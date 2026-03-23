@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>나의 일본어 학습 라이브러리</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root { --p: #8E97FD; --bg: #f8f9fa; --danger: #ff7675; --dark: #333; }
+        body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); padding: 40px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        
+        header { text-align: center; margin-bottom: 50px; }
+        header h1 { color: var(--p); font-size: 2.5rem; margin-bottom: 10px; }
+        header p { color: #666; margin-bottom: 30px; }
+
+        /* [추가] 네비게이션 바 디자인 */
+        .nav-bar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+        .nav-btn {
+            padding: 12px 24px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-vocab { background: var(--p); color: white; box-shadow: 0 4px 15px rgba(142,151,253,0.3); }
+        .btn-admin { background: var(--dark); color: white; }
+        .nav-btn:hover { transform: translateY(-3px); opacity: 0.9; }
+
+        .material-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
+        
+        .material-card { 
+            background: white; padding: 25px; border-radius: 20px; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05); transition: 0.3s; 
+            position: relative; cursor: pointer;
+            border: 1px solid transparent;
+        }
+        .material-card:hover { transform: translateY(-5px); border-color: var(--p); }
+        
+        .delete-btn {
+            position: absolute; top: 15px; right: 15px;
+            width: 30px; height: 30px; border-radius: 50%;
+            background: #eee; color: #999; border: none;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; cursor: pointer; transition: 0.2s;
+            z-index: 10;
+        }
+        .delete-btn:hover { background: var(--danger); color: white; }
+
+        .card-content h3 { margin: 0 0 10px 0; color: #333; font-size: 1.2rem; padding-right: 30px; }
+        .card-content p { color: #999; font-size: 0.85rem; margin: 0; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>📚 학습 라이브러리</h1>
+        <p>정제된 데이터가 성장을 만듭니다.</p>
+
+        <div class="nav-bar">
+            <a href="vocab.html" class="nav-btn btn-vocab">⭐ 나만의 단어장</a>
+            <a href="admin.html" class="nav-btn btn-admin">⚙️ 자료 추가</a>
+        </div>
+    </header>
+
+    <div class="material-grid" id="materialGrid"></div>
+</div>
+
+<script>
+    const CONFIG = {
+        URL: 'https://jdtowtxhexcweuxawrds.supabase.co',
+        KEY: 'sb_publishable_qSe245OfO4EyU7SQxgqSSA_qsMPRlLr'
+    };
+    const sb = window.supabase.createClient(CONFIG.URL, CONFIG.KEY);
+
+    async function loadList() {
+        const grid = document.getElementById('materialGrid');
+        grid.innerHTML = ""; 
+
+        const { data, error } = await sb
+            .from('reading_materials')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) return console.error(error);
+
+        data.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'material-card';
+            card.onclick = () => {
+                location.href = `viewer.html?id=${item.id}`;
+            };
+
+            card.innerHTML = `
+                <button class="delete-btn" onclick="deleteItem(event, '${item.id}')">×</button>
+                <div class="card-content">
+                    <h3>${item.title || '제목 없음'}</h3>
+                    <p>📅 ${new Date(item.created_at).toLocaleDateString()}</p>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    async function deleteItem(event, id) {
+        event.stopPropagation();
+        if (!confirm("이 학습 자료를 영구적으로 삭제할까요?")) return;
+
+        try {
+            const { error } = await sb
+                .from('reading_materials')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+            loadList(); 
+        } catch (err) {
+            alert("삭제 실패: " + err.message);
+        }
+    }
+
+    loadList();
+</script>
+
+</body>
+</html>

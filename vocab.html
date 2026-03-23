@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Training Center - SRS Study</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;500;700&family=Noto+Sans+KR:wght@300;400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #8E97FD;
+            --bg: #F0F2F8;
+            --text: #2D3436;
+            --line: rgba(142, 151, 253, 0.2);
+            --success: #4CAF50;
+            --danger: #ff7675;
+            --ease: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 40px 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .back-link {
+            text-decoration: none;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .tab-btn {
+            padding: 10px 25px;
+            border-radius: 20px;
+            border: 1px solid var(--primary);
+            background: white;
+            color: var(--primary);
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .session-info {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        /* [디자인] 세로 구분선 */
+        .vocab-list {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .vocab-list::before {
+            content: "";
+            position: absolute;
+            left: 35%;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: var(--line);
+            z-index: 0;
+        }
+
+        /* [수정] 카드 전체 세로 중앙 정렬 및 애니메이션 */
+        .vocab-card {
+            display: grid;
+            grid-template-columns: 35% 65%;
+            background: transparent;
+            min-height: 120px;
+            position: relative;
+            z-index: 1;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+            transition: all 0.5s var(--ease);
+            animation: slideInUp 0.5s var(--ease);
+            align-items: center;
+            /* [핵심] 수평 라인 통일 */
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .exit-x {
+            opacity: 0;
+            transform: translateY(60px) scale(0.9);
+            filter: blur(5px);
+            pointer-events: none;
+        }
+
+        .exit-o {
+            opacity: 0;
+            transform: translateX(80px) scale(0.9);
+            filter: blur(5px);
+            pointer-events: none;
+        }
+
+        .word-side {
+            padding: 20px 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            /* 눈의 피로를 가장 줄여주는 좌측 정렬 */
+            justify-content: center;
+        }
+
+        .meaning-side {
+            padding: 20px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .word-text {
+            /* font-size: 1.6rem; 기본값 (JS에서 동적 오버라이드 됨) */
+            font-weight: bold;
+            color: #333;
+            position: relative;
+            cursor: pointer;
+            word-break: break-word;
+            /* 지나치게 길어 최후의 방어선에 도달하면 단어별로 깔끔하게 떨어지게 함 */
+            line-height: 1.3;
+        }
+
+        .furigana {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(5px);
+            font-size: 0.8rem;
+            color: var(--primary);
+            opacity: 0;
+            transition: 0.3s;
+            white-space: nowrap;
+        }
+
+        .word-text:hover .furigana {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .meaning-text {
+            font-size: 1.15rem;
+            color: #555;
+            transition: opacity 0.3s;
+            flex: 1;
+        }
+
+        /* [수정] 날짜 정보: 우측 하단 구석 각주 스타일 */
+        .meta-info {
+            position: absolute;
+            bottom: 1px;
+            /* 구분선에 밀착 */
+            right: 45px;
+            /* 우측 끝 배치 (OX 버튼 간섭 방지) */
+            font-size: 0.65rem;
+            color: #ccc;
+            font-weight: 300;
+            letter-spacing: 0.2px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* [핵심] 모드별 정보 노출 제어 */
+
+        /* 1. Word 모드: 뜻만 투명하게, 날짜는 아예 제거 */
+        .mode-word .meaning-text {
+            opacity: 0;
+        }
+
+        .mode-word .meaning-side:hover .meaning-text {
+            opacity: 0.3;
+        }
+
+        .mode-word .meta-info {
+            display: none !important;
+        }
+
+        /* 2. Meaning 모드: 단어만 투명하게, 날짜와 후리가나 제거 */
+        .mode-meaning .word-text {
+            opacity: 0;
+        }
+
+        .mode-meaning .word-text:hover {
+            opacity: 0.3;
+        }
+
+        .mode-meaning .furigana,
+        .mode-meaning .meta-info {
+            display: none !important;
+        }
+
+        .ox-group {
+            display: flex;
+            gap: 12px;
+            z-index: 2;
+        }
+
+        .btn-ox {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-o {
+            background: #e8f5e9;
+            color: var(--success);
+        }
+
+        .btn-x {
+            background: #fff1f1;
+            color: var(--danger);
+        }
+
+        .btn-ox:hover {
+            transform: scale(1.2);
+        }
+
+        /* [NEW] Mastery Badge */
+        .mastery-badge {
+            font-size: 0.65rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+
+        .badge-new {
+            background: #ffeaa7;
+            color: #d63031;
+        }
+
+        .badge-learning {
+            background: #dfe6e9;
+            color: #2d3436;
+        }
+
+        .badge-due {
+            background: #fab1a0;
+            color: #d63031;
+        }
+
+        .badge-master {
+            background: #55efc4;
+            color: #00b894;
+        }
+    </style>
+</head>
+
+<body class="mode-all">
+
+    <div class="container">
+        <header>
+            <div class="nav-bar">
+                <a href="index.html" class="back-link">← Library</a>
+                <h1 style="color:var(--primary); margin:0; letter-spacing: -1px;">🚀 Training Center</h1>
+                <div id="sessionCount" style="color:#999; font-weight: 300;">Ready to study</div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-btn active" onclick="setMode('all', this)">All</button>
+                <button class="tab-btn" onclick="setMode('word', this)">Word</button>
+                <button class="tab-btn" onclick="setMode('meaning', this)">Meaning</button>
+            </div>
+        </header>
+
+        <div id="vocabList" class="vocab-list"></div>
+        <div id="loadMoreCont" style="text-align: center; margin-top: 30px; margin-bottom: 50px;"></div>
+    </div>
+
+    <script>
+        const CONFIG = {
+            URL: 'https://jdtowtxhexcweuxawrds.supabase.co',
+            KEY: 'sb_publishable_qSe245OfO4EyU7SQxgqSSA_qsMPRlLr'
+        };
+        const sb = window.supabase.createClient(CONFIG.URL, CONFIG.KEY);
+
+        let allVocabs = [];
+        let currentIndex = 0;
+        const PAGE_SIZE = 10;
+        let isInfiniteScrollActive = false;
+
+        function setMode(mode, btn) {
+            document.body.className = 'mode-' + mode;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        async function loadAllVocabs() {
+            const cached = localStorage.getItem('vocabCache');
+            if (cached) {
+                allVocabs = JSON.parse(cached);
+                renderNextPage(); // 캐시에 있는 10개 먼저 광속 렌더링
+                fetchAndCache(false); // 백그라운드 서버 최신화 통신
+            } else {
+                document.getElementById('sessionCount').innerText = "단어 불러오는 중...";
+                await fetchAndCache(true);
+            }
+        }
+
+        async function fetchAndCache(renderAfter) {
+            // 모든 단어를 가져와서 캐싱 (안정성을 위해 최대 1000개 최신순 제한)
+            const { data, error } = await sb.from('my_vocabulary').select('*').order('created_at', { ascending: false }).limit(1000);
+            if (!error && data) {
+                allVocabs = data;
+                localStorage.setItem('vocabCache', JSON.stringify(data));
+                if (renderAfter) {
+                    renderNextPage();
+                } else if (currentIndex === 0) {
+                    renderNextPage();
+                } else {
+                    document.getElementById('sessionCount').innerText = `총 단어: ${allVocabs.length}개`;
+                }
+            }
+        }
+
+        function renderNextPage() {
+            const list = document.getElementById('vocabList');
+            const nextBatch = allVocabs.slice(currentIndex, currentIndex + PAGE_SIZE);
+
+            if (currentIndex === 0) list.innerHTML = "";
+
+            if (allVocabs.length === 0) {
+                list.innerHTML = "<p style='text-align:center; padding:100px; color:#999; font-size:1.2rem;'>아직 저장된 단어가 없습니다.</p>";
+                document.getElementById('sessionCount').innerText = "Empty";
+                return;
+            }
+
+            document.getElementById('sessionCount').innerText = `총 단어: ${allVocabs.length}개`;
+
+            const nowTime = new Date().getTime();
+
+            nextBatch.forEach((item) => {
+                const card = document.createElement('div');
+                card.className = 'vocab-card';
+                card.id = `card-${item.id}`;
+
+                const timeInfo = new Date(item.last_review || item.created_at).toLocaleString('ko-KR', {
+                    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+
+                // Mastery Badge Logic
+                let badgeHtml = '';
+                const streak = item.streak || 0;
+                if (!item.last_review) {
+                    badgeHtml = `<span class="mastery-badge badge-new">New</span>`;
+                } else if (item.status === 'Master') {
+                    badgeHtml = `<span class="mastery-badge badge-master">★ Master (${streak})</span>`;
+                } else {
+                    const isDue = item.next_review && (new Date(item.next_review).getTime() <= nowTime);
+                    if (isDue) {
+                        badgeHtml = `<span class="mastery-badge badge-due">⏳ Due</span>`;
+                    } else {
+                        badgeHtml = `<span class="mastery-badge badge-learning">Lv.${streak}</span>`;
+                    }
+                }
+
+                // 글자 길이에 따른 시각적 폰트 크기 동적 조절 (자동 리사이징)
+                let baseSize = 1.6; // 최대 크기 (rem)
+                let visualLength = 0;
+                for (let c of item.text) {
+                    if (c.match(/[a-zA-Z0-9\s.,!?:;'"()-]/)) visualLength += 0.55; // 영문이나 기호는 얇게 취급
+                    else visualLength += 1.0; // 한글/한자 등은 두껍게 취급
+                }
+
+                // 6글자 분량을 넘어갈 경우 폰트 크기를 조금씩 줄이되, 가독성 마지노선인 1.15rem 에서 방어
+                let dynamicFontSize = baseSize;
+                if (visualLength > 6) {
+                    dynamicFontSize = Math.max(1.15, baseSize - ((visualLength - 6) * 0.08));
+                }
+
+                card.innerHTML = `
+                <div class="word-side">
+                    ${badgeHtml}
+                    <div class="word-text" style="font-size: ${dynamicFontSize}rem;">
+                        <span class="furigana">${item.furigana || ''}</span>
+                        ${item.text}
+                    </div>
+                </div>
+                <div class="meaning-side">
+                    <div class="meaning-text">${item.meaning}</div>
+                    <div class="meta-info">${timeInfo}</div>
+                    <div class="ox-group">
+                        <button class="btn-ox btn-x" onclick="handleSRS('${item.id}', false)">✕</button>
+                        <button class="btn-ox btn-o" onclick="handleSRS('${item.id}', true)">○</button>
+                    </div>
+                </div>
+            `;
+                list.appendChild(card);
+            });
+
+            currentIndex += nextBatch.length;
+
+            const cont = document.getElementById('loadMoreCont');
+            cont.innerHTML = "";
+
+            if (currentIndex < allVocabs.length) {
+                if (!isInfiniteScrollActive) {
+                    const btn = document.createElement('button');
+                    btn.innerText = "단어 10개 더보기 ▼";
+                    btn.style = "padding: 12px 24px; border-radius: 20px; border: 1px solid var(--primary); background: transparent; color: var(--primary); font-weight: bold; cursor: pointer; transition: 0.3s; font-family: inherit; font-size: 1rem;";
+                    btn.onmouseover = () => { btn.style.background = 'var(--primary)'; btn.style.color = 'white'; };
+                    btn.onmouseleave = () => { btn.style.background = 'transparent'; btn.style.color = 'var(--primary)'; };
+                    btn.onclick = () => {
+                        isInfiniteScrollActive = true;
+                        btn.remove();
+                        renderNextPage(); // 버튼 누르면 다음 10개 렌더링 후 스크롤 활성화
+                    };
+                    cont.appendChild(btn);
+                }
+            }
+        }
+
+        window.addEventListener('scroll', () => {
+            if (!isInfiniteScrollActive) return;
+            // 페이지 하단에 근접했는지 체크하여 다음 10개 무한 스크롤 렌더링
+            if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200) {
+                if (currentIndex < allVocabs.length) {
+                    // 부하 방지를 위한 간단한 쓰로틀링 플래그 체크 용도
+                    const scrollT = window.lastPaginating || 0;
+                    if (Date.now() - scrollT > 300) {
+                        window.lastPaginating = Date.now();
+                        renderNextPage();
+                    }
+                }
+            }
+        });
+
+        async function handleSRS(id, isSuccess) {
+            const itemIndex = allVocabs.findIndex(v => v.id === id);
+            if (itemIndex === -1) return;
+
+            const targetCard = document.getElementById(`card-${id}`);
+            if (targetCard) targetCard.classList.add(isSuccess ? 'exit-o' : 'exit-x');
+
+            const item = allVocabs[itemIndex];
+            let updates = {};
+            const now = new Date();
+
+            if (isSuccess) {
+                const newStreak = (item.streak || 0) + 1;
+                const nextReview = new Date();
+                nextReview.setDate(now.getDate() + Math.pow(2, newStreak)); // Exponential backoff based on streak
+                updates = { streak: newStreak, status: newStreak >= 8 ? 'Master' : 'Due', next_review: nextReview.toISOString(), last_review: now.toISOString() };
+            } else {
+                const tenMinsLater = new Date(now.getTime() + 10 * 60000); // 10 minutes later for failed items
+                updates = { streak: 0, status: 'Learn', next_review: tenMinsLater.toISOString(), last_review: now.toISOString() };
+            }
+
+            // Update local cache immediately
+            Object.assign(allVocabs[itemIndex], updates);
+
+            sb.from('my_vocabulary').update(updates).eq('id', id);
+
+            // 전체 리스트 재랜더링 없이 개별 요소만 DOM 트리에서 분리
+            setTimeout(() => {
+                if (targetCard && targetCard.parentNode) {
+                    targetCard.parentNode.removeChild(targetCard);
+                }
+            }, 500);
+        }
+
+        loadAllVocabs();
+    </script>
+
+</body>
+
+</html>

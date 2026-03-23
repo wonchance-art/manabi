@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>관리자 패널 - 2026 데이터 무결성 & 복구 통합본</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --p: #8E97FD;
+            --s: #4CAF50;
+            --bg: #f8f9fa;
+            --ease: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: var(--bg);
+            padding: 40px;
+        }
+
+        .card {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 35px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        }
+
+        h2 {
+            color: #333;
+            margin-top: 0;
+            border-bottom: 2px solid var(--p);
+            padding-bottom: 10px;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        textarea {
+            height: 200px;
+            resize: vertical;
+        }
+
+        button {
+            padding: 16px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1rem;
+            width: 100%;
+            transition: 0.3s;
+        }
+
+        #analyzeBtn {
+            background: var(--p);
+            color: white;
+        }
+
+        #saveBtn {
+            background: var(--s);
+            color: white;
+            display: none;
+            margin-top: 20px;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 10px;
+            background: #eee;
+            border-radius: 20px;
+            margin: 10px 0 20px 0;
+            display: none;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--p), #a29bfe);
+            transition: 0.3s var(--ease);
+        }
+
+        #status {
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            text-align: center;
+            background: #eee;
+            white-space: pre-wrap;
+            margin-bottom: 10px;
+        }
+
+        #preview {
+            background: #272822;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+            font-size: 0.8rem;
+            overflow-x: auto;
+            max-height: 300px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card">
+        <div style="margin-bottom: 20px;">
+            <a href="index.html" style="text-decoration:none; color:var(--p); font-weight:bold; font-size:1.1rem;">← 메인
+                홈으로 돌아가기</a>
+        </div>
+        <h2>🚀 콘텐츠 관리 시스템 (Premium 2.5 Flash)</h2>
+        <input type="text" id="t" placeholder="제목을 입력하세요">
+        <textarea id="r" placeholder="분석할 문장을 입력하세요 (엔터로 문단 구분 가능)"></textarea>
+
+        <button id="analyzeBtn" onclick="startProcess()">AI 문장 분석 시작</button>
+
+        <div class="progress-container" id="progContainer">
+            <div class="progress-bar" id="progBar"></div>
+        </div>
+
+        <div id="status">상태: 시스템 대기 중 (Project: 728944415231)</div>
+
+        <pre id="preview"></pre>
+    </div>
+
+    <script>
+        const CONFIG = {
+            S_URL: 'https://jdtowtxhexcweuxawrds.supabase.co',
+            S_KEY: 'sb_publishable_qSe245OfO4EyU7SQxgqSSA_qsMPRlLr',
+            AI_KEY: 'AIzaSyDxFYhMH8QYLkEqLqVjRmVYAXUp_WT0Vp4'
+        };
+
+        const sb = window.supabase.createClient(CONFIG.S_URL, CONFIG.S_KEY);
+        async function startProcess() {
+            const title = document.getElementById('t').value || "제목 없음";
+            const raw_text = document.getElementById('r').value.trim();
+            const log = document.getElementById('status');
+            const progContainer = document.getElementById('progContainer');
+            const progBar = document.getElementById('progBar');
+            const preview = document.getElementById('preview');
+
+            if (!raw_text) return alert("내용을 입력해주세요.");
+
+            progContainer.style.display = 'block';
+            progBar.style.width = '30%';
+            preview.style.display = 'none';
+
+            log.innerText = "⏳ 1단계: 뼈대 저장 중...";
+            log.style.backgroundColor = "#eee";
+
+            // 빈 초기 객체만 할당하여 Supabase Payload 초과 오류 (Failed to fetch) 방지
+            let initJson = { sequence: [], dictionary: {}, last_idx: -1, status: "analyzing" };
+
+            try {
+                const { data, error } = await sb.from('reading_materials').insert([{
+                    title: title,
+                    raw_text: raw_text,
+                    processed_json: initJson
+                }]).select();
+
+                if (error) throw error;
+                const newId = data[0].id;
+
+                progBar.style.width = '50%';
+                log.innerText = "✅ 2단계: 저장 완료! 이제 백그라운드에서 문단별 AI 분석을 시작합니다.\n페이지를 닫아도 뷰어(Reviewer)에서 자동으로 이어할 수 있습니다.";
+                log.style.backgroundColor = "#dcfce7";
+
+                // 백그라운드 분석 시작
+                runBackgroundAnalysis(newId, raw_text);
+
+            } catch (err) {
+                log.innerText = "❌ 저장 오류: " + err.message;
+                log.style.backgroundColor = "#ffdce0";
+                progBar.style.width = '0%';
+            }
+        }
+
+        async function runBackgroundAnalysis(id, text) {
+            const progBar = document.getElementById('progBar');
+            const log = document.getElementById('status');
+            const preview = document.getElementById('preview');
+            const modelPath = 'models/gemini-2.5-flash';
+            const url = `https://generativelanguage.googleapis.com/v1beta/${modelPath}:generateContent?key=${CONFIG.AI_KEY}`;
+
+            const lines = text.split('\n');
+            const timestamp = Date.now();
+            let failCount = 0;
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+
+                const { data: currentData } = await sb.from('reading_materials').select('processed_json').eq('id', id).single();
+                let currentJson = currentData.processed_json;
+
+                if (!currentJson || currentJson.status === "completed") return;
+                if (currentJson.status === "failed") return;
+
+                if (currentJson.last_idx >= i) {
+                    failCount = 0; // 성공 시 실패 카운트 리셋
+                    continue;
+                }
+
+                if (log) log.innerText = `⏳ 분석 중... (${i + 1}/${lines.length} 문단)`;
+                if (progBar) progBar.style.width = Math.floor(((i + 1) / lines.length) * 100) + '%';
+
+                if (!line) {
+                    // 기존 플레이스홀더가 있다면 제거
+                    const targetIdx = currentJson.sequence.indexOf(`p_${i}`);
+                    if (targetIdx !== -1) {
+                        currentJson.sequence.splice(targetIdx, 1);
+                        delete currentJson.dictionary[`p_${i}`];
+                    }
+                    if (i < lines.length - 1) {
+                        const brId = `br_${i}_${timestamp}`;
+                        currentJson.sequence.push(brId);
+                        currentJson.dictionary[brId] = { text: "\n", pos: "개행" };
+                    }
+
+                    currentJson.last_idx = i;
+                    if (i === lines.length - 1) currentJson.status = "completed";
+                    await sb.from('reading_materials').update({ processed_json: currentJson }).eq('id', id);
+                    continue;
+                }
+
+                const escapedLine = line.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+                const prompt = `입력된 텍스트 "${escapedLine}"를 정밀 분석해서 반드시 아래 규칙을 지킨 JSON으로 응답해.
+
+1. 데이터 구조 (Index Mapping):
+   - "sequence": ["0", "1", "2", ...] 형태로 원문의 모든 요소를 순서대로 번호를 매길 것.
+   - "dictionary": {"0": {...}, "1": {...}} 형태로 정보를 넣을 것.
+
+2. 분석 규칙 (필독):
+   - 문단 구분 보존: 원문에 줄 바꿈(Enter, \\n)이 있다면 절대로 생략하지 말고 반드시 하나의 독립된 토큰으로 포함할 것. (text: "\\n", pos: "개행" 등으로 처리)
+   - 원문의 모든 단어와 기호(따옴표, 콤마, 마침표 등)를 단 하나도 빠뜨리지 말 것.
+   - 따옴표(')나 특수 문자가 포함된 단어도 정확히 보존할 것.
+   - [영어]: 모든 토큰의 'furigana' 필드에 발음 기호(IPA)를 작성 (/ / 포함).
+   - [일본어]: 한자가 포함된 토큰만 'furigana' 작성.
+   - meaning & pos: 무조건 한국어로 작성.
+
+3. 예시: "Hello\\n'World'"
+   sequence: ["0", "1", "2", "3", "4"]
+   dictionary: {
+     "0":{text:"Hello", pos:"명사"}, 
+     "1":{text:"\\n", pos:"개행", furigana:"", meaning:""}, 
+     "2":{text:"'", pos:"기호"}, 
+     "3":{text:"World", pos:"명사"}, 
+     "4":{text:"'", pos:"기호"}
+   }
+
+설명 없이 오직 순수한 JSON만 응답할 것.`;
+
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                    });
+
+                    const resData = await response.json();
+                    if (resData.error) throw new Error(resData.error.message);
+
+                    const rawContent = resData.candidates[0].content.parts[0].text;
+                    let payload;
+                    try {
+                        const clean = rawContent.replace(/```json|```/g, '').trim();
+                        // find first { and last }
+                        const start = clean.indexOf('{');
+                        const end = clean.lastIndexOf('}');
+                        if (start === -1 || end === -1) throw new Error("JSON 괄호를 찾을 수 없습니다.");
+                        payload = JSON.parse(clean.substring(start, end + 1));
+
+                        if (!payload.sequence || !payload.dictionary) {
+                            throw new Error("sequence 또는 dictionary가 누락되었습니다.");
+                        }
+                    } catch (parseError) {
+                        throw new Error("JSON 파싱 실패: " + parseError.message);
+                    }
+
+                    let newIds = [];
+                    payload.sequence.forEach((oldId, idx) => {
+                        const newId = `id_${i}_${idx}_${timestamp}`;
+                        newIds.push(newId);
+                        currentJson.dictionary[newId] = payload.dictionary[oldId];
+                    });
+
+                    // 대기중이던 pId 찾아서 바꾸기
+                    const pId = `p_${i}`;
+                    const targetIdx = currentJson.sequence.indexOf(pId);
+                    if (targetIdx !== -1) {
+                        currentJson.sequence.splice(targetIdx, 1, ...newIds);
+                        delete currentJson.dictionary[pId];
+                    } else {
+                        currentJson.sequence.push(...newIds);
+                        if (i < lines.length - 1) {
+                            const brId = `br_${i}_${timestamp}`;
+                            currentJson.sequence.push(brId);
+                            currentJson.dictionary[brId] = { text: "\n", pos: "개행" };
+                        }
+                    }
+
+                    currentJson.last_idx = i;
+                    if (i === lines.length - 1) currentJson.status = "completed";
+
+                    await sb.from('reading_materials').update({ processed_json: currentJson }).eq('id', id);
+
+                    if (preview) {
+                        preview.innerText = `[진행중] ${i + 1}/${lines.length}\n` + JSON.stringify(currentJson, null, 2);
+                        preview.style.display = 'block';
+                    }
+
+                    failCount = 0;
+
+                } catch (err) {
+                    console.error(`${i + 1}번 문단 중단:`, err);
+                    failCount++;
+                    if (failCount >= 3) {
+                        if (log) log.innerText = `⚠️ ${i + 1}번 문단 연속 3회 실패. AI 분석이 중단되었습니다.\nReviewer 화면에서 다시 이어하기를 시도해주세요.`;
+                        currentJson.status = "failed";
+                        await sb.from('reading_materials').update({ processed_json: currentJson }).eq('id', id);
+                        break;
+                    }
+                    if (log) log.innerText = `⚠️ ${i + 1}번 문단 실패. 3초 후 재시도...`;
+                    i--; // 재시도
+                    await new Promise(r => setTimeout(r, 3000));
+                }
+            }
+
+            if (log && failCount < 3) {
+                log.innerText = "✅ 전체 문단 분석 완료!";
+                log.style.backgroundColor = "#dcfce7";
+            }
+        }
+    </script>
+</body>
+
+</html>
