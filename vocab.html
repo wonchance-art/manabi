@@ -6,27 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Training Center - SRS Study</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.9/purify.min.js"></script>
     <link
         href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;500;700&family=Noto+Sans+KR:wght@300;400;700&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
     <style>
-        :root {
-            --primary: #8E97FD;
-            --bg: #F0F2F8;
-            --text: #2D3436;
-            --line: rgba(142, 151, 253, 0.2);
-            --success: #4CAF50;
-            --danger: #ff7675;
-            --ease: cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
         body {
-            font-family: 'Noto Sans KR', sans-serif;
             background: var(--bg);
-            color: var(--text);
-            margin: 0;
             padding: 40px 20px;
-            overflow-x: hidden;
         }
 
         .container {
@@ -45,12 +34,6 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-        }
-
-        .back-link {
-            text-decoration: none;
-            color: var(--primary);
-            font-weight: bold;
         }
 
         .tabs {
@@ -325,11 +308,7 @@
     </div>
 
     <script>
-        const CONFIG = {
-            URL: 'https://jdtowtxhexcweuxawrds.supabase.co',
-            KEY: 'sb_publishable_qSe245OfO4EyU7SQxgqSSA_qsMPRlLr'
-        };
-        const sb = window.supabase.createClient(CONFIG.URL, CONFIG.KEY);
+
 
         let allVocabs = [];
         let currentIndex = 0;
@@ -425,7 +404,7 @@
                     dynamicFontSize = Math.max(1.15, baseSize - ((visualLength - 6) * 0.08));
                 }
 
-                card.innerHTML = `
+                card.innerHTML = DOMPurify.sanitize(`
                 <div class="word-side">
                     ${badgeHtml}
                     <div class="word-text" style="font-size: ${dynamicFontSize}rem;">
@@ -441,7 +420,7 @@
                         <button class="btn-ox btn-o" onclick="handleSRS('${item.id}', true)">○</button>
                     </div>
                 </div>
-            `;
+            `);
                 list.appendChild(card);
             });
 

@@ -4,13 +4,15 @@
     <meta charset="UTF-8">
     <title>나의 일본어 학습 라이브러리</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.9/purify.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
     <style>
-        :root { --p: #8E97FD; --bg: #f8f9fa; --danger: #ff7675; --dark: #333; }
-        body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); padding: 40px; }
+        body { background: var(--bg); padding: 40px; }
         .container { max-width: 900px; margin: 0 auto; }
         
         header { text-align: center; margin-bottom: 50px; }
-        header h1 { color: var(--p); font-size: 2.5rem; margin-bottom: 10px; }
+        header h1 { color: var(--primary); font-size: 2.5rem; margin-bottom: 10px; }
         header p { color: #666; margin-bottom: 30px; }
 
         /* [추가] 네비게이션 바 디자인 */
@@ -30,7 +32,7 @@
             align-items: center;
             gap: 8px;
         }
-        .btn-vocab { background: var(--p); color: white; box-shadow: 0 4px 15px rgba(142,151,253,0.3); }
+        .btn-vocab { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(142,151,253,0.3); }
         .btn-admin { background: var(--dark); color: white; }
         .nav-btn:hover { transform: translateY(-3px); opacity: 0.9; }
 
@@ -42,7 +44,7 @@
             position: relative; cursor: pointer;
             border: 1px solid transparent;
         }
-        .material-card:hover { transform: translateY(-5px); border-color: var(--p); }
+        .material-card:hover { transform: translateY(-5px); border-color: var(--primary); }
         
         .delete-btn {
             position: absolute; top: 15px; right: 15px;
@@ -75,12 +77,6 @@
 </div>
 
 <script>
-    const CONFIG = {
-        URL: 'https://jdtowtxhexcweuxawrds.supabase.co',
-        KEY: 'sb_publishable_qSe245OfO4EyU7SQxgqSSA_qsMPRlLr'
-    };
-    const sb = window.supabase.createClient(CONFIG.URL, CONFIG.KEY);
-
     async function loadList() {
         const grid = document.getElementById('materialGrid');
         grid.innerHTML = ""; 
@@ -99,13 +95,13 @@
                 location.href = `viewer.html?id=${item.id}`;
             };
 
-            card.innerHTML = `
+            card.innerHTML = DOMPurify.sanitize(`
                 <button class="delete-btn" onclick="deleteItem(event, '${item.id}')">×</button>
                 <div class="card-content">
                     <h3>${item.title || '제목 없음'}</h3>
                     <p>📅 ${new Date(item.created_at).toLocaleDateString()}</p>
                 </div>
-            `;
+            `);
             grid.appendChild(card);
         });
     }
