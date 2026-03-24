@@ -2,6 +2,7 @@ const urlParams = new URLSearchParams(window.location.search);
         const materialId = urlParams.get('id');
 
         let currentMaterialData = null; // 원본 데이터를 저장할 전역 변수
+        let isCurrentJapanese = false; // 현재 지문이 일본어인지 여부
         let settings = JSON.parse(localStorage.getItem('reader-settings')) || { size: 1.6, gapV: 15, gapH: 12, theme: 'light', font: "'Noto Sans KR'" };
 
         function applySettings() {
@@ -21,7 +22,10 @@ const urlParams = new URLSearchParams(window.location.search);
         function adjust(type, delta) {
             if (type === 'size') settings.size = Math.max(1, Math.min(3, settings.size + delta));
             if (type === 'gap-v') settings.gapV = Math.max(0, Math.min(50, settings.gapV + delta));
-            if (type === 'gap-h') settings.gapH = Math.max(0, Math.min(40, settings.gapH + delta));
+            if (type === 'gap-h') {
+                const minGap = isCurrentJapanese ? 0 : 3;
+                settings.gapH = Math.max(minGap, Math.min(40, settings.gapH + delta));
+            }
             applySettings();
         }
 
@@ -47,11 +51,14 @@ const urlParams = new URLSearchParams(window.location.search);
                 currentMaterialData = data; // 데이터 보관
 
                 // 일본어(히라가나, 가타카나, 한자)가 포함된 글인 경우 자동으로 띄어쓰기(SPACE) 간격을 0으로 설정
-                const isJapanese = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]/.test(data.raw_text || "");
-                if (isJapanese) {
+                isCurrentJapanese = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]/.test(data.raw_text || "");
+                if (isCurrentJapanese) {
                     settings.gapH = 0;
-                    applySettings();
+                } else {
+                    // 비 일본어(영어 등)는 최소 자간 3px 강제
+                    if (settings.gapH < 3) settings.gapH = 3;
                 }
+                applySettings();
 
                 document.getElementById('title').innerText = data.title;
 
