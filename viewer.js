@@ -45,6 +45,14 @@ const urlParams = new URLSearchParams(window.location.search);
                 if (error) throw error;
 
                 currentMaterialData = data; // 데이터 보관
+
+                // 일본어(히라가나, 가타카나, 한자)가 포함된 글인 경우 자동으로 띄어쓰기(SPACE) 간격을 0으로 설정
+                const isJapanese = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]/.test(data.raw_text || "");
+                if (isJapanese) {
+                    settings.gapH = 0;
+                    applySettings();
+                }
+
                 document.getElementById('title').innerText = data.title;
 
                 let json = data.processed_json;
