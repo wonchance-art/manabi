@@ -32,23 +32,36 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: { message: "Bad Request: No contents provided" } });
         }
 
-        const url = `https://generativelanguage.googleapis.com/v1beta/${model}:generateContent?key=${apiKey}`;
+        let url = `https://generativelanguage.googleapis.com/v1beta/${model}:generateContent?key=${apiKey}`;
 
         const requestBody = { contents };
         if (generationConfig) {
             requestBody.generationConfig = generationConfig;
         }
 
-        // 구글 Gemini 서버로 요청 전달
-        const response = await fetch(url, {
+        // 구글 Gemini 서버로 요청 전달 (1차 시도)
+        let response = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(requestBody)
         });
 
-        const data = await response.json();
+        let data = await response.json();
 
-        // 5. 결과를 클라이언트에게 반환
+        // 1차 시도 실패 시 (503 등 서버 오류) 자동 2.5-flash 폴백 (Fallback)
+        if (!response.ok && model !== 'models/gemini-2.5-flash') {
+            console.log(`[Fallback] ${model} 실패 (${response.status}). models/gemini-2.5-flash 로 재시도합니다.`);
+            const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+            
+            response = await fetch(fallbackUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
+            });
+            data = await response.json();
+        }
+
+        // 결과를 클라이언트에게 반환
         if (!response.ok) {
             return res.status(response.status).json(data);
         }
