@@ -26,7 +26,7 @@ export default async function handler(req, res) {
         }
 
         // 클라이언트로부터 전달받은 설정 추출
-        const { contents, generationConfig, model = 'models/gemini-2.5-flash' } = req.body;
+        const { contents, generationConfig, model = 'models/gemini-3.1-flash-lite-preview' } = req.body;
         
         if (!contents) {
             return res.status(400).json({ error: { message: "Bad Request: No contents provided" } });
