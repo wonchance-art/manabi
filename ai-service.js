@@ -7,14 +7,13 @@
  * @returns {Promise<string>} AI 응답 텍스트
  */
 async function callGemini(prompt, options = {}) {
-    const apiKey = 'AIzaSyDxFYhMH8QYLkEqLqVjRmVYAXUp_WT0Vp4';
-    const url = `https://generativelanguage.googleapis.com/v1beta/${CONFIG.GEMINI_MODEL}:generateContent?key=${apiKey}`;
-
-    const response = await fetch(url, {
+    // Vercel Serverless API (/api/gemini.js) 호출을 통해 API 키 숨김 처리
+    const response = await fetch('/api/gemini', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }] }],
+            model: CONFIG.GEMINI_MODEL, // config.js의 모델명 전달
             ...(Object.keys(options).length > 0 ? { generationConfig: options } : {})
         })
     });
