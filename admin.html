@@ -185,10 +185,13 @@
 
             const lines = text.split('\n');
             const timestamp = Date.now();
-            let failCount = 0;
+            const CONCURRENCY = 5; // 5문단 동시 처리
 
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i].trim();
+            for (let i = 0; i < lines.length; i += CONCURRENCY) {
+                const batchIndices = [];
+                for (let j = 0; j < CONCURRENCY && i + j < lines.length; j++) {
+                    batchIndices.push(i + j);
+                }
 
                 const { data: currentData } = await sb.from('reading_materials').select('processed_json').eq('id', id).single();
                 let currentJson = currentData.processed_json;
@@ -196,94 +199,102 @@
                 if (!currentJson || currentJson.status === "completed") return;
                 if (currentJson.status === "failed") return;
 
-                if (currentJson.last_idx >= i) {
-                    failCount = 0; // 성공 시 실패 카운트 리셋
-                    continue;
-                }
+                const maxProgress = Math.min(i + CONCURRENCY, lines.length);
+                if (log) log.innerText = `⏳ 병렬 분석 중... (${maxProgress}/${lines.length} 문단)`;
+                if (progBar) progBar.style.width = Math.floor((maxProgress / lines.length) * 100) + '%';
 
-                if (log) log.innerText = `⏳ 분석 중... (${i + 1}/${lines.length} 문단)`;
-                if (progBar) progBar.style.width = Math.floor(((i + 1) / lines.length) * 100) + '%';
+                // Promise.all로 5개 동시 처리
+                const promises = batchIndices.map(async (idx) => {
+                    const line = lines[idx].trim();
+                    if (currentJson.last_idx >= idx) return { idx, success: true, skipped: true };
 
-                if (!line) {
-                    // 기존 플레이스홀더가 있다면 제거
-                    const targetIdx = currentJson.sequence.indexOf(`p_${i}`);
-                    if (targetIdx !== -1) {
-                        currentJson.sequence.splice(targetIdx, 1);
-                        delete currentJson.dictionary[`p_${i}`];
-                    }
-                    if (i < lines.length - 1) {
-                        const brId = `br_${i}_${timestamp}`;
-                        currentJson.sequence.push(brId);
-                        currentJson.dictionary[brId] = { text: "\n", pos: "개행" };
-                    }
+                    if (!line) return { idx, success: true, empty: true };
 
-                    currentJson.last_idx = i;
-                    if (i === lines.length - 1) currentJson.status = "completed";
-                    await sb.from('reading_materials').update({ processed_json: currentJson }).eq('id', id);
-                    continue;
-                }
+                    const prompt = buildTokenizationPrompt(line);
+                    let failCount = 0;
 
-                const prompt = buildTokenizationPrompt(line);
-
-                try {
-                    const rawContent = await callGemini(prompt);
-                    let payload;
-                    try {
-                        payload = parseGeminiJSON(rawContent);
-
-                        if (!payload.sequence || !payload.dictionary) {
-                            throw new Error("sequence 또는 dictionary가 누락되었습니다.");
+                    while (failCount < 3) {
+                        try {
+                            const rawContent = await callGemini(prompt);
+                            const payload = parseGeminiJSON(rawContent);
+                            if (!payload.sequence || !payload.dictionary) throw new Error("sequence/dictionary 누락");
+                            return { idx, success: true, payload };
+                        } catch (err) {
+                            failCount++;
+                            if (failCount >= 3) return { idx, success: false, err };
+                            await new Promise(r => setTimeout(r, 2000)); // 2초 대기 후 재시도
                         }
-                    } catch (parseError) {
-                        throw new Error("JSON 파싱 실패: " + parseError.message);
+                    }
+                });
+
+                const results = await Promise.all(promises);
+
+                // 결과를 순차적으로 조립 (Race Condition 방지)
+                let batchFailed = false;
+
+                for (let res of results) {
+                    if (res.skipped) continue;
+
+                    if (!res.success) {
+                        console.error(`${res.idx + 1}번 문단 병렬 처리 중 3회 실패:`, res.err);
+                        batchFailed = true;
+                        continue;
                     }
 
-                    let newIds = [];
-                    payload.sequence.forEach((oldId, idx) => {
-                        const newId = `id_${i}_${idx}_${timestamp}`;
-                        newIds.push(newId);
-                        currentJson.dictionary[newId] = payload.dictionary[oldId];
-                    });
-
-                    // 대기중이던 pId 찾아서 바꾸기
-                    const pId = `p_${i}`;
-                    const targetIdx = currentJson.sequence.indexOf(pId);
-                    if (targetIdx !== -1) {
-                        currentJson.sequence.splice(targetIdx, 1, ...newIds);
-                        delete currentJson.dictionary[pId];
-                    } else {
-                        currentJson.sequence.push(...newIds);
-                        if (i < lines.length - 1) {
-                            const brId = `br_${i}_${timestamp}`;
+                    if (res.empty) {
+                        const targetIdx = currentJson.sequence.indexOf(`p_${res.idx}`);
+                        if (targetIdx !== -1) {
+                            currentJson.sequence.splice(targetIdx, 1);
+                            delete currentJson.dictionary[`p_${res.idx}`];
+                        }
+                        if (res.idx < lines.length - 1) {
+                            const brId = `br_${res.idx}_${timestamp}`;
                             currentJson.sequence.push(brId);
                             currentJson.dictionary[brId] = { text: "\n", pos: "개행" };
                         }
+                        currentJson.last_idx = Math.max(currentJson.last_idx, res.idx);
+                    } else if (res.payload) {
+                        let newIds = [];
+                        res.payload.sequence.forEach((oldId, pIdx) => {
+                            const newId = `id_${res.idx}_${pIdx}_${timestamp}`;
+                            newIds.push(newId);
+                            currentJson.dictionary[newId] = res.payload.dictionary[oldId];
+                        });
+
+                        const pId = `p_${res.idx}`;
+                        const targetIdx = currentJson.sequence.indexOf(pId);
+                        if (targetIdx !== -1) {
+                            currentJson.sequence.splice(targetIdx, 1, ...newIds);
+                            delete currentJson.dictionary[pId];
+                        } else {
+                            currentJson.sequence.push(...newIds);
+                            if (res.idx < lines.length - 1) {
+                                const brId = `br_${res.idx}_${timestamp}`;
+                                currentJson.sequence.push(brId);
+                                currentJson.dictionary[brId] = { text: "\n", pos: "개행" };
+                            }
+                        }
+                        currentJson.last_idx = Math.max(currentJson.last_idx, res.idx);
                     }
+                }
 
-                    currentJson.last_idx = i;
-                    if (i === lines.length - 1) currentJson.status = "completed";
-
+                if (batchFailed) {
+                    if (log) log.innerText = `⚠️ 일부 문단 집중 실패. AI 분석이 중단되었습니다.\nReviewer 화면에서 오류 문단을 일괄 복구해주세요.`;
+                    currentJson.status = "failed";
                     await sb.from('reading_materials').update({ processed_json: currentJson }).eq('id', id);
+                    return;
+                }
 
-                    if (preview) {
-                        preview.innerText = `[진행중] ${i + 1}/${lines.length}\n` + JSON.stringify(currentJson, null, 2);
-                        preview.style.display = 'block';
-                    }
+                // 1개 배치(5문단) 통과 시 DB에 단 1번만 업데이트
+                if (batchIndices[batchIndices.length - 1] === lines.length - 1) {
+                    currentJson.status = "completed";
+                }
+                
+                await sb.from('reading_materials').update({ processed_json: currentJson }).eq('id', id);
 
-                    failCount = 0;
-
-                } catch (err) {
-                    console.error(`${i + 1}번 문단 중단:`, err);
-                    failCount++;
-                    if (failCount >= 3) {
-                        if (log) log.innerText = `⚠️ ${i + 1}번 문단 연속 3회 실패. AI 분석이 중단되었습니다.\nReviewer 화면에서 다시 이어하기를 시도해주세요.`;
-                        currentJson.status = "failed";
-                        await sb.from('reading_materials').update({ processed_json: currentJson }).eq('id', id);
-                        break;
-                    }
-                    if (log) log.innerText = `⚠️ ${i + 1}번 문단 실패. 3초 후 재시도...`;
-                    i--; // 재시도
-                    await new Promise(r => setTimeout(r, 3000));
+                if (preview) {
+                    preview.innerText = `[병렬 처리 완료] ${maxProgress}/${lines.length}\n` + JSON.stringify(currentJson, null, 2);
+                    preview.style.display = 'block';
                 }
             }
 
