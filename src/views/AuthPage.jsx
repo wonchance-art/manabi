@@ -3,6 +3,7 @@
 import { useState, Suspense } from 'react';
 import { useAuth } from '../lib/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { toKoreanError } from '../lib/authErrors';
 
 function AuthForm() {
   const [isLogin, setIsLogin] = useState(true);
@@ -38,7 +39,7 @@ function AuthForm() {
         setSuccess('🎉 인증 이메일을 발송했습니다! 이메일을 확인해주세요.');
       }
     } catch (err) {
-      setError(err.message);
+      setError(toKoreanError(err.message));
     } finally {
       setLoading(false);
     }
@@ -48,7 +49,7 @@ function AuthForm() {
     try {
       await signInWithGoogle();
     } catch (err) {
-      setError(err.message);
+      setError(toKoreanError(err.message));
     }
   }
 

@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
+import { useToast } from '../lib/ToastContext';
 import Spinner from '../components/Spinner';
 import Button from '../components/Button';
 
@@ -19,9 +20,21 @@ async function fetchMaterial(id) {
   return data;
 }
 
+async function fetchUserVocabWords(userId) {
+  if (!userId) return new Set();
+  const { data, error } = await supabase
+    .from('user_vocabulary')
+    .select('word_text')
+    .eq('user_id', userId);
+  if (error) return new Set();
+  return new Set((data || []).map(v => v.word_text));
+}
+
 export default function ViewerPage() {
   const { id } = useParams();
   const { user } = useAuth();
+  const toast = useToast();
+  const queryClient = useQueryClient();
 
   const [fontSize, setFontSize] = useState(1.6);
   const [lineGap, setLineGap] = useState(15);
@@ -40,6 +53,31 @@ export default function ViewerPage() {
   const { data: material, isLoading, error, refetch } = useQuery({
     queryKey: ['material', id],
     queryFn: () => fetchMaterial(id),
+    // 분석 중일 때 폴링
+    refetchInterval: (data) => data?.status === 'analyzing' ? 4000 : false,
+  });
+
+  const { data: savedWords = new Set() } = useQuery({
+    queryKey: ['vocab-words', user?.id],
+    queryFn: () => fetchUserVocabWords(user.id),
+    enabled: !!user,
+    staleTime: 1000 * 30,
+  });
+
+  // 재분석 요청
+  const reanalyzeMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from('reading_materials')
+        .update({ status: 'analyzing', processed_json: null })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast('재분석을 요청했습니다. 잠시 기다려주세요.', 'info');
+      refetch();
+    },
+    onError: (err) => toast('재분석 실패: ' + err.message, 'error'),
   });
 
   const handleTokenClick = (token, tokenId) => {
@@ -55,7 +93,7 @@ export default function ViewerPage() {
 
   const analyzeGrammar = async () => {
     const text = window.getSelection().toString().trim() || selectedRangeText;
-    if (!text) return alert("분석할 문장을 드래그해서 선택해주세요.");
+    if (!text) { toast('분석할 문장을 드래그해서 선택해주세요.', 'warning'); return; }
 
     setIsGrammarModalOpen(true);
     setIsGrammarLoading(true);
@@ -84,7 +122,7 @@ export default function ViewerPage() {
   };
 
   const addToVocab = async () => {
-    if (!user) return alert("로그인이 필요합니다.");
+    if (!user) { toast('로그인이 필요합니다.', 'warning'); return; }
     if (!selectedToken) return;
 
     try {
@@ -101,10 +139,12 @@ export default function ViewerPage() {
         }], { onConflict: 'user_id, word_text' });
 
       if (insertError) throw insertError;
-      alert("단어장에 추가되었습니다!");
+      toast(`"${selectedToken.text}" 단어장에 추가됐어요! ⭐`, 'success');
+      queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
       setIsSheetOpen(false);
     } catch (err) {
-      alert("추가 실패: " + err.message);
+      toast('추가 실패: ' + err.message, 'error');
     }
   };
 
@@ -112,7 +152,10 @@ export default function ViewerPage() {
   if (error) return <div className="page-container error-banner">❌ 에러: {error.message}</div>;
 
   const json = material?.processed_json || { sequence: [], dictionary: {} };
-  const isAnalyzing = json.status === 'analyzing';
+  const status = material?.status;
+  const isAnalyzing = status === 'analyzing';
+  const isFailed = status === 'failed';
+  const isWordSaved = selectedToken ? savedWords.has(selectedToken.text) : false;
 
   return (
     <div className={`page-container viewer-theme-${theme}`} onMouseUp={handleTextSelection}>
@@ -196,7 +239,20 @@ export default function ViewerPage() {
         {isAnalyzing && (
           <div className="analyzing-banner">
             <span>⏳ 실시간 AI 해부 분석이 진행 중입니다...</span>
-            <button onClick={refetch} className="analyzing-banner__refresh">새로고침</button>
+            <button onClick={() => refetch()} className="analyzing-banner__refresh">새로고침</button>
+          </div>
+        )}
+
+        {isFailed && (
+          <div className="analyzing-banner analyzing-banner--error">
+            <span>❌ 분석에 실패했습니다.</span>
+            <button
+              onClick={() => reanalyzeMutation.mutate()}
+              disabled={reanalyzeMutation.isPending}
+              className="analyzing-banner__refresh"
+            >
+              {reanalyzeMutation.isPending ? '요청 중...' : '🔄 재분석 요청'}
+            </button>
           </div>
         )}
 
@@ -230,10 +286,13 @@ export default function ViewerPage() {
             <p className="bottom-sheet__meaning">{selectedToken.meaning || '(뜻 정보 없음)'}</p>
             <div className="bottom-sheet__actions">
               <Button variant="ghost" onClick={() => setIsSheetOpen(false)} style={{ flex: 1 }}>닫기</Button>
-              {user
-                ? <Button onClick={addToVocab} style={{ flex: 2 }}>⭐ 단어장에 추가</Button>
-                : <Link href="/auth" className="btn btn--primary" style={{ flex: 2, justifyContent: 'center' }}>🔒 로그인하고 저장하기</Link>
-              }
+              {user ? (
+                isWordSaved
+                  ? <Button variant="secondary" disabled style={{ flex: 2 }}>✓ 이미 저장됨</Button>
+                  : <Button onClick={addToVocab} style={{ flex: 2 }}>⭐ 단어장에 추가</Button>
+              ) : (
+                <Link href="/auth" className="btn btn--primary" style={{ flex: 2, justifyContent: 'center' }}>🔒 로그인하고 저장하기</Link>
+              )}
             </div>
           </div>
         </>
@@ -259,6 +318,11 @@ export default function ViewerPage() {
       )}
 
       <style>{`
+        .analyzing-banner--error {
+          border-color: rgba(255, 107, 107, 0.4);
+          background: rgba(255, 107, 107, 0.08);
+          color: var(--danger);
+        }
         @keyframes slideUp {
           from { transform: translateY(100%); }
           to { transform: translateY(0); }

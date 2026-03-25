@@ -2,13 +2,17 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { useToast } from './ToastContext';
 
 const AuthContext = createContext(null);
+
+const STREAK_MILESTONES = { 7: '🔥 7일 연속 학습 달성!', 30: '🏆 30일 연속 학습 달성!', 100: '🌟 100일 연속 학습 달성!' };
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const toast = useToast();
 
   // 프로필 조회 및 스트릭 갱신
   async function fetchProfile(userId, metadata = {}) {
@@ -66,6 +70,16 @@ export function AuthProvider({ children }) {
 
         if (updateError) throw updateError;
         setProfile(updatedProfile);
+
+        // 스트릭 마일스톤 토스트 (세션당 1회)
+        const milestoneMsg = STREAK_MILESTONES[newStreak];
+        if (milestoneMsg) {
+          const key = `milestone_shown_${newStreak}`;
+          if (!sessionStorage.getItem(key)) {
+            sessionStorage.setItem(key, '1');
+            setTimeout(() => toast(milestoneMsg, 'celebrate', 6000), 1500);
+          }
+        }
       } else {
         setProfile(data);
       }

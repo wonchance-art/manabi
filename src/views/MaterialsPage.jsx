@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
@@ -26,6 +26,8 @@ async function fetchMaterials({ tab, userId }) {
   return data || [];
 }
 
+const PAGE_SIZE = 12;
+
 const LANG_FILTERS = [
   { key: 'all',      label: '🌍 전체' },
   { key: 'Japanese', label: '🇯🇵 일본어' },
@@ -42,6 +44,10 @@ export default function MaterialsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [langFilter, setLangFilter] = useState('all');
   const [levelFilter, setLevelFilter] = useState('all');
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  // 필터 바뀌면 페이지 리셋
+  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [tab, searchQuery, langFilter, levelFilter]);
 
   const { data: materials = [], isLoading } = useQuery({
     queryKey: ['materials', tab, user?.id],
@@ -144,8 +150,9 @@ export default function MaterialsPage() {
       {isLoading ? (
         <Spinner message="자료를 불러오는 중..." />
       ) : filtered.length > 0 ? (
+        <>
         <div className="feature-grid">
-          {filtered.map(m => {
+          {filtered.slice(0, visibleCount).map(m => {
             const status = m.processed_json?.status || 'idle';
             const metadata = m.processed_json?.metadata || {};
             const language = metadata.language || (m.title.match(/[a-zA-Z]/) ? 'English' : 'Japanese');
@@ -177,6 +184,17 @@ export default function MaterialsPage() {
             );
           })}
         </div>
+        {visibleCount < filtered.length && (
+          <div style={{ textAlign: 'center', marginTop: '24px' }}>
+            <button
+              onClick={() => setVisibleCount(c => c + PAGE_SIZE)}
+              className="btn btn--secondary btn--md"
+            >
+              더 보기 ({filtered.length - visibleCount}개 남음)
+            </button>
+          </div>
+        )}
+        </>
       ) : (
         <div className="empty-state">
           <div className="empty-state__icon">📦</div>

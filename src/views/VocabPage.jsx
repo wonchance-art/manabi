@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
+import { useToast } from '../lib/ToastContext';
 import { calculateFSRS } from '../lib/fsrs';
 import Spinner from '../components/Spinner';
 import Button from '../components/Button';
@@ -18,13 +19,37 @@ async function fetchVocab(userId) {
   return data || [];
 }
 
+function exportCSV(vocab) {
+  const header = ['단어', '후리가나', '의미', '품사', '다음 복습', '안정도(S)', '난이도(D)'];
+  const rows = vocab.map(v => [
+    v.word_text,
+    v.furigana || '',
+    v.meaning || '',
+    v.pos || '',
+    new Date(v.next_review_at).toLocaleDateString('ko-KR'),
+    v.interval.toFixed(1),
+    v.ease_factor.toFixed(1),
+  ]);
+  const csv = [header, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `anatomy_vocab_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export default function VocabPage() {
   const { user } = useAuth();
+  const toast = useToast();
   const queryClient = useQueryClient();
   const [tab, setTab] = useState('list');
   const [reviewIdx, setReviewIdx] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   const [reviewFinished, setReviewFinished] = useState(false);
+  const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState('due'); // 'due' | 'newest' | 'alpha'
 
   const { data: vocab = [], isLoading } = useQuery({
     queryKey: ['vocab', user?.id],
@@ -41,8 +66,44 @@ export default function VocabPage() {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] }),
-    onError: (err) => alert("업데이트 실패: " + err.message),
+    onError: (err) => toast('업데이트 실패: ' + err.message, 'error'),
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id) => {
+      const { error } = await supabase
+        .from('user_vocabulary')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
+      toast('단어를 삭제했습니다.', 'info');
+    },
+    onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
+  });
+
+  // 검색 + 정렬
+  const filteredVocab = useMemo(() => {
+    let list = [...vocab];
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter(v =>
+        v.word_text?.toLowerCase().includes(q) ||
+        v.meaning?.toLowerCase().includes(q) ||
+        v.furigana?.toLowerCase().includes(q)
+      );
+    }
+    if (sortBy === 'due') {
+      list.sort((a, b) => new Date(a.next_review_at) - new Date(b.next_review_at));
+    } else if (sortBy === 'newest') {
+      list.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    } else if (sortBy === 'alpha') {
+      list.sort((a, b) => (a.word_text || '').localeCompare(b.word_text || '', 'ja'));
+    }
+    return list;
+  }, [vocab, search, sortBy]);
 
   const reviewWords = vocab.filter(v => new Date(v.next_review_at) <= new Date());
   const currentWord = reviewWords[reviewIdx];
@@ -54,7 +115,7 @@ export default function VocabPage() {
       if (perm === 'granted') {
         new Notification('Anatomy Studio', {
           body: `오늘 복습할 단어가 ${reviewWords.length}개 있어요! 🧠`,
-          icon: '/favicon.ico',
+          icon: '/icon.svg',
         });
       }
     });
@@ -74,6 +135,7 @@ export default function VocabPage() {
       setShowAnswer(false);
     } else {
       setReviewFinished(true);
+      toast('🎉 오늘의 복습 완료!', 'celebrate', 5000);
     }
   };
 
@@ -104,15 +166,22 @@ export default function VocabPage() {
           <h1 className="page-header__title">⭐ 내 단어장</h1>
           <p className="page-header__subtitle">FSRS v4 알고리즘으로 과학적인 복습을 경험하세요</p>
         </div>
-        {tab === 'list' && reviewWords.length > 0 && (
-          <Button onClick={startReview} variant="primary">
-            🧠 복습 시작하기 ({reviewWords.length})
-          </Button>
-        )}
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {vocab.length > 0 && (
+            <Button onClick={() => exportCSV(vocab)} variant="secondary" size="sm">
+              📥 CSV 내보내기
+            </Button>
+          )}
+          {tab === 'list' && reviewWords.length > 0 && (
+            <Button onClick={startReview} variant="primary">
+              🧠 복습 시작하기 ({reviewWords.length})
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Tab Switcher */}
-      <div className="tab-pills" style={{ marginBottom: '32px' }}>
+      <div className="tab-pills" style={{ marginBottom: '24px' }}>
         <button
           onClick={() => setTab('list')}
           className={`tab-pills__item ${tab === 'list' ? 'tab-pills__item--primary' : ''}`}
@@ -136,28 +205,79 @@ export default function VocabPage() {
       {isLoading ? (
         <Spinner message="단어들을 불러오는 중..." />
       ) : tab === 'list' ? (
-        <div className="feature-grid">
-          {vocab.length > 0 ? vocab.map(v => (
-            <div key={v.id} className="card vocab-card">
-              <div className="vocab-card__header">
-                <div>
-                  {v.furigana && <div className="vocab-card__furigana">{v.furigana}</div>}
-                  <h3 className="vocab-card__word">{v.word_text}</h3>
+        <>
+          {/* 검색 + 정렬 */}
+          <div className="filter-row" style={{ marginBottom: '20px' }}>
+            <div className="search-wrap" style={{ flex: 1 }}>
+              <input
+                type="text"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="단어, 의미, 후리가나 검색..."
+                className="search-input"
+              />
+            </div>
+            <div className="chip-group">
+              {[
+                { value: 'due', label: '복습 순' },
+                { value: 'newest', label: '최신 순' },
+                { value: 'alpha', label: '가나다 순' },
+              ].map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => setSortBy(opt.value)}
+                  className={`chip ${sortBy === opt.value ? 'chip--active' : ''}`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="feature-grid">
+            {filteredVocab.length > 0 ? filteredVocab.map(v => (
+              <div key={v.id} className="card vocab-card">
+                <div className="vocab-card__header">
+                  <div>
+                    {v.furigana && <div className="vocab-card__furigana">{v.furigana}</div>}
+                    <h3 className="vocab-card__word">{v.word_text}</h3>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span className="badge" style={{ fontSize: '0.7rem' }}>{v.pos}</span>
+                    <button
+                      onClick={() => {
+                        if (confirm(`"${v.word_text}" 를 단어장에서 삭제할까요?`)) {
+                          deleteMutation.mutate(v.id);
+                        }
+                      }}
+                      style={{
+                        width: '26px', height: '26px', borderRadius: 'var(--radius-sm)',
+                        background: 'transparent', border: '1px solid transparent',
+                        color: 'var(--text-muted)', fontSize: '0.85rem', cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        transition: 'all var(--transition-fast)',
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--danger)'; e.currentTarget.style.color = 'var(--danger)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}
+                      title="삭제"
+                    >
+                      ✕
+                    </button>
+                  </div>
                 </div>
-                <span className="badge" style={{ fontSize: '0.7rem' }}>{v.pos}</span>
+                <p className="vocab-card__meaning">{v.meaning}</p>
+                <div className="vocab-card__footer">
+                  <span>다음 복습: {new Date(v.next_review_at).toLocaleDateString('ko-KR')}</span>
+                  <span>💪 S: {v.interval.toFixed(1)} / D: {v.ease_factor.toFixed(1)}</span>
+                </div>
               </div>
-              <p className="vocab-card__meaning">{v.meaning}</p>
-              <div className="vocab-card__footer">
-                <span>다음 복습: {new Date(v.next_review_at).toLocaleDateString()}</span>
-                <span>💪 S: {v.interval.toFixed(1)} / D: {v.ease_factor.toFixed(1)}</span>
+            )) : (
+              <div className="empty-state" style={{ gridColumn: '1/-1' }}>
+                <p>{search ? '검색 결과가 없습니다.' : '아직 수집한 단어가 없습니다. 뷰어에서 단어를 클릭해 저장해보세요!'}</p>
               </div>
-            </div>
-          )) : (
-            <div className="empty-state" style={{ gridColumn: '1/-1' }}>
-              <p>아직 수집한 단어가 없습니다. 뷰어에서 단어를 클릭해 저장해보세요!</p>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        </>
       ) : tab === 'review' ? (
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
           {reviewFinished ? (
@@ -276,7 +396,7 @@ export default function VocabPage() {
 
           {/* Daily Goal */}
           <div className="card stat-card stat-card--goal">
-            <h3 style={{ fontSize: '1.1rem', alignSelf: 'flex-start' }}>🎯 오늘의 목도</h3>
+            <h3 style={{ fontSize: '1.1rem', alignSelf: 'flex-start' }}>🎯 오늘의 목표</h3>
             <div className="goal-ring-wrap">
               <svg width="120" height="120" viewBox="0 0 100 100">
                 <circle cx="50" cy="50" r="45" fill="none" stroke="var(--bg-secondary)" strokeWidth="10" />
@@ -301,13 +421,6 @@ export default function VocabPage() {
           </div>
         </div>
       )}
-
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
     </div>
   );
 }

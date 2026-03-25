@@ -1,19 +1,25 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
+import { useToast } from '../lib/ToastContext';
 import Spinner from '../components/Spinner';
 import Button from '../components/Button';
 
-async function fetchPosts() {
-  const { data, error } = await supabase
+const PAGE_SIZE = 10;
+
+async function fetchPosts(page) {
+  const from = page * PAGE_SIZE;
+  const to = from + PAGE_SIZE - 1;
+  const { data, error, count } = await supabase
     .from('forum_posts')
-    .select('*, author:profiles(display_name, avatar_url, streak_count)')
-    .order('created_at', { ascending: false });
+    .select('*, author:profiles(display_name, avatar_url, streak_count)', { count: 'exact' })
+    .order('created_at', { ascending: false })
+    .range(from, to);
   if (error) throw error;
-  return data || [];
+  return { posts: data || [], total: count ?? 0 };
 }
 
 async function fetchComments(postId) {
@@ -28,15 +34,67 @@ async function fetchComments(postId) {
 
 export default function ForumPage() {
   const { user } = useAuth();
+  const toast = useToast();
   const queryClient = useQueryClient();
   const [newPost, setNewPost] = useState('');
   const [expandedPostId, setExpandedPostId] = useState(null);
   const [commentText, setCommentText] = useState('');
+  const [page, setPage] = useState(0);
+  const [allPosts, setAllPosts] = useState([]);
+  const [hasMore, setHasMore] = useState(true);
+  const realtimeRef = useRef(null);
 
-  const { data: posts = [], isLoading } = useQuery({
-    queryKey: ['forum-posts'],
-    queryFn: fetchPosts,
+  const { data, isLoading, isFetching } = useQuery({
+    queryKey: ['forum-posts', page],
+    queryFn: () => fetchPosts(page),
+    keepPreviousData: true,
   });
+
+  // 페이지 데이터가 오면 누적
+  useEffect(() => {
+    if (!data) return;
+    if (page === 0) {
+      setAllPosts(data.posts);
+    } else {
+      setAllPosts(prev => {
+        const ids = new Set(prev.map(p => p.id));
+        return [...prev, ...data.posts.filter(p => !ids.has(p.id))];
+      });
+    }
+    setHasMore(data.posts.length === PAGE_SIZE && (page + 1) * PAGE_SIZE < data.total);
+  }, [data, page]);
+
+  // Supabase Realtime — 새 게시글 실시간 반영
+  useEffect(() => {
+    realtimeRef.current = supabase
+      .channel('forum_posts_realtime')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'forum_posts' },
+        async (payload) => {
+          // 새 글 작성자 프로필 보강
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('display_name, avatar_url, streak_count')
+            .eq('id', payload.new.author_id)
+            .single();
+          const newEntry = { ...payload.new, author: profile };
+          setAllPosts(prev => {
+            if (prev.some(p => p.id === newEntry.id)) return prev;
+            return [newEntry, ...prev];
+          });
+          // 자신이 쓴 글이 아닐 때만 알림
+          if (payload.new.author_id !== user?.id) {
+            toast(`${profile?.display_name || '누군가'}가 새 글을 올렸어요!`, 'info', 4000);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      realtimeRef.current?.unsubscribe();
+    };
+  }, [user?.id]);
 
   const { data: comments = [], isLoading: commentsLoading } = useQuery({
     queryKey: ['forum-comments', expandedPostId],
@@ -50,10 +108,10 @@ export default function ForumPage() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['forum-posts'] });
       setNewPost('');
+      toast('게시글을 올렸습니다!', 'success');
     },
-    onError: (err) => alert("글 작성 실패: " + err.message),
+    onError: (err) => toast('글 작성 실패: ' + err.message, 'error'),
   });
 
   const commentMutation = useMutation({
@@ -64,24 +122,11 @@ export default function ForumPage() {
     onSuccess: (_, { postId }) => {
       queryClient.invalidateQueries({ queryKey: ['forum-comments', postId] });
       setCommentText('');
+      toast('댓글을 달았습니다.', 'success');
     },
-    onError: (err) => alert("댓글 등록 실패: " + err.message),
+    onError: (err) => toast('댓글 등록 실패: ' + err.message, 'error'),
   });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!user) return alert("로그인이 필요합니다.");
-    if (!newPost.trim()) return;
-    postMutation.mutate(newPost.trim());
-  };
-
-  const handleCommentSubmit = (postId) => {
-    if (!user) return alert("로그인이 필요합니다.");
-    if (!commentText.trim()) return;
-    commentMutation.mutate({ postId, content: commentText.trim() });
-  };
-
-  // 좋아요 — 낙관적 업데이트 + DB 저장
   const likeMutation = useMutation({
     mutationFn: async ({ postId, currentCount }) => {
       const { error } = await supabase
@@ -91,15 +136,23 @@ export default function ForumPage() {
       if (error) throw error;
     },
     onMutate: async ({ postId }) => {
-      await queryClient.cancelQueries({ queryKey: ['forum-posts'] });
-      const prev = queryClient.getQueryData(['forum-posts']);
-      queryClient.setQueryData(['forum-posts'], old =>
-        old.map(p => p.id === postId ? { ...p, likes_count: (p.likes_count || 0) + 1 } : p)
-      );
-      return { prev };
+      setAllPosts(prev => prev.map(p => p.id === postId ? { ...p, likes_count: (p.likes_count || 0) + 1 } : p));
     },
-    onError: (_, __, ctx) => queryClient.setQueryData(['forum-posts'], ctx.prev),
+    onError: (err) => toast('좋아요 실패: ' + err.message, 'error'),
   });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!user) { toast('로그인이 필요합니다.', 'warning'); return; }
+    if (!newPost.trim()) return;
+    postMutation.mutate(newPost.trim());
+  };
+
+  const handleCommentSubmit = (postId) => {
+    if (!user) { toast('로그인이 필요합니다.', 'warning'); return; }
+    if (!commentText.trim()) return;
+    commentMutation.mutate({ postId, content: commentText.trim() });
+  };
 
   const togglePost = (postId) => {
     setExpandedPostId(prev => prev === postId ? null : postId);
@@ -140,11 +193,11 @@ export default function ForumPage() {
         </div>
 
         {/* Timeline */}
-        {isLoading ? (
+        {isLoading && page === 0 ? (
           <Spinner message="이야기를 불러오는 중..." />
         ) : (
           <div className="forum-list">
-            {posts.map(post => (
+            {allPosts.map(post => (
               <div key={post.id} className="card forum-post">
                 <div className="forum-compose">
                   <div className="forum-avatar">👤</div>
@@ -154,7 +207,7 @@ export default function ForumPage() {
                       {post.author?.streak_count > 0 && (
                         <span className="forum-post__streak">🔥 {post.author.streak_count}</span>
                       )}
-                      <span className="forum-post__date">· {new Date(post.created_at).toLocaleDateString()}</span>
+                      <span className="forum-post__date">· {new Date(post.created_at).toLocaleDateString('ko-KR')}</span>
                     </div>
                     <p className="forum-post__content">{post.content}</p>
                     <div className="forum-post__actions">
@@ -209,16 +262,27 @@ export default function ForumPage() {
                 </div>
               </div>
             ))}
+
+            {hasMore && (
+              <div style={{ textAlign: 'center', marginTop: '16px' }}>
+                <Button
+                  variant="secondary"
+                  onClick={() => setPage(p => p + 1)}
+                  disabled={isFetching}
+                >
+                  {isFetching ? '불러오는 중...' : '더 보기'}
+                </Button>
+              </div>
+            )}
+
+            {!isLoading && allPosts.length === 0 && (
+              <div className="empty-state">
+                <p>아직 게시글이 없어요. 첫 글을 남겨보세요!</p>
+              </div>
+            )}
           </div>
         )}
       </div>
-
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(5px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
     </div>
   );
 }
