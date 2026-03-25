@@ -7,6 +7,7 @@ import MaterialAddPage from './pages/MaterialAddPage';
 import VocabPage from './pages/VocabPage';
 import ForumPage from './pages/ForumPage';
 import AuthPage from './pages/AuthPage';
+import ViewerPage from './pages/ViewerPage';
 
 export default function App() {
   return (
@@ -16,9 +17,11 @@ export default function App() {
           <Route element={<Layout />}>
             <Route path="/guide" element={<GuidePage />} />
             <Route path="/materials" element={<MaterialsPage />} />
+            <Route path="/materials/add" element={<MaterialAddPage />} />
             <Route path="/vocab" element={<VocabPage />} />
             <Route path="/forum" element={<ForumPage />} />
             <Route path="/auth" element={<AuthPage />} />
+            <Route path="/viewer/:id" element={<ViewerPage />} />
             <Route path="/" element={<Navigate to="/materials" replace />} />
             <Route path="*" element={<Navigate to="/materials" replace />} />
           </Route>
