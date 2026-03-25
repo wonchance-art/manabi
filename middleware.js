@@ -1,6 +1,8 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
-import { SUPABASE_URL, SUPABASE_KEY } from './src/lib/supabase';
+
+const SUPABASE_URL = 'https://jdtowtxhexcweuxawrds.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_qSe245OfO4EyU7SQxgqSSA_qsMPRlLr';
 
 const PROTECTED_PATHS = ['/vocab', '/profile', '/materials/add'];
 const ADMIN_PATHS = ['/admin'];

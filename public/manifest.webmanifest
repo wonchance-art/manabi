@@ -1,0 +1,18 @@
+{
+  "name": "Anatomy Studio",
+  "short_name": "Anatomy",
+  "description": "AI가 문장을 해부하는 언어 학습 앱",
+  "start_url": "/materials",
+  "display": "standalone",
+  "background_color": "#0F0F1A",
+  "theme_color": "#7C5CFC",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -18,6 +18,7 @@ export default function RootLayout({ children }) {
       <head>
         <meta name="theme-color" content="#7C5CFC" />
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+        <link rel="manifest" href="/manifest.webmanifest" />
         {/* 테마 깜빡임 방지 */}
         <script
           dangerouslySetInnerHTML={{
