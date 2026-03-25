@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
@@ -66,6 +66,13 @@ export default function MaterialAddPage() {
   const [error, setError] = useState('');
 
   const abortControllerRef = useRef(null);
+
+  // 알림 권한 요청
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }, []);
 
   const levels = {
     Japanese: ['N5 기초', 'N4 기본', 'N3 중급', 'N2 상급', 'N1 심화'],
@@ -187,6 +194,15 @@ export default function MaterialAddPage() {
 
       setStatus('✅ 전체 분석 완료! 자료실로 이동합니다.');
       setProgress(100);
+
+      // 브라우저 알림 (탭이 백그라운드일 때 유용)
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('분석 완료! 🎉', {
+          body: `"${title || '새 자료'}" 분석이 완료되었습니다.`,
+          icon: '/icon.svg',
+        });
+      }
+
       setTimeout(() => navigate('/materials'), 1500);
     } catch (err) {
       setError("분석 중 오류: " + err.message);

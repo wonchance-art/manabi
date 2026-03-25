@@ -1,9 +1,11 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/AuthContext';
+import { useTheme } from '../lib/useTheme';
 
 export default function Layout() {
   const { user, profile, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
 
   async function handleAuthClick() {
     if (user) {
@@ -51,6 +53,14 @@ export default function Layout() {
             <span>관리</span>
           </NavLink>
         )}
+
+        <button
+          className="theme-toggle"
+          onClick={toggleTheme}
+          title={theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환'}
+        >
+          {theme === 'dark' ? '☀️' : '🌙'}
+        </button>
 
         <div className="gnb__actions">
           {user ? (

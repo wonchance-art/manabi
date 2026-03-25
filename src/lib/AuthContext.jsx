@@ -126,6 +126,14 @@ export function AuthProvider({ children }) {
     return data;
   }
 
+  // 비밀번호 재설정 메일 발송
+  async function resetPassword(email) {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/auth?mode=reset',
+    });
+    if (error) throw error;
+  }
+
   // 로그아웃
   async function signOut() {
     await supabase.auth.signOut();
@@ -144,6 +152,7 @@ export function AuthProvider({ children }) {
     signIn,
     signInWithGoogle,
     signOut,
+    resetPassword,
     fetchProfile
   };
 

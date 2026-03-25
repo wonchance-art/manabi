@@ -11,7 +11,9 @@ export default function AuthPage() {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { signIn, signUp, signInWithGoogle } = useAuth();
+  const [isForgot, setIsForgot] = useState(false);
+
+  const { signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || '/materials';
@@ -23,7 +25,10 @@ export default function AuthPage() {
     setLoading(true);
 
     try {
-      if (isLogin) {
+      if (isForgot) {
+        await resetPassword(email);
+        setSuccess('📧 비밀번호 재설정 링크를 이메일로 보냈습니다. 확인해주세요!');
+      } else if (isLogin) {
         await signIn(email, password);
         navigate(from, { replace: true });
       } else {
@@ -52,15 +57,15 @@ export default function AuthPage() {
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>🧬</div>
           <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '8px', color: 'var(--text-primary)' }}>
-            {isLogin ? '다시 오셨군요!' : '함께 성장해요'}
+            {isForgot ? '비밀번호 찾기' : isLogin ? '다시 오셨군요!' : '함께 성장해요'}
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-            {isLogin ? '계정에 로그인하세요' : '새 계정을 만들어보세요'}
+            {isForgot ? '가입한 이메일로 재설정 링크를 보내드려요' : isLogin ? '계정에 로그인하세요' : '새 계정을 만들어보세요'}
           </p>
         </div>
 
         {/* Google Login */}
-        <button
+        {!isForgot && <button
           onClick={handleGoogle}
           style={{
             width: '100%', padding: '12px', borderRadius: 'var(--radius-md)',
@@ -78,18 +83,18 @@ export default function AuthPage() {
             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
           </svg>
           Google로 계속하기
-        </button>
+        </button>}
 
         {/* Divider */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+        {!isForgot && <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
           <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
           <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>또는</span>
           <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
-        </div>
+        </div>}
 
         {/* Form */}
         <form onSubmit={handleSubmit}>
-          {!isLogin && (
+          {!isLogin && !isForgot && (
             <div style={{ marginBottom: '14px' }}>
               <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '6px' }}>닉네임</label>
               <input
@@ -124,22 +129,35 @@ export default function AuthPage() {
             />
           </div>
 
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '6px' }}>비밀번호</label>
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder="6자 이상"
-              required
-              minLength={6}
-              style={{
-                width: '100%', padding: '11px 14px', borderRadius: 'var(--radius-sm)',
-                background: 'var(--bg-elevated)', border: '1px solid var(--border)',
-                color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none'
-              }}
-            />
-          </div>
+          {!isForgot && (
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>비밀번호</label>
+                {isLogin && (
+                  <button
+                    type="button"
+                    onClick={() => { setIsForgot(true); setError(''); setSuccess(''); }}
+                    style={{ fontSize: '0.75rem', color: 'var(--primary-light)', background: 'none', border: 'none', cursor: 'pointer' }}
+                  >
+                    비밀번호 찾기
+                  </button>
+                )}
+              </div>
+              <input
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="6자 이상"
+                required
+                minLength={6}
+                style={{
+                  width: '100%', padding: '11px 14px', borderRadius: 'var(--radius-sm)',
+                  background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+                  color: 'var(--text-primary)', fontSize: '0.9rem', outline: 'none'
+                }}
+              />
+            </div>
+          )}
 
           {error && (
             <div style={{
@@ -173,19 +191,33 @@ export default function AuthPage() {
               transition: 'all 0.2s'
             }}
           >
-            {loading ? '처리 중...' : (isLogin ? '로그인' : '회원가입')}
+            {loading ? '처리 중...' : isForgot ? '재설정 링크 보내기' : isLogin ? '로그인' : '회원가입'}
           </button>
         </form>
 
         {/* Toggle */}
         <p style={{ textAlign: 'center', marginTop: '24px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-          {isLogin ? '아직 계정이 없으신가요?' : '이미 계정이 있으신가요?'}{' '}
-          <button
-            onClick={() => { setIsLogin(!isLogin); setError(''); setSuccess(''); }}
-            style={{ color: 'var(--primary-light)', fontWeight: 600, textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.85rem' }}
-          >
-            {isLogin ? '회원가입' : '로그인'}
-          </button>
+          {isForgot ? (
+            <>
+              기억나셨나요?{' '}
+              <button
+                onClick={() => { setIsForgot(false); setError(''); setSuccess(''); }}
+                style={{ color: 'var(--primary-light)', fontWeight: 600, textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.85rem' }}
+              >
+                로그인으로 돌아가기
+              </button>
+            </>
+          ) : (
+            <>
+              {isLogin ? '아직 계정이 없으신가요?' : '이미 계정이 있으신가요?'}{' '}
+              <button
+                onClick={() => { setIsLogin(!isLogin); setError(''); setSuccess(''); }}
+                style={{ color: 'var(--primary-light)', fontWeight: 600, textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.85rem' }}
+              >
+                {isLogin ? '회원가입' : '로그인'}
+              </button>
+            </>
+          )}
         </p>
       </div>
     </div>

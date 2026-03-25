@@ -43,6 +43,12 @@ export default function MaterialsPage() {
   const { data: materials = [], isLoading } = useQuery({
     queryKey: ['materials', tab, user?.id],
     queryFn: () => fetchMaterials({ tab, userId: user?.id }),
+    refetchInterval: (query) => {
+      const hasAnalyzing = query.state.data?.some(
+        m => m.processed_json?.status === 'analyzing'
+      );
+      return hasAnalyzing ? 5000 : false;
+    },
   });
 
   const levelOptions = langFilter === 'Japanese' ? JP_LEVELS

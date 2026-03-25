@@ -1,10 +1,19 @@
 <!doctype html>
-<html lang="en">
+<html lang="ko">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>vite_scaffold</title>
+    <meta name="theme-color" content="#7C5CFC" />
+    <meta name="description" content="AI가 문장을 형태소 단위로 해부하는 언어 학습 앱" />
+    <title>Anatomy Studio</title>
+    <!-- 테마 깜빡임 방지: React 렌더 전 localStorage 테마 적용 -->
+    <script>
+      (function() {
+        var t = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', t);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
