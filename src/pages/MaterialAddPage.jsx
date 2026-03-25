@@ -2,22 +2,21 @@ import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
+import Button from '../components/Button';
 
-// --- AI Service Logic (Ported from legacy/ai-service.js) ---
+// --- AI Service Logic ---
 const GEMINI_MODEL = 'gemini-2.0-flash-lite-preview-02-05';
 
 async function callGemini(prompt, signal, options = {}) {
   const response = await fetch('/api/gemini', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    signal, // Pass the abort signal
+    signal,
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
-      // The model and key will be handled by the VERCEL function or VITE proxy
       ...(Object.keys(options).length > 0 ? { generationConfig: options } : {})
     })
   });
-
   const resData = await response.json();
   if (!response.ok) throw new Error(resData.error?.message || "API 요청 실패");
   return resData.candidates[0].content.parts[0].text;
@@ -58,7 +57,9 @@ export default function MaterialAddPage() {
   const [title, setTitle] = useState('');
   const [rawText, setRawText] = useState('');
   const [visibility, setVisibility] = useState('private');
-  
+  const [language, setLanguage] = useState('Japanese');
+  const [level, setLevel] = useState('N3');
+
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState('시스템 대기 중');
@@ -66,36 +67,35 @@ export default function MaterialAddPage() {
 
   const abortControllerRef = useRef(null);
 
+  const levels = {
+    Japanese: ['N5 기초', 'N4 기본', 'N3 중급', 'N2 상급', 'N1 심화'],
+    English: ['A1 기초', 'A2 초급', 'B1 중급', 'B2 상급', 'C1-C2 심화']
+  };
+
   async function handleStart() {
     if (!user) return alert("로그인이 필요합니다.");
     if (!rawText.trim()) return alert("내용을 입력해주세요.");
 
     const controller = new AbortController();
     abortControllerRef.current = controller;
+    setIsProcessing(true);
+    setError('');
 
     try {
-      // 1. Initial skeleton save
-      const initJson = { sequence: [], dictionary: {}, last_idx: -1, status: "analyzing" };
+      const initJson = {
+        sequence: [], dictionary: {}, last_idx: -1, status: "analyzing",
+        metadata: { language, level, updated_at: new Date().toISOString() }
+      };
       const { data, error: insertError } = await supabase
         .from('reading_materials')
-        .insert([{
-          title: title || "제목 없음",
-          raw_text: rawText,
-          processed_json: initJson,
-          visibility: visibility,
-          owner_id: user.id
-        }])
+        .insert([{ title: title || "제목 없음", raw_text: rawText, processed_json: initJson, visibility, owner_id: user.id }])
         .select();
 
       if (insertError) throw insertError;
-      const newId = data[0].id;
 
       setStatus('✅ 저장 완료! 백그라운드 분석을 시작합니다...');
       setProgress(10);
-
-      // 2. Start background analysis (Parallel)
-      runBackgroundAnalysis(newId, rawText, controller.signal);
-
+      runBackgroundAnalysis(data[0].id, rawText, controller.signal);
     } catch (err) {
       if (err.name === 'AbortError') {
         setStatus('🛑 분석이 중단되었습니다.');
@@ -117,34 +117,28 @@ export default function MaterialAddPage() {
     const lines = text.split('\n');
     const timestamp = Date.now();
     const CONCURRENCY = 5;
-
     let currentJson = { sequence: [], dictionary: {}, last_idx: -1, status: "analyzing" };
 
     try {
       for (let i = 0; i < lines.length; i += CONCURRENCY) {
         const batchIndices = [];
-        for (let j = 0; j < CONCURRENCY && i + j < lines.length; j++) {
-          batchIndices.push(i + j);
-        }
+        for (let j = 0; j < CONCURRENCY && i + j < lines.length; j++) batchIndices.push(i + j);
 
         const maxProgress = Math.min(i + CONCURRENCY, lines.length);
         setStatus(`⏳ 병렬 분석 중... (${maxProgress}/${lines.length} 문단)`);
         setProgress(Math.floor((maxProgress / lines.length) * 90) + 10);
 
-        // Promise.all Parallel Requests
         const promises = batchIndices.map(async (idx) => {
           const line = lines[idx].trim();
           if (!line) return { idx, success: true, empty: true };
 
-          const prompt = buildTokenizationPrompt(line);
           let failCount = 0;
           while (failCount < 3) {
             try {
-              const rawContent = await callGemini(prompt, signal);
-              const payload = parseGeminiJSON(rawContent);
-              return { idx, success: true, payload };
+              const rawContent = await callGemini(buildTokenizationPrompt(line), signal);
+              return { idx, success: true, payload: parseGeminiJSON(rawContent) };
             } catch (e) {
-              if (signal.aborted) throw e; // Immediate stop if aborted
+              if (signal.aborted) throw e;
               failCount++;
               if (failCount >= 3) return { idx, success: false, err: e.message };
               await new Promise(r => setTimeout(r, 2000));
@@ -156,11 +150,7 @@ export default function MaterialAddPage() {
         let batchFailed = false;
 
         for (let res of results) {
-          if (!res.success) {
-            batchFailed = true;
-            continue;
-          }
-
+          if (!res.success) { batchFailed = true; continue; }
           if (res.empty) {
             if (res.idx < lines.length - 1) {
               const brId = `br_${res.idx}_${timestamp}`;
@@ -174,7 +164,6 @@ export default function MaterialAddPage() {
               currentJson.sequence.push(newId);
               currentJson.dictionary[newId] = res.payload.dictionary[oldId];
             });
-
             if (res.idx < lines.length - 1) {
               const brId = `br_${res.idx}_${timestamp}`;
               currentJson.sequence.push(brId);
@@ -187,22 +176,18 @@ export default function MaterialAddPage() {
         if (batchFailed) {
           currentJson.status = "failed";
           await supabase.from('reading_materials').update({ processed_json: currentJson }).eq('id', id);
-          setStatus('⚠️ 일부 문단 분석 실패. 나중에 뷰어에서 다시 시도할 수 있습니다.');
+          setStatus('⚠️ 일부 문단 분석 실패. 뷰어에서 다시 시도할 수 있습니다.');
           setIsProcessing(false);
           return;
         }
 
-        if (batchIndices[batchIndices.length - 1] === lines.length - 1) {
-          currentJson.status = "completed";
-        }
-        
+        if (batchIndices[batchIndices.length - 1] === lines.length - 1) currentJson.status = "completed";
         await supabase.from('reading_materials').update({ processed_json: currentJson }).eq('id', id);
       }
 
       setStatus('✅ 전체 분석 완료! 자료실로 이동합니다.');
       setProgress(100);
       setTimeout(() => navigate('/materials'), 1500);
-
     } catch (err) {
       setError("분석 중 오류: " + err.message);
       setIsProcessing(false);
@@ -216,110 +201,115 @@ export default function MaterialAddPage() {
         <p className="page-header__subtitle">AI가 문장을 형태소 단위로 해부해 드립니다</p>
       </div>
 
-      <div className="card" style={{ maxWidth: '800px', margin: '0 auto' }}>
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>제목</label>
+      <div className="card add-form">
+        {/* Title */}
+        <div className="form-field">
+          <label className="form-label">제목</label>
           <input
             type="text"
             value={title}
             onChange={e => setTitle(e.target.value)}
             placeholder="기사 제목이나 책 이름을 입력하세요"
-            style={{
-              width: '100%', padding: '14px', borderRadius: 'var(--radius-md)',
-              background: 'var(--bg-secondary)', border: '1px solid var(--border)',
-              color: 'var(--text-primary)', outline: 'none'
-            }}
+            className="form-input"
           />
         </div>
 
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>공개 범위</label>
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <button
-              onClick={() => setVisibility('private')}
-              style={{
-                flex: 1, padding: '10px', borderRadius: 'var(--radius-md)',
-                background: visibility === 'private' ? 'var(--primary)' : 'var(--bg-secondary)',
-                color: visibility === 'private' ? 'white' : 'var(--text-secondary)',
-                border: '1px solid var(--border)', fontSize: '0.9rem'
-              }}
-            >
-              🔒 Private (나만 보기)
-            </button>
-            <button
-              onClick={() => setVisibility('public')}
-              style={{
-                flex: 1, padding: '10px', borderRadius: 'var(--radius-md)',
-                background: visibility === 'public' ? 'var(--accent)' : 'var(--bg-secondary)',
-                color: visibility === 'public' ? 'white' : 'var(--text-secondary)',
-                border: '1px solid var(--border)', fontSize: '0.9rem'
-              }}
-            >
-              🌐 Public (도서관 공유)
-            </button>
+        {/* Visibility + Language */}
+        <div className="form-row">
+          <div className="form-field">
+            <label className="form-label">공개 범위</label>
+            <div className="toggle-group">
+              <button
+                onClick={() => setVisibility('private')}
+                className={`toggle-btn ${visibility === 'private' ? 'toggle-btn--primary' : ''}`}
+              >
+                🔒 Private
+              </button>
+              <button
+                onClick={() => setVisibility('public')}
+                className={`toggle-btn ${visibility === 'public' ? 'toggle-btn--accent' : ''}`}
+              >
+                🌐 Public
+              </button>
+            </div>
+          </div>
+
+          <div className="form-field">
+            <label className="form-label">학습 언어</label>
+            <div className="toggle-group">
+              <button
+                onClick={() => { setLanguage('Japanese'); setLevel('N3'); }}
+                className={`toggle-btn ${language === 'Japanese' ? 'toggle-btn--primary' : ''}`}
+              >
+                🇯🇵 Japanese
+              </button>
+              <button
+                onClick={() => { setLanguage('English'); setLevel('B1'); }}
+                className={`toggle-btn ${language === 'English' ? 'toggle-btn--primary' : ''}`}
+              >
+                🇬🇧 English
+              </button>
+            </div>
           </div>
         </div>
 
-        <div style={{ marginBottom: '24px' }}>
-          <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>본문 텍스트</label>
+        {/* Level */}
+        <div className="form-field">
+          <label className="form-label">권장 학습 난이도</label>
+          <div className="level-group">
+            {levels[language].map(lvl => (
+              <button
+                key={lvl}
+                onClick={() => setLevel(lvl)}
+                className={`level-btn ${level === lvl ? 'level-btn--active' : ''}`}
+              >
+                {lvl}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Text */}
+        <div className="form-field">
+          <label className="form-label">본문 텍스트</label>
           <textarea
             value={rawText}
             onChange={e => setRawText(e.target.value)}
             placeholder="분석할 문장을 입력하세요 (엔터로 문단 구분)"
-            style={{
-              width: '100%', height: '240px', padding: '16px', borderRadius: 'var(--radius-md)',
-              background: 'var(--bg-secondary)', border: '1px solid var(--border)',
-              color: 'var(--text-primary)', outline: 'none', resize: 'vertical',
-              lineHeight: '1.6', fontSize: '1rem'
-            }}
+            className="form-textarea"
           />
         </div>
 
+        {/* Progress */}
         {isProcessing && (
-          <div style={{ marginBottom: '24px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '8px' }}>
-              <span style={{ color: 'var(--primary-light)' }}>{status}</span>
+          <div className="progress-wrap">
+            <div className="progress-wrap__header">
+              <span className="progress-wrap__status">{status}</span>
               <span>{progress}%</span>
             </div>
-            <div style={{ width: '100%', height: '6px', background: 'var(--bg-secondary)', borderRadius: '10px', overflow: 'hidden' }}>
-              <div style={{ width: `${progress}%`, height: '100%', background: 'var(--primary)', transition: 'width 0.4s ease' }} />
+            <div className="progress-bar">
+              <div className="progress-bar__fill" style={{ width: `${progress}%` }} />
             </div>
           </div>
         )}
 
-        {error && (
-          <div style={{ padding: '14px', background: 'rgba(255, 107, 107, 0.1)', border: '1px solid rgba(255, 107, 107, 0.3)', color: '#FF6B6B', borderRadius: 'var(--radius-md)', marginBottom: '20px', fontSize: '0.9rem' }}>
-            ⚠️ {error}
-          </div>
-        )}
+        {/* Error */}
+        {error && <div className="error-banner">⚠️ {error}</div>}
 
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <button
+        {/* Actions */}
+        <div className="form-actions">
+          <Button
             onClick={handleStart}
             disabled={isProcessing}
-            style={{
-              flex: 3, padding: '16px', borderRadius: 'var(--radius-md)',
-              background: isProcessing ? 'var(--bg-elevated)' : 'linear-gradient(135deg, var(--primary), var(--primary-dark))',
-              color: 'white', fontWeight: 700, fontSize: '1.1rem',
-              border: 'none', cursor: isProcessing ? 'wait' : 'pointer',
-              boxShadow: isProcessing ? 'none' : '0 4px 20px rgba(124, 92, 252, 0.3)',
-              transition: 'all 0.2s'
-            }}
+            size="lg"
+            style={{ flex: 3 }}
           >
             {isProcessing ? 'AI 해부 분석 진행 중...' : '🚀 분석 시작하기'}
-          </button>
-          
+          </Button>
           {isProcessing && (
-            <button
-              onClick={handleCancel}
-              style={{
-                flex: 1, padding: '16px', borderRadius: 'var(--radius-md)',
-                background: 'rgba(255, 107, 107, 0.1)', border: '1px solid rgba(255, 107, 107, 0.3)',
-                color: '#FF6B6B', fontWeight: 600, cursor: 'pointer'
-              }}
-            >
+            <Button onClick={handleCancel} variant="danger" size="lg" style={{ flex: 1 }}>
               중단
-            </button>
+            </Button>
           )}
         </div>
       </div>

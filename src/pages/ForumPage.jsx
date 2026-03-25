@@ -1,61 +1,88 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
+import Spinner from '../components/Spinner';
+import Button from '../components/Button';
+
+async function fetchPosts() {
+  const { data, error } = await supabase
+    .from('forum_posts')
+    .select('*, author:profiles(display_name, avatar_url, streak_count)')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+
+async function fetchComments(postId) {
+  const { data, error } = await supabase
+    .from('forum_comments')
+    .select('*, author:profiles(display_name, avatar_url)')
+    .eq('post_id', postId)
+    .order('created_at', { ascending: true });
+  if (error) throw error;
+  return data || [];
+}
 
 export default function ForumPage() {
   const { user } = useAuth();
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [newPost, setNewPost] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [expandedPostId, setExpandedPostId] = useState(null);
+  const [commentText, setCommentText] = useState('');
 
-  useEffect(() => {
-    fetchPosts();
-  }, []);
+  const { data: posts = [], isLoading } = useQuery({
+    queryKey: ['forum-posts'],
+    queryFn: fetchPosts,
+  });
 
-  async function fetchPosts() {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('forum_posts')
-        .select(`
-          *,
-          author:profiles(display_name, avatar_url, streak_count)
-        `)
-        .order('created_at', { ascending: false });
+  const { data: comments = [], isLoading: commentsLoading } = useQuery({
+    queryKey: ['forum-comments', expandedPostId],
+    queryFn: () => fetchComments(expandedPostId),
+    enabled: !!expandedPostId,
+  });
 
+  const postMutation = useMutation({
+    mutationFn: async (content) => {
+      const { error } = await supabase.from('forum_posts').insert([{ author_id: user.id, content }]);
       if (error) throw error;
-      setPosts(data || []);
-    } catch (err) {
-      console.error("포스트 로드 실패:", err.message);
-    } finally {
-      setLoading(false);
-    }
-  }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['forum-posts'] });
+      setNewPost('');
+    },
+    onError: (err) => alert("글 작성 실패: " + err.message),
+  });
 
-  async function handleSubmit(e) {
+  const commentMutation = useMutation({
+    mutationFn: async ({ postId, content }) => {
+      const { error } = await supabase.from('forum_comments').insert([{ post_id: postId, author_id: user.id, content }]);
+      if (error) throw error;
+    },
+    onSuccess: (_, { postId }) => {
+      queryClient.invalidateQueries({ queryKey: ['forum-comments', postId] });
+      setCommentText('');
+    },
+    onError: (err) => alert("댓글 등록 실패: " + err.message),
+  });
+
+  const handleSubmit = (e) => {
     e.preventDefault();
     if (!user) return alert("로그인이 필요합니다.");
     if (!newPost.trim()) return;
+    postMutation.mutate(newPost.trim());
+  };
 
-    setIsSubmitting(true);
-    try {
-      const { error } = await supabase
-        .from('forum_posts')
-        .insert([{
-          author_id: user.id,
-          content: newPost.trim()
-        }]);
+  const handleCommentSubmit = (postId) => {
+    if (!user) return alert("로그인이 필요합니다.");
+    if (!commentText.trim()) return;
+    commentMutation.mutate({ postId, content: commentText.trim() });
+  };
 
-      if (error) throw error;
-      setNewPost('');
-      fetchPosts(); // Refresh
-    } catch (err) {
-      alert("글 작성 실패: " + err.message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
+  const togglePost = (postId) => {
+    setExpandedPostId(prev => prev === postId ? null : postId);
+    setCommentText('');
+  };
 
   return (
     <div className="page-container">
@@ -64,44 +91,26 @@ export default function ForumPage() {
         <p className="page-header__subtitle">다른 학습자들과 소통하며 함께 공부하세요</p>
       </div>
 
-      <div style={{ maxWidth: '640px', margin: '0 auto' }}>
+      <div className="forum-wrap">
         {/* Post Input */}
-        <div className="card" style={{ marginBottom: '24px', padding: '20px' }}>
+        <div className="card forum-post-input">
           <form onSubmit={handleSubmit}>
-            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-              <div style={{
-                width: '40px', height: '40px', borderRadius: '50%',
-                background: 'linear-gradient(135deg, var(--primary), var(--accent))',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '1.1rem', flexShrink: 0, color: 'white'
-              }}>
+            <div className="forum-compose">
+              <div className="forum-avatar forum-avatar--gradient">
                 {user?.display_name?.[0] || '✏️'}
               </div>
-              <div style={{ flex: 1 }}>
+              <div className="forum-compose__body">
                 <textarea
                   value={newPost}
-                  onChange={(e) => setNewPost(e.target.value)}
+                  onChange={e => setNewPost(e.target.value)}
                   placeholder="오늘 어떤 공부를 하셨나요? 자유롭게 남겨보세요."
-                  style={{
-                    width: '100%', minHeight: '80px', background: 'var(--bg-secondary)',
-                    border: '1px solid var(--border)', borderRadius: 'var(--radius-md)',
-                    padding: '12px', color: 'var(--text-primary)', outline: 'none',
-                    resize: 'none', fontSize: '0.95rem'
-                  }}
+                  className="forum-textarea"
                 />
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting || !newPost.trim()}
-                    style={{
-                      background: 'var(--primary)', color: 'white', border: 'none',
-                      padding: '8px 20px', borderRadius: 'var(--radius-full)',
-                      fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer',
-                      opacity: (isSubmitting || !newPost.trim()) ? 0.6 : 1
-                    }}
-                  >
-                    {isSubmitting ? '게시 중...' : '게시하기'}
-                  </button>
+                <div className="forum-compose__footer">
+                  <Button type="submit" size="sm" disabled={postMutation.isPending || !newPost.trim()}
+                    style={{ borderRadius: 'var(--radius-full)' }}>
+                    {postMutation.isPending ? '게시 중...' : '게시하기'}
+                  </Button>
                 </div>
               </div>
             </div>
@@ -109,51 +118,67 @@ export default function ForumPage() {
         </div>
 
         {/* Timeline */}
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>⏳ 이야기를 불러오는 중...</div>
+        {isLoading ? (
+          <Spinner message="이야기를 불러오는 중..." />
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div className="forum-list">
             {posts.map(post => (
-              <div key={post.id} className="card" style={{ padding: '20px' }}>
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                  <div style={{
-                    width: '40px', height: '40px', borderRadius: '50%',
-                    background: 'var(--bg-elevated)', border: '2px solid var(--border)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '1rem', flexShrink: 0
-                  }}>
-                    👤
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                      <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>{post.author?.display_name || '익명 사용자'}</span>
+              <div key={post.id} className="card forum-post">
+                <div className="forum-compose">
+                  <div className="forum-avatar">👤</div>
+                  <div className="forum-post__body">
+                    <div className="forum-post__meta">
+                      <span className="forum-post__name">{post.author?.display_name || '익명 사용자'}</span>
                       {post.author?.streak_count > 0 && (
-                        <span style={{ fontSize: '0.75rem', color: '#ff922b', fontWeight: 600 }}>🔥 {post.author.streak_count}</span>
+                        <span className="forum-post__streak">🔥 {post.author.streak_count}</span>
                       )}
-                      <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>· {new Date(post.created_at).toLocaleDateString()}</span>
+                      <span className="forum-post__date">· {new Date(post.created_at).toLocaleDateString()}</span>
                     </div>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
-                      {post.content}
-                    </p>
-                    <div style={{ marginTop: '14px', display: 'flex', gap: '20px' }}>
-                      <button 
-                        onClick={() => {
-                          const updatedPosts = posts.map(p => 
-                            p.id === post.id ? { ...p, likes_count: (p.likes_count || 0) + 1 } : p
-                          );
-                          setPosts(updatedPosts);
-                        }}
-                        style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
-                      >
-                        <span style={{ fontSize: '1rem' }}>❤️</span> {post.likes_count || 0}
+                    <p className="forum-post__content">{post.content}</p>
+                    <div className="forum-post__actions">
+                      <button className="forum-action-btn">
+                        <span>❤️</span> {post.likes_count || 0}
                       </button>
-                      <button 
-                        onClick={() => alert("댓글 기능은 준비 중입니다! 포럼 업데이트를 기다려주세요.")}
-                        style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                      <button
+                        onClick={() => togglePost(post.id)}
+                        className={`forum-action-btn ${expandedPostId === post.id ? 'forum-action-btn--active' : ''}`}
                       >
                         <span>💬</span> 댓글 {post.comments_count || 0}
                       </button>
                     </div>
+
+                    {expandedPostId === post.id && (
+                      <div className="forum-comments">
+                        <div className="forum-comment-input">
+                          <input
+                            type="text"
+                            value={commentText}
+                            onChange={e => setCommentText(e.target.value)}
+                            placeholder="따뜻한 댓글을 남겨주세요..."
+                            onKeyDown={e => e.key === 'Enter' && handleCommentSubmit(post.id)}
+                            className="form-input"
+                            style={{ padding: '8px 12px', fontSize: '0.85rem' }}
+                          />
+                          <Button size="sm" onClick={() => handleCommentSubmit(post.id)}>등록</Button>
+                        </div>
+
+                        <div className="forum-comment-list">
+                          {commentsLoading ? (
+                            <p className="forum-empty-msg">전달받는 중...</p>
+                          ) : comments.length > 0 ? comments.map(c => (
+                            <div key={c.id} className="forum-comment">
+                              <div className="forum-comment__avatar">👤</div>
+                              <div>
+                                <div className="forum-comment__name">{c.author?.display_name || '익명'}</div>
+                                <div className="forum-comment__text">{c.content}</div>
+                              </div>
+                            </div>
+                          )) : (
+                            <p className="forum-empty-msg">첫 댓글을 남겨보세요!</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -161,6 +186,13 @@ export default function ForumPage() {
           </div>
         )}
       </div>
+
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(5px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 }
