@@ -103,6 +103,33 @@ export default function ViewerPage() {
     }
   };
 
+  const addToVocab = async () => {
+    if (!user) return alert("로그인이 필요합니다.");
+    if (!selectedToken) return;
+
+    try {
+      const { error: insertError } = await supabase
+        .from('user_vocabulary')
+        .upsert([{
+          user_id: user.id,
+          word_text: selectedToken.text,
+          furigana: selectedToken.furigana || '',
+          meaning: selectedToken.meaning || '',
+          pos: selectedToken.pos || '',
+          interval: 0,      // stability
+          ease_factor: 0,   // difficulty
+          repetitions: 0,   // lapses
+          next_review_at: new Date().toISOString() // Initial review
+        }], { onConflict: 'user_id, word_text' });
+
+      if (insertError) throw insertError;
+      alert("단어장에 추가되었습니다!");
+      setIsSheetOpen(false);
+    } catch (err) {
+      alert("추가 실패: " + err.message);
+    }
+  };
+
   if (loading) return <div className="page-container">⏳ 자료 해부 중...</div>;
   if (error) return <div className="page-container">❌ 에러: {error}</div>;
 
@@ -117,38 +144,95 @@ export default function ViewerPage() {
       </header>
 
       {/* Settings Bar */}
-      <div className="card" style={{ 
+      <div className="card viewer-settings-bar" style={{ 
         display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap', 
-        padding: '12px 20px', marginBottom: '30px', background: 'var(--bg-elevated)',
-        border: '1px solid var(--border)' 
+        padding: '16px 24px', marginBottom: '30px', background: 'var(--bg-elevated)',
+        border: '1px solid var(--border)', justifyContent: 'space-between',
+        borderRadius: 'var(--radius-lg)'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderRight: '1px solid var(--border)', paddingRight: '15px' }}>
-          <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>SIZE</span>
-          <button className="gnb__profile-btn" style={{ width: '24px', height: '24px', fontSize: '0.8rem' }} onClick={() => setFontSize(f => f - 0.1)}>-</button>
-          <button className="gnb__profile-btn" style={{ width: '24px', height: '24px', fontSize: '0.8rem' }} onClick={() => setFontSize(f => f + 0.1)}>+</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+          {/* Font Size */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700 }}>SIZE</span>
+            <div style={{ display: 'flex', gap: '4px' }}>
+              <button className="gnb__profile-btn" style={{ width: '32px', height: '32px', fontSize: '1.1rem' }} onClick={() => setFontSize(f => Math.max(0.8, f - 0.1))}>-</button>
+              <button className="gnb__profile-btn" style={{ width: '32px', height: '32px', fontSize: '1.1rem' }} onClick={() => setFontSize(f => Math.min(3, f + 0.1))}>+</button>
+            </div>
+          </div>
+
+          {/* Line Gap */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700 }}>LINE</span>
+            <input 
+              type="range" min="10" max="60" value={lineGap} 
+              onChange={e => setLineGap(parseInt(e.target.value))}
+              style={{ width: '80px', accentColor: 'var(--primary)' }}
+            />
+          </div>
+
+          {/* Char Gap */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700 }}>GAP</span>
+            <input 
+              type="range" min="0" max="1" step="0.05" value={charGap} 
+              onChange={e => setCharGap(parseFloat(e.target.value))}
+              style={{ width: '80px', accentColor: 'var(--accent)' }}
+            />
+          </div>
+
+          {/* Font Selection */}
+          <select 
+            value={fontFamily} 
+            onChange={e => setFontFamily(e.target.value)}
+            style={{ 
+              background: 'var(--bg-secondary)', color: 'var(--text-primary)', 
+              border: '1px solid var(--border)', padding: '6px 12px', borderRadius: 'var(--radius-sm)',
+              fontSize: '0.85rem', outline: 'none'
+            }}
+          >
+            <option value="'Noto Sans KR'">Noto Sans KR</option>
+            <option value="'Nanum Myeongjo'">나눔 명조</option>
+            <option value="monospace">Monospace</option>
+            <option value="'Inter'">Inter</option>
+          </select>
         </div>
         
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button 
-            onClick={() => setTheme('light')} 
-            style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#fff', border: '1px solid #ccc', cursor: 'pointer' }} 
-          />
-          <button 
-            onClick={() => setTheme('dark')} 
-            style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#1a1a1a', border: '1px solid #444', cursor: 'pointer' }} 
-          />
-        </div>
+        <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+          {/* Theme Toggles */}
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button 
+              onClick={() => setTheme('light')} 
+              style={{ 
+                width: '32px', height: '32px', borderRadius: '50%', background: '#fff', 
+                border: '2px solid' + (theme === 'light' ? 'var(--primary)' : '#ddd'),
+                cursor: 'pointer', transition: 'all 0.2s'
+              }} 
+            />
+            <button 
+              onClick={() => setTheme('dark')} 
+              style={{ 
+                width: '32px', height: '32px', borderRadius: '50%', background: '#1a1a1a', 
+                border: '2px solid' + (theme === 'dark' ? 'var(--primary)' : '#444'),
+                cursor: 'pointer', transition: 'all 0.2s'
+              }} 
+            />
+          </div>
 
-        <button 
-          onClick={analyzeGrammar}
-          style={{ 
-            marginLeft: 'auto', background: 'var(--primary-glow)', color: 'var(--primary-light)', 
-            border: '1px solid var(--primary)', padding: '6px 14px', borderRadius: 'var(--radius-sm)',
-            fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer'
-          }}
-        >
-          💡 AI 문법 해설 (드래그 후 클릭)
-        </button>
+          <button 
+            onClick={analyzeGrammar}
+            disabled={isGrammarLoading}
+            style={{ 
+              background: selectedRangeText ? 'var(--primary)' : 'var(--primary-glow)', 
+              color: selectedRangeText ? 'white' : 'var(--primary-light)', 
+              border: '1px solid var(--primary)', padding: '10px 20px', borderRadius: 'var(--radius-full)',
+              fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer',
+              boxShadow: selectedRangeText ? '0 4px 15px var(--primary-shadow)' : 'none',
+              transition: 'all 0.2s'
+            }}
+          >
+            {isGrammarLoading ? '⏳ 분석 중...' : '💡 AI 문법 해설'}
+          </button>
+        </div>
       </div>
 
       {/* Reader Area */}
@@ -162,8 +246,14 @@ export default function ViewerPage() {
         }}
       >
         {isAnalyzing && (
-          <div style={{ width: '100%', padding: '20px', textAlign: 'center', color: 'var(--primary-light)', background: 'var(--primary-glow)', borderRadius: 'var(--radius-md)', marginBottom: '20px', fontSize: '1rem' }}>
-            ⏳ 실시간 AI 해부 분석이 진행 중입니다... (새로고침 시 반영)
+          <div style={{ width: '100%', padding: '15px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--primary-light)', background: 'var(--primary-glow)', borderRadius: 'var(--radius-md)', marginBottom: '20px', fontSize: '0.95rem' }}>
+            <span>⏳ 실시간 AI 해부 분석이 진행 중입니다...</span>
+            <button 
+              onClick={fetchMaterial}
+              style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '4px 12px', borderRadius: '4px', fontSize: '0.8rem', cursor: 'pointer' }}
+            >
+              새로고침
+            </button>
           </div>
         )}
 
@@ -223,10 +313,13 @@ export default function ViewerPage() {
             <p style={{ fontSize: '1.1rem', color: 'var(--text-primary)', marginBottom: '20px' }}>{selectedToken.meaning || '(뜻 정보 없음)'}</p>
             <div style={{ display: 'flex', gap: '10px' }}>
               <button className="gnb__profile-btn" style={{ flex: 1, height: '44px', borderRadius: '8px' }} onClick={() => setIsSheetOpen(false)}>닫기</button>
-              <button style={{ 
-                flex: 2, height: '44px', borderRadius: '8px', background: 'var(--primary)', 
-                color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer' 
-              }}>
+              <button 
+                onClick={addToVocab}
+                style={{ 
+                  flex: 2, height: '44px', borderRadius: '8px', background: 'var(--primary)', 
+                  color: 'white', border: 'none', fontWeight: 600, cursor: 'pointer' 
+                }}
+              >
                 ⭐ 단어장에 추가
               </button>
             </div>

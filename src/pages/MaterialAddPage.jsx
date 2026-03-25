@@ -6,13 +6,14 @@ import { useAuth } from '../lib/AuthContext';
 // --- AI Service Logic (Ported from legacy/ai-service.js) ---
 const GEMINI_MODEL = 'gemini-2.0-flash-lite-preview-02-05';
 
-async function callGemini(prompt, options = {}) {
+async function callGemini(prompt, signal, options = {}) {
   const response = await fetch('/api/gemini', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    signal, // Pass the abort signal
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
-      model: GEMINI_MODEL,
+      // The model and key will be handled by the VERCEL function or VITE proxy
       ...(Object.keys(options).length > 0 ? { generationConfig: options } : {})
     })
   });
@@ -69,10 +70,8 @@ export default function MaterialAddPage() {
     if (!user) return alert("로그인이 필요합니다.");
     if (!rawText.trim()) return alert("내용을 입력해주세요.");
 
-    setIsProcessing(true);
-    setProgress(5);
-    setStatus('⏳ 1단계: 뼈대 저장 중...');
-    setError('');
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
     try {
       // 1. Initial skeleton save
@@ -95,15 +94,26 @@ export default function MaterialAddPage() {
       setProgress(10);
 
       // 2. Start background analysis (Parallel)
-      runBackgroundAnalysis(newId, rawText);
+      runBackgroundAnalysis(newId, rawText, controller.signal);
 
     } catch (err) {
-      setError("저장 오류: " + err.message);
+      if (err.name === 'AbortError') {
+        setStatus('🛑 분석이 중단되었습니다.');
+      } else {
+        setError("저장 오류: " + err.message);
+      }
       setIsProcessing(false);
     }
   }
 
-  async function runBackgroundAnalysis(id, text) {
+  function handleCancel() {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      setStatus('🛑 중단 요청 중...');
+    }
+  }
+
+  async function runBackgroundAnalysis(id, text, signal) {
     const lines = text.split('\n');
     const timestamp = Date.now();
     const CONCURRENCY = 5;
@@ -130,10 +140,11 @@ export default function MaterialAddPage() {
           let failCount = 0;
           while (failCount < 3) {
             try {
-              const rawContent = await callGemini(prompt);
+              const rawContent = await callGemini(prompt, signal);
               const payload = parseGeminiJSON(rawContent);
               return { idx, success: true, payload };
             } catch (e) {
+              if (signal.aborted) throw e; // Immediate stop if aborted
               failCount++;
               if (failCount >= 3) return { idx, success: false, err: e.message };
               await new Promise(r => setTimeout(r, 2000));
@@ -282,20 +293,35 @@ export default function MaterialAddPage() {
           </div>
         )}
 
-        <button
-          onClick={handleStart}
-          disabled={isProcessing}
-          style={{
-            width: '100%', padding: '16px', borderRadius: 'var(--radius-md)',
-            background: isProcessing ? 'var(--bg-elevated)' : 'linear-gradient(135deg, var(--primary), var(--primary-dark))',
-            color: 'white', fontWeight: 700, fontSize: '1.1rem',
-            border: 'none', cursor: isProcessing ? 'wait' : 'pointer',
-            boxShadow: isProcessing ? 'none' : '0 4px 20px rgba(124, 92, 252, 0.3)',
-            transition: 'all 0.2s'
-          }}
-        >
-          {isProcessing ? 'AI 해부 분석 진행 중...' : '🚀 분석 시작하기'}
-        </button>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button
+            onClick={handleStart}
+            disabled={isProcessing}
+            style={{
+              flex: 3, padding: '16px', borderRadius: 'var(--radius-md)',
+              background: isProcessing ? 'var(--bg-elevated)' : 'linear-gradient(135deg, var(--primary), var(--primary-dark))',
+              color: 'white', fontWeight: 700, fontSize: '1.1rem',
+              border: 'none', cursor: isProcessing ? 'wait' : 'pointer',
+              boxShadow: isProcessing ? 'none' : '0 4px 20px rgba(124, 92, 252, 0.3)',
+              transition: 'all 0.2s'
+            }}
+          >
+            {isProcessing ? 'AI 해부 분석 진행 중...' : '🚀 분석 시작하기'}
+          </button>
+          
+          {isProcessing && (
+            <button
+              onClick={handleCancel}
+              style={{
+                flex: 1, padding: '16px', borderRadius: 'var(--radius-md)',
+                background: 'rgba(255, 107, 107, 0.1)', border: '1px solid rgba(255, 107, 107, 0.3)',
+                color: '#FF6B6B', fontWeight: 600, cursor: 'pointer'
+              }}
+            >
+              중단
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

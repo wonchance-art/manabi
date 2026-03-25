@@ -9,6 +9,7 @@ export default function MaterialsPage() {
   const [tab, setTab] = useState('public');
   const [materials, setMaterials] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchMaterials();
@@ -64,39 +65,59 @@ export default function MaterialsPage() {
         </Link>
       </div>
 
-      {/* Tabs */}
-      <div style={{ display: 'flex', gap: '4px', background: 'var(--bg-secondary)', padding: '4px', borderRadius: 'var(--radius-full)', width: 'fit-content', marginBottom: '32px' }}>
-        <button
-          onClick={() => setTab('public')}
-          style={{
-            padding: '10px 24px', borderRadius: 'var(--radius-full)',
-            fontSize: '0.9rem', fontWeight: 600,
-            background: tab === 'public' ? 'var(--accent)' : 'transparent',
-            color: tab === 'public' ? 'white' : 'var(--text-secondary)',
-            transition: 'all 0.2s'
-          }}
-        >
-          🌐 Public 도서관
-        </button>
-        <button
-          onClick={() => setTab('private')}
-          style={{
-            padding: '10px 24px', borderRadius: 'var(--radius-full)',
-            fontSize: '0.9rem', fontWeight: 600,
-            background: tab === 'private' ? 'var(--primary)' : 'transparent',
-            color: tab === 'private' ? 'white' : 'var(--text-secondary)',
-            transition: 'all 0.2s'
-          }}
-        >
-          🔒 내 보관함
-        </button>
+      {/* Search & Filter */}
+      <div style={{ display: 'flex', gap: '15px', marginBottom: '32px', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div style={{ flex: 1, position: 'relative', minWidth: '280px' }}>
+          <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>🔍</span>
+          <input 
+            type="text" 
+            placeholder="제목으로 자료 찾기..." 
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            style={{ 
+              width: '100%', padding: '12px 12px 12px 42px', borderRadius: 'var(--radius-md)',
+              background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+              color: 'var(--text-primary)', outline: 'none', fontSize: '0.95rem'
+            }}
+          />
+        </div>
+        
+        {/* Tabs */}
+        <div style={{ display: 'flex', gap: '4px', background: 'var(--bg-secondary)', padding: '4px', borderRadius: 'var(--radius-full)', width: 'fit-content' }}>
+          <button
+            onClick={() => setTab('public')}
+            style={{
+              padding: '10px 24px', borderRadius: 'var(--radius-full)',
+              fontSize: '0.9rem', fontWeight: 600,
+              background: tab === 'public' ? 'var(--accent)' : 'transparent',
+              color: tab === 'public' ? 'white' : 'var(--text-secondary)',
+              transition: 'all 0.2s'
+            }}
+          >
+            🌐 Public
+          </button>
+          <button
+            onClick={() => setTab('private')}
+            style={{
+              padding: '10px 24px', borderRadius: 'var(--radius-full)',
+              fontSize: '0.9rem', fontWeight: 600,
+              background: tab === 'private' ? 'var(--primary)' : 'transparent',
+              color: tab === 'private' ? 'white' : 'var(--text-secondary)',
+              transition: 'all 0.2s'
+            }}
+          >
+            🔒 Private
+          </button>
+        </div>
       </div>
 
       {loading ? (
-        <div style={{ padding: '60px', textAlignment: 'center', color: 'var(--text-muted)' }}>⏳ 자료를 불러오는 중...</div>
+        <div style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)' }}>⏳ 자료를 불러오는 중...</div>
       ) : materials.length > 0 ? (
         <div className="feature-grid">
-          {materials.map(m => {
+          {materials
+            .filter(m => m.title.toLowerCase().includes(searchQuery.toLowerCase()))
+            .map(m => {
             const status = m.processed_json?.status || 'idle';
             const isDone = status === 'completed';
             

@@ -47,11 +47,26 @@ export default function Layout() {
 
         <div className="gnb__actions">
           {user ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              {profile?.streak_count > 0 && (
+                <div style={{ 
+                  display: 'flex', alignItems: 'center', gap: '4px', 
+                  background: 'rgba(255, 146, 43, 0.15)', padding: '4px 10px', 
+                  borderRadius: 'var(--radius-full)', color: '#ff922b', 
+                  fontSize: '0.85rem', fontWeight: 700 
+                }}>
+                  🔥 {profile.streak_count}
+                </div>
+              )}
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {profile?.display_name || user.email}
               </span>
-              <button className="gnb__profile-btn" onClick={handleAuthClick} title="로그아웃">
+              <button 
+                className="gnb__profile-btn" 
+                onClick={handleAuthClick} 
+                title="로그아웃"
+                style={{ background: 'linear-gradient(135deg, var(--primary), var(--accent))', color: 'white', border: 'none' }}
+              >
                 {displayChar}
               </button>
             </div>
@@ -67,6 +82,26 @@ export default function Layout() {
           )}
         </div>
       </header>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="mobile-nav">
+        <NavLink to="/guide" className={({ isActive }) => `mobile-nav__link ${isActive ? 'active' : ''}`}>
+          <span className="mobile-nav__icon">📚</span>
+          <span>가이드</span>
+        </NavLink>
+        <NavLink to="/materials" className={({ isActive }) => `mobile-nav__link ${isActive ? 'active' : ''}`}>
+          <span className="mobile-nav__icon">📰</span>
+          <span>자료</span>
+        </NavLink>
+        <NavLink to="/vocab" className={({ isActive }) => `mobile-nav__link ${isActive ? 'active' : ''}`}>
+          <span className="mobile-nav__icon">⭐</span>
+          <span>단어장</span>
+        </NavLink>
+        <NavLink to="/forum" className={({ isActive }) => `mobile-nav__link ${isActive ? 'active' : ''}`}>
+          <span className="mobile-nav__icon">💬</span>
+          <span>포럼</span>
+        </NavLink>
+      </nav>
 
       <main className="app-layout">
         <Outlet />
