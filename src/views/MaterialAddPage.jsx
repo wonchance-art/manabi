@@ -1,5 +1,7 @@
+'use client';
+
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import Button from '../components/Button';
@@ -52,7 +54,7 @@ function buildTokenizationPrompt(text) {
 // --- Component ---
 export default function MaterialAddPage() {
   const { user } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const [title, setTitle] = useState('');
   const [rawText, setRawText] = useState('');
@@ -203,7 +205,7 @@ export default function MaterialAddPage() {
         });
       }
 
-      setTimeout(() => navigate('/materials'), 1500);
+      setTimeout(() => router.push('/materials'), 1500);
     } catch (err) {
       setError("분석 중 오류: " + err.message);
       setIsProcessing(false);

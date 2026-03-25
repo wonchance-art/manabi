@@ -1,5 +1,8 @@
+'use client';
+
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
@@ -34,7 +37,7 @@ const EN_LEVELS = ['A1 기초', 'A2 초급', 'B1 중급', 'B2 상급', 'C1-C2 �
 
 export default function MaterialsPage() {
   const { user } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
   const [tab, setTab] = useState('public');
   const [searchQuery, setSearchQuery] = useState('');
   const [langFilter, setLangFilter] = useState('all');
@@ -73,7 +76,7 @@ export default function MaterialsPage() {
           <h1 className="page-header__title">📰 자료실</h1>
           <p className="page-header__subtitle">AI가 해부한 고품질 텍스트로 학습하세요</p>
         </div>
-        <Link to="/materials/add" className="btn btn--primary btn--md">
+        <Link href="/materials/add" className="btn btn--primary btn--md">
           ➕ 새 자료 추가
         </Link>
       </div>
@@ -150,7 +153,7 @@ export default function MaterialsPage() {
             const isDone = status === 'completed';
 
             return (
-              <div key={m.id} className="card card--clickable" onClick={() => navigate(`/viewer/${m.id}`)}>
+              <div key={m.id} className="card card--clickable" onClick={() => router.push(`/viewer/${m.id}`)}>
                 <div>
                   <div className="card__row card__row--between">
                     <div className="card__row card__row--gap">
@@ -183,7 +186,7 @@ export default function MaterialsPage() {
               : tab === 'public' ? '아직 공유된 공용 자료가 없습니다.' : '아직 보관된 개인 자료가 없습니다.'}
           </p>
           {tab === 'private' && !searchQuery && (
-            <Link to="/materials/add" className="empty-state__link">
+            <Link href="/materials/add" className="empty-state__link">
               첫 번째 자료 추가하기 →
             </Link>
           )}

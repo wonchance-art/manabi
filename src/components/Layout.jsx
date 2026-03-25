@@ -1,57 +1,67 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+'use client';
+
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '../lib/AuthContext';
 import { useTheme } from '../lib/useTheme';
 
-export default function Layout() {
+export default function Layout({ children }) {
   const { user, profile, isAdmin, signOut } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
+  const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
 
   async function handleAuthClick() {
     if (user) {
       await signOut();
-      navigate('/auth');
+      router.push('/auth');
     } else {
-      navigate('/auth');
+      router.push('/auth');
     }
   }
 
-  const displayChar = profile?.display_name?.[0]
-    || user?.email?.[0]?.toUpperCase()
-    || '?';
+  const displayChar =
+    profile?.display_name?.[0] ||
+    user?.email?.[0]?.toUpperCase() ||
+    '?';
+
+  const navLinks = [
+    { href: '/guide',     icon: '📚', label: '가이드' },
+    { href: '/materials', icon: '📰', label: '자료' },
+    { href: '/vocab',     icon: '⭐', label: '단어장' },
+    { href: '/forum',     icon: '💬', label: '포럼' },
+  ];
 
   return (
     <>
       <header className="gnb">
-        <NavLink to="/" className="gnb__logo">
+        <Link href="/" className="gnb__logo">
           <span className="gnb__logo-icon">🧬</span>
           <span>Anatomy Studio</span>
-        </NavLink>
+        </Link>
 
         <nav className="gnb__nav">
-          <NavLink to="/guide" className={({ isActive }) => `gnb__link ${isActive ? 'active' : ''}`}>
-            <span className="gnb__link-icon">📚</span>
-            <span>가이드</span>
-          </NavLink>
-          <NavLink to="/materials" className={({ isActive }) => `gnb__link ${isActive ? 'active' : ''}`}>
-            <span className="gnb__link-icon">📰</span>
-            <span>자료</span>
-          </NavLink>
-          <NavLink to="/vocab" className={({ isActive }) => `gnb__link ${isActive ? 'active' : ''}`}>
-            <span className="gnb__link-icon">⭐</span>
-            <span>단어장</span>
-          </NavLink>
-          <NavLink to="/forum" className={({ isActive }) => `gnb__link ${isActive ? 'active' : ''}`}>
-            <span className="gnb__link-icon">💬</span>
-            <span>포럼</span>
-          </NavLink>
+          {navLinks.map(l => (
+            <Link
+              key={l.href}
+              href={l.href}
+              className={`gnb__link ${pathname === l.href || pathname.startsWith(l.href + '/') ? 'active' : ''}`}
+            >
+              <span className="gnb__link-icon">{l.icon}</span>
+              <span>{l.label}</span>
+            </Link>
+          ))}
         </nav>
 
         {isAdmin && (
-          <NavLink to="/admin" className={({ isActive }) => `gnb__link ${isActive ? 'active' : ''}`} style={{ color: '#ff922b' }}>
+          <Link
+            href="/admin"
+            className={`gnb__link ${pathname.startsWith('/admin') ? 'active' : ''}`}
+            style={{ color: '#ff922b' }}
+          >
             <span className="gnb__link-icon">🛡️</span>
             <span>관리</span>
-          </NavLink>
+          </Link>
         )}
 
         <button
@@ -66,11 +76,11 @@ export default function Layout() {
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               {profile?.streak_count > 0 && (
-                <div style={{ 
-                  display: 'flex', alignItems: 'center', gap: '4px', 
-                  background: 'rgba(255, 146, 43, 0.15)', padding: '4px 10px', 
-                  borderRadius: 'var(--radius-full)', color: '#ff922b', 
-                  fontSize: '0.85rem', fontWeight: 700 
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: '4px',
+                  background: 'rgba(255, 146, 43, 0.15)', padding: '4px 10px',
+                  borderRadius: 'var(--radius-full)', color: '#ff922b',
+                  fontSize: '0.85rem', fontWeight: 700
                 }}>
                   🔥 {profile.streak_count}
                 </div>
@@ -78,9 +88,9 @@ export default function Layout() {
               <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {profile?.display_name || user.email}
               </span>
-              <button 
-                className="gnb__profile-btn" 
-                onClick={() => navigate('/profile')} 
+              <button
+                className="gnb__profile-btn"
+                onClick={() => router.push('/profile')}
                 title="마이페이지"
                 style={{ background: 'linear-gradient(135deg, var(--primary), var(--accent))', color: 'white', border: 'none' }}
               >
@@ -102,26 +112,20 @@ export default function Layout() {
 
       {/* Mobile Bottom Navigation */}
       <nav className="mobile-nav">
-        <NavLink to="/guide" className={({ isActive }) => `mobile-nav__link ${isActive ? 'active' : ''}`}>
-          <span className="mobile-nav__icon">📚</span>
-          <span>가이드</span>
-        </NavLink>
-        <NavLink to="/materials" className={({ isActive }) => `mobile-nav__link ${isActive ? 'active' : ''}`}>
-          <span className="mobile-nav__icon">📰</span>
-          <span>자료</span>
-        </NavLink>
-        <NavLink to="/vocab" className={({ isActive }) => `mobile-nav__link ${isActive ? 'active' : ''}`}>
-          <span className="mobile-nav__icon">⭐</span>
-          <span>단어장</span>
-        </NavLink>
-        <NavLink to="/forum" className={({ isActive }) => `mobile-nav__link ${isActive ? 'active' : ''}`}>
-          <span className="mobile-nav__icon">💬</span>
-          <span>포럼</span>
-        </NavLink>
+        {navLinks.map(l => (
+          <Link
+            key={l.href}
+            href={l.href}
+            className={`mobile-nav__link ${pathname === l.href || pathname.startsWith(l.href + '/') ? 'active' : ''}`}
+          >
+            <span className="mobile-nav__icon">{l.icon}</span>
+            <span>{l.label}</span>
+          </Link>
+        ))}
       </nav>
 
       <main className="app-layout">
-        <Outlet />
+        {children}
       </main>
     </>
   );

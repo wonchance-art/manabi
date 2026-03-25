@@ -1,4 +1,6 @@
-import { Link } from 'react-router-dom';
+'use client';
+
+import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
@@ -37,7 +39,7 @@ export default function MyPage() {
     return (
       <div className="page-container mypage-guest">
         <h2>로그인이 필요한 페이지입니다</h2>
-        <Link to="/auth" className="btn btn--primary btn--md">로그인하러 가기</Link>
+        <Link href="/auth" className="btn btn--primary btn--md">로그인하러 가기</Link>
       </div>
     );
   }
@@ -103,7 +105,7 @@ export default function MyPage() {
                       </Link>
                     );
                   })}
-                  <Link to="/materials" className="mypage-more-link">전체 자료 보러가기 →</Link>
+                  <Link href="/materials" className="mypage-more-link">전체 자료 보러가기 →</Link>
                 </div>
               ) : (
                 <div className="card empty-state">
@@ -123,7 +125,7 @@ export default function MyPage() {
                 <div className="progress-bar">
                   <div className="progress-bar__fill" style={{ width: '40%' }} />
                 </div>
-                <Link to="/materials/add" className="btn btn--primary btn--md mypage-goal-cta">
+                <Link href="/materials/add" className="btn btn--primary btn--md mypage-goal-cta">
                   학습 시작하기
                 </Link>
               </div>

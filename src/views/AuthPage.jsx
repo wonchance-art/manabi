@@ -1,8 +1,10 @@
-import { useState } from 'react';
-import { useAuth } from '../lib/AuthContext';
-import { useNavigate, useLocation } from 'react-router-dom';
+'use client';
 
-export default function AuthPage() {
+import { useState, Suspense } from 'react';
+import { useAuth } from '../lib/AuthContext';
+import { useRouter, useSearchParams } from 'next/navigation';
+
+function AuthForm() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -14,9 +16,9 @@ export default function AuthPage() {
   const [isForgot, setIsForgot] = useState(false);
 
   const { signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const from = location.state?.from?.pathname || '/materials';
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const from = searchParams.get('from') || '/materials';
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -30,7 +32,7 @@ export default function AuthPage() {
         setSuccess('📧 비밀번호 재설정 링크를 이메일로 보냈습니다. 확인해주세요!');
       } else if (isLogin) {
         await signIn(email, password);
-        navigate(from, { replace: true });
+        router.push(from);
       } else {
         await signUp(email, password, displayName);
         setSuccess('🎉 인증 이메일을 발송했습니다! 이메일을 확인해주세요.');
@@ -221,5 +223,13 @@ export default function AuthPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={null}>
+      <AuthForm />
+    </Suspense>
   );
 }

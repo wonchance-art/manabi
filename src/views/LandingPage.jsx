@@ -1,4 +1,7 @@
-import { Link, useNavigate } from 'react-router-dom';
+'use client';
+
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../lib/AuthContext';
 
 const DEMO_TOKENS = [
@@ -11,9 +14,9 @@ const DEMO_TOKENS = [
 
 export default function LandingPage() {
   const { user } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
 
-  const handleCTA = () => navigate(user ? '/materials' : '/auth');
+  const handleCTA = () => router.push(user ? '/materials' : '/auth');
 
   return (
     <div className="landing">
@@ -24,11 +27,11 @@ export default function LandingPage() {
           <span>Anatomy Studio</span>
         </div>
         <div className="landing-nav__actions">
-          <Link to="/guide" className="landing-nav__link">가이드</Link>
-          <Link to="/materials" className="landing-nav__link">자료실</Link>
+          <Link href="/guide" className="landing-nav__link">가이드</Link>
+          <Link href="/materials" className="landing-nav__link">자료실</Link>
           {user
-            ? <Link to="/materials" className="btn btn--primary btn--sm">대시보드</Link>
-            : <Link to="/auth" className="btn btn--primary btn--sm">무료 시작</Link>
+            ? <Link href="/materials" className="btn btn--primary btn--sm">대시보드</Link>
+            : <Link href="/auth" className="btn btn--primary btn--sm">무료 시작</Link>
           }
         </div>
       </header>
