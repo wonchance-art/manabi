@@ -21,10 +21,10 @@ export default function Layout() {
   return (
     <>
       <header className="gnb">
-        <div className="gnb__logo">
+        <NavLink to="/" className="gnb__logo">
           <span className="gnb__logo-icon">🧬</span>
           <span>Anatomy Studio</span>
-        </div>
+        </NavLink>
 
         <nav className="gnb__nav">
           <NavLink to="/guide" className={({ isActive }) => `gnb__link ${isActive ? 'active' : ''}`}>
@@ -63,8 +63,8 @@ export default function Layout() {
               </span>
               <button 
                 className="gnb__profile-btn" 
-                onClick={handleAuthClick} 
-                title="로그아웃"
+                onClick={() => navigate('/profile')} 
+                title="마이페이지"
                 style={{ background: 'linear-gradient(135deg, var(--primary), var(--accent))', color: 'white', border: 'none' }}
               >
                 {displayChar}

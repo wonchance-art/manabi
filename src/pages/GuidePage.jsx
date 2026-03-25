@@ -17,9 +17,11 @@ export default function GuidePage() {
       icon: '🇬🇧',
       title: '영어 (CEFR) 로드맵',
       levels: [
-        { name: 'A1-A2 Basic', focus: 'Survival', desc: 'Familiar expressions, simple personal info, direct exchange in routine tasks.' },
-        { name: 'B1-B2 Independent', focus: 'Fluency', desc: 'Clear standard input, spontaneous interaction, technical discussions in expertise.' },
-        { name: 'C1-C2 Proficient', focus: 'Mastery', desc: 'Implicit meaning, academic/professional flexibility, finer shades of meaning.' }
+        { name: 'A1 기초', focus: '기초 입문', desc: '자주 쓰이는 기초적 표현, 자기소개 및 매우 단순한 일상 대화 (생존 영어).' },
+        { name: 'A2 초급', focus: '단순 소통', desc: '친숙한 주제에 대한 짧은 문장 이해 및 일상적인 정보 교환.' },
+        { name: 'B1 중급', focus: '일상 회화', desc: '여행 상황 대처, 일반적인 주제나 관심사에 대해 명확하고 표준적인 언어 구사.' },
+        { name: 'B2 상급', focus: '사회/전문적 주제', desc: '자신의 전문 분야에 대한 논의 가능, 원어민과 자연스러운 상호작용 및 논리적 추론.' },
+        { name: 'C1-C2 심화', focus: '원어민 수준', desc: '복잡하고 암시적인 의미 파악, 학술/직업적 상황에서 유연하고 완벽한 언어 구사 마스터.' }
       ]
     }
   ];

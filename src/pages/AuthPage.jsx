@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../lib/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -13,6 +13,8 @@ export default function AuthPage() {
 
   const { signIn, signUp, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || '/materials';
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -23,7 +25,7 @@ export default function AuthPage() {
     try {
       if (isLogin) {
         await signIn(email, password);
-        navigate('/materials');
+        navigate(from, { replace: true });
       } else {
         await signUp(email, password, displayName);
         setSuccess('🎉 인증 이메일을 발송했습니다! 이메일을 확인해주세요.');
