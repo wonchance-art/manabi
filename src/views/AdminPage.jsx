@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
+import { useToast } from '../lib/ToastContext';
 import Spinner from '../components/Spinner';
 import Button from '../components/Button';
 
@@ -38,6 +39,7 @@ async function fetchAllPosts() {
 export default function AdminPage() {
   const [tab, setTab] = useState('users');
   const queryClient = useQueryClient();
+  const toast = useToast();
 
   const { data: users = [], isLoading: usersLoading } = useQuery({
     queryKey: ['admin-users'],
@@ -64,7 +66,7 @@ export default function AdminPage() {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-users'] }),
-    onError: (err) => alert('역할 변경 실패: ' + err.message),
+    onError: (err) => toast('역할 변경 실패: ' + err.message, 'error'),
   });
 
   // 자료 삭제
@@ -74,7 +76,7 @@ export default function AdminPage() {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-materials'] }),
-    onError: (err) => alert('삭제 실패: ' + err.message),
+    onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
   });
 
   // 게시물 삭제
@@ -84,7 +86,7 @@ export default function AdminPage() {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-posts'] }),
-    onError: (err) => alert('삭제 실패: ' + err.message),
+    onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
   });
 
   const confirmDelete = (label, onConfirm) => {

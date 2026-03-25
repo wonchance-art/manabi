@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
+import { useToast } from '../lib/ToastContext';
 import Button from '../components/Button';
 
 // --- AI Service Logic ---
@@ -54,6 +55,7 @@ function buildTokenizationPrompt(text) {
 // --- Component ---
 export default function MaterialAddPage() {
   const { user } = useAuth();
+  const toast = useToast();
   const router = useRouter();
 
   const [title, setTitle] = useState('');
@@ -82,8 +84,8 @@ export default function MaterialAddPage() {
   };
 
   async function handleStart() {
-    if (!user) return alert("로그인이 필요합니다.");
-    if (!rawText.trim()) return alert("내용을 입력해주세요.");
+    if (!user) { toast('로그인이 필요합니다.', 'warning'); return; }
+    if (!rawText.trim()) { toast('내용을 입력해주세요.', 'warning'); return; }
 
     const controller = new AbortController();
     abortControllerRef.current = controller;

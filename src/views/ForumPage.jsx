@@ -47,7 +47,7 @@ export default function ForumPage() {
   const { data, isLoading, isFetching } = useQuery({
     queryKey: ['forum-posts', page],
     queryFn: () => fetchPosts(page),
-    keepPreviousData: true,
+    placeholderData: (prev) => prev,
   });
 
   // 페이지 데이터가 오면 누적

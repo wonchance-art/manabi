@@ -1,5 +1,27 @@
+import { Inter, Noto_Sans_KR, Noto_Sans_JP } from 'next/font/google';
 import '../index.css';
 import Providers from './providers';
+
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const notoKr = Noto_Sans_KR({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '700'],
+  variable: '--font-noto-kr',
+  display: 'swap',
+});
+
+const notoJp = Noto_Sans_JP({
+  subsets: ['latin'],
+  weight: ['300', '500', '700'],
+  variable: '--font-noto-jp',
+  display: 'swap',
+});
 
 export const metadata = {
   title: 'Anatomy Studio — AI 언어 해부 학습',
@@ -26,7 +48,7 @@ export default function RootLayout({ children }) {
           }}
         />
       </head>
-      <body>
+      <body className={`${inter.variable} ${notoKr.variable} ${notoJp.variable}`}>
         <Providers>{children}</Providers>
       </body>
     </html>
