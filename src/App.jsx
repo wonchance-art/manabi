@@ -3,6 +3,7 @@ import { AuthProvider } from './lib/AuthContext';
 import Layout from './components/Layout';
 import GuidePage from './pages/GuidePage';
 import MaterialsPage from './pages/MaterialsPage';
+import MaterialAddPage from './pages/MaterialAddPage';
 import VocabPage from './pages/VocabPage';
 import ForumPage from './pages/ForumPage';
 import AuthPage from './pages/AuthPage';
