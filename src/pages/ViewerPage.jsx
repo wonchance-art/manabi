@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
@@ -113,6 +113,16 @@ export default function ViewerPage() {
 
   return (
     <div className={`page-container viewer-theme-${theme}`} onMouseUp={handleTextSelection}>
+      {/* 비로그인 유도 배너 */}
+      {!user && (
+        <div className="viewer-guest-banner">
+          <span>🔍 단어를 클릭해 뜻을 확인할 수 있어요.</span>
+          <Link to="/auth" className="viewer-guest-banner__cta">
+            로그인하면 단어장에 저장하고 복습할 수 있습니다 →
+          </Link>
+        </div>
+      )}
+
       <header className="page-header viewer-header">
         <Link to="/materials" className="viewer-back-link">← 라이브러리</Link>
         <h1 className="page-header__title">{material.title}</h1>
@@ -217,7 +227,10 @@ export default function ViewerPage() {
             <p className="bottom-sheet__meaning">{selectedToken.meaning || '(뜻 정보 없음)'}</p>
             <div className="bottom-sheet__actions">
               <Button variant="ghost" onClick={() => setIsSheetOpen(false)} style={{ flex: 1 }}>닫기</Button>
-              <Button onClick={addToVocab} style={{ flex: 2 }}>⭐ 단어장에 추가</Button>
+              {user
+                ? <Button onClick={addToVocab} style={{ flex: 2 }}>⭐ 단어장에 추가</Button>
+                : <Link to="/auth" className="btn btn--primary" style={{ flex: 2, justifyContent: 'center' }}>🔒 로그인하고 저장하기</Link>
+              }
             </div>
           </div>
         </>

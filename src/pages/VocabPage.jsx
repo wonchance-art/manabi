@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
@@ -45,6 +45,19 @@ export default function VocabPage() {
   const reviewWords = vocab.filter(v => new Date(v.next_review_at) <= new Date());
   const currentWord = reviewWords[reviewIdx];
 
+  // 브라우저 알림 요청 — 복습 단어 있을 때만
+  useEffect(() => {
+    if (!reviewWords.length || Notification.permission !== 'default') return;
+    Notification.requestPermission().then(perm => {
+      if (perm === 'granted') {
+        new Notification('Anatomy Studio', {
+          body: `오늘 복습할 단어가 ${reviewWords.length}개 있어요! 🧠`,
+          icon: '/favicon.ico',
+        });
+      }
+    });
+  }, [reviewWords.length]);
+
   const handleScore = (rating) => {
     if (!currentWord) return;
     const nextStats = calculateFSRS(rating, {
@@ -71,6 +84,19 @@ export default function VocabPage() {
 
   return (
     <div className="page-container">
+      {/* 복습 리마인더 배너 */}
+      {!isLoading && reviewWords.length > 0 && tab === 'list' && (
+        <div className="review-reminder-banner">
+          <div className="review-reminder-banner__left">
+            <span className="review-reminder-banner__icon">🔔</span>
+            <span>오늘 복습할 단어가 <strong>{reviewWords.length}개</strong> 있어요!</span>
+          </div>
+          <button onClick={startReview} className="btn btn--primary btn--sm">
+            지금 복습하기
+          </button>
+        </div>
+      )}
+
       <div className="page-header page-header--row">
         <div>
           <h1 className="page-header__title">⭐ 내 단어장</h1>

@@ -1981,6 +1981,93 @@ button {
   text-decoration: none;
 }
 
+/* ========= Viewer Guest Banner ========= */
+.viewer-guest-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px;
+  margin-bottom: 20px;
+  background: var(--primary-glow);
+  border: 1px solid var(--border-hover);
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  flex-wrap: wrap;
+}
+
+.viewer-guest-banner__cta {
+  color: var(--primary-light);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.viewer-guest-banner__cta:hover {
+  text-decoration: underline;
+}
+
+/* ========= Review Reminder Banner ========= */
+.review-reminder-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  margin-bottom: 24px;
+  background: linear-gradient(135deg, rgba(124, 92, 252, 0.12), rgba(6, 214, 160, 0.08));
+  border: 1px solid var(--border-hover);
+  border-radius: var(--radius-md);
+  flex-wrap: wrap;
+}
+
+.review-reminder-banner__left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.95rem;
+}
+
+.review-reminder-banner__icon {
+  font-size: 1.2rem;
+}
+
+/* ========= Materials Filters ========= */
+.materials-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.chip-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.chip:hover {
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+.chip--active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
 /* ========= Responsive ========= */
 @media (max-width: 768px) {
   :root {

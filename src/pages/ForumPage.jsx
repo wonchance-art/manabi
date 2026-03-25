@@ -79,6 +79,26 @@ export default function ForumPage() {
     commentMutation.mutate({ postId, content: commentText.trim() });
   };
 
+  // 좋아요 — 낙관적 업데이트 + DB 저장
+  const likeMutation = useMutation({
+    mutationFn: async ({ postId, currentCount }) => {
+      const { error } = await supabase
+        .from('forum_posts')
+        .update({ likes_count: currentCount + 1 })
+        .eq('id', postId);
+      if (error) throw error;
+    },
+    onMutate: async ({ postId }) => {
+      await queryClient.cancelQueries({ queryKey: ['forum-posts'] });
+      const prev = queryClient.getQueryData(['forum-posts']);
+      queryClient.setQueryData(['forum-posts'], old =>
+        old.map(p => p.id === postId ? { ...p, likes_count: (p.likes_count || 0) + 1 } : p)
+      );
+      return { prev };
+    },
+    onError: (_, __, ctx) => queryClient.setQueryData(['forum-posts'], ctx.prev),
+  });
+
   const togglePost = (postId) => {
     setExpandedPostId(prev => prev === postId ? null : postId);
     setCommentText('');
@@ -136,7 +156,11 @@ export default function ForumPage() {
                     </div>
                     <p className="forum-post__content">{post.content}</p>
                     <div className="forum-post__actions">
-                      <button className="forum-action-btn">
+                      <button
+                        className="forum-action-btn"
+                        onClick={() => user && likeMutation.mutate({ postId: post.id, currentCount: post.likes_count || 0 })}
+                        title={user ? '좋아요' : '로그인 후 좋아요를 누를 수 있어요'}
+                      >
                         <span>❤️</span> {post.likes_count || 0}
                       </button>
                       <button
