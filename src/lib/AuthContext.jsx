@@ -133,10 +133,13 @@ export function AuthProvider({ children }) {
     setProfile(null);
   }
 
+  const isAdmin = profile?.role === 'admin';
+
   const value = {
     user,
     profile,
     loading,
+    isAdmin,
     signUp,
     signIn,
     signInWithGoogle,

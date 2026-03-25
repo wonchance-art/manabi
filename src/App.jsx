@@ -3,6 +3,8 @@ import { AuthProvider } from './lib/AuthContext';
 import Layout from './components/Layout';
 import ErrorBoundary from './components/ErrorBoundary';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/AdminRoute';
+import AdminPage from './pages/AdminPage';
 import LandingPage from './pages/LandingPage';
 import GuidePage from './pages/GuidePage';
 import MaterialsPage from './pages/MaterialsPage';
@@ -34,6 +36,7 @@ export default function App() {
               <Route path="/materials/add" element={<ProtectedRoute><MaterialAddPage /></ProtectedRoute>} />
               <Route path="/vocab"         element={<ProtectedRoute><VocabPage /></ProtectedRoute>} />
               <Route path="/profile"       element={<ProtectedRoute><MyPage /></ProtectedRoute>} />
+              <Route path="/admin"         element={<AdminRoute><AdminPage /></AdminRoute>} />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />

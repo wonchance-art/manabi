@@ -2,7 +2,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/AuthContext';
 
 export default function Layout() {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
 
   async function handleAuthClick() {
@@ -44,6 +44,13 @@ export default function Layout() {
             <span>포럼</span>
           </NavLink>
         </nav>
+
+        {isAdmin && (
+          <NavLink to="/admin" className={({ isActive }) => `gnb__link ${isActive ? 'active' : ''}`} style={{ color: '#ff922b' }}>
+            <span className="gnb__link-icon">🛡️</span>
+            <span>관리</span>
+          </NavLink>
+        )}
 
         <div className="gnb__actions">
           {user ? (
