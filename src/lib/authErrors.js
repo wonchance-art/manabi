@@ -8,8 +8,8 @@ export function toKoreanError(message = '') {
     return '이메일 또는 비밀번호가 올바르지 않습니다.';
   if (m.includes('email not confirmed'))
     return '이메일 인증이 필요합니다. 받은 편지함을 확인해주세요.';
-  if (m.includes('user already registered') || m.includes('already been registered'))
-    return '이미 가입된 이메일 주소입니다.';
+  if (m.includes('user already registered') || m.includes('already been registered') || m.includes('already registered') || m.includes('email already') || m.includes('duplicate'))
+    return 'ALREADY_REGISTERED';
   if (m.includes('password should be at least'))
     return '비밀번호는 최소 6자 이상이어야 합니다.';
   if (m.includes('rate limit') || m.includes('too many requests'))

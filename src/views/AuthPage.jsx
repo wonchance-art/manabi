@@ -46,7 +46,12 @@ function AuthForm() {
         setSuccess('🎉 인증 이메일을 발송했습니다! 이메일을 확인해주세요.');
       }
     } catch (err) {
-      setError(toKoreanError(err.message));
+      const msg = toKoreanError(err.message);
+      if (msg === 'ALREADY_REGISTERED') {
+        setError('ALREADY_REGISTERED');
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -169,7 +174,22 @@ function AuthForm() {
             </div>
           )}
 
-          {error && (
+          {error && error === 'ALREADY_REGISTERED' ? (
+            <div style={{
+              padding: '12px 14px', borderRadius: 'var(--radius-sm)', marginBottom: '14px',
+              background: 'rgba(255, 107, 107, 0.1)', border: '1px solid rgba(255, 107, 107, 0.3)',
+              color: '#FF6B6B', fontSize: '0.85rem'
+            }}>
+              ⚠️ 이미 가입된 이메일입니다.{' '}
+              <button
+                type="button"
+                onClick={() => { setIsLogin(true); setError(''); setSuccess(''); }}
+                style={{ color: '#FF6B6B', fontWeight: 700, textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.85rem' }}
+              >
+                로그인하러 가기 →
+              </button>
+            </div>
+          ) : error ? (
             <div style={{
               padding: '10px 14px', borderRadius: 'var(--radius-sm)', marginBottom: '14px',
               background: 'rgba(255, 107, 107, 0.1)', border: '1px solid rgba(255, 107, 107, 0.3)',
@@ -177,7 +197,7 @@ function AuthForm() {
             }}>
               ⚠️ {error}
             </div>
-          )}
+          ) : null}
 
           {success && (
             <div style={{
