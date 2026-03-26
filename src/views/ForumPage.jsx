@@ -109,6 +109,8 @@ export default function ForumPage() {
     },
     onSuccess: () => {
       setNewPost('');
+      setPage(0);
+      queryClient.invalidateQueries({ queryKey: ['forum-posts'] });
       toast('게시글을 올렸습니다!', 'success');
     },
     onError: (err) => toast('글 작성 실패: ' + err.message, 'error'),
