@@ -24,20 +24,19 @@ export function AuthProvider({ children }) {
         .single();
       
       if (error && error.code === 'PGRST116') { // Not found
-        // Create new profile
-        const { data: newProfile, error: createError } = await supabase
+        // 트리거가 이미 생성했을 수 있으므로 upsert(중복 무시) 후 재조회
+        await supabase
           .from('profiles')
-          .insert([{
+          .upsert([{
             id: userId,
             display_name: metadata.display_name || '새로운 학습자',
             streak_count: 1,
             last_login_at: new Date().toISOString()
-          }])
-          .select()
-          .single();
-        
-        if (createError) throw createError;
-        setProfile(newProfile);
+          }], { onConflict: 'id', ignoreDuplicates: true });
+
+        const { data: profile } = await supabase
+          .from('profiles').select('*').eq('id', userId).single();
+        setProfile(profile);
         return;
       } else if (error) {
         throw error;
