@@ -29,7 +29,7 @@ export function AuthProvider({ children }) {
           .from('profiles')
           .upsert([{
             id: userId,
-            display_name: metadata.display_name || '새로운 학습자',
+            display_name: metadata.display_name || metadata.full_name || metadata.name || '새로운 학습자',
             streak_count: 1,
             last_login_at: new Date().toISOString()
           }], { onConflict: 'id', ignoreDuplicates: true });
