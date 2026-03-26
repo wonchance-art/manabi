@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useAuth } from '../lib/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toKoreanError } from '../lib/authErrors';
@@ -20,6 +20,13 @@ function AuthForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const from = searchParams.get('from') || '/materials';
+
+  // 이메일 인증 실패 파라미터 처리
+  useEffect(() => {
+    if (searchParams.get('error') === 'email_confirm_failed') {
+      setError('이메일 인증에 실패했습니다. 다시 회원가입을 시도해주세요.');
+    }
+  }, []);
 
   async function handleSubmit(e) {
     e.preventDefault();
