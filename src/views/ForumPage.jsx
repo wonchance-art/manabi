@@ -77,8 +77,8 @@ export default function ForumPage() {
             .from('profiles')
             .select('display_name, avatar_url, streak_count')
             .eq('id', payload.new.author_id)
-            .single();
-          const newEntry = { ...payload.new, author: profile };
+            .maybeSingle();
+          const newEntry = { ...payload.new, author: profile || null };
           setAllPosts(prev => {
             if (prev.some(p => p.id === newEntry.id)) return prev;
             return [newEntry, ...prev];

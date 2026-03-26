@@ -27,12 +27,6 @@ export default function MaterialAddPage() {
 
   const abortControllerRef = useRef(null);
 
-  // 알림 권한 요청
-  useEffect(() => {
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
-    }
-  }, []);
 
   const levels = {
     Japanese: ['N5 기초', 'N4 기본', 'N3 중급', 'N2 상급', 'N1 심화'],
@@ -155,12 +149,17 @@ export default function MaterialAddPage() {
       setStatus('✅ 전체 분석 완료! 자료실로 이동합니다.');
       setProgress(100);
 
-      // 브라우저 알림 (탭이 백그라운드일 때 유용)
-      if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification('분석 완료! 🎉', {
-          body: `"${title || '새 자료'}" 분석이 완료되었습니다.`,
-          icon: '/icon.svg',
-        });
+      // 브라우저 알림 — 분석 완료 시점에 권한 요청 후 알림 전송
+      if ('Notification' in window) {
+        const permission = Notification.permission === 'default'
+          ? await Notification.requestPermission()
+          : Notification.permission;
+        if (permission === 'granted') {
+          new Notification('분석 완료! 🎉', {
+            body: `"${title || '새 자료'}" 분석이 완료되었습니다.`,
+            icon: '/icon.svg',
+          });
+        }
       }
 
       setTimeout(() => router.push('/materials'), 1500);

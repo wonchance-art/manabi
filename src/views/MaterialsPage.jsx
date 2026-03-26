@@ -177,7 +177,7 @@ export default function MaterialsPage() {
                   <h3 className="card__title">{m.title}</h3>
                 </div>
                 <div className="card__footer">
-                  <span>{new Date(m.created_at).toLocaleDateString()}</span>
+                  <span>{new Date(m.created_at).toLocaleDateString('ko-KR')}</span>
                   <span>{tab === 'public' ? '공용' : '비공개'}</span>
                 </div>
               </div>

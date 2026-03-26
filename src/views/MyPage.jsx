@@ -102,7 +102,7 @@ export default function MyPage() {
                           <div>
                             <h4 className="mypage-recent-item__title">{m.title}</h4>
                             <span className="mypage-recent-item__date">
-                              {new Date(m.created_at).toLocaleDateString()} 학습
+                              {new Date(m.created_at).toLocaleDateString('ko-KR')} 학습
                             </span>
                           </div>
                         </div>

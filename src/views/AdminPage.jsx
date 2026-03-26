@@ -157,7 +157,7 @@ export default function AdminPage() {
                     </td>
                     <td>🔥 {u.streak_count || 0}</td>
                     <td className="admin-table__muted">
-                      {u.last_login_at ? new Date(u.last_login_at).toLocaleDateString() : '—'}
+                      {u.last_login_at ? new Date(u.last_login_at).toLocaleDateString('ko-KR') : '—'}
                     </td>
                     <td>
                       <Button
@@ -211,7 +211,7 @@ export default function AdminPage() {
                         </span>
                       </td>
                       <td className="admin-table__muted">{status}</td>
-                      <td className="admin-table__muted">{new Date(m.created_at).toLocaleDateString()}</td>
+                      <td className="admin-table__muted">{new Date(m.created_at).toLocaleDateString('ko-KR')}</td>
                       <td>
                         <Button
                           size="sm"
@@ -254,7 +254,7 @@ export default function AdminPage() {
                     <td className="admin-table__content">{p.content}</td>
                     <td>{p.author?.display_name || '익명'}</td>
                     <td>❤️ {p.likes_count || 0}</td>
-                    <td className="admin-table__muted">{new Date(p.created_at).toLocaleDateString()}</td>
+                    <td className="admin-table__muted">{new Date(p.created_at).toLocaleDateString('ko-KR')}</td>
                     <td>
                       <Button
                         size="sm"
