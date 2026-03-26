@@ -53,8 +53,12 @@ export default function ViewerPage() {
   const { data: material, isLoading, error, refetch } = useQuery({
     queryKey: ['material', id],
     queryFn: () => fetchMaterial(id),
-    // 분석 중일 때 폴링
-    refetchInterval: (data) => data?.status === 'analyzing' ? 4000 : false,
+    // 분석 중일 때 폴링 (RQ v5 signature)
+    refetchInterval: (query) => {
+      const d = query.state.data;
+      const s = d?.status || d?.processed_json?.status;
+      return s === 'analyzing' ? 4000 : false;
+    },
   });
 
   const { data: savedWords = new Set() } = useQuery({
@@ -152,7 +156,7 @@ export default function ViewerPage() {
   if (error) return <div className="page-container error-banner">❌ 에러: {error.message}</div>;
 
   const json = material?.processed_json || { sequence: [], dictionary: {} };
-  const status = material?.status;
+  const status = material?.status || material?.processed_json?.status;
   const isAnalyzing = status === 'analyzing';
   const isFailed = status === 'failed';
   const isWordSaved = selectedToken ? savedWords.has(selectedToken.text) : false;

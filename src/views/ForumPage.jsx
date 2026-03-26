@@ -172,7 +172,7 @@ export default function ForumPage() {
           <form onSubmit={handleSubmit}>
             <div className="forum-compose">
               <div className="forum-avatar forum-avatar--gradient">
-                {user?.display_name?.[0] || '✏️'}
+                {user?.user_metadata?.display_name?.[0] || '✏️'}
               </div>
               <div className="forum-compose__body">
                 <textarea
