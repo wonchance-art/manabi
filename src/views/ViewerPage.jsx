@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -9,6 +9,47 @@ import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import Spinner from '../components/Spinner';
 import Button from '../components/Button';
+
+const GEMINI_MODEL = 'gemini-2.0-flash-lite-preview-02-05';
+
+async function callGemini(prompt, signal) {
+  const response = await fetch('/api/gemini', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    signal,
+    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+  });
+  const resData = await response.json();
+  if (!response.ok) throw new Error(resData.error?.message || 'API 요청 실패');
+  return resData.candidates[0].content.parts[0].text;
+}
+
+function parseGeminiJSON(rawText) {
+  const clean = rawText.replace(/```json|```/g, '').trim();
+  const start = clean.indexOf('{');
+  const end = clean.lastIndexOf('}');
+  if (start === -1 || end === -1) throw new Error('JSON 괄호를 찾을 수 없습니다.');
+  return JSON.parse(clean.substring(start, end + 1));
+}
+
+function buildTokenizationPrompt(text) {
+  const escaped = text.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+  return `입력된 텍스트 "${escaped}"를 정밀 분석해서 반드시 아래 규칙을 지킨 JSON으로 응답해.
+
+1. 데이터 구조 (Index Mapping):
+   - "sequence": ["0", "1", "2", ...] 형태로 원문의 모든 요소를 순서대로 번호를 매길 것.
+   - "dictionary": {"0": {...}, "1": {...}} 형태로 정보를 넣을 것.
+
+2. 분석 규칙 (필독):
+   - 문단 구분 보존: 원문에 줄 바꿈(\\n)이 있다면 반드시 하나의 독립된 토큰으로 포함할 것.
+   - 모든 단어와 기호(따옴표, 콤마, 마침표, 띄어쓰기 등)를 빠짐없이 토큰으로 분리할 것.
+   - [영어]: 단어 토큰의 'furigana' 필드에 발음 기호(IPA) 작성 (/ / 포함).
+   - [일본어]: 한자가 포함된 토큰만 'furigana' 작성.
+   - meaning & pos: 무조건 한국어로 정확한 품사와 뜻 작성.
+   - 응답은 무조건 { "sequence": [... ] 로 시작하는 유효한 JSON 포맷이어야 함.
+
+설명 없이 오직 순수한 JSON만 응답할 것.`;
+}
 
 async function fetchMaterial(id) {
   const { data, error } = await supabase
@@ -35,6 +76,9 @@ export default function ViewerPage() {
   const { user } = useAuth();
   const toast = useToast();
   const queryClient = useQueryClient();
+
+  const [isReanalyzing, setIsReanalyzing] = useState(false);
+  const reanalyzeAbortRef = useRef(null);
 
   const [fontSize, setFontSize] = useState(1.6);
   const [lineGap, setLineGap] = useState(15);
@@ -68,20 +112,82 @@ export default function ViewerPage() {
     staleTime: 1000 * 30,
   });
 
-  // 재분석 요청
+  // 재분석
   const reanalyzeMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase
-        .from('reading_materials')
-        .update({ status: 'analyzing', processed_json: null })
-        .eq('id', id);
-      if (error) throw error;
+      const rawText = material?.raw_text;
+      if (!rawText) throw new Error('원본 텍스트가 없습니다.');
+
+      const controller = new AbortController();
+      reanalyzeAbortRef.current = controller;
+      setIsReanalyzing(true);
+
+      const initJson = { sequence: [], dictionary: {}, last_idx: -1, status: 'analyzing', metadata: material.processed_json?.metadata || {} };
+      await supabase.from('reading_materials').update({ processed_json: initJson }).eq('id', id);
+
+      const lines = rawText.split('\n');
+      const timestamp = Date.now();
+      const CONCURRENCY = 5;
+      let currentJson = { ...initJson };
+
+      for (let i = 0; i < lines.length; i += CONCURRENCY) {
+        const batchIndices = [];
+        for (let j = 0; j < CONCURRENCY && i + j < lines.length; j++) batchIndices.push(i + j);
+
+        const promises = batchIndices.map(async (idx) => {
+          const line = lines[idx].trim();
+          if (!line) return { idx, success: true, empty: true };
+          let failCount = 0;
+          while (failCount < 3) {
+            try {
+              const raw = await callGemini(buildTokenizationPrompt(line), controller.signal);
+              return { idx, success: true, payload: parseGeminiJSON(raw) };
+            } catch (e) {
+              if (controller.signal.aborted) throw e;
+              failCount++;
+              if (failCount >= 3) return { idx, success: false };
+              await new Promise(r => setTimeout(r, 2000));
+            }
+          }
+        });
+
+        const results = await Promise.all(promises);
+        for (const res of results) {
+          if (!res || !res.success) { currentJson.status = 'failed'; break; }
+          if (res.empty) {
+            if (res.idx < lines.length - 1) {
+              const brId = `br_${res.idx}_${timestamp}`;
+              currentJson.sequence.push(brId);
+              currentJson.dictionary[brId] = { text: '\n', pos: '개행' };
+            }
+          } else if (res.payload) {
+            res.payload.sequence.forEach((oldId, pIdx) => {
+              const newId = `id_${res.idx}_${pIdx}_${timestamp}`;
+              currentJson.sequence.push(newId);
+              currentJson.dictionary[newId] = res.payload.dictionary[oldId];
+            });
+            if (res.idx < lines.length - 1) {
+              const brId = `br_${res.idx}_${timestamp}`;
+              currentJson.sequence.push(brId);
+              currentJson.dictionary[brId] = { text: '\n', pos: '개행' };
+            }
+          }
+        }
+
+        if (currentJson.status === 'failed') break;
+        if (batchIndices[batchIndices.length - 1] === lines.length - 1) currentJson.status = 'completed';
+        await supabase.from('reading_materials').update({ processed_json: currentJson }).eq('id', id);
+      }
     },
     onSuccess: () => {
-      toast('재분석을 요청했습니다. 잠시 기다려주세요.', 'info');
+      setIsReanalyzing(false);
+      toast('재분석 완료!', 'success');
       refetch();
     },
-    onError: (err) => toast('재분석 실패: ' + err.message, 'error'),
+    onError: (err) => {
+      setIsReanalyzing(false);
+      toast('재분석 실패: ' + err.message, 'error');
+    },
   });
 
   const handleTokenClick = (token, tokenId) => {
@@ -252,10 +358,10 @@ export default function ViewerPage() {
             <span>❌ 분석에 실패했습니다.</span>
             <button
               onClick={() => reanalyzeMutation.mutate()}
-              disabled={reanalyzeMutation.isPending}
+              disabled={isReanalyzing}
               className="analyzing-banner__refresh"
             >
-              {reanalyzeMutation.isPending ? '요청 중...' : '🔄 재분석 요청'}
+              {isReanalyzing ? '⏳ 재분석 중...' : '🔄 재분석 요청'}
             </button>
           </div>
         )}
