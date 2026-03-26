@@ -19,7 +19,18 @@ async function fetchPosts(page) {
     .order('created_at', { ascending: false })
     .range(from, to);
   if (error) throw error;
-  return { posts: data || [], total: count ?? 0 };
+
+  // profiles 조인을 별도로 처리
+  const posts = await Promise.all((data || []).map(async (post) => {
+    const { data: author } = await supabase
+      .from('profiles')
+      .select('display_name, avatar_url, streak_count')
+      .eq('id', post.author_id)
+      .maybeSingle();
+    return { ...post, author };
+  }));
+
+  return { posts, total: count ?? 0 };
 }
 
 async function fetchComments(postId) {
