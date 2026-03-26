@@ -12,9 +12,9 @@ const DEFAULT_WEIGHTS = [
  * @param {Object} prevStats - { interval (stability), ease_factor (difficulty), repetitions (lapses), next_review_at }
  * @returns {Object} Updated stats
  */
-export function calculateFSRS(rating, { interval: S = 0, ease_factor: D = 0, repetitions: lapses = 0 }) {
+export function calculateFSRS(rating, { interval: S = 0, ease_factor: D = 0, repetitions: lapses = 0, next_review_at = null }) {
   const w = DEFAULT_WEIGHTS;
-  
+
   // Initial states if never reviewed
   if (S === 0) {
     const newS = w[rating - 1];
@@ -22,11 +22,14 @@ export function calculateFSRS(rating, { interval: S = 0, ease_factor: D = 0, rep
     return finalize(newS, newD, lapses);
   }
 
-  // Calculate Retrievability (Time since last review / Current Stability)
-  // For simplicity, we assume R is around 0.9 when scheduled correctly.
-  // In a real system, we'd calculate: t = (now - last_review) / (24 * 3600 * 1000)
-  // Here we approximate based on the current interval.
-  const t = S; 
+  // Calculate actual elapsed days since last review
+  // last_review ≈ next_review_at - S days
+  let t = S;
+  if (next_review_at) {
+    const dueTime = new Date(next_review_at).getTime();
+    const daysOverdue = (Date.now() - dueTime) / (24 * 3600 * 1000);
+    t = S + Math.max(0, daysOverdue);
+  }
   const R = Math.pow(0.9, t / S);
 
   // Update Difficulty

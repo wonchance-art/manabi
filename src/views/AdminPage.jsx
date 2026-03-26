@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import Spinner from '../components/Spinner';
 import Button from '../components/Button';
@@ -37,9 +39,19 @@ async function fetchAllPosts() {
 
 // ── Component ─────────────────────────────────────
 export default function AdminPage() {
+  const { isAdmin, loading } = useAuth();
   const [tab, setTab] = useState('users');
   const queryClient = useQueryClient();
   const toast = useToast();
+
+  if (loading) return <div className="page-container"><Spinner /></div>;
+  if (!isAdmin) return (
+    <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
+      <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🚫</div>
+      <h2 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>접근 권한이 없습니다</h2>
+      <Link href="/" className="btn btn--primary">홈으로</Link>
+    </div>
+  );
 
   const { data: users = [], isLoading: usersLoading } = useQuery({
     queryKey: ['admin-users'],

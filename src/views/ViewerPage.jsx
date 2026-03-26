@@ -259,7 +259,24 @@ export default function ViewerPage() {
   };
 
   if (isLoading) return <div className="page-container"><Spinner message="자료 해부 중..." /></div>;
-  if (error) return <div className="page-container error-banner">❌ 에러: {error.message}</div>;
+  if (error) return (
+    <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
+      <div className="error-banner">❌ 에러: {error.message}</div>
+      <button onClick={() => refetch()} className="btn btn--primary" style={{ marginTop: '16px' }}>다시 시도</button>
+    </div>
+  );
+
+  // 비공개 자료 접근 제어
+  if (material?.visibility === 'private' && material?.owner_id !== user?.id) {
+    return (
+      <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
+        <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🔒</div>
+        <h2 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>비공개 자료입니다</h2>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>이 자료는 작성자만 열람할 수 있습니다.</p>
+        <Link href="/materials" className="btn btn--primary">자료실로 돌아가기</Link>
+      </div>
+    );
+  }
 
   const json = material?.processed_json || { sequence: [], dictionary: {} };
   const status = material?.status || material?.processed_json?.status;

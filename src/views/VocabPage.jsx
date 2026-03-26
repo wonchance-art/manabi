@@ -127,6 +127,7 @@ export default function VocabPage() {
       interval: currentWord.interval,
       ease_factor: currentWord.ease_factor,
       repetitions: currentWord.repetitions,
+      next_review_at: currentWord.next_review_at,
     });
     scoreMutation.mutate({ id: currentWord.id, nextStats });
 
