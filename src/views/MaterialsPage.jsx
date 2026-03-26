@@ -35,7 +35,7 @@ const LANG_FILTERS = [
 ];
 
 const JP_LEVELS = ['N5 기초', 'N4 기본', 'N3 중급', 'N2 상급', 'N1 심화'];
-const EN_LEVELS = ['A1 기초', 'A2 초급', 'B1 중급', 'B2 상급', 'C1-C2 심화'];
+const EN_LEVELS = ['A1 기초', 'A2 초급', 'B1 중급', 'B2 상급', 'C1 고급', 'C2 마스터'];
 
 export default function MaterialsPage() {
   const { user } = useAuth();
