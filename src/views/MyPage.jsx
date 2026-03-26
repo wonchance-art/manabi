@@ -32,7 +32,7 @@ export default function MyPage() {
   });
 
   const handleSignOut = async () => {
-    if (window.confirm("로그아웃 하시겠습니까?")) await signOut();
+    await signOut();
   };
 
   if (!user) {
@@ -91,7 +91,7 @@ export default function MyPage() {
                   {stats.recentMaterials.map(m => {
                     const language = m.processed_json?.metadata?.language || 'Japanese';
                     return (
-                      <Link key={m.id} to={`/viewer/${m.id}`} className="card mypage-recent-item">
+                      <Link key={m.id} href={`/viewer/${m.id}`} className="card mypage-recent-item">
                         <div className="mypage-recent-item__left">
                           <span className="card__flag">{language === 'English' ? '🇬🇧' : '🇯🇵'}</span>
                           <div>
