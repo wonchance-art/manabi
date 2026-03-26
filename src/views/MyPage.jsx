@@ -8,10 +8,14 @@ import Spinner from '../components/Spinner';
 import Button from '../components/Button';
 
 async function fetchUserStats(userId) {
-  const [{ count: matCount }, { data: vocabData, count: vocabCount }, { data: recentMats }] = await Promise.all([
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  const [{ count: matCount }, { data: vocabData, count: vocabCount }, { data: recentMats }, { count: todayVocabCount }] = await Promise.all([
     supabase.from('reading_materials').select('*', { count: 'exact', head: true }).eq('owner_id', userId),
     supabase.from('user_vocabulary').select('interval', { count: 'exact' }).eq('user_id', userId),
     supabase.from('reading_materials').select('id, title, created_at, processed_json').eq('owner_id', userId).order('created_at', { ascending: false }).limit(3),
+    supabase.from('user_vocabulary').select('*', { count: 'exact', head: true }).eq('user_id', userId).gte('created_at', todayStart.toISOString()),
   ]);
 
   return {
@@ -19,6 +23,7 @@ async function fetchUserStats(userId) {
     totalVocab: vocabCount || 0,
     masteredVocab: vocabData?.filter(v => v.interval > 14).length || 0,
     recentMaterials: recentMats || [],
+    todayVocab: todayVocabCount || 0,
   };
 }
 
@@ -119,11 +124,11 @@ export default function MyPage() {
               <h2 className="mypage-section-title">🎯 오늘의 목표</h2>
               <div className="card mypage-goal-card">
                 <div className="mypage-goal-row">
-                  <span>새로운 단어 5개 수집</span>
-                  <span className="mypage-goal-status">진행 중</span>
+                  <span>새로운 단어 5개 수집 ({stats.todayVocab}/5)</span>
+                  <span className="mypage-goal-status">{stats.todayVocab >= 5 ? '✅ 달성!' : '진행 중'}</span>
                 </div>
                 <div className="progress-bar">
-                  <div className="progress-bar__fill" style={{ width: '40%' }} />
+                  <div className="progress-bar__fill" style={{ width: `${Math.min(100, (stats.todayVocab / 5) * 100)}%` }} />
                 </div>
                 <Link href="/materials/add" className="btn btn--primary btn--md mypage-goal-cta">
                   학습 시작하기
