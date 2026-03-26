@@ -78,7 +78,7 @@ export default function LandingPage() {
               <span className="demo-sheet__reading">にほんご</span>
             </div>
             <p className="demo-sheet__meaning">일본어 · Japanese language</p>
-            <div className="demo-sheet__btn">⭐ 단어장에 추가</div>
+            <button className="demo-sheet__btn" onClick={handleCTA}>⭐ 단어장에 추가</button>
           </div>
         </div>
       </section>
