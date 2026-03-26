@@ -15,7 +15,7 @@ async function fetchPosts(page) {
   const to = from + PAGE_SIZE - 1;
   const { data, error, count } = await supabase
     .from('forum_posts')
-    .select('*, author:profiles(display_name, avatar_url, streak_count)', { count: 'exact' })
+    .select('*', { count: 'exact' })
     .order('created_at', { ascending: false })
     .range(from, to);
   if (error) throw error;
