@@ -11,6 +11,7 @@ import Spinner from '../components/Spinner';
 import Button from '../components/Button';
 import { callGemini, GEMINI_MODEL } from '../lib/gemini';
 import { analyzeText } from '../lib/analyzeText';
+import { recordActivity } from '../lib/streak';
 
 async function fetchMaterial(id) {
   const { data, error } = await supabase
@@ -34,7 +35,7 @@ async function fetchUserVocabWords(userId) {
 
 export default function ViewerPage() {
   const { id } = useParams();
-  const { user } = useAuth();
+  const { user, fetchProfile } = useAuth();
   const toast = useToast();
   const queryClient = useQueryClient();
 
@@ -249,6 +250,7 @@ export default function ViewerPage() {
       toast(`"${selectedToken.text}" 단어장에 추가됐어요! ⭐`, 'success');
       queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
+      recordActivity(user.id, () => fetchProfile(user.id));
       setIsSheetOpen(false);
     } catch (err) {
       toast('추가 실패: ' + err.message, 'error');

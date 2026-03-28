@@ -14,18 +14,18 @@ async function fetchUserStats(userId) {
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
 
-  const [{ count: matCount }, { data: vocabData, count: vocabCount }, { data: recentMats }, { count: todayVocabCount }] = await Promise.all([
-    supabase.from('reading_materials').select('*', { count: 'exact', head: true }).eq('owner_id', userId),
+  const [{ count: completedCount }, { data: vocabData, count: vocabCount }, { data: recentProgress }, { count: todayVocabCount }] = await Promise.all([
+    supabase.from('reading_progress').select('*', { count: 'exact', head: true }).eq('user_id', userId).eq('is_completed', true),
     supabase.from('user_vocabulary').select('interval', { count: 'exact' }).eq('user_id', userId),
-    supabase.from('reading_materials').select('id, title, created_at, processed_json').eq('owner_id', userId).order('created_at', { ascending: false }).limit(3),
+    supabase.from('reading_progress').select('material_id, updated_at, reading_materials(id, title, processed_json)').eq('user_id', userId).order('updated_at', { ascending: false }).limit(3),
     supabase.from('user_vocabulary').select('*', { count: 'exact', head: true }).eq('user_id', userId).gte('created_at', todayStart.toISOString()),
   ]);
 
   return {
-    totalMaterials: matCount || 0,
+    completedMaterials: completedCount || 0,
     totalVocab: vocabCount || 0,
     masteredVocab: vocabData?.filter(v => v.interval > 14).length || 0,
-    recentMaterials: recentMats || [],
+    recentProgress: recentProgress || [],
     todayVocab: todayVocabCount || 0,
   };
 }
@@ -185,8 +185,8 @@ export default function MyPage() {
               <div className="stat-card__sub">마스터 어휘: {stats.masteredVocab}개</div>
             </div>
             <div className="stat-card">
-              <div className="stat-card__label">분석한 자료</div>
-              <div className="stat-card__value stat-card__value--accent">{stats.totalMaterials}건</div>
+              <div className="stat-card__label">완료한 자료</div>
+              <div className="stat-card__value stat-card__value--accent">{stats.completedMaterials}건</div>
               <div className="stat-card__sub">지식의 지평이 넓어지고 있어요</div>
             </div>
           </div>
@@ -195,18 +195,20 @@ export default function MyPage() {
             {/* Recent Activities */}
             <div>
               <h2 className="mypage-section-title">🕒 최근 학습한 자료</h2>
-              {stats.recentMaterials.length > 0 ? (
+              {stats.recentProgress.length > 0 ? (
                 <div className="mypage-recent-list">
-                  {stats.recentMaterials.map(m => {
+                  {stats.recentProgress.map(p => {
+                    const m = p.reading_materials;
+                    if (!m) return null;
                     const language = m.processed_json?.metadata?.language || 'Japanese';
                     return (
-                      <Link key={m.id} href={`/viewer/${m.id}`} className="card mypage-recent-item">
+                      <Link key={p.material_id} href={`/viewer/${p.material_id}`} className="card mypage-recent-item">
                         <div className="mypage-recent-item__left">
                           <span className="card__flag">{language === 'English' ? '🇬🇧' : '🇯🇵'}</span>
                           <div>
                             <h4 className="mypage-recent-item__title">{m.title}</h4>
                             <span className="mypage-recent-item__date">
-                              {new Date(m.created_at).toLocaleDateString('ko-KR')} 학습
+                              {new Date(p.updated_at).toLocaleDateString('ko-KR')} 학습
                             </span>
                           </div>
                         </div>

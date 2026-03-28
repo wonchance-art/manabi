@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { calculateFSRS } from '../lib/fsrs';
+import { recordActivity } from '../lib/streak';
 import Spinner from '../components/Spinner';
 import Button from '../components/Button';
 
@@ -42,7 +43,7 @@ function exportCSV(vocab) {
 }
 
 export default function VocabPage() {
-  const { user } = useAuth();
+  const { user, fetchProfile } = useAuth();
   const toast = useToast();
   const queryClient = useQueryClient();
   const [tab, setTab] = useState('list');
@@ -144,6 +145,7 @@ export default function VocabPage() {
       next_review_at: currentWord.next_review_at,
     });
     scoreMutation.mutate({ id: currentWord.id, nextStats });
+    recordActivity(user.id, () => fetchProfile(user.id));
     goNextReview();
   };
 
