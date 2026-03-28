@@ -12,6 +12,7 @@ export async function GET() {
     .from('daily_suggestions')
     .select('id, language, source, video_id, title, channel_name, thumbnail_url, level, transcript')
     .eq('date', today)
+    .not('transcript', 'is', null)
     .order('language')
     .order('created_at');
 
