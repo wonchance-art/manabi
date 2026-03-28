@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -172,10 +172,51 @@ export default function ViewerPage() {
     },
   });
 
+  // 스크롤 위치 저장 (debounce 2s, 로그인 + 분석 완료 시만)
+  const scrollSaveTimerRef = useRef(null);
+  const saveScrollPosition = useCallback((tokenIdx) => {
+    if (!user) return;
+    clearTimeout(scrollSaveTimerRef.current);
+    scrollSaveTimerRef.current = setTimeout(async () => {
+      await supabase.from('reading_progress').upsert({
+        user_id: user.id,
+        material_id: id,
+        last_token_idx: tokenIdx,
+      }, { onConflict: 'user_id,material_id' });
+    }, 2000);
+  }, [user, id]);
+
+  // 재진입 시 마지막 읽은 위치로 스크롤 복원
+  const tokenRefs = useRef({});
+  const hasRestoredScroll = useRef(false);
+  useEffect(() => {
+    const lastIdx = readingProgress?.last_token_idx;
+    if (!lastIdx || hasRestoredScroll.current) return;
+    const json = material?.processed_json;
+    if (!json?.sequence?.length) return;
+    const tokenId = json.sequence[lastIdx];
+    if (!tokenId) return;
+    // DOM이 렌더된 후 스크롤
+    const timer = setTimeout(() => {
+      const el = tokenRefs.current[tokenId];
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        hasRestoredScroll.current = true;
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [readingProgress, material]);
+
   const handleTokenClick = (token, tokenId) => {
     if (token.pos === '개행') return;
     setSelectedToken({ ...token, id: tokenId });
     setIsSheetOpen(true);
+    // 클릭한 토큰 인덱스를 스크롤 위치로 저장
+    const json = material?.processed_json;
+    if (json?.sequence) {
+      const idx = json.sequence.indexOf(tokenId);
+      if (idx >= 0) saveScrollPosition(idx);
+    }
   };
 
   const handleTextSelection = () => {
@@ -447,6 +488,7 @@ export default function ViewerPage() {
           return (
             <div
               key={tokenId}
+              ref={el => { if (el) tokenRefs.current[tokenId] = el; }}
               className={`word-token ${isSaved ? 'word-token--saved' : ''}`}
               onClick={() => handleTokenClick(token, tokenId)}
             >
