@@ -52,6 +52,7 @@ export default function VocabPage() {
   const [reviewFinished, setReviewFinished] = useState(false);
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('due'); // 'due' | 'newest' | 'alpha'
+  const [langFilter, setLangFilter] = useState('all'); // 'all' | 'Japanese' | 'English'
   const [showHint, setShowHint] = useState(false);
 
   const { data: vocab = [], isLoading } = useQuery({
@@ -113,6 +114,9 @@ export default function VocabPage() {
   // 검색 + 정렬
   const filteredVocab = useMemo(() => {
     let list = [...vocab];
+    if (langFilter !== 'all') {
+      list = list.filter(v => v.language === langFilter);
+    }
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter(v =>
@@ -129,7 +133,7 @@ export default function VocabPage() {
       list.sort((a, b) => (a.word_text || '').localeCompare(b.word_text || '', 'ja'));
     }
     return list;
-  }, [vocab, search, sortBy]);
+  }, [vocab, search, sortBy, langFilter]);
 
   const reviewWords = vocab.filter(v => new Date(v.next_review_at) <= new Date());
   const currentWord = reviewWords[reviewIdx];
@@ -256,31 +260,51 @@ export default function VocabPage() {
         <Spinner message="단어들을 불러오는 중..." />
       ) : tab === 'list' ? (
         <>
-          {/* 검색 + 정렬 */}
-          <div className="filter-row" style={{ marginBottom: '20px' }}>
-            <div className="search-wrap" style={{ flex: 1 }}>
-              <input
-                type="text"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder="단어, 의미, 후리가나 검색..."
-                className="search-input"
-              />
+          {/* 검색 + 필터 */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
+            <div className="filter-row">
+              <div className="search-wrap" style={{ flex: 1 }}>
+                <input
+                  type="text"
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  placeholder="단어, 의미, 후리가나 검색..."
+                  className="search-input"
+                />
+              </div>
+              <div className="chip-group">
+                {[
+                  { value: 'due', label: '복습 순' },
+                  { value: 'newest', label: '최신 순' },
+                  { value: 'alpha', label: '가나다 순' },
+                ].map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setSortBy(opt.value)}
+                    className={`chip ${sortBy === opt.value ? 'chip--active' : ''}`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
             </div>
             <div className="chip-group">
               {[
-                { value: 'due', label: '복습 순' },
-                { value: 'newest', label: '최신 순' },
-                { value: 'alpha', label: '가나다 순' },
-              ].map(opt => (
+                { value: 'all', label: '🌍 전체' },
+                { value: 'Japanese', label: '🇯🇵 일본어' },
+                { value: 'English', label: '🇬🇧 영어' },
+              ].map(f => (
                 <button
-                  key={opt.value}
-                  onClick={() => setSortBy(opt.value)}
-                  className={`chip ${sortBy === opt.value ? 'chip--active' : ''}`}
+                  key={f.value}
+                  onClick={() => setLangFilter(f.value)}
+                  className={`chip ${langFilter === f.value ? 'chip--active' : ''}`}
                 >
-                  {opt.label}
+                  {f.label}
                 </button>
               ))}
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginLeft: '4px' }}>
+                {filteredVocab.length}개
+              </span>
             </div>
           </div>
 
