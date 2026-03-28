@@ -137,6 +137,21 @@ export default function MaterialsPage() {
     },
     onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
   });
+
+  const toggleVisibilityMutation = useMutation({
+    mutationFn: async ({ id, newVisibility }) => {
+      const { error } = await supabase
+        .from('reading_materials')
+        .update({ visibility: newVisibility })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: (_, { newVisibility }) => {
+      queryClient.invalidateQueries({ queryKey: ['materials'] });
+      toast(newVisibility === 'public' ? '공용으로 공개했습니다.' : '비공개로 전환했습니다.', 'success');
+    },
+    onError: (err) => toast('변경 실패: ' + err.message, 'error'),
+  });
   const searchParams = useSearchParams();
   const [tab, setTab] = useState('public');
   const [searchInput, setSearchInput] = useState('');
@@ -315,7 +330,24 @@ export default function MaterialsPage() {
                 <div className="card__footer">
                   <span>{new Date(m.created_at).toLocaleDateString('ko-KR')}</span>
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    <span>{tab === 'public' ? '공용' : '비공개'}</span>
+                    {m.owner_id === user?.id ? (
+                      <button
+                        className="btn btn--ghost btn--sm"
+                        style={{ fontSize: '0.75rem', padding: '2px 8px' }}
+                        disabled={toggleVisibilityMutation.isPending}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleVisibilityMutation.mutate({
+                            id: m.id,
+                            newVisibility: m.visibility === 'public' ? 'private' : 'public',
+                          });
+                        }}
+                      >
+                        {m.visibility === 'public' ? '🔒 비공개로' : '🌐 공개로'}
+                      </button>
+                    ) : (
+                      <span>{tab === 'public' ? '공용' : '비공개'}</span>
+                    )}
                     {m.owner_id === user?.id && (
                       <button
                         className="btn btn--ghost btn--sm"
