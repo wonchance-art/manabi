@@ -54,6 +54,7 @@ export default function ViewerPage() {
   const [grammarAnalysis, setGrammarAnalysis] = useState('');
   const [isGrammarLoading, setIsGrammarLoading] = useState(false);
   const [selectedRangeText, setSelectedRangeText] = useState('');
+  const [selectionPopup, setSelectionPopup] = useState(null); // { x, y } or null
 
   const { data: material, isLoading, error, refetch } = useQuery({
     queryKey: ['material', id],
@@ -108,8 +109,18 @@ export default function ViewerPage() {
   };
 
   const handleTextSelection = () => {
-    const text = window.getSelection().toString().trim();
-    if (text.length > 1) setSelectedRangeText(text);
+    const selection = window.getSelection();
+    const text = selection?.toString().trim();
+    if (text && text.length > 1) {
+      setSelectedRangeText(text);
+      const rect = selection.getRangeAt(0).getBoundingClientRect();
+      setSelectionPopup({
+        x: rect.left + rect.width / 2,
+        y: rect.top + window.scrollY - 48,
+      });
+    } else {
+      setSelectionPopup(null);
+    }
   };
 
   const analyzeGrammar = async () => {
@@ -119,6 +130,7 @@ export default function ViewerPage() {
     setIsGrammarModalOpen(true);
     setIsGrammarLoading(true);
     setGrammarAnalysis('');
+    setSelectionPopup(null);
 
     try {
       const prompt = `문장 "${text}"를 분석해줘.
@@ -358,7 +370,24 @@ export default function ViewerPage() {
             </div>
           );
         })}
+
+        {isDone && (
+          <div className="reader-hint">
+            💡 단어를 <strong>클릭</strong>하면 상세 정보, 문장을 <strong>드래그</strong>하면 AI 문법 해설
+          </div>
+        )}
       </div>
+
+      {/* 텍스트 선택 시 플로팅 문법 해설 버튼 */}
+      {selectionPopup && (
+        <button
+          className="grammar-float-btn"
+          style={{ top: selectionPopup.y, left: selectionPopup.x }}
+          onMouseDown={e => { e.preventDefault(); analyzeGrammar(); }}
+        >
+          💡 문법 해설
+        </button>
+      )}
 
       {/* Bottom Sheet */}
       {isSheetOpen && selectedToken && (
