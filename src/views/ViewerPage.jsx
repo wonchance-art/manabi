@@ -41,12 +41,26 @@ export default function ViewerPage() {
 
   const reanalyzeAbortRef = useRef(null);
 
-  const [fontSize, setFontSize] = useState(1.6);
-  const [lineGap, setLineGap] = useState(15);
-  const [charGap, setCharGap] = useState(0.25);
-  const [theme, setTheme] = useState('dark');
-  const [fontFamily, setFontFamily] = useState("'Noto Sans KR'");
-  const [showFurigana, setShowFurigana] = useState(true);
+  function readPref(key, fallback) {
+    try { const v = localStorage.getItem('viewer_' + key); return v !== null ? JSON.parse(v) : fallback; } catch { return fallback; }
+  }
+  function savePref(key, value) {
+    try { localStorage.setItem('viewer_' + key, JSON.stringify(value)); } catch {}
+  }
+
+  const [fontSize, setFontSizeRaw] = useState(() => readPref('fontSize', 1.6));
+  const [lineGap, setLineGapRaw] = useState(() => readPref('lineGap', 15));
+  const [charGap, setCharGapRaw] = useState(() => readPref('charGap', 0.25));
+  const [theme, setThemeRaw] = useState(() => readPref('theme', 'dark'));
+  const [fontFamily, setFontFamilyRaw] = useState(() => readPref('fontFamily', "'Noto Sans KR'"));
+  const [showFurigana, setShowFuriganaRaw] = useState(() => readPref('showFurigana', true));
+
+  function setFontSize(v) { setFontSizeRaw(v); savePref('fontSize', v); }
+  function setLineGap(v) { setLineGapRaw(v); savePref('lineGap', v); }
+  function setCharGap(v) { setCharGapRaw(v); savePref('charGap', v); }
+  function setTheme(v) { setThemeRaw(v); savePref('theme', v); }
+  function setFontFamily(v) { setFontFamilyRaw(v); savePref('fontFamily', v); }
+  function setShowFurigana(v) { setShowFuriganaRaw(v); savePref('showFurigana', v); }
 
   const [selectedToken, setSelectedToken] = useState(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
