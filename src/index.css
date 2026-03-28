@@ -1834,6 +1834,31 @@ button {
   margin-bottom: 40px;
 }
 
+.mypage-heatmap {
+  padding: 20px;
+  margin-bottom: 24px;
+}
+.mypage-heatmap__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.mypage-heatmap__summary {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.mypage-heatmap__legend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 10px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
 .mypage-streak {
   font-size: 2.5rem;
   font-weight: 800;

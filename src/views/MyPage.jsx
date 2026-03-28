@@ -14,12 +14,23 @@ async function fetchUserStats(userId) {
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
 
-  const [{ count: completedCount }, { data: vocabData, count: vocabCount }, { data: recentProgress }, { count: todayVocabCount }] = await Promise.all([
+  const heatmapStart = new Date(todayStart);
+  heatmapStart.setDate(heatmapStart.getDate() - 83); // 12주 = 84일
+
+  const [{ count: completedCount }, { data: vocabData, count: vocabCount }, { data: recentProgress }, { count: todayVocabCount }, { data: heatmapData }] = await Promise.all([
     supabase.from('reading_progress').select('*', { count: 'exact', head: true }).eq('user_id', userId).eq('is_completed', true),
     supabase.from('user_vocabulary').select('interval', { count: 'exact' }).eq('user_id', userId),
     supabase.from('reading_progress').select('material_id, updated_at, reading_materials(id, title, processed_json)').eq('user_id', userId).order('updated_at', { ascending: false }).limit(3),
     supabase.from('user_vocabulary').select('*', { count: 'exact', head: true }).eq('user_id', userId).gte('created_at', todayStart.toISOString()),
+    supabase.from('user_vocabulary').select('created_at').eq('user_id', userId).gte('created_at', heatmapStart.toISOString()),
   ]);
+
+  // 날짜별 카운트 집계
+  const dayCounts = {};
+  (heatmapData || []).forEach(v => {
+    const day = v.created_at.slice(0, 10);
+    dayCounts[day] = (dayCounts[day] || 0) + 1;
+  });
 
   return {
     completedMaterials: completedCount || 0,
@@ -27,6 +38,7 @@ async function fetchUserStats(userId) {
     masteredVocab: vocabData?.filter(v => v.interval > 14).length || 0,
     recentProgress: recentProgress || [],
     todayVocab: todayVocabCount || 0,
+    heatmapDayCounts: dayCounts,
   };
 }
 
@@ -206,6 +218,77 @@ export default function MyPage() {
               <div className="stat-card__sub">지식의 지평이 넓어지고 있어요</div>
             </div>
           </div>
+
+          {/* 학습 히트맵 */}
+          {(() => {
+            const dayCounts = stats.heatmapDayCounts || {};
+            const COLS = 12; // 12주
+            const ROWS = 7;  // 월~일
+            const CELL = 14;
+            const GAP = 3;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // 오늘 기준으로 84일 배열 (과거 → 오늘)
+            const days = Array.from({ length: COLS * ROWS }, (_, i) => {
+              const d = new Date(today);
+              d.setDate(d.getDate() - (COLS * ROWS - 1 - i));
+              return d.toISOString().slice(0, 10);
+            });
+
+            const maxCount = Math.max(1, ...Object.values(dayCounts));
+            const totalActive = Object.keys(dayCounts).length;
+            const totalWords = Object.values(dayCounts).reduce((a, b) => a + b, 0);
+
+            function cellColor(count) {
+              if (!count) return 'var(--bg-elevated)';
+              const level = Math.ceil((count / maxCount) * 4);
+              const colors = ['', 'var(--primary-glow)', 'var(--primary)', 'var(--accent)', 'var(--accent)'];
+              return colors[level] || colors[4];
+            }
+
+            const W = COLS * (CELL + GAP) - GAP;
+            const H = ROWS * (CELL + GAP) - GAP;
+
+            return (
+              <div className="card mypage-heatmap">
+                <div className="mypage-heatmap__header">
+                  <h3 className="mypage-section-title" style={{ margin: 0 }}>🗓 학습 활동 (최근 12주)</h3>
+                  <span className="mypage-heatmap__summary">{totalActive}일 활동 · {totalWords}개 단어</span>
+                </div>
+                <div style={{ overflowX: 'auto' }}>
+                  <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} style={{ display: 'block' }}>
+                    {days.map((day, i) => {
+                      const col = Math.floor(i / ROWS);
+                      const row = i % ROWS;
+                      const x = col * (CELL + GAP);
+                      const y = row * (CELL + GAP);
+                      const count = dayCounts[day] || 0;
+                      return (
+                        <rect
+                          key={day}
+                          x={x} y={y}
+                          width={CELL} height={CELL}
+                          rx={3}
+                          fill={cellColor(count)}
+                          opacity={day > today.toISOString().slice(0, 10) ? 0 : 1}
+                        >
+                          <title>{day}: {count}개</title>
+                        </rect>
+                      );
+                    })}
+                  </svg>
+                </div>
+                <div className="mypage-heatmap__legend">
+                  <span>적음</span>
+                  {['var(--bg-elevated)', 'var(--primary-glow)', 'var(--primary)', 'var(--accent)'].map((c, i) => (
+                    <rect key={i} style={{ width: 12, height: 12, background: c, borderRadius: 2, display: 'inline-block' }} />
+                  ))}
+                  <span>많음</span>
+                </div>
+              </div>
+            );
+          })()}
 
           <div className="mypage-grid">
             {/* Recent Activities */}
