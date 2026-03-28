@@ -3458,3 +3458,24 @@ button {
   flex-direction: column;
   gap: 10px;
 }
+
+/* ========= 복습 채점 버튼 안내 ========= */
+.review-score-guide {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: 10px;
+  letter-spacing: 0.02em;
+}
+.review-score-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+.review-score-btn__sub {
+  font-size: 0.65rem;
+  font-weight: 400;
+  opacity: 0.75;
+  line-height: 1;
+}

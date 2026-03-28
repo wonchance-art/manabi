@@ -381,11 +381,12 @@ export default function VocabPage() {
                         ))}
                       </p>
                     )}
+                    <p className="review-score-guide">기억이 얼마나 잘 됐나요?</p>
                     <div className="review-score-grid">
-                      <button onClick={() => handleScore(1)} className="review-score-btn review-score-btn--again">다시</button>
-                      <button onClick={() => handleScore(2)} className="review-score-btn review-score-btn--hard">어려움</button>
-                      <button onClick={() => handleScore(3)} className="review-score-btn review-score-btn--good">알맞음</button>
-                      <button onClick={() => handleScore(4)} className="review-score-btn review-score-btn--easy">쉬움</button>
+                      <button onClick={() => handleScore(1)} className="review-score-btn review-score-btn--again" title="전혀 기억 못 했음 — 오늘 다시 나옴">다시<span className="review-score-btn__sub">기억 안 남</span></button>
+                      <button onClick={() => handleScore(2)} className="review-score-btn review-score-btn--hard" title="겨우 떠올렸음 — 복습 간격 짧아짐">어려움<span className="review-score-btn__sub">겨우 생각남</span></button>
+                      <button onClick={() => handleScore(3)} className="review-score-btn review-score-btn--good" title="정확히 기억했음 — 권장 선택">알맞음<span className="review-score-btn__sub">잘 기억함</span></button>
+                      <button onClick={() => handleScore(4)} className="review-score-btn review-score-btn--easy" title="너무 쉬웠음 — 복습 간격 많이 늘어남">쉬움<span className="review-score-btn__sub">너무 쉬움</span></button>
                     </div>
                   </div>
                 ) : (
