@@ -77,12 +77,30 @@ export async function extractTranscript(videoId, langCode = 'ja', description = 
     // 자막 없음 또는 차단 — 폴백으로
   }
 
-  // 2차 폴백: 영상 설명문 (학습 채널은 보통 스크립트 일부를 설명에 포함)
-  if (description && description.length >= 200) {
+  // 2차 폴백: 영상 설명문 (BBC Learning English 등은 전체 스크립트 포함)
+  if (description && description.length >= 100) {
     return description.trim();
   }
 
   return null;
+}
+
+/**
+ * video IDs 목록의 전체 description 가져오기 (videos.list, 1 unit/call)
+ */
+async function fetchFullDescriptions(videoIds, apiKey) {
+  if (!videoIds.length) return {};
+  const params = new URLSearchParams({
+    part: 'snippet',
+    id: videoIds.join(','),
+    key: apiKey,
+  });
+  const res = await fetch(`${YOUTUBE_API}/videos?${params}`);
+  if (!res.ok) return {};
+  const data = await res.json();
+  return Object.fromEntries(
+    (data.items || []).map(item => [item.id, item.snippet?.description || ''])
+  );
 }
 
 /**
@@ -92,30 +110,39 @@ export async function extractTranscript(videoId, langCode = 'ja', description = 
 export async function fetchSuggestions(apiKey, count = 3) {
   const results = { Japanese: [], English: [] };
 
-  // 일본어: 키워드 검색
+  // ── 일본어 ──
+  const jpRaw = [];
   for (const query of SEARCH_QUERIES.Japanese) {
-    if (results.Japanese.length >= count) break;
+    if (jpRaw.length >= count) break;
     const videos = await searchVideos(apiKey, { q: query.q, langCode: 'ja', maxResults: count });
     for (const v of videos) {
-      if (results.Japanese.length >= count) break;
-      const transcript = await extractTranscript(v.videoId, 'ja', v.description);
-      results.Japanese.push({ ...v, level: query.level, transcript });
+      if (jpRaw.length >= count) break;
+      jpRaw.push({ ...v, level: query.level });
     }
   }
 
-  // 영어: 채널 기반 검색
+  // 전체 description 한 번에 가져오기
+  const jpDescs = await fetchFullDescriptions(jpRaw.map(v => v.videoId), apiKey);
+  for (const v of jpRaw) {
+    const transcript = await extractTranscript(v.videoId, 'ja', jpDescs[v.videoId] || '');
+    results.Japanese.push({ ...v, transcript });
+  }
+
+  // ── 영어 ──
+  const enRaw = [];
   for (const ch of SEARCH_QUERIES.English) {
-    if (results.English.length >= count) break;
-    const videos = await searchVideos(apiKey, {
-      channelId: ch.channelId,
-      langCode: 'en',
-      maxResults: count,
-    });
+    if (enRaw.length >= count) break;
+    const videos = await searchVideos(apiKey, { channelId: ch.channelId, langCode: 'en', maxResults: count });
     for (const v of videos) {
-      if (results.English.length >= count) break;
-      const transcript = await extractTranscript(v.videoId, 'en', v.description);
-      results.English.push({ ...v, channelName: ch.name, level: ch.level, transcript });
+      if (enRaw.length >= count) break;
+      enRaw.push({ ...v, channelName: ch.name, level: ch.level });
     }
+  }
+
+  const enDescs = await fetchFullDescriptions(enRaw.map(v => v.videoId), apiKey);
+  for (const v of enRaw) {
+    const transcript = await extractTranscript(v.videoId, 'en', enDescs[v.videoId] || '');
+    results.English.push({ ...v, transcript });
   }
 
   return results;
