@@ -263,6 +263,35 @@ export default function ForumPage() {
     },
   });
 
+  const deletePostMutation = useMutation({
+    mutationFn: async (postId) => {
+      const { error } = await supabase.from('forum_posts').delete().eq('id', postId);
+      if (error) throw error;
+    },
+    onSuccess: (_, postId) => {
+      setAllPosts(prev => prev.filter(p => p.id !== postId));
+      if (expandedPostId === postId) setExpandedPostId(null);
+      toast('게시글을 삭제했습니다.', 'success');
+    },
+    onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
+  });
+
+  const deleteCommentMutation = useMutation({
+    mutationFn: async ({ commentId, postId }) => {
+      const { error } = await supabase.from('forum_comments').delete().eq('id', commentId);
+      if (error) throw error;
+      return postId;
+    },
+    onSuccess: (postId) => {
+      queryClient.invalidateQueries({ queryKey: ['forum-comments', postId] });
+      setAllPosts(prev => prev.map(p =>
+        p.id === postId ? { ...p, comments_count: Math.max(0, (p.comments_count || 1) - 1) } : p
+      ));
+      toast('댓글을 삭제했습니다.', 'success');
+    },
+    onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
+  });
+
   const commentLikeMutation = useMutation({
     mutationFn: async ({ commentId, liked }) => {
       const fn = liked ? 'remove_comment_like' : 'add_comment_like';
@@ -408,6 +437,19 @@ export default function ForumPage() {
                       >
                         <span>💬</span> 댓글 {post.comments_count || 0}
                       </button>
+                      {post.author_id === user?.id && (
+                        <button
+                          className="forum-action-btn forum-action-btn--danger"
+                          disabled={deletePostMutation.isPending}
+                          onClick={() => {
+                            if (window.confirm('게시글을 삭제하시겠습니까?')) {
+                              deletePostMutation.mutate(post.id);
+                            }
+                          }}
+                        >
+                          🗑️ 삭제
+                        </button>
+                      )}
                     </div>
 
                     {expandedPostId === post.id && (
@@ -467,6 +509,16 @@ export default function ForumPage() {
                                       onClick={() => handleReply(c.author.display_name)}
                                     >
                                       답글 달기
+                                    </button>
+                                  )}
+                                  {c.author_id === user?.id && (
+                                    <button
+                                      className="forum-reply-btn"
+                                      style={{ color: 'var(--danger)' }}
+                                      disabled={deleteCommentMutation.isPending}
+                                      onClick={() => deleteCommentMutation.mutate({ commentId: c.id, postId: post.id })}
+                                    >
+                                      삭제
                                     </button>
                                   )}
                                 </div>

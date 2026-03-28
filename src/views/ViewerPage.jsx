@@ -38,7 +38,6 @@ export default function ViewerPage() {
   const toast = useToast();
   const queryClient = useQueryClient();
 
-  const [isReanalyzing, setIsReanalyzing] = useState(false);
   const reanalyzeAbortRef = useRef(null);
 
   const [fontSize, setFontSize] = useState(1.6);
@@ -81,7 +80,6 @@ export default function ViewerPage() {
 
       const controller = new AbortController();
       reanalyzeAbortRef.current = controller;
-      setIsReanalyzing(true);
 
       const initJson = { sequence: [], dictionary: {}, last_idx: -1, status: 'analyzing', metadata: material.processed_json?.metadata || {} };
       await supabase.from('reading_materials').update({ processed_json: initJson }).eq('id', id);
@@ -94,12 +92,10 @@ export default function ViewerPage() {
       });
     },
     onSuccess: () => {
-      setIsReanalyzing(false);
       toast('재분석 완료!', 'success');
       refetch();
     },
     onError: (err) => {
-      setIsReanalyzing(false);
       toast('재분석 실패: ' + err.message, 'error');
     },
   });
@@ -267,6 +263,17 @@ export default function ViewerPage() {
           >
             {isGrammarLoading ? '⏳ 분석 중...' : '💡 AI 문법 해설'}
           </button>
+
+          {user?.id === material?.owner_id && !isAnalyzing && (
+            <button
+              onClick={() => reanalyzeMutation.mutate()}
+              disabled={reanalyzeMutation.isPending}
+              className="grammar-btn"
+              title="원문을 다시 AI로 분석합니다"
+            >
+              {reanalyzeMutation.isPending ? '⏳ 재분석 중...' : '🔄 재분석'}
+            </button>
+          )}
         </div>
       </div>
 
@@ -287,10 +294,10 @@ export default function ViewerPage() {
             <span>❌ 분석에 실패했습니다.</span>
             <button
               onClick={() => reanalyzeMutation.mutate()}
-              disabled={isReanalyzing}
+              disabled={reanalyzeMutation.isPending}
               className="analyzing-banner__refresh"
             >
-              {isReanalyzing ? '⏳ 재분석 중...' : '🔄 재분석 요청'}
+              {reanalyzeMutation.isPending ? '⏳ 재분석 중...' : '🔄 재분석 요청'}
             </button>
           </div>
         )}

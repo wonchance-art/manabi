@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
+import { useToast } from '../lib/ToastContext';
 import { JP_LEVELS, EN_LEVELS } from '../lib/constants';
 import Spinner from '../components/Spinner';
 
@@ -50,7 +51,7 @@ function SuggestionCard({ suggestion: s, router }) {
   );
 }
 
-async function fetchMaterials({ tab, userId }) {
+async function fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuery }) {
   let query = supabase
     .from('reading_materials')
     .select('id, title, created_at, visibility, owner_id, processed_json')
@@ -61,6 +62,16 @@ async function fetchMaterials({ tab, userId }) {
   } else {
     if (!userId) return [];
     query = query.eq('visibility', 'private').eq('owner_id', userId);
+  }
+
+  if (searchQuery) {
+    query = query.ilike('title', `%${searchQuery}%`);
+  }
+  if (langFilter !== 'all') {
+    query = query.eq('processed_json->metadata->>language', langFilter);
+  }
+  if (levelFilter !== 'all') {
+    query = query.eq('processed_json->metadata->>level', levelFilter);
   }
 
   const { data, error } = await query;
@@ -80,11 +91,32 @@ const LANG_FILTERS = [
 export default function MaterialsPage() {
   const { user } = useAuth();
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id) => {
+      const { error } = await supabase.from('reading_materials').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['materials'] });
+      toast('자료를 삭제했습니다.', 'success');
+    },
+    onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
+  });
   const [tab, setTab] = useState('public');
+  const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [langFilter, setLangFilter] = useState('all');
   const [levelFilter, setLevelFilter] = useState('all');
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  // 검색어 debounce (300ms) — 매 키입력마다 DB 요청 방지
+  useEffect(() => {
+    const timer = setTimeout(() => setSearchQuery(searchInput), 300);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
 
   // 필터 바뀌면 페이지 리셋
   useEffect(() => { setVisibleCount(PAGE_SIZE); }, [tab, searchQuery, langFilter, levelFilter]);
@@ -96,8 +128,8 @@ export default function MaterialsPage() {
   });
 
   const { data: materials = [], isLoading } = useQuery({
-    queryKey: ['materials', tab, user?.id],
-    queryFn: () => fetchMaterials({ tab, userId: user?.id }),
+    queryKey: ['materials', tab, user?.id, langFilter, levelFilter, searchQuery],
+    queryFn: () => fetchMaterials({ tab, userId: user?.id, langFilter, levelFilter, searchQuery }),
     refetchInterval: (query) => {
       const hasAnalyzing = query.state.data?.some(
         m => m.processed_json?.status === 'analyzing'
@@ -110,16 +142,7 @@ export default function MaterialsPage() {
     : langFilter === 'English' ? EN_LEVELS
     : [...JP_LEVELS, ...EN_LEVELS];
 
-  const filtered = materials.filter(m => {
-    const metadata = m.processed_json?.metadata || {};
-    const language = metadata.language || (m.title.match(/[a-zA-Z]/) ? 'English' : 'Japanese');
-    const level = metadata.level || '';
-
-    if (searchQuery && !m.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-    if (langFilter !== 'all' && language !== langFilter) return false;
-    if (levelFilter !== 'all' && level !== levelFilter) return false;
-    return true;
-  });
+  const filtered = materials;
 
   return (
     <div className="page-container">
@@ -152,8 +175,8 @@ export default function MaterialsPage() {
           <input
             type="text"
             placeholder="제목으로 자료 찾기..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
+            value={searchInput}
+            onChange={e => setSearchInput(e.target.value)}
             className="search-wrap__input"
           />
         </div>
@@ -236,7 +259,24 @@ export default function MaterialsPage() {
                 </div>
                 <div className="card__footer">
                   <span>{new Date(m.created_at).toLocaleDateString('ko-KR')}</span>
-                  <span>{tab === 'public' ? '공용' : '비공개'}</span>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <span>{tab === 'public' ? '공용' : '비공개'}</span>
+                    {m.owner_id === user?.id && (
+                      <button
+                        className="btn btn--ghost btn--sm"
+                        style={{ color: 'var(--danger)', padding: '2px 6px', fontSize: '0.75rem' }}
+                        disabled={deleteMutation.isPending}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (window.confirm(`"${m.title}" 자료를 삭제하시겠습니까?`)) {
+                            deleteMutation.mutate(m.id);
+                          }
+                        }}
+                      >
+                        삭제
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             );

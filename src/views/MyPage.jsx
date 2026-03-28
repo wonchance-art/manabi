@@ -1,9 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
+import { useToast } from '../lib/ToastContext';
+import { LEVELS } from '../lib/constants';
 import Spinner from '../components/Spinner';
 import Button from '../components/Button';
 
@@ -28,7 +31,42 @@ async function fetchUserStats(userId) {
 }
 
 export default function MyPage() {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, fetchProfile, signOut } = useAuth();
+  const toast = useToast();
+  const queryClient = useQueryClient();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editLanguages, setEditLanguages] = useState(['Japanese']);
+  const [editLevelJp, setEditLevelJp] = useState('N3 중급');
+  const [editLevelEn, setEditLevelEn] = useState('B1 중급');
+
+  function startEdit() {
+    setEditName(profile?.display_name || '');
+    setEditLanguages(profile?.learning_language || ['Japanese']);
+    setEditLevelJp(profile?.learning_level_japanese || 'N3 중급');
+    setEditLevelEn(profile?.learning_level_english || 'B1 중급');
+    setIsEditing(true);
+  }
+
+  const updateProfileMutation = useMutation({
+    mutationFn: async () => {
+      if (!editName.trim()) throw new Error('닉네임을 입력해주세요.');
+      const { error } = await supabase.from('profiles').update({
+        display_name: editName.trim(),
+        learning_language: editLanguages,
+        learning_level_japanese: editLevelJp,
+        learning_level_english: editLevelEn,
+      }).eq('id', user.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      fetchProfile(user.id, user.user_metadata);
+      queryClient.invalidateQueries({ queryKey: ['user-stats', user.id] });
+      setIsEditing(false);
+      toast('프로필이 저장됐습니다.', 'success');
+    },
+    onError: (err) => toast(err.message, 'error'),
+  });
 
   const { data: stats, isLoading } = useQuery({
     queryKey: ['user-stats', user?.id],
@@ -61,8 +99,74 @@ export default function MyPage() {
             <p className="page-header__subtitle">오늘도 성장을 향한 한 걸음을 내디뎌 보세요</p>
           </div>
         </div>
-        <Button variant="ghost" size="sm" onClick={handleSignOut}>로그아웃</Button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <Button variant="secondary" size="sm" onClick={isEditing ? () => setIsEditing(false) : startEdit}>
+            {isEditing ? '취소' : '✏️ 프로필 편집'}
+          </Button>
+          <Button variant="ghost" size="sm" onClick={handleSignOut}>로그아웃</Button>
+        </div>
       </div>
+
+      {isEditing && (
+        <div className="card" style={{ marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <h3 style={{ fontSize: '0.95rem', fontWeight: 600 }}>프로필 편집</h3>
+          <div className="form-field">
+            <label className="form-label">닉네임</label>
+            <input
+              className="form-input"
+              value={editName}
+              onChange={e => setEditName(e.target.value)}
+              maxLength={20}
+            />
+          </div>
+          <div className="form-field">
+            <label className="form-label">학습 언어</label>
+            <div className="toggle-group">
+              {['Japanese', 'English'].map(lang => (
+                <button
+                  key={lang}
+                  type="button"
+                  className={`toggle-btn ${editLanguages.includes(lang) ? 'toggle-btn--primary' : ''}`}
+                  onClick={() => setEditLanguages(prev =>
+                    prev.includes(lang)
+                      ? prev.length > 1 ? prev.filter(l => l !== lang) : prev
+                      : [...prev, lang]
+                  )}
+                >
+                  {lang === 'Japanese' ? '🇯🇵 Japanese' : '🇬🇧 English'}
+                </button>
+              ))}
+            </div>
+          </div>
+          {editLanguages.includes('Japanese') && (
+            <div className="form-field">
+              <label className="form-label">🇯🇵 일본어 수준</label>
+              <div className="level-group">
+                {LEVELS.Japanese.map(lvl => (
+                  <button key={lvl} type="button"
+                    className={`level-btn ${editLevelJp === lvl ? 'level-btn--active' : ''}`}
+                    onClick={() => setEditLevelJp(lvl)}>{lvl}</button>
+                ))}
+              </div>
+            </div>
+          )}
+          {editLanguages.includes('English') && (
+            <div className="form-field">
+              <label className="form-label">🇬🇧 영어 수준</label>
+              <div className="level-group">
+                {LEVELS.English.map(lvl => (
+                  <button key={lvl} type="button"
+                    className={`level-btn ${editLevelEn === lvl ? 'level-btn--active' : ''}`}
+                    onClick={() => setEditLevelEn(lvl)}>{lvl}</button>
+                ))}
+              </div>
+            </div>
+          )}
+          <Button onClick={() => updateProfileMutation.mutate()} disabled={updateProfileMutation.isPending} size="md">
+            {updateProfileMutation.isPending ? '저장 중...' : '저장'}
+          </Button>
+        </div>
+      )}
 
       {isLoading ? (
         <Spinner message="성장 리포트를 분석 중..." />
