@@ -163,9 +163,12 @@ export default function HomePage() {
               </div>
               <button
                 className="btn btn--accent btn--sm"
-                onClick={() => router.push(`/materials/add?suggestion=${suggestion.id}`)}
+                onClick={() => suggestion.material_id
+                  ? router.push(`/viewer/${suggestion.material_id}`)
+                  : router.push(`/materials/add?suggestion=${suggestion.id}`)
+                }
               >
-                읽기 시작
+                {suggestion.material_id ? '📖 바로 읽기' : '읽기 시작'}
               </button>
             </div>
           )}

@@ -10,7 +10,7 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from('daily_suggestions')
-    .select('id, language, source, video_id, title, channel_name, thumbnail_url, level, transcript')
+    .select('id, language, source, video_id, title, channel_name, thumbnail_url, level, transcript, material_id')
     .eq('date', today)
     .not('transcript', 'is', null)
     .order('language')

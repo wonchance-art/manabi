@@ -19,6 +19,15 @@ async function fetchTodaySuggestions() {
 
 function SuggestionCard({ suggestion: s, router }) {
   const hasTranscript = !!s.transcript;
+  const isReady = !!s.material_id; // 이미 분석된 자료
+
+  function handleStudy() {
+    if (isReady) {
+      router.push(`/viewer/${s.material_id}`);
+    } else {
+      router.push(`/materials/add?suggestion=${s.id}`);
+    }
+  }
 
   return (
     <div className="suggestion-card">
@@ -32,16 +41,17 @@ function SuggestionCard({ suggestion: s, router }) {
           <span className="card__flag">{s.language === 'English' ? '🇬🇧' : '🇯🇵'}</span>
           {s.level && <span className="tag">{s.level}</span>}
           <span className="suggestion-card__source">{s.channel_name}</span>
+          {isReady && <span className="suggestion-card__ready">✅ 바로 읽기</span>}
         </div>
         <h3 className="suggestion-card__title">{s.title}</h3>
         <div className="suggestion-card__actions">
           <button
             className="btn btn--primary btn--sm"
             disabled={!hasTranscript}
-            title={hasTranscript ? '' : '자막을 가져올 수 없는 영상입니다'}
-            onClick={() => router.push(`/materials/add?suggestion=${s.id}`)}
+            title={hasTranscript ? '' : '내용을 가져올 수 없습니다'}
+            onClick={handleStudy}
           >
-            📖 공부하기
+            {isReady ? '📖 바로 읽기' : '📖 공부하기'}
           </button>
           {!hasTranscript && (
             <span className="suggestion-card__no-transcript">자막 없음</span>

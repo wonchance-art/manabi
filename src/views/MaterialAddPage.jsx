@@ -117,6 +117,16 @@ export default function MaterialAddPage() {
       setIsProcessing(false);
       setCompletedId(id);
 
+      // 추천 자료에서 진입했으면 material_id 기록 (이후 유저는 바로 뷰어로)
+      const suggestionId = searchParams.get('suggestion');
+      if (suggestionId) {
+        await supabase
+          .from('daily_suggestions')
+          .update({ material_id: id })
+          .eq('id', suggestionId)
+          .is('material_id', null); // 이미 연결된 경우 덮어쓰지 않음
+      }
+
       if ('Notification' in window) {
         const permission = Notification.permission === 'default'
           ? await Notification.requestPermission()

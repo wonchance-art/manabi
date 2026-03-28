@@ -3479,3 +3479,10 @@ button {
   opacity: 0.75;
   line-height: 1;
 }
+
+/* ========= 추천 카드 바로읽기 배지 ========= */
+.suggestion-card__ready {
+  font-size: 0.7rem;
+  color: var(--accent);
+  font-weight: 600;
+}
