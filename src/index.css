@@ -3031,3 +3031,30 @@ button {
   color: var(--text-muted);
   padding: 6px 0;
 }
+
+/* ========= 콘텐츠 소스 토글 버튼 ========= */
+.source-toggle {
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all var(--transition-fast);
+}
+.source-toggle--on {
+  background: var(--accent-glow);
+  color: var(--accent);
+  border-color: rgba(74, 138, 92, 0.3);
+}
+.source-toggle--on:hover {
+  background: rgba(74, 138, 92, 0.3);
+}
+.source-toggle--off {
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  border-color: var(--border);
+}
+.source-toggle--off:hover {
+  background: var(--border);
+}

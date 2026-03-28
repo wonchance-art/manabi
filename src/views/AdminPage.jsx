@@ -9,6 +9,33 @@ import { useToast } from '../lib/ToastContext';
 import Spinner from '../components/Spinner';
 import Button from '../components/Button';
 
+const SOURCE_TYPE_LABELS = {
+  nhk_easy:         'NHK Web Easy',
+  wikipedia_random: 'Wikipedia (랜덤)',
+};
+
+const LEVEL_OPTIONS = {
+  Japanese: ['N5 기초', 'N4 기본', 'N3 중급', 'N2 상급', 'N1 심화'],
+  English:  ['A1 기초', 'A2 초급', 'B1 중급', 'B2 상급', 'C1 고급'],
+};
+
+const DEFAULT_NEW_SOURCE = {
+  language: 'Japanese',
+  source_type: 'wikipedia_random',
+  name: '',
+  config: { lang: 'ja', level: 'N3 중급' },
+};
+
+async function fetchContentSources() {
+  const { data, error } = await supabase
+    .from('content_sources')
+    .select('*')
+    .order('language')
+    .order('created_at');
+  if (error) throw error;
+  return data || [];
+}
+
 // ── Fetchers ──────────────────────────────────────
 async function fetchAllUsers() {
   const { data, error } = await supabase
@@ -41,6 +68,8 @@ async function fetchAllPosts() {
 export default function AdminPage() {
   const { isAdmin, loading } = useAuth();
   const [tab, setTab] = useState('users');
+  const [newSource, setNewSource] = useState(DEFAULT_NEW_SOURCE);
+  const [showAddForm, setShowAddForm] = useState(false);
   const queryClient = useQueryClient();
   const toast = useToast();
 
@@ -63,6 +92,12 @@ export default function AdminPage() {
     queryKey: ['admin-materials'],
     queryFn: fetchAllMaterials,
     enabled: tab === 'materials',
+  });
+
+  const { data: sources = [], isLoading: sourcesLoading } = useQuery({
+    queryKey: ['admin-sources'],
+    queryFn: fetchContentSources,
+    enabled: tab === 'sources',
   });
 
   const { data: posts = [], isLoading: postsLoading } = useQuery({
@@ -101,6 +136,66 @@ export default function AdminPage() {
     onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
   });
 
+  // 소스 토글
+  const toggleSourceMutation = useMutation({
+    mutationFn: async ({ id, is_active }) => {
+      const { error } = await supabase.from('content_sources').update({ is_active }).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-sources'] }),
+    onError: (err) => toast('변경 실패: ' + err.message, 'error'),
+  });
+
+  // 소스 추가
+  const addSourceMutation = useMutation({
+    mutationFn: async (source) => {
+      const { error } = await supabase.from('content_sources').insert([source]);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-sources'] });
+      setShowAddForm(false);
+      setNewSource(DEFAULT_NEW_SOURCE);
+      toast('소스가 추가되었습니다.', 'success');
+    },
+    onError: (err) => toast('추가 실패: ' + err.message, 'error'),
+  });
+
+  // 소스 삭제
+  const deleteSourceMutation = useMutation({
+    mutationFn: async (id) => {
+      const { error } = await supabase.from('content_sources').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-sources'] }),
+    onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
+  });
+
+  const handleAddSource = () => {
+    if (!newSource.name.trim()) { toast('소스 이름을 입력하세요.', 'warning'); return; }
+    addSourceMutation.mutate(newSource);
+  };
+
+  const handleNewSourceChange = (field, value) => {
+    setNewSource(prev => {
+      const next = { ...prev, [field]: value };
+      // 언어 바뀌면 config의 lang과 level도 맞춰 초기화
+      if (field === 'language') {
+        next.config = {
+          lang: value === 'Japanese' ? 'ja' : 'simple',
+          level: value === 'Japanese' ? 'N3 중급' : 'B1 중급',
+        };
+      }
+      // source_type 바뀌면 nhk_easy는 lang 불필요
+      if (field === 'source_type') {
+        next.config = value === 'nhk_easy'
+          ? { level: prev.config?.level || 'N3 중급' }
+          : { lang: prev.language === 'Japanese' ? 'ja' : 'simple', level: prev.config?.level || 'B1 중급' };
+      }
+      return next;
+    });
+  };
+
   const confirmDelete = (label, onConfirm) => {
     if (window.confirm(`정말 "${label}"을(를) 삭제하시겠습니까?`)) onConfirm();
   };
@@ -118,6 +213,7 @@ export default function AdminPage() {
           { key: 'users',     label: '👥 유저 관리' },
           { key: 'materials', label: '📰 자료 관리' },
           { key: 'forum',     label: '💬 포럼 관리' },
+          { key: 'sources',   label: '📡 콘텐츠 소스' },
         ].map(t => (
           <button
             key={t.key}
@@ -269,6 +365,157 @@ export default function AdminPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+        )
+      )}
+      {/* ── 콘텐츠 소스 관리 ── */}
+      {tab === 'sources' && (
+        sourcesLoading ? <Spinner message="소스 목록 로딩 중..." /> : (
+          <div>
+            <div className="admin-table-header" style={{ marginBottom: '16px' }}>
+              <span>총 {sources.length}개 소스</span>
+              <Button size="sm" onClick={() => setShowAddForm(v => !v)}>
+                {showAddForm ? '✕ 취소' : '＋ 소스 추가'}
+              </Button>
+            </div>
+
+            {/* 추가 폼 */}
+            {showAddForm && (
+              <div className="card" style={{ marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <h3 style={{ fontSize: '0.95rem', fontWeight: 600 }}>새 소스 추가</h3>
+
+                <div className="form-row">
+                  <div className="form-field">
+                    <label className="form-label">언어</label>
+                    <select
+                      className="form-input"
+                      value={newSource.language}
+                      onChange={e => handleNewSourceChange('language', e.target.value)}
+                    >
+                      <option value="Japanese">🇯🇵 Japanese</option>
+                      <option value="English">🇬🇧 English</option>
+                    </select>
+                  </div>
+
+                  <div className="form-field">
+                    <label className="form-label">소스 타입</label>
+                    <select
+                      className="form-input"
+                      value={newSource.source_type}
+                      onChange={e => handleNewSourceChange('source_type', e.target.value)}
+                    >
+                      <option value="wikipedia_random">Wikipedia (랜덤)</option>
+                      {newSource.language === 'Japanese' && (
+                        <option value="nhk_easy">NHK Web Easy</option>
+                      )}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-field">
+                    <label className="form-label">소스 이름 (표시용)</label>
+                    <input
+                      className="form-input"
+                      placeholder="예: Simple English Wikipedia"
+                      value={newSource.name}
+                      onChange={e => handleNewSourceChange('name', e.target.value)}
+                    />
+                  </div>
+
+                  <div className="form-field">
+                    <label className="form-label">난이도</label>
+                    <select
+                      className="form-input"
+                      value={newSource.config?.level || ''}
+                      onChange={e => setNewSource(p => ({ ...p, config: { ...p.config, level: e.target.value } }))}
+                    >
+                      {(LEVEL_OPTIONS[newSource.language] || []).map(l => (
+                        <option key={l} value={l}>{l}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {newSource.source_type === 'wikipedia_random' && (
+                  <div className="form-field" style={{ maxWidth: '240px' }}>
+                    <label className="form-label">Wikipedia 언어</label>
+                    <select
+                      className="form-input"
+                      value={newSource.config?.lang || 'simple'}
+                      onChange={e => setNewSource(p => ({ ...p, config: { ...p.config, lang: e.target.value } }))}
+                    >
+                      <option value="simple">Simple English (simple.wikipedia.org)</option>
+                      <option value="en">English (en.wikipedia.org)</option>
+                      <option value="ja">日本語 (ja.wikipedia.org)</option>
+                    </select>
+                  </div>
+                )}
+
+                <div>
+                  <Button
+                    onClick={handleAddSource}
+                    disabled={addSourceMutation.isPending}
+                  >
+                    {addSourceMutation.isPending ? '추가 중...' : '추가'}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* 소스 목록 */}
+            {['Japanese', 'English'].map(lang => {
+              const langSources = sources.filter(s => s.language === lang);
+              if (!langSources.length) return null;
+              return (
+                <div key={lang} style={{ marginBottom: '28px' }}>
+                  <h3 style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    {lang === 'Japanese' ? '🇯🇵 Japanese' : '🇬🇧 English'}
+                  </h3>
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>이름</th>
+                        <th>타입</th>
+                        <th>난이도</th>
+                        <th>Wiki 언어</th>
+                        <th>상태</th>
+                        <th>삭제</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {langSources.map(s => (
+                        <tr key={s.id} style={{ opacity: s.is_active ? 1 : 0.45 }}>
+                          <td style={{ fontWeight: 500 }}>{s.name}</td>
+                          <td className="admin-table__muted">{SOURCE_TYPE_LABELS[s.source_type] || s.source_type}</td>
+                          <td className="admin-table__muted">{s.config?.level || '—'}</td>
+                          <td className="admin-table__muted">{s.config?.lang || '—'}</td>
+                          <td>
+                            <button
+                              className={`source-toggle ${s.is_active ? 'source-toggle--on' : 'source-toggle--off'}`}
+                              onClick={() => toggleSourceMutation.mutate({ id: s.id, is_active: !s.is_active })}
+                              disabled={toggleSourceMutation.isPending}
+                            >
+                              {s.is_active ? '✅ 활성' : '⏸ 비활성'}
+                            </button>
+                          </td>
+                          <td>
+                            <Button
+                              size="sm"
+                              variant="danger"
+                              disabled={deleteSourceMutation.isPending}
+                              onClick={() => confirmDelete(s.name, () => deleteSourceMutation.mutate(s.id))}
+                            >
+                              삭제
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })}
           </div>
         )
       )}
