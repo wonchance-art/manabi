@@ -88,8 +88,29 @@ const LANG_FILTERS = [
 ];
 
 
+// 레벨 순서 정의 (낮을수록 쉬움)
+const LEVEL_ORDER = {
+  'N5 기초': 0, 'N4 기본': 1, 'N3 중급': 2, 'N2 상급': 3, 'N1 심화': 4,
+  'A1 기초': 0, 'A2 초급': 1, 'B1 중급': 2, 'B2 상급': 3, 'C1 고급': 4, 'C2 마스터': 5,
+};
+
+// 유저 레벨 ±1 범위의 추천만 표시
+function filterSuggestionsByProfile(suggestions, profile) {
+  if (!profile || !suggestions.length) return suggestions;
+  return suggestions.filter(s => {
+    if (!profile.learning_language?.includes(s.language)) return false;
+    if (!s.level) return true;
+    const userLevel = s.language === 'Japanese'
+      ? profile.learning_level_japanese
+      : profile.learning_level_english;
+    if (!userLevel) return true;
+    const diff = Math.abs((LEVEL_ORDER[s.level] ?? 99) - (LEVEL_ORDER[userLevel] ?? 99));
+    return diff <= 1;
+  });
+}
+
 export default function MaterialsPage() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const router = useRouter();
   const queryClient = useQueryClient();
   const toast = useToast();
@@ -156,17 +177,21 @@ export default function MaterialsPage() {
         </Link>
       </div>
 
-      {/* 오늘의 추천 */}
-      {suggestions.length > 0 && (
-        <section className="suggestions-section">
-          <h2 className="suggestions-section__title">✨ 오늘의 추천 자료</h2>
-          <div className="suggestions-grid">
-            {suggestions.map(s => (
-              <SuggestionCard key={s.id} suggestion={s} router={router} />
-            ))}
-          </div>
-        </section>
-      )}
+      {/* 오늘의 추천 — 유저 레벨 ±1 필터링 */}
+      {(() => {
+        const filtered = filterSuggestionsByProfile(suggestions, profile);
+        if (!filtered.length) return null;
+        return (
+          <section className="suggestions-section">
+            <h2 className="suggestions-section__title">✨ 오늘의 추천 자료</h2>
+            <div className="suggestions-grid">
+              {filtered.map(s => (
+                <SuggestionCard key={s.id} suggestion={s} router={router} />
+              ))}
+            </div>
+          </section>
+        );
+      })()}
 
       {/* Search */}
       <div className="filter-row">

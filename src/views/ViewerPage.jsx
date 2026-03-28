@@ -136,9 +136,37 @@ export default function ViewerPage() {
     }
   };
 
+  function extractSourceSentence(tokenId) {
+    const sequence = json.sequence;
+    const dictionary = json.dictionary;
+    const idx = sequence.indexOf(tokenId);
+    if (idx === -1) return '';
+
+    let start = idx;
+    let end = idx;
+
+    // 앞으로 탐색 — 개행 또는 최대 15토큰
+    for (let i = idx - 1; i >= 0 && idx - i <= 15; i--) {
+      if (dictionary[sequence[i]]?.pos === '개행') break;
+      start = i;
+    }
+    // 뒤로 탐색 — 개행 또는 최대 15토큰
+    for (let i = idx + 1; i < sequence.length && i - idx <= 15; i++) {
+      if (dictionary[sequence[i]]?.pos === '개행') break;
+      end = i;
+    }
+
+    return sequence.slice(start, end + 1)
+      .map(tid => dictionary[tid]?.text || '')
+      .filter(t => t)
+      .join('');
+  }
+
   const addToVocab = async () => {
     if (!user) { toast('로그인이 필요합니다.', 'warning'); return; }
     if (!selectedToken) return;
+
+    const sourceSentence = extractSourceSentence(selectedToken.id);
 
     try {
       const { error: insertError } = await supabase
@@ -150,7 +178,9 @@ export default function ViewerPage() {
           meaning: selectedToken.meaning || '',
           pos: selectedToken.pos || '',
           interval: 0, ease_factor: 0, repetitions: 0,
-          next_review_at: new Date().toISOString()
+          next_review_at: new Date().toISOString(),
+          source_sentence: sourceSentence || null,
+          source_material_id: id,
         }], { onConflict: 'user_id, word_text' });
 
       if (insertError) throw insertError;

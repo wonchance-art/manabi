@@ -319,6 +319,15 @@ export default function VocabPage() {
                 {showAnswer ? (
                   <div className="review-card__answer">
                     <p className="review-card__meaning">{currentWord.meaning}</p>
+                    {currentWord.source_sentence && (
+                      <p className="review-card__source">
+                        {currentWord.source_sentence.split(currentWord.word_text).map((part, i, arr) => (
+                          i < arr.length - 1
+                            ? <span key={i}>{part}<mark className="review-card__highlight">{currentWord.word_text}</mark></span>
+                            : <span key={i}>{part}</span>
+                        ))}
+                      </p>
+                    )}
                     <div className="review-score-grid">
                       <button onClick={() => handleScore(1)} className="review-score-btn review-score-btn--again">다시</button>
                       <button onClick={() => handleScore(2)} className="review-score-btn review-score-btn--hard">어려움</button>
