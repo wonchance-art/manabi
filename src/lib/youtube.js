@@ -6,41 +6,40 @@ import { YoutubeTranscript } from 'youtube-transcript';
 
 const YOUTUBE_API = 'https://www.googleapis.com/youtube/v3';
 
-// 학습 콘텐츠 채널 목록
-// channel ID 확인: youtube.com/@handle → 채널 페이지 소스에서 "channelId" 검색
-export const LEARNING_CHANNELS = {
+// 학습용 YouTube 검색 쿼리
+// 채널 ID 대신 키워드 검색 — 채널 ID 오류에 덜 민감
+const SEARCH_QUERIES = {
   Japanese: [
-    // Comprehensible Japanese: 일본어로만 진행, 자막 있음, N4-N3 수준
-    { id: 'UCXo8kuOfFEPQRPqPMPAjHOQ', name: 'Comprehensible Japanese', level: 'N3 중급' },
-    // Nihongo con Teppei for Beginners: 짧은 일본어 팟캐스트 스타일
-    { id: 'UCwZkjXlspIGxMhMV0kAexeA', name: 'Nihongo con Teppei', level: 'N4 기본' },
+    { q: 'やさしい日本語 ニュース', level: 'N3 중급' },
+    { q: 'Japanese listening practice beginner', level: 'N4 기본' },
   ],
   English: [
-    { id: 'UCHaHD477h-FeBbVh9Sh7syA', name: 'BBC Learning English', level: 'B1 중급' },
-    { id: 'UCsooa4yRKGN_zEE8iknghZA', name: 'TED-Ed', level: 'B2 상급' },
+    { channelId: 'UCHaHD477h-FeBbVh9Sh7syA', name: 'BBC Learning English', level: 'B1 중급' },
+    { channelId: 'UCsooa4yRKGN_zEE8iknghZA', name: 'TED-Ed', level: 'B2 상급' },
   ],
 };
 
 /**
- * YouTube Data API v3로 채널의 최근 인기 영상 검색
+ * YouTube Data API v3 검색 (채널 또는 키워드)
  * quota: 100 units per call
  */
-export async function searchChannelVideos(channelId, apiKey, { maxResults = 5, langCode = 'ja' } = {}) {
-  const publishedAfter = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+export async function searchVideos(apiKey, { channelId, q, maxResults = 5, langCode = 'ja' } = {}) {
   const params = new URLSearchParams({
     part: 'snippet',
-    channelId,
     type: 'video',
-    videoCaption: 'closedCaption',
     order: 'viewCount',
     maxResults: String(maxResults),
-    publishedAfter,
     key: apiKey,
+    relevanceLanguage: langCode,
+    publishedAfter: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(), // 60일
   });
+
+  if (channelId) params.set('channelId', channelId);
+  if (q) params.set('q', q);
 
   const res = await fetch(`${YOUTUBE_API}/search?${params}`);
   if (!res.ok) {
-    console.error(`YouTube search failed for channel ${channelId}:`, await res.text());
+    console.error('YouTube search failed:', await res.text());
     return [];
   }
 
@@ -50,43 +49,82 @@ export async function searchChannelVideos(channelId, apiKey, { maxResults = 5, l
     title: item.snippet.title,
     channelName: item.snippet.channelTitle,
     thumbnail: item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url,
+    description: item.snippet.description || '',
   })).filter(v => v.videoId);
 }
 
 /**
- * YouTube 자막 추출 (youtube-transcript 패키지 사용)
+ * YouTube 자막 추출
+ * 1차: youtube-transcript 패키지
+ * 2차: 영상 설명문 폴백 (200자 이상일 때)
  */
-export async function extractTranscript(videoId, langCode = 'ja') {
+export async function extractTranscript(videoId, langCode = 'ja', description = '') {
+  // 1차 시도: youtube-transcript
   try {
-    // 요청 언어 우선, 없으면 자동 생성 자막 포함 전체에서 첫 번째
-    const transcripts = await YoutubeTranscript.fetchTranscript(videoId, {
-      lang: langCode,
-    });
+    const items = await YoutubeTranscript.fetchTranscript(videoId, { lang: langCode });
+    if (items?.length) {
+      const lines = items.map(t =>
+        t.text.replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/\n/g, ' ').trim()
+      ).filter(Boolean);
 
-    if (!transcripts?.length) return null;
-
-    const lines = transcripts.map(t =>
-      t.text.replace(/&amp;/g, '&').replace(/&#39;/g, "'").trim()
-    ).filter(Boolean);
-
-    // 8줄씩 문단으로 묶기
-    const paragraphs = [];
-    for (let i = 0; i < lines.length; i += 8) {
-      paragraphs.push(lines.slice(i, i + 8).join(' '));
+      const paragraphs = [];
+      for (let i = 0; i < lines.length; i += 8) {
+        paragraphs.push(lines.slice(i, i + 8).join(' '));
+      }
+      return paragraphs.join('\n');
     }
-
-    return paragraphs.join('\n');
-  } catch (e) {
-    console.error(`Transcript extraction failed [${videoId}]:`, e.message);
-    return null;
+  } catch {
+    // 자막 없음 또는 차단 — 폴백으로
   }
+
+  // 2차 폴백: 영상 설명문 (학습 채널은 보통 스크립트 일부를 설명에 포함)
+  if (description && description.length >= 200) {
+    return description.trim();
+  }
+
+  return null;
+}
+
+/**
+ * 일본어 + 영어 추천 영상 목록 수집
+ * returns: { Japanese: [...], English: [...] }
+ */
+export async function fetchSuggestions(apiKey, count = 3) {
+  const results = { Japanese: [], English: [] };
+
+  // 일본어: 키워드 검색
+  for (const query of SEARCH_QUERIES.Japanese) {
+    if (results.Japanese.length >= count) break;
+    const videos = await searchVideos(apiKey, { q: query.q, langCode: 'ja', maxResults: count });
+    for (const v of videos) {
+      if (results.Japanese.length >= count) break;
+      const transcript = await extractTranscript(v.videoId, 'ja', v.description);
+      results.Japanese.push({ ...v, level: query.level, transcript });
+    }
+  }
+
+  // 영어: 채널 기반 검색
+  for (const ch of SEARCH_QUERIES.English) {
+    if (results.English.length >= count) break;
+    const videos = await searchVideos(apiKey, {
+      channelId: ch.channelId,
+      langCode: 'en',
+      maxResults: count,
+    });
+    for (const v of videos) {
+      if (results.English.length >= count) break;
+      const transcript = await extractTranscript(v.videoId, 'en', v.description);
+      results.English.push({ ...v, channelName: ch.name, level: ch.level, transcript });
+    }
+  }
+
+  return results;
 }
 
 /**
  * NHK Web Easy 최신 기사 목록 가져오기
- * 일본어 학습에 최적화된 쉬운 일본어 뉴스 (N3-N4 수준)
  */
-export async function fetchNHKEasyArticles(count = 5) {
+export async function fetchNHKEasyArticles(count = 3) {
   try {
     const res = await fetch('https://www3.nhk.or.jp/news/easy/top-list-data.json', {
       headers: {
@@ -98,18 +136,18 @@ export async function fetchNHKEasyArticles(count = 5) {
 
     if (!res.ok) return null;
     const data = await res.json();
-    const articles = (data || []).slice(0, count);
 
     const results = [];
-    for (const article of articles) {
+    for (const article of (data || []).slice(0, count * 2)) {
+      if (results.length >= count) break;
       const newsId = article.news_id;
       if (!newsId) continue;
 
-      const text = await fetchNHKEasyArticleText(newsId);
+      const text = await fetchNHKArticleText(newsId);
       if (!text) continue;
 
       results.push({
-        videoId: newsId,       // video_id 컬럼 재사용
+        videoId: newsId,
         title: article.title,
         channelName: 'NHK Web Easy',
         thumbnail: article.news_image_uri || null,
@@ -124,27 +162,23 @@ export async function fetchNHKEasyArticles(count = 5) {
   }
 }
 
-async function fetchNHKEasyArticleText(newsId) {
+async function fetchNHKArticleText(newsId) {
   try {
-    const url = `https://www3.nhk.or.jp/news/easy/${newsId}/${newsId}.html`;
-    const res = await fetch(url, {
+    const res = await fetch(`https://www3.nhk.or.jp/news/easy/${newsId}/${newsId}.html`, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         'Referer': 'https://www3.nhk.or.jp/news/easy/',
-        'Accept': 'text/html',
       },
     });
-
     if (!res.ok) return null;
     const html = await res.text();
 
-    // 기사 본문 추출 (article 태그 안, ruby 태그 제거)
-    const articleMatch = html.match(/<article[^>]*>([\s\S]*?)<\/article>/i);
-    if (!articleMatch) return null;
+    const match = html.match(/<article[^>]*>([\s\S]*?)<\/article>/i);
+    if (!match) return null;
 
-    return articleMatch[1]
-      .replace(/<rt>[^<]*<\/rt>/g, '')     // 후리가나 제거
-      .replace(/<[^>]+>/g, '')              // 나머지 HTML 태그 제거
+    return match[1]
+      .replace(/<rt>[^<]*<\/rt>/g, '')
+      .replace(/<[^>]+>/g, '')
       .replace(/\s*\n\s*/g, '\n')
       .replace(/\n{3,}/g, '\n\n')
       .trim();
