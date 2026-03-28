@@ -13,7 +13,9 @@ export async function callGemini(prompt, signal, { model, ...generationConfig } 
   });
   const resData = await response.json();
   if (!response.ok) throw new Error(resData.error?.message || 'API 요청 실패');
-  return resData.candidates[0].content.parts[0].text;
+  const text = resData.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) throw new Error('Gemini 응답이 비어있습니다.');
+  return text;
 }
 
 export function parseGeminiJSON(rawText) {

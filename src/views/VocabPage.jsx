@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
+import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
@@ -108,18 +109,7 @@ export default function VocabPage() {
   const reviewWords = vocab.filter(v => new Date(v.next_review_at) <= new Date());
   const currentWord = reviewWords[reviewIdx];
 
-  // 브라우저 알림 요청 — 복습 단어 있을 때만
-  useEffect(() => {
-    if (!reviewWords.length || Notification.permission !== 'default') return;
-    Notification.requestPermission().then(perm => {
-      if (perm === 'granted') {
-        new Notification('Anatomy Studio', {
-          body: `오늘 복습할 단어가 ${reviewWords.length}개 있어요! 🧠`,
-          icon: '/icon.svg',
-        });
-      }
-    });
-  }, [reviewWords.length]);
+  // 브라우저 알림 — "복습 시작하기" 클릭 시에만 권한 요청 (startReview에서 호출)
 
   const handleScore = (rating) => {
     if (!currentWord) return;
@@ -130,7 +120,20 @@ export default function VocabPage() {
       next_review_at: currentWord.next_review_at,
     });
     scoreMutation.mutate({ id: currentWord.id, nextStats });
+    goNextReview();
+  };
 
+  const handleSkip = () => {
+    if (!currentWord) return;
+    // 내일로 미루기
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    scoreMutation.mutate({ id: currentWord.id, nextStats: { next_review_at: tomorrow.toISOString() } });
+    goNextReview();
+  };
+
+  const goNextReview = () => {
     if (reviewIdx < reviewWords.length - 1) {
       setReviewIdx(i => i + 1);
       setShowAnswer(false);
@@ -145,7 +148,20 @@ export default function VocabPage() {
     setReviewIdx(0);
     setShowAnswer(false);
     setReviewFinished(false);
+    // 사용자 행동(클릭) 직후에 알림 권한 요청
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
   };
+
+  if (!user) {
+    return (
+      <div className="page-container mypage-guest">
+        <h2>로그인이 필요한 페이지입니다</h2>
+        <Link href="/auth" className="btn btn--primary btn--md">로그인하러 가기</Link>
+      </div>
+    );
+  }
 
   return (
     <div className="page-container">
@@ -290,7 +306,12 @@ export default function VocabPage() {
             </div>
           ) : reviewWords.length > 0 ? (
             <div className="card review-card">
-              <div className="review-card__progress">남은 단어: {reviewWords.length - reviewIdx}</div>
+              <div className="review-card__progress">
+                <span>남은 단어: {reviewWords.length - reviewIdx}</span>
+                <button className="review-skip-btn" onClick={handleSkip} title="내일로 미루기">
+                  스킵 →
+                </button>
+              </div>
               <div className="review-card__body">
                 <h2 className="review-card__word">{currentWord.word_text}</h2>
                 {showAnswer && <p className="review-card__furigana">[{currentWord.furigana}]</p>}
@@ -299,10 +320,10 @@ export default function VocabPage() {
                   <div className="review-card__answer">
                     <p className="review-card__meaning">{currentWord.meaning}</p>
                     <div className="review-score-grid">
-                      <button onClick={() => handleScore(1)} className="review-score-btn review-score-btn--again">다시 (Again)</button>
-                      <button onClick={() => handleScore(2)} className="review-score-btn review-score-btn--hard">어려움 (Hard)</button>
-                      <button onClick={() => handleScore(3)} className="review-score-btn review-score-btn--good">알맞음 (Good)</button>
-                      <button onClick={() => handleScore(4)} className="review-score-btn review-score-btn--easy">쉬움 (Easy)</button>
+                      <button onClick={() => handleScore(1)} className="review-score-btn review-score-btn--again">다시</button>
+                      <button onClick={() => handleScore(2)} className="review-score-btn review-score-btn--hard">어려움</button>
+                      <button onClick={() => handleScore(3)} className="review-score-btn review-score-btn--good">알맞음</button>
+                      <button onClick={() => handleScore(4)} className="review-score-btn review-score-btn--easy">쉬움</button>
                     </div>
                   </div>
                 ) : (
@@ -344,6 +365,75 @@ export default function VocabPage() {
               {vocab.length > 0 ? (vocab.reduce((acc, curr) => acc + curr.interval, 0) / vocab.length).toFixed(1) : 0}d
             </div>
             <div className="stat-card__sub">평균 기억 안정도</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-card__label">총 실수 횟수</div>
+            <div className="stat-card__value" style={{ color: 'var(--danger)' }}>
+              {vocab.reduce((acc, curr) => acc + (curr.repetitions || 0), 0)}
+            </div>
+            <div className="stat-card__sub">Again 누적 횟수</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-card__label">어려운 단어</div>
+            <div className="stat-card__value" style={{ color: 'var(--warning, #f59e0b)' }}>
+              {vocab.filter(v => (v.repetitions || 0) > 2).length}
+            </div>
+            <div className="stat-card__sub">3번 이상 틀린 단어</div>
+          </div>
+
+          {/* Hard Words List */}
+          {vocab.filter(v => (v.repetitions || 0) > 2).length > 0 && (
+            <div className="card" style={{ padding: '24px', gridColumn: '1 / -1' }}>
+              <h3 style={{ fontSize: '1.1rem', marginBottom: '16px' }}>🔥 요주의 단어 TOP 5</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {[...vocab]
+                  .filter(v => (v.repetitions || 0) > 0)
+                  .sort((a, b) => (b.repetitions || 0) - (a.repetitions || 0) || a.interval - b.interval)
+                  .slice(0, 5)
+                  .map(v => (
+                    <div key={v.id} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <span style={{ fontWeight: 700, fontSize: '1rem', minWidth: '80px' }}>{v.word_text}</span>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', flex: 1 }}>{v.meaning}</span>
+                      <span style={{
+                        fontSize: '0.78rem', fontWeight: 600,
+                        color: (v.repetitions || 0) > 4 ? 'var(--danger)' : 'var(--warning, #f59e0b)',
+                        background: 'var(--bg-secondary)', borderRadius: '99px', padding: '2px 10px'
+                      }}>
+                        Again {v.repetitions}회
+                      </span>
+                      <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>안정도 {v.interval}d</span>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
+
+          {/* Difficulty Distribution */}
+          <div className="card" style={{ padding: '24px' }}>
+            <h3 style={{ fontSize: '1.1rem', marginBottom: '16px' }}>📊 난이도 분포</h3>
+            {(() => {
+              const easy = vocab.filter(v => (v.ease_factor || 0) < 4).length;
+              const medium = vocab.filter(v => (v.ease_factor || 0) >= 4 && (v.ease_factor || 0) <= 7).length;
+              const hard = vocab.filter(v => (v.ease_factor || 0) > 7).length;
+              const total = vocab.length || 1;
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {[
+                    { label: '쉬움', count: easy, color: 'var(--primary)' },
+                    { label: '보통', count: medium, color: 'var(--accent)' },
+                    { label: '어려움', count: hard, color: 'var(--danger)' },
+                  ].map(({ label, count, color }) => (
+                    <div key={label} className="pos-row">
+                      <div className="pos-row__label">{label}</div>
+                      <div className="pos-row__bar-wrap">
+                        <div className="pos-row__bar" style={{ width: `${(count / total) * 100}%`, background: color }} />
+                      </div>
+                      <div className="pos-row__pct">{count}개</div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
           </div>
 
           {/* Forecast Chart */}

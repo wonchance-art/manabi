@@ -10,7 +10,18 @@ import Button from '../components/Button';
 
 const PAGE_SIZE = 10;
 
-async function fetchPosts(page) {
+function timeAgo(dateStr) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return '방금';
+  if (mins < 60) return `${mins}분 전`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}시간 전`;
+  const days = Math.floor(hours / 24);
+  return `${days}일 전`;
+}
+
+async function fetchPosts(page, userId) {
   const from = page * PAGE_SIZE;
   const to = from + PAGE_SIZE - 1;
   const { data, error, count } = await supabase
@@ -20,31 +31,79 @@ async function fetchPosts(page) {
     .range(from, to);
   if (error) throw error;
 
-  // profiles 조인을 별도로 처리
-  const posts = await Promise.all((data || []).map(async (post) => {
-    const { data: author } = await supabase
-      .from('profiles')
-      .select('display_name, avatar_url, streak_count')
-      .eq('id', post.author_id)
-      .maybeSingle();
-    return { ...post, author };
-  }));
+  const posts = data || [];
+  if (posts.length === 0) return { posts: [], total: count ?? 0 };
 
-  return { posts, total: count ?? 0 };
+  // 단일 IN 쿼리로 모든 author 한번에 가져오기 (N+1 제거)
+  const authorIds = [...new Set(posts.map(p => p.author_id))];
+  const { data: profiles } = await supabase
+    .from('profiles')
+    .select('id, display_name, avatar_url, streak_count')
+    .in('id', authorIds);
+  const profileMap = Object.fromEntries((profiles || []).map(p => [p.id, p]));
+
+  let likedIds = new Set();
+  if (userId) {
+    const { data: likes } = await supabase
+      .from('forum_post_likes')
+      .select('post_id')
+      .eq('user_id', userId)
+      .in('post_id', posts.map(p => p.id));
+    likedIds = new Set((likes || []).map(l => l.post_id));
+  }
+
+  return {
+    posts: posts.map(p => ({ ...p, author: profileMap[p.author_id] || null, user_liked: likedIds.has(p.id) })),
+    total: count ?? 0,
+  };
 }
 
-async function fetchComments(postId) {
+async function fetchComments(postId, userId) {
   const { data, error } = await supabase
     .from('forum_comments')
-    .select('*, author:profiles(display_name, avatar_url)')
+    .select('*')
     .eq('post_id', postId)
     .order('created_at', { ascending: true });
   if (error) throw error;
-  return data || [];
+  const rawComments = data || [];
+  if (rawComments.length === 0) return [];
+
+  const authorIds = [...new Set(rawComments.map(c => c.author_id).filter(Boolean))];
+  const { data: profiles } = await supabase
+    .from('profiles')
+    .select('id, display_name, avatar_url')
+    .in('id', authorIds);
+  const profileMap = Object.fromEntries((profiles || []).map(p => [p.id, p]));
+
+  let likedSet = new Set();
+  if (userId) {
+    const { data: likes } = await supabase
+      .from('forum_comment_likes')
+      .select('comment_id')
+      .eq('user_id', userId)
+      .in('comment_id', rawComments.map(c => c.id));
+    likedSet = new Set((likes || []).map(l => l.comment_id));
+  }
+
+  return rawComments.map(c => ({
+    ...c,
+    author: profileMap[c.author_id] || null,
+    user_liked: likedSet.has(c.id),
+  }));
+}
+
+function renderWithMentions(text) {
+  if (!text) return null;
+  const parts = text.split(/(@\S+)/g);
+  return parts.map((part, i) =>
+    part.startsWith('@')
+      ? <span key={i} className="forum-mention">{part}</span>
+      : part
+  );
 }
 
 export default function ForumPage() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const toast = useToast();
   const queryClient = useQueryClient();
   const [newPost, setNewPost] = useState('');
@@ -53,15 +112,17 @@ export default function ForumPage() {
   const [page, setPage] = useState(0);
   const [allPosts, setAllPosts] = useState([]);
   const [hasMore, setHasMore] = useState(true);
+  const [mentionQuery, setMentionQuery] = useState(null);
+  const [mentionAnchor, setMentionAnchor] = useState(0);
   const realtimeRef = useRef(null);
+  const commentInputRef = useRef(null);
 
   const { data, isLoading, isFetching } = useQuery({
-    queryKey: ['forum-posts', page],
-    queryFn: () => fetchPosts(page),
+    queryKey: ['forum-posts', page, user?.id],
+    queryFn: () => fetchPosts(page, user?.id),
     placeholderData: (prev) => prev,
   });
 
-  // 페이지 데이터가 오면 누적
   useEffect(() => {
     if (!data) return;
     if (page === 0) {
@@ -75,43 +136,44 @@ export default function ForumPage() {
     setHasMore(data.posts.length === PAGE_SIZE && (page + 1) * PAGE_SIZE < data.total);
   }, [data, page]);
 
-  // Supabase Realtime — 새 게시글 실시간 반영
   useEffect(() => {
     realtimeRef.current = supabase
       .channel('forum_posts_realtime')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'forum_posts' },
-        async (payload) => {
-          // 새 글 작성자 프로필 보강
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('display_name, avatar_url, streak_count')
-            .eq('id', payload.new.author_id)
-            .maybeSingle();
-          const newEntry = { ...payload.new, author: profile || null };
-          setAllPosts(prev => {
-            if (prev.some(p => p.id === newEntry.id)) return prev;
-            return [newEntry, ...prev];
-          });
-          // 자신이 쓴 글이 아닐 때만 알림
-          if (payload.new.author_id !== user?.id) {
-            toast(`${profile?.display_name || '누군가'}가 새 글을 올렸어요!`, 'info', 4000);
-          }
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'forum_posts' }, async (payload) => {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('display_name, avatar_url, streak_count')
+          .eq('id', payload.new.author_id)
+          .maybeSingle();
+        const newEntry = { ...payload.new, author: profile || null, user_liked: false };
+        setAllPosts(prev => {
+          if (prev.some(p => p.id === newEntry.id)) return prev;
+          return [newEntry, ...prev];
+        });
+        if (payload.new.author_id !== user?.id) {
+          toast(`${profile?.display_name || '누군가'}가 새 글을 올렸어요!`, 'info', 4000);
         }
-      )
+      })
       .subscribe();
 
-    return () => {
-      realtimeRef.current?.unsubscribe();
-    };
+    return () => { realtimeRef.current?.unsubscribe(); };
   }, [user?.id]);
 
-  const { data: comments = [], isLoading: commentsLoading } = useQuery({
-    queryKey: ['forum-comments', expandedPostId],
-    queryFn: () => fetchComments(expandedPostId),
+  const { data: comments = [], isLoading: commentsLoading, error: commentsError } = useQuery({
+    queryKey: ['forum-comments', expandedPostId, user?.id],
+    queryFn: () => fetchComments(expandedPostId, user?.id),
     enabled: !!expandedPostId,
   });
+
+  const expandedPost = allPosts.find(p => p.id === expandedPostId);
+  const mentionableUsers = expandedPost ? [
+    ...(expandedPost.author?.display_name ? [expandedPost.author.display_name] : []),
+    ...comments.map(c => c.author?.display_name).filter(Boolean),
+  ].filter((name, i, arr) => arr.indexOf(name) === i && name !== (user?.user_metadata?.display_name)) : [];
+
+  const filteredMentions = mentionQuery !== null
+    ? mentionableUsers.filter(name => name.toLowerCase().includes(mentionQuery.toLowerCase()))
+    : [];
 
   const postMutation = useMutation({
     mutationFn: async (content) => {
@@ -131,27 +193,101 @@ export default function ForumPage() {
     mutationFn: async ({ postId, content }) => {
       const { error } = await supabase.from('forum_comments').insert([{ post_id: postId, author_id: user.id, content }]);
       if (error) throw error;
+
+      const actorName = profile?.display_name || '누군가';
+      const notifs = [];
+
+      // 게시글 작성자에게 댓글 알림 (본인 제외)
+      const post = allPosts.find(p => p.id === postId);
+      if (post?.author_id && post.author_id !== user.id) {
+        notifs.push({
+          user_id: post.author_id,
+          type: 'comment',
+          actor_id: user.id,
+          post_id: postId,
+          message: `${actorName}님이 회원님의 글에 댓글을 달았습니다.`,
+        });
+      }
+
+      // @멘션된 유저에게 알림
+      const mentions = [...content.matchAll(/@(\S+)/g)].map(m => m[1]);
+      for (const name of mentions) {
+        const { data: mentioned } = await supabase
+          .from('profiles').select('id').eq('display_name', name).maybeSingle();
+        if (mentioned && mentioned.id !== user.id) {
+          notifs.push({
+            user_id: mentioned.id,
+            type: 'mention',
+            actor_id: user.id,
+            post_id: postId,
+            message: `${actorName}님이 댓글에서 회원님을 태그했습니다.`,
+          });
+        }
+      }
+
+      if (notifs.length > 0) {
+        await supabase.from('notifications').insert(notifs);
+      }
     },
     onSuccess: (_, { postId }) => {
       queryClient.invalidateQueries({ queryKey: ['forum-comments', postId] });
       setCommentText('');
+      setAllPosts(prev => prev.map(p =>
+        p.id === postId ? { ...p, comments_count: (p.comments_count || 0) + 1 } : p
+      ));
       toast('댓글을 달았습니다.', 'success');
     },
     onError: (err) => toast('댓글 등록 실패: ' + err.message, 'error'),
   });
 
   const likeMutation = useMutation({
-    mutationFn: async ({ postId, currentCount }) => {
-      const { error } = await supabase
-        .from('forum_posts')
-        .update({ likes_count: currentCount + 1 })
-        .eq('id', postId);
+    mutationFn: async ({ postId, liked }) => {
+      const fn = liked ? 'remove_post_like' : 'add_post_like';
+      const { error } = await supabase.rpc(fn, { p_post_id: postId, p_user_id: user.id });
       if (error) throw error;
     },
-    onMutate: async ({ postId }) => {
-      setAllPosts(prev => prev.map(p => p.id === postId ? { ...p, likes_count: (p.likes_count || 0) + 1 } : p));
+    onMutate: async ({ postId, liked }) => {
+      setAllPosts(prev => prev.map(p =>
+        p.id === postId
+          ? { ...p, likes_count: liked ? Math.max(0, (p.likes_count || 0) - 1) : (p.likes_count || 0) + 1, user_liked: !liked }
+          : p
+      ));
     },
-    onError: (err) => toast('좋아요 실패: ' + err.message, 'error'),
+    onError: (err, { postId, liked }) => {
+      setAllPosts(prev => prev.map(p =>
+        p.id === postId
+          ? { ...p, likes_count: liked ? (p.likes_count || 0) + 1 : Math.max(0, (p.likes_count || 0) - 1), user_liked: liked }
+          : p
+      ));
+      toast('좋아요 실패: ' + err.message, 'error');
+    },
+  });
+
+  const commentLikeMutation = useMutation({
+    mutationFn: async ({ commentId, liked }) => {
+      const fn = liked ? 'remove_comment_like' : 'add_comment_like';
+      const { error } = await supabase.rpc(fn, { p_comment_id: commentId, p_user_id: user.id });
+      if (error) throw error;
+    },
+    onMutate: async ({ commentId, liked }) => {
+      queryClient.setQueryData(['forum-comments', expandedPostId, user?.id], (old = []) =>
+        old.map(c =>
+          c.id === commentId
+            ? { ...c, likes_count: liked ? Math.max(0, (c.likes_count || 0) - 1) : (c.likes_count || 0) + 1, user_liked: !liked }
+            : c
+        )
+      );
+    },
+    onError: (err, { commentId, liked }) => {
+      queryClient.setQueryData(['forum-comments', expandedPostId, user?.id], (old = []) =>
+        old.map(c =>
+          c.id === commentId
+            ? { ...c, likes_count: liked ? (c.likes_count || 0) + 1 : Math.max(0, (c.likes_count || 0) - 1), user_liked: liked }
+            : c
+        )
+      );
+      toast('좋아요 실패: ' + err.message, 'error');
+    },
   });
 
   const handleSubmit = (e) => {
@@ -167,9 +303,41 @@ export default function ForumPage() {
     commentMutation.mutate({ postId, content: commentText.trim() });
   };
 
+  const handleCommentChange = (e) => {
+    const val = e.target.value;
+    setCommentText(val);
+    const cursor = e.target.selectionStart;
+    const textBeforeCursor = val.slice(0, cursor);
+    const atIdx = textBeforeCursor.lastIndexOf('@');
+    if (atIdx !== -1) {
+      const query = textBeforeCursor.slice(atIdx + 1);
+      if (!query.includes(' ') && !query.includes('\n')) {
+        setMentionQuery(query);
+        setMentionAnchor(atIdx);
+        return;
+      }
+    }
+    setMentionQuery(null);
+  };
+
+  const insertMention = (displayName) => {
+    const before = commentText.slice(0, mentionAnchor);
+    const after = commentText.slice(mentionAnchor + 1 + (mentionQuery?.length || 0));
+    setCommentText(before + '@' + displayName + ' ' + after);
+    setMentionQuery(null);
+    commentInputRef.current?.focus();
+  };
+
+  const handleReply = (displayName) => {
+    setCommentText(`@${displayName} `);
+    setMentionQuery(null);
+    setTimeout(() => commentInputRef.current?.focus(), 0);
+  };
+
   const togglePost = (postId) => {
     setExpandedPostId(prev => prev === postId ? null : postId);
     setCommentText('');
+    setMentionQuery(null);
   };
 
   return (
@@ -180,7 +348,6 @@ export default function ForumPage() {
       </div>
 
       <div className="forum-wrap">
-        {/* Post Input */}
         <div className="card forum-post-input">
           <form onSubmit={handleSubmit}>
             <div className="forum-compose">
@@ -189,6 +356,8 @@ export default function ForumPage() {
               </div>
               <div className="forum-compose__body">
                 <textarea
+                  id="new-post"
+                  name="new-post"
                   value={newPost}
                   onChange={e => setNewPost(e.target.value)}
                   placeholder="오늘 어떤 공부를 하셨나요? 자유롭게 남겨보세요."
@@ -205,7 +374,6 @@ export default function ForumPage() {
           </form>
         </div>
 
-        {/* Timeline */}
         {isLoading && page === 0 ? (
           <Spinner message="이야기를 불러오는 중..." />
         ) : (
@@ -220,16 +388,19 @@ export default function ForumPage() {
                       {post.author?.streak_count > 0 && (
                         <span className="forum-post__streak">🔥 {post.author.streak_count}</span>
                       )}
-                      <span className="forum-post__date">· {new Date(post.created_at).toLocaleDateString('ko-KR')}</span>
+                      <span className="forum-post__date">· {timeAgo(post.created_at)}</span>
                     </div>
                     <p className="forum-post__content">{post.content}</p>
                     <div className="forum-post__actions">
                       <button
-                        className="forum-action-btn"
-                        onClick={() => user && likeMutation.mutate({ postId: post.id, currentCount: post.likes_count || 0 })}
-                        title={user ? '좋아요' : '로그인 후 좋아요를 누를 수 있어요'}
+                        className={`forum-action-btn ${post.user_liked ? 'forum-action-btn--liked' : ''}`}
+                        onClick={() => {
+                          if (!user) { toast('로그인이 필요합니다.', 'warning'); return; }
+                          likeMutation.mutate({ postId: post.id, liked: !!post.user_liked });
+                        }}
+                        title={user ? (post.user_liked ? '좋아요 취소' : '좋아요') : '로그인 후 좋아요를 누를 수 있어요'}
                       >
-                        <span>❤️</span> {post.likes_count || 0}
+                        <span>{post.user_liked ? '❤️' : '🤍'}</span> {post.likes_count || 0}
                       </button>
                       <button
                         onClick={() => togglePost(post.id)}
@@ -241,28 +412,78 @@ export default function ForumPage() {
 
                     {expandedPostId === post.id && (
                       <div className="forum-comments">
-                        <div className="forum-comment-input">
+                        <div className="forum-comment-input" style={{ position: 'relative' }}>
                           <input
+                            ref={commentInputRef}
+                            id={`comment-input-${post.id}`}
+                            name="comment"
                             type="text"
                             value={commentText}
-                            onChange={e => setCommentText(e.target.value)}
-                            placeholder="따뜻한 댓글을 남겨주세요..."
-                            onKeyDown={e => e.key === 'Enter' && handleCommentSubmit(post.id)}
+                            onChange={handleCommentChange}
+                            onKeyDown={e => {
+                              if (e.key === 'Escape') { setMentionQuery(null); return; }
+                              if (e.key === 'Enter' && mentionQuery === null) handleCommentSubmit(post.id);
+                            }}
+                            placeholder="댓글 달기... (@닉네임으로 태그)"
                             className="form-input"
                             style={{ padding: '8px 12px', fontSize: '0.85rem' }}
                           />
-                          <Button size="sm" onClick={() => handleCommentSubmit(post.id)}>등록</Button>
+                          {mentionQuery !== null && filteredMentions.length > 0 && (
+                            <div className="forum-mention-dropdown">
+                              {filteredMentions.map(name => (
+                                <button
+                                  key={name}
+                                  className="forum-mention-item"
+                                  onMouseDown={e => { e.preventDefault(); insertMention(name); }}
+                                >
+                                  @{name}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                          <Button size="sm" onClick={() => handleCommentSubmit(post.id)}>게시</Button>
                         </div>
 
                         <div className="forum-comment-list">
                           {commentsLoading ? (
                             <p className="forum-empty-msg">전달받는 중...</p>
+                          ) : commentsError ? (
+                            <p className="forum-empty-msg" style={{ color: 'var(--danger)' }}>
+                              ❌ 댓글 로드 오류: {commentsError.message}
+                            </p>
                           ) : comments.length > 0 ? comments.map(c => (
                             <div key={c.id} className="forum-comment">
                               <div className="forum-comment__avatar">👤</div>
-                              <div>
-                                <div className="forum-comment__name">{c.author?.display_name || '익명'}</div>
-                                <div className="forum-comment__text">{c.content}</div>
+                              <div className="forum-comment__body">
+                                <div className="forum-comment__text">
+                                  <span className="forum-comment__name">{c.author?.display_name || '익명'}</span>
+                                  {' '}{renderWithMentions(c.content)}
+                                </div>
+                                <div className="forum-comment__actions">
+                                  <span className="forum-comment__time">{timeAgo(c.created_at)}</span>
+                                  {c.author?.display_name && (
+                                    <button
+                                      className="forum-reply-btn"
+                                      onClick={() => handleReply(c.author.display_name)}
+                                    >
+                                      답글 달기
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="forum-comment-like">
+                                <button
+                                  className={`forum-comment-like__btn ${c.user_liked ? 'forum-comment-like__btn--liked' : ''}`}
+                                  onClick={() => {
+                                    if (!user) { toast('로그인이 필요합니다.', 'warning'); return; }
+                                    commentLikeMutation.mutate({ commentId: c.id, liked: !!c.user_liked });
+                                  }}
+                                >
+                                  {c.user_liked ? '❤️' : '🤍'}
+                                </button>
+                                {(c.likes_count || 0) > 0 && (
+                                  <span className="forum-comment-like__count">{c.likes_count}</span>
+                                )}
                               </div>
                             </div>
                           )) : (

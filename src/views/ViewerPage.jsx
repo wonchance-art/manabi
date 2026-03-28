@@ -9,7 +9,8 @@ import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import Spinner from '../components/Spinner';
 import Button from '../components/Button';
-import { callGemini, parseGeminiJSON, buildTokenizationPrompt, GEMINI_MODEL } from '../lib/gemini';
+import { callGemini, GEMINI_MODEL } from '../lib/gemini';
+import { analyzeText } from '../lib/analyzeText';
 
 async function fetchMaterial(id) {
   const { data, error } = await supabase
@@ -85,59 +86,12 @@ export default function ViewerPage() {
       const initJson = { sequence: [], dictionary: {}, last_idx: -1, status: 'analyzing', metadata: material.processed_json?.metadata || {} };
       await supabase.from('reading_materials').update({ processed_json: initJson }).eq('id', id);
 
-      const lines = rawText.split('\n');
-      const timestamp = Date.now();
-      const CONCURRENCY = 5;
-      let currentJson = { ...initJson };
-
-      for (let i = 0; i < lines.length; i += CONCURRENCY) {
-        const batchIndices = [];
-        for (let j = 0; j < CONCURRENCY && i + j < lines.length; j++) batchIndices.push(i + j);
-
-        const promises = batchIndices.map(async (idx) => {
-          const line = lines[idx].trim();
-          if (!line) return { idx, success: true, empty: true };
-          let failCount = 0;
-          while (failCount < 3) {
-            try {
-              const raw = await callGemini(buildTokenizationPrompt(line), controller.signal);
-              return { idx, success: true, payload: parseGeminiJSON(raw) };
-            } catch (e) {
-              if (controller.signal.aborted) throw e;
-              failCount++;
-              if (failCount >= 3) return { idx, success: false };
-              await new Promise(r => setTimeout(r, 2000));
-            }
-          }
-        });
-
-        const results = await Promise.all(promises);
-        for (const res of results) {
-          if (!res || !res.success) { currentJson.status = 'failed'; break; }
-          if (res.empty) {
-            if (res.idx < lines.length - 1) {
-              const brId = `br_${res.idx}_${timestamp}`;
-              currentJson.sequence.push(brId);
-              currentJson.dictionary[brId] = { text: '\n', pos: '개행' };
-            }
-          } else if (res.payload) {
-            res.payload.sequence.forEach((oldId, pIdx) => {
-              const newId = `id_${res.idx}_${pIdx}_${timestamp}`;
-              currentJson.sequence.push(newId);
-              currentJson.dictionary[newId] = res.payload.dictionary[oldId];
-            });
-            if (res.idx < lines.length - 1) {
-              const brId = `br_${res.idx}_${timestamp}`;
-              currentJson.sequence.push(brId);
-              currentJson.dictionary[brId] = { text: '\n', pos: '개행' };
-            }
-          }
-        }
-
-        if (currentJson.status === 'failed') break;
-        if (batchIndices[batchIndices.length - 1] === lines.length - 1) currentJson.status = 'completed';
-        await supabase.from('reading_materials').update({ processed_json: currentJson }).eq('id', id);
-      }
+      await analyzeText(rawText, controller.signal, {
+        metadata: initJson.metadata,
+        onBatch: async ({ currentJson }) => {
+          await supabase.from('reading_materials').update({ processed_json: currentJson }).eq('id', id);
+        },
+      });
     },
     onSuccess: () => {
       setIsReanalyzing(false);
@@ -217,7 +171,10 @@ export default function ViewerPage() {
   if (error) return (
     <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
       <div className="error-banner">❌ 에러: {error.message}</div>
-      <button onClick={() => refetch()} className="btn btn--primary" style={{ marginTop: '16px' }}>다시 시도</button>
+      <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '16px' }}>
+        <button onClick={() => refetch()} className="btn btn--primary">다시 시도</button>
+        <a href="/materials" className="btn btn--secondary">자료실로 돌아가기</a>
+      </div>
     </div>
   );
 
@@ -343,8 +300,13 @@ export default function ViewerPage() {
           if (!token) return null;
           if (token.pos === '개행') return <div key={tokenId} className="line-break" />;
 
+          const isSaved = savedWords.has(token.text);
           return (
-            <div key={tokenId} className="word-token" onClick={() => handleTokenClick(token, tokenId)}>
+            <div
+              key={tokenId}
+              className={`word-token ${isSaved ? 'word-token--saved' : ''}`}
+              onClick={() => handleTokenClick(token, tokenId)}
+            >
               {token.furigana && <span className="furigana">{token.furigana}</span>}
               <span className="surface">{token.text}</span>
             </div>
@@ -392,7 +354,18 @@ export default function ViewerPage() {
               <div className="modal__quote">{selectedRangeText}</div>
               {isGrammarLoading
                 ? <Spinner message="AI가 문장을 해부하고 있습니다..." />
-                : <div className="modal__content">{grammarAnalysis}</div>
+                : <div className="modal__content modal__content--markdown">
+                    {grammarAnalysis.split('\n').map((line, i) => {
+                      if (line.startsWith('## ')) return <h3 key={i} className="md-h3">{line.slice(3)}</h3>;
+                      if (line.startsWith('# ')) return <h2 key={i} className="md-h2">{line.slice(2)}</h2>;
+                      if (!line.trim()) return <br key={i} />;
+                      const formatted = line
+                        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                        .replace(/`(.+?)`/g, '<code>$1</code>');
+                      return <p key={i} dangerouslySetInnerHTML={{ __html: formatted }} />;
+                    })}
+                  </div>
               }
             </div>
           </div>
@@ -400,6 +373,13 @@ export default function ViewerPage() {
       )}
 
       <style>{`
+        .modal__content--markdown { display: flex; flex-direction: column; gap: 8px; }
+        .modal__content--markdown p { color: var(--text-primary); line-height: 1.7; }
+        .modal__content--markdown strong { color: var(--primary-light); font-weight: 700; }
+        .modal__content--markdown em { color: var(--accent); font-style: italic; }
+        .modal__content--markdown code { background: var(--bg-secondary); padding: 1px 6px; border-radius: 4px; font-family: monospace; font-size: 0.88em; }
+        .md-h2 { font-size: 1.05rem; font-weight: 700; color: var(--primary-light); margin-top: 8px; }
+        .md-h3 { font-size: 0.95rem; font-weight: 700; color: var(--accent); margin-top: 6px; }
         .analyzing-banner--error {
           border-color: rgba(255, 107, 107, 0.4);
           background: rgba(255, 107, 107, 0.08);

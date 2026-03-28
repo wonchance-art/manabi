@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '../lib/AuthContext';
 import { useTheme } from '../lib/useTheme';
+import OnboardingModal from './OnboardingModal';
+import NotificationBell from './NotificationBell';
 
 export default function Layout({ children }) {
   const { user, profile, isAdmin, signOut } = useAuth();
@@ -74,25 +76,17 @@ export default function Layout({ children }) {
 
         <div className="gnb__actions">
           {user ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div className="gnb__user-area">
+              <NotificationBell />
               {profile?.streak_count > 0 && (
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: '4px',
-                  background: 'rgba(255, 146, 43, 0.15)', padding: '4px 10px',
-                  borderRadius: 'var(--radius-full)', color: '#ff922b',
-                  fontSize: '0.85rem', fontWeight: 700
-                }}>
+                <div className="gnb__streak">
                   🔥 {profile.streak_count}
                 </div>
               )}
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {profile?.display_name || user.email}
-              </span>
               <button
                 className="gnb__profile-btn"
                 onClick={() => router.push('/profile')}
-                title="마이페이지"
-                style={{ background: 'linear-gradient(135deg, var(--primary), var(--accent))', color: 'white', border: 'none' }}
+                title={profile?.display_name || user.email}
               >
                 {displayChar}
               </button>
@@ -127,6 +121,8 @@ export default function Layout({ children }) {
       <main className="app-layout">
         {children}
       </main>
+
+      {profile && profile.onboarded === false && <OnboardingModal />}
     </>
   );
 }

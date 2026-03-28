@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import Button from '../components/Button';
-import { callGemini, parseGeminiJSON, buildTokenizationPrompt } from '../lib/gemini';
+import { analyzeText } from '../lib/analyzeText';
+import { LEVELS } from '../lib/constants';
 
 // --- Component ---
 export default function MaterialAddPage() {
@@ -18,20 +19,17 @@ export default function MaterialAddPage() {
   const [rawText, setRawText] = useState('');
   const [visibility, setVisibility] = useState('private');
   const [language, setLanguage] = useState('Japanese');
-  const [level, setLevel] = useState('N3');
+  const [level, setLevel] = useState('N3 중급');
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState('시스템 대기 중');
   const [error, setError] = useState('');
+  const [completedId, setCompletedId] = useState(null);
 
   const abortControllerRef = useRef(null);
 
 
-  const levels = {
-    Japanese: ['N5 기초', 'N4 기본', 'N3 중급', 'N2 상급', 'N1 심화'],
-    English: ['A1 기초', 'A2 초급', 'B1 중급', 'B2 상급', 'C1 고급', 'C2 마스터']
-  };
 
   async function handleStart() {
     if (!user) { toast('로그인이 필요합니다.', 'warning'); return; }
@@ -75,81 +73,27 @@ export default function MaterialAddPage() {
   }
 
   async function runBackgroundAnalysis(id, text, signal) {
-    const lines = text.split('\n');
-    const timestamp = Date.now();
-    const CONCURRENCY = 5;
-    let currentJson = { sequence: [], dictionary: {}, last_idx: -1, status: "analyzing" };
-
     try {
-      for (let i = 0; i < lines.length; i += CONCURRENCY) {
-        const batchIndices = [];
-        for (let j = 0; j < CONCURRENCY && i + j < lines.length; j++) batchIndices.push(i + j);
-
-        const maxProgress = Math.min(i + CONCURRENCY, lines.length);
-        setStatus(`⏳ 병렬 분석 중... (${maxProgress}/${lines.length} 문단)`);
-        setProgress(Math.floor((maxProgress / lines.length) * 90) + 10);
-
-        const promises = batchIndices.map(async (idx) => {
-          const line = lines[idx].trim();
-          if (!line) return { idx, success: true, empty: true };
-
-          let failCount = 0;
-          while (failCount < 3) {
-            try {
-              const rawContent = await callGemini(buildTokenizationPrompt(line), signal);
-              return { idx, success: true, payload: parseGeminiJSON(rawContent) };
-            } catch (e) {
-              if (signal.aborted) throw e;
-              failCount++;
-              if (failCount >= 3) return { idx, success: false, err: e.message };
-              await new Promise(r => setTimeout(r, 2000));
-            }
-          }
-        });
-
-        const results = await Promise.all(promises);
-        let batchFailed = false;
-
-        for (let res of results) {
-          if (!res.success) { batchFailed = true; continue; }
-          if (res.empty) {
-            if (res.idx < lines.length - 1) {
-              const brId = `br_${res.idx}_${timestamp}`;
-              currentJson.sequence.push(brId);
-              currentJson.dictionary[brId] = { text: "\n", pos: "개행" };
-            }
-            currentJson.last_idx = Math.max(currentJson.last_idx, res.idx);
-          } else if (res.payload) {
-            res.payload.sequence.forEach((oldId, pIdx) => {
-              const newId = `id_${res.idx}_${pIdx}_${timestamp}`;
-              currentJson.sequence.push(newId);
-              currentJson.dictionary[newId] = res.payload.dictionary[oldId];
-            });
-            if (res.idx < lines.length - 1) {
-              const brId = `br_${res.idx}_${timestamp}`;
-              currentJson.sequence.push(brId);
-              currentJson.dictionary[brId] = { text: "\n", pos: "개행" };
-            }
-            currentJson.last_idx = Math.max(currentJson.last_idx, res.idx);
-          }
-        }
-
-        if (batchFailed) {
-          currentJson.status = "failed";
+      const finalJson = await analyzeText(text, signal, {
+        metadata: { language, level, updated_at: new Date().toISOString() },
+        onBatch: async ({ currentJson, processed, total, failed }) => {
+          setStatus(`⏳ 병렬 분석 중... (${processed}/${total} 문단)`);
+          setProgress(Math.floor((processed / total) * 90) + 10);
           await supabase.from('reading_materials').update({ processed_json: currentJson }).eq('id', id);
-          setStatus('⚠️ 일부 문단 분석 실패. 뷰어에서 다시 시도할 수 있습니다.');
-          setIsProcessing(false);
-          return;
-        }
+          if (failed) {
+            setStatus('⚠️ 일부 문단 분석 실패. 뷰어에서 다시 시도할 수 있습니다.');
+            setIsProcessing(false);
+          }
+        },
+      });
 
-        if (batchIndices[batchIndices.length - 1] === lines.length - 1) currentJson.status = "completed";
-        await supabase.from('reading_materials').update({ processed_json: currentJson }).eq('id', id);
-      }
+      if (finalJson.status === 'failed') return;
 
-      setStatus('✅ 전체 분석 완료! 자료실로 이동합니다.');
+      setStatus('✅ 전체 분석 완료!');
       setProgress(100);
+      setIsProcessing(false);
+      setCompletedId(id);
 
-      // 브라우저 알림 — 분석 완료 시점에 권한 요청 후 알림 전송
       if ('Notification' in window) {
         const permission = Notification.permission === 'default'
           ? await Notification.requestPermission()
@@ -161,10 +105,8 @@ export default function MaterialAddPage() {
           });
         }
       }
-
-      setTimeout(() => router.push('/materials'), 1500);
     } catch (err) {
-      setError("분석 중 오류: " + err.message);
+      setError('분석 중 오류: ' + err.message);
       setIsProcessing(false);
     }
   }
@@ -213,13 +155,13 @@ export default function MaterialAddPage() {
             <label className="form-label">학습 언어</label>
             <div className="toggle-group">
               <button
-                onClick={() => { setLanguage('Japanese'); setLevel('N3'); }}
+                onClick={() => { setLanguage('Japanese'); setLevel('N3 중급'); }}
                 className={`toggle-btn ${language === 'Japanese' ? 'toggle-btn--primary' : ''}`}
               >
                 🇯🇵 Japanese
               </button>
               <button
-                onClick={() => { setLanguage('English'); setLevel('B1'); }}
+                onClick={() => { setLanguage('English'); setLevel('B1 중급'); }}
                 className={`toggle-btn ${language === 'English' ? 'toggle-btn--primary' : ''}`}
               >
                 🇬🇧 English
@@ -232,7 +174,7 @@ export default function MaterialAddPage() {
         <div className="form-field">
           <label className="form-label">권장 학습 난이도</label>
           <div className="level-group">
-            {levels[language].map(lvl => (
+            {LEVELS[language].map(lvl => (
               <button
                 key={lvl}
                 onClick={() => setLevel(lvl)}
@@ -272,21 +214,32 @@ export default function MaterialAddPage() {
         {error && <div className="error-banner">⚠️ {error}</div>}
 
         {/* Actions */}
-        <div className="form-actions">
-          <Button
-            onClick={handleStart}
-            disabled={isProcessing}
-            size="lg"
-            style={{ flex: 3 }}
-          >
-            {isProcessing ? 'AI 해부 분석 진행 중...' : '🚀 분석 시작하기'}
-          </Button>
-          {isProcessing && (
-            <Button onClick={handleCancel} variant="danger" size="lg" style={{ flex: 1 }}>
-              중단
+        {completedId ? (
+          <div className="form-actions">
+            <Button size="lg" style={{ flex: 2 }} onClick={() => router.push(`/viewer/${completedId}`)}>
+              📖 지금 바로 읽기
             </Button>
-          )}
-        </div>
+            <Button variant="secondary" size="lg" style={{ flex: 1 }} onClick={() => router.push('/materials')}>
+              자료실 보기
+            </Button>
+          </div>
+        ) : (
+          <div className="form-actions">
+            <Button
+              onClick={handleStart}
+              disabled={isProcessing}
+              size="lg"
+              style={{ flex: 3 }}
+            >
+              {isProcessing ? 'AI 해부 분석 진행 중...' : '🚀 분석 시작하기'}
+            </Button>
+            {isProcessing && (
+              <Button onClick={handleCancel} variant="danger" size="lg" style={{ flex: 1 }}>
+                중단
+              </Button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

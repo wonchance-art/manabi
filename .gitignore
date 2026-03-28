@@ -21,3 +21,6 @@ dist/
 npm-debug.log*
 .next/
 .vercel
+
+# MCP config (contains secrets)
+.mcp.json

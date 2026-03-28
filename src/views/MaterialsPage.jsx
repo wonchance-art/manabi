@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
+import { JP_LEVELS, EN_LEVELS } from '../lib/constants';
 import Spinner from '../components/Spinner';
 
 async function fetchMaterials({ tab, userId }) {
@@ -34,8 +35,6 @@ const LANG_FILTERS = [
   { key: 'English',  label: '🇬🇧 영어' },
 ];
 
-const JP_LEVELS = ['N5 기초', 'N4 기본', 'N3 중급', 'N2 상급', 'N1 심화'];
-const EN_LEVELS = ['A1 기초', 'A2 초급', 'B1 중급', 'B2 상급', 'C1 고급', 'C2 마스터'];
 
 export default function MaterialsPage() {
   const { user } = useAuth();
