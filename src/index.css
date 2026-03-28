@@ -3114,3 +3114,273 @@ button {
 .source-toggle--off:hover {
   background: var(--border);
 }
+
+/* ========= Viewer 완료 버튼 ========= */
+.grammar-btn--complete {
+  background: var(--accent-glow);
+  color: var(--accent);
+  border-color: rgba(74, 138, 92, 0.4);
+}
+.grammar-btn--complete:hover {
+  background: rgba(74, 138, 92, 0.3);
+}
+.viewer-complete-badge {
+  cursor: default;
+  background: var(--accent-glow);
+  color: var(--accent);
+  border-color: rgba(74, 138, 92, 0.4);
+}
+
+/* ========= Grammar Modal Footer ========= */
+.modal__footer {
+  padding: 12px 20px 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ========= Home Page ========= */
+.home-greeting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.home-greeting__title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+.home-greeting__sub {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+.streak-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 10px 20px;
+}
+.streak-badge__fire { font-size: 1.4rem; }
+.streak-badge__count { font-size: 1.5rem; font-weight: 800; color: var(--primary-light); }
+.streak-badge__label { font-size: 0.8rem; color: var(--text-secondary); }
+
+.home-section { margin-bottom: 32px; }
+.home-section__title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+}
+
+.home-tasks { display: flex; flex-direction: column; gap: 10px; }
+.home-task-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  flex-wrap: wrap;
+}
+.home-task-card--urgent { border-color: var(--primary); background: var(--primary-glow); }
+.home-task-card--done   { opacity: 0.65; }
+.home-task-card__left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  min-width: 0;
+}
+.home-task-card__icon { font-size: 1.5rem; flex-shrink: 0; }
+.home-task-card__label { font-size: 0.78rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+.home-task-card__desc { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); }
+.home-task-card__desc--title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 300px;
+}
+.home-task-card__meta { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+
+.home-goal-ring { position: relative; width: 48px; height: 48px; flex-shrink: 0; }
+.home-goal-ring__svg { width: 100%; height: 100%; }
+.home-goal-ring__label {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.68rem; font-weight: 700; color: var(--text-primary);
+}
+
+.home-recent-list { display: flex; flex-direction: column; gap: 6px; }
+.home-recent-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  transition: background var(--transition-fast);
+}
+.home-recent-item:hover { background: var(--bg-elevated); }
+.home-recent-item__left { display: flex; align-items: center; gap: 10px; overflow: hidden; }
+.home-recent-item__title {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.home-recent-item__status { font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; }
+.home-recent-item__status--done { color: var(--accent); }
+
+.home-quick-links { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.home-quick-link {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 16px 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  transition: all var(--transition-fast);
+}
+.home-quick-link:hover { background: var(--bg-elevated); color: var(--text-primary); border-color: var(--primary); }
+.home-quick-link__icon { font-size: 1.5rem; }
+
+/* ========= btn--accent ========= */
+.btn--accent {
+  background: var(--accent-glow);
+  color: var(--accent);
+  border: 1px solid rgba(74,138,92,0.4);
+}
+.btn--accent:hover { background: rgba(74,138,92,0.3); }
+
+/* ========= Materials 완료 배지 ========= */
+.badge--completed {
+  background: var(--accent-glow);
+  color: var(--accent);
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+}
+
+/* ========= VocabPage 힌트 버튼 ========= */
+.review-hint-btn {
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 4px 12px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.review-hint-btn:hover { border-color: var(--primary); color: var(--primary-light); }
+
+.review-card__hint {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  padding: 12px 16px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--border);
+  margin-top: 12px;
+  text-align: center;
+}
+.review-card__highlight--hint {
+  background: rgba(74,138,92,0.2);
+  color: var(--accent);
+  border-radius: 2px;
+  padding: 0 2px;
+}
+
+/* ========= VocabPage 탭 배지 ========= */
+.tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  color: #fff;
+  border-radius: var(--radius-full);
+  font-size: 0.65rem;
+  padding: 1px 6px;
+  margin-left: 4px;
+  font-weight: 700;
+}
+
+/* ========= 문법 노트 카드 ========= */
+.grammar-notes-list { display: flex; flex-direction: column; gap: 14px; }
+.grammar-note-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+}
+.grammar-note-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.grammar-note-card__text {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary-light);
+  line-height: 1.4;
+}
+.grammar-note-card__source {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+.grammar-note-card__delete {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 2px 4px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition: color var(--transition-fast);
+}
+.grammar-note-card__delete:hover { color: var(--danger); }
+.grammar-note-card__explanation {
+  border-left: 3px solid var(--primary);
+  padding-left: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.grammar-note-card__explanation p { color: var(--text-secondary); }
+.grammar-note-card__explanation strong { color: var(--primary-light); }
+.grammar-note-card__explanation code {
+  background: var(--bg-secondary);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 0.85em;
+  font-family: monospace;
+}
+.grammar-note-card__footer {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 10px;
+  text-align: right;
+}

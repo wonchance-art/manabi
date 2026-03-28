@@ -74,6 +74,55 @@ export default function ViewerPage() {
     staleTime: 1000 * 30,
   });
 
+  const { data: readingProgress } = useQuery({
+    queryKey: ['reading-progress', user?.id, id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('reading_progress')
+        .select('is_completed')
+        .eq('user_id', user.id)
+        .eq('material_id', id)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const markCompleteMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from('reading_progress').upsert({
+        user_id: user.id,
+        material_id: id,
+        is_completed: true,
+        completed_at: new Date().toISOString(),
+      }, { onConflict: 'user_id,material_id' });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reading-progress', user?.id, id] });
+      queryClient.invalidateQueries({ queryKey: ['reading-progress-list', user?.id] });
+      toast('🎉 읽기 완료! 훌륭해요.', 'success');
+    },
+    onError: (err) => toast('오류: ' + err.message, 'error'),
+  });
+
+  const saveGrammarNoteMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from('grammar_notes').insert({
+        user_id: user.id,
+        material_id: id,
+        selected_text: selectedRangeText,
+        explanation: grammarAnalysis,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['grammar-notes', user?.id] });
+      toast('📝 문법 노트에 저장됐어요!', 'success');
+    },
+    onError: (err) => toast('저장 실패: ' + err.message, 'error'),
+  });
+
   // 재분석
   const reanalyzeMutation = useMutation({
     mutationFn: async () => {
@@ -233,6 +282,8 @@ export default function ViewerPage() {
   const status = material?.status || material?.processed_json?.status;
   const isAnalyzing = status === 'analyzing';
   const isFailed = status === 'failed';
+  const isDone = status === 'completed';
+  const isCompleted = readingProgress?.is_completed === true;
   const isWordSaved = selectedToken ? savedWords.has(selectedToken.text) : false;
 
   return (
@@ -324,6 +375,18 @@ export default function ViewerPage() {
             >
               {reanalyzeMutation.isPending ? '⏳ 재분석 중...' : '🔄 재분석'}
             </button>
+          )}
+
+          {user && isDone && (
+            isCompleted
+              ? <span className="grammar-btn viewer-complete-badge">✅ 읽기 완료</span>
+              : <button
+                  onClick={() => markCompleteMutation.mutate()}
+                  disabled={markCompleteMutation.isPending}
+                  className="grammar-btn grammar-btn--complete"
+                >
+                  {markCompleteMutation.isPending ? '⏳...' : '✔ 읽기 완료 표시'}
+                </button>
           )}
         </div>
       </div>
@@ -443,6 +506,17 @@ export default function ViewerPage() {
                   </div>
               }
             </div>
+            {!isGrammarLoading && grammarAnalysis && user && (
+              <div className="modal__footer">
+                <button
+                  onClick={() => saveGrammarNoteMutation.mutate()}
+                  disabled={saveGrammarNoteMutation.isPending || saveGrammarNoteMutation.isSuccess}
+                  className="btn btn--secondary btn--sm"
+                >
+                  {saveGrammarNoteMutation.isSuccess ? '✅ 저장됨' : saveGrammarNoteMutation.isPending ? '저장 중...' : '📝 노트에 저장'}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

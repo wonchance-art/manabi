@@ -28,6 +28,7 @@ export default function Layout({ children }) {
     '?';
 
   const navLinks = [
+    ...(user ? [{ href: '/home', icon: '🏠', label: '홈' }] : []),
     { href: '/guide',     icon: '📚', label: '가이드' },
     { href: '/materials', icon: '📰', label: '자료' },
     { href: '/vocab',     icon: '⭐', label: '단어장' },

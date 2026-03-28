@@ -150,6 +150,20 @@ export default function MaterialsPage() {
     staleTime: 60 * 60 * 1000, // 1시간 캐시
   });
 
+  const { data: completedIds = new Set() } = useQuery({
+    queryKey: ['reading-progress-list', user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('reading_progress')
+        .select('material_id')
+        .eq('user_id', user.id)
+        .eq('is_completed', true);
+      return new Set((data || []).map(r => r.material_id));
+    },
+    enabled: !!user,
+    staleTime: 1000 * 60,
+  });
+
   const { data: materials = [], isLoading } = useQuery({
     queryKey: ['materials', tab, user?.id, langFilter, levelFilter, searchQuery],
     queryFn: () => fetchMaterials({ tab, userId: user?.id, langFilter, levelFilter, searchQuery }),
@@ -266,6 +280,7 @@ export default function MaterialsPage() {
             const language = metadata.language || (m.title.match(/[a-zA-Z]/) ? 'English' : 'Japanese');
             const level = metadata.level;
             const isDone = status === 'completed';
+            const isCompleted = completedIds.has(m.id);
 
             return (
               <div key={m.id} className="card card--clickable" onClick={() => router.push(`/viewer/${m.id}`)}>
@@ -275,12 +290,15 @@ export default function MaterialsPage() {
                       <span className="card__flag">{language === 'English' ? '🇬🇧' : '🇯🇵'}</span>
                       {level && <span className="tag">{level}</span>}
                     </div>
-                    <span className="badge" style={{
-                      background: isDone ? 'var(--accent-glow)' : 'var(--primary-glow)',
-                      color: isDone ? 'var(--accent)' : 'var(--primary-light)'
-                    }}>
-                      {isDone ? '분석 완료' : status === 'analyzing' ? '💡 분석 중' : '⏳ 대기 중'}
-                    </span>
+                    <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                      {isCompleted && <span className="badge badge--completed">✅ 완료</span>}
+                      <span className="badge" style={{
+                        background: isDone ? 'var(--accent-glow)' : 'var(--primary-glow)',
+                        color: isDone ? 'var(--accent)' : 'var(--primary-light)'
+                      }}>
+                        {isDone ? '분석 완료' : status === 'analyzing' ? '💡 분석 중' : '⏳ 대기 중'}
+                      </span>
+                    </div>
                   </div>
                   <h3 className="card__title">{m.title}</h3>
                 </div>

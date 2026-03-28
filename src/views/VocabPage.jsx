@@ -51,11 +51,35 @@ export default function VocabPage() {
   const [reviewFinished, setReviewFinished] = useState(false);
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('due'); // 'due' | 'newest' | 'alpha'
+  const [showHint, setShowHint] = useState(false);
 
   const { data: vocab = [], isLoading } = useQuery({
     queryKey: ['vocab', user?.id],
     queryFn: () => fetchVocab(user.id),
     enabled: !!user,
+  });
+
+  const { data: grammarNotes = [] } = useQuery({
+    queryKey: ['grammar-notes', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('grammar_notes')
+        .select('id, selected_text, explanation, created_at, reading_materials(title)')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!user,
+  });
+
+  const deleteNoteMutation = useMutation({
+    mutationFn: async (noteId) => {
+      const { error } = await supabase.from('grammar_notes').delete().eq('id', noteId);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['grammar-notes', user?.id] }),
+    onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
   });
 
   const scoreMutation = useMutation({
@@ -134,6 +158,7 @@ export default function VocabPage() {
   };
 
   const goNextReview = () => {
+    setShowHint(false);
     if (reviewIdx < reviewWords.length - 1) {
       setReviewIdx(i => i + 1);
       setShowAnswer(false);
@@ -216,6 +241,12 @@ export default function VocabPage() {
           className={`tab-pills__item ${tab === 'stats' ? 'tab-pills__item--primary' : ''}`}
         >
           📊 학습 통계
+        </button>
+        <button
+          onClick={() => setTab('notes')}
+          className={`tab-pills__item ${tab === 'notes' ? 'tab-pills__item--accent' : ''}`}
+        >
+          📝 문법 노트 {grammarNotes.length > 0 && <span className="tab-badge">{grammarNotes.length}</span>}
         </button>
       </div>
 
@@ -308,13 +339,33 @@ export default function VocabPage() {
             <div className="card review-card">
               <div className="review-card__progress">
                 <span>남은 단어: {reviewWords.length - reviewIdx}</span>
-                <button className="review-skip-btn" onClick={handleSkip} title="내일로 미루기">
-                  스킵 →
-                </button>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  {!showAnswer && currentWord.source_sentence && (
+                    <button
+                      className="review-hint-btn"
+                      onClick={() => setShowHint(h => !h)}
+                    >
+                      {showHint ? '힌트 숨기기' : '💡 힌트'}
+                    </button>
+                  )}
+                  <button className="review-skip-btn" onClick={() => { setShowHint(false); handleSkip(); }} title="내일로 미루기">
+                    스킵 →
+                  </button>
+                </div>
               </div>
               <div className="review-card__body">
                 <h2 className="review-card__word">{currentWord.word_text}</h2>
-                {showAnswer && <p className="review-card__furigana">[{currentWord.furigana}]</p>}
+                {showAnswer && currentWord.furigana && <p className="review-card__furigana">[{currentWord.furigana}]</p>}
+
+                {!showAnswer && showHint && currentWord.source_sentence && (
+                  <p className="review-card__hint">
+                    {currentWord.source_sentence.split(currentWord.word_text).map((part, i, arr) => (
+                      i < arr.length - 1
+                        ? <span key={i}>{part}<mark className="review-card__highlight review-card__highlight--hint">{currentWord.word_text}</mark></span>
+                        : <span key={i}>{part}</span>
+                    ))}
+                  </p>
+                )}
 
                 {showAnswer ? (
                   <div className="review-card__answer">
@@ -339,7 +390,7 @@ export default function VocabPage() {
                   <Button
                     variant="secondary"
                     size="lg"
-                    onClick={() => setShowAnswer(true)}
+                    onClick={() => { setShowAnswer(true); setShowHint(false); }}
                     style={{ marginTop: '40px', borderRadius: 'var(--radius-full)' }}
                   >
                     정답 확인하기
@@ -520,7 +571,44 @@ export default function VocabPage() {
             </p>
           </div>
         </div>
-      )}
+      ) : tab === 'notes' ? (
+        <div className="grammar-notes-list">
+          {grammarNotes.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-state__icon">📝</div>
+              <p className="empty-state__msg">저장된 문법 노트가 없습니다.<br />뷰어에서 문장을 드래그해 AI 해설을 받고 저장해보세요!</p>
+            </div>
+          ) : grammarNotes.map(note => (
+            <div key={note.id} className="grammar-note-card">
+              <div className="grammar-note-card__header">
+                <span className="grammar-note-card__text">"{note.selected_text}"</span>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexShrink: 0 }}>
+                  {note.reading_materials && (
+                    <span className="grammar-note-card__source">{note.reading_materials.title}</span>
+                  )}
+                  <button
+                    className="grammar-note-card__delete"
+                    onClick={() => deleteNoteMutation.mutate(note.id)}
+                    title="삭제"
+                  >✕</button>
+                </div>
+              </div>
+              <div className="grammar-note-card__explanation">
+                {note.explanation.split('\n').slice(0, 4).map((line, i) => {
+                  if (!line.trim()) return null;
+                  const formatted = line
+                    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/`(.+?)`/g, '<code>$1</code>');
+                  return <p key={i} dangerouslySetInnerHTML={{ __html: formatted }} style={{ margin: '2px 0', fontSize: '0.88rem', lineHeight: 1.6 }} />;
+                })}
+              </div>
+              <div className="grammar-note-card__footer">
+                {new Date(note.created_at).toLocaleDateString('ko-KR')}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }
