@@ -408,7 +408,7 @@ export default function VocabPage() {
             </div>
           )}
         </div>
-      ) : (
+      ) : tab === 'stats' ? (
         /* Stats Dashboard */
         <div className="stats-grid">
           <div className="stat-card">
