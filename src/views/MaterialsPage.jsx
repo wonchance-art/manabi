@@ -17,15 +17,12 @@ async function fetchTodaySuggestions() {
 
 function SuggestionCard({ suggestion: s, router }) {
   const hasTranscript = !!s.transcript;
-  const isYoutube = s.source === 'youtube';
-  const youtubeUrl = isYoutube ? `https://www.youtube.com/watch?v=${s.video_id}` : null;
 
   return (
     <div className="suggestion-card">
       {s.thumbnail_url && (
         <div className="suggestion-card__thumb-wrap">
           <img src={s.thumbnail_url} alt={s.title} className="suggestion-card__thumb" />
-          {isYoutube && <span className="suggestion-card__play">▶</span>}
         </div>
       )}
       <div className="suggestion-card__body">
@@ -36,25 +33,16 @@ function SuggestionCard({ suggestion: s, router }) {
         </div>
         <h3 className="suggestion-card__title">{s.title}</h3>
         <div className="suggestion-card__actions">
-          {hasTranscript ? (
-            <button
-              className="btn btn--primary btn--sm"
-              onClick={() => router.push(`/materials/add?suggestion=${s.id}`)}
-            >
-              📖 공부하기
-            </button>
-          ) : (
+          <button
+            className="btn btn--primary btn--sm"
+            disabled={!hasTranscript}
+            title={hasTranscript ? '' : '자막을 가져올 수 없는 영상입니다'}
+            onClick={() => router.push(`/materials/add?suggestion=${s.id}`)}
+          >
+            📖 공부하기
+          </button>
+          {!hasTranscript && (
             <span className="suggestion-card__no-transcript">자막 없음</span>
-          )}
-          {youtubeUrl && (
-            <a
-              href={youtubeUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn--secondary btn--sm"
-            >
-              ▶ 영상 보기
-            </a>
           )}
         </div>
       </div>
