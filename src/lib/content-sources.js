@@ -1,86 +1,93 @@
 /**
- * 콘텐츠 소스 — Wikipedia API (무료, 키 불필요, 차단 없음)
+ * 콘텐츠 소스 — Wikimedia APIs (무료, 키 불필요, 차단 없음)
  *
- * Simple English Wikipedia: CEFR A2-B1 수준으로 작성된 학습자용 영어
- * 일본어 Wikipedia: 일본어 학습용 (N3-N2 수준)
+ * wikipedia_good:
+ *   - lang: 'simple' → Simple English Wikipedia Good Articles (A2-B1)
+ *   - lang: 'ja'     → 日本語 Wikipedia 秀逸な記事 (N2-N1)
  *
- * API 문서: https://www.mediawiki.org/wiki/API:Main_page
+ * wikinews:
+ *   - lang: 'en'     → English Wikinews 최신 기사 (B2)
  */
 
-const WIKI_UA = 'ManabiApp/1.0 (language-learning; contact@example.com)';
+const WIKI_UA = 'ManabiApp/1.0 (language-learning)';
 
-/**
- * Wikipedia에서 랜덤 기사 목록 가져오기
- * @param {'en'|'ja'|'simple'} lang  - 'simple' = Simple English Wikipedia
- */
-async function fetchRandomWikiArticles(lang, count = 5) {
-  const host = lang === 'simple'
-    ? 'https://simple.wikipedia.org'
-    : `https://${lang}.wikipedia.org`;
+// ── 공통 유틸 ──────────────────────────────────────────────────
 
-  // random 네임스페이스 0 = 일반 기사
-  const url = `${host}/w/api.php?action=query&list=random&rnnamespace=0&rnlimit=${count}&format=json&origin=*`;
+async function wikiFetch(url) {
   const res = await fetch(url, { headers: { 'User-Agent': WIKI_UA } });
-  if (!res.ok) return [];
-
-  const data = await res.json();
-  return (data.query?.random || []).map(p => ({ pageid: p.id, title: p.title }));
+  if (!res.ok) return null;
+  return res.json();
 }
 
-/**
- * Wikipedia 기사 전문 가져오기 (plain text)
- */
-async function fetchWikiArticleText(lang, title) {
-  const host = lang === 'simple'
-    ? 'https://simple.wikipedia.org'
-    : `https://${lang}.wikipedia.org`;
-
+/** Wikipedia/Wikinews 기사 전문 plain text 가져오기 */
+async function fetchArticleText(host, title) {
   const params = new URLSearchParams({
     action: 'query',
     prop: 'extracts',
-    explaintext: 'true',    // plain text (HTML 제거)
+    explaintext: 'true',
     exsectionformat: 'plain',
     titles: title,
     format: 'json',
     origin: '*',
-    exlimit: '1',
   });
 
-  const res = await fetch(`${host}/w/api.php?${params}`, {
-    headers: { 'User-Agent': WIKI_UA },
-  });
-  if (!res.ok) return null;
+  const data = await wikiFetch(`${host}/w/api.php?${params}`);
+  if (!data) return null;
 
-  const data = await res.json();
-  const pages = data.query?.pages || {};
-  const page = Object.values(pages)[0];
+  const page = Object.values(data.query?.pages || {})[0];
   if (!page?.extract) return null;
 
-  // 너무 짧거나 disambiguation 페이지 제외
   const text = page.extract.trim();
-  if (text.length < 300 || text.includes('may refer to:') || text.includes('이(가) 가리키는')) {
+  // 너무 짧거나 동음이의 페이지 제외
+  if (text.length < 200 || text.includes('may refer to:') || text.includes('이(가) 가리키는')) {
     return null;
   }
 
-  // 앞 3000자만 (Gemini 분석에 충분)
   return text.slice(0, 3000);
 }
 
+/** 카테고리 구성원 목록 가져오기 (최대 500개) */
+async function fetchCategoryMembers(host, categoryTitle, limit = 200) {
+  const params = new URLSearchParams({
+    action: 'query',
+    list: 'categorymembers',
+    cmtitle: categoryTitle,
+    cmlimit: String(limit),
+    cmnamespace: '0',
+    format: 'json',
+    origin: '*',
+  });
+
+  const data = await wikiFetch(`${host}/w/api.php?${params}`);
+  return (data?.query?.categorymembers || []).map(p => p.title);
+}
+
+// ── 소스별 fetcher ─────────────────────────────────────────────
+
 /**
- * Simple English Wikipedia 기사 3개 가져오기 (영어 학습용)
+ * Simple English Wikipedia Good Articles
+ * 학습자용으로 검토된 고품질 기사 (A2-B1 수준)
  */
-export async function fetchEnglishArticles(count = 3) {
-  const candidates = await fetchRandomWikiArticles('simple', count * 3);
+export async function fetchSimpleGoodArticles(count = 3) {
+  const titles = await fetchCategoryMembers(
+    'https://simple.wikipedia.org',
+    'Category:Good articles',
+    300,
+  );
+  if (!titles.length) return [];
+
+  // 랜덤 샘플링
+  const shuffled = titles.sort(() => Math.random() - 0.5);
   const results = [];
 
-  for (const page of candidates) {
+  for (const title of shuffled) {
     if (results.length >= count) break;
-    const text = await fetchWikiArticleText('simple', page.title);
+    const text = await fetchArticleText('https://simple.wikipedia.org', title);
     if (!text) continue;
 
     results.push({
-      videoId: `wiki_en_${page.pageid}`,
-      title: page.title,
+      videoId: `wiki_simple_${encodeURIComponent(title)}`,
+      title,
       channelName: 'Simple English Wikipedia',
       thumbnail: null,
       transcript: text,
@@ -92,26 +99,101 @@ export async function fetchEnglishArticles(count = 3) {
 }
 
 /**
- * 일본어 Wikipedia 기사 3개 가져오기 (일본어 학습용)
+ * 日本語 Wikipedia 秀逸な記事 (Featured Articles)
+ * 편집자가 선정한 고품질 일본어 기사 (N2-N1 수준)
  */
-export async function fetchJapaneseArticles(count = 3) {
-  const candidates = await fetchRandomWikiArticles('ja', count * 3);
+export async function fetchJapaneseFeaturedArticles(count = 3) {
+  const titles = await fetchCategoryMembers(
+    'https://ja.wikipedia.org',
+    'Category:秀逸な記事',
+    200,
+  );
+  if (!titles.length) return [];
+
+  const shuffled = titles.sort(() => Math.random() - 0.5);
   const results = [];
 
-  for (const page of candidates) {
+  for (const title of shuffled) {
     if (results.length >= count) break;
-    const text = await fetchWikiArticleText('ja', page.title);
+    const text = await fetchArticleText('https://ja.wikipedia.org', title);
     if (!text) continue;
 
     results.push({
-      videoId: `wiki_ja_${page.pageid}`,
-      title: page.title,
-      channelName: '日本語 Wikipedia',
+      videoId: `wiki_ja_${encodeURIComponent(title)}`,
+      title,
+      channelName: '日本語 Wikipedia 秀逸な記事',
       thumbnail: null,
       transcript: text,
-      level: 'N3 중급',
+      level: 'N2 상급',
     });
   }
 
   return results;
 }
+
+/**
+ * English Wikinews — 최신 뉴스 기사 (B2 수준)
+ * 실제 시사 뉴스, 저널리즘 영어
+ */
+export async function fetchWikinews(count = 3) {
+  const params = new URLSearchParams({
+    action: 'query',
+    list: 'recentchanges',
+    rcnamespace: '0',
+    rclimit: String(count * 4),  // 일부 실패 감안해 여유분 요청
+    rctype: 'new',
+    format: 'json',
+    origin: '*',
+  });
+
+  const data = await wikiFetch(`https://en.wikinews.org/w/api.php?${params}`);
+  const articles = data?.query?.recentchanges || [];
+
+  const results = [];
+  for (const article of articles) {
+    if (results.length >= count) break;
+    const text = await fetchArticleText('https://en.wikinews.org', article.title);
+    if (!text) continue;
+
+    results.push({
+      videoId: `wikinews_${encodeURIComponent(article.title)}`,
+      title: article.title,
+      channelName: 'English Wikinews',
+      thumbnail: null,
+      transcript: text,
+      level: 'B2 상급',
+    });
+  }
+
+  return results;
+}
+
+// ── source_type 디스패처 (cron에서 사용) ──────────────────────
+
+export async function fetchFromSource(source, count = 3) {
+  const { source_type, config = {} } = source;
+  const lang = config.lang || 'simple';
+
+  switch (source_type) {
+    case 'wikipedia_good':
+      return lang === 'ja'
+        ? fetchJapaneseFeaturedArticles(count)
+        : fetchSimpleGoodArticles(count);
+
+    case 'wikinews':
+      return fetchWikinews(count);
+
+    // 이전 버전 호환
+    case 'wikipedia_random':
+      return lang === 'ja'
+        ? fetchJapaneseFeaturedArticles(count)
+        : fetchSimpleGoodArticles(count);
+
+    default:
+      return [];
+  }
+}
+
+// 이전 코드와의 호환성 유지
+export const fetchEnglishArticles  = fetchSimpleGoodArticles;
+export const fetchJapaneseArticles = fetchJapaneseFeaturedArticles;

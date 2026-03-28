@@ -10,8 +10,10 @@ import Spinner from '../components/Spinner';
 import Button from '../components/Button';
 
 const SOURCE_TYPE_LABELS = {
-  nhk_easy:         'NHK Web Easy',
+  wikipedia_good:   'Wikipedia 우수 기사',
+  wikinews:         'Wikinews (시사)',
   wikipedia_random: 'Wikipedia (랜덤)',
+  nhk_easy:         'NHK Web Easy',
 };
 
 const LEVEL_OPTIONS = {
@@ -21,9 +23,9 @@ const LEVEL_OPTIONS = {
 
 const DEFAULT_NEW_SOURCE = {
   language: 'Japanese',
-  source_type: 'wikipedia_random',
+  source_type: 'wikipedia_good',
   name: '',
-  config: { lang: 'ja', level: 'N3 중급' },
+  config: { lang: 'ja', level: 'N2 상급' },
 };
 
 async function fetchContentSources() {
@@ -186,10 +188,10 @@ export default function AdminPage() {
           level: value === 'Japanese' ? 'N3 중급' : 'B1 중급',
         };
       }
-      // source_type 바뀌면 nhk_easy는 lang 불필요
+      // wikinews는 lang 불필요
       if (field === 'source_type') {
-        next.config = value === 'nhk_easy'
-          ? { level: prev.config?.level || 'N3 중급' }
+        next.config = value === 'wikinews'
+          ? { level: prev.config?.level || 'B2 상급' }
           : { lang: prev.language === 'Japanese' ? 'ja' : 'simple', level: prev.config?.level || 'B1 중급' };
       }
       return next;
@@ -404,10 +406,8 @@ export default function AdminPage() {
                       value={newSource.source_type}
                       onChange={e => handleNewSourceChange('source_type', e.target.value)}
                     >
-                      <option value="wikipedia_random">Wikipedia (랜덤)</option>
-                      {newSource.language === 'Japanese' && (
-                        <option value="nhk_easy">NHK Web Easy</option>
-                      )}
+                      <option value="wikipedia_good">Wikipedia 우수 기사</option>
+                      <option value="wikinews">Wikinews (시사)</option>
                     </select>
                   </div>
                 </div>
