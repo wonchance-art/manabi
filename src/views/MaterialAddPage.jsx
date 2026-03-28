@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useRef, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
@@ -14,12 +14,35 @@ export default function MaterialAddPage() {
   const { user } = useAuth();
   const toast = useToast();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [title, setTitle] = useState('');
   const [rawText, setRawText] = useState('');
   const [visibility, setVisibility] = useState('private');
   const [language, setLanguage] = useState('Japanese');
   const [level, setLevel] = useState('N3 중급');
+  const [isSuggestionLoading, setIsSuggestionLoading] = useState(false);
+
+  // 추천 자료에서 진입 시 자동 폼 채우기
+  useEffect(() => {
+    const suggestionId = searchParams.get('suggestion');
+    if (!suggestionId) return;
+
+    setIsSuggestionLoading(true);
+    fetch(`/api/suggestions/today`)
+      .then(r => r.json())
+      .then(items => {
+        const s = items.find(i => i.id === suggestionId);
+        if (!s) return;
+        setTitle(s.title);
+        setRawText(s.transcript || '');
+        setLanguage(s.language || 'Japanese');
+        if (s.level) setLevel(s.level);
+        setVisibility('public');
+      })
+      .catch(() => {})
+      .finally(() => setIsSuggestionLoading(false));
+  }, []);
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -109,6 +132,17 @@ export default function MaterialAddPage() {
       setError('분석 중 오류: ' + err.message);
       setIsProcessing(false);
     }
+  }
+
+  if (isSuggestionLoading) {
+    return (
+      <div className="page-container">
+        <div className="spinner-wrap">
+          <div className="spinner" />
+          <span className="spinner-msg">추천 자료 불러오는 중...</span>
+        </div>
+      </div>
+    );
   }
 
   return (

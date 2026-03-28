@@ -9,6 +9,59 @@ import { useAuth } from '../lib/AuthContext';
 import { JP_LEVELS, EN_LEVELS } from '../lib/constants';
 import Spinner from '../components/Spinner';
 
+async function fetchTodaySuggestions() {
+  const res = await fetch('/api/suggestions/today');
+  if (!res.ok) return [];
+  return res.json();
+}
+
+function SuggestionCard({ suggestion: s, router }) {
+  const hasTranscript = !!s.transcript;
+  const isYoutube = s.source === 'youtube';
+  const youtubeUrl = isYoutube ? `https://www.youtube.com/watch?v=${s.video_id}` : null;
+
+  return (
+    <div className="suggestion-card">
+      {s.thumbnail_url && (
+        <div className="suggestion-card__thumb-wrap">
+          <img src={s.thumbnail_url} alt={s.title} className="suggestion-card__thumb" />
+          {isYoutube && <span className="suggestion-card__play">▶</span>}
+        </div>
+      )}
+      <div className="suggestion-card__body">
+        <div className="suggestion-card__meta">
+          <span className="card__flag">{s.language === 'English' ? '🇬🇧' : '🇯🇵'}</span>
+          {s.level && <span className="tag">{s.level}</span>}
+          <span className="suggestion-card__source">{s.channel_name}</span>
+        </div>
+        <h3 className="suggestion-card__title">{s.title}</h3>
+        <div className="suggestion-card__actions">
+          {hasTranscript ? (
+            <button
+              className="btn btn--primary btn--sm"
+              onClick={() => router.push(`/materials/add?suggestion=${s.id}`)}
+            >
+              📖 공부하기
+            </button>
+          ) : (
+            <span className="suggestion-card__no-transcript">자막 없음</span>
+          )}
+          {youtubeUrl && (
+            <a
+              href={youtubeUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn--secondary btn--sm"
+            >
+              ▶ 영상 보기
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 async function fetchMaterials({ tab, userId }) {
   let query = supabase
     .from('reading_materials')
@@ -48,6 +101,12 @@ export default function MaterialsPage() {
   // 필터 바뀌면 페이지 리셋
   useEffect(() => { setVisibleCount(PAGE_SIZE); }, [tab, searchQuery, langFilter, levelFilter]);
 
+  const { data: suggestions = [] } = useQuery({
+    queryKey: ['suggestions-today'],
+    queryFn: fetchTodaySuggestions,
+    staleTime: 60 * 60 * 1000, // 1시간 캐시
+  });
+
   const { data: materials = [], isLoading } = useQuery({
     queryKey: ['materials', tab, user?.id],
     queryFn: () => fetchMaterials({ tab, userId: user?.id }),
@@ -85,6 +144,18 @@ export default function MaterialsPage() {
           ➕ 새 자료 추가
         </Link>
       </div>
+
+      {/* 오늘의 추천 */}
+      {suggestions.length > 0 && (
+        <section className="suggestions-section">
+          <h2 className="suggestions-section__title">✨ 오늘의 추천 자료</h2>
+          <div className="suggestions-grid">
+            {suggestions.map(s => (
+              <SuggestionCard key={s.id} suggestion={s} router={router} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Search */}
       <div className="filter-row">
