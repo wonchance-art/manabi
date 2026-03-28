@@ -3384,3 +3384,77 @@ button {
   margin-top: 10px;
   text-align: right;
 }
+
+/* ========= 읽기 완료 요약 모달 ========= */
+.completion-overlay {
+  z-index: 1100;
+}
+.completion-modal {
+  max-width: 420px;
+  text-align: center;
+  padding: 40px 32px 32px;
+}
+.completion-modal__fireworks {
+  font-size: 3.5rem;
+  margin-bottom: 12px;
+  animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes popIn {
+  from { transform: scale(0.5); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+.completion-modal__title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+.completion-modal__subtitle {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 28px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.completion-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px 0;
+  margin-bottom: 28px;
+}
+.completion-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.completion-stat--divider {
+  flex: 0;
+  width: 1px;
+  height: 40px;
+  background: var(--border);
+}
+.completion-stat__value {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--primary-light);
+  line-height: 1;
+}
+.completion-stat__label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.completion-modal__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}

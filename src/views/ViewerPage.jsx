@@ -56,6 +56,7 @@ export default function ViewerPage() {
   const [isGrammarLoading, setIsGrammarLoading] = useState(false);
   const [selectedRangeText, setSelectedRangeText] = useState('');
   const [selectionPopup, setSelectionPopup] = useState(null); // { x, y } or null
+  const [completionModal, setCompletionModal] = useState(null); // { wordsSaved, dueCount, streak }
 
   const { data: material, isLoading, error, refetch } = useQuery({
     queryKey: ['material', id],
@@ -98,11 +99,30 @@ export default function ViewerPage() {
         completed_at: new Date().toISOString(),
       }, { onConflict: 'user_id,material_id' });
       if (error) throw error;
+
+      // 요약 데이터 병렬 조회
+      const now = new Date().toISOString();
+      const [
+        { count: wordsSaved },
+        { count: dueCount },
+      ] = await Promise.all([
+        supabase.from('user_vocabulary').select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id).eq('source_material_id', id),
+        supabase.from('user_vocabulary').select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id).lte('next_review_at', now),
+      ]);
+
+      return { wordsSaved: wordsSaved || 0, dueCount: dueCount || 0 };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['reading-progress', user?.id, id] });
       queryClient.invalidateQueries({ queryKey: ['reading-progress-list', user?.id] });
-      toast('🎉 읽기 완료! 훌륭해요.', 'success');
+      recordActivity(user.id, () => fetchProfile(user.id));
+      setCompletionModal({
+        wordsSaved: data.wordsSaved,
+        dueCount: data.dueCount,
+        streak: (profile?.streak_count || 0) + 1,
+      });
     },
     onError: (err) => toast('오류: ' + err.message, 'error'),
   });
@@ -519,6 +539,52 @@ export default function ViewerPage() {
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* 읽기 완료 요약 모달 */}
+      {completionModal && (
+        <div className="modal-overlay completion-overlay">
+          <div className="modal completion-modal">
+            <div className="completion-modal__fireworks">🎉</div>
+            <h2 className="completion-modal__title">읽기 완료!</h2>
+            <p className="completion-modal__subtitle">{material.title}</p>
+
+            <div className="completion-stats">
+              <div className="completion-stat">
+                <span className="completion-stat__value">{completionModal.wordsSaved}</span>
+                <span className="completion-stat__label">저장한 단어</span>
+              </div>
+              <div className="completion-stat completion-stat--divider" />
+              <div className="completion-stat">
+                <span className="completion-stat__value">🔥 {completionModal.streak}</span>
+                <span className="completion-stat__label">일 연속</span>
+              </div>
+              <div className="completion-stat completion-stat--divider" />
+              <div className="completion-stat">
+                <span className="completion-stat__value">{completionModal.dueCount}</span>
+                <span className="completion-stat__label">복습 대기 중</span>
+              </div>
+            </div>
+
+            <div className="completion-modal__actions">
+              {completionModal.dueCount > 0 ? (
+                <a href="/vocab" className="btn btn--primary btn--md">
+                  🧠 지금 복습하기 ({completionModal.dueCount}개)
+                </a>
+              ) : (
+                <a href="/materials" className="btn btn--primary btn--md">
+                  📰 다른 자료 보기
+                </a>
+              )}
+              <button
+                onClick={() => setCompletionModal(null)}
+                className="btn btn--ghost btn--md"
+              >
+                계속 읽기
+              </button>
+            </div>
           </div>
         </div>
       )}
