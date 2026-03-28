@@ -3487,6 +3487,21 @@ button {
   font-weight: 600;
 }
 
+/* ========= 언어 미설정 배너 ========= */
+.home-setup-banner {
+  display: block;
+  background: var(--primary-glow);
+  border: 1px solid var(--primary);
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-size: 0.875rem;
+  color: var(--primary-light);
+  text-decoration: none;
+  margin-bottom: 16px;
+  transition: background 0.15s;
+}
+.home-setup-banner:hover { background: color-mix(in srgb, var(--primary) 15%, transparent); }
+
 /* ========= 신규 유저 시작 가이드 ========= */
 .home-getting-started {
   background: linear-gradient(135deg, var(--primary-glow) 0%, var(--bg-elevated) 100%);

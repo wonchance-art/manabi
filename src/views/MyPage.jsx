@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
@@ -39,6 +39,17 @@ export default function MyPage() {
   const [editLanguages, setEditLanguages] = useState(['Japanese']);
   const [editLevelJp, setEditLevelJp] = useState('N3 중급');
   const [editLevelEn, setEditLevelEn] = useState('B1 중급');
+
+  // 프로필 미설정 신규 유저는 편집 폼 자동 오픈
+  useEffect(() => {
+    if (profile && !profile.learning_language?.length && !isEditing) {
+      setEditName(profile.display_name || '');
+      setEditLanguages(['Japanese']);
+      setEditLevelJp(profile.learning_level_japanese || 'N3 중급');
+      setEditLevelEn(profile.learning_level_english || 'B1 중급');
+      setIsEditing(true);
+    }
+  }, [profile]);
 
   function startEdit() {
     setEditName(profile?.display_name || '');
@@ -109,6 +120,11 @@ export default function MyPage() {
 
       {isEditing && (
         <div className="card" style={{ marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {profile && !profile.learning_language?.length && (
+            <div style={{ background: 'var(--primary-glow)', border: '1px solid var(--primary)', borderRadius: '8px', padding: '12px 16px', fontSize: '0.875rem', color: 'var(--primary-light)' }}>
+              👋 학습 언어와 수준을 설정하면 맞춤 자료를 추천받을 수 있어요!
+            </div>
+          )}
           <h3 style={{ fontSize: '0.95rem', fontWeight: 600 }}>프로필 편집</h3>
           <div className="form-field">
             <label className="form-label">닉네임</label>

@@ -86,8 +86,17 @@ export default function HomePage() {
   const streak = profile?.streak_count || 0;
   const isNewUser = dueCount === 0 && todayVocab === 0 && !data?.recentProgress?.length;
 
+  const hasNoLanguage = profile && !profile.learning_language?.length;
+
   return (
     <div className="page-container home-page">
+      {/* 언어 미설정 배너 */}
+      {hasNoLanguage && (
+        <Link href="/profile" className="home-setup-banner">
+          ⚙️ 학습 언어와 수준을 설정하면 맞춤 추천을 받을 수 있어요 →
+        </Link>
+      )}
+
       {/* 신규 유저 시작 가이드 */}
       {isNewUser && (
         <div className="home-getting-started">
