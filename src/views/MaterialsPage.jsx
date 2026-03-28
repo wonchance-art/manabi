@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSearchParams } from 'next/navigation';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
@@ -126,11 +127,12 @@ export default function MaterialsPage() {
     },
     onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
   });
+  const searchParams = useSearchParams();
   const [tab, setTab] = useState('public');
   const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [langFilter, setLangFilter] = useState('all');
-  const [levelFilter, setLevelFilter] = useState('all');
+  const [langFilter, setLangFilter] = useState(searchParams.get('lang') || 'all');
+  const [levelFilter, setLevelFilter] = useState(searchParams.get('level') || 'all');
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   // 검색어 debounce (300ms) — 매 키입력마다 DB 요청 방지
@@ -320,13 +322,33 @@ export default function MaterialsPage() {
         </>
       ) : (
         <div className="empty-state">
-          <div className="empty-state__icon">📦</div>
+          <div className="empty-state__icon">
+            {searchQuery || langFilter !== 'all' || levelFilter !== 'all' ? '🔍' : '📖'}
+          </div>
           <p className="empty-state__msg">
             {searchQuery || langFilter !== 'all' || levelFilter !== 'all'
               ? '조건에 맞는 자료가 없습니다.'
-              : tab === 'public' ? '아직 공유된 공용 자료가 없습니다.' : '아직 보관된 개인 자료가 없습니다.'}
+              : tab === 'public'
+                ? '아직 공유된 공용 자료가 없습니다.\n관심 있는 텍스트를 업로드하면 모두가 함께 공부할 수 있어요!'
+                : '아직 보관된 개인 자료가 없습니다.'}
           </p>
-          {tab === 'private' && !searchQuery && (
+          {(searchQuery || langFilter !== 'all' || levelFilter !== 'all') ? (
+            <button
+              className="empty-state__link"
+              onClick={() => { setLangFilter('all'); setLevelFilter('all'); setSearchInput(''); }}
+            >
+              필터 초기화
+            </button>
+          ) : tab === 'public' ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+              <Link href="/materials/add" className="btn btn--primary btn--md">
+                첫 번째 자료 공유하기 →
+              </Link>
+              <Link href="/guide" className="empty-state__link">
+                어떤 자료가 좋을지 모르겠다면 가이드 보기 →
+              </Link>
+            </div>
+          ) : (
             <Link href="/materials/add" className="empty-state__link">
               첫 번째 자료 추가하기 →
             </Link>

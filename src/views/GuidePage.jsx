@@ -223,6 +223,20 @@ function Roadmap({ curr }) {
                     "{level.quote}"
                   </div>
                 )}
+
+                <Link
+                  href={`/materials?lang=${curr.lang}&level=${encodeURIComponent(level.label)}`}
+                  style={{
+                    display: 'inline-block',
+                    marginTop: '10px',
+                    fontSize: '0.75rem',
+                    color: w.dot,
+                    textDecoration: 'none',
+                    opacity: 0.8,
+                  }}
+                >
+                  {level.label} 자료 보러가기 →
+                </Link>
               </div>
             </div>
           );

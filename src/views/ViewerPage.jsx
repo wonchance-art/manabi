@@ -45,6 +45,7 @@ export default function ViewerPage() {
   const [charGap, setCharGap] = useState(0.25);
   const [theme, setTheme] = useState('dark');
   const [fontFamily, setFontFamily] = useState("'Noto Sans KR'");
+  const [showFurigana, setShowFurigana] = useState(true);
 
   const [selectedToken, setSelectedToken] = useState(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -287,6 +288,14 @@ export default function ViewerPage() {
           </div>
 
           <button
+            onClick={() => setShowFurigana(v => !v)}
+            className={`grammar-btn ${showFurigana ? '' : 'grammar-btn--active'}`}
+            title="후리가나 표시/숨김"
+          >
+            {showFurigana ? '🈳 후리가나 숨기기' : '🈳 후리가나 보이기'}
+          </button>
+
+          <button
             onClick={analyzeGrammar}
             disabled={isGrammarLoading}
             className={`grammar-btn ${selectedRangeText ? 'grammar-btn--active' : ''}`}
@@ -344,7 +353,7 @@ export default function ViewerPage() {
               className={`word-token ${isSaved ? 'word-token--saved' : ''}`}
               onClick={() => handleTokenClick(token, tokenId)}
             >
-              {token.furigana && <span className="furigana">{token.furigana}</span>}
+              {token.furigana && showFurigana && <span className="furigana">{token.furigana}</span>}
               <span className="surface">{token.text}</span>
             </div>
           );
