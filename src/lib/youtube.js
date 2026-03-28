@@ -2,6 +2,7 @@
  * Server-side YouTube helpers
  * Node.js 환경에서만 사용 (API Route, Cron)
  */
+import { YoutubeTranscript } from 'youtube-transcript';
 
 const YOUTUBE_API = 'https://www.googleapis.com/youtube/v3';
 
@@ -9,8 +10,10 @@ const YOUTUBE_API = 'https://www.googleapis.com/youtube/v3';
 // channel ID 확인: youtube.com/@handle → 채널 페이지 소스에서 "channelId" 검색
 export const LEARNING_CHANNELS = {
   Japanese: [
-    { id: 'UCRk5KoVGGMg_j7OMauS3v3w', name: 'NHK World Japan', level: 'N3 중급' },
-    { id: 'UChG-6mHbSoIRNXESSKgQVdQ', name: 'JapanesePod101', level: 'N4 기본' },
+    // Comprehensible Japanese: 일본어로만 진행, 자막 있음, N4-N3 수준
+    { id: 'UCXo8kuOfFEPQRPqPMPAjHOQ', name: 'Comprehensible Japanese', level: 'N3 중급' },
+    // Nihongo con Teppei for Beginners: 짧은 일본어 팟캐스트 스타일
+    { id: 'UCwZkjXlspIGxMhMV0kAexeA', name: 'Nihongo con Teppei', level: 'N4 기본' },
   ],
   English: [
     { id: 'UCHaHD477h-FeBbVh9Sh7syA', name: 'BBC Learning English', level: 'B1 중급' },
@@ -51,99 +54,32 @@ export async function searchChannelVideos(channelId, apiKey, { maxResults = 5, l
 }
 
 /**
- * YouTube 영상 페이지에서 자막 추출 (scraping)
- * YouTube Data API 없이 작동, 공개 자막만 가능
+ * YouTube 자막 추출 (youtube-transcript 패키지 사용)
  */
 export async function extractTranscript(videoId, langCode = 'ja') {
   try {
-    const pageRes = await fetch(`https://www.youtube.com/watch?v=${videoId}`, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept-Language': langCode === 'ja' ? 'ja-JP,ja;q=0.9,en;q=0.8' : 'en-US,en;q=0.9',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-      },
+    // 요청 언어 우선, 없으면 자동 생성 자막 포함 전체에서 첫 번째
+    const transcripts = await YoutubeTranscript.fetchTranscript(videoId, {
+      lang: langCode,
     });
 
-    if (!pageRes.ok) return null;
-    const html = await pageRes.text();
+    if (!transcripts?.length) return null;
 
-    // ytInitialPlayerResponse에서 caption track URL 추출
-    const captionTracks = extractCaptionTracks(html);
-    if (!captionTracks.length) return null;
+    const lines = transcripts.map(t =>
+      t.text.replace(/&amp;/g, '&').replace(/&#39;/g, "'").trim()
+    ).filter(Boolean);
 
-    // 요청 언어 우선, 없으면 첫 번째 트랙
-    const track = captionTracks.find(t => t.languageCode === langCode)
-      || captionTracks.find(t => t.languageCode.startsWith(langCode.split('-')[0]))
-      || captionTracks[0];
+    // 8줄씩 문단으로 묶기
+    const paragraphs = [];
+    for (let i = 0; i < lines.length; i += 8) {
+      paragraphs.push(lines.slice(i, i + 8).join(' '));
+    }
 
-    if (!track?.baseUrl) return null;
-
-    // timedtext XML 가져오기
-    const captionRes = await fetch(track.baseUrl);
-    if (!captionRes.ok) return null;
-
-    const xml = await captionRes.text();
-    return parseTimedtextXML(xml);
+    return paragraphs.join('\n');
   } catch (e) {
     console.error(`Transcript extraction failed [${videoId}]:`, e.message);
     return null;
   }
-}
-
-function extractCaptionTracks(html) {
-  try {
-    // ytInitialPlayerResponse JSON 위치 찾기
-    const marker = 'ytInitialPlayerResponse';
-    const markerIdx = html.indexOf(marker);
-    if (markerIdx === -1) return [];
-
-    // { 시작 위치 찾기
-    let start = html.indexOf('{', markerIdx);
-    if (start === -1) return [];
-
-    // 괄호 카운팅으로 JSON 끝 찾기 (최대 3MB만 스캔)
-    let depth = 0, end = -1;
-    const limit = Math.min(start + 3 * 1024 * 1024, html.length);
-    for (let i = start; i < limit; i++) {
-      if (html[i] === '{') depth++;
-      else if (html[i] === '}') {
-        depth--;
-        if (depth === 0) { end = i; break; }
-      }
-    }
-
-    if (end === -1) return [];
-
-    const playerResponse = JSON.parse(html.substring(start, end + 1));
-    return playerResponse?.captions?.playerCaptionsTracklistRenderer?.captionTracks || [];
-  } catch {
-    return [];
-  }
-}
-
-function parseTimedtextXML(xml) {
-  const lines = [];
-  for (const match of xml.matchAll(/<text[^>]*start="([^"]+)"[^>]*>([^<]*)<\/text>/g)) {
-    const text = match[2]
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'")
-      .replace(/\s+/g, ' ')
-      .trim();
-    if (text) lines.push(text);
-  }
-
-  if (!lines.length) return null;
-
-  // 8줄씩 한 문단으로 묶기
-  const paragraphs = [];
-  for (let i = 0; i < lines.length; i += 8) {
-    paragraphs.push(lines.slice(i, i + 8).join(' '));
-  }
-
-  return paragraphs.join('\n');
 }
 
 /**
