@@ -84,9 +84,46 @@ export default function HomePage() {
 
   const displayName = profile?.display_name || '학습자';
   const streak = profile?.streak_count || 0;
+  const isNewUser = dueCount === 0 && todayVocab === 0 && !data?.recentProgress?.length;
 
   return (
     <div className="page-container home-page">
+      {/* 신규 유저 시작 가이드 */}
+      {isNewUser && (
+        <div className="home-getting-started">
+          <div className="home-getting-started__header">
+            <span className="home-getting-started__emoji">🚀</span>
+            <div>
+              <h2 className="home-getting-started__title">시작이 반이에요, {displayName}님!</h2>
+              <p className="home-getting-started__sub">3단계로 첫 학습을 완료해봐요</p>
+            </div>
+          </div>
+          <div className="home-gs-steps">
+            <Link href="/guide" className="home-gs-step">
+              <span className="home-gs-step__num">1</span>
+              <div>
+                <div className="home-gs-step__title">학습 로드맵 확인</div>
+                <div className="home-gs-step__desc">내 레벨에 맞는 가이드 보기 →</div>
+              </div>
+            </Link>
+            <Link href="/materials" className="home-gs-step">
+              <span className="home-gs-step__num">2</span>
+              <div>
+                <div className="home-gs-step__title">오늘의 추천 자료 읽기</div>
+                <div className="home-gs-step__desc">AI가 모든 단어를 해부해 드려요 →</div>
+              </div>
+            </Link>
+            <Link href="/vocab" className="home-gs-step">
+              <span className="home-gs-step__num">3</span>
+              <div>
+                <div className="home-gs-step__title">저장한 단어 복습</div>
+                <div className="home-gs-step__desc">FSRS 알고리즘이 기억을 강화해요 →</div>
+              </div>
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* 인사 + 스트릭 */}
       <div className="home-greeting">
         <div>

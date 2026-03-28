@@ -499,6 +499,72 @@ export default function VocabPage() {
             })()}
           </div>
 
+          {/* 어휘 성장 그래프 — 최근 8주 */}
+          {vocab.length > 0 && (() => {
+            const WEEKS = 8;
+            const now = new Date();
+            const weekData = Array.from({ length: WEEKS }, (_, i) => {
+              const weekStart = new Date(now);
+              weekStart.setDate(now.getDate() - (WEEKS - 1 - i) * 7 - now.getDay());
+              weekStart.setHours(0, 0, 0, 0);
+              const weekEnd = new Date(weekStart);
+              weekEnd.setDate(weekStart.getDate() + 7);
+              const count = vocab.filter(v => {
+                const d = new Date(v.created_at);
+                return d >= weekStart && d < weekEnd;
+              }).length;
+              const label = `${weekStart.getMonth() + 1}/${weekStart.getDate()}`;
+              return { label, count };
+            });
+
+            const maxVal = Math.max(...weekData.map(w => w.count), 1);
+            const W = 500, H = 120, PAD = 32;
+            const stepX = (W - PAD * 2) / (WEEKS - 1);
+            const points = weekData.map((w, i) => ({
+              x: PAD + i * stepX,
+              y: PAD + (1 - w.count / maxVal) * (H - PAD * 2),
+              ...w,
+            }));
+            const polyline = points.map(p => `${p.x},${p.y}`).join(' ');
+            const totalNew = weekData.reduce((s, w) => s + w.count, 0);
+
+            return (
+              <div className="card" style={{ padding: '24px', gridColumn: '1 / -1' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '16px' }}>
+                  <h3 style={{ fontSize: '1.1rem' }}>📈 어휘 성장 추이</h3>
+                  <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>최근 8주 +{totalNew}개</span>
+                </div>
+                <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', overflow: 'visible' }}>
+                  {/* 가로 격자선 */}
+                  {[0.25, 0.5, 0.75, 1].map(r => (
+                    <line key={r}
+                      x1={PAD} y1={PAD + (1 - r) * (H - PAD * 2)}
+                      x2={W - PAD} y2={PAD + (1 - r) * (H - PAD * 2)}
+                      stroke="var(--border)" strokeWidth="1" strokeDasharray="4 4"
+                    />
+                  ))}
+                  {/* 채움 영역 */}
+                  <polygon
+                    points={`${points[0].x},${H - PAD} ${polyline} ${points[points.length-1].x},${H - PAD}`}
+                    fill="var(--primary-glow)"
+                  />
+                  {/* 선 */}
+                  <polyline points={polyline} fill="none" stroke="var(--primary-light)" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+                  {/* 점 + 레이블 */}
+                  {points.map((p, i) => (
+                    <g key={i}>
+                      <circle cx={p.x} cy={p.y} r="4" fill="var(--primary-light)" />
+                      {p.count > 0 && (
+                        <text x={p.x} y={p.y - 8} textAnchor="middle" fontSize="10" fill="var(--primary-light)" fontWeight="700">{p.count}</text>
+                      )}
+                      <text x={p.x} y={H - 4} textAnchor="middle" fontSize="9" fill="var(--text-muted)">{p.label}</text>
+                    </g>
+                  ))}
+                </svg>
+              </div>
+            );
+          })()}
+
           {/* Forecast Chart */}
           <div className="card" style={{ padding: '24px', gridColumn: '1 / -1' }}>
             <h3 style={{ fontSize: '1.1rem', marginBottom: '20px' }}>향후 7일 복습 스케줄</h3>
