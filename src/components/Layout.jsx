@@ -4,14 +4,24 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '../lib/AuthContext';
 import { useTheme } from '../lib/useTheme';
+import { useState, useEffect } from 'react';
 import OnboardingModal from './OnboardingModal';
 import NotificationBell from './NotificationBell';
+import TourGuide from './TourGuide';
 
 export default function Layout({ children }) {
   const { user, profile, isAdmin, signOut } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
+  const [showTour, setShowTour] = useState(false);
+
+  // Show tour once for onboarded users who haven't seen it
+  useEffect(() => {
+    if (profile?.onboarded && !localStorage.getItem('as_tour_done')) {
+      setShowTour(true);
+    }
+  }, [profile?.onboarded]);
 
   async function handleAuthClick() {
     if (user) {
@@ -124,6 +134,7 @@ export default function Layout({ children }) {
       </main>
 
       {profile && profile.onboarded === false && <OnboardingModal />}
+      {showTour && <TourGuide onDone={() => setShowTour(false)} />}
     </>
   );
 }
