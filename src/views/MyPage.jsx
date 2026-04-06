@@ -7,38 +7,28 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { LEVELS } from '../lib/constants';
-import Spinner from '../components/Spinner';
+import { getXPLevel, getLevelProgress } from '../lib/xp';
+import { ACHIEVEMENTS } from '../lib/achievements';
 import Button from '../components/Button';
 
-async function fetchUserStats(userId) {
-  const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
-
-  const heatmapStart = new Date(todayStart);
-  heatmapStart.setDate(heatmapStart.getDate() - 83); // 12주 = 84일
-
-  const [{ count: completedCount }, { data: vocabData, count: vocabCount }, { data: recentProgress }, { count: todayVocabCount }, { data: heatmapData }] = await Promise.all([
+async function fetchMyStats(userId) {
+  const [
+    { count: vocabCount },
+    { count: readCount },
+    { count: reviewedCount },
+    { data: achievements },
+  ] = await Promise.all([
+    supabase.from('user_vocabulary').select('*', { count: 'exact', head: true }).eq('user_id', userId),
     supabase.from('reading_progress').select('*', { count: 'exact', head: true }).eq('user_id', userId).eq('is_completed', true),
-    supabase.from('user_vocabulary').select('interval', { count: 'exact' }).eq('user_id', userId),
-    supabase.from('reading_progress').select('material_id, updated_at, reading_materials(id, title, processed_json)').eq('user_id', userId).order('updated_at', { ascending: false }).limit(3),
-    supabase.from('user_vocabulary').select('*', { count: 'exact', head: true }).eq('user_id', userId).gte('created_at', todayStart.toISOString()),
-    supabase.from('user_vocabulary').select('created_at').eq('user_id', userId).gte('created_at', heatmapStart.toISOString()),
+    supabase.from('user_vocabulary').select('*', { count: 'exact', head: true }).eq('user_id', userId).not('last_reviewed_at', 'is', null),
+    supabase.from('user_achievements').select('achievement_id, created_at').eq('user_id', userId).order('created_at', { ascending: false }),
   ]);
-
-  // 날짜별 카운트 집계
-  const dayCounts = {};
-  (heatmapData || []).forEach(v => {
-    const day = v.created_at.slice(0, 10);
-    dayCounts[day] = (dayCounts[day] || 0) + 1;
-  });
-
   return {
-    completedMaterials: completedCount || 0,
-    totalVocab: vocabCount || 0,
-    masteredVocab: vocabData?.filter(v => v.interval > 14).length || 0,
-    recentProgress: recentProgress || [],
-    todayVocab: todayVocabCount || 0,
-    heatmapDayCounts: dayCounts,
+    vocabCount: vocabCount || 0,
+    readCount: readCount || 0,
+    reviewedCount: reviewedCount || 0,
+    earnedIds: new Set((achievements || []).map(a => a.achievement_id)),
+    earnedDates: Object.fromEntries((achievements || []).map(a => [a.achievement_id, a.created_at])),
   };
 }
 
@@ -46,303 +36,294 @@ export default function MyPage() {
   const { user, profile, fetchProfile, signOut } = useAuth();
   const toast = useToast();
   const queryClient = useQueryClient();
-  const [isEditing, setIsEditing] = useState(false);
-  const [editName, setEditName] = useState('');
-  const [editLanguages, setEditLanguages] = useState(['Japanese']);
-  const [editLevelJp, setEditLevelJp] = useState('N3 중급');
-  const [editLevelEn, setEditLevelEn] = useState('B1 중급');
 
-  // 프로필 미설정 신규 유저는 편집 폼 자동 오픈
+  const [editName, setEditName]           = useState('');
+  const [editLanguages, setEditLanguages] = useState(['Japanese']);
+  const [editLevelJp, setEditLevelJp]     = useState('N3 중급');
+  const [editLevelEn, setEditLevelEn]     = useState('B1 중급');
+  const [isEditingGoals, setIsEditingGoals] = useState(false);
+  const [goalReview, setGoalReview]       = useState(5);
+  const [goalWords, setGoalWords]         = useState(5);
+  const [goalRead, setGoalRead]           = useState(1);
+  const [badgeFilter, setBadgeFilter]     = useState('all');
+
+  const { data: stats } = useQuery({
+    queryKey: ['mypage-stats', user?.id],
+    queryFn: () => fetchMyStats(user.id),
+    enabled: !!user,
+    staleTime: 1000 * 60,
+  });
+
   useEffect(() => {
-    if (profile && !profile.learning_language?.length && !isEditing) {
-      setEditName(profile.display_name || '');
-      setEditLanguages(['Japanese']);
-      setEditLevelJp(profile.learning_level_japanese || 'N3 중급');
-      setEditLevelEn(profile.learning_level_english || 'B1 중급');
-      setIsEditing(true);
-    }
+    if (!profile) return;
+    setEditName(profile.display_name || '');
+    setEditLanguages(profile.learning_language?.length ? profile.learning_language : ['Japanese']);
+    setEditLevelJp(profile.learning_level_japanese || 'N3 중급');
+    setEditLevelEn(profile.learning_level_english  || 'B1 중급');
   }, [profile]);
 
-  function startEdit() {
-    setEditName(profile?.display_name || '');
-    setEditLanguages(profile?.learning_language || ['Japanese']);
-    setEditLevelJp(profile?.learning_level_japanese || 'N3 중급');
-    setEditLevelEn(profile?.learning_level_english || 'B1 중급');
-    setIsEditing(true);
+  function startEditGoals() {
+    setGoalReview(profile?.goal_review ?? 5);
+    setGoalWords(profile?.goal_words  ?? 5);
+    setGoalRead(profile?.goal_read    ?? 1);
+    setIsEditingGoals(true);
   }
 
-  const updateProfileMutation = useMutation({
+  const saveGoalsMutation = useMutation({
     mutationFn: async () => {
-      if (!editName.trim()) throw new Error('닉네임을 입력해주세요.');
       const { error } = await supabase.from('profiles').update({
-        display_name: editName.trim(),
-        learning_language: editLanguages,
-        learning_level_japanese: editLevelJp,
-        learning_level_english: editLevelEn,
+        goal_review: Math.max(1, goalReview),
+        goal_words:  Math.max(1, goalWords),
+        goal_read:   Math.max(1, goalRead),
       }).eq('id', user.id);
       if (error) throw error;
     },
     onSuccess: () => {
       fetchProfile(user.id, user.user_metadata);
-      queryClient.invalidateQueries({ queryKey: ['user-stats', user.id] });
-      setIsEditing(false);
+      setIsEditingGoals(false);
+      toast('목표가 저장됐습니다.', 'success');
+    },
+    onError: (err) => toast(err.message, 'error'),
+  });
+
+  const saveProfileMutation = useMutation({
+    mutationFn: async () => {
+      if (!editName.trim()) throw new Error('닉네임을 입력해주세요.');
+      const { error } = await supabase.from('profiles').update({
+        display_name:              editName.trim(),
+        learning_language:         editLanguages,
+        learning_level_japanese:   editLevelJp,
+        learning_level_english:    editLevelEn,
+      }).eq('id', user.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      fetchProfile(user.id, user.user_metadata);
+      queryClient.invalidateQueries({ queryKey: ['home', user.id] });
       toast('프로필이 저장됐습니다.', 'success');
     },
     onError: (err) => toast(err.message, 'error'),
   });
 
-  const { data: stats, isLoading } = useQuery({
-    queryKey: ['user-stats', user?.id],
-    queryFn: () => fetchUserStats(user.id),
-    enabled: !!user,
-  });
-
-  const handleSignOut = async () => {
-    await signOut();
-  };
-
   if (!user) {
     return (
-      <div className="page-container mypage-guest">
-        <h2>로그인이 필요한 페이지입니다</h2>
+      <div className="page-container mypage-noauth">
+        <h2 className="mypage-noauth__title">로그인이 필요합니다</h2>
         <Link href="/auth" className="btn btn--primary btn--md">로그인하러 가기</Link>
       </div>
     );
   }
 
   return (
-    <div className="page-container">
-      <div className="page-header page-header--row" style={{ alignItems: 'center' }}>
-        <div className="mypage-profile">
-          <div className="mypage-avatar">{profile?.display_name?.[0] || '👤'}</div>
-          <div>
-            <h1 className="page-header__title mypage-title">
-              {profile?.display_name || '학습자'}님의 대시보드
-            </h1>
-            <p className="page-header__subtitle">오늘도 성장을 향한 한 걸음을 내디뎌 보세요</p>
-          </div>
+    <div className="page-container" style={{ maxWidth: 560 }}>
+
+      {/* 헤더 */}
+      <div className="mypage-profile-header">
+        <div className="mypage-avatar">
+          {profile?.display_name?.[0] || '👤'}
         </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <Button variant="secondary" size="sm" onClick={isEditing ? () => setIsEditing(false) : startEdit}>
-            {isEditing ? '취소' : '✏️ 프로필 편집'}
-          </Button>
-          <Button variant="ghost" size="sm" onClick={handleSignOut}>로그아웃</Button>
+        <div className="mypage-profile-info">
+          <h1 className="mypage-profile-info__name">{profile?.display_name || '학습자'}</h1>
+          <p className="mypage-profile-info__email">{user.email}</p>
         </div>
+        <Button variant="ghost" size="sm" onClick={signOut}>로그아웃</Button>
       </div>
 
-      {isEditing && (
-        <div className="card" style={{ marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {profile && !profile.learning_language?.length && (
-            <div style={{ background: 'var(--primary-glow)', border: '1px solid var(--primary)', borderRadius: '8px', padding: '12px 16px', fontSize: '0.875rem', color: 'var(--primary-light)' }}>
-              👋 학습 언어와 수준을 설정하면 맞춤 자료를 추천받을 수 있어요!
-            </div>
-          )}
-          <h3 style={{ fontSize: '0.95rem', fontWeight: 600 }}>프로필 편집</h3>
-          <div className="form-field">
-            <label className="form-label">닉네임</label>
-            <input
-              className="form-input"
-              value={editName}
-              onChange={e => setEditName(e.target.value)}
-              maxLength={20}
-            />
+      {/* 프로필 설정 */}
+      <div className="card mypage-section">
+        <h2 className="mypage-section__title">👤 프로필 설정</h2>
+
+        {profile && !profile.learning_language?.length && (
+          <div className="mypage-tip-banner">
+            👋 학습 언어와 수준을 설정하면 맞춤 자료를 추천받을 수 있어요!
           </div>
+        )}
+
+        <div className="form-field">
+          <label className="form-label">닉네임</label>
+          <input
+            className="form-input"
+            value={editName}
+            onChange={e => setEditName(e.target.value)}
+            maxLength={20}
+            placeholder="표시될 이름을 입력하세요"
+          />
+        </div>
+
+        <div className="form-field">
+          <label className="form-label">학습 언어</label>
+          <div className="toggle-group">
+            {['Japanese', 'English'].map(lang => (
+              <button key={lang} type="button"
+                className={`toggle-btn ${editLanguages.includes(lang) ? 'toggle-btn--primary' : ''}`}
+                onClick={() => setEditLanguages(prev =>
+                  prev.includes(lang)
+                    ? prev.length > 1 ? prev.filter(l => l !== lang) : prev
+                    : [...prev, lang]
+                )}>
+                {lang === 'Japanese' ? '🇯🇵 Japanese' : '🇬🇧 English'}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {editLanguages.includes('Japanese') && (
           <div className="form-field">
-            <label className="form-label">학습 언어</label>
-            <div className="toggle-group">
-              {['Japanese', 'English'].map(lang => (
-                <button
-                  key={lang}
-                  type="button"
-                  className={`toggle-btn ${editLanguages.includes(lang) ? 'toggle-btn--primary' : ''}`}
-                  onClick={() => setEditLanguages(prev =>
-                    prev.includes(lang)
-                      ? prev.length > 1 ? prev.filter(l => l !== lang) : prev
-                      : [...prev, lang]
-                  )}
-                >
-                  {lang === 'Japanese' ? '🇯🇵 Japanese' : '🇬🇧 English'}
-                </button>
+            <label className="form-label">🇯🇵 일본어 수준</label>
+            <div className="level-group">
+              {LEVELS.Japanese.map(lvl => (
+                <button key={lvl} type="button"
+                  className={`level-btn ${editLevelJp === lvl ? 'level-btn--active' : ''}`}
+                  onClick={() => setEditLevelJp(lvl)}>{lvl}</button>
               ))}
             </div>
           </div>
-          {editLanguages.includes('Japanese') && (
-            <div className="form-field">
-              <label className="form-label">🇯🇵 일본어 수준</label>
-              <div className="level-group">
-                {LEVELS.Japanese.map(lvl => (
-                  <button key={lvl} type="button"
-                    className={`level-btn ${editLevelJp === lvl ? 'level-btn--active' : ''}`}
-                    onClick={() => setEditLevelJp(lvl)}>{lvl}</button>
-                ))}
+        )}
+
+        {editLanguages.includes('English') && (
+          <div className="form-field">
+            <label className="form-label">🇬🇧 영어 수준</label>
+            <div className="level-group">
+              {LEVELS.English.map(lvl => (
+                <button key={lvl} type="button"
+                  className={`level-btn ${editLevelEn === lvl ? 'level-btn--active' : ''}`}
+                  onClick={() => setEditLevelEn(lvl)}>{lvl}</button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <Button onClick={() => saveProfileMutation.mutate()} disabled={saveProfileMutation.isPending}>
+          {saveProfileMutation.isPending ? '저장 중...' : '저장'}
+        </Button>
+      </div>
+
+      {/* XP & 레벨 요약 */}
+      {profile && (() => {
+        const xp = profile.xp ?? 0;
+        const level = getXPLevel(xp);
+        const progress = getLevelProgress(xp);
+        const streak = profile.streak_count ?? 0;
+        return (
+          <div className="card mypage-section">
+            <h2 className="mypage-section__title">⚡ 레벨 & 통계</h2>
+            <div className="mypage-xp-bar">
+              <div className="mypage-xp-bar__info">
+                <span className="mypage-xp-bar__level">Lv.{level}</span>
+                <span className="mypage-xp-bar__total">{xp.toLocaleString('ko-KR')} XP</span>
+              </div>
+              <div className="mypage-xp-bar__track">
+                <div className="mypage-xp-bar__fill" style={{ width: `${progress}%` }} />
               </div>
             </div>
-          )}
-          {editLanguages.includes('English') && (
-            <div className="form-field">
-              <label className="form-label">🇬🇧 영어 수준</label>
-              <div className="level-group">
-                {LEVELS.English.map(lvl => (
-                  <button key={lvl} type="button"
-                    className={`level-btn ${editLevelEn === lvl ? 'level-btn--active' : ''}`}
-                    onClick={() => setEditLevelEn(lvl)}>{lvl}</button>
-                ))}
-              </div>
+            <div className="mypage-stat-grid">
+              {[
+                { icon: '⭐', label: '수집 단어', value: stats?.vocabCount ?? '–' },
+                { icon: '🧠', label: '복습 완료', value: stats?.reviewedCount ?? '–' },
+                { icon: '📖', label: '완독 자료', value: stats?.readCount ?? '–' },
+                { icon: '🔥', label: '연속 학습', value: streak ? `${streak}일` : '–' },
+              ].map(s => (
+                <div key={s.label} className="mypage-stat-cell">
+                  <span className="mypage-stat-cell__icon">{s.icon}</span>
+                  <span className="mypage-stat-cell__value">{s.value}</span>
+                  <span className="mypage-stat-cell__label">{s.label}</span>
+                </div>
+              ))}
             </div>
-          )}
-          <Button onClick={() => updateProfileMutation.mutate()} disabled={updateProfileMutation.isPending} size="md">
-            {updateProfileMutation.isPending ? '저장 중...' : '저장'}
-          </Button>
+          </div>
+        );
+      })()}
+
+      {/* 업적 갤러리 */}
+      {stats && (
+        <div className="card mypage-section">
+          <div className="mypage-section__header">
+            <h2 className="mypage-section__title">🏅 업적</h2>
+            <span className="mypage-badge-count">{stats.earnedIds.size} / {ACHIEVEMENTS.length}</span>
+          </div>
+
+          <div className="mypage-badge-filters">
+            {['all', '어휘', '복습', '읽기', '스트릭', 'XP', '특별'].map(cat => (
+              <button key={cat}
+                className={`mypage-badge-filter ${badgeFilter === cat ? 'mypage-badge-filter--active' : ''}`}
+                onClick={() => setBadgeFilter(cat)}>
+                {cat === 'all' ? '전체' : cat}
+              </button>
+            ))}
+          </div>
+
+          <div className="mypage-badge-grid">
+            {ACHIEVEMENTS
+              .filter(a => badgeFilter === 'all' || a.category === badgeFilter)
+              .map(a => {
+                const earned = stats.earnedIds.has(a.id);
+                const date = stats.earnedDates[a.id];
+                return (
+                  <div key={a.id} className={`mypage-badge-item ${earned ? 'mypage-badge-item--earned' : ''}`}
+                    title={earned && date ? `${new Date(date).toLocaleDateString('ko-KR')} 획득` : '미획득'}>
+                    <span className="mypage-badge-item__icon">{a.icon}</span>
+                    <span className="mypage-badge-item__name">{a.name}</span>
+                    <span className="mypage-badge-item__desc">{a.desc}</span>
+                  </div>
+                );
+              })}
+          </div>
         </div>
       )}
 
-      {isLoading ? (
-        <Spinner message="성장 리포트를 분석 중..." />
-      ) : (
-        <>
-          {/* Stats Overview */}
-          <div className="stats-grid mypage-stats">
-            <div className="stat-card">
-              <div className="stat-card__label">현재 스트릭</div>
-              <div className="stat-card__value mypage-streak">🔥 {profile?.streak_count || 0}일</div>
-              <div className="stat-card__sub">꾸준함이 실력을 만듭니다!</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-card__label">수집한 어휘</div>
-              <div className="stat-card__value stat-card__value--primary">{stats.totalVocab}개</div>
-              <div className="stat-card__sub">마스터 어휘: {stats.masteredVocab}개</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-card__label">완료한 자료</div>
-              <div className="stat-card__value stat-card__value--accent">{stats.completedMaterials}건</div>
-              <div className="stat-card__sub">지식의 지평이 넓어지고 있어요</div>
-            </div>
-          </div>
+      {/* 일일 목표 설정 */}
+      <div className="card mypage-section">
+        <div className="mypage-section__header">
+          <h2 className="mypage-section__title">🎯 일일 목표</h2>
+          {!isEditingGoals && (
+            <Button size="sm" variant="secondary" onClick={startEditGoals}>편집</Button>
+          )}
+        </div>
 
-          {/* 학습 히트맵 */}
-          {(() => {
-            const dayCounts = stats.heatmapDayCounts || {};
-            const COLS = 12; // 12주
-            const ROWS = 7;  // 월~일
-            const CELL = 14;
-            const GAP = 3;
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-
-            // 오늘 기준으로 84일 배열 (과거 → 오늘)
-            const days = Array.from({ length: COLS * ROWS }, (_, i) => {
-              const d = new Date(today);
-              d.setDate(d.getDate() - (COLS * ROWS - 1 - i));
-              return d.toISOString().slice(0, 10);
-            });
-
-            const maxCount = Math.max(1, ...Object.values(dayCounts));
-            const totalActive = Object.keys(dayCounts).length;
-            const totalWords = Object.values(dayCounts).reduce((a, b) => a + b, 0);
-
-            function cellColor(count) {
-              if (!count) return 'var(--bg-elevated)';
-              const level = Math.ceil((count / maxCount) * 4);
-              const colors = ['', 'var(--primary-glow)', 'var(--primary)', 'var(--accent)', 'var(--accent)'];
-              return colors[level] || colors[4];
-            }
-
-            const W = COLS * (CELL + GAP) - GAP;
-            const H = ROWS * (CELL + GAP) - GAP;
-
-            return (
-              <div className="card mypage-heatmap">
-                <div className="mypage-heatmap__header">
-                  <h3 className="mypage-section-title" style={{ margin: 0 }}>🗓 학습 활동 (최근 12주)</h3>
-                  <span className="mypage-heatmap__summary">{totalActive}일 활동 · {totalWords}개 단어</span>
+        {isEditingGoals ? (
+          <>
+            {[
+              { label: '🧠 단어 복습', value: goalReview, set: setGoalReview, min: 1, max: 50 },
+              { label: '⭐ 단어 수집', value: goalWords,  set: setGoalWords,  min: 1, max: 30 },
+              { label: '📖 자료 완독', value: goalRead,   set: setGoalRead,   min: 1, max: 5  },
+            ].map(({ label, value, set, min, max }) => (
+              <div key={label} className="mypage-goal-slider">
+                <div className="mypage-goal-slider__head">
+                  <span>{label}</span>
+                  <span className="mypage-goal-slider__value">{value}개</span>
                 </div>
-                <div style={{ overflowX: 'auto' }}>
-                  <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} style={{ display: 'block' }}>
-                    {days.map((day, i) => {
-                      const col = Math.floor(i / ROWS);
-                      const row = i % ROWS;
-                      const x = col * (CELL + GAP);
-                      const y = row * (CELL + GAP);
-                      const count = dayCounts[day] || 0;
-                      return (
-                        <rect
-                          key={day}
-                          x={x} y={y}
-                          width={CELL} height={CELL}
-                          rx={3}
-                          fill={cellColor(count)}
-                          opacity={day > today.toISOString().slice(0, 10) ? 0 : 1}
-                        >
-                          <title>{day}: {count}개</title>
-                        </rect>
-                      );
-                    })}
-                  </svg>
-                </div>
-                <div className="mypage-heatmap__legend">
-                  <span>적음</span>
-                  {['var(--bg-elevated)', 'var(--primary-glow)', 'var(--primary)', 'var(--accent)'].map((c, i) => (
-                    <rect key={i} style={{ width: 12, height: 12, background: c, borderRadius: 2, display: 'inline-block' }} />
-                  ))}
-                  <span>많음</span>
+                <input type="range" className="mypage-range" min={min} max={max} value={value}
+                  onChange={e => set(Number(e.target.value))} />
+                <div className="mypage-goal-slider__minmax">
+                  <span>{min}</span><span>{max}</span>
                 </div>
               </div>
-            );
-          })()}
-
-          <div className="mypage-grid">
-            {/* Recent Activities */}
-            <div>
-              <h2 className="mypage-section-title">🕒 최근 학습한 자료</h2>
-              {stats.recentProgress.length > 0 ? (
-                <div className="mypage-recent-list">
-                  {stats.recentProgress.map(p => {
-                    const m = p.reading_materials;
-                    if (!m) return null;
-                    const language = m.processed_json?.metadata?.language || 'Japanese';
-                    return (
-                      <Link key={p.material_id} href={`/viewer/${p.material_id}`} className="card mypage-recent-item">
-                        <div className="mypage-recent-item__left">
-                          <span className="card__flag">{language === 'English' ? '🇬🇧' : '🇯🇵'}</span>
-                          <div>
-                            <h4 className="mypage-recent-item__title">{m.title}</h4>
-                            <span className="mypage-recent-item__date">
-                              {new Date(p.updated_at).toLocaleDateString('ko-KR')} 학습
-                            </span>
-                          </div>
-                        </div>
-                        <span className="mypage-recent-item__arrow">→</span>
-                      </Link>
-                    );
-                  })}
-                  <Link href="/materials" className="mypage-more-link">전체 자료 보러가기 →</Link>
-                </div>
-              ) : (
-                <div className="card empty-state">
-                  아직 학습한 자료가 없습니다. 자료를 추가해 보세요!
-                </div>
-              )}
+            ))}
+            <div className="mypage-goal-actions">
+              <Button onClick={() => saveGoalsMutation.mutate()} disabled={saveGoalsMutation.isPending} style={{ flex: 1 }}>
+                {saveGoalsMutation.isPending ? '저장 중...' : '저장'}
+              </Button>
+              <Button variant="secondary" onClick={() => setIsEditingGoals(false)} style={{ flex: 1 }}>
+                취소
+              </Button>
             </div>
-
-            {/* Quick Actions */}
-            <div>
-              <h2 className="mypage-section-title">🎯 오늘의 목표</h2>
-              <div className="card mypage-goal-card">
-                <div className="mypage-goal-row">
-                  <span>새로운 단어 5개 수집 ({stats.todayVocab}/5)</span>
-                  <span className="mypage-goal-status">{stats.todayVocab >= 5 ? '✅ 달성!' : '진행 중'}</span>
-                </div>
-                <div className="progress-bar">
-                  <div className="progress-bar__fill" style={{ width: `${Math.min(100, (stats.todayVocab / 5) * 100)}%` }} />
-                </div>
-                <Link href="/materials/add" className="btn btn--primary btn--md mypage-goal-cta">
-                  학습 시작하기
-                </Link>
+          </>
+        ) : (
+          <div className="mypage-goal-list">
+            {[
+              { label: '🧠 단어 복습', goal: profile?.goal_review ?? 5 },
+              { label: '⭐ 단어 수집', goal: profile?.goal_words  ?? 5 },
+              { label: '📖 자료 완독', goal: profile?.goal_read   ?? 1 },
+            ].map(({ label, goal }) => (
+              <div key={label} className="mypage-goal-row">
+                <span className="mypage-goal-row__label">{label}</span>
+                <span className="mypage-goal-row__value">하루 {goal}개</span>
               </div>
-            </div>
+            ))}
           </div>
-        </>
-      )}
+        )}
+      </div>
+
     </div>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
@@ -8,8 +8,21 @@ import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { calculateFSRS } from '../lib/fsrs';
 import { recordActivity } from '../lib/streak';
-import Spinner from '../components/Spinner';
+import { awardXP, XP_REWARDS } from '../lib/xp';
+import { checkAndAwardAchievements } from '../lib/achievements';
+import { useTTS } from '../lib/useTTS';
+import { callGemini } from '../lib/gemini';
 import Button from '../components/Button';
+
+// JLPT / CEFR 목표 어휘 수 (학습 연구 기반 추정치)
+const LEVEL_MILESTONES = {
+  Japanese: { 'N5 기초': 800, 'N4 기본': 1500, 'N3 중급': 3750, 'N2 상급': 6000, 'N1 심화': 10000 },
+  English:  { 'A1 기초': 500, 'A2 초급': 1000, 'B1 중급': 2000, 'B2 상급': 4000, 'C1 고급': 7000, 'C2 마스터': 10000 },
+};
+
+function detectLang(word) {
+  return /[\u3040-\u30ff\u4e00-\u9fff]/.test(word) ? 'Japanese' : 'English';
+}
 
 async function fetchVocab(userId) {
   const { data, error } = await supabase
@@ -42,10 +55,36 @@ function exportCSV(vocab) {
   URL.revokeObjectURL(url);
 }
 
+/** 플래시카드·타이핑 모드 공통 점수 버튼 섹션 */
+function ScoreSection({ word, onScore }) {
+  return (
+    <div className="review-card__answer">
+      <p className="review-card__meaning">{word.meaning}</p>
+      {word.source_sentence && (
+        <p className="review-card__source">
+          {word.source_sentence.split(word.word_text).map((part, i, arr) =>
+            i < arr.length - 1
+              ? <span key={i}>{part}<mark className="review-card__highlight">{word.word_text}</mark></span>
+              : <span key={i}>{part}</span>
+          )}
+        </p>
+      )}
+      <p className="review-score-guide">기억이 얼마나 잘 됐나요?</p>
+      <div className="review-score-grid">
+        <button onClick={() => onScore(1)} className="review-score-btn review-score-btn--again" title="전혀 기억 못 했음 — 오늘 다시 나옴">다시<span className="review-score-btn__sub">기억 안 남</span></button>
+        <button onClick={() => onScore(2)} className="review-score-btn review-score-btn--hard" title="겨우 떠올렸음 — 복습 간격 짧아짐">어려움<span className="review-score-btn__sub">겨우 생각남</span></button>
+        <button onClick={() => onScore(3)} className="review-score-btn review-score-btn--good" title="정확히 기억했음 — 권장 선택">알맞음<span className="review-score-btn__sub">잘 기억함</span></button>
+        <button onClick={() => onScore(4)} className="review-score-btn review-score-btn--easy" title="너무 쉬웠음 — 복습 간격 많이 늘어남">쉬움<span className="review-score-btn__sub">너무 쉬움</span></button>
+      </div>
+    </div>
+  );
+}
+
 export default function VocabPage() {
-  const { user, fetchProfile } = useAuth();
+  const { user, profile, fetchProfile } = useAuth();
   const toast = useToast();
   const queryClient = useQueryClient();
+  const { speak, supported: ttsSupported } = useTTS();
   const [tab, setTab] = useState('list');
   const [reviewIdx, setReviewIdx] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
@@ -54,6 +93,19 @@ export default function VocabPage() {
   const [sortBy, setSortBy] = useState('due'); // 'due' | 'newest' | 'alpha'
   const [langFilter, setLangFilter] = useState('all'); // 'all' | 'Japanese' | 'English'
   const [showHint, setShowHint] = useState(false);
+  // 복습 모드: 'flash' | 'typing' | 'context'
+  const [reviewMode, setReviewMode] = useState('flash');
+  const [typingAnswer, setTypingAnswer] = useState('');
+  const [contextSelected, setContextSelected] = useState(null); // 선택한 옵션 인덱스
+  // AI 예문
+  const exampleCacheRef = useRef(new Map()); // word_id → [{sentence, translation}]
+  const [exampleLoading, setExampleLoading] = useState(false);
+  const [exampleSentences, setExampleSentences] = useState(null);
+  // 단어장 공유 덱
+  const [deckModal, setDeckModal] = useState(false); // 덱 만들기 모달
+  const [deckTitle, setDeckTitle] = useState('');
+  const [deckLang, setDeckLang] = useState('Japanese');
+  const [visibleCount, setVisibleCount] = useState(30);
 
   const { data: vocab = [], isLoading } = useQuery({
     queryKey: ['vocab', user?.id],
@@ -75,6 +127,96 @@ export default function VocabPage() {
     enabled: !!user,
   });
 
+  // 공개 덱 목록 (자신 제외 전체 + 자신 덱)
+  const { data: publicDecks = [], refetch: refetchDecks } = useQuery({
+    queryKey: ['vocab-decks'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('vocab_decks')
+        .select('id, title, language, word_count, created_at, owner:profiles(display_name), owner_id')
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: tab === 'decks',
+  });
+
+  const createDeckMutation = useMutation({
+    mutationFn: async () => {
+      if (!deckTitle.trim()) throw new Error('덱 이름을 입력하세요.');
+      const words = vocab.filter(v =>
+        (v.language === deckLang) || (!v.language && detectLang(v.word_text) === deckLang)
+      );
+      if (words.length === 0) throw new Error(`${deckLang} 단어가 없습니다.`);
+
+      const { data: deck, error: deckErr } = await supabase
+        .from('vocab_decks')
+        .insert({ owner_id: user.id, title: deckTitle.trim(), language: deckLang, word_count: words.length })
+        .select('id')
+        .single();
+      if (deckErr) throw deckErr;
+
+      const rows = words.map(v => ({
+        deck_id: deck.id,
+        word_text: v.word_text,
+        furigana: v.furigana || null,
+        meaning: v.meaning || null,
+        pos: v.pos || null,
+      }));
+      const { error: wordsErr } = await supabase.from('vocab_deck_words').insert(rows);
+      if (wordsErr) throw wordsErr;
+      return words.length;
+    },
+    onSuccess: (count) => {
+      toast(`${count}개 단어로 덱을 공유했습니다!`, 'success');
+      setDeckModal(false);
+      setDeckTitle('');
+      refetchDecks();
+    },
+    onError: (err) => toast(err.message, 'error'),
+  });
+
+  const deleteDeckMutation = useMutation({
+    mutationFn: async (deckId) => {
+      const { error } = await supabase.from('vocab_decks').delete().eq('id', deckId).eq('owner_id', user.id);
+      if (error) throw error;
+    },
+    onSuccess: () => refetchDecks(),
+    onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
+  });
+
+  const importDeckMutation = useMutation({
+    mutationFn: async (deckId) => {
+      const { data: words, error } = await supabase
+        .from('vocab_deck_words')
+        .select('word_text, furigana, meaning, pos')
+        .eq('deck_id', deckId);
+      if (error) throw error;
+
+      const rows = words.map(w => ({
+        user_id: user.id,
+        word_text: w.word_text,
+        furigana: w.furigana || '',
+        meaning: w.meaning || '',
+        pos: w.pos || '',
+        language: deckLang,
+        interval: 0, ease_factor: 0, repetitions: 0,
+        next_review_at: new Date().toISOString(),
+      }));
+      const { error: importErr } = await supabase
+        .from('user_vocabulary')
+        .upsert(rows, { onConflict: 'user_id, word_text' });
+      if (importErr) throw importErr;
+      return words.length;
+    },
+    onSuccess: (count) => {
+      toast(`${count}개 단어를 내 단어장에 추가했습니다!`, 'success');
+      queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
+    },
+    onError: (err) => toast('가져오기 실패: ' + err.message, 'error'),
+  });
+
   const deleteNoteMutation = useMutation({
     mutationFn: async (noteId) => {
       const { error } = await supabase.from('grammar_notes').delete().eq('id', noteId);
@@ -88,11 +230,17 @@ export default function VocabPage() {
     mutationFn: async ({ id, nextStats }) => {
       const { error } = await supabase
         .from('user_vocabulary')
-        .update(nextStats)
+        .update({ ...nextStats, last_reviewed_at: new Date().toISOString() })
         .eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
+      awardXP(user.id, XP_REWARDS.WORD_REVIEWED, profile?.xp ?? 0);
+      checkAndAwardAchievements(user.id, { xp: profile?.xp, streak: profile?.streak_count }).then(newBadges => {
+        newBadges.forEach(b => toast(`🏅 새 뱃지 획득: ${b.icon} ${b.name}`, 'celebrate', 5000));
+      });
+    },
     onError: (err) => toast('업데이트 실패: ' + err.message, 'error'),
   });
 
@@ -135,8 +283,20 @@ export default function VocabPage() {
     return list;
   }, [vocab, search, sortBy, langFilter]);
 
+  // 필터 변경 시 표시 개수 리셋
+  useEffect(() => { setVisibleCount(30); }, [search, sortBy, langFilter]);
+
   const reviewWords = vocab.filter(v => new Date(v.next_review_at) <= new Date());
   const currentWord = reviewWords[reviewIdx];
+
+  // 문맥 퀴즈용 객관식 보기 (정답 1 + 오답 3)
+  const contextOptions = useMemo(() => {
+    if (!currentWord) return [];
+    const others = vocab.filter(v => v.id !== currentWord.id && v.meaning);
+    const shuffled = [...others].sort(() => Math.random() - 0.5).slice(0, 3);
+    return [...shuffled, currentWord].sort(() => Math.random() - 0.5);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reviewIdx, currentWord?.id]);
 
   // 브라우저 알림 — "복습 시작하기" 클릭 시에만 권한 요청 (startReview에서 호출)
 
@@ -163,8 +323,36 @@ export default function VocabPage() {
     goNextReview();
   };
 
+  // 단어 바뀔 때 예문 초기화
+  useEffect(() => {
+    setExampleSentences(null);
+    setExampleLoading(false);
+  }, [currentWord?.id]);
+
+  async function loadExamples() {
+    if (!currentWord) return;
+    const cached = exampleCacheRef.current.get(currentWord.id);
+    if (cached) { setExampleSentences(cached); return; }
+    setExampleLoading(true);
+    try {
+      const lang = currentWord.language || detectLang(currentWord.word_text);
+      const prompt = `단어: ${currentWord.word_text}\n언어: ${lang}\n의미: ${currentWord.meaning || ''}\n\n이 단어를 자연스럽게 활용한 예문 2개를 만들어주세요. 학습자가 문맥 속에서 단어를 익힐 수 있도록 간결하고 자연스러운 문장으로 작성해주세요.\n\n반드시 아래 JSON 형식으로만 응답하세요:\n{"examples":[{"sentence":"...","translation":"한국어 번역"},{"sentence":"...","translation":"한국어 번역"}]}`;
+      const raw = await callGemini(prompt);
+      const clean = raw.replace(/```json|```/g, '').trim();
+      const parsed = JSON.parse(clean.substring(clean.indexOf('{'), clean.lastIndexOf('}') + 1));
+      exampleCacheRef.current.set(currentWord.id, parsed.examples);
+      setExampleSentences(parsed.examples);
+    } catch {
+      toast('예문 생성에 실패했어요.', 'error');
+    } finally {
+      setExampleLoading(false);
+    }
+  }
+
   const goNextReview = () => {
     setShowHint(false);
+    setTypingAnswer('');
+    setContextSelected(null);
     if (reviewIdx < reviewWords.length - 1) {
       setReviewIdx(i => i + 1);
       setShowAnswer(false);
@@ -179,7 +367,8 @@ export default function VocabPage() {
     setReviewIdx(0);
     setShowAnswer(false);
     setReviewFinished(false);
-    // 사용자 행동(클릭) 직후에 알림 권한 요청
+    setTypingAnswer('');
+    setContextSelected(null);
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
     }
@@ -212,7 +401,19 @@ export default function VocabPage() {
       <div className="page-header page-header--row">
         <div>
           <h1 className="page-header__title">⭐ 내 단어장</h1>
-          <p className="page-header__subtitle">FSRS v4 알고리즘으로 과학적인 복습을 경험하세요</p>
+          {vocab.length > 0 ? (
+            <div style={{ display: 'flex', gap: 12, marginTop: 6, fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+              <span>총 <strong style={{ color: 'var(--text-primary)' }}>{vocab.length}</strong>개</span>
+              <span>·</span>
+              <span style={{ color: reviewWords.length > 0 ? '#ff6b6b' : 'var(--accent)' }}>
+                {reviewWords.length > 0 ? `${reviewWords.length}개 복습 대기` : '모두 완료'}
+              </span>
+              <span>·</span>
+              <span>숙련 {vocab.filter(v => v.interval >= 30).length}개</span>
+            </div>
+          ) : (
+            <p className="page-header__subtitle">FSRS v4 알고리즘으로 과학적인 복습을 경험하세요</p>
+          )}
         </div>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           {vocab.length > 0 && (
@@ -254,10 +455,24 @@ export default function VocabPage() {
         >
           📝 문법 노트 {grammarNotes.length > 0 && <span className="tab-badge">{grammarNotes.length}</span>}
         </button>
+        <button
+          onClick={() => setTab('decks')}
+          className={`tab-pills__item ${tab === 'decks' ? 'tab-pills__item--primary' : ''}`}
+        >
+          🃏 공유 단어장
+        </button>
       </div>
 
       {isLoading ? (
-        <Spinner message="단어들을 불러오는 중..." />
+        <div className="skeleton-grid">
+          {[1,2,3,4,5,6].map(i => (
+            <div key={i} className="skeleton--card" style={{ height: 120 }}>
+              <div className="skeleton-line--short skeleton-line" />
+              <div className="skeleton-line--title skeleton-line" style={{ width: '60%' }} />
+              <div className="skeleton-line--text skeleton-line" />
+            </div>
+          ))}
+        </div>
       ) : tab === 'list' ? (
         <>
           {/* 검색 + 필터 */}
@@ -309,7 +524,7 @@ export default function VocabPage() {
           </div>
 
           <div className="feature-grid">
-            {filteredVocab.length > 0 ? filteredVocab.map(v => (
+            {filteredVocab.length > 0 ? filteredVocab.slice(0, visibleCount).map(v => (
               <div key={v.id} className="card vocab-card">
                 <div className="vocab-card__header">
                   <div>
@@ -318,6 +533,20 @@ export default function VocabPage() {
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span className="badge" style={{ fontSize: '0.7rem' }}>{v.pos}</span>
+                    {ttsSupported && (
+                      <button
+                        onClick={() => speak(v.word_text, v.language || detectLang(v.word_text))}
+                        title="발음 듣기"
+                        style={{
+                          width: '26px', height: '26px', borderRadius: 'var(--radius-sm)',
+                          background: 'transparent', border: '1px solid var(--border)',
+                          color: 'var(--text-muted)', fontSize: '0.8rem', cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}
+                      >
+                        🔊
+                      </button>
+                    )}
                     <button
                       onClick={() => {
                         if (confirm(`"${v.word_text}" 를 단어장에서 삭제할까요?`)) {
@@ -341,16 +570,54 @@ export default function VocabPage() {
                 </div>
                 <p className="vocab-card__meaning">{v.meaning}</p>
                 <div className="vocab-card__footer">
-                  <span>다음 복습: {new Date(v.next_review_at).toLocaleDateString('ko-KR')}</span>
-                  <span>💪 S: {v.interval.toFixed(1)} / D: {v.ease_factor.toFixed(1)}</span>
+                  <span>{new Date(v.next_review_at) <= new Date()
+                    ? '🔴 복습 필요'
+                    : `📅 ${new Date(v.next_review_at).toLocaleDateString('ko-KR')}`}
+                  </span>
+                  <span style={{
+                    padding: '2px 8px',
+                    borderRadius: 'var(--radius-full)',
+                    background: v.interval >= 30 ? 'rgba(74,138,92,0.15)' : v.interval >= 7 ? 'rgba(252,196,25,0.15)' : 'rgba(255,107,107,0.1)',
+                    color: v.interval >= 30 ? 'var(--accent)' : v.interval >= 7 ? '#f0b400' : '#ff6b6b',
+                    fontWeight: 600,
+                  }}>
+                    {v.interval >= 30 ? '숙련' : v.interval >= 7 ? '학습 중' : '초기'}
+                  </span>
                 </div>
               </div>
             )) : (
               <div className="empty-state" style={{ gridColumn: '1/-1' }}>
-                <p>{search ? '검색 결과가 없습니다.' : '아직 수집한 단어가 없습니다. 뷰어에서 단어를 클릭해 저장해보세요!'}</p>
+                <div className="empty-state__icon">{search ? '🔍' : '⭐'}</div>
+                <p className="empty-state__msg">
+                  {search
+                    ? '검색 결과가 없습니다.'
+                    : '아직 수집한 단어가 없어요'}
+                </p>
+                {!search && (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', maxWidth: 320 }}>
+                      자료를 읽으면서 모르는 단어를 탭하면<br />자동으로 단어장에 추가돼요
+                    </p>
+                    <Link href="/materials" className="btn btn--primary btn--md">
+                      📰 자료 읽으러 가기 →
+                    </Link>
+                  </div>
+                )}
+                {search && (
+                  <button className="empty-state__link" onClick={() => setSearch('')}>
+                    검색어 지우기
+                  </button>
+                )}
               </div>
             )}
           </div>
+          {filteredVocab.length > visibleCount && (
+            <div style={{ textAlign: 'center', marginTop: 16 }}>
+              <Button variant="secondary" onClick={() => setVisibleCount(c => c + 30)}>
+                더 보기 ({filteredVocab.length - visibleCount}개 남음)
+              </Button>
+            </div>
+          )}
         </>
       ) : tab === 'review' ? (
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
@@ -358,84 +625,326 @@ export default function VocabPage() {
             <div className="card review-card review-card--center">
               <div className="review-card__emoji">🎉</div>
               <h2 style={{ marginBottom: '10px' }}>오늘의 복습 완료!</h2>
-              <p style={{ color: 'var(--text-secondary)', marginBottom: '30px' }}>FSRS 알고리즘이 당신의 기억을 강화했습니다.</p>
-              <Button onClick={() => setTab('list')}>단어장으로 돌아가기</Button>
+              <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>FSRS 알고리즘이 당신의 기억을 강화했습니다.</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, width: '100%', maxWidth: 280 }}>
+                <Link href="/materials" className="btn btn--primary btn--md" style={{ textAlign: 'center' }}>
+                  📖 자료 읽으러 가기
+                </Link>
+                <Link href="/leaderboard" className="btn btn--secondary btn--md" style={{ textAlign: 'center' }}>
+                  🏆 랭킹 확인하기
+                </Link>
+                <Button variant="ghost" onClick={() => setTab('list')}>
+                  단어장으로 돌아가기
+                </Button>
+              </div>
             </div>
           ) : reviewWords.length > 0 ? (
-            <div className="card review-card">
-              <div className="review-card__progress">
-                <span>남은 단어: {reviewWords.length - reviewIdx}</span>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  {!showAnswer && currentWord.source_sentence && (
-                    <button
-                      className="review-hint-btn"
-                      onClick={() => setShowHint(h => !h)}
-                    >
-                      {showHint ? '힌트 숨기기' : '💡 힌트'}
-                    </button>
-                  )}
-                  <button className="review-skip-btn" onClick={() => { setShowHint(false); handleSkip(); }} title="내일로 미루기">
-                    스킵 →
+            <>
+              {/* 복습 모드 선택 */}
+              <div className="chip-group" style={{ marginBottom: '16px', justifyContent: 'center' }}>
+                {[
+                  { value: 'flash',   label: '🃏 플래시카드' },
+                  { value: 'typing',  label: '✏️ 타이핑' },
+                  { value: 'context', label: '📝 문맥 퀴즈' },
+                ].map(m => (
+                  <button
+                    key={m.value}
+                    onClick={() => {
+                      setReviewMode(m.value);
+                      setTypingAnswer('');
+                      setContextSelected(null);
+                      setShowAnswer(false);
+                      setShowHint(false);
+                    }}
+                    className={`chip ${reviewMode === m.value ? 'chip--active' : ''}`}
+                  >
+                    {m.label}
                   </button>
+                ))}
+              </div>
+
+              <div className="card review-card">
+                <div className="review-card__progress">
+                  <span>남은 단어: {reviewWords.length - reviewIdx}</span>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    {reviewMode === 'flash' && !showAnswer && currentWord.source_sentence && (
+                      <button className="review-hint-btn" onClick={() => setShowHint(h => !h)}>
+                        {showHint ? '힌트 숨기기' : '💡 힌트'}
+                      </button>
+                    )}
+                    <button className="review-skip-btn" onClick={() => { setShowHint(false); handleSkip(); }} title="내일로 미루기">
+                      스킵 →
+                    </button>
+                  </div>
+                </div>
+
+                <div className="review-card__body">
+                  {/* ── 단어 헤더 (문맥 퀴즈는 정답 공개 전까지 숨김) ── */}
+                  {(reviewMode !== 'context' || showAnswer) && (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+                      <h2 className="review-card__word">{currentWord.word_text}</h2>
+                      {ttsSupported && (
+                        <button
+                          onClick={() => speak(currentWord.word_text, currentWord.language || detectLang(currentWord.word_text))}
+                          title="발음 듣기"
+                          style={{
+                            background: 'var(--bg-secondary)', border: '1px solid var(--border)',
+                            borderRadius: 'var(--radius-full)', padding: '4px 10px',
+                            fontSize: '0.9rem', cursor: 'pointer', color: 'var(--text-secondary)',
+                          }}
+                        >
+                          🔊
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  {showAnswer && currentWord.furigana && (
+                    <p className="review-card__furigana">[{currentWord.furigana}]</p>
+                  )}
+
+                  {/* ── 플래시카드 모드 ── */}
+                  {reviewMode === 'flash' && (
+                    <>
+                      {!showAnswer && showHint && currentWord.source_sentence && (
+                        <p className="review-card__hint">
+                          {currentWord.source_sentence.split(currentWord.word_text).map((part, i, arr) => (
+                            i < arr.length - 1
+                              ? <span key={i}>{part}<mark className="review-card__highlight review-card__highlight--hint">{currentWord.word_text}</mark></span>
+                              : <span key={i}>{part}</span>
+                          ))}
+                        </p>
+                      )}
+                      {showAnswer ? (
+                        <ScoreSection word={currentWord} onScore={handleScore} />
+                      ) : (
+                        <Button variant="secondary" size="lg" onClick={() => { setShowAnswer(true); setShowHint(false); }}
+                          style={{ marginTop: '40px', borderRadius: 'var(--radius-full)' }}>
+                          정답 확인하기
+                        </Button>
+                      )}
+                    </>
+                  )}
+
+                  {/* ── 타이핑 모드 ── */}
+                  {reviewMode === 'typing' && (
+                    <>
+                      {!showAnswer ? (
+                        <div style={{ marginTop: '30px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          <input
+                            type="text"
+                            value={typingAnswer}
+                            onChange={e => setTypingAnswer(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && typingAnswer.trim() && setShowAnswer(true)}
+                            placeholder="의미를 입력하세요..."
+                            className="search-input"
+                            autoFocus
+                            style={{ fontSize: '1rem', textAlign: 'center' }}
+                          />
+                          <Button onClick={() => setShowAnswer(true)} disabled={!typingAnswer.trim()}>
+                            확인하기 →
+                          </Button>
+                        </div>
+                      ) : (
+                        <div style={{ marginTop: '16px' }}>
+                          {typingAnswer && (
+                            <div style={{ marginBottom: '12px', padding: '10px 14px', borderRadius: 'var(--radius-md)', background: 'var(--bg-secondary)', fontSize: '0.9rem' }}>
+                              <span style={{ color: 'var(--text-muted)' }}>내 답: </span>
+                              <span>{typingAnswer}</span>
+                            </div>
+                          )}
+                          <ScoreSection word={currentWord} onScore={handleScore} />
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* ── 문맥 퀴즈 모드 ── */}
+                  {reviewMode === 'context' && (
+                    <>
+                      {/* 예문 (단어 블랭크) */}
+                      <div style={{ marginBottom: '20px' }}>
+                        {currentWord.source_sentence ? (
+                          <p className="review-card__hint" style={{ fontSize: '1rem', lineHeight: 1.8 }}>
+                            {currentWord.source_sentence.split(currentWord.word_text).map((part, i, arr) =>
+                              i < arr.length - 1
+                                ? <span key={i}>{part}<mark style={{ background: 'var(--bg-elevated)', color: 'transparent', borderRadius: '4px', padding: '0 4px' }}>{'　'.repeat(Math.max(2, currentWord.word_text.length))}</mark></span>
+                                : <span key={i}>{part}</span>
+                            )}
+                          </p>
+                        ) : (
+                          <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', textAlign: 'center', marginBottom: '8px' }}>
+                            (예문 없음 — 의미를 선택하세요)
+                          </p>
+                        )}
+                      </div>
+
+                      {/* 객관식 보기 */}
+                      {!showAnswer ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          {contextOptions.map((opt, i) => (
+                            <button
+                              key={i}
+                              disabled={contextSelected !== null}
+                              onClick={() => {
+                                setContextSelected(i);
+                                const isCorrect = opt.id === currentWord.id;
+                                if (isCorrect) {
+                                  setTimeout(() => handleScore(3), 700);
+                                }
+                              }}
+                              style={{
+                                padding: '12px 16px',
+                                background: contextSelected === null
+                                  ? 'var(--bg-secondary)'
+                                  : opt.id === currentWord.id
+                                    ? 'rgba(74,138,92,0.25)'
+                                    : contextSelected === i
+                                      ? 'rgba(200,64,64,0.2)'
+                                      : 'var(--bg-secondary)',
+                                border: `1px solid ${
+                                  contextSelected !== null && opt.id === currentWord.id
+                                    ? 'var(--accent)'
+                                    : 'var(--border)'
+                                }`,
+                                borderRadius: 'var(--radius-md)',
+                                textAlign: 'left',
+                                cursor: contextSelected !== null ? 'default' : 'pointer',
+                                fontSize: '0.92rem',
+                                color: 'var(--text-primary)',
+                                transition: 'background 0.2s, border-color 0.2s',
+                              }}
+                            >
+                              {opt.meaning}
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <ScoreSection word={currentWord} onScore={handleScore} />
+                      )}
+
+                      {/* 오답 시 재시도 버튼 */}
+                      {contextSelected !== null && contextOptions[contextSelected]?.id !== currentWord.id && !showAnswer && (
+                        <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
+                          <Button onClick={() => handleScore(1)} variant="secondary" style={{ flex: 1 }}>
+                            다시 (Again)
+                          </Button>
+                          <Button onClick={() => { setShowAnswer(true); }} variant="ghost" style={{ flex: 1 }}>
+                            정답 보기
+                          </Button>
+                        </div>
+                      )}
+                    </>
+                  )}
+                  {/* ── AI 예문 (정답 공개 후 공통) ── */}
+                  {(showAnswer || contextSelected !== null) && (
+                    <div style={{ marginTop: '20px', borderTop: '1px solid var(--border)', paddingTop: '16px' }}>
+                      {exampleSentences ? (
+                        <>
+                          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                            ✨ AI 예문
+                          </p>
+                          {exampleSentences.map((ex, i) => (
+                            <div key={i} style={{
+                              marginBottom: '10px', padding: '10px 14px',
+                              background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)',
+                            }}>
+                              <p style={{ fontSize: '0.95rem', marginBottom: '4px', lineHeight: 1.6 }}>{ex.sentence}</p>
+                              <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>{ex.translation}</p>
+                            </div>
+                          ))}
+                        </>
+                      ) : (
+                        <button
+                          onClick={loadExamples}
+                          disabled={exampleLoading}
+                          style={{
+                            width: '100%', padding: '8px',
+                            background: 'none', border: '1px dashed var(--border)',
+                            borderRadius: 'var(--radius-md)', cursor: exampleLoading ? 'default' : 'pointer',
+                            color: 'var(--text-muted)', fontSize: '0.85rem',
+                            opacity: exampleLoading ? 0.6 : 1,
+                          }}
+                        >
+                          {exampleLoading ? '예문 생성 중...' : '✨ AI 예문 보기'}
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
-              <div className="review-card__body">
-                <h2 className="review-card__word">{currentWord.word_text}</h2>
-                {showAnswer && currentWord.furigana && <p className="review-card__furigana">[{currentWord.furigana}]</p>}
-
-                {!showAnswer && showHint && currentWord.source_sentence && (
-                  <p className="review-card__hint">
-                    {currentWord.source_sentence.split(currentWord.word_text).map((part, i, arr) => (
-                      i < arr.length - 1
-                        ? <span key={i}>{part}<mark className="review-card__highlight review-card__highlight--hint">{currentWord.word_text}</mark></span>
-                        : <span key={i}>{part}</span>
-                    ))}
-                  </p>
-                )}
-
-                {showAnswer ? (
-                  <div className="review-card__answer">
-                    <p className="review-card__meaning">{currentWord.meaning}</p>
-                    {currentWord.source_sentence && (
-                      <p className="review-card__source">
-                        {currentWord.source_sentence.split(currentWord.word_text).map((part, i, arr) => (
-                          i < arr.length - 1
-                            ? <span key={i}>{part}<mark className="review-card__highlight">{currentWord.word_text}</mark></span>
-                            : <span key={i}>{part}</span>
-                        ))}
-                      </p>
-                    )}
-                    <p className="review-score-guide">기억이 얼마나 잘 됐나요?</p>
-                    <div className="review-score-grid">
-                      <button onClick={() => handleScore(1)} className="review-score-btn review-score-btn--again" title="전혀 기억 못 했음 — 오늘 다시 나옴">다시<span className="review-score-btn__sub">기억 안 남</span></button>
-                      <button onClick={() => handleScore(2)} className="review-score-btn review-score-btn--hard" title="겨우 떠올렸음 — 복습 간격 짧아짐">어려움<span className="review-score-btn__sub">겨우 생각남</span></button>
-                      <button onClick={() => handleScore(3)} className="review-score-btn review-score-btn--good" title="정확히 기억했음 — 권장 선택">알맞음<span className="review-score-btn__sub">잘 기억함</span></button>
-                      <button onClick={() => handleScore(4)} className="review-score-btn review-score-btn--easy" title="너무 쉬웠음 — 복습 간격 많이 늘어남">쉬움<span className="review-score-btn__sub">너무 쉬움</span></button>
-                    </div>
-                  </div>
-                ) : (
-                  <Button
-                    variant="secondary"
-                    size="lg"
-                    onClick={() => { setShowAnswer(true); setShowHint(false); }}
-                    style={{ marginTop: '40px', borderRadius: 'var(--radius-full)' }}
-                  >
-                    정답 확인하기
-                  </Button>
-                )}
-              </div>
-            </div>
+            </>
           ) : (
             <div className="card review-card review-card--center">
-              <div className="review-card__emoji">✅</div>
-              <h2 style={{ marginBottom: '10px' }}>지금은 복습할 단어가 없어요</h2>
-              <p style={{ color: 'var(--text-secondary)' }}>FSRS가 다음 복습 시점을 계산해 줄 거예요.</p>
+              <div className="review-card__emoji">{vocab.length === 0 ? '⭐' : '✅'}</div>
+              <h2 style={{ marginBottom: '10px' }}>
+                {vocab.length === 0 ? '단어를 먼저 수집해볼까요?' : '지금은 복습할 단어가 없어요'}
+              </h2>
+              <p style={{ color: 'var(--text-secondary)', marginBottom: 16 }}>
+                {vocab.length === 0
+                  ? '자료를 읽으면서 모르는 단어를 탭하면 자동 저장돼요'
+                  : 'FSRS가 다음 복습 시점을 계산해 줄 거예요.'}
+              </p>
+              {vocab.length === 0 && (
+                <Link href="/materials" className="btn btn--primary btn--md">📰 자료 읽으러 가기</Link>
+              )}
             </div>
           )}
         </div>
       ) : tab === 'stats' ? (
         /* Stats Dashboard */
         <div className="stats-grid">
+          {/* 레벨 진행도 */}
+          {(() => {
+            const langs = profile?.learning_language || [];
+            const cards = [];
+
+            if (langs.includes('Japanese') || vocab.some(v => (v.language === 'Japanese') || detectLang(v.word_text) === 'Japanese')) {
+              const jpVocab = vocab.filter(v => (v.language === 'Japanese') || (!v.language && detectLang(v.word_text) === 'Japanese'));
+              const targetLevel = profile?.learning_level_japanese || 'N3 중급';
+              const target = LEVEL_MILESTONES.Japanese[targetLevel] || 3750;
+              const pct = Math.min(100, Math.round((jpVocab.length / target) * 100));
+              cards.push(
+                <div key="jp" className="card" style={{ padding: '20px', gridColumn: '1 / -1' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '10px' }}>
+                    <h3 style={{ fontSize: '1rem' }}>🇯🇵 일본어 레벨 진행도 — {targetLevel}</h3>
+                    <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>{jpVocab.length} / {target.toLocaleString('ko-KR')}개</span>
+                  </div>
+                  <div style={{ background: 'var(--bg-secondary)', borderRadius: 'var(--radius-full)', height: '10px', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${pct}%`, background: 'var(--primary-light)', borderRadius: 'var(--radius-full)', transition: 'width 0.6s ease' }} />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                    <span>{pct}% 달성</span>
+                    <span>목표까지 {Math.max(0, target - jpVocab.length).toLocaleString('ko-KR')}개 남음</span>
+                  </div>
+                </div>
+              );
+            }
+
+            if (langs.includes('English') || vocab.some(v => (v.language === 'English') || (!v.language && detectLang(v.word_text) === 'English'))) {
+              const enVocab = vocab.filter(v => (v.language === 'English') || (!v.language && detectLang(v.word_text) === 'English'));
+              const targetLevel = profile?.learning_level_english || 'B1 중급';
+              const target = LEVEL_MILESTONES.English[targetLevel] || 2000;
+              const pct = Math.min(100, Math.round((enVocab.length / target) * 100));
+              cards.push(
+                <div key="en" className="card" style={{ padding: '20px', gridColumn: '1 / -1' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '10px' }}>
+                    <h3 style={{ fontSize: '1rem' }}>🇬🇧 영어 레벨 진행도 — {targetLevel}</h3>
+                    <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>{enVocab.length} / {target.toLocaleString('ko-KR')}개</span>
+                  </div>
+                  <div style={{ background: 'var(--bg-secondary)', borderRadius: 'var(--radius-full)', height: '10px', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${pct}%`, background: 'var(--accent)', borderRadius: 'var(--radius-full)', transition: 'width 0.6s ease' }} />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                    <span>{pct}% 달성</span>
+                    <span>목표까지 {Math.max(0, target - enVocab.length).toLocaleString('ko-KR')}개 남음</span>
+                  </div>
+                </div>
+              );
+            }
+
+            return cards.length > 0 ? cards : null;
+          })()}
           <div className="stat-card">
             <div className="stat-card__label">전체 어휘 수</div>
             <div className="stat-card__value stat-card__value--primary">{vocab.length}</div>
@@ -700,6 +1209,114 @@ export default function VocabPage() {
               </div>
             </div>
           ))}
+        </div>
+      ) : tab === 'decks' ? (
+        <div>
+          {/* 헤더 */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>
+              내 단어장을 공유하거나 다른 사람의 덱을 가져와 복습하세요.
+            </p>
+            {user && (
+              <Button size="sm" onClick={() => setDeckModal(true)}>
+                + 덱 공유하기
+              </Button>
+            )}
+          </div>
+
+          {/* 덱 만들기 모달 */}
+          {deckModal && (
+            <div className="card" style={{ marginBottom: '24px', padding: '20px', border: '1px solid var(--primary-glow)' }}>
+              <h3 style={{ fontSize: '0.95rem', fontWeight: 600, marginBottom: '16px' }}>내 단어장 공유하기</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div>
+                  <label className="form-label">덱 이름</label>
+                  <input
+                    className="search-input"
+                    value={deckTitle}
+                    onChange={e => setDeckTitle(e.target.value)}
+                    placeholder="예: N3 필수 어휘 200개"
+                    maxLength={80}
+                  />
+                </div>
+                <div>
+                  <label className="form-label">언어</label>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    {['Japanese', 'English'].map(lang => (
+                      <button
+                        key={lang}
+                        onClick={() => setDeckLang(lang)}
+                        className={`chip ${deckLang === lang ? 'chip--active' : ''}`}
+                      >
+                        {lang === 'Japanese' ? '🇯🇵 일본어' : '🇬🇧 영어'}
+                      </button>
+                    ))}
+                  </div>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '6px' }}>
+                    {vocab.filter(v => (v.language === deckLang) || (!v.language && detectLang(v.word_text) === deckLang)).length}개 단어가 포함됩니다
+                  </p>
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <Button onClick={() => createDeckMutation.mutate()} disabled={!deckTitle.trim() || createDeckMutation.isPending}>
+                    {createDeckMutation.isPending ? '공유 중...' : '공유'}
+                  </Button>
+                  <Button variant="ghost" onClick={() => { setDeckModal(false); setDeckTitle(''); }}>취소</Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 덱 목록 */}
+          {publicDecks.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-state__icon">🃏</div>
+              <p className="empty-state__msg">아직 공유된 단어장이 없습니다.<br />첫 번째로 덱을 공유해보세요!</p>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gap: '12px' }}>
+              {publicDecks.map(deck => {
+                const isOwn = deck.owner_id === user?.id;
+                return (
+                  <div key={deck.id} className="card" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                        <span style={{ fontSize: '0.85rem' }}>{deck.language === 'Japanese' ? '🇯🇵' : '🇬🇧'}</span>
+                        <h4 style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {deck.title}
+                        </h4>
+                        {isOwn && <span style={{ fontSize: '0.72rem', background: 'var(--primary-glow)', color: 'var(--primary-light)', padding: '1px 6px', borderRadius: 'var(--radius-full)' }}>내 덱</span>}
+                      </div>
+                      <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: 0 }}>
+                        {deck.owner?.display_name || '익명'} · {deck.word_count}개 단어 · {new Date(deck.created_at).toLocaleDateString('ko-KR')}
+                      </p>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+                      {!isOwn && user && (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          disabled={importDeckMutation.isPending}
+                          onClick={() => importDeckMutation.mutate(deck.id)}
+                        >
+                          가져오기
+                        </Button>
+                      )}
+                      {isOwn && (
+                        <Button
+                          size="sm"
+                          variant="danger"
+                          disabled={deleteDeckMutation.isPending}
+                          onClick={() => window.confirm(`"${deck.title}" 덱을 삭제할까요?`) && deleteDeckMutation.mutate(deck.id)}
+                        >
+                          삭제
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       ) : null}
     </div>
