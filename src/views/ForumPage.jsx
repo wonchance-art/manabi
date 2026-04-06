@@ -7,6 +7,7 @@ import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { checkAndAwardAchievements } from '../lib/achievements';
 import Button from '../components/Button';
+import ConfirmModal from '../components/ConfirmModal';
 
 const PAGE_SIZE = 10;
 
@@ -116,6 +117,7 @@ export default function ForumPage() {
   const [mentionAnchor, setMentionAnchor] = useState(0);
   const realtimeRef = useRef(null);
   const commentInputRef = useRef(null);
+  const [confirmAction, setConfirmAction] = useState(null);
 
   const { data, isLoading, isFetching } = useQuery({
     queryKey: ['forum-posts', page, user?.id],
@@ -461,11 +463,10 @@ export default function ForumPage() {
                         <button
                           className="forum-action-btn forum-action-btn--danger"
                           disabled={deletePostMutation.isPending}
-                          onClick={() => {
-                            if (window.confirm('게시글을 삭제하시겠습니까?')) {
-                              deletePostMutation.mutate(post.id);
-                            }
-                          }}
+                          onClick={() => setConfirmAction({
+                            message: '게시글을 삭제하시겠습니까?',
+                            onConfirm: () => { deletePostMutation.mutate(post.id); setConfirmAction(null); },
+                          })}
                         >
                           🗑️ 삭제
                         </button>
@@ -602,6 +603,12 @@ export default function ForumPage() {
           </div>
         )}
       </div>
+      <ConfirmModal
+        open={!!confirmAction}
+        message={confirmAction?.message}
+        onConfirm={confirmAction?.onConfirm}
+        onCancel={() => setConfirmAction(null)}
+      />
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import Spinner from '../components/Spinner';
 import Button from '../components/Button';
+import ConfirmModal from '../components/ConfirmModal';
 import { STARTER_MATERIALS } from '../lib/starter-content';
 import { analyzeText } from '../lib/analyzeText';
 
@@ -87,6 +88,7 @@ export default function AdminPage() {
   const [newSource, setNewSource] = useState(DEFAULT_NEW_SOURCE);
   const [showAddForm, setShowAddForm] = useState(false);
   const [analyzingId, setAnalyzingId] = useState(null);
+  const [confirmAction, setConfirmAction] = useState(null);
   const analyzeAbortRef = useRef(null);
   const queryClient = useQueryClient();
   const toast = useToast();
@@ -279,7 +281,10 @@ export default function AdminPage() {
   };
 
   const confirmDelete = (label, onConfirm) => {
-    if (window.confirm(`정말 "${label}"을(를) 삭제하시겠습니까?`)) onConfirm();
+    setConfirmAction({
+      message: `정말 "${label}"을(를) 삭제하시겠습니까?`,
+      onConfirm: () => { onConfirm(); setConfirmAction(null); },
+    });
   };
 
   return (
@@ -708,6 +713,13 @@ export default function AdminPage() {
           </div>
         )
       )}
+
+      <ConfirmModal
+        open={!!confirmAction}
+        message={confirmAction?.message}
+        onConfirm={confirmAction?.onConfirm}
+        onCancel={() => setConfirmAction(null)}
+      />
     </div>
   );
 }
