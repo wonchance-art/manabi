@@ -1183,13 +1183,23 @@ button {
 }
 
 .viewer-settings {
+  padding: 0;
+  margin-bottom: 30px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.viewer-settings__toggle {
+  display: none; /* desktop에서 숨김 */
+}
+
+.viewer-settings__body {
   display: flex;
   gap: 20px;
   align-items: center;
   flex-wrap: wrap;
   padding: 16px 24px;
-  margin-bottom: 30px;
-  background: var(--bg-elevated);
   justify-content: space-between;
 }
 
@@ -1204,6 +1214,7 @@ button {
   display: flex;
   gap: 15px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .settings-control {
@@ -3632,6 +3643,42 @@ button {
   /* Viewer Mobile */
   .viewer-tokens {
     font-size: 1.1rem;
+  }
+
+  .viewer-settings__toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: transparent;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .viewer-settings__body {
+    display: none;
+    padding: 14px 16px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+
+  .viewer-settings--open .viewer-settings__body {
+    display: flex;
+  }
+
+  .viewer-settings--open .viewer-settings__toggle {
+    color: var(--primary-light);
+  }
+
+  .viewer-settings__left,
+  .viewer-settings__right {
+    flex-wrap: wrap;
+    gap: 10px;
   }
 
   .viewer-settings-bar {

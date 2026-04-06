@@ -170,6 +170,7 @@ export default function ViewerPage() {
   const [grammarFollowLoading, setGrammarFollowLoading] = useState(false);
   // 댓글
   const [commentInput, setCommentInput] = useState('');
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const { data: material, isLoading, error, refetch } = useQuery({
     queryKey: ['material', id],
@@ -744,7 +745,11 @@ ${labelExample}`;
       </header>
 
       {/* Settings Bar */}
-      <div className="card viewer-settings">
+      <div className={`card viewer-settings ${settingsOpen ? 'viewer-settings--open' : ''}`}>
+        <button className="viewer-settings__toggle" onClick={() => setSettingsOpen(v => !v)}>
+          ⚙️ 읽기 설정 {settingsOpen ? '▲' : '▼'}
+        </button>
+        <div className="viewer-settings__body">
         <div className="viewer-settings__left">
           <div className="settings-control">
             <span className="settings-label">SIZE</span>
@@ -851,6 +856,7 @@ ${labelExample}`;
                 </button>
           )}
         </div>
+        </div>{/* viewer-settings__body */}
       </div>
 
       {/* Reader Area */}

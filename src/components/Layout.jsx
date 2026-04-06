@@ -42,7 +42,16 @@ export default function Layout({ children }) {
     { href: '/guide',     icon: '📚', label: '가이드' },
     { href: '/materials', icon: '📰', label: '자료' },
     { href: '/vocab',     icon: '⭐', label: '단어장' },
+    { href: '/leaderboard', icon: '🏆', label: '랭킹' },
     { href: '/forum',     icon: '💬', label: '포럼' },
+  ];
+
+  const mobileNavLinks = [
+    ...(user ? [{ href: '/home', icon: '🏠', label: '홈' }] : []),
+    { href: '/materials', icon: '📰', label: '자료' },
+    { href: '/vocab',     icon: '⭐', label: '단어장' },
+    { href: '/leaderboard', icon: '🏆', label: '랭킹' },
+    ...(user ? [{ href: '/profile', icon: '👤', label: '마이' }] : [{ href: '/auth', icon: '👤', label: '로그인' }]),
   ];
 
   return (
@@ -117,7 +126,7 @@ export default function Layout({ children }) {
 
       {/* Mobile Bottom Navigation */}
       <nav className="mobile-nav">
-        {navLinks.map(l => (
+        {mobileNavLinks.map(l => (
           <Link
             key={l.href}
             href={l.href}
