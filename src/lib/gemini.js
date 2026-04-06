@@ -1,4 +1,4 @@
-export const GEMINI_MODEL = 'gemini-2.0-flash-lite-preview-02-05';
+export const GEMINI_MODEL = 'models/gemini-2.0-flash';
 
 export async function callGemini(prompt, signal, { model, ...generationConfig } = {}) {
   const response = await fetch('/api/gemini', {
@@ -28,19 +28,28 @@ export function parseGeminiJSON(rawText) {
 
 export function buildTokenizationPrompt(text) {
   const escaped = text.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-  return `입력된 텍스트 "${escaped}"를 정밀 분석해서 반드시 아래 규칙을 지킨 JSON으로 응답해.
+  return `다음 텍스트를 형태소 단위로 분석해서 JSON으로 출력해.
 
-1. 데이터 구조 (Index Mapping):
-   - "sequence": ["0", "1", "2", ...] 형태로 원문의 모든 요소를 순서대로 번호를 매길 것.
-   - "dictionary": {"0": {...}, "1": {...}} 형태로 정보를 넣을 것.
+입력: "${escaped}"
 
-2. 분석 규칙 (필독):
-   - 문단 구분 보존: 원문에 줄 바꿈(\\n)이 있다면 반드시 하나의 독립된 토큰으로 포함할 것.
-   - 모든 단어와 기호(따옴표, 콤마, 마침표, 띄어쓰기 등)를 빠짐없이 토큰으로 분리할 것.
-   - [영어]: 단어 토큰의 'furigana' 필드에 발음 기호(IPA) 작성 (/ / 포함).
-   - [일본어]: 한자가 포함된 토큰만 'furigana' 작성.
-   - meaning & pos: 무조건 한국어로 정확한 품사와 뜻 작성.
-   - 응답은 무조건 { "sequence": [... ] 로 시작하는 유효한 JSON 포맷이어야 함.
+## 출력 형식
+{"sequence":["0","1","2",...],"dictionary":{"0":{...},"1":{...},...}}
 
-설명 없이 오직 순수한 JSON만 응답할 것.`;
+## 각 토큰 필드
+- "text": 원문 그대로의 표기 (★절대 히라가나로 바꾸지 말 것★)
+- "furigana": 한자 포함 토큰만 히라가나 읽기, 나머지는 ""
+- "pos": 한국어 품사
+- "meaning": 한국어 뜻
+
+## text 필드 예시 (반드시 이렇게)
+✅ 올바름: 食べる → "text":"食べる", "furigana":"たべる"
+❌ 잘못됨: 食べる → "text":"たべる", "furigana":"食べる"  ← text와 furigana 뒤바뀜 금지
+
+✅ 올바름: 今日 → "text":"今日", "furigana":"きょう"
+❌ 잘못됨: 今日 → "text":"きょう"  ← text는 반드시 원문 표기
+
+## 주의
+- text에는 원문 한자/가타카나/영어를 그대로 쓸 것
+- 순수 히라가나 토큰(は, が, です 등)은 furigana 생략 또는 ""
+- 유효한 JSON만 출력, 설명 금지`;
 }

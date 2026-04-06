@@ -1,160 +1,176 @@
 /**
- * 콘텐츠 소스 — Wikimedia APIs (무료, 키 불필요, 차단 없음)
+ * 콘텐츠 소스 — API 키 불필요, 최신 트렌드 기사 중심
  *
- * wikipedia_good:
- *   - lang: 'simple' → Simple English Wikipedia Good Articles (A2-B1)
- *   - lang: 'ja'     → 日本語 Wikipedia 秀逸な記事 (N2-N1)
+ * Japanese:
+ *   - qiita      → Qiita 일본어 기술 트렌드 기사 (N2-N1)
+ *   - nhk_rss    → NHK 뉴스 헤드라인 다이제스트 (N3-N4)
  *
- * wikinews:
- *   - lang: 'en'     → English Wikinews 최신 기사 (B2)
+ * English:
+ *   - devto      → Dev.to 영어 기술 트렌드 기사 (B1-B2)
+ *   - wikinews   → English Wikinews 최신 기사 (B2, fallback)
  */
 
-const WIKI_UA = 'ManabiApp/1.0 (language-learning)';
+const UA = 'AnatomyStudio/1.0 (language-learning)';
 
-// ── 공통 유틸 ──────────────────────────────────────────────────
+async function jsonFetch(url, headers = {}) {
+  try {
+    const res = await fetch(url, {
+      headers: { 'User-Agent': UA, ...headers },
+      cache: 'no-store',
+    });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
 
+async function textFetch(url, headers = {}) {
+  try {
+    const res = await fetch(url, {
+      headers: { 'User-Agent': UA, ...headers },
+      cache: 'no-store',
+    });
+    if (!res.ok) return null;
+    return res.text();
+  } catch {
+    return null;
+  }
+}
+
+// 마크다운 코드 블록 / 인라인 코드 제거 + 정리
+function stripMarkdownCode(md) {
+  return md
+    .replace(/```[\s\S]*?```/g, '')   // 코드 블록
+    .replace(/`[^`]+`/g, '')          // 인라인 코드
+    .replace(/!\[.*?\]\(.*?\)/g, '')  // 이미지
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // 링크 → 텍스트
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+// ── 1. Qiita — 일본어 기술 트렌드 ──────────────────────────────
+export async function fetchQiita(count = 3) {
+  // stocks(좋아요) 10개 이상 인기글 최신순
+  const items = await jsonFetch(
+    `https://qiita.com/api/v2/items?per_page=${count * 4}&query=stocks%3A%3E10`,
+    { Authorization: process.env.QIITA_TOKEN ? `Bearer ${process.env.QIITA_TOKEN}` : undefined },
+  );
+  if (!items?.length) return [];
+
+  const results = [];
+  for (const item of items) {
+    if (results.length >= count) break;
+
+    const raw = item.body || '';
+    const text = stripMarkdownCode(raw);
+    if (text.length < 300) continue;
+
+    results.push({
+      videoId: `qiita_${item.id}`,
+      title: item.title,
+      channelName: `Qiita · @${item.user?.id || '?'}`,
+      thumbnail: null,
+      transcript: text.slice(0, 3000),
+      level: 'N2 상급',
+    });
+  }
+  return results;
+}
+
+// ── 2. NHK RSS — 일본어 뉴스 헤드라인 다이제스트 ────────────────
+export async function fetchNHKHeadlines(count = 1) {
+  const xml = await textFetch('https://www3.nhk.or.jp/rss/news/cat0.xml');
+  if (!xml) return [];
+
+  // RSS XML에서 <item> 블록 추출
+  const itemMatches = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)];
+  if (!itemMatches.length) return [];
+
+  const items = itemMatches.slice(0, 10).map(m => {
+    const block = m[1];
+    const title = (block.match(/<title>([\s\S]*?)<\/title>/) || [])[1]?.replace(/<!\[CDATA\[|\]\]>/g, '').trim() || '';
+    const desc  = (block.match(/<description>([\s\S]*?)<\/description>/) || [])[1]?.replace(/<!\[CDATA\[|\]\]>/g, '').trim() || '';
+    return { title, desc };
+  }).filter(i => i.title && i.desc);
+
+  if (!items.length) return [];
+
+  // 헤드라인 5개를 하나의 뉴스 다이제스트로 묶기
+  const selected = items.slice(0, 6);
+  const transcript = `今日のニュース（NHK）\n\n` +
+    selected.map((item, i) => `【${i + 1}】${item.title}\n${item.desc}`).join('\n\n');
+
+  return [{
+    videoId: `nhk_digest_${new Date().toISOString().split('T')[0]}`,
+    title: `今日のNHKニュース — ${new Date().toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' })}`,
+    channelName: 'NHK ニュース',
+    thumbnail: 'https://www3.nhk.or.jp/common/img/common/sns_icon_nhk.png',
+    transcript,
+    level: 'N3 중급',
+  }];
+}
+
+// ── 3. Dev.to — 영어 기술 트렌드 ───────────────────────────────
+export async function fetchDevto(count = 3) {
+  // 주간 인기글
+  const list = await jsonFetch('https://dev.to/api/articles?per_page=20&top=7');
+  if (!list?.length) return [];
+
+  // 실제 본문은 개별 요청으로 가져와야 함
+  const results = [];
+  for (const item of list) {
+    if (results.length >= count) break;
+
+    const article = await jsonFetch(`https://dev.to/api/articles/${item.id}`);
+    if (!article) continue;
+
+    const text = stripMarkdownCode(article.body_markdown || '');
+    if (text.length < 300) continue;
+
+    results.push({
+      videoId: `devto_${item.id}`,
+      title: item.title,
+      channelName: `DEV Community · @${item.user?.username || '?'}`,
+      thumbnail: item.cover_image || item.social_image || null,
+      transcript: text.slice(0, 3000),
+      level: 'B1 중급',
+    });
+  }
+  return results;
+}
+
+// ── 4. Wikinews — 영어 뉴스 (fallback) ─────────────────────────
 async function wikiFetch(url) {
-  const res = await fetch(url, { headers: { 'User-Agent': WIKI_UA } });
+  const res = await fetch(url, { headers: { 'User-Agent': UA } });
   if (!res.ok) return null;
   return res.json();
 }
 
-/** Wikipedia/Wikinews 기사 전문 plain text 가져오기 */
-async function fetchArticleText(host, title) {
+async function fetchWikinewsArticleText(title) {
   const params = new URLSearchParams({
-    action: 'query',
-    prop: 'extracts',
-    explaintext: 'true',
-    exsectionformat: 'plain',
-    titles: title,
-    format: 'json',
-    origin: '*',
+    action: 'query', prop: 'extracts', explaintext: 'true',
+    exsectionformat: 'plain', titles: title, format: 'json', origin: '*',
   });
-
-  const data = await wikiFetch(`${host}/w/api.php?${params}`);
-  if (!data) return null;
-
-  const page = Object.values(data.query?.pages || {})[0];
-  if (!page?.extract) return null;
-
-  const text = page.extract.trim();
-  // 너무 짧거나 동음이의 페이지 제외
-  if (text.length < 200 || text.includes('may refer to:') || text.includes('이(가) 가리키는')) {
-    return null;
-  }
-
+  const data = await wikiFetch(`https://en.wikinews.org/w/api.php?${params}`);
+  const page = Object.values(data?.query?.pages || {})[0];
+  const text = page?.extract?.trim() || '';
+  if (text.length < 200) return null;
   return text.slice(0, 3000);
 }
 
-/** 카테고리 구성원 목록 가져오기 (최대 500개) */
-async function fetchCategoryMembers(host, categoryTitle, limit = 200) {
-  const params = new URLSearchParams({
-    action: 'query',
-    list: 'categorymembers',
-    cmtitle: categoryTitle,
-    cmlimit: String(limit),
-    cmnamespace: '0',
-    format: 'json',
-    origin: '*',
-  });
-
-  const data = await wikiFetch(`${host}/w/api.php?${params}`);
-  return (data?.query?.categorymembers || []).map(p => p.title);
-}
-
-// ── 소스별 fetcher ─────────────────────────────────────────────
-
-/**
- * Simple English Wikipedia Good Articles
- * 학습자용으로 검토된 고품질 기사 (A2-B1 수준)
- */
-export async function fetchSimpleGoodArticles(count = 3) {
-  const titles = await fetchCategoryMembers(
-    'https://simple.wikipedia.org',
-    'Category:Good articles',
-    300,
-  );
-  if (!titles.length) return [];
-
-  // 랜덤 샘플링
-  const shuffled = titles.sort(() => Math.random() - 0.5);
-  const results = [];
-
-  for (const title of shuffled) {
-    if (results.length >= count) break;
-    const text = await fetchArticleText('https://simple.wikipedia.org', title);
-    if (!text) continue;
-
-    results.push({
-      videoId: `wiki_simple_${encodeURIComponent(title)}`,
-      title,
-      channelName: 'Simple English Wikipedia',
-      thumbnail: null,
-      transcript: text,
-      level: 'B1 중급',
-    });
-  }
-
-  return results;
-}
-
-/**
- * 日本語 Wikipedia 秀逸な記事 (Featured Articles)
- * 편집자가 선정한 고품질 일본어 기사 (N2-N1 수준)
- */
-export async function fetchJapaneseFeaturedArticles(count = 3) {
-  const titles = await fetchCategoryMembers(
-    'https://ja.wikipedia.org',
-    'Category:秀逸な記事',
-    200,
-  );
-  if (!titles.length) return [];
-
-  const shuffled = titles.sort(() => Math.random() - 0.5);
-  const results = [];
-
-  for (const title of shuffled) {
-    if (results.length >= count) break;
-    const text = await fetchArticleText('https://ja.wikipedia.org', title);
-    if (!text) continue;
-
-    results.push({
-      videoId: `wiki_ja_${encodeURIComponent(title)}`,
-      title,
-      channelName: '日本語 Wikipedia 秀逸な記事',
-      thumbnail: null,
-      transcript: text,
-      level: 'N2 상급',
-    });
-  }
-
-  return results;
-}
-
-/**
- * English Wikinews — 최신 뉴스 기사 (B2 수준)
- * 실제 시사 뉴스, 저널리즘 영어
- */
 export async function fetchWikinews(count = 3) {
   const params = new URLSearchParams({
-    action: 'query',
-    list: 'recentchanges',
-    rcnamespace: '0',
-    rclimit: String(count * 4),  // 일부 실패 감안해 여유분 요청
-    rctype: 'new',
-    format: 'json',
-    origin: '*',
+    action: 'query', list: 'recentchanges', rcnamespace: '0',
+    rclimit: String(count * 4), rctype: 'new', format: 'json', origin: '*',
   });
-
   const data = await wikiFetch(`https://en.wikinews.org/w/api.php?${params}`);
   const articles = data?.query?.recentchanges || [];
-
   const results = [];
   for (const article of articles) {
     if (results.length >= count) break;
-    const text = await fetchArticleText('https://en.wikinews.org', article.title);
+    const text = await fetchWikinewsArticleText(article.title);
     if (!text) continue;
-
     results.push({
       videoId: `wikinews_${encodeURIComponent(article.title)}`,
       title: article.title,
@@ -164,36 +180,34 @@ export async function fetchWikinews(count = 3) {
       level: 'B2 상급',
     });
   }
-
   return results;
 }
 
-// ── source_type 디스패처 (cron에서 사용) ──────────────────────
-
+// ── source_type 디스패처 ────────────────────────────────────────
 export async function fetchFromSource(source, count = 3) {
   const { source_type, config = {} } = source;
-  const lang = config.lang || 'simple';
 
   switch (source_type) {
+    case 'qiita': {
+      const results = await fetchQiita(count);
+      // Qiita rate-limit 시 NHK로 fallback
+      if (results.length === 0) return fetchNHKHeadlines(count);
+      return results;
+    }
+    case 'nhk_rss':     return fetchNHKHeadlines(count);
+    case 'devto':       return fetchDevto(count);
+    case 'wikinews':    return fetchWikinews(count);
+
+    // 구버전 호환
     case 'wikipedia_good':
-      return lang === 'ja'
-        ? fetchJapaneseFeaturedArticles(count)
-        : fetchSimpleGoodArticles(count);
-
-    case 'wikinews':
-      return fetchWikinews(count);
-
-    // 이전 버전 호환
     case 'wikipedia_random':
-      return lang === 'ja'
-        ? fetchJapaneseFeaturedArticles(count)
-        : fetchSimpleGoodArticles(count);
+      return config.lang === 'ja' ? fetchFromSource({ source_type: 'qiita' }, count) : fetchDevto(count);
 
     default:
       return [];
   }
 }
 
-// 이전 코드와의 호환성 유지
-export const fetchEnglishArticles  = fetchSimpleGoodArticles;
-export const fetchJapaneseArticles = fetchJapaneseFeaturedArticles;
+// 구버전 호환 export
+export const fetchEnglishArticles  = fetchDevto;
+export const fetchJapaneseArticles = fetchQiita;

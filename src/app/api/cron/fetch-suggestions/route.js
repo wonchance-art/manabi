@@ -7,9 +7,11 @@ export async function GET(request) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    serviceKey || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    serviceKey ? { auth: { persistSession: false } } : {},
   );
 
   const today = new Date().toISOString().split('T')[0];
@@ -24,9 +26,9 @@ export async function GET(request) {
     .order('created_at');
 
   const activeSources = dbSources.length > 0 ? dbSources : [
-    { language: 'Japanese', source_type: 'wikipedia_good', config: { lang: 'ja',     level: 'N2 상급' } },
-    { language: 'English',  source_type: 'wikipedia_good', config: { lang: 'simple', level: 'B1 중급' } },
-    { language: 'English',  source_type: 'wikinews',       config: {                 level: 'B2 상급' } },
+    { language: 'Japanese', source_type: 'qiita',   config: { level: 'N2 상급' } },
+    { language: 'Japanese', source_type: 'nhk_rss', config: { level: 'N3 중급' } },
+    { language: 'English',  source_type: 'devto',   config: { level: 'B1 중급' } },
   ];
 
   // 언어별 그룹핑
@@ -40,13 +42,16 @@ export async function GET(request) {
     const articles = [];
 
     for (const src of langSources) {
-      if (articles.length >= 3) break;
-      const fetched = await fetchFromSource(src, 3 - articles.length);
+      const fetched = await fetchFromSource(src, 2);
       articles.push(...fetched);
     }
 
     for (const a of articles) {
-      const sourceLabel = a.videoId?.startsWith('wikinews_') ? 'wikinews' : 'wikipedia';
+      const sourceLabel = a.videoId?.startsWith('qiita_') ? 'qiita'
+        : a.videoId?.startsWith('devto_') ? 'devto'
+        : a.videoId?.startsWith('nhk_') ? 'nhk'
+        : a.videoId?.startsWith('wikinews_') ? 'wikinews'
+        : 'wikipedia';
       const { error } = await supabase.from('daily_suggestions').upsert({
         date: today,
         language,

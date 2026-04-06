@@ -1,6 +1,6 @@
 // IP별 요청 카운터 (서버리스 인스턴스 재시작 시 초기화 — 충분한 억지력)
 const rateLimitMap = new Map();
-const RATE_LIMIT = 20;
+const RATE_LIMIT = 120;
 const WINDOW_MS = 60 * 1000;
 
 function isRateLimited(ip) {
@@ -44,7 +44,7 @@ export async function POST(request) {
     );
   }
 
-  const { contents, generationConfig, model = 'models/gemini-2.0-flash-lite-preview-02-05' } = body;
+  const { contents, generationConfig, model = 'models/gemini-2.0-flash' } = body;
   if (!contents) {
     return Response.json(
       { error: { message: 'Bad Request: No contents provided' } },
@@ -74,6 +74,9 @@ export async function POST(request) {
       data = await response.json();
     }
 
+    if (!response.ok) {
+      console.error('Gemini API error:', response.status, JSON.stringify(data).slice(0, 300));
+    }
     return Response.json(data, { status: response.ok ? 200 : response.status });
   } catch (err) {
     console.error('Gemini API Proxy Error:', err);
