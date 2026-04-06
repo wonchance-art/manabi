@@ -13,6 +13,7 @@ import { checkAndAwardAchievements } from '../lib/achievements';
 import { useTTS } from '../lib/useTTS';
 import { callGemini } from '../lib/gemini';
 import Button from '../components/Button';
+import ConfirmModal from '../components/ConfirmModal';
 
 // JLPT / CEFR 목표 어휘 수 (학습 연구 기반 추정치)
 const LEVEL_MILESTONES = {
@@ -106,6 +107,7 @@ export default function VocabPage() {
   const [deckTitle, setDeckTitle] = useState('');
   const [deckLang, setDeckLang] = useState('Japanese');
   const [visibleCount, setVisibleCount] = useState(30);
+  const [confirmAction, setConfirmAction] = useState(null); // { message, onConfirm }
 
   const { data: vocab = [], isLoading } = useQuery({
     queryKey: ['vocab', user?.id],
@@ -548,11 +550,10 @@ export default function VocabPage() {
                       </button>
                     )}
                     <button
-                      onClick={() => {
-                        if (confirm(`"${v.word_text}" 를 단어장에서 삭제할까요?`)) {
-                          deleteMutation.mutate(v.id);
-                        }
-                      }}
+                      onClick={() => setConfirmAction({
+                        message: `"${v.word_text}" 를 단어장에서 삭제할까요?`,
+                        onConfirm: () => { deleteMutation.mutate(v.id); setConfirmAction(null); },
+                      })}
                       style={{
                         width: '26px', height: '26px', borderRadius: 'var(--radius-sm)',
                         background: 'transparent', border: '1px solid transparent',
@@ -1306,7 +1307,10 @@ export default function VocabPage() {
                           size="sm"
                           variant="danger"
                           disabled={deleteDeckMutation.isPending}
-                          onClick={() => window.confirm(`"${deck.title}" 덱을 삭제할까요?`) && deleteDeckMutation.mutate(deck.id)}
+                          onClick={() => setConfirmAction({
+                            message: `"${deck.title}" 덱을 삭제할까요?`,
+                            onConfirm: () => { deleteDeckMutation.mutate(deck.id); setConfirmAction(null); },
+                          })}
                         >
                           삭제
                         </Button>
@@ -1319,6 +1323,13 @@ export default function VocabPage() {
           )}
         </div>
       ) : null}
+
+      <ConfirmModal
+        open={!!confirmAction}
+        message={confirmAction?.message}
+        onConfirm={confirmAction?.onConfirm}
+        onCancel={() => setConfirmAction(null)}
+      />
     </div>
   );
 }

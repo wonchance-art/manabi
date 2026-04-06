@@ -184,7 +184,7 @@ export default function HomePage() {
   const isNewUser     = dueCount === 0 && todayVocab === 0 && !data?.recentProgress?.length;
 
   return (
-    <div className="page-container home-page" style={{ maxWidth: 720, display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="page-container home-page home-layout">
 
       {/* ── 언어 미설정 배너 ── */}
       {hasNoLanguage && (
@@ -222,18 +222,11 @@ export default function HomePage() {
       )}
 
       {/* ── ① 그리팅 + XP ── */}
-      <div style={{
-        background: 'linear-gradient(135deg, var(--bg-elevated) 0%, color-mix(in srgb, var(--primary) 10%, var(--bg-card)) 100%)',
-        border: '1px solid var(--border-hover)',
-        borderRadius: 'var(--radius-lg)',
-        padding: '20px 24px',
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+      <div className="home-greeting">
+        <div className="home-greeting__top">
           <div>
-            <h1 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: 3 }}>
-              안녕하세요, {displayName}님 👋
-            </h1>
-            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>오늘도 꾸준히 언어를 해부해봐요</p>
+            <h1 className="home-greeting__name">안녕하세요, {displayName}님 👋</h1>
+            <p className="home-greeting__sub">오늘도 꾸준히 언어를 해부해봐요</p>
           </div>
           {streak > 0 && (
             <div className="streak-badge">
@@ -244,48 +237,41 @@ export default function HomePage() {
           )}
         </div>
 
-        {/* XP bar */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-          <span style={{ fontSize: '0.78rem', color: 'var(--primary-light)', fontWeight: 700, flexShrink: 0 }}>
-            ⚡ Lv.{xpLevel}
-          </span>
-          <div style={{ flex: 1, background: 'var(--bg-secondary)', borderRadius: 'var(--radius-full)', height: 6, overflow: 'hidden' }}>
-            <div style={{ height: '100%', width: `${xpProgress}%`, background: 'linear-gradient(90deg, var(--primary), var(--primary-light))', borderRadius: 'var(--radius-full)', transition: 'width 0.6s ease' }} />
+        <div className="home-xp">
+          <span className="home-xp__level">⚡ Lv.{xpLevel}</span>
+          <div className="home-xp__track">
+            <div className="home-xp__fill" style={{ width: `${xpProgress}%` }} />
           </div>
-          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', flexShrink: 0 }}>
-            {xpToNext ? `${xpToNext} XP` : '최고 레벨'}
-          </span>
+          <span className="home-xp__next">{xpToNext ? `${xpToNext} XP` : '최고 레벨'}</span>
         </div>
-        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', textAlign: 'right' }}>
-          총 {xp.toLocaleString('ko-KR')} XP 획득
-        </div>
+        <div className="home-xp__total">총 {xp.toLocaleString('ko-KR')} XP 획득</div>
       </div>
 
       {/* ── ② 오늘의 학습 ── */}
-      <div className="card" style={{ padding: '20px 22px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <h2 style={{ fontSize: '0.95rem', fontWeight: 700 }}>오늘의 학습</h2>
-          <span style={{ fontSize: '0.78rem', color: doneCount === MISSIONS.length ? 'var(--accent)' : 'var(--text-muted)', fontWeight: doneCount === MISSIONS.length ? 700 : 400 }}>
+      <div className="card home-card">
+        <div className="home-section-head">
+          <h2 className="home-section-title">오늘의 학습</h2>
+          <span className={`home-section-meta ${doneCount === MISSIONS.length ? 'home-section-meta--done' : ''}`}>
             {doneCount === MISSIONS.length ? '🎉 전부 완료!' : `${doneCount} / ${MISSIONS.length} 완료`}
           </span>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div className="home-missions">
           {MISSIONS.map(m => {
             const pct  = Math.min(100, Math.round((m.current / m.goal) * 100));
             const done = m.current >= m.goal;
             return (
               <div key={m.label}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-                  <span style={{ fontSize: '1rem', flexShrink: 0 }}>{done ? '✅' : m.icon}</span>
-                  <span style={{ flex: 1, fontSize: '0.875rem', fontWeight: 500, color: done ? 'var(--text-muted)' : 'var(--text-primary)' }}>
+                <div className="home-mission-row">
+                  <span className="home-mission-row__icon">{done ? '✅' : m.icon}</span>
+                  <span className={`home-mission-row__label ${done ? 'home-mission-row__label--done' : ''}`}>
                     {m.label}
                   </span>
-                  <span style={{ fontSize: '0.78rem', color: done ? 'var(--accent)' : 'var(--text-muted)', fontWeight: 600 }}>
+                  <span className={`home-mission-row__count ${done ? 'home-mission-row__count--done' : ''}`}>
                     {m.current} / {m.goal}
                   </span>
                   {!done && (
-                    <Link href={m.href} className="btn btn--primary btn--sm" style={{ padding: '3px 10px', fontSize: '0.72rem' }}>
+                    <Link href={m.href} className="btn btn--primary btn--sm home-mission-row__cta">
                       {m.cta}
                     </Link>
                   )}
@@ -299,18 +285,16 @@ export default function HomePage() {
         {/* 오늘의 추천 */}
         {suggestion && (
           <>
-            <div style={{ margin: '18px 0 14px', borderTop: '1px solid var(--border)' }} />
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <span style={{ fontSize: '1rem', flexShrink: 0 }}>📰</span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: 2 }}>
+            <div className="home-divider" />
+            <div className="home-suggestion">
+              <span className="home-suggestion__icon">📰</span>
+              <div className="home-suggestion__info">
+                <div className="home-suggestion__meta">
                   오늘의 추천 · {suggestion.language === 'Japanese' ? '🇯🇵' : '🇬🇧'} {suggestion.level}
                 </div>
-                <div style={{ fontSize: '0.875rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {suggestion.title}
-                </div>
+                <div className="home-suggestion__title">{suggestion.title}</div>
               </div>
-              <button className="btn btn--accent btn--sm" style={{ flexShrink: 0 }}
+              <button className="btn btn--accent btn--sm home-suggestion__btn"
                 onClick={() => suggestion.material_id
                   ? router.push(`/viewer/${suggestion.material_id}`)
                   : router.push(`/materials/add?suggestion=${suggestion.id}`)
@@ -324,29 +308,26 @@ export default function HomePage() {
 
       {/* ── ③ 이번 주 통계 ── */}
       {data && (
-        <div className="card" style={{ padding: '18px 22px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-            <h2 style={{ fontSize: '0.95rem', fontWeight: 700 }}>이번 주 활동</h2>
-            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+        <div className="card home-card">
+          <div className="home-section-head">
+            <h2 className="home-section-title">이번 주 활동</h2>
+            <span className="home-section-meta">
               {data.weekStart.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })} ~
             </span>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+          <div className="home-stat-grid">
             {[
               { icon: '⭐', label: '단어', value: data.weekVocab,   unit: '개' },
               { icon: '🧠', label: '복습', value: data.weekReviews, unit: '회' },
               { icon: '📖', label: '완독', value: data.weekReads,   unit: '편' },
               { icon: '✨', label: 'XP',   value: data.weekXP,      unit: '' },
             ].map(({ icon, label, value, unit }) => (
-              <div key={label} style={{
-                textAlign: 'center', padding: '10px 4px',
-                background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)',
-              }}>
-                <div style={{ fontSize: '1.1rem', marginBottom: 3 }}>{icon}</div>
-                <div style={{ fontWeight: 700, fontSize: '1rem', color: value > 0 ? 'var(--primary-light)' : 'var(--text-muted)' }}>
+              <div key={label} className="home-stat-cell">
+                <div className="home-stat-cell__icon">{icon}</div>
+                <div className={`home-stat-cell__value ${value > 0 ? 'home-stat-cell__value--active' : ''}`}>
                   {value}{unit}
                 </div>
-                <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: 1 }}>{label}</div>
+                <div className="home-stat-cell__label">{label}</div>
               </div>
             ))}
           </div>
@@ -354,12 +335,11 @@ export default function HomePage() {
       )}
 
       {/* ── ④ 최근 자료 + 랭킹 (2열) ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
-
+      <div className="home-two-col">
         {/* 최근 읽은 자료 */}
         {data?.recentProgress?.length > 0 && (
-          <div className="card" style={{ padding: '18px 20px' }}>
-            <h2 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: 12 }}>최근 읽은 자료</h2>
+          <div className="card home-card">
+            <h2 className="home-section-title" style={{ marginBottom: 12 }}>최근 읽은 자료</h2>
             <div className="home-recent-list">
               {data.recentProgress.map(p => {
                 const mat  = p.reading_materials;
@@ -368,7 +348,7 @@ export default function HomePage() {
                 return (
                   <Link key={p.material_id} href={`/viewer/${p.material_id}`} className="home-recent-item">
                     <div className="home-recent-item__left">
-                      <span style={{ fontSize: '0.9rem', flexShrink: 0 }}>{lang === 'English' ? '🇬🇧' : '🇯🇵'}</span>
+                      <span className="home-recent-item__flag">{lang === 'English' ? '🇬🇧' : '🇯🇵'}</span>
                       <span className="home-recent-item__title">{mat.title}</span>
                     </div>
                     <span className={`home-recent-item__status ${p.is_completed ? 'home-recent-item__status--done' : ''}`}>
@@ -383,37 +363,25 @@ export default function HomePage() {
 
         {/* 랭킹 TOP 5 */}
         {leaders.length > 0 && (
-          <div className="card" style={{ padding: '18px 20px' }}>
-            <h2 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: 12 }}>🏆 랭킹 TOP 5</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+          <div className="card home-card">
+            <h2 className="home-section-title" style={{ marginBottom: 12 }}>🏆 랭킹 TOP 5</h2>
+            <div className="home-rank-list">
               {leaders.map((entry, idx) => {
                 const isMe = entry.id === user?.id;
                 const rank = idx + 1;
                 return (
-                  <div key={entry.id} style={{
-                    display: 'flex', alignItems: 'center', gap: 10,
-                    padding: '8px 10px',
-                    background: isMe ? 'color-mix(in srgb, var(--accent) 10%, var(--bg-secondary))' : 'var(--bg-secondary)',
-                    border: `1px solid ${isMe ? 'var(--accent)' : 'transparent'}`,
-                    borderRadius: 'var(--radius-md)',
-                  }}>
-                    <span style={{ minWidth: 24, textAlign: 'center', fontSize: rank <= 3 ? '0.95rem' : '0.78rem', fontWeight: 700, color: 'var(--text-muted)' }}>
+                  <div key={entry.id} className={`home-rank-entry ${isMe ? 'home-rank-entry--me' : ''}`}>
+                    <span className={`home-rank-entry__rank ${rank <= 3 ? 'home-rank-entry__rank--medal' : ''}`}>
                       {rank <= 3 ? RANK_MEDAL[rank - 1] : `#${rank}`}
                     </span>
-                    <div style={{
-                      width: 26, height: 26, borderRadius: '50%', flexShrink: 0,
-                      background: isMe ? 'var(--accent)' : 'var(--bg-elevated)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '0.78rem', fontWeight: 700,
-                      color: isMe ? '#fff' : 'var(--text-secondary)',
-                    }}>
+                    <div className={`home-rank-entry__avatar ${isMe ? 'home-rank-entry__avatar--me' : ''}`}>
                       {entry.display_name?.[0]?.toUpperCase() || '?'}
                     </div>
-                    <span style={{ flex: 1, fontSize: '0.82rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <span className="home-rank-entry__name">
                       {entry.display_name || '익명'}
-                      {isMe && <span style={{ marginLeft: 5, fontSize: '0.6rem', background: 'var(--accent)', color: '#fff', borderRadius: 3, padding: '1px 4px' }}>나</span>}
+                      {isMe && <span className="home-rank-entry__me-tag">나</span>}
                     </span>
-                    <span style={{ fontSize: '0.78rem', fontWeight: 700, flexShrink: 0, color: rank <= 3 ? ['#f7c948','#adb5bd','#cd7f32'][rank-1] : 'var(--text-secondary)' }}>
+                    <span className="home-rank-entry__xp" data-rank={rank}>
                       {(entry.xp ?? 0).toLocaleString('ko-KR')}
                     </span>
                   </div>
@@ -446,15 +414,13 @@ export default function HomePage() {
         const W = COLS * (CELL + GAP) - GAP;
         const H = ROWS * (CELL + GAP) - GAP;
         return (
-          <div className="card" style={{ padding: '18px 20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <h2 style={{ fontSize: '0.95rem', fontWeight: 700 }}>학습 히트맵</h2>
-              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                {totalActive}일 활동 · {totalWords}개 단어
-              </span>
+          <div className="card home-card">
+            <div className="home-section-head">
+              <h2 className="home-section-title">학습 히트맵</h2>
+              <span className="home-section-meta">{totalActive}일 활동 · {totalWords}개 단어</span>
             </div>
-            <div className="home-heatmap-scroll" style={{ overflowX: 'auto' }}>
-              <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} style={{ display: 'block' }}>
+            <div className="home-heatmap-scroll">
+              <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} className="home-heatmap-svg">
                 {days.map((day, i) => (
                   <rect key={day}
                     x={Math.floor(i / ROWS) * (CELL + GAP)}
@@ -468,10 +434,10 @@ export default function HomePage() {
                 ))}
               </svg>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 8, fontSize: '0.65rem', color: 'var(--text-muted)' }}>
+            <div className="home-heatmap-legend">
               <span>적음</span>
               {['var(--bg-secondary)','var(--primary-glow)','var(--primary)','var(--accent)'].map((c, i) => (
-                <span key={i} style={{ width: 9, height: 9, background: c, borderRadius: 2, display: 'inline-block' }} />
+                <span key={i} className="home-heatmap-legend__dot" style={{ background: c }} />
               ))}
               <span>많음</span>
             </div>

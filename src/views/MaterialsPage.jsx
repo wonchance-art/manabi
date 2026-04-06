@@ -9,6 +9,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { JP_LEVELS, EN_LEVELS } from '../lib/constants';
+import ConfirmModal from '../components/ConfirmModal';
 
 
 async function fetchTodaySuggestions() {
@@ -160,6 +161,7 @@ export default function MaterialsPage() {
   const [langFilter, setLangFilter] = useState(searchParams.get('lang') || 'all');
   const [levelFilter, setLevelFilter] = useState(searchParams.get('level') || 'all');
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [confirmAction, setConfirmAction] = useState(null);
 
   // 검색어 debounce (300ms) — 매 키입력마다 DB 요청 방지
   useEffect(() => {
@@ -354,9 +356,10 @@ export default function MaterialsPage() {
                         disabled={deleteMutation.isPending}
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (window.confirm(`"${m.title}" 자료를 삭제하시겠습니까?`)) {
-                            deleteMutation.mutate(m.id);
-                          }
+                          setConfirmAction({
+                            message: `"${m.title}" 자료를 삭제하시겠습니까?`,
+                            onConfirm: () => { deleteMutation.mutate(m.id); setConfirmAction(null); },
+                          });
                         }}
                       >
                         삭제
@@ -448,6 +451,13 @@ export default function MaterialsPage() {
           </section>
         );
       })()}
+
+      <ConfirmModal
+        open={!!confirmAction}
+        message={confirmAction?.message}
+        onConfirm={confirmAction?.onConfirm}
+        onCancel={() => setConfirmAction(null)}
+      />
     </div>
   );
 }
