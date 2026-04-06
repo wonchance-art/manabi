@@ -99,20 +99,20 @@ export default function MaterialAddPage() {
     try {
       const finalJson = await analyzeText(text, signal, {
         metadata: { language, level, updated_at: new Date().toISOString() },
-        onBatch: async ({ currentJson, processed, total, failed }) => {
-          setStatus(`⏳ 병렬 분석 중... (${processed}/${total} 문단)`);
+        onBatch: async ({ currentJson, processed, total }) => {
+          const failedSoFar = currentJson.failed_indices?.length || 0;
+          setStatus(`⏳ 분석 중... (${processed}/${total}줄${failedSoFar > 0 ? ` · 실패 ${failedSoFar}` : ''})`);
           setProgress(Math.floor((processed / total) * 90) + 10);
-          await supabase.from('reading_materials').update({ processed_json: currentJson }).eq('id', id);
-          if (failed) {
-            setStatus('⚠️ 일부 문단 분석 실패. 뷰어에서 다시 시도할 수 있습니다.');
-            setIsProcessing(false);
-          }
+          const { error: updateError } = await supabase
+            .from('reading_materials').update({ processed_json: currentJson }).eq('id', id);
+          if (updateError) console.error('[analyzeText onBatch] DB update failed:', updateError.message);
         },
       });
 
-      if (finalJson.status === 'failed') return;
-
-      setStatus('✅ 전체 분석 완료!');
+      const failedCount = finalJson.failed_indices?.length || 0;
+      setStatus(failedCount > 0
+        ? `⚠️ 분석 완료 (${failedCount}개 단락 재시도 필요)`
+        : '✅ 전체 분석 완료!');
       setProgress(100);
       setIsProcessing(false);
       setCompletedId(id);
@@ -239,6 +239,11 @@ export default function MaterialAddPage() {
             placeholder="분석할 문장을 입력하세요 (엔터로 문단 구분)"
             className="form-textarea"
           />
+          {rawText.length > 0 && (
+            <div className={`form-char-count ${rawText.length > 50000 ? 'form-char-count--over' : rawText.length > 30000 ? 'form-char-count--warn' : ''}`}>
+              {rawText.length.toLocaleString()}자 · 약 {rawText.split('\n').filter(l => l.trim()).length}개 문단
+            </div>
+          )}
         </div>
 
         {/* Progress */}
@@ -249,7 +254,7 @@ export default function MaterialAddPage() {
               <span>{progress}%</span>
             </div>
             <div className="progress-bar">
-              <div className="progress-bar__fill" style={{ width: `${progress}%` }} />
+              <div className={`progress-bar__fill ${progress >= 100 ? 'progress-bar__fill--done' : ''}`} style={{ width: `${progress}%` }} />
             </div>
           </div>
         )}
@@ -259,7 +264,7 @@ export default function MaterialAddPage() {
 
         {/* Actions */}
         {completedId ? (
-          <div className="form-actions">
+          <div className="form-actions form-actions--done">
             <Button size="lg" style={{ flex: 2 }} onClick={() => router.push(`/viewer/${completedId}`)}>
               📖 지금 바로 읽기
             </Button>

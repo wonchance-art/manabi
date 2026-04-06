@@ -9,7 +9,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { JP_LEVELS, EN_LEVELS } from '../lib/constants';
-import Spinner from '../components/Spinner';
+
 
 async function fetchTodaySuggestions() {
   const res = await fetch('/api/suggestions/today');
@@ -128,8 +128,9 @@ export default function MaterialsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
-      const { error } = await supabase.from('reading_materials').delete().eq('id', id);
+      const { error, count } = await supabase.from('reading_materials').delete({ count: 'exact' }).eq('id', id);
       if (error) throw error;
+      if (count === 0) throw new Error('삭제 권한이 없거나 이미 삭제된 자료입니다.');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['materials'] });
@@ -218,22 +219,6 @@ export default function MaterialsPage() {
         </Link>
       </div>
 
-      {/* 오늘의 추천 — 유저 레벨 ±1 필터링 */}
-      {(() => {
-        const filtered = filterSuggestionsByProfile(suggestions, profile);
-        if (!filtered.length) return null;
-        return (
-          <section className="suggestions-section">
-            <h2 className="suggestions-section__title">✨ 오늘의 추천 자료</h2>
-            <div className="suggestions-grid">
-              {filtered.map(s => (
-                <SuggestionCard key={s.id} suggestion={s} router={router} />
-              ))}
-            </div>
-          </section>
-        );
-      })()}
-
       {/* Search */}
       <div className="filter-row">
         <div className="search-wrap">
@@ -295,7 +280,16 @@ export default function MaterialsPage() {
       </div>
 
       {isLoading ? (
-        <Spinner message="자료를 불러오는 중..." />
+        <div className="skeleton-grid">
+          {[1,2,3,4,5,6].map(i => (
+            <div key={i} className="skeleton--card" style={{ height: 140 }}>
+              <div className="skeleton-line--title skeleton-line" />
+              <div className="skeleton-line--text skeleton-line" />
+              <div className="skeleton-line--short skeleton-line" />
+              <div className="skeleton-bar" />
+            </div>
+          ))}
+        </div>
       ) : filtered.length > 0 ? (
         <>
         <div className="feature-grid">
@@ -316,13 +310,18 @@ export default function MaterialsPage() {
                       {level && <span className="tag">{level}</span>}
                     </div>
                     <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                      {isCompleted && <span className="badge badge--completed">✅ 완료</span>}
-                      <span className="badge" style={{
-                        background: isDone ? 'var(--accent-glow)' : 'var(--primary-glow)',
-                        color: isDone ? 'var(--accent)' : 'var(--primary-light)'
-                      }}>
-                        {isDone ? '분석 완료' : status === 'analyzing' ? '💡 분석 중' : '⏳ 대기 중'}
-                      </span>
+                      {isCompleted ? (
+                        <span className="badge" style={{ background: 'rgba(74,138,92,0.15)', color: 'var(--accent)', fontWeight: 600 }}>
+                          ✓ 완독
+                        </span>
+                      ) : !isDone && (
+                        <span className="badge" style={{
+                          background: status === 'analyzing' ? 'var(--primary-glow)' : 'var(--bg-secondary)',
+                          color: status === 'analyzing' ? 'var(--primary-light)' : 'var(--text-muted)',
+                        }}>
+                          {status === 'analyzing' ? '분석 중...' : '대기 중'}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <h3 className="card__title">{m.title}</h3>
@@ -415,6 +414,40 @@ export default function MaterialsPage() {
           )}
         </div>
       )}
+
+      {/* 오늘의 추천 — 유저 레벨 ±1 필터링 */}
+      {(() => {
+        const filteredSuggestions = filterSuggestionsByProfile(suggestions, profile);
+        if (filteredSuggestions.length > 0) {
+          return (
+            <section className="suggestions-section" style={{ marginTop: '40px' }}>
+              <h2 className="suggestions-section__title">✨ 오늘의 추천 자료</h2>
+              <div className="suggestions-grid">
+                {filteredSuggestions.map(s => (
+                  <SuggestionCard key={s.id} suggestion={s} router={router} />
+                ))}
+              </div>
+            </section>
+          );
+        }
+        // 추천이 없을 때 — 직접 추가 유도
+        return (
+          <section className="suggestions-section" style={{ marginTop: '40px' }}>
+            <h2 className="suggestions-section__title">✨ 오늘의 추천 자료</h2>
+            <div className="card" style={{ padding: '28px 20px', textAlign: 'center' }}>
+              <div style={{ fontSize: '2rem', marginBottom: 8 }}>📚</div>
+              <p style={{ color: 'var(--text-secondary)', marginBottom: 16, fontSize: '0.9rem' }}>
+                오늘의 추천이 아직 준비되지 않았어요.
+                <br />직접 관심 있는 텍스트를 추가해보세요!
+              </p>
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+                <Link href="/materials/add" className="btn btn--primary btn--sm">➕ 자료 추가하기</Link>
+                <Link href="/guide" className="btn btn--secondary btn--sm">📖 학습 로드맵 보기</Link>
+              </div>
+            </div>
+          </section>
+        );
+      })()}
     </div>
   );
 }

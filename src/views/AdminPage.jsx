@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
@@ -8,6 +8,8 @@ import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import Spinner from '../components/Spinner';
 import Button from '../components/Button';
+import { STARTER_MATERIALS } from '../lib/starter-content';
+import { analyzeText } from '../lib/analyzeText';
 
 const SOURCE_TYPE_LABELS = {
   wikipedia_good:   'Wikipedia 우수 기사',
@@ -66,12 +68,26 @@ async function fetchAllPosts() {
   return data || [];
 }
 
+const STARTER_TITLES = new Set(STARTER_MATERIALS.map(m => m.title));
+
+async function fetchStarterMaterials() {
+  const { data, error } = await supabase
+    .from('reading_materials')
+    .select('id, title, raw_text, processed_json, created_at')
+    .in('title', [...STARTER_TITLES])
+    .order('created_at');
+  if (error) throw error;
+  return data || [];
+}
+
 // ── Component ─────────────────────────────────────
 export default function AdminPage() {
   const { isAdmin, loading } = useAuth();
   const [tab, setTab] = useState('users');
   const [newSource, setNewSource] = useState(DEFAULT_NEW_SOURCE);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [analyzingId, setAnalyzingId] = useState(null);
+  const analyzeAbortRef = useRef(null);
   const queryClient = useQueryClient();
   const toast = useToast();
 
@@ -106,6 +122,13 @@ export default function AdminPage() {
     queryKey: ['admin-posts'],
     queryFn: fetchAllPosts,
     enabled: tab === 'forum',
+  });
+
+  const { data: starterMaterials = [], isLoading: startersLoading } = useQuery({
+    queryKey: ['admin-starters'],
+    queryFn: fetchStarterMaterials,
+    enabled: tab === 'starters',
+    refetchInterval: analyzingId ? 5000 : false,
   });
 
   // 역할 변경
@@ -173,6 +196,63 @@ export default function AdminPage() {
     onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
   });
 
+  // 스타터 콘텐츠 시딩
+  const seedStartersMutation = useMutation({
+    mutationFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/admin/seed-starters', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || '시딩 실패');
+      return json;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-starters'] });
+      toast(data.inserted > 0
+        ? `${data.inserted}개 스타터 자료가 추가됐습니다.`
+        : data.message, 'success');
+    },
+    onError: (err) => toast('시딩 실패: ' + err.message, 'error'),
+  });
+
+  // 개별 스타터 분석 실행
+  async function handleAnalyzeStarter(material) {
+    if (analyzingId) return;
+    const starterMeta = STARTER_MATERIALS.find(m => m.title === material.title);
+    if (!starterMeta) return;
+
+    const controller = new AbortController();
+    analyzeAbortRef.current = controller;
+    setAnalyzingId(material.id);
+
+    try {
+      await supabase
+        .from('reading_materials')
+        .update({ processed_json: { ...material.processed_json, status: 'analyzing' } })
+        .eq('id', material.id);
+
+      await analyzeText(material.raw_text || starterMeta.raw_text, controller.signal, {
+        metadata: { language: starterMeta.language, level: starterMeta.level, updated_at: new Date().toISOString() },
+        onBatch: async ({ currentJson }) => {
+          await supabase
+            .from('reading_materials')
+            .update({ processed_json: currentJson })
+            .eq('id', material.id);
+        },
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['admin-starters'] });
+      toast(`"${material.title}" 분석 완료`, 'success');
+    } catch {
+      toast(`"${material.title}" 분석 실패`, 'error');
+    } finally {
+      setAnalyzingId(null);
+      analyzeAbortRef.current = null;
+    }
+  }
+
   const handleAddSource = () => {
     if (!newSource.name.trim()) { toast('소스 이름을 입력하세요.', 'warning'); return; }
     addSourceMutation.mutate(newSource);
@@ -216,6 +296,7 @@ export default function AdminPage() {
           { key: 'materials', label: '📰 자료 관리' },
           { key: 'forum',     label: '💬 포럼 관리' },
           { key: 'sources',   label: '📡 콘텐츠 소스' },
+          { key: 'starters',  label: '🌱 스타터 콘텐츠' },
         ].map(t => (
           <button
             key={t.key}
@@ -308,7 +389,9 @@ export default function AdminPage() {
                           {m.visibility === 'public' ? '🌐 공개' : '🔒 비공개'}
                         </span>
                       </td>
-                      <td className="admin-table__muted">{status}</td>
+                      <td className="admin-table__muted">
+                        {{ idle: '⏳ 대기', analyzing: '🔄 분석 중', completed: '✅ 완료', failed: '❌ 실패' }[status] || status}
+                      </td>
                       <td className="admin-table__muted">{new Date(m.created_at).toLocaleDateString('ko-KR')}</td>
                       <td>
                         <Button
@@ -511,6 +594,112 @@ export default function AdminPage() {
                           </td>
                         </tr>
                       ))}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })}
+          </div>
+        )
+      )}
+      {/* ── 스타터 콘텐츠 ── */}
+      {tab === 'starters' && (
+        startersLoading ? <Spinner message="스타터 목록 로딩 중..." /> : (
+          <div>
+            <div className="admin-table-header" style={{ marginBottom: '20px' }}>
+              <div>
+                <span style={{ fontWeight: 600 }}>{starterMaterials.length} / {STARTER_MATERIALS.length}개 시딩됨</span>
+                {starterMaterials.length < STARTER_MATERIALS.length && (
+                  <span style={{ marginLeft: '12px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                    {STARTER_MATERIALS.length - starterMaterials.length}개 미삽입
+                  </span>
+                )}
+              </div>
+              <Button
+                size="sm"
+                disabled={seedStartersMutation.isPending || starterMaterials.length >= STARTER_MATERIALS.length}
+                onClick={() => seedStartersMutation.mutate()}
+              >
+                {seedStartersMutation.isPending ? '시딩 중...' : '🌱 스타터 시딩'}
+              </Button>
+            </div>
+
+            {/* 분석 대기 중인 항목 요약 */}
+            {(() => {
+              const seededTitles = new Set(starterMaterials.map(m => m.title));
+              const unseeded = STARTER_MATERIALS.filter(m => !seededTitles.has(m.title));
+              const idleCount = starterMaterials.filter(m => {
+                const s = m.processed_json?.status;
+                return s === 'idle' || s === 'failed';
+              }).length;
+              const completedCount = starterMaterials.filter(m => m.processed_json?.status === 'completed').length;
+
+              return (
+                <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', flexWrap: 'wrap' }}>
+                  {[
+                    { label: '✅ 분석 완료', count: completedCount, color: 'var(--success)' },
+                    { label: '⏳ 분석 대기', count: idleCount, color: 'var(--warning)' },
+                    { label: '🔄 분석 중', count: starterMaterials.filter(m => m.processed_json?.status === 'analyzing').length, color: 'var(--info)' },
+                    { label: '❌ 미삽입', count: unseeded.length, color: 'var(--text-muted)' },
+                  ].map(({ label, count, color }) => count > 0 && (
+                    <div key={label} style={{ fontSize: '0.85rem', color }}>
+                      {label}: <strong>{count}</strong>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+
+            {/* 언어별 테이블 */}
+            {['Japanese', 'English'].map(lang => {
+              const langItems = STARTER_MATERIALS.filter(m => m.language === lang);
+              return (
+                <div key={lang} style={{ marginBottom: '32px' }}>
+                  <h3 style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    {lang === 'Japanese' ? '🇯🇵 Japanese' : '🇬🇧 English'}
+                  </h3>
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>제목</th>
+                        <th>레벨</th>
+                        <th>상태</th>
+                        <th>분석</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {langItems.map(starter => {
+                        const dbMat = starterMaterials.find(m => m.title === starter.title);
+                        const status = dbMat?.processed_json?.status || 'not_seeded';
+                        const isThisAnalyzing = analyzingId === dbMat?.id;
+
+                        const statusBadge = {
+                          completed:  <span style={{ color: 'var(--success)', fontSize: '0.82rem' }}>✅ 완료</span>,
+                          analyzing:  <span style={{ color: 'var(--info)', fontSize: '0.82rem' }}>🔄 분석 중</span>,
+                          idle:       <span style={{ color: 'var(--warning)', fontSize: '0.82rem' }}>⏳ 대기</span>,
+                          failed:     <span style={{ color: 'var(--danger)', fontSize: '0.82rem' }}>❌ 실패</span>,
+                          not_seeded: <span style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>— 미삽입</span>,
+                        }[status] || <span style={{ fontSize: '0.82rem' }}>{status}</span>;
+
+                        return (
+                          <tr key={starter.title}>
+                            <td style={{ fontWeight: 500, maxWidth: '280px' }}>{starter.title}</td>
+                            <td className="admin-table__muted" style={{ whiteSpace: 'nowrap' }}>{starter.level}</td>
+                            <td>{statusBadge}</td>
+                            <td>
+                              {dbMat && status !== 'completed' && (
+                                <Button
+                                  size="sm"
+                                  disabled={!!analyzingId}
+                                  onClick={() => handleAnalyzeStarter(dbMat)}
+                                >
+                                  {isThisAnalyzing ? '분석 중...' : '분석'}
+                                </Button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
-import Spinner from '../components/Spinner';
+import { checkAndAwardAchievements } from '../lib/achievements';
 import Button from '../components/Button';
 
 const PAGE_SIZE = 10;
@@ -185,6 +185,10 @@ export default function ForumPage() {
       setPage(0);
       queryClient.invalidateQueries({ queryKey: ['forum-posts'] });
       toast('게시글을 올렸습니다!', 'success');
+      // first_post 업적 확인
+      checkAndAwardAchievements(user.id, { xp: profile?.xp, streak: profile?.streak_count, firstPost: true }).then(newBadges => {
+        newBadges.forEach(b => toast(`🏅 새 뱃지 획득: ${b.icon} ${b.name}`, 'celebrate', 5000));
+      });
     },
     onError: (err) => toast('글 작성 실패: ' + err.message, 'error'),
   });
@@ -404,22 +408,38 @@ export default function ForumPage() {
         </div>
 
         {isLoading && page === 0 ? (
-          <Spinner message="이야기를 불러오는 중..." />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {[1,2,3].map(i => (
+              <div key={i} className="skeleton--card" style={{ padding: 20 }}>
+                <div style={{ display: 'flex', gap: 12 }}>
+                  <div className="skeleton" style={{ width: 40, height: 40, borderRadius: '50%', flexShrink: 0 }} />
+                  <div style={{ flex: 1 }}>
+                    <div className="skeleton-line" style={{ width: '30%', height: 14, marginBottom: 10 }} />
+                    <div className="skeleton-line" style={{ width: '90%', marginBottom: 8 }} />
+                    <div className="skeleton-line" style={{ width: '60%' }} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         ) : (
           <div className="forum-list">
-            {allPosts.map(post => (
+            {allPosts.map(post => {
+              const authorName = post.author?.display_name || '익명';
+              const authorInitial = authorName[0]?.toUpperCase() || '?';
+              return (
               <div key={post.id} className="card forum-post">
                 <div className="forum-compose">
-                  <div className="forum-avatar">👤</div>
+                  <div className="forum-avatar forum-avatar--initial">{authorInitial}</div>
                   <div className="forum-post__body">
                     <div className="forum-post__meta">
-                      <span className="forum-post__name">{post.author?.display_name || '익명 사용자'}</span>
+                      <span className="forum-post__name">{authorName}</span>
                       {post.author?.streak_count > 0 && (
                         <span className="forum-post__streak">🔥 {post.author.streak_count}</span>
                       )}
-                      <span className="forum-post__date">· {timeAgo(post.created_at)}</span>
+                      <span className="forum-post__date">{timeAgo(post.created_at)}</span>
                     </div>
-                    <p className="forum-post__content">{post.content}</p>
+                    <p className="forum-post__content">{renderWithMentions(post.content)}</p>
                     <div className="forum-post__actions">
                       <button
                         className={`forum-action-btn ${post.user_liked ? 'forum-action-btn--liked' : ''}`}
@@ -495,7 +515,7 @@ export default function ForumPage() {
                             </p>
                           ) : comments.length > 0 ? comments.map(c => (
                             <div key={c.id} className="forum-comment">
-                              <div className="forum-comment__avatar">👤</div>
+                              <div className="forum-comment__avatar">{c.author?.display_name?.[0]?.toUpperCase() || '?'}</div>
                               <div className="forum-comment__body">
                                 <div className="forum-comment__text">
                                   <span className="forum-comment__name">{c.author?.display_name || '익명'}</span>
@@ -547,7 +567,8 @@ export default function ForumPage() {
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
 
             {hasMore && (
               <div style={{ textAlign: 'center', marginTop: '16px' }}>
@@ -563,7 +584,19 @@ export default function ForumPage() {
 
             {!isLoading && allPosts.length === 0 && (
               <div className="empty-state">
-                <p>아직 게시글이 없어요. 첫 글을 남겨보세요!</p>
+                <div className="empty-state__icon">💬</div>
+                <p className="empty-state__msg">아직 게시글이 없어요</p>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 16 }}>
+                  학습 중 궁금한 점이나 팁을 공유해보세요!
+                </p>
+                {user && (
+                  <button onClick={() => {
+                    const el = document.getElementById('new-post');
+                    if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => el.focus(), 300); }
+                  }} className="btn btn--primary btn--md">
+                    ✏️ 첫 글 작성하기
+                  </button>
+                )}
               </div>
             )}
           </div>
