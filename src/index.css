@@ -3812,6 +3812,39 @@ button {
   .suggestions-grid {
     grid-template-columns: 1fr;
   }
+
+  /* Home mobile */
+  .home-greeting {
+    padding: 16px 18px;
+  }
+  .home-greeting__name {
+    font-size: 1rem;
+  }
+  .home-card {
+    padding: 16px 18px;
+  }
+  .home-stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .home-two-col {
+    grid-template-columns: 1fr;
+  }
+  .home-mission-row__cta {
+    display: none;
+  }
+  .streak-badge {
+    padding: 6px 12px;
+  }
+  .streak-badge__count { font-size: 1.1rem; }
+  .streak-badge__label { display: none; }
+
+  /* MyPage mobile */
+  .mypage-stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .mypage-badge-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
 }
 
 /* Very small screens — stats go 1-col */
