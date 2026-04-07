@@ -408,7 +408,7 @@ export default function VocabPage() {
             <div style={{ display: 'flex', gap: 12, marginTop: 6, fontSize: '0.82rem', color: 'var(--text-muted)' }}>
               <span>총 <strong style={{ color: 'var(--text-primary)' }}>{vocab.length}</strong>개</span>
               <span>·</span>
-              <span style={{ color: reviewWords.length > 0 ? '#ff6b6b' : 'var(--accent)' }}>
+              <span style={{ color: reviewWords.length > 0 ? 'var(--danger)' : 'var(--accent)' }}>
                 {reviewWords.length > 0 ? `${reviewWords.length}개 복습 대기` : '모두 완료'}
               </span>
               <span>·</span>
@@ -580,7 +580,7 @@ export default function VocabPage() {
                     padding: '2px 8px',
                     borderRadius: 'var(--radius-full)',
                     background: v.interval >= 30 ? 'rgba(74,138,92,0.15)' : v.interval >= 7 ? 'rgba(252,196,25,0.15)' : 'rgba(255,107,107,0.1)',
-                    color: v.interval >= 30 ? 'var(--accent)' : v.interval >= 7 ? '#f0b400' : '#ff6b6b',
+                    color: v.interval >= 30 ? 'var(--accent)' : v.interval >= 7 ? 'var(--warning)' : 'var(--danger)',
                     fontWeight: 600,
                   }}>
                     {v.interval >= 30 ? '숙련' : v.interval >= 7 ? '학습 중' : '초기'}

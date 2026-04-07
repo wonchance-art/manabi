@@ -247,6 +247,17 @@ export default function HomePage() {
         <div className="home-xp__total">총 {xp.toLocaleString('ko-KR')} XP 획득</div>
       </div>
 
+      {/* ── 복습 알림 배너 ── */}
+      {dueCount > 0 && todayReviews === 0 && (
+        <Link href="/vocab" className="home-review-banner">
+          <span className="home-review-banner__icon">🧠</span>
+          <div className="home-review-banner__text">
+            <strong>{dueCount}개 단어</strong>가 복습을 기다리고 있어요
+          </div>
+          <span className="home-review-banner__cta">복습하기 →</span>
+        </Link>
+      )}
+
       {/* ── ② 오늘의 학습 ── */}
       <div className="card home-card">
         <div className="home-section-head">

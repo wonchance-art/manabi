@@ -878,7 +878,7 @@ ${labelExample}`;
               <button onClick={() => refetch()} className="analyzing-banner__refresh">새로고침</button>
               {user?.id === material?.owner_id && (
                 reanalyzeMutation.isPending
-                  ? <button onClick={stopReanalysis} className="analyzing-banner__refresh" style={{ background: '#e17055' }}>⏹ 중단</button>
+                  ? <button onClick={stopReanalysis} className="analyzing-banner__refresh" style={{ background: 'var(--danger)' }}>⏹ 중단</button>
                   : reanalyzeConfirm !== null
                     ? <>
                         <button onClick={confirmReanalyze} className="analyzing-banner__refresh">확인</button>
@@ -894,7 +894,7 @@ ${labelExample}`;
           <div className="analyzing-banner analyzing-banner--error">
             <span>❌ 분석에 실패했습니다.</span>
             {reanalyzeMutation.isPending
-              ? <button onClick={stopReanalysis} className="analyzing-banner__refresh" style={{ background: '#e17055' }}>⏹ 중단</button>
+              ? <button onClick={stopReanalysis} className="analyzing-banner__refresh" style={{ background: 'var(--danger)' }}>⏹ 중단</button>
               : reanalyzeConfirm !== null
                 ? <>
                     <button onClick={confirmReanalyze} className="analyzing-banner__refresh">확인</button>

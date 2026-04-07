@@ -5002,6 +5002,38 @@ button {
 }
 .home-setup-banner:hover { background: color-mix(in srgb, var(--primary) 15%, transparent); }
 
+/* ========= 복습 알림 배너 ========= */
+.home-review-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, rgba(255,107,107,0.12) 0%, rgba(255,159,67,0.10) 100%);
+  border: 1px solid rgba(255,107,107,0.3);
+  border-radius: var(--radius-lg);
+  padding: 14px 18px;
+  text-decoration: none;
+  color: var(--text-primary);
+  transition: transform 0.15s, box-shadow 0.15s;
+  animation: reviewPulse 2s ease-in-out infinite;
+}
+.home-review-banner:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255,107,107,0.15);
+}
+@keyframes reviewPulse {
+  0%, 100% { border-color: rgba(255,107,107,0.3); }
+  50% { border-color: rgba(255,107,107,0.6); }
+}
+.home-review-banner__icon { font-size: 1.5rem; }
+.home-review-banner__text { flex: 1; font-size: 0.9rem; }
+.home-review-banner__text strong { color: #ff6b6b; }
+.home-review-banner__cta {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #ff6b6b;
+  white-space: nowrap;
+}
+
 /* ========= 신규 유저 시작 가이드 ========= */
 .home-getting-started {
   background: linear-gradient(135deg, var(--primary-glow) 0%, var(--bg-elevated) 100%);
