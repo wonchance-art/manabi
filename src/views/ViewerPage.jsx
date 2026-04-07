@@ -658,19 +658,21 @@ ${labelExample}`;
     const sourceSentence = extractSourceSentence(selectedToken.id);
 
     try {
+      const row = {
+        user_id: user.id,
+        word_text: selectedToken.text,
+        furigana: selectedToken.furigana || '',
+        meaning: selectedToken.meaning || '',
+        pos: selectedToken.pos || '',
+        next_review_at: new Date().toISOString(),
+        language: material?.language || (/[\u3040-\u30ff\u4e00-\u9fff]/.test(selectedToken.text) ? 'Japanese' : 'English'),
+        source_sentence: sourceSentence || null,
+        source_material_id: id || null,
+      };
+
       const { error: insertError } = await supabase
         .from('user_vocabulary')
-        .upsert([{
-          user_id: user.id,
-          word_text: selectedToken.text,
-          furigana: selectedToken.furigana || '',
-          meaning: selectedToken.meaning || '',
-          pos: selectedToken.pos || '',
-          interval: 0, ease_factor: 0, repetitions: 0,
-          next_review_at: new Date().toISOString(),
-          source_sentence: sourceSentence || null,
-          source_material_id: id,
-        }], { onConflict: 'user_id, word_text' });
+        .upsert([row], { onConflict: 'user_id,word_text', ignoreDuplicates: true });
 
       if (insertError) throw insertError;
       saveCountRef.current += 1;
@@ -742,6 +744,11 @@ ${labelExample}`;
       <header className="page-header viewer-header">
         <Link href="/materials" className="viewer-back-link">← 라이브러리</Link>
         <h1 className="page-header__title">{material.title}</h1>
+        {user && savedWords.size > 0 && (
+          <Link href="/vocab" className="viewer-vocab-counter">
+            ⭐ {savedWords.size}개 수집 → 단어장
+          </Link>
+        )}
       </header>
 
       {/* Settings Bar */}

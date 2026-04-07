@@ -45,11 +45,11 @@ function AuthForm() {
         setSuccess('🎉 인증 이메일을 발송했습니다! 이메일을 확인해주세요.');
       }
     } catch (err) {
-      const msg = toKoreanError(err.message);
+      const msg = toKoreanError(err?.message || String(err));
       if (msg === 'ALREADY_REGISTERED') {
         setError('ALREADY_REGISTERED');
       } else {
-        setError(msg);
+        setError(msg || '로그인 중 오류가 발생했습니다. 다시 시도해주세요.');
       }
     } finally {
       setLoading(false);

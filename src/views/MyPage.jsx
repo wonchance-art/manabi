@@ -12,23 +12,37 @@ import { ACHIEVEMENTS } from '../lib/achievements';
 import Button from '../components/Button';
 
 async function fetchMyStats(userId) {
+  const heatmapStart = new Date();
+  heatmapStart.setHours(0, 0, 0, 0);
+  heatmapStart.setDate(heatmapStart.getDate() - 83);
+
   const [
     { count: vocabCount },
     { count: readCount },
     { count: reviewedCount },
     { data: achievements },
+    { data: vocabRows },
   ] = await Promise.all([
     supabase.from('user_vocabulary').select('*', { count: 'exact', head: true }).eq('user_id', userId),
     supabase.from('reading_progress').select('*', { count: 'exact', head: true }).eq('user_id', userId).eq('is_completed', true),
     supabase.from('user_vocabulary').select('*', { count: 'exact', head: true }).eq('user_id', userId).not('last_reviewed_at', 'is', null),
     supabase.from('user_achievements').select('achievement_id, created_at').eq('user_id', userId).order('created_at', { ascending: false }),
+    supabase.from('user_vocabulary').select('created_at, last_reviewed_at').eq('user_id', userId).gte('created_at', heatmapStart.toISOString()),
   ]);
+
+  const heatmapDayCounts = {};
+  for (const v of (vocabRows || [])) {
+    const day = v.created_at.slice(0, 10);
+    heatmapDayCounts[day] = (heatmapDayCounts[day] || 0) + 1;
+  }
+
   return {
     vocabCount: vocabCount || 0,
     readCount: readCount || 0,
     reviewedCount: reviewedCount || 0,
     earnedIds: new Set((achievements || []).map(a => a.achievement_id)),
     earnedDates: Object.fromEntries((achievements || []).map(a => [a.achievement_id, a.created_at])),
+    heatmapDayCounts,
   };
 }
 
@@ -270,6 +284,59 @@ export default function MyPage() {
           </div>
         </div>
       )}
+
+      {/* 학습 히트맵 */}
+      {stats?.heatmapDayCounts && (() => {
+        const dc = stats.heatmapDayCounts;
+        const COLS = 12, ROWS = 7, CELL = 13, GAP = 3;
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        const todayKey = today.toISOString().slice(0, 10);
+        const days = Array.from({ length: COLS * ROWS }, (_, i) => {
+          const d = new Date(today);
+          d.setDate(d.getDate() - (COLS * ROWS - 1 - i));
+          return d.toISOString().slice(0, 10);
+        });
+        const maxCount = Math.max(1, ...Object.values(dc));
+        const totalActive = Object.keys(dc).length;
+        const totalWords = Object.values(dc).reduce((a, b) => a + b, 0);
+        const cellColor = n => {
+          if (!n) return 'var(--bg-secondary)';
+          const lvl = Math.ceil((n / maxCount) * 4);
+          return ['', 'var(--primary-glow)', 'var(--primary)', 'var(--accent)', 'var(--accent)'][lvl] || 'var(--accent)';
+        };
+        const W = COLS * (CELL + GAP) - GAP;
+        const H = ROWS * (CELL + GAP) - GAP;
+        return (
+          <div className="card mypage-section">
+            <div className="mypage-section__header">
+              <h2 className="mypage-section__title">📅 학습 히트맵</h2>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{totalActive}일 활동 · {totalWords}개 단어</span>
+            </div>
+            <div className="home-heatmap-scroll">
+              <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} className="home-heatmap-svg">
+                {days.map((day, i) => (
+                  <rect key={day}
+                    x={Math.floor(i / ROWS) * (CELL + GAP)}
+                    y={(i % ROWS) * (CELL + GAP)}
+                    width={CELL} height={CELL} rx={2}
+                    fill={cellColor(dc[day] || 0)}
+                    opacity={day > todayKey ? 0 : 1}
+                  >
+                    <title>{day}: {dc[day] || 0}개</title>
+                  </rect>
+                ))}
+              </svg>
+            </div>
+            <div className="home-heatmap-legend">
+              <span>적음</span>
+              {['var(--bg-secondary)', 'var(--primary-glow)', 'var(--primary)', 'var(--accent)'].map((c, i) => (
+                <span key={i} className="home-heatmap-legend__dot" style={{ background: c }} />
+              ))}
+              <span>많음</span>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* 일일 목표 설정 */}
       <div className="card mypage-section">

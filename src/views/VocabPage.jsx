@@ -43,8 +43,8 @@ function exportCSV(vocab) {
     v.meaning || '',
     v.pos || '',
     new Date(v.next_review_at).toLocaleDateString('ko-KR'),
-    v.interval.toFixed(1),
-    v.ease_factor.toFixed(1),
+    (v.interval ?? 0).toFixed(1),
+    (v.ease_factor ?? 0).toFixed(1),
   ]);
   const csv = [header, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
   const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
@@ -208,7 +208,7 @@ export default function VocabPage() {
       }));
       const { error: importErr } = await supabase
         .from('user_vocabulary')
-        .upsert(rows, { onConflict: 'user_id, word_text' });
+        .upsert(rows, { onConflict: 'user_id,word_text' });
       if (importErr) throw importErr;
       return words.length;
     },
@@ -230,9 +230,10 @@ export default function VocabPage() {
 
   const scoreMutation = useMutation({
     mutationFn: async ({ id, nextStats }) => {
+      const payload = { ...nextStats, last_reviewed_at: new Date().toISOString() };
       const { error } = await supabase
         .from('user_vocabulary')
-        .update({ ...nextStats, last_reviewed_at: new Date().toISOString() })
+        .update(payload)
         .eq('id', id);
       if (error) throw error;
     },
@@ -305,9 +306,9 @@ export default function VocabPage() {
   const handleScore = (rating) => {
     if (!currentWord) return;
     const nextStats = calculateFSRS(rating, {
-      interval: currentWord.interval,
-      ease_factor: currentWord.ease_factor,
-      repetitions: currentWord.repetitions,
+      interval: currentWord.interval ?? 0,
+      ease_factor: currentWord.ease_factor ?? 0,
+      repetitions: currentWord.repetitions ?? 0,
       next_review_at: currentWord.next_review_at,
     });
     scoreMutation.mutate({ id: currentWord.id, nextStats });
@@ -668,7 +669,7 @@ export default function VocabPage() {
                 <div className="review-card__progress">
                   <span>남은 단어: {reviewWords.length - reviewIdx}</span>
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    {reviewMode === 'flash' && !showAnswer && currentWord.source_sentence && (
+                    {reviewMode === 'flash' && !showAnswer && currentWord?.source_sentence && (
                       <button className="review-hint-btn" onClick={() => setShowHint(h => !h)}>
                         {showHint ? '힌트 숨기기' : '💡 힌트'}
                       </button>
@@ -681,7 +682,7 @@ export default function VocabPage() {
 
                 <div className="review-card__body">
                   {/* ── 단어 헤더 (문맥 퀴즈는 정답 공개 전까지 숨김) ── */}
-                  {(reviewMode !== 'context' || showAnswer) && (
+                  {currentWord && (reviewMode !== 'context' || showAnswer) && (
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
                       <h2 className="review-card__word">{currentWord.word_text}</h2>
                       {ttsSupported && (
@@ -959,7 +960,7 @@ export default function VocabPage() {
           <div className="stat-card">
             <div className="stat-card__label">기억 건강도</div>
             <div className="stat-card__value stat-card__value--green">
-              {vocab.length > 0 ? (vocab.reduce((acc, curr) => acc + curr.interval, 0) / vocab.length).toFixed(1) : 0}d
+              {vocab.length > 0 ? (vocab.reduce((acc, curr) => acc + (curr.interval ?? 0), 0) / vocab.length).toFixed(1) : 0}d
             </div>
             <div className="stat-card__sub">평균 기억 안정도</div>
           </div>
@@ -985,7 +986,7 @@ export default function VocabPage() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {[...vocab]
                   .filter(v => (v.repetitions || 0) > 0)
-                  .sort((a, b) => (b.repetitions || 0) - (a.repetitions || 0) || a.interval - b.interval)
+                  .sort((a, b) => (b.repetitions || 0) - (a.repetitions || 0) || (a.interval ?? 0) - (b.interval ?? 0))
                   .slice(0, 5)
                   .map(v => (
                     <div key={v.id} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -996,9 +997,9 @@ export default function VocabPage() {
                         color: (v.repetitions || 0) > 4 ? 'var(--danger)' : 'var(--warning, #f59e0b)',
                         background: 'var(--bg-secondary)', borderRadius: '99px', padding: '2px 10px'
                       }}>
-                        Again {v.repetitions}회
+                        Again {v.repetitions ?? 0}회
                       </span>
-                      <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>안정도 {v.interval}d</span>
+                      <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>안정도 {(v.interval ?? 0).toFixed(1)}d</span>
                     </div>
                   ))}
               </div>

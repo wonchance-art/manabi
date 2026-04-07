@@ -118,6 +118,15 @@ export default function ForumPage() {
   const realtimeRef = useRef(null);
   const commentInputRef = useRef(null);
   const [confirmAction, setConfirmAction] = useState(null);
+  const [postCategory, setPostCategory] = useState('');
+
+  const CATEGORIES = [
+    { value: '', label: '일반' },
+    { value: '[질문]', label: '질문' },
+    { value: '[팁]', label: '팁/노하우' },
+    { value: '[자료]', label: '자료 추천' },
+    { value: '[인증]', label: '학습 인증' },
+  ];
 
   const { data, isLoading, isFetching } = useQuery({
     queryKey: ['forum-posts', page, user?.id],
@@ -184,6 +193,7 @@ export default function ForumPage() {
     },
     onSuccess: () => {
       setNewPost('');
+      setPostCategory('');
       setPage(0);
       queryClient.invalidateQueries({ queryKey: ['forum-posts'] });
       toast('게시글을 올렸습니다!', 'success');
@@ -329,7 +339,8 @@ export default function ForumPage() {
     e.preventDefault();
     if (!user) { toast('로그인이 필요합니다.', 'warning'); return; }
     if (!newPost.trim()) return;
-    postMutation.mutate(newPost.trim());
+    const content = postCategory ? `${postCategory} ${newPost.trim()}` : newPost.trim();
+    postMutation.mutate(content);
   };
 
   const handleCommentSubmit = (postId) => {
@@ -399,6 +410,15 @@ export default function ForumPage() {
                   className="forum-textarea"
                 />
                 <div className="forum-compose__footer">
+                  <div className="forum-category-pills">
+                    {CATEGORIES.map(c => (
+                      <button key={c.value} type="button"
+                        className={`forum-category-pill ${postCategory === c.value ? 'forum-category-pill--active' : ''}`}
+                        onClick={() => setPostCategory(postCategory === c.value ? '' : c.value)}>
+                        {c.label}
+                      </button>
+                    ))}
+                  </div>
                   <Button type="submit" size="sm" disabled={postMutation.isPending || !newPost.trim()}
                     style={{ borderRadius: 'var(--radius-full)' }}>
                     {postMutation.isPending ? '게시 중...' : '게시하기'}
@@ -429,6 +449,9 @@ export default function ForumPage() {
             {allPosts.map(post => {
               const authorName = post.author?.display_name || '익명';
               const authorInitial = authorName[0]?.toUpperCase() || '?';
+              const categoryMatch = post.content?.match(/^\[(질문|팁|자료|인증)\]\s?/);
+              const categoryTag = categoryMatch ? categoryMatch[0].trim() : null;
+              const postContent = categoryTag ? post.content.slice(categoryMatch[0].length) : post.content;
               return (
               <div key={post.id} className="card forum-post">
                 <div className="forum-compose">
@@ -436,12 +459,13 @@ export default function ForumPage() {
                   <div className="forum-post__body">
                     <div className="forum-post__meta">
                       <span className="forum-post__name">{authorName}</span>
+                      {categoryTag && <span className="forum-post__tag">{categoryTag}</span>}
                       {post.author?.streak_count > 0 && (
                         <span className="forum-post__streak">🔥 {post.author.streak_count}</span>
                       )}
                       <span className="forum-post__date">{timeAgo(post.created_at)}</span>
                     </div>
-                    <p className="forum-post__content">{renderWithMentions(post.content)}</p>
+                    <p className="forum-post__content">{renderWithMentions(postContent)}</p>
                     <div className="forum-post__actions">
                       <button
                         className={`forum-action-btn ${post.user_liked ? 'forum-action-btn--liked' : ''}`}

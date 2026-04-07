@@ -1188,6 +1188,21 @@ button {
   display: block;
 }
 
+.viewer-vocab-counter {
+  display: inline-block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: rgba(74, 138, 92, 0.12);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  margin-top: 6px;
+  transition: background 0.2s;
+}
+.viewer-vocab-counter:hover {
+  background: rgba(74, 138, 92, 0.22);
+}
+
 .viewer-settings {
   padding: 0;
   margin-bottom: 30px;
@@ -1862,8 +1877,11 @@ button {
 
 .forum-compose__footer {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   margin-top: 12px;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .forum-textarea {
@@ -1906,6 +1924,38 @@ button {
   font-size: 0.75rem;
   color: #ff922b;
   font-weight: 600;
+}
+.forum-post__tag {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--primary-glow);
+  padding: 1px 8px;
+  border-radius: var(--radius-full);
+}
+.forum-category-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.forum-category-pill {
+  font-size: 0.78rem;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.forum-category-pill:hover {
+  border-color: var(--primary-light);
+  color: var(--primary-light);
+}
+.forum-category-pill--active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
 }
 
 .forum-post__date {
