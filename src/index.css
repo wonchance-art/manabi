@@ -223,6 +223,26 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   top: 12px;
 }
 
+/* ========= Offline Banner ========= */
+.offline-banner {
+  position: fixed;
+  top: var(--gnb-height);
+  left: 0;
+  right: 0;
+  z-index: 999;
+  background: var(--warning);
+  color: #fff;
+  text-align: center;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  animation: slideDown 0.3s ease-out;
+}
+@keyframes slideDown {
+  from { transform: translateY(-100%); }
+  to   { transform: translateY(0); }
+}
+
 /* ========= Main Layout ========= */
 .app-layout {
   padding-top: var(--gnb-height);

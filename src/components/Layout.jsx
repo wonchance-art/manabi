@@ -15,6 +15,19 @@ export default function Layout({ children }) {
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
   const [showTour, setShowTour] = useState(false);
+  const [isOffline, setIsOffline] = useState(false);
+
+  useEffect(() => {
+    const goOffline = () => setIsOffline(true);
+    const goOnline = () => setIsOffline(false);
+    setIsOffline(!navigator.onLine);
+    window.addEventListener('offline', goOffline);
+    window.addEventListener('online', goOnline);
+    return () => {
+      window.removeEventListener('offline', goOffline);
+      window.removeEventListener('online', goOnline);
+    };
+  }, []);
 
   // Show tour once for onboarded users who haven't seen it
   useEffect(() => {
@@ -126,6 +139,13 @@ export default function Layout({ children }) {
           )}
         </div>
       </header>
+
+      {/* 오프라인 배너 */}
+      {isOffline && (
+        <div className="offline-banner" role="alert">
+          📡 인터넷 연결이 끊겼습니다. 일부 기능이 제한될 수 있어요.
+        </div>
+      )}
 
       {/* Mobile Bottom Navigation */}
       <nav className="mobile-nav" aria-label="모바일 내비게이션">
