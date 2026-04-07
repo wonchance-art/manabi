@@ -15,9 +15,9 @@ export default function ConfirmModal({ open, title, message, confirmLabel = '삭
   if (!open) return null;
 
   return (
-    <div className="confirm-overlay" onClick={onCancel}>
+    <div className="confirm-overlay" onClick={onCancel} role="dialog" aria-modal="true" aria-label={title || '확인'}>
       <div className="confirm-modal" onClick={e => e.stopPropagation()}>
-        {title && <h3 className="confirm-modal__title">{title}</h3>}
+        {title && <h3 className="confirm-modal__title" id="confirm-title">{title}</h3>}
         <p className="confirm-modal__msg">{message}</p>
         <div className="confirm-modal__actions">
           <button className="btn btn--secondary btn--sm" onClick={onCancel}>{cancelLabel}</button>

@@ -56,20 +56,22 @@ export default function Layout({ children }) {
 
   return (
     <>
-      <header className="gnb">
-        <Link href="/" className="gnb__logo">
-          <span className="gnb__logo-icon">🧬</span>
+      <a href="#main-content" className="skip-link">본문으로 건너뛰기</a>
+      <header className="gnb" role="banner">
+        <Link href="/" className="gnb__logo" aria-label="Anatomy Studio 홈">
+          <span className="gnb__logo-icon" aria-hidden="true">🧬</span>
           <span>Anatomy Studio</span>
         </Link>
 
-        <nav className="gnb__nav">
+        <nav className="gnb__nav" aria-label="메인 내비게이션">
           {navLinks.map(l => (
             <Link
               key={l.href}
               href={l.href}
               className={`gnb__link ${pathname === l.href || pathname.startsWith(l.href + '/') ? 'active' : ''}`}
+              aria-current={pathname === l.href ? 'page' : undefined}
             >
-              <span className="gnb__link-icon">{l.icon}</span>
+              <span className="gnb__link-icon" aria-hidden="true">{l.icon}</span>
               <span>{l.label}</span>
             </Link>
           ))}
@@ -90,8 +92,9 @@ export default function Layout({ children }) {
           className="theme-toggle"
           onClick={toggleTheme}
           title={theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환'}
+          aria-label={theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환'}
         >
-          {theme === 'dark' ? '☀️' : '🌙'}
+          <span aria-hidden="true">{theme === 'dark' ? '☀️' : '🌙'}</span>
         </button>
 
         <div className="gnb__actions">
@@ -125,20 +128,21 @@ export default function Layout({ children }) {
       </header>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="mobile-nav">
+      <nav className="mobile-nav" aria-label="모바일 내비게이션">
         {mobileNavLinks.map(l => (
           <Link
             key={l.href}
             href={l.href}
             className={`mobile-nav__link ${pathname === l.href || pathname.startsWith(l.href + '/') ? 'active' : ''}`}
+            aria-current={pathname === l.href ? 'page' : undefined}
           >
-            <span className="mobile-nav__icon">{l.icon}</span>
+            <span className="mobile-nav__icon" aria-hidden="true">{l.icon}</span>
             <span>{l.label}</span>
           </Link>
         ))}
       </nav>
 
-      <main className="app-layout">
+      <main className="app-layout" role="main" id="main-content">
         {children}
       </main>
 
