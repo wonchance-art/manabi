@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
@@ -9,6 +9,23 @@ import { useAuth } from '../lib/AuthContext';
 import { getXPLevel, getLevelProgress, getXPToNextLevel } from '../lib/xp';
 
 const RANK_MEDAL = ['🥇', '🥈', '🥉'];
+
+const DAILY_CHALLENGES = [
+  { icon: '🔥', title: '어려운 단어 정복', desc: '3번 이상 틀린 단어를 복습하세요', xp: 30, href: '/vocab', cta: '복습하기', check: (d) => d.todayReviewCount >= 3 },
+  { icon: '📖', title: '자료 완독 도전', desc: '자료 1편을 끝까지 읽어보세요', xp: 50, href: '/materials', cta: '읽기 시작', check: (d) => d.todayReadCount >= 1 },
+  { icon: '⭐', title: '단어 수집가', desc: '오늘 새 단어 10개를 모아보세요', xp: 25, href: '/materials', cta: '자료 보기', check: (d) => d.todayVocabCount >= 10 },
+  { icon: '🧠', title: '복습 마라톤', desc: '단어 10개 이상 복습하세요', xp: 40, href: '/vocab', cta: '복습하기', check: (d) => d.todayReviewCount >= 10 },
+  { icon: '💬', title: '커뮤니티 참여', desc: '포럼에 글이나 댓글을 남겨보세요', xp: 20, href: '/forum', cta: '포럼 가기', check: () => false },
+  { icon: '🏆', title: '올라운드 학습자', desc: '읽기 + 복습 + 수집 모두 달성하세요', xp: 60, href: '/home', cta: '현황 보기', check: (d) => d.todayReadCount >= 1 && d.todayReviewCount >= 1 && d.todayVocabCount >= 1 },
+  { icon: '📝', title: '문법 탐구', desc: '뷰어에서 AI 문법 해설을 받아보세요', xp: 20, href: '/materials', cta: '자료 보기', check: () => false },
+];
+
+function getDailyChallenge() {
+  const today = new Date().toISOString().slice(0, 10);
+  // Simple date-based seed
+  const seed = today.split('-').reduce((a, b) => a + parseInt(b), 0);
+  return DAILY_CHALLENGES[seed % DAILY_CHALLENGES.length];
+}
 
 async function fetchLeaderboard() {
   const { data } = await supabase
@@ -316,6 +333,44 @@ export default function HomePage() {
           </>
         )}
       </div>
+
+      {/* ── 오늘의 도전 ── */}
+      {data && (() => {
+        const challenge = getDailyChallenge();
+        const isDone = challenge.check({
+          todayVocabCount: todayVocab,
+          todayReviewCount: todayReviews,
+          todayReadCount: todayReads,
+        });
+        const storageKey = `as_challenge_${new Date().toISOString().slice(0, 10)}`;
+        const claimed = typeof window !== 'undefined' && localStorage.getItem(storageKey) === '1';
+
+        return (
+          <div className={`card home-card home-challenge ${isDone ? 'home-challenge--done' : ''}`}>
+            <div className="home-challenge__header">
+              <span className="home-challenge__icon">{isDone ? '✅' : challenge.icon}</span>
+              <div className="home-challenge__info">
+                <div className="home-challenge__badge">일일 도전</div>
+                <h3 className="home-challenge__title">{challenge.title}</h3>
+                <p className="home-challenge__desc">{challenge.desc}</p>
+              </div>
+              <div className="home-challenge__reward">
+                <span className="home-challenge__xp">+{challenge.xp}</span>
+                <span className="home-challenge__xp-label">XP</span>
+              </div>
+            </div>
+            {isDone ? (
+              <div className="home-challenge__done-msg">
+                {claimed ? '🎉 보너스 XP를 받았어요!' : '달성! 내일 또 도전해보세요.'}
+              </div>
+            ) : (
+              <Link href={challenge.href} className="btn btn--accent btn--sm home-challenge__cta">
+                {challenge.cta} →
+              </Link>
+            )}
+          </div>
+        );
+      })()}
 
       {/* ── ③ 이번 주 통계 ── */}
       {data && (

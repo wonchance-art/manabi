@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { checkAndAwardAchievements } from '../lib/achievements';
+import { useCelebration } from '../lib/CelebrationContext';
 import Button from '../components/Button';
 import ConfirmModal from '../components/ConfirmModal';
 
@@ -106,6 +107,7 @@ function renderWithMentions(text) {
 export default function ForumPage() {
   const { user, profile } = useAuth();
   const toast = useToast();
+  const { celebrate } = useCelebration();
   const queryClient = useQueryClient();
   const [newPost, setNewPost] = useState('');
   const [expandedPostId, setExpandedPostId] = useState(null);
@@ -199,7 +201,7 @@ export default function ForumPage() {
       toast('게시글을 올렸습니다!', 'success');
       // first_post 업적 확인
       checkAndAwardAchievements(user.id, { xp: profile?.xp, streak: profile?.streak_count, firstPost: true }).then(newBadges => {
-        newBadges.forEach(b => toast(`🏅 새 뱃지 획득: ${b.icon} ${b.name}`, 'celebrate', 5000));
+        newBadges.forEach(b => celebrate({ type: 'achievement', icon: b.icon, name: b.name, desc: b.desc }));
       });
     },
     onError: (err) => toast('글 작성 실패: ' + err.message, 'error'),

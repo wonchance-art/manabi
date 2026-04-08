@@ -14,6 +14,7 @@ import { analyzeText } from '../lib/analyzeText';
 import { recordActivity } from '../lib/streak';
 import { awardXP, XP_REWARDS } from '../lib/xp';
 import { checkAndAwardAchievements } from '../lib/achievements';
+import { useCelebration } from '../lib/CelebrationContext';
 import { useTTS } from '../lib/useTTS';
 
 async function fetchMaterial(id) {
@@ -129,6 +130,7 @@ export default function ViewerPage() {
   function cancelReanalyze() { setReanalyzeConfirm(null); }
   function stopReanalysis() { reanalyzeAbortRef.current?.abort(); }
   const { speak, supported: ttsSupported } = useTTS();
+  const { celebrate, checkLevelUp } = useCelebration();
 
   function readPref(key, fallback) {
     try { const v = localStorage.getItem('viewer_' + key); return v !== null ? JSON.parse(v) : fallback; } catch { return fallback; }
@@ -171,6 +173,8 @@ export default function ViewerPage() {
   // 댓글
   const [commentInput, setCommentInput] = useState('');
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [readProgress, setReadProgress] = useState(0);
+  const [saveAnim, setSaveAnim] = useState(false); // 단어 저장 애니메이션
 
   const { data: material, isLoading, error, refetch } = useQuery({
     queryKey: ['material', id],
@@ -202,6 +206,49 @@ export default function ViewerPage() {
       return data;
     },
     enabled: !!user,
+  });
+
+  // 완독 후 추천할 다음 자료 (같은 언어, 아직 안 읽은 것)
+  const { data: nextMaterial } = useQuery({
+    queryKey: ['next-material', id, material?.processed_json?.metadata?.language],
+    queryFn: async () => {
+      const lang = material?.processed_json?.metadata?.language;
+      // 이미 읽은 자료 ID 가져오기
+      const { data: readIds } = await supabase
+        .from('reading_progress')
+        .select('material_id')
+        .eq('user_id', user.id)
+        .eq('is_completed', true);
+      const doneSet = new Set((readIds || []).map(r => r.material_id));
+      doneSet.add(id); // 현재 자료도 제외
+
+      let query = supabase
+        .from('reading_materials')
+        .select('id, title, processed_json')
+        .eq('visibility', 'public')
+        .neq('id', id)
+        .limit(10);
+
+      const { data } = await query;
+      if (!data?.length) return null;
+
+      // 같은 언어 → 같은 레벨 우선 필터
+      const level = material?.processed_json?.metadata?.level;
+      const candidates = data
+        .filter(m => !doneSet.has(m.id) && m.processed_json?.status === 'completed')
+        .sort((a, b) => {
+          const aLang = a.processed_json?.metadata?.language === lang ? 0 : 1;
+          const bLang = b.processed_json?.metadata?.language === lang ? 0 : 1;
+          if (aLang !== bLang) return aLang - bLang;
+          const aLevel = a.processed_json?.metadata?.level === level ? 0 : 1;
+          const bLevel = b.processed_json?.metadata?.level === level ? 0 : 1;
+          return aLevel - bLevel;
+        });
+
+      return candidates[0] || null;
+    },
+    enabled: !!user && !!completionModal,
+    staleTime: 1000 * 60 * 5,
   });
 
   const { data: comments = [], refetch: refetchComments } = useQuery({
@@ -272,9 +319,11 @@ export default function ViewerPage() {
       queryClient.invalidateQueries({ queryKey: ['reading-progress', user?.id, id] });
       queryClient.invalidateQueries({ queryKey: ['reading-progress-list', user?.id] });
       recordActivity(user.id, () => fetchProfile(user.id));
-      awardXP(user.id, XP_REWARDS.MATERIAL_COMPLETED, profile?.xp ?? 0);
-      checkAndAwardAchievements(user.id, { xp: profile?.xp, streak: profile?.streak_count }).then(newBadges => {
-        newBadges.forEach(b => toast(`🏅 새 뱃지 획득: ${b.icon} ${b.name}`, 'celebrate', 5000));
+      const prevXP = profile?.xp ?? 0;
+      awardXP(user.id, XP_REWARDS.MATERIAL_COMPLETED, prevXP);
+      checkLevelUp(prevXP, prevXP + XP_REWARDS.MATERIAL_COMPLETED);
+      checkAndAwardAchievements(user.id, { xp: prevXP, streak: profile?.streak_count }).then(newBadges => {
+        newBadges.forEach(b => celebrate({ type: 'achievement', icon: b.icon, name: b.name, desc: b.desc }));
       });
       // 퀴즈 생성 후 완료 모달 표시
       const pendingCompletion = {
@@ -358,6 +407,22 @@ export default function ViewerPage() {
       }, { onConflict: 'user_id,material_id' });
     }, 2000);
   }, [user, id]);
+
+  // 읽기 진행률 바 (스크롤 기반)
+  const readerRef = useRef(null);
+  useEffect(() => {
+    const el = readerRef.current;
+    if (!el) return;
+    const handleScroll = () => {
+      const rect = el.getBoundingClientRect();
+      const total = el.scrollHeight - window.innerHeight;
+      if (total <= 0) { setReadProgress(100); return; }
+      const scrolled = -rect.top + 80; // header offset
+      setReadProgress(Math.min(100, Math.max(0, Math.round((scrolled / total) * 100))));
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [material]);
 
   // 단어 저장 카운트 (복습 유도용)
   const saveCountRef = useRef(0);
@@ -676,20 +741,29 @@ ${labelExample}`;
 
       if (insertError) throw insertError;
       saveCountRef.current += 1;
-      toast(`"${selectedToken.text}" 단어장에 추가됐어요! ⭐ +${XP_REWARDS.WORD_SAVED} XP`, 'success');
-      if (saveCountRef.current === 5) {
-        setTimeout(() => toast('단어 5개 모았어요! 🧠 복습하러 가볼까요?', 'info', 5000), 1200);
-      } else if (saveCountRef.current === 10) {
-        setTimeout(() => toast('벌써 10개! 💪 단어장에서 복습하면 기억이 오래가요', 'info', 5000), 1200);
-      }
+
+      // 저장 애니메이션 → 잠시 보여준 뒤 시트 닫기
+      setSaveAnim(true);
+      setTimeout(() => {
+        setSaveAnim(false);
+        setIsSheetOpen(false);
+        toast(`"${selectedToken.text}" 단어장에 추가됐어요! ⭐ +${XP_REWARDS.WORD_SAVED} XP`, 'success');
+        if (saveCountRef.current === 5) {
+          setTimeout(() => toast('단어 5개 모았어요! 🧠 복습하러 가볼까요?', 'info', 5000), 600);
+        } else if (saveCountRef.current === 10) {
+          setTimeout(() => toast('벌써 10개! 💪 단어장에서 복습하면 기억이 오래가요', 'info', 5000), 600);
+        }
+      }, 800);
+
       queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
       recordActivity(user.id, () => fetchProfile(user.id));
-      awardXP(user.id, XP_REWARDS.WORD_SAVED, profile?.xp ?? 0);
-      checkAndAwardAchievements(user.id, { xp: profile?.xp, streak: profile?.streak_count }).then(newBadges => {
-        newBadges.forEach(b => toast(`🏅 새 뱃지 획득: ${b.icon} ${b.name}`, 'celebrate', 5000));
+      const prevXP = profile?.xp ?? 0;
+      awardXP(user.id, XP_REWARDS.WORD_SAVED, prevXP);
+      checkLevelUp(prevXP, prevXP + XP_REWARDS.WORD_SAVED);
+      checkAndAwardAchievements(user.id, { xp: prevXP, streak: profile?.streak_count }).then(newBadges => {
+        newBadges.forEach(b => celebrate({ type: 'achievement', icon: b.icon, name: b.name, desc: b.desc }));
       });
-      setIsSheetOpen(false);
     } catch (err) {
       toast('추가 실패: ' + err.message, 'error');
     }
@@ -750,6 +824,14 @@ ${labelExample}`;
           </Link>
         )}
       </header>
+
+      {/* Reading Progress Bar */}
+      {isDone && (
+        <div className="viewer-progress-bar" aria-label={`읽기 진행률 ${readProgress}%`}>
+          <div className="viewer-progress-bar__fill" style={{ width: `${readProgress}%` }} />
+          <span className="viewer-progress-bar__label">{readProgress}%</span>
+        </div>
+      )}
 
       {/* Settings Bar */}
       <div className={`card viewer-settings ${settingsOpen ? 'viewer-settings--open' : ''}`}>
@@ -868,6 +950,7 @@ ${labelExample}`;
 
       {/* Reader Area */}
       <div
+        ref={readerRef}
         className={`card reader-area reader-area--${theme}`}
         style={{ fontSize: `${fontSize}rem`, fontFamily, gap: `${lineGap}px ${charGap}rem` }}
       >
@@ -1117,13 +1200,26 @@ ${labelExample}`;
             </div>
             <p className="bottom-sheet__meaning">{selectedToken.meaning || '(뜻 정보 없음)'}</p>
             <div className="bottom-sheet__actions">
-              <Button variant="ghost" onClick={() => setIsSheetOpen(false)} style={{ flex: 1 }}>닫기</Button>
-              {user ? (
-                isWordSaved
-                  ? <Button variant="secondary" disabled style={{ flex: 2 }}>✓ 이미 저장됨</Button>
-                  : <Button onClick={addToVocab} style={{ flex: 2 }}>⭐ 단어장에 추가</Button>
+              {saveAnim ? (
+                <div className="save-anim">
+                  <div className="save-anim__burst" aria-hidden="true">
+                    {Array.from({ length: 8 }, (_, i) => (
+                      <span key={i} className="save-anim__star" style={{ '--angle': `${i * 45}deg` }}>⭐</span>
+                    ))}
+                  </div>
+                  <span className="save-anim__check">✓ 저장 완료!</span>
+                </div>
               ) : (
-                <Link href="/auth" className="btn btn--primary" style={{ flex: 2, justifyContent: 'center' }}>🔒 로그인하고 저장하기</Link>
+                <>
+                  <Button variant="ghost" onClick={() => setIsSheetOpen(false)} style={{ flex: 1 }}>닫기</Button>
+                  {user ? (
+                    isWordSaved
+                      ? <Button variant="secondary" disabled style={{ flex: 2 }}>✓ 이미 저장됨</Button>
+                      : <Button onClick={addToVocab} style={{ flex: 2 }}>⭐ 단어장에 추가</Button>
+                  ) : (
+                    <Link href="/auth" className="btn btn--primary" style={{ flex: 2, justifyContent: 'center' }}>🔒 로그인하고 저장하기</Link>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -1410,15 +1506,32 @@ ${labelExample}`;
             </div>
 
             <div className="completion-modal__actions">
-              {completionModal.dueCount > 0 ? (
+              {completionModal.dueCount > 0 && (
                 <a href="/vocab" className="btn btn--primary btn--md">
                   🧠 지금 복습하기 ({completionModal.dueCount}개)
                 </a>
-              ) : (
+              )}
+
+              {nextMaterial && (
+                <a
+                  href={`/viewer/${nextMaterial.id}`}
+                  className="completion-next-card"
+                >
+                  <span className="completion-next-card__badge">다음 추천</span>
+                  <span className="completion-next-card__flag">
+                    {nextMaterial.processed_json?.metadata?.language === 'English' ? '🇬🇧' : '🇯🇵'}
+                  </span>
+                  <span className="completion-next-card__title">{nextMaterial.title}</span>
+                  <span className="completion-next-card__arrow">→</span>
+                </a>
+              )}
+
+              {!nextMaterial && completionModal.dueCount === 0 && (
                 <a href="/materials" className="btn btn--primary btn--md">
                   📰 다른 자료 보기
                 </a>
               )}
+
               <button
                 onClick={() => setCompletionModal(null)}
                 className="btn btn--ghost btn--md"
