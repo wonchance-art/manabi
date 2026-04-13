@@ -727,6 +727,205 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   align-items: center;
 }
 
+/* ========= Vocab Detail Card ========= */
+.vocab-detail-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: celebOverlayIn 0.2s ease;
+}
+.vocab-detail-card {
+  background: var(--bg-primary);
+  border-radius: 16px;
+  padding: 28px 24px;
+  max-width: 420px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  position: relative;
+  animation: celebModalIn 0.25s ease;
+}
+.vocab-detail-card__close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.vocab-detail-card__header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.vocab-detail-card__furigana {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.vocab-detail-card__word {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 4px 0 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.vocab-detail-card__tts {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  width: 28px;
+  height: 28px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.vocab-detail-card__meaning {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin-bottom: 10px;
+}
+.vocab-detail-card__badges {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+.vocab-detail-card__stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.vocab-detail-stat {
+  text-align: center;
+  padding: 10px 4px;
+  background: var(--bg-secondary);
+  border-radius: 10px;
+}
+.vocab-detail-stat__icon {
+  font-size: 1.1rem;
+  display: block;
+  margin-bottom: 4px;
+}
+.vocab-detail-stat__value {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: block;
+}
+.vocab-detail-stat__label {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  display: block;
+  margin-top: 2px;
+}
+.vocab-detail-card__section-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+.vocab-detail-card__timeline {
+  margin-bottom: 20px;
+}
+.vocab-detail-timeline {
+  position: relative;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.vocab-detail-timeline::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  background: var(--border);
+  border-radius: 1px;
+}
+.vocab-detail-timeline__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+}
+.vocab-detail-timeline__dot {
+  position: absolute;
+  left: -18px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 2px solid var(--bg-primary);
+  box-shadow: 0 0 0 2px var(--border);
+}
+.vocab-detail-timeline__date {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  min-width: 72px;
+}
+.vocab-detail-timeline__event {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.vocab-detail-card__growth {
+  margin-bottom: 4px;
+}
+.vocab-detail-growth-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.vocab-detail-growth-bar__label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  min-width: 56px;
+}
+.vocab-detail-growth-bar__track {
+  flex: 1;
+  height: 6px;
+  background: var(--bg-secondary);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.vocab-detail-growth-bar__fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+.vocab-detail-growth-bar__pct {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  min-width: 36px;
+  text-align: right;
+}
+
+@media (max-width: 480px) {
+  .vocab-detail-card__stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 /* ========= Review Card ========= */
 .review-card {
   min-height: 400px;
@@ -2660,6 +2859,51 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .mypage-goal-row__label { color: var(--text-secondary); }
 .mypage-goal-row__value { font-weight: 600; }
 
+/* ── Reminder ── */
+.mypage-reminder-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+.mypage-reminder-blocked {
+  font-size: 0.8rem;
+  color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 10%, transparent);
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+.mypage-reminder-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.mypage-reminder-btn {
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.mypage-reminder-btn:hover {
+  border-color: var(--primary);
+}
+.mypage-reminder-btn--active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+.mypage-reminder-status {
+  margin-top: 10px;
+  font-size: 0.82rem;
+  color: var(--accent);
+  font-weight: 500;
+}
+
 /* ── XP bar ── */
 .mypage-xp-bar { margin-bottom: 4px; }
 .mypage-xp-bar__info {
@@ -4559,6 +4803,57 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .streak-badge__fire { font-size: 1.3rem; animation: fireFlicker 1.5s ease-in-out infinite; }
 .streak-badge__count { font-size: 1.4rem; font-weight: 800; color: var(--primary-light); }
 .streak-badge__label { font-size: 0.75rem; color: var(--text-secondary); }
+
+.streak-area {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+.streak-freeze-indicator {
+  font-size: 0.75rem;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* MyPage Streak Freeze */
+.mypage-freeze {
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: var(--bg-secondary);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.mypage-freeze__info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+.mypage-freeze__icon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+.mypage-freeze__title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.mypage-freeze__desc {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.mypage-freeze__count {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--primary);
+  white-space: nowrap;
+  margin-left: auto;
+}
 
 @keyframes fireFlicker {
   0%, 100% { transform: scale(1); }

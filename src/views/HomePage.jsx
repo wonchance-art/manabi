@@ -245,13 +245,20 @@ export default function HomePage() {
             <h1 className="home-greeting__name">안녕하세요, {displayName}님 👋</h1>
             <p className="home-greeting__sub">오늘도 꾸준히 언어를 해부해봐요</p>
           </div>
-          {streak > 0 && (
-            <div className="streak-badge">
-              <span className="streak-badge__fire">🔥</span>
-              <span className="streak-badge__count">{streak}</span>
-              <span className="streak-badge__label">일 연속</span>
-            </div>
-          )}
+          <div className="streak-area">
+            {streak > 0 && (
+              <div className="streak-badge">
+                <span className="streak-badge__fire">🔥</span>
+                <span className="streak-badge__count">{streak}</span>
+                <span className="streak-badge__label">일 연속</span>
+              </div>
+            )}
+            {(profile?.streak_freeze_count ?? 0) > 0 && (
+              <div className="streak-freeze-indicator" title="스트릭 프리즈 티켓">
+                🛡️ ×{profile.streak_freeze_count}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="home-xp">

@@ -8,7 +8,7 @@ function detectLang(word) {
 export default function VocabList({
   filteredVocab, visibleCount, setVisibleCount,
   search, setSearch, sortBy, setSortBy, langFilter, setLangFilter,
-  ttsSupported, speak, setConfirmAction, deleteMutation,
+  ttsSupported, speak, setConfirmAction, deleteMutation, onWordClick,
 }) {
   return (
     <>
@@ -62,13 +62,13 @@ export default function VocabList({
 
       <div className="feature-grid">
         {filteredVocab.length > 0 ? filteredVocab.slice(0, visibleCount).map(v => (
-          <div key={v.id} className="card vocab-card">
+          <div key={v.id} className="card vocab-card" style={{ cursor: 'pointer' }} onClick={() => onWordClick?.(v)}>
             <div className="vocab-card__header">
               <div>
                 {v.furigana && <div className="vocab-card__furigana">{v.furigana}</div>}
                 <h3 className="vocab-card__word">{v.word_text}</h3>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }} onClick={e => e.stopPropagation()}>
                 <span className="badge" style={{ fontSize: '0.7rem' }}>{v.pos}</span>
                 {ttsSupported && (
                   <button

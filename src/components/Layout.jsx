@@ -36,6 +36,32 @@ export default function Layout({ children }) {
     }
   }, [profile?.onboarded]);
 
+  // 복습 알림 스케줄러
+  useEffect(() => {
+    if (!user) return;
+    const check = () => {
+      const hour = localStorage.getItem('as_reminder_hour');
+      if (!hour) return;
+      const now = new Date();
+      const currentHour = now.getHours();
+      const todayKey = now.toISOString().slice(0, 10);
+      const lastSent = localStorage.getItem('as_reminder_last_sent');
+      if (parseInt(hour) === currentHour && lastSent !== todayKey) {
+        if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+          new Notification('🧠 복습할 시간이에요!', {
+            body: '오늘의 단어를 복습하고 스트릭을 유지하세요.',
+            icon: '/favicon.ico',
+            tag: 'as-review-reminder',
+          });
+          localStorage.setItem('as_reminder_last_sent', todayKey);
+        }
+      }
+    };
+    check();
+    const timer = setInterval(check, 60_000);
+    return () => clearInterval(timer);
+  }, [user]);
+
   async function handleAuthClick() {
     if (user) {
       await signOut();

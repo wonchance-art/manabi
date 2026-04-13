@@ -16,6 +16,10 @@ import { awardXP, XP_REWARDS } from '../lib/xp';
 import { checkAndAwardAchievements } from '../lib/achievements';
 import { useCelebration } from '../lib/CelebrationContext';
 import { useTTS } from '../lib/useTTS';
+import ViewerComments from './ViewerComments';
+import ViewerBottomSheet from './ViewerBottomSheet';
+import ViewerGrammarModal from './ViewerGrammarModal';
+import ViewerQuizModal from './ViewerQuizModal';
 
 async function fetchMaterial(id) {
   const { data, error } = await supabase
@@ -35,39 +39,6 @@ async function fetchUserVocabWords(userId) {
     .eq('user_id', userId);
   if (error) return new Set();
   return new Set((data || []).map(v => v.word_text));
-}
-
-function inlineFormat(text) {
-  return text
-    .replace(/\*\*(.+?)\*\*/g, '<strong class="md-strong">$1</strong>')
-    .replace(/\*(.+?)\*/g,     '<em class="md-em">$1</em>')
-    .replace(/`(.+?)`/g,       '<code class="md-code">$1</code>');
-}
-
-// "레이블:\n내용" → "레이블: 내용" 으로 병합
-const KNOWN_LABELS = new Set([
-  '직역','의역','주어','서술어','목적어','보어','패턴','단어','상황','격식','반말',
-  '예문','예시','의미','유사표현',
-  '뉘앙스','차이','참고','활용법','조사',
-]);
-function preprocessMd(text) {
-  const lines = text.split('\n');
-  const out = [];
-  for (let i = 0; i < lines.length; i++) {
-    const t = lines[i].trim();
-    // "레이블:" 단독 줄이면 다음 내용 줄과 합침
-    const soloLabel = t.match(/^[\*_]*([가-힣A-Za-z·~]+(?:\s[가-힣A-Za-z]+)?)[\*_]*\s*[:：]\s*$/);
-    if (soloLabel && KNOWN_LABELS.has(soloLabel[1])) {
-      const nextContent = lines[i + 1]?.trim();
-      if (nextContent && !nextContent.startsWith('#') && !nextContent.startsWith('-')) {
-        out.push(`${soloLabel[1]}: ${nextContent}`);
-        i++; // 다음 줄 건너뜀
-        continue;
-      }
-    }
-    out.push(lines[i]);
-  }
-  return out.join('\n');
 }
 
 /**

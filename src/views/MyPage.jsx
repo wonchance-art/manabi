@@ -60,6 +60,8 @@ export default function MyPage() {
   const [goalWords, setGoalWords]         = useState(5);
   const [goalRead, setGoalRead]           = useState(1);
   const [badgeFilter, setBadgeFilter]     = useState('all');
+  const [reminderHour, setReminderHour]   = useState('');
+  const [notifPerm, setNotifPerm]         = useState('default');
 
   const { data: stats } = useQuery({
     queryKey: ['mypage-stats', user?.id],
@@ -75,6 +77,37 @@ export default function MyPage() {
     setEditLevelJp(profile.learning_level_japanese || 'N3 중급');
     setEditLevelEn(profile.learning_level_english  || 'B1 중급');
   }, [profile]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('as_reminder_hour');
+    if (saved !== null) setReminderHour(saved);
+    if (typeof Notification !== 'undefined') setNotifPerm(Notification.permission);
+  }, []);
+
+  async function handleReminderChange(hour) {
+    if (hour === '') {
+      localStorage.removeItem('as_reminder_hour');
+      localStorage.removeItem('as_reminder_last_sent');
+      setReminderHour('');
+      toast('복습 알림이 해제됐습니다.', 'success');
+      return;
+    }
+    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      const perm = await Notification.requestPermission();
+      setNotifPerm(perm);
+      if (perm !== 'granted') {
+        toast('알림 권한을 허용해야 복습 알림을 받을 수 있어요.', 'error');
+        return;
+      }
+    }
+    if (typeof Notification !== 'undefined' && Notification.permission === 'denied') {
+      toast('브라우저 설정에서 알림이 차단되어 있어요.', 'error');
+      return;
+    }
+    localStorage.setItem('as_reminder_hour', hour);
+    setReminderHour(hour);
+    toast(`매일 ${hour}시에 복습 알림을 보낼게요!`, 'success');
+  }
 
   function startEditGoals() {
     setGoalReview(profile?.goal_review ?? 5);
@@ -96,6 +129,19 @@ export default function MyPage() {
       fetchProfile(user.id, user.user_metadata);
       setIsEditingGoals(false);
       toast('목표가 저장됐습니다.', 'success');
+    },
+    onError: (err) => toast(err.message, 'error'),
+  });
+
+  const buyFreezeMutation = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.rpc('buy_streak_freeze', { uid: user.id });
+      if (error) throw error;
+      if (!data) throw new Error('XP가 부족합니다.');
+    },
+    onSuccess: () => {
+      fetchProfile(user.id, user.user_metadata);
+      toast('🛡️ 스트릭 프리즈를 획득했어요!', 'success');
     },
     onError: (err) => toast(err.message, 'error'),
   });
@@ -244,6 +290,26 @@ export default function MyPage() {
                 </div>
               ))}
             </div>
+
+            {/* 스트릭 프리즈 */}
+            <div className="mypage-freeze">
+              <div className="mypage-freeze__info">
+                <span className="mypage-freeze__icon">🛡️</span>
+                <div>
+                  <p className="mypage-freeze__title">스트릭 프리즈</p>
+                  <p className="mypage-freeze__desc">하루 빠져도 스트릭이 유지돼요</p>
+                </div>
+                <span className="mypage-freeze__count">{profile.streak_freeze_count ?? 0}개 보유</span>
+              </div>
+              <Button
+                size="sm"
+                variant="secondary"
+                disabled={xp < 100 || buyFreezeMutation.isPending}
+                onClick={() => buyFreezeMutation.mutate()}
+              >
+                {buyFreezeMutation.isPending ? '구매 중...' : '100 XP로 구매'}
+              </Button>
+            </div>
           </div>
         );
       })()}
@@ -389,6 +455,39 @@ export default function MyPage() {
             ))}
           </div>
         )}
+      </div>
+
+      {/* 복습 알림 설정 */}
+      <div className="card mypage-section">
+        <h2 className="mypage-section__title">🔔 복습 알림</h2>
+        <p className="mypage-reminder-desc">
+          매일 정해진 시간에 복습 알림을 보내드려요.
+        </p>
+
+        {typeof Notification !== 'undefined' && notifPerm === 'denied' && (
+          <div className="mypage-reminder-blocked">
+            ⚠️ 브라우저 설정에서 알림이 차단되어 있어요. 브라우저 주소창 왼쪽 아이콘을 눌러 알림을 허용해주세요.
+          </div>
+        )}
+
+        <div className="mypage-reminder-picker">
+          <div className="mypage-reminder-options">
+            {['', '7', '9', '12', '18', '21'].map(h => (
+              <button
+                key={h}
+                className={`mypage-reminder-btn ${reminderHour === h ? 'mypage-reminder-btn--active' : ''}`}
+                onClick={() => handleReminderChange(h)}
+              >
+                {h === '' ? '끄기' : `${h}시`}
+              </button>
+            ))}
+          </div>
+          {reminderHour && (
+            <p className="mypage-reminder-status">
+              ✅ 매일 {reminderHour}시에 알림을 보내드릴게요
+            </p>
+          )}
+        </div>
       </div>
 
     </div>
