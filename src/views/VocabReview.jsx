@@ -1,10 +1,7 @@
 import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Button from '../components/Button';
-
-function detectLang(word) {
-  return /[\u3040-\u30ff\u4e00-\u9fff]/.test(word) ? 'Japanese' : 'English';
-}
+import { detectLang } from '../lib/constants';
 
 function ScoreSection({ word, onScore }) {
   return (

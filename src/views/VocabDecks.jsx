@@ -1,8 +1,5 @@
 import Button from '../components/Button';
-
-function detectLang(word) {
-  return /[\u3040-\u30ff\u4e00-\u9fff]/.test(word) ? 'Japanese' : 'English';
-}
+import { detectLang } from '../lib/constants';
 
 export default function VocabDecks({
   user, vocab, publicDecks,

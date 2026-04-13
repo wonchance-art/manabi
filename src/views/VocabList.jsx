@@ -1,9 +1,6 @@
 import Link from 'next/link';
 import Button from '../components/Button';
-
-function detectLang(word) {
-  return /[\u3040-\u30ff\u4e00-\u9fff]/.test(word) ? 'Japanese' : 'English';
-}
+import { detectLang } from '../lib/constants';
 
 export default function VocabList({
   filteredVocab, visibleCount, setVisibleCount,
@@ -62,7 +59,7 @@ export default function VocabList({
 
       <div className="feature-grid">
         {filteredVocab.length > 0 ? filteredVocab.slice(0, visibleCount).map(v => (
-          <div key={v.id} className="card vocab-card" style={{ cursor: 'pointer' }} onClick={() => onWordClick?.(v)}>
+          <div key={v.id} className="card vocab-card" style={{ cursor: 'pointer' }} role="button" tabIndex={0} onClick={() => onWordClick?.(v)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), onWordClick?.(v))} aria-label={`${v.word_text} — ${v.meaning}`}>
             <div className="vocab-card__header">
               <div>
                 {v.furigana && <div className="vocab-card__furigana">{v.furigana}</div>}

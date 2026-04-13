@@ -30,7 +30,8 @@ export function calculateFSRS(rating, { interval: S = 0, ease_factor: D = 0, rep
     const daysOverdue = (Date.now() - dueTime) / (24 * 3600 * 1000);
     t = S + Math.max(0, daysOverdue);
   }
-  const R = Math.pow(0.9, t / S);
+  const safeS = Math.max(0.01, S);
+  const R = Math.pow(0.9, t / safeS);
 
   // Update Difficulty
   let deltaD = -(w[6] * (rating - 3));
@@ -41,19 +42,21 @@ export function calculateFSRS(rating, { interval: S = 0, ease_factor: D = 0, rep
   let newS;
   if (rating === 1) {
     // Again (Fail)
-    newS = w[11] * Math.pow(newD, -w[12]) * (Math.pow(S + 1, w[13]) - 1) * Math.exp(w[14] * (1 - R));
+    newS = w[11] * Math.pow(newD, -w[12]) * (Math.pow(safeS + 1, w[13]) - 1) * Math.exp(w[14] * (1 - R));
     lapses += 1;
   } else {
     // Hard, Good, Easy (Success)
     const hardPenalty = (rating === 2) ? w[15] : 1;
     const easyBonus = (rating === 4) ? w[16] : 1;
-    newS = S * (1 + Math.exp(w[8]) * (11 - newD) * Math.pow(S, -w[9]) * (Math.exp(w[10] * (1 - R)) - 1) * hardPenalty * easyBonus);
+    newS = safeS * (1 + Math.exp(w[8]) * (11 - newD) * Math.pow(safeS, -w[9]) * (Math.exp(w[10] * (1 - R)) - 1) * hardPenalty * easyBonus);
   }
 
   return finalize(newS, newD, lapses);
 }
 
 function finalize(S, D, lapses) {
+  S = isFinite(S) ? Math.min(Math.max(0.01, S), 36500) : 0.01;
+  D = isFinite(D) ? Math.max(1, Math.min(10, D)) : 5;
   const nextReviewAt = new Date();
   const interval = Math.max(1, Math.round(S));
   nextReviewAt.setDate(nextReviewAt.getDate() + interval);

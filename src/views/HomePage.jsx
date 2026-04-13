@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
-import { getXPLevel, getLevelProgress, getXPToNextLevel } from '../lib/xp';
+import { useToast } from '../lib/ToastContext';
+import { awardXP, getXPLevel, getLevelProgress, getXPToNextLevel } from '../lib/xp';
+import { useCelebration } from '../lib/CelebrationContext';
 
 const RANK_MEDAL = ['🥇', '🥈', '🥉'];
 
@@ -61,10 +63,11 @@ async function fetchHomeData(userId) {
     { count: todayForumPosts },
     { count: todayForumComments },
     { count: todayGrammarCount },
+    { data: allVocabRows },
   ] = await Promise.all([
     supabase.from('user_vocabulary').select('*', { count: 'exact', head: true })
       .eq('user_id', userId).lte('next_review_at', now),
-    supabase.from('user_vocabulary').select('created_at, last_reviewed_at')
+    supabase.from('user_vocabulary').select('created_at, last_reviewed_at, language, word_text')
       .eq('user_id', userId).gte('created_at', heatmapStart.toISOString()),
     supabase.from('reading_progress')
       .select('material_id, is_completed, updated_at, completed_at, reading_materials(id, title, processed_json)')
@@ -78,6 +81,8 @@ async function fetchHomeData(userId) {
       .eq('author_id', userId).gte('created_at', todayStart),
     supabase.from('grammar_notes').select('*', { count: 'exact', head: true })
       .eq('user_id', userId).gte('created_at', todayStart),
+    supabase.from('user_vocabulary').select('language, word_text')
+      .eq('user_id', userId),
   ]);
 
   const rows = vocabRows || [];
@@ -115,6 +120,15 @@ async function fetchHomeData(userId) {
     weekXP:      weekVocab * 5 + weekReview * 10 + weekRead * 50,
     weekStart:   weekStartDate,
     heatmapDayCounts,
+    vocabByLang: (() => {
+      const all = allVocabRows || [];
+      const isJa = (v) => v.language === 'Japanese' || (!v.language && /[\u3040-\u30ff\u4e00-\u9fff]/.test(v.word_text));
+      return {
+        Japanese: all.filter(isJa).length,
+        English: all.filter(v => !isJa(v)).length,
+        total: all.length,
+      };
+    })(),
   };
 }
 
@@ -133,8 +147,11 @@ function ProgressBar({ pct, done }) {
 }
 
 export default function HomePage() {
-  const { user, profile } = useAuth();
+  const { user, profile, fetchProfile } = useAuth();
   const router = useRouter();
+  const toast = useToast();
+  const { checkLevelUp } = useCelebration();
+  const [challengeClaimed, setChallengeClaimed] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ['home', user?.id],
@@ -293,6 +310,49 @@ export default function HomePage() {
         </Link>
       )}
 
+      {/* ── 레벨 진행도 ── */}
+      {data?.vocabByLang && profile?.learning_language?.length > 0 && (() => {
+        const MILESTONES = {
+          Japanese: { 'N5 기초': 800, 'N4 기본': 1500, 'N3 중급': 3750, 'N2 상급': 6000, 'N1 심화': 10000 },
+          English:  { 'A1 기초': 500, 'A2 초급': 1000, 'B1 중급': 2000, 'B2 상급': 4000, 'C1 고급': 7000, 'C2 마스터': 10000 },
+        };
+        const bars = [];
+        if (profile.learning_language.includes('Japanese') && data.vocabByLang.Japanese > 0) {
+          const level = profile.learning_level_japanese || 'N3 중급';
+          const target = MILESTONES.Japanese[level] || 3750;
+          const pct = Math.min(100, Math.round((data.vocabByLang.Japanese / target) * 100));
+          bars.push({ key: 'jp', flag: '🇯🇵', level, count: data.vocabByLang.Japanese, target, pct });
+        }
+        if (profile.learning_language.includes('English') && data.vocabByLang.English > 0) {
+          const level = profile.learning_level_english || 'B1 중급';
+          const target = MILESTONES.English[level] || 2000;
+          const pct = Math.min(100, Math.round((data.vocabByLang.English / target) * 100));
+          bars.push({ key: 'en', flag: '🇬🇧', level, count: data.vocabByLang.English, target, pct });
+        }
+        if (!bars.length) return null;
+        return (
+          <div className="card home-card" style={{ padding: '16px 20px' }}>
+            {bars.map(b => (
+              <div key={b.key} style={{ marginBottom: bars.length > 1 && b.key === 'jp' ? '12px' : 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '6px' }}>
+                  <span style={{ fontSize: '0.88rem', fontWeight: 600 }}>{b.flag} {b.level}</span>
+                  <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                    {b.count.toLocaleString('ko-KR')} / {b.target.toLocaleString('ko-KR')}개 ({b.pct}%)
+                  </span>
+                </div>
+                <div style={{ background: 'var(--bg-secondary)', borderRadius: 'var(--radius-full)', height: 8, overflow: 'hidden' }}>
+                  <div style={{
+                    height: '100%', width: `${b.pct}%`,
+                    background: b.pct >= 100 ? 'var(--accent)' : 'var(--primary-light)',
+                    borderRadius: 'var(--radius-full)', transition: 'width 0.6s ease',
+                  }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
+
       {/* ── ② 오늘의 학습 ── */}
       <div className="card home-card">
         <div className="home-section-head">
@@ -363,7 +423,18 @@ export default function HomePage() {
           todayGrammarCount: data.todayGrammarCount ?? 0,
         });
         const storageKey = `as_challenge_${new Date().toISOString().slice(0, 10)}`;
-        const claimed = typeof window !== 'undefined' && localStorage.getItem(storageKey) === '1';
+        const claimed = challengeClaimed || (typeof window !== 'undefined' && localStorage.getItem(storageKey) === '1');
+
+        async function claimReward() {
+          if (claimed || !user) return;
+          const prevXP = profile?.xp ?? 0;
+          await awardXP(user.id, challenge.xp, prevXP);
+          localStorage.setItem(storageKey, '1');
+          setChallengeClaimed(true);
+          checkLevelUp(prevXP, prevXP + challenge.xp);
+          fetchProfile(user.id, user.user_metadata);
+          toast(`🎉 +${challenge.xp} XP 보너스 획득!`, 'success');
+        }
 
         return (
           <div className={`card home-card home-challenge ${isDone ? 'home-challenge--done' : ''}`}>
@@ -380,9 +451,13 @@ export default function HomePage() {
               </div>
             </div>
             {isDone ? (
-              <div className="home-challenge__done-msg">
-                {claimed ? '🎉 보너스 XP를 받았어요!' : '달성! 내일 또 도전해보세요.'}
-              </div>
+              claimed ? (
+                <div className="home-challenge__done-msg">🎉 보너스 XP를 받았어요!</div>
+              ) : (
+                <button onClick={claimReward} className="btn btn--accent btn--sm home-challenge__cta">
+                  🎁 +{challenge.xp} XP 받기
+                </button>
+              )
             ) : (
               <Link href={challenge.href} className="btn btn--accent btn--sm home-challenge__cta">
                 {challenge.cta} →

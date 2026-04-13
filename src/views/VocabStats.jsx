@@ -3,9 +3,7 @@ const LEVEL_MILESTONES = {
   English:  { 'A1 기초': 500, 'A2 초급': 1000, 'B1 중급': 2000, 'B2 상급': 4000, 'C1 고급': 7000, 'C2 마스터': 10000 },
 };
 
-function detectLang(word) {
-  return /[\u3040-\u30ff\u4e00-\u9fff]/.test(word) ? 'Japanese' : 'English';
-}
+import { detectLang } from '../lib/constants';
 
 export default function VocabStats({ vocab, profile }) {
   return (

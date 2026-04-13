@@ -20,10 +20,7 @@ import VocabReview from './VocabReview';
 import VocabStats from './VocabStats';
 import VocabNotes from './VocabNotes';
 import VocabDecks from './VocabDecks';
-
-function detectLang(word) {
-  return /[\u3040-\u30ff\u4e00-\u9fff]/.test(word) ? 'Japanese' : 'English';
-}
+import { detectLang } from '../lib/constants';
 
 async function fetchVocab(userId) {
   const { data, error } = await supabase
@@ -71,7 +68,7 @@ function VocabDetailCard({ word: v, onClose, speak, ttsSupported }) {
   const stageColor = interval >= 30 ? 'var(--accent)' : interval >= 7 ? 'var(--warning)' : 'var(--danger)';
 
   return (
-    <div className="vocab-detail-overlay" onClick={onClose}>
+    <div className="vocab-detail-overlay" role="dialog" aria-modal="true" aria-label="단어 상세" onClick={onClose} onKeyDown={e => e.key === 'Escape' && onClose()}>
       <div className="vocab-detail-card" onClick={e => e.stopPropagation()}>
         <button className="vocab-detail-card__close" onClick={onClose}>✕</button>
 

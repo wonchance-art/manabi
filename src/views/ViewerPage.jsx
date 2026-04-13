@@ -767,7 +767,9 @@ export default function ViewerPage() {
             return (
               <div key={tokenId} ref={el => { if (el) tokenRefs.current[tokenId] = el; }}
                 className={`word-token ${isSaved ? 'word-token--saved' : ''}`}
-                onClick={() => handleTokenClick(token, tokenId)}>
+                role="button" tabIndex={0}
+                onClick={() => handleTokenClick(token, tokenId)}
+                onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), handleTokenClick(token, tokenId))}>
                 <span className="furigana">{furiganaText}</span>
                 <span className="surface">{token.text}</span>
               </div>
