@@ -32,6 +32,42 @@ export const ACHIEVEMENTS = [
 
 export const ACHIEVEMENT_MAP = Object.fromEntries(ACHIEVEMENTS.map(a => [a.id, a]));
 
+/** 순수 함수: 통계 기반으로 각 업적 달성 여부 맵 반환 */
+export function buildConditions({ vocabCount = 0, masteredCount = 0, reviewedCount = 0, readCount = 0, xp = 0, streak = 0, firstPost = false, vocabSample = [] }) {
+  const level = getXPLevel(xp);
+
+  const hasJP = vocabSample.some(v =>
+    v.language === 'Japanese' || /[\u3040-\u30ff\u4e00-\u9fff]/.test(v.word_text)
+  );
+  const hasEN = vocabSample.some(v =>
+    v.language === 'English' ||
+    (!v.language && !/[\u3040-\u30ff\u4e00-\u9fff]/.test(v.word_text) && /[a-zA-Z]/.test(v.word_text))
+  );
+
+  return {
+    first_word:   vocabCount >= 1,
+    vocab_10:     vocabCount >= 10,
+    vocab_100:    vocabCount >= 100,
+    vocab_500:    vocabCount >= 500,
+    vocab_1000:   vocabCount >= 1000,
+    master_10:    masteredCount >= 10,
+    first_review: reviewedCount >= 1,
+    first_read:   readCount >= 1,
+    read_10:      readCount >= 10,
+    read_50:      readCount >= 50,
+    streak_7:     streak >= 7,
+    streak_30:    streak >= 30,
+    streak_100:   streak >= 100,
+    xp_100:       xp >= 100,
+    xp_1000:      xp >= 1000,
+    xp_5000:      xp >= 5000,
+    level_5:      level >= 5,
+    level_10:     level >= 10,
+    polyglot:     hasJP && hasEN,
+    first_post:   firstPost,
+  };
+}
+
 /**
  * 현재 통계를 기반으로 새로 달성한 뱃지를 확인하고 DB에 저장.
  * @returns {Array} 새로 획득한 achievement 객체 배열
@@ -62,42 +98,14 @@ export async function checkAndAwardAchievements(userId, { xp = 0, streak = 0, fi
     supabase.from('user_vocabulary').select('language, word_text').eq('user_id', userId).limit(500),
   ]);
 
-  const vc    = vocabCount    || 0;
-  const mc    = masteredCount || 0;
-  const rc    = reviewedCount || 0;
-  const readC = readCount     || 0;
-  const level = getXPLevel(xp);
-
-  const hasJP = (vocabSample || []).some(v =>
-    v.language === 'Japanese' || /[\u3040-\u30ff\u4e00-\u9fff]/.test(v.word_text)
-  );
-  const hasEN = (vocabSample || []).some(v =>
-    v.language === 'English' ||
-    (!v.language && !/[\u3040-\u30ff\u4e00-\u9fff]/.test(v.word_text) && /[a-zA-Z]/.test(v.word_text))
-  );
-
-  const CONDITIONS = {
-    first_word:   vc >= 1,
-    vocab_10:     vc >= 10,
-    vocab_100:    vc >= 100,
-    vocab_500:    vc >= 500,
-    vocab_1000:   vc >= 1000,
-    master_10:    mc >= 10,
-    first_review: rc >= 1,
-    first_read:   readC >= 1,
-    read_10:      readC >= 10,
-    read_50:      readC >= 50,
-    streak_7:     streak >= 7,
-    streak_30:    streak >= 30,
-    streak_100:   streak >= 100,
-    xp_100:       xp >= 100,
-    xp_1000:      xp >= 1000,
-    xp_5000:      xp >= 5000,
-    level_5:      level >= 5,
-    level_10:     level >= 10,
-    polyglot:     hasJP && hasEN,
-    first_post:   firstPost,
-  };
+  const CONDITIONS = buildConditions({
+    vocabCount: vocabCount || 0,
+    masteredCount: masteredCount || 0,
+    reviewedCount: reviewedCount || 0,
+    readCount: readCount || 0,
+    xp, streak, firstPost,
+    vocabSample: vocabSample || [],
+  });
 
   const newOnes = toCheck.filter(a => CONDITIONS[a.id]);
 

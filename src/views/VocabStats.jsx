@@ -35,6 +35,114 @@ export default function VocabStats({ vocab, profile }) {
           );
         }
 
+        // JLPT 급수별 계단식 진행도 (일본어)
+        if (langs.includes('Japanese') || vocab.some(v => (v.language === 'Japanese') || detectLang(v.word_text) === 'Japanese')) {
+          const jpVocab = vocab.filter(v => (v.language === 'Japanese') || (!v.language && detectLang(v.word_text) === 'Japanese'));
+          const totalJp = jpVocab.length;
+          const masteredJp = jpVocab.filter(v => (v.interval ?? 0) >= 14).length;
+          const levels = Object.entries(LEVEL_MILESTONES.Japanese);
+          cards.push(
+            <div key="jp-stairs" className="card" style={{ padding: '20px', gridColumn: '1 / -1' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '14px' }}>
+                <h3 style={{ fontSize: '1rem' }}>🇯🇵 JLPT 급수 커버리지</h3>
+                <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                  수집 {totalJp}개 · 숙련 {masteredJp}개
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: 6, alignItems: 'flex-end', height: 120, padding: '8px 0' }}>
+                {levels.map(([label, target], i) => {
+                  const pct = Math.min(100, (totalJp / target) * 100);
+                  const masteredPct = Math.min(100, (masteredJp / target) * 100);
+                  const reached = totalJp >= target;
+                  const grad = `linear-gradient(180deg, var(--primary-light) 0%, var(--primary) 100%)`;
+                  return (
+                    <div key={label} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                      <span style={{
+                        fontSize: '0.7rem', fontWeight: 700,
+                        color: reached ? 'var(--accent)' : 'var(--text-muted)'
+                      }}>{reached ? '✓' : `${Math.round(pct)}%`}</span>
+                      <div style={{
+                        width: '100%', height: 70,
+                        background: 'var(--bg-secondary)', borderRadius: 'var(--radius-sm)',
+                        position: 'relative', overflow: 'hidden',
+                      }}>
+                        <div style={{
+                          position: 'absolute', left: 0, right: 0, bottom: 0,
+                          height: `${pct}%`, background: grad, transition: 'height 0.6s ease',
+                        }} />
+                        <div style={{
+                          position: 'absolute', left: 0, right: 0, bottom: 0,
+                          height: `${masteredPct}%`, background: 'var(--accent)',
+                          opacity: 0.7, transition: 'height 0.6s ease',
+                        }} title={`숙련 ${masteredJp}/${target}`} />
+                      </div>
+                      <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                        {label.split(' ')[0]}
+                      </span>
+                      <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
+                        {target.toLocaleString('ko-KR')}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 8, display: 'flex', gap: 12 }}>
+                <span><span style={{ display: 'inline-block', width: 10, height: 10, background: 'var(--primary)', borderRadius: 2, marginRight: 4 }} />수집</span>
+                <span><span style={{ display: 'inline-block', width: 10, height: 10, background: 'var(--accent)', borderRadius: 2, marginRight: 4 }} />숙련 (안정도 14일+)</span>
+              </div>
+            </div>
+          );
+        }
+
+        // CEFR 급수별 계단식 진행도 (영어)
+        if (langs.includes('English') || vocab.some(v => (v.language === 'English') || (!v.language && detectLang(v.word_text) === 'English'))) {
+          const enVocab = vocab.filter(v => (v.language === 'English') || (!v.language && detectLang(v.word_text) === 'English'));
+          const totalEn = enVocab.length;
+          const masteredEn = enVocab.filter(v => (v.interval ?? 0) >= 14).length;
+          const levels = Object.entries(LEVEL_MILESTONES.English);
+          cards.push(
+            <div key="en-stairs" className="card" style={{ padding: '20px', gridColumn: '1 / -1' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '14px' }}>
+                <h3 style={{ fontSize: '1rem' }}>🇬🇧 CEFR 급수 커버리지</h3>
+                <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                  수집 {totalEn}개 · 숙련 {masteredEn}개
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: 6, alignItems: 'flex-end', height: 120, padding: '8px 0' }}>
+                {levels.map(([label, target]) => {
+                  const pct = Math.min(100, (totalEn / target) * 100);
+                  const masteredPct = Math.min(100, (masteredEn / target) * 100);
+                  const reached = totalEn >= target;
+                  return (
+                    <div key={label} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                      <span style={{ fontSize: '0.7rem', fontWeight: 700, color: reached ? 'var(--accent)' : 'var(--text-muted)' }}>
+                        {reached ? '✓' : `${Math.round(pct)}%`}
+                      </span>
+                      <div style={{ width: '100%', height: 70, background: 'var(--bg-secondary)', borderRadius: 'var(--radius-sm)', position: 'relative', overflow: 'hidden' }}>
+                        <div style={{
+                          position: 'absolute', left: 0, right: 0, bottom: 0,
+                          height: `${pct}%`,
+                          background: 'linear-gradient(180deg, var(--accent) 0%, var(--primary) 100%)',
+                          transition: 'height 0.6s ease',
+                        }} />
+                        <div style={{
+                          position: 'absolute', left: 0, right: 0, bottom: 0,
+                          height: `${masteredPct}%`, background: 'var(--accent)',
+                          opacity: 0.8, transition: 'height 0.6s ease',
+                        }} />
+                      </div>
+                      <span style={{ fontSize: '0.72rem', fontWeight: 700 }}>{label.split(' ')[0]}</span>
+                      <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
+                        {target.toLocaleString('ko-KR')}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        }
+
         if (langs.includes('English') || vocab.some(v => (v.language === 'English') || (!v.language && detectLang(v.word_text) === 'English'))) {
           const enVocab = vocab.filter(v => (v.language === 'English') || (!v.language && detectLang(v.word_text) === 'English'));
           const targetLevel = profile?.learning_level_english || 'B1 중급';

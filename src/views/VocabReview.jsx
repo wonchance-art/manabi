@@ -18,10 +18,10 @@ function ScoreSection({ word, onScore }) {
       )}
       <p className="review-score-guide">기억이 얼마나 잘 됐나요?</p>
       <div className="review-score-grid">
-        <button onClick={() => onScore(1)} className="review-score-btn review-score-btn--again" title="전혀 기억 못 했음 — 오늘 다시 나옴">다시<span className="review-score-btn__sub">기억 안 남</span></button>
-        <button onClick={() => onScore(2)} className="review-score-btn review-score-btn--hard" title="겨우 떠올렸음 — 복습 간격 짧아짐">어려움<span className="review-score-btn__sub">겨우 생각남</span></button>
-        <button onClick={() => onScore(3)} className="review-score-btn review-score-btn--good" title="정확히 기억했음 — 권장 선택">알맞음<span className="review-score-btn__sub">잘 기억함</span></button>
-        <button onClick={() => onScore(4)} className="review-score-btn review-score-btn--easy" title="너무 쉬웠음 — 복습 간격 많이 늘어남">쉬움<span className="review-score-btn__sub">너무 쉬움</span></button>
+        <button onClick={() => onScore(1)} className="review-score-btn review-score-btn--again" title="전혀 기억 못 했음 — 오늘 다시 나옴 (+5 XP)">다시<span className="review-score-btn__sub">+5 XP</span></button>
+        <button onClick={() => onScore(2)} className="review-score-btn review-score-btn--hard" title="겨우 떠올렸음 — 복습 간격 짧아짐 (+8 XP)">어려움<span className="review-score-btn__sub">+8 XP</span></button>
+        <button onClick={() => onScore(3)} className="review-score-btn review-score-btn--good" title="정확히 기억했음 — 권장 선택 (+12 XP)">알맞음<span className="review-score-btn__sub">+12 XP ★</span></button>
+        <button onClick={() => onScore(4)} className="review-score-btn review-score-btn--easy" title="너무 쉬웠음 — 복습 간격 많이 늘어남 (+8 XP)">쉬움<span className="review-score-btn__sub">+8 XP</span></button>
       </div>
     </div>
   );
@@ -71,6 +71,56 @@ export default function VocabReview({
               <span className="review-done__stat-label">총 단어</span>
             </div>
           </div>
+
+          {/* 향후 7일 복습 스케줄 미리보기 */}
+          {(() => {
+            const days = Array.from({ length: 7 }, (_, i) => {
+              const d = new Date();
+              d.setDate(d.getDate() + i + 1); // 내일부터
+              d.setHours(0, 0, 0, 0);
+              const next = new Date(d);
+              next.setDate(d.getDate() + 1);
+              const count = vocab.filter(v => {
+                const r = new Date(v.next_review_at);
+                return r >= d && r < next;
+              }).length;
+              return { date: d, count };
+            });
+            const max = Math.max(...days.map(d => d.count), 1);
+            const total = days.reduce((s, d) => s + d.count, 0);
+            return (
+              <div style={{ marginTop: 20, padding: '16px 20px', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
+                  <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                    📅 앞으로 7일 복습 일정
+                  </span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>총 {total}개 예정</span>
+                </div>
+                <div style={{ display: 'flex', gap: 4, alignItems: 'flex-end', height: 50 }}>
+                  {days.map((d, i) => (
+                    <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+                      <div
+                        style={{
+                          width: '100%',
+                          height: d.count > 0 ? `${Math.max(8, (d.count / max) * 40)}px` : '2px',
+                          background: d.count > 0 ? 'var(--primary-light)' : 'var(--border)',
+                          borderRadius: 'var(--radius-sm)',
+                          transition: 'height 0.4s',
+                        }}
+                        title={`${d.date.toLocaleDateString('ko-KR')}: ${d.count}개`}
+                      />
+                      <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
+                        {['일','월','화','수','목','금','토'][d.date.getDay()]}
+                      </span>
+                      {d.count > 0 && (
+                        <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--primary)' }}>{d.count}</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
 
           <p className="review-done__next-label">다음에 뭘 할까요?</p>
 
@@ -156,11 +206,22 @@ export default function VocabReview({
             </div>
 
             <div className="review-card__body">
+              {/* 문법 노트 배지 */}
+              {currentWord?._isGrammar && (
+                <div style={{ textAlign: 'center', marginBottom: '8px' }}>
+                  <span style={{
+                    display: 'inline-block', padding: '3px 10px', borderRadius: 'var(--radius-full)',
+                    background: 'var(--primary-glow)', color: 'var(--primary)',
+                    fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.04em',
+                  }}>📝 문법 노트</span>
+                </div>
+              )}
+
               {/* 단어 헤더 (문맥 퀴즈는 정답 공개 전까지 숨김) */}
               {currentWord && (reviewMode !== 'context' && reviewMode !== 'listening' || showAnswer) && (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
                   <h2 className="review-card__word">{currentWord.word_text}</h2>
-                  {ttsSupported && (
+                  {ttsSupported && !currentWord._isGrammar && (
                     <button
                       onClick={() => speak(currentWord.word_text, currentWord.language || detectLang(currentWord.word_text))}
                       title="발음 듣기"

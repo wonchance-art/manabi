@@ -2,9 +2,22 @@ import { supabase } from './supabase';
 
 export const XP_REWARDS = {
   WORD_SAVED: 5,
-  WORD_REVIEWED: 10,
+  WORD_REVIEWED: 10, // 기본값 (rating 모를 때 fallback)
   MATERIAL_COMPLETED: 50,
+  MASTERY_REACHED: 25,   // 단어가 마스터(interval >= 30일)에 도달했을 때 1회성 보너스
+  WRITING_HIGH_SCORE: 15, // 쓰기 AI 점수 70+ 달성 시
 };
+
+// 복습 평가 등급별 XP (질적 가중)
+// - Again(1): 최소 XP — 참여는 했으니 5
+// - Hard(2):  8 — 기억 복구에 애씀
+// - Good(3):  12 — 가장 높음 (올바른 복습의 핵심)
+// - Easy(4):  8 — Good보다 낮게 설정해 Easy 스팸 방지
+export const XP_BY_RATING = { 1: 5, 2: 8, 3: 12, 4: 8 };
+
+export function getReviewXP(rating) {
+  return XP_BY_RATING[rating] ?? XP_REWARDS.WORD_REVIEWED;
+}
 
 // 각 레벨의 누적 XP 임계값
 export const XP_LEVELS = [0, 100, 250, 500, 1000, 2000, 3500, 6000, 10000, 15000];
@@ -37,7 +50,7 @@ export function getXPToNextLevel(xp = 0) {
 
 /** XP 원자적 증가 (Supabase RPC) + 레벨업 감지 시 알림 */
 export async function awardXP(userId, amount, prevXP = null) {
-  if (!userId || amount <= 0) return;
+  if (!userId || typeof amount !== 'number' || amount <= 0 || amount > 1000) return;
   await supabase.rpc('award_xp', { uid: userId, amount });
 
   // 레벨업 감지: prevXP를 전달받은 경우에만 확인

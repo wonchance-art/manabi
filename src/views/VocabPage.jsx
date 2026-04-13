@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useRef, useEffect, memo } from 'react';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
@@ -8,7 +8,7 @@ import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { calculateFSRS } from '../lib/fsrs';
 import { recordActivity } from '../lib/streak';
-import { awardXP, XP_REWARDS } from '../lib/xp';
+import { awardXP, XP_REWARDS, getReviewXP } from '../lib/xp';
 import { checkAndAwardAchievements } from '../lib/achievements';
 import { useCelebration } from '../lib/CelebrationContext';
 import { useTTS } from '../lib/useTTS';
@@ -20,7 +20,19 @@ import VocabReview from './VocabReview';
 import VocabStats from './VocabStats';
 import VocabNotes from './VocabNotes';
 import VocabDecks from './VocabDecks';
+import VocabWriting from './VocabWriting';
 import { detectLang } from '../lib/constants';
+
+const MAX_EXAMPLE_CACHE = 50;
+
+function fisherYatesShuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 async function fetchVocab(userId) {
   const { data, error } = await supabase
@@ -53,7 +65,7 @@ function exportCSV(vocab) {
   URL.revokeObjectURL(url);
 }
 
-function VocabDetailCard({ word: v, onClose, speak, ttsSupported }) {
+const VocabDetailCard = memo(function VocabDetailCard({ word: v, onClose, speak, ttsSupported }) {
   const now = new Date();
   const created = new Date(v.created_at);
   const daysSinceCreated = Math.max(1, Math.round((now - created) / 86400000));
@@ -154,10 +166,42 @@ function VocabDetailCard({ word: v, onClose, speak, ttsSupported }) {
             <span className="vocab-detail-growth-bar__pct">{daysSinceCreated}일</span>
           </div>
         </div>
+
+        {/* 출처 자료 링크 */}
+        {v.source_material_id && (
+          <div className="vocab-detail-card__source">
+            <h3 className="vocab-detail-card__section-title">📖 출처 자료</h3>
+            {v.source_sentence && (
+              <p style={{
+                fontSize: '0.85rem', color: 'var(--text-secondary)',
+                padding: '8px 12px', background: 'var(--bg-secondary)',
+                borderRadius: 'var(--radius-md)', marginBottom: 8, lineHeight: 1.6,
+              }}>
+                {v.source_sentence.split(v.word_text).map((part, i, arr) =>
+                  i < arr.length - 1
+                    ? <span key={i}>{part}<mark style={{ background: 'var(--primary-glow)', color: 'var(--primary-light)', padding: '0 3px', borderRadius: 3 }}>{v.word_text}</mark></span>
+                    : <span key={i}>{part}</span>
+                )}
+              </p>
+            )}
+            <Link
+              href={`/viewer/${v.source_material_id}`}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                fontSize: '0.85rem', color: 'var(--primary-light)',
+                textDecoration: 'none', padding: '6px 12px',
+                background: 'var(--bg-secondary)', borderRadius: 'var(--radius-full)',
+                border: '1px solid var(--border)',
+              }}
+            >
+              원본 자료로 이동 →
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );
-}
+});
 
 export default function VocabPage() {
   const { user, profile, fetchProfile } = useAuth();
@@ -173,7 +217,36 @@ export default function VocabPage() {
   const [sortBy, setSortBy] = useState('due');
   const [langFilter, setLangFilter] = useState('all');
   const [showHint, setShowHint] = useState(false);
-  const [reviewMode, setReviewMode] = useState('flash');
+  const [reviewMode, setReviewMode] = useState(() => {
+    if (typeof window === 'undefined') return 'flash';
+    return localStorage.getItem('as_review_mode') || 'flash';
+  });
+
+  // reviewMode 영속화
+  useEffect(() => {
+    if (typeof window !== 'undefined') localStorage.setItem('as_review_mode', reviewMode);
+  }, [reviewMode]);
+
+  // reviewIdx 영속화 (같은 날 기준, user별)
+  useEffect(() => {
+    if (!user?.id || tab !== 'review' || reviewFinished) return;
+    const key = `as_review_progress_${user.id}`;
+    const today = new Date().toISOString().slice(0, 10);
+    localStorage.setItem(key, JSON.stringify({ date: today, idx: reviewIdx }));
+  }, [reviewIdx, tab, reviewFinished, user?.id]);
+
+  // 재방문 시 같은 날 복원
+  useEffect(() => {
+    if (!user?.id) return;
+    const key = `as_review_progress_${user.id}`;
+    try {
+      const saved = JSON.parse(localStorage.getItem(key) || 'null');
+      const today = new Date().toISOString().slice(0, 10);
+      if (saved?.date === today && saved.idx > 0) {
+        setReviewIdx(saved.idx);
+      }
+    } catch { /* ignore */ }
+  }, [user?.id]);
   const [typingAnswer, setTypingAnswer] = useState('');
   const [contextSelected, setContextSelected] = useState(null);
   const exampleCacheRef = useRef(new Map());
@@ -197,7 +270,7 @@ export default function VocabPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('grammar_notes')
-        .select('id, selected_text, explanation, created_at, reading_materials(title)')
+        .select('id, selected_text, explanation, created_at, reading_materials(title), interval, ease_factor, repetitions, next_review_at, last_reviewed_at')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
       if (error) throw error;
@@ -228,9 +301,30 @@ export default function VocabPage() {
       );
       if (words.length === 0) throw new Error(`${deckLang} 단어가 없습니다.`);
 
+      // 단어들의 출처 자료 중 가장 빈번한 것을 덱 출처로 기록
+      const sourceCounts = {};
+      words.forEach(w => {
+        if (w.source_material_id) {
+          sourceCounts[w.source_material_id] = (sourceCounts[w.source_material_id] || 0) + 1;
+        }
+      });
+      const dominantSource = Object.entries(sourceCounts)
+        .sort(([, a], [, b]) => b - a)[0]?.[0];
+      // 70% 이상 같은 자료일 때만 연결
+      const sourceThreshold = words.length * 0.7;
+      const linkedSource = dominantSource && sourceCounts[dominantSource] >= sourceThreshold
+        ? dominantSource
+        : null;
+
       const { data: deck, error: deckErr } = await supabase
         .from('vocab_decks')
-        .insert({ owner_id: user.id, title: deckTitle.trim(), language: deckLang, word_count: words.length })
+        .insert({
+          owner_id: user.id,
+          title: deckTitle.trim(),
+          language: deckLang,
+          word_count: words.length,
+          source_material_id: linkedSource,
+        })
         .select('id')
         .single();
       if (deckErr) throw deckErr;
@@ -266,6 +360,15 @@ export default function VocabPage() {
 
   const importDeckMutation = useMutation({
     mutationFn: async (deckId) => {
+      // 덱의 실제 언어 정보를 DB에서 가져와 사용
+      const { data: deckInfo, error: deckInfoErr } = await supabase
+        .from('vocab_decks')
+        .select('language')
+        .eq('id', deckId)
+        .single();
+      if (deckInfoErr) throw deckInfoErr;
+      const importLang = deckInfo?.language || deckLang;
+
       const { data: words, error } = await supabase
         .from('vocab_deck_words')
         .select('word_text, furigana, meaning, pos')
@@ -278,7 +381,7 @@ export default function VocabPage() {
         furigana: w.furigana || '',
         meaning: w.meaning || '',
         pos: w.pos || '',
-        language: deckLang,
+        language: importLang,
         interval: 0, ease_factor: 0, repetitions: 0,
         next_review_at: new Date().toISOString(),
       }));
@@ -305,19 +408,32 @@ export default function VocabPage() {
   });
 
   const scoreMutation = useMutation({
-    mutationFn: async ({ id, nextStats }) => {
+    mutationFn: async ({ id, nextStats, isGrammar }) => {
       const payload = { ...nextStats, last_reviewed_at: new Date().toISOString() };
+      const table = isGrammar ? 'grammar_notes' : 'user_vocabulary';
       const { error } = await supabase
-        .from('user_vocabulary')
+        .from(table)
         .update(payload)
         .eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
+    onSuccess: (_, { isGrammar, rating, prevInterval, newInterval }) => {
+      if (isGrammar) {
+        queryClient.invalidateQueries({ queryKey: ['grammar-notes', user?.id] });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
+      }
       const prevXP = profile?.xp ?? 0;
-      awardXP(user.id, XP_REWARDS.WORD_REVIEWED, prevXP);
-      checkLevelUp(prevXP, prevXP + XP_REWARDS.WORD_REVIEWED);
+      const reviewXP = getReviewXP(rating);
+      // 마스터(interval 30일 돌파) 보너스
+      const crossedMastery = prevInterval < 30 && newInterval >= 30;
+      const totalXP = reviewXP + (crossedMastery ? XP_REWARDS.MASTERY_REACHED : 0);
+
+      awardXP(user.id, totalXP, prevXP);
+      checkLevelUp(prevXP, prevXP + totalXP);
+      if (crossedMastery) {
+        celebrate({ type: 'milestone', icon: '🏆', name: '단어 마스터!', desc: `+${XP_REWARDS.MASTERY_REACHED} XP 보너스` });
+      }
       checkAndAwardAchievements(user.id, { xp: prevXP, streak: profile?.streak_count }).then(newBadges => {
         newBadges.forEach(b => celebrate({ type: 'achievement', icon: b.icon, name: b.name, desc: b.desc }));
       });
@@ -340,51 +456,98 @@ export default function VocabPage() {
     onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
   });
 
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids) => {
+      if (!ids?.length) return 0;
+      const { error } = await supabase
+        .from('user_vocabulary')
+        .delete()
+        .in('id', ids);
+      if (error) throw error;
+      return ids.length;
+    },
+    onSuccess: (count) => {
+      queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
+      toast(`${count}개 단어를 삭제했습니다.`, 'info');
+    },
+    onError: (err) => toast('일괄 삭제 실패: ' + err.message, 'error'),
+  });
+
+  // 검색용 인덱스 사전 계산 (vocab이 바뀔 때만 1회)
+  const vocabSearchIndex = useMemo(() => {
+    return vocab.map(v => ({
+      _item: v,
+      _searchKey: `${v.word_text || ''} ${v.meaning || ''} ${v.furigana || ''}`.toLowerCase(),
+    }));
+  }, [vocab]);
+
   const filteredVocab = useMemo(() => {
-    let list = [...vocab];
+    const q = search.trim().toLowerCase();
+    let list = vocabSearchIndex;
+
     if (langFilter !== 'all') {
-      list = list.filter(v => v.language === langFilter);
+      list = list.filter(x => x._item.language === langFilter);
     }
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      list = list.filter(v =>
-        v.word_text?.toLowerCase().includes(q) ||
-        v.meaning?.toLowerCase().includes(q) ||
-        v.furigana?.toLowerCase().includes(q)
-      );
+    if (q) {
+      list = list.filter(x => x._searchKey.includes(q));
     }
+    list = list.map(x => x._item); // 인덱스 랩 해제
+
     if (sortBy === 'due') {
-      list.sort((a, b) => new Date(a.next_review_at) - new Date(b.next_review_at));
+      list = [...list].sort((a, b) => new Date(a.next_review_at) - new Date(b.next_review_at));
     } else if (sortBy === 'newest') {
-      list.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      list = [...list].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     } else if (sortBy === 'alpha') {
-      list.sort((a, b) => (a.word_text || '').localeCompare(b.word_text || '', 'ja'));
+      list = [...list].sort((a, b) => (a.word_text || '').localeCompare(b.word_text || '', 'ja'));
     }
     return list;
-  }, [vocab, search, sortBy, langFilter]);
+  }, [vocabSearchIndex, search, sortBy, langFilter]);
 
   useEffect(() => { setVisibleCount(30); }, [search, sortBy, langFilter]);
 
-  const reviewWords = vocab.filter(v => new Date(v.next_review_at) <= new Date());
+  const reviewWords = useMemo(() => {
+    const now = new Date();
+    const dueVocab = vocab.filter(v => new Date(v.next_review_at) <= now);
+    const dueGrammar = grammarNotes
+      .filter(n => n.next_review_at && new Date(n.next_review_at) <= now)
+      .map(n => ({
+        ...n,
+        _isGrammar: true,
+        word_text: n.selected_text,
+        meaning: n.explanation?.split('\n')[0]?.slice(0, 80) || '문법 노트',
+        furigana: '',
+        pos: '문법',
+        source_sentence: n.selected_text,
+      }));
+    return [...dueVocab, ...dueGrammar];
+  }, [vocab, grammarNotes]);
   const currentWord = reviewWords[reviewIdx];
 
   const contextOptions = useMemo(() => {
     if (!currentWord) return [];
     const others = vocab.filter(v => v.id !== currentWord.id && v.meaning);
-    const shuffled = [...others].sort(() => Math.random() - 0.5).slice(0, 3);
-    return [...shuffled, currentWord].sort(() => Math.random() - 0.5);
+    const distractors = fisherYatesShuffle(others).slice(0, 3);
+    return fisherYatesShuffle([...distractors, currentWord]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reviewIdx, currentWord?.id]);
 
   const handleScore = (rating) => {
     if (!currentWord) return;
+    const prevInterval = currentWord.interval ?? 0;
     const nextStats = calculateFSRS(rating, {
-      interval: currentWord.interval ?? 0,
+      interval: prevInterval,
       ease_factor: currentWord.ease_factor ?? 0,
       repetitions: currentWord.repetitions ?? 0,
       next_review_at: currentWord.next_review_at,
     });
-    scoreMutation.mutate({ id: currentWord.id, nextStats });
+    scoreMutation.mutate({
+      id: currentWord.id,
+      nextStats,
+      isGrammar: !!currentWord._isGrammar,
+      rating,
+      prevInterval,
+      newInterval: nextStats.interval ?? 0,
+    });
     recordActivity(user.id, () => fetchProfile(user.id));
     goNextReview();
   };
@@ -394,7 +557,7 @@ export default function VocabPage() {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(0, 0, 0, 0);
-    scoreMutation.mutate({ id: currentWord.id, nextStats: { next_review_at: tomorrow.toISOString() } });
+    scoreMutation.mutate({ id: currentWord.id, nextStats: { next_review_at: tomorrow.toISOString() }, isGrammar: !!currentWord._isGrammar });
     goNextReview();
   };
 
@@ -412,9 +575,15 @@ export default function VocabPage() {
       const lang = currentWord.language || detectLang(currentWord.word_text);
       const prompt = `단어: ${currentWord.word_text}\n언어: ${lang}\n의미: ${currentWord.meaning || ''}\n\n이 단어를 자연스럽게 활용한 예문 2개를 만들어주세요. 학습자가 문맥 속에서 단어를 익힐 수 있도록 간결하고 자연스러운 문장으로 작성해주세요.\n\n반드시 아래 JSON 형식으로만 응답하세요:\n{"examples":[{"sentence":"...","translation":"한국어 번역"},{"sentence":"...","translation":"한국어 번역"}]}`;
       const raw = await callGemini(prompt);
-      const clean = raw.replace(/```json|```/g, '').trim();
-      const parsed = JSON.parse(clean.substring(clean.indexOf('{'), clean.lastIndexOf('}') + 1));
-      exampleCacheRef.current.set(currentWord.id, parsed.examples);
+      const { parseGeminiJSON } = await import('../lib/gemini');
+      const parsed = parseGeminiJSON(raw);
+      if (!parsed.examples || !Array.isArray(parsed.examples)) throw new Error('예문 형식 오류');
+      const cache = exampleCacheRef.current;
+      if (cache.size >= MAX_EXAMPLE_CACHE) {
+        const firstKey = cache.keys().next().value;
+        cache.delete(firstKey);
+      }
+      cache.set(currentWord.id, parsed.examples);
       setExampleSentences(parsed.examples);
     } catch {
       toast('예문 생성에 실패했어요.', 'error');
@@ -433,6 +602,10 @@ export default function VocabPage() {
     } else {
       setReviewFinished(true);
       toast('🎉 오늘의 복습 완료!', 'celebrate', 5000);
+      // 진행도 정리
+      if (user?.id && typeof window !== 'undefined') {
+        localStorage.removeItem(`as_review_progress_${user.id}`);
+      }
     }
   };
 
@@ -520,6 +693,9 @@ export default function VocabPage() {
         <button onClick={() => setTab('decks')} className={`tab-pills__item ${tab === 'decks' ? 'tab-pills__item--primary' : ''}`}>
           🃏 공유 단어장
         </button>
+        <button onClick={() => setTab('writing')} className={`tab-pills__item ${tab === 'writing' ? 'tab-pills__item--accent' : ''}`}>
+          ✍️ 쓰기 연습
+        </button>
       </div>
 
       {isLoading ? (
@@ -547,6 +723,7 @@ export default function VocabPage() {
           speak={speak}
           setConfirmAction={setConfirmAction}
           deleteMutation={deleteMutation}
+          bulkDeleteMutation={bulkDeleteMutation}
           onWordClick={setDetailWord}
         />
       ) : tab === 'review' ? (
@@ -596,6 +773,18 @@ export default function VocabPage() {
           deleteDeckMutation={deleteDeckMutation}
           importDeckMutation={importDeckMutation}
           setConfirmAction={setConfirmAction}
+        />
+      ) : tab === 'writing' ? (
+        <VocabWriting
+          vocab={vocab}
+          toast={toast}
+          user={user}
+          awardXPOnSuccess={() => {
+            const prevXP = profile?.xp ?? 0;
+            awardXP(user.id, XP_REWARDS.WRITING_HIGH_SCORE, prevXP);
+            checkLevelUp(prevXP, prevXP + XP_REWARDS.WRITING_HIGH_SCORE);
+            recordActivity(user.id, () => fetchProfile(user.id));
+          }}
         />
       ) : null}
 
