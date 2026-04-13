@@ -31,6 +31,13 @@ export const metadata = {
     title: 'Anatomy Studio',
     description: 'AI가 문장을 해부하는 언어 학습 서비스',
     type: 'website',
+    siteName: 'Anatomy Studio',
+    locale: 'ko_KR',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Anatomy Studio',
+    description: 'AI가 문장을 해부하는 언어 학습 서비스',
   },
 };
 

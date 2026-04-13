@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../lib/AuthContext';
@@ -32,6 +33,16 @@ export default function LandingPage() {
   const { user } = useAuth();
   const router = useRouter();
   const handleCTA = () => router.push(user ? '/materials' : '/auth');
+
+  // 데모 인터랙션: 첫 방문자가 토큰 클릭해서 AI 분석을 체감
+  const [demoSelectedIdx, setDemoSelectedIdx] = useState(0);
+  const [demoSavedIds, setDemoSavedIds] = useState(new Set());
+  const demoSelected = DEMO_TOKENS[demoSelectedIdx];
+
+  const handleDemoSave = () => {
+    setDemoSavedIds(prev => new Set(prev).add(demoSelectedIdx));
+    setTimeout(() => handleCTA(), 600);
+  };
 
   return (
     <div className="landing">
@@ -79,24 +90,47 @@ export default function LandingPage() {
             <span className="demo-dot demo-dot--red" />
             <span className="demo-dot demo-dot--yellow" />
             <span className="demo-dot demo-dot--green" />
-            <span className="demo-card__label">뷰어 미리보기 — 단어를 클릭하면 상세 정보가 나타납니다</span>
+            <span className="demo-card__label">뷰어 미리보기 — 단어를 직접 클릭해보세요 👇</span>
           </div>
           <div className="demo-viewer">
-            {DEMO_TOKENS.map((t, i) => (
-              <div key={i} className="demo-token demo-token--interactive" title={`${t.pos} · ${t.meaning}`}>
-                {t.furigana && <span className="demo-furigana">{t.furigana}</span>}
-                <span className="demo-surface">{t.text}</span>
-              </div>
-            ))}
+            {DEMO_TOKENS.map((t, i) => {
+              const active = demoSelectedIdx === i;
+              const saved = demoSavedIds.has(i);
+              return (
+                <button
+                  key={i}
+                  className="demo-token demo-token--interactive"
+                  style={{
+                    outline: active ? '2px solid var(--primary)' : 'none',
+                    background: saved ? 'var(--primary-glow)' : active ? 'var(--bg-elevated)' : undefined,
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
+                  title={`${t.pos} · ${t.meaning}`}
+                  onClick={() => setDemoSelectedIdx(i)}
+                >
+                  {t.furigana && <span className="demo-furigana">{t.furigana}</span>}
+                  <span className="demo-surface">{t.text}{saved && ' ⭐'}</span>
+                </button>
+              );
+            })}
           </div>
-          <div className="demo-sheet">
+          <div className="demo-sheet" style={{ transition: 'all 0.3s ease' }}>
             <div className="demo-sheet__row">
-              <span className="demo-sheet__pos">명사</span>
-              <span className="demo-sheet__word">日本語</span>
-              <span className="demo-sheet__reading">にほんご</span>
+              <span className="demo-sheet__pos">{demoSelected.pos}</span>
+              <span className="demo-sheet__word">{demoSelected.text}</span>
+              {demoSelected.furigana && (
+                <span className="demo-sheet__reading">{demoSelected.furigana}</span>
+              )}
             </div>
-            <p className="demo-sheet__meaning">일본어 · Japanese language</p>
-            <button className="demo-sheet__btn" onClick={handleCTA}>⭐ 단어장에 추가</button>
+            <p className="demo-sheet__meaning">{demoSelected.meaning}</p>
+            <button
+              className="demo-sheet__btn"
+              onClick={handleDemoSave}
+              disabled={demoSavedIds.has(demoSelectedIdx)}
+            >
+              {demoSavedIds.has(demoSelectedIdx) ? '✓ 추가됨' : '⭐ 단어장에 추가'}
+            </button>
           </div>
         </div>
       </section>

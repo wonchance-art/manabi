@@ -13,13 +13,20 @@ import { useCelebration } from '../lib/CelebrationContext';
 const RANK_MEDAL = ['🥇', '🥈', '🥉'];
 
 const DAILY_CHALLENGES = [
-  { icon: '🔥', title: '어려운 단어 정복', desc: '3번 이상 틀린 단어를 복습하세요', xp: 30, href: '/vocab', cta: '복습하기', check: (d) => d.todayReviewCount >= 3 },
-  { icon: '📖', title: '자료 완독 도전', desc: '자료 1편을 끝까지 읽어보세요', xp: 50, href: '/materials', cta: '읽기 시작', check: (d) => d.todayReadCount >= 1 },
-  { icon: '⭐', title: '단어 수집가', desc: '오늘 새 단어 10개를 모아보세요', xp: 25, href: '/materials', cta: '자료 보기', check: (d) => d.todayVocabCount >= 10 },
-  { icon: '🧠', title: '복습 마라톤', desc: '단어 10개 이상 복습하세요', xp: 40, href: '/vocab', cta: '복습하기', check: (d) => d.todayReviewCount >= 10 },
-  { icon: '💬', title: '커뮤니티 참여', desc: '포럼에 글이나 댓글을 남겨보세요', xp: 20, href: '/forum', cta: '포럼 가기', check: (d) => d.todayForumCount >= 1 },
-  { icon: '🏆', title: '올라운드 학습자', desc: '읽기 + 복습 + 수집 모두 달성하세요', xp: 60, href: '/home', cta: '현황 보기', check: (d) => d.todayReadCount >= 1 && d.todayReviewCount >= 1 && d.todayVocabCount >= 1 },
-  { icon: '📝', title: '문법 탐구', desc: '뷰어에서 AI 문법 해설을 받아보세요', xp: 20, href: '/materials', cta: '자료 보기', check: (d) => d.todayGrammarCount >= 1 },
+  { icon: '🔥', title: '어려운 단어 정복', desc: '3번 이상 틀린 단어를 복습하세요', xp: 30, href: '/vocab', cta: '복습하기',
+    progress: (d) => ({ current: d.todayReviewCount, target: 3 }) },
+  { icon: '📖', title: '자료 완독 도전', desc: '자료 1편을 끝까지 읽어보세요', xp: 50, href: '/materials', cta: '읽기 시작',
+    progress: (d) => ({ current: d.todayReadCount, target: 1 }) },
+  { icon: '⭐', title: '단어 수집가', desc: '오늘 새 단어 10개를 모아보세요', xp: 25, href: '/materials', cta: '자료 보기',
+    progress: (d) => ({ current: d.todayVocabCount, target: 10 }) },
+  { icon: '🧠', title: '복습 마라톤', desc: '단어 10개 이상 복습하세요', xp: 40, href: '/vocab', cta: '복습하기',
+    progress: (d) => ({ current: d.todayReviewCount, target: 10 }) },
+  { icon: '💬', title: '커뮤니티 참여', desc: '포럼에 글이나 댓글을 남겨보세요', xp: 20, href: '/forum', cta: '포럼 가기',
+    progress: (d) => ({ current: d.todayForumCount, target: 1 }) },
+  { icon: '🏆', title: '올라운드 학습자', desc: '읽기 + 복습 + 수집 모두 달성하세요', xp: 60, href: '/home', cta: '현황 보기',
+    progress: (d) => ({ current: Math.min(d.todayReadCount, 1) + Math.min(d.todayReviewCount, 1) + Math.min(d.todayVocabCount, 1), target: 3 }) },
+  { icon: '📝', title: '문법 탐구', desc: '뷰어에서 AI 문법 해설을 받아보세요', xp: 20, href: '/materials', cta: '자료 보기',
+    progress: (d) => ({ current: d.todayGrammarCount, target: 1 }) },
 ];
 
 function getDailyChallenge() {
@@ -49,6 +56,12 @@ async function fetchHomeData(userId) {
   weekStartDate.setDate(weekStartDate.getDate() - (dow === 0 ? 6 : dow - 1));
   const weekStartISO = weekStartDate.toISOString();
 
+  // 지난주 범위 (월~일)
+  const prevWeekStart = new Date(weekStartDate);
+  prevWeekStart.setDate(prevWeekStart.getDate() - 7);
+  const prevWeekStartISO = prevWeekStart.toISOString();
+  const prevWeekEndISO = weekStartISO;
+
   const heatmapStart = new Date();
   heatmapStart.setHours(0, 0, 0, 0);
   heatmapStart.setDate(heatmapStart.getDate() - 83);
@@ -74,7 +87,7 @@ async function fetchHomeData(userId) {
       .eq('user_id', userId).order('updated_at', { ascending: false }).limit(20),
     fetch('/api/suggestions/today').then(r => r.ok ? r.json() : []),
     supabase.from('reading_progress').select('completed_at')
-      .eq('user_id', userId).eq('is_completed', true).gte('completed_at', weekStartISO),
+      .eq('user_id', userId).eq('is_completed', true).gte('completed_at', prevWeekStartISO),
     supabase.from('forum_posts').select('*', { count: 'exact', head: true })
       .eq('author_id', userId).gte('created_at', todayStart),
     supabase.from('forum_comments').select('*', { count: 'exact', head: true })
@@ -90,6 +103,7 @@ async function fetchHomeData(userId) {
 
   // Derive all vocab stats client-side
   let todayVocabCount = 0, todayReviewCount = 0, weekVocab = 0, weekReview = 0;
+  let prevWeekVocab = 0, prevWeekReview = 0;
   const heatmapDayCounts = {};
 
   for (const v of rows) {
@@ -97,13 +111,16 @@ async function fetchHomeData(userId) {
     heatmapDayCounts[createdDay] = (heatmapDayCounts[createdDay] || 0) + 1;
     if (v.created_at >= todayStart) todayVocabCount++;
     if (v.created_at >= weekStartISO) weekVocab++;
+    else if (v.created_at >= prevWeekStartISO && v.created_at < prevWeekEndISO) prevWeekVocab++;
     if (v.last_reviewed_at && v.last_reviewed_at >= todayStart) todayReviewCount++;
     if (v.last_reviewed_at && v.last_reviewed_at >= weekStartISO) weekReview++;
+    else if (v.last_reviewed_at && v.last_reviewed_at >= prevWeekStartISO && v.last_reviewed_at < prevWeekEndISO) prevWeekReview++;
   }
 
   // Derive read stats
   const todayReadCount = reads.filter(r => r.completed_at >= todayStart).length;
-  const weekRead = reads.length;
+  const weekRead = reads.filter(r => r.completed_at >= weekStartISO).length;
+  const prevWeekRead = reads.filter(r => r.completed_at >= prevWeekStartISO && r.completed_at < prevWeekEndISO).length;
 
   return {
     dueCount:         dueCount || 0,
@@ -119,6 +136,10 @@ async function fetchHomeData(userId) {
     weekReads:   weekRead,
     weekXP:      weekVocab * 5 + weekReview * 10 + weekRead * 50,
     weekStart:   weekStartDate,
+    prevWeekVocab,
+    prevWeekReviews: prevWeekReview,
+    prevWeekReads:   prevWeekRead,
+    prevWeekXP:      prevWeekVocab * 5 + prevWeekReview * 10 + prevWeekRead * 50,
     heatmapDayCounts,
     vocabByLang: (() => {
       const all = allVocabRows || [];
@@ -157,7 +178,8 @@ export default function HomePage() {
     queryKey: ['home', user?.id],
     queryFn:  () => fetchHomeData(user.id),
     enabled:  !!user,
-    staleTime: 1000 * 60,
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: true, // 챌린지 진행도 실시간 갱신
   });
 
   const { data: leaders = [] } = useQuery({
@@ -187,12 +209,42 @@ export default function HomePage() {
   ];
   const doneCount = MISSIONS.filter(m => m.current >= m.goal).length;
 
+  // 사용자 vocab 수 기반 현재 레벨 역산 → i+1 추천
+  // JLPT: N5(800)→N4(1500)→N3(3750)→N2(6000)→N1(10000)
+  // CEFR: A1(500)→A2(1000)→B1(2000)→B2(4000)→C1(7000)→C2(10000)
+  const JP_LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1'];
+  const JP_THRESHOLDS = [0, 800, 1500, 3750, 6000, 10000];
+  const EN_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+  const EN_THRESHOLDS = [0, 500, 1000, 2000, 4000, 7000, 10000];
+
+  const getIdealLevel = (lang, count) => {
+    const thresholds = lang === 'Japanese' ? JP_THRESHOLDS : EN_THRESHOLDS;
+    const labels = lang === 'Japanese' ? JP_LEVELS : EN_LEVELS;
+    for (let i = thresholds.length - 1; i >= 0; i--) {
+      if (count >= thresholds[i]) return labels[Math.min(i, labels.length - 1)];
+    }
+    return labels[0];
+  };
+
   const suggestion = useMemo(() => {
     const all = data?.suggestions || [];
     if (!profile || !all.length) return all[0] || null;
     const langs = profile.learning_language || [];
-    return all.find(s => langs.includes(s.language)) || all[0];
-  }, [data?.suggestions, profile]);
+    const vocabByLang = data?.vocabByLang || {};
+
+    // i+1 점수 계산: 선호 언어 > 이상적 레벨 일치 > 같은 레벨 근처
+    const scored = all.map(s => {
+      let score = 0;
+      if (langs.includes(s.language)) score += 100;
+      const count = vocabByLang[s.language] || 0;
+      const ideal = getIdealLevel(s.language, count);
+      if (s.level === ideal) score += 50;
+      else if (s.level?.startsWith(ideal[0])) score += 20; // 같은 언어군 (N/A/B/C)
+      return { ...s, score };
+    });
+    scored.sort((a, b) => b.score - a.score);
+    return scored[0] || all[0];
+  }, [data?.suggestions, data?.vocabByLang, profile]);
 
   if (!user) return (
     <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
@@ -389,39 +441,123 @@ export default function HomePage() {
         </div>
 
         {/* 오늘의 추천 */}
-        {suggestion && (
-          <>
-            <div className="home-divider" />
-            <div className="home-suggestion">
-              <span className="home-suggestion__icon">📰</span>
-              <div className="home-suggestion__info">
-                <div className="home-suggestion__meta">
-                  오늘의 추천 · {suggestion.language === 'Japanese' ? '🇯🇵' : '🇬🇧'} {suggestion.level}
+        {suggestion && (() => {
+          const vocabByLang = data?.vocabByLang || {};
+          const count = vocabByLang[suggestion.language] || 0;
+          const idealLevel = getIdealLevel(suggestion.language, count);
+          const isIdeal = suggestion.level === idealLevel;
+          return (
+            <>
+              <div className="home-divider" />
+              <div className="home-suggestion">
+                <span className="home-suggestion__icon">📰</span>
+                <div className="home-suggestion__info">
+                  <div className="home-suggestion__meta">
+                    {isIdeal && <span style={{ color: 'var(--accent)', fontWeight: 700, marginRight: 6 }}>🎯 맞춤</span>}
+                    {isIdeal ? '당신 레벨 추천' : '오늘의 추천'} · {suggestion.language === 'Japanese' ? '🇯🇵' : '🇬🇧'} {suggestion.level}
+                  </div>
+                  <div className="home-suggestion__title">{suggestion.title}</div>
                 </div>
-                <div className="home-suggestion__title">{suggestion.title}</div>
+                <button className="btn btn--accent btn--sm home-suggestion__btn"
+                  onClick={() => suggestion.material_id
+                    ? router.push(`/viewer/${suggestion.material_id}`)
+                    : router.push(`/materials/add?suggestion=${suggestion.id}`)
+                  }>
+                  {suggestion.material_id ? '바로 읽기' : '읽기 시작'}
+                </button>
               </div>
-              <button className="btn btn--accent btn--sm home-suggestion__btn"
-                onClick={() => suggestion.material_id
-                  ? router.push(`/viewer/${suggestion.material_id}`)
-                  : router.push(`/materials/add?suggestion=${suggestion.id}`)
-                }>
-                {suggestion.material_id ? '바로 읽기' : '읽기 시작'}
-              </button>
-            </div>
-          </>
-        )}
+            </>
+          );
+        })()}
       </div>
+
+      {/* ── 지난주 리포트 (월/화요일 + 미확인 시만) ── */}
+      {data && (() => {
+        const today = new Date();
+        const day = today.getDay(); // 0=일
+        const showDay = day === 1 || day === 2; // 월/화
+        if (!showDay) return null;
+        const { prevWeekVocab, prevWeekReviews, prevWeekReads, prevWeekXP } = data;
+        if (prevWeekVocab + prevWeekReviews + prevWeekReads === 0) return null;
+
+        // 이번 월요일 기준 키 (주마다 초기화)
+        const mondayKey = (() => {
+          const d = new Date(today);
+          const dow = d.getDay();
+          d.setDate(d.getDate() - (dow === 0 ? 6 : dow - 1));
+          return d.toISOString().slice(0, 10);
+        })();
+        const dismissedKey = `as_weekly_report_dismissed_${mondayKey}`;
+        const dismissed = typeof window !== 'undefined' && localStorage.getItem(dismissedKey) === '1';
+        if (dismissed) return null;
+
+        const vocabDiff = data.weekVocab - prevWeekVocab;
+        const reviewDiff = data.weekReviews - prevWeekReviews;
+
+        return (
+          <div className="card home-card" style={{
+            borderLeft: '3px solid var(--accent)',
+            background: 'linear-gradient(135deg, var(--primary-glow) 0%, transparent 60%)',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+              <div>
+                <div style={{ fontSize: '0.72rem', color: 'var(--primary)', fontWeight: 700, marginBottom: 4 }}>
+                  📊 지난주 리포트
+                </div>
+                <h3 style={{ fontSize: '1rem', margin: 0 }}>
+                  지난 한 주, 이렇게 학습하셨어요!
+                </h3>
+              </div>
+              <button
+                onClick={() => { localStorage.setItem(dismissedKey, '1'); window.location.reload(); }}
+                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1rem' }}
+                title="닫기"
+                aria-label="주간 리포트 닫기"
+              >✕</button>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 10 }}>
+              <div style={{ padding: '10px', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
+                <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginBottom: 2 }}>새 단어</div>
+                <div style={{ fontSize: '1.1rem', fontWeight: 700 }}>⭐ {prevWeekVocab}</div>
+              </div>
+              <div style={{ padding: '10px', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
+                <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginBottom: 2 }}>복습</div>
+                <div style={{ fontSize: '1.1rem', fontWeight: 700 }}>🧠 {prevWeekReviews}</div>
+              </div>
+              <div style={{ padding: '10px', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
+                <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginBottom: 2 }}>완독</div>
+                <div style={{ fontSize: '1.1rem', fontWeight: 700 }}>📖 {prevWeekReads}</div>
+              </div>
+              <div style={{ padding: '10px', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
+                <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginBottom: 2 }}>획득 XP</div>
+                <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--primary)' }}>✨ {prevWeekXP}</div>
+              </div>
+            </div>
+
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', margin: 0 }}>
+              {vocabDiff > 0 || reviewDiff > 0
+                ? `이번 주는 ${vocabDiff > 0 ? `단어 ${vocabDiff}개 더 수집` : ''}${vocabDiff > 0 && reviewDiff > 0 ? ', ' : ''}${reviewDiff > 0 ? `복습 ${reviewDiff}회 더 달성` : ''} 중이에요! 🔥`
+                : '이번 주도 꾸준히 이어가 볼까요?'}
+            </p>
+          </div>
+        );
+      })()}
 
       {/* ── 오늘의 도전 ── */}
       {data && (() => {
         const challenge = getDailyChallenge();
-        const isDone = challenge.check({
+        const progressData = challenge.progress({
           todayVocabCount: todayVocab,
           todayReviewCount: todayReviews,
           todayReadCount: todayReads,
           todayForumCount: data.todayForumCount ?? 0,
           todayGrammarCount: data.todayGrammarCount ?? 0,
         });
+        const { current, target } = progressData;
+        const clampedCurrent = Math.min(current, target);
+        const pct = Math.min(100, (current / target) * 100);
+        const isDone = current >= target;
         const storageKey = `as_challenge_${new Date().toISOString().slice(0, 10)}`;
         const claimed = challengeClaimed || (typeof window !== 'undefined' && localStorage.getItem(storageKey) === '1');
 
@@ -450,6 +586,33 @@ export default function HomePage() {
                 <span className="home-challenge__xp-label">XP</span>
               </div>
             </div>
+
+            {/* 진행 바 */}
+            <div style={{ margin: '8px 0 12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 4 }}>
+                <span>{isDone ? '완료!' : '진행 중'}</span>
+                <span style={{ fontWeight: 700, color: isDone ? 'var(--accent)' : 'var(--text-primary)' }}>
+                  {clampedCurrent} / {target}
+                </span>
+              </div>
+              <div style={{
+                background: 'var(--bg-secondary)',
+                borderRadius: 'var(--radius-full)',
+                height: 6,
+                overflow: 'hidden',
+              }}>
+                <div style={{
+                  height: '100%',
+                  width: `${pct}%`,
+                  background: isDone
+                    ? 'linear-gradient(90deg, var(--accent) 0%, var(--primary-light) 100%)'
+                    : 'var(--primary-light)',
+                  borderRadius: 'var(--radius-full)',
+                  transition: 'width 0.6s ease',
+                }} />
+              </div>
+            </div>
+
             {isDone ? (
               claimed ? (
                 <div className="home-challenge__done-msg">🎉 보너스 XP를 받았어요!</div>

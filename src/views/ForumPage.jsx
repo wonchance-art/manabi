@@ -11,6 +11,9 @@ import Button from '../components/Button';
 import ConfirmModal from '../components/ConfirmModal';
 
 const PAGE_SIZE = 10;
+const MAX_POST_LENGTH = 2000;
+const MAX_COMMENT_LENGTH = 500;
+const VALID_CATEGORIES = ['', '[질문]', '[팁]', '[자료]', '[인증]'];
 
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -121,6 +124,7 @@ export default function ForumPage() {
   const commentInputRef = useRef(null);
   const [confirmAction, setConfirmAction] = useState(null);
   const [postCategory, setPostCategory] = useState('');
+  const [pendingNewPosts, setPendingNewPosts] = useState([]); // 실시간 수신된 새 글 버퍼
 
   const CATEGORIES = [
     { value: '', label: '일반' },
@@ -150,27 +154,53 @@ export default function ForumPage() {
   }, [data, page]);
 
   useEffect(() => {
-    realtimeRef.current = supabase
-      .channel('forum_posts_realtime')
+    const channelName = `forum_posts_rt_${user?.id || 'anon'}_${Date.now()}`;
+    const channel = supabase
+      .channel(channelName)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'forum_posts' }, async (payload) => {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('display_name, avatar_url, streak_count')
-          .eq('id', payload.new.author_id)
-          .maybeSingle();
-        const newEntry = { ...payload.new, author: profile || null, user_liked: false };
-        setAllPosts(prev => {
-          if (prev.some(p => p.id === newEntry.id)) return prev;
-          return [newEntry, ...prev];
-        });
-        if (payload.new.author_id !== user?.id) {
-          toast(`${profile?.display_name || '누군가'}가 새 글을 올렸어요!`, 'info', 4000);
+        // 본인 글이면 바로 리스트에 (작성 직후 경험 유지)
+        if (payload.new.author_id === user?.id) {
+          const { data: authorProfile } = await supabase
+            .from('profiles')
+            .select('display_name, avatar_url, streak_count')
+            .eq('id', payload.new.author_id)
+            .maybeSingle();
+          const newEntry = { ...payload.new, author: authorProfile || null, user_liked: false };
+          setAllPosts(prev => prev.some(p => p.id === newEntry.id) ? prev : [newEntry, ...prev]);
+          return;
         }
+        // 타인의 글은 버퍼에 쌓아 "N개 새 글" 배지로 표시
+        setPendingNewPosts(prev => {
+          if (prev.some(p => p.id === payload.new.id)) return prev;
+          return [payload.new, ...prev];
+        });
       })
       .subscribe();
+    realtimeRef.current = channel;
 
-    return () => { realtimeRef.current?.unsubscribe(); };
+    return () => { supabase.removeChannel(channel); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
+
+  // 새 글 배지 클릭 시 버퍼 → 리스트로 이동 + 상단으로 스크롤
+  const loadPendingPosts = async () => {
+    if (pendingNewPosts.length === 0) return;
+    const authorIds = [...new Set(pendingNewPosts.map(p => p.author_id))];
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, display_name, avatar_url, streak_count')
+      .in('id', authorIds);
+    const profileMap = Object.fromEntries((profiles || []).map(p => [p.id, p]));
+    const enriched = pendingNewPosts.map(p => ({
+      ...p, author: profileMap[p.author_id] || null, user_liked: false,
+    }));
+    setAllPosts(prev => {
+      const ids = new Set(prev.map(p => p.id));
+      return [...enriched.filter(p => !ids.has(p.id)), ...prev];
+    });
+    setPendingNewPosts([]);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const { data: comments = [], isLoading: commentsLoading, error: commentsError } = useQuery({
     queryKey: ['forum-comments', expandedPostId, user?.id],
@@ -341,13 +371,22 @@ export default function ForumPage() {
     e.preventDefault();
     if (!user) { toast('로그인이 필요합니다.', 'warning'); return; }
     if (!newPost.trim()) return;
-    const content = postCategory ? `${postCategory} ${newPost.trim()}` : newPost.trim();
+    if (newPost.trim().length > MAX_POST_LENGTH) {
+      toast(`게시글은 ${MAX_POST_LENGTH}자까지 작성할 수 있어요.`, 'warning');
+      return;
+    }
+    const safeCategory = VALID_CATEGORIES.includes(postCategory) ? postCategory : '';
+    const content = safeCategory ? `${safeCategory} ${newPost.trim()}` : newPost.trim();
     postMutation.mutate(content);
   };
 
   const handleCommentSubmit = (postId) => {
     if (!user) { toast('로그인이 필요합니다.', 'warning'); return; }
     if (!commentText.trim()) return;
+    if (commentText.trim().length > MAX_COMMENT_LENGTH) {
+      toast(`댓글은 ${MAX_COMMENT_LENGTH}자까지 작성할 수 있어요.`, 'warning');
+      return;
+    }
     commentMutation.mutate({ postId, content: commentText.trim() });
   };
 
@@ -409,6 +448,8 @@ export default function ForumPage() {
                   value={newPost}
                   onChange={e => setNewPost(e.target.value)}
                   placeholder="오늘 어떤 공부를 하셨나요? 자유롭게 남겨보세요."
+                  maxLength={MAX_POST_LENGTH}
+                  aria-label="게시글 작성"
                   className="forum-textarea"
                 />
                 <div className="forum-compose__footer">
@@ -421,15 +462,38 @@ export default function ForumPage() {
                       </button>
                     ))}
                   </div>
-                  <Button type="submit" size="sm" disabled={postMutation.isPending || !newPost.trim()}
-                    style={{ borderRadius: 'var(--radius-full)' }}>
-                    {postMutation.isPending ? '게시 중...' : '게시하기'}
-                  </Button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: '0.75rem', color: newPost.length > MAX_POST_LENGTH ? 'var(--danger)' : 'var(--text-muted)' }}>
+                      {newPost.length}/{MAX_POST_LENGTH}
+                    </span>
+                    <Button type="submit" size="sm" disabled={postMutation.isPending || !newPost.trim() || newPost.length > MAX_POST_LENGTH}
+                      style={{ borderRadius: 'var(--radius-full)' }}>
+                      {postMutation.isPending ? '게시 중...' : '게시하기'}
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
           </form>
         </div>
+
+        {/* 새 글 알림 배지 */}
+        {pendingNewPosts.length > 0 && (
+          <button
+            onClick={loadPendingPosts}
+            style={{
+              position: 'sticky', top: 70, zIndex: 10,
+              margin: '0 auto 12px', display: 'block',
+              padding: '8px 18px', borderRadius: 'var(--radius-full)',
+              background: 'var(--primary)', color: '#fff', border: 'none',
+              fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+            }}
+            aria-label={`새 글 ${pendingNewPosts.length}개 보기`}
+          >
+            ↑ 새 글 {pendingNewPosts.length}개 보기
+          </button>
+        )}
 
         {isLoading && page === 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -514,6 +578,8 @@ export default function ForumPage() {
                               if (e.key === 'Enter' && mentionQuery === null) handleCommentSubmit(post.id);
                             }}
                             placeholder="댓글 달기... (@닉네임으로 태그)"
+                            maxLength={MAX_COMMENT_LENGTH}
+                            aria-label="댓글 입력"
                             className="form-input"
                             style={{ padding: '8px 12px', fontSize: '0.85rem' }}
                           />
