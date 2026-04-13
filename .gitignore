@@ -24,3 +24,6 @@ npm-debug.log*
 
 # MCP config (contains secrets)
 .mcp.json
+
+# Claude Code 로컬 상태 (메모리/워크트리)
+.claude/
