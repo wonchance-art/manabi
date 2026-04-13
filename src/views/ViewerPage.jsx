@@ -18,6 +18,8 @@ import { useTTS } from '../lib/useTTS';
 import { useViewerSettings } from '../lib/useViewerSettings';
 import { useGrammarAnalysis, GRAMMAR_ACTIONS } from '../lib/useGrammarAnalysis';
 import { useViewerQuiz } from '../lib/useViewerQuiz';
+import { useReanalyze } from '../lib/useReanalyze';
+import { useMaterialComments } from '../lib/useMaterialComments';
 import ViewerComments from './ViewerComments';
 import ViewerBottomSheet from './ViewerBottomSheet';
 import ViewerGrammarModal from './ViewerGrammarModal';
@@ -92,16 +94,6 @@ export default function ViewerPage() {
   const toast = useToast();
   const queryClient = useQueryClient();
 
-  const reanalyzeAbortRef = useRef(null);
-  const [reanalyzeConfirm, setReanalyzeConfirm] = useState(null); // null | { fullReset }
-
-  function requestReanalyze(opts) { setReanalyzeConfirm(opts); }
-  function confirmReanalyze() {
-    reanalyzeMutation.mutate(reanalyzeConfirm);
-    setReanalyzeConfirm(null);
-  }
-  function cancelReanalyze() { setReanalyzeConfirm(null); }
-  function stopReanalysis() { reanalyzeAbortRef.current?.abort(); }
   const { speak, supported: ttsSupported } = useTTS();
   const { celebrate, checkLevelUp } = useCelebration();
 
@@ -145,6 +137,37 @@ export default function ViewerPage() {
     queryFn: () => fetchUserVocabWords(user.id),
     enabled: !!user,
     staleTime: 1000 * 30,
+  });
+
+  // 자료와 연관된 공유 단어장 덱
+  const { data: relatedDecks = [] } = useQuery({
+    queryKey: ['related-decks', id, materialLang],
+    queryFn: async () => {
+      // 1순위: 이 자료 출처인 덱
+      const { data: sourceDecks } = await supabase
+        .from('vocab_decks')
+        .select('id, title, language, word_count, created_at, owner:profiles(display_name)')
+        .eq('source_material_id', id)
+        .order('created_at', { ascending: false })
+        .limit(3);
+
+      if (sourceDecks && sourceDecks.length >= 3) return sourceDecks;
+
+      // 2순위: 같은 언어 인기 덱 (word_count 순)
+      const exclude = sourceDecks?.map(d => d.id) || [];
+      let query = supabase
+        .from('vocab_decks')
+        .select('id, title, language, word_count, created_at, owner:profiles(display_name)')
+        .eq('language', materialLang)
+        .order('word_count', { ascending: false })
+        .limit(3 - (sourceDecks?.length || 0));
+      if (exclude.length) query = query.not('id', 'in', `(${exclude.join(',')})`);
+
+      const { data: langDecks } = await query;
+      return [...(sourceDecks || []), ...(langDecks || [])];
+    },
+    enabled: !!id && !!materialLang,
+    staleTime: 1000 * 60 * 5,
   });
 
   const { data: readingProgress } = useQuery({
@@ -204,45 +227,16 @@ export default function ViewerPage() {
     staleTime: 1000 * 60 * 5,
   });
 
-  const { data: comments = [], refetch: refetchComments } = useQuery({
-    queryKey: ['material-comments', id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('material_comments')
-        .select('id, content, created_at, user_id, author:profiles(display_name)')
-        .eq('material_id', id)
-        .order('created_at', { ascending: true });
-      if (error) throw error;
-      return data || [];
-    },
-  });
+  // 댓글 로직 (훅)
+  const materialComments = useMaterialComments({ materialId: id, user, toast });
+  const comments = materialComments.comments;
+  const addCommentMutation = materialComments.addMutation;
+  const deleteCommentMutation = materialComments.deleteMutation;
 
-  const addCommentMutation = useMutation({
-    mutationFn: async (content) => {
-      const { error } = await supabase
-        .from('material_comments')
-        .insert({ material_id: id, user_id: user.id, content });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      setCommentInput('');
-      refetchComments();
-    },
-    onError: (err) => toast('댓글 저장 실패: ' + err.message, 'error'),
-  });
-
-  const deleteCommentMutation = useMutation({
-    mutationFn: async (commentId) => {
-      const { error } = await supabase
-        .from('material_comments')
-        .delete()
-        .eq('id', commentId)
-        .eq('user_id', user.id);
-      if (error) throw error;
-    },
-    onSuccess: () => refetchComments(),
-    onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
-  });
+  // addMutation 성공 시 입력창 리셋 처리
+  useEffect(() => {
+    if (addCommentMutation.isSuccess) setCommentInput('');
+  }, [addCommentMutation.isSuccess]);
 
   const markCompleteMutation = useMutation({
     mutationFn: async () => {
@@ -268,16 +262,20 @@ export default function ViewerPage() {
 
       return { wordsSaved: wordsSaved || 0, dueCount: dueCount || 0 };
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       queryClient.invalidateQueries({ queryKey: ['reading-progress', user?.id, id] });
       queryClient.invalidateQueries({ queryKey: ['reading-progress-list', user?.id] });
       recordActivity(user.id, () => fetchProfile(user.id));
       const prevXP = profile?.xp ?? 0;
-      awardXP(user.id, XP_REWARDS.MATERIAL_COMPLETED, prevXP);
-      checkLevelUp(prevXP, prevXP + XP_REWARDS.MATERIAL_COMPLETED);
-      checkAndAwardAchievements(user.id, { xp: prevXP, streak: profile?.streak_count }).then(newBadges => {
-        newBadges.forEach(b => celebrate({ type: 'achievement', icon: b.icon, name: b.name, desc: b.desc }));
-      });
+      try {
+        await awardXP(user.id, XP_REWARDS.MATERIAL_COMPLETED, prevXP);
+        checkLevelUp(prevXP, prevXP + XP_REWARDS.MATERIAL_COMPLETED);
+        checkAndAwardAchievements(user.id, { xp: prevXP, streak: profile?.streak_count }).then(newBadges => {
+          newBadges.forEach(b => celebrate({ type: 'achievement', icon: b.icon, name: b.name, desc: b.desc }));
+        });
+      } catch {
+        console.error('XP 부여 실패 — 완독 기록은 저장됨');
+      }
       // 퀴즈 생성 후 완료 모달 표시
       const pendingCompletion = {
         wordsSaved: data.wordsSaved,
@@ -308,46 +306,14 @@ export default function ViewerPage() {
     onError: (err) => toast('저장 실패: ' + err.message, 'error'),
   });
 
-  // 재분석 (실패 줄만 타게팅 or 전체)
-  const reanalyzeMutation = useMutation({
-    mutationFn: async ({ fullReset = false } = {}) => {
-      const rawText = material?.raw_text;
-      if (!rawText) throw new Error('원본 텍스트가 없습니다.');
-
-      const controller = new AbortController();
-      reanalyzeAbortRef.current = controller;
-
-      const hasPartial = !fullReset && failedIndices.length > 0;
-      const baseJson = hasPartial ? material.processed_json : null;
-      const initMeta = material.processed_json?.metadata || {};
-
-      // 진행 상태 표시
-      const statusJson = hasPartial
-        ? { ...material.processed_json, status: 'analyzing' }
-        : { sequence: [], dictionary: {}, last_idx: -1, status: 'analyzing', metadata: initMeta };
-      await supabase.from('reading_materials').update({ processed_json: statusJson }).eq('id', id);
-
-      await analyzeText(rawText, controller.signal, {
-        metadata: initMeta,
-        existingJson: baseJson,
-        onBatch: async ({ currentJson }) => {
-          const { error: updateError } = await supabase
-            .from('reading_materials')
-            .update({ processed_json: currentJson })
-            .eq('id', id);
-          if (updateError) console.error('[reanalyze] DB update failed:', updateError.message);
-        },
-      });
-    },
-    onSuccess: () => {
-      toast('재분석 완료!', 'success');
-      refetch();
-    },
-    onError: (err) => {
-      if (err.name !== 'AbortError') toast('재분석 실패: ' + err.message, 'error');
-      refetch();
-    },
-  });
+  // 재분석 로직 (훅으로 분리)
+  const reanalyze = useReanalyze({ materialId: id, material, refetch, toast });
+  const reanalyzeMutation = reanalyze.mutation;
+  const reanalyzeConfirm = reanalyze.confirmState;
+  const requestReanalyze = reanalyze.request;
+  const confirmReanalyze = reanalyze.confirm;
+  const cancelReanalyze = reanalyze.cancel;
+  const stopReanalysis = reanalyze.stop;
 
   // 스크롤 위치 저장 (debounce 2s, 로그인 + 분석 완료 시만)
   const scrollSaveTimerRef = useRef(null);
@@ -444,6 +410,74 @@ export default function ViewerPage() {
       .filter(t => t)
       .join('');
   }
+
+  const correctTokenMutation = useMutation({
+    mutationFn: async ({ tokenId, corrections }) => {
+      const currentJson = material?.processed_json;
+      if (!currentJson?.dictionary?.[tokenId]) throw new Error('토큰을 찾을 수 없습니다.');
+
+      const beforeToken = currentJson.dictionary[tokenId];
+      const updatedDict = {
+        ...currentJson.dictionary,
+        [tokenId]: { ...beforeToken, ...corrections },
+      };
+      const updatedJson = { ...currentJson, dictionary: updatedDict };
+
+      const { error } = await supabase
+        .from('reading_materials')
+        .update({ processed_json: updatedJson })
+        .eq('id', id);
+      if (error) throw error;
+
+      // 교정 히스토리 로그 (실패해도 수정 자체는 유지)
+      if (user?.id) {
+        const beforeSlim = {
+          furigana: beforeToken.furigana || '',
+          meaning: beforeToken.meaning || '',
+          pos: beforeToken.pos || '',
+        };
+        await supabase.from('token_corrections').insert({
+          material_id: id,
+          token_id: tokenId,
+          user_id: user.id,
+          before_value: beforeSlim,
+          after_value: corrections,
+        }).then(({ error: logErr }) => {
+          if (logErr) console.warn('[correction log] failed:', logErr.message);
+        });
+      }
+      return { tokenId, corrections };
+    },
+    onSuccess: ({ tokenId, corrections }) => {
+      queryClient.invalidateQueries({ queryKey: ['material', id] });
+      queryClient.invalidateQueries({ queryKey: ['token-corrections', id, tokenId] });
+      // BottomSheet에 표시되는 selectedToken도 업데이트
+      setSelectedToken(prev => prev?.id === tokenId ? { ...prev, ...corrections } : prev);
+      toast('수정이 저장됐어요!', 'success');
+    },
+    onError: (err) => toast('수정 실패: ' + err.message, 'error'),
+  });
+
+  // 선택된 토큰의 교정 히스토리 조회
+  const { data: tokenCorrections = [] } = useQuery({
+    queryKey: ['token-corrections', id, selectedToken?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('token_corrections')
+        .select('id, before_value, after_value, created_at, user_id, profiles:user_id(display_name)')
+        .eq('material_id', id)
+        .eq('token_id', selectedToken.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+      return data || [];
+    },
+    enabled: !!selectedToken?.id && isSheetOpen,
+    staleTime: 1000 * 30,
+  });
+
+  const handleCorrectToken = (tokenId, corrections) => {
+    correctTokenMutation.mutate({ tokenId, corrections });
+  };
 
   const addToVocab = async () => {
     if (!user) { toast('로그인이 필요합니다.', 'warning'); return; }
@@ -810,6 +844,48 @@ export default function ViewerPage() {
         )}
       </div>
 
+      {/* 관련 공유 단어장 덱 */}
+      {isDone && relatedDecks.length > 0 && (
+        <div className="card" style={{ marginTop: 16, padding: 20 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
+            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>
+              🃏 이 자료와 관련된 공유 단어장
+            </h3>
+            <Link href="/vocab?tab=decks" style={{ fontSize: '0.78rem', color: 'var(--primary-light)' }}>
+              전체 보기 →
+            </Link>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {relatedDecks.map(deck => (
+              <Link
+                key={deck.id}
+                href={`/vocab?tab=decks&deckId=${deck.id}`}
+                style={{
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  padding: '10px 14px', background: 'var(--bg-secondary)',
+                  borderRadius: 'var(--radius-md)', textDecoration: 'none',
+                  transition: 'background 0.15s',
+                }}
+              >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{deck.title}</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                    {deck.owner?.display_name || '익명'} · {deck.word_count}단어
+                  </span>
+                </div>
+                <span style={{
+                  padding: '3px 10px', borderRadius: 'var(--radius-full)',
+                  background: 'var(--primary-glow)', color: 'var(--primary)',
+                  fontSize: '0.72rem', fontWeight: 600,
+                }}>
+                  {deck.language === 'Japanese' ? '🇯🇵' : '🇬🇧'} {deck.language}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
       <ViewerComments
         user={user} comments={comments} commentInput={commentInput}
         setCommentInput={setCommentInput} addCommentMutation={addCommentMutation}
@@ -832,6 +908,8 @@ export default function ViewerPage() {
         ttsSupported={ttsSupported} speak={speak} materialLang={materialLang}
         isWordSaved={isWordSaved} saveAnim={saveAnim} addToVocab={addToVocab}
         user={user} trimOkurigana={trimOkurigana}
+        onCorrectToken={handleCorrectToken}
+        corrections={tokenCorrections}
       />
 
       <ViewerGrammarModal

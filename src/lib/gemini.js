@@ -20,10 +20,28 @@ export async function callGemini(prompt, signal, { model, ...generationConfig } 
 
 export function parseGeminiJSON(rawText) {
   const clean = rawText.replace(/```json|```/g, '').trim();
-  const start = clean.indexOf('{');
-  const end = clean.lastIndexOf('}');
-  if (start === -1 || end === -1) throw new Error('JSON 괄호를 찾을 수 없습니다.');
-  return JSON.parse(clean.substring(start, end + 1));
+  // 배열([...]) 또는 객체({...}) 응답 모두 지원
+  const objStart = clean.indexOf('{');
+  const objEnd = clean.lastIndexOf('}');
+  const arrStart = clean.indexOf('[');
+  const arrEnd = clean.lastIndexOf(']');
+
+  let jsonStr;
+  if (objStart !== -1 && (arrStart === -1 || objStart < arrStart)) {
+    if (objEnd === -1) throw new Error('JSON 괄호를 찾을 수 없습니다.');
+    jsonStr = clean.substring(objStart, objEnd + 1);
+  } else if (arrStart !== -1) {
+    if (arrEnd === -1) throw new Error('JSON 괄호를 찾을 수 없습니다.');
+    jsonStr = clean.substring(arrStart, arrEnd + 1);
+  } else {
+    throw new Error('JSON 괄호를 찾을 수 없습니다.');
+  }
+
+  try {
+    return JSON.parse(jsonStr);
+  } catch (e) {
+    throw new Error(`Gemini 응답 JSON 파싱 실패: ${e.message}`);
+  }
 }
 
 export function buildTokenizationPrompt(text) {
