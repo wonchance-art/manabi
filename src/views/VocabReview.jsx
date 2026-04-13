@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Button from '../components/Button';
 
@@ -38,6 +39,15 @@ export default function VocabReview({
   exampleSentences, exampleLoading, loadExamples,
   setTab, hardWords,
 }) {
+  // 리스닝 모드: 카드 전환 시 자동 TTS 재생
+  const prevIdxRef = useRef(reviewIdx);
+  useEffect(() => {
+    if (reviewMode === 'listening' && ttsSupported && currentWord && prevIdxRef.current !== reviewIdx) {
+      speak(currentWord.word_text, currentWord.language || detectLang(currentWord.word_text));
+    }
+    prevIdxRef.current = reviewIdx;
+  }, [reviewIdx, reviewMode, ttsSupported, currentWord, speak]);
+
   return (
     <div style={{ maxWidth: '600px', margin: '0 auto' }}>
       {reviewFinished ? (
@@ -112,9 +122,10 @@ export default function VocabReview({
           {/* 복습 모드 선택 */}
           <div className="chip-group" style={{ marginBottom: '16px', justifyContent: 'center' }}>
             {[
-              { value: 'flash',   label: '🃏 플래시카드' },
-              { value: 'typing',  label: '✏️ 타이핑' },
-              { value: 'context', label: '📝 문맥 퀴즈' },
+              { value: 'flash',     label: '🃏 플래시카드' },
+              { value: 'typing',    label: '✏️ 타이핑' },
+              { value: 'context',   label: '📝 문맥 퀴즈' },
+              { value: 'listening', label: '🎧 리스닝' },
             ].map(m => (
               <button
                 key={m.value}
@@ -149,7 +160,7 @@ export default function VocabReview({
 
             <div className="review-card__body">
               {/* 단어 헤더 (문맥 퀴즈는 정답 공개 전까지 숨김) */}
-              {currentWord && (reviewMode !== 'context' || showAnswer) && (
+              {currentWord && (reviewMode !== 'context' && reviewMode !== 'listening' || showAnswer) && (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
                   <h2 className="review-card__word">{currentWord.word_text}</h2>
                   {ttsSupported && (
@@ -299,6 +310,91 @@ export default function VocabReview({
                         정답 보기
                       </Button>
                     </div>
+                  )}
+                </>
+              )}
+
+              {/* 리스닝 모드 */}
+              {reviewMode === 'listening' && (
+                <>
+                  {ttsSupported ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', marginTop: '20px' }}>
+                      <button
+                        onClick={() => speak(currentWord.word_text, currentWord.language || detectLang(currentWord.word_text))}
+                        className="review-listen-btn"
+                        style={{
+                          width: 80, height: 80, borderRadius: '50%',
+                          background: 'var(--primary-glow)', border: '2px solid var(--primary)',
+                          fontSize: '2rem', cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          transition: 'transform 0.15s',
+                        }}
+                        title="다시 듣기"
+                      >
+                        🔊
+                      </button>
+                      <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                        소리를 듣고 알맞은 뜻을 고르세요
+                      </p>
+
+                      {!showAnswer ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                          {contextOptions.map((opt, i) => (
+                            <button
+                              key={i}
+                              disabled={contextSelected !== null}
+                              onClick={() => {
+                                setContextSelected(i);
+                                const isCorrect = opt.id === currentWord.id;
+                                if (isCorrect) {
+                                  setTimeout(() => handleScore(3), 700);
+                                }
+                              }}
+                              style={{
+                                padding: '12px 16px',
+                                background: contextSelected === null
+                                  ? 'var(--bg-secondary)'
+                                  : opt.id === currentWord.id
+                                    ? 'rgba(74,138,92,0.25)'
+                                    : contextSelected === i
+                                      ? 'rgba(200,64,64,0.2)'
+                                      : 'var(--bg-secondary)',
+                                border: `1px solid ${
+                                  contextSelected !== null && opt.id === currentWord.id
+                                    ? 'var(--accent)'
+                                    : 'var(--border)'
+                                }`,
+                                borderRadius: 'var(--radius-md)',
+                                textAlign: 'left',
+                                cursor: contextSelected !== null ? 'default' : 'pointer',
+                                fontSize: '0.92rem',
+                                color: 'var(--text-primary)',
+                                transition: 'background 0.2s, border-color 0.2s',
+                              }}
+                            >
+                              {opt.meaning}
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <ScoreSection word={currentWord} onScore={handleScore} />
+                      )}
+
+                      {contextSelected !== null && contextOptions[contextSelected]?.id !== currentWord.id && !showAnswer && (
+                        <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
+                          <Button onClick={() => handleScore(1)} variant="secondary" style={{ flex: 1 }}>
+                            다시 (Again)
+                          </Button>
+                          <Button onClick={() => setShowAnswer(true)} variant="ghost" style={{ flex: 1 }}>
+                            정답 보기
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <p style={{ color: 'var(--text-muted)', textAlign: 'center', marginTop: '24px' }}>
+                      이 브라우저에서는 TTS를 지원하지 않아요. 다른 모드를 선택해주세요.
+                    </p>
                   )}
                 </>
               )}

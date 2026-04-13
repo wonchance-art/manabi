@@ -9,13 +9,15 @@ import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import Spinner from '../components/Spinner';
 import Button from '../components/Button';
-import { callGemini, GEMINI_MODEL } from '../lib/gemini';
 import { analyzeText } from '../lib/analyzeText';
 import { recordActivity } from '../lib/streak';
 import { awardXP, XP_REWARDS } from '../lib/xp';
 import { checkAndAwardAchievements } from '../lib/achievements';
 import { useCelebration } from '../lib/CelebrationContext';
 import { useTTS } from '../lib/useTTS';
+import { useViewerSettings } from '../lib/useViewerSettings';
+import { useGrammarAnalysis, GRAMMAR_ACTIONS } from '../lib/useGrammarAnalysis';
+import { useViewerQuiz } from '../lib/useViewerQuiz';
 import ViewerComments from './ViewerComments';
 import ViewerBottomSheet from './ViewerBottomSheet';
 import ViewerGrammarModal from './ViewerGrammarModal';
@@ -103,60 +105,40 @@ export default function ViewerPage() {
   const { speak, supported: ttsSupported } = useTTS();
   const { celebrate, checkLevelUp } = useCelebration();
 
-  function readPref(key, fallback) {
-    try { const v = localStorage.getItem('viewer_' + key); return v !== null ? JSON.parse(v) : fallback; } catch { return fallback; }
-  }
-  function savePref(key, value) {
-    try { localStorage.setItem('viewer_' + key, JSON.stringify(value)); } catch {}
-  }
+  // Custom hooks
+  const settings = useViewerSettings();
+  const { fontSize, setFontSize, lineGap, setLineGap, charGap, setCharGap,
+          theme, setTheme, fontFamily, setFontFamily, showFurigana, setShowFurigana,
+          settingsOpen, setSettingsOpen } = settings;
 
-  const [fontSize, setFontSizeRaw] = useState(() => readPref('fontSize', 1.6));
-  const [lineGap, setLineGapRaw] = useState(() => readPref('lineGap', 15));
-  const [charGap, setCharGapRaw] = useState(() => readPref('charGap', 0.25));
-  const [theme, setThemeRaw] = useState(() => readPref('theme', 'dark'));
-  const [fontFamily, setFontFamilyRaw] = useState(() => readPref('fontFamily', "'Noto Sans KR'"));
-  const [showFurigana, setShowFuriganaRaw] = useState(() => readPref('showFurigana', true));
-
-  function setFontSize(v) { setFontSizeRaw(v); savePref('fontSize', v); }
-  function setLineGap(v) { setLineGapRaw(v); savePref('lineGap', v); }
-  function setCharGap(v) { setCharGapRaw(v); savePref('charGap', v); }
-  function setTheme(v) { setThemeRaw(v); savePref('theme', v); }
-  function setFontFamily(v) { setFontFamilyRaw(v); savePref('fontFamily', v); }
-  function setShowFurigana(v) { setShowFuriganaRaw(v); savePref('showFurigana', v); }
+  const quiz = useViewerQuiz();
+  const { quizState, completionModal, setCompletionModal, generateQuiz,
+          handleQuizAnswer, advanceQuiz, finishQuiz } = quiz;
 
   const [selectedToken, setSelectedToken] = useState(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-
-  const [isGrammarModalOpen, setIsGrammarModalOpen] = useState(false);
-  const [grammarAnalysis, setGrammarAnalysis] = useState('');
-  const [isGrammarLoading, setIsGrammarLoading] = useState(false);
-  const [selectedRangeText, setSelectedRangeText] = useState('');
-  const [checkedActions, setCheckedActions] = useState(new Set());
-  const [selectionPopup, setSelectionPopup] = useState(null); // { x, y } or null
-  const [completionModal, setCompletionModal] = useState(null); // { wordsSaved, dueCount, streak, quizScore?, quizTotal? }
-  // 퀴즈
-  const [quizState, setQuizState] = useState(null);
-  // null | { status:'loading' } | { status:'active', questions, currentQ, score, selected }
-  // | { status:'done', score, total, pendingCompletion }
-  // 문법 튜터 추가 질문
-  const [grammarFollowUp, setGrammarFollowUp] = useState('');
-  const [grammarFollowLoading, setGrammarFollowLoading] = useState(false);
-  // 댓글
   const [commentInput, setCommentInput] = useState('');
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [readProgress, setReadProgress] = useState(0);
-  const [saveAnim, setSaveAnim] = useState(false); // 단어 저장 애니메이션
+  const [saveAnim, setSaveAnim] = useState(false);
 
   const { data: material, isLoading, error, refetch } = useQuery({
     queryKey: ['material', id],
     queryFn: () => fetchMaterial(id),
-    // 분석 중일 때 폴링 (RQ v5 signature)
     refetchInterval: (query) => {
       const d = query.state.data;
       const s = d?.status || d?.processed_json?.status;
       return s === 'analyzing' ? 4000 : false;
     },
   });
+
+  const materialLang = material?.processed_json?.metadata?.language || 'Japanese';
+
+  const grammar = useGrammarAnalysis({ toast, materialLang });
+  const { isGrammarModalOpen, setIsGrammarModalOpen, grammarAnalysis,
+          isGrammarLoading, selectedRangeText, checkedActions, setCheckedActions,
+          selectionPopup, grammarFollowUp, setGrammarFollowUp,
+          grammarFollowLoading, openGrammarModal, analyzeGrammar,
+          requestGrammarAnalysis, askFollowUp, handleTextSelection: handleGrammarTextSelection } = grammar;
 
   const { data: savedWords = new Set() } = useQuery({
     queryKey: ['vocab-words', user?.id],
@@ -302,7 +284,9 @@ export default function ViewerPage() {
         dueCount: data.dueCount,
         streak: (profile?.streak_count || 0) + 1,
       };
-      generateQuiz(pendingCompletion);
+      const rawText = material?.raw_text || '';
+      const lang = material?.processed_json?.metadata?.language || 'Japanese';
+      generateQuiz(rawText, lang, pendingCompletion);
     },
     onError: (err) => toast('오류: ' + err.message, 'error'),
   });
@@ -431,235 +415,9 @@ export default function ViewerPage() {
     }
   };
 
-  const handleTextSelection = () => {
-    if (isGrammarModalOpen) return;
-    const selection = window.getSelection();
-    const text = selection?.toString().trim();
-    if (text && text.length > 1) {
-      setSelectedRangeText(text);
-      const rect = selection.getRangeAt(0).getBoundingClientRect();
-      setSelectionPopup({
-        x: rect.left + rect.width / 2,
-        y: rect.top - 48,
-      });
-    } else {
-      setSelectionPopup(null);
-    }
-  };
+  const handleTextSelection = () => handleGrammarTextSelection(isGrammarModalOpen);
 
-  async function generateQuiz(pendingCompletion) {
-    const rawText = material?.raw_text || '';
-    const lang = material?.processed_json?.metadata?.language || 'Japanese';
-    const excerpt = rawText.slice(0, 1200);
-    if (!excerpt.trim()) {
-      setCompletionModal(pendingCompletion);
-      return;
-    }
-    setQuizState({ status: 'loading', pendingCompletion });
-    try {
-      const prompt = `다음 ${lang === 'Japanese' ? '일본어' : '영어'} 텍스트를 읽고 내용 이해를 확인하는 객관식 문제 3개를 만들어주세요.
 
-텍스트:
-"""
-${excerpt}
-"""
-
-규칙:
-- 각 문제는 4개 선택지 (0~3번 인덱스)
-- 정답은 텍스트에서 명확히 확인 가능해야 함
-- 질문과 선택지는 한국어로 작성
-- answer는 정답 인덱스 (0~3)
-
-반드시 아래 JSON만 출력:
-{"questions":[{"question":"...","options":["...","...","...","..."],"answer":0},{"question":"...","options":["...","...","...","..."],"answer":1},{"question":"...","options":["...","...","...","..."],"answer":2}]}`;
-
-      const raw = await callGemini(prompt, null, { model: GEMINI_MODEL });
-      const clean = raw.replace(/```json|```/g, '').trim();
-      const parsed = JSON.parse(clean.substring(clean.indexOf('{'), clean.lastIndexOf('}') + 1));
-      setQuizState({
-        status: 'active',
-        questions: parsed.questions,
-        currentQ: 0,
-        score: 0,
-        selected: null,
-        pendingCompletion,
-      });
-    } catch {
-      // 퀴즈 생성 실패 시 바로 완료 모달
-      setCompletionModal(pendingCompletion);
-    }
-  }
-
-  function handleQuizAnswer(optIdx) {
-    setQuizState(prev => {
-      if (prev.status !== 'active' || prev.selected !== null) return prev;
-      const correct = prev.questions[prev.currentQ].answer === optIdx;
-      const newScore = prev.score + (correct ? 1 : 0);
-      const isLast = prev.currentQ === prev.questions.length - 1;
-      if (isLast) {
-        return { status: 'done', score: newScore, total: prev.questions.length, pendingCompletion: prev.pendingCompletion };
-      }
-      return { ...prev, selected: optIdx, score: newScore };
-    });
-  }
-
-  function advanceQuiz() {
-    setQuizState(prev => {
-      if (prev.status !== 'active') return prev;
-      return { ...prev, currentQ: prev.currentQ + 1, selected: null };
-    });
-  }
-
-  function finishQuiz() {
-    const { score, total, pendingCompletion } = quizState;
-    setQuizState(null);
-    setCompletionModal({ ...pendingCompletion, quizScore: score, quizTotal: total });
-  }
-
-  const openGrammarModal = () => {
-    const text = window.getSelection().toString().trim() || selectedRangeText;
-    if (!text) { toast('분석할 문장을 드래그해서 선택해주세요.', 'warning'); return; }
-    setSelectedRangeText(text);
-    setGrammarAnalysis('');
-    setGrammarFollowUp('');
-    setCheckedActions(new Set());
-    setIsGrammarModalOpen(true);
-    setSelectionPopup(null);
-  };
-
-  // 하위 호환: settings bar 버튼용
-  const analyzeGrammar = openGrammarModal;
-
-  const GRAMMAR_ACTIONS = [
-    { key: 'translation', label: '🌐 전체 번역',   desc: '자연스러운 한국어 번역' },
-    { key: 'breakdown',   label: '🔬 문장 분해',   desc: '주어/서술어/조사 구조 설명' },
-    { key: 'grammar',     label: '📐 핵심 문법',   desc: '문법 패턴 + 예문' },
-    { key: 'vocab',       label: '📖 어휘 체크',   desc: '핵심 단어·표현 정리' },
-    { key: 'nuance',      label: '💬 뉘앙스·활용', desc: '실제 회화에서의 쓰임새' },
-    { key: 'full',        label: '✨ 전체 분석',   desc: '번역+분해+문법+어휘 한번에' },
-  ];
-
-  async function requestGrammarAnalysis(types) {
-    const text = selectedRangeText;
-    const isJa = materialLang === 'Japanese';
-    setIsGrammarLoading(true);
-    setGrammarAnalysis('');
-
-    const sectionPrompts = {
-      translation: isJa
-        ? `## 전체 번역\n반드시 아래 형식으로 출력:\n직역: (원문에 충실한 번역)\n의역: (자연스러운 한국어)\n뉘앙스: (두 번역 차이와 원문 어감, 2~3문장)`
-        : `## 전체 번역\nOutput in this exact format:\n직역: (literal translation)\n의역: (natural Korean translation)\n뉘앙스: (difference and original nuance, 2~3 sentences)`,
-      breakdown: isJa
-        ? `## 문장 분해\n각 성분을 아래 형식으로 출력:\n주어: (해당 부분 + 간단 설명)\n서술어: (동사/형용사 원형과 활용형)\n목적어: (있을 경우)\n조사: (쓰인 조사와 선택 이유)\n참고: (전체 구조 요약 1~2문장)`
-        : `## 문장 분해\nOutput each component in this format:\n주어: (subject + brief note)\n서술어: (verb/predicate form)\n목적어: (object if present)\n조사: (particles used and why)\n참고: (overall structure summary)`,
-      grammar: isJa
-        ? `## 핵심 문법 포인트\n문법 패턴마다 아래 형식으로 출력 (1~2개):\n패턴: (~형태 — 한 줄 요약)\n의미: (정확한 뜻과 뉘앙스)\n예문: (유사 예문 1개)\n활용법: (주의사항 또는 응용 팁)`
-        : `## 핵심 문법 포인트\nFor each pattern (1~2):\n패턴: (pattern form — one-line summary)\n의미: (meaning and nuance)\n예문: (one example sentence)\n활용법: (usage tip or caution)`,
-      vocab: isJa
-        ? `## 어휘 체크\n핵심 단어마다 아래 형식으로 출력:\n단어: (표기 · 읽기 · 품사)\n의미: (한국어 뜻)\n예문: (짧은 예문 1개)\n참고: (관련 표현 또는 주의 사항, 있을 경우)`
-        : `## 어휘 체크\nFor each key word:\n단어: (word · part of speech)\n의미: (Korean meaning)\n예문: (short example sentence)\n참고: (related expressions or notes if any)`,
-      nuance: isJa
-        ? `## 뉘앙스·활용\n아래 형식으로 출력:\n상황: (이 표현이 쓰이는 구체적 상황/관계)\n격식: (격식체 버전)\n반말: (반말/캐주얼 버전)\n유사표현: (비슷한 표현과 차이점)\n활용법: (실전 사용 시 주의점)`
-        : `## 뉘앙스·활용\nOutput in this format:\n상황: (specific context/relationship where this is used)\n격식: (formal version)\n반말: (casual version)\n유사표현: (similar expressions and differences)\n활용법: (practical usage tip)`,
-    };
-
-    const activeTypes = types.includes('full')
-      ? ['translation', 'breakdown', 'grammar', 'vocab', 'nuance']
-      : types.filter(t => t !== 'full');
-
-    let prompt;
-
-    if (activeTypes.length === 1) {
-      // 단일 선택: 기존 섹션 프롬프트 그대로
-      const intro = isJa
-        ? `일본어 문장 「${text}」를 분석해주세요. 한국어로 답변.\n\n`
-        : `Analyze the English sentence "${text}". Answer in Korean.\n\n`;
-      prompt = intro + sectionPrompts[activeTypes[0]];
-    } else {
-      // 복수 선택: 통합 프롬프트 — 중복 없이 자연스럽게
-      const aspectLabels = {
-        translation: isJa ? '전체 번역 (직역/의역/뉘앙스)' : '번역 (직역/의역/뉘앙스)',
-        breakdown:   isJa ? '문장 구조 분해 (주어/서술어/조사)' : '문장 구조 분해',
-        grammar:     isJa ? '핵심 문법 패턴 (패턴/의미/예문/활용법)' : '핵심 문법 패턴',
-        vocab:       isJa ? '어휘 체크 (단어/의미/예문)' : '어휘 체크',
-        nuance:      isJa ? '뉘앙스·활용 (상황/격식/반말/유사표현)' : '뉘앙스·활용',
-      };
-      const aspects = activeTypes.map(t => `- ${aspectLabels[t]}`).join('\n');
-      const formatNote = isJa
-        ? `각 항목의 정보를 아래 레이블 형식으로 출력하세요 (모든 항목에 적용):
-직역: / 의역: / 뉘앙스: / 주어: / 서술어: / 목적어: / 조사: / 패턴: / 의미: / 예문: / 활용법: / 단어: / 상황: / 격식: / 반말: / 유사표현: / 참고:`
-        : `Use these label formats throughout:
-직역: / 의역: / 뉘앙스: / 주어: / 서술어: / 패턴: / 의미: / 예문: / 활용법: / 단어: / 상황: / 격식: / 반말: / 유사표현: / 참고:`;
-
-      const labelExample = isJa
-        ? `출력 형식 예시 (반드시 이 형식 준수):
-## 전체 번역
-직역: 오늘은 날씨가 좋다
-의역: 오늘 날씨 정말 좋네
-뉘앙스: ~는 대조 강조, 감탄 표현
-
-## 문장 분해
-주어: 今日は — 주제/대조 조사
-서술어: いいですね — 정중한 감탄형`
-        : `Output format example (must follow this format):
-## 전체 번역
-직역: The weather is nice today
-의역: What great weather today
-뉘앙스: Casual exclamatory tone`;
-
-      prompt = isJa
-        ? `일본어 문장 「${text}」에 대해 아래 항목을 분석해주세요. 한국어로 답변.
-
-분석 항목:
-${aspects}
-
-규칙:
-- 항목들을 자연스럽게 통합하되, 중복 내용은 한 번만 작성
-- 각 섹션은 ## 소제목으로 구분
-- 모든 핵심 정보는 반드시 "레이블: 내용" 형식으로 한 줄에 작성 (줄 바꿈 금지)
-- 사용 가능한 레이블: 직역 의역 뉘앙스 주어 서술어 목적어 조사 패턴 의미 예문 활용법 단어 상황 격식 반말 유사표현 참고
-
-${labelExample}`
-        : `Analyze the English sentence "${text}" covering these aspects. Answer in Korean.
-
-Aspects:
-${aspects}
-
-Rules:
-- Integrate naturally, mention overlapping info only once
-- Separate each section with ## heading
-- Write all key info as "레이블: content" on a single line (no line break after colon)
-- Available labels: 직역 의역 뉘앙스 주어 서술어 목적어 조사 패턴 의미 예문 활용법 단어 상황 격식 반말 유사표현 참고
-
-${labelExample}`;
-    }
-
-    try {
-      const result = await callGemini(prompt, null, { model: GEMINI_MODEL });
-      setGrammarAnalysis(result);
-      setGrammarFollowUp('');
-    } catch (err) {
-      setGrammarAnalysis('❌ 분석 중 오류가 발생했습니다: ' + err.message);
-    } finally {
-      setIsGrammarLoading(false);
-    }
-  }
-
-  async function askFollowUp() {
-    const question = grammarFollowUp.trim();
-    if (!question || isGrammarLoading || grammarFollowLoading) return;
-    setGrammarFollowLoading(true);
-    try {
-      const prompt = `원문 문장: 「${selectedRangeText}」\n기존 분석:\n${grammarAnalysis}\n\n추가 질문: ${question}\n\n위 분석 맥락에서 질문에 답변해주세요. 한국어로, 간결하게.`;
-      const answer = await callGemini(prompt, null, { model: GEMINI_MODEL });
-      setGrammarAnalysis(prev => `${prev}\n\n---\n**Q: ${question}**\n${answer}`);
-      setGrammarFollowUp('');
-    } catch {
-      toast('질문 처리에 실패했어요.', 'error');
-    } finally {
-      setGrammarFollowLoading(false);
-    }
-  }
 
   function extractSourceSentence(tokenId) {
     const sequence = json.sequence;
@@ -764,7 +522,6 @@ ${labelExample}`;
   }
 
   const json = material?.processed_json || { sequence: [], dictionary: {} };
-  const materialLang = material?.processed_json?.metadata?.language || 'Japanese';
   const status = material?.status || material?.processed_json?.status;
   const isAnalyzing = status === 'analyzing';
   const isFailed = status === 'failed';
@@ -1051,81 +808,11 @@ ${labelExample}`;
         )}
       </div>
 
-      {/* 💬 자료 댓글 */}
-      <div className="card" style={{ marginTop: '24px', padding: '24px' }}>
-        <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '20px', color: 'var(--text-primary)' }}>
-          💬 토론 {comments.length > 0 && <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: '0.88rem' }}>({comments.length})</span>}
-        </h3>
-
-        {/* 댓글 목록 */}
-        {comments.length > 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '20px' }}>
-            {comments.map(c => (
-              <div key={c.id} style={{ display: 'flex', gap: '10px' }}>
-                <div style={{
-                  width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
-                  background: 'var(--primary-glow)', display: 'flex', alignItems: 'center',
-                  justifyContent: 'center', fontSize: '0.9rem', fontWeight: 700, color: 'var(--primary-light)',
-                }}>
-                  {(c.author?.display_name || '?')[0].toUpperCase()}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>
-                      {c.author?.display_name || '익명'}
-                    </span>
-                    <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                      {new Date(c.created_at).toLocaleDateString('ko-KR')}
-                    </span>
-                  </div>
-                  <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
-                    {c.content}
-                  </p>
-                </div>
-                {user?.id === c.user_id && (
-                  <button
-                    onClick={() => deleteCommentMutation.mutate(c.id)}
-                    disabled={deleteCommentMutation.isPending}
-                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.8rem', flexShrink: 0, alignSelf: 'flex-start', padding: '4px' }}
-                    title="삭제"
-                  >✕</button>
-                )}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', marginBottom: '20px' }}>
-            첫 번째 댓글을 남겨보세요.
-          </p>
-        )}
-
-        {/* 댓글 입력 */}
-        {user ? (
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <input
-              type="text"
-              value={commentInput}
-              onChange={e => setCommentInput(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && commentInput.trim() && addCommentMutation.mutate(commentInput.trim())}
-              placeholder="이 자료에 대해 이야기해보세요..."
-              className="search-input"
-              style={{ flex: 1 }}
-              maxLength={500}
-            />
-            <Button
-              size="sm"
-              disabled={!commentInput.trim() || addCommentMutation.isPending}
-              onClick={() => addCommentMutation.mutate(commentInput.trim())}
-            >
-              {addCommentMutation.isPending ? '...' : '등록'}
-            </Button>
-          </div>
-        ) : (
-          <Link href="/auth" className="btn btn--secondary btn--sm">
-            로그인하고 댓글 남기기
-          </Link>
-        )}
-      </div>
+      <ViewerComments
+        user={user} comments={comments} commentInput={commentInput}
+        setCommentInput={setCommentInput} addCommentMutation={addCommentMutation}
+        deleteCommentMutation={deleteCommentMutation}
+      />
 
       {/* 텍스트 선택 시 플로팅 문법 해설 버튼 */}
       {selectionPopup && (
@@ -1138,381 +825,30 @@ ${labelExample}`;
         </button>
       )}
 
-      {/* Bottom Sheet */}
-      {isSheetOpen && selectedToken && (
-        <>
-          <div className="overlay" onClick={() => setIsSheetOpen(false)} />
-          <div className="bottom-sheet">
-            <div className="bottom-sheet__handle" />
-            <div className="bottom-sheet__header">
-              <span className="bottom-sheet__pos">{selectedToken.pos}</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <h3 className="bottom-sheet__word">{selectedToken.text}</h3>
-                {ttsSupported && (
-                  <button
-                    onClick={() => speak(selectedToken.text, materialLang)}
-                    title="발음 듣기"
-                    style={{
-                      background: 'var(--bg-secondary)',
-                      border: '1px solid var(--border)',
-                      borderRadius: 'var(--radius-full)',
-                      padding: '4px 10px',
-                      fontSize: '0.9rem',
-                      cursor: 'pointer',
-                      color: 'var(--text-secondary)',
-                      flexShrink: 0,
-                    }}
-                  >
-                    🔊
-                  </button>
-                )}
-              </div>
-              {selectedToken.furigana && (() => { const f = trimOkurigana(selectedToken.text, selectedToken.furigana); return f ? <span className="bottom-sheet__furigana">[{f}]</span> : null; })()}
-            </div>
-            <p className="bottom-sheet__meaning">{selectedToken.meaning || '(뜻 정보 없음)'}</p>
-            <div className="bottom-sheet__actions">
-              {saveAnim ? (
-                <div className="save-anim">
-                  <div className="save-anim__burst" aria-hidden="true">
-                    {Array.from({ length: 8 }, (_, i) => (
-                      <span key={i} className="save-anim__star" style={{ '--angle': `${i * 45}deg` }}>⭐</span>
-                    ))}
-                  </div>
-                  <span className="save-anim__check">✓ 저장 완료!</span>
-                </div>
-              ) : (
-                <>
-                  <Button variant="ghost" onClick={() => setIsSheetOpen(false)} style={{ flex: 1 }}>닫기</Button>
-                  {user ? (
-                    isWordSaved
-                      ? <Button variant="secondary" disabled style={{ flex: 2 }}>✓ 이미 저장됨</Button>
-                      : <Button onClick={addToVocab} style={{ flex: 2 }}>⭐ 단어장에 추가</Button>
-                  ) : (
-                    <Link href="/auth" className="btn btn--primary" style={{ flex: 2, justifyContent: 'center' }}>🔒 로그인하고 저장하기</Link>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
-        </>
-      )}
+      <ViewerBottomSheet
+        selectedToken={selectedToken} isSheetOpen={isSheetOpen} setIsSheetOpen={setIsSheetOpen}
+        ttsSupported={ttsSupported} speak={speak} materialLang={materialLang}
+        isWordSaved={isWordSaved} saveAnim={saveAnim} addToVocab={addToVocab}
+        user={user} trimOkurigana={trimOkurigana}
+      />
 
-      {/* Grammar Modal */}
-      {isGrammarModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <div className="modal__header">
-              <h2 className="modal__title">💡 AI 문법 해설사</h2>
-              <button onClick={() => setIsGrammarModalOpen(false)} className="modal__close">✕</button>
-            </div>
-            <div className="modal__body">
-              <div className="modal__quote">
-                {materialLang === 'Japanese'
-                  ? selectedRangeText.replace(/\s+/g, '')
-                  : selectedRangeText}
-              </div>
+      <ViewerGrammarModal
+        isOpen={isGrammarModalOpen} onClose={() => setIsGrammarModalOpen(false)}
+        selectedRangeText={selectedRangeText} materialLang={materialLang}
+        isGrammarLoading={isGrammarLoading} grammarAnalysis={grammarAnalysis}
+        checkedActions={checkedActions} setCheckedActions={setCheckedActions}
+        GRAMMAR_ACTIONS={GRAMMAR_ACTIONS} requestGrammarAnalysis={requestGrammarAnalysis}
+        grammarFollowUp={grammarFollowUp} setGrammarFollowUp={setGrammarFollowUp}
+        grammarFollowLoading={grammarFollowLoading} askFollowUp={askFollowUp}
+        saveGrammarNoteMutation={saveGrammarNoteMutation} user={user}
+      />
 
-              {/* 분석 유형 선택 */}
-              {!isGrammarLoading && (
-                <div style={{ marginBottom: '16px' }}>
-                  <div className="grammar-action-grid">
-                    {GRAMMAR_ACTIONS.map(a => {
-                      const checked = checkedActions.has(a.key);
-                      return (
-                        <button
-                          key={a.key}
-                          className={`grammar-action-btn ${checked ? 'grammar-action-btn--checked' : ''}`}
-                          onClick={() => setCheckedActions(prev => {
-                            const next = new Set(prev);
-                            if (next.has(a.key)) next.delete(a.key); else next.add(a.key);
-                            return next;
-                          })}
-                        >
-                          <span className="grammar-action-btn__check">{checked ? '✓' : ''}</span>
-                          <span className="grammar-action-btn__label">{a.label}</span>
-                          <span className="grammar-action-btn__desc">{a.desc}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                  {checkedActions.size === 0
-                    ? <p style={{ textAlign: 'center', fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '10px' }}>원하는 항목을 선택해주세요</p>
-                    : <button
-                        className="btn btn--primary"
-                        style={{ width: '100%', marginTop: '10px' }}
-                        onClick={() => requestGrammarAnalysis([...checkedActions])}
-                      >
-                        ✨ 분석 시작 ({checkedActions.size}개 선택)
-                      </button>
-                  }
-                </div>
-              )}
-
-              {isGrammarLoading
-                ? <Spinner message="AI가 문장을 해부하고 있습니다..." />
-                : grammarAnalysis && (
-                    <div className="md-body">
-                      {preprocessMd(grammarAnalysis).split('\n').map((line, i) => {
-                        const t = line.trim();
-                        if (!t) return <div key={i} className="md-gap" />;
-                        if (t.startsWith('### ')) return <h4 key={i} className="md-subsection">{t.slice(4)}</h4>;
-                        if (t.startsWith('## '))  return <h3 key={i} className="md-section">{t.slice(3)}</h3>;
-                        if (t.startsWith('# '))   return <h2 key={i} className="md-title">{t.slice(2)}</h2>;
-                        if (t === '---') return <hr key={i} className="md-rule" />;
-
-                        // 레이블: 내용 패턴 감지 → 등급별 스타일
-                        const labelMatch = t.match(/^[\*_]*([가-힣A-Za-z·~]+(?:\s[가-힣A-Za-z]+)?)[\*_]*\s*[:：]\s*(.+)/);
-                        if (labelMatch) {
-                          const label = labelMatch[1].trim();
-                          const content = labelMatch[2].trim();
-
-                          const TIER1 = ['직역','의역','주어','서술어','목적어','보어','패턴','단어','상황','격식','반말'];
-                          const TIER2 = ['예문','예시','의미','유사표현'];
-                          const TIER3 = ['뉘앙스','차이','참고','활용법','조사','Note','Nuance'];
-
-                          if (TIER1.includes(label)) {
-                            return (
-                              <div key={i} className="md-trans md-trans--main">
-                                <span className="md-trans__label">{label}</span>
-                                <span className="md-trans__text">{content}</span>
-                              </div>
-                            );
-                          }
-                          if (TIER2.includes(label)) {
-                            return (
-                              <div key={i} className="md-example">
-                                <span className="md-example__label">{label}</span>
-                                <span className="md-example__text">{content}</span>
-                              </div>
-                            );
-                          }
-                          if (TIER3.includes(label)) {
-                            return (
-                              <p key={i} className="md-nuance">
-                                <span className="md-nuance__label">{label}</span>
-                                {' '}{content}
-                              </p>
-                            );
-                          }
-                        }
-
-                        // 번호 항목: "1." "1)" "① ②" 등
-                        const numberedMatch = t.match(/^(\d+[.)]\s+|[①②③④⑤⑥⑦⑧⑨⑩]\s*)(.+)/);
-                        if (numberedMatch) {
-                          const num = numberedMatch[1].trim();
-                          const content = numberedMatch[2];
-                          const html = inlineFormat(content);
-                          return (
-                            <div key={i} className="md-numbered">
-                              <span className="md-numbered__num">{num}</span>
-                              <span dangerouslySetInnerHTML={{ __html: html }} />
-                            </div>
-                          );
-                        }
-
-                        // 불릿 항목: "- " "· "
-                        if (t.startsWith('- ') || t.startsWith('· ')) {
-                          const html = inlineFormat(t.slice(2));
-                          return <div key={i} className="md-bullet" dangerouslySetInnerHTML={{ __html: html }} />;
-                        }
-
-                        const html = inlineFormat(t);
-                        return <p key={i} className="md-p" dangerouslySetInnerHTML={{ __html: html }} />;
-                      })}
-                    </div>
-                  )
-              }
-            </div>
-            {!isGrammarLoading && grammarAnalysis && (
-              <div className="modal__footer" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <input
-                    type="text"
-                    value={grammarFollowUp}
-                    onChange={e => setGrammarFollowUp(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && askFollowUp()}
-                    placeholder="이 문장에 대해 질문하기..."
-                    className="search-input"
-                    style={{ flex: 1, fontSize: '0.88rem' }}
-                    disabled={grammarFollowLoading}
-                  />
-                  <Button size="sm" onClick={askFollowUp} disabled={!grammarFollowUp.trim() || grammarFollowLoading}>
-                    {grammarFollowLoading ? '...' : '질문'}
-                  </Button>
-                </div>
-                {user && (
-                  <button
-                    onClick={() => saveGrammarNoteMutation.mutate()}
-                    disabled={saveGrammarNoteMutation.isPending || saveGrammarNoteMutation.isSuccess}
-                    className="btn btn--secondary btn--sm"
-                  >
-                    {saveGrammarNoteMutation.isSuccess ? '✅ 저장됨' : saveGrammarNoteMutation.isPending ? '저장 중...' : '📝 노트에 저장'}
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* 이해도 퀴즈 모달 */}
-      {quizState && (
-        <div className="modal-overlay completion-overlay">
-          <div className="modal completion-modal">
-            {quizState.status === 'loading' && (
-              <>
-                <div className="completion-modal__fireworks">📝</div>
-                <h2 className="completion-modal__title">이해도 확인 중...</h2>
-                <Spinner message="AI가 퀴즈를 만들고 있어요" />
-              </>
-            )}
-
-            {quizState.status === 'active' && (() => {
-              const q = quizState.questions[quizState.currentQ];
-              return (
-                <>
-                  <div className="modal__header" style={{ borderBottom: '1px solid var(--border)', paddingBottom: '12px', marginBottom: '20px' }}>
-                    <h2 className="modal__title">📝 이해도 퀴즈</h2>
-                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                      {quizState.currentQ + 1} / {quizState.questions.length}
-                    </span>
-                  </div>
-                  <p style={{ fontSize: '1rem', fontWeight: 500, lineHeight: 1.6, marginBottom: '20px', color: 'var(--text-primary)' }}>
-                    {q.question}
-                  </p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
-                    {q.options.map((opt, i) => {
-                      const isSelected = quizState.selected === i;
-                      const isCorrect = q.answer === i;
-                      const revealed = quizState.selected !== null;
-                      let bg = 'var(--bg-secondary)';
-                      let border = 'var(--border)';
-                      if (revealed) {
-                        if (isCorrect) { bg = 'rgba(74,138,92,0.2)'; border = 'var(--accent)'; }
-                        else if (isSelected) { bg = 'rgba(200,64,64,0.15)'; border = 'rgba(200,64,64,0.5)'; }
-                      }
-                      return (
-                        <button key={i}
-                          disabled={quizState.selected !== null}
-                          onClick={() => handleQuizAnswer(i)}
-                          style={{
-                            padding: '12px 16px', background: bg,
-                            border: `1px solid ${border}`, borderRadius: 'var(--radius-md)',
-                            textAlign: 'left', cursor: revealed ? 'default' : 'pointer',
-                            fontSize: '0.92rem', color: 'var(--text-primary)',
-                            transition: 'background 0.2s, border-color 0.2s',
-                          }}
-                        >
-                          {opt}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  {quizState.selected !== null && (
-                    <Button onClick={advanceQuiz} style={{ width: '100%' }}>
-                      다음 문제 →
-                    </Button>
-                  )}
-                </>
-              );
-            })()}
-
-            {quizState.status === 'done' && (
-              <>
-                <div className="completion-modal__fireworks">
-                  {quizState.score === quizState.total ? '🏆' : quizState.score >= quizState.total / 2 ? '👍' : '📚'}
-                </div>
-                <h2 className="completion-modal__title">퀴즈 완료!</h2>
-                <p style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--accent)', margin: '12px 0' }}>
-                  {quizState.score} / {quizState.total} 정답
-                </p>
-                <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', fontSize: '0.9rem' }}>
-                  {quizState.score === quizState.total
-                    ? '완벽해요! 내용을 완전히 이해했네요.'
-                    : quizState.score >= quizState.total / 2
-                      ? '잘 읽었어요. 틀린 부분을 다시 확인해보세요.'
-                      : '단어를 복습하고 다시 읽어보세요.'}
-                </p>
-                <Button onClick={finishQuiz} style={{ width: '100%' }}>
-                  결과 확인하기 →
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* 읽기 완료 요약 모달 */}
-      {completionModal && (
-        <div className="modal-overlay completion-overlay">
-          <div className="modal completion-modal">
-            <div className="completion-modal__fireworks">🎉</div>
-            <h2 className="completion-modal__title">읽기 완료!</h2>
-            <p className="completion-modal__subtitle">{material.title}</p>
-
-            <div className="completion-stats">
-              <div className="completion-stat">
-                <span className="completion-stat__value">{completionModal.wordsSaved}</span>
-                <span className="completion-stat__label">저장한 단어</span>
-              </div>
-              <div className="completion-stat completion-stat--divider" />
-              <div className="completion-stat">
-                <span className="completion-stat__value">🔥 {completionModal.streak}</span>
-                <span className="completion-stat__label">일 연속</span>
-              </div>
-              <div className="completion-stat completion-stat--divider" />
-              {completionModal.quizTotal != null ? (
-                <div className="completion-stat">
-                  <span className="completion-stat__value" style={{ color: completionModal.quizScore === completionModal.quizTotal ? 'var(--accent)' : 'var(--text-primary)' }}>
-                    {completionModal.quizScore}/{completionModal.quizTotal}
-                  </span>
-                  <span className="completion-stat__label">퀴즈 정답</span>
-                </div>
-              ) : (
-                <div className="completion-stat">
-                  <span className="completion-stat__value">{completionModal.dueCount}</span>
-                  <span className="completion-stat__label">복습 대기 중</span>
-                </div>
-              )}
-            </div>
-
-            <div className="completion-modal__actions">
-              {completionModal.dueCount > 0 && (
-                <a href="/vocab" className="btn btn--primary btn--md">
-                  🧠 지금 복습하기 ({completionModal.dueCount}개)
-                </a>
-              )}
-
-              {nextMaterial && (
-                <a
-                  href={`/viewer/${nextMaterial.id}`}
-                  className="completion-next-card"
-                >
-                  <span className="completion-next-card__badge">다음 추천</span>
-                  <span className="completion-next-card__flag">
-                    {nextMaterial.processed_json?.metadata?.language === 'English' ? '🇬🇧' : '🇯🇵'}
-                  </span>
-                  <span className="completion-next-card__title">{nextMaterial.title}</span>
-                  <span className="completion-next-card__arrow">→</span>
-                </a>
-              )}
-
-              {!nextMaterial && completionModal.dueCount === 0 && (
-                <a href="/materials" className="btn btn--primary btn--md">
-                  📰 다른 자료 보기
-                </a>
-              )}
-
-              <button
-                onClick={() => setCompletionModal(null)}
-                className="btn btn--ghost btn--md"
-              >
-                계속 읽기
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ViewerQuizModal
+        quizState={quizState} handleQuizAnswer={handleQuizAnswer}
+        advanceQuiz={advanceQuiz} finishQuiz={finishQuiz}
+        completionModal={completionModal} setCompletionModal={setCompletionModal}
+        material={material} nextMaterial={nextMaterial}
+      />
 
       <style>{`
         .modal__content--markdown { display: flex; flex-direction: column; gap: 8px; }

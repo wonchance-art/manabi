@@ -15,9 +15,9 @@ const DAILY_CHALLENGES = [
   { icon: '📖', title: '자료 완독 도전', desc: '자료 1편을 끝까지 읽어보세요', xp: 50, href: '/materials', cta: '읽기 시작', check: (d) => d.todayReadCount >= 1 },
   { icon: '⭐', title: '단어 수집가', desc: '오늘 새 단어 10개를 모아보세요', xp: 25, href: '/materials', cta: '자료 보기', check: (d) => d.todayVocabCount >= 10 },
   { icon: '🧠', title: '복습 마라톤', desc: '단어 10개 이상 복습하세요', xp: 40, href: '/vocab', cta: '복습하기', check: (d) => d.todayReviewCount >= 10 },
-  { icon: '💬', title: '커뮤니티 참여', desc: '포럼에 글이나 댓글을 남겨보세요', xp: 20, href: '/forum', cta: '포럼 가기', check: () => false },
+  { icon: '💬', title: '커뮤니티 참여', desc: '포럼에 글이나 댓글을 남겨보세요', xp: 20, href: '/forum', cta: '포럼 가기', check: (d) => d.todayForumCount >= 1 },
   { icon: '🏆', title: '올라운드 학습자', desc: '읽기 + 복습 + 수집 모두 달성하세요', xp: 60, href: '/home', cta: '현황 보기', check: (d) => d.todayReadCount >= 1 && d.todayReviewCount >= 1 && d.todayVocabCount >= 1 },
-  { icon: '📝', title: '문법 탐구', desc: '뷰어에서 AI 문법 해설을 받아보세요', xp: 20, href: '/materials', cta: '자료 보기', check: () => false },
+  { icon: '📝', title: '문법 탐구', desc: '뷰어에서 AI 문법 해설을 받아보세요', xp: 20, href: '/materials', cta: '자료 보기', check: (d) => d.todayGrammarCount >= 1 },
 ];
 
 function getDailyChallenge() {
@@ -58,6 +58,9 @@ async function fetchHomeData(userId) {
     { data: recentProgress },
     suggestionsRes,
     { data: readProgressRows },
+    { count: todayForumPosts },
+    { count: todayForumComments },
+    { count: todayGrammarCount },
   ] = await Promise.all([
     supabase.from('user_vocabulary').select('*', { count: 'exact', head: true })
       .eq('user_id', userId).lte('next_review_at', now),
@@ -69,6 +72,12 @@ async function fetchHomeData(userId) {
     fetch('/api/suggestions/today').then(r => r.ok ? r.json() : []),
     supabase.from('reading_progress').select('completed_at')
       .eq('user_id', userId).eq('is_completed', true).gte('completed_at', weekStartISO),
+    supabase.from('forum_posts').select('*', { count: 'exact', head: true })
+      .eq('author_id', userId).gte('created_at', todayStart),
+    supabase.from('forum_comments').select('*', { count: 'exact', head: true })
+      .eq('author_id', userId).gte('created_at', todayStart),
+    supabase.from('grammar_notes').select('*', { count: 'exact', head: true })
+      .eq('user_id', userId).gte('created_at', todayStart),
   ]);
 
   const rows = vocabRows || [];
@@ -96,6 +105,8 @@ async function fetchHomeData(userId) {
     todayVocabCount,
     todayReviewCount,
     todayReadCount,
+    todayForumCount:  (todayForumPosts || 0) + (todayForumComments || 0),
+    todayGrammarCount: todayGrammarCount || 0,
     recentProgress:   (recentProgress || []).slice(0, 4),
     suggestions:      suggestionsRes || [],
     weekVocab,
@@ -348,6 +359,8 @@ export default function HomePage() {
           todayVocabCount: todayVocab,
           todayReviewCount: todayReviews,
           todayReadCount: todayReads,
+          todayForumCount: data.todayForumCount ?? 0,
+          todayGrammarCount: data.todayGrammarCount ?? 0,
         });
         const storageKey = `as_challenge_${new Date().toISOString().slice(0, 10)}`;
         const claimed = typeof window !== 'undefined' && localStorage.getItem(storageKey) === '1';
