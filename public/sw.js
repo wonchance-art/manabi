@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anatomy-studio-v1';
+const CACHE_NAME = 'anatomy-studio-v202604132240';
 
 const PRECACHE_URLS = [
   '/',
@@ -13,7 +13,12 @@ const STATIC_EXTENSIONS = /\.(js|css|woff2?|ttf|otf|svg|png|jpg|ico|webp)$/;
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_URLS))
+    caches.open(CACHE_NAME).then((cache) =>
+      // 개별 요청으로 실패해도 설치 자체는 성공시킴
+      Promise.all(PRECACHE_URLS.map(url =>
+        cache.add(url).catch(err => console.warn('[sw] precache failed:', url, err?.message))
+      ))
+    )
   );
   self.skipWaiting();
 });

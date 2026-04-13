@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/update-sw-version.mjs",
     "build": "next build",
     "start": "next start",
     "test": "vitest run"

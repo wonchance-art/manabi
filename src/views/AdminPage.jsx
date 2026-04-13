@@ -133,6 +133,17 @@ export default function AdminPage() {
     refetchInterval: analyzingId ? 5000 : false,
   });
 
+  const { data: geminiStats, isLoading: statsLoading, refetch: refetchStats } = useQuery({
+    queryKey: ['admin-gemini-stats'],
+    queryFn: async () => {
+      const res = await fetch('/api/gemini');
+      if (!res.ok) throw new Error('통계 로드 실패');
+      return res.json();
+    },
+    enabled: tab === 'gemini',
+    refetchInterval: tab === 'gemini' ? 10000 : false,
+  });
+
   // 역할 변경
   const rolemutation = useMutation({
     mutationFn: async ({ userId, role }) => {
@@ -302,6 +313,7 @@ export default function AdminPage() {
           { key: 'forum',     label: '💬 포럼 관리' },
           { key: 'sources',   label: '📡 콘텐츠 소스' },
           { key: 'starters',  label: '🌱 스타터 콘텐츠' },
+          { key: 'gemini',    label: '✨ Gemini 통계' },
         ].map(t => (
           <button
             key={t.key}
@@ -710,6 +722,70 @@ export default function AdminPage() {
                 </div>
               );
             })}
+          </div>
+        )
+      )}
+
+      {/* ── Gemini 통계 ── */}
+      {tab === 'gemini' && (
+        statsLoading ? <Spinner message="통계 로딩 중..." /> : (
+          <div>
+            <div className="admin-table-header" style={{ marginBottom: 20 }}>
+              <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+                현재 서버리스 인스턴스 기준 (재시작 시 초기화) · 10초마다 자동 갱신
+              </span>
+              <Button size="sm" variant="ghost" onClick={() => refetchStats()}>🔄 새로고침</Button>
+            </div>
+
+            {geminiStats && (
+              <>
+                {/* 주요 지표 */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 20 }}>
+                  {[
+                    { label: '총 요청', value: geminiStats.total, color: 'var(--primary)' },
+                    { label: '성공', value: geminiStats.ok, color: 'var(--accent)' },
+                    { label: '에러', value: geminiStats.errors, color: 'var(--danger)' },
+                    { label: '레이트 리밋', value: geminiStats.rateLimited, color: 'var(--warning)' },
+                    { label: '폴백 사용', value: geminiStats.fallbackUsed, color: 'var(--warning)' },
+                    { label: '평균 레이턴시', value: `${geminiStats.avgLatencyMs}ms`, color: 'var(--text-primary)' },
+                    { label: '에러율', value: `${geminiStats.errorRatePct}%`, color: geminiStats.errorRatePct > 5 ? 'var(--danger)' : 'var(--text-primary)' },
+                    { label: '인스턴스 가동', value: `${geminiStats.uptimeMinutes}분`, color: 'var(--text-muted)' },
+                  ].map(s => (
+                    <div key={s.label} className="card" style={{ padding: 14 }}>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 4 }}>{s.label}</div>
+                      <div style={{ fontSize: '1.4rem', fontWeight: 700, color: s.color }}>{s.value}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* HTTP 상태별 에러 분포 */}
+                {Object.keys(geminiStats.errorByStatus || {}).length > 0 && (
+                  <div className="card" style={{ padding: 16 }}>
+                    <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: 12 }}>HTTP 상태별 에러</h3>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+                      {Object.entries(geminiStats.errorByStatus).map(([status, count]) => (
+                        <div key={status} style={{
+                          padding: '6px 14px', borderRadius: 'var(--radius-full)',
+                          background: 'var(--bg-secondary)',
+                          fontSize: '0.85rem',
+                        }}>
+                          <strong style={{ color: status.startsWith('4') ? 'var(--warning)' : 'var(--danger)' }}>
+                            {status}
+                          </strong>
+                          : {count}회
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 16, lineHeight: 1.6 }}>
+                  💡 이 통계는 <strong>현재 서버리스 인스턴스 메모리</strong>에만 저장됩니다.
+                  Vercel 등 서버리스 환경에서는 각 인스턴스가 독립적이며 재시작 시 초기화됩니다.
+                  장기 추적이 필요하면 Vercel Logs나 외부 모니터링(Sentry, Axiom) 연동이 필요합니다.
+                </p>
+              </>
+            )}
           </div>
         )
       )}
