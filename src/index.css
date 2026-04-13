@@ -26,7 +26,7 @@
   /* Text */
   --text-primary: #F4EDE4;
   --text-secondary: #A8917A;
-  --text-muted: #6B5440;
+  --text-muted: #8A7055; /* WCAG 개선: 6B5440 → 8A7055 (대비 2.4 → 3.4) */
 
   /* Chrome components */
   --gnb-bg: rgba(26, 20, 16, 0.90);
@@ -58,7 +58,11 @@
 
   --text-primary: #261A0E;
   --text-secondary: #6B5040;
-  --text-muted: #9E8270;
+  --text-muted: #7C6450; /* WCAG 개선: 9E8270 → 7C6450 (3.2 → 4.8) */
+
+  /* WCAG 개선: 라이트 모드에서 링크/강조색 대비 강화 */
+  --primary-light: #B85A30; /* E07848 → B85A30 (3.0 → 4.8) */
+  --accent: #3A6D49;        /* 4A8A5C → 3A6D49 (3.3 → 5.0) */
 
   --gnb-bg: rgba(245, 239, 230, 0.92);
   --mobile-nav-bg: rgba(237, 228, 216, 0.98);
@@ -89,6 +93,12 @@ body {
 a {
   text-decoration: none;
   color: inherit;
+}
+
+/* 접근성: 포커스 시 반드시 밑줄 — 색 대비만으로 링크 식별 의존 낮춤 */
+a:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 button {
@@ -1798,6 +1808,36 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .bottom-sheet__actions {
   display: flex;
   gap: 10px;
+}
+
+.bottom-sheet__edit {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.bottom-sheet__edit-header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.bottom-sheet__edit-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.bottom-sheet__edit-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+.bottom-sheet__edit-label span:first-child {
+  min-width: 52px;
+  font-weight: 600;
+}
+.bottom-sheet__edit-label input {
+  flex: 1;
 }
 
 /* Modal */
