@@ -5,18 +5,27 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import Button from '../components/Button';
 import ConfirmModal from '../components/ConfirmModal';
-import { getPdfMetadata, extractPageRange, suggestChunkSize } from '../lib/pdfExtract';
+import { getPdfMetadata, extractPageRange, ocrPageRange, suggestChunkSize, renderPageAsBase64 } from '../lib/pdfExtract';
+import { getCachedPdf, cachePdf, removeCachedPdf } from '../lib/pdfCache';
 
 const MAX_PDF_SIZE = 50 * 1024 * 1024; // 50MB
 
 async function fetchMyPdfs(userId) {
   const { data, error } = await supabase
     .from('uploaded_pdfs')
-    .select('id, title, filename, page_count, language, level, last_page_read, created_at')
+    .select('id, title, filename, page_count, language, level, last_page_read, created_at, thumbnail_path')
     .eq('owner_id', userId)
     .order('created_at', { ascending: false });
   if (error) throw error;
   return data || [];
+}
+
+/** base64 → Blob */
+function base64ToBlob(base64, mimeType = 'image/jpeg') {
+  const bytes = atob(base64);
+  const arr = new Uint8Array(bytes.length);
+  for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+  return new Blob([arr], { type: mimeType });
 }
 
 async function fetchPdfAnalyzedRanges(pdfId) {
@@ -43,6 +52,8 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady }) {
   const [expandedPdfId, setExpandedPdfId] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [agreedCopyright, setAgreedCopyright] = useState(false);
+  const [useOcr, setUseOcr] = useState(false);
+  const [ocrProgress, setOcrProgress] = useState(null); // { current, total, pageNum }
 
   const { data: pdfs = [], refetch } = useQuery({
     queryKey: ['my-pdfs', user?.id],
@@ -58,11 +69,16 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady }) {
 
   const deletePdfMutation = useMutation({
     mutationFn: async (pdf) => {
-      // Storage에서 먼저 삭제
+      // Storage에서 PDF + 썸네일 삭제
+      const paths = [pdf.storage_path];
+      if (pdf.thumbnail_path) paths.push(pdf.thumbnail_path);
       const { error: storageErr } = await supabase.storage
         .from('user-pdfs')
-        .remove([pdf.storage_path]);
+        .remove(paths);
       if (storageErr) console.warn('[pdf delete] storage error:', storageErr.message);
+
+      // IndexedDB 캐시 제거
+      removeCachedPdf(pdf.id).catch(() => {});
 
       // DB 삭제 (CASCADE로 연결된 reading_materials도 함께 삭제됨)
       const { error } = await supabase.from('uploaded_pdfs').delete().eq('id', pdf.id);
@@ -97,12 +113,17 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady }) {
     try {
       // 1. 메타데이터 먼저 읽기 (페이지 수, 스캔본 감지)
       const buffer = await file.arrayBuffer();
-      const { pageCount, isLikelyScanned } = await getPdfMetadata(buffer);
+      const { pageCount, isLikelyScanned, avgCharsPerPage } = await getPdfMetadata(buffer);
 
       if (isLikelyScanned) {
-        toast('이 PDF는 이미지 기반으로 보여요. 텍스트가 포함된 PDF를 올려주세요.', 'warning', 6000);
-        setUploading(false);
-        return;
+        toast(
+          `📷 스캔본으로 감지됐어요 (페이지당 평균 ${avgCharsPerPage}자). OCR 모드로 추출합니다. 시간이 조금 더 걸려요.`,
+          'info',
+          6000,
+        );
+        setUseOcr(true);
+      } else {
+        setUseOcr(false);
       }
 
       // 2. Storage 업로드
@@ -113,7 +134,22 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady }) {
         .upload(storagePath, file, { contentType: 'application/pdf' });
       if (uploadErr) throw uploadErr;
 
-      // 3. uploaded_pdfs insert
+      // 3. 첫 페이지 썸네일 생성 + 업로드 (실패해도 본 업로드는 성공 처리)
+      let thumbnailPath = null;
+      try {
+        const { doc } = await getPdfMetadata(buffer);
+        const thumbBase64 = await renderPageAsBase64(doc, 1, 400); // 작게 렌더
+        const thumbBlob = base64ToBlob(thumbBase64, 'image/jpeg');
+        thumbnailPath = `${user.id}/${pdfId}_thumb.jpg`;
+        const { error: thumbErr } = await supabase.storage
+          .from('user-pdfs')
+          .upload(thumbnailPath, thumbBlob, { contentType: 'image/jpeg' });
+        if (thumbErr) { console.warn('[pdf thumbnail]', thumbErr.message); thumbnailPath = null; }
+      } catch (err) {
+        console.warn('[pdf thumbnail] failed:', err?.message);
+      }
+
+      // 4. uploaded_pdfs insert
       const title = file.name.replace(/\.pdf$/i, '');
       const { data: inserted, error: insertErr } = await supabase
         .from('uploaded_pdfs')
@@ -125,6 +161,7 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady }) {
           storage_path: storagePath,
           file_size_bytes: file.size,
           page_count: pageCount,
+          thumbnail_path: thumbnailPath,
         })
         .select()
         .single();
@@ -149,16 +186,35 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady }) {
   const handleExtractAndAnalyze = async () => {
     if (!activePdf) return;
     setExtractingRange(true);
+    setOcrProgress(null);
     try {
-      // Storage에서 PDF 다운로드
-      const { data: signed } = await supabase.storage
-        .from('user-pdfs')
-        .createSignedUrl(activePdf.storage_path, 60);
-      if (!signed?.signedUrl) throw new Error('PDF 접근 실패');
+      // 1차: IndexedDB 캐시 확인
+      let buffer = await getCachedPdf(activePdf.id);
 
-      const res = await fetch(signed.signedUrl);
-      const buffer = await res.arrayBuffer();
-      const text = await extractPageRange(buffer, pageStart, pageEnd);
+      if (!buffer) {
+        // 캐시 없으면 Storage에서 다운로드
+        const { data: signed } = await supabase.storage
+          .from('user-pdfs')
+          .createSignedUrl(activePdf.storage_path, 60);
+        if (!signed?.signedUrl) throw new Error('PDF 접근 실패');
+
+        const res = await fetch(signed.signedUrl);
+        buffer = await res.arrayBuffer();
+        // 캐시에 저장 (실패해도 진행)
+        cachePdf(activePdf.id, buffer).catch(() => {});
+      }
+
+      let text;
+      if (useOcr) {
+        // OCR 경로: pdfjs doc 먼저 로드
+        const { getPdfMetadata } = await import('../lib/pdfExtract');
+        const { doc } = await getPdfMetadata(buffer);
+        text = await ocrPageRange(doc, pageStart, pageEnd, (current, total, pageNum) => {
+          setOcrProgress({ current, total, pageNum });
+        });
+      } else {
+        text = await extractPageRange(buffer, pageStart, pageEnd);
+      }
 
       if (!text || text.length < 30) {
         toast('이 범위에서 추출된 텍스트가 너무 적어요. 다른 페이지를 시도해보세요.', 'warning');
@@ -176,11 +232,12 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady }) {
         pageEnd,
         rawText: text,
       });
-      setActivePdf(null); // 모달 닫기
+      setActivePdf(null);
     } catch (err) {
       toast('텍스트 추출 실패: ' + err.message, 'error');
     } finally {
       setExtractingRange(false);
+      setOcrProgress(null);
     }
   };
 
@@ -256,9 +313,12 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady }) {
                 borderRadius: 'var(--radius-md)', border: '1px solid var(--border)',
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+                  {pdf.thumbnail_path && (
+                    <PdfThumbnail path={pdf.thumbnail_path} title={pdf.title} />
+                  )}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 600, fontSize: '0.92rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      📘 {pdf.title}
+                      {!pdf.thumbnail_path && '📘 '}{pdf.title}
                     </div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 2 }}>
                       {pdf.page_count}페이지 · {new Date(pdf.created_at).toLocaleDateString('ko-KR')}
@@ -331,16 +391,63 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady }) {
               </span>
             </div>
 
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 16 }}>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 12 }}>
               💡 너무 많은 페이지는 분석에 시간이 오래 걸려요. 5~10페이지가 적절합니다.
             </p>
+
+            {/* OCR 토글 */}
+            <label style={{
+              display: 'flex', alignItems: 'flex-start', gap: 8,
+              padding: '10px 12px', marginBottom: 12,
+              background: useOcr ? 'var(--primary-glow)' : 'var(--bg-secondary)',
+              borderRadius: 'var(--radius-md)',
+              border: `1px solid ${useOcr ? 'var(--primary)' : 'var(--border)'}`,
+              cursor: 'pointer', fontSize: '0.82rem',
+            }}>
+              <input
+                type="checkbox"
+                checked={useOcr}
+                onChange={e => setUseOcr(e.target.checked)}
+                style={{ marginTop: 2 }}
+              />
+              <div>
+                <div style={{ fontWeight: 600 }}>
+                  📷 OCR 모드 (이미지 기반 PDF)
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 2 }}>
+                  스캔본·이미지 PDF용. 페이지마다 AI가 텍스트를 읽어요. 추출에 페이지당 3~10초 소요.
+                </div>
+              </div>
+            </label>
+
+            {/* 진행률 */}
+            {ocrProgress && (
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: 4 }}>
+                  <span>📷 OCR 진행 중 (p.{ocrProgress.pageNum})</span>
+                  <span style={{ fontWeight: 700 }}>{ocrProgress.current}/{ocrProgress.total}</span>
+                </div>
+                <div style={{ height: 6, background: 'var(--bg-secondary)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
+                  <div style={{
+                    height: '100%',
+                    width: `${(ocrProgress.current / ocrProgress.total) * 100}%`,
+                    background: 'var(--primary-light)',
+                    transition: 'width 0.3s',
+                  }} />
+                </div>
+              </div>
+            )}
 
             <div style={{ display: 'flex', gap: 8 }}>
               <Button variant="ghost" onClick={() => setActivePdf(null)} disabled={extractingRange} style={{ flex: 1 }}>
                 건너뛰기
               </Button>
               <Button onClick={handleExtractAndAnalyze} disabled={extractingRange} style={{ flex: 2 }}>
-                {extractingRange ? '텍스트 추출 중...' : `p.${pageStart}-${pageEnd} 가져오기 →`}
+                {extractingRange
+                  ? (useOcr ? '📷 OCR 추출 중...' : '텍스트 추출 중...')
+                  : useOcr
+                    ? `🤖 OCR로 p.${pageStart}-${pageEnd} 추출 →`
+                    : `p.${pageStart}-${pageEnd} 가져오기 →`}
               </Button>
             </div>
           </div>
@@ -401,6 +508,45 @@ function PdfRangesList({ pdfId }) {
         );
       })}
     </div>
+  );
+}
+
+/** 썸네일 표시 — signed URL 요청 후 캐시 */
+function PdfThumbnail({ path, title }) {
+  const { data: url } = useQuery({
+    queryKey: ['pdf-thumb', path],
+    queryFn: async () => {
+      const { data } = await supabase.storage
+        .from('user-pdfs')
+        .createSignedUrl(path, 60 * 60); // 1시간
+      return data?.signedUrl || null;
+    },
+    staleTime: 1000 * 60 * 50, // 50분 (만료 전)
+  });
+
+  if (!url) {
+    return <div style={{
+      width: 44, height: 56,
+      background: 'var(--bg-primary)', border: '1px solid var(--border)',
+      borderRadius: 4, flexShrink: 0,
+      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem',
+    }}>📘</div>;
+  }
+
+  return (
+    /* eslint-disable-next-line @next/next/no-img-element */
+    <img
+      src={url}
+      alt={`${title} 미리보기`}
+      style={{
+        width: 44, height: 56,
+        objectFit: 'cover',
+        borderRadius: 4,
+        border: '1px solid var(--border)',
+        flexShrink: 0,
+      }}
+      loading="lazy"
+    />
   );
 }
 

@@ -17,7 +17,7 @@ async function loadPdfjs() {
   return _pdfjsPromise;
 }
 
-/** PDF 메타데이터 (페이지 수 + 첫 페이지 샘플 텍스트) */
+/** PDF 메타데이터 (페이지 수 + 스캔본 감지) */
 export async function getPdfMetadata(fileOrBuffer) {
   const pdfjs = await loadPdfjs();
   const data = fileOrBuffer instanceof File
@@ -26,21 +26,31 @@ export async function getPdfMetadata(fileOrBuffer) {
   const doc = await pdfjs.getDocument({ data: new Uint8Array(data) }).promise;
   const pageCount = doc.numPages;
 
-  // 첫 페이지 텍스트 샘플 (스캔본 감지용)
-  let firstPageText = '';
-  try {
-    const page = await doc.getPage(1);
-    const textContent = await page.getTextContent();
-    firstPageText = textContent.items.map(it => it.str || '').join('');
-  } catch {
-    firstPageText = '';
+  // 최대 3페이지 샘플링하여 스캔본 감지 정확도 향상
+  // (표지/백지가 첫 페이지인 경우 오판 방지)
+  const samplePagesToCheck = Math.min(3, pageCount);
+  let totalChars = 0;
+  let sampleText = '';
+  for (let i = 1; i <= samplePagesToCheck; i++) {
+    try {
+      const page = await doc.getPage(i);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items.map(it => it.str || '').join('');
+      totalChars += pageText.replace(/\s/g, '').length;
+      if (i === 1) sampleText = pageText;
+    } catch {/* ignore */}
   }
 
+  // 페이지당 평균 50자 미만이면 스캔본으로 판단
+  const avgCharsPerPage = totalChars / samplePagesToCheck;
+  const isLikelyScanned = avgCharsPerPage < 50;
+
   return {
-    doc, // caller가 재사용 가능
+    doc,
     pageCount,
-    firstPageText,
-    isLikelyScanned: firstPageText.replace(/\s/g, '').length < 50,
+    firstPageText: sampleText,
+    isLikelyScanned,
+    avgCharsPerPage: Math.round(avgCharsPerPage),
   };
 }
 
@@ -163,4 +173,77 @@ export function suggestChunkSize(totalPages) {
   if (totalPages <= 10) return totalPages;
   if (totalPages <= 50) return 5;
   return 3;
+}
+
+/**
+ * PDF 한 페이지를 PNG base64로 렌더링 (OCR용)
+ * @param {*} doc pdfjs 문서 객체
+ * @param {number} pageNum 1-based
+ * @param {number} maxWidth 이미지 최대 너비 (리사이즈)
+ * @returns base64 문자열 (prefix 'data:image/png;base64,' 제거됨)
+ */
+export async function renderPageAsBase64(doc, pageNum, maxWidth = 1024) {
+  const page = await doc.getPage(pageNum);
+  const viewport = page.getViewport({ scale: 1 });
+  const scale = Math.min(2, maxWidth / viewport.width);
+  const scaledViewport = page.getViewport({ scale });
+
+  const canvas = document.createElement('canvas');
+  canvas.width = scaledViewport.width;
+  canvas.height = scaledViewport.height;
+  const ctx = canvas.getContext('2d');
+
+  await page.render({ canvas, canvasContext: ctx, viewport: scaledViewport }).promise;
+
+  // PNG → JPEG (크기 절감, 품질 0.85)
+  return canvas.toDataURL('image/jpeg', 0.85).replace(/^data:image\/jpeg;base64,/, '');
+}
+
+/**
+ * Gemini Vision으로 페이지 OCR (한 페이지씩 순차 호출)
+ * @param {*} doc pdfjs 문서
+ * @param {number} pageStart 1-based
+ * @param {number} pageEnd 1-based
+ * @param {Function} onProgress(current, total, pageNum) 진행 콜백
+ */
+export async function ocrPageRange(doc, pageStart, pageEnd, onProgress) {
+  const pages = [];
+  const total = pageEnd - pageStart + 1;
+
+  for (let i = pageStart; i <= pageEnd; i++) {
+    onProgress?.(i - pageStart, total, i);
+    const base64 = await renderPageAsBase64(doc, i);
+
+    const prompt = `이 이미지는 책의 한 페이지입니다. 원문 텍스트를 정확히 추출해 그대로 돌려주세요.
+
+규칙:
+- 페이지 번호, 헤더, 푸터는 제외
+- 원본의 줄바꿈을 최대한 유지
+- 문자만 출력 (설명/주석/코드펜스 금지)
+- 일본어는 한자/가나 그대로, 영어는 영어 그대로
+- 이미지에 텍스트가 없거나 읽을 수 없으면 빈 문자열 반환`;
+
+    const res = await fetch('/api/gemini', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [
+            { text: prompt },
+            { inline_data: { mime_type: 'image/jpeg', data: base64 } },
+          ],
+        }],
+        generationConfig: { temperature: 0 },
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error?.message || `페이지 ${i} OCR 실패`);
+
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    pages.push({ pageNumber: i, lines: text.split('\n').filter(l => l.trim()) });
+  }
+
+  onProgress?.(total, total, pageEnd);
+  return postProcessPages(pages);
 }

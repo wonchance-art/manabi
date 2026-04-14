@@ -192,16 +192,31 @@ export default function ViewerPage() {
       if (nextStart > sourcePdf.page_count) throw new Error('PDF 끝에 도달했습니다.');
       const nextEnd = Math.min(nextStart + chunkSize - 1, sourcePdf.page_count);
 
-      const { extractPageRange } = await import('../lib/pdfExtract');
+      const { extractPageRange, getPdfMetadata, ocrPageRange } = await import('../lib/pdfExtract');
+      const { getCachedPdf, cachePdf } = await import('../lib/pdfCache');
 
-      // Storage에서 다운로드 → 추출
-      const { data: signed } = await supabase.storage
-        .from('user-pdfs')
-        .createSignedUrl(sourcePdf.storage_path, 60);
-      if (!signed?.signedUrl) throw new Error('PDF 접근 실패');
-      const res = await fetch(signed.signedUrl);
-      const buffer = await res.arrayBuffer();
-      const text = await extractPageRange(buffer, nextStart, nextEnd);
+      // 캐시 먼저, 없으면 Storage에서 다운로드
+      let buffer = await getCachedPdf(sourcePdf.id);
+      if (!buffer) {
+        const { data: signed } = await supabase.storage
+          .from('user-pdfs')
+          .createSignedUrl(sourcePdf.storage_path, 60);
+        if (!signed?.signedUrl) throw new Error('PDF 접근 실패');
+        const res = await fetch(signed.signedUrl);
+        buffer = await res.arrayBuffer();
+        cachePdf(sourcePdf.id, buffer).catch(() => {});
+      }
+
+      // 1차: 일반 추출 시도
+      let text = await extractPageRange(buffer, nextStart, nextEnd);
+
+      // 텍스트가 너무 적으면 OCR 자동 폴백
+      if (!text || text.length < 30) {
+        toast('📷 스캔본으로 감지 — OCR로 재시도합니다 (시간이 걸려요)', 'info', 4000);
+        const { doc } = await getPdfMetadata(buffer);
+        text = await ocrPageRange(doc, nextStart, nextEnd);
+      }
+
       if (!text || text.length < 30) throw new Error('추출된 텍스트가 너무 적습니다.');
 
       // 새 material 생성
