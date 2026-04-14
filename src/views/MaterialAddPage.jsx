@@ -8,6 +8,7 @@ import { useToast } from '../lib/ToastContext';
 import Button from '../components/Button';
 import { analyzeText } from '../lib/analyzeText';
 import { LEVELS } from '../lib/constants';
+import MaterialAddPdfSection from './MaterialAddPdfSection';
 
 // --- Component ---
 export default function MaterialAddPage() {
@@ -22,6 +23,23 @@ export default function MaterialAddPage() {
   const [language, setLanguage] = useState('Japanese');
   const [level, setLevel] = useState('N3 중급');
   const [isSuggestionLoading, setIsSuggestionLoading] = useState(false);
+  const [pdfSource, setPdfSource] = useState(null); // { pdf, pageStart, pageEnd }
+
+  // PDF에서 텍스트가 추출되면 폼에 주입
+  const handlePdfRangeReady = ({ pdf, pageStart, pageEnd, rawText: extractedText }) => {
+    setPdfSource({ pdf, pageStart, pageEnd });
+    setTitle(`${pdf.title} (p.${pageStart}-${pageEnd})`);
+    setRawText(extractedText);
+    if (pdf.language) setLanguage(pdf.language);
+    if (pdf.level) setLevel(pdf.level);
+    setVisibility('private'); // PDF 출처는 항상 private
+    toast('추출 완료! 아래에서 확인 후 분석을 시작하세요.', 'success');
+    // 스크롤 텍스트 영역으로
+    setTimeout(() => {
+      const el = document.querySelector('.form-textarea');
+      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 200);
+  };
 
   // 추천 자료에서 진입 시 자동 폼 채우기
   useEffect(() => {
@@ -68,10 +86,30 @@ export default function MaterialAddPage() {
         sequence: [], dictionary: {}, last_idx: -1, status: "analyzing",
         metadata: { language, level, updated_at: new Date().toISOString() }
       };
+      const materialRow = {
+        title: title || "제목 없음",
+        raw_text: rawText,
+        processed_json: initJson,
+        visibility: pdfSource ? 'private' : visibility, // PDF 출처는 강제 private
+        owner_id: user.id,
+        ...(pdfSource ? {
+          source_pdf_id: pdfSource.pdf.id,
+          page_start: pdfSource.pageStart,
+          page_end: pdfSource.pageEnd,
+        } : {}),
+      };
       const { data, error: insertError } = await supabase
         .from('reading_materials')
-        .insert([{ title: title || "제목 없음", raw_text: rawText, processed_json: initJson, visibility, owner_id: user.id }])
+        .insert([materialRow])
         .select();
+
+      // PDF의 last_page_read 업데이트
+      if (pdfSource && !insertError) {
+        supabase.from('uploaded_pdfs')
+          .update({ last_page_read: pdfSource.pageEnd })
+          .eq('id', pdfSource.pdf.id)
+          .then(() => {});
+      }
 
       if (insertError) throw insertError;
 
@@ -162,7 +200,43 @@ export default function MaterialAddPage() {
         <p className="page-header__subtitle">AI가 문장을 형태소 단위로 해부해 드립니다</p>
       </div>
 
+      <MaterialAddPdfSection
+        user={user}
+        toast={toast}
+        onRangeReady={handlePdfRangeReady}
+      />
+
       <div className="card add-form">
+        {/* PDF 출처 배지 */}
+        {pdfSource && (
+          <div style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            padding: '10px 14px', marginBottom: 16,
+            background: 'var(--primary-glow)', border: '1px solid var(--primary)',
+            borderRadius: 'var(--radius-md)',
+          }}>
+            <div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 700 }}>
+                📘 PDF 출처
+              </div>
+              <div style={{ fontSize: '0.88rem', marginTop: 2 }}>
+                {pdfSource.pdf.title} · p.{pdfSource.pageStart}-{pdfSource.pageEnd}
+              </div>
+            </div>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setPdfSource(null);
+                setTitle('');
+                setRawText('');
+              }}
+            >
+              ✕ 해제
+            </Button>
+          </div>
+        )}
+
         {/* Title */}
         <div className="form-field">
           <label className="form-label">제목</label>
@@ -178,17 +252,22 @@ export default function MaterialAddPage() {
         {/* Visibility + Language */}
         <div className="form-row">
           <div className="form-field">
-            <label className="form-label">공개 범위</label>
+            <label className="form-label">
+              공개 범위
+              {pdfSource && <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginLeft: 6 }}>(PDF 출처는 Private 고정)</span>}
+            </label>
             <div className="toggle-group">
               <button
-                onClick={() => setVisibility('private')}
+                onClick={() => !pdfSource && setVisibility('private')}
                 className={`toggle-btn ${visibility === 'private' ? 'toggle-btn--primary' : ''}`}
+                disabled={!!pdfSource}
               >
                 🔒 Private
               </button>
               <button
-                onClick={() => setVisibility('public')}
+                onClick={() => !pdfSource && setVisibility('public')}
                 className={`toggle-btn ${visibility === 'public' ? 'toggle-btn--accent' : ''}`}
+                disabled={!!pdfSource}
               >
                 🌐 Public
               </button>

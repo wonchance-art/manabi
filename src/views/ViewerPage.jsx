@@ -170,6 +170,77 @@ export default function ViewerPage() {
     staleTime: 1000 * 60 * 5,
   });
 
+  // PDF 출처 메타 (있으면)
+  const { data: sourcePdf } = useQuery({
+    queryKey: ['source-pdf', material?.source_pdf_id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('uploaded_pdfs')
+        .select('id, title, page_count, storage_path, language, level')
+        .eq('id', material.source_pdf_id)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!material?.source_pdf_id,
+  });
+
+  // 다음 범위 분석 (PDF 출처일 때만)
+  const nextRangeMutation = useMutation({
+    mutationFn: async ({ chunkSize = 5 } = {}) => {
+      if (!sourcePdf || !material?.page_end) throw new Error('PDF 출처 정보 없음');
+      const nextStart = material.page_end + 1;
+      if (nextStart > sourcePdf.page_count) throw new Error('PDF 끝에 도달했습니다.');
+      const nextEnd = Math.min(nextStart + chunkSize - 1, sourcePdf.page_count);
+
+      const { extractPageRange } = await import('../lib/pdfExtract');
+
+      // Storage에서 다운로드 → 추출
+      const { data: signed } = await supabase.storage
+        .from('user-pdfs')
+        .createSignedUrl(sourcePdf.storage_path, 60);
+      if (!signed?.signedUrl) throw new Error('PDF 접근 실패');
+      const res = await fetch(signed.signedUrl);
+      const buffer = await res.arrayBuffer();
+      const text = await extractPageRange(buffer, nextStart, nextEnd);
+      if (!text || text.length < 30) throw new Error('추출된 텍스트가 너무 적습니다.');
+
+      // 새 material 생성
+      const initJson = {
+        sequence: [], dictionary: {}, last_idx: -1, status: 'analyzing',
+        metadata: {
+          language: sourcePdf.language || 'Japanese',
+          level: sourcePdf.level,
+          updated_at: new Date().toISOString(),
+        },
+      };
+      const { data: inserted, error } = await supabase
+        .from('reading_materials')
+        .insert({
+          title: `${sourcePdf.title} (p.${nextStart}-${nextEnd})`,
+          raw_text: text,
+          processed_json: initJson,
+          visibility: 'private',
+          owner_id: user.id,
+          source_pdf_id: sourcePdf.id,
+          page_start: nextStart,
+          page_end: nextEnd,
+        })
+        .select()
+        .single();
+      if (error) throw error;
+
+      // last_page_read 업데이트 (fire-and-forget)
+      supabase.from('uploaded_pdfs').update({ last_page_read: nextEnd }).eq('id', sourcePdf.id).then(() => {});
+
+      return inserted;
+    },
+    onSuccess: (inserted) => {
+      toast('📖 다음 범위를 분석합니다!', 'success');
+      window.location.href = `/viewer/${inserted.id}`;
+    },
+    onError: (err) => toast('다음 범위 생성 실패: ' + err.message, 'error'),
+  });
+
   const { data: readingProgress } = useQuery({
     queryKey: ['reading-progress', user?.id, id],
     queryFn: async () => {
@@ -586,6 +657,40 @@ export default function ViewerPage() {
           </Link>
         )}
       </header>
+
+      {/* PDF 출처 배지 + 다음 범위 분석 */}
+      {sourcePdf && material.page_start && (
+        <div style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          padding: '10px 14px', marginBottom: 12,
+          background: 'var(--primary-glow)', border: '1px solid var(--primary)',
+          borderRadius: 'var(--radius-md)', flexWrap: 'wrap', gap: 10,
+        }}>
+          <div>
+            <div style={{ fontSize: '0.72rem', color: 'var(--primary)', fontWeight: 700 }}>
+              📘 PDF 출처
+            </div>
+            <div style={{ fontSize: '0.88rem', marginTop: 2 }}>
+              <strong>{sourcePdf.title}</strong> · p.{material.page_start}-{material.page_end}
+              <span style={{ color: 'var(--text-muted)', marginLeft: 8, fontSize: '0.78rem' }}>
+                (총 {sourcePdf.page_count}p)
+              </span>
+            </div>
+          </div>
+          {material.page_end < sourcePdf.page_count && (
+            <button
+              onClick={() => nextRangeMutation.mutate({ chunkSize: 5 })}
+              disabled={nextRangeMutation.isPending}
+              className="btn btn--accent btn--sm"
+              title={`p.${material.page_end + 1}부터 분석`}
+            >
+              {nextRangeMutation.isPending
+                ? '⏳ 추출 중...'
+                : `다음 p.${material.page_end + 1}-${Math.min(material.page_end + 5, sourcePdf.page_count)} 분석 →`}
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Reading Progress Bar */}
       {isDone && (
