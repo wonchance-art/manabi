@@ -46,6 +46,60 @@ async function fetchVocab(userId) {
   return data || [];
 }
 
+// 간단한 CSV 파서 (따옴표 이스케이프 처리)
+function parseCSV(text) {
+  const rows = [];
+  let row = [], cell = '', inQuote = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i], next = text[i + 1];
+    if (inQuote) {
+      if (ch === '"' && next === '"') { cell += '"'; i++; }
+      else if (ch === '"') inQuote = false;
+      else cell += ch;
+    } else {
+      if (ch === '"') inQuote = true;
+      else if (ch === ',') { row.push(cell); cell = ''; }
+      else if (ch === '\n') { row.push(cell); rows.push(row); row = []; cell = ''; }
+      else if (ch === '\r') { /* skip */ }
+      else cell += ch;
+    }
+  }
+  if (cell || row.length) { row.push(cell); rows.push(row); }
+  return rows.filter(r => r.some(c => c && c.trim()));
+}
+
+/**
+ * CSV 파일 → vocab 행 배열
+ * 지원 포맷: 우리 exportCSV 형식 ["단어","후리가나","의미","품사","다음 복습","안정도","난이도"]
+ *          또는 최소 2열 (단어, 의미)
+ */
+function csvToVocabRows(text, userId) {
+  const rows = parseCSV(text);
+  if (rows.length === 0) return [];
+
+  const header = rows[0].map(h => h.trim().toLowerCase());
+  const hasHeader = header.some(h => /단어|word|meaning|의미/.test(h));
+  const dataRows = hasHeader ? rows.slice(1) : rows;
+
+  const now = new Date().toISOString();
+  return dataRows.map(r => {
+    const [word, furigana = '', meaning = '', pos = ''] = r;
+    if (!word?.trim()) return null;
+    const text = word.trim();
+    const isJa = /[\u3040-\u30ff\u4e00-\u9fff]/.test(text);
+    return {
+      user_id: userId,
+      word_text: text,
+      furigana: furigana.trim(),
+      meaning: meaning.trim(),
+      pos: pos.trim(),
+      next_review_at: now,
+      language: isJa ? 'Japanese' : 'English',
+      base_form: isJa ? text : text.toLowerCase(),
+    };
+  }).filter(Boolean);
+}
+
 function exportCSV(vocab) {
   const header = ['단어', '후리가나', '의미', '품사', '다음 복습', '안정도(S)', '난이도(D)'];
   const rows = vocab.map(v => [
@@ -458,6 +512,33 @@ export default function VocabPage() {
     onError: (err) => toast('삭제 실패 — ' + friendlyToastMessage(err), 'error'),
   });
 
+  // CSV 불러오기
+  const csvImportMutation = useMutation({
+    mutationFn: async (file) => {
+      const text = await file.text();
+      const rows = csvToVocabRows(text, user.id);
+      if (rows.length === 0) throw new Error('유효한 행이 없습니다.');
+      if (rows.length > 5000) throw new Error('한 번에 5000개까지만 가져올 수 있어요.');
+
+      // 500개씩 배치 upsert
+      let imported = 0;
+      for (let i = 0; i < rows.length; i += 500) {
+        const chunk = rows.slice(i, i + 500);
+        const { error } = await supabase
+          .from('user_vocabulary')
+          .upsert(chunk, { onConflict: 'user_id,word_text', ignoreDuplicates: true });
+        if (error) throw error;
+        imported += chunk.length;
+      }
+      return imported;
+    },
+    onSuccess: (count) => {
+      queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
+      toast(`📥 ${count}개 단어를 가져왔어요! (중복은 자동 스킵)`, 'success', 5000);
+    },
+    onError: (err) => toast('가져오기 실패 — ' + friendlyToastMessage(err), 'error'),
+  });
+
   const bulkDeleteMutation = useMutation({
     mutationFn: async (ids) => {
       if (!ids?.length) return 0;
@@ -666,9 +747,25 @@ export default function VocabPage() {
         </div>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           {vocab.length > 0 && (
+            <>
             <Button onClick={() => exportCSV(vocab)} variant="secondary" size="sm">
-              📥 CSV 내보내기
+              📤 CSV 내보내기
             </Button>
+            <label className="btn btn--secondary btn--sm" style={{ cursor: 'pointer' }}>
+              📥 CSV 가져오기
+              <input
+                type="file"
+                accept=".csv,text/csv"
+                disabled={csvImportMutation.isPending}
+                onChange={e => {
+                  const file = e.target.files?.[0];
+                  if (file) csvImportMutation.mutate(file);
+                  e.target.value = '';
+                }}
+                style={{ display: 'none' }}
+              />
+            </label>
+            </>
           )}
           {tab === 'list' && reviewWords.length > 0 && (
             <Button onClick={startReview} variant="primary">
