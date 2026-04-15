@@ -7,6 +7,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { tokenizeJaLine } from '@/lib/server/tokenizeJa';
+import { tokenizeEnLine } from '@/lib/server/tokenizeEn';
 import { fetchMeaningsForMissing } from '@/lib/server/fetchMeanings';
 
 export const runtime = 'nodejs';
@@ -37,19 +38,14 @@ export async function POST(request) {
   }
 
   try {
-    // 현재 Phase 2 Day 1: 일본어만 지원 (영어는 기존 Gemini로 fallback — Day 3에서 처리)
-    if (language !== 'Japanese') {
-      return Response.json(
-        { error: 'English analysis not yet migrated — use /api/gemini' },
-        { status: 501 }
-      );
-    }
-
-    // 1. 각 줄 kuromoji 분할
+    // 1. 각 줄 토큰화 (언어별)
+    const tokenizer = language === 'Japanese' ? tokenizeJaLine : tokenizeEnLine;
     const tokenizedLines = await Promise.all(
       lines.map(async (line) => ({
         original: line,
-        tokens: await tokenizeJaLine(line),
+        tokens: language === 'Japanese'
+          ? await tokenizer(line)    // kuromoji async
+          : tokenizer(line),          // 영어는 sync
       }))
     );
 

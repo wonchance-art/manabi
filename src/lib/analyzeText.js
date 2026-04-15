@@ -10,16 +10,18 @@ import { callGemini, parseGeminiJSON, buildTokenizationPrompt } from './gemini';
  */
 export async function analyzeText(rawText, signal, { metadata = {}, onBatch, existingJson = null, concurrency = 6 } = {}) {
   const lang = metadata?.language || existingJson?.metadata?.language;
-  if (lang === 'Japanese') {
-    return analyzeJapanese(rawText, signal, { metadata, onBatch, existingJson });
+  // 일본어·영어 모두 공유 캐시 경로 사용 (Phase 2)
+  if (lang === 'Japanese' || lang === 'English') {
+    return analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson, language: lang });
   }
+  // 기타 언어는 기존 Gemini per-line (fallback)
   return analyzeLineByLineGemini(rawText, signal, { metadata, onBatch, existingJson, concurrency });
 }
 
 /* ─────────────────────────────────────────────────────────────
- * 일본어: /api/analyze 엔드포인트 사용 (kuromoji + 공유 캐시)
+ * 일본어/영어: /api/analyze 엔드포인트 사용 (kuromoji or 공백 분할 + 공유 캐시)
  * ─────────────────────────────────────────────────────────────*/
-async function analyzeJapanese(rawText, signal, { metadata, onBatch, existingJson }) {
+async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson, language }) {
   const lines = rawText.split('\n');
   const total = lines.length;
   const timestamp = Date.now();
@@ -71,7 +73,7 @@ async function analyzeJapanese(rawText, signal, { metadata, onBatch, existingJso
         signal,
         body: JSON.stringify({
           lines: chunk.map(c => c.text),
-          language: 'Japanese',
+          language,
         }),
       });
       const data = await res.json();
