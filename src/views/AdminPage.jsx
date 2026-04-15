@@ -146,7 +146,70 @@ export default function AdminPage() {
 
   // 사전 시드 상태
   const [extraBaseFormsText, setExtraBaseFormsText] = useState('');
-  const [jmdictUploadProgress, setJmdictUploadProgress] = useState(null); // { stage, detail }
+  const [jmdictUploadProgress, setJmdictUploadProgress] = useState(null);
+
+  // 사전 관리 상태
+  const [dictMgrQuery, setDictMgrQuery] = useState('');
+  const [dictMgrSource, setDictMgrSource] = useState('');
+  const [dictMgrLanguage, setDictMgrLanguage] = useState('Japanese');
+  const [editingEntry, setEditingEntry] = useState(null); // { id, base_form, pos, reading, meanings }
+
+  const { data: dictMgrData, refetch: refetchDictMgr } = useQuery({
+    queryKey: ['admin-dict-mgr', dictMgrQuery, dictMgrSource, dictMgrLanguage],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const params = new URLSearchParams({ language: dictMgrLanguage, limit: '100' });
+      if (dictMgrQuery) params.set('q', dictMgrQuery);
+      if (dictMgrSource) params.set('source', dictMgrSource);
+      const res = await fetch(`/api/admin/dictionary?${params}`, {
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (!res.ok) throw new Error((await res.json())?.error || 'Fetch failed');
+      return res.json();
+    },
+    enabled: tab === 'dictmgr',
+  });
+
+  const saveDictEntryMutation = useMutation({
+    mutationFn: async ({ id, updates }) => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/admin/dictionary', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({ id, updates }),
+      });
+      if (!res.ok) throw new Error((await res.json())?.error || 'Save failed');
+      return res.json();
+    },
+    onSuccess: () => {
+      refetchDictMgr();
+      queryClient.invalidateQueries({ queryKey: ['admin-dict-stats'] });
+      setEditingEntry(null);
+      toast('항목을 저장했어요 (source: user_verified)', 'success');
+    },
+    onError: (err) => toast('저장 실패: ' + err.message, 'error'),
+  });
+
+  const deleteDictEntryMutation = useMutation({
+    mutationFn: async (id) => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(`/api/admin/dictionary?id=${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (!res.ok) throw new Error((await res.json())?.error || 'Delete failed');
+      return res.json();
+    },
+    onSuccess: () => {
+      refetchDictMgr();
+      queryClient.invalidateQueries({ queryKey: ['admin-dict-stats'] });
+      toast('삭제했어요', 'info');
+    },
+    onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
+  });
   const { data: dictStats } = useQuery({
     queryKey: ['admin-dict-stats'],
     queryFn: async () => {
@@ -494,6 +557,7 @@ export default function AdminPage() {
           { key: 'starters',  label: '🌱 스타터 콘텐츠' },
           { key: 'gemini',    label: '✨ Gemini 통계' },
           { key: 'dict',      label: '📖 사전 시드' },
+          { key: 'dictmgr',   label: '🔍 사전 관리' },
         ].map(t => (
           <button
             key={t.key}
@@ -1122,6 +1186,175 @@ export default function AdminPage() {
               💡 라이선스: EDRDG License — 앱 사용 시 출처 표기 의무
             </p>
           </div>
+        </div>
+      )}
+
+      {/* ── 사전 관리 ── */}
+      {tab === 'dictmgr' && (
+        <div>
+          <div className="card" style={{ padding: 14, marginBottom: 16, display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+            <input
+              type="text"
+              value={dictMgrQuery}
+              onChange={e => setDictMgrQuery(e.target.value)}
+              placeholder="base_form 검색..."
+              className="form-input"
+              style={{ flex: 1, minWidth: 200 }}
+            />
+            <select
+              value={dictMgrLanguage}
+              onChange={e => setDictMgrLanguage(e.target.value)}
+              className="settings-select"
+            >
+              <option value="Japanese">🇯🇵 Japanese</option>
+              <option value="English">🇬🇧 English</option>
+            </select>
+            <select
+              value={dictMgrSource}
+              onChange={e => setDictMgrSource(e.target.value)}
+              className="settings-select"
+            >
+              <option value="">모든 source</option>
+              <option value="gemini">gemini</option>
+              <option value="jmdict">jmdict (KR)</option>
+              <option value="jmdict_en">jmdict_en (EN)</option>
+              <option value="jmdict_seed">jmdict_seed</option>
+              <option value="user_verified">user_verified</option>
+            </select>
+            <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+              {dictMgrData?.total ?? 0}개 (최근 100개 표시)
+            </span>
+          </div>
+
+          <div className="admin-table-wrap">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>단어</th>
+                  <th>읽기</th>
+                  <th>품사</th>
+                  <th>의미</th>
+                  <th>source</th>
+                  <th>사용</th>
+                  <th>작업</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(dictMgrData?.items || []).map(item => (
+                  <tr key={item.id}>
+                    <td style={{ fontWeight: 600 }}>{item.base_form}</td>
+                    <td className="admin-table__muted" style={{ maxWidth: 100 }}>{item.reading || '—'}</td>
+                    <td className="admin-table__muted">{item.pos || '—'}</td>
+                    <td style={{ fontSize: '0.82rem', maxWidth: 280 }}>
+                      {(item.meanings || []).map(m => m.meaning).join(' · ') || '(없음)'}
+                    </td>
+                    <td>
+                      <span className="role-badge" style={{
+                        background: item.source === 'user_verified' ? 'rgba(74,138,92,0.15)'
+                          : item.source === 'jmdict' ? 'rgba(228,120,72,0.15)'
+                          : 'var(--bg-secondary)',
+                        color: item.source === 'user_verified' ? 'var(--accent)'
+                          : item.source === 'jmdict' ? 'var(--primary)'
+                          : 'var(--text-muted)',
+                      }}>
+                        {item.source}
+                      </span>
+                    </td>
+                    <td className="admin-table__muted">{item.usage_count}회</td>
+                    <td>
+                      <Button size="sm" variant="ghost" onClick={() => setEditingEntry({
+                        ...item,
+                        meaningsText: (item.meanings || []).map(m => m.meaning).join('\n'),
+                      })}>
+                        ✏️
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        style={{ color: 'var(--danger)' }}
+                        onClick={() => confirmDelete(item.base_form, () => deleteDictEntryMutation.mutate(item.id))}
+                      >
+                        🗑️
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {dictMgrData?.items?.length === 0 && (
+              <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-muted)' }}>
+                검색 결과 없음
+              </div>
+            )}
+          </div>
+
+          {/* 편집 모달 */}
+          {editingEntry && (
+            <div className="modal-overlay" onClick={() => setEditingEntry(null)}>
+              <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 500 }}>
+                <h3 style={{ margin: '0 0 8px' }}>✏️ {editingEntry.base_form}</h3>
+                <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 16 }}>
+                  저장 시 source가 user_verified로 승격됩니다.
+                </p>
+
+                <label style={{ fontSize: '0.82rem', display: 'block', marginBottom: 4 }}>품사</label>
+                <input
+                  type="text"
+                  value={editingEntry.pos || ''}
+                  onChange={e => setEditingEntry(s => ({ ...s, pos: e.target.value }))}
+                  className="form-input"
+                  style={{ marginBottom: 12 }}
+                />
+
+                <label style={{ fontSize: '0.82rem', display: 'block', marginBottom: 4 }}>읽기</label>
+                <input
+                  type="text"
+                  value={editingEntry.reading || ''}
+                  onChange={e => setEditingEntry(s => ({ ...s, reading: e.target.value }))}
+                  className="form-input"
+                  style={{ marginBottom: 12 }}
+                />
+
+                <label style={{ fontSize: '0.82rem', display: 'block', marginBottom: 4 }}>
+                  의미 (한 줄당 하나, 위에서부터 우선순위)
+                </label>
+                <textarea
+                  value={editingEntry.meaningsText}
+                  onChange={e => setEditingEntry(s => ({ ...s, meaningsText: e.target.value }))}
+                  style={{
+                    width: '100%', minHeight: 100, padding: 10,
+                    background: 'var(--bg-secondary)', border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius-md)', fontFamily: 'monospace', fontSize: '0.85rem',
+                  }}
+                />
+
+                <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+                  <Button variant="ghost" style={{ flex: 1 }} onClick={() => setEditingEntry(null)}>
+                    취소
+                  </Button>
+                  <Button
+                    style={{ flex: 2 }}
+                    disabled={saveDictEntryMutation.isPending}
+                    onClick={() => {
+                      const meanings = editingEntry.meaningsText
+                        .split('\n').map(s => s.trim()).filter(Boolean)
+                        .map(m => ({ meaning: m }));
+                      saveDictEntryMutation.mutate({
+                        id: editingEntry.id,
+                        updates: {
+                          pos: editingEntry.pos,
+                          reading: editingEntry.reading,
+                          meanings,
+                        },
+                      });
+                    }}
+                  >
+                    저장
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
