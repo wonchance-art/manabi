@@ -235,6 +235,24 @@ export default function AdminPage() {
     refetchInterval: tab === 'overview' ? 15000 : false,
   });
 
+  // 기존 vocab base_form 백필
+  const backfillMutation = useMutation({
+    mutationFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/admin/backfill-base-form', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (!res.ok) throw new Error((await res.json())?.error || 'Backfill failed');
+      return res.json();
+    },
+    onSuccess: (data) => {
+      toast(`백필 완료: ${data.updated}개 갱신 · 실패 ${data.failed} · 남은 ${data.remaining}`, 'success', 10000);
+      queryClient.invalidateQueries({ queryKey: ['admin-overview'] });
+    },
+    onError: (err) => toast('백필 실패: ' + err.message, 'error'),
+  });
+
   const deleteDictEntryMutation = useMutation({
     mutationFn: async (id) => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -647,6 +665,25 @@ export default function AdminPage() {
               </div>
             </div>
           )}
+
+          {/* 유지보수 도구 */}
+          <div className="card" style={{ padding: 16, marginBottom: 16 }}>
+            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: '0 0 10px' }}>🛠️ 유지보수</h3>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <Button
+                size="sm"
+                variant="secondary"
+                disabled={backfillMutation.isPending}
+                onClick={() => backfillMutation.mutate()}
+                title="기존 단어장의 base_form NULL 항목을 일괄 채움"
+              >
+                {backfillMutation.isPending ? '처리 중...' : '🔧 vocab base_form 백필'}
+              </Button>
+            </div>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 8, lineHeight: 1.6 }}>
+              💡 오래된 단어 항목은 base_form이 비어 있어요. 백필하면 활용형/기본형 중복 인식이 정확해집니다. 한 번에 최대 2000개씩 처리.
+            </p>
+          </div>
 
           {/* 건강도 진단 */}
           <div className="card" style={{ padding: 16 }}>
