@@ -787,12 +787,7 @@ export default function ViewerPage() {
 
       {/* PDF 출처 배지 + 다음 범위 분석 */}
       {sourcePdf && material.page_start && (
-        <div style={{
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          padding: '10px 14px', marginBottom: 12,
-          background: 'var(--primary-glow)', border: '1px solid var(--primary)',
-          borderRadius: 'var(--radius-md)', flexWrap: 'wrap', gap: 10,
-        }}>
+        <div className="u-highlight-card u-row u-row--between u-row--wrap u-row--gap-md u-mb-sm" style={{ marginBottom: 12 }}>
           <div>
             <div style={{ fontSize: '0.72rem', color: 'var(--primary)', fontWeight: 700 }}>
               📘 PDF 출처

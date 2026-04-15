@@ -95,6 +95,57 @@ a {
   color: inherit;
 }
 
+/* ========= Layout Utilities (인라인 스타일 대체) ========= */
+.u-row { display: flex; align-items: center; }
+.u-row--gap-sm { gap: 6px; }
+.u-row--gap-md { gap: 10px; }
+.u-row--gap-lg { gap: 16px; }
+.u-row--between { justify-content: space-between; }
+.u-row--wrap { flex-wrap: wrap; }
+.u-col { display: flex; flex-direction: column; }
+.u-col--gap-sm { gap: 6px; }
+.u-col--gap-md { gap: 10px; }
+.u-col--gap-lg { gap: 16px; }
+
+.u-mt-sm { margin-top: 8px; }
+.u-mt-md { margin-top: 16px; }
+.u-mt-lg { margin-top: 24px; }
+.u-mb-sm { margin-bottom: 8px; }
+.u-mb-md { margin-bottom: 16px; }
+.u-mb-lg { margin-bottom: 24px; }
+
+.u-text-muted { color: var(--text-muted); }
+.u-text-secondary { color: var(--text-secondary); }
+.u-text-sm { font-size: 0.82rem; }
+.u-text-xs { font-size: 0.72rem; }
+.u-text-bold { font-weight: 600; }
+
+/* 강조 컨테이너: highlight + 색 보더 (오늘의 추천, 알림 등에 통일) */
+.u-highlight-card {
+  padding: 16px 18px;
+  background: var(--primary-glow);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-md);
+}
+.u-highlight-card--warning {
+  background: rgba(212, 150, 42, 0.1);
+  border-color: var(--warning);
+}
+.u-highlight-card--accent {
+  background: var(--accent-glow);
+  border-color: var(--accent);
+}
+
+/* 컴팩트 스탯 라인 */
+.u-stat-line {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
 /* 접근성: 포커스 시 반드시 밑줄 — 색 대비만으로 링크 식별 의존 낮춤 */
 a:focus-visible {
   text-decoration: underline;

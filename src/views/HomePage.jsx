@@ -336,15 +336,11 @@ export default function HomePage() {
         </div>
 
         {/* 컴팩트 상태: Lv + 수집 단어 + 복습 대기 */}
-        <div style={{ display: 'flex', gap: 14, marginTop: 14, flexWrap: 'wrap', alignItems: 'center' }}>
-          <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-            ⚡ <strong>Lv.{xpLevel}</strong> · {xp.toLocaleString('ko-KR')} XP
-          </span>
-          <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-            ⭐ <strong>{data?.vocabByLang ? Object.values(data.vocabByLang).reduce((a, b) => a + b, 0) : 0}</strong> 수집
-          </span>
+        <div className="u-stat-line u-mt-md">
+          <span>⚡ <strong>Lv.{xpLevel}</strong> · {xp.toLocaleString('ko-KR')} XP</span>
+          <span>⭐ <strong>{data?.vocabByLang ? Object.values(data.vocabByLang).reduce((a, b) => a + b, 0) : 0}</strong> 수집</span>
           {dueCount > 0 && (
-            <span style={{ fontSize: '0.85rem', color: 'var(--warning)', fontWeight: 600 }}>
+            <span style={{ color: 'var(--warning)', fontWeight: 600 }}>
               🧠 {dueCount} 복습 대기
             </span>
           )}
