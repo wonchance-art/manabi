@@ -193,6 +193,48 @@ export default function AdminPage() {
     onError: (err) => toast('저장 실패: ' + err.message, 'error'),
   });
 
+  // 대시보드 종합 지표
+  const { data: overview } = useQuery({
+    queryKey: ['admin-overview'],
+    queryFn: async () => {
+      const [
+        usersRes,
+        materialsRes,
+        dictRes,
+        vocabRes,
+        readingsRes,
+        writingRes,
+        correctionsRes,
+        pdfsRes,
+        geminiStatsRes,
+      ] = await Promise.all([
+        supabase.from('profiles').select('*', { count: 'exact', head: true }),
+        supabase.from('reading_materials').select('*', { count: 'exact', head: true }),
+        supabase.from('morpheme_dictionary').select('*', { count: 'exact', head: true }),
+        supabase.from('user_vocabulary').select('*', { count: 'exact', head: true }),
+        supabase.from('reading_progress').select('*', { count: 'exact', head: true }).eq('is_completed', true),
+        supabase.from('writing_practice').select('*', { count: 'exact', head: true }),
+        supabase.from('token_corrections').select('*', { count: 'exact', head: true }),
+        supabase.from('uploaded_pdfs').select('*', { count: 'exact', head: true }),
+        fetch('/api/gemini').then(r => r.ok ? r.json() : null).catch(() => null),
+      ]);
+
+      return {
+        users: usersRes.count ?? 0,
+        materials: materialsRes.count ?? 0,
+        dictionary: dictRes.count ?? 0,
+        vocab: vocabRes.count ?? 0,
+        readings: readingsRes.count ?? 0,
+        writing: writingRes.count ?? 0,
+        corrections: correctionsRes.count ?? 0,
+        pdfs: pdfsRes.count ?? 0,
+        gemini: geminiStatsRes,
+      };
+    },
+    enabled: tab === 'overview',
+    refetchInterval: tab === 'overview' ? 15000 : false,
+  });
+
   const deleteDictEntryMutation = useMutation({
     mutationFn: async (id) => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -550,6 +592,7 @@ export default function AdminPage() {
       {/* Tabs */}
       <div className="tab-pills" style={{ marginBottom: '32px' }}>
         {[
+          { key: 'overview',  label: '📊 대시보드' },
           { key: 'users',     label: '👥 유저 관리' },
           { key: 'materials', label: '📰 자료 관리' },
           { key: 'forum',     label: '💬 포럼 관리' },
@@ -568,6 +611,74 @@ export default function AdminPage() {
           </button>
         ))}
       </div>
+
+      {/* ── 대시보드 ── */}
+      {tab === 'overview' && (
+        <div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12, marginBottom: 20 }}>
+            {[
+              { label: '👥 유저', value: overview?.users, color: 'var(--primary)' },
+              { label: '📰 자료', value: overview?.materials, color: 'var(--primary)' },
+              { label: '📚 PDF', value: overview?.pdfs, color: 'var(--primary)' },
+              { label: '📖 사전 항목', value: overview?.dictionary, color: 'var(--accent)' },
+              { label: '⭐ 수집 단어', value: overview?.vocab, color: 'var(--accent)' },
+              { label: '✅ 완독 기록', value: overview?.readings, color: 'var(--accent)' },
+              { label: '✍️ 쓰기 기록', value: overview?.writing, color: 'var(--accent)' },
+              { label: '✏️ AI 교정', value: overview?.corrections, color: 'var(--warning)' },
+            ].map(s => (
+              <div key={s.label} className="card" style={{ padding: 14 }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 4 }}>{s.label}</div>
+                <div style={{ fontSize: '1.4rem', fontWeight: 700, color: s.color }}>
+                  {s.value ?? '…'}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Gemini 건강도 */}
+          {overview?.gemini && (
+            <div className="card" style={{ padding: 16, marginBottom: 16 }}>
+              <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: '0 0 12px' }}>✨ AI 엔진 상태</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10 }}>
+                <div><div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>총 요청</div><div style={{ fontWeight: 700 }}>{overview.gemini.total}</div></div>
+                <div><div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>에러율</div><div style={{ fontWeight: 700, color: overview.gemini.errorRatePct > 5 ? 'var(--danger)' : 'var(--accent)' }}>{overview.gemini.errorRatePct}%</div></div>
+                <div><div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>평균 레이턴시</div><div style={{ fontWeight: 700 }}>{overview.gemini.avgLatencyMs}ms</div></div>
+                <div><div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Groq 구원</div><div style={{ fontWeight: 700, color: overview.gemini.groqConfigured ? 'var(--accent)' : 'var(--text-muted)' }}>{overview.gemini.groqUsed ?? 0}{!overview.gemini.groqConfigured && ' (off)'}</div></div>
+              </div>
+            </div>
+          )}
+
+          {/* 건강도 진단 */}
+          <div className="card" style={{ padding: 16 }}>
+            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: '0 0 12px' }}>🩺 상태 체크</h3>
+            <ul style={{ fontSize: '0.88rem', lineHeight: 1.8, margin: 0, paddingLeft: 18 }}>
+              {overview?.dictionary < 500 && (
+                <li style={{ color: 'var(--warning)' }}>사전이 비어 있어요 ({overview?.dictionary}). '사전 시드'에서 Core + Common 추천</li>
+              )}
+              {overview?.dictionary >= 500 && overview?.dictionary < 5000 && (
+                <li style={{ color: 'var(--text-primary)' }}>기본 사전 확보 ({overview?.dictionary}). JMdict 임포트로 대폭 확장 가능</li>
+              )}
+              {overview?.dictionary >= 5000 && (
+                <li style={{ color: 'var(--accent)' }}>✅ 사전 풍부 ({overview?.dictionary})</li>
+              )}
+
+              {overview?.gemini && overview.gemini.errorRatePct > 10 && (
+                <li style={{ color: 'var(--danger)' }}>AI 엔진 에러율 높음 ({overview.gemini.errorRatePct}%). Groq 폴백 활성화 권장</li>
+              )}
+              {overview?.gemini && !overview.gemini.groqConfigured && (
+                <li style={{ color: 'var(--text-muted)' }}>Groq 폴백 미설정 (선택). GROQ_API_KEY 추가 시 Gemini 과부하 자동 전환</li>
+              )}
+
+              {overview?.users === 0 && (
+                <li style={{ color: 'var(--warning)' }}>사용자 없음 — 실사용 전 단계</li>
+              )}
+              {overview?.materials === 0 && (
+                <li style={{ color: 'var(--warning)' }}>자료 없음 — 스타터 시딩 필요</li>
+              )}
+            </ul>
+          </div>
+        </div>
+      )}
 
       {/* ── 유저 관리 ── */}
       {tab === 'users' && (
