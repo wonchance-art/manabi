@@ -144,6 +144,53 @@ export default function AdminPage() {
     refetchInterval: tab === 'gemini' ? 10000 : false,
   });
 
+  // 사전 시드 상태
+  const [extraBaseFormsText, setExtraBaseFormsText] = useState('');
+  const { data: dictStats } = useQuery({
+    queryKey: ['admin-dict-stats'],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('morpheme_dictionary')
+        .select('*', { count: 'exact', head: true });
+      if (error) throw error;
+      const { data: bySource } = await supabase
+        .from('morpheme_dictionary')
+        .select('source')
+        .limit(10000);
+      const sourceCount = {};
+      (bySource || []).forEach(r => { sourceCount[r.source] = (sourceCount[r.source] || 0) + 1; });
+      return { total: count ?? 0, bySource: sourceCount };
+    },
+    enabled: tab === 'dict',
+  });
+
+  const seedDictMutation = useMutation({
+    mutationFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const extraBaseForms = extraBaseFormsText.split('\n').map(s => s.trim()).filter(Boolean);
+      const res = await fetch('/api/admin/seed-dictionary', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({ includeCore: true, extraBaseForms }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || '시드 실패');
+      return json;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-dict-stats'] });
+      toast(
+        `시드 완료! 전체 ${data.total} · 기존 ${data.skipped} · 신규 ${data.inserted} · 실패 ${data.failed || 0}`,
+        'success', 7000,
+      );
+      setExtraBaseFormsText('');
+    },
+    onError: (err) => toast('시드 실패: ' + err.message, 'error'),
+  });
+
   // 역할 변경
   const rolemutation = useMutation({
     mutationFn: async ({ userId, role }) => {
@@ -314,6 +361,7 @@ export default function AdminPage() {
           { key: 'sources',   label: '📡 콘텐츠 소스' },
           { key: 'starters',  label: '🌱 스타터 콘텐츠' },
           { key: 'gemini',    label: '✨ Gemini 통계' },
+          { key: 'dict',      label: '📖 사전 시드' },
         ].map(t => (
           <button
             key={t.key}
@@ -788,6 +836,62 @@ export default function AdminPage() {
             )}
           </div>
         )
+      )}
+
+      {/* ── 사전 시드 ── */}
+      {tab === 'dict' && (
+        <div>
+          <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+            <div className="card" style={{ padding: 14, flex: 1, minWidth: 160 }}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 4 }}>총 항목</div>
+              <div style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--primary)' }}>
+                {dictStats?.total ?? '…'}
+              </div>
+            </div>
+            {dictStats && Object.entries(dictStats.bySource).map(([src, count]) => (
+              <div key={src} className="card" style={{ padding: 14, flex: 1, minWidth: 140 }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 4 }}>{src}</div>
+                <div style={{ fontSize: '1.2rem', fontWeight: 700 }}>{count}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="card" style={{ padding: 20 }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: '0 0 8px' }}>📖 일본어 핵심 어휘 시드</h3>
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: '0 0 16px' }}>
+              내장된 JLPT 핵심 어휘 약 180개를 Gemini로 번역해 공유 사전에 채웁니다.
+              이미 있는 항목은 자동 스킵. 아래에 추가 단어를 줄바꿈으로 입력하면 함께 시드됩니다.
+            </p>
+
+            <label style={{ fontSize: '0.82rem', display: 'block', marginBottom: 6 }}>
+              추가 단어 (선택, 줄바꿈으로 구분)
+            </label>
+            <textarea
+              value={extraBaseFormsText}
+              onChange={e => setExtraBaseFormsText(e.target.value)}
+              placeholder="예:&#10;経済&#10;政治&#10;日常"
+              style={{
+                width: '100%', minHeight: 120, padding: 10,
+                background: 'var(--bg-secondary)', border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-md)', color: 'var(--text-primary)',
+                fontFamily: 'monospace', fontSize: '0.85rem',
+              }}
+            />
+
+            <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
+              <Button
+                onClick={() => seedDictMutation.mutate()}
+                disabled={seedDictMutation.isPending}
+              >
+                {seedDictMutation.isPending ? '🔄 시드 진행 중... (수십 초 소요)' : '🌱 시드 실행'}
+              </Button>
+            </div>
+
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 14 }}>
+              💡 첫 실행 후엔 매 줄 분석 시 공유 사전에서 의미를 재사용해 Gemini 호출이 크게 줄어듭니다.
+            </p>
+          </div>
+        </div>
       )}
 
       <ConfirmModal

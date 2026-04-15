@@ -7,6 +7,7 @@ export default function ViewerBottomSheet({
   ttsSupported, speak, materialLang,
   isWordSaved, saveAnim, addToVocab, user, trimOkurigana,
   onCorrectToken, corrections = [],
+  onAnalyzeContext,
 }) {
   const [editing, setEditing] = useState(false);
   const [editData, setEditData] = useState({});
@@ -138,6 +139,27 @@ export default function ViewerBottomSheet({
               })()}
             </div>
             <p className="bottom-sheet__meaning">{selectedToken.meaning || '(뜻 정보 없음)'}</p>
+
+            {/* 문맥 해설 버튼 */}
+            {user && onAnalyzeContext && (
+              <button
+                onClick={onAnalyzeContext}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  width: '100%', padding: '10px 14px',
+                  margin: '8px 0 12px',
+                  background: 'var(--primary-glow)',
+                  border: '1px solid var(--primary)',
+                  borderRadius: 'var(--radius-md)',
+                  color: 'var(--primary)',
+                  fontSize: '0.85rem', fontWeight: 600,
+                  cursor: 'pointer', textAlign: 'left',
+                }}
+                title="이 단어가 현재 문장에서 어떻게 쓰였는지 AI가 해설"
+              >
+                💡 이 문맥에서 뜻 보기 →
+              </button>
+            )}
 
             {/* 교정 히스토리 */}
             {corrections.length > 0 && (

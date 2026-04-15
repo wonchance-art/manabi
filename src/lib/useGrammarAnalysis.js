@@ -131,6 +131,75 @@ ${labelExample}`;
     }
   }
 
+  /**
+   * 단어를 문맥 속에서 해설 (BottomSheet에서 호출)
+   * @param {object} token - { text, base_form, meaning, pos, furigana }
+   * @param {string} sentence - 단어가 포함된 문장
+   */
+  async function analyzeWordInContext(token, sentence) {
+    if (!token || !sentence) return;
+    const isJa = materialLang === 'Japanese';
+
+    // 모달 상태 설정 (이미 있는 UI 재사용)
+    const label = `${token.text}${token.base_form && token.base_form !== token.text ? ` (기본형: ${token.base_form})` : ''}`;
+    setSelectedRangeText(`${label} — "${sentence}"`);
+    setGrammarAnalysis('');
+    setGrammarFollowUp('');
+    setCheckedActions(new Set(['word-context']));
+    setIsGrammarModalOpen(true);
+    setSelectionPopup(null);
+    setIsGrammarLoading(true);
+
+    const prompt = isJa
+      ? `일본어 학습자를 위한 단어 문맥 해설입니다.
+
+단어: ${token.text}
+기본형: ${token.base_form || token.text}
+품사: ${token.pos || '미상'}
+사전적 뜻: ${token.meaning || '(없음)'}
+
+이 단어가 다음 문장에서 어떻게 쓰였는지 한국어로 설명해주세요.
+
+문장: 「${sentence}」
+
+## 출력 형식 (반드시 이 형식)
+이 문맥에서의 뜻: (구체적 뜻과 뉘앙스, 1~2문장)
+왜 이 뜻인가: (문법적/문맥적 근거, 1~2문장)
+어법 포인트: (관련 문법이나 패턴, 있을 때만)
+비슷한 표현: (유사 어법, 있을 때만)
+
+규칙:
+- 총 3~6줄 내외로 간결하게
+- 각 줄은 "레이블: 내용" 형식`
+      : `English word in context — explain in Korean.
+
+Word: ${token.text}
+Base form: ${token.base_form || token.text}
+POS: ${token.pos || 'unknown'}
+Dictionary meaning: ${token.meaning || '(none)'}
+
+Sentence: "${sentence}"
+
+## Output format
+이 문맥에서의 뜻: (specific meaning and nuance in this context, 1-2 sentences)
+왜 이 뜻인가: (grammatical or contextual reason, 1-2 sentences)
+어법 포인트: (related grammar, only if relevant)
+비슷한 표현: (similar expressions, only if relevant)
+
+Rules:
+- 3-6 lines total
+- Each line as "label: content"`;
+
+    try {
+      const result = await callGemini(prompt, null, { model: GEMINI_MODEL });
+      setGrammarAnalysis(result);
+    } catch (err) {
+      setGrammarAnalysis('❌ 해설 중 오류가 발생했어요: ' + err.message);
+    } finally {
+      setIsGrammarLoading(false);
+    }
+  }
+
   async function askFollowUp() {
     const question = grammarFollowUp.trim();
     if (!question || isGrammarLoading || grammarFollowLoading) return;
@@ -175,6 +244,7 @@ ${labelExample}`;
     openGrammarModal,
     analyzeGrammar: openGrammarModal,
     requestGrammarAnalysis,
+    analyzeWordInContext,
     askFollowUp,
     handleTextSelection,
   };
