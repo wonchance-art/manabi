@@ -676,27 +676,38 @@ export default function VocabPage() {
         </div>
       </div>
 
-      {/* Tab Switcher */}
-      <div className="tab-pills" style={{ marginBottom: '24px' }}>
+      {/* Tab Switcher — 3개로 축소 */}
+      <div className="tab-pills" style={{ marginBottom: '20px' }}>
         <button onClick={() => setTab('list')} className={`tab-pills__item ${tab === 'list' ? 'tab-pills__item--primary' : ''}`}>
-          🗂️ 어휘 목록
-        </button>
-        <button onClick={() => setTab('review')} className={`tab-pills__item ${tab === 'review' ? 'tab-pills__item--accent' : ''}`}>
-          🧠 오늘 복습
-        </button>
-        <button onClick={() => setTab('stats')} className={`tab-pills__item ${tab === 'stats' ? 'tab-pills__item--primary' : ''}`}>
-          📊 학습 통계
-        </button>
-        <button onClick={() => setTab('notes')} className={`tab-pills__item ${tab === 'notes' ? 'tab-pills__item--accent' : ''}`}>
-          📝 문법 노트 {grammarNotes.length > 0 && <span className="tab-badge">{grammarNotes.length}</span>}
-        </button>
-        <button onClick={() => setTab('decks')} className={`tab-pills__item ${tab === 'decks' ? 'tab-pills__item--primary' : ''}`}>
-          🃏 공유 단어장
+          🗂️ 단어장
         </button>
         <button onClick={() => setTab('writing')} className={`tab-pills__item ${tab === 'writing' ? 'tab-pills__item--accent' : ''}`}>
           ✍️ 쓰기 연습
         </button>
+        <button onClick={() => setTab('decks')} className={`tab-pills__item ${tab === 'decks' ? 'tab-pills__item--primary' : ''}`}>
+          🃏 공유 덱
+        </button>
       </div>
+
+      {/* 보조 액션 — 부가 기능 (복습/통계/노트) */}
+      {tab === 'list' && (
+        <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
+          {reviewWords.length > 0 && (
+            <Button size="sm" variant="accent" onClick={startReview}>
+              🧠 카드 복습 ({reviewWords.length})
+            </Button>
+          )}
+          <Button size="sm" variant="ghost" onClick={() => setTab('stats')}>📊 통계</Button>
+          {grammarNotes.length > 0 && (
+            <Button size="sm" variant="ghost" onClick={() => setTab('notes')}>
+              📝 문법 노트 ({grammarNotes.length})
+            </Button>
+          )}
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: 'auto', alignSelf: 'center' }}>
+            💡 자료를 읽으면서 노란 단어 클릭으로도 복습 가능
+          </span>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="skeleton-grid">

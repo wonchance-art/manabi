@@ -166,28 +166,11 @@ export default function VocabReview({
         </div>
       ) : reviewWords.length > 0 ? (
         <>
-          {/* 복습 모드 선택 */}
-          <div className="chip-group" style={{ marginBottom: '16px', justifyContent: 'center' }}>
-            {[
-              { value: 'flash',     label: '🃏 플래시카드' },
-              { value: 'typing',    label: '✏️ 타이핑' },
-              { value: 'context',   label: '📝 문맥 퀴즈' },
-              { value: 'listening', label: '🎧 리스닝' },
-            ].map(m => (
-              <button
-                key={m.value}
-                onClick={() => {
-                  setReviewMode(m.value);
-                  setTypingAnswer('');
-                  setContextSelected(null);
-                  setShowAnswer(false);
-                  setShowHint(false);
-                }}
-                className={`chip ${reviewMode === m.value ? 'chip--active' : ''}`}
-              >
-                {m.label}
-              </button>
-            ))}
+          {/* 복습 모드 안내 — 인라인 복습이 주, 카드는 backup */}
+          <div style={{
+            textAlign: 'center', marginBottom: 16, fontSize: '0.78rem', color: 'var(--text-muted)',
+          }}>
+            💡 자료를 읽으면서 노란 단어 클릭으로 더 자연스럽게 복습할 수 있어요
           </div>
 
           <div className="card review-card">
