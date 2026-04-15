@@ -146,6 +146,7 @@ export default function AdminPage() {
 
   // 사전 시드 상태
   const [extraBaseFormsText, setExtraBaseFormsText] = useState('');
+  const [jmdictUploadProgress, setJmdictUploadProgress] = useState(null); // { stage, detail }
   const { data: dictStats } = useQuery({
     queryKey: ['admin-dict-stats'],
     queryFn: async () => {
@@ -163,6 +164,61 @@ export default function AdminPage() {
     },
     enabled: tab === 'dict',
   });
+
+  // JMdict JSON 파일 업로드 (청크 단위로 서버 전송)
+  async function handleJmdictUpload(file) {
+    if (!file) return;
+    try {
+      setJmdictUploadProgress({ stage: 'parse', detail: '파일 파싱 중...' });
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      const words = parsed.words || parsed; // scriptin 포맷 or 직접 배열
+
+      if (!Array.isArray(words)) {
+        toast('올바른 JMdict JSON이 아닙니다 (words 배열 필요)', 'error');
+        setJmdictUploadProgress(null);
+        return;
+      }
+
+      // 서버 타임아웃 회피 — 2000개씩 청크로 전송
+      const { data: { session } } = await supabase.auth.getSession();
+      const CHUNK = 2000;
+      let totalInserted = 0, totalKo = 0, totalEn = 0;
+
+      for (let i = 0; i < words.length; i += CHUNK) {
+        const slice = words.slice(i, i + CHUNK);
+        setJmdictUploadProgress({
+          stage: 'upload',
+          detail: `${i + slice.length}/${words.length} 전송 중...`,
+        });
+
+        const res = await fetch('/api/admin/import-jmdict', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session?.access_token}`,
+          },
+          body: JSON.stringify({ words: slice, commonOnly: true, preferKorean: true }),
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || '업로드 실패');
+
+        totalInserted += json.inserted || 0;
+        totalKo += json.koreanGlossCount || 0;
+        totalEn += json.englishGlossCount || 0;
+      }
+
+      setJmdictUploadProgress(null);
+      queryClient.invalidateQueries({ queryKey: ['admin-dict-stats'] });
+      toast(
+        `📚 JMdict 임포트 완료! 총 ${totalInserted}개 (한국어 ${totalKo} · 영어 ${totalEn})`,
+        'success', 10000,
+      );
+    } catch (err) {
+      setJmdictUploadProgress(null);
+      toast('임포트 실패: ' + err.message, 'error');
+    }
+  }
 
   const seedDictMutation = useMutation({
     mutationFn: async ({ includeCore = true, includeCommon = false, extraOnly = false } = {}) => {
@@ -1028,6 +1084,42 @@ export default function AdminPage() {
               💡 <strong>Core</strong>: 조사·조동사·최다 빈도 단어 (먼저 하기 권장)<br />
               💡 <strong>Common</strong>: 가족·음식·장소·감정 등 일상 어휘 — Gemini 호출 400회 발생, 1~2분 소요<br />
               💡 이미 있는 항목은 자동 스킵 — 반복 실행해도 안전
+            </p>
+          </div>
+
+          {/* JMdict-simplified 임포트 */}
+          <div className="card" style={{ padding: 20, marginTop: 16 }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: '0 0 8px' }}>📚 JMdict 일괄 임포트</h3>
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: '0 0 12px', lineHeight: 1.6 }}>
+              <a href="https://github.com/scriptin/jmdict-simplified" target="_blank" rel="noopener" style={{ color: 'var(--primary-light)' }}>
+                JMdict-simplified
+              </a>의 JSON 파일을 업로드하면 공식 사전 데이터가 한번에 들어옵니다. <br />
+              공용 단어(common: true)만 자동 필터 · 한국어 gloss 우선, 없으면 영어 · Gemini 호출 <strong>0회</strong>
+            </p>
+
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+              <input
+                type="file"
+                accept=".json,application/json"
+                disabled={!!jmdictUploadProgress}
+                onChange={e => {
+                  const file = e.target.files?.[0];
+                  if (file) handleJmdictUpload(file);
+                  e.target.value = '';
+                }}
+                style={{ fontSize: '0.85rem' }}
+              />
+              {jmdictUploadProgress && (
+                <span style={{ fontSize: '0.82rem', color: 'var(--primary)' }}>
+                  ⚙ {jmdictUploadProgress.detail}
+                </span>
+              )}
+            </div>
+
+            <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 10, lineHeight: 1.5 }}>
+              💡 추천 파일: <code>jmdict-eng-common-*.json</code> (영어, 공용 단어만, ~3MB)<br />
+              💡 한국어: <code>jmdict-kor-common-*.json</code> (있으면 우선 사용)<br />
+              💡 라이선스: EDRDG License — 앱 사용 시 출처 표기 의무
             </p>
           </div>
         </div>
