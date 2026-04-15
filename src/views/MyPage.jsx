@@ -10,6 +10,7 @@ import { LEVELS } from '../lib/constants';
 import { getXPLevel, getLevelProgress } from '../lib/xp';
 import { ACHIEVEMENTS } from '../lib/achievements';
 import Button from '../components/Button';
+import VocabStats from './VocabStats';
 
 async function fetchMyStats(userId) {
   const heatmapStart = new Date();
@@ -66,6 +67,20 @@ export default function MyPage() {
   const { data: stats } = useQuery({
     queryKey: ['mypage-stats', user?.id],
     queryFn: () => fetchMyStats(user.id),
+    enabled: !!user,
+    staleTime: 1000 * 60,
+  });
+
+  // VocabStats 이관용 — 전체 단어 가져오기
+  const { data: vocabAll = [] } = useQuery({
+    queryKey: ['mypage-vocab-all', user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('user_vocabulary')
+        .select('*')
+        .eq('user_id', user.id);
+      return data || [];
+    },
     enabled: !!user,
     staleTime: 1000 * 60,
   });
@@ -198,6 +213,14 @@ export default function MyPage() {
           <Link href="/forum" className="btn btn--ghost btn--sm">💬 포럼</Link>
         </div>
       </div>
+
+      {/* 📊 학습 통계 — /vocab에서 이관 */}
+      {vocabAll.length > 0 && (
+        <div id="vocab-stats" className="mypage-section" style={{ marginBottom: 16 }}>
+          <h2 className="mypage-section__title">📊 학습 통계</h2>
+          <VocabStats vocab={vocabAll} profile={profile} />
+        </div>
+      )}
 
       {/* 프로필 설정 */}
       <div className="card mypage-section">

@@ -796,7 +796,7 @@ export default function VocabPage() {
               🧠 카드 복습 ({reviewWords.length})
             </Button>
           )}
-          <Button size="sm" variant="ghost" onClick={() => setTab('stats')}>📊 통계</Button>
+          <Link href="/profile#vocab-stats" className="btn btn--ghost btn--sm">📊 통계</Link>
           {grammarNotes.length > 0 && (
             <Button size="sm" variant="ghost" onClick={() => setTab('notes')}>
               📝 문법 노트 ({grammarNotes.length})
