@@ -20,6 +20,7 @@ import { useGrammarAnalysis, GRAMMAR_ACTIONS } from '../lib/useGrammarAnalysis';
 import { useViewerQuiz } from '../lib/useViewerQuiz';
 import { useReanalyze } from '../lib/useReanalyze';
 import { useMaterialComments } from '../lib/useMaterialComments';
+import { friendlyToastMessage } from '../lib/errorMessage';
 import ViewerComments from './ViewerComments';
 import ViewerBottomSheet from './ViewerBottomSheet';
 import ViewerGrammarModal from './ViewerGrammarModal';
@@ -305,7 +306,7 @@ export default function ViewerPage() {
       toast('📖 다음 범위 분석 시작! 뷰어로 이동합니다', 'success');
       window.location.href = `/viewer/${inserted.id}`;
     },
-    onError: (err) => toast('다음 범위 생성 실패: ' + err.message, 'error'),
+    onError: (err) => toast('다음 범위 생성 실패 — ' + friendlyToastMessage(err), 'error'),
   });
 
   const { data: readingProgress } = useQuery({
@@ -424,7 +425,7 @@ export default function ViewerPage() {
       const lang = material?.processed_json?.metadata?.language || 'Japanese';
       generateQuiz(rawText, lang, pendingCompletion);
     },
-    onError: (err) => toast('오류: ' + err.message, 'error'),
+    onError: (err) => toast(friendlyToastMessage(err), 'error'),
   });
 
   const saveGrammarNoteMutation = useMutation({
@@ -441,7 +442,7 @@ export default function ViewerPage() {
       queryClient.invalidateQueries({ queryKey: ['grammar-notes', user?.id] });
       toast('📝 문법 노트에 저장됐어요!', 'success');
     },
-    onError: (err) => toast('저장 실패: ' + err.message, 'error'),
+    onError: (err) => toast('저장 실패 — ' + friendlyToastMessage(err), 'error'),
   });
 
   // 재분석 로직 (훅으로 분리)
@@ -577,7 +578,7 @@ export default function ViewerPage() {
       recordActivity(user.id, () => fetchProfile(user.id));
       toast(`복습 완료! +${xp} XP`, 'success', 2000);
     },
-    onError: (err) => toast('복습 저장 실패: ' + err.message, 'error'),
+    onError: (err) => toast('복습 저장 실패 — ' + friendlyToastMessage(err), 'error'),
   });
 
   const correctTokenMutation = useMutation({
@@ -624,7 +625,7 @@ export default function ViewerPage() {
       setSelectedToken(prev => prev?.id === tokenId ? { ...prev, ...corrections } : prev);
       toast('수정이 저장됐어요!', 'success');
     },
-    onError: (err) => toast('수정 실패: ' + err.message, 'error'),
+    onError: (err) => toast('수정 실패 — ' + friendlyToastMessage(err), 'error'),
   });
 
   // 선택된 토큰의 교정 히스토리 조회
@@ -698,7 +699,7 @@ export default function ViewerPage() {
         newBadges.forEach(b => celebrate({ type: 'achievement', icon: b.icon, name: b.name, desc: b.desc }));
       });
     } catch (err) {
-      toast('추가 실패: ' + err.message, 'error');
+      toast('단어 추가 실패 — ' + friendlyToastMessage(err), 'error');
     }
   };
 

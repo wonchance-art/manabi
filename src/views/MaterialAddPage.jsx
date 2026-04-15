@@ -9,6 +9,7 @@ import Button from '../components/Button';
 import { analyzeText } from '../lib/analyzeText';
 import { LEVELS } from '../lib/constants';
 import MaterialAddPdfSection from './MaterialAddPdfSection';
+import { friendlyToastMessage } from '../lib/errorMessage';
 
 // --- Component ---
 export default function MaterialAddPage() {
@@ -120,7 +121,7 @@ export default function MaterialAddPage() {
       if (err.name === 'AbortError') {
         setStatus('🛑 분석이 중단되었습니다.');
       } else {
-        setError("저장 오류: " + err.message);
+        setError("저장 오류 — " + friendlyToastMessage(err));
       }
       setIsProcessing(false);
     }
@@ -178,7 +179,7 @@ export default function MaterialAddPage() {
         }
       }
     } catch (err) {
-      setError('분석 중 오류: ' + err.message);
+      setError('분석 중 오류 — ' + friendlyToastMessage(err));
       setIsProcessing(false);
     }
   }

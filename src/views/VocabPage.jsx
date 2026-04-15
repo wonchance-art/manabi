@@ -22,6 +22,7 @@ import VocabNotes from './VocabNotes';
 import VocabDecks from './VocabDecks';
 import VocabWriting from './VocabWriting';
 import { CardGridSkeleton } from '../components/Skeleton';
+import { friendlyToastMessage } from '../lib/errorMessage';
 import { detectLang } from '../lib/constants';
 
 const MAX_EXAMPLE_CACHE = 50;
@@ -356,7 +357,7 @@ export default function VocabPage() {
       if (error) throw error;
     },
     onSuccess: () => refetchDecks(),
-    onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
+    onError: (err) => toast('삭제 실패 — ' + friendlyToastMessage(err), 'error'),
   });
 
   const importDeckMutation = useMutation({
@@ -396,7 +397,7 @@ export default function VocabPage() {
       toast(`${count}개 단어를 내 단어장에 추가했습니다!`, 'success');
       queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
     },
-    onError: (err) => toast('가져오기 실패: ' + err.message, 'error'),
+    onError: (err) => toast('가져오기 실패 — ' + friendlyToastMessage(err), 'error'),
   });
 
   const deleteNoteMutation = useMutation({
@@ -405,7 +406,7 @@ export default function VocabPage() {
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['grammar-notes', user?.id] }),
-    onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
+    onError: (err) => toast('삭제 실패 — ' + friendlyToastMessage(err), 'error'),
   });
 
   const scoreMutation = useMutation({
@@ -439,7 +440,7 @@ export default function VocabPage() {
         newBadges.forEach(b => celebrate({ type: 'achievement', icon: b.icon, name: b.name, desc: b.desc }));
       });
     },
-    onError: (err) => toast('업데이트 실패: ' + err.message, 'error'),
+    onError: (err) => toast('업데이트 실패 — ' + friendlyToastMessage(err), 'error'),
   });
 
   const deleteMutation = useMutation({
@@ -454,7 +455,7 @@ export default function VocabPage() {
       queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
       toast('단어를 삭제했습니다.', 'info');
     },
-    onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
+    onError: (err) => toast('삭제 실패 — ' + friendlyToastMessage(err), 'error'),
   });
 
   const bulkDeleteMutation = useMutation({
