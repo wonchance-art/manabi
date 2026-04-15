@@ -192,6 +192,45 @@ export default function MaterialsPage() {
     staleTime: 1000 * 60,
   });
 
+  // 복습 대기 중인 단어 (Reading-as-Review용)
+  const { data: dueVocabIndex } = useQuery({
+    queryKey: ['due-vocab-index', user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('user_vocabulary')
+        .select('word_text, base_form, next_review_at')
+        .eq('user_id', user.id)
+        .lte('next_review_at', new Date().toISOString());
+      const surfaces = new Set();
+      const bases = new Set();
+      for (const v of data || []) {
+        if (v.word_text) surfaces.add(v.word_text);
+        if (v.base_form) bases.add(v.base_form);
+      }
+      return { surfaces, bases };
+    },
+    enabled: !!user,
+    staleTime: 1000 * 60,
+  });
+
+  function countDueInMaterial(material) {
+    if (!dueVocabIndex || !material?.processed_json?.dictionary) return 0;
+    const dict = material.processed_json.dictionary;
+    const seen = new Set();
+    let count = 0;
+    for (const tokenId of material.processed_json.sequence || []) {
+      const t = dict[tokenId];
+      if (!t || t.pos === '개행') continue;
+      const key = t.base_form || t.text;
+      if (seen.has(key)) continue;
+      if (dueVocabIndex.surfaces.has(t.text) || (t.base_form && dueVocabIndex.bases.has(t.base_form))) {
+        seen.add(key);
+        count++;
+      }
+    }
+    return count;
+  }
+
   const { data: materials = [], isLoading } = useQuery({
     queryKey: ['materials', tab, user?.id, langFilter, levelFilter, searchQuery],
     queryFn: () => fetchMaterials({ tab, userId: user?.id, langFilter, levelFilter, searchQuery }),
@@ -302,6 +341,7 @@ export default function MaterialsPage() {
             const level = metadata.level;
             const isDone = status === 'completed';
             const isCompleted = completedIds.has(m.id);
+            const dueCount = isDone ? countDueInMaterial(m) : 0;
 
             return (
               <div key={m.id} className="card card--clickable" onClick={() => router.push(`/viewer/${m.id}`)}>
@@ -310,6 +350,19 @@ export default function MaterialsPage() {
                     <div className="card__row card__row--gap">
                       <span className="card__flag">{language === 'English' ? '🇬🇧' : '🇯🇵'}</span>
                       {level && <span className="tag">{level}</span>}
+                      {dueCount > 0 && (
+                        <span
+                          className="tag"
+                          style={{
+                            background: 'rgba(212,150,42,0.15)',
+                            color: 'var(--warning)',
+                            fontWeight: 700,
+                          }}
+                          title="이 자료를 읽으면 복습 처리됨"
+                        >
+                          🧠 {dueCount} 복습
+                        </span>
+                      )}
                     </div>
                     <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
                       {isCompleted ? (

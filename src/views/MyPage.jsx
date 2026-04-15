@@ -189,6 +189,16 @@ export default function MyPage() {
         <Button variant="ghost" size="sm" onClick={signOut}>로그아웃</Button>
       </div>
 
+      {/* 부가 기능 바로가기 — 네비에서 제거된 항목들 */}
+      <div className="card mypage-section" style={{ marginBottom: 16 }}>
+        <h2 className="mypage-section__title" style={{ fontSize: '0.9rem', marginBottom: 10 }}>🔗 바로가기</h2>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <Link href="/guide" className="btn btn--ghost btn--sm">📚 가이드</Link>
+          <Link href="/leaderboard" className="btn btn--ghost btn--sm">🏆 랭킹</Link>
+          <Link href="/forum" className="btn btn--ghost btn--sm">💬 포럼</Link>
+        </div>
+      </div>
+
       {/* 프로필 설정 */}
       <div className="card mypage-section">
         <h2 className="mypage-section__title">👤 프로필 설정</h2>
