@@ -36,26 +36,44 @@ async function fetchMaterial(id) {
 }
 
 async function fetchUserVocabWords(userId) {
-  if (!userId) return { surfaces: new Set(), bases: new Set() };
+  if (!userId) return { byKey: new Map(), surfaces: new Set(), bases: new Set() };
   const { data, error } = await supabase
     .from('user_vocabulary')
-    .select('word_text, base_form')
+    .select('id, word_text, base_form, meaning, pos, furigana, interval, ease_factor, repetitions, next_review_at, language')
     .eq('user_id', userId);
-  if (error) return { surfaces: new Set(), bases: new Set() };
+  if (error) return { byKey: new Map(), surfaces: new Set(), bases: new Set() };
+
+  const byKey = new Map(); // 'surface:<text>' or 'base:<text>' → vocab row
   const surfaces = new Set();
   const bases = new Set();
   for (const v of data || []) {
-    if (v.word_text) surfaces.add(v.word_text);
-    if (v.base_form) bases.add(v.base_form);
+    if (v.word_text) {
+      surfaces.add(v.word_text);
+      byKey.set(`surface:${v.word_text}`, v);
+    }
+    if (v.base_form) {
+      bases.add(v.base_form);
+      if (!byKey.has(`base:${v.base_form}`)) byKey.set(`base:${v.base_form}`, v);
+    }
   }
-  return { surfaces, bases };
+  return { byKey, surfaces, bases };
+}
+
+function findSavedVocab(savedWords, token) {
+  if (!token) return null;
+  return savedWords.byKey?.get(`surface:${token.text}`)
+    || (token.base_form && savedWords.byKey?.get(`base:${token.base_form}`))
+    || null;
 }
 
 function isTokenSaved(savedWords, token) {
-  if (!token) return false;
-  if (savedWords.surfaces?.has(token.text)) return true;
-  if (token.base_form && savedWords.bases?.has(token.base_form)) return true;
-  return false;
+  return !!findSavedVocab(savedWords, token);
+}
+
+function isTokenDue(savedWords, token) {
+  const v = findSavedVocab(savedWords, token);
+  if (!v?.next_review_at) return false;
+  return new Date(v.next_review_at) <= new Date();
 }
 
 /**
@@ -146,7 +164,7 @@ export default function ViewerPage() {
           requestGrammarAnalysis, analyzeWordInContext, askFollowUp,
           handleTextSelection: handleGrammarTextSelection } = grammar;
 
-  const { data: savedWords = { surfaces: new Set(), bases: new Set() } } = useQuery({
+  const { data: savedWords = { byKey: new Map(), surfaces: new Set(), bases: new Set() } } = useQuery({
     queryKey: ['vocab-words', user?.id],
     queryFn: () => fetchUserVocabWords(user.id),
     enabled: !!user,
@@ -533,6 +551,35 @@ export default function ViewerPage() {
       .join('');
   }
 
+  // 인라인 복습: 뷰어에서 단어 보며 바로 FSRS 평가
+  const inlineReviewMutation = useMutation({
+    mutationFn: async ({ vocab, rating }) => {
+      const { calculateFSRS } = await import('../lib/fsrs');
+      const nextStats = calculateFSRS(rating, {
+        interval: vocab.interval ?? 0,
+        ease_factor: vocab.ease_factor ?? 0,
+        repetitions: vocab.repetitions ?? 0,
+        next_review_at: vocab.next_review_at,
+      });
+      const { error } = await supabase
+        .from('user_vocabulary')
+        .update({ ...nextStats, last_reviewed_at: new Date().toISOString() })
+        .eq('id', vocab.id);
+      if (error) throw error;
+      return { vocab, rating, nextStats };
+    },
+    onSuccess: async ({ rating }) => {
+      queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
+      const prevXP = profile?.xp ?? 0;
+      const xp = rating === 3 ? 12 : rating === 1 ? 5 : 8;
+      const { awardXP } = await import('../lib/xp');
+      awardXP(user.id, xp, prevXP);
+      recordActivity(user.id, () => fetchProfile(user.id));
+      toast(`복습 완료! +${xp} XP`, 'success', 2000);
+    },
+    onError: (err) => toast('복습 저장 실패: ' + err.message, 'error'),
+  });
+
   const correctTokenMutation = useMutation({
     mutationFn: async ({ tokenId, corrections }) => {
       const currentJson = material?.processed_json;
@@ -689,6 +736,24 @@ export default function ViewerPage() {
   const isWordSaved = isTokenSaved(savedWords, selectedToken);
   const savedCount = (savedWords.surfaces?.size || 0);
 
+  // 이 자료에서 복습 가능한 단어 수 (현재 로드된 토큰 기준)
+  const dueInMaterial = (() => {
+    if (!savedWords.byKey || !material?.processed_json?.dictionary) return 0;
+    const dict = material.processed_json.dictionary;
+    let count = 0;
+    const seen = new Set();
+    for (const tokenId of material.processed_json.sequence || []) {
+      const t = dict[tokenId];
+      if (!t || t.pos === '개행') continue;
+      const vocab = findSavedVocab(savedWords, t);
+      if (vocab?.next_review_at && new Date(vocab.next_review_at) <= new Date() && !seen.has(vocab.id)) {
+        seen.add(vocab.id);
+        count++;
+      }
+    }
+    return count;
+  })();
+
   return (
     <div className={`page-container viewer-theme-${theme}`} onMouseUp={handleTextSelection}>
       {/* 비로그인 유도 배너 */}
@@ -708,6 +773,15 @@ export default function ViewerPage() {
           <Link href="/vocab" className="viewer-vocab-counter">
             ⭐ {savedCount}개 수집 → 단어장
           </Link>
+        )}
+        {user && dueInMaterial > 0 && (
+          <div style={{
+            padding: '4px 10px', borderRadius: 'var(--radius-full)',
+            background: 'rgba(212,150,42,0.15)', border: '1px solid var(--warning)',
+            color: 'var(--warning)', fontSize: '0.78rem', fontWeight: 600,
+          }} title="노란 테두리 단어 클릭 → 인라인 복습">
+            🧠 {dueInMaterial}개 복습 가능
+          </div>
         )}
       </header>
 
@@ -984,12 +1058,13 @@ export default function ViewerPage() {
               );
             }
             const isSaved = isTokenSaved(savedWords, token);
+            const isDue = isSaved && isTokenDue(savedWords, token);
             const furiganaText = showFurigana && token.furigana
               ? trimOkurigana(token.text, token.furigana)
               : '';
             return (
               <div key={tokenId} ref={el => { if (el) tokenRefs.current[tokenId] = el; }}
-                className={`word-token ${isSaved ? 'word-token--saved' : ''}`}
+                className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}`}
                 role="button" tabIndex={0}
                 onClick={() => handleTokenClick(token, tokenId)}
                 onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), handleTokenClick(token, tokenId))}>
@@ -1103,7 +1178,15 @@ export default function ViewerPage() {
           if (!selectedToken?.id) return;
           const sentence = extractSourceSentence(selectedToken.id);
           analyzeWordInContext(selectedToken, sentence);
-          setIsSheetOpen(false); // BottomSheet 닫고 문법 모달 보이게
+          setIsSheetOpen(false);
+        }}
+        reviewableVocab={findSavedVocab(savedWords, selectedToken)}
+        isReviewDue={selectedToken ? isTokenDue(savedWords, selectedToken) : false}
+        onReview={(rating) => {
+          const vocab = findSavedVocab(savedWords, selectedToken);
+          if (!vocab) return;
+          inlineReviewMutation.mutate({ vocab, rating });
+          setIsSheetOpen(false);
         }}
       />
 

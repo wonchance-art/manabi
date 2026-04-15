@@ -8,6 +8,7 @@ export default function ViewerBottomSheet({
   isWordSaved, saveAnim, addToVocab, user, trimOkurigana,
   onCorrectToken, corrections = [],
   onAnalyzeContext,
+  reviewableVocab, isReviewDue, onReview,
 }) {
   const [editing, setEditing] = useState(false);
   const [editData, setEditData] = useState({});
@@ -139,6 +140,48 @@ export default function ViewerBottomSheet({
               })()}
             </div>
             <p className="bottom-sheet__meaning">{selectedToken.meaning || '(뜻 정보 없음)'}</p>
+
+            {/* 인라인 복습 (저장된 단어 + 복습 시점 도달) */}
+            {user && reviewableVocab && isReviewDue && onReview && (
+              <div style={{
+                padding: '12px 14px',
+                margin: '8px 0 12px',
+                background: 'rgba(212,150,42,0.1)',
+                border: '1px solid var(--warning)',
+                borderRadius: 'var(--radius-md)',
+              }}>
+                <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--warning)', marginBottom: 6 }}>
+                  🧠 복습 시점! 기억이 얼마나 남았나요?
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
+                  {[
+                    { rating: 1, label: '다시', sub: '+5', color: 'var(--danger)' },
+                    { rating: 2, label: '어려움', sub: '+8', color: 'var(--warning)' },
+                    { rating: 3, label: '알맞음', sub: '+12 ★', color: 'var(--accent)' },
+                    { rating: 4, label: '쉬움', sub: '+8', color: 'var(--primary)' },
+                  ].map(b => (
+                    <button
+                      key={b.rating}
+                      onClick={() => onReview(b.rating)}
+                      style={{
+                        padding: '8px 4px',
+                        background: 'var(--bg-secondary)',
+                        border: `1px solid ${b.color}`,
+                        borderRadius: 'var(--radius-sm)',
+                        color: b.color,
+                        cursor: 'pointer',
+                        fontSize: '0.78rem',
+                        fontWeight: 600,
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+                      }}
+                    >
+                      <span>{b.label}</span>
+                      <span style={{ fontSize: '0.68rem', opacity: 0.75 }}>{b.sub} XP</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* 문맥 해설 버튼 */}
             {user && onAnalyzeContext && (

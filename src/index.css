@@ -1725,6 +1725,21 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   opacity: 0.6;
 }
 
+/* 복습 대상: 불투명도 복원 + 부드러운 펄스 */
+.word-token--due .surface {
+  opacity: 1;
+  border-bottom: 2px solid var(--warning);
+  animation: due-pulse 2.5s ease-in-out infinite;
+}
+.word-token--due:hover .surface {
+  animation-play-state: paused;
+}
+
+@keyframes due-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(212, 150, 42, 0); }
+  50%      { box-shadow: 0 0 6px 1px rgba(212, 150, 42, 0.4); }
+}
+
 .furigana {
   display: block;
   height: 1.1em;          /* 고정 높이 — 요미가나 없는 토큰도 동일한 높이 확보 */
