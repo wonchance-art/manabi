@@ -91,8 +91,7 @@ export async function POST(request) {
 
   // 3. Gemini 배치 의미 요청 + upsert
   try {
-    const fetched = await fetchMeaningsForMissing(missing, 'Japanese', supabase);
-    // source를 'jmdict_seed'로 표시 (내장 시드 구분)
+    const { result: fetched, errors } = await fetchMeaningsForMissing(missing, 'Japanese', supabase);
     const updateIds = [...fetched.keys()];
     if (updateIds.length > 0) {
       await supabase
@@ -108,6 +107,7 @@ export async function POST(request) {
       attempted: missing.length,
       inserted: fetched.size,
       failed: missing.length - fetched.size,
+      errors: errors.slice(0, 5), // 앞 5개만 노출
     });
   } catch (err) {
     return Response.json(

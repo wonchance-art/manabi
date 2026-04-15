@@ -174,6 +174,7 @@ async function analyzeJapanese(rawText, signal, { metadata, onBatch, existingJso
 async function analyzeLineByLineGemini(rawText, signal, { metadata, onBatch, existingJson, concurrency }) {
   const lines = rawText.split('\n');
   const total = lines.length;
+  const lang = metadata?.language || existingJson?.metadata?.language || 'Japanese';
   const timestamp = Date.now();
   let currentConcurrency = concurrency;
   const MIN_CONCURRENCY = 2;
@@ -206,7 +207,7 @@ async function analyzeLineByLineGemini(rawText, signal, { metadata, onBatch, exi
       let lastError = null;
       for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
         try {
-          const raw = await callGemini(buildTokenizationPrompt(line), signal);
+          const raw = await callGemini(buildTokenizationPrompt(line, lang), signal);
           const payload = parseGeminiJSON(raw);
           return { idx, type: 'success', payload, line };
         } catch (e) {

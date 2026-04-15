@@ -87,13 +87,12 @@ export async function POST(request) {
 
     if (missingList.length > 0) {
       try {
-        const fetched = await fetchMeaningsForMissing(missingList, language, supabase);
+        const { result: fetched } = await fetchMeaningsForMissing(missingList, language, supabase);
         for (const [baseForm, entry] of fetched) {
           cache.set(baseForm, entry);
         }
       } catch (err) {
         console.warn('[api/analyze] Gemini meaning fetch failed:', err?.message);
-        // 치명적 에러는 아니므로 계속 진행 — 캐시에 없는 건 meaning이 빈 문자열이 됨
       }
     }
 

@@ -1,6 +1,6 @@
 // 서버 전용 — 미싱 형태소들의 의미를 Gemini에 배치 요청
 
-const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
 
 function buildMeaningBatchPrompt(entries) {
   // entries: [{ base_form, pos }, ...]
@@ -40,45 +40,75 @@ function parseJsonLenient(text) {
  */
 export async function fetchMeaningsForMissing(missing, language, supabase) {
   const result = new Map();
-  if (missing.length === 0) return result;
+  const errors = [];
+  if (missing.length === 0) return { result, errors };
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error('GEMINI_API_KEY not set');
 
   // 한 번에 너무 많이 보내면 응답 품질 저하 — 15개씩 배치
   const BATCH_SIZE = 15;
+  const MAX_RETRIES = 4;
+  const DELAYS = [5000, 10000, 20000, 40000];
+
+  async function callWithRetry(prompt) {
+    let lastErr = null;
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      const res = await fetch(`${GEMINI_URL}?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0 },
+        }),
+      });
+      const data = await res.json();
+      const isCapacity = res.status === 503 || res.status === 429 ||
+        JSON.stringify(data).toLowerCase().includes('high demand') ||
+        JSON.stringify(data).toLowerCase().includes('overloaded');
+
+      if (res.ok) return { res, data };
+      lastErr = { res, data };
+
+      if (!isCapacity || attempt === MAX_RETRIES - 1) return { res, data };
+      const delay = DELAYS[attempt];
+      console.warn(`[fetchMeanings] capacity retry ${attempt + 1}/${MAX_RETRIES} in ${delay}ms`);
+      await new Promise(r => setTimeout(r, delay));
+    }
+    return lastErr;
+  }
+
   for (let i = 0; i < missing.length; i += BATCH_SIZE) {
     const batch = missing.slice(i, i + BATCH_SIZE);
 
     const prompt = buildMeaningBatchPrompt(batch);
-    const res = await fetch(`${GEMINI_URL}?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0 },
-      }),
-    });
-
-    const data = await res.json();
+    const { res, data } = await callWithRetry(prompt);
     if (!res.ok) {
-      console.warn('[fetchMeanings] batch failed:', res.status, JSON.stringify(data).slice(0, 200));
-      continue; // 이 배치만 스킵, 다음 배치 계속
+      const errMsg = `HTTP ${res.status}: ${JSON.stringify(data).slice(0, 300)}`;
+      console.warn('[fetchMeanings] batch failed:', errMsg);
+      errors.push({ stage: 'http', batch: i, error: errMsg });
+      continue;
     }
 
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!text) continue;
+    if (!text) {
+      console.warn('[fetchMeanings] empty response', JSON.stringify(data).slice(0, 200));
+      errors.push({ stage: 'empty', batch: i, error: 'no candidates.text' });
+      continue;
+    }
 
     let parsed;
     try {
       parsed = parseJsonLenient(text);
     } catch (e) {
-      console.warn('[fetchMeanings] parse failed:', e.message, text.slice(0, 200));
+      console.warn('[fetchMeanings] parse failed:', e.message, text.slice(0, 300));
+      errors.push({ stage: 'parse', batch: i, error: e.message, sample: text.slice(0, 200) });
       continue;
     }
 
     if (!Array.isArray(parsed) || parsed.length !== batch.length) {
       console.warn('[fetchMeanings] length mismatch', parsed?.length, batch.length);
+      errors.push({ stage: 'length', batch: i, expected: batch.length, got: parsed?.length });
       continue;
     }
 
@@ -111,9 +141,12 @@ export async function fetchMeaningsForMissing(missing, language, supabase) {
       const { error } = await supabase
         .from('morpheme_dictionary')
         .upsert(rows, { onConflict: 'base_form,language', ignoreDuplicates: false });
-      if (error) console.warn('[fetchMeanings] db upsert failed:', error.message);
+      if (error) {
+        console.warn('[fetchMeanings] db upsert failed:', error.message);
+        errors.push({ stage: 'db', batch: i, error: error.message });
+      }
     }
   }
 
-  return result;
+  return { result, errors };
 }

@@ -194,7 +194,13 @@ Rules:
       const result = await callGemini(prompt, null, { model: GEMINI_MODEL });
       setGrammarAnalysis(result);
     } catch (err) {
-      setGrammarAnalysis('❌ 해설 중 오류가 발생했어요: ' + err.message);
+      const msg = (err.message || '').toLowerCase();
+      const isCapacity = msg.includes('high demand') || msg.includes('overloaded') || msg.includes('unavailable');
+      setGrammarAnalysis(
+        isCapacity
+          ? '⏳ Gemini 서버가 일시적으로 과부하 상태입니다. 몇 분 뒤 다시 시도해주세요.'
+          : '❌ 해설 중 오류가 발생했어요: ' + err.message,
+      );
     } finally {
       setIsGrammarLoading(false);
     }

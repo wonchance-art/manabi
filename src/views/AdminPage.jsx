@@ -184,8 +184,16 @@ export default function AdminPage() {
       queryClient.invalidateQueries({ queryKey: ['admin-dict-stats'] });
       toast(
         `시드 완료! 전체 ${data.total} · 기존 ${data.skipped} · 신규 ${data.inserted} · 실패 ${data.failed || 0}`,
-        'success', 7000,
+        data.inserted === 0 ? 'warning' : 'success', 10000,
       );
+      if (data.errors && data.errors.length > 0) {
+        console.error('[seed errors]', data.errors);
+        const first = data.errors[0];
+        toast(
+          `에러(${first.stage}): ${first.error?.slice(0, 200)}`,
+          'error', 15000,
+        );
+      }
       setExtraBaseFormsText('');
     },
     onError: (err) => toast('시드 실패: ' + err.message, 'error'),

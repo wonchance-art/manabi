@@ -7,6 +7,7 @@ const SUPABASE_KEY = 'sb_publishable_qSe245OfO4EyU7SQxgqSSA_qsMPRlLr';
 
 export async function generateMetadata({ params }) {
   try {
+    const { id } = await params;
     const cookieStore = await cookies();
     const supabase = createServerClient(SUPABASE_URL, SUPABASE_KEY, {
       cookies: {
@@ -17,7 +18,7 @@ export async function generateMetadata({ params }) {
     const { data } = await supabase
       .from('reading_materials')
       .select('title')
-      .eq('id', params.id)
+      .eq('id', id)
       .single();
     const title = data?.title ? `${data.title} | Anatomy Studio` : '자료 뷰어 | Anatomy Studio';
     const description = data?.title ? `AI가 분석한 "${data.title}" 학습 자료` : 'AI 언어 해부 학습';

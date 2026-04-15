@@ -79,7 +79,7 @@ export async function POST(request) {
     );
   }
 
-  const { contents, generationConfig, model = 'models/gemini-2.0-flash' } = body;
+  const { contents, generationConfig, model = 'models/gemini-2.5-flash' } = body;
   if (!contents) {
     recordStat('errors');
     stats.errorByStatus['400'] = (stats.errorByStatus['400'] || 0) + 1;
@@ -100,10 +100,10 @@ export async function POST(request) {
     });
     let data = await response.json();
 
-    // 폴백: 1차 실패 시 gemini-2.5-flash 재시도
-    if (!response.ok && model !== 'models/gemini-2.5-flash') {
+    // 폴백: 1차 실패 시 gemini-2.5-flash-lite 재시도 (더 가볍고 용량 여유 있음)
+    if (!response.ok && model !== 'models/gemini-2.5-flash-lite') {
       recordStat('fallbackUsed');
-      const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+      const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
       response = await fetch(fallbackUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
