@@ -7,10 +7,11 @@ export default function VocabList({
   filteredVocab, visibleCount, setVisibleCount,
   search, setSearch, sortBy, setSortBy, langFilter, setLangFilter,
   ttsSupported, speak, setConfirmAction, deleteMutation, onWordClick,
-  bulkDeleteMutation,
+  bulkDeleteMutation, updateVocabMutation,
 }) {
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set());
+  const [editing, setEditing] = useState(null); // 편집 중인 단어
 
   const toggleSelect = (id) => {
     setSelectedIds(prev => {
@@ -191,6 +192,28 @@ export default function VocabList({
                     🔊
                   </button>
                 )}
+                {!selectMode && updateVocabMutation && (
+                  <button
+                    onClick={() => setEditing({
+                      id: v.id,
+                      word_text: v.word_text,
+                      furigana: v.furigana || '',
+                      meaning: v.meaning || '',
+                      pos: v.pos || '',
+                    })}
+                    style={{
+                      width: '26px', height: '26px', borderRadius: 'var(--radius-sm)',
+                      background: 'transparent', border: '1px solid transparent',
+                      color: 'var(--text-muted)', fontSize: '0.82rem', cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--primary-light)'; e.currentTarget.style.color = 'var(--primary-light)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}
+                    title="편집"
+                  >
+                    ✏️
+                  </button>
+                )}
                 {!selectMode && (
                   <button
                     onClick={() => setConfirmAction({
@@ -262,6 +285,69 @@ export default function VocabList({
           <Button variant="secondary" onClick={() => setVisibleCount(c => c + 30)}>
             더 보기 ({filteredVocab.length - visibleCount}개 남음)
           </Button>
+        </div>
+      )}
+
+      {/* 편집 모달 */}
+      {editing && (
+        <div className="modal-overlay" onClick={() => setEditing(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 440 }}>
+            <h3 style={{ margin: '0 0 16px', fontSize: '1.05rem' }}>✏️ 단어 편집</h3>
+
+            <label className="u-text-sm u-text-bold" style={{ display: 'block', marginBottom: 4 }}>단어</label>
+            <input
+              type="text"
+              value={editing.word_text}
+              onChange={e => setEditing(s => ({ ...s, word_text: e.target.value }))}
+              className="form-input"
+              style={{ marginBottom: 12 }}
+            />
+
+            <label className="u-text-sm u-text-bold" style={{ display: 'block', marginBottom: 4 }}>후리가나 / 발음</label>
+            <input
+              type="text"
+              value={editing.furigana}
+              onChange={e => setEditing(s => ({ ...s, furigana: e.target.value }))}
+              className="form-input"
+              placeholder="(선택)"
+              style={{ marginBottom: 12 }}
+            />
+
+            <label className="u-text-sm u-text-bold" style={{ display: 'block', marginBottom: 4 }}>의미</label>
+            <input
+              type="text"
+              value={editing.meaning}
+              onChange={e => setEditing(s => ({ ...s, meaning: e.target.value }))}
+              className="form-input"
+              style={{ marginBottom: 12 }}
+            />
+
+            <label className="u-text-sm u-text-bold" style={{ display: 'block', marginBottom: 4 }}>품사</label>
+            <input
+              type="text"
+              value={editing.pos}
+              onChange={e => setEditing(s => ({ ...s, pos: e.target.value }))}
+              className="form-input"
+              placeholder="(선택)"
+              style={{ marginBottom: 16 }}
+            />
+
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Button variant="ghost" onClick={() => setEditing(null)} style={{ flex: 1 }}>취소</Button>
+              <Button
+                onClick={() => {
+                  updateVocabMutation.mutate(
+                    { id: editing.id, updates: editing },
+                    { onSuccess: () => setEditing(null) }
+                  );
+                }}
+                disabled={updateVocabMutation?.isPending}
+                style={{ flex: 2 }}
+              >
+                {updateVocabMutation?.isPending ? '저장 중...' : '저장'}
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </>

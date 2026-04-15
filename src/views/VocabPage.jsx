@@ -539,6 +539,61 @@ export default function VocabPage() {
     onError: (err) => toast('가져오기 실패 — ' + friendlyToastMessage(err), 'error'),
   });
 
+  // 수동 단어 추가 모달
+  const [manualAddOpen, setManualAddOpen] = useState(false);
+  const [manualDraft, setManualDraft] = useState({ word_text: '', furigana: '', meaning: '', pos: '', language: 'Japanese' });
+
+  const manualAddMutation = useMutation({
+    mutationFn: async (draft) => {
+      const text = draft.word_text.trim();
+      if (!text) throw new Error('단어를 입력해주세요');
+      const isJa = /[\u3040-\u30ff\u4e00-\u9fff]/.test(text);
+      const row = {
+        user_id: user.id,
+        word_text: text,
+        base_form: isJa ? text : text.toLowerCase(),
+        furigana: draft.furigana.trim(),
+        meaning: draft.meaning.trim(),
+        pos: draft.pos.trim(),
+        language: draft.language || (isJa ? 'Japanese' : 'English'),
+        next_review_at: new Date().toISOString(),
+      };
+      const { error } = await supabase
+        .from('user_vocabulary')
+        .upsert([row], { onConflict: 'user_id,word_text', ignoreDuplicates: true });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
+      toast('단어를 추가했어요', 'success');
+      setManualAddOpen(false);
+      setManualDraft({ word_text: '', furigana: '', meaning: '', pos: '', language: 'Japanese' });
+    },
+    onError: (err) => toast('추가 실패 — ' + friendlyToastMessage(err), 'error'),
+  });
+
+  // 개별 단어 편집 (word_text/furigana/meaning/pos)
+  const updateVocabMutation = useMutation({
+    mutationFn: async ({ id, updates }) => {
+      const allowed = {};
+      if (typeof updates.word_text === 'string') allowed.word_text = updates.word_text.trim().slice(0, 200);
+      if (typeof updates.furigana === 'string') allowed.furigana = updates.furigana.trim().slice(0, 200);
+      if (typeof updates.meaning === 'string') allowed.meaning = updates.meaning.trim().slice(0, 500);
+      if (typeof updates.pos === 'string') allowed.pos = updates.pos.trim().slice(0, 50);
+      if (Object.keys(allowed).length === 0) throw new Error('변경할 내용이 없어요');
+      const { error } = await supabase
+        .from('user_vocabulary')
+        .update(allowed)
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
+      toast('단어를 수정했어요', 'success');
+    },
+    onError: (err) => toast('수정 실패 — ' + friendlyToastMessage(err), 'error'),
+  });
+
   const bulkDeleteMutation = useMutation({
     mutationFn: async (ids) => {
       if (!ids?.length) return 0;
@@ -746,6 +801,9 @@ export default function VocabPage() {
           )}
         </div>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <Button onClick={() => setManualAddOpen(true)} variant="primary" size="sm">
+            ➕ 단어 추가
+          </Button>
           {vocab.length > 0 && (
             <>
             <Button onClick={() => exportCSV(vocab)} variant="secondary" size="sm">
@@ -826,6 +884,7 @@ export default function VocabPage() {
           setConfirmAction={setConfirmAction}
           deleteMutation={deleteMutation}
           bulkDeleteMutation={bulkDeleteMutation}
+          updateVocabMutation={updateVocabMutation}
           onWordClick={setDetailWord}
         />
       ) : tab === 'review' ? (
@@ -892,6 +951,86 @@ export default function VocabPage() {
 
       {detailWord && (
         <VocabDetailCard word={detailWord} onClose={() => setDetailWord(null)} speak={speak} ttsSupported={ttsSupported} />
+      )}
+
+      {/* 수동 단어 추가 모달 */}
+      {manualAddOpen && (
+        <div className="modal-overlay" onClick={() => !manualAddMutation.isPending && setManualAddOpen(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 440 }}>
+            <h3 style={{ margin: '0 0 16px', fontSize: '1.05rem' }}>➕ 단어 직접 추가</h3>
+
+            <label className="u-text-sm u-text-bold" style={{ display: 'block', marginBottom: 4 }}>언어</label>
+            <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+              {['Japanese', 'English'].map(lang => (
+                <button
+                  key={lang}
+                  type="button"
+                  onClick={() => setManualDraft(d => ({ ...d, language: lang }))}
+                  className={`btn btn--sm ${manualDraft.language === lang ? 'btn--primary' : 'btn--ghost'}`}
+                  style={{ flex: 1 }}
+                >
+                  {lang === 'Japanese' ? '🇯🇵 일본어' : '🇬🇧 영어'}
+                </button>
+              ))}
+            </div>
+
+            <label className="u-text-sm u-text-bold" style={{ display: 'block', marginBottom: 4 }}>단어 *</label>
+            <input
+              type="text"
+              value={manualDraft.word_text}
+              onChange={e => setManualDraft(d => ({ ...d, word_text: e.target.value }))}
+              className="form-input"
+              placeholder={manualDraft.language === 'Japanese' ? '예: 食べる' : 'e.g. eloquent'}
+              autoFocus
+              style={{ marginBottom: 12 }}
+            />
+
+            <label className="u-text-sm u-text-bold" style={{ display: 'block', marginBottom: 4 }}>
+              {manualDraft.language === 'Japanese' ? '후리가나' : '발음 (선택)'}
+            </label>
+            <input
+              type="text"
+              value={manualDraft.furigana}
+              onChange={e => setManualDraft(d => ({ ...d, furigana: e.target.value }))}
+              className="form-input"
+              placeholder={manualDraft.language === 'Japanese' ? 'たべる' : '(선택)'}
+              style={{ marginBottom: 12 }}
+            />
+
+            <label className="u-text-sm u-text-bold" style={{ display: 'block', marginBottom: 4 }}>의미</label>
+            <input
+              type="text"
+              value={manualDraft.meaning}
+              onChange={e => setManualDraft(d => ({ ...d, meaning: e.target.value }))}
+              className="form-input"
+              placeholder="한국어 뜻"
+              style={{ marginBottom: 12 }}
+            />
+
+            <label className="u-text-sm u-text-bold" style={{ display: 'block', marginBottom: 4 }}>품사 (선택)</label>
+            <input
+              type="text"
+              value={manualDraft.pos}
+              onChange={e => setManualDraft(d => ({ ...d, pos: e.target.value }))}
+              className="form-input"
+              placeholder="동사 / 명사 / 형용사..."
+              style={{ marginBottom: 16 }}
+            />
+
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Button variant="ghost" onClick={() => setManualAddOpen(false)} disabled={manualAddMutation.isPending} style={{ flex: 1 }}>
+                취소
+              </Button>
+              <Button
+                onClick={() => manualAddMutation.mutate(manualDraft)}
+                disabled={manualAddMutation.isPending || !manualDraft.word_text.trim()}
+                style={{ flex: 2 }}
+              >
+                {manualAddMutation.isPending ? '추가 중...' : '추가'}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
 
       <ConfirmModal

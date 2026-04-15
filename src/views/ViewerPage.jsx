@@ -144,6 +144,8 @@ export default function ViewerPage() {
   const [commentInput, setCommentInput] = useState('');
   const [readProgress, setReadProgress] = useState(0);
   const [saveAnim, setSaveAnim] = useState(false);
+  const [titleEditing, setTitleEditing] = useState(false);
+  const [titleDraft, setTitleDraft] = useState('');
 
   const { data: material, isLoading, error, refetch } = useQuery({
     queryKey: ['material', id],
@@ -552,6 +554,25 @@ export default function ViewerPage() {
       .join('');
   }
 
+  // 제목 편집 (owner만)
+  const updateTitleMutation = useMutation({
+    mutationFn: async (newTitle) => {
+      const title = newTitle.trim().slice(0, 200);
+      if (!title) throw new Error('제목이 비어있어요');
+      const { error } = await supabase
+        .from('reading_materials')
+        .update({ title })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['material', id] });
+      setTitleEditing(false);
+      toast('제목을 수정했어요', 'success');
+    },
+    onError: (err) => toast('제목 수정 실패 — ' + friendlyToastMessage(err), 'error'),
+  });
+
   // 인라인 복습: 뷰어에서 단어 보며 바로 FSRS 평가
   const inlineReviewMutation = useMutation({
     mutationFn: async ({ vocab, rating }) => {
@@ -769,7 +790,44 @@ export default function ViewerPage() {
 
       <header className="page-header viewer-header">
         <Link href="/materials" className="viewer-back-link">← 라이브러리</Link>
-        <h1 className="page-header__title">{material.title}</h1>
+        {titleEditing && user?.id === material?.owner_id ? (
+          <form
+            onSubmit={e => { e.preventDefault(); updateTitleMutation.mutate(titleDraft); }}
+            style={{ display: 'flex', gap: 6, alignItems: 'center', flex: 1 }}
+          >
+            <input
+              type="text"
+              value={titleDraft}
+              onChange={e => setTitleDraft(e.target.value)}
+              onKeyDown={e => e.key === 'Escape' && setTitleEditing(false)}
+              autoFocus
+              className="form-input"
+              style={{ fontSize: '1.1rem', fontWeight: 600, padding: '6px 10px', flex: 1 }}
+              maxLength={200}
+            />
+            <Button size="sm" type="submit" disabled={updateTitleMutation.isPending || !titleDraft.trim()}>저장</Button>
+            <Button size="sm" variant="ghost" type="button" onClick={() => setTitleEditing(false)}>취소</Button>
+          </form>
+        ) : (
+          <h1 className="page-header__title" style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+            {material.title}
+            {user?.id === material?.owner_id && (
+              <button
+                onClick={() => { setTitleDraft(material.title); setTitleEditing(true); }}
+                title="제목 편집"
+                style={{
+                  background: 'transparent', border: 'none', cursor: 'pointer',
+                  color: 'var(--text-muted)', fontSize: '0.85rem',
+                  padding: 4, borderRadius: 4,
+                }}
+                onMouseEnter={e => e.currentTarget.style.color = 'var(--primary-light)'}
+                onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
+              >
+                ✏️
+              </button>
+            )}
+          </h1>
+        )}
         {user && savedCount > 0 && (
           <Link href="/vocab" className="viewer-vocab-counter">
             ⭐ {savedCount}개 수집 → 단어장
