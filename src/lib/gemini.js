@@ -142,7 +142,6 @@ function buildEnglishTokenizationPrompt(text) {
 
 ## 각 토큰 필드 (모두 필수)
 - "text": 원문 그대로의 단어/구두점 (대소문자 유지)
-- "furigana": IPA 발음기호 (간단한 영어단어만. 모르면 "")
 - "pos": 한국어 품사 ("명사", "동사", "형용사", "부사", "전치사", "접속사", "관사", "대명사", "조동사", "감탄사", "기호" 중 하나)
 - "meaning": 한국어 뜻 (★반드시 채울 것. 모르면 추정이라도★)
 
@@ -154,14 +153,15 @@ function buildEnglishTokenizationPrompt(text) {
 
 ## 예시 ("I love apples.")
 {"sequence":["0","1","2","3"],"dictionary":{
-  "0":{"text":"I","furigana":"aɪ","pos":"대명사","meaning":"나"},
-  "1":{"text":"love","furigana":"lʌv","pos":"동사","meaning":"사랑하다"},
-  "2":{"text":"apples","furigana":"ˈæp.əlz","pos":"명사","meaning":"사과들"},
+  "0":{"text":"I","pos":"대명사","meaning":"나"},
+  "1":{"text":"love","pos":"동사","meaning":"사랑하다"},
+  "2":{"text":"apples","pos":"명사","meaning":"사과들"},
   "3":{"text":".","pos":"기호","meaning":"(마침표)"}
 }}
 
 ## 주의
 - meaning은 **절대 빈 문자열로 두지 말 것**. 모호하면 주요 뜻 하나만
+- furigana 필드는 영어에선 불필요 (출력 금지)
 - JSON만 출력, 설명 금지`;
 }
 
