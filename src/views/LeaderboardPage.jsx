@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../lib/AuthContext';
 import { supabase } from '../lib/supabase';
 import { getXPLevel as getLevel, getLevelProgress } from '../lib/xp';
+import EmptyState from '../components/EmptyState';
 
 const RANK_MEDAL = ['🥇', '🥈', '🥉'];
 const RANK_COLORS = ['#f7c948', '#adb5bd', '#cd7f32'];
@@ -118,11 +119,11 @@ export default function LeaderboardPage() {
           })}
 
           {leaders.length === 0 && (
-            <div className="empty-state">
-              <div className="empty-state__icon">🏆</div>
-              <p className="empty-state__msg">아직 랭킹 데이터가 없어요</p>
-              <p className="empty-state__sub">단어를 복습하고 자료를 읽으면 XP가 쌓여요!</p>
-            </div>
+            <EmptyState
+              icon="🏆"
+              title="아직 랭킹 데이터가 없어요"
+              desc="단어를 복습하고 자료를 읽으면 XP가 쌓여요!"
+            />
           )}
         </div>
       )}

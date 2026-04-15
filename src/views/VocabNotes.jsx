@@ -1,11 +1,14 @@
+import EmptyState from '../components/EmptyState';
+
 export default function VocabNotes({ grammarNotes, deleteNoteMutation }) {
   return (
     <div className="grammar-notes-list">
       {grammarNotes.length === 0 ? (
-        <div className="empty-state">
-          <div className="empty-state__icon">📝</div>
-          <p className="empty-state__msg">저장된 문법 노트가 없습니다.<br />뷰어에서 문장을 드래그해 AI 해설을 받고 저장해보세요!</p>
-        </div>
+        <EmptyState
+          icon="📝"
+          title="저장된 문법 노트가 없습니다"
+          desc="뷰어에서 문장을 드래그해 AI 해설을 받고 저장해보세요!"
+        />
       ) : grammarNotes.map(note => (
         <div key={note.id} className="grammar-note-card">
           <div className="grammar-note-card__header">
