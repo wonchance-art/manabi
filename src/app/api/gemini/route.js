@@ -1,3 +1,44 @@
+const GROQ_MODEL = 'llama-3.3-70b-versatile';
+const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
+
+/** Groq 호출 + Gemini 호환 응답 형식으로 변환 */
+async function callGroq(contents, generationConfig) {
+  const groqKey = process.env.GROQ_API_KEY;
+  if (!groqKey) return null;
+
+  // Gemini contents → OpenAI-compatible messages
+  const promptText = contents.flatMap(c =>
+    (c.parts || []).map(p => p.text || '')
+  ).join('\n');
+
+  const res = await fetch(GROQ_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${groqKey}`,
+    },
+    body: JSON.stringify({
+      model: GROQ_MODEL,
+      messages: [{ role: 'user', content: promptText }],
+      temperature: generationConfig?.temperature ?? 0,
+      stream: false,
+    }),
+  });
+
+  if (!res.ok) return null;
+  const data = await res.json();
+  const text = data.choices?.[0]?.message?.content;
+  if (!text) return null;
+
+  // Gemini candidates 형식으로 포장
+  return {
+    candidates: [{
+      content: { parts: [{ text }] },
+      _provider: 'groq',
+    }],
+  };
+}
+
 // IP별 요청 카운터 (서버리스 인스턴스 재시작 시 초기화 — 충분한 억지력)
 const rateLimitMap = new Map();
 const RATE_LIMIT = 300; // 분당 요청 수 (분석 속도 향상 위해 상향)
@@ -13,8 +54,9 @@ const stats = {
   errors: 0,
   rateLimited: 0,
   fallbackUsed: 0,
-  latencySum: 0, // ms
-  errorByStatus: {}, // { "400": n, "429": n, ... }
+  groqUsed: 0,     // Gemini 전체 실패 시 Groq로 살린 횟수
+  latencySum: 0,
+  errorByStatus: {},
 };
 
 function recordStat(key, inc = 1) {
@@ -100,7 +142,7 @@ export async function POST(request) {
     });
     let data = await response.json();
 
-    // 폴백: 1차 실패 시 gemini-2.5-flash-lite 재시도 (더 가볍고 용량 여유 있음)
+    // 폴백 1: 1차 실패 시 gemini-2.5-flash-lite 재시도 (더 가볍고 용량 여유 있음)
     if (!response.ok && model !== 'models/gemini-2.5-flash-lite') {
       recordStat('fallbackUsed');
       const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
@@ -110,6 +152,18 @@ export async function POST(request) {
         body: JSON.stringify(requestBody),
       });
       data = await response.json();
+    }
+
+    // 폴백 2: Gemini 두 번째도 실패 시 Groq (GROQ_API_KEY 설정됐을 때만)
+    if (!response.ok) {
+      const groqData = await callGroq(contents, generationConfig).catch(() => null);
+      if (groqData) {
+        recordStat('groqUsed');
+        recordStat('ok');
+        const latency = Date.now() - started;
+        stats.latencySum += latency;
+        return Response.json(groqData, { status: 200 });
+      }
     }
 
     const latency = Date.now() - started;
@@ -150,6 +204,8 @@ export async function GET() {
     errors: stats.errors,
     rateLimited: stats.rateLimited,
     fallbackUsed: stats.fallbackUsed,
+    groqUsed: stats.groqUsed,
+    groqConfigured: !!process.env.GROQ_API_KEY,
     avgLatencyMs: avgLatency,
     errorRatePct: errorRate,
     errorByStatus: stats.errorByStatus,

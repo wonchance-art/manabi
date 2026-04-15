@@ -78,6 +78,35 @@ export async function fetchMeaningsForMissing(missing, language, supabase) {
   const MAX_RETRIES = 4;
   const DELAYS = [5000, 10000, 20000, 40000];
 
+  async function callGroqFallback(prompt) {
+    const groqKey = process.env.GROQ_API_KEY;
+    if (!groqKey) return null;
+    try {
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${groqKey}`,
+        },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0,
+          stream: false,
+        }),
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      const text = data.choices?.[0]?.message?.content;
+      if (!text) return null;
+      // Gemini candidates 형식으로 포장 (downstream text 파싱은 동일)
+      return {
+        candidates: [{ content: { parts: [{ text }] } }],
+        _provider: 'groq',
+      };
+    } catch { return null; }
+  }
+
   async function callWithRetry(prompt) {
     let lastErr = null;
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
@@ -109,12 +138,21 @@ export async function fetchMeaningsForMissing(missing, language, supabase) {
     const batch = missing.slice(i, i + BATCH_SIZE);
 
     const prompt = buildMeaningBatchPrompt(batch, language);
-    const { res, data } = await callWithRetry(prompt);
+    let { res, data } = await callWithRetry(prompt);
+
+    // Gemini 최종 실패 → Groq 폴백 시도
     if (!res.ok) {
-      const errMsg = `HTTP ${res.status}: ${JSON.stringify(data).slice(0, 300)}`;
-      console.warn('[fetchMeanings] batch failed:', errMsg);
-      errors.push({ stage: 'http', batch: i, error: errMsg });
-      continue;
+      const groqData = await callGroqFallback(prompt);
+      if (groqData) {
+        console.log('[fetchMeanings] batch recovered via Groq');
+        data = groqData;
+        res = { ok: true, status: 200 };
+      } else {
+        const errMsg = `HTTP ${res.status}: ${JSON.stringify(data).slice(0, 300)}`;
+        console.warn('[fetchMeanings] batch failed:', errMsg);
+        errors.push({ stage: 'http', batch: i, error: errMsg });
+        continue;
+      }
     }
 
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text;

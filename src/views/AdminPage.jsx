@@ -806,7 +806,12 @@ export default function AdminPage() {
                     { label: '성공', value: geminiStats.ok, color: 'var(--accent)' },
                     { label: '에러', value: geminiStats.errors, color: 'var(--danger)' },
                     { label: '레이트 리밋', value: geminiStats.rateLimited, color: 'var(--warning)' },
-                    { label: '폴백 사용', value: geminiStats.fallbackUsed, color: 'var(--warning)' },
+                    { label: 'Gemini 폴백', value: geminiStats.fallbackUsed, color: 'var(--warning)' },
+                    {
+                      label: `Groq 구원 ${geminiStats.groqConfigured ? '' : '(미설정)'}`,
+                      value: geminiStats.groqUsed ?? 0,
+                      color: geminiStats.groqConfigured ? 'var(--accent)' : 'var(--text-muted)',
+                    },
                     { label: '평균 레이턴시', value: `${geminiStats.avgLatencyMs}ms`, color: 'var(--text-primary)' },
                     { label: '에러율', value: `${geminiStats.errorRatePct}%`, color: geminiStats.errorRatePct > 5 ? 'var(--danger)' : 'var(--text-primary)' },
                     { label: '인스턴스 가동', value: `${geminiStats.uptimeMinutes}분`, color: 'var(--text-muted)' },
