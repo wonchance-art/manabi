@@ -11,6 +11,7 @@ import { getXPLevel, getLevelProgress } from '../lib/xp';
 import { ACHIEVEMENTS } from '../lib/achievements';
 import Button from '../components/Button';
 import VocabStats from './VocabStats';
+import { useTheme } from '../lib/useTheme';
 
 async function fetchMyStats(userId) {
   const heatmapStart = new Date();
@@ -51,6 +52,7 @@ export default function MyPage() {
   const { user, profile, fetchProfile, signOut } = useAuth();
   const toast = useToast();
   const queryClient = useQueryClient();
+  const { theme, toggleTheme } = useTheme();
 
   const [editName, setEditName]           = useState('');
   const [editLanguages, setEditLanguages] = useState(['Japanese']);
@@ -212,6 +214,32 @@ export default function MyPage() {
           <Link href="/leaderboard" className="btn btn--ghost btn--sm">🏆 랭킹</Link>
           <Link href="/forum" className="btn btn--ghost btn--sm">💬 포럼</Link>
         </div>
+      </div>
+
+      {/* 테마 설정 */}
+      <div className="card mypage-section" style={{ marginBottom: 16 }}>
+        <h2 className="mypage-section__title" style={{ fontSize: '0.9rem', marginBottom: 10 }}>🎨 테마</h2>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            onClick={() => theme !== 'light' && toggleTheme()}
+            className={`btn btn--sm ${theme === 'light' ? 'btn--primary' : 'btn--ghost'}`}
+            aria-pressed={theme === 'light'}
+            style={{ flex: 1 }}
+          >
+            ☀️ 라이트
+          </button>
+          <button
+            onClick={() => theme !== 'dark' && toggleTheme()}
+            className={`btn btn--sm ${theme === 'dark' ? 'btn--primary' : 'btn--ghost'}`}
+            aria-pressed={theme === 'dark'}
+            style={{ flex: 1 }}
+          >
+            🌙 다크
+          </button>
+        </div>
+        <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 6 }}>
+          💡 상단 네비 {theme === 'dark' ? '☀️' : '🌙'} 아이콘으로도 전환 가능
+        </p>
       </div>
 
       {/* 📊 학습 통계 — /vocab에서 이관 */}

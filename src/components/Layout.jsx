@@ -129,6 +129,7 @@ export default function Layout({ children }) {
           onClick={toggleTheme}
           title={theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환'}
           aria-label={theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환'}
+          aria-pressed={theme === 'dark'}
         >
           <span aria-hidden="true">{theme === 'dark' ? '☀️' : '🌙'}</span>
         </button>
