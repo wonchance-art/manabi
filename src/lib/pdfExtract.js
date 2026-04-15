@@ -1,17 +1,17 @@
 'use client';
 
 // pdfjs-dist는 클라이언트에서만 사용
-// workerSrc는 동적 import 시 자동 설정되지 않아 수동 지정 필요
+// Next.js + pdfjs-dist v4 호환: legacy ESM 빌드 사용
 
 let _pdfjsPromise = null;
 
 async function loadPdfjs() {
   if (_pdfjsPromise) return _pdfjsPromise;
   _pdfjsPromise = (async () => {
-    const pdfjs = await import('pdfjs-dist');
-    // Next.js 공개 경로에 워커 파일을 올리지 않고 CDN 사용 (버전 자동 매칭)
-    pdfjs.GlobalWorkerOptions.workerSrc =
-      `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+    const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
+    // worker 파일을 public/에서 서빙 (CDN 의존 제거)
+    // build 시 scripts/copy-pdf-worker로 복사됨
+    pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
     return pdfjs;
   })();
   return _pdfjsPromise;
@@ -168,11 +168,11 @@ function postProcessPages(pages) {
   return joined.join('\n').trim();
 }
 
-/** 추천 청크 크기 */
+/** 추천 청크 크기 — "보이는 페이지 빠르게" UX 우선 */
 export function suggestChunkSize(totalPages) {
-  if (totalPages <= 10) return totalPages;
-  if (totalPages <= 50) return 5;
-  return 3;
+  if (totalPages <= 5) return totalPages;
+  if (totalPages <= 30) return 3;
+  return 2;
 }
 
 /**

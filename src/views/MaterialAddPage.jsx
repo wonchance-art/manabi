@@ -137,6 +137,7 @@ export default function MaterialAddPage() {
     try {
       const finalJson = await analyzeText(text, signal, {
         metadata: { language, level, updated_at: new Date().toISOString() },
+        concurrency: 8, // PDF/페이스트 모두 더 빠르게
         onBatch: async ({ currentJson, processed, total }) => {
           const failedSoFar = currentJson.failed_indices?.length || 0;
           setStatus(`⏳ 분석 중... (${processed}/${total}줄${failedSoFar > 0 ? ` · 실패 ${failedSoFar}` : ''})`);

@@ -1,6 +1,6 @@
 // IP별 요청 카운터 (서버리스 인스턴스 재시작 시 초기화 — 충분한 억지력)
 const rateLimitMap = new Map();
-const RATE_LIMIT = 120;
+const RATE_LIMIT = 300; // 분당 요청 수 (분석 속도 향상 위해 상향)
 const WINDOW_MS = 60 * 1000;
 const MAX_ENTRIES = 10000;
 let lastCleanup = Date.now();

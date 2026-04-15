@@ -130,7 +130,8 @@ export default function ViewerPage() {
           isGrammarLoading, selectedRangeText, checkedActions, setCheckedActions,
           selectionPopup, grammarFollowUp, setGrammarFollowUp,
           grammarFollowLoading, openGrammarModal, analyzeGrammar,
-          requestGrammarAnalysis, askFollowUp, handleTextSelection: handleGrammarTextSelection } = grammar;
+          requestGrammarAnalysis, analyzeWordInContext, askFollowUp,
+          handleTextSelection: handleGrammarTextSelection } = grammar;
 
   const { data: savedWords = new Set() } = useQuery({
     queryKey: ['vocab-words', user?.id],
@@ -247,10 +248,30 @@ export default function ViewerPage() {
       // last_page_read 업데이트 (fire-and-forget)
       supabase.from('uploaded_pdfs').update({ last_page_read: nextEnd }).eq('id', sourcePdf.id).then(() => {});
 
+      // 백그라운드 분석 시작 (fire-and-forget) — 리다이렉트 후에도 계속 실행됨
+      (async () => {
+        try {
+          const finalJson = await analyzeText(text, new AbortController().signal, {
+            metadata: initJson.metadata,
+            concurrency: 8,
+            onBatch: async ({ currentJson }) => {
+              await supabase.from('reading_materials')
+                .update({ processed_json: currentJson })
+                .eq('id', inserted.id);
+            },
+          });
+          await supabase.from('reading_materials')
+            .update({ processed_json: finalJson })
+            .eq('id', inserted.id);
+        } catch (e) {
+          console.error('[next-range analyze]', e?.message);
+        }
+      })();
+
       return inserted;
     },
     onSuccess: (inserted) => {
-      toast('📖 다음 범위를 분석합니다!', 'success');
+      toast('📖 다음 범위 분석 시작! 뷰어로 이동합니다', 'success');
       window.location.href = `/viewer/${inserted.id}`;
     },
     onError: (err) => toast('다음 범위 생성 실패: ' + err.message, 'error'),
@@ -400,6 +421,8 @@ export default function ViewerPage() {
   const confirmReanalyze = reanalyze.confirm;
   const cancelReanalyze = reanalyze.cancel;
   const stopReanalysis = reanalyze.stop;
+  const isStaleAnalysis = reanalyze.stale;
+  const missingLineCount = reanalyze.missingIndices.length;
 
   // 스크롤 위치 저장 (debounce 2s, 로그인 + 분석 완료 시만)
   const scrollSaveTimerRef = useRef(null);
@@ -836,7 +859,7 @@ export default function ViewerPage() {
         className={`card reader-area reader-area--${theme}`}
         style={{ fontSize: `${fontSize}rem`, fontFamily, gap: `${lineGap}px ${charGap}rem` }}
       >
-        {isAnalyzing && (
+        {isAnalyzing && !isStaleAnalysis && (
           <div className="analyzing-banner">
             <span>⏳ 실시간 AI 해부 분석이 진행 중입니다...</span>
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -850,6 +873,37 @@ export default function ViewerPage() {
                         <button onClick={cancelReanalyze} className="analyzing-banner__refresh" style={{ background: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}>취소</button>
                       </>
                     : <button onClick={() => requestReanalyze({ fullReset: true })} className="analyzing-banner__refresh" style={{ background: 'var(--accent)' }}>🔄 재시작</button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* 중단된 분석 복구 배너 */}
+        {isStaleAnalysis && user?.id === material?.owner_id && (
+          <div className="analyzing-banner" style={{ background: 'rgba(252,196,25,0.1)', borderColor: 'rgba(252,196,25,0.4)' }}>
+            <span>
+              ⚠️ 분석이 중단된 것 같아요
+              {missingLineCount > 0 && ` (남은 ${missingLineCount}줄)`}
+            </span>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {reanalyzeMutation.isPending ? (
+                <button onClick={stopReanalysis} className="analyzing-banner__refresh" style={{ background: 'var(--danger)' }}>⏹ 중단</button>
+              ) : missingLineCount > 0 ? (
+                <button
+                  onClick={() => reanalyze.mutation.mutate({ resume: true })}
+                  className="analyzing-banner__refresh"
+                  style={{ background: 'var(--accent)' }}
+                >
+                  ▶ 이어서 분석하기
+                </button>
+              ) : (
+                <button
+                  onClick={() => requestReanalyze({ fullReset: true })}
+                  className="analyzing-banner__refresh"
+                  style={{ background: 'var(--accent)' }}
+                >
+                  🔄 처음부터 재분석
+                </button>
               )}
             </div>
           </div>
@@ -1030,6 +1084,12 @@ export default function ViewerPage() {
         user={user} trimOkurigana={trimOkurigana}
         onCorrectToken={handleCorrectToken}
         corrections={tokenCorrections}
+        onAnalyzeContext={() => {
+          if (!selectedToken?.id) return;
+          const sentence = extractSourceSentence(selectedToken.id);
+          analyzeWordInContext(selectedToken, sentence);
+          setIsSheetOpen(false); // BottomSheet 닫고 문법 모달 보이게
+        }}
       />
 
       <ViewerGrammarModal

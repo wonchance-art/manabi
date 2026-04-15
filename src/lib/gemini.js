@@ -71,3 +71,33 @@ export function buildTokenizationPrompt(text) {
 - 순수 히라가나 토큰(は, が, です 등)은 furigana 생략 또는 ""
 - 유효한 JSON만 출력, 설명 금지`;
 }
+
+/**
+ * 여러 줄을 한 번에 분석하는 배치 프롬프트
+ * 응답: [{ sequence, dictionary }, ...] 각 줄에 대응
+ */
+export function buildBatchTokenizationPrompt(lines) {
+  const jsonLines = JSON.stringify(lines);
+  return `다음은 여러 줄의 텍스트 배열이다. 각 줄을 독립적으로 형태소 분석해 JSON 배열로 출력해.
+
+입력 배열: ${jsonLines}
+
+## 출력 형식 (배열, 각 원소가 한 줄 분석 결과)
+[
+  {"sequence":["0","1",...],"dictionary":{"0":{...},...}},
+  {"sequence":["0","1",...],"dictionary":{"0":{...},...}},
+  ...
+]
+
+## 각 토큰 필드
+- "text": 원문 그대로의 표기 (히라가나로 바꾸지 말 것)
+- "furigana": 한자 포함 토큰만 히라가나 읽기, 나머지는 ""
+- "pos": 한국어 품사
+- "meaning": 한국어 뜻
+
+## 주의
+- 입력 배열 길이와 출력 배열 길이 반드시 동일
+- 빈 문자열 입력이 있으면 {"sequence":[],"dictionary":{}} 로 처리
+- text는 원문 그대로, furigana와 혼동 금지
+- 유효한 JSON 배열만 출력, 설명 금지`;
+}
