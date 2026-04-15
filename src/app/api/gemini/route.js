@@ -1,4 +1,6 @@
-const GROQ_MODEL = 'llama-3.3-70b-versatile';
+// Qwen 3 — CJK 언어에 강하고 instruct 모드라 빠름
+// Reasoning 버전이 아닌 function calling(instruct) 카테고리 버전 사용
+const GROQ_MODEL = 'qwen/qwen3-32b';
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 /** Groq 호출 + Gemini 호환 응답 형식으로 변환 */
@@ -22,6 +24,8 @@ async function callGroq(contents, generationConfig) {
       messages: [{ role: 'user', content: promptText }],
       temperature: generationConfig?.temperature ?? 0,
       stream: false,
+      // Qwen 3 thinking 모드 비활성화 (불필요한 추론 토큰 낭비 방지)
+      reasoning_effort: 'none',
     }),
   });
 

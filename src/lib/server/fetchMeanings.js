@@ -89,10 +89,11 @@ export async function fetchMeaningsForMissing(missing, language, supabase) {
           Authorization: `Bearer ${groqKey}`,
         },
         body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
+          model: 'qwen/qwen3-32b',
           messages: [{ role: 'user', content: prompt }],
           temperature: 0,
           stream: false,
+          reasoning_effort: 'none', // thinking 토큰 낭비 방지
         }),
       });
       if (!res.ok) return null;
