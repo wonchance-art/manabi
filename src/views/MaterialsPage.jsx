@@ -10,6 +10,7 @@ import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { JP_LEVELS, EN_LEVELS } from '../lib/constants';
 import ConfirmModal from '../components/ConfirmModal';
+import { CardGridSkeleton } from '../components/Skeleton';
 
 
 async function fetchTodaySuggestions() {
@@ -321,16 +322,7 @@ export default function MaterialsPage() {
       </div>
 
       {isLoading ? (
-        <div className="skeleton-grid">
-          {[1,2,3,4,5,6].map(i => (
-            <div key={i} className="skeleton--card" style={{ height: 140 }}>
-              <div className="skeleton-line--title skeleton-line" />
-              <div className="skeleton-line--text skeleton-line" />
-              <div className="skeleton-line--short skeleton-line" />
-              <div className="skeleton-bar" />
-            </div>
-          ))}
-        </div>
+        <CardGridSkeleton />
       ) : filtered.length > 0 ? (
         <>
         <div className="feature-grid">

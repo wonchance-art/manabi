@@ -21,6 +21,7 @@ import VocabStats from './VocabStats';
 import VocabNotes from './VocabNotes';
 import VocabDecks from './VocabDecks';
 import VocabWriting from './VocabWriting';
+import { CardGridSkeleton } from '../components/Skeleton';
 import { detectLang } from '../lib/constants';
 
 const MAX_EXAMPLE_CACHE = 50;
@@ -710,15 +711,7 @@ export default function VocabPage() {
       )}
 
       {isLoading ? (
-        <div className="skeleton-grid">
-          {[1,2,3,4,5,6].map(i => (
-            <div key={i} className="skeleton--card" style={{ height: 120 }}>
-              <div className="skeleton-line--short skeleton-line" />
-              <div className="skeleton-line--title skeleton-line" style={{ width: '60%' }} />
-              <div className="skeleton-line--text skeleton-line" />
-            </div>
-          ))}
-        </div>
+        <CardGridSkeleton height={120} />
       ) : tab === 'list' ? (
         <VocabList
           filteredVocab={filteredVocab}
