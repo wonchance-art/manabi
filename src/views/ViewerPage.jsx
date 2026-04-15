@@ -36,13 +36,26 @@ async function fetchMaterial(id) {
 }
 
 async function fetchUserVocabWords(userId) {
-  if (!userId) return new Set();
+  if (!userId) return { surfaces: new Set(), bases: new Set() };
   const { data, error } = await supabase
     .from('user_vocabulary')
-    .select('word_text')
+    .select('word_text, base_form')
     .eq('user_id', userId);
-  if (error) return new Set();
-  return new Set((data || []).map(v => v.word_text));
+  if (error) return { surfaces: new Set(), bases: new Set() };
+  const surfaces = new Set();
+  const bases = new Set();
+  for (const v of data || []) {
+    if (v.word_text) surfaces.add(v.word_text);
+    if (v.base_form) bases.add(v.base_form);
+  }
+  return { surfaces, bases };
+}
+
+function isTokenSaved(savedWords, token) {
+  if (!token) return false;
+  if (savedWords.surfaces?.has(token.text)) return true;
+  if (token.base_form && savedWords.bases?.has(token.base_form)) return true;
+  return false;
 }
 
 /**
@@ -133,7 +146,7 @@ export default function ViewerPage() {
           requestGrammarAnalysis, analyzeWordInContext, askFollowUp,
           handleTextSelection: handleGrammarTextSelection } = grammar;
 
-  const { data: savedWords = new Set() } = useQuery({
+  const { data: savedWords = { surfaces: new Set(), bases: new Set() } } = useQuery({
     queryKey: ['vocab-words', user?.id],
     queryFn: () => fetchUserVocabWords(user.id),
     enabled: !!user,
@@ -598,6 +611,7 @@ export default function ViewerPage() {
       const row = {
         user_id: user.id,
         word_text: selectedToken.text,
+        base_form: selectedToken.base_form || selectedToken.text, // kuromoji 경로에서 전달됨
         furigana: selectedToken.furigana || '',
         meaning: selectedToken.meaning || '',
         pos: selectedToken.pos || '',
@@ -672,7 +686,8 @@ export default function ViewerPage() {
   const isPartial = status === 'partial';
   const failedIndices = material?.processed_json?.failed_indices || [];
   const isCompleted = readingProgress?.is_completed === true;
-  const isWordSaved = selectedToken ? savedWords.has(selectedToken.text) : false;
+  const isWordSaved = isTokenSaved(savedWords, selectedToken);
+  const savedCount = (savedWords.surfaces?.size || 0);
 
   return (
     <div className={`page-container viewer-theme-${theme}`} onMouseUp={handleTextSelection}>
@@ -689,9 +704,9 @@ export default function ViewerPage() {
       <header className="page-header viewer-header">
         <Link href="/materials" className="viewer-back-link">← 라이브러리</Link>
         <h1 className="page-header__title">{material.title}</h1>
-        {user && savedWords.size > 0 && (
+        {user && savedCount > 0 && (
           <Link href="/vocab" className="viewer-vocab-counter">
-            ⭐ {savedWords.size}개 수집 → 단어장
+            ⭐ {savedCount}개 수집 → 단어장
           </Link>
         )}
       </header>
@@ -968,7 +983,7 @@ export default function ViewerPage() {
                 </div>
               );
             }
-            const isSaved = savedWords.has(token.text);
+            const isSaved = isTokenSaved(savedWords, token);
             const furiganaText = showFurigana && token.furigana
               ? trimOkurigana(token.text, token.furigana)
               : '';
