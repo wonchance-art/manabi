@@ -193,7 +193,99 @@ export default function GuidePage() {
         </p>
       </div>
 
+      {/* ── 앱 사용법 (현행화) ── */}
+      <section style={{ margin: '40px 0 52px' }}>
+        <h2 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: 20, textAlign: 'center' }}>
+          🗺️ 3단계 사용법
+        </h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
+          {[
+            {
+              num: '1', icon: '📰',
+              title: '자료 가져오기',
+              desc: '텍스트 붙여넣기 또는 PDF 업로드. AI가 형태소 단위로 자동 분석.',
+              sub: '스캔본 PDF도 OCR로 자동 처리 · 페이지 범위 선택',
+              href: '/materials/add', cta: '자료 추가',
+            },
+            {
+              num: '2', icon: '⭐',
+              title: '읽으며 단어 저장',
+              desc: '모르는 단어 클릭 → 뜻·발음 확인 → 단어장에 추가. 문장과 함께 저장됨.',
+              sub: '💡 문맥 해설 버튼으로 이 단어가 왜 이 뜻인지 심화',
+              href: '/materials', cta: '자료실 가기',
+            },
+            {
+              num: '3', icon: '🧠',
+              title: '읽기 = 복습',
+              desc: '단어 저장 후 다시 자료를 읽으면, 복습 시점 된 단어가 노란색으로 표시됨. 클릭해서 바로 평가.',
+              sub: 'FSRS 알고리즘이 최적 복습 간격 자동 계산',
+              href: '/vocab', cta: '단어장 보기',
+            },
+          ].map(step => (
+            <div key={step.num} className="card" style={{ padding: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                <div style={{
+                  width: 36, height: 36, borderRadius: '50%',
+                  background: 'var(--primary-glow)', color: 'var(--primary)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontWeight: 700, fontSize: '1.05rem',
+                }}>
+                  {step.num}
+                </div>
+                <div style={{ fontSize: '1.5rem' }}>{step.icon}</div>
+              </div>
+              <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: 6 }}>{step.title}</h3>
+              <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', marginBottom: 8, lineHeight: 1.6 }}>
+                {step.desc}
+              </p>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 14, lineHeight: 1.5 }}>
+                💡 {step.sub}
+              </p>
+              <Link href={step.href} className="btn btn--ghost btn--sm" style={{ padding: '6px 14px' }}>
+                {step.cta} →
+              </Link>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── 주요 기능 간략 소개 ── */}
+      <section style={{ marginBottom: 52 }}>
+        <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: 16 }}>
+          ✨ 이 앱이 특별한 이유
+        </h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
+          {[
+            { icon: '🤖', title: 'AI 형태소 해부', desc: '일본어는 오프라인 분석(kuromoji) + AI 의미. 빠르고 저렴.' },
+            { icon: '📖', title: '읽기 기반 복습', desc: '별도 카드 복습 없이, 자료 읽다가 노란 단어 클릭하면 끝.' },
+            { icon: '💡', title: '문맥별 해설 온디맨드', desc: '다의어도 지금 이 문장에서의 뜻을 AI가 설명해줌.' },
+            { icon: '📚', title: 'PDF 책 한 권을 나눠 읽기', desc: '수백 페이지 PDF도 3~5장씩 분석, 캐시로 빠른 재분석.' },
+            { icon: '✍️', title: '쓰기 연습', desc: '학습한 단어로 문장 만들기 → AI 교정 피드백.' },
+            { icon: '🔧', title: 'AI 분석 수정 가능', desc: '틀린 뜻·후리가나 발견 시 ✏️로 직접 고치기.' },
+          ].map(f => (
+            <div key={f.title} style={{
+              padding: 14,
+              background: 'var(--bg-secondary)',
+              borderRadius: 'var(--radius-md)',
+              border: '1px solid var(--border)',
+            }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 4 }}>
+                <span style={{ fontSize: '1.1rem' }}>{f.icon}</span>
+                <strong style={{ fontSize: '0.92rem' }}>{f.title}</strong>
+              </div>
+              <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{f.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Divider ── */}
+      <div style={{ margin: '52px 0 36px', borderTop: '1px solid var(--border)' }} />
+
       {/* ── Roadmaps ── */}
+      <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: 16 }}>
+        📊 언어 레벨 로드맵
+      </h2>
       <div className="guide-roadmap-grid">
         {CURRICULUMS.map(curr => <Roadmap key={curr.lang} curr={curr} />)}
       </div>
