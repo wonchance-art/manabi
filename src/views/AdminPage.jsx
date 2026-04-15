@@ -289,6 +289,70 @@ export default function AdminPage() {
     onError: (err) => toast('시딩 실패: ' + err.message, 'error'),
   });
 
+  // 일괄 분석 상태
+  const [bulkProgress, setBulkProgress] = useState(null); // { current, total, currentTitle }
+
+  async function handleBulkAnalyzeStarters() {
+    if (analyzingId || bulkProgress) return;
+
+    // 미완료(idle, failed, partial, analyzing) 스타터 필터
+    const pending = starterMaterials.filter(m => {
+      const s = m.processed_json?.status;
+      return s !== 'completed';
+    });
+
+    if (pending.length === 0) {
+      toast('분석 대기 중인 스타터가 없습니다.', 'info');
+      return;
+    }
+
+    setBulkProgress({ current: 0, total: pending.length, currentTitle: '' });
+
+    let completed = 0;
+    let failed = 0;
+
+    for (let i = 0; i < pending.length; i++) {
+      const material = pending[i];
+      const starterMeta = STARTER_MATERIALS.find(m => m.title === material.title);
+      if (!starterMeta) continue;
+
+      setBulkProgress({ current: i, total: pending.length, currentTitle: material.title });
+
+      const controller = new AbortController();
+      analyzeAbortRef.current = controller;
+      setAnalyzingId(material.id);
+
+      try {
+        await supabase
+          .from('reading_materials')
+          .update({ processed_json: { ...material.processed_json, status: 'analyzing' } })
+          .eq('id', material.id);
+
+        await analyzeText(material.raw_text || starterMeta.raw_text, controller.signal, {
+          metadata: { language: starterMeta.language, level: starterMeta.level, updated_at: new Date().toISOString() },
+          onBatch: async ({ currentJson }) => {
+            await supabase.from('reading_materials').update({ processed_json: currentJson }).eq('id', material.id);
+          },
+        });
+        completed++;
+      } catch {
+        failed++;
+      } finally {
+        setAnalyzingId(null);
+        analyzeAbortRef.current = null;
+      }
+    }
+
+    queryClient.invalidateQueries({ queryKey: ['admin-starters'] });
+    queryClient.invalidateQueries({ queryKey: ['admin-dict-stats'] });
+    setBulkProgress(null);
+    toast(
+      `일괄 분석 완료: 성공 ${completed} / 실패 ${failed}. 사전도 자동 갱신됐어요.`,
+      failed > 0 ? 'warning' : 'success',
+      7000,
+    );
+  }
+
   // 개별 스타터 분석 실행
   async function handleAnalyzeStarter(material) {
     if (analyzingId) return;
@@ -692,14 +756,47 @@ export default function AdminPage() {
                   </span>
                 )}
               </div>
-              <Button
-                size="sm"
-                disabled={seedStartersMutation.isPending || starterMaterials.length >= STARTER_MATERIALS.length}
-                onClick={() => seedStartersMutation.mutate()}
-              >
-                {seedStartersMutation.isPending ? '시딩 중...' : '🌱 스타터 시딩'}
-              </Button>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <Button
+                  size="sm"
+                  disabled={seedStartersMutation.isPending || starterMaterials.length >= STARTER_MATERIALS.length}
+                  onClick={() => seedStartersMutation.mutate()}
+                >
+                  {seedStartersMutation.isPending ? '시딩 중...' : '🌱 스타터 시딩'}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="accent"
+                  disabled={!!analyzingId || !!bulkProgress || starterMaterials.length === 0}
+                  onClick={handleBulkAnalyzeStarters}
+                  title="미완료 스타터를 전부 분석하고 공유 사전에 자동 저장"
+                >
+                  {bulkProgress
+                    ? `⚙ ${bulkProgress.current}/${bulkProgress.total}`
+                    : '⚡ 전체 분석 + 사전 시드'}
+                </Button>
+              </div>
             </div>
+
+            {/* 일괄 분석 진행률 */}
+            {bulkProgress && (
+              <div className="card" style={{ padding: 14, marginBottom: 16, background: 'var(--primary-glow)', border: '1px solid var(--primary)' }}>
+                <div style={{ fontSize: '0.82rem', fontWeight: 600, marginBottom: 6 }}>
+                  📖 {bulkProgress.currentTitle || '준비 중...'}
+                </div>
+                <div style={{ height: 6, background: 'var(--bg-secondary)', borderRadius: 3, overflow: 'hidden' }}>
+                  <div style={{
+                    width: `${(bulkProgress.current / bulkProgress.total) * 100}%`,
+                    height: '100%',
+                    background: 'var(--primary-light)',
+                    transition: 'width 0.3s',
+                  }} />
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 4 }}>
+                  {bulkProgress.current} / {bulkProgress.total} 완료 · 각 자료 분석 중 공유 사전 자동 갱신
+                </div>
+              </div>
+            )}
 
             {/* 분석 대기 중인 항목 요약 */}
             {(() => {
