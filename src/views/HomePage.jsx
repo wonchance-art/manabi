@@ -9,6 +9,7 @@ import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { awardXP, getXPLevel, getLevelProgress, getXPToNextLevel } from '../lib/xp';
 import { useCelebration } from '../lib/CelebrationContext';
+import Button from '../components/Button';
 
 const RANK_MEDAL = ['🥇', '🥈', '🥉'];
 
@@ -281,30 +282,30 @@ export default function HomePage() {
   const isNewUser     = dueCount === 0 && todayVocab === 0 && !data?.recentProgress?.length;
 
   return (
-    <div className="page-container home-page home-layout">
+    <div className="page-container home-page home-layout" style={{ maxWidth: 720 }}>
 
-      {/* ── 언어 미설정 배너 ── */}
+      {/* 언어 미설정 배너 */}
       {hasNoLanguage && (
         <Link href="/profile" className="home-setup-banner">
           ⚙️ 학습 언어와 수준을 설정하면 맞춤 추천을 받을 수 있어요 →
         </Link>
       )}
 
-      {/* ── 신규 유저 가이드 ── */}
+      {/* 신규 유저 3단계 가이드 (진짜 처음) */}
       {isNewUser && (
         <div className="home-getting-started">
           <div className="home-getting-started__header">
             <span className="home-getting-started__emoji">🚀</span>
             <div>
-              <h2 className="home-getting-started__title">시작이 반이에요, {displayName}님!</h2>
-              <p className="home-getting-started__sub">3단계로 첫 학습을 완료해봐요</p>
+              <h2 className="home-getting-started__title">시작해볼까요, {displayName}님!</h2>
+              <p className="home-getting-started__sub">3단계로 첫 학습 완료</p>
             </div>
           </div>
           <div className="home-gs-steps">
             {[
-              { href: '/guide',     num: 1, title: '학습 로드맵 확인',    desc: '내 레벨에 맞는 가이드 보기 →' },
-              { href: '/materials', num: 2, title: '오늘의 추천 자료 읽기', desc: 'AI가 모든 단어를 해부해 드려요 →' },
-              { href: '/vocab',     num: 3, title: '저장한 단어 복습',    desc: 'FSRS 알고리즘이 기억을 강화해요 →' },
+              { href: '/guide',     num: 1, title: '학습 로드맵', desc: '내 레벨 파악 →' },
+              { href: '/materials', num: 2, title: '자료 읽기',   desc: 'AI 해부 분석 →' },
+              { href: '/vocab',     num: 3, title: '단어 복습',   desc: 'FSRS 기억 강화 →' },
             ].map(s => (
               <Link key={s.num} href={s.href} className="home-gs-step">
                 <span className="home-gs-step__num">{s.num}</span>
@@ -318,456 +319,106 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* ── ① 그리팅 + XP ── */}
+      {/* ① 그리팅 + 간결한 상태 한 줄 */}
       <div className="home-greeting">
         <div className="home-greeting__top">
           <div>
             <h1 className="home-greeting__name">안녕하세요, {displayName}님 👋</h1>
-            <p className="home-greeting__sub">오늘도 꾸준히 언어를 해부해봐요</p>
+            <p className="home-greeting__sub">오늘도 한 편 읽어볼까요?</p>
           </div>
-          <div className="streak-area">
-            {streak > 0 && (
-              <div className="streak-badge">
-                <span className="streak-badge__fire">🔥</span>
-                <span className="streak-badge__count">{streak}</span>
-                <span className="streak-badge__label">일 연속</span>
-              </div>
-            )}
-            {(profile?.streak_freeze_count ?? 0) > 0 && (
-              <div className="streak-freeze-indicator" title="스트릭 프리즈 티켓">
-                🛡️ ×{profile.streak_freeze_count}
-              </div>
-            )}
-          </div>
+          {streak > 0 && (
+            <div className="streak-badge">
+              <span className="streak-badge__fire">🔥</span>
+              <span className="streak-badge__count">{streak}</span>
+              <span className="streak-badge__label">일 연속</span>
+            </div>
+          )}
         </div>
 
-        <div className="home-xp">
-          <span className="home-xp__level">⚡ Lv.{xpLevel}</span>
-          <div className="home-xp__track">
-            <div className="home-xp__fill" style={{ width: `${xpProgress}%` }} />
-          </div>
-          <span className="home-xp__next">{xpToNext ? `${xpToNext} XP` : '최고 레벨'}</span>
-        </div>
-        <div className="home-xp__total">총 {xp.toLocaleString('ko-KR')} XP 획득</div>
-      </div>
-
-      {/* ── 복습 알림 배너 ── */}
-      {dueCount > 0 && todayReviews === 0 && (
-        <Link href="/vocab" className="home-review-banner">
-          <span className="home-review-banner__icon">🧠</span>
-          <div className="home-review-banner__text">
-            <strong>{dueCount}개 단어</strong>가 복습을 기다리고 있어요
-          </div>
-          <span className="home-review-banner__cta">복습하기 →</span>
-        </Link>
-      )}
-
-      {/* ── 레벨 진행도 ── */}
-      {data?.vocabByLang && profile?.learning_language?.length > 0 && (() => {
-        const MILESTONES = {
-          Japanese: { 'N5 기초': 800, 'N4 기본': 1500, 'N3 중급': 3750, 'N2 상급': 6000, 'N1 심화': 10000 },
-          English:  { 'A1 기초': 500, 'A2 초급': 1000, 'B1 중급': 2000, 'B2 상급': 4000, 'C1 고급': 7000, 'C2 마스터': 10000 },
-        };
-        const bars = [];
-        if (profile.learning_language.includes('Japanese') && data.vocabByLang.Japanese > 0) {
-          const level = profile.learning_level_japanese || 'N3 중급';
-          const target = MILESTONES.Japanese[level] || 3750;
-          const pct = Math.min(100, Math.round((data.vocabByLang.Japanese / target) * 100));
-          bars.push({ key: 'jp', flag: '🇯🇵', level, count: data.vocabByLang.Japanese, target, pct });
-        }
-        if (profile.learning_language.includes('English') && data.vocabByLang.English > 0) {
-          const level = profile.learning_level_english || 'B1 중급';
-          const target = MILESTONES.English[level] || 2000;
-          const pct = Math.min(100, Math.round((data.vocabByLang.English / target) * 100));
-          bars.push({ key: 'en', flag: '🇬🇧', level, count: data.vocabByLang.English, target, pct });
-        }
-        if (!bars.length) return null;
-        return (
-          <div className="card home-card" style={{ padding: '16px 20px' }}>
-            {bars.map(b => (
-              <div key={b.key} style={{ marginBottom: bars.length > 1 && b.key === 'jp' ? '12px' : 0 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '6px' }}>
-                  <span style={{ fontSize: '0.88rem', fontWeight: 600 }}>{b.flag} {b.level}</span>
-                  <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                    {b.count.toLocaleString('ko-KR')} / {b.target.toLocaleString('ko-KR')}개 ({b.pct}%)
-                  </span>
-                </div>
-                <div style={{ background: 'var(--bg-secondary)', borderRadius: 'var(--radius-full)', height: 8, overflow: 'hidden' }}>
-                  <div style={{
-                    height: '100%', width: `${b.pct}%`,
-                    background: b.pct >= 100 ? 'var(--accent)' : 'var(--primary-light)',
-                    borderRadius: 'var(--radius-full)', transition: 'width 0.6s ease',
-                  }} />
-                </div>
-              </div>
-            ))}
-          </div>
-        );
-      })()}
-
-      {/* ── ② 오늘의 학습 ── */}
-      <div className="card home-card">
-        <div className="home-section-head">
-          <h2 className="home-section-title">오늘의 학습</h2>
-          <span className={`home-section-meta ${doneCount === MISSIONS.length ? 'home-section-meta--done' : ''}`}>
-            {doneCount === MISSIONS.length ? '🎉 전부 완료!' : `${doneCount} / ${MISSIONS.length} 완료`}
+        {/* 컴팩트 상태: Lv + 수집 단어 + 복습 대기 */}
+        <div style={{ display: 'flex', gap: 14, marginTop: 14, flexWrap: 'wrap', alignItems: 'center' }}>
+          <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+            ⚡ <strong>Lv.{xpLevel}</strong> · {xp.toLocaleString('ko-KR')} XP
           </span>
+          <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+            ⭐ <strong>{data?.vocabByLang ? Object.values(data.vocabByLang).reduce((a, b) => a + b, 0) : 0}</strong> 수집
+          </span>
+          {dueCount > 0 && (
+            <span style={{ fontSize: '0.85rem', color: 'var(--warning)', fontWeight: 600 }}>
+              🧠 {dueCount} 복습 대기
+            </span>
+          )}
         </div>
-
-        <div className="home-missions">
-          {MISSIONS.map(m => {
-            const pct  = Math.min(100, Math.round((m.current / m.goal) * 100));
-            const done = m.current >= m.goal;
-            return (
-              <div key={m.label}>
-                <div className="home-mission-row">
-                  <span className="home-mission-row__icon">{done ? '✅' : m.icon}</span>
-                  <span className={`home-mission-row__label ${done ? 'home-mission-row__label--done' : ''}`}>
-                    {m.label}
-                  </span>
-                  <span className={`home-mission-row__count ${done ? 'home-mission-row__count--done' : ''}`}>
-                    {m.current} / {m.goal}
-                  </span>
-                  {!done && (
-                    <Link href={m.href} className="btn btn--primary btn--sm home-mission-row__cta">
-                      {m.cta}
-                    </Link>
-                  )}
-                </div>
-                <ProgressBar pct={pct} done={done} />
-              </div>
-            );
-          })}
-        </div>
-
-        {/* 오늘의 추천 */}
-        {suggestion && (() => {
-          const vocabByLang = data?.vocabByLang || {};
-          const count = vocabByLang[suggestion.language] || 0;
-          const idealLevel = getIdealLevel(suggestion.language, count);
-          const isIdeal = suggestion.level === idealLevel;
-          return (
-            <>
-              <div className="home-divider" />
-              <div className="home-suggestion">
-                <span className="home-suggestion__icon">📰</span>
-                <div className="home-suggestion__info">
-                  <div className="home-suggestion__meta">
-                    {isIdeal && <span style={{ color: 'var(--accent)', fontWeight: 700, marginRight: 6 }}>🎯 맞춤</span>}
-                    {isIdeal ? '당신 레벨 추천' : '오늘의 추천'} · {suggestion.language === 'Japanese' ? '🇯🇵' : '🇬🇧'} {suggestion.level}
-                  </div>
-                  <div className="home-suggestion__title">{suggestion.title}</div>
-                </div>
-                <button className="btn btn--accent btn--sm home-suggestion__btn"
-                  onClick={() => suggestion.material_id
-                    ? router.push(`/viewer/${suggestion.material_id}`)
-                    : router.push(`/materials/add?suggestion=${suggestion.id}`)
-                  }>
-                  {suggestion.material_id ? '바로 읽기' : '읽기 시작'}
-                </button>
-              </div>
-            </>
-          );
-        })()}
       </div>
 
-      {/* ── 지난주 리포트 (월/화요일 + 미확인 시만) ── */}
-      {data && (() => {
-        const today = new Date();
-        const day = today.getDay(); // 0=일
-        const showDay = day === 1 || day === 2; // 월/화
-        if (!showDay) return null;
-        const { prevWeekVocab, prevWeekReviews, prevWeekReads, prevWeekXP } = data;
-        if (prevWeekVocab + prevWeekReviews + prevWeekReads === 0) return null;
-
-        // 이번 월요일 기준 키 (주마다 초기화)
-        const mondayKey = (() => {
-          const d = new Date(today);
-          const dow = d.getDay();
-          d.setDate(d.getDate() - (dow === 0 ? 6 : dow - 1));
-          return d.toISOString().slice(0, 10);
-        })();
-        const dismissedKey = `as_weekly_report_dismissed_${mondayKey}`;
-        const dismissed = typeof window !== 'undefined' && localStorage.getItem(dismissedKey) === '1';
-        if (dismissed) return null;
-
-        const vocabDiff = data.weekVocab - prevWeekVocab;
-        const reviewDiff = data.weekReviews - prevWeekReviews;
-
+      {/* ② 오늘 읽기 — 가장 큰 포커스 */}
+      {suggestion && (() => {
+        const vocabByLang = data?.vocabByLang || {};
+        const count = vocabByLang[suggestion.language] || 0;
+        const idealLevel = getIdealLevel(suggestion.language, count);
+        const isIdeal = suggestion.level === idealLevel;
         return (
-          <div className="card home-card" style={{
-            borderLeft: '3px solid var(--accent)',
-            background: 'linear-gradient(135deg, var(--primary-glow) 0%, transparent 60%)',
+          <div className="card" style={{
+            padding: '24px 20px',
+            background: 'linear-gradient(135deg, var(--primary-glow) 0%, var(--bg-card) 60%)',
+            border: '1px solid var(--primary)',
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-              <div>
-                <div style={{ fontSize: '0.72rem', color: 'var(--primary)', fontWeight: 700, marginBottom: 4 }}>
-                  📊 지난주 리포트
-                </div>
-                <h3 style={{ fontSize: '1rem', margin: 0 }}>
-                  지난 한 주, 이렇게 학습하셨어요!
-                </h3>
-              </div>
-              <button
-                onClick={() => { localStorage.setItem(dismissedKey, '1'); window.location.reload(); }}
-                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1rem' }}
-                title="닫기"
-                aria-label="주간 리포트 닫기"
-              >✕</button>
+            <div style={{ fontSize: '0.72rem', color: 'var(--primary)', fontWeight: 700, marginBottom: 6 }}>
+              📖 오늘 이걸 읽어보세요
             </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 10 }}>
-              <div style={{ padding: '10px', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
-                <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginBottom: 2 }}>새 단어</div>
-                <div style={{ fontSize: '1.1rem', fontWeight: 700 }}>⭐ {prevWeekVocab}</div>
-              </div>
-              <div style={{ padding: '10px', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
-                <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginBottom: 2 }}>복습</div>
-                <div style={{ fontSize: '1.1rem', fontWeight: 700 }}>🧠 {prevWeekReviews}</div>
-              </div>
-              <div style={{ padding: '10px', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
-                <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginBottom: 2 }}>완독</div>
-                <div style={{ fontSize: '1.1rem', fontWeight: 700 }}>📖 {prevWeekReads}</div>
-              </div>
-              <div style={{ padding: '10px', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
-                <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginBottom: 2 }}>획득 XP</div>
-                <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--primary)' }}>✨ {prevWeekXP}</div>
-              </div>
+            <h2 style={{ fontSize: '1.15rem', margin: '0 0 8px', lineHeight: 1.4 }}>
+              {suggestion.title}
+            </h2>
+            <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: 16 }}>
+              {isIdeal && <span style={{ color: 'var(--accent)', fontWeight: 700 }}>🎯 맞춤 </span>}
+              {suggestion.language === 'Japanese' ? '🇯🇵' : '🇬🇧'} {suggestion.level}
+              {suggestion.channel_name && ` · ${suggestion.channel_name}`}
             </div>
-
-            <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', margin: 0 }}>
-              {vocabDiff > 0 || reviewDiff > 0
-                ? `이번 주는 ${vocabDiff > 0 ? `단어 ${vocabDiff}개 더 수집` : ''}${vocabDiff > 0 && reviewDiff > 0 ? ', ' : ''}${reviewDiff > 0 ? `복습 ${reviewDiff}회 더 달성` : ''} 중이에요! 🔥`
-                : '이번 주도 꾸준히 이어가 볼까요?'}
-            </p>
+            <Button
+              onClick={() => suggestion.material_id
+                ? router.push(`/viewer/${suggestion.material_id}`)
+                : router.push(`/materials/add?suggestion=${suggestion.id}`)
+              }
+            >
+              {suggestion.material_id ? '📖 바로 읽기 →' : '✨ 분석하고 읽기 →'}
+            </Button>
           </div>
         );
       })()}
 
-      {/* ── 오늘의 도전 ── */}
-      {data && (() => {
-        const challenge = getDailyChallenge();
-        const progressData = challenge.progress({
-          todayVocabCount: todayVocab,
-          todayReviewCount: todayReviews,
-          todayReadCount: todayReads,
-          todayForumCount: data.todayForumCount ?? 0,
-          todayGrammarCount: data.todayGrammarCount ?? 0,
-        });
-        const { current, target } = progressData;
-        const clampedCurrent = Math.min(current, target);
-        const pct = Math.min(100, (current / target) * 100);
-        const isDone = current >= target;
-        const storageKey = `as_challenge_${new Date().toISOString().slice(0, 10)}`;
-        const claimed = challengeClaimed || (typeof window !== 'undefined' && localStorage.getItem(storageKey) === '1');
-
-        async function claimReward() {
-          if (claimed || !user) return;
-          const prevXP = profile?.xp ?? 0;
-          await awardXP(user.id, challenge.xp, prevXP);
-          localStorage.setItem(storageKey, '1');
-          setChallengeClaimed(true);
-          checkLevelUp(prevXP, prevXP + challenge.xp);
-          fetchProfile(user.id, user.user_metadata);
-          toast(`🎉 +${challenge.xp} XP 보너스 획득!`, 'success');
-        }
-
-        return (
-          <div className={`card home-card home-challenge ${isDone ? 'home-challenge--done' : ''}`}>
-            <div className="home-challenge__header">
-              <span className="home-challenge__icon">{isDone ? '✅' : challenge.icon}</span>
-              <div className="home-challenge__info">
-                <div className="home-challenge__badge">일일 도전</div>
-                <h3 className="home-challenge__title">{challenge.title}</h3>
-                <p className="home-challenge__desc">{challenge.desc}</p>
-              </div>
-              <div className="home-challenge__reward">
-                <span className="home-challenge__xp">+{challenge.xp}</span>
-                <span className="home-challenge__xp-label">XP</span>
-              </div>
-            </div>
-
-            {/* 진행 바 */}
-            <div style={{ margin: '8px 0 12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 4 }}>
-                <span>{isDone ? '완료!' : '진행 중'}</span>
-                <span style={{ fontWeight: 700, color: isDone ? 'var(--accent)' : 'var(--text-primary)' }}>
-                  {clampedCurrent} / {target}
-                </span>
-              </div>
-              <div style={{
-                background: 'var(--bg-secondary)',
-                borderRadius: 'var(--radius-full)',
-                height: 6,
-                overflow: 'hidden',
-              }}>
-                <div style={{
-                  height: '100%',
-                  width: `${pct}%`,
-                  background: isDone
-                    ? 'linear-gradient(90deg, var(--accent) 0%, var(--primary-light) 100%)'
-                    : 'var(--primary-light)',
-                  borderRadius: 'var(--radius-full)',
-                  transition: 'width 0.6s ease',
-                }} />
-              </div>
-            </div>
-
-            {isDone ? (
-              claimed ? (
-                <div className="home-challenge__done-msg">🎉 보너스 XP를 받았어요!</div>
-              ) : (
-                <button onClick={claimReward} className="btn btn--accent btn--sm home-challenge__cta">
-                  🎁 +{challenge.xp} XP 받기
-                </button>
-              )
-            ) : (
-              <Link href={challenge.href} className="btn btn--accent btn--sm home-challenge__cta">
-                {challenge.cta} →
-              </Link>
-            )}
-          </div>
-        );
-      })()}
-
-      {/* ── ③ 이번 주 통계 ── */}
-      {data && (
+      {/* ③ 최근 읽던 자료 — compact 3개 */}
+      {data?.recentProgress?.length > 0 && (
         <div className="card home-card">
-          <div className="home-section-head">
-            <h2 className="home-section-title">이번 주 활동</h2>
-            <span className="home-section-meta">
-              {data.weekStart.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })} ~
-            </span>
-          </div>
-          <div className="home-stat-grid">
-            {[
-              { icon: '⭐', label: '단어', value: data.weekVocab,   unit: '개' },
-              { icon: '🧠', label: '복습', value: data.weekReviews, unit: '회' },
-              { icon: '📖', label: '완독', value: data.weekReads,   unit: '편' },
-              { icon: '✨', label: 'XP',   value: data.weekXP,      unit: '' },
-            ].map(({ icon, label, value, unit }) => (
-              <div key={label} className="home-stat-cell">
-                <div className="home-stat-cell__icon">{icon}</div>
-                <div className={`home-stat-cell__value ${value > 0 ? 'home-stat-cell__value--active' : ''}`}>
-                  {value}{unit}
-                </div>
-                <div className="home-stat-cell__label">{label}</div>
-              </div>
+          <h2 className="home-section-title" style={{ fontSize: '0.95rem', marginBottom: 12 }}>
+            📚 최근 읽던 자료
+          </h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {data.recentProgress.slice(0, 3).map(r => r.reading_materials && (
+              <Link
+                key={r.material_id}
+                href={`/viewer/${r.material_id}`}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '10px 12px',
+                  background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)',
+                  textDecoration: 'none', color: 'var(--text-primary)',
+                }}
+              >
+                <span style={{ fontSize: '1rem' }}>{r.is_completed ? '✅' : '📖'}</span>
+                <span style={{ flex: 1, fontSize: '0.88rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {r.reading_materials.title}
+                </span>
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                  {new Date(r.updated_at || r.completed_at).toLocaleDateString('ko-KR')}
+                </span>
+              </Link>
             ))}
           </div>
+          <Link href="/materials" className="btn btn--ghost btn--sm" style={{ marginTop: 10, width: '100%', justifyContent: 'center' }}>
+            전체 자료 보기 →
+          </Link>
         </div>
       )}
-
-      {/* ── ④ 최근 자료 + 랭킹 (2열) ── */}
-      <div className="home-two-col">
-        {/* 최근 읽은 자료 */}
-        {data?.recentProgress?.length > 0 && (
-          <div className="card home-card">
-            <h2 className="home-section-title" style={{ marginBottom: 12 }}>최근 읽은 자료</h2>
-            <div className="home-recent-list">
-              {data.recentProgress.map(p => {
-                const mat  = p.reading_materials;
-                if (!mat) return null;
-                const lang = mat.processed_json?.metadata?.language;
-                return (
-                  <Link key={p.material_id} href={`/viewer/${p.material_id}`} className="home-recent-item">
-                    <div className="home-recent-item__left">
-                      <span className="home-recent-item__flag">{lang === 'English' ? '🇬🇧' : '🇯🇵'}</span>
-                      <span className="home-recent-item__title">{mat.title}</span>
-                    </div>
-                    <span className={`home-recent-item__status ${p.is_completed ? 'home-recent-item__status--done' : ''}`}>
-                      {p.is_completed ? '완료' : '이어읽기'}
-                    </span>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* 랭킹 TOP 5 */}
-        {leaders.length > 0 && (
-          <div className="card home-card">
-            <h2 className="home-section-title" style={{ marginBottom: 12 }}>🏆 랭킹 TOP 5</h2>
-            <div className="home-rank-list">
-              {leaders.map((entry, idx) => {
-                const isMe = entry.id === user?.id;
-                const rank = idx + 1;
-                return (
-                  <div key={entry.id} className={`home-rank-entry ${isMe ? 'home-rank-entry--me' : ''}`}>
-                    <span className={`home-rank-entry__rank ${rank <= 3 ? 'home-rank-entry__rank--medal' : ''}`}>
-                      {rank <= 3 ? RANK_MEDAL[rank - 1] : `#${rank}`}
-                    </span>
-                    <div className={`home-rank-entry__avatar ${isMe ? 'home-rank-entry__avatar--me' : ''}`}>
-                      {entry.display_name?.[0]?.toUpperCase() || '?'}
-                    </div>
-                    <span className="home-rank-entry__name">
-                      {entry.display_name || '익명'}
-                      {isMe && <span className="home-rank-entry__me-tag">나</span>}
-                    </span>
-                    <span className="home-rank-entry__xp" data-rank={rank}>
-                      {(entry.xp ?? 0).toLocaleString('ko-KR')}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* ── ⑤ 학습 히트맵 ── */}
-      {data?.heatmapDayCounts && (() => {
-        const dc   = data.heatmapDayCounts;
-        const COLS = 12, ROWS = 7, CELL = 13, GAP = 3;
-        const today = new Date(); today.setHours(0,0,0,0);
-        const todayKey = today.toISOString().slice(0,10);
-        const days = Array.from({ length: COLS * ROWS }, (_, i) => {
-          const d = new Date(today);
-          d.setDate(d.getDate() - (COLS * ROWS - 1 - i));
-          return d.toISOString().slice(0,10);
-        });
-        const maxCount = Math.max(1, ...Object.values(dc));
-        const totalActive = Object.keys(dc).length;
-        const totalWords  = Object.values(dc).reduce((a, b) => a + b, 0);
-        const cellColor = n => {
-          if (!n) return 'var(--bg-secondary)';
-          const lvl = Math.ceil((n / maxCount) * 4);
-          return ['','var(--primary-glow)','var(--primary)','var(--accent)','var(--accent)'][lvl] || 'var(--accent)';
-        };
-        const W = COLS * (CELL + GAP) - GAP;
-        const H = ROWS * (CELL + GAP) - GAP;
-        return (
-          <div className="card home-card">
-            <div className="home-section-head">
-              <h2 className="home-section-title">학습 히트맵</h2>
-              <span className="home-section-meta">{totalActive}일 활동 · {totalWords}개 단어</span>
-            </div>
-            <div className="home-heatmap-scroll">
-              <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} className="home-heatmap-svg">
-                {days.map((day, i) => (
-                  <rect key={day}
-                    x={Math.floor(i / ROWS) * (CELL + GAP)}
-                    y={(i % ROWS) * (CELL + GAP)}
-                    width={CELL} height={CELL} rx={2}
-                    fill={cellColor(dc[day] || 0)}
-                    opacity={day > todayKey ? 0 : 1}
-                  >
-                    <title>{day}: {dc[day] || 0}개</title>
-                  </rect>
-                ))}
-              </svg>
-            </div>
-            <div className="home-heatmap-legend">
-              <span>적음</span>
-              {['var(--bg-secondary)','var(--primary-glow)','var(--primary)','var(--accent)'].map((c, i) => (
-                <span key={i} className="home-heatmap-legend__dot" style={{ background: c }} />
-              ))}
-              <span>많음</span>
-            </div>
-          </div>
-        );
-      })()}
 
     </div>
   );
