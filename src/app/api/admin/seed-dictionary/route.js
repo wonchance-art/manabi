@@ -5,6 +5,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { SEED_JP_CORE } from '@/lib/server/seed-jp-core';
+import { SEED_JP_COMMON } from '@/lib/server/seed-jp-common';
 import { fetchMeaningsForMissing } from '@/lib/server/fetchMeanings';
 
 export const runtime = 'nodejs';
@@ -50,23 +51,31 @@ export async function POST(request) {
   let body = {};
   try { body = await request.json(); } catch {}
   const {
-    includeCore = true,               // 내장 SEED_JP_CORE 포함 여부
-    extraBaseForms = [],              // 사용자 제공 추가 목록 (["単語1", "単語2", ...])
-    limit = 500,                      // 한번에 처리할 최대 항목
+    includeCore = true,               // SEED_JP_CORE 포함 (조사/조동사/빈도 최상위 ~180)
+    includeCommon = false,             // SEED_JP_COMMON 포함 (일상 어휘 ~400)
+    extraBaseForms = [],              // 사용자 제공 추가 목록
+    limit = 1000,                     // 한번에 처리할 최대 항목
   } = body;
 
   const supabase = serverSupabase();
 
-  // 1. 시드 대상 조립
+  // 1. 시드 대상 조립 (중복 제거)
   let candidates = [];
-  if (includeCore) candidates.push(...SEED_JP_CORE);
+  const seen = new Set();
+  const addIfNew = (item) => {
+    if (seen.has(item.base_form)) return;
+    seen.add(item.base_form);
+    candidates.push(item);
+  };
+
+  if (includeCore) SEED_JP_CORE.forEach(addIfNew);
+  if (includeCommon) SEED_JP_COMMON.forEach(addIfNew);
   if (Array.isArray(extraBaseForms)) {
     for (const bf of extraBaseForms) {
       if (typeof bf !== 'string') continue;
       const trimmed = bf.trim();
       if (!trimmed) continue;
-      if (candidates.find(c => c.base_form === trimmed)) continue;
-      candidates.push({ base_form: trimmed, pos: '미분류', reading: '' });
+      addIfNew({ base_form: trimmed, pos: '미분류', reading: '' });
     }
   }
   candidates = candidates.slice(0, limit);

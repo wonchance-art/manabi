@@ -165,7 +165,7 @@ export default function AdminPage() {
   });
 
   const seedDictMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async ({ includeCore = true, includeCommon = false, extraOnly = false } = {}) => {
       const { data: { session } } = await supabase.auth.getSession();
       const extraBaseForms = extraBaseFormsText.split('\n').map(s => s.trim()).filter(Boolean);
       const res = await fetch('/api/admin/seed-dictionary', {
@@ -174,7 +174,11 @@ export default function AdminPage() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session?.access_token}`,
         },
-        body: JSON.stringify({ includeCore: true, extraBaseForms }),
+        body: JSON.stringify({
+          includeCore: extraOnly ? false : includeCore,
+          includeCommon: extraOnly ? false : includeCommon,
+          extraBaseForms,
+        }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || '시드 실패');
@@ -886,17 +890,42 @@ export default function AdminPage() {
               }}
             />
 
-            <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
+            <div style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <Button
-                onClick={() => seedDictMutation.mutate()}
+                onClick={() => seedDictMutation.mutate({ includeCore: true, includeCommon: false })}
                 disabled={seedDictMutation.isPending}
               >
-                {seedDictMutation.isPending ? '🔄 시드 진행 중... (수십 초 소요)' : '🌱 시드 실행'}
+                {seedDictMutation.isPending ? '🔄 진행 중...' : '🌱 Core 시드 (~180)'}
               </Button>
+              <Button
+                variant="secondary"
+                onClick={() => seedDictMutation.mutate({ includeCore: false, includeCommon: true })}
+                disabled={seedDictMutation.isPending}
+              >
+                📘 Common 시드 (~400)
+              </Button>
+              <Button
+                variant="accent"
+                onClick={() => seedDictMutation.mutate({ includeCore: true, includeCommon: true })}
+                disabled={seedDictMutation.isPending}
+              >
+                ⭐ 전체 시드 (Core + Common)
+              </Button>
+              {extraBaseFormsText.trim() && (
+                <Button
+                  variant="ghost"
+                  onClick={() => seedDictMutation.mutate({ extraOnly: true })}
+                  disabled={seedDictMutation.isPending}
+                >
+                  📝 추가 단어만
+                </Button>
+              )}
             </div>
 
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 14 }}>
-              💡 첫 실행 후엔 매 줄 분석 시 공유 사전에서 의미를 재사용해 Gemini 호출이 크게 줄어듭니다.
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 14, lineHeight: 1.6 }}>
+              💡 <strong>Core</strong>: 조사·조동사·최다 빈도 단어 (먼저 하기 권장)<br />
+              💡 <strong>Common</strong>: 가족·음식·장소·감정 등 일상 어휘 — Gemini 호출 400회 발생, 1~2분 소요<br />
+              💡 이미 있는 항목은 자동 스킵 — 반복 실행해도 안전
             </p>
           </div>
         </div>
