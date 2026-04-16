@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
@@ -9,15 +9,11 @@ import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import Button from '../components/Button';
 import Spinner from '../components/Spinner';
-
 import PdfDocumentInner from '../components/PdfDocument';
 
 async function fetchPdfInfo(pdfId) {
   const { data, error } = await supabase
-    .from('uploaded_pdfs')
-    .select('*')
-    .eq('id', pdfId)
-    .maybeSingle();
+    .from('uploaded_pdfs').select('*').eq('id', pdfId).maybeSingle();
   if (error) throw error;
   if (!data) throw new Error('NOT_FOUND');
   return data;
@@ -25,51 +21,23 @@ async function fetchPdfInfo(pdfId) {
 
 async function getPdfUrl(storagePath) {
   const { data, error } = await supabase.storage
-    .from('user-pdfs')
-    .createSignedUrl(storagePath, 3600);
+    .from('user-pdfs').createSignedUrl(storagePath, 3600);
   if (error) throw error;
   return data.signedUrl;
-}
-
-async function quickAnalyze(text, language) {
-  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
-  if (lines.length === 0) return null;
-  let authHeader = {};
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.access_token) authHeader = { Authorization: `Bearer ${session.access_token}` };
-  } catch {}
-  const res = await fetch('/api/analyze', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...authHeader },
-    body: JSON.stringify({ lines, language }),
-  });
-  if (!res.ok) throw new Error('분석 실패');
-  const data = await res.json();
-  const tokens = [];
-  for (const result of data.results || []) {
-    for (const tokenId of result.sequence) {
-      const t = result.dictionary[tokenId];
-      if (t && t.pos !== '기호' && t.text?.trim()) tokens.push(t);
-    }
-  }
-  return tokens;
 }
 
 export default function PdfViewerPage() {
   const { id } = useParams();
   const { user } = useAuth();
   const toast = useToast();
+  const containerRef = useRef(null);
 
   const [numPages, setNumPages] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [scale, setScale] = useState(1.2);
+  const [scale, setScale] = useState(1.0);
   const [language, setLanguage] = useState('Japanese');
-
-  const [selectedText, setSelectedText] = useState('');
-  const [analyzedTokens, setAnalyzedTokens] = useState(null);
-  const [analyzing, setAnalyzing] = useState(false);
-  const [saving, setSaving] = useState({});
+  const [selectedToken, setSelectedToken] = useState(null);
+  const [saving, setSaving] = useState(false);
 
   const { data: pdfInfo, isLoading, error } = useQuery({
     queryKey: ['pdf-info', id],
@@ -84,49 +52,46 @@ export default function PdfViewerPage() {
     staleTime: 1000 * 60 * 30,
   });
 
-  const handleMouseUp = useCallback(() => {
-    const selection = window.getSelection();
-    const text = selection?.toString()?.trim();
-    if (text && text.length > 0 && text.length < 500) {
-      setSelectedText(text);
-      setAnalyzedTokens(null);
-    }
+  const [selectedText, setSelectedText] = useState(null); // 드래그 선택 텍스트
+
+  // 토큰 클릭 + 드래그 선택 이벤트 수신
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const onToken = (e) => { setSelectedToken(e.detail); setSelectedText(null); };
+    const onSelect = (e) => { setSelectedText(e.detail); setSelectedToken(null); };
+    el.addEventListener('pdf-token-click', onToken);
+    el.addEventListener('pdf-text-select', onSelect);
+    return () => {
+      el.removeEventListener('pdf-token-click', onToken);
+      el.removeEventListener('pdf-text-select', onSelect);
+    };
   }, []);
 
-  async function handleAnalyze() {
-    if (!selectedText) return;
-    setAnalyzing(true);
-    try {
-      const tokens = await quickAnalyze(selectedText, language);
-      setAnalyzedTokens(tokens);
-    } catch (e) {
-      toast('분석 실패: ' + e.message, 'error');
-    } finally {
-      setAnalyzing(false);
-    }
+  function changePage(pg) {
+    setCurrentPage(pg);
+    setSelectedToken(null);
   }
 
-  async function handleSaveWord(token) {
-    if (!user) { toast('로그인이 필요합니다.', 'warning'); return; }
-    const key = token.base_form || token.text;
-    setSaving(prev => ({ ...prev, [key]: true }));
+  async function handleSaveWord() {
+    if (!user || !selectedToken) return;
+    setSaving(true);
     try {
       const { error } = await supabase.from('user_vocabulary').upsert({
         user_id: user.id,
-        word_text: token.text,
-        base_form: token.base_form || token.text,
-        meaning: token.meaning || '',
-        pos: token.pos || '',
-        furigana: token.furigana || '',
+        word_text: selectedToken.text,
+        base_form: selectedToken.base_form || selectedToken.text,
+        meaning: selectedToken.meaning || '',
+        pos: selectedToken.pos || '',
+        furigana: selectedToken.furigana || '',
         language,
-        source_sentence: selectedText.slice(0, 200),
       }, { onConflict: 'user_id,word_text' });
       if (error) throw error;
-      toast(`⭐ "${token.text}" 저장!`, 'success');
+      toast(`⭐ "${selectedToken.text}" 저장!`, 'success');
     } catch (e) {
       toast('저장 실패: ' + e.message, 'error');
     } finally {
-      setSaving(prev => ({ ...prev, [key]: false }));
+      setSaving(false);
     }
   }
 
@@ -135,7 +100,6 @@ export default function PdfViewerPage() {
     <div className="page-container" style={{ textAlign: 'center', paddingTop: 80 }}>
       <div style={{ fontSize: '3rem', marginBottom: 12 }}>📄</div>
       <h2>PDF를 찾을 수 없어요</h2>
-      <p style={{ color: 'var(--text-muted)', marginBottom: 20 }}>삭제됐거나 권한이 없는 파일입니다.</p>
       <Link href="/materials" className="btn btn--primary">자료실로</Link>
     </div>
   );
@@ -159,60 +123,99 @@ export default function PdfViewerPage() {
 
       {numPages && (
         <div className="pdf-nav">
-          <button className="btn btn--ghost btn--sm" disabled={currentPage <= 1} onClick={() => setCurrentPage(p => p - 1)}>◀ 이전</button>
+          <button className="btn btn--ghost btn--sm" disabled={currentPage <= 1} onClick={() => changePage(currentPage - 1)}>◀ 이전</button>
           <span style={{ fontSize: '0.85rem' }}>{currentPage} / {numPages}</span>
-          <button className="btn btn--ghost btn--sm" disabled={currentPage >= numPages} onClick={() => setCurrentPage(p => p + 1)}>다음 ▶</button>
+          <button className="btn btn--ghost btn--sm" disabled={currentPage >= numPages} onClick={() => changePage(currentPage + 1)}>다음 ▶</button>
         </div>
       )}
 
-      <div className="pdf-container" onMouseUp={handleMouseUp}>
+      {/* PDF + 오버레이 */}
+      <div ref={containerRef} className="pdf-container">
         {pdfUrl ? (
           <PdfDocumentInner
             fileUrl={pdfUrl}
             pageNumber={currentPage}
             scale={scale}
             onLoadSuccess={setNumPages}
+            language={language}
           />
         ) : (
           <Spinner message="PDF URL 가져오는 중..." />
         )}
       </div>
 
+      {/* 단어 클릭 팝업 */}
+      {selectedToken && (
+        <div className="pdf-analysis-panel">
+          <div className="pdf-analysis-panel__header">
+            <div>
+              <div style={{ fontSize: '1.3rem', fontWeight: 700 }}>
+                {selectedToken.furigana
+                  ? <ruby>{selectedToken.text}<rt style={{ fontSize: '0.5em' }}>{selectedToken.furigana}</rt></ruby>
+                  : selectedToken.text}
+              </div>
+              <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: 4 }}>
+                {selectedToken.pos}
+                {selectedToken.base_form && selectedToken.base_form !== selectedToken.text && ` · ${selectedToken.base_form}`}
+              </div>
+            </div>
+            <button className="pdf-analysis-panel__close" onClick={() => setSelectedToken(null)}>✕</button>
+          </div>
+          <div style={{ fontSize: '1rem', marginBottom: 12 }}>{selectedToken.meaning || '(뜻 없음)'}</div>
+          {user && (
+            <Button size="sm" disabled={saving} onClick={handleSaveWord}>
+              {saving ? '저장 중...' : '⭐ 단어장에 저장'}
+            </Button>
+          )}
+        </div>
+      )}
+
+      {/* 드래그 선택 팝업 */}
       {selectedText && (
         <div className="pdf-analysis-panel">
           <div className="pdf-analysis-panel__header">
-            <span className="pdf-analysis-panel__selected">
-              "{selectedText.length > 80 ? selectedText.slice(0, 80) + '…' : selectedText}"
-            </span>
-            <button className="pdf-analysis-panel__close" onClick={() => { setSelectedText(''); setAnalyzedTokens(null); }}>✕</button>
-          </div>
-
-          {!analyzedTokens && !analyzing && (
-            <Button size="sm" onClick={handleAnalyze}>🔬 분석하기</Button>
-          )}
-          {analyzing && <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>⏳ 분석 중...</span>}
-
-          {analyzedTokens && (
-            <div className="pdf-analysis-panel__tokens">
-              {analyzedTokens.map((t, i) => {
-                const key = t.base_form || t.text;
-                return (
-                  <div key={i} className="pdf-token-row">
-                    <div className="pdf-token-row__word">
-                      {t.furigana ? <ruby>{t.text}<rt>{t.furigana}</rt></ruby> : <span>{t.text}</span>}
-                    </div>
-                    <span className="pdf-token-row__pos">{t.pos}</span>
-                    <span className="pdf-token-row__meaning">{t.meaning || '—'}</span>
-                    {user && (
-                      <button className="pdf-token-row__save" disabled={saving[key]} onClick={() => handleSaveWord(t)}>
-                        {saving[key] ? '...' : '⭐'}
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
+            <div style={{ fontSize: '0.95rem', lineHeight: 1.6, flex: 1 }}>
+              "{selectedText.length > 100 ? selectedText.slice(0, 100) + '…' : selectedText}"
             </div>
-          )}
+            <button className="pdf-analysis-panel__close" onClick={() => setSelectedText(null)}>✕</button>
+          </div>
+          <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 8 }}>
+            선택한 텍스트를 분석해서 단어를 찾습니다
+          </div>
+          <Button size="sm" onClick={async () => {
+            try {
+              let authHeader = {};
+              try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session?.access_token) authHeader = { Authorization: `Bearer ${session.access_token}` };
+              } catch {}
+              const res = await fetch('/api/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', ...authHeader },
+                body: JSON.stringify({ lines: selectedText.split('\n').filter(Boolean), language }),
+              });
+              if (!res.ok) throw new Error('실패');
+              const data = await res.json();
+              const tokens = [];
+              for (const r of data.results || []) {
+                for (const tid of r.sequence) {
+                  const t = r.dictionary[tid];
+                  if (t && t.meaning && t.pos !== '기호') tokens.push(t);
+                }
+              }
+              if (tokens.length > 0) {
+                // 첫 번째 의미 있는 토큰 선택
+                setSelectedToken(tokens[0]);
+                setSelectedText(null);
+              } else {
+                toast('분석 결과가 없어요.', 'info');
+              }
+            } catch (e) {
+              toast('분석 실패: ' + e.message, 'error');
+            }
+          }}>
+            🔬 분석하기
+          </Button>
         </div>
       )}
     </div>

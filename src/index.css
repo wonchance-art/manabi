@@ -4500,14 +4500,21 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   min-height: 400px;
   padding: 16px;
 }
-/* PDF 텍스트 레이어 — 선택 가능 투명 오버레이 */
-.pdf-text-layer span {
-  position: absolute;
-  white-space: pre;
+/* PDF 히트 토큰 — 투명 텍스트, 호버/선택 시 표시 */
+.pdf-hit-token, .pdf-hit-punct {
   color: transparent;
-  cursor: text;
+  white-space: pre;
+  overflow: hidden;
 }
-.pdf-text-layer span::selection {
+.pdf-hit-token {
+  cursor: pointer;
+  border-radius: 2px;
+  transition: background 0.12s;
+}
+.pdf-hit-token:hover {
+  background: rgba(124, 92, 252, 0.25);
+}
+.pdf-hit-token::selection, .pdf-hit-punct::selection {
   background: rgba(124, 92, 252, 0.35);
   color: transparent;
 }
