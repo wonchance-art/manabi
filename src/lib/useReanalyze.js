@@ -4,47 +4,67 @@ import { useState, useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { supabase } from './supabase';
 import { analyzeText } from './analyzeText';
+import { autoSplitParagraphs } from './splitParagraphs';
 
-const STALE_THRESHOLD_MS = 3 * 60 * 1000; // 3분 이상 움직임 없으면 중단으로 판단
+const STALE_THRESHOLD_MS = 3 * 60 * 1000;
 
-/** 분석이 중단된 상태인지 감지 */
 export function isStaleAnalyzing(material) {
   const json = material?.processed_json;
   const status = json?.status || material?.status;
   if (status !== 'analyzing') return false;
-
   const updatedAt = json?.metadata?.updated_at;
-  if (!updatedAt) return true; // 타임스탬프 없으면 stale로 간주
-  const ageMs = Date.now() - new Date(updatedAt).getTime();
-  return ageMs > STALE_THRESHOLD_MS;
+  if (!updatedAt) return true;
+  return Date.now() - new Date(updatedAt).getTime() > STALE_THRESHOLD_MS;
 }
 
-/** 아직 처리 안 된 원본 줄 인덱스 배열 반환 */
 export function computeMissingLineIndices(material) {
   const rawText = material?.raw_text || '';
   const lines = rawText.split('\n');
-  const total = lines.length;
   const sequence = material?.processed_json?.sequence || [];
-
-  // sequence의 토큰 ID에서 원본 줄 idx 추출 (id_{idx}_ · failed_{idx}_ · br_{idx}_)
   const processedIndices = new Set();
   for (const tokenId of sequence) {
     const m = tokenId.match(/^(?:id|failed|br)_(\d+)_/);
     if (m) processedIndices.add(parseInt(m[1]));
   }
-
   const missing = [];
-  for (let i = 0; i < total; i++) {
-    if (!processedIndices.has(i) && lines[i].trim()) {
-      missing.push(i);
-    }
+  for (let i = 0; i < lines.length; i++) {
+    if (!processedIndices.has(i) && lines[i].trim()) missing.push(i);
   }
   return missing;
 }
 
+/** raw_text를 문단으로 분리 (자동 분리 적용). 각 문단: { index, lineIndices, preview } */
+export function getParagraphs(rawText) {
+  if (!rawText) return [];
+  rawText = autoSplitParagraphs(rawText);
+  const lines = rawText.split('\n');
+  const paragraphs = [];
+  let current = [];
+  for (let i = 0; i < lines.length; i++) {
+    if (!lines[i].trim()) {
+      if (current.length > 0) {
+        paragraphs.push(current);
+        current = [];
+      }
+    } else {
+      current.push(i);
+    }
+  }
+  if (current.length > 0) paragraphs.push(current);
+
+  return paragraphs.map((lineIndices, index) => ({
+    index,
+    lineIndices,
+    preview: lines[lineIndices[0]].trim().slice(0, 60) + (lines[lineIndices[0]].trim().length > 60 ? '…' : ''),
+    lineCount: lineIndices.length,
+  }));
+}
+
 /**
  * Viewer 재분석 훅
- * - mode: 'full'(전체 재분석) | 'failed'(실패 줄만) | 'resume'(중단 지점 이어서)
+ * mutation opts:
+ *   { fullReset: true }           — 전체 재분석
+ *   { selectedLineIndices: Set }  — 선택 문단만 재분석 (나머지 기존 유지)
  */
 export function useReanalyze({ materialId, material, refetch, toast }) {
   const abortRef = useRef(null);
@@ -55,9 +75,16 @@ export function useReanalyze({ materialId, material, refetch, toast }) {
   const missingIndices = stale ? computeMissingLineIndices(material) : [];
 
   const mutation = useMutation({
-    mutationFn: async ({ fullReset = false, resume = false } = {}) => {
-      const rawText = material?.raw_text;
+    mutationFn: async ({ fullReset = false, resume = false, selectedLineIndices = null } = {}) => {
+      let rawText = material?.raw_text;
       if (!rawText) throw new Error('원본 텍스트가 없습니다.');
+
+      // 문단 구분이 안 돼있으면 자동 분리 후 DB에도 반영
+      const split = autoSplitParagraphs(rawText);
+      if (split !== rawText) {
+        rawText = split;
+        await supabase.from('reading_materials').update({ raw_text: rawText }).eq('id', materialId);
+      }
 
       const controller = new AbortController();
       abortRef.current = controller;
@@ -70,20 +97,21 @@ export function useReanalyze({ materialId, material, refetch, toast }) {
       let baseJson = null;
       let statusJson;
 
-      if (fullReset) {
-        // 전체 리셋
+      if (selectedLineIndices) {
+        // 부분 분석: 선택한 줄만 failed로 마킹 → 나머지 기존 유지
+        const failedForPartial = [...selectedLineIndices].sort((a, b) => a - b);
+        baseJson = { ...material.processed_json, failed_indices: failedForPartial };
+        statusJson = { ...baseJson, status: 'analyzing', metadata: initMeta };
+      } else if (fullReset) {
         statusJson = { sequence: [], dictionary: {}, last_idx: -1, status: 'analyzing', metadata: initMeta, failed_indices: [] };
       } else if (resume && missingIndices.length > 0) {
-        // 이어서 분석: 미처리 줄을 failed_indices로 추가
         const mergedFailed = [...new Set([...(failedIndices || []), ...missingIndices])].sort((a, b) => a - b);
         baseJson = { ...material.processed_json, failed_indices: mergedFailed };
         statusJson = { ...baseJson, status: 'analyzing', metadata: initMeta };
       } else if (failedIndices.length > 0) {
-        // 실패 줄만
         baseJson = material.processed_json;
         statusJson = { ...baseJson, status: 'analyzing', metadata: initMeta };
       } else {
-        // 기본 전체
         statusJson = { sequence: [], dictionary: {}, last_idx: -1, status: 'analyzing', metadata: initMeta, failed_indices: [] };
       }
 
@@ -94,7 +122,6 @@ export function useReanalyze({ materialId, material, refetch, toast }) {
         existingJson: baseJson,
         concurrency: 8,
         onBatch: async ({ currentJson }) => {
-          // updated_at 매번 갱신해서 stale 판단에 활용
           const json = {
             ...currentJson,
             metadata: { ...currentJson.metadata, updated_at: new Date().toISOString() },

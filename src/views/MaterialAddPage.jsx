@@ -7,6 +7,7 @@ import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import Button from '../components/Button';
 import { analyzeText } from '../lib/analyzeText';
+import { autoSplitParagraphs } from '../lib/splitParagraphs';
 import { LEVELS } from '../lib/constants';
 import MaterialAddPdfSection from './MaterialAddPdfSection';
 import { friendlyToastMessage } from '../lib/errorMessage';
@@ -89,7 +90,7 @@ export default function MaterialAddPage() {
       };
       const materialRow = {
         title: title || "제목 없음",
-        raw_text: rawText,
+        raw_text: autoSplitParagraphs(rawText),
         processed_json: initJson,
         visibility: pdfSource ? 'private' : visibility, // PDF 출처는 강제 private
         owner_id: user.id,

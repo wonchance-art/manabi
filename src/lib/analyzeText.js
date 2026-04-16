@@ -29,6 +29,33 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
   const isRetry = !!(existingJson?.failed_indices?.length);
   const failedSet = new Set(isRetry ? existingJson.failed_indices : []);
 
+  // 1. 문단 분리 — 빈 줄 기준으로 그룹핑
+  const paragraphs = []; // [{ lineIndices: [0,1,2], lines: ['...','...'] }]
+  let currentPara = { lineIndices: [], lines: [] };
+  for (let i = 0; i < total; i++) {
+    if (!lines[i].trim()) {
+      if (currentPara.lineIndices.length > 0) {
+        paragraphs.push(currentPara);
+        currentPara = { lineIndices: [], lines: [] };
+      }
+      paragraphs.push({ lineIndices: [i], lines: [''], empty: true });
+    } else {
+      currentPara.lineIndices.push(i);
+      currentPara.lines.push(lines[i].trim());
+    }
+  }
+  if (currentPara.lineIndices.length > 0) paragraphs.push(currentPara);
+
+  // 2. auth 토큰 미리 가져오기
+  let authHeader = {};
+  try {
+    const { supabase } = await import('./supabase');
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.access_token) {
+      authHeader = { Authorization: `Bearer ${session.access_token}` };
+    }
+  } catch {}
+
   let currentJson = {
     sequence: [],
     dictionary: {},
@@ -38,136 +65,108 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
     failed_indices: [],
   };
 
-  // 재시도 모드일 때 실패 안 한 줄은 기존 토큰 복원
-  const lineStatus = new Array(total).fill(null); // 'success' | 'empty' | 'reuse' | 'failed' | null
+  let processedLines = 0;
 
-  if (isRetry) {
-    for (let i = 0; i < total; i++) {
-      if (!failedSet.has(i)) {
-        lineStatus[i] = lines[i].trim() ? 'reuse' : 'empty';
-      }
-    }
-  }
-
-  // 서버에 보낼 줄만 추림 (재시도 모드면 실패 줄만, 아니면 전체)
-  const linesToAnalyze = [];
-  for (let i = 0; i < total; i++) {
-    if (lineStatus[i]) continue; // 이미 결정된 것 스킵
-    if (!lines[i].trim()) { lineStatus[i] = 'empty'; continue; }
-    linesToAnalyze.push({ idx: i, text: lines[i].trim() });
-  }
-
-  // 큰 덩어리를 서버 타임아웃(60s) 안에 처리하기 위해 청크 단위로 전송
-  const CHUNK_SIZE = 20; // 20줄씩 한 번의 /api/analyze 호출
-
-  for (let chunkStart = 0; chunkStart < linesToAnalyze.length; chunkStart += CHUNK_SIZE) {
+  // 3. 문단 단위로 분석 → 즉시 DB 저장
+  for (const para of paragraphs) {
     if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
 
-    const chunk = linesToAnalyze.slice(chunkStart, chunkStart + CHUNK_SIZE);
+    // 빈 줄 문단 → 개행만 추가
+    if (para.empty) {
+      const idx = para.lineIndices[0];
+      const brId = `br_${idx}_${timestamp}`;
+      currentJson.sequence.push(brId);
+      currentJson.dictionary[brId] = { text: '\n', pos: '개행' };
+      currentJson.last_idx = idx;
+      processedLines++;
+      continue;
+    }
 
-    let response;
+    // 재시도 모드: 이 문단의 모든 줄이 성공 상태면 기존 토큰 재사용
+    const needsAnalysis = para.lineIndices.some(i => !isRetry || failedSet.has(i));
+
+    if (!needsAnalysis) {
+      // 기존 토큰 복원
+      for (const idx of para.lineIndices) {
+        const prefixes = [`id_${idx}_`, `br_${idx}_`, `failed_${idx}_`];
+        const existing = (existingJson?.sequence || []).filter(id =>
+          prefixes.some(p => id.startsWith(p))
+        );
+        existing.forEach(id => {
+          currentJson.sequence.push(id);
+          currentJson.dictionary[id] = existingJson.dictionary[id];
+        });
+        currentJson.last_idx = idx;
+      }
+      // 문단 사이 개행
+      const lastIdx = para.lineIndices[para.lineIndices.length - 1];
+      if (lastIdx < total - 1) {
+        const brId = `br_${lastIdx}_end_${timestamp}`;
+        currentJson.sequence.push(brId);
+        currentJson.dictionary[brId] = { text: '\n', pos: '개행' };
+      }
+      processedLines += para.lineIndices.length;
+      continue;
+    }
+
+    // 서버로 문단 전송
+    let response = null;
     try {
-      // Supabase 세션 토큰 첨부 (서버 측 인증/레이트 리밋용)
-      let authHeader = {};
-      try {
-        const { supabase } = await import('./supabase');
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.access_token) {
-          authHeader = { Authorization: `Bearer ${session.access_token}` };
-        }
-      } catch {}
-
       const res = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeader },
         signal,
-        body: JSON.stringify({
-          lines: chunk.map(c => c.text),
-          language,
-        }),
+        body: JSON.stringify({ lines: para.lines, language }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
       response = data;
     } catch (e) {
       if (signal?.aborted) throw e;
-      console.error('[analyzeJapanese] chunk failed:', e?.message);
-      // 이 청크의 모든 줄을 failed로 표시
-      for (const c of chunk) lineStatus[c.idx] = 'failed';
-      continue;
+      console.error('[analyzeHybrid] paragraph failed:', e?.message);
     }
 
-    // 서버 응답을 각 줄에 매핑
-    response.results.forEach((result, i) => {
-      const { idx, text } = chunk[i];
-      // 서버의 토큰 id를 클라이언트 타임스탬프 기반으로 rewrite (재시도 시 충돌 방지)
-      const newSequence = result.sequence.map((_, pIdx) => `id_${idx}_${pIdx}_${timestamp}`);
-      const newDictionary = {};
-      result.sequence.forEach((srvId, pIdx) => {
-        newDictionary[newSequence[pIdx]] = result.dictionary[srvId];
-      });
-      lineStatus[idx] = { type: 'success', sequence: newSequence, dictionary: newDictionary, text };
-    });
-  }
+    // 문단 결과 조립
+    for (let li = 0; li < para.lineIndices.length; li++) {
+      const idx = para.lineIndices[li];
+      const result = response?.results?.[li];
 
-  // 최종 조립 (원본 줄 순서대로)
-  for (let idx = 0; idx < total; idx++) {
-    const s = lineStatus[idx];
-
-    if (s && typeof s === 'object' && s.type === 'success') {
-      for (const id of s.sequence) {
-        currentJson.sequence.push(id);
-        currentJson.dictionary[id] = s.dictionary[id];
+      if (result) {
+        const newSeq = result.sequence.map((_, pi) => `id_${idx}_${pi}_${timestamp}`);
+        result.sequence.forEach((srvId, pi) => {
+          currentJson.sequence.push(newSeq[pi]);
+          currentJson.dictionary[newSeq[pi]] = result.dictionary[srvId];
+        });
+      } else {
+        // 실패
+        const failedId = `failed_${idx}_${timestamp}`;
+        currentJson.sequence.push(failedId);
+        currentJson.dictionary[failedId] = {
+          text: lines[idx],
+          pos: '미분석',
+          failed: true,
+          original_line_idx: idx,
+        };
+        currentJson.failed_indices.push(idx);
       }
+
+      // 줄 사이 개행
       if (idx < total - 1) {
         const brId = `br_${idx}_${timestamp}`;
         currentJson.sequence.push(brId);
         currentJson.dictionary[brId] = { text: '\n', pos: '개행' };
       }
-    } else if (s === 'empty') {
-      if (idx < total - 1) {
-        const brId = `br_${idx}_${timestamp}`;
-        currentJson.sequence.push(brId);
-        currentJson.dictionary[brId] = { text: '\n', pos: '개행' };
-      }
-    } else if (s === 'reuse') {
-      const prefix1 = `id_${idx}_`;
-      const prefix2 = `br_${idx}_`;
-      const prefix3 = `failed_${idx}_`;
-      const existing = (existingJson?.sequence || []).filter(id =>
-        id.startsWith(prefix1) || id.startsWith(prefix2) || id.startsWith(prefix3)
-      );
-      existing.forEach(id => {
-        currentJson.sequence.push(id);
-        currentJson.dictionary[id] = existingJson.dictionary[id];
-      });
-    } else {
-      // failed
-      const failedId = `failed_${idx}_${timestamp}`;
-      currentJson.sequence.push(failedId);
-      currentJson.dictionary[failedId] = {
-        text: lines[idx],
-        pos: '미분석',
-        failed: true,
-        original_line_idx: idx,
-      };
-      if (idx < total - 1) {
-        const brId = `br_${idx}_${timestamp}`;
-        currentJson.sequence.push(brId);
-        currentJson.dictionary[brId] = { text: '\n', pos: '개행' };
-      }
-      currentJson.failed_indices.push(idx);
+      currentJson.last_idx = idx;
     }
-    currentJson.last_idx = idx;
 
-    // progress: 매 줄마다는 과하므로 주기적으로 저장
-    if ((idx + 1) % 10 === 0 || idx === total - 1) {
-      currentJson.metadata = {
-        ...(currentJson.metadata || {}),
-        updated_at: new Date().toISOString(),
-      };
-      await onBatch?.({ currentJson, processed: idx + 1, total });
-    }
+    processedLines += para.lineIndices.length;
+
+    // 문단 완료 → 즉시 DB 저장 (실시간 갱신)
+    currentJson.metadata = {
+      ...(currentJson.metadata || {}),
+      updated_at: new Date().toISOString(),
+    };
+    await onBatch?.({ currentJson, processed: processedLines, total });
   }
 
   currentJson.status = currentJson.failed_indices.length > 0 ? 'partial' : 'completed';

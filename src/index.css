@@ -1714,6 +1714,90 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-size: 0.95rem;
 }
 
+/* 재분석 드롭다운 — 모달 오버레이 */
+.reanalyze-panel-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+}
+.reanalyze-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+  z-index: 1000;
+  min-width: 260px;
+  overflow: hidden;
+  animation: fadeInUp 0.15s ease;
+}
+.reanalyze-panel__item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  border-bottom: 1px solid var(--border);
+}
+.reanalyze-panel__item:last-child { border-bottom: none; }
+.reanalyze-panel__item:hover { background: var(--bg-secondary); }
+.reanalyze-panel__item span { font-size: 0.75rem; color: var(--text-muted); }
+.reanalyze-panel--pick {
+  min-width: 300px;
+  max-width: 420px;
+}
+.reanalyze-panel__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.reanalyze-panel__list {
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 6px 0;
+}
+.reanalyze-panel__para {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  transition: background 0.1s;
+}
+.reanalyze-panel__para:hover { background: var(--bg-secondary); }
+.reanalyze-panel__para input[type="checkbox"] { flex-shrink: 0; accent-color: var(--primary); }
+.reanalyze-panel__preview {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-secondary);
+}
+.reanalyze-panel__lines {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+.reanalyze-panel__actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+}
+
 .analyzing-banner--error {
   color: #ff7675;
   background: rgba(255, 118, 117, 0.1);

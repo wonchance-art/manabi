@@ -18,7 +18,7 @@ import { useTTS } from '../lib/useTTS';
 import { useViewerSettings } from '../lib/useViewerSettings';
 import { useGrammarAnalysis, GRAMMAR_ACTIONS } from '../lib/useGrammarAnalysis';
 import { useViewerQuiz } from '../lib/useViewerQuiz';
-import { useReanalyze } from '../lib/useReanalyze';
+import { useReanalyze, getParagraphs } from '../lib/useReanalyze';
 import { useMaterialComments } from '../lib/useMaterialComments';
 import { friendlyToastMessage } from '../lib/errorMessage';
 import ReportMaterialButton from '../components/ReportMaterialButton';
@@ -481,16 +481,41 @@ export default function ViewerPage() {
     onError: (err) => toast('저장 실패 — ' + friendlyToastMessage(err), 'error'),
   });
 
-  // 재분석 로직 (훅으로 분리)
+  // 재분석 로직
   const reanalyze = useReanalyze({ materialId: id, material, refetch, toast });
   const reanalyzeMutation = reanalyze.mutation;
-  const reanalyzeConfirm = reanalyze.confirmState;
-  const requestReanalyze = reanalyze.request;
-  const confirmReanalyze = reanalyze.confirm;
-  const cancelReanalyze = reanalyze.cancel;
   const stopReanalysis = reanalyze.stop;
   const isStaleAnalysis = reanalyze.stale;
   const missingLineCount = reanalyze.missingIndices.length;
+
+  // 재분석 패널 상태: null | 'menu' | 'pick'
+  const [reanalyzePanel, setReanalyzePanel] = useState(null);
+  const [selectedParas, setSelectedParas] = useState(new Set());
+
+  const paragraphs = material?.raw_text ? getParagraphs(material.raw_text) : [];
+
+  function togglePara(idx) {
+    setSelectedParas(prev => {
+      const next = new Set(prev);
+      if (next.has(idx)) next.delete(idx); else next.add(idx);
+      return next;
+    });
+  }
+  function startFullReanalyze() {
+    setReanalyzePanel(null);
+    reanalyze.mutation.mutate({ fullReset: true });
+  }
+  function startPartialReanalyze() {
+    const lineIndices = new Set();
+    for (const pi of selectedParas) {
+      const para = paragraphs[pi];
+      if (para) para.lineIndices.forEach(li => lineIndices.add(li));
+    }
+    if (lineIndices.size === 0) { toast('문단을 선택해주세요.', 'warning'); return; }
+    setReanalyzePanel(null);
+    setSelectedParas(new Set());
+    reanalyze.mutation.mutate({ selectedLineIndices: lineIndices });
+  }
 
   // 스크롤 위치 저장 (debounce 2s, 로그인 + 분석 완료 시만)
   const scrollSaveTimerRef = useRef(null);
@@ -1001,31 +1026,60 @@ export default function ViewerPage() {
               <button onClick={stopReanalysis} className="grammar-btn grammar-btn--danger">
                 ⏹ 분석 중단
               </button>
-            ) : reanalyzeConfirm !== null ? (
-              <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                  {reanalyzeConfirm.fullReset ? '전체 재분석할까요?' : `실패 ${failedIndices.length}줄만 재분석할까요?`}
-                </span>
-                <button onClick={confirmReanalyze} className="grammar-btn grammar-btn--active" style={{ padding: '4px 10px' }}>확인</button>
-                <button onClick={cancelReanalyze} className="grammar-btn" style={{ padding: '4px 10px' }}>취소</button>
-              </div>
-            ) : isPartial && failedIndices.length > 0 ? (
-              <div style={{ display: 'flex', gap: '6px' }}>
-                <button
-                  onClick={() => requestReanalyze({ fullReset: false })}
-                  className="grammar-btn grammar-btn--active"
-                  title={`실패한 ${failedIndices.length}줄만 재분석`}
-                >
-                  ⚠️ 실패 {failedIndices.length}줄 재분석
-                </button>
-                <button onClick={() => requestReanalyze({ fullReset: true })} className="grammar-btn" title="전체 다시 분석">
-                  🔄 전체
-                </button>
-              </div>
             ) : (
-              <button onClick={() => requestReanalyze({ fullReset: true })} className="grammar-btn" title="원문을 다시 AI로 분석합니다">
-                🔄 재분석
-              </button>
+              <div style={{ position: 'relative' }}>
+                <button
+                  onClick={() => setReanalyzePanel(prev => prev ? null : 'menu')}
+                  className="grammar-btn"
+                >
+                  🔄 재분석
+                </button>
+
+                {reanalyzePanel && (
+                  <>
+                    <div className="reanalyze-panel-overlay" onClick={() => setReanalyzePanel(null)} />
+                    {reanalyzePanel === 'menu' && (
+                      <div className="reanalyze-panel">
+                        <button className="reanalyze-panel__item" onClick={startFullReanalyze}>
+                          <strong>전체 분석</strong>
+                          <span>처음부터 다시 분석합니다</span>
+                        </button>
+                        <button className="reanalyze-panel__item" onClick={() => { setReanalyzePanel('pick'); setSelectedParas(new Set()); }}>
+                          <strong>부분 분석</strong>
+                          <span>문단을 선택해서 분석합니다</span>
+                        </button>
+                      </div>
+                    )}
+                    {reanalyzePanel === 'pick' && (
+                      <div className="reanalyze-panel reanalyze-panel--pick">
+                        <div className="reanalyze-panel__header">
+                          <span style={{ fontWeight: 700, fontSize: '0.88rem' }}>문단 선택</span>
+                          <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{selectedParas.size}개 선택</span>
+                        </div>
+                        <div className="reanalyze-panel__list">
+                          {paragraphs.map(p => (
+                            <label key={p.index} className="reanalyze-panel__para">
+                              <input
+                                type="checkbox"
+                                checked={selectedParas.has(p.index)}
+                                onChange={() => togglePara(p.index)}
+                              />
+                              <span className="reanalyze-panel__preview">{p.preview}</span>
+                              <span className="reanalyze-panel__lines">{p.lineCount}줄</span>
+                            </label>
+                          ))}
+                        </div>
+                        <div className="reanalyze-panel__actions">
+                          <button className="btn btn--ghost btn--sm" onClick={() => setReanalyzePanel(null)}>취소</button>
+                          <button className="btn btn--primary btn--sm" onClick={startPartialReanalyze} disabled={selectedParas.size === 0}>
+                            {selectedParas.size}개 문단 분석
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
             )
           )}
 
@@ -1052,50 +1106,24 @@ export default function ViewerPage() {
       >
         {isAnalyzing && !isStaleAnalysis && (
           <div className="analyzing-banner">
-            <span>⏳ 실시간 AI 해부 분석이 진행 중입니다...</span>
+            <span>⏳ 문단 단위로 분석 중입니다...</span>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button onClick={() => refetch()} className="analyzing-banner__refresh">새로고침</button>
-              {user?.id === material?.owner_id && (
-                reanalyzeMutation.isPending
-                  ? <button onClick={stopReanalysis} className="analyzing-banner__refresh" style={{ background: 'var(--danger)' }}>⏹ 중단</button>
-                  : reanalyzeConfirm !== null
-                    ? <>
-                        <button onClick={confirmReanalyze} className="analyzing-banner__refresh">확인</button>
-                        <button onClick={cancelReanalyze} className="analyzing-banner__refresh" style={{ background: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}>취소</button>
-                      </>
-                    : <button onClick={() => requestReanalyze({ fullReset: true })} className="analyzing-banner__refresh" style={{ background: 'var(--accent)' }}>🔄 재시작</button>
+              {user?.id === material?.owner_id && reanalyzeMutation.isPending && (
+                <button onClick={stopReanalysis} className="analyzing-banner__refresh" style={{ background: 'var(--danger)' }}>⏹ 중단</button>
               )}
             </div>
           </div>
         )}
 
-        {/* 중단된 분석 복구 배너 */}
         {isStaleAnalysis && user?.id === material?.owner_id && (
           <div className="analyzing-banner" style={{ background: 'rgba(252,196,25,0.1)', borderColor: 'rgba(252,196,25,0.4)' }}>
-            <span>
-              ⚠️ 분석이 중단된 것 같아요
-              {missingLineCount > 0 && ` (남은 ${missingLineCount}줄)`}
-            </span>
+            <span>⚠️ 분석이 중단된 것 같아요{missingLineCount > 0 && ` (남은 ${missingLineCount}줄)`}</span>
             <div style={{ display: 'flex', gap: '8px' }}>
-              {reanalyzeMutation.isPending ? (
-                <button onClick={stopReanalysis} className="analyzing-banner__refresh" style={{ background: 'var(--danger)' }}>⏹ 중단</button>
-              ) : missingLineCount > 0 ? (
-                <button
-                  onClick={() => reanalyze.mutation.mutate({ resume: true })}
-                  className="analyzing-banner__refresh"
-                  style={{ background: 'var(--accent)' }}
-                >
-                  ▶ 이어서 분석하기
-                </button>
-              ) : (
-                <button
-                  onClick={() => requestReanalyze({ fullReset: true })}
-                  className="analyzing-banner__refresh"
-                  style={{ background: 'var(--accent)' }}
-                >
-                  🔄 처음부터 재분석
-                </button>
-              )}
+              {reanalyzeMutation.isPending
+                ? <button onClick={stopReanalysis} className="analyzing-banner__refresh" style={{ background: 'var(--danger)' }}>⏹ 중단</button>
+                : <button onClick={() => reanalyze.mutation.mutate({ resume: true })} className="analyzing-banner__refresh" style={{ background: 'var(--accent)' }}>▶ 이어서 분석</button>
+              }
             </div>
           </div>
         )}
@@ -1105,26 +1133,15 @@ export default function ViewerPage() {
             <span>❌ 분석에 실패했습니다.</span>
             {reanalyzeMutation.isPending
               ? <button onClick={stopReanalysis} className="analyzing-banner__refresh" style={{ background: 'var(--danger)' }}>⏹ 중단</button>
-              : reanalyzeConfirm !== null
-                ? <>
-                    <button onClick={confirmReanalyze} className="analyzing-banner__refresh">확인</button>
-                    <button onClick={cancelReanalyze} className="analyzing-banner__refresh" style={{ background: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}>취소</button>
-                  </>
-                : <button onClick={() => requestReanalyze({ fullReset: true })} className="analyzing-banner__refresh">🔄 재분석 요청</button>
+              : <button onClick={startFullReanalyze} className="analyzing-banner__refresh">🔄 재분석</button>
             }
           </div>
         )}
 
         {isPartial && failedIndices.length > 0 && !reanalyzeMutation.isPending && (
           <div className="analyzing-banner analyzing-banner--warn">
-            <span>⚠️ {failedIndices.length}개 단락을 분석하지 못했습니다. 아래 표시된 줄을 재시도할 수 있습니다.</span>
-            {reanalyzeConfirm !== null
-              ? <>
-                  <button onClick={confirmReanalyze} className="analyzing-banner__refresh">확인</button>
-                  <button onClick={cancelReanalyze} className="analyzing-banner__refresh" style={{ background: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}>취소</button>
-                </>
-              : <button onClick={() => requestReanalyze({ fullReset: false })} className="analyzing-banner__refresh">실패 줄 재분석</button>
-            }
+            <span>⚠️ {failedIndices.length}줄 분석 실패</span>
+            <button onClick={() => reanalyze.mutation.mutate()} className="analyzing-banner__refresh">실패 줄 재시도</button>
           </div>
         )}
 
