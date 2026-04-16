@@ -4455,6 +4455,160 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   }
 }
 
+/* ========= PDF Viewer ========= */
+.pdf-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  flex-wrap: wrap;
+}
+.pdf-toolbar__back {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.pdf-toolbar__title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pdf-toolbar__controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.pdf-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 8px 0;
+}
+.pdf-container {
+  display: flex;
+  justify-content: center;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  overflow: auto;
+  min-height: 400px;
+  padding: 16px;
+}
+.pdf-container .react-pdf__Page {
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  border-radius: 4px;
+  overflow: hidden;
+}
+/* 텍스트 레이어 — 선택 가능 + 투명 오버레이 */
+.pdf-container .react-pdf__Page__textContent {
+  opacity: 0.3;
+}
+.pdf-container .react-pdf__Page__textContent::selection,
+.pdf-container .react-pdf__Page__textContent span::selection {
+  background: rgba(124, 92, 252, 0.35);
+}
+
+/* 분석 패널 — 하단 고정 */
+.pdf-analysis-panel {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
+  padding: 16px 20px;
+  z-index: 500;
+  max-height: 50vh;
+  overflow-y: auto;
+  animation: slideUp 0.2s ease;
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.pdf-analysis-panel__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.pdf-analysis-panel__selected {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  flex: 1;
+}
+.pdf-analysis-panel__close {
+  background: transparent;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 2px 6px;
+}
+.pdf-analysis-panel__tokens {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.pdf-token-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+}
+.pdf-token-row__word {
+  font-weight: 700;
+  font-size: 1rem;
+  min-width: 60px;
+}
+.pdf-token-row__word rt {
+  font-size: 0.55em;
+  color: var(--primary-light);
+  font-weight: 400;
+}
+.pdf-token-row__pos {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  background: var(--bg-primary);
+  padding: 2px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.pdf-token-row__meaning {
+  flex: 1;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+.pdf-token-row__save {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.pdf-token-row__save:hover {
+  background: var(--primary-glow);
+  border-color: var(--primary);
+}
+
 /* ========= Leaderboard ========= */
 .lb-header { margin-bottom: 24px; }
 .lb-header__title {

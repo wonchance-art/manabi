@@ -328,6 +328,9 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady }) {
                     <Button size="sm" variant="ghost" onClick={() => setExpandedPdfId(isExpanded ? null : pdf.id)}>
                       {isExpanded ? '▲' : '▼'}
                     </Button>
+                    <Button size="sm" variant="secondary" onClick={() => window.location.href = `/pdf/${pdf.id}`}>
+                      📖 읽기
+                    </Button>
                     <Button size="sm" onClick={() => handleSelectExistingPdf(pdf)}>
                       범위 선택
                     </Button>
