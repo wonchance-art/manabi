@@ -23,8 +23,8 @@ const PERSONAS = [
 const FEATURES = [
   { icon: '⚡', title: '실시간 AI 병렬 분석', desc: 'Gemini AI가 여러 문단을 동시에 처리합니다. 긴 텍스트도 수십 초 안에 완료.' },
   { icon: '🇯🇵', title: '후리가나 자동 생성', desc: '한자가 포함된 모든 단어에 후리가나를 자동으로 달아드립니다. N5~N1 전 범위 지원.' },
-  { icon: '🇬🇧', title: '영어 IPA 발음 기호', desc: '영어 단어에 국제음성기호(IPA)를 자동 표시. 발음까지 함께 학습하세요.' },
-  { icon: '📊', title: 'FSRS v4 알고리즘', desc: '망각 곡선 기반 최적 시점 복습 알림. 단순 반복보다 40% 더 기억에 오래 남습니다.' },
+  { icon: '🇬🇧', title: '영어 어휘 분석', desc: '영어 단어의 품사·한국어 뜻·예문을 즉시 제공. 긴 원서도 부담 없이 읽기.' },
+  { icon: '📊', title: 'FSRS v5 알고리즘', desc: '최신 기억 곡선 모델. 단순 반복보다 훨씬 적은 시간으로 오래 기억에 남습니다.' },
   { icon: '🌐', title: '공개 자료 공유', desc: '분석한 자료를 커뮤니티와 공유하거나 다른 학습자의 자료로 함께 공부하세요.' },
   { icon: '🔒', title: '클라우드 학습 데이터', desc: '단어장·복습 기록·학습 통계가 안전하게 저장됩니다. 어디서든 이어서 학습.' },
 ];
@@ -44,8 +44,23 @@ export default function LandingPage() {
     setTimeout(() => handleCTA(), 600);
   };
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'Anatomy Studio',
+    description: 'AI가 일본어·영어 문장을 형태소 단위로 해부하고, FSRS로 과학적 복습을 제공하는 언어 학습 앱',
+    applicationCategory: 'EducationalApplication',
+    operatingSystem: 'Web',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'KRW' },
+    inLanguage: ['ko', 'ja', 'en'],
+  };
+
   return (
     <div className="landing">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
       {/* ── NAV ── */}
       <header className="landing-nav">
@@ -208,7 +223,7 @@ export default function LandingPage() {
       <section className="landing-section">
         <div className="landing-section__inner landing-stats">
           <div className="stat-pill">
-            <span className="stat-pill__num">FSRS v4</span>
+            <span className="stat-pill__num">FSRS v5</span>
             <span className="stat-pill__label">최신 간격 반복 알고리즘</span>
           </div>
           <div className="stat-pill">
@@ -237,12 +252,14 @@ export default function LandingPage() {
       <footer className="landing-footer">
         <div className="landing-footer__left">
           <span className="landing-footer__brand">🧬 Anatomy Studio</span>
-          <span className="landing-footer__copy">AI 기반 언어 해부 학습 플랫폼 · © 2025</span>
+          <span className="landing-footer__copy">AI 기반 언어 해부 학습 플랫폼 · © 2026</span>
         </div>
         <div className="landing-footer__links">
           <Link href="/guide"    className="landing-footer__link">사용 가이드</Link>
-          <Link href="/forum"    className="landing-footer__link">커뮤니티</Link>
+          <Link href="/help"     className="landing-footer__link">도움말</Link>
           <Link href="/materials" className="landing-footer__link">자료실</Link>
+          <Link href="/terms"    className="landing-footer__link">이용약관</Link>
+          <Link href="/privacy"  className="landing-footer__link">개인정보</Link>
         </div>
       </footer>
 

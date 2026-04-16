@@ -9,6 +9,7 @@ import { createClient } from '@supabase/supabase-js';
 import { tokenizeJaLine } from '@/lib/server/tokenizeJa';
 import { tokenizeEnLine } from '@/lib/server/tokenizeEn';
 import { fetchMeaningsForMissing } from '@/lib/server/fetchMeanings';
+import { rateLimit, getClientKey } from '@/lib/server/rateLimit';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60; // Vercel Node.js 함수: 최대 60초
@@ -22,6 +23,32 @@ function getServerSupabase() {
 }
 
 export async function POST(request) {
+  // 인증 확인 — 로그인 사용자만 분석 가능 (Gemini 쿼터 남용 방지)
+  const authHeader = request.headers.get('authorization');
+  if (!authHeader) {
+    return Response.json({ error: '로그인이 필요합니다.' }, { status: 401 });
+  }
+  const token = authHeader.replace(/^Bearer\s+/i, '');
+  const anonClient = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    { auth: { persistSession: false } }
+  );
+  const { data: { user }, error: userErr } = await anonClient.auth.getUser(token);
+  if (userErr || !user) {
+    return Response.json({ error: '세션이 만료됐어요. 다시 로그인해주세요.' }, { status: 401 });
+  }
+
+  // Rate limit — 사용자별 분당 20회
+  const key = getClientKey(request, user.id);
+  const rl = rateLimit(key, { limit: 20, windowMs: 60_000 });
+  if (!rl.ok) {
+    return Response.json(
+      { error: '요청이 너무 많아요. 잠시 후 다시 시도해주세요.' },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(rl.resetIn / 1000)) } }
+    );
+  }
+
   let body;
   try {
     body = await request.json();
@@ -93,6 +120,18 @@ export async function POST(request) {
     }
 
     // 5. processed_json 호환 응답 조립
+    // 불필요 furigana 필터: 히라가나·카타카나·기호만인 토큰은 reading 무시
+    const isAllHiragana = s => /^[\u3040-\u309F\u30FC]+$/.test(s);
+    const isAllKatakana = s => /^[\u30A0-\u30FF\u30FC]+$/.test(s);
+    const isSymbolOnly  = s => /^[\s\d\p{P}\p{S}\u3000-\u303F\uFF00-\uFFEF]+$/u.test(s);
+
+    function cleanFurigana(surface, rawReading) {
+      if (!rawReading) return null;
+      if (isAllHiragana(surface) || isAllKatakana(surface) || isSymbolOnly(surface)) return null;
+      if (rawReading === surface) return null; // 완전 동일하면 중복
+      return rawReading;
+    }
+
     const timestamp = Date.now();
     const results = tokenizedLines.map(({ tokens }, lineIdx) => {
       const sequence = [];
@@ -102,9 +141,10 @@ export async function POST(request) {
         sequence.push(tokenId);
         const cached = cache.get(t.base_form);
         const meaning = cached?.meanings?.[0]?.meaning || '';
+        const rawReading = cached?.reading || t.furigana || null;
         dictionary[tokenId] = {
           text: t.text,
-          furigana: cached?.reading || t.furigana || '',
+          furigana: cleanFurigana(t.text, rawReading),
           pos: cached?.pos || t.pos,
           meaning,
           base_form: t.base_form,

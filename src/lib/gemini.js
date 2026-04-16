@@ -1,9 +1,19 @@
 export const GEMINI_MODEL = 'models/gemini-2.5-flash';
 
 async function callGeminiOnce(prompt, signal, { model, ...generationConfig } = {}) {
+  // Supabase 세션 토큰 첨부 (서버 측 인증용)
+  let authHeader = {};
+  try {
+    const { supabase } = await import('./supabase');
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.access_token) {
+      authHeader = { Authorization: `Bearer ${session.access_token}` };
+    }
+  } catch {}
+
   const response = await fetch('/api/gemini', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...authHeader },
     signal,
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],

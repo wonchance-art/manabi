@@ -67,9 +67,19 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
 
     let response;
     try {
+      // Supabase 세션 토큰 첨부 (서버 측 인증/레이트 리밋용)
+      let authHeader = {};
+      try {
+        const { supabase } = await import('./supabase');
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          authHeader = { Authorization: `Bearer ${session.access_token}` };
+        }
+      } catch {}
+
       const res = await fetch('/api/analyze', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeader },
         signal,
         body: JSON.stringify({
           lines: chunk.map(c => c.text),

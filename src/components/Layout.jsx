@@ -8,6 +8,8 @@ import { useState, useEffect } from 'react';
 import OnboardingModal from './OnboardingModal';
 import NotificationBell from './NotificationBell';
 import TourGuide from './TourGuide';
+import { supabase } from '../lib/supabase';
+import { useToast } from '../lib/ToastContext';
 
 export default function Layout({ children }) {
   const { user, profile, isAdmin, signOut } = useAuth();
@@ -16,6 +18,25 @@ export default function Layout({ children }) {
   const { theme, toggleTheme } = useTheme();
   const [showTour, setShowTour] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
+  const [resendingConfirm, setResendingConfirm] = useState(false);
+  const toast = useToast();
+
+  // 이메일 미검증 사용자 감지 (Supabase에서 confirm 필수가 꺼진 경우)
+  const needsEmailConfirm = !!user && user.email && !user.email_confirmed_at && !user.confirmed_at;
+
+  async function resendConfirmation() {
+    if (!user?.email || resendingConfirm) return;
+    setResendingConfirm(true);
+    try {
+      const { error } = await supabase.auth.resend({ type: 'signup', email: user.email });
+      if (error) throw error;
+      toast('📧 인증 메일을 다시 보냈어요. 받은편지함을 확인해주세요.', 'success');
+    } catch (err) {
+      toast('재발송 실패 — ' + (err?.message || '잠시 후 다시 시도'), 'error');
+    } finally {
+      setResendingConfirm(false);
+    }
+  }
 
   useEffect(() => {
     const goOffline = () => setIsOffline(true);
@@ -168,6 +189,36 @@ export default function Layout({ children }) {
       {isOffline && (
         <div className="offline-banner" role="alert" aria-live="assertive">
           📡 인터넷 연결이 끊겼습니다. 일부 기능이 제한될 수 있어요.
+        </div>
+      )}
+
+      {/* 이메일 미검증 안내 */}
+      {needsEmailConfirm && (
+        <div
+          role="status"
+          style={{
+            background: 'var(--warning-bg, #fef3c7)',
+            color: 'var(--warning-text, #92400e)',
+            borderBottom: '1px solid var(--warning-border, #fde68a)',
+            padding: '10px 16px',
+            fontSize: '0.85rem',
+            textAlign: 'center',
+          }}
+        >
+          📧 이메일 인증이 필요해요 — <strong>{user.email}</strong> 받은편지함을 확인해주세요.{' '}
+          <button
+            type="button"
+            onClick={resendConfirmation}
+            disabled={resendingConfirm}
+            style={{
+              background: 'transparent', border: 'none',
+              color: 'inherit', textDecoration: 'underline',
+              cursor: resendingConfirm ? 'default' : 'pointer',
+              fontWeight: 600, marginLeft: 4,
+            }}
+          >
+            {resendingConfirm ? '발송 중...' : '인증 메일 다시 보내기'}
+          </button>
         </div>
       )}
 

@@ -63,11 +63,7 @@ async function fetchHomeData(userId) {
   const prevWeekStartISO = prevWeekStart.toISOString();
   const prevWeekEndISO = weekStartISO;
 
-  const heatmapStart = new Date();
-  heatmapStart.setHours(0, 0, 0, 0);
-  heatmapStart.setDate(heatmapStart.getDate() - 83);
-
-  // 5 queries instead of 10 — vocab stats are derived client-side from vocabRows
+  // vocab stats are derived client-side from vocabRows
   const [
     { count: dueCount },
     { data: vocabRows },
@@ -82,7 +78,7 @@ async function fetchHomeData(userId) {
     supabase.from('user_vocabulary').select('*', { count: 'exact', head: true })
       .eq('user_id', userId).lte('next_review_at', now),
     supabase.from('user_vocabulary').select('created_at, last_reviewed_at, language, word_text')
-      .eq('user_id', userId).gte('created_at', heatmapStart.toISOString()),
+      .eq('user_id', userId).gte('created_at', prevWeekStartISO),
     supabase.from('reading_progress')
       .select('material_id, is_completed, updated_at, completed_at, reading_materials(id, title, processed_json)')
       .eq('user_id', userId).order('updated_at', { ascending: false }).limit(20),
@@ -105,11 +101,8 @@ async function fetchHomeData(userId) {
   // Derive all vocab stats client-side
   let todayVocabCount = 0, todayReviewCount = 0, weekVocab = 0, weekReview = 0;
   let prevWeekVocab = 0, prevWeekReview = 0;
-  const heatmapDayCounts = {};
 
   for (const v of rows) {
-    const createdDay = v.created_at.slice(0, 10);
-    heatmapDayCounts[createdDay] = (heatmapDayCounts[createdDay] || 0) + 1;
     if (v.created_at >= todayStart) todayVocabCount++;
     if (v.created_at >= weekStartISO) weekVocab++;
     else if (v.created_at >= prevWeekStartISO && v.created_at < prevWeekEndISO) prevWeekVocab++;
@@ -141,7 +134,6 @@ async function fetchHomeData(userId) {
     prevWeekReviews: prevWeekReview,
     prevWeekReads:   prevWeekRead,
     prevWeekXP:      prevWeekVocab * 5 + prevWeekReview * 10 + prevWeekRead * 50,
-    heatmapDayCounts,
     vocabByLang: (() => {
       const all = allVocabRows || [];
       const isJa = (v) => v.language === 'Japanese' || (!v.language && /[\u3040-\u30ff\u4e00-\u9fff]/.test(v.word_text));
@@ -381,6 +373,21 @@ export default function HomePage() {
           </div>
         );
       })()}
+
+      {/* 기억 상태 요약 + 통계 더 보기 */}
+      {dueCount > 0 || todayVocab > 0 ? (
+        <Link href="/stats" className="card" style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '14px 16px', textDecoration: 'none', color: 'var(--text-primary)',
+        }}>
+          <div style={{ display: 'flex', gap: 16, fontSize: '0.88rem' }}>
+            <span>⭐ 수집 <strong>{todayVocab}</strong></span>
+            <span>🧠 복습 <strong>{todayReviews}</strong></span>
+            <span>📖 완독 <strong>{todayReads}</strong></span>
+          </div>
+          <span style={{ fontSize: '0.82rem', color: 'var(--primary)', flexShrink: 0 }}>통계 →</span>
+        </Link>
+      ) : null}
 
       {/* ③ 최근 읽던 자료 — compact 3개 */}
       {data?.recentProgress?.length > 0 && (

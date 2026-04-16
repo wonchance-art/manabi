@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useToast } from './ToastContext';
 
@@ -13,6 +13,8 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const toast = useToast();
+  const explicitSignOutRef = useRef(false);
+  const hadSessionRef = useRef(false);
 
   // 프로필 조회 및 스트릭 갱신
   async function fetchProfile(userId, metadata = {}) {
@@ -91,18 +93,30 @@ export function AuthProvider({ children }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
+        hadSessionRef.current = true;
         fetchProfile(session.user.id, session.user.user_metadata);
       }
       setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      async (event, session) => {
         setUser(session?.user ?? null);
         if (session?.user) {
+          hadSessionRef.current = true;
           fetchProfile(session.user.id, session.user.user_metadata);
         } else {
           setProfile(null);
+          // 세션이 있다가 사라진 경우 — 명시적 로그아웃이 아니면 만료로 간주
+          if (event === 'SIGNED_OUT' && hadSessionRef.current && !explicitSignOutRef.current) {
+            toast('세션이 만료됐어요. 다시 로그인해주세요.', 'warning', 5000);
+            if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/auth')) {
+              const from = window.location.pathname + window.location.search;
+              window.location.href = `/auth?from=${encodeURIComponent(from)}`;
+            }
+          }
+          hadSessionRef.current = false;
+          explicitSignOutRef.current = false;
         }
       }
     );
@@ -154,6 +168,7 @@ export function AuthProvider({ children }) {
 
   // 로그아웃
   async function signOut() {
+    explicitSignOutRef.current = true;
     await supabase.auth.signOut();
     setUser(null);
     setProfile(null);

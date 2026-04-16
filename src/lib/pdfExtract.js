@@ -223,9 +223,18 @@ export async function ocrPageRange(doc, pageStart, pageEnd, onProgress) {
 - 일본어는 한자/가나 그대로, 영어는 영어 그대로
 - 이미지에 텍스트가 없거나 읽을 수 없으면 빈 문자열 반환`;
 
+    let authHeader = {};
+    try {
+      const { supabase } = await import('./supabase');
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token) {
+        authHeader = { Authorization: `Bearer ${session.access_token}` };
+      }
+    } catch {}
+
     const res = await fetch('/api/gemini', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeader },
       body: JSON.stringify({
         contents: [{
           parts: [

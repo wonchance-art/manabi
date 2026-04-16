@@ -6,38 +6,26 @@ import { createPortal } from 'react-dom';
 const STEPS = [
   {
     target: null,
-    title: '🧬 Anatomy Studio 투어',
-    body: '앱의 주요 기능을 빠르게 소개해 드릴게요! 언제든지 건너뛸 수 있어요.',
+    title: '🧬 환영해요!',
+    body: '3단계로 핵심만 소개할게요. 언제든지 건너뛸 수 있어요.',
     position: 'center',
   },
   {
-    target: 'a[href="/home"]',
-    title: '🏠 홈',
-    body: '오늘의 목표와 미션을 확인하고, 학습 현황을 한눈에 볼 수 있어요.',
-    position: 'bottom',
-  },
-  {
     target: 'a[href="/materials"]',
-    title: '📰 자료',
-    body: '실제 일본어·영어 텍스트를 읽으며 모르는 단어를 탭해 바로 수집하세요.',
+    title: '1. 자료를 읽어요',
+    body: '일본어·영어 글이나 PDF를 열면 단어가 자동 분석돼요. 모르는 단어를 탭하면 단어장에 저장됩니다.',
     position: 'bottom',
   },
   {
     target: 'a[href="/vocab"]',
-    title: '⭐ 단어장',
-    body: '수집한 단어를 FSRS 알고리즘으로 최적화된 간격에 맞춰 복습해요.',
+    title: '2. 복습은 자동으로',
+    body: '저장한 단어는 기억 곡선(FSRS)에 맞춰 다시 읽기 화면에서 노란색으로 뜹니다. 읽기가 곧 복습이에요.',
     position: 'bottom',
   },
   {
-    target: 'a[href="/forum"]',
-    title: '💬 포럼',
-    body: '다른 학습자들과 질문을 나누고 스터디 팁을 공유해보세요.',
-    position: 'bottom',
-  },
-  {
-    target: 'a[href="/leaderboard"]',
-    title: '🏆 랭킹',
-    body: '읽기·복습·단어 수집으로 XP를 쌓고 리더보드 상위권에 도전하세요!',
+    target: 'a[href="/home"]',
+    title: '3. 홈에서 시작',
+    body: '홈에서 오늘 복습할 자료를 추천해드려요. 자, 시작해볼까요?',
     position: 'bottom',
   },
 ];

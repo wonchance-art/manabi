@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useAuth } from '../lib/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toKoreanError } from '../lib/authErrors';
+import { supabase } from '../lib/supabase';
 
 function AuthForm() {
   const [isLogin, setIsLogin] = useState(true);
@@ -15,6 +16,9 @@ function AuthForm() {
   const [loading, setLoading] = useState(false);
 
   const [isForgot, setIsForgot] = useState(false);
+  const [isReset, setIsReset] = useState(false);
+  const [newPw, setNewPw] = useState('');
+  const [confirmNewPw, setConfirmNewPw] = useState('');
 
   const { signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
   const router = useRouter();
@@ -25,6 +29,11 @@ function AuthForm() {
     if (searchParams.get('error') === 'email_confirm_failed') {
       setError('이메일 인증에 실패했습니다. 다시 회원가입을 시도해주세요.');
     }
+    if (searchParams.get('mode') === 'reset') {
+      setIsReset(true);
+      setIsLogin(false);
+      setIsForgot(false);
+    }
   }, []);
 
   async function handleSubmit(e) {
@@ -34,7 +43,14 @@ function AuthForm() {
     setLoading(true);
 
     try {
-      if (isForgot) {
+      if (isReset) {
+        if (newPw.length < 8) { setError('비밀번호는 8자 이상이어야 합니다.'); setLoading(false); return; }
+        if (newPw !== confirmNewPw) { setError('비밀번호 확인이 일치하지 않습니다.'); setLoading(false); return; }
+        const { error: updErr } = await supabase.auth.updateUser({ password: newPw });
+        if (updErr) throw updErr;
+        setSuccess('🎉 비밀번호가 변경됐어요. 자동으로 로그인됩니다...');
+        setTimeout(() => router.push('/home'), 1500);
+      } else if (isForgot) {
         await resetPassword(email);
         setSuccess('📧 비밀번호 재설정 링크를 이메일로 보냈습니다. 확인해주세요!');
       } else if (isLogin) {
@@ -71,15 +87,15 @@ function AuthForm() {
         <div className="auth-header">
           <div className="auth-header__icon">🧬</div>
           <h1 className="auth-header__title">
-            {isForgot ? '비밀번호 찾기' : isLogin ? '다시 오셨군요!' : '함께 성장해요'}
+            {isReset ? '새 비밀번호 설정' : isForgot ? '비밀번호 찾기' : isLogin ? '다시 오셨군요!' : '함께 성장해요'}
           </h1>
           <p className="auth-header__sub">
-            {isForgot ? '가입한 이메일로 재설정 링크를 보내드려요' : isLogin ? '계정에 로그인하세요' : '새 계정을 만들어보세요'}
+            {isReset ? '사용할 새 비밀번호를 입력해주세요' : isForgot ? '가입한 이메일로 재설정 링크를 보내드려요' : isLogin ? '계정에 로그인하세요' : '새 계정을 만들어보세요'}
           </p>
         </div>
 
         {/* Google Login */}
-        {!isForgot && (
+        {!isForgot && !isReset && (
           <button onClick={handleGoogle} className="auth-google-btn">
             <svg width="20" height="20" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -92,7 +108,7 @@ function AuthForm() {
         )}
 
         {/* Divider */}
-        {!isForgot && (
+        {!isForgot && !isReset && (
           <div className="auth-divider">
             <div className="auth-divider__line" />
             <span className="auth-divider__text">또는</span>
@@ -116,19 +132,52 @@ function AuthForm() {
             </div>
           )}
 
-          <div className="auth-field">
-            <label className="auth-label">이메일</label>
-            <input
-              type="email"
-              className="auth-input"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="hello@example.com"
-              required
-            />
-          </div>
+          {!isReset && (
+            <div className="auth-field">
+              <label className="auth-label">이메일</label>
+              <input
+                type="email"
+                className="auth-input"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="hello@example.com"
+                required
+              />
+            </div>
+          )}
 
-          {!isForgot && (
+          {isReset && (
+            <>
+              <div className="auth-field">
+                <label className="auth-label">새 비밀번호</label>
+                <input
+                  type="password"
+                  className="auth-input"
+                  value={newPw}
+                  onChange={e => setNewPw(e.target.value)}
+                  placeholder="8자 이상"
+                  required
+                  minLength={8}
+                  autoComplete="new-password"
+                />
+              </div>
+              <div className="auth-field">
+                <label className="auth-label">새 비밀번호 확인</label>
+                <input
+                  type="password"
+                  className="auth-input"
+                  value={confirmNewPw}
+                  onChange={e => setConfirmNewPw(e.target.value)}
+                  placeholder="다시 입력"
+                  required
+                  minLength={8}
+                  autoComplete="new-password"
+                />
+              </div>
+            </>
+          )}
+
+          {!isForgot && !isReset && (
             <div className="auth-field">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                 <label className="auth-label" style={{ marginBottom: 0 }}>비밀번호</label>
@@ -178,11 +227,19 @@ function AuthForm() {
             disabled={loading}
             className={`auth-submit ${loading ? 'auth-submit--loading' : ''}`}
           >
-            {loading ? '처리 중...' : isForgot ? '재설정 링크 보내기' : isLogin ? '로그인' : '회원가입'}
+            {loading ? '처리 중...' : isReset ? '비밀번호 변경' : isForgot ? '재설정 링크 보내기' : isLogin ? '로그인' : '회원가입'}
           </button>
+
+          {!isLogin && !isForgot && !isReset && (
+            <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: 10, lineHeight: 1.5 }}>
+              가입 시 <a href="/terms" target="_blank" rel="noopener" style={{ color: 'var(--primary)' }}>이용약관</a> 및{' '}
+              <a href="/privacy" target="_blank" rel="noopener" style={{ color: 'var(--primary)' }}>개인정보 처리방침</a>에 동의합니다.
+            </p>
+          )}
         </form>
 
         {/* Toggle */}
+        {!isReset && (
         <p className="auth-toggle">
           {isForgot ? (
             <>
@@ -206,6 +263,7 @@ function AuthForm() {
             </>
           )}
         </p>
+        )}
       </div>
     </div>
   );

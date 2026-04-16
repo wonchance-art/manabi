@@ -21,6 +21,7 @@ import { useViewerQuiz } from '../lib/useViewerQuiz';
 import { useReanalyze } from '../lib/useReanalyze';
 import { useMaterialComments } from '../lib/useMaterialComments';
 import { friendlyToastMessage } from '../lib/errorMessage';
+import ReportMaterialButton from '../components/ReportMaterialButton';
 import ViewerComments from './ViewerComments';
 import ViewerBottomSheet from './ViewerBottomSheet';
 import ViewerGrammarModal from './ViewerGrammarModal';
@@ -31,8 +32,13 @@ async function fetchMaterial(id) {
     .from('reading_materials')
     .select('*')
     .eq('id', id)
-    .single();
+    .maybeSingle();
   if (error) throw error;
+  if (!data) {
+    const err = new Error('NOT_FOUND');
+    err.code = 'NOT_FOUND';
+    throw err;
+  }
   return data;
 }
 
@@ -86,38 +92,66 @@ function isTokenDue(savedWords, token) {
  * 超える  + こえる    → こ
  * 食べる  + たべる    → た
  * 思い出す + おもいだす → おもだ   (い・す 제거)
- * 引っ張る + ひっぱる  → ひぱ     (っ・る 모두 원문에 있으므로 제거)
- * 今日    + きょう    → きょう    (한자만이라 그대로)
+ * 한자·히라가나 혼합 토큰을 ruby 세그먼트로 분리.
+ * 例: 取りまとめ + とりまとめ → [{kanji:"取", reading:"と"}, {plain:"りまとめ"}]
+ *     引っ張る   + ひっぱる   → [{kanji:"引", reading:"ひ"}, {plain:"っ"}, {kanji:"張", reading:"ぱ"}, {plain:"る"}]
+ *     今日       + きょう     → [{kanji:"今日", reading:"きょう"}]
  *
- * 알고리즘: text의 히라가나 연속 블록을 순서대로 furigana에서 제거 (greedy)
+ * 알고리즘: surface의 히라가나 구간을 앵커로 reading을 분할 → 한자 구간에 읽기 할당
  */
-function trimOkurigana(text, furigana) {
-  if (!furigana) return furigana;
+function splitRuby(text, furigana) {
+  if (!furigana) return [{ plain: text }];
 
-  const HIRA = /[\u3041-\u3096]/;
+  const KANJI = /[\u4E00-\u9FFF\u3400-\u4DBF\uF900-\uFAFF]/;
+  const isKanji = ch => KANJI.test(ch);
 
-  // text에서 히라가나 연속 블록 추출 (순서 유지)
-  const hiraBlocks = [];
-  let buf = '';
-  for (const ch of text) {
-    if (HIRA.test(ch)) {
-      buf += ch;
+  // 1. surface를 [kanji 구간, hira 구간, ...] 으로 분할
+  const segments = [];
+  let i = 0;
+  while (i < text.length) {
+    if (isKanji(text[i])) {
+      let j = i;
+      while (j < text.length && isKanji(text[j])) j++;
+      segments.push({ type: 'kanji', text: text.slice(i, j) });
+      i = j;
     } else {
-      if (buf) { hiraBlocks.push(buf); buf = ''; }
+      let j = i;
+      while (j < text.length && !isKanji(text[j])) j++;
+      segments.push({ type: 'plain', text: text.slice(i, j) });
+      i = j;
     }
   }
-  if (buf) hiraBlocks.push(buf);
 
-  if (!hiraBlocks.length) return furigana;
+  // 한자가 없으면 plain으로 반환
+  if (!segments.some(s => s.type === 'kanji')) return [{ plain: text }];
 
-  // furigana에서 각 블록을 순서대로 제거
-  let result = furigana;
-  for (const block of hiraBlocks) {
-    const idx = result.indexOf(block);
-    if (idx !== -1) result = result.slice(0, idx) + result.slice(idx + block.length);
-  }
+  // 2. hira 구간들을 앵커로 regex를 만들어 reading을 분할
+  //    한자 구간 → (.+?)  /  hira 구간 → 리터럴 이스케이프
+  const regexParts = segments.map(s =>
+    s.type === 'kanji' ? '(.+?)' : s.text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  );
+  // 마지막 한자 캡처는 greedy로 (.+)
+  const lastKanjiIdx = regexParts.lastIndexOf('(.+?)');
+  if (lastKanjiIdx !== -1) regexParts[lastKanjiIdx] = '(.+)';
 
-  return result || furigana; // 전부 제거되면 원본 반환
+  try {
+    const regex = new RegExp('^' + regexParts.join('') + '$');
+    const match = furigana.match(regex);
+    if (match) {
+      let groupIdx = 1;
+      return segments.map(s => {
+        if (s.type === 'kanji') {
+          return { kanji: s.text, reading: match[groupIdx++] };
+        }
+        return { plain: s.text };
+      });
+    }
+  } catch {}
+
+  // regex 실패 시 fallback: 전체 한자에 전체 reading
+  return segments.map(s =>
+    s.type === 'kanji' ? { kanji: s.text, reading: furigana } : { plain: s.text }
+  );
 }
 
 export default function ViewerPage() {
@@ -725,15 +759,26 @@ export default function ViewerPage() {
   };
 
   if (isLoading) return <div className="page-container"><Spinner message="자료 해부 중..." /></div>;
-  if (error) return (
-    <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
-      <div className="error-banner">❌ 에러: {error.message}</div>
-      <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '16px' }}>
-        <button onClick={() => refetch()} className="btn btn--primary">다시 시도</button>
-        <a href="/materials" className="btn btn--secondary">자료실로 돌아가기</a>
+  if (error) {
+    const isNotFound = error.code === 'NOT_FOUND' || /not.*found|no.*rows|multiple.*rows/i.test(error.message || '');
+    return (
+      <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
+        <div style={{ fontSize: '3rem', marginBottom: 12 }}>{isNotFound ? '🗑️' : '❌'}</div>
+        <h2 style={{ color: 'var(--text-primary)', marginBottom: 8 }}>
+          {isNotFound ? '자료를 찾을 수 없어요' : '자료를 불러올 수 없어요'}
+        </h2>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: 20, maxWidth: 400, margin: '0 auto 20px' }}>
+          {isNotFound
+            ? '이 자료는 삭제됐거나 비공개로 전환됐을 수 있어요. 연결됐던 단어는 단어장에 그대로 남아 있습니다.'
+            : (error.message || '잠시 후 다시 시도해주세요.')}
+        </p>
+        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+          {!isNotFound && <button onClick={() => refetch()} className="btn btn--primary">다시 시도</button>}
+          <a href="/materials" className="btn btn--secondary">자료실로 돌아가기</a>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   // 비공개 자료 접근 제어
   if (material?.visibility === 'private' && material?.owner_id !== user?.id) {
@@ -827,6 +872,9 @@ export default function ViewerPage() {
               </button>
             )}
           </h1>
+        )}
+        {user && material?.visibility === 'public' && material?.owner_id !== user.id && (
+          <ReportMaterialButton materialId={material.id} userId={user.id} toast={toast} />
         )}
         {user && savedCount > 0 && (
           <Link href="/vocab" className="viewer-vocab-counter">
@@ -1081,8 +1129,49 @@ export default function ViewerPage() {
         )}
 
         {(() => {
-          // 분석 중: raw_text 줄을 미리 보여주고 처리된 줄만 토큰으로 교체
+          // raw_text 줄 분리 (헤딩 감지 + showRaw 렌더 공용)
           const rawLines = material?.raw_text?.split('\n') ?? [];
+
+          // 헤딩 감지: 명시적 # 마크다운 또는 휴리스틱 자동 감지
+          const SENTENCE_END = /[。！？!?.…」』)）】\]》>~〜]$/;
+          const HEADING_CLASS = { 1: 'viewer-h1', 2: 'viewer-h2', 3: 'viewer-h3' };
+
+          const headingLevels = rawLines.map((line, idx) => {
+            const trimmed = line.trim();
+            if (!trimmed) return 0;
+
+            // 명시적 마크다운
+            const md = trimmed.match(/^(#{1,3})\s/);
+            if (md) return md[1].length;
+
+            const len = trimmed.length;
+            const nextLine = rawLines[idx + 1]?.trim() || '';
+            const prevLine = rawLines[idx - 1]?.trim() || '';
+            const endsWithPunctuation = SENTENCE_END.test(trimmed);
+
+            // 첫 줄이고 짧고 마침표 없으면 → h1 (제목)
+            if (idx === 0 && len <= 40 && !endsWithPunctuation) return 1;
+
+            // 짧은 줄 + 마침표 없음 + 앞이 빈줄(또는 첫줄) + 뒤에 긴 줄 → h2
+            if (len <= 30 && !endsWithPunctuation
+                && (!prevLine || prevLine === '')
+                && nextLine.length > len * 1.5) return 2;
+
+            // 좀 더 긴 짧은 줄 + 마침표 없음 + 앞 빈줄 → h3
+            if (len <= 50 && len > 1 && !endsWithPunctuation
+                && (!prevLine || prevLine === '')
+                && nextLine.length > len) return 3;
+
+            return 0;
+          });
+
+          function getHeadingLevel(lineText, lineIdx) {
+            if (lineIdx != null && headingLevels[lineIdx] != null) return headingLevels[lineIdx];
+            if (!lineText) return 0;
+            const m = lineText.match(/^(#{1,3})\s/);
+            return m ? m[1].length : 0;
+          }
+
           const showRaw = isAnalyzing && rawLines.length > 0;
 
           // lineIdx → [tokenId, ...] 맵 구성
@@ -1113,17 +1202,26 @@ export default function ViewerPage() {
             }
             const isSaved = isTokenSaved(savedWords, token);
             const isDue = isSaved && isTokenDue(savedWords, token);
-            const furiganaText = showFurigana && token.furigana
-              ? trimOkurigana(token.text, token.furigana)
-              : '';
+            const rubySegments = showFurigana && token.furigana
+              ? splitRuby(token.text, token.furigana)
+              : null;
             return (
               <div key={tokenId} ref={el => { if (el) tokenRefs.current[tokenId] = el; }}
                 className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}`}
                 role="button" tabIndex={0}
                 onClick={() => handleTokenClick(token, tokenId)}
                 onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), handleTokenClick(token, tokenId))}>
-                <span className="furigana">{furiganaText}</span>
-                <span className="surface">{token.text}</span>
+                {rubySegments ? (
+                  <span className="surface">
+                    {rubySegments.map((seg, i) =>
+                      seg.kanji
+                        ? <ruby key={i}>{seg.kanji}<rt>{seg.reading}</rt></ruby>
+                        : <span key={i}>{seg.plain}</span>
+                    )}
+                  </span>
+                ) : (
+                  <span className="surface">{token.text}</span>
+                )}
               </div>
             );
           };
@@ -1132,12 +1230,14 @@ export default function ViewerPage() {
             return rawLines.map((line, lineIdx) => {
               const lineTokens = tokensByLine.get(lineIdx);
               const isLast = lineIdx === rawLines.length - 1;
+              const hLevel = getHeadingLevel(line, lineIdx);
+              const hClass = HEADING_CLASS[hLevel] || '';
               return (
-                <span key={lineIdx} style={{ display: 'contents' }}>
+                <span key={lineIdx} className={hClass || undefined} style={{ display: 'contents' }}>
                   {lineTokens?.length > 0
                     ? lineTokens.map(renderToken)
                     : line.trim()
-                      ? <span className="word-token--raw">{line}</span>
+                      ? <span className="word-token--raw">{line.trim().replace(/^#{1,3}\s/, '')}</span>
                       : null
                   }
                   {!isLast && <div className="line-break" />}
@@ -1146,12 +1246,50 @@ export default function ViewerPage() {
             });
           }
 
-          // 분석 완료 후: 기존 sequence 렌더
-          return json.sequence.map((tokenId) => {
+          // 분석 완료 후: 줄 단위로 그룹핑 → 헤딩 감지
+          // tokenId에서 원본 줄 idx 추출 (id_{lineIdx}_{tokenIdx}_...)
+          const lineGroups = []; // [{rawIdx, tokenIds}]
+          let curGroup = { rawIdx: 0, tokenIds: [] };
+          for (const tokenId of json.sequence) {
             const token = json.dictionary[tokenId];
-            if (!token) return null;
-            if (token.pos === '개행') return <div key={tokenId} className="line-break" />;
-            return renderToken(tokenId);
+            if (!token) continue;
+            if (token.pos === '개행') {
+              lineGroups.push(curGroup);
+              const m = tokenId.match(/^(?:id|br|failed)_(\d+)_/);
+              curGroup = { rawIdx: m ? parseInt(m[1]) + 1 : curGroup.rawIdx + 1, tokenIds: [] };
+            } else {
+              const m = tokenId.match(/^(?:id|failed)_(\d+)_/);
+              if (m && curGroup.tokenIds.length === 0) curGroup.rawIdx = parseInt(m[1]);
+              curGroup.tokenIds.push(tokenId);
+            }
+          }
+          if (curGroup.tokenIds.length) lineGroups.push(curGroup);
+
+          return lineGroups.map((group, gi) => {
+            const rawIdx = group.rawIdx;
+            const lineTokenIds = group.tokenIds;
+
+            // 명시적 # 토큰 체크
+            let mdLevel = 0;
+            for (let k = 0; k < Math.min(3, lineTokenIds.length); k++) {
+              const t = json.dictionary[lineTokenIds[k]];
+              if (t?.text?.trim() === '#') mdLevel++;
+              else break;
+            }
+
+            // 휴리스틱 fallback (rawLines 기반)
+            const hLevel = mdLevel || getHeadingLevel(rawLines[rawIdx], rawIdx);
+            const hClass = HEADING_CLASS[hLevel] || '';
+
+            // 명시적 # 토큰 스킵
+            const startIdx = mdLevel;
+
+            return (
+              <span key={gi} className={hClass || undefined} style={{ display: 'contents' }}>
+                {lineTokenIds.slice(startIdx).map(renderToken)}
+                {gi < lineGroups.length - 1 && <div className="line-break" />}
+              </span>
+            );
           });
         })()}
 
@@ -1225,7 +1363,7 @@ export default function ViewerPage() {
         selectedToken={selectedToken} isSheetOpen={isSheetOpen} setIsSheetOpen={setIsSheetOpen}
         ttsSupported={ttsSupported} speak={speak} materialLang={materialLang}
         isWordSaved={isWordSaved} saveAnim={saveAnim} addToVocab={addToVocab}
-        user={user} trimOkurigana={trimOkurigana}
+        user={user} splitRuby={splitRuby}
         onCorrectToken={handleCorrectToken}
         corrections={tokenCorrections}
         onAnalyzeContext={() => {

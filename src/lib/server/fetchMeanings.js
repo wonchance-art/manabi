@@ -9,18 +9,20 @@ function buildMeaningBatchPrompt(entries, language = 'Japanese') {
 
 function buildJapaneseMeaningBatchPrompt(entries) {
   const list = entries.map((e, i) => `${i + 1}. "${e.base_form}" (${e.pos || '미상'})`).join('\n');
-  return `다음은 일본어 단어 목록입니다. 각 단어의 기본적인 한국어 뜻을 JSON 배열로 알려주세요.
+  return `다음은 일본어 단어 목록입니다. 각 단어의 한국어 뜻과 히라가나 읽기를 JSON 배열로 알려주세요.
 
 ${list}
 
 ## 출력 형식 (순서와 길이 정확히 일치)
 [
-  { "meanings": [{"meaning": "기본 뜻"}, {"meaning": "보조 뜻(있으면)"}] },
-  { "meanings": [{"meaning": "..."}] },
+  { "reading": "ひらがな読み", "meanings": [{"meaning": "기본 뜻"}, {"meaning": "보조 뜻(있으면)"}] },
+  { "reading": "...", "meanings": [{"meaning": "..."}] },
   ...
 ]
 
 ## 규칙
+- reading: 가장 일반적인 문맥에서의 히라가나 읽기 (예: 一日→いちにち, 今日→きょう, 大人→おとな)
+- 한자가 없는 단어(히라가나/카타카나/기호)는 reading을 null로
 - 각 단어에 1~2개 주요 의미 (가장 흔한 순)
 - 의미는 10자 이내로 간결하게
 - 조사(は, が 등)와 조동사(ます, た 등)는 한국어 대응어 ("은/는", "이/가", "~합니다" 등)
@@ -193,11 +195,16 @@ export async function fetchMeaningsForMissing(missing, language, supabase) {
       // 영어는 Gemini가 pos를 정해줌, 일본어는 기존 pos 유지
       const pos = language === 'English' && entry?.pos ? String(entry.pos).slice(0, 30) : source.pos;
 
+      // Gemini가 맥락 기반 reading을 제공하면 kuromoji reading보다 우선
+      const reading = (language === 'Japanese' && entry?.reading && typeof entry.reading === 'string')
+        ? entry.reading
+        : (source.reading || null);
+
       const dictEntry = {
         base_form: source.base_form,
         language,
         pos,
-        reading: source.reading || null,
+        reading,
         meanings: normalizedMeanings,
         source: 'gemini',
       };

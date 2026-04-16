@@ -47,6 +47,21 @@ function posToKorean(jaPos) {
   return POS_MAP[jaPos] || jaPos || '기타';
 }
 
+/** 순수 히라가나 여부 */
+function isAllHiragana(str) {
+  return /^[\u3040-\u309F\u30FC]+$/.test(str);
+}
+
+/** 순수 카타카나 여부 */
+function isAllKatakana(str) {
+  return /^[\u30A0-\u30FF\u30FC]+$/.test(str);
+}
+
+/** 기호/공백/숫자만 여부 */
+function isSymbolOnly(str) {
+  return /^[\s\d\p{P}\p{S}\u3000-\u303F\uFF00-\uFFEF]+$/u.test(str);
+}
+
 /**
  * 한 줄을 kuromoji로 분석해 토큰 배열 반환
  * 반환 형식은 processed_json의 dictionary 항목과 호환
@@ -57,17 +72,26 @@ export async function tokenizeJaLine(line) {
   const tokens = tokenizer.tokenize(line);
 
   return tokens.map((t) => {
-    // basic_form이 "*"면 surface 그대로 사용
     const baseForm = (t.basic_form && t.basic_form !== '*') ? t.basic_form : t.surface_form;
     const reading = katakanaToHiragana(t.reading || '');
     const pos = posToKorean(t.pos);
+    const surface = t.surface_form;
+
+    // 불필요한 후리가나 제거:
+    // 1) 히라가나 → 후리가나가 본문과 동일 (중복)
+    // 2) 기호/숫자 → 후리가나 불필요
+    // 3) 카타카나 → 히라가나 후리가나 불필요 (원어 그대로 읽으면 됨)
+    // 4) 후리가나가 본문과 동일 → 중복
+    let furigana = reading;
+    if (isAllHiragana(surface) || isSymbolOnly(surface) || isAllKatakana(surface) || reading === surface) {
+      furigana = null;
+    }
 
     return {
-      text: t.surface_form,
+      text: surface,
       base_form: baseForm,
-      furigana: reading,
+      furigana,
       pos,
-      // meaning은 DB/Gemini에서 나중에 채움
     };
   });
 }

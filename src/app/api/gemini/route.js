@@ -1,3 +1,5 @@
+import { createClient } from '@supabase/supabase-js';
+
 // Qwen 3 — CJK 언어에 강하고 instruct 모드라 빠름
 // Reasoning 버전이 아닌 function calling(instruct) 카테고리 버전 사용
 const GROQ_MODEL = 'qwen/qwen3-32b';
@@ -91,11 +93,30 @@ export async function POST(request) {
   const started = Date.now();
   recordStat('total');
 
-  const ip =
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    'unknown';
+  // 인증 확인 — Gemini 쿼터 남용 방지
+  const authHeader = request.headers.get('authorization');
+  if (!authHeader) {
+    recordStat('errors');
+    stats.errorByStatus['401'] = (stats.errorByStatus['401'] || 0) + 1;
+    return Response.json({ error: { message: '로그인이 필요합니다.' } }, { status: 401 });
+  }
+  const token = authHeader.replace(/^Bearer\s+/i, '');
+  const authClient = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    { auth: { persistSession: false } }
+  );
+  const { data: { user: authUser }, error: authErr } = await authClient.auth.getUser(token);
+  if (authErr || !authUser) {
+    recordStat('errors');
+    stats.errorByStatus['401'] = (stats.errorByStatus['401'] || 0) + 1;
+    return Response.json({ error: { message: '세션이 만료됐어요. 다시 로그인해주세요.' } }, { status: 401 });
+  }
 
-  if (isRateLimited(ip)) {
+  // 사용자 ID 기반 rate limit (IP보다 공정)
+  const rateLimitKey = `u:${authUser.id}`;
+
+  if (isRateLimited(rateLimitKey)) {
     recordStat('rateLimited');
     return Response.json(
       { error: { message: '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.' } },

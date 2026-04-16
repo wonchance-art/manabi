@@ -266,6 +266,16 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   outline-offset: 2px;
 }
 
+/* 모션 감소 선호 사용자 — 애니메이션 최소화 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* skip-to-content (키보드 사용자용) */
 .skip-link {
   position: absolute;
@@ -1727,19 +1737,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 
 .word-token--raw {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
+  display: inline;
   vertical-align: bottom;
   opacity: 0.25;
   cursor: default;
   color: var(--text-secondary);
   letter-spacing: 0.05em;
-}
-.word-token--raw::before {
-  content: '';
-  display: block;
-  height: 1.1em; /* word-token .furigana 높이와 동일 */
 }
 
 .word-token--failed {
@@ -1763,12 +1766,47 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   height: 0;
 }
 
+/* 마크다운 헤딩 스타일 (뷰어 내) */
+.viewer-h1 .surface { font-size: 1.5em; font-weight: 800; }
+.viewer-h2 .surface { font-size: 1.25em; font-weight: 700; }
+.viewer-h3 .surface { font-size: 1.1em; font-weight: 600; }
+.viewer-h1, .viewer-h2, .viewer-h3 {
+  display: contents;
+}
+.viewer-h1 + .line-break,
+.viewer-h2 + .line-break,
+.viewer-h3 + .line-break {
+  margin-bottom: 4px;
+}
+
 .word-token {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
+  display: inline;
   vertical-align: bottom;
   cursor: pointer;
+}
+
+/* ruby 후리가나 */
+.word-token ruby {
+  position: relative;
+  ruby-position: over;
+}
+.word-token rt {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 100%;
+  font-size: 0.45em;
+  line-height: 1;
+  color: var(--primary-light);
+  font-weight: 400;
+  opacity: 0.8;
+  user-select: none;
+  white-space: nowrap;
+  pointer-events: none;
+}
+/* ruby 유무 관계없이 줄 높이 통일 — rt absolute라 공간은 line-height로 확보 */
+.word-token .surface {
+  line-height: 2.2;
 }
 
 .word-token--saved .surface {
@@ -1791,18 +1829,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   50%      { box-shadow: 0 0 6px 1px rgba(212, 150, 42, 0.4); }
 }
 
+/* failed 토큰 전용 빈 furigana 영역 */
 .furigana {
-  display: block;
-  height: 1.1em;          /* 고정 높이 — 요미가나 없는 토큰도 동일한 높이 확보 */
-  font-size: 0.5em;
-  line-height: 1.1em;
-  color: var(--primary-light);
-  font-weight: 400;
-  white-space: nowrap;
-  user-select: none;
-  pointer-events: none;
-  opacity: 0.8;
-  text-align: center;
+  display: none;
 }
 
 .surface {
@@ -2912,6 +2941,40 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-size: 0.95rem;
   font-weight: 700;
   margin: 0;
+}
+
+/* 접기/펴기 collapsible (프로필/목표/알림) */
+.mypage-collapse {
+  border-top: 1px solid var(--border);
+  margin-top: 10px;
+}
+.mypage-collapse:first-of-type { border-top: none; margin-top: 14px; }
+.mypage-collapse__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 2px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  list-style: none;
+  user-select: none;
+  gap: 8px;
+}
+.mypage-collapse__summary::-webkit-details-marker { display: none; }
+.mypage-collapse__summary:hover { color: var(--text-primary); }
+.mypage-collapse__chevron {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  transition: transform 0.2s;
+}
+.mypage-collapse[open] .mypage-collapse__chevron { transform: rotate(180deg); }
+.mypage-collapse__body {
+  padding: 4px 2px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: fadeInUp 0.2s ease;
 }
 .mypage-tip-banner {
   background: var(--primary-glow);

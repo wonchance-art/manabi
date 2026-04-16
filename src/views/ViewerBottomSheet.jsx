@@ -5,7 +5,7 @@ import Button from '../components/Button';
 export default function ViewerBottomSheet({
   selectedToken, isSheetOpen, setIsSheetOpen,
   ttsSupported, speak, materialLang,
-  isWordSaved, saveAnim, addToVocab, user, trimOkurigana,
+  isWordSaved, saveAnim, addToVocab, user, splitRuby,
   onCorrectToken, corrections = [],
   onAnalyzeContext,
   reviewableVocab, isReviewDue, onReview,
@@ -134,10 +134,12 @@ export default function ViewerBottomSheet({
                   </button>
                 )}
               </div>
-              {selectedToken.furigana && (() => {
-                const f = trimOkurigana(selectedToken.text, selectedToken.furigana);
-                return f ? <span className="bottom-sheet__furigana">[{f}]</span> : null;
-              })()}
+              {selectedToken.furigana && (
+                <span className="bottom-sheet__furigana">
+                  [{splitRuby(selectedToken.text, selectedToken.furigana)
+                    .map((seg, i) => seg.reading || seg.plain || '').join('')}]
+                </span>
+              )}
             </div>
             <p className="bottom-sheet__meaning">{selectedToken.meaning || '(뜻 정보 없음)'}</p>
 

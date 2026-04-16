@@ -6,5 +6,8 @@ export default function sitemap() {
     { url: `${BASE_URL}/guide`,     lastModified: new Date(), changeFrequency: 'monthly',  priority: 0.8 },
     { url: `${BASE_URL}/materials`, lastModified: new Date(), changeFrequency: 'daily',    priority: 0.9 },
     { url: `${BASE_URL}/forum`,     lastModified: new Date(), changeFrequency: 'hourly',   priority: 0.7 },
+    { url: `${BASE_URL}/help`,      lastModified: new Date(), changeFrequency: 'monthly',  priority: 0.6 },
+    { url: `${BASE_URL}/terms`,     lastModified: new Date(), changeFrequency: 'yearly',   priority: 0.3 },
+    { url: `${BASE_URL}/privacy`,   lastModified: new Date(), changeFrequency: 'yearly',   priority: 0.3 },
   ];
 }
