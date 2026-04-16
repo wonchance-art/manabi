@@ -4500,18 +4500,16 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   min-height: 400px;
   padding: 16px;
 }
-.pdf-container .react-pdf__Page {
-  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
-  border-radius: 4px;
-  overflow: hidden;
+/* PDF 텍스트 레이어 — 선택 가능 투명 오버레이 */
+.pdf-text-layer span {
+  position: absolute;
+  white-space: pre;
+  color: transparent;
+  cursor: text;
 }
-/* 텍스트 레이어 — 선택 가능 + 투명 오버레이 */
-.pdf-container .react-pdf__Page__textContent {
-  opacity: 0.3;
-}
-.pdf-container .react-pdf__Page__textContent::selection,
-.pdf-container .react-pdf__Page__textContent span::selection {
+.pdf-text-layer span::selection {
   background: rgba(124, 92, 252, 0.35);
+  color: transparent;
 }
 
 /* 분석 패널 — 하단 고정 */

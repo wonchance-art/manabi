@@ -2,11 +2,10 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
-import { reportError } from '../lib/reportError';
 
 export default function RouteError({ error, reset }) {
   useEffect(() => {
-    reportError(error, { src: 'route-error', digest: error?.digest });
+    console.error('[route-error]', error);
   }, [error]);
 
   const isNetwork = /network|fetch|timeout|load/i.test(error?.message || '');

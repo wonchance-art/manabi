@@ -1,20 +1,16 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
-import { Document, Page, pdfjs } from 'react-pdf';
-import 'react-pdf/dist/esm/Page/TextLayer.css';
-import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import Button from '../components/Button';
 import Spinner from '../components/Spinner';
 
-// PDF.js worker — public에 이미 있는 파일 사용 또는 CDN
-pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+import PdfDocumentInner from '../components/PdfDocument';
 
 async function fetchPdfInfo(pdfId) {
   const { data, error } = await supabase
@@ -30,22 +26,19 @@ async function fetchPdfInfo(pdfId) {
 async function getPdfUrl(storagePath) {
   const { data, error } = await supabase.storage
     .from('user-pdfs')
-    .createSignedUrl(storagePath, 3600); // 1시간
+    .createSignedUrl(storagePath, 3600);
   if (error) throw error;
   return data.signedUrl;
 }
 
-// 선택한 텍스트를 /api/analyze로 빠르게 분석
 async function quickAnalyze(text, language) {
   const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
   if (lines.length === 0) return null;
-
   let authHeader = {};
   try {
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.access_token) authHeader = { Authorization: `Bearer ${session.access_token}` };
   } catch {}
-
   const res = await fetch('/api/analyze', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...authHeader },
@@ -53,8 +46,6 @@ async function quickAnalyze(text, language) {
   });
   if (!res.ok) throw new Error('분석 실패');
   const data = await res.json();
-
-  // results의 모든 토큰을 flat하게 반환
   const tokens = [];
   for (const result of data.results || []) {
     for (const tokenId of result.sequence) {
@@ -73,15 +64,12 @@ export default function PdfViewerPage() {
   const [numPages, setNumPages] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [scale, setScale] = useState(1.2);
-  const [pdfUrl, setPdfUrl] = useState(null);
   const [language, setLanguage] = useState('Japanese');
 
-  // 단어 분석 상태
   const [selectedText, setSelectedText] = useState('');
   const [analyzedTokens, setAnalyzedTokens] = useState(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [saving, setSaving] = useState({});
-  const containerRef = useRef(null);
 
   const { data: pdfInfo, isLoading, error } = useQuery({
     queryKey: ['pdf-info', id],
@@ -89,23 +77,13 @@ export default function PdfViewerPage() {
     enabled: !!id,
   });
 
-  // PDF URL 가져오기
-  useQuery({
+  const { data: pdfUrl } = useQuery({
     queryKey: ['pdf-url', pdfInfo?.storage_path],
-    queryFn: async () => {
-      const url = await getPdfUrl(pdfInfo.storage_path);
-      setPdfUrl(url);
-      return url;
-    },
+    queryFn: () => getPdfUrl(pdfInfo.storage_path),
     enabled: !!pdfInfo?.storage_path,
     staleTime: 1000 * 60 * 30,
   });
 
-  function onDocumentLoadSuccess({ numPages: n }) {
-    setNumPages(n);
-  }
-
-  // 텍스트 선택 감지
   const handleMouseUp = useCallback(() => {
     const selection = window.getSelection();
     const text = selection?.toString()?.trim();
@@ -115,7 +93,6 @@ export default function PdfViewerPage() {
     }
   }, []);
 
-  // 선택 텍스트 분석
   async function handleAnalyze() {
     if (!selectedText) return;
     setAnalyzing(true);
@@ -129,7 +106,6 @@ export default function PdfViewerPage() {
     }
   }
 
-  // 단어 저장
   async function handleSaveWord(token) {
     if (!user) { toast('로그인이 필요합니다.', 'warning'); return; }
     const key = token.base_form || token.text;
@@ -166,7 +142,6 @@ export default function PdfViewerPage() {
 
   return (
     <div className="page-container" style={{ maxWidth: 900, padding: '16px 8px' }}>
-      {/* 상단 바 */}
       <div className="pdf-toolbar">
         <Link href="/materials" className="pdf-toolbar__back">← 자료실</Link>
         <h1 className="pdf-toolbar__title">{pdfInfo?.title || 'PDF'}</h1>
@@ -182,7 +157,6 @@ export default function PdfViewerPage() {
         </div>
       </div>
 
-      {/* 페이지 네비게이션 */}
       {numPages && (
         <div className="pdf-nav">
           <button className="btn btn--ghost btn--sm" disabled={currentPage <= 1} onClick={() => setCurrentPage(p => p - 1)}>◀ 이전</button>
@@ -191,36 +165,26 @@ export default function PdfViewerPage() {
         </div>
       )}
 
-      {/* PDF 렌더링 */}
-      <div ref={containerRef} className="pdf-container" onMouseUp={handleMouseUp}>
+      <div className="pdf-container" onMouseUp={handleMouseUp}>
         {pdfUrl ? (
-          <Document
-            file={pdfUrl}
-            onLoadSuccess={onDocumentLoadSuccess}
-            loading={<Spinner message="PDF 렌더링 중..." />}
-            error={<div style={{ padding: 40, textAlign: 'center', color: 'var(--danger)' }}>PDF를 열 수 없어요</div>}
-          >
-            <Page
-              pageNumber={currentPage}
-              scale={scale}
-              renderTextLayer={true}
-              renderAnnotationLayer={true}
-            />
-          </Document>
+          <PdfDocumentInner
+            fileUrl={pdfUrl}
+            pageNumber={currentPage}
+            scale={scale}
+            onLoadSuccess={setNumPages}
+          />
         ) : (
           <Spinner message="PDF URL 가져오는 중..." />
         )}
       </div>
 
-      {/* 선택 텍스트 분석 패널 */}
       {selectedText && (
         <div className="pdf-analysis-panel">
           <div className="pdf-analysis-panel__header">
-            <span className="pdf-analysis-panel__selected">"{selectedText.length > 80 ? selectedText.slice(0, 80) + '…' : selectedText}"</span>
-            <button
-              className="pdf-analysis-panel__close"
-              onClick={() => { setSelectedText(''); setAnalyzedTokens(null); }}
-            >✕</button>
+            <span className="pdf-analysis-panel__selected">
+              "{selectedText.length > 80 ? selectedText.slice(0, 80) + '…' : selectedText}"
+            </span>
+            <button className="pdf-analysis-panel__close" onClick={() => { setSelectedText(''); setAnalyzedTokens(null); }}>✕</button>
           </div>
 
           {!analyzedTokens && !analyzing && (
@@ -235,17 +199,12 @@ export default function PdfViewerPage() {
                 return (
                   <div key={i} className="pdf-token-row">
                     <div className="pdf-token-row__word">
-                      {t.furigana && <ruby>{t.text}<rt>{t.furigana}</rt></ruby>}
-                      {!t.furigana && <span>{t.text}</span>}
+                      {t.furigana ? <ruby>{t.text}<rt>{t.furigana}</rt></ruby> : <span>{t.text}</span>}
                     </div>
                     <span className="pdf-token-row__pos">{t.pos}</span>
                     <span className="pdf-token-row__meaning">{t.meaning || '—'}</span>
                     {user && (
-                      <button
-                        className="pdf-token-row__save"
-                        disabled={saving[key]}
-                        onClick={() => handleSaveWord(t)}
-                      >
+                      <button className="pdf-token-row__save" disabled={saving[key]} onClick={() => handleSaveWord(t)}>
                         {saving[key] ? '...' : '⭐'}
                       </button>
                     )}

@@ -41,13 +41,14 @@ export function getRecentErrors() {
   return [...recentErrors];
 }
 
-// window 전역 에러도 캐치 (클라이언트 전용)
+// window 전역 에러 로깅 (클라이언트 전용, 로깅만 — 에러 전파는 막지 않음)
 if (typeof window !== 'undefined' && !window.__anatomyErrorHooked) {
   window.__anatomyErrorHooked = true;
   window.addEventListener('error', (e) => {
-    reportError(e.error || new Error(e.message), { src: 'window.onerror', file: e.filename, line: e.lineno });
+    // 로깅만, re-throw 안 함
+    console.warn('[global-error]', e.message, e.filename, e.lineno);
   });
   window.addEventListener('unhandledrejection', (e) => {
-    reportError(e.reason instanceof Error ? e.reason : new Error(String(e.reason)), { src: 'unhandledrejection' });
+    console.warn('[unhandled-rejection]', e.reason?.message || e.reason);
   });
 }
