@@ -1787,22 +1787,15 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 
 /* ruby 후리가나 */
 .word-token ruby {
-  position: relative;
   ruby-position: over;
+  ruby-overhang: auto;
 }
 .word-token rt {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: 100%;
-  font-size: 0.45em;
-  line-height: 1;
+  font-size: 0.5em;
   color: var(--primary-light);
   font-weight: 400;
-  opacity: 0.8;
+  opacity: 0.85;
   user-select: none;
-  white-space: nowrap;
-  pointer-events: none;
 }
 /* ruby 유무 관계없이 줄 높이 통일 — rt absolute라 공간은 line-height로 확보 */
 .word-token .surface {
