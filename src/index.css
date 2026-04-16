@@ -4456,6 +4456,201 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 
 /* ========= PDF Viewer ========= */
+.pdf-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+.pdf-layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  gap: 0;
+}
+.pdf-main {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+}
+.pdf-side {
+  width: 260px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  border-right: 1px solid var(--border);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  transition: opacity 0.2s;
+}
+.pdf-side--right {
+  border-right: none;
+  border-left: 1px solid var(--border);
+}
+.pdf-side__empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* 왼쪽 — 맥락 설명 */
+.pdf-context__title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+.pdf-context__original {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  padding: 10px 12px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--border);
+  margin-bottom: 14px;
+  word-break: break-word;
+}
+.pdf-context__loading {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  padding: 8px 0;
+}
+.pdf-context__text {
+  font-size: 0.9rem;
+  line-height: 1.75;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+/* (unused) 단어 상세 — 제거 예정 */
+.pdf-detail__word {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+.pdf-detail__word rt { font-size: 0.45em; color: var(--primary-light); font-weight: 400; }
+.pdf-detail__meta {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.pdf-detail__pos {
+  font-size: 0.75rem;
+  background: var(--bg-secondary);
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: var(--text-muted);
+}
+.pdf-detail__base {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.pdf-detail__meaning {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+  margin-bottom: 14px;
+}
+.pdf-detail__context {
+  font-size: 0.82rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--primary);
+}
+.pdf-detail__context mark {
+  background: var(--primary-glow);
+  color: var(--primary-light);
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+/* 오른쪽 — 단어 리스트 */
+.pdf-word-list__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.pdf-word-list__title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.pdf-word-list__toggle {
+  background: none;
+  border: none;
+  font-size: 0.72rem;
+  color: var(--primary-light);
+  cursor: pointer;
+  padding: 2px 6px;
+}
+.pdf-word-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 0.1s;
+  margin-bottom: 2px;
+}
+.pdf-word-item:hover { background: var(--bg-secondary); }
+.pdf-word-item--active { background: var(--bg-secondary); border-left: 3px solid var(--primary); }
+.pdf-word-item--saved { opacity: 0.5; }
+.pdf-word-item__text {
+  font-weight: 700;
+  font-size: 0.9rem;
+  min-width: 40px;
+}
+.pdf-word-item__meaning {
+  flex: 1;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pdf-word-item__save {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 2px;
+  flex-shrink: 0;
+}
+.pdf-word-item__dismiss {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  opacity: 0.5;
+  transition: opacity 0.1s;
+}
+.pdf-word-item__dismiss:hover {
+  opacity: 1;
+  color: var(--text-secondary);
+}
+
+/* 모바일: 3열 → 1열 */
+@media (max-width: 900px) {
+  .pdf-layout { flex-direction: column; }
+  .pdf-side { width: 100%; max-height: 200px; border: none; border-bottom: 1px solid var(--border); }
+  .pdf-side--right { border-bottom: none; border-top: 1px solid var(--border); }
+  .pdf-side--left:not(.pdf-side--active) { display: none; }
+}
+
 .pdf-toolbar {
   display: flex;
   align-items: center;
@@ -4500,70 +4695,39 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   min-height: 400px;
   padding: 16px;
 }
-/* PDF 히트 토큰 — 투명 텍스트, 호버/선택 시 표시 */
-.pdf-hit-token, .pdf-hit-punct {
+/* pdfjs v4 TextLayer — 정확한 위치 배치 */
+
+/* pdfjs 공식 TextLayer CSS (pdfjs-dist/legacy/web/pdf_viewer.css에서 발췌) */
+.textLayer {
+  position: absolute;
+  text-align: initial;
+  inset: 0;
+  overflow: clip;
+  opacity: 1;
+  line-height: 1;
+  -webkit-text-size-adjust: none;
+  -moz-text-size-adjust: none;
+  text-size-adjust: none;
+  forced-color-adjust: none;
+  transform-origin: 0 0;
+  caret-color: CanvasText;
+  z-index: 0;
+}
+.textLayer :is(span, br) {
   color: transparent;
+  position: absolute;
   white-space: pre;
-  overflow: hidden;
+  cursor: text;
+  transform-origin: 0% 0%;
 }
-.pdf-hit-token {
-  cursor: pointer;
-  border-radius: 2px;
-  transition: background 0.12s;
+.textLayer > :not(.markedContent),
+.textLayer .markedContent span:not(.markedContent) {
+  z-index: 1;
 }
-.pdf-hit-token:hover {
-  background: rgba(124, 92, 252, 0.25);
-}
-.pdf-hit-token::selection, .pdf-hit-punct::selection {
-  background: rgba(124, 92, 252, 0.35);
-  color: transparent;
+.textLayer ::selection {
+  background: rgba(0, 120, 215, 0.3);
 }
 
-/* 분석 패널 — 하단 고정 */
-.pdf-analysis-panel {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: var(--bg-card);
-  border-top: 1px solid var(--border);
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
-  padding: 16px 20px;
-  z-index: 500;
-  max-height: 50vh;
-  overflow-y: auto;
-  animation: slideUp 0.2s ease;
-}
-@keyframes slideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
-}
-.pdf-analysis-panel__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-.pdf-analysis-panel__selected {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  line-height: 1.5;
-  flex: 1;
-}
-.pdf-analysis-panel__close {
-  background: transparent;
-  border: none;
-  font-size: 1.1rem;
-  cursor: pointer;
-  color: var(--text-muted);
-  padding: 2px 6px;
-}
-.pdf-analysis-panel__tokens {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
 .pdf-token-row {
   display: flex;
   align-items: center;
