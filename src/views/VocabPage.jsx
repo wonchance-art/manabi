@@ -43,7 +43,25 @@ async function fetchVocab(userId) {
     .eq('user_id', userId)
     .order('next_review_at', { ascending: true });
   if (error) throw error;
-  return data || [];
+
+  // language가 비어있는 기존 단어에 자동 감지 적용
+  const needsUpdate = [];
+  const result = (data || []).map(v => {
+    if (v.language) return v;
+    const isJa = /[\u3040-\u30ff\u4e00-\u9fff]/.test(v.word_text);
+    const lang = isJa ? 'Japanese' : 'English';
+    needsUpdate.push({ id: v.id, language: lang });
+    return { ...v, language: lang };
+  });
+
+  // DB에도 반영 (fire-and-forget)
+  if (needsUpdate.length > 0) {
+    Promise.all(needsUpdate.map(u =>
+      supabase.from('user_vocabulary').update({ language: u.language }).eq('id', u.id)
+    )).catch(() => {});
+  }
+
+  return result;
 }
 
 // 간단한 CSV 파서 (따옴표 이스케이프 처리)
@@ -271,7 +289,10 @@ export default function VocabPage() {
   const [reviewFinished, setReviewFinished] = useState(false);
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('due');
-  const [langFilter, setLangFilter] = useState('all');
+  const [langFilter, setLangFilter] = useState(() => {
+    if (typeof window === 'undefined') return 'all';
+    return localStorage.getItem('vocab_langFilter') || 'all';
+  });
   const [showHint, setShowHint] = useState(false);
   const [reviewMode, setReviewMode] = useState(() => {
     if (typeof window === 'undefined') return 'flash';

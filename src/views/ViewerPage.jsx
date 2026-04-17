@@ -22,6 +22,7 @@ import { useReanalyze, getParagraphs } from '../lib/useReanalyze';
 import { useMaterialComments } from '../lib/useMaterialComments';
 import { friendlyToastMessage } from '../lib/errorMessage';
 import { callGemini } from '../lib/gemini';
+import { fetchWordDetailText } from '../lib/wordDetail';
 import ReportMaterialButton from '../components/ReportMaterialButton';
 import ViewerComments from './ViewerComments';
 import ViewerBottomSheet from './ViewerBottomSheet';
@@ -614,36 +615,9 @@ export default function ViewerPage() {
   }
 
   async function fetchWordDetail(token) {
-    const key = `${materialLang}:${token.base_form || token.text}`;
-    const cached = getDetailCached(key);
-    if (cached) { setWordDetail({ detail: cached, loading: false }); return; }
-
     setWordDetail({ detail: null, loading: true });
     try {
-      const langName = materialLang === 'Japanese' ? '일본어' : '영어';
-      const prompt = `"${token.text}" (${token.pos || ''})
-${materialLang === 'English' ? '\n**발음**\nIPA 발음 기호\n' : ''}
-**뜻**
-1. 간결한 뜻 (3~5단어)
-2. 간결한 뜻
-
-**뉘앙스**
-1~2문장. 비슷한 단어와 차이.
-
-**예문**
-- **원문 예문.**
-한국어 번역
-- **원문 예문.**
-한국어 번역
-
-위 형식 정확히 따라 출력. 규칙:
-- 도입/인사/설명 문구 금지. 바로 시작
-- 뜻은 괄호 보충 없이 짧게
-- 예문은 **굵은 원문** 다음 줄에 한국어 번역
-- ${langName} → 한국어`;
-      const raw = await callGemini(prompt);
-      const detail = raw?.candidates?.[0]?.content?.parts?.[0]?.text || raw || '';
-      setDetailCached(key, detail);
+      const detail = await fetchWordDetailText(token, materialLang);
       setWordDetail({ detail, loading: false });
     } catch {
       setWordDetail({ detail: '설명을 가져올 수 없었어요.', loading: false });
@@ -658,30 +632,9 @@ ${materialLang === 'English' ? '\n**발음**\nIPA 발음 기호\n' : ''}
   const [popupWord, setPopupWord] = useState(null); // { token, detail, loading }
 
   async function handleDragWordClick(token) {
-    const key = `${materialLang}:${token.base_form || token.text}`;
-    const cached = getDetailCached(key);
-    if (cached) { setPopupWord({ token, detail: cached, loading: false }); return; }
     setPopupWord({ token, detail: null, loading: true });
     try {
-      const langName = materialLang === 'Japanese' ? '일본어' : '영어';
-      const raw = await callGemini(`"${token.text}" (${token.pos || ''})
-${materialLang === 'English' ? '\n**발음**\nIPA 발음 기호\n' : ''}
-**뜻**
-1. 간결한 뜻 (3~5단어)
-2. 간결한 뜻
-
-**뉘앙스**
-1~2문장. 비슷한 단어와 차이.
-
-**예문**
-- **원문 예문.**
-한국어 번역
-- **원문 예문.**
-한국어 번역
-
-위 형식 정확히. 도입 금지, 괄호 보충 금지, ${langName} → 한국어`);
-      const detail = raw?.candidates?.[0]?.content?.parts?.[0]?.text || raw || '';
-      setDetailCached(key, detail);
+      const detail = await fetchWordDetailText(token, materialLang);
       setPopupWord({ token, detail, loading: false });
     } catch {
       setPopupWord(prev => prev ? { ...prev, detail: '설명을 가져올 수 없었어요.', loading: false } : null);

@@ -8,6 +8,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { callGemini } from '../lib/gemini';
+import { fetchWordDetailText } from '../lib/wordDetail';
 import Button from '../components/Button';
 import Spinner from '../components/Spinner';
 import PdfDocument from '../components/PdfDocument';
@@ -114,43 +115,9 @@ export default function PdfViewerPage() {
   const [wordDetail, setWordDetail] = useState(null); // { token, detail, loading }
 
   async function handleWordClick(token) {
-    const key = token.base_form || token.text;
-    const cacheKey = `detail:${language}:${key}`;
-    const cached = getCached(cacheKey);
-
-    if (cached) {
-      setWordDetail({ token, detail: cached, loading: false });
-      return;
-    }
-
     setWordDetail({ token, detail: null, loading: true });
-
     try {
-      const langName = language === 'Japanese' ? '일본어' : '영어';
-      const prompt = `"${token.text}" (${token.pos || ''})
-${language === 'English' ? `\n**발음**\nIPA 발음 기호\n` : ''}
-**뜻**
-1. 간결한 뜻 (3~5단어)
-2. 간결한 뜻
-
-**뉘앙스**
-1~2문장. 비슷한 단어와 차이.
-
-**예문**
-- **원문 예문.**
-한국어 번역
-- **원문 예문.**
-한국어 번역
-
-위 형식 정확히 따라 출력. 규칙:
-- 도입/인사/설명 문구 금지. 바로 **뜻**부터 시작
-- 뜻은 괄호 보충 없이 짧게. "(주로~)" "(~의 의미)" 금지
-- 예문은 **굵은 원문** 다음 줄에 한국어 번역
-- ${langName} → 한국어`;
-
-      const raw = await callGemini(prompt);
-      const detail = raw?.candidates?.[0]?.content?.parts?.[0]?.text || raw || '';
-      setCached(cacheKey, detail);
+      const detail = await fetchWordDetailText(token, language);
       setWordDetail({ token, detail, loading: false });
     } catch {
       setWordDetail(prev => prev ? { ...prev, detail: '설명을 가져올 수 없었어요.', loading: false } : null);

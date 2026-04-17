@@ -127,8 +127,10 @@ export async function POST(request) {
 
     function cleanFurigana(surface, rawReading) {
       if (!rawReading) return null;
+      // IPA 발음 기호 (영어)는 항상 유지
+      if (rawReading.startsWith('/')) return rawReading;
       if (isAllHiragana(surface) || isAllKatakana(surface) || isSymbolOnly(surface)) return null;
-      if (rawReading === surface) return null; // 완전 동일하면 중복
+      if (rawReading === surface) return null;
       return rawReading;
     }
 

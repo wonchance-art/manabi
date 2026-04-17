@@ -83,7 +83,7 @@ export default function VocabList({
           ].map(f => (
             <button
               key={f.value}
-              onClick={() => setLangFilter(f.value)}
+              onClick={() => { setLangFilter(f.value); localStorage.setItem('vocab_langFilter', f.value); }}
               className={`chip ${langFilter === f.value ? 'chip--active' : ''}`}
             >
               {f.label}

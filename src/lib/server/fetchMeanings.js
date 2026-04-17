@@ -30,21 +30,21 @@ ${list}
 }
 
 function buildEnglishMeaningBatchPrompt(entries) {
-  // 영어는 POS도 같이 판정해서 저장 (pre-assigned pos가 없음)
   const list = entries.map((e, i) => `${i + 1}. "${e.base_form}"`).join('\n');
-  return `다음은 영어 단어 목록입니다. 각 단어의 품사와 한국어 뜻을 JSON 배열로 알려주세요.
+  return `다음은 영어 단어 목록입니다. 각 단어의 품사, IPA 발음, 한국어 뜻을 JSON 배열로 알려주세요.
 
 ${list}
 
 ## 출력 형식 (순서와 길이 정확히 일치)
 [
-  { "pos": "동사", "meanings": [{"meaning": "기본 뜻"}, {"meaning": "보조 뜻"}] },
-  { "pos": "명사", "meanings": [{"meaning": "..."}] },
+  { "pos": "동사", "ipa": "/ɪɡˈzæm.pəl/", "meanings": [{"meaning": "기본 뜻"}, {"meaning": "보조 뜻"}] },
+  { "pos": "명사", "ipa": "/wɜːrd/", "meanings": [{"meaning": "..."}] },
   ...
 ]
 
 ## 규칙
 - pos는 한국어로 (명사/동사/형용사/부사/전치사/접속사/관사/대명사/조동사/감탄사/수사)
+- ipa는 슬래시 포함 IPA 발음 기호
 - 각 단어에 1~2개 주요 의미 (가장 흔한 순)
 - 의미는 10자 이내로 간결하게
 - 복수형이어도 단수 기준 뜻 (apples → "사과")
@@ -195,10 +195,15 @@ export async function fetchMeaningsForMissing(missing, language, supabase) {
       // 영어는 Gemini가 pos를 정해줌, 일본어는 기존 pos 유지
       const pos = language === 'English' && entry?.pos ? String(entry.pos).slice(0, 30) : source.pos;
 
-      // Gemini가 맥락 기반 reading을 제공하면 kuromoji reading보다 우선
-      const reading = (language === 'Japanese' && entry?.reading && typeof entry.reading === 'string')
-        ? entry.reading
-        : (source.reading || null);
+      // 일본어: Gemini 맥락 기반 reading / 영어: IPA 발음
+      let reading;
+      if (language === 'Japanese' && entry?.reading && typeof entry.reading === 'string') {
+        reading = entry.reading;
+      } else if (language === 'English' && entry?.ipa && typeof entry.ipa === 'string') {
+        reading = entry.ipa;
+      } else {
+        reading = source.reading || null;
+      }
 
       const dictEntry = {
         base_form: source.base_form,
