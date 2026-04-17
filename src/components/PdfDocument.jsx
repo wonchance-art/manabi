@@ -13,12 +13,16 @@ async function loadPdfjs() {
   return _pdfjsPromise;
 }
 
-export default function PdfDocument({ fileUrl, pageNumber, scale, onLoadSuccess }) {
+/**
+ * PDF 페이지를 canvas로 렌더 + 해당 페이지 텍스트를 onPageText로 전달.
+ * TextLayer 없음 — 텍스트는 별도 패널에서 토큰으로 표시.
+ */
+export default function PdfDocument({ fileUrl, pageNumber, scale, onLoadSuccess, onPageText }) {
   const canvasRef = useRef(null);
-  const textLayerRef = useRef(null);
   const [doc, setDoc] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const textCache = useRef({});
 
   useEffect(() => {
     if (!fileUrl) return;
@@ -36,7 +40,7 @@ export default function PdfDocument({ fileUrl, pageNumber, scale, onLoadSuccess 
   }, [fileUrl]);
 
   const renderPage = useCallback(async () => {
-    if (!doc || !canvasRef.current || !textLayerRef.current) return;
+    if (!doc || !canvasRef.current) return;
     const page = await doc.getPage(pageNumber);
     const viewport = page.getViewport({ scale });
 
@@ -50,18 +54,15 @@ export default function PdfDocument({ fileUrl, pageNumber, scale, onLoadSuccess 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     await page.render({ canvasContext: ctx, viewport }).promise;
 
-    // TextLayer — pdfjs 원본 그대로, 드래그 선택용
-    const textDiv = textLayerRef.current;
-    textDiv.innerHTML = '';
-    textDiv.style.width = `${viewport.width}px`;
-    textDiv.style.height = `${viewport.height}px`;
-    textDiv.style.setProperty('--scale-factor', String(scale));
-
-    const textContent = await page.getTextContent();
-    const pdfjs = await loadPdfjs();
-    try {
-      await new pdfjs.TextLayer({ textContentSource: textContent, viewport, container: textDiv }).render();
-    } catch {}
+    // 텍스트 추출 → 부모에 전달 (캐시)
+    if (textCache.current[pageNumber]) {
+      onPageText?.(textCache.current[pageNumber], pageNumber);
+    } else {
+      const textContent = await page.getTextContent();
+      const text = textContent.items.map(it => it.str).join('\n');
+      textCache.current[pageNumber] = text;
+      onPageText?.(text, pageNumber);
+    }
   }, [doc, pageNumber, scale]);
 
   useEffect(() => { renderPage(); }, [renderPage]);
@@ -69,20 +70,5 @@ export default function PdfDocument({ fileUrl, pageNumber, scale, onLoadSuccess 
   if (error) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--danger)' }}>{error}</div>;
   if (loading) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>PDF 로딩 중...</div>;
 
-  return (
-    <div style={{ position: 'relative', display: 'inline-block' }}>
-      <canvas ref={canvasRef} style={{ display: 'block', borderRadius: 4, boxShadow: '0 2px 12px rgba(0,0,0,0.15)' }} />
-      <div
-        ref={textLayerRef}
-        className="textLayer"
-        onMouseUp={() => {
-          const sel = window.getSelection();
-          const text = sel?.toString()?.trim();
-          if (text && text.length >= 1) {
-            window.dispatchEvent(new CustomEvent('pdf-text-select', { detail: text }));
-          }
-        }}
-      />
-    </div>
-  );
+  return <canvas ref={canvasRef} style={{ display: 'block', borderRadius: 4, boxShadow: '0 2px 12px rgba(0,0,0,0.15)', maxWidth: '100%' }} />;
 }
