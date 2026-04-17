@@ -191,6 +191,8 @@ ${language === 'English' ? `\n**발음**\nIPA 발음 기호\n` : ''}
     const seen = new Set();
     return toks
       .filter(t => {
+        if (!t.text?.trim() || !t.meaning) return false;
+        if (t.pos === '기호' || /^[\s。、！？!?,.:;""''（）()「」『』【】…·\-\/\[\]{}#@&%$]+$/.test(t.text)) return false;
         const key = t.base_form || t.text;
         if (seen.has(key)) return false;
         seen.add(key);

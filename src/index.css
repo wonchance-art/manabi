@@ -4893,6 +4893,91 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   border-color: var(--primary);
 }
 
+/* ========= Tour Guide ========= */
+.tour-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 9998;
+}
+.tour-spotlight {
+  position: fixed;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.55);
+  z-index: 9999;
+  border-radius: 10px;
+}
+.tour-tooltip {
+  z-index: 10000;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  width: 320px;
+  max-width: 90vw;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+  animation: fadeInUp 0.2s ease;
+}
+.tour-dots {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.tour-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--bg-secondary);
+}
+.tour-dot--active {
+  background: var(--primary);
+}
+.tour-tooltip__title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.tour-tooltip__body {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+.tour-tooltip__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.tour-skip-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.tour-skip-btn:hover {
+  color: var(--text-secondary);
+}
+.tour-nav-btns {
+  display: flex;
+  gap: 8px;
+}
+.tour-btn {
+  padding: 6px 14px;
+  border-radius: var(--radius-md);
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.tour-btn--prev {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+.tour-btn--next {
+  background: var(--primary);
+  color: #fff;
+}
+
 /* ========= Leaderboard ========= */
 .lb-header { margin-bottom: 24px; }
 .lb-header__title {
