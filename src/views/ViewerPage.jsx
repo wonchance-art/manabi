@@ -25,7 +25,6 @@ import { callGemini } from '../lib/gemini';
 import { fetchWordDetailText } from '../lib/wordDetail';
 import ReportMaterialButton from '../components/ReportMaterialButton';
 import ViewerComments from './ViewerComments';
-import ViewerBottomSheet from './ViewerBottomSheet';
 import ViewerGrammarModal from './ViewerGrammarModal';
 import ViewerQuizModal from './ViewerQuizModal';
 
