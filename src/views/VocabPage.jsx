@@ -791,101 +791,74 @@ export default function VocabPage() {
 
   return (
     <div className="page-container">
-      {/* 복습 리마인더 배너 */}
-      {!isLoading && reviewWords.length > 0 && tab === 'list' && (
-        <div className="review-reminder-banner">
-          <div className="review-reminder-banner__left">
-            <span className="review-reminder-banner__icon">🔔</span>
-            <span>오늘 복습할 단어가 <strong>{reviewWords.length}개</strong> 있어요!</span>
-          </div>
-          <button onClick={startReview} className="btn btn--primary btn--sm">
-            지금 복습하기
-          </button>
-        </div>
-      )}
 
-      <div className="page-header page-header--row">
-        <div>
-          <h1 className="page-header__title">⭐ 내 단어장</h1>
-          {vocab.length > 0 ? (
-            <div style={{ display: 'flex', gap: 12, marginTop: 6, fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-              <span>총 <strong style={{ color: 'var(--text-primary)' }}>{vocab.length}</strong>개</span>
-              <span>·</span>
-              <span style={{ color: reviewWords.length > 0 ? 'var(--danger)' : 'var(--accent)' }}>
-                {reviewWords.length > 0 ? `${reviewWords.length}개 복습 대기` : '모두 완료'}
-              </span>
-              <span>·</span>
-              <span>숙련 {vocab.filter(v => v.interval >= 30).length}개</span>
-            </div>
-          ) : (
-            <p className="page-header__subtitle">FSRS v4 알고리즘으로 과학적인 복습을 경험하세요</p>
-          )}
-        </div>
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          <Button onClick={() => setManualAddOpen(true)} variant="primary" size="sm">
-            ➕ 단어 추가
-          </Button>
+      {/* 헤더 — 제목 + 요약 수치 */}
+      <div className="page-header">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+          <h1 className="page-header__title" style={{ margin: 0 }}>단어장</h1>
           {vocab.length > 0 && (
-            <>
-            <Button onClick={() => exportCSV(vocab)} variant="secondary" size="sm">
-              📤 CSV 내보내기
-            </Button>
-            <label className="btn btn--secondary btn--sm" style={{ cursor: 'pointer' }}>
-              📥 CSV 가져오기
-              <input
-                type="file"
-                accept=".csv,text/csv"
-                disabled={csvImportMutation.isPending}
-                onChange={e => {
-                  const file = e.target.files?.[0];
-                  if (file) csvImportMutation.mutate(file);
-                  e.target.value = '';
-                }}
-                style={{ display: 'none' }}
-              />
-            </label>
-            </>
-          )}
-          {tab === 'list' && reviewWords.length > 0 && (
-            <Button onClick={startReview} variant="primary">
-              🧠 복습 시작하기 ({reviewWords.length})
-            </Button>
+            <div style={{ display: 'flex', gap: 14, fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+              <span>{vocab.length}개</span>
+              <span style={{ color: reviewWords.length > 0 ? 'var(--warning)' : 'var(--accent)' }}>
+                {reviewWords.length > 0 ? `${reviewWords.length} 복습 대기` : '✓ 완료'}
+              </span>
+              <span>숙련 {vocab.filter(v => v.interval >= 30).length}</span>
+            </div>
           )}
         </div>
       </div>
 
-      {/* Tab Switcher — 3개로 축소 */}
-      <div className="tab-pills" style={{ marginBottom: '20px' }}>
-        <button onClick={() => setTab('list')} className={`tab-pills__item ${tab === 'list' ? 'tab-pills__item--primary' : ''}`}>
-          🗂️ 단어장
-        </button>
-        <button onClick={() => setTab('writing')} className={`tab-pills__item ${tab === 'writing' ? 'tab-pills__item--accent' : ''}`}>
-          ✍️ 쓰기 연습
-        </button>
-        <button onClick={() => setTab('decks')} className={`tab-pills__item ${tab === 'decks' ? 'tab-pills__item--primary' : ''}`}>
-          🃏 공유 덱
-        </button>
-      </div>
-
-      {/* 보조 액션 — 부가 기능 (복습/통계/노트) */}
-      {tab === 'list' && (
-        <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
-          {reviewWords.length > 0 && (
-            <Button size="sm" variant="accent" onClick={startReview}>
-              🧠 카드 복습 ({reviewWords.length})
-            </Button>
-          )}
-          <Link href="/profile#vocab-stats" className="btn btn--ghost btn--sm">📊 통계</Link>
+      {/* 탭 + 주요 액션 한 줄 */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
+        <div className="tab-pills">
+          <button onClick={() => setTab('list')} className={`tab-pills__item ${tab === 'list' ? 'tab-pills__item--primary' : ''}`}>
+            단어장
+          </button>
+          <button onClick={() => setTab('writing')} className={`tab-pills__item ${tab === 'writing' ? 'tab-pills__item--accent' : ''}`}>
+            쓰기
+          </button>
+          <button onClick={() => setTab('decks')} className={`tab-pills__item ${tab === 'decks' ? 'tab-pills__item--primary' : ''}`}>
+            공유 덱
+          </button>
           {grammarNotes.length > 0 && (
-            <Button size="sm" variant="ghost" onClick={() => setTab('notes')}>
-              📝 문법 노트 ({grammarNotes.length})
+            <button onClick={() => setTab('notes')} className={`tab-pills__item ${tab === 'notes' ? 'tab-pills__item--primary' : ''}`}>
+              문법 노트
+            </button>
+          )}
+        </div>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          {tab === 'list' && reviewWords.length > 0 && (
+            <Button size="sm" onClick={startReview}>
+              🧠 복습 ({reviewWords.length})
             </Button>
           )}
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: 'auto', alignSelf: 'center' }}>
-            💡 자료를 읽으면서 노란 단어 클릭으로도 복습 가능
-          </span>
+          <Button size="sm" variant="ghost" onClick={() => setManualAddOpen(true)}>+ 추가</Button>
+          {vocab.length > 0 && (
+            <details style={{ position: 'relative' }}>
+              <summary className="btn btn--ghost btn--sm" style={{ cursor: 'pointer', listStyle: 'none' }}>⋯</summary>
+              <div style={{
+                position: 'absolute', right: 0, top: '100%', marginTop: 4,
+                background: 'var(--bg-card)', border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-md)', boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+                zIndex: 100, minWidth: 160, overflow: 'hidden',
+              }}>
+                <button onClick={() => exportCSV(vocab)} style={{ display: 'block', width: '100%', padding: '10px 14px', border: 'none', background: 'transparent', textAlign: 'left', fontSize: '0.85rem', cursor: 'pointer', color: 'var(--text-primary)' }}>
+                  📤 CSV 내보내기
+                </button>
+                <label style={{ display: 'block', padding: '10px 14px', fontSize: '0.85rem', cursor: 'pointer', color: 'var(--text-primary)' }}>
+                  📥 CSV 가져오기
+                  <input type="file" accept=".csv,text/csv" disabled={csvImportMutation.isPending}
+                    onChange={e => { const f = e.target.files?.[0]; if (f) csvImportMutation.mutate(f); e.target.value = ''; }}
+                    style={{ display: 'none' }} />
+                </label>
+                <Link href="/stats" style={{ display: 'block', padding: '10px 14px', fontSize: '0.85rem', textDecoration: 'none', color: 'var(--text-primary)' }}>
+                  📊 학습 통계
+                </Link>
+              </div>
+            </details>
+          )}
         </div>
-      )}
+      </div>
 
       {isLoading ? (
         <CardGridSkeleton height={120} />
