@@ -1,18 +1,42 @@
-// 서버 전용 — 영어 토큰화 (kuromoji 같은 형태소 분석 없이 공백+구두점 분리)
-// base_form은 소문자화된 surface로 사용 (run/running/ran 는 별도 키로 취급)
-// 완벽한 lemmatization 대신 실용적 캐시 히트율 우선
+// 서버 전용 — 영어 토큰화 + lemmatization
+// wink-lemmatizer (동사/명사) + 불규칙 사전 (형용사/명사 복수)
 
-/**
- * 한 줄을 토큰으로 분리
- * 반환 형식은 tokenizeJa와 호환 (surface/base_form/pos/furigana)
- */
+import lemmatizer from 'wink-lemmatizer';
+
+const IRREGULARS = {
+  // 명사 불규칙 복수
+  children: 'child', men: 'man', women: 'woman', people: 'person',
+  teeth: 'tooth', feet: 'foot', mice: 'mouse', geese: 'goose',
+  lives: 'life', knives: 'knife', wives: 'wife', leaves: 'leaf',
+  wolves: 'wolf', shelves: 'shelf', halves: 'half',
+  // 형용사 비교급/최상급
+  better: 'good', best: 'good', worse: 'bad', worst: 'bad',
+  more: 'many', most: 'many', less: 'little', least: 'little',
+  bigger: 'big', biggest: 'big', larger: 'large', largest: 'large',
+  smaller: 'small', smallest: 'small', older: 'old', oldest: 'old',
+  // be 동사
+  am: 'be', is: 'be', are: 'be', was: 'be', were: 'be', been: 'be',
+};
+
+function lemmatize(word) {
+  const lower = word.toLowerCase();
+  if (lower.length <= 2) return lower;
+  if (IRREGULARS[lower]) return IRREGULARS[lower];
+
+  // wink-lemmatizer: verb → noun → adjective 순서로 시도
+  const asVerb = lemmatizer.verb(lower);
+  if (asVerb !== lower) return asVerb;
+  const asNoun = lemmatizer.noun(lower);
+  if (asNoun !== lower) return asNoun;
+  const asAdj = lemmatizer.adjective(lower);
+  if (asAdj !== lower) return asAdj;
+
+  return lower;
+}
+
 export function tokenizeEnLine(line) {
   if (!line || !line.trim()) return [];
 
-  // 단어 + 구두점 분리 정규식
-  // - 축약형(I'm, don't) 유지
-  // - 소유격('s)은 단어에 포함
-  // - 구두점은 별도 토큰
   const PATTERN = /([A-Za-z][A-Za-z'\-]*[A-Za-z]?|[A-Za-z]|[.,!?;:"'()\[\]]|\d+)/g;
   const tokens = [];
   let match;
@@ -23,9 +47,9 @@ export function tokenizeEnLine(line) {
 
     tokens.push({
       text: surface,
-      base_form: isPunct ? surface : surface.toLowerCase(),
-      furigana: '', // 영어는 IPA 안 씀
-      pos: isPunct ? '기호' : isNumber ? '수사' : null, // 나머지는 Gemini가 채움
+      base_form: isPunct ? surface : lemmatize(surface),
+      furigana: '',
+      pos: isPunct ? '기호' : isNumber ? '수사' : null,
     });
   }
   return tokens;

@@ -4470,11 +4470,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .pdf-main {
   flex: 1;
-  overflow-y: auto;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  align-items: center;
   min-width: 0;
+  max-height: calc(100vh - 52px);
 }
 .pdf-side {
   width: 260px;
@@ -4626,6 +4626,134 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   padding: 2px;
   flex-shrink: 0;
 }
+.pdf-word-item--active {
+  background: var(--bg-secondary);
+  border-left: 3px solid var(--primary);
+}
+
+/* 단어 상세 팝업 */
+.pdf-detail-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+}
+.pdf-detail-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 520px;
+  max-width: 92vw;
+  max-height: 80vh;
+  overflow-y: auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.35);
+  z-index: 1000;
+  animation: fadeInUp 0.15s ease;
+}
+.pdf-detail-popup__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20px 20px 0;
+}
+.pdf-detail-popup__word {
+  font-size: 1.6rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+.pdf-detail-popup__word rt {
+  font-size: 0.45em;
+  color: var(--primary-light);
+  font-weight: 400;
+}
+.pdf-detail-popup__close {
+  background: transparent;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 4px 8px;
+}
+.pdf-detail-popup__meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 20px 12px;
+  flex-wrap: wrap;
+}
+.pdf-detail-popup__pos {
+  font-size: 0.72rem;
+  background: var(--bg-secondary);
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: var(--text-muted);
+}
+.pdf-detail-popup__base {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.pdf-detail-popup__short {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+.pdf-detail-popup__body {
+  padding: 0 20px 16px;
+}
+.pdf-detail-popup__text {
+  font-size: 0.88rem;
+  line-height: 1.7;
+  color: var(--text-primary);
+}
+.pdf-detail-popup__text p {
+  margin: 0 0 18px;
+}
+.pdf-detail-popup__text p:last-child {
+  margin-bottom: 0;
+}
+.pdf-detail-hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 14px 0 10px;
+}
+.pdf-detail-popup__text p:first-child .pdf-detail-hr:first-child,
+.pdf-detail-hr:first-child {
+  display: none;
+}
+.pdf-detail-heading {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.pdf-detail-popup__text strong:not(.pdf-detail-heading) {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+.pdf-detail-popup__save {
+  display: block;
+  width: calc(100% - 40px);
+  margin: 0 20px 20px;
+  padding: 10px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.pdf-detail-popup__save:hover { opacity: 0.9; }
+.pdf-detail-popup__save--done {
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  cursor: default;
+}
+
 .pdf-word-item__dismiss {
   font-size: 0.7rem;
   color: var(--text-muted);
@@ -4692,77 +4820,20 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 /* pdfjs v4 TextLayer — 정확한 위치 배치 */
 
 
-/* PDF 텍스트 패널 — 오른쪽 분석 결과 */
-.pdf-text-panel {
-  width: 380px;
-  flex-shrink: 0;
-  border-left: 1px solid var(--border);
+.pdf-input-bar {
   display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-.pdf-text-panel__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 16px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.pdf-text-panel__body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px;
-  line-height: 2.2;
-}
-.pdf-text-punct {
-  color: var(--text-secondary);
-}
-.pdf-text-token {
-  cursor: pointer;
-  border-radius: 3px;
-  padding: 1px 2px;
-  transition: background 0.1s;
-}
-.pdf-text-token:hover {
-  background: var(--primary-glow);
-}
-.pdf-text-token--active {
-  background: var(--primary-glow);
-  outline: 1.5px solid var(--primary);
-}
-.pdf-text-token--saved {
-  opacity: 0.45;
-}
-.pdf-text-token rt {
-  font-size: 0.5em;
-  color: var(--primary-light);
-  opacity: 0.85;
-}
-.pdf-text-panel__detail {
-  flex-shrink: 0;
-  padding: 14px 16px;
+  gap: 8px;
+  padding: 12px 16px;
   border-top: 1px solid var(--border);
-  background: var(--bg-secondary);
+  background: var(--bg-card);
+  flex-shrink: 0;
 }
-.pdf-text-panel__detail-word {
-  font-size: 1.4rem;
-  font-weight: 800;
-  margin-bottom: 4px;
+
+.pdf-side--left {
+  border-right: 1px solid var(--border);
 }
-.pdf-text-panel__detail-word rt {
-  font-size: 0.45em;
-  color: var(--primary-light);
-}
-.pdf-text-panel__detail-pos {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  margin-bottom: 6px;
-}
-.pdf-text-panel__detail-meaning {
-  font-size: 0.95rem;
-  line-height: 1.6;
-  margin-bottom: 4px;
+.pdf-side--right {
+  border-left: 1px solid var(--border);
 }
 
 /* 모바일: 2열 → 세로 */

@@ -179,6 +179,20 @@ export default function MaterialsPage() {
     staleTime: 60 * 60 * 1000, // 1시간 캐시
   });
 
+  const { data: pdfs = [] } = useQuery({
+    queryKey: ['my-pdfs', user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('uploaded_pdfs')
+        .select('id, title, page_count, created_at, thumbnail_path')
+        .eq('owner_id', user.id)
+        .order('created_at', { ascending: false });
+      return data || [];
+    },
+    enabled: !!user && tab === 'pdf',
+    staleTime: 1000 * 60,
+  });
+
   const { data: completedIds = new Set() } = useQuery({
     queryKey: ['reading-progress-list', user?.id],
     queryFn: async () => {
@@ -283,11 +297,17 @@ export default function MaterialsPage() {
             className={`tab-pills__item ${tab === 'private' ? 'tab-pills__item--primary' : ''}`}>
             🔒 Private
           </button>
+          {user && (
+            <button onClick={() => setTab('pdf')}
+              className={`tab-pills__item ${tab === 'pdf' ? 'tab-pills__item--primary' : ''}`}>
+              📄 PDF
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Language + Level filter */}
-      <div className="materials-filters">
+      {/* Language + Level filter — PDF 탭에서는 숨김 */}
+      {tab !== 'pdf' && <div className="materials-filters">
         <div className="chip-group">
           {LANG_FILTERS.map(f => (
             <button
@@ -319,9 +339,36 @@ export default function MaterialsPage() {
             ))}
           </div>
         )}
-      </div>
+      </div>}
 
-      {isLoading ? (
+      {/* PDF 탭 */}
+      {tab === 'pdf' ? (
+        pdfs.length > 0 ? (
+          <div className="feature-grid">
+            {pdfs.map(pdf => (
+              <Link key={pdf.id} href={`/pdf/${pdf.id}`} className="card card--clickable" style={{ padding: 16, textDecoration: 'none', color: 'inherit' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span style={{ fontSize: '2rem' }}>📄</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: '0.92rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {pdf.title}
+                    </div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 2 }}>
+                      {pdf.page_count}페이지 · {new Date(pdf.created_at).toLocaleDateString('ko-KR')}
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>📄</div>
+            <p>업로드된 PDF가 없습니다.</p>
+            <Link href="/materials/add" className="btn btn--primary btn--sm" style={{ marginTop: 12 }}>PDF 업로드하기</Link>
+          </div>
+        )
+      ) : isLoading ? (
         <CardGridSkeleton />
       ) : filtered.length > 0 ? (
         <>
