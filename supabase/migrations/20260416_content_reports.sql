@@ -4,7 +4,7 @@
 
 create table if not exists content_reports (
   id uuid primary key default gen_random_uuid(),
-  material_id uuid not null references reading_materials(id) on delete cascade,
+  material_id bigint not null references reading_materials(id) on delete cascade,
   reporter_id uuid not null references auth.users(id) on delete cascade,
   reason text not null,            -- 'inappropriate' | 'copyright' | 'spam' | 'other'
   details text,                    -- 선택 입력 (상세 설명)
