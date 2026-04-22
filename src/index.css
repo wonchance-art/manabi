@@ -4922,12 +4922,144 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   padding: 20px 24px;
   min-width: 0;
 }
-@media (max-width: 1024px) {
+/* 태블릿·모바일 — 좌우 패널 숨기고 바텀시트로 전환 */
+.viewer-sheet-bar,
+.viewer-sheet { display: none; }
+
+@media (max-width: 1179px) {
   .viewer-3col { flex-direction: column; height: auto; }
-  .viewer-side { width: 100%; max-height: 40vh; border: none; border-bottom: 1px solid var(--border); }
-  .viewer-side--right { border-bottom: none; border-top: 1px solid var(--border); }
-  .viewer-side--left:empty, .viewer-side--left:not(:has(.viewer-side__content)) { display: none; }
-  .viewer-center { overflow: visible; }
+  .viewer-side { display: none; }
+  .viewer-center { overflow: visible; padding-bottom: 72px; }
+
+  /* 하단 미니 바 — 항상 노출 */
+  .viewer-sheet-bar {
+    display: flex;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 100;
+    gap: 8px;
+    padding: 8px 10px;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
+    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+  }
+  .viewer-sheet-bar__btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.12s;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .viewer-sheet-bar__btn.is-active {
+    border-color: var(--primary);
+    background: var(--primary-glow);
+    color: var(--primary);
+  }
+  .viewer-sheet-bar__badge {
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: var(--bg-primary);
+    padding: 1px 7px;
+    border-radius: 10px;
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .viewer-sheet-bar__btn.is-active .viewer-sheet-bar__badge {
+    color: var(--primary);
+    background: rgba(255,255,255,0.4);
+  }
+
+  /* 바텀시트 본체 */
+  .viewer-sheet {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    max-height: 70vh;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    box-shadow: 0 -8px 32px rgba(0,0,0,0.18);
+    z-index: 110;
+    animation: viewerSheetUp 0.22s ease-out;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .viewer-sheet__handle {
+    position: relative;
+    padding: 10px 16px 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .viewer-sheet__handle-bar {
+    width: 40px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+    margin: 0 auto;
+  }
+  .viewer-sheet__close {
+    position: absolute;
+    top: 6px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 1rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 6px 10px;
+  }
+  .viewer-sheet__sections {
+    overflow-y: auto;
+    flex: 1;
+    -webkit-overflow-scrolling: touch;
+  }
+  .viewer-sheet__section {
+    border-bottom: 1px solid var(--border);
+  }
+  .viewer-sheet__section:last-child { border-bottom: none; }
+  .viewer-sheet__section-header {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+    border: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--text-primary);
+  }
+  .viewer-sheet__section.is-open .viewer-sheet__section-header {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+  }
+  .viewer-sheet__chevron {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+  }
+  .viewer-sheet__section-body {
+    padding: 16px;
+  }
+
+  @keyframes viewerSheetUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
 }
 
 /* ========= Reading Test ========= */

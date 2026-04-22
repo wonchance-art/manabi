@@ -25,6 +25,7 @@ import { callGemini } from '../lib/gemini';
 import { fetchWordDetailText } from '../lib/wordDetail';
 import ReportMaterialButton from '../components/ReportMaterialButton';
 import ReadingTest from '../components/ReadingTest';
+import ViewerBottomSheet from '../components/ViewerBottomSheet';
 import ViewerComments from './ViewerComments';
 import ViewerGrammarModal from './ViewerGrammarModal';
 import ViewerQuizModal from './ViewerQuizModal';
@@ -978,37 +979,144 @@ export default function ViewerPage() {
     return count;
   })();
 
+  const rightPanelContent = dragTokens !== null ? (
+    <div className="viewer-side__content">
+      <div className="pdf-word-list__header" style={{ marginBottom: 10 }}>
+        <span className="pdf-word-list__title">단어 ({dragTokens.length})</span>
+      </div>
+      {dragAnalyzing && <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 8 }}>⏳ 분석 중...</div>}
+      {dragTokens.map((t, i) => {
+        const isSaved = savedWords.surfaces?.has(t.text) || savedWords.bases?.has(t.base_form);
+        return (
+          <div key={i} className={`pdf-word-item ${isSaved ? 'pdf-word-item--saved' : ''}`}>
+            <span className="pdf-word-item__text" onClick={() => handleDragWordClick(t)}>{t.text}</span>
+            <span className="pdf-word-item__meaning" onClick={() => handleDragWordClick(t)}>{t.meaning}</span>
+            {user && (
+              <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                <button className="pdf-word-item__save" disabled={isSaved}
+                  onClick={async () => {
+                    try {
+                      await supabase.from('user_vocabulary').upsert({
+                        user_id: user.id, word_text: t.text, base_form: t.base_form || t.text,
+                        meaning: t.meaning || '', pos: t.pos || '', furigana: t.furigana || '',
+                        language: materialLang,
+                      }, { onConflict: 'user_id,word_text' });
+                      toast(`⭐ "${t.text}" 저장!`, 'success');
+                      queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
+                    } catch { toast('저장 실패', 'error'); }
+                  }}>
+                  {isSaved ? '✓' : '⭐'}
+                </button>
+                <button className="pdf-word-item__save pdf-word-item__dismiss"
+                  onClick={() => {
+                    setDragTokens(prev => prev?.filter((_, idx) => idx !== i) || null);
+                    toast(`"${t.text}" 제거`, 'info');
+                  }}>✕</button>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  ) : selectedToken && isSheetOpen ? (
+    <div className="viewer-side__content">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+        <div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 800, lineHeight: 1.3 }}>
+            {selectedToken.furigana
+              ? splitRuby(selectedToken.text, selectedToken.furigana).map((seg, i) =>
+                  seg.kanji ? <ruby key={i}>{seg.kanji}<rt style={{ fontSize: '0.45em', color: 'var(--primary-light)' }}>{seg.reading}</rt></ruby> : <span key={i}>{seg.plain}</span>
+                )
+              : selectedToken.text}
+          </div>
+          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 4 }}>
+            {selectedToken.pos}
+            {selectedToken.base_form && selectedToken.base_form !== selectedToken.text && ` · ${selectedToken.base_form}`}
+          </div>
+        </div>
+        {ttsSupported && (
+          <button onClick={() => speak(selectedToken.text, materialLang)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }} title="발음 듣기">🔊</button>
+        )}
+      </div>
+      <div style={{ fontSize: '1rem', lineHeight: 1.6, marginBottom: 14 }}>
+        {selectedToken.meaning || '(뜻 없음)'}
+      </div>
+
+      {wordDetail?.loading ? (
+        <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 12 }}>⏳ 상세 설명 생성 중...</div>
+      ) : wordDetail?.detail ? (
+        <div className="pdf-detail-popup__text" style={{ marginBottom: 14 }}
+          dangerouslySetInnerHTML={{ __html: formatDetail(wordDetail.detail) }} />
+      ) : (
+        <button
+          onClick={() => fetchWordDetail(selectedToken)}
+          className="btn btn--ghost btn--sm"
+          style={{ width: '100%', marginBottom: 12 }}
+        >
+          🔬 상세 설명 보기
+        </button>
+      )}
+
+      {user && findSavedVocab(savedWords, selectedToken) && isTokenDue(savedWords, selectedToken) && (
+        <div style={{ padding: '10px 12px', background: 'rgba(212,150,42,0.1)', borderRadius: 'var(--radius-md)', marginBottom: 12, border: '1px solid var(--warning)' }}>
+          <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--warning)', marginBottom: 8 }}>🧠 복습 시점이에요!</div>
+          <div style={{ display: 'flex', gap: 6 }}>
+            {[{ label: '🔴 모름', rating: 1 }, { label: '🟡 애매', rating: 2 }, { label: '🟢 알아', rating: 3 }].map(r => (
+              <button key={r.rating} onClick={() => {
+                const vocab = findSavedVocab(savedWords, selectedToken);
+                if (vocab) inlineReviewMutation.mutate({ vocab, rating: r.rating });
+              }} className="btn btn--ghost btn--sm" style={{ flex: 1 }}>{r.label}</button>
+            ))}
+          </div>
+        </div>
+      )}
+      {user && (
+        <button onClick={addToVocab} disabled={isWordSaved}
+          className={`btn ${isWordSaved ? 'btn--ghost' : 'btn--primary'} btn--sm`} style={{ width: '100%' }}>
+          {saveAnim ? '✨ 저장됨!' : isWordSaved ? '✓ 단어장에 있음' : '⭐ 단어장에 저장'}
+        </button>
+      )}
+    </div>
+  ) : (
+    <div className="pdf-side__empty">
+      <div style={{ fontSize: '1.5rem', marginBottom: 8 }}>📝</div>
+      단어 클릭 → 상세<br />문장 드래그 → 단어 목록
+    </div>
+  );
+
+  const leftPanelContent = leftPanelLoading ? (
+    <div className="pdf-side__empty">
+      <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>⏳ 번역 + 맥락 생성 중...</span>
+    </div>
+  ) : leftPanelResult ? (
+    <div className="viewer-side__content">
+      <div className="pdf-context__title">💡 번역 · 맥락</div>
+      {leftPanelText && (
+        <div className="pdf-context__original">"{leftPanelText.length > 120 ? leftPanelText.slice(0, 120) + '…' : leftPanelText}"</div>
+      )}
+      <div className="pdf-context__text" dangerouslySetInnerHTML={{ __html:
+        leftPanelResult
+          .replace(/\*\*(.+?)\*\*/g, (_, m) =>
+            /^(번역|맥락)$/.test(m.trim()) ? `<hr class="pdf-detail-hr" /><strong class="pdf-detail-heading">${m}</strong>` : `<strong>${m}</strong>`
+          )
+          .split('\n').map(l => l.trim()).filter(Boolean).join('<br />')
+          .replace(/(<br \/>){2,}/g, '</p><p>')
+          .replace(/^/, '<p>').replace(/$/, '</p>')
+      }} />
+    </div>
+  ) : (
+    <div className="pdf-side__empty">
+      <div style={{ fontSize: '1.5rem', marginBottom: 8 }}>💡</div>
+      텍스트를 드래그하면<br />번역과 맥락이 여기에
+    </div>
+  );
+
   return (
     <div className={`viewer-3col viewer-theme-${theme}`} onMouseUp={handleTextSelection}>
 
       {/* 왼쪽 — 문법 해설 / 맥락 */}
       <aside className="viewer-side viewer-side--left">
-        {leftPanelLoading ? (
-          <div className="pdf-side__empty">
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>⏳ 번역 + 맥락 생성 중...</span>
-          </div>
-        ) : leftPanelResult ? (
-          <div className="viewer-side__content">
-            <div className="pdf-context__title">💡 번역 · 맥락</div>
-            {leftPanelText && (
-              <div className="pdf-context__original">"{leftPanelText.length > 120 ? leftPanelText.slice(0, 120) + '…' : leftPanelText}"</div>
-            )}
-            <div className="pdf-context__text" dangerouslySetInnerHTML={{ __html:
-              leftPanelResult
-                .replace(/\*\*(.+?)\*\*/g, (_, m) =>
-                  /^(번역|맥락)$/.test(m.trim()) ? `<hr class="pdf-detail-hr" /><strong class="pdf-detail-heading">${m}</strong>` : `<strong>${m}</strong>`
-                )
-                .split('\n').map(l => l.trim()).filter(Boolean).join('<br />')
-                .replace(/(<br \/>){2,}/g, '</p><p>')
-                .replace(/^/, '<p>').replace(/$/, '</p>')
-            }} />
-          </div>
-        ) : (
-          <div className="pdf-side__empty">
-            <div style={{ fontSize: '1.5rem', marginBottom: 8 }}>💡</div>
-            텍스트를 드래그하면<br />번역과 맥락이 여기에
-          </div>
-        )}
+        {leftPanelContent}
       </aside>
 
       {/* 중앙 — 뷰어 본문 */}
@@ -1557,116 +1665,17 @@ export default function ViewerPage() {
 
       {/* 오른쪽 — 단어 클릭 상세 or 드래그 단어 리스트 */}
       <aside className="viewer-side viewer-side--right">
-        {dragTokens !== null ? (
-          /* 드래그 모드 — 단어 리스트 (PDF 뷰어와 동일) */
-          <div className="viewer-side__content">
-            <div className="pdf-word-list__header" style={{ marginBottom: 10 }}>
-              <span className="pdf-word-list__title">단어 ({dragTokens.length})</span>
-            </div>
-            {dragAnalyzing && <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 8 }}>⏳ 분석 중...</div>}
-            {dragTokens.map((t, i) => {
-              const key = t.base_form || t.text;
-              const isSaved = savedWords.surfaces?.has(t.text) || savedWords.bases?.has(t.base_form);
-              return (
-                <div key={i} className={`pdf-word-item ${isSaved ? 'pdf-word-item--saved' : ''}`}>
-                  <span className="pdf-word-item__text" onClick={() => handleDragWordClick(t)}>{t.text}</span>
-                  <span className="pdf-word-item__meaning" onClick={() => handleDragWordClick(t)}>{t.meaning}</span>
-                  {user && (
-                    <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-                      <button className="pdf-word-item__save" disabled={isSaved}
-                        onClick={async () => {
-                          try {
-                            await supabase.from('user_vocabulary').upsert({
-                              user_id: user.id, word_text: t.text, base_form: t.base_form || t.text,
-                              meaning: t.meaning || '', pos: t.pos || '', furigana: t.furigana || '',
-                              language: materialLang,
-                            }, { onConflict: 'user_id,word_text' });
-                            toast(`⭐ "${t.text}" 저장!`, 'success');
-                            queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
-                          } catch { toast('저장 실패', 'error'); }
-                        }}>
-                        {isSaved ? '✓' : '⭐'}
-                      </button>
-                      <button className="pdf-word-item__save pdf-word-item__dismiss"
-                        onClick={() => {
-                          setDragTokens(prev => prev?.filter((_, idx) => idx !== i) || null);
-                          toast(`"${t.text}" 제거`, 'info');
-                        }}>✕</button>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        ) : selectedToken && isSheetOpen ? (
-          /* 단일 클릭 모드 — 단어 상세 */
-          <div className="viewer-side__content">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-              <div>
-                <div style={{ fontSize: '1.5rem', fontWeight: 800, lineHeight: 1.3 }}>
-                  {selectedToken.furigana
-                    ? splitRuby(selectedToken.text, selectedToken.furigana).map((seg, i) =>
-                        seg.kanji ? <ruby key={i}>{seg.kanji}<rt style={{ fontSize: '0.45em', color: 'var(--primary-light)' }}>{seg.reading}</rt></ruby> : <span key={i}>{seg.plain}</span>
-                      )
-                    : selectedToken.text}
-                </div>
-                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 4 }}>
-                  {selectedToken.pos}
-                  {selectedToken.base_form && selectedToken.base_form !== selectedToken.text && ` · ${selectedToken.base_form}`}
-                </div>
-              </div>
-              {ttsSupported && (
-                <button onClick={() => speak(selectedToken.text, materialLang)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }} title="발음 듣기">🔊</button>
-              )}
-            </div>
-            <div style={{ fontSize: '1rem', lineHeight: 1.6, marginBottom: 14 }}>
-              {selectedToken.meaning || '(뜻 없음)'}
-            </div>
-
-            {/* AI 상세 설명 */}
-            {wordDetail?.loading ? (
-              <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 12 }}>⏳ 상세 설명 생성 중...</div>
-            ) : wordDetail?.detail ? (
-              <div className="pdf-detail-popup__text" style={{ marginBottom: 14 }}
-                dangerouslySetInnerHTML={{ __html: formatDetail(wordDetail.detail) }} />
-            ) : (
-              <button
-                onClick={() => fetchWordDetail(selectedToken)}
-                className="btn btn--ghost btn--sm"
-                style={{ width: '100%', marginBottom: 12 }}
-              >
-                🔬 상세 설명 보기
-              </button>
-            )}
-
-            {user && findSavedVocab(savedWords, selectedToken) && isTokenDue(savedWords, selectedToken) && (
-              <div style={{ padding: '10px 12px', background: 'rgba(212,150,42,0.1)', borderRadius: 'var(--radius-md)', marginBottom: 12, border: '1px solid var(--warning)' }}>
-                <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--warning)', marginBottom: 8 }}>🧠 복습 시점이에요!</div>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  {[{ label: '🔴 모름', rating: 1 }, { label: '🟡 애매', rating: 2 }, { label: '🟢 알아', rating: 3 }].map(r => (
-                    <button key={r.rating} onClick={() => {
-                      const vocab = findSavedVocab(savedWords, selectedToken);
-                      if (vocab) inlineReviewMutation.mutate({ vocab, rating: r.rating });
-                    }} className="btn btn--ghost btn--sm" style={{ flex: 1 }}>{r.label}</button>
-                  ))}
-                </div>
-              </div>
-            )}
-            {user && (
-              <button onClick={addToVocab} disabled={isWordSaved}
-                className={`btn ${isWordSaved ? 'btn--ghost' : 'btn--primary'} btn--sm`} style={{ width: '100%' }}>
-                {saveAnim ? '✨ 저장됨!' : isWordSaved ? '✓ 단어장에 있음' : '⭐ 단어장에 저장'}
-              </button>
-            )}
-          </div>
-        ) : (
-          <div className="pdf-side__empty">
-            <div style={{ fontSize: '1.5rem', marginBottom: 8 }}>📝</div>
-            단어 클릭 → 상세<br />문장 드래그 → 단어 목록
-          </div>
-        )}
+        {rightPanelContent}
       </aside>
 
+      <ViewerBottomSheet
+        leftContent={leftPanelContent}
+        rightContent={rightPanelContent}
+        leftActive={leftPanelLoading || !!leftPanelResult}
+        rightActive={dragTokens !== null || (selectedToken && isSheetOpen)}
+        leftBadge={leftPanelLoading ? '생성 중' : null}
+        rightBadge={selectedToken?.text || (dragTokens ? `${dragTokens.length}개` : null)}
+      />
 
       <ViewerGrammarModal
         isOpen={isGrammarModalOpen} onClose={() => setIsGrammarModalOpen(false)}
