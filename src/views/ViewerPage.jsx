@@ -24,6 +24,7 @@ import { friendlyToastMessage } from '../lib/errorMessage';
 import { callGemini } from '../lib/gemini';
 import { fetchWordDetailText } from '../lib/wordDetail';
 import ReportMaterialButton from '../components/ReportMaterialButton';
+import ReadingTest from '../components/ReadingTest';
 import ViewerComments from './ViewerComments';
 import ViewerGrammarModal from './ViewerGrammarModal';
 import ViewerQuizModal from './ViewerQuizModal';
@@ -626,6 +627,9 @@ export default function ViewerPage() {
   // 오른쪽 패널: 드래그 시 단어 리스트 모드
   const [dragTokens, setDragTokens] = useState(null); // null이면 단일 클릭 모드
   const [dragAnalyzing, setDragAnalyzing] = useState(false);
+
+  // 리딩 테스트
+  const [showReadingTest, setShowReadingTest] = useState(false);
 
   // 드래그 단어 클릭 → 팝업 (PDF와 동일)
   const [popupWord, setPopupWord] = useState(null); // { token, detail, loading }
@@ -1472,10 +1476,33 @@ export default function ViewerPage() {
 
         {isDone && (
           <div className="reader-hint">
-            💡 단어를 <strong>클릭</strong>하면 상세 정보, 문장을 <strong>드래그</strong>하면 AI 문법 해설
+            💡 단어를 <strong>클릭</strong>하면 상세 정보, 문장을 <strong>드래그</strong>하면 번역+맥락
           </div>
         )}
+
       </div>
+
+      {/* 리딩 테스트 — 뷰어 밖, 별도 섹션 */}
+      {isDone && (
+        <div className="reading-test-section">
+          {!showReadingTest ? (
+            <div className="reading-test-cta">
+              <div className="reading-test-cta__icon">📝</div>
+              <div className="reading-test-cta__title">Ready to test your comprehension?</div>
+              <div className="reading-test-cta__sub">IELTS-style Reading Test · 5 questions</div>
+              <Button onClick={() => setShowReadingTest(true)} style={{ marginTop: 16 }}>Start Test</Button>
+            </div>
+          ) : (
+            <ReadingTest
+              rawText={material?.raw_text}
+              language={materialLang}
+              materialId={id}
+              onClose={() => setShowReadingTest(false)}
+              inline
+            />
+          )}
+        </div>
+      )}
 
       {/* 관련 공유 단어장 덱 */}
       {isDone && relatedDecks.length > 0 && (
@@ -1639,6 +1666,7 @@ export default function ViewerPage() {
           </div>
         )}
       </aside>
+
 
       <ViewerGrammarModal
         isOpen={isGrammarModalOpen} onClose={() => setIsGrammarModalOpen(false)}

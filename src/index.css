@@ -4930,6 +4930,195 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   .viewer-center { overflow: visible; }
 }
 
+/* ========= Reading Test ========= */
+.reading-test-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.reading-test {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  width: 560px;
+  max-width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.3);
+  animation: fadeInUp 0.2s ease;
+}
+.reading-test__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg-card);
+  z-index: 1;
+}
+.reading-test__body {
+  padding: 20px;
+}
+.reading-test__question {
+  margin-bottom: 24px;
+}
+.reading-test__q-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.reading-test__q-num {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.reading-test__q-type {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  background: var(--bg-secondary);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.reading-test__q-text {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-bottom: 10px;
+  color: var(--text-primary);
+}
+.reading-test__options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.reading-test__option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 0.88rem;
+  transition: all 0.1s;
+}
+.reading-test__option:hover {
+  background: var(--bg-secondary);
+}
+.reading-test__option--selected {
+  border-color: var(--primary);
+  background: var(--primary-glow);
+}
+.reading-test__option input[type="radio"] {
+  accent-color: var(--primary);
+}
+/* 결과 */
+.reading-test__score {
+  text-align: center;
+  margin-bottom: 8px;
+}
+.reading-test__score-num {
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+.reading-test__score-total {
+  font-size: 1.5rem;
+  color: var(--text-muted);
+}
+.reading-test__result-item {
+  padding: 14px;
+  border-radius: var(--radius-md);
+  margin-bottom: 10px;
+  border-left: 3px solid;
+}
+.reading-test__result-item--correct {
+  border-color: var(--accent);
+  background: rgba(74,138,92,0.06);
+}
+.reading-test__result-item--wrong {
+  border-color: var(--danger);
+  background: rgba(200,64,64,0.06);
+}
+.reading-test__result-header {
+  font-weight: 700;
+  font-size: 0.88rem;
+  margin-bottom: 4px;
+}
+.reading-test__result-q {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+.reading-test__result-answers {
+  display: flex;
+  gap: 12px;
+  font-size: 0.82rem;
+  margin-bottom: 6px;
+}
+.reading-test__your-answer { color: var(--danger); }
+.reading-test__correct-answer { color: var(--accent); font-weight: 600; }
+.reading-test__result-expl {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* 리딩 테스트 섹션 — 뷰어와 동일한 배경 */
+.reading-test-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 40px 24px;
+  margin-top: 16px;
+}
+
+/* CTA — 중앙 정렬 */
+.reading-test-cta {
+  text-align: center;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px 0;
+}
+.reading-test-cta__icon { font-size: 2.5rem; margin-bottom: 12px; }
+.reading-test-cta__title { font-size: 1.05rem; font-weight: 700; margin-bottom: 4px; }
+.reading-test-cta__sub { font-size: 0.82rem; color: var(--text-muted); }
+
+/* 인라인 모드 — 왼쪽 정렬, 뷰어 너비 */
+.reading-test--inline {
+  width: 100%;
+  max-width: 100%;
+  max-height: none;
+  box-shadow: none;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+.reading-test--inline .reading-test__header {
+  background: transparent;
+  padding: 0 0 14px;
+  border-bottom: 1px solid var(--border);
+  position: static;
+}
+.reading-test--inline .reading-test__body {
+  padding: 20px 0;
+}
+
 /* ========= Tour Guide ========= */
 .tour-overlay {
   position: fixed;
