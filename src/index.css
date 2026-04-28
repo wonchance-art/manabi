@@ -6506,6 +6506,49 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 
 /* ========= 신규 유저 시작 가이드 ========= */
+/* ========= Listen Controls (본문 듣기) ========= */
+.listen-controls {
+  margin: 8px 0 12px;
+}
+.listen-controls__panel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+}
+.listen-controls__btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast);
+}
+.listen-controls__btn:hover {
+  background: var(--bg-card);
+}
+.listen-controls__progress {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  min-width: 40px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.listen-controls__rate {
+  font-size: 0.78rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 2px 6px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
 /* ========= Home Journey (첫 주 여정) ========= */
 .home-journey {
   background: var(--bg-card);

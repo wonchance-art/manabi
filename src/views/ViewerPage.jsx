@@ -26,6 +26,7 @@ import { fetchWordDetailText } from '../lib/wordDetail';
 import ReportMaterialButton from '../components/ReportMaterialButton';
 import ReadingTest from '../components/ReadingTest';
 import ViewerBottomSheet from '../components/ViewerBottomSheet';
+import ListenControls from '../components/ListenControls';
 import ViewerComments from './ViewerComments';
 import ViewerGrammarModal from './ViewerGrammarModal';
 import ViewerQuizModal from './ViewerQuizModal';
@@ -1188,6 +1189,8 @@ export default function ViewerPage() {
           </div>
         )}
       </header>
+
+      <ListenControls text={material?.raw_text} language={materialLang} />
 
       {/* PDF 출처 배지 + 다음 범위 분석 */}
       {sourcePdf && material.page_start && (

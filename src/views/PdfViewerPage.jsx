@@ -13,6 +13,7 @@ import Button from '../components/Button';
 import Spinner from '../components/Spinner';
 import PdfDocument from '../components/PdfDocument';
 import ViewerBottomSheet from '../components/ViewerBottomSheet';
+import ListenControls from '../components/ListenControls';
 
 async function fetchPdfInfo(pdfId) {
   const { data, error } = await supabase
@@ -344,6 +345,12 @@ export default function PdfViewerPage() {
         leftBadge={contextLoading ? '생성 중' : null}
         rightBadge={visibleTokens.length > 0 ? `${visibleTokens.length}개` : null}
       />
+
+      {inputText && (
+        <div style={{ position: 'fixed', bottom: 80, right: 16, zIndex: 50 }}>
+          <ListenControls text={inputText} language={language} />
+        </div>
+      )}
 
       {/* 단어 상세 팝업 */}
       {wordDetail && (
