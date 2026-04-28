@@ -273,6 +273,19 @@ export default function HomePage() {
   const hasNoLanguage = profile && !profile.learning_language?.length;
   const isNewUser     = dueCount === 0 && todayVocab === 0 && !data?.recentProgress?.length;
 
+  // 첫 주 마일스톤 — 5/5 완료되면 자동 숨김
+  const totalVocab     = data?.vocabByLang?.total ?? 0;
+  const completedReads = (data?.weekReads ?? 0) + (data?.prevWeekReads ?? 0);
+  const everReviews    = (data?.weekReviews ?? 0) + (data?.prevWeekReviews ?? 0);
+  const JOURNEY = [
+    { icon: '📖', label: '첫 자료 완독',    done: completedReads >= 1, href: '/materials' },
+    { icon: '⭐', label: '단어 5개 저장',    done: totalVocab >= 5,     href: '/materials' },
+    { icon: '🧠', label: '첫 단어 복습',    done: everReviews >= 1,    href: '/vocab' },
+    { icon: '🔥', label: '3일 연속 학습',   done: streak >= 3,         href: '/materials' },
+    { icon: '📚', label: '단어 20개 도달',  done: totalVocab >= 20,    href: '/materials' },
+  ];
+  const journeyDone = JOURNEY.filter(j => j.done).length;
+
   return (
     <div className="page-container home-page home-layout" style={{ maxWidth: 720 }}>
 
@@ -281,6 +294,31 @@ export default function HomePage() {
         <Link href="/profile" className="home-setup-banner">
           ⚙️ 학습 언어와 수준을 설정하면 맞춤 추천을 받을 수 있어요 →
         </Link>
+      )}
+
+      {/* 첫 주 여정 — 5/5 완료되면 자동 숨김 */}
+      {journeyDone < JOURNEY.length && (
+        <div className="home-journey">
+          <div className="home-journey__header">
+            <span className="home-journey__title">🎯 첫 주 여정</span>
+            <span className="home-journey__progress">{journeyDone} / {JOURNEY.length}</span>
+          </div>
+          <div className="home-journey__bar">
+            <div className="home-journey__bar-fill" style={{ width: `${(journeyDone / JOURNEY.length) * 100}%` }} />
+          </div>
+          <ul className="home-journey__list">
+            {JOURNEY.map(j => (
+              <li key={j.label} className={`home-journey__item ${j.done ? 'is-done' : ''}`}>
+                <span className="home-journey__check">{j.done ? '✓' : j.icon}</span>
+                {j.done ? (
+                  <span className="home-journey__label">{j.label}</span>
+                ) : (
+                  <Link href={j.href} className="home-journey__label home-journey__label--link">{j.label}</Link>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
       {/* 신규 유저 3단계 가이드 (진짜 처음) */}

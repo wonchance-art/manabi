@@ -139,6 +139,37 @@ function exportCSV(vocab) {
   URL.revokeObjectURL(url);
 }
 
+// Anki 가져오기 호환 TSV (.txt) — Front | Back | Tags 3열
+function exportAnki(vocab) {
+  const escape = (s) => String(s ?? '').replace(/\t/g, ' ').replace(/\r?\n/g, '<br>');
+  const lines = [
+    '#separator:tab',
+    '#html:true',
+    '#columns:Front\tBack\tTags',
+  ];
+  for (const v of vocab) {
+    const isJa = v.language === 'Japanese' && v.furigana;
+    const front = isJa
+      ? `${escape(v.word_text)}<br><small>${escape(v.furigana)}</small>`
+      : escape(v.word_text);
+    const back = [
+      `<b>${escape(v.meaning || '')}</b>`,
+      v.pos ? `<small>${escape(v.pos)}</small>` : '',
+      v.source_sentence ? `<hr><i>${escape(v.source_sentence)}</i>` : '',
+    ].filter(Boolean).join('<br>');
+    const tags = ['anatomy-studio', v.language ? v.language.toLowerCase() : '', v.pos ? v.pos.replace(/\s+/g, '_') : '']
+      .filter(Boolean).join(' ');
+    lines.push(`${front}\t${back}\t${tags}`);
+  }
+  const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/plain;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `anatomy_vocab_anki_${new Date().toISOString().split('T')[0]}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 const VocabDetailCard = memo(function VocabDetailCard({ word: v, onClose, speak, ttsSupported }) {
   const now = new Date();
   const created = new Date(v.created_at);
@@ -844,6 +875,9 @@ export default function VocabPage() {
               }}>
                 <button onClick={() => exportCSV(vocab)} style={{ display: 'block', width: '100%', padding: '10px 14px', border: 'none', background: 'transparent', textAlign: 'left', fontSize: '0.85rem', cursor: 'pointer', color: 'var(--text-primary)' }}>
                   📤 CSV 내보내기
+                </button>
+                <button onClick={() => exportAnki(vocab)} style={{ display: 'block', width: '100%', padding: '10px 14px', border: 'none', background: 'transparent', textAlign: 'left', fontSize: '0.85rem', cursor: 'pointer', color: 'var(--text-primary)' }}>
+                  🃏 Anki 내보내기
                 </button>
                 <label style={{ display: 'block', padding: '10px 14px', fontSize: '0.85rem', cursor: 'pointer', color: 'var(--text-primary)' }}>
                   📥 CSV 가져오기
