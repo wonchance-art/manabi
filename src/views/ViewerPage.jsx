@@ -663,11 +663,19 @@ export default function ViewerPage() {
       setSelectedToken(null);
       setIsSheetOpen(false);
 
-      // 병렬 실행
+      // 번역+맥락 localStorage 캐시 (lang:hash)
       const langName = materialLang === 'Japanese' ? '일본어' : '영어';
+      const cacheKey = `viewer_tx:${materialLang}:${sel.slice(0, 200)}`;
+      const cached = (() => { try { return localStorage.getItem(cacheKey); } catch { return null; } })();
+      if (cached) {
+        setLeftPanelResult(cached);
+        setLeftPanelLoading(false);
+      }
+
+      // 병렬 실행
       await Promise.allSettled([
-        // 번역+맥락
-        callGemini(`다음 ${langName} 텍스트를 한국어로 처리해주세요.
+        // 번역+맥락 (캐시 미스 시에만)
+        cached ? Promise.resolve() : callGemini(`다음 ${langName} 텍스트를 한국어로 처리해주세요.
 
 "${sel}"
 
@@ -680,8 +688,10 @@ export default function ViewerPage() {
 내용 이해를 돕는 배경 설명 2~3문장
 
 규칙: 마크다운 **굵게**만 사용, 간결하게`).then(raw => {
-          setLeftPanelResult(raw?.candidates?.[0]?.content?.parts?.[0]?.text || raw || '');
+          const text = raw?.candidates?.[0]?.content?.parts?.[0]?.text || raw || '';
+          setLeftPanelResult(text);
           setLeftPanelLoading(false);
+          try { if (text) localStorage.setItem(cacheKey, text); } catch {}
         }).catch(() => { setLeftPanelResult(''); setLeftPanelLoading(false); }),
 
         // 단어 분석
