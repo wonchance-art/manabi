@@ -238,6 +238,208 @@ The most effective strategies for overcoming procrastination involve addressing 
 Understanding procrastination as a deeply human response to discomfort, rather than a moral failing, is the first step toward changing it.`,
   },
 
+  // ── 일본어 N5 추가 ─────────────────────────────────────
+  {
+    title: '[N5] 学校の一日 (학교 하루)',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `朝、学校に行きます。
+教室で友達に「おはよう」と言います。
+一時間目は国語の授業です。
+先生は黒板に字を書きます。
+昼休みに友達とお弁当を食べます。
+お弁当はおにぎりとサラダです。
+午後は体育の時間です。
+今日はサッカーをしました。
+学校が終わったら、図書館で本を読みます。`,
+  },
+  {
+    title: '[N5] 朝のあいさつ (아침 인사)',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `おはようございます。
+今日もいい天気ですね。
+朝ごはんはもう食べましたか。
+私はパンと牛乳を飲みました。
+これから会社へ行きます。
+電車は少し混んでいます。
+駅で友達に会いました。
+「お先に失礼します」と言って先に行きました。
+気持ちのいい朝です。`,
+  },
+  {
+    title: '[N5] 食堂で (식당에서)',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `お昼ご飯を食べに食堂へ行きました。
+メニューを見て、ラーメンを注文しました。
+「ラーメンを一つください」と言いました。
+水はセルフサービスです。
+ラーメンは熱くておいしかったです。
+となりの人はカレーを食べていました。
+食事の後、お会計をしました。
+八百円でした。
+「ごちそうさまでした」と言って店を出ました。`,
+  },
+  {
+    title: '[N5] 私の趣味 (나의 취미)',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `私の趣味は音楽を聞くことです。
+特にピアノの曲が好きです。
+週末は家で静かに音楽を聞きます。
+時々ギターも練習します。
+まだ上手ではありませんが、楽しいです。
+友達はサッカーが趣味です。
+妹は絵を描くのが好きです。
+みんな違う趣味があっておもしろいです。
+皆さんの趣味は何ですか。`,
+  },
+  {
+    title: '[N5] 雨の日 (비 오는 날)',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `今日は朝から雨が降っています。
+傘を持って学校へ行きました。
+道は人が少ないです。
+教室の窓から雨を見ます。
+雨の音は静かで好きです。
+昼ごはんは食堂で食べました。
+午後、雨はやみました。
+空に虹が出ました。
+きれいな景色でした。`,
+  },
+
+  // ── 일본어 N4 추가 ─────────────────────────────────────
+  {
+    title: '[N4] 友達と買い物 (친구와 쇼핑)',
+    language: 'Japanese', level: 'N4 기본',
+    raw_text: `先週の土曜日、友達と一緒にデパートへ行きました。
+新しい服を買いたかったからです。
+最初に三階の婦人服売り場を見ました。
+気に入った青いシャツがありましたが、少し高かったので迷いました。
+友達は「セールの時にまた来たら？」と言いました。
+それは良いアイデアだと思います。
+お昼は地下のレストランでパスタを食べました。
+帰り道、雨が降り始めましたが、楽しい一日でした。
+来週も一緒に出かける約束をしました。`,
+  },
+  {
+    title: '[N4] 旅行の計画 (여행 계획)',
+    language: 'Japanese', level: 'N4 기본',
+    raw_text: `来月、友達と京都へ旅行に行く予定です。
+京都には有名なお寺がたくさんあります。
+特に清水寺と金閣寺は絶対に見たいです。
+新幹線で行くつもりですが、まだチケットを買っていません。
+ホテルはインターネットで予約しました。
+駅から歩いて十分のところにあります。
+食べ物も楽しみです。京都の抹茶アイスは有名らしいです。
+友達はお寺で写真をたくさん撮りたいと言っていました。
+天気がよければいいなと思います。`,
+  },
+  {
+    title: '[N4] 新しい仕事 (새 직장)',
+    language: 'Japanese', level: 'N4 기본',
+    raw_text: `先月から新しい会社で働き始めました。
+前の仕事より家から近くて便利です。
+朝は八時に家を出て、九時前に会社に着きます。
+最初の一週間は新しい仕事を覚えるのが大変でした。
+でも先輩がやさしく教えてくれて、少しずつ慣れてきました。
+昼休みは同僚と一緒に近くの食堂でランチを食べます。
+仕事は忙しいですが、やりがいがあります。
+家に帰ったら、お風呂に入ってゆっくり休みます。`,
+  },
+
+  // ── 영어 A1 추가 ─────────────────────────────────────
+  {
+    title: '[A1] My Best Friend (나의 가장 친한 친구)',
+    language: 'English', level: 'A1 기초',
+    raw_text: `My best friend is Lisa. She is twelve years old.
+We are in the same class at school.
+Lisa has long brown hair and big eyes.
+She is very kind and funny.
+We like the same things. We both love music and animals.
+On weekends, we play in the park or watch movies.
+Sometimes, we have lunch at her house.
+Her mom makes very good pancakes.
+I am happy to have a friend like Lisa.`,
+  },
+  {
+    title: '[A1] Going to School (학교 가기)',
+    language: 'English', level: 'A1 기초',
+    raw_text: `I go to school every day from Monday to Friday.
+My school is not far from my house.
+I walk to school with my brother. It takes ten minutes.
+We start class at eight o'clock.
+My favorite subject is English.
+I also like art and music.
+At noon, we have lunch in the cafeteria.
+School ends at three in the afternoon.
+After school, I do my homework and play with my dog.`,
+  },
+  {
+    title: '[A1] My Pet (나의 반려동물)',
+    language: 'English', level: 'A1 기초',
+    raw_text: `I have a small dog. His name is Max.
+Max is brown and white. He has big ears.
+He is three years old.
+Max likes to play with a yellow ball.
+Every morning, I take him to the park.
+He runs very fast and meets other dogs.
+He loves to eat chicken and rice.
+At night, Max sleeps next to my bed.
+I love my dog very much.`,
+  },
+  {
+    title: '[A1] Daily Routines (하루 일과)',
+    language: 'English', level: 'A1 기초',
+    raw_text: `I wake up at seven every morning.
+First, I brush my teeth and wash my face.
+Then I have breakfast with my family.
+I usually eat toast and drink milk.
+I go to school by bus. The bus stop is near my house.
+School finishes at three thirty.
+After school, I do my homework.
+In the evening, I watch TV or read a book.
+I go to bed at ten o'clock.`,
+  },
+
+  // ── 영어 A2 추가 ─────────────────────────────────────
+  {
+    title: '[A2] A Trip to the Beach (해변 여행)',
+    language: 'English', level: 'A2 초급',
+    raw_text: `Last summer, my family and I went to the beach for the weekend.
+We drove for about three hours and arrived at a small hotel near the sea.
+The weather was perfect — sunny and warm, with a light breeze.
+On the first day, we swam in the ocean and built a big sandcastle.
+My little sister found beautiful shells along the shore.
+For lunch, we ate fresh fish at a restaurant by the water.
+In the evening, we watched the sunset together.
+The sky turned pink and orange. It was so beautiful.
+We took many photos to remember this special trip.`,
+  },
+  {
+    title: '[A2] Cooking with My Grandma (할머니와 요리하기)',
+    language: 'English', level: 'A2 초급',
+    raw_text: `Every Sunday, I visit my grandma and we cook together.
+She is teaching me her favorite recipes.
+Last week, we made vegetable soup and homemade bread.
+First, we cut the carrots, potatoes, and onions.
+Grandma showed me how to add the right amount of salt.
+While the soup was cooking, we kneaded the bread dough.
+The kitchen smelled amazing.
+After two hours, everything was ready.
+I love these afternoons because I learn something new and spend time with her.`,
+  },
+  {
+    title: '[A2] My Favorite Holiday (내가 좋아하는 명절)',
+    language: 'English', level: 'A2 초급',
+    raw_text: `My favorite holiday is the Lunar New Year.
+It is the most important holiday in my family.
+We usually celebrate it for three days.
+On the first day, we wear new clothes and visit our grandparents.
+My grandma cooks special food, like rice cakes and dumplings.
+The children receive money in red envelopes from the older relatives.
+We also play traditional games together.
+At night, we watch fireworks from the balcony.
+I always feel happy and grateful during this holiday.`,
+  },
+
   // ── 영어 C1 ──────────────────────────────────────────────
   {
     title: '[C1] Artificial Intelligence and the Question of Consciousness (AI와 의식의 문제)',

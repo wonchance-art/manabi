@@ -299,6 +299,7 @@ export default function PdfViewerPage() {
       <div className="pdf-toolbar" style={{ padding: '10px 16px' }}>
         <Link href="/materials" className="pdf-toolbar__back">← 자료실</Link>
         <h1 className="pdf-toolbar__title">{pdfInfo?.title || 'PDF'}</h1>
+        {inputText && <ListenControls text={inputText} language={language} />}
         <select value={language} onChange={e => { setLanguage(e.target.value); localStorage.setItem('pdf_language', e.target.value); }}
           style={{ fontSize: '0.8rem', padding: '4px 8px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
           <option value="Japanese">🇯🇵</option>
@@ -345,12 +346,6 @@ export default function PdfViewerPage() {
         leftBadge={contextLoading ? '생성 중' : null}
         rightBadge={visibleTokens.length > 0 ? `${visibleTokens.length}개` : null}
       />
-
-      {inputText && (
-        <div style={{ position: 'fixed', bottom: 80, right: 16, zIndex: 50 }}>
-          <ListenControls text={inputText} language={language} />
-        </div>
-      )}
 
       {/* 단어 상세 팝업 */}
       {wordDetail && (
