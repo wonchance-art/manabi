@@ -161,6 +161,7 @@ export default function MaterialsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [langFilter, setLangFilter] = useState(searchParams.get('lang') || 'all');
   const [levelFilter, setLevelFilter] = useState(searchParams.get('level') || 'all');
+  const [sortBy, setSortBy] = useState('newest'); // newest | level | title
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [confirmAction, setConfirmAction] = useState(null);
 
@@ -261,7 +262,23 @@ export default function MaterialsPage() {
     : langFilter === 'English' ? EN_LEVELS
     : [...JP_LEVELS, ...EN_LEVELS];
 
-  const filtered = materials;
+  const filtered = (() => {
+    if (sortBy === 'newest') return materials;
+    const arr = [...materials];
+    if (sortBy === 'level') {
+      arr.sort((a, b) => {
+        const la = a.processed_json?.metadata?.level;
+        const lb = b.processed_json?.metadata?.level;
+        const oa = la in LEVEL_ORDER ? LEVEL_ORDER[la] : 99;
+        const ob = lb in LEVEL_ORDER ? LEVEL_ORDER[lb] : 99;
+        if (oa !== ob) return oa - ob;
+        return new Date(b.created_at) - new Date(a.created_at);
+      });
+    } else if (sortBy === 'title') {
+      arr.sort((a, b) => (a.title || '').localeCompare(b.title || '', 'ko'));
+    }
+    return arr;
+  })();
 
   return (
     <div className="page-container">
@@ -318,6 +335,17 @@ export default function MaterialsPage() {
               {f.label}
             </button>
           ))}
+          <select
+            value={sortBy}
+            onChange={e => setSortBy(e.target.value)}
+            className="chip chip--select"
+            aria-label="정렬"
+            style={{ marginLeft: 'auto' }}
+          >
+            <option value="newest">🕒 최신순</option>
+            <option value="level">📊 쉬운순</option>
+            <option value="title">🔤 제목순</option>
+          </select>
         </div>
 
         {langFilter !== 'all' && (
