@@ -7215,31 +7215,23 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 /* ═══════════════════════════════════════════════
    Viewer Progress Bar — 읽기 진행률
    ═══════════════════════════════════════════════ */
+/* 읽기 진행률 — viewport 최상단 고정, 본문과 분리 */
 .viewer-progress-bar {
-  position: sticky; top: 56px; z-index: 90;
-  height: 4px;
-  background: var(--bg-secondary);
-  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
-  overflow: visible;
-  margin-bottom: 8px;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: transparent;
+  z-index: 200;
+  pointer-events: none;
 }
 .viewer-progress-bar__fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--primary-light), var(--accent));
-  border-radius: inherit;
-  transition: width 0.15s ease-out;
-  position: relative;
+  background: var(--primary);
+  transition: width 0.2s ease-out;
+  box-shadow: 0 0 8px var(--primary-glow);
 }
 .viewer-progress-bar__label {
-  position: absolute; right: 0; top: 6px;
-  font-size: 0.65rem; font-weight: 700;
-  color: var(--text-muted);
-  opacity: 0;
-  transition: opacity var(--transition-fast);
-  pointer-events: none;
-}
-.viewer-progress-bar:hover .viewer-progress-bar__label {
-  opacity: 1;
+  display: none;
 }
 
 /* ═══════════════════════════════════════════════
