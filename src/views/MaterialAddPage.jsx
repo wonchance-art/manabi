@@ -64,6 +64,21 @@ export default function MaterialAddPage() {
       .finally(() => setIsSuggestionLoading(false));
   }, []);
 
+  // 클립보드 페이스트 진입 (iPad 등) — sessionStorage로 전달된 텍스트 자동 채우기
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const pending = sessionStorage.getItem('pending_paste');
+      if (pending) {
+        setRawText(pending);
+        sessionStorage.removeItem('pending_paste');
+        setTimeout(() => {
+          document.querySelector('.form-textarea')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+      }
+    } catch {}
+  }, []);
+
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState('시스템 대기 중');
@@ -314,7 +329,24 @@ export default function MaterialAddPage() {
 
         {/* Text */}
         <div className="form-field">
-          <label className="form-label">본문 텍스트</label>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+            <label className="form-label" style={{ marginBottom: 0 }}>본문 텍스트</label>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={async () => {
+                try {
+                  const t = await navigator.clipboard.readText();
+                  if (t?.trim()) { setRawText(t); toast('클립보드에서 붙여넣었어요', 'success'); }
+                  else toast('클립보드가 비어있어요', 'info');
+                } catch {
+                  toast('브라우저에서 클립보드 접근을 허용해 주세요', 'warning');
+                }
+              }}
+            >
+              📋 클립보드 붙여넣기
+            </Button>
+          </div>
           <textarea
             value={rawText}
             onChange={e => setRawText(e.target.value)}

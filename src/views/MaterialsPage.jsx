@@ -287,9 +287,29 @@ export default function MaterialsPage() {
           <h1 className="page-header__title">📰 자료실</h1>
           <p className="page-header__subtitle">AI가 해부한 고품질 텍스트로 학습하세요</p>
         </div>
-        <Link href="/materials/add" className="btn btn--primary btn--md">
-          ➕ 새 자료 추가
-        </Link>
+        <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+          <button
+            className="btn btn--ghost btn--md"
+            onClick={async () => {
+              try {
+                const t = await navigator.clipboard.readText();
+                if (t?.trim()) {
+                  sessionStorage.setItem('pending_paste', t.trim());
+                  router.push('/materials/add');
+                } else {
+                  toast('클립보드가 비어있어요', 'info');
+                }
+              } catch {
+                toast('브라우저 클립보드 접근을 허용해 주세요', 'warning');
+              }
+            }}
+          >
+            📋 붙여넣어 시작
+          </button>
+          <Link href="/materials/add" className="btn btn--primary btn--md">
+            ➕ 새 자료 추가
+          </Link>
+        </div>
       </div>
 
       {/* Search */}
