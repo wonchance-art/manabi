@@ -209,7 +209,9 @@ export default function PdfViewerPage() {
     try {
       const { error } = await supabase.from('user_vocabulary').upsert({
         user_id: user.id, word_text: token.text, base_form: token.base_form || token.text,
-        meaning: token.meaning || '', pos: token.pos || '', furigana: token.furigana || '', language,
+        meaning: token.meaning || '', pos: token.pos || '',
+        furigana: token.furigana || token.reading || '', // 영어는 IPA 저장
+        language,
         source_sentence: inputText.slice(0, 200),
       }, { onConflict: 'user_id,word_text' });
       if (error) throw error;

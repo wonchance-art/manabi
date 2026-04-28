@@ -884,7 +884,7 @@ export default function ViewerPage() {
         user_id: user.id,
         word_text: selectedToken.text,
         base_form: selectedToken.base_form || selectedToken.text, // kuromoji 경로에서 전달됨
-        furigana: selectedToken.furigana || '',
+        furigana: selectedToken.furigana || selectedToken.reading || '', // 영어는 IPA 저장
         meaning: selectedToken.meaning || '',
         pos: selectedToken.pos || '',
         next_review_at: new Date().toISOString(),
@@ -1009,7 +1009,7 @@ export default function ViewerPage() {
                     try {
                       await supabase.from('user_vocabulary').upsert({
                         user_id: user.id, word_text: t.text, base_form: t.base_form || t.text,
-                        meaning: t.meaning || '', pos: t.pos || '', furigana: t.furigana || '',
+                        meaning: t.meaning || '', pos: t.pos || '', furigana: t.furigana || t.reading || '',
                         language: materialLang,
                       }, { onConflict: 'user_id,word_text' });
                       toast(`⭐ "${t.text}" 저장!`, 'success');
@@ -1750,7 +1750,7 @@ export default function ViewerPage() {
                     try {
                       await supabase.from('user_vocabulary').upsert({
                         user_id: user.id, word_text: t.text, base_form: t.base_form || t.text,
-                        meaning: t.meaning || '', pos: t.pos || '', furigana: t.furigana || '',
+                        meaning: t.meaning || '', pos: t.pos || '', furigana: t.furigana || t.reading || '',
                         language: materialLang,
                       }, { onConflict: 'user_id,word_text' });
                       toast(`⭐ "${t.text}" 저장!`, 'success');
