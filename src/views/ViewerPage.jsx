@@ -1049,9 +1049,20 @@ export default function ViewerPage() {
           <button onClick={() => speak(selectedToken.text, materialLang)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }} title="발음 듣기">🔊</button>
         )}
       </div>
-      <div style={{ fontSize: '1rem', lineHeight: 1.6, marginBottom: 14 }}>
+      <div style={{ fontSize: '1rem', lineHeight: 1.6, marginBottom: materialLang === 'English' && selectedToken.reading ? 4 : 14 }}>
         {selectedToken.meaning || '(뜻 없음)'}
       </div>
+      {materialLang === 'English' && selectedToken.reading && (
+        <div style={{
+          fontSize: '0.88rem',
+          color: 'var(--text-secondary)',
+          fontFamily: 'ui-monospace, "SF Mono", Menlo, monospace',
+          letterSpacing: '0.02em',
+          marginBottom: 14,
+        }}>
+          {selectedToken.reading}
+        </div>
+      )}
 
       {wordDetail?.loading ? (
         <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 12 }}>⏳ 상세 설명 생성 중...</div>

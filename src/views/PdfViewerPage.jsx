@@ -366,6 +366,16 @@ export default function PdfViewerPage() {
                 <span className="pdf-detail-popup__base">{wordDetail.token.base_form}</span>
               )}
               <span className="pdf-detail-popup__short">{wordDetail.token.meaning}</span>
+              {language === 'English' && wordDetail.token.reading && (
+                <span style={{
+                  fontSize: '0.82rem',
+                  color: 'var(--text-secondary)',
+                  fontFamily: 'ui-monospace, "SF Mono", Menlo, monospace',
+                  letterSpacing: '0.02em',
+                }}>
+                  {wordDetail.token.reading}
+                </span>
+              )}
             </div>
             <div className="pdf-detail-popup__body">
               {wordDetail.loading

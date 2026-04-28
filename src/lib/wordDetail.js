@@ -36,7 +36,7 @@ export async function fetchWordDetailText(token, language) {
   // 3. Gemini
   const langName = language === 'Japanese' ? '일본어' : '영어';
   const prompt = `"${token.text}" (${token.pos || ''})
-${language === 'English' ? '\n**발음**\nIPA 발음 기호\n' : ''}
+
 **뜻**
 1. 간결한 뜻 (3~5단어)
 2. 간결한 뜻
