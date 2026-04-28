@@ -1,6 +1,22 @@
 'use client';
 
 import Link from 'next/link';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '../lib/supabase';
+
+async function fetchLevelCounts() {
+  const { data } = await supabase
+    .from('reading_materials')
+    .select('processed_json')
+    .eq('visibility', 'public')
+    .limit(500);
+  const counts = {};
+  for (const m of data || []) {
+    const lvl = m.processed_json?.metadata?.level;
+    if (lvl) counts[lvl] = (counts[lvl] || 0) + 1;
+  }
+  return counts;
+}
 
 /* ── Warm gradient scale: beginner → advanced ── */
 const W = [
@@ -105,7 +121,7 @@ const TIPS = [
 ];
 
 /* ── Subcomponent: single roadmap timeline ── */
-function Roadmap({ curr }) {
+function Roadmap({ curr, levelCounts = {} }) {
   return (
     <section>
       <div className="roadmap-header">
@@ -164,7 +180,12 @@ function Roadmap({ curr }) {
                   className="roadmap-link"
                   style={{ color: w.dot }}
                 >
-                  {level.label} 자료 보러가기 →
+                  {level.label} 자료 보러가기
+                  {levelCounts[level.label] > 0 && (
+                    <span style={{ marginLeft: 6, fontSize: '0.78rem', opacity: 0.75 }}>
+                      ({levelCounts[level.label]}편)
+                    </span>
+                  )} →
                 </Link>
               </div>
             </div>
@@ -177,6 +198,11 @@ function Roadmap({ curr }) {
 
 /* ── Main Page ── */
 export default function GuidePage() {
+  const { data: levelCounts = {} } = useQuery({
+    queryKey: ['guide-level-counts'],
+    queryFn: fetchLevelCounts,
+    staleTime: 1000 * 60 * 10,
+  });
   return (
     <div className="page-container" style={{ maxWidth: '1100px' }}>
 
@@ -287,7 +313,7 @@ export default function GuidePage() {
         📊 언어 레벨 로드맵
       </h2>
       <div className="guide-roadmap-grid">
-        {CURRICULUMS.map(curr => <Roadmap key={curr.lang} curr={curr} />)}
+        {CURRICULUMS.map(curr => <Roadmap key={curr.lang} curr={curr} levelCounts={levelCounts} />)}
       </div>
 
       {/* ── Divider ── */}
