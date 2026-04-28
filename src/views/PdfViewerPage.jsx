@@ -12,6 +12,7 @@ import { fetchWordDetailText } from '../lib/wordDetail';
 import Button from '../components/Button';
 import Spinner from '../components/Spinner';
 import PdfDocument from '../components/PdfDocument';
+import ViewerBottomSheet from '../components/ViewerBottomSheet';
 
 async function fetchPdfInfo(pdfId) {
   const { data, error } = await supabase
@@ -234,6 +235,64 @@ export default function PdfViewerPage() {
   const visibleTokens = hideKnown ? tokens.filter(t => !t._alreadySaved) : tokens;
   const hasResults = tokens.length > 0 || analyzing || contextLoading || contextExpl;
 
+  const leftPanelContent = hasResults ? (
+    <div className="pdf-context">
+      <div className="pdf-context__title">💡 번역 · 맥락</div>
+      {inputText && (
+        <div className="pdf-context__original">
+          "{inputText.length > 120 ? inputText.slice(0, 120) + '…' : inputText}"
+        </div>
+      )}
+      {contextLoading ? (
+        <div className="pdf-context__loading">⏳ 번역 + 맥락 생성 중...</div>
+      ) : contextExpl ? (
+        <div className="pdf-context__text" dangerouslySetInnerHTML={{ __html: formatDetail(contextExpl) }} />
+      ) : null}
+    </div>
+  ) : (
+    <div className="pdf-side__empty">
+      <div style={{ fontSize: '1.5rem', marginBottom: 8 }}>💡</div>
+      복사한 텍스트의<br />번역과 맥락이 여기에
+    </div>
+  );
+
+  const rightPanelContent = visibleTokens.length > 0 ? (
+    <div className="pdf-word-list">
+      <div className="pdf-word-list__header">
+        <span className="pdf-word-list__title">단어 ({visibleTokens.length})</span>
+        <button className="pdf-word-list__toggle"
+          onClick={() => { const v = !hideKnown; setHideKnown(v); localStorage.setItem('pdf_hideKnown', String(v)); }}>
+          {hideKnown ? '전체' : '숨기기'}
+        </button>
+      </div>
+      {visibleTokens.map((t, i) => {
+        const key = t.base_form || t.text;
+        const saved = t._alreadySaved || saving[key] === 'done';
+        return (
+          <div key={i} className={`pdf-word-item ${saved ? 'pdf-word-item--saved' : ''} ${wordDetail?.token?.text === t.text ? 'pdf-word-item--active' : ''}`}>
+            <span className="pdf-word-item__text" onClick={() => handleWordClick(t)}>{t.text}</span>
+            <span className="pdf-word-item__meaning" onClick={() => handleWordClick(t)}>{t.meaning}</span>
+            {user && (
+              <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                <button className="pdf-word-item__save" disabled={saved || !!saving[key]}
+                  onClick={() => handleSaveWord(t)}>{saved ? '✓' : '⭐'}</button>
+                <button className="pdf-word-item__save pdf-word-item__dismiss"
+                  onClick={() => handleDismissWord(t)}>✕</button>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  ) : analyzing ? (
+    <div className="pdf-side__empty">⏳ 분석 중...</div>
+  ) : (
+    <div className="pdf-side__empty">
+      <div style={{ fontSize: '1.5rem', marginBottom: 8 }}>📝</div>
+      단어 목록이<br />여기에 표시됩니다
+    </div>
+  );
+
   return (
     <div className="pdf-page">
       <div className="pdf-toolbar" style={{ padding: '10px 16px' }}>
@@ -249,26 +308,7 @@ export default function PdfViewerPage() {
       <div className="pdf-layout">
         {/* 왼쪽 — 맥락 설명 */}
         <aside className={`pdf-side pdf-side--left ${hasResults ? 'pdf-side--active' : ''}`}>
-          {hasResults ? (
-            <div className="pdf-context">
-              <div className="pdf-context__title">💡 번역 · 맥락</div>
-              {inputText && (
-                <div className="pdf-context__original">
-                  "{inputText.length > 120 ? inputText.slice(0, 120) + '…' : inputText}"
-                </div>
-              )}
-              {contextLoading ? (
-                <div className="pdf-context__loading">⏳ 번역 + 맥락 생성 중...</div>
-              ) : contextExpl ? (
-                <div className="pdf-context__text" dangerouslySetInnerHTML={{ __html: formatDetail(contextExpl) }} />
-              ) : null}
-            </div>
-          ) : (
-            <div className="pdf-side__empty">
-              <div style={{ fontSize: '1.5rem', marginBottom: 8 }}>💡</div>
-              복사한 텍스트의<br />번역과 맥락이 여기에
-            </div>
-          )}
+          {leftPanelContent}
         </aside>
 
         {/* 중앙 — PDF 내장 뷰어 */}
@@ -292,44 +332,18 @@ export default function PdfViewerPage() {
 
         {/* 오른쪽 — 단어 리스트 */}
         <aside className={`pdf-side pdf-side--right ${hasResults ? 'pdf-side--active' : ''}`}>
-          {visibleTokens.length > 0 ? (
-            <div className="pdf-word-list">
-              <div className="pdf-word-list__header">
-                <span className="pdf-word-list__title">단어 ({visibleTokens.length})</span>
-                <button className="pdf-word-list__toggle"
-                  onClick={() => { const v = !hideKnown; setHideKnown(v); localStorage.setItem('pdf_hideKnown', String(v)); }}>
-                  {hideKnown ? '전체' : '숨기기'}
-                </button>
-              </div>
-              {visibleTokens.map((t, i) => {
-                const key = t.base_form || t.text;
-                const saved = t._alreadySaved || saving[key] === 'done';
-                return (
-                  <div key={i} className={`pdf-word-item ${saved ? 'pdf-word-item--saved' : ''} ${wordDetail?.token?.text === t.text ? 'pdf-word-item--active' : ''}`}>
-                    <span className="pdf-word-item__text" onClick={() => handleWordClick(t)}>{t.text}</span>
-                    <span className="pdf-word-item__meaning" onClick={() => handleWordClick(t)}>{t.meaning}</span>
-                    {user && (
-                      <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-                        <button className="pdf-word-item__save" disabled={saved || !!saving[key]}
-                          onClick={() => handleSaveWord(t)}>{saved ? '✓' : '⭐'}</button>
-                        <button className="pdf-word-item__save pdf-word-item__dismiss"
-                          onClick={() => handleDismissWord(t)}>✕</button>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          ) : analyzing ? (
-            <div className="pdf-side__empty">⏳ 분석 중...</div>
-          ) : (
-            <div className="pdf-side__empty">
-              <div style={{ fontSize: '1.5rem', marginBottom: 8 }}>📝</div>
-              단어 목록이<br />여기에 표시됩니다
-            </div>
-          )}
+          {rightPanelContent}
         </aside>
       </div>
+
+      <ViewerBottomSheet
+        leftContent={leftPanelContent}
+        rightContent={rightPanelContent}
+        leftActive={contextLoading || !!contextExpl}
+        rightActive={analyzing || visibleTokens.length > 0}
+        leftBadge={contextLoading ? '생성 중' : null}
+        rightBadge={visibleTokens.length > 0 ? `${visibleTokens.length}개` : null}
+      />
 
       {/* 단어 상세 팝업 */}
       {wordDetail && (

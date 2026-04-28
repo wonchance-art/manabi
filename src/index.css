@@ -4765,12 +4765,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   color: var(--text-secondary);
 }
 
-/* 모바일: 3열 → 1열 */
-@media (max-width: 900px) {
+/* PDF 모바일·태블릿: 좌우 사이드 숨김 (바텀시트로 대체) */
+@media (max-width: 1179px) {
   .pdf-layout { flex-direction: column; }
-  .pdf-side { width: 100%; max-height: 200px; border: none; border-bottom: 1px solid var(--border); }
-  .pdf-side--right { border-bottom: none; border-top: 1px solid var(--border); }
-  .pdf-side--left:not(.pdf-side--active) { display: none; }
+  .pdf-side { display: none; }
+  .pdf-main { padding-bottom: 64px; max-height: none; }
+  .pdf-input-bar { margin-bottom: 0; }
 }
 
 .pdf-toolbar {
@@ -4836,12 +4836,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   border-left: 1px solid var(--border);
 }
 
-/* 모바일: 2열 → 세로 */
-@media (max-width: 768px) {
-  .pdf-layout { flex-direction: column; }
-  .pdf-text-panel { width: 100%; max-height: 50vh; border-left: none; border-top: 1px solid var(--border); }
-  .pdf-side { display: none; }
-}
 
 .pdf-token-row {
   display: flex;
