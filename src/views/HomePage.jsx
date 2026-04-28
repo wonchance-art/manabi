@@ -74,6 +74,7 @@ async function fetchHomeData(userId) {
     { count: todayForumComments },
     { count: todayGrammarCount },
     { data: allVocabRows },
+    { data: publicMaterials },
   ] = await Promise.all([
     supabase.from('user_vocabulary').select('*', { count: 'exact', head: true })
       .eq('user_id', userId).lte('next_review_at', now),
@@ -93,6 +94,11 @@ async function fetchHomeData(userId) {
       .eq('user_id', userId).gte('created_at', todayStart),
     supabase.from('user_vocabulary').select('language, word_text')
       .eq('user_id', userId),
+    supabase.from('reading_materials')
+      .select('id, title, language, level')
+      .eq('visibility', 'public')
+      .order('created_at', { ascending: false })
+      .limit(40),
   ]);
 
   const rows = vocabRows || [];
@@ -143,6 +149,8 @@ async function fetchHomeData(userId) {
         total: all.length,
       };
     })(),
+    publicMaterials: publicMaterials || [],
+    readMaterialIds: (recentProgress || []).filter(r => r.is_completed).map(r => r.material_id),
   };
 }
 
@@ -408,6 +416,53 @@ export default function HomePage() {
             >
               {suggestion.material_id ? '📖 바로 읽기 →' : '✨ 분석하고 읽기 →'}
             </Button>
+          </div>
+        );
+      })()}
+
+      {/* 내 레벨 추천 자료 — 시드 콘텐츠 노출 */}
+      {(() => {
+        const all = data?.publicMaterials || [];
+        const readIds = new Set(data?.readMaterialIds || []);
+        const langs = profile?.learning_language || ['Japanese'];
+        const vocabByLang = data?.vocabByLang || {};
+        const idealByLang = Object.fromEntries(langs.map(l => [l, getIdealLevel(l, vocabByLang[l] || 0)]));
+        const matched = all
+          .filter(m => !readIds.has(m.id))
+          .filter(m => langs.includes(m.language))
+          .map(m => {
+            const ideal = idealByLang[m.language];
+            const score = m.level?.startsWith(ideal) ? 100 : (m.level?.[0] === ideal?.[0] ? 50 : 10);
+            return { ...m, score };
+          })
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 3);
+        if (matched.length === 0) return null;
+        return (
+          <div className="card home-card">
+            <h2 className="home-section-title" style={{ fontSize: '0.95rem', marginBottom: 12 }}>
+              🎯 내 레벨 추천 자료
+            </h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {matched.map(m => (
+                <Link
+                  key={m.id}
+                  href={`/viewer/${m.id}`}
+                  className="home-recent-item"
+                  style={{ textDecoration: 'none' }}
+                >
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {m.title}
+                    </div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 2 }}>
+                      {m.language === 'Japanese' ? '🇯🇵' : '🇬🇧'} {m.level || '레벨 미정'}
+                    </div>
+                  </div>
+                  <span style={{ color: 'var(--primary)', fontSize: '0.82rem', flexShrink: 0 }}>읽기 →</span>
+                </Link>
+              ))}
+            </div>
           </div>
         );
       })()}
