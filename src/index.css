@@ -5270,6 +5270,39 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   padding: 20px 0;
 }
 
+/* ========= 시리즈/레벨 완주 카드 ========= */
+.series-end-card {
+  display: block;
+  margin-top: 16px;
+  padding: 16px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: inherit;
+  transition: background var(--transition-fast);
+}
+.series-end-card:hover {
+  background: var(--bg-elevated);
+}
+.series-end-card--top:hover {
+  background: var(--bg-card);
+  cursor: default;
+}
+.series-end-card__hint {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+.series-end-card__title {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-primary);
+}
+
 /* ========= 다음 강의 카드 (미니멀) ========= */
 .next-lesson-card {
   display: block;
