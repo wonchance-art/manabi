@@ -205,6 +205,96 @@ Autumn food is also great. Apples, pears, and sweet potatoes are all in season.
 Some people prefer spring or summer, but for me, nothing beats a beautiful autumn day.`,
   },
 
+  // ── 일본어 N3 문법 시리즈 (다음 단계) ──────────────────
+  {
+    title: '[N3 문법 #1] ~ようになる / ~ようにする (변화·노력)',
+    language: 'Japanese', level: 'N3 중급',
+    raw_text: `毎日練習して、日本語が話せるようになりました。
+最近、健康のために野菜をたくさん食べるようにしています。
+朝早く起きるようになって、生活が変わりました。
+忘れないように、メモを取るようにしています。
+彼は最近、笑うようになりました。
+コーヒーを飲まないようにしています。
+時間を守るようにしましょう。`,
+  },
+  {
+    title: '[N3 문법 #2] 수동형 ~れる/~られる',
+    language: 'Japanese', level: 'N3 중급',
+    raw_text: `先生に名前を呼ばれました。
+雨に降られて、服が濡れました。
+友達に笑われて、恥ずかしかったです。
+このお寺は四百年前に建てられました。
+新しい計画が発表されました。
+私の自転車が盗まれました。
+この本は世界中で読まれています。`,
+  },
+  {
+    title: '[N3 문법 #3] 사동형 ~せる/~させる',
+    language: 'Japanese', level: 'N3 중급',
+    raw_text: `母は弟に部屋を掃除させました。
+先生は学生にたくさん本を読ませます。
+父は私に毎朝牛乳を飲ませました。
+すみません、ちょっと待たせてください。
+社員に働かせすぎないでください。
+子供を公園で遊ばせます。
+歌を歌わせていただけますか。`,
+  },
+  {
+    title: '[N3 문법 #4] ~てしまう (완료·유감)',
+    language: 'Japanese', level: 'N3 중급',
+    raw_text: `宿題をやっと終わってしまいました。
+財布を電車に忘れてしまいました。
+ケーキを全部食べてしまいました。
+大事な本を無くしてしまった。
+うっかり寝坊してしまいました。
+雨に濡れて風邪を引いてしまった。
+一晩でこの小説を読んでしまった。`,
+  },
+  {
+    title: '[N3 문법 #5] ~ばかり (한정·완료 직후)',
+    language: 'Japanese', level: 'N3 중급',
+    raw_text: `弟はゲームばかりしています。
+最近、雨ばかり降っています。
+日本に来たばかりで、まだ慣れていません。
+食べたばかりなのに、もうお腹がすいた。
+この会社に入ったばかりです。
+甘いものばかり食べないでください。
+昨日買ったばかりのかばんを汚してしまった。`,
+  },
+  {
+    title: '[N3 문법 #6] ~ばよかった (~할 걸 그랬다)',
+    language: 'Japanese', level: 'N3 중급',
+    raw_text: `もっと早く来ればよかった。
+傘を持ってくればよかったです。
+あの時、彼に正直に言えばよかった。
+もっと勉強しておけばよかった。
+野菜を買っておけばよかったな。
+試験の前に復習すればよかった。
+あの本を買っておけばよかった。`,
+  },
+  {
+    title: '[N3 문법 #7] ~らしい / ~みたい (~인 것 같다)',
+    language: 'Japanese', level: 'N3 중급',
+    raw_text: `田中さんは来週、引っ越すらしいです。
+明日は雨が降るらしい。
+あの人は学生みたいです。
+店長は怒っているみたいだ。
+本物のダイヤモンドみたいに光っている。
+今年の夏はとても暑いらしい。
+彼女は本当の姉妹みたいに仲がいい。`,
+  },
+  {
+    title: '[N3 문법 #8] 경어 입문 — お~になる / ご~になる',
+    language: 'Japanese', level: 'N3 중급',
+    raw_text: `先生はもうお帰りになりました。
+社長は今、お電話中でいらっしゃいます。
+お客様はこの本をお読みになりましたか。
+どうぞこちらにお座りください。
+資料をご覧ください。
+ご注文はお決まりですか。
+お先に失礼いたします。`,
+  },
+
   // ── 영어 B1 ──────────────────────────────────────────────
   {
     title: '[B1] The Benefits of Language Learning (언어 학습의 이점)',
@@ -852,6 +942,118 @@ The children receive money in red envelopes from the older relatives.
 We also play traditional games together.
 At night, we watch fireworks from the balcony.
 I always feel happy and grateful during this holiday.`,
+  },
+
+  // ── 영어 A2 문법 시리즈 (다음 단계) ────────────────────
+  {
+    title: '[A2 grammar #1] comparatives — than',
+    language: 'English', level: 'A2 초급',
+    raw_text: `She is taller than her brother.
+This book is more interesting than that one.
+My new phone is faster than my old one.
+Today is hotter than yesterday.
+Coffee is more expensive than tea here.
+He runs faster than I do.
+Math is harder than English for me.`,
+  },
+  {
+    title: '[A2 grammar #2] superlatives — the most',
+    language: 'English', level: 'A2 초급',
+    raw_text: `Mt. Everest is the highest mountain in the world.
+She is the tallest girl in our class.
+This is the best restaurant in town.
+Summer is the hottest season here.
+He is the funniest person I know.
+That was the most beautiful sunset.
+Math is the most difficult subject for me.`,
+  },
+  {
+    title: '[A2 grammar #3] be going to (계획·예측)',
+    language: 'English', level: 'A2 초급',
+    raw_text: `I am going to visit my grandmother this weekend.
+She is going to study abroad next year.
+We are going to have lunch at noon.
+Look at those clouds — it is going to rain.
+They are going to move to a new house.
+What are you going to do tomorrow?
+I am not going to give up.`,
+  },
+  {
+    title: '[A2 grammar #4] will / won\'t (미래·약속)',
+    language: 'English', level: 'A2 초급',
+    raw_text: `I will help you with the homework.
+She will be twenty years old next month.
+We won't be late, I promise.
+The meeting will start at three o'clock.
+I think it will rain later.
+He won't tell anyone our secret.
+I will call you when I arrive.`,
+  },
+  {
+    title: '[A2 grammar #5] should / shouldn\'t (조언)',
+    language: 'English', level: 'A2 초급',
+    raw_text: `You should drink more water every day.
+He should see a doctor about his cough.
+You shouldn't eat so much sugar.
+We should leave now to catch the bus.
+Children shouldn't watch too much TV.
+You should try this restaurant — it's great.
+You shouldn't drive when you are tired.`,
+  },
+  {
+    title: '[A2 grammar #6] have to / don\'t have to (의무)',
+    language: 'English', level: 'A2 초급',
+    raw_text: `I have to finish this report today.
+She has to wear a uniform at school.
+We have to be at the airport by six.
+You don't have to come if you are busy.
+He doesn't have to work on Sundays.
+Do I have to take the test again?
+We have to study hard for the exam.`,
+  },
+  {
+    title: '[A2 grammar #7] used to (과거의 습관)',
+    language: 'English', level: 'A2 초급',
+    raw_text: `I used to live in Busan when I was a child.
+She used to play the piano every day.
+We used to go to the beach every summer.
+He used to smoke, but he stopped last year.
+There used to be a small shop on this corner.
+Did you use to walk to school?
+I didn't use to like vegetables, but now I do.`,
+  },
+  {
+    title: '[A2 grammar #8] may / might (가능성)',
+    language: 'English', level: 'A2 초급',
+    raw_text: `It may rain this afternoon.
+She might come to the party tonight.
+We may go to Japan next year.
+He might be at home now — try calling.
+I may not have time tomorrow.
+You may use my phone if you need to.
+The train might be late because of the snow.`,
+  },
+  {
+    title: '[A2 grammar #9] who / which / that (관계대명사)',
+    language: 'English', level: 'A2 초급',
+    raw_text: `The man who lives next door is a doctor.
+This is the book that I told you about.
+She has a friend who speaks five languages.
+The cake which my mom made was delicious.
+That's the restaurant that we visited last week.
+I know a person who can help you.
+The car that I bought is very fast.`,
+  },
+  {
+    title: '[A2 grammar #10] some / any / much / many (수량)',
+    language: 'English', level: 'A2 초급',
+    raw_text: `There are some apples in the kitchen.
+Do you have any questions?
+I don't have any money with me.
+There isn't much milk left.
+How many books do you read each year?
+We need some help with this project.
+Are there any seats available?`,
   },
 
   // ── 영어 C1 ──────────────────────────────────────────────
