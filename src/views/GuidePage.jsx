@@ -4,18 +4,34 @@ import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 
-async function fetchLevelCounts() {
+async function fetchLevelData() {
   const { data } = await supabase
     .from('reading_materials')
-    .select('processed_json')
+    .select('id, title, processed_json')
     .eq('visibility', 'public')
-    .limit(500);
+    .order('created_at', { ascending: false })
+    .limit(200);
   const counts = {};
+  const samples = {};
   for (const m of data || []) {
     const lvl = m.processed_json?.metadata?.level;
-    if (lvl) counts[lvl] = (counts[lvl] || 0) + 1;
+    if (!lvl) continue;
+    counts[lvl] = (counts[lvl] || 0) + 1;
+    if (!samples[lvl]) samples[lvl] = [];
+    if (samples[lvl].length < 4) samples[lvl].push({ id: m.id, title: m.title });
   }
-  return counts;
+  return { counts, samples };
+}
+
+async function fetchCompletedIds() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user) return new Set();
+  const { data } = await supabase
+    .from('reading_progress')
+    .select('material_id')
+    .eq('user_id', session.user.id)
+    .eq('is_completed', true);
+  return new Set((data || []).map(r => r.material_id));
 }
 
 /* ── Warm gradient scale: beginner → advanced ── */
@@ -121,7 +137,7 @@ const TIPS = [
 ];
 
 /* ── Subcomponent: single roadmap timeline ── */
-function Roadmap({ curr, levelCounts = {} }) {
+function Roadmap({ curr, levelCounts = {}, levelSamples = {}, completedIds = new Set() }) {
   return (
     <section>
       <div className="roadmap-header">
@@ -175,12 +191,28 @@ function Roadmap({ curr, levelCounts = {} }) {
                   ))}
                 </div>
 
+                {(levelSamples[level.label] || []).length > 0 && (
+                  <ul className="roadmap-samples">
+                    {levelSamples[level.label].map(s => {
+                      const done = completedIds.has(s.id);
+                      return (
+                        <li key={s.id} className={`roadmap-sample ${done ? 'is-done' : ''}`}>
+                          <Link href={`/viewer/${s.id}`} className="roadmap-sample__link">
+                            <span className="roadmap-sample__status">{done ? '✓' : '🆕'}</span>
+                            <span className="roadmap-sample__title">{s.title}</span>
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+
                 <Link
                   href={`/materials?lang=${curr.lang}&level=${encodeURIComponent(level.label)}`}
                   className="roadmap-link"
                   style={{ color: w.dot }}
                 >
-                  {level.label} 자료 보러가기
+                  {level.label} 자료 전체 보기
                   {levelCounts[level.label] > 0 && (
                     <span style={{ marginLeft: 6, fontSize: '0.78rem', opacity: 0.75 }}>
                       ({levelCounts[level.label]}편)
@@ -198,10 +230,15 @@ function Roadmap({ curr, levelCounts = {} }) {
 
 /* ── Main Page ── */
 export default function GuidePage() {
-  const { data: levelCounts = {} } = useQuery({
-    queryKey: ['guide-level-counts'],
-    queryFn: fetchLevelCounts,
+  const { data: levelData = { counts: {}, samples: {} } } = useQuery({
+    queryKey: ['guide-level-data'],
+    queryFn: fetchLevelData,
     staleTime: 1000 * 60 * 10,
+  });
+  const { data: completedIds = new Set() } = useQuery({
+    queryKey: ['guide-completed-ids'],
+    queryFn: fetchCompletedIds,
+    staleTime: 1000 * 60 * 5,
   });
   return (
     <div className="page-container" style={{ maxWidth: '1100px' }}>
@@ -313,7 +350,15 @@ export default function GuidePage() {
         📊 언어 레벨 로드맵
       </h2>
       <div className="guide-roadmap-grid">
-        {CURRICULUMS.map(curr => <Roadmap key={curr.lang} curr={curr} levelCounts={levelCounts} />)}
+        {CURRICULUMS.map(curr => (
+          <Roadmap
+            key={curr.lang}
+            curr={curr}
+            levelCounts={levelData.counts}
+            levelSamples={levelData.samples}
+            completedIds={completedIds}
+          />
+        ))}
       </div>
 
       {/* ── Divider ── */}
