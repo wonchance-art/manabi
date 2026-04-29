@@ -446,8 +446,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 
 .card:hover {
   border-color: var(--border-hover);
-  transform: translateY(-2px);
-  box-shadow: var(--card-shadow-hover);
 }
 
 /* ========= Page Header variants ========= */
@@ -5217,25 +5215,43 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   line-height: 1.5;
 }
 
-/* 리딩 테스트 섹션 — 뷰어와 동일한 배경 */
+/* 리딩 테스트 / 회화 활성화 시 인라인 컨테이너 */
 .reading-test-section {
-  background: var(--bg-card);
+  background: transparent;
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 40px 24px;
-  margin-top: 16px;
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+  margin-top: 12px;
 }
 
-/* CTA — 중앙 정렬 */
-.reading-test-cta {
-  text-align: center;
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 20px 0;
+/* 학습 강화 row — 두 보조 CTA를 한 줄에 (미니멀) */
+.post-reading-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
 }
-.reading-test-cta__icon { font-size: 2.5rem; margin-bottom: 12px; }
-.reading-test-cta__title { font-size: 1.05rem; font-weight: 700; margin-bottom: 4px; }
-.reading-test-cta__sub { font-size: 0.82rem; color: var(--text-muted); }
+.post-reading-actions__btn {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  text-align: center;
+}
+.post-reading-actions__btn:hover {
+  background: var(--bg-elevated);
+}
+
+/* 구버전 CTA 호환용 — 점진 제거 예정 */
+.reading-test-cta { padding: 8px 0; text-align: center; }
+.reading-test-cta__icon { display: none; }
+.reading-test-cta__title { font-size: 0.95rem; font-weight: 600; margin-bottom: 2px; }
+.reading-test-cta__sub { font-size: 0.78rem; color: var(--text-muted); }
 
 /* 인라인 모드 — 왼쪽 정렬, 뷰어 너비 */
 .reading-test--inline {
@@ -5257,41 +5273,37 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   padding: 20px 0;
 }
 
-/* ========= 다음 강의 카드 ========= */
+/* ========= 다음 강의 카드 (미니멀) ========= */
 .next-lesson-card {
   display: block;
   margin-top: 16px;
-  padding: 18px 22px;
-  background: linear-gradient(135deg, var(--primary-glow) 0%, var(--bg-card) 100%);
-  border: 1px solid var(--primary);
-  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--primary);
+  border-radius: var(--radius-md);
   text-decoration: none;
   color: inherit;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  transition: background var(--transition-fast);
 }
 .next-lesson-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  background: var(--bg-elevated);
 }
 .next-lesson-card__hint {
-  font-size: 0.78rem;
-  font-weight: 700;
+  font-size: 0.72rem;
+  font-weight: 600;
   color: var(--primary);
-  letter-spacing: 0.04em;
-  margin-bottom: 6px;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+  text-transform: uppercase;
 }
 .next-lesson-card__title {
-  font-size: 1.05rem;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 600;
   line-height: 1.4;
   color: var(--text-primary);
-  margin-bottom: 8px;
 }
-.next-lesson-card__cta {
-  font-size: 0.82rem;
-  color: var(--primary);
-  font-weight: 600;
-}
+.next-lesson-card__cta { display: none; }
 
 /* ========= Conversation Panel ========= */
 .conversation-panel {
@@ -6105,14 +6117,14 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   display: flex;
   align-items: center;
   gap: 6px;
-  background: linear-gradient(135deg, rgba(192,82,42,0.15), rgba(74,138,92,0.1));
-  border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
   border-radius: var(--radius-full);
-  padding: 8px 16px;
+  padding: 6px 14px;
 }
-.streak-badge__fire { font-size: 1.3rem; animation: fireFlicker 1.5s ease-in-out infinite; }
-.streak-badge__count { font-size: 1.4rem; font-weight: 800; color: var(--primary-light); }
-.streak-badge__label { font-size: 0.75rem; color: var(--text-secondary); }
+.streak-badge__fire { font-size: 1.05rem; }
+.streak-badge__count { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); }
+.streak-badge__label { font-size: 0.75rem; color: var(--text-muted); }
 
 .streak-area {
   display: flex;
@@ -6827,11 +6839,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 
 .home-getting-started {
-  background: linear-gradient(135deg, var(--primary-glow) 0%, var(--bg-elevated) 100%);
-  border: 1px solid var(--primary);
-  border-radius: var(--radius-xl, 16px);
-  padding: 24px;
-  margin-bottom: 28px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--primary);
+  border-radius: var(--radius-lg);
+  padding: 20px 22px;
+  margin-bottom: 24px;
 }
 .home-getting-started__header {
   display: flex;

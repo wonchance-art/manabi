@@ -393,9 +393,10 @@ export default function HomePage() {
         const isIdeal = suggestion.level === idealLevel;
         return (
           <div className="card" style={{
-            padding: '24px 20px',
-            background: 'linear-gradient(135deg, var(--primary-glow) 0%, var(--bg-card) 60%)',
-            border: '1px solid var(--primary)',
+            padding: '20px 22px',
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border)',
+            borderLeft: '3px solid var(--primary)',
           }}>
             <div style={{ fontSize: '0.72rem', color: 'var(--primary)', fontWeight: 700, marginBottom: 6 }}>
               📖 오늘 이걸 읽어보세요

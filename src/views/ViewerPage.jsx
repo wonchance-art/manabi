@@ -1649,57 +1649,56 @@ export default function ViewerPage() {
 
       </div>
 
-      {/* 다음 강의 — 같은 시리즈 next # */}
+      {/* 다음 강의 — 같은 시리즈 next # (primary CTA) */}
       {isDone && nextLesson && (
         <Link href={`/viewer/${nextLesson.id}`} className="next-lesson-card">
-          <div className="next-lesson-card__hint">다음 강의 →</div>
+          <div className="next-lesson-card__hint">다음 강의</div>
           <div className="next-lesson-card__title">{nextLesson.title}</div>
-          <div className="next-lesson-card__cta">이어서 학습하기 →</div>
         </Link>
       )}
 
-      {/* 리딩 테스트 — 뷰어 밖, 별도 섹션 */}
-      {isDone && (
-        <div className="reading-test-section">
-          {!showReadingTest ? (
-            <div className="reading-test-cta">
-              <div className="reading-test-cta__icon">📝</div>
-              <div className="reading-test-cta__title">Ready to test your comprehension?</div>
-              <div className="reading-test-cta__sub">IELTS-style Reading Test · 5 questions</div>
-              <Button onClick={() => setShowReadingTest(true)} style={{ marginTop: 16 }}>Start Test</Button>
-            </div>
-          ) : (
-            <ReadingTest
-              rawText={material?.raw_text}
-              language={materialLang}
-              materialId={id}
-              onClose={() => setShowReadingTest(false)}
-              inline
-            />
-          )}
+      {/* 학습 강화 — 보조 CTA 두 개를 한 줄에 (미니멀) */}
+      {isDone && !showReadingTest && !showConversation && (
+        <div className="post-reading-actions">
+          <button
+            className="post-reading-actions__btn"
+            onClick={() => setShowReadingTest(true)}
+          >
+            리딩 테스트
+          </button>
+          <button
+            className="post-reading-actions__btn"
+            onClick={() => setShowConversation(true)}
+          >
+            회화 연습
+          </button>
         </div>
       )}
 
-      {/* 회화 연습 — 뷰어 밖, 별도 섹션 */}
-      {isDone && (
+      {/* 리딩 테스트 인라인 확장 */}
+      {isDone && showReadingTest && (
         <div className="reading-test-section">
-          {!showConversation ? (
-            <div className="reading-test-cta">
-              <div className="reading-test-cta__icon">💬</div>
-              <div className="reading-test-cta__title">AI 튜터와 대화해 볼까요?</div>
-              <div className="reading-test-cta__sub">방금 읽은 본문을 주제로 {materialLang === 'Japanese' ? '일본어' : '영어'} 회화 연습</div>
-              <Button onClick={() => setShowConversation(true)} style={{ marginTop: 16 }}>대화 시작</Button>
-            </div>
-          ) : (
-            <ConversationPanel
-              rawText={material?.raw_text}
-              language={materialLang}
-              materialId={id}
-              materialTitle={material?.title}
-              onClose={() => setShowConversation(false)}
-              inline
-            />
-          )}
+          <ReadingTest
+            rawText={material?.raw_text}
+            language={materialLang}
+            materialId={id}
+            onClose={() => setShowReadingTest(false)}
+            inline
+          />
+        </div>
+      )}
+
+      {/* 회화 연습 인라인 확장 */}
+      {isDone && showConversation && (
+        <div className="reading-test-section">
+          <ConversationPanel
+            rawText={material?.raw_text}
+            language={materialLang}
+            materialId={id}
+            materialTitle={material?.title}
+            onClose={() => setShowConversation(false)}
+            inline
+          />
         </div>
       )}
 
