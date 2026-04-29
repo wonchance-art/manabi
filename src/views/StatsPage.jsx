@@ -10,6 +10,7 @@ import { getXPLevel, getLevelProgress } from '../lib/xp';
 import { ACHIEVEMENTS } from '../lib/achievements';
 import Button from '../components/Button';
 import VocabStats from './VocabStats';
+import { parseTitle } from '../lib/seriesMeta';
 
 async function fetchStatsData(userId) {
   const heatmapStart = new Date();
@@ -21,11 +22,15 @@ async function fetchStatsData(userId) {
     { data: achievements },
     { data: heatmapRows },
     { data: allVocab },
+    { data: seriesMaterials },
+    { data: completedRows },
   ] = await Promise.all([
     supabase.from('reading_progress').select('*', { count: 'exact', head: true }).eq('user_id', userId).eq('is_completed', true),
     supabase.from('user_achievements').select('achievement_id, created_at').eq('user_id', userId).order('created_at', { ascending: false }),
     supabase.from('user_vocabulary').select('created_at').eq('user_id', userId).gte('created_at', heatmapStart.toISOString()),
     supabase.from('user_vocabulary').select('*').eq('user_id', userId),
+    supabase.from('reading_materials').select('id, title').eq('visibility', 'public').ilike('title', '[%#%]%').limit(300),
+    supabase.from('reading_progress').select('material_id').eq('user_id', userId).eq('is_completed', true),
   ]);
 
   const heatmapDayCounts = {};
@@ -38,6 +43,20 @@ async function fetchStatsData(userId) {
   const mastered = vocab.filter(v => (v.interval ?? 0) > 14).length;
   const reviewed = vocab.filter(v => v.last_reviewed_at).length;
 
+  // 시리즈별 진행도 집계
+  const doneSet = new Set((completedRows || []).map(r => r.material_id));
+  const groups = new Map();
+  for (const m of (seriesMaterials || [])) {
+    const meta = parseTitle(m.title);
+    if (!meta.level || !meta.series || meta.num == null) continue;
+    const key = `${meta.level}|${meta.series}`;
+    if (!groups.has(key)) groups.set(key, { level: meta.level, series: meta.series, total: 0, completed: 0 });
+    const g = groups.get(key);
+    g.total += 1;
+    if (doneSet.has(m.id)) g.completed += 1;
+  }
+  const seriesProgress = [...groups.values()];
+
   return {
     vocab,
     mastered,
@@ -46,6 +65,7 @@ async function fetchStatsData(userId) {
     earnedIds: new Set((achievements || []).map(a => a.achievement_id)),
     earnedDates: Object.fromEntries((achievements || []).map(a => [a.achievement_id, a.created_at])),
     heatmapDayCounts,
+    seriesProgress,
   };
 }
 
@@ -143,6 +163,52 @@ export default function StatsPage() {
           <VocabStats vocab={vocab} profile={profile} section="hardwords" />
         </>
       )}
+
+      {/* 시리즈 학습 진척도 */}
+      {data?.seriesProgress?.length > 0 && (() => {
+        const LEVEL_ORDER = { N5: 0, N4: 1, N3: 2, N2: 3, N1: 4, A1: 5, A2: 6, B1: 7, B2: 8, C1: 9, C2: 10 };
+        const sorted = [...data.seriesProgress].sort((a, b) => {
+          const oa = LEVEL_ORDER[a.level] ?? 99;
+          const ob = LEVEL_ORDER[b.level] ?? 99;
+          if (oa !== ob) return oa - ob;
+          return a.series.localeCompare(b.series);
+        });
+        const totalCompleted = sorted.reduce((s, g) => s + g.completed, 0);
+        const totalAll = sorted.reduce((s, g) => s + g.total, 0);
+        return (
+          <div className="card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <h2 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>📚 시리즈 진척도</h2>
+              <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{totalCompleted} / {totalAll}</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {sorted.map(g => {
+                const pct = g.total > 0 ? (g.completed / g.total) * 100 : 0;
+                const done = g.completed === g.total;
+                return (
+                  <div key={`${g.level}|${g.series}`} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <span style={{ fontSize: '0.82rem', fontWeight: 600, minWidth: 100, color: done ? 'var(--accent)' : 'var(--text-primary)' }}>
+                      {done && '✓ '}{g.level} {g.series}
+                    </span>
+                    <div style={{ flex: 1, height: 6, background: 'var(--bg-secondary)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
+                      <div style={{
+                        width: `${pct}%`,
+                        height: '100%',
+                        background: done ? 'var(--accent)' : 'var(--primary)',
+                        borderRadius: 'inherit',
+                        transition: 'width 0.5s ease',
+                      }} />
+                    </div>
+                    <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', minWidth: 48, textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                      {g.completed}/{g.total}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ⑤ 히트맵 — "꾸준히 했나" */}
       {data?.heatmapDayCounts && (() => {
