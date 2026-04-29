@@ -7,25 +7,31 @@ const STEPS = [
   {
     target: null,
     title: '🧬 환영해요!',
-    body: '3단계로 핵심만 소개할게요. 언제든지 건너뛸 수 있어요.',
+    body: '핵심만 빠르게 소개할게요. 언제든 건너뛸 수 있어요.',
     position: 'center',
   },
   {
+    target: 'a[href="/guide"]',
+    title: '1. 학습 로드맵',
+    body: 'JLPT N5→N1, CEFR A1→C2 시리즈로 단계별 학습. 레벨별 진행도가 시각화돼요.',
+    position: 'bottom',
+  },
+  {
     target: 'a[href="/materials"]',
-    title: '1. 자료를 읽어요',
-    body: '일본어·영어 글이나 PDF를 열면 단어가 자동 분석돼요. 모르는 단어를 탭하면 단어장에 저장됩니다.',
+    title: '2. 자료 읽기',
+    body: '글이나 PDF를 읽으면 단어가 자동 분석돼요. 본문 듣기·리딩 테스트·AI 회화까지 한 화면에서.',
     position: 'bottom',
   },
   {
     target: 'a[href="/vocab"]',
-    title: '2. 복습은 자동으로',
-    body: '저장한 단어는 기억 곡선(FSRS)에 맞춰 다시 읽기 화면에서 노란색으로 뜹니다. 읽기가 곧 복습이에요.',
+    title: '3. 자동 복습',
+    body: '저장한 단어는 FSRS 기억 곡선으로 자동 복습. 읽기 중 노란 단어 클릭으로도 복습돼요.',
     position: 'bottom',
   },
   {
     target: 'a[href="/home"]',
-    title: '3. 홈에서 시작',
-    body: '홈에서 오늘 복습할 자료를 추천해드려요. 자, 시작해볼까요?',
+    title: '4. 홈에서 이어가기',
+    body: '"이어서 학습" 카드로 진행 중인 시리즈로 직진. 자, 시작해볼까요?',
     position: 'bottom',
   },
 ];
