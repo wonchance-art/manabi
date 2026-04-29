@@ -17,6 +17,7 @@ import Button from '../components/Button';
 import ConfirmModal from '../components/ConfirmModal';
 import VocabList from './VocabList';
 import VocabReview from './VocabReview';
+import { parseTitle } from '../lib/seriesMeta';
 import VocabStats from './VocabStats';
 import VocabNotes from './VocabNotes';
 import VocabDecks from './VocabDecks';
@@ -39,7 +40,7 @@ function fisherYatesShuffle(arr) {
 async function fetchVocab(userId) {
   const { data, error } = await supabase
     .from('user_vocabulary')
-    .select('*')
+    .select('*, reading_materials(title)')
     .eq('user_id', userId)
     .order('next_review_at', { ascending: true });
   if (error) throw error;
@@ -325,6 +326,14 @@ export default function VocabPage() {
     return localStorage.getItem('vocab_langFilter') || 'all';
   });
   const [showHint, setShowHint] = useState(false);
+  const [seriesFilter, setSeriesFilter] = useState(() => {
+    if (typeof window === 'undefined') return 'all';
+    return localStorage.getItem('vocab_seriesFilter') || 'all';
+  });
+  useEffect(() => {
+    if (typeof window !== 'undefined') localStorage.setItem('vocab_seriesFilter', seriesFilter);
+  }, [seriesFilter]);
+
   const [reviewMode, setReviewMode] = useState(() => {
     if (typeof window === 'undefined') return 'flash';
     return localStorage.getItem('as_review_mode') || 'flash';
@@ -695,22 +704,53 @@ export default function VocabPage() {
 
   useEffect(() => { setVisibleCount(30); }, [search, sortBy, langFilter]);
 
+  // 단어가 속한 시리즈 집합 (chip filter용)
+  const availableSeries = useMemo(() => {
+    const set = new Map(); // key = level|series, val = display
+    for (const v of vocab) {
+      const t = v.reading_materials?.title;
+      if (!t) continue;
+      const meta = parseTitle(t);
+      if (!meta.level || !meta.series) continue;
+      const key = `${meta.level}|${meta.series}`;
+      if (!set.has(key)) set.set(key, `${meta.level} ${meta.series}`);
+    }
+    return [...set.entries()].map(([key, label]) => ({ key, label }));
+  }, [vocab]);
+
+  // seriesFilter 무효화: 더이상 vocab에 없는 시리즈가 선택돼있으면 'all'로
+  useEffect(() => {
+    if (seriesFilter !== 'all' && !availableSeries.some(s => s.key === seriesFilter)) {
+      setSeriesFilter('all');
+    }
+  }, [seriesFilter, availableSeries]);
+
+  function vocabMatchesSeries(v) {
+    if (seriesFilter === 'all') return true;
+    const t = v.reading_materials?.title;
+    if (!t) return false;
+    const meta = parseTitle(t);
+    return `${meta.level}|${meta.series}` === seriesFilter;
+  }
+
   const reviewWords = useMemo(() => {
     const now = new Date();
-    const dueVocab = vocab.filter(v => new Date(v.next_review_at) <= now);
-    const dueGrammar = grammarNotes
-      .filter(n => n.next_review_at && new Date(n.next_review_at) <= now)
-      .map(n => ({
-        ...n,
-        _isGrammar: true,
-        word_text: n.selected_text,
-        meaning: n.explanation?.split('\n')[0]?.slice(0, 80) || '문법 노트',
-        furigana: '',
-        pos: '문법',
-        source_sentence: n.selected_text,
-      }));
+    const dueVocab = vocab.filter(v => new Date(v.next_review_at) <= now && vocabMatchesSeries(v));
+    const dueGrammar = seriesFilter === 'all'
+      ? grammarNotes
+          .filter(n => n.next_review_at && new Date(n.next_review_at) <= now)
+          .map(n => ({
+            ...n,
+            _isGrammar: true,
+            word_text: n.selected_text,
+            meaning: n.explanation?.split('\n')[0]?.slice(0, 80) || '문법 노트',
+            furigana: '',
+            pos: '문법',
+            source_sentence: n.selected_text,
+          }))
+      : [];
     return [...dueVocab, ...dueGrammar];
-  }, [vocab, grammarNotes]);
+  }, [vocab, grammarNotes, seriesFilter]);
   const currentWord = reviewWords[reviewIdx];
 
   const contextOptions = useMemo(() => {
@@ -916,6 +956,26 @@ export default function VocabPage() {
           onWordClick={setDetailWord}
         />
       ) : tab === 'review' ? (
+        <>
+          {availableSeries.length > 0 && (
+            <div className="chip-group" style={{ marginBottom: 12, justifyContent: 'center' }}>
+              <button
+                className={`chip ${seriesFilter === 'all' ? 'chip--active' : ''}`}
+                onClick={() => setSeriesFilter('all')}
+              >
+                전체
+              </button>
+              {availableSeries.map(s => (
+                <button
+                  key={s.key}
+                  className={`chip ${seriesFilter === s.key ? 'chip--active' : ''}`}
+                  onClick={() => setSeriesFilter(s.key)}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          )}
         <VocabReview
           vocab={vocab}
           reviewWords={reviewWords}
@@ -943,6 +1003,7 @@ export default function VocabPage() {
           setTab={setTab}
           hardWords={vocab.filter(v => (v.repetitions || 0) > 2).length}
         />
+        </>
       ) : tab === 'stats' ? (
         <VocabStats vocab={vocab} profile={profile} />
       ) : tab === 'notes' ? (
