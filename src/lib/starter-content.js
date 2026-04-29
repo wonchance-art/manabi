@@ -395,6 +395,100 @@ Understanding procrastination as a deeply human response to discomfort, rather t
 きれいな景色でした。`,
   },
 
+  // ── 일본어 N5 핵심 보강 (필수 추가 패턴) ────────────────
+  {
+    title: '[N5 문법 #16] 의문사 정리 (何·誰·どこ·いつ·どう·なぜ·どんな)',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `これは何ですか。
+あの人は誰ですか。
+トイレはどこですか。
+いつ来ますか。
+どうやって行きますか。
+なぜ勉強しますか。
+どんな本が好きですか。
+何時に会いますか。
+どこから来ましたか。`,
+  },
+  {
+    title: '[N5 문법 #17] ~から / ~まで (범위)',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `九時から五時まで働きます。
+東京から大阪まで新幹線で行きます。
+家から学校まで歩いて十分です。
+月曜日から金曜日まで授業があります。
+朝から晩まで雨が降っています。
+ここから駅まで近いです。
+四月から日本語を勉強しています。`,
+  },
+  {
+    title: '[N5 문법 #18] 조수사 (~人·~枚·~本·~冊·~個·~匹)',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `学生が三人います。
+紙を二枚ください。
+ペンを五本買いました。
+本を二冊読みました。
+りんごを三個食べました。
+犬が一匹います。
+コーヒーを二つお願いします。
+家族は四人です。`,
+  },
+  {
+    title: '[N5 문법 #19] ~ませんか / ~ましょう (제안)',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `一緒に映画を見ませんか。
+お茶を飲みませんか。
+今、行きましょう。
+ご飯を食べましょう。
+明日、公園に行きませんか。
+さあ、始めましょう。
+週末、買い物に行きませんか。`,
+  },
+  {
+    title: '[N5 문법 #20] ~から (이유)',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `寒いから、コートを着ます。
+今日は忙しいから、行けません。
+時間がないから、急ぎましょう。
+日本語が好きだから、勉強します。
+雨が降っているから、出かけません。
+お腹がすいたから、ご飯を食べました。
+明日は休みだから、ゆっくりします。`,
+  },
+  {
+    title: '[N5 문법 #21] 比較 ~より (비교)',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `今日は昨日より暑いです。
+東京は大阪より大きいです。
+コーヒーよりお茶のほうが好きです。
+飛行機は新幹線より速いです。
+私は妹より背が高いです。
+英語より日本語のほうが難しいです。
+冬は夏より好きです。`,
+  },
+  {
+    title: '[N5 문법 #22] 종조사 ね / よ (확인·강조)',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `今日はいい天気ですね。
+そうですね、本当に暑いですね。
+これ、おいしいですよ。
+気をつけてくださいね。
+あの人、有名ですよ。
+明日は休みですよ。
+あ、もう三時ですね。
+この店、安いですよ。`,
+  },
+  {
+    title: '[N5 문법 #23] ~でしょう (추측·확인)',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `明日は雨が降るでしょう。
+彼はもう来るでしょう。
+これは難しいでしょう。
+あなたも来るでしょう。
+たぶん、田中さんは知らないでしょう。
+週末は混むでしょう。
+あの店は今日、開いているでしょう。`,
+  },
+
   // ── 일본어 N5 카나 입문 (글자부터) ─────────────────────
   {
     title: '[N5 카나 #1] 히라가나로 첫 일본어',
@@ -857,6 +951,123 @@ School finishes at three thirty.
 After school, I do my homework.
 In the evening, I watch TV or read a book.
 I go to bed at ten o'clock.`,
+  },
+
+  // ── 영어 A1 핵심 보강 (필수 추가 패턴) ──────────────
+  {
+    title: '[A1 grammar #11] wh-questions (who/what/where/when/why/how)',
+    language: 'English', level: 'A1 기초',
+    raw_text: `What is your name?
+Where are you from?
+When is your birthday?
+Why are you sad?
+Who is that person?
+How are you today?
+What time is it?
+Where do you live?
+How much is this?`,
+  },
+  {
+    title: '[A1 grammar #12] prepositions of place (in/on/at/under/next to)',
+    language: 'English', level: 'A1 기초',
+    raw_text: `The book is on the table.
+The cat is under the chair.
+She lives in Seoul.
+Meet me at the cafe.
+The post office is next to the bank.
+The keys are in my bag.
+He is at home.
+There's a picture on the wall.`,
+  },
+  {
+    title: '[A1 grammar #13] prepositions of time (in/on/at)',
+    language: 'English', level: 'A1 기초',
+    raw_text: `I wake up at seven o'clock.
+We have a meeting on Monday.
+My birthday is in May.
+The store opens at nine.
+We met in 2020.
+School starts on September 1st.
+I usually exercise in the morning.`,
+  },
+  {
+    title: '[A1 grammar #14] this / that / these / those',
+    language: 'English', level: 'A1 기초',
+    raw_text: `This is my book.
+That is my friend.
+These shoes are new.
+Those flowers are beautiful.
+This is a pen, that is a pencil.
+These cookies are delicious.
+What is that?
+Are those your keys?`,
+  },
+  {
+    title: '[A1 grammar #15] articles a / an / the',
+    language: 'English', level: 'A1 기초',
+    raw_text: `I have a dog and a cat.
+She bought an apple.
+The sun is bright today.
+Pass me the salt, please.
+A teacher came to our class.
+There is an old tree in the garden.
+She is the best student in the class.`,
+  },
+  {
+    title: '[A1 grammar #16] negative present (don\'t / doesn\'t)',
+    language: 'English', level: 'A1 기초',
+    raw_text: `I don't like coffee.
+She doesn't speak French.
+We don't watch TV at night.
+He doesn't have a car.
+They don't live here anymore.
+I don't know his name.
+The store doesn't open on Sundays.`,
+  },
+  {
+    title: '[A1 grammar #17] negative past (didn\'t)',
+    language: 'English', level: 'A1 기초',
+    raw_text: `I didn't go to the party.
+She didn't see the movie.
+We didn't have time yesterday.
+He didn't call me.
+They didn't finish the work.
+I didn't understand the question.
+She didn't eat breakfast this morning.`,
+  },
+  {
+    title: '[A1 grammar #18] adverbs of frequency (always/usually/often/sometimes/never)',
+    language: 'English', level: 'A1 기초',
+    raw_text: `I always brush my teeth before bed.
+She usually walks to school.
+We often eat pasta on Fridays.
+He sometimes plays the guitar.
+They never miss class.
+I rarely drink coffee.
+He is always late.`,
+  },
+  {
+    title: '[A1 grammar #19] like + ing (취미)',
+    language: 'English', level: 'A1 기초',
+    raw_text: `I like reading books.
+She loves cooking.
+We enjoy playing games together.
+He hates waking up early.
+Do you like swimming?
+My brother likes drawing.
+They love watching movies.`,
+  },
+  {
+    title: '[A1 grammar #20] imperatives (명령·요청)',
+    language: 'English', level: 'A1 기초',
+    raw_text: `Please sit down.
+Open the window, please.
+Don't run in the hall.
+Be quiet, please.
+Listen carefully.
+Pass me the book.
+Don't worry.
+Come here.`,
   },
 
   // ── 영어 A1 실용 표현 (자주 쓰는 표현 모음) ──────────
