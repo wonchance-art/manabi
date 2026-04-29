@@ -4468,7 +4468,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .pdf-page {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100vh;        /* fallback */
+  height: 100dvh;       /* 모바일 키보드 올라오면 자동 축소 */
   overflow: hidden;
 }
 .pdf-layout {
@@ -4484,6 +4485,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   flex-direction: column;
   min-width: 0;
   max-height: calc(100vh - 52px);
+  max-height: calc(100dvh - 52px);
 }
 .pdf-side {
   width: 260px;
@@ -4900,6 +4902,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .viewer-3col {
   display: flex;
   height: calc(100vh - var(--gnb-height, 56px));
+  height: calc(100dvh - var(--gnb-height, 56px));
   overflow: hidden;
 }
 .viewer-side {
