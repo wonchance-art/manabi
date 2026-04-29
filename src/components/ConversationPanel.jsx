@@ -77,18 +77,28 @@ ${(rawText || '').slice(0, 1500)}
 Conversation so far:
 ${history}
 
-Reply as the Tutor. Rules:
-- ONLY in ${targetLang}
-- 2-3 sentences max
-- Match the student's apparent level (simpler if they make basic mistakes)
-- Stay near the passage's topic when possible
-- Ask a follow-up question to keep the conversation going
+Reply in TWO parts.
 
-Tutor:`;
+PART 1 — Tutor reply in ${targetLang}:
+- 2-3 sentences max
+- Match the student's apparent level
+- Stay near the passage topic, ask a follow-up question
+
+PART 2 — If the student's most recent message contains a clear ${targetLang} error (grammar, word choice, naturalness), give ONE brief correction in Korean. Format EXACTLY:
+📝 교정: <한국어로 1-2문장>
+If the message has no notable errors, OMIT PART 2 entirely.
+
+Output PART 1, then a blank line, then PART 2 (if any). No labels, no other text.`;
     try {
       const raw = await callGemini(prompt);
-      const text = (raw?.candidates?.[0]?.content?.parts?.[0]?.text || raw || '').replace(/^Tutor:\s*/i, '').trim();
-      setMessages(prev => [...prev, { role: 'ai', text: text || '(응답이 비어있어요)', ts: Date.now() }]);
+      const full = (raw?.candidates?.[0]?.content?.parts?.[0]?.text || raw || '').replace(/^Tutor:\s*/i, '').trim();
+      const correctionMatch = full.match(/📝\s*교정:\s*(.+)$/s);
+      const correction = correctionMatch ? correctionMatch[1].trim() : null;
+      const text = (correctionMatch ? full.slice(0, correctionMatch.index) : full).trim();
+      setMessages(prev => [
+        ...prev,
+        { role: 'ai', text: text || '(응답이 비어있어요)', correction, ts: Date.now() },
+      ]);
     } catch {
       setMessages(prev => [...prev, { role: 'ai', text: '(응답을 받지 못했어요)', ts: Date.now(), error: true }]);
     } finally {
@@ -137,17 +147,24 @@ Tutor:`;
         )}
 
         {messages.map((m, i) => (
-          <div key={i} className={`conversation-msg conversation-msg--${m.role}`}>
-            <div className="conversation-msg__bubble">
-              {m.text}
+          <div key={i} className={`conversation-msg-wrap conversation-msg-wrap--${m.role}`}>
+            <div className={`conversation-msg conversation-msg--${m.role}`}>
+              <div className="conversation-msg__bubble">
+                {m.text}
+              </div>
+              {m.role === 'ai' && ttsSupported && !m.error && (
+                <button
+                  className="conversation-msg__tts"
+                  onClick={() => speak(m.text, language)}
+                  title="발음 듣기"
+                  aria-label="발음 듣기"
+                >🔊</button>
+              )}
             </div>
-            {m.role === 'ai' && ttsSupported && !m.error && (
-              <button
-                className="conversation-msg__tts"
-                onClick={() => speak(m.text, language)}
-                title="발음 듣기"
-                aria-label="발음 듣기"
-              >🔊</button>
+            {m.role === 'ai' && m.correction && (
+              <div className="conversation-correction">
+                📝 <span>{m.correction}</span>
+              </div>
             )}
           </div>
         ))}

@@ -5356,6 +5356,25 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   padding: 4px;
 }
 .conversation-msg__tts:hover { opacity: 1; }
+.conversation-msg-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.conversation-msg-wrap--user { align-items: flex-end; }
+.conversation-msg-wrap--ai { align-items: flex-start; }
+.conversation-correction {
+  font-size: 0.78rem;
+  color: var(--warning, #d4962a);
+  background: rgba(212, 150, 42, 0.08);
+  border-left: 2px solid var(--warning, #d4962a);
+  padding: 6px 10px;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  max-width: 90%;
+  line-height: 1.5;
+  display: flex;
+  gap: 6px;
+}
 .conversation-panel__input-row {
   display: flex;
   gap: 8px;
