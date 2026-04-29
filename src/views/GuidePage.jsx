@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { parseTitle } from '../lib/seriesMeta';
+import { getIdealLevel } from '../lib/levels';
 
 async function fetchLevelData() {
   const { data } = await supabase
@@ -50,6 +51,20 @@ async function fetchCompletedIds() {
     .eq('user_id', session.user.id)
     .eq('is_completed', true);
   return new Set((data || []).map(r => r.material_id));
+}
+
+async function fetchVocabByLang() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user) return { Japanese: 0, English: 0 };
+  const { data } = await supabase
+    .from('user_vocabulary')
+    .select('language')
+    .eq('user_id', session.user.id);
+  const counts = { Japanese: 0, English: 0 };
+  for (const v of (data || [])) {
+    if (counts[v.language] != null) counts[v.language] += 1;
+  }
+  return counts;
 }
 
 /* ── Warm gradient scale: beginner → advanced ── */
@@ -273,6 +288,15 @@ export default function GuidePage() {
     queryFn: fetchCompletedIds,
     staleTime: 1000 * 60 * 5,
   });
+  const { data: vocabByLang } = useQuery({
+    queryKey: ['guide-vocab-by-lang'],
+    queryFn: fetchVocabByLang,
+    staleTime: 1000 * 60 * 5,
+  });
+  const recommendedLevels = vocabByLang ? {
+    Japanese: getIdealLevel('Japanese', vocabByLang.Japanese || 0),
+    English: getIdealLevel('English', vocabByLang.English || 0),
+  } : null;
   return (
     <div className="page-container" style={{ maxWidth: '1100px' }}>
 
@@ -287,6 +311,21 @@ export default function GuidePage() {
           어느 레벨에 있든 괜찮습니다.
           지금 이 순간부터의 꾸준함이 전부입니다.
         </p>
+        {recommendedLevels && ((vocabByLang?.Japanese || 0) + (vocabByLang?.English || 0)) > 0 && (
+          <div className="guide-hero__recommend">
+            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', letterSpacing: '0.04em', textTransform: 'uppercase', fontWeight: 600 }}>
+              현재 추천 레벨
+            </span>
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 6 }}>
+              {(vocabByLang?.Japanese || 0) > 0 && (
+                <span style={{ fontSize: '0.95rem' }}>🇯🇵 <strong>{recommendedLevels.Japanese}</strong></span>
+              )}
+              {(vocabByLang?.English || 0) > 0 && (
+                <span style={{ fontSize: '0.95rem' }}>🇬🇧 <strong>{recommendedLevels.English}</strong></span>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── 앱 사용법 (현행화) ── */}

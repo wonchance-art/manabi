@@ -9,6 +9,7 @@ import { useAuth } from '../lib/AuthContext';
 import { getXPLevel, getLevelProgress, getXPToNextLevel } from '../lib/xp';
 import Button from '../components/Button';
 import { parseTitle } from '../lib/seriesMeta';
+import { getIdealLevel } from '../lib/levels';
 
 async function fetchHomeData(userId) {
   const todayStr   = new Date().toISOString().split('T')[0];
@@ -192,23 +193,6 @@ export default function HomePage() {
   const todayReviews = data?.todayReviewCount   ?? 0;
   const todayReads   = data?.todayReadCount     ?? 0;
   const dueCount     = data?.dueCount           ?? 0;
-
-  // 사용자 vocab 수 기반 현재 레벨 역산 → i+1 추천
-  // JLPT: N5(800)→N4(1500)→N3(3750)→N2(6000)→N1(10000)
-  // CEFR: A1(500)→A2(1000)→B1(2000)→B2(4000)→C1(7000)→C2(10000)
-  const JP_LEVELS = ['N5', 'N4', 'N3', 'N2', 'N1'];
-  const JP_THRESHOLDS = [0, 800, 1500, 3750, 6000, 10000];
-  const EN_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
-  const EN_THRESHOLDS = [0, 500, 1000, 2000, 4000, 7000, 10000];
-
-  const getIdealLevel = (lang, count) => {
-    const thresholds = lang === 'Japanese' ? JP_THRESHOLDS : EN_THRESHOLDS;
-    const labels = lang === 'Japanese' ? JP_LEVELS : EN_LEVELS;
-    for (let i = thresholds.length - 1; i >= 0; i--) {
-      if (count >= thresholds[i]) return labels[Math.min(i, labels.length - 1)];
-    }
-    return labels[0];
-  };
 
   const suggestion = useMemo(() => {
     const all = data?.suggestions || [];

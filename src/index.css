@@ -7029,6 +7029,14 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   margin: 0 auto;
   line-height: 1.8;
 }
+.guide-hero__recommend {
+  margin-top: 20px;
+  padding: 14px 20px;
+  display: inline-block;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
 
 /* Roadmap header */
 .roadmap-header {
