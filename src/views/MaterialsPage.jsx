@@ -451,7 +451,16 @@ export default function MaterialsPage() {
       ) : filtered.length > 0 ? (
         <>
         <div className="feature-grid">
-          {filtered.slice(0, visibleCount).map(m => {
+          {(() => {
+            // 시리즈별 총 편수 사전 계산 (자료 카드에 #5/23 표시용)
+            const seriesTotals = new Map();
+            for (const x of materials) {
+              const xm = parseTitle(x.title);
+              if (!xm.level || !xm.series || xm.num == null) continue;
+              const k = `${xm.level}|${xm.series}`;
+              seriesTotals.set(k, (seriesTotals.get(k) || 0) + 1);
+            }
+            return filtered.slice(0, visibleCount).map(m => {
             const status = m.processed_json?.status || 'idle';
             const metadata = m.processed_json?.metadata || {};
             const language = metadata.language || (m.title.match(/[a-zA-Z]/) ? 'English' : 'Japanese');
@@ -459,6 +468,13 @@ export default function MaterialsPage() {
             const isDone = status === 'completed';
             const isCompleted = completedIds.has(m.id);
             const dueCount = isDone ? countDueInMaterial(m) : 0;
+            const titleMeta = parseTitle(m.title);
+            const seriesTotal = (titleMeta.level && titleMeta.series)
+              ? seriesTotals.get(`${titleMeta.level}|${titleMeta.series}`) || 0
+              : 0;
+            const seriesPosition = (titleMeta.num != null && seriesTotal > 0)
+              ? `${titleMeta.num}/${seriesTotal}`
+              : null;
 
             return (
               <div key={m.id} className="card card--clickable" onClick={() => router.push(`/viewer/${m.id}`)}>
@@ -467,6 +483,11 @@ export default function MaterialsPage() {
                     <div className="card__row card__row--gap">
                       <span className="card__flag">{language === 'English' ? '🇬🇧' : '🇯🇵'}</span>
                       {level && <span className="tag">{level}</span>}
+                      {seriesPosition && (
+                        <span className="tag" style={{ background: 'var(--bg-secondary)', color: 'var(--text-secondary)', fontVariantNumeric: 'tabular-nums' }} title={`${titleMeta.series} 시리즈`}>
+                          {seriesPosition}
+                        </span>
+                      )}
                       {dueCount > 0 && (
                         <span
                           className="tag"
@@ -544,7 +565,8 @@ export default function MaterialsPage() {
                 </div>
               </div>
             );
-          })}
+            });
+          })()}
         </div>
         {visibleCount < filtered.length && (
           <div style={{ textAlign: 'center', marginTop: '24px' }}>
