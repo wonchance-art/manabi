@@ -22,13 +22,18 @@ export async function POST(request) {
   if (profile?.role !== 'admin') return Response.json({ error: 'Forbidden' }, { status: 403 });
 
   // 이미 존재하는 스타터 자료 확인 (title 기준)
+  // 148+ 타이틀을 한 번에 .in()으로 보내면 PostgREST URL 길이 제한 → 30개씩 배치
   const starterTitles = STARTER_MATERIALS.map(m => m.title);
-  const { data: existing } = await supabase
-    .from('reading_materials')
-    .select('title')
-    .in('title', starterTitles);
-
-  const existingTitles = new Set((existing || []).map(m => m.title));
+  const CHUNK = 30;
+  const existingTitles = new Set();
+  for (let i = 0; i < starterTitles.length; i += CHUNK) {
+    const slice = starterTitles.slice(i, i + CHUNK);
+    const { data: existing } = await supabase
+      .from('reading_materials')
+      .select('title')
+      .in('title', slice);
+    for (const r of (existing || [])) existingTitles.add(r.title);
+  }
   const toInsert = STARTER_MATERIALS.filter(m => !existingTitles.has(m.title));
 
   if (toInsert.length === 0) {

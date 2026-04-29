@@ -72,13 +72,21 @@ async function fetchAllPosts() {
 const STARTER_TITLES = new Set(STARTER_MATERIALS.map(m => m.title));
 
 async function fetchStarterMaterials() {
-  const { data, error } = await supabase
-    .from('reading_materials')
-    .select('id, title, raw_text, processed_json, created_at')
-    .in('title', [...STARTER_TITLES])
-    .order('created_at');
-  if (error) throw error;
-  return data || [];
+  // 148+ 타이틀을 한 번에 .in()으로 보내면 PostgREST URL 길이 제한 초과 → 30개씩 배치
+  const titles = [...STARTER_TITLES];
+  const CHUNK = 30;
+  const all = [];
+  for (let i = 0; i < titles.length; i += CHUNK) {
+    const slice = titles.slice(i, i + CHUNK);
+    const { data, error } = await supabase
+      .from('reading_materials')
+      .select('id, title, raw_text, processed_json, created_at')
+      .in('title', slice);
+    if (error) throw error;
+    if (data) all.push(...data);
+  }
+  all.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+  return all;
 }
 
 // ── Component ─────────────────────────────────────
