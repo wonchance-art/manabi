@@ -158,6 +158,26 @@ export default function MaterialsPage() {
   });
   const searchParams = useSearchParams();
   const [tab, setTab] = useState('public');
+  const [testScores, setTestScores] = useState({});
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const result = {};
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('reading_test_history:')) {
+          const id = key.slice('reading_test_history:'.length);
+          const arr = JSON.parse(localStorage.getItem(key) || '[]');
+          if (arr.length === 0) continue;
+          const best = arr.reduce((b, h) => h.score > b.score ? h : b);
+          result[id] = best;
+        }
+      }
+    } catch {}
+    setTestScores(result);
+  }, []);
+
   const [searchInput, setSearchInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [langFilter, setLangFilter] = useState(searchParams.get('lang') || 'all');
@@ -462,6 +482,11 @@ export default function MaterialsPage() {
                       )}
                     </div>
                     <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                      {testScores[String(m.id)] && (
+                        <span className="badge" style={{ background: 'rgba(212,150,42,0.12)', color: 'var(--warning)', fontWeight: 600 }} title="리딩 테스트 최고 점수">
+                          🏆 {testScores[String(m.id)].score}/{testScores[String(m.id)].total}
+                        </span>
+                      )}
                       {isCompleted ? (
                         <span className="badge" style={{ background: 'rgba(74,138,92,0.15)', color: 'var(--accent)', fontWeight: 600 }}>
                           ✓ 완독
