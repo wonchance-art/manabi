@@ -25,6 +25,7 @@ import { callGemini } from '../lib/gemini';
 import { fetchWordDetailText } from '../lib/wordDetail';
 import ReportMaterialButton from '../components/ReportMaterialButton';
 import ReadingTest from '../components/ReadingTest';
+import ConversationPanel from '../components/ConversationPanel';
 import ViewerBottomSheet from '../components/ViewerBottomSheet';
 import ListenControls from '../components/ListenControls';
 import ViewerComments from './ViewerComments';
@@ -632,6 +633,8 @@ export default function ViewerPage() {
 
   // 리딩 테스트
   const [showReadingTest, setShowReadingTest] = useState(false);
+  // 회화 연습
+  const [showConversation, setShowConversation] = useState(false);
 
   // 드래그 단어 클릭 → 팝업 (PDF와 동일)
   const [popupWord, setPopupWord] = useState(null); // { token, detail, loading }
@@ -1630,6 +1633,29 @@ export default function ViewerPage() {
               language={materialLang}
               materialId={id}
               onClose={() => setShowReadingTest(false)}
+              inline
+            />
+          )}
+        </div>
+      )}
+
+      {/* 회화 연습 — 뷰어 밖, 별도 섹션 */}
+      {isDone && (
+        <div className="reading-test-section">
+          {!showConversation ? (
+            <div className="reading-test-cta">
+              <div className="reading-test-cta__icon">💬</div>
+              <div className="reading-test-cta__title">AI 튜터와 대화해 볼까요?</div>
+              <div className="reading-test-cta__sub">방금 읽은 본문을 주제로 {materialLang === 'Japanese' ? '일본어' : '영어'} 회화 연습</div>
+              <Button onClick={() => setShowConversation(true)} style={{ marginTop: 16 }}>대화 시작</Button>
+            </div>
+          ) : (
+            <ConversationPanel
+              rawText={material?.raw_text}
+              language={materialLang}
+              materialId={id}
+              materialTitle={material?.title}
+              onClose={() => setShowConversation(false)}
               inline
             />
           )}
