@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anatomy-studio-v202604301630';
+const CACHE_NAME = 'anatomy-studio-v202604301700';
 
 const PRECACHE_URLS = [
   '/',

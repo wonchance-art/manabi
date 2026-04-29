@@ -32,6 +32,7 @@ import { parseTitle } from '../lib/seriesMeta';
 import { formatDetail } from '../lib/wordDetailFormat';
 import { useSeriesNeighbors } from '../lib/useSeriesNeighbors';
 import { useTitleEdit } from '../lib/useTitleEdit';
+import { useDragWordPopup } from '../lib/useDragWordPopup';
 import ViewerComments from './ViewerComments';
 import ViewerGrammarModal from './ViewerGrammarModal';
 import ViewerQuizModal from './ViewerQuizModal';
@@ -630,18 +631,8 @@ export default function ViewerPage() {
   // 회화 연습
   const [showConversation, setShowConversation] = useState(false);
 
-  // 드래그 단어 클릭 → 팝업 (PDF와 동일)
-  const [popupWord, setPopupWord] = useState(null); // { token, detail, loading }
-
-  async function handleDragWordClick(token) {
-    setPopupWord({ token, detail: null, loading: true });
-    try {
-      const detail = await fetchWordDetailText(token, materialLang);
-      setPopupWord({ token, detail, loading: false });
-    } catch {
-      setPopupWord(prev => prev ? { ...prev, detail: '설명을 가져올 수 없었어요.', loading: false } : null);
-    }
-  }
+  // 드래그 단어 클릭 → AI 상세 팝업 (PDF와 동일)
+  const { popupWord, setPopupWord, handleDragWordClick } = useDragWordPopup(materialLang);
 
   const handleTextSelection = () => {
     handleGrammarTextSelection(isGrammarModalOpen);
