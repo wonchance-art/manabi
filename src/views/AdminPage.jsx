@@ -455,6 +455,26 @@ export default function AdminPage() {
     onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
   });
 
+  // IPA 백필 즉시 실행
+  const backfillIpaMutation = useMutation({
+    mutationFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/cron/backfill-ipa', {
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || '실행 실패');
+      return json;
+    },
+    onSuccess: (data) => {
+      const msg = data.stage === 'idle'
+        ? '빈 IPA 없음 — 모든 영어 단어가 이미 채워져 있어요'
+        : `사전 ${data.dictUpdated || 0} · Gemini ${data.geminiUpdated || 0} · 잔여 ${data.remaining || 0}`;
+      toast(msg, 'success');
+    },
+    onError: (err) => toast('실행 실패: ' + err.message, 'error'),
+  });
+
   // 스타터 콘텐츠 시딩
   const seedStartersMutation = useMutation({
     mutationFn: async () => {
@@ -1050,6 +1070,15 @@ export default function AdminPage() {
                   {bulkProgress
                     ? `⚙ ${bulkProgress.current}/${bulkProgress.total}`
                     : '⚡ 전체 분석 + 사전 시드'}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  disabled={backfillIpaMutation.isPending}
+                  onClick={() => backfillIpaMutation.mutate()}
+                  title="user_vocabulary 영어 단어 중 IPA 비어있는 것 채우기 (최대 ~75개/회)"
+                >
+                  {backfillIpaMutation.isPending ? '실행 중...' : '🔤 IPA 백필 실행'}
                 </Button>
               </div>
             </div>

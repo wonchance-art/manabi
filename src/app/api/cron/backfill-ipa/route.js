@@ -4,8 +4,27 @@ import { callGemini, parseGeminiJSON } from '../../../../lib/gemini.js';
 export const maxDuration = 60;
 
 export async function GET(request) {
+  // 인증: CRON_SECRET (Vercel cron) OR 관리자 세션 (대시보드 수동 실행)
   const authHeader = request.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const isCron = authHeader === `Bearer ${process.env.CRON_SECRET}`;
+  let isAdmin = false;
+  if (!isCron && authHeader?.startsWith('Bearer ')) {
+    const token = authHeader.slice('Bearer '.length);
+    try {
+      const userClient = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        { auth: { persistSession: false } },
+      );
+      const { data: { user } } = await userClient.auth.getUser(token);
+      if (user) {
+        const { data: profile } = await userClient
+          .from('profiles').select('role').eq('id', user.id).single();
+        isAdmin = profile?.role === 'admin';
+      }
+    } catch {}
+  }
+  if (!isCron && !isAdmin) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
