@@ -944,22 +944,33 @@ export default function VocabPage() {
 
       {/* 시리즈 필터 (list / review 탭에 공통 적용) */}
       {(tab === 'list' || tab === 'review') && availableSeries.length > 0 && (
-        <div className="chip-group" style={{ marginBottom: 12 }}>
-          <button
-            className={`chip ${seriesFilter === 'all' ? 'chip--active' : ''}`}
-            onClick={() => setSeriesFilter('all')}
-          >
-            전체 시리즈
-          </button>
-          {availableSeries.map(s => (
+        <div style={{ marginBottom: 12 }}>
+          <div className="chip-group">
             <button
-              key={s.key}
-              className={`chip ${seriesFilter === s.key ? 'chip--active' : ''}`}
-              onClick={() => setSeriesFilter(s.key)}
+              className={`chip ${seriesFilter === 'all' ? 'chip--active' : ''}`}
+              onClick={() => setSeriesFilter('all')}
             >
-              {s.label}
+              전체 시리즈
             </button>
-          ))}
+            {availableSeries.map(s => (
+              <button
+                key={s.key}
+                className={`chip ${seriesFilter === s.key ? 'chip--active' : ''}`}
+                onClick={() => setSeriesFilter(s.key)}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+          {seriesFilter !== 'all' && (() => {
+            const filtered = vocab.filter(vocabMatchesSeries);
+            const due = filtered.filter(v => new Date(v.next_review_at) <= new Date()).length;
+            return (
+              <div style={{ marginTop: 8, fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                이 시리즈 단어 <strong>{filtered.length}</strong>개 · 복습 대기 <strong style={{ color: due > 0 ? 'var(--warning)' : 'var(--accent)' }}>{due}</strong>개
+              </div>
+            );
+          })()}
         </div>
       )}
 
