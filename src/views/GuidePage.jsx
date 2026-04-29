@@ -22,6 +22,7 @@ async function fetchLevelData() {
   }
   // 레벨별로 시리즈→번호 순 정렬, 상위 6편만 샘플
   const samples = {};
+  const levelIds = {};
   for (const lvl of Object.keys(byLevel)) {
     const arr = byLevel[lvl].slice().sort((a, b) => {
       const ma = parseTitle(a.title);
@@ -35,8 +36,9 @@ async function fetchLevelData() {
       return 0;
     });
     samples[lvl] = arr.slice(0, 6).map(m => ({ id: m.id, title: m.title }));
+    levelIds[lvl] = arr.map(m => m.id);
   }
-  return { counts, samples };
+  return { counts, samples, levelIds };
 }
 
 async function fetchCompletedIds() {
@@ -153,7 +155,7 @@ const TIPS = [
 ];
 
 /* ── Subcomponent: single roadmap timeline ── */
-function Roadmap({ curr, levelCounts = {}, levelSamples = {}, completedIds = new Set() }) {
+function Roadmap({ curr, levelCounts = {}, levelSamples = {}, levelIds = {}, completedIds = new Set() }) {
   return (
     <section>
       <div className="roadmap-header">
@@ -168,6 +170,10 @@ function Roadmap({ curr, levelCounts = {}, levelSamples = {}, completedIds = new
         {curr.levels.map((level, idx) => {
           const w = W[idx];
           const isLast = idx === curr.levels.length - 1;
+          const ids = levelIds[level.label] || [];
+          const lvlCompleted = ids.filter(id => completedIds.has(id)).length;
+          const lvlTotal = ids.length;
+          const lvlPct = lvlTotal > 0 ? (lvlCompleted / lvlTotal) * 100 : 0;
           return (
             <div key={level.name} className="roadmap-row">
               {/* ── dot + connector ── */}
@@ -223,13 +229,24 @@ function Roadmap({ curr, levelCounts = {}, levelSamples = {}, completedIds = new
                   </ul>
                 )}
 
+                {lvlTotal > 0 && lvlCompleted > 0 && (
+                  <div className="roadmap-progress">
+                    <div className="roadmap-progress__bar">
+                      <div className="roadmap-progress__fill" style={{ width: `${lvlPct}%`, background: w.dot }} />
+                    </div>
+                    <span className="roadmap-progress__text">
+                      {lvlCompleted} / {lvlTotal} 완료
+                    </span>
+                  </div>
+                )}
+
                 <Link
                   href={`/materials?lang=${curr.lang}&level=${encodeURIComponent(level.label)}`}
                   className="roadmap-link"
                   style={{ color: w.dot }}
                 >
                   {level.label} 자료 전체 보기
-                  {levelCounts[level.label] > 0 && (
+                  {levelCounts[level.label] > 0 && lvlCompleted === 0 && (
                     <span style={{ marginLeft: 6, fontSize: '0.78rem', opacity: 0.75 }}>
                       ({levelCounts[level.label]}편)
                     </span>
@@ -372,6 +389,7 @@ export default function GuidePage() {
             curr={curr}
             levelCounts={levelData.counts}
             levelSamples={levelData.samples}
+            levelIds={levelData.levelIds}
             completedIds={completedIds}
           />
         ))}

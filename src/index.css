@@ -7149,6 +7149,34 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   transform: translateX(3px);
 }
 
+/* Roadmap 레벨별 진행도 */
+.roadmap-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  margin-bottom: 4px;
+}
+.roadmap-progress__bar {
+  flex: 1;
+  max-width: 240px;
+  height: 4px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+.roadmap-progress__fill {
+  height: 100%;
+  border-radius: inherit;
+  transition: width 0.5s ease;
+}
+.roadmap-progress__text {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
 /* Roadmap 인라인 샘플 자료 */
 .roadmap-samples {
   list-style: none;
