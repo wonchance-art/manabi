@@ -305,6 +305,32 @@ Understanding procrastination as a deeply human response to discomfort, rather t
 きれいな景色でした。`,
   },
 
+  // ── 일본어 N5 카나 입문 (글자부터) ─────────────────────
+  {
+    title: '[N5 카나 #1] 히라가나로 첫 일본어',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `わたしは がくせい です。
+あなたは せんせい です。
+これは ほん です。
+あれは とけい です。
+おはよう、げんき ですか。
+ありがとう ございます。
+さようなら、また あした。
+すみません、いま なんじ ですか。`,
+  },
+  {
+    title: '[N5 카나 #2] 카타카나로 외래어 익히기',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `コーヒーを のみます。
+パンを たべます。
+バスで がっこうへ いきます。
+テレビを みます。
+ノートと ペンが あります。
+カメラで しゃしんを とります。
+タクシーに のります。
+レストランで ピザを たべました。`,
+  },
+
   // ── 일본어 N5 문법 시리즈 (입문자 순차 학습) ───────────
   {
     title: '[N5 문법 #1] ~は~です (기본 단정문)',
@@ -512,6 +538,115 @@ Understanding procrastination as a deeply human response to discomfort, rather t
 家に帰ったら、お風呂に入ってゆっくり休みます。`,
   },
 
+  // ── 일본어 N4 문법 시리즈 (다음 단계) ──────────────────
+  {
+    title: '[N4 문법 #1] ~て (동작 연결)',
+    language: 'Japanese', level: 'N4 기본',
+    raw_text: `朝起きて、顔を洗います。
+本を読んで、寝ます。
+コーヒーを飲んで、出かけます。
+電車に乗って、会社へ行きます。
+友達に会って、ご飯を食べました。
+シャワーを浴びて、寝ました。
+お弁当を作って、学校へ持っていきます。`,
+  },
+  {
+    title: '[N4 문법 #2] ~ています (진행·상태)',
+    language: 'Japanese', level: 'N4 기본',
+    raw_text: `今、本を読んでいます。
+雨が降っています。
+彼は会社で働いています。
+ドアが開いています。
+妹は東京に住んでいます。
+私は日本語を勉強しています。
+電車が止まっています。`,
+  },
+  {
+    title: '[N4 문법 #3] ~てもいいですか (허락)',
+    language: 'Japanese', level: 'N4 기본',
+    raw_text: `ここに座ってもいいですか。
+写真を撮ってもいいですか。
+窓を開けてもいいですか。
+日本語で話してもいいですか。
+このペンを使ってもいいですか。
+テレビを見てもいいですか。
+少し休んでもいいですか。`,
+  },
+  {
+    title: '[N4 문법 #4] ~てから (~한 후에)',
+    language: 'Japanese', level: 'N4 기본',
+    raw_text: `仕事が終わってから、映画を見に行きます。
+ご飯を食べてから、薬を飲みます。
+シャワーを浴びてから、出かけます。
+家に帰ってから、宿題をします。
+電気を消してから、寝ます。
+歯を磨いてから、寝ます。`,
+  },
+  {
+    title: '[N4 문법 #5] ~たことがあります (경험)',
+    language: 'Japanese', level: 'N4 기본',
+    raw_text: `日本に行ったことがあります。
+富士山に登ったことがあります。
+すしを食べたことがありますか。
+彼に会ったことがあります。
+この本を読んだことがありません。
+飛行機に乗ったことがあります。
+雪を見たことがありません。`,
+  },
+  {
+    title: '[N4 문법 #6] ~ながら (~하면서)',
+    language: 'Japanese', level: 'N4 기본',
+    raw_text: `音楽を聞きながら、勉強します。
+コーヒーを飲みながら、新聞を読みます。
+歩きながら、電話で話します。
+笑いながら、話しました。
+テレビを見ながら、ご飯を食べます。
+お茶を飲みながら、休みます。`,
+  },
+  {
+    title: '[N4 문법 #7] ~たり~たり (열거)',
+    language: 'Japanese', level: 'N4 기본',
+    raw_text: `日曜日は、買い物をしたり、映画を見たりします。
+公園で走ったり、本を読んだりしました。
+友達と食事をしたり、お酒を飲んだりします。
+週末は掃除をしたり、洗濯をしたりします。
+旅行で写真を撮ったり、ご飯を食べたりしました。
+雨が降ったり、止んだりしています。`,
+  },
+  {
+    title: '[N4 문법 #8] ~とき (~할 때)',
+    language: 'Japanese', level: 'N4 기본',
+    raw_text: `朝、起きたとき、雨が降っていました。
+日本に行くとき、パスポートを忘れないでください。
+寒いとき、お茶を飲みます。
+眠いとき、コーヒーを飲みます。
+ひまなとき、本を読みます。
+小さいとき、よく公園で遊びました。
+家を出るとき、電気を消します。`,
+  },
+  {
+    title: '[N4 문법 #9] ~たら (가정·결과)',
+    language: 'Japanese', level: 'N4 기본',
+    raw_text: `雨が降ったら、出かけません。
+時間があったら、来てください。
+家に帰ったら、電話します。
+お金があったら、車を買いたいです。
+日本に行ったら、温泉に入りたいです。
+寒かったら、ストーブをつけてください。
+分からなかったら、聞いてください。`,
+  },
+  {
+    title: '[N4 문법 #10] ~なくてはいけない (의무)',
+    language: 'Japanese', level: 'N4 기본',
+    raw_text: `明日、早く起きなくてはいけません。
+宿題をしなくてはいけません。
+日本語を勉強しなくてはいけません。
+電車に乗らなくてはいけません。
+病院に行かなくてはいけません。
+もっと運動しなくてはいけません。
+野菜を食べなくてはいけません。`,
+  },
+
   // ── 영어 A1 추가 ─────────────────────────────────────
   {
     title: '[A1] My Best Friend (나의 가장 친한 친구)',
@@ -564,6 +699,118 @@ School finishes at three thirty.
 After school, I do my homework.
 In the evening, I watch TV or read a book.
 I go to bed at ten o'clock.`,
+  },
+
+  // ── 영어 A1 문법 시리즈 (입문자 순차 학습) ──────────────
+  {
+    title: '[A1 grammar #1] be 동사 (am / is / are)',
+    language: 'English', level: 'A1 기초',
+    raw_text: `I am a student. My name is John.
+You are kind.
+She is a doctor. She is from Korea.
+We are friends.
+They are at the park.
+This is my brother. He is twelve years old.
+I am happy today.`,
+  },
+  {
+    title: '[A1 grammar #2] have / has (소유)',
+    language: 'English', level: 'A1 기초',
+    raw_text: `I have a brother and a sister.
+She has a small dog.
+We have a new car.
+They have two children.
+I have a question.
+He has black hair and brown eyes.
+My friend has a beautiful house.`,
+  },
+  {
+    title: '[A1 grammar #3] there is / there are (존재)',
+    language: 'English', level: 'A1 기초',
+    raw_text: `There is a book on the table.
+There are five students in the classroom.
+There is a park near my house.
+There are many people in the park today.
+Is there a bathroom on this floor?
+There are no apples in the fridge.
+There is a cat under the chair.`,
+  },
+  {
+    title: '[A1 grammar #4] simple present (일상·습관)',
+    language: 'English', level: 'A1 기초',
+    raw_text: `I read books every day.
+She works at a bank.
+We play soccer on weekends.
+He drinks coffee in the morning.
+The bus comes at eight o'clock.
+My family lives in Seoul.
+The sun rises in the east.`,
+  },
+  {
+    title: '[A1 grammar #5] present continuous (~ing, 진행)',
+    language: 'English', level: 'A1 기초',
+    raw_text: `I am reading a book now.
+She is cooking dinner.
+They are playing in the garden.
+He is sleeping on the sofa.
+We are studying English.
+It is raining outside.
+The baby is laughing.`,
+  },
+  {
+    title: '[A1 grammar #6] simple past — regular verbs',
+    language: 'English', level: 'A1 기초',
+    raw_text: `Yesterday, I cleaned my room.
+She watched a movie last night.
+We visited my grandmother.
+They walked to school this morning.
+He cooked pasta for dinner.
+I called my friend.
+The children played in the park.`,
+  },
+  {
+    title: '[A1 grammar #7] simple past — irregular verbs',
+    language: 'English', level: 'A1 기초',
+    raw_text: `I went to the park yesterday.
+She had breakfast at seven.
+We saw a beautiful sunset.
+They came to my house last weekend.
+He gave me a book for my birthday.
+I made a sandwich for lunch.
+The cat ate all the fish.`,
+  },
+  {
+    title: '[A1 grammar #8] can / cannot (능력)',
+    language: 'English', level: 'A1 기초',
+    raw_text: `I can speak two languages.
+She can swim very well.
+We can meet tomorrow.
+He cannot drive a car.
+Can you help me with this?
+Birds can fly, but penguins cannot.
+My little sister can read already.`,
+  },
+  {
+    title: '[A1 grammar #9] want to (~하고 싶다)',
+    language: 'English', level: 'A1 기초',
+    raw_text: `I want to learn Japanese.
+She wants to be a doctor.
+We want to travel to Italy next year.
+He wants to buy a new phone.
+I want to eat pizza tonight.
+Do you want to come with us?
+They want to live in the countryside.`,
+  },
+  {
+    title: '[A1 grammar #10] yes/no questions',
+    language: 'English', level: 'A1 기초',
+    raw_text: `Are you tired?
+Is she at home?
+Do you like coffee?
+Does he speak English?
+Did you watch the game last night?
+Can you swim?
+Are they your friends?`,
   },
 
   // ── 영어 A2 추가 ─────────────────────────────────────
