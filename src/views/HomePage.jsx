@@ -287,33 +287,8 @@ export default function HomePage() {
         </Link>
       )}
 
-      {/* 첫 주 여정 — 5/5 완료되면 자동 숨김 */}
-      {journeyDone < JOURNEY.length && (
-        <div className="home-journey">
-          <div className="home-journey__header">
-            <span className="home-journey__title">🎯 첫 주 여정</span>
-            <span className="home-journey__progress">{journeyDone} / {JOURNEY.length}</span>
-          </div>
-          <div className="home-journey__bar">
-            <div className="home-journey__bar-fill" style={{ width: `${(journeyDone / JOURNEY.length) * 100}%` }} />
-          </div>
-          <ul className="home-journey__list">
-            {JOURNEY.map(j => (
-              <li key={j.label} className={`home-journey__item ${j.done ? 'is-done' : ''}`}>
-                <span className="home-journey__check">{j.done ? '✓' : j.icon}</span>
-                {j.done ? (
-                  <span className="home-journey__label">{j.label}</span>
-                ) : (
-                  <Link href={j.href} className="home-journey__label home-journey__label--link">{j.label}</Link>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* 신규 유저 3단계 가이드 (진짜 처음) */}
-      {isNewUser && (
+      {/* 진짜 처음 → 3단계 가이드 / 활동 시작 후 → 첫 주 여정 (XOR) */}
+      {isNewUser ? (
         <div className="home-getting-started">
           <div className="home-getting-started__header">
             <span className="home-getting-started__emoji">🚀</span>
@@ -337,6 +312,28 @@ export default function HomePage() {
               </Link>
             ))}
           </div>
+        </div>
+      ) : journeyDone < JOURNEY.length && (
+        <div className="home-journey">
+          <div className="home-journey__header">
+            <span className="home-journey__title">🎯 첫 주 여정</span>
+            <span className="home-journey__progress">{journeyDone} / {JOURNEY.length}</span>
+          </div>
+          <div className="home-journey__bar">
+            <div className="home-journey__bar-fill" style={{ width: `${(journeyDone / JOURNEY.length) * 100}%` }} />
+          </div>
+          <ul className="home-journey__list">
+            {JOURNEY.map(j => (
+              <li key={j.label} className={`home-journey__item ${j.done ? 'is-done' : ''}`}>
+                <span className="home-journey__check">{j.done ? '✓' : j.icon}</span>
+                {j.done ? (
+                  <span className="home-journey__label">{j.label}</span>
+                ) : (
+                  <Link href={j.href} className="home-journey__label home-journey__label--link">{j.label}</Link>
+                )}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 
