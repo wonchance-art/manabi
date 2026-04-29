@@ -28,6 +28,7 @@ import ReadingTest from '../components/ReadingTest';
 import ConversationPanel from '../components/ConversationPanel';
 import ViewerBottomSheet from '../components/ViewerBottomSheet';
 import ListenControls from '../components/ListenControls';
+import { parseTitle, findNextInSeries } from '../lib/seriesMeta';
 import ViewerComments from './ViewerComments';
 import ViewerGrammarModal from './ViewerGrammarModal';
 import ViewerQuizModal from './ViewerQuizModal';
@@ -366,6 +367,23 @@ export default function ViewerPage() {
   });
 
   // 완독 후 추천할 다음 자료 (같은 언어, 아직 안 읽은 것)
+  const { data: nextLesson } = useQuery({
+    queryKey: ['next-lesson', id, material?.title],
+    queryFn: async () => {
+      const meta = parseTitle(material?.title || '');
+      if (!meta.level || !meta.series || meta.num == null) return null;
+      const { data } = await supabase
+        .from('reading_materials')
+        .select('id, title')
+        .eq('visibility', 'public')
+        .ilike('title', `[${meta.level} ${meta.series} #%`)
+        .limit(50);
+      return findNextInSeries(meta, data || []);
+    },
+    enabled: !!material?.title,
+    staleTime: 1000 * 60 * 10,
+  });
+
   const { data: nextMaterial } = useQuery({
     queryKey: ['next-material', id, material?.processed_json?.metadata?.language],
     queryFn: async () => {
@@ -1630,6 +1648,15 @@ export default function ViewerPage() {
         )}
 
       </div>
+
+      {/* 다음 강의 — 같은 시리즈 next # */}
+      {isDone && nextLesson && (
+        <Link href={`/viewer/${nextLesson.id}`} className="next-lesson-card">
+          <div className="next-lesson-card__hint">다음 강의 →</div>
+          <div className="next-lesson-card__title">{nextLesson.title}</div>
+          <div className="next-lesson-card__cta">이어서 학습하기 →</div>
+        </Link>
+      )}
 
       {/* 리딩 테스트 — 뷰어 밖, 별도 섹션 */}
       {isDone && (

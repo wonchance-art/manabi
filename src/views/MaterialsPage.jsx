@@ -8,6 +8,7 @@ import { useSearchParams } from 'next/navigation';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
+import { parseTitle } from '../lib/seriesMeta';
 import { JP_LEVELS, EN_LEVELS } from '../lib/constants';
 import ConfirmModal from '../components/ConfirmModal';
 import { CardGridSkeleton } from '../components/Skeleton';
@@ -272,6 +273,15 @@ export default function MaterialsPage() {
         const oa = la in LEVEL_ORDER ? LEVEL_ORDER[la] : 99;
         const ob = lb in LEVEL_ORDER ? LEVEL_ORDER[lb] : 99;
         if (oa !== ob) return oa - ob;
+        // 같은 레벨: 시리즈 → 번호 → 최신순 (학습 경로 자연 정렬)
+        const ma = parseTitle(a.title);
+        const mb = parseTitle(b.title);
+        const sa = ma.series || '￿'; // 시리즈 없는 자료는 뒤로
+        const sb = mb.series || '￿';
+        if (sa !== sb) return sa.localeCompare(sb);
+        if (ma.num != null && mb.num != null) return ma.num - mb.num;
+        if (ma.num != null) return -1;
+        if (mb.num != null) return 1;
         return new Date(b.created_at) - new Date(a.created_at);
       });
     } else if (sortBy === 'title') {

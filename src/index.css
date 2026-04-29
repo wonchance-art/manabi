@@ -5257,6 +5257,42 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   padding: 20px 0;
 }
 
+/* ========= 다음 강의 카드 ========= */
+.next-lesson-card {
+  display: block;
+  margin-top: 16px;
+  padding: 18px 22px;
+  background: linear-gradient(135deg, var(--primary-glow) 0%, var(--bg-card) 100%);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  color: inherit;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+.next-lesson-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+.next-lesson-card__hint {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+.next-lesson-card__title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+.next-lesson-card__cta {
+  font-size: 0.82rem;
+  color: var(--primary);
+  font-weight: 600;
+}
+
 /* ========= Conversation Panel ========= */
 .conversation-panel {
   display: flex;
