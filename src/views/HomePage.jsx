@@ -10,6 +10,7 @@ import { useToast } from '../lib/ToastContext';
 import { awardXP, getXPLevel, getLevelProgress, getXPToNextLevel } from '../lib/xp';
 import { useCelebration } from '../lib/CelebrationContext';
 import Button from '../components/Button';
+import { parseTitle } from '../lib/seriesMeta';
 
 const RANK_MEDAL = ['🥇', '🥈', '🥉'];
 
@@ -75,6 +76,8 @@ async function fetchHomeData(userId) {
     { count: todayGrammarCount },
     { data: allVocabRows },
     { data: publicMaterials },
+    { data: seriesMaterials },
+    { data: allCompleted },
   ] = await Promise.all([
     supabase.from('user_vocabulary').select('*', { count: 'exact', head: true })
       .eq('user_id', userId).lte('next_review_at', now),
@@ -99,6 +102,15 @@ async function fetchHomeData(userId) {
       .eq('visibility', 'public')
       .order('created_at', { ascending: false })
       .limit(40),
+    supabase.from('reading_materials')
+      .select('id, title, processed_json')
+      .eq('visibility', 'public')
+      .ilike('title', '[%#%]%')
+      .limit(300),
+    supabase.from('reading_progress')
+      .select('material_id')
+      .eq('user_id', userId)
+      .eq('is_completed', true),
   ]);
 
   const rows = vocabRows || [];
@@ -151,6 +163,34 @@ async function fetchHomeData(userId) {
     })(),
     publicMaterials: publicMaterials || [],
     readMaterialIds: (recentProgress || []).filter(r => r.is_completed).map(r => r.material_id),
+    seriesProgress: (() => {
+      const doneSet = new Set((allCompleted || []).map(r => r.material_id));
+      const groups = new Map(); // key = level|series
+      for (const m of (seriesMaterials || [])) {
+        const meta = parseTitle(m.title);
+        if (!meta.level || !meta.series || meta.num == null) continue;
+        const lang = m.processed_json?.metadata?.language || (/[A-Z]\d/.test(meta.level) ? 'English' : 'Japanese');
+        const key = `${meta.level}|${meta.series}`;
+        if (!groups.has(key)) groups.set(key, { level: meta.level, series: meta.series, language: lang, items: [] });
+        groups.get(key).items.push({ id: m.id, title: m.title, num: meta.num });
+      }
+      const out = [];
+      for (const g of groups.values()) {
+        g.items.sort((a, b) => a.num - b.num);
+        const completed = g.items.filter(i => doneSet.has(i.id)).length;
+        const total = g.items.length;
+        const next = g.items.find(i => !doneSet.has(i.id));
+        out.push({
+          level: g.level,
+          series: g.series,
+          language: g.language,
+          completed,
+          total,
+          next: next ? { id: next.id, title: next.title, num: next.num } : null,
+        });
+      }
+      return out;
+    })(),
   };
 }
 
@@ -418,6 +458,32 @@ export default function HomePage() {
               {suggestion.material_id ? '📖 바로 읽기 →' : '✨ 분석하고 읽기 →'}
             </Button>
           </div>
+        );
+      })()}
+
+      {/* 이어서 학습 — 진행 중인 시리즈 */}
+      {(() => {
+        const all = data?.seriesProgress || [];
+        const langs = profile?.learning_language || ['Japanese'];
+        // 진행 중(0 < completed < total) → 시작 안 함(completed === 0) 순서
+        const inProgress = all.filter(s => langs.includes(s.language) && s.completed > 0 && s.next);
+        if (inProgress.length === 0) return null;
+        // 가장 많이 진행한 시리즈 1개 prominent
+        inProgress.sort((a, b) => (b.completed / b.total) - (a.completed / a.total));
+        const top = inProgress[0];
+        const pct = Math.round((top.completed / top.total) * 100);
+        return (
+          <Link href={`/viewer/${top.next.id}`} className="home-continue-card">
+            <div className="home-continue-card__head">
+              <span className="home-continue-card__hint">이어서 학습</span>
+              <span className="home-continue-card__progress">{top.completed} / {top.total}</span>
+            </div>
+            <div className="home-continue-card__series">{top.level} {top.series}</div>
+            <div className="home-continue-card__bar">
+              <div className="home-continue-card__bar-fill" style={{ width: `${pct}%` }} />
+            </div>
+            <div className="home-continue-card__next">{top.next.title}</div>
+          </Link>
         );
       })()}
 
