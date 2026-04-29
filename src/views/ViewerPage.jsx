@@ -29,6 +29,7 @@ import ConversationPanel from '../components/ConversationPanel';
 import ViewerBottomSheet from '../components/ViewerBottomSheet';
 import ListenControls from '../components/ListenControls';
 import { parseTitle, findNextInSeries } from '../lib/seriesMeta';
+import { formatDetail } from '../lib/wordDetailFormat';
 import ViewerComments from './ViewerComments';
 import ViewerGrammarModal from './ViewerGrammarModal';
 import ViewerQuizModal from './ViewerQuizModal';
@@ -670,21 +671,6 @@ export default function ViewerPage() {
   function getDetailCached(key) { if (!isClient) return null; try { return JSON.parse(localStorage.getItem(`pdf_cache:detail:${key}`)); } catch { return null; } }
   function setDetailCached(key, val) { if (!isClient) return; try { localStorage.setItem(`pdf_cache:detail:${key}`, JSON.stringify(val)); } catch {} }
 
-  function formatDetail(text) {
-    if (!text) return '';
-    const lines = text.split('\n').map(l => l.trim()).filter(l => l !== '-');
-    const startIdx = lines.findIndex(l => l.startsWith('**'));
-    const cleaned = (startIdx > 0 ? lines.slice(startIdx) : lines).join('\n');
-    return cleaned
-      .replace(/\*\*(.+?)\*\*/g, (_, m) => {
-        if (/^(발음|뜻|뉘앙스|예문)$/.test(m.trim())) return `<hr class="pdf-detail-hr" /><strong class="pdf-detail-heading">${m}</strong>`;
-        return `<strong>${m}</strong>`;
-      })
-      .split('\n').map(l => l.trim()).filter(Boolean).join('<br />')
-      .replace(/(<br \/>){2,}/g, '</p><p>')
-      .replace(/^/, '<p>').replace(/$/, '</p>');
-  }
-
   async function fetchWordDetail(token) {
     setWordDetail({ detail: null, loading: true });
     try {
@@ -1187,15 +1173,7 @@ export default function ViewerPage() {
       {leftPanelText && (
         <div className="pdf-context__original">"{leftPanelText.length > 120 ? leftPanelText.slice(0, 120) + '…' : leftPanelText}"</div>
       )}
-      <div className="pdf-context__text" dangerouslySetInnerHTML={{ __html:
-        leftPanelResult
-          .replace(/\*\*(.+?)\*\*/g, (_, m) =>
-            /^(번역|맥락)$/.test(m.trim()) ? `<hr class="pdf-detail-hr" /><strong class="pdf-detail-heading">${m}</strong>` : `<strong>${m}</strong>`
-          )
-          .split('\n').map(l => l.trim()).filter(Boolean).join('<br />')
-          .replace(/(<br \/>){2,}/g, '</p><p>')
-          .replace(/^/, '<p>').replace(/$/, '</p>')
-      }} />
+      <div className="pdf-context__text" dangerouslySetInnerHTML={{ __html: formatDetail(leftPanelResult) }} />
     </div>
   ) : (
     <div className="pdf-side__empty">

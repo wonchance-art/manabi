@@ -14,6 +14,7 @@ import Spinner from '../components/Spinner';
 import PdfDocument from '../components/PdfDocument';
 import ViewerBottomSheet from '../components/ViewerBottomSheet';
 import ListenControls from '../components/ListenControls';
+import { formatDetail } from '../lib/wordDetailFormat';
 
 async function fetchPdfInfo(pdfId) {
   const { data, error } = await supabase
@@ -90,28 +91,6 @@ export default function PdfViewerPage() {
   const [saving, setSaving] = useState({});
   const [contextExpl, setContextExpl] = useState('');
   const [contextLoading, setContextLoading] = useState(false);
-
-  // 마크다운 간이 렌더 — **볼드** → <strong>, 줄바꿈 보존, 섹션 간 여백
-  function formatDetail(text) {
-    if (!text) return '';
-    // 도입 문구 제거 (첫 줄이 **뜻**이 아니면 잘라냄)
-    const lines = text.split('\n').map(l => l.trim()).filter(l => l !== '-');
-    const startIdx = lines.findIndex(l => l.startsWith('**'));
-    const cleaned = (startIdx > 0 ? lines.slice(startIdx) : lines).join('\n');
-
-    return cleaned
-      .replace(/\*\*(.+?)\*\*/g, (_, m) => {
-        // 섹션 제목(뜻/뉘앙스/예문)인지 인라인 굵게인지 구분
-        if (/^(번역|맥락|발음|뜻|뉘앙스|예문)$/.test(m.trim())) return `<hr class="pdf-detail-hr" /><strong class="pdf-detail-heading">${m}</strong>`;
-        return `<strong>${m}</strong>`;
-      })
-      .split('\n')
-      .map(l => l.trim())
-      .filter(Boolean)
-      .join('<br />')
-      .replace(/(<br \/>){2,}/g, '</p><p>')
-      .replace(/^/, '<p>').replace(/$/, '</p>');
-  }
 
   // 단어 상세 팝업
   const [wordDetail, setWordDetail] = useState(null); // { token, detail, loading }
