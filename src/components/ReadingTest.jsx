@@ -5,6 +5,7 @@ import { callGemini } from '../lib/gemini';
 import Button from './Button';
 
 const STORAGE_KEY = 'reading_test:';
+const HISTORY_KEY = 'reading_test_history:';
 
 function loadSaved(materialId) {
   if (typeof window === 'undefined' || !materialId) return null;
@@ -14,6 +15,22 @@ function loadSaved(materialId) {
 function saveToDisk(materialId, data) {
   if (typeof window === 'undefined' || !materialId) return;
   try { localStorage.setItem(STORAGE_KEY + materialId, JSON.stringify(data)); } catch {}
+}
+
+function pushHistory(materialId, score, total) {
+  if (typeof window === 'undefined' || !materialId) return;
+  try {
+    const key = HISTORY_KEY + materialId;
+    const arr = JSON.parse(localStorage.getItem(key) || '[]');
+    arr.push({ score, total, ts: Date.now() });
+    if (arr.length > 20) arr.shift();
+    localStorage.setItem(key, JSON.stringify(arr));
+  } catch {}
+}
+
+function getHistory(materialId) {
+  if (typeof window === 'undefined' || !materialId) return [];
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY + materialId) || '[]'); } catch { return []; }
 }
 
 export default function ReadingTest({ rawText, language, materialId, onClose, inline = false }) {
@@ -136,6 +153,7 @@ Rules:
     const r = { score, total: questions.length, explanations };
     setResult(r);
     setStatus('done');
+    pushHistory(materialId, score, questions.length);
   }
 
   function resetTest() {
@@ -214,12 +232,20 @@ Rules:
         )}
 
         {/* done */}
-        {status === 'done' && result && (
+        {status === 'done' && result && (() => {
+          const history = getHistory(materialId);
+          const best = history.length > 0 ? history.reduce((b, h) => h.score > b.score ? h : b) : null;
+          return (
           <div className="reading-test__body">
             <div className="reading-test__score">
               <span className="reading-test__score-num">{result.score}</span>
               <span className="reading-test__score-total">/ {result.total}</span>
             </div>
+            {history.length > 1 && best && (
+              <div style={{ textAlign: 'center', fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 8 }}>
+                최고 {best.score}/{best.total} · 시도 {history.length}회
+              </div>
+            )}
             <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginBottom: 24, fontSize: '0.9rem' }}>
               {result.score === result.total ? 'Excellent! Perfect score.' :
                result.score >= result.total * 0.6 ? 'Good job. Review the ones you missed.' :
@@ -247,7 +273,8 @@ Rules:
               {onClose && <Button onClick={onClose} style={{ flex: 1 }}>Close</Button>}
             </div>
           </div>
-        )}
+          );
+        })()}
       </div>
     </Wrapper>
   );
