@@ -1,51 +1,14 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
-import { useToast } from '../lib/ToastContext';
-import { awardXP, getXPLevel, getLevelProgress, getXPToNextLevel } from '../lib/xp';
-import { useCelebration } from '../lib/CelebrationContext';
+import { getXPLevel, getLevelProgress, getXPToNextLevel } from '../lib/xp';
 import Button from '../components/Button';
 import { parseTitle } from '../lib/seriesMeta';
-
-const RANK_MEDAL = ['🥇', '🥈', '🥉'];
-
-const DAILY_CHALLENGES = [
-  { icon: '🔥', title: '어려운 단어 정복', desc: '3번 이상 틀린 단어를 복습하세요', xp: 30, href: '/vocab', cta: '복습하기',
-    progress: (d) => ({ current: d.todayReviewCount, target: 3 }) },
-  { icon: '📖', title: '자료 완독 도전', desc: '자료 1편을 끝까지 읽어보세요', xp: 50, href: '/materials', cta: '읽기 시작',
-    progress: (d) => ({ current: d.todayReadCount, target: 1 }) },
-  { icon: '⭐', title: '단어 수집가', desc: '오늘 새 단어 10개를 모아보세요', xp: 25, href: '/materials', cta: '자료 보기',
-    progress: (d) => ({ current: d.todayVocabCount, target: 10 }) },
-  { icon: '🧠', title: '복습 마라톤', desc: '단어 10개 이상 복습하세요', xp: 40, href: '/vocab', cta: '복습하기',
-    progress: (d) => ({ current: d.todayReviewCount, target: 10 }) },
-  { icon: '💬', title: '커뮤니티 참여', desc: '포럼에 글이나 댓글을 남겨보세요', xp: 20, href: '/forum', cta: '포럼 가기',
-    progress: (d) => ({ current: d.todayForumCount, target: 1 }) },
-  { icon: '🏆', title: '올라운드 학습자', desc: '읽기 + 복습 + 수집 모두 달성하세요', xp: 60, href: '/home', cta: '현황 보기',
-    progress: (d) => ({ current: Math.min(d.todayReadCount, 1) + Math.min(d.todayReviewCount, 1) + Math.min(d.todayVocabCount, 1), target: 3 }) },
-  { icon: '📝', title: '문법 탐구', desc: '뷰어에서 AI 문법 해설을 받아보세요', xp: 20, href: '/materials', cta: '자료 보기',
-    progress: (d) => ({ current: d.todayGrammarCount, target: 1 }) },
-];
-
-function getDailyChallenge() {
-  const today = new Date().toISOString().slice(0, 10);
-  // Simple date-based seed
-  const seed = today.split('-').reduce((a, b) => a + parseInt(b), 0);
-  return DAILY_CHALLENGES[seed % DAILY_CHALLENGES.length];
-}
-
-async function fetchLeaderboard() {
-  const { data } = await supabase
-    .from('profiles')
-    .select('id, display_name, xp, streak_count')
-    .order('xp', { ascending: false })
-    .limit(5);
-  return data || [];
-}
 
 async function fetchHomeData(userId) {
   const todayStr   = new Date().toISOString().split('T')[0];
@@ -211,22 +174,13 @@ function ProgressBar({ pct, done }) {
 export default function HomePage() {
   const { user, profile, fetchProfile } = useAuth();
   const router = useRouter();
-  const toast = useToast();
-  const { checkLevelUp } = useCelebration();
-  const [challengeClaimed, setChallengeClaimed] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ['home', user?.id],
     queryFn:  () => fetchHomeData(user.id),
     enabled:  !!user,
     staleTime: 1000 * 60 * 5,
-    refetchOnWindowFocus: true, // 챌린지 진행도 실시간 갱신
-  });
-
-  const { data: leaders = [] } = useQuery({
-    queryKey: ['leaderboard-home'],
-    queryFn:  fetchLeaderboard,
-    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: true,
   });
 
   const xp         = profile?.xp ?? 0;
@@ -234,21 +188,10 @@ export default function HomePage() {
   const xpProgress = getLevelProgress(xp);
   const xpToNext   = getXPToNextLevel(xp);
 
-  const goalReview = profile?.goal_review ?? 5;
-  const goalWords  = profile?.goal_words  ?? 5;
-  const goalRead   = profile?.goal_read   ?? 1;
-
   const todayVocab   = data?.todayVocabCount    ?? 0;
   const todayReviews = data?.todayReviewCount   ?? 0;
   const todayReads   = data?.todayReadCount     ?? 0;
   const dueCount     = data?.dueCount           ?? 0;
-
-  const MISSIONS = [
-    { icon: '🧠', label: '단어 복습', goal: goalReview, current: todayReviews, href: '/vocab',      cta: '복습하기' },
-    { icon: '⭐', label: '단어 수집', goal: goalWords,  current: todayVocab,   href: '/materials', cta: '자료 보기' },
-    { icon: '📖', label: '자료 완독', goal: goalRead,   current: todayReads,   href: '/materials', cta: '읽기 시작' },
-  ];
-  const doneCount = MISSIONS.filter(m => m.current >= m.goal).length;
 
   // 사용자 vocab 수 기반 현재 레벨 역산 → i+1 추천
   // JLPT: N5(800)→N4(1500)→N3(3750)→N2(6000)→N1(10000)
