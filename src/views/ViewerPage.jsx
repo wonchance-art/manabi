@@ -9,7 +9,6 @@ import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import Spinner from '../components/Spinner';
 import Button from '../components/Button';
-import { analyzeText } from '../lib/analyzeText';
 import { recordActivity } from '../lib/streak';
 import { awardXP, XP_REWARDS } from '../lib/xp';
 import { checkAndAwardAchievements } from '../lib/achievements';
@@ -33,6 +32,7 @@ import { formatDetail } from '../lib/wordDetailFormat';
 import { useSeriesNeighbors } from '../lib/useSeriesNeighbors';
 import { useTitleEdit } from '../lib/useTitleEdit';
 import { useDragWordPopup } from '../lib/useDragWordPopup';
+import { useNextRangeMutation } from '../lib/useNextRangeMutation';
 import ViewerComments from './ViewerComments';
 import ViewerGrammarModal from './ViewerGrammarModal';
 import ViewerQuizModal from './ViewerQuizModal';
@@ -263,97 +263,8 @@ export default function ViewerPage() {
     enabled: !!material?.source_pdf_id,
   });
 
-  // 다음 범위 분석 (PDF 출처일 때만)
-  const nextRangeMutation = useMutation({
-    mutationFn: async ({ chunkSize = 5 } = {}) => {
-      if (!sourcePdf || !material?.page_end) throw new Error('PDF 출처 정보 없음');
-      const nextStart = material.page_end + 1;
-      if (nextStart > sourcePdf.page_count) throw new Error('PDF 끝에 도달했습니다.');
-      const nextEnd = Math.min(nextStart + chunkSize - 1, sourcePdf.page_count);
-
-      const { extractPageRange, getPdfMetadata, ocrPageRange } = await import('../lib/pdfExtract');
-      const { getCachedPdf, cachePdf } = await import('../lib/pdfCache');
-
-      // 캐시 먼저, 없으면 Storage에서 다운로드
-      let buffer = await getCachedPdf(sourcePdf.id);
-      if (!buffer) {
-        const { data: signed } = await supabase.storage
-          .from('user-pdfs')
-          .createSignedUrl(sourcePdf.storage_path, 60);
-        if (!signed?.signedUrl) throw new Error('PDF 접근 실패');
-        const res = await fetch(signed.signedUrl);
-        buffer = await res.arrayBuffer();
-        cachePdf(sourcePdf.id, buffer).catch(() => {});
-      }
-
-      // 1차: 일반 추출 시도
-      let text = await extractPageRange(buffer, nextStart, nextEnd);
-
-      // 텍스트가 너무 적으면 OCR 자동 폴백
-      if (!text || text.length < 30) {
-        toast('📷 스캔본으로 감지 — OCR로 재시도합니다 (시간이 걸려요)', 'info', 4000);
-        const { doc } = await getPdfMetadata(buffer);
-        text = await ocrPageRange(doc, nextStart, nextEnd);
-      }
-
-      if (!text || text.length < 30) throw new Error('추출된 텍스트가 너무 적습니다.');
-
-      // 새 material 생성
-      const initJson = {
-        sequence: [], dictionary: {}, last_idx: -1, status: 'analyzing',
-        metadata: {
-          language: sourcePdf.language || 'Japanese',
-          level: sourcePdf.level,
-          updated_at: new Date().toISOString(),
-        },
-      };
-      const { data: inserted, error } = await supabase
-        .from('reading_materials')
-        .insert({
-          title: `${sourcePdf.title} (p.${nextStart}-${nextEnd})`,
-          raw_text: text,
-          processed_json: initJson,
-          visibility: 'private',
-          owner_id: user.id,
-          source_pdf_id: sourcePdf.id,
-          page_start: nextStart,
-          page_end: nextEnd,
-        })
-        .select()
-        .single();
-      if (error) throw error;
-
-      // last_page_read 업데이트 (fire-and-forget)
-      supabase.from('uploaded_pdfs').update({ last_page_read: nextEnd }).eq('id', sourcePdf.id).then(() => {});
-
-      // 백그라운드 분석 시작 (fire-and-forget) — 리다이렉트 후에도 계속 실행됨
-      (async () => {
-        try {
-          const finalJson = await analyzeText(text, new AbortController().signal, {
-            metadata: initJson.metadata,
-            concurrency: 8,
-            onBatch: async ({ currentJson }) => {
-              await supabase.from('reading_materials')
-                .update({ processed_json: currentJson })
-                .eq('id', inserted.id);
-            },
-          });
-          await supabase.from('reading_materials')
-            .update({ processed_json: finalJson })
-            .eq('id', inserted.id);
-        } catch (e) {
-          console.error('[next-range analyze]', e?.message);
-        }
-      })();
-
-      return inserted;
-    },
-    onSuccess: (inserted) => {
-      toast('📖 다음 범위 분석 시작! 뷰어로 이동합니다', 'success');
-      window.location.href = `/viewer/${inserted.id}`;
-    },
-    onError: (err) => toast('다음 범위 생성 실패 — ' + friendlyToastMessage(err), 'error'),
-  });
+  // PDF 출처 자료의 다음 페이지 범위 분석 mutation
+  const nextRangeMutation = useNextRangeMutation({ material, sourcePdf, user, toast });
 
   const { data: readingProgress } = useQuery({
     queryKey: ['reading-progress', user?.id, id],
