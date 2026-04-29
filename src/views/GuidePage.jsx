@@ -3,22 +3,38 @@
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
+import { parseTitle } from '../lib/seriesMeta';
 
 async function fetchLevelData() {
   const { data } = await supabase
     .from('reading_materials')
     .select('id, title, processed_json')
     .eq('visibility', 'public')
-    .order('created_at', { ascending: false })
-    .limit(200);
+    .limit(300);
   const counts = {};
-  const samples = {};
+  const byLevel = {};
   for (const m of data || []) {
     const lvl = m.processed_json?.metadata?.level;
     if (!lvl) continue;
     counts[lvl] = (counts[lvl] || 0) + 1;
-    if (!samples[lvl]) samples[lvl] = [];
-    if (samples[lvl].length < 4) samples[lvl].push({ id: m.id, title: m.title });
+    if (!byLevel[lvl]) byLevel[lvl] = [];
+    byLevel[lvl].push(m);
+  }
+  // 레벨별로 시리즈→번호 순 정렬, 상위 6편만 샘플
+  const samples = {};
+  for (const lvl of Object.keys(byLevel)) {
+    const arr = byLevel[lvl].slice().sort((a, b) => {
+      const ma = parseTitle(a.title);
+      const mb = parseTitle(b.title);
+      const sa = ma.series || '￿';
+      const sb = mb.series || '￿';
+      if (sa !== sb) return sa.localeCompare(sb);
+      if (ma.num != null && mb.num != null) return ma.num - mb.num;
+      if (ma.num != null) return -1;
+      if (mb.num != null) return 1;
+      return 0;
+    });
+    samples[lvl] = arr.slice(0, 6).map(m => ({ id: m.id, title: m.title }));
   }
   return { counts, samples };
 }
