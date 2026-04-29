@@ -172,6 +172,7 @@ export default function ViewerPage() {
   const settings = useViewerSettings();
   const { fontSize, setFontSize, lineGap, setLineGap, charGap, setCharGap,
           theme, setTheme, fontFamily, setFontFamily, showFurigana, setShowFurigana,
+          autoSpeakOnClick, setAutoSpeakOnClick,
           settingsOpen, setSettingsOpen } = settings;
 
   const quiz = useViewerQuiz();
@@ -583,6 +584,9 @@ export default function ViewerPage() {
     setIsSheetOpen(true);
     setDragTokens(null);
     setWordDetail(null);
+    if (settings.autoSpeakOnClick && ttsSupported && t.text) {
+      speak(t.text, materialLang);
+    }
     // 클릭한 토큰 인덱스를 스크롤 위치로 저장
     const json = material?.processed_json;
     if (json?.sequence) {
@@ -1311,6 +1315,16 @@ export default function ViewerPage() {
           >
             {showFurigana ? '🈳 후리가나 숨기기' : '🈳 후리가나 보이기'}
           </button>
+
+          {ttsSupported && (
+            <button
+              onClick={() => setAutoSpeakOnClick(v => !v)}
+              className={`grammar-btn ${autoSpeakOnClick ? 'grammar-btn--active' : ''}`}
+              title="단어 클릭 시 자동 발음"
+            >
+              {autoSpeakOnClick ? '🔊 자동 발음 켜짐' : '🔇 자동 발음 꺼짐'}
+            </button>
+          )}
 
           <button
             onClick={analyzeGrammar}

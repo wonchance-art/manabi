@@ -14,6 +14,7 @@ export function useViewerSettings() {
   const [theme, setThemeRaw] = useState(() => readPref('theme', 'dark'));
   const [fontFamily, setFontFamilyRaw] = useState(() => readPref('fontFamily', "'Noto Sans KR'"));
   const [showFurigana, setShowFuriganaRaw] = useState(() => readPref('showFurigana', true));
+  const [autoSpeakOnClick, setAutoSpeakOnClickRaw] = useState(() => readPref('autoSpeakOnClick', false));
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const setFontSize = (v) => { const val = typeof v === 'function' ? v(fontSize) : v; setFontSizeRaw(val); savePref('fontSize', val); };
@@ -22,6 +23,7 @@ export function useViewerSettings() {
   const setTheme = (v) => { setThemeRaw(v); savePref('theme', v); };
   const setFontFamily = (v) => { setFontFamilyRaw(v); savePref('fontFamily', v); };
   const setShowFurigana = (v) => { const val = typeof v === 'function' ? v(showFurigana) : v; setShowFuriganaRaw(val); savePref('showFurigana', val); };
+  const setAutoSpeakOnClick = (v) => { const val = typeof v === 'function' ? v(autoSpeakOnClick) : v; setAutoSpeakOnClickRaw(val); savePref('autoSpeakOnClick', val); };
 
   return {
     fontSize, setFontSize,
@@ -30,6 +32,7 @@ export function useViewerSettings() {
     theme, setTheme,
     fontFamily, setFontFamily,
     showFurigana, setShowFurigana,
+    autoSpeakOnClick, setAutoSpeakOnClick,
     settingsOpen, setSettingsOpen,
   };
 }
