@@ -367,23 +367,34 @@ export default function ViewerPage() {
     enabled: !!user,
   });
 
-  // 완독 후 추천할 다음 자료 (같은 언어, 아직 안 읽은 것)
-  const { data: nextLesson } = useQuery({
-    queryKey: ['next-lesson', id, material?.title],
+  // 같은 시리즈의 prev/next lesson — 헤더 네비 + 완독 시 카드용
+  const { data: seriesNeighbors } = useQuery({
+    queryKey: ['series-neighbors', id, material?.title],
     queryFn: async () => {
       const meta = parseTitle(material?.title || '');
-      if (!meta.level || !meta.series || meta.num == null) return null;
+      if (!meta.level || !meta.series || meta.num == null) return { prev: null, next: null };
       const { data } = await supabase
         .from('reading_materials')
         .select('id, title')
         .eq('visibility', 'public')
         .ilike('title', `[${meta.level} ${meta.series} #%`)
         .limit(50);
-      return findNextInSeries(meta, data || []);
+      const items = (data || []).map(m => ({ ...m, _meta: parseTitle(m.title) }));
+      // prev = 가장 큰 num이 current.num보다 작은 것
+      const prev = items
+        .filter(x => x._meta.num != null && x._meta.num < meta.num)
+        .sort((a, b) => b._meta.num - a._meta.num)[0] || null;
+      const next = findNextInSeries(meta, data || []);
+      return {
+        prev: prev ? { id: prev.id, title: prev.title } : null,
+        next: next || null,
+      };
     },
     enabled: !!material?.title,
     staleTime: 1000 * 60 * 10,
   });
+  const prevLesson = seriesNeighbors?.prev || null;
+  const nextLesson = seriesNeighbors?.next || null;
 
   // 시리즈 완주 시: 같은 레벨의 다른 시리즈 #1 → 없으면 다음 레벨 첫 lesson
   const { data: seriesEndCard } = useQuery({
@@ -1203,6 +1214,16 @@ export default function ViewerPage() {
 
       <header className="page-header viewer-header">
         <Link href="/materials" className="viewer-back-link">← 라이브러리</Link>
+        {(prevLesson || nextLesson) && (
+          <div className="viewer-series-nav">
+            {prevLesson ? (
+              <Link href={`/viewer/${prevLesson.id}`} className="viewer-series-nav__btn" title={prevLesson.title} aria-label="이전 강의">◀</Link>
+            ) : <span className="viewer-series-nav__btn viewer-series-nav__btn--disabled" aria-hidden="true">◀</span>}
+            {nextLesson ? (
+              <Link href={`/viewer/${nextLesson.id}`} className="viewer-series-nav__btn" title={nextLesson.title} aria-label="다음 강의">▶</Link>
+            ) : <span className="viewer-series-nav__btn viewer-series-nav__btn--disabled" aria-hidden="true">▶</span>}
+          </div>
+        )}
         {titleEditing && user?.id === material?.owner_id ? (
           <form
             onSubmit={e => { e.preventDefault(); updateTitleMutation.mutate(titleDraft); }}

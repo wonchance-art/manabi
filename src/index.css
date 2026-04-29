@@ -1504,6 +1504,36 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   display: block;
 }
 
+/* 시리즈 prev/next 네비 */
+.viewer-series-nav {
+  display: inline-flex;
+  gap: 4px;
+  margin-bottom: 8px;
+  margin-left: 12px;
+}
+.viewer-series-nav__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  text-decoration: none;
+  transition: background var(--transition-fast);
+}
+.viewer-series-nav__btn:hover {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+.viewer-series-nav__btn--disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
 .viewer-vocab-counter {
   display: inline-block;
   font-size: 0.82rem;
