@@ -628,6 +628,74 @@ Understanding procrastination as a deeply human response to discomfort, rather t
 家に帰ったら、お風呂に入ってゆっくり休みます。`,
   },
 
+  // ── 일본어 N5 실용 표현 (자주 쓰는 표현 모음) ──────────
+  {
+    title: '[N5 실용 #1] 인사·자기소개',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `おはようございます。
+こんにちは。
+こんばんは。
+はじめまして、山田です。
+どうぞよろしくお願いします。
+お名前は何ですか。
+私は韓国から来ました。
+お元気ですか。
+おかげさまで元気です。
+さようなら、また明日。`,
+  },
+  {
+    title: '[N5 실용 #2] 숫자·나이',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `私は二十歳です。
+弟は十八歳です。
+妹は十二歳です。
+今、三時です。
+六百円です。
+一、二、三、四、五。
+六、七、八、九、十。
+百、千、万。
+このりんごは一つ百円です。`,
+  },
+  {
+    title: '[N5 실용 #3] 시간·요일·날짜',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `今、何時ですか。
+午前九時です。
+午後三時半です。
+今日は月曜日です。
+明日は火曜日です。
+週末は土曜日と日曜日です。
+今は何月ですか。
+四月です。
+誕生日は十月十五日です。`,
+  },
+  {
+    title: '[N5 실용 #4] 카페·식당 주문',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `すみません、メニューを見せてください。
+コーヒーをお願いします。
+これとこれをください。
+お水もお願いします。
+お会計、お願いします。
+おいしかったです。
+ごちそうさまでした。
+これは何ですか。
+辛くないですか。`,
+  },
+  {
+    title: '[N5 실용 #5] 길 묻기',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `すみません、駅はどこですか。
+まっすぐ行ってください。
+右に曲がってください。
+左に曲がってください。
+信号の前で待ってください。
+コンビニのとなりです。
+ここから歩いて十分です。
+銀行はあそこです。
+ありがとうございました。`,
+  },
+
   // ── 일본어 N4 문법 시리즈 (다음 단계) ──────────────────
   {
     title: '[N4 문법 #1] ~て (동작 연결)',
@@ -789,6 +857,73 @@ School finishes at three thirty.
 After school, I do my homework.
 In the evening, I watch TV or read a book.
 I go to bed at ten o'clock.`,
+  },
+
+  // ── 영어 A1 실용 표현 (자주 쓰는 표현 모음) ──────────
+  {
+    title: '[A1 phrases #1] Greetings & Introductions',
+    language: 'English', level: 'A1 기초',
+    raw_text: `Hello! How are you?
+I'm fine, thank you. And you?
+Nice to meet you.
+My name is Tom.
+I'm from Korea.
+What's your name?
+What do you do?
+I'm a student.
+See you later!
+Have a nice day.`,
+  },
+  {
+    title: '[A1 phrases #2] Numbers & Age',
+    language: 'English', level: 'A1 기초',
+    raw_text: `I am twenty years old.
+She is fifteen.
+There are three children in our family.
+The book costs ten dollars.
+My phone number is 010-1234-5678.
+One, two, three, four, five.
+Six, seven, eight, nine, ten.
+A hundred, a thousand, a million.
+This pen is two dollars.`,
+  },
+  {
+    title: '[A1 phrases #3] Time & Days',
+    language: 'English', level: 'A1 기초',
+    raw_text: `What time is it?
+It's three o'clock.
+It's half past two.
+Today is Monday.
+Tomorrow is Tuesday.
+The weekend is Saturday and Sunday.
+What month is it?
+It's April.
+My birthday is on October 15th.`,
+  },
+  {
+    title: '[A1 phrases #4] At a Café / Restaurant',
+    language: 'English', level: 'A1 기초',
+    raw_text: `Can I see the menu, please?
+Can I have a coffee, please?
+I'd like this and this.
+Water, please.
+The check, please.
+That was delicious.
+Thank you for the meal.
+What is this?
+Is it spicy?`,
+  },
+  {
+    title: '[A1 phrases #5] Asking for Directions',
+    language: 'English', level: 'A1 기초',
+    raw_text: `Excuse me, where is the station?
+Go straight ahead.
+Turn right at the corner.
+Turn left at the traffic light.
+It's next to the convenience store.
+It's a ten-minute walk from here.
+The bank is over there.
+Thank you very much.`,
   },
 
   // ── 영어 A1 문법 시리즈 (입문자 순차 학습) ──────────────
