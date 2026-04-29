@@ -205,6 +205,116 @@ Autumn food is also great. Apples, pears, and sweet potatoes are all in season.
 Some people prefer spring or summer, but for me, nothing beats a beautiful autumn day.`,
   },
 
+  // ── 일본어 N4 핵심 보강 (필수 추가 패턴) ────────────────
+  {
+    title: '[N4 문법 #11] 가능형 ~られる / ~える (~할 수 있다)',
+    language: 'Japanese', level: 'N4 기본',
+    raw_text: `日本語が話せます。
+漢字が読めます。
+朝早く起きられません。
+このピアノが弾けますか。
+彼は速く走れます。
+辛いものは食べられません。
+ここで写真が撮れますか。
+日本語を話すことができます。`,
+  },
+  {
+    title: '[N4 문법 #12] ~ば (조건)',
+    language: 'Japanese', level: 'N4 기본',
+    raw_text: `時間があれば、行きます。
+お金があれば、買います。
+天気が良ければ、行きましょう。
+もっと安ければ、買いたいです。
+分からなければ、聞いてください。
+雨が降れば、試合は中止です。
+急がなければ、間に合いません。`,
+  },
+  {
+    title: '[N4 문법 #13] ~なら (가정·전제)',
+    language: 'Japanese', level: 'N4 기본',
+    raw_text: `日本に行くなら、京都もぜひ行ってください。
+あなたが来るなら、私も行きます。
+車で行くなら、私も乗せてください。
+韓国料理なら、この店がおすすめです。
+本を買うなら、本屋がいいですよ。
+彼が来ないなら、私も帰ります。`,
+  },
+  {
+    title: '[N4 문법 #14] 보통체 (普通形, informal)',
+    language: 'Japanese', level: 'N4 기본',
+    raw_text: `今日は暑い。
+昨日、映画を見た。
+明日、来ない。
+日本語を勉強する。
+あの人は学生だ。
+これは私のだ。
+昨日は楽しかった。
+雨が降っている。`,
+  },
+  {
+    title: '[N4 문법 #15] ~でしょう / ~かもしれません (추측)',
+    language: 'Japanese', level: 'N4 기본',
+    raw_text: `明日は雨が降るでしょう。
+彼はもう着いたでしょう。
+このテストは難しいかもしれません。
+雨が降るかもしれません。
+彼は知らないかもしれない。
+バスは遅れるかもしれません。
+留守かもしれませんね。`,
+  },
+  {
+    title: '[N4 문법 #16] ~つもり / ~予定 (의도·예정)',
+    language: 'Japanese', level: 'N4 기본',
+    raw_text: `来年、日本へ行くつもりです。
+今度、新しい仕事を始めるつもりです。
+明日、彼に会う予定です。
+来週、休む予定です。
+何もしないつもりです。
+週末は家にいるつもりです。
+来月、引っ越す予定です。`,
+  },
+  {
+    title: '[N4 문법 #17] ~そうです (양태, ~할 것 같다)',
+    language: 'Japanese', level: 'N4 기본',
+    raw_text: `このケーキはおいしそうです。
+彼は元気そうです。
+雨が降りそうですね。
+赤ちゃんが泣きそうです。
+このかばんは丈夫そうです。
+あの人は親切そうです。
+試験は難しそうです。`,
+  },
+  {
+    title: '[N4 문법 #18] ~そうです (전문, ~라고 한다)',
+    language: 'Japanese', level: 'N4 기본',
+    raw_text: `天気予報によると、明日は晴れるそうです。
+彼は来週、結婚するそうです。
+この店のラーメンはおいしいそうです。
+日本語の試験は難しいそうです。
+ニュースで聞いたが、地震があったそうだ。
+田中さんは病気だそうです。`,
+  },
+  {
+    title: '[N4 문법 #19] ~はずです (당연·확신)',
+    language: 'Japanese', level: 'N4 기본',
+    raw_text: `彼はもう着いているはずです。
+このバスは三時に来るはずだ。
+そのレストランは安いはずです。
+鈴木さんは知っているはずです。
+昨日メールしたから、見ているはずです。
+彼女が来るはずだったのに、来なかった。`,
+  },
+  {
+    title: '[N4 문법 #20] ~ように (목적)',
+    language: 'Japanese', level: 'N4 기본',
+    raw_text: `忘れないように、メモします。
+聞こえるように、大きい声で話してください。
+日本語が上手になるように、毎日練習しています。
+風邪を引かないように、気をつけてください。
+遅れないように、早く家を出ました。
+分かるように、簡単に説明してください。`,
+  },
+
   // ── 일본어 N3 문법 시리즈 (다음 단계) ──────────────────
   {
     title: '[N3 문법 #1] ~ようになる / ~ようにする (변화·노력)',
@@ -1288,6 +1398,119 @@ The children receive money in red envelopes from the older relatives.
 We also play traditional games together.
 At night, we watch fireworks from the balcony.
 I always feel happy and grateful during this holiday.`,
+  },
+
+  // ── 영어 A2 핵심 보강 (필수 추가 패턴) ────────────────
+  {
+    title: '[A2 grammar #11] present perfect (have / has + p.p.)',
+    language: 'English', level: 'A2 초급',
+    raw_text: `I have lived in Seoul for ten years.
+She has just finished her homework.
+We have visited Japan three times.
+He has never tried sushi.
+Have you seen this movie?
+They haven't called me yet.
+I have known her since 2015.
+She has lost her keys.`,
+  },
+  {
+    title: '[A2 grammar #12] past continuous (was / were + ing)',
+    language: 'English', level: 'A2 초급',
+    raw_text: `I was reading when she called.
+They were playing in the park yesterday.
+What were you doing at noon?
+She was cooking when the doorbell rang.
+We were watching a movie last night.
+He was studying all evening.
+It was raining when we left the house.`,
+  },
+  {
+    title: '[A2 grammar #13] first conditional (if + present, will)',
+    language: 'English', level: 'A2 초급',
+    raw_text: `If it rains, we will stay home.
+If you study hard, you will pass the exam.
+If she comes, we will start the meeting.
+What will you do if he says no?
+If I have time, I will call you tonight.
+If we hurry, we won't be late.
+If you don't eat, you'll be hungry later.`,
+  },
+  {
+    title: '[A2 grammar #14] must / mustn\'t (강한 의무·금지)',
+    language: 'English', level: 'A2 초급',
+    raw_text: `You must wear a seatbelt in the car.
+We must finish this report today.
+You mustn't smoke here.
+Children mustn't play with fire.
+She must take her medicine every morning.
+We mustn't be late for the meeting.
+You must tell the truth.`,
+  },
+  {
+    title: '[A2 grammar #15] gerund vs infinitive',
+    language: 'English', level: 'A2 초급',
+    raw_text: `I enjoy swimming in the ocean.
+She wants to learn French.
+He stopped smoking last year.
+They decided to leave early.
+We love watching movies together.
+I'm thinking of moving abroad.
+She agreed to help us.`,
+  },
+  {
+    title: '[A2 grammar #16] adverbs of manner (-ly)',
+    language: 'English', level: 'A2 초급',
+    raw_text: `She speaks slowly and clearly.
+He drives carefully on rainy days.
+The children played happily in the garden.
+She sang beautifully at the concert.
+He answered politely.
+The dog ran quickly across the field.
+Please knock loudly on the door.`,
+  },
+  {
+    title: '[A2 grammar #17] already / yet / just (현재완료 부사)',
+    language: 'English', level: 'A2 초급',
+    raw_text: `I have already finished my work.
+Have you eaten dinner yet?
+She has just arrived at the airport.
+We haven't started the project yet.
+They have already left the office.
+He has just called me.
+I haven't seen that movie yet.`,
+  },
+  {
+    title: '[A2 grammar #18] so / such (강조)',
+    language: 'English', level: 'A2 초급',
+    raw_text: `The movie was so good.
+She is so kind to everyone.
+It was such a long day.
+He is such a nice person.
+I'm so tired tonight.
+The food was so delicious.
+That was such a beautiful song.`,
+  },
+  {
+    title: '[A2 grammar #19] too / enough',
+    language: 'English', level: 'A2 초급',
+    raw_text: `This soup is too hot to eat.
+She is not tall enough to reach the shelf.
+The room is big enough for all of us.
+It's too cold to swim today.
+Are you old enough to drive?
+The coffee is too strong.
+This bag isn't big enough for my books.`,
+  },
+  {
+    title: '[A2 grammar #20] passive voice (basic)',
+    language: 'English', level: 'A2 초급',
+    raw_text: `The letter was written by my mother.
+This bridge was built in 1990.
+English is spoken in many countries.
+The car is being repaired now.
+This song was sung by Adele.
+The cake is made with chocolate.
+The window was broken yesterday.`,
   },
 
   // ── 영어 A2 문법 시리즈 (다음 단계) ────────────────────
