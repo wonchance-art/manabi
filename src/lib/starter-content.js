@@ -3,736 +3,8 @@
  * 어드민 패널에서 한 번 시드하면 모든 유저가 공개 자료로 접근 가능
  */
 export const STARTER_MATERIALS = [
-  // ── 일본어 N5 ──────────────────────────────────────────────
-  {
-    title: '[N5] 私の一日 (하루 일과)',
-    language: 'Japanese', level: 'N5 기초',
-    raw_text: `私は毎朝六時に起きます。
-まず顔を洗って、朝ごはんを食べます。
-朝ごはんはパンとコーヒーです。
-七時に家を出て、電車で学校へ行きます。
-学校では日本語と数学を勉強します。
-午後三時に学校が終わります。
-家に帰って、宿題をします。
-夜は家族と一緒に夕ごはんを食べます。
-十一時に寝ます。`,
-  },
-  {
-    title: '[N5] 天気と季節 (날씨와 계절)',
-    language: 'Japanese', level: 'N5 기초',
-    raw_text: `今日はいい天気です。
-空は青くて、太陽が輝いています。
-公園で散歩しました。
-花がたくさん咲いています。
-春は暖かくて好きです。
-夏は暑いです。冬は寒いです。
-秋は涼しくて気持ちいいです。
-どの季節が好きですか？
-私は春が一番好きです。`,
-  },
-  {
-    title: '[N5] 家族の紹介 (가족 소개)',
-    language: 'Japanese', level: 'N5 기초',
-    raw_text: `私の家族は四人います。
-父と母と妹と私です。
-父は会社員です。毎日電車で会社へ行きます。
-母は料理が上手です。毎日おいしいごはんを作ります。
-妹は小学校の三年生です。
-妹は犬が大好きです。
-私たちは小さいけれど、仲のいい家族です。
-週末は家族でよく映画を見ます。`,
-  },
 
-  // ── 일본어 N4 ──────────────────────────────────────────────
-  {
-    title: '[N4] 休日の過ごし方 (주말 보내기)',
-    language: 'Japanese', level: 'N4 기본',
-    raw_text: `先週末、友達と映画を見に行きました。
-映画館は駅から歩いて五分のところにあります。
-見たのはアクション映画で、とても面白かったです。
-映画の後で、近くのレストランで夕食を食べました。
-パスタとサラダを注文しました。
-値段は少し高かったですが、味はとても良かったです。
-友達と楽しい時間を過ごせて、本当によかったです。
-また来月も一緒に出かけようと約束しました。`,
-  },
-  {
-    title: '[N4] スーパーでの買い物 (마트에서 장 보기)',
-    language: 'Japanese', level: 'N4 기본',
-    raw_text: `今日はスーパーへ買い物に行きました。
-今日は野菜と果物を買うつもりでした。
-トマト、きゅうり、にんじんをかごに入れました。
-果物はりんごとバナナにしました。
-お肉のコーナーも見ました。鶏肉が特売になっていました。
-値段が安かったので、思ったより多く買ってしまいました。
-レジで会計をするとき、ポイントカードを使いました。
-全部で三千二百円でした。エコバッグを持って来て正解でした。`,
-  },
-  {
-    title: '[N4] 日本の四季 (일본의 사계절)',
-    language: 'Japanese', level: 'N4 기본',
-    raw_text: `日本には春・夏・秋・冬の四つの季節があります。
-春には桜が全国で咲き、お花見を楽しむ人が大勢います。
-夏は気温が高く、海や山でのレジャーが盛んです。
-七月と八月には各地で花火大会が開かれます。
-秋になると木の葉が赤や黄色に色づき、美しい紅葉が楽しめます。
-冬は北日本を中心に雪が多く降ります。
-スキーやスノーボードを楽しむ人も多いです。
-日本に来たら、ぜひ四季の変化を体験してみてください。`,
-  },
-
-  // ── 일본어 N3 ──────────────────────────────────────────────
-  {
-    title: '[N3] インターネットと現代生活 (인터넷과 현대 생활)',
-    language: 'Japanese', level: 'N3 중급',
-    raw_text: `近年、インターネットの普及により、人々の生活は大きく変わりました。
-スマートフォンを使えば、どこにいても瞬時に情報を検索できます。
-また、SNSを通じて遠くにいる友人や家族とも簡単に連絡が取れるようになりました。
-一方で、情報過多や偽情報の拡散など、新たな問題も生まれています。
-インターネットを正しく使いこなすためには、情報リテラシーを身につけることが大切です。
-特に若い世代は、ネット上の情報を批判的に見る力を養う必要があります。
-便利なツールとして活用しながら、そのリスクにも注意していきたいものです。`,
-  },
-  {
-    title: '[N3] 日本の伝統文化 (일본의 전통문화)',
-    language: 'Japanese', level: 'N3 중급',
-    raw_text: `日本の伝統文化には、茶道・華道・武道・歌舞伎など多くの種類があります。
-茶道はお茶を点てて飲む文化であり、礼儀や精神修養を重んじる芸術です。
-単にお茶を飲む行為ではなく、「一期一会」という言葉に象徴されるように、その場の出会いを大切にする哲学を含んでいます。
-華道は花を生けることを通じて美を表現する芸術で、江戸時代に広く普及しました。
-武道には柔道・剣道・空手などがあり、技術の向上だけでなく精神面の成長も目指します。
-これらの伝統文化は長い歴史の中で磨かれてきたものであり、現代においても多くの人に親しまれています。`,
-  },
-  {
-    title: '[N3] 環境問題への取り組み (환경 문제 대응)',
-    language: 'Japanese', level: 'N3 중급',
-    raw_text: `環境問題は現代社会における重要な課題の一つです。
-地球温暖化の影響により、異常気象や海面上昇が各地で報告されています。
-これらの問題を解決するために、世界中でさまざまな取り組みが進められています。
-再生可能エネルギーの普及や電気自動車の導入が積極的に進んでいます。
-日常生活においても、省エネルギーやリサイクルを心がけることが大切です。
-プラスチックごみの削減や食品ロスの防止も重要な課題です。
-一人ひとりの小さな行動が積み重なることで、大きな変化につながると信じられています。`,
-  },
-
-  // ── 일본어 N2 ──────────────────────────────────────────────
-  {
-    title: '[N2] 少子高齢化と社会への影響 (저출산 고령화와 사회 영향)',
-    language: 'Japanese', level: 'N2 상급',
-    raw_text: `日本は現在、深刻な少子高齢化問題に直面しています。
-合計特殊出生率は長年にわたって低下し続けており、人口減少が社会全体に及ぼす影響は計り知れません。
-労働力不足は産業界の大きな課題となっており、外国人労働者の受け入れ拡大や女性・高齢者の就労促進が進められています。
-また、社会保障費の増大により、財政への圧迫も深刻化しています。
-一方、デジタル化の推進や人工知能の活用によって、生産性の向上を図る動きも活発化しています。
-少子化対策として、育児支援の充実や働き方改革が進められているものの、根本的な解決には至っていないのが現状です。
-この問題は日本だけでなく、韓国や南欧諸国でも共通の課題となっており、各国が対策を模索しています。`,
-  },
-  {
-    title: '[N2] 人工知能が変える未来 (AI가 바꾸는 미래)',
-    language: 'Japanese', level: 'N2 상급',
-    raw_text: `人工知能（AI）技術の急速な発展は、社会のあらゆる分野に革命的な変化をもたらしつつあります。
-医療分野では、AIによる画像診断が従来の方法を凌駕する精度を実現しており、早期発見・早期治療への貢献が期待されています。
-製造業においては、AIを活用したロボットが複雑な作業を自動化し、生産効率を飛躍的に向上させています。
-しかし、その一方でAIの普及により、多くの職種が自動化の脅威にさらされているとも言われています。
-特にルーティン作業を中心とした職業への影響は避けられないとみられており、人間がAIと共存するための新たなスキルの習得が求められています。
-倫理的な問題も無視できません。AIによる意思決定の透明性や、個人情報の保護については、国際的な議論が続いています。`,
-  },
-
-  // ── 일본어 N1 ──────────────────────────────────────────────
-  {
-    title: '[N1] 言語と思考の関係性 (언어와 사고의 관계)',
-    language: 'Japanese', level: 'N1 심화',
-    raw_text: `言語は単なるコミュニケーションの手段にとどまらず、人間の思考様式そのものを形成するものであるという議論が、言語学や認知科学において長年にわたって展開されてきた。
-サピア＝ウォーフ仮説として知られるこの考え方は、人が使う言語によって現実の認識の仕方が異なるという主張を核心としている。
-たとえば、色彩語の体系が異なる言語話者間では、色の識別能力に差異が生じるという実験結果も報告されている。
-一方、言語が思考を完全に規定するという強形態の主張に対しては多くの反論があり、現在では言語と思考は相互に影響し合いながらも、それぞれ独立した認知プロセスを持つという見解が主流となっている。
-複数の言語を操るバイリンガルの研究は、この問題に新たな視点を与えている。
-彼らはしばしば「どの言語で考えるか」によって思考パターンや感情表現が変化することを報告しており、言語と思考の複雑な相互作用を示している。`,
-  },
-
-  // ── 영어 A1 ──────────────────────────────────────────────
-  {
-    title: '[A1] My Daily Routine (나의 하루 일과)',
-    language: 'English', level: 'A1 기초',
-    raw_text: `My name is Mia. I am twenty years old.
-I wake up at seven o'clock every morning.
-I wash my face and eat breakfast.
-I like eggs and toast for breakfast.
-I go to school by bus.
-At school, I study English and math.
-I eat lunch with my friends.
-I come home at four o'clock.
-I do my homework and watch TV.
-I go to bed at ten o'clock.
-I like my daily routine.`,
-  },
-  {
-    title: '[A1] My Room (나의 방)',
-    language: 'English', level: 'A1 기초',
-    raw_text: `This is my room.
-My room is small but comfortable.
-I have a bed, a desk, and a bookshelf.
-My desk is near the window.
-On my desk, I have a computer and some books.
-My bookshelf has many books.
-I like to read before I sleep.
-The walls are white.
-I have a poster of my favorite singer on the wall.
-I love my room. It is my special place.`,
-  },
-
-  // ── 영어 A2 ──────────────────────────────────────────────
-  {
-    title: '[A2] A Visit to My Grandparents (조부모님 방문)',
-    language: 'English', level: 'A2 초급',
-    raw_text: `Last weekend, I visited my grandparents. They live in a small town near the mountains, about two hours from my city.
-My grandfather loves gardening. He showed me all the vegetables he grows: tomatoes, peppers, and cucumbers. He gave me some to take home.
-My grandmother is an excellent cook. She made a big lunch for us with homemade soup and fresh bread. Everything was delicious.
-After lunch, we sat in the garden and talked. My grandparents told me stories about their life when they were young. It was very interesting.
-In the evening, we went for a walk around the town. It is very quiet and peaceful there. I saw many old buildings and a beautiful church.
-I was a little sad when it was time to go home. I really enjoy spending time with my grandparents. I plan to visit them again next month.`,
-  },
-  {
-    title: '[A2] My Favorite Season (내가 좋아하는 계절)',
-    language: 'English', level: 'A2 초급',
-    raw_text: `My favorite season is autumn. I love the cool weather and the beautiful colors of the leaves.
-In autumn, the trees turn red, orange, and yellow. The parks look like paintings.
-I like to go for walks in the park and collect fallen leaves. Sometimes I take photos of them.
-The weather in autumn is perfect — not too hot and not too cold. I can wear my favorite sweaters.
-In autumn, I also enjoy drinking hot chocolate and reading books at home.
-Halloween is in autumn, and I love decorating the house with pumpkins and spiders.
-Autumn food is also great. Apples, pears, and sweet potatoes are all in season.
-Some people prefer spring or summer, but for me, nothing beats a beautiful autumn day.`,
-  },
-
-  // ── 일본어 N4 핵심 보강 (필수 추가 패턴) ────────────────
-  {
-    title: '[N4 문법 #11] 가능형 ~られる / ~える (~할 수 있다)',
-    language: 'Japanese', level: 'N4 기본',
-    raw_text: `日本語が話せます。
-漢字が読めます。
-朝早く起きられません。
-このピアノが弾けますか。
-彼は速く走れます。
-辛いものは食べられません。
-ここで写真が撮れますか。
-日本語を話すことができます。`,
-  },
-  {
-    title: '[N4 문법 #12] ~ば (조건)',
-    language: 'Japanese', level: 'N4 기본',
-    raw_text: `時間があれば、行きます。
-お金があれば、買います。
-天気が良ければ、行きましょう。
-もっと安ければ、買いたいです。
-分からなければ、聞いてください。
-雨が降れば、試合は中止です。
-急がなければ、間に合いません。`,
-  },
-  {
-    title: '[N4 문법 #13] ~なら (가정·전제)',
-    language: 'Japanese', level: 'N4 기본',
-    raw_text: `日本に行くなら、京都もぜひ行ってください。
-あなたが来るなら、私も行きます。
-車で行くなら、私も乗せてください。
-韓国料理なら、この店がおすすめです。
-本を買うなら、本屋がいいですよ。
-彼が来ないなら、私も帰ります。`,
-  },
-  {
-    title: '[N4 문법 #14] 보통체 (普通形, informal)',
-    language: 'Japanese', level: 'N4 기본',
-    raw_text: `今日は暑い。
-昨日、映画を見た。
-明日、来ない。
-日本語を勉強する。
-あの人は学生だ。
-これは私のだ。
-昨日は楽しかった。
-雨が降っている。`,
-  },
-  {
-    title: '[N4 문법 #15] ~でしょう / ~かもしれません (추측)',
-    language: 'Japanese', level: 'N4 기본',
-    raw_text: `明日は雨が降るでしょう。
-彼はもう着いたでしょう。
-このテストは難しいかもしれません。
-雨が降るかもしれません。
-彼は知らないかもしれない。
-バスは遅れるかもしれません。
-留守かもしれませんね。`,
-  },
-  {
-    title: '[N4 문법 #16] ~つもり / ~予定 (의도·예정)',
-    language: 'Japanese', level: 'N4 기본',
-    raw_text: `来年、日本へ行くつもりです。
-今度、新しい仕事を始めるつもりです。
-明日、彼に会う予定です。
-来週、休む予定です。
-何もしないつもりです。
-週末は家にいるつもりです。
-来月、引っ越す予定です。`,
-  },
-  {
-    title: '[N4 문법 #17] ~そうです (양태, ~할 것 같다)',
-    language: 'Japanese', level: 'N4 기본',
-    raw_text: `このケーキはおいしそうです。
-彼は元気そうです。
-雨が降りそうですね。
-赤ちゃんが泣きそうです。
-このかばんは丈夫そうです。
-あの人は親切そうです。
-試験は難しそうです。`,
-  },
-  {
-    title: '[N4 문법 #18] ~そうです (전문, ~라고 한다)',
-    language: 'Japanese', level: 'N4 기본',
-    raw_text: `天気予報によると、明日は晴れるそうです。
-彼は来週、結婚するそうです。
-この店のラーメンはおいしいそうです。
-日本語の試験は難しいそうです。
-ニュースで聞いたが、地震があったそうだ。
-田中さんは病気だそうです。`,
-  },
-  {
-    title: '[N4 문법 #19] ~はずです (당연·확신)',
-    language: 'Japanese', level: 'N4 기본',
-    raw_text: `彼はもう着いているはずです。
-このバスは三時に来るはずだ。
-そのレストランは安いはずです。
-鈴木さんは知っているはずです。
-昨日メールしたから、見ているはずです。
-彼女が来るはずだったのに、来なかった。`,
-  },
-  {
-    title: '[N4 문법 #20] ~ように (목적)',
-    language: 'Japanese', level: 'N4 기본',
-    raw_text: `忘れないように、メモします。
-聞こえるように、大きい声で話してください。
-日本語が上手になるように、毎日練習しています。
-風邪を引かないように、気をつけてください。
-遅れないように、早く家を出ました。
-分かるように、簡単に説明してください。`,
-  },
-
-  // ── 일본어 N3 문법 시리즈 (다음 단계) ──────────────────
-  {
-    title: '[N3 문법 #1] ~ようになる / ~ようにする (변화·노력)',
-    language: 'Japanese', level: 'N3 중급',
-    raw_text: `毎日練習して、日本語が話せるようになりました。
-最近、健康のために野菜をたくさん食べるようにしています。
-朝早く起きるようになって、生活が変わりました。
-忘れないように、メモを取るようにしています。
-彼は最近、笑うようになりました。
-コーヒーを飲まないようにしています。
-時間を守るようにしましょう。`,
-  },
-  {
-    title: '[N3 문법 #2] 수동형 ~れる/~られる',
-    language: 'Japanese', level: 'N3 중급',
-    raw_text: `先生に名前を呼ばれました。
-雨に降られて、服が濡れました。
-友達に笑われて、恥ずかしかったです。
-このお寺は四百年前に建てられました。
-新しい計画が発表されました。
-私の自転車が盗まれました。
-この本は世界中で読まれています。`,
-  },
-  {
-    title: '[N3 문법 #3] 사동형 ~せる/~させる',
-    language: 'Japanese', level: 'N3 중급',
-    raw_text: `母は弟に部屋を掃除させました。
-先生は学生にたくさん本を読ませます。
-父は私に毎朝牛乳を飲ませました。
-すみません、ちょっと待たせてください。
-社員に働かせすぎないでください。
-子供を公園で遊ばせます。
-歌を歌わせていただけますか。`,
-  },
-  {
-    title: '[N3 문법 #4] ~てしまう (완료·유감)',
-    language: 'Japanese', level: 'N3 중급',
-    raw_text: `宿題をやっと終わってしまいました。
-財布を電車に忘れてしまいました。
-ケーキを全部食べてしまいました。
-大事な本を無くしてしまった。
-うっかり寝坊してしまいました。
-雨に濡れて風邪を引いてしまった。
-一晩でこの小説を読んでしまった。`,
-  },
-  {
-    title: '[N3 문법 #5] ~ばかり (한정·완료 직후)',
-    language: 'Japanese', level: 'N3 중급',
-    raw_text: `弟はゲームばかりしています。
-最近、雨ばかり降っています。
-日本に来たばかりで、まだ慣れていません。
-食べたばかりなのに、もうお腹がすいた。
-この会社に入ったばかりです。
-甘いものばかり食べないでください。
-昨日買ったばかりのかばんを汚してしまった。`,
-  },
-  {
-    title: '[N3 문법 #6] ~ばよかった (~할 걸 그랬다)',
-    language: 'Japanese', level: 'N3 중급',
-    raw_text: `もっと早く来ればよかった。
-傘を持ってくればよかったです。
-あの時、彼に正直に言えばよかった。
-もっと勉強しておけばよかった。
-野菜を買っておけばよかったな。
-試験の前に復習すればよかった。
-あの本を買っておけばよかった。`,
-  },
-  {
-    title: '[N3 문법 #7] ~らしい / ~みたい (~인 것 같다)',
-    language: 'Japanese', level: 'N3 중급',
-    raw_text: `田中さんは来週、引っ越すらしいです。
-明日は雨が降るらしい。
-あの人は学生みたいです。
-店長は怒っているみたいだ。
-本物のダイヤモンドみたいに光っている。
-今年の夏はとても暑いらしい。
-彼女は本当の姉妹みたいに仲がいい。`,
-  },
-  {
-    title: '[N3 문법 #8] 경어 입문 — お~になる / ご~になる',
-    language: 'Japanese', level: 'N3 중급',
-    raw_text: `先生はもうお帰りになりました。
-社長は今、お電話中でいらっしゃいます。
-お客様はこの本をお読みになりましたか。
-どうぞこちらにお座りください。
-資料をご覧ください。
-ご注文はお決まりですか。
-お先に失礼いたします。`,
-  },
-
-  // ── 일본어 N3 핵심 보강 (필수 추가 패턴) ────────────────
-  {
-    title: '[N3 문법 #9] ~ところ (직전·직후·진행)',
-    language: 'Japanese', level: 'N3 중급',
-    raw_text: `今、出かけるところです。
-ちょうどご飯を食べているところです。
-今、家に着いたところです。
-試験が始まるところです。
-ちょうど今、終わったところです。
-電話をかけようとしていたところです。
-ちょうど駅に着いたところでした。`,
-  },
-  {
-    title: '[N3 문법 #10] ~わけだ (당연·논리적 결과)',
-    language: 'Japanese', level: 'N3 중급',
-    raw_text: `彼は十年も日本に住んでいる。日本語が上手なわけだ。
-冷蔵庫が空っぽだから、お腹がすくわけだ。
-雪が降っている。寒いわけだ。
-試験に合格した。喜ぶわけだ。
-忙しかった。連絡がなかったわけだ。
-彼は朝から何も食べていない。お腹がすいているわけだ。`,
-  },
-  {
-    title: '[N3 문법 #11] ~について / ~に関して (~에 대해)',
-    language: 'Japanese', level: 'N3 중급',
-    raw_text: `日本の文化について話しましょう。
-このテーマについて、いろいろ調べました。
-彼の意見について、どう思いますか。
-環境問題について、考えてみましょう。
-旅行についての質問があります。
-新しい計画に関して、説明します。
-あの事件に関する記事を読みました。`,
-  },
-  {
-    title: '[N3 문법 #12] ~まま (~한 채로)',
-    language: 'Japanese', level: 'N3 중급',
-    raw_text: `窓を開けたまま、出かけました。
-靴を履いたまま、家に入らないでください。
-何も言わないまま、彼は去って行った。
-昨日のままで、何も変わっていない。
-立ったまま、話します。
-電気をつけたまま、寝てしまった。
-彼の手紙は読まないまま、置いてある。`,
-  },
-  {
-    title: '[N3 문법 #13] ~ものだ (당연·일반론)',
-    language: 'Japanese', level: 'N3 중급',
-    raw_text: `人は誰でも間違えるものだ。
-時間が経つのは早いものですね。
-日本人はよくお辞儀をするものだ。
-若いときは、よく勉強したものだ。
-子供は遊びたがるものだ。
-人生はそんなものだ。
-昔はよく友達と遊んだものだ。`,
-  },
-  {
-    title: '[N3 문법 #14] ~限り (~하는 한)',
-    language: 'Japanese', level: 'N3 중급',
-    raw_text: `できる限り、頑張ります。
-私が知る限り、彼はまだ独身です。
-体が元気な限り、働き続けたい。
-雨が降らない限り、試合は行われます。
-時間が許す限り、お手伝いします。
-私が見た限り、問題はありません。`,
-  },
-  {
-    title: '[N3 문법 #15] ~ば~ほど (~할수록)',
-    language: 'Japanese', level: 'N3 중급',
-    raw_text: `勉強すればするほど、楽しくなる。
-食べれば食べるほど、お腹がすく。
-高ければ高いほど、品質がいい。
-急げば急ぐほど、ミスが増える。
-聞けば聞くほど、面白い話だ。
-考えれば考えるほど、分からなくなる。`,
-  },
-  {
-    title: '[N3 문법 #16] ~につれて (~에 따라, 변화)',
-    language: 'Japanese', level: 'N3 중급',
-    raw_text: `時間が経つにつれて、忘れていきます。
-年を取るにつれて、体が弱くなる。
-都市が発展するにつれて、人口が増えた。
-春になるにつれて、暖かくなる。
-経験が増えるにつれて、自信もついてきた。
-山を登るにつれて、空気が薄くなる。`,
-  },
-  {
-    title: '[N3 문법 #17] ~代わりに (~대신)',
-    language: 'Japanese', level: 'N3 중급',
-    raw_text: `バターの代わりにオリーブオイルを使います。
-私の代わりに、田中さんが行きます。
-休む代わりに、明日働きます。
-日本語を教える代わりに、英語を教えてもらった。
-本を買う代わりに、図書館で借りました。
-電車の代わりにバスで行きました。`,
-  },
-  {
-    title: '[N3 문법 #18] ~に違いない (~임에 틀림없다)',
-    language: 'Japanese', level: 'N3 중급',
-    raw_text: `彼は犯人に違いない。
-これはきっと彼女のかばんに違いない。
-あの音は雷に違いない。
-試験に合格したに違いない。
-彼女は怒っているに違いない。
-あの店は今、混んでいるに違いない。
-彼はもう知っているに違いない。`,
-  },
-
-  // ── 영어 B1 ──────────────────────────────────────────────
-  {
-    title: '[B1] The Benefits of Language Learning (언어 학습의 이점)',
-    language: 'English', level: 'B1 중급',
-    raw_text: `Learning a new language is one of the most rewarding things a person can do. While it requires time and effort, the benefits are enormous and long-lasting.
-First of all, learning a language opens doors to new cultures. When you can speak someone's native language, you gain a much deeper understanding of their way of thinking, their humor, and their values. This creates real connections that would not be possible otherwise.
-Secondly, being bilingual or multilingual can significantly improve your career prospects. In today's global economy, employers highly value candidates who can communicate in multiple languages. It can set you apart in competitive job markets.
-There are also proven cognitive benefits. Research shows that learning a second language improves memory, enhances attention, and even delays the onset of dementia in old age.
-Finally, knowing another language simply makes travel more enjoyable and meaningful. Instead of relying on translations, you can have genuine conversations with local people and discover hidden aspects of a culture that most tourists never see.
-The journey of language learning is never easy, but every step forward brings its own small joy.`,
-  },
-  {
-    title: '[B1] Urban Farming: Growing Food in the City (도시 농업)',
-    language: 'English', level: 'B1 중급',
-    raw_text: `Urban farming is a growing trend in cities around the world. More and more people are finding creative ways to grow food in small urban spaces, from rooftop gardens to community allotments and indoor vertical farms.
-The reasons behind this movement are varied. Some people are motivated by environmental concerns, as locally grown food reduces the carbon footprint associated with transporting produce from rural areas. Others are drawn to the idea of knowing exactly where their food comes from and avoiding pesticides.
-Community gardens, where local residents share a plot of land, have become popular social spaces as well. They bring together people from different backgrounds and help build a sense of community in neighborhoods that might otherwise feel disconnected.
-However, urban farming also faces challenges. Space is limited and expensive in cities. Not all crops grow well in urban environments, and pollution can be a concern in some areas.
-Despite these obstacles, the urban farming movement continues to expand, supported by new technologies such as hydroponic systems that allow plants to grow without soil. As cities look for more sustainable ways to feed their populations, urban farming is likely to play an increasingly important role.`,
-  },
-
-  // ── 영어 B2 ──────────────────────────────────────────────
-  {
-    title: '[B2] The Psychology of Procrastination (미루기의 심리학)',
-    language: 'English', level: 'B2 상급',
-    raw_text: `Procrastination is one of the most common challenges facing people in modern society, yet it is frequently misunderstood. Many assume it is simply a matter of laziness or poor time management, but psychologists paint a far more nuanced picture.
-At its core, procrastination is an emotional regulation problem rather than a productivity one. When faced with a task that generates anxiety, boredom, self-doubt, or frustration, the brain instinctively seeks immediate relief by redirecting attention to something more pleasant. The task remains undone not because the person lacks time, but because they are avoiding the negative emotions associated with it.
-Research by Dr. Timothy Pychyl at Carleton University suggests that chronic procrastinators tend to prioritize their mood in the short term at the cost of their long-term goals. This creates a vicious cycle: the longer a task is avoided, the more anxiety it accumulates, making it even harder to start.
-Counterintuitively, perfectionists are often significant procrastinators. The fear of producing work that falls short of their high standards can paralyze them entirely, leading to prolonged delays.
-The most effective strategies for overcoming procrastination involve addressing the emotional component directly. Breaking tasks into smaller, less intimidating steps, practicing self-compassion when setbacks occur, and creating environments that minimize distraction have all shown measurable results in clinical studies.
-Understanding procrastination as a deeply human response to discomfort, rather than a moral failing, is the first step toward changing it.`,
-  },
-
-  // ── 일본어 N5 추가 ─────────────────────────────────────
-  {
-    title: '[N5] 学校の一日 (학교 하루)',
-    language: 'Japanese', level: 'N5 기초',
-    raw_text: `朝、学校に行きます。
-教室で友達に「おはよう」と言います。
-一時間目は国語の授業です。
-先生は黒板に字を書きます。
-昼休みに友達とお弁当を食べます。
-お弁当はおにぎりとサラダです。
-午後は体育の時間です。
-今日はサッカーをしました。
-学校が終わったら、図書館で本を読みます。`,
-  },
-  {
-    title: '[N5] 朝のあいさつ (아침 인사)',
-    language: 'Japanese', level: 'N5 기초',
-    raw_text: `おはようございます。
-今日もいい天気ですね。
-朝ごはんはもう食べましたか。
-私はパンと牛乳を飲みました。
-これから会社へ行きます。
-電車は少し混んでいます。
-駅で友達に会いました。
-「お先に失礼します」と言って先に行きました。
-気持ちのいい朝です。`,
-  },
-  {
-    title: '[N5] 食堂で (식당에서)',
-    language: 'Japanese', level: 'N5 기초',
-    raw_text: `お昼ご飯を食べに食堂へ行きました。
-メニューを見て、ラーメンを注文しました。
-「ラーメンを一つください」と言いました。
-水はセルフサービスです。
-ラーメンは熱くておいしかったです。
-となりの人はカレーを食べていました。
-食事の後、お会計をしました。
-八百円でした。
-「ごちそうさまでした」と言って店を出ました。`,
-  },
-  {
-    title: '[N5] 私の趣味 (나의 취미)',
-    language: 'Japanese', level: 'N5 기초',
-    raw_text: `私の趣味は音楽を聞くことです。
-特にピアノの曲が好きです。
-週末は家で静かに音楽を聞きます。
-時々ギターも練習します。
-まだ上手ではありませんが、楽しいです。
-友達はサッカーが趣味です。
-妹は絵を描くのが好きです。
-みんな違う趣味があっておもしろいです。
-皆さんの趣味は何ですか。`,
-  },
-  {
-    title: '[N5] 雨の日 (비 오는 날)',
-    language: 'Japanese', level: 'N5 기초',
-    raw_text: `今日は朝から雨が降っています。
-傘を持って学校へ行きました。
-道は人が少ないです。
-教室の窓から雨を見ます。
-雨の音は静かで好きです。
-昼ごはんは食堂で食べました。
-午後、雨はやみました。
-空に虹が出ました。
-きれいな景色でした。`,
-  },
-
-  // ── 일본어 N5 핵심 보강 (필수 추가 패턴) ────────────────
-  {
-    title: '[N5 문법 #16] 의문사 정리 (何·誰·どこ·いつ·どう·なぜ·どんな)',
-    language: 'Japanese', level: 'N5 기초',
-    raw_text: `これは何ですか。
-あの人は誰ですか。
-トイレはどこですか。
-いつ来ますか。
-どうやって行きますか。
-なぜ勉強しますか。
-どんな本が好きですか。
-何時に会いますか。
-どこから来ましたか。`,
-  },
-  {
-    title: '[N5 문법 #17] ~から / ~まで (범위)',
-    language: 'Japanese', level: 'N5 기초',
-    raw_text: `九時から五時まで働きます。
-東京から大阪まで新幹線で行きます。
-家から学校まで歩いて十分です。
-月曜日から金曜日まで授業があります。
-朝から晩まで雨が降っています。
-ここから駅まで近いです。
-四月から日本語を勉強しています。`,
-  },
-  {
-    title: '[N5 문법 #18] 조수사 (~人·~枚·~本·~冊·~個·~匹)',
-    language: 'Japanese', level: 'N5 기초',
-    raw_text: `学生が三人います。
-紙を二枚ください。
-ペンを五本買いました。
-本を二冊読みました。
-りんごを三個食べました。
-犬が一匹います。
-コーヒーを二つお願いします。
-家族は四人です。`,
-  },
-  {
-    title: '[N5 문법 #19] ~ませんか / ~ましょう (제안)',
-    language: 'Japanese', level: 'N5 기초',
-    raw_text: `一緒に映画を見ませんか。
-お茶を飲みませんか。
-今、行きましょう。
-ご飯を食べましょう。
-明日、公園に行きませんか。
-さあ、始めましょう。
-週末、買い物に行きませんか。`,
-  },
-  {
-    title: '[N5 문법 #20] ~から (이유)',
-    language: 'Japanese', level: 'N5 기초',
-    raw_text: `寒いから、コートを着ます。
-今日は忙しいから、行けません。
-時間がないから、急ぎましょう。
-日本語が好きだから、勉強します。
-雨が降っているから、出かけません。
-お腹がすいたから、ご飯を食べました。
-明日は休みだから、ゆっくりします。`,
-  },
-  {
-    title: '[N5 문법 #21] 比較 ~より (비교)',
-    language: 'Japanese', level: 'N5 기초',
-    raw_text: `今日は昨日より暑いです。
-東京は大阪より大きいです。
-コーヒーよりお茶のほうが好きです。
-飛行機は新幹線より速いです。
-私は妹より背が高いです。
-英語より日本語のほうが難しいです。
-冬は夏より好きです。`,
-  },
-  {
-    title: '[N5 문법 #22] 종조사 ね / よ (확인·강조)',
-    language: 'Japanese', level: 'N5 기초',
-    raw_text: `今日はいい天気ですね。
-そうですね、本当に暑いですね。
-これ、おいしいですよ。
-気をつけてくださいね。
-あの人、有名ですよ。
-明日は休みですよ。
-あ、もう三時ですね。
-この店、安いですよ。`,
-  },
-  {
-    title: '[N5 문법 #23] ~でしょう (추측·확인)',
-    language: 'Japanese', level: 'N5 기초',
-    raw_text: `明日は雨が降るでしょう。
-彼はもう来るでしょう。
-これは難しいでしょう。
-あなたも来るでしょう。
-たぶん、田中さんは知らないでしょう。
-週末は混むでしょう。
-あの店は今日、開いているでしょう。`,
-  },
-
-  // ── 일본어 N5 카나 입문 (글자부터) ─────────────────────
-  {
-    title: '[N5 카나 #1] 히라가나로 첫 일본어',
-    language: 'Japanese', level: 'N5 기초',
-    raw_text: `わたしは がくせい です。
-あなたは せんせい です。
-これは ほん です。
-あれは とけい です。
-おはよう、げんき ですか。
-ありがとう ございます。
-さようなら、また あした。
-すみません、いま なんじ ですか。`,
-  },
-  {
-    title: '[N5 카나 #2] 카타카나로 외래어 익히기',
-    language: 'Japanese', level: 'N5 기초',
-    raw_text: `コーヒーを のみます。
-パンを たべます。
-バスで がっこうへ いきます。
-テレビを みます。
-ノートと ペンが あります。
-カメラで しゃしんを とります。
-タクシーに のります。
-レストランで ピザを たべました。`,
-  },
-
-  // ── 일본어 N5 문법 시리즈 (입문자 순차 학습) ───────────
+  // ── N5 ─────────────────────
   {
     title: '[N5 문법 #1] ~は~です (기본 단정문)',
     language: 'Japanese', level: 'N5 기초',
@@ -898,48 +170,98 @@ Understanding procrastination as a deeply human response to discomfort, rather t
 ちょっと待ってください。
 電気を消してください。`,
   },
-
-  // ── 일본어 N4 추가 ─────────────────────────────────────
   {
-    title: '[N4] 友達と買い物 (친구와 쇼핑)',
-    language: 'Japanese', level: 'N4 기본',
-    raw_text: `先週の土曜日、友達と一緒にデパートへ行きました。
-新しい服を買いたかったからです。
-最初に三階の婦人服売り場を見ました。
-気に入った青いシャツがありましたが、少し高かったので迷いました。
-友達は「セールの時にまた来たら？」と言いました。
-それは良いアイデアだと思います。
-お昼は地下のレストランでパスタを食べました。
-帰り道、雨が降り始めましたが、楽しい一日でした。
-来週も一緒に出かける約束をしました。`,
+    title: '[N5 문법 #16] 의문사 정리 (何·誰·どこ·いつ·どう·なぜ·どんな)',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `これは何ですか。
+あの人は誰ですか。
+トイレはどこですか。
+いつ来ますか。
+どうやって行きますか。
+なぜ勉強しますか。
+どんな本が好きですか。
+何時に会いますか。
+どこから来ましたか。`,
   },
   {
-    title: '[N4] 旅行の計画 (여행 계획)',
-    language: 'Japanese', level: 'N4 기본',
-    raw_text: `来月、友達と京都へ旅行に行く予定です。
-京都には有名なお寺がたくさんあります。
-特に清水寺と金閣寺は絶対に見たいです。
-新幹線で行くつもりですが、まだチケットを買っていません。
-ホテルはインターネットで予約しました。
-駅から歩いて十分のところにあります。
-食べ物も楽しみです。京都の抹茶アイスは有名らしいです。
-友達はお寺で写真をたくさん撮りたいと言っていました。
-天気がよければいいなと思います。`,
+    title: '[N5 문법 #17] ~から / ~まで (범위)',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `九時から五時まで働きます。
+東京から大阪まで新幹線で行きます。
+家から学校まで歩いて十分です。
+月曜日から金曜日まで授業があります。
+朝から晩まで雨が降っています。
+ここから駅まで近いです。
+四月から日本語を勉強しています。`,
   },
   {
-    title: '[N4] 新しい仕事 (새 직장)',
-    language: 'Japanese', level: 'N4 기본',
-    raw_text: `先月から新しい会社で働き始めました。
-前の仕事より家から近くて便利です。
-朝は八時に家を出て、九時前に会社に着きます。
-最初の一週間は新しい仕事を覚えるのが大変でした。
-でも先輩がやさしく教えてくれて、少しずつ慣れてきました。
-昼休みは同僚と一緒に近くの食堂でランチを食べます。
-仕事は忙しいですが、やりがいがあります。
-家に帰ったら、お風呂に入ってゆっくり休みます。`,
+    title: '[N5 문법 #18] 조수사 (~人·~枚·~本·~冊·~個·~匹)',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `学生が三人います。
+紙を二枚ください。
+ペンを五本買いました。
+本を二冊読みました。
+りんごを三個食べました。
+犬が一匹います。
+コーヒーを二つお願いします。
+家族は四人です。`,
   },
-
-  // ── 일본어 N5 실용 표현 (자주 쓰는 표현 모음) ──────────
+  {
+    title: '[N5 문법 #19] ~ませんか / ~ましょう (제안)',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `一緒に映画を見ませんか。
+お茶を飲みませんか。
+今、行きましょう。
+ご飯を食べましょう。
+明日、公園に行きませんか。
+さあ、始めましょう。
+週末、買い物に行きませんか。`,
+  },
+  {
+    title: '[N5 문법 #20] ~から (이유)',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `寒いから、コートを着ます。
+今日は忙しいから、行けません。
+時間がないから、急ぎましょう。
+日本語が好きだから、勉強します。
+雨が降っているから、出かけません。
+お腹がすいたから、ご飯を食べました。
+明日は休みだから、ゆっくりします。`,
+  },
+  {
+    title: '[N5 문법 #21] 比較 ~より (비교)',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `今日は昨日より暑いです。
+東京は大阪より大きいです。
+コーヒーよりお茶のほうが好きです。
+飛行機は新幹線より速いです。
+私は妹より背が高いです。
+英語より日本語のほうが難しいです。
+冬は夏より好きです。`,
+  },
+  {
+    title: '[N5 문법 #22] 종조사 ね / よ (확인·강조)',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `今日はいい天気ですね。
+そうですね、本当に暑いですね。
+これ、おいしいですよ。
+気をつけてくださいね。
+あの人、有名ですよ。
+明日は休みですよ。
+あ、もう三時ですね。
+この店、安いですよ。`,
+  },
+  {
+    title: '[N5 문법 #23] ~でしょう (추측·확인)',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `明日は雨が降るでしょう。
+彼はもう来るでしょう。
+これは難しいでしょう。
+あなたも来るでしょう。
+たぶん、田中さんは知らないでしょう。
+週末は混むでしょう。
+あの店は今日、開いているでしょう。`,
+  },
   {
     title: '[N5 실용 #1] 인사·자기소개',
     language: 'Japanese', level: 'N5 기초',
@@ -1006,8 +328,32 @@ Understanding procrastination as a deeply human response to discomfort, rather t
 銀行はあそこです。
 ありがとうございました。`,
   },
+  {
+    title: '[N5 카나 #1] 히라가나로 첫 일본어',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `わたしは がくせい です。
+あなたは せんせい です。
+これは ほん です。
+あれは とけい です。
+おはよう、げんき ですか。
+ありがとう ございます。
+さようなら、また あした。
+すみません、いま なんじ ですか。`,
+  },
+  {
+    title: '[N5 카나 #2] 카타카나로 외래어 익히기',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `コーヒーを のみます。
+パンを たべます。
+バスで がっこうへ いきます。
+テレビを みます。
+ノートと ペンが あります。
+カメラで しゃしんを とります。
+タクシーに のります。
+レストランで ピザを たべました。`,
+  },
 
-  // ── 일본어 N4 문법 시리즈 (다음 단계) ──────────────────
+  // ── N4 ─────────────────────
   {
     title: '[N4 문법 #1] ~て (동작 연결)',
     language: 'Japanese', level: 'N4 기본',
@@ -1115,62 +461,421 @@ Understanding procrastination as a deeply human response to discomfort, rather t
 もっと運動しなくてはいけません。
 野菜を食べなくてはいけません。`,
   },
+  {
+    title: '[N4 문법 #11] 가능형 ~られる / ~える (~할 수 있다)',
+    language: 'Japanese', level: 'N4 기본',
+    raw_text: `日本語が話せます。
+漢字が読めます。
+朝早く起きられません。
+このピアノが弾けますか。
+彼は速く走れます。
+辛いものは食べられません。
+ここで写真が撮れますか。
+日本語を話すことができます。`,
+  },
+  {
+    title: '[N4 문법 #12] ~ば (조건)',
+    language: 'Japanese', level: 'N4 기본',
+    raw_text: `時間があれば、行きます。
+お金があれば、買います。
+天気が良ければ、行きましょう。
+もっと安ければ、買いたいです。
+分からなければ、聞いてください。
+雨が降れば、試合は中止です。
+急がなければ、間に合いません。`,
+  },
+  {
+    title: '[N4 문법 #13] ~なら (가정·전제)',
+    language: 'Japanese', level: 'N4 기본',
+    raw_text: `日本に行くなら、京都もぜひ行ってください。
+あなたが来るなら、私も行きます。
+車で行くなら、私も乗せてください。
+韓国料理なら、この店がおすすめです。
+本を買うなら、本屋がいいですよ。
+彼が来ないなら、私も帰ります。`,
+  },
+  {
+    title: '[N4 문법 #14] 보통체 (普通形, informal)',
+    language: 'Japanese', level: 'N4 기본',
+    raw_text: `今日は暑い。
+昨日、映画を見た。
+明日、来ない。
+日本語を勉強する。
+あの人は学生だ。
+これは私のだ。
+昨日は楽しかった。
+雨が降っている。`,
+  },
+  {
+    title: '[N4 문법 #15] ~でしょう / ~かもしれません (추측)',
+    language: 'Japanese', level: 'N4 기본',
+    raw_text: `明日は雨が降るでしょう。
+彼はもう着いたでしょう。
+このテストは難しいかもしれません。
+雨が降るかもしれません。
+彼は知らないかもしれない。
+バスは遅れるかもしれません。
+留守かもしれませんね。`,
+  },
+  {
+    title: '[N4 문법 #16] ~つもり / ~予定 (의도·예정)',
+    language: 'Japanese', level: 'N4 기본',
+    raw_text: `来年、日本へ行くつもりです。
+今度、新しい仕事を始めるつもりです。
+明日、彼に会う予定です。
+来週、休む予定です。
+何もしないつもりです。
+週末は家にいるつもりです。
+来月、引っ越す予定です。`,
+  },
+  {
+    title: '[N4 문법 #17] ~そうです (양태, ~할 것 같다)',
+    language: 'Japanese', level: 'N4 기본',
+    raw_text: `このケーキはおいしそうです。
+彼は元気そうです。
+雨が降りそうですね。
+赤ちゃんが泣きそうです。
+このかばんは丈夫そうです。
+あの人は親切そうです。
+試験は難しそうです。`,
+  },
+  {
+    title: '[N4 문법 #18] ~そうです (전문, ~라고 한다)',
+    language: 'Japanese', level: 'N4 기본',
+    raw_text: `天気予報によると、明日は晴れるそうです。
+彼は来週、結婚するそうです。
+この店のラーメンはおいしいそうです。
+日本語の試験は難しいそうです。
+ニュースで聞いたが、地震があったそうだ。
+田中さんは病気だそうです。`,
+  },
+  {
+    title: '[N4 문법 #19] ~はずです (당연·확신)',
+    language: 'Japanese', level: 'N4 기본',
+    raw_text: `彼はもう着いているはずです。
+このバスは三時に来るはずだ。
+そのレストランは安いはずです。
+鈴木さんは知っているはずです。
+昨日メールしたから、見ているはずです。
+彼女が来るはずだったのに、来なかった。`,
+  },
+  {
+    title: '[N4 문법 #20] ~ように (목적)',
+    language: 'Japanese', level: 'N4 기본',
+    raw_text: `忘れないように、メモします。
+聞こえるように、大きい声で話してください。
+日本語が上手になるように、毎日練習しています。
+風邪を引かないように、気をつけてください。
+遅れないように、早く家を出ました。
+分かるように、簡単に説明してください。`,
+  },
 
-  // ── 영어 A1 추가 ─────────────────────────────────────
+  // ── N3 ─────────────────────
   {
-    title: '[A1] My Best Friend (나의 가장 친한 친구)',
-    language: 'English', level: 'A1 기초',
-    raw_text: `My best friend is Lisa. She is twelve years old.
-We are in the same class at school.
-Lisa has long brown hair and big eyes.
-She is very kind and funny.
-We like the same things. We both love music and animals.
-On weekends, we play in the park or watch movies.
-Sometimes, we have lunch at her house.
-Her mom makes very good pancakes.
-I am happy to have a friend like Lisa.`,
+    title: '[N3 문법 #1] ~ようになる / ~ようにする (변화·노력)',
+    language: 'Japanese', level: 'N3 중급',
+    raw_text: `毎日練習して、日本語が話せるようになりました。
+最近、健康のために野菜をたくさん食べるようにしています。
+朝早く起きるようになって、生活が変わりました。
+忘れないように、メモを取るようにしています。
+彼は最近、笑うようになりました。
+コーヒーを飲まないようにしています。
+時間を守るようにしましょう。`,
   },
   {
-    title: '[A1] Going to School (학교 가기)',
-    language: 'English', level: 'A1 기초',
-    raw_text: `I go to school every day from Monday to Friday.
-My school is not far from my house.
-I walk to school with my brother. It takes ten minutes.
-We start class at eight o'clock.
-My favorite subject is English.
-I also like art and music.
-At noon, we have lunch in the cafeteria.
-School ends at three in the afternoon.
-After school, I do my homework and play with my dog.`,
+    title: '[N3 문법 #2] 수동형 ~れる/~られる',
+    language: 'Japanese', level: 'N3 중급',
+    raw_text: `先生に名前を呼ばれました。
+雨に降られて、服が濡れました。
+友達に笑われて、恥ずかしかったです。
+このお寺は四百年前に建てられました。
+新しい計画が発表されました。
+私の自転車が盗まれました。
+この本は世界中で読まれています。`,
   },
   {
-    title: '[A1] My Pet (나의 반려동물)',
-    language: 'English', level: 'A1 기초',
-    raw_text: `I have a small dog. His name is Max.
-Max is brown and white. He has big ears.
-He is three years old.
-Max likes to play with a yellow ball.
-Every morning, I take him to the park.
-He runs very fast and meets other dogs.
-He loves to eat chicken and rice.
-At night, Max sleeps next to my bed.
-I love my dog very much.`,
+    title: '[N3 문법 #3] 사동형 ~せる/~させる',
+    language: 'Japanese', level: 'N3 중급',
+    raw_text: `母は弟に部屋を掃除させました。
+先生は学生にたくさん本を読ませます。
+父は私に毎朝牛乳を飲ませました。
+すみません、ちょっと待たせてください。
+社員に働かせすぎないでください。
+子供を公園で遊ばせます。
+歌を歌わせていただけますか。`,
   },
   {
-    title: '[A1] Daily Routines (하루 일과)',
-    language: 'English', level: 'A1 기초',
-    raw_text: `I wake up at seven every morning.
-First, I brush my teeth and wash my face.
-Then I have breakfast with my family.
-I usually eat toast and drink milk.
-I go to school by bus. The bus stop is near my house.
-School finishes at three thirty.
-After school, I do my homework.
-In the evening, I watch TV or read a book.
-I go to bed at ten o'clock.`,
+    title: '[N3 문법 #4] ~てしまう (완료·유감)',
+    language: 'Japanese', level: 'N3 중급',
+    raw_text: `宿題をやっと終わってしまいました。
+財布を電車に忘れてしまいました。
+ケーキを全部食べてしまいました。
+大事な本を無くしてしまった。
+うっかり寝坊してしまいました。
+雨に濡れて風邪を引いてしまった。
+一晩でこの小説を読んでしまった。`,
+  },
+  {
+    title: '[N3 문법 #5] ~ばかり (한정·완료 직후)',
+    language: 'Japanese', level: 'N3 중급',
+    raw_text: `弟はゲームばかりしています。
+最近、雨ばかり降っています。
+日本に来たばかりで、まだ慣れていません。
+食べたばかりなのに、もうお腹がすいた。
+この会社に入ったばかりです。
+甘いものばかり食べないでください。
+昨日買ったばかりのかばんを汚してしまった。`,
+  },
+  {
+    title: '[N3 문법 #6] ~ばよかった (~할 걸 그랬다)',
+    language: 'Japanese', level: 'N3 중급',
+    raw_text: `もっと早く来ればよかった。
+傘を持ってくればよかったです。
+あの時、彼に正直に言えばよかった。
+もっと勉強しておけばよかった。
+野菜を買っておけばよかったな。
+試験の前に復習すればよかった。
+あの本を買っておけばよかった。`,
+  },
+  {
+    title: '[N3 문법 #7] ~らしい / ~みたい (~인 것 같다)',
+    language: 'Japanese', level: 'N3 중급',
+    raw_text: `田中さんは来週、引っ越すらしいです。
+明日は雨が降るらしい。
+あの人は学生みたいです。
+店長は怒っているみたいだ。
+本物のダイヤモンドみたいに光っている。
+今年の夏はとても暑いらしい。
+彼女は本当の姉妹みたいに仲がいい。`,
+  },
+  {
+    title: '[N3 문법 #8] 경어 입문 — お~になる / ご~になる',
+    language: 'Japanese', level: 'N3 중급',
+    raw_text: `先生はもうお帰りになりました。
+社長は今、お電話中でいらっしゃいます。
+お客様はこの本をお読みになりましたか。
+どうぞこちらにお座りください。
+資料をご覧ください。
+ご注文はお決まりですか。
+お先に失礼いたします。`,
+  },
+  {
+    title: '[N3 문법 #9] ~ところ (직전·직후·진행)',
+    language: 'Japanese', level: 'N3 중급',
+    raw_text: `今、出かけるところです。
+ちょうどご飯を食べているところです。
+今、家に着いたところです。
+試験が始まるところです。
+ちょうど今、終わったところです。
+電話をかけようとしていたところです。
+ちょうど駅に着いたところでした。`,
+  },
+  {
+    title: '[N3 문법 #10] ~わけだ (당연·논리적 결과)',
+    language: 'Japanese', level: 'N3 중급',
+    raw_text: `彼は十年も日本に住んでいる。日本語が上手なわけだ。
+冷蔵庫が空っぽだから、お腹がすくわけだ。
+雪が降っている。寒いわけだ。
+試験に合格した。喜ぶわけだ。
+忙しかった。連絡がなかったわけだ。
+彼は朝から何も食べていない。お腹がすいているわけだ。`,
+  },
+  {
+    title: '[N3 문법 #11] ~について / ~に関して (~에 대해)',
+    language: 'Japanese', level: 'N3 중급',
+    raw_text: `日本の文化について話しましょう。
+このテーマについて、いろいろ調べました。
+彼の意見について、どう思いますか。
+環境問題について、考えてみましょう。
+旅行についての質問があります。
+新しい計画に関して、説明します。
+あの事件に関する記事を読みました。`,
+  },
+  {
+    title: '[N3 문법 #12] ~まま (~한 채로)',
+    language: 'Japanese', level: 'N3 중급',
+    raw_text: `窓を開けたまま、出かけました。
+靴を履いたまま、家に入らないでください。
+何も言わないまま、彼は去って行った。
+昨日のままで、何も変わっていない。
+立ったまま、話します。
+電気をつけたまま、寝てしまった。
+彼の手紙は読まないまま、置いてある。`,
+  },
+  {
+    title: '[N3 문법 #13] ~ものだ (당연·일반론)',
+    language: 'Japanese', level: 'N3 중급',
+    raw_text: `人は誰でも間違えるものだ。
+時間が経つのは早いものですね。
+日本人はよくお辞儀をするものだ。
+若いときは、よく勉強したものだ。
+子供は遊びたがるものだ。
+人生はそんなものだ。
+昔はよく友達と遊んだものだ。`,
+  },
+  {
+    title: '[N3 문법 #14] ~限り (~하는 한)',
+    language: 'Japanese', level: 'N3 중급',
+    raw_text: `できる限り、頑張ります。
+私が知る限り、彼はまだ独身です。
+体が元気な限り、働き続けたい。
+雨が降らない限り、試合は行われます。
+時間が許す限り、お手伝いします。
+私が見た限り、問題はありません。`,
+  },
+  {
+    title: '[N3 문법 #15] ~ば~ほど (~할수록)',
+    language: 'Japanese', level: 'N3 중급',
+    raw_text: `勉強すればするほど、楽しくなる。
+食べれば食べるほど、お腹がすく。
+高ければ高いほど、品質がいい。
+急げば急ぐほど、ミスが増える。
+聞けば聞くほど、面白い話だ。
+考えれば考えるほど、分からなくなる。`,
+  },
+  {
+    title: '[N3 문법 #16] ~につれて (~에 따라, 변화)',
+    language: 'Japanese', level: 'N3 중급',
+    raw_text: `時間が経つにつれて、忘れていきます。
+年を取るにつれて、体が弱くなる。
+都市が発展するにつれて、人口が増えた。
+春になるにつれて、暖かくなる。
+経験が増えるにつれて、自信もついてきた。
+山を登るにつれて、空気が薄くなる。`,
+  },
+  {
+    title: '[N3 문법 #17] ~代わりに (~대신)',
+    language: 'Japanese', level: 'N3 중급',
+    raw_text: `バターの代わりにオリーブオイルを使います。
+私の代わりに、田中さんが行きます。
+休む代わりに、明日働きます。
+日本語を教える代わりに、英語を教えてもらった。
+本を買う代わりに、図書館で借りました。
+電車の代わりにバスで行きました。`,
+  },
+  {
+    title: '[N3 문법 #18] ~に違いない (~임에 틀림없다)',
+    language: 'Japanese', level: 'N3 중급',
+    raw_text: `彼は犯人に違いない。
+これはきっと彼女のかばんに違いない。
+あの音は雷に違いない。
+試験に合格したに違いない。
+彼女は怒っているに違いない。
+あの店は今、混んでいるに違いない。
+彼はもう知っているに違いない。`,
   },
 
-  // ── 영어 A1 핵심 보강 (필수 추가 패턴) ──────────────
+  // ── A1 ─────────────────────
+  {
+    title: '[A1 grammar #1] be 동사 (am / is / are)',
+    language: 'English', level: 'A1 기초',
+    raw_text: `I am a student. My name is John.
+You are kind.
+She is a doctor. She is from Korea.
+We are friends.
+They are at the park.
+This is my brother. He is twelve years old.
+I am happy today.`,
+  },
+  {
+    title: '[A1 grammar #2] have / has (소유)',
+    language: 'English', level: 'A1 기초',
+    raw_text: `I have a brother and a sister.
+She has a small dog.
+We have a new car.
+They have two children.
+I have a question.
+He has black hair and brown eyes.
+My friend has a beautiful house.`,
+  },
+  {
+    title: '[A1 grammar #3] there is / there are (존재)',
+    language: 'English', level: 'A1 기초',
+    raw_text: `There is a book on the table.
+There are five students in the classroom.
+There is a park near my house.
+There are many people in the park today.
+Is there a bathroom on this floor?
+There are no apples in the fridge.
+There is a cat under the chair.`,
+  },
+  {
+    title: '[A1 grammar #4] simple present (일상·습관)',
+    language: 'English', level: 'A1 기초',
+    raw_text: `I read books every day.
+She works at a bank.
+We play soccer on weekends.
+He drinks coffee in the morning.
+The bus comes at eight o'clock.
+My family lives in Seoul.
+The sun rises in the east.`,
+  },
+  {
+    title: '[A1 grammar #5] present continuous (~ing, 진행)',
+    language: 'English', level: 'A1 기초',
+    raw_text: `I am reading a book now.
+She is cooking dinner.
+They are playing in the garden.
+He is sleeping on the sofa.
+We are studying English.
+It is raining outside.
+The baby is laughing.`,
+  },
+  {
+    title: '[A1 grammar #6] simple past — regular verbs',
+    language: 'English', level: 'A1 기초',
+    raw_text: `Yesterday, I cleaned my room.
+She watched a movie last night.
+We visited my grandmother.
+They walked to school this morning.
+He cooked pasta for dinner.
+I called my friend.
+The children played in the park.`,
+  },
+  {
+    title: '[A1 grammar #7] simple past — irregular verbs',
+    language: 'English', level: 'A1 기초',
+    raw_text: `I went to the park yesterday.
+She had breakfast at seven.
+We saw a beautiful sunset.
+They came to my house last weekend.
+He gave me a book for my birthday.
+I made a sandwich for lunch.
+The cat ate all the fish.`,
+  },
+  {
+    title: '[A1 grammar #8] can / cannot (능력)',
+    language: 'English', level: 'A1 기초',
+    raw_text: `I can speak two languages.
+She can swim very well.
+We can meet tomorrow.
+He cannot drive a car.
+Can you help me with this?
+Birds can fly, but penguins cannot.
+My little sister can read already.`,
+  },
+  {
+    title: '[A1 grammar #9] want to (~하고 싶다)',
+    language: 'English', level: 'A1 기초',
+    raw_text: `I want to learn Japanese.
+She wants to be a doctor.
+We want to travel to Italy next year.
+He wants to buy a new phone.
+I want to eat pizza tonight.
+Do you want to come with us?
+They want to live in the countryside.`,
+  },
+  {
+    title: '[A1 grammar #10] yes/no questions',
+    language: 'English', level: 'A1 기초',
+    raw_text: `Are you tired?
+Is she at home?
+Do you like coffee?
+Does he speak English?
+Did you watch the game last night?
+Can you swim?
+Are they your friends?`,
+  },
   {
     title: '[A1 grammar #11] wh-questions (who/what/where/when/why/how)',
     language: 'English', level: 'A1 기초',
@@ -1286,8 +991,6 @@ Pass me the book.
 Don't worry.
 Come here.`,
   },
-
-  // ── 영어 A1 실용 표현 (자주 쓰는 표현 모음) ──────────
   {
     title: '[A1 phrases #1] Greetings & Introductions',
     language: 'English', level: 'A1 기초',
@@ -1354,273 +1057,7 @@ The bank is over there.
 Thank you very much.`,
   },
 
-  // ── 영어 A1 문법 시리즈 (입문자 순차 학습) ──────────────
-  {
-    title: '[A1 grammar #1] be 동사 (am / is / are)',
-    language: 'English', level: 'A1 기초',
-    raw_text: `I am a student. My name is John.
-You are kind.
-She is a doctor. She is from Korea.
-We are friends.
-They are at the park.
-This is my brother. He is twelve years old.
-I am happy today.`,
-  },
-  {
-    title: '[A1 grammar #2] have / has (소유)',
-    language: 'English', level: 'A1 기초',
-    raw_text: `I have a brother and a sister.
-She has a small dog.
-We have a new car.
-They have two children.
-I have a question.
-He has black hair and brown eyes.
-My friend has a beautiful house.`,
-  },
-  {
-    title: '[A1 grammar #3] there is / there are (존재)',
-    language: 'English', level: 'A1 기초',
-    raw_text: `There is a book on the table.
-There are five students in the classroom.
-There is a park near my house.
-There are many people in the park today.
-Is there a bathroom on this floor?
-There are no apples in the fridge.
-There is a cat under the chair.`,
-  },
-  {
-    title: '[A1 grammar #4] simple present (일상·습관)',
-    language: 'English', level: 'A1 기초',
-    raw_text: `I read books every day.
-She works at a bank.
-We play soccer on weekends.
-He drinks coffee in the morning.
-The bus comes at eight o'clock.
-My family lives in Seoul.
-The sun rises in the east.`,
-  },
-  {
-    title: '[A1 grammar #5] present continuous (~ing, 진행)',
-    language: 'English', level: 'A1 기초',
-    raw_text: `I am reading a book now.
-She is cooking dinner.
-They are playing in the garden.
-He is sleeping on the sofa.
-We are studying English.
-It is raining outside.
-The baby is laughing.`,
-  },
-  {
-    title: '[A1 grammar #6] simple past — regular verbs',
-    language: 'English', level: 'A1 기초',
-    raw_text: `Yesterday, I cleaned my room.
-She watched a movie last night.
-We visited my grandmother.
-They walked to school this morning.
-He cooked pasta for dinner.
-I called my friend.
-The children played in the park.`,
-  },
-  {
-    title: '[A1 grammar #7] simple past — irregular verbs',
-    language: 'English', level: 'A1 기초',
-    raw_text: `I went to the park yesterday.
-She had breakfast at seven.
-We saw a beautiful sunset.
-They came to my house last weekend.
-He gave me a book for my birthday.
-I made a sandwich for lunch.
-The cat ate all the fish.`,
-  },
-  {
-    title: '[A1 grammar #8] can / cannot (능력)',
-    language: 'English', level: 'A1 기초',
-    raw_text: `I can speak two languages.
-She can swim very well.
-We can meet tomorrow.
-He cannot drive a car.
-Can you help me with this?
-Birds can fly, but penguins cannot.
-My little sister can read already.`,
-  },
-  {
-    title: '[A1 grammar #9] want to (~하고 싶다)',
-    language: 'English', level: 'A1 기초',
-    raw_text: `I want to learn Japanese.
-She wants to be a doctor.
-We want to travel to Italy next year.
-He wants to buy a new phone.
-I want to eat pizza tonight.
-Do you want to come with us?
-They want to live in the countryside.`,
-  },
-  {
-    title: '[A1 grammar #10] yes/no questions',
-    language: 'English', level: 'A1 기초',
-    raw_text: `Are you tired?
-Is she at home?
-Do you like coffee?
-Does he speak English?
-Did you watch the game last night?
-Can you swim?
-Are they your friends?`,
-  },
-
-  // ── 영어 A2 추가 ─────────────────────────────────────
-  {
-    title: '[A2] A Trip to the Beach (해변 여행)',
-    language: 'English', level: 'A2 초급',
-    raw_text: `Last summer, my family and I went to the beach for the weekend.
-We drove for about three hours and arrived at a small hotel near the sea.
-The weather was perfect — sunny and warm, with a light breeze.
-On the first day, we swam in the ocean and built a big sandcastle.
-My little sister found beautiful shells along the shore.
-For lunch, we ate fresh fish at a restaurant by the water.
-In the evening, we watched the sunset together.
-The sky turned pink and orange. It was so beautiful.
-We took many photos to remember this special trip.`,
-  },
-  {
-    title: '[A2] Cooking with My Grandma (할머니와 요리하기)',
-    language: 'English', level: 'A2 초급',
-    raw_text: `Every Sunday, I visit my grandma and we cook together.
-She is teaching me her favorite recipes.
-Last week, we made vegetable soup and homemade bread.
-First, we cut the carrots, potatoes, and onions.
-Grandma showed me how to add the right amount of salt.
-While the soup was cooking, we kneaded the bread dough.
-The kitchen smelled amazing.
-After two hours, everything was ready.
-I love these afternoons because I learn something new and spend time with her.`,
-  },
-  {
-    title: '[A2] My Favorite Holiday (내가 좋아하는 명절)',
-    language: 'English', level: 'A2 초급',
-    raw_text: `My favorite holiday is the Lunar New Year.
-It is the most important holiday in my family.
-We usually celebrate it for three days.
-On the first day, we wear new clothes and visit our grandparents.
-My grandma cooks special food, like rice cakes and dumplings.
-The children receive money in red envelopes from the older relatives.
-We also play traditional games together.
-At night, we watch fireworks from the balcony.
-I always feel happy and grateful during this holiday.`,
-  },
-
-  // ── 영어 A2 핵심 보강 (필수 추가 패턴) ────────────────
-  {
-    title: '[A2 grammar #11] present perfect (have / has + p.p.)',
-    language: 'English', level: 'A2 초급',
-    raw_text: `I have lived in Seoul for ten years.
-She has just finished her homework.
-We have visited Japan three times.
-He has never tried sushi.
-Have you seen this movie?
-They haven't called me yet.
-I have known her since 2015.
-She has lost her keys.`,
-  },
-  {
-    title: '[A2 grammar #12] past continuous (was / were + ing)',
-    language: 'English', level: 'A2 초급',
-    raw_text: `I was reading when she called.
-They were playing in the park yesterday.
-What were you doing at noon?
-She was cooking when the doorbell rang.
-We were watching a movie last night.
-He was studying all evening.
-It was raining when we left the house.`,
-  },
-  {
-    title: '[A2 grammar #13] first conditional (if + present, will)',
-    language: 'English', level: 'A2 초급',
-    raw_text: `If it rains, we will stay home.
-If you study hard, you will pass the exam.
-If she comes, we will start the meeting.
-What will you do if he says no?
-If I have time, I will call you tonight.
-If we hurry, we won't be late.
-If you don't eat, you'll be hungry later.`,
-  },
-  {
-    title: '[A2 grammar #14] must / mustn\'t (강한 의무·금지)',
-    language: 'English', level: 'A2 초급',
-    raw_text: `You must wear a seatbelt in the car.
-We must finish this report today.
-You mustn't smoke here.
-Children mustn't play with fire.
-She must take her medicine every morning.
-We mustn't be late for the meeting.
-You must tell the truth.`,
-  },
-  {
-    title: '[A2 grammar #15] gerund vs infinitive',
-    language: 'English', level: 'A2 초급',
-    raw_text: `I enjoy swimming in the ocean.
-She wants to learn French.
-He stopped smoking last year.
-They decided to leave early.
-We love watching movies together.
-I'm thinking of moving abroad.
-She agreed to help us.`,
-  },
-  {
-    title: '[A2 grammar #16] adverbs of manner (-ly)',
-    language: 'English', level: 'A2 초급',
-    raw_text: `She speaks slowly and clearly.
-He drives carefully on rainy days.
-The children played happily in the garden.
-She sang beautifully at the concert.
-He answered politely.
-The dog ran quickly across the field.
-Please knock loudly on the door.`,
-  },
-  {
-    title: '[A2 grammar #17] already / yet / just (현재완료 부사)',
-    language: 'English', level: 'A2 초급',
-    raw_text: `I have already finished my work.
-Have you eaten dinner yet?
-She has just arrived at the airport.
-We haven't started the project yet.
-They have already left the office.
-He has just called me.
-I haven't seen that movie yet.`,
-  },
-  {
-    title: '[A2 grammar #18] so / such (강조)',
-    language: 'English', level: 'A2 초급',
-    raw_text: `The movie was so good.
-She is so kind to everyone.
-It was such a long day.
-He is such a nice person.
-I'm so tired tonight.
-The food was so delicious.
-That was such a beautiful song.`,
-  },
-  {
-    title: '[A2 grammar #19] too / enough',
-    language: 'English', level: 'A2 초급',
-    raw_text: `This soup is too hot to eat.
-She is not tall enough to reach the shelf.
-The room is big enough for all of us.
-It's too cold to swim today.
-Are you old enough to drive?
-The coffee is too strong.
-This bag isn't big enough for my books.`,
-  },
-  {
-    title: '[A2 grammar #20] passive voice (basic)',
-    language: 'English', level: 'A2 초급',
-    raw_text: `The letter was written by my mother.
-This bridge was built in 1990.
-English is spoken in many countries.
-The car is being repaired now.
-This song was sung by Adele.
-The cake is made with chocolate.
-The window was broken yesterday.`,
-  },
-
-  // ── 영어 A2 문법 시리즈 (다음 단계) ────────────────────
+  // ── A2 ─────────────────────
   {
     title: '[A2 grammar #1] comparatives — than',
     language: 'English', level: 'A2 초급',
@@ -1731,14 +1168,115 @@ How many books do you read each year?
 We need some help with this project.
 Are there any seats available?`,
   },
-
-  // ── 영어 C1 ──────────────────────────────────────────────
   {
-    title: '[C1] Artificial Intelligence and the Question of Consciousness (AI와 의식의 문제)',
-    language: 'English', level: 'C1 고급',
-    raw_text: `The rapid advancement of artificial intelligence has revived one of philosophy's oldest and most intractable questions: what is consciousness, and could a machine ever possess it? As large language models demonstrate increasingly sophisticated reasoning and generate text that is functionally indistinguishable from human-written prose, the boundaries between simulation and genuine understanding have become frustratingly blurred.
-The philosophical framework most commonly invoked in this debate is the distinction between "weak AI" and "strong AI." Weak AI refers to systems that simulate intelligent behavior for specific tasks without any form of subjective experience, while strong AI — which remains hypothetical — would involve genuine mental states and self-awareness. Critics of current AI systems, drawing on John Searle's famous "Chinese Room" argument, contend that even the most sophisticated language model is merely performing syntactic manipulation without any semantic understanding of the content it produces.
-Proponents of machine consciousness, however, argue that this position is philosophically inconsistent. If consciousness can emerge from the electrochemical activity of neurons — which are, after all, physical processes — there is no principled reason why sufficiently complex computational processes could not give rise to subjective experience. The "hard problem" of consciousness, as articulated by David Chalmers, remains unsolved for biological minds as much as for artificial ones.
-What makes this debate particularly consequential is its ethical dimension. If future AI systems were determined to possess some form of experience, the moral implications would be profound, demanding a fundamental reconsideration of how such entities are created, used, and ultimately disposed of. The question is no longer purely academic.`,
+    title: '[A2 grammar #11] present perfect (have / has + p.p.)',
+    language: 'English', level: 'A2 초급',
+    raw_text: `I have lived in Seoul for ten years.
+She has just finished her homework.
+We have visited Japan three times.
+He has never tried sushi.
+Have you seen this movie?
+They haven't called me yet.
+I have known her since 2015.
+She has lost her keys.`,
+  },
+  {
+    title: '[A2 grammar #12] past continuous (was / were + ing)',
+    language: 'English', level: 'A2 초급',
+    raw_text: `I was reading when she called.
+They were playing in the park yesterday.
+What were you doing at noon?
+She was cooking when the doorbell rang.
+We were watching a movie last night.
+He was studying all evening.
+It was raining when we left the house.`,
+  },
+  {
+    title: '[A2 grammar #13] first conditional (if + present, will)',
+    language: 'English', level: 'A2 초급',
+    raw_text: `If it rains, we will stay home.
+If you study hard, you will pass the exam.
+If she comes, we will start the meeting.
+What will you do if he says no?
+If I have time, I will call you tonight.
+If we hurry, we won't be late.
+If you don't eat, you'll be hungry later.`,
+  },
+  {
+    title: '[A2 grammar #14] must / mustn\'t (강한 의무·금지)',
+    language: 'English', level: 'A2 초급',
+    raw_text: `You must wear a seatbelt in the car.
+We must finish this report today.
+You mustn't smoke here.
+Children mustn't play with fire.
+She must take her medicine every morning.
+We mustn't be late for the meeting.
+You must tell the truth.`,
+  },
+  {
+    title: '[A2 grammar #15] gerund vs infinitive',
+    language: 'English', level: 'A2 초급',
+    raw_text: `I enjoy swimming in the ocean.
+She wants to learn French.
+He stopped smoking last year.
+They decided to leave early.
+We love watching movies together.
+I'm thinking of moving abroad.
+She agreed to help us.`,
+  },
+  {
+    title: '[A2 grammar #16] adverbs of manner (-ly)',
+    language: 'English', level: 'A2 초급',
+    raw_text: `She speaks slowly and clearly.
+He drives carefully on rainy days.
+The children played happily in the garden.
+She sang beautifully at the concert.
+He answered politely.
+The dog ran quickly across the field.
+Please knock loudly on the door.`,
+  },
+  {
+    title: '[A2 grammar #17] already / yet / just (현재완료 부사)',
+    language: 'English', level: 'A2 초급',
+    raw_text: `I have already finished my work.
+Have you eaten dinner yet?
+She has just arrived at the airport.
+We haven't started the project yet.
+They have already left the office.
+He has just called me.
+I haven't seen that movie yet.`,
+  },
+  {
+    title: '[A2 grammar #18] so / such (강조)',
+    language: 'English', level: 'A2 초급',
+    raw_text: `The movie was so good.
+She is so kind to everyone.
+It was such a long day.
+He is such a nice person.
+I'm so tired tonight.
+The food was so delicious.
+That was such a beautiful song.`,
+  },
+  {
+    title: '[A2 grammar #19] too / enough',
+    language: 'English', level: 'A2 초급',
+    raw_text: `This soup is too hot to eat.
+She is not tall enough to reach the shelf.
+The room is big enough for all of us.
+It's too cold to swim today.
+Are you old enough to drive?
+The coffee is too strong.
+This bag isn't big enough for my books.`,
+  },
+  {
+    title: '[A2 grammar #20] passive voice (basic)',
+    language: 'English', level: 'A2 초급',
+    raw_text: `The letter was written by my mother.
+This bridge was built in 1990.
+English is spoken in many countries.
+The car is being repaired now.
+This song was sung by Adele.
+The cake is made with chocolate.
+The window was broken yesterday.`,
   },
 ];
