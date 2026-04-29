@@ -425,8 +425,38 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* ② 오늘 읽기 — 가장 큰 포커스 */}
-      {suggestion && (() => {
+      {/* ── 학습 진입점 (1순위만 노출) ──
+          이어서 학습 > 오늘 읽기 (daily suggestion) > 내 레벨 추천
+          진행 중 시리즈가 있으면 그곳으로 직진. 추천은 secondary */}
+      {(() => {
+        const all = data?.seriesProgress || [];
+        const langs = profile?.learning_language || ['Japanese'];
+        const inProgress = all.filter(s => langs.includes(s.language) && s.completed > 0 && s.next);
+        inProgress.sort((a, b) => (b.completed / b.total) - (a.completed / a.total));
+        const top = inProgress[0];
+        if (!top) return null;
+        const pct = Math.round((top.completed / top.total) * 100);
+        return (
+          <Link href={`/viewer/${top.next.id}`} className="home-continue-card">
+            <div className="home-continue-card__head">
+              <span className="home-continue-card__hint">이어서 학습</span>
+              <span className="home-continue-card__progress">{top.completed} / {top.total}</span>
+            </div>
+            <div className="home-continue-card__series">{top.level} {top.series}</div>
+            <div className="home-continue-card__bar">
+              <div className="home-continue-card__bar-fill" style={{ width: `${pct}%` }} />
+            </div>
+            <div className="home-continue-card__next">{top.next.title}</div>
+          </Link>
+        );
+      })()}
+
+      {/* 오늘 읽기 — 진행 중 시리즈가 없을 때만 */}
+      {(() => {
+        const inProgress = (data?.seriesProgress || []).some(s =>
+          (profile?.learning_language || ['Japanese']).includes(s.language) && s.completed > 0 && s.next
+        );
+        if (inProgress || !suggestion) return null;
         const vocabByLang = data?.vocabByLang || {};
         const count = vocabByLang[suggestion.language] || 0;
         const idealLevel = getIdealLevel(suggestion.language, count);
@@ -461,34 +491,12 @@ export default function HomePage() {
         );
       })()}
 
-      {/* 이어서 학습 — 진행 중인 시리즈 */}
+      {/* 내 레벨 추천 자료 — 진행 중 시리즈가 없을 때만 */}
       {(() => {
-        const all = data?.seriesProgress || [];
-        const langs = profile?.learning_language || ['Japanese'];
-        // 진행 중(0 < completed < total) → 시작 안 함(completed === 0) 순서
-        const inProgress = all.filter(s => langs.includes(s.language) && s.completed > 0 && s.next);
-        if (inProgress.length === 0) return null;
-        // 가장 많이 진행한 시리즈 1개 prominent
-        inProgress.sort((a, b) => (b.completed / b.total) - (a.completed / a.total));
-        const top = inProgress[0];
-        const pct = Math.round((top.completed / top.total) * 100);
-        return (
-          <Link href={`/viewer/${top.next.id}`} className="home-continue-card">
-            <div className="home-continue-card__head">
-              <span className="home-continue-card__hint">이어서 학습</span>
-              <span className="home-continue-card__progress">{top.completed} / {top.total}</span>
-            </div>
-            <div className="home-continue-card__series">{top.level} {top.series}</div>
-            <div className="home-continue-card__bar">
-              <div className="home-continue-card__bar-fill" style={{ width: `${pct}%` }} />
-            </div>
-            <div className="home-continue-card__next">{top.next.title}</div>
-          </Link>
+        const inProgress = (data?.seriesProgress || []).some(s =>
+          (profile?.learning_language || ['Japanese']).includes(s.language) && s.completed > 0 && s.next
         );
-      })()}
-
-      {/* 내 레벨 추천 자료 — 시드 콘텐츠 노출 */}
-      {(() => {
+        if (inProgress) return null;
         const all = data?.publicMaterials || [];
         const readIds = new Set(data?.readMaterialIds || []);
         const langs = profile?.learning_language || ['Japanese'];
