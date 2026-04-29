@@ -28,8 +28,9 @@ import ReadingTest from '../components/ReadingTest';
 import ConversationPanel from '../components/ConversationPanel';
 import ViewerBottomSheet from '../components/ViewerBottomSheet';
 import ListenControls from '../components/ListenControls';
-import { parseTitle, findNextInSeries } from '../lib/seriesMeta';
+import { parseTitle } from '../lib/seriesMeta';
 import { formatDetail } from '../lib/wordDetailFormat';
+import { useSeriesNeighbors } from '../lib/useSeriesNeighbors';
 import ViewerComments from './ViewerComments';
 import ViewerGrammarModal from './ViewerGrammarModal';
 import ViewerQuizModal from './ViewerQuizModal';
@@ -367,80 +368,8 @@ export default function ViewerPage() {
     enabled: !!user,
   });
 
-  // 같은 시리즈의 prev/next lesson — 헤더 네비 + 완독 시 카드용
-  const { data: seriesNeighbors } = useQuery({
-    queryKey: ['series-neighbors', id, material?.title],
-    queryFn: async () => {
-      const meta = parseTitle(material?.title || '');
-      if (!meta.level || !meta.series || meta.num == null) return { prev: null, next: null };
-      const { data } = await supabase
-        .from('reading_materials')
-        .select('id, title')
-        .eq('visibility', 'public')
-        .ilike('title', `[${meta.level} ${meta.series} #%`)
-        .limit(50);
-      const items = (data || []).map(m => ({ ...m, _meta: parseTitle(m.title) }));
-      // prev = 가장 큰 num이 current.num보다 작은 것
-      const prev = items
-        .filter(x => x._meta.num != null && x._meta.num < meta.num)
-        .sort((a, b) => b._meta.num - a._meta.num)[0] || null;
-      const next = findNextInSeries(meta, data || []);
-      return {
-        prev: prev ? { id: prev.id, title: prev.title } : null,
-        next: next || null,
-      };
-    },
-    enabled: !!material?.title,
-    staleTime: 1000 * 60 * 10,
-  });
-  const prevLesson = seriesNeighbors?.prev || null;
-  const nextLesson = seriesNeighbors?.next || null;
-
-  // 시리즈 완주 시: 같은 레벨의 다른 시리즈 #1 → 없으면 다음 레벨 첫 lesson
-  const { data: seriesEndCard } = useQuery({
-    queryKey: ['series-end', id, material?.title, nextLesson?.id ?? 'none'],
-    queryFn: async () => {
-      const meta = parseTitle(material?.title || '');
-      if (!meta.level || !meta.series || meta.num == null) return null;
-      if (nextLesson) return null;
-
-      // 같은 레벨의 다른 시리즈 #1
-      const { data: same } = await supabase
-        .from('reading_materials')
-        .select('id, title')
-        .eq('visibility', 'public')
-        .ilike('title', `[${meta.level}%#%`)
-        .limit(50);
-      const otherSeries = (same || [])
-        .map(m => ({ ...m, _meta: parseTitle(m.title) }))
-        .filter(c => c._meta.series && c._meta.series !== meta.series && c._meta.num === 1)
-        .sort((a, b) => (a._meta.series || '').localeCompare(b._meta.series || ''));
-      if (otherSeries[0]) {
-        return { type: 'series', level: meta.level, fromSeries: meta.series, material: { id: otherSeries[0].id, title: otherSeries[0].title } };
-      }
-
-      // 다음 레벨로 진학
-      const LEVEL_NEXT = { N5: 'N4', N4: 'N3', N3: 'N2', N2: 'N1', A1: 'A2', A2: 'B1', B1: 'B2', B2: 'C1' };
-      const nextLevel = LEVEL_NEXT[meta.level];
-      if (!nextLevel) return { type: 'top', level: meta.level, fromSeries: meta.series };
-      const { data: nl } = await supabase
-        .from('reading_materials')
-        .select('id, title')
-        .eq('visibility', 'public')
-        .ilike('title', `[${nextLevel}%#%`)
-        .limit(50);
-      const nlc = (nl || [])
-        .map(m => ({ ...m, _meta: parseTitle(m.title) }))
-        .filter(c => c._meta.num === 1)
-        .sort((a, b) => (a._meta.series || '').localeCompare(b._meta.series || ''));
-      if (nlc[0]) {
-        return { type: 'level', level: meta.level, nextLevel, fromSeries: meta.series, material: { id: nlc[0].id, title: nlc[0].title } };
-      }
-      return { type: 'top', level: meta.level, fromSeries: meta.series };
-    },
-    enabled: !!material?.title,
-    staleTime: 1000 * 60 * 10,
-  });
+  // 시리즈 navigation: 같은 시리즈 prev/next + 시리즈/레벨 완주 안내
+  const { prevLesson, nextLesson, seriesEndCard } = useSeriesNeighbors(id, material?.title);
 
   const { data: nextMaterial } = useQuery({
     queryKey: ['next-material', id, material?.processed_json?.metadata?.language],
