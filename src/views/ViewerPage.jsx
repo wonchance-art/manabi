@@ -31,6 +31,7 @@ import ListenControls from '../components/ListenControls';
 import { parseTitle } from '../lib/seriesMeta';
 import { formatDetail } from '../lib/wordDetailFormat';
 import { useSeriesNeighbors } from '../lib/useSeriesNeighbors';
+import { useTitleEdit } from '../lib/useTitleEdit';
 import ViewerComments from './ViewerComments';
 import ViewerGrammarModal from './ViewerGrammarModal';
 import ViewerQuizModal from './ViewerQuizModal';
@@ -187,8 +188,7 @@ export default function ViewerPage() {
   const [commentInput, setCommentInput] = useState('');
   const [readProgress, setReadProgress] = useState(0);
   const [saveAnim, setSaveAnim] = useState(false);
-  const [titleEditing, setTitleEditing] = useState(false);
-  const [titleDraft, setTitleDraft] = useState('');
+  const { titleEditing, setTitleEditing, titleDraft, setTitleDraft, updateTitleMutation } = useTitleEdit(id, toast);
 
   const { data: material, isLoading, error, refetch } = useQuery({
     queryKey: ['material', id],
@@ -753,25 +753,6 @@ export default function ViewerPage() {
       .filter(t => t)
       .join('');
   }
-
-  // 제목 편집 (owner만)
-  const updateTitleMutation = useMutation({
-    mutationFn: async (newTitle) => {
-      const title = newTitle.trim().slice(0, 200);
-      if (!title) throw new Error('제목이 비어있어요');
-      const { error } = await supabase
-        .from('reading_materials')
-        .update({ title })
-        .eq('id', id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['material', id] });
-      setTitleEditing(false);
-      toast('제목을 수정했어요', 'success');
-    },
-    onError: (err) => toast('제목 수정 실패 — ' + friendlyToastMessage(err), 'error'),
-  });
 
   // 인라인 복습: 뷰어에서 단어 보며 바로 FSRS 평가
   const inlineReviewMutation = useMutation({
