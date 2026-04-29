@@ -687,6 +687,14 @@ export default function VocabPage() {
     if (langFilter !== 'all') {
       list = list.filter(x => x._item.language === langFilter);
     }
+    if (seriesFilter !== 'all') {
+      list = list.filter(x => {
+        const t = x._item.reading_materials?.title;
+        if (!t) return false;
+        const meta = parseTitle(t);
+        return `${meta.level}|${meta.series}` === seriesFilter;
+      });
+    }
     if (q) {
       list = list.filter(x => x._searchKey.includes(q));
     }
@@ -700,7 +708,7 @@ export default function VocabPage() {
       list = [...list].sort((a, b) => (a.word_text || '').localeCompare(b.word_text || '', 'ja'));
     }
     return list;
-  }, [vocabSearchIndex, search, sortBy, langFilter]);
+  }, [vocabSearchIndex, search, sortBy, langFilter, seriesFilter]);
 
   useEffect(() => { setVisibleCount(30); }, [search, sortBy, langFilter]);
 
@@ -934,6 +942,27 @@ export default function VocabPage() {
         </div>
       </div>
 
+      {/* 시리즈 필터 (list / review 탭에 공통 적용) */}
+      {(tab === 'list' || tab === 'review') && availableSeries.length > 0 && (
+        <div className="chip-group" style={{ marginBottom: 12 }}>
+          <button
+            className={`chip ${seriesFilter === 'all' ? 'chip--active' : ''}`}
+            onClick={() => setSeriesFilter('all')}
+          >
+            전체 시리즈
+          </button>
+          {availableSeries.map(s => (
+            <button
+              key={s.key}
+              className={`chip ${seriesFilter === s.key ? 'chip--active' : ''}`}
+              onClick={() => setSeriesFilter(s.key)}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+      )}
+
       {isLoading ? (
         <CardGridSkeleton height={120} />
       ) : tab === 'list' ? (
@@ -956,26 +985,6 @@ export default function VocabPage() {
           onWordClick={setDetailWord}
         />
       ) : tab === 'review' ? (
-        <>
-          {availableSeries.length > 0 && (
-            <div className="chip-group" style={{ marginBottom: 12, justifyContent: 'center' }}>
-              <button
-                className={`chip ${seriesFilter === 'all' ? 'chip--active' : ''}`}
-                onClick={() => setSeriesFilter('all')}
-              >
-                전체
-              </button>
-              {availableSeries.map(s => (
-                <button
-                  key={s.key}
-                  className={`chip ${seriesFilter === s.key ? 'chip--active' : ''}`}
-                  onClick={() => setSeriesFilter(s.key)}
-                >
-                  {s.label}
-                </button>
-              ))}
-            </div>
-          )}
         <VocabReview
           vocab={vocab}
           reviewWords={reviewWords}
@@ -1003,7 +1012,6 @@ export default function VocabPage() {
           setTab={setTab}
           hardWords={vocab.filter(v => (v.repetitions || 0) > 2).length}
         />
-        </>
       ) : tab === 'stats' ? (
         <VocabStats vocab={vocab} profile={profile} />
       ) : tab === 'notes' ? (
