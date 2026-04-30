@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import EmptyState from '../components/EmptyState';
 
 export default function VocabNotes({ grammarNotes, deleteNoteMutation }) {
@@ -6,8 +7,9 @@ export default function VocabNotes({ grammarNotes, deleteNoteMutation }) {
       {grammarNotes.length === 0 ? (
         <EmptyState
           icon="📝"
-          title="저장된 문법 노트가 없습니다"
-          desc="뷰어에서 문장을 드래그해 AI 해설을 받고 저장해보세요!"
+          title="저장된 문법 노트가 없어요"
+          desc="뷰어에서 문장을 드래그해 AI 해설을 받고 저장해보세요"
+          action={<Link href="/materials" className="btn btn--primary btn--md">📰 자료 보러가기</Link>}
         />
       ) : grammarNotes.map(note => (
         <div key={note.id} className="grammar-note-card">
