@@ -12,10 +12,39 @@ export default function ConversationPanel({ rawText, language, materialId, mater
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [listening, setListening] = useState(false);
+  const recognitionRef = useRef(null);
   const { speak, supported: ttsSupported } = useTTS();
   const scrollRef = useRef(null);
   const targetLang = language === 'Japanese' ? 'Japanese' : 'English';
   const targetLangKo = language === 'Japanese' ? '일본어' : '영어';
+
+  // Web Speech Recognition 지원 체크 (Chrome/Edge/Safari)
+  const sttSupported = typeof window !== 'undefined' &&
+    !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+
+  function startListening() {
+    if (listening || !sttSupported) return;
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recog = new SR();
+    recog.lang = language === 'Japanese' ? 'ja-JP' : 'en-US';
+    recog.continuous = false;
+    recog.interimResults = false;
+    recog.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setInput(prev => (prev ? prev + ' ' : '') + transcript);
+    };
+    recog.onend = () => setListening(false);
+    recog.onerror = () => setListening(false);
+    recognitionRef.current = recog;
+    setListening(true);
+    try { recog.start(); } catch { setListening(false); }
+  }
+
+  function stopListening() {
+    try { recognitionRef.current?.stop(); } catch {}
+    setListening(false);
+  }
 
   useEffect(() => {
     if (!materialId) return;
@@ -190,11 +219,23 @@ Output PART 1, then a blank line, then PART 2 (if any). No labels, no other text
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={onKeyDown}
-            placeholder={placeholder}
+            placeholder={listening ? '🔴 듣는 중...' : placeholder}
             className="conversation-panel__input"
             rows={2}
             disabled={loading}
           />
+          {sttSupported && (
+            <button
+              type="button"
+              className="conversation-panel__mic"
+              onClick={listening ? stopListening : startListening}
+              title={listening ? '중지' : '음성 입력'}
+              aria-label={listening ? '음성 입력 중지' : '음성 입력'}
+              disabled={loading}
+            >
+              {listening ? '⏹' : '🎤'}
+            </button>
+          )}
           <Button onClick={send} disabled={loading || !input.trim()}>
             보내기
           </Button>
