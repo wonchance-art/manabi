@@ -7,6 +7,7 @@ export default function ListenControls({ text, language = 'Japanese' }) {
   const [paused, setPaused] = useState(false);
   const [rate, setRate] = useState(1);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
+  const [currentSentence, setCurrentSentence] = useState('');
   const sentencesRef = useRef([]);
   const indexRef = useRef(0);
   const supported = typeof window !== 'undefined' && 'speechSynthesis' in window;
@@ -34,6 +35,7 @@ export default function ListenControls({ text, language = 'Japanese' }) {
       return;
     }
     setProgress({ current: i + 1, total: sentences.length });
+    setCurrentSentence(sentences[i]);
     const utter = new SpeechSynthesisUtterance(sentences[i]);
     utter.lang = language === 'Japanese' ? 'ja-JP' : 'en-US';
     utter.rate = rate;
@@ -70,6 +72,7 @@ export default function ListenControls({ text, language = 'Japanese' }) {
     setPlaying(false);
     setPaused(false);
     setProgress(p => ({ ...p, current: 0 }));
+    setCurrentSentence('');
   }
 
   if (!supported || !text) return null;
@@ -101,6 +104,9 @@ export default function ListenControls({ text, language = 'Japanese' }) {
             <option value="1.5">1.5x</option>
           </select>
         </div>
+      )}
+      {playing && currentSentence && (
+        <div className="listen-controls__current">{currentSentence}</div>
       )}
     </div>
   );
