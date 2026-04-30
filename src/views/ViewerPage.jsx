@@ -17,7 +17,8 @@ import { useTTS } from '../lib/useTTS';
 import { useViewerSettings } from '../lib/useViewerSettings';
 import { useGrammarAnalysis, GRAMMAR_ACTIONS } from '../lib/useGrammarAnalysis';
 import { useViewerQuiz } from '../lib/useViewerQuiz';
-import { useReanalyze, getParagraphs } from '../lib/useReanalyze';
+import { useReanalyze } from '../lib/useReanalyze';
+import { useReanalyzeUI } from '../lib/useReanalyzeUI';
 import { useMaterialComments } from '../lib/useMaterialComments';
 import { friendlyToastMessage } from '../lib/errorMessage';
 import { callGemini } from '../lib/gemini';
@@ -405,41 +406,17 @@ export default function ViewerPage() {
     onError: (err) => toast('저장 실패 — ' + friendlyToastMessage(err), 'error'),
   });
 
-  // 재분석 로직
+  // 재분석 로직 + UI
   const reanalyze = useReanalyze({ materialId: id, material, refetch, toast });
   const reanalyzeMutation = reanalyze.mutation;
   const stopReanalysis = reanalyze.stop;
   const isStaleAnalysis = reanalyze.stale;
   const missingLineCount = reanalyze.missingIndices.length;
-
-  // 재분석 패널 상태: null | 'menu' | 'pick'
-  const [reanalyzePanel, setReanalyzePanel] = useState(null);
-  const [selectedParas, setSelectedParas] = useState(new Set());
-
-  const paragraphs = material?.raw_text ? getParagraphs(material.raw_text) : [];
-
-  function togglePara(idx) {
-    setSelectedParas(prev => {
-      const next = new Set(prev);
-      if (next.has(idx)) next.delete(idx); else next.add(idx);
-      return next;
-    });
-  }
-  function startFullReanalyze() {
-    setReanalyzePanel(null);
-    reanalyze.mutation.mutate({ fullReset: true });
-  }
-  function startPartialReanalyze() {
-    const lineIndices = new Set();
-    for (const pi of selectedParas) {
-      const para = paragraphs[pi];
-      if (para) para.lineIndices.forEach(li => lineIndices.add(li));
-    }
-    if (lineIndices.size === 0) { toast('문단을 선택해주세요.', 'warning'); return; }
-    setReanalyzePanel(null);
-    setSelectedParas(new Set());
-    reanalyze.mutation.mutate({ selectedLineIndices: lineIndices });
-  }
+  const {
+    reanalyzePanel, setReanalyzePanel,
+    selectedParas, paragraphs,
+    togglePara, startFullReanalyze, startPartialReanalyze,
+  } = useReanalyzeUI({ reanalyze, material, toast });
 
   // 읽기 진행률 바 — readerRef는 본문 컨테이너에 부착
   const { readerRef, readProgress } = useReadProgress(material);
