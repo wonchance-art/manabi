@@ -215,19 +215,25 @@ export default function MaterialsPage() {
     staleTime: 1000 * 60,
   });
 
-  const { data: completedIds = new Set() } = useQuery({
+  const { data: progressMap = { completed: new Set(), inProgress: new Map() } } = useQuery({
     queryKey: ['reading-progress-list', user?.id],
     queryFn: async () => {
       const { data } = await supabase
         .from('reading_progress')
-        .select('material_id')
-        .eq('user_id', user.id)
-        .eq('is_completed', true);
-      return new Set((data || []).map(r => r.material_id));
+        .select('material_id, is_completed, last_token_idx')
+        .eq('user_id', user.id);
+      const completed = new Set();
+      const inProgress = new Map();
+      for (const r of (data || [])) {
+        if (r.is_completed) completed.add(r.material_id);
+        else if (r.last_token_idx > 0) inProgress.set(r.material_id, r.last_token_idx);
+      }
+      return { completed, inProgress };
     },
     enabled: !!user,
     staleTime: 1000 * 60,
   });
+  const completedIds = progressMap.completed;
 
   // 복습 대기 중인 단어 (Reading-as-Review용)
   const { data: dueVocabIndex } = useQuery({
@@ -512,14 +518,29 @@ export default function MaterialsPage() {
                         <span className="badge" style={{ background: 'rgba(74,138,92,0.15)', color: 'var(--accent)', fontWeight: 600 }}>
                           ✓ 완독
                         </span>
-                      ) : !isDone && (
-                        <span className="badge" style={{
-                          background: status === 'analyzing' ? 'var(--primary-glow)' : 'var(--bg-secondary)',
-                          color: status === 'analyzing' ? 'var(--primary-light)' : 'var(--text-muted)',
-                        }}>
-                          {status === 'analyzing' ? '분석 중...' : '대기 중'}
-                        </span>
-                      )}
+                      ) : (() => {
+                        const lastIdx = progressMap.inProgress.get(m.id);
+                        const total = m.processed_json?.sequence?.length || 0;
+                        if (lastIdx && total > 0) {
+                          const pct = Math.round((lastIdx / total) * 100);
+                          return (
+                            <span className="badge" style={{ background: 'var(--bg-secondary)', color: 'var(--primary)', fontWeight: 600 }} title="이어서 읽기">
+                              📖 {pct}%
+                            </span>
+                          );
+                        }
+                        if (!isDone) {
+                          return (
+                            <span className="badge" style={{
+                              background: status === 'analyzing' ? 'var(--primary-glow)' : 'var(--bg-secondary)',
+                              color: status === 'analyzing' ? 'var(--primary-light)' : 'var(--text-muted)',
+                            }}>
+                              {status === 'analyzing' ? '분석 중...' : '대기 중'}
+                            </span>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
                   </div>
                   <h3 className="card__title">{m.title}</h3>
