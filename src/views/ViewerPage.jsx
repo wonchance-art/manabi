@@ -1517,6 +1517,7 @@ export default function ViewerPage() {
             materialTitle={material?.title}
             onClose={() => setShowConversation(false)}
             inline
+            nextLesson={nextLesson}
           />
         </div>
       )}

@@ -1,13 +1,14 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { callGemini } from '../lib/gemini';
 import { useTTS } from '../lib/useTTS';
 import Button from './Button';
 
 const STORAGE_KEY = 'conversation:';
 
-export default function ConversationPanel({ rawText, language, materialId, materialTitle, onClose, inline = false }) {
+export default function ConversationPanel({ rawText, language, materialId, materialTitle, onClose, inline = false, nextLesson = null }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -125,6 +126,11 @@ Output PART 1, then a blank line, then PART 2 (if any). No labels, no other text
       <div className="conversation-panel__header">
         <h3 style={{ margin: 0, fontSize: '1.05rem' }}>💬 회화 연습</h3>
         <div style={{ display: 'flex', gap: 8 }}>
+          {nextLesson && messages.length >= 4 && (
+            <Link href={`/viewer/${nextLesson.id}`} className="btn btn--ghost btn--sm" title={nextLesson.title}>
+              다음 강의 →
+            </Link>
+          )}
           {messages.length > 0 && (
             <button onClick={reset} className="btn btn--ghost btn--sm" title="대화 초기화">↺ 새 대화</button>
           )}
