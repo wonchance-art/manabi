@@ -34,6 +34,7 @@ import { useTitleEdit } from '../lib/useTitleEdit';
 import { useDragWordPopup } from '../lib/useDragWordPopup';
 import { useNextRangeMutation } from '../lib/useNextRangeMutation';
 import { useReadProgress } from '../lib/useReadProgress';
+import { useScrollRestore } from '../lib/useScrollRestore';
 import ViewerComments from './ViewerComments';
 import ViewerGrammarModal from './ViewerGrammarModal';
 import ViewerQuizModal from './ViewerQuizModal';
@@ -440,46 +441,14 @@ export default function ViewerPage() {
     reanalyze.mutation.mutate({ selectedLineIndices: lineIndices });
   }
 
-  // 스크롤 위치 저장 (debounce 2s, 로그인 + 분석 완료 시만)
-  const scrollSaveTimerRef = useRef(null);
-  const saveScrollPosition = useCallback((tokenIdx) => {
-    if (!user) return;
-    clearTimeout(scrollSaveTimerRef.current);
-    scrollSaveTimerRef.current = setTimeout(async () => {
-      await supabase.from('reading_progress').upsert({
-        user_id: user.id,
-        material_id: id,
-        last_token_idx: tokenIdx,
-      }, { onConflict: 'user_id,material_id' });
-    }, 2000);
-  }, [user, id]);
-
   // 읽기 진행률 바 — readerRef는 본문 컨테이너에 부착
   const { readerRef, readProgress } = useReadProgress(material);
 
+  // 스크롤 위치 저장(debounce 2s) + 재진입 시 자동 복원
+  const { saveScrollPosition, tokenRefs } = useScrollRestore({ user, materialId: id, material, readingProgress });
+
   // 단어 저장 카운트 (복습 유도용)
   const saveCountRef = useRef(0);
-
-  // 재진입 시 마지막 읽은 위치로 스크롤 복원
-  const tokenRefs = useRef({});
-  const hasRestoredScroll = useRef(false);
-  useEffect(() => {
-    const lastIdx = readingProgress?.last_token_idx;
-    if (!lastIdx || hasRestoredScroll.current) return;
-    const json = material?.processed_json;
-    if (!json?.sequence?.length) return;
-    const tokenId = json.sequence[lastIdx];
-    if (!tokenId) return;
-    // DOM이 렌더된 후 스크롤
-    const timer = setTimeout(() => {
-      const el = tokenRefs.current[tokenId];
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        hasRestoredScroll.current = true;
-      }
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [readingProgress, material]);
 
   const handleTokenClick = (token, tokenId) => {
     if (token.pos === '개행') return;
