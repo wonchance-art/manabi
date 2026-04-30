@@ -38,9 +38,10 @@ function fisherYatesShuffle(arr) {
 }
 
 async function fetchVocab(userId) {
+  // 단어 본체는 무조건 fetch — JOIN 실패 시에도 단어장이 비어 보이지 않게
   const { data, error } = await supabase
     .from('user_vocabulary')
-    .select('*, reading_materials(title)')
+    .select('*')
     .eq('user_id', userId)
     .order('next_review_at', { ascending: true });
   if (error) throw error;
@@ -61,6 +62,28 @@ async function fetchVocab(userId) {
       supabase.from('user_vocabulary').update({ language: u.language }).eq('id', u.id)
     )).catch(() => {});
   }
+
+  // 시리즈 필터용 source material titles 별도 fetch (실패해도 vocab은 그대로)
+  try {
+    const sourceIds = [...new Set(result.map(v => v.source_material_id).filter(Boolean))];
+    if (sourceIds.length > 0) {
+      const titlesMap = new Map();
+      const CHUNK = 30;
+      for (let i = 0; i < sourceIds.length; i += CHUNK) {
+        const slice = sourceIds.slice(i, i + CHUNK);
+        const { data: mats } = await supabase
+          .from('reading_materials')
+          .select('id, title')
+          .in('id', slice);
+        for (const m of (mats || [])) titlesMap.set(m.id, m.title);
+      }
+      for (const v of result) {
+        if (v.source_material_id && titlesMap.has(v.source_material_id)) {
+          v.reading_materials = { title: titlesMap.get(v.source_material_id) };
+        }
+      }
+    }
+  } catch {}
 
   return result;
 }
