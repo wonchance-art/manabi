@@ -19,6 +19,7 @@ import { useGrammarAnalysis, GRAMMAR_ACTIONS } from '../lib/useGrammarAnalysis';
 import { useViewerQuiz } from '../lib/useViewerQuiz';
 import { useReanalyze } from '../lib/useReanalyze';
 import { useReanalyzeUI } from '../lib/useReanalyzeUI';
+import { useReadingCompletion } from '../lib/useReadingCompletion';
 import { useMaterialComments } from '../lib/useMaterialComments';
 import { friendlyToastMessage } from '../lib/errorMessage';
 import { callGemini } from '../lib/gemini';
@@ -338,55 +339,10 @@ export default function ViewerPage() {
     if (addCommentMutation.isSuccess) setCommentInput('');
   }, [addCommentMutation.isSuccess]);
 
-  const markCompleteMutation = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase.from('reading_progress').upsert({
-        user_id: user.id,
-        material_id: id,
-        is_completed: true,
-        completed_at: new Date().toISOString(),
-      }, { onConflict: 'user_id,material_id' });
-      if (error) throw error;
-
-      // 요약 데이터 병렬 조회
-      const now = new Date().toISOString();
-      const [
-        { count: wordsSaved },
-        { count: dueCount },
-      ] = await Promise.all([
-        supabase.from('user_vocabulary').select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id).eq('source_material_id', id),
-        supabase.from('user_vocabulary').select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id).lte('next_review_at', now),
-      ]);
-
-      return { wordsSaved: wordsSaved || 0, dueCount: dueCount || 0 };
-    },
-    onSuccess: async (data) => {
-      queryClient.invalidateQueries({ queryKey: ['reading-progress', user?.id, id] });
-      queryClient.invalidateQueries({ queryKey: ['reading-progress-list', user?.id] });
-      recordActivity(user.id, () => fetchProfile(user.id));
-      const prevXP = profile?.xp ?? 0;
-      try {
-        await awardXP(user.id, XP_REWARDS.MATERIAL_COMPLETED, prevXP);
-        checkLevelUp(prevXP, prevXP + XP_REWARDS.MATERIAL_COMPLETED);
-        checkAndAwardAchievements(user.id, { xp: prevXP, streak: profile?.streak_count }).then(newBadges => {
-          newBadges.forEach(b => celebrate({ type: 'achievement', icon: b.icon, name: b.name, desc: b.desc }));
-        });
-      } catch {
-        console.error('XP 부여 실패 — 완독 기록은 저장됨');
-      }
-      // 퀴즈 생성 후 완료 모달 표시
-      const pendingCompletion = {
-        wordsSaved: data.wordsSaved,
-        dueCount: data.dueCount,
-        streak: (profile?.streak_count || 0) + 1,
-      };
-      const rawText = material?.raw_text || '';
-      const lang = material?.processed_json?.metadata?.language || 'Japanese';
-      generateQuiz(rawText, lang, pendingCompletion);
-    },
-    onError: (err) => toast(friendlyToastMessage(err), 'error'),
+  const markCompleteMutation = useReadingCompletion({
+    materialId: id, user, profile, fetchProfile,
+    material, generateQuiz, celebrate, checkLevelUp,
+    toast,
   });
 
   const saveGrammarNoteMutation = useMutation({
