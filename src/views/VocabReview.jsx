@@ -487,11 +487,11 @@ export default function VocabReview({
           <p style={{ color: 'var(--text-secondary)', marginBottom: 16 }}>
             {vocab.length === 0
               ? '자료를 읽으면서 모르는 단어를 탭하면 자동 저장돼요'
-              : 'FSRS가 다음 복습 시점을 계산해 줄 거예요.'}
+              : 'FSRS가 다음 복습 시점을 계산해 줄 거예요. 새 자료를 읽으며 단어를 더 모아보세요.'}
           </p>
-          {vocab.length === 0 && (
-            <Link href="/materials" className="btn btn--primary btn--md">📰 자료 읽으러 가기</Link>
-          )}
+          <Link href="/materials" className="btn btn--primary btn--md">
+            📰 자료 {vocab.length === 0 ? '읽으러 가기' : '더 읽기'}
+          </Link>
         </div>
       )}
     </div>

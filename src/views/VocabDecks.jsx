@@ -67,7 +67,16 @@ export default function VocabDecks({
       {publicDecks.length === 0 ? (
         <div className="empty-state">
           <div className="empty-state__icon">🃏</div>
-          <p className="empty-state__msg">아직 공유된 단어장이 없습니다.<br />첫 번째로 덱을 공유해보세요!</p>
+          <p className="empty-state__msg">아직 공유된 단어장이 없어요</p>
+          {user && vocab.length > 0 ? (
+            <Button onClick={() => setDeckModal(true)} style={{ marginTop: 12 }}>
+              + 첫 덱 공유하기
+            </Button>
+          ) : (
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: 8 }}>
+              {user ? '단어를 모은 뒤 덱으로 공유해보세요.' : '로그인 후 덱을 공유할 수 있어요.'}
+            </p>
+          )}
         </div>
       ) : (
         <div style={{ display: 'grid', gap: '12px' }}>

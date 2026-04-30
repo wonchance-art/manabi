@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import Link from 'next/link';
 import Button from '../components/Button';
 import { callGemini, parseGeminiJSON } from '../lib/gemini';
 import { detectLang } from '../lib/constants';
@@ -180,9 +181,12 @@ export default function VocabWriting({ vocab, toast, awardXPOnSuccess, user }) {
       <div className="card review-card review-card--center">
         <div className="review-card__emoji">✍️</div>
         <h2 style={{ marginBottom: 10 }}>아직 단어가 없어요</h2>
-        <p style={{ color: 'var(--text-secondary)' }}>
-          단어를 먼저 수집한 뒤 쓰기 연습을 할 수 있어요.
+        <p style={{ color: 'var(--text-secondary)', marginBottom: 16 }}>
+          자료를 읽으며 단어를 모은 뒤 쓰기 연습을 할 수 있어요.
         </p>
+        <Link href="/materials" className="btn btn--primary btn--md">
+          📰 자료 보러가기
+        </Link>
       </div>
     );
   }
