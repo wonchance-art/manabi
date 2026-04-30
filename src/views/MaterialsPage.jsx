@@ -546,7 +546,15 @@ export default function MaterialsPage() {
                   <h3 className="card__title">{m.title}</h3>
                 </div>
                 <div className="card__footer">
-                  <span>{new Date(m.created_at).toLocaleDateString('ko-KR')}</span>
+                  <span>
+                    {new Date(m.created_at).toLocaleDateString('ko-KR')}
+                    {(() => {
+                      const tokens = m.processed_json?.sequence?.length || 0;
+                      if (tokens < 50) return null;
+                      const min = Math.max(1, Math.round(tokens / 200));
+                      return <span style={{ marginLeft: 8, color: 'var(--text-muted)' }}>· ⏱ {min}분</span>;
+                    })()}
+                  </span>
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                     {m.owner_id === user?.id ? (
                       <button
