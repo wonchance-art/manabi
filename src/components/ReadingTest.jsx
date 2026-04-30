@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { callGemini } from '../lib/gemini';
 import Button from './Button';
 
@@ -33,7 +34,7 @@ function getHistory(materialId) {
   try { return JSON.parse(localStorage.getItem(HISTORY_KEY + materialId) || '[]'); } catch { return []; }
 }
 
-export default function ReadingTest({ rawText, language, materialId, onClose, inline = false }) {
+export default function ReadingTest({ rawText, language, materialId, onClose, inline = false, nextLesson = null }) {
   const [status, setStatus] = useState('idle'); // idle | loading | active | done
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
@@ -268,9 +269,14 @@ Rules:
               </div>
             ))}
 
-            <div style={{ display: 'flex', gap: 8, marginTop: 20 }}>
-              <Button variant="ghost" onClick={resetTest} style={{ flex: 1 }}>New Test</Button>
-              {onClose && <Button onClick={onClose} style={{ flex: 1 }}>Close</Button>}
+            <div style={{ display: 'flex', gap: 8, marginTop: 20, flexWrap: 'wrap' }}>
+              <Button variant="ghost" onClick={resetTest} style={{ flex: '1 1 120px' }}>New Test</Button>
+              {onClose && <Button variant="ghost" onClick={onClose} style={{ flex: '1 1 120px' }}>Close</Button>}
+              {nextLesson && (
+                <Link href={`/viewer/${nextLesson.id}`} className="btn btn--primary btn--md" style={{ flex: '1 1 160px', justifyContent: 'center' }}>
+                  다음 강의 →
+                </Link>
+              )}
             </div>
           </div>
           );

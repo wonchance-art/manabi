@@ -1502,6 +1502,7 @@ export default function ViewerPage() {
             materialId={id}
             onClose={() => setShowReadingTest(false)}
             inline
+            nextLesson={nextLesson}
           />
         </div>
       )}
