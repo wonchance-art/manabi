@@ -20,6 +20,7 @@ import { useViewerQuiz } from '../lib/useViewerQuiz';
 import { useReanalyze } from '../lib/useReanalyze';
 import { useReanalyzeUI } from '../lib/useReanalyzeUI';
 import { useReadingCompletion } from '../lib/useReadingCompletion';
+import { useGrammarNoteSave } from '../lib/useGrammarNoteSave';
 import { useMaterialComments } from '../lib/useMaterialComments';
 import { friendlyToastMessage } from '../lib/errorMessage';
 import { callGemini } from '../lib/gemini';
@@ -345,21 +346,11 @@ export default function ViewerPage() {
     toast,
   });
 
-  const saveGrammarNoteMutation = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase.from('grammar_notes').insert({
-        user_id: user.id,
-        material_id: id,
-        selected_text: selectedRangeText,
-        explanation: grammarAnalysis,
-      });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['grammar-notes', user?.id] });
-      toast('📝 문법 노트에 저장됐어요!', 'success');
-    },
-    onError: (err) => toast('저장 실패 — ' + friendlyToastMessage(err), 'error'),
+  const saveGrammarNoteMutation = useGrammarNoteSave({
+    user, materialId: id,
+    selectedText: selectedRangeText,
+    explanation: grammarAnalysis,
+    toast,
   });
 
   // 재분석 로직 + UI
