@@ -33,6 +33,7 @@ import { useSeriesNeighbors } from '../lib/useSeriesNeighbors';
 import { useTitleEdit } from '../lib/useTitleEdit';
 import { useDragWordPopup } from '../lib/useDragWordPopup';
 import { useNextRangeMutation } from '../lib/useNextRangeMutation';
+import { useReadProgress } from '../lib/useReadProgress';
 import ViewerComments from './ViewerComments';
 import ViewerGrammarModal from './ViewerGrammarModal';
 import ViewerQuizModal from './ViewerQuizModal';
@@ -187,7 +188,6 @@ export default function ViewerPage() {
   const [selectedToken, setSelectedToken] = useState(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [commentInput, setCommentInput] = useState('');
-  const [readProgress, setReadProgress] = useState(0);
   const [saveAnim, setSaveAnim] = useState(false);
   const { titleEditing, setTitleEditing, titleDraft, setTitleDraft, updateTitleMutation } = useTitleEdit(id, toast);
 
@@ -454,21 +454,8 @@ export default function ViewerPage() {
     }, 2000);
   }, [user, id]);
 
-  // 읽기 진행률 바 (스크롤 기반)
-  const readerRef = useRef(null);
-  useEffect(() => {
-    const el = readerRef.current;
-    if (!el) return;
-    const handleScroll = () => {
-      const rect = el.getBoundingClientRect();
-      const total = el.scrollHeight - window.innerHeight;
-      if (total <= 0) { setReadProgress(100); return; }
-      const scrolled = -rect.top + 80; // header offset
-      setReadProgress(Math.min(100, Math.max(0, Math.round((scrolled / total) * 100))));
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [material]);
+  // 읽기 진행률 바 — readerRef는 본문 컨테이너에 부착
+  const { readerRef, readProgress } = useReadProgress(material);
 
   // 단어 저장 카운트 (복습 유도용)
   const saveCountRef = useRef(0);
