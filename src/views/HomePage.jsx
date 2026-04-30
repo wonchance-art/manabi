@@ -326,7 +326,19 @@ export default function HomePage() {
         <div className="home-greeting__top">
           <div>
             <h1 className="home-greeting__name">안녕하세요, {displayName}님 👋</h1>
-            <p className="home-greeting__sub">오늘도 한 편 읽어볼까요?</p>
+            <p className="home-greeting__sub">{(() => {
+              const langs = profile?.learning_language || ['Japanese'];
+              const inProgress = (data?.seriesProgress || [])
+                .filter(s => langs.includes(s.language) && s.completed > 0 && s.next);
+              if (inProgress.length > 0) {
+                inProgress.sort((a, b) => (b.completed / b.total) - (a.completed / a.total));
+                const top = inProgress[0];
+                return `${top.level} ${top.series} ${top.completed}/${top.total} 진행 중이에요`;
+              }
+              if (dueCount > 0) return `${dueCount}개 단어가 복습을 기다려요`;
+              if ((data?.vocabByLang?.total || 0) === 0) return '첫 단어를 모아보러 가볼까요?';
+              return '오늘도 한 편 읽어볼까요?';
+            })()}</p>
           </div>
           {streak > 0 && (
             <div className="streak-badge">
