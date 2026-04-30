@@ -282,8 +282,8 @@ export default function ViewerPage() {
     enabled: !!user,
   });
 
-  // 시리즈 navigation: 같은 시리즈 prev/next + 시리즈/레벨 완주 안내
-  const { prevLesson, nextLesson, seriesEndCard } = useSeriesNeighbors(id, material?.title);
+  // 시리즈 navigation: 같은 시리즈 prev/next + 시리즈/레벨 완주 안내 + 진척도
+  const { prevLesson, nextLesson, seriesEndCard, seriesPosition } = useSeriesNeighbors(id, material?.title);
 
   const { data: nextMaterial } = useQuery({
     queryKey: ['next-material', id, material?.processed_json?.metadata?.language],
@@ -964,6 +964,11 @@ export default function ViewerPage() {
             {prevLesson ? (
               <Link href={`/viewer/${prevLesson.id}`} className="viewer-series-nav__btn" title={prevLesson.title} aria-label="이전 강의">◀</Link>
             ) : <span className="viewer-series-nav__btn viewer-series-nav__btn--disabled" aria-hidden="true">◀</span>}
+            {seriesPosition && (
+              <span className="viewer-series-nav__position" title={`${seriesPosition.level} ${seriesPosition.series}`}>
+                {seriesPosition.current}/{seriesPosition.total}
+              </span>
+            )}
             {nextLesson ? (
               <Link href={`/viewer/${nextLesson.id}`} className="viewer-series-nav__btn" title={nextLesson.title} aria-label="다음 강의">▶</Link>
             ) : <span className="viewer-series-nav__btn viewer-series-nav__btn--disabled" aria-hidden="true">▶</span>}

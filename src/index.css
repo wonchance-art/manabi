@@ -1533,6 +1533,13 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   opacity: 0.3;
   cursor: not-allowed;
 }
+.viewer-series-nav__position {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  padding: 0 6px;
+  align-self: center;
+}
 
 .viewer-vocab-counter {
   display: inline-block;

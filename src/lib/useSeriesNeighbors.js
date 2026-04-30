@@ -16,7 +16,7 @@ export function useSeriesNeighbors(materialId, materialTitle) {
     queryKey: ['series-neighbors', materialId, materialTitle],
     queryFn: async () => {
       const meta = parseTitle(materialTitle || '');
-      if (!meta.level || !meta.series || meta.num == null) return { prev: null, next: null };
+      if (!meta.level || !meta.series || meta.num == null) return { prev: null, next: null, position: null };
       const { data } = await supabase
         .from('reading_materials')
         .select('id, title')
@@ -28,9 +28,11 @@ export function useSeriesNeighbors(materialId, materialTitle) {
         .filter(x => x._meta.num != null && x._meta.num < meta.num)
         .sort((a, b) => b._meta.num - a._meta.num)[0] || null;
       const next = findNextInSeries(meta, data || []);
+      const total = items.filter(x => x._meta.num != null).length;
       return {
         prev: prev ? { id: prev.id, title: prev.title } : null,
         next: next || null,
+        position: { current: meta.num, total, level: meta.level, series: meta.series },
       };
     },
     enabled: !!materialTitle,
@@ -38,6 +40,7 @@ export function useSeriesNeighbors(materialId, materialTitle) {
   });
   const prevLesson = seriesNeighbors?.prev || null;
   const nextLesson = seriesNeighbors?.next || null;
+  const seriesPosition = seriesNeighbors?.position || null;
 
   const { data: seriesEndCard } = useQuery({
     queryKey: ['series-end', materialId, materialTitle, nextLesson?.id ?? 'none'],
@@ -81,5 +84,5 @@ export function useSeriesNeighbors(materialId, materialTitle) {
     staleTime: 1000 * 60 * 10,
   });
 
-  return { prevLesson, nextLesson, seriesEndCard };
+  return { prevLesson, nextLesson, seriesEndCard, seriesPosition };
 }
