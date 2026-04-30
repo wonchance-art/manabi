@@ -482,8 +482,19 @@ export default function MaterialsPage() {
               ? `${titleMeta.num}/${seriesTotal}`
               : null;
 
+            const previewText = (() => {
+              const dict = m.processed_json?.dictionary || {};
+              const seq = m.processed_json?.sequence || [];
+              if (seq.length === 0) return '';
+              return seq.slice(0, 40).map(id => dict[id]?.text || '').filter(Boolean).join('').slice(0, 120);
+            })();
             return (
-              <div key={m.id} className="card card--clickable" onClick={() => router.push(`/viewer/${m.id}`)}>
+              <div
+                key={m.id}
+                className="card card--clickable"
+                onClick={() => router.push(`/viewer/${m.id}`)}
+                title={previewText || undefined}
+              >
                 <div>
                   <div className="card__row card__row--between">
                     <div className="card__row card__row--gap">
