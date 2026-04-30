@@ -21,6 +21,7 @@ import { useReanalyze } from '../lib/useReanalyze';
 import { useReanalyzeUI } from '../lib/useReanalyzeUI';
 import { useReadingCompletion } from '../lib/useReadingCompletion';
 import { useGrammarNoteSave } from '../lib/useGrammarNoteSave';
+import { useInlineReview } from '../lib/useInlineReview';
 import { useMaterialComments } from '../lib/useMaterialComments';
 import { friendlyToastMessage } from '../lib/errorMessage';
 import { callGemini } from '../lib/gemini';
@@ -537,33 +538,7 @@ export default function ViewerPage() {
   }
 
   // 인라인 복습: 뷰어에서 단어 보며 바로 FSRS 평가
-  const inlineReviewMutation = useMutation({
-    mutationFn: async ({ vocab, rating }) => {
-      const { calculateFSRS } = await import('../lib/fsrs');
-      const nextStats = calculateFSRS(rating, {
-        interval: vocab.interval ?? 0,
-        ease_factor: vocab.ease_factor ?? 0,
-        repetitions: vocab.repetitions ?? 0,
-        next_review_at: vocab.next_review_at,
-      });
-      const { error } = await supabase
-        .from('user_vocabulary')
-        .update({ ...nextStats, last_reviewed_at: new Date().toISOString() })
-        .eq('id', vocab.id);
-      if (error) throw error;
-      return { vocab, rating, nextStats };
-    },
-    onSuccess: async ({ rating }) => {
-      queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
-      const prevXP = profile?.xp ?? 0;
-      const xp = rating === 3 ? 12 : rating === 1 ? 5 : 8;
-      const { awardXP } = await import('../lib/xp');
-      awardXP(user.id, xp, prevXP);
-      recordActivity(user.id, () => fetchProfile(user.id));
-      toast(`복습 완료! +${xp} XP`, 'success', 2000);
-    },
-    onError: (err) => toast('복습 저장 실패 — ' + friendlyToastMessage(err), 'error'),
-  });
+  const inlineReviewMutation = useInlineReview({ user, profile, fetchProfile, toast });
 
   const correctTokenMutation = useMutation({
     mutationFn: async ({ tokenId, corrections }) => {
