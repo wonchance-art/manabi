@@ -256,7 +256,7 @@ function Roadmap({ curr, levelCounts = {}, levelSamples = {}, levelIds = {}, com
                 )}
 
                 <Link
-                  href={`/materials?lang=${curr.lang}&level=${encodeURIComponent(level.label)}`}
+                  href={`/lessons?lang=${curr.lang}&level=${encodeURIComponent(level.label)}`}
                   className="roadmap-link"
                   style={{ color: w.dot }}
                 >

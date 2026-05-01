@@ -1,0 +1,316 @@
+'use client';
+
+import { useState, useMemo, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../lib/AuthContext';
+import { parseTitle } from '../lib/seriesMeta';
+import { getIdealLevel } from '../lib/levels';
+import { CardGridSkeleton } from '../components/Skeleton';
+
+const LANG_FILTERS = [
+  { key: 'all',      label: '🌍 전체' },
+  { key: 'Japanese', label: '🇯🇵 일본어' },
+  { key: 'English',  label: '🇬🇧 영어' },
+];
+
+const LEVEL_ORDER = {
+  'N5 기초': 0, 'N4 기본': 1, 'N3 중급': 2, 'N2 상급': 3, 'N1 심화': 4,
+  'A1 기초': 0, 'A2 초급': 1, 'B1 중급': 2, 'B2 상급': 3, 'C1 고급': 4, 'C2 마스터': 5,
+};
+
+const JP_LEVELS = ['N5 기초', 'N4 기본', 'N3 중급', 'N2 상급', 'N1 심화'];
+const EN_LEVELS = ['A1 기초', 'A2 초급', 'B1 중급', 'B2 상급', 'C1 고급', 'C2 마스터'];
+
+async function fetchLessons() {
+  const { data } = await supabase
+    .from('reading_materials')
+    .select('id, title, created_at, processed_json')
+    .eq('visibility', 'public')
+    .ilike('title', '[%#%]%')
+    .limit(300);
+  return data || [];
+}
+
+async function fetchProgressMap(userId) {
+  if (!userId) return { completed: new Set(), inProgress: new Map() };
+  const { data } = await supabase
+    .from('reading_progress')
+    .select('material_id, is_completed, last_token_idx')
+    .eq('user_id', userId);
+  const completed = new Set();
+  const inProgress = new Map();
+  for (const r of (data || [])) {
+    if (r.is_completed) completed.add(r.material_id);
+    else if (r.last_token_idx > 0) inProgress.set(r.material_id, r.last_token_idx);
+  }
+  return { completed, inProgress };
+}
+
+async function fetchVocabByLang(userId) {
+  if (!userId) return { Japanese: 0, English: 0 };
+  const { data } = await supabase
+    .from('user_vocabulary')
+    .select('language')
+    .eq('user_id', userId);
+  const counts = { Japanese: 0, English: 0 };
+  for (const v of (data || [])) {
+    if (counts[v.language] != null) counts[v.language] += 1;
+  }
+  return counts;
+}
+
+export default function LessonsPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { user, profile } = useAuth();
+  const [langFilter, setLangFilter] = useState(searchParams.get('lang') || 'all');
+  const [levelFilter, setLevelFilter] = useState(searchParams.get('level') || 'all');
+  const [testScores, setTestScores] = useState({});
+
+  // 리딩 테스트 점수 (localStorage)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const result = {};
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('reading_test_history:')) {
+          const id = key.slice('reading_test_history:'.length);
+          const arr = JSON.parse(localStorage.getItem(key) || '[]');
+          if (arr.length === 0) continue;
+          const best = arr.reduce((b, h) => h.score > b.score ? h : b);
+          result[id] = best;
+        }
+      }
+    } catch {}
+    setTestScores(result);
+  }, []);
+
+  const { data: lessons = [], isLoading } = useQuery({
+    queryKey: ['lessons'],
+    queryFn: fetchLessons,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const { data: progressMap = { completed: new Set(), inProgress: new Map() } } = useQuery({
+    queryKey: ['lessons-progress', user?.id],
+    queryFn: () => fetchProgressMap(user?.id),
+    enabled: !!user,
+  });
+
+  const { data: vocabByLang } = useQuery({
+    queryKey: ['lessons-vocab-lang', user?.id],
+    queryFn: () => fetchVocabByLang(user?.id),
+    enabled: !!user,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const recommendedLevel = useMemo(() => {
+    if (!vocabByLang) return null;
+    if (langFilter === 'Japanese') return getIdealLevel('Japanese', vocabByLang.Japanese || 0);
+    if (langFilter === 'English') return getIdealLevel('English', vocabByLang.English || 0);
+    return null;
+  }, [vocabByLang, langFilter]);
+
+  // 시리즈별 총 편수 (5/23용)
+  const seriesTotals = useMemo(() => {
+    const map = new Map();
+    for (const m of lessons) {
+      const meta = parseTitle(m.title);
+      if (!meta.level || !meta.series || meta.num == null) continue;
+      const k = `${meta.level}|${meta.series}`;
+      map.set(k, (map.get(k) || 0) + 1);
+    }
+    return map;
+  }, [lessons]);
+
+  // 정렬: 레벨 → 시리즈명 → 번호
+  const sorted = useMemo(() => {
+    let arr = lessons.slice();
+    if (langFilter !== 'all') {
+      arr = arr.filter(m => m.processed_json?.metadata?.language === langFilter);
+    }
+    if (levelFilter !== 'all') {
+      arr = arr.filter(m => m.processed_json?.metadata?.level === levelFilter);
+    }
+    arr.sort((a, b) => {
+      const la = a.processed_json?.metadata?.level;
+      const lb = b.processed_json?.metadata?.level;
+      const oa = la in LEVEL_ORDER ? LEVEL_ORDER[la] : 99;
+      const ob = lb in LEVEL_ORDER ? LEVEL_ORDER[lb] : 99;
+      if (oa !== ob) return oa - ob;
+      const ma = parseTitle(a.title);
+      const mb = parseTitle(b.title);
+      const sa = ma.series || '￿';
+      const sb = mb.series || '￿';
+      if (sa !== sb) return sa.localeCompare(sb);
+      if (ma.num != null && mb.num != null) return ma.num - mb.num;
+      return 0;
+    });
+    return arr;
+  }, [lessons, langFilter, levelFilter]);
+
+  // 레벨 옵션 (선택된 언어에 따라)
+  const levelOptions = langFilter === 'Japanese' ? JP_LEVELS
+    : langFilter === 'English' ? EN_LEVELS
+    : [...JP_LEVELS, ...EN_LEVELS];
+
+  return (
+    <div className="page-container">
+      <div className="page-header page-header--row">
+        <div>
+          <h1 className="page-header__title">🎓 강의</h1>
+          <p className="page-header__subtitle">패턴·표현 단계별 학습 (시리즈 #N)</p>
+        </div>
+      </div>
+
+      {/* 추천 레벨 */}
+      {recommendedLevel && (
+        <div style={{
+          padding: '12px 16px',
+          marginBottom: 16,
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border)',
+          borderLeft: '3px solid var(--primary)',
+          borderRadius: 'var(--radius-md)',
+          fontSize: '0.88rem',
+        }}>
+          현재 추천 레벨: <strong style={{ color: 'var(--primary)' }}>{recommendedLevel}</strong>
+          <span style={{ marginLeft: 8, color: 'var(--text-muted)', fontSize: '0.82rem' }}>
+            (단어 수 기준 자동 추천)
+          </span>
+        </div>
+      )}
+
+      {/* 언어 필터 */}
+      <div className="materials-filters">
+        <div className="chip-group">
+          {LANG_FILTERS.map(f => (
+            <button
+              key={f.key}
+              onClick={() => { setLangFilter(f.key); setLevelFilter('all'); }}
+              className={`chip ${langFilter === f.key ? 'chip--active' : ''}`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+
+        {/* 레벨 필터 */}
+        {langFilter !== 'all' && (
+          <div className="chip-group">
+            <button
+              onClick={() => setLevelFilter('all')}
+              className={`chip ${levelFilter === 'all' ? 'chip--active' : ''}`}
+            >
+              전체 난이도
+            </button>
+            {levelOptions.map(lvl => (
+              <button
+                key={lvl}
+                onClick={() => setLevelFilter(lvl)}
+                className={`chip ${levelFilter === lvl ? 'chip--active' : ''}`}
+              >
+                {lvl}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {isLoading ? (
+        <CardGridSkeleton height={120} />
+      ) : sorted.length > 0 ? (
+        <div className="feature-grid">
+          {sorted.map(m => {
+            const status = m.processed_json?.status || 'idle';
+            const metadata = m.processed_json?.metadata || {};
+            const language = metadata.language || (m.title.match(/[a-zA-Z]/) ? 'English' : 'Japanese');
+            const level = metadata.level;
+            const isDone = status === 'completed';
+            const isCompleted = progressMap.completed.has(m.id);
+            const titleMeta = parseTitle(m.title);
+            const total = (titleMeta.level && titleMeta.series)
+              ? seriesTotals.get(`${titleMeta.level}|${titleMeta.series}`) || 0
+              : 0;
+            const seriesPosition = (titleMeta.num != null && total > 0) ? `${titleMeta.num}/${total}` : null;
+            const previewText = (() => {
+              const dict = m.processed_json?.dictionary || {};
+              const seq = m.processed_json?.sequence || [];
+              if (seq.length === 0) return '';
+              return seq.slice(0, 40).map(id => dict[id]?.text || '').filter(Boolean).join('').slice(0, 120);
+            })();
+            return (
+              <div
+                key={m.id}
+                className="card card--clickable"
+                onClick={() => router.push(`/viewer/${m.id}`)}
+                title={previewText || undefined}
+              >
+                <div>
+                  <div className="card__row card__row--between">
+                    <div className="card__row card__row--gap">
+                      <span className="card__flag">{language === 'English' ? '🇬🇧' : '🇯🇵'}</span>
+                      {level && <span className="tag">{level}</span>}
+                      {seriesPosition && (
+                        <span className="tag" style={{ background: 'var(--bg-secondary)', color: 'var(--text-secondary)', fontVariantNumeric: 'tabular-nums' }} title={`${titleMeta.series} 시리즈`}>
+                          {seriesPosition}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                      {testScores[String(m.id)] && (
+                        <span className="badge" style={{ background: 'rgba(212,150,42,0.12)', color: 'var(--warning)', fontWeight: 600 }} title="리딩 테스트 최고 점수">
+                          🏆 {testScores[String(m.id)].score}/{testScores[String(m.id)].total}
+                        </span>
+                      )}
+                      {isCompleted ? (
+                        <span className="badge" style={{ background: 'rgba(74,138,92,0.15)', color: 'var(--accent)', fontWeight: 600 }}>
+                          ✓ 완료
+                        </span>
+                      ) : (() => {
+                        const lastIdx = progressMap.inProgress.get(m.id);
+                        const totalSeq = m.processed_json?.sequence?.length || 0;
+                        if (lastIdx && totalSeq > 0) {
+                          const pct = Math.round((lastIdx / totalSeq) * 100);
+                          return (
+                            <span className="badge" style={{ background: 'var(--bg-secondary)', color: 'var(--primary)', fontWeight: 600 }} title="이어서 학습">
+                              📖 {pct}%
+                            </span>
+                          );
+                        }
+                        if (!isDone) {
+                          return (
+                            <span className="badge" style={{
+                              background: status === 'analyzing' ? 'var(--primary-glow)' : 'var(--bg-secondary)',
+                              color: status === 'analyzing' ? 'var(--primary-light)' : 'var(--text-muted)',
+                            }}>
+                              {status === 'analyzing' ? '분석 중' : '대기 중'}
+                            </span>
+                          );
+                        }
+                        return null;
+                      })()}
+                    </div>
+                  </div>
+                  <h3 className="card__title">{m.title}</h3>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="empty-state">
+          <div className="empty-state__icon">🎓</div>
+          <p className="empty-state__msg">조건에 맞는 강의가 없어요</p>
+          <Link href="/admin" className="empty-state__link">
+            관리자 페이지에서 시드 실행하기 →
+          </Link>
+        </div>
+      )}
+    </div>
+  );
+}

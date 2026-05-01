@@ -71,6 +71,9 @@ async function fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuer
     .select('id, title, created_at, visibility, owner_id, processed_json')
     .order('created_at', { ascending: false });
 
+  // 자료실은 현지 언어 콘텐츠만 — 시리즈 패턴 [* #N] 자료는 /lessons로 분리
+  query = query.not('title', 'ilike', '[%#%]%');
+
   if (tab === 'public') {
     query = query.eq('visibility', 'public');
   } else {
@@ -321,7 +324,7 @@ export default function MaterialsPage() {
       <div className="page-header page-header--row">
         <div>
           <h1 className="page-header__title">📰 자료실</h1>
-          <p className="page-header__subtitle">AI가 해부한 고품질 텍스트로 학습하세요</p>
+          <p className="page-header__subtitle">현지 언어 콘텐츠 (기사·이야기·PDF). 패턴 학습은 <Link href="/lessons" style={{ color: 'var(--primary)' }}>강의</Link>에서</p>
         </div>
         <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
           <button
