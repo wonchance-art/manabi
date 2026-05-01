@@ -329,6 +329,71 @@ export const STARTER_MATERIALS = [
 ありがとうございました。`,
   },
   {
+    title: '[N5 실용 #6] 가족·관계',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `私の家族は四人です。
+父と母と姉と私です。
+父は会社員で、毎日電車で会社へ行きます。
+母は料理が上手です。
+姉は二歳上で、大学生です。
+おじいちゃんとおばあちゃんは元気です。
+親戚も多くて、いつも賑やかです。
+うちには小さい犬もいます。
+名前はポチです。`,
+  },
+  {
+    title: '[N5 실용 #7] 직업·자기소개',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `私は学生です。
+大学で日本語を勉強しています。
+専攻は経済学です。
+趣味は読書と映画鑑賞です。
+韓国のソウルから来ました。
+出身は釜山です。
+日本語を二年間勉強しています。
+将来は日本で働きたいです。
+どうぞよろしくお願いします。`,
+  },
+  {
+    title: '[N5 실용 #8] 쇼핑·계산',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `これはいくらですか。
+千五百円です。
+ちょっと高いですね。
+カードで払えますか。
+現金でお願いします。
+領収書をください。
+袋はいりますか。
+いりません、ありがとうございます。
+もう少し安くなりませんか。`,
+  },
+  {
+    title: '[N5 실용 #9] 병원·증상',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `お腹が痛いです。
+頭が痛くて熱があります。
+風邪を引いたみたいです。
+薬を飲みました。
+医者に行ったほうがいいですか。
+病院はどこですか。
+大丈夫ですか。
+お大事に。
+早く治るといいですね。`,
+  },
+  {
+    title: '[N5 실용 #10] 교통수단',
+    language: 'Japanese', level: 'N5 기초',
+    raw_text: `バスで会社に行きます。
+電車に乗ります。
+どこで降りますか。
+次の駅で降ります。
+タクシーを呼んでください。
+何分かかりますか。
+三十分くらいかかります。
+今日は渋滞がひどいです。
+急いでください。`,
+  },
+  {
     title: '[N5 카나 #1] 히라가나로 첫 일본어',
     language: 'Japanese', level: 'N5 기초',
     raw_text: `わたしは がくせい です。
@@ -1056,6 +1121,70 @@ It's a ten-minute walk from here.
 The bank is over there.
 Thank you very much.`,
   },
+  {
+    title: '[A1 phrases #6] Family & Relationships',
+    language: 'English', level: 'A1 기초',
+    raw_text: `I have two sisters and one brother.
+My father is a doctor.
+My mother is a teacher.
+My grandmother lives with us.
+I love my family very much.
+We have a dog named Max.
+My best friend is named Sarah.
+We've been friends since childhood.
+I miss my family when I'm away.`,
+  },
+  {
+    title: '[A1 phrases #7] Introductions (school/work)',
+    language: 'English', level: 'A1 기초',
+    raw_text: `I'm a university student.
+I'm studying English literature.
+My major is economics.
+I work at a small company.
+I'm an English teacher.
+I'm from South Korea.
+I've been learning English for two years.
+Nice to meet you, looking forward to working together.`,
+  },
+  {
+    title: '[A1 phrases #8] Shopping & Money',
+    language: 'English', level: 'A1 기초',
+    raw_text: `How much is this?
+It's twenty dollars.
+That's a bit expensive.
+Can I pay by card?
+I'll pay in cash.
+Can I have a receipt, please?
+Do I need a bag?
+No, I don't need one. Thanks.
+Is there a discount?`,
+  },
+  {
+    title: '[A1 phrases #9] Health & Doctor',
+    language: 'English', level: 'A1 기초',
+    raw_text: `I have a stomach ache.
+I have a headache and a fever.
+I think I caught a cold.
+I took some medicine.
+Should I see a doctor?
+Where is the hospital?
+Are you okay?
+Take care.
+I hope you feel better soon.`,
+  },
+  {
+    title: '[A1 phrases #10] Transportation',
+    language: 'English', level: 'A1 기초',
+    raw_text: `I'll take the bus.
+We're getting on the train.
+Where do I get off?
+I get off at the next station.
+Please call a taxi.
+How long does it take?
+About thirty minutes.
+The traffic is terrible today.
+Please hurry.`,
+  },
 
   // ── A2 ─────────────────────
   {
@@ -1278,5 +1407,117 @@ The car is being repaired now.
 This song was sung by Adele.
 The cake is made with chocolate.
 The window was broken yesterday.`,
+  },
+
+  // ── B1 grammar 시리즈 ──────────────────────
+  {
+    title: '[B1 grammar #1] present perfect continuous',
+    language: 'English', level: 'B1 중급',
+    raw_text: `I have been studying English for five years.
+She has been working here since 2019.
+It has been raining all day.
+They have been waiting for two hours.
+We have been living in this city for a long time.
+He has been learning to play the guitar recently.
+How long have you been working on this project?`,
+  },
+  {
+    title: '[B1 grammar #2] past perfect',
+    language: 'English', level: 'B1 중급',
+    raw_text: `By the time I arrived, the meeting had already started.
+She had finished her homework before dinner.
+They had never been to Japan before that trip.
+He told me he had seen the movie twice.
+We had lived in three different countries by 2020.
+The sun had set when we got home.
+I realized I had forgotten my keys.`,
+  },
+  {
+    title: '[B1 grammar #3] second conditional (가정)',
+    language: 'English', level: 'B1 중급',
+    raw_text: `If I had more time, I would travel the world.
+If she were taller, she could be a model.
+If we lived closer, we'd see each other more often.
+What would you do if you won the lottery?
+I would help you if I could.
+If I were you, I would take the job.
+They would be happier if they had more freedom.`,
+  },
+  {
+    title: '[B1 grammar #4] third conditional (가정 과거)',
+    language: 'English', level: 'B1 중급',
+    raw_text: `If I had studied harder, I would have passed the exam.
+She would have come if she had known.
+We could have caught the train if we had left earlier.
+If they had told us, we would have helped.
+He would have been a great doctor if he had finished medical school.
+I would have called you if my phone had not been dead.
+If you had asked, I would have helped you.`,
+  },
+  {
+    title: '[B1 grammar #5] reported speech (간접화법)',
+    language: 'English', level: 'B1 중급',
+    raw_text: `She said she was tired.
+He told me he would be late.
+They asked if I had finished the report.
+The teacher explained that the test would be next week.
+My friend said she had seen the movie already.
+He mentioned that he was moving abroad.
+She wondered if I knew the answer.`,
+  },
+  {
+    title: '[B1 grammar #6] passive voice (advanced)',
+    language: 'English', level: 'B1 중급',
+    raw_text: `The window has been broken.
+The new bridge will be opened next month.
+Mistakes were made during the project.
+The decision was being discussed when I arrived.
+The package should be delivered by Friday.
+These products are made in Korea.
+A new policy is being introduced next year.`,
+  },
+  {
+    title: '[B1 grammar #7] modals of deduction',
+    language: 'English', level: 'B1 중급',
+    raw_text: `He must be tired after such a long day.
+She can't be at home — her car isn't here.
+They might be running late.
+This must be the right address.
+He could be at the gym.
+It must have been a difficult decision.
+She might have forgotten our meeting.`,
+  },
+  {
+    title: '[B1 grammar #8] used to / would (과거 습관)',
+    language: 'English', level: 'B1 중급',
+    raw_text: `I used to live in a small town.
+She used to play the piano when she was young.
+We would visit our grandparents every summer.
+He didn't use to like vegetables.
+They used to be best friends.
+I would walk to school every morning when I was a kid.
+This park used to be a forest.`,
+  },
+  {
+    title: '[B1 grammar #9] so do I / neither do I',
+    language: 'English', level: 'B1 중급',
+    raw_text: `I love coffee. — So do I.
+She doesn't eat meat. — Neither do I.
+He's been to Japan. — So have I.
+We can't speak French. — Neither can we.
+They will go to the party. — So will we.
+I haven't seen that movie. — Neither have I.
+She enjoys hiking. — So do my parents.`,
+  },
+  {
+    title: '[B1 grammar #10] wishes & regrets',
+    language: 'English', level: 'B1 중급',
+    raw_text: `I wish I knew the answer.
+She wishes she had more time.
+I wish I hadn't said that.
+If only I could fly.
+He wishes he were taller.
+We wish we had visited that museum.
+I wish you were here.`,
   },
 ];
