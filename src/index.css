@@ -5340,6 +5340,114 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   color: var(--text-primary);
 }
 
+/* ========= Lessons List (Notion-style) ========= */
+.lessons-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.lessons-list__group {
+  display: flex;
+  flex-direction: column;
+}
+.lessons-list__group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0 4px 8px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+.lessons-list__group-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
+}
+.lessons-list__group-count {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.lessons-list__rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.lessons-list__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  outline: none;
+}
+.lessons-list__row:hover,
+.lessons-list__row:focus-visible {
+  background: var(--bg-secondary);
+}
+.lessons-list__row--done {
+  color: var(--text-muted);
+}
+.lessons-list__row--done .lessons-list__title {
+  color: var(--text-secondary);
+}
+.lessons-list__status {
+  font-size: 0.85rem;
+  width: 16px;
+  text-align: center;
+  flex-shrink: 0;
+  color: var(--border);
+}
+.lessons-list__row--done .lessons-list__status { color: var(--accent); }
+.lessons-list__row--progress .lessons-list__status { color: var(--primary); }
+.lessons-list__lang {
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+.lessons-list__title {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.92rem;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+.lessons-list__meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+.lessons-list__pos,
+.lessons-list__score,
+.lessons-list__pct {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.lessons-list__score {
+  color: var(--warning);
+  font-weight: 600;
+}
+.lessons-list__pct {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+@media (max-width: 600px) {
+  .lessons-list__row { gap: 8px; padding: 10px 8px; }
+  .lessons-list__title { font-size: 0.88rem; }
+  .lessons-list__meta { gap: 6px; }
+  .lessons-list__lang { display: none; }
+}
+
 /* ========= 다음 강의 카드 (미니멀) ========= */
 .next-lesson-card {
   display: block;

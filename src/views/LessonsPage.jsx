@@ -222,87 +222,89 @@ export default function LessonsPage() {
       </div>
 
       {isLoading ? (
-        <CardGridSkeleton height={120} />
-      ) : sorted.length > 0 ? (
-        <div className="feature-grid">
-          {sorted.map(m => {
-            const status = m.processed_json?.status || 'idle';
-            const metadata = m.processed_json?.metadata || {};
-            const language = metadata.language || (m.title.match(/[a-zA-Z]/) ? 'English' : 'Japanese');
-            const level = metadata.level;
-            const isDone = status === 'completed';
-            const isCompleted = progressMap.completed.has(m.id);
-            const titleMeta = parseTitle(m.title);
-            const total = (titleMeta.level && titleMeta.series)
-              ? seriesTotals.get(`${titleMeta.level}|${titleMeta.series}`) || 0
-              : 0;
-            const seriesPosition = (titleMeta.num != null && total > 0) ? `${titleMeta.num}/${total}` : null;
-            const previewText = (() => {
-              const dict = m.processed_json?.dictionary || {};
-              const seq = m.processed_json?.sequence || [];
-              if (seq.length === 0) return '';
-              return seq.slice(0, 40).map(id => dict[id]?.text || '').filter(Boolean).join('').slice(0, 120);
-            })();
-            return (
-              <div
-                key={m.id}
-                className="card card--clickable"
-                onClick={() => router.push(`/viewer/${m.id}`)}
-                title={previewText || undefined}
-              >
-                <div>
-                  <div className="card__row card__row--between">
-                    <div className="card__row card__row--gap">
-                      <span className="card__flag">{language === 'English' ? '🇬🇧' : '🇯🇵'}</span>
-                      {level && <span className="tag">{level}</span>}
-                      {seriesPosition && (
-                        <span className="tag" style={{ background: 'var(--bg-secondary)', color: 'var(--text-secondary)', fontVariantNumeric: 'tabular-nums' }} title={`${titleMeta.series} 시리즈`}>
-                          {seriesPosition}
-                        </span>
-                      )}
-                    </div>
-                    <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
-                      {testScores[String(m.id)] && (
-                        <span className="badge" style={{ background: 'rgba(212,150,42,0.12)', color: 'var(--warning)', fontWeight: 600 }} title="리딩 테스트 최고 점수">
-                          🏆 {testScores[String(m.id)].score}/{testScores[String(m.id)].total}
-                        </span>
-                      )}
-                      {isCompleted ? (
-                        <span className="badge" style={{ background: 'rgba(74,138,92,0.15)', color: 'var(--accent)', fontWeight: 600 }}>
-                          ✓ 완료
-                        </span>
-                      ) : (() => {
-                        const lastIdx = progressMap.inProgress.get(m.id);
-                        const totalSeq = m.processed_json?.sequence?.length || 0;
-                        if (lastIdx && totalSeq > 0) {
-                          const pct = Math.round((lastIdx / totalSeq) * 100);
-                          return (
-                            <span className="badge" style={{ background: 'var(--bg-secondary)', color: 'var(--primary)', fontWeight: 600 }} title="이어서 학습">
-                              📖 {pct}%
-                            </span>
-                          );
-                        }
-                        if (!isDone) {
-                          return (
-                            <span className="badge" style={{
-                              background: status === 'analyzing' ? 'var(--primary-glow)' : 'var(--bg-secondary)',
-                              color: status === 'analyzing' ? 'var(--primary-light)' : 'var(--text-muted)',
-                            }}>
-                              {status === 'analyzing' ? '분석 중' : '대기 중'}
-                            </span>
-                          );
-                        }
-                        return null;
-                      })()}
-                    </div>
-                  </div>
-                  <h3 className="card__title">{m.title}</h3>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
+        <CardGridSkeleton height={48} />
+      ) : sorted.length > 0 ? (() => {
+        // 레벨별로 그룹화 (정렬은 이미 sorted)
+        const groups = [];
+        let currentLevel = null;
+        for (const m of sorted) {
+          const lv = m.processed_json?.metadata?.level;
+          if (lv !== currentLevel) {
+            currentLevel = lv;
+            groups.push({ level: lv, items: [] });
+          }
+          groups[groups.length - 1].items.push(m);
+        }
+        return (
+          <div className="lessons-list">
+            {groups.map(g => {
+              const completedCount = g.items.filter(m => progressMap.completed.has(m.id)).length;
+              return (
+                <section key={g.level || 'unknown'} className="lessons-list__group">
+                  <header className="lessons-list__group-header">
+                    <span className="lessons-list__group-title">{g.level || '레벨 미정'}</span>
+                    <span className="lessons-list__group-count">{completedCount} / {g.items.length}</span>
+                  </header>
+                  <ul className="lessons-list__rows">
+                    {g.items.map(m => {
+                      const metadata = m.processed_json?.metadata || {};
+                      const language = metadata.language || (m.title.match(/[a-zA-Z]/) ? 'English' : 'Japanese');
+                      const isCompleted = progressMap.completed.has(m.id);
+                      const titleMeta = parseTitle(m.title);
+                      const total = (titleMeta.level && titleMeta.series)
+                        ? seriesTotals.get(`${titleMeta.level}|${titleMeta.series}`) || 0
+                        : 0;
+                      const seriesPosition = (titleMeta.num != null && total > 0) ? `${titleMeta.num}/${total}` : null;
+                      const lastIdx = progressMap.inProgress.get(m.id);
+                      const totalSeq = m.processed_json?.sequence?.length || 0;
+                      const pct = (lastIdx && totalSeq > 0) ? Math.round((lastIdx / totalSeq) * 100) : 0;
+                      const score = testScores[String(m.id)];
+                      const previewText = (() => {
+                        const dict = m.processed_json?.dictionary || {};
+                        const seq = m.processed_json?.sequence || [];
+                        if (seq.length === 0) return '';
+                        return seq.slice(0, 40).map(id => dict[id]?.text || '').filter(Boolean).join('').slice(0, 120);
+                      })();
+                      // 상태 표시 우선순위: 완료 > 진행 중 > 미시작
+                      const statusDot = isCompleted ? 'done' : (lastIdx ? 'progress' : 'idle');
+                      return (
+                        <li
+                          key={m.id}
+                          className={`lessons-list__row lessons-list__row--${statusDot}`}
+                          onClick={() => router.push(`/viewer/${m.id}`)}
+                          title={previewText || undefined}
+                          role="link"
+                          tabIndex={0}
+                          onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && router.push(`/viewer/${m.id}`)}
+                        >
+                          <span className="lessons-list__status" aria-hidden="true">
+                            {isCompleted ? '●' : lastIdx ? '◐' : '○'}
+                          </span>
+                          <span className="lessons-list__lang" aria-hidden="true">
+                            {language === 'English' ? '🇬🇧' : '🇯🇵'}
+                          </span>
+                          <span className="lessons-list__title">{m.title}</span>
+                          <span className="lessons-list__meta">
+                            {seriesPosition && (
+                              <span className="lessons-list__pos" title={`${titleMeta.series} 시리즈`}>{seriesPosition}</span>
+                            )}
+                            {score && (
+                              <span className="lessons-list__score" title="리딩 테스트 최고 점수">🏆 {score.score}/{score.total}</span>
+                            )}
+                            {!isCompleted && lastIdx && pct > 0 && (
+                              <span className="lessons-list__pct">{pct}%</span>
+                            )}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </section>
+              );
+            })}
+          </div>
+        );
+      })() : (
         <div className="empty-state">
           <div className="empty-state__icon">🎓</div>
           <p className="empty-state__msg">조건에 맞는 강의가 없어요</p>
