@@ -115,6 +115,86 @@ export default function LessonsPage() {
     return null;
   }, [vocabByLang, langFilter]);
 
+  // 사용자 상태에 따른 추천 시작점
+  const recommendStart = useMemo(() => {
+    if (lessons.length === 0) return null;
+
+    // 시리즈별 그룹화
+    const seriesMap = new Map();
+    for (const m of lessons) {
+      const meta = parseTitle(m.title);
+      if (!meta.level || !meta.series || meta.num == null) continue;
+      const k = `${meta.level}|${meta.series}`;
+      if (!seriesMap.has(k)) seriesMap.set(k, []);
+      seriesMap.get(k).push({ ...m, _meta: meta });
+    }
+
+    // 1순위: 진행 중 시리즈 (가장 많이 진행한 것)
+    let bestInProgress = null;
+    for (const items of seriesMap.values()) {
+      items.sort((a, b) => a._meta.num - b._meta.num);
+      const completed = items.filter(i => progressMap.completed.has(i.id)).length;
+      if (completed === 0 || completed === items.length) continue;
+      const next = items.find(i => !progressMap.completed.has(i.id));
+      if (!next) continue;
+      const pct = completed / items.length;
+      if (!bestInProgress || pct > bestInProgress.pct) {
+        bestInProgress = {
+          type: 'continue',
+          level: items[0]._meta.level,
+          series: items[0]._meta.series,
+          completed,
+          total: items.length,
+          pct,
+          material: { id: next.id, title: next.title },
+        };
+      }
+    }
+    if (bestInProgress) return bestInProgress;
+
+    // 2순위: 추천 레벨의 첫 미완료 lesson
+    if (recommendedLevel) {
+      const candidates = lessons
+        .filter(m => m.processed_json?.metadata?.level === recommendedLevel)
+        .map(m => ({ ...m, _meta: parseTitle(m.title) }))
+        .filter(m => m._meta.num != null)
+        .sort((a, b) => {
+          const sa = a._meta.series || '';
+          const sb = b._meta.series || '';
+          if (sa !== sb) return sa.localeCompare(sb);
+          return a._meta.num - b._meta.num;
+        });
+      const first = candidates.find(m => !progressMap.completed.has(m.id));
+      if (first) {
+        return { type: 'start-level', level: recommendedLevel, material: { id: first.id, title: first.title } };
+      }
+    }
+
+    // 3순위: 절대 신규 → N5 카나 #1 (또는 A1 grammar #1)
+    const fallback = lessons
+      .filter(m => {
+        const meta = parseTitle(m.title);
+        const targetLevel = langFilter === 'English' ? 'A1 기초' : 'N5 기초';
+        return meta.level === targetLevel && meta.num === 1 && (meta.series === '카나' || meta.series === 'grammar');
+      })
+      .sort((a, b) => {
+        const ma = parseTitle(a.title);
+        const mb = parseTitle(b.title);
+        // 카나 시리즈 우선 (일본어), grammar #1 우선 (영어)
+        if (ma.series === '카나' && mb.series !== '카나') return -1;
+        if (mb.series === '카나' && ma.series !== '카나') return 1;
+        return 0;
+      });
+    if (fallback[0]) {
+      return {
+        type: 'start-fresh',
+        level: fallback[0].processed_json?.metadata?.level,
+        material: { id: fallback[0].id, title: fallback[0].title },
+      };
+    }
+    return null;
+  }, [lessons, progressMap, recommendedLevel, langFilter]);
+
   // 시리즈별 총 편수 (5/23용)
   const seriesTotals = useMemo(() => {
     const map = new Map();
@@ -167,22 +247,27 @@ export default function LessonsPage() {
         </div>
       </div>
 
-      {/* 추천 레벨 */}
-      {recommendedLevel && (
-        <div style={{
-          padding: '12px 16px',
-          marginBottom: 16,
-          background: 'var(--bg-card)',
-          border: '1px solid var(--border)',
-          borderLeft: '3px solid var(--primary)',
-          borderRadius: 'var(--radius-md)',
-          fontSize: '0.88rem',
-        }}>
-          현재 추천 레벨: <strong style={{ color: 'var(--primary)' }}>{recommendedLevel}</strong>
-          <span style={{ marginLeft: 8, color: 'var(--text-muted)', fontSize: '0.82rem' }}>
-            (단어 수 기준 자동 추천)
-          </span>
-        </div>
+      {/* 추천 시작점 — 진행 중 / 추천 레벨 첫 lesson / 신규 입문 */}
+      {recommendStart && (
+        <Link href={`/viewer/${recommendStart.material.id}`} className="lessons-hero">
+          <div className="lessons-hero__hint">
+            {recommendStart.type === 'continue' && '📍 이어서 학습'}
+            {recommendStart.type === 'start-level' && `🎯 추천 시작점 — ${recommendStart.level}`}
+            {recommendStart.type === 'start-fresh' && '🌱 첫 강의로 시작'}
+          </div>
+          <div className="lessons-hero__title">{recommendStart.material.title}</div>
+          {recommendStart.type === 'continue' && (
+            <div className="lessons-hero__sub">
+              {recommendStart.level} {recommendStart.series} · {recommendStart.completed}/{recommendStart.total} 진행
+            </div>
+          )}
+          {recommendStart.type === 'start-level' && (
+            <div className="lessons-hero__sub">단어 수 기준 자동 추천</div>
+          )}
+          {recommendStart.type === 'start-fresh' && (
+            <div className="lessons-hero__sub">언어 학습은 글자부터</div>
+          )}
+        </Link>
       )}
 
       {/* 언어 필터 */}

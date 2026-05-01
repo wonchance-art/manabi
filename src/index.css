@@ -5340,6 +5340,41 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   color: var(--text-primary);
 }
 
+/* ========= Lessons Hero (추천 시작점) ========= */
+.lessons-hero {
+  display: block;
+  margin-bottom: 24px;
+  padding: 18px 22px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--primary);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: inherit;
+  transition: background var(--transition-fast);
+}
+.lessons-hero:hover {
+  background: var(--bg-elevated);
+}
+.lessons-hero__hint {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--primary);
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+.lessons-hero__title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+.lessons-hero__sub {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
 /* ========= Lessons List (Notion-style) ========= */
 .lessons-list {
   display: flex;
