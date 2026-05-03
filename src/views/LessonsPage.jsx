@@ -11,7 +11,6 @@ import { getIdealLevel } from '../lib/levels';
 import { CardGridSkeleton } from '../components/Skeleton';
 
 const LANG_FILTERS = [
-  { key: 'all',      label: '🌍 전체' },
   { key: 'Japanese', label: '🇯🇵 일본어' },
   { key: 'English',  label: '🇬🇧 영어' },
 ];
@@ -66,7 +65,10 @@ export default function LessonsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, profile } = useAuth();
-  const [langFilter, setLangFilter] = useState(searchParams.get('lang') || 'all');
+  const [langFilter, setLangFilter] = useState(() => {
+    const u = searchParams.get('lang');
+    return u === 'English' ? 'English' : 'Japanese';
+  });
   const [levelFilter, setLevelFilter] = useState(searchParams.get('level') || 'all');
   const [testScores, setTestScores] = useState({});
 
@@ -210,9 +212,7 @@ export default function LessonsPage() {
   // 정렬: 레벨 → 시리즈명 → 번호
   const sorted = useMemo(() => {
     let arr = lessons.slice();
-    if (langFilter !== 'all') {
-      arr = arr.filter(m => m.processed_json?.metadata?.language === langFilter);
-    }
+    arr = arr.filter(m => m.processed_json?.metadata?.language === langFilter);
     if (levelFilter !== 'all') {
       arr = arr.filter(m => m.processed_json?.metadata?.level === levelFilter);
     }
@@ -234,9 +234,7 @@ export default function LessonsPage() {
   }, [lessons, langFilter, levelFilter]);
 
   // 레벨 옵션 (선택된 언어에 따라)
-  const levelOptions = langFilter === 'Japanese' ? JP_LEVELS
-    : langFilter === 'English' ? EN_LEVELS
-    : [...JP_LEVELS, ...EN_LEVELS];
+  const levelOptions = langFilter === 'Japanese' ? JP_LEVELS : EN_LEVELS;
 
   return (
     <div className="page-container">
@@ -285,25 +283,23 @@ export default function LessonsPage() {
         </div>
 
         {/* 레벨 필터 */}
-        {langFilter !== 'all' && (
-          <div className="chip-group">
+        <div className="chip-group">
+          <button
+            onClick={() => setLevelFilter('all')}
+            className={`chip ${levelFilter === 'all' ? 'chip--active' : ''}`}
+          >
+            전체 난이도
+          </button>
+          {levelOptions.map(lvl => (
             <button
-              onClick={() => setLevelFilter('all')}
-              className={`chip ${levelFilter === 'all' ? 'chip--active' : ''}`}
+              key={lvl}
+              onClick={() => setLevelFilter(lvl)}
+              className={`chip ${levelFilter === lvl ? 'chip--active' : ''}`}
             >
-              전체 난이도
+              {lvl}
             </button>
-            {levelOptions.map(lvl => (
-              <button
-                key={lvl}
-                onClick={() => setLevelFilter(lvl)}
-                className={`chip ${levelFilter === lvl ? 'chip--active' : ''}`}
-              >
-                {lvl}
-              </button>
-            ))}
-          </div>
-        )}
+          ))}
+        </div>
       </div>
 
       {isLoading ? (
