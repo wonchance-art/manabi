@@ -5387,17 +5387,37 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .lessons-list__group-header {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  padding: 0 4px 8px;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 4px;
+  border: none;
+  background: none;
   border-bottom: 1px solid var(--border);
-  margin-bottom: 4px;
+  cursor: pointer;
+  text-align: left;
+  color: var(--text-primary);
+  transition: background var(--transition-fast);
+}
+.lessons-list__group-header:hover {
+  background: var(--bg-secondary);
+}
+.lessons-list__group-chevron {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  width: 14px;
+  flex-shrink: 0;
+  transition: transform 0.15s;
+}
+.lessons-list__group.is-open .lessons-list__group-chevron {
+  color: var(--primary);
 }
 .lessons-list__group-title {
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: 0.02em;
+  flex: 1;
 }
 .lessons-list__group-count {
   font-size: 0.78rem;

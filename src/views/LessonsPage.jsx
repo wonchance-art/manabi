@@ -69,6 +69,22 @@ export default function LessonsPage() {
     const u = searchParams.get('lang');
     return u === 'English' ? 'English' : 'Japanese';
   });
+  const [expandedGroups, setExpandedGroups] = useState(() => {
+    if (typeof window === 'undefined') return new Set();
+    try {
+      const saved = JSON.parse(localStorage.getItem('lessons_expanded') || '[]');
+      return new Set(Array.isArray(saved) ? saved : []);
+    } catch { return new Set(); }
+  });
+  function toggleGroup(level) {
+    setExpandedGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(level)) next.delete(level);
+      else next.add(level);
+      try { localStorage.setItem('lessons_expanded', JSON.stringify([...next])); } catch {}
+      return next;
+    });
+  }
   const [levelFilter, setLevelFilter] = useState(searchParams.get('level') || 'all');
   const [testScores, setTestScores] = useState({});
 
@@ -320,12 +336,21 @@ export default function LessonsPage() {
           <div className="lessons-list">
             {groups.map(g => {
               const completedCount = g.items.filter(m => progressMap.completed.has(m.id)).length;
+              const groupKey = g.level || 'unknown';
+              const isOpen = expandedGroups.has(groupKey);
               return (
-                <section key={g.level || 'unknown'} className="lessons-list__group">
-                  <header className="lessons-list__group-header">
+                <section key={groupKey} className={`lessons-list__group ${isOpen ? 'is-open' : ''}`}>
+                  <button
+                    type="button"
+                    className="lessons-list__group-header"
+                    onClick={() => toggleGroup(groupKey)}
+                    aria-expanded={isOpen}
+                  >
+                    <span className="lessons-list__group-chevron" aria-hidden="true">{isOpen ? '▾' : '▸'}</span>
                     <span className="lessons-list__group-title">{g.level || '레벨 미정'}</span>
                     <span className="lessons-list__group-count">{completedCount} / {g.items.length}</span>
-                  </header>
+                  </button>
+                  {isOpen && (
                   <ul className="lessons-list__rows">
                     {g.items.map(m => {
                       const metadata = m.processed_json?.metadata || {};
@@ -380,6 +405,7 @@ export default function LessonsPage() {
                       );
                     })}
                   </ul>
+                  )}
                 </section>
               );
             })}
