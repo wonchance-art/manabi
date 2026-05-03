@@ -263,7 +263,7 @@ export default function LessonsPage() {
 
       {/* 추천 시작점 — 진행 중 / 추천 레벨 첫 lesson / 신규 입문 */}
       {recommendStart && (
-        <Link href={`/viewer/${recommendStart.material.id}`} className="lessons-hero">
+        <Link href={`/lessons/${recommendStart.material.id}`} className="lessons-hero">
           <div className="lessons-hero__hint">
             {recommendStart.type === 'continue' && '📍 이어서 학습'}
             {recommendStart.type === 'start-level' && `🎯 추천 시작점 — ${recommendStart.level}`}
@@ -381,11 +381,11 @@ export default function LessonsPage() {
                         <li
                           key={m.id}
                           className={`lessons-list__row lessons-list__row--${statusDot}`}
-                          onClick={() => router.push(`/viewer/${m.id}`)}
+                          onClick={() => router.push(`/lessons/${m.id}`)}
                           title={previewText || undefined}
                           role="link"
                           tabIndex={0}
-                          onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && router.push(`/viewer/${m.id}`)}
+                          onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && router.push(`/lessons/${m.id}`)}
                         >
                           <span className="lessons-list__status" aria-hidden="true">
                             {isCompleted ? '●' : lastIdx ? '◐' : '○'}
