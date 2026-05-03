@@ -5665,6 +5665,44 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   background: var(--bg-elevated);
 }
 
+.lesson-conversation {
+  margin-top: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+}
+.lesson-conversation__toggle {
+  cursor: pointer;
+  padding: 12px 18px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  list-style: none;
+  user-select: none;
+}
+.lesson-conversation__toggle::-webkit-details-marker { display: none; }
+.lesson-conversation__toggle::marker { content: ''; }
+.lesson-conversation__toggle::before {
+  content: '▸';
+  display: inline-block;
+  margin-right: 6px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  transition: transform var(--transition-fast);
+}
+.lesson-conversation[open] .lesson-conversation__toggle::before {
+  transform: rotate(90deg);
+}
+.lesson-conversation[open] .lesson-conversation__toggle {
+  border-bottom: 1px solid var(--border);
+}
+.lesson-body--conversation {
+  border: none;
+  background: transparent;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  padding: 12px 18px 16px;
+}
+
 .lesson-explanation {
   background: var(--bg-card);
   border: 1px solid var(--border);

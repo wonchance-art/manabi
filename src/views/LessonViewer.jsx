@@ -269,8 +269,8 @@ ${(material.raw_text || '').slice(0, 400)}
           <span className="lesson-phases__label">💭 정리</span>
         </button>
         <button
-          className={`lesson-phases__btn ${phase === 4 ? 'is-active' : ''}`}
-          onClick={() => changePhase(4)}
+          className={`lesson-phases__btn ${phase === 3 ? 'is-active' : ''}`}
+          onClick={() => changePhase(3)}
         >
           <span className="lesson-phases__num">3</span>
           <span className="lesson-phases__label">✍️ 만들기</span>
@@ -293,6 +293,25 @@ ${(material.raw_text || '').slice(0, 400)}
               );
             })}
           </div>
+
+          {material.conversation_script && (
+            <details className="lesson-conversation" open>
+              <summary className="lesson-conversation__toggle">
+                💬 회화에서 써보기 — 이 패턴이 실제로 쓰이는 장면
+              </summary>
+              <div className="lesson-body lesson-body--conversation">
+                {material.conversation_script.split('\n').map((line, i) => {
+                  if (!line.trim()) return null;
+                  return (
+                    <p key={i} className="lesson-body__line" onClick={() => ttsSupported && speak(line, language)}>
+                      {line}
+                    </p>
+                  );
+                })}
+              </div>
+            </details>
+          )}
+
           {ttsSupported && (
             <p className="lesson-phase__tip">💡 문장을 클릭하면 발음 들을 수 있어요</p>
           )}
@@ -324,13 +343,13 @@ ${(material.raw_text || '').slice(0, 400)}
           )}
           <div className="lesson-phase__actions">
             <Button variant="ghost" onClick={() => changePhase(1)}>← 예문 다시 보기</Button>
-            <Button onClick={() => changePhase(4)}>직접 만들어 보기 →</Button>
+            <Button onClick={() => changePhase(3)}>직접 만들어 보기 →</Button>
           </div>
         </div>
       )}
 
-      {/* Phase 4 — 만들기 (생산) */}
-      {phase === 4 && (
+      {/* Phase 3 — 만들기 (생산) */}
+      {phase === 3 && (
         <div className="lesson-phase">
           <div className="lesson-phase__hint">
             이 패턴으로 {targetLangKo} 문장을 만들어 보세요. AI가 즉시 교정해 드려요.
