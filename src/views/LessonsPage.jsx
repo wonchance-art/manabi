@@ -321,22 +321,33 @@ export default function LessonsPage() {
       {isLoading ? (
         <CardGridSkeleton height={48} />
       ) : sorted.length > 0 ? (() => {
-        // 레벨별로 그룹화 (정렬은 이미 sorted)
+        // 카나는 별도 그룹(최상단), 그 외는 레벨별 통합
         const groups = [];
+        const kanaItems = [];
         let currentLevel = null;
         for (const m of sorted) {
+          const meta = parseTitle(m.title);
+          if (meta.series === '카나') {
+            kanaItems.push(m);
+            continue;
+          }
           const lv = m.processed_json?.metadata?.level;
           if (lv !== currentLevel) {
             currentLevel = lv;
-            groups.push({ level: lv, items: [] });
+            groups.push({ level: lv, items: [], key: lv || 'unknown' });
           }
           groups[groups.length - 1].items.push(m);
+        }
+        if (kanaItems.length > 0) {
+          // 번호 순으로 정렬
+          kanaItems.sort((a, b) => (parseTitle(a.title).num || 0) - (parseTitle(b.title).num || 0));
+          groups.unshift({ level: '카나 입문', items: kanaItems, key: '__kana__' });
         }
         return (
           <div className="lessons-list">
             {groups.map(g => {
               const completedCount = g.items.filter(m => progressMap.completed.has(m.id)).length;
-              const groupKey = g.level || 'unknown';
+              const groupKey = g.key;
               const isOpen = expandedGroups.has(groupKey);
               return (
                 <section key={groupKey} className={`lessons-list__group ${isOpen ? 'is-open' : ''}`}>
@@ -347,20 +358,14 @@ export default function LessonsPage() {
                     aria-expanded={isOpen}
                   >
                     <span className="lessons-list__group-chevron" aria-hidden="true">{isOpen ? '▾' : '▸'}</span>
-                    <span className="lessons-list__group-title">{g.level || '레벨 미정'}</span>
+                    <span className="lessons-list__group-title">{g.level}</span>
                     <span className="lessons-list__group-count">{completedCount} / {g.items.length}</span>
                   </button>
                   {isOpen && (
                   <ul className="lessons-list__rows">
                     {g.items.map(m => {
-                      const metadata = m.processed_json?.metadata || {};
-                      const language = metadata.language || (m.title.match(/[a-zA-Z]/) ? 'English' : 'Japanese');
                       const isCompleted = progressMap.completed.has(m.id);
                       const titleMeta = parseTitle(m.title);
-                      const total = (titleMeta.level && titleMeta.series)
-                        ? seriesTotals.get(`${titleMeta.level}|${titleMeta.series}`) || 0
-                        : 0;
-                      const seriesPosition = (titleMeta.num != null && total > 0) ? `${titleMeta.num}/${total}` : null;
                       const lastIdx = progressMap.inProgress.get(m.id);
                       const totalSeq = m.processed_json?.sequence?.length || 0;
                       const pct = (lastIdx && totalSeq > 0) ? Math.round((lastIdx / totalSeq) * 100) : 0;
@@ -371,7 +376,6 @@ export default function LessonsPage() {
                         if (seq.length === 0) return '';
                         return seq.slice(0, 40).map(id => dict[id]?.text || '').filter(Boolean).join('').slice(0, 120);
                       })();
-                      // 상태 표시 우선순위: 완료 > 진행 중 > 미시작
                       const statusDot = isCompleted ? 'done' : (lastIdx ? 'progress' : 'idle');
                       return (
                         <li
@@ -386,14 +390,10 @@ export default function LessonsPage() {
                           <span className="lessons-list__status" aria-hidden="true">
                             {isCompleted ? '●' : lastIdx ? '◐' : '○'}
                           </span>
-                          <span className="lessons-list__lang" aria-hidden="true">
-                            {language === 'English' ? '🇬🇧' : '🇯🇵'}
+                          <span className="lessons-list__title">
+                            {titleMeta.display || m.title}
                           </span>
-                          <span className="lessons-list__title">{m.title}</span>
                           <span className="lessons-list__meta">
-                            {seriesPosition && (
-                              <span className="lessons-list__pos" title={`${titleMeta.series} 시리즈`}>{seriesPosition}</span>
-                            )}
                             {score && (
                               <span className="lessons-list__score" title="리딩 테스트 최고 점수">🏆 {score.score}/{score.total}</span>
                             )}
