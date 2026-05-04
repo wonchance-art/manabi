@@ -5807,55 +5807,31 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   .kana-chart__title { font-size: 1.1rem; }
 }
 
-/* ========= Kana Tracer (따라 쓰기 캔버스) ========= */
-.kana-tracer__overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  animation: fadeIn 0.15s ease-out;
-}
+/* ========= Kana Tracer (따라 쓰기, 인라인) ========= */
 .kana-tracer {
-  position: relative;
-  background: var(--bg-card);
-  border-radius: 24px;
-  padding: 26px 24px 20px;
+  margin: 18px auto 0;
   max-width: 360px;
-  width: 100%;
-  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
-  animation: slideUp 0.2s ease-out;
-}
-.kana-tracer__close {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: none;
+  padding: 18px 16px 14px;
   background: var(--bg-elevated);
-  color: var(--text-muted);
-  font-size: 1.4rem;
-  line-height: 1;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  transition: background 0.15s, color 0.15s;
-}
-.kana-tracer__close:hover { background: var(--border); color: var(--text-primary); }
-.kana-tracer__title {
+  border-radius: 18px;
+  border: 1px solid var(--border);
   text-align: center;
+}
+.kana-tracer--empty {
+  padding: 24px 16px;
+  background: transparent;
+  border-style: dashed;
+}
+.kana-tracer--empty .kana-tracer__hint {
+  margin: 0;
+}
+.kana-tracer__title {
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--text-muted);
-  margin-bottom: 14px;
+  margin-bottom: 12px;
   letter-spacing: 0.04em;
+  font-family: var(--font-klee), var(--font-noto-jp), serif;
 }
 .kana-tracer__stage {
   position: relative;
@@ -5902,14 +5878,15 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   text-align: center;
   line-height: 1.5;
 }
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
 @media (max-width: 400px) {
   .kana-tracer__stage { width: 240px; height: 240px; }
   .kana-tracer__guide { font-size: 200px; }
+}
+
+.kana-chart__cell.is-active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
 }
 
 .lesson-explanation {

@@ -1,24 +1,10 @@
 'use client';
-import { useEffect, useRef } from 'react';
-import { useTTS } from '../lib/useTTS';
+import { useRef } from 'react';
 
-export default function KanaTracer({ char, onClose }) {
+export default function KanaTracer({ char }) {
   const canvasRef = useRef(null);
   const drawing = useRef(false);
   const last = useRef(null);
-  const { speak, supported } = useTTS();
-
-  useEffect(() => {
-    if (!char || !supported) return;
-    const t = setTimeout(() => speak(char, 'Japanese'), 200);
-    return () => clearTimeout(t);
-  }, [char]);
-
-  useEffect(() => {
-    function onKey(e) { if (e.key === 'Escape') onClose(); }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
 
   function getPos(e) {
     const c = canvasRef.current;
@@ -51,7 +37,7 @@ export default function KanaTracer({ char, onClose }) {
     last.current = pos;
   }
 
-  function end(e) {
+  function end() {
     drawing.current = false;
     last.current = null;
   }
@@ -62,39 +48,35 @@ export default function KanaTracer({ char, onClose }) {
     c.getContext('2d').clearRect(0, 0, c.width, c.height);
   }
 
-  if (!char) return null;
+  if (!char) {
+    return (
+      <div className="kana-tracer kana-tracer--empty">
+        <p className="kana-tracer__hint">위 표에서 글자를 누르면 여기에서 따라 쓸 수 있어요</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="kana-tracer__overlay" onClick={onClose}>
-      <div className="kana-tracer" onClick={e => e.stopPropagation()}>
-        <button className="kana-tracer__close" onClick={onClose} aria-label="닫기">×</button>
-        <div className="kana-tracer__title">따라 써보기</div>
-        <div className="kana-tracer__stage">
-          <div className="kana-tracer__guide" aria-hidden="true">{char}</div>
-          <canvas
-            ref={canvasRef}
-            width={560}
-            height={560}
-            className="kana-tracer__canvas"
-            onPointerDown={start}
-            onPointerMove={move}
-            onPointerUp={end}
-            onPointerCancel={end}
-            onPointerLeave={end}
-          />
-        </div>
-        <div className="kana-tracer__actions">
-          <button className="btn btn--ghost btn--sm" onClick={() => supported && speak(char, 'Japanese')}>
-            🔊 발음
-          </button>
-          <button className="btn btn--ghost btn--sm" onClick={clearCanvas}>
-            ↺ 지우기
-          </button>
-        </div>
-        <p className="kana-tracer__hint">
-          옅게 보이는 글자 위에 따라 그려보세요. 회색 숫자가 획 순서예요.
-        </p>
+    <div className="kana-tracer">
+      <div className="kana-tracer__title">따라 써보기 — {char}</div>
+      <div className="kana-tracer__stage">
+        <div className="kana-tracer__guide" aria-hidden="true">{char}</div>
+        <canvas
+          ref={canvasRef}
+          width={560}
+          height={560}
+          className="kana-tracer__canvas"
+          onPointerDown={start}
+          onPointerMove={move}
+          onPointerUp={end}
+          onPointerCancel={end}
+          onPointerLeave={end}
+        />
       </div>
+      <div className="kana-tracer__actions">
+        <button className="btn btn--ghost btn--sm" onClick={clearCanvas}>↺ 지우기</button>
+      </div>
+      <p className="kana-tracer__hint">옅게 보이는 글자 위에 따라 그려보세요. 회색 숫자가 획 순서예요.</p>
     </div>
   );
 }
