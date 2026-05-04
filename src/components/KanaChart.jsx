@@ -1,6 +1,7 @@
 'use client';
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 import { useTTS } from '../lib/useTTS';
+import KanaTracer from './KanaTracer';
 
 const HIRAGANA = [
   ['あ', 'い', 'う', 'え', 'お'],
@@ -35,6 +36,7 @@ const COL_LABELS = ['a', 'i', 'u', 'e', 'o'];
 
 export default function KanaChart({ variant = 'hiragana' }) {
   const { speak, supported } = useTTS();
+  const [tracing, setTracing] = useState(null);
   const chart = variant === 'hiragana' ? HIRAGANA : KATAKANA;
   const titleKo = variant === 'hiragana' ? '히라가나 50음도' : '가타카나 50음도';
 
@@ -42,7 +44,7 @@ export default function KanaChart({ variant = 'hiragana' }) {
     <section className="kana-chart">
       <div className="kana-chart__header">
         <h3 className="kana-chart__title">{titleKo}</h3>
-        <p className="kana-chart__hint">글자를 누르면 발음이 들려요</p>
+        <p className="kana-chart__hint">글자를 누르면 발음이 들려요 — 길게 누르면 따라 써보기</p>
       </div>
 
       <div className="kana-chart__grid">
@@ -61,7 +63,10 @@ export default function KanaChart({ variant = 'hiragana' }) {
                   type="button"
                   className="kana-chart__cell"
                   onClick={() => supported && speak(c, 'Japanese')}
-                  aria-label={`${c} 발음 듣기`}
+                  onContextMenu={(e) => { e.preventDefault(); setTracing(c); }}
+                  onDoubleClick={() => setTracing(c)}
+                  aria-label={`${c} 발음 듣기 (더블클릭: 따라 쓰기)`}
+                  title="클릭: 발음 / 더블클릭: 따라 쓰기"
                 >
                   {c}
                 </button>
@@ -73,7 +78,9 @@ export default function KanaChart({ variant = 'hiragana' }) {
         ))}
       </div>
 
-      <p className="kana-chart__footer">✏️ 노트나 태블릿에 한 글자씩 따라 써보세요</p>
+      <p className="kana-chart__footer">✏️ 글자를 더블클릭하면 화면 위에 직접 따라 쓸 수 있어요</p>
+
+      <KanaTracer char={tracing} onClose={() => setTracing(null)} />
     </section>
   );
 }
