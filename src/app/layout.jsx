@@ -1,4 +1,4 @@
-import { Inter, Noto_Sans_KR, Noto_Sans_JP } from 'next/font/google';
+import { Inter, Noto_Sans_KR, Noto_Sans_JP, Klee_One } from 'next/font/google';
 import '../index.css';
 import Providers from './providers';
 
@@ -20,6 +20,13 @@ const notoJp = Noto_Sans_JP({
   subsets: ['latin'],
   weight: ['300', '500', '700'],
   variable: '--font-noto-jp',
+  display: 'swap',
+});
+
+const kleeOne = Klee_One({
+  subsets: ['latin'],
+  weight: ['400', '600'],
+  variable: '--font-klee',
   display: 'swap',
 });
 
@@ -81,7 +88,7 @@ export default function RootLayout({ children }) {
           />
         )}
       </head>
-      <body className={`${inter.variable} ${notoKr.variable} ${notoJp.variable}`}>
+      <body className={`${inter.variable} ${notoKr.variable} ${notoJp.variable} ${kleeOne.variable}`}>
         <Providers>{children}</Providers>
       </body>
     </html>

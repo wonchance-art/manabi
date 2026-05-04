@@ -5703,6 +5703,101 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   padding: 12px 18px 16px;
 }
 
+/* ========= Kana Chart (둥글둥글 귀엽게) ========= */
+.kana-chart {
+  margin: 16px 0 20px;
+  padding: 22px 20px 18px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+}
+.kana-chart__header { text-align: center; margin-bottom: 16px; }
+.kana-chart__title {
+  font-family: var(--font-klee), var(--font-noto-jp), serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0 0 4px;
+  color: var(--text-primary);
+}
+.kana-chart__hint {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+.kana-chart__grid {
+  display: grid;
+  grid-template-columns: 28px repeat(5, 1fr);
+  gap: 6px;
+  max-width: 440px;
+  margin: 0 auto;
+}
+.kana-chart__head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-family: var(--font-inter), monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.kana-chart__head--corner {
+  background: transparent;
+}
+.kana-chart__cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-klee), var(--font-noto-jp), serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  background: var(--bg-elevated);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.15s, color 0.15s, border-color 0.15s;
+  padding: 0;
+}
+.kana-chart__cell:hover {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+  transform: scale(1.06);
+}
+.kana-chart__cell:active {
+  transform: scale(0.96);
+}
+.kana-chart__cell--empty {
+  background: transparent;
+  border: 1.5px dashed var(--border);
+  color: var(--text-muted);
+  opacity: 0.35;
+  cursor: default;
+  font-size: 1rem;
+}
+.kana-chart__cell--empty:hover {
+  background: transparent;
+  color: var(--text-muted);
+  border-color: var(--border);
+  transform: none;
+}
+.kana-chart__footer {
+  margin: 16px 0 0;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 600px) {
+  .kana-chart { padding: 16px 12px 14px; }
+  .kana-chart__grid { grid-template-columns: 22px repeat(5, 1fr); gap: 4px; }
+  .kana-chart__cell { font-size: 1.2rem; border-radius: 11px; }
+  .kana-chart__title { font-size: 1.1rem; }
+}
+
 .lesson-explanation {
   background: var(--bg-card);
   border: 1px solid var(--border);

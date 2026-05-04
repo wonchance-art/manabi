@@ -18,6 +18,7 @@ import { callGemini } from '../lib/gemini';
 import { formatDetail } from '../lib/wordDetailFormat';
 import Spinner from '../components/Spinner';
 import Button from '../components/Button';
+import KanaChart from '../components/KanaChart';
 
 const STORAGE_KEY = 'lesson_progress:';
 
@@ -281,8 +282,15 @@ ${(material.raw_text || '').slice(0, 400)}
       {phase === 1 && (
         <div className="lesson-phase">
           <div className="lesson-phase__hint">
-            예문을 읽으며 패턴이 어떤 의미인지 추측해 보세요.
+            {meta.series === '카나'
+              ? '먼저 표를 보며 글자에 익숙해진 뒤, 아래 예문으로 실제 사용을 확인해 보세요.'
+              : '예문을 읽으며 패턴이 어떤 의미인지 추측해 보세요.'}
           </div>
+
+          {meta.series === '카나' && (
+            <KanaChart variant={String(id) === '74' ? 'katakana' : 'hiragana'} />
+          )}
+
           <div className="lesson-body">
             {(material.raw_text || '').split('\n').map((line, i) => {
               if (!line.trim()) return null;
