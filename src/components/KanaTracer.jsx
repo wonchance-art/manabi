@@ -1,10 +1,16 @@
 'use client';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 export default function KanaTracer({ char }) {
   const canvasRef = useRef(null);
   const drawing = useRef(false);
   const last = useRef(null);
+
+  useEffect(() => {
+    const c = canvasRef.current;
+    if (!c) return;
+    c.getContext('2d').clearRect(0, 0, c.width, c.height);
+  }, [char]);
 
   function getPos(e) {
     const c = canvasRef.current;
