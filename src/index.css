@@ -5833,6 +5833,39 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   color: var(--primary);
   font-weight: 700;
 }
+.lesson-explanation__heading {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 18px 0 8px;
+  letter-spacing: -0.01em;
+}
+.lesson-explanation__heading:first-child {
+  margin-top: 0;
+}
+.lesson-explanation__p {
+  margin: 0 0 6px;
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+.lesson-explanation__gap {
+  height: 6px;
+}
+.lesson-explanation__example {
+  margin: 4px 0;
+  padding: 6px 10px;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--text-primary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  background: var(--bg-elevated);
+  transition: background var(--transition-fast);
+}
+.lesson-explanation__example:hover {
+  background: var(--border);
+}
 
 .lesson-production__input {
   width: 100%;

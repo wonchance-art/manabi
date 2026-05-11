@@ -15,7 +15,7 @@ import { useReadingCompletion } from '../lib/useReadingCompletion';
 import { parseTitle } from '../lib/seriesMeta';
 import { fetchOrGenerateExplanation } from '../lib/lessonExplanation';
 import { callGemini } from '../lib/gemini';
-import { formatDetail } from '../lib/wordDetailFormat';
+import { formatDetail, formatLessonExplanation } from '../lib/wordDetailFormat';
 import Spinner from '../components/Spinner';
 import Button from '../components/Button';
 import KanaChart from '../components/KanaChart';
@@ -243,33 +243,15 @@ ${(material.raw_text || '').slice(0, 400)}
       <h1 className="lesson-viewer__title">{titleDisplay}</h1>
       <div className="lesson-viewer__sub">{meta.level} {meta.series && `· ${meta.series}`}</div>
 
-      {/* 1. 예문 */}
-      <section className="lesson-section">
-        <h2 className="lesson-section__title">📖 예문</h2>
-
-        {meta.series === '카나' && (
+      {/* 카나 강의 — 표 먼저 */}
+      {meta.series === '카나' && (
+        <section className="lesson-section">
           <KanaChart variant={String(id) === '74' ? 'katakana' : 'hiragana'} />
-        )}
+        </section>
+      )}
 
-        <div className="lesson-body">
-          {(material.raw_text || '').split('\n').map((line, i) => {
-            if (!line.trim()) return <div key={i} className="lesson-body__gap" aria-hidden="true" />;
-            return (
-              <p key={i} className="lesson-body__line" onClick={() => ttsSupported && speak(line, language)}>
-                {line}
-              </p>
-            );
-          })}
-        </div>
-
-        {ttsSupported && (
-          <p className="lesson-section__tip">💡 문장을 클릭하면 발음을 들을 수 있어요</p>
-        )}
-      </section>
-
-      {/* 2. 한국어 설명 */}
+      {/* 1. 정리 (예문 + 설명 통합) */}
       <section className="lesson-section">
-        <h2 className="lesson-section__title">💭 정리</h2>
         {loadingExpl && !explanation ? (
           <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)' }}>
             ⏳ 한국어 설명 생성 중...
@@ -277,12 +259,19 @@ ${(material.raw_text || '').slice(0, 400)}
         ) : explanation ? (
           <div
             className="lesson-explanation"
-            dangerouslySetInnerHTML={{ __html: formatDetail(explanation) }}
+            dangerouslySetInnerHTML={{ __html: formatLessonExplanation(explanation) }}
+            onClick={(e) => {
+              const el = e.target.closest('[data-ja]');
+              if (el && ttsSupported) speak(el.dataset.ja, language);
+            }}
           />
         ) : (
           <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)' }}>
             설명을 가져올 수 없었어요. 잠시 후 다시 시도해 주세요.
           </div>
+        )}
+        {ttsSupported && explanation && (
+          <p className="lesson-section__tip">💡 일본어 문장을 클릭하면 발음을 들을 수 있어요</p>
         )}
       </section>
 
