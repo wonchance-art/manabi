@@ -16,6 +16,7 @@ import { parseTitle } from '../lib/seriesMeta';
 import { fetchOrGenerateExplanation } from '../lib/lessonExplanation';
 import { callGemini } from '../lib/gemini';
 import { formatDetail, formatLessonExplanation } from '../lib/wordDetailFormat';
+import { getLessonContent } from '../content/lessons';
 import Spinner from '../components/Spinner';
 import Button from '../components/Button';
 import KanaChart from '../components/KanaChart';
@@ -50,15 +51,23 @@ export default function LessonViewer() {
   const langCode = language === 'Japanese' ? 'ja-JP' : 'en-US';
   const targetLangKo = language === 'Japanese' ? '일본어' : '영어';
 
+  // 코드 콘텐츠 (있으면 DB보다 우선)
+  const lessonCode = material ? getLessonContent(material.id) : null;
+  const conversationScript = lessonCode?.conversation || material?.conversation_script || null;
+
   // 시리즈 navigation
   const { prevLesson, nextLesson, seriesPosition } = useSeriesNeighbors(id, material?.title);
 
-  // 한국어 설명 (캐시 → Gemini)
-  const [explanation, setExplanation] = useState(material?.lesson_explanation_ko || null);
+  // 한국어 설명: 코드 콘텐츠 → DB 캐시 → Gemini
+  const [explanation, setExplanation] = useState(lessonCode?.explanation || material?.lesson_explanation_ko || null);
   const [loadingExpl, setLoadingExpl] = useState(false);
 
   useEffect(() => {
     if (!material) return;
+    if (lessonCode?.explanation) {
+      setExplanation(lessonCode.explanation);
+      return;
+    }
     if (material.lesson_explanation_ko) {
       setExplanation(material.lesson_explanation_ko);
       return;
@@ -68,7 +77,7 @@ export default function LessonViewer() {
       setExplanation(t);
       setLoadingExpl(false);
     });
-  }, [material?.id, material?.lesson_explanation_ko]);
+  }, [material?.id, material?.lesson_explanation_ko, lessonCode?.explanation]);
 
   // localStorage 영속 (사용자 입력)
   useEffect(() => {
@@ -276,11 +285,11 @@ ${(material.raw_text || '').slice(0, 400)}
       </section>
 
       {/* 3. 실전 대화 */}
-      {material.conversation_script && (
+      {conversationScript && (
         <section className="lesson-section">
           <h2 className="lesson-section__title">💬 실전 대화</h2>
           <div className="lesson-body lesson-body--conversation">
-            {material.conversation_script.split('\n').map((line, i) => {
+            {conversationScript.split('\n').map((line, i) => {
               if (!line.trim()) return <div key={i} className="lesson-body__gap" aria-hidden="true" />;
               return (
                 <p key={i} className="lesson-body__line" onClick={() => ttsSupported && speak(line, language)}>
