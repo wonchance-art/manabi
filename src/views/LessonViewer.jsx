@@ -15,8 +15,9 @@ import { useReadingCompletion } from '../lib/useReadingCompletion';
 import { parseTitle } from '../lib/seriesMeta';
 import { fetchOrGenerateExplanation } from '../lib/lessonExplanation';
 import { callGemini } from '../lib/gemini';
-import { formatDetail, formatLessonExplanation } from '../lib/wordDetailFormat';
+import { formatDetail } from '../lib/wordDetailFormat';
 import { getLessonContent } from '../content/lessons';
+import LessonExplanation from '../components/LessonExplanation';
 import Spinner from '../components/Spinner';
 import Button from '../components/Button';
 import KanaChart from '../components/KanaChart';
@@ -259,27 +260,25 @@ ${(material.raw_text || '').slice(0, 400)}
         </section>
       )}
 
-      {/* 1. 정리 (예문 + 설명 통합) */}
+      {/* 정리 (예문 + 설명 통합) */}
       <section className="lesson-section">
-        {loadingExpl && !explanation ? (
+        {loadingExpl && !explanation && !lessonCode?.sections ? (
           <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)' }}>
             ⏳ 한국어 설명 생성 중...
           </div>
-        ) : explanation ? (
-          <div
-            className="lesson-explanation"
-            dangerouslySetInnerHTML={{ __html: formatLessonExplanation(explanation) }}
-            onClick={(e) => {
-              const el = e.target.closest('[data-ja]');
-              if (el && ttsSupported) speak(el.dataset.ja, language);
-            }}
+        ) : (lessonCode?.sections || explanation) ? (
+          <LessonExplanation
+            intro={lessonCode?.intro}
+            sections={lessonCode?.sections}
+            fallbackText={explanation}
+            onJaClick={(ja) => ttsSupported && speak(ja, language)}
           />
         ) : (
           <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)' }}>
             설명을 가져올 수 없었어요. 잠시 후 다시 시도해 주세요.
           </div>
         )}
-        {ttsSupported && explanation && (
+        {ttsSupported && (lessonCode?.sections || explanation) && (
           <p className="lesson-section__tip">💡 일본어 문장을 클릭하면 발음을 들을 수 있어요</p>
         )}
       </section>
@@ -288,15 +287,28 @@ ${(material.raw_text || '').slice(0, 400)}
       {conversationScript && (
         <section className="lesson-section">
           <h2 className="lesson-section__title">💬 실전 대화</h2>
-          <div className="lesson-body lesson-body--conversation">
-            {conversationScript.split('\n').map((line, i) => {
-              if (!line.trim()) return <div key={i} className="lesson-body__gap" aria-hidden="true" />;
-              return (
-                <p key={i} className="lesson-body__line" onClick={() => ttsSupported && speak(line, language)}>
-                  {line}
-                </p>
-              );
-            })}
+          <div className="lesson-conversation">
+            {Array.isArray(conversationScript)
+              ? conversationScript.map((turn, i) => (
+                  <div
+                    key={i}
+                    className={`lesson-conversation__turn lesson-conversation__turn--${i % 2 === 0 ? 'a' : 'b'}`}
+                    onClick={() => ttsSupported && speak(turn.ja, language)}
+                    role="button"
+                    tabIndex={0}
+                  >
+                    <div className="lesson-conversation__ja">{turn.ja}</div>
+                    {turn.ko && <div className="lesson-conversation__ko">{turn.ko}</div>}
+                  </div>
+                ))
+              : conversationScript.split('\n').map((line, i) => {
+                  if (!line.trim()) return <div key={i} className="lesson-body__gap" aria-hidden="true" />;
+                  return (
+                    <p key={i} className="lesson-body__line" onClick={() => ttsSupported && speak(line, language)}>
+                      {line}
+                    </p>
+                  );
+                })}
           </div>
         </section>
       )}

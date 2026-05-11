@@ -5867,6 +5867,184 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   background: var(--border);
 }
 
+/* ========= Lesson Sections (정형 블록 렌더링) ========= */
+.lesson-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.lesson-sections__intro {
+  margin: 0 0 4px;
+  padding: 14px 16px;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--text-primary);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--primary);
+  border-radius: var(--radius-md);
+}
+
+.lesson-block {
+  padding: 16px 18px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+.lesson-block__heading {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+.lesson-block__lead {
+  margin: 0 0 12px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+.lesson-block__body {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+
+.lesson-block--callout {
+  background: var(--bg-elevated);
+}
+.lesson-block--callout .lesson-block__heading {
+  font-size: 0.95rem;
+}
+.lesson-block--callout .lesson-block__body {
+  color: var(--text-primary);
+}
+
+.lesson-block--mission {
+  border-left: 3px solid var(--primary);
+}
+.lesson-block--mission .lesson-block__heading {
+  color: var(--primary);
+}
+
+.lesson-examples {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.lesson-example {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+.lesson-example:hover {
+  background: var(--border);
+}
+.lesson-example:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+.lesson-example__ja {
+  font-size: 1.02rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+  font-family: var(--font-noto-jp), system-ui, sans-serif;
+}
+.lesson-example__ko {
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+.lesson-blanks {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+  counter-reset: blank;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.lesson-blank {
+  counter-increment: blank;
+  position: relative;
+  padding: 10px 12px 10px 36px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-sm);
+  font-size: 1.02rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+  font-family: var(--font-noto-jp), system-ui, sans-serif;
+}
+.lesson-blank::before {
+  content: counter(blank);
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-family: system-ui, sans-serif;
+}
+
+/* 회화 — A/B 턴 시각 분리 */
+.lesson-conversation {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.lesson-conversation__turn {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  max-width: 88%;
+  transition: filter var(--transition-fast);
+}
+.lesson-conversation__turn:hover {
+  filter: brightness(0.97);
+}
+.lesson-conversation__turn--a {
+  align-self: flex-start;
+  background: var(--bg-elevated);
+}
+.lesson-conversation__turn--b {
+  align-self: flex-end;
+  background: color-mix(in srgb, var(--primary) 12%, var(--bg-card));
+  border: 1px solid color-mix(in srgb, var(--primary) 25%, transparent);
+}
+.lesson-conversation__ja {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+  font-family: var(--font-noto-jp), system-ui, sans-serif;
+}
+.lesson-conversation__ko {
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
 .lesson-production__input {
   width: 100%;
   padding: 12px 14px;
