@@ -18,6 +18,7 @@ import { callGemini } from '../lib/gemini';
 import { formatDetail } from '../lib/wordDetailFormat';
 import { getLessonContent } from '../content/lessons';
 import LessonExplanation from '../components/LessonExplanation';
+import LessonPractice from '../components/LessonPractice';
 import Spinner from '../components/Spinner';
 import Button from '../components/Button';
 import KanaChart from '../components/KanaChart';
@@ -313,68 +314,80 @@ ${(material.raw_text || '').slice(0, 400)}
         </section>
       )}
 
-      {/* 4. 직접 만들기 */}
+      {/* 4. 직접 만들기 — practice 있으면 한→일 미션, 없으면 AI 자유 입력 */}
       <section className="lesson-section">
         <h2 className="lesson-section__title">✍️ 직접 만들기</h2>
-        <div className="lesson-section__hint">
-          이 패턴으로 {targetLangKo} 문장을 만들어 보세요. AI가 즉시 교정해 드려요.
-        </div>
 
-        <div className="lesson-production">
-          <textarea
-            value={userInput}
-            onChange={e => setUserInput(e.target.value)}
-            placeholder={`이 패턴으로 ${targetLangKo} 문장 1개`}
-            className="lesson-production__input"
-            rows={3}
-            disabled={loadingFeedback}
+        {Array.isArray(lessonCode?.practice) && lessonCode.practice.length > 0 ? (
+          <LessonPractice
+            items={lessonCode.practice}
+            lessonId={id}
+            ttsSupported={ttsSupported}
+            speak={speak}
+            language={language}
           />
-          <div className="lesson-production__actions">
-            {sttSupported && (
-              <button
-                type="button"
-                onClick={startListening}
-                disabled={listening || loadingFeedback}
-                className="btn btn--ghost btn--sm"
-                title="음성 입력"
-              >
-                {listening ? '🔴 듣는 중' : '🎤 음성'}
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={fetchAiExample}
-              disabled={loadingExample}
-              className="btn btn--ghost btn--sm"
-            >
-              {loadingExample ? '⏳' : '💡 AI 예시 보기'}
-            </button>
-            <Button
-              onClick={checkUserSentence}
-              disabled={!userInput.trim() || loadingFeedback}
-            >
-              {loadingFeedback ? '⏳ 확인 중' : 'AI에게 확인'}
-            </Button>
-          </div>
-        </div>
-
-        {aiExample && (
-          <div className="lesson-ai-example">
-            <div className="lesson-ai-example__label">💡 AI 예시</div>
-            <div className="lesson-ai-example__body">{aiExample}</div>
-          </div>
-        )}
-
-        {feedback && (
-          <div className="lesson-feedback">
-            <div
-              className="lesson-feedback__body"
-              dangerouslySetInnerHTML={{ __html: formatDetail(feedback) }}
-            />
-            <div className="lesson-feedback__actions">
-              <Button variant="ghost" size="sm" onClick={clearProductionState}>↺ 다시 만들기</Button>
+        ) : (
+          <>
+            <div className="lesson-section__hint">
+              이 패턴으로 {targetLangKo} 문장을 만들어 보세요. AI가 즉시 교정해 드려요.
             </div>
-          </div>
+            <div className="lesson-production">
+              <textarea
+                value={userInput}
+                onChange={e => setUserInput(e.target.value)}
+                placeholder={`이 패턴으로 ${targetLangKo} 문장 1개`}
+                className="lesson-production__input"
+                rows={3}
+                disabled={loadingFeedback}
+              />
+              <div className="lesson-production__actions">
+                {sttSupported && (
+                  <button
+                    type="button"
+                    onClick={startListening}
+                    disabled={listening || loadingFeedback}
+                    className="btn btn--ghost btn--sm"
+                    title="음성 입력"
+                  >
+                    {listening ? '🔴 듣는 중' : '🎤 음성'}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={fetchAiExample}
+                  disabled={loadingExample}
+                  className="btn btn--ghost btn--sm"
+                >
+                  {loadingExample ? '⏳' : '💡 AI 예시 보기'}
+                </button>
+                <Button
+                  onClick={checkUserSentence}
+                  disabled={!userInput.trim() || loadingFeedback}
+                >
+                  {loadingFeedback ? '⏳ 확인 중' : 'AI에게 확인'}
+                </Button>
+              </div>
+            </div>
+
+            {aiExample && (
+              <div className="lesson-ai-example">
+                <div className="lesson-ai-example__label">💡 AI 예시</div>
+                <div className="lesson-ai-example__body">{aiExample}</div>
+              </div>
+            )}
+
+            {feedback && (
+              <div className="lesson-feedback">
+                <div
+                  className="lesson-feedback__body"
+                  dangerouslySetInnerHTML={{ __html: formatDetail(feedback) }}
+                />
+                <div className="lesson-feedback__actions">
+                  <Button variant="ghost" size="sm" onClick={clearProductionState}>↺ 다시 만들기</Button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </section>
 
