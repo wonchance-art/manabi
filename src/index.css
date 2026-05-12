@@ -6045,6 +6045,103 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   color: var(--text-muted);
 }
 
+/* ========= Lesson Vocab (오늘의 단어 미니 사전) ========= */
+.lesson-vocab {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.lesson-vocab__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.lesson-vocab__count {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.lesson-vocab__hint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.lesson-vocab__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px;
+}
+.lesson-vocab__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition-fast);
+}
+.lesson-vocab__item:hover {
+  border-color: color-mix(in srgb, var(--primary) 30%, var(--border));
+}
+.lesson-vocab__ja {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: var(--font-noto-jp), system-ui, sans-serif;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+}
+.lesson-vocab__ja:hover {
+  color: var(--primary);
+}
+.lesson-vocab__meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.lesson-vocab__ko {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lesson-vocab__pos {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.lesson-vocab__save {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+}
+.lesson-vocab__save:hover:not(:disabled) {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.lesson-vocab__save:disabled {
+  opacity: 0.5;
+  cursor: default;
+  color: var(--accent, #10b981);
+}
+
 /* ========= Lesson Practice (한→일 번역 미션) ========= */
 .lesson-practice {
   display: flex;

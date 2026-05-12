@@ -19,6 +19,7 @@ import { formatDetail } from '../lib/wordDetailFormat';
 import { getLessonContent } from '../content/lessons';
 import LessonExplanation from '../components/LessonExplanation';
 import LessonPractice from '../components/LessonPractice';
+import LessonVocab from '../components/LessonVocab';
 import Spinner from '../components/Spinner';
 import Button from '../components/Button';
 import KanaChart from '../components/KanaChart';
@@ -311,6 +312,20 @@ ${(material.raw_text || '').slice(0, 400)}
                   );
                 })}
           </div>
+        </section>
+      )}
+
+      {/* 어휘 미니 사전 */}
+      {Array.isArray(lessonCode?.vocab) && lessonCode.vocab.length > 0 && (
+        <section className="lesson-section">
+          <h2 className="lesson-section__title">📚 오늘의 단어</h2>
+          <LessonVocab
+            items={lessonCode.vocab}
+            lessonId={id}
+            language={language}
+            ttsSupported={ttsSupported}
+            speak={speak}
+          />
         </section>
       )}
 
