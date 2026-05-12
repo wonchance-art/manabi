@@ -107,10 +107,7 @@ export default function LessonVocab({ items, lessonId, language = 'Japanese', tt
               >
                 {v.ja}
               </button>
-              <div className="lesson-vocab__meta">
-                <span className="lesson-vocab__ko">{v.ko}</span>
-                {v.pos && <span className="lesson-vocab__pos">{v.pos}</span>}
-              </div>
+              <span className="lesson-vocab__ko">{v.ko}</span>
               <button
                 type="button"
                 className="lesson-vocab__save"

@@ -262,6 +262,21 @@ ${(material.raw_text || '').slice(0, 400)}
         </section>
       )}
 
+      {/* 오늘의 단어 — 학습 시작 전에 가볍게 훑어보기 */}
+      {Array.isArray(lessonCode?.vocab) && lessonCode.vocab.length > 0 && (
+        <section className="lesson-section">
+          <h2 className="lesson-section__title">📚 오늘의 단어</h2>
+          <p className="lesson-section__hint">먼저 가볍게 훑어보세요. 본문에서 다시 만납니다.</p>
+          <LessonVocab
+            items={lessonCode.vocab}
+            lessonId={id}
+            language={language}
+            ttsSupported={ttsSupported}
+            speak={speak}
+          />
+        </section>
+      )}
+
       {/* 정리 (예문 + 설명 통합) */}
       <section className="lesson-section">
         {loadingExpl && !explanation && !lessonCode?.sections ? (
@@ -315,21 +330,7 @@ ${(material.raw_text || '').slice(0, 400)}
         </section>
       )}
 
-      {/* 어휘 미니 사전 */}
-      {Array.isArray(lessonCode?.vocab) && lessonCode.vocab.length > 0 && (
-        <section className="lesson-section">
-          <h2 className="lesson-section__title">📚 오늘의 단어</h2>
-          <LessonVocab
-            items={lessonCode.vocab}
-            lessonId={id}
-            language={language}
-            ttsSupported={ttsSupported}
-            speak={speak}
-          />
-        </section>
-      )}
-
-      {/* 4. 직접 만들기 — practice 있으면 한→일 미션, 없으면 AI 자유 입력 */}
+      {/* 직접 만들기 — practice 있으면 한→일 미션, 없으면 AI 자유 입력 */}
       <section className="lesson-section">
         <h2 className="lesson-section__title">✍️ 직접 만들기</h2>
 
