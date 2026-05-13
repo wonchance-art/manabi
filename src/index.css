@@ -5584,30 +5584,27 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
-  font-size: 0.82rem;
-  color: var(--text-secondary);
-  margin-bottom: 16px;
-  padding: 8px 12px;
-  background: var(--bg-elevated);
-  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: -4px 0 18px;
+  padding: 0;
   font-variant-numeric: tabular-nums;
 }
 .lesson-viewer__meta [aria-hidden] {
-  color: var(--text-muted);
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
 .lesson-section {
-  margin-top: 28px;
+  margin-top: 36px;
 }
 .lesson-section:first-of-type {
-  margin-top: 20px;
+  margin-top: 24px;
 }
 .lesson-section__title {
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--text-primary);
-  margin: 0 0 12px;
+  margin: 0 0 14px;
   letter-spacing: -0.01em;
 }
 .lesson-section__hint {
@@ -5888,36 +5885,35 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .lesson-sections {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 22px;
 }
 .lesson-sections__intro {
   margin: 0 0 4px;
-  padding: 14px 16px;
+  padding: 18px 20px;
   font-size: 0.95rem;
   line-height: 1.65;
   color: var(--text-primary);
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--primary);
+  background: color-mix(in srgb, var(--primary) 6%, var(--bg-card));
+  border: 1px solid color-mix(in srgb, var(--primary) 18%, var(--border));
   border-radius: var(--radius-md);
 }
 
 .lesson-block {
-  padding: 16px 18px;
+  padding: 20px 22px;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
 }
 .lesson-block__heading {
-  margin: 0 0 8px;
-  font-size: 1rem;
+  margin: 0 0 10px;
+  font-size: 1.02rem;
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.01em;
 }
 .lesson-block__lead {
-  margin: 0 0 12px;
-  font-size: 0.9rem;
+  margin: 0 0 14px;
+  font-size: 0.92rem;
   line-height: 1.6;
   color: var(--text-secondary);
 }
@@ -5930,12 +5926,15 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 
 .lesson-block--callout {
   background: var(--bg-elevated);
+  padding: 16px 18px;
 }
 .lesson-block--callout .lesson-block__heading {
   font-size: 0.95rem;
+  margin-bottom: 6px;
 }
 .lesson-block--callout .lesson-block__body {
   color: var(--text-primary);
+  margin: 0;
 }
 /* tone variants — 콜아웃에 좌측 색상 띠 */
 .lesson-block--pronunciation {
@@ -5948,9 +5947,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   border-left: 3px solid var(--accent, #10b981);
 }
 
-.lesson-block--mission {
-  border-left: 3px solid var(--primary);
-}
 .lesson-block--mission .lesson-block__heading {
   color: var(--primary);
 }
@@ -5961,33 +5957,35 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 .lesson-example {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 10px 12px;
-  background: var(--bg-elevated);
-  border-radius: var(--radius-sm);
+  padding: 8px 0 8px 14px;
+  background: transparent;
+  border: none;
+  border-left: 2px solid var(--border);
+  border-radius: 0;
   cursor: pointer;
-  transition: background var(--transition-fast);
+  transition: border-left-color var(--transition-fast);
 }
 .lesson-example:hover {
-  background: var(--border);
+  border-left-color: var(--primary);
 }
 .lesson-example:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 1px;
 }
 .lesson-example__ja {
-  font-size: 1.02rem;
-  line-height: 1.5;
+  font-size: 1.04rem;
+  line-height: 1.95;
   color: var(--text-primary);
   font-family: var(--font-noto-jp), system-ui, sans-serif;
 }
 .lesson-example__ko {
-  font-size: 0.82rem;
+  font-size: 0.84rem;
   line-height: 1.4;
   color: var(--text-muted);
 }
@@ -6171,15 +6169,16 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .lesson-vocab__item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
+  gap: 12px;
+  padding: 12px 14px;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  transition: border-color var(--transition-fast);
+  transition: border-color var(--transition-fast), background var(--transition-fast);
 }
 .lesson-vocab__item:hover {
-  border-color: color-mix(in srgb, var(--primary) 30%, var(--border));
+  border-color: color-mix(in srgb, var(--primary) 38%, var(--border));
+  background: var(--bg-elevated);
 }
 .lesson-vocab__ja {
   background: transparent;
@@ -6213,17 +6212,20 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   min-width: 0;
 }
 .lesson-vocab__ja-text {
-  font-size: 1.02rem;
-  font-weight: 600;
+  font-size: 1.12rem;
+  font-weight: 700;
   color: var(--text-primary);
   font-family: var(--font-noto-jp), system-ui, sans-serif;
+  letter-spacing: -0.01em;
 }
 .lesson-vocab__romaji {
-  font-size: 0.7rem;
-  color: var(--text-muted);
+  font-size: 0.72rem;
+  color: var(--primary);
   font-family: system-ui, sans-serif;
-  letter-spacing: 0.02em;
-  margin-top: -2px;
+  letter-spacing: 0.04em;
+  margin-top: -1px;
+  opacity: 0.7;
+  font-weight: 600;
 }
 
 /* ========= JaText 시각 강조 (vocab 단어 + 조사 「は」) ========= */
@@ -6282,10 +6284,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   ruby-align: center;
 }
 .ja-particle rt {
-  font-size: 0.55em;
+  font-size: 0.68em;
   color: var(--primary);
-  font-weight: 600;
-  letter-spacing: 0;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  opacity: 0.85;
 }
 
 /* ========= Lesson 헤더 sticky 진척 막대 ========= */
@@ -6429,12 +6433,13 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   border-top: 1px dashed var(--border);
 }
 .lesson-cfu__label {
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
-  color: var(--text-muted);
+  letter-spacing: 0.06em;
+  color: var(--primary);
   text-transform: uppercase;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+  opacity: 0.75;
 }
 .lesson-cfu__q {
   font-size: 0.95rem;
@@ -6457,7 +6462,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  background: var(--bg-elevated);
+  background: transparent;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   font-size: 0.92rem;
@@ -6469,6 +6474,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .lesson-cfu__option:disabled { cursor: default; }
 .lesson-cfu__option--clickable:hover {
+  background: var(--bg-elevated);
   border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
 }
 .lesson-cfu__option--correct {
@@ -6804,17 +6810,16 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 
 .lesson-practice__prompt {
   padding: 16px 18px;
-  background: var(--bg-card);
+  background: var(--bg-elevated);
   border: 1px solid var(--border);
-  border-left: 3px solid var(--primary);
   border-radius: var(--radius-md);
 }
 .lesson-practice__label {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--text-muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--primary);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   margin-bottom: 6px;
 }
 .lesson-practice__ko {
@@ -6996,9 +7001,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   align-items: center;
   text-align: center;
   padding: 28px 20px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--primary);
+  background: color-mix(in srgb, var(--accent, #10b981) 8%, var(--bg-card));
+  border: 1px solid color-mix(in srgb, var(--accent, #10b981) 24%, var(--border));
   border-radius: var(--radius-md);
   gap: 6px;
 }
@@ -7091,7 +7095,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 
 @media (max-width: 600px) {
   .lesson-viewer__title { font-size: 1.25rem; }
-  .lesson-section { margin-top: 22px; }
+  .lesson-section { margin-top: 28px; }
   .lesson-section__title { font-size: 0.9rem; }
   .lesson-body { padding: 14px 14px; }
   .lesson-body__line { font-size: 0.95rem; padding: 6px 8px; }
