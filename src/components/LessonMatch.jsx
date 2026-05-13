@@ -27,6 +27,7 @@ function fmt(ms) {
  */
 export default function LessonMatch({ items, lessonId, language = 'Japanese', ttsSupported, speak }) {
   const [round, setRound] = useState(0);
+  const [direction, setDirection] = useState('ja-to-ko'); // 'ja-to-ko' | 'ko-to-ja'
   const seeds = useMemo(() => ({
     left: shuffle(items.map((_, i) => i)),
     right: shuffle(items.map((_, i) => i)),
@@ -39,6 +40,8 @@ export default function LessonMatch({ items, lessonId, language = 'Japanese', tt
   const [elapsed, setElapsed] = useState(0);
   const [done, setDone] = useState(false);
   const [bestTime, setBestTime] = useState(null);
+
+  const leftIsJa = direction === 'ja-to-ko';
 
   useEffect(() => {
     if (!lessonId || typeof window === 'undefined') return;
@@ -54,15 +57,16 @@ export default function LessonMatch({ items, lessonId, language = 'Japanese', tt
     return () => clearInterval(id);
   }, [startTime, done]);
 
-  function selectJa(i) {
+  function selectLeft(i) {
     if (matched.has(i)) return;
     setSelected(i);
-    if (ttsSupported) speak(items[i].ja, language);
+    if (leftIsJa && ttsSupported) speak(items[i].ja, language);
   }
 
-  function selectKo(i) {
+  function selectRight(i) {
     if (selected == null || matched.has(i)) return;
     if (selected === i) {
+      if (!leftIsJa && ttsSupported) speak(items[i].ja, language);
       const m = new Set([...matched, i]);
       setMatched(m);
       setSelected(null);
@@ -80,8 +84,9 @@ export default function LessonMatch({ items, lessonId, language = 'Japanese', tt
     }
   }
 
-  function restart() {
+  function restart(flip = false) {
     setRound(r => r + 1);
+    if (flip) setDirection(d => (d === 'ja-to-ko' ? 'ko-to-ja' : 'ja-to-ko'));
     setSelected(null);
     setMatched(new Set());
     setShake(null);
@@ -98,7 +103,10 @@ export default function LessonMatch({ items, lessonId, language = 'Japanese', tt
         <div className="lesson-match__done-sub">
           ⏱ {fmt(elapsed)}{bestTime === elapsed && elapsed > 0 ? ' · 최고 기록!' : bestTime ? ` · 최고 ${fmt(bestTime)}` : ''}
         </div>
-        <Button variant="ghost" size="sm" onClick={restart}>↺ 다시 도전</Button>
+        <div className="lesson-match__done-actions">
+          <Button variant="ghost" size="sm" onClick={() => restart(false)}>↺ 다시 도전</Button>
+          <Button size="sm" onClick={() => restart(true)}>↔ 반대 방향</Button>
+        </div>
       </div>
     );
   }
@@ -107,6 +115,9 @@ export default function LessonMatch({ items, lessonId, language = 'Japanese', tt
     <div className="lesson-match">
       <div className="lesson-match__header">
         <span className="lesson-match__progress">{matched.size}/{items.length} 짝</span>
+        <span className="lesson-match__direction">
+          {leftIsJa ? '日 → 韓' : '韓 → 日'}
+        </span>
         <span className="lesson-match__time">⏱ {fmt(elapsed)}</span>
         {bestTime && <span className="lesson-match__best">최고 {fmt(bestTime)}</span>}
       </div>
@@ -115,14 +126,14 @@ export default function LessonMatch({ items, lessonId, language = 'Japanese', tt
           {seeds.left.map(i => {
             const cls = [
               'lesson-match__card',
-              'lesson-match__card--ja',
+              leftIsJa ? 'lesson-match__card--ja' : 'lesson-match__card--ko',
               matched.has(i) && 'lesson-match__card--matched',
               selected === i && 'lesson-match__card--selected',
               shake && shake[0] === i && 'lesson-match__card--shake',
             ].filter(Boolean).join(' ');
             return (
-              <button key={`L${i}`} type="button" className={cls} onClick={() => selectJa(i)} disabled={matched.has(i)}>
-                {items[i].ja}
+              <button key={`L${i}`} type="button" className={cls} onClick={() => selectLeft(i)} disabled={matched.has(i)}>
+                {leftIsJa ? items[i].ja : items[i].ko}
               </button>
             );
           })}
@@ -131,7 +142,7 @@ export default function LessonMatch({ items, lessonId, language = 'Japanese', tt
           {seeds.right.map(i => {
             const cls = [
               'lesson-match__card',
-              'lesson-match__card--ko',
+              leftIsJa ? 'lesson-match__card--ko' : 'lesson-match__card--ja',
               matched.has(i) && 'lesson-match__card--matched',
               selected != null && !matched.has(i) && 'lesson-match__card--target',
               shake && shake[1] === i && 'lesson-match__card--shake',
@@ -141,10 +152,10 @@ export default function LessonMatch({ items, lessonId, language = 'Japanese', tt
                 key={`R${i}`}
                 type="button"
                 className={cls}
-                onClick={() => selectKo(i)}
+                onClick={() => selectRight(i)}
                 disabled={matched.has(i) || selected == null}
               >
-                {items[i].ko}
+                {leftIsJa ? items[i].ko : items[i].ja}
               </button>
             );
           })}

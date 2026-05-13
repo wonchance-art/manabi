@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import LessonMatch from './LessonMatch';
+import { toRomaji } from '../lib/kanaRomaji';
 
 export default function LessonVocab({ items, lessonId, language = 'Japanese', ttsSupported, speak }) {
   const { user } = useAuth();
@@ -128,7 +129,11 @@ export default function LessonVocab({ items, lessonId, language = 'Japanese', tt
                 onClick={() => ttsSupported && speak(v.ja, language)}
                 title="발음 듣기"
               >
-                {v.ja}
+                <span className="lesson-vocab__ja-text">{v.ja}</span>
+                {(() => {
+                  const r = v.romaji || toRomaji(v.ja);
+                  return r ? <span className="lesson-vocab__romaji">{r}</span> : null;
+                })()}
               </button>
               <span className="lesson-vocab__ko">{v.ko}</span>
               <button

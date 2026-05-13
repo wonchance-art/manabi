@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { formatLessonExplanation } from '../lib/wordDetailFormat';
+import JaText from './JaText';
 
 const VALID_KINDS = new Set(['pattern', 'callout', 'mission']);
 const VALID_TONES = new Set(['pronunciation', 'warning', 'tip']);
@@ -11,7 +12,7 @@ const VALID_TONES = new Set(['pronunciation', 'warning', 'tip']);
  *  - sections 배열이 있으면 정형 렌더
  *  - 없으면 fallback markdown(formatLessonExplanation)
  */
-export default function LessonExplanation({ intro, sections, fallbackText, onJaClick, lessonId }) {
+export default function LessonExplanation({ intro, sections, fallbackText, onJaClick, lessonId, vocab }) {
   const useSections = Array.isArray(sections) && sections.length > 0;
 
   if (useSections) {
@@ -19,7 +20,7 @@ export default function LessonExplanation({ intro, sections, fallbackText, onJaC
       <div className="lesson-sections">
         {intro && <p className="lesson-sections__intro">{intro}</p>}
         {sections.map((s, i) => (
-          <SectionBlock key={i} section={s} sectionIdx={i} lessonId={lessonId} onJaClick={onJaClick} />
+          <SectionBlock key={i} section={s} sectionIdx={i} lessonId={lessonId} onJaClick={onJaClick} vocab={vocab} />
         ))}
       </div>
     );
@@ -37,7 +38,7 @@ export default function LessonExplanation({ intro, sections, fallbackText, onJaC
   );
 }
 
-function SectionBlock({ section, sectionIdx, lessonId, onJaClick }) {
+function SectionBlock({ section, sectionIdx, lessonId, onJaClick, vocab }) {
   const kind = section.kind || 'pattern';
   const tone = section.tone ? ` lesson-block--${section.tone}` : '';
 
@@ -72,7 +73,7 @@ function SectionBlock({ section, sectionIdx, lessonId, onJaClick }) {
               tabIndex={0}
               onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), onJaClick?.(ex.ja))}
             >
-              <span className="lesson-example__ja">{ex.ja}</span>
+              <span className="lesson-example__ja"><JaText ja={ex.ja} vocab={vocab} /></span>
               {ex.ko && <span className="lesson-example__ko">{ex.ko}</span>}
             </li>
           ))}

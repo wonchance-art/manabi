@@ -303,6 +303,7 @@ ${(material.raw_text || '').slice(0, 400)}
             fallbackText={explanation}
             onJaClick={(ja) => ttsSupported && speak(ja, language)}
             lessonId={id}
+            vocab={lessonCode?.vocab}
           />
         ) : (
           <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)' }}>
@@ -323,6 +324,7 @@ ${(material.raw_text || '').slice(0, 400)}
             language={language}
             ttsSupported={ttsSupported}
             speak={speak}
+            vocab={lessonCode?.vocab}
           />
         </section>
       )}

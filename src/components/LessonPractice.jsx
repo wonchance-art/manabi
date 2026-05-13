@@ -1,27 +1,49 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import Button from './Button';
 import { isAnswerCorrect } from '../lib/lessonAccepts';
+import { diffChars } from '../lib/diffChars';
 
 const STORAGE_KEY = 'lesson_practice:';
+const MODE_KEY = 'lesson_practice_mode';
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function buildChips(ja) {
+  return String(ja || '')
+    .split(/\s+/)
+    .map(s => s.trim())
+    .filter(Boolean)
+    .map((text, idx) => ({ idx, text }));
+}
 
 /**
  * 한 → 일 번역 미션
- *  - 입력 → 정규화 + 변형 자동 인정
- *  - fail 시 cloze(빈칸) 힌트 옵션
- *  - 전체 끝난 후 틀린 문항만 재시도 (mistake-driven re-loop)
+ *  - 모드 keyboard / chips: IME 없어도 칩 클릭으로 풀이 가능
+ *  - fail 시 cloze(빈칸) 힌트 + 입력 모드면 diff 표시
+ *  - 끝난 후 틀린 문항만 재시도 (mistake-driven re-loop)
  */
 export default function LessonPractice({ items, lessonId, ttsSupported, speak, language }) {
-  const [phase, setPhase] = useState('main'); // 'main' | 'review' | 'done'
+  const [phase, setPhase] = useState('main');
   const [queue, setQueue] = useState(() => items.map((_, i) => i));
   const [queueIdx, setQueueIdx] = useState(0);
   const [input, setInput] = useState('');
-  const [result, setResult] = useState(null); // null | 'pass' | 'fail'
+  const [result, setResult] = useState(null);
   const [failed, setFailed] = useState(new Set());
   const [showCloze, setShowCloze] = useState(false);
   const [clozeChoice, setClozeChoice] = useState(null);
   const [listening, setListening] = useState(false);
+  const [mode, setMode] = useState('chips');
+  const [chipPool, setChipPool] = useState([]);
+  const [chipPicked, setChipPicked] = useState([]);
   const inputRef = useRef(null);
 
   const sttSupported = typeof window !== 'undefined' &&
@@ -31,16 +53,31 @@ export default function LessonPractice({ items, lessonId, ttsSupported, speak, l
   const total = queue.length;
   const current = items[queue[queueIdx]];
 
+  // 초기 로드 — 진척 + 모드
   useEffect(() => {
-    if (!lessonId || typeof window === 'undefined') return;
+    if (typeof window === 'undefined') return;
+    if (lessonId) {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY + lessonId) || '{}');
+        if (Array.isArray(saved.queue) && saved.queue.length > 0) setQueue(saved.queue);
+        if (typeof saved.queueIdx === 'number') setQueueIdx(saved.queueIdx);
+        if (saved.phase === 'main' || saved.phase === 'review' || saved.phase === 'done') setPhase(saved.phase);
+        if (Array.isArray(saved.failed)) setFailed(new Set(saved.failed));
+      } catch {}
+    }
     try {
-      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY + lessonId) || '{}');
-      if (Array.isArray(saved.queue) && saved.queue.length > 0) setQueue(saved.queue);
-      if (typeof saved.queueIdx === 'number') setQueueIdx(saved.queueIdx);
-      if (saved.phase === 'main' || saved.phase === 'review' || saved.phase === 'done') setPhase(saved.phase);
-      if (Array.isArray(saved.failed)) setFailed(new Set(saved.failed));
+      const m = localStorage.getItem(MODE_KEY);
+      if (m === 'keyboard' || m === 'chips') setMode(m);
     } catch {}
   }, [lessonId]);
+
+  // 문항 또는 모드 변경 시 chips 리셋
+  useEffect(() => {
+    if (mode !== 'chips' || !current) return;
+    const chips = buildChips(current.ja);
+    setChipPool(shuffle(chips));
+    setChipPicked([]);
+  }, [queue, queueIdx, mode, current?.ja]);
 
   function persist(updates) {
     if (!lessonId || typeof window === 'undefined') return;
@@ -52,9 +89,26 @@ export default function LessonPractice({ items, lessonId, ttsSupported, speak, l
     } catch {}
   }
 
+  function changeMode(m) {
+    setMode(m);
+    setResult(null);
+    setShowCloze(false);
+    setClozeChoice(null);
+    try { localStorage.setItem(MODE_KEY, m); } catch {}
+    if (m === 'keyboard') {
+      setTimeout(() => inputRef.current?.focus(), 50);
+    }
+  }
+
+  function currentValue() {
+    if (mode === 'chips') return chipPicked.map(c => c.text).join(' ');
+    return input;
+  }
+
   function check() {
-    if (!input.trim()) return;
-    const ok = isAnswerCorrect(input, current);
+    const value = currentValue();
+    if (!value.trim()) return;
+    const ok = isAnswerCorrect(value, current);
     setResult(ok ? 'pass' : 'fail');
     const curIdx = queue[queueIdx];
     if (!ok && phase === 'main') {
@@ -78,7 +132,7 @@ export default function LessonPractice({ items, lessonId, ttsSupported, speak, l
       setShowCloze(false);
       setClozeChoice(null);
       persist({ queueIdx: n });
-      setTimeout(() => inputRef.current?.focus(), 50);
+      if (mode === 'keyboard') setTimeout(() => inputRef.current?.focus(), 50);
     } else {
       setPhase('done');
       persist({ phase: 'done', done: true });
@@ -87,7 +141,13 @@ export default function LessonPractice({ items, lessonId, ttsSupported, speak, l
 
   function retry() {
     setResult(null);
-    setTimeout(() => inputRef.current?.focus(), 50);
+    if (mode === 'chips') {
+      const chips = buildChips(current.ja);
+      setChipPool(shuffle(chips));
+      setChipPicked([]);
+    } else {
+      setTimeout(() => inputRef.current?.focus(), 50);
+    }
   }
 
   function startReview() {
@@ -101,7 +161,7 @@ export default function LessonPractice({ items, lessonId, ttsSupported, speak, l
     setClozeChoice(null);
     setPhase('review');
     persist({ phase: 'review', queue: arr, queueIdx: 0 });
-    setTimeout(() => inputRef.current?.focus(), 50);
+    if (mode === 'keyboard') setTimeout(() => inputRef.current?.focus(), 50);
   }
 
   function restartAll() {
@@ -115,7 +175,22 @@ export default function LessonPractice({ items, lessonId, ttsSupported, speak, l
     setClozeChoice(null);
     setPhase('main');
     persist({ phase: 'main', queue: q, queueIdx: 0, failed: [], done: false });
-    setTimeout(() => inputRef.current?.focus(), 50);
+    if (mode === 'keyboard') setTimeout(() => inputRef.current?.focus(), 50);
+  }
+
+  function pickChip(c) {
+    if (result === 'pass') return;
+    setChipPicked(prev => [...prev, c]);
+    setChipPool(prev => prev.filter(p => p.idx !== c.idx));
+    if (result === 'fail') setResult(null);
+  }
+
+  function unpickChip(at) {
+    if (result === 'pass') return;
+    const c = chipPicked[at];
+    setChipPicked(prev => prev.filter((_, i) => i !== at));
+    setChipPool(prev => [...prev, c]);
+    if (result === 'fail') setResult(null);
   }
 
   function startListening() {
@@ -143,6 +218,12 @@ export default function LessonPractice({ items, lessonId, ttsSupported, speak, l
     }
   }
 
+  // diff 계산 (keyboard 모드 + fail 시)
+  const diff = useMemo(() => {
+    if (mode !== 'keyboard' || result !== 'fail' || !current?.ja || !input) return null;
+    return diffChars(input, current.ja);
+  }, [mode, result, current?.ja, input]);
+
   // ── done 화면
   if (phase === 'done') {
     const passedCount = items.length - failed.size;
@@ -165,9 +246,23 @@ export default function LessonPractice({ items, lessonId, ttsSupported, speak, l
     );
   }
 
-  // ── 풀이 화면
   return (
     <div className="lesson-practice">
+      <div className="lesson-practice__mode-toggle" role="group" aria-label="입력 방식">
+        <button
+          type="button"
+          className={`lesson-practice__mode-btn ${mode === 'chips' ? 'is-active' : ''}`}
+          onClick={() => changeMode('chips')}
+          aria-pressed={mode === 'chips'}
+        >🧩 단어 조립</button>
+        <button
+          type="button"
+          className={`lesson-practice__mode-btn ${mode === 'keyboard' ? 'is-active' : ''}`}
+          onClick={() => changeMode('keyboard')}
+          aria-pressed={mode === 'keyboard'}
+        >⌨️ 직접 입력</button>
+      </div>
+
       <div className="lesson-practice__progress">
         <span className="lesson-practice__progress-num">
           {phase === 'review' && <span className="lesson-practice__review-tag">↺ 복습</span>}
@@ -179,22 +274,55 @@ export default function LessonPractice({ items, lessonId, ttsSupported, speak, l
       </div>
 
       <div className="lesson-practice__prompt">
-        <div className="lesson-practice__label">아래 한국어를 일본어로 써 보세요</div>
+        <div className="lesson-practice__label">아래 한국어를 일본어로 옮겨 보세요</div>
         <div className="lesson-practice__ko">{current.ko}</div>
       </div>
 
-      <textarea
-        ref={inputRef}
-        value={input}
-        onChange={(e) => { setInput(e.target.value); if (result) setResult(null); }}
-        onKeyDown={onKeyDown}
-        placeholder="일본어로 입력…"
-        className="lesson-practice__input"
-        rows={2}
-        disabled={result === 'pass'}
-        autoFocus
-        lang="ja"
-      />
+      {mode === 'chips' ? (
+        <div className="lesson-practice__chips">
+          <div className="lesson-practice__chips-slot" aria-label="조립 영역">
+            {chipPicked.length === 0 ? (
+              <span className="lesson-practice__chips-placeholder">아래 칩을 순서대로 눌러 보세요</span>
+            ) : (
+              chipPicked.map((c, i) => (
+                <button
+                  key={`${c.idx}-${i}`}
+                  type="button"
+                  className="lesson-practice__chip lesson-practice__chip--picked"
+                  onClick={() => unpickChip(i)}
+                  lang="ja"
+                  title="다시 칩 풀로"
+                >{c.text}</button>
+              ))
+            )}
+          </div>
+          <div className="lesson-practice__chips-pool" aria-label="칩 풀">
+            {chipPool.map(c => (
+              <button
+                key={c.idx}
+                type="button"
+                className="lesson-practice__chip"
+                onClick={() => pickChip(c)}
+                lang="ja"
+                disabled={result === 'pass'}
+              >{c.text}</button>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <textarea
+          ref={inputRef}
+          value={input}
+          onChange={(e) => { setInput(e.target.value); if (result) setResult(null); }}
+          onKeyDown={onKeyDown}
+          placeholder="일본어로 입력…"
+          className="lesson-practice__input"
+          rows={2}
+          disabled={result === 'pass'}
+          autoFocus
+          lang="ja"
+        />
+      )}
 
       {result === 'pass' && (
         <div className="lesson-practice__feedback lesson-practice__feedback--pass">
@@ -214,17 +342,50 @@ export default function LessonPractice({ items, lessonId, ttsSupported, speak, l
       {result === 'fail' && !showCloze && (
         <div className="lesson-practice__feedback lesson-practice__feedback--fail">
           <div className="lesson-practice__mark">⚠️ 다시 한번</div>
-          <div className="lesson-practice__answer">
-            <span className="lesson-practice__answer-label">예시 답</span>
-            <span
-              className="lesson-practice__answer-ja"
-              onClick={() => ttsSupported && speak(current.ja, language)}
-              role="button"
-              tabIndex={0}
-            >
-              {current.ja}
-            </span>
-          </div>
+          {diff && (
+            <div className="lesson-practice__diff">
+              <div className="lesson-practice__diff-row">
+                <span className="lesson-practice__diff-label">내 답</span>
+                <span className="lesson-practice__diff-text" lang="ja">
+                  {diff.map((s, i) => {
+                    if (s.type === 'ins') return null;
+                    const cls = s.type === 'del' ? 'lesson-practice__diff-char--extra' : 'lesson-practice__diff-char--eq';
+                    return <span key={i} className={cls}>{s.text}</span>;
+                  })}
+                </span>
+              </div>
+              <div className="lesson-practice__diff-row">
+                <span className="lesson-practice__diff-label">정답</span>
+                <span
+                  className="lesson-practice__diff-text"
+                  lang="ja"
+                  onClick={() => ttsSupported && speak(current.ja, language)}
+                  role="button"
+                  tabIndex={0}
+                >
+                  {diff.map((s, i) => {
+                    if (s.type === 'del') return null;
+                    const cls = s.type === 'ins' ? 'lesson-practice__diff-char--missing' : 'lesson-practice__diff-char--eq';
+                    return <span key={i} className={cls}>{s.text}</span>;
+                  })}
+                </span>
+              </div>
+            </div>
+          )}
+          {!diff && (
+            <div className="lesson-practice__answer">
+              <span className="lesson-practice__answer-label">예시 답</span>
+              <span
+                className="lesson-practice__answer-ja"
+                onClick={() => ttsSupported && speak(current.ja, language)}
+                role="button"
+                tabIndex={0}
+                lang="ja"
+              >
+                {current.ja}
+              </span>
+            </div>
+          )}
           {current.cloze && (
             <button
               type="button"
@@ -258,9 +419,7 @@ export default function LessonPractice({ items, lessonId, ttsSupported, speak, l
                   onClick={() => clozeChoice == null && setClozeChoice(i)}
                   disabled={clozeChoice != null}
                   lang="ja"
-                >
-                  {opt}
-                </button>
+                >{opt}</button>
               );
             })}
           </div>
@@ -275,7 +434,7 @@ export default function LessonPractice({ items, lessonId, ttsSupported, speak, l
       )}
 
       <div className="lesson-practice__actions">
-        {sttSupported && result === null && (
+        {sttSupported && mode === 'keyboard' && result === null && (
           <button
             type="button"
             onClick={startListening}
@@ -287,11 +446,11 @@ export default function LessonPractice({ items, lessonId, ttsSupported, speak, l
           </button>
         )}
         {result === null && (
-          <Button onClick={check} disabled={!input.trim()}>확인</Button>
+          <Button onClick={check} disabled={!currentValue().trim()}>확인</Button>
         )}
         {result === 'fail' && (
           <>
-            <Button variant="ghost" onClick={retry}>↺ 다시 입력</Button>
+            <Button variant="ghost" onClick={retry}>↺ 다시</Button>
             <Button onClick={nextQuestion}>{queueIdx < total - 1 ? '다음 →' : '결과 보기'}</Button>
           </>
         )}

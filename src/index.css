@@ -6057,6 +6057,30 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   cursor: pointer;
   margin: 0;
 }
+.lesson-conversation__rate {
+  display: inline-flex;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.lesson-conversation__rate-btn {
+  background: transparent;
+  border: none;
+  padding: 4px 8px;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+  font-family: system-ui, sans-serif;
+}
+.lesson-conversation__rate-btn:not(:last-child) {
+  border-right: 1px solid var(--border);
+}
+.lesson-conversation__rate-btn.is-active {
+  background: var(--primary);
+  color: #fff;
+}
 .lesson-conversation {
   display: flex;
   flex-direction: column;
@@ -6181,6 +6205,42 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   text-overflow: ellipsis;
   min-width: 0;
 }
+.lesson-vocab__ja {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  min-width: 0;
+}
+.lesson-vocab__ja-text {
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: var(--font-noto-jp), system-ui, sans-serif;
+}
+.lesson-vocab__romaji {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-family: system-ui, sans-serif;
+  letter-spacing: 0.02em;
+  margin-top: -2px;
+}
+
+/* ========= JaText 시각 강조 (vocab 단어 + 조사 「は」) ========= */
+.ja-vocab {
+  border-bottom: 1px dotted color-mix(in srgb, var(--primary) 55%, transparent);
+  cursor: help;
+}
+.ja-particle {
+  ruby-position: over;
+  ruby-align: center;
+}
+.ja-particle rt {
+  font-size: 0.55em;
+  color: var(--primary);
+  font-weight: 600;
+  letter-spacing: 0;
+}
 .lesson-vocab__save {
   background: transparent;
   border: 1px solid var(--border);
@@ -6283,6 +6343,21 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .lesson-match__done-emoji { font-size: 2rem; }
 .lesson-match__done-title { font-size: 1.05rem; font-weight: 700; }
 .lesson-match__done-sub { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 6px; }
+.lesson-match__done-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.lesson-match__direction {
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
+  color: var(--primary);
+  letter-spacing: 0.02em;
+}
 
 /* ========= Lesson CFU (이해 확인 객관식) ========= */
 .lesson-cfu {
@@ -6470,6 +6545,116 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   flex-direction: column;
   gap: 12px;
 }
+.lesson-practice__mode-toggle {
+  display: inline-flex;
+  align-self: flex-start;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.lesson-practice__mode-btn {
+  background: transparent;
+  border: none;
+  padding: 6px 12px;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.lesson-practice__mode-btn:not(:last-child) {
+  border-right: 1px solid var(--border);
+}
+.lesson-practice__mode-btn.is-active {
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+}
+
+.lesson-practice__chips {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.lesson-practice__chips-slot {
+  min-height: 56px;
+  padding: 12px 14px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.lesson-practice__chips-placeholder {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+.lesson-practice__chips-pool {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.lesson-practice__chip {
+  padding: 8px 14px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  cursor: pointer;
+  font-family: var(--font-noto-jp), system-ui, sans-serif;
+  color: var(--text-primary);
+  transition: all var(--transition-fast);
+}
+.lesson-practice__chip:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+}
+.lesson-practice__chip--picked {
+  background: color-mix(in srgb, var(--primary) 14%, var(--bg-card));
+  border-color: color-mix(in srgb, var(--primary) 35%, transparent);
+  color: var(--text-primary);
+}
+
+.lesson-practice__diff {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.lesson-practice__diff-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.lesson-practice__diff-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+  width: 44px;
+}
+.lesson-practice__diff-text {
+  font-size: 1.02rem;
+  line-height: 1.55;
+  font-family: var(--font-noto-jp), system-ui, sans-serif;
+  cursor: default;
+}
+.lesson-practice__diff-char--eq {
+  color: var(--text-primary);
+}
+.lesson-practice__diff-char--extra {
+  color: var(--warning, #f59e0b);
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+}
+.lesson-practice__diff-char--missing {
+  color: var(--accent, #10b981);
+  font-weight: 700;
+  background: color-mix(in srgb, var(--accent, #10b981) 14%, transparent);
+  border-radius: 2px;
+  padding: 0 2px;
+}
+
 .lesson-practice__progress {
   display: flex;
   align-items: center;
@@ -6804,6 +6989,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   .lesson-summary { padding: 16px 16px; }
   .lesson-summary__cta { justify-content: stretch; }
   .lesson-summary__cta > * { flex: 1; text-align: center; }
+  .lesson-practice__diff-label { width: 36px; font-size: 0.66rem; }
+  .lesson-practice__diff-text { font-size: 0.95rem; }
+  .lesson-practice__chip { padding: 7px 12px; font-size: 0.95rem; }
+  .lesson-practice__mode-btn { padding: 5px 10px; font-size: 0.78rem; }
 }
 
 /* ========= Conversation Panel ========= */

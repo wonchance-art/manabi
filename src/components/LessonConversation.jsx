@@ -1,6 +1,10 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import JaText from './JaText';
+
+const RATE_KEY = 'lesson_tts_rate';
+const RATE_OPTIONS = [0.7, 1, 1.2];
 
 /**
  * 강의 회화 섹션
@@ -9,14 +13,28 @@ import { useEffect, useRef, useState } from 'react';
  *  - 한국어 가리기 토글: blur 처리 → 호버/탭으로 reveal
  *  - 개별 turn 클릭: 그 줄만 단발 재생
  */
-export default function LessonConversation({ turns, language = 'Japanese', ttsSupported, speak }) {
+export default function LessonConversation({ turns, language = 'Japanese', ttsSupported, speak, vocab }) {
   const list = normalizeTurns(turns);
   const langCode = language === 'Japanese' ? 'ja-JP' : 'en-US';
 
   const [playingIdx, setPlayingIdx] = useState(-1);
   const [hideKo, setHideKo] = useState(false);
   const [revealed, setRevealed] = useState(new Set());
+  const [rate, setRate] = useState(1);
   const stopRef = useRef(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const saved = Number(localStorage.getItem(RATE_KEY));
+      if (RATE_OPTIONS.includes(saved)) setRate(saved);
+    } catch {}
+  }, []);
+
+  function changeRate(r) {
+    setRate(r);
+    try { localStorage.setItem(RATE_KEY, String(r)); } catch {}
+  }
 
   useEffect(() => {
     return () => {
@@ -36,6 +54,7 @@ export default function LessonConversation({ turns, language = 'Japanese', ttsSu
       try {
         const u = new SpeechSynthesisUtterance(text);
         u.lang = langCode;
+        u.rate = rate;
         u.onend = () => resolve();
         u.onerror = () => resolve();
         window.speechSynthesis.speak(u);
@@ -64,6 +83,16 @@ export default function LessonConversation({ turns, language = 'Japanese', ttsSu
 
   function playOne(text) {
     if (!ttsSupported || !text || playingIdx >= 0) return;
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      try {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = langCode;
+        u.rate = rate;
+        window.speechSynthesis.speak(u);
+        return;
+      } catch {}
+    }
     speak(text, language);
   }
 
@@ -91,6 +120,21 @@ export default function LessonConversation({ turns, language = 'Japanese', ttsSu
             >
               {playing ? '■ 정지' : '▶ 모두 듣기'}
             </button>
+          )}
+          {ttsSupported && (
+            <div className="lesson-conversation__rate" role="group" aria-label="재생 속도">
+              {RATE_OPTIONS.map(r => (
+                <button
+                  key={r}
+                  type="button"
+                  className={`lesson-conversation__rate-btn ${rate === r ? 'is-active' : ''}`}
+                  onClick={() => changeRate(r)}
+                  aria-pressed={rate === r}
+                >
+                  {r === 1 ? '1×' : `${r}×`}
+                </button>
+              ))}
+            </div>
           )}
           {hasKo && (
             <label className="lesson-conversation__toggle">
@@ -123,7 +167,7 @@ export default function LessonConversation({ turns, language = 'Japanese', ttsSu
               tabIndex={0}
               aria-current={isPlaying ? 'true' : undefined}
             >
-              <div className="lesson-conversation__ja">{turn.ja}</div>
+              <div className="lesson-conversation__ja"><JaText ja={turn.ja} vocab={vocab} /></div>
               {turn.ko && (
                 <div
                   className={`lesson-conversation__ko ${koHidden ? 'lesson-conversation__ko--blurred' : ''}`}
