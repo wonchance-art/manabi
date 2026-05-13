@@ -20,6 +20,7 @@ import { getLessonContent } from '../content/lessons';
 import LessonExplanation from '../components/LessonExplanation';
 import LessonPractice from '../components/LessonPractice';
 import LessonVocab from '../components/LessonVocab';
+import LessonConversation from '../components/LessonConversation';
 import Spinner from '../components/Spinner';
 import Button from '../components/Button';
 import KanaChart from '../components/KanaChart';
@@ -300,33 +301,16 @@ ${(material.raw_text || '').slice(0, 400)}
         )}
       </section>
 
-      {/* 3. 실전 대화 */}
+      {/* 실전 대화 — 자동재생 + 한국어 가리기 토글 */}
       {conversationScript && (
         <section className="lesson-section">
           <h2 className="lesson-section__title">💬 실전 대화</h2>
-          <div className="lesson-conversation">
-            {Array.isArray(conversationScript)
-              ? conversationScript.map((turn, i) => (
-                  <div
-                    key={i}
-                    className={`lesson-conversation__turn lesson-conversation__turn--${i % 2 === 0 ? 'a' : 'b'}`}
-                    onClick={() => ttsSupported && speak(turn.ja, language)}
-                    role="button"
-                    tabIndex={0}
-                  >
-                    <div className="lesson-conversation__ja">{turn.ja}</div>
-                    {turn.ko && <div className="lesson-conversation__ko">{turn.ko}</div>}
-                  </div>
-                ))
-              : conversationScript.split('\n').map((line, i) => {
-                  if (!line.trim()) return <div key={i} className="lesson-body__gap" aria-hidden="true" />;
-                  return (
-                    <p key={i} className="lesson-body__line" onClick={() => ttsSupported && speak(line, language)}>
-                      {line}
-                    </p>
-                  );
-                })}
-          </div>
+          <LessonConversation
+            turns={conversationScript}
+            language={language}
+            ttsSupported={ttsSupported}
+            speak={speak}
+          />
         </section>
       )}
 

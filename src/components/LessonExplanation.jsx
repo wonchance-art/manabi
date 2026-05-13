@@ -31,9 +31,28 @@ export default function LessonExplanation({ intro, sections, fallbackText, onJaC
   );
 }
 
+const VALID_KINDS = new Set(['pattern', 'callout', 'mission']);
+const VALID_TONES = new Set(['pronunciation', 'warning', 'tip']);
+
 function SectionBlock({ section, onJaClick }) {
   const kind = section.kind || 'pattern';
   const tone = section.tone ? ` lesson-block--${section.tone}` : '';
+
+  if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') {
+    if (!VALID_KINDS.has(kind)) {
+      // eslint-disable-next-line no-console
+      console.warn(`[LessonExplanation] unknown section.kind: "${kind}". Allowed: ${[...VALID_KINDS].join(', ')}`);
+    }
+    if (section.tone && !VALID_TONES.has(section.tone)) {
+      // eslint-disable-next-line no-console
+      console.warn(`[LessonExplanation] unknown section.tone: "${section.tone}". Allowed: ${[...VALID_TONES].join(', ')}`);
+    }
+    if (!section.heading && !section.body && !section.lead && !section.examples?.length && !section.blanks?.length) {
+      // eslint-disable-next-line no-console
+      console.warn('[LessonExplanation] section is empty (no heading/lead/body/examples/blanks)');
+    }
+  }
+
   return (
     <div className={`lesson-block lesson-block--${kind}${tone}`}>
       {section.heading && <h3 className="lesson-block__heading">{section.heading}</h3>}

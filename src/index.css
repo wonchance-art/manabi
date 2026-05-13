@@ -5920,6 +5920,16 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .lesson-block--callout .lesson-block__body {
   color: var(--text-primary);
 }
+/* tone variants — 콜아웃에 좌측 색상 띠 */
+.lesson-block--pronunciation {
+  border-left: 3px solid color-mix(in srgb, var(--primary) 60%, transparent);
+}
+.lesson-block--warning {
+  border-left: 3px solid var(--warning, #f59e0b);
+}
+.lesson-block--tip {
+  border-left: 3px solid var(--accent, #10b981);
+}
 
 .lesson-block--mission {
   border-left: 3px solid var(--primary);
@@ -6005,7 +6015,31 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-family: system-ui, sans-serif;
 }
 
-/* 회화 — A/B 턴 시각 분리 */
+/* 회화 — A/B 턴 시각 분리 + 자동재생 + 가리기 토글 */
+.lesson-conversation-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.lesson-conversation__controls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.lesson-conversation__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+.lesson-conversation__toggle input {
+  cursor: pointer;
+  margin: 0;
+}
 .lesson-conversation {
   display: flex;
   flex-direction: column;
@@ -6019,7 +6053,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   border-radius: var(--radius-md);
   cursor: pointer;
   max-width: 88%;
-  transition: filter var(--transition-fast);
+  transition: filter var(--transition-fast), box-shadow var(--transition-fast);
 }
 .lesson-conversation__turn:hover {
   filter: brightness(0.97);
@@ -6033,6 +6067,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   background: color-mix(in srgb, var(--primary) 12%, var(--bg-card));
   border: 1px solid color-mix(in srgb, var(--primary) 25%, transparent);
 }
+.lesson-conversation__turn--playing {
+  box-shadow: 0 0 0 2px var(--primary);
+}
 .lesson-conversation__ja {
   font-size: 1rem;
   line-height: 1.5;
@@ -6043,6 +6080,15 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-size: 0.8rem;
   line-height: 1.4;
   color: var(--text-muted);
+  border-radius: var(--radius-sm);
+  transition: filter 0.2s;
+}
+.lesson-conversation__ko--blurred {
+  filter: blur(5px);
+  cursor: pointer;
+}
+.lesson-conversation__ko--blurred:hover {
+  filter: blur(0);
 }
 
 /* ========= Lesson Vocab (오늘의 단어 미니 사전) ========= */
@@ -6380,6 +6426,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   .lesson-explanation { padding: 14px 14px; }
   .lesson-production__actions { justify-content: stretch; }
   .lesson-production__actions > * { flex: 1; }
+  .lesson-vocab__list { grid-template-columns: 1fr; }
+  .lesson-conversation__turn { max-width: 95%; }
+  .lesson-conversation__controls { gap: 10px; }
+  .lesson-practice__actions { justify-content: stretch; }
+  .lesson-practice__actions > * { flex: 1; }
+  .lesson-block { padding: 14px 14px; }
 }
 
 /* ========= Conversation Panel ========= */

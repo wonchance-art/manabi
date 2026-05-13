@@ -2,25 +2,9 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Button from './Button';
+import { isAnswerCorrect } from '../lib/lessonAccepts';
 
 const STORAGE_KEY = 'lesson_practice:';
-
-// 띄어쓰기·구두점·전각 공백 흡수
-function normalize(s) {
-  return String(s || '')
-    .replace(/[\s　。、・！？!?,.]/g, '')
-    .trim();
-}
-
-function isCorrect(input, item) {
-  const n = normalize(input);
-  if (!n) return false;
-  if (n === normalize(item.ja)) return true;
-  if (Array.isArray(item.accepts)) {
-    return item.accepts.some(a => normalize(a) === n);
-  }
-  return false;
-}
 
 export default function LessonPractice({ items, lessonId, ttsSupported, speak, language }) {
   const [idx, setIdx] = useState(0);
@@ -56,7 +40,7 @@ export default function LessonPractice({ items, lessonId, ttsSupported, speak, l
 
   function check() {
     if (!input.trim()) return;
-    setResult(isCorrect(input, current) ? 'pass' : 'fail');
+    setResult(isAnswerCorrect(input, current) ? 'pass' : 'fail');
   }
 
   function next() {
