@@ -215,6 +215,20 @@ ${(material.raw_text || '').slice(0, 400)}
   });
   const isCompleted = readingProgress?.is_completed === true;
 
+  // 스크롤 진척 (헤더 sticky 막대)
+  const [scrollPct, setScrollPct] = useState(0);
+  useEffect(() => {
+    function onScroll() {
+      const doc = document.documentElement;
+      const max = doc.scrollHeight - doc.clientHeight;
+      const pct = max > 0 ? Math.min(100, Math.max(0, (window.scrollY / max) * 100)) : 0;
+      setScrollPct(pct);
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [id]);
+
   if (isLoading) return <div className="page-container"><Spinner message="강의 로딩 중..." /></div>;
   if (!material) return (
     <div className="page-container" style={{ textAlign: 'center', paddingTop: 80 }}>
@@ -237,6 +251,10 @@ ${(material.raw_text || '').slice(0, 400)}
   const titleDisplay = meta.display || material.title;
 
   return (
+    <>
+      <div className="lesson-progress-bar-bg" aria-hidden="true">
+        <div className="lesson-progress-bar" style={{ width: `${scrollPct}%` }} />
+      </div>
     <div className="page-container lesson-viewer" style={{ maxWidth: 720 }}>
       {/* 헤더 */}
       <header className="lesson-viewer__header">
@@ -340,6 +358,7 @@ ${(material.raw_text || '').slice(0, 400)}
             ttsSupported={ttsSupported}
             speak={speak}
             language={language}
+            vocab={lessonCode.vocab}
           />
         ) : (
           <>
@@ -445,5 +464,6 @@ ${(material.raw_text || '').slice(0, 400)}
         </Link>
       </div>
     </div>
+    </>
   );
 }

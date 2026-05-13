@@ -6227,9 +6227,55 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 
 /* ========= JaText 시각 강조 (vocab 단어 + 조사 「は」) ========= */
+.ja-text { display: inline; }
+.ja-vocab-wrap {
+  position: relative;
+  display: inline-block;
+}
 .ja-vocab {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
   border-bottom: 1px dotted color-mix(in srgb, var(--primary) 55%, transparent);
-  cursor: help;
+  border-radius: 2px;
+  line-height: inherit;
+}
+.ja-vocab:hover {
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+}
+.ja-vocab--active {
+  background: color-mix(in srgb, var(--primary) 18%, transparent);
+  border-bottom-color: transparent;
+}
+.ja-vocab__popover {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  font-size: 0.82rem;
+  white-space: nowrap;
+  z-index: 50;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  font-family: system-ui, sans-serif;
+  pointer-events: none;
+}
+.ja-vocab__popover::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--border);
 }
 .ja-particle {
   ruby-position: over;
@@ -6240,6 +6286,23 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   color: var(--primary);
   font-weight: 600;
   letter-spacing: 0;
+}
+
+/* ========= Lesson 헤더 sticky 진척 막대 ========= */
+.lesson-progress-bar-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: transparent;
+  z-index: 100;
+  pointer-events: none;
+}
+.lesson-progress-bar {
+  height: 100%;
+  background: var(--primary);
+  transition: width 0.1s linear;
 }
 .lesson-vocab__save {
   background: transparent;
@@ -6458,6 +6521,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   padding: 2px 4px;
 }
 .lesson-cfu__reset:hover { color: var(--primary); }
+.lesson-cfu__verdict {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.lesson-cfu__verdict--wrong { color: var(--warning, #f59e0b); }
 
 /* ========= Lesson Summary (마무리 카드) ========= */
 .lesson-summary {
@@ -6653,6 +6722,58 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   background: color-mix(in srgb, var(--accent, #10b981) 14%, transparent);
   border-radius: 2px;
   padding: 0 2px;
+}
+
+.lesson-practice__chip-answer {
+  margin-top: 6px;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--accent, #10b981) 8%, var(--bg-card));
+  border: 1px solid color-mix(in srgb, var(--accent, #10b981) 24%, transparent);
+  border-radius: var(--radius-sm);
+}
+.lesson-practice__chip-answer-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.lesson-practice__chip-answer-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  cursor: pointer;
+}
+.lesson-practice__chip-answer-list:hover {
+  opacity: 0.92;
+}
+.lesson-practice__chip-answer-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-family: var(--font-noto-jp), system-ui, sans-serif;
+  color: var(--text-primary);
+}
+.lesson-practice__chip-answer-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent, #10b981);
+  color: #fff;
+  font-size: 0.66rem;
+  font-weight: 700;
+  font-family: system-ui, sans-serif;
+  flex-shrink: 0;
 }
 
 .lesson-practice__progress {

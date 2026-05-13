@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import Button from './Button';
 import { isAnswerCorrect } from '../lib/lessonAccepts';
 import { diffChars } from '../lib/diffChars';
+import { tokenizeJa } from '../lib/jaTokenize';
 
 const STORAGE_KEY = 'lesson_practice:';
 const MODE_KEY = 'lesson_practice_mode';
@@ -17,12 +18,17 @@ function shuffle(arr) {
   return a;
 }
 
-function buildChips(ja) {
-  return String(ja || '')
-    .split(/\s+/)
-    .map(s => s.trim())
-    .filter(Boolean)
-    .map((text, idx) => ({ idx, text }));
+function buildChipPool(ja, vocab) {
+  const correct = tokenizeJa(ja, vocab);
+  const correctChips = correct.map((text, idx) => ({ idx, text }));
+  // distractor: vocab 중 정답에 없는 단어 최대 2개
+  const usedSet = new Set(correct);
+  const candidates = (vocab || [])
+    .filter(v => v && v.ja && !usedSet.has(v.ja))
+    .map(v => v.ja);
+  const distractors = shuffle(candidates).slice(0, Math.min(2, candidates.length));
+  const distractorChips = distractors.map((text, i) => ({ idx: 10000 + i, text }));
+  return { correct, pool: shuffle([...correctChips, ...distractorChips]) };
 }
 
 /**
@@ -31,7 +37,7 @@ function buildChips(ja) {
  *  - fail 시 cloze(빈칸) 힌트 + 입력 모드면 diff 표시
  *  - 끝난 후 틀린 문항만 재시도 (mistake-driven re-loop)
  */
-export default function LessonPractice({ items, lessonId, ttsSupported, speak, language }) {
+export default function LessonPractice({ items, lessonId, ttsSupported, speak, language, vocab }) {
   const [phase, setPhase] = useState('main');
   const [queue, setQueue] = useState(() => items.map((_, i) => i));
   const [queueIdx, setQueueIdx] = useState(0);
@@ -44,6 +50,7 @@ export default function LessonPractice({ items, lessonId, ttsSupported, speak, l
   const [mode, setMode] = useState('chips');
   const [chipPool, setChipPool] = useState([]);
   const [chipPicked, setChipPicked] = useState([]);
+  const [correctChips, setCorrectChips] = useState([]);
   const inputRef = useRef(null);
 
   const sttSupported = typeof window !== 'undefined' &&
@@ -74,10 +81,11 @@ export default function LessonPractice({ items, lessonId, ttsSupported, speak, l
   // 문항 또는 모드 변경 시 chips 리셋
   useEffect(() => {
     if (mode !== 'chips' || !current) return;
-    const chips = buildChips(current.ja);
-    setChipPool(shuffle(chips));
+    const { correct, pool } = buildChipPool(current.ja, vocab);
+    setChipPool(pool);
+    setCorrectChips(correct);
     setChipPicked([]);
-  }, [queue, queueIdx, mode, current?.ja]);
+  }, [queue, queueIdx, mode, current?.ja, vocab]);
 
   function persist(updates) {
     if (!lessonId || typeof window === 'undefined') return;
@@ -142,8 +150,9 @@ export default function LessonPractice({ items, lessonId, ttsSupported, speak, l
   function retry() {
     setResult(null);
     if (mode === 'chips') {
-      const chips = buildChips(current.ja);
-      setChipPool(shuffle(chips));
+      const { correct, pool } = buildChipPool(current.ja, vocab);
+      setChipPool(pool);
+      setCorrectChips(correct);
       setChipPicked([]);
     } else {
       setTimeout(() => inputRef.current?.focus(), 50);
@@ -372,7 +381,7 @@ export default function LessonPractice({ items, lessonId, ttsSupported, speak, l
               </div>
             </div>
           )}
-          {!diff && (
+          {!diff && mode !== 'chips' && (
             <div className="lesson-practice__answer">
               <span className="lesson-practice__answer-label">예시 답</span>
               <span
@@ -384,6 +393,24 @@ export default function LessonPractice({ items, lessonId, ttsSupported, speak, l
               >
                 {current.ja}
               </span>
+            </div>
+          )}
+          {mode === 'chips' && correctChips.length > 0 && (
+            <div className="lesson-practice__chip-answer">
+              <div className="lesson-practice__chip-answer-label">정답 순서</div>
+              <div
+                className="lesson-practice__chip-answer-list"
+                onClick={() => ttsSupported && speak(current.ja, language)}
+                role="button"
+                tabIndex={0}
+              >
+                {correctChips.map((t, i) => (
+                  <span key={i} className="lesson-practice__chip-answer-item">
+                    <span className="lesson-practice__chip-answer-num">{i + 1}</span>
+                    <span lang="ja">{t}</span>
+                  </span>
+                ))}
+              </div>
             </div>
           )}
           {current.cloze && (

@@ -1,8 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { formatLessonExplanation } from '../lib/wordDetailFormat';
 import JaText from './JaText';
+
+function shuffleIdx(n) {
+  const a = Array.from({ length: n }, (_, i) => i);
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 const VALID_KINDS = new Set(['pattern', 'callout', 'mission']);
 const VALID_TONES = new Set(['pronunciation', 'warning', 'tip']);
@@ -94,33 +103,42 @@ function SectionBlock({ section, sectionIdx, lessonId, onJaClick, vocab }) {
 }
 
 function SectionCFU({ cfu, sectionIdx, lessonId }) {
-  const [choice, setChoice] = useState(null);
+  const [round, setRound] = useState(0);
+  const order = useMemo(() => shuffleIdx((cfu.options || []).length), [cfu, round]);
+  const shuffledAnswerIdx = order.indexOf(cfu.answer);
+
+  const [choice, setChoice] = useState(null); // displayed idx (셔플 후)
   const [revealed, setRevealed] = useState(false);
+  const [storedCorrect, setStoredCorrect] = useState(null);
   const key = lessonId != null ? `lesson_cfu:${lessonId}:${sectionIdx}` : null;
 
   useEffect(() => {
     if (!key || typeof window === 'undefined') return;
     try {
       const saved = JSON.parse(localStorage.getItem(key) || 'null');
-      if (saved && typeof saved.choice === 'number') {
-        setChoice(saved.choice);
+      if (saved && typeof saved.correct === 'boolean') {
+        setStoredCorrect(saved.correct);
         setRevealed(true);
       }
     } catch {}
   }, [key]);
 
-  function pick(i) {
+  function pick(displayedIdx) {
     if (revealed) return;
-    setChoice(i);
+    setChoice(displayedIdx);
     setRevealed(true);
+    const isCorrect = displayedIdx === shuffledAnswerIdx;
+    setStoredCorrect(isCorrect);
     if (key && typeof window !== 'undefined') {
-      try { localStorage.setItem(key, JSON.stringify({ choice: i, correct: i === cfu.answer })); } catch {}
+      try { localStorage.setItem(key, JSON.stringify({ correct: isCorrect })); } catch {}
     }
   }
 
   function reset() {
     setChoice(null);
     setRevealed(false);
+    setStoredCorrect(null);
+    setRound(r => r + 1);
     if (key && typeof window !== 'undefined') {
       try { localStorage.removeItem(key); } catch {}
     }
@@ -131,30 +149,33 @@ function SectionCFU({ cfu, sectionIdx, lessonId }) {
       <div className="lesson-cfu__label">💡 이해 확인</div>
       <div className="lesson-cfu__q">{cfu.q}</div>
       <ul className="lesson-cfu__options">
-        {(cfu.options || []).map((opt, i) => {
-          const isCorrect = i === cfu.answer;
-          const isChoice = choice === i;
+        {order.map((origIdx, displayIdx) => {
+          const isCorrectOpt = origIdx === cfu.answer;
+          const isChoice = choice === displayIdx;
           const cls = [
             'lesson-cfu__option',
-            revealed && isCorrect && 'lesson-cfu__option--correct',
-            revealed && isChoice && !isCorrect && 'lesson-cfu__option--wrong',
+            revealed && isCorrectOpt && 'lesson-cfu__option--correct',
+            revealed && isChoice && !isCorrectOpt && 'lesson-cfu__option--wrong',
             !revealed && 'lesson-cfu__option--clickable',
           ].filter(Boolean).join(' ');
           return (
-            <li key={i}>
-              <button type="button" className={cls} onClick={() => pick(i)} disabled={revealed}>
-                <span className="lesson-cfu__option-num">{i + 1}</span>
-                <span className="lesson-cfu__option-text">{opt}</span>
-                {revealed && isCorrect && <span className="lesson-cfu__option-mark">✓</span>}
-                {revealed && isChoice && !isCorrect && <span className="lesson-cfu__option-mark">✗</span>}
+            <li key={displayIdx}>
+              <button type="button" className={cls} onClick={() => pick(displayIdx)} disabled={revealed}>
+                <span className="lesson-cfu__option-num">{displayIdx + 1}</span>
+                <span className="lesson-cfu__option-text">{cfu.options[origIdx]}</span>
+                {revealed && isCorrectOpt && <span className="lesson-cfu__option-mark">✓</span>}
+                {revealed && isChoice && !isCorrectOpt && <span className="lesson-cfu__option-mark">✗</span>}
               </button>
             </li>
           );
         })}
       </ul>
+      {revealed && storedCorrect === false && (
+        <div className="lesson-cfu__verdict lesson-cfu__verdict--wrong">⚠️ 정답을 다시 살펴보세요</div>
+      )}
       {revealed && cfu.explain && <div className="lesson-cfu__explain">{cfu.explain}</div>}
       {revealed && (
-        <button type="button" className="lesson-cfu__reset" onClick={reset}>다시 풀기</button>
+        <button type="button" className="lesson-cfu__reset" onClick={reset}>↺ 다시 풀기</button>
       )}
     </div>
   );
