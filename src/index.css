@@ -5577,7 +5577,24 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .lesson-viewer__sub {
   font-size: 0.85rem;
   color: var(--text-muted);
-  margin-bottom: 20px;
+  margin-bottom: 10px;
+}
+.lesson-viewer__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-sm);
+  font-variant-numeric: tabular-nums;
+}
+.lesson-viewer__meta [aria-hidden] {
+  color: var(--text-muted);
+  opacity: 0.6;
 }
 
 .lesson-section {
@@ -6102,6 +6119,13 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   justify-content: space-between;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
+}
+.lesson-vocab__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 .lesson-vocab__count {
   font-size: 0.82rem;
@@ -6175,6 +6199,269 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   opacity: 0.5;
   cursor: default;
   color: var(--accent, #10b981);
+}
+
+/* ========= Lesson Match (단어 매칭 미니 게임) ========= */
+.lesson-match {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.lesson-match__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.lesson-match__progress { font-weight: 600; color: var(--text-secondary); }
+.lesson-match__time { font-variant-numeric: tabular-nums; }
+.lesson-match__best { color: var(--text-muted); }
+.lesson-match__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.lesson-match__col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.lesson-match__card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  text-align: center;
+  transition: all var(--transition-fast);
+  font-family: var(--font-noto-jp), system-ui, sans-serif;
+  color: var(--text-primary);
+  min-height: 42px;
+}
+.lesson-match__card--ko {
+  font-family: system-ui, sans-serif;
+}
+.lesson-match__card:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+}
+.lesson-match__card--selected {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 12%, var(--bg-card));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 30%, transparent);
+}
+.lesson-match__card--target {
+  border-style: dashed;
+}
+.lesson-match__card--matched {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.lesson-match__card--shake {
+  animation: lesson-match-shake 0.45s ease-in-out;
+  border-color: var(--warning, #f59e0b);
+  background: color-mix(in srgb, var(--warning, #f59e0b) 12%, var(--bg-card));
+}
+@keyframes lesson-match-shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
+}
+.lesson-match--done {
+  align-items: center;
+  text-align: center;
+  padding: 24px 16px;
+}
+.lesson-match__done-emoji { font-size: 2rem; }
+.lesson-match__done-title { font-size: 1.05rem; font-weight: 700; }
+.lesson-match__done-sub { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 6px; }
+
+/* ========= Lesson CFU (이해 확인 객관식) ========= */
+.lesson-cfu {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--border);
+}
+.lesson-cfu__label {
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.lesson-cfu__q {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+.lesson-cfu__options {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.lesson-cfu__option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.92rem;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--font-noto-jp), system-ui, sans-serif;
+  transition: all var(--transition-fast);
+}
+.lesson-cfu__option:disabled { cursor: default; }
+.lesson-cfu__option--clickable:hover {
+  border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+}
+.lesson-cfu__option--correct {
+  border-color: var(--accent, #10b981);
+  background: color-mix(in srgb, var(--accent, #10b981) 12%, var(--bg-card));
+}
+.lesson-cfu__option--wrong {
+  border-color: var(--warning, #f59e0b);
+  background: color-mix(in srgb, var(--warning, #f59e0b) 12%, var(--bg-card));
+}
+.lesson-cfu__option-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  font-size: 0.74rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  font-family: system-ui, sans-serif;
+}
+.lesson-cfu__option-text { flex: 1; line-height: 1.4; }
+.lesson-cfu__option-mark {
+  font-weight: 700;
+  font-size: 1rem;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.lesson-cfu__option--correct .lesson-cfu__option-mark { color: var(--accent, #10b981); }
+.lesson-cfu__option--wrong .lesson-cfu__option-mark { color: var(--warning, #f59e0b); }
+.lesson-cfu__explain {
+  margin-top: 10px;
+  padding: 10px 12px;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  background: var(--bg-elevated);
+  border-radius: var(--radius-sm);
+}
+.lesson-cfu__reset {
+  margin-top: 8px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.82rem;
+  padding: 2px 4px;
+}
+.lesson-cfu__reset:hover { color: var(--primary); }
+
+/* ========= Lesson Summary (마무리 카드) ========= */
+.lesson-summary {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--primary);
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.lesson-summary__title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-primary);
+}
+.lesson-summary__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.lesson-summary__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+.lesson-summary__icon {
+  flex-shrink: 0;
+  font-size: 1rem;
+  width: 22px;
+  text-align: center;
+}
+.lesson-summary__sub {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+.lesson-summary__next {
+  padding: 12px 14px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.lesson-summary__next-label {
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+.lesson-summary__next-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.lesson-summary__next-body {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+.lesson-summary__cta {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.lesson-footer-actions--minor {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: none;
+  justify-content: center;
 }
 
 /* ========= Lesson Practice (한→일 번역 미션) ========= */
@@ -6313,6 +6600,85 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   background: var(--bg-elevated);
 }
 
+.lesson-practice__hint-btn {
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
+.lesson-practice__cloze {
+  margin-top: 6px;
+  padding: 12px 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.lesson-practice__cloze-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+.lesson-practice__cloze-template {
+  font-size: 1.05rem;
+  line-height: 1.55;
+  color: var(--text-primary);
+  font-family: var(--font-noto-jp), system-ui, sans-serif;
+}
+.lesson-practice__cloze-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.lesson-practice__cloze-option {
+  padding: 8px 14px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  cursor: pointer;
+  font-family: var(--font-noto-jp), system-ui, sans-serif;
+  color: var(--text-primary);
+  transition: all var(--transition-fast);
+}
+.lesson-practice__cloze-option:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+}
+.lesson-practice__cloze-option--correct {
+  border-color: var(--accent, #10b981);
+  background: color-mix(in srgb, var(--accent, #10b981) 14%, var(--bg-card));
+}
+.lesson-practice__cloze-option--wrong {
+  border-color: var(--warning, #f59e0b);
+  background: color-mix(in srgb, var(--warning, #f59e0b) 14%, var(--bg-card));
+}
+.lesson-practice__cloze-feedback {
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.lesson-practice__review-tag {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 1px 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
+  color: var(--primary);
+  border-radius: 999px;
+}
+
+.lesson-practice__done-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 .lesson-practice__actions {
   display: flex;
   gap: 8px;
@@ -6432,6 +6798,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   .lesson-practice__actions { justify-content: stretch; }
   .lesson-practice__actions > * { flex: 1; }
   .lesson-block { padding: 14px 14px; }
+  .lesson-match__grid { gap: 6px; }
+  .lesson-match__card { padding: 8px 10px; font-size: 0.92rem; }
+  .lesson-cfu__option { font-size: 0.88rem; padding: 9px 10px; }
+  .lesson-summary { padding: 16px 16px; }
+  .lesson-summary__cta { justify-content: stretch; }
+  .lesson-summary__cta > * { flex: 1; text-align: center; }
 }
 
 /* ========= Conversation Panel ========= */

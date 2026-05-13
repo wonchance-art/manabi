@@ -5,6 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
+import LessonMatch from './LessonMatch';
 
 export default function LessonVocab({ items, lessonId, language = 'Japanese', ttsSupported, speak }) {
   const { user } = useAuth();
@@ -76,24 +77,46 @@ export default function LessonVocab({ items, lessonId, language = 'Japanese', tt
   }
 
   const savedAll = items.length > 0 && savedSet.size === items.length;
+  const [showMatch, setShowMatch] = useState(false);
 
   return (
     <div className="lesson-vocab">
       <div className="lesson-vocab__header">
         <span className="lesson-vocab__count">{items.length}개 단어</span>
-        {user ? (
-          <button
-            type="button"
-            onClick={saveAll}
-            disabled={savedAll || saving}
-            className={`btn btn--sm ${savedAll ? 'btn--ghost' : 'btn--primary'}`}
-          >
-            {saving ? '⏳' : savedAll ? '✓ 모두 저장됨' : '⭐ 모두 단어장에'}
-          </button>
-        ) : (
-          <span className="lesson-vocab__hint">로그인하면 저장 가능</span>
-        )}
+        <div className="lesson-vocab__actions">
+          {items.length >= 4 && (
+            <button
+              type="button"
+              onClick={() => setShowMatch(s => !s)}
+              className="btn btn--sm btn--ghost"
+              aria-expanded={showMatch}
+            >
+              {showMatch ? '↑ 접기' : '🎮 단어 익히기'}
+            </button>
+          )}
+          {user ? (
+            <button
+              type="button"
+              onClick={saveAll}
+              disabled={savedAll || saving}
+              className={`btn btn--sm ${savedAll ? 'btn--ghost' : 'btn--primary'}`}
+            >
+              {saving ? '⏳' : savedAll ? '✓ 모두 저장됨' : '⭐ 모두 단어장에'}
+            </button>
+          ) : (
+            <span className="lesson-vocab__hint">로그인하면 저장 가능</span>
+          )}
+        </div>
       </div>
+      {showMatch && (
+        <LessonMatch
+          items={items}
+          lessonId={lessonId}
+          language={language}
+          ttsSupported={ttsSupported}
+          speak={speak}
+        />
+      )}
       <ul className="lesson-vocab__list">
         {items.map(v => {
           const saved = savedSet.has(v.ja);

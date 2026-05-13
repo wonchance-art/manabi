@@ -1,20 +1,26 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { formatLessonExplanation } from '../lib/wordDetailFormat';
+
+const VALID_KINDS = new Set(['pattern', 'callout', 'mission']);
+const VALID_TONES = new Set(['pronunciation', 'warning', 'tip']);
 
 /**
  * 강의 본문 렌더러
- *  - sections 배열이 있으면 정형 렌더 (헤딩 + 예문 + 콜아웃 + 미션)
+ *  - sections 배열이 있으면 정형 렌더
  *  - 없으면 fallback markdown(formatLessonExplanation)
  */
-export default function LessonExplanation({ intro, sections, fallbackText, onJaClick }) {
+export default function LessonExplanation({ intro, sections, fallbackText, onJaClick, lessonId }) {
   const useSections = Array.isArray(sections) && sections.length > 0;
 
   if (useSections) {
     return (
       <div className="lesson-sections">
         {intro && <p className="lesson-sections__intro">{intro}</p>}
-        {sections.map((s, i) => <SectionBlock key={i} section={s} onJaClick={onJaClick} />)}
+        {sections.map((s, i) => (
+          <SectionBlock key={i} section={s} sectionIdx={i} lessonId={lessonId} onJaClick={onJaClick} />
+        ))}
       </div>
     );
   }
@@ -31,10 +37,7 @@ export default function LessonExplanation({ intro, sections, fallbackText, onJaC
   );
 }
 
-const VALID_KINDS = new Set(['pattern', 'callout', 'mission']);
-const VALID_TONES = new Set(['pronunciation', 'warning', 'tip']);
-
-function SectionBlock({ section, onJaClick }) {
+function SectionBlock({ section, sectionIdx, lessonId, onJaClick }) {
   const kind = section.kind || 'pattern';
   const tone = section.tone ? ` lesson-block--${section.tone}` : '';
 
@@ -47,9 +50,9 @@ function SectionBlock({ section, onJaClick }) {
       // eslint-disable-next-line no-console
       console.warn(`[LessonExplanation] unknown section.tone: "${section.tone}". Allowed: ${[...VALID_TONES].join(', ')}`);
     }
-    if (!section.heading && !section.body && !section.lead && !section.examples?.length && !section.blanks?.length) {
+    if (!section.heading && !section.body && !section.lead && !section.examples?.length && !section.blanks?.length && !section.cfu) {
       // eslint-disable-next-line no-console
-      console.warn('[LessonExplanation] section is empty (no heading/lead/body/examples/blanks)');
+      console.warn('[LessonExplanation] section is empty');
     }
   }
 
@@ -81,6 +84,76 @@ function SectionBlock({ section, onJaClick }) {
             <li key={i} className="lesson-blank">{b}</li>
           ))}
         </ol>
+      )}
+      {section.cfu && (
+        <SectionCFU cfu={section.cfu} sectionIdx={sectionIdx} lessonId={lessonId} />
+      )}
+    </div>
+  );
+}
+
+function SectionCFU({ cfu, sectionIdx, lessonId }) {
+  const [choice, setChoice] = useState(null);
+  const [revealed, setRevealed] = useState(false);
+  const key = lessonId != null ? `lesson_cfu:${lessonId}:${sectionIdx}` : null;
+
+  useEffect(() => {
+    if (!key || typeof window === 'undefined') return;
+    try {
+      const saved = JSON.parse(localStorage.getItem(key) || 'null');
+      if (saved && typeof saved.choice === 'number') {
+        setChoice(saved.choice);
+        setRevealed(true);
+      }
+    } catch {}
+  }, [key]);
+
+  function pick(i) {
+    if (revealed) return;
+    setChoice(i);
+    setRevealed(true);
+    if (key && typeof window !== 'undefined') {
+      try { localStorage.setItem(key, JSON.stringify({ choice: i, correct: i === cfu.answer })); } catch {}
+    }
+  }
+
+  function reset() {
+    setChoice(null);
+    setRevealed(false);
+    if (key && typeof window !== 'undefined') {
+      try { localStorage.removeItem(key); } catch {}
+    }
+  }
+
+  return (
+    <div className="lesson-cfu">
+      <div className="lesson-cfu__label">💡 이해 확인</div>
+      <div className="lesson-cfu__q">{cfu.q}</div>
+      <ul className="lesson-cfu__options">
+        {(cfu.options || []).map((opt, i) => {
+          const isCorrect = i === cfu.answer;
+          const isChoice = choice === i;
+          const cls = [
+            'lesson-cfu__option',
+            revealed && isCorrect && 'lesson-cfu__option--correct',
+            revealed && isChoice && !isCorrect && 'lesson-cfu__option--wrong',
+            !revealed && 'lesson-cfu__option--clickable',
+          ].filter(Boolean).join(' ');
+          return (
+            <li key={i}>
+              <button type="button" className={cls} onClick={() => pick(i)} disabled={revealed}>
+                <span className="lesson-cfu__option-num">{i + 1}</span>
+                <span className="lesson-cfu__option-text">{opt}</span>
+                {revealed && isCorrect && <span className="lesson-cfu__option-mark">✓</span>}
+                {revealed && isChoice && !isCorrect && <span className="lesson-cfu__option-mark">✗</span>}
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+      {revealed && cfu.explain && <div className="lesson-cfu__explain">{cfu.explain}</div>}
+      {revealed && (
+        <button type="button" className="lesson-cfu__reset" onClick={reset}>다시 풀기</button>
       )}
     </div>
   );

@@ -21,6 +21,7 @@ import LessonExplanation from '../components/LessonExplanation';
 import LessonPractice from '../components/LessonPractice';
 import LessonVocab from '../components/LessonVocab';
 import LessonConversation from '../components/LessonConversation';
+import LessonSummary from '../components/LessonSummary';
 import Spinner from '../components/Spinner';
 import Button from '../components/Button';
 import KanaChart from '../components/KanaChart';
@@ -256,6 +257,17 @@ ${(material.raw_text || '').slice(0, 400)}
       <h1 className="lesson-viewer__title">{titleDisplay}</h1>
       <div className="lesson-viewer__sub">{meta.level} {meta.series && `· ${meta.series}`}</div>
 
+      {lessonCode && (
+        <div className="lesson-viewer__meta">
+          {lessonCode.vocab?.length > 0 && <span>📚 {lessonCode.vocab.length}단어</span>}
+          {(() => {
+            const p = (lessonCode.sections || []).filter(s => !s.kind || s.kind === 'pattern').length;
+            return p > 0 ? (<><span aria-hidden="true">·</span><span>🎯 {p}패턴</span></>) : null;
+          })()}
+          {lessonCode.duration && (<><span aria-hidden="true">·</span><span>⏱ {lessonCode.duration}</span></>)}
+        </div>
+      )}
+
       {/* 카나 강의 — 표 먼저 */}
       {meta.series === '카나' && (
         <section className="lesson-section">
@@ -290,6 +302,7 @@ ${(material.raw_text || '').slice(0, 400)}
             sections={lessonCode?.sections}
             fallbackText={explanation}
             onJaClick={(ja) => ttsSupported && speak(ja, language)}
+            lessonId={id}
           />
         ) : (
           <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)' }}>
@@ -391,27 +404,44 @@ ${(material.raw_text || '').slice(0, 400)}
         )}
       </section>
 
-      {/* 완료 / 다음 액션 */}
-      <div className="lesson-footer-actions">
+      {/* 강의 마무리 — 요약 + 다음 미리보기 + 완료 CTA */}
+      {lessonCode ? (
+        <section className="lesson-section">
+          <LessonSummary
+            lesson={lessonCode}
+            lessonId={id}
+            language={language}
+            nextLesson={nextLesson}
+            isCompleted={isCompleted}
+            completePending={markCompleteMutation.isPending}
+            onComplete={() => markCompleteMutation.mutate()}
+          />
+        </section>
+      ) : (
+        <>
+          <div className="lesson-footer-actions">
+            {!isCompleted ? (
+              <Button onClick={() => markCompleteMutation.mutate()} disabled={markCompleteMutation.isPending}>
+                {markCompleteMutation.isPending ? '⏳' : '✓ 강의 완료'}
+              </Button>
+            ) : (
+              <span className="lesson-completed">✓ 완료됨</span>
+            )}
+          </div>
+          {isCompleted && nextLesson && (
+            <Link href={`/lessons/${nextLesson.id}`} className="next-lesson-card" style={{ marginTop: 24 }}>
+              <div className="next-lesson-card__hint">다음 강의</div>
+              <div className="next-lesson-card__title">{nextLesson.title}</div>
+            </Link>
+          )}
+        </>
+      )}
+
+      <div className="lesson-footer-actions lesson-footer-actions--minor">
         <Link href={`/viewer/${id}`} className="btn btn--ghost btn--sm">
           단어 분석 자세히 보기 →
         </Link>
-        {!isCompleted ? (
-          <Button onClick={() => markCompleteMutation.mutate()} disabled={markCompleteMutation.isPending}>
-            {markCompleteMutation.isPending ? '⏳' : '✓ 강의 완료'}
-          </Button>
-        ) : (
-          <span className="lesson-completed">✓ 완료됨</span>
-        )}
       </div>
-
-      {/* 다음 강의 카드 (완료 후) */}
-      {isCompleted && nextLesson && (
-        <Link href={`/lessons/${nextLesson.id}`} className="next-lesson-card" style={{ marginTop: 24 }}>
-          <div className="next-lesson-card__hint">다음 강의</div>
-          <div className="next-lesson-card__title">{nextLesson.title}</div>
-        </Link>
-      )}
     </div>
   );
 }
