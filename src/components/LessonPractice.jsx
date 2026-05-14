@@ -5,6 +5,7 @@ import Button from './Button';
 import { isAnswerCorrect } from '../lib/lessonAccepts';
 import { diffChars } from '../lib/diffChars';
 import { tokenizeJa } from '../lib/jaTokenize';
+import { fireSparkle, fireBurst } from '../lib/celebration';
 
 const STORAGE_KEY = 'lesson_practice:';
 const MODE_KEY = 'lesson_practice_mode';
@@ -52,6 +53,8 @@ export default function LessonPractice({ items, lessonId, ttsSupported, speak, l
   const [chipPicked, setChipPicked] = useState([]);
   const [correctChips, setCorrectChips] = useState([]);
   const inputRef = useRef(null);
+  const feedbackRef = useRef(null);
+  const doneRef = useRef(null);
 
   const sttSupported = typeof window !== 'undefined' &&
     !!(window.SpeechRecognition || window.webkitSpeechRecognition);
@@ -128,6 +131,12 @@ export default function LessonPractice({ items, lessonId, ttsSupported, speak, l
       n.delete(curIdx);
       setFailed(n);
       persist({ failed: [...n] });
+    }
+    if (ok) {
+      // 다음 paint 이후 sparkle (feedback 박스 렌더 완료 후 좌표 정확)
+      requestAnimationFrame(() => {
+        fireSparkle({ source: feedbackRef.current, count: 14, colors: 'accent' });
+      });
     }
   }
 
@@ -233,11 +242,20 @@ export default function LessonPractice({ items, lessonId, ttsSupported, speak, l
     return diffChars(input, current.ja);
   }, [mode, result, current?.ja, input]);
 
+  // 미션 done 진입 시 burst (전체 통과일 때만)
+  useEffect(() => {
+    if (phase !== 'done' || failed.size !== 0) return;
+    const t = setTimeout(() => {
+      fireBurst({ source: doneRef.current, colors: ['accent', 'primary'] });
+    }, 200);
+    return () => clearTimeout(t);
+  }, [phase, failed.size]);
+
   // ── done 화면
   if (phase === 'done') {
     const passedCount = items.length - failed.size;
     return (
-      <div className="lesson-practice lesson-practice--done">
+      <div className="lesson-practice lesson-practice--done" ref={doneRef}>
         <div className="lesson-practice__done-emoji">{failed.size === 0 ? '🎉' : '👍'}</div>
         <div className="lesson-practice__done-title">
           {failed.size === 0 ? '미션 완료' : `${passedCount}/${items.length} 정답`}
@@ -334,7 +352,7 @@ export default function LessonPractice({ items, lessonId, ttsSupported, speak, l
       )}
 
       {result === 'pass' && (
-        <div className="lesson-practice__feedback lesson-practice__feedback--pass">
+        <div className="lesson-practice__feedback lesson-practice__feedback--pass" ref={feedbackRef}>
           <span className="lesson-practice__mark">✓</span>
           <span>정답이에요</span>
           {ttsSupported && (

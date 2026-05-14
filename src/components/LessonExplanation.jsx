@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { formatLessonExplanation } from '../lib/wordDetailFormat';
 import JaText from './JaText';
+import { fireSparkle } from '../lib/celebration';
 
 function shuffleIdx(n) {
   const a = Array.from({ length: n }, (_, i) => i);
@@ -110,6 +111,7 @@ function SectionCFU({ cfu, sectionIdx, lessonId }) {
   const [choice, setChoice] = useState(null); // displayed idx (셔플 후)
   const [revealed, setRevealed] = useState(false);
   const [storedCorrect, setStoredCorrect] = useState(null);
+  const optionsRef = useRef(null);
   const key = lessonId != null ? `lesson_cfu:${lessonId}:${sectionIdx}` : null;
 
   useEffect(() => {
@@ -132,6 +134,11 @@ function SectionCFU({ cfu, sectionIdx, lessonId }) {
     if (key && typeof window !== 'undefined') {
       try { localStorage.setItem(key, JSON.stringify({ correct: isCorrect })); } catch {}
     }
+    if (isCorrect) {
+      const opts = optionsRef.current;
+      const correctEl = opts?.children?.[shuffledAnswerIdx];
+      fireSparkle({ source: correctEl || opts, count: 12, colors: 'accent' });
+    }
   }
 
   function reset() {
@@ -148,7 +155,7 @@ function SectionCFU({ cfu, sectionIdx, lessonId }) {
     <div className="lesson-cfu">
       <div className="lesson-cfu__label">💡 이해 확인</div>
       <div className="lesson-cfu__q">{cfu.q}</div>
-      <ul className="lesson-cfu__options">
+      <ul className="lesson-cfu__options" ref={optionsRef}>
         {order.map((origIdx, displayIdx) => {
           const isCorrectOpt = origIdx === cfu.answer;
           const isChoice = choice === displayIdx;

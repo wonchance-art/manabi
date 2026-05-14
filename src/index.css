@@ -6133,6 +6133,35 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   border-radius: var(--radius-sm);
   transition: filter 0.2s;
 }
+.lesson-conversation__ja-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.lesson-conversation__wave {
+  display: inline-flex;
+  gap: 2px;
+  align-items: center;
+  height: 14px;
+}
+.lesson-conversation__wave span {
+  display: inline-block;
+  width: 3px;
+  height: 100%;
+  background: var(--primary);
+  border-radius: 2px;
+  animation: lesson-wave 0.9s ease-in-out infinite;
+  transform-origin: center;
+}
+.lesson-conversation__wave span:nth-child(1) { animation-delay: 0s; }
+.lesson-conversation__wave span:nth-child(2) { animation-delay: 0.12s; }
+.lesson-conversation__wave span:nth-child(3) { animation-delay: 0.24s; }
+.lesson-conversation__wave span:nth-child(4) { animation-delay: 0.36s; }
+.lesson-conversation__wave span:nth-child(5) { animation-delay: 0.48s; }
+@keyframes lesson-wave {
+  0%, 100% { transform: scaleY(0.35); }
+  50% { transform: scaleY(1); }
+}
 .lesson-conversation__ko--blurred {
   filter: blur(5px);
   cursor: pointer;
@@ -6185,7 +6214,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  transition: border-color var(--transition-fast), background var(--transition-fast);
+  transition: border-color var(--lp-trans-fast), background var(--lp-trans-fast), transform 0.2s ease;
+  transform-style: preserve-3d;
+  will-change: transform;
 }
 .lesson-vocab__item:hover {
   border-color: color-mix(in srgb, var(--primary) 38%, var(--border));
@@ -6517,13 +6548,38 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 10px 12px;
-  cursor: pointer;
+  cursor: grab;
   font-size: 0.95rem;
   text-align: center;
-  transition: all var(--transition-fast);
+  transition: background var(--lp-trans-fast), border-color var(--lp-trans-fast), box-shadow var(--lp-trans), opacity 0.35s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   font-family: var(--font-noto-jp), system-ui, sans-serif;
   color: var(--text-primary);
   min-height: 42px;
+  user-select: none;
+  touch-action: none;
+}
+.lesson-match__card:active { cursor: grabbing; }
+.lesson-match__card--target { cursor: default; }
+.lesson-match__card--dragging {
+  opacity: 0;
+}
+.lesson-match__card--ghost {
+  background: var(--bg-card);
+  border: 1px solid var(--primary);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 0 0 4px color-mix(in srgb, var(--primary) 22%, transparent);
+  padding: 10px 14px;
+  font-size: 1rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-noto-jp), system-ui, sans-serif;
+  color: var(--text-primary);
+  cursor: grabbing;
+  transform: scale(1.04);
+}
+.lesson-match__card--over {
+  background: color-mix(in srgb, var(--primary) 18%, var(--bg-card));
+  border-color: var(--primary);
+  border-style: solid;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 28%, transparent);
 }
 .lesson-match__card--ko {
   font-family: system-ui, sans-serif;

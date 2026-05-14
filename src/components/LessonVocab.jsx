@@ -7,6 +7,7 @@ import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import LessonMatch from './LessonMatch';
 import { toRomaji } from '../lib/kanaRomaji';
+import { useTilt } from '../lib/useTilt';
 
 export default function LessonVocab({ items, lessonId, language = 'Japanese', ttsSupported, speak }) {
   const { user } = useAuth();
@@ -119,37 +120,48 @@ export default function LessonVocab({ items, lessonId, language = 'Japanese', tt
         />
       )}
       <ul className="lesson-vocab__list">
-        {items.map(v => {
-          const saved = savedSet.has(v.ja);
-          return (
-            <li key={v.ja} className="lesson-vocab__item">
-              <button
-                type="button"
-                className="lesson-vocab__ja"
-                onClick={() => ttsSupported && speak(v.ja, language)}
-                title="발음 듣기"
-              >
-                <span className="lesson-vocab__ja-text">{v.ja}</span>
-                {(() => {
-                  const r = v.romaji || toRomaji(v.ja);
-                  return r ? <span className="lesson-vocab__romaji">{r}</span> : null;
-                })()}
-              </button>
-              <span className="lesson-vocab__ko">{v.ko}</span>
-              <button
-                type="button"
-                className="lesson-vocab__save"
-                onClick={() => saveOne(v)}
-                disabled={saved || !user}
-                aria-label={saved ? '저장됨' : '단어장에 저장'}
-                title={saved ? '저장됨' : user ? '단어장에 저장' : '로그인 필요'}
-              >
-                {saved ? '✓' : '⭐'}
-              </button>
-            </li>
-          );
-        })}
+        {items.map(v => (
+          <VocabCard
+            key={v.ja}
+            v={v}
+            saved={savedSet.has(v.ja)}
+            user={user}
+            language={language}
+            ttsSupported={ttsSupported}
+            speak={speak}
+            saveOne={saveOne}
+          />
+        ))}
       </ul>
     </div>
+  );
+}
+
+function VocabCard({ v, saved, user, language, ttsSupported, speak, saveOne }) {
+  const tiltRef = useTilt({ max: 3 });
+  const romaji = v.romaji || toRomaji(v.ja);
+  return (
+    <li ref={tiltRef} className="lesson-vocab__item">
+      <button
+        type="button"
+        className="lesson-vocab__ja"
+        onClick={() => ttsSupported && speak(v.ja, language)}
+        title="발음 듣기"
+      >
+        <span className="lesson-vocab__ja-text">{v.ja}</span>
+        {romaji && <span className="lesson-vocab__romaji">{romaji}</span>}
+      </button>
+      <span className="lesson-vocab__ko">{v.ko}</span>
+      <button
+        type="button"
+        className="lesson-vocab__save"
+        onClick={() => saveOne(v)}
+        disabled={saved || !user}
+        aria-label={saved ? '저장됨' : '단어장에 저장'}
+        title={saved ? '저장됨' : user ? '단어장에 저장' : '로그인 필요'}
+      >
+        {saved ? '✓' : '⭐'}
+      </button>
+    </li>
   );
 }

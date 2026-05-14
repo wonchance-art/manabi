@@ -167,7 +167,14 @@ export default function LessonConversation({ turns, language = 'Japanese', ttsSu
               tabIndex={0}
               aria-current={isPlaying ? 'true' : undefined}
             >
-              <div className="lesson-conversation__ja"><JaText ja={turn.ja} vocab={vocab} /></div>
+              <div className="lesson-conversation__ja-row">
+                <div className="lesson-conversation__ja"><JaText ja={turn.ja} vocab={vocab} /></div>
+                {isPlaying && (
+                  <span className="lesson-conversation__wave" aria-hidden="true">
+                    <span /><span /><span /><span /><span />
+                  </span>
+                )}
+              </div>
               {turn.ko && (
                 <div
                   className={`lesson-conversation__ko ${koHidden ? 'lesson-conversation__ko--blurred' : ''}`}

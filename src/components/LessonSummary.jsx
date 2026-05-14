@@ -1,10 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import Button from './Button';
+import { fireBurst } from '../lib/celebration';
+import { useCountUp } from '../lib/useCountUp';
+
+function Stat({ value }) {
+  const { value: n, ref } = useCountUp(value);
+  return <strong ref={ref}>{n}</strong>;
+}
 
 /**
  * 강의 마무리 카드
@@ -19,6 +26,12 @@ export default function LessonSummary({
   const [savedCount, setSavedCount] = useState(0);
   const [practiceResult, setPracticeResult] = useState(null);
   const [cfuStats, setCfuStats] = useState({ answered: 0, correct: 0 });
+  const ctaRef = useRef(null);
+
+  function handleComplete() {
+    fireBurst({ source: ctaRef.current, colors: ['primary', 'accent'] });
+    onComplete?.();
+  }
 
   useEffect(() => {
     if (!user || !lesson?.vocab?.length) { setSavedCount(0); return; }
@@ -74,7 +87,7 @@ export default function LessonSummary({
           <li className="lesson-summary__item">
             <span className="lesson-summary__icon">💡</span>
             <div>
-              <strong>{patternCount}개 패턴</strong>
+              <Stat value={patternCount} />개 패턴
               <span className="lesson-summary__sub"> · 각 패턴을 회화 속에서 사용 가능</span>
             </div>
           </li>
@@ -84,11 +97,11 @@ export default function LessonSummary({
           <li className="lesson-summary__item">
             <span className="lesson-summary__icon">📚</span>
             <div>
-              <strong>{vocabCount}단어</strong>
+              <Stat value={vocabCount} />단어
               {user ? (
                 <span className="lesson-summary__sub">
                   {' · '}
-                  {allSaved ? '모두 단어장에 저장됨' : `${savedCount}/${vocabCount} 저장됨 (위에서 ⭐로 마저 저장)`}
+                  {allSaved ? '모두 단어장에 저장됨' : <><Stat value={savedCount} />/{vocabCount} 저장됨 (위에서 ⭐로 마저 저장)</>}
                 </span>
               ) : (
                 <span className="lesson-summary__sub"> · 로그인하면 단어장에 저장됩니다</span>
@@ -101,7 +114,7 @@ export default function LessonSummary({
           <li className="lesson-summary__item">
             <span className="lesson-summary__icon">✅</span>
             <div>
-              <strong>이해 확인 {cfuStats.correct}/{cfuStats.answered}</strong>
+              이해 확인 <Stat value={cfuStats.correct} />/<Stat value={cfuStats.answered} />
             </div>
           </li>
         )}
@@ -110,7 +123,7 @@ export default function LessonSummary({
           <li className="lesson-summary__item">
             <span className="lesson-summary__icon">✍️</span>
             <div>
-              <strong>미션 {practiceResult.correct}/{practiceResult.total} 정답</strong>
+              미션 <Stat value={practiceResult.correct} />/<Stat value={practiceResult.total} /> 정답
             </div>
           </li>
         )}
@@ -136,9 +149,9 @@ export default function LessonSummary({
         </div>
       )}
 
-      <div className="lesson-summary__cta">
+      <div className="lesson-summary__cta" ref={ctaRef}>
         {!isCompleted ? (
-          <Button onClick={onComplete} disabled={completePending}>
+          <Button onClick={handleComplete} disabled={completePending}>
             {completePending ? '⏳' : '🎉 강의 마치기'}
           </Button>
         ) : nextLesson ? (
