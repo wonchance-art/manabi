@@ -2,9 +2,20 @@
 
 import { useEffect, useRef, useState } from 'react';
 import JaText from './JaText';
+import TtsVoicePicker from './TtsVoicePicker';
 
 const RATE_KEY = 'lesson_tts_rate';
 const RATE_OPTIONS = [0.7, 1, 1.2];
+const VOICE_STORAGE_KEY = 'tts_voice';
+
+function getSelectedVoiceURI(language) {
+  if (typeof window === 'undefined') return null;
+  const key = language === 'Japanese' || language === 'ja' ? 'ja' : 'en';
+  try {
+    const saved = JSON.parse(localStorage.getItem(VOICE_STORAGE_KEY) || '{}');
+    return saved[key] || null;
+  } catch { return null; }
+}
 
 /**
  * 강의 회화 섹션
@@ -55,6 +66,11 @@ export default function LessonConversation({ turns, language = 'Japanese', ttsSu
         const u = new SpeechSynthesisUtterance(text);
         u.lang = langCode;
         u.rate = rate;
+        const wantedURI = getSelectedVoiceURI(language);
+        if (wantedURI) {
+          const v = window.speechSynthesis.getVoices().find(x => x.voiceURI === wantedURI);
+          if (v) u.voice = v;
+        }
         u.onend = () => resolve();
         u.onerror = () => resolve();
         window.speechSynthesis.speak(u);
@@ -89,6 +105,11 @@ export default function LessonConversation({ turns, language = 'Japanese', ttsSu
         const u = new SpeechSynthesisUtterance(text);
         u.lang = langCode;
         u.rate = rate;
+        const wantedURI = getSelectedVoiceURI(language);
+        if (wantedURI) {
+          const v = window.speechSynthesis.getVoices().find(x => x.voiceURI === wantedURI);
+          if (v) u.voice = v;
+        }
         window.speechSynthesis.speak(u);
         return;
       } catch {}
@@ -136,6 +157,7 @@ export default function LessonConversation({ turns, language = 'Japanese', ttsSu
               ))}
             </div>
           )}
+          {ttsSupported && <TtsVoicePicker language={language} />}
           {hasKo && (
             <label className="lesson-conversation__toggle">
               <input
