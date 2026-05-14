@@ -5568,6 +5568,17 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   align-items: center;
   gap: 6px;
 }
+/* 강의 페이지 디자인 토큰 — 카드/간격/transition 일관 */
+.lesson-viewer {
+  --lp-pad: 20px;
+  --lp-pad-sm: 16px;
+  --lp-pad-lg: 22px;
+  --lp-radius: var(--radius-md);
+  --lp-radius-sm: var(--radius-sm);
+  --lp-gap: 36px;
+  --lp-trans: 0.18s ease;
+  --lp-trans-fast: 0.12s ease;
+}
 .lesson-viewer__title {
   font-size: 1.5rem;
   font-weight: 700;
@@ -6305,8 +6316,149 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .lesson-progress-bar {
   height: 100%;
+  background: linear-gradient(90deg, var(--primary), color-mix(in srgb, var(--primary) 70%, var(--accent, #10b981)));
+  transition: width 0.25s ease-out;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--primary) 50%, transparent);
+}
+
+/* ========= Lesson Stepper (섹션 진척 dot) ========= */
+.lesson-stepper {
+  position: sticky;
+  top: 2px;
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: 2px;
+  padding: 10px 0 12px;
+  background: linear-gradient(to bottom, var(--bg-page, var(--bg-card)) 70%, transparent);
+  margin: 8px -20px 16px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.lesson-stepper__step {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 14px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  opacity: 0.38;
+  transition: opacity var(--lp-trans), transform var(--lp-trans);
+  position: relative;
+}
+.lesson-stepper__step:hover { opacity: 0.7; }
+.lesson-stepper__step.is-visited { opacity: 0.72; }
+.lesson-stepper__step.is-active {
+  opacity: 1;
+  transform: translateY(-1px);
+}
+.lesson-stepper__step.is-active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 25%;
+  right: 25%;
+  height: 2px;
   background: var(--primary);
-  transition: width 0.1s linear;
+  border-radius: 1px;
+  animation: stepper-slide 0.25s ease-out;
+}
+@keyframes stepper-slide {
+  from { transform: scaleX(0.3); opacity: 0; }
+  to { transform: scaleX(1); opacity: 1; }
+}
+.lesson-stepper__icon {
+  font-size: 1.05rem;
+  line-height: 1;
+}
+.lesson-stepper__label {
+  font-size: 0.66rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+}
+.lesson-stepper__step.is-active .lesson-stepper__label { color: var(--primary); }
+
+/* ========= 접근성 — focus-visible 일관 ========= */
+.lesson-viewer button:focus-visible,
+.lesson-viewer [role="button"]:focus-visible,
+.lesson-viewer [tabindex="0"]:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ========= 마이크로 인터랙션 ========= */
+/* 페이지 진입 — 섹션 fade-in stagger (첫 방문 시만, data-fresh="1") */
+@keyframes lesson-section-fade {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.lesson-viewer[data-fresh="1"] .lesson-section {
+  animation: lesson-section-fade 0.36s ease-out backwards;
+}
+.lesson-viewer[data-fresh="1"] .lesson-section:nth-of-type(1) { animation-delay: 0.02s; }
+.lesson-viewer[data-fresh="1"] .lesson-section:nth-of-type(2) { animation-delay: 0.08s; }
+.lesson-viewer[data-fresh="1"] .lesson-section:nth-of-type(3) { animation-delay: 0.14s; }
+.lesson-viewer[data-fresh="1"] .lesson-section:nth-of-type(4) { animation-delay: 0.2s; }
+.lesson-viewer[data-fresh="1"] .lesson-section:nth-of-type(5) { animation-delay: 0.26s; }
+.lesson-viewer[data-fresh="1"] .lesson-section:nth-of-type(6) { animation-delay: 0.32s; }
+
+/* 정답 시 pop */
+@keyframes lesson-correct-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.04); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent, #10b981) 25%, transparent); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 transparent; }
+}
+.lesson-cfu__option--correct,
+.lesson-practice__cloze-option--correct,
+.lesson-practice__feedback--pass {
+  animation: lesson-correct-pop 0.5s ease-out;
+}
+
+/* 칩 클릭 시 짧은 pulse */
+@keyframes lesson-chip-tap {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.94); }
+  100% { transform: scale(1); }
+}
+.lesson-practice__chip:active:not(:disabled) {
+  animation: lesson-chip-tap 0.15s ease-out;
+}
+.lesson-cfu__option:active:not(:disabled) {
+  animation: lesson-chip-tap 0.15s ease-out;
+}
+
+/* 매칭 매치 시 부드러운 fade */
+.lesson-match__card {
+  transition:
+    opacity 0.35s ease,
+    visibility 0.35s ease,
+    background var(--lp-trans),
+    border-color var(--lp-trans),
+    box-shadow var(--lp-trans);
+}
+.lesson-match__card--matched {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: scale(0.92);
+}
+
+/* prefers-reduced-motion 대응 */
+@media (prefers-reduced-motion: reduce) {
+  .lesson-viewer *,
+  .lesson-viewer *::before,
+  .lesson-viewer *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 .lesson-vocab__save {
   background: transparent;
@@ -7118,6 +7270,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   .lesson-practice__diff-text { font-size: 0.95rem; }
   .lesson-practice__chip { padding: 7px 12px; font-size: 0.95rem; }
   .lesson-practice__mode-btn { padding: 5px 10px; font-size: 0.78rem; }
+  .lesson-stepper { gap: 0; margin: 6px -16px 12px; padding: 8px 0 10px; }
+  .lesson-stepper__step { padding: 4px 8px; }
+  .lesson-stepper__icon { font-size: 0.95rem; }
+  .lesson-stepper__label { font-size: 0.6rem; }
 }
 
 /* ========= Conversation Panel ========= */

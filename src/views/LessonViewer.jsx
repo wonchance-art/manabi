@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
@@ -22,6 +22,7 @@ import LessonPractice from '../components/LessonPractice';
 import LessonVocab from '../components/LessonVocab';
 import LessonConversation from '../components/LessonConversation';
 import LessonSummary from '../components/LessonSummary';
+import LessonStepper from '../components/LessonStepper';
 import Spinner from '../components/Spinner';
 import Button from '../components/Button';
 import KanaChart from '../components/KanaChart';
@@ -215,6 +216,26 @@ ${(material.raw_text || '').slice(0, 400)}
   });
   const isCompleted = readingProgress?.is_completed === true;
 
+  // 페이지 진입 stagger — 처음 방문 1회만
+  const [isFresh, setIsFresh] = useState(false);
+  useEffect(() => {
+    if (!id || typeof window === 'undefined') return;
+    const key = `lesson_visited:${id}`;
+    try {
+      if (!localStorage.getItem(key)) {
+        setIsFresh(true);
+        localStorage.setItem(key, '1');
+      }
+    } catch {}
+  }, [id]);
+
+  // 섹션 ref — stepper용
+  const vocabRef = useRef(null);
+  const explainRef = useRef(null);
+  const convRef = useRef(null);
+  const practiceRef = useRef(null);
+  const summaryRef = useRef(null);
+
   // 스크롤 진척 (헤더 sticky 막대)
   const [scrollPct, setScrollPct] = useState(0);
   useEffect(() => {
@@ -255,7 +276,7 @@ ${(material.raw_text || '').slice(0, 400)}
       <div className="lesson-progress-bar-bg" aria-hidden="true">
         <div className="lesson-progress-bar" style={{ width: `${scrollPct}%` }} />
       </div>
-    <div className="page-container lesson-viewer" style={{ maxWidth: 720 }}>
+    <div className="page-container lesson-viewer" style={{ maxWidth: 720 }} data-fresh={isFresh ? '1' : '0'}>
       {/* 헤더 */}
       <header className="lesson-viewer__header">
         <Link href="/lessons" className="lesson-viewer__back">← 강의 목록</Link>
@@ -286,6 +307,25 @@ ${(material.raw_text || '').slice(0, 400)}
         </div>
       )}
 
+      {lessonCode && meta.series !== '카나' && (
+        <LessonStepper
+          steps={[
+            { key: 'vocab', icon: '📚', label: '단어' },
+            { key: 'explain', icon: '💭', label: '정리' },
+            { key: 'conv', icon: '💬', label: '회화' },
+            { key: 'practice', icon: '✍️', label: '미션' },
+            { key: 'summary', icon: '🎯', label: '마무리' },
+          ]}
+          sectionRefs={{
+            vocab: vocabRef,
+            explain: explainRef,
+            conv: convRef,
+            practice: practiceRef,
+            summary: summaryRef,
+          }}
+        />
+      )}
+
       {/* 카나 강의 — 표 먼저 */}
       {meta.series === '카나' && (
         <section className="lesson-section">
@@ -295,7 +335,7 @@ ${(material.raw_text || '').slice(0, 400)}
 
       {/* 오늘의 단어 — 학습 시작 전에 가볍게 훑어보기 */}
       {Array.isArray(lessonCode?.vocab) && lessonCode.vocab.length > 0 && (
-        <section className="lesson-section">
+        <section className="lesson-section" ref={vocabRef}>
           <h2 className="lesson-section__title">📚 오늘의 단어</h2>
           <p className="lesson-section__hint">먼저 가볍게 훑어보세요. 본문에서 다시 만납니다.</p>
           <LessonVocab
@@ -309,7 +349,7 @@ ${(material.raw_text || '').slice(0, 400)}
       )}
 
       {/* 정리 (예문 + 설명 통합) */}
-      <section className="lesson-section">
+      <section className="lesson-section" ref={explainRef}>
         {loadingExpl && !explanation && !lessonCode?.sections ? (
           <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)' }}>
             ⏳ 한국어 설명 생성 중...
@@ -335,7 +375,7 @@ ${(material.raw_text || '').slice(0, 400)}
 
       {/* 실전 대화 — 자동재생 + 한국어 가리기 토글 */}
       {conversationScript && (
-        <section className="lesson-section">
+        <section className="lesson-section" ref={convRef}>
           <h2 className="lesson-section__title">💬 실전 대화</h2>
           <LessonConversation
             turns={conversationScript}
@@ -348,7 +388,7 @@ ${(material.raw_text || '').slice(0, 400)}
       )}
 
       {/* 직접 만들기 — practice 있으면 한→일 미션, 없으면 AI 자유 입력 */}
-      <section className="lesson-section">
+      <section className="lesson-section" ref={practiceRef}>
         <h2 className="lesson-section__title">✍️ 직접 만들기</h2>
 
         {Array.isArray(lessonCode?.practice) && lessonCode.practice.length > 0 ? (
@@ -427,7 +467,7 @@ ${(material.raw_text || '').slice(0, 400)}
 
       {/* 강의 마무리 — 요약 + 다음 미리보기 + 완료 CTA */}
       {lessonCode ? (
-        <section className="lesson-section">
+        <section className="lesson-section" ref={summaryRef}>
           <LessonSummary
             lesson={lessonCode}
             lessonId={id}
