@@ -211,9 +211,10 @@ export default [
       },
       {
         heading: "양보와 반박 — certes... mais의 기술",
+        pattern: "Certes ..., mais ... (양보 → 반박)",
         body:
-          "프랑스식 논증의 꽃은 **concession(양보) 후 réfutation(반박)**이에요. 상대 논거를 먼저 인정하는 척 충분히 펼친 다음, 더 강한 논거로 뒤집는 거죠. 신호탄은 **certes**(물론, 분명히)예요. 프랑스어 텍스트에서 certes가 보이면 100% 뒤에 mais나 cependant이 따라온다고 봐도 됩니다.\n\n" +
-          "반박의 강도를 조절하는 연결어들도 구별해두세요. **cependant/toutefois**(그러나 — 중립적), **néanmoins**(그럼에도 불구하고), **en revanche**(반면에 — 대조), **or**(그런데 — 논리 전환의 결정적 한 수). 특히 or는 삼단논법에서 새 전제를 들이미는 접속사로, 한국어 '그런데'보다 훨씬 논리적인 무게를 가져요.",
+          "프랑스식 논증의 꽃은 **양보(concession) 후 반박(réfutation)**이에요. 신호탄 **certes**(물론)가 보이면 100% 뒤에 mais나 cependant이 따라온다고 봐도 됩니다.\n\n" +
+          "반박 강도 조절: **cependant/toutefois**(중립), **néanmoins**(그럼에도), **en revanche**(대조), **or**(논리 전환의 결정적 한 수 — 삼단논법에서 새 전제를 들이미는 접속사예요).",
         examples: [
           { fr: "Certes, le numérique facilite l'accès au savoir. Mais cet accès reste profondément inégal.", ko: "물론 디지털은 지식 접근을 쉽게 해준다. 그러나 그 접근은 여전히 극도로 불평등하다.", note: "certes... mais — 양보-반박의 골격" },
           { fr: "Si l'on ne peut nier les avantages de cette réforme, il n'en demeure pas moins qu'elle fragilise les plus précaires.", ko: "이 개혁의 장점을 부정할 수는 없다 해도, 그것이 가장 취약한 이들을 흔든다는 사실에는 변함이 없다.", note: "il n'en demeure pas moins que — C1 작문의 고득점 표현" },
@@ -223,9 +224,10 @@ export default [
       },
       {
         heading: "결론 — 닫고, 열기",
+        pattern: "결론 = bilan (최종 답변) + ouverture (더 넓은 질문으로 열기)",
         body:
-          "프랑스식 결론은 두 동작이에요. **bilan**(요약·답변 — problématique에 대한 최종 답을 명확히) 그리고 **ouverture**(개방 — 논의를 더 넓은 질문으로 열며 끝맺기). 요약만 하고 끝나면 닫힌 글, 새 주제를 갑자기 던지면 산만한 글 — 기존 논의에서 자연스럽게 이어지는 한 걸음이 좋은 ouverture예요.\n\n" +
-          "결론 신호어는 **en définitive, en somme, au terme de cette réflexion**(이 성찰의 끝에서) 등이 있어요. 구어적인 au final이나 단순 나열의 finalement보다 격이 높아요.",
+          "요약만 하면 닫힌 글, 새 주제를 갑자기 던지면 산만한 글 — 기존 논의에서 자연스럽게 이어지는 한 걸음이 좋은 **ouverture**예요.\n\n" +
+          "결론 신호어는 **en définitive, en somme, au terme de cette réflexion** 등 — 구어적인 au final이나 단순 나열의 finalement보다 격이 높아요.",
         examples: [
           { fr: "En définitive, le télétravail apparaît moins comme une révolution que comme un révélateur.", ko: "결국 재택근무는 혁명이라기보다 (기존 문제를 드러내는) 리트머스지에 가까워 보인다.", note: "moins comme A que comme B — 세련된 결론 구문" },
           { fr: "Reste à savoir si ces évolutions profiteront au plus grand nombre.", ko: "이 변화가 다수에게 이로울지는 두고 볼 일이다.", note: "reste à savoir si — ouverture의 단골 마무리" },
