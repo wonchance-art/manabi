@@ -359,9 +359,10 @@ export default [
       },
       {
         heading: "최상급 — 비교급에 le/la/les만 얹기",
+        pattern: "le/la/les + plus/moins + 형용사 (+ de ~중에서)",
         body:
-          "최상급은 비교급 앞에 **정관사**를 붙이면 돼요: le/la/les plus ...(가장 ~한), le/la/les moins ...(가장 덜 ~한).\n\n" +
-          "'~중에서'는 **de**로 표현해요: la plus grande ville **de** Corée(한국**에서** 가장 큰 도시). 영어 in Korea의 in에 끌려 dans을 쓰지 않도록 주의하세요.",
+          "최상급은 비교급 앞에 **정관사**를 붙이면 돼요: le plus ...(가장 ~한), le moins ...(가장 덜 ~한).\n\n" +
+          "'~중에서'는 **de**로 표현해요: la plus grande ville **de** Corée. 영어 in Korea의 in에 끌려 dans을 쓰지 않도록 주의하세요.",
         examples: [
           { fr: "C'est le plus beau musée de Paris.", ipa: "[sɛ lə ply bo myze də paʁi]", ko: "이곳은 파리에서 가장 아름다운 미술관이에요." },
           { fr: "Séoul est la plus grande ville de Corée.", ipa: "[seul ɛ la ply gʁɑ̃d vil də kɔʁe]", ko: "서울은 한국에서 가장 큰 도시예요." },
@@ -371,10 +372,10 @@ export default [
       },
       {
         heading: "meilleur vs mieux — better가 둘로 갈라져요",
+        pattern: "bon(좋은) → meilleur · bien(잘) → mieux",
         body:
-          "bon(좋은)과 bien(잘)은 plus를 못 써요. 전용 비교급이 따로 있어요.\n\n" +
-          "**bon(좋은, 형용사) → meilleur** : Ce café est meilleur.(이 커피가 더 맛있어요.)\n**bien(잘, 부사) → mieux** : Tu parles mieux.(너 말이 더 늘었어.)\n\n" +
-          "구별법은 원급으로 되돌려보기 — '좋은(bon)'이 어울리면 meilleur, '잘(bien)'이 어울리면 mieux예요. 최상급도 그대로: le meilleur(최고의), le mieux(가장 잘).",
+          "bon과 bien은 plus를 못 쓰고 **전용 비교급**이 따로 있어요. Ce café est meilleur. / Tu parles mieux.\n\n" +
+          "구별법은 원급으로 되돌려보기 — '좋은(bon)'이 어울리면 meilleur, '잘(bien)'이 어울리면 mieux. 최상급도 그대로 le meilleur, le mieux예요.",
         table: {
           caption: "불규칙 비교급",
           headers: ["원급", "비교급", "최상급"],
