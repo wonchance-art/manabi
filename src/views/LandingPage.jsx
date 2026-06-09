@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../lib/AuthContext';
@@ -30,9 +30,14 @@ const FEATURES = [
 ];
 
 export default function LandingPage() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
   const handleCTA = () => router.push(user ? '/materials' : '/auth');
+
+  // 로그인 사용자는 랜딩을 건너뛰고 홈으로
+  useEffect(() => {
+    if (!loading && user) router.replace('/home');
+  }, [loading, user, router]);
 
   // 데모 인터랙션: 첫 방문자가 토큰 클릭해서 AI 분석을 체감
   const [demoSelectedIdx, setDemoSelectedIdx] = useState(0);
