@@ -390,10 +390,11 @@ export default [
       },
       {
         heading: "ce qui ..., c'est ... — 뜸 들이고 공개하기",
+        pattern: "Ce qui / Ce que / Ce dont ..., c'est ...",
+        patternKo: "궁금증을 먼저 만들고 답을 뒤에 공개",
         body:
-          "또 하나의 강조법은 **궁금증을 먼저 만들고 답을 뒤에 공개**하는 구조예요. B1에서 배운 ce qui/ce que가 주인공이에요.\n\n" +
-          "**Ce qui** me plaît, **c'est** son humour.(내 마음에 드는 것, 그건 그의 유머예요.) — '내 마음에 드는 것'이라고 뜸을 들인 뒤 쉼표 너머에서 답을 공개하죠. 강조 대상이 절의 주어면 ce qui, 목적어면 ce que, de 결합 동사면 ce dont을 써요.\n\n" +
-          "회화에서는 거꾸로 뒤에 붙이는 변형도 많이 들려요: C'est génial, **ce que tu as fait**(네가 한 거, 정말 멋지다).",
+          "**Ce qui** me plaît, **c'est** son humour.(내 마음에 드는 것, 그건 그의 유머예요.) — 뜸을 들인 뒤 쉼표 너머에서 답을 공개해요. 절의 주어면 ce qui, 목적어면 ce que, de 결합이면 ce dont.\n\n" +
+          "회화에서는 거꾸로 뒤에 붙이는 변형도 많이 들려요: C'est génial, **ce que tu as fait**.",
         examples: [
           { fr: "Ce qui m'inquiète, c'est son silence.", ko: "걱정되는 건 그의 침묵이에요." },
           { fr: "Ce que je préfère en automne, c'est la lumière.", ko: "가을에 내가 제일 좋아하는 건 빛이에요." },
@@ -403,9 +404,11 @@ export default [
       },
       {
         heading: "일상 회화의 가벼운 강조 — 분리 구문",
+        pattern: "Moi, je ... · Le café, j'adore ça",
+        patternKo: "강조할 말을 앞뒤로 빼고 대명사로 받기",
         body:
-          "격식은 떨어지지만 회화에서 더 흔한 강조법도 있어요. 강조할 말을 문장 앞이나 뒤로 빼고 대명사로 받는 **분리(dislocation)** 구문이에요.\n\n" +
-          "**Moi, je** pense que...(나는 말이야, ~라고 생각해), Le café, **j'adore ça**(커피? 완전 좋아하지). 프랑스인의 입버릇 Moi, je...가 바로 이거예요. 한국어의 '~는 말이야/말인데' 주제화와 감각이 비슷해서 우리에게는 오히려 자연스러운 구조입니다.",
+          "격식은 떨어지지만 회화에서 더 흔한 **분리(dislocation)** 구문이에요. 프랑스인의 입버릇 Moi, je...가 바로 이거예요.\n\n" +
+          "한국어의 '~는 말이야/말인데' 주제화와 감각이 비슷해서 우리에게는 오히려 자연스러운 구조입니다.",
         examples: [
           { fr: "Moi, je ne suis pas d'accord.", ko: "나는 (말이야) 동의 안 해." },
           { fr: "Cette série, tout le monde en parle.", ko: "그 드라마, 다들 얘기하더라." },
