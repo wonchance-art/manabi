@@ -490,9 +490,10 @@ export default [
     sections: [
       {
         heading: "aller(가다) — 최강 불규칙 동사",
+        pattern: "je vais · tu vas · il va · nous allons · vous allez · ils vont",
         body:
-          "**aller**(가다)는 -er로 끝나지만 1군이 아니에요. 활용이 제멋대로인 완전 불규칙 동사 — 그만큼 많이 쓰여서 닳고 닳은 동사라는 뜻이기도 해요.\n\n" +
-          "인사말 Ça va ?(잘 지내?)의 va도 사실 aller의 3인칭이에요. 이미 여러분은 aller를 쓰고 있었던 거죠.",
+          "**aller**(가다)는 -er로 끝나지만 1군이 아닌 완전 불규칙 동사예요 — 그만큼 많이 쓰여서 닳고 닳았다는 뜻이죠.\n\n" +
+          "인사말 Ça va ?의 va도 사실 aller의 3인칭이에요. 이미 여러분은 aller를 쓰고 있었던 거죠.",
         table: {
           caption: "aller 직설법 현재",
           headers: ["인칭", "형태", "발음"],
@@ -512,10 +513,10 @@ export default [
       },
       {
         heading: "aller à — 그리고 의무 축약 au / aux",
+        pattern: "à + le → au · à + les → aux (à la / à l'는 그대로)",
         body:
-          "'~에 가다'는 aller **à**예요. 그런데 à 뒤에 정관사가 오면 **반드시 축약**해야 해요.\n\n" +
-          "**à + le = au** / **à + les = aux** [o]\n\n" +
-          "à la와 à l'는 그대로예요. 영어 to the처럼 따로 쓰는 선택지는 없어요 — à le라고 쓰면 그냥 틀린 문장이에요.",
+          "'~에 가다'는 aller **à**인데, à 뒤에 정관사 le/les가 오면 **반드시 축약**해야 해요.\n\n" +
+          "영어 to the처럼 따로 쓰는 선택지는 없어요 — à le라고 쓰면 그냥 틀린 문장이에요.",
         table: {
           caption: "à + 정관사 축약",
           headers: ["조합", "결과", "예시"],
@@ -535,9 +536,11 @@ export default [
       },
       {
         heading: "futur proche — aller + 원형 = '~할 거예요'",
+        pattern: "aller 현재형 + 동사 원형 → 가까운 미래",
+        patternKo: "'~할 거예요' — 두 번째 동사는 원형 그대로",
         body:
-          "aller의 진짜 위력은 여기 있어요. **aller 현재형 + 동사 원형**이면 가까운 미래를 표현할 수 있어요. 이걸 **futur proche**(근접 미래)라고 해요.\n\n" +
-          "Je vais manger.(나 먹을 거야.) — 동사 두 개째(manger)는 활용하지 않고 원형 그대로 두는 게 포인트예요. 일상 회화의 미래 표현은 대부분 이걸로 해결돼요. 아직 단순 미래 시제를 안 배웠어도 미래를 말할 수 있게 되는 거죠.",
+          "**aller 현재형 + 동사 원형**이면 가까운 미래(**futur proche**)를 표현해요. Je vais manger.(나 먹을 거야.)\n\n" +
+          "두 번째 동사는 활용하지 않고 **원형 그대로** 두는 게 포인트예요. 일상 회화의 미래 표현은 대부분 이걸로 해결돼요.",
         examples: [
           { fr: "Je vais manger.", ipa: "[ʒə vɛ mɑ̃ʒe]", ko: "나 (이제) 먹을 거야." },
           { fr: "Tu vas travailler demain ?", ipa: "[ty va tʁavaje dəmɛ̃]", ko: "너 내일 일할 거야?" },
