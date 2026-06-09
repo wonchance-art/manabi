@@ -51,11 +51,10 @@ export default [
       },
       {
         heading: "직설법과 갈리는 미묘한 경계 — penser que의 두 얼굴",
+        pattern: "Je pense que + 직설법 · Je ne pense pas que + 접속법",
         body:
-          "같은 동사가 **긍정문이냐 부정·의문문이냐에 따라 법이 갈리는** 경우가 있어요. 대표가 penser que, croire que, trouver que예요.\n\n" +
-          "**Je pense qu'il a raison.**(직설법) — 그가 옳다고 '사실처럼' 제시.\n" +
-          "**Je ne pense pas qu'il ait raison.**(접속법) — 부정하는 순간 que절은 사실이 아니라 의심의 대상이 되죠.\n\n" +
-          "도치 의문문(Penses-tu qu'il **ait** raison ?)도 같은 원리로 접속법이 격식이에요. il est certain/sûr/évident que(직설법) ↔ il n'est pas certain que(접속법)도 같은 패턴입니다.",
+          "penser/croire/trouver que는 **긍정문이냐 부정·의문문이냐에 따라 법이 갈려요**. 부정하는 순간 que절은 사실이 아니라 의심의 대상이 되니까요.\n\n" +
+          "도치 의문문(Penses-tu qu'il **ait** raison ?)도 같은 원리로 접속법이 격식이에요. il est certain que(직설법) ↔ il n'est pas certain que(접속법)도 같은 패턴입니다.",
         examples: [
           { fr: "Je crois que c'est une bonne idée.", ko: "좋은 생각인 것 같아요.", note: "긍정 → 직설법" },
           { fr: "Je ne crois pas que ce soit une bonne idée.", ko: "좋은 생각이라고는 생각하지 않아요.", note: "부정 → 접속법" },
@@ -66,9 +65,10 @@ export default [
       },
       {
         heading: "최상급과 유일성 뒤의 접속법",
+        pattern: "최상급 / le seul / le premier + 관계절 → 접속법",
         body:
-          "하나 더, 격식 프랑스어의 멋이 드러나는 자리: **최상급이나 유일성 표현(le seul, le premier, le dernier...) 뒤의 관계절**에는 접속법이 자주 와요.\n\n" +
-          "C'est le meilleur film que j'**aie** vu(내가 본 최고의 영화예요) — '내가 본 것 중에서'라는 주관적 평가의 테두리 안에 있다는 신호예요. 직설법(que j'ai vu)도 틀리지는 않지만, 접속법이 더 다듬어진 인상을 줘요.",
+          "**최상급이나 유일성 표현 뒤의 관계절**에는 접속법이 자주 와요. C'est le meilleur film que j'**aie** vu — '내가 본 것 중에서'라는 주관적 평가의 테두리 신호예요.\n\n" +
+          "직설법(que j'ai vu)도 틀리지는 않지만, 접속법이 더 다듬어진 인상을 줘요.",
         examples: [
           { fr: "C'est le meilleur restaurant que je connaisse.", ko: "제가 아는 최고의 레스토랑이에요." },
           { fr: "Tu es la seule personne qui me comprenne.", ko: "너는 나를 이해해 주는 유일한 사람이야." },
