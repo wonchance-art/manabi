@@ -375,9 +375,11 @@ export default [
       },
       {
         heading: "발음이 바뀌는 순간 — grand vs grande",
+        pattern: "grand [gʁɑ̃] → grande [gʁɑ̃d]",
+        patternKo: "여성형 -e는 잠자던 끝 자음을 깨우는 스위치",
         body:
-          "여기에 발음 마법이 숨어 있어요. 남성형 grand은 끝 d가 묵음이라 [gʁɑ̃]. 그런데 여성형 grande는 **-e가 앞의 d를 깨워서** [gʁɑ̃d]가 돼요.\n\n" +
-          "즉 여성형의 -e 자체는 소리가 없지만, **잠자던 끝 자음을 살리는 스위치** 역할을 해요. petit[pəti]/petite[pətit], français[fʁɑ̃sɛ]/française[fʁɑ̃sɛz] 전부 같은 원리예요. 듣기에서 남/여를 구별하는 결정적 단서가 바로 이 끝 자음이에요.",
+          "남성형 grand은 끝 d가 묵음이라 [gʁɑ̃]인데, 여성형 grande는 **-e가 앞의 d를 깨워서** [gʁɑ̃d]가 돼요. petit/petite, français/française 전부 같은 원리예요.\n\n" +
+          "듣기에서 남/여를 구별하는 결정적 단서가 바로 이 **끝 자음**이에요.",
         examples: [
           { fr: "Il est grand.", ipa: "[il ɛ gʁɑ̃]", ko: "그는 키가 커요.", note: "d 묵음" },
           { fr: "Elle est grande.", ipa: "[ɛl ɛ gʁɑ̃d]", ko: "그녀는 키가 커요.", note: "e가 d를 살려요" },
@@ -387,9 +389,10 @@ export default [
       },
       {
         heading: "위치 — 형용사는 기본적으로 명사 뒤",
+        pattern: "명사 + 형용사 (un vin rouge)",
         body:
-          "영어와 결정적으로 다른 점: 프랑스어 형용사는 **원칙적으로 명사 뒤**에 와요.\n\n" +
-          "un vin **rouge**(레드 와인, 직역: 와인 빨간), une voiture **française**(프랑스 차). 색깔·국적·모양 등 대부분의 형용사가 뒤에 붙어요.",
+          "프랑스어 형용사는 **원칙적으로 명사 뒤**에 와요.\n\n" +
+          "un vin **rouge**(직역: 와인 빨간), une voiture **française**. 색깔·국적·모양 등 대부분의 형용사가 뒤에 붙어요.",
         examples: [
           { fr: "un vin rouge", ipa: "[œ̃ vɛ̃ ʁuʒ]", ko: "레드 와인", note: "명사 + 형용사 어순" },
           { fr: "une voiture française", ipa: "[yn vwatyʁ fʁɑ̃sɛz]", ko: "프랑스 자동차" },
