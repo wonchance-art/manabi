@@ -91,9 +91,10 @@ export default [
     sections: [
       {
         heading: "avoir 활용 — 리에종 주의보",
+        pattern: "j'ai · tu as · il a · nous avons · vous avez · ils ont",
         body:
-          "**avoir**(가지다)는 être와 함께 프랑스어의 양대 기둥이에요. 소유를 말할 뿐 아니라, 나중에 배울 과거시제(passé composé)의 재료도 되는 동사라 활용을 입에 완전히 붙여야 해요.\n\n" +
-          "발음 포인트: je + ai는 **j'ai**[ʒe]로 축약돼요. 그리고 nous avons, vous avez, ils ont은 모두 리에종으로 [z] 소리가 끼어들어요 — '누자봉, 부자베, 일종'.",
+          "**avoir**(가지다)는 être와 함께 프랑스어의 양대 기둥이에요. 나중에 배울 과거시제(passé composé)의 재료도 되니 활용을 입에 완전히 붙여야 해요.\n\n" +
+          "발음 포인트: je + ai는 **j'ai**[ʒe]로 축약되고, nous avons, vous avez, ils ont은 모두 리에종으로 [z]가 끼어들어요 — '누자봉, 부자베, 일종'.",
         table: {
           caption: "avoir 직설법 현재",
           headers: ["인칭", "형태", "발음"],
@@ -115,10 +116,11 @@ export default [
       },
       {
         heading: "avoir 숙어 — 배고픔도 나이도 '가지는' 언어",
+        pattern: "avoir + faim / soif / chaud / froid / sommeil / peur / ... ans",
+        patternKo: "상태와 나이는 '가지는' 것",
         body:
-          "프랑스어는 몸의 상태와 나이를 **avoir로** 표현해요. 직역하면 '나는 배고픔을 가지고 있다', '나는 20년을 가지고 있다'가 되는 식이죠.\n\n" +
-          "**avoir faim**(배고프다) / **avoir soif**(목마르다) / **avoir chaud**(덥다) / **avoir froid**(춥다) / **avoir sommeil**(졸리다) / **avoir peur**(무섭다) / **avoir ... ans**(~살이다)\n\n" +
-          "이때 faim, soif 등은 관사 없이 통째로 굳은 숙어예요. 분석하지 말고 덩어리로 외우세요.",
+          "프랑스어는 몸의 상태와 나이를 **avoir로** 표현해요. 직역하면 '배고픔을 가지고 있다', '20년을 가지고 있다'가 되는 식이죠.\n\n" +
+          "이때 faim, soif 등은 **관사 없이** 통째로 굳은 숙어예요. 분석하지 말고 덩어리로 외우세요.",
         examples: [
           { fr: "J'ai faim.", ipa: "[ʒe fɛ̃]", ko: "배고파요." },
           { fr: "Tu as soif ?", ipa: "[ty a swaf]", ko: "목말라?" },
@@ -129,9 +131,10 @@ export default [
       },
       {
         heading: "il y a — '~이 있다'의 공식",
+        pattern: "il y a + 명사 → ~이 있다 (단수·복수 동일)",
         body:
-          "avoir가 들어간 최중요 표현 하나 더: **il y a**(~이 있다). 영어 there is/there are에 해당하는데, 프랑스어는 단수든 복수든 **형태가 il y a 하나**라서 오히려 쉬워요.\n\n" +
-          "발음은 [ilja] '일리야' — 세 단어지만 한 덩어리로 굴러가요. 구어에서는 [ja] '야'로까지 줄어들기도 해요.",
+          "영어 there is/there are에 해당하지만, 단수든 복수든 **형태가 il y a 하나**라서 오히려 쉬워요.\n\n" +
+          "발음은 [ilja] '일리야' — 세 단어지만 한 덩어리로 굴러가요. 구어에서는 [ja]까지 줄어들기도 해요.",
         examples: [
           { fr: "Il y a un café ici.", ipa: "[ilja œ̃ kafe isi]", ko: "여기 카페가 하나 있어요." },
           { fr: "Il y a des livres sur la table.", ipa: "[ilja de livʁ syʁ la tabl]", ko: "탁자 위에 책들이 있어요.", note: "복수여도 il y a 그대로" },
