@@ -149,6 +149,7 @@ export default [
       },
       {
         heading: "나머지 모음 빠르게 정리",
+        pattern: "oi = [wa] · au/eau = [o] · ai/ei = [ɛ] · eu = [ø]",
         body:
           "**oi [wa]** — '와'. trois(3), moi(나).\n" +
           "**eu [ø]/[œ]** — '외'를 짧게. deux(2), sœur.\n" +
@@ -177,10 +178,10 @@ export default [
     sections: [
       {
         heading: "대원칙 — 단어 끝 자음은 읽지 않는다",
+        pattern: "단어 끝 자음 → 묵음 (예외: c, r, f, l = CaReFuL)",
         body:
-          "프랑스어 읽기의 가장 중요한 규칙: **단어 끝의 자음은 대부분 묵음**이에요. Paris는 '파리스'가 아니라 '파히', grand은 '그랑드'가 아니라 '그헝'.\n\n" +
-          "예외적으로 끝에서도 발음되는 자음은 **c, r, f, l** 네 개 — 영어 단어 **CaReFuL**로 외우세요. (단 -er로 끝나는 동사의 r은 묵음이에요.)\n\n" +
-          "단어 끝 **e**(악상 없는)도 거의 항상 묵음이에요. 대신 그 앞의 자음을 살려주는 역할을 해요: petit [pəti] vs petite [pətit].",
+          "**단어 끝의 자음은 대부분 묵음**이에요. Paris는 '파히', grand은 '그헝'. 끝에서도 발음되는 자음은 **c, r, f, l** — 영어 단어 **CaReFuL**로 외우세요. (단 -er 동사의 r은 묵음.)\n\n" +
+          "단어 끝 **e**(악상 없는)도 거의 항상 묵음이지만, 그 앞의 자음을 살려줘요: petit [pəti] vs petite [pətit].",
         examples: [
           { fr: "Paris", ipa: "[paʁi]", ko: "파리", note: "끝 s 묵음" },
           { fr: "beaucoup", ipa: "[boku]", ko: "많이", note: "끝 p 묵음" },
@@ -192,9 +193,10 @@ export default [
       },
       {
         heading: "h는 언제나 묵음",
+        pattern: "h → 항상 묵음 (무음 h: l'hôtel · 유음 h: le héros)",
         body:
-          "프랑스어의 **h는 단어 어디에 있든 절대 발음하지 않아요**. hôtel은 '호텔'이 아니라 '오텔', huit(8)은 '위트'.\n\n" +
-          "다만 h에는 두 종류가 있어요. **무음 h**는 없는 글자 취급이라 앞 단어와 축약·연음이 일어나고(l'hôtel), **유음 h**는 소리는 안 나지만 자음처럼 행동해서 축약을 막아요(le héros). 사전에 †나 * 표시로 구분되는데, A0에서는 'héros처럼 축약 안 되는 h도 있다' 정도만 알면 충분해요.",
+          "**h는 단어 어디에 있든 절대 발음하지 않아요**. hôtel은 '오텔', huit(8)은 '위트'.\n\n" +
+          "다만 **무음 h**는 없는 글자 취급이라 축약·연음이 일어나고(l'hôtel), **유음 h**는 자음처럼 행동해 축약을 막아요(le héros). A0에서는 '축약 안 되는 h도 있다' 정도만 알면 충분해요.",
         examples: [
           { fr: "l'hôtel", ipa: "[lotɛl]", ko: "호텔", note: "무음 h — le+hôtel이 l'hôtel로 축약" },
           { fr: "l'heure", ipa: "[lœʁ]", ko: "시간, 시각" },
