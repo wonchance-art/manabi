@@ -219,9 +219,9 @@ export default [
     sections: [
       {
         heading: "속담 — 대화에 양념처럼 박히는 지혜",
+        pattern: "Qui vivra verra = 두고 보자 · Petit à petit, l'oiseau fait son nid = 티끌 모아 태산",
         body:
-          "프랑스어 대화와 글에는 속담(proverbe)이 수시로, 종종 **반 토막만** 인용돼요. Qui vivra...라고만 해도 듣는 사람이 verra를 채우죠. 그래서 속담은 통째로 알아야 반 토막도 알아들어요.\n\n" +
-          "최빈출만 추리면: **Qui vivra verra**(살다 보면 알게 되리라 — 두고 보자), **Petit à petit, l'oiseau fait son nid**(조금씩, 새는 둥지를 짓는다 — 티끌 모아 태산), **Il ne faut pas vendre la peau de l'ours avant de l'avoir tué**(곰을 잡기 전에 가죽부터 팔지 마라 — 김칫국부터 마시지 마라), **C'est en forgeant qu'on devient forgeron**(쇠를 두드려야 대장장이가 된다 — 하면서 는다), **Après la pluie, le beau temps**(비 온 뒤에 갠 하늘 — 고생 끝에 낙).\n\n" +
+          "속담은 종종 **반 토막만** 인용돼요(Qui vivra...만 말해도 verra를 채우죠). 그래서 통째로 알아야 반 토막도 알아들어요. 그 외 최빈출: vendre la peau de l'ours(김칫국), C'est en forgeant...(하면서 는다), Après la pluie, le beau temps(고생 끝에 낙).\n\n" +
           "한국 속담과 그림은 달라도 뜻이 포개지는 짝이 많아요. 이 대응을 만들어두면 암기도 번역도 쉬워져요.",
         examples: [
           { fr: "Ne vendons pas la peau de l'ours : attendons les résultats.", ko: "김칫국부터 마시지 말자. 결과를 기다리자.", note: "속담을 반만 잘라 동사를 바꿔 쓰는 전형적 활용" },
@@ -232,12 +232,10 @@ export default [
       },
       {
         heading: "라퐁텐의 우화 — 프랑스인의 공통 교과서",
+        pattern: "cigale = 베짱이형 · fourmi = 개미형 · «La raison du plus fort est toujours la meilleure»",
         body:
-          "17세기 라퐁텐(La Fontaine)의 우화는 프랑스 초등학교에서 전 국민이 암송하는 텍스트예요. 그래서 우화의 구절과 캐릭터가 **성인들의 대화와 언론에 암호처럼** 돌아다녀요.\n\n" +
-          "**《매미와 개미》(La Cigale et la Fourmi)** — cigale(베짱이처럼 노는 사람)과 fourmi(개미처럼 모으는 사람)는 경제 기사의 단골 은유예요. 우화 속 개미의 차가운 대답 **«Eh bien ! dansez maintenant.»**(그럼 이제 춤추시지요)는 '자업자득'의 시그니처 인용구고요.\n\n" +
-          "**《까마귀와 여우》(Le Corbeau et le Renard)** — 아첨에 넘어가 치즈를 떨어뜨린 까마귀. 아첨꾼을 경계하라는 맥락에서 인용돼요.\n\n" +
-          "**《늑대와 어린 양》(Le Loup et l'Agneau)** — 첫 줄 **«La raison du plus fort est toujours la meilleure»**(강자의 논리가 언제나 이긴다)는 국제 정치 기사 제목의 단골이에요.\n\n" +
-          "**《토끼와 거북이》** — 교훈 **«Rien ne sert de courir ; il faut partir à point»**(달려봐야 소용없다, 제때 출발해야 한다)도 통째로 인용되는 명구예요.",
+          "라퐁텐의 우화는 전 국민이 초등학교에서 암송하는 텍스트라, 구절과 캐릭터가 **대화와 언론에 암호처럼** 돌아다녀요. 《매미와 개미》의 cigale/fourmi는 경제 기사의 단골 은유이고, «Eh bien ! dansez maintenant.»는 자업자득의 시그니처 인용구예요.\n\n" +
+          "《늑대와 어린 양》 첫 줄 «La raison du plus fort...»(강자의 논리가 언제나 이긴다)는 국제 정치 기사 제목의 단골, 《토끼와 거북이》의 «Rien ne sert de courir ; il faut partir à point»도 통째로 인용되는 명구예요.",
         examples: [
           { fr: "En matière d'épargne, il y a les cigales et les fourmis.", ko: "저축에 관한 한, 세상에는 베짱이형과 개미형이 있다.", note: "경제 기사의 전형적 라퐁텐 암시" },
           { fr: "Tirer les marrons du feu, voilà ce qu'il a fait pour son chef.", ko: "불 속의 밤을 대신 꺼내준 것 — 그가 상사를 위해 한 일이 바로 그거다.", note: "《원숭이와 고양이》에서 온 표현. 남 좋은 일에 위험을 무릅쓰다" },
