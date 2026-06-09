@@ -128,6 +128,7 @@ export default [
       },
       {
         heading: "꼭 외워야 할 불규칙 6총사",
+        pattern: "être → sois · avoir → aie · aller → aille · faire → fasse · pouvoir → puisse · savoir → sache",
         body:
           "자주 쓰는 동사일수록 불규칙이에요. 이 여섯 개는 사용 빈도가 압도적이니 표째로 암기하세요.\n\n" +
           "être와 avoir는 어미까지 특이하고, aller와 vouloir는 nous/vous에서 어간이 바뀌는 점(aille/allions, veuille/voulions)을 조심하세요.",
@@ -150,12 +151,9 @@ export default [
       },
       {
         heading: "접속법을 부르는 표현 — 필요·바람·감정·의심",
+        pattern: "il faut que / vouloir que / être content que / douter que + 접속법",
         body:
-          "어떤 표현 뒤에서 접속법이 나오는지 묶어서 보면 패턴이 보여요. 전부 '사실 보고'가 아니라 '머릿속 평가'라는 공통점이 있어요.\n\n" +
-          "**필요·의무**: il faut que, il est nécessaire que\n" +
-          "**바람·요구**: vouloir que, souhaiter que, demander que\n" +
-          "**감정**: être content/triste/désolé que, avoir peur que, c'est dommage que\n" +
-          "**의심·부정**: douter que, je ne pense pas que, il est possible que\n\n" +
+          "**필요·의무**(il faut que), **바람·요구**(vouloir que, demander que), **감정**(être content que, c'est dommage que), **의심·부정**(douter que, je ne pense pas que) — 전부 '머릿속 평가'라는 공통점이 있어요.\n\n" +
           "이 중에서도 **il faut que + 접속법**은 일상 회화 최고 빈도 패턴이에요. 여기서부터 입에 붙이세요.",
         examples: [
           { fr: "Il faut que je parte maintenant.", ko: "저 이제 가야 해요." },
