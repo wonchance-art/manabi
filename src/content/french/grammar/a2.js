@@ -102,9 +102,10 @@ export default [
     sections: [
       {
         heading: "어떤 동사가 être를 고를까 — 이동과 상태변화",
+        pattern: "이동·상태변화 동사 → être 현재형 + 과거분사 (Je suis allé)",
         body:
-          "대부분의 동사는 avoir를 조동사로 쓰지만, **한 줌의 동사들은 être**를 써요: Je **suis** allé(갔어요), Elle **est** née(태어났어요).\n\n" +
-          "공통점은 **장소의 이동이나 상태의 변화**예요. aller(가다)/venir(오다), arriver(도착하다)/partir(떠나다), entrer(들어가다)/sortir(나가다), monter(올라가다)/descendre(내려가다), naître(태어나다)/mourir(죽다), rester(머물다), tomber(넘어지다), retourner(돌아가다), passer(들르다) — 보다시피 대부분 반의어 짝이라 쌍으로 외우면 효율적이에요.",
+          "대부분의 동사는 avoir를 쓰지만, **이동·상태변화를 나타내는 한 줌의 동사들은 être**를 써요.\n\n" +
+          "aller/venir, arriver/partir, entrer/sortir, monter/descendre, naître/mourir, rester, tomber, retourner, passer — 대부분 **반의어 짝**이라 쌍으로 외우면 효율적이에요.",
         examples: [
           { fr: "Je suis allé au cinéma.", ipa: "[ʒə sɥizale o sinema]", ko: "저는 영화관에 갔어요. (남성 화자)" },
           { fr: "Elle est partie à huit heures.", ipa: "[ɛl ɛ paʁti a ɥitœʁ]", ko: "그녀는 8시에 떠났어요." },
@@ -115,10 +116,10 @@ export default [
       },
       {
         heading: "결정적 차이 — 과거분사가 주어에 성수 일치",
+        pattern: "être + 과거분사 → 주어에 성수 일치 (allé / allée / allés / allées)",
         body:
-          "être를 조동사로 쓰면 새 규칙이 따라와요. **과거분사가 형용사처럼 주어의 성·수에 일치**해요.\n\n" +
-          "Il est all**é** / Elle est all**ée** / Ils sont all**és** / Elles sont all**ées**\n\n" +
-          "être 뒤의 과거분사는 형용사 대접을 받는다고 생각하면 자연스러워요. Elle est grande에서 grande가 여성형이 되듯, Elle est allée에서 allée도 여성형이 되는 거예요.",
+          "être를 조동사로 쓰면 **과거분사가 형용사처럼 주어의 성·수에 일치**해요.\n\n" +
+          "Elle est grande에서 grande가 여성형이 되듯, Elle est all**ée**에서 allée도 여성형이 되는 거예요.",
         table: {
           caption: "aller의 passé composé — 성수 일치",
           headers: ["주어", "형태", "발음"],
@@ -138,9 +139,10 @@ export default [
       },
       {
         heading: "대명동사도 전원 être — 그리고 정리",
+        pattern: "이동·상태변화 + 모든 대명동사 → être · 나머지 전부 → avoir",
         body:
-          "잠시 뒤(이 레벨 4챕터)에 배울 **대명동사(se lever 등)도 전부 être**를 조동사로 써요: Je me suis levé(나는 일어났어요). 지금은 '그런 부대가 하나 더 있다'고 자리만 잡아두세요.\n\n" +
-          "정리하면 — 조동사 선택 공식은 이거예요. **이동·상태변화 동사 한 줌 + 모든 대명동사 = être, 나머지 전부 = avoir.** 헷갈리면 avoir가 기본값이에요.",
+          "잠시 뒤 배울 **대명동사(se lever 등)도 전부 être**를 조동사로 써요: Je me suis levé(나는 일어났어요).\n\n" +
+          "조동사 선택은 이 공식 하나로 끝이에요. 헷갈리면 **avoir가 기본값**이에요.",
         examples: [
           { fr: "Je me suis levé tôt.", ipa: "[ʒə mə sɥi ləve to]", ko: "저는 일찍 일어났어요. (예고편)" },
           { fr: "J'ai quitté la maison à neuf heures.", ipa: "[ʒe kite la mɛzɔ̃ a nœvœʁ]", ko: "저는 9시에 집을 나섰어요.", note: "quitter는 목적어를 갖는 동사라 avoir" },
