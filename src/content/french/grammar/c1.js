@@ -420,12 +420,10 @@ export default [
       },
       {
         heading: "음식의 이미지 — 역시 프랑스",
+        pattern: "raconter des salades = 둘러대다 · c'est du gâteau = 식은 죽 먹기",
         body:
-          "음식의 나라답게 음식 관용구가 풍년이에요.\n\n" +
-          "**raconter des salades** — 샐러드를 이야기하다 → **허풍 떨다, 둘러대다**. 이것저것 섞어 그럴듯하게 버무린 말이라는 그림이에요.\n\n" +
-          "**mettre son grain de sel** — 자기 소금 한 톨을 넣다 → **(부탁하지도 않았는데) 참견하다**.\n\n" +
-          "**les carottes sont cuites** — 당근이 다 익었다 → **이제 끝났다, 돌이킬 수 없다**. 체념의 표현이에요.\n\n" +
-          "**ce n'est pas de la tarte** — 타르트가 아니다 → **만만치 않다, 어렵다**. 반대로 쉬운 일은 c'est du gâteau(케이크다)라고 해요. 영어 a piece of cake와 그림이 같죠.",
+          "음식의 나라답게 풍년이에요. **raconter des salades**(샐러드를 이야기하다 → 둘러대다), **mettre son grain de sel**(소금 한 톨 넣다 → 참견하다), **les carottes sont cuites**(당근이 다 익었다 → 이제 끝났다).\n\n" +
+          "**ce n'est pas de la tarte**(타르트가 아니다 → 만만치 않다)의 반대는 c'est du gâteau — 영어 a piece of cake와 그림이 같죠.",
         examples: [
           { fr: "Arrête de raconter des salades, dis-moi la vérité.", ko: "둘러대지 말고 사실대로 말해.", note: "복수형 des salades로 써요." },
           { fr: "Il faut toujours qu'il mette son grain de sel dans nos discussions.", ko: "걔는 우리 얘기에 꼭 끼어들어 한마디 해야 직성이 풀려.", note: "il faut que + 접속법과 자주 결합하는 짜증 섞인 어투" },
