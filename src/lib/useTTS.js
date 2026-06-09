@@ -40,8 +40,14 @@ export function useTTS() {
     return () => synth.removeEventListener?.('voiceschanged', refresh);
   }, []);
 
-  const langCode = (lang) => (lang === 'Japanese' || lang === 'ja' ? 'ja-JP' : 'en-US');
-  const langKey = (lang) => (lang === 'Japanese' || lang === 'ja' ? 'ja' : 'en');
+  const langCode = (lang) =>
+    lang === 'Japanese' || lang === 'ja' ? 'ja-JP'
+    : lang === 'French' || lang === 'fr' ? 'fr-FR'
+    : 'en-US';
+  const langKey = (lang) =>
+    lang === 'Japanese' || lang === 'ja' ? 'ja'
+    : lang === 'French' || lang === 'fr' ? 'fr'
+    : 'en';
 
   const listVoices = useCallback((lang = 'Japanese') => {
     if (typeof window === 'undefined' || !window.speechSynthesis) return [];

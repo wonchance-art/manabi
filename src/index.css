@@ -10145,36 +10145,158 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   transition: background 0.15s ease;
 }
 .fr-vocab-tab:hover { background: var(--bg-elevated); }
-.fr-word-list {
+/* ── 어휘 세로 리스트 — 정렬·미니멀·셀프 테스트 ── */
+.fr-vlist-tools {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.fr-vlist-tools .search-input { flex: 1; min-width: 180px; }
+.fr-vlist-tools__toggles { display: flex; gap: 6px; }
+.fr-vlist-hint {
+  font-size: 0.78rem; color: var(--text-muted);
+  margin-bottom: 12px;
+}
+.fr-vlist-theme {
+  font-size: 0.95rem; font-weight: 700;
+  margin: 18px 0 6px;
+}
+.fr-vlist-theme__count {
+  font-size: 0.74rem; color: var(--text-muted); font-weight: 500;
+  margin-left: 8px;
+}
+.fr-vlist { list-style: none; margin: 0; padding: 0; }
+.fr-vrow {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 10px;
+  grid-template-columns: 168px 1fr auto;
+  gap: 24px;
+  align-items: start;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--border);
 }
-@media (max-width: 700px) {
-  .fr-word-list { grid-template-columns: 1fr; }
+.fr-vrow--quiz { cursor: pointer; }
+.fr-vrow--quiz:hover { background: var(--bg-secondary); }
+.fr-vrow__word { min-width: 0; }
+.fr-vrow__main {
+  display: block;
+  font-size: 0.98rem; font-weight: 700;
+  line-height: 1.45;
+  overflow-wrap: break-word;
 }
-.fr-word { padding: 12px 14px; }
-.fr-word__head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
-.fr-word__fr { font-size: 0.98rem; }
-.fr-word__ipa { font-size: 0.76rem; color: var(--text-muted); }
-.fr-word__pos {
-  font-size: 0.68rem; font-weight: 700;
+.fr-vrow__pron {
+  display: block;
+  font-size: 0.74rem; color: var(--text-muted);
+  margin-top: 1px;
+}
+.fr-vrow__body { min-width: 0; }
+.fr-vrow__ko {
+  font-size: 0.88rem; color: var(--text-primary);
+  line-height: 1.55;
+}
+.fr-vrow__pos {
+  font-size: 0.66rem; font-weight: 700;
   color: var(--text-muted);
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: var(--radius-full);
-  padding: 1px 8px;
+  padding: 1px 7px;
+  margin-right: 7px;
+  vertical-align: 1px;
 }
-.fr-word__ko { font-size: 0.86rem; color: var(--text-secondary); margin-top: 3px; }
-.fr-word__en { font-size: 0.8rem; color: var(--text-muted); }
-.fr-word__etym {
+.fr-vrow__en { font-size: 0.78rem; color: var(--text-muted); }
+.fr-vrow__etym {
   font-size: 0.78rem; color: #51A85C;
-  line-height: 1.55; margin-top: 6px;
+  line-height: 1.55; margin-top: 4px;
 }
-.fr-word__ex {
-  font-size: 0.8rem; color: var(--text-secondary);
+.fr-vrow__ex {
+  font-size: 0.79rem; color: var(--text-secondary);
   font-style: italic; line-height: 1.55;
-  margin-top: 6px; padding-top: 6px;
-  border-top: 1px dashed var(--border);
+  margin-top: 4px;
 }
-.fr-word__ex-ko { color: var(--text-muted); font-style: normal; }
+.fr-vrow__ex-yomi { font-style: normal; font-size: 0.72rem; color: var(--text-muted); }
+.fr-vrow__ex-ko { color: var(--text-muted); font-style: normal; }
+.fr-vrow__actions {
+  display: flex; gap: 4px; align-items: center;
+  padding-top: 2px;
+}
+.fr-vrow__save {
+  background: transparent; border: none;
+  font-size: 0.95rem; cursor: pointer;
+  padding: 2px 4px; border-radius: var(--radius-sm);
+  opacity: 0.75; transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.fr-vrow__save:hover:not(:disabled) { opacity: 1; transform: scale(1.15); }
+.fr-vrow__save.is-saved { opacity: 0.55; cursor: default; color: var(--accent); }
+
+/* 가리기 모드 — 가려진 셀 */
+.fr-vrow__word.is-hidden, .fr-vrow__body.is-hidden {
+  position: relative;
+}
+.fr-vrow__word.is-hidden > *, .fr-vrow__body.is-hidden > * {
+  filter: blur(7px);
+  opacity: 0.45;
+  user-select: none;
+  pointer-events: none;
+}
+
+@media (max-width: 560px) {
+  .fr-vrow { grid-template-columns: 116px 1fr auto; gap: 12px; }
+  .fr-vrow__main { font-size: 0.92rem; }
+}
+
+/* ── 발음 버튼 ── */
+.fr-speak {
+  background: transparent; border: none;
+  cursor: pointer; font-size: 0.85rem;
+  padding: 1px 4px; border-radius: var(--radius-sm);
+  opacity: 0.6; transition: opacity 0.15s ease;
+  vertical-align: middle;
+}
+.fr-speak:hover { opacity: 1; }
+.fr-speak--xs { font-size: 0.75rem; }
+
+/* ── 패턴 체크 (회상 연습) ── */
+.fr-check__toggle-all {
+  margin-left: auto;
+  background: transparent; border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  font-size: 0.72rem; font-weight: 600;
+  color: var(--text-muted);
+  padding: 3px 10px; cursor: pointer;
+}
+.fr-check__toggle-all:hover { background: var(--bg-secondary); color: var(--text-primary); }
+.fr-check__lead {
+  font-size: 0.82rem; color: var(--text-muted);
+  margin-bottom: 12px;
+}
+.fr-check__list { list-style: none; margin: 0; padding: 0; counter-reset: check; }
+.fr-check__item {
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+  padding: 9px 0;
+  border-bottom: 1px dashed var(--border);
+}
+.fr-check__item::before {
+  counter-increment: check;
+  content: counter(check);
+  flex-shrink: 0;
+  font-size: 0.72rem; font-weight: 800;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.fr-check__ko {
+  flex: 1; min-width: 160px;
+  font-size: 0.88rem; color: var(--text-primary);
+}
+.fr-check__answer {
+  background: transparent; border: none; cursor: pointer;
+  text-align: left; padding: 0;
+}
+.fr-check__hidden {
+  font-size: 0.78rem; font-weight: 600;
+  color: var(--text-muted);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-full);
+  padding: 3px 12px;
+}
+.fr-check__answer:hover .fr-check__hidden { color: var(--text-primary); }
+.fr-check__main { font-size: 0.92rem; font-weight: 700; }
+.fr-check__pron { font-size: 0.74rem; font-weight: 400; color: var(--text-muted); }

@@ -2,8 +2,10 @@ import Link from 'next/link';
 import { getRefLang } from '../content/refLangs';
 import { refInline, refMain, refPron, Callout, CALLOUT_ORDER, LevelDot } from './refShared';
 import RefReadMark from '../components/RefReadMark';
+import RefSpeak from '../components/RefSpeak';
+import RefPatternCheck from '../components/RefPatternCheck';
 
-function ExampleList({ examples, langCode }) {
+function ExampleList({ examples, langCode, lang }) {
   if (!examples?.length) return null;
   return (
     <ul className="fr-examples">
@@ -14,6 +16,7 @@ function ExampleList({ examples, langCode }) {
             <div className="fr-example__fr">
               <span lang={langCode}>{refMain(ex)}</span>
               {pron && <span className="fr-example__ipa">{pron}</span>}
+              <RefSpeak text={refMain(ex)} lang={lang} size="xs" />
             </div>
             <div className="fr-example__ko">{ex.ko}</div>
             {ex.note && <div className="fr-example__note">└ {refInline(ex.note)}</div>}
@@ -69,6 +72,12 @@ export default function ReferenceChapterPage({ lang, slug }) {
   const patternIndex = chapter.sections
     .map((sec, i) => ({ i, pattern: sec.pattern }))
     .filter(p => p.pattern);
+  // 패턴 체크 — 섹션별 첫 예문으로 회상 연습 (최대 5문항)
+  const checkItems = chapter.sections
+    .map(sec => sec.examples?.[0])
+    .filter(ex => ex && ex.ko && refMain(ex))
+    .slice(0, 5)
+    .map(ex => ({ ko: ex.ko, main: refMain(ex), pron: refPron(ex), langCode: ref.langCode }));
 
   return (
     <div className="page-container" style={{ maxWidth: 760 }}>
@@ -139,7 +148,7 @@ export default function ReferenceChapterPage({ lang, slug }) {
           )}
 
           <SectionTable table={sec.table} />
-          <ExampleList examples={sec.examples} langCode={ref.langCode} />
+          <ExampleList examples={sec.examples} langCode={ref.langCode} lang={lang} />
 
           {/* 상세 설명 — 패턴·예문 아래의 부가 설명 */}
           {sec.body && (
@@ -155,6 +164,9 @@ export default function ReferenceChapterPage({ lang, slug }) {
           ))}
         </section>
       ))}
+
+      {/* ── 패턴 체크 (회상 연습) ── */}
+      <RefPatternCheck items={checkItems} lang={lang} />
 
       {/* ── 이전/다음 ── */}
       <nav className="fr-pager" aria-label="챕터 이동">
