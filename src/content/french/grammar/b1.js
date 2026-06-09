@@ -559,9 +559,10 @@ export default [
       },
       {
         heading: "소유대명사 — le mien, la tienne, les leurs",
+        pattern: "정관사 + mien/tien/sien... (C'est le mien = 그건 내 거야)",
         body:
-          "'내 것', '네 것'을 한 단어로 말하는 **소유대명사**예요. C'est mon livre → C'est **le mien**(그건 내 거야).\n\n" +
-          "포인트는 둘. ① 정관사(le/la/les)가 세트의 일부예요 — 관사 없이 mien만 쓰지 않아요. ② 성·수는 **소유자가 아니라 가리키는 물건**에 일치해요. 그의 가방(le sac)이면 소유자가 여성이어도 le sien입니다.",
+          "'내 것', '네 것'을 한 단어로 말하는 **소유대명사**예요. C'est mon livre → C'est **le mien**.\n\n" +
+          "포인트 둘. ① **정관사가 세트의 일부**예요. ② 성·수는 소유자가 아니라 **가리키는 물건**에 일치해요 — 가방(le sac)이면 소유자가 여성이어도 le sien.",
         table: {
           caption: "소유대명사 전체표",
           headers: ["소유자", "남성 단수", "여성 단수", "남성 복수", "여성 복수"],
