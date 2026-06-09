@@ -14,10 +14,11 @@ export default [
     sections: [
       {
         heading: "어디에 쓰는 시제인가 — 현실적인 가이드부터",
+        pattern: "passé simple = 문어 전용 과거 (소설·동화·역사 서술)",
+        patternKo: "말하기 ✗ · 읽고 알아보기 ○",
         body:
-          "passé simple(단순과거)은 **완료된 과거의 사건을 서술하는 시제**예요. 의미만 보면 passé composé와 거의 같죠. 차이는 의미가 아니라 **서식지**예요.\n\n" +
-          "passé simple은 오늘날 **소설, 동화, 역사 서술, 전기** 같은 문어에서만 살아 있어요. 일상 회화에서는 passé composé가 그 자리를 완전히 차지했고, 프랑스인이 말하면서 passé simple을 쓰면 일부러 옛날 말투를 흉내 내는 농담처럼 들려요.\n\n" +
-          "그래서 학습 전략도 명확해요. **쓰기·말하기용으로 활용을 암기할 필요는 없어요.** 텍스트에서 만났을 때 '아, 이건 ~했다는 뜻이구나' 하고 **알아보는 능력**만 있으면 됩니다. 특히 소설의 서술은 3인칭이 대부분이라, il/elle와 ils/elles 형태만 확실히 익혀도 독서의 90%가 해결돼요.",
+          "의미는 passé composé와 거의 같지만 **서식지**가 달라요. passé simple은 소설·동화·역사 서술 같은 **문어에서만** 살아 있고, 회화에서 쓰면 옛날 말투 흉내처럼 들려요.\n\n" +
+          "학습 전략: 활용 암기 대신 **알아보는 능력**만 있으면 돼요. 소설 서술은 3인칭이 대부분이라 il/elle, ils/elles 형태만 익혀도 독서의 90%가 해결돼요.",
         examples: [
           { fr: "Elle ouvrit la porte, entra et s'assit près de la fenêtre.", ko: "그녀는 문을 열고, 들어와, 창가에 앉았다.", note: "ouvrit·entra·s'assit — 사건이 차례로 '탁탁탁' 진행되는 서술의 시제" },
           { fr: "Victor Hugo naquit en 1802 et mourut en 1885.", ko: "빅토르 위고는 1802년에 태어나 1885년에 죽었다.", note: "위인전·역사 서술의 전형적 문체" },
@@ -26,9 +27,10 @@ export default [
       },
       {
         heading: "규칙 동사의 형태 — 3인칭 중심으로",
+        pattern: "-er → -a/-èrent · -ir → -it/-irent · 그 외 → -ut/-urent",
         body:
-          "어미는 동사 그룹에 따라 세 갈래예요. -er 동사는 **-a / -èrent**, -ir 동사는 **-it / -irent**, 그 외 다수는 **-ut / -urent** 계열이에요.\n\n" +
-          "읽기용 핵심은 이거예요. 본문에서 **동사 어간 + a, it, ut** 형태가 보이고 문맥이 과거 서술이면 passé simple이에요. parla(말했다), finit(끝냈다), voulut(원했다)처럼요.",
+          "어미는 동사 그룹에 따라 세 갈래예요.\n\n" +
+          "읽기용 핵심: 본문에서 **동사 어간 + a, it, ut** 형태가 보이고 문맥이 과거 서술이면 passé simple이에요. parla(말했다), finit(끝냈다), voulut(원했다)처럼요.",
         table: {
           caption: "규칙 패턴 — 3인칭만 추린 표",
           headers: ["동사", "il/elle", "ils/elles", "뜻"],
@@ -45,9 +47,10 @@ export default [
       },
       {
         heading: "꼭 알아봐야 하는 불규칙 동사들",
+        pattern: "fut(être) · eut(avoir) · fit(faire) · vint(venir) · prit(prendre)",
         body:
-          "불규칙 형태는 짧고 강렬해서 처음 보면 정체를 못 알아봐요. fut가 être라는 걸 모르면 문장 전체가 무너지죠. 최빈출만 추렸으니 이 표는 **읽기용 치트시트**로 두고두고 참조하세요.\n\n" +
-          "특히 **fut(être) / eut(avoir) / fit(faire) / vint(venir) / prit(prendre)** 다섯 개는 한 페이지에 몇 번씩 나오는 단골이에요.",
+          "불규칙 형태는 짧고 강렬해서 처음 보면 정체를 못 알아봐요. fut가 être라는 걸 모르면 문장 전체가 무너지죠.\n\n" +
+          "최빈출만 추렸으니 이 표는 **읽기용 치트시트**로 두고두고 참조하세요. 패턴의 다섯 개는 한 페이지에 몇 번씩 나오는 단골이에요.",
         table: {
           caption: "불규칙 passé simple — 3인칭 핵심표",
           headers: ["동사", "il/elle", "ils/elles", "뜻"],
@@ -76,9 +79,10 @@ export default [
       },
       {
         heading: "텍스트 속에서 — imparfait와의 협업",
+        pattern: "imparfait = 배경 · passé simple = 사건",
         body:
-          "소설 문장에서 passé simple과 imparfait는 역할을 나눠 가져요. **imparfait가 배경(무대, 상태, 반복)을 깔면, passé simple이 사건(행동, 전환)을 찍어요.** B1에서 배운 passé composé vs imparfait의 구도에서, 사건 담당만 passé simple로 교체된 셈이에요.\n\n" +
-          "참고로 passé simple의 짝꿍 선행 시제인 **passé antérieur**(quand il eut fini... 그가 끝내자마자)도 문학 텍스트에 가끔 나와요. avoir/être의 단순과거 + 과거분사 형태라는 것만 알아두면 읽는 데 지장 없어요.",
+          "소설에서 **imparfait가 배경(무대, 상태)을 깔면, passé simple이 사건(행동, 전환)을 찍어요.** B1의 passé composé vs imparfait 구도에서 사건 담당만 교체된 셈이에요.\n\n" +
+          "짝꿍 선행 시제 **passé antérieur**(quand il eut fini... 끝내자마자)도 가끔 나와요. avoir/être의 단순과거 + 과거분사라는 것만 알아두면 충분해요.",
         examples: [
           { fr: "Il pleuvait depuis trois jours. Soudain, on frappa à la porte.", ko: "사흘째 비가 내리고 있었다. 갑자기 누군가 문을 두드렸다.", note: "imparfait(배경) + passé simple(사건)의 전형적 콤비" },
           { fr: "Dès qu'elle eut terminé sa lettre, elle sortit la poster.", ko: "편지를 다 쓰자마자, 그녀는 부치러 나갔다.", note: "eut terminé = passé antérieur, '~하자마자'의 문어체" },
