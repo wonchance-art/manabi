@@ -194,10 +194,10 @@ export default [
       },
       {
         heading: "아프리카 — 프랑스어의 미래가 자라는 곳",
+        pattern: "essencerie = 주유소 · ambiancer = 분위기 띄우다 · présentement = 지금",
         body:
-          "통계적으로 프랑스어의 무게중심은 아프리카로 이동 중이에요. 킨샤사(콩고민주공화국)는 파리보다 인구가 많은, 세계 최대의 프랑스어 사용 도시로 꼽혀요.\n\n" +
-          "아프리카 프랑스어는 현지어와 어울리며 창의적인 어휘를 만들어왔어요. **une essencerie**(주유소 — 세네갈, essence+erie의 조어), **un maquis**(노점 식당 — 코트디부아르), **ambiancer**(분위기를 띄우다, 놀다), **présentement**(지금 — 본토에서는 드문 부사가 표준으로), **caillou**(돌 → 다이아몬드 등 맥락 확장).\n\n" +
-          "아프리카 문학(셍고르, 마리아마 바, 아마두 쿠루마, 알랭 마방쿠...)을 읽는 것은 C2 독서의 큰 보상이에요. 쿠루마는 «프랑스어를 말링케어로 부러뜨려 쓴다»고 했을 만큼, 프랑스어의 가능성을 넓힌 문장들을 만날 수 있어요.",
+          "프랑스어의 무게중심은 아프리카로 이동 중이에요 — 킨샤사는 파리보다 큰, 세계 최대의 프랑스어 사용 도시로 꼽혀요. 현지어와 어울리며 **une essencerie**(essence+erie), **un maquis**(노점 식당) 같은 창의적 어휘가 태어났어요.\n\n" +
+          "아프리카 문학(셍고르, 쿠루마, 마방쿠...)은 C2 독서의 큰 보상이에요. 쿠루마는 «프랑스어를 말링케어로 부러뜨려 쓴다»고 했을 만큼 언어의 가능성을 넓혔어요.",
         examples: [
           { fr: "On s'arrête à l'essencerie avant de prendre la route.", ko: "출발 전에 주유소에 들르자. (세네갈)", note: "essence(휘발유)에 -erie를 붙인 합리적 조어 — boulangerie와 같은 원리" },
           { fr: "Viens, on va ambiancer au maquis ce soir !", ko: "가자, 오늘 밤 마키(노점 식당)에서 신나게 놀자! (서아프리카)", note: "ambiancer ← ambiance(분위기)" },
