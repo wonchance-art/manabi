@@ -571,10 +571,10 @@ export default [
       },
       {
         heading: "il y en a — 그리고 통문장 무기고",
+        pattern: "il y a + en → il y en a [iljɑ̃na]",
         body:
-          "il y a와 en이 합체하면 **il y en a**(그게 (몇 개) 있다)가 돼요. [iljɑ̃na] '일리야나' — 분해하지 말고 소리째 삼키세요.\n\n" +
-          "Il y a des croissants ? — Oui, il y **en** a trois.(응, 세 개 있어.)\n\n" +
-          "y와 en은 분석보다 **굳은 표현으로 먼저 입에 붙이는 게** 왕도예요. On y va !(가자!), Vas-y !(해봐!), J'en ai assez.(지긋지긋해. — 직역: 그것을 충분히 가졌다) 같은 표현들이 일상 회화의 뼈대거든요.",
+          "il y a와 en이 합체하면 **il y en a**(그게 (몇 개) 있다)예요. Il y a des croissants ? — Oui, il y **en** a trois. 분해하지 말고 소리째 삼키세요.\n\n" +
+          "y와 en은 분석보다 **굳은 표현으로 먼저 입에 붙이는 게** 왕도예요. On y va !(가자!), Vas-y !(해봐!), J'en ai assez.(지긋지긋해!)",
         examples: [
           { fr: "Il y a du fromage ? — Oui, il y en a.", ipa: "[wi iljɑ̃na]", ko: "치즈 있어? — 응, 있어." },
           { fr: "Il n'y en a plus.", ipa: "[ilnjɑ̃na ply]", ko: "그거 이제 없어요. (다 떨어졌어요)", note: "가게에서 자주 듣는 문장" },
@@ -596,10 +596,10 @@ export default [
     sections: [
       {
         heading: "관계대명사란 — 명사 뒤에 설명 달기",
+        pattern: "명사 + qui/que + 설명 문장",
         body:
-          "'**프랑스어를 공부하는** 친구', '**내가 어제 본** 영화'처럼 명사에 문장 하나를 통째로 달아 설명하는 장치가 관계대명사예요.\n\n" +
-          "J'ai un ami. + Il étudie le français. → J'ai un ami **qui** étudie le français.(프랑스어를 공부하는 친구가 있어요.)\n\n" +
-          "주의할 어순 차이: 한국어는 꾸미는 문장이 명사 **앞**에 오지만('프랑스어를 공부하는 → 친구'), 프랑스어는 명사 **뒤**에 와요(un ami ← qui étudie...). 형용사가 명사 뒤에 오던 것과 같은 방향이에요 — 결론부터 말하고 설명은 나중에.",
+          "명사에 문장 하나를 통째로 달아 설명하는 장치예요. J'ai un ami. + Il étudie le français. → J'ai un ami **qui** étudie le français.\n\n" +
+          "한국어는 꾸미는 문장이 명사 **앞**('공부하는 → 친구')이지만, 프랑스어는 명사 **뒤**예요 — 결론부터 말하고 설명은 나중에.",
         examples: [
           { fr: "J'ai un ami qui habite à Paris.", ipa: "[ʒe œ̃nami ki abit a paʁi]", ko: "파리에 사는 친구가 있어요." },
           { fr: "C'est le livre que je lis.", ipa: "[sɛ lə livʁ kə ʒə li]", ko: "이게 제가 읽고 있는 책이에요." },
