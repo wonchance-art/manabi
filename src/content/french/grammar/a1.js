@@ -231,9 +231,10 @@ export default [
       },
       {
         heading: "모음 앞에서는 n' — 그리고 발음 흐름",
+        pattern: "ne + 모음/무음 h → n' (Je n'aime pas)",
         body:
-          "ne는 모음이나 무음 h 앞에서 **n'**로 축약돼요: Je n'aime pas(좋아하지 않아요), Je n'habite pas(살지 않아요).\n\n" +
-          "ne의 [ə]는 약한 소리라 실제 발화에서는 거의 들리지 않고 스쳐 지나가요. 부정의 무게는 사실 **pas** 쪽에 실려 있어요.",
+          "ne는 모음이나 무음 h 앞에서 **n'**로 축약돼요: Je n'aime pas, Je n'habite pas.\n\n" +
+          "ne의 [ə]는 약한 소리라 실제 발화에서는 거의 스쳐 지나가요. 부정의 무게는 사실 **pas** 쪽에 실려 있어요.",
         examples: [
           { fr: "Je n'aime pas le sport.", ipa: "[ʒə nɛm pa lə spɔʁ]", ko: "저는 운동을 안 좋아해요." },
           { fr: "Elle n'écoute pas.", ipa: "[ɛl nekut pa]", ko: "그녀는 듣지 않아요." },
@@ -241,10 +242,10 @@ export default [
       },
       {
         heading: "pas de — 부정문에서 관사가 변신해요",
+        pattern: "부정문: un/une/des → de (모음 앞 d')",
         body:
-          "중요한 규칙: 부정문에서 **un/une/des는 de로 바뀌어요**.\n\n" +
-          "J'ai **un** chat → Je n'ai pas **de** chat(고양이가 없어요). '하나도 없음'을 표현할 땐 '하나(un)'라는 말 자체가 무의미해지니 중립적인 de로 갈아탄다고 이해하면 돼요. de도 모음 앞에서는 d'가 됩니다.\n\n" +
-          "단, **être 뒤에서는 그대로**예요: Ce n'est pas un chat(그건 고양이가 아니에요). 그리고 정관사 le/la/les도 그대로 유지돼요: Je n'aime pas le café.",
+          "J'ai **un** chat → Je n'ai pas **de** chat. '하나도 없음'의 세계에서는 '하나(un)'라는 말이 무의미해지니 중립적인 de로 갈아탄다고 이해하면 돼요.\n\n" +
+          "단, **être 뒤에서는 그대로**(Ce n'est pas un chat)이고, 정관사 le/la/les도 유지돼요(Je n'aime pas le café).",
         examples: [
           { fr: "Je n'ai pas de chat.", ipa: "[ʒə ne pa də ʃa]", ko: "저는 고양이가 없어요.", note: "un → de" },
           { fr: "Il n'y a pas de problème.", ipa: "[ilnja pa də pʁɔblɛm]", ko: "문제없어요.", note: "il y a의 부정 — 통째로 암기" },
