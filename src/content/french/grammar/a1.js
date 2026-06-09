@@ -474,7 +474,7 @@ export default [
           { fr: "son école", ipa: "[sɔ̃nekɔl]", ko: "그/그녀의 학교", note: "école은 여성 명사" },
           { fr: "ton histoire", ipa: "[tɔ̃nistwaʁ]", ko: "너의 이야기", note: "h 묵음 → 모음 취급" },
         ],
-        tip: "리에종 덕분에 mon amie는 '몽나미'처럼 n이 살아나요. '모음 앞 여성 명사 = mon/ton/son + 리에종' 세트로 소리째 외우면 자연스럽게 입에 붙어요.",
+        tip: "리에종 덕분에 mon amie는 '몽나미'처럼 n이 살아나요 — 볼펜 브랜드 모나미(Monami)가 바로 mon ami(내 친구)의 그 소리예요. '모음 앞 여성 명사 = mon/ton/son + 리에종' 세트로 소리째 외우면 자연스럽게 입에 붙어요.",
       },
     ],
   },
@@ -609,7 +609,7 @@ export default [
           { fr: "On prend du fromage ?", ipa: "[ɔ̃ pʁɑ̃ dy fʁɔmaʒ]", ko: "우리 치즈 (좀) 먹을까?" },
           { fr: "Il y a de la soupe et du riz.", ipa: "[ilja də la sup e dy ʁi]", ko: "수프와 밥이 있어요." },
         ],
-        tip: "같은 명사라도 관사가 의미를 바꿔요. Je bois **du** café(커피를 마셔요 — 일부) vs J'aime **le** café(커피를 좋아해요 — 커피라는 것 전체). **좋아하고 싫어하는 대상엔 정관사, 먹고 마시는 양엔 부분관사** — 이 구별이 A1의 백미예요.",
+        tip: "같은 명사라도 관사가 의미를 바꿔요. Je bois **du** café(커피를 마셔요 — 일부) vs J'aime **le** café(커피를 좋아해요 — 커피라는 것 전체). 카페오레(café **au** lait)의 au도 à+le 축약 — 메뉴판의 lait(우유) 앞에까지 관사가 꼬박꼬박 붙는 언어라는 증거죠. **좋아하는 대상엔 정관사, 먹고 마시는 양엔 부분관사** — 이 구별이 A1의 백미예요.",
       },
       {
         heading: "부정문에서는 전부 de로 변신",

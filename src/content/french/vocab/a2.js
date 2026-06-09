@@ -156,6 +156,7 @@ export default {
           ipa: "[mɑ̃to]",
           ko: "코트, 외투",
           pos: "n.m.",
+          etym: "한국어 '망토'가 바로 이 단어에서 온 말이에요 — 프랑스어에서는 평범한 '코트, 외투'를 뜻해요. -eau로 끝나니 남성!",
         },
         {
           fr: "la chaussure",
@@ -175,7 +176,7 @@ export default {
           ko: "가격; 상",
           pos: "n.m.",
           en: "price",
-          etym: "영어 price, prize 둘 다 이 단어와 같은 뿌리 — 프랑스어 prix는 '가격'과 '상' 두 뜻을 다 가져요.",
+          etym: "그랑프리(grand prix)가 직역하면 '큰 상'이에요. 영어 price, prize 둘 다 이 단어와 같은 뿌리 — prix는 '가격'과 '상' 두 뜻을 다 가져요.",
         },
         {
           fr: "la taille",
@@ -189,6 +190,7 @@ export default {
           ipa: "[ʃɛʁ]",
           ko: "비싼; 친애하는 (여성형 chère)",
           pos: "adj.",
+          etym: "초코 케이크 몽쉘(Mon cher)이 바로 '나의 사랑하는 이'예요. cher는 '소중한'이 원뜻이라 '친애하는'과 '비싼' 두 뜻을 다 가져요.",
           ex: { fr: "C'est trop cher !", ko: "너무 비싸요!" },
         },
         {
@@ -347,6 +349,7 @@ export default {
           ipa: "[nɛʒ]",
           ko: "눈 (하늘에서 오는)",
           pos: "n.f.",
+          etym: "화장품 브랜드 라네즈(LANEIGE)가 바로 la neige — '눈(雪)'이에요. neige가 여성 명사라서 정관사도 la죠.",
         },
         {
           fr: "il neige",
@@ -396,6 +399,7 @@ export default {
           ipa: "[mɔ̃taɲ]",
           ko: "산",
           pos: "n.f.",
+          etym: "만년필 브랜드 몽블랑(Mont Blanc)은 '흰 산' — 알프스 최고봉의 이름이에요. mont(산봉우리)와 montagne는 한 가족이고, 영어 mountain도 같은 뿌리죠.",
         },
         {
           fr: "la fleur",

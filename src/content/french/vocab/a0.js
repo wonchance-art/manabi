@@ -16,6 +16,7 @@ export default {
           ipa: "[bɔ̃ʒuʁ]",
           ko: "안녕하세요 (아침~낮)",
           pos: "expr.",
+          etym: "'봉쥬르 우유'로 익숙한 그 말 — bon(좋은)+jour(날), 직역하면 '좋은 날'이에요. jour는 베이커리 뚜레쥬르(Tous les jours, '매일')에도 숨어 있죠.",
           ex: { fr: "Bonjour, madame !", ko: "안녕하세요! (여성에게)" },
         },
         {
@@ -226,6 +227,7 @@ export default {
           ipa: "[o]",
           ko: "물",
           pos: "n.f.",
+          etym: "향수의 '오 드 뚜왈렛(eau de toilette)', '오 드 퍼퓸'의 그 '오'가 바로 이 단어 — eau는 '물'이에요. 글자 세 개가 [o] 한 소리!",
           ex: { fr: "Une eau, s'il vous plaît.", ko: "물 하나 주세요." },
         },
         {
@@ -233,12 +235,14 @@ export default {
           ipa: "[kʁwasɑ̃]",
           ko: "크루아상",
           pos: "n.m.",
+          etym: "croissant의 원뜻은 '초승달(자라나는 달)' — 빵 모양이 초승달이라 붙은 이름이에요. croître(자라다)에서 왔고, 영어 crescent와 같은 뿌리죠.",
         },
         {
           fr: "la baguette",
           ipa: "[bagɛt]",
           ko: "바게트",
           pos: "n.f.",
+          etym: "원뜻은 '막대기'! 막대기처럼 길쭉해서 빵 이름이 됐고, 마법 지팡이(baguette magique)와 젓가락(baguettes)도 같은 단어예요.",
           ex: { fr: "Une baguette, s'il vous plaît.", ko: "바게트 하나 주세요." },
         },
         {

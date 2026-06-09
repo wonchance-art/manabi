@@ -198,7 +198,7 @@ export default {
           ko: "신문; 일기",
           pos: "n.m.",
           en: "journal",
-          etym: "jour(하루)에서 — '매일 나오는 것'. 영어 journal, journalist의 어원이 바로 이 단어예요.",
+          etym: "뚜레쥬르(Tous les jours)의 그 jour(하루)에서 — '매일 나오는 것'이라 신문이에요. 영어 journal, journalist의 어원이 바로 이 단어죠.",
         },
         {
           fr: "la publicité",
@@ -221,6 +221,7 @@ export default {
           ko: "온라인의, 온라인으로",
           pos: "loc.",
           en: "online",
+          etym: "ligne은 '선' — 마지노선(la ligne Maginot)의 그 ligne이에요. en ligne은 직역하면 '선 위에', 곧 '온라인'이죠.",
           ex: { fr: "J'ai acheté ce livre en ligne.", ko: "이 책을 온라인으로 샀어요." },
         },
         {

@@ -61,7 +61,7 @@ export default [
           { fr: "Elle a fait ses devoirs.", ipa: "[ɛl a fɛ se dəvwaʁ]", ko: "그녀는 숙제를 했어요." },
           { fr: "On a vu un bon film.", ipa: "[ɔ̃na vy œ̃ bɔ̃ film]", ko: "우리 좋은 영화 봤어." },
         ],
-        tip: "avoir의 과거분사 eu는 철자와 달리 그냥 [y] — A0에서 연습한 그 u 소리 하나예요. 'J'ai eu'는 [ʒe y] '줴 위'처럼 굴러갑니다.",
+        tip: "avoir의 과거분사 eu는 철자와 달리 그냥 [y] — A0에서 연습한 그 u 소리 하나예요. 그리고 voir의 과거분사 vu는 이미 알고 계시죠 — 데자뷔(déjà vu)가 바로 '이미(déjà) 본(vu)'이거든요. 과거분사는 이렇게 한국어에 들어온 프랑스어 속에도 숨어 있어요.",
       },
       {
         heading: "의미 — 형태는 현재완료, 쓰임은 그냥 과거",

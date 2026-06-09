@@ -64,7 +64,7 @@ export default {
           ko: "세계화",
           pos: "n.f.",
           en: "globalization",
-          etym: "흥미로운 평행 조어 — 영어는 globe(지구본)에서 globalization을, 프랑스어는 monde(세계)에서 mondialisation을 각자 만들었어요. 뜻은 같지만 어원이 달라요.",
+          etym: "영어는 globe(지구본)에서 globalization을, 프랑스어는 monde(세계)에서 mondialisation을 각자 만들었어요. monde는 화장품 마몽드(Ma Monde)로 낯익은 단어 — 단, monde는 남성 명사라 문법대로라면 mon monde예요.",
         },
         {
           fr: "l'impôt (m.)",
@@ -243,6 +243,7 @@ export default {
           ipa: "[ʃɛdœvʁ]",
           ko: "걸작",
           pos: "n.m.",
+          etym: "'셰프(chef)'의 원뜻은 '머리, 우두머리' — chef-d'œuvre는 '작품들의 우두머리', 곧 걸작이에요. 주방의 셰프도 chef de cuisine(주방의 우두머리)에서 온 말이죠.",
           ex: { fr: "Ce roman est considéré comme un chef-d'œuvre.", ko: "이 소설은 걸작으로 평가받아요." },
         },
         {
@@ -278,7 +279,7 @@ export default {
           ipa: "[ʁɔmɑ̃]",
           ko: "소설",
           pos: "n.m.",
-          etym: "경고: 영어 romance가 아니라 '소설(novel)'! 중세에 라틴어가 아닌 로망어(roman)로 쓴 이야기에서 온 말이에요.",
+          etym: "경고: 영어 romance가 아니라 '소설(novel)'! 중세에 라틴어가 아닌 로망어(roman)로 쓴 이야기에서 온 말로, 한국어 '로망'도 멀리 이 집안 출신이에요.",
         },
         {
           fr: "l'écrivain (m.) / l'écrivaine (f.)",

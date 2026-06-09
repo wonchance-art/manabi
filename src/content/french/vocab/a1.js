@@ -75,6 +75,7 @@ export default {
           ipa: "[bebe]",
           ko: "아기",
           pos: "n.m.",
+          etym: "유아용품 브랜드에 흔한 '베베'가 바로 이 단어 — 프랑스어로 그냥 '아기'예요.",
         },
         {
           fr: "l'homme (m.)",
@@ -95,7 +96,7 @@ export default {
           ko: "친구 (여성형 amie)",
           pos: "n.m.",
           en: "amicable",
-          etym: "라틴어 amīcus(친구) — 영어 amicable(우호적인)의 뿌리예요.",
+          etym: "볼펜 브랜드 모나미(Mon ami)가 바로 '내 친구'라는 뜻이에요. 라틴어 amīcus(친구)에서 왔고, 영어 amicable(우호적인)의 뿌리이기도 해요.",
         },
         {
           fr: "la personne",
@@ -197,7 +198,7 @@ export default {
           ko: "공부하다",
           pos: "v.",
           en: "study",
-          etym: "라틴어 studēre(열중하다) — 영어 study, student와 같은 뿌리예요.",
+          etym: "에뛰드(étude)가 이 동사의 명사형 — '공부, 연습(곡)'이라 쇼팽의 에튀드도, 화장품 에뛰드도 여기서 왔어요. 라틴어 studēre(열중하다) — 영어 study와 같은 뿌리죠.",
         },
         {
           fr: "vouloir",
@@ -222,6 +223,7 @@ export default {
           ipa: "[pɛ̃]",
           ko: "빵",
           pos: "n.m.",
+          etym: "베이커리 메뉴 뺑오쇼콜라(pain au chocolat)의 '뺑'이 바로 이 단어예요. 라틴어 pānis에서 왔고, 한국어 '빵'(포르투갈어 pão 경유)과도 먼 친척이죠.",
           ex: { fr: "Je mange du pain.", ko: "저는 빵을 먹어요." },
         },
         {
@@ -274,6 +276,7 @@ export default {
           ipa: "[lɛ]",
           ko: "우유",
           pos: "n.m.",
+          etym: "카페오레(café au lait)가 바로 '우유 넣은 커피' — lait가 우유예요. 이탈리아어 라떼(latte)와 같은 라틴어 뿌리죠.",
         },
         {
           fr: "le jus",
@@ -289,7 +292,7 @@ export default {
           ko: "와인, 포도주",
           pos: "n.m.",
           en: "wine",
-          etym: "라틴어 vīnum — 영어 wine과 같은 뿌리예요.",
+          etym: "겨울 카페 메뉴 뱅쇼(vin chaud)가 바로 '따뜻한 와인'이에요. 라틴어 vīnum — 영어 wine과 같은 뿌리죠.",
           ex: { fr: "Un verre de vin, s'il vous plaît.", ko: "와인 한 잔 주세요." },
         },
         {
@@ -323,6 +326,7 @@ export default {
           ipa: "[mɛzɔ̃]",
           ko: "집",
           pos: "n.f.",
+          etym: "메종키츠네, 메종 마르지엘라 — 패션 브랜드의 '메종(maison)'이 바로 '집'이에요. 원래 '~의 집(상점·하우스)'이라는 간판 표현이죠.",
           ex: { fr: "Ma maison est petite.", ko: "우리 집은 작아요." },
         },
         {
@@ -419,7 +423,7 @@ export default {
           ipa: "[ʒuʁ]",
           ko: "날, 하루, 낮",
           pos: "n.m.",
-          etym: "la journée는 영어 journey와 어원이 같지만 뜻은 '하루(낮 동안)'! 옛날엔 '하루치 여행 거리'였거든요.",
+          etym: "베이커리 뚜레쥬르(Tous les jours)가 바로 '매일(모든 날들)'이라는 뜻 — 그 jour예요. 참고로 la journée는 영어 journey와 어원이 같은데, 옛날엔 '하루치 여행 거리'였거든요.",
         },
         {
           fr: "la semaine",
@@ -544,13 +548,14 @@ export default {
           ko: "큰, 키가 큰 (여성형 grande)",
           pos: "adj.",
           en: "grand",
-          etym: "영어 grand(웅장한), grande 사이즈의 그 grand이에요. 프랑스어에서는 그냥 '큰'.",
+          etym: "그랑프리(grand prix)가 직역하면 '큰 상' — 그 grand이에요. 영어 grand(웅장한)도 같은 단어지만, 프랑스어에서는 그냥 '큰'.",
         },
         {
           fr: "petit",
           ipa: "[pəti]",
           ko: "작은 (여성형 petite)",
           pos: "adj.",
+          etym: "쁘띠첼의 '쁘띠(petit)'가 바로 '작은'이에요. 끝 t가 묵음이라 [쁘띠] — 여성형 petite에서는 t가 살아나 [쁘띠뜨]가 되죠.",
           ex: { fr: "C'est un petit café.", ko: "작은 카페예요." },
         },
         {
@@ -586,7 +591,7 @@ export default {
           ko: "새로운 (여성형 nouvelle)",
           pos: "adj.",
           en: "novel",
-          etym: "라틴어 novus — 영어 novel(새로운), novelty와 같은 뿌리예요.",
+          etym: "아르누보(art nouveau)의 '누보', 영화사의 누벨바그(nouvelle vague, '새 물결')의 '누벨'(여성형)이 바로 이 단어예요. 라틴어 novus — 영어 novel과 같은 뿌리죠.",
         },
         {
           fr: "jeune",
