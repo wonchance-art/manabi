@@ -260,10 +260,11 @@ export default [
       },
       {
         heading: "절대분사구문 — 분사가 자기 주어를 데리고 올 때",
+        pattern: "une fois + 명사 + 과거분사 (Une fois le travail terminé, ...)",
+        patternKo: "분사가 주절과 다른 자기 주어를 가짐",
         body:
-          "진짜 C1다운 구조는 **분사가 주절과 다른 자기만의 주어를 갖는** proposition participiale(절대분사구문)이에요.\n\n" +
-          "**La nuit tombée, les rues se vident.** — '밤이 내리자, 거리가 빈다.' 여기서 la nuit는 주절(les rues...)의 주어가 아니라 분사 tombée만의 주어죠. 시간·이유·조건의 부사절이 접속사 없이 통째로 압축된 거예요.\n\n" +
-          "가장 생산적인 패턴이 **une fois + 명사 + 과거분사**(일단 ~가 ...되면/되자)예요. Une fois le travail terminé(일을 마치고 나면), Une fois la décision prise(결정이 내려지자). 과거분사는 자기 주어의 성·수에 일치시켜요 — terminé는 le travail(남성)에, prise는 la décision(여성)에 맞춘 거예요.",
+          "**La nuit tombée, les rues se vident.**(밤이 내리자, 거리가 빈다.) — la nuit는 주절이 아니라 분사 tombée만의 주어예요. 시간·이유의 부사절이 접속사 없이 통째로 압축된 거죠.\n\n" +
+          "가장 생산적인 패턴이 **une fois + 명사 + 과거분사**예요. 과거분사는 자기 주어의 성·수에 일치해요: Une fois la décision **prise**(la décision이 여성이라 prise).",
         examples: [
           { fr: "Une fois le travail terminé, nous pourrons partir tranquilles.", ko: "일이 끝나고 나면, 우리는 마음 편히 떠날 수 있을 거예요.", note: "une fois + 명사 + p.p. — 최빈출 절대분사 패턴" },
           { fr: "La nuit tombée, le village retrouva son calme.", ko: "밤이 내리자, 마을은 고요를 되찾았다.", note: "분사의 주어(la nuit) ≠ 주절의 주어(le village)" },
@@ -274,14 +275,10 @@ export default [
       },
       {
         heading: "굳어진 분사 표현들 — 전치사가 된 분사",
+        pattern: "étant donné (que) · y compris · excepté · cela dit · le cas échéant",
         body:
-          "분사구문 중 일부는 아예 굳어서 전치사·접속사처럼 쓰여요. 이들은 분석하지 말고 덩어리로 외우는 게 답이에요.\n\n" +
-          "**étant donné (que)** — ~을 고려하면, ~이므로\n" +
-          "**y compris** — ~을 포함하여\n" +
-          "**excepté / mis à part** — ~을 제외하고\n" +
-          "**cela dit / ceci étant** — 그렇긴 하지만\n" +
-          "**le cas échéant** — 경우에 따라서는, 필요하다면 (행정 문서 최빈출)\n\n" +
-          "굳어진 표현이라 대부분 성·수 일치도 하지 않아요. étant donné la situation(상황을 고려하면)에서 donné는 la situation에 일치시키지 않은 채 불변이에요.",
+          "일부 분사구문은 굳어서 전치사·접속사처럼 쓰여요: **étant donné (que)**(~이므로), **y compris**(~을 포함하여), **excepté**(~을 제외하고), **cela dit**(그렇긴 하지만), **le cas échéant**(필요하다면 — 행정 문서 최빈출). 분석하지 말고 덩어리로 외우세요.\n\n" +
+          "굳어진 표현이라 대부분 **성·수 일치도 하지 않아요**: étant donné la situation에서 donné는 불변이에요.",
         examples: [
           { fr: "Étant donné la complexité du dossier, le jugement a été reporté.", ko: "사안의 복잡성을 고려하여, 판결이 연기되었다.", note: "étant donné = 격식 문어의 '~이므로'" },
           { fr: "Tous les employés, y compris la direction, sont concernés.", ko: "경영진을 포함한 전 직원이 해당된다.", note: "y compris — 불변" },
