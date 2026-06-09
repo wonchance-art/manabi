@@ -14,9 +14,10 @@ export default [
     sections: [
       {
         heading: "형태 — 미래 어간 + 반과거 어미",
+        pattern: "미래 어간 + -ais, -ais, -ait, -ions, -iez, -aient",
         body:
-          "조건법 현재의 공식은 깔끔해요. **단순미래(futur simple)의 어간**에 **반과거(imparfait)의 어미**(-ais, -ais, -ait, -ions, -iez, -aient)를 붙이면 끝.\n\n" +
-          "이미 배운 두 시제의 조합이라 새로 외울 건 거의 없어요. 미래형이 불규칙한 동사(être→ser-, avoir→aur-, aller→ir-, faire→fer-, pouvoir→pourr-, vouloir→voudr-, venir→viendr-, voir→verr-, devoir→devr-)는 조건법에서도 같은 어간을 그대로 써요.",
+          "**단순미래의 어간**에 **반과거의 어미**를 붙이면 끝 — 이미 배운 두 시제의 조합이라 새로 외울 건 거의 없어요.\n\n" +
+          "미래형이 불규칙한 동사(être→ser-, avoir→aur-, aller→ir-, vouloir→voudr-, pouvoir→pourr- 등)는 조건법에서도 **같은 어간**을 그대로 써요.",
         table: {
           caption: "parler 조건법 현재",
           headers: ["인칭", "형태", "발음"],
