@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getChapter, getLevelMeta } from '../content/french';
 import { frInline, Callout, CALLOUT_ORDER, LevelDot } from './frenchShared';
+import FrenchReadMark from '../components/FrenchReadMark';
 
 function ExampleList({ examples }) {
   if (!examples?.length) return null;
@@ -52,7 +53,7 @@ export default function FrenchChapterPage({ slug }) {
       <div className="page-container" style={{ maxWidth: 760, textAlign: 'center', paddingTop: 80 }}>
         <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>🔍</div>
         <h1 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: 8 }}>챕터를 찾을 수 없어요</h1>
-        <Link href="/french" className="btn btn--ghost btn--sm">프랑스어 레퍼런스로 돌아가기 →</Link>
+        <Link href="/lessons?lang=French" className="btn btn--ghost btn--sm">프랑스어 강의 목록으로 →</Link>
       </div>
     );
   }
@@ -62,10 +63,12 @@ export default function FrenchChapterPage({ slug }) {
 
   return (
     <div className="page-container" style={{ maxWidth: 760 }}>
+      <FrenchReadMark slug={chapter.slug} />
+
       {/* ── 브레드크럼 ── */}
       <nav style={{ marginBottom: 18 }} aria-label="브레드크럼">
-        <Link href="/french" style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-          ← 프랑스어 레퍼런스
+        <Link href="/lessons?lang=French" style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+          ← 프랑스어 강의 목록
         </Link>
       </nav>
 

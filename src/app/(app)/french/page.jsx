@@ -1,10 +1,6 @@
-import FrenchPage from '@/views/FrenchPage';
+import { redirect } from 'next/navigation';
 
-export const metadata = {
-  title: '프랑스어 레퍼런스 | Anatomy Studio',
-  description: 'A0 기초 상식부터 C2 마스터까지 — 한국어 화자를 위한 프랑스어 문법·어휘 중추 레퍼런스.',
-};
-
+// 프랑스어 레퍼런스는 강의 페이지(🇫🇷 탭)로 통합 — 구 링크 호환용 리다이렉트
 export default function Page() {
-  return <FrenchPage />;
+  redirect('/lessons?lang=French');
 }

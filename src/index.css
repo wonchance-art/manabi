@@ -9957,15 +9957,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   background: rgba(255,107,107,0.1);
 }
 
-/* ========= French Reference (🇫🇷 /french) ========= */
-.fr-level {
-  padding: 22px;
-  margin-bottom: 18px;
-}
-.fr-level__head {
-  display: flex; align-items: flex-start; gap: 14px;
-  margin-bottom: 14px;
-}
+/* ========= French Reference (강의 🇫🇷 탭 + /french/grammar·vocab) ========= */
 .fr-level-dot {
   flex-shrink: 0;
   width: 46px; height: 46px; border-radius: 50%;
@@ -9973,44 +9965,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-weight: 800; font-size: 0.9rem;
 }
 .fr-level-dot--sm { width: 34px; height: 34px; font-size: 0.74rem; }
-.fr-level__title { font-size: 1.15rem; font-weight: 800; }
-.fr-level__focus {
-  font-size: 0.74rem; font-weight: 700;
-  padding: 3px 10px; border-radius: var(--radius-full);
-}
-.fr-level__desc {
-  font-size: 0.86rem; color: var(--text-secondary);
-  line-height: 1.6; margin-top: 4px;
-}
-.fr-chapter-list {
-  list-style: none; margin: 0; padding: 0;
-  border-top: 1px solid var(--border);
-}
-.fr-chapter-link {
-  display: flex; align-items: baseline; gap: 12px;
-  padding: 10px 6px;
-  border-bottom: 1px solid var(--border);
-  color: var(--text-primary);
-  transition: background 0.15s ease;
-}
-.fr-chapter-link:hover { background: var(--bg-secondary); }
-.fr-chapter-link__num {
-  flex-shrink: 0;
-  font-size: 0.78rem; font-weight: 800;
-  font-variant-numeric: tabular-nums;
-}
-.fr-chapter-link__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.fr-chapter-link__title { font-size: 0.92rem; font-weight: 600; line-height: 1.4; }
-.fr-chapter-link__summary {
-  font-size: 0.78rem; color: var(--text-muted); line-height: 1.5;
-  display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;
-}
-.fr-chapter-link__meta { flex-shrink: 0; font-size: 0.74rem; color: var(--text-muted); }
-.fr-vocab-link {
-  display: inline-block; margin-top: 12px;
-  font-size: 0.88rem; font-weight: 700;
-}
-.fr-vocab-link:hover { text-decoration: underline; }
 
 /* ── 챕터 상세 ── */
 .fr-section { padding: 22px; margin-bottom: 16px; }

@@ -9,10 +9,12 @@ import { useAuth } from '../lib/AuthContext';
 import { parseTitle } from '../lib/seriesMeta';
 import { getIdealLevel } from '../lib/levels';
 import { CardGridSkeleton } from '../components/Skeleton';
+import { FR_LEVEL_META, getGrammarChapters, countVocab } from '../content/french';
 
 const LANG_FILTERS = [
   { key: 'Japanese', label: '🇯🇵 일본어' },
   { key: 'English',  label: '🇬🇧 영어' },
+  { key: 'French',   label: '🇫🇷 프랑스어' },
 ];
 
 const LEVEL_ORDER = {
@@ -67,7 +69,7 @@ export default function LessonsPage() {
   const { user, profile } = useAuth();
   const [langFilter, setLangFilter] = useState(() => {
     const u = searchParams.get('lang');
-    return u === 'English' ? 'English' : 'Japanese';
+    return u === 'English' || u === 'French' ? u : 'Japanese';
   });
   const [expandedGroups, setExpandedGroups] = useState(() => {
     if (typeof window === 'undefined') return new Set();
@@ -87,6 +89,15 @@ export default function LessonsPage() {
   }
   const [levelFilter, setLevelFilter] = useState(searchParams.get('level') || 'all');
   const [testScores, setTestScores] = useState({});
+  const [frRead, setFrRead] = useState(() => new Set());
+
+  // 프랑스어 레퍼런스 읽음 표시 (localStorage — FrenchReadMark가 기록)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      setFrRead(new Set(JSON.parse(localStorage.getItem('fr_read_chapters') || '[]')));
+    } catch {}
+  }, []);
 
   // 리딩 테스트 점수 (localStorage)
   useEffect(() => {
@@ -250,7 +261,18 @@ export default function LessonsPage() {
   }, [lessons, langFilter, levelFilter]);
 
   // 레벨 옵션 (선택된 언어에 따라)
-  const levelOptions = langFilter === 'Japanese' ? JP_LEVELS : EN_LEVELS;
+  const isFrench = langFilter === 'French';
+  const levelOptions = langFilter === 'Japanese' ? JP_LEVELS
+    : isFrench ? FR_LEVEL_META.map(m => m.label)
+    : EN_LEVELS;
+
+  // 프랑스어 — 코드 기반 레퍼런스 (DB 강의와 별도 소스)
+  const frGroups = useMemo(() => {
+    if (!isFrench) return [];
+    return FR_LEVEL_META
+      .filter(m => levelFilter === 'all' || m.label === levelFilter)
+      .map(m => ({ meta: m, chapters: getGrammarChapters(m.key), vocabCount: countVocab(m.key) }));
+  }, [isFrench, levelFilter]);
 
   return (
     <div className="page-container">
@@ -261,8 +283,8 @@ export default function LessonsPage() {
         </div>
       </div>
 
-      {/* 추천 시작점 — 진행 중 / 추천 레벨 첫 lesson / 신규 입문 */}
-      {recommendStart && (
+      {/* 추천 시작점 — 진행 중 / 추천 레벨 첫 lesson / 신규 입문 (DB 강의 전용) */}
+      {!isFrench && recommendStart && (
         <Link href={`/lessons/${recommendStart.material.id}`} className="lessons-hero">
           <div className="lessons-hero__hint">
             {recommendStart.type === 'continue' && '📍 이어서 학습'}
@@ -318,7 +340,88 @@ export default function LessonsPage() {
         </div>
       </div>
 
-      {isLoading ? (
+      {isFrench ? (
+        <div className="lessons-list">
+          {/* 레퍼런스 소개 — 한국인 학습자 설계 + 콜아웃 범례 */}
+          <div className="card" style={{ padding: '14px 16px', marginBottom: 6 }}>
+            <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: 1.65, marginBottom: 8 }}>
+              A0 기초 상식부터 C2까지 학습 순서대로 배치된 <strong>문법·어휘 레퍼런스</strong>예요.
+              한국어 화자가 막히는 지점과, 영어와 라틴어 뿌리가 같은 단어의 연결고리를 함께 짚어줍니다.
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+              <span>🚨 한국인 함정</span>
+              <span>·</span>
+              <span>🇬🇧 영어와 비교</span>
+              <span>·</span>
+              <span>🌱 라틴어 어원</span>
+              <span>·</span>
+              <span>💡 팁</span>
+            </div>
+          </div>
+
+          {frGroups.map(({ meta, chapters, vocabCount }) => {
+            const groupKey = `fr:${meta.key}`;
+            const isOpen = expandedGroups.has(groupKey);
+            const readCount = chapters.filter(c => frRead.has(c.slug)).length;
+            return (
+              <section key={groupKey} className={`lessons-list__group ${isOpen ? 'is-open' : ''}`}>
+                <button
+                  type="button"
+                  className="lessons-list__group-header"
+                  onClick={() => toggleGroup(groupKey)}
+                  aria-expanded={isOpen}
+                >
+                  <span className="lessons-list__group-chevron" aria-hidden="true">{isOpen ? '▾' : '▸'}</span>
+                  <span className="lessons-list__group-title">
+                    {meta.label}
+                    <span style={{ fontWeight: 500, fontSize: '0.82em', color: 'var(--text-muted)', marginLeft: 8 }}>
+                      {meta.focus}
+                    </span>
+                  </span>
+                  <span className="lessons-list__group-count">{readCount} / {chapters.length}</span>
+                </button>
+                {isOpen && (
+                  <ul className="lessons-list__rows">
+                    {chapters.map(ch => {
+                      const read = frRead.has(ch.slug);
+                      return (
+                        <li
+                          key={ch.slug}
+                          className={`lessons-list__row lessons-list__row--${read ? 'done' : 'idle'}`}
+                          onClick={() => router.push(`/french/grammar/${ch.slug}`)}
+                          title={ch.summary || undefined}
+                          role="link"
+                          tabIndex={0}
+                          onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && router.push(`/french/grammar/${ch.slug}`)}
+                        >
+                          <span className="lessons-list__status" aria-hidden="true">{read ? '●' : '○'}</span>
+                          <span className="lessons-list__title">#{ch.order} {ch.title}</span>
+                          <span className="lessons-list__meta">
+                            {ch.duration && <span className="lessons-list__pct">{ch.duration}</span>}
+                          </span>
+                        </li>
+                      );
+                    })}
+                    {vocabCount > 0 && (
+                      <li
+                        className="lessons-list__row lessons-list__row--idle"
+                        onClick={() => router.push(`/french/vocab/${meta.key.toLowerCase()}`)}
+                        role="link"
+                        tabIndex={0}
+                        onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && router.push(`/french/vocab/${meta.key.toLowerCase()}`)}
+                      >
+                        <span className="lessons-list__status" aria-hidden="true">📖</span>
+                        <span className="lessons-list__title">{meta.label} 어휘 — {vocabCount}단어 (주제별·검색)</span>
+                        <span className="lessons-list__meta" />
+                      </li>
+                    )}
+                  </ul>
+                )}
+              </section>
+            );
+          })}
+        </div>
+      ) : isLoading ? (
         <CardGridSkeleton height={48} />
       ) : sorted.length > 0 ? (() => {
         // 카나는 별도 그룹(최상단), 그 외는 레벨별 통합
