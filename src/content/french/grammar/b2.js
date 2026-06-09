@@ -429,9 +429,10 @@ export default [
     sections: [
       {
         heading: "명사화란 — 격식 문체의 압축 기술",
+        pattern: "Les prix ont augmenté → l'augmentation des prix",
+        patternKo: "동사를 명사로 바꿔 문장 압축",
         body:
-          "**명사화(nominalisation)**는 동사나 형용사를 명사로 바꿔 문장을 압축하는 기술이에요. Les prix **ont augmenté**(가격이 올랐다) → **L'augmentation** des prix(가격 상승).\n\n" +
-          "왜 배우냐면, 프랑스어의 격식 문체(신문, 보고서, 행정 문서, 학술문)가 **동사 중심이 아니라 명사 중심**으로 돌아가기 때문이에요. 한국어도 '가격이 올라서 걱정이다'보다 '가격 상승이 우려된다'가 더 격식 있게 들리죠 — 같은 원리예요.\n\n" +
+          "프랑스어의 격식 문체(신문, 보고서, 학술문)는 **동사 중심이 아니라 명사 중심**으로 돌아가요. 한국어도 '가격이 올라서 걱정이다'보다 '가격 상승이 우려된다'가 더 격식 있게 들리죠 — 같은 원리예요.\n\n" +
           "DELF B2 듣기·독해 지문이 바로 이 명사 문체로 쓰여 있고, 작문 요약에서도 명사화 능력이 점수를 가릅니다.",
         examples: [
           { fr: "la construction d'un nouveau pont", ko: "새 다리의 건설", note: "← On construit un nouveau pont." },
