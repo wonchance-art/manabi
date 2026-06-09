@@ -100,9 +100,87 @@ export default [
   },
 
   {
-    slug: "a2-02-future",
+    slug: "a2-02-past-continuous",
     level: "A2",
     order: 2,
+    title: "과거진행과 used to — 배경 화면과 옛 습관",
+    titleFr: "Past continuous & used to",
+    summary: "전화가 왔을 때(사건) 나는 자고 있었다(배경) — 과거를 입체적으로 그리는 was/were -ing, 그리고 '~하곤 했다'의 used to를 정리해요.",
+    duration: "약 9분",
+    sections: [
+      {
+        heading: "was/were + -ing — 과거의 배경 화면",
+        pattern: "was/were + -ing",
+        patternKo: "그 시점에 한창 진행 중이던 일",
+        body:
+          "과거진행형은 **과거의 한 시점에 한창 진행 중이던 장면**을 그려요. 1챕터의 과거형이 '찰칵' 찍힌 사진(끝난 사건)이라면, 과거진행형은 그 뒤에서 **흐르고 있던 동영상(배경 화면)**이에요.\n\n" +
+          "그래서 at 8 p.m. yesterday, at that time처럼 **시점을 콕 찍는 표현**과 단짝이에요 — '어제 저녁 8시에 뭐 하고 있었어요?'",
+        examples: [
+          { en: "I was watching TV at eight last night.", ko: "어젯밤 8시에 TV를 보고 있었어요." },
+          { en: "They were having dinner at that time.", ko: "그때 그들은 저녁을 먹고 있었어요." },
+          { en: "What were you doing at ten?", ko: "10시에 뭐 하고 있었어요?" },
+        ],
+        vsKo: "한국어 **'-고 있었다'**가 정확히 이 시제예요 — '보고 있었어요' = was watching. '-었다'(과거형)와 '-고 있었다'(과거진행)를 가르는 모어 감각을 그대로 가져오면, 두 시제의 분기가 거의 자동으로 끝나요.",
+      },
+      {
+        heading: "when/while — 배경 위에 사건이 끼어든다",
+        pattern: "was -ing + when + 과거형 · while + was -ing + 과거형",
+        patternKo: "배경은 진행형, 끼어든 사건은 과거형",
+        body:
+          "두 시제의 진짜 쓸모는 **결합**이에요 — '전화가 왔을 때(사건) 나는 자고 있었다(배경)' = I **was sleeping** when the phone **rang**. 길게 흐르던 배경 위에 짧은 사건이 '탁' 끼어드는 그림이죠.\n\n" +
+          "**when은 사건(과거형) 쪽**, **while은 배경(진행형) 쪽**과 단짝이에요 — while I was cooking(요리하는 동안), when he arrived(그가 도착했을 때).",
+        table: {
+          caption: "past simple vs past continuous",
+          headers: ["", "past simple", "past continuous"],
+          rows: [
+            ["역할", "사건 — '탁' 일어난 일", "배경 — 흐르고 있던 일"],
+            ["그림", "사진 한 장", "흐르는 동영상"],
+            ["단짝", "when, yesterday, ~ ago", "while, at 8 p.m., at that time"],
+            ["예", "the phone rang", "I was sleeping"],
+          ],
+        },
+        examples: [
+          { en: "I was sleeping when the phone rang.", ko: "전화가 왔을 때 자고 있었어요.", note: "배경(진행) + 사건(과거)" },
+          { en: "While I was cooking, he set the table.", ko: "제가 요리하는 동안 그가 상을 차렸어요." },
+          { en: "It started to rain while we were walking home.", ko: "집에 걸어가는 동안 비가 오기 시작했어요." },
+        ],
+        pitfall: "'When the phone was ringing, I slept.'(X)처럼 역할을 뒤집는 게 전형적 실수예요 — 길게 흐르던 일(자다)이 배경=진행형, 끼어든 일(전화가 오다)이 사건=과거형이에요. 문장을 만들기 전에 '어느 쪽이 동영상이고 어느 쪽이 사진인가?'를 먼저 정하세요.",
+      },
+      {
+        heading: "used to — 지금은 아닌 과거의 습관",
+        pattern: "used to + 동사원형",
+        patternKo: "예전엔 ~했다 (지금은 아니다)",
+        body:
+          "**used to + 동사원형**은 과거에 반복된 습관이나 오래 지속된 상태를 말하면서, **'지금은 아니다'라는 뉘앙스가 내장**돼 있어요 — I used to smoke.(예전엔 담배를 피웠어요 — 지금은 끊었고요.)\n\n" +
+          "부정·의문은 did의 세계 규칙 그대로예요 — I **didn't use to** like coffee. / **Did you use to** live in Busan? (did가 과거를 가져가니 use로 돌아가요.)",
+        examples: [
+          { en: "I used to play the piano.", ko: "예전엔 피아노를 쳤어요. (지금은 안 쳐요)" },
+          { en: "There used to be a bakery here.", ko: "여기 예전에 빵집이 있었어요.", note: "상태에도 OK — '~하곤 했다'로는 번역이 안 되는 지점" },
+          { en: "I didn't use to like coffee, but now I love it.", ko: "예전엔 커피를 안 좋아했는데, 지금은 정말 좋아해요." },
+        ],
+        vsKo: "한국어 '-곤 했다'와 닮았지만 두 가지가 달라요 — ① used to는 **'지금은 아님'이 기본 내장**이고('피아노 치곤 했다'는 지금 여부가 열려 있죠), ② 상태(살다, 있다)에도 써요. '예전엔 ~했는데 (지금은 아냐)'가 떠오르면 used to — 이게 더 정확한 매핑이에요.",
+      },
+      {
+        heading: "used to vs be used to -ing — 모양만 닮은 남남",
+        pattern: "used to + 원형 = 옛 습관 ↔ be used to + -ing = 익숙하다",
+        patternKo: "be가 보이면 '익숙하다'",
+        body:
+          "**be used to + -ing**는 전혀 다른 표현으로, '~에 **익숙하다**'예요 — I'm used to getting up early.(일찍 일어나는 데 익숙해요.) 여기서 used는 형용사이고, to는 부정사가 아니라 전치사라서 **뒤에 -ing**가 와요.\n\n" +
+          "구별법은 간단해요 — **앞에 be(am/is/are/was)가 있으면 '익숙하다', 없으면 '옛 습관'**. get used to -ing는 '익숙해지다'예요.",
+        examples: [
+          { en: "I used to get up early.", ko: "예전엔 일찍 일어났어요. (지금은 아니에요)", note: "옛 습관" },
+          { en: "I'm used to getting up early.", ko: "일찍 일어나는 데 익숙해요. (지금 얘기)", note: "be + used to + -ing" },
+          { en: "She's getting used to driving in Seoul.", ko: "그녀는 서울 운전에 익숙해지는 중이에요." },
+        ],
+        pitfall: "'I'm used to get up early.'(X)가 단골 오답이에요 — be used to의 to는 전치사라 뒤에 동사원형이 못 와요. 그리고 발음 함정 하나: used to는 [juːstə] '유스터'로, use(쓰다)의 [juːz]와 달리 **s가 맑은 [s]**예요. '유즈드 투'로 읽으면 어색해져요.",
+      },
+    ],
+  },
+
+  {
+    slug: "a2-02-future",
+    level: "A2",
+    order: 3,
     title: "will vs be going to — '-ㄹ게'와 '-ㄹ 거야'",
     titleFr: "Future: will vs be going to",
     summary: "영어의 두 미래 표현은 한국어 '-ㄹ게'와 '-ㄹ 거야'의 차이와 놀랍도록 닮았어요. 즉석 결정 vs 미리 정한 계획.",
@@ -169,7 +247,7 @@ export default [
   {
     slug: "a2-03-comparatives",
     level: "A2",
-    order: 3,
+    order: 4,
     title: "비교급과 최상급 — -er이냐 more냐",
     titleFr: "Comparatives & superlatives",
     summary: "taller인지 more tall인지 — 선택 기준은 단어의 길이예요. than 뒤에 me가 오는 이유까지 정리해요.",
@@ -249,7 +327,7 @@ export default [
   {
     slug: "a2-04-modals-basic",
     level: "A2",
-    order: 4,
+    order: 5,
     title: "조동사 can/must/should/have to — 부정의 함정",
     titleFr: "Modal verbs: can / must / should / have to",
     summary: "동사 앞에서 뉘앙스를 입히는 조동사. 특히 must not과 don't have to가 전혀 다른 뜻이 되는 함정을 집중 공략해요.",
@@ -327,7 +405,7 @@ export default [
   {
     slug: "a2-05-present-perfect-intro",
     level: "A2",
-    order: 5,
+    order: 6,
     title: "현재완료 입문 — 과거가 지금까지 닿아 있다",
     titleFr: "Present perfect: an introduction",
     summary: "한국어에 없어서 평생 회피하게 되는 시제, 현재완료. '과거의 일이 지금까지 닿아 있다'는 프레임 하나로 입문해요.",
@@ -412,7 +490,7 @@ export default [
   {
     slug: "a2-06-infinitive-gerund",
     level: "A2",
-    order: 6,
+    order: 7,
     title: "to부정사 vs 동명사 — 동사 뒤에 동사가 올 때",
     titleFr: "Infinitive vs gerund",
     summary: "want to go인데 enjoy going인 이유. 암기가 필요한 동사들과, stop to/-ing처럼 의미가 갈리는 함정을 정리해요.",
@@ -493,7 +571,7 @@ export default [
   {
     slug: "a2-07-adverbs-frequency",
     level: "A2",
-    order: 7,
+    order: 8,
     title: "빈도부사와 어순 — always의 지정석",
     titleFr: "Adverbs of frequency & word order",
     summary: "always부터 never까지 빈도의 사다리를 세우고, 한국어와 달리 자리가 정해져 있는 빈도부사의 지정석 규칙을 익혀요.",
@@ -574,7 +652,7 @@ export default [
   {
     slug: "a2-08-there-is",
     level: "A2",
-    order: 8,
+    order: 9,
     title: "there is/are와 비인칭 it — '있다'가 갈라지는 길목",
     titleFr: "There is / there are & impersonal it",
     summary: "한국어 '있다' 하나가 영어에선 there is(존재)와 have(소유)로 갈라져요. 주어가 꼭 필요한 영어의 해결사, 비인칭 it도 함께.",
