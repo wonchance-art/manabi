@@ -313,12 +313,10 @@ export default [
       },
       {
         heading: "à 군단과 de 군단 — 부정사를 연결하는 전치사",
+        pattern: "commencer à + inf · finir de + inf · vouloir + inf (전치사 없음)",
         body:
-          "동사 + 동사를 이을 때 어떤 동사는 à, 어떤 동사는 de, 어떤 동사는 맨 부정사를 써요. 고빈도만 추리면:\n\n" +
-          "**+ à + inf**: commencer à(시작하다), réussir à(해내다), apprendre à(배우다), aider à(돕다), s'habituer à(익숙해지다), hésiter à(망설이다)\n" +
-          "**+ de + inf**: finir de(끝내다), décider de(결심하다), essayer de(시도하다), accepter de, refuser de, oublier de(잊다), éviter de(피하다)\n" +
-          "**맨 부정사**: vouloir, pouvoir, devoir, aimer, espérer, savoir\n\n" +
-          "commencer à ↔ finir de가 짝으로 어긋나는 게 얄밉죠. 안타깝게도 의미 규칙은 없어서, 짝문장으로 입에 붙이는 게 정석이에요.",
+          "동사 + 동사를 이을 때 어떤 동사는 à(commencer, réussir, apprendre, s'habituer), 어떤 동사는 de(finir, décider, essayer, oublier, éviter), 어떤 동사는 맨 부정사(vouloir, pouvoir, devoir, aimer, espérer)를 써요.\n\n" +
+          "commencer à ↔ finir de가 짝으로 어긋나는 게 얄밉죠. 의미 규칙은 없어서, 짝문장으로 입에 붙이는 게 정석이에요.",
         table: {
           caption: "고빈도 동사 + 전치사 치트시트",
           headers: ["à + inf", "de + inf", "전치사 없음"],
@@ -339,11 +337,10 @@ export default [
       },
       {
         heading: "영어 감각이 배신하는 동사들",
+        pattern: "attendre/chercher/écouter + 직접목적어 (전치사 ✗) · téléphoner/répondre + à · dépendre + de",
         body:
-          "마지막으로, **영어에는 전치사가 있는데 프랑스어에는 없는**(또는 그 반대인) 블랙리스트예요.\n\n" +
-          "**전치사 없이 직접 목적어**: attendre(wait **for**), chercher(look **for**), écouter(listen **to**), regarder(look **at**), demander(ask **for**), payer(pay **for**)\n" +
-          "**à가 필요**: téléphoner à(call), répondre à(answer), ressembler à(resemble), plaire à(~의 마음에 들다)\n" +
-          "**de가 필요**: dépendre de(depend **on**), se souvenir de(remember), s'occuper de(take care **of**)",
+          "**영어에는 전치사가 있는데 프랑스어에는 없는**(또는 그 반대인) 블랙리스트예요.\n\n" +
+          "전치사 없음: attendre(wait **for**), chercher(look **for**), écouter(listen **to**), payer(pay **for**). à 필요: téléphoner à, répondre à, ressembler à. de 필요: dépendre de, se souvenir de, s'occuper de.",
         examples: [
           { fr: "J'attends le bus depuis vingt minutes.", ko: "버스를 20분째 기다리고 있어요.", note: "attendre pour(X) — 전치사 없음" },
           { fr: "Je cherche mes clés.", ko: "열쇠를 찾고 있어요.", note: "chercher pour(X)" },
