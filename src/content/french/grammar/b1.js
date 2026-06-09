@@ -499,12 +499,10 @@ export default [
       },
       {
         heading: "의문문 옮기기 — si와 ce que",
+        pattern: "네/아니오 → si · qu'est-ce que → ce que · qu'est-ce qui → ce qui · 의문사 → 유지",
         body:
-          "의문문은 **demander**(묻다)로 옮기는데, 의문문의 종류에 따라 연결사가 달라져요.\n\n" +
-          "**네/아니오 의문문 → si**: « Tu viens ? » → Il demande **si** je viens.\n" +
-          "**qu'est-ce que(무엇을) → ce que**: « Qu'est-ce que tu fais ? » → Il demande **ce que** je fais.\n" +
-          "**qu'est-ce qui(무엇이) → ce qui**: « Qu'est-ce qui se passe ? » → Il demande **ce qui** se passe.\n" +
-          "**그 밖의 의문사(où, quand, pourquoi, comment...)는 그대로 유지**: Il demande **où** j'habite.",
+          "의문문은 **demander**(묻다)로 옮기고, 종류에 따라 연결사가 달라져요. « Tu viens ? » → Il demande **si** je viens. / « Qu'est-ce que tu fais ? » → Il demande **ce que** je fais.\n\n" +
+          "où, quand, pourquoi 같은 의문사는 그대로 유지돼요: Il demande **où** j'habite.",
         examples: [
           { fr: "Elle m'a demandé si j'étais libre samedi.", ko: "그녀는 내가 토요일에 시간이 되는지 물었어요." },
           { fr: "Il m'a demandé ce que je faisais dans la vie.", ko: "그는 내 직업이 뭔지 물었어요." },
@@ -514,9 +512,10 @@ export default [
       },
       {
         heading: "명령문과 시간 표현의 변신",
+        pattern: "명령문 → dire de + 부정사 · demain → le lendemain · hier → la veille",
         body:
-          "**명령문은 de + 부정사**로 옮겨요: « Attends-moi ! » → Il m'a dit **de l'attendre**(기다리라고 했어요). 부정 명령은 de **ne pas** + 부정사.\n\n" +
-          "말한 시점이 과거로 밀리면 **시간·장소 표현도 함께** 바뀌어요: aujourd'hui → ce jour-là(그날), demain → le lendemain(다음 날), hier → la veille(전날), ici → là.",
+          "**명령문은 de + 부정사**로 옮겨요: « Attends-moi ! » → Il m'a dit **de l'attendre**. 부정 명령은 de **ne pas** + 부정사.\n\n" +
+          "말한 시점이 과거로 밀리면 **시간·장소 표현도 함께** 바뀌어요: aujourd'hui → ce jour-là, ici → là.",
         examples: [
           { fr: "Le médecin m'a dit de me reposer.", ko: "의사가 쉬라고 했어요." },
           { fr: "Elle m'a dit de ne pas m'inquiéter.", ko: "그녀는 걱정하지 말라고 했어요." },
@@ -538,9 +537,10 @@ export default [
     sections: [
       {
         heading: "celui 계열 — '그것/그 사람'으로 명사 반복 피하기",
+        pattern: "celui / celle / ceux / celles + de... / 관계절 / -ci·-là",
         body:
-          "같은 명사를 두 번 말하기 싫을 때, **앞에 나온 명사를 성·수에 맞는 celui 계열로 대신**해요: celui(남단), celle(여단), ceux(남복), celles(여복).\n\n" +
-          "단, celui는 혼자 못 서고 반드시 뒤에 보충이 붙어요. 붙는 것은 세 종류: ① **de + 명사**(소속·소유), ② **관계절**(qui/que/dont), ③ **-ci/-là**(이것/저것).",
+          "같은 명사를 두 번 말하기 싫을 때, **성·수에 맞는 celui 계열로 대신**해요.\n\n" +
+          "단, celui는 혼자 못 서고 반드시 뒤에 보충이 붙어요: ① **de + 명사**(소유), ② **관계절**(qui/que/dont), ③ **-ci/-là**(이것/저것).",
         table: {
           caption: "celui 계열",
           headers: ["", "단수", "복수"],
