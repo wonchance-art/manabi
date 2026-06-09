@@ -190,9 +190,10 @@ export default [
       },
       {
         heading: "자주 쓰는 -er 동사로 문장 만들기",
+        pattern: "je + 모음/무음 h 시작 동사 → j' (j'aime, j'habite)",
         body:
-          "일상 대화의 주력 동사들이 거의 다 1군이에요: **aimer**(좋아하다), **habiter**(살다), **travailler**(일하다), **étudier**(공부하다), **regarder**(보다), **écouter**(듣다), **manger**(먹다), **chanter**(노래하다).\n\n" +
-          "aimer처럼 모음으로 시작하는 동사는 je가 **j'**로 축약돼요: j'aime, j'habite(h 묵음이니까), j'étudie.",
+          "일상 대화의 주력 동사들이 거의 다 1군이에요: **aimer**(좋아하다), **habiter**(살다), **travailler**(일하다), **étudier**(공부하다), **regarder**(보다), **manger**(먹다).\n\n" +
+          "모음(또는 무음 h)으로 시작하는 동사는 je가 **j'**로 축약돼요: j'aime, j'habite, j'étudie.",
         examples: [
           { fr: "J'habite à Séoul.", ipa: "[ʒabit a seul]", ko: "저는 서울에 살아요." },
           { fr: "Tu aimes le cinéma ?", ipa: "[ty ɛm lə sinema]", ko: "너 영화 좋아해?" },
@@ -216,9 +217,11 @@ export default [
     sections: [
       {
         heading: "기본 공식 — ne + 동사 + pas",
+        pattern: "ne + 동사 + pas",
+        patternKo: "동사를 샌드위치처럼 감싸는 부정",
         body:
-          "프랑스어 부정문은 부정어를 한 단어 끼우는 게 아니라, **ne와 pas 두 조각으로 동사를 샌드위치처럼 감싸요**.\n\n" +
-          "Je parle(말해요) → Je **ne** parle **pas**(말하지 않아요). 빵(ne)—패티(동사)—빵(pas) 구조를 몸에 익히세요. 감싸는 대상은 어디까지나 **활용된 동사**예요.",
+          "부정어 한 단어가 아니라, **ne와 pas 두 조각으로 동사를 감싸요**. Je parle → Je **ne** parle **pas**.\n\n" +
+          "빵(ne)—패티(동사)—빵(pas) 구조예요. 감싸는 대상은 어디까지나 **활용된 동사**예요.",
         examples: [
           { fr: "Je ne parle pas chinois.", ipa: "[ʒə nə paʁl pa ʃinwa]", ko: "저는 중국어를 못해요." },
           { fr: "Il ne travaille pas.", ipa: "[il nə tʁavaj pa]", ko: "그는 일하지 않아요." },
