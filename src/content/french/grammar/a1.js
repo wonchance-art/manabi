@@ -700,10 +700,10 @@ export default [
       },
       {
         heading: "날짜와 요일 — le 3 mai 공식",
+        pattern: "le + 숫자 + 달 이름 (예외: 1일 = le premier)",
         body:
-          "날짜는 **le + 숫자 + 달 이름**: le 3 mai(5월 3일). 어순이 한국어와 반대로 '일 → 월'이에요. 단 하나의 예외 — 1일만 서수를 써서 **le premier**(le 1er)예요.\n\n" +
-          "요일(lundi 월 ~ dimanche 일)과 달 이름(janvier 1월 ~ décembre 12월)은 **소문자로** 써요. '매주 월요일마다'는 le lundi처럼 정관사를 붙여요.\n\n" +
-          "'오늘 며칠이에요?'는 **On est le combien ?**(구어) 또는 Nous sommes le + 날짜로 답해요.",
+          "날짜는 **le 3 mai**(5월 3일)처럼 어순이 한국어와 반대로 '일 → 월'이에요. 1일만 서수 **le premier**(le 1er)를 써요.\n\n" +
+          "요일·달 이름은 **소문자**로 쓰고, '매주 월요일마다'는 le lundi처럼 정관사를 붙여요. '오늘 며칠이에요?'는 **On est le combien ?**",
         examples: [
           { fr: "On est le combien ? — On est le 9 juin.", ipa: "[ɔ̃nɛ lə kɔ̃bjɛ̃ — ɔ̃nɛ lə nœf ʒɥɛ̃]", ko: "오늘 며칠이에요? — 6월 9일이에요." },
           { fr: "Mon anniversaire, c'est le premier avril.", ipa: "[mɔ̃nanivɛʁsɛʁ sɛ lə pʁəmjɛʁ avʁil]", ko: "제 생일은 4월 1일이에요.", note: "1일만 premier" },
