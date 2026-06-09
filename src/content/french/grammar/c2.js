@@ -97,10 +97,10 @@ export default [
       },
       {
         heading: "euphémisme — 완곡어법, 부드럽게 덮는 기술",
+        pattern: "il nous a quittés = 별세 · plan social = 정리해고 · quartiers sensibles = 우범 지역",
         body:
-          "**euphémisme**(완곡어법)은 불편한 현실을 부드러운 말로 감싸는 기법이에요. litote가 수사적 강조라면, euphémisme은 충격 완화가 목적이죠.\n\n" +
-          "죽음 주변에 특히 많아요: **il nous a quittés**(우리 곁을 떠났다), **disparaître**(사라지다 → 별세하다), **s'éteindre**(꺼지다 → 숨을 거두다). 사회·행정 언어에도 가득해요: **demandeur d'emploi**(구직자 ← 실업자), **les quartiers sensibles**(민감한 지역 ← 우범 지역), **un plan social**(사회적 계획 ← 정리해고).\n\n" +
-          "C2 독해력은 이 포장지를 벗겨 읽는 능력이에요. 특히 신문의 정치·경제 기사는 euphémisme의 박물관이라, 단어의 사전적 뜻이 아니라 **무엇을 덮고 있는지**를 읽어야 해요.",
+          "**euphémisme**(완곡어법)은 불편한 현실을 부드러운 말로 감싸요. litote가 수사적 강조라면 euphémisme은 충격 완화가 목적 — 죽음 주변(s'éteindre, disparaître)과 사회·행정 언어(demandeur d'emploi ← 실업자)에 특히 많아요.\n\n" +
+          "C2 독해력은 이 포장지를 벗겨 읽는 능력이에요. 정치·경제 기사에서는 사전적 뜻이 아니라 **무엇을 덮고 있는지**를 읽어야 해요.",
         examples: [
           { fr: "Son grand-père s'est éteint paisiblement dans la nuit.", ko: "그분의 할아버지는 밤사이 평온히 영면하셨다.", note: "s'éteindre — 촛불이 꺼지는 이미지의 완곡어" },
           { fr: "L'entreprise annonce un plan de sauvegarde de l'emploi.", ko: "회사가 «고용 보호 계획»을 발표했다.", note: "실제 내용은 대규모 감원 — 행정 완곡어법의 정점" },
@@ -109,11 +109,10 @@ export default [
       },
       {
         heading: "도치 — 문어의 우아한 어순 바꾸기",
+        pattern: "Peut-être / Sans doute / À peine + 동사-주어 도치",
         body:
-          "격조 있는 문어 프랑스어는 어순을 뒤집어 리듬과 격을 만들어요. 의문문 도치와는 다른, **문체적 도치**(inversion stylistique)예요.\n\n" +
-          "**부사 뒤 도치** — peut-être, sans doute, aussi(그래서), à peine 등이 문두에 오면 주어-동사가 도치돼요. Peut-être a-t-il raison(어쩌면 그가 옳을지도). 이 도치를 쓰느냐가 글의 격을 한 단계 가르죠.\n\n" +
-          "**관계절·종속절 안의 도치** — le pays où vivait son père(그의 아버지가 살던 나라)처럼 짧은 주어를 동사 뒤로 보내 문장의 무게중심을 다듬어요.\n\n" +
-          "**묘사 도치** — 장소 표현을 문두로: Au fond de la salle se trouvait un piano(홀 안쪽에는 피아노가 한 대 놓여 있었다). 소설 묘사의 표준 카메라 워크예요.",
+          "격조 있는 문어는 어순을 뒤집어 리듬과 격을 만들어요. **부사 뒤 도치**(Peut-être a-t-il raison)가 대표 — 이 도치를 쓰느냐가 글의 격을 한 단계 가르죠.\n\n" +
+          "**관계절 안의 도치**(le pays où vivait son père)와 **묘사 도치**(Au fond de la salle se trouvait un piano — 장소구 + 동사 + 주어)도 소설·격식 문어의 표준 카메라 워크예요.",
         examples: [
           { fr: "Peut-être faudrait-il repenser tout le système.", ko: "어쩌면 시스템 전체를 다시 생각해야 할지도 모른다.", note: "peut-être 문두 + 도치 = 격식 문어. 구어라면 Peut-être qu'il faudrait..." },
           { fr: "À peine était-elle sortie qu'il se mit à pleuvoir.", ko: "그녀가 나서자마자 비가 내리기 시작했다.", note: "à peine... que — 도치가 의무적인 구문" },
