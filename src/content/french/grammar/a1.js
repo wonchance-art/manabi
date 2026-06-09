@@ -551,10 +551,10 @@ export default [
       },
       {
         heading: "venir(오다)와 passé récent — '방금 ~했어요'",
+        pattern: "venir de + 동사 원형 → 방금 ~했어요 (passé récent)",
         body:
           "**venir**(오다)도 필수 불규칙 동사예요: je viens, tu viens, il vient, nous venons, vous venez, ils viennent [vjɛn].\n\n" +
-          "그리고 대칭의 미학 — aller + 원형이 가까운 미래라면, **venir de + 원형**은 가까운 과거예요(**passé récent**). Je viens de manger.(나 방금 먹었어.)\n\n" +
-          "직역하면 '먹는 것으로부터 오는 길이다'쯤 되는데, '방금 ~한 참이다'라는 의미로 매일 쓰여요.",
+          "aller + 원형이 가까운 미래라면, **venir de + 원형**은 가까운 과거예요. Je viens de manger.(나 방금 먹었어.) — 직역 '먹는 것으로부터 오는 길이다'.",
         examples: [
           { fr: "Je viens de Corée.", ipa: "[ʒə vjɛ̃ də kɔʁe]", ko: "저는 한국에서 왔어요.", note: "출신을 말하는 venir de + 장소" },
           { fr: "Je viens de manger.", ipa: "[ʒə vjɛ̃ də mɑ̃ʒe]", ko: "나 방금 먹었어.", note: "venir de + 원형 = 방금 ~했다" },
@@ -576,10 +576,11 @@ export default [
     sections: [
       {
         heading: "왜 필요한가 — '빵 하나'도 '빵 전체'도 아닐 때",
+        pattern: "du + 남성 · de la + 여성 · de l' + 모음 앞 · des + 복수",
+        patternKo: "셀 수 없는 것의 '얼마간, 좀'",
         body:
-          "'저는 빵을 먹어요'라고 할 때, un pain(빵 한 덩어리 통째)도 le pain(빵이라는 것 전체)도 어색해요. 내가 먹는 건 **빵이라는 덩어리 중 얼마간**이니까요.\n\n" +
-          "이 '얼마간, 좀'을 담당하는 게 **부분관사**예요. 물·빵·치즈·돈·시간처럼 셀 수 없는 것을 '일부' 먹고 마시고 가질 때 씁니다. A0에서 예고했던, 관사 3종 세트의 마지막 조각이에요.\n\n" +
-          "형태는 사실 **de + 정관사**예요. 그래서 de + le = **du**라는 익숙한 축약이 또 등장해요.",
+          "un pain(한 덩어리 통째)도 le pain(빵이라는 것 전체)도 아닌, **'빵을 좀'**을 담당하는 게 **부분관사**예요. 물·빵·치즈처럼 셀 수 없는 것을 '일부' 먹고 마실 때 써요.\n\n" +
+          "형태는 사실 **de + 정관사**라서, de + le = **du**라는 익숙한 축약이 또 등장해요.",
         table: {
           caption: "부분관사",
           headers: ["형태", "쓰는 곳", "예시"],
