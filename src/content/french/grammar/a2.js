@@ -163,10 +163,11 @@ export default [
     sections: [
       {
         heading: "형태 — nous에서 어간을 꺼내요",
+        pattern: "nous 현재형 - ons + -ais, -ais, -ait, -ions, -iez, -aient",
+        patternKo: "예외는 être(ét-) 단 하나",
         body:
-          "imparfait(반과거) 만들기는 전 시제 중 가장 규칙적이에요.\n\n" +
-          "**현재형 nous에서 -ons를 뗀 어간 + -ais, -ais, -ait, -ions, -iez, -aient**\n\n" +
-          "nous parlons → parl- → je parlais. 이 공식의 예외는 프랑스어 전체에서 **être(어간 ét-) 단 하나**예요: j'étais(나는 ~였다). 발음 포인트: -ais/-ait/-aient는 전부 [ɛ]로 같은 소리예요.",
+          "imparfait(반과거) 만들기는 전 시제 중 가장 규칙적이에요. nous parlons → parl- → je parlais.\n\n" +
+          "예외는 프랑스어 전체에서 **être(어간 ét-) 단 하나**예요: j'étais. 발음 포인트: -ais/-ait/-aient는 전부 [ɛ]로 같은 소리예요.",
         table: {
           caption: "parler의 imparfait",
           headers: ["인칭", "형태", "발음"],
@@ -188,11 +189,10 @@ export default [
       },
       {
         heading: "용법 — 습관, 진행, 배경 묘사",
+        pattern: "imparfait → ① 습관 '~하곤 했다' ② 진행 '~하고 있었다' ③ 배경 묘사",
         body:
-          "imparfait는 과거를 **끝나는 지점 없이, 펼쳐진 상태로** 보여주는 시제예요. 세 가지 대표 용법으로 잡으세요.\n\n" +
-          "**1. 과거의 습관** — '~하곤 했다': Avant, je fumais.(예전엔 담배를 피우곤 했어요.)\n" +
-          "**2. 과거의 진행** — '~하고 있었다': Je dormais.(자고 있었어요.)\n" +
-          "**3. 배경 묘사** — 날씨, 나이, 감정, 풍경: Il pleuvait.(비가 내리고 있었어요.) J'avais dix ans.(저는 열 살이었어요.)",
+          "imparfait는 과거를 **끝나는 지점 없이, 펼쳐진 상태로** 보여주는 시제예요.\n\n" +
+          "**습관**(Avant, je fumais. 예전엔 피우곤 했어요), **진행**(Je dormais. 자고 있었어요), **배경 묘사**(Il pleuvait. / J'avais dix ans.) 세 가지로 잡으세요.",
         examples: [
           { fr: "Quand j'étais petit, j'habitais à Daegu.", ipa: "[kɑ̃ ʒetɛ pəti ʒabitɛ a tɛgu]", ko: "어렸을 때 저는 대구에 살았어요.", note: "습관·지속" },
           { fr: "Avant, elle travaillait dans un café.", ipa: "[avɑ̃ ɛl tʁavajɛ dɑ̃zœ̃ kafe]", ko: "예전에 그녀는 카페에서 일했어요." },
