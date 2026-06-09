@@ -318,9 +318,10 @@ export default [
       },
       {
         heading: "의문사 6총사 — où, quand, qui, que, comment, pourquoi",
+        pattern: "의문사 + est-ce que ... ? · 구어: 평서문 + 의문사 ?",
         body:
-          "정보를 묻는 의문사들이에요. 의문사 + est-ce que 조합이 가장 무난해요: Où est-ce que tu habites ?(어디 살아?)\n\n" +
-          "구어에서는 의문사를 **문장 끝에 던지는** 방식도 아주 흔해요: Tu habites où ?(너 어디 살아?)",
+          "의문사 + est-ce que 조합이 가장 무난해요: Où est-ce que tu habites ?(어디 살아?)\n\n" +
+          "구어에서는 의문사를 **문장 끝에 던지는** 방식도 아주 흔해요: Tu habites où ?",
         table: {
           caption: "기본 의문사",
           headers: ["의문사", "발음", "뜻", "예시"],
@@ -354,10 +355,10 @@ export default [
     sections: [
       {
         heading: "성·수 일치 — 형용사는 명사를 따라가요",
+        pattern: "여성형 = 남성형 + e · 복수형 = + s",
         body:
-          "프랑스어 형용사는 꾸미는 명사의 **성(남/여)과 수(단/복)에 맞춰 모양이 변해요**. 기본 공식은 단순해요.\n\n" +
-          "**여성형 = 남성형 + e** / **복수형 = + s**\n\n" +
-          "그래서 한 형용사는 기본적으로 네 가지 모습을 가져요: petit / petit**e** / petit**s** / petit**es**. 이미 -e로 끝나는 형용사(rouge 등)는 여성형이 그대로이고, 복수 -s는 (A0에서 배웠듯) 발음되지 않아요.",
+          "형용사는 꾸미는 명사의 **성과 수에 맞춰** 변해요. 한 형용사는 기본 네 가지 모습: petit / petit**e** / petit**s** / petit**es**.\n\n" +
+          "이미 -e로 끝나는 형용사(rouge 등)는 여성형이 그대로이고, 복수 -s는 발음되지 않아요.",
         table: {
           caption: "petit(작은)의 4가지 모습",
           headers: ["", "단수", "복수"],
