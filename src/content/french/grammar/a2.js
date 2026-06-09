@@ -241,8 +241,9 @@ export default [
       },
       {
         heading: "활용 — 재귀대명사도 인칭 따라 변신",
+        pattern: "me · te · se · nous · vous · se + 동사",
         body:
-          "se 부분도 주어에 맞춰 변해요: **me, te, se, nous, vous, se**. 동사 활용에 대명사 변화까지 이중 활용인 셈이지만, 표로 보면 패턴이 명확해요.\n\n" +
+          "se 부분도 주어에 맞춰 변해요. 동사 활용에 대명사 변화까지 이중 활용인 셈이지만, 표로 보면 패턴이 명확해요.\n\n" +
           "me/te/se는 모음 앞에서 m'/t'/s'로 축약돼요: Je **m'**appelle, Tu **t'**habilles.",
         table: {
           caption: "se lever(일어나다) 직설법 현재",
@@ -265,9 +266,10 @@ export default [
       },
       {
         heading: "아침 루틴 한 세트 + 상호 의미",
+        pattern: "se réveiller → se lever → se laver → s'habiller → se coucher",
         body:
-          "대명동사가 가장 빛나는 곳은 하루 일과 묘사예요: **se réveiller**(잠이 깨다) → **se lever**(일어나다) → **se laver**(씻다) → **s'habiller**(옷을 입다) → **se coucher**(잠자리에 들다).\n\n" +
-          "그리고 주어가 복수일 때는 '서로'라는 **상호 의미**도 가능해요. Ils s'aiment.(그들은 서로 사랑해요.) On se voit demain ?(우리 내일 볼까? — 직역: 서로를 보다)",
+          "대명동사가 가장 빛나는 곳은 하루 일과 묘사예요. 잠이 깨고, 일어나고, 씻고, 입고, 잠자리에 드는 흐름을 한 세트로 외우세요.\n\n" +
+          "주어가 복수일 때는 '서로'라는 **상호 의미**도 가능해요. Ils s'aiment.(서로 사랑해요.) On se voit demain ?(내일 볼까?)",
         examples: [
           { fr: "Elle se réveille à six heures.", ipa: "[ɛl sə ʁevɛj a sizœʁ]", ko: "그녀는 6시에 잠이 깨요." },
           { fr: "Je m'habille vite.", ipa: "[ʒə mabij vit]", ko: "저는 옷을 빨리 입어요." },
