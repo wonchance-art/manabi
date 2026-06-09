@@ -9967,26 +9967,99 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .fr-level-dot--sm { width: 34px; height: 34px; font-size: 0.74rem; }
 
 /* ── 챕터 상세 ── */
-.fr-section { padding: 22px; margin-bottom: 16px; }
-.fr-section__heading {
-  display: flex; align-items: baseline; gap: 10px;
-  font-size: 1.05rem; font-weight: 700; margin-bottom: 12px;
+
+/* 핵심 패턴 한눈에 — 챕터 상단 요약 박스 */
+.fr-pattern-summary {
+  border: 1px solid;
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  margin-bottom: 20px;
 }
-.fr-section__num { font-size: 0.85rem; font-weight: 800; }
-.fr-section__para {
-  font-size: 0.92rem; line-height: 1.75;
-  color: var(--text-secondary);
+.fr-pattern-summary__title {
+  font-size: 0.78rem; font-weight: 800;
+  letter-spacing: 0.04em; text-transform: uppercase;
   margin-bottom: 10px;
 }
-.fr-section__para strong { color: var(--text-primary); }
+.fr-pattern-summary__list { list-style: none; margin: 0; padding: 0; }
+.fr-pattern-summary__item {
+  display: flex; align-items: baseline; gap: 10px;
+  padding: 5px 0;
+  color: var(--text-primary);
+}
+.fr-pattern-summary__item:hover .fr-pattern-summary__text { text-decoration: underline; }
+.fr-pattern-summary__num {
+  flex-shrink: 0;
+  font-size: 0.74rem; font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.fr-pattern-summary__text {
+  font-size: 0.95rem; font-weight: 700;
+  line-height: 1.5;
+}
+
+.fr-section { padding: 22px; margin-bottom: 16px; scroll-margin-top: 80px; }
+.fr-section__heading {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 1.08rem; font-weight: 800; margin-bottom: 14px;
+  line-height: 1.4;
+}
+.fr-section__num {
+  flex-shrink: 0;
+  width: 24px; height: 24px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 0.78rem; font-weight: 800;
+}
+
+/* 패턴 공식 박스 — 섹션의 핵심을 가장 크게 */
+.fr-pattern {
+  border-left: 4px solid;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  margin-bottom: 14px;
+}
+.fr-pattern__text {
+  font-size: 1.12rem; font-weight: 800;
+  line-height: 1.5; letter-spacing: 0.01em;
+  color: var(--text-primary);
+}
+.fr-pattern__ko {
+  font-size: 0.8rem; color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* 상세 설명 — 패턴·예문 아래의 부가 텍스트 (시각적 보조 위계) */
+.fr-section__detail {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+}
+.fr-section__para {
+  font-size: 0.88rem; line-height: 1.7;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+.fr-section__para:last-child { margin-bottom: 0; }
+/* 핵심 용어 형광펜 강조 */
+.fr-section__para strong,
+.fr-callout__body strong,
+.fr-pattern-summary__text strong,
+.fr-pattern__text strong {
+  color: var(--text-primary);
+  font-weight: 700;
+  background: linear-gradient(transparent 60%, var(--primary-glow) 60%);
+  border-radius: 2px;
+  padding: 0 1px;
+}
 
 .fr-examples { list-style: none; margin: 12px 0 4px; padding: 0; }
 .fr-example {
   padding: 10px 14px; margin-bottom: 8px;
   background: var(--bg-secondary);
+  border-left: 3px solid var(--border);
   border-radius: var(--radius-sm);
 }
-.fr-example__fr { font-size: 0.95rem; font-weight: 600; }
+.fr-example__fr { font-size: 1rem; font-weight: 700; line-height: 1.55; }
 .fr-example__ipa {
   margin-left: 8px;
   font-size: 0.78rem; font-weight: 400; color: var(--text-muted);

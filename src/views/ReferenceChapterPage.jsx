@@ -65,6 +65,10 @@ export default function ReferenceChapterPage({ lang, slug }) {
 
   const { chapter, prev, next } = data;
   const meta = ref.getLevelMeta(chapter.level);
+  // 핵심 패턴 한눈에 — pattern이 있는 섹션만 모아 상단 요약
+  const patternIndex = chapter.sections
+    .map((sec, i) => ({ i, pattern: sec.pattern }))
+    .filter(p => p.pattern);
 
   return (
     <div className="page-container" style={{ maxWidth: 760 }}>
@@ -78,7 +82,7 @@ export default function ReferenceChapterPage({ lang, slug }) {
       </nav>
 
       {/* ── 헤더 ── */}
-      <header style={{ marginBottom: 28 }}>
+      <header style={{ marginBottom: 22 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
           <LevelDot meta={meta} size="sm" />
           <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 600 }}>
@@ -95,24 +99,57 @@ export default function ReferenceChapterPage({ lang, slug }) {
           </p>
         )}
         {chapter.summary && (
-          <p style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', lineHeight: 1.65, marginTop: 10 }}>
+          <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginTop: 10 }}>
             {chapter.summary}
           </p>
         )}
       </header>
 
+      {/* ── 핵심 패턴 한눈에 ── */}
+      {patternIndex.length > 0 && (
+        <div className="fr-pattern-summary" style={{ borderColor: meta?.line, background: meta?.bg }}>
+          <div className="fr-pattern-summary__title" style={{ color: meta?.color }}>📌 핵심 패턴 한눈에</div>
+          <ol className="fr-pattern-summary__list">
+            {patternIndex.map(p => (
+              <li key={p.i}>
+                <a href={`#sec-${p.i + 1}`} className="fr-pattern-summary__item">
+                  <span className="fr-pattern-summary__num" style={{ color: meta?.color }}>{p.i + 1}</span>
+                  <span className="fr-pattern-summary__text">{refInline(p.pattern)}</span>
+                </a>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+
       {/* ── 본문 섹션 ── */}
       {chapter.sections.map((sec, i) => (
-        <section key={i} className="card fr-section">
+        <section key={i} id={`sec-${i + 1}`} className="card fr-section">
           <h2 className="fr-section__heading">
-            <span className="fr-section__num" style={{ color: meta?.color }}>{i + 1}</span>
+            <span className="fr-section__num" style={{ background: meta?.bg, color: meta?.color }}>{i + 1}</span>
             {sec.heading}
           </h2>
-          {sec.body && sec.body.split(/\n\n/).map((para, j) => (
-            <p key={j} className="fr-section__para">{refInline(para)}</p>
-          ))}
+
+          {/* 패턴 공식 박스 — 섹션의 핵심을 가장 먼저, 가장 크게 */}
+          {sec.pattern && (
+            <div className="fr-pattern" style={{ borderColor: meta?.color }}>
+              <div className="fr-pattern__text">{refInline(sec.pattern)}</div>
+              {sec.patternKo && <div className="fr-pattern__ko">{sec.patternKo}</div>}
+            </div>
+          )}
+
           <SectionTable table={sec.table} />
           <ExampleList examples={sec.examples} langCode={ref.langCode} />
+
+          {/* 상세 설명 — 패턴·예문 아래의 부가 설명 */}
+          {sec.body && (
+            <div className="fr-section__detail">
+              {sec.body.split(/\n\n/).map((para, j) => (
+                <p key={j} className="fr-section__para">{refInline(para)}</p>
+              ))}
+            </div>
+          )}
+
           {CALLOUT_ORDER.map(kind => (
             <Callout key={kind} kind={kind} text={sec[kind]} />
           ))}
