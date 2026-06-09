@@ -14,10 +14,11 @@ export default [
     sections: [
       {
         heading: "공식 — avoir 현재형 + 과거분사",
+        pattern: "avoir 현재형 + 과거분사",
+        patternKo: "회화의 '~했어요'를 담당하는 복합과거",
         body:
-          "드디어 과거를 말할 차례예요. 프랑스어 회화에서 '~했어요'를 담당하는 시제가 **passé composé**(복합과거)예요. 이름 그대로 두 조각의 **복합** 구조죠.\n\n" +
-          "**avoir 현재형(조동사) + 과거분사(participe passé)**\n\n" +
-          "J'ai mangé.(나 먹었어.) — A1에서 avoir 활용을 입에 붙여둔 보람이 여기서 터져요. avoir만 인칭에 따라 변하고, 과거분사는 (avoir 조동사일 때는) 변하지 않아요.",
+          "회화에서 '~했어요'를 담당하는 시제가 **passé composé**(복합과거)예요. J'ai mangé.(나 먹었어.)\n\n" +
+          "**avoir만 인칭에 따라 변하고**, 과거분사는 (avoir 조동사일 때는) 변하지 않아요.",
         table: {
           caption: "manger의 passé composé",
           headers: ["인칭", "형태", "발음"],
@@ -38,10 +39,10 @@ export default [
       },
       {
         heading: "과거분사 만들기 — 규칙과 단골 불규칙",
+        pattern: "-er → -é (mangé) · -ir → -i (fini)",
         body:
-          "규칙은 동사 그룹별로 깔끔해요.\n\n" +
-          "**-er 동사 → -é**: manger → mangé (발음은 원형과 같은 [e]!)\n**-ir 동사 → -i**: finir → fini, dormir → dormi\n\n" +
-          "문제는 자주 쓰는 동사일수록 불규칙이라는 것. 다행히 최빈출 불규칙은 한 줌이라 표로 끝낼 수 있어요.",
+          "규칙은 동사 그룹별로 깔끔해요. -er 동사의 -é는 발음이 원형과 같은 [e]예요.\n\n" +
+          "자주 쓰는 동사일수록 불규칙이지만, 최빈출 불규칙은 한 줌이라 표로 끝낼 수 있어요.",
         table: {
           caption: "단골 불규칙 과거분사",
           headers: ["원형", "과거분사", "예시"],
