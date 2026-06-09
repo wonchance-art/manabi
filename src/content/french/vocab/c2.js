@@ -76,7 +76,7 @@ export default {
         { fr: "grosso modo", ipa: "[ɡʁoso mɔdo]", ko: "대충, 대략", pos: "loc.", ex: { fr: "Grosso modo, ça coûte mille euros.", ko: "대략 천 유로쯤 해요." } },
         { fr: "ipso facto", ipa: "[ipso fakto]", ko: "그 사실 자체로, 자동적으로", pos: "loc.", en: "ipso facto" },
         { fr: "sine qua non", ipa: "[sine kwa nɔn]", ko: "필수 불가결한 (조건)", pos: "loc.", en: "sine qua non", ex: { fr: "une condition sine qua non", ko: "필수 불가결한 조건" } },
-        { fr: "statu quo", ipa: "[staty kwo]", ko: "현상 유지", pos: "n.m.", en: "status quo", etym: "주의 — 영어는 status quo, 프랑스어는 statu quo로 철자가 달라요." },
+        { fr: "le statu quo", ipa: "[staty kwo]", ko: "현상 유지", pos: "n.m.", en: "status quo", etym: "주의 — 영어는 status quo, 프랑스어는 statu quo로 철자가 달라요." },
         { fr: "ex æquo", ipa: "[ɛɡzeko]", ko: "동점으로, 공동 (순위)", pos: "loc.", ex: { fr: "Ils sont arrivés premiers ex æquo.", ko: "그들은 공동 1위로 들어왔다." } },
         { fr: "et cætera (etc.)", ipa: "[ɛt seteʁa]", ko: "기타 등등", pos: "loc.", en: "et cetera" },
       ],

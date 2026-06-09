@@ -3,6 +3,8 @@
  * 문법(grammar/<level>.js) + 어휘(vocab/<level>.js)를 A0→C2 학습 순서로 묶음.
  * 콘텐츠는 코드가 단일 소스 — 형식은 SCHEMA.md 참고.
  */
+import { createRegistry } from '../refRegistry';
+
 import grammarA0 from './grammar/a0';
 import grammarA1 from './grammar/a1';
 import grammarA2 from './grammar/a2';
@@ -58,48 +60,16 @@ export const FR_LEVEL_META = [
   },
 ];
 
-const GRAMMAR = {
-  A0: grammarA0, A1: grammarA1, A2: grammarA2,
-  B1: grammarB1, B2: grammarB2, C1: grammarC1, C2: grammarC2,
-};
-
-const VOCAB = {
-  A0: vocabA0, A1: vocabA1, A2: vocabA2,
-  B1: vocabB1, B2: vocabB2, C1: vocabC1, C2: vocabC2,
-};
-
-/** 레벨 순서·챕터 order 순으로 평탄화된 전체 챕터 목록 */
-export const ALL_CHAPTERS = FR_LEVEL_META.flatMap(meta =>
-  (GRAMMAR[meta.key] || []).slice().sort((a, b) => a.order - b.order)
+const registry = createRegistry(
+  FR_LEVEL_META,
+  { A0: grammarA0, A1: grammarA1, A2: grammarA2, B1: grammarB1, B2: grammarB2, C1: grammarC1, C2: grammarC2 },
+  { A0: vocabA0, A1: vocabA1, A2: vocabA2, B1: vocabB1, B2: vocabB2, C1: vocabC1, C2: vocabC2 },
 );
 
-const BY_SLUG = new Map(ALL_CHAPTERS.map((ch, idx) => [ch.slug, idx]));
-
-export function getLevelMeta(key) {
-  return FR_LEVEL_META.find(m => m.key === String(key || '').toUpperCase()) || null;
-}
-
-export function getGrammarChapters(levelKey) {
-  return GRAMMAR[String(levelKey || '').toUpperCase()] || [];
-}
-
-/** slug로 챕터 + 이전/다음 챕터(레벨 경계 넘어 연속) 조회 */
-export function getChapter(slug) {
-  const idx = BY_SLUG.get(slug);
-  if (idx == null) return null;
-  return {
-    chapter: ALL_CHAPTERS[idx],
-    prev: idx > 0 ? ALL_CHAPTERS[idx - 1] : null,
-    next: idx < ALL_CHAPTERS.length - 1 ? ALL_CHAPTERS[idx + 1] : null,
-  };
-}
-
-export function getVocab(levelKey) {
-  return VOCAB[String(levelKey || '').toUpperCase()] || null;
-}
-
-export function countVocab(levelKey) {
-  const v = getVocab(levelKey);
-  if (!v) return 0;
-  return v.themes.reduce((sum, t) => sum + t.words.length, 0);
-}
+export const ALL_CHAPTERS = registry.ALL_CHAPTERS;
+export const getLevelMeta = registry.getLevelMeta;
+export const getGrammarChapters = registry.getGrammarChapters;
+export const getChapter = registry.getChapter;
+export const getVocab = registry.getVocab;
+export const countVocab = registry.countVocab;
+export default registry;
