@@ -2,13 +2,10 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { parseTitle } from '../lib/seriesMeta';
-import { getIdealLevel } from '../lib/levels';
-import { CardGridSkeleton } from '../components/Skeleton';
 
 const LANG_FILTERS = [
   { key: 'Japanese', label: '🇯🇵 일본어' },
@@ -16,22 +13,21 @@ const LANG_FILTERS = [
   { key: 'French',   label: '🇫🇷 프랑스어' },
 ];
 
-const LEVEL_ORDER = {
-  'N5 기초': 0, 'N4 기본': 1, 'N3 중급': 2, 'N2 상급': 3, 'N1 심화': 4,
-  'A1 기초': 0, 'A2 초급': 1, 'B1 중급': 2, 'B2 상급': 3, 'C1 고급': 4, 'C2 마스터': 5,
-};
-
-const JP_LEVELS = ['N5 기초', 'N4 기본', 'N3 중급', 'N2 상급', 'N1 심화'];
-const EN_LEVELS = ['A1 기초', 'A2 초급', 'B1 중급', 'B2 상급', 'C1 고급', 'C2 마스터'];
-
-async function fetchLessons() {
+/**
+ * 카나 쓰기 드릴 — DB 실습 강의 중 레퍼런스가 대체할 수 없는 유일한 시리즈.
+ * 그 외 DB 문법 강의는 레퍼런스와 중복이라 목록에서 제외 (직접 링크는 유효).
+ */
+async function fetchKanaLessons() {
   const { data } = await supabase
     .from('reading_materials')
-    .select('id, title, created_at, processed_json')
+    .select('id, title, processed_json')
     .eq('visibility', 'public')
-    .ilike('title', '[%#%]%')
-    .limit(300);
-  return data || [];
+    .ilike('title', '%카나 #%')
+    .limit(60);
+  return (data || [])
+    .map(m => ({ ...m, _meta: parseTitle(m.title) }))
+    .filter(m => m._meta.series === '카나')
+    .sort((a, b) => (a._meta.num || 0) - (b._meta.num || 0));
 }
 
 async function fetchProgressMap(userId) {
@@ -49,28 +45,17 @@ async function fetchProgressMap(userId) {
   return { completed, inProgress };
 }
 
-async function fetchVocabByLang(userId) {
-  if (!userId) return { Japanese: 0, English: 0 };
-  const { data } = await supabase
-    .from('user_vocabulary')
-    .select('language')
-    .eq('user_id', userId);
-  const counts = { Japanese: 0, English: 0 };
-  for (const v of (data || [])) {
-    if (counts[v.language] != null) counts[v.language] += 1;
-  }
-  return counts;
-}
-
 /** refManifest: 서버에서 만든 레퍼런스 경량 목차 — lessons/page.jsx 참고 */
 export default function LessonsPage({ refManifest = {} }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
+
   const [langFilter, setLangFilter] = useState(() => {
     const u = searchParams.get('lang');
     return u === 'English' || u === 'French' ? u : 'Japanese';
   });
+  const [levelFilter, setLevelFilter] = useState(searchParams.get('level') || 'all');
   const [expandedGroups, setExpandedGroups] = useState(() => {
     if (typeof window === 'undefined') return new Set();
     try {
@@ -78,18 +63,17 @@ export default function LessonsPage({ refManifest = {} }) {
       return new Set(Array.isArray(saved) ? saved : []);
     } catch { return new Set(); }
   });
-  function toggleGroup(level) {
+  const [refRead, setRefRead] = useState(() => ({}));
+
+  function toggleGroup(key) {
     setExpandedGroups(prev => {
       const next = new Set(prev);
-      if (next.has(level)) next.delete(level);
-      else next.add(level);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
       try { localStorage.setItem('lessons_expanded', JSON.stringify([...next])); } catch {}
       return next;
     });
   }
-  const [levelFilter, setLevelFilter] = useState(searchParams.get('level') || 'all');
-  const [testScores, setTestScores] = useState({});
-  const [refRead, setRefRead] = useState(() => ({}));
 
   // 레퍼런스 챕터 읽음 표시 (localStorage — RefReadMark가 기록)
   useEffect(() => {
@@ -107,177 +91,22 @@ export default function LessonsPage({ refManifest = {} }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 리딩 테스트 점수 (localStorage)
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const result = {};
-    try {
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith('reading_test_history:')) {
-          const id = key.slice('reading_test_history:'.length);
-          const arr = JSON.parse(localStorage.getItem(key) || '[]');
-          if (arr.length === 0) continue;
-          const best = arr.reduce((b, h) => h.score > b.score ? h : b);
-          result[id] = best;
-        }
-      }
-    } catch {}
-    setTestScores(result);
-  }, []);
-
-  const { data: lessons = [], isLoading } = useQuery({
-    queryKey: ['lessons'],
-    queryFn: fetchLessons,
-    staleTime: 1000 * 60 * 5,
+  // 카나 드릴 (일본어 탭 전용)
+  const { data: kanaLessons = [] } = useQuery({
+    queryKey: ['kana-lessons'],
+    queryFn: fetchKanaLessons,
+    enabled: langFilter === 'Japanese',
+    staleTime: 1000 * 60 * 10,
   });
-
   const { data: progressMap = { completed: new Set(), inProgress: new Map() } } = useQuery({
     queryKey: ['lessons-progress', user?.id],
     queryFn: () => fetchProgressMap(user?.id),
-    enabled: !!user,
+    enabled: !!user && langFilter === 'Japanese',
   });
 
-  const { data: vocabByLang } = useQuery({
-    queryKey: ['lessons-vocab-lang', user?.id],
-    queryFn: () => fetchVocabByLang(user?.id),
-    enabled: !!user,
-    staleTime: 1000 * 60 * 5,
-  });
-
-  const recommendedLevel = useMemo(() => {
-    if (!vocabByLang) return null;
-    if (langFilter === 'Japanese') return getIdealLevel('Japanese', vocabByLang.Japanese || 0);
-    if (langFilter === 'English') return getIdealLevel('English', vocabByLang.English || 0);
-    return null;
-  }, [vocabByLang, langFilter]);
-
-  // 사용자 상태에 따른 추천 시작점
-  const recommendStart = useMemo(() => {
-    if (lessons.length === 0) return null;
-
-    // 시리즈별 그룹화
-    const seriesMap = new Map();
-    for (const m of lessons) {
-      const meta = parseTitle(m.title);
-      if (!meta.level || !meta.series || meta.num == null) continue;
-      const k = `${meta.level}|${meta.series}`;
-      if (!seriesMap.has(k)) seriesMap.set(k, []);
-      seriesMap.get(k).push({ ...m, _meta: meta });
-    }
-
-    // 1순위: 진행 중 시리즈 (가장 많이 진행한 것)
-    let bestInProgress = null;
-    for (const items of seriesMap.values()) {
-      items.sort((a, b) => a._meta.num - b._meta.num);
-      const completed = items.filter(i => progressMap.completed.has(i.id)).length;
-      if (completed === 0 || completed === items.length) continue;
-      const next = items.find(i => !progressMap.completed.has(i.id));
-      if (!next) continue;
-      const pct = completed / items.length;
-      if (!bestInProgress || pct > bestInProgress.pct) {
-        bestInProgress = {
-          type: 'continue',
-          level: items[0]._meta.level,
-          series: items[0]._meta.series,
-          completed,
-          total: items.length,
-          pct,
-          material: { id: next.id, title: next.title },
-        };
-      }
-    }
-    if (bestInProgress) return bestInProgress;
-
-    // 2순위: 추천 레벨의 첫 미완료 lesson
-    if (recommendedLevel) {
-      const candidates = lessons
-        .filter(m => m.processed_json?.metadata?.level === recommendedLevel)
-        .map(m => ({ ...m, _meta: parseTitle(m.title) }))
-        .filter(m => m._meta.num != null)
-        .sort((a, b) => {
-          const sa = a._meta.series || '';
-          const sb = b._meta.series || '';
-          if (sa !== sb) return sa.localeCompare(sb);
-          return a._meta.num - b._meta.num;
-        });
-      const first = candidates.find(m => !progressMap.completed.has(m.id));
-      if (first) {
-        return { type: 'start-level', level: recommendedLevel, material: { id: first.id, title: first.title } };
-      }
-    }
-
-    // 3순위: 절대 신규 → N5 카나 #1 (또는 A1 grammar #1)
-    const fallback = lessons
-      .filter(m => {
-        const meta = parseTitle(m.title);
-        const targetLevel = langFilter === 'English' ? 'A1 기초' : 'N5 기초';
-        return meta.level === targetLevel && meta.num === 1 && (meta.series === '카나' || meta.series === 'grammar');
-      })
-      .sort((a, b) => {
-        const ma = parseTitle(a.title);
-        const mb = parseTitle(b.title);
-        // 카나 시리즈 우선 (일본어), grammar #1 우선 (영어)
-        if (ma.series === '카나' && mb.series !== '카나') return -1;
-        if (mb.series === '카나' && ma.series !== '카나') return 1;
-        return 0;
-      });
-    if (fallback[0]) {
-      return {
-        type: 'start-fresh',
-        level: fallback[0].processed_json?.metadata?.level,
-        material: { id: fallback[0].id, title: fallback[0].title },
-      };
-    }
-    return null;
-  }, [lessons, progressMap, recommendedLevel, langFilter]);
-
-  // 시리즈별 총 편수 (5/23용)
-  const seriesTotals = useMemo(() => {
-    const map = new Map();
-    for (const m of lessons) {
-      const meta = parseTitle(m.title);
-      if (!meta.level || !meta.series || meta.num == null) continue;
-      const k = `${meta.level}|${meta.series}`;
-      map.set(k, (map.get(k) || 0) + 1);
-    }
-    return map;
-  }, [lessons]);
-
-  // 정렬: 레벨 → 시리즈명 → 번호
-  const sorted = useMemo(() => {
-    let arr = lessons.slice();
-    arr = arr.filter(m => m.processed_json?.metadata?.language === langFilter);
-    if (levelFilter !== 'all') {
-      arr = arr.filter(m => m.processed_json?.metadata?.level === levelFilter);
-    }
-    arr.sort((a, b) => {
-      const la = a.processed_json?.metadata?.level;
-      const lb = b.processed_json?.metadata?.level;
-      const oa = la in LEVEL_ORDER ? LEVEL_ORDER[la] : 99;
-      const ob = lb in LEVEL_ORDER ? LEVEL_ORDER[lb] : 99;
-      if (oa !== ob) return oa - ob;
-      const ma = parseTitle(a.title);
-      const mb = parseTitle(b.title);
-      const sa = ma.series || '￿';
-      const sb = mb.series || '￿';
-      if (sa !== sb) return sa.localeCompare(sb);
-      if (ma.num != null && mb.num != null) return ma.num - mb.num;
-      return 0;
-    });
-    return arr;
-  }, [lessons, langFilter, levelFilter]);
-
-  // 레퍼런스가 중심 콘텐츠 — DB 실습 강의(일본어·영어)는 하단 보조 섹션
   const refLang = refManifest[langFilter];
-  const hasPracticeLessons = langFilter !== 'French';
+  const levelOptions = refLang ? refLang.levels.map(l => l.label) : [];
 
-  // 레벨 옵션 (매니페스트 기준 — DB 강의 레벨 라벨과 동일)
-  const levelOptions = refLang ? refLang.levels.map(l => l.label)
-    : langFilter === 'Japanese' ? JP_LEVELS
-    : EN_LEVELS;
-
-  // 코드 기반 레퍼런스 그룹 (DB 강의와 별도 소스)
   const refGroups = useMemo(() => {
     if (!refLang) return [];
     return refLang.levels
@@ -285,12 +114,17 @@ export default function LessonsPage({ refManifest = {} }) {
       .map(l => ({ meta: l, chapters: l.chapters, vocabCount: l.vocabCount }));
   }, [refLang, levelFilter]);
 
+  // 카나 그룹은 N5와 짝 — 전체 또는 N5 필터에서만 노출
+  const showKana = langFilter === 'Japanese'
+    && kanaLessons.length > 0
+    && (levelFilter === 'all' || levelFilter === 'N5 기초');
+
   return (
     <div className="page-container">
       <div className="page-header page-header--row">
         <div>
           <h1 className="page-header__title">🎓 강의</h1>
-          <p className="page-header__subtitle">문법·어휘 레퍼런스 + 실습 강의</p>
+          <p className="page-header__subtitle">학습 순서대로 배치된 문법·어휘 레퍼런스</p>
         </div>
       </div>
 
@@ -328,7 +162,7 @@ export default function LessonsPage({ refManifest = {} }) {
         </div>
       </div>
 
-      {refLang ? (
+      {refLang && (
         <div className="lessons-list">
           {/* 레퍼런스 소개 — 한국인 학습자 설계 + 콜아웃 범례 */}
           <div className="card" style={{ padding: '14px 16px', marginBottom: 6 }}>
@@ -344,6 +178,57 @@ export default function LessonsPage({ refManifest = {} }) {
             </div>
           </div>
 
+          {/* 카나 쓰기 드릴 — 문자 학습의 실습 짝 (N5 위에 배치) */}
+          {showKana && (() => {
+            const groupKey = 'kana-drill';
+            const isOpen = expandedGroups.has(groupKey);
+            const doneCount = kanaLessons.filter(m => progressMap.completed.has(m.id)).length;
+            return (
+              <section className={`lessons-list__group ${isOpen ? 'is-open' : ''}`}>
+                <button
+                  type="button"
+                  className="lessons-list__group-header"
+                  onClick={() => toggleGroup(groupKey)}
+                  aria-expanded={isOpen}
+                >
+                  <span className="lessons-list__group-chevron" aria-hidden="true">{isOpen ? '▾' : '▸'}</span>
+                  <span className="lessons-list__group-title">
+                    ✏️ 카나 쓰기 드릴
+                    <span style={{ fontWeight: 500, fontSize: '0.82em', color: 'var(--text-muted)', marginLeft: 8 }}>
+                      히라가나·가타카나 — 문자 챕터의 실습 짝
+                    </span>
+                  </span>
+                  <span className="lessons-list__group-count">{doneCount} / {kanaLessons.length}</span>
+                </button>
+                {isOpen && (
+                  <ul className="lessons-list__rows">
+                    {kanaLessons.map(m => {
+                      const isCompleted = progressMap.completed.has(m.id);
+                      const lastIdx = progressMap.inProgress.get(m.id);
+                      return (
+                        <li
+                          key={m.id}
+                          className={`lessons-list__row lessons-list__row--${isCompleted ? 'done' : lastIdx ? 'progress' : 'idle'}`}
+                          onClick={() => router.push(`/lessons/${m.id}`)}
+                          role="link"
+                          tabIndex={0}
+                          onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && router.push(`/lessons/${m.id}`)}
+                        >
+                          <span className="lessons-list__status" aria-hidden="true">
+                            {isCompleted ? '●' : lastIdx ? '◐' : '○'}
+                          </span>
+                          <span className="lessons-list__title">{m._meta.display || m.title}</span>
+                          <span className="lessons-list__meta" />
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </section>
+            );
+          })()}
+
+          {/* 레벨별 레퍼런스 그룹 */}
           {refGroups.map(({ meta, chapters, vocabCount }) => {
             const groupKey = `ref:${langFilter}:${meta.key}`;
             const isOpen = expandedGroups.has(groupKey);
@@ -407,144 +292,6 @@ export default function LessonsPage({ refManifest = {} }) {
             );
           })}
         </div>
-      ) : null}
-
-      {/* ── 실습 강의 (일본어·영어) — 퀴즈·회화·번역 미션 인터랙티브 강의 ── */}
-      {hasPracticeLessons && (
-      <section style={{ marginTop: 30, paddingTop: 22, borderTop: '1px solid var(--border)' }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
-          <h2 style={{ fontSize: '1.02rem', fontWeight: 700 }}>✏️ 실습 강의</h2>
-          <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-            레퍼런스로 이해했다면, 퀴즈·회화·번역 미션으로 손에 익히세요
-          </span>
-        </div>
-
-        {/* 추천 시작점 — 진행 중 / 추천 레벨 첫 lesson / 신규 입문 */}
-        {recommendStart && (
-          <Link href={`/lessons/${recommendStart.material.id}`} className="lessons-hero">
-            <div className="lessons-hero__hint">
-              {recommendStart.type === 'continue' && '📍 이어서 학습'}
-              {recommendStart.type === 'start-level' && `🎯 추천 시작점 — ${recommendStart.level}`}
-              {recommendStart.type === 'start-fresh' && '🌱 첫 강의로 시작'}
-            </div>
-            <div className="lessons-hero__title">{recommendStart.material.title}</div>
-            {recommendStart.type === 'continue' && (
-              <div className="lessons-hero__sub">
-                {recommendStart.level} {recommendStart.series} · {recommendStart.completed}/{recommendStart.total} 진행
-              </div>
-            )}
-            {recommendStart.type === 'start-level' && (
-              <div className="lessons-hero__sub">단어 수 기준 자동 추천</div>
-            )}
-            {recommendStart.type === 'start-fresh' && (
-              <div className="lessons-hero__sub">언어 학습은 글자부터</div>
-            )}
-          </Link>
-        )}
-
-      {isLoading ? (
-        <CardGridSkeleton height={48} />
-      ) : sorted.length > 0 ? (() => {
-        // 카나는 별도 그룹(최상단), 그 외는 레벨별 통합
-        const groups = [];
-        const kanaItems = [];
-        let currentLevel = null;
-        for (const m of sorted) {
-          const meta = parseTitle(m.title);
-          if (meta.series === '카나') {
-            kanaItems.push(m);
-            continue;
-          }
-          const lv = m.processed_json?.metadata?.level;
-          if (lv !== currentLevel) {
-            currentLevel = lv;
-            groups.push({ level: lv, items: [], key: lv || 'unknown' });
-          }
-          groups[groups.length - 1].items.push(m);
-        }
-        if (kanaItems.length > 0) {
-          // 번호 순으로 정렬
-          kanaItems.sort((a, b) => (parseTitle(a.title).num || 0) - (parseTitle(b.title).num || 0));
-          groups.unshift({ level: '카나 입문', items: kanaItems, key: '__kana__' });
-        }
-        return (
-          <div className="lessons-list">
-            {groups.map(g => {
-              const completedCount = g.items.filter(m => progressMap.completed.has(m.id)).length;
-              const groupKey = g.key;
-              const isOpen = expandedGroups.has(groupKey);
-              return (
-                <section key={groupKey} className={`lessons-list__group ${isOpen ? 'is-open' : ''}`}>
-                  <button
-                    type="button"
-                    className="lessons-list__group-header"
-                    onClick={() => toggleGroup(groupKey)}
-                    aria-expanded={isOpen}
-                  >
-                    <span className="lessons-list__group-chevron" aria-hidden="true">{isOpen ? '▾' : '▸'}</span>
-                    <span className="lessons-list__group-title">{g.level}</span>
-                    <span className="lessons-list__group-count">{completedCount} / {g.items.length}</span>
-                  </button>
-                  {isOpen && (
-                  <ul className="lessons-list__rows">
-                    {g.items.map(m => {
-                      const isCompleted = progressMap.completed.has(m.id);
-                      const titleMeta = parseTitle(m.title);
-                      const lastIdx = progressMap.inProgress.get(m.id);
-                      const totalSeq = m.processed_json?.sequence?.length || 0;
-                      const pct = (lastIdx && totalSeq > 0) ? Math.round((lastIdx / totalSeq) * 100) : 0;
-                      const score = testScores[String(m.id)];
-                      const previewText = (() => {
-                        const dict = m.processed_json?.dictionary || {};
-                        const seq = m.processed_json?.sequence || [];
-                        if (seq.length === 0) return '';
-                        return seq.slice(0, 40).map(id => dict[id]?.text || '').filter(Boolean).join('').slice(0, 120);
-                      })();
-                      const statusDot = isCompleted ? 'done' : (lastIdx ? 'progress' : 'idle');
-                      return (
-                        <li
-                          key={m.id}
-                          className={`lessons-list__row lessons-list__row--${statusDot}`}
-                          onClick={() => router.push(`/lessons/${m.id}`)}
-                          title={previewText || undefined}
-                          role="link"
-                          tabIndex={0}
-                          onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && router.push(`/lessons/${m.id}`)}
-                        >
-                          <span className="lessons-list__status" aria-hidden="true">
-                            {isCompleted ? '●' : lastIdx ? '◐' : '○'}
-                          </span>
-                          <span className="lessons-list__title">
-                            {titleMeta.display || m.title}
-                          </span>
-                          <span className="lessons-list__meta">
-                            {score && (
-                              <span className="lessons-list__score" title="리딩 테스트 최고 점수">🏆 {score.score}/{score.total}</span>
-                            )}
-                            {!isCompleted && lastIdx && pct > 0 && (
-                              <span className="lessons-list__pct">{pct}%</span>
-                            )}
-                          </span>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                  )}
-                </section>
-              );
-            })}
-          </div>
-        );
-      })() : (
-        <div className="empty-state">
-          <div className="empty-state__icon">🎓</div>
-          <p className="empty-state__msg">조건에 맞는 강의가 없어요</p>
-          <Link href="/admin" className="empty-state__link">
-            관리자 페이지에서 시드 실행하기 →
-          </Link>
-        </div>
-      )}
-      </section>
       )}
     </div>
   );
