@@ -1,22 +1,25 @@
 import Link from 'next/link';
-import { getChapter, getLevelMeta } from '../content/french';
-import { frInline, Callout, CALLOUT_ORDER, LevelDot } from './frenchShared';
-import FrenchReadMark from '../components/FrenchReadMark';
+import { getRefLang } from '../content/refLangs';
+import { refInline, refMain, refPron, Callout, CALLOUT_ORDER, LevelDot } from './refShared';
+import RefReadMark from '../components/RefReadMark';
 
-function ExampleList({ examples }) {
+function ExampleList({ examples, langCode }) {
   if (!examples?.length) return null;
   return (
     <ul className="fr-examples">
-      {examples.map((ex, i) => (
-        <li key={i} className="fr-example">
-          <div className="fr-example__fr">
-            <span lang="fr">{ex.fr}</span>
-            {ex.ipa && <span className="fr-example__ipa">{ex.ipa}</span>}
-          </div>
-          <div className="fr-example__ko">{ex.ko}</div>
-          {ex.note && <div className="fr-example__note">└ {frInline(ex.note)}</div>}
-        </li>
-      ))}
+      {examples.map((ex, i) => {
+        const pron = refPron(ex);
+        return (
+          <li key={i} className="fr-example">
+            <div className="fr-example__fr">
+              <span lang={langCode}>{refMain(ex)}</span>
+              {pron && <span className="fr-example__ipa">{pron}</span>}
+            </div>
+            <div className="fr-example__ko">{ex.ko}</div>
+            {ex.note && <div className="fr-example__note">└ {refInline(ex.note)}</div>}
+          </li>
+        );
+      })}
     </ul>
   );
 }
@@ -34,7 +37,7 @@ function SectionTable({ table }) {
         )}
         <tbody>
           {table.rows.map((row, i) => (
-            <tr key={i}>{row.map((cell, j) => <td key={j} lang={j > 0 ? undefined : 'fr'}>{frInline(cell)}</td>)}</tr>
+            <tr key={i}>{row.map((cell, j) => <td key={j}>{refInline(cell)}</td>)}</tr>
           ))}
         </tbody>
       </table>
@@ -43,32 +46,34 @@ function SectionTable({ table }) {
 }
 
 /**
- * 프랑스어 문법 챕터 상세 페이지
+ * 언어 레퍼런스 — 문법 챕터 상세 페이지 (프랑스어·일본어·영어 공용)
  */
-export default function FrenchChapterPage({ slug }) {
-  const data = getChapter(slug);
+export default function ReferenceChapterPage({ lang, slug }) {
+  const ref = getRefLang(lang);
+  const data = ref?.getChapter(slug);
+  const backHref = `/lessons?lang=${lang}&view=ref`;
 
   if (!data) {
     return (
       <div className="page-container" style={{ maxWidth: 760, textAlign: 'center', paddingTop: 80 }}>
         <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>🔍</div>
         <h1 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: 8 }}>챕터를 찾을 수 없어요</h1>
-        <Link href="/lessons?lang=French" className="btn btn--ghost btn--sm">프랑스어 강의 목록으로 →</Link>
+        <Link href={backHref} className="btn btn--ghost btn--sm">{ref?.name || ''} 강의 목록으로 →</Link>
       </div>
     );
   }
 
   const { chapter, prev, next } = data;
-  const meta = getLevelMeta(chapter.level);
+  const meta = ref.getLevelMeta(chapter.level);
 
   return (
     <div className="page-container" style={{ maxWidth: 760 }}>
-      <FrenchReadMark slug={chapter.slug} />
+      <RefReadMark storageKey={ref.readKey} slug={chapter.slug} />
 
       {/* ── 브레드크럼 ── */}
       <nav style={{ marginBottom: 18 }} aria-label="브레드크럼">
-        <Link href="/lessons?lang=French" style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-          ← 프랑스어 강의 목록
+        <Link href={backHref} style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+          ← {ref.flag} {ref.name} 강의 목록
         </Link>
       </nav>
 
@@ -85,7 +90,7 @@ export default function FrenchChapterPage({ slug }) {
         </div>
         <h1 style={{ fontSize: '1.45rem', fontWeight: 800, lineHeight: 1.35 }}>{chapter.title}</h1>
         {chapter.titleFr && (
-          <p lang="fr" style={{ fontSize: '0.95rem', color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 4 }}>
+          <p lang={ref.langCode} style={{ fontSize: '0.95rem', color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 4 }}>
             {chapter.titleFr}
           </p>
         )}
@@ -104,10 +109,10 @@ export default function FrenchChapterPage({ slug }) {
             {sec.heading}
           </h2>
           {sec.body && sec.body.split(/\n\n/).map((para, j) => (
-            <p key={j} className="fr-section__para">{frInline(para)}</p>
+            <p key={j} className="fr-section__para">{refInline(para)}</p>
           ))}
           <SectionTable table={sec.table} />
-          <ExampleList examples={sec.examples} />
+          <ExampleList examples={sec.examples} langCode={ref.langCode} />
           {CALLOUT_ORDER.map(kind => (
             <Callout key={kind} kind={kind} text={sec[kind]} />
           ))}
@@ -117,14 +122,14 @@ export default function FrenchChapterPage({ slug }) {
       {/* ── 이전/다음 ── */}
       <nav className="fr-pager" aria-label="챕터 이동">
         {prev ? (
-          <Link href={`/french/grammar/${prev.slug}`} className="fr-pager__link">
-            <span className="fr-pager__dir">← 이전 · {getLevelMeta(prev.level)?.label}</span>
+          <Link href={`${ref.base}/grammar/${prev.slug}`} className="fr-pager__link">
+            <span className="fr-pager__dir">← 이전 · {ref.getLevelMeta(prev.level)?.label}</span>
             <span className="fr-pager__title">{prev.title}</span>
           </Link>
         ) : <span />}
         {next ? (
-          <Link href={`/french/grammar/${next.slug}`} className="fr-pager__link fr-pager__link--next">
-            <span className="fr-pager__dir">{getLevelMeta(next.level)?.label} · 다음 →</span>
+          <Link href={`${ref.base}/grammar/${next.slug}`} className="fr-pager__link fr-pager__link--next">
+            <span className="fr-pager__dir">{ref.getLevelMeta(next.level)?.label} · 다음 →</span>
             <span className="fr-pager__title">{next.title}</span>
           </Link>
         ) : <span />}
