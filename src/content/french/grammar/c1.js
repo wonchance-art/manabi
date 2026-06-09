@@ -248,10 +248,11 @@ export default [
     sections: [
       {
         heading: "왜 압축하는가 — 문어 프랑스어의 미학",
+        pattern: "Comme il était fatigué, ... → Fatigué, il est rentré",
+        patternKo: "종속절을 분사로 접어 넣기",
         body:
-          "격식 있는 프랑스어 문어는 **종속절을 분사 구조로 접어 넣어** 문장의 밀도를 높여요. Comme il était fatigué, il est rentré(피곤했기 때문에 그는 돌아갔다)를 Fatigué, il est rentré 한 방으로 줄이는 식이죠.\n\n" +
-          "이 압축은 르몽드 같은 신문 기사, 학술 논문, 행정 문서의 기본 문체예요. C1 독해 속도가 안 나오는 큰 이유 중 하나가 바로 이 압축 구조를 펼쳐 읽는 훈련 부족이에요. 이 챕터의 목표는 둘 — **읽을 때 즉시 펼치기, 쓸 때 한 단계 접기.**\n\n" +
-          "압축의 재료는 세 가지예요. ① 현재분사(-ant), ② 과거분사, ③ 분사 앞에 독자적 주어를 가진 **절대분사구문**(proposition participiale).",
+          "격식 문어는 **종속절을 분사 구조로 접어 넣어** 밀도를 높여요. 신문·논문·행정 문서의 기본 문체라, C1 독해 속도가 안 나오는 큰 이유가 이 압축 구조를 펼쳐 읽는 훈련 부족이에요.\n\n" +
+          "재료는 셋: ① 현재분사(-ant), ② 과거분사, ③ 독자적 주어를 가진 **절대분사구문**. 목표는 **읽을 때 즉시 펼치기, 쓸 때 한 단계 접기**예요.",
         examples: [
           { fr: "Ne sachant que répondre, elle garda le silence.", ko: "뭐라 답해야 할지 몰라, 그녀는 침묵을 지켰다.", note: "= Comme elle ne savait pas... 현재분사의 이유 표현" },
           { fr: "Arrivé tard, il n'a pas pu assister à la réunion.", ko: "늦게 도착해서 그는 회의에 참석하지 못했다.", note: "과거분사 하나가 절 하나를 대신해요. 분사의 주어 = 주절의 주어" },
