@@ -236,12 +236,10 @@ export default [
       },
       {
         heading: "대립과 양보 — cependant, néanmoins, en revanche",
+        pattern: "cependant/toutefois = 그렇지만 · néanmoins = 그럼에도 · pourtant = 그런데도 · en revanche = 반면에",
         body:
-          "전부 '하지만' 계열이지만 결이 달라요.\n\n" +
-          "**cependant / toutefois** — 격식 있는 '그렇지만'. mais의 문어체 업그레이드.\n" +
-          "**néanmoins** — '그럼에도 불구하고'. 앞 내용을 인정하면서도 뒤집을 때.\n" +
-          "**pourtant** — '그런데도'. 모순에 대한 놀라움이 살짝 묻어나요.\n" +
-          "**en revanche / par contre** — '반면에'. 반박이 아니라 **대조**예요. 두 대상을 나란히 비교할 때만 쓰세요. (par contre는 구어적, en revanche가 격식)",
+          "전부 '하지만' 계열이지만 결이 달라요. **cependant/toutefois**는 mais의 문어체 업그레이드, **néanmoins**은 앞 내용을 인정하면서 뒤집기, **pourtant**은 모순에 대한 놀라움이에요.\n\n" +
+          "**en revanche / par contre**는 반박이 아니라 **대조** — 두 대상을 나란히 비교할 때만 쓰세요. (par contre는 구어적, en revanche가 격식)",
         examples: [
           { fr: "Ce projet est ambitieux. Néanmoins, il reste réalisable.", ko: "이 프로젝트는 야심 차요. 그럼에도 실현 가능합니다." },
           { fr: "Il a très peu étudié. Pourtant, il a réussi l'examen.", ko: "그는 공부를 거의 안 했어요. 그런데도 시험에 합격했죠." },
