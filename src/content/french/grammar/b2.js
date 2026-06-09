@@ -249,11 +249,10 @@ export default [
       },
       {
         heading: "원인과 결과 — par conséquent, en effet, ainsi",
+        pattern: "par conséquent = 따라서 · en effet = 근거 뒷받침 · en fait = 반전·정정",
         body:
-          "**par conséquent / c'est pourquoi** — '따라서, 그래서'. donc의 격식 버전으로 결론을 끌어내요.\n" +
-          "**ainsi** — '이렇게 하여, 그 결과'. 문두에 오면 격식 글에서 도치(ainsi est-il...)도 가능하지만 B2에서는 평서 어순으로 충분해요.\n" +
-          "**en effet** — '실제로, 과연'. **앞 문장의 근거를 대는** 연결사예요. 한국 학습자 최다 오용 1위: '사실은'이라는 반전의 뜻이 아닙니다.\n" +
-          "반전·정정의 '사실은, 실은'은 **en fait**예요. 둘은 글자 하나 차이로 정반대 방향이에요.",
+          "**par conséquent / c'est pourquoi**는 donc의 격식 버전으로 결론을 끌어내고, **ainsi**는 '이렇게 하여, 그 결과'예요.\n\n" +
+          "**en effet**는 **앞 문장의 근거를 대는** 연결사예요 — '사실은'이라는 반전이 아닙니다(한국 학습자 최다 오용 1위). 반전·정정의 '실은'은 **en fait** — 글자 하나 차이로 정반대 방향이에요.",
         examples: [
           { fr: "Les billets sont chers. Par conséquent, peu de jeunes vont à l'opéra.", ko: "표가 비싸요. 따라서 오페라에 가는 젊은이가 적죠." },
           { fr: "Ce quartier est agréable. En effet, on y trouve beaucoup de parcs.", ko: "이 동네는 살기 좋아요. 실제로 공원이 많거든요.", note: "en effet = 앞 문장 뒷받침" },
@@ -263,11 +262,10 @@ export default [
       },
       {
         heading: "첨가·전환·구조화 — d'ailleurs, par ailleurs, d'abord...",
+        pattern: "d'abord → ensuite → enfin · de plus = 게다가 · par ailleurs = 전환",
         body:
-          "**de plus / en outre** — '게다가'. 논거를 쌓을 때.\n" +
-          "**d'ailleurs** — '하긴, 그러고 보니'. 곁가지 근거를 슬쩍 보태는 말로, 없어도 논리가 성립해요.\n" +
-          "**par ailleurs** — '한편, 또한'. 새로운 논점으로 **전환**할 때. d'ailleurs와 모양이 닮았지만 역할이 달라요.\n\n" +
-          "글 전체의 뼈대는 **d'abord(우선) → ensuite(다음으로) → enfin(끝으로)**, 결론은 **en conclusion / pour conclure**로 잡아요.",
+          "**de plus / en outre**는 논거를 쌓는 '게다가', **d'ailleurs**는 곁가지 근거를 슬쩍 보태는 '하긴', **par ailleurs**는 새 논점으로 **전환**하는 '한편'이에요 — 마지막 둘은 모양이 닮았지만 역할이 달라요.\n\n" +
+          "글 전체의 뼈대는 **d'abord → ensuite → enfin**, 결론은 **en conclusion / pour conclure**로 잡아요.",
         examples: [
           { fr: "Ce film est magnifique. De plus, la musique est superbe.", ko: "이 영화는 훌륭해요. 게다가 음악도 멋지죠." },
           { fr: "Je n'ai pas envie de sortir. D'ailleurs, il pleut.", ko: "나갈 마음이 없어. 하긴 비도 오고." },
