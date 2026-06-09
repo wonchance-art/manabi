@@ -258,10 +258,10 @@ export default [
       },
       {
         heading: "dont — de를 통째로 삼키는 관계대명사",
+        pattern: "de + 선행사 → dont (parler de → le livre dont je parle)",
         body:
-          "**dont = de + 무엇**이에요. parler **de**(~에 대해 말하다), avoir besoin **de**(~이 필요하다), être fier **de**(~이 자랑스럽다)처럼 de와 결합하는 표현이 관계절에 들어가면, 그 'de + 선행사' 자리를 dont 하나가 흡수해요.\n\n" +
-          "Je parle **de ce livre** → le livre **dont** je parle(내가 말하는 그 책).\n\n" +
-          "또 하나의 큰 용법이 **소유**예요. la femme **dont** le fils est médecin(아들이 의사인 그 여자) — '그 여자**의** 아들'의 '의(de)'를 dont이 담당하죠.",
+          "**dont = de + 무엇**이에요. parler **de**, avoir besoin **de**처럼 de와 결합하는 표현이 관계절에 들어가면, 'de + 선행사' 자리를 dont 하나가 흡수해요.\n\n" +
+          "또 하나의 큰 용법이 **소유**예요. la femme **dont** le fils est médecin(아들이 의사인 그 여자) — '~의(de)'를 dont이 담당하죠.",
         examples: [
           { fr: "C'est le livre dont je t'ai parlé.", ko: "내가 너한테 말했던 그 책이야.", note: "parler de → dont" },
           { fr: "Voilà tout ce dont j'ai besoin.", ko: "이게 내가 필요한 전부예요.", note: "avoir besoin de → dont" },
@@ -273,9 +273,10 @@ export default [
       },
       {
         heading: "où — 장소만이 아니라 시간도",
+        pattern: "장소·시간 선행사 → où (la ville où · le jour où)",
         body:
           "**où**는 선행사가 **장소**일 때 쓰는 관계대명사예요: la ville **où** je suis né(내가 태어난 도시).\n\n" +
-          "한국 학습자가 자주 놓치는 건 **시간 선행사**예요. '~한 날', '~하던 순간'처럼 선행사가 시간이어도 où를 써요. le jour **où** je t'ai rencontré(너를 만난 날) — quand이 아니라 où입니다.",
+          "자주 놓치는 건 **시간 선행사**예요. le jour **où** je t'ai rencontré(너를 만난 날) — quand이 아니라 où입니다.",
         examples: [
           { fr: "Voici le quartier où j'habite.", ko: "여기가 제가 사는 동네예요." },
           { fr: "Je me souviens du jour où on s'est rencontrés.", ko: "우리가 만난 날을 기억해요.", note: "시간 선행사에도 où" },
