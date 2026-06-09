@@ -176,10 +176,10 @@ export default [
       },
       {
         heading: "현재분사 — 관계절을 압축하는 문어체 도구",
+        pattern: "qui 관계절 → 현재분사 (les étudiants ayant fini)",
         body:
-          "현재분사의 주 무대는 **글**이에요. qui 관계절을 한 단어로 압축하죠: les étudiants **qui ont** fini → les étudiants **ayant** fini(끝낸 학생들).\n\n" +
-          "원인·이유를 나타내는 분사구문도 격식 글에서 애용돼요: **Étant** malade, il n'est pas venu(아파서 그는 오지 않았다). 회화에서는 Comme il était malade...처럼 풀어 말하는 게 보통이에요.\n\n" +
-          "현재분사는 **절대 일치하지 않아요**. une femme parlant trois langues — parlant에 e가 붙지 않죠. 이 '불변'이 형용사와의 결정적 차이예요.",
+          "현재분사의 주 무대는 **글**이에요. qui 관계절을 한 단어로 압축하고, 원인 분사구문(**Étant** malade, il n'est pas venu)으로도 애용돼요. 회화에서는 Comme절로 풀어 말하는 게 보통이에요.\n\n" +
+          "현재분사는 **절대 일치하지 않아요**. une femme parlant trois langues — 이 '불변'이 형용사와의 결정적 차이예요.",
         examples: [
           { fr: "Les passagers voyageant avec des enfants embarquent en premier.", ko: "아이를 동반한 승객은 먼저 탑승합니다.", note: "안내 방송·공지문의 단골 구조" },
           { fr: "N'ayant pas reçu de réponse, je vous écris de nouveau.", ko: "답장을 받지 못하여 다시 메일을 드립니다.", note: "격식 이메일 표현" },
@@ -188,9 +188,10 @@ export default [
       },
       {
         heading: "동사적 형용사 — 철자까지 달라지는 경우",
+        pattern: "분사 fatiguant ↔ 형용사 fatigant",
         body:
           "일부 동사는 **현재분사와 동사적 형용사의 철자가 달라요**. 분사는 동사 활용(nous형)을 따르고, 형용사는 라틴어식 철자를 따로 갖기 때문이에요.\n\n" +
-          "대표가 fatiguer: 분사는 **fatiguant**(u 유지), 형용사는 **fatigant**(u 탈락). Un travail **fatigant**(피곤하게 하는 일 — 형용사) vs Ce travail, **fatiguant** tout le monde, ...(모두를 지치게 하면서 — 분사).",
+          "Un travail **fatigant**(피곤하게 하는 일 — 형용사, u 탈락) vs Ce travail, **fatiguant** tout le monde, ...(모두를 지치게 하면서 — 분사, u 유지).",
         table: {
           caption: "철자가 갈리는 대표 쌍 (분사 / 형용사)",
           headers: ["동사", "현재분사", "동사적 형용사"],
