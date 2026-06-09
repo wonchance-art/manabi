@@ -519,9 +519,10 @@ export default [
       },
       {
         heading: "불규칙 둘 + 부드럽게 말하는 기술",
+        pattern: "être → Sois / Soyez · avoir → Aie / Ayez",
         body:
-          "명령법 불규칙은 사실상 둘만 챙기면 돼요: **être → Sois sage !**(얌전히 있어!) / Soyez prudents !(조심하세요!), **avoir → Aie confiance !**(자신감을 가져!) / N'ayez pas peur !(무서워하지 마세요!).\n\n" +
-          "그리고 어조 이야기. 프랑스어 명령형은 그 자체로는 꽤 직설적이라, 실전에서는 **s'il te plaît / s'il vous plaît**를 곁들이거나, 아예 의문문으로 돌려 말해요(Tu peux fermer la porte ? 문 좀 닫아줄래?). 한국어에서 '문 닫아!'보다 '문 좀 닫아줄래요?'가 부드러운 것과 같은 사회적 감각이에요.",
+          "명령법 불규칙은 사실상 둘만 챙기면 돼요: Sois sage !(얌전히 있어!), N'ayez pas peur !(무서워하지 마세요!)\n\n" +
+          "명령형은 그 자체로 꽤 직설적이라, 실전에서는 **s'il vous plaît**를 곁들이거나 의문문으로 돌려 말해요(Tu peux fermer la porte ?). '문 닫아!'보다 '문 좀 닫아줄래요?'가 부드러운 것과 같은 감각이에요.",
         examples: [
           { fr: "N'ayez pas peur !", ipa: "[nɛje pa pœʁ]", ko: "무서워하지 마세요!" },
           { fr: "Attendez-moi, s'il vous plaît !", ipa: "[atɑ̃de mwa sil vu plɛ]", ko: "저 좀 기다려주세요!" },
@@ -543,9 +544,10 @@ export default [
     sections: [
       {
         heading: "y — '거기에'를 받는 한 글자",
+        pattern: "à/dans/chez + 장소 → y + 동사 (J'y vais)",
         body:
-          "**y**는 **à/dans/chez 등 + 장소**를 통째로 받는 대명사예요. 위치는 목적 대명사와 똑같이 **동사 앞**.\n\n" +
-          "Tu vas à Paris ? — Oui, j'**y** vais.(응, 거기 가.) à Paris 전체가 y 한 글자로 압축된 거예요. 장소뿐 아니라 'à + 사물'도 받아요: Tu penses à ton examen ? — Oui, j'y pense.(응, 그거 생각해.)",
+          "**y**는 '전치사 + 장소'를 통째로 받는 대명사예요. Tu vas à Paris ? — Oui, j'**y** vais. 위치는 목적 대명사처럼 **동사 앞**.\n\n" +
+          "장소뿐 아니라 'à + 사물'도 받아요: Tu penses à ton examen ? — Oui, j'y pense.",
         examples: [
           { fr: "Tu vas au bureau ? — Oui, j'y vais.", ipa: "[ʒi vɛ]", ko: "사무실 가? — 응, 가." },
           { fr: "Elle habite à Lyon ? — Oui, elle y habite depuis deux ans.", ipa: "[ɛl i abit dəpɥi døzɑ̃]", ko: "그녀는 리옹에 살아요? — 네, 2년째 거기 살아요." },
@@ -555,10 +557,10 @@ export default [
       },
       {
         heading: "en — 'de + 명사'와 수량을 받는 한 글자",
+        pattern: "de + 명사 → en (J'en bois · J'en ai deux)",
         body:
-          "**en**은 **de가 이끄는 것들**을 받아요. 특히 부분관사(du/de la/des)가 붙은 음식·음료, 그리고 수량 표현에서 대활약해요.\n\n" +
-          "Tu bois du café ? — Oui, j'**en** bois.(응, (그거) 마셔.)\n\n" +
-          "수량을 붙여 말할 때 진가가 나와요: Tu as des frères ? — J'**en** ai deux.(두 명 있어.) 직역하면 '나는 그것을-둘-가진다' — 숫자만 말하면 안 되고 en이 꼭 필요해요.",
+          "**en**은 de가 이끄는 것들 — 특히 부분관사(du/de la/des)가 붙은 음식·음료를 받아요. Tu bois du café ? — Oui, j'**en** bois.\n\n" +
+          "수량 표현에서 진가가 나와요: J'**en** ai deux.(두 명 있어.) 숫자만 말하면 안 되고 **en이 꼭 필요해요**.",
         examples: [
           { fr: "Tu manges du pain ? — Oui, j'en mange.", ipa: "[ʒɑ̃ mɑ̃ʒ]", ko: "빵 먹어? — 응, 먹어." },
           { fr: "Vous avez des enfants ? — Oui, j'en ai deux.", ipa: "[ʒɑ̃ne dø]", ko: "자녀가 있으세요? — 네, 둘 있어요." },
