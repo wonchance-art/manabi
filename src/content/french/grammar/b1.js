@@ -68,9 +68,10 @@ export default [
       },
       {
         heading: "용법 3 — 조심스러운 단정과 충고",
+        pattern: "tu devrais + 원형 → ~하는 게 좋겠어 (= should)",
         body:
-          "조건법은 '확실하지 않음'의 표지이기도 해요. 뉴스에서 미확인 정보를 전할 때(~라고 한다), 충고할 때(tu devrais = ~하는 게 좋을 텐데) 두루 쓰여요.\n\n" +
-          "특히 **devoir의 조건법(devrais)**은 영어 should에 해당하는 충고 표현으로, 일상 회화 사용 빈도가 아주 높아요.",
+          "조건법은 '확실하지 않음'의 표지이기도 해요. 뉴스의 미확인 정보(~라고 한다), 충고(tu devrais) 등에 두루 쓰여요.\n\n" +
+          "특히 **devoir의 조건법(devrais)**은 영어 should에 해당하는 충고 표현으로, 일상 회화 빈도가 아주 높아요.",
         examples: [
           { fr: "Tu devrais te reposer un peu.", ko: "너 좀 쉬는 게 좋겠어.", note: "devoir 조건법 = should" },
           { fr: "Il y aurait trois blessés dans l'accident.", ko: "사고로 부상자가 세 명 발생한 것으로 보입니다.", note: "미확인 보도의 조건법" },
@@ -92,10 +93,10 @@ export default [
     sections: [
       {
         heading: "접속법이란 — 카메라 vs 머릿속 필터",
+        pattern: "사실 보고 → 직설법 · 바람·필요·감정·의심 → 접속법",
         body:
-          "지금까지 배운 시제(현재, 복합과거, 반과거, 미래...)는 전부 **직설법(indicatif)**이었어요. 직설법은 세상을 카메라로 찍듯 **사실로 서술**하는 모드예요: Il pleut(비가 온다) — 찍으면 찍히는 사실이죠.\n\n" +
-          "**접속법(subjonctif)**은 다른 모드예요. 사실 자체가 아니라, 그 사실에 대한 **내 머릿속의 평가·바람·감정·의심**을 통과시켜 말할 때 써요. Il faut qu'il vienne(그가 와야 해요)에서 '그가 온다'는 아직 사실이 아니에요 — 내 머릿속의 요구사항일 뿐이죠. 그래서 동사가 접속법 vienne로 바뀌어요.\n\n" +
-          "정리하면: **que 뒤의 내용을 사실로서 보고하면 직설법, 바람·필요·감정·의심의 대상으로 다루면 접속법.** 이 한 줄이 접속법 전체를 관통하는 직관이에요.",
+          "지금까지의 시제는 전부 세상을 카메라로 찍듯 **사실로 서술**하는 **직설법**이었어요. **접속법(subjonctif)**은 사실이 아니라 그에 대한 **내 머릿속의 평가·바람·감정·의심**을 말하는 모드예요.\n\n" +
+          "Il faut qu'il **vienne**(그가 와야 해요)에서 '그가 온다'는 아직 사실이 아니라 머릿속 요구사항이죠. **que 뒤를 사실로 보고하면 직설법, 바람·평가의 대상으로 다루면 접속법** — 이 한 줄이 전체를 관통해요.",
         examples: [
           { fr: "Je sais qu'il vient.", ko: "그가 온다는 걸 알아요.", note: "안다 = 사실 보고 → 직설법 vient" },
           { fr: "Je veux qu'il vienne.", ko: "그가 오기를 원해요.", note: "원한다 = 머릿속 바람 → 접속법 vienne" },
@@ -104,9 +105,10 @@ export default [
       },
       {
         heading: "형태 — ils 어간 + e, es, e, ions, iez, ent",
+        pattern: "ils 현재형 - ent + -e, -es, -e, -ions, -iez, -ent",
         body:
-          "만드는 법: **직설법 현재 ils 형태에서 -ent을 떼고** -e, -es, -e, -ions, -iez, -ent을 붙여요. nous/vous는 반과거와 모양이 같아요.\n\n" +
-          "예: finir → ils finissent → que je finisse. partir → ils partent → que je parte. 규칙 -er 동사는 단수형이 직설법 현재와 모양이 같아서, 접속법인 줄 모르고 이미 쓰고 있는 경우도 많아요.",
+          "**직설법 현재 ils 형태에서 -ent을 떼고** 어미를 붙여요: ils finissent → que je finisse. nous/vous는 반과거와 모양이 같아요.\n\n" +
+          "규칙 -er 동사는 단수형이 직설법 현재와 모양이 같아서, 접속법인 줄 모르고 이미 쓰고 있는 경우도 많아요.",
         table: {
           caption: "finir 접속법 현재",
           headers: ["인칭", "형태", "발음"],
