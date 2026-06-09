@@ -456,10 +456,10 @@ export default [
       },
       {
         heading: "futur proche vs futur simple — 체감 거리의 차이",
+        pattern: "futur proche = 확정·근접 (Je vais partir) · futur simple = 계획·예측·격식 (Je partirai)",
         body:
-          "이미 배운 futur proche(aller + 원형)와 분업 관계예요.\n\n" +
-          "**futur proche** — 곧 일어날, 이미 정해진, 확실한 일: Je vais partir.(나 이제 갈 거야.)\n**futur simple** — 먼 미래, 계획·약속·예측, 격식: Je partirai un jour.(언젠가 떠날 거예요.)\n\n" +
-          "경계가 칼같지는 않아서 일상 회화는 futur proche가 다수파예요. futur simple은 일기예보(Il fera beau), 약속(Je t'appellerai), 다짐 같은 데서 빛나요.",
+          "경계가 칼같지는 않아서 일상 회화는 **futur proche가 다수파**예요.\n\n" +
+          "futur simple은 일기예보(Il fera beau), 약속(Je t'appellerai), 다짐 같은 데서 빛나요.",
         examples: [
           { fr: "Je vais partir. (지금/확정)", ipa: "[ʒə vɛ paʁtiʁ]", ko: "나 (곧) 갈 거야." },
           { fr: "Un jour, je partirai. (먼 미래)", ipa: "[œ̃ ʒuʁ ʒə paʁtiʁe]", ko: "언젠가 나는 떠날 거야." },
@@ -482,9 +482,10 @@ export default [
     sections: [
       {
         heading: "형태 — 현재형에서 주어만 빼기 (그리고 -s 탈락)",
+        pattern: "tu/nous/vous 현재형 - 주어 (-er 동사 tu형은 -s 탈락: Parle !)",
         body:
-          "명령법은 새 활용을 거의 안 외워도 돼요. **tu / nous / vous의 현재형에서 주어를 지우면** 끝이에요. nous형은 '~하자'(권유), vous형은 정중한 명령이 돼요.\n\n" +
-          "단 하나의 함정: **-er 동사(그리고 aller)의 tu형에서는 끝의 -s를 떼요**. Tu parles → **Parle !**(말해!), Tu vas → **Va !**(가!). 발음은 어차피 묵음이라 똑같고, 순수하게 철자 규칙이에요.",
+          "**tu / nous / vous의 현재형에서 주어를 지우면** 끝이에요. nous형은 '~하자'(권유), vous형은 정중한 명령이 돼요.\n\n" +
+          "단 하나의 함정: **-er 동사(그리고 aller)의 tu형에서는 끝의 -s를 떼요**. Tu parles → **Parle !** 발음은 어차피 묵음이라 똑같고, 순수하게 철자 규칙이에요.",
         table: {
           caption: "명령법 3형태",
           headers: ["대상", "parler", "faire", "aller"],
@@ -504,10 +505,10 @@ export default [
       },
       {
         heading: "대명사의 자리 이동 — Lève-toi !",
+        pattern: "긍정 명령: 동사-대명사 (Lève-toi !) · 부정 명령: 원위치 (Ne te lève pas !)",
         body:
-          "목적 대명사·재귀대명사는 평소엔 동사 앞이었죠. 그런데 **긍정 명령문에서는 동사 뒤로 이동**하고 하이픈으로 연결돼요. 이때 me/te는 힘이 실린 형태 **moi/toi**로 변신해요.\n\n" +
-          "Tu te lèves(너는 일어난다) → **Lève-toi !**(일어나!)\nVous me téléphonez → **Téléphonez-moi !**(전화 주세요!)\n\n" +
-          "**부정 명령에서는 원위치**예요: **Ne te lève pas !**(일어나지 마!) — 긍정이면 뒤, 부정이면 앞. 이 시소만 기억하세요.",
+          "평소 동사 앞이던 대명사가 **긍정 명령문에서는 동사 뒤로 이동**하고 하이픈으로 연결돼요. 이때 me/te는 힘이 실린 형태 **moi/toi**로 변신해요: Téléphonez-**moi** !\n\n" +
+          "**부정 명령에서는 원위치** — 긍정이면 뒤, 부정이면 앞. 이 시소만 기억하세요.",
         examples: [
           { fr: "Lève-toi, il est huit heures !", ipa: "[lɛv twa il ɛ ɥitœʁ]", ko: "일어나, 8시야!" },
           { fr: "Téléphonez-moi demain.", ipa: "[telefɔne mwa dəmɛ̃]", ko: "내일 전화 주세요." },

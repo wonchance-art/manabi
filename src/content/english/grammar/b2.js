@@ -14,11 +14,11 @@ export default [
     sections: [
       {
         heading: "3형 — 이미 끝난 과거를 되돌려보는 상상",
+        pattern: "If + had p.p., would have p.p.",
+        patternKo: "-했더라면 -했을 텐데 — 후회와 안도의 문법",
         body:
-          "2형이 '지금'과 반대되는 상상이라면, **3형은 '과거'와 반대되는 상상**이에요. 이미 벌어진 일이라 절대 바꿀 수 없는 것을, 머릿속에서만 되감아보는 문법이죠. 그래서 3형의 단골 정서는 **후회와 안도**예요.\n\n" +
-          "공식: **If + had p.p., would have p.p.**\n\n" +
-          "If I had studied harder, I would have passed the exam. — 실제로는 열심히 안 했고, 그래서 떨어졌어요. 그 과거를 거꾸로 돌려보는 거예요.\n\n" +
-          "형태가 길어 보이지만 구조는 2형에서 시계만 과거로 민 것뿐이에요: had → had p.p., would + 원형 → would have p.p.",
+          "2형이 '지금'과 반대되는 상상이라면, **3형은 '과거'와 반대되는 상상**이에요. 이미 벌어져 바꿀 수 없는 일을 머릿속에서만 되감는 문법이라 단골 정서는 **후회와 안도**예요.\n\n" +
+          "If I had studied harder, I would have passed the exam. — 실제로는 안 했고, 떨어졌어요. 형태는 2형에서 시계만 과거로 민 것뿐이에요: had → had p.p., would + 원형 → would have p.p.",
         examples: [
           { en: "If I had studied harder, I would have passed the exam.", ko: "더 열심히 공부했더라면 시험에 합격했을 텐데요. (실제: 안 했고, 떨어짐)" },
           { en: "If you had told me earlier, I could have helped you.", ko: "더 일찍 말해줬더라면 도와줄 수 있었을 텐데." },
@@ -28,13 +28,11 @@ export default [
       },
       {
         heading: "should have p.p. — 후회의 일상 버전",
+        pattern: "should / could / must / might + have p.p.",
+        patternKo: "~했어야 했는데 · ~할 수도 있었는데 · ~했음에 틀림없다",
         body:
-          "3형 문장은 길어요. 일상 회화에서 후회를 말할 땐 if절을 떼어버린 **조동사 + have p.p.**가 훨씬 자주 쓰여요.\n\n" +
-          "**should have p.p.** — ~했어야 했는데 (안 했다): I should have listened to you.\n" +
-          "**shouldn't have p.p.** — ~하지 말았어야 했는데 (해버렸다): I shouldn't have said that.\n" +
-          "**could have p.p.** — ~할 수도 있었는데 (안 했다/못 했다): We could have won.\n" +
-          "**would have p.p.** — (그 상황이었다면) ~했을 텐데: I would have done the same.\n\n" +
-          "그리고 B1에서 배운 추측의 조동사도 have p.p.를 만나면 **과거 추측**이 돼요: must have p.p.(~했음에 틀림없다), might have p.p.(~했을지도), can't have p.p.(~했을 리 없다).",
+          "일상 회화의 후회는 if절을 떼어버린 **조동사 + have p.p.**가 훨씬 자주 쓰여요 — **should have p.p.**(~했어야 했는데), **shouldn't have p.p.**(~하지 말았어야 했는데), **could have p.p.**(~할 수도 있었는데), **would have p.p.**(그 상황이었다면 ~했을 텐데).\n\n" +
+          "B1의 추측 조동사도 have p.p.를 만나면 **과거 추측**이 돼요: must have p.p.(~했음에 틀림없다), might have p.p.(~했을지도), can't have p.p.(~했을 리 없다).",
         table: {
           caption: "조동사 + have p.p. 한눈에",
           headers: ["형태", "뜻", "정서"],
@@ -57,13 +55,11 @@ export default [
       },
       {
         heading: "혼합 가정문 — 과거의 원인, 현재의 결과",
+        pattern: "If + had p.p., would + 원형 (과거 원인 → 현재 결과)",
+        patternKo: "각 절의 시간을 따로 묻고 그 시간의 형태로 조립",
         body:
-          "현실의 후회는 시간을 가로질러요. '그때 안 샀더라면(과거), 지금 부자일 텐데(현재)' — 이렇게 **if절과 주절의 시간대가 다른** 것이 혼합 가정문이에요.\n\n" +
-          "**과거 가정 → 현재 결과**: If + had p.p., **would + 원형**\n" +
-          "If I had taken that job, I **would be** in New York now.\n\n" +
-          "**현재 가정 → 과거 결과**: If + 과거, **would have p.p.**\n" +
-          "If he weren't so careless, he **wouldn't have lost** his passport.\n\n" +
-          "외울 건 없어요 — **각 절의 시간을 따로 묻고, 그 시간에 맞는 형태를 조립**하면 끝이에요. 과거 이야기면 had p.p./would have p.p., 현재 이야기면 과거형/would + 원형. now, today 같은 시간 부사가 큰 힌트가 됩니다.",
+          "'그때 안 샀더라면(과거), 지금 부자일 텐데(현재)' — **if절과 주절의 시간대가 다른** 것이 혼합 가정문이에요. 과거 가정 → 현재 결과는 If + had p.p., **would + 원형**, 현재 가정 → 과거 결과는 If + 과거, **would have p.p.**\n\n" +
+          "외울 건 없어요 — **각 절의 시간을 따로 묻고 그 시간에 맞는 형태를 조립**하면 끝이에요. now, today 같은 시간 부사가 큰 힌트가 됩니다.",
         examples: [
           { en: "If I had saved money in my twenties, I would be much richer now.", ko: "20대에 돈을 모았더라면 지금 훨씬 부자일 텐데요.", note: "과거 원인 → 현재 결과" },
           { en: "If she weren't afraid of flying, she would have come with us.", ko: "그녀가 비행공포증만 없다면 우리와 같이 왔을 거예요.", note: "현재 성격 → 과거 결과" },
@@ -72,11 +68,10 @@ export default [
       },
       {
         heading: "wish와 If only — 가정법의 사촌",
+        pattern: "wish + 과거형 = 현재 아쉬움 · wish + had p.p. = 과거 후회",
+        patternKo: "If only = wish의 강조 버전",
         body:
-          "후회·아쉬움은 wish로도 말해요. 시제 규칙이 가정문과 평행이라 같이 묶어두면 좋아요.\n\n" +
-          "**wish + 과거형** — 현재에 대한 아쉬움: I wish I knew the answer.(지금 모르니까)\n" +
-          "**wish + had p.p.** — 과거에 대한 후회: I wish I had studied abroad.(안 갔으니까)\n\n" +
-          "**If only**는 wish의 강조 버전이에요 — '~하기만 했다면!': If only I had known!\n\n" +
+          "**wish + 과거형**은 현재에 대한 아쉬움(I wish I knew the answer. — 지금 모르니까), **wish + had p.p.**는 과거에 대한 후회(I wish I had studied abroad.)예요. **If only**는 wish의 강조 버전 — If only I had known!\n\n" +
           "2형 가정문처럼 be동사는 were를 써요: I wish I were taller.",
         examples: [
           { en: "I wish I had more time.", ko: "시간이 더 있으면 좋을 텐데요. (현재)" },
@@ -99,10 +94,11 @@ export default [
     sections: [
       {
         heading: "have been -ing의 정체 — 기간을 강조하는 현재완료",
+        pattern: "How long have you been -ing? → have been -ing + for/since",
+        patternKo: "'-한 지 ~ 됐다' 전용 시제",
         body:
-          "현재완료진행(have been -ing)은 이름이 무섭지만 하는 일은 하나예요. **과거에 시작해 지금까지 계속되는 행동의 '지속'을 강조**하는 것.\n\n" +
-          "I have been studying English for ten years. — 10년 전 시작했고, 지금도 진행 중이고, 그 **기간**에 스포트라이트가 있어요.\n\n" +
-          "그래서 단짝 질문이 **How long...?**이에요. How long have you been waiting? / How long have you been working here? — '얼마나 오래'를 묻고 답하는 거의 모든 문장이 이 시제의 영역입니다. **for/since**와의 결합률도 최상위예요.",
+          "현재완료진행은 하는 일이 하나예요 — **과거에 시작해 지금까지 계속되는 행동의 '지속'을 강조**하는 것. I have been studying English for ten years.는 10년 전 시작했고 지금도 진행 중이며, 그 **기간**에 스포트라이트가 있어요.\n\n" +
+          "그래서 단짝 질문이 **How long...?**이고, **for/since**와의 결합률도 최상위예요.",
         examples: [
           { en: "How long have you been learning English?", ko: "영어 배운 지 얼마나 됐어요?", note: "'~한 지 얼마나'의 표준 질문" },
           { en: "I have been working at this company for five years.", ko: "이 회사에서 일한 지 5년 됐어요." },
@@ -113,12 +109,11 @@ export default [
       },
       {
         heading: "현재완료 단순 vs 진행 — 결과냐 과정이냐",
+        pattern: "have p.p. = 결과·횟수 ↔ have been -ing = 과정·기간",
+        patternKo: "상태동사(know·like)는 진행형 불가",
         body:
-          "I have read the book.과 I have been reading the book.은 둘 다 맞는 문장이지만 말하는 바가 달라요.\n\n" +
-          "**have p.p. (단순)** — **결과·완료**에 초점: I have read the book. (다 읽었어요 — 내용 물어봐도 돼요)\n" +
-          "**have been -ing (진행)** — **과정·지속**에 초점: I have been reading the book. (요즘 계속 읽는 중이에요 — 아직 안 끝남)\n\n" +
-          "그래서 **횟수·완성량은 단순형**(I have written three emails), **소요 시간은 진행형**(I have been writing emails all morning)이 어울려요.\n\n" +
-          "주의: know, like, believe, own 같은 **상태동사는 진행형 불가** — 아무리 오래 알았어도 I have been knowing(×)이 아니라 I have known her for ten years(○)예요.",
+          "**have p.p.(단순)**는 결과·완료에 초점(I have read the book. — 다 읽었어요), **have been -ing(진행)**는 과정·지속에 초점(I have been reading the book. — 아직 안 끝남)이에요. 그래서 **횟수·완성량은 단순형**, **소요 시간은 진행형**이 어울려요.\n\n" +
+          "주의: know, like, believe, own 같은 **상태동사는 진행형 불가** — I have been knowing(×)이 아니라 I have known her for ten years(○)예요.",
         table: {
           caption: "단순 완료 vs 완료진행",
           headers: ["", "have p.p.", "have been -ing"],
@@ -138,11 +133,11 @@ export default [
       },
       {
         heading: "흔적 읽기 — 방금까지 뭘 하고 있었길래",
+        pattern: "현재의 증거 한 문장 + Have you been -ing?",
+        patternKo: "방금까지 계속된 행동이 남긴 흔적 읽기",
         body:
-          "완료진행의 두 번째 얼굴: **방금까지 계속된 행동이 현재에 남긴 흔적**을 읽을 때 써요. 행동은 막 끝났을 수 있지만, 증거가 눈앞에 있는 상황이에요.\n\n" +
-          "Your eyes are red. **Have you been crying?** (눈이 빨개 — 방금까지 울고 있었구나)\n" +
-          "The ground is wet. **It has been raining.** (땅이 젖었네 — 비가 계속 왔었구나)\n\n" +
-          "이 용법은 추리의 말투예요. 셜록 홈즈가 '당신, 방금까지 ~하고 있었군요'라고 말할 때의 그 문법 — 현재의 단서에서 직전의 지속 행동을 읽어내는 거죠. 회화에 깔리면 굉장히 자연스러운 중상급 티가 납니다.",
+          "완료진행의 두 번째 얼굴 — **방금까지 계속된 행동이 현재에 남긴 흔적**을 읽을 때 써요. Your eyes are red. **Have you been crying?** / The ground is wet. **It has been raining.**\n\n" +
+          "셜록 홈즈가 '당신, 방금까지 ~하고 있었군요'라고 말할 때의 그 추리 말투예요. 회화에 깔리면 굉장히 자연스러운 중상급 티가 납니다.",
         examples: [
           { en: "You're out of breath. Have you been running?", ko: "숨이 차네요. 뛰어왔어요?" },
           { en: "Sorry about the mess — I've been packing all day.", ko: "어질러져서 미안해요. 하루 종일 짐 싸는 중이었거든요." },
@@ -152,10 +147,10 @@ export default [
       },
       {
         heading: "과거완료진행 — 기준점을 과거로 옮기면",
+        pattern: "had been -ing = 과거의 한 시점까지 계속",
         body:
-          "현재완료진행의 기준점은 '지금'이에요. 이 기준점을 과거의 한 시점으로 옮기면 **had been -ing(과거완료진행)**가 돼요.\n\n" +
-          "When I arrived, they **had been waiting** for an hour. — 내가 도착한 그 시점까지, 그들이 한 시간째 기다리고 있었던 거예요.\n\n" +
-          "구조는 똑같아요: '기준 시점까지 얼마나 오래 계속됐나'. 기준이 지금이면 have been -ing, 과거의 한 장면이면 had been -ing. 스토리텔링(과거 이야기)에서 배경 설명으로 자주 깔리는 시제입니다.",
+          "현재완료진행의 기준점 '지금'을 과거의 한 시점으로 옮기면 **had been -ing**가 돼요 — When I arrived, they **had been waiting** for an hour.(도착한 그 시점까지 한 시간째 대기 중)\n\n" +
+          "구조는 똑같아요: '기준 시점까지 얼마나 오래 계속됐나'. 스토리텔링(과거 이야기)에서 배경 설명으로 자주 깔리는 시제입니다.",
         examples: [
           { en: "When I got there, she had been waiting for two hours.", ko: "내가 도착했을 때, 그녀는 두 시간째 기다리고 있었어요." },
           { en: "He was tired because he had been driving all night.", ko: "밤새 운전한 터라 그는 지쳐 있었어요." },
@@ -175,11 +170,11 @@ export default [
     sections: [
       {
         heading: "무관사 — '관사 없음'도 하나의 선택이에요",
+        pattern: "go to school(기능·활동) ↔ go to the school(그 건물)",
+        patternKo: "school·bed·church·work·home — 활동이면 무관사",
         body:
-          "a와 the만 고민하던 단계를 넘어, B2에서는 **관사를 안 쓰는 것(무관사, zero article)도 의미가 있는 선택**이라는 걸 알아야 해요.\n\n" +
-          "대표 케이스가 **go to school**이에요. school에 the가 없는 이유는, 여기서 school이 '그 건물'이 아니라 **'수업·학업이라는 기능'**을 가리키기 때문이에요. 학생이 공부하러 가면 go to school(무관사), 학부모가 상담하러 그 건물에 가면 go to the school(정관사).\n\n" +
-          "같은 원리의 단어들: **bed**(잠), **church**(예배), **prison**(복역), **hospital**(입원·치료, 영국식), **work**(일), **home**.\n\n" +
-          "**go to bed** = 자러 가다 / **go to the bed** = 그 침대 쪽으로 걸어가다 — 관사 하나로 뜻이 갈라져요.",
+          "B2에서는 **관사를 안 쓰는 것(무관사)도 의미가 있는 선택**이라는 걸 알아야 해요. go to school의 school은 '그 건물'이 아니라 **'수업·학업이라는 기능'** — 학생이 공부하러 가면 go to school, 학부모가 그 건물에 가면 go to the school이에요.\n\n" +
+          "같은 원리: **bed**(잠), **church**(예배), **prison**(복역), **hospital**(입원, 영국식), **work**, **home**. go to bed(자러 가다) vs go to the bed(그 침대로 걸어가다) — 관사 하나로 뜻이 갈라져요.",
         examples: [
           { en: "My daughter goes to school at eight.", ko: "딸은 8시에 학교에 가요. (수업하러 — 기능)" },
           { en: "I went to the school to meet her teacher.", ko: "담임 선생님을 만나러 학교에 갔어요. (그 건물 — 장소)" },
@@ -190,12 +185,11 @@ export default [
       },
       {
         heading: "총칭 — '~라는 것 전체'를 말하는 세 가지 방법",
+        pattern: "총칭 = 무관사 복수 — Cats are independent. · I like apples.",
+        patternKo: "the + 단수(학술적) · a + 단수(개체 대표)도 가능",
         body:
-          "'고양이는 독립적이다'처럼 **종 전체**를 말하는 방법이 영어엔 셋 있어요.\n\n" +
-          "**① 무관사 복수 (Cats are independent.)** — 가장 자연스러운 일상 표현. 회화의 기본값.\n" +
-          "**② the + 단수 (The cat is independent.)** — '고양이라는 종'을 학술적으로 대상화. 백과사전·논문 말투.\n" +
-          "**③ a + 단수 (A cat is independent.)** — '아무 고양이나 한 마리 잡아도' — 개체 대표형.\n\n" +
-          "B2에서 꼭 잡을 것은 ①이에요. 한국어 '나는 사과를 좋아해요'를 직역하면 I like apple(×)이 되기 쉬운데, 종류 전체를 좋아하는 거니까 **I like apples** — 무관사 **복수**가 정답이에요. 셀 수 없는 명사는 무관사 단수로: I like music. / Health is more important than money.",
+          "종 전체를 말하는 방법은 셋 — **① 무관사 복수**(Cats are independent. — 회화의 기본값), **② the + 단수**(The cat is independent. — 백과사전·논문 말투), **③ a + 단수**(A cat is independent. — 아무 고양이나 한 마리 잡아도).\n\n" +
+          "B2에서 꼭 잡을 것은 ①이에요. '사과를 좋아해요'는 I like apple(×)이 아니라 **I like apples** — 무관사 **복수**예요. 셀 수 없는 명사는 무관사 단수로: I like music. / Health is more important than money.",
         examples: [
           { en: "I like apples.", ko: "저는 사과를 좋아해요.", note: "I like apple × — 총칭은 무관사 복수" },
           { en: "Dogs are loyal animals.", ko: "개는 충성스러운 동물이에요." },
@@ -206,11 +200,11 @@ export default [
       },
       {
         heading: "고유명사와 the — 붙는 이름, 안 붙는 이름",
+        pattern: "강·바다·산맥·군도·기관 = the · 도시·단일 산·호수·공항 = 무관사",
+        patternKo: "여럿의 집합·물줄기엔 the, 점 하나는 무관사",
         body:
-          "고유명사는 원칙적으로 무관사예요(Korea, Seoul, Mount Halla, Lake Tahoe). 그런데 **the가 붙는 부류**가 정해져 있어요.\n\n" +
-          "**the가 붙는 것**: 복수형 국가·군도(**the** Philippines, **the** Netherlands), 강·바다·해협(**the** Han River, **the** Pacific), 산맥(**the** Alps), 사막(**the** Sahara), 호텔·박물관·극장(**the** Hilton, **the** Louvre), 신문(**the** New York Times), 'of'가 든 이름(**the** University of Oxford)\n\n" +
-          "**무관사인 것**: 대부분의 국가·도시(Korea, Paris), 단일 산(Mount Everest), 호수(Lake Baikal), 거리(Gangnam-daero), 공항·역(Incheon Airport), 공원(Central Park), 사람 이름\n\n" +
-          "패턴이 보이죠? **여럿이 모여 이루어진 것(군도·산맥·복수국가)과 흐르는 물줄기·기관명**에는 the, **점 하나로 찍히는 것(도시·단일 산·호수)**은 무관사 — 거칠지만 강력한 경향이에요.",
+          "고유명사는 원칙적으로 무관사지만(Korea, Seoul, Mount Halla), **the가 붙는 부류**가 정해져 있어요 — 복수형 국가·군도(**the** Philippines), 강·바다(**the** Han River, **the** Pacific), 산맥(**the** Alps), 호텔·박물관·신문(**the** Hilton, **the** Times), 'of'형 이름(**the** University of Oxford).\n\n" +
+          "패턴이 보이죠? **여럿이 모여 이루어진 것과 흐르는 물줄기·기관명**에는 the, **점 하나로 찍히는 것(도시·단일 산·호수)**은 무관사 — 거칠지만 강력한 경향이에요.",
         table: {
           caption: "고유명사 관사 치트시트",
           headers: ["분류", "관사", "예"],
@@ -233,11 +227,11 @@ export default [
       },
       {
         heading: "한 단어, 세 가지 관사 — 의미가 바뀌는 순간들",
+        pattern: "have dinner(일상 식사) · a dinner(만찬 행사) · the dinner(그 저녁)",
+        patternKo: "관사는 장식이 아니라 의미의 스위치",
         body:
-          "마무리로, 같은 명사에 무관사/a/the를 갈아 끼우면 의미가 어떻게 변하는지 모아볼게요. 관사가 '장식'이 아니라 **의미의 스위치**라는 걸 체감하는 게 이 챕터의 목표예요.\n\n" +
-          "**dinner**: have dinner(저녁 먹다 — 일상 식사는 무관사) / a dinner(만찬 행사 하나) / the dinner(아까 말한 그 저녁)\n" +
-          "**school**: go to school(공부하러) / a school(학교 한 곳) / the school(그 학교 건물)\n" +
-          "**by + 교통수단은 무관사**: by bus, by subway, by plane. 단, 특정한 차를 타면 in my car, on the 8 o'clock train.",
+          "같은 명사에 무관사/a/the를 갈아 끼우면 의미가 변해요 — **dinner**: have dinner(일상 식사) / a dinner(만찬 행사 하나) / the dinner(아까 말한 그 저녁). **school**: go to school(공부하러) / a school(한 곳) / the school(그 건물).\n\n" +
+          "**by + 교통수단은 무관사**예요: by bus, by subway, by plane. 단, 특정한 차를 타면 in my car, on the 8 o'clock train.",
         examples: [
           { en: "Let's have dinner together. — The dinner was amazing.", ko: "같이 저녁 먹어요. — (먹고 나서) 그 저녁 정말 훌륭했어요.", note: "식사 자체는 무관사, 되짚으면 the" },
           { en: "I go to work by subway.", ko: "지하철로 출근해요.", note: "by + 교통수단 = 무관사" },
@@ -259,11 +253,10 @@ export default [
     sections: [
       {
         heading: "도치란 — 어순을 흔들어 시선을 끄는 장치",
+        pattern: "부정어 문두 + 의문문 어순 — Never have I seen ...",
+        patternKo: "① 부정어를 맨 앞으로 ② 나머지는 의문문처럼",
         body:
-          "영어는 어순(주어+동사)이 생명인 언어죠. 그래서 역설적으로, **어순을 일부러 뒤집으면 강한 스포트라이트 효과**가 나요. 이게 도치(inversion)예요.\n\n" +
-          "I have never seen such a beautiful sunset. (평범)\n" +
-          "**Never have I seen** such a beautiful sunset. (문학적·극적 — '이런 노을은 처음이야!')\n\n" +
-          "구조는 의문문과 똑같아요. **부정·제한의 부사(구)를 문장 맨 앞으로 빼고, 그 뒤를 의문문 어순(조동사+주어+동사)으로** 만드는 거예요. Never have I seen... = Have I seen...?의 어순에 Never를 얹은 모양이죠.\n\n" +
+          "어순이 생명인 영어에서 **어순을 일부러 뒤집으면 강한 스포트라이트 효과**가 나요 — 이게 도치예요. **Never have I seen** such a beautiful sunset.(이런 노을은 처음이야!) 구조는 의문문과 똑같아요 — 부정·제한의 부사를 문두로 빼고, 뒤를 **조동사+주어+동사** 어순으로 만드는 거예요.\n\n" +
           "일상 대화에서 남발하면 연극 톤이 되지만, **에세이·프레젠테이션·시험 라이팅**에서는 한두 번의 도치가 글의 격을 확실히 올려줍니다.",
         examples: [
           { en: "Never have I seen such a mess.", ko: "이런 난장판은 본 적이 없어요." },
@@ -274,15 +267,11 @@ export default [
       },
       {
         heading: "Not only... but also — 도치의 에이스",
+        pattern: "Not only + 도치(조동사+주어) ..., but (also) ...",
+        patternKo: "No sooner ~ than · Hardly ~ when · Only then도 같은 부류",
         body:
-          "격식 작문에서 가장 활용도 높은 도치가 **Not only A but also B**예요.\n\n" +
-          "기본형: She is not only smart but also kind.\n" +
-          "도치형: **Not only is she smart, but she is also kind.** — Not only가 문두로 나오면 그 절은 의문문 어순!\n\n" +
-          "비슷한 부류의 문두 트리거들:\n" +
-          "**No sooner had I arrived than** it started to rain. (도착하자마자 비가 왔다)\n" +
-          "**Hardly had we started when** the power went out. (시작하자마자 정전됐다)\n" +
-          "**Under no circumstances should you** share this password. (어떤 경우에도 공유하지 마세요)\n" +
-          "**Only then did I realize** my mistake. (그제야 깨달았다)",
+          "격식 작문 최고 활용도의 도치 — She is not only smart but also kind. → **Not only is she smart, but she is also kind.** Not only가 문두로 나오면 그 절은 의문문 어순!\n\n" +
+          "같은 부류의 문두 트리거: **No sooner had I arrived than** it started to rain. / **Hardly had we started when** the power went out. / **Under no circumstances should you** share this password. / **Only then did I realize** my mistake.",
         table: {
           caption: "문두에 오면 도치를 부르는 트리거",
           headers: ["트리거", "뜻", "예"],
@@ -303,12 +292,11 @@ export default [
       },
       {
         heading: "So / Neither — 회화 속의 미니 도치",
+        pattern: "긍정 맞장구 So do I. · 부정 맞장구 Neither do I.",
+        patternKo: "동사는 앞 문장에 맞추기 — So am I / So can I / So did I",
         body:
-          "사실 여러분은 도치를 이미 쓰고 있어요. 맞장구의 **So do I.(나도) / Neither do I.(나도 안 그래)**가 바로 도치거든요.\n\n" +
-          "A: I love this song. — B: **So do I.** (긍정 맞장구)\n" +
-          "A: I can't swim. — B: **Neither can I.** (부정 맞장구)\n\n" +
-          "동사를 앞 문장에 맞추는 게 포인트예요: am이면 So am I, can이면 So can I, 일반동사 과거면 So did I.\n\n" +
-          "확장형으로 **so + 형용사 도치**도 있어요: **So beautiful was the view that** we stayed another hour. (경치가 너무 아름다워서 한 시간 더 머물렀다) — so... that 구문의 격식 변형이에요.",
+          "맞장구의 **So do I.(나도) / Neither do I.(나도 안 그래)**가 바로 도치예요. 동사를 앞 문장에 맞추는 게 포인트 — am이면 So am I, can이면 So can I, 일반동사 과거면 So did I.\n\n" +
+          "확장형으로 **so + 형용사 도치**도 있어요: **So beautiful was the view that** we stayed another hour. — so... that 구문의 격식 변형이에요.",
         examples: [
           { en: "A: I'm exhausted. — B: So am I.", ko: "A: 너무 피곤해. — B: 나도." },
           { en: "A: I didn't like the ending. — B: Neither did I.", ko: "A: 결말이 별로였어. — B: 나도 별로였어." },
@@ -318,12 +306,11 @@ export default [
       },
       {
         heading: "It is... that 강조 구문 — 스포트라이트 옮기기",
+        pattern: "It is X that ... · What I need is ...",
+        patternKo: "문장의 한 조각에 스포트라이트 쏘기 (분열문)",
         body:
-          "도치와 함께 알아둘 강조 장치가 **분열문(cleft sentence)**, 이른바 It is... that 강조 구문이에요. 문장의 한 조각을 It is와 that 사이에 끼워 스포트라이트를 쏘는 거예요.\n\n" +
-          "Mina broke the vase yesterday. 에서:\n" +
-          "**It was Mina that(who) broke the vase.** — 깬 사람은 (다른 누구도 아닌) 미나\n" +
-          "**It was yesterday that** Mina broke the vase. — 깬 것은 (다른 날 아닌) 어제\n\n" +
-          "**What I need is...** 형태(의사분열문)도 세트로: What I need is a long vacation. (내게 필요한 건 긴 휴가다) — 회화에서도 흔히 쓰이는, 자연스러운 강조법이에요.",
+          "문장의 한 조각을 It is와 that 사이에 끼워 스포트라이트를 쏘는 **분열문(cleft sentence)**이에요 — **It was Mina that(who) broke the vase.**(깬 사람은 다른 누구도 아닌 미나) / **It was yesterday that** Mina broke the vase.(깬 것은 어제)\n\n" +
+          "**What I need is...** 형태(의사분열문)도 세트로: What I need is a long vacation. — 회화에서도 흔히 쓰이는 자연스러운 강조법이에요.",
         examples: [
           { en: "It was the design that impressed me most.", ko: "가장 인상 깊었던 건 바로 디자인이었어요." },
           { en: "It wasn't me who left the door open!", ko: "문 열어둔 거 내가 아니야!" },
@@ -345,12 +332,11 @@ export default [
     sections: [
       {
         heading: "분사구문의 원리 — 접속사+주어를 떼어내는 압축",
+        pattern: "When I opened the box, ... → Opening the box, I ...",
+        patternKo: "두 절의 주어가 같을 때 '접속사+주어'를 삭제",
         body:
-          "분사구문은 새 문법이 아니라 **압축 기술**이에요. 두 절의 주어가 같을 때, 부사절의 '접속사+주어'를 지우고 동사를 분사(-ing)로 바꾸는 거예요.\n\n" +
-          "**When I opened** the box, I found a letter.\n" +
-          "→ **Opening** the box, I found a letter. (상자를 열었더니 편지가 있었다)\n\n" +
-          "지워진 접속사의 의미(~할 때, ~해서, ~하면서)는 문맥이 채워요. 그래서 분사구문은 의미가 살짝 열려 있는, **간결함과 모호함을 맞바꾼** 문체예요.\n\n" +
-          "주 서식지는 **격식 문어** — 논문, 보고서, 뉴스, 소설이에요. 회화에서는 -ing 분사구문보다 접속사를 살려 말하는 게 보통이지만, 듣고 읽는 양은 많으니 해석 속도를 위해서라도 꼭 잡아야 해요.",
+          "분사구문은 새 문법이 아니라 **압축 기술**이에요. 두 절의 주어가 같을 때 부사절의 '접속사+주어'를 지우고 동사를 분사(-ing)로 바꿔요 — 지워진 접속사의 의미(~할 때, ~해서, ~하면서)는 문맥이 채우는, **간결함과 모호함을 맞바꾼** 문체예요.\n\n" +
+          "주 서식지는 **격식 문어**(논문, 보고서, 뉴스, 소설)예요. 회화에서는 접속사를 살려 말하는 게 보통이지만, 해석 속도를 위해서라도 꼭 잡아야 해요.",
         examples: [
           { en: "Feeling tired, I went to bed early.", ko: "피곤해서 일찍 잤어요. (= Because I felt tired)" },
           { en: "Walking along the beach, we talked about the future.", ko: "해변을 걸으면서 우리는 미래에 대해 이야기했어요. (= While we walked)" },
@@ -360,10 +346,10 @@ export default [
       },
       {
         heading: "세 가지 형태 — -ing / p.p. / Having p.p.",
+        pattern: "-ing(능동·동시) · p.p.(수동) · Having p.p.(먼저 일어남)",
+        patternKo: "부정은 분사 앞에 not — Not knowing ~",
         body:
-          "**① 현재분사 (-ing)** — 주어가 그 동작을 **하는** 능동 관계: Seeing the police, he ran away. (경찰을 '보고')\n\n" +
-          "**② 과거분사 (p.p.)** — 주어가 그 동작을 **당하는** 수동 관계: **Seen** from above, the island looks like a heart. (위에서 '보여질' 때 = 위에서 보면) — 원래 Being seen에서 Being이 생략된 형태예요.\n\n" +
-          "**③ Having p.p.** — 주절보다 **분명히 먼저** 일어난 일: **Having finished** the report, she went home. (보고서를 다 끝낸 **뒤에** 퇴근) — 순서를 또렷이 못 박고 싶을 때 써요.\n\n" +
+          "**① -ing** — 주어가 동작을 **하는** 능동(Seeing the police, he ran away.), **② p.p.** — 주어가 **당하는** 수동(**Seen** from above, the island looks like a heart. — Being seen에서 Being 생략), **③ Having p.p.** — 주절보다 **분명히 먼저** 일어난 일(**Having finished** the report, she went home.).\n\n" +
           "부정은 분사 앞에 not: **Not knowing** what to say, I stayed silent.",
         table: {
           caption: "분사구문 3형태",
@@ -384,12 +370,11 @@ export default [
       },
       {
         heading: "현수분사 — 분사구문 최대의 함정",
+        pattern: "대원칙: 분사의 의미상 주어 = 주절의 주어",
+        patternKo: "깨지면 현수분사(dangling participle)",
         body:
-          "분사구문의 대원칙: **분사의 의미상 주어 = 주절의 주어.** 이게 깨진 문장이 악명 높은 **현수분사(dangling participle)**예요.\n\n" +
-          "**Walking down the street, the building caught my eye.** (×)\n" +
-          "— 문법대로 읽으면 '건물이 길을 걸어가다가' 내 눈을 사로잡은 게 돼요. 걸은 건 나인데 주절의 주어는 the building이라 분사가 허공에 매달린(dangling) 거죠.\n\n" +
-          "고치는 법 두 가지: ① 주절 주어를 분사의 주인으로 교체 — Walking down the street, **I noticed** the building. ② 접속사와 주어를 복원 — **As I was walking** down the street, the building caught my eye.\n\n" +
-          "원어민도 흔히 저지르는 실수라 영문 글쓰기 강의의 단골 경고 대상이에요. 분사구문을 쓸 때마다 '이 -ing의 주인이 주절 주어 맞나?'를 한 번 자문하는 습관이 보험입니다.",
+          "**Walking down the street, the building caught my eye.**(×) — 문법대로 읽으면 '건물이 길을 걸어간' 게 돼요. 걸은 건 나인데 주절 주어가 the building이라 분사가 허공에 매달린 **현수분사**예요.\n\n" +
+          "고치는 법: ① 주절 주어를 분사의 주인으로 교체 — Walking down the street, **I noticed** the building. ② 접속사와 주어를 복원 — **As I was walking** down the street, ... 분사구문을 쓸 때마다 '이 -ing의 주인이 주절 주어 맞나?'를 자문하는 습관이 보험입니다.",
         examples: [
           { en: "Walking down the street, I noticed a new cafe.", ko: "길을 걷다가 새 카페를 발견했어요.", note: "걷는 주체 = I — 올바른 분사구문" },
           { en: "Having reviewed your application, we are pleased to offer you the position.", ko: "지원서를 검토한 결과, 귀하께 합격을 알려드리게 되어 기쁩니다.", note: "검토한 주체 = we ○" },
@@ -399,10 +384,11 @@ export default [
       },
       {
         heading: "굳은 분사 표현 — 외워서 바로 쓰는 세트",
+        pattern: "Generally speaking · Judging from ~ · Considering ~ · Given ~",
+        patternKo: "주어 일치 면제 — 문장 전체에 걸리는 부사처럼",
         body:
-          "주어 일치 규칙을 면제받은, **관용구로 굳은 분사 표현**들이 있어요. 문장 전체에 걸리는 부사처럼 쓰이는 것들이라 그대로 외워서 쓰면 돼요.\n\n" +
-          "**Generally speaking,** (일반적으로 말해) / **Strictly speaking,** (엄밀히 말하면) / **Judging from ~,** (~로 판단하건대) / **Considering ~,** (~을 고려하면) / **Speaking of ~,** (~ 얘기가 나와서 말인데) / **Given ~,** (~을 감안하면)\n\n" +
-          "이 표현들은 격식 작문의 문단 도입부에서도, 일상 회화의 화제 전환에서도 두루 일해요. 분사구문 전체를 공격적으로 쓰기 전에, 이 굳은 세트부터 입에 붙이는 게 가성비 좋은 순서예요.",
+          "주어 일치 규칙을 면제받은 **관용구로 굳은 분사 표현**들 — **Generally speaking**(일반적으로), **Strictly speaking**(엄밀히), **Judging from ~**(~로 판단하건대), **Considering ~**(~을 고려하면), **Speaking of ~**(~ 얘기가 나와서), **Given ~**(~을 감안하면).\n\n" +
+          "격식 작문의 문단 도입부에서도, 일상 회화의 화제 전환에서도 두루 일해요. 이 굳은 세트부터 입에 붙이는 게 가성비 좋은 순서예요.",
         examples: [
           { en: "Generally speaking, prices rise in spring.", ko: "일반적으로 봄에는 물가가 올라요." },
           { en: "Judging from his accent, he must be from Busan.", ko: "억양으로 판단하건대 그는 부산 출신임에 틀림없어요." },
@@ -424,12 +410,11 @@ export default [
     sections: [
       {
         heading: "연결어에는 격식의 층이 있어요",
+        pattern: "but → however → nevertheless · so → therefore → hence",
+        patternKo: "자리에 맞는 격식의 층 고르기",
         body:
-          "and, but, so만으로도 말은 통해요. 하지만 에세이·보고서·시험 라이팅에서 그 셋만 반복하면 글이 단조롭고 가벼워 보여요. 영어 연결어에는 **격식의 스펙트럼**이 있고, 위층 어휘는 대부분 라틴어 출신이에요.\n\n" +
-          "**대조**: but (일상) → however (중립·격식) → nevertheless / nonetheless (격식)\n" +
-          "**인과**: so (일상) → therefore (격식) → thus / hence / consequently (격식·문어)\n" +
-          "**추가**: also (일상) → in addition / moreover (격식) → furthermore (격식)\n\n" +
-          "요령은 **자리에 맞는 층을 고르는 것**이에요. 친구와의 채팅에 nevertheless를 쓰면 우스꽝스럽고, 학술 에세이가 but...but...so...로 이어지면 격이 떨어져요. 같은 뜻의 연결어를 층별로 한 개씩 갖춰두는 게 B2 라이팅의 기본 장비입니다.",
+          "and, but, so만 반복하면 에세이·보고서가 단조롭고 가벼워 보여요. 영어 연결어에는 **격식의 스펙트럼**이 있고, 위층 어휘는 대부분 라틴어 출신이에요 — 대조: but → however → nevertheless, 인과: so → therefore → thus/hence, 추가: also → moreover → furthermore.\n\n" +
+          "요령은 **자리에 맞는 층을 고르는 것** — 채팅에 nevertheless는 우스꽝스럽고, 학술 에세이가 but...so...로 이어지면 격이 떨어져요. 같은 뜻의 연결어를 층별로 한 개씩 갖춰두는 게 B2 라이팅의 기본 장비입니다.",
         table: {
           caption: "연결어 격식 스펙트럼",
           headers: ["기능", "일상", "중립~격식", "격식·문어"],
@@ -450,12 +435,11 @@ export default [
       },
       {
         heading: "however의 구두점 — 가장 많이 틀리는 지점",
+        pattern: "절. However, 절 / 절; however, 절 — 콤마 단독 연결 금지",
+        patternKo: "however는 부사 — 접속사 but과 달리 절을 못 이어요",
         body:
-          "however는 뜻은 but인데 **품사가 달라요**. but은 접속사라 두 절을 직접 이을 수 있지만, however는 **부사**라서 절을 잇는 힘이 없어요. 그래서 구두점 규칙이 달라집니다.\n\n" +
-          "**It was raining, but we went out.** (○ — 접속사라 콤마로 연결)\n" +
-          "**It was raining, however we went out.** (× — 부사는 절을 못 이어요. 이게 comma splice)\n\n" +
-          "however로 두 절을 이으려면: ① 마침표로 끊고 새 문장 — It was raining. **However,** we went out. ② 세미콜론 — It was raining**; however,** we went out.\n\n" +
-          "therefore, moreover, nevertheless, thus도 전부 같은 부류(접속부사)라 같은 규칙을 따라요. 'however류 = 마침표나 세미콜론이 선행' — 이 한 줄이 영문 라이팅 감점의 단골 하나를 지워줍니다.",
+          "however는 뜻은 but인데 **품사가 부사**라 절을 잇는 힘이 없어요. It was raining, but we went out.(○) vs It was raining, however we went out.(× — comma splice). however로 이으려면 ① 마침표로 끊거나 ② 세미콜론을 쓰세요 — It was raining**; however,** we went out.\n\n" +
+          "therefore, moreover, nevertheless, thus도 같은 부류(접속부사)라 같은 규칙이에요. 'however류 = 마침표나 세미콜론이 선행' — 이 한 줄이 영문 라이팅 감점의 단골 하나를 지워줍니다.",
         examples: [
           { en: "The data was incomplete. However, the trend was clear.", ko: "데이터는 불완전했어요. 하지만 추세는 분명했죠.", note: "마침표 + However, 콤마" },
           { en: "The data was incomplete; however, the trend was clear.", ko: "(같은 뜻 — 세미콜론 버전)" },
@@ -465,11 +449,11 @@ export default [
       },
       {
         heading: "whereas / while — 두 사실을 나란히 대조하기",
+        pattern: "A ..., whereas/while B ... = ~인 반면",
+        patternKo: "진짜 접속사 — 한 문장 안에서 두 절 연결",
         body:
-          "however가 '앞 내용에 대한 반전'이라면, **whereas**는 **두 사실을 나란히 놓고 비교·대조**할 때 써요. 이쪽은 진짜 접속사라 한 문장 안에서 두 절을 이어요.\n\n" +
-          "**Exports rose by 10%, whereas imports fell by 3%.** (수출은 10% 늘어난 반면, 수입은 3% 줄었다)\n\n" +
-          "**while**도 같은 일을 해요 — '~하는 동안'이라는 시간 의미 외에 '~인 반면'이라는 대조 의미가 있어요: While I prefer tea, my wife loves coffee.\n\n" +
-          "통계·그래프 묘사, 두 입장 비교 에세이에서 whereas/while은 거의 필수 장비예요. '반면에'가 떠오를 때 on the other hand만 반복하지 말고 whereas로 한 문장에 압축해보세요.",
+          "however가 '앞 내용에 대한 반전'이라면, **whereas**는 **두 사실을 나란히 놓고 비교·대조**해요 — Exports rose by 10%, whereas imports fell by 3%. **while**도 '~하는 동안' 외에 '~인 반면'이라는 대조 의미가 있어요: While I prefer tea, my wife loves coffee.\n\n" +
+          "통계·그래프 묘사, 두 입장 비교 에세이에서 거의 필수 장비예요. '반면에'가 떠오를 때 on the other hand만 반복하지 말고 whereas로 한 문장에 압축해보세요.",
         examples: [
           { en: "The north of the country is mountainous, whereas the south is flat.", ko: "그 나라의 북부는 산악 지대인 반면, 남부는 평탄해요." },
           { en: "While online classes are convenient, they lack human connection.", ko: "온라인 수업은 편리한 반면, 사람 사이의 교감이 부족해요.", note: "양보로 문을 여는 에세이 단골 문형" },
@@ -479,10 +463,10 @@ export default [
       },
       {
         heading: "hence와 thus — 짧지만 묵직한 인과",
+        pattern: "thus + -ing = 그렇게 함으로써 · hence + 명사구",
+        patternKo: "향신료처럼 — 한 편에 한두 번이면 충분",
         body:
-          "**hence**와 **thus**는 인과 연결어 중에서도 가장 문어적이에요. 학술문·보고서에서 빛나죠.\n\n" +
-          "**thus** — '이렇게 하여, 따라서'. 절 전체를 받기도 하고, **thus + -ing**(분사구문과 결합)로 '그렇게 함으로써'를 표현하기도 해요: The company cut prices, **thus attracting** new customers.\n\n" +
-          "**hence** — '그러므로'. 특히 **hence + 명사구**로 동사 없이 쓰는 용법이 독특해요: The demand doubled — **hence the higher prices.** (수요가 두 배가 됐고, 그래서 가격이 오른 것이다)\n\n" +
+          "**thus**는 '이렇게 하여, 따라서' — **thus + -ing**로 '그렇게 함으로써'를 표현해요: The company cut prices, **thus attracting** new customers. **hence**는 '그러므로' — 특히 **hence + 명사구**로 동사 없이 쓰는 용법이 독특해요: The demand doubled — **hence the higher prices.**\n\n" +
           "이 둘은 한 편의 글에 한두 번이면 충분해요. 향신료처럼 — 적게 써야 효과가 살아요.",
         examples: [
           { en: "The experiment failed twice; thus, we revised the design.", ko: "실험이 두 번 실패했고, 따라서 설계를 수정했어요." },
@@ -505,10 +489,11 @@ export default [
     sections: [
       {
         heading: "문법은 맞는데 어색한 이유 — 단어의 교우 관계",
+        pattern: "heavy rain(○) · strong rain(×) ↔ strong coffee(○) · heavy coffee(×)",
+        patternKo: "콜로케이션 = 논리가 아니라 단어의 교우 관계",
         body:
-          "**strong rain** — 문법적으로 완벽하고 뜻도 통하지만, 원어민은 이렇게 말하지 않아요. 비는 **heavy rain**이거든요. 반면 커피는 strong coffee(○), heavy coffee(×).\n\n" +
-          "이렇게 **단어마다 정해진 단짝 조합**을 콜로케이션(collocation)이라고 해요. 논리가 아니라 관습이라, '왜?'가 없어요. 그냥 그 단어의 교우 관계예요.\n\n" +
-          "B2부터 영어 실력을 가르는 건 문법보다 콜로케이션이에요. 문법 오류는 '배우는 중이구나'로 들리지만, 콜로케이션이 자연스러우면 같은 문법 수준에서도 **확연히 유창하게** 들려요. 시험 라이팅·스피킹 채점 기준에 lexical resource(어휘 운용)가 따로 있는 이유이기도 하고요.",
+          "**strong rain**은 문법적으로 완벽하지만 원어민은 그렇게 말하지 않아요 — 비는 **heavy rain**, 커피는 strong coffee예요. 이렇게 **단어마다 정해진 단짝 조합**이 콜로케이션(collocation)이에요. 논리가 아니라 관습이라 '왜?'가 없어요.\n\n" +
+          "B2부터 실력을 가르는 건 문법보다 콜로케이션이에요. 콜로케이션이 자연스러우면 같은 문법 수준에서도 **확연히 유창하게** 들려요 — 시험 채점 기준에 lexical resource가 따로 있는 이유예요.",
         examples: [
           { en: "We had heavy rain all weekend.", ko: "주말 내내 폭우가 내렸어요.", note: "strong rain ×" },
           { en: "I need a strong coffee this morning.", ko: "오늘 아침엔 진한 커피가 필요해요.", note: "heavy coffee ×" },
@@ -518,11 +503,11 @@ export default [
       },
       {
         heading: "make vs do — 한국어 '하다'의 두 갈래",
+        pattern: "make = 결과물 창조 (a mistake·a decision) · do = 과업 수행 (homework·the dishes)",
+        patternKo: "'하다' 직역 금지 — 덩어리째 암기",
         body:
-          "한국어 '하다'는 만능 동사죠. 숙제도 하고, 실수도 하고, 약속도 해요. 영어는 이 '하다'를 최소 둘로 가르는데, 경향은 이래요.\n\n" +
-          "**make = 만들어내다** — 결과물이 생기는 행위: make a mistake(실수), make a decision(결정), make a promise(약속), make money(돈), make progress(진전), make an effort(노력), make noise(소음)\n\n" +
-          "**do = 수행하다** — 일·과업을 처리하는 행위: do homework(숙제), do the dishes(설거지), do business(사업), do research(연구), do your best(최선), do exercise(운동)\n\n" +
-          "'결과물 창조 = make, 과업 수행 = do'라는 경향이 7할은 맞혀주지만, 결국은 **덩어리째 암기**가 정답이에요. make a decision을 'make+a+decision'이 아니라 한 단어처럼 외우세요.",
+          "한국어 만능 동사 '하다'를 영어는 최소 둘로 갈라요 — **make = 만들어내다**(결과물이 생김: make a mistake, make a decision, make money, make progress), **do = 수행하다**(일·과업 처리: do homework, do the dishes, do research, do your best).\n\n" +
+          "'결과물 창조 = make, 과업 수행 = do'가 7할은 맞혀주지만, 결국은 **덩어리째 암기**가 정답이에요. make a decision을 한 단어처럼 외우세요.",
         table: {
           caption: "make vs do 핵심 콜로케이션",
           headers: ["make (결과물 창조)", "do (과업 수행)"],
@@ -544,10 +529,11 @@ export default [
       },
       {
         heading: "have와 take — 경험과 동작의 동사",
+        pattern: "take medicine(약을 먹다) · take a picture(사진을 찍다) · have a great time",
+        patternKo: "have = 겪다·누리다 · take = 잡아서 행하다",
         body:
-          "**have = 겪다·누리다** — 식사·휴식·경험을 '가지는' 그림: have breakfast(아침 식사), have a break(휴식), have fun(즐기다), have a look(보다), have a conversation(대화하다), have a problem(문제가 있다)\n\n" +
-          "**take = 잡아서 행하다** — 동작을 '집어 드는' 그림: take a shower(샤워), take a walk(산책), take a break(휴식 — have와 호환), take a picture(사진 찍다), take medicine(약을 먹다), take an exam(시험을 치다), take a taxi(택시를 타다)\n\n" +
-          "여기서 한국어 간섭 주의보 — '약을 **먹다**'는 eat medicine이 아니라 **take medicine**, '사진을 **찍다**'는 cut/shoot이 아니라 **take a picture**, '샤워**하다**'는 do a shower가 아니라 **take(have) a shower**예요. 한국어 동사를 거치지 말고 영어 덩어리를 직통으로 불러와야 하는 대표 지점들이에요.",
+          "**have = 겪다·누리다**(have breakfast, have fun, have a look, have a problem), **take = 잡아서 행하다**(take a shower, take a walk, take a picture, take medicine, take an exam, take a taxi)예요.\n\n" +
+          "한국어 간섭 주의보 — '약을 **먹다**'는 eat medicine이 아니라 **take medicine**, '사진을 **찍다**'는 **take a picture**, '샤워**하다**'는 **take(have) a shower**예요. 한국어 동사를 거치지 말고 영어 덩어리를 직통으로 불러와야 해요.",
         examples: [
           { en: "Don't forget to take your medicine.", ko: "약 먹는 거 잊지 마세요.", note: "eat medicine ×" },
           { en: "Let's take a break and have some coffee.", ko: "잠깐 쉬면서 커피 마셔요." },
@@ -558,11 +544,11 @@ export default [
       },
       {
         heading: "형용사·부사 콜로케이션, 그리고 모으는 법",
+        pattern: "heavy traffic · highly unlikely · deeply disappointed · bitterly cold",
+        patternKo: "단어장은 '단어+뜻'이 아니라 '덩어리+장면'으로",
         body:
-          "동사 콜로케이션만큼 중요한 게 **형용사+명사, 부사+형용사** 조합이에요.\n\n" +
-          "**형용사+명사**: heavy traffic(교통체증), strong opinion(강한 의견), high temperature(높은 온도 — big ×), fast food / quick meal(빠른 식사 — fast meal은 어색)\n\n" +
-          "**부사+형용사**: highly unlikely(매우 ~할 것 같지 않은), deeply disappointed(몹시 실망한), fully aware(충분히 인지하는), bitterly cold(혹독하게 추운) — 전부 very로 바꿔도 통하지만, 단짝 부사를 쓰면 표현의 해상도가 달라져요.\n\n" +
-          "**모으는 법**: ① 새 단어를 만나면 뜻 대신 **옆 단어**를 같이 적기 (decision → make a tough decision) ② 콜로케이션 사전(무료 온라인 사전 다수) 활용 ③ 다독 중에 '어, 이 조합 처음 보네' 하는 순간을 수집. 단어장을 '단어+뜻'에서 '**덩어리+장면**'으로 바꾸는 것이 B2에서 C1으로 가는 가장 확실한 길이에요.",
+          "**형용사+명사**(heavy traffic, strong opinion, high temperature — big ×)와 **부사+형용사**(highly unlikely, deeply disappointed, fully aware, bitterly cold)도 동사 콜로케이션만큼 중요해요 — 전부 very로 바꿔도 통하지만, 단짝 부사를 쓰면 표현의 해상도가 달라져요.\n\n" +
+          "모으는 법: ① 새 단어의 뜻 대신 **옆 단어**를 같이 적기(decision → make a tough decision) ② 콜로케이션 사전 활용 ③ 다독 중 낯선 조합 수집. 단어장을 '덩어리+장면'으로 바꾸는 것이 B2에서 C1으로 가는 가장 확실한 길이에요.",
         examples: [
           { en: "We got stuck in heavy traffic.", ko: "교통체증에 갇혔어요.", note: "many traffic ×, heavy가 단짝" },
           { en: "It's highly unlikely that he'll come.", ko: "그가 올 가능성은 매우 낮아요.", note: "very unlikely보다 격 있는 조합" },
