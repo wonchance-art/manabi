@@ -14,10 +14,11 @@ export default [
     sections: [
       {
         heading: "무엇이고, 왜 사라졌나",
+        pattern: "주절 과거 → 접속법도 과거형 (Je voulais qu'il vînt)",
+        patternKo: "고전 문학의 시제 일치 — 현대 구어에서는 소멸",
         body:
-          "고전 문학의 시제 일치 규칙에서는 **주절이 과거이면 종속절의 접속법도 과거형**으로 맞췄어요. Je veux qu'il vienne(현재 → 접속법 현재)가 과거가 되면 Je voulais qu'il **vînt**(반과거 → 접속법 반과거)가 되는 식이죠.\n\n" +
-          "이 접속법 반과거(subjonctif imparfait)와 대과거(subjonctif plus-que-parfait)는 **현대 구어에서 완전히 사라졌고**, 현대 문어에서도 의고적·해학적 효과를 노릴 때가 아니면 거의 안 써요. 현대어는 시제 일치를 포기하고 그냥 접속법 현재·과거로 대체해요: Je voulais qu'il vienne.\n\n" +
-          "그래서 학습 목표는 단 하나 — **17~20세기 초 텍스트(몰리에르, 발자크, 플로베르, 프루스트...)에서 만났을 때 알아보기.** 직접 쓸 일은, 농담을 하고 싶을 때 말고는 없어요.",
+          "고전 문학에서는 주절이 과거이면 종속절의 접속법도 과거형으로 맞췄어요. 이 접속법 반과거·대과거는 **현대 구어에서 완전히 사라졌고**, 현대어는 그냥 접속법 현재·과거로 대체해요(Je voulais qu'il vienne).\n\n" +
+          "학습 목표는 단 하나 — **17~20세기 초 텍스트(몰리에르, 발자크, 프루스트...)에서 만났을 때 알아보기.** 직접 쓸 일은 농담할 때 말고는 없어요.",
         examples: [
           { fr: "Il fallait qu'il partît avant l'aube.", ko: "그는 동트기 전에 떠나야 했다.", note: "현대어라면 qu'il parte. 고전 텍스트의 시제 일치" },
           { fr: "Je craignais qu'elle ne fût déjà partie.", ko: "나는 그녀가 이미 떠났을까 두려웠다.", note: "fût = être의 접속법 반과거. 허사 ne와 결합한 전형적 문어" },
