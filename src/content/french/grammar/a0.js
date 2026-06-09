@@ -262,9 +262,10 @@ export default [
       },
       {
         heading: "앙셴느망 — 원래 발음되던 자음도 이어 읽기",
+        pattern: "발음되는 끝 자음 + 모음 → 한 덩어리 (il est = [i-lɛ])",
         body:
-          "리에종과 비슷한 **앙셴느망(enchaînement)**도 있어요. 원래 발음되던 끝 자음이 다음 모음 단어에 자연스럽게 붙는 현상이에요. il est는 '일 에'가 아니라 '이-레'[i-lɛ]로 흘러가죠.\n\n" +
-          "둘을 굳이 구별해 외울 필요는 없어요. 핵심은 하나 — **프랑스어는 단어 단위가 아니라 의미 덩어리 단위로 물 흐르듯 읽는 언어**라는 것. 프랑스어가 노래처럼 들리는 이유가 바로 이거예요.",
+          "**앙셴느망(enchaînement)**은 원래 발음되던 끝 자음이 다음 모음 단어에 자연스럽게 붙는 현상이에요. 리에종과 굳이 구별해 외울 필요는 없어요.\n\n" +
+          "핵심은 하나 — **프랑스어는 단어 단위가 아니라 의미 덩어리 단위로** 물 흐르듯 읽는 언어라는 것.",
         examples: [
           { fr: "il est", ipa: "[ilɛ]", ko: "그는 ~이다", note: "'이레'처럼 흘러가요" },
           { fr: "elle habite", ipa: "[ɛlabit]", ko: "그녀는 산다", note: "h는 묵음이니 l이 바로 a에 붙어요" },
@@ -273,12 +274,9 @@ export default [
       },
       {
         heading: "언제 하고 언제 안 하나",
+        pattern: "관사/대명사/형용사/짧은 전치사 + 모음 → 리에종 필수 · et 뒤 → 금지",
         body:
-          "모든 곳에서 리에종을 하는 건 아니에요. A0에서는 **꼭 해야 하는 경우**만 기억하세요.\n\n" +
-          "**관사+명사**: les amis, un homme\n" +
-          "**대명사+동사**: vous avez, ils ont\n" +
-          "**형용사+명사**: petit ami\n" +
-          "**짧은 전치사 뒤**: chez elle\n\n" +
+          "A0에서는 **꼭 해야 하는 경우**만 기억하세요 — **관사+명사**(les amis), **대명사+동사**(vous avez), **형용사+명사**(petit ami), **짧은 전치사 뒤**(chez elle).\n\n" +
           "반대로 **et(그리고) 뒤에서는 절대 리에종하지 않아요**. et un café는 '에 엉 까페'(O), '에뚱 까페'(X).",
         examples: [
           { fr: "et un café", ipa: "[e œ̃ kafe]", ko: "그리고 커피 한 잔", note: "et 뒤는 리에종 금지!" },
@@ -299,10 +297,10 @@ export default [
     sections: [
       {
         heading: "문법적 성이란 — '남자답다/여자답다'가 아니에요",
+        pattern: "모든 명사 → masculin(남성) 또는 féminin(여성)",
         body:
-          "프랑스어의 **모든 명사**는 남성(masculin) 아니면 여성(féminin) 둘 중 하나예요. le livre(책)는 남성, la table(탁자)는 여성.\n\n" +
-          "여기서 한국 학습자가 가장 많이 하는 질문: '책이 왜 남자예요?' — 답은, **아무 이유 없어요**. 문법적 성은 의미가 아니라 그냥 단어의 문법적 분류예요. 한국어에서 '먹다'는 '-다'로 끝나고 명사는 조사가 붙는 것처럼, 임의의 문법 규칙일 뿐이에요. '남성 명사 = 남성적인 것'이라는 연상은 버리는 게 좋아요. 실제로 '수염'(la barbe)은 여성 명사, '화장'(le maquillage)은 남성 명사거든요.\n\n" +
-          "사람·동물은 대체로 자연 성별을 따라요: le père(아버지)/la mère(어머니), le frère(형제)/la sœur(자매).",
+          "**모든 명사**는 남성 아니면 여성이에요. '책이 왜 남자예요?'라는 질문의 답은 — **아무 이유 없어요**. 의미가 아니라 임의의 문법적 분류라서, '수염'(la barbe)은 여성, '화장'(le maquillage)은 남성이에요.\n\n" +
+          "사람·동물은 대체로 자연 성별을 따라요: le père(아버지)/la mère(어머니).",
         examples: [
           { fr: "le livre", ipa: "[livʁ]", ko: "책 (남성)", note: "이유는 묻지 않기로 해요" },
           { fr: "la table", ipa: "[tabl]", ko: "탁자 (여성)" },
@@ -312,10 +310,9 @@ export default [
       },
       {
         heading: "어미를 보면 80%는 맞힌다",
+        pattern: "-tion/-té/-ette/-ie → 여성 · -age/-ment/-eau/-isme → 남성",
         body:
-          "다행히 단어의 **끝부분(어미)을 보면 성을 높은 확률로 추측**할 수 있어요. 대표 패턴만 외워두세요.\n\n" +
-          "**여성일 확률이 높은 어미**: -tion/-sion (la nation), -té (la liberté), -ette (la baguette), -ure (la culture), -ence/-ance (la France), -ie (la vie)\n\n" +
-          "**남성일 확률이 높은 어미**: -age (le fromage), -ment (le moment), -eau (le bureau), -isme (le tourisme), -o (le métro)",
+          "단어의 **끝부분(어미)을 보면 성을 높은 확률로 추측**할 수 있어요. 아래 표의 대표 패턴만 외워두세요.",
         table: {
           caption: "성 추측 치트시트",
           headers: ["어미", "성", "예시"],
@@ -335,10 +332,10 @@ export default [
       },
       {
         heading: "성을 외우는 유일한 정석 — 관사와 한 덩어리로",
+        pattern: "암기 = 관사 + 명사 (livre ✗ → le livre ✓)",
         body:
-          "단어를 외울 때 **반드시 관사를 붙여서** 외우세요. 'livre = 책'이 아니라 '**le livre** = 책'으로요.\n\n" +
-          "성을 틀리면 관사(le/la), 형용사(petit/petite), 대명사(il/elle)까지 줄줄이 틀리게 돼요. 반대로 단어를 처음 만날 때 관사째 외워두면 나머지는 자동으로 따라옵니다. 이 레퍼런스의 어휘 파트에서 명사를 전부 관사와 함께 싣는 이유예요.\n\n" +
-          "모음으로 시작하는 단어는 l'eau처럼 축약돼서 성이 안 보여요. 그럴 땐 '물 = l'eau, 여성'처럼 성을 따로 메모하거나, une eau처럼 부정관사로 외우는 요령이 있어요.",
+          "단어는 **반드시 관사를 붙여서** 외우세요. 성을 틀리면 관사·형용사·대명사까지 줄줄이 틀리지만, 관사째 외워두면 나머지는 자동으로 따라와요.\n\n" +
+          "모음으로 시작하는 단어는 l'eau처럼 축약돼 성이 안 보이니, **une eau처럼 부정관사로** 외우는 요령이 있어요.",
         examples: [
           { fr: "le livre → un livre", ipa: "[lə livʁ]", ko: "책 — 남성 세트로 암기" },
           { fr: "la table → une table", ipa: "[la tabl]", ko: "탁자 — 여성 세트로 암기" },
@@ -360,10 +357,10 @@ export default [
     sections: [
       {
         heading: "관사 없는 명사는 벌거벗은 명사",
+        pattern: "명사 → 거의 항상 관사와 함께 (정관사 le/la/les · 부정관사 un/une/des · 부분관사 du/de la)",
         body:
-          "한국어로는 '책 읽어요'라고 하지, '그 책을' '한 권의 책을'이라고 매번 말하지 않죠. 그래서 한국 학습자는 관사를 빼먹는 실수를 정말 오래 해요.\n\n" +
-          "프랑스어에서 명사는 **거의 언제나 관사(또는 그 비슷한 말)와 함께** 다녀요. J'aime le café(저는 커피를 좋아해요)에서 le를 빼면 문법적으로 깨진 문장이 돼요. 영어보다도 관사 사용이 더 철저해서, 영어에서는 관사 없이 쓰는 I like coffee 같은 문장에도 프랑스어는 관사가 필요해요.\n\n" +
-          "관사는 크게 세 종류: **정관사**(le/la/les), **부정관사**(un/une/des), 그리고 A1에서 배울 **부분관사**(du/de la)예요.",
+          "한국어엔 관사가 없어서 한국 학습자는 관사를 빼먹는 실수를 정말 오래 해요. 프랑스어 명사는 **거의 언제나 관사와 함께** 다니고, J'aime le café에서 le를 빼면 깨진 문장이 돼요.\n\n" +
+          "영어보다도 철저해서, 영어가 관사 없이 쓰는 I like coffee 같은 문장에도 프랑스어는 관사가 필요해요.",
         examples: [
           { fr: "J'aime le café.", ipa: "[ʒɛm lə kafe]", ko: "저는 커피를 좋아해요.", note: "좋아하는 대상엔 정관사" },
           { fr: "C'est un livre.", ipa: "[sɛtœ̃ livʁ]", ko: "이것은 책이에요.", note: "'하나의' 셀 수 있는 것엔 부정관사" },
@@ -372,12 +369,10 @@ export default [
       },
       {
         heading: "정관사 le, la, les — 그리고 축약 l'",
+        pattern: "le + 남성 단수 · la + 여성 단수 · l' + 모음 앞 · les + 복수",
         body:
-          "**le** + 남성 단수 (le livre)\n" +
-          "**la** + 여성 단수 (la table)\n" +
-          "**l'** + 모음/무음 h로 시작하는 단수 (l'eau, l'hôtel) — 성 불문\n" +
-          "**les** + 모든 복수 (les livres, les tables)\n\n" +
-          "정관사는 ① 이미 아는·특정한 것(그 책), ② 종류 전체(커피란 것), ③ 좋아하고 싫어하는 대상을 말할 때 써요.",
+          "**le** livre, **la** table, **l'**eau(모음/무음 h 앞, 성 불문), **les** livres(모든 복수)예요.\n\n" +
+          "정관사는 ① 이미 아는·특정한 것(그 책), ② 종류 전체(커피란 것), ③ **좋아하고 싫어하는 대상**을 말할 때 써요.",
         table: {
           headers: ["", "남성", "여성", "모음 앞", "복수"],
           rows: [
@@ -393,9 +388,11 @@ export default [
       },
       {
         heading: "부정관사 un, une, des — '하나' 그리고 영어에 없는 des",
+        pattern: "un + 남성 · une + 여성 · des + 복수",
+        patternKo: "des는 영어에도 없는 '복수 부정관사'",
         body:
           "**un**(남성)/**une**(여성)은 영어 a/an과 같아요 — 정해지지 않은 '하나의' 무엇.\n\n" +
-          "특이한 건 **des** — 부정관사의 **복수형**이에요. 영어로는 I have books처럼 관사 없이 말하는 것을, 프랑스어는 J'ai des livres처럼 des를 꼭 붙여요. '몇 개의, 어떤(복수)'이라는 뜻인데 한국어로는 번역되지 않는 경우가 많아요.",
+          "특이한 건 복수형 **des**예요. 영어로는 I have books처럼 관사 없이 말하는 것을, 프랑스어는 J'ai **des** livres처럼 des를 꼭 붙여요. 한국어로는 번역되지 않는 경우가 많아요.",
         examples: [
           { fr: "un café, s'il vous plaît", ipa: "[œ̃ kafe sil vu plɛ]", ko: "커피 한 잔 주세요", note: "주문의 만능 공식" },
           { fr: "une question", ipa: "[yn kɛstjɔ̃]", ko: "질문 하나", note: "-tion은 여성 → une" },
@@ -417,6 +414,7 @@ export default [
     sections: [
       {
         heading: "기본 인사 세트",
+        pattern: "Bonjour → 낮 · Bonsoir → 저녁 · Salut → 친한 사이 · Au revoir → 작별",
         body:
           "**Bonjour** [봉주르] — 아침~낮의 만능 인사. 가게에 들어갈 때 점원에게 반드시 건네는 게 프랑스 예절이에요.\n" +
           "**Bonsoir** [봉수아르] — 저녁 인사.\n" +
