@@ -661,10 +661,10 @@ export default [
       },
       {
         heading: "70~99 — 프랑스식 암산 체조",
+        pattern: "70 = soixante-dix (60+10) · 80 = quatre-vingts (4×20) · 90 = 4×20+10",
         body:
-          "70부터 프랑스어는 갑자기 수학 문제를 내기 시작해요.\n\n" +
-          "**70 = soixante-dix (60+10)** → 71은 soixante et onze(60+11), 75는 soixante-quinze(60+15)\n**80 = quatre-vingts (4×20)** → 곱셈까지 등장!\n**90 = quatre-vingt-dix (4×20+10)** → 99는 quatre-vingt-dix-neuf(4×20+10+9). 한 숫자에 단어가 네 개예요.\n\n" +
-          "처음 보면 멘붕이 정상이에요. 하지만 생각해보면 우리도 '하나둘셋'과 '일이삼' 두 체계를 섞어 쓰고, 자릿수마다 '만, 억, 조'로 점프하는 언어를 쓰죠. 모든 언어는 어딘가 이상하고, 프랑스어는 그게 숫자일 뿐이에요. 전화번호와 가격에서 무한 반복되니, 외우려 하지 말고 들으면서 익숙해지세요.",
+          "70부터 프랑스어는 수학 문제를 내요. 99는 quatre-vingt-dix-neuf(4×20+10+9) — 한 숫자에 단어가 네 개예요.\n\n" +
+          "처음엔 멘붕이 정상이지만, 전화번호와 가격에서 무한 반복되니 외우려 하지 말고 **들으면서 익숙해지세요**.",
         table: {
           caption: "70~90 생존표",
           headers: ["숫자", "프랑스어", "계산식"],
@@ -686,9 +686,10 @@ export default [
       },
       {
         heading: "시간 묻고 답하기 — Quelle heure est-il ?",
+        pattern: "Il est + 숫자 + heure(s) (+ et demie / et quart / moins le quart)",
         body:
-          "시간 질문은 **Quelle heure est-il ?**(몇 시예요?) — 도치형이지만 굳은 표현이라 통째로 외워요. 대답은 **Il est ... heure(s)** 틀에 숫자만 끼우면 돼요.\n\n" +
-          "30분 = **et demie**, 15분 = **et quart**, '~시 15분 전' = **moins le quart**. 정오는 midi, 자정은 minuit라는 전용 단어를 써요.",
+          "시간 질문 **Quelle heure est-il ?**은 굳은 표현이라 통째로 외워요. 대답은 **Il est ... heure(s)** 틀에 숫자만 끼우면 돼요.\n\n" +
+          "30분 = **et demie**, 15분 = **et quart**, 15분 전 = **moins le quart**. 정오는 midi, 자정은 minuit라는 전용 단어를 써요.",
         examples: [
           { fr: "Quelle heure est-il ?", ipa: "[kɛlœʁ ɛtil]", ko: "몇 시예요?" },
           { fr: "Il est deux heures.", ipa: "[il ɛ døzœʁ]", ko: "2시예요.", note: "리에종 '되죄르'" },
