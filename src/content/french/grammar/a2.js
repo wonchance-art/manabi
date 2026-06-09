@@ -405,9 +405,10 @@ export default [
     sections: [
       {
         heading: "형태 — 원형 + ai, as, a, ons, ez, ont",
+        pattern: "동사 원형 + -ai, -as, -a, -ons, -ez, -ont",
+        patternKo: "미래 어미 = avoir 현재형",
         body:
-          "futur simple(단순 미래) 만들기: **동사 원형을 어간으로, 그 뒤에 어미 -ai, -as, -a, -ons, -ez, -ont**.\n\n" +
-          "이 어미들, 어디서 봤죠? **avoir의 현재형**(ai, as, a, avons, avez, ont)이에요! 역사적으로 '먹는 것을 가지고 있다(manger + ai) → 먹을 것이다'로 굳은 형태라, 우연이 아니라 진짜 avoir예요. 덕분에 새로 외울 어미가 사실상 없어요.\n\n" +
+          "이 어미들은 **avoir의 현재형**이에요. 역사적으로 'manger + ai(먹는 것을 가지고 있다) → 먹을 것이다'로 굳은 형태라, 새로 외울 어미가 사실상 없어요.\n\n" +
           "-re로 끝나는 동사는 **끝의 e를 떼고** 붙여요: prendre → je prendr**ai**.",
         table: {
           caption: "parler의 futur simple",
@@ -429,10 +430,10 @@ export default [
       },
       {
         heading: "4대 불규칙 어간 — serai, aurai, irai, ferai",
+        pattern: "être → ser- · avoir → aur- · aller → ir- · faire → fer-",
         body:
-          "어미는 절대 불변이지만, **어간이 제멋대로인 동사들**이 있어요. 늘 그렇듯 최중요 동사들이죠.\n\n" +
-          "**être → ser-** (je serai 나는 ~일 것이다)\n**avoir → aur-** (j'aurai)\n**aller → ir-** (j'irai)\n**faire → fer-** (je ferai)\n\n" +
-          "그 외 자주 나오는 것: venir → viendr-, pouvoir → pourr-, voir → verr-. 불규칙이라도 **어간이 r로 끝나는 것**은 모두 같아요 — 미래형에서는 항상 [ʁ] 소리가 들린다는 게 청취 단서예요.",
+          "어미는 절대 불변이지만, 최중요 동사들은 **어간이 제멋대로**예요. 그 외 자주 나오는 것: venir → viendr-, pouvoir → pourr-, voir → verr-.\n\n" +
+          "불규칙이라도 **어간이 r로 끝나는 것**은 모두 같아요 — 미래형에서는 항상 [ʁ] 소리가 들린다는 게 청취 단서예요.",
         table: {
           caption: "불규칙 어간 핵심 7",
           headers: ["원형", "미래 어간", "je 형태"],
