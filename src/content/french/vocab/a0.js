@@ -71,7 +71,6 @@ export default {
           ipa: "[ɛkskyze mwa]",
           ko: "실례합니다 (말을 걸 때)",
           pos: "expr.",
-          en: "excuse me",
         },
       ],
     },
@@ -84,7 +83,6 @@ export default {
           ipa: "[zeʁo]",
           ko: "0, 영",
           pos: "num.",
-          en: "zero",
         },
         {
           fr: "un",

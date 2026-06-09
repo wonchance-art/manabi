@@ -396,7 +396,6 @@ export default {
           ipa: "[mɔ̃taɲ]",
           ko: "산",
           pos: "n.f.",
-          en: "mountain",
         },
         {
           fr: "la fleur",
@@ -451,7 +450,6 @@ export default {
           ipa: "[kɔlɛg]",
           ko: "동료 (여성형 la collègue)",
           pos: "n.m.",
-          en: "colleague",
         },
         {
           fr: "le patron",
@@ -481,14 +479,12 @@ export default {
           ipa: "[pʁɔʒɛ]",
           ko: "프로젝트, 계획",
           pos: "n.m.",
-          en: "project",
         },
         {
           fr: "l'emploi (m.)",
           ipa: "[ɑ̃plwa]",
           ko: "일자리, 고용",
           pos: "n.m.",
-          en: "employ",
         },
         {
           fr: "gagner",
@@ -502,14 +498,12 @@ export default {
           ipa: "[pʁɔfesœʁ]",
           ko: "교사, 교수",
           pos: "n.m.",
-          en: "professor",
         },
         {
           fr: "l'étudiant (m.)",
           ipa: "[etydjɑ̃]",
           ko: "대학생 (여성형 étudiante)",
           pos: "n.m.",
-          en: "student",
         },
         {
           fr: "le serveur",
@@ -669,8 +663,6 @@ export default {
           ipa: "[sə ʁəpoze]",
           ko: "쉬다, 휴식하다",
           pos: "v.",
-          en: "repose",
-          etym: "영어 repose(휴식), rest area의 프랑스식 표지 aire de repos에서 만나는 단어예요.",
         },
         {
           fr: "se promener",
@@ -691,7 +683,6 @@ export default {
           ipa: "[kɔmɑ̃se]",
           ko: "시작하다",
           pos: "v.",
-          en: "commence",
         },
         {
           fr: "finir",
@@ -721,7 +712,6 @@ export default {
           ipa: "[pʁepaʁe]",
           ko: "준비하다",
           pos: "v.",
-          en: "prepare",
         },
         {
           fr: "oublier",
