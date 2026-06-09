@@ -14,10 +14,11 @@ export default [
     sections: [
       {
         heading: "왜 우리는 현재완료를 피하게 됐나",
+        pattern: "I ate = 끝난 옛날이야기 ↔ I have eaten = 지금에 닿아 있는 이야기",
+        patternKo: "현재완료 = 현재에 무게가 실린 시제",
         body:
-          "한국어 과거형 '-았/었'은 하나뿐이에요. '먹었어요'는 어제 먹었든 방금 먹었든 똑같죠. 그런데 영어는 같은 '먹었다'를 **I ate**와 **I have eaten** 둘로 나눠요. 한국어에 없는 구분이니, 우리는 본능적으로 둘 다 과거형으로 때우게 돼요.\n\n" +
-          "핵심 그림은 이거예요. **과거시제는 '끝난 옛날이야기'**, **현재완료는 '과거에서 출발해 지금에 닿아 있는 이야기'**예요. I lost my keys(잃어버렸다 — 그 후 찾았는지는 모름) vs I have lost my keys(잃어버려서 **지금도 없다**, 그래서 지금 못 들어가요).\n\n" +
-          "즉 현재완료는 이름과 달리 과거 시제가 아니라 **현재에 무게가 실린 시제**예요. '지금 어떤 상태인가'를 말하고 싶을 때 쓰는 도구라고 생각하면 절반은 끝났습니다.",
+          "한국어 '-았/었'은 하나뿐이라, 영어가 같은 '먹었다'를 **I ate**와 **I have eaten**으로 나누는 순간 우리는 본능적으로 둘 다 과거형으로 때우게 돼요. 핵심 그림: **과거시제는 '끝난 옛날이야기'**, **현재완료는 '과거에서 출발해 지금에 닿아 있는 이야기'**예요.\n\n" +
+          "I lost my keys(그 후 찾았는지는 모름) vs I have lost my keys(**지금도 없다**). 현재완료는 이름과 달리 과거 시제가 아니라 '지금 어떤 상태인가'를 말하는 도구예요.",
         examples: [
           { en: "I lost my keys yesterday.", ko: "어제 열쇠를 잃어버렸어요. (끝난 과거 사건 — 지금은 찾았을 수도)", note: "과거의 한 점" },
           { en: "I have lost my keys.", ko: "열쇠를 잃어버렸어요. (그래서 지금 없어요)", note: "현재에 닿아 있는 결과" },
@@ -28,13 +29,10 @@ export default [
       },
       {
         heading: "결정적 판별법 — 시간 표현이 답을 알려줘요",
+        pattern: "yesterday · ~ ago · in 2020 → 과거 ↔ since · for · just · yet · ever → 현재완료",
         body:
-          "다행히 문장 속 시간 표현이 거의 답을 정해줘요. **끝난 시점을 콕 찍는 말**(yesterday, last week, in 2020, when I was young, ago)이 있으면 무조건 과거시제. 현재완료와는 절대 같이 못 써요.\n\n" +
-          "반대로 **지금까지 이어지는 기간**을 나타내는 말과는 현재완료가 짝이에요.\n\n" +
-          "**since + 시작점** — since 2020, since I moved here (~이후로 지금까지)\n" +
-          "**for + 기간** — for three years, for a long time (~동안 지금까지)\n" +
-          "**just** — 방금 막 / **already** — 벌써 / **yet** — (부정문) 아직, (의문문) 벌써\n" +
-          "**ever / never** — 지금까지 살면서 한 번이라도 / 한 번도",
+          "문장 속 시간 표현이 거의 답을 정해줘요. **끝난 시점을 콕 찍는 말**(yesterday, last week, in 2020, ago)이 있으면 무조건 과거시제 — 현재완료와는 절대 같이 못 써요.\n\n" +
+          "반대로 **since + 시작점**(~이후로 지금까지), **for + 기간**(~동안 지금까지), just·already·yet·ever/never처럼 '지금까지'를 품은 말은 현재완료의 짝이에요.",
         table: {
           caption: "신호어로 시제 고르기",
           headers: ["신호어", "시제", "예문"],
@@ -56,10 +54,11 @@ export default [
       },
       {
         heading: "경험 말하기 — have been to의 마법",
+        pattern: "Have you ever + p.p.? → 네 답하면 → When did you ~? (과거시제 전환)",
+        patternKo: "문 열기는 현재완료, 들어가서는 과거시제",
         body:
-          "회화에서 현재완료가 가장 빛나는 자리는 **경험** 묻고 답하기예요. 'Have you ever + p.p.?'는 '살면서 ~해본 적 있어요?'라는 만능 질문 공식이죠.\n\n" +
-          "여기서 한 가지 유명한 구분 — **have been to**(가본 적 있다, 다녀왔다)와 **have gone to**(가버려서 지금 없다)는 전혀 다른 말이에요. 자기소개나 스몰토크에서 쓰는 건 거의 항상 have been to입니다.\n\n" +
-          "주의: 경험을 묻는 건 현재완료지만, **상대가 '네'라고 답한 뒤 구체적인 이야기로 들어가면 과거시제**로 갈아타요. '언제? 어땠어?'는 이미 특정 과거의 일이니까요. 이 전환이 자연스러우면 중급 티가 확 납니다.",
+          "경험 질문의 만능 공식은 **Have you ever + p.p.?**예요. 그리고 **have been to**(가본 적 있다)와 **have gone to**(가버려서 지금 없다)는 전혀 다른 말 — 스몰토크에서 쓰는 건 거의 항상 have been to예요.\n\n" +
+          "주의: 상대가 '네'라고 답한 뒤 구체적인 이야기('언제? 어땠어?')로 들어가면 **과거시제로 갈아타요**. 이 전환이 자연스러우면 중급 티가 확 납니다.",
         examples: [
           { en: "A: Have you ever been to Jeju? — B: Yes, I have.", ko: "A: 제주도 가본 적 있어요? — B: 네, 있어요." },
           { en: "A: When did you go? — B: I went there last spring. It was beautiful.", ko: "A: 언제 갔어요? — B: 지난봄에요. 정말 아름다웠어요.", note: "구체적 이야기 = 과거시제로 전환!" },
@@ -69,10 +68,10 @@ export default [
       },
       {
         heading: "현실 체크 — 미국 영어는 과거시제를 더 좋아해요",
+        pattern: "I just ate. (미국 구어) = I have just eaten. — 역방향은 불가",
         body:
-          "교과서적으로는 just/already/yet에 현재완료를 쓰지만, **미국 구어에서는 과거시제로 말하는 경우가 아주 흔해요**. I just ate. / Did you eat yet? / I already saw it. 전부 미국에서는 자연스러운 문장이에요. (영국 영어는 현재완료를 더 지키는 편이에요.)\n\n" +
-          "그러니 미드에서 Did you finish yet?을 듣고 '내가 배운 거랑 다른데?' 하고 흔들릴 필요 없어요. 둘 다 맞아요.\n\n" +
-          "단, **반대 방향은 안 돼요**. yesterday 같은 확정 과거 시점에 현재완료를 쓰는 건 미국에서도 영국에서도 틀린 문장입니다. '현재완료 자리에 과거시제'는 허용되는 캐주얼함이지만, '과거시제 자리에 현재완료'는 그냥 오류예요. 시험·격식 작문에서는 교과서 규칙대로 쓰는 게 안전합니다.",
+          "교과서는 just/already/yet에 현재완료를 쓰지만, **미국 구어에서는 과거시제가 아주 흔해요** — I just ate. / Did you eat yet? 전부 자연스러워요. (영국 영어는 현재완료를 더 지키는 편이에요.)\n\n" +
+          "단, **반대 방향은 안 돼요**. yesterday 같은 확정 과거 시점에 현재완료를 쓰는 건 어디서도 오류예요. 시험·격식 작문에서는 교과서 규칙대로 쓰는 게 안전합니다.",
         examples: [
           { en: "I just got home. (미국 구어) = I have just got home. (영국)", ko: "방금 집에 왔어요.", note: "둘 다 OK" },
           { en: "Did you eat lunch yet? (미국 구어) = Have you eaten lunch yet?", ko: "점심 벌써 먹었어요?" },
@@ -93,10 +92,11 @@ export default [
     sections: [
       {
         heading: "한국어 '-면'은 하나, 영어 if는 여러 개",
+        pattern: "1형: If + 현재, will ↔ 2형: If + 과거, would",
+        patternKo: "기준은 시제가 아니라 현실성 — 진짜 가능? 그냥 상상?",
         body:
-          "'시간이 있으면 갈게'와 '시간이 있으면 갈 텐데'. 한국어는 둘 다 '-면'이지만, 뒤를 보면 분위기가 다르죠. 앞 문장은 진짜 갈 수도 있는 약속, 뒤 문장은 **사실은 시간이 없어서 못 간다**는 아쉬움이에요.\n\n" +
-          "영어는 이 차이를 **동사 형태로** 표시해요. 실현 가능한 가정은 **1형(If + 현재, will)**, 현실과 반대거나 가능성이 희박한 상상은 **2형(If + 과거, would)**.\n\n" +
-          "그러니 가정문을 만들 때 첫 질문은 '시제가 뭐지?'가 아니라 **'이거 진짜 일어날 수 있는 일인가, 그냥 상상인가?'**예요. 현실성을 먼저 정하면 형태는 따라옵니다.",
+          "'시간이 있으면 갈게'(진짜 갈 수도)와 '시간이 있으면 갈 텐데'(사실 못 감) — 한국어는 둘 다 '-면'이지만, 영어는 이 차이를 **동사 형태로** 표시해요. 실현 가능한 가정은 **1형(If + 현재, will)**, 비현실적 상상은 **2형(If + 과거, would)**.\n\n" +
+          "가정문의 첫 질문은 '시제가 뭐지?'가 아니라 **'이거 진짜 일어날 수 있는 일인가, 그냥 상상인가?'**예요. 현실성을 먼저 정하면 형태는 따라옵니다.",
         examples: [
           { en: "If I have time, I will visit you.", ko: "시간이 있으면 갈게요. (있을 수도 있음 — 진짜 계획)" },
           { en: "If I had time, I would visit you.", ko: "시간이 있으면 갈 텐데요. (사실 없어서 못 가요 — 상상)" },
@@ -105,9 +105,10 @@ export default [
       },
       {
         heading: "1형 — 충분히 일어날 수 있는 일",
+        pattern: "If + 현재시제, will + 동사원형",
+        patternKo: "if절 안에는 will 금지 — 미래여도 현재시제",
         body:
-          "**If + 현재시제, will + 동사원형.** 조건이 충족되면 실제로 벌어질 일을 말해요. 약속, 경고, 계획, 협상 — 일상 회화의 주력 가정문이에요.\n\n" +
-          "포인트는 하나: **if절 안에는 will을 쓰지 않는다**는 것. 미래의 일이라도 if절은 현재시제로 써요. 한국어로는 '비가 올 거면'이라고 생각되니 If it will rain이라고 쓰고 싶어지지만, If it rains가 맞아요.\n\n" +
+          "조건이 충족되면 실제로 벌어질 일 — 약속, 경고, 계획, 협상의 주력 가정문이에요. 포인트는 하나: **if절 안에는 will을 쓰지 않아요**. 미래의 일이라도 if절은 현재시제 — If it rains(○), If it will rain(×).\n\n" +
           "주절에는 will 대신 can, may, 명령문도 올 수 있어요: If you finish early, you can go home.",
         examples: [
           { en: "If it rains tomorrow, we will cancel the picnic.", ko: "내일 비가 오면 소풍을 취소할 거예요.", note: "if절은 현재시제 — will rain ×" },
@@ -118,10 +119,11 @@ export default [
       },
       {
         heading: "2형 — 현실과 반대인 상상, 그리고 If I were",
+        pattern: "If + 과거시제, would/could/might + 동사원형",
+        patternKo: "be동사는 주어 불문 were — If I were you",
         body:
-          "**If + 과거시제, would + 동사원형.** 지금 사실과 반대거나, 일어날 가망이 거의 없는 일을 상상할 때 써요. '복권에 당첨되면', '내가 너라면' — 전부 2형의 영역이에요.\n\n" +
-          "여기서 유명한 규칙 하나. 2형 if절에서 be동사는 주어가 무엇이든 **were**를 쓰는 게 격식 표준이에요. If I were you, If she were here. 일상 회화에서는 If I was...도 흔히 들리지만, 시험과 격식 작문에서는 were가 정답이고, **If I were you(내가 너라면)는 통째로 굳은 표현**이라 was로 바꾸면 오히려 어색해요.\n\n" +
-          "would 외에 could(~할 수 있을 텐데), might(~할지도 모를 텐데)도 주절에 올 수 있어요.",
+          "지금 사실과 반대거나 가망이 거의 없는 상상 — '복권에 당첨되면', '내가 너라면'이 전부 2형이에요. 2형 if절의 be동사는 주어가 무엇이든 **were**가 격식 표준이에요(회화에선 If I was...도 들리지만, 시험·격식 작문은 were).\n\n" +
+          "특히 **If I were you(내가 너라면)는 통째로 굳은 표현**이라 was로 바꾸면 오히려 어색해요. 주절에는 would 외에 could(~할 수 있을 텐데), might(~할지도 모를 텐데)도 와요.",
         examples: [
           { en: "If I won the lottery, I would quit my job.", ko: "복권에 당첨되면 일을 그만둘 텐데요. (당첨 가능성 거의 없음)" },
           { en: "If I were you, I would apologize first.", ko: "내가 너라면 먼저 사과하겠어.", note: "조언의 만능 공식" },
@@ -132,11 +134,10 @@ export default [
       },
       {
         heading: "1형이냐 2형이냐 — 같은 상황, 다른 태도",
+        pattern: "1형 = 진지하게 봄 · 2형 = 거리 두기 → 공손·조심스러움",
         body:
-          "재미있는 건, **같은 상황도 화자의 태도에 따라 1형과 2형을 골라 쓸 수 있다**는 거예요.\n\n" +
-          "If you help me, we will finish by six. (도와줄 가능성을 진지하게 봄)\n" +
-          "If you helped me, we would finish by six. (도와줄 것 같지는 않지만... 하는 뉘앙스)\n\n" +
-          "그래서 2형은 **공손한 부탁이나 조심스러운 제안**에도 쓰여요. 현실과 거리를 두면 어조가 부드러워지거든요 — Would you...?가 Will you...?보다 공손한 것과 같은 원리예요. 한국어에서 '혹시 ~해주시면'이라고 한 발 빼는 것과 닮았죠.",
+          "**같은 상황도 화자의 태도에 따라 1형과 2형을 골라 쓸 수 있어요.** If you help me, we will finish by six.(도와줄 가능성을 진지하게 봄) vs If you helped me, we would finish by six.(그럴 것 같지는 않지만...).\n\n" +
+          "그래서 2형은 **공손한 부탁·조심스러운 제안**에도 쓰여요. 현실과 거리를 두면 어조가 부드러워지거든요 — Would you...?가 Will you...?보다 공손한 것과 같은 원리예요.",
         examples: [
           { en: "If you have questions, I will be happy to help.", ko: "질문이 있으면 기꺼이 도와드릴게요. (실제 상황 대비)" },
           { en: "It would be great if you could send it by Friday.", ko: "금요일까지 보내주시면 정말 감사하겠습니다.", note: "비즈니스 이메일 단골 — 2형의 공손함" },
@@ -164,12 +165,10 @@ export default [
     sections: [
       {
         heading: "수동태는 언제 쓰나 — '누가'가 중요하지 않을 때",
+        pattern: "행위자를 모르거나 · 뻔하거나 · 숨기고 싶을 때 → 수동태",
+        patternKo: "by ~는 정말 필요할 때만",
         body:
-          "학교에서 수동태를 '능동태를 기계적으로 뒤집는 연습'으로 배웠지만, 실제 영어에서 수동태를 고르는 이유는 따로 있어요. **행위자(누가)가 안 중요하거나, 모르거나, 숨기고 싶을 때**예요.\n\n" +
-          "**① 누가 했는지 모를 때** — My bike was stolen. (도둑이 누군지 모름)\n" +
-          "**② 누가 했는지 뻔하거나 안 중요할 때** — English is spoken in Australia. (호주 사람들이겠죠)\n" +
-          "**③ 행위자보다 대상이 화제일 때** — This temple was built in 1395. (절이 주인공)\n" +
-          "**④ 책임을 부드럽게 흐릴 때** — Mistakes were made. (누가 했는지는 말 안 함 — 정치인 단골 화법)\n\n" +
+          "실제 영어에서 수동태를 고르는 이유는 **행위자(누가)가 안 중요하거나, 모르거나, 숨기고 싶을 때**예요 — ① 누가 했는지 모름(My bike was stolen.), ② 뻔함(English is spoken in Australia.), ③ 대상이 화제(This temple was built in 1395.), ④ 책임 흐리기(Mistakes were made.).\n\n" +
           "그래서 by ~(행위자)는 **정말 필요할 때만** 붙여요. 실제 수동태 문장의 대부분은 by 없이 끝납니다.",
         examples: [
           { en: "My wallet was stolen on the subway.", ko: "지하철에서 지갑을 도둑맞았어요.", note: "범인을 모르니 수동태가 자연스러워요" },
@@ -181,9 +180,10 @@ export default [
       },
       {
         heading: "형태 — be + p.p., 시제는 be가 담당",
+        pattern: "be + 과거분사 — 시제·조동사는 be가 변신",
+        patternKo: "is made → was made → will be made → has been made",
         body:
-          "수동태의 뼈대는 **be + 과거분사(p.p.)** 하나예요. 시제·조동사는 전부 **be 부분이 변신**해서 표현해요. p.p.는 끝까지 그대로고요.\n\n" +
-          "is made → was made → will be made → is being made → has been made → can be made. 'be의 일곱 가지 옷 갈아입기'라고 생각하면 표가 한눈에 들어와요.",
+          "수동태의 뼈대는 **be + 과거분사(p.p.)** 하나예요. 시제·조동사는 전부 **be 부분이 변신**해서 표현하고, p.p.는 끝까지 그대로예요 — 'be의 일곱 가지 옷 갈아입기'라고 생각하면 표가 한눈에 들어와요.",
         table: {
           caption: "시제별 수동태 — make로 정리",
           headers: ["시제", "형태", "예문"],
@@ -204,13 +204,11 @@ export default [
       },
       {
         heading: "한국어 피동과의 대응 — '-되다/-받다/-아지다'",
+        pattern: "-되다 / -받다 / -아지다 / -당하다 → be + p.p.",
+        patternKo: "1:1 번역 금물 — '놀랐어요'도 I was surprised",
         body:
-          "좋은 소식: 한국어에도 피동이 있어서 개념 자체는 익숙해요. 대응 관계를 잡아두면 번역이 빨라져요.\n\n" +
-          "**-되다** → be p.p.의 가장 흔한 짝: 취소되다 be canceled, 건설되다 be built\n" +
-          "**-받다** → 받는 쪽 시점: 초대받다 be invited, 사랑받다 be loved\n" +
-          "**-아/어지다** → 만들어지다 be made, 알려지다 be known\n" +
-          "**-당하다** → 부정적 피해: 해고당하다 be fired, 도둑맞다 be stolen\n\n" +
-          "단, 1:1 기계 번역은 금물이에요. 한국어가 능동인데 영어는 수동인 경우(놀랐어요 → I was surprised), 반대인 경우(다쳤어요 → I got hurt / I hurt my leg)가 수두룩하거든요. '한국어 피동 = 영어 수동'이 아니라 **'행위자를 숨기고 싶은 마음 = 수동태'**로 기억하는 게 안전해요.",
+          "한국어 피동과의 대응: **-되다**(취소되다 be canceled), **-받다**(초대받다 be invited), **-아/어지다**(만들어지다 be made), **-당하다**(해고당하다 be fired).\n\n" +
+          "단, 1:1 기계 번역은 금물이에요 — 한국어는 능동인데 영어는 수동인 경우(놀랐어요 → I was surprised)가 수두룩해요. '한국어 피동 = 영어 수동'이 아니라 **'행위자를 숨기고 싶은 마음 = 수동태'**로 기억하세요.",
         examples: [
           { en: "The meeting was canceled.", ko: "회의가 취소됐어요.", note: "-되다 ↔ be p.p." },
           { en: "We were invited to the wedding.", ko: "우리는 결혼식에 초대받았어요.", note: "-받다 ↔ be p.p." },
@@ -220,10 +218,11 @@ export default [
       },
       {
         heading: "get 수동태 — 회화의 수동태",
+        pattern: "get + p.p. = 사건이 탁 벌어지는 순간의 수동태",
+        patternKo: "격식 문서엔 be, 입말엔 get",
         body:
-          "일상 회화에서는 be 대신 **get + p.p.**를 정말 많이 써요. 특히 **예기치 못한 일, 사고, 변화**에는 get이 더 자연스러워요.\n\n" +
-          "get fired(해고당하다), get hurt(다치다), get stolen(도둑맞다), get caught(걸리다), get paid(돈을 받다), get married(결혼하다)...\n\n" +
-          "be 수동태가 '상태'에 가깝다면 get 수동태는 '**사건이 탁 벌어지는 순간**'의 느낌이에요. The door was closed는 '문이 닫혀 있었다'(상태)로도 읽히지만, The door got closed는 닫히는 사건 자체를 가리켜요. 격식 문서에는 be, 입말에는 get — 이 감각으로 구분하면 됩니다.",
+          "일상 회화에서는 be 대신 **get + p.p.**를 정말 많이 써요 — 특히 **예기치 못한 일, 사고, 변화**에는 get이 더 자연스러워요. get fired, get hurt, get stolen, get caught, get paid, get married...\n\n" +
+          "be 수동태가 '상태'에 가깝다면 get 수동태는 '**사건이 탁 벌어지는 순간**'의 느낌이에요. 격식 문서에는 be, 입말에는 get — 이 감각으로 구분하면 됩니다.",
         examples: [
           { en: "He got fired last month.", ko: "그는 지난달에 해고당했어요.", note: "회화에서는 was fired보다 흔해요" },
           { en: "Be careful not to get hurt.", ko: "다치지 않게 조심하세요." },
@@ -244,12 +243,11 @@ export default [
     sections: [
       {
         heading: "어순 반전 — 한국어는 앞에서, 영어는 뒤에서 꾸며요",
+        pattern: "명사 먼저 + [who/which/that + 설명]",
+        patternKo: "한국어 [어제 만난] 사람 ↔ 영어 the person [who I met]",
         body:
-          "관계대명사가 어려운 진짜 이유는 who/which 선택이 아니라 **수식의 방향**이에요.\n\n" +
-          "한국어: [어제 만난] **사람** — 꾸미는 말이 명사 **앞**\n" +
-          "영어: the **person** [who I met yesterday] — 꾸미는 말이 명사 **뒤**\n\n" +
-          "그래서 한국어로 문장을 다 설계한 뒤 번역하면 어순이 꼬여요. 요령은 **명사부터 먼저 말하고, 설명을 뒤에 이어 붙이는 것**. 'the person... 누구냐면... who I met yesterday'처럼, 일단 명사를 던지고 관계사로 부연하는 리듬을 입에 붙이세요.\n\n" +
-          "관계대명사 자체는 두 문장을 잇는 접착제예요: I met a person. + The person works at Google. → I met a person **who** works at Google.",
+          "관계대명사가 어려운 진짜 이유는 who/which 선택이 아니라 **수식의 방향**이에요 — 한국어는 꾸미는 말이 명사 **앞**, 영어는 명사 **뒤**. 한국어로 문장을 다 설계한 뒤 번역하면 어순이 꼬여요.\n\n" +
+          "요령은 **명사부터 먼저 말하고 설명을 뒤에 이어 붙이는 것** — 'the person... 누구냐면... who I met yesterday'의 리듬이에요. 관계대명사 자체는 두 문장을 잇는 접착제예요: I met a person **who** works at Google.",
         examples: [
           { en: "The man who lives next door is a doctor.", ko: "옆집에 사는 남자는 의사예요.", note: "한국어 [옆집에 사는]이 영어에선 뒤로" },
           { en: "I lost the book which you lent me.", ko: "네가 빌려준 책을 잃어버렸어." },
@@ -259,13 +257,11 @@ export default [
       },
       {
         heading: "who / which / that — 선택은 생각보다 단순해요",
+        pattern: "사람 → who · 사물 → which · 만능 → that (콤마 뒤 that 금지)",
+        patternKo: "소유는 whose — a friend whose sister is a singer",
         body:
-          "**who** — 선행사가 사람일 때\n" +
-          "**which** — 선행사가 사물·동물일 때\n" +
-          "**that** — 사람이든 사물이든 대부분 대체 가능 (회화에서 최다 출전)\n" +
-          "**whose** — 소유 관계 ('~의'): a friend whose sister is a singer\n\n" +
-          "회화에서는 고민될 때 that을 쓰면 거의 안전해요. 다만 **콤마 뒤(계속적 용법)에는 that을 못 쓴다**는 것만 기억하세요. 콤마가 보이면 who/which입니다.\n\n" +
-          "콤마 있는 관계절은 '꼭 필요한 정보'가 아니라 **'덧붙이는 참고 정보'**예요: My brother, who lives in Busan, is visiting. (형이 한 명뿐이고, 부산에 산다는 건 부가 설명)",
+          "**who**는 사람, **which**는 사물·동물, **that**은 대부분 대체 가능(회화 최다 출전), **whose**는 소유 관계예요. 고민될 때 that을 쓰면 거의 안전하지만, **콤마 뒤(계속적 용법)에는 that을 못 써요** — 콤마가 보이면 who/which입니다.\n\n" +
+          "콤마 있는 관계절은 '꼭 필요한 정보'가 아니라 **'덧붙이는 참고 정보'**예요: My brother, who lives in Busan, is visiting.",
         examples: [
           { en: "She is the designer who made this logo.", ko: "그녀가 이 로고를 만든 디자이너예요." },
           { en: "I bought a phone that has two cameras.", ko: "카메라가 두 개 달린 폰을 샀어요." },
@@ -276,11 +272,10 @@ export default [
       },
       {
         heading: "생략 — 원어민이 짧게 말하는 비밀",
+        pattern: "관계사 + 주어+동사 = 목적격 → 생략 OK · 관계사 + 동사 = 주격 → 생략 불가",
         body:
-          "관계대명사는 **목적격일 때 생략 가능**해요. 그리고 원어민 회화에서는 생략하는 쪽이 압도적으로 자연스러워요.\n\n" +
-          "The movie (that) we watched was boring. — that 뒤에 we(새 주어)가 바로 오죠? 관계사가 절 안에서 목적어 역할이라는 뜻이고, 이럴 땐 빼도 돼요.\n\n" +
-          "반대로 **주격은 생략 불가**예요. The man who called you... 에서 who를 빼면 The man called you(남자가 전화했다)라는 다른 문장이 돼버리니까요.\n\n" +
-          "판별 공식: **관계사 바로 뒤에 '주어+동사'가 오면 목적격 → 생략 OK. 바로 동사가 오면 주격 → 생략 불가.**",
+          "관계대명사는 **목적격일 때 생략 가능**하고, 원어민 회화에서는 생략하는 쪽이 압도적으로 자연스러워요 — The movie (that) we watched was boring.\n\n" +
+          "반대로 **주격은 생략 불가**예요. The man who called you...에서 who를 빼면 '남자가 전화했다'라는 다른 문장이 돼버리니까요. 판별 공식: **관계사 바로 뒤에 '주어+동사'가 오면 생략 OK, 바로 동사가 오면 생략 불가.**",
         examples: [
           { en: "The movie we watched last night was amazing.", ko: "어젯밤에 본 영화 진짜 좋았어.", note: "(that) 생략 — 회화의 기본값" },
           { en: "Is this the bag you were looking for?", ko: "이게 찾던 가방이에요?", note: "(that/which) 생략" },
@@ -290,10 +285,11 @@ export default [
       },
       {
         heading: "where와 when — 장소·시간 버전",
+        pattern: "장소 + where ~ · 시간 + when ~",
+        patternKo: "where = in which의 압축",
         body:
-          "선행사가 장소면 **where**, 시간이면 **when**을 쓸 수 있어요. 관계부사라고 부르지만, 용법은 같아요 — 명사 뒤에 설명 붙이기.\n\n" +
-          "This is the cafe **where** we first met. / I still remember the day **when** we first met.\n\n" +
-          "where는 'in which(그 안에서)'를 압축한 말이에요. 그래서 the city where I was born = the city in which I was born. B1에서는 where/when만 자연스럽게 쓸 수 있으면 충분합니다.",
+          "선행사가 장소면 **where**, 시간이면 **when** — 용법은 같아요, 명사 뒤에 설명 붙이기. This is the cafe **where** we first met. / the day **when** we first met.\n\n" +
+          "where는 'in which(그 안에서)'를 압축한 말이에요. B1에서는 where/when만 자연스럽게 쓸 수 있으면 충분합니다.",
         examples: [
           { en: "That's the hospital where I was born.", ko: "저기가 내가 태어난 병원이에요." },
           { en: "Do you remember the day when we first met?", ko: "우리가 처음 만난 날 기억해요?" },
@@ -314,9 +310,10 @@ export default [
     sections: [
       {
         heading: "왜 시제가 뒤로 밀리나 — 보고 시점의 논리",
+        pattern: "현재 → 과거 · 과거 → 과거완료 · will → would · can → could",
+        patternKo: "보고 시점 기준으로 시계를 한 칸 뒤로 (backshift)",
         body:
-          "He said, \"I am busy.\" 를 따옴표 없이 옮기면 He said he **was** busy. — am이 was로 한 칸 밀렸죠. 이걸 **시제 후퇴(backshift)**라고 해요.\n\n" +
-          "암기 규칙이기 전에 논리예요. 그가 '바쁘다'고 말한 건 **말하던 그 시점**의 일이에요. 지금 내가 보고하는 시점에서 보면 이미 과거죠. 그래서 보고하는 동사(said)가 과거면, 인용 내용도 한 칸 과거로 끌려가는 거예요.\n\n" +
+          "He said, \"I am busy.\" → He said he **was** busy. — 이 **시제 후퇴(backshift)**는 암기 규칙이기 전에 논리예요. 그가 '바쁘다'고 말한 건 말하던 그 시점의 일이고, 지금 보고하는 시점에서 보면 이미 과거니까요.\n\n" +
           "공식: **현재→과거, 과거→과거완료, will→would, can→could, must→had to**. 시계를 한 칸씩 뒤로 돌린다고 생각하세요.",
         table: {
           caption: "시제 후퇴 한 칸 표",
@@ -338,12 +335,11 @@ export default [
       },
       {
         heading: "say vs tell — 한 끗 차이로 감점되는 단골",
+        pattern: "say + 내용 · tell + 사람 + 내용",
+        patternKo: "said me(×) · told me(○) · said to me(○)",
         body:
-          "둘 다 '말하다'지만 문형이 달라요.\n\n" +
-          "**say + 내용** — He said (that) he was tired. 듣는 사람을 붙이려면 **say to me**.\n" +
-          "**tell + 사람 + 내용** — He told **me** (that) he was tired. tell은 **듣는 사람이 반드시 필요**해요.\n\n" +
-          "정리하면: said me (×), told me (○), said to me (○, 다소 격식), told (듣는 사람 없이 단독 ×).\n\n" +
-          "tell이 들어가는 굳은 표현은 예외적으로 사람 없이도 써요: tell the truth(진실을 말하다), tell a lie, tell a story, tell the difference.",
+          "**say + 내용**(He said he was tired. — 사람을 붙이려면 say to me), **tell + 사람 + 내용**(He told **me** he was tired. — 듣는 사람 필수).\n\n" +
+          "tell이 들어가는 굳은 표현은 예외적으로 사람 없이도 써요: tell the truth, tell a lie, tell a story, tell the difference.",
         examples: [
           { en: "He told me that the meeting was canceled.", ko: "그가 회의가 취소됐다고 (나에게) 말해줬어요." },
           { en: "She said that she was moving to Busan.", ko: "그녀가 부산으로 이사 간다고 했어요." },
@@ -353,11 +349,10 @@ export default [
       },
       {
         heading: "질문과 부탁 옮기기",
+        pattern: "asked if/wh- + 평서문 어순 · told/asked + 사람 + (not) to부정사",
         body:
-          "**의문문 옮기기** — asked를 쓰고, 어순은 **평서문 어순으로 복귀**해요. 의문문 어순(do you, are you)을 그대로 끌고 오면 안 돼요.\n\n" +
-          "Yes/No 질문은 **if/whether**로: \"Are you OK?\" → She asked **if** I was OK.\n" +
-          "의문사 질문은 의문사 유지: \"Where do you live?\" → He asked **where I lived**. (where did I live ×)\n\n" +
-          "**명령·부탁 옮기기** — to부정사로 압축해요: \"Wait here.\" → He told me **to wait** there. / \"Please help me.\" → She asked me **to help** her. 금지는 not to: He told me **not to be** late.",
+          "**의문문 옮기기** — asked를 쓰고 어순은 **평서문으로 복귀**해요. Yes/No 질문은 **if/whether**(She asked **if** I was OK.), 의문사 질문은 의문사 유지(He asked **where I lived**. — where did I live ×).\n\n" +
+          "**명령·부탁**은 to부정사로 압축해요: He told me **to wait** there. / 금지는 not to: He told me **not to be** late.",
         examples: [
           { en: "She asked if I had eaten lunch.", ko: "그녀가 점심 먹었냐고 물었어요." },
           { en: "He asked where I worked.", ko: "그가 어디서 일하냐고 물었어요.", note: "where did I work × — 평서문 어순으로" },
@@ -368,10 +363,11 @@ export default [
       },
       {
         heading: "한국어 '-대/-래'와 비교 — 우리는 이미 간접화법 고수",
+        pattern: "-대 = said (that) · -래 = told me to · -냬 = asked if/wh-",
+        patternKo: "차이는 시제 — 영어만 한 칸 후퇴",
         body:
-          "사실 한국어 화자는 간접화법을 매일 써요. '바쁘**대**'(바쁘다고 해), '오**래**'(오라고 해), '가**냬**'(가냐고 해) — 어미 하나로 평서·명령·의문 인용을 구분하는 정교한 시스템이죠.\n\n" +
-          "대응을 잡아보면: **-대** = said (that)..., **-래** = told me to..., **-냬** = asked if/wh-...\n\n" +
-          "차이는 시제예요. 한국어는 '바쁘대'처럼 인용 내용의 시제를 원래대로 두지만, 영어는 보고 동사에 맞춰 **시제를 끌어내려요**. 그러니 '-대'를 번역할 때는 ① said를 놓고 ② 내용 시제를 한 칸 후퇴 — 이 2단계만 기계적으로 적용하면 됩니다.",
+          "한국어 화자는 간접화법을 매일 써요 — '바쁘**대**', '오**래**', '가**냬**'. 대응은 **-대** = said (that)..., **-래** = told me to..., **-냬** = asked if/wh-...예요.\n\n" +
+          "차이는 시제예요. 한국어는 인용 내용의 시제를 원래대로 두지만, 영어는 보고 동사에 맞춰 **시제를 끌어내려요**. '-대'를 번역할 때는 ① said를 놓고 ② 내용 시제를 한 칸 후퇴 — 이 2단계만 기계적으로 적용하면 됩니다.",
         examples: [
           { en: "He says he is busy.", ko: "그가 바쁘대요. (지금 전하는 말 — says면 후퇴 없음)" },
           { en: "He said he was busy.", ko: "그가 바쁘다고 했어요. (과거 보고 — 한 칸 후퇴)" },
@@ -393,13 +389,10 @@ export default [
     sections: [
       {
         heading: "조동사는 확신의 온도계예요",
+        pattern: "must be(95%) > should be(75%) > might be(30~50%) > can't be(0%)",
+        patternKo: "-임에 틀림없어 > -일 거야 > -일지도 > -일 리 없어",
         body:
           "He is at home.(사실 단정)과 He must be at home.(정황상 틀림없음), He might be at home.(그럴 수도) — 영어는 **확신의 정도를 조동사로** 표현해요.\n\n" +
-          "온도계로 정렬하면:\n\n" +
-          "**must be** (95%) — 증거가 있어서 '틀림없다'\n" +
-          "**should be** (75%) — 정상적이라면 '~일 것이다'\n" +
-          "**may / might / could be** (30~50%) — '~일지도 모른다'\n" +
-          "**can't be** (거의 0%) — '그럴 리가 없다'\n\n" +
           "한국어 어미 '-임에 틀림없어 / -일 거야 / -일지도 몰라 / -일 리 없어'와 깔끔하게 대응돼요. 단정(is)과 추측(must be) 사이의 온도를 고르는 습관 — 이게 중급 회화의 품격을 만듭니다.",
         table: {
           caption: "확신의 온도계",
@@ -419,10 +412,10 @@ export default [
       },
       {
         heading: "must be의 반대는 mustn't be가 아니라 can't be",
+        pattern: "must be(틀림없다) ↔ can't be(그럴 리 없다)",
+        patternKo: "mustn't = 금지 — 추측이 아니에요",
         body:
-          "여기가 이 챕터의 최대 함정이에요. '틀림없다'의 반대, 즉 '**그럴 리 없다**'는 **can't be**예요. mustn't be가 아니에요.\n\n" +
-          "**mustn't**는 추측이 아니라 **금지**(~하면 안 된다)예요. You mustn't smoke here.(여기서 담배 피우면 안 돼요.)\n\n" +
-          "그러니 추측의 짝은 이렇게 기억하세요: **must be(틀림없다) ↔ can't be(그럴 리 없다)**. He must be Korean. ↔ He can't be Korean.\n\n" +
+          "'틀림없다'의 반대, 즉 '**그럴 리 없다**'는 **can't be**예요 — mustn't be가 아니에요. **mustn't**는 추측이 아니라 **금지**(~하면 안 된다)예요: You mustn't smoke here.\n\n" +
           "참고로 의무의 must(~해야 한다)와 추측의 must(~임에 틀림없다)는 형태가 같아요. 뒤에 be나 상태가 오면 대개 추측, 행동 동사가 오면 대개 의무로 읽혀요.",
         examples: [
           { en: "She can't be his sister. They look nothing alike.", ko: "그녀가 그의 여동생일 리 없어요. 하나도 안 닮았는걸요.", note: "mustn't be ×" },
@@ -433,12 +426,11 @@ export default [
       },
       {
         heading: "might / may / could — '~일지도'의 삼형제",
+        pattern: "may(격식) · might(입말) · could(가능성·제안)",
+        patternKo: "부정은 might not(아닐지도) vs can't(그럴 리 없어)",
         body:
-          "셋 다 '~일지도 모른다'로, 일상 회화에서는 거의 바꿔 쓸 수 있어요. 미묘한 결만 잡아두면:\n\n" +
-          "**may** — 셋 중 가장 격식. 문어·뉴스에서 선호.\n" +
-          "**might** — 가장 흔한 입말. may보다 살짝 약한 확신.\n" +
-          "**could** — '가능성이 열려 있다'는 결. 제안할 때도 자주 써요(We could try that new cafe).\n\n" +
-          "부정형 주의: **might not / may not**(~이 아닐지도 모른다)은 가능성의 부정이고, **couldn't be**는 can't be처럼 '~일 리 없다'는 강한 부정이에요. 헷갈리면 might not(아닐지도) vs can't(그럴 리 없어) 두 개만 기억하세요.",
+          "셋 다 '~일지도 모른다'로 거의 바꿔 쓸 수 있어요 — **may**는 가장 격식(문어·뉴스), **might**는 가장 흔한 입말, **could**는 '가능성이 열려 있다'는 결로 제안에도 자주 써요(We could try that new cafe).\n\n" +
+          "부정형 주의: **might not / may not**은 가능성의 부정(아닐지도), **can't be**는 '~일 리 없다'는 강한 부정이에요.",
         examples: [
           { en: "I might be a little late tonight.", ko: "오늘 밤 조금 늦을지도 몰라요.", note: "약속 잡기 필수 표현" },
           { en: "It could rain this afternoon. Take an umbrella.", ko: "오후에 비가 올 수도 있어요. 우산 챙기세요." },
@@ -448,10 +440,10 @@ export default [
       },
       {
         heading: "진행형 추측 — must be -ing",
+        pattern: "must/might + be + -ing = 지금 ~하는 중인 게 틀림없어/일지도",
         body:
-          "지금 벌어지고 있는 일을 추측할 때는 **조동사 + be + -ing**로 조합해요.\n\n" +
-          "She must be sleeping.(자고 있는 게 틀림없어) / They might be having dinner.(저녁 먹는 중일지도)\n\n" +
-          "전화를 안 받을 때, 사무실에 불이 켜져 있을 때 — 일상에서 출현 빈도가 높은 패턴이니 덩어리째 입에 붙이세요. 과거에 대한 추측(must have p.p.)은 B2 가정문 챕터에서 이어서 다룹니다.",
+          "지금 벌어지고 있는 일의 추측은 **조동사 + be + -ing**예요 — She must be sleeping. / They might be having dinner.\n\n" +
+          "전화를 안 받을 때, 사무실에 불이 켜져 있을 때 — 출현 빈도가 높은 패턴이니 덩어리째 입에 붙이세요. 과거에 대한 추측(must have p.p.)은 B2 가정문 챕터에서 이어서 다룹니다.",
         examples: [
           { en: "He's not answering. He must be driving.", ko: "전화를 안 받네요. 운전 중인 게 틀림없어요." },
           { en: "The kids are quiet. They might be watching a movie.", ko: "애들이 조용하네. 영화 보고 있는 건지도." },
@@ -472,10 +464,11 @@ export default [
     sections: [
       {
         heading: "왜 우리는 구동사를 피해왔나 — 격의 문제",
+        pattern: "put off(일상) ↔ postpone(격식) — 게르만계 vs 라틴계",
+        patternKo: "구동사 = 영어의 '입말 절반'",
         body:
-          "한국 학습자는 '미루다'를 영어로 옮길 때 **postpone**을 먼저 떠올려요. 시험 단어장에서 외운 라틴계 어휘니까요. 그런데 원어민의 일상 대화에서는 **put off**가 압도적으로 많이 쓰여요.\n\n" +
-          "영어 어휘에는 **두 개의 층**이 있어요. 노르만 정복 이후 들어온 라틴·프랑스계 어휘(postpone, discover, tolerate)는 격식·문어의 층, 게르만 토박이 동사로 만든 구동사(put off, find out, put up with)는 일상·구어의 층이에요.\n\n" +
-          "그래서 회화에서 라틴계 단어만 쓰면 문법이 완벽해도 묘하게 **딱딱하고 책 같은** 인상을 줘요. 한국어로 치면 친구에게 '약속을 연기하자' 대신 '약속을 미루자'라고 하는 차이 — 둘 다 맞지만 온도가 다르죠. 구동사는 어려운 추가 과제가 아니라, 영어의 '입말 절반'을 되찾는 일이에요.",
+          "영어 어휘에는 **두 개의 층**이 있어요 — 라틴·프랑스계 어휘(postpone, discover, tolerate)는 격식·문어의 층, 게르만 토박이 동사로 만든 구동사(put off, find out, put up with)는 일상·구어의 층이에요.\n\n" +
+          "회화에서 라틴계 단어만 쓰면 문법이 완벽해도 **딱딱하고 책 같은** 인상을 줘요 — 친구에게 '약속을 연기하자'라고 말하는 격이죠. 구동사는 어려운 추가 과제가 아니라 영어의 '입말 절반'을 되찾는 일이에요.",
         table: {
           caption: "같은 뜻, 다른 온도 — 구동사 vs 라틴계 동사",
           headers: ["구동사 (일상)", "라틴계 (격식)", "뜻"],
@@ -498,13 +491,11 @@ export default [
       },
       {
         heading: "구동사의 구조 — 동사에 방향을 더하다",
+        pattern: "동사 + up(완전히) / off(분리) / out(밖으로) / on(계속)",
+        patternKo: "불변화사의 그림으로 절반은 추측 가능",
         body:
-          "구동사 = **동사 + 불변화사(particle: up, off, out, on...)**. 불변화사는 동사에 **방향과 결**을 더해요.\n\n" +
-          "**up** — 위로 / 완전히 끝까지: eat up(다 먹다), grow up(자라다), use up(다 써버리다)\n" +
-          "**off** — 분리·이탈: take off(이륙하다·벗다), turn off(끄다), put off(미루다)\n" +
-          "**out** — 밖으로 / 드러나게: find out(알아내다), figure out(파악하다), run out(다 떨어지다)\n" +
-          "**on** — 계속·접촉: go on(계속하다), put on(입다), hold on(기다리다)\n\n" +
-          "모든 구동사가 논리적으로 풀리지는 않지만(put up with처럼 굳어버린 것도 많아요), 핵심 불변화사 대여섯 개의 그림을 잡아두면 처음 보는 구동사도 절반은 추측이 됩니다.",
+          "구동사 = **동사 + 불변화사(particle)**. 불변화사는 동사에 **방향과 결**을 더해요 — **up**은 위로·완전히(eat up, use up), **off**는 분리·이탈(take off, turn off), **out**은 밖으로·드러나게(find out, run out), **on**은 계속·접촉(go on, hold on).\n\n" +
+          "모든 구동사가 논리적으로 풀리지는 않지만, 핵심 불변화사 대여섯 개의 그림을 잡아두면 처음 보는 구동사도 절반은 추측이 됩니다.",
         examples: [
           { en: "We've run out of milk.", ko: "우유가 다 떨어졌어요.", note: "run out = 달리다 끝까지 → 바닥나다" },
           { en: "I can't figure out this error message.", ko: "이 에러 메시지를 도무지 모르겠어요." },
@@ -515,11 +506,11 @@ export default [
       },
       {
         heading: "분리 가능 vs 불가 — it은 반드시 사이에",
+        pattern: "turn off the light = turn the light off · 대명사는 turn it off만 ○",
+        patternKo: "look after/run into류는 분리 불가",
         body:
-          "구동사 문법의 핵심 규칙이에요. **타동사 구동사는 대부분 분리 가능** — 목적어를 동사와 불변화사 사이에 끼울 수 있어요.\n\n" +
-          "turn off the light = turn the light off (둘 다 ○)\n\n" +
-          "그런데 **목적어가 대명사(it, them, him)면 반드시 사이에** 넣어야 해요. turn it off (○) / turn off it (×).\n\n" +
-          "반면 **분리 불가 구동사**도 있어요. 전치사로 끝나는 유형(look after, look into, get over, run into)은 목적어가 항상 뒤로 가요: look after the baby (○), look the baby after (×). 사전에서 구동사를 찾으면 분리 가능 여부가 표시돼 있으니, 새 구동사를 만날 때마다 함께 확인하는 습관을 들이세요.",
+          "**타동사 구동사는 대부분 분리 가능** — turn off the light = turn the light off. 그런데 **목적어가 대명사(it, them, him)면 반드시 사이에** 넣어야 해요: turn it off (○) / turn off it (×).\n\n" +
+          "반면 전치사로 끝나는 **분리 불가 구동사**(look after, look into, get over, run into)는 목적어가 항상 뒤로 가요. 새 구동사를 만나면 분리 가능 여부를 함께 확인하는 습관을 들이세요.",
         examples: [
           { en: "Can you turn the music down? / Can you turn it down?", ko: "음악 좀 줄여줄래요?", note: "대명사면 무조건 사이에" },
           { en: "She turned down the offer. = She turned the offer down.", ko: "그녀는 그 제안을 거절했어요." },
@@ -530,10 +521,11 @@ export default [
       },
       {
         heading: "B1 필수 구동사 스타터 팩",
+        pattern: "pick up · drop off · look for · look forward to -ing · set up · work out",
+        patternKo: "목적어가 든 문장째로 암기",
         body:
-          "욕심내지 말고, 출현 빈도 최상위만 먼저 내 것으로 만들어요. 아래는 회화·이메일에서 당장 굴러다니는 것들이에요.\n\n" +
-          "**get up**(일어나다) · **wake up**(잠 깨다) · **go out**(외출하다) · **come back**(돌아오다) · **pick up**(데리러 가다·줍다) · **drop off**(내려주다) · **look for**(찾다) · **look forward to**(기대하다) · **set up**(설치하다·잡다) · **work out**(운동하다·잘 풀리다)\n\n" +
-          "외울 때는 반드시 **목적어가 든 문장째로** 외우세요. 'pick up = 줍다'가 아니라 'I'll pick you up at seven.'으로요. 구동사는 단어장이 아니라 문장 속에서만 진짜 모습이 보입니다.",
+          "출현 빈도 최상위부터: **get up · wake up · go out · come back · pick up**(데리러 가다·줍다) **· drop off · look for · look forward to**(기대하다) **· set up · work out**(운동하다·잘 풀리다).\n\n" +
+          "외울 때는 반드시 **목적어가 든 문장째로** 외우세요 — 'pick up = 줍다'가 아니라 'I'll pick you up at seven.'으로요. 구동사는 문장 속에서만 진짜 모습이 보입니다.",
         examples: [
           { en: "I'll pick you up at the airport.", ko: "공항으로 데리러 갈게요." },
           { en: "I'm looking forward to seeing you.", ko: "만나길 기대하고 있어요.", note: "to 뒤에 동명사 — 이메일 마무리 단골" },
