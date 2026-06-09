@@ -14,10 +14,11 @@ export default [
     sections: [
       {
         heading: "주어 인칭대명사 — 프랑스어 문장의 필수품",
+        pattern: "je · tu · il/elle/on · nous · vous · ils/elles + 동사",
+        patternKo: "주어 대명사는 절대 생략 불가",
         body:
-          "프랑스어 문장은 **주어 + 동사**로 시작해요. 그리고 그 주어 자리를 채우는 게 인칭대명사예요.\n\n" +
-          "**je**(나) / **tu**(너) / **il**(그) / **elle**(그녀) / **on**(우리·사람들) / **nous**(우리) / **vous**(당신·너희) / **ils**(그들) / **elles**(그녀들)\n\n" +
-          "주의할 점 두 가지. 첫째, il/elle은 사람뿐 아니라 **사물도** 가리켜요. le livre(책)는 남성 명사니까 il, la table(탁자)은 elle이에요. 둘째, ils는 남성 복수뿐 아니라 **남녀가 섞인 무리**에도 써요. 남자 1명 + 여자 9명이어도 ils입니다.",
+          "프랑스어 문장은 **주어 + 동사**로 시작하고, 그 주어 자리를 인칭대명사가 채워요.\n\n" +
+          "주의 둘. il/elle은 사람뿐 아니라 **사물도** 가리켜요(le livre → il, la table → elle). 그리고 ils는 **남녀가 섞인 무리**에도 써요 — 남자 1명 + 여자 9명이어도 ils.",
         examples: [
           { fr: "Il est petit.", ipa: "[il ɛ pəti]", ko: "그는 (또는 그것은) 작아요.", note: "il = 남성 명사라면 무엇이든" },
           { fr: "Elle est grande.", ipa: "[ɛl ɛ gʁɑ̃d]", ko: "그녀는 (또는 그것은) 커요." },
