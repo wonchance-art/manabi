@@ -342,9 +342,10 @@ export default [
       },
       {
         heading: "용법 1 — 동시동작: ~하면서",
+        pattern: "en + -ant → ~하면서 (강조·대조: tout en + -ant)",
         body:
           "가장 기본 용법은 **두 동작이 동시에** 일어남을 나타내는 '~하면서'예요. 주절의 동사와 제롱디프의 동작이 같은 시간에 겹쳐요.\n\n" +
-          "동시성을 강조하고 싶으면 **tout en + -ant**을 써요. 특히 두 동작이 살짝 모순될 때(웃으면서 비판하기 등) tout이 어울려요.",
+          "동시성을 강조하거나 두 동작이 살짝 모순될 때(웃으면서 비판하기 등)는 **tout en + -ant**을 써요.",
         examples: [
           { fr: "Elle téléphone en marchant.", ko: "그녀는 걸으면서 통화해요." },
           { fr: "Ne mange pas en regardant ton portable !", ko: "휴대폰 보면서 먹지 마!" },
@@ -353,9 +354,10 @@ export default [
       },
       {
         heading: "용법 2 — 수단과 조건: ~함으로써, ~하면",
+        pattern: "en + -ant → ~함으로써 · ~하면",
         body:
-          "'어떻게?'에 답하는 **수단·방법**의 용법: C'est en forgeant qu'on devient forgeron(쇠를 두드림으로써 대장장이가 된다 — 프랑스 속담). 한국어 '~함으로써', '~해서'에 해당해요.\n\n" +
-          "또 **조건**의 뉘앙스로도 써요: En partant maintenant, tu arriveras à l'heure(지금 떠나면 제시간에 도착할 거야) — si tu pars maintenant과 같은 뜻을 더 가볍게 전해요.",
+          "'어떻게?'에 답하는 **수단·방법**의 용법이에요: C'est en forgeant qu'on devient forgeron(쇠를 두드림으로써 대장장이가 된다 — 속담).\n\n" +
+          "**조건**의 뉘앙스로도 써요: En partant maintenant, tu arriveras à l'heure(지금 떠나면 제시간에 도착할 거야).",
         examples: [
           { fr: "J'ai appris le français en regardant des séries.", ko: "드라마를 보면서(봄으로써) 프랑스어를 배웠어요." },
           { fr: "En lisant tous les jours, on enrichit son vocabulaire.", ko: "매일 읽으면 어휘가 풍부해져요.", note: "조건의 제롱디프" },
@@ -365,9 +367,10 @@ export default [
       },
       {
         heading: "제약 — 주어가 반드시 일치해야 해요",
+        pattern: "제롱디프의 숨은 주어 = 주절의 주어",
         body:
-          "제롱디프의 가장 중요한 규칙: **제롱디프의 숨은 주어 = 주절의 주어**여야 해요. Elle téléphone en marchant에서 걷는 사람과 통화하는 사람은 같은 '그녀'죠.\n\n" +
-          "그래서 '비가 오면서 우리는 출발했다'처럼 두 동작의 주어가 다르면 제롱디프를 쓸 수 없어요 — Comme il pleuvait, nous sommes partis처럼 접속사로 풀어야 해요.",
+          "Elle téléphone en marchant에서 걷는 사람과 통화하는 사람은 같은 '그녀'죠. 이 일치가 **의무**예요.\n\n" +
+          "'비가 오면서 우리는 출발했다'처럼 두 동작의 주어가 다르면 제롱디프를 못 쓰고, Comme il pleuvait, nous sommes partis처럼 접속사로 풀어야 해요.",
         examples: [
           { fr: "En sortant du métro, j'ai vu Paul.", ko: "지하철에서 나오다가 폴을 봤어요.", note: "나온 사람 = 본 사람 = je ✓" },
           { fr: "Je l'ai croisée en allant au marché.", ko: "시장에 가다가 그녀와 마주쳤어요." },
