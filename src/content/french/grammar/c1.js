@@ -142,10 +142,10 @@ export default [
       },
       {
         heading: "문법도 격을 입는다 — ne 탈락, 의문문 3형",
+        pattern: "도치 (soutenu) → est-ce que (courant) → 억양만 (familier)",
         body:
-          "어휘만이 아니라 문법 구조 자체가 격 신호예요.\n\n" +
-          "**부정의 ne** — soutenu/courant 문어에서는 ne...pas를 갖추지만, 구어 familier에서는 ne가 거의 항상 떨어져요. Je sais pas, C'est pas grave. 글에서 ne를 빼면 틀린 글이 되고, 말에서 ne를 꼬박꼬박 챙기면 다소 딱딱하게 들려요.\n\n" +
-          "**의문문 3형** — 같은 질문이 격에 따라 세 가지로 변해요. 도치(soutenu) → est-ce que(courant) → 억양만(familier). 의문사가 문장 끝으로 가는 것도 familier의 특징이에요(Tu vas où ?).",
+          "어휘만이 아니라 문법 구조 자체가 격 신호예요. **부정의 ne**는 문어에서 필수지만 구어 familier에서는 거의 항상 떨어져요(Je sais pas) — 글에서 빼면 틀리고, 말에서 꼬박꼬박 챙기면 딱딱하게 들려요.\n\n" +
+          "**의문문**도 격에 따라 세 가지로 변하고, 의문사가 문장 끝으로 가는 것(Tu vas où ?)도 familier의 특징이에요.",
         table: {
           caption: "의문문의 세 가지 격",
           headers: ["격", "형태", "예문"],
@@ -162,12 +162,10 @@ export default [
       },
       {
         heading: "어떤 상황에 어떤 격을 쓰나",
+        pattern: "말하기 = courant · 듣기 = familier까지 · 쓰기 = soutenu까지",
         body:
-          "실전 기준은 의외로 단순해요.\n\n" +
-          "**soutenu** — DALF 작문, 자기소개서(lettre de motivation), 공식 이메일, 발표·연설. '쓰는 프랑스어'의 기본값이에요.\n\n" +
-          "**courant** — 직장 대화, 상점·관공서, 처음 만난 사람. 외국인 학습자의 안전지대예요. 어떤 상황에서도 무례하지 않아요.\n\n" +
-          "**familier** — 친구, 또래, 가까운 동료. 단, familier 안에도 스펙트럼이 있어서 vulgaire(비속어)로 넘어가는 단어들은 따로 표시해 익혀야 해요.\n\n" +
-          "외국인에게 현실적인 조언: **말하기는 courant을 기본으로, 듣기는 familier까지, 쓰기는 soutenu까지.** 이 비대칭 전략이 가장 효율적이에요. familier를 어설프게 쓰면 어색하지만, 못 알아들으면 대화가 끊기니까요.",
+          "**soutenu**는 DALF 작문·자기소개서·공식 이메일, **courant**은 직장·상점·처음 만난 사람(외국인의 안전지대), **familier**는 친구·또래 — 단 vulgaire(비속어)로 넘어가는 단어는 따로 표시해 익히세요.\n\n" +
+          "현실적인 조언은 패턴의 **비대칭 전략**이에요. familier를 어설프게 쓰면 어색하지만, 못 알아들으면 대화가 끊기니까요.",
         examples: [
           { fr: "Je vous prie d'agréer, Madame, l'expression de mes salutations distinguées.", ko: "삼가 깊은 경의를 표합니다. (공식 편지의 정형 맺음말)", note: "직역하면 과장 같지만 프랑스 격식 편지의 표준 클리셰예요." },
           { fr: "Ça te dit d'aller boire un verre ?", ko: "한잔하러 갈래?", note: "ça te dit = 친근한 제안의 만능 표현" },
