@@ -288,9 +288,10 @@ export default [
     sections: [
       {
         heading: "왜 어려운가 — 전치사는 동사의 지문",
+        pattern: "동사마다 정해진 전치사 — dépendre de · réussir à · attendre + ∅",
         body:
-          "프랑스어 동사는 저마다 **정해진 전치사**를 데리고 다녀요. 의미로 추론이 안 되는 경우가 많아서, 영어 구동사(look for, depend on)를 외울 때와 같은 종류의 암기가 필요해요.\n\n" +
-          "문제는 **영어와 어긋나는 지점**이에요. 영어 감각으로 전치사를 고르면 틀리는 동사들이 정해져 있으니, 그 블랙리스트부터 잡는 게 효율적입니다. 이 챕터의 목표는 '전부 외우기'가 아니라 '틀리는 자리를 아는 것'이에요.",
+          "프랑스어 동사는 저마다 **정해진 전치사**를 데리고 다녀요. 영어 구동사(look for, depend on)를 외울 때와 같은 종류의 암기가 필요해요.\n\n" +
+          "문제는 **영어와 어긋나는 지점**이에요. 목표는 '전부 외우기'가 아니라 '틀리는 자리를 아는 것'이에요.",
         examples: [
           { fr: "Ça dépend de toi.", ko: "그건 너한테 달렸어.", note: "영어 depend on ↔ 프랑스어 dépendre de" },
         ],
@@ -298,11 +299,10 @@ export default [
       },
       {
         heading: "penser à vs penser de — 같은 동사, 다른 전치사, 다른 뜻",
+        pattern: "penser à = 떠올리다·챙기다 · penser de = 의견",
         body:
-          "전치사가 **뜻을 가르는** 대표 사례예요.\n\n" +
-          "**penser à** — ~을 생각하다, 떠올리다, 챙기다. 생각이 어떤 대상으로 **향하는** 것.\n" +
-          "**penser de** — ~에 대해 (어떻게) 생각하다 = **의견**. 주로 의문문에서: Qu'est-ce que tu penses **de** ce film ?(이 영화 어떻게 생각해?)\n\n" +
-          "답할 때는 Je pense que...(~라고 생각해)로 받아요. 비슷한 짝으로 parler à(~에게 말하다) vs parler de(~에 대해 말하다), jouer à(스포츠·게임을 하다) vs jouer de(악기를 연주하다)도 있어요.",
+          "전치사가 **뜻을 가르는** 대표 사례예요. **penser à**는 생각이 대상으로 향하는 것, **penser de**는 의견(Qu'est-ce que tu penses **de** ce film ?) — 답은 Je pense que...로 받아요.\n\n" +
+          "비슷한 짝: parler à(~에게 말하다) vs parler de(~에 대해), jouer à(스포츠) vs jouer de(악기).",
         examples: [
           { fr: "Je pense souvent à mes années d'université.", ko: "대학 시절을 자주 생각해요." },
           { fr: "Pense à acheter du pain !", ko: "빵 사는 거 잊지 마!", note: "penser à + inf = 챙기다, 잊지 않다" },
