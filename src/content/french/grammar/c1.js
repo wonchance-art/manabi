@@ -325,11 +325,10 @@ export default [
       },
       {
         heading: "amener / emmener / apporter / emporter — 사람이냐 물건이냐, 오느냐 가느냐",
+        pattern: "mener = 사람 · porter = 물건 × a- = 이쪽으로 · em- = 저쪽으로",
         body:
-          "네 동사가 전부 '데려가다/가져가다' 계열이라 대혼란이 오는 짝이에요. 두 축으로 가르면 단순해져요.\n\n" +
-          "**축 1: 무엇을?** — mener 계열(amener, emmener)은 **스스로 움직이는 대상**(사람, 동물), porter 계열(apporter, emporter)은 **들고 옮기는 물건**.\n\n" +
-          "**축 2: 어느 방향?** — a- 계열(amener, apporter)은 **말하는 지점·도착점 쪽으로**(데려오다/가져오다), em- 계열(emmener, emporter)은 **떠나는 쪽으로, 데리고/지니고 떠나다**.\n\n" +
-          "테이크아웃의 à emporter(가지고 떠나기 = 포장)가 em- 방향성의 완벽한 예시예요.",
+          "네 동사가 전부 '데려가다/가져가다' 계열이라 대혼란이 오지만, **두 축**으로 가르면 단순해요. mener 계열은 스스로 움직이는 대상(사람·동물), porter 계열은 들고 옮기는 물건. a- 계열은 도착점 쪽으로(데려오다), em- 계열은 떠나는 쪽으로(데리고 떠나다).\n\n" +
+          "테이크아웃의 **à emporter**(지니고 떠나기 = 포장)가 em- 방향성의 완벽한 예시예요.",
         table: {
           caption: "2×2로 끝내는 네 동사",
           headers: ["", "사람·동물 (mener)", "물건 (porter)"],
@@ -348,12 +347,10 @@ export default [
       },
       {
         heading: "retourner / revenir / rentrer — 세 개의 '돌아가다'",
+        pattern: "revenir = 화자 쪽으로 · retourner = 제3의 장소로 다시 · rentrer = 본거지로 (귀가·귀국)",
         body:
-          "기준점이 어디냐가 전부예요.\n\n" +
-          "**revenir** — **말하는 사람이 있는 곳으로** 돌아오다. Reviens vite !(빨리 돌아와!)\n\n" +
-          "**retourner** — **지금 여기가 아닌 곳으로, 다시** 가다. 전에 가봤던 제3의 장소로 한 번 더. Je veux retourner au Japon(일본에 다시 가고 싶다 — 화자는 지금 일본에 없음).\n\n" +
-          "**rentrer** — **자기 본거지(집, 고향, 모국)로** 돌아가다. Je rentre chez moi(집에 간다), rentrer en Corée(귀국하다). '귀(歸)'가 들어가는 한국어 번역(귀가, 귀국, 귀사)과 잘 포개져요.\n\n" +
-          "같은 상황도 기준점에 따라 동사가 달라져요. 파리 여행 중인 내가 한국의 친구에게 말한다면: Je rentre dimanche(일요일에 귀국해). 파리에 사는 친구가 나에게: Tu reviendras nous voir ?(또 우리 보러 돌아올 거지?). 그리고 내가 나중에: J'aimerais retourner à Paris(파리에 다시 가고 싶어).",
+          "기준점이 어디냐가 전부예요. **revenir**는 말하는 사람이 있는 곳으로(Reviens vite !), **retourner**는 전에 가봤던 제3의 장소로 다시(retourner au Japon — 화자는 지금 일본에 없음), **rentrer**는 집·고향·모국으로 — 한국어 '귀(歸)' 계열(귀가, 귀국)과 잘 포개져요.\n\n" +
+          "같은 상황도 기준점 따라 달라져요. 파리 여행 중인 내가 한국 친구에게: Je rentre dimanche. 파리 친구가 나에게: Tu reviendras ? 나중의 나: J'aimerais retourner à Paris.",
         examples: [
           { fr: "Attends-moi ici, je reviens dans cinq minutes.", ko: "여기서 기다려, 5분 뒤에 돌아올게.", note: "지금 이 지점으로 = revenir" },
           { fr: "Nous sommes retournés dans le village de notre enfance.", ko: "우리는 어린 시절의 마을에 다시 가보았다.", note: "제3의 장소로 다시 = retourner" },
