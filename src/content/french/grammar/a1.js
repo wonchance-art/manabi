@@ -402,10 +402,10 @@ export default [
       },
       {
         heading: "앞에 오는 예외 — BAGS 형용사",
+        pattern: "BAGS (Beauty·Age·Goodness·Size) → 명사 앞",
         body:
-          "자주 쓰는 짧은 형용사 한 줌은 예외적으로 **명사 앞**에 와요. 영어 암기법 **BAGS**로 묶여요.\n\n" +
-          "**B**eauty(아름다움): beau/belle, joli\n**A**ge(나이): jeune, vieux, nouveau\n**G**oodness(좋고 나쁨): bon/bonne, mauvais\n**S**ize(크기): grand, petit, gros\n\n" +
-          "전부 일상에서 빈도가 압도적으로 높은 형용사들이라, '뒤가 원칙, BAGS만 앞'으로 정리하면 실전의 대부분이 커버돼요.",
+          "자주 쓰는 짧은 형용사 한 줌은 예외적으로 **명사 앞**에 와요. **B**eauty(beau, joli), **A**ge(jeune, vieux, nouveau), **G**oodness(bon, mauvais), **S**ize(grand, petit, gros).\n\n" +
+          "전부 빈도가 압도적으로 높은 형용사들이라, **'뒤가 원칙, BAGS만 앞'**으로 정리하면 실전 대부분이 커버돼요.",
         examples: [
           { fr: "un bon restaurant", ipa: "[œ̃ bɔ̃ ʁɛstoʁɑ̃]", ko: "좋은 식당" },
           { fr: "une jolie maison", ipa: "[yn ʒɔli mɛzɔ̃]", ko: "예쁜 집" },
@@ -427,8 +427,9 @@ export default [
     sections: [
       {
         heading: "기본 시스템 — 인칭 × 소유물의 성·수",
+        pattern: "mon/ma/mes · ton/ta/tes · son/sa/ses · notre/nos · votre/vos · leur/leurs",
         body:
-          "'나의, 너의, 그의...'에 해당하는 소유 형용사예요. 표가 커 보이지만 구조는 하나예요: **누구의 것인지(인칭)** × **소유물 명사의 성·수**.\n\n" +
+          "표가 커 보이지만 구조는 하나예요: **누구의 것인지(인칭)** × **소유물 명사의 성·수**.\n\n" +
           "nous/vous/ils 줄은 성 구별 없이 단·복수만 나뉘어서 오히려 쉬워요: notre/nos, votre/vos, leur/leurs.",
         table: {
           caption: "소유 형용사 전체표",
