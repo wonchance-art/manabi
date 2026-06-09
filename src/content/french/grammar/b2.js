@@ -123,9 +123,11 @@ export default [
       },
       {
         heading: "②형 — si + 반과거: 지금과 다른 상상",
+        pattern: "si + imparfait, conditionnel présent",
+        patternKo: "제안 변형: Et si on + 반과거 ?",
         body:
-          "**현재 사실과 반대되거나 실현 가능성이 낮은** 상상은 si + 반과거, 주절은 조건법 현재예요. B1 조건법 챕터에서 만난 그 패턴이죠.\n\n" +
-          "이 형태는 제안에도 변형돼 쓰여요: **Et si on + 반과거 ?**(~하는 거 어때?) — Et si on partait en Italie ?(이탈리아로 떠나는 거 어때?) 주절 없이 si절만으로 부드러운 제안이 됩니다.",
+          "**현재 사실과 반대되거나 실현 가능성이 낮은** 상상이에요. B1 조건법 챕터에서 만난 그 패턴이죠.\n\n" +
+          "제안에도 변형돼 쓰여요: **Et si on partait en Italie ?**(이탈리아로 떠나는 거 어때?) — 주절 없이 si절만으로 부드러운 제안이 됩니다.",
         examples: [
           { fr: "Si j'étais toi, je refuserais cette offre.", ko: "내가 너라면 그 제안 거절할 거야." },
           { fr: "Si on habitait à Paris, on irait au théâtre toutes les semaines.", ko: "파리에 산다면 매주 연극을 보러 갈 텐데." },
@@ -134,10 +136,10 @@ export default [
       },
       {
         heading: "③형 — si + 대과거와 조건법 과거: 돌이킬 수 없는 일",
+        pattern: "si + plus-que-parfait, conditionnel passé (avoir/être 조건법 + 과거분사)",
         body:
-          "**이미 지나간 과거를 되돌리는 상상**에는 si + 대과거, 주절에 **조건법 과거(conditionnel passé)**를 써요.\n\n" +
-          "조건법 과거 만들기: **avoir/être의 조건법 현재 + 과거분사**. j'aurais fait(했을 텐데), je serais venu(e)(왔을 텐데).\n\n" +
-          "조건법 과거는 가정문 밖에서도 후회와 비난의 단골이에요: **j'aurais dû** + 부정사(~했어야 했는데), **tu aurais pu** + 부정사(~할 수도 있었잖아).",
+          "**이미 지나간 과거를 되돌리는 상상**이에요. 조건법 과거는 avoir/être의 조건법 현재 + 과거분사: j'aurais fait(했을 텐데), je serais venu(e).\n\n" +
+          "가정문 밖에서도 후회와 비난의 단골이에요: **j'aurais dû** + 부정사(~했어야 했는데), **tu aurais pu** + 부정사(~할 수도 있었잖아).",
         examples: [
           { fr: "Si tu m'avais prévenu, je serais venu plus tôt.", ko: "네가 미리 알려줬더라면 더 일찍 왔을 거야." },
           { fr: "Si elle avait étudié en France, elle parlerait mieux français.", ko: "그녀가 프랑스에서 공부했더라면 지금 프랑스어를 더 잘할 텐데.", note: "혼합형 — 과거의 가정, 현재의 결과" },
@@ -161,11 +163,9 @@ export default [
     sections: [
       {
         heading: "-ant 삼형제 — 한눈에 구별하기",
+        pattern: "① 현재분사 (불변·문어) · ② en + -ant (제롱디프) · ③ 동사적 형용사 (성수 일치)",
         body:
-          "B1에서 제롱디프(en + -ant)를 배웠죠. 사실 -ant 형태는 셋으로 갈라져요.\n\n" +
-          "**① 현재분사(participe présent)** — en 없이 쓰는 동사 성격의 -ant. 불변(일치 없음). 문어체.\n" +
-          "**② 제롱디프(gérondif)** — en + -ant. 주절 동사를 꾸미는 부사 역할(~하면서/~해서).\n" +
-          "**③ 동사적 형용사(adjectif verbal)** — 완전히 형용사가 된 -ant. **성·수 일치**를 해요.\n\n" +
+          "B1의 제롱디프 외에도 -ant 형태는 셋으로 갈라져요. **현재분사**는 en 없이 쓰는 동사 성격의 -ant(불변), **제롱디프**는 en + -ant(부사 역할), **동사적 형용사**는 완전히 형용사가 된 -ant(성·수 일치)예요.\n\n" +
           "구별 신호: en이 붙으면 ②, 명사를 꾸미며 일치하면 ③, 목적어·보어를 끌고 다니면서 불변이면 ①.",
         examples: [
           { fr: "Les personnes ayant un billet peuvent entrer.", ko: "표를 가진 분들은 입장하실 수 있습니다.", note: "① 현재분사 — 목적어(un billet)를 끌고 다녀요" },
