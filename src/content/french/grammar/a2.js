@@ -292,10 +292,11 @@ export default [
     sections: [
       {
         heading: "직접목적 대명사 le, la, les — 어순 충격에 대비하세요",
+        pattern: "주어 + le/la/les + 동사 (Je la vois)",
+        patternKo: "목적 대명사는 동사 앞",
         body:
-          "'그 책 읽었어? — 응, **그거** 읽었어.'의 '그거'를 담당하는 게 직접목적 대명사예요. **le**(남성 단수), **la**(여성 단수), **les**(복수) — 정관사와 모양이 같아요. 모음 앞에서 le/la는 l'로 축약돼요.\n\n" +
-          "충격 포인트는 위치예요. 프랑스어 목적 대명사는 **동사 앞**에 와요.\n\n" +
-          "Tu vois Marie ? — Oui, je **la** vois.(응, 그녀를 봐.) '나는-그녀를-본다' 순서인 거죠.",
+          "'그거/그를/그녀를'을 담당하는 직접목적 대명사 **le**(남성), **la**(여성), **les**(복수)는 정관사와 모양이 같고, 모음 앞에서 l'로 축약돼요.\n\n" +
+          "충격 포인트는 위치 — **동사 앞**이에요. Tu vois Marie ? — Oui, je **la** vois. '나는-그녀를-본다' 순서인 거죠.",
         examples: [
           { fr: "Tu lis ce livre ? — Oui, je le lis.", ipa: "[ʒə lə li]", ko: "이 책 읽어? — 응, 그거 읽어." },
           { fr: "Tu aimes la France ? — Je l'aime !", ipa: "[ʒə lɛm]", ko: "프랑스 좋아해? — 좋아하지!", note: "모음 앞 l'" },
@@ -306,10 +307,10 @@ export default [
       },
       {
         heading: "간접목적 대명사 lui, leur — '~에게'",
+        pattern: "à + 사람 → lui (그/그녀에게) · leur (그들에게)",
         body:
-          "**parler à**(~에게 말하다), **téléphoner à**(~에게 전화하다), **donner à**(~에게 주다)처럼 'à + 사람'을 받는 대명사가 간접목적 대명사예요.\n\n" +
-          "**lui**(그/그녀에게) / **leur**(그들에게)\n\n" +
-          "me, te, nous, vous는 직접·간접 모양이 같아서, 새로 외울 건 lui와 leur 둘뿐이에요. 한국어 조사 '~에게'가 붙는 자리라고 생각하면 감이 빨라요.",
+          "**parler à**, **téléphoner à**, **donner à**처럼 'à + 사람'을 받는 게 간접목적 대명사예요. 한국어 조사 **'~에게'**가 붙는 자리라고 생각하면 감이 빨라요.\n\n" +
+          "me, te, nous, vous는 직접·간접 모양이 같아서, 새로 외울 건 lui와 leur 둘뿐이에요.",
         examples: [
           { fr: "Je téléphone à ma mère. → Je lui téléphone.", ipa: "[ʒə lɥi telefɔn]", ko: "어머니께 전화해요. → 그분께 전화해요." },
           { fr: "Tu parles à tes parents ? — Oui, je leur parle.", ipa: "[ʒə lœʁ paʁl]", ko: "부모님과 얘기해? — 응, (그분들께) 얘기해." },
