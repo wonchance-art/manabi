@@ -288,11 +288,10 @@ export default [
       },
       {
         heading: "현재분사 vs 제롱디프 vs 동사적 형용사 — 마지막 정리",
+        pattern: "en + -ant (제롱디프) · -ant 불변 (현재분사) · -ant 일치 (형용사)",
         body:
-          "-ant 형태가 세 갈래로 갈리는 것도 C1에서 마무리해둘 지점이에요.\n\n" +
-          "**제롱디프(en + -ant)** — 주절 주어의 동시 동작·수단. En lisant, il prenait des notes.\n" +
-          "**현재분사(-ant, en 없음)** — 명사를 수식하거나 이유·묘사의 절을 압축. 불변이에요.\n" +
-          "**동사적 형용사** — 분사가 형용사로 굳은 것. 성·수 일치를 하고, 일부는 철자도 달라요: fatigant(피곤하게 하는, 형용사) vs en fatiguant(피곤하게 하면서, 분사), provocant vs provoquant.",
+          "-ant 형태의 세 갈래를 C1에서 마무리해둘 지점이에요. **제롱디프**는 주절 주어의 동시 동작·수단, **현재분사**는 절을 압축하며 불변, **동사적 형용사**는 성·수 일치를 해요.\n\n" +
+          "일부는 철자도 달라요: fatig**ant**(형용사) vs en fatig**uant**(분사), provocant vs provoquant.",
         examples: [
           { fr: "Les passagers ayant un billet électronique peuvent embarquer directement.", ko: "전자 티켓을 소지한 승객은 바로 탑승할 수 있다.", note: "ayant... = qui ont...의 압축. 안내문의 표준 문체" },
           { fr: "C'est une expérience fatigante, mais enrichissante.", ko: "피곤하지만 얻는 게 많은 경험이에요.", note: "fatigante — 형용사이므로 여성형 일치, 철자에 u 없음" },
@@ -313,11 +312,10 @@ export default [
     sections: [
       {
         heading: "savoir vs connaître — 정보인가, 친숙함인가",
+        pattern: "savoir + 절/동사원형 (정보·방법) · connaître + 명사 (친숙함)",
         body:
-          "둘 다 한국어로 '알다'라서 끝까지 헷갈리는 1순위 짝이에요. 기준은 명확해요.\n\n" +
-          "**savoir** — 머리로 아는 **정보·사실·방법**. 뒤에 절(que, où, comment...)이나 동사원형이 와요. Je sais qu'il ment(그가 거짓말하는 걸 안다), Je sais nager(수영할 줄 안다).\n\n" +
-          "**connaître** — 경험으로 아는 **친숙함**. 뒤에 반드시 명사가 와요. 사람, 장소, 작품은 무조건 connaître예요. Je connais Marie, Je connais Lyon.\n\n" +
-          "C1다운 디테일 하나 더 — 복합과거에서 의미가 변해요. **j'ai su**는 '알고 있었다'가 아니라 '**알게 되었다**(소식을 접했다)', **j'ai connu**는 '**처음 만났다, 겪었다**'예요. 시제가 의미를 바꾸는 대표 사례죠.",
+          "둘 다 '알다'라서 끝까지 헷갈리는 1순위 짝이에요. **savoir**는 머리로 아는 정보·사실·방법(Je sais nager), **connaître**는 경험으로 아는 친숙함 — 사람, 장소, 작품은 무조건 connaître예요(Je connais Marie).\n\n" +
+          "C1다운 디테일: 복합과거에서 의미가 변해요. **j'ai su** = '알게 되었다', **j'ai connu** = '처음 만났다, 겪었다'.",
         examples: [
           { fr: "Je sais où elle habite, mais je ne connais pas son quartier.", ko: "그녀가 어디 사는지는 알지만(정보), 그 동네를 가본 적은 없어요(경험).", note: "한 문장 안에서 두 '알다'의 분업" },
           { fr: "J'ai su la nouvelle par hasard.", ko: "그 소식을 우연히 알게 됐어요.", note: "passé composé의 savoir = 앎의 '발생'" },
