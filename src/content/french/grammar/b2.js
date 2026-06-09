@@ -364,10 +364,10 @@ export default [
     sections: [
       {
         heading: "프랑스어의 정보구조 — 강세 대신 구문",
+        pattern: "강조 = 구문으로: c'est ... qui/que · ce qui ..., c'est ...",
         body:
-          "영어는 **I** did it처럼 단어에 강세를 실어 강조할 수 있죠. 한국어는 '내가' '나는'처럼 조사를 바꾸고요. 프랑스어는 둘 다 잘 안 통해요 — 강세 위치가 고정된 언어라서요.\n\n" +
-          "대신 프랑스어는 **문장 구조 자체를 바꿔서** 스포트라이트를 옮겨요. 이걸 mise en relief(부조, 도드라지게 하기)라고 해요. 대표 장치가 **c'est ... qui/que**(분열문)와 **ce qui ..., c'est ...**(유사분열문)이에요.\n\n" +
-          "이 구문들은 문어체 장식이 아니라 **일상 회화의 기본 어법**이에요. 프랑스인의 입에서 하루에도 수십 번 나오는 구조입니다.",
+          "영어는 강세로, 한국어는 조사로 강조하지만 프랑스어는 둘 다 잘 안 통해요 — 강세 위치가 고정된 언어라서요. 대신 **문장 구조 자체를 바꿔서** 스포트라이트를 옮겨요(mise en relief).\n\n" +
+          "이 구문들은 문어체 장식이 아니라 **일상 회화의 기본 어법**이에요. 프랑스인의 입에서 하루에도 수십 번 나옵니다.",
         examples: [
           { fr: "C'est moi qui ai fait ça.", ko: "그거 한 사람 나야. (내가 했어.)" },
           { fr: "Ce que j'aime ici, c'est l'ambiance.", ko: "여기서 내가 좋아하는 건 분위기야." },
@@ -376,10 +376,10 @@ export default [
       },
       {
         heading: "c'est ... qui / c'est ... que — 스포트라이트 분열문",
+        pattern: "C'est + 강조어 + qui (주어) / que (목적어·부사구)",
         body:
-          "강조하고 싶은 말을 c'est와 qui/que 사이에 끼워요. **강조 대상이 주어면 qui, 그 밖(목적어·부사구)이면 que**.\n\n" +
-          "C'est **Marie qui** a appelé(전화한 건 마리예요 — 주어 강조). C'est **ce livre que** je cherchais(내가 찾던 게 이 책이에요 — 목적어 강조). C'est **en 2002 que** je suis né(내가 태어난 건 2002년이에요 — 부사구 강조).\n\n" +
-          "인칭대명사를 강조할 땐 강세형(moi, toi, lui...)을 써요: C'est **moi** qui..., C'est **toi** que...",
+          "강조하고 싶은 말을 c'est와 qui/que 사이에 끼워요. C'est **Marie qui** a appelé(주어 강조), C'est **ce livre que** je cherchais(목적어 강조), C'est **en 2002 que** je suis né(부사구 강조).\n\n" +
+          "인칭대명사를 강조할 땐 강세형(moi, toi, lui...)을 써요: C'est **moi** qui...",
         examples: [
           { fr: "C'est Paul qui a préparé le dîner, pas moi.", ko: "저녁을 준비한 건 폴이에요, 제가 아니라." },
           { fr: "C'est cette chanson que j'écoutais tout le temps.", ko: "내가 늘 듣던 게 바로 이 노래야." },
