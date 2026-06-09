@@ -89,8 +89,6 @@ export default function LessonsPage({ refManifest = {} }) {
   }
   const [levelFilter, setLevelFilter] = useState(searchParams.get('level') || 'all');
   const [testScores, setTestScores] = useState({});
-  // 강의 vs 레퍼런스 뷰 (일본어·영어는 둘 다, 프랑스어는 레퍼런스만)
-  const [viewMode, setViewMode] = useState(() => (searchParams.get('view') === 'ref' ? 'ref' : 'lessons'));
   const [refRead, setRefRead] = useState(() => ({}));
 
   // 레퍼런스 챕터 읽음 표시 (localStorage — RefReadMark가 기록)
@@ -270,54 +268,31 @@ export default function LessonsPage({ refManifest = {} }) {
     return arr;
   }, [lessons, langFilter, levelFilter]);
 
-  // 레퍼런스 뷰 — 프랑스어는 DB 강의가 없으므로 항상 레퍼런스
+  // 레퍼런스가 중심 콘텐츠 — DB 실습 강의(일본어·영어)는 하단 보조 섹션
   const refLang = refManifest[langFilter];
-  const showRef = langFilter === 'French' || viewMode === 'ref';
+  const hasPracticeLessons = langFilter !== 'French';
 
-  // 레벨 옵션 (선택된 언어에 따라 — 레퍼런스 뷰는 매니페스트 기준)
-  const levelOptions = showRef && refLang ? refLang.levels.map(l => l.label)
+  // 레벨 옵션 (매니페스트 기준 — DB 강의 레벨 라벨과 동일)
+  const levelOptions = refLang ? refLang.levels.map(l => l.label)
     : langFilter === 'Japanese' ? JP_LEVELS
     : EN_LEVELS;
 
   // 코드 기반 레퍼런스 그룹 (DB 강의와 별도 소스)
   const refGroups = useMemo(() => {
-    if (!showRef || !refLang) return [];
+    if (!refLang) return [];
     return refLang.levels
       .filter(l => levelFilter === 'all' || l.label === levelFilter)
       .map(l => ({ meta: l, chapters: l.chapters, vocabCount: l.vocabCount }));
-  }, [showRef, refLang, levelFilter]);
+  }, [refLang, levelFilter]);
 
   return (
     <div className="page-container">
       <div className="page-header page-header--row">
         <div>
           <h1 className="page-header__title">🎓 강의</h1>
-          <p className="page-header__subtitle">패턴·표현 단계별 학습 (시리즈 #N)</p>
+          <p className="page-header__subtitle">문법·어휘 레퍼런스 + 실습 강의</p>
         </div>
       </div>
-
-      {/* 추천 시작점 — 진행 중 / 추천 레벨 첫 lesson / 신규 입문 (DB 강의 전용) */}
-      {!showRef && recommendStart && (
-        <Link href={`/lessons/${recommendStart.material.id}`} className="lessons-hero">
-          <div className="lessons-hero__hint">
-            {recommendStart.type === 'continue' && '📍 이어서 학습'}
-            {recommendStart.type === 'start-level' && `🎯 추천 시작점 — ${recommendStart.level}`}
-            {recommendStart.type === 'start-fresh' && '🌱 첫 강의로 시작'}
-          </div>
-          <div className="lessons-hero__title">{recommendStart.material.title}</div>
-          {recommendStart.type === 'continue' && (
-            <div className="lessons-hero__sub">
-              {recommendStart.level} {recommendStart.series} · {recommendStart.completed}/{recommendStart.total} 진행
-            </div>
-          )}
-          {recommendStart.type === 'start-level' && (
-            <div className="lessons-hero__sub">단어 수 기준 자동 추천</div>
-          )}
-          {recommendStart.type === 'start-fresh' && (
-            <div className="lessons-hero__sub">언어 학습은 글자부터</div>
-          )}
-        </Link>
-      )}
 
       {/* 언어 필터 */}
       <div className="materials-filters">
@@ -332,24 +307,6 @@ export default function LessonsPage({ refManifest = {} }) {
             </button>
           ))}
         </div>
-
-        {/* 강의 ↔ 레퍼런스 토글 (일본어·영어 — 프랑스어는 레퍼런스 고정) */}
-        {langFilter !== 'French' && (
-          <div className="chip-group">
-            <button
-              onClick={() => setViewMode('lessons')}
-              className={`chip ${viewMode === 'lessons' ? 'chip--active' : ''}`}
-            >
-              🎓 강의
-            </button>
-            <button
-              onClick={() => setViewMode('ref')}
-              className={`chip ${viewMode === 'ref' ? 'chip--active' : ''}`}
-            >
-              📚 문법·어휘 레퍼런스
-            </button>
-          </div>
-        )}
 
         {/* 레벨 필터 */}
         <div className="chip-group">
@@ -371,7 +328,7 @@ export default function LessonsPage({ refManifest = {} }) {
         </div>
       </div>
 
-      {showRef && refLang ? (
+      {refLang ? (
         <div className="lessons-list">
           {/* 레퍼런스 소개 — 한국인 학습자 설계 + 콜아웃 범례 */}
           <div className="card" style={{ padding: '14px 16px', marginBottom: 6 }}>
@@ -450,7 +407,42 @@ export default function LessonsPage({ refManifest = {} }) {
             );
           })}
         </div>
-      ) : isLoading ? (
+      ) : null}
+
+      {/* ── 실습 강의 (일본어·영어) — 퀴즈·회화·번역 미션 인터랙티브 강의 ── */}
+      {hasPracticeLessons && (
+      <section style={{ marginTop: 30, paddingTop: 22, borderTop: '1px solid var(--border)' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
+          <h2 style={{ fontSize: '1.02rem', fontWeight: 700 }}>✏️ 실습 강의</h2>
+          <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+            레퍼런스로 이해했다면, 퀴즈·회화·번역 미션으로 손에 익히세요
+          </span>
+        </div>
+
+        {/* 추천 시작점 — 진행 중 / 추천 레벨 첫 lesson / 신규 입문 */}
+        {recommendStart && (
+          <Link href={`/lessons/${recommendStart.material.id}`} className="lessons-hero">
+            <div className="lessons-hero__hint">
+              {recommendStart.type === 'continue' && '📍 이어서 학습'}
+              {recommendStart.type === 'start-level' && `🎯 추천 시작점 — ${recommendStart.level}`}
+              {recommendStart.type === 'start-fresh' && '🌱 첫 강의로 시작'}
+            </div>
+            <div className="lessons-hero__title">{recommendStart.material.title}</div>
+            {recommendStart.type === 'continue' && (
+              <div className="lessons-hero__sub">
+                {recommendStart.level} {recommendStart.series} · {recommendStart.completed}/{recommendStart.total} 진행
+              </div>
+            )}
+            {recommendStart.type === 'start-level' && (
+              <div className="lessons-hero__sub">단어 수 기준 자동 추천</div>
+            )}
+            {recommendStart.type === 'start-fresh' && (
+              <div className="lessons-hero__sub">언어 학습은 글자부터</div>
+            )}
+          </Link>
+        )}
+
+      {isLoading ? (
         <CardGridSkeleton height={48} />
       ) : sorted.length > 0 ? (() => {
         // 카나는 별도 그룹(최상단), 그 외는 레벨별 통합
@@ -551,6 +543,8 @@ export default function LessonsPage({ refManifest = {} }) {
             관리자 페이지에서 시드 실행하기 →
           </Link>
         </div>
+      )}
+      </section>
       )}
     </div>
   );
