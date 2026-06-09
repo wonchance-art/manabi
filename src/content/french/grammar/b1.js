@@ -39,9 +39,11 @@ export default [
       },
       {
         heading: "용법 1 — 공손한 부탁: je voudrais의 정체",
+        pattern: "Je voudrais... · Pourriez-vous... ?",
+        patternKo: "조건법 = '주세요' → '주시겠어요?'의 공손화 장치",
         body:
-          "카페에서 배운 **Je voudrais un café**(커피 한 잔 주세요)의 voudrais가 바로 조건법이에요. Je veux(원해요)를 조건법으로 바꾸면 '괜찮으시다면 원하는데요...' 하고 한 발 물러선 뉘앙스가 돼요.\n\n" +
-          "한국어로 치면 '주세요'를 '주시겠어요?'로, '해요'를 '해 주실 수 있을까요?'로 바꾸는 것과 같은 공손화 장치예요. pouvoir와 vouloir의 조건법은 서비스 상황의 만능 열쇠입니다.",
+          "**Je voudrais un café**의 voudrais가 바로 조건법이에요. Je veux를 조건법으로 바꾸면 '괜찮으시다면...' 하고 한 발 물러선 뉘앙스가 돼요.\n\n" +
+          "한국어 '주세요' → '주시겠어요?'와 같은 공손화 장치예요. pouvoir와 vouloir의 조건법은 서비스 상황의 만능 열쇠입니다.",
         examples: [
           { fr: "Je voudrais réserver une table.", ko: "테이블을 예약하고 싶은데요." },
           { fr: "Pourriez-vous répéter, s'il vous plaît ?", ko: "다시 한번 말씀해 주시겠어요?" },
@@ -52,10 +54,11 @@ export default [
       },
       {
         heading: "용법 2 — 가정: si + 반과거, 조건법",
+        pattern: "si + imparfait, conditionnel présent",
+        patternKo: "'만약 ~라면 ...할 텐데' — 현재 사실과 다른 가정",
         body:
-          "'만약 ~라면 ...할 텐데'라는 **현재 사실과 다른 가정**은 정해진 짝으로 말해요.\n\n" +
-          "**Si + 반과거(imparfait), 조건법 현재**\n\n" +
-          "Si j'avais le temps, je voyagerais. — 시간이 있다면 여행할 텐데. (실제로는 시간이 없죠.) si절에는 반과거, 결과절에는 조건법 — 이 분업이 핵심이에요. 두 절의 순서는 바꿔도 됩니다.",
+          "Si j'avais le temps, je voyagerais. — 시간이 있다면 여행할 텐데. (실제로는 없죠.)\n\n" +
+          "**si절에는 반과거, 결과절에는 조건법** — 이 분업이 핵심이에요. 두 절의 순서는 바꿔도 됩니다.",
         examples: [
           { fr: "Si j'avais plus d'argent, j'achèterais cet appartement.", ko: "돈이 더 있다면 이 아파트를 살 텐데." },
           { fr: "Si tu venais avec nous, ce serait parfait.", ko: "네가 우리랑 같이 가면 완벽할 텐데." },
