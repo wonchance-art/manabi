@@ -156,9 +156,10 @@ export default [
     sections: [
       {
         heading: "동사 원형과 1군 동사",
+        pattern: "원형 - er = 어간 → 어간 + -e, -es, -e, -ons, -ez, -ent",
         body:
-          "사전에 실리는 동사의 기본형을 **원형(infinitif)**이라고 해요. parler(말하다), aimer(좋아하다)처럼 **-er로 끝나는 동사**가 프랑스어 동사의 약 90%를 차지하고, 이들을 1군 동사라고 불러요.\n\n" +
-          "활용법은 간단해요. 원형에서 **-er를 떼고**(이게 어간), 인칭별 어미 **-e, -es, -e, -ons, -ez, -ent**를 붙이면 끝. 이 패턴 하나로 수천 개의 동사를 활용할 수 있어요. 새 동사가 생겨도(googler, liker) 전부 이 패턴을 따라요.",
+          "사전에 실리는 기본형을 **원형(infinitif)**이라고 해요. parler, aimer처럼 **-er로 끝나는 1군 동사**가 프랑스어 동사의 약 90%예요.\n\n" +
+          "원형에서 -er를 뗀 **어간**에 인칭별 어미를 붙이면 끝. 새 동사가 생겨도(googler, liker) 전부 이 패턴을 따라요.",
         examples: [
           { fr: "parler", ipa: "[paʁle]", ko: "말하다 (원형)", note: "-er의 r는 묵음 — '빠를레'" },
           { fr: "aimer", ipa: "[ɛme]", ko: "좋아하다, 사랑하다 (원형)" },
@@ -168,9 +169,10 @@ export default [
       },
       {
         heading: "활용표 — 쓰기는 6개, 소리는 사실상 3개",
+        pattern: "-e, -es, -ent → 묵음 = [paʁl] · -ons → [ɔ̃] · -ez → [e]",
         body:
-          "parler로 활용표를 보세요. 여기서 결정적인 발음 포인트: 어미 **-e, -es, -ent는 전부 묵음**이에요.\n\n" +
-          "그래서 je parle, tu parles, il parle, ils parlent — **네 개가 전부 [paʁl] 똑같은 소리**예요. 귀로 들으면 6개 중 실제로 구별되는 건 [paʁl] / [paʁlɔ̃] / [paʁle] 세 가지뿐이죠. 듣기가 편해지는 대신, 쓰기에서는 안 들리는 어미를 철자로 챙겨야 해요.",
+          "결정적인 발음 포인트: 어미 **-e, -es, -ent는 전부 묵음**이에요. 그래서 je parle, tu parles, il parle, ils parlent **네 개가 똑같은 소리** [paʁl]이죠.\n\n" +
+          "귀로 구별되는 건 [paʁl] / [paʁlɔ̃] / [paʁle] 세 가지뿐이에요. 듣기가 편해지는 대신, 쓰기에서는 안 들리는 어미를 철자로 챙겨야 해요.",
         table: {
           caption: "parler 직설법 현재 — 묵음 어미 주의",
           headers: ["인칭", "형태", "발음"],
