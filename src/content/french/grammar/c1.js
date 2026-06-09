@@ -433,11 +433,10 @@ export default [
       },
       {
         heading: "신체의 이미지 — 그리고 사용 설명서",
+        pattern: "coûter les yeux de la tête = 터무니없이 비싸다 · casser les pieds = 귀찮게 하다",
         body:
-          "**coûter les yeux de la tête** — 머리에서 눈이 빠질 만큼 비싸다 → **터무니없이 비싸다**. 더 구어적으로는 coûter un bras(팔 하나 값이다)라고도 해요. 한국어 '눈이 튀어나올 가격'과 그림이 통하죠.\n\n" +
-          "**avoir le cœur sur la main** — 심장을 손 위에 올려놓고 있다 → **천성이 너그럽다, 잘 베푼다**.\n\n" +
-          "**casser les pieds (à qqn)** — 발을 부수다 → **귀찮게 하다, 성가시게 굴다**. 여기서 형용사 casse-pieds(성가신 사람)도 나와요.\n\n" +
-          "마지막으로 사용 전략이에요. 관용구는 **이해는 최대로, 사용은 보수적으로.** 대부분 familier 레지스터라 격식 작문에는 못 쓰고, 어설픈 타이밍에 쓰면 의도치 않게 우스워져요. 회화에서 두세 개씩, 프랑스인이 쓰는 걸 들은 맥락 그대로 따라 쓰며 늘려가는 게 정석입니다.",
+          "**coûter les yeux de la tête**(눈이 빠질 만큼 비싸다 — '눈이 튀어나올 가격'과 통하죠), **avoir le cœur sur la main**(심장을 손에 → 잘 베푼다), **casser les pieds**(발을 부수다 → 귀찮게 하다).\n\n" +
+          "사용 전략: **이해는 최대로, 사용은 보수적으로.** 대부분 familier라 격식 작문에는 못 쓰고, 프랑스인이 쓰는 걸 들은 맥락 그대로 따라 쓰며 늘려가는 게 정석입니다.",
         examples: [
           { fr: "Ce sac coûte les yeux de la tête.", ko: "이 가방, 눈 튀어나오게 비싸요.", note: "쇼핑 회화의 단골" },
           { fr: "Elle a le cœur sur la main : elle aide tout le monde.", ko: "그녀는 정말 베푸는 사람이에요. 모두를 도와줘요.", note: "사람 칭찬의 고정 표현" },
