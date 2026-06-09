@@ -186,10 +186,10 @@ export default [
     sections: [
       {
         heading: "thèse — antithèse — synthèse: 프랑스식 사고의 틀",
+        pattern: "problématique → thèse(정) → antithèse(반) → synthèse(합)",
         body:
-          "프랑스 글쓰기(dissertation)의 뼈대는 **정(thèse) — 반(antithèse) — 합(synthèse)**이에요. 어떤 주장을 펼친 뒤, 일부러 반대 입장을 충실하게 검토하고, 마지막에 두 입장을 넘어서는 종합으로 마무리하죠. 프랑스 고등학생이 바칼로레아 철학 시험에서 훈련하는 바로 그 틀이고, DALF C1·C2 작문 채점 기준의 바탕이기도 해요.\n\n" +
-          "한국 글쓰기 교육의 서론-본론-결론과 비슷해 보이지만 결정적 차이가 있어요. 프랑스식에서는 **반대 입장을 다루지 않으면 미완성 글**로 평가받아요. '내 주장 + 근거 셋'으로 밀어붙이는 글은 프랑스 기준으로는 일방적(partial)이라는 인상을 줘요.\n\n" +
-          "구조의 또 다른 필수품이 **problématique**(문제 제기)예요. 주제를 그대로 받아쓰는 게 아니라, 긴장이 있는 질문으로 다듬어 서론에 명시해야 해요. '재택근무에 대하여'가 아니라 '재택근무는 자유의 확장인가, 노동의 침투인가?'처럼요.",
+          "프랑스 dissertation은 주장을 펼친 뒤 **일부러 반대 입장을 충실히 검토**하고, 두 입장을 넘어서는 종합으로 마무리해요. 한국식 서론-본론-결론과 달리, **반대 입장을 다루지 않으면 미완성 글**로 평가받아요.\n\n" +
+          "또 하나의 필수품이 **problématique**(문제 제기) — 주제를 긴장이 있는 질문으로 다듬어 서론에 명시해야 해요. '재택근무에 대하여'가 아니라 '재택근무는 자유의 확장인가, 노동의 침투인가?'처럼요.",
         examples: [
           { fr: "Dans quelle mesure le télétravail transforme-t-il notre rapport au travail ?", ko: "재택근무는 우리의 노동관을 어디까지 변화시키는가?", note: "dans quelle mesure(어느 정도까지)는 problématique의 단골 틀" },
           { fr: "Il convient de s'interroger sur les limites de ce modèle.", ko: "이 모델의 한계에 대해 질문을 던져볼 필요가 있다.", note: "il convient de + inf. = '~할 필요가 있다'의 격식형" },
@@ -198,9 +198,10 @@ export default [
       },
       {
         heading: "서론과 전개 — 글을 여는 표현들",
+        pattern: "서론 = 도입 → problématique 제시 → annonce du plan",
         body:
-          "서론은 **도입(주제로의 진입) → problématique 제시 → 전개 예고(annonce du plan)** 3단계가 정석이에요. 각 단계의 정형 표현을 통째로 외워두면 시험장에서 시간을 벌어요.\n\n" +
-          "본론 전개에서는 단락 사이의 **connecteurs**(연결어)가 이정표 역할을 해요. 첫째/둘째/셋째를 premièrement만 반복하면 단조로우니, en premier lieu, par ailleurs, en outre, enfin처럼 변주하세요.",
+          "서론 3단계의 정형 표현을 통째로 외워두면 시험장에서 시간을 벌어요.\n\n" +
+          "본론 전개에서는 단락 사이의 **connecteurs**가 이정표예요. premièrement만 반복하면 단조로우니 en premier lieu, par ailleurs, en outre, enfin처럼 변주하세요.",
         examples: [
           { fr: "De nos jours, la question de l'intelligence artificielle suscite de vifs débats.", ko: "오늘날 인공지능 문제는 격렬한 논쟁을 불러일으키고 있다.", note: "susciter de vifs débats — 서론 도입의 단골 콜로케이션" },
           { fr: "Nous verrons dans un premier temps..., avant d'examiner dans un second temps...", ko: "먼저 ~을 살펴본 뒤, 이어서 ~을 검토할 것이다.", note: "annonce du plan(전개 예고)의 정형 틀" },
