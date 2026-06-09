@@ -65,9 +65,10 @@ export default [
       },
       {
         heading: "의미 — 형태는 현재완료, 쓰임은 그냥 과거",
+        pattern: "passé composé = 완료된 과거 사건 ('-었어요')",
         body:
-          "여기가 이 챕터에서 제일 중요한 줄이에요. passé composé는 **완료된 과거의 사건**을 말하는, 한국어 '-었어요/-했어요'에 해당하는 평범한 과거시제예요.\n\n" +
-          "어제 한 일, 지난 주말 이야기, 여행담 — 회화의 과거는 거의 전부 passé composé로 처리돼요. hier(어제), la semaine dernière(지난주), ce matin(오늘 아침) 같은 시간 표현과 단짝이에요.",
+          "passé composé는 **완료된 과거의 사건**을 말하는, 한국어 '-었어요/-했어요'에 해당하는 평범한 과거시제예요.\n\n" +
+          "회화의 과거는 거의 전부 이걸로 처리돼요. hier(어제), la semaine dernière(지난주) 같은 시간 표현과 단짝이에요.",
         examples: [
           { fr: "Hier, j'ai travaillé.", ipa: "[jɛʁ ʒe tʁavaje]", ko: "어제 저는 일했어요." },
           { fr: "La semaine dernière, nous avons visité Lyon.", ipa: "[la səmɛn dɛʁnjɛʁ nuzavɔ̃ vizite ljɔ̃]", ko: "지난주에 우리는 리옹을 구경했어요." },
@@ -76,9 +77,10 @@ export default [
       },
       {
         heading: "부정문과 의문문 — 샌드위치는 조동사만 감싸요",
+        pattern: "ne + avoir + pas + 과거분사 (Je n'ai pas mangé)",
         body:
-          "부정의 ne ... pas는 **조동사 avoir만** 감싸요. 과거분사는 샌드위치 바깥에 남아요.\n\n" +
-          "Je **n'ai pas** mangé.(안 먹었어요.) — 'Je n'ai mangé pas'가 아니에요. 의문문도 평소처럼: 억양만 올리거나, Est-ce que를 붙이거나, 조동사를 도치해요(As-tu mangé ?).",
+          "ne ... pas는 **조동사 avoir만** 감싸요. 과거분사는 샌드위치 바깥에 남아요 — 'Je n'ai mangé pas'가 아니에요.\n\n" +
+          "의문문은 평소처럼: 억양만 올리거나, Est-ce que를 붙이거나, 조동사를 도치해요(As-tu mangé ?).",
         examples: [
           { fr: "Je n'ai pas fini.", ipa: "[ʒə ne pa fini]", ko: "저는 아직 못 끝냈어요." },
           { fr: "Il n'a pas pris de café.", ipa: "[il na pa pʁi də kafe]", ko: "그는 커피를 안 마셨어요.", note: "부정문이라 du → de" },
