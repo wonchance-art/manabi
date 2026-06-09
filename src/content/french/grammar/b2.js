@@ -14,10 +14,10 @@ export default [
     sections: [
       {
         heading: "접속법 과거 — 평가 시점보다 앞선 일",
+        pattern: "avoir/être 접속법 현재 + 과거분사 (que tu sois venu)",
         body:
-          "B1에서 배운 접속법 현재는 '지금 또는 앞으로의 일'에 대한 평가였어요. 평가하는 내용이 **이미 일어난 일**이면 **접속법 과거(subjonctif passé)**를 써요.\n\n" +
-          "만들기는 쉬워요: **avoir/être의 접속법 현재 + 과거분사**. 복합과거의 접속법 버전인 셈이죠.\n\n" +
-          "Je suis content que tu **sois venu**(네가 와 줘서 기뻐) — 기쁜 건 지금, 온 건 그 전. 주절과 종속절의 시간 차이가 핵심이에요.",
+          "평가하는 내용이 **이미 일어난 일**이면 **접속법 과거(subjonctif passé)**를 써요. 복합과거의 접속법 버전인 셈이죠.\n\n" +
+          "Je suis content que tu **sois venu**(네가 와 줘서 기뻐) — 기쁜 건 지금, 온 건 그 전. **주절과 종속절의 시간 차이**가 핵심이에요.",
         table: {
           caption: "접속법 현재 vs 접속법 과거",
           headers: ["", "접속법 현재", "접속법 과거"],
@@ -36,12 +36,10 @@ export default [
       },
       {
         heading: "접속법을 부르는 접속사 — bien que, pour que, avant que...",
+        pattern: "bien que · pour que · avant que · jusqu'à ce que · à moins que + 접속법",
         body:
-          "B1에서는 동사(vouloir que, il faut que) 뒤의 접속법을 봤다면, B2에서는 **접속사**가 접속법을 부르는 경우를 정리해요. 양보·목적·시간 선행 등 '아직 사실로 확정되지 않았거나, 사실 여부와 무관하게 틀로 제시되는' 내용들이에요.\n\n" +
-          "**양보**: bien que, quoique(~이긴 하지만)\n" +
-          "**목적**: pour que, afin que(~하도록)\n" +
-          "**시간**: avant que(~하기 전에), jusqu'à ce que(~할 때까지)\n" +
-          "**조건·제외**: à condition que(~한다는 조건으로), à moins que(~하지 않는 한), sans que(~하지 않은 채)",
+          "B2에서는 **접속사**가 접속법을 부르는 경우를 정리해요. **양보**(bien que, quoique), **목적**(pour que, afin que), **시간**(avant que, jusqu'à ce que), **조건·제외**(à condition que, à moins que, sans que).\n\n" +
+          "공통점은 '아직 사실로 확정되지 않았거나, 사실 여부와 무관하게 틀로 제시되는' 내용이라는 것이에요.",
         examples: [
           { fr: "Bien qu'il soit fatigué, il continue à travailler.", ko: "피곤하긴 하지만 그는 계속 일해요." },
           { fr: "Je t'explique encore une fois pour que ce soit clair.", ko: "확실해지도록 한 번 더 설명할게." },
