@@ -256,9 +256,10 @@ export default [
       },
       {
         heading: "구어에서는 ne가 사라져요",
+        pattern: "구어: Je (ne) sais pas → Je sais pas",
         body:
-          "실제 프랑스인의 일상 대화에서는 **ne가 매우 자주 탈락**해요. Je ne sais pas(몰라요)가 Je sais pas → 빠르게는 'J'sais pas'[ʃɛpa]까지 줄어들죠.\n\n" +
-          "여러분이 쓰는 글에서는 ne를 꼭 챙기되, **들을 때는 pas만으로 부정을 감지**할 수 있어야 해요. 부정의 진짜 신호등은 pas입니다.",
+          "일상 대화에서는 **ne가 매우 자주 탈락**해요. Je ne sais pas가 Je sais pas → 빠르게는 'J'sais pas'[ʃɛpa]까지 줄어들죠.\n\n" +
+          "글에서는 ne를 꼭 챙기되, **들을 때는 pas만으로 부정을 감지**할 수 있어야 해요.",
         examples: [
           { fr: "Je sais pas.", ipa: "[ʒə sɛ pa]", ko: "몰라. (구어)", note: "글에서는 Je ne sais pas" },
           { fr: "C'est pas grave.", ipa: "[sɛ pa gʁav]", ko: "괜찮아, 별일 아니야. (구어)" },
@@ -279,8 +280,9 @@ export default [
     sections: [
       {
         heading: "방법 1 — 억양만 올리기 (구어의 기본값)",
+        pattern: "평서문 + 억양 ↗ (Tu parles français ?)",
         body:
-          "가장 쉬운 의문문: 평서문 그대로 두고 **문장 끝 억양만 올리면** 끝이에요. Tu parles français. ↘ → Tu parles français ? ↗\n\n" +
+          "평서문 그대로 두고 **문장 끝 억양만 올리면** 의문문이 돼요.\n\n" +
           "일상 회화에서 압도적으로 많이 쓰는 방식이에요. 친구 사이, 편한 상황에서는 이걸로 충분해요.",
         examples: [
           { fr: "Tu as faim ?", ipa: "[ty a fɛ̃]", ko: "배고파?" },
@@ -291,9 +293,10 @@ export default [
       },
       {
         heading: "방법 2 — Est-ce que : 만능 의문문 변환기",
+        pattern: "Est-ce que + 평서문 ? (모음 앞 Est-ce qu')",
         body:
-          "평서문 앞에 **Est-ce que**[ɛskə]를 붙이면 의문문이 돼요. 어순을 전혀 건드리지 않아도 되는 안전한 방법이라, 말하기 시험과 일반 회화 모두에서 표준적으로 쓰여요.\n\n" +
-          "직역하면 '~인 것인가요?'쯤 되지만, 의미는 따지지 말고 **의문문 스위치**라고 생각하세요. 모음 앞에서는 Est-ce qu'로 축약돼요.",
+          "평서문 앞에 **Est-ce que**[ɛskə]만 붙이면 돼요. 어순을 건드리지 않는 안전한 방법이라 말하기 시험과 일반 회화 모두에서 표준이에요.\n\n" +
+          "직역하면 '~인 것인가요?'쯤 되지만, 의미는 따지지 말고 **의문문 스위치**라고 생각하세요.",
         examples: [
           { fr: "Est-ce que tu parles français ?", ipa: "[ɛskə ty paʁl fʁɑ̃sɛ]", ko: "너 프랑스어 할 줄 알아?" },
           { fr: "Est-ce que vous avez des questions ?", ipa: "[ɛskə vuzave de kɛstjɔ̃]", ko: "질문 있으세요?" },
@@ -303,10 +306,10 @@ export default [
       },
       {
         heading: "방법 3 — 도치 : 격식의 영역",
+        pattern: "동사-주어 ? (Parlez-vous... · 모음 충돌 시 A-t-il ?)",
         body:
-          "주어와 동사의 순서를 뒤집고 하이픈으로 잇는 **도치 의문문**: Vous parlez → **Parlez-vous** français ?\n\n" +
-          "격식 있는 말하기와 글에서 쓰는 방식이에요. 3인칭에서 동사가 모음으로 끝나면 발음을 위해 **-t-**를 끼워 넣어요: Il a → A-**t**-il ? / Elle habite → Habite-**t**-elle ?\n\n" +
-          "A1 단계에서는 직접 만들기보다, Parlez-vous anglais ?나 Quelle heure est-il ? 같은 **굳은 표현으로 만나는 도치를 알아듣는 것**이 목표예요.",
+          "주어와 동사를 뒤집고 하이픈으로 잇는 격식 의문문이에요. 3인칭에서 동사가 모음으로 끝나면 발음을 위해 **-t-**를 끼워 넣어요: Il a → A-**t**-il ?\n\n" +
+          "A1에서는 직접 만들기보다, Parlez-vous anglais ? 같은 **굳은 표현으로 만나는 도치를 알아듣는 것**이 목표예요.",
         examples: [
           { fr: "Parlez-vous anglais ?", ipa: "[paʁle vu ɑ̃glɛ]", ko: "영어 하세요?" },
           { fr: "Êtes-vous fatigué ?", ipa: "[ɛt vu fatige]", ko: "피곤하세요?" },
