@@ -479,10 +479,10 @@ export default [
       },
       {
         heading: "작문에 써먹기 — 문장에서 명사구로",
+        pattern: "avant que + 절 → avant + 명사구 (avant l'ouverture du magasin)",
         body:
-          "명사화는 읽기 기술이자 **쓰기 기술**이에요. 종속절을 명사구로 바꾸면 문장이 단정해지고 격이 올라가요.\n\n" +
-          "Avant **que le magasin ouvre**(가게가 열기 전에 — 접속법까지 동원) → Avant **l'ouverture du magasin**(개점 전에). Parce que les prix **ont augmenté** → **En raison de l'augmentation** des prix(가격 상승으로 인해).\n\n" +
-          "특히 avant/après 뒤에서 명사화를 쓰면 접속법·시제 고민이 통째로 사라지니, 시험장에서 실전 가치가 큰 기술이에요.",
+          "종속절을 명사구로 바꾸면 문장이 단정해지고 격이 올라가요. Parce que les prix ont augmenté → **En raison de l'augmentation** des prix.\n\n" +
+          "특히 avant/après 뒤에서 명사화를 쓰면 **접속법·시제 고민이 통째로 사라지니**, 시험장에서 실전 가치가 큰 기술이에요.",
         examples: [
           { fr: "Après la signature du contrat, nous commencerons les travaux.", ko: "계약 체결 후에 공사를 시작하겠습니다.", note: "= après que le contrat sera signé보다 훨씬 깔끔" },
           { fr: "En raison de la grève, les cours sont annulés.", ko: "파업으로 인해 수업이 취소되었습니다." },
