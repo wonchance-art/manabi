@@ -101,6 +101,7 @@ export default function Layout({ children }) {
   const navLinks = [
     ...(user ? [{ href: '/home', icon: '🏠', label: '홈' }] : []),
     { href: '/lessons',   icon: '🎓', label: '강의' },
+    { href: '/french',    icon: '🇫🇷', label: '프랑스어' },
     { href: '/materials', icon: '📰', label: '자료' },
     { href: '/vocab',     icon: '⭐', label: '단어장' },
   ];
@@ -108,6 +109,7 @@ export default function Layout({ children }) {
   const mobileNavLinks = [
     ...(user ? [{ href: '/home', icon: '🏠', label: '홈' }] : []),
     { href: '/lessons',   icon: '🎓', label: '강의' },
+    { href: '/french',    icon: '🇫🇷', label: '프랑스어' },
     { href: '/materials', icon: '📰', label: '자료' },
     { href: '/vocab',     icon: '⭐', label: '단어장' },
     ...(user ? [{ href: '/profile', icon: '👤', label: '마이' }] : [{ href: '/auth', icon: '👤', label: '로그인' }]),

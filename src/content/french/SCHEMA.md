@@ -1,0 +1,98 @@
+# 프랑스어 레퍼런스 콘텐츠 형식 (French Reference Schema)
+
+중추 레퍼런스 = **문법**(`grammar/<level>.js`) + **어휘**(`vocab/<level>.js`).
+레벨: A0(입문 상식) → A1 → A2 → B1 → B2 → C1 → C2.
+`index.js`가 전체를 레지스트리로 묶음. 콘텐츠는 코드가 단일 소스 (DB 불필요).
+
+대상 독자: **한국어 모어 화자**, 영어 B1 수준 가정.
+- 설명은 전부 한국어. 부드러운 해요체 (강의 lessons 톤과 동일).
+- 영어 어휘/문법 지식을 지렛대로 활용하되 **남발 금지** — 진짜 도움될 때만 `vsEn`/`etym` 사용.
+- 한국인이 특히 헷갈리는 지점은 `pitfall`로 명시적으로 처리.
+
+## 문법 챕터 (grammar/<level>.js)
+
+`export default [ chapter, chapter, ... ]` — order 순 배열.
+
+```js
+{
+  slug: 'a1-01-etre',          // 필수. 전체에서 유일. '<level>-<번호>-<영문키워드>'
+  level: 'A1',                  // 'A0'|'A1'|'A2'|'B1'|'B2'|'C1'|'C2'
+  order: 1,                     // 레벨 내 순서 (학습 순서)
+  title: 'être 동사 — 존재와 상태의 뼈대',   // 한국어 제목
+  titleFr: 'Le verbe être',     // 프랑스어 부제 (선택)
+  summary: '한 줄 요약 — 챕터 목록 카드에 표시',
+  duration: '약 8분',
+
+  sections: [
+    {
+      heading: '소제목',
+      body: '한국어 설명. 빈 줄(\\n\\n)로 문단 구분. **굵게** 마크업만 지원.',
+
+      // 예문 (선택) — 해당 레벨까지 배운 어휘·문법만 사용할 것
+      examples: [
+        { fr: 'Je suis coréenne.', ipa: '[ʒə sɥi kɔʁeɛn]', ko: '저는 한국인이에요. (여성)', note: '선택: 짧은 부가 설명' },
+      ],
+
+      // 표 (선택) — 활용표 등
+      table: {
+        caption: 'être 직설법 현재',          // 선택
+        headers: ['인칭', '형태', '발음'],
+        rows: [ ['je', 'suis', '[sɥi]'], ['tu', 'es', '[ɛ]'] ],
+      },
+
+      // 콜아웃 (각각 선택, 문자열, **굵게** 지원)
+      pitfall: '한국인이 자주 틀리는/헷갈리는 점',       // 🚨 주황 띠
+      vsEn:    '영어와의 유사점·차이점',                 // 🇬🇧 파랑 띠
+      etym:    '라틴어 뿌리 — 영어 동족어와의 연결',      // 🌱 초록 띠
+      tip:     '보너스 팁·암기 요령',                   // 💡 보라 띠
+    },
+  ],
+}
+```
+
+### 가이드라인
+- 챕터당 sections 3~5개. 섹션당 examples 2~5개.
+- **예문은 해당 레벨에 맞는 어휘·표현만** — A1 챕터에 subjonctif 금지.
+- 예문에는 가급적 ipa 병기 (A0~A2 필수, B1+ 선택).
+- 콜아웃은 챕터 전체에서 3~5개 정도. 한 섹션에 모두 때려넣지 말 것.
+- `etym`은 라틴어 뿌리가 같아 영어 단어로 뜻을 유추할 수 있을 때만.
+  예: "arriver ← 라틴어 ad rīpam(강기슭에 닿다). 영어 arrive와 같은 뿌리예요."
+- `vsEn`은 구조 비교가 이해를 단축할 때만.
+  예: "영어 현재완료(have+p.p.)와 형태는 같지만, passé composé는 그냥 과거시제로 써요."
+
+### JS 문자열 규칙 (중요)
+- 프랑스어 아포스트로프(l'eau, c'est, j'ai)가 흔하므로 **콘텐츠 문자열은 작은따옴표 대신 큰따옴표** 사용을 기본으로.
+- 또는 작은따옴표 사용 시 반드시 `\'` 이스케이프.
+- 검증: `node -e "import('./src/content/french/grammar/a1.js').then(m=>console.log(m.default.length))"`
+
+## 어휘 (vocab/<level>.js)
+
+```js
+export default {
+  level: 'A1',
+  title: 'A1 기초 어휘',
+  desc: '한 줄 소개',
+  themes: [
+    {
+      name: '가족과 사람', icon: '👨‍👩‍👧',
+      words: [
+        {
+          fr: 'la famille',          // 명사는 관사 포함해서 (성 암기 습관)
+          ipa: '[famij]',
+          ko: '가족',
+          pos: 'n.f.',               // n.m. | n.f. | v. | adj. | adv. | prep. | expr. 등
+          en: 'family',              // 선택: 영어 동족어가 있을 때만
+          etym: '라틴어 familia — 영어 family와 같은 뿌리',  // 선택: 도움될 때만
+          ex: { fr: 'Ma famille habite à Séoul.', ko: '우리 가족은 서울에 살아요.' },  // 선택
+        },
+      ],
+    },
+  ],
+}
+```
+
+### 가이드라인
+- 테마 4~8개로 묶기. 테마당 단어 8~20개.
+- 명사는 항상 관사 포함 (`le livre`, `l'eau (f.)` — 모음 축약 시 성 괄호 표기).
+- `en`/`etym`은 동족어가 명확할 때만 (faux amis는 etym에 경고로 활용 가능).
+- 레벨 어휘량 가이드: A0 ~40 / A1 ~100 / A2 ~100 / B1 ~80 / B2 ~80 / C1 ~60 / C2 ~50.

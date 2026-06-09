@@ -9956,3 +9956,198 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   color: var(--danger);
   background: rgba(255,107,107,0.1);
 }
+
+/* ========= French Reference (🇫🇷 /french) ========= */
+.fr-level {
+  padding: 22px;
+  margin-bottom: 18px;
+}
+.fr-level__head {
+  display: flex; align-items: flex-start; gap: 14px;
+  margin-bottom: 14px;
+}
+.fr-level-dot {
+  flex-shrink: 0;
+  width: 46px; height: 46px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 0.9rem;
+}
+.fr-level-dot--sm { width: 34px; height: 34px; font-size: 0.74rem; }
+.fr-level__title { font-size: 1.15rem; font-weight: 800; }
+.fr-level__focus {
+  font-size: 0.74rem; font-weight: 700;
+  padding: 3px 10px; border-radius: var(--radius-full);
+}
+.fr-level__desc {
+  font-size: 0.86rem; color: var(--text-secondary);
+  line-height: 1.6; margin-top: 4px;
+}
+.fr-chapter-list {
+  list-style: none; margin: 0; padding: 0;
+  border-top: 1px solid var(--border);
+}
+.fr-chapter-link {
+  display: flex; align-items: baseline; gap: 12px;
+  padding: 10px 6px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+  transition: background 0.15s ease;
+}
+.fr-chapter-link:hover { background: var(--bg-secondary); }
+.fr-chapter-link__num {
+  flex-shrink: 0;
+  font-size: 0.78rem; font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.fr-chapter-link__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.fr-chapter-link__title { font-size: 0.92rem; font-weight: 600; line-height: 1.4; }
+.fr-chapter-link__summary {
+  font-size: 0.78rem; color: var(--text-muted); line-height: 1.5;
+  display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;
+}
+.fr-chapter-link__meta { flex-shrink: 0; font-size: 0.74rem; color: var(--text-muted); }
+.fr-vocab-link {
+  display: inline-block; margin-top: 12px;
+  font-size: 0.88rem; font-weight: 700;
+}
+.fr-vocab-link:hover { text-decoration: underline; }
+
+/* ── 챕터 상세 ── */
+.fr-section { padding: 22px; margin-bottom: 16px; }
+.fr-section__heading {
+  display: flex; align-items: baseline; gap: 10px;
+  font-size: 1.05rem; font-weight: 700; margin-bottom: 12px;
+}
+.fr-section__num { font-size: 0.85rem; font-weight: 800; }
+.fr-section__para {
+  font-size: 0.92rem; line-height: 1.75;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+.fr-section__para strong { color: var(--text-primary); }
+
+.fr-examples { list-style: none; margin: 12px 0 4px; padding: 0; }
+.fr-example {
+  padding: 10px 14px; margin-bottom: 8px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+}
+.fr-example__fr { font-size: 0.95rem; font-weight: 600; }
+.fr-example__ipa {
+  margin-left: 8px;
+  font-size: 0.78rem; font-weight: 400; color: var(--text-muted);
+}
+.fr-example__ko { font-size: 0.84rem; color: var(--text-secondary); margin-top: 2px; }
+.fr-example__note { font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; line-height: 1.5; }
+
+.fr-table-wrap { overflow-x: auto; margin: 12px 0; }
+.fr-table {
+  width: 100%; border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.fr-table caption {
+  caption-side: top; text-align: left;
+  font-size: 0.78rem; font-weight: 700; color: var(--text-muted);
+  padding-bottom: 6px;
+}
+.fr-table th, .fr-table td {
+  padding: 7px 10px; text-align: left;
+  border: 1px solid var(--border);
+}
+.fr-table th {
+  background: var(--bg-secondary);
+  font-weight: 700; font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.fr-callout {
+  margin: 12px 0 4px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border-left: 3px solid;
+}
+.fr-callout__label {
+  display: block;
+  font-size: 0.74rem; font-weight: 800;
+  letter-spacing: 0.02em; margin-bottom: 4px;
+}
+.fr-callout__body { font-size: 0.86rem; line-height: 1.65; color: var(--text-secondary); }
+.fr-callout--pitfall { border-color: #E8763C; background: rgba(232,118,60,0.1); }
+.fr-callout--pitfall .fr-callout__label { color: #E8763C; }
+.fr-callout--vsen { border-color: #4DABF7; background: rgba(77,171,247,0.1); }
+.fr-callout--vsen .fr-callout__label { color: #4DABF7; }
+.fr-callout--etym { border-color: #51A85C; background: rgba(81,168,92,0.1); }
+.fr-callout--etym .fr-callout__label { color: #51A85C; }
+.fr-callout--tip { border-color: #9775FA; background: rgba(151,117,250,0.1); }
+.fr-callout--tip .fr-callout__label { color: #9775FA; }
+
+.fr-pager {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  margin: 24px 0 8px;
+}
+.fr-pager__link {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 14px 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  transition: background 0.15s ease;
+}
+.fr-pager__link:hover { background: var(--bg-elevated); }
+.fr-pager__link--next { text-align: right; }
+.fr-pager__dir { font-size: 0.72rem; color: var(--text-muted); font-weight: 700; }
+.fr-pager__title { font-size: 0.86rem; font-weight: 600; line-height: 1.4; }
+@media (max-width: 560px) {
+  .fr-pager { grid-template-columns: 1fr; }
+  .fr-pager__link--next { text-align: left; }
+}
+
+/* ── 어휘 ── */
+.fr-vocab-tabs {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  margin-bottom: 16px;
+}
+.fr-vocab-tab {
+  padding: 5px 14px;
+  font-size: 0.84rem; font-weight: 700;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  transition: background 0.15s ease;
+}
+.fr-vocab-tab:hover { background: var(--bg-elevated); }
+.fr-word-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 10px;
+}
+@media (max-width: 700px) {
+  .fr-word-list { grid-template-columns: 1fr; }
+}
+.fr-word { padding: 12px 14px; }
+.fr-word__head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.fr-word__fr { font-size: 0.98rem; }
+.fr-word__ipa { font-size: 0.76rem; color: var(--text-muted); }
+.fr-word__pos {
+  font-size: 0.68rem; font-weight: 700;
+  color: var(--text-muted);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 1px 8px;
+}
+.fr-word__ko { font-size: 0.86rem; color: var(--text-secondary); margin-top: 3px; }
+.fr-word__en { font-size: 0.8rem; color: var(--text-muted); }
+.fr-word__etym {
+  font-size: 0.78rem; color: #51A85C;
+  line-height: 1.55; margin-top: 6px;
+}
+.fr-word__ex {
+  font-size: 0.8rem; color: var(--text-secondary);
+  font-style: italic; line-height: 1.55;
+  margin-top: 6px; padding-top: 6px;
+  border-top: 1px dashed var(--border);
+}
+.fr-word__ex-ko { color: var(--text-muted); font-style: normal; }
