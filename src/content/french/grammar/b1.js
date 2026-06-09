@@ -584,10 +584,10 @@ export default [
       },
       {
         heading: "ce qui / ce que — 선행사 없는 관계절",
+        pattern: "ce qui + 동사 (주어) · ce que + 주어+동사 (목적어) · ce dont (de 결합)",
         body:
-          "qui/que 앞에 선행사 명사가 없을 때는 **중성 대명사 ce**를 받침대로 세워요. **ce qui**(~하는 것 — 주어 자리), **ce que**(~하는 것 — 목적어 자리). '무엇'인지 정해지지 않은 막연한 '것'을 가리켜요.\n\n" +
-          "Dis-moi **ce que** tu veux(네가 원하는 것을 말해줘), **Ce qui** m'intéresse, c'est l'histoire(나를 흥미롭게 하는 것은 역사예요). de 결합 동사면 **ce dont**: ce dont j'ai besoin(내가 필요로 하는 것).\n\n" +
-          "ce qui/ce que는 간접화법(qu'est-ce que → ce que)에서 이미 만났고, B2의 강조 구문(Ce qui..., c'est...)에서 주인공이 돼요. 여기서 확실히 잡아두면 두 챕터가 공짜로 풀립니다.",
+          "선행사 명사가 없을 때는 **중성 대명사 ce**를 받침대로 세워요. Dis-moi **ce que** tu veux(네가 원하는 것), **Ce qui** m'intéresse(나를 흥미롭게 하는 것).\n\n" +
+          "간접화법(qu'est-ce que → ce que)에서 이미 만났고, B2의 강조 구문(Ce qui..., c'est...)에서 주인공이 돼요. 여기서 잡아두면 두 챕터가 공짜로 풀립니다.",
         examples: [
           { fr: "Ce qui compte, c'est la santé.", ko: "중요한 것은 건강이에요." },
           { fr: "Je ne comprends pas ce que tu dis.", ko: "네가 무슨 말을 하는지 모르겠어." },
