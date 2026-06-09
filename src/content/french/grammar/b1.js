@@ -464,10 +464,10 @@ export default [
     sections: [
       {
         heading: "기본 구조 — dire que로 문장 옮기기",
+        pattern: "Il dit que + 평서문 (인칭은 화자 기준으로 전환)",
         body:
-          "남의 말을 따옴표째 전하는 게 직접화법, 내 문장 속에 녹여 전하는 게 **간접화법**이에요. 평서문은 **dire que**(~라고 말하다)로 연결해요.\n\n" +
-          "Il dit : « Je suis fatigué. » → Il dit **qu'il est** fatigué.\n\n" +
-          "따옴표를 풀면서 **인칭이 화자 기준으로 바뀌는 것**(je → il, mon → son)에 주의하세요. 주절이 현재(Il dit)면 종속절 시제는 그대로 유지돼요.",
+          "남의 말을 내 문장 속에 녹여 전하는 게 **간접화법**이에요. Il dit : « Je suis fatigué. » → Il dit **qu'il est** fatigué.\n\n" +
+          "따옴표를 풀면서 **인칭이 화자 기준으로** 바뀌어요(je → il, mon → son). 주절이 현재면 종속절 시제는 그대로 유지돼요.",
         examples: [
           { fr: "Elle dit qu'elle a faim.", ko: "그녀는 배고프다고 말해요." },
           { fr: "Il dit que son frère habite à Busan.", ko: "그는 자기 형이 부산에 산다고 해요.", note: "mon frère → son frère" },
@@ -475,9 +475,10 @@ export default [
       },
       {
         heading: "시제 후퇴 — 주절이 과거가 되면",
+        pattern: "주절이 과거: 현재 → 반과거 · 복합과거 → 대과거 · 미래 → 조건법 현재",
         body:
-          "핵심 규칙: **주절이 과거(Il a dit, Elle a demandé...)면 종속절의 시제가 한 칸 뒤로 물러나요.**\n\n" +
-          "현재 → 반과거, 복합과거 → 대과거, 미래 → 조건법 현재. '그가 말한 시점'을 기준으로 시간 전체가 과거 쪽으로 평행이동하는 거예요. 반과거·대과거·조건법은 이미 물러난 형태라 그대로 둡니다.",
+          "**주절이 과거(Il a dit...)면 종속절의 시제가 한 칸 뒤로 물러나요.** '그가 말한 시점'을 기준으로 시간 전체가 과거 쪽으로 평행이동하는 거예요.\n\n" +
+          "반과거·대과거·조건법은 이미 물러난 형태라 그대로 둡니다.",
         table: {
           caption: "시제 후퇴 — Il a dit que... 뒤에서",
           headers: ["직접화법", "간접화법", "예"],
