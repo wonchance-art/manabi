@@ -14,12 +14,11 @@ export default [
     sections: [
       {
         heading: "접속법이라는 유령 — 영어에도 '법(mood)'이 있었다",
+        pattern: "① 동사원형 접속법 (he be, she go) · ② were 접속법 (If I were)",
+        patternKo: "격식문·법률문·굳은 표현에 남은 화석",
         body:
-          "프랑스어나 스페인어를 배워본 분이라면 subjonctif/subjuntivo라는 거대한 활용 체계에 시달려봤을 거예요. 영어에도 원래 그 체계가 있었어요. **사실을 말하는 직설법(indicative)과, 소망·요구·비현실을 말하는 접속법(subjunctive)**이 동사 모양으로 구분됐죠.\n\n" +
-          "천 년에 걸쳐 영어가 어미를 깎아내면서 접속법은 거의 사라졌어요. 하지만 완전히 죽지는 않았습니다. **격식문, 법률문, 굳은 표현 속에 화석처럼 박혀** 지금도 쓰여요. 형태는 단 두 가지만 기억하면 돼요.\n\n" +
-          "**① 동사원형 접속법**: 인칭·시제와 무관하게 동사원형. he be, she go, it remain.\n" +
-          "**② were 접속법**: 비현실 가정에서 인칭과 무관하게 were. If I were, if she were.\n\n" +
-          "이 챕터는 '새 문법'이 아니라, 여러분이 이미 본 적 있는 문장들의 **정체를 밝히는** 챕터예요.",
+          "영어에도 원래 **사실의 직설법과 소망·요구·비현실의 접속법(subjunctive)**이 동사 모양으로 구분되는 체계가 있었어요. 천 년에 걸쳐 어미가 깎이며 거의 사라졌지만, **격식문·법률문·굳은 표현 속에 화석처럼** 살아 있어요.\n\n" +
+          "남은 형태는 둘뿐 — **① 동사원형 접속법**(인칭·시제 무관: he be, she go), **② were 접속법**(비현실 가정에서 인칭 무관 were). 이 챕터는 새 문법이 아니라, 이미 본 적 있는 문장들의 **정체를 밝히는** 챕터예요.",
         examples: [
           { en: "God save the King.", ko: "국왕 폐하 만세. (왕을 구하소서)", note: "saves가 아닌 save — 기원을 나타내는 접속법 화석이에요." },
           { en: "So be it.", ko: "그렇다면 그렇게 하지. (될 대로 되라지)", note: "it is가 아니라 be it — 어순까지 옛 모습 그대로예요." },
@@ -29,11 +28,11 @@ export default [
       },
       {
         heading: "요구·제안의 접속법 — I suggest (that) he be on time",
+        pattern: "suggest / demand / insist / It is essential + that + 주어 + 동사원형",
+        patternKo: "3인칭도 -s 없이 · 부정은 not + 원형",
         body:
-          "현대 영어에서 접속법이 가장 활발하게 살아 있는 자리예요. **요구·제안·주장·필수를 나타내는 동사와 형용사 뒤의 that절**에서는 동사원형을 써요.\n\n" +
-          "**유발 동사**: suggest, recommend, demand, insist, require, request, propose, ask\n" +
-          "**유발 형용사**: It is essential / important / vital / imperative / necessary that...\n\n" +
-          "핵심은 3인칭 단수에서도 -s가 붙지 않고, **부정은 not + 동사원형**, be동사는 인칭 불문 be라는 것. 미국 영어는 이 형태를 일관되게 쓰고, 영국 영어는 should + 동사원형으로 풀어 쓰는 경향이 있어요(I suggest that he should be...). 둘 다 맞지만, 학술·비즈니스 문서에서는 원형 접속법이 더 간결하고 격식 있게 들립니다.",
+          "**요구·제안·주장·필수의 동사·형용사 뒤 that절**에서는 동사원형을 써요 — 유발 동사는 suggest, recommend, demand, insist, require, request, propose, 유발 형용사는 It is essential/important/vital/imperative that... 3인칭 단수에도 -s가 붙지 않고, **부정은 not + 동사원형**, be동사는 인칭 불문 be예요.\n\n" +
+          "미국 영어는 이 형태를 일관되게 쓰고, 영국 영어는 should + 원형으로 풀어 쓰는 경향이 있어요. 둘 다 맞지만 학술·비즈니스 문서에서는 원형 접속법이 더 간결하고 격식 있게 들립니다.",
         examples: [
           { en: "I suggest that he be present at the hearing.", ko: "그가 청문회에 출석할 것을 제안합니다.", note: "he is(X) — 격식문의 표준은 he be." },
           { en: "The committee demanded that the report not be released.", ko: "위원회는 보고서가 공개되지 않을 것을 요구했다.", note: "부정은 do를 쓰지 않고 not be." },
@@ -44,10 +43,11 @@ export default [
       },
       {
         heading: "were 접속법 — If I were you, as it were",
+        pattern: "비현실 가정 → 인칭 불문 were · Were I in your position(도치)",
+        patternKo: "as it were(말하자면) · if need be(필요하다면)",
         body:
-          "If I was와 If I were의 차이, 막연히 '둘 다 되는 것 같은데'로 넘어가셨다면 여기서 정리해요. **비현실·반사실 가정에서 인칭 불문 were를 쓰는 것**이 접속법의 두 번째 생존자예요.\n\n" +
-          "구어에서는 If I was도 흔히 들리지만, **격식 글·시험·면접에서는 were가 표준**이에요. 특히 도치 구문에서는 선택의 여지가 없어요 — **Were I in your position**처럼 if를 빼고 도치하는 격식 구문은 was로는 아예 만들 수 없거든요.\n\n" +
-          "굳은 표현으로는 **as it were**(말하자면, 이를테면)와 **if need be**(필요하다면)가 자주 나와요. as it was가 아니라 as it were인 이유 — 비현실의 화석이기 때문이에요.",
+          "**비현실·반사실 가정에서 인칭 불문 were**가 접속법의 두 번째 생존자예요. 구어에서는 If I was도 흔하지만 **격식 글·시험·면접에서는 were가 표준** — 특히 **Were I in your position**처럼 if를 빼고 도치하는 격식 구문은 was로는 아예 만들 수 없어요.\n\n" +
+          "굳은 표현으로 **as it were**(말하자면)와 **if need be**(필요하다면)가 자주 나와요 — 비현실의 화석이라 as it was가 아니에요.",
         examples: [
           { en: "If I were in your shoes, I would take the offer.", ko: "제가 당신 입장이라면 그 제안을 받아들이겠어요.", note: "현실이 아닌 가정 → were." },
           { en: "Were the project to fail, the entire team would be held responsible.", ko: "만에 하나 프로젝트가 실패한다면, 팀 전체가 책임을 지게 될 것이다.", note: "if 생략 + 도치 — 계약서·보고서의 격식 가정문." },
@@ -58,13 +58,11 @@ export default [
       },
       {
         heading: "lest와 격식 기원문 — 법률·문학의 흔적들",
+        pattern: "lest + 주어 + 동사원형 = ~하지 않도록",
+        patternKo: "Be that as it may · Come what may — 통째로 암기",
         body:
-          "**lest**(~하지 않도록, ~할까 봐)는 접속법을 데리고 다니는 마지막 접속사예요. lest 뒤에는 동사원형(또는 should + 원형)이 와요. 일상 회화에서는 in case나 so that... not으로 풀어 말하지만, **연설·문학·추모 문구**에서는 lest가 특유의 무게를 만들어요. 전쟁 추모비의 **Lest we forget**(우리가 잊지 않도록)이 대표적이죠.\n\n" +
-          "그 밖의 화석 기원문도 모아둘게요. 전부 '접속법 동사원형 + 도치'라는 같은 구조예요.\n\n" +
-          "**Far be it from me to...** — 내가 감히 ~하려는 건 아니지만 (정중한 반론의 서두)\n" +
-          "**Be that as it may** — 그렇다 하더라도\n" +
-          "**Suffice it to say (that)...** — ~라고만 말해두죠\n" +
-          "**Come what may** — 무슨 일이 있어도",
+          "**lest**(~하지 않도록)는 접속법을 데리고 다니는 마지막 접속사예요 — 뒤에 동사원형(또는 should + 원형)이 와요. 일상에선 in case로 풀어 말하지만, **연설·문학·추모 문구**에서는 lest가 특유의 무게를 만들어요(전쟁 추모비의 **Lest we forget**).\n\n" +
+          "같은 '접속법 원형 + 도치' 구조의 화석 기원문: **Far be it from me to...**(감히 ~하려는 건 아니지만), **Be that as it may**(그렇다 하더라도), **Suffice it to say**(~라고만 말해두죠), **Come what may**(무슨 일이 있어도).",
         examples: [
           { en: "He wrote everything down, lest he forget.", ko: "잊지 않도록 그는 모든 것을 적어두었다.", note: "forgets가 아니라 forget — lest는 접속법을 부릅니다." },
           { en: "Far be it from me to criticize your work, but the numbers don't add up.", ko: "제가 감히 당신 작업을 비판하려는 건 아니지만, 숫자가 맞지 않아요.", note: "반론 직전의 격식 완충재." },
@@ -87,10 +85,11 @@ export default [
     sections: [
       {
         heading: "왜 헤징인가 — 단정의 비용",
+        pattern: "This proves ~ → The evidence suggests ~ may have ...",
+        patternKo: "헤징 = 확신의 정도를 계측해 보고하는 장치",
         body:
-          "C1 학습자의 영어가 '정확한데 어딘가 거친' 이유의 팔 할이 여기 있어요. **헤징(hedging)**은 주장의 강도를 의도적으로 낮추는 언어 장치예요. 회피나 자신감 부족이 아니라, 영어 담화에서는 **전문성과 예의의 표지**입니다.\n\n" +
-          "논리는 이래요. This proves that...이라고 단정하면, 반례가 하나만 나와도 주장 전체가 무너져요. The evidence suggests that...이라고 말하면 반례가 나와도 '시사한다고 했지 증명한다고 안 했다'는 지적 퇴로가 남죠. 학술 영어에서 헤징은 **검증 가능성에 대한 겸손**이고, 비즈니스 영어에서는 **상대의 체면(face)을 지켜주는 외교술**이에요.\n\n" +
-          "그래서 영어 논문에는 may, appear, suggest가 빼곡하고, 영국식 비즈니스 이메일에서는 You are wrong 대신 I'm not sure that's quite right가 표준이 됩니다. 단정문을 헤징문으로 바꾸는 변환 능력 — 이게 이 챕터의 목표예요.",
+          "**헤징(hedging)**은 주장의 강도를 의도적으로 낮추는 장치로, 영어 담화에서는 회피가 아니라 **전문성과 예의의 표지**예요. This proves...라고 단정하면 반례 하나에 주장 전체가 무너지지만, The evidence suggests...는 지적 퇴로를 남기죠.\n\n" +
+          "학술 영어에서 헤징은 **검증 가능성에 대한 겸손**, 비즈니스 영어에서는 **상대의 체면을 지키는 외교술**이에요. 단정문을 헤징문으로 바꾸는 변환 능력이 이 챕터의 목표예요.",
         examples: [
           { en: "This proves the policy failed. → The evidence suggests the policy may have been less effective than intended.", ko: "이것은 정책이 실패했음을 증명한다. → 증거에 따르면 정책은 의도보다 효과가 적었을 수 있음이 시사된다.", note: "강도를 세 군데서 낮췄어요: proves→suggests, failed→less effective, 단정→may have been." },
           { en: "Your figures are wrong. → I wonder if these figures might need another look.", ko: "당신 수치가 틀렸어요. → 이 수치들은 한 번 더 검토가 필요할 수도 있지 않을까 싶은데요.", note: "지적은 그대로, 충돌만 제거." },
@@ -99,11 +98,11 @@ export default [
       },
       {
         heading: "조동사 헤징 — would, might, could, may의 온도 차",
+        pattern: "I would suggest/argue ~ · You might want to ~ (사실상 지시)",
+        patternKo: "would = 헤징의 만능 윤활유",
         body:
-          "헤징의 1차 도구는 조동사예요. 같은 문장도 조동사에 따라 온도가 달라져요.\n\n" +
-          "**would** — 헤징의 만능 윤활유. I would suggest, I would argue, I would say는 '지금 단정하는 게 아니라 조심스럽게 내놓는다'는 신호예요. 의견 동사 앞에 would를 끼우는 것만으로 문장이 한 단계 부드러워져요.\n\n" +
-          "**might / may / could** — 가능성의 3형제. 격식 글에서는 may가 가장 중립적이고, might는 그보다 한 칸 낮은 가능성, could는 '이론상 가능'의 뉘앙스예요.\n\n" +
-          "특히 **might want to / may wish to**는 비즈니스 영어의 핵심 완곡 명령이에요. You might want to check the attachment는 표면상 '확인하고 싶을 수도 있겠다'지만, 실제 의미는 **'확인하세요'**예요. 이걸 문자 그대로 '안 하고 싶으면 안 해도 되는구나'로 읽으면 큰일 납니다.",
+          "**would**는 헤징의 만능 윤활유예요 — I would suggest, I would argue는 '단정이 아니라 조심스럽게 내놓는다'는 신호죠. **might/may/could**는 가능성의 3형제로, 격식 글에서는 may가 가장 중립, might는 한 칸 낮은 가능성, could는 '이론상 가능'이에요.\n\n" +
+          "특히 **might want to / may wish to**는 비즈니스의 핵심 완곡 명령이에요. You might want to check the attachment의 실제 의미는 **'확인하세요'** — 문자 그대로 '안 해도 되는구나'로 읽으면 큰일 납니다.",
         table: {
           caption: "단정 강도 스펙트럼 — 같은 내용, 다른 온도",
           headers: ["강도", "표현", "체감 확신도"],
@@ -125,12 +124,11 @@ export default [
       },
       {
         heading: "어휘적 헤징 — appear, suggest, tend, arguably",
+        pattern: "appear to · suggest · tend to · arguably · presumably",
+        patternKo: "동사·부사 차원의 정교한 헤징",
         body:
-          "조동사 다음 단계는 어휘예요. 학술 영어는 동사·부사 차원에서 헤징을 정교하게 운용해요.\n\n" +
-          "**동사**: appear to / seem to (~로 보인다), suggest / indicate (시사하다), tend to (~하는 경향이 있다), point to (~를 가리킨다)\n" +
-          "**부사**: arguably (따져보면 ~라 할 만하다), presumably (짐작건대), reportedly (보도에 따르면), to some extent (어느 정도는), broadly (대체로)\n" +
-          "**명사 우회**: There is a tendency to... / One possible explanation is...\n\n" +
-          "주목할 단어는 **arguably**예요. 직역하면 '논쟁의 여지가 있게'지만 실제로는 **'논거를 대서 주장할 수 있을 만큼' — 즉 꽤 강한 주장을 안전하게 던지는 장치**예요. Arguably the best defender in the league는 '최고가 아닐 수도 있다'가 아니라 '최고라고 말해도 무리가 아니다'에 가깝습니다.",
+          "조동사 다음 단계는 어휘예요 — **동사**: appear to/seem to(~로 보인다), suggest/indicate(시사하다), tend to(~하는 경향이 있다), **부사**: arguably, presumably, reportedly, to some extent, **명사 우회**: There is a tendency to... / One possible explanation is...\n\n" +
+          "주목할 단어는 **arguably**예요 — '논거를 대서 주장할 수 있을 만큼', 즉 **꽤 강한 주장을 안전하게 던지는 장치**예요. Arguably the best defender in the league는 '최고라고 말해도 무리가 아니다'에 가깝습니다.",
         examples: [
           { en: "The results appear to support the hypothesis.", ko: "결과는 가설을 뒷받침하는 것으로 보인다.", note: "support라고 단정하지 않는 논문의 표준 동사." },
           { en: "Participants tended to overestimate their own performance.", ko: "참가자들은 자신의 수행을 과대평가하는 경향을 보였다.", note: "예외가 있었어도 안전한 서술." },
@@ -141,11 +139,10 @@ export default [
       },
       {
         heading: "비즈니스 완곡 문법 — 부탁·거절·반대의 공식",
+        pattern: "부탁 I was wondering if ~ · 거절 I'm afraid ~ · 반대 That's a fair point, though ~",
         body:
-          "마지막으로, 비즈니스 영어에서 헤징이 거의 **고정 문형**이 된 세 장면을 정리해요.\n\n" +
-          "**① 부탁** — 과거형과 진행형이 부탁을 부드럽게 해요. I was wondering if you could...는 현재의 부탁을 일부러 과거진행으로 밀어내서 압박을 줄이는 문형이에요. Would you mind -ing...도 표준형이죠.\n\n" +
-          "**② 거절** — 영어 비즈니스 거절은 No를 직접 말하지 않아요. I'm afraid... / Unfortunately... / not in a position to...가 No의 격식 포장지예요.\n\n" +
-          "**③ 반대** — 반대는 부분 동의로 시작해요. I see your point, but... / That's a fair point, though I wonder if... 패턴이에요. with all due respect는 격식상 존중 표현이지만, 실전에서는 오히려 '지금부터 세게 반박한다'는 예고편으로 들리니 사용에 주의하세요.",
+          "헤징이 고정 문형이 된 세 장면 — **① 부탁**: 과거진행이 압박을 줄여요(I was wondering if you could... / Would you mind -ing). **② 거절**: No를 직접 말하지 않아요(I'm afraid... / Unfortunately... / not in a position to...). **③ 반대**: 부분 동의로 시작해요(I see your point, but... / That's a fair point, though I wonder if...).\n\n" +
+          "with all due respect는 격식상 존중 표현이지만, 실전에서는 '지금부터 세게 반박한다'는 예고편으로 들리니 사용에 주의하세요.",
         examples: [
           { en: "I was wondering if you could send over the draft by Wednesday.", ko: "수요일까지 초안을 보내주실 수 있을까 해서요.", note: "과거진행 = 부탁의 에어백." },
           { en: "I'm afraid we're not in a position to lower the price at this stage.", ko: "죄송하지만 현 단계에서는 가격을 낮춰드릴 수 있는 상황이 아닙니다.", note: "No price cut을 세 겹으로 포장한 표준 거절문." },
@@ -167,11 +164,11 @@ export default [
     sections: [
       {
         heading: "1066년, 영어가 이중 언어가 된 날",
+        pattern: "get(일상) ↔ obtain(격식) — 게르만계 vs 라틴계",
+        patternKo: "같은 뜻의 단어가 두 벌씩 — 노르만 정복의 유산",
         body:
-          "영어 어휘의 가장 큰 비밀은 역사에 있어요. 1066년 노르망디 공작 윌리엄이 잉글랜드를 정복한 뒤 **약 300년간 지배층은 프랑스어를, 민중은 영어를** 썼어요. 그 결과 영어에는 같은 뜻의 단어가 **두 벌씩** 생겼습니다.\n\n" +
-          "민중의 입에 남은 **게르만계 단어**는 짧고, 일상적이고, 몸에 가까워요: get, ask, buy, start, help. 지배층에서 내려온 **라틴계(프랑스어 경유) 단어**는 길고, 격식 있고, 추상적이에요: obtain, inquire, purchase, commence, assist.\n\n" +
-          "유명한 예가 가축과 고기예요. 들판에서 기르는 동물은 영어 농부의 말(cow, pig, sheep)인데, 식탁에 오른 고기는 프랑스 귀족의 말(beef, pork, mutton)이에요. **기르는 자의 언어와 먹는 자의 언어가 달랐던** 역사가 단어에 화석으로 남은 거죠.\n\n" +
-          "이 이중 구조를 알면, 단어 선택이 단순한 동의어 고르기가 아니라 **격식의 온도 조절**이라는 게 보이기 시작해요.",
+          "1066년 노르만 정복 뒤 약 300년간 **지배층은 프랑스어를, 민중은 영어를** 썼고, 그 결과 같은 뜻의 단어가 **두 벌씩** 생겼어요 — 게르만계는 짧고 일상적(get, ask, buy, start), 라틴계는 길고 격식 있어요(obtain, inquire, purchase, commence).\n\n" +
+          "유명한 예가 가축과 고기예요 — 기르는 동물은 농부의 영어(cow, pig), 식탁의 고기는 귀족의 프랑스어(beef, pork). 이 이중 구조를 알면 단어 선택이 **격식의 온도 조절**이라는 게 보이기 시작해요.",
         examples: [
           { en: "The cow becomes beef; the pig becomes pork; the sheep becomes mutton.", ko: "소는 비프가 되고, 돼지는 포크가 되고, 양은 머튼이 된다.", note: "산 동물은 게르만계, 요리된 고기는 프랑스계 — 노르만 정복의 식탁 흔적." },
           { en: "We got the visa. / We obtained the visa.", ko: "비자를 받았어요. / 비자를 취득하였습니다.", note: "같은 사건, 다른 온도 — 한국어 번역의 어감 차이가 정확히 대응해요." },
@@ -180,9 +177,11 @@ export default [
       },
       {
         heading: "게르만계 vs 라틴계 — 짝으로 외우는 격식 스위치",
+        pattern: "ask ↔ inquire · buy ↔ purchase · start ↔ commence · help ↔ assist",
+        patternKo: "평소형·격식형을 세트로 갖고 스위치 전환",
         body:
-          "실전 요령은 단어를 낱개가 아니라 **짝으로** 익히는 거예요. 평소형(게르만계)과 격식형(라틴계)을 세트로 갖고 있다가, 상황에 따라 스위치를 올리고 내리는 거죠.\n\n" +
-          "쓰임의 직관은 이래요. **말할 때, 친한 사이, 감정을 전할 때**는 게르만계가 자연스럽고 진실하게 들려요. **계약서, 공지, 논문, 고객 응대**에서는 라틴계가 정확하고 전문적으로 들려요. 비행기 안내방송이 좋은 예예요 — 승무원은 We will be commencing our descent shortly라고 하지, We'll start going down soon이라고 하지 않죠.",
+          "실전 요령은 단어를 **짝으로** 익혀, 상황에 따라 스위치를 올리고 내리는 거예요. **말할 때·친한 사이·감정 전달**은 게르만계가 자연스럽고, **계약서·공지·논문·고객 응대**는 라틴계가 정확하고 전문적으로 들려요.\n\n" +
+          "비행기 안내방송이 좋은 예 — 승무원은 We will be commencing our descent shortly라고 하지, We'll start going down soon이라고 하지 않죠.",
         table: {
           caption: "격식 스위치 — 게르만계(평소) ↔ 라틴계(격식)",
           headers: ["평소 (게르만계)", "격식 (라틴계)", "격식형이 어울리는 자리"],
@@ -207,9 +206,10 @@ export default [
       },
       {
         heading: "구동사 vs 라틴 동사 — put off와 postpone",
+        pattern: "회화 기본값 = 구동사(put off) · 격식문 기본값 = 라틴 동사(postpone)",
+        patternKo: "한국 학습자의 역전 현상 — 일상 대화가 공문서처럼",
         body:
-          "이중 구조의 또 다른 전선이 **구동사(phrasal verbs)**예요. 게르만계 동사 + 부사·전치사 조합(put off, find out, look into)은 거의 모두 라틴계 한 단어 동사(postpone, discover, investigate)와 짝을 이뤄요.\n\n" +
-          "여기서 한국 학습자의 고질적인 **역전 현상**이 일어나요. 시험 영어로 단련된 학습자는 postpone, investigate 같은 라틴계 단어가 오히려 편하고, put off, look into 같은 구동사가 어려워요. 그 결과 **친구와의 수다에서 논문 어휘를 쓰는** 부자연스러움이 생기죠. Let's postpone our dinner는 문법적으로 완벽하지만, 친구 사이라면 Let's put it off till next week가 자연스러워요.\n\n" +
+          "구동사(put off, find out, look into)는 거의 모두 라틴계 한 단어 동사(postpone, discover, investigate)와 짝을 이뤄요. 시험 영어로 단련된 한국 학습자는 라틴계가 오히려 편해서 **친구와의 수다에서 논문 어휘를 쓰는 역전 현상**이 생겨요 — Let's postpone our dinner보다 Let's put it off till next week가 친구 사이엔 자연스러워요.\n\n" +
           "원칙: **회화의 기본값은 구동사, 격식문의 기본값은 라틴 동사.** C1의 과제는 어려운 단어를 더 배우는 게 아니라, 이미 아는 쉬운 단어를 제자리에 돌려놓는 것이에요.",
         examples: [
           { en: "Sorry, I have to put off our meeting. / The committee has decided to postpone the vote.", ko: "미안, 우리 약속 미뤄야 할 것 같아. / 위원회는 표결을 연기하기로 결정하였다.", note: "메시지 vs 공식 발표." },
@@ -220,13 +220,11 @@ export default [
       },
       {
         heading: "격식 스펙트럼 실전 — 같은 용건, 세 가지 옷",
+        pattern: "Sorry! → Sorry for the slow reply → I apologize for the delayed response",
+        patternKo: "격식은 상하 관계가 아니라 '거리'의 함수",
         body:
-          "마무리로 같은 용건을 세 가지 격식으로 입혀볼게요. 용건: '회신이 늦었다, 다음 주에 보자.'\n\n" +
-          "**캐주얼 (친구)**: Sorry for the late reply! Wanna meet up next week?\n" +
-          "**중립 (동료)**: Sorry for the slow reply — could we meet sometime next week?\n" +
-          "**격식 (외부 고객)**: I apologize for the delayed response. Would it be possible to arrange a meeting next week?\n\n" +
-          "보이시죠 — 문법이 아니라 **어휘의 핏줄이 바뀌어요**. sorry→apologize, late reply→delayed response, meet up→arrange a meeting. 격식이 올라갈수록 라틴계 비중이 커지고 문장이 길어집니다.\n\n" +
-          "단, 영어의 격식은 **상하 관계가 아니라 거리의 함수**라는 점을 기억하세요. 직급이 높아도 가까우면 캐주얼하게, 직급이 낮아도 처음 보는 외부인이면 격식 있게 — 한국어 존댓말이 '위아래'를 재는 동안, 영어 레지스터는 '멀고 가까움'을 잽니다.",
+          "같은 용건도 격식에 따라 **어휘의 핏줄이 바뀌어요** — sorry→apologize, late reply→delayed response, meet up→arrange a meeting. 격식이 올라갈수록 라틴계 비중이 커지고 문장이 길어집니다.\n\n" +
+          "단, 영어의 격식은 **상하 관계가 아니라 거리의 함수**예요. 직급이 높아도 가까우면 캐주얼하게, 직급이 낮아도 처음 보는 외부인이면 격식 있게 — 한국어 존댓말이 '위아래'를 재는 동안, 영어 레지스터는 '멀고 가까움'을 잽니다.",
         examples: [
           { en: "Hey, got a sec? — Do you have a moment? — I was wondering if you might have a moment to discuss the proposal.", ko: "야, 잠깐 시간 돼? — 잠시 시간 괜찮으세요? — 제안서 논의를 위해 잠시 시간을 내주실 수 있을지 여쭙니다.", note: "같은 부탁의 3단 변속." },
           { en: "Thanks a lot! — Thank you for your help. — I greatly appreciate your assistance in this matter.", ko: "정말 고마워! — 도와주셔서 감사합니다. — 이 건에 대한 귀하의 조력에 깊이 감사드립니다.", note: "thank(게르만) → appreciate(라틴), help(게르만) → assistance(라틴)." },
@@ -247,10 +245,11 @@ export default [
     sections: [
       {
         heading: "정보구조 — 문장에는 스포트라이트가 있다",
+        pattern: "구정보 앞 · 신정보 뒤 — 문장 끝이 스포트라이트 (end-focus)",
+        patternKo: "어순이 고정된 영어는 '구조 수술'로 초점을 옮겨요",
         body:
-          "문법적으로 완벽한데 어딘가 흐름이 어색한 영어 — 원인은 대개 **정보구조(information structure)**예요. 모든 문장에는 **이미 아는 정보(구정보)**와 **새로 전하는 정보(신정보)**가 있고, 영어의 기본 설계는 **구정보를 앞에, 신정보를 뒤에** 놓는 거예요. 문장 끝이 스포트라이트 자리인 셈이죠(end-focus 원칙).\n\n" +
-          "문제는 영어의 어순이 SVO로 단단히 고정되어 있다는 것. 한국어처럼 조사를 믿고 단어를 자유롭게 옮길 수 없어요. 그래서 영어는 **문장 구조 자체를 바꾸는 장치들**을 발달시켰어요 — 문장을 둘로 쪼개는 분열문(cleft), 목적어를 앞으로 끌어내는 전치(fronting), 주어와 동사를 뒤집는 도치(inversion).\n\n" +
-          "말로 할 때는 강세 하나로 강조할 수 있지만(I lent him the BOOK), **글에는 강세가 없어요**. 그래서 격식 글일수록 이 구조 장치들이 중요해집니다.",
+          "모든 문장에는 **이미 아는 정보(구정보)**와 **새로 전하는 정보(신정보)**가 있고, 영어의 기본 설계는 **구정보 앞, 신정보 뒤** — 문장 끝이 스포트라이트 자리예요(end-focus). 그런데 영어는 SVO 어순이 고정되어 한국어처럼 단어를 자유롭게 옮길 수 없어요.\n\n" +
+          "그래서 **문장 구조 자체를 바꾸는 장치**가 발달했어요 — 분열문(cleft), 전치(fronting), 도치(inversion). 말로는 강세 하나로 강조할 수 있지만 **글에는 강세가 없어서**, 격식 글일수록 이 구조 장치들이 중요해집니다.",
         examples: [
           { en: "A: Who broke the printer? — B: Tom broke it. (TOM에 강세)", ko: "A: 누가 프린터를 망가뜨렸어? — B: 톰이 그랬어.", note: "말에서는 강세로 충분하지만—" },
           { en: "It was Tom who broke the printer.", ko: "프린터를 망가뜨린 건 (다름 아닌) 톰이었다.", note: "글에서는 구조로 강세를 만들어요. 이것이 분열문." },
@@ -259,13 +258,11 @@ export default [
       },
       {
         heading: "it-cleft — It was Tom who broke it",
+        pattern: "It is/was + 초점 + that/who + 나머지",
+        patternKo: "'다른 누구도 아닌 바로 X' — 대조와 배타",
         body:
-          "**It is/was + 초점 + that/who + 나머지** — 문장을 둘로 쪼개(cleave) 초점만 스포트라이트 자리에 올리는 구문이에요. 핵심 뉘앙스는 **대조와 배타**: '다른 누구도 아닌 바로 X'라는 함의가 실려요.\n\n" +
-          "원문 Tom broke the printer yesterday에서 무엇이든 초점으로 끌어올릴 수 있어요.\n\n" +
-          "**주어 초점**: It was Tom who broke the printer. (앤이 아니라)\n" +
-          "**목적어 초점**: It was the printer that Tom broke. (스캐너가 아니라)\n" +
-          "**부사어 초점**: It was yesterday that Tom broke it. (오늘이 아니라)\n\n" +
-          "이 '바로 그것' 함의 때문에 it-cleft는 **반박과 정정**에 특히 강해요. 또 학술문에서는 It is this gap that the present study addresses(본 연구가 다루는 것이 바로 이 공백이다)처럼 연구의 초점을 선언하는 데 애용됩니다.",
+          "문장을 둘로 쪼개(cleave) 초점만 스포트라이트에 올리는 구문 — 핵심 뉘앙스는 **대조와 배타**('다른 누구도 아닌 바로 X')예요. Tom broke the printer yesterday에서 주어(It was Tom who...), 목적어(It was the printer that...), 부사어(It was yesterday that...) 무엇이든 초점으로 끌어올릴 수 있어요.\n\n" +
+          "이 '바로 그것' 함의 때문에 **반박과 정정**에 특히 강하고, 학술문에서는 It is this gap that the present study addresses처럼 연구의 초점 선언에 애용됩니다.",
         examples: [
           { en: "It was the timing, not the idea, that doomed the project.", ko: "프로젝트를 망친 건 아이디어가 아니라 타이밍이었다.", note: "대조를 문장 구조에 새겼어요." },
           { en: "It was only after the merger that the problems began to surface.", ko: "문제가 드러나기 시작한 것은 합병 이후에야였다.", note: "시간 부사구 초점 — 격식문 단골." },
@@ -275,10 +272,11 @@ export default [
       },
       {
         heading: "what-cleft — What we need is time",
+        pattern: "What + 구정보 + is/was + 신정보 · All ~ is ...(오직 그것뿐)",
+        patternKo: "뜸 들여 기대를 만든 뒤 답을 공개",
         body:
-          "**What + 구정보 + is/was + 신정보** — wh-절을 주어로 세우는 의사분열문(pseudo-cleft)이에요. it-cleft가 '바로 그것'이라며 찌르는 느낌이라면, what-cleft는 **뜸을 들여 기대를 만든 뒤 답을 공개하는** 느낌이에요. 문장 전체가 '질문 → 답'의 미니 드라마가 되죠.\n\n" +
-          "그래서 it-cleft보다 회화에서 훨씬 자주 들려요. What I'm trying to say is...(내 말의 요지는), What bothers me is...(내가 거슬리는 건), What happened was...(무슨 일이 있었냐면) — 모두 입말의 단골 서두예요.\n\n" +
-          "변형도 알아두세요. **All + 절**은 '오직 그것뿐'이라는 최소화 초점이에요: All we need is one more week(필요한 건 딱 일주일뿐). 역방향 배치(Time is what we need)도 가능합니다.",
+          "wh-절을 주어로 세우는 의사분열문이에요. it-cleft가 '바로 그것'이라며 찌른다면, what-cleft는 **뜸을 들여 기대를 만든 뒤 답을 공개**해요 — 그래서 회화에서 훨씬 자주 들려요: What I'm trying to say is...(요지는), What bothers me is..., What happened was...\n\n" +
+          "변형 **All + 절**은 '오직 그것뿐'이라는 최소화 초점이에요: All we need is one more week. 역방향 배치(Time is what we need)도 가능합니다.",
         examples: [
           { en: "What this company lacks is not talent but direction.", ko: "이 회사에 부족한 것은 인재가 아니라 방향이다.", note: "뜸 들이기 → 공개. 프레젠테이션의 한 방." },
           { en: "What I'm trying to say is that we're running out of time.", ko: "제가 드리려는 말씀은, 우리에게 시간이 없다는 겁니다.", note: "회화에서 요점 정리의 표준 서두." },
@@ -289,11 +287,11 @@ export default [
       },
       {
         heading: "전치와 도치 — Never have I seen such a mess",
+        pattern: "Never / Not only / Under no circumstances 문두 → 조동사 + 주어 도치",
+        patternKo: "전치(This I know) · 장소구 도치(On the hill stood ~)도 같은 가족",
         body:
-          "분열문 없이 어순만 비트는 장치도 있어요.\n\n" +
-          "**전치(fronting)** — 목적어·보어를 문두로 끌어내는 것. This I know for certain(이것만은 확실히 안다), That much is clear(그 정도는 분명하다). 끌어낸 요소가 주제가 되면서 문장에 무게가 실려요. 문학·연설 톤이라 남발하면 부담스럽지만, 결정적인 한 문장에는 효과적이에요.\n\n" +
-          "**부정어 도치(negative inversion)** — never, rarely, not only, under no circumstances 같은 부정·제한 부사가 문두에 오면 **주어와 조동사가 의문문처럼 도치**돼요. Never have I seen..., Not only did he resign, but... 격식문과 연설의 대표 장치로, '강조 기어'를 한 단 올리는 효과예요.\n\n" +
-          "**장소구 도치**도 있어요 — 무대 지시처럼 장소를 먼저 깔고 주어를 뒤로: On the hill stood an old church. 묘사문·소설 문체의 향기가 나죠. 신정보(주어)를 문장 끝 스포트라이트로 보내는, end-focus 원칙의 정석적 응용이에요.",
+          "**전치(fronting)**는 목적어·보어를 문두로 끌어내는 것(This I know for certain.) — 문학·연설 톤이라 결정적인 한 문장에만 효과적이에요. **부정어 도치**는 never, rarely, not only, under no circumstances가 문두에 오면 **주어와 조동사가 의문문처럼 도치**되는 것 — Never have I seen..., Not only did he resign, but...\n\n" +
+          "**장소구 도치**도 있어요 — On the hill stood an old church. 신정보(주어)를 문장 끝 스포트라이트로 보내는, end-focus 원칙의 정석적 응용이에요.",
         examples: [
           { en: "Never in my career have I seen such a complete failure of oversight.", ko: "내 경력을 통틀어 이토록 총체적인 감독 부실은 본 적이 없다.", note: "have I — 의문문형 도치. 청문회·사설의 톤." },
           { en: "Not only did the policy fail, but it made the problem worse.", ko: "그 정책은 실패했을 뿐 아니라 문제를 오히려 악화시켰다.", note: "not only 문두 = did 도치 필수." },
@@ -316,10 +314,11 @@ export default [
     sections: [
       {
         heading: "개념적 은유 — 관용구에는 지도가 있다",
+        pattern: "TIME IS MONEY — spend · save · waste · invest time",
+        patternKo: "관용구는 낱개 암기가 아니라 은유 지도",
         body:
-          "spend time, waste time, save time, invest time — 시간에 관한 영어 동사들이 전부 **돈 동사**라는 걸 눈치채셨나요? 우연이 아니에요. 인지언어학자 레이코프(Lakoff)와 존슨(Johnson)은 「Metaphors We Live By」(1980)에서 이를 **개념적 은유(conceptual metaphor)**라고 불렀어요 — 한 영역(시간)을 다른 영역(돈)의 논리로 통째로 이해하는 사고의 틀이죠.\n\n" +
-          "**TIME IS MONEY**(시간은 돈이다)라는 은유 하나가 수십 개의 표현을 낳아요. 시간을 쓰고(spend), 아끼고(save), 빌리고(borrow), 누군가에게 시간을 '지불'할 가치가 있는지(worth your time) 따지죠.\n\n" +
-          "이게 학습자에게 중요한 이유 — 관용구를 낱개로 외우면 수천 개의 무작위 암기지만, **은유 체계로 묶으면 수십 개의 지도**가 돼요. 새 표현을 만나도 '아, TIME IS MONEY 계열이구나' 하고 뜻을 추론할 수 있게 됩니다.",
+          "spend time, waste time, save time, invest time — 시간 동사가 전부 **돈 동사**인 건 우연이 아니에요. 레이코프와 존슨이 말한 **개념적 은유(conceptual metaphor)** — 한 영역(시간)을 다른 영역(돈)의 논리로 통째로 이해하는 사고의 틀이에요. **TIME IS MONEY** 은유 하나가 수십 개의 표현을 낳죠.\n\n" +
+          "관용구를 낱개로 외우면 수천 개의 무작위 암기지만, **은유 체계로 묶으면 수십 개의 지도**가 돼요. 새 표현을 만나도 계열을 짚으면 뜻이 추론됩니다.",
         examples: [
           { en: "Thanks for your time — I know it's valuable.", ko: "시간 내주셔서 감사해요 — 귀한 시간인 거 알아요.", note: "시간이 '가치 있는 자산'으로 개념화돼 있어요." },
           { en: "We're running out of time. Let's not waste it on details.", ko: "시간이 떨어져 가요. 세부 사항에 낭비하지 맙시다.", note: "run out(고갈되다), waste(낭비하다) — 전부 자원의 어휘." },
@@ -329,12 +328,10 @@ export default [
       },
       {
         heading: "큰 은유 가족들 — 논쟁은 전쟁, 인생은 여행, 위는 좋음",
+        pattern: "ARGUMENT IS WAR · LIFE IS A JOURNEY · UP IS GOOD · IDEAS ARE FOOD",
         body:
-          "영어 담화를 지배하는 대표 은유 가족을 더 소개할게요.\n\n" +
-          "**ARGUMENT IS WAR(논쟁은 전쟁)** — 주장을 방어하고(defend), 약점을 공격하고(attack), 논리를 격추하고(shoot down), 진지를 사수해요(stand one's ground). 영어 토론 문화의 뼈대가 이 은유 위에 서 있어요.\n\n" +
-          "**LIFE IS A JOURNEY(인생은 여행)** — 갈림길에 서고(at a crossroads), 길을 잃고(lost), 짐을 지고(baggage), 먼 길을 왔어요(come a long way).\n\n" +
-          "**UP IS GOOD / DOWN IS BAD(위는 좋음, 아래는 나쁨)** — 기분이 뜨고(things are looking up), 가라앉고(feeling down), 경기가 살아나고(upturn), 침체해요(downturn).\n\n" +
-          "**IDEAS ARE FOOD(생각은 음식)** — 생각을 소화하고(digest), 곱씹고(chew on), 날것의 데이터(raw data)를 다듬어요. 설익은 생각은 half-baked idea죠.",
+          "영어 담화를 지배하는 대표 은유 가족 — **ARGUMENT IS WAR**(defend, attack, shoot down, stand one's ground), **LIFE IS A JOURNEY**(at a crossroads, lost, baggage, come a long way), **UP IS GOOD / DOWN IS BAD**(looking up, feeling down, upturn/downturn), **IDEAS ARE FOOD**(digest, chew on, raw data, half-baked idea).\n\n" +
+          "영어 토론 문화의 뼈대가 ARGUMENT IS WAR 위에 서 있고, 경제 기사 문체의 기본값이 UP IS GOOD이에요.",
         examples: [
           { en: "She shot down every objection and stood her ground.", ko: "그녀는 모든 반론을 격추하고 자기 입장을 사수했다.", note: "ARGUMENT IS WAR — 토론 기사 한 줄에 전쟁 어휘가 두 개." },
           { en: "After the scandal, his career is at a crossroads.", ko: "스캔들 이후 그의 경력은 갈림길에 서 있다.", note: "LIFE IS A JOURNEY." },
@@ -345,10 +342,11 @@ export default [
       },
       {
         heading: "한국어와 겹치는 것, 어긋나는 것",
+        pattern: "눈이 높다 → have high standards — 부위가 아니라 기능을 번역",
+        patternKo: "큰 은유는 보편(겹침) · 신체 은유는 어긋남의 최대 산지",
         body:
-          "좋은 소식: 큰 은유는 인간 보편이라 **한국어와 겹치는 게 많아요**. '시간을 아끼다/낭비하다', '주장을 방어하다', '기분이 가라앉다' — TIME IS MONEY, ARGUMENT IS WAR, DOWN IS BAD가 한국어에도 그대로 있죠. 이런 표현은 사실상 무료로 얻고 들어가는 거예요.\n\n" +
-          "위험한 건 **비슷한데 어긋나는** 지점이에요. 같은 신체 부위로 다른 뜻을 만들거나, 한국어 직역이 영어에서 통하지 않는 경우죠. '눈이 높다'를 직역한 Her eyes are high는 의미 불명이고, 영어로는 She has high standards예요. 반대로 영어 pull one's leg(놀리다)를 '다리를 잡아당기다'로 직역하면 한국어에선 아무 관용 의미가 없죠.\n\n" +
-          "특히 **신체 은유**가 어긋남의 최대 산지예요. 한국어는 '마음'이 가슴과 머리 사이 어딘가에 있는 추상 기관이지만, 영어는 감정은 heart, 이성은 head/mind로 분업이 명확해요. '마음에 들다'가 상황 따라 like(호감)도 되고 suit(적합)도 되는 이유예요.",
+          "큰 은유는 인간 보편이라 **한국어와 겹치는 게 많아요** — '시간을 아끼다', '주장을 방어하다', '기분이 가라앉다'는 사실상 무료로 얻고 들어가요. 위험한 건 **비슷한데 어긋나는** 지점 — '눈이 높다'의 직역 Her eyes are high는 의미 불명이고, 영어는 She has high standards예요.\n\n" +
+          "특히 **신체 은유**가 어긋남의 최대 산지예요. 한국어 '마음'은 가슴과 머리 사이의 추상 기관이지만, 영어는 감정은 heart, 이성은 head/mind로 분업이 명확해요 — '마음에 들다'가 상황 따라 like도 suit도 되는 이유예요.",
         table: {
           caption: "한–영 관용구 대조 — 겹침과 어긋남",
           headers: ["한국어", "직역하면", "실제 영어", "판정"],
@@ -370,10 +368,11 @@ export default [
       },
       {
         heading: "관용구 운용법 — 아는 것과 쓰는 것 사이",
+        pattern: "안전권: make sense · in the long run · on the same page · the bottom line",
+        patternKo: "일차 목표는 수신 — 화려한 것은 알아듣는 걸로 충분",
         body:
-          "마지막으로 솔직한 운용 가이드예요. C1 학습자에게 관용구의 일차 목표는 **수신(듣고 읽고 알아채기)**이지 송신이 아니에요.\n\n" +
-          "이유는 셋. 첫째, 관용구는 **형태가 얼어붙어** 있어서 한 단어만 바꿔도 깨져요 — a piece of cake를 a slice of cake라고 하면 그냥 케이크 한 조각이에요. 둘째, **세대·지역 코드**가 강해요. It's raining cats and dogs는 교과서 단골이지만 실제 젊은 화자는 거의 안 쓰고, 들으면 살짝 옛날 말투로 느껴져요. 셋째, 격식 불일치 — 보고서에 over the moon(너무 신나는)을 쓰면 옷을 잘못 입은 거예요.\n\n" +
-          "안전한 송신 전략: **빈도 높고 격식 중립적인 것부터** 손에 익히세요. make sense, in the long run, on the same page, the bottom line — 이런 '회색 지대' 표현은 회의에서도 수다에서도 안전해요. 화려한 것(kick the bucket, spill the beans)은 알아듣는 걸로 충분합니다.",
+          "C1에서 관용구의 일차 목표는 **수신(알아채기)**이지 송신이 아니에요. 이유는 셋 — ① 형태가 얼어붙어 한 단어만 바꿔도 깨지고(a slice of cake ×), ② 세대·지역 코드가 강하고(raining cats and dogs는 옛날 말투), ③ 격식 불일치 위험이 있어요(보고서에 over the moon ×).\n\n" +
+          "안전한 송신 전략: **빈도 높고 격식 중립적인 것부터** — make sense, in the long run, on the same page, the bottom line. 이런 '회색 지대' 표현은 회의에서도 수다에서도 안전해요.",
         examples: [
           { en: "That makes sense. Let's make sure we're all on the same page before we move on.", ko: "말이 되네요. 넘어가기 전에 우리 모두 같은 그림을 보고 있는지 확인합시다.", note: "비즈니스 안전권 관용구 2연속 — 어디서나 통해요." },
           { en: "The bottom line is, we can't afford another delay.", ko: "결론은, 더 이상의 지연은 감당할 수 없다는 겁니다.", note: "bottom line = 회계 장부 맨 아랫줄(순이익) — 비즈니스 은유 출신." },
@@ -395,11 +394,10 @@ export default [
     sections: [
       {
         heading: "학술 문체의 3원칙 — 압축, 탈인격, 신중함",
+        pattern: "압축 · 탈인격 · 신중함 — I found ~ → The results indicate ~",
+        patternKo: "구현 장치 = 명사화 · 수동태 · 객관화 구문",
         body:
-          "학술 영어(academic English)는 사실상 별도의 방언이에요. 원어민도 대학에서 따로 훈련받아야 쓸 수 있죠. 지배 원리는 세 가지예요.\n\n" +
-          "**① 압축(density)** — 같은 내용을 더 적은 절(clause)에 담아요. 구어가 동사 중심의 긴 사슬이라면, 학술문은 명사 중심의 밀도 높은 덩어리예요.\n\n" +
-          "**② 탈인격(impersonality)** — 행위자보다 행위·결과를 앞세워요. I found that... 대신 The results indicate that...로, '나'의 주관이 아니라 데이터가 말하는 형식을 취해요.\n\n" +
-          "**③ 신중함(caution)** — 2챕터에서 배운 헤징이 전면 가동돼요. prove 대신 suggest, always 대신 typically.\n\n" +
+          "학술 영어는 사실상 별도의 방언이에요 — 원어민도 따로 훈련받아야 쓸 수 있죠. 지배 원리는 셋: **① 압축**(같은 내용을 더 적은 절에 — 명사 중심의 밀도), **② 탈인격**(I found... 대신 The results indicate... — 데이터가 말하는 형식), **③ 신중함**(prove 대신 suggest — 헤징 전면 가동).\n\n" +
           "이 세 원칙을 구현하는 기계장치가 **명사화, 수동태, 객관화 구문**이에요. 이제 하나씩 분해해볼게요.",
         examples: [
           { en: "We looked at how people behave when prices go up. → This study examines consumer behavior under rising prices.", ko: "우리는 가격이 오를 때 사람들이 어떻게 행동하는지 살펴봤다. → 본 연구는 물가 상승 하의 소비자 행동을 고찰한다.", note: "절 3개 → 절 1개. 같은 내용, 학술적 밀도." },
@@ -409,10 +407,11 @@ export default [
       },
       {
         heading: "명사화 — 동사를 명사로 접는 기술",
+        pattern: "analyze → analysis · fail → failure — 절을 명사구로 접기",
+        patternKo: "개념·앞 내용 받기엔 명사화, 행위 서술엔 동사",
         body:
-          "**명사화(nominalization)**는 동사·형용사를 명사로 바꿔 절을 구로 접는 기술이에요. analyze→analysis, fail→failure, significant→significance.\n\n" +
-          "왜 접을까요? 첫째, **압축** — The economy grew rapidly. This surprised analysts. 두 문장이 The rapid growth of the economy surprised analysts. 한 문장이 돼요. 둘째, **담화의 연결** — 앞 문장의 내용을 명사 하나로 받아서 다음 문장의 주어로 쓸 수 있어요. 셋째, **측정 가능한 대상화** — '실패했다'는 사건이지만 the failure rate(실패율)는 측정하고 비교할 수 있는 변수가 되죠.\n\n" +
-          "다만 명사화는 양날의 검이에요. 과하면 문장이 관료적 안개가 됩니다. The implementation of the utilization of...(활용의 실행은...) 같은 문장은 학술이 아니라 그냥 나쁜 글이에요. 영어 글쓰기 교본들이 'zombie nouns(좀비 명사)'라고 비판하는 게 바로 이 과잉 명사화예요. 원칙: **개념을 다루거나 앞 내용을 받을 때만 명사화하고, 행위를 서술할 땐 동사로**.",
+          "**명사화(nominalization)**는 동사·형용사를 명사로 바꿔 절을 구로 접는 기술이에요. 효과는 셋 — **압축**(두 문장이 한 문장으로), **담화 연결**(앞 문장 내용을 명사 하나로 받아 다음 주어로), **대상화**('실패했다'는 사건이지만 the failure rate는 측정 가능한 변수).\n\n" +
+          "다만 과하면 문장이 관료적 안개('zombie nouns')가 돼요. 원칙: **개념을 다루거나 앞 내용을 받을 때만 명사화하고, 행위를 서술할 땐 동사로**.",
         table: {
           caption: "명사화 변환표 — 구어절 → 학술구",
           headers: ["구어 (동사 중심)", "학술 (명사 중심)"],
@@ -432,16 +431,11 @@ export default [
       },
       {
         heading: "수동태 운용 — 언제 쓰고 언제 버리나",
+        pattern: "방법은 수동 (Data were collected) · 주장은 능동 (We argue that ~)",
+        patternKo: "수동태 = 시선 이동 장치 — 주인공을 주어 자리에",
         body:
-          "'학술문은 수동태'라는 낡은 공식부터 버릴게요. 진짜 규칙은 **수동태는 시선 이동 장치**라는 거예요. 능동태는 행위자를, 수동태는 대상·과정을 카메라 중앙에 놓아요.\n\n" +
-          "**수동태가 정답인 자리**\n" +
-          "① 행위자가 뻔하거나 무의미할 때 — 실험 방법 서술: The samples were heated to 80°C. (누가 가열했는지는 정보 가치가 없죠.)\n" +
-          "② 대상이 담화의 주제일 때 — 앞 문장에서 말한 대상을 주어로 이어받을 때.\n" +
-          "③ 행위자를 전략적으로 숨길 때 — Mistakes were made.(실수가 있었다) 같은 책임 회피 화법. 정치 담화의 고전이에요.\n\n" +
-          "**능동태가 정답인 자리**\n" +
-          "① 주장을 펼 때 — We argue that...이 It is argued by us that...보다 명확하고 힘 있어요.\n" +
-          "② 행위자가 핵심 정보일 때.\n\n" +
-          "최신 학술지 투고 규정(Nature, APA 스타일 등)은 오히려 **명확성을 위해 능동태를 권장**해요. 현대 학술문의 실제 모습은 '방법은 수동, 주장은 능동'의 혼합이에요.",
+          "'학술문은 수동태'라는 낡은 공식부터 버릴게요 — 진짜 규칙은 **수동태는 시선 이동 장치**예요. 수동태가 정답인 자리: ① 행위자가 뻔할 때(실험 방법: The samples were heated.), ② 대상이 담화의 주제일 때, ③ 행위자를 전략적으로 숨길 때(Mistakes were made.). 능동태가 정답인 자리: 주장을 펼 때(We argue that...), 행위자가 핵심 정보일 때.\n\n" +
+          "최신 학술지 규정(Nature, APA 등)은 오히려 **명확성을 위해 능동태를 권장**해요. 현대 학술문의 실제 모습은 '방법은 수동, 주장은 능동'의 혼합이에요.",
         examples: [
           { en: "Data were collected over a six-month period and analyzed using regression models.", ko: "데이터는 6개월에 걸쳐 수집되었고 회귀 모형으로 분석되었다.", note: "방법 서술 — 행위자(연구자)는 정보 가치 0이므로 수동." },
           { en: "We argue that this framework overlooks informal labor.", ko: "우리는 이 틀이 비공식 노동을 간과한다고 주장한다.", note: "주장 — 능동으로 책임을 명시하는 게 현대 표준." },
@@ -452,12 +446,11 @@ export default [
       },
       {
         heading: "객관화 장치 — '나'를 지우는 문형들",
+        pattern: "It is widely accepted that ~ · The findings suggest ~ · While it is true that X, ...",
+        patternKo: "의견을 객관적 진술처럼 — 통째로 쓰는 공식",
         body:
-          "학술문이 주관적 의견을 객관적 진술처럼 들리게 만드는 정형 문형들을 모아볼게요. 전부 통째로 쓰는 공식이에요.\n\n" +
-          "**가주어 it 구문** — It is widely accepted that...(널리 받아들여진다), It could be argued that...(~라고 주장할 수도 있다), It remains unclear whether...(~인지는 불분명하다). 의견의 출처를 익명화해요.\n\n" +
-          "**무생물 주어** — 데이터·결과·표가 말하게 해요: The findings suggest..., Table 2 shows..., This evidence points to... 연구자의 해석을 증거의 발언으로 바꾸는 장치예요.\n\n" +
-          "**There is 구문** — There is growing evidence that...(~라는 증거가 늘고 있다), There appears to be a correlation...(상관이 있는 것으로 보인다).\n\n" +
-          "**양보 선행 구문** — 반론을 먼저 인정하고 재반박해요: While it is true that X, it does not follow that Y.(X가 사실이긴 하지만, 그렇다고 Y가 따라 나오는 것은 아니다.) 학술 논증의 가장 세련된 무기예요.",
+          "주관적 의견을 객관적 진술처럼 들리게 하는 정형 문형들 — **가주어 it**(It is widely accepted that..., It remains unclear whether...), **무생물 주어**(The findings suggest..., Table 2 shows...), **There is 구문**(There is growing evidence that...), **양보 선행 구문**(While it is true that X, it does not follow that Y.).\n\n" +
+          "특히 양보 선행 구문은 반론을 먼저 인정하고 재반박하는, 학술 논증의 가장 세련된 무기예요.",
         examples: [
           { en: "It is widely accepted that early intervention improves outcomes; however, the evidence for adults remains limited.", ko: "조기 개입이 결과를 개선한다는 것은 널리 받아들여지지만, 성인 대상 증거는 여전히 제한적이다.", note: "통설 인정 → 공백 지적. 서론(Introduction)의 표준 리듬." },
           { en: "The findings suggest a strong association, although causality cannot be established from this design.", ko: "결과는 강한 연관성을 시사하나, 본 설계로는 인과관계를 확정할 수 없다.", note: "무생물 주어 + 한계 명시 — 심사자가 좋아하는 한 문장." },

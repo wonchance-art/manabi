@@ -224,9 +224,10 @@ export default [
       },
       {
         heading: "보너스 — Si j'avais su !",
+        pattern: "Si + 대과거 ! → ~했더라면! (탄식)",
         body:
-          "대과거는 감탄형 후회 표현에도 등장해요. **Si j'avais su !**(알았더라면!)처럼 si + 대과거만 던지고 뒷말을 생략하면 '~했더라면 (좋았을걸)'이라는 탄식이 돼요.\n\n" +
-          "이 si + 대과거가 '과거 사실과 반대되는 가정문'으로 완성되는 모습은 B2의 가정문 챕터에서 만나요. 지금은 표현 두어 개만 챙겨두세요.",
+          "**Si j'avais su !**(알았더라면!)처럼 si + 대과거만 던지고 뒷말을 생략하면 후회의 탄식이 돼요.\n\n" +
+          "이 si + 대과거가 '과거 사실과 반대되는 가정문'으로 완성되는 모습은 B2 가정문 챕터에서 만나요.",
         examples: [
           { fr: "Si j'avais su !", ko: "(그럴 줄) 알았더라면!" },
           { fr: "Ah, si tu m'avais écouté...", ko: "아, 네가 내 말을 들었더라면..." },
@@ -246,9 +247,10 @@ export default [
     sections: [
       {
         heading: "복습 30초 — qui와 que의 분업",
+        pattern: "qui = 주어 자리 · que = 직접목적어 자리",
         body:
-          "관계절에서 **qui는 주어 자리**, **que는 직접목적어 자리**가 비었을 때 썼죠. l'ami **qui** habite à Lyon(리옹에 사는 친구 — qui가 주어), le livre **que** je lis(내가 읽는 책 — que가 목적어).\n\n" +
-          "그런데 동사가 **de나 다른 전치사**를 데리고 다니면 qui/que로는 부족해요. 오늘은 그 빈자리를 채우는 세 가지 — dont, où, lequel 계열이에요.",
+          "l'ami **qui** habite à Lyon(qui가 주어), le livre **que** je lis(que가 목적어)였죠.\n\n" +
+          "그런데 동사가 **de나 다른 전치사**를 데리고 다니면 qui/que로는 부족해요. 그 빈자리를 채우는 게 dont, où, lequel 계열이에요.",
         examples: [
           { fr: "C'est une amie qui travaille avec moi.", ko: "저와 함께 일하는 친구예요." },
           { fr: "Le film que tu m'as conseillé était super.", ko: "네가 추천해 준 영화 정말 좋았어." },
