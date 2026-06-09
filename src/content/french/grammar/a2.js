@@ -320,9 +320,10 @@ export default [
       },
       {
         heading: "어순 종합 — 부정문, 두 동사 문장, passé composé",
+        pattern: "Je ne le vois pas · Je vais le faire · Je l'ai vu",
+        patternKo: "부정문은 통째로 감싸기 · 원형 앞 · 조동사 앞",
         body:
-          "'동사 앞' 원칙을 상황별로 확장해볼게요.\n\n" +
-          "**부정문**: ne ... pas가 대명사+동사를 통째로 감싸요 → Je ne le vois pas.\n**futur proche 등 동사 두 개**: 대명사는 **원형 바로 앞** → Je vais le faire.(그거 할 거야.)\n**passé composé**: 조동사 앞 → Je l'ai vu.(그거 봤어.)\n\n" +
+          "**부정문**은 ne...pas가 대명사+동사를 통째로 감싸고, **동사 두 개** 문장은 원형 바로 앞, **passé composé**는 조동사 앞이에요.\n\n" +
           "공통 원리는 하나 — 대명사는 **자기 의미가 걸리는 동사에 최대한 바짝 붙는다**예요.",
         examples: [
           { fr: "Je ne le connais pas.", ipa: "[ʒə nə lə kɔnɛ pa]", ko: "저는 그를 몰라요." },
@@ -345,10 +346,10 @@ export default [
     sections: [
       {
         heading: "비교급 3종 세트 — plus / moins / aussi ... que",
+        pattern: "plus(더) / moins(덜) / aussi(만큼) + 형용사 + que + 비교 상대",
         body:
-          "프랑스어 비교는 형용사·부사 앞에 부품 하나만 끼우면 끝이에요.\n\n" +
-          "**plus ... que** (~보다 더) / **moins ... que** (~보다 덜) / **aussi ... que** (~만큼)\n\n" +
-          "Il est **plus grand que** moi.(그는 나보다 키가 커요.) 비교 상대는 que 뒤에 — 한국어 조사 '~보다'가 que 자리에 온다고 생각하면 돼요. moins(덜)는 한국어로 어색해서 잘 안 쓰게 되는데, 프랑스어에서는 아주 자연스러운 표현이에요(moins cher = 덜 비싼 = 더 싼).",
+          "형용사·부사 앞에 부품 하나만 끼우면 끝이에요. Il est **plus grand que** moi. — 한국어 조사 '~보다'가 que 자리에 온다고 생각하면 돼요.\n\n" +
+          "moins(덜)는 한국어로 어색해서 잘 안 쓰게 되는데, 프랑스어에서는 아주 자연스러워요(moins cher = 덜 비싼 = 더 싼).",
         examples: [
           { fr: "Il est plus grand que moi.", ipa: "[il ɛ ply gʁɑ̃ kə mwa]", ko: "그는 저보다 키가 커요." },
           { fr: "Le métro est moins cher que le taxi.", ipa: "[lə metʁo ɛ mwɛ̃ ʃɛʁ kə lə taksi]", ko: "지하철이 택시보다 (덜 비싸요 =) 싸요." },
