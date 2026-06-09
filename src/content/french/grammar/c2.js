@@ -157,10 +157,10 @@ export default [
       },
       {
         heading: "벨기에와 스위스 — septante, nonante의 합리주의",
+        pattern: "70 = septante · 90 = nonante · 80 = huitante (스위스 일부)",
         body:
-          "프랑스 본토의 70(soixante-dix = 60+10), 90(quatre-vingt-dix = 4×20+10)은 학습자를 괴롭히는 악명 높은 셈법이죠. 벨기에와 스위스는 **septante(70), nonante(90)**라는 정직한 단어를 써요. 스위스 일부 주(보, 발레, 프리부르)는 80도 **huitante**라고 해요.\n\n" +
-          "식사 이름도 한 칸씩 밀려 있어요. 벨기에·스위스(그리고 퀘벡)에서 **déjeuner는 아침**, **dîner는 점심**, **souper가 저녁**이에요. 어원적으로는 이쪽이 원조이고, 파리가 식사 시간이 늦어지며 한 칸씩 당겨 쓴 거예요.\n\n" +
-          "벨기에 특유 표현 몇 개: **une chique**(사탕), **savoir**를 pouvoir 뜻으로(Je ne saurais pas venir = 못 가요), 숫자 표현 외에도 s'il vous plaît를 '여기요(물건을 건네며)'로 쓰는 용법이 유명해요.",
+          "본토의 soixante-dix(60+10), quatre-vingt-dix(4×20+10) 대신 벨기에·스위스는 **정직한 단어**를 써요. 식사 이름도 한 칸씩 밀려 있어요: **déjeuner = 아침, dîner = 점심, souper = 저녁**(퀘벡도 동일) — 어원적으로는 이쪽이 원조예요.\n\n" +
+          "벨기에 특유 표현: savoir를 pouvoir 뜻으로(Je ne saurais pas venir = 못 가요), s'il vous plaît를 '여기요(물건을 건네며)'로 쓰는 용법이 유명해요.",
         table: {
           caption: "숫자와 식사 — 지역별 비교",
           headers: ["", "프랑스", "벨기에", "스위스", "퀘벡"],
@@ -181,10 +181,10 @@ export default [
       },
       {
         heading: "퀘벡 — 대서양 건너의 프랑스어",
+        pattern: "week-end → fin de semaine · e-mail → courriel · shopping → magasiner",
         body:
-          "퀘벡 프랑스어는 17세기 프랑스어에서 갈라져 독자 진화했어요. 억양 차이가 커서 프랑스인도 퀘벡 영화에 자막을 켤 정도예요.\n\n" +
-          "**영어에 강경한 어휘 정책**이 특징이에요. 영어의 바다에 둘러싸인 퀘벡은 프랑스 본토보다 영어 차용에 훨씬 엄격해서, 본토가 le week-end, un e-mail, le shopping이라 할 때 퀘벡은 **la fin de semaine, un courriel, magasiner**라고 해요. courriel(courrier électronique의 축약)은 역수입되어 프랑스 공문서에서도 권장돼요.\n\n" +
-          "일상 어휘도 달라요: **un char**(자동차 — 본토에서는 전차), **une blonde**(여자친구), **un chum**(남자친구·친구), **c'est plate**(지루해), **avoir de la misère à**(~하는 데 애먹다). 발음은 [t]/[d]가 [i], [y] 앞에서 [ts]/[dz]로 — tu가 '츄'처럼 들리는 게 대표 신호예요.",
+          "퀘벡 프랑스어는 17세기 프랑스어에서 갈라져 독자 진화했고, 영어의 바다에 둘러싸여 **본토보다 영어 차용에 훨씬 엄격**해요. courriel은 역수입되어 프랑스 공문서에서도 권장돼요.\n\n" +
+          "일상 어휘도 달라요: **un char**(자동차), **une blonde**(여자친구), **c'est plate**(지루해). 발음은 [t]/[d]가 [i], [y] 앞에서 [ts]/[dz]로 — tu가 '츄'처럼 들리는 게 대표 신호예요.",
         examples: [
           { fr: "On va magasiner en fin de semaine ?", ko: "주말에 쇼핑 갈래? (퀘벡)", note: "본토: On va faire du shopping ce week-end ?" },
           { fr: "Envoie-moi un courriel.", ko: "이메일 보내줘.", note: "퀘벡발 단어 — 프랑스 행정 문서의 공식 권장어이기도 해요." },
