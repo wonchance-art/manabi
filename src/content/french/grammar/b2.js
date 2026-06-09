@@ -441,13 +441,10 @@ export default [
       },
       {
         heading: "접미사 패턴 — -tion, -ment, -age",
+        pattern: "-tion/-sion/-ure → 여성 · -ment/-age → 남성",
         body:
-          "명사화 접미사는 패턴이 있고, A0에서 배운 성 추측 규칙이 그대로 적용돼요.\n\n" +
-          "**-tion / -sion (여성)** — 가장 생산적인 패턴: construire → la construction, augmenter → l'augmentation, décider → la décision\n" +
-          "**-ment (남성)** — développer → le développement, changer → le changement\n" +
-          "**-age (남성)** — recycler → le recyclage, passer → le passage\n" +
-          "**-ure (여성)** — ouvrir → l'ouverture, fermer → la fermeture\n\n" +
-          "접미사 없이 만들어지는 짧은 명사들도 고빈도예요: partir → le départ, arriver → l'arrivée(여성), choisir → le choix, hausser → la hausse(상승), baisser → la baisse(하락).",
+          "명사화 접미사는 패턴이 있고, A0의 성 추측 규칙이 그대로 적용돼요: la construction, le développement, le recyclage, l'ouverture(f.).\n\n" +
+          "접미사 없는 짧은 명사들도 고빈도예요: le départ, l'arrivée(여성), le choix, la hausse(상승), la baisse(하락).",
         table: {
           caption: "명사화 패턴과 성",
           headers: ["접미사", "성", "예시"],
@@ -469,10 +466,10 @@ export default [
       },
       {
         heading: "신문 헤드라인 읽기 — 동사 없는 문장의 세계",
+        pattern: "헤드라인 = 명사 + de + 명사 (Reprise du trafic lundi)",
         body:
-          "프랑스 신문 헤드라인은 **동사를 거의 쓰지 않아요**. 명사화가 그 자리를 대신하죠.\n\n" +
-          "**Grève des transports : reprise du trafic lundi**(교통 파업: 월요일 운행 재개) — 동사가 하나도 없지만 '파업이 있었고, 월요일에 운행이 재개된다'는 두 문장이 압축되어 있어요.\n\n" +
-          "해독 요령: **명사를 동사로 되돌려 읽기**. hausse → '오르다', reprise → '재개되다', ouverture → '열리다'로 풀면 문장이 살아나요. Le Monde나 France Info 헤드라인을 하루 세 개씩 풀어 읽는 것만큼 좋은 B2 훈련이 없습니다.",
+          "프랑스 신문 헤드라인은 **동사를 거의 쓰지 않고** 명사화가 그 자리를 대신해요. Grève des transports : reprise du trafic lundi — 동사 없이 두 문장이 압축되어 있죠.\n\n" +
+          "해독 요령은 **명사를 동사로 되돌려 읽기**: hausse → '오르다', reprise → '재개되다'. Le Monde 헤드라인을 하루 세 개씩 풀어 읽는 것만큼 좋은 B2 훈련이 없어요.",
         examples: [
           { fr: "Hausse du prix de l'électricité en janvier", ko: "1월 전기 요금 인상", note: "= Le prix de l'électricité augmentera en janvier." },
           { fr: "Réouverture du musée après deux ans de travaux", ko: "2년의 공사 끝에 미술관 재개관" },
