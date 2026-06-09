@@ -286,9 +286,10 @@ export default [
       },
       {
         heading: "lequel 계열 — 그 밖의 전치사 뒤에는",
+        pattern: "전치사 + lequel/laquelle/lesquels/lesquelles (à+lequel → auquel · de+lequel → duquel)",
         body:
-          "avec, pour, sur, dans, sans 같은 전치사 뒤에서는 **lequel/laquelle/lesquels/lesquelles**(선행사의 성·수에 일치)를 써요: la table **sur laquelle**...(그 위에 ~한 탁자), les amis **avec lesquels**...(함께 ~한 친구들).\n\n" +
-          "전치사가 à나 de면 정관사처럼 축약돼요: à + lequel → **auquel**, de + lequel → **duquel** (à laquelle은 축약 없음). 참고로 선행사가 **사람**이면 전치사 + qui도 가능해요: l'amie avec qui je voyage.",
+          "avec, pour, sur, dans 같은 전치사 뒤에서는 **lequel 계열**(선행사의 성·수에 일치)을 써요: la table **sur laquelle**..., les amis **avec lesquels**...\n\n" +
+          "à나 de는 정관사처럼 축약돼요(auquel, duquel). 선행사가 **사람**이면 전치사 + qui도 가능해요: l'amie avec qui je voyage.",
         table: {
           caption: "lequel 계열과 축약형",
           headers: ["성·수", "기본형", "à + ...", "de + ..."],
@@ -320,9 +321,9 @@ export default [
     sections: [
       {
         heading: "형태 — nous 어간 + -ant",
+        pattern: "en + (nous 현재형 - ons + -ant) → en parlant",
         body:
-          "제롱디프는 **en + 현재분사**예요. 현재분사는 **직설법 현재 nous 형태에서 -ons을 떼고 -ant**을 붙여 만들어요.\n\n" +
-          "nous parlons → parlant → **en parlant**(말하면서). nous finissons → finissant → **en finissant**. nous mangeons → mangeant처럼 어간의 철자(ge, c→ç)도 nous형을 그대로 따라가요.\n\n" +
+          "제롱디프는 **en + 현재분사**예요. nous parlons → parlant → **en parlant**(말하면서). 어간의 철자(mangeons → mangeant)도 nous형을 그대로 따라가요.\n\n" +
           "예외는 딱 셋: être → **étant**, avoir → **ayant**, savoir → **sachant**.",
         table: {
           caption: "제롱디프 만들기",
