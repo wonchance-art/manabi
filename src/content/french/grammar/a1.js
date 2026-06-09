@@ -451,10 +451,10 @@ export default [
       },
       {
         heading: "결정적 반전 — 소유자가 아니라 '소유물'의 성에 일치",
+        pattern: "son/sa/ses → 뒤에 오는 명사의 성·수 기준 (소유자 무관)",
         body:
-          "여기가 이 챕터의 심장이에요. mon/ma를 가르는 기준은 **내가 남자냐 여자냐가 아니라, 뒤에 오는 명사가 남성이냐 여성이냐**예요.\n\n" +
-          "여성인 제가 말해도 '나의 아버지'는 mon père(père가 남성 명사니까), 남성인 분이 말해도 '나의 어머니'는 ma mère(mère가 여성 명사니까)예요.\n\n" +
-          "그래서 3인칭이 충격적이에요. **sa mère**는 '그의 어머니'일 수도, '그녀의 어머니'일 수도 있어요. sa가 여성형인 이유는 mère가 여성이기 때문이지, 소유자가 여성이라서가 아니거든요. 누구의 어머니인지는 오직 문맥이 말해줘요.",
+          "mon/ma를 가르는 기준은 내가 남자냐 여자냐가 아니라, **뒤에 오는 명사가 남성이냐 여성이냐**예요. 여성인 제가 말해도 '나의 아버지'는 mon père죠.\n\n" +
+          "그래서 **sa mère**는 '그의 어머니'일 수도, '그녀의 어머니'일 수도 있어요. 누구의 어머니인지는 오직 문맥이 말해줘요.",
         examples: [
           { fr: "Paul aime sa mère.", ipa: "[pɔl ɛm sa mɛʁ]", ko: "폴은 자기 어머니를 사랑해요.", note: "소유자는 남자지만 mère가 여성 → sa" },
           { fr: "Marie aime son père.", ipa: "[maʁi ɛm sɔ̃ pɛʁ]", ko: "마리는 자기 아버지를 사랑해요.", note: "소유자는 여자지만 père가 남성 → son" },
@@ -465,9 +465,10 @@ export default [
       },
       {
         heading: "발음 보호 규칙 — 모음 앞에서는 ma 대신 mon",
+        pattern: "여성 명사 + 모음 시작 → ma/ta/sa 대신 mon/ton/son (mon amie)",
         body:
-          "여성 명사라도 **모음(또는 무음 h)으로 시작하면 ma/ta/sa 대신 mon/ton/son**을 써요. ma amie처럼 모음이 충돌하는 걸 프랑스어가 못 견디기 때문이에요.\n\n" +
-          "그래서 '나의 (여자) 친구'는 **mon amie**[mɔ̃nami]. 명사는 여전히 여성이라서, 형용사는 여성형으로 일치해요: mon **petite** amie가 아니라 ma petite amie... 가 아니고 — mon amie가 jolie한 거죠(mon amie est jolie). 형태만 mon을 빌려 쓴다고 생각하세요.",
+          "여성 명사라도 **모음(또는 무음 h)으로 시작하면 mon/ton/son**을 써요. ma amie처럼 모음이 충돌하는 걸 프랑스어가 못 견디기 때문이에요.\n\n" +
+          "형태만 mon을 빌려 쓸 뿐 명사는 여전히 여성이라, 일치는 여성형으로 해요: mon amie est joli**e**.",
         examples: [
           { fr: "mon amie", ipa: "[mɔ̃nami]", ko: "내 (여자인) 친구", note: "amie는 여성이지만 모음 앞이라 mon" },
           { fr: "son école", ipa: "[sɔ̃nekɔl]", ko: "그/그녀의 학교", note: "école은 여성 명사" },
