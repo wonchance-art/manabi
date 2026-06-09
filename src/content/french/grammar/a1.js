@@ -600,9 +600,10 @@ export default [
       },
       {
         heading: "음식·음료 회화의 주력 엔진",
+        pattern: "manger / boire / prendre + du / de la + 음식",
         body:
-          "부분관사가 가장 바쁘게 일하는 곳은 식탁이에요. **manger**(먹다), **boire**(마시다, 불규칙: je bois), **prendre**(먹다/마시다/시키다, 불규칙: je prends) 같은 동사와 짝을 이뤄요.\n\n" +
-          "카페에서 주문할 때, 장 볼 때, 아침 메뉴를 말할 때 — 전부 부분관사의 무대예요.",
+          "부분관사가 가장 바쁘게 일하는 곳은 식탁이에요. **manger**(먹다), **boire**(마시다, je bois), **prendre**(시키다, je prends) 같은 동사와 짝을 이뤄요.\n\n" +
+          "카페 주문, 장보기, 아침 메뉴 — 전부 부분관사의 무대예요.",
         examples: [
           { fr: "Je bois du café le matin.", ipa: "[ʒə bwa dy kafe lə matɛ̃]", ko: "저는 아침에 커피를 마셔요." },
           { fr: "On prend du fromage ?", ipa: "[ɔ̃ pʁɑ̃ dy fʁɔmaʒ]", ko: "우리 치즈 (좀) 먹을까?" },
@@ -612,9 +613,10 @@ export default [
       },
       {
         heading: "부정문에서는 전부 de로 변신",
+        pattern: "부정문: du / de la / de l' / des → de",
         body:
-          "부정문 챕터의 규칙이 그대로 적용돼요. **부정문에서 du/de la/de l'/des는 모두 de**가 됩니다.\n\n" +
-          "Je bois du café → Je ne bois pas **de** café. '없음'의 세계에서는 양을 따질 필요가 없으니 전부 중립적인 de로 통일되는 거예요.",
+          "부정문 챕터의 규칙이 그대로 적용돼요. Je bois du café → Je ne bois pas **de** café.\n\n" +
+          "'없음'의 세계에서는 양을 따질 필요가 없으니 전부 중립적인 de로 통일되는 거예요.",
         examples: [
           { fr: "Je ne mange pas de viande.", ipa: "[ʒə nə mɑ̃ʒ pa də vjɑ̃d]", ko: "저는 고기를 안 먹어요.", note: "de la viande → pas de viande" },
           { fr: "Il n'y a pas de lait.", ipa: "[ilnja pa də lɛ]", ko: "우유가 없어요." },
@@ -636,9 +638,10 @@ export default [
     sections: [
       {
         heading: "0~69 — 여기까지는 평화로워요",
+        pattern: "20~69 = 십 단위 + 일 단위 · 21/31... = ... et un",
         body:
-          "1~16까지는 고유한 단어, 17~19는 dix-sept(10+7) 식의 조합, 20~69는 '십 단위 + 일 단위' 구조예요. 영어와 같은 논리라 무난해요.\n\n" +
-          "21, 31...에는 et(그리고)이 끼어요: vingt **et** un(21). 발음 주의 셋 — six과 dix는 단독으로 [sis]/[dis]지만 명사 앞에서는 [si]/[di]로, 모음 앞에서는 [siz]/[diz]로 변해요.",
+          "1~16은 고유한 단어, 17~19는 dix-sept(10+7) 식, 20~69는 '십 단위 + 일 단위'예요. 영어와 같은 논리라 무난해요.\n\n" +
+          "발음 주의: six과 dix는 단독 [sis]/[dis], 명사 앞 [si]/[di], 모음 앞 [siz]/[diz]로 변해요.",
         table: {
           caption: "기둥이 되는 숫자들",
           headers: ["숫자", "프랑스어", "발음"],
