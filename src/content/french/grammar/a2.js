@@ -607,9 +607,10 @@ export default [
       },
       {
         heading: "qui — 뒤 문장의 '주어' 자리를 채워요",
+        pattern: "qui + 동사 (주어 역할 · 축약 불가)",
         body:
-          "**qui**는 관계절 안에서 **주어 역할**을 해요. 그래서 **qui 바로 뒤에는 동사**가 와요.\n\n" +
-          "un ami **qui étudie**...(공부하는 친구), le train **qui arrive**...(도착하는 기차) — 사람이든 사물이든 상관없이, '주어가 빠진 문장'을 붙일 때 qui예요. qui는 모음 앞에서도 **절대 축약되지 않아요**: l'ami qui arrive (qu'arrive ✗).",
+          "**qui**는 관계절 안에서 **주어 역할**이라 **바로 뒤에 동사**가 와요. un ami **qui étudie**, le train **qui arrive** — 사람이든 사물이든 상관없어요.\n\n" +
+          "qui는 모음 앞에서도 **절대 축약되지 않아요**: l'ami qui arrive (qu'arrive ✗).",
         examples: [
           { fr: "J'aime les gens qui chantent.", ipa: "[ʒɛm le ʒɑ̃ ki ʃɑ̃t]", ko: "저는 노래하는 사람들을 좋아해요.", note: "사람 + qui" },
           { fr: "Le train qui arrive vient de Lyon.", ipa: "[lə tʁɛ̃ ki aʁiv vjɛ̃ də ljɔ̃]", ko: "지금 들어오는 기차는 리옹에서 와요.", note: "사물 + qui — 사물이어도 qui!" },
@@ -618,10 +619,10 @@ export default [
       },
       {
         heading: "que — 뒤 문장의 '목적어' 자리를 채워요",
+        pattern: "que + 주어 + 동사 (목적어 역할 · 모음 앞 qu')",
         body:
-          "**que**는 관계절 안에서 **목적어 역할**이에요. 그래서 **que 뒤에는 주어+동사**가 따라와요.\n\n" +
-          "le livre **que je lis**(내가 읽는 책 — je lis ce livre의 ce livre가 que로), la femme **que tu connais**(네가 아는 여자).\n\n" +
-          "qui와 달리 que는 모음 앞에서 **qu'로 축약돼요**: le film **qu'**il aime(그가 좋아하는 영화). 축약되는 쪽이 que라는 것도 둘을 가르는 단서예요.",
+          "**que**는 관계절 안에서 **목적어 역할**이라 **뒤에 주어+동사**가 따라와요. le livre **que je lis**(내가 읽는 책), la femme **que tu connais**.\n\n" +
+          "qui와 달리 que는 모음 앞에서 **qu'로 축약돼요**: le film **qu'**il aime. 축약되는 쪽이 que라는 것도 둘을 가르는 단서예요.",
         examples: [
           { fr: "C'est le film que je préfère.", ipa: "[sɛ lə film kə ʒə pʁefɛʁ]", ko: "이게 제가 제일 좋아하는 영화예요." },
           { fr: "La femme que tu connais est ma sœur.", ipa: "[la fam kə ty kɔnɛ ɛ ma sœʁ]", ko: "네가 아는 그 여자분이 내 언니야.", note: "사람 + que" },
