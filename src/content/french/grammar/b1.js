@@ -392,10 +392,10 @@ export default [
     sections: [
       {
         heading: "형태 — être + 과거분사 (+ par)",
+        pattern: "être + 과거분사 (+ par 행위자)",
         body:
-          "수동태는 **être + 과거분사**로 만들고, 행위자는 **par**(~에 의해)로 표시해요. 능동문의 목적어가 주어 자리로 올라오는 구조죠.\n\n" +
-          "Le chat mange la souris(고양이가 쥐를 먹는다) → La souris **est mangée** par le chat(쥐가 고양이에게 먹힌다).\n\n" +
-          "주의할 점 둘. ① 과거분사는 **주어의 성·수에 일치**해요(mangée — la souris가 여성이라 e 추가). ② 시제는 être가 짊어져요 — être를 복합과거로 바꾸면 수동태 과거가 됩니다.",
+          "능동문의 목적어가 주어로 올라오는 구조예요: Le chat mange la souris → La souris **est mangée** par le chat.\n\n" +
+          "주의 둘. ① 과거분사는 **주어의 성·수에 일치**(mangée). ② 시제는 être가 짊어져요 — être를 복합과거로 바꾸면 수동태 과거가 됩니다.",
         examples: [
           { fr: "Ce roman est traduit en vingt langues.", ko: "이 소설은 20개 언어로 번역되어 있어요." },
           { fr: "La tour Eiffel a été construite en 1889.", ko: "에펠탑은 1889년에 건설되었어요.", note: "a été + construite — 복합과거 수동, 여성 일치" },
@@ -414,9 +414,10 @@ export default [
       },
       {
         heading: "par냐 de냐 — 행위자 표시의 두 갈래",
+        pattern: "구체적 행위·사건 → par · 감정·지속 상태 → de",
         body:
-          "행위자는 보통 **par**로 표시하지만, 동사가 **감정·상태·동반**을 나타낼 때는 **de**를 써요: aimé **de** tous(모두에게 사랑받는), couvert **de** neige(눈으로 덮인), connu **de** tous(모두가 아는).\n\n" +
-          "구별 감각: 구체적 행위·사건이면 par, 지속적 상태나 감정이면 de. 처음엔 aimé de, couvert de, suivi de, accompagné de 같은 단골 표현을 통째로 외우는 게 실용적이에요.",
+          "행위자는 보통 **par**지만, **감정·상태·동반**을 나타낼 때는 **de**를 써요: aimé **de** tous(모두에게 사랑받는), couvert **de** neige(눈으로 덮인).\n\n" +
+          "처음엔 aimé de, couvert de, suivi de, accompagné de 같은 단골 표현을 통째로 외우는 게 실용적이에요.",
         examples: [
           { fr: "Elle est respectée de tous ses collègues.", ko: "그녀는 모든 동료에게 존경받아요.", note: "감정 → de" },
           { fr: "La maison a été détruite par l'incendie.", ko: "그 집은 화재로 파괴됐어요.", note: "사건 → par" },
