@@ -104,10 +104,10 @@ export default [
     sections: [
       {
         heading: "세 개의 층 — 그리고 한국어 존댓말과의 결정적 차이",
+        pattern: "soutenu (격식·문어) · courant (표준) · familier (친근·구어)",
         body:
-          "프랑스어 표현은 크게 세 층으로 나뉘어요. **soutenu**(격식체 — 문어, 연설, 공식 문서), **courant**(표준체 — 뉴스, 직장, 처음 만난 사람), **familier**(친근체 — 친구, 가족, SNS).\n\n" +
-          "한국어 존댓말 위계와 비슷해 보이지만, 작동 방식이 달라요. 한국어는 주로 **어미**(-습니다/-어요/-어)가 격을 결정하죠. 프랑스어는 어미가 아니라 **단어 선택 자체, 문장 구조, 발음 습관**이 통째로 바뀌어요. 같은 '차'가 격에 따라 automobile → voiture → bagnole로 단어부터 달라지는 거예요.\n\n" +
-          "그래서 tu/vous만 잘 고른다고 격이 맞는 게 아니에요. vous를 쓰면서 bagnole, bouffer 같은 단어를 섞으면 한국어로 치면 '고객님, 밥 처드셨어요?' 같은 부조화가 생겨요. C1부터는 **단어마다 격 태그를 함께 외우는 습관**이 필요합니다.",
+          "한국어는 **어미**(-습니다/-어요/-어)가 격을 결정하지만, 프랑스어는 **단어 선택, 문장 구조, 발음 습관**이 통째로 바뀌어요. 같은 '차'가 automobile → voiture → bagnole로 단어부터 달라지죠.\n\n" +
+          "그래서 tu/vous만 잘 고른다고 격이 맞는 게 아니에요. vous를 쓰며 bagnole, bouffer를 섞으면 '고객님, 밥 처드셨어요?' 같은 부조화가 생겨요. C1부터는 **단어마다 격 태그를 함께 외우는 습관**이 필요합니다.",
         examples: [
           { fr: "Je ne sais pas. / Je sais pas. / J'sais pas.", ko: "모르겠습니다. / 몰라요. / 몰라.", note: "같은 문장이 격에 따라 점점 줄어들어요. 마지막은 발음상 '셰파'처럼 들려요." },
           { fr: "Nous allons partir. / On va partir.", ko: "출발하겠습니다. / 우리 갈게.", note: "주어 nous ↔ on 교체도 대표적인 격 신호" },
@@ -116,6 +116,7 @@ export default [
       },
       {
         heading: "같은 뜻, 세 단어 — 레지스터 어휘표",
+        pattern: "automobile → voiture → bagnole · ouvrage → livre → bouquin",
         body:
           "자주 쓰는 개념일수록 세 층의 단어가 따로 있어요. 아래 표의 familier 단어들은 영화·드라마·일상 대화의 최빈출 어휘이기도 해요.",
         table: {
