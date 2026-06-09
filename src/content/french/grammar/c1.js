@@ -359,11 +359,10 @@ export default [
       },
       {
         heading: "an / année — 그리고 jour/journée, soir/soirée",
+        pattern: "an/jour/soir = 단위·눈금 (숫자와) · année/journée/soirée = 내용·지속 (형용사와)",
         body:
-          "한국어로는 둘 다 '해, 년'이지만 시선이 달라요.\n\n" +
-          "**an** — 셀 수 있는 **단위, 눈금**. 숫자와 함께: deux ans(2년), J'ai trente ans(서른 살), tous les ans(매년).\n\n" +
-          "**année** — 그 시간의 **내용물, 안에서 보낸 경험**. 형용사·한정어와 함께: une bonne année(좋은 한 해), toute l'année(일 년 내내), les années 90(90년대), cette année(올해).\n\n" +
-          "같은 분업이 **jour/journée, soir/soirée, matin/matinée**에도 그대로 적용돼요. trois jours(3일 — 눈금) vs toute la journée(하루 종일 — 내용물), Bonsoir(만났을 때) vs Bonne soirée(헤어질 때 — '남은 저녁 시간 잘 보내요').",
+          "**an**은 셀 수 있는 단위·눈금(deux ans, J'ai trente ans), **année**는 그 시간의 내용물·경험(une bonne année, toute l'année, cette année)이에요.\n\n" +
+          "같은 분업이 jour/journée, soir/soirée, matin/matinée에도 적용돼요. Bonsoir(만났을 때) vs **Bonne soirée**(헤어질 때 — '남은 저녁 잘 보내요').",
         table: {
           caption: "단위형 vs 지속형",
           headers: ["단위·눈금", "내용·지속", "대표 예"],
@@ -395,10 +394,10 @@ export default [
     sections: [
       {
         heading: "관용구를 대하는 자세 — 그리고 기분의 표현들",
+        pattern: "avoir le cafard = 우울하다 · avoir la pêche = 컨디션 최고 · être dans la lune = 멍 때리다",
         body:
-          "관용 표현(expression idiomatique)은 단어 뜻의 합이 아니에요. avoir le cafard를 '바퀴벌레를 가지고 있다'로 직역하면 영문을 알 수 없죠 — 실제 뜻은 '**우울하다, 기분이 처지다**'예요. 시인 보들레르가 《악의 꽃》에서 cafard를 우울의 이미지로 쓰면서 퍼진 표현이라고 알려져 있어요.\n\n" +
-          "관용구는 **이미지와 유래를 함께 외울 때** 기억에 남아요. 이 챕터는 빈도 높은 표현을 이미지 계열(기분, 동물, 음식, 신체)로 묶어 소개할게요.\n\n" +
-          "기분 계열을 몇 개 더: **avoir la pêche**(복숭아를 갖다 → 컨디션이 최고다), **être dans la lune**(달에 가 있다 → 멍 때리다, 딴생각 중이다), **avoir un coup de blues**(블루스가 한 방 오다 → 갑자기 울적하다).",
+          "관용 표현은 단어 뜻의 합이 아니에요. avoir le cafard(바퀴벌레를 가지다)의 실제 뜻은 '**우울하다**' — 보들레르가 《악의 꽃》에서 퍼뜨린 이미지로 알려져 있어요.\n\n" +
+          "관용구는 **이미지와 유래를 함께 외울 때** 기억에 남아요. 이 챕터는 기분·동물·음식·신체 계열로 묶어 소개할게요.",
         examples: [
           { fr: "Depuis qu'elle est partie, j'ai le cafard.", ko: "그녀가 떠난 뒤로 마음이 울적해요.", note: "직역: 바퀴벌레를 갖고 있다" },
           { fr: "T'as la pêche aujourd'hui !", ko: "너 오늘 컨디션 좋아 보인다!", note: "familier한 말투와 잘 어울리는 표현" },
@@ -408,11 +407,10 @@ export default [
       },
       {
         heading: "동물의 이미지 — 토끼, 고양이, 닭",
+        pattern: "poser un lapin = 바람맞히다 · donner sa langue au chat = 모르겠다, 항복",
         body:
-          "**poser un lapin (à qqn)** — 토끼를 놓다 → **바람맞히다**. 약속 장소에 안 나타나는 것. 19세기 속어에서 '대가를 치르지 않고 떠나다'라는 뜻이 변해 정착했어요.\n\n" +
-          "**donner sa langue au chat** — 혀를 고양이에게 주다 → **(수수께끼 등에서) 모르겠다, 항복**. 답을 포기할 때 쓰는 정해진 공식이에요.\n\n" +
-          "**avoir un chat dans la gorge** — 목에 고양이가 있다 → **목이 잠기다**. 영어는 같은 상황에 개구리(a frog in one's throat)를 넣죠. 언어마다 동물 캐스팅이 달라요.\n\n" +
-          "**quand les poules auront des dents** — 닭에게 이가 나면 → **절대 그럴 일 없다**. 한국어 '해가 서쪽에서 뜨면'의 프랑스 버전이에요.",
+          "**poser un lapin**(토끼를 놓다 → 바람맞히다), **donner sa langue au chat**(혀를 고양이에게 주다 → 항복), **avoir un chat dans la gorge**(목에 고양이 → 목이 잠기다 — 영어는 개구리를 넣죠).\n\n" +
+          "**quand les poules auront des dents**(닭에게 이가 나면)는 한국어 '해가 서쪽에서 뜨면'의 프랑스 버전이에요.",
         examples: [
           { fr: "Il m'a posé un lapin, je l'ai attendu une heure au café.", ko: "걔가 날 바람맞혔어. 카페에서 한 시간을 기다렸다니까.", note: "데이트·약속 불발의 표준 표현" },
           { fr: "Alors, la réponse ? — Je donne ma langue au chat !", ko: "자, 정답은? — 모르겠다, 항복!", note: "퀴즈 상황의 고정 표현" },
