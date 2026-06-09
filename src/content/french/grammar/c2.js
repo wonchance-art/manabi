@@ -245,10 +245,10 @@ export default [
       },
       {
         heading: "성경과 역사에서 온 이미지",
+        pattern: "s'en laver les mains = 책임 회피 · bouc émissaire = 희생양 · revenons à nos moutons = 본론으로",
         body:
-          "세속 국가 프랑스지만, 언어에는 성경의 그림이 깊이 박혀 있어요. **s'en laver les mains**(손을 씻다 — 빌라도처럼 책임을 회피하다), **un bouc émissaire**(희생양), **jeter la première pierre**(첫 돌을 던지다 — 남을 함부로 단죄하다), **une traversée du désert**(광야의 횡단 — 정치인·예술가의 길고 어두운 침체기), **rendre à César ce qui est à César**(카이사르의 것은 카이사르에게 — 공은 공, 사는 사).\n\n" +
-          "역사에서 온 코드도 있어요. **Paris vaut bien une messe**(파리는 미사 한 번의 값어치가 있다 — 앙리 4세가 왕위를 위해 개종하며 했다는 말, 실리를 위한 신념 타협), **un cadeau empoisonné**? 아니, 이건 일반 표현이고 — **après moi, le déluge**(내 뒤에야 홍수가 오든 말든 — 루이 15세 시대의 말로, 무책임의 극치)가 대표적이에요.\n\n" +
-          "중세 희극에서 온 **revenons à nos moutons**(우리의 양들에게 돌아갑시다 — 본론으로 돌아가자)도 회의와 수업에서 지금도 매일 쓰여요. 《파틀랭 선생의 소극》(15세기)에서 재판이 곁길로 샐 때마다 판사가 외친 대사예요.",
+          "세속 국가지만 언어에는 성경의 그림이 깊이 박혀 있어요: **s'en laver les mains**(빌라도처럼 손 씻기), **un bouc émissaire**(희생양), **une traversée du désert**(정치인·예술가의 긴 침체기), **jeter la première pierre**(함부로 단죄하기).\n\n" +
+          "역사 코드로는 **Paris vaut bien une messe**(실리를 위한 신념 타협), **après moi, le déluge**(무책임의 극치)가 대표적이고, 중세 희극에서 온 **revenons à nos moutons**(본론으로 돌아갑시다)은 회의에서 지금도 매일 쓰여요.",
         examples: [
           { fr: "Le ministre s'en lave les mains : ce sera au prochain gouvernement de décider.", ko: "장관은 손을 씻어버렸다. 결정은 다음 정부의 몫이 될 것이다.", note: "책임 회피 보도의 고정 이미지" },
           { fr: "Après sa défaite, il a connu une longue traversée du désert.", ko: "패배 이후 그는 길고 긴 침체기를 보냈다.", note: "정치 기사 최빈출 — 출애굽기의 광야 40년에서" },
