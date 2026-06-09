@@ -201,10 +201,10 @@ export default [
       },
       {
         heading: "passé composé vs imparfait — 사진과 동영상",
+        pattern: "passé composé = 사건 한 컷 (사진) · imparfait = 깔린 배경 (동영상)",
         body:
-          "두 과거시제의 분업이 이 챕터의 최종 보스예요. 비유 하나로 잡으세요.\n\n" +
-          "**passé composé = 사진**: 시작과 끝이 있는, '일어난 사건' 한 컷.\n**imparfait = 동영상의 배경 화면**: 그 사건이 일어나던 동안 깔려 있던 상황.\n\n" +
-          "그래서 한 문장 안에서 자주 협업해요: Je **dormais**(자고 있었는데 — 배경) quand le téléphone **a sonné**(전화가 울렸어요 — 사건). 이야기를 할 때 무대 세팅은 imparfait로, 줄거리 진행은 passé composé로 깔린다고 생각하면 돼요.",
+          "두 과거시제는 한 문장 안에서 자주 협업해요: Je **dormais**(자고 있었는데 — 배경) quand le téléphone **a sonné**(전화가 울렸어요 — 사건).\n\n" +
+          "이야기할 때 **무대 세팅은 imparfait**, **줄거리 진행은 passé composé**로 깔린다고 생각하면 돼요.",
         examples: [
           { fr: "Je dormais quand tu as téléphoné.", ipa: "[ʒə dɔʁmɛ kɑ̃ ty a telefɔne]", ko: "네가 전화했을 때 나는 자고 있었어." },
           { fr: "Il faisait beau, alors nous sommes sortis.", ipa: "[il fəzɛ bo alɔʁ nu sɔm sɔʁti]", ko: "날씨가 좋아서 우리는 밖에 나갔어요.", note: "배경(imparfait) → 행동(p.c.)" },
@@ -227,10 +227,11 @@ export default [
     sections: [
       {
         heading: "개념 — laver와 se laver의 차이",
+        pattern: "laver(씻다) → se laver(자기 자신을 씻다)",
+        patternKo: "행동이 자기에게 돌아오는 동사 = 대명동사",
         body:
-          "**laver**는 '(무언가를) 씻다', **se laver**는 '자기 자신을 씻다 = 씻다(목욕하다)'예요. 이 **se**(자기 자신을)가 붙은 동사를 **대명동사**라고 해요.\n\n" +
-          "한국어에는 없는 문법 범주라 낯설지만, 발상 자체는 익숙해요. '아이를 씻기다'와 '(내가) 씻다', '머리를 깎아주다'와 '(내 머리를) 깎다' — 행동이 자기에게 돌아오는 그 감각을 프랑스어는 se라는 부품으로 명시하는 것뿐이에요.\n\n" +
-          "사실 여러분은 이미 하나 알고 있어요. **Je m'appelle...**(제 이름은 ~예요)의 정체가 바로 대명동사 s'appeler(스스로를 ~라고 부르다)였던 거예요.",
+          "**se**(자기 자신을)가 붙은 동사를 **대명동사**라고 해요. 한국어에 없는 범주지만, '아이를 씻기다'와 '(내가) 씻다'의 차이를 se라는 부품으로 명시하는 것뿐이에요.\n\n" +
+          "사실 이미 하나 알고 있어요 — **Je m'appelle...**의 정체가 바로 대명동사 s'appeler(스스로를 ~라고 부르다)예요.",
         examples: [
           { fr: "Je lave la voiture.", ipa: "[ʒə lav la vwatyʁ]", ko: "저는 차를 닦아요.", note: "보통 동사 — 대상이 따로" },
           { fr: "Je me lave.", ipa: "[ʒə mə lav]", ko: "저는 씻어요.", note: "대명동사 — 행동이 나에게로" },
