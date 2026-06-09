@@ -27,9 +27,10 @@ export default [
       },
       {
         heading: "형태 — 단순과거에서 만들어져요",
+        pattern: "passé simple + ^(악상 시르콩플렉스) → 접속법 반과거 (fut → fût · eut → eût)",
         body:
-          "다행히 새로 외울 건 적어요. **접속법 반과거는 passé simple 어간에서 규칙적으로 만들어지거든요.** il parla → qu'il parlât, il finit → qu'il finît, il fut → qu'il fût, il eut → qu'il eût.\n\n" +
-          "텍스트에서 압도적으로 자주 나오는 건 3인칭 단수예요. 식별 포인트는 **악상 시르콩플렉스(^)**: fût, eût, allât, vînt, parlât. 단순과거(fut, eut)와 모자 하나 차이라는 것만 기억하면 돼요.",
+          "**접속법 반과거는 passé simple 어간에서 규칙적으로** 만들어져요: il parla → qu'il parlât, il fut → qu'il fût.\n\n" +
+          "텍스트에서 압도적으로 자주 나오는 건 3인칭 단수예요. 식별 포인트는 **모자(^)** — 단순과거(fut, eut)와 모자 하나 차이라는 것만 기억하면 돼요.",
         table: {
           caption: "최빈출 접속법 반과거 — 3인칭 단수",
           headers: ["동사", "passé simple", "subj. imparfait", "현대어 대체형"],
@@ -47,10 +48,10 @@ export default [
       },
       {
         heading: "접속법 대과거 — 그리고 조건법 과거 제2형",
+        pattern: "que + eût/fût + p.p. = 접속법 대과거 · que 없으면 = aurait/serait + p.p.",
         body:
-          "접속법 대과거는 **eût/fût + 과거분사**예요: qu'il eût aimé(그가 사랑했었기를), qu'elle fût venue(그녀가 왔었기를). 종속절에서는 접속법 과거의 문어 버전으로 읽으면 돼요.\n\n" +
-          "진짜 함정은 따로 있어요. 같은 형태가 종속절 밖에서 **조건법 과거 제2형**(conditionnel passé 2e forme)으로 쓰여요. Il eût aimé voyager = Il aurait aimé voyager(그는 여행하기를 좋아했을 텐데). que도 없는 자리에 eût가 보이면 '~했을 텐데'라는 조건법 과거로 번역해야 해요.\n\n" +
-          "정리하면 독해 공식은 이거예요. **que 뒤의 eût/fût + p.p. = 접속법 과거처럼, que 없는 eût/fût + p.p. = aurait/serait + p.p.처럼** 읽기.",
+          "접속법 대과거는 **eût/fût + 과거분사**예요: qu'il eût aimé. 종속절에서는 접속법 과거의 문어 버전으로 읽으면 돼요.\n\n" +
+          "진짜 함정: 같은 형태가 종속절 밖에서 **조건법 과거 제2형**으로 쓰여요. Il eût aimé voyager = Il aurait aimé voyager(여행을 좋아했을 텐데) — que 없는 자리의 eût는 '~했을 텐데'로 번역하세요.",
         examples: [
           { fr: "On eût dit un tableau de Monet.", ko: "마치 모네의 그림 같았다.", note: "= On aurait dit... 문학 텍스트 최빈출 패턴이니 통째로 암기" },
           { fr: "Je regrettais qu'il n'eût rien compris.", ko: "나는 그가 아무것도 이해하지 못했음이 안타까웠다.", note: "que 뒤 → 접속법 대과거" },
