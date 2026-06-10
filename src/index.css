@@ -9966,14 +9966,17 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .fr-level-dot--sm { width: 34px; height: 34px; font-size: 0.74rem; }
 
-/* 챕터 행 우측 — 문법 용어 라벨 */
+/* 챕터 행 우측 — 문법 용어 라벨 (잘림 없이 줄바꿈 허용) */
 .lessons-list__topic {
   font-size: 0.72rem; color: var(--text-muted);
-  max-width: 180px;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  max-width: 280px;
+  text-align: right;
+  line-height: 1.35;
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 @media (max-width: 560px) {
-  .lessons-list__topic { max-width: 96px; }
+  .lessons-list__topic { max-width: 130px; }
 }
 
 /* ── 챕터 상세 ── */

@@ -108,13 +108,19 @@ export default function ReferenceChapterPage({ lang, slug }) {
           )}
         </div>
         <h1 style={{ fontSize: '1.45rem', fontWeight: 800, lineHeight: 1.35 }}>{chapter.title}</h1>
-        {(chapter.topic || chapter.titleFr) && (
-          <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginTop: 5 }}>
-            {chapter.topic}
-            {chapter.topic && chapter.titleFr && ' · '}
-            {chapter.titleFr && <span lang={ref.langCode} style={{ fontStyle: 'italic' }}>{chapter.titleFr}</span>}
-          </p>
-        )}
+        {(() => {
+          // topic이 원어 제목을 이미 포함하면 중복 표기 생략
+          const titleFr = chapter.titleFr && !(chapter.topic || '').includes(chapter.titleFr)
+            ? chapter.titleFr : null;
+          if (!chapter.topic && !titleFr) return null;
+          return (
+            <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginTop: 5 }}>
+              {chapter.topic}
+              {chapter.topic && titleFr && ' · '}
+              {titleFr && <span lang={ref.langCode} style={{ fontStyle: 'italic' }}>{titleFr}</span>}
+            </p>
+          );
+        })()}
         {chapter.summary && (
           <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginTop: 10 }}>
             {chapter.summary}

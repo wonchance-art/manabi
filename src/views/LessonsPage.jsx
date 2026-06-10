@@ -2,10 +2,6 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
-import { useAuth } from '../lib/AuthContext';
-import { parseTitle } from '../lib/seriesMeta';
 
 const LANG_FILTERS = [
   { key: 'Japanese', label: '🇯🇵 일본어' },
@@ -13,43 +9,10 @@ const LANG_FILTERS = [
   { key: 'French',   label: '🇫🇷 프랑스어' },
 ];
 
-/**
- * 카나 쓰기 드릴 — DB 실습 강의 중 레퍼런스가 대체할 수 없는 유일한 시리즈.
- * 그 외 DB 문법 강의는 레퍼런스와 중복이라 목록에서 제외 (직접 링크는 유효).
- */
-async function fetchKanaLessons() {
-  const { data } = await supabase
-    .from('reading_materials')
-    .select('id, title, processed_json')
-    .eq('visibility', 'public')
-    .ilike('title', '%카나 #%')
-    .limit(60);
-  return (data || [])
-    .map(m => ({ ...m, _meta: parseTitle(m.title) }))
-    .filter(m => m._meta.series === '카나')
-    .sort((a, b) => (a._meta.num || 0) - (b._meta.num || 0));
-}
-
-async function fetchProgressMap(userId) {
-  if (!userId) return { completed: new Set(), inProgress: new Map() };
-  const { data } = await supabase
-    .from('reading_progress')
-    .select('material_id, is_completed, last_token_idx')
-    .eq('user_id', userId);
-  const completed = new Set();
-  const inProgress = new Map();
-  for (const r of (data || [])) {
-    if (r.is_completed) completed.add(r.material_id);
-    else if (r.last_token_idx > 0) inProgress.set(r.material_id, r.last_token_idx);
-  }
-  return { completed, inProgress };
-}
-
 /** refManifest: 서버에서 만든 레퍼런스 경량 목차 — lessons/page.jsx 참고 */
 export default function LessonsPage({ refManifest = {} }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user } = useAuth();
 
   const [langFilter, setLangFilter] = useState(() => {
     const u = searchParams.get('lang');
@@ -91,19 +54,6 @@ export default function LessonsPage({ refManifest = {} }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 카나 드릴 (일본어 탭 전용)
-  const { data: kanaLessons = [] } = useQuery({
-    queryKey: ['kana-lessons'],
-    queryFn: fetchKanaLessons,
-    enabled: langFilter === 'Japanese',
-    staleTime: 1000 * 60 * 10,
-  });
-  const { data: progressMap = { completed: new Set(), inProgress: new Map() } } = useQuery({
-    queryKey: ['lessons-progress', user?.id],
-    queryFn: () => fetchProgressMap(user?.id),
-    enabled: !!user && langFilter === 'Japanese',
-  });
-
   const refLang = refManifest[langFilter];
   const levelOptions = refLang ? refLang.levels.map(l => l.label) : [];
 
@@ -113,61 +63,6 @@ export default function LessonsPage({ refManifest = {} }) {
       .filter(l => levelFilter === 'all' || l.label === levelFilter)
       .map(l => ({ meta: l, chapters: l.chapters, vocabCount: l.vocabCount, bunkeiCount: l.bunkeiCount || 0 }));
   }, [refLang, levelFilter]);
-
-  // 카나 그룹은 OT(문자 챕터)와 짝 — 전체 또는 OT 필터에서만 노출
-  const showKana = langFilter === 'Japanese'
-    && kanaLessons.length > 0
-    && (levelFilter === 'all' || levelFilter === 'OT 오리엔테이션');
-
-  // 카나 쓰기 드릴 그룹 — OT 그룹 바로 아래에 렌더
-  function renderKanaDrills() {
-    const groupKey = 'kana-drill';
-    const isOpen = expandedGroups.has(groupKey);
-    const doneCount = kanaLessons.filter(m => progressMap.completed.has(m.id)).length;
-    return (
-      <section className={`lessons-list__group ${isOpen ? 'is-open' : ''}`}>
-        <button
-          type="button"
-          className="lessons-list__group-header"
-          onClick={() => toggleGroup(groupKey)}
-          aria-expanded={isOpen}
-        >
-          <span className="lessons-list__group-chevron" aria-hidden="true">{isOpen ? '▾' : '▸'}</span>
-          <span className="lessons-list__group-title">
-            ✏️ 카나 쓰기 드릴
-            <span style={{ fontWeight: 500, fontSize: '0.82em', color: 'var(--text-muted)', marginLeft: 8 }}>
-              히라가나·가타카나 — 문자 챕터의 실습 짝
-            </span>
-          </span>
-          <span className="lessons-list__group-count">{doneCount} / {kanaLessons.length}</span>
-        </button>
-        {isOpen && (
-          <ul className="lessons-list__rows">
-            {kanaLessons.map(m => {
-              const isCompleted = progressMap.completed.has(m.id);
-              const lastIdx = progressMap.inProgress.get(m.id);
-              return (
-                <li
-                  key={m.id}
-                  className={`lessons-list__row lessons-list__row--${isCompleted ? 'done' : lastIdx ? 'progress' : 'idle'}`}
-                  onClick={() => router.push(`/lessons/${m.id}`)}
-                  role="link"
-                  tabIndex={0}
-                  onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && router.push(`/lessons/${m.id}`)}
-                >
-                  <span className="lessons-list__status" aria-hidden="true">
-                    {isCompleted ? '●' : lastIdx ? '◐' : '○'}
-                  </span>
-                  <span className="lessons-list__title">{m._meta.display || m.title}</span>
-                  <span className="lessons-list__meta" />
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </section>
-    );
-  }
 
   return (
     <div className="page-container">
@@ -228,15 +123,14 @@ export default function LessonsPage({ refManifest = {} }) {
             </div>
           </div>
 
-          {/* 레벨별 레퍼런스 그룹 — 일본어 OT 뒤에는 카나 드릴이 따라붙음 */}
+          {/* 레벨별 레퍼런스 그룹 */}
           {refGroups.map(({ meta, chapters, vocabCount, bunkeiCount }) => {
             const groupKey = `ref:${langFilter}:${meta.key}`;
             const isOpen = expandedGroups.has(groupKey);
             const readSet = refRead[langFilter] || new Set();
             const readCount = chapters.filter(c => readSet.has(c.slug)).length;
             return (
-              <div key={groupKey} style={{ display: 'contents' }}>
-              <section className={`lessons-list__group ${isOpen ? 'is-open' : ''}`}>
+              <section key={groupKey} className={`lessons-list__group ${isOpen ? 'is-open' : ''}`}>
                 <button
                   type="button"
                   className="lessons-list__group-header"
@@ -317,8 +211,6 @@ export default function LessonsPage({ refManifest = {} }) {
                   </ul>
                 )}
               </section>
-              {meta.key === 'OT' && showKana && renderKanaDrills()}
-              </div>
             );
           })}
         </div>
