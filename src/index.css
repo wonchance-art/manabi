@@ -9956,3 +9956,433 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   color: var(--danger);
   background: rgba(255,107,107,0.1);
 }
+
+/* ========= French Reference (강의 🇫🇷 탭 + /french/grammar·vocab) ========= */
+.fr-level-dot {
+  flex-shrink: 0;
+  width: 46px; height: 46px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 0.9rem;
+}
+.fr-level-dot--sm { width: 34px; height: 34px; font-size: 0.74rem; }
+
+/* 챕터 행 우측 — 문법 용어 라벨 (잘림 없이 줄바꿈 허용) */
+.lessons-list__topic {
+  font-size: 0.72rem; color: var(--text-muted);
+  max-width: 280px;
+  text-align: right;
+  line-height: 1.35;
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+@media (max-width: 560px) {
+  .lessons-list__topic { max-width: 130px; }
+}
+
+/* ── 챕터 상세 ── */
+
+/* 핵심 패턴 한눈에 — 챕터 상단 요약 박스 */
+.fr-pattern-summary {
+  border: 1px solid;
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  margin-bottom: 20px;
+}
+.fr-pattern-summary__title {
+  font-size: 0.78rem; font-weight: 800;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.fr-pattern-summary__list { list-style: none; margin: 0; padding: 0; }
+.fr-pattern-summary__item {
+  display: flex; align-items: baseline; gap: 10px;
+  padding: 5px 0;
+  color: var(--text-primary);
+}
+.fr-pattern-summary__item:hover .fr-pattern-summary__text { text-decoration: underline; }
+.fr-pattern-summary__num {
+  flex-shrink: 0;
+  font-size: 0.74rem; font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.fr-pattern-summary__text {
+  font-size: 0.95rem; font-weight: 700;
+  line-height: 1.5;
+}
+
+.fr-section { padding: 22px; margin-bottom: 16px; scroll-margin-top: 80px; }
+.fr-section__heading {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 1.08rem; font-weight: 800; margin-bottom: 14px;
+  line-height: 1.4;
+}
+.fr-section__num {
+  flex-shrink: 0;
+  width: 24px; height: 24px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 0.78rem; font-weight: 800;
+}
+
+/* 패턴 공식 박스 — 섹션의 핵심을 가장 크게 */
+.fr-pattern {
+  border-left: 4px solid;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  margin-bottom: 14px;
+}
+.fr-pattern__text {
+  font-size: 1.12rem; font-weight: 800;
+  line-height: 1.5; letter-spacing: 0.01em;
+  color: var(--text-primary);
+}
+.fr-pattern__ko {
+  font-size: 0.8rem; color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* 상세 설명 — 패턴·예문 아래의 부가 텍스트 (시각적 보조 위계) */
+.fr-section__detail {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+}
+.fr-section__para {
+  font-size: 0.88rem; line-height: 1.7;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+.fr-section__para:last-child { margin-bottom: 0; }
+/* 핵심 용어 형광펜 강조 */
+.fr-section__para strong,
+.fr-callout__body strong,
+.fr-pattern-summary__text strong,
+.fr-pattern__text strong {
+  color: var(--text-primary);
+  font-weight: 700;
+  background: linear-gradient(transparent 60%, var(--primary-glow) 60%);
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+.fr-examples { list-style: none; margin: 12px 0 4px; padding: 0; }
+.fr-example {
+  padding: 10px 14px; margin-bottom: 8px;
+  background: var(--bg-secondary);
+  border-left: 3px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.fr-example__fr { font-size: 1rem; font-weight: 700; line-height: 1.55; }
+.fr-example__ipa {
+  margin-left: 8px;
+  font-size: 0.78rem; font-weight: 400; color: var(--text-muted);
+}
+.fr-example__ko { font-size: 0.84rem; color: var(--text-secondary); margin-top: 2px; }
+.fr-example__note { font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; line-height: 1.5; }
+
+.fr-table-wrap { overflow-x: auto; margin: 12px 0; }
+.fr-table {
+  width: 100%; border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.fr-table caption {
+  caption-side: top; text-align: left;
+  font-size: 0.78rem; font-weight: 700; color: var(--text-muted);
+  padding-bottom: 6px;
+}
+.fr-table th, .fr-table td {
+  padding: 7px 10px; text-align: left;
+  border: 1px solid var(--border);
+}
+.fr-table th {
+  background: var(--bg-secondary);
+  font-weight: 700; font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.fr-callout {
+  margin: 12px 0 4px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border-left: 3px solid;
+}
+.fr-callout__label {
+  display: block;
+  font-size: 0.74rem; font-weight: 800;
+  letter-spacing: 0.02em; margin-bottom: 4px;
+}
+.fr-callout__body { font-size: 0.86rem; line-height: 1.65; color: var(--text-secondary); }
+.fr-callout--pitfall { border-color: #E8763C; background: rgba(232,118,60,0.1); }
+.fr-callout--pitfall .fr-callout__label { color: #E8763C; }
+.fr-callout--vsen { border-color: #4DABF7; background: rgba(77,171,247,0.1); }
+.fr-callout--vsen .fr-callout__label { color: #4DABF7; }
+.fr-callout--etym { border-color: #51A85C; background: rgba(81,168,92,0.1); }
+.fr-callout--etym .fr-callout__label { color: #51A85C; }
+.fr-callout--tip { border-color: #9775FA; background: rgba(151,117,250,0.1); }
+.fr-callout--tip .fr-callout__label { color: #9775FA; }
+
+.fr-pager {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  margin: 24px 0 8px;
+}
+.fr-pager__link {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 14px 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  transition: background 0.15s ease;
+}
+.fr-pager__link:hover { background: var(--bg-elevated); }
+.fr-pager__link--next { text-align: right; }
+.fr-pager__dir { font-size: 0.72rem; color: var(--text-muted); font-weight: 700; }
+.fr-pager__title { font-size: 0.86rem; font-weight: 600; line-height: 1.4; }
+@media (max-width: 560px) {
+  .fr-pager { grid-template-columns: 1fr; }
+  .fr-pager__link--next { text-align: left; }
+}
+
+/* ── 어휘 ── */
+.fr-vocab-tabs {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  margin-bottom: 16px;
+}
+.fr-vocab-tab {
+  padding: 5px 14px;
+  font-size: 0.84rem; font-weight: 700;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  transition: background 0.15s ease;
+}
+.fr-vocab-tab:hover { background: var(--bg-elevated); }
+/* ── 어휘 세로 리스트 — 정렬·미니멀·셀프 테스트 ── */
+.fr-vlist-tools {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.fr-vlist-tools .search-input { flex: 1; min-width: 180px; }
+.fr-vlist-tools__toggles { display: flex; gap: 6px; }
+.fr-vlist-hint {
+  font-size: 0.78rem; color: var(--text-muted);
+  margin-bottom: 12px;
+}
+.fr-vlist-theme {
+  font-size: 0.95rem; font-weight: 700;
+  margin: 18px 0 6px;
+}
+.fr-vlist-theme__count {
+  font-size: 0.74rem; color: var(--text-muted); font-weight: 500;
+  margin-left: 8px;
+}
+.fr-vlist { list-style: none; margin: 0; padding: 0; }
+.fr-vrow {
+  display: grid;
+  grid-template-columns: 168px 1fr auto;
+  gap: 24px;
+  align-items: start;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--border);
+}
+.fr-vrow--quiz { cursor: pointer; }
+.fr-vrow--quiz:hover { background: var(--bg-secondary); }
+.fr-vrow__word { min-width: 0; }
+.fr-vrow__main {
+  display: block;
+  font-size: 0.98rem; font-weight: 700;
+  line-height: 1.45;
+  overflow-wrap: break-word;
+}
+.fr-vrow__pron {
+  display: block;
+  font-size: 0.74rem; color: var(--text-muted);
+  margin-top: 1px;
+}
+.fr-vrow__body { min-width: 0; }
+.fr-vrow__ko {
+  font-size: 0.88rem; color: var(--text-primary);
+  line-height: 1.55;
+}
+.fr-vrow__pos {
+  font-size: 0.66rem; font-weight: 700;
+  color: var(--text-muted);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 1px 7px;
+  margin-right: 7px;
+  vertical-align: 1px;
+}
+.fr-vrow__en { font-size: 0.78rem; color: var(--text-muted); }
+.fr-vrow__etym {
+  font-size: 0.78rem; color: #51A85C;
+  line-height: 1.55; margin-top: 4px;
+}
+.fr-vrow__ex {
+  font-size: 0.79rem; color: var(--text-secondary);
+  font-style: italic; line-height: 1.55;
+  margin-top: 4px;
+}
+.fr-vrow__ex-yomi { font-style: normal; font-size: 0.72rem; color: var(--text-muted); }
+.fr-vrow__ex-ko { color: var(--text-muted); font-style: normal; }
+.fr-vrow__actions {
+  display: flex; gap: 4px; align-items: center;
+  padding-top: 2px;
+}
+.fr-vrow__save {
+  background: transparent; border: none;
+  font-size: 0.95rem; cursor: pointer;
+  padding: 2px 4px; border-radius: var(--radius-sm);
+  opacity: 0.75; transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.fr-vrow__save:hover:not(:disabled) { opacity: 1; transform: scale(1.15); }
+.fr-vrow__save.is-saved { opacity: 0.55; cursor: default; color: var(--accent); }
+
+/* 가리기 모드 — 가려진 셀 */
+.fr-vrow__word.is-hidden, .fr-vrow__body.is-hidden {
+  position: relative;
+}
+.fr-vrow__word.is-hidden > *, .fr-vrow__body.is-hidden > * {
+  filter: blur(7px);
+  opacity: 0.45;
+  user-select: none;
+  pointer-events: none;
+}
+
+.fr-vrow--wide { grid-template-columns: 200px 1fr auto; }
+.fr-vrow__chlink {
+  display: inline-block;
+  font-size: 0.74rem; font-weight: 600;
+  color: var(--primary);
+  margin-top: 5px;
+}
+.fr-vrow__chlink:hover { text-decoration: underline; }
+@media (max-width: 560px) {
+  .fr-vrow { grid-template-columns: 116px 1fr auto; gap: 12px; }
+  .fr-vrow--wide { grid-template-columns: 132px 1fr auto; }
+  .fr-vrow__main { font-size: 0.92rem; }
+}
+
+/* ── 문형 사전 흐름 ── */
+.lessons-list__bunkei-chip {
+  flex-shrink: 0;
+  font-size: 0.72rem; font-weight: 700;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 2px 9px;
+  margin-right: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.lessons-list__bunkei-chip:hover { background: var(--bg-elevated); color: var(--text-primary); }
+
+.lessons-list__row--tool {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+}
+.lessons-list__row--tool .lessons-list__title { font-weight: 600; }
+.lessons-list__row--tool:hover { background: var(--bg-elevated); }
+
+.fr-bunkei-cta {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 16px;
+  margin: 4px 0 8px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  transition: background 0.15s ease;
+}
+.fr-bunkei-cta:hover { background: var(--bg-elevated); }
+.fr-bunkei-cta__text { flex: 1; }
+.fr-bunkei-cta__text strong { color: var(--primary); }
+
+.fr-chfilter {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; flex-wrap: wrap;
+  padding: 9px 14px;
+  margin-bottom: 14px;
+  background: var(--primary-glow);
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+}
+.fr-chfilter__back { font-weight: 600; text-decoration: underline; }
+.fr-chfilter__clear {
+  font-weight: 700; color: var(--text-secondary);
+  white-space: nowrap;
+}
+.fr-chfilter__clear:hover { color: var(--text-primary); }
+
+/* ── 일본어 요미가나(루비) ── */
+.ja-ruby { line-height: 2.05; }
+.ja-ruby ruby { ruby-align: center; }
+.ja-ruby rt {
+  font-size: 0.55em;
+  font-weight: 400;
+  color: var(--text-muted);
+  letter-spacing: 0;
+  user-select: none;
+}
+
+/* ── 발음 버튼 ── */
+.fr-speak {
+  background: transparent; border: none;
+  cursor: pointer; font-size: 0.85rem;
+  padding: 1px 4px; border-radius: var(--radius-sm);
+  opacity: 0.6; transition: opacity 0.15s ease;
+  vertical-align: middle;
+}
+.fr-speak:hover { opacity: 1; }
+.fr-speak--xs { font-size: 0.75rem; }
+
+/* ── 패턴 체크 (회상 연습) ── */
+.fr-check__toggle-all {
+  margin-left: auto;
+  background: transparent; border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  font-size: 0.72rem; font-weight: 600;
+  color: var(--text-muted);
+  padding: 3px 10px; cursor: pointer;
+}
+.fr-check__toggle-all:hover { background: var(--bg-secondary); color: var(--text-primary); }
+.fr-check__lead {
+  font-size: 0.82rem; color: var(--text-muted);
+  margin-bottom: 12px;
+}
+.fr-check__list { list-style: none; margin: 0; padding: 0; counter-reset: check; }
+.fr-check__item {
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+  padding: 9px 0;
+  border-bottom: 1px dashed var(--border);
+}
+.fr-check__item::before {
+  counter-increment: check;
+  content: counter(check);
+  flex-shrink: 0;
+  font-size: 0.72rem; font-weight: 800;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.fr-check__ko {
+  flex: 1; min-width: 160px;
+  font-size: 0.88rem; color: var(--text-primary);
+}
+.fr-check__answer {
+  background: transparent; border: none; cursor: pointer;
+  text-align: left; padding: 0;
+}
+.fr-check__hidden {
+  font-size: 0.78rem; font-weight: 600;
+  color: var(--text-muted);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-full);
+  padding: 3px 12px;
+}
+.fr-check__answer:hover .fr-check__hidden { color: var(--text-primary); }
+.fr-check__main { font-size: 0.92rem; font-weight: 700; }
+.fr-check__pron { font-size: 0.74rem; font-weight: 400; color: var(--text-muted); }
