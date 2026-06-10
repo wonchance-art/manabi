@@ -106,6 +106,15 @@ export default function ReferenceChapterPage({ lang, slug }) {
           {chapter.duration && (
             <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>⏱ {chapter.duration}</span>
           )}
+          {/* 문형 사전 빠른 진입 — 헤더에서 바로 (일본어) */}
+          {ref.getBunkei?.(chapter.level) && (
+            <Link
+              href={`${ref.base}/bunkei/${chapter.level.toLowerCase()}`}
+              className="fr-header-bunkei"
+            >
+              📑 {chapter.level} 문형 사전
+            </Link>
+          )}
         </div>
         <h1 style={{ fontSize: '1.45rem', fontWeight: 800, lineHeight: 1.35 }}>{chapter.title}</h1>
         {(() => {
