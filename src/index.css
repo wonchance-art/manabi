@@ -10262,6 +10262,59 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   .fr-vrow__main { font-size: 0.92rem; }
 }
 
+/* ── 문형 사전 흐름 ── */
+.lessons-list__bunkei-chip {
+  flex-shrink: 0;
+  font-size: 0.72rem; font-weight: 700;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 2px 9px;
+  margin-right: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.lessons-list__bunkei-chip:hover { background: var(--bg-elevated); color: var(--text-primary); }
+
+.lessons-list__row--tool {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+}
+.lessons-list__row--tool .lessons-list__title { font-weight: 600; }
+.lessons-list__row--tool:hover { background: var(--bg-elevated); }
+
+.fr-bunkei-cta {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 16px;
+  margin: 4px 0 8px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  transition: background 0.15s ease;
+}
+.fr-bunkei-cta:hover { background: var(--bg-elevated); }
+.fr-bunkei-cta__text { flex: 1; }
+.fr-bunkei-cta__text strong { color: var(--primary); }
+
+.fr-chfilter {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; flex-wrap: wrap;
+  padding: 9px 14px;
+  margin-bottom: 14px;
+  background: var(--primary-glow);
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+}
+.fr-chfilter__back { font-weight: 600; text-decoration: underline; }
+.fr-chfilter__clear {
+  font-weight: 700; color: var(--text-secondary);
+  white-space: nowrap;
+}
+.fr-chfilter__clear:hover { color: var(--text-primary); }
+
 /* ── 일본어 요미가나(루비) ── */
 .ja-ruby { line-height: 2.05; }
 .ja-ruby ruby { ruby-align: center; }

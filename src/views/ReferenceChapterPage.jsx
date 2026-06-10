@@ -176,6 +176,28 @@ export default function ReferenceChapterPage({ lang, slug }) {
       {/* ── 패턴 체크 (회상 연습) ── */}
       <RefPatternCheck items={checkItems} lang={lang} />
 
+      {/* ── 문형 사전으로 — 이 챕터와 연결된 문형 확장 학습 ── */}
+      {(() => {
+        const bunkei = ref.getBunkei?.(chapter.level);
+        if (!bunkei) return null;
+        const related = bunkei.themes.flatMap(t => t.items).filter(i => i.ch === chapter.slug).length;
+        const base = `${ref.base}/bunkei/${chapter.level.toLowerCase()}`;
+        return (
+          <Link
+            href={related > 0 ? `${base}?ch=${chapter.slug}` : base}
+            className="fr-bunkei-cta"
+          >
+            <span className="fr-bunkei-cta__icon" aria-hidden="true">📑</span>
+            <span className="fr-bunkei-cta__text">
+              {related > 0
+                ? <>이 챕터와 연결된 문형 <strong>{related}개</strong>를 {chapter.level} 문형 사전에서 모아 보기</>
+                : <>{chapter.level} 문형 사전 전체 보기</>}
+            </span>
+            <span aria-hidden="true">→</span>
+          </Link>
+        );
+      })()}
+
       {/* ── 이전/다음 ── */}
       <nav className="fr-pager" aria-label="챕터 이동">
         {prev ? (

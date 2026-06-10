@@ -250,10 +250,50 @@ export default function LessonsPage({ refManifest = {} }) {
                       {meta.focus}
                     </span>
                   </span>
+                  {/* 접힌 상태에서도 보이는 문형 사전 바로가기 */}
+                  {bunkeiCount > 0 && (
+                    <span
+                      className="lessons-list__bunkei-chip"
+                      role="link"
+                      tabIndex={0}
+                      title={`${meta.key} 문형 사전 — ${bunkeiCount}문형 전수`}
+                      onClick={e => { e.stopPropagation(); router.push(`${refLang.base}/bunkei/${meta.key.toLowerCase()}`); }}
+                      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); router.push(`${refLang.base}/bunkei/${meta.key.toLowerCase()}`); } }}
+                    >
+                      📑 {bunkeiCount}
+                    </span>
+                  )}
                   <span className="lessons-list__group-count">{readCount} / {chapters.length}</span>
                 </button>
                 {isOpen && (
                   <ul className="lessons-list__rows">
+                    {/* 레벨 도구 — 챕터(커리큘럼) 위에 사전·어휘(레퍼런스 도구) */}
+                    {bunkeiCount > 0 && (
+                      <li
+                        className="lessons-list__row lessons-list__row--tool"
+                        onClick={() => router.push(`${refLang.base}/bunkei/${meta.key.toLowerCase()}`)}
+                        role="link"
+                        tabIndex={0}
+                        onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && router.push(`${refLang.base}/bunkei/${meta.key.toLowerCase()}`)}
+                      >
+                        <span className="lessons-list__status" aria-hidden="true">📑</span>
+                        <span className="lessons-list__title">{meta.key} 문형 사전 — {bunkeiCount}문형 전수 (검색·뜻 가리기)</span>
+                        <span className="lessons-list__meta" />
+                      </li>
+                    )}
+                    {vocabCount > 0 && (
+                      <li
+                        className="lessons-list__row lessons-list__row--tool"
+                        onClick={() => router.push(`${refLang.base}/vocab/${meta.key.toLowerCase()}`)}
+                        role="link"
+                        tabIndex={0}
+                        onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && router.push(`${refLang.base}/vocab/${meta.key.toLowerCase()}`)}
+                      >
+                        <span className="lessons-list__status" aria-hidden="true">📖</span>
+                        <span className="lessons-list__title">{meta.label} 어휘 — {vocabCount}단어 (주제별·검색)</span>
+                        <span className="lessons-list__meta" />
+                      </li>
+                    )}
                     {chapters.map(ch => {
                       const read = readSet.has(ch.slug);
                       return (
@@ -274,32 +314,6 @@ export default function LessonsPage({ refManifest = {} }) {
                         </li>
                       );
                     })}
-                    {bunkeiCount > 0 && (
-                      <li
-                        className="lessons-list__row lessons-list__row--idle"
-                        onClick={() => router.push(`${refLang.base}/bunkei/${meta.key.toLowerCase()}`)}
-                        role="link"
-                        tabIndex={0}
-                        onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && router.push(`${refLang.base}/bunkei/${meta.key.toLowerCase()}`)}
-                      >
-                        <span className="lessons-list__status" aria-hidden="true">📑</span>
-                        <span className="lessons-list__title">{meta.key} 문형 사전 — {bunkeiCount}문형 전수 (접속·뜻·예문)</span>
-                        <span className="lessons-list__meta" />
-                      </li>
-                    )}
-                    {vocabCount > 0 && (
-                      <li
-                        className="lessons-list__row lessons-list__row--idle"
-                        onClick={() => router.push(`${refLang.base}/vocab/${meta.key.toLowerCase()}`)}
-                        role="link"
-                        tabIndex={0}
-                        onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && router.push(`${refLang.base}/vocab/${meta.key.toLowerCase()}`)}
-                      >
-                        <span className="lessons-list__status" aria-hidden="true">📖</span>
-                        <span className="lessons-list__title">{meta.label} 어휘 — {vocabCount}단어 (주제별·검색)</span>
-                        <span className="lessons-list__meta" />
-                      </li>
-                    )}
                   </ul>
                 )}
               </section>

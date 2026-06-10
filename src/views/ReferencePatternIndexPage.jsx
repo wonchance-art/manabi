@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useTTS } from '../lib/useTTS';
 import { refInline, LevelDot, JaText } from './refShared';
 
@@ -12,6 +13,10 @@ import { refInline, LevelDot, JaText } from './refShared';
  */
 export default function ReferencePatternIndexPage({ refInfo, levelMeta = [], meta, bunkei }) {
   const { speak, supported: ttsSupported } = useTTS();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  // ?ch=<챕터 slug> — 챕터 페이지에서 "연관 문형 모아 보기"로 진입한 경우
+  const chFilter = searchParams.get('ch') || null;
   const [query, setQuery] = useState('');
   const [hideMeaning, setHideMeaning] = useState(false);
   const [revealed, setRevealed] = useState(() => new Set());
@@ -20,19 +25,25 @@ export default function ReferencePatternIndexPage({ refInfo, levelMeta = [], met
   const filteredThemes = useMemo(() => {
     if (!bunkei) return [];
     const q = query.trim().toLowerCase();
-    if (!q) return bunkei.themes;
     return bunkei.themes
       .map(t => ({
         ...t,
         items: t.items.filter(i =>
-          i.pattern.toLowerCase().includes(q) ||
-          i.ko.toLowerCase().includes(q) ||
-          (i.conn || '').toLowerCase().includes(q) ||
-          (i.ex?.ja || '').includes(q)
+          (!chFilter || i.ch === chFilter) &&
+          (!q ||
+            i.pattern.toLowerCase().includes(q) ||
+            i.ko.toLowerCase().includes(q) ||
+            (i.conn || '').toLowerCase().includes(q) ||
+            (i.ex?.ja || '').includes(q))
         ),
       }))
       .filter(t => t.items.length > 0);
-  }, [bunkei, query]);
+  }, [bunkei, query, chFilter]);
+
+  const chFilterCount = useMemo(
+    () => filteredThemes.reduce((s, t) => s + t.items.length, 0),
+    [filteredThemes]
+  );
 
   function toggleReveal(key) {
     if (!hideMeaning) return;
@@ -123,6 +134,18 @@ export default function ReferencePatternIndexPage({ refInfo, levelMeta = [], met
       </div>
       {hideMeaning && (
         <p className="fr-vlist-hint">문형을 보고 뜻을 떠올린 뒤, 행을 탭하면 확인할 수 있어요.</p>
+      )}
+
+      {/* 챕터 연관 필터 활성 표시 */}
+      {chFilter && (
+        <div className="fr-chfilter">
+          <span>
+            🔗 챕터 연관 문형만 보는 중 ({chFilterCount}개)
+            {' · '}
+            <Link href={`/japanese/grammar/${chFilter}`} className="fr-chfilter__back">챕터로 돌아가기</Link>
+          </span>
+          <Link href={pathname} className="fr-chfilter__clear">전체 {total}문형 보기 ✕</Link>
+        </div>
       )}
 
       {filteredThemes.length === 0 && (
