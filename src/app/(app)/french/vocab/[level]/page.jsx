@@ -3,8 +3,11 @@ import { REF_LANGS } from '@/content/refLangs';
 
 const ref = REF_LANGS.French;
 
+// 어휘가 있는 레벨만 (OT 등 문법 전용 레벨 제외)
+const VOCAB_LEVELS = ref.LEVEL_META.filter(m => ref.countVocab(m.key) > 0);
+
 export function generateStaticParams() {
-  return ref.LEVEL_META.map(m => ({ level: m.key.toLowerCase() }));
+  return VOCAB_LEVELS.map(m => ({ level: m.key.toLowerCase() }));
 }
 
 export async function generateMetadata({ params }) {
@@ -22,7 +25,7 @@ export default async function Page({ params }) {
     <ReferenceVocabPage
       lang="French"
       refInfo={{ base: ref.base, flag: ref.flag, name: ref.name, langCode: ref.langCode }}
-      levelMeta={ref.LEVEL_META}
+      levelMeta={VOCAB_LEVELS}
       meta={ref.getLevelMeta(level)}
       vocab={ref.getVocab(level)}
     />

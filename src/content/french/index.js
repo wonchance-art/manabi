@@ -24,9 +24,9 @@ import vocabC2 from './vocab/c2';
 /** 레벨 메타 — 학습 순서대로. 색은 입문(파랑)→마스터(자주) 그라데이션 */
 export const FR_LEVEL_META = [
   {
-    key: 'A0', label: 'A0 입문', focus: '프랑스어 기초 상식',
+    key: 'A0', short: 'OT', label: 'OT 오리엔테이션', focus: '시작 전 워밍업',
     desc: '알파벳·발음·명사의 성·관사 — 본격 학습 전에 알아야 할 프랑스어의 작동 원리.',
-    color: '#4DABF7', bg: 'rgba(77,171,247,0.12)', line: 'rgba(77,171,247,0.35)',
+    color: '#868E96', bg: 'rgba(134,142,150,0.12)', line: 'rgba(134,142,150,0.35)',
   },
   {
     key: 'A1', label: 'A1 기초', focus: '첫 문장 만들기',

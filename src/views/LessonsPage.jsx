@@ -114,10 +114,60 @@ export default function LessonsPage({ refManifest = {} }) {
       .map(l => ({ meta: l, chapters: l.chapters, vocabCount: l.vocabCount }));
   }, [refLang, levelFilter]);
 
-  // 카나 그룹은 N5와 짝 — 전체 또는 N5 필터에서만 노출
+  // 카나 그룹은 OT(문자 챕터)와 짝 — 전체 또는 OT 필터에서만 노출
   const showKana = langFilter === 'Japanese'
     && kanaLessons.length > 0
-    && (levelFilter === 'all' || levelFilter === 'N5 기초');
+    && (levelFilter === 'all' || levelFilter === 'OT 오리엔테이션');
+
+  // 카나 쓰기 드릴 그룹 — OT 그룹 바로 아래에 렌더
+  function renderKanaDrills() {
+    const groupKey = 'kana-drill';
+    const isOpen = expandedGroups.has(groupKey);
+    const doneCount = kanaLessons.filter(m => progressMap.completed.has(m.id)).length;
+    return (
+      <section className={`lessons-list__group ${isOpen ? 'is-open' : ''}`}>
+        <button
+          type="button"
+          className="lessons-list__group-header"
+          onClick={() => toggleGroup(groupKey)}
+          aria-expanded={isOpen}
+        >
+          <span className="lessons-list__group-chevron" aria-hidden="true">{isOpen ? '▾' : '▸'}</span>
+          <span className="lessons-list__group-title">
+            ✏️ 카나 쓰기 드릴
+            <span style={{ fontWeight: 500, fontSize: '0.82em', color: 'var(--text-muted)', marginLeft: 8 }}>
+              히라가나·가타카나 — 문자 챕터의 실습 짝
+            </span>
+          </span>
+          <span className="lessons-list__group-count">{doneCount} / {kanaLessons.length}</span>
+        </button>
+        {isOpen && (
+          <ul className="lessons-list__rows">
+            {kanaLessons.map(m => {
+              const isCompleted = progressMap.completed.has(m.id);
+              const lastIdx = progressMap.inProgress.get(m.id);
+              return (
+                <li
+                  key={m.id}
+                  className={`lessons-list__row lessons-list__row--${isCompleted ? 'done' : lastIdx ? 'progress' : 'idle'}`}
+                  onClick={() => router.push(`/lessons/${m.id}`)}
+                  role="link"
+                  tabIndex={0}
+                  onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && router.push(`/lessons/${m.id}`)}
+                >
+                  <span className="lessons-list__status" aria-hidden="true">
+                    {isCompleted ? '●' : lastIdx ? '◐' : '○'}
+                  </span>
+                  <span className="lessons-list__title">{m._meta.display || m.title}</span>
+                  <span className="lessons-list__meta" />
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
+    );
+  }
 
   return (
     <div className="page-container">
@@ -178,64 +228,15 @@ export default function LessonsPage({ refManifest = {} }) {
             </div>
           </div>
 
-          {/* 카나 쓰기 드릴 — 문자 학습의 실습 짝 (N5 위에 배치) */}
-          {showKana && (() => {
-            const groupKey = 'kana-drill';
-            const isOpen = expandedGroups.has(groupKey);
-            const doneCount = kanaLessons.filter(m => progressMap.completed.has(m.id)).length;
-            return (
-              <section className={`lessons-list__group ${isOpen ? 'is-open' : ''}`}>
-                <button
-                  type="button"
-                  className="lessons-list__group-header"
-                  onClick={() => toggleGroup(groupKey)}
-                  aria-expanded={isOpen}
-                >
-                  <span className="lessons-list__group-chevron" aria-hidden="true">{isOpen ? '▾' : '▸'}</span>
-                  <span className="lessons-list__group-title">
-                    ✏️ 카나 쓰기 드릴
-                    <span style={{ fontWeight: 500, fontSize: '0.82em', color: 'var(--text-muted)', marginLeft: 8 }}>
-                      히라가나·가타카나 — 문자 챕터의 실습 짝
-                    </span>
-                  </span>
-                  <span className="lessons-list__group-count">{doneCount} / {kanaLessons.length}</span>
-                </button>
-                {isOpen && (
-                  <ul className="lessons-list__rows">
-                    {kanaLessons.map(m => {
-                      const isCompleted = progressMap.completed.has(m.id);
-                      const lastIdx = progressMap.inProgress.get(m.id);
-                      return (
-                        <li
-                          key={m.id}
-                          className={`lessons-list__row lessons-list__row--${isCompleted ? 'done' : lastIdx ? 'progress' : 'idle'}`}
-                          onClick={() => router.push(`/lessons/${m.id}`)}
-                          role="link"
-                          tabIndex={0}
-                          onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && router.push(`/lessons/${m.id}`)}
-                        >
-                          <span className="lessons-list__status" aria-hidden="true">
-                            {isCompleted ? '●' : lastIdx ? '◐' : '○'}
-                          </span>
-                          <span className="lessons-list__title">{m._meta.display || m.title}</span>
-                          <span className="lessons-list__meta" />
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-              </section>
-            );
-          })()}
-
-          {/* 레벨별 레퍼런스 그룹 */}
+          {/* 레벨별 레퍼런스 그룹 — 일본어 OT 뒤에는 카나 드릴이 따라붙음 */}
           {refGroups.map(({ meta, chapters, vocabCount }) => {
             const groupKey = `ref:${langFilter}:${meta.key}`;
             const isOpen = expandedGroups.has(groupKey);
             const readSet = refRead[langFilter] || new Set();
             const readCount = chapters.filter(c => readSet.has(c.slug)).length;
             return (
-              <section key={groupKey} className={`lessons-list__group ${isOpen ? 'is-open' : ''}`}>
+              <div key={groupKey} style={{ display: 'contents' }}>
+              <section className={`lessons-list__group ${isOpen ? 'is-open' : ''}`}>
                 <button
                   type="button"
                   className="lessons-list__group-header"
@@ -289,6 +290,8 @@ export default function LessonsPage({ refManifest = {} }) {
                   </ul>
                 )}
               </section>
+              {meta.key === 'OT' && showKana && renderKanaDrills()}
+              </div>
             );
           })}
         </div>

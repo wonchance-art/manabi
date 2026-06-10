@@ -4,6 +4,7 @@
  */
 import { createRegistry } from '../refRegistry';
 
+import grammarOT from './grammar/ot';
 import grammarN5 from './grammar/n5';
 import grammarN4 from './grammar/n4';
 import grammarN3 from './grammar/n3';
@@ -19,8 +20,13 @@ import vocabN1 from './vocab/n1';
 /** 레벨 메타 — 가이드 로드맵과 같은 웜 그라데이션 */
 export const JA_LEVEL_META = [
   {
+    key: 'OT', label: 'OT 오리엔테이션', focus: '시작 전 워밍업',
+    desc: '이미 아는 일본어·문자 체계·발음·한자 읽기 — 본격 학습 전 즐거운 워밍업.',
+    color: '#868E96', bg: 'rgba(134,142,150,0.12)', line: 'rgba(134,142,150,0.35)',
+  },
+  {
     key: 'N5', label: 'N5 기초', focus: '기초 입문',
-    desc: '문자·발음·한자 읽기 상식부터 조사 は/が와 기본 문형까지.',
+    desc: 'です/だ와 조사 は/が부터 — 본격 문법·어휘의 시작.',
     color: '#F5C34A', bg: 'rgba(245,195,74,0.12)', line: 'rgba(245,195,74,0.35)',
   },
   {
@@ -47,7 +53,7 @@ export const JA_LEVEL_META = [
 
 const registry = createRegistry(
   JA_LEVEL_META,
-  { N5: grammarN5, N4: grammarN4, N3: grammarN3, N2: grammarN2, N1: grammarN1 },
+  { OT: grammarOT, N5: grammarN5, N4: grammarN4, N3: grammarN3, N2: grammarN2, N1: grammarN1 },
   { N5: vocabN5, N4: vocabN4, N3: vocabN3, N2: vocabN2, N1: vocabN1 },
 );
 

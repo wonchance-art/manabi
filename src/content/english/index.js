@@ -4,6 +4,7 @@
  */
 import { createRegistry } from '../refRegistry';
 
+import grammarOT from './grammar/ot';
 import grammarA1 from './grammar/a1';
 import grammarA2 from './grammar/a2';
 import grammarB1 from './grammar/b1';
@@ -20,6 +21,11 @@ import vocabC2 from './vocab/c2';
 
 /** 레벨 메타 — 틸 그라데이션 (기초 밝음 → 마스터 깊음) */
 export const EN_LEVEL_META = [
+  {
+    key: 'OT', label: 'OT 오리엔테이션', focus: '시작 전 워밍업',
+    desc: '이미 아는 영어·알파벳·파닉스·강세 — 진짜 처음부터, 즐겁게.',
+    color: '#868E96', bg: 'rgba(134,142,150,0.12)', line: 'rgba(134,142,150,0.35)',
+  },
   {
     key: 'A1', label: 'A1 기초', focus: '생존 영어',
     desc: 'be동사·SVO 어순·관사 — 한국어와 정면충돌하는 지점부터 정리.',
@@ -54,7 +60,7 @@ export const EN_LEVEL_META = [
 
 const registry = createRegistry(
   EN_LEVEL_META,
-  { A1: grammarA1, A2: grammarA2, B1: grammarB1, B2: grammarB2, C1: grammarC1, C2: grammarC2 },
+  { OT: grammarOT, A1: grammarA1, A2: grammarA2, B1: grammarB1, B2: grammarB2, C1: grammarC1, C2: grammarC2 },
   { A1: vocabA1, A2: vocabA2, B1: vocabB1, B2: vocabB2, C1: vocabC1, C2: vocabC2 },
 );
 

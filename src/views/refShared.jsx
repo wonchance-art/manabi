@@ -52,7 +52,7 @@ export function LevelDot({ meta, size = 'md' }) {
       className={`fr-level-dot ${size === 'sm' ? 'fr-level-dot--sm' : ''}`}
       style={{ background: meta.bg, border: `2px solid ${meta.color}`, color: meta.color }}
     >
-      {meta.key}
+      {meta.short || meta.key}
     </span>
   );
 }

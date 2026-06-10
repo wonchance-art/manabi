@@ -148,7 +148,7 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
               style={active ? { color: m.color, background: m.bg, borderColor: m.line } : undefined}
               aria-current={active ? 'page' : undefined}
             >
-              {m.key}
+              {m.short || m.key}
             </Link>
           );
         })}
