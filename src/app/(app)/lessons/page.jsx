@@ -32,6 +32,8 @@ function buildRefManifest() {
           duration: c.duration || null,
         })),
         vocabCount: ref.countVocab(m.key),
+        // 문형 사전 (현재 일본어 JLPT 전용 — countBunkei가 있는 언어만)
+        bunkeiCount: ref.countBunkei ? ref.countBunkei(m.key) : 0,
       })),
     };
   }

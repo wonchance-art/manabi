@@ -17,6 +17,12 @@ import vocabN3 from './vocab/n3';
 import vocabN2 from './vocab/n2';
 import vocabN1 from './vocab/n1';
 
+import bunkeiN5 from './bunkei/n5';
+import bunkeiN4 from './bunkei/n4';
+import bunkeiN3 from './bunkei/n3';
+import bunkeiN2 from './bunkei/n2';
+import bunkeiN1 from './bunkei/n1';
+
 /** 레벨 메타 — 가이드 로드맵과 같은 웜 그라데이션 */
 export const JA_LEVEL_META = [
   {
@@ -63,4 +69,18 @@ export const getGrammarChapters = registry.getGrammarChapters;
 export const getChapter = registry.getChapter;
 export const getVocab = registry.getVocab;
 export const countVocab = registry.countVocab;
+
+/** JLPT 문형 사전 — 챕터(이해)와 별개의 전수 커버 레이어 (SCHEMA.md 참고) */
+const BUNKEI = { N5: bunkeiN5, N4: bunkeiN4, N3: bunkeiN3, N2: bunkeiN2, N1: bunkeiN1 };
+
+export function getBunkei(levelKey) {
+  return BUNKEI[String(levelKey || '').toUpperCase()] || null;
+}
+
+export function countBunkei(levelKey) {
+  const b = getBunkei(levelKey);
+  if (!b) return 0;
+  return b.themes.reduce((sum, t) => sum + t.items.length, 0);
+}
+
 export default registry;

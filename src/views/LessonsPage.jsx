@@ -111,7 +111,7 @@ export default function LessonsPage({ refManifest = {} }) {
     if (!refLang) return [];
     return refLang.levels
       .filter(l => levelFilter === 'all' || l.label === levelFilter)
-      .map(l => ({ meta: l, chapters: l.chapters, vocabCount: l.vocabCount }));
+      .map(l => ({ meta: l, chapters: l.chapters, vocabCount: l.vocabCount, bunkeiCount: l.bunkeiCount || 0 }));
   }, [refLang, levelFilter]);
 
   // 카나 그룹은 OT(문자 챕터)와 짝 — 전체 또는 OT 필터에서만 노출
@@ -229,7 +229,7 @@ export default function LessonsPage({ refManifest = {} }) {
           </div>
 
           {/* 레벨별 레퍼런스 그룹 — 일본어 OT 뒤에는 카나 드릴이 따라붙음 */}
-          {refGroups.map(({ meta, chapters, vocabCount }) => {
+          {refGroups.map(({ meta, chapters, vocabCount, bunkeiCount }) => {
             const groupKey = `ref:${langFilter}:${meta.key}`;
             const isOpen = expandedGroups.has(groupKey);
             const readSet = refRead[langFilter] || new Set();
@@ -274,6 +274,19 @@ export default function LessonsPage({ refManifest = {} }) {
                         </li>
                       );
                     })}
+                    {bunkeiCount > 0 && (
+                      <li
+                        className="lessons-list__row lessons-list__row--idle"
+                        onClick={() => router.push(`${refLang.base}/bunkei/${meta.key.toLowerCase()}`)}
+                        role="link"
+                        tabIndex={0}
+                        onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && router.push(`${refLang.base}/bunkei/${meta.key.toLowerCase()}`)}
+                      >
+                        <span className="lessons-list__status" aria-hidden="true">📑</span>
+                        <span className="lessons-list__title">{meta.key} 문형 사전 — {bunkeiCount}문형 전수 (접속·뜻·예문)</span>
+                        <span className="lessons-list__meta" />
+                      </li>
+                    )}
                     {vocabCount > 0 && (
                       <li
                         className="lessons-list__row lessons-list__row--idle"

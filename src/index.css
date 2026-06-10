@@ -10248,8 +10248,17 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   pointer-events: none;
 }
 
+.fr-vrow--wide { grid-template-columns: 200px 1fr auto; }
+.fr-vrow__chlink {
+  display: inline-block;
+  font-size: 0.74rem; font-weight: 600;
+  color: var(--primary);
+  margin-top: 5px;
+}
+.fr-vrow__chlink:hover { text-decoration: underline; }
 @media (max-width: 560px) {
   .fr-vrow { grid-template-columns: 116px 1fr auto; gap: 12px; }
+  .fr-vrow--wide { grid-template-columns: 132px 1fr auto; }
   .fr-vrow__main { font-size: 0.92rem; }
 }
 
