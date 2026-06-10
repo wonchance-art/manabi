@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useTTS } from '../lib/useTTS';
-import { refInline, LevelDot } from './refShared';
+import { refInline, LevelDot, JaText } from './refShared';
 
 /**
  * JLPT 문형 사전 — 레벨별 전수 커버 레이어 (챕터=이해, 사전=검색·암기)
@@ -161,8 +161,7 @@ export default function ReferencePatternIndexPage({ refInfo, levelMeta = [], met
                     {item.note && <div className="fr-vrow__etym">⚠️ {refInline(item.note)}</div>}
                     {item.ex && (
                       <div className="fr-vrow__ex">
-                        <span lang="ja">{item.ex.ja}</span>
-                        <span className="fr-vrow__ex-yomi"> {item.ex.yomi}</span>
+                        <JaText ja={item.ex.ja} yomi={item.ex.yomi} />
                         <span className="fr-vrow__ex-ko"> — {item.ex.ko}</span>
                       </div>
                     )}

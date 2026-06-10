@@ -10262,6 +10262,17 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   .fr-vrow__main { font-size: 0.92rem; }
 }
 
+/* ── 일본어 요미가나(루비) ── */
+.ja-ruby { line-height: 2.05; }
+.ja-ruby ruby { ruby-align: center; }
+.ja-ruby rt {
+  font-size: 0.55em;
+  font-weight: 400;
+  color: var(--text-muted);
+  letter-spacing: 0;
+  user-select: none;
+}
+
 /* ── 발음 버튼 ── */
 .fr-speak {
   background: transparent; border: none;

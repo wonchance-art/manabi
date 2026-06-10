@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import RefSpeak from './RefSpeak';
+import { JaText } from '../views/refShared';
 
 /**
  * 패턴 체크 — 챕터 끝 회상 연습.
@@ -52,8 +53,14 @@ export default function RefPatternCheck({ items, lang }) {
               >
                 {open ? (
                   <span className="fr-check__main" lang={item.langCode}>
-                    {item.main}
-                    {item.pron && <span className="fr-check__pron"> {item.pron}</span>}
+                    {item.langCode === 'ja' ? (
+                      <JaText ja={item.main} yomi={item.pron} />
+                    ) : (
+                      <>
+                        {item.main}
+                        {item.pron && <span className="fr-check__pron"> {item.pron}</span>}
+                      </>
+                    )}
                   </span>
                 ) : (
                   <span className="fr-check__hidden">정답 보기</span>

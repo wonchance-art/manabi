@@ -7,7 +7,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { useTTS } from '../lib/useTTS';
-import { refInline, refMain, refPron, LevelDot } from './refShared';
+import { refInline, refMain, refPron, LevelDot, JaText, alignFurigana } from './refShared';
 
 /**
  * 언어 레퍼런스 — 레벨별·주제별 어휘 (프랑스어·일본어·영어 공용)
@@ -219,10 +219,16 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
                   className={`fr-vrow ${hideMode ? 'fr-vrow--quiz' : ''}`}
                   onClick={() => toggleReveal(text)}
                 >
-                  {/* 단어 열 — 고정 폭으로 정렬 */}
+                  {/* 단어 열 — 고정 폭으로 정렬, 일본어는 한자 위 요미가나 */}
                   <div className={`fr-vrow__word ${wordHidden ? 'is-hidden' : ''}`}>
-                    <span className="fr-vrow__main" lang={refInfo.langCode}>{text}</span>
-                    {pron && <span className="fr-vrow__pron">{pron}</span>}
+                    {refInfo.langCode === 'ja' && alignFurigana(text, pron) ? (
+                      <span className="fr-vrow__main"><JaText ja={text} yomi={pron} /></span>
+                    ) : (
+                      <>
+                        <span className="fr-vrow__main" lang={refInfo.langCode}>{text}</span>
+                        {pron && pron !== text && <span className="fr-vrow__pron">{pron}</span>}
+                      </>
+                    )}
                   </div>
 
                   {/* 뜻 열 — 학습자 이해 순서: 뜻 → 연결 지식 → 예문 */}
@@ -235,8 +241,11 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
                     {link && <div className="fr-vrow__etym">{linkIcon} {refInline(link)}</div>}
                     {w.ex && (
                       <div className="fr-vrow__ex">
-                        <span lang={refInfo.langCode}>{refMain(w.ex)}</span>
-                        {w.ex.yomi && <span className="fr-vrow__ex-yomi"> {w.ex.yomi}</span>}
+                        {refInfo.langCode === 'ja' ? (
+                          <JaText ja={refMain(w.ex)} yomi={w.ex.yomi} />
+                        ) : (
+                          <span lang={refInfo.langCode}>{refMain(w.ex)}</span>
+                        )}
                         <span className="fr-vrow__ex-ko"> — {w.ex.ko}</span>
                       </div>
                     )}

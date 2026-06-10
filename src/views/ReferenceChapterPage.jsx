@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { getRefLang } from '../content/refLangs';
-import { refInline, refMain, refPron, Callout, CALLOUT_ORDER, LevelDot } from './refShared';
+import { refInline, refMain, refPron, Callout, CALLOUT_ORDER, LevelDot, JaText } from './refShared';
 import RefReadMark from '../components/RefReadMark';
 import RefSpeak from '../components/RefSpeak';
 import RefPatternCheck from '../components/RefPatternCheck';
@@ -14,8 +14,14 @@ function ExampleList({ examples, langCode, lang }) {
         return (
           <li key={i} className="fr-example">
             <div className="fr-example__fr">
-              <span lang={langCode}>{refMain(ex)}</span>
-              {pron && <span className="fr-example__ipa">{pron}</span>}
+              {langCode === 'ja' ? (
+                <JaText ja={refMain(ex)} yomi={pron} />
+              ) : (
+                <>
+                  <span lang={langCode}>{refMain(ex)}</span>
+                  {pron && <span className="fr-example__ipa">{pron}</span>}
+                </>
+              )}
               <RefSpeak text={refMain(ex)} lang={lang} size="xs" />
             </div>
             <div className="fr-example__ko">{ex.ko}</div>
