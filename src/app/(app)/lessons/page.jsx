@@ -27,6 +27,7 @@ function buildRefManifest() {
           slug: c.slug,
           order: c.order,
           title: c.title,
+          topic: c.topic || null,
           summary: c.summary || null,
           duration: c.duration || null,
         })),

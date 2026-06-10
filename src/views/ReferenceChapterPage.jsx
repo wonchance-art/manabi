@@ -102,9 +102,11 @@ export default function ReferenceChapterPage({ lang, slug }) {
           )}
         </div>
         <h1 style={{ fontSize: '1.45rem', fontWeight: 800, lineHeight: 1.35 }}>{chapter.title}</h1>
-        {chapter.titleFr && (
-          <p lang={ref.langCode} style={{ fontSize: '0.95rem', color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 4 }}>
-            {chapter.titleFr}
+        {(chapter.topic || chapter.titleFr) && (
+          <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginTop: 5 }}>
+            {chapter.topic}
+            {chapter.topic && chapter.titleFr && ' · '}
+            {chapter.titleFr && <span lang={ref.langCode} style={{ fontStyle: 'italic' }}>{chapter.titleFr}</span>}
           </p>
         )}
         {chapter.summary && (

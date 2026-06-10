@@ -268,7 +268,7 @@ export default function LessonsPage({ refManifest = {} }) {
                           <span className="lessons-list__status" aria-hidden="true">{read ? '●' : '○'}</span>
                           <span className="lessons-list__title">#{ch.order} {ch.title}</span>
                           <span className="lessons-list__meta">
-                            {ch.duration && <span className="lessons-list__pct">{ch.duration}</span>}
+                            {ch.topic && <span className="lessons-list__topic">{ch.topic}</span>}
                           </span>
                         </li>
                       );
