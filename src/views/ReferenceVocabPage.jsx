@@ -138,25 +138,64 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
         </div>
       </header>
 
-      {/* ── 레벨 탭 ── */}
-      <div className="fr-vocab-tabs" role="tablist" aria-label="레벨 선택">
-        {levelMeta.map(m => {
-          const active = m.key === meta?.key;
-          return (
-            <Link
-              key={m.key}
-              href={`${refInfo.base}/vocab/${m.key.toLowerCase()}`}
-              className={`fr-vocab-tab ${active ? 'is-active' : ''}`}
-              style={active ? { color: m.color, background: m.bg, borderColor: m.line } : undefined}
-              aria-current={active ? 'page' : undefined}
+      {/* ── 툴바: 레벨 탭 | 가리기 | 문형 사전으로 ── */}
+      <div className="bk-toolbar">
+        <div className="bk-toolbar__group" role="tablist" aria-label="레벨 선택">
+          {levelMeta.map(m => {
+            const active = m.key === meta?.key;
+            return (
+              <Link
+                key={m.key}
+                href={`${refInfo.base}/vocab/${m.key.toLowerCase()}`}
+                className={`fr-vocab-tab ${active ? 'is-active' : ''}`}
+                style={active ? { color: m.color, background: m.bg, borderColor: m.line } : undefined}
+                aria-current={active ? 'page' : undefined}
+              >
+                {m.short || m.key}
+              </Link>
+            );
+          })}
+        </div>
+        <span className="bk-toolbar__sep" aria-hidden="true" />
+        <div className="bk-toolbar__group">
+          <button
+            type="button"
+            className={`chip ${hideMode === 'word' ? 'chip--active' : ''}`}
+            onClick={() => setMode('word')}
+            aria-pressed={hideMode === 'word'}
+          >
+            단어 가리기
+          </button>
+          <button
+            type="button"
+            className={`chip ${hideMode === 'meaning' ? 'chip--active' : ''}`}
+            onClick={() => setMode('meaning')}
+            aria-pressed={hideMode === 'meaning'}
+          >
+            뜻 가리기
+          </button>
+          {refInfo.langCode === 'ja' && (
+            <button
+              type="button"
+              className={`chip ${hideYomi ? 'chip--active' : ''}`}
+              onClick={() => { setHideYomi(v => !v); setRevealed(new Set()); }}
+              aria-pressed={hideYomi}
             >
-              {m.short || m.key}
+              요미가나 가리기
+            </button>
+          )}
+        </div>
+        {hasBunkei && (
+          <>
+            <span className="bk-toolbar__sep" aria-hidden="true" />
+            <Link href={`${refInfo.base}/bunkei/${meta?.key.toLowerCase()}`} className="bk-switch">
+              📑 {meta?.key} 문형 사전으로 →
             </Link>
-          );
-        })}
+          </>
+        )}
       </div>
 
-      {/* ── 도구 모음: 검색 + 가리기 토글 ── */}
+      {/* ── 검색 ── */}
       <div className="fr-vlist-tools">
         <input
           type="search"
@@ -166,39 +205,6 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
           onChange={e => setQuery(e.target.value)}
           aria-label="단어 검색"
         />
-        <div className="fr-vlist-tools__toggles">
-          <button
-            type="button"
-            className={`chip ${hideMode === 'word' ? 'chip--active' : ''}`}
-            onClick={() => setMode('word')}
-            aria-pressed={hideMode === 'word'}
-          >
-            🙈 단어 가리기
-          </button>
-          <button
-            type="button"
-            className={`chip ${hideMode === 'meaning' ? 'chip--active' : ''}`}
-            onClick={() => setMode('meaning')}
-            aria-pressed={hideMode === 'meaning'}
-          >
-            💭 뜻 가리기
-          </button>
-          {refInfo.langCode === 'ja' && (
-            <button
-              type="button"
-              className={`chip ${hideYomi ? 'chip--active' : ''}`}
-              onClick={() => { setHideYomi(v => !v); setRevealed(new Set()); }}
-              aria-pressed={hideYomi}
-            >
-              🔤 요미가나 가리기
-            </button>
-          )}
-        </div>
-        {hasBunkei && (
-          <Link href={`${refInfo.base}/bunkei/${meta?.key.toLowerCase()}`} className="bk-switch">
-            📑 {meta?.key} 문형 사전으로 →
-          </Link>
-        )}
       </div>
       {anyHide && (
         <p className="fr-vlist-hint">
