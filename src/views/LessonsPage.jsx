@@ -154,7 +154,7 @@ export default function LessonsPage({ refManifest = {} }) {
                       onClick={e => { e.stopPropagation(); router.push(`${refLang.base}/bunkei/${meta.key.toLowerCase()}`); }}
                       onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); router.push(`${refLang.base}/bunkei/${meta.key.toLowerCase()}`); } }}
                     >
-                      📑 {bunkeiCount}
+                      📑 문형 사전 {bunkeiCount}
                     </span>
                   )}
                   <span className="lessons-list__group-count">{readCount} / {chapters.length}</span>

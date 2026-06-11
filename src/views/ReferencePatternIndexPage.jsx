@@ -174,43 +174,46 @@ export default function ReferencePatternIndexPage({ refInfo, levelMeta = [], met
                 >
                   {/* 문형 열 */}
                   <div className="fr-vrow__word">
-                    <span className="fr-vrow__main" lang="ja">{item.pattern}</span>
+                    <span className="fr-vrow__main bk-pattern" lang="ja">{item.pattern}</span>
                     {item.conn && <span className="fr-vrow__pron">{item.conn}</span>}
                   </div>
 
                   {/* 뜻·예문 열 */}
                   <div className={`fr-vrow__body ${meaningHidden ? 'is-hidden' : ''}`}>
-                    <div className="fr-vrow__ko">{item.ko}</div>
-                    {item.note && <div className="fr-vrow__etym">⚠️ {refInline(item.note)}</div>}
+                    <div className="bk-ko">{item.ko}</div>
+                    {item.note && <div className="bk-note">⚠️ {refInline(item.note)}</div>}
                     {item.ex && (
-                      <div className="fr-vrow__ex">
-                        <JaText ja={item.ex.ja} yomi={item.ex.yomi} />
-                        <span className="fr-vrow__ex-ko"> — {item.ex.ko}</span>
+                      <div className="bk-ex">
+                        <div className="bk-ex__ja">
+                          <JaText ja={item.ex.ja} yomi={item.ex.yomi} />
+                          {ttsSupported && (
+                            <button
+                              type="button"
+                              className="fr-speak fr-speak--xs"
+                              onClick={e => { e.stopPropagation(); speak(item.ex.ja, 'Japanese'); }}
+                              aria-label="예문 발음 듣기"
+                              title="예문 발음 듣기"
+                            >
+                              🔊
+                            </button>
+                          )}
+                        </div>
+                        <div className="bk-ex__ko">{item.ex.ko}</div>
                       </div>
-                    )}
-                    {item.ch && (
-                      <Link
-                        href={`/japanese/grammar/${item.ch}`}
-                        className="fr-vrow__chlink"
-                        onClick={e => e.stopPropagation()}
-                      >
-                        📖 자세한 설명 챕터로 →
-                      </Link>
                     )}
                   </div>
 
-                  {/* 액션 열 */}
+                  {/* 우측 — 챕터 연결 칩 */}
                   <div className="fr-vrow__actions">
-                    {ttsSupported && item.ex?.ja && (
-                      <button
-                        type="button"
-                        className="fr-speak fr-speak--xs"
-                        onClick={e => { e.stopPropagation(); speak(item.ex.ja, 'Japanese'); }}
-                        aria-label="예문 발음 듣기"
-                        title="예문 발음 듣기"
+                    {item.ch && (
+                      <Link
+                        href={`/japanese/grammar/${item.ch}`}
+                        className="bk-chlink"
+                        title="이 문형을 자세히 다루는 챕터"
+                        onClick={e => e.stopPropagation()}
                       >
-                        🔊
-                      </button>
+                        📖 챕터
+                      </Link>
                     )}
                   </div>
                 </li>
