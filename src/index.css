@@ -10252,6 +10252,39 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 
 .fr-vrow--wide { grid-template-columns: 200px 1fr auto; }
+
+/* ── 문형 사전 행 — 위계: 문형 → 뜻 → 예문 ── */
+.bk-pattern { font-size: 1.04rem; font-weight: 800; letter-spacing: 0.01em; }
+.bk-ko { font-size: 0.92rem; font-weight: 600; color: var(--text-primary); line-height: 1.5; }
+.bk-note {
+  font-size: 0.76rem; color: var(--text-muted);
+  line-height: 1.5; margin-top: 3px;
+}
+.bk-ex {
+  margin-top: 7px;
+  padding: 6px 0 6px 10px;
+  border-left: 2px solid var(--primary-glow);
+}
+.bk-ex__ja {
+  font-size: 0.92rem; font-weight: 500;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+.bk-ex__ja .ja-ruby { line-height: 1.9; }
+.bk-ex__ko { font-size: 0.78rem; color: var(--text-muted); margin-top: 1px; }
+.bk-chlink {
+  flex-shrink: 0;
+  font-size: 0.7rem; font-weight: 700;
+  color: var(--text-muted);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 2px 9px;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.bk-chlink:hover { background: var(--bg-elevated); color: var(--text-primary); }
+
 .fr-vrow__chlink {
   display: inline-block;
   font-size: 0.74rem; font-weight: 600;
