@@ -24,24 +24,28 @@ export default {
           ipa: "[bɔ̃swaʁ]",
           ko: "안녕하세요 (저녁)",
           pos: "expr.",
+          ex: { fr: "Bonsoir, monsieur !", ko: "안녕하세요! (저녁 인사)" },
         },
         {
           fr: "salut",
           ipa: "[saly]",
           ko: "안녕 (친한 사이, 만날 때도 헤어질 때도)",
           pos: "expr.",
+          ex: { fr: "Salut, ça va ?", ko: "안녕, 잘 지내?" },
         },
         {
           fr: "au revoir",
           ipa: "[o ʁəvwaʁ]",
           ko: "안녕히 가세요 / 안녕히 계세요",
           pos: "expr.",
+          ex: { fr: "Au revoir, madame !", ko: "안녕히 계세요!" },
         },
         {
           fr: "bonne nuit",
           ipa: "[bɔn nɥi]",
           ko: "잘 자요 (자러 갈 때만)",
           pos: "expr.",
+          ex: { fr: "Bonne nuit ! À demain !", ko: "잘 자요! 내일 봐요!" },
         },
         {
           fr: "merci",
@@ -66,12 +70,14 @@ export default {
           pos: "expr.",
           en: "pardon",
           etym: "영어 pardon(용서)이 바로 이 프랑스어에서 온 말이에요.",
+          ex: { fr: "Oh, pardon, madame !", ko: "아, 죄송합니다!" },
         },
         {
           fr: "excusez-moi",
           ipa: "[ɛkskyze mwa]",
           ko: "실례합니다 (말을 걸 때)",
           pos: "expr.",
+          ex: { fr: "Excusez-moi, où est le café ?", ko: "실례합니다, 카페가 어디예요?" },
         },
       ],
     },
@@ -103,6 +109,7 @@ export default {
           ipa: "[tʁwa]",
           ko: "3, 셋",
           pos: "num.",
+          ex: { fr: "Trois baguettes, s'il vous plaît.", ko: "바게트 세 개 주세요." },
         },
         {
           fr: "quatre",
@@ -160,6 +167,7 @@ export default {
           ipa: "[wi]",
           ko: "네, 응",
           pos: "adv.",
+          ex: { fr: "Oui, merci beaucoup !", ko: "네, 정말 감사합니다!" },
         },
         {
           fr: "non",
@@ -175,6 +183,7 @@ export default {
           pos: "expr.",
           en: "accord",
           etym: "영어 accord(일치, 합의)와 같은 뿌리 — '합의됐어요'가 곧 '오케이'예요.",
+          ex: { fr: "D'accord, merci !", ko: "알겠어요, 고마워요!" },
         },
         {
           fr: "ça va",
@@ -188,12 +197,14 @@ export default {
           ipa: "[vwala]",
           ko: "여기 있어요 / 바로 그거예요",
           pos: "expr.",
+          ex: { fr: "Voilà votre café, madame.", ko: "여기 커피 나왔습니다." },
         },
         {
           fr: "je ne sais pas",
           ipa: "[ʒə nə sɛ pa]",
           ko: "모르겠어요",
           pos: "expr.",
+          ex: { fr: "Où est la boulangerie ? — Je ne sais pas.", ko: "빵집이 어디예요? — 모르겠어요." },
         },
         {
           fr: "je ne comprends pas",
@@ -214,6 +225,7 @@ export default {
           ko: "커피; 카페",
           pos: "n.m.",
           en: "café",
+          ex: { fr: "Un café et un croissant, s'il vous plaît.", ko: "커피 하나랑 크루아상 하나 주세요." },
         },
         {
           fr: "le thé",
@@ -221,6 +233,7 @@ export default {
           ko: "차 (홍차 등)",
           pos: "n.m.",
           en: "tea",
+          ex: { fr: "Un thé, s'il vous plaît.", ko: "차 한 잔 주세요." },
         },
         {
           fr: "l'eau (f.)",
@@ -236,6 +249,7 @@ export default {
           ko: "크루아상",
           pos: "n.m.",
           etym: "croissant의 원뜻은 '초승달(자라나는 달)' — 빵 모양이 초승달이라 붙은 이름이에요. croître(자라다)에서 왔고, 영어 crescent와 같은 뿌리죠.",
+          ex: { fr: "Deux croissants, s'il vous plaît.", ko: "크루아상 두 개 주세요." },
         },
         {
           fr: "la baguette",
@@ -252,6 +266,7 @@ export default {
           pos: "n.f.",
           en: "card",
           etym: "영어 card, à la carte(메뉴에서 골라서)의 carte가 바로 이 단어예요.",
+          ex: { fr: "La carte, s'il vous plaît.", ko: "메뉴판 좀 주세요." },
         },
         {
           fr: "l'addition (f.)",
@@ -281,6 +296,7 @@ export default {
           pos: "n.f.",
           en: "question",
           etym: "-tion으로 끝나는 명사는 거의 100% 여성! 영어 -tion 단어는 대부분 프랑스어 출신이에요.",
+          ex: { fr: "Pardon, j'ai une question.", ko: "저기요, 질문이 하나 있어요." },
         },
         {
           fr: "la liberté",
@@ -310,6 +326,7 @@ export default {
           ipa: "[fʁɔmaʒ]",
           ko: "치즈",
           pos: "n.m.",
+          ex: { fr: "C'est bon, le fromage !", ko: "치즈 맛있어요!" },
         },
         {
           fr: "le moment",

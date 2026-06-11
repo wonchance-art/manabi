@@ -8,10 +8,10 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { useTTS } from '../lib/useTTS';
-import { refInline, LevelDot, JaText } from './refShared';
+import { refInline, refMain, refPron, LevelDot, JaText } from './refShared';
 
 /**
- * JLPT 문형 사전 — 레벨별 전수 커버 레이어 (챕터=이해, 사전=검색·암기)
+ * 문형 사전 — 레벨별 전수 커버 레이어 (챕터=이해, 사전=검색·암기) · 언어 공용
  * 세로 정렬 리스트 · 검색 · 뜻 가리기 셀프테스트 · 예문 TTS · 문형 저장(FSRS) · 관련 챕터 링크.
  * 데이터는 서버 라우트에서 해당 레벨 분량만 props로 전달받는다.
  */
@@ -33,7 +33,8 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
   const [savedSet, setSavedSet] = useState(() => new Set());
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  const backHref = `/lessons?lang=Japanese`;
+  const backHref = `/lessons?lang=${lang}`;
+  const isJa = refInfo.langCode === 'ja';
 
   const allItems = useMemo(
     () => (bunkei ? bunkei.themes.flatMap(t => t.items) : []),
@@ -91,8 +92,8 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
             i.ko.toLowerCase().includes(q) ||
             (i.conn || '').toLowerCase().includes(q) ||
             (i.note || '').toLowerCase().includes(q) ||
-            (i.ex?.ja || '').includes(q) ||
-            (i.ex2?.ja || '').includes(q))
+            refMain(i.ex || {}).toLowerCase().includes(q) ||
+            refMain(i.ex2 || {}).toLowerCase().includes(q))
         ),
       }))
       .filter(t => t.items.length > 0);
@@ -145,7 +146,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
       <div className="page-container" style={{ maxWidth: 760, textAlign: 'center', paddingTop: 80 }}>
         <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>🔍</div>
         <h1 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: 8 }}>해당 레벨의 문형 사전이 없어요</h1>
-        <Link href={backHref} className="btn btn--ghost btn--sm">일본어 강의 목록으로 →</Link>
+        <Link href={backHref} className="btn btn--ghost btn--sm">{refInfo.name} 강의 목록으로 →</Link>
       </div>
     );
   }
@@ -156,7 +157,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
     <div className="page-container" style={{ maxWidth: 820 }}>
       <nav style={{ marginBottom: 18 }} aria-label="브레드크럼">
         <Link href={backHref} style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-          ← 🇯🇵 일본어 강의 목록
+          ← {refInfo.flag} {refInfo.name} 강의 목록
         </Link>
       </nav>
 
@@ -220,7 +221,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
             onClick={toggleYomi}
             aria-pressed={hideYomi}
           >
-            요미가나 가리기
+            {isJa ? '요미가나 가리기' : '발음 가리기'}
           </button>
         </div>
         {hasVocab && (
@@ -246,7 +247,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
       </div>
       {anyHide && (
         <p className="fr-vlist-hint">
-          {hideMode === 'word' ? '뜻을 보고 문형을 떠올린 뒤' : hideMode === 'meaning' ? '문형을 보고 뜻을 떠올린 뒤' : '한자를 보고 독음을 떠올린 뒤'}, 행을 탭하면 확인할 수 있어요.
+          {hideMode === 'word' ? '뜻을 보고 문형을 떠올린 뒤' : hideMode === 'meaning' ? '문형을 보고 뜻을 떠올린 뒤' : isJa ? '한자를 보고 독음을 떠올린 뒤' : '철자를 보고 발음을 떠올린 뒤'}, 행을 탭하면 확인할 수 있어요.
         </p>
       )}
 
@@ -256,7 +257,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
           <span>
             🔗 챕터 연관 문형만 보는 중 ({chFilterCount}개)
             {' · '}
-            <Link href={`/japanese/grammar/${chFilter}`} className="fr-chfilter__back">챕터로 돌아가기</Link>
+            <Link href={`${refInfo.base}/grammar/${chFilter}`} className="fr-chfilter__back">챕터로 돌아가기</Link>
           </span>
           <Link href={pathname} className="fr-chfilter__clear">전체 {total}문형 보기 ✕</Link>
         </div>
@@ -311,7 +312,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
                 >
                   {/* 문형 열 — 병기 형태(・)·접속 대안(/)은 줄 구분 */}
                   <div className={`fr-vrow__word ${wordHidden ? 'is-hidden' : ''}`}>
-                    <span className="fr-vrow__main bk-pattern" lang="ja">
+                    <span className="fr-vrow__main bk-pattern" lang={refInfo.langCode}>
                       {item.pattern.split('・').map((form, fi) => (
                         <span key={fi} className="bk-line">{form}</span>
                       ))}
@@ -334,12 +335,19 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
                         {[item.ex, item.ex2].filter(Boolean).map((ex, ei) => (
                           <div key={ei} className="bk-ex__pair">
                             <div className="bk-ex__ja">
-                              <JaText ja={ex.ja} yomi={ex.yomi} />
+                              {isJa ? (
+                                <JaText ja={ex.ja} yomi={ex.yomi} />
+                              ) : (
+                                <>
+                                  <span lang={refInfo.langCode}>{refMain(ex)}</span>
+                                  {refPron(ex) && <span className="fr-example__ipa">{refPron(ex)}</span>}
+                                </>
+                              )}
                               {ttsSupported && (
                                 <button
                                   type="button"
                                   className="fr-speak fr-speak--xs"
-                                  onClick={e => { e.stopPropagation(); speak(ex.ja, 'Japanese'); }}
+                                  onClick={e => { e.stopPropagation(); speak(refMain(ex), lang); }}
                                   aria-label="예문 발음 듣기"
                                   title="예문 발음 듣기"
                                 >
@@ -358,7 +366,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
                   <div className="fr-vrow__actions">
                     {item.ch && (
                       <Link
-                        href={`/japanese/grammar/${item.ch}`}
+                        href={`${refInfo.base}/grammar/${item.ch}`}
                         className="bk-chlink"
                         title="이 문형을 자세히 다루는 챕터"
                         onClick={e => e.stopPropagation()}

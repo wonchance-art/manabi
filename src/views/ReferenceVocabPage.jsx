@@ -72,15 +72,13 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
     try { localStorage.setItem('vocab_hide_prefs', JSON.stringify({ mode, yomi })); } catch {}
   }
 
-  // 가리기 설정 유지 — 레벨 이동·재방문에도 유지 (요미가나는 일본어에서만 복원)
+  // 가리기 설정 유지 — 레벨 이동·재방문에도 유지
   useEffect(() => {
     try {
       const s = JSON.parse(localStorage.getItem('vocab_hide_prefs') || 'null');
       if (s?.mode === 'word' || s?.mode === 'meaning') setHideMode(s.mode);
-      if (s?.yomi && refInfo.langCode === 'ja') setHideYomi(true);
+      if (s?.yomi) setHideYomi(true);
     } catch {}
-    // refInfo.langCode는 라우트 단위 상수
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function setMode(mode) {
@@ -198,16 +196,14 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
           >
             뜻 가리기
           </button>
-          {refInfo.langCode === 'ja' && (
-            <button
-              type="button"
-              className={`chip ${hideYomi ? 'chip--active' : ''}`}
-              onClick={toggleYomi}
-              aria-pressed={hideYomi}
-            >
-              요미가나 가리기
-            </button>
-          )}
+          <button
+            type="button"
+            className={`chip ${hideYomi ? 'chip--active' : ''}`}
+            onClick={toggleYomi}
+            aria-pressed={hideYomi}
+          >
+            {refInfo.langCode === 'ja' ? '요미가나 가리기' : '발음 가리기'}
+          </button>
         </div>
         {hasBunkei && (
           <>
@@ -232,7 +228,7 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
       </div>
       {anyHide && (
         <p className="fr-vlist-hint">
-          {hideMode === 'word' ? '뜻을 보고 단어를 떠올린 뒤' : hideMode === 'meaning' ? '단어를 보고 뜻을 떠올린 뒤' : '한자를 보고 독음을 떠올린 뒤'}, 행을 탭하면 확인할 수 있어요.
+          {hideMode === 'word' ? '뜻을 보고 단어를 떠올린 뒤' : hideMode === 'meaning' ? '단어를 보고 뜻을 떠올린 뒤' : refInfo.langCode === 'ja' ? '한자를 보고 독음을 떠올린 뒤' : '철자를 보고 발음을 떠올린 뒤'}, 행을 탭하면 확인할 수 있어요.
         </p>
       )}
 

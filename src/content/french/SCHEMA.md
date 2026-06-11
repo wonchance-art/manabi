@@ -124,3 +124,40 @@ export default {
 | 톤·일관성 | 10 | 해요체 · 용어 통일 · 콜아웃 3~5개/챕터, 한 섹션에 몰지 않기 |
 
 어휘 합격선: 발음 표기 100% · 명사 관사(또는 성 정보) 100% · 어원 연결 20~50% · 예문 ≥30%.
+
+## 문형 사전 (bunkei/<level>.js) — DELF 전수 커버 레이어
+
+챕터가 '이해'라면 문형 사전은 '전수 검색'. 해당 레벨의 핵심 구문·표현을 빠짐없이 수록한다.
+(일본어 `src/content/japanese/SCHEMA.md`의 문형 사전과 같은 구조 — 렌더러 공용)
+
+```js
+export default {
+  level: 'A1',
+  title: 'A1 문형 사전',
+  desc: '한 줄 소개',
+  themes: [
+    {
+      name: '부정·금지', icon: '🚫',
+      items: [
+        {
+          pattern: 'ne … pas',                    // 문형 (대표 표기)
+          conn: 'ne + 동사 + pas',                 // 구조·접속
+          ko: '~하지 않다 (기본 부정)',              // 한국어 대응 (간결)
+          ex:  { fr: 'Je ne parle pas anglais.', ipa: '[ʒə nə paʁl pa ɑ̃ɡlɛ]', ko: '저는 영어를 못해요.' },
+          ex2: { fr: 'Il ne travaille pas le dimanche.', ipa: '[il nə tʁavaj pa lə dimɑ̃ʃ]', ko: '그는 일요일에는 일하지 않아요.' },  // 필수 — 항목당 예문 2개
+          note: '구어에서는 ne를 자주 생략한다 — « Je parle pas. » (familier)',  // 선택 — 한 줄 주의점
+          ch: 'a1-05-negation',                    // 선택 — 이 문형을 다루는 챕터 slug
+        },
+      ],
+    },
+  ],
+}
+```
+
+- 모든 항목 필수: pattern · conn · ko · ex · ex2 (각 fr+ipa+ko). note/ch는 선택.
+- **pattern에 한국어 괄호 금지** — 뜻·용법 구별은 ko나 note에서. 동음 문형은 하나로 합쳐 ko에 ①② 병기.
+- **pattern 구분자 규칙** — 병렬 형태는 `・`로 구분(렌더링 시 줄바꿈): `c'est … qui・c'est … que`. `/`는 한 형태 안의 낱말 교체에만(`du/de la/des`) — 줄바꿈되지 않는다.
+- **같은 문형의 긍정/부정 분리 금지** — 하나로 묶고 ex=긍정, ex2=부정.
+- **레지스터(문체) 교차 표기** — 뚜렷한 격식·문어(soutenu) 문형엔 note에 구어 대응을, 뚜렷한 구어(familier) 문형엔 격식 대응을: 「구어에서는 « on » 쪽이 자연스럽다」 / 「격식·문어에서는 « ne … point »」. 중립 문형엔 강요하지 않는다.
+- 예문 ipa 필수 (어휘 발음 표기 100% 기준과 동일). 예문은 그 레벨까지의 어휘·문법으로 짧게.
+- 테마는 기능별 그룹 8~16개. 목표 수: A1 80+ / A2 90+ / B1 100+ / B2 100+ / C1 80+ / C2 60+.

@@ -39,6 +39,7 @@ export default {
           ipa: "[ɑ̃boʃe]",
           ko: "채용하다",
           pos: "v.",
+          ex: { fr: "L'entreprise embauche dix personnes cette année.", ko: "그 회사는 올해 열 명을 채용해요." },
         },
         {
           fr: "démissionner",
@@ -76,6 +77,7 @@ export default {
           ko: "인턴십, 실습",
           pos: "n.m.",
           etym: "경고: 영어 stage(무대)가 아니에요! 무대는 la scène. stage는 '실습 기간'입니다.",
+          ex: { fr: "Elle fait un stage dans une entreprise française.", ko: "그녀는 프랑스 회사에서 인턴을 해요." },
         },
         {
           fr: "le congé",
@@ -91,6 +93,7 @@ export default {
           pos: "n.f.",
           en: "formation",
           etym: "영어 formation(형성)보다 뜻이 넓어요 — 프랑스어에서는 '교육·훈련 과정'이 제1 의미입니다.",
+          ex: { fr: "Je suis une formation en ligne le soir.", ko: "저는 저녁마다 온라인 연수를 들어요." },
         },
         {
           fr: "gérer",
@@ -106,6 +109,7 @@ export default {
           pos: "n.f.",
           en: "equip",
           etym: "영어 equip(장비를 갖추다)과 같은 뿌리 — '배에 인원과 장비를 갖추다'에서 '팀'으로 발전했어요.",
+          ex: { fr: "Notre équipe a gagné le match !", ko: "우리 팀이 경기에서 이겼어!" },
         },
         {
           fr: "le patron / la patronne",
@@ -154,6 +158,7 @@ export default {
           ko: "다운로드하다",
           pos: "v.",
           etym: "télé(멀리)+charger(싣다). charger는 영어 charge와 같은 뿌리예요.",
+          ex: { fr: "J'ai téléchargé l'application hier soir.", ko: "어젯밤에 그 앱을 다운로드했어요." },
         },
         {
           fr: "numérique",
@@ -161,6 +166,7 @@ export default {
           ko: "디지털의",
           pos: "adj.",
           etym: "영어 digital에 해당하는 말이 프랑스어에서는 numérique(numéro, 숫자에서). 평행 조어의 좋은 예죠.",
+          ex: { fr: "Mes enfants vivent dans un monde numérique.", ko: "우리 아이들은 디지털 세상에 살아요." },
         },
         {
           fr: "l'écran (m.)",
@@ -177,6 +183,7 @@ export default {
           pos: "n.f.",
           en: "chain",
           etym: "라틴어 catena(사슬) — 영어 chain과 같은 뿌리. '방송 채널'이라는 뜻이 더해졌어요.",
+          ex: { fr: "Il y a un bon film sur cette chaîne ce soir.", ko: "오늘 저녁 이 채널에서 좋은 영화를 해요." },
         },
         {
           fr: "l'émission (f.)",
@@ -199,6 +206,7 @@ export default {
           pos: "n.m.",
           en: "journal",
           etym: "뚜레쥬르(Tous les jours)의 그 jour(하루)에서 — '매일 나오는 것'이라 신문이에요. 영어 journal, journalist의 어원이 바로 이 단어죠.",
+          ex: { fr: "Mon père lit le journal tous les matins.", ko: "아버지는 매일 아침 신문을 읽으세요." },
         },
         {
           fr: "la publicité",
@@ -214,6 +222,7 @@ export default {
           pos: "n.m.",
           en: "password",
           etym: "mot(말)+passe(통과) — 영어 password와 발상이 똑같은 평행 조어예요.",
+          ex: { fr: "J'ai encore oublié mon mot de passe !", ko: "비밀번호를 또 까먹었어!" },
         },
         {
           fr: "en ligne",
@@ -230,6 +239,7 @@ export default {
           ko: "방송하다, 퍼뜨리다",
           pos: "v.",
           en: "diffuse",
+          ex: { fr: "La radio diffuse les actualités à sept heures.", ko: "라디오는 7시에 뉴스를 내보내요." },
         },
       ],
     },
@@ -251,6 +261,7 @@ export default {
           pos: "n.m.",
           en: "point of view",
           etym: "영어 point of view는 이 프랑스어 표현을 그대로 직역해 들여간 말이에요.",
+          ex: { fr: "Je comprends ton point de vue.", ko: "네 관점은 이해해." },
         },
         {
           fr: "le débat",
@@ -258,6 +269,7 @@ export default {
           ko: "토론, 논쟁",
           pos: "n.m.",
           en: "debate",
+          ex: { fr: "Ce sujet provoque un grand débat.", ko: "이 주제는 큰 논쟁을 불러일으켜요." },
         },
         {
           fr: "convaincre",
@@ -274,6 +286,7 @@ export default {
           ko: "설득하다",
           pos: "v.",
           en: "persuade",
+          ex: { fr: "Il m'a persuadé de venir avec lui.", ko: "그는 같이 가자고 나를 설득했어요." },
         },
         {
           fr: "soutenir",
@@ -282,6 +295,7 @@ export default {
           pos: "v.",
           en: "sustain",
           etym: "라틴어 sustinere(아래에서 받치다) — 영어 sustain과 같은 뿌리. '의견을 받쳐 들다'는 그림이에요.",
+          ex: { fr: "Ne t'inquiète pas, je soutiens ta décision.", ko: "걱정 마, 나는 네 결정을 지지해." },
         },
         {
           fr: "s'opposer à",
@@ -305,6 +319,7 @@ export default {
           pos: "v.",
           en: "express",
           etym: "라틴어 exprimere(짜내다) — 영어 express와 같은 뿌리. espresso(에스프레소)도 친척이에요.",
+          ex: { fr: "Il est difficile d'exprimer ses émotions.", ko: "감정을 표현하기란 어려워요." },
         },
         {
           fr: "la critique",
@@ -320,6 +335,7 @@ export default {
           pos: "v.",
           en: "doubt",
           etym: "라틴어 dubitare. 영어 doubt의 발음 안 되는 b는 라틴어를 흉내 내 끼워 넣은 장식 철자 — 프랑스어 douter에는 처음부터 b가 없어요.",
+          ex: { fr: "Franchement, je doute de cette histoire.", ko: "솔직히 이 이야기는 의심스러워." },
         },
         {
           fr: "prétendre",
@@ -356,6 +372,7 @@ export default {
           pos: "n.f.",
           en: "society",
           etym: "라틴어 societas — 영어 society와 같은 뿌리. 프랑스어에서는 '회사'라는 뜻도 흔해요.",
+          ex: { fr: "La société coréenne change très vite.", ko: "한국 사회는 아주 빠르게 변해요." },
         },
         {
           fr: "l'égalité (f.)",
@@ -377,6 +394,7 @@ export default {
           ipa: "[dəvwaʁ]",
           ko: "의무; (복수로) 숙제",
           pos: "n.m.",
+          ex: { fr: "Les enfants font leurs devoirs après l'école.", ko: "아이들은 방과 후에 숙제를 해요." },
         },
         {
           fr: "la confiance",
@@ -385,6 +403,7 @@ export default {
           pos: "n.f.",
           en: "confidence",
           etym: "영어 confidence는 '자신감' 쪽으로 기울었지만, 프랑스어 confiance는 '남에 대한 신뢰'가 중심이에요. faire confiance à(~를 믿다)로 자주 써요.",
+          ex: { fr: "Je fais confiance à mes amis.", ko: "저는 친구들을 믿어요." },
         },
         {
           fr: "s'entendre avec",
@@ -399,6 +418,7 @@ export default {
           ko: "다투다, 말다툼하다",
           pos: "v.",
           en: "dispute",
+          ex: { fr: "Ils se disputent souvent pour rien.", ko: "그들은 별것 아닌 일로 자주 다퉈요." },
         },
         {
           fr: "le voisin / la voisine",
@@ -469,6 +489,7 @@ export default {
           pos: "n.m.",
           en: "means",
           etym: "라틴어 medianus(중간의) — 영어 means, medium과 같은 뿌리예요.",
+          ex: { fr: "Le métro est le moyen le plus rapide.", ko: "지하철이 가장 빠른 수단이에요." },
         },
         {
           fr: "la possibilité",
@@ -476,6 +497,7 @@ export default {
           ko: "가능성",
           pos: "n.f.",
           en: "possibility",
+          ex: { fr: "Il y a une possibilité de travailler à l'étranger.", ko: "해외에서 일할 가능성이 있어요." },
         },
         {
           fr: "le choix",
@@ -484,6 +506,7 @@ export default {
           pos: "n.m.",
           en: "choice",
           etym: "영어 choice는 프랑스어 choix의 옛 형태를 그대로 빌려간 말이에요.",
+          ex: { fr: "Tu as fait le bon choix.", ko: "넌 옳은 선택을 했어." },
         },
         {
           fr: "la liberté",
@@ -515,6 +538,7 @@ export default {
           pos: "n.m.",
           en: "souvenir",
           etym: "영어 souvenir는 '기념품'으로 뜻이 좁아졌지만, 프랑스어에서는 '기억·추억' 전반을 가리켜요.",
+          ex: { fr: "J'ai de bons souvenirs de Jeju.", ko: "제주도의 좋은 추억이 있어요." },
         },
         {
           fr: "l'espoir (m.)",
@@ -535,12 +559,14 @@ export default {
           ko: "진실",
           pos: "n.f.",
           etym: "라틴어 veritas. 영어 very도 원래 프랑스어 vrai(진짜의)에서 온 말 — '참으로'가 '매우'가 된 거예요.",
+          ex: { fr: "Dis-moi la vérité, s'il te plaît.", ko: "제발 사실대로 말해 줘." },
         },
         {
           fr: "le mensonge",
           ipa: "[mɑ̃sɔ̃ʒ]",
           ko: "거짓말",
           pos: "n.m.",
+          ex: { fr: "Ce n'est pas vrai, c'est un mensonge !", ko: "그건 사실이 아니야, 거짓말이야!" },
         },
         {
           fr: "le hasard",
@@ -557,6 +583,7 @@ export default {
           pos: "n.m.",
           en: "sense",
           etym: "영어 sense와 같은 뿌리지만 '방향'이라는 뜻이 추가 — sens unique(일방통행)처럼요.",
+          ex: { fr: "Cette phrase a deux sens différents.", ko: "이 문장은 서로 다른 두 가지 의미가 있어요." },
         },
       ],
     },
@@ -577,6 +604,7 @@ export default {
           ko: "~하고 싶다",
           pos: "expr.",
           etym: "envie는 영어 envy(질투)와 같은 뿌리지만, 이 표현에서는 '욕구'예요. '질투하다'가 아니라 '하고 싶다'!",
+          ex: { fr: "J'ai envie de manger du kimchi.", ko: "김치가 먹고 싶어요." },
         },
         {
           fr: "se rendre compte de",
@@ -632,6 +660,7 @@ export default {
           ipa: "[ʁɑ̃dʁ sɛʁvis a]",
           ko: "~에게 도움을 주다",
           pos: "expr.",
+          ex: { fr: "Il aime rendre service à ses voisins.", ko: "그는 이웃 돕는 걸 좋아해요." },
         },
         {
           fr: "se débrouiller",
@@ -646,6 +675,7 @@ export default {
           ko: "~하는 습관이 있다, ~에 익숙하다",
           pos: "expr.",
           etym: "habitude는 영어 habit과 같은 뿌리(라틴어 habere, 가지다)예요.",
+          ex: { fr: "J'ai l'habitude de me lever tôt.", ko: "저는 일찍 일어나는 데 익숙해요." },
         },
         {
           fr: "faire la queue",
@@ -653,6 +683,7 @@ export default {
           ko: "줄을 서다",
           pos: "expr.",
           etym: "queue는 원래 '꼬리'. 영국 영어 queue(줄 서다)는 이 프랑스어를 그대로 빌려간 말이에요.",
+          ex: { fr: "On fait la queue devant la boulangerie.", ko: "우리는 빵집 앞에서 줄을 서요." },
         },
       ],
     },

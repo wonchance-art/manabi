@@ -39,6 +39,7 @@ export default {
           ko: "문제의식, 논제 (논문의 중심 질문)",
           pos: "n.f.",
           etym: "프랑스 대입 논술(dissertation)의 핵심 개념 — 영어 problem보다 '질문의 틀'에 가까운, 번역하기 어려운 단어예요.",
+          ex: { fr: "Quelle est la problématique de votre mémoire ?", ko: "당신 논문의 중심 논제는 무엇인가요?" },
         },
         {
           fr: "l'hypothèse (f.)",
@@ -69,6 +70,7 @@ export default {
           ko: "본질적인, 그 자체의",
           pos: "adj.",
           en: "intrinsic",
+          ex: { fr: "La valeur intrinsèque de ce texte est indéniable.", ko: "이 텍스트의 본질적 가치는 부인할 수 없어요." },
         },
         {
           fr: "la cohérence",
@@ -76,6 +78,7 @@ export default {
           ko: "일관성, 정합성",
           pos: "n.f.",
           en: "coherence",
+          ex: { fr: "Votre argumentation manque parfois de cohérence.", ko: "당신의 논증은 때때로 일관성이 부족해요." },
         },
         {
           fr: "l'ambiguïté (f.)",
@@ -111,6 +114,7 @@ export default {
           ko: "(사회적) 분열, 균열",
           pos: "n.m.",
           etym: "영어 cleavage와 같은 뿌리(쪼개짐)지만, 시사 프랑스어에서는 '좌우 분열' 같은 사회적 균열을 가리켜요.",
+          ex: { fr: "Le clivage entre générations se creuse.", ko: "세대 간 균열이 깊어지고 있어요." },
         },
         {
           fr: "la grille de lecture",
@@ -147,6 +151,7 @@ export default {
           pos: "n.m.",
           en: "crepuscular",
           etym: "영어 crepuscular(황혼의)와 같은 라틴어 뿌리. '인생의 황혼' 같은 비유에도 써요.",
+          ex: { fr: "La ville est magnifique au crépuscule.", ko: "황혼 녘의 도시는 정말 아름다워요." },
         },
         {
           fr: "la mélancolie",
@@ -169,6 +174,7 @@ export default {
           pos: "n.f.",
           en: "quest",
           etym: "ê의 모자 = 사라진 s — 옛 형태 queste가 영어 quest로 남아 있어요. en quête de = ~을 찾아서.",
+          ex: { fr: "Ce roman raconte la quête d'identité d'un jeune exilé.", ko: "이 소설은 젊은 망명자의 정체성 추구를 그려요." },
         },
         {
           fr: "le désarroi",
@@ -197,6 +203,7 @@ export default {
           ko: "먼 옛날에 (문어)",
           pos: "adv.",
           etym: "예외적으로 끝 s를 발음해요. ja a dis(이미 날들이 있었다)가 줄어든 화석 같은 단어.",
+          ex: { fr: "Jadis, ce quartier était un village de pêcheurs.", ko: "먼 옛날 이 동네는 어촌 마을이었어요." },
         },
         {
           fr: "naguère",
@@ -219,6 +226,7 @@ export default {
           pos: "n.m.",
           en: "frisson",
           etym: "영어가 이 단어를 그대로 차용해 frisson(짜릿한 전율)으로 써요.",
+          ex: { fr: "Cette scène m'a donné des frissons.", ko: "그 장면에 전율이 일었어요." },
         },
         {
           fr: "s'évanouir",
@@ -253,6 +261,7 @@ export default {
           ko: "(근본 해결 없이) 완화하다, 미봉하다",
           pos: "v.",
           etym: "라틴어 pallium(망토) — '망토로 덮어 가리다'. 영어 palliative(완화 치료의)와 같은 뿌리예요.",
+          ex: { fr: "Cette mesure pallie le manque de personnel.", ko: "이 조치는 인력 부족을 임시로 메워요." },
         },
         {
           fr: "enfreindre",
@@ -283,12 +292,14 @@ export default {
           ipa: "[pʁone]",
           ko: "옹호하다, 주창하다",
           pos: "v.",
+          ex: { fr: "Le ministre prône un retour aux méthodes classiques.", ko: "장관은 전통적 방식으로의 회귀를 주창해요." },
         },
         {
           fr: "déceler",
           ipa: "[desle]",
           ko: "간파하다, (숨은 것을) 탐지하다",
           pos: "v.",
+          ex: { fr: "L'analyse a décelé plusieurs erreurs dans le rapport.", ko: "분석 결과 보고서에서 여러 오류가 발견됐어요." },
         },
         {
           fr: "escompter",
@@ -296,6 +307,7 @@ export default {
           ko: "기대하다, 예상하고 계산에 넣다",
           pos: "v.",
           etym: "영어 discount와 같은 뿌리(이탈리아어 scontare) — '미리 셈에 넣다'에서 '기대하다'로. 상업 용어로는 '어음 할인'이라는 뜻도 있어요.",
+          ex: { fr: "Les résultats sont inférieurs à ce que nous escomptions.", ko: "결과가 우리가 기대했던 수준에 못 미쳐요." },
         },
         {
           fr: "conjuguer",
@@ -303,6 +315,7 @@ export default {
           ko: "결합하다; (동사를) 활용하다",
           pos: "v.",
           etym: "라틴어 conjugare(멍에로 묶다) — 영어 conjugate와 같은 뿌리. conjuguer efforts et talents처럼 '역량을 결합하다'로 써요.",
+          ex: { fr: "Ce projet conjugue tradition et modernité.", ko: "이 프로젝트는 전통과 현대를 결합해요." },
         },
         {
           fr: "amorcer",
@@ -316,12 +329,14 @@ export default {
           ipa: "[paʁaʃve]",
           ko: "완벽하게 마무리 짓다",
           pos: "v.",
+          ex: { fr: "Il a parachevé son œuvre juste avant sa mort.", ko: "그는 죽기 직전에 작품을 완벽하게 마무리했어요." },
         },
         {
           fr: "entériner",
           ipa: "[ɑ̃teʁine]",
           ko: "(공식적으로) 승인하다, 추인하다",
           pos: "v.",
+          ex: { fr: "Le parlement a entériné l'accord signé en mars.", ko: "의회가 3월에 체결된 합의를 추인했어요." },
         },
         {
           fr: "édulcorer",
@@ -329,6 +344,7 @@ export default {
           ko: "(표현·내용을) 순화하다, 물 타다",
           pos: "v.",
           etym: "라틴어 dulcis(달다) — 영어 dulcet(감미로운)과 같은 뿌리. '설탕을 타다'가 원뜻이라 '내용을 달게 희석하다'는 비유가 그대로 보여요.",
+          ex: { fr: "Le rapport officiel édulcore la réalité.", ko: "공식 보고서는 현실을 물 타서 순화해요." },
         },
         {
           fr: "juguler",
@@ -351,6 +367,7 @@ export default {
           ko: "타협하다, 양보하다",
           pos: "v.",
           etym: "라틴어 transigere — 영어 transact(거래하다)와 같은 뿌리. ne pas transiger sur = ~에서는 절대 타협하지 않다.",
+          ex: { fr: "Elle refuse de transiger sur la qualité.", ko: "그녀는 품질에 관해서는 타협하지 않아요." },
         },
       ],
     },
@@ -371,12 +388,14 @@ export default {
           ko: "직접 팔을 걷어붙이고 돕다",
           pos: "expr.",
           etym: "직역은 '반죽에 손을 넣다' — 빵의 나라다운 표현이죠.",
+          ex: { fr: "Tout le monde a mis la main à la pâte pour le déménagement.", ko: "이사할 때 모두가 팔을 걷어붙이고 도왔어요." },
         },
         {
           fr: "tirer son épingle du jeu",
           ipa: "[tiʁe sɔ̃nepɛ̃gl dy ʒø]",
           ko: "곤란한 상황에서 손해 없이 잘 빠져나오다",
           pos: "expr.",
+          ex: { fr: "Malgré la crise, cette entreprise tire son épingle du jeu.", ko: "위기에도 이 회사는 손해 없이 잘 빠져나가고 있어요." },
         },
         {
           fr: "avoir le cafard",
@@ -384,12 +403,14 @@ export default {
           ko: "우울하다, 기분이 가라앉다",
           pos: "expr.",
           etym: "cafard는 '바퀴벌레' — 보들레르가 퍼뜨린 표현으로 알려져 있어요. '마음속에 바퀴벌레가 있다'니, 꽤 시적인 우울이죠.",
+          ex: { fr: "J'ai le cafard depuis ton départ.", ko: "네가 떠난 뒤로 마음이 울적해." },
         },
         {
           fr: "passer sous silence",
           ipa: "[pase su silɑ̃s]",
           ko: "(일부러) 언급하지 않다, 함구하다",
           pos: "expr.",
+          ex: { fr: "Le rapport passe sous silence les vrais problèmes.", ko: "그 보고서는 진짜 문제들을 함구해요." },
         },
         {
           fr: "faire preuve de",
@@ -410,6 +431,7 @@ export default {
           ipa: "[təniʁ kɔ̃t də]",
           ko: "~을 고려하다, 감안하다",
           pos: "expr.",
+          ex: { fr: "Il faut tenir compte du contexte culturel.", ko: "문화적 맥락을 고려해야 해요." },
         },
         {
           fr: "avoir beau + inf.",
@@ -431,6 +453,7 @@ export default {
           ko: "곤경이 끝나려면 아직 멀었다",
           pos: "expr.",
           etym: "직역은 '아직 여인숙에서 못 나왔다' — 여기서 auberge는 감옥의 은어였어요.",
+          ex: { fr: "Avec tous ces papiers à remplir, on n'est pas sortis de l'auberge !", ko: "작성할 서류가 이렇게 많으니, 아직 갈 길이 멀었어!" },
         },
         {
           fr: "mettre les bouchées doubles",
@@ -438,6 +461,7 @@ export default {
           ko: "박차를 가하다, 속도를 두 배로 내다",
           pos: "expr.",
           etym: "직역은 '한입 분량을 두 배로 먹다' — 일을 음식처럼 해치우는 그림이에요.",
+          ex: { fr: "Il faut mettre les bouchées doubles pour finir à temps.", ko: "제때 끝내려면 박차를 가해야 해요." },
         },
         {
           fr: "couper les ponts",
@@ -445,6 +469,7 @@ export default {
           ko: "(사람과의) 관계를 완전히 끊다",
           pos: "expr.",
           etym: "영어 burn one's bridges와 같은 발상 — 영어는 다리를 태우고, 프랑스어는 자릅니다.",
+          ex: { fr: "Elle a coupé les ponts avec sa famille.", ko: "그녀는 가족과 관계를 완전히 끊었어요." },
         },
         {
           fr: "tomber à l'eau",

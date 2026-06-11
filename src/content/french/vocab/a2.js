@@ -25,6 +25,7 @@ export default {
           ipa: "[tʁɛ̃]",
           ko: "기차",
           pos: "n.m.",
+          ex: { fr: "Je prends le train pour Busan.", ko: "부산행 기차를 타요." },
         },
         {
           fr: "l'avion (m.)",
@@ -77,6 +78,7 @@ export default {
           ipa: "[paspɔʁ]",
           ko: "여권",
           pos: "n.m.",
+          ex: { fr: "Votre passeport, s'il vous plaît.", ko: "여권 보여주세요." },
         },
         {
           fr: "l'aéroport (m.)",
@@ -97,6 +99,7 @@ export default {
           pos: "n.m.",
           en: "hotel",
           etym: "ô의 모자 = 사라진 s. 영어 hostel, hospital과 한 식구예요. h는 묵음!",
+          ex: { fr: "L'hôtel est près de la gare.", ko: "호텔은 기차역 근처에 있어요." },
         },
         {
           fr: "partir",
@@ -112,6 +115,7 @@ export default {
           pos: "v.",
           en: "arrive",
           etym: "라틴어 ad rīpam(강기슭에 닿다)에서 — 영어 arrive와 같은 뿌리예요.",
+          ex: { fr: "Le train arrive à neuf heures.", ko: "기차는 9시에 도착해요." },
         },
       ],
     },
@@ -177,6 +181,7 @@ export default {
           pos: "n.m.",
           en: "price",
           etym: "그랑프리(grand prix)가 직역하면 '큰 상'이에요. 영어 price, prize 둘 다 이 단어와 같은 뿌리 — prix는 '가격'과 '상' 두 뜻을 다 가져요.",
+          ex: { fr: "Quel est le prix de ce manteau ?", ko: "이 코트는 가격이 얼마예요?" },
         },
         {
           fr: "la taille",
@@ -207,12 +212,14 @@ export default {
           pos: "v.",
           en: "vendor",
           etym: "라틴어 vēndere — 영어 vendor(판매자), vending machine과 같은 뿌리예요.",
+          ex: { fr: "Ce magasin vend de jolies robes.", ko: "이 가게는 예쁜 원피스를 팔아요." },
         },
         {
           fr: "payer",
           ipa: "[peje]",
           ko: "지불하다, 계산하다",
           pos: "v.",
+          ex: { fr: "Je peux payer par carte ?", ko: "카드로 계산해도 되나요?" },
         },
       ],
     },
@@ -303,12 +310,14 @@ export default {
           pos: "n.m.",
           en: "medicine",
           etym: "영어 medicine, medical과 같은 라틴어 medicus 뿌리 — 단 프랑스어 médecin은 '의사(사람)'예요.",
+          ex: { fr: "Je vais chez le médecin cet après-midi.", ko: "오늘 오후에 의사한테 가요." },
         },
         {
           fr: "le médicament",
           ipa: "[medikamɑ̃]",
           ko: "약",
           pos: "n.m.",
+          ex: { fr: "Je prends un médicament contre le mal de tête.", ko: "두통약을 먹고 있어요." },
         },
         {
           fr: "avoir mal (à)",
@@ -356,6 +365,7 @@ export default {
           ipa: "[il nɛʒ]",
           ko: "눈이 와요",
           pos: "expr.",
+          ex: { fr: "Il neige beaucoup à Séoul en hiver.", ko: "서울엔 겨울에 눈이 많이 와요." },
         },
         {
           fr: "le soleil",
@@ -393,6 +403,7 @@ export default {
           pos: "n.f.",
           en: "marine",
           etym: "라틴어 mare — 영어 marine(바다의), mermaid의 mer-와 같은 뿌리예요.",
+          ex: { fr: "On va à la mer ce week-end ?", ko: "이번 주말에 바다 갈까?" },
         },
         {
           fr: "la montagne",
@@ -400,6 +411,7 @@ export default {
           ko: "산",
           pos: "n.f.",
           etym: "만년필 브랜드 몽블랑(Mont Blanc)은 '흰 산' — 알프스 최고봉의 이름이에요. mont(산봉우리)와 montagne는 한 가족이고, 영어 mountain도 같은 뿌리죠.",
+          ex: { fr: "Il y a beaucoup de montagnes en Corée.", ko: "한국에는 산이 많아요." },
         },
         {
           fr: "la fleur",
@@ -448,12 +460,14 @@ export default {
           ipa: "[ɑ̃tʁəpʁiz]",
           ko: "회사, 기업",
           pos: "n.f.",
+          ex: { fr: "Elle travaille dans une grande entreprise.", ko: "그녀는 대기업에서 일해요." },
         },
         {
           fr: "le collègue",
           ipa: "[kɔlɛg]",
           ko: "동료 (여성형 la collègue)",
           pos: "n.m.",
+          ex: { fr: "Je déjeune avec mes collègues à midi.", ko: "정오에 동료들과 점심을 먹어요." },
         },
         {
           fr: "le patron",
@@ -461,6 +475,7 @@ export default {
           ko: "사장, 상사",
           pos: "n.m.",
           etym: "영어 patron(후원자, 단골)과 어원은 같지만, 프랑스어에서는 '사장님'이라는 뜻이 기본이에요.",
+          ex: { fr: "Mon patron est très gentil.", ko: "우리 사장님은 정말 친절하세요." },
         },
         {
           fr: "le salaire",
@@ -469,6 +484,7 @@ export default {
           pos: "n.m.",
           en: "salary",
           etym: "라틴어 salārium(소금 살 돈) — 영어 salary와 같은 뿌리예요.",
+          ex: { fr: "Mon salaire arrive à la fin du mois.", ko: "월급은 월말에 들어와요." },
         },
         {
           fr: "la réunion",
@@ -502,6 +518,7 @@ export default {
           ipa: "[pʁɔfesœʁ]",
           ko: "교사, 교수",
           pos: "n.m.",
+          ex: { fr: "Notre professeur de français vient de Lyon.", ko: "우리 프랑스어 선생님은 리옹 출신이에요." },
         },
         {
           fr: "l'étudiant (m.)",
@@ -557,24 +574,28 @@ export default {
           ipa: "[syʁpʁi]",
           ko: "놀란 (여성형 surprise)",
           pos: "adj.",
+          ex: { fr: "Je suis surpris de te voir ici !", ko: "여기서 너를 보다니 깜짝 놀랐어!" },
         },
         {
           fr: "inquiet",
           ipa: "[ɛ̃kjɛ]",
           ko: "걱정하는, 불안한 (여성형 inquiète)",
           pos: "adj.",
+          ex: { fr: "Ma mère est inquiète pour moi.", ko: "어머니는 저를 걱정하세요." },
         },
         {
           fr: "calme",
           ipa: "[kalm]",
           ko: "차분한, 조용한",
           pos: "adj.",
+          ex: { fr: "La mer est calme aujourd'hui.", ko: "오늘은 바다가 잔잔해요." },
         },
         {
           fr: "nerveux",
           ipa: "[nɛʁvø]",
           ko: "긴장한, 신경이 곤두선 (여성형 nerveuse)",
           pos: "adj.",
+          ex: { fr: "Je suis nerveux avant l'examen.", ko: "시험을 앞두고 긴장돼요." },
         },
         {
           fr: "en colère",
@@ -597,6 +618,7 @@ export default {
           pos: "n.f.",
           en: "joy",
           etym: "영어 joy가 바로 이 프랑스어에서 온 말이에요.",
+          ex: { fr: "Quelle joie de te revoir !", ko: "다시 만나서 정말 기뻐!" },
         },
         {
           fr: "l'amour (m.)",
@@ -604,24 +626,28 @@ export default {
           ko: "사랑",
           pos: "n.m.",
           etym: "라틴어 amor — 영어 amorous, amateur(원래 '사랑하는 사람')와 같은 뿌리예요.",
+          ex: { fr: "C'est une belle histoire d'amour.", ko: "아름다운 사랑 이야기예요." },
         },
         {
           fr: "pleurer",
           ipa: "[plœʁe]",
           ko: "울다",
           pos: "v.",
+          ex: { fr: "Le bébé pleure toute la nuit.", ko: "아기가 밤새 울어요." },
         },
         {
           fr: "rire",
           ipa: "[ʁiʁ]",
           ko: "웃다",
           pos: "v.",
+          ex: { fr: "On a beaucoup ri ensemble.", ko: "우리는 같이 실컷 웃었어요." },
         },
         {
           fr: "sourire",
           ipa: "[suʁiʁ]",
           ko: "미소 짓다",
           pos: "v.",
+          ex: { fr: "Elle sourit toujours à tout le monde.", ko: "그녀는 늘 모두에게 미소를 지어요." },
         },
       ],
     },
@@ -648,12 +674,14 @@ export default {
           ipa: "[sə lave]",
           ko: "씻다",
           pos: "v.",
+          ex: { fr: "Je me lave les mains avant le repas.", ko: "밥 먹기 전에 손을 씻어요." },
         },
         {
           fr: "s'habiller",
           ipa: "[sabije]",
           ko: "옷을 입다",
           pos: "v.",
+          ex: { fr: "Je m'habille vite le matin.", ko: "아침엔 옷을 빨리 입어요." },
         },
         {
           fr: "se coucher",
@@ -667,6 +695,7 @@ export default {
           ipa: "[sə ʁəpoze]",
           ko: "쉬다, 휴식하다",
           pos: "v.",
+          ex: { fr: "Repose-toi bien ce week-end !", ko: "주말에 푹 쉬어!" },
         },
         {
           fr: "se promener",
@@ -687,6 +716,7 @@ export default {
           ipa: "[kɔmɑ̃se]",
           ko: "시작하다",
           pos: "v.",
+          ex: { fr: "Le film commence à huit heures.", ko: "영화는 8시에 시작해요." },
         },
         {
           fr: "finir",
@@ -695,6 +725,7 @@ export default {
           pos: "v.",
           en: "finish",
           etym: "라틴어 fīnīre — 영어 finish, final과 같은 뿌리예요.",
+          ex: { fr: "Je finis le travail à six heures.", ko: "저는 6시에 일이 끝나요." },
         },
         {
           fr: "rentrer",
@@ -710,12 +741,14 @@ export default {
           pos: "v.",
           en: "dormitory",
           etym: "라틴어 dormīre — 영어 dormitory(기숙사, '자는 곳')와 같은 뿌리예요.",
+          ex: { fr: "J'ai mal dormi cette nuit.", ko: "어젯밤에 잠을 설쳤어요." },
         },
         {
           fr: "préparer",
           ipa: "[pʁepaʁe]",
           ko: "준비하다",
           pos: "v.",
+          ex: { fr: "Ma mère prépare le dîner.", ko: "어머니가 저녁을 준비하세요." },
         },
         {
           fr: "oublier",
