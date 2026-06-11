@@ -83,4 +83,5 @@ export function countBunkei(levelKey) {
   return b.themes.reduce((sum, t) => sum + t.items.length, 0);
 }
 
-export default registry;
+// default export(레지스트리)에도 문형 사전 API 포함 — refLangs가 default를 펼쳐 쓰므로 필수
+export default { ...registry, getBunkei, countBunkei };
