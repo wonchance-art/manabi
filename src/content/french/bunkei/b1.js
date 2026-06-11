@@ -354,6 +354,7 @@ export default {
           ex: { fr: "Ça fait trois ans que j'apprends le français.", ipa: "[sa fɛ tʁwazɑ̃ kə ʒapʁɑ̃ lə fʁɑ̃sɛ]", ko: "프랑스어를 배운 지 3년이 됐어요." },
           ex2: { fr: "Ça faisait longtemps qu'on ne s'était pas vus.", ipa: "[sa fəzɛ lɔ̃tɑ̃ kɔ̃ nə setɛ pa vy]", ko: "우리 정말 오랜만에 보는 거였어." },
           note: "구어 — 격식·문어에서는 « cela fait … que » / « il y a … que »",
+          ch: "a2-11-time-expressions",
         },
         {
           pattern: "déjà・ne … pas encore",
@@ -448,6 +449,7 @@ export default {
           ko: "~하는 모든 것",
           ex: { fr: "Tout ce qui brille n'est pas or.", ipa: "[tu sə ki bʁij nɛ pa ɔʁ]", ko: "반짝인다고 다 금은 아니다." },
           ex2: { fr: "Raconte-moi tout ce que tu as vu.", ipa: "[ʁakɔ̃t mwa tu sə kə ty a vy]", ko: "네가 본 걸 전부 말해 줘." },
+          ch: "a2-12-quantity-tout",
         },
       ],
     },
@@ -550,6 +552,7 @@ export default {
           ko: "~하기 전에",
           ex: { fr: "Réfléchis bien avant de répondre.", ipa: "[ʁefleʃi bjɛ̃ avɑ̃ də ʁepɔ̃dʁ]", ko: "대답하기 전에 잘 생각해 봐." },
           ex2: { fr: "Avant de partir, vérifie que tout est éteint.", ipa: "[avɑ̃ də paʁtiʁ veʁifi kə tutɛtetɛ̃]", ko: "나가기 전에 다 껐는지 확인해." },
+          ch: "b1-09-connectors-purpose-time",
         },
         {
           pattern: "après avoir・après être + participe passé",
@@ -558,6 +561,7 @@ export default {
           ex: { fr: "Après avoir fini mes études, j'ai travaillé deux ans à Lyon.", ipa: "[apʁɛzavwaʁ fini mezetyd ʒe tʁavaje døzɑ̃ a ljɔ̃]", ko: "학업을 마친 뒤 리옹에서 2년 일했어요." },
           ex2: { fr: "Après être rentrée chez elle, elle s'est tout de suite couchée.", ipa: "[apʁɛzɛtʁ ʁɑ̃tʁe ʃezɛl ɛl sɛ tu də sɥit kuʃe]", ko: "집에 돌아온 뒤 그녀는 곧바로 잠자리에 들었어요." },
           note: "주절과 동일 주어일 때만. être 동사는 과거분사 성수 일치",
+          ch: "b1-09-connectors-purpose-time",
         },
         {
           pattern: "sans + infinitif",
@@ -565,6 +569,7 @@ export default {
           ko: "~하지 않고",
           ex: { fr: "Il est parti sans dire au revoir.", ipa: "[il ɛ paʁti sɑ̃ diʁ o ʁəvwaʁ]", ko: "그는 인사도 없이 떠났어요." },
           ex2: { fr: "On ne progresse pas sans faire d'erreurs.", ipa: "[ɔ̃ nə pʁɔɡʁɛs pa sɑ̃ fɛʁ dɛʁœʁ]", ko: "실수 없이는 늘지 않아요." },
+          ch: "b2-09-negation-advanced",
         },
         {
           pattern: "au lieu de + infinitif",
@@ -803,6 +808,7 @@ export default {
           ex: { fr: "Afin d'éviter les embouteillages, partez avant sept heures.", ipa: "[afɛ̃ devite lezɑ̃butɛjaʒ paʁte avɑ̃ sɛtœʁ]", ko: "교통 체증을 피하려면 7시 전에 출발하세요." },
           ex2: { fr: "Le texte a été simplifié afin que chacun puisse le comprendre.", ipa: "[lə tɛkst a ete sɛ̃plifje afɛ̃ kə ʃakœ̃ pɥis lə kɔ̃pʁɑ̃dʁ]", ko: "누구나 이해할 수 있도록 본문을 쉽게 고쳤습니다." },
           note: "격식·문어 — 구어에서는 pour (que)가 자연스럽다",
+          ch: "b1-09-connectors-purpose-time",
         },
         {
           pattern: "bien que",
@@ -820,6 +826,7 @@ export default {
           ex: { fr: "Puisque tu es là, aide-moi à mettre la table.", ipa: "[pɥiskə ty ɛ la ɛd mwa a mɛtʁ la tabl]", ko: "온 김에 상 차리는 것 좀 도와줘." },
           ex2: { fr: "Puisque personne ne veut décider, c'est moi qui choisis.", ipa: "[pɥiskə pɛʁsɔn nə vø deside sɛ mwa ki ʃwazi]", ko: "아무도 결정 안 하겠다니 내가 고를게." },
           note: "새 정보의 이유는 parce que — puisque는 '너도 알다시피'의 어감",
+          ch: "b1-09-connectors-purpose-time",
         },
         {
           pattern: "Comme …, …",
@@ -828,6 +835,7 @@ export default {
           ex: { fr: "Comme il pleuvait, on est restés à la maison.", ipa: "[kɔm il pløvɛ ɔ̃nɛ ʁɛste a la mɛzɔ̃]", ko: "비가 와서 우리는 집에 있었어요." },
           ex2: { fr: "Comme je ne connaissais personne, je suis parti tôt.", ipa: "[kɔm ʒə nə kɔnɛsɛ pɛʁsɔn ʒə sɥi paʁti to]", ko: "아는 사람이 없어서 일찍 자리를 떴어요." },
           note: "원인의 comme는 반드시 문두 — 문중이면 비교(~처럼)로 읽힌다",
+          ch: "b1-09-connectors-purpose-time",
         },
         {
           pattern: "grâce à・à cause de",
@@ -836,6 +844,7 @@ export default {
           ex: { fr: "Grâce à toi, j'ai réussi mon entretien.", ipa: "[ɡʁas a twa ʒe ʁeysi mɔ̃nɑ̃tʁətjɛ̃]", ko: "네 덕분에 면접 잘 봤어." },
           ex2: { fr: "Le match a été annulé à cause de la pluie.", ipa: "[lə matʃ a ete anyle a koz də la plɥi]", ko: "비 때문에 경기가 취소됐어요." },
           note: "긍정적 결과 → grâce à, 부정적 → à cause de. 중립·격식은 en raison de (B2)",
+          ch: "b1-09-connectors-purpose-time",
         },
         {
           pattern: "car",
@@ -844,6 +853,7 @@ export default {
           ex: { fr: "Je dois partir, car j'ai un rendez-vous important.", ipa: "[ʒə dwa paʁtiʁ kaʁ ʒe œ̃ ʁɑ̃devu ɛ̃pɔʁtɑ̃]", ko: "중요한 약속이 있어서 가 봐야 해요." },
           ex2: { fr: "Il n'a rien dit, car il ne voulait pas l'inquiéter.", ipa: "[il na ʁjɛ̃ di kaʁ il nə vulɛ pa lɛ̃kjete]", ko: "그녀를 걱정시키고 싶지 않아서 그는 아무 말도 하지 않았다." },
           note: "문어 접속사 — 문두에 못 오고, 구어에서는 parce que",
+          ch: "b1-09-connectors-purpose-time",
         },
         {
           pattern: "c'est pour ça que",
@@ -852,6 +862,7 @@ export default {
           ex: { fr: "J'ai grandi au bord de la mer, c'est pour ça que j'aime nager.", ipa: "[ʒe ɡʁɑ̃di o bɔʁ də la mɛʁ sɛ puʁ sa kə ʒɛm naʒe]", ko: "바닷가에서 자라서 수영을 좋아해요." },
           ex2: { fr: "C'est pour ça que je ne réponds plus à ses messages.", ipa: "[sɛ puʁ sa kə ʒə nə ʁepɔ̃ ply a se mesaʒ]", ko: "그래서 걔 메시지에 더는 답을 안 하는 거야." },
           note: "구어 — 격식·문어에서는 c'est pourquoi / c'est la raison pour laquelle",
+          ch: "b1-09-connectors-purpose-time",
         },
         {
           pattern: "quand même",
@@ -860,6 +871,7 @@ export default {
           ex: { fr: "Il pleuvait, mais on est sortis quand même.", ipa: "[il pløvɛ mɛ ɔ̃nɛ sɔʁti kɑ̃ mɛm]", ko: "비가 왔지만 그래도 우리는 나갔어요." },
           ex2: { fr: "Tu aurais quand même pu me prévenir !", ipa: "[ty oʁɛ kɑ̃ mɛm py mə pʁevəniʁ]", ko: "그래도 미리 말은 해 줄 수 있었잖아!" },
           note: "구어 만능 양보 부사 — 격식은 tout de même, 문어는 néanmoins",
+          ch: "b1-09-connectors-purpose-time",
         },
       ],
     },
@@ -874,6 +886,7 @@ export default {
           ex: { fr: "Appelle-moi dès que tu arrives.", ipa: "[apɛl mwa dɛ kə ty aʁiv]", ko: "도착하자마자 전화해." },
           ex2: { fr: "Dès que j'aurai les résultats, je te les enverrai.", ipa: "[dɛ kə ʒoʁe le ʁezylta ʒə tə lezɑ̃vɛʁe]", ko: "결과 나오는 대로 보내 줄게." },
           note: "미래의 일이면 양쪽 다 미래시제 — 한국어 '~하면'에 끌려 현재형을 쓰지 않기",
+          ch: "b1-09-connectors-purpose-time",
         },
         {
           pattern: "pendant que",
@@ -881,6 +894,7 @@ export default {
           ko: "~하는 동안",
           ex: { fr: "Pendant que tu te prépares, je fais le café.", ipa: "[pɑ̃dɑ̃ kə ty tə pʁepaʁ ʒə fɛ lə kafe]", ko: "네가 준비하는 동안 커피 내릴게." },
           ex2: { fr: "Quelqu'un est entré pendant que nous n'étions pas là.", ipa: "[kɛlkœ̃ ɛtɑ̃tʁe pɑ̃dɑ̃ kə nu netjɔ̃ pa la]", ko: "우리가 없는 사이에 누군가 들어왔어요." },
+          ch: "b1-09-connectors-purpose-time",
         },
         {
           pattern: "depuis que",
@@ -888,6 +902,7 @@ export default {
           ko: "~한 이후로",
           ex: { fr: "Depuis qu'elle fait du yoga, elle dort beaucoup mieux.", ipa: "[dəpɥi kɛl fɛ dy jɔɡa ɛl dɔʁ boku mjø]", ko: "요가를 시작한 뒤로 그녀는 훨씬 잘 자요." },
           ex2: { fr: "On ne s'est pas reparlé depuis qu'il a déménagé.", ipa: "[ɔ̃ nə sɛ pa ʁəpaʁle dəpɥi kil a demenaʒe]", ko: "그가 이사 간 뒤로 다시 연락한 적이 없어요." },
+          ch: "b1-09-connectors-purpose-time",
         },
         {
           pattern: "jusqu'à ce que",
@@ -914,6 +929,7 @@ export default {
           ex: { fr: "Lorsque j'étais enfant, nous passions l'été chez ma grand-mère.", ipa: "[lɔʁskə ʒetɛ ɑ̃fɑ̃ nu pasjɔ̃ lete ʃe ma ɡʁɑ̃mɛʁ]", ko: "어릴 때 우리는 할머니 댁에서 여름을 보내곤 했어요." },
           ex2: { fr: "Lorsque vous aurez terminé, signez en bas de la page.", ipa: "[lɔʁskə vuzoʁe tɛʁmine siɲe ɑ̃ ba də la paʒ]", ko: "다 마치시면 페이지 하단에 서명하세요." },
           note: "quand의 격식·문어형 — 의문사로는 쓸 수 없다",
+          ch: "b1-09-connectors-purpose-time",
         },
         {
           pattern: "chaque fois que",
@@ -921,6 +937,7 @@ export default {
           ko: "~할 때마다",
           ex: { fr: "Chaque fois que je vois ce film, je pleure.", ipa: "[ʃak fwa kə ʒə vwa sə film ʒə plœʁ]", ko: "이 영화를 볼 때마다 울어요." },
           ex2: { fr: "Chaque fois qu'il ouvre la bouche, c'est pour se plaindre.", ipa: "[ʃak fwa kiluvʁ la buʃ sɛ puʁ sə plɛ̃dʁ]", ko: "그는 입만 열면 불평이에요." },
+          ch: "b1-09-connectors-purpose-time",
         },
         {
           pattern: "au moment où",
@@ -928,6 +945,7 @@ export default {
           ko: "바로 ~하는 순간에",
           ex: { fr: "Le téléphone a sonné au moment où je sortais.", ipa: "[lə telefɔn a sɔne o mɔmɑ̃ u ʒə sɔʁtɛ]", ko: "막 나가려는 순간에 전화가 울렸어요." },
           ex2: { fr: "Au moment où j'allais payer, j'ai vu que je n'avais plus ma carte.", ipa: "[o mɔmɑ̃ u ʒalɛ peje ʒe vy kə ʒə navɛ ply ma kaʁt]", ko: "계산하려는 순간 카드가 없다는 걸 알았어요." },
+          ch: "b1-09-connectors-purpose-time",
         },
         {
           pattern: "en attendant・en attendant de",
@@ -935,6 +953,7 @@ export default {
           ko: "~을 기다리는 동안, 그동안에",
           ex: { fr: "En attendant le bus, elle lit les nouvelles sur son téléphone.", ipa: "[ɑ̃natɑ̃dɑ̃ lə bys ɛl li le nuvɛl syʁ sɔ̃ telefɔn]", ko: "버스를 기다리는 동안 그녀는 휴대폰으로 뉴스를 봐요." },
           ex2: { fr: "En attendant de trouver un appartement, il loge chez un ami.", ipa: "[ɑ̃natɑ̃dɑ̃ də tʁuve œ̃napaʁtəmɑ̃ il lɔʒ ʃezœ̃nami]", ko: "집을 구할 때까지 그는 친구 집에 머물러요." },
+          ch: "b1-09-connectors-purpose-time",
         },
       ],
     },
@@ -972,6 +991,7 @@ export default {
           ex: { fr: "Il me semble que les prix ont encore augmenté.", ipa: "[il mə sɑ̃bl kə le pʁi ɔ̃tɑ̃kɔʁ oɡmɑ̃te]", ko: "물가가 또 오른 것 같아요." },
           ex2: { fr: "Il me semble qu'on oublie quelque chose d'important.", ipa: "[il mə sɑ̃bl kɔ̃nubli kɛlkə ʃoz dɛ̃pɔʁtɑ̃]", ko: "우리가 뭔가 중요한 걸 잊고 있는 것 같은데요." },
           note: "il me semble que + 직설법 / il semble que + 접속법 — 대명사 하나로 법이 갈린다 (B2)",
+          ch: "b2-10-impersonal-formal",
         },
         {
           pattern: "être d'accord avec・pour",
@@ -1022,6 +1042,7 @@ export default {
           ex: { fr: "Je n'ai que dix euros sur moi.", ipa: "[ʒə ne kə dizøʁo syʁ mwa]", ko: "지금 가진 게 10유로밖에 없어요." },
           ex2: { fr: "Elle ne pense qu'à son travail.", ipa: "[ɛl nə pɑ̃s ka sɔ̃ tʁavaj]", ko: "그녀는 일 생각밖에 안 해요." },
           note: "부정이 아니라 제한(~만) — pas와 함께 쓰지 않는다",
+          ch: "b2-09-negation-advanced",
         },
         {
           pattern: "ne … aucun",
@@ -1030,6 +1051,7 @@ export default {
           ex: { fr: "Je n'ai aucune idée de ce qui s'est passé.", ipa: "[ʒə ne okyn ide də sə ki sɛ pase]", ko: "무슨 일이 있었는지 전혀 모르겠어요." },
           ex2: { fr: "Aucun train ne circule aujourd'hui à cause de la grève.", ipa: "[okœ̃ tʁɛ̃ nə siʁkyl oʒuʁdɥi a koz də la ɡʁɛv]", ko: "파업 때문에 오늘은 기차가 한 대도 다니지 않아요." },
           note: "aucun 뒤 명사는 단수 — 주어로 쓰면 aucun … ne",
+          ch: "b2-09-negation-advanced",
         },
         {
           pattern: "personne ne・rien ne",
@@ -1037,6 +1059,7 @@ export default {
           ko: "아무도/아무것도 ~않다",
           ex: { fr: "Personne ne m'a prévenu du changement d'horaire.", ipa: "[pɛʁsɔn nə ma pʁevəny dy ʃɑ̃ʒmɑ̃ dɔʁɛʁ]", ko: "시간 변경을 아무도 안 알려 줬어요." },
           ex2: { fr: "Rien ne presse, prends ton temps.", ipa: "[ʁjɛ̃ nə pʁɛs pʁɑ̃ tɔ̃ tɑ̃]", ko: "급할 거 없으니까 천천히 해." },
+          ch: "b2-09-negation-advanced",
         },
         {
           pattern: "ne … nulle part",
@@ -1044,6 +1067,7 @@ export default {
           ko: "어디에서도 ~않다",
           ex: { fr: "Je ne trouve mes lunettes nulle part.", ipa: "[ʒə nə tʁuv me lynɛt nyl paʁ]", ko: "안경이 어디에도 안 보여요." },
           ex2: { fr: "On n'est nulle part aussi bien que chez soi.", ipa: "[ɔ̃ nɛ nyl paʁ osi bjɛ̃ kə ʃe swa]", ko: "집만큼 편한 곳은 어디에도 없어요." },
+          ch: "b2-09-negation-advanced",
         },
         {
           pattern: "ne … plus rien・jamais personne",
@@ -1052,6 +1076,7 @@ export default {
           ex: { fr: "Depuis la dispute, il ne dit plus rien.", ipa: "[dəpɥi la dispyt il nə di ply ʁjɛ̃]", ko: "다툰 뒤로 그는 더 이상 아무 말도 안 해요." },
           ex2: { fr: "Elle n'invite jamais personne chez elle.", ipa: "[ɛl nɛ̃vit ʒamɛ pɛʁsɔn ʃezɛl]", ko: "그녀는 집에 누구도 초대하는 법이 없어요." },
           note: "부정어는 겹칠 수 있다 — 어순은 plus/jamais가 rien/personne보다 앞",
+          ch: "b2-09-negation-advanced",
         },
         {
           pattern: "sans rien・sans jamais",
@@ -1059,6 +1084,7 @@ export default {
           ko: "아무것도 ~하지 않은 채",
           ex: { fr: "Il est resté là sans rien dire.", ipa: "[il ɛ ʁɛste la sɑ̃ ʁjɛ̃ diʁ]", ko: "그는 아무 말 없이 거기 서 있었어요." },
           ex2: { fr: "Elle a tout organisé sans jamais demander d'aide.", ipa: "[ɛla tutɔʁɡanize sɑ̃ ʒamɛ dəmɑ̃de dɛd]", ko: "그녀는 한 번도 도움을 청하지 않고 모든 걸 준비했어요." },
+          ch: "b2-09-negation-advanced",
         },
         {
           pattern: "moi non plus",
@@ -1067,6 +1093,7 @@ export default {
           ex: { fr: "Je n'aime pas les huîtres. — Moi non plus.", ipa: "[ʒə nɛm pa lezɥitʁ mwa nɔ̃ ply]", ko: "굴을 안 좋아해요. — 저도요." },
           ex2: { fr: "Il n'a rien compris, et moi non plus.", ipa: "[il na ʁjɛ̃ kɔ̃pʁi e mwa nɔ̃ ply]", ko: "그도 하나도 이해 못 했고, 나도 마찬가지였어." },
           note: "긍정 동조는 moi aussi — 부정문에 aussi로 맞장구치면 오류",
+          ch: "b2-09-negation-advanced",
         },
       ],
     },

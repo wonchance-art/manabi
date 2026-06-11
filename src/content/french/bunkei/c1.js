@@ -346,6 +346,7 @@ export default {
           ex: { fr: "Le vote aura lieu, à moins que l'opposition ne s'y oppose.", ipa: "[lə vɔt oʁa ljø a mwɛ̃ kə lɔpozisjɔ̃ nə si ɔpoz]", ko: "야당이 반대하지 않는 한 표결은 진행될 것이다." },
           ex2: { fr: "Rien ne changera, à moins qu'une crise n'éclate.", ipa: "[ʁjɛ̃ nə ʃɑ̃ʒʁa a mwɛ̃ kyn kʁiz neklat]", ko: "위기가 터지지 않는 한 아무것도 바뀌지 않을 것이다." },
           note: "ne는 허사 — 구어에서는 « à moins que ça change »처럼 탈락하기도 한다.",
+          ch: "b2-09-negation-advanced",
         },
         {
           pattern: "plus … que … ne・moins … que … ne",
@@ -390,6 +391,7 @@ export default {
           ex: { fr: "Le gouvernement n'entend nullement reculer.", ipa: "[lə ɡuvɛʁnəmɑ̃ nɑ̃tɑ̃ nylmɑ̃ ʁəkyle]", ko: "정부는 물러설 생각이 전혀 없다." },
           ex2: { fr: "Cela ne remet aucunement en cause l'accord.", ipa: "[səla nə ʁəmɛ okynmɑ̃ ɑ̃ koz lakɔʁ]", ko: "그것은 협정을 조금도 흔들지 않는다." },
           note: "문어 — 구어로는 « pas du tout ».",
+          ch: "b2-09-negation-advanced",
         },
         {
           pattern: "ne serait-ce que",
@@ -398,6 +400,7 @@ export default {
           ex: { fr: "Il faudrait l'écouter, ne serait-ce que par politesse.", ipa: "[il fodʁɛ lekute nə səʁɛs kə paʁ pɔlitɛs]", ko: "예의상으로라도 그의 말을 들어 봐야 할 것이다." },
           ex2: { fr: "Restez, ne serait-ce qu'une heure.", ipa: "[ʁɛste nə səʁɛs kyn œʁ]", ko: "한 시간만이라도 계세요." },
           note: "조건법 굳은꼴 — 더 문어적으로는 « ne fût-ce que »(C2). 구어로는 « même si c'est juste… ».",
+          ch: "b2-09-negation-advanced",
         },
         {
           pattern: "non sans",
@@ -781,6 +784,7 @@ export default {
           ex: { fr: "Il se peut que le scrutin soit reporté.", ipa: "[il sə pø kə lə skʁytɛ̃ swa ʁəpɔʁte]", ko: "투표가 연기될 수도 있다." },
           ex2: { fr: "Il se pourrait que la cour annule la décision.", ipa: "[il sə puʁɛ kə la kuʁ anyl la desizjɔ̃]", ko: "법원이 그 결정을 무효화할 가능성도 있다." },
           note: "조건법 « il se pourrait que »는 더 약한 추측 — 구어로는 « peut-être que ».",
+          ch: "b2-10-impersonal-formal",
         },
         {
           pattern: "il s'avère que・il apparaît que",
@@ -789,6 +793,7 @@ export default {
           ex: { fr: "Il s'avère que les données avaient été falsifiées.", ipa: "[il savɛʁ kə le dɔne avɛ ete falsifje]", ko: "자료가 조작되었던 것으로 드러났다." },
           ex2: { fr: "Il apparaît que personne n'avait vérifié les comptes.", ipa: "[il apaʁɛ kə pɛʁsɔn navɛ veʁifje le kɔ̃t]", ko: "아무도 회계를 검증하지 않았던 것으로 보인다." },
           note: "avérer는 어원이 '참으로 확인되다' — « s'avérer faux »는 규범가들이 꺼리는 조합. 구어로는 « en fait, on a découvert que ».",
+          ch: "b2-10-impersonal-formal",
         },
         {
           pattern: "il est à craindre que・reste à savoir",

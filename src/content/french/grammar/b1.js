@@ -607,4 +607,91 @@ export default [
       },
     ],
   },
+  {
+    slug: "b1-09-connectors-purpose-time",
+    level: "B1",
+    order: 9,
+    title: "\"도착하자마자 전화할게\"의 함정",
+    topic: "접속사 pour que·puisque·dès que",
+    titleFr: "But, cause et temps : les conjonctions",
+    summary: "목적의 pour que, 이유의 puisque·comme, 시간의 dès que와 après avoir — 두 문장을 잇는 B1 접속 도구를 한 상자에 정리해요.",
+    duration: "약 10분",
+    sections: [
+      {
+        heading: "목적 — pour que + 접속법, pour + 부정사",
+        pattern: "주어 다름 → pour que + 접속법 · 주어 같음 → pour + 동사원형",
+        body:
+          "'~하도록'의 **pour que**는 **접속법**을 불러요 — 목적은 아직 실현되지 않은 머릿속 그림이니까요(접속법 입문 챕터의 직관 그대로).\n\n" +
+          "두 동작의 **주어가 같으면** que절 대신 **pour + 동사원형**으로 압축해요. 격식 버전이 **afin que / afin de**입니다.",
+        examples: [
+          { fr: "Je t'envoie le plan pour que tu ne te perdes pas.", ipa: "[ʒə tɑ̃vwa lə plɑ̃ puʁ kə ty nə tə pɛʁd pa]", ko: "길 잃지 않게 약도를 보내 줄게." },
+          { fr: "Je fais du sport pour rester en forme.", ipa: "[ʒə fɛ dy spɔʁ puʁ ʁɛste ɑ̃ fɔʁm]", ko: "건강을 유지하려고 운동해요.", note: "주어가 같으니 pour + 원형" },
+          { fr: "Afin d'éviter la foule, partons tôt.", ipa: "[afɛ̃ devite la ful paʁtɔ̃ to]", ko: "인파를 피하도록 일찍 출발합시다.", note: "afin de = pour의 격식형" },
+        ],
+        pitfall: "주어가 같은데 pour que를 쓰면 비문이에요 — Je travaille pour que je réussisse(✗) → pour réussir(O). '내가 ~하려고 내가 ~한다'에서 que절이 닫히는 건 vouloir que의 규칙과 똑같습니다.",
+      },
+      {
+        heading: "이유 4총사 — parce que·car·puisque·comme",
+        pattern: "parce que(중립) · car(문어) · puisque(서로 아는 이유) · comme(문두 전용)",
+        body:
+          "넷 다 '~이니까'지만 자리가 달라요. **parce que**는 만능 중립, **car**는 글에서만, **puisque**는 '너도 알다시피'라는 자명한 이유, **comme**은 **문두 전용**이에요.\n\n" +
+          "명사로 이유를 댈 땐 **grâce à**(~ 덕분에, 긍정)와 **à cause de**(~ 때문에, 부정)로 갈라요. 결과 쪽에서 받으면 **c'est pour ça que**(그래서 ~인 거야)예요.",
+        table: {
+          caption: "이유 표현 자리 잡기",
+          headers: ["표현", "결", "위치·용법"],
+          rows: [
+            ["parce que", "중립", "질문 Pourquoi ?의 답 — 어디든"],
+            ["car", "문어", "문중에만 — 회화에서는 드묾"],
+            ["puisque", "자명한 이유", "상대도 아는 사실을 근거로"],
+            ["comme", "중립", "반드시 문두 — 문중이면 '~처럼'"],
+          ],
+        },
+        examples: [
+          { fr: "Comme il faisait froid, on est rentrés.", ipa: "[kɔm il fəzɛ fʁwa ɔ̃nɛ ʁɑ̃tʁe]", ko: "추워서 우리는 들어갔어요." },
+          { fr: "Puisque tu connais la ville, c'est toi le guide !", ipa: "[pɥiskə ty kɔnɛ la vil sɛ twa lə ɡid]", ko: "네가 이 도시를 잘 아니까 네가 가이드야!" },
+          { fr: "Grâce à tes conseils, j'ai réussi.", ipa: "[ɡʁas a te kɔ̃sɛj ʒe ʁeysi]", ko: "네 조언 덕분에 해냈어.", note: "부정적 원인이면 à cause de" },
+        ],
+        tip: "이유를 듣고도 '그래도 했어'라고 받아치는 만능 부사가 **quand même**예요: Il pleuvait, mais on est sortis quand même.(비가 왔지만 그래도 나갔어.) 회화 빈도 최상위권이니 입버릇으로 만들어두세요.",
+      },
+      {
+        heading: "시간 접속 — dès que 군단은 전부 직설법",
+        pattern: "dès que / pendant que / depuis que / lorsque + 직설법 (미래 일이면 미래시제)",
+        body:
+          "'~하자마자(dès que), ~하는 동안(pendant que), ~한 뒤로(depuis que)'는 사실의 시간 관계라 전부 **직설법**이에요. **lorsque**는 quand의 격식형이고요.\n\n" +
+          "최대 함정은 시제 — **미래의 일이면 양쪽 다 미래형**을 써요: Je t'appellerai dès que j'**arriverai**.",
+        table: {
+          caption: "직설법 시간 접속사",
+          headers: ["접속사", "뜻"],
+          rows: [
+            ["quand / lorsque(격식)", "~할 때"],
+            ["dès que", "~하자마자"],
+            ["pendant que", "~하는 동안"],
+            ["depuis que", "~한 뒤로"],
+            ["chaque fois que", "~할 때마다"],
+            ["au moment où", "바로 ~하는 순간"],
+          ],
+        },
+        examples: [
+          { fr: "Je t'appellerai dès que j'arriverai à la gare.", ipa: "[ʒə tapɛlʁe dɛ kə ʒaʁivʁe a la ɡaʁ]", ko: "역에 도착하자마자 전화할게.", note: "양쪽 다 미래형" },
+          { fr: "Pendant que tu ranges, je prépare le dîner.", ipa: "[pɑ̃dɑ̃ kə ty ʁɑ̃ʒ ʒə pʁepaʁ lə dine]", ko: "네가 정리하는 동안 내가 저녁을 준비할게." },
+          { fr: "Depuis qu'il habite à Lyon, on se voit moins.", ipa: "[dəpɥi kil abit a ljɔ̃ ɔ̃ sə vwa mwɛ̃]", ko: "그가 리옹에 살게 된 뒤로 우리는 덜 만나요." },
+        ],
+        vsEn: "영어는 미래 얘기라도 when/as soon as 뒤에 현재형을 쓰죠(I'll call you when I **arrive**). 프랑스어는 시제를 숨기지 않고 **quand j'arriverai**처럼 미래형을 그대로 써요. 영어 습관 때문에 현재형을 쓰는 게 이 구문 최다 오류입니다.",
+      },
+      {
+        heading: "전후 압축 — avant de·après avoir·en attendant",
+        pattern: "avant de + 동사원형 · après avoir/être + 과거분사",
+        body:
+          "주어가 같으면 절 대신 부정사로 압축해요. '~하기 전에'는 **avant de + 원형**, '~한 후에'는 **après + avoir/être + 과거분사**(부정사 과거) — 이 비대칭이 포인트예요.\n\n" +
+          "'~을 기다리는 동안'은 **en attendant (de)**예요. 주어가 다르면 부정사로 못 줄이고 avant que(+ 접속법, B2)로 풀어야 해요.",
+        examples: [
+          { fr: "Réfléchis bien avant de signer le contrat.", ipa: "[ʁefleʃi bjɛ̃ avɑ̃ də siɲe lə kɔ̃tʁa]", ko: "계약서에 서명하기 전에 잘 생각해 봐." },
+          { fr: "Après avoir visité le musée, nous avons déjeuné sur place.", ipa: "[apʁɛzavwaʁ vizite lə myze nuzavɔ̃ deʒœne syʁ plas]", ko: "미술관을 둘러본 뒤 우리는 그 자리에서 점심을 먹었어요." },
+          { fr: "Après être rentrée, elle a tout raconté à sa sœur.", ipa: "[apʁɛzɛtʁ ʁɑ̃tʁe ɛl a tu ʁakɔ̃te a sa sœʁ]", ko: "집에 돌아온 뒤 그녀는 언니에게 다 이야기했어요.", note: "être 계열은 성수 일치(rentrée)" },
+          { fr: "En attendant de trouver mieux, je garde ce travail.", ipa: "[ɑ̃natɑ̃dɑ̃ də tʁuve mjø ʒə ɡaʁd sə tʁavaj]", ko: "더 나은 자리를 찾을 때까지 이 일을 계속할 거예요." },
+        ],
+        pitfall: "'~한 후에'를 avant de의 대칭으로 après + 원형(après finir ✗)이라고 만들기 쉬워요. après 뒤에는 반드시 **부정사 과거(avoir/être + 과거분사)** — '끝낸 상태 이후'라는 완료의 논리가 형태에 박혀 있는 거예요.",
+      },
+    ],
+  },
 ];
