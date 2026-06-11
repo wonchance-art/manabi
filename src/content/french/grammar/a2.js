@@ -663,4 +663,185 @@ export default [
       },
     ],
   },
+  {
+    slug: "a2-11-time-expressions",
+    level: "A2",
+    order: 11,
+    title: "\"3년째 배우고 있어요\"를 한 단어로",
+    topic: "시간 표현 depuis·pendant·il y a",
+    titleFr: "Les expressions de temps",
+    summary: "depuis, pendant, il y a, dans, en — 한국어 '~동안, ~전에, ~후에'가 프랑스어에서 일곱 갈래로 갈라지는 지도를 한 장에 그려요.",
+    duration: "약 9분",
+    sections: [
+      {
+        heading: "depuis — 시작점부터 지금까지, 현재형으로",
+        pattern: "현재형 + depuis + 기간/시점",
+        patternKo: "'3년째 ~하고 있어요'는 depuis 하나로",
+        body:
+          "**depuis**는 과거에 시작해 **지금도 계속되는 일**의 경과를 표시해요. J'apprends le français **depuis** trois ans.(3년째 배우고 있어요.)\n\n" +
+          "핵심은 시제 — 지금도 하고 있으니 **현재형**을 써요. 뒤에는 기간(trois ans)도, 시점(2022, lundi)도 다 올 수 있어요.",
+        examples: [
+          { fr: "J'apprends le français depuis trois ans.", ipa: "[ʒapʁɑ̃ lə fʁɑ̃sɛ dəpɥi tʁwazɑ̃]", ko: "3년째 프랑스어를 배우고 있어요." },
+          { fr: "Elle travaille ici depuis 2022.", ipa: "[ɛl tʁavaj isi dəpɥi dø mil vɛ̃tdø]", ko: "그녀는 2022년부터 여기서 일해요.", note: "시점도 OK" },
+          { fr: "On se connaît depuis longtemps.", ipa: "[ɔ̃ sə kɔnɛ dəpɥi lɔ̃tɑ̃]", ko: "우리는 오래전부터 아는 사이예요." },
+        ],
+        vsEn: "영어라면 I **have been learning** French for three years — 현재완료진행이죠. 프랑스어는 '지금도 하는 중'이라는 현재성에 주목해 그냥 현재형을 써요. 영어 감각으로 J'ai appris ... depuis(✗)라고 복합과거를 쓰면 '계속'의 의미가 깨집니다.",
+      },
+      {
+        heading: "ça fait ... que — 기간을 앞세워 강조하기",
+        pattern: "Ça fait + 기간 + que + 현재형 (= Il y a + 기간 + que)",
+        body:
+          "depuis와 같은 뜻을 **기간을 문장 맨 앞으로** 빼서 강조하는 구어 변형이에요. **Ça fait** trois ans **que** j'habite ici.(여기 산 지 3년 됐어요.)\n\n" +
+          "**il y a + 기간 + que**도 같은 틀이에요. 셋 다 동사는 현재형 — '아직 진행 중'이라는 신호죠.",
+        examples: [
+          { fr: "Ça fait six mois que je travaille ici.", ipa: "[sa fɛ si mwa kə ʒə tʁavaj isi]", ko: "여기서 일한 지 6개월 됐어요." },
+          { fr: "Il y a une heure que j'attends !", ipa: "[ilja ynœʁ kə ʒatɑ̃]", ko: "기다린 지 한 시간째야!" },
+          { fr: "Ça fait longtemps qu'on ne s'est pas vus !", ipa: "[sa fɛ lɔ̃tɑ̃ kɔ̃ nə sɛ pa vy]", ko: "우리 진짜 오랜만이다!", note: "재회 인사의 국민 표현" },
+        ],
+        tip: "한국어 '~한 지 ...이 되다'와 어순까지 닮아서(기간이 먼저) depuis보다 입에 잘 붙어요. 재회 인사 «Ça fait longtemps !»(오랜만이야!)부터 통째로 외워두세요.",
+      },
+      {
+        heading: "pendant vs il y a — 닫힌 기간과 과거의 한 점",
+        pattern: "pendant + 기간 (~ 동안) · 과거시제 + il y a + 기간 (~ 전에)",
+        body:
+          "**pendant**은 시작과 끝이 **닫힌 기간**이에요. J'ai habité à Busan **pendant** deux ans.(2년 동안 살았어요 — 지금은 아님.) 격식 글에서는 같은 자리에 **au cours de**(~ 동안에)도 자주 보여요.\n\n" +
+          "**il y a + 기간**은 '~ 전에'라는 **과거의 한 점** — 과거시제와 단짝이에요. Il est parti **il y a** dix minutes.(10분 전에 떠났어요.)",
+        examples: [
+          { fr: "J'ai étudié le piano pendant cinq ans.", ipa: "[ʒe etydje lə pjano pɑ̃dɑ̃ sɛ̃kɑ̃]", ko: "피아노를 5년 동안 배웠어요.", note: "지금은 안 침 — 그래서 복합과거" },
+          { fr: "Elle est arrivée en France il y a un mois.", ipa: "[ɛl ɛtaʁive ɑ̃ fʁɑ̃s ilja œ̃ mwa]", ko: "그녀는 한 달 전에 프랑스에 왔어요." },
+          { fr: "Pendant le dîner, on a parlé de tout.", ipa: "[pɑ̃dɑ̃ lə dine ɔ̃na paʁle də tu]", ko: "저녁 먹는 동안 이런저런 얘기를 했어요.", note: "pendant + 명사도 OK" },
+        ],
+        pitfall: "한국어 '3년 동안 배웠어요'는 지금도 배우는지 애매하지만, 프랑스어는 칼같이 갈려요 — **지금도 하면 depuis + 현재형, 끝났으면 pendant + 복합과거**. 'depuis인데 복합과거'인 문장이 보이면 십중팔구 오류입니다.",
+      },
+      {
+        heading: "dans vs en — '~ 후에'와 '~ 만에'",
+        pattern: "dans + 기간 (지금부터 ~ 후에) · en + 기간 (~ 만에, 걸려서)",
+        body:
+          "**dans**은 **지금부터 잰 미래의 한 점**이에요. Le train part **dans** vingt minutes.(20분 후에 출발해요.) il y a(~ 전에)의 거울상이죠.\n\n" +
+          "**en**은 **소요 시간** — '얼마나 걸려서'예요. Il a tout mangé **en** cinq minutes.(5분 만에 다 먹었어요.)",
+        examples: [
+          { fr: "Le train part dans vingt minutes.", ipa: "[lə tʁɛ̃ paʁ dɑ̃ vɛ̃ minyt]", ko: "기차는 20분 후에 출발해요." },
+          { fr: "Il a tout mangé en cinq minutes.", ipa: "[il a tu mɑ̃ʒe ɑ̃ sɛ̃k minyt]", ko: "그는 5분 만에 다 먹었어요." },
+          { fr: "Dans un an, je parlerai mieux français.", ipa: "[dɑ̃zœ̃nɑ̃ ʒə paʁləʁe mjø fʁɑ̃sɛ]", ko: "1년 후엔 프랑스어를 더 잘하게 될 거예요." },
+        ],
+        vsEn: "영어 in은 in ten minutes(10분 후에)와 in one hour(한 시간 만에)를 다 커버해요. 프랑스어는 이걸 **dans(후에)/en(만에)**으로 쪼개요. '지금부터 카운트다운이면 dans, 스톱워치 기록이면 en'으로 구별하세요.",
+      },
+      {
+        heading: "시작점과 끝점 — à partir de·jusqu'à, 그리고 전체 지도",
+        pattern: "à partir de + 시점 (~부터) · jusqu'à + 시점 (~까지)",
+        body:
+          "**à partir de**는 시작점(특히 미래의), **jusqu'à**는 끝점이에요. à와 le가 만나면 **jusqu'au** matin처럼 축약돼요.\n\n" +
+          "이 챕터의 일곱 표현은 결국 **시간축 위의 위치와 방향**이 전부예요. 표 한 장으로 정리하면 끝납니다.",
+        table: {
+          caption: "시간 표현 한눈에",
+          headers: ["표현", "방향·의미", "예"],
+          rows: [
+            ["depuis + 현재형", "과거 → 지금 계속", "depuis trois ans (3년째)"],
+            ["il y a", "과거의 한 점 (~ 전에)", "il y a une heure (한 시간 전에)"],
+            ["pendant", "닫힌 기간 (~ 동안)", "pendant deux ans (2년 동안)"],
+            ["en", "소요 시간 (~ 만에)", "en une heure (한 시간 만에)"],
+            ["dans", "미래의 한 점 (~ 후에)", "dans une heure (한 시간 후에)"],
+            ["à partir de", "시작점 (~부터)", "à partir de lundi (월요일부터)"],
+            ["jusqu'à", "끝점 (~까지)", "jusqu'à minuit (자정까지)"],
+          ],
+        },
+        examples: [
+          { fr: "Le musée est ouvert jusqu'à dix-neuf heures.", ipa: "[lə myze ɛtuvɛʁ ʒyska diznœvœʁ]", ko: "미술관은 저녁 7시까지 열어요." },
+          { fr: "À partir de demain, je me lève à six heures !", ipa: "[a paʁtiʁ də dəmɛ̃ ʒə mə lɛv a sizœʁ]", ko: "내일부터 6시에 일어날 거야!" },
+        ],
+        tip: "il y a(과거로 ~ 전)와 dans(미래로 ~ 후)은 현재를 축으로 한 거울 대칭이에요. «Il y a une heure ↔ dans une heure»를 짝으로 외우면 방향이 안 헷갈립니다.",
+      },
+    ],
+  },
+
+  {
+    slug: "a2-12-quantity-tout",
+    level: "A2",
+    order: 12,
+    title: "\"사람이 너무 많아요\" — 양 재는 법",
+    topic: "수량 표현·tout 4형태",
+    titleFr: "La quantité et tout",
+    summary: "beaucoup de, trop de, un peu de의 수량 부사부터 형태가 넷인 tout까지 — '얼마나'를 말하는 부품을 한 상자에 모아요.",
+    duration: "약 8분",
+    sections: [
+      {
+        heading: "수량 부사 + de — 관사가 사라지는 자리",
+        pattern: "beaucoup / trop / assez / (un) peu + de + 무관사 명사",
+        patternKo: "양을 재는 순간 du/de la/des → de",
+        body:
+          "'많이, 너무, 충분히, 조금'을 명사에 붙일 때는 **부사 + de** 틀을 써요. 이때 부분관사·부정관사는 사라지고 **맨 de**만 남아요: du café → beaucoup **de** café.\n\n" +
+          "**un peu de**(조금은 있는)와 **peu de**(거의 없는)는 뉘앙스가 반대니 따로 챙기세요.",
+        examples: [
+          { fr: "Il y a beaucoup de monde sur la place.", ipa: "[ilja boku də mɔ̃d syʁ la plas]", ko: "광장에 사람이 많아요." },
+          { fr: "Je bois un peu de lait le matin.", ipa: "[ʒə bwa œ̃ pø də lɛ lə matɛ̃]", ko: "아침에 우유를 조금 마셔요." },
+          { fr: "Tu poses trop de questions !", ipa: "[ty poz tʁo də kɛstjɔ̃]", ko: "너 질문이 너무 많아!" },
+          { fr: "Il n'y a pas assez de temps.", ipa: "[il nja pazase də tɑ̃]", ko: "시간이 충분하지 않아요." },
+        ],
+        pitfall: "beaucoup **des**(✗)가 최다 빈출 오류예요. '커피를 많이'에서 '그 커피(du café)'의 관사를 끌고 오고 싶어지지만, 수량 표현 뒤는 무조건 맨 de — beaucoup de café, trop d'eau처럼요.",
+      },
+      {
+        heading: "단위와 개수 — un kilo de, quelques, plusieurs, chaque",
+        pattern: "단위 명사 + de + 무관사 명사 · quelques(몇) · plusieurs(여러) · chaque(각, 매)",
+        body:
+          "장보기의 핵심 틀 — **un kilo de** tomates, **une bouteille de** vin, un morceau **de** fromage. 단위 뒤도 역시 맨 de예요.\n\n" +
+          "개수가 흐릿할 땐 **quelques**(몇몇) < **plusieurs**(여럿)예요. **chaque**(각, ~마다)는 항상 **단수**와 짝입니다: chaque jour(매일).",
+        examples: [
+          { fr: "Je voudrais un kilo de pommes et un morceau de fromage.", ipa: "[ʒə vudʁɛ œ̃ kilo də pɔm e œ̃ mɔʁso də fʁɔmaʒ]", ko: "사과 1킬로랑 치즈 한 조각 주세요." },
+          { fr: "Il reste quelques places pour le concert.", ipa: "[il ʁɛst kɛlk plas puʁ lə kɔ̃sɛʁ]", ko: "콘서트 자리가 몇 개 남아 있어요." },
+          { fr: "Il y a plusieurs solutions.", ipa: "[ilja plyzjœʁ sɔlysjɔ̃]", ko: "해결책은 여러 가지예요." },
+          { fr: "Chaque chambre a une salle de bains.", ipa: "[ʃak ʃɑ̃bʁ a yn sal də bɛ̃]", ko: "방마다 욕실이 딸려 있어요." },
+        ],
+        tip: "시장·빵집에서는 «un kilo de ..., s'il vous plaît» 틀 하나로 거의 모든 주문이 해결돼요. 수량 표현은 문법이기 전에 생존 도구 — 입으로 먼저 외우세요.",
+      },
+      {
+        heading: "tout의 4형태 — 명사 앞에서 성수 일치",
+        pattern: "tout / toute / tous / toutes + 정관사·소유사 + 명사",
+        body:
+          "'모든, 전체'의 **tout**는 형용사처럼 **네 가지 형태**로 변해요. 뒤따르는 명사의 성·수가 결정해요: tout le temps, toute la journée, tous les jours, toutes les semaines.\n\n" +
+          "특히 **tous les + 기간**은 '~마다'(반복)예요: tous les matins(매일 아침), toutes les dix minutes(10분마다).",
+        table: {
+          caption: "tout 4형태",
+          headers: ["형태", "발음", "예"],
+          rows: [
+            ["tout (남성 단수)", "[tu]", "tout le monde, tout le temps"],
+            ["toute (여성 단수)", "[tut]", "toute la journée (하루 종일)"],
+            ["tous (남성 복수)", "[tu]", "tous les jours (매일)"],
+            ["toutes (여성 복수)", "[tut]", "toutes les semaines (매주)"],
+          ],
+        },
+        examples: [
+          { fr: "J'ai dormi toute la matinée.", ipa: "[ʒe dɔʁmi tut la matine]", ko: "오전 내내 잤어요." },
+          { fr: "Tous mes amis aiment ce café.", ipa: "[tu mezami ɛm sə kafe]", ko: "내 친구들 모두 이 카페를 좋아해요." },
+          { fr: "Le bus passe toutes les quinze minutes.", ipa: "[lə bys pas tut le kɛ̃z minyt]", ko: "버스는 15분마다 와요." },
+        ],
+        pitfall: "한정사 tous는 **[tu]**(s 묵음)지만, '모두'라는 대명사로 쓰면 **[tus]**로 s를 발음해요: Ils sont **tous** là [tus].(다들 와 있어.) 철자는 같은데 소리가 갈리는 드문 경우라, 듣기에서 결정적 단서가 됩니다.",
+      },
+      {
+        heading: "굳은 표현 — tout le monde, tout ce que",
+        pattern: "tout le monde + 단수 동사 · tout ce qui/que (~하는 모든 것)",
+        body:
+          "**tout le monde**(모두)는 뜻은 복수지만 **동사는 3인칭 단수**예요. 절을 통째로 받을 땐 **tout ce qui/que**: C'est **tout ce que** je sais.(그게 내가 아는 전부야.)\n\n" +
+          "부사로 굳은 tout도 한 줌 있어요 — pas du tout(전혀), tout de suite(곧바로), tout droit(직진).",
+        examples: [
+          { fr: "Tout le monde veut venir samedi.", ipa: "[tu lə mɔ̃d vø vəniʁ samdi]", ko: "토요일에 다들 오고 싶어 해요." },
+          { fr: "C'est tout ce que je sais.", ipa: "[sɛ tu sə kə ʒə sɛ]", ko: "그게 내가 아는 전부야." },
+          { fr: "Merci pour tout !", ipa: "[mɛʁsi puʁ tu]", ko: "여러모로 고마웠어요!", note: "대명사로 쓰인 tout" },
+        ],
+        vsEn: "영어 everybody도 단수 취급이죠(Everybody **is** here). tout le monde **est** là — 똑같은 감각이에요. 단, 직역하면 'all the world'라서 '온 세상'으로 오해하기 쉬운데, 그냥 '모두'라는 뜻입니다.",
+      },
+      {
+        heading: "quelque chose·quelqu'un — '무언가, 누군가' + 형용사",
+        pattern: "quelque chose / quelqu'un + de + 형용사 (남성형 고정)",
+        body:
+          "'무언가(quelque chose)'와 '누군가(quelqu'un)'에 형용사를 붙이려면 **de**가 필요해요: quelque chose **de** bon(맛있는 거), quelqu'un **de** gentil(친절한 사람).\n\n" +
+          "이때 형용사는 **항상 남성 단수형**으로 고정이에요 — quelque chose de bonne(✗).",
+        examples: [
+          { fr: "Tu veux manger quelque chose ?", ipa: "[ty vø mɑ̃ʒe kɛlkə ʃoz]", ko: "뭐 좀 먹을래?" },
+          { fr: "Quelqu'un a laissé un message pour toi.", ipa: "[kɛlkœ̃ a lɛse œ̃ mesaʒ puʁ twa]", ko: "누가 너한테 메시지를 남겼어." },
+          { fr: "Je cherche quelque chose de joli pour ma mère.", ipa: "[ʒə ʃɛʁʃ kɛlkə ʃoz də ʒɔli puʁ ma mɛʁ]", ko: "어머니께 드릴 예쁜 걸 찾고 있어요.", note: "de + 남성형 joli" },
+        ],
+        tip: "이 짝의 부정형이 바로 rien(아무것도)과 personne(아무도)예요. rien de grave(심각한 건 없어), personne d'intéressant처럼 de + 남성형 규칙도 그대로 — 부정 확장 챕터(B2)에서 다시 만나요.",
+      },
+    ],
+  },
 ];
