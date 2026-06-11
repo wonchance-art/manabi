@@ -11,15 +11,18 @@ import { refInline, LevelDot, JaText } from './refShared';
  * 세로 정렬 리스트 · 검색 · 뜻 가리기 셀프테스트 · 예문 TTS · 관련 챕터 링크.
  * 데이터는 서버 라우트에서 해당 레벨 분량만 props로 전달받는다.
  */
-export default function ReferencePatternIndexPage({ refInfo, levelMeta = [], meta, bunkei }) {
+export default function ReferencePatternIndexPage({ refInfo, levelMeta = [], meta, bunkei, hasVocab = false }) {
   const { speak, supported: ttsSupported } = useTTS();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   // ?ch=<챕터 slug> — 챕터 페이지에서 "연관 문형 모아 보기"로 진입한 경우
   const chFilter = searchParams.get('ch') || null;
   const [query, setQuery] = useState('');
-  const [hideMeaning, setHideMeaning] = useState(false);
+  // 가리기: hideMode(문형/뜻 — 배타) + hideYomi(요미가나 — 독립 조합 가능)
+  const [hideMode, setHideMode] = useState(null);
+  const [hideYomi, setHideYomi] = useState(false);
   const [revealed, setRevealed] = useState(() => new Set());
+  const anyHide = hideMode !== null || hideYomi;
   const backHref = `/lessons?lang=Japanese`;
 
   const filteredThemes = useMemo(() => {
@@ -45,8 +48,13 @@ export default function ReferencePatternIndexPage({ refInfo, levelMeta = [], met
     [filteredThemes]
   );
 
+  function setMode(mode) {
+    setHideMode(prev => (prev === mode ? null : mode));
+    setRevealed(new Set());
+  }
+
   function toggleReveal(key) {
-    if (!hideMeaning) return;
+    if (!anyHide) return;
     setRevealed(prev => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
@@ -124,16 +132,39 @@ export default function ReferencePatternIndexPage({ refInfo, levelMeta = [], met
         <div className="fr-vlist-tools__toggles">
           <button
             type="button"
-            className={`chip ${hideMeaning ? 'chip--active' : ''}`}
-            onClick={() => { setHideMeaning(v => !v); setRevealed(new Set()); }}
-            aria-pressed={hideMeaning}
+            className={`chip ${hideMode === 'word' ? 'chip--active' : ''}`}
+            onClick={() => setMode('word')}
+            aria-pressed={hideMode === 'word'}
+          >
+            🙈 문형 가리기
+          </button>
+          <button
+            type="button"
+            className={`chip ${hideMode === 'meaning' ? 'chip--active' : ''}`}
+            onClick={() => setMode('meaning')}
+            aria-pressed={hideMode === 'meaning'}
           >
             💭 뜻 가리기
           </button>
+          <button
+            type="button"
+            className={`chip ${hideYomi ? 'chip--active' : ''}`}
+            onClick={() => { setHideYomi(v => !v); setRevealed(new Set()); }}
+            aria-pressed={hideYomi}
+          >
+            🔤 요미가나 가리기
+          </button>
         </div>
+        {hasVocab && (
+          <Link href={`${refInfo.base}/vocab/${meta?.key.toLowerCase()}`} className="bk-switch">
+            📖 {meta?.key} 어휘로 →
+          </Link>
+        )}
       </div>
-      {hideMeaning && (
-        <p className="fr-vlist-hint">문형을 보고 뜻을 떠올린 뒤, 행을 탭하면 확인할 수 있어요.</p>
+      {anyHide && (
+        <p className="fr-vlist-hint">
+          {hideMode === 'word' ? '뜻을 보고 문형을 떠올린 뒤' : hideMode === 'meaning' ? '문형을 보고 뜻을 떠올린 뒤' : '한자를 보고 독음을 떠올린 뒤'}, 행을 탭하면 확인할 수 있어요.
+        </p>
       )}
 
       {/* 챕터 연관 필터 활성 표시 */}
@@ -163,17 +194,20 @@ export default function ReferencePatternIndexPage({ refInfo, levelMeta = [], met
             <span className="fr-vlist-theme__count">{theme.items.length}</span>
           </h2>
           <ul className="fr-vlist">
-            {theme.items.map(item => {
-              const isRevealed = revealed.has(item.pattern);
-              const meaningHidden = hideMeaning && !isRevealed;
+            {theme.items.map((item, idx) => {
+              const rowKey = `${theme.name}:${item.pattern}:${idx}`;
+              const isRevealed = revealed.has(rowKey);
+              const wordHidden = hideMode === 'word' && !isRevealed;
+              const meaningHidden = hideMode === 'meaning' && !isRevealed;
+              const yomiHidden = hideYomi && !isRevealed;
               return (
                 <li
-                  key={item.pattern}
-                  className={`fr-vrow fr-vrow--wide ${hideMeaning ? 'fr-vrow--quiz' : ''}`}
-                  onClick={() => toggleReveal(item.pattern)}
+                  key={rowKey}
+                  className={`fr-vrow fr-vrow--wide ${anyHide ? 'fr-vrow--quiz' : ''} ${yomiHidden ? 'row-hide-yomi' : ''}`}
+                  onClick={() => toggleReveal(rowKey)}
                 >
                   {/* 문형 열 */}
-                  <div className="fr-vrow__word">
+                  <div className={`fr-vrow__word ${wordHidden ? 'is-hidden' : ''}`}>
                     <span className="fr-vrow__main bk-pattern" lang="ja">{item.pattern}</span>
                     {item.conn && <span className="fr-vrow__pron">{item.conn}</span>}
                   </div>
@@ -182,23 +216,27 @@ export default function ReferencePatternIndexPage({ refInfo, levelMeta = [], met
                   <div className={`fr-vrow__body ${meaningHidden ? 'is-hidden' : ''}`}>
                     <div className="bk-ko">{item.ko}</div>
                     {item.note && <div className="bk-note">⚠️ {refInline(item.note)}</div>}
-                    {item.ex && (
+                    {(item.ex || item.ex2) && (
                       <div className="bk-ex">
-                        <div className="bk-ex__ja">
-                          <JaText ja={item.ex.ja} yomi={item.ex.yomi} />
-                          {ttsSupported && (
-                            <button
-                              type="button"
-                              className="fr-speak fr-speak--xs"
-                              onClick={e => { e.stopPropagation(); speak(item.ex.ja, 'Japanese'); }}
-                              aria-label="예문 발음 듣기"
-                              title="예문 발음 듣기"
-                            >
-                              🔊
-                            </button>
-                          )}
-                        </div>
-                        <div className="bk-ex__ko">{item.ex.ko}</div>
+                        {[item.ex, item.ex2].filter(Boolean).map((ex, ei) => (
+                          <div key={ei} className="bk-ex__pair">
+                            <div className="bk-ex__ja">
+                              <JaText ja={ex.ja} yomi={ex.yomi} />
+                              {ttsSupported && (
+                                <button
+                                  type="button"
+                                  className="fr-speak fr-speak--xs"
+                                  onClick={e => { e.stopPropagation(); speak(ex.ja, 'Japanese'); }}
+                                  aria-label="예문 발음 듣기"
+                                  title="예문 발음 듣기"
+                                >
+                                  🔊
+                                </button>
+                              )}
+                            </div>
+                            <div className="bk-ex__ko">{ex.ko}</div>
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>

@@ -1,5 +1,6 @@
 import ReferenceVocabPage from '@/views/ReferenceVocabPage';
 import { REF_LANGS } from '@/content/refLangs';
+import { countBunkei } from '@/content/japanese';
 
 const ref = REF_LANGS.Japanese;
 
@@ -28,6 +29,7 @@ export default async function Page({ params }) {
       levelMeta={VOCAB_LEVELS}
       meta={ref.getLevelMeta(level)}
       vocab={ref.getVocab(level)}
+      hasBunkei={countBunkei(level) > 0}
     />
   );
 }
