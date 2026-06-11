@@ -10298,6 +10298,26 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .bk-chlink:hover { background: var(--bg-elevated); color: var(--text-primary); }
 
+/* 사전 툴바 — 레벨 탭 | 가리기 | 상호 이동 을 한 줄에, 구분선으로 분리 */
+.bk-toolbar {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.bk-toolbar__group {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+}
+.bk-toolbar__sep {
+  width: 1px; align-self: stretch; min-height: 22px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+@media (max-width: 560px) {
+  .bk-toolbar__sep { display: none; }
+}
+
+/* 병기 문형(・)·접속 대안(/) — 형태마다 한 줄씩 */
+.bk-line { display: block; }
+
 /* 문형 사전 ↔ 어휘 상호 이동 버튼 */
 .bk-switch {
   flex-shrink: 0;

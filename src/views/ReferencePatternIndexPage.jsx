@@ -101,25 +101,62 @@ export default function ReferencePatternIndexPage({ refInfo, levelMeta = [], met
         )}
       </header>
 
-      {/* ── 레벨 탭 ── */}
-      <div className="fr-vocab-tabs" role="tablist" aria-label="레벨 선택">
-        {levelMeta.map(m => {
-          const active = m.key === meta?.key;
-          return (
-            <Link
-              key={m.key}
-              href={`${refInfo.base}/bunkei/${m.key.toLowerCase()}`}
-              className={`fr-vocab-tab ${active ? 'is-active' : ''}`}
-              style={active ? { color: m.color, background: m.bg, borderColor: m.line } : undefined}
-              aria-current={active ? 'page' : undefined}
-            >
-              {m.key}
+      {/* ── 툴바: 레벨 탭 | 가리기 | 어휘로 ── */}
+      <div className="bk-toolbar">
+        <div className="bk-toolbar__group" role="tablist" aria-label="레벨 선택">
+          {levelMeta.map(m => {
+            const active = m.key === meta?.key;
+            return (
+              <Link
+                key={m.key}
+                href={`${refInfo.base}/bunkei/${m.key.toLowerCase()}`}
+                className={`fr-vocab-tab ${active ? 'is-active' : ''}`}
+                style={active ? { color: m.color, background: m.bg, borderColor: m.line } : undefined}
+                aria-current={active ? 'page' : undefined}
+              >
+                {m.key}
+              </Link>
+            );
+          })}
+        </div>
+        <span className="bk-toolbar__sep" aria-hidden="true" />
+        <div className="bk-toolbar__group">
+          <button
+            type="button"
+            className={`chip ${hideMode === 'word' ? 'chip--active' : ''}`}
+            onClick={() => setMode('word')}
+            aria-pressed={hideMode === 'word'}
+          >
+            문형 가리기
+          </button>
+          <button
+            type="button"
+            className={`chip ${hideMode === 'meaning' ? 'chip--active' : ''}`}
+            onClick={() => setMode('meaning')}
+            aria-pressed={hideMode === 'meaning'}
+          >
+            뜻 가리기
+          </button>
+          <button
+            type="button"
+            className={`chip ${hideYomi ? 'chip--active' : ''}`}
+            onClick={() => { setHideYomi(v => !v); setRevealed(new Set()); }}
+            aria-pressed={hideYomi}
+          >
+            요미가나 가리기
+          </button>
+        </div>
+        {hasVocab && (
+          <>
+            <span className="bk-toolbar__sep" aria-hidden="true" />
+            <Link href={`${refInfo.base}/vocab/${meta?.key.toLowerCase()}`} className="bk-switch">
+              📖 {meta?.key} 어휘로 →
             </Link>
-          );
-        })}
+          </>
+        )}
       </div>
 
-      {/* ── 도구 모음 ── */}
+      {/* ── 검색 ── */}
       <div className="fr-vlist-tools">
         <input
           type="search"
@@ -129,37 +166,6 @@ export default function ReferencePatternIndexPage({ refInfo, levelMeta = [], met
           onChange={e => setQuery(e.target.value)}
           aria-label="문형 검색"
         />
-        <div className="fr-vlist-tools__toggles">
-          <button
-            type="button"
-            className={`chip ${hideMode === 'word' ? 'chip--active' : ''}`}
-            onClick={() => setMode('word')}
-            aria-pressed={hideMode === 'word'}
-          >
-            🙈 문형 가리기
-          </button>
-          <button
-            type="button"
-            className={`chip ${hideMode === 'meaning' ? 'chip--active' : ''}`}
-            onClick={() => setMode('meaning')}
-            aria-pressed={hideMode === 'meaning'}
-          >
-            💭 뜻 가리기
-          </button>
-          <button
-            type="button"
-            className={`chip ${hideYomi ? 'chip--active' : ''}`}
-            onClick={() => { setHideYomi(v => !v); setRevealed(new Set()); }}
-            aria-pressed={hideYomi}
-          >
-            🔤 요미가나 가리기
-          </button>
-        </div>
-        {hasVocab && (
-          <Link href={`${refInfo.base}/vocab/${meta?.key.toLowerCase()}`} className="bk-switch">
-            📖 {meta?.key} 어휘로 →
-          </Link>
-        )}
       </div>
       {anyHide && (
         <p className="fr-vlist-hint">
@@ -206,10 +212,20 @@ export default function ReferencePatternIndexPage({ refInfo, levelMeta = [], met
                   className={`fr-vrow fr-vrow--wide ${anyHide ? 'fr-vrow--quiz' : ''} ${yomiHidden ? 'row-hide-yomi' : ''}`}
                   onClick={() => toggleReveal(rowKey)}
                 >
-                  {/* 문형 열 */}
+                  {/* 문형 열 — 병기 형태(・)·접속 대안(/)은 줄 구분 */}
                   <div className={`fr-vrow__word ${wordHidden ? 'is-hidden' : ''}`}>
-                    <span className="fr-vrow__main bk-pattern" lang="ja">{item.pattern}</span>
-                    {item.conn && <span className="fr-vrow__pron">{item.conn}</span>}
+                    <span className="fr-vrow__main bk-pattern" lang="ja">
+                      {item.pattern.split('・').map((form, fi) => (
+                        <span key={fi} className="bk-line">{form}</span>
+                      ))}
+                    </span>
+                    {item.conn && (
+                      <span className="fr-vrow__pron">
+                        {item.conn.split(' / ').map((c, ci) => (
+                          <span key={ci} className="bk-line">{c}</span>
+                        ))}
+                      </span>
+                    )}
                   </div>
 
                   {/* 뜻·예문 열 */}
