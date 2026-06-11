@@ -1,17 +1,24 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../lib/AuthContext';
+import { useToast } from '../lib/ToastContext';
 import { useTTS } from '../lib/useTTS';
 import { refInline, LevelDot, JaText } from './refShared';
 
 /**
  * JLPT 문형 사전 — 레벨별 전수 커버 레이어 (챕터=이해, 사전=검색·암기)
- * 세로 정렬 리스트 · 검색 · 뜻 가리기 셀프테스트 · 예문 TTS · 관련 챕터 링크.
+ * 세로 정렬 리스트 · 검색 · 뜻 가리기 셀프테스트 · 예문 TTS · 문형 저장(FSRS) · 관련 챕터 링크.
  * 데이터는 서버 라우트에서 해당 레벨 분량만 props로 전달받는다.
  */
-export default function ReferencePatternIndexPage({ refInfo, levelMeta = [], meta, bunkei, hasVocab = false }) {
+export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, levelMeta = [], meta, bunkei, hasVocab = false }) {
+  const { user } = useAuth();
+  const toast = useToast();
+  const queryClient = useQueryClient();
   const { speak, supported: ttsSupported } = useTTS();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -23,7 +30,53 @@ export default function ReferencePatternIndexPage({ refInfo, levelMeta = [], met
   const [hideYomi, setHideYomi] = useState(false);
   const [revealed, setRevealed] = useState(() => new Set());
   const anyHide = hideMode !== null || hideYomi;
+  const [savedSet, setSavedSet] = useState(() => new Set());
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const backHref = `/lessons?lang=Japanese`;
+
+  const allItems = useMemo(
+    () => (bunkei ? bunkei.themes.flatMap(t => t.items) : []),
+    [bunkei]
+  );
+
+  // 이미 단어장에 저장된 문형 표시 (어휘 페이지와 같은 user_vocabulary 사용)
+  useEffect(() => {
+    if (!user || allItems.length === 0) { setSavedSet(new Set()); return; }
+    let cancel = false;
+    (async () => {
+      const { data } = await supabase
+        .from('user_vocabulary')
+        .select('word_text')
+        .eq('user_id', user.id)
+        .in('word_text', allItems.map(i => i.pattern));
+      if (!cancel && data) setSavedSet(new Set(data.map(d => d.word_text)));
+    })();
+    return () => { cancel = true; };
+  }, [user?.id, allItems]);
+
+  async function savePattern(item) {
+    if (!user) return toast?.('로그인하면 문형을 단어장에 저장할 수 있어요', 'info');
+    if (savedSet.has(item.pattern)) return;
+    try {
+      const { error } = await supabase
+        .from('user_vocabulary')
+        .upsert({
+          user_id: user.id,
+          word_text: item.pattern,
+          base_form: item.pattern,
+          meaning: item.ko || '',
+          pos: '문형',
+          language: lang,
+        }, { onConflict: 'user_id,word_text' });
+      if (error) throw error;
+      setSavedSet(prev => new Set([...prev, item.pattern]));
+      toast?.(`⭐ "${item.pattern}" 단어장에 저장`, 'success');
+      queryClient.invalidateQueries({ queryKey: ['vocab-words', user.id] });
+    } catch {
+      toast?.('저장 실패', 'error');
+    }
+  }
 
   const filteredThemes = useMemo(() => {
     if (!bunkei) return [];
@@ -37,7 +90,9 @@ export default function ReferencePatternIndexPage({ refInfo, levelMeta = [], met
             i.pattern.toLowerCase().includes(q) ||
             i.ko.toLowerCase().includes(q) ||
             (i.conn || '').toLowerCase().includes(q) ||
-            (i.ex?.ja || '').includes(q))
+            (i.note || '').toLowerCase().includes(q) ||
+            (i.ex?.ja || '').includes(q) ||
+            (i.ex2?.ja || '').includes(q))
         ),
       }))
       .filter(t => t.items.length > 0);
@@ -48,8 +103,30 @@ export default function ReferencePatternIndexPage({ refInfo, levelMeta = [], met
     [filteredThemes]
   );
 
+  function persistHide(mode, yomi) {
+    try { localStorage.setItem('bk_hide_prefs', JSON.stringify({ mode, yomi })); } catch {}
+  }
+
+  // 가리기 설정 유지 — 레벨 이동·재방문에도 유지
+  useEffect(() => {
+    try {
+      const s = JSON.parse(localStorage.getItem('bk_hide_prefs') || 'null');
+      if (s?.mode === 'word' || s?.mode === 'meaning') setHideMode(s.mode);
+      if (s?.yomi) setHideYomi(true);
+    } catch {}
+  }, []);
+
   function setMode(mode) {
-    setHideMode(prev => (prev === mode ? null : mode));
+    const next = hideMode === mode ? null : mode;
+    setHideMode(next);
+    persistHide(next, hideYomi);
+    setRevealed(new Set());
+  }
+
+  function toggleYomi() {
+    const next = !hideYomi;
+    setHideYomi(next);
+    persistHide(hideMode, next);
     setRevealed(new Set());
   }
 
@@ -140,7 +217,7 @@ export default function ReferencePatternIndexPage({ refInfo, levelMeta = [], met
           <button
             type="button"
             className={`chip ${hideYomi ? 'chip--active' : ''}`}
-            onClick={() => { setHideYomi(v => !v); setRevealed(new Set()); }}
+            onClick={toggleYomi}
             aria-pressed={hideYomi}
           >
             요미가나 가리기
@@ -191,9 +268,21 @@ export default function ReferencePatternIndexPage({ refInfo, levelMeta = [], met
         </p>
       )}
 
+      {/* ── 테마 점프 내비 — 긴 목록 브라우징 보조 ── */}
+      {filteredThemes.length > 1 && (
+        <nav className="bk-themenav" aria-label="주제 바로가기">
+          {filteredThemes.map((theme, ti) => (
+            <a key={theme.name} href={`#bk-theme-${ti}`} className="bk-themenav__chip">
+              {theme.icon && <span aria-hidden="true">{theme.icon} </span>}
+              {theme.name}
+            </a>
+          ))}
+        </nav>
+      )}
+
       {/* ── 주제별 문형 리스트 ── */}
-      {filteredThemes.map(theme => (
-        <section key={theme.name} style={{ marginBottom: 26 }}>
+      {filteredThemes.map((theme, ti) => (
+        <section key={theme.name} id={`bk-theme-${ti}`} style={{ marginBottom: 26, scrollMarginTop: 80 }}>
           <h2 className="fr-vlist-theme">
             {theme.icon && <span aria-hidden="true">{theme.icon} </span>}
             {theme.name}
@@ -211,6 +300,14 @@ export default function ReferencePatternIndexPage({ refInfo, levelMeta = [], met
                   key={rowKey}
                   className={`fr-vrow fr-vrow--wide ${anyHide ? 'fr-vrow--quiz' : ''} ${yomiHidden ? 'row-hide-yomi' : ''}`}
                   onClick={() => toggleReveal(rowKey)}
+                  {...(anyHide && {
+                    role: 'button',
+                    tabIndex: 0,
+                    'aria-pressed': isRevealed,
+                    onKeyDown: e => {
+                      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleReveal(rowKey); }
+                    },
+                  })}
                 >
                   {/* 문형 열 — 병기 형태(・)·접속 대안(/)은 줄 구분 */}
                   <div className={`fr-vrow__word ${wordHidden ? 'is-hidden' : ''}`}>
@@ -257,7 +354,7 @@ export default function ReferencePatternIndexPage({ refInfo, levelMeta = [], met
                     )}
                   </div>
 
-                  {/* 우측 — 챕터 연결 칩 */}
+                  {/* 우측 — 문형 저장 + 챕터 연결 칩 */}
                   <div className="fr-vrow__actions">
                     {item.ch && (
                       <Link
@@ -268,6 +365,18 @@ export default function ReferencePatternIndexPage({ refInfo, levelMeta = [], met
                       >
                         📖 챕터
                       </Link>
+                    )}
+                    {mounted && (
+                      <button
+                        type="button"
+                        className={`fr-vrow__save ${savedSet.has(item.pattern) ? 'is-saved' : ''}`}
+                        onClick={e => { e.stopPropagation(); savePattern(item); }}
+                        disabled={savedSet.has(item.pattern)}
+                        aria-label={savedSet.has(item.pattern) ? '단어장에 저장됨' : '문형을 단어장에 저장'}
+                        title={savedSet.has(item.pattern) ? '저장됨' : user ? '단어장에 저장 (FSRS 복습 시작)' : '로그인 필요'}
+                      >
+                        {savedSet.has(item.pattern) ? '✓' : '⭐'}
+                      </button>
                     )}
                   </div>
                 </li>

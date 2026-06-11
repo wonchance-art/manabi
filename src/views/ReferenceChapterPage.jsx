@@ -87,8 +87,6 @@ export default function ReferenceChapterPage({ lang, slug }) {
 
   return (
     <div className="page-container" style={{ maxWidth: 760 }}>
-      <RefReadMark storageKey={ref.readKey} slug={chapter.slug} />
-
       {/* ── 브레드크럼 ── */}
       <nav style={{ marginBottom: 18 }} aria-label="브레드크럼">
         <Link href={backHref} style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
@@ -106,13 +104,21 @@ export default function ReferenceChapterPage({ lang, slug }) {
           {chapter.duration && (
             <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>⏱ {chapter.duration}</span>
           )}
-          {/* 문형 사전 빠른 진입 — 헤더에서 바로 (일본어) */}
+          {/* 문형 사전·어휘 빠른 진입 — 헤더에서 바로 */}
           {ref.getBunkei?.(chapter.level) && (
             <Link
               href={`${ref.base}/bunkei/${chapter.level.toLowerCase()}`}
               className="fr-header-bunkei"
             >
               📑 {chapter.level} 문형 사전
+            </Link>
+          )}
+          {ref.countVocab(chapter.level) > 0 && (
+            <Link
+              href={`${ref.base}/vocab/${chapter.level.toLowerCase()}`}
+              className="fr-header-bunkei"
+            >
+              📖 {chapter.level} 어휘
             </Link>
           )}
         </div>
@@ -189,7 +195,10 @@ export default function ReferenceChapterPage({ lang, slug }) {
       ))}
 
       {/* ── 패턴 체크 (회상 연습) ── */}
-      <RefPatternCheck items={checkItems} lang={lang} />
+      <RefPatternCheck items={checkItems} lang={lang} storageKey={`${ref.readKey}_check`} slug={chapter.slug} />
+
+      {/* 읽음 기록 — 여기(챕터 끝)까지 스크롤해야 읽음 처리 */}
+      <RefReadMark storageKey={ref.readKey} slug={chapter.slug} />
 
       {/* ── 문형 사전으로 — 이 챕터와 연결된 문형 확장 학습 ── */}
       {(() => {

@@ -68,8 +68,32 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
       .filter(t => t.words.length > 0);
   }, [vocab, query]);
 
+  function persistHide(mode, yomi) {
+    try { localStorage.setItem('vocab_hide_prefs', JSON.stringify({ mode, yomi })); } catch {}
+  }
+
+  // 가리기 설정 유지 — 레벨 이동·재방문에도 유지 (요미가나는 일본어에서만 복원)
+  useEffect(() => {
+    try {
+      const s = JSON.parse(localStorage.getItem('vocab_hide_prefs') || 'null');
+      if (s?.mode === 'word' || s?.mode === 'meaning') setHideMode(s.mode);
+      if (s?.yomi && refInfo.langCode === 'ja') setHideYomi(true);
+    } catch {}
+    // refInfo.langCode는 라우트 단위 상수
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   function setMode(mode) {
-    setHideMode(prev => (prev === mode ? null : mode));
+    const next = hideMode === mode ? null : mode;
+    setHideMode(next);
+    persistHide(next, hideYomi);
+    setRevealed(new Set());
+  }
+
+  function toggleYomi() {
+    const next = !hideYomi;
+    setHideYomi(next);
+    persistHide(hideMode, next);
     setRevealed(new Set());
   }
 
@@ -178,7 +202,7 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
             <button
               type="button"
               className={`chip ${hideYomi ? 'chip--active' : ''}`}
-              onClick={() => { setHideYomi(v => !v); setRevealed(new Set()); }}
+              onClick={toggleYomi}
               aria-pressed={hideYomi}
             >
               요미가나 가리기
@@ -243,6 +267,14 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
                   key={rowKey}
                   className={`fr-vrow ${anyHide ? 'fr-vrow--quiz' : ''} ${yomiHidden ? 'row-hide-yomi' : ''}`}
                   onClick={() => toggleReveal(rowKey)}
+                  {...(anyHide && {
+                    role: 'button',
+                    tabIndex: 0,
+                    'aria-pressed': isRevealed,
+                    onKeyDown: e => {
+                      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleReveal(rowKey); }
+                    },
+                  })}
                 >
                   {/* 단어 열 — 고정 폭으로 정렬, 일본어는 한자 위 요미가나 */}
                   <div className={`fr-vrow__word ${wordHidden ? 'is-hidden' : ''}`}>
@@ -251,7 +283,7 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
                     ) : (
                       <>
                         <span className="fr-vrow__main" lang={refInfo.langCode}>{text}</span>
-                        {pron && pron !== text && <span className="fr-vrow__pron">{pron}</span>}
+                        {pron && pron !== text && <span className="fr-vrow__pron fr-vrow__pron--yomi">{pron}</span>}
                       </>
                     )}
                   </div>
@@ -272,6 +304,17 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
                               <JaText ja={refMain(w.ex)} yomi={w.ex.yomi} />
                             ) : (
                               <span lang={refInfo.langCode}>{refMain(w.ex)}</span>
+                            )}
+                            {mounted && ttsSupported && (
+                              <button
+                                type="button"
+                                className="fr-speak fr-speak--xs"
+                                onClick={e => { e.stopPropagation(); speak(refMain(w.ex), lang); }}
+                                aria-label="예문 발음 듣기"
+                                title="예문 발음 듣기"
+                              >
+                                🔊
+                              </button>
                             )}
                           </div>
                           <div className="bk-ex__ko">{w.ex.ko}</div>

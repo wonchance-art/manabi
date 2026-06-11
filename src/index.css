@@ -10318,6 +10318,28 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 /* 병기 문형(・)·접속 대안(/) — 형태마다 한 줄씩 */
 .bk-line { display: block; }
 
+/* 테마 점프 내비 — 가로 스크롤 칩 줄 */
+.bk-themenav {
+  display: flex; gap: 6px;
+  overflow-x: auto;
+  padding: 2px 0 8px;
+  margin-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+.bk-themenav__chip {
+  flex-shrink: 0;
+  font-size: 0.76rem; font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 3px 11px;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.bk-themenav__chip:hover { background: var(--bg-elevated); color: var(--text-primary); }
+
 /* 문형 사전 ↔ 어휘 상호 이동 버튼 */
 .bk-switch {
   flex-shrink: 0;
@@ -10335,6 +10357,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 /* 요미가나 가리기 — 행 단위, 탭하면 공개 (루비 rt + 폴백 독음만 — 접속(conn)은 유지) */
 .row-hide-yomi rt { visibility: hidden; }
 .row-hide-yomi .fr-example__ipa { visibility: hidden; }
+.row-hide-yomi .fr-vrow__pron--yomi { visibility: hidden; }
 
 .fr-vrow__chlink {
   display: inline-block;
@@ -10463,6 +10486,25 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   padding: 3px 10px; cursor: pointer;
 }
 .fr-check__toggle-all:hover { background: var(--bg-secondary); color: var(--text-primary); }
+/* 자가 채점 — 정답 확인 후 맞음/틀림 */
+.fr-check__grade { display: inline-flex; gap: 4px; }
+.fr-check__grade-btn {
+  border: 1px solid var(--border); background: transparent;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem; font-weight: 600;
+  padding: 2px 9px; cursor: pointer;
+  color: var(--text-muted);
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.fr-check__grade-btn.is-on--o { color: var(--accent); border-color: var(--accent); }
+.fr-check__grade-btn.is-on--x { color: var(--danger); border-color: var(--danger); }
+.fr-check__last { color: var(--text-muted); }
+.fr-check__result {
+  margin-top: 12px; padding-top: 10px;
+  border-top: 1px dashed var(--border);
+  font-size: 0.86rem; color: var(--text-secondary);
+}
+.fr-check__result strong { color: var(--text-primary); }
 .fr-check__lead {
   font-size: 0.82rem; color: var(--text-muted);
   margin-bottom: 12px;

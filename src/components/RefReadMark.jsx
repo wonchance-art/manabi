@@ -1,22 +1,43 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 /**
- * 레퍼런스 문법 챕터 열람 기록 (localStorage)
+ * 레퍼런스 문법 챕터 읽음 기록 (localStorage)
  * 강의 페이지(레퍼런스 뷰)의 읽음 표시(● / N/M)에 사용.
  * storageKey: 언어별 키 — fr_read_chapters / ja_read_chapters / en_read_chapters
+ *
+ * 챕터 끝에 센티널로 렌더 — 끝까지 스크롤해야 '읽음'으로 기록한다.
+ * (IntersectionObserver 미지원 환경은 종전처럼 열람 즉시 기록)
  */
 export default function RefReadMark({ storageKey, slug }) {
+  const ref = useRef(null);
+
   useEffect(() => {
     if (!storageKey || !slug) return;
-    try {
-      const arr = JSON.parse(localStorage.getItem(storageKey) || '[]');
-      if (!arr.includes(slug)) {
-        arr.push(slug);
-        localStorage.setItem(storageKey, JSON.stringify(arr));
+    const record = () => {
+      try {
+        const arr = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        if (!arr.includes(slug)) {
+          arr.push(slug);
+          localStorage.setItem(storageKey, JSON.stringify(arr));
+        }
+      } catch {}
+    };
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === 'undefined') {
+      record();
+      return;
+    }
+    const io = new IntersectionObserver(entries => {
+      if (entries.some(e => e.isIntersecting)) {
+        record();
+        io.disconnect();
       }
-    } catch {}
+    });
+    io.observe(el);
+    return () => io.disconnect();
   }, [storageKey, slug]);
-  return null;
+
+  return <span ref={ref} aria-hidden="true" style={{ display: 'block', height: 1 }} />;
 }

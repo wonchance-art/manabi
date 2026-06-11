@@ -27,6 +27,7 @@ export default function LessonsPage({ refManifest = {} }) {
     } catch { return new Set(); }
   });
   const [refRead, setRefRead] = useState(() => ({}));
+  const [refReadLoaded, setRefReadLoaded] = useState(false);
 
   function toggleGroup(key) {
     setExpandedGroups(prev => {
@@ -50,12 +51,27 @@ export default function LessonsPage({ refManifest = {} }) {
       }
     }
     setRefRead(map);
+    setRefReadLoaded(true);
     // refManifest는 서버에서 내려오는 정적 데이터 — 마운트 시 1회면 충분
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const refLang = refManifest[langFilter];
   const levelOptions = refLang ? refLang.levels.map(l => l.label) : [];
+
+  // 첫 방문(해당 언어에 펼친 그룹이 없을 때) — 학습 중인 레벨 자동 펼침
+  const autoExpanded = useMemo(() => new Set(), []);
+  useEffect(() => {
+    if (!refLang || !refReadLoaded || autoExpanded.has(langFilter)) return;
+    autoExpanded.add(langFilter);
+    setExpandedGroups(prev => {
+      if ([...prev].some(k => k.startsWith(`ref:${langFilter}:`))) return prev;
+      const readSet = refRead[langFilter] || new Set();
+      const target = refLang.levels.find(l => l.chapters.some(c => !readSet.has(c.slug))) || refLang.levels[0];
+      if (!target) return prev;
+      return new Set([...prev, `ref:${langFilter}:${target.key}`]);
+    });
+  }, [refLang, refRead, refReadLoaded, langFilter, autoExpanded]);
 
   const refGroups = useMemo(() => {
     if (!refLang) return [];
