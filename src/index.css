@@ -10486,6 +10486,25 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   padding: 3px 10px; cursor: pointer;
 }
 .fr-check__toggle-all:hover { background: var(--bg-secondary); color: var(--text-primary); }
+/* 자가 채점 — 정답 확인 후 맞음/틀림 */
+.fr-check__grade { display: inline-flex; gap: 4px; }
+.fr-check__grade-btn {
+  border: 1px solid var(--border); background: transparent;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem; font-weight: 600;
+  padding: 2px 9px; cursor: pointer;
+  color: var(--text-muted);
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.fr-check__grade-btn.is-on--o { color: var(--accent); border-color: var(--accent); }
+.fr-check__grade-btn.is-on--x { color: var(--danger); border-color: var(--danger); }
+.fr-check__last { color: var(--text-muted); }
+.fr-check__result {
+  margin-top: 12px; padding-top: 10px;
+  border-top: 1px dashed var(--border);
+  font-size: 0.86rem; color: var(--text-secondary);
+}
+.fr-check__result strong { color: var(--text-primary); }
 .fr-check__lead {
   font-size: 0.82rem; color: var(--text-muted);
   margin-bottom: 12px;

@@ -103,8 +103,30 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
     [filteredThemes]
   );
 
+  function persistHide(mode, yomi) {
+    try { localStorage.setItem('bk_hide_prefs', JSON.stringify({ mode, yomi })); } catch {}
+  }
+
+  // 가리기 설정 유지 — 레벨 이동·재방문에도 유지
+  useEffect(() => {
+    try {
+      const s = JSON.parse(localStorage.getItem('bk_hide_prefs') || 'null');
+      if (s?.mode === 'word' || s?.mode === 'meaning') setHideMode(s.mode);
+      if (s?.yomi) setHideYomi(true);
+    } catch {}
+  }, []);
+
   function setMode(mode) {
-    setHideMode(prev => (prev === mode ? null : mode));
+    const next = hideMode === mode ? null : mode;
+    setHideMode(next);
+    persistHide(next, hideYomi);
+    setRevealed(new Set());
+  }
+
+  function toggleYomi() {
+    const next = !hideYomi;
+    setHideYomi(next);
+    persistHide(hideMode, next);
     setRevealed(new Set());
   }
 
@@ -195,7 +217,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
           <button
             type="button"
             className={`chip ${hideYomi ? 'chip--active' : ''}`}
-            onClick={() => { setHideYomi(v => !v); setRevealed(new Set()); }}
+            onClick={toggleYomi}
             aria-pressed={hideYomi}
           >
             요미가나 가리기
