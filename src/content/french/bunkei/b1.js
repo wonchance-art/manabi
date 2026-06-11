@@ -385,7 +385,7 @@ export default {
           ch: "b1-04-relative-advanced",
         },
         {
-          pattern: "où (관계사)",
+          pattern: "la ville où・le jour où",
           conn: "장소·시간 선행사 + où + 절",
           ko: "~하는 곳/때",
           ex: { fr: "Voici le quartier où j'ai grandi.", ipa: "[vwasi lə kaʁtje u ʒe ɡʁɑ̃di]", ko: "여기가 제가 자란 동네예요." },
@@ -822,7 +822,7 @@ export default {
           note: "새 정보의 이유는 parce que — puisque는 '너도 알다시피'의 어감",
         },
         {
-          pattern: "comme + 절 (원인)",
+          pattern: "Comme …, …",
           conn: "Comme + 절, 주절 — 반드시 문두",
           ko: "~이므로, ~여서 (문두 원인)",
           ex: { fr: "Comme il pleuvait, on est restés à la maison.", ipa: "[kɔm il pløvɛ ɔ̃nɛ ʁɛste a la mɛzɔ̃]", ko: "비가 와서 우리는 집에 있었어요." },
