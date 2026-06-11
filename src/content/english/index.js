@@ -19,6 +19,13 @@ import vocabB2 from './vocab/b2';
 import vocabC1 from './vocab/c1';
 import vocabC2 from './vocab/c2';
 
+import bunkeiA1 from './bunkei/a1';
+import bunkeiA2 from './bunkei/a2';
+import bunkeiB1 from './bunkei/b1';
+import bunkeiB2 from './bunkei/b2';
+import bunkeiC1 from './bunkei/c1';
+import bunkeiC2 from './bunkei/c2';
+
 /** 레벨 메타 — 틸 그라데이션 (기초 밝음 → 마스터 깊음) */
 export const EN_LEVEL_META = [
   {
@@ -70,4 +77,19 @@ export const getGrammarChapters = registry.getGrammarChapters;
 export const getChapter = registry.getChapter;
 export const getVocab = registry.getVocab;
 export const countVocab = registry.countVocab;
-export default registry;
+
+/** 문형 사전 — 챕터(이해)와 별개의 전수 커버 레이어 (SCHEMA.md 참고) */
+const BUNKEI = { A1: bunkeiA1, A2: bunkeiA2, B1: bunkeiB1, B2: bunkeiB2, C1: bunkeiC1, C2: bunkeiC2 };
+
+export function getBunkei(levelKey) {
+  return BUNKEI[String(levelKey || '').toUpperCase()] || null;
+}
+
+export function countBunkei(levelKey) {
+  const b = getBunkei(levelKey);
+  if (!b) return 0;
+  return b.themes.reduce((sum, t) => sum + t.items.length, 0);
+}
+
+// default export(레지스트리)에도 문형 사전 API 포함 — refLangs가 default를 펼쳐 쓰므로 필수
+export default { ...registry, getBunkei, countBunkei };

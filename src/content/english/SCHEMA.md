@@ -62,3 +62,42 @@ export default {
 
 ## 품질 루브릭
 `src/content/french/SCHEMA.md`의 «품질 루브릭 (100점)» 표를 그대로 적용.
+
+## 문형 사전 (bunkei/<level>.js) — CEFR 전수 커버 레이어
+
+챕터가 '이해'라면 문형 사전은 '전수 검색'. 해당 레벨의 핵심 구문·표현을 빠짐없이 수록한다.
+(일본어·프랑스어 문형 사전과 같은 구조 — 렌더러 공용)
+
+```js
+export default {
+  level: 'A1',
+  title: 'A1 문형 사전',
+  desc: '한 줄 소개',
+  themes: [
+    {
+      name: '존재·소유', icon: '📦',
+      items: [
+        {
+          pattern: "there is・there are",          // 문형 (대표 표기)
+          conn: "there is + 단수/불가산 / there are + 복수",  // 구조
+          ko: "~이 있다 (존재)",                     // 한국어 대응 (간결)
+          ex:  { en: "There is a cafe near the station.", ko: "역 근처에 카페가 있어요." },
+          ex2: { en: "There are several reasons for this.", ko: "여기에는 몇 가지 이유가 있어요." },  // 필수 — 항목당 예문 2개
+          note: "수 일치는 be 뒤 명사와: ❌ There is several issues → ✓ There **are** several issues.",  // 선택 — 한 줄 주의점
+          ch: 'a2-08-there-is',                     // 선택 — 이 문형을 다루는 챕터 slug
+        },
+      ],
+    },
+  ],
+}
+```
+
+- 모든 항목 필수: pattern · conn · ko · ex · ex2 (각 en+ko). note/ch는 선택.
+- **예문에 발음기호(IPA) 쓰지 않음** — 발음은 TTS가 담당 (어휘 단어의 ipa와 구별).
+- **pattern에 한국어 괄호 금지** — 뜻·용법 구별은 ko나 note에서. 동음 문형은 하나로 합쳐 ko에 ①② 병기.
+- **pattern 구분자 규칙** — 병렬 형태는 `・`(렌더링 시 줄바꿈): `used to・would (과거 습관)` 금지 예 — 한국어 괄호이므로 ko로. `/`는 한 형태 안의 낱말 교체에만(`some/any`) — 줄바꿈되지 않는다.
+- **같은 문형의 긍정/부정 분리 금지** — 하나로 묶고 ex=긍정, ex2=부정.
+- **함정 note (❌→✓)** — 원천 데이터의 오류 대조를 살려 note에 한 줄로: "❌ discuss about it → ✓ **discuss** it (전치사 불필요)". **볼드**로 핵심 강조.
+- **레지스터·영미 차이 교차 표기** — 격식 문형엔 구어 대응을, 구어 문형엔 격식 대응을: 「구어에서는 **have got**, 격식 글에서는 **have**」. 영미가 갈리면 명시: 「미국식은 bare subjunctive(*I insist that he go*), 영국식은 **should + 원형**」. 중립 문형엔 강요하지 않는다.
+- 테마는 기능별 그룹 8~16개. 목표 수: A1 80+ / A2 90+ / B1 110+ / B2 110+ / C1 90+ / C2 60+.
+- 예문은 그 레벨까지의 어휘로 짧게. 한국 문화 맥락 활용 환영.
