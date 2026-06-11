@@ -467,4 +467,164 @@ export default [
       },
     ],
   },
+
+  {
+    slug: "c1-07-verb-complementation",
+    level: "C1",
+    order: 7,
+    title: "\"explain me\"가 통하지 않는 이유",
+    topic: "동사 보어 구조",
+    titleFr: "Verb Complementation Patterns",
+    summary: "consider it essential, appoint her director, explain it to me — 동사마다 뒤에 올 수 있는 구조의 면허가 다릅니다. C1 정확성의 마지막 관문, 보어 구조의 체계를 해부해요.",
+    duration: "약 10분",
+    sections: [
+      {
+        heading: "목적어 + 보어 — consider it essential, appoint her director",
+        pattern: "consider/find/deem + O + 형용사 · appoint/elect/name + O + 직책명사",
+        patternKo: "목적어 뒤에 be 없이 곧장 평가·직함",
+        body:
+          "**consider, find, deem, judge**는 목적어 뒤에 **be 없이 형용사 보어**를 직결해요 — We found the evidence **inconclusive**(증거가 결정적이지 않다고 판단했다). consider the proposal **premature**, deem it **necessary** — that절(found that it was...)을 한 칸으로 접는 격식문의 압축 장치예요.\n\n" +
+          "**appoint, elect, name, declare**는 명사 보어를 받아요 — They appointed her **director**. 이때 직책이 조직에 하나뿐이면 **관사를 떼는 것**이 격식 표준이에요(appointed her director). 한편 **regard, see, view, describe**는 **as가 필수**인 부류죠: regard it **as** a failure.",
+        examples: [
+          { en: "The court found the contract invalid.", ko: "법원은 그 계약이 무효라고 판단했다.", note: "found that it was invalid의 압축" },
+          { en: "The board appointed her chief executive.", ko: "이사회는 그녀를 최고경영자로 임명했다.", note: "유일 직책 = 무관사" },
+          { en: "Critics declared the experiment a failure.", ko: "비평가들은 그 실험을 실패로 규정했다." },
+        ],
+        pitfall: "**consider A as B** — regard의 as가 전염된 과잉이에요. 격식 문장의 표준은 consider A B(consider it essential)이고, as가 꼭 필요한 동사는 따로 등록돼 있어요: **regard/view/see/describe/refer to A as B**, think of A as B. '동사마다 as 면허가 다르다'고 기억하세요.",
+      },
+      {
+        heading: "가목적어 it — find it difficult to say no",
+        pattern: "find/make/consider + it + 형용사 + to부정사/that절",
+        patternKo: "진짜 목적어가 길면 it을 먼저 앉히고 뒤로 보내기",
+        body:
+          "목적어 자리에 to부정사나 that절을 직접 앉히면 문장이 무너져요 — I find to work from home difficult.(×) 영어는 **가목적어 it**을 먼저 앉히고 진짜 목적어를 뒤로 보냅니다 — I find **it** difficult **to work from home**. / The committee considers **it** essential **that the data be verified**.\n\n" +
+          "make it clear that..., make it a rule to..., owe it to A to... — 격식문 단골 패턴이 전부 이 골격이에요. (that절 안의 be는 접속법 — C1 접속법 챕터 참고.)",
+        examples: [
+          { en: "I find it difficult to say no to him.", ko: "그에게 거절하는 게 어렵게 느껴져요.", note: "find to say no difficult ×" },
+          { en: "We consider it essential that every voice be heard.", ko: "우리는 모든 목소리가 들리는 것이 필수라고 본다." },
+          { en: "She made it clear that the decision was final.", ko: "그녀는 그 결정이 최종임을 분명히 했다." },
+        ],
+        etym: "complement(보어)는 라틴어 **complere(가득 채우다)** — complete, complimentary와 같은 뿌리예요. 보어는 동사가 비워 둔 자리를 '채워서 완성하는' 말이라는 뜻이죠. 동사마다 비워 두는 자리의 모양이 다르다는 것 — 그게 이 챕터 전체의 주제예요.",
+      },
+      {
+        heading: "이중목적어와 전치사를 요구하는 동사 — explain to",
+        pattern: "give A B = give B to A ↔ explain/suggest/introduce + B + to + A",
+        patternKo: "give류만 4형식 면허 — explain류는 to 필수",
+        body:
+          "give, send, show, offer, teach는 **두 어순**이 가능해요 — give **me the book** / give **the book to me**. 어느 쪽이냐는 정보구조가 정해요: **새 정보를 뒤로**(분열문 챕터의 end-focus 원리). 받는 사람이 새 정보면 to 쪽으로 보내는 거죠.\n\n" +
+          "함정은 이 면허가 동사마다 다르다는 것 — **explain, suggest, introduce, mention, describe, announce, recommend**는 4형식이 안 되고 **사물 먼저 + to 사람**이 철칙이에요: explain **it to me**(explain me it ×). 그리고 이중목적어 문장은 **받는 사람을 주어로 한 수동**이 자연스러워요 — She **was awarded** the prize. / I **was told** the news.",
+        examples: [
+          { en: "Could you explain the process to me again?", ko: "그 절차를 다시 설명해 주시겠어요?", note: "explain me the process ×" },
+          { en: "He suggested a better approach to the team.", ko: "그는 팀에 더 나은 접근법을 제안했다.", note: "suggest me ×" },
+          { en: "She was awarded first prize for her thesis.", ko: "그녀는 논문으로 1등상을 받았다.", note: "수혜자 주어 수동" },
+        ],
+        pitfall: "**explain me the rule / suggest me a place** — C1 레벨에서도 잔존하는 최장수 오류예요. '나에게 설명하다'의 어순 직역이죠. give류(주로 짧은 게르만계)와 달리 explain·suggest·introduce류(라틴계)는 사람 목적어를 바로 못 받습니다. Can you recommend a restaurant **to us**? — 사물 먼저, 사람은 to 뒤.",
+      },
+      {
+        heading: "to부정사 vs 원형 — 보어 형태의 면허 체계",
+        pattern: "tell/ask/expect/require + O + to do ↔ make/let/have/see/hear + O + do",
+        patternKo: "want O done(결과 상태) · keep O waiting(상태 유지)",
+        body:
+          "목적어 뒤 동사의 형태도 동사가 정해요 — **대다수는 to부정사**(tell, ask, order, expect, require, enable, persuade + O + **to** do), **사역 make/let/have와 지각 see/hear/watch만 원형**(B2 사역·지각 챕터에서 정리한 예외들 — 수동태에서는 to 복원), **help는 양다리**(help me (to) carry)예요.\n\n" +
+          "C1에서 챙길 정밀 포인트 둘 — **want/need + O + p.p.**는 '~된 상태'라는 결과를 주문하고(I want it **done** by noon), **keep/leave + O + -ing**는 상태의 유지·방치를 그려요(Sorry to keep you **waiting**. / He left the engine **running**). 보어 자리의 형태(to do / do / -ing / p.p.)가 각각 다른 그림인 거예요.",
+        examples: [
+          { en: "The new policy enables staff to work remotely.", ko: "새 정책은 직원들이 원격 근무를 할 수 있게 한다." },
+          { en: "I need this report finished by Friday.", ko: "이 보고서가 금요일까지 끝나 있어야 해요.", note: "결과 상태 = p.p." },
+          { en: "He left the engine running.", ko: "그는 시동을 켜 둔 채로 뒀다.", note: "방치·유지 = -ing" },
+        ],
+        vsKo: "한국어 '-하게 하다/-하도록 하다'는 어떤 동사에든 같은 어미로 붙지만, 영어는 **동사마다 보어 형태의 면허가 등록**되어 있어요. 새 동사를 익힐 때 뜻만이 아니라 **문형(V + O + to do인지, 원형인지, -ing인지)**을 사전에서 함께 확인하는 습관 — C1 정확성의 마지막 한 칸은 여기서 채워집니다.",
+      },
+      {
+        heading: "수동 부정사·수동 동명사 — to be done, being done",
+        pattern: "expect to be told · avoid being seen · is to be submitted",
+        patternKo: "부정사·동명사도 태를 가진다",
+        body:
+          "부정사와 동명사에도 수동형이 있어요 — **to be + p.p.**, **being + p.p.** 주어·화제가 '당하는' 쪽이면 망설임 없이 태를 뒤집으세요 — Nobody likes **to be told** what to do(지시받는 것). / He avoided **being photographed**(찍히는 것).\n\n" +
+          "격식문 단골: The form **is to be submitted** by Friday(제출되어야 한다 — 격식 예정 be to와의 결합), The results **remain to be seen**(두고 볼 일이다). 완료형 **to have been p.p.**까지 가면 시제차도 표현돼요 — She claims **to have been misquoted**(과거에 잘못 인용되었다고 주장한다).",
+        examples: [
+          { en: "Nobody likes to be kept waiting.", ko: "기다리게 되는 걸 좋아하는 사람은 없어요." },
+          { en: "He resents being treated like a child.", ko: "그는 아이 취급받는 것에 분개해요." },
+          { en: "All entries are to be submitted electronically.", ko: "모든 출품작은 온라인으로 제출되어야 한다.", note: "규정문의 be to + 수동 부정사" },
+        ],
+      },
+    ],
+  },
+
+  {
+    slug: "c1-08-time-perspective",
+    level: "C1",
+    order: 8,
+    title: "\"~하곤 했다\"의 세 얼굴",
+    topic: "used to·미래 운용",
+    titleFr: "Time Perspective: used to / be to / Future Perfect",
+    summary: "used to·would·be used to가 갈리는 지점, be to와 be about to의 격식 예정, 과거에서 본 미래, 그리고 미래완료까지 — 시제를 '운용'하는 C1의 시간 감각을 다뤄요.",
+    duration: "약 10분",
+    sections: [
+      {
+        heading: "used to vs would vs be used to — 형태는 친척, 정체는 셋",
+        pattern: "used to + 원형(과거 습관·상태) · would + 원형(회상 속 반복 동작) · be used to + -ing(익숙함)",
+        patternKo: "상태엔 would 불가 · be used to의 to는 전치사",
+        body:
+          "**used to**는 '지금은 아닌 과거'의 습관·상태 만능형이에요 — I used to **live** in Daegu(상태도 OK). **would**는 회고 모드의 반복 **동작** 전용 — Every summer we **would** swim in the river. 상태동사에는 못 써요(would live ×, would believe ×).\n\n" +
+          "**be used to + -ing/명사**는 시제 장치가 아니라 '익숙하다'는 상태 표현 — 이 to는 전치사라 뒤가 -ing예요(get used to는 '익숙해지다'라는 변화). 셋은 형태만 친척이고 문법적 정체가 전부 다릅니다.",
+        table: {
+          caption: "used to 삼형제 판별표",
+          headers: ["형태", "뜻", "제약"],
+          rows: [
+            ["used to + 원형", "과거의 습관·상태 (지금 아님)", "부정·의문은 did + use to"],
+            ["would + 원형", "회상 속 반복 동작", "상태동사 불가"],
+            ["be/get used to + -ing", "~에 익숙하다 / 익숙해지다", "to는 전치사 — 뒤는 -ing"],
+          ],
+        },
+        examples: [
+          { en: "I used to believe in ghosts.", ko: "예전엔 귀신을 믿었어요.", note: "상태 — would believe ×" },
+          { en: "My grandfather would tell us stories by the fire.", ko: "할아버지는 화롯가에서 이야기를 들려주시곤 했어요.", note: "회고 모드의 would" },
+          { en: "I'm used to driving on the left now.", ko: "이젠 좌측 운전에 익숙해요.", note: "to + -ing" },
+        ],
+        pitfall: "**I'm used to wake up early.**(×) — used to(과거 습관)와 be used to(익숙함)의 혼선이 만드는 단골 오류예요. be가 보이면 to는 전치사 → **waking**. 거꾸로 과거 습관에 be를 끼우는 I was used to play(×)도 같은 혼선 — **be가 없으면 원형, be가 있으면 -ing**입니다.",
+      },
+      {
+        heading: "be to와 be about to — 격식의 예정, 임박의 순간",
+        pattern: "be to + 원형(공식 예정·지시) · be about to(막 ~하려는 참) · be due to(기한 예정)",
+        patternKo: "신문 헤드라인과 일정 공지의 미래",
+        body:
+          "**be to + 원형**은 격식의 미래예요 — 공식 일정(The President **is to visit** Seoul), 지시·규정(You **are to report** by nine. — 9시까지 보고할 것), 운명(They were never **to meet** again). 뉴스 보도와 공문의 기본 장비죠.\n\n" +
+          "**be about to**는 '막 ~하려는 참'(I was about to call you — 더 격식은 **be on the point of -ing**), **be due to**는 기한이 박힌 예정(The train **is due to** arrive at six)이에요. will이 '예측'이라면 이들은 **이미 짜인 판** 위의 미래예요.",
+        examples: [
+          { en: "The two leaders are to meet in Geneva next month.", ko: "두 정상은 다음 달 제네바에서 회동할 예정이다.", note: "보도문의 격식 미래" },
+          { en: "Hurry — the store is about to close.", ko: "서둘러요. 가게가 막 닫으려는 참이에요." },
+          { en: "The report is due to be published on Monday.", ko: "보고서는 월요일에 발표될 예정이다." },
+        ],
+        tip: "if절 속의 be to는 특수 무기예요 — **If you are to pass the exam, you must start now.**(시험에 붙고자 한다면) — '목적의 조건'을 만들어요. 격식 라이팅에서 in order to의 세련된 변주로 한 번씩 써 보세요.",
+      },
+      {
+        heading: "과거에서 본 미래 — would, was going to",
+        pattern: "would(그 후 ~하게 된다) · was going to(하려던 — 보통 무산) · was to(예정·운명)",
+        patternKo: "기준점을 과거로 옮긴 미래",
+        body:
+          "이야기의 기준점이 과거이면, 그 시점의 '미래'도 과거형 장비로 말해요 — **would**는 과거에서 내다본 미래(He didn't know it then, but he **would** become president. — 후에 대통령이 된다), **was going to**는 그때의 계획·조짐인데 **'결국 안 됐다'는 함의**가 자주 실려요 — I **was going to** call you, but my phone died.\n\n" +
+          "간접화법의 will→would 후퇴(B1 간접화법 챕터)도 사실 이 원리의 한 갈래예요. 소설·전기·회고록에서 이 장비를 읽어내면 시간의 겹이 보입니다.",
+        examples: [
+          { en: "She was going to study abroad, but the pandemic changed everything.", ko: "그녀는 유학을 가려고 했지만, 팬데믹이 모든 걸 바꿔놨어요.", note: "무산의 함의" },
+          { en: "It was a decision that would change his life.", ko: "그것은 그의 인생을 바꾸게 될 결정이었다.", note: "전기·내레이션의 would" },
+          { en: "The meeting was to take place in May.", ko: "회의는 5월에 열리기로 되어 있었다." },
+        ],
+        vsKo: "한국어도 '-하려고 했다', '-할 예정이었다', '-하게 될 것이었다'로 같은 일을 해요. 주목할 것은 was going to에 실리는 **무산의 기류** — I was going to say something은 '말하려고 했는데 (안 했다/못 했다)'까지 들려요. 한국어 '-려고 했다'와 거의 같은 함의라, 이 문형만큼은 모어의 직감이 그대로 통합니다.",
+      },
+      {
+        heading: "미래완료와 미래완료진행 — 미래의 한 점에서 뒤돌아보기",
+        pattern: "will have p.p.(그때까지 완료) · will have been -ing(그때면 ~한 지 …)",
+        patternKo: "단짝은 by/by the time — 미래진행 will be -ing도 세트",
+        body:
+          "기준점을 미래로 보내고 거기서 뒤돌아보는 시제예요 — **will have p.p.**는 '그 시점까지는 완료'(By June, I **will have worked** here for ten years.), **will have been -ing**는 그 시점까지의 지속을 강조해요. 단짝 신호어는 **by + 시점, by the time + 현재시제 절**. (현재완료진행의 기준점 이동 원리는 B2 완료진행 챕터와 같아요.)\n\n" +
+          "**will be -ing**(미래진행)는 '그 시각에 ~하는 중'에 더해 **공손한 확인 질문**으로 자주 일해요 — **Will you be using** the car tonight?(쓰실 건가요 — 의도를 캐묻지 않는 중립 질문). Will you use...?보다 압박이 훨씬 적어요.",
+        examples: [
+          { en: "By the time you land, I'll have finished the slides.", ko: "네가 착륙할 때쯤이면 슬라이드를 다 끝내놨을 거야.", note: "by the time + 현재시제, 주절 미래완료" },
+          { en: "Next month, we'll have been living here for five years.", ko: "다음 달이면 여기 산 지 5년이 돼요." },
+          { en: "Will you be joining us for dinner?", ko: "저녁 함께하실 건가요?", note: "미래진행 = 공손한 확인" },
+        ],
+        pitfall: "**By the time he will arrive...**(×) — by the time은 시간절이라 will 금지, 현재시제(by the time he **arrives**)예요. 그리고 미래완료를 아무 미래에나 쓰는 과잉도 주의 — **by류 기준점이 없으면 그냥 미래시제**가 정답입니다. 단순 예고는 I will finish it tomorrow면 충분해요.",
+      },
+    ],
+  },
 ];

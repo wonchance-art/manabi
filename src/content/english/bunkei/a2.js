@@ -541,6 +541,7 @@ export default {
           ex: { en: "Can you give me your number?", ko: "번호 좀 알려 줄래요?" },
           ex2: { en: "I bought a small gift for my teacher.", ko: "선생님께 드릴 작은 선물을 샀어요." },
           note: "둘 다 가능 — 단 explain은 to형만: ❌ explain **me** the rule → ✓ explain the rule **to me**.",
+          ch: "c1-07-verb-complementation",
         },
       ],
     },
@@ -635,6 +636,7 @@ export default {
           ex: { en: "This movie always makes me cry.", ko: "이 영화는 볼 때마다 눈물이 나요." },
           ex2: { en: "My parents don't let me play games on weekdays.", ko: "부모님이 평일에는 게임을 못 하게 하세요." },
           note: "❌ made me **to cry** → ✓ made me **cry** (make·let 뒤는 to 없는 원형).",
+          ch: "b2-08-causative-perception",
         },
         {
           pattern: "get + 사람 + to・have + 물건 + 과거분사",
@@ -643,6 +645,7 @@ export default {
           ex: { en: "I got my brother to help me move.", ko: "동생을 설득해서 이사를 돕게 했어요." },
           ex2: { en: "I had my hair cut yesterday.", ko: "어제 머리를 잘랐어요. (미용실에서)" },
           note: "'머리 잘랐어'는 ❌ I cut my hair (직접 잘랐다는 뜻) → ✓ I **had** my hair **cut**.",
+          ch: "b2-08-causative-perception",
         },
       ],
     },
@@ -699,6 +702,7 @@ export default {
           ex: { en: "I'm looking forward to the holiday.", ko: "연휴가 너무 기다려져요." },
           ex2: { en: "We look forward to seeing you soon.", ko: "곧 뵙기를 기대하겠습니다." },
           note: "❌ look forward to **see** you → ✓ to **seeing** you. 이메일 맺음말 단골 — 격식체에서는 진행형 없이 We look forward to …",
+          ch: "b1-08-preposition-combos",
         },
         {
           pattern: "listen to・look at",
@@ -707,6 +711,7 @@ export default {
           ex: { en: "I listen to music on the subway.", ko: "저는 지하철에서 음악을 들어요." },
           ex2: { en: "Look at this picture!", ko: "이 사진 좀 봐!" },
           note: "❌ listen music → ✓ listen **to** music.",
+          ch: "b1-08-preposition-combos",
         },
         {
           pattern: "wait for・ask for",
@@ -715,6 +720,7 @@ export default {
           ex: { en: "We waited for the bus for twenty minutes.", ko: "버스를 20분 동안 기다렸어요." },
           ex2: { en: "He asked for help.", ko: "그는 도움을 청했어요." },
           note: "❌ wait **someone** → ✓ wait **for** someone.",
+          ch: "b1-08-preposition-combos",
         },
         {
           pattern: "think about・talk about",
@@ -723,6 +729,7 @@ export default {
           ex: { en: "I'm thinking about changing my job.", ko: "이직할까 생각 중이에요." },
           ex2: { en: "We talked about the trip all night.", ko: "우리는 밤새 여행 이야기를 했어요." },
           note: "단 ❌ discuss **about** it → ✓ **discuss** it (discuss는 전치사 불필요).",
+          ch: "b1-08-preposition-combos",
         },
         {
           pattern: "belong to・depend on",
@@ -730,6 +737,7 @@ export default {
           ko: "~에 속하다 / ~에 달려 있다",
           ex: { en: "This umbrella belongs to Mina.", ko: "이 우산은 미나 거예요." },
           ex2: { en: "It depends on the weather.", ko: "날씨에 달려 있어요." },
+          ch: "b1-08-preposition-combos",
         },
         {
           pattern: "interested in・good at",
@@ -738,6 +746,7 @@ export default {
           ex: { en: "She is interested in Korean history.", ko: "그녀는 한국사에 관심이 있어요." },
           ex2: { en: "I'm not good at singing.", ko: "저는 노래를 잘 못해요." },
           note: "❌ interested **about** → ✓ interested **in**, ❌ good **in** math → ✓ good **at** math.",
+          ch: "b1-08-preposition-combos",
         },
         {
           pattern: "afraid of・proud of・full of",
@@ -745,6 +754,7 @@ export default {
           ko: "~을 무서워하다 / 자랑스러워하다 / ~로 가득하다",
           ex: { en: "I'm afraid of spiders.", ko: "저는 거미를 무서워해요." },
           ex2: { en: "Her parents are very proud of her.", ko: "부모님은 그녀를 아주 자랑스러워하세요." },
+          ch: "b1-08-preposition-combos",
         },
         {
           pattern: "angry with・angry about",
@@ -753,6 +763,7 @@ export default {
           ex: { en: "She is angry with me.", ko: "그녀는 나한테 화가 났어요." },
           ex2: { en: "They were angry about the late bus.", ko: "그들은 버스가 늦어서 화가 났어요." },
           note: "사람에겐 **with**, 상황·일에는 **about/at**.",
+          ch: "b1-08-preposition-combos",
         },
       ],
     },
@@ -802,6 +813,7 @@ export default {
           ex: { en: "I love this song. — So do I.", ko: "나 이 노래 너무 좋아. — 나도." },
           ex2: { en: "I'm hungry. — So am I.", ko: "배고파. — 나도." },
           note: "동사를 원문과 맞춘다 — be엔 So **am** I, 일반동사엔 So **do** I, 완료엔 So **have** I.",
+          ch: "b1-09-question-craft",
         },
         {
           pattern: "Neither do I.・Me neither.",
@@ -810,6 +822,7 @@ export default {
           ex: { en: "I don't like horror movies. — Neither do I.", ko: "난 공포 영화 싫어. — 나도 싫어." },
           ex2: { en: "I can't drive. — Me neither.", ko: "나 운전 못 해. — 나도." },
           note: "부정문 뒤에는 ❌ Me **too** → ✓ Me **neither** / Neither do I. Me neither는 구어 — 글에서는 Neither do I.",
+          ch: "b1-09-question-craft",
         },
         {
           pattern: "…, isn't it?・…, don't you?",
@@ -818,6 +831,7 @@ export default {
           ex: { en: "It's hot today, isn't it?", ko: "오늘 덥네요, 그렇죠?" },
           ex2: { en: "You don't eat meat, do you?", ko: "너 고기 안 먹지, 그렇지?" },
           note: "꼬리는 본문과 반대 극성 + 같은 조동사·주어 — ❌ She is a teacher, isn't **it**? → ✓ …, isn't **she**?",
+          ch: "b1-09-question-craft",
         },
       ],
     },
@@ -832,6 +846,7 @@ export default {
           ex: { en: "How many people are coming?", ko: "몇 명이나 와요?" },
           ex2: { en: "I don't have much time today.", ko: "오늘은 시간이 별로 없어요." },
           note: "❌ **much** books → ✓ **many** books. 긍정 평서문에서는 구어로 **a lot of**가 자연스럽고, much/many는 격식 글에서.",
+          ch: "b2-09-determiners-agreement",
         },
         {
           pattern: "a few・a little",
@@ -839,6 +854,7 @@ export default {
           ko: "몇몇의 / 약간의",
           ex: { en: "I have a few questions.", ko: "질문이 몇 개 있어요." },
           ex2: { en: "There is a little milk left in the fridge.", ko: "냉장고에 우유가 조금 남아 있어요." },
+          ch: "b2-09-determiners-agreement",
         },
         {
           pattern: "few・little",
@@ -847,6 +863,7 @@ export default {
           ex: { en: "Few students passed the test.", ko: "시험에 붙은 학생이 거의 없었어요." },
           ex2: { en: "We have little time. Let's hurry.", ko: "시간이 거의 없어요. 서두릅시다." },
           note: "a 하나로 뉘앙스가 뒤집힌다 — **a few** friends(몇 명 있다) vs **few** friends(거의 없다).",
+          ch: "b2-09-determiners-agreement",
         },
         {
           pattern: "every + 단수 명사",
@@ -855,6 +872,7 @@ export default {
           ex: { en: "Every student has a locker.", ko: "모든 학생에게 사물함이 있어요." },
           ex2: { en: "Not every restaurant opens on Sundays.", ko: "모든 식당이 일요일에 여는 건 아니에요." },
           note: "❌ every student**s** → ✓ every **student** (every 뒤는 항상 단수).",
+          ch: "b2-09-determiners-agreement",
         },
         {
           pattern: "all・all of",
@@ -863,6 +881,7 @@ export default {
           ex: { en: "All my friends like this place.", ko: "제 친구들은 모두 이곳을 좋아해요." },
           ex2: { en: "Not all of them are coming.", ko: "그들 전부가 오는 건 아니에요." },
           note: "every는 단수와, all은 복수와 — every student **is** / all students **are**.",
+          ch: "b2-09-determiners-agreement",
         },
         {
           pattern: "both・both A and B",
@@ -870,6 +889,7 @@ export default {
           ko: "둘 다",
           ex: { en: "Both of my parents work.", ko: "우리 부모님은 두 분 다 일하세요." },
           ex2: { en: "She speaks both Korean and Japanese.", ko: "그녀는 한국어와 일본어를 둘 다 해요." },
+          ch: "b2-09-determiners-agreement",
         },
         {
           pattern: "either・neither",
@@ -878,6 +898,7 @@ export default {
           ex: { en: "You can take either bus. Both go to City Hall.", ko: "둘 중 아무 버스나 타도 돼요. 둘 다 시청에 가요." },
           ex2: { en: "Neither answer is correct.", ko: "두 답 모두 틀렸어요." },
           note: "단수 취급 — ❌ Neither answer **are** → ✓ Neither answer **is**. 짝꿍: either A **or** B / neither A **nor** B.",
+          ch: "b2-09-determiners-agreement",
         },
       ],
     },

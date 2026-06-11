@@ -451,6 +451,7 @@ export default {
           ex: { en: "There is some milk in the fridge.", ko: "냉장고에 우유가 좀 있어요." },
           ex2: { en: "I don't have any questions.", ko: "질문 없습니다." },
           note: "권유·부탁 의문문은 some — Would you like **some** tea? ❌ I have any apples → ✓ I have **some** apples.",
+          ch: "b2-09-determiners-agreement",
         },
         {
           pattern: "no・none",
@@ -459,6 +460,7 @@ export default {
           ex: { en: "I have no money this month.", ko: "이번 달엔 돈이 하나도 없어요." },
           ex2: { en: "How many tickets are left? — None.", ko: "표가 몇 장 남았어요? — 하나도 없어요." },
           note: "이중부정 금지 — ❌ I don't have **no** money → ✓ I have **no** money / I **don't** have **any** money.",
+          ch: "b2-09-determiners-agreement",
         },
         {
           pattern: "something・anything・nothing",
@@ -467,6 +469,7 @@ export default {
           ex: { en: "I want something to drink.", ko: "마실 것 좀 주세요." },
           ex2: { en: "There is nothing in the box.", ko: "상자 안에 아무것도 없어요." },
           note: "형용사는 뒤에 — something **new** (❌ new something). nothing은 그 자체로 부정이라 동사는 긍정형.",
+          ch: "b2-09-determiners-agreement",
         },
         {
           pattern: "a lot of・lots of",

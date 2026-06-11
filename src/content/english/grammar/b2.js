@@ -566,4 +566,174 @@ export default [
       },
     ],
   },
+
+  {
+    slug: "b2-08-causative-perception",
+    level: "B2",
+    order: 8,
+    title: "\"머리 잘랐어\"가 위험해지는 순간",
+    topic: "사역·지각동사",
+    titleFr: "Causatives & Perception Verbs: make / let / have / get",
+    summary: "make him go에는 to가 없고, I cut my hair는 셀프 이발이 돼요. 사역동사 4총사와 지각동사, 그리고 have something done까지 — 동사원형 보어의 세계를 정리해요.",
+    duration: "약 10분",
+    sections: [
+      {
+        heading: "사역 4총사 — 강제, 의뢰, 설득, 허락",
+        pattern: "make/let/have + 사람 + 동사원형 · get + 사람 + to 동사원형",
+        patternKo: "make=강제 · have=시킴 · get=설득(to!) · let=허락",
+        body:
+          "'~하게 하다'를 영어는 네 단계의 온도로 갈라요 — **make**(강제로 시키다), **have**(업무·역할로 시키다), **get**(구슬리고 애써서 하게 하다), **let**(허락해 주다). 핵심 문법은 하나: make/let/have 뒤 동사는 **원형**(to 없음), **get만 to부정사**를 받아요.\n\n" +
+          "force/allow/ask 같은 일반 동사가 전부 to를 받는 것(force him **to go**)과 대조적이에요. 사역 3인방의 원형은 영어에서 드문 예외라 시험 단골입니다.",
+        table: {
+          caption: "사역동사 온도계",
+          headers: ["동사", "온도", "형태", "예"],
+          rows: [
+            ["make", "강제 — 선택권 없음", "make + O + 원형", "She made me wait."],
+            ["have", "중립 — 업무·서비스", "have + O + 원형", "I'll have him call you."],
+            ["get", "설득·노력", "get + O + to 원형", "I got him to help me."],
+            ["let", "허락", "let + O + 원형", "Let me explain."],
+          ],
+        },
+        examples: [
+          { en: "My boss made me redo the whole report.", ko: "상사가 보고서를 통째로 다시 쓰게 했어요.", note: "made me to redo ×" },
+          { en: "Her parents wouldn't let her travel alone.", ko: "부모님이 혼자 여행하는 걸 허락하지 않으셨어요." },
+          { en: "I finally got my brother to admit his mistake.", ko: "마침내 동생이 실수를 인정하게 만들었어요.", note: "get만 to" },
+        ],
+        pitfall: "**made me to wait / let me to go** — to부정사 반사가 만드는 최다 오류예요. make/let/have는 **원형 직결**입니다. 거꾸로 **get him admit**(×)처럼 get에서 to를 빼는 역방향 오류도 같이 다녀요 — 'get만 to'를 한 묶음으로 외우세요.",
+      },
+      {
+        heading: "지각동사 — see him leave vs see him leaving",
+        pattern: "see/hear/watch/feel + O + 원형(전 과정) · -ing(진행 중인 장면)",
+        patternKo: "끝까지 봤으면 원형, 한 장면이면 -ing",
+        body:
+          "see, hear, watch, feel, notice도 목적어 뒤에 **원형**을 받아요 — 단, **-ing와 의미가 갈려요**. 원형은 **처음부터 끝까지 전 과정**을 목격한 것(I saw him **leave** — 나가는 걸 다 봤다), -ing는 **진행 중인 한 장면**(I saw him **leaving** — 나가고 있는 모습을 봤다)이에요.\n\n" +
+          "알리바이가 갈릴 수도 있는 차이죠. 소리도 똑같아요 — I heard her **sing** the whole song(완창을 들었다) vs I heard her **singing** in the shower(부르는 소리가 들려왔다).",
+        examples: [
+          { en: "I saw her cross the street.", ko: "그녀가 길을 건너는 걸 (처음부터 끝까지) 봤어요.", note: "전 과정 = 원형" },
+          { en: "I saw her crossing the street.", ko: "그녀가 길을 건너고 있는 걸 봤어요.", note: "한 장면 = -ing" },
+          { en: "We heard someone shouting outside.", ko: "밖에서 누가 소리치는 게 들렸어요." },
+        ],
+        vsKo: "한국어 '-하는 것을 보다'는 전 과정인지 한 장면인지 구분하지 않아요. 그래서 한국어에서 출발하면 이 선택지가 아예 안 보이죠. '봤다'를 말하기 전에 '끝까지 봤나, 스쳐 봤나'를 한 번 자문하는 습관 — 그게 이 문법의 전부예요.",
+      },
+      {
+        heading: "have/get something done — 맡겨서 받는 일",
+        pattern: "have/get + 사물 + p.p. = (남에게 맡겨) ~되게 하다",
+        patternKo: "미용실·수리점·병원의 전용 문형",
+        body:
+          "**I cut my hair**는 '내가 (가위 들고) 내 머리를 잘랐다'예요. 미용실에 다녀왔다면 **I had my hair cut** — have + 사물 + **p.p.**로 '맡겨서 ~되게 했다'를 표현해요. get을 쓰면 더 구어적: Where did you **get** your hair **cut**?\n\n" +
+          "이 문형은 **피해**에도 써요 — I **had my wallet stolen** on the subway(지갑을 도둑맞았다). 사물이 '당하는' 쪽이니 보어가 p.p.인 거예요 — 1절의 have him **call**(사람이 행동 = 원형)과 비교하면 구조가 보입니다. (be + p.p. 수동태의 큰 그림은 B1 수동태 챕터 참고.)",
+        examples: [
+          { en: "I'm having the car serviced tomorrow.", ko: "내일 차 점검 맡겨요." },
+          { en: "She got her phone screen replaced.", ko: "그녀는 (맡겨서) 폰 액정을 교체했어요." },
+          { en: "He had his passport stolen in the crowd.", ko: "그는 인파 속에서 여권을 도둑맞았어요.", note: "피해의 have + O + p.p." },
+        ],
+        pitfall: "**I cut my hair yesterday.** — 문법은 완벽한데 뜻이 '셀프 이발'이 되는 함정이에요. 맡긴 일은 **had/got + 사물 + p.p.**: I had my hair cut, I had my eyes checked(시력 검사를 받았다), We're getting the house painted. '내가 했다'와 '맡겨서 됐다'를 영어는 문형으로 가르니, 미용실·병원·수리점 이야기에서는 이 문형을 자동 소환하세요.",
+      },
+      {
+        heading: "수동태가 되면 to가 돌아온다",
+        pattern: "make him wait → He was made to wait · see him leave → He was seen to leave",
+        patternKo: "원형의 면허는 능동태 한정",
+        body:
+          "make·지각동사의 원형 보어는 **능동태에서만** 허용돼요. 수동태로 뒤집으면 숨었던 to가 돌아옵니다 — They made him wait. → He **was made to wait**. / She **was seen to enter** the building.\n\n" +
+          "**let은 수동태가 어색해서 be allowed to로 교체**해요 — He **was allowed to** leave(was let leave ×). help는 능동에서 원형·to 둘 다 가능(help me (to) carry), 수동에서는 to가 표준이에요.",
+        examples: [
+          { en: "He was made to apologize in front of everyone.", ko: "그는 모두 앞에서 사과하게끔 됐어요.", note: "수동에서 to 부활" },
+          { en: "The staff were not allowed to take photos.", ko: "직원들은 사진 촬영이 허용되지 않았어요.", note: "let의 수동 대역 = be allowed to" },
+        ],
+        tip: "정리 공식 — **능동은 원형, 수동은 to**. was made wait(×)/was made to wait(○)를 가르는 시험 단골 포인트예요. 부정사의 수동형(to be done)까지 포함한 더 큰 보어 체계는 C1 동사 보어 챕터에서 이어집니다.",
+      },
+    ],
+  },
+
+  {
+    slug: "b2-09-determiners-agreement",
+    level: "B2",
+    order: 9,
+    title: "\"every people\"이 두 번 틀린 이유",
+    topic: "한정사·수일치",
+    titleFr: "Determiners & Agreement: all / every / each",
+    summary: "all, every, each는 같은 '모든'이 아니고, a few와 few는 긍정과 부정으로 갈려요. 한정사의 뉘앙스부터 a number of의 수일치까지, 작문 감점 단골 지대를 정리해요.",
+    duration: "약 10분",
+    sections: [
+      {
+        heading: "all / every / each — '모든'의 세 얼굴",
+        pattern: "all + 복수 · every + 단수(빠짐없이) · each + 단수(하나씩 따로)",
+        patternKo: "둘에 대해서는 both(둘 다) · either(둘 중 하나) · neither(둘 다 아님)",
+        body:
+          "**all**은 덩어리 전체(all students), **every**는 전체를 빠짐없이 — 단 **뒤는 단수**예요(every student **is**). **each**는 하나하나 개별 조명(each student — 한 명씩 면담하는 그림). every는 셋 이상부터, each는 둘부터 쓸 수 있어요.\n\n" +
+          "대상이 **둘**이면 전용 한정사로 갈아타요 — **both**(둘 다, 복수 취급), **either**(둘 중 어느 한쪽), **neither**(둘 다 아님, 단수 취급). 상관 구문 either A or B / neither A nor B도 이 가족이에요.",
+        examples: [
+          { en: "Every seat was taken.", ko: "모든 자리가 차 있었어요.", note: "every + 단수 명사 + 단수 동사" },
+          { en: "Each member has a different role.", ko: "각 멤버는 서로 다른 역할이 있어요." },
+          { en: "Neither answer is correct.", ko: "두 답 모두 틀렸어요.", note: "neither = 단수 취급" },
+        ],
+        pitfall: "**every students / every people** — every 뒤에 복수를 놓는 게 최다 감점이에요. every students are(×) → every student **is**(○). 참고로 people은 그 자체가 복수 개념이라 every people은 두 번 틀린 표현 — '모든 사람'은 **everyone** 또는 **all people**이에요.",
+      },
+      {
+        heading: "many / much · (a) few / (a) little — a 하나로 갈리는 세계",
+        pattern: "many/few + 가산 복수 · much/little + 불가산 — a가 붙으면 긍정, 없으면 부정",
+        patternKo: "a few = 좀 있다 ↔ few = 거의 없다",
+        body:
+          "양의 한정사는 두 축으로 갈려요 — **셀 수 있으면 many/few, 셀 수 없으면 much/little**. 그리고 결정적인 한 끗: **a가 붙으면 긍정('좀 있다'), 없으면 부정('거의 없다')**. I have **a few** friends(친구가 좀 있다) vs I have **few** friends(친구가 거의 없다) — a 하나로 외로움이 갈려요.\n\n" +
+          "비교급도 갈려요 — 가산은 **fewer**, 불가산은 **less**(less people은 구어에선 흔하지만 격식 글에선 fewer people). 그리고 much는 긍정 평서문에서 어색해서 **a lot of**가 기본값이에요(I have much money보다 a lot of money).",
+        examples: [
+          { en: "We have a little time before the train.", ko: "기차 전까지 시간이 좀 있어요." },
+          { en: "There's little hope of finding it now.", ko: "이제 그걸 찾을 가망은 거의 없어요.", note: "a 없는 little = 부정" },
+          { en: "Fewer students applied this year.", ko: "올해는 지원 학생이 더 적었어요.", note: "가산의 비교는 fewer" },
+        ],
+        vsKo: "한국어 '조금'은 '조금 있다(긍정)'와 '조금**밖에** 없다(부정)'를 조사로 가르죠. 영어는 그 일을 **관사 a**가 해요 — a few/a little = '조금 있다', few/little = '조금밖에 없다'. a의 유무 = '-밖에'의 유무라고 매핑해 두면 다시는 안 헷갈려요.",
+      },
+      {
+        heading: "some과 any — 긍정·부정 공식을 넘어서",
+        pattern: "some = 있다고 보는 마음 · any = 열어두는 마음",
+        patternKo: "권유·부탁은 의문문이라도 some · 긍정문의 any = '아무 ~나'",
+        body:
+          "교과서 공식 'some은 긍정문, any는 부정·의문문'은 절반만 맞아요. 진짜 기준은 화자의 마음 — **some은 '있다'를 전제**하고, **any는 있는지 없는지를 열어둬요**.\n\n" +
+          "그래서 **권유·부탁은 의문문이라도 some** — Would you like **some** coffee?(커피가 있고, 줄 생각이니까) / Can I have **some** water? 그리고 **긍정문의 any는 '아무 ~나'** — Take **any** seat you like(아무 자리나 앉으세요). something/anything/nothing 시리즈도 똑같은 논리로 움직여요.",
+        examples: [
+          { en: "Would you like some more rice?", ko: "밥 좀 더 드릴까요?", note: "권유 = 의문문이라도 some" },
+          { en: "Call me anytime — any day works.", ko: "언제든 전화해요. 아무 날이나 괜찮아요.", note: "긍정문의 any = 아무 ~나" },
+          { en: "Is there anything I can do to help?", ko: "제가 도울 수 있는 일이 있을까요?" },
+        ],
+      },
+      {
+        heading: "another / other / the other — '다른'의 교통정리",
+        pattern: "another + 단수(하나 더) · other + 복수(다른 ~들) · the other(나머지 그것)",
+        patternKo: "others = 다른 것들 · the others = 나머지 전부",
+        body:
+          "**another**는 an+other, 즉 '**또 하나**'라 단수 전용이에요(another cup). **other**는 복수·불가산 앞에(other people). **the가 붙으면 '나머지'로 확정** — 둘 중 하나는 one, 나머지 하나는 **the other**. 명사 없이 단독으로 쓰면 s가 붙어요 — **others**(다른 사람들·것들), **the others**(나머지 전부).\n\n" +
+          "나열 공식: one ..., another ...(또 하나), the other(마지막 나머지) — 셋을 차례로 소개할 때의 표준 틀이에요.",
+        examples: [
+          { en: "This towel is wet — can I get another?", ko: "이 수건 젖었는데 하나 더 주시겠어요?" },
+          { en: "I have two brothers. One lives in Seoul, and the other lives in Busan.", ko: "형제가 둘인데, 한 명은 서울, 나머지 한 명은 부산에 살아요." },
+          { en: "Some people agreed; others didn't.", ko: "동의한 사람도 있고, 아닌 사람들도 있었어요." },
+        ],
+        pitfall: "**another books**(×) — another 뒤에 복수를 놓는 게 단골이에요(another book ○). 단, **another three days**처럼 수량 덩어리는 예외적으로 OK — three days를 한 묶음으로 보기 때문이에요. 그리고 막연한 '남들'을 the others로 쓰면 '(특정 집단의) 나머지 전원'이 돼버려요 — 막연하면 **others**입니다.",
+      },
+      {
+        heading: "수일치의 함정 지대 — a number of vs the number of",
+        pattern: "A number of + 복수 + 복수동사 ↔ The number of + 복수 + 단수동사",
+        patternKo: "동사의 주인은 head noun — of 뒤에 속지 마세요",
+        body:
+          "**a number of**는 '여러'라는 수식어라 **뒤의 복수 명사가 주어**(복수동사), **the number of**는 '~의 수' 자체가 주어(단수동사)예요 — A number of issues **were** raised. / The number of issues **is** growing.\n\n" +
+          "원리는 하나 — **동사의 주인(head noun)을 찾아라**. The increase in exports **was** significant(주어는 increase, exports 아님). each of / neither of / none of + 복수명사도 격식 글에서는 단수동사가 표준이에요(Neither of them **is** ready). **집합명사**(team, family, staff)는 미국식은 단수, 영국식은 의미에 따라 복수도 허용 — The team **is** strong(미) / The team **are** playing well(영).",
+        table: {
+          caption: "수일치 치트시트",
+          headers: ["주어", "동사", "예"],
+          rows: [
+            ["a number of + 복수", "복수", "A number of questions remain."],
+            ["the number of + 복수", "단수", "The number of users is rising."],
+            ["each of / neither of + 복수", "단수 (격식)", "Each of the rooms has a view."],
+            ["either A or B", "B에 일치", "Either he or I am wrong."],
+            ["집합명사 (team, staff)", "미: 단수 · 영: 단·복", "The staff is/are friendly."],
+          ],
+        },
+        examples: [
+          { en: "A number of students have complained about the schedule.", ko: "여러 학생이 일정에 대해 항의했어요." },
+          { en: "The number of applicants has doubled this year.", ko: "올해 지원자 수가 두 배가 됐어요." },
+        ],
+        tip: "수일치가 헷갈리면 **of 이하를 손으로 가리세요**. The quality (of the products) is... — 남는 명사에 동사를 맞추면 끝이에요. 이 30초 점검이 라이팅 감점의 절반을 막아줍니다.",
+      },
+    ],
+  },
 ];

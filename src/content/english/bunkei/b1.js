@@ -121,6 +121,7 @@ export default {
           ex: { en: "I used to play the piano when I was a child.", ko: "어릴 때는 피아노를 쳤었어요. (지금은 안 침)" },
           ex2: { en: "Recycling didn't use to be common in the 1970s.", ko: "1970년대에는 재활용이 흔하지 않았어요." },
           note: "❌ I usedn't smoke・I use to go → ✓ I **didn't use to** smoke・I **used to** go (부정·의문은 did + use to).",
+          ch: "c1-08-time-perspective",
         },
         {
           pattern: "would always・would often",
@@ -129,6 +130,7 @@ export default {
           ex: { en: "Every summer we would visit my grandmother in Busan.", ko: "여름마다 부산의 할머니 댁에 가곤 했어요." },
           ex2: { en: "He would often stay up all night reading.", ko: "그는 책을 읽느라 밤을 새우곤 했어요." },
           note: "상태동사에는 would 불가: ❌ I would live in Daegu → ✓ I **used to live** in Daegu.",
+          ch: "c1-08-time-perspective",
         },
         {
           pattern: "be used to・get used to + -ing",
@@ -137,6 +139,7 @@ export default {
           ex: { en: "I'm used to waking up early now.", ko: "이제는 일찍 일어나는 게 익숙해요." },
           ex2: { en: "It took me months to get used to driving on the left.", ko: "좌측 운전에 익숙해지는 데 몇 달 걸렸어요." },
           note: "❌ I'm used to wake up early → ✓ used to **waking** up (이 to는 전치사). 과거 습관 used to do와 형태 혼동 주의.",
+          ch: "c1-08-time-perspective",
         },
         {
           pattern: "was/were + -ing + when",
@@ -497,6 +500,7 @@ export default {
           ex: { en: "Can you tell me where the station is?", ko: "역이 어디인지 알려 주시겠어요?" },
           ex2: { en: "Could you tell me how much it costs?", ko: "가격이 얼마인지 알려 주시겠어요?" },
           note: "❌ Do you know where is the station? → ✓ Do you know where **the station is**? (간접의문은 평서 어순).",
+          ch: "b1-09-question-craft",
         },
         {
           pattern: "Do you know if/whether ...?",
@@ -505,6 +509,7 @@ export default {
           ex: { en: "Do you know if there are any tickets left?", ko: "남은 표가 있는지 아세요?" },
           ex2: { en: "Do you know whether the shop opens on Sundays?", ko: "그 가게가 일요일에 여는지 아세요?" },
           note: "yes/no 의문은 if/whether로 — whether가 약간 더 격식.",
+          ch: "b1-09-question-craft",
         },
         {
           pattern: "I wonder + wh-/if",
@@ -513,6 +518,7 @@ export default {
           ex: { en: "I wonder what time the meeting starts.", ko: "회의가 몇 시에 시작하는지 궁금하네요." },
           ex2: { en: "I was wondering if you could help me.", ko: "혹시 도와주실 수 있을까 해서요." },
           note: "*I was wondering if you could...*는 아주 공손한 부탁 공식 — 과거형이라 더 부드럽다.",
+          ch: "b1-09-question-craft",
         },
         {
           pattern: "..., don't you?・..., did she?",
@@ -521,6 +527,7 @@ export default {
           ex: { en: "You like spicy food, don't you?", ko: "매운 음식 좋아하죠?" },
           ex2: { en: "She didn't arrive late, did she?", ko: "그녀가 늦게 온 건 아니죠?" },
           note: "❌ He doesn't know, doesn't he? → ✓ ..., **does he?** (부정문엔 긍정 tag). tag의 조동사는 본문과 일치.",
+          ch: "b1-09-question-craft",
         },
         {
           pattern: "I'm ..., aren't I?",
@@ -529,6 +536,7 @@ export default {
           ex: { en: "I'm on the list, aren't I?", ko: "저 명단에 있는 거 맞죠?" },
           ex2: { en: "I'm not too late, am I?", ko: "저 많이 늦은 건 아니죠?" },
           note: "amn't는 없다 — 표준 tag는 **aren't I**. *am I not?*은 매우 격식적.",
+          ch: "b1-09-question-craft",
         },
         {
           pattern: "Let's ..., shall we?",
@@ -537,6 +545,7 @@ export default {
           ex: { en: "Let's take a break, shall we?", ko: "잠깐 쉬는 게 어때요?" },
           ex2: { en: "Open the window, will you?", ko: "창문 좀 열어 줄래?" },
           note: "Let's는 **shall we**, 명령문은 **will/would you**가 고정 tag.",
+          ch: "b1-09-question-craft",
         },
         {
           pattern: "Nobody ..., did they?",
@@ -545,6 +554,7 @@ export default {
           ex: { en: "Nobody called while I was out, did they?", ko: "내가 없는 동안 아무도 전화 안 했죠?" },
           ex2: { en: "Nothing went wrong, did it?", ko: "잘못된 건 없었죠?" },
           note: "nobody·someone은 tag에서 **they**로, nothing은 **it**으로 받는다.",
+          ch: "b1-09-question-craft",
         },
         {
           pattern: "which vs what",
@@ -694,6 +704,7 @@ export default {
           ex: { en: "He solved the problem by analyzing the data.", ko: "그는 데이터를 분석해서 문제를 해결했어요." },
           ex2: { en: "She left without saying goodbye.", ko: "그녀는 인사도 없이 떠났어요." },
           note: "❌ without to ask・by to analyze → ✓ without **asking**・by **analyzing** (전치사 뒤 to부정사 금지).",
+          ch: "b1-08-preposition-combos",
         },
         {
           pattern: "look forward to + -ing",
@@ -702,6 +713,7 @@ export default {
           ex: { en: "I'm looking forward to seeing you next week.", ko: "다음 주에 만나는 게 기대돼요." },
           ex2: { en: "We're not looking forward to moving house.", ko: "이사하는 게 별로 기대되지 않아요." },
           note: "❌ looking forward to see you → ✓ to **seeing** you (이 to는 전치사). 이메일 맺음말 단골.",
+          ch: "b1-08-preposition-combos",
         },
         {
           pattern: "insist on・object to + -ing",
@@ -710,6 +722,7 @@ export default {
           ex: { en: "She insists on paying for dinner.", ko: "그녀는 저녁값을 자기가 내겠다고 고집해요." },
           ex2: { en: "They object to working on weekends.", ko: "그들은 주말 근무에 반대해요." },
           note: "depend on, believe in, think about, worry about + -ing도 같은 원리.",
+          ch: "b1-08-preposition-combos",
         },
         {
           pattern: "be interested in + -ing",
@@ -718,6 +731,7 @@ export default {
           ex: { en: "I'm interested in learning French.", ko: "프랑스어를 배우는 데 관심이 있어요." },
           ex2: { en: "He isn't interested in changing jobs.", ko: "그는 이직에 관심이 없어요." },
           note: "❌ interested about/for → ✓ interested **in**.",
+          ch: "b1-08-preposition-combos",
         },
         {
           pattern: "by + -ing",
@@ -725,6 +739,7 @@ export default {
           ko: "~함으로써",
           ex: { en: "You can improve by practicing a little every day.", ko: "매일 조금씩 연습하면 실력이 늘어요." },
           ex2: { en: "We cut costs by switching suppliers.", ko: "공급업체를 바꿔서 비용을 줄였어요." },
+          ch: "b1-08-preposition-combos",
         },
         {
           pattern: "instead of + -ing",
@@ -733,6 +748,7 @@ export default {
           ex: { en: "We walked instead of taking the bus.", ko: "버스를 타는 대신 걸었어요." },
           ex2: { en: "Instead of complaining, try suggesting a solution.", ko: "불평하는 대신 해결책을 제안해 보세요." },
           note: "❌ instead of to work → ✓ instead of **working**.",
+          ch: "b1-08-preposition-combos",
         },
         {
           pattern: "after・before + -ing",
@@ -741,6 +757,7 @@ export default {
           ex: { en: "After finishing the report, she went home.", ko: "보고서를 끝낸 후 그녀는 집에 갔어요." },
           ex2: { en: "Check everything twice before submitting the form.", ko: "양식을 제출하기 전에 모든 걸 두 번 확인하세요." },
           note: "주절 주어와 같을 때만 — 다르면 절로: After **she finished**, we left.",
+          ch: "b1-08-preposition-combos",
         },
         {
           pattern: "prevent・stop + O + from + -ing",
@@ -749,6 +766,7 @@ export default {
           ex: { en: "The fence prevented the animals from escaping.", ko: "울타리가 동물들이 도망가는 걸 막았어요." },
           ex2: { en: "Nothing can stop me from achieving my goal.", ko: "그 무엇도 내가 목표를 이루는 걸 막을 수 없어요." },
           note: "❌ prevent them to escape → ✓ prevent them **from escaping**.",
+          ch: "b1-08-preposition-combos",
         },
         {
           pattern: "accuse ... of・blame ... for",
@@ -757,6 +775,7 @@ export default {
           ex: { en: "She accused him of stealing the documents.", ko: "그녀는 그가 서류를 훔쳤다고 비난했어요." },
           ex2: { en: "Don't blame me for not warning you.", ko: "미리 경고 안 했다고 날 탓하지 마." },
           note: "congratulate ... **on** -ing, suspect ... **of** -ing도 같은 골격.",
+          ch: "b1-08-preposition-combos",
         },
         {
           pattern: "thank ... for・apologize for + -ing",
@@ -765,6 +784,7 @@ export default {
           ex: { en: "Thank you for coming all this way.", ko: "먼 길 와 주셔서 감사해요." },
           ex2: { en: "I apologize for not replying sooner.", ko: "더 빨리 답장 못 드려 죄송합니다." },
           note: "사과할 상대는 to: apologize **to** her **for** being late.",
+          ch: "b1-08-preposition-combos",
         },
       ],
     },
@@ -1062,6 +1082,7 @@ export default {
           ex: { en: "She's interested in modern art.", ko: "그녀는 현대 미술에 관심이 있어요." },
           ex2: { en: "I'm not interested in watching golf.", ko: "골프 경기 보는 건 관심 없어요." },
           note: "❌ interested about → ✓ interested **in**.",
+          ch: "b1-08-preposition-combos",
         },
         {
           pattern: "afraid of・scared of",
@@ -1070,6 +1091,7 @@ export default {
           ex: { en: "I'm afraid of heights.", ko: "저는 높은 곳을 무서워해요." },
           ex2: { en: "Don't be afraid of making mistakes.", ko: "실수하는 걸 두려워하지 마세요." },
           note: "❌ afraid to spiders → ✓ afraid **of** spiders. afraid는 명사 앞 수식 불가: ❌ an afraid child.",
+          ch: "b1-08-preposition-combos",
         },
         {
           pattern: "good at・bad at",
@@ -1078,6 +1100,7 @@ export default {
           ex: { en: "He's good at explaining difficult ideas.", ko: "그는 어려운 개념을 잘 설명해요." },
           ex2: { en: "I'm bad at remembering names.", ko: "저는 이름을 잘 못 외워요." },
           note: "능력은 at, 용도는 for: This app is good **for** learning vocabulary.",
+          ch: "b1-08-preposition-combos",
         },
         {
           pattern: "different from",
@@ -1086,6 +1109,7 @@ export default {
           ex: { en: "This style is different from that one.", ko: "이 스타일은 저것과 달라요." },
           ex2: { en: "The result wasn't different from what we expected.", ko: "결과는 우리 예상과 다르지 않았어요." },
           note: "표준은 from — 영국 구어 different **to**, 미국 구어 different **than**도 쓰이지만 격식 글은 from.",
+          ch: "b1-08-preposition-combos",
         },
         {
           pattern: "similar to",
@@ -1094,6 +1118,7 @@ export default {
           ex: { en: "Your situation is similar to mine.", ko: "네 상황이 내 상황과 비슷하네." },
           ex2: { en: "His new song doesn't sound similar to anything else on the album.", ko: "그의 신곡은 앨범의 다른 곡들과 전혀 비슷하지 않아요." },
           note: "❌ similar with → ✓ similar **to**.",
+          ch: "b1-08-preposition-combos",
         },
         {
           pattern: "angry with・angry at",
@@ -1102,6 +1127,7 @@ export default {
           ex: { en: "She's angry with him for being late.", ko: "그녀는 그가 늦어서 그에게 화가 났어요." },
           ex2: { en: "He's angry about the decision.", ko: "그는 그 결정에 화가 나 있어요." },
           note: "사람은 with, 상황·행동은 at/about.",
+          ch: "b1-08-preposition-combos",
         },
         {
           pattern: "responsible for",
@@ -1109,6 +1135,7 @@ export default {
           ko: "~를 책임지고 있다",
           ex: { en: "She's responsible for the marketing team.", ko: "그녀가 마케팅 팀을 책임지고 있어요." },
           ex2: { en: "Who is responsible for this mess?", ko: "이 난장판은 누구 책임이에요?" },
+          ch: "b1-08-preposition-combos",
         },
         {
           pattern: "proud of・pleased with",
@@ -1116,6 +1143,7 @@ export default {
           ko: "~를 자랑스러워하다 / ~에 만족하다",
           ex: { en: "They're proud of their daughter.", ko: "그들은 딸을 자랑스러워해요." },
           ex2: { en: "I'm pleased with the results.", ko: "결과에 만족해요." },
+          ch: "b1-08-preposition-combos",
         },
         {
           pattern: "married to・get married",
@@ -1124,6 +1152,7 @@ export default {
           ex: { en: "She's married to a pilot.", ko: "그녀는 파일럿과 결혼했어요." },
           ex2: { en: "They got married last spring.", ko: "그들은 지난봄에 결혼했어요." },
           note: "❌ married with him → ✓ married **to** him.",
+          ch: "b1-08-preposition-combos",
         },
         {
           pattern: "listen to・wait for",
@@ -1132,6 +1161,7 @@ export default {
           ex: { en: "I listen to podcasts on my way to work.", ko: "출근길에 팟캐스트를 들어요." },
           ex2: { en: "We waited for the bus for over an hour.", ko: "버스를 한 시간 넘게 기다렸어요." },
           note: "❌ listen music・wait someone → ✓ listen **to** music・wait **for** someone.",
+          ch: "b1-08-preposition-combos",
         },
         {
           pattern: "discuss・mention (no preposition)",
@@ -1140,6 +1170,7 @@ export default {
           ex: { en: "We discussed the plan for two hours.", ko: "우리는 두 시간 동안 그 계획을 논의했어요." },
           ex2: { en: "Don't mention it to anyone yet.", ko: "아직 아무한테도 그 얘기 하지 마." },
           note: "❌ discuss about it → ✓ **discuss** it (전치사 불필요). enter into ✗, marry with ✗.",
+          ch: "b1-08-preposition-combos",
         },
         {
           pattern: "depend on・rely on",
@@ -1148,6 +1179,7 @@ export default {
           ex: { en: "It depends on the weather.", ko: "날씨에 달려 있어요." },
           ex2: { en: "You can rely on her to keep her word.", ko: "그녀는 약속을 지키니까 믿어도 돼요." },
           note: "❌ depend of → ✓ depend **on**. 구어에서는 *It depends.* 단독으로도 가능.",
+          ch: "b1-08-preposition-combos",
         },
       ],
     },

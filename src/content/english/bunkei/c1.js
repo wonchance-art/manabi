@@ -29,6 +29,7 @@ export default {
           ex: { en: "The experiment is about to begin, so please take your seats.", ko: "실험이 막 시작되려 하니 자리에 앉아 주세요." },
           ex2: { en: "No one realised that disaster was about to strike.", ko: "재앙이 임박했다는 것을 아무도 깨닫지 못했다." },
           note: "미래 표현의 강약: **will**(객관 예측) > **be going to**(계획·필연) > **be to**(공식) > **be about to**(지금 당장).",
+          ch: "c1-08-time-perspective",
         },
         {
           pattern: "will be doing",
@@ -37,6 +38,7 @@ export default {
           ex: { en: "At ten tomorrow, I will be presenting the findings to the board.", ko: "내일 10시에 저는 이사회에 결과를 발표하고 있을 겁니다." },
           ex2: { en: "We won't be using this system after the upgrade.", ko: "업그레이드 이후에는 이 시스템을 쓰고 있지 않을 것이다." },
           note: "Will you be using the printer?처럼 **상대의 계획을 부담 없이 묻는 완곡 용법**도 빈출 — Will you use…?보다 압박이 적다.",
+          ch: "c1-08-time-perspective",
         },
         {
           pattern: "will have done",
@@ -45,6 +47,7 @@ export default {
           ex: { en: "By next Friday, we will have completed the analysis.", ko: "다음 주 금요일까지는 분석을 끝내 놓을 것이다." },
           ex2: { en: "The committee will not have reached a decision before the deadline.", ko: "위원회는 마감 전까지 결정에 이르지 못했을 것이다." },
           note: "기준점은 **미래의 완료 시점** — by then, by 2030 같은 신호어와 짝을 이룬다.",
+          ch: "c1-08-time-perspective",
         },
         {
           pattern: "will have been doing",
@@ -53,6 +56,7 @@ export default {
           ex: { en: "By graduation, she will have been studying English for ten years.", ko: "졸업할 때면 그녀는 영어를 공부한 지 10년이 된다." },
           ex2: { en: "By then, the crisis will have been affecting the region for a decade.", ko: "그때쯤이면 그 위기가 그 지역에 영향을 미친 지 10년이 될 것이다." },
           note: "기간(for…) 강조 전용 — 결과만 말하면 will have done으로 충분하다.",
+          ch: "c1-08-time-perspective",
         },
         {
           pattern: "would do・was going to do",
@@ -61,6 +65,7 @@ export default {
           ex: { en: "He said the report would be ready by noon.", ko: "그는 보고서가 정오까지 준비될 거라고 말했다." },
           ex2: { en: "The paper was going to be published in June, but it never appeared.", ko: "그 논문은 6월에 출간될 예정이었지만 끝내 나오지 않았다." },
           note: "간접화법·회상·보도의 기본 장치 — **would arrive ≠ has arrived**, 그때의 예상을 재구성하는 시제다.",
+          ch: "c1-08-time-perspective",
         },
         {
           pattern: "I'm liking・the paper is arguing",
@@ -167,6 +172,7 @@ export default {
           ex: { en: "When he lived in London, he would visit his grandmother every weekend.", ko: "런던에 살던 시절, 그는 주말마다 할머니를 찾아뵙곤 했다." },
           ex2: { en: "She would never complain, no matter how hard the work was.", ko: "일이 아무리 힘들어도 그녀는 결코 불평하지 않곤 했다." },
           note: "❌ He **would visit** his grandmother last year (맥락 없는 단일 사건) → ✓ 시간 맥락(in those days…)이 먼저. 상태에는 would 불가 — 상태·중단된 습관은 **used to**.",
+          ch: "c1-08-time-perspective",
         },
       ],
     },
@@ -225,6 +231,7 @@ export default {
           ex: { en: "She told him to finish the report by Friday.", ko: "그녀는 그에게 금요일까지 보고서를 끝내라고 했다." },
           ex2: { en: "The committee asked the team not to release the data yet.", ko: "위원회는 팀에게 아직 데이터를 공개하지 말 것을 요청했다." },
           note: "❌ She told me **that to complete** the task → ✓ She told me **to complete** the task. 부정은 **not to + 원형**. say는 이 구조 불가 — ❌ He **said me** → ✓ He **told me**.",
+          ch: "c1-07-verb-complementation",
         },
         {
           pattern: "ask・wonder + wh-clause",
@@ -233,6 +240,7 @@ export default {
           ex: { en: "They investigated why the system had crashed.", ko: "그들은 시스템이 왜 다운됐는지 조사했다." },
           ex2: { en: "I wonder what they have decided about the merger.", ko: "그들이 합병에 대해 무엇을 결정했는지 궁금하다." },
           note: "❌ She asked where **was he** living → ✓ She asked where **he was** living — 간접의문은 도치 없이 평서 어순. 직접의문에서만 도치한다.",
+          ch: "b1-09-question-craft",
         },
         {
           pattern: "whether・whether ... or",
@@ -241,6 +249,7 @@ export default {
           ex: { en: "She asked whether he would attend the meeting.", ko: "그녀는 그가 회의에 참석할지 물었다." },
           ex2: { en: "The manager inquired whether we prefer morning or afternoon sessions.", ko: "매니저는 우리가 오전과 오후 중 어느 시간대를 선호하는지 물었다." },
           note: "구어·중립은 **if**, 격식 글은 **whether** — 전치사 뒤·to부정사 앞에서는 whether만 가능(C2에서 상술).",
+          ch: "b1-09-question-craft",
         },
         {
           pattern: "said that ... was・said that ... is",
@@ -326,6 +335,7 @@ export default {
           ex: { en: "He expects to be promoted by the end of the year.", ko: "그는 연말까지 승진하기를 기대한다." },
           ex2: { en: "These figures are not to be taken at face value.", ko: "이 수치들을 액면 그대로 받아들여서는 안 된다." },
           note: "❌ I expect **be informed** → ✓ I expect **to be informed** — 수동 부정사의 to는 어떤 환경에서도 생략되지 않는다.",
+          ch: "c1-07-verb-complementation",
         },
         {
           pattern: "being done",
@@ -334,6 +344,7 @@ export default {
           ex: { en: "Being questioned by the police is a stressful experience.", ko: "경찰에게 심문당하는 것은 스트레스가 큰 경험이다." },
           ex2: { en: "She avoided being drawn into the controversy.", ko: "그녀는 논란에 휘말리는 것을 피했다." },
           note: "avoid・risk・resent처럼 동명사만 받는 동사 뒤의 수동은 being done — ❌ avoided **to be drawn** → ✓ avoided **being drawn**.",
+          ch: "c1-07-verb-complementation",
         },
         {
           pattern: "be heard to do・be made to do",
@@ -342,6 +353,7 @@ export default {
           ex: { en: "He was heard to remark that the policy would fail.", ko: "그가 그 정책이 실패할 거라고 말하는 것이 들렸다." },
           ex2: { en: "No employee should be made to work unpaid overtime.", ko: "어떤 직원도 무급 초과근무를 강요당해서는 안 된다." },
           note: "능동 I heard him **remark** / They made him **apologise** → 수동에서는 **to**가 살아난다: ❌ was made **apologise** → ✓ was made **to apologise**.",
+          ch: "b2-08-causative-perception",
         },
       ],
     },
@@ -356,6 +368,7 @@ export default {
           ex: { en: "The committee deemed the proposal unviable.", ko: "위원회는 그 제안을 실행 불가능하다고 판단했다." },
           ex2: { en: "We did not find the evidence convincing.", ko: "우리는 그 증거가 설득력 있다고 보지 않았다." },
           note: "보어를 빼면 문장이 미완성 — ❌ They made him. → ✓ They made him **responsible**. render·deem은 고도 격식, find·make는 중립.",
+          ch: "c1-07-verb-complementation",
         },
         {
           pattern: "appoint・elect・name + object + noun",
@@ -364,6 +377,7 @@ export default {
           ex: { en: "They appointed her project director following the restructuring.", ko: "구조조정 이후 그들은 그녀를 프로젝트 책임자로 임명했다." },
           ex2: { en: "The board did not elect him chairman, despite expectations.", ko: "예상과 달리 이사회는 그를 의장으로 선출하지 않았다." },
           note: "❌ appointed her **to** project manager → ✓ appointed her project manager / appointed her **as** project manager — as는 선택, to는 불가.",
+          ch: "c1-07-verb-complementation",
         },
         {
           pattern: "find it difficult to・consider it essential that",
@@ -372,6 +386,7 @@ export default {
           ex: { en: "I find it difficult to concentrate in noisy environments.", ko: "나는 시끄러운 환경에서 집중하는 것이 어렵다." },
           ex2: { en: "She considered it essential that all protocols be followed.", ko: "그녀는 모든 규약이 준수되는 것이 필수라고 여겼다." },
           note: "❌ I find **to concentrate difficult** → ✓ I find **it** difficult to concentrate — 진짜 목적어(절)는 뒤로, 자리는 it이 지킨다.",
+          ch: "c1-07-verb-complementation",
         },
         {
           pattern: "want・need + object + done",
@@ -380,6 +395,7 @@ export default {
           ex: { en: "They want their proposal accepted without amendments.", ko: "그들은 자신들의 제안이 수정 없이 수용되기를 원한다." },
           ex2: { en: "We don't want these findings misquoted in the press.", ko: "우리는 이 결과가 언론에 잘못 인용되는 것을 원치 않는다." },
           note: "❌ They want the proposal **accept** → ✓ **accepted** — 목적어가 '당하는' 쪽이면 과거분사. 의도된 행동이면 to부정사(want the team **to submit**).",
+          ch: "c1-07-verb-complementation",
         },
         {
           pattern: "keep・leave + object + doing",
@@ -388,6 +404,7 @@ export default {
           ex: { en: "Keep the engine running while I check the sensors.", ko: "센서를 확인하는 동안 엔진을 켜 둬." },
           ex2: { en: "Don't leave the question unanswered in your conclusion.", ko: "결론에서 그 질문을 답하지 않은 채로 두지 마라." },
           note: "현재분사 = 진행 유지(running), 과거분사·형용사 = 상태 방치(unanswered, open) — 보어 형태가 능수동을 가른다.",
+          ch: "c1-07-verb-complementation",
         },
         {
           pattern: "give someone something・give something to someone",
@@ -396,6 +413,7 @@ export default {
           ex: { en: "The committee awarded her the prize.", ko: "위원회는 그녀에게 상을 수여했다." },
           ex2: { en: "The documents were not sent to the auditors until March.", ko: "그 문서들은 3월이 되어서야 감사관들에게 발송되었다." },
           note: "간접목적어 선행형이 기본·간결 — 직접목적어를 강조하거나 길 때만 to/for형. buy·make·cook은 **for**, give·send·show는 **to**.",
+          ch: "c1-07-verb-complementation",
         },
         {
           pattern: "explain・mention・introduce something to someone",
@@ -404,6 +422,7 @@ export default {
           ex: { en: "He explained the problem to the new staff.", ko: "그는 신입 직원들에게 그 문제를 설명했다." },
           ex2: { en: "She didn't mention the budget cuts to the team.", ko: "그녀는 팀에게 예산 삭감을 언급하지 않았다." },
           note: "❌ **Explain me** the problem → ✓ Explain the problem **to me** — explain·mention·introduce·suggest는 '사람 먼저' 어순이 없다.",
+          ch: "c1-07-verb-complementation",
         },
         {
           pattern: "she was awarded the prize",
@@ -412,6 +431,7 @@ export default {
           ex: { en: "He was given full access to the archives.", ko: "그는 기록 보관소에 대한 전면 접근권을 부여받았다." },
           ex2: { en: "They were not told the real reason for the delay.", ko: "그들은 지연의 진짜 이유를 듣지 못했다." },
           note: "두 수동이 모두 가능하지만 학술문은 **사람 주어형**(She was awarded…)이 우세 — The prize was awarded to her는 사물 강조용.",
+          ch: "c1-07-verb-complementation",
         },
         {
           pattern: "deny・admit・avoid doing",
@@ -656,6 +676,7 @@ export default {
           ex: { en: "A number of employees have requested remote work.", ko: "여러 직원이 원격 근무를 요청했다." },
           ex2: { en: "The number of complaints has not decreased.", ko: "불만 건수는 줄지 않았다." },
           note: "❌ A number of employees **has** requested → ✓ **have** — a number of는 many와 같다. the number of는 '수' 자체가 주어라 단수.",
+          ch: "b2-09-determiners-agreement",
         },
         {
           pattern: "neither of・either of",
@@ -664,6 +685,7 @@ export default {
           ex: { en: "Either of the options is viable in principle.", ko: "두 선택지 중 어느 쪽이든 원칙적으로는 실행 가능하다." },
           ex2: { en: "Neither of the candidates was fully qualified.", ko: "두 후보 중 어느 쪽도 자격을 온전히 갖추지 못했다." },
           note: "❌ Neither of the candidates **were** qualified (격식 글) → ✓ **was** — 구어에서는 복수 동사도 통용되지만 격식 글은 단수.",
+          ch: "b2-09-determiners-agreement",
         },
         {
           pattern: "neither A nor B",
@@ -672,6 +694,7 @@ export default {
           ex: { en: "Neither the employees nor the CEO was aware of the issue.", ko: "직원들도 CEO도 그 문제를 알지 못했다." },
           ex2: { en: "Neither John nor his colleagues are attending the conference.", ko: "존도 그의 동료들도 학회에 참석하지 않는다." },
           note: "동사는 **가까운 쪽 명사**에 맞춘다 — either…or도 동일. 어색하면 문장을 재구성하는 것이 안전하다.",
+          ch: "b2-09-determiners-agreement",
         },
         {
           pattern: "none of",
@@ -680,6 +703,7 @@ export default {
           ex: { en: "None of the evidence was conclusive.", ko: "그 증거 중 어느 것도 결정적이지 않았다." },
           ex2: { en: "None of the reports were independently verified.", ko: "그 보고서들 중 독립적으로 검증된 것은 없었다." },
           note: "복수 명사 뒤에서는 복수 동사가 현대 표준이지만, 보수적 격식체는 단수(None of the reports **was**…)도 유지한다.",
+          ch: "b2-09-determiners-agreement",
         },
         {
           pattern: "the team is・the team are",
@@ -697,6 +721,7 @@ export default {
           ex: { en: "Each of the participants has signed a consent form.", ko: "참가자 각각이 동의서에 서명했다." },
           ex2: { en: "Every measurement was repeated three times.", ko: "모든 측정은 세 번씩 반복되었다." },
           note: "❌ **Every of** the students → ✓ **Each of** the students / **Every** student — every는 of를 받지 못한다. each = 개별성, every = 규칙적 전체.",
+          ch: "b2-09-determiners-agreement",
         },
         {
           pattern: "the increase in X is",
@@ -705,6 +730,7 @@ export default {
           ex: { en: "The increase in student enrolment is significant.", ko: "학생 등록의 증가는 유의미하다." },
           ex2: { en: "The proposal from the board members was rejected.", ko: "이사진이 낸 그 제안은 부결되었다." },
           note: "❌ The increase in enrolment **are** significant → ✓ **is** — 일치는 전치사구가 아니라 **핵심 명사**와. The majority of votes는 영국식에서 were도 가능.",
+          ch: "b2-09-determiners-agreement",
         },
         {
           pattern: "fewer・less",
@@ -713,6 +739,7 @@ export default {
           ex: { en: "Fewer people attended this year than last.", ko: "올해는 작년보다 참석자가 적었다." },
           ex2: { en: "The new process consumes less energy.", ko: "새 공정은 에너지를 덜 소비한다." },
           note: "❌ **Less** people attended → ✓ **Fewer** people attended (격식 표준) — 구어·광고에서는 less people도 흔하지만 격식 글에서는 감점 요인.",
+          ch: "b2-09-determiners-agreement",
         },
         {
           pattern: "both A and B",
@@ -721,6 +748,7 @@ export default {
           ex: { en: "Both the methodology and the dataset are publicly available.", ko: "방법론과 데이터셋 모두 공개되어 있다." },
           ex2: { en: "Both options are far from ideal.", ko: "두 선택지 모두 이상과는 거리가 멀다." },
           note: "both…and는 항상 복수 일치 — ❌ Both A and B **is** → ✓ **are**. 부정 '둘 다 아님'은 both not이 아니라 **neither**로.",
+          ch: "b2-09-determiners-agreement",
         },
       ],
     },
