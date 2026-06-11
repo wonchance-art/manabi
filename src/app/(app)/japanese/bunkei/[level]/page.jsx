@@ -28,6 +28,7 @@ export default async function Page({ params }) {
       levelMeta={BUNKEI_LEVELS}
       meta={ref.getLevelMeta(level)}
       bunkei={getBunkei(level)}
+      hasVocab={ref.countVocab(level) > 0}
     />
   );
 }

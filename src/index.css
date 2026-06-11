@@ -10265,6 +10265,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   padding: 6px 0 6px 10px;
   border-left: 2px solid var(--primary-glow);
 }
+.bk-ex__pair + .bk-ex__pair { margin-top: 7px; }
 .bk-ex__ja {
   font-size: 0.92rem; font-weight: 500;
   line-height: 1.6;
@@ -10284,6 +10285,24 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   transition: background 0.15s ease, color 0.15s ease;
 }
 .bk-chlink:hover { background: var(--bg-elevated); color: var(--text-primary); }
+
+/* 문형 사전 ↔ 어휘 상호 이동 버튼 */
+.bk-switch {
+  flex-shrink: 0;
+  font-size: 0.8rem; font-weight: 700;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 6px 14px;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.bk-switch:hover { background: var(--bg-elevated); color: var(--text-primary); }
+
+/* 요미가나 가리기 — 행 단위, 탭하면 공개 (루비 rt + 폴백 독음만 — 접속(conn)은 유지) */
+.row-hide-yomi rt { visibility: hidden; }
+.row-hide-yomi .fr-example__ipa { visibility: hidden; }
 
 .fr-vrow__chlink {
   display: inline-block;

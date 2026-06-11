@@ -14,16 +14,18 @@ import { refInline, refMain, refPron, LevelDot, JaText, alignFurigana } from './
  * 세로 단일 열 정렬 리스트. 단어 가리기/뜻 가리기 셀프 테스트, 발음(TTS), 단어장(FSRS) 저장.
  * 데이터는 서버 라우트에서 해당 레벨 분량만 props로 전달받는다.
  */
-export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta, vocab }) {
+export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta, vocab, hasBunkei = false }) {
   const { user } = useAuth();
   const toast = useToast();
   const queryClient = useQueryClient();
   const { speak, supported: ttsSupported } = useTTS();
 
   const [query, setQuery] = useState('');
-  // 가리기 모드: null | 'word' | 'meaning' — 켜면 해당 열이 가려지고, 행을 탭하면 그 행만 공개
+  // 가리기: hideMode(단어/뜻 — 배타) + hideYomi(요미가나 — 독립, 일본어 전용)
   const [hideMode, setHideMode] = useState(null);
+  const [hideYomi, setHideYomi] = useState(false);
   const [revealed, setRevealed] = useState(() => new Set());
+  const anyHide = hideMode !== null || hideYomi;
   const [savedSet, setSavedSet] = useState(() => new Set());
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -72,7 +74,7 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
   }
 
   function toggleReveal(key) {
-    if (!hideMode) return;
+    if (!anyHide) return;
     setRevealed(prev => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
@@ -181,11 +183,26 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
           >
             💭 뜻 가리기
           </button>
+          {refInfo.langCode === 'ja' && (
+            <button
+              type="button"
+              className={`chip ${hideYomi ? 'chip--active' : ''}`}
+              onClick={() => { setHideYomi(v => !v); setRevealed(new Set()); }}
+              aria-pressed={hideYomi}
+            >
+              🔤 요미가나 가리기
+            </button>
+          )}
         </div>
+        {hasBunkei && (
+          <Link href={`${refInfo.base}/bunkei/${meta?.key.toLowerCase()}`} className="bk-switch">
+            📑 {meta?.key} 문형 사전으로 →
+          </Link>
+        )}
       </div>
-      {hideMode && (
+      {anyHide && (
         <p className="fr-vlist-hint">
-          {hideMode === 'word' ? '뜻을 보고 단어를 떠올린 뒤' : '단어를 보고 뜻을 떠올린 뒤'}, 행을 탭하면 확인할 수 있어요.
+          {hideMode === 'word' ? '뜻을 보고 단어를 떠올린 뒤' : hideMode === 'meaning' ? '단어를 보고 뜻을 떠올린 뒤' : '한자를 보고 독음을 떠올린 뒤'}, 행을 탭하면 확인할 수 있어요.
         </p>
       )}
 
@@ -204,20 +221,22 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
             <span className="fr-vlist-theme__count">{theme.words.length}</span>
           </h2>
           <ul className="fr-vlist">
-            {theme.words.map(w => {
+            {theme.words.map((w, wi) => {
               const text = refMain(w);
               const pron = refPron(w);
               const link = w.etym || w.hanja;
               const linkIcon = w.hanja ? '🈶' : '🌱';
               const saved = savedSet.has(text);
-              const isRevealed = revealed.has(text);
+              const rowKey = `${theme.name}:${text}:${wi}`;
+              const isRevealed = revealed.has(rowKey);
               const wordHidden = hideMode === 'word' && !isRevealed;
               const meaningHidden = hideMode === 'meaning' && !isRevealed;
+              const yomiHidden = hideYomi && !isRevealed;
               return (
                 <li
-                  key={text}
-                  className={`fr-vrow ${hideMode ? 'fr-vrow--quiz' : ''}`}
-                  onClick={() => toggleReveal(text)}
+                  key={rowKey}
+                  className={`fr-vrow ${anyHide ? 'fr-vrow--quiz' : ''} ${yomiHidden ? 'row-hide-yomi' : ''}`}
+                  onClick={() => toggleReveal(rowKey)}
                 >
                   {/* 단어 열 — 고정 폭으로 정렬, 일본어는 한자 위 요미가나 */}
                   <div className={`fr-vrow__word ${wordHidden ? 'is-hidden' : ''}`}>
@@ -240,13 +259,17 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
                     </div>
                     {link && <div className="fr-vrow__etym">{linkIcon} {refInline(link)}</div>}
                     {w.ex && (
-                      <div className="fr-vrow__ex">
-                        {refInfo.langCode === 'ja' ? (
-                          <JaText ja={refMain(w.ex)} yomi={w.ex.yomi} />
-                        ) : (
-                          <span lang={refInfo.langCode}>{refMain(w.ex)}</span>
-                        )}
-                        <span className="fr-vrow__ex-ko"> — {w.ex.ko}</span>
+                      <div className="bk-ex">
+                        <div className="bk-ex__pair">
+                          <div className="bk-ex__ja">
+                            {refInfo.langCode === 'ja' ? (
+                              <JaText ja={refMain(w.ex)} yomi={w.ex.yomi} />
+                            ) : (
+                              <span lang={refInfo.langCode}>{refMain(w.ex)}</span>
+                            )}
+                          </div>
+                          <div className="bk-ex__ko">{w.ex.ko}</div>
+                        </div>
                       </div>
                     )}
                   </div>
