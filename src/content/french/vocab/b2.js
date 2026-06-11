@@ -18,6 +18,7 @@ export default {
           pos: "n.m.",
           en: "power",
           etym: "라틴어 potere — 영어 power는 이 단어의 옛 프랑스어 형태 poeir를 빌려간 거예요.",
+          ex: { fr: "Ce parti est au pouvoir depuis dix ans.", ko: "이 정당은 10년째 집권하고 있어요." },
         },
         {
           fr: "la loi",
@@ -41,6 +42,7 @@ export default {
           ko: "선거",
           pos: "n.f.",
           en: "election",
+          ex: { fr: "L'élection présidentielle aura lieu en avril.", ko: "대통령 선거는 4월에 치러져요." },
         },
         {
           fr: "le parti",
@@ -72,6 +74,7 @@ export default {
           ko: "세금",
           pos: "n.m.",
           etym: "ô의 모자 = 사라진 s의 흔적. 옛 형태 impost는 영어에 그대로 남아 있어요(impose도 친척).",
+          ex: { fr: "Le gouvernement promet de baisser les impôts.", ko: "정부는 세금 인하를 약속해요." },
         },
         {
           fr: "le marché",
@@ -117,6 +120,7 @@ export default {
           pos: "n.f.",
           en: "debt",
           etym: "영어 debt의 묵음 b는 라틴어(debitum)를 흉내 낸 장식 철자. 프랑스어 dette가 원래 발음을 보여줘요.",
+          ex: { fr: "La dette publique du pays augmente encore.", ko: "나라의 공공 부채가 또 늘고 있어요." },
         },
         {
           fr: "gouverner",
@@ -124,6 +128,7 @@ export default {
           ko: "통치하다, 다스리다",
           pos: "v.",
           en: "govern",
+          ex: { fr: "Il est difficile de gouverner un pays divisé.", ko: "분열된 나라를 통치하기는 어려워요." },
         },
       ],
     },
@@ -172,6 +177,7 @@ export default {
           ko: "지속 가능한",
           pos: "adj.",
           etym: "영어 durable은 '튼튼한'이지만, 프랑스어에서는 '지속 가능한'이 핵심 — développement durable = sustainable development예요.",
+          ex: { fr: "La ville investit dans les transports durables.", ko: "시는 지속 가능한 교통에 투자해요." },
         },
         {
           fr: "l'effet de serre (m.)",
@@ -187,6 +193,7 @@ export default {
           pos: "n.f.",
           en: "research",
           etym: "영어 research는 프랑스어 recercher(다시 찾다)에서 온 말이에요.",
+          ex: { fr: "Elle travaille dans la recherche médicale.", ko: "그녀는 의학 연구 분야에서 일해요." },
         },
         {
           fr: "le chercheur / la chercheuse",
@@ -201,6 +208,7 @@ export default {
           pos: "n.f.",
           en: "experience",
           etym: "한 단어가 영어 experience(경험)와 experiment(실험)를 모두 커버해요. 문맥으로 구별하세요.",
+          ex: { fr: "Les chercheurs ont refait l'expérience trois fois.", ko: "연구자들은 실험을 세 번 다시 했어요." },
         },
         {
           fr: "la découverte",
@@ -209,6 +217,7 @@ export default {
           pos: "n.f.",
           en: "discovery",
           etym: "découvrir = dé(벗기다)+couvrir(덮다) — 영어 dis+cover와 구조까지 똑같아요.",
+          ex: { fr: "Cette découverte va changer la médecine.", ko: "이 발견은 의학을 바꿀 거예요." },
         },
         {
           fr: "les énergies renouvelables (f.pl.)",
@@ -237,6 +246,7 @@ export default {
           ko: "작품",
           pos: "n.f.",
           etym: "라틴어 opera(일, 작품)에서 — 영어 hors d'œuvre(전채), masterpiece의 원형인 chef-d'œuvre가 여기서 나와요.",
+          ex: { fr: "Ce musée présente toute l'œuvre de Monet.", ko: "이 미술관은 모네의 전 작품을 선보여요." },
         },
         {
           fr: "le chef-d'œuvre",
@@ -280,6 +290,7 @@ export default {
           ko: "소설",
           pos: "n.m.",
           etym: "경고: 영어 romance가 아니라 '소설(novel)'! 중세에 라틴어가 아닌 로망어(roman)로 쓴 이야기에서 온 말로, 한국어 '로망'도 멀리 이 집안 출신이에요.",
+          ex: { fr: "Je lis un roman coréen en ce moment.", ko: "요즘 한국 소설을 읽고 있어요." },
         },
         {
           fr: "l'écrivain (m.) / l'écrivaine (f.)",
@@ -318,6 +329,7 @@ export default {
           ko: "독서, 읽기",
           pos: "n.f.",
           etym: "경고: 영어 lecture(강의)가 아니에요! '독서'입니다. 강의는 le cours 또는 la conférence.",
+          ex: { fr: "La lecture est mon passe-temps préféré.", ko: "독서는 제가 제일 좋아하는 취미예요." },
         },
       ],
     },
@@ -338,12 +350,14 @@ export default {
           ko: "그럼에도 불구하고",
           pos: "adv.",
           etym: "néant(무)+moins(덜) — 영어 nevertheless(never-the-less)와 조립 방식이 놀랍도록 닮은 평행 조어예요.",
+          ex: { fr: "Le projet est risqué ; néanmoins, il faut essayer.", ko: "그 계획은 위험해요. 그럼에도 시도해야 해요." },
         },
         {
           fr: "toutefois",
           ipa: "[tutfwa]",
           ko: "그렇지만",
           pos: "adv.",
+          ex: { fr: "C'est une bonne idée ; toutefois, elle coûte cher.", ko: "좋은 생각이에요. 그렇지만 비용이 많이 들죠." },
         },
         {
           fr: "en revanche",
@@ -351,12 +365,14 @@ export default {
           ko: "반면에, 그 대신",
           pos: "loc.",
           etym: "revanche는 영어 revenge(복수)와 같은 뿌리지만, 이 표현에서는 '그 대신, 반면에'라는 대조의 뜻이에요.",
+          ex: { fr: "Il parle mal anglais ; en revanche, son français est parfait.", ko: "그는 영어는 서툴러요. 반면 프랑스어는 완벽하죠." },
         },
         {
           fr: "en outre",
           ipa: "[ɑ̃nutʁ]",
           ko: "게다가, 더욱이 (문어)",
           pos: "loc.",
+          ex: { fr: "Ce travail est intéressant ; en outre, il est bien payé.", ko: "이 일은 흥미로워요. 게다가 보수도 좋죠." },
         },
         {
           fr: "par conséquent",
@@ -364,6 +380,7 @@ export default {
           ko: "따라서, 그 결과",
           pos: "loc.",
           en: "consequently",
+          ex: { fr: "Il a neigé toute la nuit ; par conséquent, les routes sont dangereuses.", ko: "밤새 눈이 왔어요. 따라서 도로가 위험해요." },
         },
         {
           fr: "en ce qui concerne",
@@ -385,6 +402,7 @@ export default {
           ipa: "[otʁəmɑ̃ di]",
           ko: "다시 말해",
           pos: "loc.",
+          ex: { fr: "Il n'a pas répondu ; autrement dit, c'est non.", ko: "그는 답하지 않았어요. 다시 말해 거절이죠." },
         },
         {
           fr: "il est indéniable que",
@@ -392,6 +410,7 @@ export default {
           ko: "~은 부인할 수 없다",
           pos: "expr.",
           en: "undeniable",
+          ex: { fr: "Il est indéniable que le climat change.", ko: "기후가 변하고 있다는 건 부인할 수 없어요." },
         },
         {
           fr: "soulever une question",
@@ -405,6 +424,7 @@ export default {
           ipa: "[abɔʁde]",
           ko: "(주제를) 다루다, 접근하다",
           pos: "v.",
+          ex: { fr: "L'article aborde la question du logement.", ko: "그 기사는 주거 문제를 다뤄요." },
         },
         {
           fr: "constater",
@@ -419,6 +439,7 @@ export default {
           ko: "고려하다, 검토하다, 전망하다",
           pos: "v.",
           en: "envisage",
+          ex: { fr: "Le gouvernement envisage une réforme des retraites.", ko: "정부는 연금 개혁을 검토하고 있어요." },
         },
         {
           fr: "nuancer",
@@ -426,6 +447,7 @@ export default {
           ko: "(주장에) 뉘앙스를 더하다, 단서를 달다",
           pos: "v.",
           etym: "영어 nuance는 이 프랑스어 명사 그대로예요. DELF 작문에서 '단정 대신 nuancer하라'는 단골 조언!",
+          ex: { fr: "Il faut nuancer ce jugement trop sévère.", ko: "이 지나치게 단호한 평가에는 단서를 달아야 해요." },
         },
       ],
     },
@@ -440,6 +462,7 @@ export default {
           pos: "adj.",
           en: "redoubtable",
           etym: "redouter(두려워하다)에서 — 영어 redoubtable과 같은 뿌리. '경외할 만한 강자'라는 칭찬으로도 써요.",
+          ex: { fr: "Cette équipe est un adversaire redoutable.", ko: "이 팀은 만만찮은 상대예요." },
         },
         {
           fr: "incontournable",
@@ -454,12 +477,14 @@ export default {
           ko: "모호한, 애매한",
           pos: "adj.",
           en: "ambiguous",
+          ex: { fr: "Sa réponse reste volontairement ambiguë.", ko: "그의 대답은 의도적으로 모호한 채예요." },
         },
         {
           fr: "méfiant",
           ipa: "[mefjɑ̃]",
           ko: "의심 많은, 경계하는",
           pos: "adj.",
+          ex: { fr: "Il est méfiant envers les réseaux sociaux.", ko: "그는 소셜 미디어를 경계해요." },
         },
         {
           fr: "exigeant",
@@ -474,6 +499,7 @@ export default {
           ipa: "[bulvɛʁsɑ̃]",
           ko: "가슴을 뒤흔드는, 충격적으로 감동적인",
           pos: "adj.",
+          ex: { fr: "La fin de ce film coréen est bouleversante.", ko: "이 한국 영화의 결말은 가슴을 뒤흔들어요." },
         },
         {
           fr: "décevant",
@@ -481,6 +507,7 @@ export default {
           ko: "실망스러운",
           pos: "adj.",
           etym: "décevoir는 영어 deceive(속이다)와 같은 라틴어 뿌리지만, 뜻이 갈라져 '실망시키다'가 됐어요. '기대를 속인다'고 기억하세요.",
+          ex: { fr: "Le résultat de l'élection est décevant.", ko: "선거 결과가 실망스러워요." },
         },
         {
           fr: "inquiétant",
@@ -495,6 +522,7 @@ export default {
           ko: "매력적인, 솔깃한",
           pos: "adj.",
           etym: "séduire는 영어 seduce와 같은 뿌리지만 훨씬 넓고 무난한 뜻 — '매력적인 제안(une offre séduisante)'처럼 써요.",
+          ex: { fr: "C'est une offre séduisante, mais risquée.", ko: "솔깃한 제안이지만 위험해요." },
         },
         {
           fr: "pertinent",
@@ -509,6 +537,7 @@ export default {
           ipa: "[susjø / susjøz]",
           ko: "걱정하는; ~에 신경 쓰는 (soucieux de)",
           pos: "adj.",
+          ex: { fr: "Le maire est soucieux de l'environnement.", ko: "시장은 환경에 신경을 써요." },
         },
         {
           fr: "maladroit",
@@ -516,6 +545,7 @@ export default {
           ko: "서투른, 눈치 없는",
           pos: "adj.",
           etym: "mal(나쁘게)+adroit(능숙한) — adroit는 영어에도 그대로 차용된 단어예요.",
+          ex: { fr: "Sa remarque était vraiment maladroite.", ko: "그의 발언은 정말 눈치가 없었어요." },
         },
         {
           fr: "éphémère",
@@ -524,6 +554,7 @@ export default {
           pos: "adj.",
           en: "ephemeral",
           etym: "그리스어 ephēmeros(하루살이의) — 영어 ephemeral과 같은 뿌리예요.",
+          ex: { fr: "Le succès de ce chanteur a été éphémère.", ko: "그 가수의 성공은 덧없이 끝났어요." },
         },
       ],
     },
@@ -545,6 +576,7 @@ export default {
           ko: "경우에 따라서는, 어쩌면",
           pos: "adv.",
           etym: "영어 eventually(결국)가 아니에요! '결국'은 finalement. éventuellement는 '필요하다면, 혹시'예요.",
+          ex: { fr: "Je peux éventuellement vous aider samedi.", ko: "경우에 따라서는 토요일에 도와드릴 수도 있어요." },
         },
         {
           fr: "la librairie",
@@ -568,6 +600,7 @@ export default {
           ko: "실망",
           pos: "n.f.",
           etym: "영어 deception(속임수)이 아니라 '실망'! 속임수는 la tromperie예요.",
+          ex: { fr: "Quelle déception, ce match !", ko: "이번 경기, 정말 실망이야!" },
         },
         {
           fr: "blesser",
@@ -598,6 +631,7 @@ export default {
           ko: "임대, 렌트",
           pos: "n.f.",
           etym: "영어 location(위치)이 아니라 '임대'! 위치는 l'emplacement. location de voitures = 렌터카.",
+          ex: { fr: "La location coûte très cher à Paris.", ko: "파리는 임대료가 아주 비싸요." },
         },
         {
           fr: "achever",
@@ -605,6 +639,7 @@ export default {
           ko: "완성하다, 끝마치다",
           pos: "v.",
           etym: "영어 achieve(성취하다)가 아니라 '끝내다'예요. 성취하다는 réaliser, accomplir.",
+          ex: { fr: "Elle a achevé son roman après dix ans.", ko: "그녀는 10년 만에 소설을 완성했어요." },
         },
         {
           fr: "résumer",
@@ -612,6 +647,7 @@ export default {
           ko: "요약하다",
           pos: "v.",
           etym: "영어 resume(재개하다)가 아니에요! '요약하다'입니다. 재개하다는 reprendre. 이력서(résumé)의 어원이기도 해요.",
+          ex: { fr: "Pouvez-vous résumer cet article en trois phrases ?", ko: "이 기사를 세 문장으로 요약해 주시겠어요?" },
         },
         {
           fr: "l'issue (f.)",
@@ -619,6 +655,7 @@ export default {
           ko: "출구; 결말, 해결책",
           pos: "n.f.",
           etym: "영어 issue(문제, 쟁점)가 아니에요! '출구·결말'입니다. issue de secours = 비상구.",
+          ex: { fr: "Après des mois de discussions, les négociations sont sans issue.", ko: "몇 달의 논의 끝에도 협상은 출구가 없어요." },
         },
         {
           fr: "la monnaie",
@@ -641,6 +678,7 @@ export default {
           ko: "변덕스러운",
           pos: "adj.",
           etym: "영어 versatile(다재다능한)은 칭찬, 프랑스어 versatile(변덕스러운)은 비판! 다재다능은 polyvalent을 쓰세요.",
+          ex: { fr: "L'opinion publique se montre souvent versatile.", ko: "여론은 종종 변덕스러운 모습을 보여요." },
         },
       ],
     },

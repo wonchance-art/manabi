@@ -25,24 +25,28 @@ export default {
           ipa: "[pɛʁ]",
           ko: "아버지",
           pos: "n.m.",
+          ex: { fr: "Mon père aime le vin.", ko: "우리 아버지는 와인을 좋아하세요." },
         },
         {
           fr: "la mère",
           ipa: "[mɛʁ]",
           ko: "어머니",
           pos: "n.f.",
+          ex: { fr: "Ma mère travaille à l'hôpital.", ko: "우리 어머니는 병원에서 일하세요." },
         },
         {
           fr: "les parents (m. pl.)",
           ipa: "[paʁɑ̃]",
           ko: "부모님",
           pos: "n.m.",
+          ex: { fr: "Mes parents habitent à Daegu.", ko: "우리 부모님은 대구에 사세요." },
         },
         {
           fr: "le frère",
           ipa: "[fʁɛʁ]",
           ko: "형, 오빠, 남동생 (형제)",
           pos: "n.m.",
+          ex: { fr: "J'ai deux frères.", ko: "저는 형제가 둘 있어요." },
         },
         {
           fr: "la sœur",
@@ -56,12 +60,14 @@ export default {
           ipa: "[fis]",
           ko: "아들",
           pos: "n.m.",
+          ex: { fr: "Mon fils est étudiant.", ko: "제 아들은 대학생이에요." },
         },
         {
           fr: "la fille",
           ipa: "[fij]",
           ko: "딸; 소녀",
           pos: "n.f.",
+          ex: { fr: "Ma fille a cinq ans.", ko: "제 딸은 다섯 살이에요." },
         },
         {
           fr: "l'enfant (m.)",
@@ -69,6 +75,7 @@ export default {
           ko: "아이, 어린이",
           pos: "n.m.",
           etym: "영어 infant(유아)와 같은 라틴어 뿌리 — '아직 말 못 하는 사람'이라는 뜻이었어요.",
+          ex: { fr: "Ils ont trois enfants.", ko: "그들은 아이가 셋 있어요." },
         },
         {
           fr: "le bébé",
@@ -97,6 +104,7 @@ export default {
           pos: "n.m.",
           en: "amicable",
           etym: "볼펜 브랜드 모나미(Mon ami)가 바로 '내 친구'라는 뜻이에요. 라틴어 amīcus(친구)에서 왔고, 영어 amicable(우호적인)의 뿌리이기도 해요.",
+          ex: { fr: "Je vais au cinéma avec un ami.", ko: "친구랑 영화관에 가요." },
         },
         {
           fr: "la personne",
@@ -137,12 +145,14 @@ export default {
           ipa: "[vəniʁ]",
           ko: "오다",
           pos: "v.",
+          ex: { fr: "Tu viens chez moi ce soir ?", ko: "오늘 저녁에 우리 집에 올래?" },
         },
         {
           fr: "faire",
           ipa: "[fɛʁ]",
           ko: "하다, 만들다",
           pos: "v.",
+          ex: { fr: "Qu'est-ce que tu fais demain ?", ko: "내일 뭐 해?" },
         },
         {
           fr: "prendre",
@@ -156,12 +166,14 @@ export default {
           ipa: "[mɑ̃ʒe]",
           ko: "먹다",
           pos: "v.",
+          ex: { fr: "Qu'est-ce qu'on mange ce soir ?", ko: "오늘 저녁엔 뭐 먹지?" },
         },
         {
           fr: "boire",
           ipa: "[bwaʁ]",
           ko: "마시다",
           pos: "v.",
+          ex: { fr: "Tu bois un café avec moi ?", ko: "나랑 커피 한잔할래?" },
         },
         {
           fr: "parler",
@@ -191,6 +203,7 @@ export default {
           ipa: "[tʁavaje]",
           ko: "일하다",
           pos: "v.",
+          ex: { fr: "Mon père travaille à Séoul.", ko: "우리 아버지는 서울에서 일하세요." },
         },
         {
           fr: "étudier",
@@ -199,18 +212,21 @@ export default {
           pos: "v.",
           en: "study",
           etym: "에뛰드(étude)가 이 동사의 명사형 — '공부, 연습(곡)'이라 쇼팽의 에튀드도, 화장품 에뛰드도 여기서 왔어요. 라틴어 studēre(열중하다) — 영어 study와 같은 뿌리죠.",
+          ex: { fr: "J'étudie le français à la bibliothèque.", ko: "저는 도서관에서 프랑스어를 공부해요." },
         },
         {
           fr: "vouloir",
           ipa: "[vulwaʁ]",
           ko: "원하다",
           pos: "v.",
+          ex: { fr: "Je veux habiter à Paris.", ko: "저는 파리에 살고 싶어요." },
         },
         {
           fr: "pouvoir",
           ipa: "[puvwaʁ]",
           ko: "~할 수 있다",
           pos: "v.",
+          ex: { fr: "Tu peux venir demain ?", ko: "너 내일 올 수 있어?" },
         },
       ],
     },
@@ -231,12 +247,14 @@ export default {
           ipa: "[ʁi]",
           ko: "쌀, 밥",
           pos: "n.m.",
+          ex: { fr: "Les Coréens mangent du riz tous les jours.", ko: "한국인은 매일 밥을 먹어요." },
         },
         {
           fr: "la viande",
           ipa: "[vjɑ̃d]",
           ko: "고기",
           pos: "n.f.",
+          ex: { fr: "Je ne mange pas de viande.", ko: "저는 고기를 안 먹어요." },
         },
         {
           fr: "le poisson",
@@ -249,6 +267,7 @@ export default {
           ipa: "[legym]",
           ko: "채소",
           pos: "n.m.",
+          ex: { fr: "Mange tes légumes !", ko: "채소 먹어!" },
         },
         {
           fr: "le fruit",
@@ -277,6 +296,7 @@ export default {
           ko: "우유",
           pos: "n.m.",
           etym: "카페오레(café au lait)가 바로 '우유 넣은 커피' — lait가 우유예요. 이탈리아어 라떼(latte)와 같은 라틴어 뿌리죠.",
+          ex: { fr: "Tu veux du lait dans ton café ?", ko: "커피에 우유 넣을래?" },
         },
         {
           fr: "le jus",
@@ -306,6 +326,7 @@ export default {
           ipa: "[deʒœne]",
           ko: "점심 (식사)",
           pos: "n.m.",
+          ex: { fr: "Après le déjeuner, je vais au parc.", ko: "점심 먹고 공원에 가요." },
         },
         {
           fr: "le dîner",
@@ -342,6 +363,7 @@ export default {
           ko: "부엌; 요리",
           pos: "n.f.",
           etym: "영어 cuisine은 '요리 스타일'만 뜻하지만, 프랑스어에서는 '부엌'이라는 뜻이 기본이에요.",
+          ex: { fr: "Ma mère est dans la cuisine.", ko: "어머니는 부엌에 계세요." },
         },
         {
           fr: "la porte",
@@ -385,6 +407,7 @@ export default {
           ipa: "[livʁ]",
           ko: "책",
           pos: "n.m.",
+          ex: { fr: "Ce livre est très bon.", ko: "이 책 정말 좋아요." },
         },
         {
           fr: "le téléphone",
@@ -424,18 +447,21 @@ export default {
           ko: "날, 하루, 낮",
           pos: "n.m.",
           etym: "베이커리 뚜레쥬르(Tous les jours)가 바로 '매일(모든 날들)'이라는 뜻 — 그 jour예요. 참고로 la journée는 영어 journey와 어원이 같은데, 옛날엔 '하루치 여행 거리'였거든요.",
+          ex: { fr: "Quel jour sommes-nous ?", ko: "오늘 무슨 요일이죠?" },
         },
         {
           fr: "la semaine",
           ipa: "[səmɛn]",
           ko: "주, 일주일",
           pos: "n.f.",
+          ex: { fr: "Je travaille cinq jours par semaine.", ko: "저는 일주일에 5일 일해요." },
         },
         {
           fr: "le mois",
           ipa: "[mwa]",
           ko: "달, 월",
           pos: "n.m.",
+          ex: { fr: "Le mois prochain, je vais à Paris.", ko: "다음 달에 파리에 가요." },
         },
         {
           fr: "l'année (f.)",
@@ -444,6 +470,7 @@ export default {
           pos: "n.f.",
           en: "annual",
           etym: "라틴어 annus(해) — 영어 annual(연례의), anniversary와 같은 뿌리예요.",
+          ex: { fr: "Bonne année !", ko: "새해 복 많이 받으세요!" },
         },
         {
           fr: "l'heure (f.)",
@@ -473,24 +500,28 @@ export default {
           ipa: "[jɛʁ]",
           ko: "어제",
           pos: "adv.",
+          ex: { fr: "Hier, j'ai mangé au restaurant.", ko: "어제 식당에서 밥을 먹었어요." },
         },
         {
           fr: "maintenant",
           ipa: "[mɛ̃tnɑ̃]",
           ko: "지금",
           pos: "adv.",
+          ex: { fr: "Maintenant, j'habite à Incheon.", ko: "지금은 인천에 살아요." },
         },
         {
           fr: "le matin",
           ipa: "[matɛ̃]",
           ko: "아침, 오전",
           pos: "n.m.",
+          ex: { fr: "Le matin, je bois un thé.", ko: "아침에는 차를 마셔요." },
         },
         {
           fr: "le soir",
           ipa: "[swaʁ]",
           ko: "저녁",
           pos: "n.m.",
+          ex: { fr: "Le soir, j'étudie à la maison.", ko: "저녁에는 집에서 공부해요." },
         },
         {
           fr: "le lundi",
@@ -498,6 +529,7 @@ export default {
           ko: "월요일",
           pos: "n.m.",
           etym: "lun-은 라틴어 lūna(달) — 영어 lunar처럼 '달의 날'이에요. 요일은 모두 남성 명사!",
+          ex: { fr: "Le lundi, je travaille à la maison.", ko: "월요일마다 재택근무를 해요." },
         },
         {
           fr: "le mardi",
@@ -549,6 +581,7 @@ export default {
           pos: "adj.",
           en: "grand",
           etym: "그랑프리(grand prix)가 직역하면 '큰 상' — 그 grand이에요. 영어 grand(웅장한)도 같은 단어지만, 프랑스어에서는 그냥 '큰'.",
+          ex: { fr: "Mon frère est très grand.", ko: "우리 형은 키가 아주 커요." },
         },
         {
           fr: "petit",
@@ -570,6 +603,7 @@ export default {
           ipa: "[mɔvɛ]",
           ko: "나쁜",
           pos: "adj.",
+          ex: { fr: "Le café est mauvais ici.", ko: "여기 커피는 맛이 없어요." },
         },
         {
           fr: "beau",
@@ -578,12 +612,14 @@ export default {
           pos: "adj.",
           en: "beauty",
           etym: "영어 beauty, beautiful의 beau-가 바로 이 단어예요.",
+          ex: { fr: "C'est une belle maison.", ko: "아름다운 집이네요." },
         },
         {
           fr: "joli",
           ipa: "[ʒɔli]",
           ko: "예쁜",
           pos: "adj.",
+          ex: { fr: "C'est un joli sac.", ko: "가방이 예쁘네요." },
         },
         {
           fr: "nouveau",
@@ -592,18 +628,21 @@ export default {
           pos: "adj.",
           en: "novel",
           etym: "아르누보(art nouveau)의 '누보', 영화사의 누벨바그(nouvelle vague, '새 물결')의 '누벨'(여성형)이 바로 이 단어예요. 라틴어 novus — 영어 novel과 같은 뿌리죠.",
+          ex: { fr: "J'ai un nouveau téléphone.", ko: "새 휴대폰이 생겼어요." },
         },
         {
           fr: "jeune",
           ipa: "[ʒœn]",
           ko: "젊은, 어린",
           pos: "adj.",
+          ex: { fr: "Il est jeune et beau.", ko: "그는 젊고 잘생겼어요." },
         },
         {
           fr: "vieux",
           ipa: "[vjø]",
           ko: "늙은, 오래된 (여성형 vieille)",
           pos: "adj.",
+          ex: { fr: "C'est un vieux livre.", ko: "오래된 책이에요." },
         },
         {
           fr: "facile",
@@ -618,6 +657,7 @@ export default {
           ko: "어려운",
           pos: "adj.",
           en: "difficult",
+          ex: { fr: "Cette question est difficile.", ko: "이 질문은 어려워요." },
         },
         {
           fr: "chaud",
@@ -631,6 +671,7 @@ export default {
           ipa: "[fʁwa]",
           ko: "차가운, 추운",
           pos: "adj.",
+          ex: { fr: "L'eau est très froide !", ko: "물이 너무 차가워요!" },
         },
         {
           fr: "content",
@@ -639,6 +680,7 @@ export default {
           pos: "adj.",
           en: "content",
           etym: "영어 content(만족한)와 같은 뿌리 — 다만 프랑스어에서는 '기쁘다'에 가깝게 자주 써요.",
+          ex: { fr: "Elle est très contente aujourd'hui.", ko: "그녀는 오늘 아주 기분이 좋아요." },
         },
       ],
     },
@@ -652,6 +694,7 @@ export default {
           ko: "도시",
           pos: "n.f.",
           etym: "영어 village(마을)의 vill-이 같은 뿌리예요. 단, ville의 ill은 예외적으로 [l] 발음!",
+          ex: { fr: "Séoul est une grande ville.", ko: "서울은 큰 도시예요." },
         },
         {
           fr: "la rue",
@@ -666,6 +709,7 @@ export default {
           pos: "n.f.",
           en: "school",
           etym: "라틴어 schola — 영어 school과 같은 뿌리. é의 악상이 사라진 s의 흔적이에요(escole→école).",
+          ex: { fr: "Les enfants sont à l'école.", ko: "아이들은 학교에 있어요." },
         },
         {
           fr: "la gare",
@@ -679,6 +723,7 @@ export default {
           ipa: "[ʁɛstoʁɑ̃]",
           ko: "식당, 레스토랑",
           pos: "n.m.",
+          ex: { fr: "On va au restaurant ce soir ?", ko: "오늘 저녁에 외식할까?" },
         },
         {
           fr: "le cinéma",
@@ -701,6 +746,7 @@ export default {
           ko: "시장",
           pos: "n.m.",
           en: "market",
+          ex: { fr: "Je vais au marché le samedi.", ko: "토요일마다 시장에 가요." },
         },
         {
           fr: "l'hôpital (m.)",
@@ -734,6 +780,7 @@ export default {
           ipa: "[pei]",
           ko: "나라, 국가",
           pos: "n.m.",
+          ex: { fr: "La France est un beau pays.", ko: "프랑스는 아름다운 나라예요." },
         },
       ],
     },
