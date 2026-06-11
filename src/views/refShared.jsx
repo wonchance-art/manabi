@@ -27,12 +27,19 @@ const isKanjiLike = ch => /[一-鿿々〆ヶ0-9０-９]/.test(ch);
 const kataToHira = s => s.replace(/[ァ-ヶ]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60));
 const PUNCT = '。、・！？!?,. 　「」『』();（）:〜';
 
+// 한자 독음(rt) 후보 제약 — 독음은 가나로만 구성되고, 음절 경계상 올 수 없는 글자로 시작하지 않는다.
+const isKanaCh = c => (c >= 'ぁ' && c <= 'ゖ') || c === 'ー';
+const RT_BAD_START = 'んっーゃゅょぁぃぅぇぉゎ';
+const UO_VOWEL = 'うくすつぬふむゆるぐずづぶぷぅゅょおこそとのほもよろをごぞどぼぽぉ'; // う단·お단 — 뒤따르는 「う」는 장음
+const SMALL_KANA = 'ぁぃぅぇぉゃゅょゎっー';
+const moraLen = rt => rt.reduce((n, c) => n + (SMALL_KANA.includes(c) ? 0 : 1), 0); // 한자당 독음 길이 추정용
+
 export function alignFurigana(ja, yomiRaw) {
   if (!ja || !yomiRaw) return null;
   if (/[가-힣]/.test(yomiRaw)) return null;          // 한글 병기(OT) — 정렬 대상 아님
   if (![...ja].some(isKanjiLike)) return null;       // 한자 없음 — 루비 불필요
 
-  const yomi = kataToHira(yomiRaw.replace(/[\s　]+/g, ''));
+  const yomi = [...kataToHira(yomiRaw.replace(/[\s　]+/g, ''))];
   // ja → [한자 구간 | 가나·기호 구간] 세그먼트
   const segs = [];
   for (const ch of ja) {
@@ -41,39 +48,59 @@ export function alignFurigana(ja, yomiRaw) {
     else segs.push({ t, s: ch });
   }
 
-  let yi = 0;
-  const out = [];
-  for (let i = 0; i < segs.length; i++) {
-    const seg = segs[i];
+  // 백트래킹 정렬: 한자 구간마다 가능한 독음 길이를 모두 시도하고,
+  // 비용 Σ(독음길이−한자길이)² 가 최소인 전역 정렬을 채택한다(동점이면 앞 구간이 긴 쪽).
+  const N = yomi.length;
+  const memo = new Map();
+  // afterRt: 직전에 소비한 yomi 글자가 한자 독음(rt)이었는지 — 한자↔한자 경계에서만 장음 규칙 적용
+  function solve(si, yi, afterRt) {
+    if (si === segs.length) {
+      let j = yi;
+      while (j < N && PUNCT.includes(yomi[j])) j++;    // 꼬리 구두점 허용
+      return j === N ? { cost: 0, parts: [] } : null;
+    }
+    const key = (si * 4096 + yi) * 2 + (afterRt ? 1 : 0);
+    if (memo.has(key)) return memo.get(key);
+    const seg = segs[si];
+    let best = null;
     if (seg.t === 'p') {
       const norm = kataToHira(seg.s.replace(/[\s　]+/g, ''));
+      let j = yi, ok = true;
       for (const c of norm) {
-        if (yi < yomi.length && yomi[yi] === c) yi++;
+        while (j < N && yomi[j] !== c && PUNCT.includes(yomi[j])) j++; // yomi 쪽 구두점 건너뜀
+        if (j < N && yomi[j] === c) j++;
         else if (PUNCT.includes(c)) continue;          // yomi 쪽에 구두점이 없는 경우 허용
-        else return null;
+        else { ok = false; break; }
       }
-      out.push({ text: seg.s });
+      if (ok) {
+        const rest = solve(si + 1, j, j === yi ? afterRt : false);
+        if (rest) best = { cost: rest.cost, parts: [{ text: seg.s }, ...rest.parts] };
+      }
     } else {
-      // 다음 가나 구간의 첫 글자를 앵커로 한자 독음 범위를 결정
-      let endIdx = yomi.length;
-      const next = segs[i + 1];
-      if (next) {
-        const anchorNorm = kataToHira(next.s.replace(/[\s　]+/g, ''));
-        const anchor = [...anchorNorm].find(c => !PUNCT.includes(c));
-        if (anchor) {
-          const found = yomi.indexOf(anchor, yi + 1);
-          if (found === -1) return null;
-          endIdx = found;
-        }
+      // 다음 가나 구간의 첫 글자 — 독음이 뒤따르는 조사·오쿠리가나를 삼키는 동점 해소용
+      let nextFirst = null;
+      if (segs[si + 1]) {
+        const nn = kataToHira(segs[si + 1].s.replace(/[\s　]+/g, ''));
+        nextFirst = [...nn].find(c => !PUNCT.includes(c)) || null;
       }
-      const rt = yomi.slice(yi, endIdx);
-      if (!rt) return null;
-      out.push({ text: seg.s, rt });
-      yi = endIdx;
+      for (let end = N; end > yi; end--) {
+        const rt = yomi.slice(yi, end);
+        if (!rt.every(isKanaCh)) continue;
+        if (RT_BAD_START.includes(rt[0])) continue;
+        if (rt[0] === 'う' && afterRt && yi > 0 && UO_VOWEL.includes(yomi[yi - 1])) continue;
+        const rest = solve(si + 1, end, true);
+        if (!rest) continue;
+        const d = moraLen(rt) - seg.s.length;
+        const cost = rest.cost + 8 * d * d + (nextFirst && rt.includes(nextFirst) ? 1 : 0);
+        if (!best || cost < best.cost)
+          best = { cost, parts: [{ text: seg.s, rt: rt.join('') }, ...rest.parts] };
+      }
     }
+    memo.set(key, best);
+    return best;
   }
-  if (yi < yomi.length) return null;                   // 남는 독음 — 정렬 신뢰 불가
-  return out;
+  const r = solve(0, 0, false);
+  return r ? r.parts : null;                           // 정렬 불가 — 정렬 신뢰 불가
 }
 
 /** 일본어 텍스트 — 한자 위 요미가나 루비, 실패 시 기존(원문+독음) 폴백 */
