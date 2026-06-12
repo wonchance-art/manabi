@@ -27,6 +27,7 @@ export default {
           ex: { fr: "Il parle tout bas de peur que les enfants ne l'entendent.", ipa: "[il paʁl tu ba də pœʁ kə lezɑ̃fɑ̃ nə lɑ̃tɑ̃d]", ko: "아이들이 들을까 봐 그는 아주 작게 말해요." },
           ex2: { fr: "Elle a tout vérifié deux fois, de crainte qu'on ne lui reproche une erreur.", ipa: "[ɛla tu veʁifje dø fwa də kʁɛ̃t kɔ̃ nə lɥi ʁəpʁɔʃ yn ɛʁœʁ]", ko: "실수를 지적당할까 봐 그녀는 모든 걸 두 번 확인했어요." },
           note: "ne는 허사(부정 아님). 구어에서는 de peur de + 동사원형 쪽이 자연스럽다",
+          ch: "b2-01-subjonctif-advanced",
         },
         {
           pattern: "à moins que",
@@ -44,6 +45,7 @@ export default {
           ex: { fr: "Tu peux emprunter ma voiture, pourvu que tu fasses le plein.", ipa: "[ty pø ɑ̃pʁœ̃te ma vwatyʁ puʁvy kə ty fas lə plɛ̃]", ko: "기름만 가득 채워 놓으면 내 차 빌려 가도 돼." },
           ex2: { fr: "Pourvu qu'il ne soit rien arrivé de grave !", ipa: "[puʁvy kil nə swa ʁjɛ̃naʁive də ɡʁav]", ko: "부디 큰일이 아니어야 할 텐데!" },
           note: "주절 없이 단독 감탄문이면 '부디 ~하기를'의 기원",
+          ch: "b2-01-subjonctif-advanced",
         },
         {
           pattern: "à condition que",
@@ -52,6 +54,7 @@ export default {
           ex: { fr: "Je veux bien t'aider, à condition que tu t'y mettes dès aujourd'hui.", ipa: "[ʒə vø bjɛ̃ tɛde a kɔ̃disjɔ̃ kə ty ti mɛt dɛzoʒuʁdɥi]", ko: "오늘부터 바로 시작한다는 조건이라면 기꺼이 도와줄게." },
           ex2: { fr: "L'accord sera signé à condition que chaque partie fasse des concessions.", ipa: "[lakɔʁ səʁa siɲe a kɔ̃disjɔ̃ kə ʃak paʁti fas de kɔ̃sesjɔ̃]", ko: "각 당사자가 양보한다는 조건으로 협정이 체결될 것입니다." },
           note: "주어가 같으면 à condition de + 동사원형 (B1)",
+          ch: "b2-01-subjonctif-advanced",
         },
         {
           pattern: "en attendant que",
@@ -59,6 +62,7 @@ export default {
           ko: "~할 때까지 (그동안)",
           ex: { fr: "Installez-vous, en attendant que le docteur puisse vous recevoir.", ipa: "[ɛ̃stale vu ɑ̃natɑ̃dɑ̃ kə lə dɔktœʁ pɥis vu ʁəsəvwaʁ]", ko: "의사 선생님이 진료 보실 수 있을 때까지 앉아 계세요." },
           ex2: { fr: "On loue un studio en attendant que les travaux soient finis.", ipa: "[ɔ̃ lu œ̃ stydjo ɑ̃natɑ̃dɑ̃ kə le tʁavo swa fini]", ko: "공사가 끝날 때까지 원룸을 빌려 살고 있어요." },
+          ch: "b2-01-subjonctif-advanced",
         },
         {
           pattern: "sans que",
@@ -75,6 +79,7 @@ export default {
           ko: "~하는 동안에, ~할 시간 동안",
           ex: { fr: "Attends-moi là, le temps que j'aille chercher la voiture.", ipa: "[atɑ̃ mwa la lə tɑ̃ kə ʒaj ʃɛʁʃe la vwatyʁ]", ko: "차 가져올 동안 거기서 기다려." },
           ex2: { fr: "Le temps que les secours arrivent, la foule s'était déjà dispersée.", ipa: "[lə tɑ̃ kə le səkuʁ aʁiv la ful setɛ deʒa dispɛʁse]", ko: "구조대가 도착할 즈음엔 군중이 이미 흩어진 뒤였어요." },
+          ch: "b2-01-subjonctif-advanced",
         },
       ],
     },
@@ -98,6 +103,7 @@ export default {
           ex: { fr: "Quelle que soit votre décision, je la respecterai.", ipa: "[kɛl kə swa vɔtʁ desizjɔ̃ ʒə la ʁɛspɛktəʁe]", ko: "어떤 결정을 내리시든 존중하겠습니다." },
           ex2: { fr: "Quels que soient les obstacles, nous irons jusqu'au bout.", ipa: "[kɛl kə swa lezɔpstakl nuziʁɔ̃ ʒysko bu]", ko: "어떤 장애물이 있어도 우리는 끝까지 갈 거예요." },
           note: "quel은 뒤 명사와 성수 일치, 표기는 두 단어(quel que) — 한 단어 quoique와 혼동 금지",
+          ch: "b2-01-subjonctif-advanced",
         },
         {
           pattern: "quoi que",
@@ -106,6 +112,7 @@ export default {
           ex: { fr: "Quoi que tu fasses, fais-le à fond.", ipa: "[kwa kə ty fas fɛ lə a fɔ̃]", ko: "뭘 하든 제대로 해." },
           ex2: { fr: "Quoi qu'il arrive, garde ton calme.", ipa: "[kwa kil aʁiv ɡaʁd tɔ̃ kalm]", ko: "무슨 일이 있어도 침착함을 잃지 마." },
           note: "quoi que(무엇을 ~하든)와 quoique(~이긴 하지만)는 발음이 같아 표기 함정",
+          ch: "b2-01-subjonctif-advanced",
         },
         {
           pattern: "où que",
@@ -113,6 +120,7 @@ export default {
           ko: "어디에 ~하든",
           ex: { fr: "Où que vous alliez cet été, réservez tôt.", ipa: "[u kə vuzalje sɛtete ʁezɛʁve to]", ko: "이번 여름 어디로 가시든 일찍 예약하세요." },
           ex2: { fr: "Où qu'il se cache, on finira par le retrouver.", ipa: "[u kil sə kaʃ ɔ̃ finiʁa paʁ lə ʁətʁuve]", ko: "그가 어디에 숨든 결국 찾아낼 거예요." },
+          ch: "b2-01-subjonctif-advanced",
         },
         {
           pattern: "qui que",
@@ -121,6 +129,7 @@ export default {
           ex: { fr: "Qui que vous soyez, vous devez montrer votre badge.", ipa: "[ki kə vu swaje vu dəve mɔ̃tʁe vɔtʁ badʒ]", ko: "누구시든 출입증을 보여 주셔야 합니다." },
           ex2: { fr: "N'en parlez à qui que ce soit avant l'annonce officielle.", ipa: "[nɑ̃ paʁle a ki kə sə swa avɑ̃ lanɔ̃s ɔfisjɛl]", ko: "공식 발표 전에는 그 누구에게도 말하지 마세요." },
           note: "qui que ce soit = '그 누구라도' — 부정문에서 personne의 강조형",
+          ch: "b2-01-subjonctif-advanced",
         },
         {
           pattern: "aussi … soit-il",
@@ -129,6 +138,7 @@ export default {
           ex: { fr: "Aussi doué soit-il, il ne peut pas tout faire seul.", ipa: "[osi dwe swatil il nə pø pa tu fɛʁ sœl]", ko: "아무리 재능이 있어도 그 혼자 다 할 수는 없어요." },
           ex2: { fr: "Si étrange que cela paraisse, personne n'avait rien remarqué.", ipa: "[si etʁɑ̃ʒ kə səla paʁɛs pɛʁsɔn navɛ ʁjɛ̃ ʁəmaʁke]", ko: "이상하게 들리겠지만 아무도 아무것도 눈치채지 못했어요." },
           note: "격식·문어 — 구어에서는 même si + 직설법으로 푼다",
+          ch: "b2-01-subjonctif-advanced",
         },
         {
           pattern: "tout riche qu'il est",
@@ -160,6 +170,7 @@ export default {
           ex: { fr: "Je doute qu'on puisse finir avant vendredi.", ipa: "[ʒə dut kɔ̃ pɥis finiʁ avɑ̃ vɑ̃dʁədi]", ko: "금요일 전에 끝낼 수 있을지 의문이에요." },
           ex2: { fr: "Personne ne doute que la situation soit grave.", ipa: "[pɛʁsɔn nə dut kə la sitɥasjɔ̃ swa ɡʁav]", ko: "상황이 심각하다는 건 누구도 의심하지 않아요." },
           note: "se douter que(~임을 짐작하다)는 직설법 — 뜻이 정반대로 갈리는 함정",
+          ch: "b1-02-subjonctif-intro",
         },
         {
           pattern: "il est possible que・il se peut que",
@@ -176,6 +187,7 @@ export default {
           ko: "~인지 확실하지 않다",
           ex: { fr: "Il n'est pas certain que les négociations aboutissent.", ipa: "[il nɛ pa sɛʁtɛ̃ kə le neɡɔsjasjɔ̃ abutis]", ko: "협상이 타결될지는 확실하지 않습니다." },
           ex2: { fr: "Il n'est pas sûr qu'elle veuille déménager.", ipa: "[il nɛ pa syʁ kɛl vœj demenaʒe]", ko: "그녀가 이사를 원하는지는 확실치 않아요." },
+          ch: "b2-01-subjonctif-advanced",
         },
         {
           pattern: "le seul qui・le premier qui",
@@ -208,6 +220,7 @@ export default {
           ex: { fr: "Le ministre nie que des pressions aient été exercées.", ipa: "[lə ministʁ ni kə de pʁesjɔ̃ ɛ ete ɛɡzɛʁse]", ko: "장관은 압력이 있었다는 사실을 부인합니다." },
           ex2: { fr: "On ne peut pas nier que le climat ait changé.", ipa: "[ɔ̃ nə pø pa nje kə lə klima ɛ ʃɑ̃ʒe]", ko: "기후가 변했다는 것은 부인할 수 없어요." },
           note: "격식·문어 동사 — 구어에서는 « il dit que ce n'est pas vrai » 식으로 푼다",
+          ch: "b2-01-subjonctif-advanced",
         },
       ],
     },
@@ -247,6 +260,7 @@ export default {
           ko: "~했어야 했다 (무인칭 후회·진단)",
           ex: { fr: "Il aurait fallu partir une heure plus tôt.", ipa: "[il oʁɛ faly paʁtiʁ ynœʁ ply to]", ko: "한 시간 일찍 출발했어야 했어요." },
           ex2: { fr: "Il aurait fallu que quelqu'un vérifie les chiffres.", ipa: "[il oʁɛ faly kə kɛlkœ̃ veʁifi le ʃifʁ]", ko: "누군가는 수치를 확인했어야 했어요." },
+          ch: "b2-02-hypothese-si",
         },
         {
           pattern: "j'aurais aimé",
@@ -254,6 +268,7 @@ export default {
           ko: "~하고 싶었는데 (이루지 못한 소망)",
           ex: { fr: "J'aurais aimé être là pour ton anniversaire.", ipa: "[ʒoʁɛ eme ɛtʁ la puʁ tɔ̃nanivɛʁsɛʁ]", ko: "네 생일에 가고 싶었는데 못 가서 아쉬워." },
           ex2: { fr: "Elle aurait aimé que ses parents soient présents à la remise des diplômes.", ipa: "[ɛl oʁɛ eme kə se paʁɑ̃ swa pʁezɑ̃ a la ʁəmiz de diplom]", ko: "그녀는 졸업식에 부모님이 와 주셨으면 했어요." },
+          ch: "b2-02-hypothese-si",
         },
         {
           pattern: "l'accident aurait fait …",
@@ -262,6 +277,7 @@ export default {
           ex: { fr: "Selon la presse, l'accident aurait fait trois blessés.", ipa: "[səlɔ̃ la pʁɛs laksidɑ̃ oʁɛ fɛ tʁwa blese]", ko: "언론에 따르면 이 사고로 3명이 다친 것으로 알려졌습니다." },
           ex2: { fr: "Le suspect se serait enfui à l'étranger.", ipa: "[lə syspɛ sə səʁɛ ɑ̃fɥi a letʁɑ̃ʒe]", ko: "용의자는 해외로 도주한 것으로 전해집니다." },
           note: "단정을 피하는 신문·방송 문체 — 한국어 '~한 것으로 전해졌다'에 대응",
+          ch: "b1-01-conditionnel-present",
         },
         {
           pattern: "sans + N, conditionnel",
@@ -270,6 +286,7 @@ export default {
           ex: { fr: "Sans ton aide, je n'aurais jamais fini à temps.", ipa: "[sɑ̃ tɔ̃nɛd ʒə noʁɛ ʒamɛ fini a tɑ̃]", ko: "네 도움이 없었다면 제때 못 끝냈을 거야." },
           ex2: { fr: "Sans cette erreur d'arbitrage, l'équipe aurait gagné.", ipa: "[sɑ̃ sɛt ɛʁœʁ daʁbitʁaʒ lekip oʁɛ ɡaɲe]", ko: "그 오심만 없었어도 팀이 이겼을 거예요." },
           note: "avec도 같은 용법 — Avec un peu de chance, on aurait réussi",
+          ch: "b2-02-hypothese-si",
         },
         {
           pattern: "faillir + infinitif",
@@ -360,6 +377,7 @@ export default {
           ex: { fr: "Certes, le projet coûte cher, mais il créera des emplois.", ipa: "[sɛʁt lə pʁɔʒɛ kut ʃɛʁ mɛ il kʁeəʁa dezɑ̃plwa]", ko: "물론 비용은 많이 들지만, 이 사업은 일자리를 만들 거예요." },
           ex2: { fr: "C'est certes une belle idée, mais elle est irréalisable.", ipa: "[sɛ sɛʁt yn bɛl ide mɛ ɛl ɛtiʁealizabl]", ko: "분명 멋진 아이디어지만 실현 불가능해요." },
           note: "DELF 논술의 정석 양보 — 구어에서는 « c'est vrai que …, mais »",
+          ch: "c1-03-argumentation",
         },
       ],
     },
@@ -562,6 +580,7 @@ export default {
           ex: { fr: "Quant à moi, je préfère ne pas me prononcer.", ipa: "[kɑ̃ta mwa ʒə pʁefɛʁ nə pa mə pʁɔnɔ̃se]", ko: "저로 말하자면, 입장을 밝히지 않는 쪽을 택할게요." },
           ex2: { fr: "Quant au financement, rien n'est encore décidé.", ipa: "[kɑ̃to finɑ̃smɑ̃ ʁjɛ̃ nɛtɑ̃kɔʁ deside]", ko: "재원 문제에 관해서는 아직 아무것도 정해지지 않았습니다." },
           note: "리에종 [kɑ̃t] 필수. 구어에서는 « pour moi » / « de mon côté »",
+          ch: "b2-06-mise-en-relief",
         },
         {
           pattern: "en ce qui concerne",
@@ -569,6 +588,7 @@ export default {
           ko: "~에 관해서는",
           ex: { fr: "En ce qui concerne les délais, soyons réalistes.", ipa: "[ɑ̃ sə ki kɔ̃sɛʁn le delɛ swajɔ̃ ʁealist]", ko: "일정에 관해서는 현실적으로 생각합시다." },
           ex2: { fr: "En ce qui me concerne, le débat est clos.", ipa: "[ɑ̃ sə ki mə kɔ̃sɛʁn lə deba ɛ klo]", ko: "저로서는 이 논쟁은 끝난 얘기예요." },
+          ch: "b2-06-mise-en-relief",
         },
         {
           pattern: "d'une part …, d'autre part …",
@@ -577,6 +597,7 @@ export default {
           ex: { fr: "D'une part, le télétravail fait gagner du temps ; d'autre part, il isole.", ipa: "[dyn paʁ lə teletʁavaj fɛ ɡaɲe dy tɑ̃ dotʁ paʁ il izɔl]", ko: "재택근무는 한편으로는 시간을 벌어 주지만, 다른 한편으로는 사람을 고립시켜요." },
           ex2: { fr: "Ce choix s'explique d'une part par le coût, d'autre part par le calendrier.", ipa: "[sə ʃwa sɛksplik dyn paʁ paʁ lə ku dotʁ paʁ paʁ lə kalɑ̃dʁije]", ko: "이 선택은 한편으로는 비용, 다른 한편으로는 일정 때문입니다." },
           note: "둘째 항을 « d'une autre part »로 쓰지 않는다",
+          ch: "b2-04-connecteurs",
         },
         {
           pattern: "de toute façon・de toute manière",
@@ -585,6 +606,7 @@ export default {
           ex: { fr: "De toute façon, il est trop tard pour changer d'avis.", ipa: "[də tut fasɔ̃ il ɛ tʁo taʁ puʁ ʃɑ̃ʒe davi]", ko: "어쨌든 이제 와서 마음을 바꾸기엔 너무 늦었어요." },
           ex2: { fr: "Je t'accompagne ; de toute manière, je devais sortir.", ipa: "[ʒə takɔ̃paɲ də tut manjɛʁ ʒə dəvɛ sɔʁtiʁ]", ko: "같이 가 줄게. 어차피 나가야 했거든." },
           note: "구어 기운 — 문어에서는 quoi qu'il en soit, en tout état de cause",
+          ch: "b2-04-connecteurs",
         },
         {
           pattern: "au fond・en somme",
@@ -592,6 +614,7 @@ export default {
           ko: "결국, 요컨대",
           ex: { fr: "Au fond, tout le monde veut la même chose : être reconnu.", ipa: "[o fɔ̃ tu lə mɔ̃d vø la mɛm ʃoz ɛtʁ ʁəkɔny]", ko: "결국 모두가 원하는 건 같아요. 인정받는 거죠." },
           ex2: { fr: "En somme, le bilan est plutôt positif.", ipa: "[ɑ̃ sɔm lə bilɑ̃ ɛ plyto pozitif]", ko: "요컨대 결산은 꽤 긍정적입니다." },
+          ch: "b2-04-connecteurs",
         },
       ],
     },
@@ -700,6 +723,7 @@ export default {
           ko: "일단 ~되면, ~이 끝나자마자",
           ex: { fr: "Une fois le contrat signé, vous recevrez les clés.", ipa: "[yn fwa lə kɔ̃tʁa siɲe vu ʁəsəvʁe le kle]", ko: "계약서에 서명만 되면 열쇠를 받으실 거예요." },
           ex2: { fr: "Une fois les enfants couchés, la maison redevient calme.", ipa: "[yn fwa lezɑ̃fɑ̃ kuʃe la mɛzɔ̃ ʁədəvjɛ̃ kalm]", ko: "아이들이 잠들고 나면 집이 다시 조용해져요." },
+          ch: "c1-04-participiales",
         },
         {
           pattern: "sachant que",
@@ -707,6 +731,7 @@ export default {
           ko: "~임을 감안하면",
           ex: { fr: "Sachant que le magasin ferme à dix-huit heures, dépêchons-nous.", ipa: "[saʃɑ̃ kə lə maɡazɛ̃ fɛʁm a dizɥitœʁ depɛʃɔ̃ nu]", ko: "가게가 18시에 닫는 걸 감안하면 서둘러야 해요." },
           ex2: { fr: "Sachant qu'il ne reste que trois places, mieux vaut réserver maintenant.", ipa: "[saʃɑ̃ kil nə ʁɛst kə tʁwa plas mjø vo ʁezɛʁve mɛ̃tnɑ̃]", ko: "세 자리밖에 안 남았으니 지금 예약하는 게 낫겠어요." },
+          ch: "c1-04-participiales",
         },
         {
           pattern: "y compris",
@@ -714,6 +739,7 @@ export default {
           ko: "~을 포함하여",
           ex: { fr: "Le musée est ouvert tous les jours, y compris le lundi.", ipa: "[lə myze ɛtuvɛʁ tu le ʒuʁ i kɔ̃pʁi lə lœ̃di]", ko: "박물관은 월요일을 포함해 매일 문을 열어요." },
           ex2: { fr: "Tout le monde a été surpris, y compris moi.", ipa: "[tu lə mɔ̃d a ete syʁpʁi i kɔ̃pʁi mwa]", ko: "저까지 포함해서 모두가 놀랐어요." },
+          ch: "c1-04-participiales",
         },
         {
           pattern: "le cas échéant",
@@ -722,6 +748,7 @@ export default {
           ex: { fr: "Remplissez le formulaire et joignez, le cas échéant, un justificatif.", ipa: "[ʁɑ̃plise lə fɔʁmylɛʁ e ʒwaɲe lə kazeʃeɑ̃ œ̃ ʒystifikatif]", ko: "양식을 작성하시고, 해당되는 경우 증빙 서류를 첨부하세요." },
           ex2: { fr: "Le cas échéant, une seconde réunion sera organisée.", ipa: "[lə kazeʃeɑ̃ yn səɡɔ̃d ʁeynjɔ̃ səʁa ɔʁɡanize]", ko: "필요한 경우 2차 회의가 열릴 예정입니다." },
           note: "행정 문어 — 구어에서는 si besoin / si nécessaire",
+          ch: "c1-04-participiales",
         },
         {
           pattern: "soit … soit …",
@@ -871,6 +898,7 @@ export default {
           ko: "~ 동안에, ~에 걸쳐",
           ex: { fr: "Plusieurs incidents ont eu lieu au cours de la nuit.", ipa: "[plyzjœʁzɛ̃sidɑ̃ ɔ̃ty ljø o kuʁ də la nɥi]", ko: "밤사이 여러 사건이 일어났습니다." },
           ex2: { fr: "Au cours des dix dernières années, la ville a beaucoup changé.", ipa: "[o kuʁ de di dɛʁnjɛʁzane la vil a boku ʃɑ̃ʒe]", ko: "지난 10년 동안 이 도시는 많이 변했어요." },
+          ch: "a2-11-time-expressions",
         },
         {
           pattern: "face à",
@@ -885,6 +913,7 @@ export default {
           ko: "~이 없을 때는, 차선으로",
           ex: { fr: "À défaut de champagne, on trinquera au cidre.", ipa: "[a defo də ʃɑ̃paɲ ɔ̃ tʁɛ̃kəʁa o sidʁ]", ko: "샴페인이 없으면 시드르로 건배하죠 뭐." },
           ex2: { fr: "À défaut de pouvoir tout lire, lisez au moins l'introduction.", ipa: "[a defo də puvwaʁ tu liʁ lize o mwɛ̃ lɛ̃tʁɔdyksjɔ̃]", ko: "다 읽을 수 없다면 적어도 서론은 읽으세요." },
+          ch: "b2-08-cause-consequence",
         },
         {
           pattern: "avant + N・après + N",
@@ -907,6 +936,7 @@ export default {
           ko: "~라고 가정하면",
           ex: { fr: "À supposer qu'il dise oui, encore faut-il trouver le financement.", ipa: "[a sypoze kil diz wi ɑ̃kɔʁ fotil tʁuve lə finɑ̃smɑ̃]", ko: "그가 승낙한다 쳐도 자금을 구해야 하는 문제가 남아요." },
           ex2: { fr: "À supposer que tout se passe bien, nous ouvririons en mars.", ipa: "[a sypoze kə tu sə pas bjɛ̃ nuzuvʁiʁjɔ̃ ɑ̃ maʁs]", ko: "모든 게 잘된다고 가정하면 3월에 문을 열 수 있을 거예요." },
+          ch: "b2-02-hypothese-si",
         },
         {
           pattern: "en admettant que",
@@ -914,6 +944,7 @@ export default {
           ko: "~임을 인정한다 치더라도",
           ex: { fr: "En admettant que tu aies raison, comment le prouver ?", ipa: "[ɑ̃nadmɛtɑ̃ kə ty ɛ ʁɛzɔ̃ kɔmɑ̃ lə pʁuve]", ko: "네 말이 맞다 치자, 그걸 어떻게 증명하지?" },
           ex2: { fr: "En admettant même qu'on parte tout de suite, on arriverait trop tard.", ipa: "[ɑ̃nadmɛtɑ̃ mɛm kɔ̃ paʁt tu də sɥit ɔ̃naʁivəʁɛ tʁo taʁ]", ko: "지금 당장 출발한다 해도 너무 늦게 도착할 거예요." },
+          ch: "b2-02-hypothese-si",
         },
         {
           pattern: "dans l'hypothèse où",
@@ -922,6 +953,7 @@ export default {
           ex: { fr: "Dans l'hypothèse où l'accord échouerait, de nouvelles élections auraient lieu.", ipa: "[dɑ̃ lipotɛz u lakɔʁ eʃuʁɛ də nuvɛlzelɛksjɔ̃ oʁɛ ljø]", ko: "합의가 무산될 경우 새 선거가 치러질 것입니다." },
           ex2: { fr: "Dans l'hypothèse où vous changeriez d'avis, contactez-nous.", ipa: "[dɑ̃ lipotɛz u vu ʃɑ̃ʒəʁje davi kɔ̃takte nu]", ko: "혹시 마음이 바뀌시면 연락 주세요." },
           note: "+ 조건법. 격식 — 구어에서는 au cas où",
+          ch: "b2-02-hypothese-si",
         },
         {
           pattern: "pour peu que",
@@ -930,6 +962,7 @@ export default {
           ex: { fr: "Pour peu qu'il fasse beau, la terrasse est pleine.", ipa: "[puʁ pø kil fas bo la teʁas ɛ plɛn]", ko: "날이 조금만 좋아도 테라스가 꽉 차요." },
           ex2: { fr: "Pour peu qu'on le critique, il se vexe.", ipa: "[puʁ pø kɔ̃ lə kʁitik il sə vɛks]", ko: "조금만 지적해도 그는 삐쳐요." },
           note: "문어 기운 — 구어에서는 « il suffit que … pour que »",
+          ch: "b2-02-hypothese-si",
         },
         {
           pattern: "si tant est que",
@@ -938,6 +971,7 @@ export default {
           ex: { fr: "Le plan fonctionnera, si tant est que chacun respecte les délais.", ipa: "[lə plɑ̃ fɔ̃ksjɔnəʁa si tɑ̃tɛ kə ʃakœ̃ ʁɛspɛkt le delɛ]", ko: "모두가 기한을 지킨다면야 계획은 굴러갈 거예요." },
           ex2: { fr: "Il viendra, si tant est qu'il ait vraiment envie de nous voir.", ipa: "[il vjɛ̃dʁa si tɑ̃tɛ kil ɛ vʁɛmɑ̃ ɑ̃vi də nu vwaʁ]", ko: "정말 우리를 보고 싶은 마음이 있다면야 오겠죠." },
           note: "회의적 뉘앙스의 문어 — 구어에서는 « si vraiment … »",
+          ch: "b2-02-hypothese-si",
         },
         {
           pattern: "si jamais",
@@ -945,6 +979,7 @@ export default {
           ko: "혹시라도 ~하면",
           ex: { fr: "Si jamais tu passes par Lyon, appelle-moi.", ipa: "[si ʒamɛ ty pas paʁ ljɔ̃ apɛl mwa]", ko: "혹시라도 리옹에 들르면 전화해." },
           ex2: { fr: "Si jamais il refuse, on trouvera quelqu'un d'autre.", ipa: "[si ʒamɛ il ʁəfyz ɔ̃ tʁuvəʁa kɛlkœ̃ dotʁ]", ko: "혹시 그가 거절하면 다른 사람을 찾으면 돼요." },
+          ch: "b2-02-hypothese-si",
         },
         {
           pattern: "autrement",
@@ -975,6 +1010,7 @@ export default {
           ko: "~하는 경향이 있다",
           ex: { fr: "J'ai tendance à tout remettre au lendemain.", ipa: "[ʒe tɑ̃dɑ̃s a tu ʁəmɛtʁ o lɑ̃dmɛ̃]", ko: "저는 뭐든 내일로 미루는 경향이 있어요." },
           ex2: { fr: "Les médias ont tendance à tout dramatiser.", ipa: "[le medja ɔ̃ tɑ̃dɑ̃s a tu dʁamatize]", ko: "언론은 모든 걸 극적으로 부풀리는 경향이 있어요." },
+          ch: "b2-05-verb-prepositions",
         },
         {
           pattern: "être censé + infinitif",
@@ -1000,6 +1036,7 @@ export default {
           ex: { fr: "Je ne manquerai pas de vous tenir informé.", ipa: "[ʒə nə mɑ̃kəʁe pa də vu təniʁ ɛ̃fɔʁme]", ko: "진행 상황을 꼭 알려 드리겠습니다." },
           ex2: { fr: "Elle n'a pas manqué de souligner les faiblesses du rapport.", ipa: "[ɛl na pa mɑ̃ke də suliɲe le fɛblɛs dy ʁapɔʁ]", ko: "그녀는 보고서의 허점을 어김없이 짚어 냈어요." },
           note: "격식 서신 표현 — 구어에서는 « je te tiendrai au courant »",
+          ch: "b2-05-verb-prepositions",
         },
         {
           pattern: "n'avoir qu'à",
@@ -1008,6 +1045,7 @@ export default {
           ex: { fr: "Tu n'as qu'à lui envoyer un message.", ipa: "[ty na ka lɥi ɑ̃vwaje œ̃ mesaʒ]", ko: "메시지 한 통만 보내면 되잖아." },
           ex2: { fr: "Si ça ne te plaît pas, tu n'avais qu'à le dire plus tôt.", ipa: "[si sa nə tə plɛ pa ty navɛ ka lə diʁ ply to]", ko: "마음에 안 들었으면 진작 말하지 그랬어." },
           note: "어조에 따라 핀잔이 된다 — 반과거 tu n'avais qu'à는 거의 항상 비난",
+          ch: "b2-09-negation-advanced",
         },
         {
           pattern: "en vouloir à",

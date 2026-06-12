@@ -182,6 +182,7 @@ export default {
           ex: { fr: "Il fait beau aujourd'hui.", ipa: "[il fɛ bo oʒuʁdɥi]", ko: "오늘 날씨가 좋아요." },
           ex2: { fr: "Il ne fait pas chaud ce matin.", ipa: "[il nə fɛ pa ʃo sə matɛ̃]", ko: "오늘 아침은 별로 안 덥네요." },
           note: "날씨의 il은 '그'가 아니라 비인칭 주어 — 비는 il pleut, 눈은 il neige",
+          ch: "a1-02-avoir",
         },
         {
           pattern: "faire du/de la/de l' + 활동",
@@ -198,6 +199,7 @@ export default {
           ko: "~의 것이다 (소유)",
           ex: { fr: "Ce sac, c'est à moi.", ipa: "[sə sak sɛt‿a mwa]", ko: "이 가방, 제 거예요." },
           ex2: { fr: "C'est à qui, ce parapluie ?", ipa: "[sɛt‿a ki sə paʁaplɥi]", ko: "이 우산 누구 거예요?" },
+          ch: "b1-08-pronouns-advanced",
         },
       ],
     },
@@ -239,6 +241,7 @@ export default {
           ex: { fr: "J'aime le cinéma. — Moi aussi !", ipa: "[ʒɛm lə sinema — mwa osi]", ko: "나 영화 좋아해. — 나도!" },
           ex2: { fr: "Je n'ai pas faim. — Moi non plus.", ipa: "[ʒə ne pa fɛ̃ — mwa nɔ̃ ply]", ko: "나 배 안 고파. — 나도 안 고파." },
           note: "부정문에 맞장구칠 때 aussi를 쓰면 어색 — 부정엔 반드시 non plus",
+          ch: "b2-09-negation-advanced",
         },
         {
           pattern: "Si !",
@@ -459,6 +462,7 @@ export default {
           ex: { fr: "Ce restaurant est très bon.", ipa: "[sə ʁɛstoʁɑ̃ ɛ tʁɛ bɔ̃]", ko: "이 식당 정말 맛있어요." },
           ex2: { fr: "Cet hôtel n'est pas cher.", ipa: "[sɛt‿otɛl nɛ pa ʃɛʁ]", ko: "이 호텔은 비싸지 않아요." },
           note: "'이/그/저' 구분이 없는 하나의 ce — 멀고 가까움을 굳이 나누면 -ci/-là를 붙인다",
+          ch: "b1-08-pronouns-advanced",
         },
       ],
     },
@@ -566,6 +570,7 @@ export default {
           ex: { fr: "Je veux apprendre le français.", ipa: "[ʒə vø apʁɑ̃dʁ lə fʁɑ̃sɛ]", ko: "프랑스어를 배우고 싶어요." },
           ex2: { fr: "Tu veux un café ? — Non merci, je ne veux pas de café.", ipa: "[ty vø œ̃ kafe — nɔ̃ mɛʁsi ʒə nə vø pa də kafe]", ko: "커피 마실래? — 아니 괜찮아, 커피 생각 없어." },
           note: "주문·부탁에서 « Je veux »는 직설적으로 들릴 수 있다 — 공손하게는 je voudrais (A2)",
+          ch: "b2-05-verb-prepositions",
         },
         {
           pattern: "pouvoir + 동사 원형",
@@ -574,6 +579,7 @@ export default {
           ex: { fr: "Je peux payer par carte ?", ipa: "[ʒə pø peje paʁ kaʁt]", ko: "카드로 계산해도 되나요?" },
           ex2: { fr: "Elle ne peut pas venir aujourd'hui.", ipa: "[ɛl nə pø pa vəniʁ oʒuʁdɥi]", ko: "그녀는 오늘 못 와요." },
           note: "능력·허락·부탁을 모두 커버 — « Je peux … ? »는 허락 요청의 기본형",
+          ch: "b2-05-verb-prepositions",
         },
         {
           pattern: "devoir + 동사 원형",
@@ -582,6 +588,7 @@ export default {
           ex: { fr: "Je dois partir maintenant.", ipa: "[ʒə dwa paʁtiʁ mɛ̃tnɑ̃]", ko: "저 이제 가야 해요." },
           ex2: { fr: "Tu ne dois pas fumer ici.", ipa: "[ty nə dwa pa fyme isi]", ko: "여기서 담배 피우면 안 돼." },
           note: "부정형 ne devoir pas는 '안 해도 된다'가 아니라 '~하면 안 된다' — 영어 don't have to와 다르다",
+          ch: "b2-05-verb-prepositions",
         },
         {
           pattern: "aimer・adorer・détester + 동사 원형",
@@ -616,6 +623,7 @@ export default {
           ko: "~하기 위해, ~하려고",
           ex: { fr: "J'étudie pour passer le DELF.", ipa: "[ʒetydi puʁ pase lə dɛlf]", ko: "델프 시험을 보려고 공부해요." },
           ex2: { fr: "On va au marché pour acheter des fruits.", ipa: "[ɔ̃ va o maʁʃe puʁ aʃte de fʁɥi]", ko: "과일을 사러 시장에 가요." },
+          ch: "b1-09-connectors-purpose-time",
         },
       ],
     },
@@ -673,6 +681,7 @@ export default {
           ex: { fr: "Vous pouvez répéter, s'il vous plaît ?", ipa: "[vu puve ʁepete sil vu plɛ]", ko: "다시 한번 말씀해 주시겠어요?" },
           ex2: { fr: "Tu peux m'aider ?", ipa: "[ty pø mɛde]", ko: "나 좀 도와줄 수 있어?" },
           note: "명령문보다 부드러운 부탁 — 더 격식 있게는 Pourriez-vous … ? (A2 조건법)",
+          ch: "a1-05-questions",
         },
       ],
     },
@@ -747,6 +756,7 @@ export default {
           ko: "~ 전에 / ~ 후에",
           ex: { fr: "Avant le dîner, je fais mes devoirs.", ipa: "[avɑ̃ lə dine ʒə fɛ me dəvwaʁ]", ko: "저녁 식사 전에 숙제를 해요." },
           ex2: { fr: "Après le travail, on va au café.", ipa: "[apʁɛ lə tʁavaj ɔ̃ va o kafe]", ko: "퇴근 후에 우리는 카페에 가요." },
+          ch: "b1-09-connectors-purpose-time",
         },
         {
           pattern: "ce matin・cet après-midi・ce soir",
@@ -777,6 +787,7 @@ export default {
           ex: { fr: "C'est trop cher pour moi.", ipa: "[sɛ tʁo ʃɛʁ puʁ mwa]", ko: "저한테는 너무 비싸요." },
           ex2: { fr: "Tu parles trop vite !", ipa: "[ty paʁl tʁo vit]", ko: "너 말이 너무 빨라!" },
           note: "본래 '지나치게'라는 부정적 뉘앙스 — 요즘 구어에서는 « C'est trop bon ! »처럼 '완전'의 뜻으로도 쓴다",
+          ch: "a2-12-quantity-tout",
         },
         {
           pattern: "un peu・beaucoup",
@@ -784,6 +795,7 @@ export default {
           ko: "조금 / 많이",
           ex: { fr: "Je parle un peu français.", ipa: "[ʒə paʁl œ̃ pø fʁɑ̃sɛ]", ko: "프랑스어를 조금 해요." },
           ex2: { fr: "Merci beaucoup !", ipa: "[mɛʁsi boku]", ko: "정말 감사합니다!" },
+          ch: "a2-12-quantity-tout",
         },
         {
           pattern: "beaucoup de …・un peu de …",
@@ -823,6 +835,7 @@ export default {
           ko: "~와 함께 / ~ 없이",
           ex: { fr: "Je voyage avec ma famille.", ipa: "[ʒə vwajaʒ avɛk ma famij]", ko: "가족과 함께 여행해요." },
           ex2: { fr: "Un café sans sucre, s'il vous plaît.", ipa: "[œ̃ kafe sɑ̃ sykʁ sil vu plɛ]", ko: "설탕 없는 커피로 주세요." },
+          ch: "b2-09-negation-advanced",
         },
       ],
     },
@@ -863,6 +876,7 @@ export default {
           ex: { fr: "Tu aimes ce chanteur ? — J'adore !", ipa: "[ty ɛm sə ʃɑ̃tœʁ — ʒadɔʁ]", ko: "이 가수 좋아해? — 완전 좋아해!" },
           ex2: { fr: "C'est super, ton idée !", ipa: "[sɛ sypɛʁ tɔ̃n‿ide]", ko: "네 아이디어 진짜 좋다!" },
           note: "super·génial·chouette는 구어 감탄 형용사 — 격식 글에서는 excellent 등으로",
+          ch: "a1-01-pronouns-etre",
         },
       ],
     },

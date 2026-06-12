@@ -175,6 +175,7 @@ export default {
           ex: { fr: "Il faut réserver à l'avance.", ipa: "[il fo ʁezɛʁve a lavɑ̃s]", ko: "미리 예약해야 해요." },
           ex2: { fr: "Il ne faut pas fumer ici.", ipa: "[il nə fo pa fyme isi]", ko: "여기서 담배를 피우면 안 돼요." },
           note: "부정 il ne faut pas는 '~할 필요 없다'가 아니라 '~하면 안 된다'(금지) — devoir 부정과 같은 함정",
+          ch: "b1-02-subjonctif-intro",
         },
         {
           pattern: "commencer à …・finir de …",
@@ -183,6 +184,7 @@ export default {
           ex: { fr: "Il commence à pleuvoir.", ipa: "[il kɔmɑ̃s a pløvwaʁ]", ko: "비가 오기 시작해요." },
           ex2: { fr: "J'ai fini de manger.", ipa: "[ʒe fini də mɑ̃ʒe]", ko: "다 먹었어요." },
           note: "동사마다 à/de가 정해져 있다 — commencer는 à, finir는 de로 짝 암기",
+          ch: "b2-05-verb-prepositions",
         },
         {
           pattern: "essayer de + 동사 원형",
@@ -190,6 +192,7 @@ export default {
           ko: "~하려고 해 보다, 시도하다",
           ex: { fr: "J'essaie de parler français tous les jours.", ipa: "[ʒesɛ də paʁle fʁɑ̃sɛ tu le ʒuʁ]", ko: "매일 프랑스어로 말하려고 노력해요." },
           ex2: { fr: "Essaie de dormir un peu.", ipa: "[esɛ də dɔʁmiʁ œ̃ pø]", ko: "조금이라도 자 봐." },
+          ch: "b2-05-verb-prepositions",
         },
         {
           pattern: "apprendre à + 동사 원형",
@@ -198,6 +201,7 @@ export default {
           ex: { fr: "J'apprends à conduire.", ipa: "[ʒapʁɑ̃ a kɔ̃dɥiʁ]", ko: "운전을 배우고 있어요." },
           ex2: { fr: "Elle apprend à nager à ses enfants.", ipa: "[ɛl apʁɑ̃ a naʒe a sez‿ɑ̃fɑ̃]", ko: "그녀는 아이들에게 수영을 가르쳐요." },
           note: "'언어를 배우다'는 apprendre + 명사(le français), '~하는 법'은 apprendre à + 원형",
+          ch: "b2-05-verb-prepositions",
         },
         {
           pattern: "savoir + 동사 원형",
@@ -206,6 +210,7 @@ export default {
           ex: { fr: "Je sais nager.", ipa: "[ʒə sɛ naʒe]", ko: "수영할 줄 알아요." },
           ex2: { fr: "Tu sais conduire ? — Non, je ne sais pas.", ipa: "[ty sɛ kɔ̃dɥiʁ — nɔ̃ ʒə nə sɛ pa]", ko: "운전할 줄 알아? — 아니, 못 해." },
           note: "기술·능력은 savoir, 상황상 가능은 pouvoir — '수영할 줄 안다' vs '(지금) 수영해도 된다'",
+          ch: "c1-05-nuances",
         },
         {
           pattern: "connaître + 명사",
@@ -214,6 +219,7 @@ export default {
           ex: { fr: "Tu connais ce restaurant ?", ipa: "[ty kɔnɛ sə ʁɛstoʁɑ̃]", ko: "이 식당 알아?" },
           ex2: { fr: "Je ne connais pas bien Paris.", ipa: "[ʒə nə kɔnɛ pa bjɛ̃ paʁi]", ko: "파리를 잘 몰라요." },
           note: "사실·정보를 알면 savoir(Je sais que…), 사람·장소를 알면 connaître — 한국어 '알다' 하나가 둘로 갈린다",
+          ch: "c1-05-nuances",
         },
       ],
     },
@@ -273,6 +279,7 @@ export default {
           ex: { fr: "Tu viens avec moi ?", ipa: "[ty vjɛ̃ avɛk mwa]", ko: "나랑 같이 갈래?" },
           ex2: { fr: "Moi, je ne suis pas d'accord.", ipa: "[mwa ʒə nə sɥi pa dakɔʁ]", ko: "나는 동의 안 해." },
           note: "« Moi, je… »는 구어에서 주어 강조의 기본 틀 — 어색한 게 아니라 자연스러운 입버릇",
+          ch: "b2-06-mise-en-relief",
         },
         {
           pattern: "Donne-le-moi !・Vas-y !",
@@ -451,6 +458,7 @@ export default {
           ex: { fr: "J'ai autant de travail que toi.", ipa: "[ʒe otɑ̃ də tʁavaj kə twa]", ko: "나도 너만큼 일이 많아." },
           ex2: { fr: "Il n'y a pas autant de monde qu'hier.", ipa: "[il nja pa otɑ̃ də mɔ̃d kjɛʁ]", ko: "어제만큼 사람이 많지 않아요." },
           note: "형용사 비교는 aussi, 명사 수량 비교는 autant de — 짝을 헷갈리지 말 것",
+          ch: "a2-06-comparative",
         },
         {
           pattern: "plus de …・moins de …",
@@ -458,6 +466,7 @@ export default {
           ko: "더 많은 ~ / 더 적은 ~",
           ex: { fr: "Il y a plus de touristes en été.", ipa: "[ilja plys də tuʁist ɑ̃n‿ete]", ko: "여름에는 관광객이 더 많아요." },
           ex2: { fr: "Je mange moins de viande qu'avant.", ipa: "[ʒə mɑ̃ʒ mwɛ̃ də vjɑ̃d kavɑ̃]", ko: "예전보다 고기를 덜 먹어요." },
+          ch: "a2-06-comparative",
         },
         {
           pattern: "comme …",
@@ -524,6 +533,7 @@ export default {
           ex: { fr: "Il pleut, donc on reste ici.", ipa: "[il plø dɔ̃k ɔ̃ ʁɛst isi]", ko: "비가 와서 우리는 여기 있을 거예요." },
           ex2: { fr: "Tu ne viens pas ? Alors, j'y vais seul.", ipa: "[ty nə vjɛ̃ pa alɔʁ ʒi vɛ sœl]", ko: "안 온다고? 그럼 나 혼자 갈게." },
           note: "구어에서 alors는 '자, 그럼, 어디 보자' 같은 추임새로도 끝없이 쓰인다",
+          ch: "b2-04-connecteurs",
         },
         {
           pattern: "quand + 문장",
@@ -541,6 +551,7 @@ export default {
           ex: { fr: "D'abord, on visite le musée, ensuite on déjeune.", ipa: "[dabɔʁ ɔ̃ vizit lə myze ɑ̃sɥit ɔ̃ deʒœn]", ko: "먼저 박물관을 보고, 그다음에 점심을 먹어요." },
           ex2: { fr: "Enfin, nous sommes rentrés à l'hôtel.", ipa: "[ɑ̃fɛ̃ nu sɔm ʁɑ̃tʁe a lotɛl]", ko: "마지막으로 우리는 호텔로 돌아왔어요." },
           note: "DELF 말하기·쓰기에서 이야기 순서를 잡아 주는 3종 세트 — puis(그리고)도 같은 계열",
+          ch: "b2-04-connecteurs",
         },
         {
           pattern: "avant de + 동사 원형",
@@ -725,6 +736,7 @@ export default {
           ex: { fr: "Je voudrais un billet pour Lyon, s'il vous plaît.", ipa: "[ʒə vudʁɛ œ̃ bijɛ puʁ ljɔ̃ sil vu plɛ]", ko: "리옹행 표 한 장 주세요." },
           ex2: { fr: "Je voudrais réserver une table pour deux.", ipa: "[ʒə vudʁɛ ʁezɛʁve yn tabl puʁ dø]", ko: "두 명 자리를 예약하고 싶은데요." },
           note: "주문·예약의 표준 공손형 — « Je veux »는 같은 상황에서 직설적으로 들린다",
+          ch: "b1-01-conditionnel-present",
         },
         {
           pattern: "J'aimerais …",
@@ -733,6 +745,7 @@ export default {
           ex: { fr: "J'aimerais visiter le Louvre.", ipa: "[ʒɛməʁɛ vizite lə luvʁ]", ko: "루브르에 가 보고 싶어요." },
           ex2: { fr: "J'aimerais bien, mais je n'ai pas le temps.", ipa: "[ʒɛməʁɛ bjɛ̃ mɛ ʒə ne pa lə tɑ̃]", ko: "그러고는 싶은데 시간이 없어요." },
           note: "« J'aimerais bien »만으로 '그러고 싶다'는 완곡한 수락·거절의 쿠션이 된다",
+          ch: "b1-01-conditionnel-present",
         },
         {
           pattern: "Pourriez-vous … ?・Pourrais-je … ?",
@@ -741,6 +754,7 @@ export default {
           ex: { fr: "Pourriez-vous parler plus lentement ?", ipa: "[puʁje vu paʁle ply lɑ̃tmɑ̃]", ko: "조금 더 천천히 말씀해 주시겠어요?" },
           ex2: { fr: "Pourrais-je avoir l'addition ?", ipa: "[puʁɛ ʒə avwaʁ ladisjɔ̃]", ko: "계산서 좀 주시겠어요?" },
           note: "Vous pouvez … ?보다 한 단계 정중 — 가게·관공서·이메일에서 빛난다",
+          ch: "b1-01-conditionnel-present",
         },
         {
           pattern: "Tu devrais …・Vous devriez …",
@@ -749,6 +763,7 @@ export default {
           ex: { fr: "Tu devrais te reposer un peu.", ipa: "[ty dəvʁɛ tə ʁəpoze œ̃ pø]", ko: "너 좀 쉬는 게 좋겠어." },
           ex2: { fr: "Vous ne devriez pas manger si vite.", ipa: "[vu nə dəvʁje pa mɑ̃ʒe si vit]", ko: "그렇게 빨리 드시면 안 좋아요." },
           note: "Tu dois(해야 해)보다 부드러운 권유 — 영어 should의 자리",
+          ch: "b1-01-conditionnel-present",
         },
         {
           pattern: "Ça te dit de … ?・Ça vous dit de … ?",
@@ -780,6 +795,7 @@ export default {
           ex: { fr: "Il dit que le film est super.", ipa: "[il di kə lə film ɛ sypɛʁ]", ko: "그는 영화가 정말 좋다고 해요." },
           ex2: { fr: "Elle a dit qu'elle ne pouvait pas venir.", ipa: "[ɛl a di kɛl nə puvɛ pa vəniʁ]", ko: "그녀는 올 수 없다고 했어요." },
           note: "주절이 과거면 que 뒤도 과거 쪽으로 끌려간다(시제 일치) — 일단 패턴으로 통째 암기",
+          ch: "b1-07-discours-indirect",
         },
         {
           pattern: "penser que …・croire que …",
@@ -788,6 +804,7 @@ export default {
           ex: { fr: "Je pense que c'est une bonne idée.", ipa: "[ʒə pɑ̃s kə sɛt‿yn bɔn ide]", ko: "좋은 생각인 것 같아요." },
           ex2: { fr: "Je ne crois pas qu'il va venir.", ipa: "[ʒə nə kʁwa pa kil va vəniʁ]", ko: "그가 올 것 같지 않아요." },
           note: "영어 I think와 달리 que 생략 불가 — ×Je pense c'est bon",
+          ch: "b2-01-subjonctif-advanced",
         },
         {
           pattern: "je trouve que …",
@@ -796,6 +813,7 @@ export default {
           ex: { fr: "Je trouve que ce restaurant est trop cher.", ipa: "[ʒə tʁuv kə sə ʁɛstoʁɑ̃ ɛ tʁo ʃɛʁ]", ko: "이 식당은 너무 비싼 것 같아요." },
           ex2: { fr: "Tu ne trouves pas qu'il fait froid ici ?", ipa: "[ty nə tʁuv pa kil fɛ fʁwa isi]", ko: "여기 좀 춥지 않아?" },
           note: "trouver(찾다)가 '~라고 느끼다'로 — 감상 말하기의 단골 동사",
+          ch: "b2-01-subjonctif-advanced",
         },
         {
           pattern: "demander si …",
@@ -804,6 +822,7 @@ export default {
           ex: { fr: "Il demande si tu es libre samedi.", ipa: "[il dəmɑ̃d si ty ɛ libʁ samdi]", ko: "그가 너 토요일에 시간 되는지 물어봐." },
           ex2: { fr: "Je ne sais pas s'il va pleuvoir.", ipa: "[ʒə nə sɛ pa sil va pløvwaʁ]", ko: "비가 올지 모르겠어요." },
           note: "est-ce que는 간접 의문에 못 들어간다 — ×Il demande est-ce que…, si로 바꾼다",
+          ch: "b1-07-discours-indirect",
         },
         {
           pattern: "demander à 사람 de + 동사 원형",
@@ -812,6 +831,7 @@ export default {
           ex: { fr: "Je demande à mon frère de m'aider.", ipa: "[ʒə dəmɑ̃d a mɔ̃ fʁɛʁ də mɛde]", ko: "형에게 도와 달라고 부탁해요." },
           ex2: { fr: "Elle m'a demandé de fermer la fenêtre.", ipa: "[ɛl ma dəmɑ̃de də fɛʁme la fənɛtʁ]", ko: "그녀가 저에게 창문을 닫아 달라고 했어요." },
           note: "명령문을 간접화법으로 옮기는 기본 틀 — « Ferme ! » → demander de fermer",
+          ch: "b1-07-discours-indirect",
         },
         {
           pattern: "espérer + 동사 원형・espérer que …",
@@ -820,6 +840,7 @@ export default {
           ex: { fr: "J'espère te voir bientôt.", ipa: "[ʒɛspɛʁ tə vwaʁ bjɛ̃to]", ko: "곧 보길 바라." },
           ex2: { fr: "J'espère qu'il fera beau demain.", ipa: "[ʒɛspɛʁ kil fəʁa bo dəmɛ̃]", ko: "내일 날씨가 좋았으면 좋겠어요." },
           note: "espérer que 뒤는 그냥 직설법(미래 OK) — 편지·메일 맺음말 « J'espère que tu vas bien »",
+          ch: "b1-02-subjonctif-intro",
         },
         {
           pattern: "à mon avis・pour moi",
@@ -858,6 +879,7 @@ export default {
           ex: { fr: "Tu as raison, c'est trop tard.", ipa: "[ty a ʁɛzɔ̃ sɛ tʁo taʁ]", ko: "네 말이 맞아, 너무 늦었어." },
           ex2: { fr: "Il a tort de ne pas écouter.", ipa: "[il a tɔʁ də nə paz‿ekute]", ko: "귀 기울이지 않는 건 그의 잘못이에요." },
           note: "'옳음을 가지다'라는 avoir 관용구 — être right 식 직역 금지 (×Tu es raison)",
+          ch: "a1-02-avoir",
         },
         {
           pattern: "ça veut dire …・Qu'est-ce que ça veut dire ?",

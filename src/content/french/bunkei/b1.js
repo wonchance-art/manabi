@@ -52,6 +52,7 @@ export default {
           ko: "안 그러면, 그렇지 않으면",
           ex: { fr: "Dépêche-toi, sinon on va être en retard.", ipa: "[depɛʃ twa sinɔ̃ ɔ̃ va ɛtʁ ɑ̃ ʁətaʁ]", ko: "서둘러, 안 그러면 늦겠어." },
           ex2: { fr: "Note bien l'adresse, sinon tu vas l'oublier.", ipa: "[nɔt bjɛ̃ ladʁɛs sinɔ̃ ty va lublije]", ko: "주소 잘 적어 둬, 안 그러면 잊어버릴 거야." },
+          ch: "b2-09-negation-advanced",
         },
         {
           pattern: "à condition de + infinitif",
@@ -60,6 +61,7 @@ export default {
           ex: { fr: "Tu peux sortir à condition de rentrer avant minuit.", ipa: "[ty pø sɔʁtiʁ a kɔ̃disjɔ̃ də ʁɑ̃tʁe avɑ̃ minɥi]", ko: "자정 전에 들어온다는 조건으로 나가도 돼." },
           ex2: { fr: "On réussit à condition de ne pas abandonner.", ipa: "[ɔ̃ ʁeysi a kɔ̃disjɔ̃ də nə pa abɑ̃dɔne]", ko: "포기하지만 않으면 성공해요." },
           note: "주어가 다르면 à condition que + 접속법 (B2)",
+          ch: "b2-01-subjonctif-advanced",
         },
         {
           pattern: "en cas de + N",
@@ -116,6 +118,7 @@ export default {
           ko: "~하는 편이 낫다/낫겠다",
           ex: { fr: "Il vaut mieux réserver à l'avance.", ipa: "[il vo mjø ʁezɛʁve a lavɑ̃s]", ko: "미리 예약하는 편이 나아요." },
           ex2: { fr: "Il vaudrait mieux ne pas en parler à ta mère.", ipa: "[il vodʁɛ mjø nə pa ɑ̃ paʁle a ta mɛʁ]", ko: "어머니께는 그 얘기를 안 하는 게 좋겠어." },
+          ch: "b2-10-impersonal-formal",
         },
         {
           pattern: "tu ferais mieux de",
@@ -124,6 +127,7 @@ export default {
           ex: { fr: "Tu ferais mieux de te coucher plus tôt.", ipa: "[ty fəʁɛ mjø də tə kuʃe ply to]", ko: "좀 더 일찍 자는 게 좋을걸." },
           ex2: { fr: "Vous feriez mieux de ne pas signer tout de suite.", ipa: "[vu fəʁje mjø də nə pa siɲe tu də sɥit]", ko: "바로 서명하지 않는 편이 나을 겁니다." },
           note: "devrais보다 질책 뉘앙스가 강하다 — '~하는 게 신상에 좋을걸'에 가까울 때도",
+          ch: "b1-01-conditionnel-present",
         },
         {
           pattern: "ça te dirait de",
@@ -132,6 +136,7 @@ export default {
           ex: { fr: "Ça te dirait d'aller boire un café ?", ipa: "[sa tə diʁɛ dale bwaʁ œ̃ kafe]", ko: "커피 한잔하러 갈래?" },
           ex2: { fr: "Ça vous dirait de venir dîner samedi soir ?", ipa: "[sa vu diʁɛ də vəniʁ dine samdi swaʁ]", ko: "토요일 저녁 식사하러 오실래요?" },
           note: "구어 제안 — 격식에서는 « Auriez-vous envie de… ? » / « Voudriez-vous… ? »",
+          ch: "b1-01-conditionnel-present",
         },
         {
           pattern: "j'aimerais",
@@ -323,6 +328,7 @@ export default {
           ex: { fr: "Le train vient de partir.", ipa: "[lə tʁɛ̃ vjɛ̃ də paʁtiʁ]", ko: "기차가 방금 떠났어요." },
           ex2: { fr: "Je venais de m'endormir quand le téléphone a sonné.", ipa: "[ʒə vənɛ də mɑ̃dɔʁmiʁ kɑ̃ lə telefɔn a sɔne]", ko: "막 잠들었는데 전화벨이 울렸어." },
           note: "반과거 venais de면 '막 ~했던 참이었다'",
+          ch: "a1-08-aller-venir",
         },
         {
           pattern: "être en train de",
@@ -507,6 +513,7 @@ export default {
           ex: { fr: "Je me suis fait couper les cheveux hier.", ipa: "[ʒə mə sɥi fɛ kupe le ʃəvø jɛʁ]", ko: "어제 머리 잘랐어요." },
           ex2: { fr: "Il s'est fait voler son portefeuille dans le métro.", ipa: "[il sɛ fɛ vɔle sɔ̃ pɔʁtəfœj dɑ̃ lə metʁo]", ko: "그는 지하철에서 지갑을 소매치기당했어요." },
           note: "'~당하다/받다'의 구어 단골 — 딱딱한 수동태보다 훨씬 빈번",
+          ch: "b1-06-passive",
         },
         {
           pattern: "laisser + infinitif",
@@ -585,6 +592,7 @@ export default {
           ex: { fr: "Après des mois de recherche, elle a fini par trouver un appartement.", ipa: "[apʁɛ de mwa də ʁəʃɛʁʃ ɛla fini paʁ tʁuve œ̃napaʁtəmɑ̃]", ko: "몇 달을 찾은 끝에 그녀는 결국 집을 구했어요." },
           ex2: { fr: "Tu vas finir par tomber malade si tu dors si peu.", ipa: "[ty va finiʁ paʁ tɔ̃be malad si ty dɔʁ si pø]", ko: "그렇게 조금 자다간 결국 병나고 말 거야." },
           note: "finir de(~을 끝내다)와 구별 — finir par = '결국 ~하다'",
+          ch: "b2-05-verb-prepositions",
         },
         {
           pattern: "avoir du mal à",
@@ -592,6 +600,7 @@ export default {
           ko: "~하는 데 애를 먹다",
           ex: { fr: "J'ai du mal à comprendre les Parisiens quand ils parlent vite.", ipa: "[ʒe dy mal a kɔ̃pʁɑ̃dʁ le paʁizjɛ̃ kɑ̃til paʁl vit]", ko: "파리 사람들이 빨리 말하면 알아듣기 힘들어요." },
           ex2: { fr: "Elle a eu du mal à s'habituer au climat coréen.", ipa: "[ɛla y dy mal a sabitɥe o klima kɔʁeɛ̃]", ko: "그녀는 한국 기후에 적응하느라 애를 먹었어요." },
+          ch: "a1-02-avoir",
         },
       ],
     },
@@ -665,6 +674,7 @@ export default {
           ko: "~하겠다고 약속하다",
           ex: { fr: "Il a promis de ne plus arriver en retard.", ipa: "[il a pʁɔmi də nə plyzaʁive ɑ̃ ʁətaʁ]", ko: "그는 다시는 늦지 않겠다고 약속했어요." },
           ex2: { fr: "Elle m'a promis qu'elle viendrait à la cérémonie.", ipa: "[ɛl ma pʁɔmi kɛl vjɛ̃dʁɛ a la seʁemɔni]", ko: "그녀는 식에 오겠다고 약속했어요." },
+          ch: "b1-07-discours-indirect",
         },
       ],
     },
@@ -720,6 +730,7 @@ export default {
           ex: { fr: "Vous êtes déjà venu ici, n'est-ce pas ?", ipa: "[vuzɛt deʒa vəny isi nɛs pa]", ko: "여기 와 보신 적 있으시죠?" },
           ex2: { fr: "Ce n'était pas si difficile, n'est-ce pas ?", ipa: "[sə netɛ pa si difisil nɛs pa]", ko: "그렇게 어렵진 않았죠?" },
           note: "약간 격식·교과서 느낌 — 구어에서는 « hein ? » « non ? »가 훨씬 흔하다",
+          ch: "a1-05-questions",
         },
       ],
     },
@@ -769,6 +780,7 @@ export default {
           ex: { fr: "Tu savais qu'ils avaient déménagé ? — Oui, je le savais.", ipa: "[ty savɛ kilzavɛ demenaʒe wi ʒə lə savɛ]", ko: "걔들 이사한 거 알고 있었어? — 응, 알고 있었어." },
           ex2: { fr: "Contente ? Je le suis vraiment.", ipa: "[kɔ̃tɑ̃t ʒə lə sɥi vʁɛmɑ̃]", ko: "기쁘냐고요? 정말 기뻐요." },
           note: "절·형용사 전체를 받는 중성 le — 한국어로는 번역되지 않아 누락하기 쉽다",
+          ch: "a2-05-object-pronouns",
         },
         {
           pattern: "en avoir besoin・s'en souvenir",
@@ -975,6 +987,7 @@ export default {
           ex: { fr: "Je trouve que tu as bien fait de refuser.", ipa: "[ʒə tʁuv kə ty a bjɛ̃ fɛ də ʁəfyze]", ko: "네가 거절하길 잘했다고 생각해." },
           ex2: { fr: "Je ne trouve pas que ce soit si grave.", ipa: "[ʒə nə tʁuv pa kə sə swa si ɡʁav]", ko: "그게 그렇게 심각하다고는 생각 안 해." },
           note: "직접 보고 느낀 평가 — 부정문이면 que절에 접속법이 자연스럽다",
+          ch: "b2-01-subjonctif-advanced",
         },
         {
           pattern: "je pense que・je crois que",
@@ -983,6 +996,7 @@ export default {
           ex: { fr: "Je pense que tu devrais lui dire la vérité.", ipa: "[ʒə pɑ̃s kə ty dəvʁɛ lɥi diʁ la veʁite]", ko: "네가 사실대로 말하는 게 좋을 것 같아." },
           ex2: { fr: "Je crois qu'on s'est déjà rencontrés quelque part.", ipa: "[ʒə kʁwa kɔ̃ sɛ deʒa ʁɑ̃kɔ̃tʁe kɛlkə paʁ]", ko: "우리 어디서 만난 적 있는 것 같은데요." },
           note: "긍정은 직설법 — 부정·의문이면 접속법으로 기우는 것이 B2 포인트",
+          ch: "b2-01-subjonctif-advanced",
         },
         {
           pattern: "il me semble que",
@@ -1006,6 +1020,7 @@ export default {
           ko: "~하는 것이 옳다/틀리다",
           ex: { fr: "Tu as eu raison de dire non.", ipa: "[ty a y ʁɛzɔ̃ də diʁ nɔ̃]", ko: "네가 거절한 건 잘한 일이야." },
           ex2: { fr: "On aurait tort de sous-estimer cette équipe.", ipa: "[ɔ̃noʁɛ tɔʁ də suzɛstime sɛtekip]", ko: "이 팀을 얕보면 큰코다칠 거예요." },
+          ch: "a1-02-avoir",
         },
         {
           pattern: "ça dépend",
@@ -1014,6 +1029,7 @@ export default {
           ex: { fr: "On mange dehors ? — Ça dépend du temps qu'il fera.", ipa: "[ɔ̃ mɑ̃ʒ dəɔʁ sa depɑ̃ dy tɑ̃ kil fəʁa]", ko: "밖에서 먹을까? — 날씨가 어떨지에 달렸지." },
           ex2: { fr: "Ça dépend si j'arrive à finir mon travail avant six heures.", ipa: "[sa depɑ̃ si ʒaʁiv a finiʁ mɔ̃ tʁavaj avɑ̃ sizœʁ]", ko: "6시 전에 일을 끝낼 수 있느냐에 달렸어." },
           note: "명사 앞에는 de, si절 앞에는 de 없이 바로 si",
+          ch: "b2-05-verb-prepositions",
         },
         {
           pattern: "avoir l'impression que",
