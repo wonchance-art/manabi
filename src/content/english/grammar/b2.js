@@ -150,6 +150,7 @@ export default [
       {
         heading: "과거완료진행 — 기준점을 과거로 옮기면",
         pattern: "had been -ing = 과거의 한 시점까지 계속",
+        patternKo: "기준점 '지금'을 과거로 옮긴 버전 — 과거 이야기의 배경",
         body:
           "현재완료진행의 기준점 '지금'을 과거의 한 시점으로 옮기면 **had been -ing**가 돼요 — When I arrived, they **had been waiting** for an hour.(도착한 그 시점까지 한 시간째 대기 중)\n\n" +
           "구조는 똑같아요: '기준 시점까지 얼마나 오래 계속됐나'. 스토리텔링(과거 이야기)에서 배경 설명으로 자주 깔리는 시제입니다.",

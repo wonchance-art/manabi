@@ -851,6 +851,7 @@ export default [
       {
         heading: "굳은 표현 — tout le monde, tout ce que",
         pattern: "tout le monde + 단수 동사 · tout ce qui/que (~하는 모든 것)",
+        patternKo: "'모두'는 단수 동사와 — tout의 굳은 표현들",
         body:
           "**tout le monde**(모두)는 뜻은 복수지만 **동사는 3인칭 단수**예요. 절을 통째로 받을 땐 **tout ce qui/que**: C'est **tout ce que** je sais.(그게 내가 아는 전부야.)\n\n" +
           "부사로 굳은 tout도 한 줌 있어요 — pas du tout(전혀), tout de suite(곧바로), tout droit(직진).",
@@ -864,6 +865,7 @@ export default [
       {
         heading: "quelque chose·quelqu'un — '무언가, 누군가' + 형용사",
         pattern: "quelque chose / quelqu'un + de + 형용사 (남성형 고정)",
+        patternKo: "'무언가/누군가'에 형용사를 달 땐 de + 남성형",
         body:
           "'무언가(quelque chose)'와 '누군가(quelqu'un)'에 형용사를 붙이려면 **de**가 필요해요: quelque chose **de** bon(맛있는 거), quelqu'un **de** gentil(친절한 사람).\n\n" +
           "이때 형용사는 **항상 남성 단수형**으로 고정이에요 — quelque chose de bonne(✗).",

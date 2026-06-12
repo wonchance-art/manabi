@@ -142,6 +142,7 @@ export default [
       {
         heading: "비즈니스 완곡 문법 — 부탁·거절·반대의 공식",
         pattern: "부탁 I was wondering if ~ · 거절 I'm afraid ~ · 반대 That's a fair point, though ~",
+        patternKo: "부탁·거절·반대를 감싸는 고정 문형 세 벌",
         body:
           "헤징이 고정 문형이 된 세 장면 — **① 부탁**: 과거진행이 압박을 줄여요(I was wondering if you could... / Would you mind -ing). **② 거절**: No를 직접 말하지 않아요(I'm afraid... / Unfortunately... / not in a position to...). **③ 반대**: 부분 동의로 시작해요(I see your point, but... / That's a fair point, though I wonder if...).\n\n" +
           "with all due respect는 격식상 존중 표현이지만, 실전에서는 '지금부터 세게 반박한다'는 예고편으로 들리니 사용에 주의하세요.",
@@ -334,6 +335,7 @@ export default [
       {
         heading: "큰 은유 가족들 — 논쟁은 전쟁, 인생은 여행, 위는 좋음",
         pattern: "ARGUMENT IS WAR · LIFE IS A JOURNEY · UP IS GOOD · IDEAS ARE FOOD",
+        patternKo: "영어 담화를 지배하는 4대 은유 가족",
         body:
           "영어 담화를 지배하는 대표 은유 가족 — **ARGUMENT IS WAR**(defend, attack, shoot down, stand one's ground), **LIFE IS A JOURNEY**(at a crossroads, lost, baggage, come a long way), **UP IS GOOD / DOWN IS BAD**(looking up, feeling down, upturn/downturn), **IDEAS ARE FOOD**(digest, chew on, raw data, half-baked idea).\n\n" +
           "영어 토론 문화의 뼈대가 ARGUMENT IS WAR 위에 서 있고, 경제 기사 문체의 기본값이 UP IS GOOD이에요.",
