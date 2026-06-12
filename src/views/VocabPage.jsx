@@ -17,10 +17,6 @@ import ConfirmModal from '../components/ConfirmModal';
 import VocabList from './VocabList';
 import VocabReview from './VocabReview';
 import { parseTitle } from '../lib/seriesMeta';
-import VocabStats from './VocabStats';
-import VocabNotes from './VocabNotes';
-import VocabDecks from './VocabDecks';
-import VocabWriting from './VocabWriting';
 import { CardGridSkeleton } from '../components/Skeleton';
 import { friendlyToastMessage } from '../lib/errorMessage';
 import { detectLang } from '../lib/constants';
@@ -387,9 +383,6 @@ export default function VocabPage() {
   const exampleCacheRef = useRef(new Map());
   const [exampleLoading, setExampleLoading] = useState(false);
   const [exampleSentences, setExampleSentences] = useState(null);
-  const [deckModal, setDeckModal] = useState(false);
-  const [deckTitle, setDeckTitle] = useState('');
-  const [deckLang, setDeckLang] = useState('Japanese');
   const [visibleCount, setVisibleCount] = useState(30);
   const [confirmAction, setConfirmAction] = useState(null);
   const [detailWord, setDetailWord] = useState(null);
@@ -400,164 +393,17 @@ export default function VocabPage() {
     enabled: !!user,
   });
 
-  const { data: grammarNotes = [] } = useQuery({
-    queryKey: ['grammar-notes', user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('grammar_notes')
-        .select('id, selected_text, explanation, created_at, reading_materials(title), interval, ease_factor, repetitions, next_review_at, last_reviewed_at')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: !!user,
-  });
-
-  const { data: publicDecks = [], refetch: refetchDecks } = useQuery({
-    queryKey: ['vocab-decks'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('vocab_decks')
-        .select('id, title, language, word_count, created_at, owner:profiles(display_name), owner_id')
-        .order('created_at', { ascending: false })
-        .limit(50);
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: tab === 'decks',
-  });
-
-  const createDeckMutation = useMutation({
-    mutationFn: async () => {
-      if (!deckTitle.trim()) throw new Error('덱 이름을 입력하세요.');
-      const words = vocab.filter(v =>
-        (v.language === deckLang) || (!v.language && detectLang(v.word_text) === deckLang)
-      );
-      if (words.length === 0) throw new Error(`${deckLang} 단어가 없습니다.`);
-
-      // 단어들의 출처 자료 중 가장 빈번한 것을 덱 출처로 기록
-      const sourceCounts = {};
-      words.forEach(w => {
-        if (w.source_material_id) {
-          sourceCounts[w.source_material_id] = (sourceCounts[w.source_material_id] || 0) + 1;
-        }
-      });
-      const dominantSource = Object.entries(sourceCounts)
-        .sort(([, a], [, b]) => b - a)[0]?.[0];
-      // 70% 이상 같은 자료일 때만 연결
-      const sourceThreshold = words.length * 0.7;
-      const linkedSource = dominantSource && sourceCounts[dominantSource] >= sourceThreshold
-        ? dominantSource
-        : null;
-
-      const { data: deck, error: deckErr } = await supabase
-        .from('vocab_decks')
-        .insert({
-          owner_id: user.id,
-          title: deckTitle.trim(),
-          language: deckLang,
-          word_count: words.length,
-          source_material_id: linkedSource,
-        })
-        .select('id')
-        .single();
-      if (deckErr) throw deckErr;
-
-      const rows = words.map(v => ({
-        deck_id: deck.id,
-        word_text: v.word_text,
-        furigana: v.furigana || null,
-        meaning: v.meaning || null,
-        pos: v.pos || null,
-      }));
-      const { error: wordsErr } = await supabase.from('vocab_deck_words').insert(rows);
-      if (wordsErr) throw wordsErr;
-      return words.length;
-    },
-    onSuccess: (count) => {
-      toast(`${count}개 단어로 덱을 공유했습니다!`, 'success');
-      setDeckModal(false);
-      setDeckTitle('');
-      refetchDecks();
-    },
-    onError: (err) => toast(err.message, 'error'),
-  });
-
-  const deleteDeckMutation = useMutation({
-    mutationFn: async (deckId) => {
-      const { error } = await supabase.from('vocab_decks').delete().eq('id', deckId).eq('owner_id', user.id);
-      if (error) throw error;
-    },
-    onSuccess: () => refetchDecks(),
-    onError: (err) => toast('삭제 실패 — ' + friendlyToastMessage(err), 'error'),
-  });
-
-  const importDeckMutation = useMutation({
-    mutationFn: async (deckId) => {
-      // 덱의 실제 언어 정보를 DB에서 가져와 사용
-      const { data: deckInfo, error: deckInfoErr } = await supabase
-        .from('vocab_decks')
-        .select('language')
-        .eq('id', deckId)
-        .single();
-      if (deckInfoErr) throw deckInfoErr;
-      const importLang = deckInfo?.language || deckLang;
-
-      const { data: words, error } = await supabase
-        .from('vocab_deck_words')
-        .select('word_text, furigana, meaning, pos')
-        .eq('deck_id', deckId);
-      if (error) throw error;
-
-      const rows = words.map(w => ({
-        user_id: user.id,
-        word_text: w.word_text,
-        furigana: w.furigana || '',
-        meaning: w.meaning || '',
-        pos: w.pos || '',
-        language: importLang,
-        interval: 0, ease_factor: 0, repetitions: 0,
-        next_review_at: new Date().toISOString(),
-      }));
-      const { error: importErr } = await supabase
-        .from('user_vocabulary')
-        .upsert(rows, { onConflict: 'user_id,word_text' });
-      if (importErr) throw importErr;
-      return words.length;
-    },
-    onSuccess: (count) => {
-      toast(`${count}개 단어를 내 단어장에 추가했습니다!`, 'success');
-      queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
-    },
-    onError: (err) => toast('가져오기 실패 — ' + friendlyToastMessage(err), 'error'),
-  });
-
-  const deleteNoteMutation = useMutation({
-    mutationFn: async (noteId) => {
-      const { error } = await supabase.from('grammar_notes').delete().eq('id', noteId);
-      if (error) throw error;
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['grammar-notes', user?.id] }),
-    onError: (err) => toast('삭제 실패 — ' + friendlyToastMessage(err), 'error'),
-  });
-
   const scoreMutation = useMutation({
-    mutationFn: async ({ id, nextStats, isGrammar }) => {
+    mutationFn: async ({ id, nextStats }) => {
       const payload = { ...nextStats, last_reviewed_at: new Date().toISOString() };
-      const table = isGrammar ? 'grammar_notes' : 'user_vocabulary';
       const { error } = await supabase
-        .from(table)
+        .from('user_vocabulary')
         .update(payload)
         .eq('id', id);
       if (error) throw error;
     },
-    onSuccess: (_, { isGrammar, rating, prevInterval, newInterval }) => {
-      if (isGrammar) {
-        queryClient.invalidateQueries({ queryKey: ['grammar-notes', user?.id] });
-      } else {
-        queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
-      }
+    onSuccess: (_, { rating, prevInterval, newInterval }) => {
+      queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
       const prevXP = profile?.xp ?? 0;
       const reviewXP = getReviewXP(rating);
       // 마스터(interval 30일 돌파) 보너스
@@ -758,22 +604,8 @@ export default function VocabPage() {
 
   const reviewWords = useMemo(() => {
     const now = new Date();
-    const dueVocab = vocab.filter(v => new Date(v.next_review_at) <= now && vocabMatchesSeries(v));
-    const dueGrammar = seriesFilter === 'all'
-      ? grammarNotes
-          .filter(n => n.next_review_at && new Date(n.next_review_at) <= now)
-          .map(n => ({
-            ...n,
-            _isGrammar: true,
-            word_text: n.selected_text,
-            meaning: n.explanation?.split('\n')[0]?.slice(0, 80) || '문법 노트',
-            furigana: '',
-            pos: '문법',
-            source_sentence: n.selected_text,
-          }))
-      : [];
-    return [...dueVocab, ...dueGrammar];
-  }, [vocab, grammarNotes, seriesFilter]);
+    return vocab.filter(v => new Date(v.next_review_at) <= now && vocabMatchesSeries(v));
+  }, [vocab, seriesFilter]);
   const currentWord = reviewWords[reviewIdx];
 
   const contextOptions = useMemo(() => {
@@ -796,7 +628,6 @@ export default function VocabPage() {
     scoreMutation.mutate({
       id: currentWord.id,
       nextStats,
-      isGrammar: !!currentWord._isGrammar,
       rating,
       prevInterval,
       newInterval: nextStats.interval ?? 0,
@@ -810,7 +641,7 @@ export default function VocabPage() {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(0, 0, 0, 0);
-    scoreMutation.mutate({ id: currentWord.id, nextStats: { next_review_at: tomorrow.toISOString() }, isGrammar: !!currentWord._isGrammar });
+    scoreMutation.mutate({ id: currentWord.id, nextStats: { next_review_at: tomorrow.toISOString() } });
     goNextReview();
   };
 
@@ -889,73 +720,82 @@ export default function VocabPage() {
       {/* 헤더 — 제목 + 요약 수치 */}
       <div className="page-header">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-          <h1 className="page-header__title" style={{ margin: 0 }}>단어장</h1>
+          <h1 className="page-header__title" style={{ margin: 0 }}>어휘</h1>
           {vocab.length > 0 && (
             <div style={{ display: 'flex', gap: 14, fontSize: '0.82rem', color: 'var(--text-muted)' }}>
               <span>{vocab.length}개</span>
-              <span style={{ color: reviewWords.length > 0 ? 'var(--warning)' : 'var(--accent)' }}>
-                {reviewWords.length > 0 ? `${reviewWords.length} 복습 대기` : '✓ 완료'}
-              </span>
               <span>숙련 {vocab.filter(v => v.interval >= 30).length}</span>
             </div>
           )}
         </div>
       </div>
 
-      {/* 탭 + 주요 액션 한 줄 */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
-        <div className="tab-pills">
-          <button onClick={() => setTab('list')} className={`tab-pills__item ${tab === 'list' ? 'tab-pills__item--primary' : ''}`}>
-            단어장
-          </button>
-          <button onClick={() => setTab('writing')} className={`tab-pills__item ${tab === 'writing' ? 'tab-pills__item--accent' : ''}`}>
-            쓰기
-          </button>
-          <button onClick={() => setTab('decks')} className={`tab-pills__item ${tab === 'decks' ? 'tab-pills__item--primary' : ''}`}>
-            공유 덱
-          </button>
-          {grammarNotes.length > 0 && (
-            <button onClick={() => setTab('notes')} className={`tab-pills__item ${tab === 'notes' ? 'tab-pills__item--primary' : ''}`}>
-              문법 노트
-            </button>
-          )}
+      {/* 복습 히어로 — 이 페이지의 단 하나의 질문: 오늘 복습했나 */}
+      {tab === 'list' && (
+        <div className="card vocab-hero">
+          <div className="vocab-hero__body">
+            <span className="vocab-hero__kicker">오늘 복습</span>
+            {reviewWords.length > 0 ? (
+              <>
+                <span className="vocab-hero__num">{reviewWords.length}</span>
+                <span className="vocab-hero__sub">개 단어가 기다려요</span>
+              </>
+            ) : (
+              <span className="vocab-hero__done">
+                오늘 복습 끝{(() => {
+                  const next = vocab
+                    .filter(v => vocabMatchesSeries(v) && new Date(v.next_review_at) > new Date())
+                    .sort((a, b) => new Date(a.next_review_at) - new Date(b.next_review_at))[0];
+                  if (!next) return null;
+                  const d = new Date(next.next_review_at);
+                  const days = Math.ceil((d - new Date()) / 86400000);
+                  return ` — 다음 복습 ${days <= 1 ? '내일' : `${days}일 후`}`;
+                })()}
+              </span>
+            )}
+          </div>
+          <div className="vocab-hero__actions">
+            {reviewWords.length > 0 && (
+              <Button onClick={startReview}>복습 시작 →</Button>
+            )}
+            <Button size="sm" variant="ghost" onClick={() => setManualAddOpen(true)}>+ 추가</Button>
+            {vocab.length > 0 && (
+              <details style={{ position: 'relative' }}>
+                <summary className="btn btn--ghost btn--sm" style={{ cursor: 'pointer', listStyle: 'none' }}>⋯</summary>
+                <div style={{
+                  position: 'absolute', right: 0, top: '100%', marginTop: 4,
+                  background: 'var(--bg-card)', border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-md)', boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+                  zIndex: 100, minWidth: 160, overflow: 'hidden',
+                }}>
+                  <button onClick={() => exportCSV(vocab)} style={{ display: 'block', width: '100%', padding: '10px 14px', border: 'none', background: 'transparent', textAlign: 'left', fontSize: '0.85rem', cursor: 'pointer', color: 'var(--text-primary)' }}>
+                    CSV 내보내기
+                  </button>
+                  <button onClick={() => exportAnki(vocab)} style={{ display: 'block', width: '100%', padding: '10px 14px', border: 'none', background: 'transparent', textAlign: 'left', fontSize: '0.85rem', cursor: 'pointer', color: 'var(--text-primary)' }}>
+                    Anki 내보내기
+                  </button>
+                  <label style={{ display: 'block', padding: '10px 14px', fontSize: '0.85rem', cursor: 'pointer', color: 'var(--text-primary)' }}>
+                    CSV 가져오기
+                    <input type="file" accept=".csv,text/csv" disabled={csvImportMutation.isPending}
+                      onChange={e => { const f = e.target.files?.[0]; if (f) csvImportMutation.mutate(f); e.target.value = ''; }}
+                      style={{ display: 'none' }} />
+                  </label>
+                  <Link href="/home" style={{ display: 'block', padding: '10px 14px', fontSize: '0.85rem', textDecoration: 'none', color: 'var(--text-primary)' }}>
+                    학습 통계
+                  </Link>
+                </div>
+              </details>
+            )}
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          {tab === 'list' && reviewWords.length > 0 && (
-            <Button size="sm" onClick={startReview}>
-              복습 ({reviewWords.length})
-            </Button>
-          )}
-          <Button size="sm" variant="ghost" onClick={() => setManualAddOpen(true)}>+ 추가</Button>
-          {vocab.length > 0 && (
-            <details style={{ position: 'relative' }}>
-              <summary className="btn btn--ghost btn--sm" style={{ cursor: 'pointer', listStyle: 'none' }}>⋯</summary>
-              <div style={{
-                position: 'absolute', right: 0, top: '100%', marginTop: 4,
-                background: 'var(--bg-card)', border: '1px solid var(--border)',
-                borderRadius: 'var(--radius-md)', boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
-                zIndex: 100, minWidth: 160, overflow: 'hidden',
-              }}>
-                <button onClick={() => exportCSV(vocab)} style={{ display: 'block', width: '100%', padding: '10px 14px', border: 'none', background: 'transparent', textAlign: 'left', fontSize: '0.85rem', cursor: 'pointer', color: 'var(--text-primary)' }}>
-                  CSV 내보내기
-                </button>
-                <button onClick={() => exportAnki(vocab)} style={{ display: 'block', width: '100%', padding: '10px 14px', border: 'none', background: 'transparent', textAlign: 'left', fontSize: '0.85rem', cursor: 'pointer', color: 'var(--text-primary)' }}>
-                  Anki 내보내기
-                </button>
-                <label style={{ display: 'block', padding: '10px 14px', fontSize: '0.85rem', cursor: 'pointer', color: 'var(--text-primary)' }}>
-                  CSV 가져오기
-                  <input type="file" accept=".csv,text/csv" disabled={csvImportMutation.isPending}
-                    onChange={e => { const f = e.target.files?.[0]; if (f) csvImportMutation.mutate(f); e.target.value = ''; }}
-                    style={{ display: 'none' }} />
-                </label>
-                <Link href="/home" style={{ display: 'block', padding: '10px 14px', fontSize: '0.85rem', textDecoration: 'none', color: 'var(--text-primary)' }}>
-                  학습 통계
-                </Link>
-              </div>
-            </details>
-          )}
-        </div>
-      </div>
+      )}
+
+      {/* 복습 세션 중 — 목록 복귀 */}
+      {tab === 'review' && !reviewFinished && (
+        <button type="button" className="chip" style={{ marginBottom: 12 }} onClick={() => setTab('list')}>
+          ← 단어 목록
+        </button>
+      )}
 
       {/* 시리즈 필터 (list / review 탭에 공통 적용) */}
       {(tab === 'list' || tab === 'review') && availableSeries.length > 0 && (
@@ -1036,39 +876,6 @@ export default function VocabPage() {
           exampleLoading={exampleLoading}
           loadExamples={loadExamples}
           setTab={setTab}
-          hardWords={vocab.filter(v => (v.repetitions || 0) > 2).length}
-        />
-      ) : tab === 'stats' ? (
-        <VocabStats vocab={vocab} profile={profile} />
-      ) : tab === 'notes' ? (
-        <VocabNotes grammarNotes={grammarNotes} deleteNoteMutation={deleteNoteMutation} />
-      ) : tab === 'decks' ? (
-        <VocabDecks
-          user={user}
-          vocab={vocab}
-          publicDecks={publicDecks}
-          deckModal={deckModal}
-          setDeckModal={setDeckModal}
-          deckTitle={deckTitle}
-          setDeckTitle={setDeckTitle}
-          deckLang={deckLang}
-          setDeckLang={setDeckLang}
-          createDeckMutation={createDeckMutation}
-          deleteDeckMutation={deleteDeckMutation}
-          importDeckMutation={importDeckMutation}
-          setConfirmAction={setConfirmAction}
-        />
-      ) : tab === 'writing' ? (
-        <VocabWriting
-          vocab={vocab}
-          toast={toast}
-          user={user}
-          awardXPOnSuccess={() => {
-            const prevXP = profile?.xp ?? 0;
-            awardXP(user.id, XP_REWARDS.WRITING_HIGH_SCORE, prevXP);
-            checkLevelUp(prevXP, prevXP + XP_REWARDS.WRITING_HIGH_SCORE);
-            recordActivity(user.id, () => fetchProfile(user.id));
-          }}
         />
       ) : null}
 

@@ -34,7 +34,7 @@ export default function VocabReview({
   typingAnswer, setTypingAnswer, contextSelected, setContextSelected, contextOptions,
   handleScore, handleSkip, ttsSupported, speak,
   exampleSentences, exampleLoading, loadExamples,
-  setTab, hardWords,
+  setTab,
 }) {
   // 리스닝 모드: 카드 전환 시 자동 TTS 재생
   const prevIdxRef = useRef(reviewIdx);
@@ -124,17 +124,6 @@ export default function VocabReview({
           <p className="review-done__next-label">다음에 뭘 할까요?</p>
 
           <div className="review-done__actions">
-            {hardWords > 0 && (
-              <button
-                className="review-done__card"
-                onClick={() => setTab('stats')}
-              >
-                <div className="review-done__card-text">
-                  <strong>요주의 단어 확인</strong>
-                  <span>{hardWords}개 단어가 어려워하고 있어요</span>
-                </div>
-              </button>
-            )}
             <Link href="/materials" className="review-done__card">
               <div className="review-done__card-text">
                 <strong>새 자료 읽기</strong>
@@ -178,22 +167,11 @@ export default function VocabReview({
             </div>
 
             <div className="review-card__body">
-              {/* 문법 노트 배지 */}
-              {currentWord?._isGrammar && (
-                <div style={{ textAlign: 'center', marginBottom: '8px' }}>
-                  <span style={{
-                    display: 'inline-block', padding: '3px 10px', borderRadius: 'var(--radius-full)',
-                    background: 'var(--primary-glow)', color: 'var(--primary)',
-                    fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.04em',
-                  }}>문법 노트</span>
-                </div>
-              )}
-
               {/* 단어 헤더 (문맥 퀴즈는 정답 공개 전까지 숨김) */}
               {currentWord && (reviewMode !== 'context' && reviewMode !== 'listening' || showAnswer) && (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
                   <h2 className="review-card__word">{currentWord.word_text}</h2>
-                  {ttsSupported && !currentWord._isGrammar && (
+                  {ttsSupported && (
                     <button
                       onClick={() => speak(currentWord.word_text, currentWord.language || detectLang(currentWord.word_text))}
                       title="발음 듣기"
