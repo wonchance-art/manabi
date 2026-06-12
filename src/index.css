@@ -8399,3 +8399,13 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 @media (max-width: 600px) {
   .lvprog__vocab { display: none; }
 }
+
+/* 홈 — 행동/현황 구분선 */
+.home-divider {
+  font-family: var(--font-serif);
+  font-size: 1.05rem; font-weight: 700;
+  color: var(--text-primary);
+  margin: 18px 0 0;
+  padding-top: 22px;
+  border-top: 1px solid var(--border);
+}

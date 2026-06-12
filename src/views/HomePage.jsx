@@ -374,6 +374,22 @@ export default function HomePage({ continueManifest = {}, refManifest = {} }) {
         </div>
       </div>
 
+      {/* 강의 이어서 학습 — 챕터 진행 기록 기반 (미통과 재도전 우선) */}
+      {continueCard && (
+        <Link
+          href={`${continueCard.ref.base}/grammar/${continueCard.ch.slug}`}
+          className="lessons-continue"
+        >
+          <span className="lessons-continue__body">
+            <span className="lessons-continue__kicker">
+              {continueCard.ref.name} 강의 {continueCard.mode === 'retry' ? '재도전 — 패턴 체크 미통과' : '이어서 학습'}
+            </span>
+            <span className="lessons-continue__title">#{continueCard.ch.order} {continueCard.ch.title}</span>
+          </span>
+          <span className="lessons-continue__meta">{continueCard.levelLabel} →</span>
+        </Link>
+      )}
+
       {/* ── 학습 진입점 (1순위만 노출) ──
           이어서 학습 > 오늘 읽기 (daily suggestion) > 내 레벨 추천
           진행 중 시리즈가 있으면 그곳으로 직진. 추천은 secondary */}
@@ -399,22 +415,6 @@ export default function HomePage({ continueManifest = {}, refManifest = {} }) {
           </Link>
         );
       })()}
-
-      {/* 강의 이어서 학습 — 챕터 진행 기록 기반 (미통과 재도전 우선) */}
-      {continueCard && (
-        <Link
-          href={`${continueCard.ref.base}/grammar/${continueCard.ch.slug}`}
-          className="lessons-continue"
-        >
-          <span className="lessons-continue__body">
-            <span className="lessons-continue__kicker">
-              {continueCard.ref.name} 강의 {continueCard.mode === 'retry' ? '재도전 — 패턴 체크 미통과' : '이어서 학습'}
-            </span>
-            <span className="lessons-continue__title">#{continueCard.ch.order} {continueCard.ch.title}</span>
-          </span>
-          <span className="lessons-continue__meta">{continueCard.levelLabel} →</span>
-        </Link>
-      )}
 
       {/* 오늘 읽기 — 진행 중 시리즈가 없을 때만 */}
       {(() => {
@@ -541,7 +541,8 @@ export default function HomePage({ continueManifest = {}, refManifest = {} }) {
         </div>
       )}
 
-      {/* 학습 현황 — 급수 진행·시리즈·기억 건강·히트맵 */}
+      {/* ── 현황 — 행동 카드들 아래 상태 스택 ── */}
+      <h2 className="home-divider">현황</h2>
       <ProfileStats refManifest={refManifest} />
 
     </div>
