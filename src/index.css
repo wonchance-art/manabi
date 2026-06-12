@@ -10444,6 +10444,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   transition: background 0.15s ease, color 0.15s ease;
 }
 .lessons-list__bunkei-chip:hover { background: var(--bg-elevated); color: var(--text-primary); }
+@media (max-width: 600px) {
+  /* 칩 2개(문형·어휘 사전)가 들어가도록 — 레벨 포커스 문구는 양보 */
+  .lessons-list__bunkei-chip { font-size: 0.68rem; padding: 2px 7px; margin-right: 5px; }
+  .lessons-list__group-focus { display: none; }
+}
 
 /* 이어서 학습 — 지금 할 챕터 바로가기 카드 */
 .lessons-continue {
@@ -10493,13 +10498,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-weight: 700;
   margin-right: 8px;
 }
-
-.lessons-list__row--tool {
-  background: var(--bg-secondary);
-  border-radius: var(--radius-sm);
-}
-.lessons-list__row--tool .lessons-list__title { font-weight: 600; }
-.lessons-list__row--tool:hover { background: var(--bg-elevated); }
 
 .fr-bunkei-cta {
   display: flex; align-items: center; gap: 10px;
