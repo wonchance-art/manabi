@@ -29,6 +29,7 @@ export default [
       {
         heading: "être 활용 — 영어 be 동사의 프랑스 버전",
         pattern: "je suis · tu es · il est · nous sommes · vous êtes · ils sont",
+        patternKo: "'~이다' être의 6인칭 불규칙 활용 한 세트",
         body:
           "**être**(~이다, 있다)는 프랑스어 최다 빈도 동사예요. 인칭마다 모양이 완전히 달라지는 불규칙 동사라 표를 통째로 입에 붙여야 해요.\n\n" +
           "발음 포인트: tu es와 il est는 둘 다 [ɛ]로 **소리가 같고**, vous êtes는 리에종으로 '부제트'[vuzɛt]가 돼요.",
@@ -54,6 +55,7 @@ export default [
       {
         heading: "C'est ... — '이것은/그것은 ~이에요'의 만능 공식",
         pattern: "C'est + 명사/형용사 · 복수 → Ce sont",
+        patternKo: "'이것은/그것은 ~이에요'의 만능 소개 공식",
         body:
           "**c'est**(= ce + est)는 사물 소개, 사람 소개, 감상 표현까지 한 방에 처리하는 만능 표현이에요.\n\n" +
           "복수일 때는 **ce sont**을 쓰지만, 구어에서는 복수에도 c'est를 쓰는 경우가 많아요.",
@@ -68,6 +70,7 @@ export default [
       {
         heading: "on — 사전에 없는 진짜 '우리'",
         pattern: "on = 구어의 '우리' → 동사는 3인칭 단수 (on est)",
+        patternKo: "구어의 '우리' — 뜻은 복수, 동사는 단수",
         body:
           "실제 프랑스인의 입에서 나오는 '우리'는 대부분 **on**이에요. 원래 '사람들, 누군가'를 뜻하는 대명사인데 구어에서 nous를 거의 대체했고, 문법적으로는 **3인칭 단수** 취급이라 활용도 쉬워요.\n\n" +
           "정리하면: 글·격식에서는 nous, 입으로 말할 때는 on. 둘 다 알아들을 수 있어야 해요.",
@@ -94,6 +97,7 @@ export default [
       {
         heading: "avoir 활용 — 리에종 주의보",
         pattern: "j'ai · tu as · il a · nous avons · vous avez · ils ont",
+        patternKo: "'가지다' avoir의 6인칭 활용 — 리에종 [z] 주의",
         body:
           "**avoir**(가지다)는 être와 함께 프랑스어의 양대 기둥이에요. 나중에 배울 과거시제(passé composé)의 재료도 되니 활용을 입에 완전히 붙여야 해요.\n\n" +
           "발음 포인트: je + ai는 **j'ai**[ʒe]로 축약되고, nous avons, vous avez, ils ont은 모두 리에종으로 [z]가 끼어들어요 — '누자봉, 부자베, 일종'.",
@@ -134,6 +138,7 @@ export default [
       {
         heading: "il y a — '~이 있다'의 공식",
         pattern: "il y a + 명사 → ~이 있다 (단수·복수 동일)",
+        patternKo: "'~이 있다' — 단수든 복수든 형태는 하나",
         body:
           "영어 there is/there are에 해당하지만, 단수든 복수든 **형태가 il y a 하나**라서 오히려 쉬워요.\n\n" +
           "발음은 [ilja] '일리야' — 세 단어지만 한 덩어리로 굴러가요. 구어에서는 [ja]까지 줄어들기도 해요.",
@@ -160,6 +165,7 @@ export default [
       {
         heading: "동사 원형과 1군 동사",
         pattern: "원형 - er = 어간 → 어간 + -e, -es, -e, -ons, -ez, -ent",
+        patternKo: "-er를 뗀 어간에 인칭별 어미만 붙이면 끝",
         body:
           "사전에 실리는 기본형을 **원형(infinitif)**이라고 해요. parler, aimer처럼 **-er로 끝나는 1군 동사**가 프랑스어 동사의 약 90%예요.\n\n" +
           "원형에서 -er를 뗀 **어간**에 인칭별 어미를 붙이면 끝. 새 동사가 생겨도(googler, liker) 전부 이 패턴을 따라요.",
@@ -173,6 +179,7 @@ export default [
       {
         heading: "활용표 — 쓰기는 6개, 소리는 사실상 3개",
         pattern: "-e, -es, -ent → 묵음 = [paʁl] · -ons → [ɔ̃] · -ez → [e]",
+        patternKo: "철자는 여섯, 귀에 들리는 소리는 사실상 셋",
         body:
           "결정적인 발음 포인트: 어미 **-e, -es, -ent는 전부 묵음**이에요. 그래서 je parle, tu parles, il parle, ils parlent **네 개가 똑같은 소리** [paʁl]이죠.\n\n" +
           "귀로 구별되는 건 [paʁl] / [paʁlɔ̃] / [paʁle] 세 가지뿐이에요. 듣기가 편해지는 대신, 쓰기에서는 안 들리는 어미를 철자로 챙겨야 해요.",
@@ -194,6 +201,7 @@ export default [
       {
         heading: "자주 쓰는 -er 동사로 문장 만들기",
         pattern: "je + 모음/무음 h 시작 동사 → j' (j'aime, j'habite)",
+        patternKo: "모음으로 시작하는 동사 앞에서 je는 j'로 축약",
         body:
           "일상 대화의 주력 동사들이 거의 다 1군이에요: **aimer**(좋아하다), **habiter**(살다), **travailler**(일하다), **étudier**(공부하다), **regarder**(보다), **manger**(먹다).\n\n" +
           "모음(또는 무음 h)으로 시작하는 동사는 je가 **j'**로 축약돼요: j'aime, j'habite, j'étudie.",
@@ -236,6 +244,7 @@ export default [
       {
         heading: "모음 앞에서는 n' — 그리고 발음 흐름",
         pattern: "ne + 모음/무음 h → n' (Je n'aime pas)",
+        patternKo: "모음 앞에서 ne는 n'로 — 부정의 무게는 pas에",
         body:
           "ne는 모음이나 무음 h 앞에서 **n'**로 축약돼요: Je n'aime pas, Je n'habite pas.\n\n" +
           "ne의 [ə]는 약한 소리라 실제 발화에서는 거의 스쳐 지나가요. 부정의 무게는 사실 **pas** 쪽에 실려 있어요.",
@@ -247,6 +256,7 @@ export default [
       {
         heading: "pas de — 부정문에서 관사가 변신해요",
         pattern: "부정문: un/une/des → de (모음 앞 d')",
+        patternKo: "부정문에서 부정관사가 de로 변신 (être 뒤는 예외)",
         body:
           "J'ai **un** chat → Je n'ai pas **de** chat. '하나도 없음'의 세계에서는 '하나(un)'라는 말이 무의미해지니 중립적인 de로 갈아탄다고 이해하면 돼요.\n\n" +
           "단, **être 뒤에서는 그대로**(Ce n'est pas un chat)이고, 정관사 le/la/les도 유지돼요(Je n'aime pas le café).",
@@ -261,6 +271,7 @@ export default [
       {
         heading: "구어에서는 ne가 사라져요",
         pattern: "구어: Je (ne) sais pas → Je sais pas",
+        patternKo: "일상 대화에서는 ne가 자주 탈락",
         body:
           "일상 대화에서는 **ne가 매우 자주 탈락**해요. Je ne sais pas가 Je sais pas → 빠르게는 'J'sais pas'[ʃɛpa]까지 줄어들죠.\n\n" +
           "글에서는 ne를 꼭 챙기되, **들을 때는 pas만으로 부정을 감지**할 수 있어야 해요.",
@@ -286,6 +297,7 @@ export default [
       {
         heading: "방법 1 — 억양만 올리기 (구어의 기본값)",
         pattern: "평서문 + 억양 ↗ (Tu parles français ?)",
+        patternKo: "끝만 올리면 의문문 — 구어의 기본값",
         body:
           "평서문 그대로 두고 **문장 끝 억양만 올리면** 의문문이 돼요.\n\n" +
           "일상 회화에서 압도적으로 많이 쓰는 방식이에요. 친구 사이, 편한 상황에서는 이걸로 충분해요.",
@@ -299,6 +311,7 @@ export default [
       {
         heading: "방법 2 — Est-ce que : 만능 의문문 변환기",
         pattern: "Est-ce que + 평서문 ? (모음 앞 Est-ce qu')",
+        patternKo: "평서문 앞에 붙이는 만능 의문문 스위치",
         body:
           "평서문 앞에 **Est-ce que**[ɛskə]만 붙이면 돼요. 어순을 건드리지 않는 안전한 방법이라 말하기 시험과 일반 회화 모두에서 표준이에요.\n\n" +
           "직역하면 '~인 것인가요?'쯤 되지만, 의미는 따지지 말고 **의문문 스위치**라고 생각하세요.",
@@ -312,6 +325,7 @@ export default [
       {
         heading: "방법 3 — 도치 : 격식의 영역",
         pattern: "동사-주어 ? (Parlez-vous... · 모음 충돌 시 A-t-il ?)",
+        patternKo: "주어와 동사를 뒤집는 격식 의문문",
         body:
           "주어와 동사를 뒤집고 하이픈으로 잇는 격식 의문문이에요. 3인칭에서 동사가 모음으로 끝나면 발음을 위해 **-t-**를 끼워 넣어요: Il a → A-**t**-il ?\n\n" +
           "A1에서는 직접 만들기보다, Parlez-vous anglais ? 같은 **굳은 표현으로 만나는 도치를 알아듣는 것**이 목표예요.",
@@ -324,6 +338,7 @@ export default [
       {
         heading: "의문사 6총사 — où, quand, qui, que, comment, pourquoi",
         pattern: "의문사 + est-ce que ... ? · 구어: 평서문 + 의문사 ?",
+        patternKo: "어디·언제·누구 등 의문사 여섯으로 묻기",
         body:
           "의문사 + est-ce que 조합이 가장 무난해요: Où est-ce que tu habites ?(어디 살아?)\n\n" +
           "구어에서는 의문사를 **문장 끝에 던지는** 방식도 아주 흔해요: Tu habites où ?",
@@ -362,6 +377,7 @@ export default [
       {
         heading: "성·수 일치 — 형용사는 명사를 따라가요",
         pattern: "여성형 = 남성형 + e · 복수형 = + s",
+        patternKo: "형용사는 명사의 성·수 따라 네 가지 모습",
         body:
           "형용사는 꾸미는 명사의 **성과 수에 맞춰** 변해요. 한 형용사는 기본 네 가지 모습: petit / petit**e** / petit**s** / petit**es**.\n\n" +
           "이미 -e로 끝나는 형용사(rouge 등)는 여성형이 그대로이고, 복수 -s는 발음되지 않아요.",
@@ -396,6 +412,7 @@ export default [
       {
         heading: "위치 — 형용사는 기본적으로 명사 뒤",
         pattern: "명사 + 형용사 (un vin rouge)",
+        patternKo: "형용사의 기본 위치는 명사 뒤",
         body:
           "프랑스어 형용사는 **원칙적으로 명사 뒤**에 와요.\n\n" +
           "un vin **rouge**(직역: 와인 빨간), une voiture **française**. 색깔·국적·모양 등 대부분의 형용사가 뒤에 붙어요.",
@@ -409,6 +426,7 @@ export default [
       {
         heading: "앞에 오는 예외 — BAGS 형용사",
         pattern: "BAGS (Beauty·Age·Goodness·Size) → 명사 앞",
+        patternKo: "미모·나이·선악·크기 형용사만 예외로 명사 앞",
         body:
           "자주 쓰는 짧은 형용사 한 줌은 예외적으로 **명사 앞**에 와요. **B**eauty(beau, joli), **A**ge(jeune, vieux, nouveau), **G**oodness(bon, mauvais), **S**ize(grand, petit, gros).\n\n" +
           "전부 빈도가 압도적으로 높은 형용사들이라, **'뒤가 원칙, BAGS만 앞'**으로 정리하면 실전 대부분이 커버돼요.",
@@ -435,6 +453,7 @@ export default [
       {
         heading: "기본 시스템 — 인칭 × 소유물의 성·수",
         pattern: "mon/ma/mes · ton/ta/tes · son/sa/ses · notre/nos · votre/vos · leur/leurs",
+        patternKo: "인칭 × 소유물의 성·수로 짜인 소유 형용사 표",
         body:
           "표가 커 보이지만 구조는 하나예요: **누구의 것인지(인칭)** × **소유물 명사의 성·수**.\n\n" +
           "nous/vous/ils 줄은 성 구별 없이 단·복수만 나뉘어서 오히려 쉬워요: notre/nos, votre/vos, leur/leurs.",
@@ -459,6 +478,7 @@ export default [
       {
         heading: "결정적 반전 — 소유자가 아니라 '소유물'의 성에 일치",
         pattern: "son/sa/ses → 뒤에 오는 명사의 성·수 기준 (소유자 무관)",
+        patternKo: "기준은 소유자가 아니라 소유물 명사의 성",
         body:
           "mon/ma를 가르는 기준은 내가 남자냐 여자냐가 아니라, **뒤에 오는 명사가 남성이냐 여성이냐**예요. 여성인 제가 말해도 '나의 아버지'는 mon père죠.\n\n" +
           "그래서 **sa mère**는 '그의 어머니'일 수도, '그녀의 어머니'일 수도 있어요. 누구의 어머니인지는 오직 문맥이 말해줘요.",
@@ -473,6 +493,7 @@ export default [
       {
         heading: "발음 보호 규칙 — 모음 앞에서는 ma 대신 mon",
         pattern: "여성 명사 + 모음 시작 → ma/ta/sa 대신 mon/ton/son (mon amie)",
+        patternKo: "모음 충돌을 피하려고 여성 명사 앞에도 mon",
         body:
           "여성 명사라도 **모음(또는 무음 h)으로 시작하면 mon/ton/son**을 써요. ma amie처럼 모음이 충돌하는 걸 프랑스어가 못 견디기 때문이에요.\n\n" +
           "형태만 mon을 빌려 쓸 뿐 명사는 여전히 여성이라, 일치는 여성형으로 해요: mon amie est joli**e**.",
@@ -499,6 +520,7 @@ export default [
       {
         heading: "aller(가다) — 최강 불규칙 동사",
         pattern: "je vais · tu vas · il va · nous allons · vous allez · ils vont",
+        patternKo: "'가다' aller의 완전 불규칙 활용",
         body:
           "**aller**(가다)는 -er로 끝나지만 1군이 아닌 완전 불규칙 동사예요 — 그만큼 많이 쓰여서 닳고 닳았다는 뜻이죠.\n\n" +
           "인사말 Ça va ?의 va도 사실 aller의 3인칭이에요. 이미 여러분은 aller를 쓰고 있었던 거죠.",
@@ -522,6 +544,7 @@ export default [
       {
         heading: "aller à — 그리고 의무 축약 au / aux",
         pattern: "à + le → au · à + les → aux (à la / à l'는 그대로)",
+        patternKo: "à와 정관사 le/les가 만나면 의무 축약",
         body:
           "'~에 가다'는 aller **à**인데, à 뒤에 정관사 le/les가 오면 **반드시 축약**해야 해요.\n\n" +
           "영어 to the처럼 따로 쓰는 선택지는 없어요 — à le라고 쓰면 그냥 틀린 문장이에요.",
@@ -560,6 +583,7 @@ export default [
       {
         heading: "venir(오다)와 passé récent — '방금 ~했어요'",
         pattern: "venir de + 동사 원형 → 방금 ~했어요 (passé récent)",
+        patternKo: "'방금 ~했어요' — venir de 뒤에 원형",
         body:
           "**venir**(오다)도 필수 불규칙 동사예요: je viens, tu viens, il vient, nous venons, vous venez, ils viennent [vjɛn].\n\n" +
           "aller + 원형이 가까운 미래라면, **venir de + 원형**은 가까운 과거예요. Je viens de manger.(나 방금 먹었어.) — 직역 '먹는 것으로부터 오는 길이다'.",
@@ -610,6 +634,7 @@ export default [
       {
         heading: "음식·음료 회화의 주력 엔진",
         pattern: "manger / boire / prendre + du / de la + 음식",
+        patternKo: "먹고 마시는 동사와 짝을 이루는 부분관사",
         body:
           "부분관사가 가장 바쁘게 일하는 곳은 식탁이에요. **manger**(먹다), **boire**(마시다, je bois), **prendre**(시키다, je prends) 같은 동사와 짝을 이뤄요.\n\n" +
           "카페 주문, 장보기, 아침 메뉴 — 전부 부분관사의 무대예요.",
@@ -623,6 +648,7 @@ export default [
       {
         heading: "부정문에서는 전부 de로 변신",
         pattern: "부정문: du / de la / de l' / des → de",
+        patternKo: "부정문에서는 부분관사도 전부 de로 통일",
         body:
           "부정문 챕터의 규칙이 그대로 적용돼요. Je bois du café → Je ne bois pas **de** café.\n\n" +
           "'없음'의 세계에서는 양을 따질 필요가 없으니 전부 중립적인 de로 통일되는 거예요.",
@@ -649,6 +675,7 @@ export default [
       {
         heading: "0~69 — 여기까지는 평화로워요",
         pattern: "20~69 = 십 단위 + 일 단위 · 21/31... = ... et un",
+        patternKo: "69까지는 십 단위 + 일 단위의 평범한 조립",
         body:
           "1~16은 고유한 단어, 17~19는 dix-sept(10+7) 식, 20~69는 '십 단위 + 일 단위'예요. 영어와 같은 논리라 무난해요.\n\n" +
           "발음 주의: six과 dix는 단독 [sis]/[dis], 명사 앞 [si]/[di], 모음 앞 [siz]/[diz]로 변해요.",
@@ -672,6 +699,7 @@ export default [
       {
         heading: "70~99 — 프랑스식 암산 체조",
         pattern: "70 = soixante-dix (60+10) · 80 = quatre-vingts (4×20) · 90 = 4×20+10",
+        patternKo: "70부터는 60+10, 4×20 식의 암산 체조",
         body:
           "70부터 프랑스어는 수학 문제를 내요. 99는 quatre-vingt-dix-neuf(4×20+10+9) — 한 숫자에 단어가 네 개예요.\n\n" +
           "처음엔 멘붕이 정상이지만, 전화번호와 가격에서 무한 반복되니 외우려 하지 말고 **들으면서 익숙해지세요**.",
@@ -697,6 +725,7 @@ export default [
       {
         heading: "시간 묻고 답하기 — Quelle heure est-il ?",
         pattern: "Il est + 숫자 + heure(s) (+ et demie / et quart / moins le quart)",
+        patternKo: "시간 대답은 Il est 틀에 숫자 끼우기 — heures 생략 불가",
         body:
           "시간 질문 **Quelle heure est-il ?**은 굳은 표현이라 통째로 외워요. 대답은 **Il est ... heure(s)** 틀에 숫자만 끼우면 돼요.\n\n" +
           "30분 = **et demie**, 15분 = **et quart**, 15분 전 = **moins le quart**. 정오는 midi, 자정은 minuit라는 전용 단어를 써요.",
@@ -711,6 +740,7 @@ export default [
       {
         heading: "날짜와 요일 — le 3 mai 공식",
         pattern: "le + 숫자 + 달 이름 (예외: 1일 = le premier)",
+        patternKo: "날짜는 '일 → 월' 순서 — 1일만 premier",
         body:
           "날짜는 **le 3 mai**(5월 3일)처럼 어순이 한국어와 반대로 '일 → 월'이에요. 1일만 서수 **le premier**(le 1er)를 써요.\n\n" +
           "요일·달 이름은 **소문자**로 쓰고, '매주 월요일마다'는 le lundi처럼 정관사를 붙여요. '오늘 며칠이에요?'는 **On est le combien ?**",

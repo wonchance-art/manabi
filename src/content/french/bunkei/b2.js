@@ -67,6 +67,7 @@ export default {
           ex: { fr: "Il est sorti sans que personne s'en aperçoive.", ipa: "[il ɛ sɔʁti sɑ̃ kə pɛʁsɔn sɑ̃napɛʁswav]", ko: "아무도 눈치채지 못하게 그는 빠져나갔어요." },
           ex2: { fr: "La loi est passée sans que l'opposition puisse vraiment débattre.", ipa: "[la lwa ɛ pase sɑ̃ kə lɔpozisjɔ̃ pɥis vʁɛmɑ̃ debatʁ]", ko: "야당이 제대로 토론도 못 한 채 법이 통과됐어요." },
           note: "주어가 같으면 sans + 동사원형. 문어에서는 허사 ne가 끼기도 한다",
+          ch: "b2-09-negation-advanced",
         },
         {
           pattern: "le temps que",
@@ -167,6 +168,7 @@ export default {
           ex: { fr: "Il est possible que je sois en retard ce soir.", ipa: "[il ɛ pɔsibl kə ʒə swa ɑ̃ ʁətaʁ sə swaʁ]", ko: "오늘 저녁에 늦을 수도 있어요." },
           ex2: { fr: "Il se peut que le vol soit annulé à cause du vent.", ipa: "[il sə pø kə lə vɔl swa anyle a koz dy vɑ̃]", ko: "바람 때문에 항공편이 결항될 수도 있어요." },
           note: "il est probable que는 직설법 — 가능성이 '높다'고 판단하면 직설법으로 돌아온다",
+          ch: "b2-10-impersonal-formal",
         },
         {
           pattern: "il n'est pas certain que",
@@ -371,6 +373,7 @@ export default {
           ko: "~이라는 점을 고려하면",
           ex: { fr: "Étant donné que les prix flambent, beaucoup renoncent à acheter.", ipa: "[etɑ̃ dɔne kə le pʁi flɑ̃b boku ʁənɔ̃s a aʃte]", ko: "물가가 치솟다 보니 많은 사람이 구매를 포기해요." },
           ex2: { fr: "Étant donné la situation, mieux vaut reporter le voyage.", ipa: "[etɑ̃ dɔne la sitɥasjɔ̃ mjø vo ʁəpɔʁte lə vwajaʒ]", ko: "상황을 고려하면 여행을 미루는 게 낫겠어요." },
+          ch: "b2-08-cause-consequence",
         },
         {
           pattern: "vu que・vu + N",
@@ -379,6 +382,7 @@ export default {
           ex: { fr: "Vu l'heure, on ferait mieux de rentrer.", ipa: "[vy lœʁ ɔ̃ fəʁɛ mjø də ʁɑ̃tʁe]", ko: "시간이 시간이니 들어가는 게 좋겠어." },
           ex2: { fr: "Vu qu'il ne répond pas, on commence sans lui.", ipa: "[vy kil nə ʁepɔ̃ pa ɔ̃ kɔmɑ̃s sɑ̃ lɥi]", ko: "답이 없으니 그 없이 시작하죠." },
           note: "vu que는 구어 기운 — 문어에서는 étant donné que, dans la mesure où",
+          ch: "b2-08-cause-consequence",
         },
         {
           pattern: "en raison de・du fait de",
@@ -387,6 +391,7 @@ export default {
           ex: { fr: "Le vol est retardé en raison du brouillard.", ipa: "[lə vɔl ɛ ʁətaʁde ɑ̃ ʁɛzɔ̃ dy bʁujaʁ]", ko: "안개로 인해 항공편이 지연되고 있습니다." },
           ex2: { fr: "Du fait de la grève, plusieurs écoles resteront fermées.", ipa: "[dy fɛ də la ɡʁɛv plyzjœʁzekɔl ʁɛstəʁɔ̃ fɛʁme]", ko: "파업으로 인해 여러 학교가 문을 닫습니다." },
           note: "격식 공지문 — 구어에서는 à cause de",
+          ch: "b2-08-cause-consequence",
         },
         {
           pattern: "faute de",
@@ -395,6 +400,7 @@ export default {
           ex: { fr: "Le festival a été annulé faute de moyens.", ipa: "[lə fɛstival a ete anyle fot də mwajɛ̃]", ko: "예산이 없어서 축제가 취소됐어요." },
           ex2: { fr: "Faute d'avoir réservé, nous n'avons pas eu de table.", ipa: "[fot davwaʁ ʁezɛʁve nu navɔ̃ pazy də tabl]", ko: "예약을 안 한 탓에 자리를 못 잡았어요." },
           note: "= par manque de. faute de mieux(차선책으로)도 관용",
+          ch: "b2-08-cause-consequence",
         },
         {
           pattern: "sous prétexte que・de",
@@ -403,6 +409,7 @@ export default {
           ex: { fr: "Il est parti tôt sous prétexte qu'il avait mal à la tête.", ipa: "[il ɛ paʁti to su pʁetɛkst kil avɛ mal a la tɛt]", ko: "그는 머리가 아프다는 핑계로 일찍 자리를 떴어요." },
           ex2: { fr: "Sous prétexte de nous aider, elle contrôle tout.", ipa: "[su pʁetɛkst də nuzɛde ɛl kɔ̃tʁol tu]", ko: "도와준다는 명목으로 그녀가 모든 걸 좌지우지해요." },
           note: "화자가 그 이유를 믿지 않는다는 뉘앙스 내장",
+          ch: "b2-08-cause-consequence",
         },
         {
           pattern: "d'autant plus que",
@@ -411,6 +418,7 @@ export default {
           ex: { fr: "Je comprends ta déception, d'autant plus que tu avais beaucoup travaillé.", ipa: "[ʒə kɔ̃pʁɑ̃ ta desɛpsjɔ̃ dotɑ̃ ply kə ty avɛ boku tʁavaje]", ko: "네 실망 이해해, 그렇게 열심히 했으니 더더욱." },
           ex2: { fr: "L'erreur est grave, d'autant plus qu'elle était évitable.", ipa: "[lɛʁœʁ ɛ ɡʁav dotɑ̃ ply kɛl etɛ evitabl]", ko: "피할 수 있었던 실수라는 점에서 더 심각해요." },
           note: "한국어로 옮기기 어려운 강화 표현 — '~이니만큼 더더욱'",
+          ch: "b2-08-cause-consequence",
         },
         {
           pattern: "dans la mesure où",
@@ -418,6 +426,7 @@ export default {
           ko: "~인 한에서, ~인 만큼",
           ex: { fr: "Dans la mesure où chacun participe, le projet reste réalisable.", ipa: "[dɑ̃ la məzyʁ u ʃakœ̃ paʁtisip lə pʁɔʒɛ ʁɛst ʁealizabl]", ko: "모두가 참여하는 한 이 계획은 실현 가능해요." },
           ex2: { fr: "Sa critique est juste, dans la mesure où les délais n'ont pas été respectés.", ipa: "[sa kʁitik ɛ ʒyst dɑ̃ la məzyʁ u le delɛ nɔ̃ pa ete ʁɛspɛkte]", ko: "기한이 안 지켜진 건 사실인 만큼 그의 비판은 타당해요." },
+          ch: "b2-08-cause-consequence",
         },
         {
           pattern: "ce n'est pas que",
@@ -426,6 +435,7 @@ export default {
           ex: { fr: "Ce n'est pas que je m'ennuie, mais il se fait tard.", ipa: "[sə nɛ pa kə ʒə mɑ̃nɥi mɛ il sə fɛ taʁ]", ko: "지루해서가 아니라 시간이 늦어서 그래요." },
           ex2: { fr: "Ce n'est pas qu'il soit paresseux, c'est qu'il est débordé.", ipa: "[sə nɛ pa kil swa paʁesø sɛ kil ɛ debɔʁde]", ko: "그가 게을러서가 아니라 일이 너무 많아서예요." },
           note: "que절은 접속법. 격식 문어형은 « non que + 접속법 »",
+          ch: "b2-08-cause-consequence",
         },
       ],
     },
@@ -440,6 +450,7 @@ export default {
           ex: { fr: "Il a plu toute la nuit, si bien que la route est inondée.", ipa: "[il a ply tut la nɥi si bjɛ̃ kə la ʁut ɛtinɔ̃de]", ko: "밤새 비가 와서 도로가 물에 잠겼어요." },
           ex2: { fr: "Personne n'a vérifié, si bien que l'erreur est passée inaperçue.", ipa: "[pɛʁsɔn na veʁifje si bjɛ̃ kə lɛʁœʁ ɛ pase inapɛʁsy]", ko: "아무도 확인하지 않은 탓에 오류가 그냥 넘어갔어요." },
           note: "이미 일어난 결과 — 직설법",
+          ch: "b2-08-cause-consequence",
         },
         {
           pattern: "de sorte que",
@@ -448,6 +459,7 @@ export default {
           ex: { fr: "Le texte a été réécrit, de sorte qu'il est enfin lisible.", ipa: "[lə tɛkst a ete ʁeekʁi də sɔʁt kil ɛtɑ̃fɛ̃ lizibl]", ko: "글을 다시 써서 이제야 읽을 만해요." },
           ex2: { fr: "Parlez lentement, de sorte que chacun puisse suivre.", ipa: "[paʁle lɑ̃təmɑ̃ də sɔʁt kə ʃakœ̃ pɥis sɥivʁ]", ko: "모두가 따라올 수 있도록 천천히 말씀하세요." },
           note: "직설법이면 결과, 접속법이면 목적 — 법(mode)으로 의미가 갈린다",
+          ch: "b2-08-cause-consequence",
         },
         {
           pattern: "tellement … que・si … que",
@@ -456,6 +468,7 @@ export default {
           ex: { fr: "Il était tellement fatigué qu'il s'est endormi à table.", ipa: "[il etɛ tɛlmɑ̃ fatiɡe kil sɛtɑ̃dɔʁmi a tabl]", ko: "그는 너무 피곤해서 밥 먹다가 잠들었어요." },
           ex2: { fr: "La file était si longue que nous avons renoncé.", ipa: "[la fil etɛ si lɔ̃ɡ kə nuzavɔ̃ ʁənɔ̃se]", ko: "줄이 너무 길어서 우리는 포기했어요." },
           note: "동사를 강조할 땐 tellement만 가능 — « il a tellement plu que … »",
+          ch: "b2-08-cause-consequence",
         },
         {
           pattern: "au point de・au point que",
@@ -463,6 +476,7 @@ export default {
           ko: "~할 정도로, 급기야 ~하기에 이르다",
           ex: { fr: "Il travaille au point d'en oublier de manger.", ipa: "[il tʁavaj o pwɛ̃ dɑ̃nublije də mɑ̃ʒe]", ko: "그는 밥 먹는 것도 잊을 정도로 일해요." },
           ex2: { fr: "La tension est montée au point que la réunion a été suspendue.", ipa: "[la tɑ̃sjɔ̃ ɛ mɔ̃te o pwɛ̃ kə la ʁeynjɔ̃ a ete syspɑ̃dy]", ko: "긴장이 고조된 나머지 회의가 중단됐어요." },
+          ch: "b2-08-cause-consequence",
         },
         {
           pattern: "c'est pourquoi",
@@ -480,6 +494,7 @@ export default {
           ex: { fr: "Le métro était en panne ; du coup, j'ai pris un vélo.", ipa: "[lə metʁo etɛ ɑ̃ pan dy ku ʒe pʁi œ̃ velo]", ko: "지하철이 멈춰서 그냥 자전거 탔어." },
           ex2: { fr: "Du coup, on remet la soirée à samedi ?", ipa: "[dy ku ɔ̃ ʁəmɛ la swaʁe a samdi]", ko: "그럼 모임은 토요일로 미루는 거지?" },
           note: "매우 구어적(남용 논란도) — 작문에서는 par conséquent, c'est pourquoi로",
+          ch: "b2-08-cause-consequence",
         },
         {
           pattern: "par conséquent",
@@ -591,6 +606,7 @@ export default {
           ex: { fr: "Il ne boit ni café ni thé.", ipa: "[il nə bwa ni kafe ni te]", ko: "그는 커피도 차도 안 마셔요." },
           ex2: { fr: "Ni la pluie ni le vent ne les ont arrêtés.", ipa: "[ni la plɥi ni lə vɑ̃ nə lezɔ̃taʁete]", ko: "비도 바람도 그들을 막지 못했어요." },
           note: "ni 뒤에서는 부정관사·부분관사 생략 — « ni de café » ✗",
+          ch: "b2-09-negation-advanced",
         },
         {
           pattern: "non seulement … mais",
@@ -598,6 +614,7 @@ export default {
           ko: "~뿐 아니라 …도",
           ex: { fr: "Non seulement il est arrivé en retard, mais il n'a même pas prévenu.", ipa: "[nɔ̃ sœlmɑ̃ il ɛtaʁive ɑ̃ ʁətaʁ mɛ il na mɛm pa pʁevəny]", ko: "그는 늦게 온 것도 모자라 연락조차 안 했어요." },
           ex2: { fr: "Cette mesure est non seulement coûteuse, mais aussi inefficace.", ipa: "[sɛt məzyʁ ɛ nɔ̃ sœlmɑ̃ kutøz mɛ osi inefikas]", ko: "이 조치는 비용이 많이 들 뿐 아니라 효과도 없어요." },
+          ch: "b2-09-negation-advanced",
         },
         {
           pattern: "ne explétif",
@@ -606,6 +623,7 @@ export default {
           ex: { fr: "C'est plus compliqué que je ne le pensais.", ipa: "[sɛ ply kɔ̃plike kə ʒə nə lə pɑ̃sɛ]", ko: "생각했던 것보다 복잡하네요." },
           ex2: { fr: "Partons avant que la nuit ne tombe.", ipa: "[paʁtɔ̃ avɑ̃ kə la nɥi nə tɔ̃b]", ko: "어두워지기 전에 출발합시다." },
           note: "pas가 없으면 부정이 아니다 — 격식·문어의 표지로, 구어에서는 대개 생략",
+          ch: "b2-09-negation-advanced",
         },
         {
           pattern: "ne … guère",
@@ -614,6 +632,7 @@ export default {
           ex: { fr: "Il n'a guère le temps de lire ces jours-ci.", ipa: "[il na ɡɛʁ lə tɑ̃ də liʁ se ʒuʁsi]", ko: "요즘 그는 책 읽을 시간이 거의 없어요." },
           ex2: { fr: "La situation n'a guère évolué depuis un an.", ipa: "[la sitɥasjɔ̃ na ɡɛʁ evɔlɥe dəpɥi œ̃nɑ̃]", ko: "1년이 지나도록 상황은 별로 나아지지 않았어요." },
           note: "문어 — 구어에서는 ne … pas vraiment / pas tellement",
+          ch: "b2-09-negation-advanced",
         },
         {
           pattern: "ne … point",
@@ -622,6 +641,7 @@ export default {
           ex: { fr: "Je ne le crains point.", ipa: "[ʒə nə lə kʁɛ̃ pwɛ̃]", ko: "나는 그것이 조금도 두렵지 않다." },
           ex2: { fr: "Point n'est besoin d'en dire plus.", ipa: "[pwɛ̃ nɛ bəzwɛ̃ dɑ̃ diʁ ply]", ko: "더 말할 필요도 없다." },
           note: "고풍·문학 문체 — 일상에서는 ne … pas. 익살·강조로 일부러 쓰기도 한다",
+          ch: "b2-09-negation-advanced",
         },
         {
           pattern: "ne serait-ce que",
@@ -630,6 +650,7 @@ export default {
           ex: { fr: "Appelle-la, ne serait-ce que cinq minutes.", ipa: "[apɛl la nə səʁɛs kə sɛ̃k minyt]", ko: "5분만이라도 그녀에게 전화해 봐." },
           ex2: { fr: "Ne serait-ce que par politesse, il aurait dû répondre.", ipa: "[nə səʁɛs kə paʁ pɔlitɛs il oʁɛ dy ʁepɔ̃dʁ]", ko: "예의상으로라도 그는 답을 했어야죠." },
           note: "격식 — 구어에서는 « même juste cinq minutes »",
+          ch: "b2-09-negation-advanced",
         },
         {
           pattern: "rien que",
@@ -638,6 +659,7 @@ export default {
           ex: { fr: "Rien que d'y penser, j'ai le vertige.", ipa: "[ʁjɛ̃ kə di pɑ̃se ʒe lə vɛʁtiʒ]", ko: "생각만 해도 아찔해요." },
           ex2: { fr: "Rien que le loyer coûte mille euros par mois.", ipa: "[ʁjɛ̃ kə lə lwaje kut mil øʁo paʁ mwa]", ko: "집세만 한 달에 천 유로예요." },
           note: "구어 강조 — '~만으로도'",
+          ch: "b2-09-negation-advanced",
         },
         {
           pattern: "sans quoi・faute de quoi",
@@ -646,6 +668,7 @@ export default {
           ex: { fr: "Répondez avant vendredi, sans quoi votre réservation sera annulée.", ipa: "[ʁepɔ̃de avɑ̃ vɑ̃dʁədi sɑ̃ kwa vɔtʁ ʁezɛʁvasjɔ̃ səʁa anyle]", ko: "금요일 전까지 회신하셔야 하며, 그렇지 않으면 예약이 취소됩니다." },
           ex2: { fr: "Il faut un accord écrit, faute de quoi rien n'est valable.", ipa: "[il fo œ̃nakɔʁ ekʁi fot də kwa ʁjɛ̃ nɛ valabl]", ko: "서면 합의가 필요하고, 그게 없으면 아무것도 유효하지 않아요." },
           note: "격식 — 구어에서는 sinon",
+          ch: "b2-09-negation-advanced",
         },
       ],
     },
@@ -729,6 +752,7 @@ export default {
           ex: { fr: "Dans ce roman, il s'agit d'une famille qui émigre au Canada.", ipa: "[dɑ̃ sə ʁɔmɑ̃ il saʒi dyn famij ki emiɡʁ o kanada]", ko: "이 소설은 캐나다로 이민 가는 한 가족의 이야기예요." },
           ex2: { fr: "Il ne s'agit pas de tout changer, mais d'améliorer l'existant.", ipa: "[il nə saʒi pa də tu ʃɑ̃ʒe mɛ dameljɔʁe lɛɡzistɑ̃]", ko: "전부 바꾸자는 게 아니라 있는 걸 개선하자는 거예요." },
           note: "주어는 항상 il — « ce livre s'agit de … » ✗ ('이 책은 ~에 관한 것이다'의 직역 함정)",
+          ch: "b2-10-impersonal-formal",
         },
         {
           pattern: "il s'avère que",
@@ -737,6 +761,7 @@ export default {
           ex: { fr: "Après vérification, il s'avère que le document était faux.", ipa: "[apʁɛ veʁifikasjɔ̃ il savɛʁ kə lə dɔkymɑ̃ etɛ fo]", ko: "확인 결과 그 문서는 위조로 드러났습니다." },
           ex2: { fr: "Il s'avère que personne n'avait lu le contrat en entier.", ipa: "[il savɛʁ kə pɛʁsɔn navɛ ly lə kɔ̃tʁa ɑ̃nɑ̃tje]", ko: "알고 보니 계약서를 끝까지 읽은 사람이 아무도 없었어요." },
           note: "격식 — 구어에서는 « en fait, il se trouve que »",
+          ch: "b2-10-impersonal-formal",
         },
         {
           pattern: "il convient de",
@@ -745,6 +770,7 @@ export default {
           ex: { fr: "Il convient de rappeler les règles de sécurité.", ipa: "[il kɔ̃vjɛ̃ də ʁaple le ʁɛɡl də sekyʁite]", ko: "안전 수칙을 다시 한 번 상기할 필요가 있습니다." },
           ex2: { fr: "Il convient de ne pas tirer de conclusions trop vite.", ipa: "[il kɔ̃vjɛ̃ də nə pa tiʁe də kɔ̃klyzjɔ̃ tʁo vit]", ko: "성급하게 결론을 내리지 않는 것이 바람직합니다." },
           note: "행정·논문 문체 — 구어 대응은 il vaut mieux / il faut",
+          ch: "b2-10-impersonal-formal",
         },
         {
           pattern: "il paraît que",
@@ -753,6 +779,7 @@ export default {
           ex: { fr: "Il paraît que le restaurant va fermer.", ipa: "[il paʁɛ kə lə ʁɛstoʁɑ̃ va fɛʁme]", ko: "그 식당 곧 문 닫는대요." },
           ex2: { fr: "Il paraît qu'ils se sont rencontrés à Séoul.", ipa: "[il paʁɛ kil sə sɔ̃ ʁɑ̃kɔ̃tʁe a seul]", ko: "두 사람 서울에서 만났다던데요." },
           note: "구어 '카더라' — 격식 보도는 조건법(« il y aurait… »)",
+          ch: "b2-10-impersonal-formal",
         },
         {
           pattern: "il semble que・il me semble que",
@@ -761,6 +788,7 @@ export default {
           ex: { fr: "Il semble que la situation se soit calmée.", ipa: "[il sɑ̃bl kə la sitɥasjɔ̃ sə swa kalme]", ko: "상황이 진정된 듯합니다." },
           ex2: { fr: "Il me semble que nous nous sommes déjà rencontrés.", ipa: "[il mə sɑ̃bl kə nu nu sɔm deʒa ʁɑ̃kɔ̃tʁe]", ko: "우리 전에 만난 적이 있는 것 같은데요." },
           note: "me가 붙으면 직설법, 없으면 접속법 — 대명사 하나로 법이 갈린다",
+          ch: "b2-10-impersonal-formal",
         },
         {
           pattern: "il arrive que",
@@ -768,6 +796,7 @@ export default {
           ko: "때때로 ~하는 일이 있다",
           ex: { fr: "Il arrive que le train ait du retard en hiver.", ipa: "[il aʁiv kə lə tʁɛ̃ ɛ dy ʁətaʁ ɑ̃nivɛʁ]", ko: "겨울에는 기차가 연착하는 일이 종종 있어요." },
           ex2: { fr: "Il m'arrive d'oublier complètement quel jour on est.", ipa: "[il maʁiv dublije kɔ̃plɛtmɑ̃ kɛl ʒuʁ ɔ̃nɛ]", ko: "오늘이 며칠인지 까맣게 잊을 때가 있어요." },
+          ch: "b2-10-impersonal-formal",
         },
         {
           pattern: "il suffit de・il suffit que",
@@ -775,6 +804,7 @@ export default {
           ko: "~하기만 하면 된다",
           ex: { fr: "Il suffit de cliquer ici pour s'inscrire.", ipa: "[il syfi də klike isi puʁ sɛ̃skʁiʁ]", ko: "여기만 클릭하면 가입돼요." },
           ex2: { fr: "Il suffit qu'il pleuve un peu pour que tout soit bloqué.", ipa: "[il syfi kil pløv œ̃ pø puʁ kə tu swa blɔke]", ko: "비가 조금만 와도 모든 게 마비돼요." },
+          ch: "b2-10-impersonal-formal",
         },
         {
           pattern: "il est question de",
@@ -783,6 +813,7 @@ export default {
           ex: { fr: "Il est question de construire une nouvelle ligne de métro.", ipa: "[il ɛ kɛstjɔ̃ də kɔ̃stʁɥiʁ yn nuvɛl liɲ də metʁo]", ko: "새 지하철 노선 건설이 논의되고 있어요." },
           ex2: { fr: "Il n'est pas question que je paie pour les autres.", ipa: "[il nɛ pa kɛstjɔ̃ kə ʒə pɛ puʁ lezotʁ]", ko: "내가 남들 몫까지 낸다는 건 말도 안 돼요." },
           note: "il n'est pas question que + 접속법 = '절대 안 된다' (강한 거부)",
+          ch: "b2-10-impersonal-formal",
         },
         {
           pattern: "il reste à",
@@ -791,6 +822,7 @@ export default {
           ex: { fr: "Il reste à convaincre les habitants du quartier.", ipa: "[il ʁɛst a kɔ̃vɛ̃kʁ lezabitɑ̃ dy kaʁtje]", ko: "이제 동네 주민들을 설득하는 일이 남았어요." },
           ex2: { fr: "Il ne me reste plus qu'à signer.", ipa: "[il nə mə ʁɛst ply ka siɲe]", ko: "이제 서명만 하면 돼요." },
           note: "« il ne reste plus qu'à » = '이제 ~만 남았다' — 구어에서는 « y a plus qu'à »",
+          ch: "b2-10-impersonal-formal",
         },
       ],
     },
@@ -929,6 +961,7 @@ export default {
           ex: { fr: "Le plan est bon ; encore faut-il que chacun joue le jeu.", ipa: "[lə plɑ̃ ɛ bɔ̃ ɑ̃kɔʁ fotil kə ʃakœ̃ ʒu lə ʒø]", ko: "계획은 좋아요. 다만 모두가 제 역할을 해 줘야죠." },
           ex2: { fr: "C'est faisable, encore faut-il s'y mettre sérieusement.", ipa: "[sɛ fəzabl ɑ̃kɔʁ fotil si mɛtʁ seʁjøzmɑ̃]", ko: "가능은 한데, 진지하게 달려들어야 해요." },
           note: "문두 부사 + 도치는 문어 표지 — 구어에서는 « mais il faut encore que »",
+          ch: "b2-10-impersonal-formal",
         },
       ],
     },
@@ -1023,6 +1056,7 @@ export default {
           ex: { fr: "Il est indéniable que les mentalités ont évolué.", ipa: "[il ɛtɛ̃denjabl kə le mɑ̃talite ɔ̃tevɔlɥe]", ko: "사람들의 의식이 변했다는 것은 부인할 수 없습니다." },
           ex2: { fr: "Il est indéniable que ce quartier a changé en dix ans.", ipa: "[il ɛtɛ̃denjabl kə sə kaʁtje a ʃɑ̃ʒe ɑ̃ dizɑ̃]", ko: "이 동네가 10년 새 변한 건 분명한 사실이에요." },
           note: "논술 도입 단골 — 구어에서는 « c'est clair que » (familier)",
+          ch: "b2-10-impersonal-formal",
         },
         {
           pattern: "force est de constater que",
@@ -1031,6 +1065,7 @@ export default {
           ex: { fr: "Force est de constater que les résultats ne sont pas au rendez-vous.", ipa: "[fɔʁs ɛ də kɔ̃state kə le ʁezylta nə sɔ̃ pa o ʁɑ̃devu]", ko: "결과가 기대에 못 미친다는 점을 인정하지 않을 수 없습니다." },
           ex2: { fr: "Force est de constater qu'on a sous-estimé le problème.", ipa: "[fɔʁs ɛ də kɔ̃state kɔ̃na suzɛstime lə pʁɔblɛm]", ko: "문제를 과소평가했다는 사실을 인정할 수밖에 없어요." },
           note: "고정 문어 관용 — 구어 대응은 « il faut bien admettre que »",
+          ch: "b2-10-impersonal-formal",
         },
         {
           pattern: "il va de soi que",
@@ -1039,6 +1074,7 @@ export default {
           ex: { fr: "Il va de soi que les frais de déplacement seront remboursés.", ipa: "[il va də swa kə le fʁɛ də deplasmɑ̃ səʁɔ̃ ʁɑ̃buʁse]", ko: "출장비가 환급되는 것은 말할 것도 없습니다." },
           ex2: { fr: "Il va de soi qu'aucune décision ne sera prise sans vous.", ipa: "[il va də swa kokyn desizjɔ̃ nə səʁa pʁiz sɑ̃ vu]", ko: "당신 없이는 어떤 결정도 내리지 않을 것이 당연합니다." },
           note: "= cela va sans dire",
+          ch: "b2-10-impersonal-formal",
         },
         {
           pattern: "toujours est-il que",
@@ -1046,6 +1082,7 @@ export default {
           ko: "어쨌든 분명한 것은 ~이다",
           ex: { fr: "On ignore qui a pris la décision ; toujours est-il que personne n'a été consulté.", ipa: "[ɔ̃niɲɔʁ ki a pʁi la desizjɔ̃ tuʒuʁzɛtil kə pɛʁsɔn na ete kɔ̃sylte]", ko: "누가 결정했는지는 몰라도, 분명한 건 아무도 의견을 묻지 않았다는 거예요." },
           ex2: { fr: "Peut-être exagère-t-il ; toujours est-il que le danger existe.", ipa: "[pøtɛtʁ ɛɡzaʒɛʁtil tuʒuʁzɛtil kə lə dɑ̃ʒe ɛɡzist]", ko: "그가 과장하는 것일 수도 있지만, 어쨌든 위험은 존재해요." },
+          ch: "b2-10-impersonal-formal",
         },
         {
           pattern: "reste que・il n'empêche que",
@@ -1054,6 +1091,7 @@ export default {
           ex: { fr: "Reste que la question du financement n'est pas réglée.", ipa: "[ʁɛst kə la kɛstjɔ̃ dy finɑ̃smɑ̃ nɛ pa ʁeɡle]", ko: "그래도 재원 문제는 여전히 해결되지 않은 채 남아 있습니다." },
           ex2: { fr: "Il n'empêche que sans lui, rien n'aurait été possible.", ipa: "[il nɑ̃pɛʃ kə sɑ̃ lɥi ʁjɛ̃ noʁɛ ete pɔsibl]", ko: "그래도 그가 없었다면 아무것도 불가능했을 거예요." },
           note: "구어에서는 « n'empêche, … » 단독으로 '그래도 어쨌든'",
+          ch: "b2-10-impersonal-formal",
         },
         {
           pattern: "autant dire que",
@@ -1061,6 +1099,7 @@ export default {
           ko: "~라고 해도 과언이 아니다",
           ex: { fr: "Le stade était aux trois quarts vide ; autant dire que le match n'intéressait personne.", ipa: "[lə stad etɛ o tʁwa kaʁ vid otɑ̃ diʁ kə lə matʃ nɛ̃teʁɛsɛ pɛʁsɔn]", ko: "경기장 4분의 3이 비어 있었으니, 아무도 관심 없는 경기였다고 해도 과언이 아니죠." },
           ex2: { fr: "Autant dire qu'avec ce budget, rien n'est possible.", ipa: "[otɑ̃ diʁ kavɛk sə bydʒɛ ʁjɛ̃ nɛ pɔsibl]", ko: "이 예산으로는 아무것도 할 수 없다는 말이나 마찬가지예요." },
+          ch: "b2-10-impersonal-formal",
         },
         {
           pattern: "selon・d'après + N",
@@ -1069,6 +1108,7 @@ export default {
           ex: { fr: "Selon une étude récente, un Français sur trois dort mal.", ipa: "[səlɔ̃ yn etyd ʁesɑ̃t œ̃ fʁɑ̃sɛ syʁ tʁwa dɔʁ mal]", ko: "최근 연구에 따르면 프랑스인 3명 중 1명은 잠을 잘 못 잔대요." },
           ex2: { fr: "D'après les témoins, la voiture roulait très vite.", ipa: "[dapʁɛ le temwɛ̃ la vwatyʁ ʁulɛ tʁɛ vit]", ko: "목격자들에 따르면 차가 매우 빠르게 달리고 있었습니다." },
           note: "selon moi / d'après moi는 가능하지만 « selon je » ✗ — 강세형만",
+          ch: "b2-10-impersonal-formal",
         },
         {
           pattern: "en tant que",
@@ -1077,6 +1117,7 @@ export default {
           ex: { fr: "En tant que parent, je ne peux pas rester indifférent.", ipa: "[ɑ̃ tɑ̃ kə paʁɑ̃ ʒə nə pø pa ʁɛste ɛ̃difeʁɑ̃]", ko: "부모로서 저는 무관심할 수가 없어요." },
           ex2: { fr: "Elle s'exprimait en tant que représentante du personnel.", ipa: "[ɛl sɛkspʁimɛ ɑ̃ tɑ̃ kə ʁəpʁezɑ̃tɑ̃t dy pɛʁsɔnɛl]", ko: "그녀는 직원 대표 자격으로 발언했습니다." },
           note: "자격 '~로서' — comme보다 명확하고 격식적",
+          ch: "b2-10-impersonal-formal",
         },
       ],
     },

@@ -164,6 +164,7 @@ export default {
           ex: { en: "You attended the briefing, didn't you?", ko: "브리핑에 참석하셨죠?" },
           ex2: { en: "She won't object to the schedule, will she?", ko: "그녀가 일정에 반대하진 않겠죠?" },
           note: "❌ You attended, **did you**? → ✓ You attended, **didn't you**? — 극성이 반전돼야 확인 의문. 같은 극성 태그(…, did you?)는 빈정거림·추궁의 뉘앙스가 된다.",
+          ch: "b1-09-question-craft",
         },
         {
           pattern: "than the previous one・than he does",

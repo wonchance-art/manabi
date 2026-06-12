@@ -31,6 +31,7 @@ export default [
       {
         heading: "결정적 판별법 — 시간 표현이 답을 알려줘요",
         pattern: "yesterday · ~ ago · in 2020 → 과거 ↔ since · for · just · yet · ever → 현재완료",
+        patternKo: "시간 신호어가 시제를 정해줘요 — 끝난 시점이면 무조건 과거",
         body:
           "문장 속 시간 표현이 거의 답을 정해줘요. **끝난 시점을 콕 찍는 말**(yesterday, last week, in 2020, ago)이 있으면 무조건 과거시제 — 현재완료와는 절대 같이 못 써요.\n\n" +
           "반대로 **since + 시작점**(~이후로 지금까지), **for + 기간**(~동안 지금까지), just·already·yet·ever/never처럼 '지금까지'를 품은 말은 현재완료의 짝이에요.",
@@ -70,6 +71,7 @@ export default [
       {
         heading: "현실 체크 — 미국 영어는 과거시제를 더 좋아해요",
         pattern: "I just ate. (미국 구어) = I have just eaten. — 역방향은 불가",
+        patternKo: "미국 구어는 just/yet에도 과거시제 허용 (반대 방향은 어디서도 오류)",
         body:
           "교과서는 just/already/yet에 현재완료를 쓰지만, **미국 구어에서는 과거시제가 아주 흔해요** — I just ate. / Did you eat yet? 전부 자연스러워요. (영국 영어는 현재완료를 더 지키는 편이에요.)\n\n" +
           "단, **반대 방향은 안 돼요**. yesterday 같은 확정 과거 시점에 현재완료를 쓰는 건 어디서도 오류예요. 시험·격식 작문에서는 교과서 규칙대로 쓰는 게 안전합니다.",
@@ -137,6 +139,7 @@ export default [
       {
         heading: "1형이냐 2형이냐 — 같은 상황, 다른 태도",
         pattern: "1형 = 진지하게 봄 · 2형 = 거리 두기 → 공손·조심스러움",
+        patternKo: "같은 상황도 태도 따라 선택 — 거리를 두면 어조가 부드러워져요",
         body:
           "**같은 상황도 화자의 태도에 따라 1형과 2형을 골라 쓸 수 있어요.** If you help me, we will finish by six.(도와줄 가능성을 진지하게 봄) vs If you helped me, we would finish by six.(그럴 것 같지는 않지만...).\n\n" +
           "그래서 2형은 **공손한 부탁·조심스러운 제안**에도 쓰여요. 현실과 거리를 두면 어조가 부드러워지거든요 — Would you...?가 Will you...?보다 공손한 것과 같은 원리예요.",
@@ -277,6 +280,7 @@ export default [
       {
         heading: "생략 — 원어민이 짧게 말하는 비밀",
         pattern: "관계사 + 주어+동사 = 목적격 → 생략 OK · 관계사 + 동사 = 주격 → 생략 불가",
+        patternKo: "목적격 관계대명사는 생략이 회화의 기본값",
         body:
           "관계대명사는 **목적격일 때 생략 가능**하고, 원어민 회화에서는 생략하는 쪽이 압도적으로 자연스러워요 — The movie (that) we watched was boring.\n\n" +
           "반대로 **주격은 생략 불가**예요. The man who called you...에서 who를 빼면 '남자가 전화했다'라는 다른 문장이 돼버리니까요. 판별 공식: **관계사 바로 뒤에 '주어+동사'가 오면 생략 OK, 바로 동사가 오면 생략 불가.**",
@@ -355,6 +359,7 @@ export default [
       {
         heading: "질문과 부탁 옮기기",
         pattern: "asked if/wh- + 평서문 어순 · told/asked + 사람 + (not) to부정사",
+        patternKo: "질문 옮기기는 평서문 어순, 명령·부탁은 to부정사로 압축",
         body:
           "**의문문 옮기기** — asked를 쓰고 어순은 **평서문으로 복귀**해요. Yes/No 질문은 **if/whether**(She asked **if** I was OK.), 의문사 질문은 의문사 유지(He asked **where I lived**. — where did I live ×).\n\n" +
           "**명령·부탁**은 to부정사로 압축해요: He told me **to wait** there. / 금지는 not to: He told me **not to be** late.",
@@ -447,6 +452,7 @@ export default [
       {
         heading: "진행형 추측 — must be -ing",
         pattern: "must/might + be + -ing = 지금 ~하는 중인 게 틀림없어/일지도",
+        patternKo: "지금 벌어지는 중인 일의 추측은 be -ing를 더해요",
         body:
           "지금 벌어지고 있는 일의 추측은 **조동사 + be + -ing**예요 — She must be sleeping. / They might be having dinner.\n\n" +
           "전화를 안 받을 때, 사무실에 불이 켜져 있을 때 — 출현 빈도가 높은 패턴이니 덩어리째 입에 붙이세요. 과거에 대한 추측(must have p.p.)은 B2 가정문 챕터에서 이어서 다룹니다.",
@@ -540,6 +546,169 @@ export default [
           { en: "Could you set up a meeting for Thursday?", ko: "목요일로 회의 좀 잡아줄래요?" },
         ],
         vsKo: "한국어는 '미루다, 알아내다, 참다'처럼 동사 하나가 통째로 바뀌지만, 영어 구어는 put/get/take/turn 같은 **기본 동사 십여 개에 방향 부품을 갈아 끼우는 조립식**이에요. 어휘를 늘리는 게 아니라 조합을 늘리는 시스템이라는 걸 받아들이면, 구동사가 '외울 게 또 늘었다'가 아니라 '부품 몇 개로 수백 단어를 만드는 치트키'로 보이기 시작해요.",
+      },
+    ],
+  },
+
+  {
+    slug: "b1-08-preposition-combos",
+    level: "B1",
+    order: 8,
+    title: "단어는 아는데 전치사에서 막힌다",
+    topic: "동사·형용사+전치사",
+    titleFr: "Preposition Combinations: depend on / interested in",
+    summary: "listen, depend, interested — 단어는 다 아는데 to? on? in?에서 멈칫하는 순간을 위한 챕터예요. 전치사는 논리가 아니라 단짝이라, 덩어리 단위 공략법을 정리합니다.",
+    duration: "약 10분",
+    sections: [
+      {
+        heading: "동사+전치사 — 한 단어처럼 굳은 짝",
+        pattern: "listen to · wait for · depend on · apologize to 사람 for 잘못",
+        patternKo: "동사와 전치사는 세트 — 조사 감각으로 고르면 틀려요",
+        body:
+          "'음악을 듣다', '버스를 기다리다' — 한국어로는 둘 다 '-를'인데, 영어는 listen **to** music, wait **for** the bus예요. 동사 뒤 전치사는 논리가 아니라 **그 동사가 데리고 다니는 단짝**이라, 동사+전치사를 한 단어처럼 통째로 외우는 게 유일한 정공법이에요.\n\n" +
+          "까다로운 대표가 **apologize** — 사과할 '상대'는 to, 사과할 '이유'는 for예요: apologize **to** her **for** being late. 같은 최상위 빈도 세트로 ask **for**(달라고 하다), pay **for**(값을 치르다), belong **to**(~에 속하다), rely/depend **on**(~에 기대다, ~에 달려 있다)이 있어요.",
+        examples: [
+          { en: "I'm listening to a new podcast these days.", ko: "요즘 새 팟캐스트를 듣고 있어요.", note: "listen music ×" },
+          { en: "Everything depends on the test results.", ko: "모든 게 검사 결과에 달려 있어요.", note: "depend of ×" },
+          { en: "I apologized to my boss for missing the deadline.", ko: "마감을 놓친 것에 대해 상사에게 사과했어요.", note: "상대는 to, 이유는 for" },
+        ],
+        pitfall: "거꾸로 **전치사를 붙이면 안 되는 동사**도 있어요 — discuss about it(×) → **discuss** it, marry with him(×) → **marry** him, answer to the question(×) → **answer** the question, enter into the room(×) → **enter** the room. 한국어 '~에 대해 논의하다'의 '-에 대해' 때문에 about이 끼어드는 게 최다 오류 — discuss는 이미 'about'을 품고 있는 동사예요.",
+      },
+      {
+        heading: "형용사+전치사 — interested in이 한 덩어리인 이유",
+        pattern: "interested in · good at · afraid of · different from · angry with/at",
+        patternKo: "형용사도 전치사 단짝이 정해져 있어요",
+        body:
+          "형용사도 마찬가지로 짝이 등록되어 있어요 — **interested in, good at, afraid of, proud of, responsible for, similar to, different from**. 전부 형용사+전치사가 한 덩어리예요.\n\n" +
+          "**angry**는 대상에 따라 갈려요 — 사람에게는 **with**(angry with him), 상황·행동에는 **at/about**(angry at the decision). 그리고 '~와 결혼한'은 married **to**(married with ×) — 한국어 '-와'의 직역이 가장 자주 어긋나는 자리예요.",
+        table: {
+          caption: "B1 필수 형용사+전치사",
+          headers: ["덩어리", "뜻", "주의"],
+          rows: [
+            ["interested in", "~에 관심 있는", "about ×"],
+            ["good / bad at", "~를 잘하는·못하는", "용도는 for (good for)"],
+            ["afraid / scared of", "~를 무서워하는", "to + 명사 ×"],
+            ["different from", "~와 다른", "격식 글은 from"],
+            ["similar to", "~와 비슷한", "with ×"],
+            ["angry with 사람 · at/about 상황", "~에게·~에 화난", "대상 따라 분기"],
+            ["proud of / pleased with", "~를 자랑스러워하는 / ~에 만족하는", ""],
+            ["married to", "~와 결혼한", "with ×"],
+          ],
+        },
+        examples: [
+          { en: "She's really good at explaining difficult things.", ko: "그녀는 어려운 걸 정말 잘 설명해요." },
+          { en: "Why are you angry with me? I'm angry about the schedule, not you.", ko: "왜 나한테 화났어? — 화난 건 일정 때문이지 네가 아니야.", note: "사람 with, 상황 about" },
+          { en: "Your case is similar to mine.", ko: "네 경우는 내 경우와 비슷해." },
+        ],
+        vsKo: "한국어 조사 '-에/-와/-를'과 영어 전치사는 1:1 대응이 안 돼요. '-와 다르다'는 different **from**(with가 아니라), '-와 결혼하다'는 married **to**. 조사를 번역하려는 본능을 끄고, **형용사 쪽에서 전치사를 불러오는** 방향으로 외우는 게 정답이에요.",
+      },
+      {
+        heading: "전치사 뒤 동사는 무조건 -ing",
+        pattern: "by -ing(~함으로써) · without -ing(~하지 않고) · instead of -ing(~하는 대신)",
+        patternKo: "전치사 + to부정사는 존재하지 않아요",
+        body:
+          "**모든 전치사 뒤의 동사는 -ing** — 예외 없는 대원칙이에요. by analyzing(분석함으로써), without asking(묻지 않고), instead of taking(타는 대신), before/after leaving(떠나기 전에/후에).\n\n" +
+          "함정은 **to가 전치사인 표현들** — look forward **to**, be used **to**, object **to**의 to는 부정사의 to가 아니라 전치사라서 뒤에 -ing가 와요. I'm looking forward to **seeing** you(to see ×). 이메일 맺음말 단골이라 꼭 챙기세요.",
+        examples: [
+          { en: "He improved his English by watching dramas without subtitles.", ko: "그는 자막 없이 드라마를 보면서 영어 실력을 늘렸어요.", note: "by + -ing = 수단" },
+          { en: "She left without saying goodbye.", ko: "그녀는 인사도 없이 떠났어요." },
+          { en: "I'm looking forward to hearing from you.", ko: "회신 기다리겠습니다.", note: "이 to는 전치사 — to hear ×" },
+        ],
+        pitfall: "**looking forward to see you / without to ask** — to부정사 자동 반사가 만드는 오류예요. 구별법: to 뒤에 명사를 넣어보세요. look forward to **the weekend**처럼 명사가 자연스럽게 들어가면 그 to는 전치사 → 동사는 -ing. want to, decide to처럼 명사가 못 들어가면 부정사의 to예요.",
+      },
+      {
+        heading: "동사+목적어+전치사 — 3단 골격",
+        pattern: "thank A for B · prevent A from -ing · accuse A of -ing · congratulate A on B",
+        patternKo: "누구를 + 무엇 때문에 — 골격째로 암기",
+        body:
+          "B1 라이팅·스피킹에서 점수를 가르는 3단 골격이에요 — **thank** A **for** B(고마움), **blame** A **for** B(탓), **prevent/stop** A **from** -ing(저지), **accuse** A **of** -ing(비난), **congratulate** A **on** B(축하), **remind** A **of** B(상기).\n\n" +
+          "구동사(put off, look after)와는 다른 부류예요 — 구동사는 동사+불변화사가 새 뜻을 만들지만(구동사 입문 챕터 참고), 여기는 **동사 본연의 뜻 + 등록된 전치사** 조합이에요. 단어 궁합의 더 큰 그림은 B2 콜로케이션 챕터로 이어집니다.",
+        examples: [
+          { en: "Thank you so much for inviting us.", ko: "초대해 주셔서 정말 감사해요.", note: "thank A for -ing" },
+          { en: "The rain prevented us from going hiking.", ko: "비 때문에 등산을 못 갔어요.", note: "prevent A from -ing" },
+          { en: "This song always reminds me of that summer.", ko: "이 노래를 들으면 항상 그 여름이 떠올라요." },
+        ],
+        tip: "전치사 결합은 문장째 수집이 정석이에요. 단어장에 'depend = 의존하다' 대신 **It depends on the weather.** 한 문장을 적으세요. 그리고 새 동사·형용사를 만나면 사전에서 **뒤에 오는 전치사부터** 확인하는 습관 — 이 습관 하나가 B1과 B2를 가릅니다.",
+      },
+    ],
+  },
+
+  {
+    slug: "b1-09-question-craft",
+    level: "B1",
+    order: 9,
+    title: "\"어디인지 아세요?\"의 어순 반전",
+    topic: "간접의문·부가의문",
+    titleFr: "Question Craft: Indirect Questions & Tags",
+    summary: "Do you know where it is?의 어순, aren't I?의 부가의문, So do I의 맞장구, Who broke it?의 주어 의문까지 — 질문을 둘러싼 네 가지 기술을 한 챕터에 모았어요.",
+    duration: "약 10분",
+    sections: [
+      {
+        heading: "간접의문 — 질문을 문장 속에 넣으면 어순이 풀린다",
+        pattern: "Where is it? → Do you know where it is?",
+        patternKo: "간접의문 = 의문사 + 평서문 어순 · do/does/did 소멸",
+        body:
+          "질문을 Do you know..., Could you tell me... 속에 넣는 순간 **의문문 어순이 평서문으로 돌아가요** — Where **is the station**? → Do you know where **the station is**? 조동사 do/does/did는 아예 사라져요: What time **does it start**? → I don't know what time **it starts**.\n\n" +
+          "yes/no 질문은 **if/whether**로 받아요: Is it open? → Do you know **if** it's open? 직설 질문보다 부드러워서 **공손한 질문의 기본형**이기도 해요 — 길 묻기, 전화 문의, 회사 메일이 전부 이 형태가 표준입니다.",
+        examples: [
+          { en: "Do you know where the nearest ATM is?", ko: "가장 가까운 ATM이 어디 있는지 아세요?", note: "where is the ATM ×" },
+          { en: "Could you tell me what time the museum opens?", ko: "박물관이 몇 시에 여는지 알려 주시겠어요?", note: "does가 사라지고 opens로" },
+          { en: "I wonder if she got my message.", ko: "그녀가 내 메시지를 받았는지 모르겠네요." },
+        ],
+        pitfall: "**Do you know where is the station?** — 간접의문 오류의 90%가 이 어순이에요. 의문문을 통째로 옮겨 심는 거죠. 묻는 힘은 문장 맨 앞의 Do you know가 이미 다 쓰고 있으니, 뒤따르는 절은 **평서문으로 쉬어도 됩니다**. 간접화법의 asked where I lived(간접화법 챕터)와 정확히 같은 규칙이에요.",
+      },
+      {
+        heading: "부가의문 — 문장 끝에 붙이는 \"그렇죠?\"",
+        pattern: "긍정문 + 부정 tag(..., isn't it?) · 부정문 + 긍정 tag(..., is it?)",
+        patternKo: "앞이 긍정이면 꼬리는 부정 — 시소 규칙",
+        body:
+          "확인·동의를 구하는 한국어 '-죠?'의 자리에 영어는 **부가의문(tag)**을 붙여요. 규칙은 시소 — 본문이 긍정이면 tag는 부정, 본문이 부정이면 tag는 긍정. 동사는 본문 것을 그대로 받아요: be면 isn't it, 일반동사 현재면 don't you, 과거면 didn't she.\n\n" +
+          "암기가 필요한 특수 tag 네 가지 — **I'm... → aren't I?**(amn't는 존재하지 않음), **Let's... → shall we?**, **명령문 → will you?**, **Nobody/Nothing 주어 → 긍정 tag + they/it**.",
+        table: {
+          caption: "특수 부가의문 모음",
+          headers: ["본문", "tag", "예"],
+          rows: [
+            ["I am ...", "aren't I?", "I'm next, aren't I?"],
+            ["Let's ...", "shall we?", "Let's start, shall we?"],
+            ["명령문", "will you?", "Close the door, will you?"],
+            ["Nobody / No one ...", "긍정 tag + they", "Nobody called, did they?"],
+            ["Nothing ...", "긍정 tag + it", "Nothing broke, did it?"],
+          ],
+        },
+        examples: [
+          { en: "You're coming to the party, aren't you?", ko: "파티에 올 거죠?" },
+          { en: "She didn't forget, did she?", ko: "그녀가 잊은 건 아니죠?", note: "부정문 → 긍정 tag" },
+          { en: "I'm on the list, aren't I?", ko: "저 명단에 있는 거 맞죠?", note: "amn't I는 없어요" },
+        ],
+        pitfall: "**He doesn't know, doesn't he?** — 부정문에 부정 tag를 또 붙이는 실수예요. tag는 본문과 반대 극성이 철칙: He doesn't know, **does he?** 그리고 tag의 동사를 본문과 다르게 갈아 끼우는 것도 오류 — You can swim, do you?(×) → can't you?(○). 동사는 복사, 극성만 반전이에요.",
+      },
+      {
+        heading: "짧은 대답과 맞장구 — Yes, I do.에서 So do I.까지",
+        pattern: "Yes, I do. / No, I'm not. · 맞장구 So do I.(긍정) · Neither do I.(부정)",
+        patternKo: "본동사 대신 조동사로 받기",
+        body:
+          "영어는 Yes/No 단독 대답이 퉁명스럽게 들릴 수 있어서 **조동사를 재활용한 짧은 대답**이 기본 매너예요 — Do you...?에는 Yes, I **do**., Are you...?에는 No, I'**m not**. 본동사를 반복하지 않고 조동사만 남기는 게 포인트예요.\n\n" +
+          "맞장구도 같은 원리 — 긍정문에는 **So + 조동사 + I**(나도 그래), 부정문에는 **Neither + 조동사 + I**(나도 안 그래). 앞 문장이 am이면 So am I, can이면 So can I, 일반동사 과거면 So did I. 캐주얼하게는 Me too / Me neither예요. (이 어순이 도치라는 큰 그림은 B2 도치 챕터에서 이어집니다.)",
+        examples: [
+          { en: "A: Do you like jazz? — B: Yes, I do. / Not really.", ko: "A: 재즈 좋아해요? — B: 네, 좋아해요. / 그냥 그래요." },
+          { en: "A: I can't cook at all. — B: Neither can I.", ko: "A: 난 요리 정말 못해. — B: 나도 못해.", note: "부정 맞장구에 Me too ×" },
+          { en: "A: I loved the ending. — B: So did I.", ko: "A: 결말 너무 좋았어. — B: 나도.", note: "과거 일반동사 → did로 받기" },
+        ],
+        vsKo: "부정 의문에 답할 때 한국어와 영어가 정반대예요. '안 좋아해요?'에 한국어는 '**네**, 안 좋아해요'지만 영어는 **No**, I don't. 한국어 네/아니요는 **상대 말에 대한 동의 여부**를, 영어 Yes/No는 **내 대답 자체의 긍정/부정**을 따라가요. 'Yes 뒤에는 반드시 긍정문, No 뒤에는 반드시 부정문'으로 기억하면 안 헷갈려요.",
+      },
+      {
+        heading: "주어 의문 vs 목적어 의문 — Who broke it?에 did가 없는 이유",
+        pattern: "주어를 물으면 그대로(Who broke it?) · 목적어를 물으면 do 소환(Who did they invite?)",
+        patternKo: "묻는 자리가 주어면 do/does/did 불필요",
+        body:
+          "Who가 **주어 자리**를 물을 땐 의문사가 주어 자리에 그대로 앉으니 어순 변화도, do도 필요 없어요 — **Who broke** the vase?(누가 깼어?) / **What happened?**(무슨 일이야?). 반대로 **목적어**를 물을 땐 평소처럼 do/does/did가 소환돼요 — **Who did they invite?**(누구를 초대했어?).\n\n" +
+          "판별법은 답을 만들어보는 것 — Who broke it? → **Tom** broke it.(답이 주어 자리 = do 불필요) / Who did they invite? → They invited **Tom**.(답이 목적어 자리 = do 필요).",
+        examples: [
+          { en: "Who told you that?", ko: "누가 그래요?", note: "주어 질문 — Who did tell ×" },
+          { en: "What happened at the meeting?", ko: "회의에서 무슨 일이 있었어요?" },
+          { en: "Who did you meet at the conference?", ko: "학회에서 누구를 만났어요?", note: "목적어 질문 — did 필요" },
+        ],
+        pitfall: "**Who did break the vase?** — 주어를 묻는 질문에 did를 넣는 과잉교정이에요(따져 묻는 강조가 아닌 한 ×). 반대 방향 **Who you invited?**도 같은 빈도로 나와요. 한국어는 '누**가** 깼어?/누구**를** 초대했어?'처럼 조사가 구분해 주지만, 영어는 **do의 유무**가 그 일을 합니다.",
       },
     ],
   },

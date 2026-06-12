@@ -190,6 +190,7 @@ export default {
           ex: { en: "This time next week, I'll be flying to London.", ko: "다음 주 이맘때면 런던행 비행기 안일 거예요." },
           ex2: { en: "Don't call at nine — we'll be having dinner.", ko: "9시에는 전화하지 마. 저녁 먹고 있을 거야." },
           note: "공손한 확인 의문으로도: Will you **be using** the car today? (의도를 묻지 않는 중립 질문).",
+          ch: "c1-08-time-perspective",
         },
         {
           pattern: "will have + p.p.",
@@ -198,6 +199,7 @@ export default {
           ex: { en: "By the end of the month, we will have completed the project.", ko: "이달 말까지는 프로젝트를 끝냈을 거예요." },
           ex2: { en: "She won't have finished the report by Friday.", ko: "그녀는 금요일까지 보고서를 못 끝낼 거예요." },
           note: "특정 시각(at 3pm)보다 기한(by ...)과 어울린다: ❌ At 3pm I will have gone → ✓ **By** 3pm.",
+          ch: "c1-08-time-perspective",
         },
         {
           pattern: "will have been + -ing",
@@ -215,6 +217,7 @@ export default {
           ex: { en: "By the time you read this, I will have left.", ko: "네가 이 글을 읽을 때쯤이면 난 이미 떠났을 거야." },
           ex2: { en: "By the time the guests arrive, we'll have set everything up.", ko: "손님들이 도착할 때쯤이면 준비를 다 마쳤을 거예요." },
           note: "by the time 절은 현재시제: ❌ by the time you will read → ✓ by the time you **read**.",
+          ch: "c1-08-time-perspective",
         },
         {
           pattern: "was going to・was about to",
@@ -223,6 +226,7 @@ export default {
           ex: { en: "I was going to call you, but I lost your number.", ko: "전화하려고 했는데 번호를 잃어버렸어요." },
           ex2: { en: "We were about to give up when the answer came.", ko: "포기하려던 참에 답이 왔어요." },
           note: "'하려고 했(는데 안 했)다'는 미실현 함의가 깔린다.",
+          ch: "c1-08-time-perspective",
         },
         {
           pattern: "be due to・be to",
@@ -231,6 +235,7 @@ export default {
           ex: { en: "The president is to visit Japan next month.", ko: "대통령은 다음 달 일본을 방문할 예정입니다." },
           ex2: { en: "The train is due to arrive at 9:40.", ko: "열차는 9시 40분 도착 예정이에요." },
           note: "보도·공지 문체 — 구어는 be supposed to나 현재진행이 자연.",
+          ch: "c1-08-time-perspective",
         },
         {
           pattern: "be on the point of + -ing",
@@ -239,6 +244,7 @@ export default {
           ex: { en: "The company is on the point of signing the deal.", ko: "회사는 막 계약을 체결하려는 참이에요." },
           ex2: { en: "I was on the point of leaving when she finally showed up.", ko: "막 나가려는데 그제야 그녀가 나타났어요." },
           note: "be about to의 격식 변형.",
+          ch: "c1-08-time-perspective",
         },
         {
           pattern: "won't (refusal)",
@@ -360,6 +366,7 @@ export default {
           ex: { en: "The teacher made us rewrite the essay.", ko: "선생님은 우리에게 에세이를 다시 쓰게 했어요." },
           ex2: { en: "Don't make me laugh.", ko: "웃기지 좀 마." },
           note: "❌ made me to cry → ✓ made me **cry**. 수동태에서는 to 부활: He was made **to wait**.",
+          ch: "b2-08-causative-perception",
         },
         {
           pattern: "let someone do",
@@ -368,6 +375,7 @@ export default {
           ex: { en: "My parents let me travel alone at sixteen.", ko: "부모님은 제가 열여섯에 혼자 여행하는 걸 허락하셨어요." },
           ex2: { en: "They didn't let us take photos inside.", ko: "안에서는 사진을 못 찍게 했어요." },
           note: "let은 수동태 불가 — be allowed to로: We **were allowed to** enter.",
+          ch: "b2-08-causative-perception",
         },
         {
           pattern: "have someone do",
@@ -376,6 +384,7 @@ export default {
           ex: { en: "I'll have my assistant send you the details.", ko: "비서를 시켜 자세한 내용을 보내 드릴게요." },
           ex2: { en: "She had the mechanic check the brakes.", ko: "그녀는 정비사에게 브레이크를 점검하게 했어요." },
           note: "❌ had him to fix the car → ✓ had him **fix** the car.",
+          ch: "b2-08-causative-perception",
         },
         {
           pattern: "get someone to do",
@@ -384,6 +393,7 @@ export default {
           ex: { en: "Can you get him to call me back?", ko: "그가 저한테 다시 전화하게 해 줄래요?" },
           ex2: { en: "I finally got my dad to try Indian food.", ko: "드디어 아빠가 인도 음식을 드시게 만들었어요." },
           note: "get만 to부정사 — make/let/have는 원형. 강제(make) > 의뢰(have) > 설득(get) > 허용(let).",
+          ch: "b2-08-causative-perception",
         },
         {
           pattern: "make + O + adjective",
@@ -392,6 +402,7 @@ export default {
           ex: { en: "Your comment made me angry.", ko: "네 말에 화가 났어." },
           ex2: { en: "The news made everyone nervous.", ko: "그 소식에 모두가 불안해졌어요." },
           note: "❌ made them to be sad・made her happily → ✓ made them **sad** (형용사, 부사 불가).",
+          ch: "b2-08-causative-perception",
         },
         {
           pattern: "see・hear + O + do",
@@ -400,6 +411,7 @@ export default {
           ex: { en: "I saw him leave the building.", ko: "그가 건물에서 나가는 걸 봤어요." },
           ex2: { en: "We heard her sing the whole song.", ko: "그녀가 노래를 끝까지 부르는 걸 들었어요." },
           note: "❌ I saw her to arrive → ✓ saw her **arrive** (to부정사 불가).",
+          ch: "b2-08-causative-perception",
         },
         {
           pattern: "see・hear + O + -ing",
@@ -408,6 +420,7 @@ export default {
           ex: { en: "I saw him leaving the building.", ko: "그가 건물에서 나가고 있는 모습을 봤어요." },
           ex2: { en: "She felt her hands trembling.", ko: "그녀는 손이 떨리고 있는 걸 느꼈어요." },
           note: "전 과정은 원형, 진행 스냅샷은 -ing — 행위가 끝났는지 여부가 갈린다.",
+          ch: "b2-08-causative-perception",
         },
         {
           pattern: "help + O + (to) do",
@@ -416,6 +429,7 @@ export default {
           ex: { en: "She helped me carry the boxes.", ko: "그녀가 상자 나르는 걸 도와줬어요." },
           ex2: { en: "This app helps you to manage your time.", ko: "이 앱은 시간 관리를 도와줘요." },
           note: "to는 생략 가능 — 미국식은 생략이 우세, 영국식은 둘 다 흔하다.",
+          ch: "b2-08-causative-perception",
         },
         {
           pattern: "make yourself understood",
@@ -423,6 +437,7 @@ export default {
           ko: "자기 말을 이해시키다/들리게 하다",
           ex: { en: "Can you make yourself understood in English?", ko: "영어로 의사소통이 되세요?" },
           ex2: { en: "I had to shout to make myself heard over the music.", ko: "음악 소리 때문에 소리쳐야 내 말이 들렸어요." },
+          ch: "b2-08-causative-perception",
         },
       ],
     },
@@ -866,6 +881,7 @@ export default {
           ex: { en: "Would you like some coffee?", ko: "커피 좀 드릴까요?" },
           ex2: { en: "Any student with a valid ID can apply.", ko: "유효한 학생증이 있는 학생이라면 누구나 지원할 수 있어요." },
           note: "권유·긍정 기대 의문엔 some: Can I have **some** water? 긍정문의 any는 '아무거나'.",
+          ch: "b2-09-determiners-agreement",
         },
         {
           pattern: "another・other・the other",
@@ -874,6 +890,7 @@ export default {
           ex: { en: "Can I have another cup of coffee?", ko: "커피 한 잔 더 주시겠어요?" },
           ex2: { en: "Some people agreed; others didn't.", ko: "동의한 사람도 있었고, 그러지 않은 사람도 있었어요." },
           note: "❌ another books → ✓ **other** books・another **book**. 정해진 나머지는 the other(s).",
+          ch: "b2-09-determiners-agreement",
         },
         {
           pattern: "all (of) the・most of the",
@@ -882,6 +899,7 @@ export default {
           ex: { en: "Most of the students passed the exam.", ko: "학생 대부분이 시험에 합격했어요." },
           ex2: { en: "Not all of the information was accurate.", ko: "모든 정보가 정확하지는 않았어요." },
           note: "❌ Most of students → ✓ **Most students**・Most **of the** students (of 뒤엔 한정사 필수).",
+          ch: "b2-09-determiners-agreement",
         },
         {
           pattern: "both・either・neither",
@@ -890,6 +908,7 @@ export default {
           ex: { en: "Both methods have advantages.", ko: "두 방법 모두 장점이 있어요." },
           ex2: { en: "Neither candidate met the requirements.", ko: "두 후보 모두 요건을 충족하지 못했어요." },
           note: "❌ Neither candidates were → ✓ Neither candidate **was** (단수).",
+          ch: "b2-09-determiners-agreement",
         },
         {
           pattern: "either ... or・neither ... nor",
@@ -898,6 +917,7 @@ export default {
           ex: { en: "You can either email me or call the office.", ko: "메일을 주시거나 사무실로 전화하시면 돼요." },
           ex2: { en: "Neither the price nor the quality was acceptable.", ko: "가격도 품질도 받아들일 수 없는 수준이었어요." },
           note: "근접 일치: Neither he nor **they were** told (동사는 가까운 주어에 맞춘다).",
+          ch: "b2-09-determiners-agreement",
         },
         {
           pattern: "few・a few",
@@ -906,6 +926,7 @@ export default {
           ex: { en: "A few friends came over to help.", ko: "친구 몇 명이 도우러 와 줬어요." },
           ex2: { en: "Few people understand how serious it is.", ko: "이게 얼마나 심각한지 이해하는 사람은 거의 없어요." },
           note: "a 하나로 톤이 반전 — few는 '없어서 아쉬움', a few는 '있어서 다행'.",
+          ch: "b2-09-determiners-agreement",
         },
         {
           pattern: "little・a little",
@@ -914,6 +935,7 @@ export default {
           ex: { en: "There's a little time left, so don't panic.", ko: "시간이 조금 남았으니 당황하지 마세요." },
           ex2: { en: "There's little hope of finding survivors.", ko: "생존자를 찾을 가망은 거의 없어요." },
           note: "few/a few는 가산, little/a little은 불가산.",
+          ch: "b2-09-determiners-agreement",
         },
         {
           pattern: "no + noun・none",
@@ -922,6 +944,7 @@ export default {
           ex: { en: "No evidence supports this theory.", ko: "이 이론을 뒷받침하는 증거는 없어요." },
           ex2: { en: "We looked for errors but found none.", ko: "오류를 찾아봤지만 하나도 없었어요." },
           note: "❌ Not evidence exists → ✓ **No** evidence exists (no는 한정사, not은 동사 부정).",
+          ch: "b2-09-determiners-agreement",
         },
         {
           pattern: "whole・entire",
@@ -930,6 +953,7 @@ export default {
           ex: { en: "I spent the whole weekend preparing for the interview.", ko: "주말 내내 면접 준비를 했어요." },
           ex2: { en: "The entire building was evacuated.", ko: "건물 전체에 대피령이 내려졌어요." },
           note: "❌ all the day → ✓ **all day**・**the whole day**.",
+          ch: "b2-09-determiners-agreement",
         },
       ],
     },

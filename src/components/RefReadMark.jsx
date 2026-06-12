@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { useAuth } from '../lib/AuthContext';
+import { langFromReadKey, syncReadRemote } from '../lib/refProgress';
 
 /**
  * 레퍼런스 문법 챕터 읽음 기록 (localStorage)
@@ -12,9 +14,18 @@ import { useEffect, useRef } from 'react';
  */
 export default function RefReadMark({ storageKey, slug }) {
   const ref = useRef(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     if (!storageKey || !slug) return;
+    const lang = langFromReadKey(storageKey);
+    // 진입 즉시 기록 — [강의] 복귀 시 언어 유지·해당 챕터로 자동 스크롤용
+    try {
+      if (lang) {
+        localStorage.setItem('lessons_lang', lang);
+        localStorage.setItem('ref_last_chapter', JSON.stringify({ lang, slug, at: Date.now() }));
+      }
+    } catch {}
     const record = () => {
       try {
         const arr = JSON.parse(localStorage.getItem(storageKey) || '[]');
@@ -22,7 +33,11 @@ export default function RefReadMark({ storageKey, slug }) {
           arr.push(slug);
           localStorage.setItem(storageKey, JSON.stringify(arr));
         }
+        // 홈 '이어서 학습' 카드용 — 마지막으로 학습한 언어·챕터
+        if (lang) localStorage.setItem('ref_last_visit', JSON.stringify({ lang, slug, at: Date.now() }));
       } catch {}
+      // 로그인 시 서버 동기화 (실패해도 localStorage가 원본)
+      if (user?.id && lang) syncReadRemote(user.id, lang, slug);
     };
     const el = ref.current;
     if (!el || typeof IntersectionObserver === 'undefined') {
@@ -37,7 +52,7 @@ export default function RefReadMark({ storageKey, slug }) {
     });
     io.observe(el);
     return () => io.disconnect();
-  }, [storageKey, slug]);
+  }, [storageKey, slug, user?.id]);
 
   return <span ref={ref} aria-hidden="true" style={{ display: 'block', height: 1 }} />;
 }

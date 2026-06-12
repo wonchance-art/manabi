@@ -200,6 +200,7 @@ export default [
       {
         heading: "성경에서 온 표현 — 무신론자도 쓰는 어휘",
         pattern: "good Samaritan · the writing on the wall · scapegoat · prodigal son",
+        patternKo: "종교색은 빠지고 어휘만 남은 성경 표현들",
         body:
           "성경 표현은 영어에 가장 넓게 퍼진 지층 — 종교색은 증발하고 어휘만 남았어요. **good Samaritan**(곤경의 낯선 이를 돕는 사람 — Good Samaritan law로 제도화), **the writing on the wall**(임박한 몰락의 징조 — 경제 기사 단골), **prodigal son**(떠났다 돌아온 사람), **scapegoat**(희생양).\n\n" +
           "**forbidden fruit, salt of the earth, go the extra mile**도 전부 성경 출신이에요.",
@@ -214,6 +215,7 @@ export default [
       {
         heading: "셰익스피어 — 일상 회화 속의 400년 전 대사",
         pattern: "break the ice · wild-goose chase · pound of flesh · green-eyed monster",
+        patternKo: "일상 회화에 살아남은 400년 전 셰익스피어 대사들",
         body:
           "셰익스피어는 '읽는 고전'이기 전에 **현대 영어 어휘의 공장**이에요 — **break the ice**(「말괄량이 길들이기」), **wild-goose chase**(「로미오와 줄리엣」), **the green-eyed monster**(질투, 「오셀로」 — 영어에서 질투의 색이 초록인 이유), **pound of flesh**(「베니스의 상인」), in a pickle, heart of gold까지.\n\n" +
           "대사 자체가 관용구가 된 경우도 있어요 — **To be or not to be**는 패러디의 만능 틀(To buy or not to buy...), **star-crossed lovers**, **All the world's a stage**도 인용 단골이에요.",
@@ -228,6 +230,7 @@ export default [
       {
         heading: "그리스 신화 — Achilles' heel에서 Pandora's box까지",
         pattern: "Achilles' heel · Pandora's box · Trojan horse · Sisyphean task",
+        patternKo: "가장 오래된 지층 — 보통명사가 된 그리스 신화",
         body:
           "가장 오래된 지층, 그리스 신화 — **Achilles' heel**(치명적 약점, 한국어에도 있어 무료 항목), **Pandora's box**(한번 열면 닫을 수 없는 재앙), **Trojan horse**(내부의 숨은 위협 — 컴퓨터 바이러스로 제2의 인생), **Midas touch**(닿는 것마다 황금), **Sisyphean**(끝없이 반복되는 헛수고).\n\n" +
           "신화가 보통명사가 된 경우도 많아요 — odyssey(긴 여정), herculean(초인적인), mentor(오디세우스 아들의 스승 이름!).",

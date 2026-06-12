@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
@@ -10,6 +10,8 @@ import { getXPLevel, getLevelProgress, getXPToNextLevel } from '../lib/xp';
 import Button from '../components/Button';
 import { parseTitle } from '../lib/seriesMeta';
 import { getIdealLevel } from '../lib/levels';
+import { isPassed } from '../components/RefPatternCheck';
+import { pullProgress } from '../lib/refProgress';
 
 async function fetchHomeData(userId) {
   const todayStr   = new Date().toISOString().split('T')[0];
@@ -172,9 +174,74 @@ function ProgressBar({ pct, done }) {
   );
 }
 
-export default function HomePage() {
+export default function HomePage({ continueManifest = {} }) {
   const { user, profile, fetchProfile } = useAuth();
   const router = useRouter();
+
+  // 강의 이어서 학습 — localStorage 진행 기록으로 다음 챕터 계산 (로그인 시 서버 병합)
+  const [refProgress, setRefProgress] = useState(null);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const load = () => {
+      const prog = {};
+      for (const [name, ref] of Object.entries(continueManifest)) {
+        try {
+          prog[name] = {
+            readSet: new Set(JSON.parse(localStorage.getItem(ref.readKey) || '[]')),
+            checkMap: JSON.parse(localStorage.getItem(`${ref.readKey}_check`) || '{}'),
+          };
+        } catch {
+          prog[name] = { readSet: new Set(), checkMap: {} };
+        }
+      }
+      let lastVisit = null;
+      try { lastVisit = JSON.parse(localStorage.getItem('ref_last_visit') || 'null'); } catch {}
+      setRefProgress({ prog, lastVisit });
+    };
+    load();
+    if (user?.id) {
+      const readKeys = Object.fromEntries(
+        Object.entries(continueManifest).map(([name, ref]) => [name, ref.readKey])
+      );
+      pullProgress(user.id, readKeys).then(changed => { if (changed) load(); });
+    }
+    // continueManifest는 서버에서 내려오는 정적 데이터
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
+  const continueCard = useMemo(() => {
+    if (!refProgress) return null;
+    const { prog, lastVisit } = refProgress;
+    // 언어 우선순위: 마지막 학습 언어 → 프로필 학습 언어 → 매니페스트 순서
+    const order = [
+      ...(lastVisit?.lang ? [lastVisit.lang] : []),
+      ...(profile?.learning_language || []),
+      ...Object.keys(continueManifest),
+    ];
+    const seen = new Set();
+    for (const name of order) {
+      if (seen.has(name) || !continueManifest[name]) continue;
+      seen.add(name);
+      const ref = continueManifest[name];
+      const { readSet, checkMap } = prog[name] || { readSet: new Set(), checkMap: {} };
+      // 활동이 전혀 없는 언어는 건너뜀 (신규 사용자는 시작 가이드가 담당)
+      if (readSet.size === 0 && Object.keys(checkMap).length === 0) continue;
+      let firstUnread = null;
+      for (const l of ref.levels) {
+        for (const ch of l.chapters) {
+          const result = checkMap[ch.slug];
+          if (result && !isPassed(result)) {
+            return { ref, ch, levelLabel: l.label, mode: 'retry' };
+          }
+          if (!firstUnread && !readSet.has(ch.slug)) {
+            firstUnread = { ref, ch, levelLabel: l.label, mode: 'next' };
+          }
+        }
+      }
+      if (firstUnread) return firstUnread;
+    }
+    return null;
+  }, [refProgress, profile, continueManifest]);
 
   const { data, isLoading } = useQuery({
     queryKey: ['home', user?.id],
@@ -386,6 +453,25 @@ export default function HomePage() {
           </Link>
         );
       })()}
+
+      {/* 강의 이어서 학습 — 챕터 진행 기록 기반 (미통과 재도전 우선) */}
+      {continueCard && (
+        <Link
+          href={`${continueCard.ref.base}/grammar/${continueCard.ch.slug}`}
+          className="lessons-continue"
+        >
+          <span className="lessons-continue__label" aria-hidden="true">
+            {continueCard.mode === 'retry' ? '🔁' : '🎓'}
+          </span>
+          <span className="lessons-continue__body">
+            <span className="lessons-continue__kicker">
+              {continueCard.ref.flag} 강의 {continueCard.mode === 'retry' ? '재도전 — 패턴 체크 미통과' : '이어서 학습'}
+            </span>
+            <span className="lessons-continue__title">#{continueCard.ch.order} {continueCard.ch.title}</span>
+          </span>
+          <span className="lessons-continue__meta">{continueCard.levelLabel} →</span>
+        </Link>
+      )}
 
       {/* 오늘 읽기 — 진행 중 시리즈가 없을 때만 */}
       {(() => {

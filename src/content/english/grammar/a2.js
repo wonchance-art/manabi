@@ -207,6 +207,7 @@ export default [
       {
         heading: "형태 정리 — will은 만능, be going to는 be 변화 주의",
         pattern: "will('ll / won't) + 원형 · am/is/are going to + 원형",
+        patternKo: "will은 모양 하나, be going to는 be가 주어 따라 변신",
         body:
           "**will**은 조동사라 주어가 누구든 will + 원형, 축약은 'll, 부정은 won't예요. **be going to**는 be 부분이 주어 따라 변하고(am/is/are), 부정·의문도 be 동사 규칙 그대로예요.\n\n" +
           "회화에서 going to는 **gonna** [ˈɡənə]로 뭉개지는 일이 많아요. 직접 쓰는 건 격식 없는 자리에서만 권하지만, 귀에는 꼭 등록해두세요.",
@@ -221,6 +222,7 @@ export default [
       {
         heading: "예측 — 근거가 눈에 보이면 going to",
         pattern: "눈앞의 근거 → be going to · 의견·짐작 → will",
+        patternKo: "예측: 근거가 눈에 보이면 going to, 짐작이면 will",
         body:
           "예측에는 둘 다 쓰지만 분업이 있어요 — **be going to**는 눈앞의 근거를 보고 하는 예측(먹구름 → It's going to rain.), **will**은 의견·짐작에 기댄 예측(I think he'll like this gift.)으로 I think, probably, maybe와 단짝이에요.\n\n" +
           "경계가 칼같지는 않아요. 다만 '이미 굴러가기 시작한 일(먹구름, 기울어진 컵)'에는 going to가 압도적으로 자연스러워요.",
@@ -370,6 +372,7 @@ export default [
       {
         heading: "must vs have to — 긍정은 쌍둥이, 부정은 남남",
         pattern: "must not = 금지(하면 안 돼) ↔ don't have to = 불필요(안 해도 돼)",
+        patternKo: "부정에서 갈라짐 — '하면 안 돼' vs '안 해도 돼'",
         body:
           "긍정문에서 must와 have to는 둘 다 '~해야 한다'예요(must는 화자의 판단, have to는 규칙·사정 — A2에선 '거의 같다'로 충분). **진짜 함정은 부정** — **must not은 금지**, **don't have to는 불필요**로 정반대급으로 갈라져요.\n\n" +
           "'You don't have to pay.'는 '안 내도 돼요(공짜예요)'인데, must not로 잘못 말하면 '내면 안 됩니다!'라는 금지가 돼버려요.",
@@ -521,6 +524,7 @@ export default [
       {
         heading: "to부정사를 받는 동사 — 미래로 향하는 동사들",
         pattern: "want / plan / decide / hope / promise + to + 동사원형",
+        patternKo: "아직 안 한 일을 향하는 동사들 = to파",
         body:
           "to파는 대체로 **'아직 안 한 일'을 향하는** 동사예요 — 원하고(want), 계획하고(plan), 결심하고(decide), 바라는(hope) 일은 모두 미래에 있죠.\n\n" +
           "**필수 멤버**: want, need, plan, decide, hope, learn, promise, would like",
@@ -535,6 +539,7 @@ export default [
       {
         heading: "-ing를 받는 동사 — 통째로 외울 멤버들",
         pattern: "enjoy / finish / mind / keep / give up + -ing",
+        patternKo: "-ing만 받는 동사들 = 명단 통째로 암기",
         body:
           "-ing파는 수가 적으니 **명단을 통째로** 외우는 게 정석이에요. 행위가 이미 존재해야 즐기고(enjoy) 끝내고(finish) 포기할(give up) 수 있다 — 'ing = 스냅사진' 프레임이 통하는 그룹이에요.",
         table: {
@@ -629,6 +634,7 @@ export default [
       {
         heading: "이동이 허용되는 부사들",
         pattern: "sometimes/usually/often = 문두·문미 이동 가능 · always/never = 지정석만",
+        patternKo: "중간 빈도만 이동 허용, always/never는 못 움직여요",
         body:
           "**sometimes, usually, often**은 강조를 위해 문장 맨 앞이나 맨 뒤로 이동할 수 있어요 — Sometimes I cook. / I visit my parents often.\n\n" +
           "반대로 **always와 never는 이동 금지**예요 — 'Always I'm busy.'(X). (Never를 문두에 두는 도치 구문이 있긴 하지만 C1의 영역이에요.)",

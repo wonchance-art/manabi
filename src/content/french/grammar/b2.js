@@ -16,6 +16,7 @@ export default [
       {
         heading: "접속법 과거 — 평가 시점보다 앞선 일",
         pattern: "avoir/être 접속법 현재 + 과거분사 (que tu sois venu)",
+        patternKo: "접속법 과거 — 평가 시점보다 먼저 일어난 일",
         body:
           "평가하는 내용이 **이미 일어난 일**이면 **접속법 과거(subjonctif passé)**를 써요. 복합과거의 접속법 버전인 셈이죠.\n\n" +
           "Je suis content que tu **sois venu**(네가 와 줘서 기뻐) — 기쁜 건 지금, 온 건 그 전. **주절과 종속절의 시간 차이**가 핵심이에요.",
@@ -38,6 +39,7 @@ export default [
       {
         heading: "접속법을 부르는 접속사 — bien que, pour que, avant que...",
         pattern: "bien que · pour que · avant que · jusqu'à ce que · à moins que + 접속법",
+        patternKo: "양보·목적·시간·조건 접속사 뒤에는 접속법",
         body:
           "B2에서는 **접속사**가 접속법을 부르는 경우를 정리해요. **양보**(bien que, quoique), **목적**(pour que, afin que), **시간**(avant que, jusqu'à ce que), **조건·제외**(à condition que, à moins que, sans que).\n\n" +
           "공통점은 '아직 사실로 확정되지 않았거나, 사실 여부와 무관하게 틀로 제시되는' 내용이라는 것이에요.",
@@ -53,6 +55,7 @@ export default [
       {
         heading: "직설법과 갈리는 미묘한 경계 — penser que의 두 얼굴",
         pattern: "Je pense que + 직설법 · Je ne pense pas que + 접속법",
+        patternKo: "penser류 — 긍정이면 직설법, 부정·의문이면 접속법",
         body:
           "penser/croire/trouver que는 **긍정문이냐 부정·의문문이냐에 따라 법이 갈려요**. 부정하는 순간 que절은 사실이 아니라 의심의 대상이 되니까요.\n\n" +
           "도치 의문문(Penses-tu qu'il **ait** raison ?)도 같은 원리로 접속법이 격식이에요. il est certain que(직설법) ↔ il n'est pas certain que(접속법)도 같은 패턴입니다.",
@@ -67,6 +70,7 @@ export default [
       {
         heading: "최상급과 유일성 뒤의 접속법",
         pattern: "최상급 / le seul / le premier + 관계절 → 접속법",
+        patternKo: "최상급·유일성 표현 뒤 관계절에는 접속법",
         body:
           "**최상급이나 유일성 표현 뒤의 관계절**에는 접속법이 자주 와요. C'est le meilleur film que j'**aie** vu — '내가 본 것 중에서'라는 주관적 평가의 테두리 신호예요.\n\n" +
           "직설법(que j'ai vu)도 틀리지는 않지만, 접속법이 더 다듬어진 인상을 줘요.",
@@ -114,6 +118,7 @@ export default [
       {
         heading: "①형 — si + 현재: 충분히 일어날 수 있는 일",
         pattern: "si + 현재, 미래/현재/명령문",
+        patternKo: "실현 가능한 조건 — si + 현재 (si절에 미래 금지)",
         body:
           "조건이 **현실적으로 가능**할 때는 si절에 현재를 쓰고, 주절에는 미래·현재·명령문이 자유롭게 와요. 이미 아는 시제의 조합일 뿐이죠.\n\n" +
           "si + il(s)는 **s'il(s)**로 축약되지만, si + elle은 si elle 그대로라는 것만 챙기세요.",
@@ -139,6 +144,7 @@ export default [
       {
         heading: "③형 — si + 대과거와 조건법 과거: 돌이킬 수 없는 일",
         pattern: "si + plus-que-parfait, conditionnel passé (avoir/être 조건법 + 과거분사)",
+        patternKo: "~했더라면 ...했을 텐데 — 과거의 비현실 가정",
         body:
           "**이미 지나간 과거를 되돌리는 상상**이에요. 조건법 과거는 avoir/être의 조건법 현재 + 과거분사: j'aurais fait(했을 텐데), je serais venu(e).\n\n" +
           "가정문 밖에서도 후회와 비난의 단골이에요: **j'aurais dû** + 부정사(~했어야 했는데), **tu aurais pu** + 부정사(~할 수도 있었잖아).",
@@ -167,6 +173,7 @@ export default [
       {
         heading: "-ant 삼형제 — 한눈에 구별하기",
         pattern: "① 현재분사 (불변·문어) · ② en + -ant (제롱디프) · ③ 동사적 형용사 (성수 일치)",
+        patternKo: "-ant 삼형제 구별 — en 유무·일치 여부가 신호",
         body:
           "B1의 제롱디프 외에도 -ant 형태는 셋으로 갈라져요. **현재분사**는 en 없이 쓰는 동사 성격의 -ant(불변), **제롱디프**는 en + -ant(부사 역할), **동사적 형용사**는 완전히 형용사가 된 -ant(성·수 일치)예요.\n\n" +
           "구별 신호: en이 붙으면 ②, 명사를 꾸미며 일치하면 ③, 목적어·보어를 끌고 다니면서 불변이면 ①.",
@@ -180,6 +187,7 @@ export default [
       {
         heading: "현재분사 — 관계절을 압축하는 문어체 도구",
         pattern: "qui 관계절 → 현재분사 (les étudiants ayant fini)",
+        patternKo: "qui 관계절을 압축하는 현재분사 (불변·문어체)",
         body:
           "현재분사의 주 무대는 **글**이에요. qui 관계절을 한 단어로 압축하고, 원인 분사구문(**Étant** malade, il n'est pas venu)으로도 애용돼요. 회화에서는 Comme절로 풀어 말하는 게 보통이에요.\n\n" +
           "현재분사는 **절대 일치하지 않아요**. une femme parlant trois langues — 이 '불변'이 형용사와의 결정적 차이예요.",
@@ -192,6 +200,7 @@ export default [
       {
         heading: "동사적 형용사 — 철자까지 달라지는 경우",
         pattern: "분사 fatiguant ↔ 형용사 fatigant",
+        patternKo: "분사와 동사적 형용사의 철자가 갈리는 쌍",
         body:
           "일부 동사는 **현재분사와 동사적 형용사의 철자가 달라요**. 분사는 동사 활용(nous형)을 따르고, 형용사는 라틴어식 철자를 따로 갖기 때문이에요.\n\n" +
           "Un travail **fatigant**(피곤하게 하는 일 — 형용사, u 탈락) vs Ce travail, **fatiguant** tout le monde, ...(모두를 지치게 하면서 — 분사, u 유지).",
@@ -241,6 +250,7 @@ export default [
       {
         heading: "대립과 양보 — cependant, néanmoins, en revanche",
         pattern: "cependant/toutefois = 그렇지만 · néanmoins = 그럼에도 · pourtant = 그런데도 · en revanche = 반면에",
+        patternKo: "'하지만' 계열 가르기 — 반박은 cependant, 대조는 en revanche",
         body:
           "전부 '하지만' 계열이지만 결이 달라요. **cependant/toutefois**는 mais의 문어체 업그레이드, **néanmoins**은 앞 내용을 인정하면서 뒤집기, **pourtant**은 모순에 대한 놀라움이에요.\n\n" +
           "**en revanche / par contre**는 반박이 아니라 **대조** — 두 대상을 나란히 비교할 때만 쓰세요. (par contre는 구어적, en revanche가 격식)",
@@ -254,6 +264,7 @@ export default [
       {
         heading: "원인과 결과 — par conséquent, en effet, ainsi",
         pattern: "par conséquent = 따라서 · en effet = 근거 뒷받침 · en fait = 반전·정정",
+        patternKo: "결과·근거 연결사 — en effet는 뒷받침, en fait는 반전",
         body:
           "**par conséquent / c'est pourquoi**는 donc의 격식 버전으로 결론을 끌어내고, **ainsi**는 '이렇게 하여, 그 결과'예요.\n\n" +
           "**en effet**는 **앞 문장의 근거를 대는** 연결사예요 — '사실은'이라는 반전이 아닙니다(한국 학습자 최다 오용 1위). 반전·정정의 '실은'은 **en fait** — 글자 하나 차이로 정반대 방향이에요.",
@@ -267,6 +278,7 @@ export default [
       {
         heading: "첨가·전환·구조화 — d'ailleurs, par ailleurs, d'abord...",
         pattern: "d'abord → ensuite → enfin · de plus = 게다가 · par ailleurs = 전환",
+        patternKo: "첨가·전환·뼈대 연결사 — 우선·다음으로·끝으로",
         body:
           "**de plus / en outre**는 논거를 쌓는 '게다가', **d'ailleurs**는 곁가지 근거를 슬쩍 보태는 '하긴', **par ailleurs**는 새 논점으로 **전환**하는 '한편'이에요 — 마지막 둘은 모양이 닮았지만 역할이 달라요.\n\n" +
           "글 전체의 뼈대는 **d'abord → ensuite → enfin**, 결론은 **en conclusion / pour conclure**로 잡아요.",
@@ -294,6 +306,7 @@ export default [
       {
         heading: "왜 어려운가 — 전치사는 동사의 지문",
         pattern: "동사마다 정해진 전치사 — dépendre de · réussir à · attendre + ∅",
+        patternKo: "동사마다 정해진 전치사 — 패턴째 암기가 기본",
         body:
           "프랑스어 동사는 저마다 **정해진 전치사**를 데리고 다녀요. 영어 구동사(look for, depend on)를 외울 때와 같은 종류의 암기가 필요해요.\n\n" +
           "문제는 **영어와 어긋나는 지점**이에요. 목표는 '전부 외우기'가 아니라 '틀리는 자리를 아는 것'이에요.",
@@ -305,6 +318,7 @@ export default [
       {
         heading: "penser à vs penser de — 같은 동사, 다른 전치사, 다른 뜻",
         pattern: "penser à = 떠올리다·챙기다 · penser de = 의견",
+        patternKo: "전치사가 뜻을 가르는 짝 — à는 떠올리기, de는 의견",
         body:
           "전치사가 **뜻을 가르는** 대표 사례예요. **penser à**는 생각이 대상으로 향하는 것, **penser de**는 의견(Qu'est-ce que tu penses **de** ce film ?) — 답은 Je pense que...로 받아요.\n\n" +
           "비슷한 짝: parler à(~에게 말하다) vs parler de(~에 대해), jouer à(스포츠) vs jouer de(악기).",
@@ -319,6 +333,7 @@ export default [
       {
         heading: "à 군단과 de 군단 — 부정사를 연결하는 전치사",
         pattern: "commencer à + inf · finir de + inf · vouloir + inf (전치사 없음)",
+        patternKo: "부정사를 잇는 세 갈래 — à 군단·de 군단·맨 부정사",
         body:
           "동사 + 동사를 이을 때 어떤 동사는 à(commencer, réussir, apprendre, s'habituer), 어떤 동사는 de(finir, décider, essayer, oublier, éviter), 어떤 동사는 맨 부정사(vouloir, pouvoir, devoir, aimer, espérer)를 써요.\n\n" +
           "commencer à ↔ finir de가 짝으로 어긋나는 게 얄밉죠. 의미 규칙은 없어서, 짝문장으로 입에 붙이는 게 정석이에요.",
@@ -343,6 +358,7 @@ export default [
       {
         heading: "영어 감각이 배신하는 동사들",
         pattern: "attendre/chercher/écouter + 직접목적어 (전치사 ✗) · téléphoner/répondre + à · dépendre + de",
+        patternKo: "영어 감각이 배신하는 동사들 — wait for ↔ attendre(전치사 없음)",
         body:
           "**영어에는 전치사가 있는데 프랑스어에는 없는**(또는 그 반대인) 블랙리스트예요.\n\n" +
           "전치사 없음: attendre(wait **for**), chercher(look **for**), écouter(listen **to**), payer(pay **for**). à 필요: téléphoner à, répondre à, ressembler à. de 필요: dépendre de, se souvenir de, s'occuper de.",
@@ -371,6 +387,7 @@ export default [
       {
         heading: "프랑스어의 정보구조 — 강세 대신 구문",
         pattern: "강조 = 구문으로: c'est ... qui/que · ce qui ..., c'est ...",
+        patternKo: "프랑스어 강조는 강세가 아니라 구문으로",
         body:
           "영어는 강세로, 한국어는 조사로 강조하지만 프랑스어는 둘 다 잘 안 통해요 — 강세 위치가 고정된 언어라서요. 대신 **문장 구조 자체를 바꿔서** 스포트라이트를 옮겨요(mise en relief).\n\n" +
           "이 구문들은 문어체 장식이 아니라 **일상 회화의 기본 어법**이에요. 프랑스인의 입에서 하루에도 수십 번 나옵니다.",
@@ -383,6 +400,7 @@ export default [
       {
         heading: "c'est ... qui / c'est ... que — 스포트라이트 분열문",
         pattern: "C'est + 강조어 + qui (주어) / que (목적어·부사구)",
+        patternKo: "c'est와 qui/que 사이에 강조어 끼우기 (분열문)",
         body:
           "강조하고 싶은 말을 c'est와 qui/que 사이에 끼워요. C'est **Marie qui** a appelé(주어 강조), C'est **ce livre que** je cherchais(목적어 강조), C'est **en 2002 que** je suis né(부사구 강조).\n\n" +
           "인칭대명사를 강조할 땐 강세형(moi, toi, lui...)을 써요: C'est **moi** qui...",
@@ -449,6 +467,7 @@ export default [
       {
         heading: "접미사 패턴 — -tion, -ment, -age",
         pattern: "-tion/-sion/-ure → 여성 · -ment/-age → 남성",
+        patternKo: "명사화 접미사가 성을 결정 — -tion 여성, -ment 남성",
         body:
           "명사화 접미사는 패턴이 있고, A0의 성 추측 규칙이 그대로 적용돼요: la construction, le développement, le recyclage, l'ouverture(f.).\n\n" +
           "접미사 없는 짧은 명사들도 고빈도예요: le départ, l'arrivée(여성), le choix, la hausse(상승), la baisse(하락).",
@@ -474,6 +493,7 @@ export default [
       {
         heading: "신문 헤드라인 읽기 — 동사 없는 문장의 세계",
         pattern: "헤드라인 = 명사 + de + 명사 (Reprise du trafic lundi)",
+        patternKo: "동사 없는 헤드라인 — 명사를 동사로 되돌려 읽기",
         body:
           "프랑스 신문 헤드라인은 **동사를 거의 쓰지 않고** 명사화가 그 자리를 대신해요. Grève des transports : reprise du trafic lundi — 동사 없이 두 문장이 압축되어 있죠.\n\n" +
           "해독 요령은 **명사를 동사로 되돌려 읽기**: hausse → '오르다', reprise → '재개되다'. Le Monde 헤드라인을 하루 세 개씩 풀어 읽는 것만큼 좋은 B2 훈련이 없어요.",
@@ -487,6 +507,7 @@ export default [
       {
         heading: "작문에 써먹기 — 문장에서 명사구로",
         pattern: "avant que + 절 → avant + 명사구 (avant l'ouverture du magasin)",
+        patternKo: "종속절을 명사구로 바꿔 격식 작문에 활용",
         body:
           "종속절을 명사구로 바꾸면 문장이 단정해지고 격이 올라가요. Parce que les prix ont augmenté → **En raison de l'augmentation** des prix.\n\n" +
           "특히 avant/après 뒤에서 명사화를 쓰면 **접속법·시제 고민이 통째로 사라지니**, 시험장에서 실전 가치가 큰 기술이에요.",
@@ -496,6 +517,293 @@ export default [
           { fr: "La lecture quotidienne améliore le vocabulaire.", ko: "매일 하는 독서는 어휘력을 향상시켜요.", note: "lire → la lecture" },
         ],
         tip: "요약 과제(synthèse)에서는 지문의 동사 문장을 명사구로 바꾸는 것 자체가 채점 포인트예요. '~가 늘었다 → la hausse de ~', '~가 시작됐다 → le début de ~' 같은 변환 쌍을 10개쯤 장전해 두면 요약 속도가 확 빨라집니다.",
+      },
+    ],
+  },
+  {
+    slug: "b2-08-cause-consequence",
+    level: "B2",
+    order: 8,
+    title: "\"오죽하면 그랬을까\"를 말하는 법",
+    topic: "원인·결과 표현 심화",
+    titleFr: "La cause et la conséquence",
+    summary: "parce que와 donc 너머 — étant donné que·faute de의 원인, si bien que·au point de의 결과·정도까지, 논증의 인과 어휘를 넓혀요.",
+    duration: "약 11분",
+    sections: [
+      {
+        heading: "전제된 원인 — étant donné que·vu que·en raison de",
+        pattern: "étant donné que / vu que + 직설법 · étant donné / vu / en raison de + 명사",
+        patternKo: "~을 고려하면·~로 인해 — 전제된 사실의 원인 (직설법)",
+        body:
+          "'~을 고려하면, ~이니'의 **étant donné que**(격식)와 **vu que**(구어 기운)는 둘 다 **이미 확인된 사실**을 전제로 깔아요 — 그래서 직설법이에요.\n\n" +
+          "명사 앞 버전이 실전 빈도는 더 높아요: **étant donné / vu + 명사**, 그리고 공지문의 단골 **en raison de**(~로 인해)·**du fait de**.",
+        examples: [
+          { fr: "Étant donné que le vol est complet, prenons le train.", ipa: "[etɑ̃ dɔne kə lə vɔl ɛ kɔ̃plɛ pʁənɔ̃ lə tʁɛ̃]", ko: "비행기가 만석이니 기차를 탑시다." },
+          { fr: "Vu le prix, je préfère attendre les soldes.", ipa: "[vy lə pʁi ʒə pʁefɛʁ atɑ̃dʁ le sɔld]", ko: "가격이 가격이니 세일을 기다리는 게 낫겠어요." },
+          { fr: "Le concert est reporté en raison de la tempête.", ipa: "[lə kɔ̃sɛʁ ɛ ʁəpɔʁte ɑ̃ ʁɛzɔ̃ də la tɑ̃pɛt]", ko: "폭풍으로 인해 콘서트가 연기되었습니다.", note: "안내 방송·공지 문체" },
+        ],
+        tip: "격식 사다리로 기억하세요 — 구어 **vu que** < 중립 **parce que** < 격식 **étant donné que / en raison de**. DELF 작문에서 à cause de를 en raison de로 갈아 끼우는 것만으로도 글의 격이 올라갑니다.",
+      },
+      {
+        heading: "결핍과 핑계 — faute de·sous prétexte que",
+        pattern: "faute de + 명사 (~이 없어서) · sous prétexte que + 직설법 (~라는 핑계로)",
+        patternKo: "~이 없어서 (결핍) · ~라는 핑계로 (불신)",
+        body:
+          "**faute de**는 '~이 없는 탓에'라는 **결핍의 원인**이에요(= par manque de): faute de budget(예산이 없어서). faute d'avoir réservé처럼 부정사 과거도 받아요.\n\n" +
+          "**sous prétexte que/de**는 '~라는 핑계로' — **화자가 그 이유를 믿지 않는다**는 불신이 표현 안에 내장돼 있어요.",
+        examples: [
+          { fr: "Le projet a été abandonné faute de budget.", ipa: "[lə pʁɔʒɛ a ete abɑ̃dɔne fot də bydʒɛ]", ko: "예산이 없어서 프로젝트가 무산됐어요." },
+          { fr: "Faute d'avoir confirmé, nous avons perdu la réservation.", ipa: "[fot davwaʁ kɔ̃fiʁme nuzavɔ̃ pɛʁdy la ʁezɛʁvasjɔ̃]", ko: "확정을 안 한 탓에 예약을 놓쳤어요." },
+          { fr: "Il a annulé sous prétexte qu'il avait trop de travail.", ipa: "[il a anyle su pʁetɛkst kil avɛ tʁo də tʁavaj]", ko: "그는 일이 너무 많다는 핑계로 취소했어요.", note: "'정말 바빠서'가 아니라는 의심이 깔림" },
+        ],
+      },
+      {
+        heading: "강화와 한정 — d'autant plus que·dans la mesure où",
+        pattern: "d'autant plus que + 직설법 (~이니 더더욱) · dans la mesure où (~인 만큼)",
+        patternKo: "~이니 더더욱 (강화) · ~인 만큼 (한정된 이유)",
+        body:
+          "**d'autant plus que**는 이유를 보태며 정도를 끌어올려요 — '게다가 ~이니 더더욱'. 한국어에 깔끔한 등가어가 없어 문장째 익히는 게 빨라요.\n\n" +
+          "**dans la mesure où**는 '~인 한에서, ~인 만큼'이라는 조건 달린 이유예요. 반대로 이유를 부정하고 바로잡을 땐 **ce n'est pas que + 접속법**(~라서가 아니라)을 써요.",
+        examples: [
+          { fr: "Son succès est d'autant plus impressionnant qu'il est parti de rien.", ipa: "[sɔ̃ syksɛ ɛ dotɑ̃ plyzɛ̃pʁesjɔnɑ̃ kil ɛ paʁti də ʁjɛ̃]", ko: "맨손으로 시작했기에 그의 성공은 더더욱 인상적이에요." },
+          { fr: "Dans la mesure où tout le monde est d'accord, on peut signer dès demain.", ipa: "[dɑ̃ la məzyʁ u tu lə mɔ̃d ɛ dakɔʁ ɔ̃ pø siɲe dɛ dəmɛ̃]", ko: "모두가 동의하는 만큼 내일이라도 서명할 수 있어요." },
+          { fr: "Ce n'est pas que le film soit mauvais, c'est qu'il est trop long.", ipa: "[sə nɛ pa kə lə film swa mɔvɛ sɛ kil ɛ tʁo lɔ̃]", ko: "영화가 나빠서가 아니라 너무 길어서 그래요.", note: "부정된 이유는 접속법, 진짜 이유는 직설법" },
+        ],
+        tip: "d'autant plus que는 DELF 논술의 비밀 무기예요. 논거를 하나 더 쌓을 때 De plus 대신 «C'est d'autant plus vrai que ...»를 쓰면 단숨에 B2다운 문장이 됩니다.",
+      },
+      {
+        heading: "결과 — si bien que·de sorte que",
+        pattern: "si bien que + 직설법 (그 결과) · de sorte que + 직설법(결과) / 접속법(목적)",
+        patternKo: "그 결과 ~했다 — de sorte que는 법이 결과/목적을 가름",
+        body:
+          "'그 결과 ~했다'의 기본형이 **si bien que + 직설법**이에요 — 이미 일어난 결과니까요.\n\n" +
+          "**de sorte que**는 두 얼굴 — **직설법이면 결과**, **접속법이면 목적**('~하도록')이에요. 법(法) 선택이 의미를 가르는 드문 사례죠. 회화에서는 이 자리를 **du coup**(그래서)가 휩쓸지만, 작문에는 못 들어갑니다.",
+        examples: [
+          { fr: "Il a neigé toute la nuit, si bien que l'école est fermée.", ipa: "[il a neʒe tut la nɥi si bjɛ̃ kə lekɔl ɛ fɛʁme]", ko: "밤새 눈이 와서 학교가 문을 닫았어요." },
+          { fr: "J'ai tout noté, de sorte que rien n'a été oublié.", ipa: "[ʒe tu nɔte də sɔʁt kə ʁjɛ̃ na ete ublije]", ko: "제가 전부 적어 둬서 아무것도 빠뜨리지 않았어요.", note: "직설법 → 결과" },
+          { fr: "Écris lisiblement, de sorte que tout le monde puisse te relire.", ipa: "[ekʁi lizibləmɑ̃ də sɔʁt kə tu lə mɔ̃d pɥis tə ʁəliʁ]", ko: "모두가 알아볼 수 있도록 또박또박 써.", note: "접속법 → 목적" },
+        ],
+        pitfall: "de sorte que 뒤의 법을 고르는 기준은 '이미 일어났는가'예요. 일어난 사실의 보고면 직설법(결과), 아직 노리는 그림이면 접속법(목적). 시험에서 이 구분을 직접 묻습니다.",
+      },
+      {
+        heading: "정도 — si/tellement ... que·au point de",
+        pattern: "si/tellement + 형용사·부사 + que · 동사 + tellement que · au point de + 동사원형",
+        patternKo: "너무 ~해서 …하다 — 정도의 극단까지 표현",
+        body:
+          "'너무 ~해서 …하다'는 **si/tellement ... que**예요. 형용사·부사 앞엔 둘 다 되지만, **동사를 강조할 땐 tellement만** 가능해요(Il a tellement plu que ...).\n\n" +
+          "'~할 정도로, 급기야 ~하기에 이르다'는 **au point de + 원형 / au point que + 직설법**으로 정도의 극단을 찍어요.",
+        examples: [
+          { fr: "Elle était si émue qu'elle ne pouvait plus parler.", ipa: "[ɛl etɛ si emy kɛl nə puvɛ ply paʁle]", ko: "그녀는 너무 감격해서 말을 잇지 못했어요." },
+          { fr: "Il a tellement plu que la rivière a débordé.", ipa: "[il a tɛlmɑ̃ ply kə la ʁivjɛʁ a debɔʁde]", ko: "비가 너무 많이 와서 강이 넘쳤어요.", note: "동사 강조는 tellement 전용" },
+          { fr: "Il aime ce groupe au point de suivre toute la tournée.", ipa: "[il ɛm sə ɡʁup o pwɛ̃ də sɥivʁ tut la tuʁne]", ko: "그는 투어를 통째로 따라다닐 정도로 이 밴드를 좋아해요." },
+        ],
+        vsEn: "si ... que는 영어 so ... that, tellement de ... que는 so much/many ... that와 정확히 평행이에요. 영어에서 so that(목적)과 so ... that(정도)을 구별하던 감각이 pour que / si ... que 구분에도 그대로 통합니다.",
+      },
+    ],
+  },
+
+  {
+    slug: "b2-09-negation-advanced",
+    level: "B2",
+    order: 9,
+    title: "\"커피도 차도 안 마셔요\" 말하기",
+    topic: "부정 확장 ne…ni·ne…que·허사 ne",
+    titleFr: "La négation avancée",
+    summary: "pas의 자리를 차지하는 부정어 가족, '~만'의 ne…que, A도 B도의 ni…ni, 그리고 부정이 아닌 ne(허사)까지 — 부정 체계를 완성해요.",
+    duration: "약 11분",
+    sections: [
+      {
+        heading: "pas의 자리를 빼앗는 말들 — plus·jamais·rien·personne·aucun",
+        pattern: "ne + 동사 + plus / jamais / rien / personne / aucun(e) / nulle part",
+        patternKo: "pas 자리에 갈아 끼우는 부정어 — pas와 동시 사용 금지",
+        body:
+          "기본 부정 ne...pas의 **pas 자리에 다른 부정어를 갈아 끼우면** 의미가 확장돼요. pas와 겹쳐 쓰지 않는 게 철칙이에요(ne mange pas rien ✗).\n\n" +
+          "rien·personne·aucun은 **주어 자리**로도 올라가요: **Rien ne** change. **Aucun** train **ne** circule. 이때도 ne는 남고, 부정어끼리는 겹칠 수 있어요(plus rien, jamais personne).",
+        table: {
+          caption: "부정어 가족",
+          headers: ["문형", "뜻"],
+          rows: [
+            ["ne … plus", "더 이상 ~않다"],
+            ["ne … jamais", "결코 ~않다"],
+            ["ne … rien", "아무것도 ~않다"],
+            ["ne … personne", "아무도 ~않다"],
+            ["ne … aucun(e) + 단수 명사", "아무 ~도 없다"],
+            ["ne … nulle part", "어디에서도 ~않다"],
+          ],
+        },
+        examples: [
+          { fr: "Il ne reste rien dans le frigo.", ipa: "[il nə ʁɛst ʁjɛ̃ dɑ̃ lə fʁiɡo]", ko: "냉장고에 아무것도 안 남았어요." },
+          { fr: "Aucun magasin n'est ouvert à cette heure-ci.", ipa: "[okœ̃ maɡazɛ̃ nɛtuvɛʁ a sɛtœʁsi]", ko: "이 시간엔 문 연 가게가 하나도 없어요.", note: "aucun + 단수 명사" },
+          { fr: "Il ne dit plus rien à personne.", ipa: "[il nə di ply ʁjɛ̃ a pɛʁsɔn]", ko: "그는 이제 누구에게도 아무 말도 안 해요.", note: "부정어 겹치기 — plus/jamais가 먼저" },
+        ],
+        pitfall: "부정문에 맞장구칠 때 '나도'를 moi aussi라고 하면 오류예요 — **moi non plus**(나도 안 그래)가 짝이에요. Je n'aime pas les huîtres. — Moi non plus. 긍정엔 aussi, 부정엔 non plus로 스위치가 갈립니다.",
+      },
+      {
+        heading: "ne ... que — 형태는 부정, 뜻은 '~만'",
+        pattern: "ne + 동사 + que + 한정 대상 (= seulement)",
+        patternKo: "'~만·~밖에' — 부정이 아닌 한정의 ne ... que",
+        body:
+          "**ne ... que**는 부정이 아니라 **한정**이에요: Je n'ai **que** dix minutes.(10분밖에 없어요.) que 바로 뒤가 스포트라이트 자리예요.\n\n" +
+          "강조 확장형도 세트로 — **rien que**(단지 ~만으로), **ne serait-ce que**(하다못해 ~만이라도).",
+        examples: [
+          { fr: "On ne vit qu'une fois.", ipa: "[ɔ̃ nə vi kyn fwa]", ko: "인생은 한 번뿐이다.", note: "프랑스판 YOLO" },
+          { fr: "Rien que l'idée me fatigue.", ipa: "[ʁjɛ̃ kə lide mə fatiɡ]", ko: "생각만 해도 피곤해요." },
+          { fr: "Reste encore un peu, ne serait-ce que dix minutes.", ipa: "[ʁɛst ɑ̃kɔʁ œ̃ pø nə səʁɛs kə di minyt]", ko: "조금만 더 있어, 하다못해 10분만이라도." },
+        ],
+        tip: "ne ... que가 진짜 부정이 아니라는 증거는 **관사**예요. 부정문에서는 du → de로 줄지만(Je ne bois pas **de** café), ne ... que에서는 그대로 살아요(Je ne bois **que du** thé — 차만 마셔요). 관사가 살아 있으면 '~만'으로 읽으세요.",
+      },
+      {
+        heading: "ni ... ni — 'A도 B도'의 문법",
+        pattern: "ne + 동사 + ni A ni B · Ni A ni B + ne + 동사",
+        patternKo: "A도 B도 아니다 — ni 뒤에서는 관사 탈락",
+        body:
+          "두 대상을 한꺼번에 부정하려면 **ne ... ni ... ni**예요. ni 뒤에서는 **부정관사·부분관사가 탈락**해요: ni café ni thé(ni du café ✗).\n\n" +
+          "주어 자리로도 올라가요: **Ni** lui **ni** moi **ne** savions. 긍정의 짝은 **non seulement ... mais (aussi)**(~뿐 아니라 …도)예요.",
+        examples: [
+          { fr: "Il ne boit ni vin ni bière.", ipa: "[il nə bwa ni vɛ̃ ni bjɛʁ]", ko: "그는 와인도 맥주도 안 마셔요." },
+          { fr: "Ni le prix ni la distance ne l'ont fait changer d'avis.", ipa: "[ni lə pʁi ni la distɑ̃s nə lɔ̃ fɛ ʃɑ̃ʒe davi]", ko: "가격도 거리도 그의 마음을 바꾸지 못했어요." },
+          { fr: "Elle est non seulement rapide, mais aussi très précise.", ipa: "[ɛl ɛ nɔ̃ sœlmɑ̃ ʁapid mɛ osi tʁɛ pʁesiz]", ko: "그녀는 빠를 뿐 아니라 아주 정확해요.", note: "ni…ni의 긍정 짝" },
+        ],
+        vsEn: "영어 neither ... nor, not only ... but also와 구조가 그대로 포개져요. 차이 하나 — 프랑스어는 ni 뒤의 관사를 떨어뜨립니다. neither coffee nor tea = ni café ni thé.",
+      },
+      {
+        heading: "sans 가족 — ~없이, ~하지 못하게, 안 그러면",
+        pattern: "sans + 동사원형 (주어 같음) · sans que + 접속법 (주어 다름) · sans quoi (그렇지 않으면)",
+        patternKo: "~하지 않고·~없이 — 주어 다르면 sans que + 접속법",
+        body:
+          "'~하지 않고'는 주어가 같으면 **sans + 원형**(Il est parti **sans payer**), 다르면 **sans que + 접속법**이에요. sans rien dire(아무 말 없이), sans jamais se plaindre(한 번도 불평하지 않고)처럼 **rien/jamais와도 결합**해요.\n\n" +
+          "격식문의 **sans quoi / faute de quoi**는 '그렇지 않으면'(= sinon)이에요.",
+        examples: [
+          { fr: "Il est entré sans faire de bruit.", ipa: "[il ɛtɑ̃tʁe sɑ̃ fɛʁ də bʁɥi]", ko: "그는 소리 없이 들어왔어요." },
+          { fr: "Elle a tout organisé sans que je m'en rende compte.", ipa: "[ɛl a tu ɔʁɡanize sɑ̃ kə ʒə mɑ̃ ʁɑ̃d kɔ̃t]", ko: "내가 눈치채지 못하는 사이에 그녀가 다 준비했어요.", note: "주어가 다르니 sans que + 접속법" },
+          { fr: "Répondez avant jeudi, sans quoi l'offre sera annulée.", ipa: "[ʁepɔ̃de avɑ̃ ʒødi sɑ̃ kwa lɔfʁ səʁa anyle]", ko: "목요일 전까지 회신하세요. 그렇지 않으면 제안은 취소됩니다." },
+        ],
+      },
+      {
+        heading: "부정이 아닌 ne — 허사 ne와 문어 부정",
+        pattern: "avant que / à moins que / craindre que / 비교 que + ne (부정 아님)",
+        patternKo: "pas 없는 ne는 부정이 아닌 격식 장식 (허사 ne)",
+        body:
+          "**pas 없는 ne**는 대개 부정이 아니라 격식 장식, **허사 ne(ne explétif)**예요: avant qu'il **ne** parte(그가 떠나기 전에 — '안 떠나기 전'이 아님!), C'est mieux que je **ne** pensais(생각보다 낫다).\n\n" +
+          "반대로 pas 자리를 문어 부사가 대신하기도 해요 — **ne ... guère**(별로 ~않다), **ne ... point**(고어), **ne ... nullement**(단호한 부정). aucun의 격식 사촌 **nul**(nulle part의 그 nul)도 글에서 만나요.",
+        examples: [
+          { fr: "C'est plus loin que je ne pensais.", ipa: "[sɛ ply lwɛ̃ kə ʒə nə pɑ̃sɛ]", ko: "생각보다 머네요.", note: "비교문의 허사 ne" },
+          { fr: "Partez avant qu'il ne soit trop tard.", ipa: "[paʁte avɑ̃ kil nə swa tʁo taʁ]", ko: "너무 늦기 전에 떠나세요." },
+          { fr: "Il n'a guère dormi cette semaine.", ipa: "[il na ɡɛʁ dɔʁmi sɛt səmɛn]", ko: "그는 이번 주에 잠을 거의 못 잤어요." },
+          { fr: "Je ne suis nullement convaincu.", ipa: "[ʒə nə sɥi nylmɑ̃ kɔ̃vɛ̃ky]", ko: "저는 전혀 납득되지 않았습니다." },
+        ],
+        pitfall: "허사 ne를 부정으로 읽으면 뜻이 뒤집혀요. plus difficile que je ne pensais는 '생각 안 했던 것보다'가 아니라 '생각**보다** 어렵다'예요. **pas(또는 rien·jamais 등)가 없으면 부정이 아니다** — 이 한 줄로 오독의 90%가 사라집니다.",
+        etym: "pas와 point의 기원은 '한 걸음(pas)', '한 점(point)'이에요. 옛 프랑스어에서 '한 걸음도 안 걷는다, 한 점도 안 보인다'처럼 부정을 강조하던 명사들이 문법 부품으로 굳었죠. point는 영어 point와 같은 라틴어 punctum의 후손이라, ne ... point는 'not one point'로 풀면 바로 이해됩니다.",
+      },
+    ],
+  },
+
+  {
+    slug: "b2-10-impersonal-formal",
+    level: "B2",
+    order: 10,
+    title: "이 il은 아무도 가리키지 않는다",
+    topic: "무인칭 구문·논증 격식 표현",
+    titleFr: "Tournures impersonnelles et style soutenu",
+    summary: "il s'agit de, il s'avère que의 무인칭 구문과 force est de constater 같은 논증 관용구 — 신문·논술 문체의 마지막 퍼즐이에요.",
+    duration: "약 11분",
+    sections: [
+      {
+        heading: "무인칭 il — 주어 칸을 채우는 빈 의자",
+        pattern: "il + 동사 ... (il은 아무것도 가리키지 않음)",
+        patternKo: "아무도 가리키지 않는 자리 채우기 주어 il",
+        body:
+          "Il pleut, il faut, il y a의 **il**은 누구도 가리키지 않는 **자리 채우기용 주어**예요. B2부터는 이 무인칭이 격식 문체의 주력 엔진이 돼요.\n\n" +
+          "진짜 주어를 뒤로 미루는 효과가 있어요: **Il manque** deux chaises.(의자 두 개가 모자라요 — '부족하다'는 사실부터 선언.)",
+        examples: [
+          { fr: "Il manque une signature en bas de la page.", ipa: "[il mɑ̃k yn siɲatyʁ ɑ̃ ba də la paʒ]", ko: "페이지 하단에 서명 하나가 빠져 있습니다." },
+          { fr: "Il reste trois places pour ce soir.", ipa: "[il ʁɛst tʁwa plas puʁ sə swaʁ]", ko: "오늘 저녁 자리가 세 개 남았어요." },
+          { fr: "Il est arrivé quelque chose d'étrange hier soir.", ipa: "[il ɛtaʁive kɛlkə ʃoz detʁɑ̃ʒ jɛʁ swaʁ]", ko: "어젯밤 이상한 일이 일어났어요.", note: "진짜 주어(quelque chose)가 뒤로" },
+        ],
+        vsEn: "영어의 가주어 it(it turns out that ...)과 존재의 there(there remain three seats)가 프랑스어에서는 전부 **il** 하나로 통합돼요. '뜻 없는 주어'라는 발상 자체는 영어에서 이미 익숙하니, 형태만 il로 갈아 끼우면 됩니다.",
+      },
+      {
+        heading: "il s'agit de — '~에 관한 것이다'의 대표 함정",
+        pattern: "il s'agit de + 명사·동사원형 (주어는 영원히 il)",
+        patternKo: "~에 관한 이야기다 — 주어는 반드시 il뿐",
+        body:
+          "줄거리·핵심을 말하는 격식 동사 **s'agir**는 **무인칭 전용**이에요 — 주어 자리에 il 외에는 아무것도 못 와요.\n\n" +
+          "'중요한 것은 ~이다'라는 뜻도 가져요: Il s'agit maintenant **d'**agir vite.(이제 중요한 건 빨리 움직이는 거예요.)",
+        examples: [
+          { fr: "Dans ce roman, il s'agit d'un village qui disparaît.", ipa: "[dɑ̃ sə ʁɔmɑ̃ il saʒi dœ̃ vilaʒ ki dispaʁɛ]", ko: "이 소설은 사라져 가는 마을 이야기예요." },
+          { fr: "Il s'agit maintenant de convaincre le jury.", ipa: "[il saʒi mɛ̃tnɑ̃ də kɔ̃vɛ̃kʁ lə ʒyʁi]", ko: "이제 중요한 건 심사위원을 설득하는 거예요." },
+          { fr: "Il ne s'agit pas d'argent, mais de respect.", ipa: "[il nə saʒi pa daʁʒɑ̃ mɛ də ʁɛspɛ]", ko: "돈 문제가 아니라 존중의 문제예요." },
+        ],
+        pitfall: "'이 책은 전쟁에 관한 것이다'를 직역해 Ce livre s'agit de la guerre(✗)라고 쓰는 게 최다 오류예요. 책을 주어로 말하고 싶으면 Ce livre **parle de** / **porte sur** la guerre — s'agit는 반드시 il과만 짝입니다.",
+      },
+      {
+        heading: "드러남·소문·가능성 — il s'avère que·il paraît que·il se peut que",
+        pattern: "il s'avère / paraît que + 직설법 · il se peut / il semble que + 접속법",
+        patternKo: "확실성이 법을 가름 — 사실·소문은 직설법, 가능성은 접속법",
+        body:
+          "정보의 확실성에 따라 법이 갈려요. **확인된 사실로 드러남**(il s'avère que)과 **소문**(il paraît que — '카더라')은 직설법, **가능성**(il se peut que, il est possible que)과 **막연한 인상**(il semble que)은 접속법이에요.\n\n" +
+          "**il arrive que**(때때로 ~하는 일이 있다)와 **il suffit que/de**(~하기만 하면 된다)도 접속법 계열이에요.",
+        table: {
+          caption: "무인칭 구문과 법(法)",
+          headers: ["구문", "법", "뜻"],
+          rows: [
+            ["il s'avère que", "직설법", "~임이 드러나다"],
+            ["il paraît que", "직설법", "~라고 하더라 (소문)"],
+            ["il me semble que", "직설법", "내가 보기엔 ~같다"],
+            ["il semble que", "접속법", "~인 듯하다"],
+            ["il se peut que", "접속법", "~일지도 모른다"],
+            ["il arrive que", "접속법", "때때로 ~하는 일이 있다"],
+            ["il suffit que / de", "접속법 / + 원형", "~하기만 하면 된다"],
+          ],
+        },
+        examples: [
+          { fr: "Il s'avère que le témoin avait menti.", ipa: "[il savɛʁ kə lə temwɛ̃ avɛ mɑ̃ti]", ko: "목격자가 거짓말을 한 것으로 드러났습니다." },
+          { fr: "Il paraît qu'ils vont se marier.", ipa: "[il paʁɛ kil vɔ̃ sə maʁje]", ko: "걔네 결혼한다더라." },
+          { fr: "Il se peut que la réunion soit reportée.", ipa: "[il sə pø kə la ʁeynjɔ̃ swa ʁəpɔʁte]", ko: "회의가 미뤄질 수도 있어요." },
+        ],
+        pitfall: "il semble que는 접속법, **il me semble que는 직설법** — me 하나로 법이 갈려요. 내(me) 판단으로 끌어오는 순간 화자에게는 사실로 서기 때문이에요. '주관 표지가 붙을수록 오히려 직설법'이라는 역설로 외워두세요.",
+      },
+      {
+        heading: "권고와 과제 — il convient de·il est question de·il reste à",
+        pattern: "il convient de + 동사원형 · il est question de · il reste à",
+        patternKo: "~하는 것이 바람직하다 등 권고·과제의 무인칭",
+        body:
+          "행정문·논문의 정중한 권고가 **il convient de**(~하는 것이 바람직하다)예요. **il est question de**는 '~이 논의되고 있다', **il reste à**는 '~할 일이 남았다'.\n\n" +
+          "부정형 **il n'est pas question que + 접속법**은 '절대 안 된다'는 강한 거부예요.",
+        examples: [
+          { fr: "Il convient de relire le contrat avant de signer.", ipa: "[il kɔ̃vjɛ̃ də ʁəliʁ lə kɔ̃tʁa avɑ̃ də siɲe]", ko: "서명 전에 계약서를 다시 읽어 보는 것이 바람직합니다." },
+          { fr: "Il est question de déplacer le siège à Lyon.", ipa: "[il ɛ kɛstjɔ̃ də deplase lə sjɛʒ a ljɔ̃]", ko: "본사를 리옹으로 옮기는 방안이 논의되고 있어요." },
+          { fr: "Il ne reste plus qu'à attendre la réponse.", ipa: "[il nə ʁɛst ply ka atɑ̃dʁ la ʁepɔ̃s]", ko: "이제 답을 기다리는 일만 남았네요." },
+        ],
+        tip: "Il n'est pas question que tu paies !(네가 내다니 말도 안 돼!) — 격식 구문이지만 회화에서도 강한 거부의 단골이에요. 줄여서 «Pas question !»(절대 안 돼!) 단독으로도 쓰입니다.",
+      },
+      {
+        heading: "논증의 화석들 — force est de constater·toujours est-il que",
+        pattern: "force est de constater que · toujours est-il que · il va de soi que + 직설법",
+        patternKo: "어순이 굳은 논증 관용구 — 도치형 그대로 암기",
+        body:
+          "에세이와 사설에는 **어순이 굳은 관용구**들이 살아 있어요. **force est de constater que**(인정하지 않을 수 없다), **toujours est-il que**(어쨌든 분명한 것은), **encore faut-il que + 접속법**(다만 ~해야 한다는 전제가 남는다) — 도치형 그대로 외우는 화석들이에요.\n\n" +
+          "출처는 **selon / d'après + 명사**(~에 따르면), 자격은 **en tant que**(~로서: en tant que parent 부모로서)로 표시해요. 표의 표현을 서너 개만 장전해도 논술의 격이 달라집니다.",
+        table: {
+          caption: "논증 격식 표현 치트시트",
+          headers: ["표현", "뜻"],
+          rows: [
+            ["il est indéniable que", "~임은 부인할 수 없다"],
+            ["force est de constater que", "~임을 인정하지 않을 수 없다"],
+            ["il va de soi que", "~은 자명하다"],
+            ["toujours est-il que", "어쨌든 분명한 것은 ~이다"],
+            ["reste que · il n'empêche que", "그래도 ~라는 사실은 남는다"],
+            ["autant dire que", "~라고 해도 과언이 아니다"],
+            ["encore faut-il que + 접속법", "다만 ~해야 한다는 전제가 남는다"],
+          ],
+        },
+        examples: [
+          { fr: "Force est de constater que rien n'a changé.", ipa: "[fɔʁs ɛ də kɔ̃state kə ʁjɛ̃ na ʃɑ̃ʒe]", ko: "아무것도 변하지 않았음을 인정하지 않을 수 없습니다." },
+          { fr: "Toujours est-il que la décision a déjà été prise.", ipa: "[tuʒuʁzɛtil kə la desizjɔ̃ a deʒa ete pʁiz]", ko: "어쨌든 분명한 건 결정이 이미 내려졌다는 거예요." },
+          { fr: "Il va de soi que l'entrée est gratuite pour les membres.", ipa: "[il va də swa kə lɑ̃tʁe ɛ ɡʁatɥit puʁ le mɑ̃bʁ]", ko: "회원에게 입장이 무료인 건 말할 것도 없고요." },
+          { fr: "Selon ce rapport, la situation s'améliore.", ipa: "[səlɔ̃ sə ʁapɔʁ la sitɥasjɔ̃ sameljɔʁ]", ko: "이 보고서에 따르면 상황은 나아지고 있습니다.", note: "출처 표시 — d'après도 같은 자리" },
+        ],
+        tip: "결론 문단을 «Force est de constater que ...»로 열고 «Toujours est-il que ...»로 받으면 DELF 채점자가 바로 알아보는 격식 신호가 돼요. 단, 한 편에 한 번씩만 — 화석은 박물관처럼 아껴 쓰는 게 멋입니다.",
       },
     ],
   },

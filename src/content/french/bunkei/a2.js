@@ -143,6 +143,7 @@ export default {
           ex: { fr: "Le film commence dans dix minutes.", ipa: "[lə film kɔmɑ̃s dɑ̃ di minyt]", ko: "영화는 10분 후에 시작해요." },
           ex2: { fr: "Dans deux ans, je parlerai bien français.", ipa: "[dɑ̃ døz‿ɑ̃ ʒə paʁləʁe bjɛ̃ fʁɑ̃sɛ]", ko: "2년 후에는 프랑스어를 잘하게 될 거예요." },
           note: "미래로 세는 '~ 후'는 dans, 과거로 세는 '~ 전'은 il y a — 방향이 반대",
+          ch: "a2-11-time-expressions",
         },
       ],
     },
@@ -337,6 +338,7 @@ export default {
           ex: { fr: "Je ne fume plus.", ipa: "[ʒə nə fym ply]", ko: "이제 담배 안 피워요." },
           ex2: { fr: "Il n'y a plus de pain.", ipa: "[il nja ply də pɛ̃]", ko: "빵이 다 떨어졌어요." },
           note: "부정의 plus는 [ply] (s 묵음) — '더'라는 비교의 plus[plys]와 발음으로 구분된다",
+          ch: "b2-09-negation-advanced",
         },
         {
           pattern: "ne … jamais",
@@ -345,6 +347,7 @@ export default {
           ex: { fr: "Je ne bois jamais d'alcool.", ipa: "[ʒə nə bwa ʒamɛ dalkɔl]", ko: "저는 술을 전혀 안 마셔요." },
           ex2: { fr: "Elle n'est jamais allée à l'étranger.", ipa: "[ɛl nɛ ʒamɛz‿ale a letʁɑ̃ʒe]", ko: "그녀는 외국에 한 번도 가 본 적이 없어요." },
           note: "복합과거에서는 조동사와 과거분사 사이에 — jamais 뒤에도 관사는 de로 준다",
+          ch: "b2-09-negation-advanced",
         },
         {
           pattern: "ne … rien",
@@ -353,6 +356,7 @@ export default {
           ex: { fr: "Je ne comprends rien.", ipa: "[ʒə nə kɔ̃pʁɑ̃ ʁjɛ̃]", ko: "하나도 모르겠어요." },
           ex2: { fr: "Il n'a rien mangé ce matin.", ipa: "[il na ʁjɛ̃ mɑ̃ʒe sə matɛ̃]", ko: "그는 오늘 아침에 아무것도 안 먹었어요." },
           note: "rien이 pas의 자리를 차지한다 — pas와 같이 쓰면 안 됨 (×ne mange pas rien)",
+          ch: "b2-09-negation-advanced",
         },
         {
           pattern: "ne … personne",
@@ -361,6 +365,7 @@ export default {
           ex: { fr: "Je ne connais personne ici.", ipa: "[ʒə nə kɔnɛ pɛʁsɔn isi]", ko: "여기 아는 사람이 아무도 없어요." },
           ex2: { fr: "Il n'y a personne dans la rue.", ipa: "[il nja pɛʁsɔn dɑ̃ la ʁy]", ko: "거리에 아무도 없어요." },
           note: "une personne(한 사람)과 같은 단어가 부정문에서 '아무도'로 — 문맥으로 구분",
+          ch: "b2-09-negation-advanced",
         },
         {
           pattern: "Personne ne …・Rien ne …",
@@ -369,6 +374,7 @@ export default {
           ex: { fr: "Personne ne répond au téléphone.", ipa: "[pɛʁsɔn nə ʁepɔ̃ o telefɔn]", ko: "아무도 전화를 안 받아요." },
           ex2: { fr: "Rien ne change ici.", ipa: "[ʁjɛ̃ nə ʃɑ̃ʒ isi]", ko: "여기는 아무것도 안 변해요." },
           note: "주어 자리에 와도 ne는 남는다 — pas는 쓰지 않는다",
+          ch: "b2-09-negation-advanced",
         },
         {
           pattern: "ne … que",
@@ -377,6 +383,7 @@ export default {
           ex: { fr: "Je n'ai que dix euros.", ipa: "[ʒə ne kə diz‿øʁo]", ko: "10유로밖에 없어요." },
           ex2: { fr: "Elle ne boit que de l'eau.", ipa: "[ɛl nə bwa kə də lo]", ko: "그녀는 물만 마셔요." },
           note: "형태는 부정문이지만 뜻은 '~만'(=seulement) — 부정이 아니라 한정",
+          ch: "b2-09-negation-advanced",
         },
         {
           pattern: "ne … ni … ni …",
@@ -385,6 +392,7 @@ export default {
           ex: { fr: "Je ne bois ni café ni thé.", ipa: "[ʒə nə bwa ni kafe ni te]", ko: "커피도 차도 안 마셔요." },
           ex2: { fr: "Il n'a ni frère ni sœur.", ipa: "[il na ni fʁɛʁ ni sœʁ]", ko: "그는 형제도 자매도 없어요." },
           note: "ni 뒤에는 un/du 같은 관사를 떨어뜨린다 — ×ni du café ni du thé",
+          ch: "b2-09-negation-advanced",
         },
       ],
     },
@@ -507,6 +515,7 @@ export default {
           ex: { fr: "Je reste à la maison parce que je suis malade.", ipa: "[ʒə ʁɛst a la mɛzɔ̃ paʁs kə ʒə sɥi malad]", ko: "아파서 집에 있어요." },
           ex2: { fr: "Il est resté, car il était fatigué.", ipa: "[il ɛ ʁɛste kaʁ il etɛ fatiɡe]", ko: "그는 피곤했기에 남았다." },
           note: "car는 글에서 쓰는 접속사 — 일상 회화에서는 parce que 쪽이 자연스럽다",
+          ch: "b1-09-connectors-purpose-time",
         },
         {
           pattern: "donc・alors",
@@ -523,6 +532,7 @@ export default {
           ex: { fr: "Quand je suis fatigué, je bois un café.", ipa: "[kɑ̃ ʒə sɥi fatiɡe ʒə bwa œ̃ kafe]", ko: "피곤할 때는 커피를 마셔요." },
           ex2: { fr: "Appelle-moi quand tu arrives.", ipa: "[apɛl mwa kɑ̃ ty aʁiv]", ko: "도착하면 전화해." },
           note: "의문사 quand(언제?)과 같은 단어 — 문중에서는 접속사 '~할 때'",
+          ch: "b1-09-connectors-purpose-time",
         },
         {
           pattern: "d'abord・ensuite・enfin",
@@ -539,6 +549,7 @@ export default {
           ex: { fr: "Je me brosse les dents avant de dormir.", ipa: "[ʒə mə bʁɔs le dɑ̃ avɑ̃ də dɔʁmiʁ]", ko: "자기 전에 이를 닦아요." },
           ex2: { fr: "Réfléchis bien avant de répondre.", ipa: "[ʁefleʃi bjɛ̃ avɑ̃ də ʁepɔ̃dʁ]", ko: "대답하기 전에 잘 생각해 봐." },
           note: "avant + 명사(avant le dîner), avant de + 동사 원형 — 뒤에 오는 품사로 형태가 갈린다",
+          ch: "b1-09-connectors-purpose-time",
         },
       ],
     },
@@ -553,6 +564,7 @@ export default {
           ex: { fr: "J'apprends le français depuis six mois.", ipa: "[ʒapʁɑ̃ lə fʁɑ̃sɛ dəpɥi si mwa]", ko: "6개월 전부터 프랑스어를 배우고 있어요." },
           ex2: { fr: "Il habite ici depuis 2020.", ipa: "[il abit isi dəpɥi dø mil vɛ̃]", ko: "그는 2020년부터 여기 살아요." },
           note: "지금도 계속되면 현재형 + depuis — 영어처럼 완료형을 쓰지 않는다 (×J'ai appris depuis…)",
+          ch: "a2-11-time-expressions",
         },
         {
           pattern: "pendant + 기간",
@@ -561,6 +573,7 @@ export default {
           ex: { fr: "J'ai habité au Japon pendant trois ans.", ipa: "[ʒe abite o ʒapɔ̃ pɑ̃dɑ̃ tʁwaz‿ɑ̃]", ko: "일본에서 3년 동안 살았어요." },
           ex2: { fr: "Pendant les vacances, je ne travaille pas.", ipa: "[pɑ̃dɑ̃ le vakɑ̃s ʒə nə tʁavaj pa]", ko: "방학 동안에는 일을 안 해요." },
           note: "끝난 기간은 pendant, 지금도 계속이면 depuis — 둘의 대립이 핵심",
+          ch: "a2-11-time-expressions",
         },
         {
           pattern: "il y a + 기간",
@@ -569,6 +582,7 @@ export default {
           ex: { fr: "Je suis arrivé en France il y a deux mois.", ipa: "[ʒə sɥiz‿aʁive ɑ̃ fʁɑ̃s ilja dø mwa]", ko: "두 달 전에 프랑스에 왔어요." },
           ex2: { fr: "Il a téléphoné il y a cinq minutes.", ipa: "[il a telefɔne ilja sɛ̃k minyt]", ko: "그가 5분 전에 전화했어요." },
           note: "존재의 il y a(~이 있다)와 동형 — 뒤에 기간이 오고 과거 시제와 짝이면 '~ 전에'",
+          ch: "a2-11-time-expressions",
         },
         {
           pattern: "ça fait + 기간 + que …",
@@ -577,6 +591,7 @@ export default {
           ex: { fr: "Ça fait trois ans que j'habite ici.", ipa: "[sa fɛ tʁwaz‿ɑ̃ kə ʒabit isi]", ko: "여기 산 지 3년 됐어요." },
           ex2: { fr: "Ça fait longtemps qu'on ne s'est pas vus !", ipa: "[sa fɛ lɔ̃tɑ̃ kɔ̃ nə sɛ pa vy]", ko: "우리 정말 오랜만이다!" },
           note: "depuis와 같은 뜻을 구어적으로 — 기간을 문장 앞으로 빼서 강조하는 효과",
+          ch: "a2-11-time-expressions",
         },
         {
           pattern: "en + 기간",
@@ -585,6 +600,7 @@ export default {
           ex: { fr: "Il a fini son travail en une heure.", ipa: "[il a fini sɔ̃ tʁavaj ɑ̃n‿yn‿œʁ]", ko: "그는 한 시간 만에 일을 끝냈어요." },
           ex2: { fr: "On va à Busan en deux heures en train.", ipa: "[ɔ̃ va a buzan ɑ̃ døz‿œʁ ɑ̃ tʁɛ̃]", ko: "기차로 두 시간이면 부산에 가요." },
           note: "dans + 기간(지금부터 ~ 후)과 구분 — en은 '얼마나 걸리는가'",
+          ch: "a2-11-time-expressions",
         },
         {
           pattern: "jusqu'à …",
@@ -592,6 +608,7 @@ export default {
           ko: "~까지",
           ex: { fr: "Le magasin est ouvert jusqu'à vingt heures.", ipa: "[lə maɡazɛ̃ ɛt‿uvɛʁ ʒyska vɛ̃t‿œʁ]", ko: "가게는 저녁 8시까지 열어요." },
           ex2: { fr: "On a dansé jusqu'au matin.", ipa: "[ɔ̃n‿a dɑ̃se ʒysko matɛ̃]", ko: "우리는 아침까지 춤췄어요." },
+          ch: "a2-11-time-expressions",
         },
         {
           pattern: "à partir de …",
@@ -600,6 +617,7 @@ export default {
           ex: { fr: "Je suis libre à partir de quinze heures.", ipa: "[ʒə sɥi libʁ a paʁtiʁ də kɛ̃z‿œʁ]", ko: "오후 3시부터 시간 있어요." },
           ex2: { fr: "À partir de demain, je fais du sport !", ipa: "[a paʁtiʁ də dəmɛ̃ ʒə fɛ dy spɔʁ]", ko: "내일부터 운동할 거야!" },
           note: "미래의 시작점에 자연스럽다 — depuis는 과거에서 지금까지, à partir de는 어느 시점 이후",
+          ch: "a2-11-time-expressions",
         },
       ],
     },
@@ -614,6 +632,7 @@ export default {
           ex: { fr: "Je voudrais un kilo de tomates.", ipa: "[ʒə vudʁɛ œ̃ kilo də tɔmat]", ko: "토마토 1킬로 주세요." },
           ex2: { fr: "On a acheté une bouteille de vin.", ipa: "[ɔ̃n‿a aʃte yn butɛj də vɛ̃]", ko: "와인 한 병을 샀어요." },
           note: "de 뒤는 무관사 — un morceau de(한 조각), un litre de(1리터)도 같은 틀",
+          ch: "a2-12-quantity-tout",
         },
         {
           pattern: "assez de …",
@@ -621,6 +640,7 @@ export default {
           ko: "충분한 ~",
           ex: { fr: "Tu as assez d'argent ?", ipa: "[ty a ase daʁʒɑ̃]", ko: "돈 충분히 있어?" },
           ex2: { fr: "Il n'y a pas assez de chaises pour tout le monde.", ipa: "[il nja paz‿ase də ʃɛz puʁ tu lə mɔ̃d]", ko: "모두가 앉을 의자가 부족해요." },
+          ch: "a2-12-quantity-tout",
         },
         {
           pattern: "trop de …",
@@ -628,6 +648,7 @@ export default {
           ko: "너무 많은 ~",
           ex: { fr: "Il y a trop de monde dans le métro.", ipa: "[ilja tʁo də mɔ̃d dɑ̃ lə metʁo]", ko: "지하철에 사람이 너무 많아요." },
           ex2: { fr: "Je bois trop de café en ce moment.", ipa: "[ʒə bwa tʁo də kafe ɑ̃ sə mɔmɑ̃]", ko: "요즘 커피를 너무 많이 마셔요." },
+          ch: "a2-12-quantity-tout",
         },
         {
           pattern: "quelques …",
@@ -635,6 +656,7 @@ export default {
           ko: "몇몇의 ~, 몇 ~",
           ex: { fr: "J'ai quelques questions.", ipa: "[ʒe kɛlk kɛstjɔ̃]", ko: "질문이 몇 개 있어요." },
           ex2: { fr: "On reste encore quelques jours.", ipa: "[ɔ̃ ʁɛst ɑ̃kɔʁ kɛlk ʒuʁ]", ko: "며칠 더 머물 거예요." },
+          ch: "a2-12-quantity-tout",
         },
         {
           pattern: "plusieurs …",
@@ -643,6 +665,7 @@ export default {
           ex: { fr: "Il parle plusieurs langues.", ipa: "[il paʁl plyzjœʁ lɑ̃ɡ]", ko: "그는 여러 언어를 해요." },
           ex2: { fr: "J'ai vu ce film plusieurs fois.", ipa: "[ʒe vy sə film plyzjœʁ fwa]", ko: "이 영화를 여러 번 봤어요." },
           note: "quelques(몇몇)보다 많은 느낌 — 성 구분 없이 형태 하나",
+          ch: "a2-12-quantity-tout",
         },
         {
           pattern: "chaque …",
@@ -651,6 +674,7 @@ export default {
           ex: { fr: "Chaque étudiant a un livre.", ipa: "[ʃak etydjɑ̃ a œ̃ livʁ]", ko: "학생마다 책이 한 권씩 있어요." },
           ex2: { fr: "Je vais à la piscine chaque semaine.", ipa: "[ʒə vɛ a la pisin ʃak səmɛn]", ko: "매주 수영장에 가요." },
           note: "항상 단수와 — '매주'는 chaque semaine = toutes les semaines",
+          ch: "a2-12-quantity-tout",
         },
         {
           pattern: "tout/toute/tous/toutes + 명사",
@@ -659,6 +683,7 @@ export default {
           ex: { fr: "J'ai travaillé toute la journée.", ipa: "[ʒe tʁavaje tut la ʒuʁne]", ko: "하루 종일 일했어요." },
           ex2: { fr: "Tous mes amis viennent ce soir.", ipa: "[tu mez‿ami vjɛn sə swaʁ]", ko: "내 친구들 모두 오늘 저녁에 와." },
           note: "한정사 tous는 [tu] (s 묵음), 대명사로 쓰면 [tus] — Ils sont tous là [tus]",
+          ch: "a2-12-quantity-tout",
         },
         {
           pattern: "tous les + 기간",
@@ -667,6 +692,7 @@ export default {
           ex: { fr: "Je fais du yoga tous les matins.", ipa: "[ʒə fɛ dy jɔɡa tu le matɛ̃]", ko: "매일 아침 요가를 해요." },
           ex2: { fr: "Le bus passe toutes les dix minutes.", ipa: "[lə bys pas tut le di minyt]", ko: "버스는 10분마다 와요." },
           note: "tous les jours(매일)는 통째로 암기 — 여성 명사엔 toutes les",
+          ch: "a2-12-quantity-tout",
         },
         {
           pattern: "tout le monde",
@@ -675,6 +701,7 @@ export default {
           ex: { fr: "Tout le monde est là ?", ipa: "[tu lə mɔ̃d ɛ la]", ko: "다들 왔어요?" },
           ex2: { fr: "Tout le monde n'aime pas le fromage.", ipa: "[tu lə mɔ̃d nɛm pa lə fʁɔmaʒ]", ko: "모두가 치즈를 좋아하는 건 아니에요." },
           note: "뜻은 '모두'지만 동사는 단수 — ×Tout le monde sont",
+          ch: "a2-12-quantity-tout",
         },
         {
           pattern: "quelque chose・quelqu'un",
@@ -683,6 +710,7 @@ export default {
           ex: { fr: "Tu veux boire quelque chose ?", ipa: "[ty vø bwaʁ kɛlk ʃoz]", ko: "뭐 마실래?" },
           ex2: { fr: "Quelqu'un a oublié son parapluie.", ipa: "[kɛlkœ̃ a ublije sɔ̃ paʁaplɥi]", ko: "누군가 우산을 두고 갔어요." },
           note: "형용사를 붙이면 de + 남성형 — quelque chose de bon (×quelque chose bonne)",
+          ch: "a2-12-quantity-tout",
         },
       ],
     },

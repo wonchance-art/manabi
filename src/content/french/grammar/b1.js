@@ -16,6 +16,7 @@ export default [
       {
         heading: "형태 — 미래 어간 + 반과거 어미",
         pattern: "미래 어간 + -ais, -ais, -ait, -ions, -iez, -aient",
+        patternKo: "조건법 만들기 — 미래 어간에 반과거 어미 결합",
         body:
           "**단순미래의 어간**에 **반과거의 어미**를 붙이면 끝 — 이미 배운 두 시제의 조합이라 새로 외울 건 거의 없어요.\n\n" +
           "미래형이 불규칙한 동사(être→ser-, avoir→aur-, aller→ir-, vouloir→voudr-, pouvoir→pourr- 등)는 조건법에서도 **같은 어간**을 그대로 써요.",
@@ -70,6 +71,7 @@ export default [
       {
         heading: "용법 3 — 조심스러운 단정과 충고",
         pattern: "tu devrais + 원형 → ~하는 게 좋겠어 (= should)",
+        patternKo: "~하는 게 좋겠어 — 충고·미확인 정보의 거리 두기",
         body:
           "조건법은 '확실하지 않음'의 표지이기도 해요. 뉴스의 미확인 정보(~라고 한다), 충고(tu devrais) 등에 두루 쓰여요.\n\n" +
           "특히 **devoir의 조건법(devrais)**은 영어 should에 해당하는 충고 표현으로, 일상 회화 빈도가 아주 높아요.",
@@ -96,6 +98,7 @@ export default [
       {
         heading: "접속법이란 — 카메라 vs 머릿속 필터",
         pattern: "사실 보고 → 직설법 · 바람·필요·감정·의심 → 접속법",
+        patternKo: "사실이면 직설법, 머릿속 바람·평가면 접속법",
         body:
           "지금까지의 시제는 전부 세상을 카메라로 찍듯 **사실로 서술**하는 **직설법**이었어요. **접속법(subjonctif)**은 사실이 아니라 그에 대한 **내 머릿속의 평가·바람·감정·의심**을 말하는 모드예요.\n\n" +
           "Il faut qu'il **vienne**(그가 와야 해요)에서 '그가 온다'는 아직 사실이 아니라 머릿속 요구사항이죠. **que 뒤를 사실로 보고하면 직설법, 바람·평가의 대상으로 다루면 접속법** — 이 한 줄이 전체를 관통해요.",
@@ -108,6 +111,7 @@ export default [
       {
         heading: "형태 — ils 어간 + e, es, e, ions, iez, ent",
         pattern: "ils 현재형 - ent + -e, -es, -e, -ions, -iez, -ent",
+        patternKo: "접속법 만들기 — ils 어간에 접속법 어미",
         body:
           "**직설법 현재 ils 형태에서 -ent을 떼고** 어미를 붙여요: ils finissent → que je finisse. nous/vous는 반과거와 모양이 같아요.\n\n" +
           "규칙 -er 동사는 단수형이 직설법 현재와 모양이 같아서, 접속법인 줄 모르고 이미 쓰고 있는 경우도 많아요.",
@@ -131,6 +135,7 @@ export default [
       {
         heading: "꼭 외워야 할 불규칙 6총사",
         pattern: "être → sois · avoir → aie · aller → aille · faire → fasse · pouvoir → puisse · savoir → sache",
+        patternKo: "고빈도 동사 6개의 불규칙 접속법 (통째로 암기)",
         body:
           "자주 쓰는 동사일수록 불규칙이에요. 이 여섯 개는 사용 빈도가 압도적이니 표째로 암기하세요.\n\n" +
           "être와 avoir는 어미까지 특이하고, aller와 vouloir는 nous/vous에서 어간이 바뀌는 점(aille/allions, veuille/voulions)을 조심하세요.",
@@ -154,6 +159,7 @@ export default [
       {
         heading: "접속법을 부르는 표현 — 필요·바람·감정·의심",
         pattern: "il faut que / vouloir que / être content que / douter que + 접속법",
+        patternKo: "필요·바람·감정·의심 표현 뒤 que절은 접속법",
         body:
           "**필요·의무**(il faut que), **바람·요구**(vouloir que, demander que), **감정**(être content que, c'est dommage que), **의심·부정**(douter que, je ne pense pas que) — 전부 '머릿속 평가'라는 공통점이 있어요.\n\n" +
           "이 중에서도 **il faut que + 접속법**은 일상 회화 최고 빈도 패턴이에요. 여기서부터 입에 붙이세요.",
@@ -195,6 +201,7 @@ export default [
       {
         heading: "형태 — avoir/être의 반과거 + 과거분사",
         pattern: "avoir/être 반과거 + 과거분사 (j'avais fini · j'étais parti)",
+        patternKo: "대과거 만들기 — 복합과거의 조동사를 반과거로",
         body:
           "복합과거를 알면 공짜로 얻는 시제예요. 조동사를 **반과거형으로 바꾸기만** 하면 돼요: J'ai fini → J'**avais** fini.\n\n" +
           "조동사 선택, être일 때의 성·수 일치, 대명동사 처리 — 전부 **복합과거의 규칙 그대로**예요.",
@@ -215,6 +222,7 @@ export default [
       {
         heading: "3단 시간축 — 이야기 속에서 굴리기",
         pattern: "반과거 = 무대 · 복합과거 = 사건 · 대과거 = 그 이전의 사연",
+        patternKo: "이야기 속 3단 분업 — 무대·사건·그 이전 사연",
         body:
           "실제 이야기에서는 세 시제가 분업해요. **반과거**가 무대를 깔고, **복합과거**가 사건을 진행시키고, **대과거**가 그 이전의 사연을 끼워 넣어요.\n\n" +
           "'마리를 만났어(사건). 행복해 보였어(상태). 막 새 직장을 구했던 거야(이전 사연).' — 이 리듬이 프랑스어 스토리텔링의 기본 박자예요.",
@@ -228,6 +236,7 @@ export default [
       {
         heading: "보너스 — Si j'avais su !",
         pattern: "Si + 대과거 ! → ~했더라면! (탄식)",
+        patternKo: "~했더라면! — 뒷말을 생략한 후회의 탄식",
         body:
           "**Si j'avais su !**(알았더라면!)처럼 si + 대과거만 던지고 뒷말을 생략하면 후회의 탄식이 돼요.\n\n" +
           "이 si + 대과거가 '과거 사실과 반대되는 가정문'으로 완성되는 모습은 B2 가정문 챕터에서 만나요.",
@@ -252,6 +261,7 @@ export default [
       {
         heading: "복습 30초 — qui와 que의 분업",
         pattern: "qui = 주어 자리 · que = 직접목적어 자리",
+        patternKo: "관계절 빈자리가 주어면 qui, 직접목적어면 que",
         body:
           "l'ami **qui** habite à Lyon(qui가 주어), le livre **que** je lis(que가 목적어)였죠.\n\n" +
           "그런데 동사가 **de나 다른 전치사**를 데리고 다니면 qui/que로는 부족해요. 그 빈자리를 채우는 게 dont, où, lequel 계열이에요.",
@@ -263,6 +273,7 @@ export default [
       {
         heading: "dont — de를 통째로 삼키는 관계대명사",
         pattern: "de + 선행사 → dont (parler de → le livre dont je parle)",
+        patternKo: "'de + 선행사' 자리를 통째로 받는 dont (소유 포함)",
         body:
           "**dont = de + 무엇**이에요. parler **de**, avoir besoin **de**처럼 de와 결합하는 표현이 관계절에 들어가면, 'de + 선행사' 자리를 dont 하나가 흡수해요.\n\n" +
           "또 하나의 큰 용법이 **소유**예요. la femme **dont** le fils est médecin(아들이 의사인 그 여자) — '~의(de)'를 dont이 담당하죠.",
@@ -278,6 +289,7 @@ export default [
       {
         heading: "où — 장소만이 아니라 시간도",
         pattern: "장소·시간 선행사 → où (la ville où · le jour où)",
+        patternKo: "장소뿐 아니라 시간 선행사도 받는 où",
         body:
           "**où**는 선행사가 **장소**일 때 쓰는 관계대명사예요: la ville **où** je suis né(내가 태어난 도시).\n\n" +
           "자주 놓치는 건 **시간 선행사**예요. le jour **où** je t'ai rencontré(너를 만난 날) — quand이 아니라 où입니다.",
@@ -291,6 +303,7 @@ export default [
       {
         heading: "lequel 계열 — 그 밖의 전치사 뒤에는",
         pattern: "전치사 + lequel/laquelle/lesquels/lesquelles (à+lequel → auquel · de+lequel → duquel)",
+        patternKo: "그 밖의 전치사 뒤에는 lequel 계열 (성수 일치)",
         body:
           "avec, pour, sur, dans 같은 전치사 뒤에서는 **lequel 계열**(선행사의 성·수에 일치)을 써요: la table **sur laquelle**..., les amis **avec lesquels**...\n\n" +
           "à나 de는 정관사처럼 축약돼요(auquel, duquel). 선행사가 **사람**이면 전치사 + qui도 가능해요: l'amie avec qui je voyage.",
@@ -327,6 +340,7 @@ export default [
       {
         heading: "형태 — nous 어간 + -ant",
         pattern: "en + (nous 현재형 - ons + -ant) → en parlant",
+        patternKo: "제롱디프 만들기 — en + nous 어간 + -ant",
         body:
           "제롱디프는 **en + 현재분사**예요. nous parlons → parlant → **en parlant**(말하면서). 어간의 철자(mangeons → mangeant)도 nous형을 그대로 따라가요.\n\n" +
           "예외는 딱 셋: être → **étant**, avoir → **ayant**, savoir → **sachant**.",
@@ -348,6 +362,7 @@ export default [
       {
         heading: "용법 1 — 동시동작: ~하면서",
         pattern: "en + -ant → ~하면서 (강조·대조: tout en + -ant)",
+        patternKo: "~하면서 — 두 동작의 동시 진행",
         body:
           "가장 기본 용법은 **두 동작이 동시에** 일어남을 나타내는 '~하면서'예요. 주절의 동사와 제롱디프의 동작이 같은 시간에 겹쳐요.\n\n" +
           "동시성을 강조하거나 두 동작이 살짝 모순될 때(웃으면서 비판하기 등)는 **tout en + -ant**을 써요.",
@@ -360,6 +375,7 @@ export default [
       {
         heading: "용법 2 — 수단과 조건: ~함으로써, ~하면",
         pattern: "en + -ant → ~함으로써 · ~하면",
+        patternKo: "~함으로써·~하면 — 수단과 조건의 제롱디프",
         body:
           "'어떻게?'에 답하는 **수단·방법**의 용법이에요: C'est en forgeant qu'on devient forgeron(쇠를 두드림으로써 대장장이가 된다 — 속담).\n\n" +
           "**조건**의 뉘앙스로도 써요: En partant maintenant, tu arriveras à l'heure(지금 떠나면 제시간에 도착할 거야).",
@@ -373,6 +389,7 @@ export default [
       {
         heading: "제약 — 주어가 반드시 일치해야 해요",
         pattern: "제롱디프의 숨은 주어 = 주절의 주어",
+        patternKo: "제롱디프의 주어는 주절 주어와 반드시 일치",
         body:
           "Elle téléphone en marchant에서 걷는 사람과 통화하는 사람은 같은 '그녀'죠. 이 일치가 **의무**예요.\n\n" +
           "'비가 오면서 우리는 출발했다'처럼 두 동작의 주어가 다르면 제롱디프를 못 쓰고, Comme il pleuvait, nous sommes partis처럼 접속사로 풀어야 해요.",
@@ -399,6 +416,7 @@ export default [
       {
         heading: "형태 — être + 과거분사 (+ par)",
         pattern: "être + 과거분사 (+ par 행위자)",
+        patternKo: "수동태 만들기 — être + 과거분사 (주어에 성수 일치)",
         body:
           "능동문의 목적어가 주어로 올라오는 구조예요: Le chat mange la souris → La souris **est mangée** par le chat.\n\n" +
           "주의 둘. ① 과거분사는 **주어의 성·수에 일치**(mangée). ② 시제는 être가 짊어져요 — être를 복합과거로 바꾸면 수동태 과거가 됩니다.",
@@ -421,6 +439,7 @@ export default [
       {
         heading: "par냐 de냐 — 행위자 표시의 두 갈래",
         pattern: "구체적 행위·사건 → par · 감정·지속 상태 → de",
+        patternKo: "행위자 표시 — 구체적 행위는 par, 감정·상태는 de",
         body:
           "행위자는 보통 **par**지만, **감정·상태·동반**을 나타낼 때는 **de**를 써요: aimé **de** tous(모두에게 사랑받는), couvert **de** neige(눈으로 덮인).\n\n" +
           "처음엔 aimé de, couvert de, suivi de, accompagné de 같은 단골 표현을 통째로 외우는 게 실용적이에요.",
@@ -433,6 +452,7 @@ export default [
       {
         heading: "프랑스어식 습관 — on으로 수동 피하기",
         pattern: "수동 회피: on + 능동문 · 대명동사 수동 (Ça se vend bien)",
+        patternKo: "회화의 수동 회피 — on 능동문·대명동사로 말하기",
         body:
           "**프랑스어 회화는 수동태를 별로 좋아하지 않아요**. 행위자가 불분명하면 **on**을 주어로 한 능동문이 훨씬 자연스러워요: On parle français en France. / On m'a volé mon portefeuille.\n\n" +
           "또 하나의 회피 장치는 **대명동사 수동**이에요: Ça **se vend** bien(잘 팔려요). 일반적 사실·관습을 말할 때 애용돼요.",
@@ -447,6 +467,7 @@ export default [
       {
         heading: "한국어 피동과의 대응 — '-되다/-받다/-당하다'",
         pattern: "-되다/-받다 ≈ être + p.p. · -당하다 ≈ 수동 또는 on 구문",
+        patternKo: "한국어 피동과의 대응 — 형태 직역 대신 상황 기준 선택",
         body:
           "한국어에도 피동이 있어서 개념 자체는 익숙해요. 다만 방향이 항상 일치하지는 않아요 — 한국어 피동을 프랑스어는 on 능동으로(도둑맞았다 → On m'a volé...) 말하는 경우가 많아요.\n\n" +
           "**형태 대응이 아니라 '그 상황에서 프랑스인이 뭐라고 하는가'**를 기준으로 삼으세요.",
@@ -472,6 +493,7 @@ export default [
       {
         heading: "기본 구조 — dire que로 문장 옮기기",
         pattern: "Il dit que + 평서문 (인칭은 화자 기준으로 전환)",
+        patternKo: "간접화법 기본 — que로 잇고 인칭은 화자 기준으로 전환",
         body:
           "남의 말을 내 문장 속에 녹여 전하는 게 **간접화법**이에요. Il dit : « Je suis fatigué. » → Il dit **qu'il est** fatigué.\n\n" +
           "따옴표를 풀면서 **인칭이 화자 기준으로** 바뀌어요(je → il, mon → son). 주절이 현재면 종속절 시제는 그대로 유지돼요.",
@@ -483,6 +505,7 @@ export default [
       {
         heading: "시제 후퇴 — 주절이 과거가 되면",
         pattern: "주절이 과거: 현재 → 반과거 · 복합과거 → 대과거 · 미래 → 조건법 현재",
+        patternKo: "주절이 과거면 종속절 시제가 한 칸 후퇴",
         body:
           "**주절이 과거(Il a dit...)면 종속절의 시제가 한 칸 뒤로 물러나요.** '그가 말한 시점'을 기준으로 시간 전체가 과거 쪽으로 평행이동하는 거예요.\n\n" +
           "반과거·대과거·조건법은 이미 물러난 형태라 그대로 둡니다.",
@@ -507,6 +530,7 @@ export default [
       {
         heading: "의문문 옮기기 — si와 ce que",
         pattern: "네/아니오 → si · qu'est-ce que → ce que · qu'est-ce qui → ce qui · 의문사 → 유지",
+        patternKo: "의문문 옮기기 — 네/아니오는 si, '무엇'은 ce que/ce qui",
         body:
           "의문문은 **demander**(묻다)로 옮기고, 종류에 따라 연결사가 달라져요. « Tu viens ? » → Il demande **si** je viens. / « Qu'est-ce que tu fais ? » → Il demande **ce que** je fais.\n\n" +
           "où, quand, pourquoi 같은 의문사는 그대로 유지돼요: Il demande **où** j'habite.",
@@ -520,6 +544,7 @@ export default [
       {
         heading: "명령문과 시간 표현의 변신",
         pattern: "명령문 → dire de + 부정사 · demain → le lendemain · hier → la veille",
+        patternKo: "명령문은 de + 부정사로, 시간 표현도 함께 전환",
         body:
           "**명령문은 de + 부정사**로 옮겨요: « Attends-moi ! » → Il m'a dit **de l'attendre**. 부정 명령은 de **ne pas** + 부정사.\n\n" +
           "말한 시점이 과거로 밀리면 **시간·장소 표현도 함께** 바뀌어요: aujourd'hui → ce jour-là, ici → là.",
@@ -546,6 +571,7 @@ export default [
       {
         heading: "celui 계열 — '그것/그 사람'으로 명사 반복 피하기",
         pattern: "celui / celle / ceux / celles + de... / 관계절 / -ci·-là",
+        patternKo: "명사 반복을 피하는 celui 계열 — '~의 것·~하는 사람'",
         body:
           "같은 명사를 두 번 말하기 싫을 때, **성·수에 맞는 celui 계열로 대신**해요.\n\n" +
           "단, celui는 혼자 못 서고 반드시 뒤에 보충이 붙어요: ① **de + 명사**(소유), ② **관계절**(qui/que/dont), ③ **-ci/-là**(이것/저것).",
@@ -568,6 +594,7 @@ export default [
       {
         heading: "소유대명사 — le mien, la tienne, les leurs",
         pattern: "정관사 + mien/tien/sien... (C'est le mien = 그건 내 거야)",
+        patternKo: "'내 것·네 것'을 한 단어로 — 소유대명사 (물건의 성수에 일치)",
         body:
           "'내 것', '네 것'을 한 단어로 말하는 **소유대명사**예요. C'est mon livre → C'est **le mien**.\n\n" +
           "포인트 둘. ① **정관사가 세트의 일부**예요. ② 성·수는 소유자가 아니라 **가리키는 물건**에 일치해요 — 가방(le sac)이면 소유자가 여성이어도 le sien.",
@@ -593,6 +620,7 @@ export default [
       {
         heading: "ce qui / ce que — 선행사 없는 관계절",
         pattern: "ce qui + 동사 (주어) · ce que + 주어+동사 (목적어) · ce dont (de 결합)",
+        patternKo: "선행사 없는 '~하는 것' — ce qui/ce que/ce dont",
         body:
           "선행사 명사가 없을 때는 **중성 대명사 ce**를 받침대로 세워요. Dis-moi **ce que** tu veux(네가 원하는 것), **Ce qui** m'intéresse(나를 흥미롭게 하는 것).\n\n" +
           "간접화법(qu'est-ce que → ce que)에서 이미 만났고, B2의 강조 구문(Ce qui..., c'est...)에서 주인공이 돼요. 여기서 잡아두면 두 챕터가 공짜로 풀립니다.",
@@ -604,6 +632,97 @@ export default [
         ],
         vsEn: "영어 what(= the thing which)에 해당해요. what I want = ce que je veux. 영어는 what 하나지만 프랑스어는 절 안에서의 역할에 따라 ce qui(주어)/ce que(목적어)/ce dont(de 결합)으로 갈라진다는 점이 차이예요.",
         tip: "구별 요령은 관계대명사 때와 같아요. 뒤따르는 절에 주어가 없으면 ce qui(ce qui se passe — se passe의 주어가 없죠), 주어가 이미 있으면 ce que(ce que tu fais — tu가 주어). 5초 점검으로 충분합니다.",
+      },
+    ],
+  },
+  {
+    slug: "b1-09-connectors-purpose-time",
+    level: "B1",
+    order: 9,
+    title: "\"도착하자마자 전화할게\"의 함정",
+    topic: "접속사 pour que·puisque·dès que",
+    titleFr: "But, cause et temps : les conjonctions",
+    summary: "목적의 pour que, 이유의 puisque·comme, 시간의 dès que와 après avoir — 두 문장을 잇는 B1 접속 도구를 한 상자에 정리해요.",
+    duration: "약 10분",
+    sections: [
+      {
+        heading: "목적 — pour que + 접속법, pour + 부정사",
+        pattern: "주어 다름 → pour que + 접속법 · 주어 같음 → pour + 동사원형",
+        patternKo: "~하도록 — 주어 다르면 pour que + 접속법, 같으면 pour + 원형",
+        body:
+          "'~하도록'의 **pour que**는 **접속법**을 불러요 — 목적은 아직 실현되지 않은 머릿속 그림이니까요(접속법 입문 챕터의 직관 그대로).\n\n" +
+          "두 동작의 **주어가 같으면** que절 대신 **pour + 동사원형**으로 압축해요. 격식 버전이 **afin que / afin de**입니다.",
+        examples: [
+          { fr: "Je t'envoie le plan pour que tu ne te perdes pas.", ipa: "[ʒə tɑ̃vwa lə plɑ̃ puʁ kə ty nə tə pɛʁd pa]", ko: "길 잃지 않게 약도를 보내 줄게." },
+          { fr: "Je fais du sport pour rester en forme.", ipa: "[ʒə fɛ dy spɔʁ puʁ ʁɛste ɑ̃ fɔʁm]", ko: "건강을 유지하려고 운동해요.", note: "주어가 같으니 pour + 원형" },
+          { fr: "Afin d'éviter la foule, partons tôt.", ipa: "[afɛ̃ devite la ful paʁtɔ̃ to]", ko: "인파를 피하도록 일찍 출발합시다.", note: "afin de = pour의 격식형" },
+        ],
+        pitfall: "주어가 같은데 pour que를 쓰면 비문이에요 — Je travaille pour que je réussisse(✗) → pour réussir(O). '내가 ~하려고 내가 ~한다'에서 que절이 닫히는 건 vouloir que의 규칙과 똑같습니다.",
+      },
+      {
+        heading: "이유 4총사 — parce que·car·puisque·comme",
+        pattern: "parce que(중립) · car(문어) · puisque(서로 아는 이유) · comme(문두 전용)",
+        patternKo: "'~이니까' 4총사 — 격·위치·자명함에 따라 갈라 쓰기",
+        body:
+          "넷 다 '~이니까'지만 자리가 달라요. **parce que**는 만능 중립, **car**는 글에서만, **puisque**는 '너도 알다시피'라는 자명한 이유, **comme**은 **문두 전용**이에요.\n\n" +
+          "명사로 이유를 댈 땐 **grâce à**(~ 덕분에, 긍정)와 **à cause de**(~ 때문에, 부정)로 갈라요. 결과 쪽에서 받으면 **c'est pour ça que**(그래서 ~인 거야)예요.",
+        table: {
+          caption: "이유 표현 자리 잡기",
+          headers: ["표현", "결", "위치·용법"],
+          rows: [
+            ["parce que", "중립", "질문 Pourquoi ?의 답 — 어디든"],
+            ["car", "문어", "문중에만 — 회화에서는 드묾"],
+            ["puisque", "자명한 이유", "상대도 아는 사실을 근거로"],
+            ["comme", "중립", "반드시 문두 — 문중이면 '~처럼'"],
+          ],
+        },
+        examples: [
+          { fr: "Comme il faisait froid, on est rentrés.", ipa: "[kɔm il fəzɛ fʁwa ɔ̃nɛ ʁɑ̃tʁe]", ko: "추워서 우리는 들어갔어요." },
+          { fr: "Puisque tu connais la ville, c'est toi le guide !", ipa: "[pɥiskə ty kɔnɛ la vil sɛ twa lə ɡid]", ko: "네가 이 도시를 잘 아니까 네가 가이드야!" },
+          { fr: "Grâce à tes conseils, j'ai réussi.", ipa: "[ɡʁas a te kɔ̃sɛj ʒe ʁeysi]", ko: "네 조언 덕분에 해냈어.", note: "부정적 원인이면 à cause de" },
+        ],
+        tip: "이유를 듣고도 '그래도 했어'라고 받아치는 만능 부사가 **quand même**예요: Il pleuvait, mais on est sortis quand même.(비가 왔지만 그래도 나갔어.) 회화 빈도 최상위권이니 입버릇으로 만들어두세요.",
+      },
+      {
+        heading: "시간 접속 — dès que 군단은 전부 직설법",
+        pattern: "dès que / pendant que / depuis que / lorsque + 직설법 (미래 일이면 미래시제)",
+        patternKo: "시간 접속사는 직설법 — 미래 일이면 양쪽 다 미래형",
+        body:
+          "'~하자마자(dès que), ~하는 동안(pendant que), ~한 뒤로(depuis que)'는 사실의 시간 관계라 전부 **직설법**이에요. **lorsque**는 quand의 격식형이고요.\n\n" +
+          "최대 함정은 시제 — **미래의 일이면 양쪽 다 미래형**을 써요: Je t'appellerai dès que j'**arriverai**.",
+        table: {
+          caption: "직설법 시간 접속사",
+          headers: ["접속사", "뜻"],
+          rows: [
+            ["quand / lorsque(격식)", "~할 때"],
+            ["dès que", "~하자마자"],
+            ["pendant que", "~하는 동안"],
+            ["depuis que", "~한 뒤로"],
+            ["chaque fois que", "~할 때마다"],
+            ["au moment où", "바로 ~하는 순간"],
+          ],
+        },
+        examples: [
+          { fr: "Je t'appellerai dès que j'arriverai à la gare.", ipa: "[ʒə tapɛlʁe dɛ kə ʒaʁivʁe a la ɡaʁ]", ko: "역에 도착하자마자 전화할게.", note: "양쪽 다 미래형" },
+          { fr: "Pendant que tu ranges, je prépare le dîner.", ipa: "[pɑ̃dɑ̃ kə ty ʁɑ̃ʒ ʒə pʁepaʁ lə dine]", ko: "네가 정리하는 동안 내가 저녁을 준비할게." },
+          { fr: "Depuis qu'il habite à Lyon, on se voit moins.", ipa: "[dəpɥi kil abit a ljɔ̃ ɔ̃ sə vwa mwɛ̃]", ko: "그가 리옹에 살게 된 뒤로 우리는 덜 만나요." },
+        ],
+        vsEn: "영어는 미래 얘기라도 when/as soon as 뒤에 현재형을 쓰죠(I'll call you when I **arrive**). 프랑스어는 시제를 숨기지 않고 **quand j'arriverai**처럼 미래형을 그대로 써요. 영어 습관 때문에 현재형을 쓰는 게 이 구문 최다 오류입니다.",
+      },
+      {
+        heading: "전후 압축 — avant de·après avoir·en attendant",
+        pattern: "avant de + 동사원형 · après avoir/être + 과거분사",
+        patternKo: "~하기 전에는 avant de + 원형, ~한 후에는 après + 부정사 과거",
+        body:
+          "주어가 같으면 절 대신 부정사로 압축해요. '~하기 전에'는 **avant de + 원형**, '~한 후에'는 **après + avoir/être + 과거분사**(부정사 과거) — 이 비대칭이 포인트예요.\n\n" +
+          "'~을 기다리는 동안'은 **en attendant (de)**예요. 주어가 다르면 부정사로 못 줄이고 avant que(+ 접속법, B2)로 풀어야 해요.",
+        examples: [
+          { fr: "Réfléchis bien avant de signer le contrat.", ipa: "[ʁefleʃi bjɛ̃ avɑ̃ də siɲe lə kɔ̃tʁa]", ko: "계약서에 서명하기 전에 잘 생각해 봐." },
+          { fr: "Après avoir visité le musée, nous avons déjeuné sur place.", ipa: "[apʁɛzavwaʁ vizite lə myze nuzavɔ̃ deʒœne syʁ plas]", ko: "미술관을 둘러본 뒤 우리는 그 자리에서 점심을 먹었어요." },
+          { fr: "Après être rentrée, elle a tout raconté à sa sœur.", ipa: "[apʁɛzɛtʁ ʁɑ̃tʁe ɛl a tu ʁakɔ̃te a sa sœʁ]", ko: "집에 돌아온 뒤 그녀는 언니에게 다 이야기했어요.", note: "être 계열은 성수 일치(rentrée)" },
+          { fr: "En attendant de trouver mieux, je garde ce travail.", ipa: "[ɑ̃natɑ̃dɑ̃ də tʁuve mjø ʒə ɡaʁd sə tʁavaj]", ko: "더 나은 자리를 찾을 때까지 이 일을 계속할 거예요." },
+        ],
+        pitfall: "'~한 후에'를 avant de의 대칭으로 après + 원형(après finir ✗)이라고 만들기 쉬워요. après 뒤에는 반드시 **부정사 과거(avoir/être + 과거분사)** — '끝낸 상태 이후'라는 완료의 논리가 형태에 박혀 있는 거예요.",
       },
     ],
   },
