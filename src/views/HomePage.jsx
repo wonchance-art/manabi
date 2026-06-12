@@ -352,27 +352,6 @@ export default function HomePage({ continueManifest = {}, refManifest = {} }) {
         </Link>
       )}
 
-      {/* ── 학습 진입점 (1순위만 노출) ──
-          이어서 학습 > 오늘 읽기 (daily suggestion) > 내 레벨 추천
-          진행 중 시리즈가 있으면 그곳으로 직진. 추천은 secondary */}
-      {(() => {
-        const all = data?.seriesProgress || [];
-        const langs = profile?.learning_language || ['Japanese'];
-        const inProgress = all.filter(s => langs.includes(s.language) && s.completed > 0 && s.next);
-        inProgress.sort((a, b) => (b.completed / b.total) - (a.completed / a.total));
-        const top = inProgress[0];
-        if (!top) return null;
-        return (
-          <Link href={`/viewer/${top.next.id}`} className="lessons-continue">
-            <span className="lessons-continue__body">
-              <span className="lessons-continue__kicker">자료 이어서 읽기 · {top.level} {top.series}</span>
-              <span className="lessons-continue__title">{top.next.title}</span>
-            </span>
-            <span className="lessons-continue__meta">{top.completed} / {top.total} →</span>
-          </Link>
-        );
-      })()}
-
       {/* 오늘 읽기 — 진행 중 시리즈가 없을 때만 */}
       {(() => {
         const inProgress = (data?.seriesProgress || []).some(s =>
@@ -413,50 +392,6 @@ export default function HomePage({ continueManifest = {}, refManifest = {} }) {
         );
       })()}
 
-      {/* 복습하기 — 대기 단어가 있을 때 */}
-      {dueCount > 0 && (
-        <Link href="/vocab" className="lessons-continue">
-          <span className="lessons-continue__body">
-            <span className="lessons-continue__kicker">단어 복습</span>
-            <span className="lessons-continue__title">{dueCount}개 단어가 기다리고 있어요</span>
-          </span>
-          <span className="lessons-continue__meta">복습하기 →</span>
-        </Link>
-      )}
-
-      {/* ③ 최근 읽던 자료 — compact 3개 */}
-      {data?.recentProgress?.length > 0 && (
-        <div className="card home-card">
-          <h2 className="home-section-title" style={{ fontSize: '0.95rem', marginBottom: 12 }}>
-            최근 읽던 자료
-          </h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {data.recentProgress.slice(0, 3).map(r => r.reading_materials && (
-              <Link
-                key={r.material_id}
-                href={`/viewer/${r.material_id}`}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 10,
-                  padding: '10px 12px',
-                  background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)',
-                  textDecoration: 'none', color: 'var(--text-primary)',
-                }}
-              >
-                <span style={{ fontSize: '1rem' }}>{r.is_completed ? '●' : '○'}</span>
-                <span style={{ flex: 1, fontSize: '0.88rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {r.reading_materials.title}
-                </span>
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                  {new Date(r.updated_at || r.completed_at).toLocaleDateString('ko-KR')}
-                </span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── 현황 — 행동 카드들 아래 상태 스택 ── */}
-      <h2 className="home-divider">현황</h2>
       <ProfileStats refManifest={refManifest} />
 
     </div>

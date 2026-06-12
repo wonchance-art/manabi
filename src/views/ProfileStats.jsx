@@ -10,7 +10,7 @@ import VocabStats from './VocabStats';
 
 const LANG_KO = { Japanese: '일본어', English: '영어', French: '프랑스어' };
 
-/** 레벨별 어휘 수집 목표 (누적) — 급수 진행 카드의 보조 지표 */
+/** 레벨별 어휘 수집 목표 (누적) — 진도 카드의 보조 지표 */
 const VOCAB_TARGETS = {
   Japanese: { N5: 800, N4: 1500, N3: 3750, N2: 6000, N1: 10000 },
   English:  { A1: 500, A2: 1000, B1: 2000, B2: 4000, C1: 7000, C2: 10000 },
@@ -64,7 +64,7 @@ export default function ProfileStats({ refManifest = {} }) {
   const hasHardWords = vocab.filter(v => (v.repetitions || 0) >= 2).length > 0;
   const hasHeatmap = data?.heatmapDayCounts && Object.keys(data.heatmapDayCounts).length > 0;
 
-  // 벤토 배치: 1×1 통계 4개가 좌측 2×2 블록, 급수 진행이 우측 2×2 — 이후 2×2·와이드
+  // 벤토 배치: 좌측 통계 2×2 블록 + 우측 단어 복습 라이브 타일 / 진도·기억 건강 / 요주의·히트맵
   const stats = [
     { label: '수집', value: vocab.length },
     { label: '숙련', value: data?.mastered ?? '–' },
@@ -77,10 +77,13 @@ export default function ProfileStats({ refManifest = {} }) {
       <StatTile {...stats[0]} />
       <StatTile {...stats[1]} />
       <div className="bento-item bento--2x2">
-        <LevelCoverageCard refManifest={refManifest} vocab={vocab} />
+        <ReviewTile vocab={vocab} />
       </div>
       <StatTile {...stats[2]} />
       <StatTile {...stats[3]} />
+      <div className="bento-item bento--2x2">
+        <LevelCoverageCard refManifest={refManifest} vocab={vocab} />
+      </div>
       {vocab.length > 0 && (
         <div className="bento-item bento--2x2">
           <VocabStats vocab={vocab} profile={profile} section="memory" />
@@ -92,11 +95,63 @@ export default function ProfileStats({ refManifest = {} }) {
         </div>
       )}
       {hasHeatmap && (
-        <div className="bento-item bento--4x1">
+        <div className="bento-item bento--2x2">
           <HeatmapCard dayCounts={data.heatmapDayCounts} />
         </div>
       )}
     </div>
+  );
+}
+
+/* ── 단어 복습 라이브 타일 — 단어가 시간차로 넘어가는 메트로식 타일, 클릭 시 단어장 ── */
+
+function ReviewTile({ vocab }) {
+  const now = Date.now();
+  // 복습 대기 단어 우선, 없으면 최근 수집 단어
+  const pool = useMemo(() => {
+    const due = vocab
+      .filter(v => v.next_review_at && new Date(v.next_review_at).getTime() <= now)
+      .sort((a, b) => new Date(a.next_review_at) - new Date(b.next_review_at));
+    if (due.length > 0) return due.slice(0, 20);
+    return [...vocab]
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      .slice(0, 20);
+    // now는 렌더 시점 고정으로 충분
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vocab]);
+  const dueCount = useMemo(
+    () => vocab.filter(v => v.next_review_at && new Date(v.next_review_at).getTime() <= now).length,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [vocab]
+  );
+
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    if (pool.length < 2) return;
+    const t = setInterval(() => setIdx(i => (i + 1) % pool.length), 3500);
+    return () => clearInterval(t);
+  }, [pool.length]);
+
+  const word = pool[idx % Math.max(pool.length, 1)];
+
+  return (
+    <Link href="/vocab" className="card review-tile">
+      <span className="review-tile__head">
+        <span className="review-tile__kicker">단어 복습</span>
+        {dueCount > 0 && <span className="review-tile__due">{dueCount}개 대기</span>}
+      </span>
+      {word ? (
+        <span className="review-tile__cycle" key={word.id ?? idx}>
+          <span className="review-tile__word">{word.word_text}</span>
+          <span className="review-tile__meaning">{word.meaning}</span>
+        </span>
+      ) : (
+        <span className="review-tile__cycle">
+          <span className="review-tile__meaning">아직 수집한 단어가 없어요.<br />자료를 읽으며 단어를 모아보세요.</span>
+        </span>
+      )}
+      <span className="review-tile__cta">복습하기 →</span>
+    </Link>
   );
 }
 
@@ -109,7 +164,7 @@ function StatTile({ label, value }) {
   );
 }
 
-/* ── 급수 진행 — 챕터(강의) 통과 + 어휘 수집 통합, 3개 언어 ── */
+/* ── 진도 — 레벨별 챕터(강의) 통과 + 어휘 수집 통합, 3개 언어 ── */
 
 function LevelCoverageCard({ refManifest, vocab }) {
   const langs = Object.keys(refManifest);
@@ -149,7 +204,7 @@ function LevelCoverageCard({ refManifest, vocab }) {
   return (
     <div className="card mypage-section">
       <div className="lvprog__head">
-        <h2 className="mypage-section__title" style={{ margin: 0 }}>급수 진행</h2>
+        <h2 className="mypage-section__title" style={{ margin: 0 }}>진도</h2>
         <div className="lvprog__tabs">
           {langs.map(l => (
             <button key={l} type="button"
@@ -201,7 +256,7 @@ function LevelCoverageCard({ refManifest, vocab }) {
 /* ── 학습 히트맵 ── */
 
 function HeatmapCard({ dayCounts }) {
-  const ROWS = 7, CELL = 13, GAP = 3, COLS = 32;
+  const ROWS = 7, CELL = 13, GAP = 3, COLS = 16;
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const todayKey = today.toISOString().slice(0, 10);
   const days = Array.from({ length: COLS * ROWS }, (_, i) => {
