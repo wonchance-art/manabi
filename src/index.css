@@ -10551,6 +10551,23 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   transition: filter 0.15s ease;
 }
 .fr-check__next:hover { filter: brightness(1.1); }
+/* 통과 후 복습 추천 */
+.fr-check__review {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  margin-top: 10px; padding-top: 10px;
+  border-top: 1px dashed var(--border);
+  font-size: 0.78rem;
+}
+.fr-check__review-label { color: var(--text-muted); font-weight: 600; }
+.fr-check__review-link {
+  color: var(--text-secondary); font-weight: 700;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 3px 10px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.fr-check__review-link:hover { background: var(--bg-elevated); color: var(--text-primary); }
 /* 자가 채점 — 정답 확인 후 맞음/틀림 */
 .fr-check__grade { display: inline-flex; gap: 4px; }
 .fr-check__grade-btn {

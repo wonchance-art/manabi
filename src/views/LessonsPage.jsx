@@ -225,8 +225,14 @@ export default function LessonsPage({ refManifest = {} }) {
                     </span>
                   )}
                   <span className="lessons-list__group-count">
-                    {passedCount > 0 && <span className="lessons-list__group-passed">✅{passedCount}</span>}
-                    {readCount} / {chapters.length}
+                    {passedCount === chapters.length && chapters.length > 0 ? (
+                      <span className="lessons-list__group-passed">🏆 수료</span>
+                    ) : (
+                      <>
+                        {passedCount > 0 && <span className="lessons-list__group-passed">✅{passedCount}</span>}
+                        {readCount} / {chapters.length}
+                      </>
+                    )}
                   </span>
                 </button>
                 {isOpen && (

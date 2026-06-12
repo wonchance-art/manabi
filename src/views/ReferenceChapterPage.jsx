@@ -85,6 +85,27 @@ export default function ReferenceChapterPage({ lang, slug }) {
     .slice(0, 5)
     .map(ex => ({ ko: ex.ko, main: refMain(ex), pron: refPron(ex), langCode: ref.langCode }));
 
+  // 통과 후 복습 추천 — 연관 문형·레벨 어휘 (있을 때만)
+  const reviewLinks = [];
+  {
+    const bunkei = ref.getBunkei?.(chapter.level);
+    if (bunkei) {
+      const related = bunkei.themes.flatMap(t => t.items).filter(i => i.ch === chapter.slug).length;
+      if (related > 0) {
+        reviewLinks.push({
+          href: `${ref.base}/bunkei/${chapter.level.toLowerCase()}?ch=${chapter.slug}`,
+          label: `📑 연관 문형 ${related}개 복습`,
+        });
+      }
+    }
+    if (ref.countVocab(chapter.level) > 0) {
+      reviewLinks.push({
+        href: `${ref.base}/vocab/${chapter.level.toLowerCase()}`,
+        label: `📖 ${chapter.level} 어휘`,
+      });
+    }
+  }
+
   return (
     <div className="page-container" style={{ maxWidth: 760 }}>
       {/* ── 브레드크럼 ── */}
@@ -201,6 +222,7 @@ export default function ReferenceChapterPage({ lang, slug }) {
         storageKey={`${ref.readKey}_check`}
         slug={chapter.slug}
         next={next ? { href: `${ref.base}/grammar/${next.slug}`, title: next.title } : null}
+        reviewLinks={reviewLinks}
       />
 
       {/* 읽음 기록 — 여기(챕터 끝)까지 스크롤해야 읽음 처리 */}

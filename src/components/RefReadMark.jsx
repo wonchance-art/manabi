@@ -22,6 +22,9 @@ export default function RefReadMark({ storageKey, slug }) {
           arr.push(slug);
           localStorage.setItem(storageKey, JSON.stringify(arr));
         }
+        // 홈 '이어서 학습' 카드용 — 마지막으로 학습한 언어·챕터
+        const lang = { ja: 'Japanese', en: 'English', fr: 'French' }[storageKey.slice(0, 2)];
+        if (lang) localStorage.setItem('ref_last_visit', JSON.stringify({ lang, slug, at: Date.now() }));
       } catch {}
     };
     const el = ref.current;

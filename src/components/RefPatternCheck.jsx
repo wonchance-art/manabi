@@ -19,7 +19,7 @@ export function isPassed(result) {
  * 다음 챕터를 안내한다. 미통과면 재도전을 권한다.
  * items: [{ ko, main, pron }] · next: { href, title } | null
  */
-export default function RefPatternCheck({ items, lang, storageKey, slug, next = null }) {
+export default function RefPatternCheck({ items, lang, storageKey, slug, next = null, reviewLinks = [] }) {
   const [revealed, setRevealed] = useState(() => new Set());
   const [marks, setMarks] = useState(() => new Map()); // index → 'o' | 'x'
   const [lastResult, setLastResult] = useState(null);
@@ -172,6 +172,14 @@ export default function RefPatternCheck({ items, lang, storageKey, slug, next = 
               <span className="fr-check__last">마지막 챕터까지 끝! 🏁</span>
             )}
           </div>
+          {passedNow && reviewLinks.length > 0 && (
+            <div className="fr-check__review">
+              <span className="fr-check__review-label">기억에 박아두기:</span>
+              {reviewLinks.map(l => (
+                <Link key={l.href} href={l.href} className="fr-check__review-link">{l.label}</Link>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </section>
