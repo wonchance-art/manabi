@@ -11,6 +11,7 @@ import Button from '../components/Button';
 import { parseTitle } from '../lib/seriesMeta';
 import { getIdealLevel } from '../lib/levels';
 import { isPassed } from '../components/RefPatternCheck';
+import { pullProgress } from '../lib/refProgress';
 
 async function fetchHomeData(userId) {
   const todayStr   = new Date().toISOString().split('T')[0];
@@ -177,27 +178,36 @@ export default function HomePage({ continueManifest = {} }) {
   const { user, profile, fetchProfile } = useAuth();
   const router = useRouter();
 
-  // 강의 이어서 학습 — localStorage 진행 기록으로 다음 챕터 계산
+  // 강의 이어서 학습 — localStorage 진행 기록으로 다음 챕터 계산 (로그인 시 서버 병합)
   const [refProgress, setRefProgress] = useState(null);
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const prog = {};
-    for (const [name, ref] of Object.entries(continueManifest)) {
-      try {
-        prog[name] = {
-          readSet: new Set(JSON.parse(localStorage.getItem(ref.readKey) || '[]')),
-          checkMap: JSON.parse(localStorage.getItem(`${ref.readKey}_check`) || '{}'),
-        };
-      } catch {
-        prog[name] = { readSet: new Set(), checkMap: {} };
+    const load = () => {
+      const prog = {};
+      for (const [name, ref] of Object.entries(continueManifest)) {
+        try {
+          prog[name] = {
+            readSet: new Set(JSON.parse(localStorage.getItem(ref.readKey) || '[]')),
+            checkMap: JSON.parse(localStorage.getItem(`${ref.readKey}_check`) || '{}'),
+          };
+        } catch {
+          prog[name] = { readSet: new Set(), checkMap: {} };
+        }
       }
+      let lastVisit = null;
+      try { lastVisit = JSON.parse(localStorage.getItem('ref_last_visit') || 'null'); } catch {}
+      setRefProgress({ prog, lastVisit });
+    };
+    load();
+    if (user?.id) {
+      const readKeys = Object.fromEntries(
+        Object.entries(continueManifest).map(([name, ref]) => [name, ref.readKey])
+      );
+      pullProgress(user.id, readKeys).then(changed => { if (changed) load(); });
     }
-    let lastVisit = null;
-    try { lastVisit = JSON.parse(localStorage.getItem('ref_last_visit') || 'null'); } catch {}
-    setRefProgress({ prog, lastVisit });
-    // continueManifest는 서버에서 내려오는 정적 데이터 — 마운트 시 1회면 충분
+    // continueManifest는 서버에서 내려오는 정적 데이터
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user?.id]);
 
   const continueCard = useMemo(() => {
     if (!refProgress) return null;

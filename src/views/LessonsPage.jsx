@@ -3,6 +3,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { isPassed } from '../components/RefPatternCheck';
+import { useAuth } from '../lib/AuthContext';
+import { pullProgress } from '../lib/refProgress';
 
 const LANG_FILTERS = [
   { key: 'Japanese', label: '🇯🇵 일본어' },
@@ -14,6 +16,7 @@ const LANG_FILTERS = [
 export default function LessonsPage({ refManifest = {} }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user } = useAuth();
 
   const [langFilter, setLangFilter] = useState(() => {
     const u = searchParams.get('lang');
@@ -44,26 +47,36 @@ export default function LessonsPage({ refManifest = {} }) {
   // 레퍼런스 챕터 읽음·패턴 체크 결과 (localStorage — RefReadMark/RefPatternCheck가 기록)
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const map = {};
-    const checks = {};
-    for (const [name, ref] of Object.entries(refManifest)) {
-      try {
-        map[name] = new Set(JSON.parse(localStorage.getItem(ref.readKey) || '[]'));
-      } catch {
-        map[name] = new Set();
+    const load = () => {
+      const map = {};
+      const checks = {};
+      for (const [name, ref] of Object.entries(refManifest)) {
+        try {
+          map[name] = new Set(JSON.parse(localStorage.getItem(ref.readKey) || '[]'));
+        } catch {
+          map[name] = new Set();
+        }
+        try {
+          checks[name] = JSON.parse(localStorage.getItem(`${ref.readKey}_check`) || '{}');
+        } catch {
+          checks[name] = {};
+        }
       }
-      try {
-        checks[name] = JSON.parse(localStorage.getItem(`${ref.readKey}_check`) || '{}');
-      } catch {
-        checks[name] = {};
-      }
-    }
-    setRefRead(map);
-    setRefCheck(checks);
+      setRefRead(map);
+      setRefCheck(checks);
+    };
+    load();
     setRefReadLoaded(true);
-    // refManifest는 서버에서 내려오는 정적 데이터 — 마운트 시 1회면 충분
+    // 로그인 시 서버 기록과 병합 — 갱신되면 재로딩 (기기 간 진도 동기화)
+    if (user?.id) {
+      const readKeys = Object.fromEntries(
+        Object.entries(refManifest).map(([name, ref]) => [name, ref.readKey])
+      );
+      pullProgress(user.id, readKeys).then(changed => { if (changed) load(); });
+    }
+    // refManifest는 서버에서 내려오는 정적 데이터
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user?.id]);
 
   const refLang = refManifest[langFilter];
   const levelOptions = refLang ? refLang.levels.map(l => l.label) : [];

@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import RefSpeak from './RefSpeak';
 import { JaText } from '../views/refShared';
+import { useAuth } from '../lib/AuthContext';
+import { syncCheckRemote } from '../lib/refProgress';
 
 /** 통과 기준 — 정답률 80% 이상 */
 export function isPassed(result) {
@@ -20,6 +22,7 @@ export function isPassed(result) {
  * items: [{ ko, main, pron }] · next: { href, title } | null
  */
 export default function RefPatternCheck({ items, lang, storageKey, slug, next = null, reviewLinks = [] }) {
+  const { user } = useAuth();
   const [revealed, setRevealed] = useState(() => new Set());
   const [marks, setMarks] = useState(() => new Map()); // index → 'o' | 'x'
   const [lastResult, setLastResult] = useState(null);
@@ -63,6 +66,8 @@ export default function RefPatternCheck({ items, lang, storageKey, slug, next = 
           localStorage.setItem(storageKey, JSON.stringify(map));
         } catch {}
         setLastResult(result);
+        // 로그인 시 서버 동기화 (실패해도 localStorage가 원본)
+        if (user?.id) syncCheckRemote(user.id, lang, slug, result);
       }
       return next;
     });
