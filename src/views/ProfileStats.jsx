@@ -61,39 +61,51 @@ export default function ProfileStats({ refManifest = {} }) {
   if (!user) return null;
   const vocab = data?.vocab || [];
   const streak = profile?.streak_count ?? 0;
+  const hasHardWords = vocab.filter(v => (v.repetitions || 0) >= 2).length > 0;
+  const hasHeatmap = data?.heatmapDayCounts && Object.keys(data.heatmapDayCounts).length > 0;
+
+  // 벤토 배치: 1×1 통계 4개가 좌측 2×2 블록, 급수 진행이 우측 2×2 — 이후 2×2·와이드
+  const stats = [
+    { label: '수집', value: vocab.length },
+    { label: '숙련', value: data?.mastered ?? '–' },
+    { label: '완독', value: data?.readCount ?? '–' },
+    { label: '스트릭', value: streak ? `${streak}일` : '–' },
+  ];
 
   return (
-    <>
-      {/* 핵심 현황 */}
-      <div className="card mypage-section">
-        <div className="mypage-stat-grid">
-          {[
-            { label: '수집', value: vocab.length },
-            { label: '숙련', value: data?.mastered ?? '–' },
-            { label: '완독', value: data?.readCount ?? '–' },
-            { label: '스트릭', value: streak ? `${streak}일` : '–' },
-          ].map(s => (
-            <div key={s.label} className="mypage-stat-cell">
-              <span className="mypage-stat-cell__value">{s.value}</span>
-              <span className="mypage-stat-cell__label">{s.label}</span>
-            </div>
-          ))}
-        </div>
+    <div className="bento">
+      <StatTile {...stats[0]} />
+      <StatTile {...stats[1]} />
+      <div className="bento-item bento--2x2">
+        <LevelCoverageCard refManifest={refManifest} vocab={vocab} />
       </div>
-
-      <LevelCoverageCard refManifest={refManifest} vocab={vocab} />
-
+      <StatTile {...stats[2]} />
+      <StatTile {...stats[3]} />
       {vocab.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 16 }}>
+        <div className="bento-item bento--2x2">
           <VocabStats vocab={vocab} profile={profile} section="memory" />
+        </div>
+      )}
+      {hasHardWords && (
+        <div className="bento-item bento--2x2">
           <VocabStats vocab={vocab} profile={profile} section="hardwords" />
         </div>
       )}
-
-      {data?.heatmapDayCounts && Object.keys(data.heatmapDayCounts).length > 0 && (
-        <HeatmapCard dayCounts={data.heatmapDayCounts} />
+      {hasHeatmap && (
+        <div className="bento-item bento--4x1">
+          <HeatmapCard dayCounts={data.heatmapDayCounts} />
+        </div>
       )}
-    </>
+    </div>
+  );
+}
+
+function StatTile({ label, value }) {
+  return (
+    <div className="bento-item bento--1x1 card bento-stat">
+      <span className="mypage-stat-cell__value">{value}</span>
+      <span className="mypage-stat-cell__label">{label}</span>
+    </div>
   );
 }
 
