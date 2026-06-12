@@ -18,8 +18,15 @@ export default function RefReadMark({ storageKey, slug }) {
 
   useEffect(() => {
     if (!storageKey || !slug) return;
+    const lang = langFromReadKey(storageKey);
+    // 진입 즉시 기록 — [강의] 복귀 시 언어 유지·해당 챕터로 자동 스크롤용
+    try {
+      if (lang) {
+        localStorage.setItem('lessons_lang', lang);
+        localStorage.setItem('ref_last_chapter', JSON.stringify({ lang, slug, at: Date.now() }));
+      }
+    } catch {}
     const record = () => {
-      const lang = langFromReadKey(storageKey);
       try {
         const arr = JSON.parse(localStorage.getItem(storageKey) || '[]');
         if (!arr.includes(slug)) {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { isPassed } from '../components/RefPatternCheck';
 import { useAuth } from '../lib/AuthContext';
@@ -20,8 +20,20 @@ export default function LessonsPage({ refManifest = {} }) {
 
   const [langFilter, setLangFilter] = useState(() => {
     const u = searchParams.get('lang');
-    return u === 'English' || u === 'French' ? u : 'Japanese';
+    if (u === 'English' || u === 'French' || u === 'Japanese') return u;
+    // URL에 없으면 마지막 선택 언어 유지 (챕터 페이지 진입 시에도 갱신됨)
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('lessons_lang');
+      if (saved === 'English' || saved === 'French' || saved === 'Japanese') return saved;
+    }
+    return 'Japanese';
   });
+  // 마지막으로 본 챕터 — 복귀 시 자동 스크롤 대상
+  const [lastChapter] = useState(() => {
+    if (typeof window === 'undefined') return null;
+    try { return JSON.parse(localStorage.getItem('ref_last_chapter') || 'null'); } catch { return null; }
+  });
+  const scrolledRef = useRef(false);
   const [levelFilter, setLevelFilter] = useState(searchParams.get('level') || 'all');
   const [expandedGroups, setExpandedGroups] = useState(() => {
     if (typeof window === 'undefined') return new Set();
@@ -81,19 +93,41 @@ export default function LessonsPage({ refManifest = {} }) {
   const refLang = refManifest[langFilter];
   const levelOptions = refLang ? refLang.levels.map(l => l.label) : [];
 
+  // 마지막 선택 언어 저장 — [강의] 재진입 시 유지
+  useEffect(() => {
+    try { localStorage.setItem('lessons_lang', langFilter); } catch {}
+  }, [langFilter]);
+
   // 첫 방문(해당 언어에 펼친 그룹이 없을 때) — 학습 중인 레벨 자동 펼침
+  // + 마지막 본 챕터가 있으면 그 레벨 그룹도 펼침 (자동 스크롤 대상)
   const autoExpanded = useMemo(() => new Set(), []);
   useEffect(() => {
     if (!refLang || !refReadLoaded || autoExpanded.has(langFilter)) return;
     autoExpanded.add(langFilter);
     setExpandedGroups(prev => {
-      if ([...prev].some(k => k.startsWith(`ref:${langFilter}:`))) return prev;
-      const readSet = refRead[langFilter] || new Set();
-      const target = refLang.levels.find(l => l.chapters.some(c => !readSet.has(c.slug))) || refLang.levels[0];
-      if (!target) return prev;
-      return new Set([...prev, `ref:${langFilter}:${target.key}`]);
+      const next = new Set(prev);
+      if (lastChapter?.lang === langFilter) {
+        const holder = refLang.levels.find(l => l.chapters.some(c => c.slug === lastChapter.slug));
+        if (holder) next.add(`ref:${langFilter}:${holder.key}`);
+      }
+      if (![...next].some(k => k.startsWith(`ref:${langFilter}:`))) {
+        const readSet = refRead[langFilter] || new Set();
+        const target = refLang.levels.find(l => l.chapters.some(c => !readSet.has(c.slug))) || refLang.levels[0];
+        if (target) next.add(`ref:${langFilter}:${target.key}`);
+      }
+      return next.size === prev.size ? prev : next;
     });
-  }, [refLang, refRead, refReadLoaded, langFilter, autoExpanded]);
+  }, [refLang, refRead, refReadLoaded, langFilter, autoExpanded, lastChapter]);
+
+  // 마지막 본 챕터로 자동 스크롤 (1회) — 그룹이 펼쳐져 행이 렌더된 뒤 실행
+  useEffect(() => {
+    if (scrolledRef.current || !refReadLoaded || !lastChapter || lastChapter.lang !== langFilter) return;
+    const el = document.getElementById(`lessons-ch-${lastChapter.slug}`);
+    if (!el) return; // 아직 그룹 미펼침 — 다음 렌더에서 재시도
+    scrolledRef.current = true;
+    el.scrollIntoView({ block: 'center' });
+    el.classList.add('lessons-list__row--recent');
+  }, [refReadLoaded, expandedGroups, langFilter, lastChapter, levelFilter]);
 
   const refGroups = useMemo(() => {
     if (!refLang) return [];
@@ -284,6 +318,7 @@ export default function LessonsPage({ refManifest = {} }) {
                       return (
                         <li
                           key={ch.slug}
+                          id={`lessons-ch-${ch.slug}`}
                           className={`lessons-list__row lessons-list__row--${passed ? 'passed' : read ? 'done' : 'idle'}`}
                           onClick={() => router.push(`${refLang.base}/grammar/${ch.slug}`)}
                           title={ch.summary || undefined}

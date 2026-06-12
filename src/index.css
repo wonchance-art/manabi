@@ -10449,6 +10449,13 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   white-space: nowrap;
 }
 
+/* 복귀 시 마지막 본 챕터 하이라이트 */
+.lessons-list__row--recent { animation: recentFlash 2s ease-out 1; }
+@keyframes recentFlash {
+  0%   { background: var(--primary-glow); }
+  100% { background: transparent; }
+}
+
 /* 진행 3단계 — ✅ 통과 행 */
 .lessons-list__row--passed .lessons-list__status { font-size: 0.72rem; }
 .lessons-list__row--passed .lessons-list__title { color: var(--text-secondary); }
