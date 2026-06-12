@@ -82,28 +82,29 @@ export default function ReferenceChapterPage({ lang, slug }) {
     .flatMap(sec => sec.examples || [])
     .filter(ex => ex && ex.ko && refMain(ex));
 
-  // ① 뜻 고르기 — 패턴↔뜻 매칭, 오답은 같은 챕터 → 같은 레벨의 다른 패턴 뜻에서
+  // ① 표현 고르기 — 한국어 의도 → 알맞은 표현 (실전 방향: 쓰고 싶은 말에서 형태를 회상)
+  //    문법 용어 문답 대신, 바로 쓸 표현을 고르는 연습. 오답은 같은 챕터 → 같은 레벨의 다른 표현
   const ownPatterns = chapter.sections.filter(s => s.pattern && s.patternKo);
-  const levelKoPool = [...new Set(
+  const levelPatternPool = [...new Set(
     ref.getGrammarChapters(chapter.level)
       .filter(c => c.slug !== chapter.slug)
       .flatMap(c => c.sections || [])
-      .map(s => s.patternKo)
+      .map(s => s.pattern)
       .filter(Boolean)
   )];
-  const meaning = ownPatterns.slice(0, 3).map(s => {
-    const ownOthers = ownPatterns.map(p => p.patternKo).filter(k => k !== s.patternKo);
-    const distractors = [...new Set([...ownOthers, ...levelKoPool])]
-      .filter(k => k !== s.patternKo)
+  const meaning = ownPatterns.slice(0, 2).map(s => {
+    const ownOthers = ownPatterns.map(p => p.pattern).filter(k => k !== s.pattern);
+    const distractors = [...new Set([...ownOthers, ...levelPatternPool])]
+      .filter(k => k !== s.pattern)
       .slice(0, 3);
-    return { pattern: s.pattern, correct: s.patternKo, distractors };
+    return { ko: s.patternKo, correct: s.pattern, distractors };
   }).filter(m => m.distractors.length >= 2);
 
   // ② 적용 — 어순 배열(공백 토큰 3~10개) 우선, 안 되면 번역 고르기
   const apply = [];
   const usedApply = new Set();
   for (const ex of exAll) {
-    if (apply.length >= 3) break;
+    if (apply.length >= 4) break;
     const main = refMain(ex);
     const tokens = main.split(/[\s　]+/).filter(Boolean);
     if (tokens.length >= 3 && tokens.length <= 10 && !usedApply.has(main)) {
@@ -112,7 +113,7 @@ export default function ReferenceChapterPage({ lang, slug }) {
     }
   }
   for (const ex of exAll) {
-    if (apply.length >= 3) break;
+    if (apply.length >= 4) break;
     const main = refMain(ex);
     if (usedApply.has(main)) continue;
     const distractors = exAll.map(o => refMain(o)).filter(o => o !== main).slice(0, 3);
