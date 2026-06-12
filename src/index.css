@@ -8456,3 +8456,20 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   .cohort-team__name { flex-basis: 100%; }
   .cohort-join { flex-wrap: wrap; }
 }
+
+/* 클래스 — 수동 멤버 배정 */
+.cohort-addmember { margin: 6px 0 10px; }
+.cohort-addmember__input { width: 100%; max-width: 280px; font-size: 0.85rem; }
+.cohort-addmember__list { list-style: none; margin: 6px 0 0; padding: 0; }
+.cohort-addmember__item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 6px; border-radius: var(--radius-sm);
+}
+.cohort-addmember__item:hover { background: var(--bg-secondary); }
+.cohort-team__remove {
+  flex-shrink: 0;
+  background: none; border: none; cursor: pointer;
+  color: var(--text-muted); font-size: 0.82rem; line-height: 1;
+  padding: 4px 6px; border-radius: var(--radius-sm);
+}
+.cohort-team__remove:hover { color: var(--danger, #e03131); background: var(--bg-secondary); }
