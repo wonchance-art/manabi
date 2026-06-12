@@ -15,7 +15,7 @@ const LANG_KO = { Japanese: '일본어', English: '영어', French: '프랑스�
 async function fetchProfileStats(userId) {
   const heatmapStart = new Date();
   heatmapStart.setHours(0, 0, 0, 0);
-  heatmapStart.setDate(heatmapStart.getDate() - 364);
+  heatmapStart.setDate(heatmapStart.getDate() - 179);
 
   const [
     { data: heatmapRows },
@@ -375,9 +375,9 @@ function HeatmapCard({ dayCounts }) {
   const [sel, setSel] = useState(null);
   const today = new Date(); today.setHours(0, 0, 0, 0);
 
-  // 52주 × 7일 — 가장 오른쪽 아래가 오늘 (좌→우 시간 진행)
+  // 최근 180일 — 가장 오른쪽 아래가 오늘 (좌→우 시간 진행)
   const days = useMemo(() => {
-    const total = 52 * 7;
+    const total = 180;
     return Array.from({ length: total }, (_, i) => {
       const d = new Date(today);
       d.setDate(d.getDate() - (total - 1 - i));

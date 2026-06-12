@@ -8450,6 +8450,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   grid-auto-flow: column;
   grid-template-rows: repeat(7, 1fr);
   gap: 2px;
-  min-width: 480px;
+  min-width: 320px;
 }
 .hm-strip .hm-day { width: 100%; min-width: 9px; }
