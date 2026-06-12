@@ -29,6 +29,7 @@ export default [
       {
         heading: "형태 — 단순과거에서 만들어져요",
         pattern: "passé simple + ^(악상 시르콩플렉스) → 접속법 반과거 (fut → fût · eut → eût)",
+        patternKo: "단순과거에 모자(^)를 씌우면 접속법 반과거",
         body:
           "**접속법 반과거는 passé simple 어간에서 규칙적으로** 만들어져요: il parla → qu'il parlât, il fut → qu'il fût.\n\n" +
           "텍스트에서 압도적으로 자주 나오는 건 3인칭 단수예요. 식별 포인트는 **모자(^)** — 단순과거(fut, eut)와 모자 하나 차이라는 것만 기억하면 돼요.",
@@ -50,6 +51,7 @@ export default [
       {
         heading: "접속법 대과거 — 그리고 조건법 과거 제2형",
         pattern: "que + eût/fût + p.p. = 접속법 대과거 · que 없으면 = aurait/serait + p.p.",
+        patternKo: "eût/fût + 과거분사 — que 없는 자리는 '~했을 텐데'",
         body:
           "접속법 대과거는 **eût/fût + 과거분사**예요: qu'il eût aimé. 종속절에서는 접속법 과거의 문어 버전으로 읽으면 돼요.\n\n" +
           "진짜 함정: 같은 형태가 종속절 밖에서 **조건법 과거 제2형**으로 쓰여요. Il eût aimé voyager = Il aurait aimé voyager(여행을 좋아했을 텐데) — que 없는 자리의 eût는 '~했을 텐데'로 번역하세요.",
@@ -62,6 +64,7 @@ export default [
       {
         heading: "고전 읽기 실전 전략",
         pattern: "fût/eût/vînt/pût · -ât/-ît/-ût → 현대어 접속법으로 읽기",
+        patternKo: "고전 읽기 전략 — 모자 쓴 동사를 현대어 접속법으로 풀기",
         body:
           "독서 전략 세 줄: ① 모자 쓴 짧은 동사(fût, eût, vînt, pût)는 접속법 반과거·대과거 — 의미는 현대어 접속법과 같아요. ② -ât, -ît, -ût 동사도 같은 식구. ③ que 없는 자리의 eût/fût + 과거분사는 '~했을 텐데'.\n\n" +
           "이 세 규칙이면 발자크와 프루스트의 시제 앞에서 길을 잃지 않아요. 활용표 전체 암기는 프랑스인들도 안 하는 일이에요.",
@@ -87,6 +90,7 @@ export default [
       {
         heading: "litote — 덜 말해서 더 말하기",
         pattern: "litote: 약하게 말해 강하게 전하기 (Je ne te hais point = 사랑해요)",
+        patternKo: "덜 말해서 더 말하는 완서법",
         body:
           "**litote**(완서법)는 부정·절제로 실제보다 약하게 말해 오히려 강한 뜻을 전하는, 프랑스 수사학의 간판이에요. 《르 시드》의 **«Va, je ne te hais point.»** — '미워하지 않는다'는 절제 아래 '여전히 사랑한다'가 타오르죠.\n\n" +
           "일상의 **C'est pas mal**(→ 꽤 좋다), **Ce n'est pas faux**(→ 맞는 말이다)도 같은 원리예요. 프랑스인의 칭찬이 인색해 보이는 건 litote가 문화적 기본값이기 때문이에요.",
@@ -100,6 +104,7 @@ export default [
       {
         heading: "euphémisme — 완곡어법, 부드럽게 덮는 기술",
         pattern: "il nous a quittés = 별세 · plan social = 정리해고 · quartiers sensibles = 우범 지역",
+        patternKo: "불편한 현실을 부드러운 말로 감싸는 완곡어법",
         body:
           "**euphémisme**(완곡어법)은 불편한 현실을 부드러운 말로 감싸요. litote가 수사적 강조라면 euphémisme은 충격 완화가 목적 — 죽음 주변(s'éteindre, disparaître)과 사회·행정 언어(demandeur d'emploi ← 실업자)에 특히 많아요.\n\n" +
           "C2 독해력은 이 포장지를 벗겨 읽는 능력이에요. 정치·경제 기사에서는 사전적 뜻이 아니라 **무엇을 덮고 있는지**를 읽어야 해요.",
@@ -112,6 +117,7 @@ export default [
       {
         heading: "도치 — 문어의 우아한 어순 바꾸기",
         pattern: "Peut-être / Sans doute / À peine + 동사-주어 도치",
+        patternKo: "문두 부사 뒤 주어-동사 도치 (격식 문어의 어순)",
         body:
           "격조 있는 문어는 어순을 뒤집어 리듬과 격을 만들어요. **부사 뒤 도치**(Peut-être a-t-il raison)가 대표 — 이 도치를 쓰느냐가 글의 격을 한 단계 가르죠.\n\n" +
           "**관계절 안의 도치**(le pays où vivait son père)와 **묘사 도치**(Au fond de la salle se trouvait un piano — 장소구 + 동사 + 주어)도 소설·격식 문어의 표준 카메라 워크예요.",
@@ -125,6 +131,7 @@ export default [
       {
         heading: "삼항 리듬과 그 밖의 장치들",
         pattern: "rythme ternaire (Liberté, Égalité, Fraternité) · anaphore (수구 반복) · antiphrase (반어)",
+        patternKo: "셋 나열·첫머리 반복·반어의 수사 장치",
         body:
           "프랑스 수사학은 셋을 사랑해요 — **삼항 리듬**의 원형이 Liberté, Égalité, Fraternité죠. **anaphore**는 문장 첫머리를 반복해 파도를 만드는 기법으로, 올랑드의 «Moi président...» 15회 반복 연설이 교과서적 사례예요.\n\n" +
           "**antiphrase**는 뜻과 반대로 말하기: C'est malin !(참 영리하기도 하지! → 멍청한 짓이야!) 억양과 맥락을 못 읽으면 칭찬으로 오해해요.",
@@ -161,6 +168,7 @@ export default [
       {
         heading: "벨기에와 스위스 — septante, nonante의 합리주의",
         pattern: "70 = septante · 90 = nonante · 80 = huitante (스위스 일부)",
+        patternKo: "벨기에·스위스의 정직한 숫자 표현 (70·80·90)",
         body:
           "본토의 soixante-dix(60+10), quatre-vingt-dix(4×20+10) 대신 벨기에·스위스는 **정직한 단어**를 써요. 식사 이름도 한 칸씩 밀려 있어요: **déjeuner = 아침, dîner = 점심, souper = 저녁**(퀘벡도 동일) — 어원적으로는 이쪽이 원조예요.\n\n" +
           "벨기에 특유 표현: savoir를 pouvoir 뜻으로(Je ne saurais pas venir = 못 가요), s'il vous plaît를 '여기요(물건을 건네며)'로 쓰는 용법이 유명해요.",
@@ -185,6 +193,7 @@ export default [
       {
         heading: "퀘벡 — 대서양 건너의 프랑스어",
         pattern: "week-end → fin de semaine · e-mail → courriel · shopping → magasiner",
+        patternKo: "영어 차용을 거부하는 퀘벡식 어휘",
         body:
           "퀘벡 프랑스어는 17세기 프랑스어에서 갈라져 독자 진화했고, 영어의 바다에 둘러싸여 **본토보다 영어 차용에 훨씬 엄격**해요. courriel은 역수입되어 프랑스 공문서에서도 권장돼요.\n\n" +
           "일상 어휘도 달라요: **un char**(자동차), **une blonde**(여자친구), **c'est plate**(지루해). 발음은 [t]/[d]가 [i], [y] 앞에서 [ts]/[dz]로 — tu가 '츄'처럼 들리는 게 대표 신호예요.",
@@ -198,6 +207,7 @@ export default [
       {
         heading: "아프리카 — 프랑스어의 미래가 자라는 곳",
         pattern: "essencerie = 주유소 · ambiancer = 분위기 띄우다 · présentement = 지금",
+        patternKo: "아프리카에서 태어난 창의적 프랑스어 어휘",
         body:
           "프랑스어의 무게중심은 아프리카로 이동 중이에요 — 킨샤사는 파리보다 큰, 세계 최대의 프랑스어 사용 도시로 꼽혀요. 현지어와 어울리며 **une essencerie**(essence+erie), **un maquis**(노점 식당) 같은 창의적 어휘가 태어났어요.\n\n" +
           "아프리카 문학(셍고르, 쿠루마, 마방쿠...)은 C2 독서의 큰 보상이에요. 쿠루마는 «프랑스어를 말링케어로 부러뜨려 쓴다»고 했을 만큼 언어의 가능성을 넓혔어요.",
@@ -224,6 +234,7 @@ export default [
       {
         heading: "속담 — 대화에 양념처럼 박히는 지혜",
         pattern: "Qui vivra verra = 두고 보자 · Petit à petit, l'oiseau fait son nid = 티끌 모아 태산",
+        patternKo: "대화에 반 토막으로 인용되는 속담들",
         body:
           "속담은 종종 **반 토막만** 인용돼요(Qui vivra...만 말해도 verra를 채우죠). 그래서 통째로 알아야 반 토막도 알아들어요. 그 외 최빈출: vendre la peau de l'ours(김칫국), C'est en forgeant...(하면서 는다), Après la pluie, le beau temps(고생 끝에 낙).\n\n" +
           "한국 속담과 그림은 달라도 뜻이 포개지는 짝이 많아요. 이 대응을 만들어두면 암기도 번역도 쉬워져요.",
@@ -237,6 +248,7 @@ export default [
       {
         heading: "라퐁텐의 우화 — 프랑스인의 공통 교과서",
         pattern: "cigale = 베짱이형 · fourmi = 개미형 · «La raison du plus fort est toujours la meilleure»",
+        patternKo: "라퐁텐 우화에서 온 인용구와 캐릭터 은유",
         body:
           "라퐁텐의 우화는 전 국민이 초등학교에서 암송하는 텍스트라, 구절과 캐릭터가 **대화와 언론에 암호처럼** 돌아다녀요. 《매미와 개미》의 cigale/fourmi는 경제 기사의 단골 은유이고, «Eh bien ! dansez maintenant.»는 자업자득의 시그니처 인용구예요.\n\n" +
           "《늑대와 어린 양》 첫 줄 «La raison du plus fort...»(강자의 논리가 언제나 이긴다)는 국제 정치 기사 제목의 단골, 《토끼와 거북이》의 «Rien ne sert de courir ; il faut partir à point»도 통째로 인용되는 명구예요.",
@@ -250,6 +262,7 @@ export default [
       {
         heading: "성경과 역사에서 온 이미지",
         pattern: "s'en laver les mains = 책임 회피 · bouc émissaire = 희생양 · revenons à nos moutons = 본론으로",
+        patternKo: "성경·역사에서 와서 세속화된 관용구",
         body:
           "세속 국가지만 언어에는 성경의 그림이 깊이 박혀 있어요: **s'en laver les mains**(빌라도처럼 손 씻기), **un bouc émissaire**(희생양), **une traversée du désert**(정치인·예술가의 긴 침체기), **jeter la première pierre**(함부로 단죄하기).\n\n" +
           "역사 코드로는 **Paris vaut bien une messe**(실리를 위한 신념 타협), **après moi, le déluge**(무책임의 극치)가 대표적이고, 중세 희극에서 온 **revenons à nos moutons**(본론으로 돌아갑시다)은 회의에서 지금도 매일 쓰여요.",
@@ -263,6 +276,7 @@ export default [
       {
         heading: "뉴스와 일상의 레퍼런스 — 환유의 나라",
         pattern: "l'Élysée = 대통령실 · Matignon = 총리실 · Bercy = 경제재정부 · l'Hexagone = 프랑스 본토",
+        patternKo: "기관을 건물·장소 이름으로 부르는 뉴스 환유",
         body:
           "프랑스 뉴스는 기관을 **건물·장소 이름으로 부르는 환유**가 표준이에요. 그 외 le Quai d'Orsay(외교부), la place Beauvau(내무부), Bruxelles(EU) — 이 코드를 모르면 헤드라인이 풀리지 않아요.\n\n" +
           "학교에서 배우는 정형 인용 — «Je pense, donc je suis»(데카르트), «L'enfer, c'est les autres»(사르트르) — 은 광고와 SNS에서 끝없이 패러디돼요. 그 변형을 알아채는 것이 '문화적 유창함'이에요.",
@@ -289,6 +303,7 @@ export default [
       {
         heading: "등가가 없을 때 — 번역은 단어가 아니라 효과를 옮기는 일",
         pattern: "전략: ① 풀어쓰기 ② 기능 등가 ③ 차용 + 설명",
+        patternKo: "등가어 없는 단어를 옮기는 세 가지 번역 전략",
         body:
           "옮길 수 없는 단어가 생각보다 많아요. 프랑스어 쪽은 **flâner**(음미하며 거닐기), **terroir**, **bof**, **voilà** — 한국어 쪽은 **정(情)**, **눈치**, **답답하다**, **아깝다**. '눈치가 없다'는 상황에 따라 Il manque de tact나 Il ne capte rien처럼 **다른 표현을 골라야** 해요.\n\n" +
           "전략은 셋: 풀어쓰기(flâner → 하릴없이 거닐며 음미하다), 기능 등가(같은 상황에서 실제로 하는 말로 교체), 차용+설명(테루아처럼 들여오기). 어느 것을 고를지가 번역가의 판단이에요.",
@@ -302,6 +317,7 @@ export default [
       {
         heading: "존댓말의 번역 — tu/vous로는 다 담을 수 없는 위계",
         pattern: "한국어 경어법 (어미·호칭·어휘 3중) ↔ tu/vous 스위치 하나",
+        patternKo: "존댓말 번역 — 형태가 아니라 관계를 옮기기",
         body:
           "한→프에서는 존대 정보가 뭉개지고, 프→한에서는 정보를 **만들어내야** 해요. 이 vous는 하십시오체인가 해요체인가 — 근거는 원문에 없고 **인물의 나이, 관계, 장면의 온도**에서 추론해야 하죠. vous에서 tu로 넘어가는 순간은 '말 놓기' 장면으로 옮기는 게 정석이에요.\n\n" +
           "한→프에서는 **조건법(Pourriez-vous...), 어휘 격, Monsieur/Madame 호칭**으로 공손의 온도를 재구성해요. C1의 레지스터 감각이 번역 기술로 환생하는 거예요.",
@@ -315,6 +331,7 @@ export default [
       {
         heading: "시제와 관사 — 한국어에 없는 칸을 비우고 채우기",
         pattern: "imparfait → '-고 있었다 / -곤 했다 / -던' · un = 한/웬 (신정보) · le = 그 (구정보)",
+        patternKo: "한국어에 없는 시제·관사 칸을 채워 옮기기",
         body:
           "**시제**: imparfait/passé composé 구분은 한국어 '-었-' 하나로 수렴해요. Il pleuvait를 '비가 내리고 있었다'로 옮겨야 imparfait의 카메라가 살아나고, 한→프에서는 그 구분을 **번역가가 결정**해야 해요.\n\n" +
           "**관사**: un/le의 신·구정보 차이는 한국어 '이/가'와 '은/는'의 구분과 절묘하게 포개져요. 한→프에서는 명사마다 **셀 수 있나(un)? 아는 것·총칭인가(le)? 일부인가(du)?**의 3분기 알고리즘을 돌리세요 — A0의 관사 이야기가 여기까지 옵니다.",

@@ -16,6 +16,7 @@ export default [
       {
         heading: "형태 — 미래 어간 + 반과거 어미",
         pattern: "미래 어간 + -ais, -ais, -ait, -ions, -iez, -aient",
+        patternKo: "조건법 만들기 — 미래 어간에 반과거 어미 결합",
         body:
           "**단순미래의 어간**에 **반과거의 어미**를 붙이면 끝 — 이미 배운 두 시제의 조합이라 새로 외울 건 거의 없어요.\n\n" +
           "미래형이 불규칙한 동사(être→ser-, avoir→aur-, aller→ir-, vouloir→voudr-, pouvoir→pourr- 등)는 조건법에서도 **같은 어간**을 그대로 써요.",
@@ -70,6 +71,7 @@ export default [
       {
         heading: "용법 3 — 조심스러운 단정과 충고",
         pattern: "tu devrais + 원형 → ~하는 게 좋겠어 (= should)",
+        patternKo: "~하는 게 좋겠어 — 충고·미확인 정보의 거리 두기",
         body:
           "조건법은 '확실하지 않음'의 표지이기도 해요. 뉴스의 미확인 정보(~라고 한다), 충고(tu devrais) 등에 두루 쓰여요.\n\n" +
           "특히 **devoir의 조건법(devrais)**은 영어 should에 해당하는 충고 표현으로, 일상 회화 빈도가 아주 높아요.",
@@ -96,6 +98,7 @@ export default [
       {
         heading: "접속법이란 — 카메라 vs 머릿속 필터",
         pattern: "사실 보고 → 직설법 · 바람·필요·감정·의심 → 접속법",
+        patternKo: "사실이면 직설법, 머릿속 바람·평가면 접속법",
         body:
           "지금까지의 시제는 전부 세상을 카메라로 찍듯 **사실로 서술**하는 **직설법**이었어요. **접속법(subjonctif)**은 사실이 아니라 그에 대한 **내 머릿속의 평가·바람·감정·의심**을 말하는 모드예요.\n\n" +
           "Il faut qu'il **vienne**(그가 와야 해요)에서 '그가 온다'는 아직 사실이 아니라 머릿속 요구사항이죠. **que 뒤를 사실로 보고하면 직설법, 바람·평가의 대상으로 다루면 접속법** — 이 한 줄이 전체를 관통해요.",
@@ -108,6 +111,7 @@ export default [
       {
         heading: "형태 — ils 어간 + e, es, e, ions, iez, ent",
         pattern: "ils 현재형 - ent + -e, -es, -e, -ions, -iez, -ent",
+        patternKo: "접속법 만들기 — ils 어간에 접속법 어미",
         body:
           "**직설법 현재 ils 형태에서 -ent을 떼고** 어미를 붙여요: ils finissent → que je finisse. nous/vous는 반과거와 모양이 같아요.\n\n" +
           "규칙 -er 동사는 단수형이 직설법 현재와 모양이 같아서, 접속법인 줄 모르고 이미 쓰고 있는 경우도 많아요.",
@@ -131,6 +135,7 @@ export default [
       {
         heading: "꼭 외워야 할 불규칙 6총사",
         pattern: "être → sois · avoir → aie · aller → aille · faire → fasse · pouvoir → puisse · savoir → sache",
+        patternKo: "고빈도 동사 6개의 불규칙 접속법 (통째로 암기)",
         body:
           "자주 쓰는 동사일수록 불규칙이에요. 이 여섯 개는 사용 빈도가 압도적이니 표째로 암기하세요.\n\n" +
           "être와 avoir는 어미까지 특이하고, aller와 vouloir는 nous/vous에서 어간이 바뀌는 점(aille/allions, veuille/voulions)을 조심하세요.",
@@ -154,6 +159,7 @@ export default [
       {
         heading: "접속법을 부르는 표현 — 필요·바람·감정·의심",
         pattern: "il faut que / vouloir que / être content que / douter que + 접속법",
+        patternKo: "필요·바람·감정·의심 표현 뒤 que절은 접속법",
         body:
           "**필요·의무**(il faut que), **바람·요구**(vouloir que, demander que), **감정**(être content que, c'est dommage que), **의심·부정**(douter que, je ne pense pas que) — 전부 '머릿속 평가'라는 공통점이 있어요.\n\n" +
           "이 중에서도 **il faut que + 접속법**은 일상 회화 최고 빈도 패턴이에요. 여기서부터 입에 붙이세요.",
@@ -195,6 +201,7 @@ export default [
       {
         heading: "형태 — avoir/être의 반과거 + 과거분사",
         pattern: "avoir/être 반과거 + 과거분사 (j'avais fini · j'étais parti)",
+        patternKo: "대과거 만들기 — 복합과거의 조동사를 반과거로",
         body:
           "복합과거를 알면 공짜로 얻는 시제예요. 조동사를 **반과거형으로 바꾸기만** 하면 돼요: J'ai fini → J'**avais** fini.\n\n" +
           "조동사 선택, être일 때의 성·수 일치, 대명동사 처리 — 전부 **복합과거의 규칙 그대로**예요.",
@@ -215,6 +222,7 @@ export default [
       {
         heading: "3단 시간축 — 이야기 속에서 굴리기",
         pattern: "반과거 = 무대 · 복합과거 = 사건 · 대과거 = 그 이전의 사연",
+        patternKo: "이야기 속 3단 분업 — 무대·사건·그 이전 사연",
         body:
           "실제 이야기에서는 세 시제가 분업해요. **반과거**가 무대를 깔고, **복합과거**가 사건을 진행시키고, **대과거**가 그 이전의 사연을 끼워 넣어요.\n\n" +
           "'마리를 만났어(사건). 행복해 보였어(상태). 막 새 직장을 구했던 거야(이전 사연).' — 이 리듬이 프랑스어 스토리텔링의 기본 박자예요.",
@@ -228,6 +236,7 @@ export default [
       {
         heading: "보너스 — Si j'avais su !",
         pattern: "Si + 대과거 ! → ~했더라면! (탄식)",
+        patternKo: "~했더라면! — 뒷말을 생략한 후회의 탄식",
         body:
           "**Si j'avais su !**(알았더라면!)처럼 si + 대과거만 던지고 뒷말을 생략하면 후회의 탄식이 돼요.\n\n" +
           "이 si + 대과거가 '과거 사실과 반대되는 가정문'으로 완성되는 모습은 B2 가정문 챕터에서 만나요.",
@@ -252,6 +261,7 @@ export default [
       {
         heading: "복습 30초 — qui와 que의 분업",
         pattern: "qui = 주어 자리 · que = 직접목적어 자리",
+        patternKo: "관계절 빈자리가 주어면 qui, 직접목적어면 que",
         body:
           "l'ami **qui** habite à Lyon(qui가 주어), le livre **que** je lis(que가 목적어)였죠.\n\n" +
           "그런데 동사가 **de나 다른 전치사**를 데리고 다니면 qui/que로는 부족해요. 그 빈자리를 채우는 게 dont, où, lequel 계열이에요.",
@@ -263,6 +273,7 @@ export default [
       {
         heading: "dont — de를 통째로 삼키는 관계대명사",
         pattern: "de + 선행사 → dont (parler de → le livre dont je parle)",
+        patternKo: "'de + 선행사' 자리를 통째로 받는 dont (소유 포함)",
         body:
           "**dont = de + 무엇**이에요. parler **de**, avoir besoin **de**처럼 de와 결합하는 표현이 관계절에 들어가면, 'de + 선행사' 자리를 dont 하나가 흡수해요.\n\n" +
           "또 하나의 큰 용법이 **소유**예요. la femme **dont** le fils est médecin(아들이 의사인 그 여자) — '~의(de)'를 dont이 담당하죠.",
@@ -278,6 +289,7 @@ export default [
       {
         heading: "où — 장소만이 아니라 시간도",
         pattern: "장소·시간 선행사 → où (la ville où · le jour où)",
+        patternKo: "장소뿐 아니라 시간 선행사도 받는 où",
         body:
           "**où**는 선행사가 **장소**일 때 쓰는 관계대명사예요: la ville **où** je suis né(내가 태어난 도시).\n\n" +
           "자주 놓치는 건 **시간 선행사**예요. le jour **où** je t'ai rencontré(너를 만난 날) — quand이 아니라 où입니다.",
@@ -291,6 +303,7 @@ export default [
       {
         heading: "lequel 계열 — 그 밖의 전치사 뒤에는",
         pattern: "전치사 + lequel/laquelle/lesquels/lesquelles (à+lequel → auquel · de+lequel → duquel)",
+        patternKo: "그 밖의 전치사 뒤에는 lequel 계열 (성수 일치)",
         body:
           "avec, pour, sur, dans 같은 전치사 뒤에서는 **lequel 계열**(선행사의 성·수에 일치)을 써요: la table **sur laquelle**..., les amis **avec lesquels**...\n\n" +
           "à나 de는 정관사처럼 축약돼요(auquel, duquel). 선행사가 **사람**이면 전치사 + qui도 가능해요: l'amie avec qui je voyage.",
@@ -327,6 +340,7 @@ export default [
       {
         heading: "형태 — nous 어간 + -ant",
         pattern: "en + (nous 현재형 - ons + -ant) → en parlant",
+        patternKo: "제롱디프 만들기 — en + nous 어간 + -ant",
         body:
           "제롱디프는 **en + 현재분사**예요. nous parlons → parlant → **en parlant**(말하면서). 어간의 철자(mangeons → mangeant)도 nous형을 그대로 따라가요.\n\n" +
           "예외는 딱 셋: être → **étant**, avoir → **ayant**, savoir → **sachant**.",
@@ -348,6 +362,7 @@ export default [
       {
         heading: "용법 1 — 동시동작: ~하면서",
         pattern: "en + -ant → ~하면서 (강조·대조: tout en + -ant)",
+        patternKo: "~하면서 — 두 동작의 동시 진행",
         body:
           "가장 기본 용법은 **두 동작이 동시에** 일어남을 나타내는 '~하면서'예요. 주절의 동사와 제롱디프의 동작이 같은 시간에 겹쳐요.\n\n" +
           "동시성을 강조하거나 두 동작이 살짝 모순될 때(웃으면서 비판하기 등)는 **tout en + -ant**을 써요.",
@@ -360,6 +375,7 @@ export default [
       {
         heading: "용법 2 — 수단과 조건: ~함으로써, ~하면",
         pattern: "en + -ant → ~함으로써 · ~하면",
+        patternKo: "~함으로써·~하면 — 수단과 조건의 제롱디프",
         body:
           "'어떻게?'에 답하는 **수단·방법**의 용법이에요: C'est en forgeant qu'on devient forgeron(쇠를 두드림으로써 대장장이가 된다 — 속담).\n\n" +
           "**조건**의 뉘앙스로도 써요: En partant maintenant, tu arriveras à l'heure(지금 떠나면 제시간에 도착할 거야).",
@@ -373,6 +389,7 @@ export default [
       {
         heading: "제약 — 주어가 반드시 일치해야 해요",
         pattern: "제롱디프의 숨은 주어 = 주절의 주어",
+        patternKo: "제롱디프의 주어는 주절 주어와 반드시 일치",
         body:
           "Elle téléphone en marchant에서 걷는 사람과 통화하는 사람은 같은 '그녀'죠. 이 일치가 **의무**예요.\n\n" +
           "'비가 오면서 우리는 출발했다'처럼 두 동작의 주어가 다르면 제롱디프를 못 쓰고, Comme il pleuvait, nous sommes partis처럼 접속사로 풀어야 해요.",

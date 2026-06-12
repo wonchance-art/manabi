@@ -29,6 +29,7 @@ export default [
       {
         heading: "규칙 동사의 형태 — 3인칭 중심으로",
         pattern: "-er → -a/-èrent · -ir → -it/-irent · 그 외 → -ut/-urent",
+        patternKo: "동사 그룹별 단순과거 규칙 어미 (a/it/ut)",
         body:
           "어미는 동사 그룹에 따라 세 갈래예요.\n\n" +
           "읽기용 핵심: 본문에서 **동사 어간 + a, it, ut** 형태가 보이고 문맥이 과거 서술이면 passé simple이에요. parla(말했다), finit(끝냈다), voulut(원했다)처럼요.",
@@ -49,6 +50,7 @@ export default [
       {
         heading: "꼭 알아봐야 하는 불규칙 동사들",
         pattern: "fut(être) · eut(avoir) · fit(faire) · vint(venir) · prit(prendre)",
+        patternKo: "꼭 알아봐야 하는 최빈출 불규칙 단순과거",
         body:
           "불규칙 형태는 짧고 강렬해서 처음 보면 정체를 못 알아봐요. fut가 être라는 걸 모르면 문장 전체가 무너지죠.\n\n" +
           "최빈출만 추렸으니 이 표는 **읽기용 치트시트**로 두고두고 참조하세요. 패턴의 다섯 개는 한 페이지에 몇 번씩 나오는 단골이에요.",
@@ -81,6 +83,7 @@ export default [
       {
         heading: "텍스트 속에서 — imparfait와의 협업",
         pattern: "imparfait = 배경 · passé simple = 사건",
+        patternKo: "배경은 반과거, 사건은 단순과거 (소설 서술의 분업)",
         body:
           "소설에서 **imparfait가 배경(무대, 상태)을 깔면, passé simple이 사건(행동, 전환)을 찍어요.** B1의 passé composé vs imparfait 구도에서 사건 담당만 교체된 셈이에요.\n\n" +
           "짝꿍 선행 시제 **passé antérieur**(quand il eut fini... 끝내자마자)도 가끔 나와요. avoir/être의 단순과거 + 과거분사라는 것만 알아두면 충분해요.",
@@ -107,6 +110,7 @@ export default [
       {
         heading: "세 개의 층 — 그리고 한국어 존댓말과의 결정적 차이",
         pattern: "soutenu (격식·문어) · courant (표준) · familier (친근·구어)",
+        patternKo: "프랑스어의 세 가지 격 (격식·표준·친근)",
         body:
           "한국어는 **어미**(-습니다/-어요/-어)가 격을 결정하지만, 프랑스어는 **단어 선택, 문장 구조, 발음 습관**이 통째로 바뀌어요. 같은 '차'가 automobile → voiture → bagnole로 단어부터 달라지죠.\n\n" +
           "그래서 tu/vous만 잘 고른다고 격이 맞는 게 아니에요. vous를 쓰며 bagnole, bouffer를 섞으면 '고객님, 밥 처드셨어요?' 같은 부조화가 생겨요. C1부터는 **단어마다 격 태그를 함께 외우는 습관**이 필요합니다.",
@@ -119,6 +123,7 @@ export default [
       {
         heading: "같은 뜻, 세 단어 — 레지스터 어휘표",
         pattern: "automobile → voiture → bagnole · ouvrage → livre → bouquin",
+        patternKo: "같은 뜻을 격에 따라 다른 단어로 (3단 어휘)",
         body:
           "자주 쓰는 개념일수록 세 층의 단어가 따로 있어요. 아래 표의 familier 단어들은 영화·드라마·일상 대화의 최빈출 어휘이기도 해요.",
         table: {
@@ -145,6 +150,7 @@ export default [
       {
         heading: "문법도 격을 입는다 — ne 탈락, 의문문 3형",
         pattern: "도치 (soutenu) → est-ce que (courant) → 억양만 (familier)",
+        patternKo: "격에 따라 달라지는 의문문 세 가지 형태",
         body:
           "어휘만이 아니라 문법 구조 자체가 격 신호예요. **부정의 ne**는 문어에서 필수지만 구어 familier에서는 거의 항상 떨어져요(Je sais pas) — 글에서 빼면 틀리고, 말에서 꼬박꼬박 챙기면 딱딱하게 들려요.\n\n" +
           "**의문문**도 격에 따라 세 가지로 변하고, 의문사가 문장 끝으로 가는 것(Tu vas où ?)도 familier의 특징이에요.",
@@ -165,6 +171,7 @@ export default [
       {
         heading: "어떤 상황에 어떤 격을 쓰나",
         pattern: "말하기 = courant · 듣기 = familier까지 · 쓰기 = soutenu까지",
+        patternKo: "기능별 격 사용 전략 (비대칭으로 익히기)",
         body:
           "**soutenu**는 DALF 작문·자기소개서·공식 이메일, **courant**은 직장·상점·처음 만난 사람(외국인의 안전지대), **familier**는 친구·또래 — 단 vulgaire(비속어)로 넘어가는 단어는 따로 표시해 익히세요.\n\n" +
           "현실적인 조언은 패턴의 **비대칭 전략**이에요. familier를 어설프게 쓰면 어색하지만, 못 알아들으면 대화가 끊기니까요.",
@@ -190,6 +197,7 @@ export default [
       {
         heading: "thèse — antithèse — synthèse: 프랑스식 사고의 틀",
         pattern: "problématique → thèse(정) → antithèse(반) → synthèse(합)",
+        patternKo: "문제 제기 후 정-반-합으로 전개하는 글의 틀",
         body:
           "프랑스 dissertation은 주장을 펼친 뒤 **일부러 반대 입장을 충실히 검토**하고, 두 입장을 넘어서는 종합으로 마무리해요. 한국식 서론-본론-결론과 달리, **반대 입장을 다루지 않으면 미완성 글**로 평가받아요.\n\n" +
           "또 하나의 필수품이 **problématique**(문제 제기) — 주제를 긴장이 있는 질문으로 다듬어 서론에 명시해야 해요. '재택근무에 대하여'가 아니라 '재택근무는 자유의 확장인가, 노동의 침투인가?'처럼요.",
@@ -202,6 +210,7 @@ export default [
       {
         heading: "서론과 전개 — 글을 여는 표현들",
         pattern: "서론 = 도입 → problématique 제시 → annonce du plan",
+        patternKo: "서론 3단계 (도입·문제 제기·전개 예고)",
         body:
           "서론 3단계의 정형 표현을 통째로 외워두면 시험장에서 시간을 벌어요.\n\n" +
           "본론 전개에서는 단락 사이의 **connecteurs**가 이정표예요. premièrement만 반복하면 단조로우니 en premier lieu, par ailleurs, en outre, enfin처럼 변주하세요.",
@@ -215,6 +224,7 @@ export default [
       {
         heading: "양보와 반박 — certes... mais의 기술",
         pattern: "Certes ..., mais ... (양보 → 반박)",
+        patternKo: "물론 ~이지만 ... (양보 후 반박하기)",
         body:
           "프랑스식 논증의 꽃은 **양보(concession) 후 반박(réfutation)**이에요. 신호탄 **certes**(물론)가 보이면 100% 뒤에 mais나 cependant이 따라온다고 봐도 됩니다.\n\n" +
           "반박 강도 조절: **cependant/toutefois**(중립), **néanmoins**(그럼에도), **en revanche**(대조), **or**(논리 전환의 결정적 한 수 — 삼단논법에서 새 전제를 들이미는 접속사예요).",
@@ -228,6 +238,7 @@ export default [
       {
         heading: "결론 — 닫고, 열기",
         pattern: "결론 = bilan (최종 답변) + ouverture (더 넓은 질문으로 열기)",
+        patternKo: "결론 쓰기 — 최종 답변으로 닫고 새 질문으로 열기",
         body:
           "요약만 하면 닫힌 글, 새 주제를 갑자기 던지면 산만한 글 — 기존 논의에서 자연스럽게 이어지는 한 걸음이 좋은 **ouverture**예요.\n\n" +
           "결론 신호어는 **en définitive, en somme, au terme de cette réflexion** 등 — 구어적인 au final이나 단순 나열의 finalement보다 격이 높아요.",
@@ -280,6 +291,7 @@ export default [
       {
         heading: "굳어진 분사 표현들 — 전치사가 된 분사",
         pattern: "étant donné (que) · y compris · excepté · cela dit · le cas échéant",
+        patternKo: "전치사·접속사처럼 굳어진 분사 표현 (성·수 불변)",
         body:
           "일부 분사구문은 굳어서 전치사·접속사처럼 쓰여요: **étant donné (que)**(~이므로), **y compris**(~을 포함하여), **excepté**(~을 제외하고), **cela dit**(그렇긴 하지만), **le cas échéant**(필요하다면 — 행정 문서 최빈출). 분석하지 말고 덩어리로 외우세요.\n\n" +
           "굳어진 표현이라 대부분 **성·수 일치도 하지 않아요**: étant donné la situation에서 donné는 불변이에요.",
@@ -293,6 +305,7 @@ export default [
       {
         heading: "현재분사 vs 제롱디프 vs 동사적 형용사 — 마지막 정리",
         pattern: "en + -ant (제롱디프) · -ant 불변 (현재분사) · -ant 일치 (형용사)",
+        patternKo: "-ant 형태의 세 갈래 구별 (제롱디프·분사·형용사)",
         body:
           "-ant 형태의 세 갈래를 C1에서 마무리해둘 지점이에요. **제롱디프**는 주절 주어의 동시 동작·수단, **현재분사**는 절을 압축하며 불변, **동사적 형용사**는 성·수 일치를 해요.\n\n" +
           "일부는 철자도 달라요: fatig**ant**(형용사) vs en fatig**uant**(분사), provocant vs provoquant.",
@@ -318,6 +331,7 @@ export default [
       {
         heading: "savoir vs connaître — 정보인가, 친숙함인가",
         pattern: "savoir + 절/동사원형 (정보·방법) · connaître + 명사 (친숙함)",
+        patternKo: "정보·방법으로 알면 savoir, 경험으로 알면 connaître",
         body:
           "둘 다 '알다'라서 끝까지 헷갈리는 1순위 짝이에요. **savoir**는 머리로 아는 정보·사실·방법(Je sais nager), **connaître**는 경험으로 아는 친숙함 — 사람, 장소, 작품은 무조건 connaître예요(Je connais Marie).\n\n" +
           "C1다운 디테일: 복합과거에서 의미가 변해요. **j'ai su** = '알게 되었다', **j'ai connu** = '처음 만났다, 겪었다'.",
@@ -331,6 +345,7 @@ export default [
       {
         heading: "amener / emmener / apporter / emporter — 사람이냐 물건이냐, 오느냐 가느냐",
         pattern: "mener = 사람 · porter = 물건 × a- = 이쪽으로 · em- = 저쪽으로",
+        patternKo: "데려오다/가져가다 — 사람·물건 × 방향의 2×2 구별",
         body:
           "네 동사가 전부 '데려가다/가져가다' 계열이라 대혼란이 오지만, **두 축**으로 가르면 단순해요. mener 계열은 스스로 움직이는 대상(사람·동물), porter 계열은 들고 옮기는 물건. a- 계열은 도착점 쪽으로(데려오다), em- 계열은 떠나는 쪽으로(데리고 떠나다).\n\n" +
           "테이크아웃의 **à emporter**(지니고 떠나기 = 포장)가 em- 방향성의 완벽한 예시예요.",
@@ -353,6 +368,7 @@ export default [
       {
         heading: "retourner / revenir / rentrer — 세 개의 '돌아가다'",
         pattern: "revenir = 화자 쪽으로 · retourner = 제3의 장소로 다시 · rentrer = 본거지로 (귀가·귀국)",
+        patternKo: "기준점에 따라 갈리는 세 가지 '돌아가다'",
         body:
           "기준점이 어디냐가 전부예요. **revenir**는 말하는 사람이 있는 곳으로(Reviens vite !), **retourner**는 전에 가봤던 제3의 장소로 다시(retourner au Japon — 화자는 지금 일본에 없음), **rentrer**는 집·고향·모국으로 — 한국어 '귀(歸)' 계열(귀가, 귀국)과 잘 포개져요.\n\n" +
           "같은 상황도 기준점 따라 달라져요. 파리 여행 중인 내가 한국 친구에게: Je rentre dimanche. 파리 친구가 나에게: Tu reviendras ? 나중의 나: J'aimerais retourner à Paris.",
@@ -365,6 +381,7 @@ export default [
       {
         heading: "an / année — 그리고 jour/journée, soir/soirée",
         pattern: "an/jour/soir = 단위·눈금 (숫자와) · année/journée/soirée = 내용·지속 (형용사와)",
+        patternKo: "시간 명사의 단위형 vs 내용·지속형 구별",
         body:
           "**an**은 셀 수 있는 단위·눈금(deux ans, J'ai trente ans), **année**는 그 시간의 내용물·경험(une bonne année, toute l'année, cette année)이에요.\n\n" +
           "같은 분업이 jour/journée, soir/soirée, matin/matinée에도 적용돼요. Bonsoir(만났을 때) vs **Bonne soirée**(헤어질 때 — '남은 저녁 잘 보내요').",
@@ -401,6 +418,7 @@ export default [
       {
         heading: "관용구를 대하는 자세 — 그리고 기분의 표현들",
         pattern: "avoir le cafard = 우울하다 · avoir la pêche = 컨디션 최고 · être dans la lune = 멍 때리다",
+        patternKo: "기분·상태를 그리는 관용구 (우울·생기·딴생각)",
         body:
           "관용 표현은 단어 뜻의 합이 아니에요. avoir le cafard(바퀴벌레를 가지다)의 실제 뜻은 '**우울하다**' — 보들레르가 《악의 꽃》에서 퍼뜨린 이미지로 알려져 있어요.\n\n" +
           "관용구는 **이미지와 유래를 함께 외울 때** 기억에 남아요. 이 챕터는 기분·동물·음식·신체 계열로 묶어 소개할게요.",
@@ -414,6 +432,7 @@ export default [
       {
         heading: "동물의 이미지 — 토끼, 고양이, 닭",
         pattern: "poser un lapin = 바람맞히다 · donner sa langue au chat = 모르겠다, 항복",
+        patternKo: "동물 이미지 관용구 (바람맞히다·항복하다)",
         body:
           "**poser un lapin**(토끼를 놓다 → 바람맞히다), **donner sa langue au chat**(혀를 고양이에게 주다 → 항복), **avoir un chat dans la gorge**(목에 고양이 → 목이 잠기다 — 영어는 개구리를 넣죠).\n\n" +
           "**quand les poules auront des dents**(닭에게 이가 나면)는 한국어 '해가 서쪽에서 뜨면'의 프랑스 버전이에요.",
@@ -427,6 +446,7 @@ export default [
       {
         heading: "음식의 이미지 — 역시 프랑스",
         pattern: "raconter des salades = 둘러대다 · c'est du gâteau = 식은 죽 먹기",
+        patternKo: "음식 이미지 관용구 (둘러대다·식은 죽 먹기)",
         body:
           "음식의 나라답게 풍년이에요. **raconter des salades**(샐러드를 이야기하다 → 둘러대다), **mettre son grain de sel**(소금 한 톨 넣다 → 참견하다), **les carottes sont cuites**(당근이 다 익었다 → 이제 끝났다).\n\n" +
           "**ce n'est pas de la tarte**(타르트가 아니다 → 만만치 않다)의 반대는 c'est du gâteau — 영어 a piece of cake와 그림이 같죠.",
@@ -440,6 +460,7 @@ export default [
       {
         heading: "신체의 이미지 — 그리고 사용 설명서",
         pattern: "coûter les yeux de la tête = 터무니없이 비싸다 · casser les pieds = 귀찮게 하다",
+        patternKo: "신체 이미지 관용구 (비싸다·귀찮게 하다)",
         body:
           "**coûter les yeux de la tête**(눈이 빠질 만큼 비싸다 — '눈이 튀어나올 가격'과 통하죠), **avoir le cœur sur la main**(심장을 손에 → 잘 베푼다), **casser les pieds**(발을 부수다 → 귀찮게 하다).\n\n" +
           "사용 전략: **이해는 최대로, 사용은 보수적으로.** 대부분 familier라 격식 작문에는 못 쓰고, 프랑스인이 쓰는 걸 들은 맥락 그대로 따라 쓰며 늘려가는 게 정석입니다.",
