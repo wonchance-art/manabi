@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
@@ -90,7 +90,9 @@ export default function ProfileStats({ refManifest = {} }) {
         </div>
       )}
 
-      {data?.heatmapDayCounts && <HeatmapCard dayCounts={data.heatmapDayCounts} />}
+      {data?.heatmapDayCounts && Object.keys(data.heatmapDayCounts).length > 0 && (
+        <HeatmapCard dayCounts={data.heatmapDayCounts} />
+      )}
     </>
   );
 }
@@ -99,25 +101,28 @@ export default function ProfileStats({ refManifest = {} }) {
 
 function LevelCoverageCard({ refManifest, vocab }) {
   const langs = Object.keys(refManifest);
-  const [lang, setLang] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('lessons_lang');
-      if (langs.includes(saved)) return saved;
-    }
-    return langs[0] || 'Japanese';
-  });
+  const [lang, setLang] = useState(langs[0] || 'Japanese');
+  // SSR과 첫 클라이언트 렌더를 일치시키기 위해 localStorage는 마운트 후에만 읽는다
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+    const saved = localStorage.getItem('lessons_lang');
+    if (langs.includes(saved)) setLang(saved);
+    // langs는 정적 매니페스트에서 파생
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const ref = refManifest[lang];
 
   // 강의 진행 — localStorage (강의 목록과 동일 원본)
   const progress = useMemo(() => {
-    if (!ref || typeof window === 'undefined') return { readSet: new Set(), checkMap: {} };
+    if (!ref || !mounted) return { readSet: new Set(), checkMap: {} };
     try {
       return {
         readSet: new Set(JSON.parse(localStorage.getItem(ref.readKey) || '[]')),
         checkMap: JSON.parse(localStorage.getItem(`${ref.readKey}_check`) || '{}'),
       };
     } catch { return { readSet: new Set(), checkMap: {} }; }
-  }, [ref]);
+  }, [ref, mounted]);
 
   const langVocabCount = useMemo(
     () => vocab.filter(v => v.language === lang).length,
@@ -126,6 +131,8 @@ function LevelCoverageCard({ refManifest, vocab }) {
 
   if (!ref) return null;
   const targets = VOCAB_TARGETS[lang] || {};
+  // 어휘 보조 지표: 도달한 레벨 ✓, 다음 목표 레벨만 숫자 노출 (반복 표기 방지)
+  const nextVocabKey = ref.levels.find(lv => targets[lv.key] && langVocabCount < targets[lv.key])?.key || null;
 
   return (
     <div className="card mypage-section">
@@ -159,9 +166,11 @@ function LevelCoverageCard({ refManifest, vocab }) {
               <span className="lvprog__count">
                 {done ? '수료' : `${passed} / ${total}`}
               </span>
-              {target ? (
-                <span className={`lvprog__vocab ${vocabReached ? 'is-done' : ''}`}>
-                  단어 {vocabReached ? '✓' : `${langVocabCount.toLocaleString('ko-KR')}/${target.toLocaleString('ko-KR')}`}
+              {target && vocabReached ? (
+                <span className="lvprog__vocab is-done">단어 ✓</span>
+              ) : target && lv.key === nextVocabKey ? (
+                <span className="lvprog__vocab">
+                  단어 {langVocabCount.toLocaleString('ko-KR')}/{target.toLocaleString('ko-KR')}
                 </span>
               ) : <span className="lvprog__vocab" />}
             </div>

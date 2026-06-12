@@ -127,12 +127,12 @@ export default function VocabStats({ vocab, profile, section }) {
       })()}
 
       {/* 요주의 단어 TOP 5 */}
-      {showHard && vocab.filter(v => (v.repetitions || 0) > 2).length > 0 && (
+      {showHard && vocab.filter(v => (v.repetitions || 0) >= 2).length > 0 && (
         <div className="card" >
           <h3 style={{ fontSize: '0.95rem', marginBottom: 12 }}>요주의 단어 TOP 5</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {[...vocab]
-              .filter(v => (v.repetitions || 0) > 0)
+              .filter(v => (v.repetitions || 0) >= 2)
               .sort((a, b) => (b.repetitions || 0) - (a.repetitions || 0) || (a.interval ?? 0) - (b.interval ?? 0))
               .slice(0, 5)
               .map(v => (
@@ -233,7 +233,21 @@ export default function VocabStats({ vocab, profile, section }) {
       })()}
 
       {/* 향후 7일 복습 스케줄 */}
-      {showMemory && <div className="card" >
+      {showMemory && (() => {
+        const weekTotal = vocab.filter(v => {
+          if (!v.next_review_at) return false;
+          const d = (new Date(v.next_review_at) - Date.now()) / 86400000;
+          return d < 7;
+        }).length;
+        if (weekTotal === 0) return (
+          <div className="card">
+            <h3 style={{ fontSize: '0.95rem', marginBottom: 6 }}>복습 스케줄 (7일)</h3>
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: 0 }}>
+              예정된 복습이 없어요. 새 단어를 수집하면 여기에 일정이 잡혀요.
+            </p>
+          </div>
+        );
+        return <div className="card">
         <h3 style={{ fontSize: '0.95rem', marginBottom: 16 }}>복습 스케줄 (7일)</h3>
         <div className="forecast-chart">
           {[...Array(7)].map((_, i) => {
@@ -256,7 +270,8 @@ export default function VocabStats({ vocab, profile, section }) {
             );
           })}
         </div>
-      </div>}
+      </div>;
+      })()}
     </div>
   );
 }
