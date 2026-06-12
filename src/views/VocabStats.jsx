@@ -155,8 +155,6 @@ export default function VocabStats({ vocab, profile, section }) {
       {/* 기억 건강 리포트 */}
       {showMemory && vocab.length > 0 && (() => {
         const now = Date.now();
-        const W = 500, H = 140, PAD = 40;
-        const DAYS = 30;
         const retentionBuckets = { high: 0, mid: 0, low: 0, forgotten: 0 };
         let totalRetention = 0;
         vocab.forEach(v => {
@@ -171,12 +169,6 @@ export default function VocabStats({ vocab, profile, section }) {
           else retentionBuckets.forgotten++;
         });
         const avgRetention = Math.round((totalRetention / vocab.length) * 100);
-        const avgStability = vocab.reduce((a, v) => a + Math.max(v.interval ?? 0.5, 0.5), 0) / vocab.length;
-        const curvePoints = Array.from({ length: DAYS + 1 }, (_, i) => {
-          const r = Math.exp(-i / (avgStability * 9)) * 100;
-          return { x: PAD + (i / DAYS) * (W - PAD * 2), y: PAD + ((100 - r) / 100) * (H - PAD * 2), day: i, r: Math.round(r) };
-        });
-        const curveLine = curvePoints.map(p => `${p.x},${p.y}`).join(' ');
         return (
           <div className="card" >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
@@ -199,79 +191,48 @@ export default function VocabStats({ vocab, profile, section }) {
                 </div>
               ))}
             </div>
-            <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: '14px 0 6px' }}>
-              복습 안 하면? (망각 곡선 · 안정도 {avgStability.toFixed(1)}d 기준)
-            </p>
-            <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', overflow: 'visible' }}>
-              {[90, 70, 50].map(r => {
-                const y = PAD + ((100 - r) / 100) * (H - PAD * 2);
-                return (
-                  <g key={r}>
-                    <line x1={PAD} y1={y} x2={W - PAD} y2={y} stroke="var(--border)" strokeWidth="1" strokeDasharray="4 4" />
-                    <text x={PAD - 6} y={y + 3} textAnchor="end" fontSize="9" fill="var(--text-muted)">{r}%</text>
-                  </g>
-                );
-              })}
-              <polygon points={`${curvePoints[0].x},${H - PAD} ${curveLine} ${curvePoints[curvePoints.length-1].x},${H - PAD}`} fill="url(#forgetGrad)" />
-              <defs>
-                <linearGradient id="forgetGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--primary-light)" stopOpacity="0.2" />
-                  <stop offset="100%" stopColor="var(--danger)" stopOpacity="0.05" />
-                </linearGradient>
-              </defs>
-              <polyline points={curveLine} fill="none" stroke="var(--primary-light)" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
-              {curvePoints.filter((_, i) => i === 0 || i === 7 || i === 14 || i === 30).map(p => (
-                <g key={p.day}>
-                  <circle cx={p.x} cy={p.y} r="4" fill={p.r >= 70 ? 'var(--accent)' : p.r >= 40 ? 'var(--warning)' : 'var(--danger)'} />
-                  <text x={p.x} y={p.y - 10} textAnchor="middle" fontSize="10" fontWeight="700" fill={p.r >= 70 ? 'var(--accent)' : p.r >= 40 ? 'var(--warning)' : 'var(--danger)'}>{p.r}%</text>
-                  <text x={p.x} y={H - 4} textAnchor="middle" fontSize="9" fill="var(--text-muted)">{p.day === 0 ? '오늘' : `${p.day}일 후`}</text>
-                </g>
-              ))}
-            </svg>
+            {(() => {
+              const weekTotal = vocab.filter(v => {
+                if (!v.next_review_at) return false;
+                const d = (new Date(v.next_review_at) - now) / 86400000;
+                return d < 7;
+              }).length;
+              if (weekTotal === 0) return (
+                <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '16px 0 0' }}>
+                  7일 안에 예정된 복습이 없어요.
+                </p>
+              );
+              return (
+                <>
+                  <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: '16px 0 6px' }}>복습 스케줄 (7일)</p>
+                  <div className="forecast-chart">
+                    {[...Array(7)].map((_, i) => {
+                      const date = new Date();
+                      date.setDate(date.getDate() + i);
+                      const count = vocab.filter(v => new Date(v.next_review_at).toDateString() === date.toDateString()).length;
+                      const maxCount = Math.max(...[...Array(7)].map((_, k) => {
+                        const d = new Date(); d.setDate(d.getDate() + k);
+                        return vocab.filter(v => new Date(v.next_review_at).toDateString() === d.toDateString()).length;
+                      }), 1);
+                      return (
+                        <div key={i} className="forecast-col">
+                          <div className="forecast-bar" style={{
+                            height: `${(count / maxCount) * 100}%`, minHeight: count > 0 ? '4px' : '0',
+                            background: i === 0 ? 'var(--accent)' : 'var(--primary-light)',
+                          }} />
+                          <div className="forecast-label">{i === 0 ? '오늘' : `${date.getMonth()+1}/${date.getDate()}`}</div>
+                          {count > 0 && <div className="forecast-count">{count}</div>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              );
+            })()}
           </div>
         );
       })()}
 
-      {/* 향후 7일 복습 스케줄 */}
-      {showMemory && (() => {
-        const weekTotal = vocab.filter(v => {
-          if (!v.next_review_at) return false;
-          const d = (new Date(v.next_review_at) - Date.now()) / 86400000;
-          return d < 7;
-        }).length;
-        if (weekTotal === 0) return (
-          <div className="card">
-            <h3 style={{ fontSize: '0.95rem', marginBottom: 6 }}>복습 스케줄 (7일)</h3>
-            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: 0 }}>
-              예정된 복습이 없어요. 새 단어를 수집하면 여기에 일정이 잡혀요.
-            </p>
-          </div>
-        );
-        return <div className="card">
-        <h3 style={{ fontSize: '0.95rem', marginBottom: 16 }}>복습 스케줄 (7일)</h3>
-        <div className="forecast-chart">
-          {[...Array(7)].map((_, i) => {
-            const date = new Date();
-            date.setDate(date.getDate() + i);
-            const count = vocab.filter(v => new Date(v.next_review_at).toDateString() === date.toDateString()).length;
-            const maxCount = Math.max(...[...Array(7)].map((_, k) => {
-              const d = new Date(); d.setDate(d.getDate() + k);
-              return vocab.filter(v => new Date(v.next_review_at).toDateString() === d.toDateString()).length;
-            }), 1);
-            return (
-              <div key={i} className="forecast-col">
-                <div className="forecast-bar" style={{
-                  height: `${(count / maxCount) * 100}%`, minHeight: count > 0 ? '4px' : '0',
-                  background: i === 0 ? 'var(--accent)' : 'var(--primary-light)',
-                }} />
-                <div className="forecast-label">{i === 0 ? '오늘' : `${date.getMonth()+1}/${date.getDate()}`}</div>
-                {count > 0 && <div className="forecast-count">{count}</div>}
-              </div>
-            );
-          })}
-        </div>
-      </div>;
-      })()}
     </div>
   );
 }

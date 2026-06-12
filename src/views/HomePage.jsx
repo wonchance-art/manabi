@@ -38,7 +38,6 @@ async function fetchHomeData(userId) {
     suggestionsRes,
     { data: readProgressRows },
     { data: allVocabRows },
-    { data: publicMaterials },
     { data: seriesMaterials },
     { data: allCompleted },
   ] = await Promise.all([
@@ -54,11 +53,6 @@ async function fetchHomeData(userId) {
       .eq('user_id', userId).eq('is_completed', true).gte('completed_at', prevWeekStartISO),
     supabase.from('user_vocabulary').select('language, word_text')
       .eq('user_id', userId),
-    supabase.from('reading_materials')
-      .select('id, title, language, level')
-      .eq('visibility', 'public')
-      .order('created_at', { ascending: false })
-      .limit(40),
     supabase.from('reading_materials')
       .select('id, title, processed_json')
       .eq('visibility', 'public')
@@ -116,8 +110,6 @@ async function fetchHomeData(userId) {
         total: all.length,
       };
     })(),
-    publicMaterials: publicMaterials || [],
-    readMaterialIds: (recentProgress || []).filter(r => r.is_completed).map(r => r.material_id),
     seriesProgress: (() => {
       const doneSet = new Set((allCompleted || []).map(r => r.material_id));
       const groups = new Map(); // key = level|series
@@ -295,7 +287,6 @@ export default function HomePage({ continueManifest = {}, refManifest = {} }) {
   );
 
   const displayName   = profile?.display_name || '학습자';
-  const streak        = profile?.streak_count || 0;
   const hasNoLanguage = profile && !profile.learning_language?.length;
   const isNewUser     = dueCount === 0 && todayVocab === 0 && !data?.recentProgress?.length;
 
@@ -336,42 +327,14 @@ export default function HomePage({ continueManifest = {}, refManifest = {} }) {
         </div>
       )}
 
-      {/* ① 그리팅 + 간결한 상태 한 줄 */}
+      {/* ① 그리팅 — 인사 + 한 줄 (상태 수치·스트릭은 현황 스택이 담당) */}
       <div className="home-greeting">
-        <div className="home-greeting__top">
-          <div>
-            <h1 className="home-greeting__name">안녕하세요, {displayName}님</h1>
-            <p className="home-greeting__sub">{(() => {
-              const langs = profile?.learning_language || ['Japanese'];
-              const inProgress = (data?.seriesProgress || [])
-                .filter(s => langs.includes(s.language) && s.completed > 0 && s.next);
-              if (inProgress.length > 0) {
-                inProgress.sort((a, b) => (b.completed / b.total) - (a.completed / a.total));
-                const top = inProgress[0];
-                return `${top.level} ${top.series} ${top.completed}/${top.total} 진행 중이에요`;
-              }
-              if (dueCount > 0) return `${dueCount}개 단어가 복습을 기다려요`;
-              if ((data?.vocabByLang?.total || 0) === 0) return '첫 단어를 모아보러 가볼까요?';
-              return '오늘도 한 편 읽어볼까요?';
-            })()}</p>
-          </div>
-          {streak > 0 && (
-            <div className="streak-badge">
-              <span className="streak-badge__count">{streak}</span>
-              <span className="streak-badge__label">일 연속</span>
-            </div>
-          )}
-        </div>
-
-        {/* 컴팩트 상태: 수집 단어 + 복습 대기 */}
-        <div className="u-stat-line u-mt-md">
-          <span>단어 <strong>{data?.vocabByLang?.total ?? 0}</strong> 수집</span>
-          {dueCount > 0 && (
-            <span style={{ color: 'var(--warning)', fontWeight: 600 }}>
-              복습 대기 {dueCount}
-            </span>
-          )}
-        </div>
+        <h1 className="home-greeting__name">안녕하세요, {displayName}님</h1>
+        <p className="home-greeting__sub">{
+          dueCount > 0 ? `${dueCount}개 단어가 복습을 기다려요`
+          : (data?.vocabByLang?.total || 0) === 0 ? '첫 단어를 모아보러 가볼까요?'
+          : '오늘도 한 편 읽어볼까요?'
+        }</p>
       </div>
 
       {/* 강의 이어서 학습 — 챕터 진행 기록 기반 (미통과 재도전 우선) */}
@@ -451,56 +414,16 @@ export default function HomePage({ continueManifest = {}, refManifest = {} }) {
         );
       })()}
 
-      {/* 내 레벨 추천 자료 — 진행 중 시리즈가 없을 때만 */}
-      {(() => {
-        const inProgress = (data?.seriesProgress || []).some(s =>
-          (profile?.learning_language || ['Japanese']).includes(s.language) && s.completed > 0 && s.next
-        );
-        if (inProgress) return null;
-        const all = data?.publicMaterials || [];
-        const readIds = new Set(data?.readMaterialIds || []);
-        const langs = profile?.learning_language || ['Japanese'];
-        const vocabByLang = data?.vocabByLang || {};
-        const idealByLang = Object.fromEntries(langs.map(l => [l, getIdealLevel(l, vocabByLang[l] || 0)]));
-        const matched = all
-          .filter(m => !readIds.has(m.id))
-          .filter(m => langs.includes(m.language))
-          .map(m => {
-            const ideal = idealByLang[m.language];
-            const score = m.level?.startsWith(ideal) ? 100 : (m.level?.[0] === ideal?.[0] ? 50 : 10);
-            return { ...m, score };
-          })
-          .sort((a, b) => b.score - a.score)
-          .slice(0, 3);
-        if (matched.length === 0) return null;
-        return (
-          <div className="card home-card">
-            <h2 className="home-section-title" style={{ fontSize: '0.95rem', marginBottom: 12 }}>
-              내 레벨 추천 자료
-            </h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {matched.map(m => (
-                <Link
-                  key={m.id}
-                  href={`/viewer/${m.id}`}
-                  className="home-recent-item"
-                  style={{ textDecoration: 'none' }}
-                >
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {m.title}
-                    </div>
-                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 2 }}>
-                      {m.language === 'Japanese' ? '일본어' : '영어'} {m.level || '레벨 미정'}
-                    </div>
-                  </div>
-                  <span style={{ color: 'var(--primary)', fontSize: '0.82rem', flexShrink: 0 }}>읽기 →</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        );
-      })()}
+      {/* 복습하기 — 대기 단어가 있을 때 */}
+      {dueCount > 0 && (
+        <Link href="/vocab" className="lessons-continue">
+          <span className="lessons-continue__body">
+            <span className="lessons-continue__kicker">단어 복습</span>
+            <span className="lessons-continue__title">{dueCount}개 단어가 기다리고 있어요</span>
+          </span>
+          <span className="lessons-continue__meta">복습하기 →</span>
+        </Link>
+      )}
 
       {/* ③ 최근 읽던 자료 — compact 3개 */}
       {data?.recentProgress?.length > 0 && (
@@ -530,9 +453,6 @@ export default function HomePage({ continueManifest = {}, refManifest = {} }) {
               </Link>
             ))}
           </div>
-          <Link href="/materials" className="btn btn--ghost btn--sm" style={{ marginTop: 10, width: '100%', justifyContent: 'center' }}>
-            전체 자료 보기 →
-          </Link>
         </div>
       )}
 
