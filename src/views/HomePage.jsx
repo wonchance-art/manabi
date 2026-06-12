@@ -382,7 +382,7 @@ export default function HomePage({ continueManifest = {}, refManifest = {} }) {
         >
           <span className="lessons-continue__body">
             <span className="lessons-continue__kicker">
-              {continueCard.ref.name} 강의 {continueCard.mode === 'retry' ? '재도전 — 패턴 체크 미통과' : '이어서 학습'}
+              {continueCard.mode === 'retry' ? '강의 재도전 — 패턴 체크 미통과' : '강의 이어서 학습'} · {continueCard.ref.name}
             </span>
             <span className="lessons-continue__title">#{continueCard.ch.order} {continueCard.ch.title}</span>
           </span>
@@ -400,18 +400,13 @@ export default function HomePage({ continueManifest = {}, refManifest = {} }) {
         inProgress.sort((a, b) => (b.completed / b.total) - (a.completed / a.total));
         const top = inProgress[0];
         if (!top) return null;
-        const pct = Math.round((top.completed / top.total) * 100);
         return (
-          <Link href={`/viewer/${top.next.id}`} className="home-continue-card">
-            <div className="home-continue-card__head">
-              <span className="home-continue-card__hint">이어서 학습</span>
-              <span className="home-continue-card__progress">{top.completed} / {top.total}</span>
-            </div>
-            <div className="home-continue-card__series">{top.level} {top.series}</div>
-            <div className="home-continue-card__bar">
-              <div className="home-continue-card__bar-fill" style={{ width: `${pct}%` }} />
-            </div>
-            <div className="home-continue-card__next">{top.next.title}</div>
+          <Link href={`/viewer/${top.next.id}`} className="lessons-continue">
+            <span className="lessons-continue__body">
+              <span className="lessons-continue__kicker">자료 이어서 읽기 · {top.level} {top.series}</span>
+              <span className="lessons-continue__title">{top.next.title}</span>
+            </span>
+            <span className="lessons-continue__meta">{top.completed} / {top.total} →</span>
           </Link>
         );
       })()}
