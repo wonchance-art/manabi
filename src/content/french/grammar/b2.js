@@ -780,6 +780,7 @@ export default [
       {
         heading: "논증의 화석들 — force est de constater·toujours est-il que",
         pattern: "force est de constater que · toujours est-il que · il va de soi que + 직설법",
+        patternKo: "어순이 굳은 논증 관용구 — 도치형 그대로 암기",
         body:
           "에세이와 사설에는 **어순이 굳은 관용구**들이 살아 있어요. **force est de constater que**(인정하지 않을 수 없다), **toujours est-il que**(어쨌든 분명한 것은), **encore faut-il que + 접속법**(다만 ~해야 한다는 전제가 남는다) — 도치형 그대로 외우는 화석들이에요.\n\n" +
           "출처는 **selon / d'après + 명사**(~에 따르면), 자격은 **en tant que**(~로서: en tant que parent 부모로서)로 표시해요. 표의 표현을 서너 개만 장전해도 논술의 격이 달라집니다.",

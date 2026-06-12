@@ -507,6 +507,7 @@ export default [
       {
         heading: "형태 — 현재형에서 주어만 빼기 (그리고 -s 탈락)",
         pattern: "tu/nous/vous 현재형 - 주어 (-er 동사 tu형은 -s 탈락: Parle !)",
+        patternKo: "명령은 현재형에서 주어 빼기 — tu형은 -s 탈락",
         body:
           "**tu / nous / vous의 현재형에서 주어를 지우면** 끝이에요. nous형은 '~하자'(권유), vous형은 정중한 명령이 돼요.\n\n" +
           "단 하나의 함정: **-er 동사(그리고 aller)의 tu형에서는 끝의 -s를 떼요**. Tu parles → **Parle !** 발음은 어차피 묵음이라 똑같고, 순수하게 철자 규칙이에요.",
@@ -530,6 +531,7 @@ export default [
       {
         heading: "대명사의 자리 이동 — Lève-toi !",
         pattern: "긍정 명령: 동사-대명사 (Lève-toi !) · 부정 명령: 원위치 (Ne te lève pas !)",
+        patternKo: "긍정 명령이면 대명사가 동사 뒤로 (te는 toi로)",
         body:
           "평소 동사 앞이던 대명사가 **긍정 명령문에서는 동사 뒤로 이동**하고 하이픈으로 연결돼요. 이때 me/te는 힘이 실린 형태 **moi/toi**로 변신해요: Téléphonez-**moi** !\n\n" +
           "**부정 명령에서는 원위치** — 긍정이면 뒤, 부정이면 앞. 이 시소만 기억하세요.",
@@ -544,6 +546,7 @@ export default [
       {
         heading: "불규칙 둘 + 부드럽게 말하는 기술",
         pattern: "être → Sois / Soyez · avoir → Aie / Ayez",
+        patternKo: "être와 avoir의 불규칙 명령형 두 쌍",
         body:
           "명령법 불규칙은 사실상 둘만 챙기면 돼요: Sois sage !(얌전히 있어!), N'ayez pas peur !(무서워하지 마세요!)\n\n" +
           "명령형은 그 자체로 꽤 직설적이라, 실전에서는 **s'il vous plaît**를 곁들이거나 의문문으로 돌려 말해요(Tu peux fermer la porte ?). '문 닫아!'보다 '문 좀 닫아줄래요?'가 부드러운 것과 같은 감각이에요.",
@@ -570,6 +573,7 @@ export default [
       {
         heading: "y — '거기에'를 받는 한 글자",
         pattern: "à/dans/chez + 장소 → y + 동사 (J'y vais)",
+        patternKo: "'거기에'를 통째로 받는 대명사 y — 동사 앞에",
         body:
           "**y**는 '전치사 + 장소'를 통째로 받는 대명사예요. Tu vas à Paris ? — Oui, j'**y** vais. 위치는 목적 대명사처럼 **동사 앞**.\n\n" +
           "장소뿐 아니라 'à + 사물'도 받아요: Tu penses à ton examen ? — Oui, j'y pense.",
@@ -583,6 +587,7 @@ export default [
       {
         heading: "en — 'de + 명사'와 수량을 받는 한 글자",
         pattern: "de + 명사 → en (J'en bois · J'en ai deux)",
+        patternKo: "de + 명사와 수량을 받는 대명사 en",
         body:
           "**en**은 de가 이끄는 것들 — 특히 부분관사(du/de la/des)가 붙은 음식·음료를 받아요. Tu bois du café ? — Oui, j'**en** bois.\n\n" +
           "수량 표현에서 진가가 나와요: J'**en** ai deux.(두 명 있어.) 숫자만 말하면 안 되고 **en이 꼭 필요해요**.",
@@ -597,6 +602,7 @@ export default [
       {
         heading: "il y en a — 그리고 통문장 무기고",
         pattern: "il y a + en → il y en a [iljɑ̃na]",
+        patternKo: "il y a와 en의 합체 '그게 있어요' — 소리째 암기",
         body:
           "il y a와 en이 합체하면 **il y en a**(그게 (몇 개) 있다)예요. Il y a des croissants ? — Oui, il y **en** a trois. 분해하지 말고 소리째 삼키세요.\n\n" +
           "y와 en은 분석보다 **굳은 표현으로 먼저 입에 붙이는 게** 왕도예요. On y va !(가자!), Vas-y !(해봐!), J'en ai assez.(지긋지긋해!)",
@@ -623,6 +629,7 @@ export default [
       {
         heading: "관계대명사란 — 명사 뒤에 설명 달기",
         pattern: "명사 + qui/que + 설명 문장",
+        patternKo: "명사 뒤에 문장을 통째로 달아 설명하는 장치",
         body:
           "명사에 문장 하나를 통째로 달아 설명하는 장치예요. J'ai un ami. + Il étudie le français. → J'ai un ami **qui** étudie le français.\n\n" +
           "한국어는 꾸미는 문장이 명사 **앞**('공부하는 → 친구')이지만, 프랑스어는 명사 **뒤**예요 — 결론부터 말하고 설명은 나중에.",
@@ -634,6 +641,7 @@ export default [
       {
         heading: "qui — 뒤 문장의 '주어' 자리를 채워요",
         pattern: "qui + 동사 (주어 역할 · 축약 불가)",
+        patternKo: "관계절의 주어 자리를 채우는 qui — 바로 뒤에 동사",
         body:
           "**qui**는 관계절 안에서 **주어 역할**이라 **바로 뒤에 동사**가 와요. un ami **qui étudie**, le train **qui arrive** — 사람이든 사물이든 상관없어요.\n\n" +
           "qui는 모음 앞에서도 **절대 축약되지 않아요**: l'ami qui arrive (qu'arrive ✗).",
@@ -646,6 +654,7 @@ export default [
       {
         heading: "que — 뒤 문장의 '목적어' 자리를 채워요",
         pattern: "que + 주어 + 동사 (목적어 역할 · 모음 앞 qu')",
+        patternKo: "관계절의 목적어 자리를 채우는 que — 뒤에 주어+동사",
         body:
           "**que**는 관계절 안에서 **목적어 역할**이라 **뒤에 주어+동사**가 따라와요. le livre **que je lis**(내가 읽는 책), la femme **que tu connais**.\n\n" +
           "qui와 달리 que는 모음 앞에서 **qu'로 축약돼요**: le film **qu'**il aime. 축약되는 쪽이 que라는 것도 둘을 가르는 단서예요.",
@@ -659,6 +668,7 @@ export default [
       {
         heading: "구별법 총정리 — 사람/사물이 아니라 역할",
         pattern: "뒤에 동사 → qui · 뒤에 주어+동사 → que",
+        patternKo: "사람/사물이 아니라 빠진 자리의 역할로 구별",
         body:
           "최대 함정: qui/que는 영어 who/which처럼 **선행사가 사람이냐 사물이냐로 갈리지 않아요**. 기준은 **관계절 안에서 빠진 자리가 주어냐 목적어냐**예요.\n\n" +
           "실전 판별법은 관계대명사 **바로 뒤**를 보는 것 — 이 한 줄이면 90%가 해결돼요.",
@@ -706,6 +716,7 @@ export default [
       {
         heading: "ça fait ... que — 기간을 앞세워 강조하기",
         pattern: "Ça fait + 기간 + que + 현재형 (= Il y a + 기간 + que)",
+        patternKo: "'~한 지 ...됐다' — 기간을 문장 앞으로 빼 강조",
         body:
           "depuis와 같은 뜻을 **기간을 문장 맨 앞으로** 빼서 강조하는 구어 변형이에요. **Ça fait** trois ans **que** j'habite ici.(여기 산 지 3년 됐어요.)\n\n" +
           "**il y a + 기간 + que**도 같은 틀이에요. 셋 다 동사는 현재형 — '아직 진행 중'이라는 신호죠.",
@@ -719,6 +730,7 @@ export default [
       {
         heading: "pendant vs il y a — 닫힌 기간과 과거의 한 점",
         pattern: "pendant + 기간 (~ 동안) · 과거시제 + il y a + 기간 (~ 전에)",
+        patternKo: "끝난 기간은 pendant, '~전에'는 il y a",
         body:
           "**pendant**은 시작과 끝이 **닫힌 기간**이에요. J'ai habité à Busan **pendant** deux ans.(2년 동안 살았어요 — 지금은 아님.) 격식 글에서는 같은 자리에 **au cours de**(~ 동안에)도 자주 보여요.\n\n" +
           "**il y a + 기간**은 '~ 전에'라는 **과거의 한 점** — 과거시제와 단짝이에요. Il est parti **il y a** dix minutes.(10분 전에 떠났어요.)",
@@ -732,6 +744,7 @@ export default [
       {
         heading: "dans vs en — '~ 후에'와 '~ 만에'",
         pattern: "dans + 기간 (지금부터 ~ 후에) · en + 기간 (~ 만에, 걸려서)",
+        patternKo: "'~후에'는 dans, 소요 시간 '~만에'는 en",
         body:
           "**dans**은 **지금부터 잰 미래의 한 점**이에요. Le train part **dans** vingt minutes.(20분 후에 출발해요.) il y a(~ 전에)의 거울상이죠.\n\n" +
           "**en**은 **소요 시간** — '얼마나 걸려서'예요. Il a tout mangé **en** cinq minutes.(5분 만에 다 먹었어요.)",
@@ -745,6 +758,7 @@ export default [
       {
         heading: "시작점과 끝점 — à partir de·jusqu'à, 그리고 전체 지도",
         pattern: "à partir de + 시점 (~부터) · jusqu'à + 시점 (~까지)",
+        patternKo: "시작점 '~부터'와 끝점 '~까지'",
         body:
           "**à partir de**는 시작점(특히 미래의), **jusqu'à**는 끝점이에요. à와 le가 만나면 **jusqu'au** matin처럼 축약돼요.\n\n" +
           "이 챕터의 일곱 표현은 결국 **시간축 위의 위치와 방향**이 전부예요. 표 한 장으로 정리하면 끝납니다.",
@@ -798,6 +812,7 @@ export default [
       {
         heading: "단위와 개수 — un kilo de, quelques, plusieurs, chaque",
         pattern: "단위 명사 + de + 무관사 명사 · quelques(몇) · plusieurs(여러) · chaque(각, 매)",
+        patternKo: "단위·개수를 세는 부품들 — 단위 뒤도 맨 de",
         body:
           "장보기의 핵심 틀 — **un kilo de** tomates, **une bouteille de** vin, un morceau **de** fromage. 단위 뒤도 역시 맨 de예요.\n\n" +
           "개수가 흐릿할 땐 **quelques**(몇몇) < **plusieurs**(여럿)예요. **chaque**(각, ~마다)는 항상 **단수**와 짝입니다: chaque jour(매일).",
@@ -812,6 +827,7 @@ export default [
       {
         heading: "tout의 4형태 — 명사 앞에서 성수 일치",
         pattern: "tout / toute / tous / toutes + 정관사·소유사 + 명사",
+        patternKo: "'모든'의 tout는 명사의 성·수 따라 네 형태",
         body:
           "'모든, 전체'의 **tout**는 형용사처럼 **네 가지 형태**로 변해요. 뒤따르는 명사의 성·수가 결정해요: tout le temps, toute la journée, tous les jours, toutes les semaines.\n\n" +
           "특히 **tous les + 기간**은 '~마다'(반복)예요: tous les matins(매일 아침), toutes les dix minutes(10분마다).",
