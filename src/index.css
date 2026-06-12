@@ -5952,9 +5952,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   margin-bottom: 16px;
 }
 .home-greeting__name {
-  font-size: 1.15rem;
+  font-family: var(--font-serif);
+  font-size: 1.4rem;
   font-weight: 700;
-  margin-bottom: 3px;
+  word-break: keep-all;
+  margin-bottom: 4px;
 }
 .home-greeting__sub {
   font-size: 0.82rem;
@@ -7914,9 +7916,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .lessons-continue__label { font-size: 1.05rem; flex-shrink: 0; }
 .lessons-continue__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
 .lessons-continue__kicker {
-  font-size: 0.7rem; font-weight: 800;
+  font-size: 0.74rem; font-weight: 700;
   color: var(--text-muted);
-  text-transform: uppercase; letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
 }
 .lessons-continue__title {
   font-size: 0.95rem; font-weight: 700;
@@ -8383,7 +8385,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .review-tile:hover { background: var(--bg-elevated); }
 .review-tile__head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
-.review-tile__kicker { font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); }
+.review-tile__kicker { font-size: 0.74rem; font-weight: 700; color: var(--text-muted); letter-spacing: 0.02em; }
 .review-tile__due { font-size: 0.74rem; font-weight: 600; color: var(--warning); font-variant-numeric: tabular-nums; }
 .review-tile__cycle {
   flex: 1; display: flex; flex-direction: column;

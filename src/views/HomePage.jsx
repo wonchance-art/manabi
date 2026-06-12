@@ -369,10 +369,10 @@ export default function HomePage({ continueManifest = {}, refManifest = {} }) {
             border: '1px solid var(--border)',
             borderLeft: '3px solid var(--primary)',
           }}>
-            <div style={{ fontSize: '0.72rem', color: 'var(--primary)', fontWeight: 700, marginBottom: 6 }}>
-              오늘 이걸 읽어보세요
+            <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.02em', marginBottom: 6 }}>
+              오늘 읽기
             </div>
-            <h2 style={{ fontSize: '1.15rem', margin: '0 0 8px', lineHeight: 1.4 }}>
+            <h2 style={{ fontSize: '1.05rem', fontWeight: 700, margin: '0 0 8px', lineHeight: 1.45 }}>
               {suggestion.title}
             </h2>
             <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: 16 }}>

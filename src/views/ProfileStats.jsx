@@ -372,7 +372,6 @@ function LevelCoverageCard({ refManifest }) {
 /* ── 히트맵 — 좌→우로 진행되는 연속 주 스트립, 호버·터치 시 날짜·개수 ── */
 
 function HeatmapCard({ dayCounts }) {
-  const [sel, setSel] = useState(null);
   const today = new Date(); today.setHours(0, 0, 0, 0);
 
   // 최근 180일 — 가장 오른쪽 아래가 오늘 (좌→우 시간 진행)
@@ -399,27 +398,19 @@ function HeatmapCard({ dayCounts }) {
     <div className="card mypage-section">
       <div className="lvprog__head">
         <h2 className="mypage-section__title" style={{ margin: 0 }}>히트맵</h2>
-        <span className="lvprog__count">
-          {sel ? `${sel.label} · ${sel.count}개` : `${totalActive}일 · ${totalWords}개`}
-        </span>
+        <span className="lvprog__count">{totalActive}일 · {totalWords}개</span>
       </div>
       <div className="hm-scroll">
-        <div className="hm-strip" onMouseLeave={() => setSel(null)}>
+        <div className="hm-strip">
           {days.map((d, i) => {
             const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
             const n = dayCounts[key] || 0;
-            const label = `${d.getMonth() + 1}월 ${d.getDate()}일`;
             return (
-              <button
+              <span
                 key={i}
-                type="button"
                 className="hm-day"
                 style={{ background: colorOf(n) }}
-                title={`${label} · ${n}개`}
-                aria-label={`${label} ${n}개`}
-                onClick={() => setSel({ label, count: n })}
-                onMouseEnter={() => setSel({ label, count: n })}
-                onFocus={() => setSel({ label, count: n })}
+                title={`${d.getMonth() + 1}월 ${d.getDate()}일 · ${n}개`}
               />
             );
           })}

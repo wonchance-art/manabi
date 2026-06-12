@@ -192,19 +192,9 @@ export default function VocabStats({ vocab, profile, section }) {
               ))}
             </div>
             {(() => {
-              const weekTotal = vocab.filter(v => {
-                if (!v.next_review_at) return false;
-                const d = (new Date(v.next_review_at) - now) / 86400000;
-                return d < 7;
-              }).length;
-              if (weekTotal === 0) return (
-                <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '16px 0 0' }}>
-                  7일 안에 예정된 복습이 없어요.
-                </p>
-              );
               return (
                 <>
-                  <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: '16px 0 6px' }}>복습 스케줄 (7일)</p>
+                  <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: '16px 0 6px' }}>복습 스케줄</p>
                   <div className="forecast-chart">
                     {[...Array(7)].map((_, i) => {
                       const date = new Date();
