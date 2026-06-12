@@ -11,6 +11,7 @@ import { parseTitle } from '../lib/seriesMeta';
 import { getIdealLevel } from '../lib/levels';
 import { isPassed } from '../components/RefPatternCheck';
 import { pullProgress } from '../lib/refProgress';
+import ProfileStats from './ProfileStats';
 
 async function fetchHomeData(userId) {
   const todayStr   = new Date().toISOString().split('T')[0];
@@ -162,7 +163,7 @@ function ProgressBar({ pct, done }) {
   );
 }
 
-export default function HomePage({ continueManifest = {} }) {
+export default function HomePage({ continueManifest = {}, refManifest = {} }) {
   const { user, profile, fetchProfile } = useAuth();
   const router = useRouter();
 
@@ -506,21 +507,6 @@ export default function HomePage({ continueManifest = {} }) {
         );
       })()}
 
-      {/* 기억 상태 요약 + 통계 더 보기 */}
-      {dueCount > 0 || todayVocab > 0 ? (
-        <Link href="/profile" className="card" style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '14px 16px', textDecoration: 'none', color: 'var(--text-primary)',
-        }}>
-          <div style={{ display: 'flex', gap: 16, fontSize: '0.88rem' }}>
-            <span>수집 <strong>{todayVocab}</strong></span>
-            <span>복습 <strong>{todayReviews}</strong></span>
-            <span>완독 <strong>{todayReads}</strong></span>
-          </div>
-          <span style={{ fontSize: '0.82rem', color: 'var(--primary)', flexShrink: 0 }}>통계 →</span>
-        </Link>
-      ) : null}
-
       {/* ③ 최근 읽던 자료 — compact 3개 */}
       {data?.recentProgress?.length > 0 && (
         <div className="card home-card">
@@ -554,6 +540,9 @@ export default function HomePage({ continueManifest = {} }) {
           </Link>
         </div>
       )}
+
+      {/* 학습 현황 — 급수 진행·시리즈·기억 건강·히트맵 */}
+      <ProfileStats refManifest={refManifest} />
 
     </div>
   );

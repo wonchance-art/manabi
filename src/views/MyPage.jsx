@@ -9,10 +9,9 @@ import { useToast } from '../lib/ToastContext';
 import { LEVELS } from '../lib/constants';
 import Button from '../components/Button';
 import AccountSettings from '../components/AccountSettings';
-import ProfileStats from './ProfileStats';
 import InstallPrompt from '../components/InstallPrompt';
 
-export default function MyPage({ refManifest = {} }) {
+export default function MyPage() {
   const { user, profile, fetchProfile, signOut } = useAuth();
   const toast = useToast();
   const queryClient = useQueryClient();
@@ -131,8 +130,6 @@ export default function MyPage({ refManifest = {} }) {
         <Button variant="ghost" size="sm" onClick={signOut}>로그아웃</Button>
       </div>
 
-      {/* 학습 통계 — 페이지 통합 */}
-      <ProfileStats refManifest={refManifest} />
 
       {/* 학습 설정 */}
       <div className="card mypage-section">

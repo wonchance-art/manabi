@@ -948,7 +948,7 @@ export default function VocabPage() {
                     onChange={e => { const f = e.target.files?.[0]; if (f) csvImportMutation.mutate(f); e.target.value = ''; }}
                     style={{ display: 'none' }} />
                 </label>
-                <Link href="/profile" style={{ display: 'block', padding: '10px 14px', fontSize: '0.85rem', textDecoration: 'none', color: 'var(--text-primary)' }}>
+                <Link href="/home" style={{ display: 'block', padding: '10px 14px', fontSize: '0.85rem', textDecoration: 'none', color: 'var(--text-primary)' }}>
                   학습 통계
                 </Link>
               </div>
