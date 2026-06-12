@@ -331,9 +331,8 @@ export default function HomePage({ continueManifest = {}, refManifest = {} }) {
       <div className="home-greeting">
         <h1 className="home-greeting__name">안녕하세요, {displayName}님</h1>
         <p className="home-greeting__sub">{
-          dueCount > 0 ? `${dueCount}개 단어가 복습을 기다려요`
-          : (data?.vocabByLang?.total || 0) === 0 ? '첫 단어를 모아보러 가볼까요?'
-          : '오늘도 한 편 읽어볼까요?'
+          (data?.vocabByLang?.total || 0) === 0 ? '첫 단어를 모아보러 가볼까요?'
+          : '오늘도 한 걸음, 이어가 볼까요?'
         }</p>
       </div>
 
