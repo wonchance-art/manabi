@@ -2742,34 +2742,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 
 /* ── XP bar ── */
-.mypage-xp-bar { margin-bottom: 4px; }
-.mypage-xp-bar__info {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 6px;
-}
-.mypage-xp-bar__level {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--primary-light);
-}
-.mypage-xp-bar__total {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-}
-.mypage-xp-bar__track {
-  height: 6px;
-  background: var(--bg-secondary);
-  border-radius: var(--radius-full);
-  overflow: hidden;
-}
-.mypage-xp-bar__fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--primary), var(--primary-light));
-  border-radius: var(--radius-full);
-  transition: width 0.6s ease;
-}
+
 
 /* ── stat grid ── */
 .mypage-stat-grid {
@@ -2799,79 +2772,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 
 /* ── badge gallery ── */
-.mypage-badge-count {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--accent);
-}
-.mypage-badge-filters {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-.mypage-badge-filter {
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: 0.72rem;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.mypage-badge-filter:hover {
-  border-color: var(--border-hover);
-  color: var(--text-primary);
-}
-.mypage-badge-filter--active {
-  background: var(--primary-glow);
-  border-color: var(--primary);
-  color: var(--primary-light);
-  font-weight: 600;
-}
-.mypage-badge-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 10px;
-}
-.mypage-badge-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 14px 8px 10px;
-  border-radius: var(--radius-md);
-  background: var(--bg-secondary);
-  border: 1px solid transparent;
-  opacity: 0.4;
-  filter: grayscale(1);
-  transition: all 0.2s;
-}
-.mypage-badge-item--earned {
-  opacity: 1;
-  filter: none;
-  border-color: var(--border-hover);
-}
-.mypage-badge-item--earned:hover {
-  border-color: var(--accent);
-  transform: translateY(-2px);
-}
-.mypage-badge-item__icon {
-  font-size: 1.5rem;
-  margin-bottom: 4px;
-}
-.mypage-badge-item__name {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  line-height: 1.2;
-}
-.mypage-badge-item__desc {
-  font-size: 0.65rem;
-  color: var(--text-muted);
-  margin-top: 2px;
-  line-height: 1.3;
-}
+
 
 /* ========================================
    Landing Page
@@ -6083,43 +5984,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 
 /* MyPage Streak Freeze */
-.mypage-freeze {
-  margin-top: 12px;
-  padding: 12px 14px;
-  background: var(--bg-secondary);
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-.mypage-freeze__info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1;
-  min-width: 0;
-}
-.mypage-freeze__icon {
-  font-size: 1.4rem;
-  flex-shrink: 0;
-}
-.mypage-freeze__title {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-.mypage-freeze__desc {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
-.mypage-freeze__count {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--primary);
-  white-space: nowrap;
-  margin-left: auto;
-}
+
 
 @keyframes fireFlicker {
   0%, 100% { transform: scale(1); }
@@ -8473,3 +8338,64 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   padding: 4px 6px; border-radius: var(--radius-sm);
 }
 .cohort-team__remove:hover { color: var(--danger, #e03131); background: var(--bg-secondary); }
+
+/* ========= 프로필 — 급수 진행·시리즈 진척도 ========= */
+.lvprog__head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; flex-wrap: wrap; margin-bottom: 12px;
+}
+.lvprog__tabs { display: flex; gap: 4px; }
+.lvprog__rows { display: flex; flex-direction: column; gap: 9px; }
+.lvprog__row { display: flex; align-items: center; gap: 10px; }
+.lvprog__key {
+  font-family: var(--font-serif);
+  font-size: 1.05rem; font-weight: 700; line-height: 1;
+  min-width: 2.4ch; color: var(--text-primary);
+}
+.lvprog__key.is-done { color: var(--accent); }
+.lvprog__series {
+  font-size: 0.82rem; font-weight: 600; min-width: 100px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.lvprog__series.is-done { color: var(--accent); }
+.lvprog__bar {
+  flex: 1; height: 7px; position: relative;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-full); overflow: hidden;
+}
+.lvprog__bar-read, .lvprog__bar-pass {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  border-radius: var(--radius-full);
+  transition: width 0.5s ease;
+}
+.lvprog__bar-read { background: var(--primary-glow); }
+.lvprog__bar-pass { background: var(--primary); }
+.lvprog__count {
+  font-size: 0.76rem; color: var(--text-muted);
+  min-width: 3.6em; text-align: right;
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.lvprog__vocab {
+  font-size: 0.72rem; color: var(--text-muted);
+  min-width: 7.5em; text-align: right;
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.lvprog__vocab.is-done { color: var(--accent); font-weight: 700; }
+.lvprog__next {
+  font-size: 0.76rem; font-weight: 600; color: var(--primary);
+  text-decoration: none; min-width: 5.4em; text-align: right; white-space: nowrap;
+}
+.lvprog__next:hover { text-decoration: underline; }
+.lvprog__legend {
+  display: flex; gap: 14px; flex-wrap: wrap;
+  font-size: 0.7rem; color: var(--text-muted); margin-top: 10px;
+}
+.lvprog__dot {
+  display: inline-block; width: 8px; height: 8px;
+  border-radius: 2px; margin-right: 4px;
+}
+.lvprog__dot--read { background: var(--primary-glow); }
+.lvprog__dot--pass { background: var(--primary); }
+@media (max-width: 600px) {
+  .lvprog__vocab { display: none; }
+}

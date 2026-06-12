@@ -508,7 +508,7 @@ export default function HomePage({ continueManifest = {} }) {
 
       {/* 기억 상태 요약 + 통계 더 보기 */}
       {dueCount > 0 || todayVocab > 0 ? (
-        <Link href="/stats" className="card" style={{
+        <Link href="/profile" className="card" style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '14px 16px', textDecoration: 'none', color: 'var(--text-primary)',
         }}>

@@ -3,7 +3,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
 import { recordActivity } from './streak';
 import { awardXP, XP_REWARDS } from './xp';
-import { checkAndAwardAchievements } from './achievements';
 import { friendlyToastMessage } from './errorMessage';
 
 /**
@@ -50,9 +49,6 @@ export function useReadingCompletion({
       try {
         await awardXP(user.id, XP_REWARDS.MATERIAL_COMPLETED, prevXP);
         checkLevelUp(prevXP, prevXP + XP_REWARDS.MATERIAL_COMPLETED);
-        checkAndAwardAchievements(user.id, { xp: prevXP, streak: profile?.streak_count }).then(newBadges => {
-          newBadges.forEach(b => celebrate({ type: 'achievement', icon: b.icon, name: b.name, desc: b.desc }));
-        });
       } catch {
         console.error('XP 부여 실패 — 완독 기록은 저장됨');
       }

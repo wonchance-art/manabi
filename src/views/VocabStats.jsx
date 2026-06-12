@@ -6,11 +6,13 @@ import { detectLang } from '../lib/constants';
 const LEVEL_MILESTONES = {
   Japanese: { 'N5 기초': 800, 'N4 기본': 1500, 'N3 중급': 3750, 'N2 상급': 6000, 'N1 심화': 10000 },
   English:  { 'A1 기초': 500, 'A2 초급': 1000, 'B1 중급': 2000, 'B2 상급': 4000, 'C1 고급': 7000, 'C2 마스터': 10000 },
+  French:   { 'A1 기초': 500, 'A2 초급': 1000, 'B1 중급': 2000, 'B2 상급': 4000, 'C1 고급': 7000, 'C2 마스터': 10000 },
 };
 
 const LANG_META = {
-  Japanese: { label: '일본어', coverageTitle: 'JLPT 급수 커버리지', defaultTarget: 'N3 중급' },
-  English:  { label: '영어',   coverageTitle: 'CEFR 급수 커버리지', defaultTarget: 'B1 중급' },
+  Japanese: { label: '일본어',   coverageTitle: 'JLPT 급수 커버리지', defaultTarget: 'N3 중급' },
+  English:  { label: '영어',     coverageTitle: 'CEFR 급수 커버리지', defaultTarget: 'B1 중급' },
+  French:   { label: '프랑스어', coverageTitle: 'CEFR 급수 커버리지', defaultTarget: 'B1 중급' },
 };
 
 function getLangVocab(vocab, lang) {
@@ -46,7 +48,7 @@ function LangTabs({ activeLangs, current, onChange }) {
 // section prop: undefined = 전체, 'levels' = 진행도+커버리지, 'memory' = 기억건강+스케줄, 'hardwords' = 요주의
 export default function VocabStats({ vocab, profile, section }) {
   const profileLangs = profile?.learning_language || [];
-  const activeLangs = ['Japanese', 'English'].filter(l =>
+  const activeLangs = ['Japanese', 'English', 'French'].filter(l =>
     profileLangs.includes(l) || vocab.some(v => (v.language === l) || (!v.language && detectLang(v.word_text) === l))
   );
 
@@ -66,7 +68,9 @@ export default function VocabStats({ vocab, profile, section }) {
         const langVocab = getLangVocab(vocab, effLevelLang);
         const total = langVocab.length;
         const mastered = langVocab.filter(v => (v.interval ?? 0) >= 14).length;
-        const targetLevel = (effLevelLang === 'Japanese' ? profile?.learning_level_japanese : profile?.learning_level_english) || meta.defaultTarget;
+        const targetLevel = (effLevelLang === 'Japanese' ? profile?.learning_level_japanese
+          : effLevelLang === 'English' ? profile?.learning_level_english
+          : profile?.learning_level_french) || meta.defaultTarget;
         const targetCount = LEVEL_MILESTONES[effLevelLang][targetLevel] || Object.values(LEVEL_MILESTONES[effLevelLang])[0];
         const pct = Math.min(100, Math.round((total / targetCount) * 100));
         const barColor = effLevelLang === 'Japanese' ? 'var(--primary-light)' : 'var(--accent)';
