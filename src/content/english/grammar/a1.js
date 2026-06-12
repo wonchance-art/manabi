@@ -125,6 +125,7 @@ export default [
       {
         heading: "-s의 철자와 발음",
         pattern: "무성음 뒤 [s] · 유성음 뒤 [z] · 쉭쉭 소리 뒤 [ɪz]",
+        patternKo: "앞 소리에 따라 -s 발음이 셋으로 갈려요",
         body:
           "대부분은 그냥 -s를 붙이고, 철자 규칙은 표 네 줄이 전부예요. 발음은 **앞 소리가 무성음이면 [s], 유성음이면 [z], 쉭쉭 소리(s/sh/ch) 뒤면 [ɪz]** — 이 삼분법 하나면 돼요.",
         table: {
@@ -255,6 +256,7 @@ export default [
       {
         heading: "복수형 만들기 — 철자와 발음",
         pattern: "+s · +es · y→ies · 불규칙(men, children, feet)",
+        patternKo: "복수형 철자 규칙 + 통째로 외울 불규칙들",
         body:
           "철자 규칙은 3인칭 -s와 똑같고, 발음도 같은 삼분법이에요 — 무성음 뒤 [s], 유성음 뒤 [z], 쉭쉭 소리 뒤 [ɪz]. 다만 자주 쓰는 **불규칙 복수** 몇 개는 통째로 외워야 해요.",
         table: {
@@ -294,6 +296,7 @@ export default [
       {
         heading: "many / much / a lot of — 짝을 맞춰 쓰기",
         pattern: "many + 가산 복수 · much + 불가산 · a lot of = 만능",
+        patternKo: "셀 수 있으면 many, 못 세면 much, 헷갈리면 a lot of",
         body:
           "'많다'도 가산/불가산에 따라 갈라져요 — **many** + 셀 수 있는 복수, **much** + 셀 수 없는 명사(주로 부정·의문문), **a lot of**는 아무거나.\n\n" +
           "헷갈리면 a lot of를 쓰세요 — 틀릴 일이 없는 안전한 선택이에요. some/any도 가산·불가산 모두에 붙어서 편해요.",
@@ -358,6 +361,7 @@ export default [
       {
         heading: "소유격 my/your/his/her — 명사 앞의 옷",
         pattern: "소유격 + 명사 (my book) · 이름 + 's (Minsu's bag)",
+        patternKo: "'~의'는 반드시 명사 앞에, 이름에는 's",
         body:
           "소유격은 **반드시 명사 앞**에 붙어요 — my book, her phone. 영어는 한국어보다 소유격을 훨씬 부지런히 써서, '손 씻어'도 'Wash **your** hands.'예요.\n\n" +
           "사람 이름에는 **'s**를 붙여요 — Minsu's bag(민수의 가방). 이 's는 한국어 '의'와 거의 같은 감각이라 쉬워요.",
@@ -442,6 +446,7 @@ export default [
       {
         heading: "-ing 철자 규칙",
         pattern: "+ing · e 탈락(make→making) · 자음 겹침(run→running)",
+        patternKo: "-ing 붙일 때 e는 빼고, 짧은 모음 뒤 자음은 겹쳐요",
         body: "-ing 붙이는 철자 규칙은 표의 네 줄이 전부예요.",
         table: {
           caption: "-ing 만들기",
@@ -504,6 +509,7 @@ export default [
       {
         heading: "의문문 — Do/Does를 문 앞에 세우기",
         pattern: "(의문사 +) Do/Does + 주어 + 동사원형 ~?",
+        patternKo: "물을 땐 Do/Does를 맨 앞에, 의문사는 그보다 더 앞에",
         body:
           "대답은 do로 받아요 — Yes, I do. / No, I don't. 동사를 반복하는 대신 do가 동사를 대신해주는 거예요.\n\n" +
           "what, where, when 같은 의문사가 있으면 **의문사 + do/does + 주어 + 동사원형** — 의문사가 맨 앞, 그다음은 평소 의문문 그대로예요.",
@@ -592,6 +598,7 @@ export default [
       {
         heading: "장소의 in/on/at",
         pattern: "at the station(지점) · on the wall(표면) · in Seoul(내부)",
+        patternKo: "장소도 같은 그림 — 같은 곳도 보는 눈에 따라 전치사가 바뀜",
         body:
           "장소도 같은 그림이에요 — **at + 지점**(at the door, at school), **on + 표면·선**(on the wall, on the second floor), **in + 내부**(in my bag, in Seoul, in Korea).\n\n" +
           "재미있는 건 **같은 장소도 보는 눈에 따라 전치사가 바뀐다**는 거예요. 'at school'은 학교를 점으로 본 것, 'in the school'은 건물 내부에 있다는 뜻이에요.",

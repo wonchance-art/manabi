@@ -16,6 +16,7 @@ export default [
       {
         heading: "접속법 과거 — 평가 시점보다 앞선 일",
         pattern: "avoir/être 접속법 현재 + 과거분사 (que tu sois venu)",
+        patternKo: "접속법 과거 — 평가 시점보다 먼저 일어난 일",
         body:
           "평가하는 내용이 **이미 일어난 일**이면 **접속법 과거(subjonctif passé)**를 써요. 복합과거의 접속법 버전인 셈이죠.\n\n" +
           "Je suis content que tu **sois venu**(네가 와 줘서 기뻐) — 기쁜 건 지금, 온 건 그 전. **주절과 종속절의 시간 차이**가 핵심이에요.",
@@ -38,6 +39,7 @@ export default [
       {
         heading: "접속법을 부르는 접속사 — bien que, pour que, avant que...",
         pattern: "bien que · pour que · avant que · jusqu'à ce que · à moins que + 접속법",
+        patternKo: "양보·목적·시간·조건 접속사 뒤에는 접속법",
         body:
           "B2에서는 **접속사**가 접속법을 부르는 경우를 정리해요. **양보**(bien que, quoique), **목적**(pour que, afin que), **시간**(avant que, jusqu'à ce que), **조건·제외**(à condition que, à moins que, sans que).\n\n" +
           "공통점은 '아직 사실로 확정되지 않았거나, 사실 여부와 무관하게 틀로 제시되는' 내용이라는 것이에요.",
@@ -53,6 +55,7 @@ export default [
       {
         heading: "직설법과 갈리는 미묘한 경계 — penser que의 두 얼굴",
         pattern: "Je pense que + 직설법 · Je ne pense pas que + 접속법",
+        patternKo: "penser류 — 긍정이면 직설법, 부정·의문이면 접속법",
         body:
           "penser/croire/trouver que는 **긍정문이냐 부정·의문문이냐에 따라 법이 갈려요**. 부정하는 순간 que절은 사실이 아니라 의심의 대상이 되니까요.\n\n" +
           "도치 의문문(Penses-tu qu'il **ait** raison ?)도 같은 원리로 접속법이 격식이에요. il est certain que(직설법) ↔ il n'est pas certain que(접속법)도 같은 패턴입니다.",
@@ -67,6 +70,7 @@ export default [
       {
         heading: "최상급과 유일성 뒤의 접속법",
         pattern: "최상급 / le seul / le premier + 관계절 → 접속법",
+        patternKo: "최상급·유일성 표현 뒤 관계절에는 접속법",
         body:
           "**최상급이나 유일성 표현 뒤의 관계절**에는 접속법이 자주 와요. C'est le meilleur film que j'**aie** vu — '내가 본 것 중에서'라는 주관적 평가의 테두리 신호예요.\n\n" +
           "직설법(que j'ai vu)도 틀리지는 않지만, 접속법이 더 다듬어진 인상을 줘요.",
@@ -114,6 +118,7 @@ export default [
       {
         heading: "①형 — si + 현재: 충분히 일어날 수 있는 일",
         pattern: "si + 현재, 미래/현재/명령문",
+        patternKo: "실현 가능한 조건 — si + 현재 (si절에 미래 금지)",
         body:
           "조건이 **현실적으로 가능**할 때는 si절에 현재를 쓰고, 주절에는 미래·현재·명령문이 자유롭게 와요. 이미 아는 시제의 조합일 뿐이죠.\n\n" +
           "si + il(s)는 **s'il(s)**로 축약되지만, si + elle은 si elle 그대로라는 것만 챙기세요.",
@@ -139,6 +144,7 @@ export default [
       {
         heading: "③형 — si + 대과거와 조건법 과거: 돌이킬 수 없는 일",
         pattern: "si + plus-que-parfait, conditionnel passé (avoir/être 조건법 + 과거분사)",
+        patternKo: "~했더라면 ...했을 텐데 — 과거의 비현실 가정",
         body:
           "**이미 지나간 과거를 되돌리는 상상**이에요. 조건법 과거는 avoir/être의 조건법 현재 + 과거분사: j'aurais fait(했을 텐데), je serais venu(e).\n\n" +
           "가정문 밖에서도 후회와 비난의 단골이에요: **j'aurais dû** + 부정사(~했어야 했는데), **tu aurais pu** + 부정사(~할 수도 있었잖아).",
@@ -167,6 +173,7 @@ export default [
       {
         heading: "-ant 삼형제 — 한눈에 구별하기",
         pattern: "① 현재분사 (불변·문어) · ② en + -ant (제롱디프) · ③ 동사적 형용사 (성수 일치)",
+        patternKo: "-ant 삼형제 구별 — en 유무·일치 여부가 신호",
         body:
           "B1의 제롱디프 외에도 -ant 형태는 셋으로 갈라져요. **현재분사**는 en 없이 쓰는 동사 성격의 -ant(불변), **제롱디프**는 en + -ant(부사 역할), **동사적 형용사**는 완전히 형용사가 된 -ant(성·수 일치)예요.\n\n" +
           "구별 신호: en이 붙으면 ②, 명사를 꾸미며 일치하면 ③, 목적어·보어를 끌고 다니면서 불변이면 ①.",
@@ -180,6 +187,7 @@ export default [
       {
         heading: "현재분사 — 관계절을 압축하는 문어체 도구",
         pattern: "qui 관계절 → 현재분사 (les étudiants ayant fini)",
+        patternKo: "qui 관계절을 압축하는 현재분사 (불변·문어체)",
         body:
           "현재분사의 주 무대는 **글**이에요. qui 관계절을 한 단어로 압축하고, 원인 분사구문(**Étant** malade, il n'est pas venu)으로도 애용돼요. 회화에서는 Comme절로 풀어 말하는 게 보통이에요.\n\n" +
           "현재분사는 **절대 일치하지 않아요**. une femme parlant trois langues — 이 '불변'이 형용사와의 결정적 차이예요.",
@@ -192,6 +200,7 @@ export default [
       {
         heading: "동사적 형용사 — 철자까지 달라지는 경우",
         pattern: "분사 fatiguant ↔ 형용사 fatigant",
+        patternKo: "분사와 동사적 형용사의 철자가 갈리는 쌍",
         body:
           "일부 동사는 **현재분사와 동사적 형용사의 철자가 달라요**. 분사는 동사 활용(nous형)을 따르고, 형용사는 라틴어식 철자를 따로 갖기 때문이에요.\n\n" +
           "Un travail **fatigant**(피곤하게 하는 일 — 형용사, u 탈락) vs Ce travail, **fatiguant** tout le monde, ...(모두를 지치게 하면서 — 분사, u 유지).",
