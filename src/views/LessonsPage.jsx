@@ -91,7 +91,7 @@ export default function LessonsPage({ refManifest = {} }) {
   }, [user?.id]);
 
   const refLang = refManifest[langFilter];
-  const levelOptions = refLang ? refLang.levels.map(l => l.label) : [];
+  const levelOptions = refLang ? refLang.levels.map(l => ({ value: l.label, short: l.short || l.key })) : [];
 
   // 마지막 선택 언어 저장 — [강의] 재진입 시 유지
   useEffect(() => {
@@ -185,15 +185,15 @@ export default function LessonsPage({ refManifest = {} }) {
             onClick={() => setLevelFilter('all')}
             className={`chip ${levelFilter === 'all' ? 'chip--active' : ''}`}
           >
-            전체 난이도
+            전체
           </button>
           {levelOptions.map(lvl => (
             <button
-              key={lvl}
-              onClick={() => setLevelFilter(lvl)}
-              className={`chip ${levelFilter === lvl ? 'chip--active' : ''}`}
+              key={lvl.value}
+              onClick={() => setLevelFilter(lvl.value)}
+              className={`chip ${levelFilter === lvl.value ? 'chip--active' : ''}`}
             >
-              {lvl}
+              {lvl.short}
             </button>
           ))}
         </div>
