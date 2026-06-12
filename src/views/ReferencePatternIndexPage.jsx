@@ -273,8 +273,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
         <nav className="bk-themenav" aria-label="주제 바로가기">
           {filteredThemes.map((theme, ti) => (
             <a key={theme.name} href={`#bk-theme-${ti}`} className="bk-themenav__chip">
-              {theme.icon && <span aria-hidden="true">{theme.icon} </span>}
-              {theme.name}
+                            {theme.name}
             </a>
           ))}
         </nav>
@@ -284,8 +283,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
       {filteredThemes.map((theme, ti) => (
         <section key={theme.name} id={`bk-theme-${ti}`} style={{ marginBottom: 26, scrollMarginTop: 80 }}>
           <h2 className="fr-vlist-theme">
-            {theme.icon && <span aria-hidden="true">{theme.icon} </span>}
-            {theme.name}
+                        {theme.name}
             <span className="fr-vlist-theme__count">{theme.items.length}</span>
           </h2>
           <ul className="fr-vlist">
