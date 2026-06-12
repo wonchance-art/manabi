@@ -160,7 +160,7 @@ export default function LessonsPage({ refManifest = {} }) {
     <div className="page-container">
       <div className="page-header page-header--row">
         <div>
-          <h1 className="page-header__title">강의</h1>
+          <h1 className="page-header__title">교재</h1>
           <p className="page-header__subtitle">학습 순서대로 배치된 문법·어휘 레퍼런스</p>
         </div>
       </div>

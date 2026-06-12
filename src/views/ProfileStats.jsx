@@ -5,7 +5,9 @@ import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
+import { useToast } from '../lib/ToastContext';
 import { isPassed } from '../components/RefPatternCheck';
+import Button from '../components/Button';
 import VocabStats from './VocabStats';
 
 const LANG_KO = { Japanese: '일본어', English: '영어', French: '프랑스어' };
@@ -20,14 +22,12 @@ const VOCAB_TARGETS = {
 async function fetchProfileStats(userId) {
   const heatmapStart = new Date();
   heatmapStart.setHours(0, 0, 0, 0);
-  heatmapStart.setDate(heatmapStart.getDate() - 224);
+  heatmapStart.setDate(heatmapStart.getDate() - 364);
 
   const [
-    { count: readCount },
     { data: heatmapRows },
     { data: allVocab },
   ] = await Promise.all([
-    supabase.from('reading_progress').select('*', { count: 'exact', head: true }).eq('user_id', userId).eq('is_completed', true),
     supabase.from('user_vocabulary').select('created_at').eq('user_id', userId).gte('created_at', heatmapStart.toISOString()),
     supabase.from('user_vocabulary').select('*').eq('user_id', userId),
   ]);
@@ -38,15 +38,10 @@ async function fetchProfileStats(userId) {
     heatmapDayCounts[day] = (heatmapDayCounts[day] || 0) + 1;
   }
 
-  const vocab = allVocab || [];
-
-  return {
-    vocab,
-    mastered: vocab.filter(v => (v.interval ?? 0) > 14).length,
-    readCount: readCount || 0,
-    heatmapDayCounts,
-  };
+  return { vocab: allVocab || [], heatmapDayCounts };
 }
+
+const isToday = ts => ts && new Date(ts).toDateString() === new Date().toDateString();
 
 export default function ProfileStats({ refManifest = {} }) {
   const { user, profile } = useAuth();
@@ -61,26 +56,20 @@ export default function ProfileStats({ refManifest = {} }) {
   if (!user) return null;
   const vocab = data?.vocab || [];
   const streak = profile?.streak_count ?? 0;
-  const hasHardWords = vocab.filter(v => (v.repetitions || 0) >= 2).length > 0;
   const hasHeatmap = data?.heatmapDayCounts && Object.keys(data.heatmapDayCounts).length > 0;
-
-  // 벤토 배치: 좌측 통계 2×2 블록 + 우측 단어 복습 라이브 타일 / 진도·기억 건강 / 요주의·히트맵
-  const stats = [
-    { label: '수집', value: vocab.length },
-    { label: '숙련', value: data?.mastered ?? '–' },
-    { label: '완독', value: data?.readCount ?? '–' },
-    { label: '스트릭', value: streak ? `${streak}일` : '–' },
-  ];
+  const todayActivity =
+    vocab.filter(v => isToday(v.created_at)).length +
+    vocab.filter(v => isToday(v.last_reviewed_at)).length;
 
   return (
     <div className="bento">
-      <StatTile {...stats[0]} />
-      <StatTile {...stats[1]} />
+      <GoalTile vocab={vocab} />
+      <DdayTile />
       <div className="bento-item bento--2x2">
         <ReviewTile vocab={vocab} />
       </div>
-      <StatTile {...stats[2]} />
-      <StatTile {...stats[3]} />
+      <StatTile label="스트릭" value={streak ? `${streak}일` : '–'} />
+      <StatTile label="오늘 활동" value={todayActivity} />
       <div className="bento-item bento--2x2">
         <LevelCoverageCard refManifest={refManifest} vocab={vocab} />
       </div>
@@ -89,16 +78,177 @@ export default function ProfileStats({ refManifest = {} }) {
           <VocabStats vocab={vocab} profile={profile} section="memory" />
         </div>
       )}
-      {hasHardWords && (
-        <div className="bento-item bento--2x2">
-          <VocabStats vocab={vocab} profile={profile} section="hardwords" />
-        </div>
-      )}
       {hasHeatmap && (
-        <div className="bento-item bento--2x2">
+        <div className="bento-item bento--4x4">
           <HeatmapCard dayCounts={data.heatmapDayCounts} />
         </div>
       )}
+    </div>
+  );
+}
+
+function StatTile({ label, value }) {
+  return (
+    <div className="bento-item bento--1x1 card bento-stat">
+      <span className="mypage-stat-cell__value">{value}</span>
+      <span className="mypage-stat-cell__label">{label}</span>
+    </div>
+  );
+}
+
+/* ── 목표 타일 — 오늘 달성률, 누르면 일일 목표 설정 ── */
+
+function GoalTile({ vocab }) {
+  const { user, profile, fetchProfile } = useAuth();
+  const toast = useToast();
+  const [open, setOpen] = useState(false);
+  const [goalReview, setGoalReview] = useState(5);
+  const [goalWords, setGoalWords] = useState(5);
+  const [goalRead, setGoalRead] = useState(1);
+  const [busy, setBusy] = useState(false);
+
+  const gReview = profile?.goal_review ?? 5;
+  const gWords = profile?.goal_words ?? 5;
+  const reviewsToday = vocab.filter(v => isToday(v.last_reviewed_at)).length;
+  const wordsToday = vocab.filter(v => isToday(v.created_at)).length;
+  // 달성률 — 복습·수집 목표 기준 (완독은 목표 설정만 지원)
+  const pct = Math.round(
+    (Math.min(1, reviewsToday / Math.max(gReview, 1)) + Math.min(1, wordsToday / Math.max(gWords, 1))) / 2 * 100
+  );
+
+  function openModal() {
+    setGoalReview(profile?.goal_review ?? 5);
+    setGoalWords(profile?.goal_words ?? 5);
+    setGoalRead(profile?.goal_read ?? 1);
+    setOpen(true);
+  }
+
+  async function save() {
+    if (busy) return;
+    setBusy(true);
+    const { error } = await supabase.from('profiles').update({
+      goal_review: Math.max(1, goalReview),
+      goal_words: Math.max(1, goalWords),
+      goal_read: Math.max(1, goalRead),
+    }).eq('id', user.id);
+    setBusy(false);
+    if (error) { toast('저장 실패 — ' + error.message, 'error'); return; }
+    fetchProfile(user.id, user.user_metadata);
+    toast('일일 목표를 저장했어요.', 'success');
+    setOpen(false);
+  }
+
+  return (
+    <>
+      <button type="button" className="bento-item bento--1x1 card bento-stat bento-stat--btn" onClick={openModal}>
+        <span className="mypage-stat-cell__value">{pct}%</span>
+        <span className="mypage-stat-cell__label">오늘 목표</span>
+      </button>
+      {open && (
+        <TileModal title="일일 목표" onClose={() => setOpen(false)}>
+          {[
+            { label: '단어 복습', value: goalReview, set: setGoalReview, max: 50 },
+            { label: '단어 수집', value: goalWords, set: setGoalWords, max: 30 },
+            { label: '자료 완독', value: goalRead, set: setGoalRead, max: 5 },
+          ].map(g => (
+            <div key={g.label} className="tile-modal__row">
+              <span>{g.label}</span>
+              <input type="number" min={1} max={g.max} className="form-input tile-modal__num"
+                value={g.value} onChange={e => g.set(Math.max(1, Math.min(g.max, Number(e.target.value) || 1)))} />
+            </div>
+          ))}
+          <Button size="sm" onClick={save} disabled={busy}>{busy ? '저장 중...' : '저장'}</Button>
+        </TileModal>
+      )}
+    </>
+  );
+}
+
+/* ── D-Day 타일 — 시험일 등 목표일 설정 (localStorage) ── */
+
+function DdayTile() {
+  const [dday, setDday] = useState(null);
+  const [mounted, setMounted] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [date, setDate] = useState('');
+  const [label, setLabel] = useState('');
+
+  useEffect(() => {
+    setMounted(true);
+    try { setDday(JSON.parse(localStorage.getItem('as_dday') || 'null')); } catch {}
+  }, []);
+
+  const diff = useMemo(() => {
+    if (!dday?.date) return null;
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const target = new Date(dday.date); target.setHours(0, 0, 0, 0);
+    return Math.round((target - today) / 86400000);
+  }, [dday]);
+
+  function openModal() {
+    setDate(dday?.date || '');
+    setLabel(dday?.label || '');
+    setOpen(true);
+  }
+
+  function save() {
+    if (!date) return;
+    const next = { date, label: label.trim() };
+    localStorage.setItem('as_dday', JSON.stringify(next));
+    setDday(next);
+    setOpen(false);
+  }
+
+  function clear() {
+    localStorage.removeItem('as_dday');
+    setDday(null);
+    setOpen(false);
+  }
+
+  const value = !mounted || !dday ? '설정'
+    : diff === 0 ? 'D-Day'
+    : diff > 0 ? `D-${diff}`
+    : `D+${Math.abs(diff)}`;
+
+  return (
+    <>
+      <button type="button" className="bento-item bento--1x1 card bento-stat bento-stat--btn" onClick={openModal}>
+        <span className="mypage-stat-cell__value">{value}</span>
+        <span className="mypage-stat-cell__label">{(mounted && dday?.label) || 'D-Day'}</span>
+      </button>
+      {open && (
+        <TileModal title="D-Day 설정" onClose={() => setOpen(false)}>
+          <div className="tile-modal__row">
+            <span>날짜</span>
+            <input type="date" className="form-input tile-modal__num" style={{ maxWidth: 160 }}
+              value={date} onChange={e => setDate(e.target.value)} />
+          </div>
+          <div className="tile-modal__row">
+            <span>이름</span>
+            <input className="form-input tile-modal__num" style={{ maxWidth: 160 }} maxLength={12}
+              placeholder="예: JLPT N3" value={label} onChange={e => setLabel(e.target.value)} />
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <Button size="sm" onClick={save} disabled={!date} style={{ flex: 1 }}>저장</Button>
+            {dday && <Button size="sm" variant="secondary" onClick={clear} style={{ flex: 1 }}>삭제</Button>}
+          </div>
+        </TileModal>
+      )}
+    </>
+  );
+}
+
+/** 타일 공용 미니 모달 */
+function TileModal({ title, onClose, children }) {
+  return (
+    <div className="tile-modal__overlay" onClick={onClose} role="dialog" aria-label={title}>
+      <div className="card tile-modal" onClick={e => e.stopPropagation()}>
+        <div className="tile-modal__head">
+          <h3 className="tile-modal__title">{title}</h3>
+          <button type="button" className="tile-modal__close" onClick={onClose} aria-label="닫기">✕</button>
+        </div>
+        {children}
+      </div>
     </div>
   );
 }
@@ -155,16 +305,7 @@ function ReviewTile({ vocab }) {
   );
 }
 
-function StatTile({ label, value }) {
-  return (
-    <div className="bento-item bento--1x1 card bento-stat">
-      <span className="mypage-stat-cell__value">{value}</span>
-      <span className="mypage-stat-cell__label">{label}</span>
-    </div>
-  );
-}
-
-/* ── 진도 — 레벨별 챕터(강의) 통과 + 어휘 수집 통합, 3개 언어 ── */
+/* ── 진도 — 레벨별 챕터(교재) 통과 + 어휘 수집 통합, 3개 언어 ── */
 
 function LevelCoverageCard({ refManifest, vocab }) {
   const langs = Object.keys(refManifest);
@@ -180,7 +321,7 @@ function LevelCoverageCard({ refManifest, vocab }) {
   }, []);
   const ref = refManifest[lang];
 
-  // 강의 진행 — localStorage (강의 목록과 동일 원본)
+  // 교재 진행 — localStorage (교재 목록과 동일 원본)
   const progress = useMemo(() => {
     if (!ref || !mounted) return { readSet: new Set(), checkMap: {} };
     try {
@@ -253,45 +394,73 @@ function LevelCoverageCard({ refManifest, vocab }) {
   );
 }
 
-/* ── 학습 히트맵 ── */
+/* ── 학습 히트맵 — 최근 12개월 달력형, 호버/터치 시 날짜·개수 ── */
 
 function HeatmapCard({ dayCounts }) {
-  const ROWS = 7, CELL = 13, GAP = 3, COLS = 16;
+  const [sel, setSel] = useState(null);
   const today = new Date(); today.setHours(0, 0, 0, 0);
-  const todayKey = today.toISOString().slice(0, 10);
-  const days = Array.from({ length: COLS * ROWS }, (_, i) => {
-    const d = new Date(today);
-    d.setDate(d.getDate() - (COLS * ROWS - 1 - i));
-    return d.toISOString().slice(0, 10);
-  });
+
+  const months = useMemo(() => {
+    const out = [];
+    for (let i = 11; i >= 0; i--) {
+      out.push(new Date(today.getFullYear(), today.getMonth() - i, 1));
+    }
+    return out;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const maxCount = Math.max(1, ...Object.values(dayCounts));
   const totalActive = Object.keys(dayCounts).length;
   const totalWords = Object.values(dayCounts).reduce((a, b) => a + b, 0);
-  const cellColor = n => {
+  const colorOf = n => {
     if (!n) return 'var(--bg-secondary)';
     const lvl = Math.ceil((n / maxCount) * 4);
     return ['', 'var(--primary-glow)', 'var(--primary)', 'var(--accent)', 'var(--accent)'][lvl] || 'var(--accent)';
   };
-  const W = COLS * (CELL + GAP) - GAP;
-  const H = ROWS * (CELL + GAP) - GAP;
+
   return (
     <div className="card mypage-section">
       <div className="lvprog__head">
         <h2 className="mypage-section__title" style={{ margin: 0 }}>학습 히트맵</h2>
-        <span className="lvprog__count">{totalActive}일 · {totalWords}개</span>
+        <span className="lvprog__count">
+          {sel ? `${sel.label} · ${sel.count}개` : `최근 12개월 — ${totalActive}일 · ${totalWords}개`}
+        </span>
       </div>
-      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block' }}>
-        {days.map((day, i) => (
-          <rect key={day}
-            x={Math.floor(i / ROWS) * (CELL + GAP)}
-            y={(i % ROWS) * (CELL + GAP)}
-            width={CELL} height={CELL} rx={2}
-            fill={cellColor(dayCounts[day] || 0)}
-            opacity={day > todayKey ? 0 : 1}>
-            <title>{day}: {dayCounts[day] || 0}개</title>
-          </rect>
-        ))}
-      </svg>
+      <div className="hm-months" onMouseLeave={() => setSel(null)}>
+        {months.map(m => {
+          const year = m.getFullYear();
+          const mon = m.getMonth();
+          const firstDow = new Date(year, mon, 1).getDay();
+          const lastDate = new Date(year, mon + 1, 0).getDate();
+          return (
+            <div key={`${year}-${mon}`} className="hm-month">
+              <span className="hm-month__label">{year !== today.getFullYear() ? `${String(year).slice(2)}년 ` : ''}{mon + 1}월</span>
+              <div className="hm-grid">
+                {Array.from({ length: firstDow }).map((_, i) => <span key={`b${i}`} />)}
+                {Array.from({ length: lastDate }).map((_, i) => {
+                  const date = new Date(year, mon, i + 1);
+                  if (date > today) return <span key={i} className="hm-day hm-day--future" />;
+                  const n = dayCounts[`${year}-${String(mon + 1).padStart(2, '0')}-${String(i + 1).padStart(2, '0')}`] || 0;
+                  const label = `${mon + 1}월 ${i + 1}일`;
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      className="hm-day"
+                      style={{ background: colorOf(n) }}
+                      title={`${label} · ${n}개`}
+                      aria-label={`${label} ${n}개`}
+                      onClick={() => setSel({ label, count: n })}
+                      onMouseEnter={() => setSel({ label, count: n })}
+                      onFocus={() => setSel({ label, count: n })}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

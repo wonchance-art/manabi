@@ -8418,3 +8418,50 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: none; }
 }
+
+/* 4×4 타일 + 누르는 통계 타일 + 타일 모달 + 달력형 히트맵 */
+.bento--4x4 { grid-column: span 4; grid-row: span 4; }
+.bento-stat--btn { cursor: pointer; border: 1px solid var(--border); transition: background 0.15s ease; }
+.bento-stat--btn:hover { background: var(--bg-elevated); }
+
+.tile-modal__overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.tile-modal { width: 100%; max-width: 340px; padding: 20px; }
+.tile-modal__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.tile-modal__title { font-family: var(--font-serif); font-size: 1.05rem; font-weight: 700; margin: 0; }
+.tile-modal__close { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 0.9rem; padding: 4px; }
+.tile-modal__row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; margin-bottom: 12px; font-size: 0.88rem;
+}
+.tile-modal__num { max-width: 90px; text-align: right; }
+
+.hm-months {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px 18px;
+  margin-top: 10px;
+}
+.hm-month__label {
+  display: block;
+  font-size: 0.72rem; font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+}
+.hm-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.hm-day {
+  aspect-ratio: 1; width: 100%;
+  border: none; padding: 0; border-radius: 2px;
+  background: var(--bg-secondary);
+  cursor: pointer;
+}
+.hm-day--future { background: transparent; }
+
+@media (max-width: 600px) {
+  .bento--4x4 { grid-column: span 2; grid-row: auto; }
+  .hm-months { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+}

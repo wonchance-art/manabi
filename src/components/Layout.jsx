@@ -90,19 +90,18 @@ export default function Layout({ children }) {
   // 핵심 네비게이션만 노출 — 부가 기능(가이드·통계)은 프로필 안쪽으로
   const navLinks = [
     ...(user ? [{ href: '/home', label: '홈' }] : []),
-    { href: '/lessons',   label: '강의' },
+    { href: '/lessons',   label: '교재' },
     { href: '/materials', label: '자료' },
-    { href: '/vocab',     label: '단어장' },
+    { href: '/vocab',     label: '단어' },
     ...(user ? [{ href: '/cohorts', label: '클래스' }] : []),
   ];
 
   const mobileNavLinks = [
     ...(user ? [{ href: '/home', label: '홈' }] : []),
-    { href: '/lessons',   label: '강의' },
+    { href: '/lessons',   label: '교재' },
     { href: '/materials', label: '자료' },
-    { href: '/vocab',     label: '단어장' },
-    ...(user ? [{ href: '/cohorts', label: '클래스' }] : []),
-    ...(user ? [{ href: '/profile', label: '마이' }] : [{ href: '/auth', label: '로그인' }]),
+    { href: '/vocab',     label: '단어' },
+    ...(user ? [] : [{ href: '/auth', label: '로그인' }]),
   ];
 
   return (

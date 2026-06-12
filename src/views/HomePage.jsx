@@ -344,7 +344,7 @@ export default function HomePage({ continueManifest = {}, refManifest = {} }) {
         >
           <span className="lessons-continue__body">
             <span className="lessons-continue__kicker">
-              {continueCard.mode === 'retry' ? '강의 재도전 — 패턴 체크 미통과' : '강의 이어서 학습'} · {continueCard.ref.name}
+              {continueCard.mode === 'retry' ? '교재 재도전 — 패턴 체크 미통과' : '교재 이어서 학습'} · {continueCard.ref.name}
             </span>
             <span className="lessons-continue__title">#{continueCard.ch.order} {continueCard.ch.title}</span>
           </span>
