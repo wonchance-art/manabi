@@ -41,6 +41,7 @@ export default [
       {
         heading: "과거분사 만들기 — 규칙과 단골 불규칙",
         pattern: "-er → -é (mangé) · -ir → -i (fini)",
+        patternKo: "과거분사 만들기 — 규칙은 깔끔, 단골 동사는 불규칙",
         body:
           "규칙은 동사 그룹별로 깔끔해요. -er 동사의 -é는 발음이 원형과 같은 [e]예요.\n\n" +
           "자주 쓰는 동사일수록 불규칙이지만, 최빈출 불규칙은 한 줌이라 표로 끝낼 수 있어요.",
@@ -67,6 +68,7 @@ export default [
       {
         heading: "의미 — 형태는 현재완료, 쓰임은 그냥 과거",
         pattern: "passé composé = 완료된 과거 사건 ('-었어요')",
+        patternKo: "형태는 영어 현재완료, 쓰임은 그냥 과거",
         body:
           "passé composé는 **완료된 과거의 사건**을 말하는, 한국어 '-었어요/-했어요'에 해당하는 평범한 과거시제예요.\n\n" +
           "회화의 과거는 거의 전부 이걸로 처리돼요. hier(어제), la semaine dernière(지난주) 같은 시간 표현과 단짝이에요.",
@@ -79,6 +81,7 @@ export default [
       {
         heading: "부정문과 의문문 — 샌드위치는 조동사만 감싸요",
         pattern: "ne + avoir + pas + 과거분사 (Je n'ai pas mangé)",
+        patternKo: "복합과거의 부정은 조동사 avoir만 감싸기",
         body:
           "ne ... pas는 **조동사 avoir만** 감싸요. 과거분사는 샌드위치 바깥에 남아요 — 'Je n'ai mangé pas'가 아니에요.\n\n" +
           "의문문은 평소처럼: 억양만 올리거나, Est-ce que를 붙이거나, 조동사를 도치해요(As-tu mangé ?).",
@@ -105,6 +108,7 @@ export default [
       {
         heading: "어떤 동사가 être를 고를까 — 이동과 상태변화",
         pattern: "이동·상태변화 동사 → être 현재형 + 과거분사 (Je suis allé)",
+        patternKo: "이동·상태변화 동사는 조동사로 être와 결합",
         body:
           "대부분의 동사는 avoir를 쓰지만, **이동·상태변화를 나타내는 한 줌의 동사들은 être**를 써요.\n\n" +
           "aller/venir, arriver/partir, entrer/sortir, monter/descendre, naître/mourir, rester, tomber, retourner, passer — 대부분 **반의어 짝**이라 쌍으로 외우면 효율적이에요.",
@@ -119,6 +123,7 @@ export default [
       {
         heading: "결정적 차이 — 과거분사가 주어에 성수 일치",
         pattern: "être + 과거분사 → 주어에 성수 일치 (allé / allée / allés / allées)",
+        patternKo: "être 조동사면 과거분사가 주어에 성수 일치",
         body:
           "être를 조동사로 쓰면 **과거분사가 형용사처럼 주어의 성·수에 일치**해요.\n\n" +
           "Elle est grande에서 grande가 여성형이 되듯, Elle est all**ée**에서 allée도 여성형이 되는 거예요.",
@@ -142,6 +147,7 @@ export default [
       {
         heading: "대명동사도 전원 être — 그리고 정리",
         pattern: "이동·상태변화 + 모든 대명동사 → être · 나머지 전부 → avoir",
+        patternKo: "대명동사도 전원 être — 헷갈리면 avoir가 기본값",
         body:
           "잠시 뒤 배울 **대명동사(se lever 등)도 전부 être**를 조동사로 써요: Je me suis levé(나는 일어났어요).\n\n" +
           "조동사 선택은 이 공식 하나로 끝이에요. 헷갈리면 **avoir가 기본값**이에요.",
@@ -193,6 +199,7 @@ export default [
       {
         heading: "용법 — 습관, 진행, 배경 묘사",
         pattern: "imparfait → ① 습관 '~하곤 했다' ② 진행 '~하고 있었다' ③ 배경 묘사",
+        patternKo: "과거를 끝점 없이 펼쳐 보여주는 세 가지 용법",
         body:
           "imparfait는 과거를 **끝나는 지점 없이, 펼쳐진 상태로** 보여주는 시제예요.\n\n" +
           "**습관**(Avant, je fumais. 예전엔 피우곤 했어요), **진행**(Je dormais. 자고 있었어요), **배경 묘사**(Il pleuvait. / J'avais dix ans.) 세 가지로 잡으세요.",
@@ -205,6 +212,7 @@ export default [
       {
         heading: "passé composé vs imparfait — 사진과 동영상",
         pattern: "passé composé = 사건 한 컷 (사진) · imparfait = 깔린 배경 (동영상)",
+        patternKo: "사건 한 컷은 복합과거, 깔린 배경은 반과거",
         body:
           "두 과거시제는 한 문장 안에서 자주 협업해요: Je **dormais**(자고 있었는데 — 배경) quand le téléphone **a sonné**(전화가 울렸어요 — 사건).\n\n" +
           "이야기할 때 **무대 세팅은 imparfait**, **줄거리 진행은 passé composé**로 깔린다고 생각하면 돼요.",
@@ -246,6 +254,7 @@ export default [
       {
         heading: "활용 — 재귀대명사도 인칭 따라 변신",
         pattern: "me · te · se · nous · vous · se + 동사",
+        patternKo: "재귀대명사도 주어 따라 변신 — 모음 앞에선 m'/t'/s'",
         body:
           "se 부분도 주어에 맞춰 변해요. 동사 활용에 대명사 변화까지 이중 활용인 셈이지만, 표로 보면 패턴이 명확해요.\n\n" +
           "me/te/se는 모음 앞에서 m'/t'/s'로 축약돼요: Je **m'**appelle, Tu **t'**habilles.",
@@ -271,6 +280,7 @@ export default [
       {
         heading: "아침 루틴 한 세트 + 상호 의미",
         pattern: "se réveiller → se lever → se laver → s'habiller → se coucher",
+        patternKo: "하루 일과 묘사 동사 한 세트 — 복수면 '서로' 의미도",
         body:
           "대명동사가 가장 빛나는 곳은 하루 일과 묘사예요. 잠이 깨고, 일어나고, 씻고, 입고, 잠자리에 드는 흐름을 한 세트로 외우세요.\n\n" +
           "주어가 복수일 때는 '서로'라는 **상호 의미**도 가능해요. Ils s'aiment.(서로 사랑해요.) On se voit demain ?(내일 볼까?)",
@@ -313,6 +323,7 @@ export default [
       {
         heading: "간접목적 대명사 lui, leur — '~에게'",
         pattern: "à + 사람 → lui (그/그녀에게) · leur (그들에게)",
+        patternKo: "'~에게'를 받는 간접목적 대명사 — lui는 남녀 공용",
         body:
           "**parler à**, **téléphoner à**, **donner à**처럼 'à + 사람'을 받는 게 간접목적 대명사예요. 한국어 조사 **'~에게'**가 붙는 자리라고 생각하면 감이 빨라요.\n\n" +
           "me, te, nous, vous는 직접·간접 모양이 같아서, 새로 외울 건 lui와 leur 둘뿐이에요.",
@@ -353,6 +364,7 @@ export default [
       {
         heading: "비교급 3종 세트 — plus / moins / aussi ... que",
         pattern: "plus(더) / moins(덜) / aussi(만큼) + 형용사 + que + 비교 상대",
+        patternKo: "'더/덜/만큼' 비교 — '~보다'는 que 자리에",
         body:
           "형용사·부사 앞에 부품 하나만 끼우면 끝이에요. Il est **plus grand que** moi. — 한국어 조사 '~보다'가 que 자리에 온다고 생각하면 돼요.\n\n" +
           "moins(덜)는 한국어로 어색해서 잘 안 쓰게 되는데, 프랑스어에서는 아주 자연스러워요(moins cher = 덜 비싼 = 더 싼).",
@@ -366,6 +378,7 @@ export default [
       {
         heading: "최상급 — 비교급에 le/la/les만 얹기",
         pattern: "le/la/les + plus/moins + 형용사 (+ de ~중에서)",
+        patternKo: "최상급은 비교급 앞에 정관사만 얹기",
         body:
           "최상급은 비교급 앞에 **정관사**를 붙이면 돼요: le plus ...(가장 ~한), le moins ...(가장 덜 ~한).\n\n" +
           "'~중에서'는 **de**로 표현해요: la plus grande ville **de** Corée. 영어 in Korea의 in에 끌려 dans을 쓰지 않도록 주의하세요.",
@@ -379,6 +392,7 @@ export default [
       {
         heading: "meilleur vs mieux — better가 둘로 갈라져요",
         pattern: "bon(좋은) → meilleur · bien(잘) → mieux",
+        patternKo: "'더 좋은'은 meilleur, '더 잘'은 mieux — 전용 비교급",
         body:
           "bon과 bien은 plus를 못 쓰고 **전용 비교급**이 따로 있어요. Ce café est meilleur. / Tu parles mieux.\n\n" +
           "구별법은 원급으로 되돌려보기 — '좋은(bon)'이 어울리면 meilleur, '잘(bien)'이 어울리면 mieux. 최상급도 그대로 le meilleur, le mieux예요.",
@@ -438,6 +452,7 @@ export default [
       {
         heading: "4대 불규칙 어간 — serai, aurai, irai, ferai",
         pattern: "être → ser- · avoir → aur- · aller → ir- · faire → fer-",
+        patternKo: "어미는 불변, 어간이 제멋대로인 핵심 동사들",
         body:
           "어미는 절대 불변이지만, 최중요 동사들은 **어간이 제멋대로**예요. 그 외 자주 나오는 것: venir → viendr-, pouvoir → pourr-, voir → verr-.\n\n" +
           "불규칙이라도 **어간이 r로 끝나는 것**은 모두 같아요 — 미래형에서는 항상 [ʁ] 소리가 들린다는 게 청취 단서예요.",
@@ -464,6 +479,7 @@ export default [
       {
         heading: "futur proche vs futur simple — 체감 거리의 차이",
         pattern: "futur proche = 확정·근접 (Je vais partir) · futur simple = 계획·예측·격식 (Je partirai)",
+        patternKo: "확정·근접 미래와 계획·예측 미래의 분담",
         body:
           "경계가 칼같지는 않아서 일상 회화는 **futur proche가 다수파**예요.\n\n" +
           "futur simple은 일기예보(Il fera beau), 약속(Je t'appellerai), 다짐 같은 데서 빛나요.",

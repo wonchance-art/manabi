@@ -533,6 +533,7 @@ export default [
       {
         heading: "전제된 원인 — étant donné que·vu que·en raison de",
         pattern: "étant donné que / vu que + 직설법 · étant donné / vu / en raison de + 명사",
+        patternKo: "~을 고려하면·~로 인해 — 전제된 사실의 원인 (직설법)",
         body:
           "'~을 고려하면, ~이니'의 **étant donné que**(격식)와 **vu que**(구어 기운)는 둘 다 **이미 확인된 사실**을 전제로 깔아요 — 그래서 직설법이에요.\n\n" +
           "명사 앞 버전이 실전 빈도는 더 높아요: **étant donné / vu + 명사**, 그리고 공지문의 단골 **en raison de**(~로 인해)·**du fait de**.",
@@ -546,6 +547,7 @@ export default [
       {
         heading: "결핍과 핑계 — faute de·sous prétexte que",
         pattern: "faute de + 명사 (~이 없어서) · sous prétexte que + 직설법 (~라는 핑계로)",
+        patternKo: "~이 없어서 (결핍) · ~라는 핑계로 (불신)",
         body:
           "**faute de**는 '~이 없는 탓에'라는 **결핍의 원인**이에요(= par manque de): faute de budget(예산이 없어서). faute d'avoir réservé처럼 부정사 과거도 받아요.\n\n" +
           "**sous prétexte que/de**는 '~라는 핑계로' — **화자가 그 이유를 믿지 않는다**는 불신이 표현 안에 내장돼 있어요.",
@@ -558,6 +560,7 @@ export default [
       {
         heading: "강화와 한정 — d'autant plus que·dans la mesure où",
         pattern: "d'autant plus que + 직설법 (~이니 더더욱) · dans la mesure où (~인 만큼)",
+        patternKo: "~이니 더더욱 (강화) · ~인 만큼 (한정된 이유)",
         body:
           "**d'autant plus que**는 이유를 보태며 정도를 끌어올려요 — '게다가 ~이니 더더욱'. 한국어에 깔끔한 등가어가 없어 문장째 익히는 게 빨라요.\n\n" +
           "**dans la mesure où**는 '~인 한에서, ~인 만큼'이라는 조건 달린 이유예요. 반대로 이유를 부정하고 바로잡을 땐 **ce n'est pas que + 접속법**(~라서가 아니라)을 써요.",
@@ -571,6 +574,7 @@ export default [
       {
         heading: "결과 — si bien que·de sorte que",
         pattern: "si bien que + 직설법 (그 결과) · de sorte que + 직설법(결과) / 접속법(목적)",
+        patternKo: "그 결과 ~했다 — de sorte que는 법이 결과/목적을 가름",
         body:
           "'그 결과 ~했다'의 기본형이 **si bien que + 직설법**이에요 — 이미 일어난 결과니까요.\n\n" +
           "**de sorte que**는 두 얼굴 — **직설법이면 결과**, **접속법이면 목적**('~하도록')이에요. 법(法) 선택이 의미를 가르는 드문 사례죠. 회화에서는 이 자리를 **du coup**(그래서)가 휩쓸지만, 작문에는 못 들어갑니다.",
@@ -584,6 +588,7 @@ export default [
       {
         heading: "정도 — si/tellement ... que·au point de",
         pattern: "si/tellement + 형용사·부사 + que · 동사 + tellement que · au point de + 동사원형",
+        patternKo: "너무 ~해서 …하다 — 정도의 극단까지 표현",
         body:
           "'너무 ~해서 …하다'는 **si/tellement ... que**예요. 형용사·부사 앞엔 둘 다 되지만, **동사를 강조할 땐 tellement만** 가능해요(Il a tellement plu que ...).\n\n" +
           "'~할 정도로, 급기야 ~하기에 이르다'는 **au point de + 원형 / au point que + 직설법**으로 정도의 극단을 찍어요.",
@@ -636,6 +641,7 @@ export default [
       {
         heading: "ne ... que — 형태는 부정, 뜻은 '~만'",
         pattern: "ne + 동사 + que + 한정 대상 (= seulement)",
+        patternKo: "'~만·~밖에' — 부정이 아닌 한정의 ne ... que",
         body:
           "**ne ... que**는 부정이 아니라 **한정**이에요: Je n'ai **que** dix minutes.(10분밖에 없어요.) que 바로 뒤가 스포트라이트 자리예요.\n\n" +
           "강조 확장형도 세트로 — **rien que**(단지 ~만으로), **ne serait-ce que**(하다못해 ~만이라도).",
@@ -649,6 +655,7 @@ export default [
       {
         heading: "ni ... ni — 'A도 B도'의 문법",
         pattern: "ne + 동사 + ni A ni B · Ni A ni B + ne + 동사",
+        patternKo: "A도 B도 아니다 — ni 뒤에서는 관사 탈락",
         body:
           "두 대상을 한꺼번에 부정하려면 **ne ... ni ... ni**예요. ni 뒤에서는 **부정관사·부분관사가 탈락**해요: ni café ni thé(ni du café ✗).\n\n" +
           "주어 자리로도 올라가요: **Ni** lui **ni** moi **ne** savions. 긍정의 짝은 **non seulement ... mais (aussi)**(~뿐 아니라 …도)예요.",
@@ -662,6 +669,7 @@ export default [
       {
         heading: "sans 가족 — ~없이, ~하지 못하게, 안 그러면",
         pattern: "sans + 동사원형 (주어 같음) · sans que + 접속법 (주어 다름) · sans quoi (그렇지 않으면)",
+        patternKo: "~하지 않고·~없이 — 주어 다르면 sans que + 접속법",
         body:
           "'~하지 않고'는 주어가 같으면 **sans + 원형**(Il est parti **sans payer**), 다르면 **sans que + 접속법**이에요. sans rien dire(아무 말 없이), sans jamais se plaindre(한 번도 불평하지 않고)처럼 **rien/jamais와도 결합**해요.\n\n" +
           "격식문의 **sans quoi / faute de quoi**는 '그렇지 않으면'(= sinon)이에요.",
@@ -674,6 +682,7 @@ export default [
       {
         heading: "부정이 아닌 ne — 허사 ne와 문어 부정",
         pattern: "avant que / à moins que / craindre que / 비교 que + ne (부정 아님)",
+        patternKo: "pas 없는 ne는 부정이 아닌 격식 장식 (허사 ne)",
         body:
           "**pas 없는 ne**는 대개 부정이 아니라 격식 장식, **허사 ne(ne explétif)**예요: avant qu'il **ne** parte(그가 떠나기 전에 — '안 떠나기 전'이 아님!), C'est mieux que je **ne** pensais(생각보다 낫다).\n\n" +
           "반대로 pas 자리를 문어 부사가 대신하기도 해요 — **ne ... guère**(별로 ~않다), **ne ... point**(고어), **ne ... nullement**(단호한 부정). aucun의 격식 사촌 **nul**(nulle part의 그 nul)도 글에서 만나요.",
@@ -702,6 +711,7 @@ export default [
       {
         heading: "무인칭 il — 주어 칸을 채우는 빈 의자",
         pattern: "il + 동사 ... (il은 아무것도 가리키지 않음)",
+        patternKo: "아무도 가리키지 않는 자리 채우기 주어 il",
         body:
           "Il pleut, il faut, il y a의 **il**은 누구도 가리키지 않는 **자리 채우기용 주어**예요. B2부터는 이 무인칭이 격식 문체의 주력 엔진이 돼요.\n\n" +
           "진짜 주어를 뒤로 미루는 효과가 있어요: **Il manque** deux chaises.(의자 두 개가 모자라요 — '부족하다'는 사실부터 선언.)",
@@ -715,6 +725,7 @@ export default [
       {
         heading: "il s'agit de — '~에 관한 것이다'의 대표 함정",
         pattern: "il s'agit de + 명사·동사원형 (주어는 영원히 il)",
+        patternKo: "~에 관한 이야기다 — 주어는 반드시 il뿐",
         body:
           "줄거리·핵심을 말하는 격식 동사 **s'agir**는 **무인칭 전용**이에요 — 주어 자리에 il 외에는 아무것도 못 와요.\n\n" +
           "'중요한 것은 ~이다'라는 뜻도 가져요: Il s'agit maintenant **d'**agir vite.(이제 중요한 건 빨리 움직이는 거예요.)",
@@ -728,6 +739,7 @@ export default [
       {
         heading: "드러남·소문·가능성 — il s'avère que·il paraît que·il se peut que",
         pattern: "il s'avère / paraît que + 직설법 · il se peut / il semble que + 접속법",
+        patternKo: "확실성이 법을 가름 — 사실·소문은 직설법, 가능성은 접속법",
         body:
           "정보의 확실성에 따라 법이 갈려요. **확인된 사실로 드러남**(il s'avère que)과 **소문**(il paraît que — '카더라')은 직설법, **가능성**(il se peut que, il est possible que)과 **막연한 인상**(il semble que)은 접속법이에요.\n\n" +
           "**il arrive que**(때때로 ~하는 일이 있다)와 **il suffit que/de**(~하기만 하면 된다)도 접속법 계열이에요.",
@@ -754,6 +766,7 @@ export default [
       {
         heading: "권고와 과제 — il convient de·il est question de·il reste à",
         pattern: "il convient de + 동사원형 · il est question de · il reste à",
+        patternKo: "~하는 것이 바람직하다 등 권고·과제의 무인칭",
         body:
           "행정문·논문의 정중한 권고가 **il convient de**(~하는 것이 바람직하다)예요. **il est question de**는 '~이 논의되고 있다', **il reste à**는 '~할 일이 남았다'.\n\n" +
           "부정형 **il n'est pas question que + 접속법**은 '절대 안 된다'는 강한 거부예요.",

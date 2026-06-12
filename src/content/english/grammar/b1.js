@@ -31,6 +31,7 @@ export default [
       {
         heading: "결정적 판별법 — 시간 표현이 답을 알려줘요",
         pattern: "yesterday · ~ ago · in 2020 → 과거 ↔ since · for · just · yet · ever → 현재완료",
+        patternKo: "시간 신호어가 시제를 정해줘요 — 끝난 시점이면 무조건 과거",
         body:
           "문장 속 시간 표현이 거의 답을 정해줘요. **끝난 시점을 콕 찍는 말**(yesterday, last week, in 2020, ago)이 있으면 무조건 과거시제 — 현재완료와는 절대 같이 못 써요.\n\n" +
           "반대로 **since + 시작점**(~이후로 지금까지), **for + 기간**(~동안 지금까지), just·already·yet·ever/never처럼 '지금까지'를 품은 말은 현재완료의 짝이에요.",
@@ -70,6 +71,7 @@ export default [
       {
         heading: "현실 체크 — 미국 영어는 과거시제를 더 좋아해요",
         pattern: "I just ate. (미국 구어) = I have just eaten. — 역방향은 불가",
+        patternKo: "미국 구어는 just/yet에도 과거시제 허용 (반대 방향은 어디서도 오류)",
         body:
           "교과서는 just/already/yet에 현재완료를 쓰지만, **미국 구어에서는 과거시제가 아주 흔해요** — I just ate. / Did you eat yet? 전부 자연스러워요. (영국 영어는 현재완료를 더 지키는 편이에요.)\n\n" +
           "단, **반대 방향은 안 돼요**. yesterday 같은 확정 과거 시점에 현재완료를 쓰는 건 어디서도 오류예요. 시험·격식 작문에서는 교과서 규칙대로 쓰는 게 안전합니다.",
@@ -137,6 +139,7 @@ export default [
       {
         heading: "1형이냐 2형이냐 — 같은 상황, 다른 태도",
         pattern: "1형 = 진지하게 봄 · 2형 = 거리 두기 → 공손·조심스러움",
+        patternKo: "같은 상황도 태도 따라 선택 — 거리를 두면 어조가 부드러워져요",
         body:
           "**같은 상황도 화자의 태도에 따라 1형과 2형을 골라 쓸 수 있어요.** If you help me, we will finish by six.(도와줄 가능성을 진지하게 봄) vs If you helped me, we would finish by six.(그럴 것 같지는 않지만...).\n\n" +
           "그래서 2형은 **공손한 부탁·조심스러운 제안**에도 쓰여요. 현실과 거리를 두면 어조가 부드러워지거든요 — Would you...?가 Will you...?보다 공손한 것과 같은 원리예요.",
@@ -277,6 +280,7 @@ export default [
       {
         heading: "생략 — 원어민이 짧게 말하는 비밀",
         pattern: "관계사 + 주어+동사 = 목적격 → 생략 OK · 관계사 + 동사 = 주격 → 생략 불가",
+        patternKo: "목적격 관계대명사는 생략이 회화의 기본값",
         body:
           "관계대명사는 **목적격일 때 생략 가능**하고, 원어민 회화에서는 생략하는 쪽이 압도적으로 자연스러워요 — The movie (that) we watched was boring.\n\n" +
           "반대로 **주격은 생략 불가**예요. The man who called you...에서 who를 빼면 '남자가 전화했다'라는 다른 문장이 돼버리니까요. 판별 공식: **관계사 바로 뒤에 '주어+동사'가 오면 생략 OK, 바로 동사가 오면 생략 불가.**",
@@ -355,6 +359,7 @@ export default [
       {
         heading: "질문과 부탁 옮기기",
         pattern: "asked if/wh- + 평서문 어순 · told/asked + 사람 + (not) to부정사",
+        patternKo: "질문 옮기기는 평서문 어순, 명령·부탁은 to부정사로 압축",
         body:
           "**의문문 옮기기** — asked를 쓰고 어순은 **평서문으로 복귀**해요. Yes/No 질문은 **if/whether**(She asked **if** I was OK.), 의문사 질문은 의문사 유지(He asked **where I lived**. — where did I live ×).\n\n" +
           "**명령·부탁**은 to부정사로 압축해요: He told me **to wait** there. / 금지는 not to: He told me **not to be** late.",
@@ -447,6 +452,7 @@ export default [
       {
         heading: "진행형 추측 — must be -ing",
         pattern: "must/might + be + -ing = 지금 ~하는 중인 게 틀림없어/일지도",
+        patternKo: "지금 벌어지는 중인 일의 추측은 be -ing를 더해요",
         body:
           "지금 벌어지고 있는 일의 추측은 **조동사 + be + -ing**예요 — She must be sleeping. / They might be having dinner.\n\n" +
           "전화를 안 받을 때, 사무실에 불이 켜져 있을 때 — 출현 빈도가 높은 패턴이니 덩어리째 입에 붙이세요. 과거에 대한 추측(must have p.p.)은 B2 가정문 챕터에서 이어서 다룹니다.",
