@@ -252,11 +252,10 @@ export default function LessonsPage({ refManifest = {} }) {
                   aria-expanded={isOpen}
                 >
                   <span className="lessons-list__group-chevron" aria-hidden="true">{isOpen ? '▾' : '▸'}</span>
+                  <span className="lessons-list__group-glyph" aria-hidden="true">{meta.short || meta.key}</span>
                   <span className="lessons-list__group-title">
-                    {meta.label}
-                    <span style={{ fontWeight: 500, fontSize: '0.82em', color: 'var(--text-muted)', marginLeft: 8 }}>
-                      {meta.focus}
-                    </span>
+                    {meta.label.replace(`${meta.short || meta.key} `, '')}
+                    <span className="lessons-list__group-focus">· {meta.focus}</span>
                   </span>
                   {/* 접힌 상태에서도 보이는 문형 사전 바로가기 */}
                   {bunkeiCount > 0 && (

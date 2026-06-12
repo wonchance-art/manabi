@@ -5428,13 +5428,29 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .lessons-list__group.is-open .lessons-list__group-chevron {
   color: var(--primary);
 }
-.lessons-list__group-title {
+.lessons-list__group-glyph {
   font-family: var(--font-serif);
-  font-size: 1rem;
+  font-size: 1.5rem;
   font-weight: 700;
+  line-height: 1;
+  min-width: 2.2ch;
   color: var(--text-primary);
-  letter-spacing: 0.02em;
+}
+.lessons-list__group-title {
+  display: flex; align-items: baseline; gap: 7px;
+  min-width: 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-primary);
   flex: 1;
+  white-space: nowrap;
+}
+.lessons-list__group-focus {
+  font-weight: 500;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .lessons-list__group-count {
   font-size: 0.78rem;
