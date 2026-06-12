@@ -10416,6 +10416,48 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .lessons-list__bunkei-chip:hover { background: var(--bg-elevated); color: var(--text-primary); }
 
+/* 이어서 학습 — 지금 할 챕터 바로가기 카드 */
+.lessons-continue {
+  display: flex; align-items: center; gap: 12px;
+  width: 100%;
+  text-align: left;
+  padding: 13px 16px;
+  margin-bottom: 6px;
+  background: var(--primary-glow);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+.lessons-continue:hover { filter: brightness(1.05); }
+.lessons-continue__label { font-size: 1.05rem; flex-shrink: 0; }
+.lessons-continue__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.lessons-continue__kicker {
+  font-size: 0.7rem; font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.lessons-continue__title {
+  font-size: 0.95rem; font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+.lessons-continue__meta {
+  flex-shrink: 0;
+  font-size: 0.8rem; font-weight: 700;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* 진행 3단계 — ✅ 통과 행 */
+.lessons-list__row--passed .lessons-list__status { font-size: 0.72rem; }
+.lessons-list__row--passed .lessons-list__title { color: var(--text-secondary); }
+.lessons-list__group-passed {
+  color: var(--accent);
+  font-weight: 700;
+  margin-right: 8px;
+}
+
 .lessons-list__row--tool {
   background: var(--bg-secondary);
   border-radius: var(--radius-sm);
@@ -10486,6 +10528,29 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   padding: 3px 10px; cursor: pointer;
 }
 .fr-check__toggle-all:hover { background: var(--bg-secondary); color: var(--text-primary); }
+/* 통과 판정 패널 — 채점 완료 시 */
+.fr-check__verdict {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border-left: 3px solid;
+}
+.fr-check__verdict.is-pass { border-color: var(--accent); background: rgba(74,138,92,0.1); }
+.fr-check__verdict.is-fail { border-color: var(--warning); background: rgba(245,195,74,0.08); }
+.fr-check__verdict .fr-check__result { margin-top: 0; padding-top: 0; border-top: none; }
+.fr-check__verdict-actions {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-top: 10px;
+}
+.fr-check__next {
+  font-size: 0.86rem; font-weight: 700;
+  color: #fff;
+  background: var(--primary);
+  border-radius: var(--radius-full);
+  padding: 7px 16px;
+  transition: filter 0.15s ease;
+}
+.fr-check__next:hover { filter: brightness(1.1); }
 /* 자가 채점 — 정답 확인 후 맞음/틀림 */
 .fr-check__grade { display: inline-flex; gap: 4px; }
 .fr-check__grade-btn {

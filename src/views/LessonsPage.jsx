@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { isPassed } from '../components/RefPatternCheck';
 
 const LANG_FILTERS = [
   { key: 'Japanese', label: '🇯🇵 일본어' },
@@ -27,6 +28,7 @@ export default function LessonsPage({ refManifest = {} }) {
     } catch { return new Set(); }
   });
   const [refRead, setRefRead] = useState(() => ({}));
+  const [refCheck, setRefCheck] = useState(() => ({}));
   const [refReadLoaded, setRefReadLoaded] = useState(false);
 
   function toggleGroup(key) {
@@ -39,18 +41,25 @@ export default function LessonsPage({ refManifest = {} }) {
     });
   }
 
-  // 레퍼런스 챕터 읽음 표시 (localStorage — RefReadMark가 기록)
+  // 레퍼런스 챕터 읽음·패턴 체크 결과 (localStorage — RefReadMark/RefPatternCheck가 기록)
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const map = {};
+    const checks = {};
     for (const [name, ref] of Object.entries(refManifest)) {
       try {
         map[name] = new Set(JSON.parse(localStorage.getItem(ref.readKey) || '[]'));
       } catch {
         map[name] = new Set();
       }
+      try {
+        checks[name] = JSON.parse(localStorage.getItem(`${ref.readKey}_check`) || '{}');
+      } catch {
+        checks[name] = {};
+      }
     }
     setRefRead(map);
+    setRefCheck(checks);
     setRefReadLoaded(true);
     // refManifest는 서버에서 내려오는 정적 데이터 — 마운트 시 1회면 충분
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -79,6 +88,26 @@ export default function LessonsPage({ refManifest = {} }) {
       .filter(l => levelFilter === 'all' || l.label === levelFilter)
       .map(l => ({ meta: l, chapters: l.chapters, vocabCount: l.vocabCount, bunkeiCount: l.bunkeiCount || 0 }));
   }, [refLang, levelFilter]);
+
+  // 이어서 학습 — ① 마지막 체크에서 미통과한 챕터(재도전) ② 첫 미학습 챕터
+  const continueTarget = useMemo(() => {
+    if (!refLang || !refReadLoaded) return null;
+    const readSet = refRead[langFilter] || new Set();
+    const checkMap = refCheck[langFilter] || {};
+    let firstUnread = null;
+    for (const l of refLang.levels) {
+      for (const ch of l.chapters) {
+        const result = checkMap[ch.slug];
+        if (result && !isPassed(result)) {
+          return { ...ch, levelLabel: l.label, mode: 'retry' };
+        }
+        if (!firstUnread && !readSet.has(ch.slug)) {
+          firstUnread = { ...ch, levelLabel: l.label, mode: 'next' };
+        }
+      }
+    }
+    return firstUnread; // 전부 읽고 통과했으면 null
+  }, [refLang, refReadLoaded, refRead, refCheck, langFilter]);
 
   return (
     <div className="page-container">
@@ -139,12 +168,34 @@ export default function LessonsPage({ refManifest = {} }) {
             </div>
           </div>
 
+          {/* 이어서 학습 — 지금 할 챕터로 한 번에 */}
+          {continueTarget && (
+            <button
+              type="button"
+              className="lessons-continue"
+              onClick={() => router.push(`${refLang.base}/grammar/${continueTarget.slug}`)}
+            >
+              <span className="lessons-continue__label" aria-hidden="true">
+                {continueTarget.mode === 'retry' ? '🔁' : '▶'}
+              </span>
+              <span className="lessons-continue__body">
+                <span className="lessons-continue__kicker">
+                  {continueTarget.mode === 'retry' ? '재도전 — 지난 패턴 체크 미통과' : '이어서 학습'}
+                </span>
+                <span className="lessons-continue__title">#{continueTarget.order} {continueTarget.title}</span>
+              </span>
+              <span className="lessons-continue__meta">{continueTarget.levelLabel} →</span>
+            </button>
+          )}
+
           {/* 레벨별 레퍼런스 그룹 */}
           {refGroups.map(({ meta, chapters, vocabCount, bunkeiCount }) => {
             const groupKey = `ref:${langFilter}:${meta.key}`;
             const isOpen = expandedGroups.has(groupKey);
             const readSet = refRead[langFilter] || new Set();
+            const checkMap = refCheck[langFilter] || {};
             const readCount = chapters.filter(c => readSet.has(c.slug)).length;
+            const passedCount = chapters.filter(c => isPassed(checkMap[c.slug])).length;
             return (
               <section key={groupKey} className={`lessons-list__group ${isOpen ? 'is-open' : ''}`}>
                 <button
@@ -173,7 +224,10 @@ export default function LessonsPage({ refManifest = {} }) {
                       📑 문형 사전 {bunkeiCount}
                     </span>
                   )}
-                  <span className="lessons-list__group-count">{readCount} / {chapters.length}</span>
+                  <span className="lessons-list__group-count">
+                    {passedCount > 0 && <span className="lessons-list__group-passed">✅{passedCount}</span>}
+                    {readCount} / {chapters.length}
+                  </span>
                 </button>
                 {isOpen && (
                   <ul className="lessons-list__rows">
@@ -206,17 +260,19 @@ export default function LessonsPage({ refManifest = {} }) {
                     )}
                     {chapters.map(ch => {
                       const read = readSet.has(ch.slug);
+                      const passed = isPassed(checkMap[ch.slug]);
+                      // 진행 3단계: ○ 미학습 → ◐ 읽음 → ✅ 통과
                       return (
                         <li
                           key={ch.slug}
-                          className={`lessons-list__row lessons-list__row--${read ? 'done' : 'idle'}`}
+                          className={`lessons-list__row lessons-list__row--${passed ? 'passed' : read ? 'done' : 'idle'}`}
                           onClick={() => router.push(`${refLang.base}/grammar/${ch.slug}`)}
                           title={ch.summary || undefined}
                           role="link"
                           tabIndex={0}
                           onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && router.push(`${refLang.base}/grammar/${ch.slug}`)}
                         >
-                          <span className="lessons-list__status" aria-hidden="true">{read ? '●' : '○'}</span>
+                          <span className="lessons-list__status" aria-hidden="true">{passed ? '✅' : read ? '◐' : '○'}</span>
                           <span className="lessons-list__title">#{ch.order} {ch.title}</span>
                           <span className="lessons-list__meta">
                             {ch.topic && <span className="lessons-list__topic">{ch.topic}</span>}

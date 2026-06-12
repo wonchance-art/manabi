@@ -1,17 +1,25 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import RefSpeak from './RefSpeak';
 import { JaText } from '../views/refShared';
 
+/** 통과 기준 — 정답률 80% 이상 */
+export function isPassed(result) {
+  if (!result || !result.total) return false;
+  if (typeof result.passed === 'boolean') return result.passed;
+  return result.right >= Math.ceil(result.total * 0.8);
+}
+
 /**
- * 패턴 체크 — 챕터 끝 회상 연습.
+ * 패턴 체크 — 챕터 끝 회상 연습이자 통과 관문.
  * 한국어 번역을 보고 원어 문장을 입으로 만들어본 뒤, 탭해서 정답 확인.
- * 확인 후 맞음/틀림 자가 채점 — 전 문항 채점 시 결과를 localStorage에 기록해
- * 다음 방문 때 지난 결과를 보여준다 (다시 볼 챕터 판단용).
- * items: [{ ko, main, pron }]
+ * 확인 후 맞음/틀림 자가 채점 — 전 문항 채점 시 80% 이상이면 '통과'로 기록하고
+ * 다음 챕터를 안내한다. 미통과면 재도전을 권한다.
+ * items: [{ ko, main, pron }] · next: { href, title } | null
  */
-export default function RefPatternCheck({ items, lang, storageKey, slug }) {
+export default function RefPatternCheck({ items, lang, storageKey, slug, next = null }) {
   const [revealed, setRevealed] = useState(() => new Set());
   const [marks, setMarks] = useState(() => new Map()); // index → 'o' | 'x'
   const [lastResult, setLastResult] = useState(null);
@@ -40,22 +48,36 @@ export default function RefPatternCheck({ items, lang, storageKey, slug }) {
     setMarks(prev => {
       const next = new Map(prev);
       next.set(i, val);
-      // 전 문항 채점 완료 → 결과 저장
+      // 전 문항 채점 완료 → 결과 저장 (통과 여부 포함)
       if (next.size === items.length && storageKey && slug) {
         const right = [...next.values()].filter(v => v === 'o').length;
+        const result = {
+          right,
+          total: items.length,
+          at: Date.now(),
+          passed: right >= Math.ceil(items.length * 0.8),
+        };
         try {
           const map = JSON.parse(localStorage.getItem(storageKey) || '{}');
-          map[slug] = { right, total: items.length, at: Date.now() };
+          map[slug] = result;
           localStorage.setItem(storageKey, JSON.stringify(map));
         } catch {}
+        setLastResult(result);
       }
       return next;
     });
   }
 
+  function retry() {
+    setMarks(new Map());
+    setRevealed(new Set());
+  }
+
   const allOpen = revealed.size === items.length;
   const done = marks.size === items.length;
   const rightCount = [...marks.values()].filter(v => v === 'o').length;
+  const passNeed = Math.ceil(items.length * 0.8);
+  const passedNow = done && rightCount >= passNeed;
 
   return (
     <section className="card fr-section fr-check">
@@ -70,9 +92,11 @@ export default function RefPatternCheck({ items, lang, storageKey, slug }) {
         </button>
       </h2>
       <p className="fr-check__lead">
-        한국어를 보고 이 챕터의 패턴으로 문장을 만들어보세요. 떠올린 뒤 탭해서 확인!
+        한국어를 보고 이 챕터의 패턴으로 문장을 만들어보세요. <strong>{passNeed}/{items.length} 이상</strong>이면 통과!
         {lastResult && !done && (
-          <span className="fr-check__last"> · 지난 결과 {lastResult.right}/{lastResult.total}</span>
+          <span className="fr-check__last">
+            {' '}· 지난 결과 {lastResult.right}/{lastResult.total} {isPassed(lastResult) ? '✅ 통과' : '· 재도전 추천'}
+          </span>
         )}
       </p>
       <ol className="fr-check__list">
@@ -129,10 +153,26 @@ export default function RefPatternCheck({ items, lang, storageKey, slug }) {
         })}
       </ol>
       {done && (
-        <p className="fr-check__result">
-          이번 결과 <strong>{rightCount}/{items.length}</strong>
-          {rightCount < items.length ? ' — 틀린 패턴은 위 섹션에서 한 번 더 확인해보세요.' : ' — 완벽해요! 🎉'}
-        </p>
+        <div className={`fr-check__verdict ${passedNow ? 'is-pass' : 'is-fail'}`}>
+          <p className="fr-check__result">
+            {passedNow ? (
+              <>🎉 <strong>통과! {rightCount}/{items.length}</strong> — 이 챕터의 패턴이 손에 익었어요.</>
+            ) : (
+              <><strong>{rightCount}/{items.length}</strong> — 통과까지 {passNeed - rightCount}개. 틀린 패턴을 위 섹션에서 다시 본 뒤 재도전해보세요.</>
+            )}
+          </p>
+          <div className="fr-check__verdict-actions">
+            <button type="button" className="chip" onClick={retry}>🔁 다시 도전</button>
+            {passedNow && next && (
+              <Link href={next.href} className="fr-check__next">
+                다음 챕터 · {next.title} →
+              </Link>
+            )}
+            {passedNow && !next && (
+              <span className="fr-check__last">마지막 챕터까지 끝! 🏁</span>
+            )}
+          </div>
+        </div>
       )}
     </section>
   );

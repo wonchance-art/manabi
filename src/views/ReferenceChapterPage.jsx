@@ -194,8 +194,14 @@ export default function ReferenceChapterPage({ lang, slug }) {
         </section>
       ))}
 
-      {/* ── 패턴 체크 (회상 연습) ── */}
-      <RefPatternCheck items={checkItems} lang={lang} storageKey={`${ref.readKey}_check`} slug={chapter.slug} />
+      {/* ── 패턴 체크 (회상 연습 + 통과 관문) ── */}
+      <RefPatternCheck
+        items={checkItems}
+        lang={lang}
+        storageKey={`${ref.readKey}_check`}
+        slug={chapter.slug}
+        next={next ? { href: `${ref.base}/grammar/${next.slug}`, title: next.title } : null}
+      />
 
       {/* 읽음 기록 — 여기(챕터 끝)까지 스크롤해야 읽음 처리 */}
       <RefReadMark storageKey={ref.readKey} slug={chapter.slug} />
