@@ -122,7 +122,7 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
         }, { onConflict: 'user_id,word_text' });
       if (error) throw error;
       setSavedSet(prev => new Set([...prev, text]));
-      toast?.(`⭐ "${text}" 단어장에 저장`, 'success');
+      toast?.(`"${text}" 단어장에 저장`, 'success');
       queryClient.invalidateQueries({ queryKey: ['vocab-words', user.id] });
     } catch {
       toast?.('저장 실패', 'error');
@@ -145,7 +145,7 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
     <div className="page-container" style={{ maxWidth: 760 }}>
       <nav style={{ marginBottom: 18 }} aria-label="브레드크럼">
         <Link href={backHref} style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-          ← {refInfo.flag} {refInfo.name} 강의 목록
+          ← {refInfo.name} 강의 목록
         </Link>
       </nav>
 
@@ -209,7 +209,7 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
           <>
             <span className="bk-toolbar__sep" aria-hidden="true" />
             <Link href={`${refInfo.base}/bunkei/${meta?.key.toLowerCase()}`} className="bk-switch">
-              📑 {meta?.key} 문형 사전으로 →
+              {meta?.key} 문형 사전으로 →
             </Link>
           </>
         )}
@@ -220,7 +220,7 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
         <input
           type="search"
           className="search-input"
-          placeholder="🔍 검색"
+          placeholder="검색"
           value={query}
           onChange={e => setQuery(e.target.value)}
           aria-label="단어 검색"
@@ -289,7 +289,7 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
                     <div className="fr-vrow__ko">
                       {w.pos && <span className="fr-vrow__pos">{w.pos}</span>}
                       {w.ko}
-                      {lang === 'French' && w.en && <span className="fr-vrow__en"> · 🇬🇧 {w.en}</span>}
+                      {lang === 'French' && w.en && <span className="fr-vrow__en"> · EN {w.en}</span>}
                     </div>
                     {link && <div className="fr-vrow__etym">{linkIcon} {refInline(link)}</div>}
                     {w.ex && (
@@ -309,7 +309,7 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
                                 aria-label="예문 발음 듣기"
                                 title="예문 발음 듣기"
                               >
-                                🔊
+                                ▷
                               </button>
                             )}
                           </div>
@@ -329,7 +329,7 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
                         aria-label="발음 듣기"
                         title="발음 듣기"
                       >
-                        🔊
+                        ▷
                       </button>
                     )}
                     <button
@@ -340,7 +340,7 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
                       aria-label={saved ? '단어장에 저장됨' : '단어장에 저장'}
                       title={saved ? '저장됨' : user ? '단어장에 저장 (FSRS 복습 시작)' : '로그인 필요'}
                     >
-                      {saved ? '✓' : '⭐'}
+                      {saved ? '✓' : '＋'}
                     </button>
                   </div>
                 </li>

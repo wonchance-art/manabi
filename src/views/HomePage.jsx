@@ -334,7 +334,7 @@ export default function HomePage({ continueManifest = {} }) {
       {/* 언어 미설정 배너 */}
       {hasNoLanguage && (
         <Link href="/profile" className="home-setup-banner">
-          ⚙️ 학습 언어와 수준을 설정하면 맞춤 추천을 받을 수 있어요 →
+          학습 언어와 수준을 설정하면 맞춤 추천을 받을 수 있어요 →
         </Link>
       )}
 
@@ -342,7 +342,6 @@ export default function HomePage({ continueManifest = {} }) {
       {isNewUser ? (
         <div className="home-getting-started">
           <div className="home-getting-started__header">
-            <span className="home-getting-started__emoji">🚀</span>
             <div>
               <h2 className="home-getting-started__title">시작해볼까요, {displayName}님!</h2>
               <p className="home-getting-started__sub">3단계로 첫 학습 완료</p>
@@ -367,7 +366,7 @@ export default function HomePage({ continueManifest = {} }) {
       ) : journeyDone < JOURNEY.length && (
         <div className="home-journey">
           <div className="home-journey__header">
-            <span className="home-journey__title">🎯 첫 주 여정</span>
+            <span className="home-journey__title">첫 주 여정</span>
             <span className="home-journey__progress">{journeyDone} / {JOURNEY.length}</span>
           </div>
           <div className="home-journey__bar">
@@ -376,7 +375,7 @@ export default function HomePage({ continueManifest = {} }) {
           <ul className="home-journey__list">
             {JOURNEY.map(j => (
               <li key={j.label} className={`home-journey__item ${j.done ? 'is-done' : ''}`}>
-                <span className="home-journey__check">{j.done ? '✓' : j.icon}</span>
+                <span className="home-journey__check">{j.done ? '✓' : '○'}</span>
                 {j.done ? (
                   <span className="home-journey__label">{j.label}</span>
                 ) : (
@@ -392,7 +391,7 @@ export default function HomePage({ continueManifest = {} }) {
       <div className="home-greeting">
         <div className="home-greeting__top">
           <div>
-            <h1 className="home-greeting__name">안녕하세요, {displayName}님 👋</h1>
+            <h1 className="home-greeting__name">안녕하세요, {displayName}님</h1>
             <p className="home-greeting__sub">{(() => {
               const langs = profile?.learning_language || ['Japanese'];
               const inProgress = (data?.seriesProgress || [])
@@ -409,7 +408,6 @@ export default function HomePage({ continueManifest = {} }) {
           </div>
           {streak > 0 && (
             <div className="streak-badge">
-              <span className="streak-badge__fire">🔥</span>
               <span className="streak-badge__count">{streak}</span>
               <span className="streak-badge__label">일 연속</span>
             </div>
@@ -418,11 +416,11 @@ export default function HomePage({ continueManifest = {} }) {
 
         {/* 컴팩트 상태: Lv + 수집 단어 + 복습 대기 */}
         <div className="u-stat-line u-mt-md">
-          <span>⚡ <strong>Lv.{xpLevel}</strong> · {xp.toLocaleString('ko-KR')} XP</span>
-          <span>⭐ <strong>{data?.vocabByLang ? Object.values(data.vocabByLang).reduce((a, b) => a + b, 0) : 0}</strong> 수집</span>
+          <span><strong>Lv.{xpLevel}</strong> · {xp.toLocaleString('ko-KR')} XP</span>
+          <span>단어 <strong>{data?.vocabByLang ? Object.values(data.vocabByLang).reduce((a, b) => a + b, 0) : 0}</strong> 수집</span>
           {dueCount > 0 && (
             <span style={{ color: 'var(--warning)', fontWeight: 600 }}>
-              🧠 {dueCount} 복습 대기
+              복습 대기 {dueCount}
             </span>
           )}
         </div>
@@ -460,12 +458,9 @@ export default function HomePage({ continueManifest = {} }) {
           href={`${continueCard.ref.base}/grammar/${continueCard.ch.slug}`}
           className="lessons-continue"
         >
-          <span className="lessons-continue__label" aria-hidden="true">
-            {continueCard.mode === 'retry' ? '🔁' : '🎓'}
-          </span>
           <span className="lessons-continue__body">
             <span className="lessons-continue__kicker">
-              {continueCard.ref.flag} 강의 {continueCard.mode === 'retry' ? '재도전 — 패턴 체크 미통과' : '이어서 학습'}
+              {continueCard.ref.name} 강의 {continueCard.mode === 'retry' ? '재도전 — 패턴 체크 미통과' : '이어서 학습'}
             </span>
             <span className="lessons-continue__title">#{continueCard.ch.order} {continueCard.ch.title}</span>
           </span>
@@ -491,14 +486,14 @@ export default function HomePage({ continueManifest = {} }) {
             borderLeft: '3px solid var(--primary)',
           }}>
             <div style={{ fontSize: '0.72rem', color: 'var(--primary)', fontWeight: 700, marginBottom: 6 }}>
-              📖 오늘 이걸 읽어보세요
+              오늘 이걸 읽어보세요
             </div>
             <h2 style={{ fontSize: '1.15rem', margin: '0 0 8px', lineHeight: 1.4 }}>
               {suggestion.title}
             </h2>
             <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: 16 }}>
-              {isIdeal && <span style={{ color: 'var(--accent)', fontWeight: 700 }}>🎯 맞춤 </span>}
-              {suggestion.language === 'Japanese' ? '🇯🇵' : '🇬🇧'} {suggestion.level}
+              {isIdeal && <span style={{ color: 'var(--accent)', fontWeight: 700 }}>맞춤 </span>}
+              {suggestion.language === 'Japanese' ? '일본어' : '영어'} {suggestion.level}
               {suggestion.channel_name && ` · ${suggestion.channel_name}`}
             </div>
             <Button
@@ -507,7 +502,7 @@ export default function HomePage({ continueManifest = {} }) {
                 : router.push(`/materials/add?suggestion=${suggestion.id}`)
               }
             >
-              {suggestion.material_id ? '📖 바로 읽기 →' : '✨ 분석하고 읽기 →'}
+              {suggestion.material_id ? '바로 읽기 →' : '분석하고 읽기 →'}
             </Button>
           </div>
         );
@@ -538,7 +533,7 @@ export default function HomePage({ continueManifest = {} }) {
         return (
           <div className="card home-card">
             <h2 className="home-section-title" style={{ fontSize: '0.95rem', marginBottom: 12 }}>
-              🎯 내 레벨 추천 자료
+              내 레벨 추천 자료
             </h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {matched.map(m => (
@@ -553,7 +548,7 @@ export default function HomePage({ continueManifest = {} }) {
                       {m.title}
                     </div>
                     <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 2 }}>
-                      {m.language === 'Japanese' ? '🇯🇵' : '🇬🇧'} {m.level || '레벨 미정'}
+                      {m.language === 'Japanese' ? '일본어' : '영어'} {m.level || '레벨 미정'}
                     </div>
                   </div>
                   <span style={{ color: 'var(--primary)', fontSize: '0.82rem', flexShrink: 0 }}>읽기 →</span>
@@ -571,9 +566,9 @@ export default function HomePage({ continueManifest = {} }) {
           padding: '14px 16px', textDecoration: 'none', color: 'var(--text-primary)',
         }}>
           <div style={{ display: 'flex', gap: 16, fontSize: '0.88rem' }}>
-            <span>⭐ 수집 <strong>{todayVocab}</strong></span>
-            <span>🧠 복습 <strong>{todayReviews}</strong></span>
-            <span>📖 완독 <strong>{todayReads}</strong></span>
+            <span>수집 <strong>{todayVocab}</strong></span>
+            <span>복습 <strong>{todayReviews}</strong></span>
+            <span>완독 <strong>{todayReads}</strong></span>
           </div>
           <span style={{ fontSize: '0.82rem', color: 'var(--primary)', flexShrink: 0 }}>통계 →</span>
         </Link>
@@ -583,7 +578,7 @@ export default function HomePage({ continueManifest = {} }) {
       {data?.recentProgress?.length > 0 && (
         <div className="card home-card">
           <h2 className="home-section-title" style={{ fontSize: '0.95rem', marginBottom: 12 }}>
-            📚 최근 읽던 자료
+            최근 읽던 자료
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {data.recentProgress.slice(0, 3).map(r => r.reading_materials && (
@@ -597,7 +592,7 @@ export default function HomePage({ continueManifest = {} }) {
                   textDecoration: 'none', color: 'var(--text-primary)',
                 }}
               >
-                <span style={{ fontSize: '1rem' }}>{r.is_completed ? '✅' : '📖'}</span>
+                <span style={{ fontSize: '1rem' }}>{r.is_completed ? '●' : '○'}</span>
                 <span style={{ flex: 1, fontSize: '0.88rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {r.reading_materials.title}
                 </span>

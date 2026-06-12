@@ -72,7 +72,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
         }, { onConflict: 'user_id,word_text' });
       if (error) throw error;
       setSavedSet(prev => new Set([...prev, item.pattern]));
-      toast?.(`⭐ "${item.pattern}" 단어장에 저장`, 'success');
+      toast?.(`"${item.pattern}" 단어장에 저장`, 'success');
       queryClient.invalidateQueries({ queryKey: ['vocab-words', user.id] });
     } catch {
       toast?.('저장 실패', 'error');
@@ -157,7 +157,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
     <div className="page-container" style={{ maxWidth: 820 }}>
       <nav style={{ marginBottom: 18 }} aria-label="브레드크럼">
         <Link href={backHref} style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-          ← {refInfo.flag} {refInfo.name} 강의 목록
+          ← {refInfo.name} 강의 목록
         </Link>
       </nav>
 
@@ -228,7 +228,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
           <>
             <span className="bk-toolbar__sep" aria-hidden="true" />
             <Link href={`${refInfo.base}/vocab/${meta?.key.toLowerCase()}`} className="bk-switch">
-              📖 {meta?.key} 어휘로 →
+              {meta?.key} 어휘로 →
             </Link>
           </>
         )}
@@ -239,7 +239,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
         <input
           type="search"
           className="search-input"
-          placeholder="🔍 문형·뜻·예문 검색"
+          placeholder="문형·뜻·예문 검색"
           value={query}
           onChange={e => setQuery(e.target.value)}
           aria-label="문형 검색"
@@ -351,7 +351,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
                                   aria-label="예문 발음 듣기"
                                   title="예문 발음 듣기"
                                 >
-                                  🔊
+                                  ▷
                                 </button>
                               )}
                             </div>
@@ -371,7 +371,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
                         title="이 문형을 자세히 다루는 챕터"
                         onClick={e => e.stopPropagation()}
                       >
-                        📖 챕터
+                        챕터
                       </Link>
                     )}
                     {mounted && (
@@ -383,7 +383,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
                         aria-label={savedSet.has(item.pattern) ? '단어장에 저장됨' : '문형을 단어장에 저장'}
                         title={savedSet.has(item.pattern) ? '저장됨' : user ? '단어장에 저장 (FSRS 복습 시작)' : '로그인 필요'}
                       >
-                        {savedSet.has(item.pattern) ? '✓' : '⭐'}
+                        {savedSet.has(item.pattern) ? '✓' : '＋'}
                       </button>
                     )}
                   </div>

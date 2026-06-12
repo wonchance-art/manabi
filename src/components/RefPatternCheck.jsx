@@ -161,14 +161,14 @@ export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug
   return (
     <section className="card fr-section fr-check">
       <h2 className="fr-section__heading">
-        <span aria-hidden="true">✍️</span> 패턴 체크
+        패턴 체크
         {total > 0 && <span className="fr-check__count">{answeredCount}/{total}</span>}
       </h2>
       <p className="fr-check__lead">
         세 단계로 이 챕터를 확인해요. <strong>{passNeed > 0 ? `${passNeed}/${total}` : '80%'} 이상</strong>이면 통과!
         {lastResult && !done && (
           <span className="fr-check__last">
-            {' '}· 지난 결과 {lastResult.right}/{lastResult.total} {isPassed(lastResult) ? '✅ 통과' : '· 재도전 추천'}
+            {' '}· 지난 결과 {lastResult.right}/{lastResult.total} {isPassed(lastResult) ? '— 통과' : '— 재도전 추천'}
           </span>
         )}
       </p>
@@ -243,7 +243,7 @@ export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug
                     )}
                     {ans && (
                       <div className="fr-quiz__answer">
-                        {ans.ok ? '⭕' : '❌'}{' '}
+                        {ans.ok ? '○' : '×'}{' '}
                         <span lang={langCode}>{renderMain(q.answer, q.pron)}</span>
                         <RefSpeak text={q.answer} lang={lang} size="xs" />
                       </div>
@@ -269,7 +269,7 @@ export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug
                         </button>
                       ))}
                     </div>
-                    {ans && <div className="fr-quiz__answer">{ans.ok ? '⭕ 정확해요' : <>❌ 정답: <span lang={langCode}>{q.correct}</span></>}<RefSpeak text={q.correct} lang={lang} size="xs" /></div>}
+                    {ans && <div className="fr-quiz__answer">{ans.ok ? '○ 정확해요' : <>× 정답: <span lang={langCode}>{q.correct}</span></>}<RefSpeak text={q.correct} lang={lang} size="xs" /></div>}
                   </div>
                 )}
 
@@ -295,7 +295,7 @@ export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug
                             <button type="button" className="fr-check__grade-btn" onClick={() => gradeProduce(q, false)}>틀림</button>
                           </span>
                         )}
-                        {ans && <span className={`fr-quiz__mark ${ans.ok ? 'is-correct' : 'is-wrong'}`}>{ans.ok ? '⭕' : '❌'}</span>}
+                        {ans && <span className={`fr-quiz__mark ${ans.ok ? 'is-correct' : 'is-wrong'}`}>{ans.ok ? '○' : '×'}</span>}
                       </div>
                     )}
                   </div>
@@ -310,25 +310,25 @@ export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug
         <div className={`fr-check__verdict ${passedNow ? 'is-pass' : 'is-fail'}`}>
           <p className="fr-check__result">
             {passedNow ? (
-              <>🎉 <strong>통과! {rightCount}/{total}</strong> — 이 챕터의 패턴이 손에 익었어요.</>
+              <><strong>통과 — {rightCount}/{total}</strong>. 이 챕터의 패턴이 손에 익었어요.</>
             ) : (
               <><strong>{rightCount}/{total}</strong> — 통과까지 {passNeed - rightCount}개. 틀린 패턴을 위 섹션에서 다시 본 뒤 재도전해보세요.</>
             )}
           </p>
           <div className="fr-check__verdict-actions">
-            <button type="button" className="chip" onClick={retry}>🔁 다시 도전</button>
+            <button type="button" className="chip" onClick={retry}>다시 도전</button>
             {passedNow && next && (
               <Link href={next.href} className="fr-check__next">
                 다음 챕터 · {next.title} →
               </Link>
             )}
             {passedNow && !next && (
-              <span className="fr-check__last">마지막 챕터까지 끝! 🏁</span>
+              <span className="fr-check__last">마지막 챕터까지 마쳤습니다.</span>
             )}
           </div>
           {passedNow && reviewLinks.length > 0 && (
             <div className="fr-check__review">
-              <span className="fr-check__review-label">기억에 박아두기:</span>
+              <span className="fr-check__review-label">복습으로 단단히 —</span>
               {reviewLinks.map(l => (
                 <Link key={l.href} href={l.href} className="fr-check__review-link">{l.label}</Link>
               ))}

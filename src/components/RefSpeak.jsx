@@ -20,7 +20,7 @@ export default function RefSpeak({ text, lang, size = 'sm' }) {
       aria-label="발음 듣기"
       title="발음 듣기"
     >
-      🔊
+      ▷
     </button>
   );
 }
