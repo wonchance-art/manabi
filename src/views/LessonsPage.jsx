@@ -252,12 +252,12 @@ export default function LessonsPage({ refManifest = {} }) {
                   <span className="lessons-list__group-glyph" aria-hidden="true">{meta.short || meta.key}</span>
                   <span className="lessons-list__group-title">
                     {meta.label.replace(`${meta.short || meta.key} `, '')}
-                    <span className="lessons-list__group-focus">· {meta.focus}</span>
                   </span>
+                  <span className="lessons-list__group-focus">{meta.focus}</span>
                   {/* 접힌 상태에서도 보이는 사전 바로가기 */}
                   {bunkeiCount > 0 && (
                     <span
-                      className="lessons-list__bunkei-chip"
+                      className="lessons-list__bunkei-chip lessons-list__chip--bunkei"
                       role="link"
                       tabIndex={0}
                       title={`${meta.key} 문형 사전 — ${bunkeiCount}문형 전수 (검색·뜻 가리기)`}
@@ -269,7 +269,7 @@ export default function LessonsPage({ refManifest = {} }) {
                   )}
                   {vocabCount > 0 && (
                     <span
-                      className="lessons-list__bunkei-chip"
+                      className="lessons-list__bunkei-chip lessons-list__chip--vocab"
                       role="link"
                       tabIndex={0}
                       title={`${meta.label} 어휘 사전 — ${vocabCount}단어 (주제별·검색)`}

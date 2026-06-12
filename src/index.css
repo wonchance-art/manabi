@@ -5402,9 +5402,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   flex-direction: column;
 }
 .lessons-list__group-header {
-  display: flex;
+  /* 고정 칼럼 그리드 — 모든 레벨에서 제목·부제·사전 칩·카운트가 세로로 정렬 */
+  display: grid;
+  grid-template-columns: 14px 2.6rem 6.2em minmax(0, 1fr) auto auto auto;
   align-items: center;
-  gap: 8px;
+  column-gap: 8px;
   width: 100%;
   padding: 10px 4px;
   border: none;
@@ -5437,22 +5439,29 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   color: var(--text-primary);
 }
 .lessons-list__group-title {
-  display: flex; align-items: baseline; gap: 7px;
   min-width: 0;
   font-size: 0.92rem;
   font-weight: 600;
   color: var(--text-primary);
-  flex: 1;
   white-space: nowrap;
+  overflow: hidden;
 }
 .lessons-list__group-focus {
+  min-width: 0;
   font-weight: 500;
   font-size: 0.8rem;
   color: var(--text-muted);
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* 사전 칩·카운트 — 칼럼 고정 (칩이 없는 레벨에서도 자리 유지) */
+.lessons-list__chip--bunkei { grid-column: 5; }
+.lessons-list__chip--vocab { grid-column: 6; }
 .lessons-list__group-count {
+  grid-column: 7;
+  min-width: 5.2em;
+  text-align: right;
   font-size: 0.78rem;
   font-feature-settings: 'tnum';
   color: var(--text-muted);
@@ -10432,22 +10441,27 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .fr-header-bunkei:hover { background: var(--bg-elevated); color: var(--text-primary); }
 
 .lessons-list__bunkei-chip {
-  flex-shrink: 0;
+  min-width: 7.4em;
+  text-align: center;
   font-size: 0.72rem; font-weight: 700;
   color: var(--text-secondary);
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: var(--radius-full);
   padding: 2px 9px;
-  margin-right: 8px;
   cursor: pointer;
+  font-variant-numeric: tabular-nums;
   transition: background 0.15s ease, color 0.15s ease;
 }
 .lessons-list__bunkei-chip:hover { background: var(--bg-elevated); color: var(--text-primary); }
 @media (max-width: 600px) {
-  /* 칩 2개(문형·어휘 사전)가 들어가도록 — 레벨 포커스 문구는 양보 */
-  .lessons-list__bunkei-chip { font-size: 0.68rem; padding: 2px 7px; margin-right: 5px; }
+  /* 좁은 화면 — 부제 칼럼은 양보하고 제목이 남는 폭을 차지 */
+  .lessons-list__group-header { grid-template-columns: 12px 2.2rem minmax(0, 1fr) auto auto auto; }
   .lessons-list__group-focus { display: none; }
+  .lessons-list__chip--bunkei { grid-column: 4; }
+  .lessons-list__chip--vocab { grid-column: 5; }
+  .lessons-list__group-count { grid-column: 6; min-width: 0; }
+  .lessons-list__bunkei-chip { min-width: 0; font-size: 0.68rem; padding: 2px 7px; }
 }
 
 /* 이어서 학습 — 지금 할 챕터 바로가기 카드 */
