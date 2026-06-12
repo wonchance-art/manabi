@@ -87,7 +87,7 @@ export default function StatsPage() {
       if (error) throw error;
       if (!ok) throw new Error('XP가 부족합니다.');
     },
-    onSuccess: () => { fetchProfile(user.id, user.user_metadata); toast('🛡️ 스트릭 프리즈 획득!', 'success'); },
+    onSuccess: () => { fetchProfile(user.id, user.user_metadata); toast('스트릭 프리즈 획득', 'success'); },
     onError: (err) => toast(err.message, 'error'),
   });
 
@@ -110,7 +110,7 @@ export default function StatsPage() {
     <div className="page-container" style={{ maxWidth: 560, display: 'flex', flexDirection: 'column', gap: 16 }}>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 style={{ fontSize: '1.3rem', fontWeight: 700, margin: 0 }}>📊 학습 통계</h1>
+        <h1 style={{ fontSize: '1.3rem', fontWeight: 700, margin: 0 }}>학습 통계</h1>
         <Link href="/profile" className="btn btn--ghost btn--sm">← 프로필</Link>
       </div>
 
@@ -128,10 +128,10 @@ export default function StatsPage() {
           </div>
           <div className="mypage-stat-grid">
             {[
-              { icon: '⭐', label: '수집', value: vocab.length },
-              { icon: '🏅', label: '숙련', value: data?.mastered ?? '–' },
-              { icon: '📖', label: '완독', value: data?.readCount ?? '–' },
-              { icon: '🔥', label: '스트릭', value: streak ? `${streak}일` : '–' },
+              { icon: '', label: '수집', value: vocab.length },
+              { icon: '', label: '숙련', value: data?.mastered ?? '–' },
+              { icon: '', label: '완독', value: data?.readCount ?? '–' },
+              { icon: '', label: '스트릭', value: streak ? `${streak}일` : '–' },
             ].map(s => (
               <div key={s.label} className="mypage-stat-cell">
                 <span className="mypage-stat-cell__icon">{s.icon}</span>
@@ -142,7 +142,6 @@ export default function StatsPage() {
           </div>
           <div className="mypage-freeze" style={{ marginTop: 14 }}>
             <div className="mypage-freeze__info">
-              <span className="mypage-freeze__icon">🛡️</span>
               <div>
                 <p className="mypage-freeze__title">스트릭 프리즈 <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>{profile.streak_freeze_count ?? 0}개</span></p>
               </div>
@@ -178,7 +177,7 @@ export default function StatsPage() {
         return (
           <div className="card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <h2 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>📚 시리즈 진척도</h2>
+              <h2 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>시리즈 진척도</h2>
               <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{totalCompleted} / {totalAll}</span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -236,7 +235,7 @@ export default function StatsPage() {
         return (
           <div className="card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              <h2 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>📅 학습 히트맵</h2>
+              <h2 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>학습 히트맵</h2>
               <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{totalActive}일 · {totalWords}개</span>
             </div>
             <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block' }}>
@@ -259,7 +258,7 @@ export default function StatsPage() {
       {data && (
         <div className="card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-            <h2 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>🏅 업적</h2>
+            <h2 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>업적</h2>
             <span className="mypage-badge-count">{data.earnedIds.size} / {ACHIEVEMENTS.length}</span>
           </div>
           <div className="mypage-badge-filters">

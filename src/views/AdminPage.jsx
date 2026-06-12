@@ -60,15 +60,6 @@ async function fetchAllMaterials() {
   return data || [];
 }
 
-async function fetchAllPosts() {
-  const { data, error } = await supabase
-    .from('forum_posts')
-    .select('id, content, created_at, likes_count, author:profiles(display_name)')
-    .order('created_at', { ascending: false });
-  if (error) throw error;
-  return data || [];
-}
-
 const STARTER_TITLES = new Set(STARTER_MATERIALS.map(m => m.title));
 
 async function fetchStarterMaterials() {
@@ -126,12 +117,6 @@ export default function AdminPage() {
     queryKey: ['admin-sources'],
     queryFn: fetchContentSources,
     enabled: tab === 'sources',
-  });
-
-  const { data: posts = [], isLoading: postsLoading } = useQuery({
-    queryKey: ['admin-posts'],
-    queryFn: fetchAllPosts,
-    enabled: tab === 'forum',
   });
 
   const { data: starterMaterials = [], isLoading: startersLoading } = useQuery({
@@ -410,16 +395,6 @@ export default function AdminPage() {
     onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
   });
 
-  // 게시물 삭제
-  const deletePostMutation = useMutation({
-    mutationFn: async (id) => {
-      const { error } = await supabase.from('forum_posts').delete().eq('id', id);
-      if (error) throw error;
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-posts'] }),
-    onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
-  });
-
   // 소스 토글
   const toggleSourceMutation = useMutation({
     mutationFn: async ({ id, is_active }) => {
@@ -632,7 +607,7 @@ export default function AdminPage() {
     <div className="page-container">
       <div className="page-header">
         <h1 className="page-header__title">🛡️ 관리자 대시보드</h1>
-        <p className="page-header__subtitle">유저, 자료, 포럼을 관리하세요</p>
+        <p className="page-header__subtitle">유저·자료·콘텐츠를 관리하세요</p>
       </div>
 
       {/* Tabs */}
@@ -641,7 +616,6 @@ export default function AdminPage() {
           { key: 'overview',  label: '📊 대시보드' },
           { key: 'users',     label: '👥 유저 관리' },
           { key: 'materials', label: '📰 자료 관리' },
-          { key: 'forum',     label: '💬 포럼 관리' },
           { key: 'sources',   label: '📡 콘텐츠 소스' },
           { key: 'starters',  label: '🌱 스타터 콘텐츠' },
           { key: 'gemini',    label: '✨ Gemini 통계' },
@@ -849,47 +823,6 @@ export default function AdminPage() {
         )
       )}
 
-      {/* ── 포럼 관리 ── */}
-      {tab === 'forum' && (
-        postsLoading ? <Spinner message="포럼 로딩 중..." /> : (
-          <div className="admin-table-wrap">
-            <div className="admin-table-header">
-              <span>총 {posts.length}건</span>
-            </div>
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>내용</th>
-                  <th>작성자</th>
-                  <th>좋아요</th>
-                  <th>작성일</th>
-                  <th>삭제</th>
-                </tr>
-              </thead>
-              <tbody>
-                {posts.map(p => (
-                  <tr key={p.id}>
-                    <td className="admin-table__content">{p.content}</td>
-                    <td>{p.author?.display_name || '익명'}</td>
-                    <td>❤️ {p.likes_count || 0}</td>
-                    <td className="admin-table__muted">{new Date(p.created_at).toLocaleDateString('ko-KR')}</td>
-                    <td>
-                      <Button
-                        size="sm"
-                        variant="danger"
-                        disabled={deletePostMutation.isPending}
-                        onClick={() => confirmDelete(p.content.slice(0, 20), () => deletePostMutation.mutate(p.id))}
-                      >
-                        삭제
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )
-      )}
       {/* ── 콘텐츠 소스 관리 ── */}
       {tab === 'sources' && (
         sourcesLoading ? <Spinner message="소스 목록 로딩 중..." /> : (

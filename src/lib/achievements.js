@@ -27,13 +27,12 @@ export const ACHIEVEMENTS = [
   { id: 'level_10',     icon: '🏆', name: '레벨 10',        desc: '최고 레벨에 도달했어요!',         category: 'XP' },
   // 특별
   { id: 'polyglot',     icon: '🌍', name: '폴리글랏',       desc: '일본어와 영어 단어를 모두 수집했어요', category: '특별' },
-  { id: 'first_post',   icon: '💬', name: '첫 글',          desc: '커뮤니티에 첫 글을 올렸어요',    category: '특별' },
 ];
 
 export const ACHIEVEMENT_MAP = Object.fromEntries(ACHIEVEMENTS.map(a => [a.id, a]));
 
 /** 순수 함수: 통계 기반으로 각 업적 달성 여부 맵 반환 */
-export function buildConditions({ vocabCount = 0, masteredCount = 0, reviewedCount = 0, readCount = 0, xp = 0, streak = 0, firstPost = false, vocabSample = [] }) {
+export function buildConditions({ vocabCount = 0, masteredCount = 0, reviewedCount = 0, readCount = 0, xp = 0, streak = 0, vocabSample = [] }) {
   const level = getXPLevel(xp);
 
   const hasJP = vocabSample.some(v =>
@@ -64,7 +63,6 @@ export function buildConditions({ vocabCount = 0, masteredCount = 0, reviewedCou
     level_5:      level >= 5,
     level_10:     level >= 10,
     polyglot:     hasJP && hasEN,
-    first_post:   firstPost,
   };
 }
 
@@ -72,7 +70,7 @@ export function buildConditions({ vocabCount = 0, masteredCount = 0, reviewedCou
  * 현재 통계를 기반으로 새로 달성한 뱃지를 확인하고 DB에 저장.
  * @returns {Array} 새로 획득한 achievement 객체 배열
  */
-export async function checkAndAwardAchievements(userId, { xp = 0, streak = 0, firstPost = false } = {}) {
+export async function checkAndAwardAchievements(userId, { xp = 0, streak = 0 } = {}) {
   if (!userId) return [];
 
   const { data: existing } = await supabase
@@ -103,7 +101,7 @@ export async function checkAndAwardAchievements(userId, { xp = 0, streak = 0, fi
     masteredCount: masteredCount || 0,
     reviewedCount: reviewedCount || 0,
     readCount: readCount || 0,
-    xp, streak, firstPost,
+    xp, streak,
     vocabSample: vocabSample || [],
   });
 
@@ -112,14 +110,6 @@ export async function checkAndAwardAchievements(userId, { xp = 0, streak = 0, fi
   if (newOnes.length > 0) {
     await supabase.from('user_achievements').insert(
       newOnes.map(a => ({ user_id: userId, achievement_id: a.id }))
-    );
-    // 업적 알림 발송
-    await supabase.from('notifications').insert(
-      newOnes.map(a => ({
-        user_id: userId,
-        type: 'achievement',
-        message: `${a.icon} 업적 달성: ${a.name} — ${a.desc}`,
-      }))
     );
   }
 

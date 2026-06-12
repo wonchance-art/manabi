@@ -178,14 +178,13 @@ Rules:
       <div className={`reading-test ${inline ? 'reading-test--inline' : ''}`} onClick={e => e.stopPropagation()}>
 
         <div className="reading-test__header">
-          <h2 style={{ margin: 0, fontSize: '1.1rem' }}>📝 IELTS Reading Test</h2>
+          <h2 style={{ margin: 0, fontSize: '1.1rem' }}>IELTS Reading Test</h2>
           {onClose && <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', color: 'var(--text-muted)' }}>✕</button>}
         </div>
 
         {/* idle */}
         {status === 'idle' && (
           <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-            <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>📝</div>
             <p style={{ color: 'var(--text-secondary)', marginBottom: 20, lineHeight: 1.6 }}>
               Test your comprehension with<br />IELTS-style reading questions.
             </p>
@@ -196,7 +195,7 @@ Rules:
         {/* loading */}
         {status === 'loading' && (
           <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)' }}>
-            ⏳ Generating questions...
+            Generating questions...
           </div>
         )}
 
@@ -227,7 +226,7 @@ Rules:
             ))}
 
             <Button onClick={gradeTest} disabled={!allAnswered} style={{ width: '100%', marginTop: 16 }}>
-              {allAnswered ? '✅ Submit & Grade' : `${Object.keys(answers).length}/${questions.length} answered`}
+              {allAnswered ? '✓ Submit & Grade' : `${Object.keys(answers).length}/${questions.length} answered`}
             </Button>
           </div>
         )}
@@ -256,7 +255,7 @@ Rules:
             {result.explanations.map((e, i) => (
               <div key={i} className={`reading-test__result-item ${e.correct ? 'reading-test__result-item--correct' : 'reading-test__result-item--wrong'}`}>
                 <div className="reading-test__result-header">
-                  <span>{e.correct ? '✅' : '❌'} Q{i + 1}</span>
+                  <span>{e.correct ? '✓' : '×'} Q{i + 1}</span>
                 </div>
                 <p className="reading-test__result-q">{e.question}</p>
                 {!e.correct && (

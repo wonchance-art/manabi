@@ -13,7 +13,6 @@ export default function ViewerQuizModal({
           <div className="modal completion-modal">
             {quizState.status === 'loading' && (
               <>
-                <div className="completion-modal__fireworks">📝</div>
                 <h2 className="completion-modal__title">이해도 확인 중...</h2>
                 <Spinner message="AI가 퀴즈를 만들고 있어요" />
               </>
@@ -24,7 +23,7 @@ export default function ViewerQuizModal({
               return (
                 <>
                   <div className="modal__header" style={{ borderBottom: '1px solid var(--border)', paddingBottom: '12px', marginBottom: '20px' }}>
-                    <h2 className="modal__title">📝 이해도 퀴즈</h2>
+                    <h2 className="modal__title">이해도 퀴즈</h2>
                     <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                       {quizState.currentQ + 1} / {quizState.questions.length}
                     </span>
@@ -71,10 +70,7 @@ export default function ViewerQuizModal({
 
             {quizState.status === 'done' && (
               <>
-                <div className="completion-modal__fireworks">
-                  {quizState.score === quizState.total ? '🏆' : quizState.score >= quizState.total / 2 ? '👍' : '📚'}
-                </div>
-                <h2 className="completion-modal__title">퀴즈 완료!</h2>
+                <h2 className="completion-modal__title">퀴즈 완료</h2>
                 <p style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--accent)', margin: '12px 0' }}>
                   {quizState.score} / {quizState.total} 정답
                 </p>
@@ -98,8 +94,7 @@ export default function ViewerQuizModal({
       {completionModal && (
         <div className="modal-overlay completion-overlay">
           <div className="modal completion-modal">
-            <div className="completion-modal__fireworks">🎉</div>
-            <h2 className="completion-modal__title">읽기 완료!</h2>
+            <h2 className="completion-modal__title">읽기 완료</h2>
             <p className="completion-modal__subtitle">{material?.title}</p>
 
             <div className="completion-stats">
@@ -109,7 +104,7 @@ export default function ViewerQuizModal({
               </div>
               <div className="completion-stat completion-stat--divider" />
               <div className="completion-stat">
-                <span className="completion-stat__value">🔥 {completionModal.streak}</span>
+                <span className="completion-stat__value">{completionModal.streak}</span>
                 <span className="completion-stat__label">일 연속</span>
               </div>
               <div className="completion-stat completion-stat--divider" />
@@ -131,7 +126,7 @@ export default function ViewerQuizModal({
             <div className="completion-modal__actions">
               {completionModal.dueCount > 0 && (
                 <a href="/vocab" className="btn btn--primary btn--md">
-                  🧠 지금 복습하기 ({completionModal.dueCount}개)
+                  지금 복습하기 ({completionModal.dueCount}개)
                 </a>
               )}
 
@@ -139,7 +134,7 @@ export default function ViewerQuizModal({
                 <a href={`/viewer/${nextMaterial.id}`} className="completion-next-card">
                   <span className="completion-next-card__badge">다음 추천</span>
                   <span className="completion-next-card__flag">
-                    {nextMaterial.processed_json?.metadata?.language === 'English' ? '🇬🇧' : '🇯🇵'}
+                    {nextMaterial.processed_json?.metadata?.language === 'English' ? '영어' : '일본어'}
                   </span>
                   <span className="completion-next-card__title">{nextMaterial.title}</span>
                   <span className="completion-next-card__arrow">→</span>
@@ -148,7 +143,7 @@ export default function ViewerQuizModal({
 
               {!nextMaterial && completionModal.dueCount === 0 && (
                 <a href="/materials" className="btn btn--primary btn--md">
-                  📰 다른 자료 보기
+                  다른 자료 보기
                 </a>
               )}
 

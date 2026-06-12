@@ -7,7 +7,7 @@ import { buildConditions, ACHIEVEMENTS, ACHIEVEMENT_MAP } from '../achievements'
 describe('buildConditions', () => {
   const EMPTY = {
     vocabCount: 0, masteredCount: 0, reviewedCount: 0,
-    readCount: 0, xp: 0, streak: 0, firstPost: false, vocabSample: [],
+    readCount: 0, xp: 0, streak: 0, vocabSample: [],
   };
 
   it('모든 통계 0 → 모든 조건 false', () => {
@@ -83,15 +83,11 @@ describe('buildConditions', () => {
     expect(c.polyglot).toBe(true);
   });
 
-  it('first_post', () => {
-    expect(buildConditions({ ...EMPTY, firstPost: true }).first_post).toBe(true);
-    expect(buildConditions({ ...EMPTY, firstPost: false }).first_post).toBe(false);
-  });
 });
 
 describe('ACHIEVEMENTS 상수', () => {
-  it('20개 업적 정의', () => {
-    expect(ACHIEVEMENTS).toHaveLength(20);
+  it('19개 업적 정의', () => {
+    expect(ACHIEVEMENTS).toHaveLength(19);
   });
 
   it('모든 업적에 필수 필드 존재', () => {

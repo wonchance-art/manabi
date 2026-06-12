@@ -8,7 +8,7 @@ export default function ViewerComments({
   return (
     <div className="card" style={{ marginTop: '24px', padding: '24px' }}>
       <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '20px', color: 'var(--text-primary)' }}>
-        💬 토론 {comments.length > 0 && <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: '0.88rem' }}>({comments.length})</span>}
+        토론 {comments.length > 0 && <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: '0.88rem' }}>({comments.length})</span>}
       </h3>
 
       {comments.length > 0 ? (

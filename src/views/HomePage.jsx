@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
-import { getXPLevel, getLevelProgress, getXPToNextLevel } from '../lib/xp';
 import Button from '../components/Button';
 import { parseTitle } from '../lib/seriesMeta';
 import { getIdealLevel } from '../lib/levels';
@@ -37,9 +36,6 @@ async function fetchHomeData(userId) {
     { data: recentProgress },
     suggestionsRes,
     { data: readProgressRows },
-    { count: todayForumPosts },
-    { count: todayForumComments },
-    { count: todayGrammarCount },
     { data: allVocabRows },
     { data: publicMaterials },
     { data: seriesMaterials },
@@ -55,12 +51,6 @@ async function fetchHomeData(userId) {
     fetch('/api/suggestions/today').then(r => r.ok ? r.json() : []),
     supabase.from('reading_progress').select('completed_at')
       .eq('user_id', userId).eq('is_completed', true).gte('completed_at', prevWeekStartISO),
-    supabase.from('forum_posts').select('*', { count: 'exact', head: true })
-      .eq('author_id', userId).gte('created_at', todayStart),
-    supabase.from('forum_comments').select('*', { count: 'exact', head: true })
-      .eq('author_id', userId).gte('created_at', todayStart),
-    supabase.from('grammar_notes').select('*', { count: 'exact', head: true })
-      .eq('user_id', userId).gte('created_at', todayStart),
     supabase.from('user_vocabulary').select('language, word_text')
       .eq('user_id', userId),
     supabase.from('reading_materials')
@@ -105,8 +95,6 @@ async function fetchHomeData(userId) {
     todayVocabCount,
     todayReviewCount,
     todayReadCount,
-    todayForumCount:  (todayForumPosts || 0) + (todayForumComments || 0),
-    todayGrammarCount: todayGrammarCount || 0,
     recentProgress:   (recentProgress || []).slice(0, 4),
     suggestions:      suggestionsRes || [],
     weekVocab,
@@ -251,11 +239,6 @@ export default function HomePage({ continueManifest = {} }) {
     refetchOnWindowFocus: true,
   });
 
-  const xp         = profile?.xp ?? 0;
-  const xpLevel    = getXPLevel(xp);
-  const xpProgress = getLevelProgress(xp);
-  const xpToNext   = getXPToNextLevel(xp);
-
   const todayVocab   = data?.todayVocabCount    ?? 0;
   const todayReviews = data?.todayReviewCount   ?? 0;
   const todayReads   = data?.todayReadCount     ?? 0;
@@ -315,19 +298,6 @@ export default function HomePage({ continueManifest = {} }) {
   const hasNoLanguage = profile && !profile.learning_language?.length;
   const isNewUser     = dueCount === 0 && todayVocab === 0 && !data?.recentProgress?.length;
 
-  // 첫 주 마일스톤 — 5/5 완료되면 자동 숨김
-  const totalVocab     = data?.vocabByLang?.total ?? 0;
-  const completedReads = (data?.weekReads ?? 0) + (data?.prevWeekReads ?? 0);
-  const everReviews    = (data?.weekReviews ?? 0) + (data?.prevWeekReviews ?? 0);
-  const JOURNEY = [
-    { icon: '📖', label: '첫 자료 완독',    done: completedReads >= 1, href: '/materials' },
-    { icon: '⭐', label: '단어 5개 저장',    done: totalVocab >= 5,     href: '/materials' },
-    { icon: '🧠', label: '첫 단어 복습',    done: everReviews >= 1,    href: '/vocab' },
-    { icon: '🔥', label: '3일 연속 학습',   done: streak >= 3,         href: '/materials' },
-    { icon: '📚', label: '단어 20개 도달',  done: totalVocab >= 20,    href: '/materials' },
-  ];
-  const journeyDone = JOURNEY.filter(j => j.done).length;
-
   return (
     <div className="page-container home-page home-layout" style={{ maxWidth: 720 }}>
 
@@ -338,8 +308,8 @@ export default function HomePage({ continueManifest = {} }) {
         </Link>
       )}
 
-      {/* 진짜 처음 → 3단계 가이드 / 활동 시작 후 → 첫 주 여정 (XOR) */}
-      {isNewUser ? (
+      {/* 진짜 처음 — 3단계 가이드 */}
+      {isNewUser && (
         <div className="home-getting-started">
           <div className="home-getting-started__header">
             <div>
@@ -362,28 +332,6 @@ export default function HomePage({ continueManifest = {} }) {
               </Link>
             ))}
           </div>
-        </div>
-      ) : journeyDone < JOURNEY.length && (
-        <div className="home-journey">
-          <div className="home-journey__header">
-            <span className="home-journey__title">첫 주 여정</span>
-            <span className="home-journey__progress">{journeyDone} / {JOURNEY.length}</span>
-          </div>
-          <div className="home-journey__bar">
-            <div className="home-journey__bar-fill" style={{ width: `${(journeyDone / JOURNEY.length) * 100}%` }} />
-          </div>
-          <ul className="home-journey__list">
-            {JOURNEY.map(j => (
-              <li key={j.label} className={`home-journey__item ${j.done ? 'is-done' : ''}`}>
-                <span className="home-journey__check">{j.done ? '✓' : '○'}</span>
-                {j.done ? (
-                  <span className="home-journey__label">{j.label}</span>
-                ) : (
-                  <Link href={j.href} className="home-journey__label home-journey__label--link">{j.label}</Link>
-                )}
-              </li>
-            ))}
-          </ul>
         </div>
       )}
 
@@ -414,10 +362,9 @@ export default function HomePage({ continueManifest = {} }) {
           )}
         </div>
 
-        {/* 컴팩트 상태: Lv + 수집 단어 + 복습 대기 */}
+        {/* 컴팩트 상태: 수집 단어 + 복습 대기 */}
         <div className="u-stat-line u-mt-md">
-          <span><strong>Lv.{xpLevel}</strong> · {xp.toLocaleString('ko-KR')} XP</span>
-          <span>단어 <strong>{data?.vocabByLang ? Object.values(data.vocabByLang).reduce((a, b) => a + b, 0) : 0}</strong> 수집</span>
+          <span>단어 <strong>{data?.vocabByLang?.total ?? 0}</strong> 수집</span>
           {dueCount > 0 && (
             <span style={{ color: 'var(--warning)', fontWeight: 600 }}>
               복습 대기 {dueCount}

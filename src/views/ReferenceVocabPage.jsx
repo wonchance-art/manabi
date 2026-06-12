@@ -132,7 +132,6 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
   if (!vocab) {
     return (
       <div className="page-container" style={{ maxWidth: 760, textAlign: 'center', paddingTop: 80 }}>
-        <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>🔍</div>
         <h1 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: 8 }}>해당 레벨의 어휘가 없어요</h1>
         <Link href={backHref} className="btn btn--ghost btn--sm">{refInfo?.name || ''} 강의 목록으로 →</Link>
       </div>
@@ -242,7 +241,6 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
       {filteredThemes.map(theme => (
         <section key={theme.name} style={{ marginBottom: 26 }}>
           <h2 className="fr-vlist-theme">
-            {theme.icon && <span aria-hidden="true">{theme.icon} </span>}
             {theme.name}
             <span className="fr-vlist-theme__count">{theme.words.length}</span>
           </h2>
@@ -251,7 +249,7 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
               const text = refMain(w);
               const pron = refPron(w);
               const link = w.etym || w.hanja;
-              const linkIcon = w.hanja ? '🈶' : '🌱';
+              const linkIcon = w.hanja ? '한자' : '어원';
               const saved = savedSet.has(text);
               const rowKey = `${theme.name}:${text}:${wi}`;
               const isRevealed = revealed.has(rowKey);
@@ -291,7 +289,7 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
                       {w.ko}
                       {lang === 'French' && w.en && <span className="fr-vrow__en"> · EN {w.en}</span>}
                     </div>
-                    {link && <div className="fr-vrow__etym">{linkIcon} {refInline(link)}</div>}
+                    {link && <div className="fr-vrow__etym"><strong>{linkIcon}</strong> · {refInline(link)}</div>}
                     {w.ex && (
                       <div className="bk-ex">
                         <div className="bk-ex__pair">

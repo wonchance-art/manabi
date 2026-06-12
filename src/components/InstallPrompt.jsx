@@ -50,18 +50,18 @@ export default function InstallPrompt() {
   return (
     <div className="card mypage-section" style={{ marginBottom: 16 }}>
       <h2 className="mypage-section__title" style={{ fontSize: '0.9rem', marginBottom: 8 }}>
-        📱 앱으로 설치
+        앱으로 설치
       </h2>
       {deferred ? (
         <>
           <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 10, lineHeight: 1.6 }}>
             홈 화면에 추가하면 브라우저 없이 앱처럼 실행할 수 있어요.
           </p>
-          <Button size="sm" onClick={handleInstall}>🏠 홈 화면에 추가</Button>
+          <Button size="sm" onClick={handleInstall}>홈 화면에 추가</Button>
         </>
       ) : isIos ? (
         <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-          Safari 공유 버튼 <strong>(⬆️)</strong> → <strong>&ldquo;홈 화면에 추가&rdquo;</strong> 로 앱처럼 사용할 수 있어요.
+          Safari 공유 버튼 → <strong>&ldquo;홈 화면에 추가&rdquo;</strong> 로 앱처럼 사용할 수 있어요.
         </p>
       ) : null}
     </div>

@@ -8,11 +8,11 @@ export const metadata = {
 const FAQ = [
   {
     q: '어떻게 학습을 시작하나요?',
-    a: '자료실에서 일본어·영어 글을 열거나 PDF를 업로드하세요. 단어를 탭하면 의미와 예문이 뜨고, ⭐ 아이콘으로 단어장에 저장됩니다.',
+    a: '자료실에서 일본어·영어 글을 열거나 PDF를 업로드하세요. 단어를 탭하면 의미와 예문이 뜨고, 별 아이콘으로 단어장에 저장됩니다.',
   },
   {
     q: '"읽기가 복습이다"가 무슨 뜻인가요?',
-    a: '별도의 복습 화면이 없어요. 저장한 단어가 복습 시점이 되면, 읽기 화면에서 자동으로 노란색으로 표시되고 그 자리에서 🟢🟡🔴 버튼으로 기억 강도를 평가할 수 있어요.',
+    a: '별도의 복습 화면이 없어요. 저장한 단어가 복습 시점이 되면, 읽기 화면에서 자동으로 노란색으로 표시되고 그 자리에서 버튼으로 기억 강도를 평가할 수 있어요.',
   },
   {
     q: 'FSRS는 뭐예요?',
@@ -68,9 +68,9 @@ export default function HelpPage() {
       <div style={{ marginTop: 40, padding: 16, borderRadius: 10, background: 'var(--bg-subtle)', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
         더 궁금하신 점이 있으신가요? 아래 링크도 확인해주세요.
         <div style={{ marginTop: 10, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <Link href="/guide" className="btn btn--ghost btn--sm">📚 사용 가이드</Link>
-          <Link href="/terms" className="btn btn--ghost btn--sm">📄 이용약관</Link>
-          <Link href="/privacy" className="btn btn--ghost btn--sm">🔒 개인정보</Link>
+          <Link href="/guide" className="btn btn--ghost btn--sm">사용 가이드</Link>
+          <Link href="/terms" className="btn btn--ghost btn--sm">이용약관</Link>
+          <Link href="/privacy" className="btn btn--ghost btn--sm">개인정보</Link>
         </div>
       </div>
     </div>

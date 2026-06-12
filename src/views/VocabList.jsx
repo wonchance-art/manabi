@@ -77,9 +77,9 @@ export default function VocabList({
         </div>
         <div className="chip-group">
           {[
-            { value: 'all', label: '🌍 전체' },
-            { value: 'Japanese', label: '🇯🇵 일본어' },
-            { value: 'English', label: '🇬🇧 영어' },
+            { value: 'all', label: '전체' },
+            { value: 'Japanese', label: '일본어' },
+            { value: 'English', label: '영어' },
           ].map(f => (
             <button
               key={f.value}
@@ -128,7 +128,7 @@ export default function VocabList({
                   disabled={bulkDeleteMutation?.isPending}
                   style={{ background: 'var(--danger)' }}
                 >
-                  🗑️ 삭제 ({selectedIds.size})
+                  삭제 ({selectedIds.size})
                 </Button>
               </>
             )}
@@ -189,7 +189,7 @@ export default function VocabList({
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}
                   >
-                    🔊
+                    ▷
                   </button>
                 )}
                 {!selectMode && updateVocabMutation && (
@@ -211,7 +211,7 @@ export default function VocabList({
                     onMouseLeave={e => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}
                     title="편집"
                   >
-                    ✏️
+                    ✎
                   </button>
                 )}
                 {!selectMode && (
@@ -239,8 +239,8 @@ export default function VocabList({
             <p className="vocab-card__meaning">{v.meaning}</p>
             <div className="vocab-card__footer">
               <span>{new Date(v.next_review_at) <= new Date()
-                ? '🔴 복습 필요'
-                : `📅 ${new Date(v.next_review_at).toLocaleDateString('ko-KR')}`}
+                ? '복습 필요'
+                : new Date(v.next_review_at).toLocaleDateString('ko-KR')}
               </span>
               <span style={{
                 padding: '2px 8px',
@@ -256,7 +256,6 @@ export default function VocabList({
           );
         }) : (
           <div className="empty-state" style={{ gridColumn: '1/-1' }}>
-            <div className="empty-state__icon">{search ? '🔍' : '⭐'}</div>
             <p className="empty-state__msg">
               {search
                 ? '검색 결과가 없습니다.'
@@ -268,7 +267,7 @@ export default function VocabList({
                   자료를 읽으면서 모르는 단어를 탭하면<br />자동으로 단어장에 추가돼요
                 </p>
                 <Link href="/materials" className="btn btn--primary btn--md">
-                  📰 자료 읽으러 가기 →
+                  자료 읽으러 가기 →
                 </Link>
               </div>
             )}
@@ -292,7 +291,7 @@ export default function VocabList({
       {editing && (
         <div className="modal-overlay" onClick={() => setEditing(null)}>
           <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 440 }}>
-            <h3 style={{ margin: '0 0 16px', fontSize: '1.05rem' }}>✏️ 단어 편집</h3>
+            <h3 style={{ margin: '0 0 16px', fontSize: '1.05rem' }}>단어 편집</h3>
 
             <label className="u-text-sm u-text-bold" style={{ display: 'block', marginBottom: 4 }}>단어</label>
             <input

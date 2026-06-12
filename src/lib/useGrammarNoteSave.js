@@ -20,7 +20,7 @@ export function useGrammarNoteSave({ user, materialId, selectedText, explanation
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['grammar-notes', user?.id] });
-      toast?.('📝 문법 노트에 저장됐어요!', 'success');
+      toast?.('문법 노트에 저장됐어요.', 'success');
     },
     onError: (err) => toast?.('저장 실패 — ' + friendlyToastMessage(err), 'error'),
   });

@@ -50,8 +50,7 @@ export default function VocabReview({
       {reviewFinished ? (
         <div className="review-done">
           <div className="review-done__header">
-            <div className="review-done__emoji">🎉</div>
-            <h2 className="review-done__title">오늘의 복습 완료!</h2>
+            <h2 className="review-done__title">오늘의 복습 완료</h2>
             <p className="review-done__sub">FSRS 알고리즘이 당신의 기억을 강화했습니다.</p>
           </div>
 
@@ -92,7 +91,7 @@ export default function VocabReview({
               <div style={{ marginTop: 20, padding: '16px 20px', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
                   <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                    📅 앞으로 7일 복습 일정
+                    앞으로 7일 복습 일정
                   </span>
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>총 {total}개 예정</span>
                 </div>
@@ -130,7 +129,6 @@ export default function VocabReview({
                 className="review-done__card"
                 onClick={() => setTab('stats')}
               >
-                <span className="review-done__card-icon">🔥</span>
                 <div className="review-done__card-text">
                   <strong>요주의 단어 확인</strong>
                   <span>{hardWords}개 단어가 어려워하고 있어요</span>
@@ -138,24 +136,15 @@ export default function VocabReview({
               </button>
             )}
             <Link href="/materials" className="review-done__card">
-              <span className="review-done__card-icon">📖</span>
               <div className="review-done__card-text">
                 <strong>새 자료 읽기</strong>
                 <span>읽으면서 새 단어를 수집해요</span>
               </div>
             </Link>
-            <Link href="/forum" className="review-done__card">
-              <span className="review-done__card-icon">💬</span>
+            <Link href="/lessons" className="review-done__card">
               <div className="review-done__card-text">
-                <strong>학습 인증 올리기</strong>
-                <span>커뮤니티에 오늘의 학습을 공유해요</span>
-              </div>
-            </Link>
-            <Link href="/leaderboard" className="review-done__card">
-              <span className="review-done__card-icon">🏆</span>
-              <div className="review-done__card-text">
-                <strong>랭킹 확인</strong>
-                <span>내 순위가 올라갔을지도?</span>
+                <strong>강의 이어서 보기</strong>
+                <span>문법 챕터를 학습하고 패턴 체크에 도전해요</span>
               </div>
             </Link>
           </div>
@@ -170,7 +159,7 @@ export default function VocabReview({
           <div style={{
             textAlign: 'center', marginBottom: 16, fontSize: '0.78rem', color: 'var(--text-muted)',
           }}>
-            💡 자료를 읽으면서 노란 단어 클릭으로 더 자연스럽게 복습할 수 있어요
+            자료를 읽으면서 노란 단어 클릭으로 더 자연스럽게 복습할 수 있어요
           </div>
 
           <div className="card review-card">
@@ -179,7 +168,7 @@ export default function VocabReview({
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 {reviewMode === 'flash' && !showAnswer && currentWord?.source_sentence && (
                   <button className="review-hint-btn" onClick={() => setShowHint(h => !h)}>
-                    {showHint ? '힌트 숨기기' : '💡 힌트'}
+                    {showHint ? '힌트 숨기기' : '힌트'}
                   </button>
                 )}
                 <button className="review-skip-btn" onClick={() => { setShowHint(false); handleSkip(); }} title="내일로 미루기">
@@ -196,7 +185,7 @@ export default function VocabReview({
                     display: 'inline-block', padding: '3px 10px', borderRadius: 'var(--radius-full)',
                     background: 'var(--primary-glow)', color: 'var(--primary)',
                     fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.04em',
-                  }}>📝 문법 노트</span>
+                  }}>문법 노트</span>
                 </div>
               )}
 
@@ -214,7 +203,7 @@ export default function VocabReview({
                         fontSize: '0.9rem', cursor: 'pointer', color: 'var(--text-secondary)',
                       }}
                     >
-                      🔊
+                      ▷
                     </button>
                   )}
                 </div>
@@ -372,7 +361,7 @@ export default function VocabReview({
                         }}
                         title="다시 듣기"
                       >
-                        🔊
+                        ▷
                       </button>
                       <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                         소리를 듣고 알맞은 뜻을 고르세요
@@ -446,7 +435,7 @@ export default function VocabReview({
                   {exampleSentences ? (
                     <>
                       <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                        ✨ AI 예문
+                        AI 예문
                       </p>
                       {exampleSentences.map((ex, i) => (
                         <div key={i} style={{
@@ -470,7 +459,7 @@ export default function VocabReview({
                         opacity: exampleLoading ? 0.6 : 1,
                       }}
                     >
-                      {exampleLoading ? '예문 생성 중...' : '✨ AI 예문 보기'}
+                      {exampleLoading ? '예문 생성 중...' : 'AI 예문 보기'}
                     </button>
                   )}
                 </div>
@@ -480,7 +469,7 @@ export default function VocabReview({
         </>
       ) : (
         <div className="card review-card review-card--center">
-          <div className="review-card__emoji">{vocab.length === 0 ? '⭐' : '✅'}</div>
+          <div className="review-card__emoji">{vocab.length === 0 ? '★' : '✓'}</div>
           <h2 style={{ marginBottom: '10px' }}>
             {vocab.length === 0 ? '단어를 먼저 수집해볼까요?' : '지금은 복습할 단어가 없어요'}
           </h2>
@@ -490,7 +479,7 @@ export default function VocabReview({
               : 'FSRS가 다음 복습 시점을 계산해 줄 거예요. 새 자료를 읽으며 단어를 더 모아보세요.'}
           </p>
           <Link href="/materials" className="btn btn--primary btn--md">
-            📰 자료 {vocab.length === 0 ? '읽으러 가기' : '더 읽기'}
+            자료 {vocab.length === 0 ? '읽으러 가기' : '더 읽기'}
           </Link>
         </div>
       )}

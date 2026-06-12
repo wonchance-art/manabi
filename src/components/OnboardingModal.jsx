@@ -54,7 +54,6 @@ export default function OnboardingModal() {
     <div className="onboarding-overlay">
       <div className="onboarding-modal">
         <div className="onboarding-modal__header">
-          <div className="onboarding-modal__emoji">🧬</div>
           <h2 className="onboarding-modal__title">Anatomy Studio에 오신 걸 환영해요!</h2>
           <p className="onboarding-modal__sub">학습 시작 전에 몇 가지만 알려주세요.</p>
         </div>
@@ -82,14 +81,14 @@ export default function OnboardingModal() {
                 onClick={() => toggleLanguage('Japanese')}
                 className={`toggle-btn ${languages.includes('Japanese') ? 'toggle-btn--primary' : ''}`}
               >
-                🇯🇵 Japanese
+                일본어
               </button>
               <button
                 type="button"
                 onClick={() => toggleLanguage('English')}
                 className={`toggle-btn ${languages.includes('English') ? 'toggle-btn--primary' : ''}`}
               >
-                🇬🇧 English
+                영어
               </button>
             </div>
           </div>
@@ -97,7 +96,7 @@ export default function OnboardingModal() {
           {/* 일본어 레벨 */}
           {languages.includes('Japanese') && (
             <div className="form-field">
-              <label className="form-label">🇯🇵 일본어 수준</label>
+              <label className="form-label">일본어 수준</label>
               <div className="level-group">
                 {LEVELS.Japanese.map(lvl => (
                   <button
@@ -116,7 +115,7 @@ export default function OnboardingModal() {
           {/* 영어 레벨 */}
           {languages.includes('English') && (
             <div className="form-field">
-              <label className="form-label">🇬🇧 영어 수준</label>
+              <label className="form-label">영어 수준</label>
               <div className="level-group">
                 {LEVELS.English.map(lvl => (
                   <button
@@ -135,7 +134,7 @@ export default function OnboardingModal() {
           {error && <p style={{ color: 'var(--danger)', fontSize: '0.85rem' }}>{error}</p>}
 
           <Button type="submit" size="lg" disabled={saving} style={{ width: '100%', marginTop: '8px' }}>
-            {saving ? '저장 중...' : '시작하기 🚀'}
+            {saving ? '저장 중...' : '시작하기'}
           </Button>
         </form>
       </div>

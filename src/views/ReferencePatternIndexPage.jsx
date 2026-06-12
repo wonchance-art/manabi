@@ -144,7 +144,6 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
   if (!bunkei) {
     return (
       <div className="page-container" style={{ maxWidth: 760, textAlign: 'center', paddingTop: 80 }}>
-        <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>🔍</div>
         <h1 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: 8 }}>해당 레벨의 문형 사전이 없어요</h1>
         <Link href={backHref} className="btn btn--ghost btn--sm">{refInfo.name} 강의 목록으로 →</Link>
       </div>
@@ -255,7 +254,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
       {chFilter && (
         <div className="fr-chfilter">
           <span>
-            🔗 챕터 연관 문형만 보는 중 ({chFilterCount}개)
+            챕터 연관 문형만 보는 중 ({chFilterCount}개)
             {' · '}
             <Link href={`${refInfo.base}/grammar/${chFilter}`} className="fr-chfilter__back">챕터로 돌아가기</Link>
           </span>

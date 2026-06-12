@@ -195,7 +195,7 @@ export default function PdfViewerPage() {
       }, { onConflict: 'user_id,word_text' });
       if (error) throw error;
       setSaving(prev => ({ ...prev, [key]: 'done' }));
-      toast(`⭐ "${token.text}" 저장!`, 'success');
+      toast(`"${token.text}" 저장!`, 'success');
     } catch (e) { toast('저장 실패', 'error'); setSaving(prev => ({ ...prev, [key]: false })); }
   }
 
@@ -219,21 +219,20 @@ export default function PdfViewerPage() {
 
   const leftPanelContent = hasResults ? (
     <div className="pdf-context">
-      <div className="pdf-context__title">💡 번역 · 맥락</div>
+      <div className="pdf-context__title">번역 · 맥락</div>
       {inputText && (
         <div className="pdf-context__original">
           "{inputText.length > 120 ? inputText.slice(0, 120) + '…' : inputText}"
         </div>
       )}
       {contextLoading ? (
-        <div className="pdf-context__loading">⏳ 번역 + 맥락 생성 중...</div>
+        <div className="pdf-context__loading">번역 + 맥락 생성 중...</div>
       ) : contextExpl ? (
         <div className="pdf-context__text" dangerouslySetInnerHTML={{ __html: formatDetail(contextExpl) }} />
       ) : null}
     </div>
   ) : (
     <div className="pdf-side__empty">
-      <div style={{ fontSize: '1.5rem', marginBottom: 8 }}>💡</div>
       복사한 텍스트의<br />번역과 맥락이 여기에
     </div>
   );
@@ -257,7 +256,7 @@ export default function PdfViewerPage() {
             {user && (
               <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
                 <button className="pdf-word-item__save" disabled={saved || !!saving[key]}
-                  onClick={() => handleSaveWord(t)}>{saved ? '✓' : '⭐'}</button>
+                  onClick={() => handleSaveWord(t)}>{saved ? '✓' : '★'}</button>
                 <button className="pdf-word-item__save pdf-word-item__dismiss"
                   onClick={() => handleDismissWord(t)}>✕</button>
               </div>
@@ -267,10 +266,9 @@ export default function PdfViewerPage() {
       })}
     </div>
   ) : analyzing ? (
-    <div className="pdf-side__empty">⏳ 분석 중...</div>
+    <div className="pdf-side__empty">분석 중...</div>
   ) : (
     <div className="pdf-side__empty">
-      <div style={{ fontSize: '1.5rem', marginBottom: 8 }}>📝</div>
       단어 목록이<br />여기에 표시됩니다
     </div>
   );
@@ -283,8 +281,8 @@ export default function PdfViewerPage() {
         {inputText && <ListenControls text={inputText} language={language} />}
         <select value={language} onChange={e => { setLanguage(e.target.value); localStorage.setItem('pdf_language', e.target.value); }}
           style={{ fontSize: '0.8rem', padding: '4px 8px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
-          <option value="Japanese">🇯🇵</option>
-          <option value="English">🇬🇧</option>
+          <option value="Japanese">일본어</option>
+          <option value="English">영어</option>
         </select>
       </div>
 
@@ -302,13 +300,13 @@ export default function PdfViewerPage() {
               onClick={async () => {
                 try { const t = await navigator.clipboard.readText(); if (t?.trim()) handleAnalyze(t.trim()); else toast('클립보드 비어있음', 'info'); }
                 catch { toast('클립보드 권한 필요', 'warning'); }
-              }}>📋</button>
+              }}>붙여넣기</button>
             <input type="text" value={inputText} onChange={e => setInputText(e.target.value)}
               placeholder="붙여넣기 또는 직접 입력" className="form-input" style={{ flex: 1, fontSize: '0.82rem' }}
               onPaste={e => { const t = e.clipboardData?.getData('text')?.trim(); if (t) { e.preventDefault(); handleAnalyze(t); } }}
               onKeyDown={e => e.key === 'Enter' && handleAnalyze(inputText)} />
             <Button size="sm" onClick={() => handleAnalyze(inputText)} disabled={!inputText.trim() || analyzing}>
-              {analyzing ? '⏳' : '→'}
+              {analyzing ? '...' : '→'}
             </Button>
           </div>
         </main>
@@ -360,7 +358,7 @@ export default function PdfViewerPage() {
             </div>
             <div className="pdf-detail-popup__body">
               {wordDetail.loading
-                ? <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>⏳ 상세 설명 생성 중...</div>
+                ? <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>상세 설명 생성 중...</div>
                 : <div className="pdf-detail-popup__text" dangerouslySetInnerHTML={{ __html: formatDetail(wordDetail.detail) }} />
               }
             </div>
@@ -371,7 +369,7 @@ export default function PdfViewerPage() {
                 <button className={`pdf-detail-popup__save ${saved ? 'pdf-detail-popup__save--done' : ''}`}
                   disabled={saved || !!saving[key]}
                   onClick={() => handleSaveWord(wordDetail.token)}>
-                  {saved ? '✓ 저장됨' : saving[key] ? '저장 중...' : '⭐ 단어장에 저장'}
+                  {saved ? '✓ 저장됨' : saving[key] ? '저장 중...' : '단어장에 저장'}
                 </button>
               );
             })()}

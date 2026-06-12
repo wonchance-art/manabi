@@ -14,19 +14,19 @@ const DEMO_TOKENS = [
 ];
 
 const PERSONAS = [
-  { icon: '📺', text: '일드·애니·유튜브를 자막 없이 이해하고 싶은 분' },
-  { icon: '📰', text: '뉴스·소설·원서를 읽으며 어휘력을 키우고 싶은 분' },
-  { icon: '🎯', text: 'JLPT·토익을 앞두고 효율적으로 단어를 암기해야 하는 분' },
-  { icon: '🔁', text: '열심히 외워도 금방 잊어버리는 패턴에서 벗어나고 싶은 분' },
+  { icon: '', text: '일드·애니·유튜브를 자막 없이 이해하고 싶은 분' },
+  { icon: '', text: '뉴스·소설·원서를 읽으며 어휘력을 키우고 싶은 분' },
+  { icon: '', text: 'JLPT·토익을 앞두고 효율적으로 단어를 암기해야 하는 분' },
+  { icon: '', text: '열심히 외워도 금방 잊어버리는 패턴에서 벗어나고 싶은 분' },
 ];
 
 const FEATURES = [
-  { icon: '⚡', title: '실시간 AI 병렬 분석', desc: 'Gemini AI가 여러 문단을 동시에 처리합니다. 긴 텍스트도 수십 초 안에 완료.' },
-  { icon: '🇯🇵', title: '후리가나 자동 생성', desc: '한자가 포함된 모든 단어에 후리가나를 자동으로 달아드립니다. N5~N1 전 범위 지원.' },
-  { icon: '🇬🇧', title: '영어 어휘 분석', desc: '영어 단어의 품사·한국어 뜻·예문을 즉시 제공. 긴 원서도 부담 없이 읽기.' },
-  { icon: '📊', title: 'FSRS v5 알고리즘', desc: '최신 기억 곡선 모델. 단순 반복보다 훨씬 적은 시간으로 오래 기억에 남습니다.' },
-  { icon: '🌐', title: '공개 자료 공유', desc: '분석한 자료를 커뮤니티와 공유하거나 다른 학습자의 자료로 함께 공부하세요.' },
-  { icon: '🔒', title: '클라우드 학습 데이터', desc: '단어장·복습 기록·학습 통계가 안전하게 저장됩니다. 어디서든 이어서 학습.' },
+  { icon: '', title: '실시간 AI 병렬 분석', desc: 'Gemini AI가 여러 문단을 동시에 처리합니다. 긴 텍스트도 수십 초 안에 완료.' },
+  { icon: '', title: '후리가나 자동 생성', desc: '한자가 포함된 모든 단어에 후리가나를 자동으로 달아드립니다. N5~N1 전 범위 지원.' },
+  { icon: '', title: '영어 어휘 분석', desc: '영어 단어의 품사·한국어 뜻·예문을 즉시 제공. 긴 원서도 부담 없이 읽기.' },
+  { icon: '', title: 'FSRS v5 알고리즘', desc: '최신 기억 곡선 모델. 단순 반복보다 훨씬 적은 시간으로 오래 기억에 남습니다.' },
+  { icon: '', title: '공개 자료 공유', desc: '분석한 자료를 커뮤니티와 공유하거나 다른 학습자의 자료로 함께 공부하세요.' },
+  { icon: '', title: '클라우드 학습 데이터', desc: '단어장·복습 기록·학습 통계가 안전하게 저장됩니다. 어디서든 이어서 학습.' },
 ];
 
 export default function LandingPage() {
@@ -70,7 +70,6 @@ export default function LandingPage() {
       {/* ── NAV ── */}
       <header className="landing-nav">
         <div className="landing-nav__logo">
-          <span>🧬</span>
           <span>Anatomy Studio</span>
         </div>
         <div className="landing-nav__actions">
@@ -86,7 +85,7 @@ export default function LandingPage() {
       {/* ── HERO ── */}
       <section className="landing-hero">
         <div className="landing-hero__badge anim-fade-up" style={{ animationDelay: '0.05s' }}>
-          ✨ AI 기반 언어 해부 학습
+          AI 기반 언어 해부 학습
         </div>
         <h1 className="landing-hero__title anim-fade-up" style={{ animationDelay: '0.15s' }}>
           텍스트를 읽는 게 아니라<br />
@@ -110,7 +109,7 @@ export default function LandingPage() {
             <span className="demo-dot demo-dot--red" />
             <span className="demo-dot demo-dot--yellow" />
             <span className="demo-dot demo-dot--green" />
-            <span className="demo-card__label">뷰어 미리보기 — 단어를 직접 클릭해보세요 👇</span>
+            <span className="demo-card__label">뷰어 미리보기 — 단어를 직접 클릭해보세요</span>
           </div>
           <div className="demo-viewer">
             {DEMO_TOKENS.map((t, i) => {
@@ -130,7 +129,7 @@ export default function LandingPage() {
                   onClick={() => setDemoSelectedIdx(i)}
                 >
                   {t.furigana && <span className="demo-furigana">{t.furigana}</span>}
-                  <span className="demo-surface">{t.text}{saved && ' ⭐'}</span>
+                  <span className="demo-surface">{t.text}{saved && ' ★'}</span>
                 </button>
               );
             })}
@@ -149,7 +148,7 @@ export default function LandingPage() {
               onClick={handleDemoSave}
               disabled={demoSavedIds.has(demoSelectedIdx)}
             >
-              {demoSavedIds.has(demoSelectedIdx) ? '✓ 추가됨' : '⭐ 단어장에 추가'}
+              {demoSavedIds.has(demoSelectedIdx) ? '✓ 추가됨' : '★ 단어장에 추가'}
             </button>
           </div>
         </div>
@@ -185,21 +184,18 @@ export default function LandingPage() {
           <div className="steps">
             <div className="step">
               <div className="step__num">01</div>
-              <div className="step__icon">📋</div>
               <h3 className="step__title">텍스트 붙여넣기</h3>
               <p className="step__desc">뉴스 기사, 소설, 자막 등 원하는 텍스트를 붙여넣으면 AI가 즉시 분석합니다.</p>
             </div>
             <div className="step__arrow">→</div>
             <div className="step">
               <div className="step__num">02</div>
-              <div className="step__icon">🔬</div>
               <h3 className="step__title">AI 해부 &amp; 단어 수집</h3>
               <p className="step__desc">각 단어를 클릭하면 후리가나·품사·뜻이 나옵니다. 모르는 단어는 바로 단어장에 추가.</p>
             </div>
             <div className="step__arrow">→</div>
             <div className="step">
               <div className="step__num">03</div>
-              <div className="step__icon">🧠</div>
               <h3 className="step__title">FSRS 과학적 복습</h3>
               <p className="step__desc">최신 간격 반복 알고리즘이 기억이 흐려질 타이밍에 딱 맞춰 복습을 제안합니다.</p>
             </div>
@@ -256,7 +252,7 @@ export default function LandingPage() {
       {/* ── FOOTER ── */}
       <footer className="landing-footer">
         <div className="landing-footer__left">
-          <span className="landing-footer__brand">🧬 Anatomy Studio</span>
+          <span className="landing-footer__brand">Anatomy Studio</span>
           <span className="landing-footer__copy">AI 기반 언어 해부 학습 플랫폼 · © 2026</span>
         </div>
         <div className="landing-footer__links">

@@ -33,7 +33,7 @@ export function useNextRangeMutation({ material, sourcePdf, user, toast }) {
       let text = await extractPageRange(buffer, nextStart, nextEnd);
 
       if (!text || text.length < 30) {
-        toast?.('📷 스캔본으로 감지 — OCR로 재시도합니다 (시간이 걸려요)', 'info', 4000);
+        toast?.('스캔본으로 감지 — OCR로 재시도합니다 (시간이 걸려요)', 'info', 4000);
         const { doc } = await getPdfMetadata(buffer);
         text = await ocrPageRange(doc, nextStart, nextEnd);
       }
@@ -89,7 +89,7 @@ export function useNextRangeMutation({ material, sourcePdf, user, toast }) {
       return inserted;
     },
     onSuccess: (inserted) => {
-      toast?.('📖 다음 범위 분석 시작! 뷰어로 이동합니다', 'success');
+      toast?.('다음 범위 분석 시작 — 뷰어로 이동합니다', 'success');
       window.location.href = `/viewer/${inserted.id}`;
     },
     onError: (err) => toast?.('다음 범위 생성 실패 — ' + friendlyToastMessage(err), 'error'),

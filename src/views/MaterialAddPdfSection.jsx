@@ -117,7 +117,7 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady }) {
 
       if (isLikelyScanned) {
         toast(
-          `📷 스캔본으로 감지됐어요 (페이지당 평균 ${avgCharsPerPage}자). OCR 모드로 추출합니다. 시간이 조금 더 걸려요.`,
+          `스캔본으로 감지됐어요 (페이지당 평균 ${avgCharsPerPage}자). OCR 모드로 추출합니다. 시간이 조금 더 걸려요.`,
           'info',
           6000,
         );
@@ -167,7 +167,7 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady }) {
         .single();
       if (insertErr) throw insertErr;
 
-      toast(`📘 "${title}" 업로드 완료 (${pageCount}페이지)`, 'success');
+      toast(`"${title}" 업로드 완료 (${pageCount}페이지)`, 'success');
       refetch();
 
       // 4. 즉시 범위 선택 UI로 — 추천 크기 자동 적용
@@ -256,7 +256,7 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady }) {
     <div className="card add-form" style={{ marginBottom: 20 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <div>
-          <h2 style={{ fontSize: '1rem', fontWeight: 700, margin: 0 }}>📚 내 PDF 책장</h2>
+          <h2 style={{ fontSize: '1rem', fontWeight: 700, margin: 0 }}>내 PDF 책장</h2>
           <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: '4px 0 0' }}>
             PDF를 업로드하고 페이지 범위별로 분석할 수 있어요
           </p>
@@ -318,7 +318,7 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady }) {
                   )}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 600, fontSize: '0.92rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {!pdf.thumbnail_path && '📘 '}{pdf.title}
+                      {pdf.title}
                     </div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 2 }}>
                       {pdf.page_count}페이지 · {new Date(pdf.created_at).toLocaleDateString('ko-KR')}
@@ -329,7 +329,7 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady }) {
                       {isExpanded ? '▲' : '▼'}
                     </Button>
                     <Button size="sm" variant="secondary" onClick={() => window.location.href = `/pdf/${pdf.id}`}>
-                      📖 읽기
+                      읽기
                     </Button>
                     <Button size="sm" onClick={() => handleSelectExistingPdf(pdf)}>
                       범위 선택
@@ -340,7 +340,7 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady }) {
                       onClick={() => setConfirmDelete(pdf)}
                       style={{ color: 'var(--danger)' }}
                     >
-                      🗑️
+                      삭제
                     </Button>
                   </div>
                 </div>
@@ -358,7 +358,7 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady }) {
       {activePdf && (
         <div className="modal-overlay" onClick={() => !extractingRange && setActivePdf(null)}>
           <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 440 }}>
-            <h3 style={{ margin: '0 0 6px', fontSize: '1.05rem' }}>📖 {activePdf.title}</h3>
+            <h3 style={{ margin: '0 0 6px', fontSize: '1.05rem' }}>{activePdf.title}</h3>
             <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 16 }}>
               총 {activePdf.page_count}페이지 · 분석할 범위를 선택하세요
             </p>
@@ -395,7 +395,7 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady }) {
             </div>
 
             <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 12 }}>
-              💡 너무 많은 페이지는 분석에 시간이 오래 걸려요. 5~10페이지가 적절합니다.
+              너무 많은 페이지는 분석에 시간이 오래 걸려요. 5~10페이지가 적절합니다.
             </p>
 
             {/* OCR 토글 */}
@@ -415,7 +415,7 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady }) {
               />
               <div>
                 <div style={{ fontWeight: 600 }}>
-                  📷 OCR 모드 (이미지 기반 PDF)
+                  OCR 모드 (이미지 기반 PDF)
                 </div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 2 }}>
                   스캔본·이미지 PDF용. 페이지마다 AI가 텍스트를 읽어요. 추출에 페이지당 3~10초 소요.
@@ -427,7 +427,7 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady }) {
             {ocrProgress && (
               <div style={{ marginBottom: 12 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', marginBottom: 4 }}>
-                  <span>📷 OCR 진행 중 (p.{ocrProgress.pageNum})</span>
+                  <span>OCR 진행 중 (p.{ocrProgress.pageNum})</span>
                   <span style={{ fontWeight: 700 }}>{ocrProgress.current}/{ocrProgress.total}</span>
                 </div>
                 <div style={{ height: 6, background: 'var(--bg-secondary)', borderRadius: 'var(--radius-full)', overflow: 'hidden' }}>
@@ -447,9 +447,9 @@ export default function MaterialAddPdfSection({ user, toast, onRangeReady }) {
               </Button>
               <Button onClick={handleExtractAndAnalyze} disabled={extractingRange} style={{ flex: 2 }}>
                 {extractingRange
-                  ? (useOcr ? '📷 OCR 추출 중...' : '텍스트 추출 중...')
+                  ? (useOcr ? 'OCR 추출 중...' : '텍스트 추출 중...')
                   : useOcr
-                    ? `🤖 OCR로 p.${pageStart}-${pageEnd} 추출 →`
+                    ? `OCR로 p.${pageStart}-${pageEnd} 추출 →`
                     : `p.${pageStart}-${pageEnd} 가져오기 →`}
               </Button>
             </div>
@@ -491,8 +491,8 @@ function PdfRangesList({ pdfId }) {
       {ranges.map(r => {
         const status = r.processed_json?.status || 'idle';
         const statusLabel = {
-          completed: '✅ 완료', analyzing: '🔄 분석 중', partial: '⚠️ 일부 실패',
-          idle: '⏳ 대기', failed: '❌ 실패',
+          completed: '✓ 완료', analyzing: '분석 중', partial: '일부 실패',
+          idle: '대기', failed: '× 실패',
         }[status] || status;
         return (
           <a
@@ -505,7 +505,7 @@ function PdfRangesList({ pdfId }) {
               textDecoration: 'none', color: 'var(--text-primary)',
             }}
           >
-            <span>📄 p.{r.page_start}-{r.page_end}</span>
+            <span>p.{r.page_start}-{r.page_end}</span>
             <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{statusLabel}</span>
           </a>
         );
@@ -533,7 +533,7 @@ function PdfThumbnail({ path, title }) {
       background: 'var(--bg-primary)', border: '1px solid var(--border)',
       borderRadius: 4, flexShrink: 0,
       display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem',
-    }}>📘</div>;
+    }} />;
   }
 
   return (
