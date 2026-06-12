@@ -10528,6 +10528,83 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   padding: 3px 10px; cursor: pointer;
 }
 .fr-check__toggle-all:hover { background: var(--bg-secondary); color: var(--text-primary); }
+/* ── 패턴 체크 v2 — 3단계 퀴즈 ── */
+.fr-check__count {
+  margin-left: auto;
+  font-size: 0.76rem; font-weight: 700;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.fr-quiz { list-style: none; margin: 0; padding: 0; }
+.fr-quiz__item { margin-bottom: 4px; }
+.fr-quiz__stage {
+  display: flex; align-items: baseline; gap: 7px;
+  margin: 18px 0 8px;
+  font-size: 0.86rem; font-weight: 800;
+  color: var(--text-primary);
+}
+.fr-quiz__item:first-child .fr-quiz__stage { margin-top: 4px; }
+.fr-quiz__stage-num { color: var(--primary); }
+.fr-quiz__stage-hint { font-size: 0.72rem; font-weight: 500; color: var(--text-muted); }
+.fr-quiz__q {
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+}
+.fr-quiz__prompt { font-size: 0.92rem; font-weight: 700; margin-bottom: 8px; line-height: 1.5; }
+.fr-quiz__opts { display: flex; flex-wrap: wrap; gap: 6px; }
+.fr-quiz__opts--col { flex-direction: column; align-items: stretch; }
+.fr-quiz__opt {
+  text-align: left;
+  font-size: 0.84rem; font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 7px 12px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+  line-height: 1.5;
+}
+.fr-quiz__opt:hover:not(:disabled) { border-color: var(--primary); color: var(--text-primary); }
+.fr-quiz__opt.is-correct { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+.fr-quiz__opt.is-wrong { border-color: var(--danger); color: var(--danger); }
+.fr-quiz__opt.is-locked { opacity: 0.5; }
+.fr-quiz__opt:disabled { cursor: default; }
+/* 어순 배열 */
+.fr-quiz__line {
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+  min-height: 40px;
+  padding: 6px 8px;
+  margin-bottom: 8px;
+  background: var(--bg-primary);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+}
+.fr-quiz__line.is-correct { border-color: var(--accent); border-style: solid; }
+.fr-quiz__line.is-wrong { border-color: var(--danger); border-style: solid; }
+.fr-quiz__line-hint { font-size: 0.76rem; color: var(--text-muted); }
+.fr-quiz__tokens { display: flex; flex-wrap: wrap; gap: 6px; }
+.fr-quiz__token {
+  font-size: 0.88rem; font-weight: 600;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+.fr-quiz__token:hover:not(:disabled) { border-color: var(--primary); }
+.fr-quiz__token.is-picked { background: var(--primary-glow); }
+.fr-quiz__answer {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  font-size: 0.9rem; line-height: 1.7;
+  margin-top: 6px;
+}
+.fr-quiz__mark.is-correct { color: var(--accent); }
+.fr-quiz__mark.is-wrong { color: var(--danger); }
 /* 통과 판정 패널 — 채점 완료 시 */
 .fr-check__verdict {
   margin-top: 14px;

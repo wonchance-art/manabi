@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import RefSpeak from './RefSpeak';
 import { JaText } from '../views/refShared';
@@ -14,18 +14,47 @@ export function isPassed(result) {
   return result.right >= Math.ceil(result.total * 0.8);
 }
 
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/** 셔플 결과가 원본과 같으면 한 번 더 (짧은 배열의 '이미 정답' 방지) */
+function shuffleDistinct(arr) {
+  if (arr.length < 2) return [...arr];
+  for (let tries = 0; tries < 5; tries++) {
+    const s = shuffle(arr);
+    if (s.some((v, i) => v !== arr[i])) return s;
+  }
+  return [...arr].reverse();
+}
+
+const STAGE_META = {
+  meaning: { num: '①', label: '뜻 고르기', hint: '패턴의 뜻을 고르세요' },
+  apply:   { num: '②', label: '문장 만들기', hint: '한국어에 맞게 답하세요' },
+  produce: { num: '③', label: '입으로 만들기', hint: '문장을 만든 뒤 확인하고 스스로 채점하세요' },
+};
+
 /**
- * 패턴 체크 — 챕터 끝 회상 연습이자 통과 관문.
- * 한국어 번역을 보고 원어 문장을 입으로 만들어본 뒤, 탭해서 정답 확인.
- * 확인 후 맞음/틀림 자가 채점 — 전 문항 채점 시 80% 이상이면 '통과'로 기록하고
- * 다음 챕터를 안내한다. 미통과면 재도전을 권한다.
- * items: [{ ko, main, pron }] · next: { href, title } | null
+ * 패턴 체크 v2 — 챕터 끝 3단계 퀴즈이자 통과 관문.
+ * ① 뜻 고르기(객관식·자동 채점) ② 문장 만들기(어순 배열/번역 고르기·자동 채점)
+ * ③ 입으로 만들기(회상·자가 채점). 정답률 80% 이상이면 통과로 기록하고 다음 챕터를 안내한다.
+ * quiz: { meaning:[{pattern,correct,distractors}], apply:[{type:'order',tokens,answer,ko,pron}|{type:'choose',ko,correct,distractors,pron}], produce:[{ko,main,pron}] }
  */
-export default function RefPatternCheck({ items, lang, storageKey, slug, next = null, reviewLinks = [] }) {
+export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug, next = null, reviewLinks = [] }) {
   const { user } = useAuth();
-  const [revealed, setRevealed] = useState(() => new Set());
-  const [marks, setMarks] = useState(() => new Map()); // index → 'o' | 'x'
+  const [seed, setSeed] = useState(0);          // 재도전 시 +1 → 보기 재셔플
+  const [mounted, setMounted] = useState(false); // SSR 셔플 불일치 방지
   const [lastResult, setLastResult] = useState(null);
+  const [answers, setAnswers] = useState({});    // id → { ok, picked? }
+  const [orderPicks, setOrderPicks] = useState({}); // id → 선택한 토큰 인덱스 배열
+  const [revealedP, setRevealedP] = useState({});   // 생산 문항 정답 공개
+
+  useEffect(() => setMounted(true), []);
 
   // 지난 결과 불러오기
   useEffect(() => {
@@ -36,134 +65,254 @@ export default function RefPatternCheck({ items, lang, storageKey, slug, next = 
     } catch {}
   }, [storageKey, slug]);
 
-  if (!items?.length) return null;
+  // 문항 구성 — 마운트 후 셔플
+  const questions = useMemo(() => {
+    if (!mounted || !quiz) return null;
+    const qs = [];
+    (quiz.meaning || []).forEach((m, i) =>
+      qs.push({ id: `m${i}`, stage: 'meaning', type: 'meaning', ...m, options: shuffle([m.correct, ...m.distractors.slice(0, 3)]) })
+    );
+    (quiz.apply || []).forEach((a, i) => {
+      if (a.type === 'order') {
+        qs.push({ id: `a${i}`, stage: 'apply', ...a, bank: shuffleDistinct(a.tokens.map((t, ti) => ({ t, ti }))) });
+      } else {
+        qs.push({ id: `a${i}`, stage: 'apply', ...a, options: shuffle([a.correct, ...a.distractors.slice(0, 3)]) });
+      }
+    });
+    (quiz.produce || []).forEach((p, i) =>
+      qs.push({ id: `p${i}`, stage: 'produce', type: 'produce', ...p })
+    );
+    return qs;
+    // seed 변경 시 재셔플
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mounted, quiz, seed]);
 
-  function toggle(i) {
-    setRevealed(prev => {
-      const next = new Set(prev);
-      if (next.has(i)) next.delete(i);
-      else next.add(i);
-      return next;
+  const total = questions?.length ?? 0;
+  if (!quiz || ((quiz.meaning?.length || 0) + (quiz.apply?.length || 0) + (quiz.produce?.length || 0)) === 0) return null;
+
+  function answerChoice(q, opt) {
+    if (answers[q.id]) return;
+    setAnswers(prev => ({ ...prev, [q.id]: { ok: opt === q.correct, picked: opt } }));
+  }
+
+  function pickToken(q, bankIdx) {
+    if (answers[q.id]) return;
+    setOrderPicks(prev => {
+      const cur = prev[q.id] || [];
+      if (cur.includes(bankIdx)) return prev;
+      const nextPicks = [...cur, bankIdx];
+      if (nextPicks.length === q.tokens.length) {
+        const built = nextPicks.map(bi => q.bank[bi].t).join(' ');
+        const answer = q.tokens.join(' ');
+        setAnswers(a => ({ ...a, [q.id]: { ok: built === answer, picked: built } }));
+      }
+      return { ...prev, [q.id]: nextPicks };
     });
   }
 
-  function mark(i, val) {
-    setMarks(prev => {
-      const next = new Map(prev);
-      next.set(i, val);
-      // 전 문항 채점 완료 → 결과 저장 (통과 여부 포함)
-      if (next.size === items.length && storageKey && slug) {
-        const right = [...next.values()].filter(v => v === 'o').length;
-        const result = {
-          right,
-          total: items.length,
-          at: Date.now(),
-          passed: right >= Math.ceil(items.length * 0.8),
-        };
-        try {
-          const map = JSON.parse(localStorage.getItem(storageKey) || '{}');
-          map[slug] = result;
-          localStorage.setItem(storageKey, JSON.stringify(map));
-        } catch {}
-        setLastResult(result);
-        // 로그인 시 서버 동기화 (실패해도 localStorage가 원본)
-        if (user?.id) syncCheckRemote(user.id, lang, slug, result);
-      }
-      return next;
+  function unpickToken(q, pos) {
+    if (answers[q.id]) return;
+    setOrderPicks(prev => {
+      const cur = prev[q.id] || [];
+      return { ...prev, [q.id]: cur.filter((_, i) => i !== pos) };
     });
+  }
+
+  function gradeProduce(q, ok) {
+    if (answers[q.id]) return;
+    setAnswers(prev => ({ ...prev, [q.id]: { ok } }));
   }
 
   function retry() {
-    setMarks(new Map());
-    setRevealed(new Set());
+    setAnswers({});
+    setOrderPicks({});
+    setRevealedP({});
+    setSeed(s => s + 1);
   }
 
-  const allOpen = revealed.size === items.length;
-  const done = marks.size === items.length;
-  const rightCount = [...marks.values()].filter(v => v === 'o').length;
-  const passNeed = Math.ceil(items.length * 0.8);
+  const answeredCount = Object.keys(answers).length;
+  const done = total > 0 && answeredCount === total;
+  const rightCount = Object.values(answers).filter(a => a.ok).length;
+  const passNeed = Math.ceil(total * 0.8);
   const passedNow = done && rightCount >= passNeed;
+
+  // 완료 → 결과 저장 (1회)
+  useEffect(() => {
+    if (!done || !storageKey || !slug) return;
+    const result = { right: rightCount, total, at: Date.now(), passed: rightCount >= Math.ceil(total * 0.8) };
+    try {
+      const map = JSON.parse(localStorage.getItem(storageKey) || '{}');
+      map[slug] = result;
+      localStorage.setItem(storageKey, JSON.stringify(map));
+    } catch {}
+    setLastResult(result);
+    if (user?.id) syncCheckRemote(user.id, lang, slug, result);
+    // done 전환 시 1회만
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [done]);
+
+  const renderMain = (text, pron) =>
+    langCode === 'ja'
+      ? <JaText ja={text} yomi={pron} />
+      : <>{text}{pron && <span className="fr-check__pron"> {pron}</span>}</>;
+
+  let lastStage = null;
 
   return (
     <section className="card fr-section fr-check">
       <h2 className="fr-section__heading">
         <span aria-hidden="true">✍️</span> 패턴 체크
-        <button
-          type="button"
-          className="fr-check__toggle-all"
-          onClick={() => setRevealed(allOpen ? new Set() : new Set(items.map((_, i) => i)))}
-        >
-          {allOpen ? '모두 가리기' : '모두 보기'}
-        </button>
+        {total > 0 && <span className="fr-check__count">{answeredCount}/{total}</span>}
       </h2>
       <p className="fr-check__lead">
-        한국어를 보고 이 챕터의 패턴으로 문장을 만들어보세요. <strong>{passNeed}/{items.length} 이상</strong>이면 통과!
+        세 단계로 이 챕터를 확인해요. <strong>{passNeed > 0 ? `${passNeed}/${total}` : '80%'} 이상</strong>이면 통과!
         {lastResult && !done && (
           <span className="fr-check__last">
             {' '}· 지난 결과 {lastResult.right}/{lastResult.total} {isPassed(lastResult) ? '✅ 통과' : '· 재도전 추천'}
           </span>
         )}
       </p>
-      <ol className="fr-check__list">
-        {items.map((item, i) => {
-          const open = revealed.has(i);
-          const m = marks.get(i);
-          return (
-            <li key={i} className="fr-check__item">
-              <span className="fr-check__ko">{item.ko}</span>
-              <button
-                type="button"
-                className={`fr-check__answer ${open ? 'is-open' : ''}`}
-                onClick={() => toggle(i)}
-                aria-expanded={open}
-              >
-                {open ? (
-                  <span className="fr-check__main" lang={item.langCode}>
-                    {item.langCode === 'ja' ? (
-                      <JaText ja={item.main} yomi={item.pron} />
-                    ) : (
-                      <>
-                        {item.main}
-                        {item.pron && <span className="fr-check__pron"> {item.pron}</span>}
-                      </>
-                    )}
-                  </span>
-                ) : (
-                  <span className="fr-check__hidden">정답 보기</span>
+
+      {!questions && <p className="fr-check__lead">문항 준비 중…</p>}
+
+      {questions && (
+        <ol className="fr-quiz">
+          {questions.map(q => {
+            const showStage = q.stage !== lastStage;
+            lastStage = q.stage;
+            const ans = answers[q.id];
+            const stage = STAGE_META[q.stage];
+            return (
+              <li key={`${seed}:${q.id}`} className="fr-quiz__item">
+                {showStage && (
+                  <div className="fr-quiz__stage">
+                    <span className="fr-quiz__stage-num">{stage.num}</span> {stage.label}
+                    <span className="fr-quiz__stage-hint">{stage.hint}</span>
+                  </div>
                 )}
-              </button>
-              {open && <RefSpeak text={item.main} lang={lang} size="xs" />}
-              {open && (
-                <span className="fr-check__grade" role="group" aria-label="자가 채점">
-                  <button
-                    type="button"
-                    className={`fr-check__grade-btn ${m === 'o' ? 'is-on--o' : ''}`}
-                    onClick={() => mark(i, 'o')}
-                    aria-pressed={m === 'o'}
-                  >
-                    맞음
-                  </button>
-                  <button
-                    type="button"
-                    className={`fr-check__grade-btn ${m === 'x' ? 'is-on--x' : ''}`}
-                    onClick={() => mark(i, 'x')}
-                    aria-pressed={m === 'x'}
-                  >
-                    틀림
-                  </button>
-                </span>
-              )}
-            </li>
-          );
-        })}
-      </ol>
+
+                {/* ① 패턴 → 뜻 객관식 */}
+                {q.type === 'meaning' && (
+                  <div className="fr-quiz__q">
+                    <div className="fr-quiz__prompt" lang={langCode}>{q.pattern}</div>
+                    <div className="fr-quiz__opts">
+                      {q.options.map(opt => (
+                        <button
+                          key={opt}
+                          type="button"
+                          className={`fr-quiz__opt ${ans ? (opt === q.correct ? 'is-correct' : opt === ans.picked ? 'is-wrong' : 'is-locked') : ''}`}
+                          onClick={() => answerChoice(q, opt)}
+                          disabled={!!ans}
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* ② 어순 배열 */}
+                {q.type === 'order' && (
+                  <div className="fr-quiz__q">
+                    <div className="fr-quiz__prompt">“{q.ko}”</div>
+                    <div className={`fr-quiz__line ${ans ? (ans.ok ? 'is-correct' : 'is-wrong') : ''}`}>
+                      {(orderPicks[q.id] || []).map((bi, pos) => (
+                        <button
+                          key={pos}
+                          type="button"
+                          className="fr-quiz__token is-picked"
+                          onClick={() => unpickToken(q, pos)}
+                          disabled={!!ans}
+                          lang={langCode}
+                        >
+                          {q.bank[bi].t}
+                        </button>
+                      ))}
+                      {(orderPicks[q.id] || []).length === 0 && <span className="fr-quiz__line-hint">단어를 순서대로 탭하세요</span>}
+                    </div>
+                    {!ans && (
+                      <div className="fr-quiz__tokens">
+                        {q.bank.map((tok, bi) => (
+                          (orderPicks[q.id] || []).includes(bi) ? null : (
+                            <button key={bi} type="button" className="fr-quiz__token" onClick={() => pickToken(q, bi)} lang={langCode}>
+                              {tok.t}
+                            </button>
+                          )
+                        ))}
+                      </div>
+                    )}
+                    {ans && (
+                      <div className="fr-quiz__answer">
+                        {ans.ok ? '⭕' : '❌'}{' '}
+                        <span lang={langCode}>{renderMain(q.answer, q.pron)}</span>
+                        <RefSpeak text={q.answer} lang={lang} size="xs" />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ② 번역 고르기 (어순 배열 불가 예문) */}
+                {q.type === 'choose' && (
+                  <div className="fr-quiz__q">
+                    <div className="fr-quiz__prompt">“{q.ko}”</div>
+                    <div className="fr-quiz__opts fr-quiz__opts--col">
+                      {q.options.map(opt => (
+                        <button
+                          key={opt}
+                          type="button"
+                          className={`fr-quiz__opt ${ans ? (opt === q.correct ? 'is-correct' : opt === ans.picked ? 'is-wrong' : 'is-locked') : ''}`}
+                          onClick={() => answerChoice(q, opt)}
+                          disabled={!!ans}
+                          lang={langCode}
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                    {ans && <div className="fr-quiz__answer">{ans.ok ? '⭕ 정확해요' : <>❌ 정답: <span lang={langCode}>{q.correct}</span></>}<RefSpeak text={q.correct} lang={lang} size="xs" /></div>}
+                  </div>
+                )}
+
+                {/* ③ 생산 — 회상 후 자가 채점 */}
+                {q.type === 'produce' && (
+                  <div className="fr-quiz__q">
+                    <div className="fr-quiz__prompt">“{q.ko}”</div>
+                    {!revealedP[q.id] ? (
+                      <button
+                        type="button"
+                        className="fr-check__answer"
+                        onClick={() => setRevealedP(prev => ({ ...prev, [q.id]: true }))}
+                      >
+                        <span className="fr-check__hidden">입으로 만든 뒤 — 정답 보기</span>
+                      </button>
+                    ) : (
+                      <div className="fr-quiz__answer">
+                        <span className="fr-check__main" lang={langCode}>{renderMain(q.main, q.pron)}</span>
+                        <RefSpeak text={q.main} lang={lang} size="xs" />
+                        {!ans && (
+                          <span className="fr-check__grade" role="group" aria-label="자가 채점">
+                            <button type="button" className="fr-check__grade-btn" onClick={() => gradeProduce(q, true)}>맞음</button>
+                            <button type="button" className="fr-check__grade-btn" onClick={() => gradeProduce(q, false)}>틀림</button>
+                          </span>
+                        )}
+                        {ans && <span className={`fr-quiz__mark ${ans.ok ? 'is-correct' : 'is-wrong'}`}>{ans.ok ? '⭕' : '❌'}</span>}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </li>
+            );
+          })}
+        </ol>
+      )}
+
       {done && (
         <div className={`fr-check__verdict ${passedNow ? 'is-pass' : 'is-fail'}`}>
           <p className="fr-check__result">
             {passedNow ? (
-              <>🎉 <strong>통과! {rightCount}/{items.length}</strong> — 이 챕터의 패턴이 손에 익었어요.</>
+              <>🎉 <strong>통과! {rightCount}/{total}</strong> — 이 챕터의 패턴이 손에 익었어요.</>
             ) : (
-              <><strong>{rightCount}/{items.length}</strong> — 통과까지 {passNeed - rightCount}개. 틀린 패턴을 위 섹션에서 다시 본 뒤 재도전해보세요.</>
+              <><strong>{rightCount}/{total}</strong> — 통과까지 {passNeed - rightCount}개. 틀린 패턴을 위 섹션에서 다시 본 뒤 재도전해보세요.</>
             )}
           </p>
           <div className="fr-check__verdict-actions">

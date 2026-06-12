@@ -78,12 +78,61 @@ export default function ReferenceChapterPage({ lang, slug }) {
   const patternIndex = chapter.sections
     .map((sec, i) => ({ i, pattern: sec.pattern }))
     .filter(p => p.pattern);
-  // 패턴 체크 — 섹션별 첫 예문으로 회상 연습 (최대 5문항)
-  const checkItems = chapter.sections
-    .map(sec => sec.examples?.[0])
-    .filter(ex => ex && ex.ko && refMain(ex))
-    .slice(0, 5)
-    .map(ex => ({ ko: ex.ko, main: refMain(ex), pron: refPron(ex), langCode: ref.langCode }));
+  // 패턴 체크 v2 — 3단계 퀴즈 구성 (의미 매칭 → 적용 → 생산)
+  const exAll = chapter.sections
+    .flatMap(sec => sec.examples || [])
+    .filter(ex => ex && ex.ko && refMain(ex));
+
+  // ① 뜻 고르기 — 패턴↔뜻 매칭, 오답은 같은 챕터 → 같은 레벨의 다른 패턴 뜻에서
+  const ownPatterns = chapter.sections.filter(s => s.pattern && s.patternKo);
+  const levelKoPool = [...new Set(
+    ref.getGrammarChapters(chapter.level)
+      .filter(c => c.slug !== chapter.slug)
+      .flatMap(c => c.sections || [])
+      .map(s => s.patternKo)
+      .filter(Boolean)
+  )];
+  const meaning = ownPatterns.slice(0, 3).map(s => {
+    const ownOthers = ownPatterns.map(p => p.patternKo).filter(k => k !== s.patternKo);
+    const distractors = [...new Set([...ownOthers, ...levelKoPool])]
+      .filter(k => k !== s.patternKo)
+      .slice(0, 3);
+    return { pattern: s.pattern, correct: s.patternKo, distractors };
+  }).filter(m => m.distractors.length >= 2);
+
+  // ② 적용 — 어순 배열(공백 토큰 3~10개) 우선, 안 되면 번역 고르기
+  const apply = [];
+  const usedApply = new Set();
+  for (const ex of exAll) {
+    if (apply.length >= 3) break;
+    const main = refMain(ex);
+    const tokens = main.split(/[\s　]+/).filter(Boolean);
+    if (tokens.length >= 3 && tokens.length <= 10 && !usedApply.has(main)) {
+      apply.push({ type: 'order', tokens, answer: main, ko: ex.ko, pron: refPron(ex) });
+      usedApply.add(main);
+    }
+  }
+  for (const ex of exAll) {
+    if (apply.length >= 3) break;
+    const main = refMain(ex);
+    if (usedApply.has(main)) continue;
+    const distractors = exAll.map(o => refMain(o)).filter(o => o !== main).slice(0, 3);
+    if (distractors.length >= 2) {
+      apply.push({ type: 'choose', ko: ex.ko, correct: main, distractors, pron: refPron(ex) });
+      usedApply.add(main);
+    }
+  }
+
+  // ③ 생산 — 적용에서 안 쓴 예문 우선, 부족하면 재사용 (생산은 다른 능력)
+  const producePool = [
+    ...exAll.filter(ex => !usedApply.has(refMain(ex))),
+    ...exAll.filter(ex => usedApply.has(refMain(ex))),
+  ];
+  const produce = producePool.slice(0, 3).map(ex => ({
+    ko: ex.ko, main: refMain(ex), pron: refPron(ex),
+  }));
+
+  const quiz = { meaning, apply, produce };
 
   // 통과 후 복습 추천 — 연관 문형·레벨 어휘 (있을 때만)
   const reviewLinks = [];
@@ -215,10 +264,11 @@ export default function ReferenceChapterPage({ lang, slug }) {
         </section>
       ))}
 
-      {/* ── 패턴 체크 (회상 연습 + 통과 관문) ── */}
+      {/* ── 패턴 체크 (3단계 퀴즈 + 통과 관문) ── */}
       <RefPatternCheck
-        items={checkItems}
+        quiz={quiz}
         lang={lang}
+        langCode={ref.langCode}
         storageKey={`${ref.readKey}_check`}
         slug={chapter.slug}
         next={next ? { href: `${ref.base}/grammar/${next.slug}`, title: next.title } : null}
