@@ -192,7 +192,7 @@ export default function ReferenceChapterPage({ lang, slug }) {
             </Link>
           )}
         </div>
-        <h1 style={{ fontSize: '1.45rem', fontWeight: 800, lineHeight: 1.35 }}>{chapter.title}</h1>
+        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.7rem', fontWeight: 700, lineHeight: 1.42, letterSpacing: '-0.01em', wordBreak: 'keep-all' }}>{chapter.title}</h1>
         {(() => {
           // topic이 원어 제목을 이미 포함하면 중복 표기 생략
           const titleFr = chapter.titleFr && !(chapter.topic || '').includes(chapter.titleFr)

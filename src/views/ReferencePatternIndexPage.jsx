@@ -166,7 +166,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <LevelDot meta={meta} />
           <div>
-            <h1 style={{ fontSize: '1.3rem', fontWeight: 800 }}>{bunkei.title}</h1>
+            <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.4rem', fontWeight: 700 }}>{bunkei.title}</h1>
             <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
               {total}문형 전수 수록 · 주제 {bunkei.themes.length}개
             </p>
