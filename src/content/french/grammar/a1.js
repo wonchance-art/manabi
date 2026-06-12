@@ -29,6 +29,7 @@ export default [
       {
         heading: "être 활용 — 영어 be 동사의 프랑스 버전",
         pattern: "je suis · tu es · il est · nous sommes · vous êtes · ils sont",
+        patternKo: "'~이다' être의 6인칭 불규칙 활용 한 세트",
         body:
           "**être**(~이다, 있다)는 프랑스어 최다 빈도 동사예요. 인칭마다 모양이 완전히 달라지는 불규칙 동사라 표를 통째로 입에 붙여야 해요.\n\n" +
           "발음 포인트: tu es와 il est는 둘 다 [ɛ]로 **소리가 같고**, vous êtes는 리에종으로 '부제트'[vuzɛt]가 돼요.",
@@ -54,6 +55,7 @@ export default [
       {
         heading: "C'est ... — '이것은/그것은 ~이에요'의 만능 공식",
         pattern: "C'est + 명사/형용사 · 복수 → Ce sont",
+        patternKo: "'이것은/그것은 ~이에요'의 만능 소개 공식",
         body:
           "**c'est**(= ce + est)는 사물 소개, 사람 소개, 감상 표현까지 한 방에 처리하는 만능 표현이에요.\n\n" +
           "복수일 때는 **ce sont**을 쓰지만, 구어에서는 복수에도 c'est를 쓰는 경우가 많아요.",
@@ -68,6 +70,7 @@ export default [
       {
         heading: "on — 사전에 없는 진짜 '우리'",
         pattern: "on = 구어의 '우리' → 동사는 3인칭 단수 (on est)",
+        patternKo: "구어의 '우리' — 뜻은 복수, 동사는 단수",
         body:
           "실제 프랑스인의 입에서 나오는 '우리'는 대부분 **on**이에요. 원래 '사람들, 누군가'를 뜻하는 대명사인데 구어에서 nous를 거의 대체했고, 문법적으로는 **3인칭 단수** 취급이라 활용도 쉬워요.\n\n" +
           "정리하면: 글·격식에서는 nous, 입으로 말할 때는 on. 둘 다 알아들을 수 있어야 해요.",
@@ -94,6 +97,7 @@ export default [
       {
         heading: "avoir 활용 — 리에종 주의보",
         pattern: "j'ai · tu as · il a · nous avons · vous avez · ils ont",
+        patternKo: "'가지다' avoir의 6인칭 활용 — 리에종 [z] 주의",
         body:
           "**avoir**(가지다)는 être와 함께 프랑스어의 양대 기둥이에요. 나중에 배울 과거시제(passé composé)의 재료도 되니 활용을 입에 완전히 붙여야 해요.\n\n" +
           "발음 포인트: je + ai는 **j'ai**[ʒe]로 축약되고, nous avons, vous avez, ils ont은 모두 리에종으로 [z]가 끼어들어요 — '누자봉, 부자베, 일종'.",
@@ -134,6 +138,7 @@ export default [
       {
         heading: "il y a — '~이 있다'의 공식",
         pattern: "il y a + 명사 → ~이 있다 (단수·복수 동일)",
+        patternKo: "'~이 있다' — 단수든 복수든 형태는 하나",
         body:
           "영어 there is/there are에 해당하지만, 단수든 복수든 **형태가 il y a 하나**라서 오히려 쉬워요.\n\n" +
           "발음은 [ilja] '일리야' — 세 단어지만 한 덩어리로 굴러가요. 구어에서는 [ja]까지 줄어들기도 해요.",
@@ -160,6 +165,7 @@ export default [
       {
         heading: "동사 원형과 1군 동사",
         pattern: "원형 - er = 어간 → 어간 + -e, -es, -e, -ons, -ez, -ent",
+        patternKo: "-er를 뗀 어간에 인칭별 어미만 붙이면 끝",
         body:
           "사전에 실리는 기본형을 **원형(infinitif)**이라고 해요. parler, aimer처럼 **-er로 끝나는 1군 동사**가 프랑스어 동사의 약 90%예요.\n\n" +
           "원형에서 -er를 뗀 **어간**에 인칭별 어미를 붙이면 끝. 새 동사가 생겨도(googler, liker) 전부 이 패턴을 따라요.",
@@ -173,6 +179,7 @@ export default [
       {
         heading: "활용표 — 쓰기는 6개, 소리는 사실상 3개",
         pattern: "-e, -es, -ent → 묵음 = [paʁl] · -ons → [ɔ̃] · -ez → [e]",
+        patternKo: "철자는 여섯, 귀에 들리는 소리는 사실상 셋",
         body:
           "결정적인 발음 포인트: 어미 **-e, -es, -ent는 전부 묵음**이에요. 그래서 je parle, tu parles, il parle, ils parlent **네 개가 똑같은 소리** [paʁl]이죠.\n\n" +
           "귀로 구별되는 건 [paʁl] / [paʁlɔ̃] / [paʁle] 세 가지뿐이에요. 듣기가 편해지는 대신, 쓰기에서는 안 들리는 어미를 철자로 챙겨야 해요.",
@@ -194,6 +201,7 @@ export default [
       {
         heading: "자주 쓰는 -er 동사로 문장 만들기",
         pattern: "je + 모음/무음 h 시작 동사 → j' (j'aime, j'habite)",
+        patternKo: "모음으로 시작하는 동사 앞에서 je는 j'로 축약",
         body:
           "일상 대화의 주력 동사들이 거의 다 1군이에요: **aimer**(좋아하다), **habiter**(살다), **travailler**(일하다), **étudier**(공부하다), **regarder**(보다), **manger**(먹다).\n\n" +
           "모음(또는 무음 h)으로 시작하는 동사는 je가 **j'**로 축약돼요: j'aime, j'habite, j'étudie.",

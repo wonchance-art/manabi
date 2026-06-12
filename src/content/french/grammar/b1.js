@@ -416,6 +416,7 @@ export default [
       {
         heading: "형태 — être + 과거분사 (+ par)",
         pattern: "être + 과거분사 (+ par 행위자)",
+        patternKo: "수동태 만들기 — être + 과거분사 (주어에 성수 일치)",
         body:
           "능동문의 목적어가 주어로 올라오는 구조예요: Le chat mange la souris → La souris **est mangée** par le chat.\n\n" +
           "주의 둘. ① 과거분사는 **주어의 성·수에 일치**(mangée). ② 시제는 être가 짊어져요 — être를 복합과거로 바꾸면 수동태 과거가 됩니다.",
@@ -438,6 +439,7 @@ export default [
       {
         heading: "par냐 de냐 — 행위자 표시의 두 갈래",
         pattern: "구체적 행위·사건 → par · 감정·지속 상태 → de",
+        patternKo: "행위자 표시 — 구체적 행위는 par, 감정·상태는 de",
         body:
           "행위자는 보통 **par**지만, **감정·상태·동반**을 나타낼 때는 **de**를 써요: aimé **de** tous(모두에게 사랑받는), couvert **de** neige(눈으로 덮인).\n\n" +
           "처음엔 aimé de, couvert de, suivi de, accompagné de 같은 단골 표현을 통째로 외우는 게 실용적이에요.",
@@ -450,6 +452,7 @@ export default [
       {
         heading: "프랑스어식 습관 — on으로 수동 피하기",
         pattern: "수동 회피: on + 능동문 · 대명동사 수동 (Ça se vend bien)",
+        patternKo: "회화의 수동 회피 — on 능동문·대명동사로 말하기",
         body:
           "**프랑스어 회화는 수동태를 별로 좋아하지 않아요**. 행위자가 불분명하면 **on**을 주어로 한 능동문이 훨씬 자연스러워요: On parle français en France. / On m'a volé mon portefeuille.\n\n" +
           "또 하나의 회피 장치는 **대명동사 수동**이에요: Ça **se vend** bien(잘 팔려요). 일반적 사실·관습을 말할 때 애용돼요.",
@@ -464,6 +467,7 @@ export default [
       {
         heading: "한국어 피동과의 대응 — '-되다/-받다/-당하다'",
         pattern: "-되다/-받다 ≈ être + p.p. · -당하다 ≈ 수동 또는 on 구문",
+        patternKo: "한국어 피동과의 대응 — 형태 직역 대신 상황 기준 선택",
         body:
           "한국어에도 피동이 있어서 개념 자체는 익숙해요. 다만 방향이 항상 일치하지는 않아요 — 한국어 피동을 프랑스어는 on 능동으로(도둑맞았다 → On m'a volé...) 말하는 경우가 많아요.\n\n" +
           "**형태 대응이 아니라 '그 상황에서 프랑스인이 뭐라고 하는가'**를 기준으로 삼으세요.",
@@ -489,6 +493,7 @@ export default [
       {
         heading: "기본 구조 — dire que로 문장 옮기기",
         pattern: "Il dit que + 평서문 (인칭은 화자 기준으로 전환)",
+        patternKo: "간접화법 기본 — que로 잇고 인칭은 화자 기준으로 전환",
         body:
           "남의 말을 내 문장 속에 녹여 전하는 게 **간접화법**이에요. Il dit : « Je suis fatigué. » → Il dit **qu'il est** fatigué.\n\n" +
           "따옴표를 풀면서 **인칭이 화자 기준으로** 바뀌어요(je → il, mon → son). 주절이 현재면 종속절 시제는 그대로 유지돼요.",
@@ -500,6 +505,7 @@ export default [
       {
         heading: "시제 후퇴 — 주절이 과거가 되면",
         pattern: "주절이 과거: 현재 → 반과거 · 복합과거 → 대과거 · 미래 → 조건법 현재",
+        patternKo: "주절이 과거면 종속절 시제가 한 칸 후퇴",
         body:
           "**주절이 과거(Il a dit...)면 종속절의 시제가 한 칸 뒤로 물러나요.** '그가 말한 시점'을 기준으로 시간 전체가 과거 쪽으로 평행이동하는 거예요.\n\n" +
           "반과거·대과거·조건법은 이미 물러난 형태라 그대로 둡니다.",
@@ -524,6 +530,7 @@ export default [
       {
         heading: "의문문 옮기기 — si와 ce que",
         pattern: "네/아니오 → si · qu'est-ce que → ce que · qu'est-ce qui → ce qui · 의문사 → 유지",
+        patternKo: "의문문 옮기기 — 네/아니오는 si, '무엇'은 ce que/ce qui",
         body:
           "의문문은 **demander**(묻다)로 옮기고, 종류에 따라 연결사가 달라져요. « Tu viens ? » → Il demande **si** je viens. / « Qu'est-ce que tu fais ? » → Il demande **ce que** je fais.\n\n" +
           "où, quand, pourquoi 같은 의문사는 그대로 유지돼요: Il demande **où** j'habite.",
@@ -537,6 +544,7 @@ export default [
       {
         heading: "명령문과 시간 표현의 변신",
         pattern: "명령문 → dire de + 부정사 · demain → le lendemain · hier → la veille",
+        patternKo: "명령문은 de + 부정사로, 시간 표현도 함께 전환",
         body:
           "**명령문은 de + 부정사**로 옮겨요: « Attends-moi ! » → Il m'a dit **de l'attendre**. 부정 명령은 de **ne pas** + 부정사.\n\n" +
           "말한 시점이 과거로 밀리면 **시간·장소 표현도 함께** 바뀌어요: aujourd'hui → ce jour-là, ici → là.",
@@ -563,6 +571,7 @@ export default [
       {
         heading: "celui 계열 — '그것/그 사람'으로 명사 반복 피하기",
         pattern: "celui / celle / ceux / celles + de... / 관계절 / -ci·-là",
+        patternKo: "명사 반복을 피하는 celui 계열 — '~의 것·~하는 사람'",
         body:
           "같은 명사를 두 번 말하기 싫을 때, **성·수에 맞는 celui 계열로 대신**해요.\n\n" +
           "단, celui는 혼자 못 서고 반드시 뒤에 보충이 붙어요: ① **de + 명사**(소유), ② **관계절**(qui/que/dont), ③ **-ci/-là**(이것/저것).",
@@ -585,6 +594,7 @@ export default [
       {
         heading: "소유대명사 — le mien, la tienne, les leurs",
         pattern: "정관사 + mien/tien/sien... (C'est le mien = 그건 내 거야)",
+        patternKo: "'내 것·네 것'을 한 단어로 — 소유대명사 (물건의 성수에 일치)",
         body:
           "'내 것', '네 것'을 한 단어로 말하는 **소유대명사**예요. C'est mon livre → C'est **le mien**.\n\n" +
           "포인트 둘. ① **정관사가 세트의 일부**예요. ② 성·수는 소유자가 아니라 **가리키는 물건**에 일치해요 — 가방(le sac)이면 소유자가 여성이어도 le sien.",
@@ -610,6 +620,7 @@ export default [
       {
         heading: "ce qui / ce que — 선행사 없는 관계절",
         pattern: "ce qui + 동사 (주어) · ce que + 주어+동사 (목적어) · ce dont (de 결합)",
+        patternKo: "선행사 없는 '~하는 것' — ce qui/ce que/ce dont",
         body:
           "선행사 명사가 없을 때는 **중성 대명사 ce**를 받침대로 세워요. Dis-moi **ce que** tu veux(네가 원하는 것), **Ce qui** m'intéresse(나를 흥미롭게 하는 것).\n\n" +
           "간접화법(qu'est-ce que → ce que)에서 이미 만났고, B2의 강조 구문(Ce qui..., c'est...)에서 주인공이 돼요. 여기서 잡아두면 두 챕터가 공짜로 풀립니다.",
@@ -637,6 +648,7 @@ export default [
       {
         heading: "목적 — pour que + 접속법, pour + 부정사",
         pattern: "주어 다름 → pour que + 접속법 · 주어 같음 → pour + 동사원형",
+        patternKo: "~하도록 — 주어 다르면 pour que + 접속법, 같으면 pour + 원형",
         body:
           "'~하도록'의 **pour que**는 **접속법**을 불러요 — 목적은 아직 실현되지 않은 머릿속 그림이니까요(접속법 입문 챕터의 직관 그대로).\n\n" +
           "두 동작의 **주어가 같으면** que절 대신 **pour + 동사원형**으로 압축해요. 격식 버전이 **afin que / afin de**입니다.",
@@ -650,6 +662,7 @@ export default [
       {
         heading: "이유 4총사 — parce que·car·puisque·comme",
         pattern: "parce que(중립) · car(문어) · puisque(서로 아는 이유) · comme(문두 전용)",
+        patternKo: "'~이니까' 4총사 — 격·위치·자명함에 따라 갈라 쓰기",
         body:
           "넷 다 '~이니까'지만 자리가 달라요. **parce que**는 만능 중립, **car**는 글에서만, **puisque**는 '너도 알다시피'라는 자명한 이유, **comme**은 **문두 전용**이에요.\n\n" +
           "명사로 이유를 댈 땐 **grâce à**(~ 덕분에, 긍정)와 **à cause de**(~ 때문에, 부정)로 갈라요. 결과 쪽에서 받으면 **c'est pour ça que**(그래서 ~인 거야)예요.",
@@ -673,6 +686,7 @@ export default [
       {
         heading: "시간 접속 — dès que 군단은 전부 직설법",
         pattern: "dès que / pendant que / depuis que / lorsque + 직설법 (미래 일이면 미래시제)",
+        patternKo: "시간 접속사는 직설법 — 미래 일이면 양쪽 다 미래형",
         body:
           "'~하자마자(dès que), ~하는 동안(pendant que), ~한 뒤로(depuis que)'는 사실의 시간 관계라 전부 **직설법**이에요. **lorsque**는 quand의 격식형이고요.\n\n" +
           "최대 함정은 시제 — **미래의 일이면 양쪽 다 미래형**을 써요: Je t'appellerai dès que j'**arriverai**.",
@@ -698,6 +712,7 @@ export default [
       {
         heading: "전후 압축 — avant de·après avoir·en attendant",
         pattern: "avant de + 동사원형 · après avoir/être + 과거분사",
+        patternKo: "~하기 전에는 avant de + 원형, ~한 후에는 après + 부정사 과거",
         body:
           "주어가 같으면 절 대신 부정사로 압축해요. '~하기 전에'는 **avant de + 원형**, '~한 후에'는 **après + avoir/être + 과거분사**(부정사 과거) — 이 비대칭이 포인트예요.\n\n" +
           "'~을 기다리는 동안'은 **en attendant (de)**예요. 주어가 다르면 부정사로 못 줄이고 avant que(+ 접속법, B2)로 풀어야 해요.",
