@@ -115,6 +115,7 @@ export default {
           ex: { en: "Will the funding be renewed? — I think so.", ko: "지원금이 갱신될까요? — 그럴 것 같습니다." },
           ex2: { en: "Is there time to revise the draft? — I'm afraid not.", ko: "초안을 수정할 시간이 있나요? — 아쉽지만 없을 것 같습니다." },
           note: "부정은 동사에 따라 갈린다: I don't think so / I hope **not**(❌ I don't hope so) — believe·suppose는 양쪽 다 가능.",
+          ch: "b1-09-question-craft",
         },
         {
           pattern: "she has too・he won't",
@@ -123,6 +124,7 @@ export default {
           ex: { en: "The first team has finished, and the second has too.", ko: "첫 팀은 끝냈고, 두 번째 팀도 끝냈다." },
           ex2: { en: "She will sign the agreement, but he won't.", ko: "그녀는 합의서에 서명하겠지만 그는 하지 않을 것이다." },
           note: "❌ I can sing; she can **do** too → ✓ she can too — 조동사 뒤에 do를 덧대지 않는다(영국 구어의 she can do는 예외적 변이).",
+          ch: "b1-09-question-craft",
         },
         {
           pattern: "I'd like to",
@@ -139,6 +141,7 @@ export default {
           ex: { en: "She opposed the plan, and her colleagues did the same.", ko: "그녀는 그 계획에 반대했고 동료들도 똑같이 했다." },
           ex2: { en: "I disapprove of such tactics, and most reviewers feel the same.", ko: "나는 그런 전술을 못마땅해하는데 대부분의 심사자도 같은 생각이다." },
           note: "do so보다 중립적 — 감정·태도에는 do so가 안 되고 **feel the same**이 받는다(❌ he feels so about it).",
+          ch: "c1-03-discourse-register",
         },
         {
           pattern: "you passed the exam?",
@@ -156,6 +159,7 @@ export default {
           ex: { en: "Didn't she mention the deadline at the last meeting?", ko: "그녀가 지난 회의에서 마감을 언급하지 않았나요?" },
           ex2: { en: "Wouldn't it be safer to wait for the full dataset?", ko: "전체 데이터셋을 기다리는 편이 더 안전하지 않을까요?" },
           note: "기대 답은 보통 yes — 놀람·동의 요청·정중한 제안의 장치. 초격식 비축약형은 어순이 다르다: Did she **not** mention…?",
+          ch: "b1-09-question-craft",
         },
         {
           pattern: "..., didn't you?・..., will she?",
@@ -173,6 +177,7 @@ export default {
           ex: { en: "This model performs better than the previous one.", ko: "이 모델은 이전 모델보다 성능이 좋다." },
           ex2: { en: "She works far harder than he does.", ko: "그녀는 그보다 훨씬 열심히 일한다." },
           note: "생략된 부분을 복원해야 비교 대상이 보인다 — than he does ≠ than him(구어). 모호하면 보충: I like her more **than he does** vs more **than I like him**.",
+          ch: "a2-03-comparatives",
         },
         {
           pattern: "the president himself・by themselves",
@@ -195,6 +200,7 @@ export default {
           ex: { en: "A friend of my father's chairs the ethics committee.", ko: "아버지 친구 한 분이 윤리위원회를 이끌고 계신다." },
           ex2: { en: "That remark of yours did not go unnoticed.", ko: "당신의 그 발언은 그냥 넘어가지지 않았다." },
           note: "a friend of my father = 중의적, a friend of my father**'s** = '여럿 중 하나'가 분명 — a painting of Picasso's(피카소가 그린 것) vs of Picasso(피카소를 그린 것)도 같은 대립.",
+          ch: "a1-05-pronouns-possessive",
         },
         {
           pattern: "mothers-in-law・passers-by",
@@ -203,6 +209,7 @@ export default {
           ex: { en: "Both her sisters-in-law work in publishing.", ko: "그녀의 두 시누이 모두 출판계에서 일한다." },
           ex2: { en: "The accident was witnessed by several passers-by.", ko: "그 사고는 여러 행인이 목격했다." },
           note: "❌ mother-in-**laws**・passer-**bys** → ✓ **mothers**-in-law・**passers**-by — 핵심 명사에 s. 단순 명사+명사는 마지막 단어에(coffee table**s**). editors-in-chief도 동일.",
+          ch: "a1-04-plural-countable",
         },
         {
           pattern: "the allegation that・the assertion that",
@@ -238,6 +245,7 @@ export default {
           ex: { en: "The methodology, a mixed-methods approach, combined surveys and interviews.", ko: "그 방법론, 즉 혼합 방법 접근은 설문과 면접을 결합했다." },
           ex2: { en: "My colleague Sarah, who led the fieldwork, drafted the appendix.", ko: "현장 조사를 이끈 내 동료 사라가 부록 초안을 썼다." },
           note: "쉼표가 있으면 보충(여럿 중 하나), 없으면 한정(my colleague John = 그 존) — 콜론 동격(one key variable: income)은 정의 제시용.",
+          ch: "c1-06-academic-writing",
         },
         {
           pattern: "research methodology・policy framework",
@@ -246,6 +254,7 @@ export default {
           ex: { en: "Advances in machine learning have transformed risk assessment.", ko: "기계 학습의 발전은 위험 평가를 변모시켰다." },
           ex2: { en: "The proposal lacks a coherent policy framework.", ko: "그 제안에는 일관된 정책 틀이 없다." },
           note: "핵심은 **마지막 명사**(head) — a student paper는 논문이지 학생이 아니다. 수식 명사는 원칙적으로 단수형(❌ a **researches** project).",
+          ch: "c1-06-academic-writing",
         },
         {
           pattern: "a well-known actor・well known",
@@ -284,6 +293,7 @@ export default {
           ex: { en: "Approval depends on whether the funding arrives in time.", ko: "승인은 자금이 제때 도착하는지에 달려 있다." },
           ex2: { en: "The debate is not about whether change is needed, but how fast.", ko: "논쟁은 변화가 필요한지가 아니라 얼마나 빨라야 하는지에 관한 것이다." },
           note: "❌ It depends on **if** the funding arrives → ✓ depends on **whether** — 전치사의 목적어 자리는 whether 전용.",
+          ch: "b1-08-preposition-combos",
         },
         {
           pattern: "whether to do",
@@ -292,6 +302,7 @@ export default {
           ex: { en: "The council debated whether to extend the deadline.", ko: "의회는 마감을 연장할지를 두고 토론했다." },
           ex2: { en: "She is still unsure whether to accept the offer.", ko: "그녀는 그 제안을 수락할지 아직 확신이 서지 않는다." },
           note: "❌ debated **if to extend** → ✓ **whether to extend** — to부정사를 이끌 수 있는 것은 whether뿐이다.",
+          ch: "b1-09-question-craft",
         },
         {
           pattern: "whether or not",
@@ -300,6 +311,7 @@ export default {
           ex: { en: "Whether or not we agree, the decision stands.", ko: "우리가 동의하든 안 하든 그 결정은 유효하다." },
           ex2: { en: "It remains unclear whether the effect is causal or not.", ko: "그 효과가 인과적인지 아닌지는 여전히 불분명하다." },
           note: "❌ **If or not** we agree → ✓ Whether or not — if는 or not과 결합하지 못한다. or not은 뒤로 미룰 수도 있다.",
+          ch: "b1-09-question-craft",
         },
         {
           pattern: "whether she attends or not, ...",
@@ -325,6 +337,7 @@ export default {
           ex: { en: "That the committee was never consulted is telling.", ko: "위원회와 한 번도 협의하지 않았다는 사실은 많은 것을 시사한다." },
           ex2: { en: "That no one resigned does not mean no one was responsible.", ko: "아무도 사임하지 않았다고 해서 아무도 책임이 없다는 뜻은 아니다." },
           note: "주어 자리의 that은 절대 생략 불가 — ❌ **He failed** is unfortunate. 부담스러우면 가주어로: It is unfortunate that he failed.",
+          ch: "c1-06-academic-writing",
         },
         {
           pattern: "I don't know that ...",
@@ -393,6 +406,7 @@ export default {
           ex: { en: "As far as cost is concerned, the option is prohibitive.", ko: "비용에 관한 한 그 선택지는 감당하기 어렵다." },
           ex2: { en: "As far as the law is concerned, the practice remains legal.", ko: "법에 관한 한 그 관행은 여전히 합법이다." },
           note: "❌ As far as cost(꼬리 절단) → ✓ as far as cost **is concerned** — 구어에서 흔한 절단형은 격식 글에서 오류로 본다. 간결 대안은 **regarding / in terms of**.",
+          ch: "c1-06-academic-writing",
         },
         {
           pattern: "what is more",
@@ -452,6 +466,7 @@ export default {
           ex: { en: "Fortunately, no one was injured in the collapse.", ko: "다행히 붕괴 사고에서 다친 사람은 없었다." },
           ex2: { en: "Frankly, the proposal lacks any serious costing.", ko: "솔직히 그 제안에는 진지한 비용 산정이 전혀 없다." },
           note: "주관을 드러내는 부사 — 객관 서술(데이터 기술)에서는 절제하고, 논평·의견문에서 신호로 쓴다. 문중에 넣으면 동사 수식으로 오독될 수 있다.",
+          ch: "c1-02-hedging-nuance",
         },
         {
           pattern: "increasingly・ever more",
@@ -469,6 +484,7 @@ export default {
           ex: { en: "The two accounts are utterly incompatible.", ko: "두 설명은 전혀 양립할 수 없다." },
           ex2: { en: "By morning the battery was completely dead.", ko: "아침이 되자 배터리는 완전히 방전되어 있었다." },
           note: "❌ **very** impossible・**very** dead → ✓ utterly・completely — very는 등급 형용사 전용. utterly는 부정적 평가와 강하게 결속한다(utterly wrong).",
+          ch: "b2-07-collocations",
         },
         {
           pattern: "appear・seem",
@@ -495,6 +511,7 @@ export default {
           ex: { en: "There is no evidence that the two events were connected.", ko: "두 사건이 연결되어 있었다는 증거는 전혀 없다." },
           ex2: { en: "We see no reason to revise the original estimate.", ko: "애초의 추정치를 수정할 이유가 없다고 본다." },
           note: "There isn't any evidence보다 단호하고 격식적 — 반박·결론 문장의 무게추. 대명사형은 **none**(None of them came).",
+          ch: "a2-08-there-is",
         },
       ],
     },
@@ -527,6 +544,7 @@ export default {
           ex: { en: "The proposal is still under review by the funding body.", ko: "그 제안서는 아직 지원 기관의 검토를 받고 있다." },
           ex2: { en: "Under the new regulation, all transfers must be declared.", ko: "새 규정 아래에서는 모든 이전 내역을 신고해야 한다." },
           note: "is being reviewed를 명사구 하나로 — under construction・under way・under pressure도 같은 계열. 관사가 없다는 점이 표식이다.",
+          ch: "c1-06-academic-writing",
         },
         {
           pattern: "in the event of・in case of",
@@ -535,6 +553,7 @@ export default {
           ex: { en: "In the event of equipment failure, backup systems activate automatically.", ko: "장비 고장 시 예비 시스템이 자동으로 작동한다." },
           ex2: { en: "In case of fire, do not use the lifts.", ko: "화재 시 승강기를 이용하지 마시오." },
           note: "if절을 명사구로 접은 규정·안내문의 정형구 — 일상 구어는 **if something goes wrong**. in case + 절(대비)과 의미가 다름에 주의.",
+          ch: "c1-03-discourse-register",
         },
         {
           pattern: "in order not to・so as not to",
@@ -560,6 +579,7 @@ export default {
           ex: { en: "This instrument is designed for measuring trace gases.", ko: "이 기기는 미량 기체 측정용으로 설계되었다." },
           ex2: { en: "The fund was never intended for covering operating costs.", ko: "그 기금은 애초에 운영비 충당용이 아니었다." },
           note: "for -ing = 사물의 일반 용도, to부정사 = 행위자의 그때 의도 — I went to the bank **to deposit** a cheque(목적)이지 for depositing이 아니다.",
+          ch: "b1-08-preposition-combos",
         },
         {
           pattern: "be deemed unviable・be appointed director",

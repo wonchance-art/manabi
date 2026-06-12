@@ -18,6 +18,7 @@ export default {
           ex: { en: "My name is Chaeyeon.", ko: "제 이름은 채연이에요." },
           ex2: { en: "Hi, I'm Minsu. Nice to meet you.", ko: "안녕하세요, 저는 민수예요. 반갑습니다." },
           note: "구어에서는 **I'm + 이름** 쪽이 더 가볍고 자연스럽다 — My name is …는 살짝 격식.",
+          ch: "a1-01-be-verb",
         },
         {
           pattern: "I am from …",
@@ -68,6 +69,7 @@ export default {
           ex: { en: "How are you? — I'm fine, thanks. And you?", ko: "잘 지내요? — 잘 지내요, 고마워요. 그쪽은요?" },
           ex2: { en: "How is your mother? — She's not bad.", ko: "어머니는 어떠세요? — 잘 지내세요." },
           note: "미국 구어에서는 **How are you doing? / What's up?** 도 흔하다 — 격식 자리에서는 How are you?",
+          ch: "a1-01-be-verb",
         },
         {
           pattern: "This is …",
@@ -76,6 +78,7 @@ export default {
           ex: { en: "This is my friend Minho.", ko: "이쪽은 제 친구 민호예요." },
           ex2: { en: "Hello, this is Jiwoo speaking.", ko: "여보세요, 저 지우인데요. (전화)" },
           note: "사람을 소개할 때 ❌ He is my friend (첫 소개) → ✓ **This is** my friend. 전화로 '저는 ~인데요'도 This is …",
+          ch: "a1-01-be-verb",
         },
         {
           pattern: "What is your name?・Where are you from?",
@@ -142,6 +145,7 @@ export default {
           ko: "(시간이) ~ 걸리다",
           ex: { en: "It takes an hour to get to Incheon.", ko: "인천까지 한 시간 걸려요." },
           ex2: { en: "It doesn't take long. Maybe ten minutes.", ko: "오래 안 걸려요. 한 10분쯤?" },
+          ch: "a2-08-there-is",
         },
         {
           pattern: "S + V + O",
@@ -209,6 +213,7 @@ export default {
           ko: "~을 원하다 / ~이 필요하다",
           ex: { en: "I want a new phone.", ko: "새 휴대폰을 갖고 싶어요." },
           ex2: { en: "We don't need more chairs.", ko: "의자는 더 필요 없어요." },
+          ch: "a1-02-present-simple",
         },
         {
           pattern: "I think (that) …",
@@ -327,6 +332,7 @@ export default {
           ex: { en: "This is Minsu's phone.", ko: "이건 민수의 휴대폰이에요." },
           ex2: { en: "The children's books are on the desk.", ko: "아이들의 책이 책상 위에 있어요." },
           note: "복수형 뒤에는 아포스트로피만 — my parents**'** car. 사물엔 보통 of — the door **of** the house.",
+          ch: "a1-05-pronouns-possessive",
         },
         {
           pattern: "Whose …?",
@@ -334,6 +340,7 @@ export default {
           ko: "누구의 ~예요?",
           ex: { en: "Whose umbrella is this? — It's mine.", ko: "이거 누구 우산이에요? — 제 거예요." },
           ex2: { en: "Whose shoes are these? — They're my brother's.", ko: "이 신발 누구 거야? — 우리 형 거야." },
+          ch: "a1-05-pronouns-possessive",
         },
         {
           pattern: "myself・yourself・themselves",
@@ -374,6 +381,7 @@ export default {
           ex: { en: "I've got two tickets for the concert.", ko: "콘서트 표가 두 장 있어." },
           ex2: { en: "She hasn't got any money.", ko: "그녀는 돈이 하나도 없어요." },
           note: "영국 구어는 **have got**(Have you got …?), 미국식·격식 글은 **have**(Do you have …?)가 기본 — 뜻은 같다.",
+          ch: "c2-02-varieties",
         },
       ],
     },
@@ -536,6 +544,7 @@ export default {
           ko: "~ 앞에 / ~ 뒤에",
           ex: { en: "The bus stops in front of the school.", ko: "버스는 학교 앞에 서요." },
           ex2: { en: "The cat is hiding behind the door.", ko: "고양이가 문 뒤에 숨어 있어요." },
+          ch: "a1-08-prepositions-basic",
         },
         {
           pattern: "next to・between・under",
@@ -543,6 +552,7 @@ export default {
           ko: "~ 옆에 / 사이에 / 아래에",
           ex: { en: "The pharmacy is between the bank and the cafe.", ko: "약국은 은행과 카페 사이에 있어요." },
           ex2: { en: "Your shoes are under the table, next to mine.", ko: "네 신발은 탁자 밑, 내 신발 옆에 있어." },
+          ch: "a1-08-prepositions-basic",
         },
         {
           pattern: "near・far from",
@@ -550,6 +560,7 @@ export default {
           ko: "~ 가까이에 / ~에서 멀리",
           ex: { en: "I live near the subway station.", ko: "저는 지하철역 가까이에 살아요." },
           ex2: { en: "The airport is not far from here.", ko: "공항은 여기서 멀지 않아요." },
+          ch: "a1-08-prepositions-basic",
         },
         {
           pattern: "go to・go home",
@@ -566,6 +577,7 @@ export default {
           ko: "왼쪽에 / 오른쪽에",
           ex: { en: "The bathroom is on the left.", ko: "화장실은 왼쪽에 있어요." },
           ex2: { en: "In Korea, cars drive on the right.", ko: "한국에서는 차가 오른쪽으로 다녀요." },
+          ch: "a1-08-prepositions-basic",
         },
       ],
     },
@@ -605,6 +617,7 @@ export default {
           ko: "~ 전에 / ~ 후에 / ~ 동안",
           ex: { en: "We watch TV after dinner.", ko: "우리는 저녁 먹고 TV를 봐요." },
           ex2: { en: "People don't talk during the movie.", ko: "영화 상영 중에는 사람들이 말을 안 해요." },
+          ch: "a1-08-prepositions-basic",
         },
         {
           pattern: "from … to …",
@@ -612,6 +625,7 @@ export default {
           ko: "~부터 ~까지",
           ex: { en: "I work from nine to six.", ko: "저는 9시부터 6시까지 일해요." },
           ex2: { en: "The store is open from Monday to Saturday.", ko: "그 가게는 월요일부터 토요일까지 열어요." },
+          ch: "a1-08-prepositions-basic",
         },
         {
           pattern: "every day・every Monday",
@@ -620,6 +634,7 @@ export default {
           ex: { en: "I exercise every day.", ko: "저는 매일 운동해요." },
           ex2: { en: "We don't have class every Friday.", ko: "금요일마다 수업이 있는 건 아니에요." },
           note: "두 단어로 — ❌ I study **everyday** → ✓ **every day** (everyday는 '일상의'라는 형용사).",
+          ch: "a2-07-adverbs-frequency",
         },
       ],
     },
@@ -692,6 +707,7 @@ export default {
           ex: { en: "Which color do you like, black or white?", ko: "검정이랑 흰색 중에 어느 색이 좋아요?" },
           ex2: { en: "Which bus goes to Gangnam?", ko: "어느 버스가 강남에 가요?" },
           note: "열린 질문은 what, 보기 중에서 고르면 which.",
+          ch: "a1-07-questions-negatives",
         },
         {
           pattern: "How much is it?",
@@ -699,6 +715,7 @@ export default {
           ko: "얼마예요?",
           ex: { en: "How much is this T-shirt?", ko: "이 티셔츠 얼마예요?" },
           ex2: { en: "How much are these apples? — Three thousand won.", ko: "이 사과들 얼마예요? — 3천 원이요." },
+          ch: "a1-04-plural-countable",
         },
       ],
     },
@@ -712,6 +729,7 @@ export default {
           ko: "그리고 / 하지만",
           ex: { en: "I like coffee and tea.", ko: "저는 커피랑 차를 좋아해요." },
           ex2: { en: "The room is small but clean.", ko: "방은 작지만 깨끗해요." },
+          ch: "b2-06-linking-devices",
         },
         {
           pattern: "or",
@@ -726,6 +744,7 @@ export default {
           ko: "그래서",
           ex: { en: "I'm tired, so I'm going home.", ko: "피곤해서 집에 가려고요." },
           ex2: { en: "The bus is late, so we are waiting.", ko: "버스가 늦어서 기다리는 중이에요." },
+          ch: "b2-06-linking-devices",
         },
         {
           pattern: "because",
@@ -742,6 +761,7 @@ export default {
           ex: { en: "I'm hungry. — Me too!", ko: "배고파. — 나도!" },
           ex2: { en: "She speaks English and also a little Korean.", ko: "그녀는 영어를 하고 한국어도 조금 해요." },
           note: "부정문에 맞장구칠 때는 ❌ Me **too** → ✓ Me **neither** (A2에서 자세히).",
+          ch: "b2-06-linking-devices",
         },
       ],
     },

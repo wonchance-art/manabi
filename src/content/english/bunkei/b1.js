@@ -223,6 +223,7 @@ export default {
           ex: { en: "You can borrow my car as long as you return it by six.", ko: "6시까지 돌려주기만 하면 내 차 빌려 가도 돼." },
           ex2: { en: "As long as you don't make noise, you can stay.", ko: "시끄럽게 하지 않는 한 있어도 돼요." },
           note: "조건절이므로 will 금지: ❌ as long as you will work hard → ✓ as long as you **work** hard.",
+          ch: "b1-02-conditionals-1-2",
         },
         {
           pattern: "provided that・providing",
@@ -231,6 +232,7 @@ export default {
           ex: { en: "The grant will be approved provided that all documents are submitted.", ko: "모든 서류가 제출된다면 보조금이 승인될 거예요." },
           ex2: { en: "You can leave early providing you finish your work.", ko: "일을 끝낸다면 일찍 가도 됩니다." },
           note: "계약서·공문 단골 격식체 — 구어에서는 if·as long as가 자연스럽다. 더 격식은 on condition that.",
+          ch: "b1-02-conditionals-1-2",
         },
         {
           pattern: "when・until・as soon as + present",
@@ -239,6 +241,7 @@ export default {
           ex: { en: "I'll call you when I arrive.", ko: "도착하면 전화할게요." },
           ex2: { en: "We won't start until everyone is here.", ko: "모두 올 때까지 시작하지 않을 거예요." },
           note: "❌ I'll call you when I will arrive → ✓ when I **arrive** (시간절에 will 금지).",
+          ch: "b1-02-conditionals-1-2",
         },
         {
           pattern: "What if ...?",
@@ -247,6 +250,7 @@ export default {
           ex: { en: "What if we miss the last bus?", ko: "막차를 놓치면 어떡하지?" },
           ex2: { en: "What if you asked her directly?", ko: "그녀에게 직접 물어보면 어때?" },
           note: "과거형을 쓰면 더 가정적이고 조심스러운 제안이 된다.",
+          ch: "b1-02-conditionals-1-2",
         },
       ],
     },
@@ -478,6 +482,7 @@ export default {
           ex: { en: "She admitted making a mistake.", ko: "그녀는 실수했다고 인정했어요." },
           ex2: { en: "He denied taking the money.", ko: "그는 돈을 가져가지 않았다고 부인했어요." },
           note: "전달동사 선택이 태도까지 전한다 — claim(주장), insist(고집), mention(언급).",
+          ch: "a2-06-infinitive-gerund",
         },
         {
           pattern: "promise・agree・refuse + to",
@@ -486,6 +491,7 @@ export default {
           ex: { en: "He promised to call back before noon.", ko: "그는 정오 전에 다시 전화하겠다고 약속했어요." },
           ex2: { en: "They refused to change the schedule.", ko: "그들은 일정 변경을 거부했어요." },
           note: "❌ promised not going late → ✓ promised **not to be** late.",
+          ch: "a2-06-infinitive-gerund",
         },
       ],
     },
@@ -563,6 +569,7 @@ export default {
           ex: { en: "Which color do you prefer — blue or green?", ko: "파랑이랑 초록 중 어느 색이 좋아요?" },
           ex2: { en: "What kind of music do you listen to?", ko: "어떤 종류의 음악을 들어요?" },
           note: "선택지가 눈앞에 있으면 which, 열린 질문이면 what.",
+          ch: "a1-07-questions-negatives",
         },
       ],
     },
@@ -640,6 +647,7 @@ export default {
           ex: { en: "We regret to inform you that the position has been filled.", ko: "유감스럽지만 해당 자리는 충원되었음을 알려 드립니다." },
           ex2: { en: "I regret saying those words.", ko: "그런 말을 한 걸 후회해요." },
           note: "regret to inform/announce는 격식 통지 공식 — 일상의 후회는 -ing.",
+          ch: "a2-06-infinitive-gerund",
         },
         {
           pattern: "need + -ing",
@@ -648,6 +656,7 @@ export default {
           ex: { en: "The car needs washing.", ko: "차를 세차할 때가 됐어요." },
           ex2: { en: "These figures don't need checking again.", ko: "이 수치들은 다시 확인할 필요 없어요." },
           note: "❌ The house needs to paint → ✓ needs **painting**・needs **to be painted**.",
+          ch: "a2-06-infinitive-gerund",
         },
         {
           pattern: "like + -ing・like to",
@@ -673,6 +682,7 @@ export default {
           ex: { en: "I prefer working in the morning.", ko: "저는 오전에 일하는 게 더 좋아요." },
           ex2: { en: "She prefers tea to coffee.", ko: "그녀는 커피보다 차를 더 좋아해요." },
           note: "❌ prefer coffee than tea → ✓ prefer coffee **to** tea. would prefer는 to부정사: I'd prefer **to stay**.",
+          ch: "a2-06-infinitive-gerund",
         },
         {
           pattern: "would rather",
@@ -1013,6 +1023,7 @@ export default {
           ex: { en: "I fell asleep during the movie.", ko: "영화 보다가 잠들었어요." },
           ex2: { en: "She texted me while I was working.", ko: "내가 일하는 동안 그녀가 문자를 보냈어요." },
           note: "❌ during I was watching → ✓ **while** I was watching (during 뒤엔 명사만).",
+          ch: "a2-02-past-continuous",
         },
         {
           pattern: "by・until",
@@ -1037,6 +1048,7 @@ export default {
           ex: { en: "Countries such as France and Italy attract many tourists.", ko: "프랑스나 이탈리아 같은 나라들은 관광객이 많아요." },
           ex2: { en: "Avoid sugary drinks such as soda.", ko: "탄산음료 같은 단 음료는 피하세요." },
           note: "예시는 such as, 유사 비유는 like — 격식 글에서는 구분이 점수다.",
+          ch: "b2-06-linking-devices",
         },
         {
           pattern: "in time・on time",
@@ -1044,6 +1056,7 @@ export default {
           ko: "①시간 안에, 늦지 않게 ②정시에",
           ex: { en: "We arrived just in time for the last train.", ko: "막차 시간에 딱 맞춰 도착했어요." },
           ex2: { en: "The KTX always leaves on time.", ko: "KTX는 항상 정시에 출발해요." },
+          ch: "a1-08-prepositions-basic",
         },
         {
           pattern: "at the end・in the end",
@@ -1052,6 +1065,7 @@ export default {
           ex: { en: "There's a quiz at the end of the lesson.", ko: "수업 끝에 퀴즈가 있어요." },
           ex2: { en: "In the end, we decided not to move.", ko: "결국 우리는 이사하지 않기로 했어요." },
           note: "at the end는 위치·시점, in the end는 '결국'(= finally).",
+          ch: "a1-08-prepositions-basic",
         },
         {
           pattern: "between・among",
@@ -1060,6 +1074,7 @@ export default {
           ex: { en: "The secret is between you and me.", ko: "이 비밀은 너와 나 사이의 일이야." },
           ex2: { en: "The house is hidden among the trees.", ko: "그 집은 나무들 사이에 숨어 있어요." },
           note: "명확히 구분되는 둘(셋이라도 1:1 관계)은 between, 덩어리 속은 among.",
+          ch: "a1-08-prepositions-basic",
         },
         {
           pattern: "at the weekend・on the weekend",
@@ -1068,6 +1083,7 @@ export default {
           ex: { en: "What are you doing at the weekend?", ko: "주말에 뭐 해요?" },
           ex2: { en: "I don't work on the weekend.", ko: "저는 주말에는 일하지 않아요." },
           note: "영국식은 **at** the weekend, 미국식은 **on** the weekend — 둘 다 표준.",
+          ch: "c2-02-varieties",
         },
       ],
     },

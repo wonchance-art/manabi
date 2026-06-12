@@ -248,6 +248,7 @@ export default {
           ko: "(시간표상) ~한다",
           ex: { en: "The first train leaves at 5:30.", ko: "첫차는 5시 반에 출발해요." },
           ex2: { en: "The exam starts at nine on Monday.", ko: "시험은 월요일 9시에 시작해요." },
+          ch: "a2-02-future",
         },
         {
           pattern: "Shall I …?・Shall we …?",
@@ -288,6 +289,7 @@ export default {
           ko: "~할 수 있었다 / ~할 수 없었다",
           ex: { en: "I could swim when I was five.", ko: "저는 다섯 살 때 수영을 할 수 있었어요." },
           ex2: { en: "We couldn't find a taxi last night.", ko: "어젯밤에 택시를 못 잡았어요." },
+          ch: "a2-04-modals-basic",
         },
         {
           pattern: "Can I …?・May I …?",
@@ -296,6 +298,7 @@ export default {
           ex: { en: "Can I sit here?", ko: "여기 앉아도 돼요?" },
           ex2: { en: "May I ask a question?", ko: "질문 하나 드려도 될까요?" },
           note: "일상 구어 기본값은 Can I — **May I**는 격식·서비스 영어에서.",
+          ch: "a2-04-modals-basic",
         },
         {
           pattern: "may・might",
@@ -304,6 +307,7 @@ export default {
           ex: { en: "It might rain this afternoon.", ko: "오후에 비가 올지도 몰라요." },
           ex2: { en: "She may not come today.", ko: "그녀는 오늘 안 올 수도 있어요." },
           note: "❌ might **to** rain → ✓ might **rain**. might가 may보다 살짝 더 불확실한 느낌.",
+          ch: "b1-06-modals-speculation",
         },
         {
           pattern: "must",
@@ -494,6 +498,7 @@ export default {
           ex: { en: "Your phone is the same as mine.", ko: "네 폰은 내 거랑 같은 거네." },
           ex2: { en: "British English is a little different from American English.", ko: "영국 영어는 미국 영어와 조금 달라요." },
           note: "표준은 different **from** — 영국 구어 different **to**, 미국 구어 different **than**도 쓰인다.",
+          ch: "b1-08-preposition-combos",
         },
       ],
     },
@@ -628,6 +633,7 @@ export default {
           ex: { en: "Let's go shopping in Myeongdong.", ko: "명동에 쇼핑하러 가자." },
           ex2: { en: "We went hiking in Bukhansan last Saturday.", ko: "지난 토요일에 북한산으로 등산을 갔어요." },
           note: "❌ go **to** swimming → ✓ go swimming (운동·여가 활동에 쓰는 고정 패턴).",
+          ch: "a2-06-infinitive-gerund",
         },
         {
           pattern: "make/let + 사람 + 동사원형",
@@ -676,6 +682,7 @@ export default {
           ko: "일어나다 / (잠에서) 깨다",
           ex: { en: "I get up at six every morning.", ko: "저는 매일 아침 6시에 일어나요." },
           ex2: { en: "The baby woke up three times last night.", ko: "아기가 어젯밤에 세 번 깼어요." },
+          ch: "b1-07-phrasal-verbs-intro",
         },
         {
           pattern: "pick up・give up",
