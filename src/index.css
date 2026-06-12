@@ -8374,6 +8374,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   .bento--2x2 { grid-column: span 2; grid-row: span 1; }
   .bento--4x1 { grid-column: span 2; }
   .bento-stat .mypage-stat-cell__value { font-size: 1.4rem; }
+  /* 모바일 순서: [목표][D-Day] / [스트릭][오늘 활동] / [단어 복습 라이브] / 나머지
+     — 3번째 자식 = 단어 복습 타일, 6번째부터 = 진도·기억 건강·히트맵 (ProfileStats 구조와 연동) */
+  .bento > :nth-child(3) { order: 2; }
+  .bento > :nth-child(n+6) { order: 3; }
 }
 
 /* 단어 복습 라이브 타일 */
