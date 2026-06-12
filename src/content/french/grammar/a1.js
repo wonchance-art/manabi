@@ -493,6 +493,7 @@ export default [
       {
         heading: "발음 보호 규칙 — 모음 앞에서는 ma 대신 mon",
         pattern: "여성 명사 + 모음 시작 → ma/ta/sa 대신 mon/ton/son (mon amie)",
+        patternKo: "모음 충돌을 피하려고 여성 명사 앞에도 mon",
         body:
           "여성 명사라도 **모음(또는 무음 h)으로 시작하면 mon/ton/son**을 써요. ma amie처럼 모음이 충돌하는 걸 프랑스어가 못 견디기 때문이에요.\n\n" +
           "형태만 mon을 빌려 쓸 뿐 명사는 여전히 여성이라, 일치는 여성형으로 해요: mon amie est joli**e**.",
@@ -519,6 +520,7 @@ export default [
       {
         heading: "aller(가다) — 최강 불규칙 동사",
         pattern: "je vais · tu vas · il va · nous allons · vous allez · ils vont",
+        patternKo: "'가다' aller의 완전 불규칙 활용",
         body:
           "**aller**(가다)는 -er로 끝나지만 1군이 아닌 완전 불규칙 동사예요 — 그만큼 많이 쓰여서 닳고 닳았다는 뜻이죠.\n\n" +
           "인사말 Ça va ?의 va도 사실 aller의 3인칭이에요. 이미 여러분은 aller를 쓰고 있었던 거죠.",
@@ -542,6 +544,7 @@ export default [
       {
         heading: "aller à — 그리고 의무 축약 au / aux",
         pattern: "à + le → au · à + les → aux (à la / à l'는 그대로)",
+        patternKo: "à와 정관사 le/les가 만나면 의무 축약",
         body:
           "'~에 가다'는 aller **à**인데, à 뒤에 정관사 le/les가 오면 **반드시 축약**해야 해요.\n\n" +
           "영어 to the처럼 따로 쓰는 선택지는 없어요 — à le라고 쓰면 그냥 틀린 문장이에요.",
@@ -580,6 +583,7 @@ export default [
       {
         heading: "venir(오다)와 passé récent — '방금 ~했어요'",
         pattern: "venir de + 동사 원형 → 방금 ~했어요 (passé récent)",
+        patternKo: "'방금 ~했어요' — venir de 뒤에 원형",
         body:
           "**venir**(오다)도 필수 불규칙 동사예요: je viens, tu viens, il vient, nous venons, vous venez, ils viennent [vjɛn].\n\n" +
           "aller + 원형이 가까운 미래라면, **venir de + 원형**은 가까운 과거예요. Je viens de manger.(나 방금 먹었어.) — 직역 '먹는 것으로부터 오는 길이다'.",
@@ -630,6 +634,7 @@ export default [
       {
         heading: "음식·음료 회화의 주력 엔진",
         pattern: "manger / boire / prendre + du / de la + 음식",
+        patternKo: "먹고 마시는 동사와 짝을 이루는 부분관사",
         body:
           "부분관사가 가장 바쁘게 일하는 곳은 식탁이에요. **manger**(먹다), **boire**(마시다, je bois), **prendre**(시키다, je prends) 같은 동사와 짝을 이뤄요.\n\n" +
           "카페 주문, 장보기, 아침 메뉴 — 전부 부분관사의 무대예요.",
@@ -643,6 +648,7 @@ export default [
       {
         heading: "부정문에서는 전부 de로 변신",
         pattern: "부정문: du / de la / de l' / des → de",
+        patternKo: "부정문에서는 부분관사도 전부 de로 통일",
         body:
           "부정문 챕터의 규칙이 그대로 적용돼요. Je bois du café → Je ne bois pas **de** café.\n\n" +
           "'없음'의 세계에서는 양을 따질 필요가 없으니 전부 중립적인 de로 통일되는 거예요.",
@@ -669,6 +675,7 @@ export default [
       {
         heading: "0~69 — 여기까지는 평화로워요",
         pattern: "20~69 = 십 단위 + 일 단위 · 21/31... = ... et un",
+        patternKo: "69까지는 십 단위 + 일 단위의 평범한 조립",
         body:
           "1~16은 고유한 단어, 17~19는 dix-sept(10+7) 식, 20~69는 '십 단위 + 일 단위'예요. 영어와 같은 논리라 무난해요.\n\n" +
           "발음 주의: six과 dix는 단독 [sis]/[dis], 명사 앞 [si]/[di], 모음 앞 [siz]/[diz]로 변해요.",
@@ -692,6 +699,7 @@ export default [
       {
         heading: "70~99 — 프랑스식 암산 체조",
         pattern: "70 = soixante-dix (60+10) · 80 = quatre-vingts (4×20) · 90 = 4×20+10",
+        patternKo: "70부터는 60+10, 4×20 식의 암산 체조",
         body:
           "70부터 프랑스어는 수학 문제를 내요. 99는 quatre-vingt-dix-neuf(4×20+10+9) — 한 숫자에 단어가 네 개예요.\n\n" +
           "처음엔 멘붕이 정상이지만, 전화번호와 가격에서 무한 반복되니 외우려 하지 말고 **들으면서 익숙해지세요**.",
@@ -717,6 +725,7 @@ export default [
       {
         heading: "시간 묻고 답하기 — Quelle heure est-il ?",
         pattern: "Il est + 숫자 + heure(s) (+ et demie / et quart / moins le quart)",
+        patternKo: "시간 대답은 Il est 틀에 숫자 끼우기 — heures 생략 불가",
         body:
           "시간 질문 **Quelle heure est-il ?**은 굳은 표현이라 통째로 외워요. 대답은 **Il est ... heure(s)** 틀에 숫자만 끼우면 돼요.\n\n" +
           "30분 = **et demie**, 15분 = **et quart**, 15분 전 = **moins le quart**. 정오는 midi, 자정은 minuit라는 전용 단어를 써요.",
@@ -731,6 +740,7 @@ export default [
       {
         heading: "날짜와 요일 — le 3 mai 공식",
         pattern: "le + 숫자 + 달 이름 (예외: 1일 = le premier)",
+        patternKo: "날짜는 '일 → 월' 순서 — 1일만 premier",
         body:
           "날짜는 **le 3 mai**(5월 3일)처럼 어순이 한국어와 반대로 '일 → 월'이에요. 1일만 서수 **le premier**(le 1er)를 써요.\n\n" +
           "요일·달 이름은 **소문자**로 쓰고, '매주 월요일마다'는 le lundi처럼 정관사를 붙여요. '오늘 며칠이에요?'는 **On est le combien ?**",

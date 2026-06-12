@@ -250,6 +250,7 @@ export default [
       {
         heading: "대립과 양보 — cependant, néanmoins, en revanche",
         pattern: "cependant/toutefois = 그렇지만 · néanmoins = 그럼에도 · pourtant = 그런데도 · en revanche = 반면에",
+        patternKo: "'하지만' 계열 가르기 — 반박은 cependant, 대조는 en revanche",
         body:
           "전부 '하지만' 계열이지만 결이 달라요. **cependant/toutefois**는 mais의 문어체 업그레이드, **néanmoins**은 앞 내용을 인정하면서 뒤집기, **pourtant**은 모순에 대한 놀라움이에요.\n\n" +
           "**en revanche / par contre**는 반박이 아니라 **대조** — 두 대상을 나란히 비교할 때만 쓰세요. (par contre는 구어적, en revanche가 격식)",
@@ -263,6 +264,7 @@ export default [
       {
         heading: "원인과 결과 — par conséquent, en effet, ainsi",
         pattern: "par conséquent = 따라서 · en effet = 근거 뒷받침 · en fait = 반전·정정",
+        patternKo: "결과·근거 연결사 — en effet는 뒷받침, en fait는 반전",
         body:
           "**par conséquent / c'est pourquoi**는 donc의 격식 버전으로 결론을 끌어내고, **ainsi**는 '이렇게 하여, 그 결과'예요.\n\n" +
           "**en effet**는 **앞 문장의 근거를 대는** 연결사예요 — '사실은'이라는 반전이 아닙니다(한국 학습자 최다 오용 1위). 반전·정정의 '실은'은 **en fait** — 글자 하나 차이로 정반대 방향이에요.",
@@ -276,6 +278,7 @@ export default [
       {
         heading: "첨가·전환·구조화 — d'ailleurs, par ailleurs, d'abord...",
         pattern: "d'abord → ensuite → enfin · de plus = 게다가 · par ailleurs = 전환",
+        patternKo: "첨가·전환·뼈대 연결사 — 우선·다음으로·끝으로",
         body:
           "**de plus / en outre**는 논거를 쌓는 '게다가', **d'ailleurs**는 곁가지 근거를 슬쩍 보태는 '하긴', **par ailleurs**는 새 논점으로 **전환**하는 '한편'이에요 — 마지막 둘은 모양이 닮았지만 역할이 달라요.\n\n" +
           "글 전체의 뼈대는 **d'abord → ensuite → enfin**, 결론은 **en conclusion / pour conclure**로 잡아요.",
@@ -303,6 +306,7 @@ export default [
       {
         heading: "왜 어려운가 — 전치사는 동사의 지문",
         pattern: "동사마다 정해진 전치사 — dépendre de · réussir à · attendre + ∅",
+        patternKo: "동사마다 정해진 전치사 — 패턴째 암기가 기본",
         body:
           "프랑스어 동사는 저마다 **정해진 전치사**를 데리고 다녀요. 영어 구동사(look for, depend on)를 외울 때와 같은 종류의 암기가 필요해요.\n\n" +
           "문제는 **영어와 어긋나는 지점**이에요. 목표는 '전부 외우기'가 아니라 '틀리는 자리를 아는 것'이에요.",
@@ -314,6 +318,7 @@ export default [
       {
         heading: "penser à vs penser de — 같은 동사, 다른 전치사, 다른 뜻",
         pattern: "penser à = 떠올리다·챙기다 · penser de = 의견",
+        patternKo: "전치사가 뜻을 가르는 짝 — à는 떠올리기, de는 의견",
         body:
           "전치사가 **뜻을 가르는** 대표 사례예요. **penser à**는 생각이 대상으로 향하는 것, **penser de**는 의견(Qu'est-ce que tu penses **de** ce film ?) — 답은 Je pense que...로 받아요.\n\n" +
           "비슷한 짝: parler à(~에게 말하다) vs parler de(~에 대해), jouer à(스포츠) vs jouer de(악기).",
@@ -328,6 +333,7 @@ export default [
       {
         heading: "à 군단과 de 군단 — 부정사를 연결하는 전치사",
         pattern: "commencer à + inf · finir de + inf · vouloir + inf (전치사 없음)",
+        patternKo: "부정사를 잇는 세 갈래 — à 군단·de 군단·맨 부정사",
         body:
           "동사 + 동사를 이을 때 어떤 동사는 à(commencer, réussir, apprendre, s'habituer), 어떤 동사는 de(finir, décider, essayer, oublier, éviter), 어떤 동사는 맨 부정사(vouloir, pouvoir, devoir, aimer, espérer)를 써요.\n\n" +
           "commencer à ↔ finir de가 짝으로 어긋나는 게 얄밉죠. 의미 규칙은 없어서, 짝문장으로 입에 붙이는 게 정석이에요.",
@@ -352,6 +358,7 @@ export default [
       {
         heading: "영어 감각이 배신하는 동사들",
         pattern: "attendre/chercher/écouter + 직접목적어 (전치사 ✗) · téléphoner/répondre + à · dépendre + de",
+        patternKo: "영어 감각이 배신하는 동사들 — wait for ↔ attendre(전치사 없음)",
         body:
           "**영어에는 전치사가 있는데 프랑스어에는 없는**(또는 그 반대인) 블랙리스트예요.\n\n" +
           "전치사 없음: attendre(wait **for**), chercher(look **for**), écouter(listen **to**), payer(pay **for**). à 필요: téléphoner à, répondre à, ressembler à. de 필요: dépendre de, se souvenir de, s'occuper de.",
@@ -380,6 +387,7 @@ export default [
       {
         heading: "프랑스어의 정보구조 — 강세 대신 구문",
         pattern: "강조 = 구문으로: c'est ... qui/que · ce qui ..., c'est ...",
+        patternKo: "프랑스어 강조는 강세가 아니라 구문으로",
         body:
           "영어는 강세로, 한국어는 조사로 강조하지만 프랑스어는 둘 다 잘 안 통해요 — 강세 위치가 고정된 언어라서요. 대신 **문장 구조 자체를 바꿔서** 스포트라이트를 옮겨요(mise en relief).\n\n" +
           "이 구문들은 문어체 장식이 아니라 **일상 회화의 기본 어법**이에요. 프랑스인의 입에서 하루에도 수십 번 나옵니다.",
@@ -392,6 +400,7 @@ export default [
       {
         heading: "c'est ... qui / c'est ... que — 스포트라이트 분열문",
         pattern: "C'est + 강조어 + qui (주어) / que (목적어·부사구)",
+        patternKo: "c'est와 qui/que 사이에 강조어 끼우기 (분열문)",
         body:
           "강조하고 싶은 말을 c'est와 qui/que 사이에 끼워요. C'est **Marie qui** a appelé(주어 강조), C'est **ce livre que** je cherchais(목적어 강조), C'est **en 2002 que** je suis né(부사구 강조).\n\n" +
           "인칭대명사를 강조할 땐 강세형(moi, toi, lui...)을 써요: C'est **moi** qui...",
@@ -458,6 +467,7 @@ export default [
       {
         heading: "접미사 패턴 — -tion, -ment, -age",
         pattern: "-tion/-sion/-ure → 여성 · -ment/-age → 남성",
+        patternKo: "명사화 접미사가 성을 결정 — -tion 여성, -ment 남성",
         body:
           "명사화 접미사는 패턴이 있고, A0의 성 추측 규칙이 그대로 적용돼요: la construction, le développement, le recyclage, l'ouverture(f.).\n\n" +
           "접미사 없는 짧은 명사들도 고빈도예요: le départ, l'arrivée(여성), le choix, la hausse(상승), la baisse(하락).",
@@ -483,6 +493,7 @@ export default [
       {
         heading: "신문 헤드라인 읽기 — 동사 없는 문장의 세계",
         pattern: "헤드라인 = 명사 + de + 명사 (Reprise du trafic lundi)",
+        patternKo: "동사 없는 헤드라인 — 명사를 동사로 되돌려 읽기",
         body:
           "프랑스 신문 헤드라인은 **동사를 거의 쓰지 않고** 명사화가 그 자리를 대신해요. Grève des transports : reprise du trafic lundi — 동사 없이 두 문장이 압축되어 있죠.\n\n" +
           "해독 요령은 **명사를 동사로 되돌려 읽기**: hausse → '오르다', reprise → '재개되다'. Le Monde 헤드라인을 하루 세 개씩 풀어 읽는 것만큼 좋은 B2 훈련이 없어요.",
@@ -496,6 +507,7 @@ export default [
       {
         heading: "작문에 써먹기 — 문장에서 명사구로",
         pattern: "avant que + 절 → avant + 명사구 (avant l'ouverture du magasin)",
+        patternKo: "종속절을 명사구로 바꿔 격식 작문에 활용",
         body:
           "종속절을 명사구로 바꾸면 문장이 단정해지고 격이 올라가요. Parce que les prix ont augmenté → **En raison de l'augmentation** des prix.\n\n" +
           "특히 avant/après 뒤에서 명사화를 쓰면 **접속법·시제 고민이 통째로 사라지니**, 시험장에서 실전 가치가 큰 기술이에요.",
