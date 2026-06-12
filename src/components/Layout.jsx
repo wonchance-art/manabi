@@ -91,16 +91,16 @@ export default function Layout({ children }) {
   const navLinks = [
     ...(user ? [{ href: '/home', label: '홈' }] : []),
     { href: '/lessons',   label: '교재' },
+    { href: '/vocab',     label: '어휘' },
     { href: '/materials', label: '자료' },
-    { href: '/vocab',     label: '단어' },
     ...(user ? [{ href: '/cohorts', label: '클래스' }] : []),
   ];
 
   const mobileNavLinks = [
     ...(user ? [{ href: '/home', label: '홈' }] : []),
     { href: '/lessons',   label: '교재' },
+    { href: '/vocab',     label: '어휘' },
     { href: '/materials', label: '자료' },
-    { href: '/vocab',     label: '단어' },
     ...(user ? [] : [{ href: '/auth', label: '로그인' }]),
   ];
 
@@ -148,11 +148,6 @@ export default function Layout({ children }) {
         <div className="gnb__actions">
           {user ? (
             <div className="gnb__user-area">
-              {profile?.streak_count > 0 && (
-                <div className="gnb__streak">
-                  {profile.streak_count}일 연속
-                </div>
-              )}
               <button
                 className="gnb__profile-btn"
                 onClick={() => router.push('/profile')}

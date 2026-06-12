@@ -12,13 +12,6 @@ import VocabStats from './VocabStats';
 
 const LANG_KO = { Japanese: '일본어', English: '영어', French: '프랑스어' };
 
-/** 레벨별 어휘 수집 목표 (누적) — 진도 카드의 보조 지표 */
-const VOCAB_TARGETS = {
-  Japanese: { N5: 800, N4: 1500, N3: 3750, N2: 6000, N1: 10000 },
-  English:  { A1: 500, A2: 1000, B1: 2000, B2: 4000, C1: 7000, C2: 10000 },
-  French:   { A0: 200, A1: 500, A2: 1000, B1: 2000, B2: 4000, C1: 7000, C2: 10000 },
-};
-
 async function fetchProfileStats(userId) {
   const heatmapStart = new Date();
   heatmapStart.setHours(0, 0, 0, 0);
@@ -71,7 +64,7 @@ export default function ProfileStats({ refManifest = {} }) {
       <StatTile label="스트릭" value={streak ? `${streak}일` : '–'} />
       <StatTile label="오늘 활동" value={todayActivity} />
       <div className="bento-item bento--2x2">
-        <LevelCoverageCard refManifest={refManifest} vocab={vocab} />
+        <LevelCoverageCard refManifest={refManifest} />
       </div>
       {vocab.length > 0 && (
         <div className="bento-item bento--2x2">
@@ -79,7 +72,7 @@ export default function ProfileStats({ refManifest = {} }) {
         </div>
       )}
       {hasHeatmap && (
-        <div className="bento-item bento--4x4">
+        <div className="bento-item bento--4x1">
           <HeatmapCard dayCounts={data.heatmapDayCounts} />
         </div>
       )}
@@ -307,7 +300,7 @@ function ReviewTile({ vocab }) {
 
 /* ── 진도 — 레벨별 챕터(교재) 통과 + 어휘 수집 통합, 3개 언어 ── */
 
-function LevelCoverageCard({ refManifest, vocab }) {
+function LevelCoverageCard({ refManifest }) {
   const langs = Object.keys(refManifest);
   const [lang, setLang] = useState(langs[0] || 'Japanese');
   // SSR과 첫 클라이언트 렌더를 일치시키기 위해 localStorage는 마운트 후에만 읽는다
@@ -332,15 +325,7 @@ function LevelCoverageCard({ refManifest, vocab }) {
     } catch { return { readSet: new Set(), checkMap: {} }; }
   }, [ref, mounted]);
 
-  const langVocabCount = useMemo(
-    () => vocab.filter(v => v.language === lang).length,
-    [vocab, lang]
-  );
-
   if (!ref) return null;
-  const targets = VOCAB_TARGETS[lang] || {};
-  // 어휘 보조 지표: 도달한 레벨 ✓, 다음 목표 레벨만 숫자 노출 (반복 표기 방지)
-  const nextVocabKey = ref.levels.find(lv => targets[lv.key] && langVocabCount < targets[lv.key])?.key || null;
 
   return (
     <div className="card mypage-section">
@@ -361,8 +346,6 @@ function LevelCoverageCard({ refManifest, vocab }) {
           const total = lv.chapters.length;
           const passed = lv.chapters.filter(c => isPassed(progress.checkMap[c.slug])).length;
           const read = lv.chapters.filter(c => progress.readSet.has(c.slug)).length;
-          const target = targets[lv.key];
-          const vocabReached = target && langVocabCount >= target;
           const done = total > 0 && passed === total;
           return (
             <div key={lv.key} className="lvprog__row">
@@ -374,38 +357,32 @@ function LevelCoverageCard({ refManifest, vocab }) {
               <span className="lvprog__count">
                 {done ? '수료' : `${passed} / ${total}`}
               </span>
-              {target && vocabReached ? (
-                <span className="lvprog__vocab is-done">단어 ✓</span>
-              ) : target && lv.key === nextVocabKey ? (
-                <span className="lvprog__vocab">
-                  단어 {langVocabCount.toLocaleString('ko-KR')}/{target.toLocaleString('ko-KR')}
-                </span>
-              ) : <span className="lvprog__vocab" />}
             </div>
           );
         })}
       </div>
       <div className="lvprog__legend">
         <span><span className="lvprog__dot lvprog__dot--read" />읽음</span>
-        <span><span className="lvprog__dot lvprog__dot--pass" />퀴즈 통과</span>
-        <span>단어 = 해당 언어 수집 어휘 / 레벨 목표</span>
+        <span><span className="lvprog__dot lvprog__dot--pass" />통과</span>
       </div>
     </div>
   );
 }
 
-/* ── 학습 히트맵 — 최근 12개월 달력형, 호버/터치 시 날짜·개수 ── */
+/* ── 히트맵 — 좌→우로 진행되는 연속 주 스트립, 호버·터치 시 날짜·개수 ── */
 
 function HeatmapCard({ dayCounts }) {
   const [sel, setSel] = useState(null);
   const today = new Date(); today.setHours(0, 0, 0, 0);
 
-  const months = useMemo(() => {
-    const out = [];
-    for (let i = 11; i >= 0; i--) {
-      out.push(new Date(today.getFullYear(), today.getMonth() - i, 1));
-    }
-    return out;
+  // 52주 × 7일 — 가장 오른쪽 아래가 오늘 (좌→우 시간 진행)
+  const days = useMemo(() => {
+    const total = 52 * 7;
+    return Array.from({ length: total }, (_, i) => {
+      const d = new Date(today);
+      d.setDate(d.getDate() - (total - 1 - i));
+      return d;
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -421,45 +398,32 @@ function HeatmapCard({ dayCounts }) {
   return (
     <div className="card mypage-section">
       <div className="lvprog__head">
-        <h2 className="mypage-section__title" style={{ margin: 0 }}>학습 히트맵</h2>
+        <h2 className="mypage-section__title" style={{ margin: 0 }}>히트맵</h2>
         <span className="lvprog__count">
-          {sel ? `${sel.label} · ${sel.count}개` : `최근 12개월 — ${totalActive}일 · ${totalWords}개`}
+          {sel ? `${sel.label} · ${sel.count}개` : `${totalActive}일 · ${totalWords}개`}
         </span>
       </div>
-      <div className="hm-months" onMouseLeave={() => setSel(null)}>
-        {months.map(m => {
-          const year = m.getFullYear();
-          const mon = m.getMonth();
-          const firstDow = new Date(year, mon, 1).getDay();
-          const lastDate = new Date(year, mon + 1, 0).getDate();
-          return (
-            <div key={`${year}-${mon}`} className="hm-month">
-              <span className="hm-month__label">{year !== today.getFullYear() ? `${String(year).slice(2)}년 ` : ''}{mon + 1}월</span>
-              <div className="hm-grid">
-                {Array.from({ length: firstDow }).map((_, i) => <span key={`b${i}`} />)}
-                {Array.from({ length: lastDate }).map((_, i) => {
-                  const date = new Date(year, mon, i + 1);
-                  if (date > today) return <span key={i} className="hm-day hm-day--future" />;
-                  const n = dayCounts[`${year}-${String(mon + 1).padStart(2, '0')}-${String(i + 1).padStart(2, '0')}`] || 0;
-                  const label = `${mon + 1}월 ${i + 1}일`;
-                  return (
-                    <button
-                      key={i}
-                      type="button"
-                      className="hm-day"
-                      style={{ background: colorOf(n) }}
-                      title={`${label} · ${n}개`}
-                      aria-label={`${label} ${n}개`}
-                      onClick={() => setSel({ label, count: n })}
-                      onMouseEnter={() => setSel({ label, count: n })}
-                      onFocus={() => setSel({ label, count: n })}
-                    />
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
+      <div className="hm-scroll">
+        <div className="hm-strip" onMouseLeave={() => setSel(null)}>
+          {days.map((d, i) => {
+            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            const n = dayCounts[key] || 0;
+            const label = `${d.getMonth() + 1}월 ${d.getDate()}일`;
+            return (
+              <button
+                key={i}
+                type="button"
+                className="hm-day"
+                style={{ background: colorOf(n) }}
+                title={`${label} · ${n}개`}
+                aria-label={`${label} ${n}개`}
+                onClick={() => setSel({ label, count: n })}
+                onMouseEnter={() => setSel({ label, count: n })}
+                onFocus={() => setSel({ label, count: n })}
+              />
+            );
+          })}
+        </div>
       </div>
     </div>
   );
