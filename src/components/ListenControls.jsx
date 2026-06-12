@@ -81,7 +81,7 @@ export default function ListenControls({ text, language = 'Japanese' }) {
     <div className="listen-controls">
       {!playing ? (
         <button className="btn btn--ghost btn--sm" onClick={play} title="본문 전체 듣기">
-          🎧 듣기
+          ▷ 듣기
         </button>
       ) : (
         <div className="listen-controls__panel">

@@ -640,11 +640,11 @@ export default function ViewerPage() {
       setTimeout(() => {
         setSaveAnim(false);
         setIsSheetOpen(false);
-        toast(`"${selectedToken.text}" 단어장에 추가됐어요! ⭐ +${XP_REWARDS.WORD_SAVED} XP`, 'success');
+        toast(`"${selectedToken.text}" 단어장에 추가됐어요! +${XP_REWARDS.WORD_SAVED} XP`, 'success');
         if (saveCountRef.current === 5) {
-          setTimeout(() => toast('단어 5개 모았어요! 🧠 복습하러 가볼까요?', 'info', 5000), 600);
+          setTimeout(() => toast('단어 5개 모았어요! 복습하러 가볼까요?', 'info', 5000), 600);
         } else if (saveCountRef.current === 10) {
-          setTimeout(() => toast('벌써 10개! 💪 단어장에서 복습하면 기억이 오래가요', 'info', 5000), 600);
+          setTimeout(() => toast('벌써 10개! 단어장에서 복습하면 기억이 오래가요', 'info', 5000), 600);
         }
       }, 800);
 
@@ -667,7 +667,7 @@ export default function ViewerPage() {
     const isNotFound = error.code === 'NOT_FOUND' || /not.*found|no.*rows|multiple.*rows/i.test(error.message || '');
     return (
       <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
-        <div style={{ fontSize: '3rem', marginBottom: 12 }}>{isNotFound ? '🗑️' : '❌'}</div>
+        <div style={{ fontSize: '3rem', marginBottom: 12 }}>{isNotFound ? '' : '×'}</div>
         <h2 style={{ color: 'var(--text-primary)', marginBottom: 8 }}>
           {isNotFound ? '자료를 찾을 수 없어요' : '자료를 불러올 수 없어요'}
         </h2>
@@ -688,7 +688,6 @@ export default function ViewerPage() {
   if (material?.visibility === 'private' && material?.owner_id !== user?.id) {
     return (
       <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
-        <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🔒</div>
         <h2 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>비공개 자료입니다</h2>
         <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>이 자료는 작성자만 열람할 수 있습니다.</p>
         <Link href="/materials" className="btn btn--primary">자료실로 돌아가기</Link>
@@ -730,7 +729,7 @@ export default function ViewerPage() {
       <div className="pdf-word-list__header" style={{ marginBottom: 10 }}>
         <span className="pdf-word-list__title">단어 ({dragTokens.length})</span>
       </div>
-      {dragAnalyzing && <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 8 }}>⏳ 분석 중...</div>}
+      {dragAnalyzing && <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 8 }}>분석 중...</div>}
       {dragTokens.map((t, i) => {
         const isSaved = savedWords.surfaces?.has(t.text) || savedWords.bases?.has(t.base_form);
         return (
@@ -747,11 +746,11 @@ export default function ViewerPage() {
                         meaning: t.meaning || '', pos: t.pos || '', furigana: t.furigana || t.reading || '',
                         language: materialLang,
                       }, { onConflict: 'user_id,word_text' });
-                      toast(`⭐ "${t.text}" 저장!`, 'success');
+                      toast(`"${t.text}" 저장!`, 'success');
                       queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
                     } catch { toast('저장 실패', 'error'); }
                   }}>
-                  {isSaved ? '✓' : '⭐'}
+                  {isSaved ? '✓' : '★'}
                 </button>
                 <button className="pdf-word-item__save pdf-word-item__dismiss"
                   onClick={() => {
@@ -781,7 +780,7 @@ export default function ViewerPage() {
           </div>
         </div>
         {ttsSupported && (
-          <button onClick={() => speak(selectedToken.text, materialLang)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }} title="발음 듣기">🔊</button>
+          <button onClick={() => speak(selectedToken.text, materialLang)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }} title="발음 듣기">▷</button>
         )}
       </div>
       <div style={{ fontSize: '1rem', lineHeight: 1.6, marginBottom: materialLang === 'English' && selectedToken.reading ? 4 : 14 }}>
@@ -800,7 +799,7 @@ export default function ViewerPage() {
       )}
 
       {wordDetail?.loading ? (
-        <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 12 }}>⏳ 상세 설명 생성 중...</div>
+        <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 12 }}>상세 설명 생성 중...</div>
       ) : wordDetail?.detail ? (
         <div className="pdf-detail-popup__text" style={{ marginBottom: 14 }}
           dangerouslySetInnerHTML={{ __html: formatDetail(wordDetail.detail) }} />
@@ -810,15 +809,15 @@ export default function ViewerPage() {
           className="btn btn--ghost btn--sm"
           style={{ width: '100%', marginBottom: 12 }}
         >
-          🔬 상세 설명 보기
+          상세 설명 보기
         </button>
       )}
 
       {user && findSavedVocab(savedWords, selectedToken) && isTokenDue(savedWords, selectedToken) && (
         <div style={{ padding: '10px 12px', background: 'rgba(212,150,42,0.1)', borderRadius: 'var(--radius-md)', marginBottom: 12, border: '1px solid var(--warning)' }}>
-          <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--warning)', marginBottom: 8 }}>🧠 복습 시점이에요!</div>
+          <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--warning)', marginBottom: 8 }}>복습 시점이에요</div>
           <div style={{ display: 'flex', gap: 6 }}>
-            {[{ label: '🔴 모름', rating: 1 }, { label: '🟡 애매', rating: 2 }, { label: '🟢 알아', rating: 3 }].map(r => (
+            {[{ label: '모름', rating: 1 }, { label: '애매', rating: 2 }, { label: '알아', rating: 3 }].map(r => (
               <button key={r.rating} onClick={() => {
                 const vocab = findSavedVocab(savedWords, selectedToken);
                 if (vocab) inlineReviewMutation.mutate({ vocab, rating: r.rating });
@@ -830,24 +829,23 @@ export default function ViewerPage() {
       {user && (
         <button onClick={addToVocab} disabled={isWordSaved}
           className={`btn ${isWordSaved ? 'btn--ghost' : 'btn--primary'} btn--sm`} style={{ width: '100%' }}>
-          {saveAnim ? '✨ 저장됨!' : isWordSaved ? '✓ 단어장에 있음' : '⭐ 단어장에 저장'}
+          {saveAnim ? '저장됨' : isWordSaved ? '✓ 단어장에 있음' : '단어장에 저장'}
         </button>
       )}
     </div>
   ) : (
     <div className="pdf-side__empty">
-      <div style={{ fontSize: '1.5rem', marginBottom: 8 }}>📝</div>
       단어 클릭 → 상세<br />문장 드래그 → 단어 목록
     </div>
   );
 
   const leftPanelContent = leftPanelLoading ? (
     <div className="pdf-side__empty">
-      <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>⏳ 번역 + 맥락 생성 중...</span>
+      <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>번역 + 맥락 생성 중...</span>
     </div>
   ) : leftPanelResult ? (
     <div className="viewer-side__content">
-      <div className="pdf-context__title">💡 번역 · 맥락</div>
+      <div className="pdf-context__title">번역 · 맥락</div>
       {leftPanelText && (
         <div className="pdf-context__original">"{leftPanelText.length > 120 ? leftPanelText.slice(0, 120) + '…' : leftPanelText}"</div>
       )}
@@ -855,7 +853,6 @@ export default function ViewerPage() {
     </div>
   ) : (
     <div className="pdf-side__empty">
-      <div style={{ fontSize: '1.5rem', marginBottom: 8 }}>💡</div>
       텍스트를 드래그하면<br />번역과 맥락이 여기에
     </div>
   );
@@ -872,7 +869,7 @@ export default function ViewerPage() {
       <main className="viewer-center">
       {!user && (
         <div className="viewer-guest-banner">
-          <span>🔍 단어를 클릭해 뜻을 확인할 수 있어요.</span>
+          <span>단어를 클릭해 뜻을 확인할 수 있어요.</span>
           <Link href="/auth" className="viewer-guest-banner__cta">
             로그인하면 단어장에 저장하고 복습할 수 있습니다 →
           </Link>
@@ -929,7 +926,7 @@ export default function ViewerPage() {
                 onMouseEnter={e => e.currentTarget.style.color = 'var(--primary-light)'}
                 onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
               >
-                ✏️
+                편집
               </button>
             )}
           </h1>
@@ -939,7 +936,7 @@ export default function ViewerPage() {
         )}
         {user && savedCount > 0 && (
           <Link href="/vocab" className="viewer-vocab-counter">
-            ⭐ {savedCount}개 수집 → 단어장
+            {savedCount}개 수집 → 단어장
           </Link>
         )}
         {user && dueInMaterial > 0 && (
@@ -948,7 +945,7 @@ export default function ViewerPage() {
             background: 'rgba(212,150,42,0.15)', border: '1px solid var(--warning)',
             color: 'var(--warning)', fontSize: '0.78rem', fontWeight: 600,
           }} title="노란 테두리 단어 클릭 → 인라인 복습">
-            🧠 {dueInMaterial}개 복습 가능
+            {dueInMaterial}개 복습 가능
           </div>
         )}
       </header>
@@ -960,7 +957,7 @@ export default function ViewerPage() {
         <div className="u-highlight-card u-row u-row--between u-row--wrap u-row--gap-md u-mb-sm" style={{ marginBottom: 12 }}>
           <div>
             <div style={{ fontSize: '0.72rem', color: 'var(--primary)', fontWeight: 700 }}>
-              📘 PDF 출처
+              PDF 출처
             </div>
             <div style={{ fontSize: '0.88rem', marginTop: 2 }}>
               <strong>{sourcePdf.title}</strong> · p.{material.page_start}-{material.page_end}
@@ -977,7 +974,7 @@ export default function ViewerPage() {
               title={`p.${material.page_end + 1}부터 분석`}
             >
               {nextRangeMutation.isPending
-                ? '⏳ 추출 중...'
+                ? '추출 중...'
                 : `다음 p.${material.page_end + 1}-${Math.min(material.page_end + 5, sourcePdf.page_count)} 분석 →`}
             </button>
           )}
@@ -995,7 +992,7 @@ export default function ViewerPage() {
       {/* Settings Bar */}
       <div className={`card viewer-settings ${settingsOpen ? 'viewer-settings--open' : ''}`}>
         <button className="viewer-settings__toggle" onClick={() => setSettingsOpen(v => !v)}>
-          ⚙️ 읽기 설정 {settingsOpen ? '▲' : '▼'}
+          읽기 설정 {settingsOpen ? '▲' : '▼'}
         </button>
         <div className="viewer-settings__body">
         <div className="viewer-settings__left">
@@ -1048,7 +1045,7 @@ export default function ViewerPage() {
             className={`grammar-btn ${showFurigana ? '' : 'grammar-btn--active'}`}
             title="후리가나 표시/숨김"
           >
-            {showFurigana ? '🈳 후리가나 숨기기' : '🈳 후리가나 보이기'}
+            {showFurigana ? '후리가나 숨기기' : '후리가나 보이기'}
           </button>
 
           {ttsSupported && (
@@ -1057,7 +1054,7 @@ export default function ViewerPage() {
               className={`grammar-btn ${autoSpeakOnClick ? 'grammar-btn--active' : ''}`}
               title="단어 클릭 시 자동 발음"
             >
-              {autoSpeakOnClick ? '🔊 자동 발음 켜짐' : '🔇 자동 발음 꺼짐'}
+              {autoSpeakOnClick ? '▷ 자동 발음 켜짐' : '◻ 자동 발음 꺼짐'}
             </button>
           )}
 
@@ -1066,7 +1063,7 @@ export default function ViewerPage() {
             disabled={isGrammarLoading}
             className={`grammar-btn ${selectedRangeText ? 'grammar-btn--active' : ''}`}
           >
-            {isGrammarLoading ? '⏳ 분석 중...' : '💡 AI 문법 해설'}
+            {isGrammarLoading ? '분석 중...' : 'AI 문법 해설'}
           </button>
 
           {user?.id === material?.owner_id && !isAnalyzing && (
@@ -1080,7 +1077,7 @@ export default function ViewerPage() {
                   onClick={() => setReanalyzePanel(prev => prev ? null : 'menu')}
                   className="grammar-btn"
                 >
-                  🔄 재분석
+                  재분석
                 </button>
 
                 {reanalyzePanel && (
@@ -1133,13 +1130,13 @@ export default function ViewerPage() {
 
           {user && isDone && (
             isCompleted
-              ? <span className="grammar-btn viewer-complete-badge">✅ 읽기 완료</span>
+              ? <span className="grammar-btn viewer-complete-badge">✓ 읽기 완료</span>
               : <button
                   onClick={() => markCompleteMutation.mutate()}
                   disabled={markCompleteMutation.isPending}
                   className="grammar-btn grammar-btn--complete"
                 >
-                  {markCompleteMutation.isPending ? '⏳...' : '✔ 읽기 완료 표시'}
+                  {markCompleteMutation.isPending ? '...' : '✓ 읽기 완료 표시'}
                 </button>
           )}
         </div>
@@ -1154,7 +1151,7 @@ export default function ViewerPage() {
       >
         {isAnalyzing && !isStaleAnalysis && (
           <div className="analyzing-banner">
-            <span>⏳ 문단 단위로 분석 중입니다...</span>
+            <span>문단 단위로 분석 중입니다...</span>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button onClick={() => refetch()} className="analyzing-banner__refresh">새로고침</button>
               {user?.id === material?.owner_id && reanalyzeMutation.isPending && (
@@ -1166,7 +1163,7 @@ export default function ViewerPage() {
 
         {isStaleAnalysis && user?.id === material?.owner_id && (
           <div className="analyzing-banner" style={{ background: 'rgba(252,196,25,0.1)', borderColor: 'rgba(252,196,25,0.4)' }}>
-            <span>⚠️ 분석이 중단된 것 같아요{missingLineCount > 0 && ` (남은 ${missingLineCount}줄)`}</span>
+            <span>분석이 중단된 것 같아요{missingLineCount > 0 && ` (남은 ${missingLineCount}줄)`}</span>
             <div style={{ display: 'flex', gap: '8px' }}>
               {reanalyzeMutation.isPending
                 ? <button onClick={stopReanalysis} className="analyzing-banner__refresh" style={{ background: 'var(--danger)' }}>⏹ 중단</button>
@@ -1178,17 +1175,17 @@ export default function ViewerPage() {
 
         {isFailed && (
           <div className="analyzing-banner analyzing-banner--error">
-            <span>❌ 분석에 실패했습니다.</span>
+            <span>분석에 실패했습니다.</span>
             {reanalyzeMutation.isPending
               ? <button onClick={stopReanalysis} className="analyzing-banner__refresh" style={{ background: 'var(--danger)' }}>⏹ 중단</button>
-              : <button onClick={startFullReanalyze} className="analyzing-banner__refresh">🔄 재분석</button>
+              : <button onClick={startFullReanalyze} className="analyzing-banner__refresh">재분석</button>
             }
           </div>
         )}
 
         {isPartial && failedIndices.length > 0 && !reanalyzeMutation.isPending && (
           <div className="analyzing-banner analyzing-banner--warn">
-            <span>⚠️ {failedIndices.length}줄 분석 실패</span>
+            <span>{failedIndices.length}줄 분석 실패</span>
             <button onClick={() => reanalyze.mutation.mutate()} className="analyzing-banner__refresh">실패 줄 재시도</button>
           </div>
         )}
@@ -1261,7 +1258,7 @@ export default function ViewerPage() {
                   className="word-token word-token--failed" title="분석 실패 — 재시도 버튼을 눌러주세요">
                   <span className="furigana" />
                   <span className="surface">{token.text}</span>
-                  <span className="failed-marker">⚠️</span>
+                  <span className="failed-marker">!</span>
                 </div>
               );
             }
@@ -1360,7 +1357,7 @@ export default function ViewerPage() {
 
         {isDone && (
           <div className="reader-hint">
-            💡 단어를 <strong>클릭</strong>하면 상세 정보, 문장을 <strong>드래그</strong>하면 번역+맥락
+            단어를 <strong>클릭</strong>하면 상세 정보, 문장을 <strong>드래그</strong>하면 번역+맥락
           </div>
         )}
 
@@ -1380,15 +1377,15 @@ export default function ViewerPage() {
           <Link href={`/viewer/${seriesEndCard.material.id}`} className="series-end-card">
             <div className="series-end-card__hint">
               {seriesEndCard.type === 'level'
-                ? `🎓 ${seriesEndCard.level} 완주! ${seriesEndCard.nextLevel}로 진학`
-                : `🎉 ${seriesEndCard.level} ${seriesEndCard.fromSeries} 시리즈 완주!`}
+                ? `${seriesEndCard.level} 완주! ${seriesEndCard.nextLevel}로 진학`
+                : `${seriesEndCard.level} ${seriesEndCard.fromSeries} 시리즈 완주!`}
             </div>
             <div className="series-end-card__title">{seriesEndCard.material.title}</div>
           </Link>
         ) : (
           <div className="series-end-card series-end-card--top">
             <div className="series-end-card__hint">
-              🎓 {seriesEndCard.level} {seriesEndCard.fromSeries} 시리즈 완주!
+              {seriesEndCard.level} {seriesEndCard.fromSeries} 시리즈 완주!
             </div>
             <div className="series-end-card__title" style={{ color: 'var(--text-muted)' }}>
               최고 레벨 도달 — 외부 자료를 활용해보세요
@@ -1449,7 +1446,7 @@ export default function ViewerPage() {
         <div className="card" style={{ marginTop: 16, padding: 20 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
             <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>
-              🃏 이 자료와 관련된 공유 단어장
+              이 자료와 관련된 공유 단어장
             </h3>
             <Link href="/vocab?tab=decks" style={{ fontSize: '0.78rem', color: 'var(--primary-light)' }}>
               전체 보기 →
@@ -1478,7 +1475,7 @@ export default function ViewerPage() {
                   background: 'var(--primary-glow)', color: 'var(--primary)',
                   fontSize: '0.72rem', fontWeight: 600,
                 }}>
-                  {deck.language === 'Japanese' ? '🇯🇵' : '🇬🇧'} {deck.language}
+                  {deck.language === 'Japanese' ? '일본어' : '영어'}
                 </span>
               </Link>
             ))}
@@ -1544,7 +1541,7 @@ export default function ViewerPage() {
             </div>
             <div className="pdf-detail-popup__body">
               {popupWord.loading
-                ? <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>⏳ 상세 설명 생성 중...</div>
+                ? <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>상세 설명 생성 중...</div>
                 : <div className="pdf-detail-popup__text" dangerouslySetInnerHTML={{ __html: formatDetail(popupWord.detail) }} />
               }
             </div>
@@ -1561,11 +1558,11 @@ export default function ViewerPage() {
                         meaning: t.meaning || '', pos: t.pos || '', furigana: t.furigana || t.reading || '',
                         language: materialLang,
                       }, { onConflict: 'user_id,word_text' });
-                      toast(`⭐ "${t.text}" 저장!`, 'success');
+                      toast(`"${t.text}" 저장!`, 'success');
                       queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
                     } catch { toast('저장 실패', 'error'); }
                   }}>
-                  {isSaved ? '✓ 저장됨' : '⭐ 단어장에 저장'}
+                  {isSaved ? '✓ 저장됨' : '단어장에 저장'}
                 </button>
               );
             })()}

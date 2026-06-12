@@ -6,8 +6,6 @@ import { useAuth } from '../lib/AuthContext';
 import { useTheme } from '../lib/useTheme';
 import { useState, useEffect } from 'react';
 import OnboardingModal from './OnboardingModal';
-import NotificationBell from './NotificationBell';
-import TourGuide from './TourGuide';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../lib/ToastContext';
 
@@ -16,7 +14,6 @@ export default function Layout({ children }) {
   const router = useRouter();
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
-  const [showTour, setShowTour] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
   const [resendingConfirm, setResendingConfirm] = useState(false);
   const toast = useToast();
@@ -30,7 +27,7 @@ export default function Layout({ children }) {
     try {
       const { error } = await supabase.auth.resend({ type: 'signup', email: user.email });
       if (error) throw error;
-      toast('📧 인증 메일을 다시 보냈어요. 받은편지함을 확인해주세요.', 'success');
+      toast('인증 메일을 다시 보냈어요. 받은편지함을 확인해주세요.', 'success');
     } catch (err) {
       toast('재발송 실패 — ' + (err?.message || '잠시 후 다시 시도'), 'error');
     } finally {
@@ -50,13 +47,6 @@ export default function Layout({ children }) {
     };
   }, []);
 
-  // Show tour once for onboarded users who haven't seen it
-  useEffect(() => {
-    if (profile?.onboarded && !localStorage.getItem('as_tour_done')) {
-      setShowTour(true);
-    }
-  }, [profile?.onboarded]);
-
   // 복습 알림 스케줄러
   useEffect(() => {
     if (!user) return;
@@ -69,7 +59,7 @@ export default function Layout({ children }) {
       const lastSent = localStorage.getItem('as_reminder_last_sent');
       if (parseInt(hour) === currentHour && lastSent !== todayKey) {
         if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-          new Notification('🧠 복습할 시간이에요!', {
+          new Notification('복습할 시간이에요', {
             body: '오늘의 단어를 복습하고 스트릭을 유지하세요.',
             icon: '/favicon.ico',
             tag: 'as-review-reminder',
@@ -97,20 +87,22 @@ export default function Layout({ children }) {
     user?.email?.[0]?.toUpperCase() ||
     '?';
 
-  // 핵심 네비게이션만 노출 — 부가 기능(랭킹/포럼/가이드)은 프로필 안쪽으로
+  // 핵심 네비게이션만 노출 — 부가 기능(가이드·통계)은 프로필 안쪽으로
   const navLinks = [
-    ...(user ? [{ href: '/home', icon: '🏠', label: '홈' }] : []),
-    { href: '/lessons',   icon: '🎓', label: '강의' },
-    { href: '/materials', icon: '📰', label: '자료' },
-    { href: '/vocab',     icon: '⭐', label: '단어장' },
+    ...(user ? [{ href: '/home', label: '홈' }] : []),
+    { href: '/lessons',   label: '강의' },
+    { href: '/materials', label: '자료' },
+    { href: '/vocab',     label: '단어장' },
+    ...(user ? [{ href: '/cohorts', label: '클래스' }] : []),
   ];
 
   const mobileNavLinks = [
-    ...(user ? [{ href: '/home', icon: '🏠', label: '홈' }] : []),
-    { href: '/lessons',   icon: '🎓', label: '강의' },
-    { href: '/materials', icon: '📰', label: '자료' },
-    { href: '/vocab',     icon: '⭐', label: '단어장' },
-    ...(user ? [{ href: '/profile', icon: '👤', label: '마이' }] : [{ href: '/auth', icon: '👤', label: '로그인' }]),
+    ...(user ? [{ href: '/home', label: '홈' }] : []),
+    { href: '/lessons',   label: '강의' },
+    { href: '/materials', label: '자료' },
+    { href: '/vocab',     label: '단어장' },
+    ...(user ? [{ href: '/cohorts', label: '클래스' }] : []),
+    ...(user ? [{ href: '/profile', label: '마이' }] : [{ href: '/auth', label: '로그인' }]),
   ];
 
   return (
@@ -118,7 +110,6 @@ export default function Layout({ children }) {
       <a href="#main-content" className="skip-link">본문으로 건너뛰기</a>
       <header className="gnb" role="banner">
         <Link href="/" className="gnb__logo" aria-label="Anatomy Studio 홈">
-          <span className="gnb__logo-icon" aria-hidden="true">🧬</span>
           <span>Anatomy Studio</span>
         </Link>
 
@@ -130,7 +121,6 @@ export default function Layout({ children }) {
               className={`gnb__link ${pathname === l.href || pathname.startsWith(l.href + '/') ? 'active' : ''}`}
               aria-current={pathname === l.href ? 'page' : undefined}
             >
-              <span className="gnb__link-icon" aria-hidden="true">{l.icon}</span>
               <span>{l.label}</span>
             </Link>
           ))}
@@ -142,7 +132,6 @@ export default function Layout({ children }) {
             className={`gnb__link ${pathname.startsWith('/admin') ? 'active' : ''}`}
             style={{ color: '#ff922b' }}
           >
-            <span className="gnb__link-icon">🛡️</span>
             <span>관리</span>
           </Link>
         )}
@@ -154,16 +143,15 @@ export default function Layout({ children }) {
           aria-label={theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환'}
           aria-pressed={theme === 'dark'}
         >
-          <span aria-hidden="true">{theme === 'dark' ? '☀️' : '🌙'}</span>
+          <span aria-hidden="true">◐</span>
         </button>
 
         <div className="gnb__actions">
           {user ? (
             <div className="gnb__user-area">
-              <NotificationBell />
               {profile?.streak_count > 0 && (
                 <div className="gnb__streak">
-                  🔥 {profile.streak_count}
+                  {profile.streak_count}일 연속
                 </div>
               )}
               <button
@@ -190,7 +178,7 @@ export default function Layout({ children }) {
       {/* 오프라인 배너 */}
       {isOffline && (
         <div className="offline-banner" role="alert" aria-live="assertive">
-          📡 인터넷 연결이 끊겼습니다. 일부 기능이 제한될 수 있어요.
+          인터넷 연결이 끊겼습니다. 일부 기능이 제한될 수 있어요.
         </div>
       )}
 
@@ -207,7 +195,7 @@ export default function Layout({ children }) {
             textAlign: 'center',
           }}
         >
-          📧 이메일 인증이 필요해요 — <strong>{user.email}</strong> 받은편지함을 확인해주세요.{' '}
+          이메일 인증이 필요해요 — <strong>{user.email}</strong> 받은편지함을 확인해주세요.{' '}
           <button
             type="button"
             onClick={resendConfirmation}
@@ -233,7 +221,6 @@ export default function Layout({ children }) {
             className={`mobile-nav__link ${pathname === l.href || pathname.startsWith(l.href + '/') ? 'active' : ''}`}
             aria-current={pathname === l.href ? 'page' : undefined}
           >
-            <span className="mobile-nav__icon" aria-hidden="true">{l.icon}</span>
             <span>{l.label}</span>
           </Link>
         ))}
@@ -244,7 +231,6 @@ export default function Layout({ children }) {
       </main>
 
       {profile && profile.onboarded === false && <OnboardingModal />}
-      {showTour && <TourGuide onDone={() => setShowTour(false)} />}
     </>
   );
 }

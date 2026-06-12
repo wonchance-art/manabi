@@ -103,7 +103,7 @@ export default function AccountSettings({ user, toast, signOut }) {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || '삭제 실패');
-      toast('계정이 삭제됐어요. 안녕히 가세요 👋', 'info', 4000);
+      toast('계정이 삭제됐어요. 안녕히 가세요.', 'info', 4000);
       await signOut();
     } catch (err) {
       toast('삭제 실패 — ' + friendlyToastMessage(err), 'error');
@@ -117,7 +117,7 @@ export default function AccountSettings({ user, toast, signOut }) {
     <>
       <div className="card mypage-section" style={{ marginBottom: 16 }}>
         <h2 className="mypage-section__title" style={{ fontSize: '0.9rem', marginBottom: 10 }}>
-          🔐 계정
+          계정
         </h2>
 
         <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 10 }}>
@@ -127,13 +127,13 @@ export default function AccountSettings({ user, toast, signOut }) {
         {!pwMode ? (
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <Button size="sm" variant="secondary" onClick={() => setPwMode(true)}>
-              🔑 비밀번호 변경
+              비밀번호 변경
             </Button>
             <Button size="sm" variant="ghost" onClick={handleExportMyData} disabled={!!exportMsg}>
-              📥 내 데이터 내보내기
+              내 데이터 내보내기
             </Button>
             <Button size="sm" variant="ghost" style={{ color: 'var(--danger)' }} onClick={() => setDeleteConfirm(true)}>
-              🗑️ 계정 삭제
+              계정 삭제
             </Button>
           </div>
         ) : (
@@ -181,7 +181,7 @@ export default function AccountSettings({ user, toast, signOut }) {
 
         {exportMsg && (
           <div style={{ fontSize: '0.78rem', color: 'var(--primary)', marginTop: 8 }}>
-            ⏳ {exportMsg}
+            {exportMsg}
           </div>
         )}
       </div>
@@ -190,7 +190,7 @@ export default function AccountSettings({ user, toast, signOut }) {
       {deleteConfirm && (
         <div className="modal-overlay" onClick={() => !deleting && setDeleteConfirm(false)}>
           <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 440 }}>
-            <h3 style={{ margin: '0 0 8px', color: 'var(--danger)' }}>⚠️ 계정 삭제</h3>
+            <h3 style={{ margin: '0 0 8px', color: 'var(--danger)' }}>계정 삭제</h3>
             <p style={{ fontSize: '0.88rem', lineHeight: 1.6, color: 'var(--text-secondary)', marginBottom: 14 }}>
               이 작업은 <strong>되돌릴 수 없습니다</strong>. 수집한 모든 단어, 자료, 기록이 영구 삭제돼요.
               공용(public)으로 공유한 자료는 익명 사용자로 남을 수 있습니다.

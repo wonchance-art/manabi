@@ -112,7 +112,7 @@ export default function ViewerGrammarModal({
     <div className="modal-overlay">
       <div className="modal">
         <div className="modal__header">
-          <h2 className="modal__title">💡 AI 문법 해설사</h2>
+          <h2 className="modal__title">AI 문법 해설사</h2>
           <button onClick={onClose} className="modal__close">✕</button>
         </div>
         <div className="modal__body">
@@ -151,7 +151,7 @@ export default function ViewerGrammarModal({
                     style={{ width: '100%', marginTop: '10px' }}
                     onClick={() => requestGrammarAnalysis([...checkedActions])}
                   >
-                    ✨ 분석 시작 ({checkedActions.size}개 선택)
+                    분석 시작 ({checkedActions.size}개 선택)
                   </button>
               }
             </div>
@@ -189,7 +189,7 @@ export default function ViewerGrammarModal({
                 disabled={saveGrammarNoteMutation.isPending || saveGrammarNoteMutation.isSuccess}
                 className="btn btn--secondary btn--sm"
               >
-                {saveGrammarNoteMutation.isSuccess ? '✅ 저장됨' : saveGrammarNoteMutation.isPending ? '저장 중...' : '📝 노트에 저장'}
+                {saveGrammarNoteMutation.isSuccess ? '✓ 저장됨' : saveGrammarNoteMutation.isPending ? '저장 중...' : '노트에 저장'}
               </button>
             )}
           </div>

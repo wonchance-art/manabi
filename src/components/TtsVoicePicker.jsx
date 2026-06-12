@@ -16,7 +16,7 @@ const SAMPLES = {
 
 function describeVoice(v) {
   const tags = [];
-  if (v.localService === false) tags.push('☁ 클라우드');
+  if (v.localService === false) tags.push('클라우드');
   if (/google/i.test(v.name)) tags.push('Google');
   if (/microsoft/i.test(v.name)) tags.push('MS');
   if (/apple|samantha|kyoko|otoya/i.test(v.name)) tags.push('Apple');
@@ -68,7 +68,7 @@ export default function TtsVoicePicker({ language = 'Japanese', compact = false 
         aria-expanded={open}
         title="발음 음성 선택"
       >
-        🎙️ <span className="tts-voice__name">{currentVoice.name.split(/[(\[]/)[0].trim()}</span>
+        <span className="tts-voice__name">{currentVoice.name.split(/[(\[]/)[0].trim()}</span>
         <span className="tts-voice__chev" aria-hidden="true">▾</span>
       </button>
       {open && (
@@ -103,7 +103,7 @@ export default function TtsVoicePicker({ language = 'Japanese', compact = false 
                       onClick={(e) => preview(v.voiceURI, e)}
                       aria-label={`${v.name} 미리듣기`}
                       title="이 음성으로 미리듣기"
-                    >🔊</button>
+                    >▷</button>
                   </button>
                 </li>
               );
@@ -111,7 +111,7 @@ export default function TtsVoicePicker({ language = 'Japanese', compact = false 
           </ul>
           {voices.every(v => v.localService) && (
             <div className="tts-voice__hint">
-              💡 더 자연스러운 음성이 필요하면 Chrome 또는 Edge로 접속하면 Google·Microsoft 클라우드 음성이 추가됩니다.
+              더 자연스러운 음성이 필요하면 Chrome 또는 Edge로 접속하면 Google·Microsoft 클라우드 음성이 추가됩니다.
             </div>
           )}
         </div>

@@ -80,7 +80,7 @@ const W = [
 const CURRICULUMS = [
   {
     lang: 'Japanese',
-    icon: '🇯🇵',
+    icon: '',
     title: '일본어 로드맵',
     subtitle: 'JLPT N5 → N1',
     levels: [
@@ -113,7 +113,7 @@ const CURRICULUMS = [
   },
   {
     lang: 'English',
-    icon: '🇬🇧',
+    icon: '',
     title: '영어 로드맵',
     subtitle: 'CEFR A1 → C2',
     levels: [
@@ -153,17 +153,17 @@ const CURRICULUMS = [
 
 const TIPS = [
   {
-    icon: '📖',
+    icon: '',
     title: '매일 15분 읽기',
     desc: '관심 있는 주제의 원문을 매일 15분씩 읽는 것만으로 1년 뒤 어휘력이 3배 성장합니다.',
   },
   {
-    icon: '🧠',
+    icon: '',
     title: '간격 반복 복습',
     desc: 'FSRS 알고리즘으로 기억이 흐릿해지는 정확한 타이밍에 복습하면 최소 노력으로 최대 기억 효과를 얻습니다.',
   },
   {
-    icon: '✍️',
+    icon: '',
     title: '문장 단위로 저장',
     desc: '단어 하나보다 문맥이 담긴 문장을 함께 저장하면 실제 사용 능력이 훨씬 빠르게 늘어납니다.',
   },
@@ -217,7 +217,7 @@ function Roadmap({ curr, levelCounts = {}, levelSamples = {}, levelIds = {}, com
                   >
                     {level.focus}
                   </span>
-                  <span className="roadmap-badge--duration">⏱ {level.duration}</span>
+                  <span className="roadmap-badge--duration">{level.duration}</span>
                 </div>
 
                 <p className="roadmap-content__desc">{level.desc}</p>
@@ -235,7 +235,7 @@ function Roadmap({ curr, levelCounts = {}, levelSamples = {}, levelIds = {}, com
                       return (
                         <li key={s.id} className={`roadmap-sample ${done ? 'is-done' : ''}`}>
                           <Link href={`/viewer/${s.id}`} className="roadmap-sample__link">
-                            <span className="roadmap-sample__status">{done ? '✓' : '🆕'}</span>
+                            <span className="roadmap-sample__status">{done ? '✓' : '○'}</span>
                             <span className="roadmap-sample__title">{s.title}</span>
                           </Link>
                         </li>
@@ -302,7 +302,6 @@ export default function GuidePage() {
 
       {/* ── Hero ── */}
       <div className="guide-hero">
-        <div className="guide-hero__icon">🌏</div>
         <h1 className="guide-hero__title">
           외국어를 배운다는 것은<br />
           <span className="guide-hero__accent">새로운 세계를 여는 것</span>입니다
@@ -318,10 +317,10 @@ export default function GuidePage() {
             </span>
             <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 6 }}>
               {(vocabByLang?.Japanese || 0) > 0 && (
-                <span style={{ fontSize: '0.95rem' }}>🇯🇵 <strong>{recommendedLevels.Japanese}</strong></span>
+                <span style={{ fontSize: '0.95rem' }}>일본어 <strong>{recommendedLevels.Japanese}</strong></span>
               )}
               {(vocabByLang?.English || 0) > 0 && (
-                <span style={{ fontSize: '0.95rem' }}>🇬🇧 <strong>{recommendedLevels.English}</strong></span>
+                <span style={{ fontSize: '0.95rem' }}>영어 <strong>{recommendedLevels.English}</strong></span>
               )}
             </div>
           </div>
@@ -331,26 +330,26 @@ export default function GuidePage() {
       {/* ── 앱 사용법 (현행화) ── */}
       <section style={{ margin: '40px 0 52px' }}>
         <h2 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: 20, textAlign: 'center' }}>
-          🗺️ 3단계 사용법
+          3단계 사용법
         </h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
           {[
             {
-              num: '1', icon: '📰',
+              num: '1', icon: '',
               title: '자료 가져오기',
               desc: '텍스트 붙여넣기 또는 PDF 업로드. AI가 형태소 단위로 자동 분석.',
               sub: '스캔본 PDF도 OCR로 자동 처리 · 페이지 범위 선택',
               href: '/materials/add', cta: '자료 추가',
             },
             {
-              num: '2', icon: '⭐',
+              num: '2', icon: '',
               title: '읽으며 단어 저장',
               desc: '모르는 단어 클릭 → 뜻·발음 확인 → 단어장에 추가. 문장과 함께 저장됨.',
-              sub: '💡 문맥 해설 버튼으로 이 단어가 왜 이 뜻인지 심화',
+              sub: '문맥 해설 버튼으로 이 단어가 왜 이 뜻인지 심화',
               href: '/materials', cta: '자료실 가기',
             },
             {
-              num: '3', icon: '🧠',
+              num: '3', icon: '',
               title: '읽기 = 복습',
               desc: '단어 저장 후 다시 자료를 읽으면, 복습 시점 된 단어가 노란색으로 표시됨. 클릭해서 바로 평가.',
               sub: 'FSRS 알고리즘이 최적 복습 간격 자동 계산',
@@ -374,7 +373,7 @@ export default function GuidePage() {
                 {step.desc}
               </p>
               <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 14, lineHeight: 1.5 }}>
-                💡 {step.sub}
+                {step.sub}
               </p>
               <Link href={step.href} className="btn btn--ghost btn--sm" style={{ padding: '6px 14px' }}>
                 {step.cta} →
@@ -387,16 +386,16 @@ export default function GuidePage() {
       {/* ── 주요 기능 간략 소개 ── */}
       <section style={{ marginBottom: 52 }}>
         <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: 16 }}>
-          ✨ 이 앱이 특별한 이유
+          이 앱이 특별한 이유
         </h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
           {[
-            { icon: '🤖', title: 'AI 형태소 해부', desc: '일본어는 오프라인 분석(kuromoji) + AI 의미. 빠르고 저렴.' },
-            { icon: '📖', title: '읽기 기반 복습', desc: '별도 카드 복습 없이, 자료 읽다가 노란 단어 클릭하면 끝.' },
-            { icon: '💡', title: '문맥별 해설 온디맨드', desc: '다의어도 지금 이 문장에서의 뜻을 AI가 설명해줌.' },
-            { icon: '📚', title: 'PDF 책 한 권을 나눠 읽기', desc: '수백 페이지 PDF도 3~5장씩 분석, 캐시로 빠른 재분석.' },
-            { icon: '✍️', title: '쓰기 연습', desc: '학습한 단어로 문장 만들기 → AI 교정 피드백.' },
-            { icon: '🔧', title: 'AI 분석 수정 가능', desc: '틀린 뜻·후리가나 발견 시 ✏️로 직접 고치기.' },
+            { icon: '', title: 'AI 형태소 해부', desc: '일본어는 오프라인 분석(kuromoji) + AI 의미. 빠르고 저렴.' },
+            { icon: '', title: '읽기 기반 복습', desc: '별도 카드 복습 없이, 자료 읽다가 노란 단어 클릭하면 끝.' },
+            { icon: '', title: '문맥별 해설 온디맨드', desc: '다의어도 지금 이 문장에서의 뜻을 AI가 설명해줌.' },
+            { icon: '', title: 'PDF 책 한 권을 나눠 읽기', desc: '수백 페이지 PDF도 3~5장씩 분석, 캐시로 빠른 재분석.' },
+            { icon: '', title: '쓰기 연습', desc: '학습한 단어로 문장 만들기 → AI 교정 피드백.' },
+            { icon: '', title: 'AI 분석 수정 가능', desc: '틀린 뜻·후리가나 발견 시 직접 고치기.' },
           ].map(f => (
             <div key={f.title} style={{
               padding: 14,
@@ -419,7 +418,7 @@ export default function GuidePage() {
 
       {/* ── Roadmaps ── */}
       <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: 16 }}>
-        📊 언어 레벨 로드맵
+        언어 레벨 로드맵
       </h2>
       <div className="guide-roadmap-grid">
         {CURRICULUMS.map(curr => (
@@ -443,7 +442,7 @@ export default function GuidePage() {
           fontSize: '1.1rem', fontWeight: 700,
           marginBottom: '20px', color: 'var(--text-primary)',
         }}>
-          💡 효과적인 학습을 위한 세 가지 원칙
+          효과적인 학습을 위한 세 가지 원칙
         </h2>
         <div className="guide-tips-grid">
           {TIPS.map(tip => (

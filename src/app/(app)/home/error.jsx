@@ -7,7 +7,6 @@ export default function HomeError({ error, reset }) {
 
   return (
     <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
-      <div style={{ fontSize: '4rem', marginBottom: '16px' }}>🏠</div>
       <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '8px' }}>
         홈 화면을 불러올 수 없습니다
       </h2>

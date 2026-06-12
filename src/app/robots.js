@@ -5,7 +5,7 @@ export default function robots() {
     rules: [
       {
         userAgent: '*',
-        allow: ['/', '/guide', '/materials', '/forum', '/viewer/'],
+        allow: ['/', '/guide', '/materials', '/viewer/'],
         disallow: ['/admin', '/profile', '/vocab', '/materials/add', '/api/'],
       },
     ],

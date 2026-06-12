@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { callGemini, GEMINI_MODEL } from './gemini';
 
 const GRAMMAR_ACTIONS = [
-  { key: 'translation', label: '🌐 전체 번역',   desc: '자연스러운 한국어 번역' },
-  { key: 'breakdown',   label: '🔬 문장 분해',   desc: '주어/서술어/조사 구조 설명' },
-  { key: 'grammar',     label: '📐 핵심 문법',   desc: '문법 패턴 + 예문' },
-  { key: 'vocab',       label: '📖 어휘 체크',   desc: '핵심 단어·표현 정리' },
-  { key: 'nuance',      label: '💬 뉘앙스·활용', desc: '실제 회화에서의 쓰임새' },
+  { key: 'translation', label: '전체 번역',   desc: '자연스러운 한국어 번역' },
+  { key: 'breakdown',   label: '문장 분해',   desc: '주어/서술어/조사 구조 설명' },
+  { key: 'grammar',     label: '핵심 문법',   desc: '문법 패턴 + 예문' },
+  { key: 'vocab',       label: '어휘 체크',   desc: '핵심 단어·표현 정리' },
+  { key: 'nuance',      label: '뉘앙스·활용', desc: '실제 회화에서의 쓰임새' },
   { key: 'full',        label: '✨ 전체 분석',   desc: '번역+분해+문법+어휘 한번에' },
 ];
 

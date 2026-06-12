@@ -7,9 +7,9 @@ import { useAuth } from '../lib/AuthContext';
 import { pullProgress } from '../lib/refProgress';
 
 const LANG_FILTERS = [
-  { key: 'Japanese', label: '🇯🇵 일본어' },
-  { key: 'English',  label: '🇬🇧 영어' },
-  { key: 'French',   label: '🇫🇷 프랑스어' },
+  { key: 'Japanese', label: '일본어' },
+  { key: 'English',  label: '영어' },
+  { key: 'French',   label: '프랑스어' },
 ];
 
 /** refManifest: 서버에서 만든 레퍼런스 경량 목차 — lessons/page.jsx 참고 */
@@ -160,7 +160,7 @@ export default function LessonsPage({ refManifest = {} }) {
     <div className="page-container">
       <div className="page-header page-header--row">
         <div>
-          <h1 className="page-header__title">🎓 강의</h1>
+          <h1 className="page-header__title">강의</h1>
           <p className="page-header__subtitle">학습 순서대로 배치된 문법·어휘 레퍼런스</p>
         </div>
       </div>
@@ -222,9 +222,6 @@ export default function LessonsPage({ refManifest = {} }) {
               className="lessons-continue"
               onClick={() => router.push(`${refLang.base}/grammar/${continueTarget.slug}`)}
             >
-              <span className="lessons-continue__label" aria-hidden="true">
-                {continueTarget.mode === 'retry' ? '🔁' : '▶'}
-              </span>
               <span className="lessons-continue__body">
                 <span className="lessons-continue__kicker">
                   {continueTarget.mode === 'retry' ? '재도전 — 지난 패턴 체크 미통과' : '이어서 학습'}
@@ -252,31 +249,42 @@ export default function LessonsPage({ refManifest = {} }) {
                   aria-expanded={isOpen}
                 >
                   <span className="lessons-list__group-chevron" aria-hidden="true">{isOpen ? '▾' : '▸'}</span>
+                  <span className="lessons-list__group-glyph" aria-hidden="true">{meta.short || meta.key}</span>
                   <span className="lessons-list__group-title">
-                    {meta.label}
-                    <span style={{ fontWeight: 500, fontSize: '0.82em', color: 'var(--text-muted)', marginLeft: 8 }}>
-                      {meta.focus}
-                    </span>
+                    {meta.label.replace(`${meta.short || meta.key} `, '')}
                   </span>
-                  {/* 접힌 상태에서도 보이는 문형 사전 바로가기 */}
+                  <span className="lessons-list__group-focus">{meta.focus}</span>
+                  {/* 접힌 상태에서도 보이는 사전 바로가기 */}
                   {bunkeiCount > 0 && (
                     <span
-                      className="lessons-list__bunkei-chip"
+                      className="lessons-list__bunkei-chip lessons-list__chip--bunkei"
                       role="link"
                       tabIndex={0}
-                      title={`${meta.key} 문형 사전 — ${bunkeiCount}문형 전수`}
+                      title={`${meta.key} 문형 사전 — ${bunkeiCount}문형 전수 (검색·뜻 가리기)`}
                       onClick={e => { e.stopPropagation(); router.push(`${refLang.base}/bunkei/${meta.key.toLowerCase()}`); }}
                       onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); router.push(`${refLang.base}/bunkei/${meta.key.toLowerCase()}`); } }}
                     >
-                      📑 문형 사전 {bunkeiCount}
+                      문형 사전 {bunkeiCount}
+                    </span>
+                  )}
+                  {vocabCount > 0 && (
+                    <span
+                      className="lessons-list__bunkei-chip lessons-list__chip--vocab"
+                      role="link"
+                      tabIndex={0}
+                      title={`${meta.label} 어휘 사전 — ${vocabCount}단어 (주제별·검색)`}
+                      onClick={e => { e.stopPropagation(); router.push(`${refLang.base}/vocab/${meta.key.toLowerCase()}`); }}
+                      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); router.push(`${refLang.base}/vocab/${meta.key.toLowerCase()}`); } }}
+                    >
+                      어휘 사전 {vocabCount}
                     </span>
                   )}
                   <span className="lessons-list__group-count">
                     {passedCount === chapters.length && chapters.length > 0 ? (
-                      <span className="lessons-list__group-passed">🏆 수료</span>
+                      <span className="lessons-list__group-passed">수료</span>
                     ) : (
                       <>
-                        {passedCount > 0 && <span className="lessons-list__group-passed">✅{passedCount}</span>}
+                        {passedCount > 0 && <span className="lessons-list__group-passed">●{passedCount}</span>}
                         {readCount} / {chapters.length}
                       </>
                     )}
@@ -284,33 +292,6 @@ export default function LessonsPage({ refManifest = {} }) {
                 </button>
                 {isOpen && (
                   <ul className="lessons-list__rows">
-                    {/* 레벨 도구 — 챕터(커리큘럼) 위에 사전·어휘(레퍼런스 도구) */}
-                    {bunkeiCount > 0 && (
-                      <li
-                        className="lessons-list__row lessons-list__row--tool"
-                        onClick={() => router.push(`${refLang.base}/bunkei/${meta.key.toLowerCase()}`)}
-                        role="link"
-                        tabIndex={0}
-                        onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && router.push(`${refLang.base}/bunkei/${meta.key.toLowerCase()}`)}
-                      >
-                        <span className="lessons-list__status" aria-hidden="true">📑</span>
-                        <span className="lessons-list__title">{meta.key} 문형 사전 — {bunkeiCount}문형 전수 (검색·뜻 가리기)</span>
-                        <span className="lessons-list__meta" />
-                      </li>
-                    )}
-                    {vocabCount > 0 && (
-                      <li
-                        className="lessons-list__row lessons-list__row--tool"
-                        onClick={() => router.push(`${refLang.base}/vocab/${meta.key.toLowerCase()}`)}
-                        role="link"
-                        tabIndex={0}
-                        onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && router.push(`${refLang.base}/vocab/${meta.key.toLowerCase()}`)}
-                      >
-                        <span className="lessons-list__status" aria-hidden="true">📖</span>
-                        <span className="lessons-list__title">{meta.label} 어휘 — {vocabCount}단어 (주제별·검색)</span>
-                        <span className="lessons-list__meta" />
-                      </li>
-                    )}
                     {chapters.map(ch => {
                       const read = readSet.has(ch.slug);
                       const passed = isPassed(checkMap[ch.slug]);
@@ -326,7 +307,7 @@ export default function LessonsPage({ refManifest = {} }) {
                           tabIndex={0}
                           onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && router.push(`${refLang.base}/grammar/${ch.slug}`)}
                         >
-                          <span className="lessons-list__status" aria-hidden="true">{passed ? '✅' : read ? '◐' : '○'}</span>
+                          <span className="lessons-list__status" aria-hidden="true">{passed ? '●' : read ? '◐' : '○'}</span>
                           <span className="lessons-list__title">#{ch.order} {ch.title}</span>
                           <span className="lessons-list__meta">
                             {ch.topic && <span className="lessons-list__topic">{ch.topic}</span>}

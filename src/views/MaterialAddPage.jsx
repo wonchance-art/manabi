@@ -130,12 +130,12 @@ export default function MaterialAddPage() {
 
       if (insertError) throw insertError;
 
-      setStatus('✅ 저장 완료! 백그라운드 분석을 시작합니다...');
+      setStatus('저장 완료. 백그라운드 분석을 시작합니다...');
       setProgress(10);
       runBackgroundAnalysis(data[0].id, rawText, controller.signal);
     } catch (err) {
       if (err.name === 'AbortError') {
-        setStatus('🛑 분석이 중단되었습니다.');
+        setStatus('분석이 중단되었습니다.');
       } else {
         setError("저장 오류 — " + friendlyToastMessage(err));
       }
@@ -146,7 +146,7 @@ export default function MaterialAddPage() {
   function handleCancel() {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
-      setStatus('🛑 중단 요청 중...');
+      setStatus('중단 요청 중...');
     }
   }
 
@@ -157,7 +157,7 @@ export default function MaterialAddPage() {
         concurrency: 8, // PDF/페이스트 모두 더 빠르게
         onBatch: async ({ currentJson, processed, total }) => {
           const failedSoFar = currentJson.failed_indices?.length || 0;
-          setStatus(`⏳ 분석 중... (${processed}/${total}줄${failedSoFar > 0 ? ` · 실패 ${failedSoFar}` : ''})`);
+          setStatus(`분석 중... (${processed}/${total}줄${failedSoFar > 0 ? ` · 실패 ${failedSoFar}` : ''})`);
           setProgress(Math.floor((processed / total) * 90) + 10);
           const { error: updateError } = await supabase
             .from('reading_materials').update({ processed_json: currentJson }).eq('id', id);
@@ -167,8 +167,8 @@ export default function MaterialAddPage() {
 
       const failedCount = finalJson.failed_indices?.length || 0;
       setStatus(failedCount > 0
-        ? `⚠️ 분석 완료 (${failedCount}개 단락 재시도 필요)`
-        : '✅ 전체 분석 완료!');
+        ? `분석 완료 (${failedCount}개 단락 재시도 필요)`
+        : '전체 분석 완료');
       setProgress(100);
       setIsProcessing(false);
       setCompletedId(id);
@@ -188,7 +188,7 @@ export default function MaterialAddPage() {
           ? await Notification.requestPermission()
           : Notification.permission;
         if (permission === 'granted') {
-          new Notification('분석 완료! 🎉', {
+          new Notification('분석 완료', {
             body: `"${title || '새 자료'}" 분석이 완료되었습니다.`,
             icon: '/icon.svg',
           });
@@ -214,7 +214,7 @@ export default function MaterialAddPage() {
   return (
     <div className="page-container">
       <div className="page-header">
-        <h1 className="page-header__title">📝 새 자료 추가</h1>
+        <h1 className="page-header__title">새 자료 추가</h1>
         <p className="page-header__subtitle">AI가 문장을 형태소 단위로 해부해 드립니다</p>
       </div>
 
@@ -235,7 +235,7 @@ export default function MaterialAddPage() {
           }}>
             <div>
               <div style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 700 }}>
-                📘 PDF 출처
+                PDF 출처
               </div>
               <div style={{ fontSize: '0.88rem', marginTop: 2 }}>
                 {pdfSource.pdf.title} · p.{pdfSource.pageStart}-{pdfSource.pageEnd}
@@ -280,14 +280,14 @@ export default function MaterialAddPage() {
                 className={`toggle-btn ${visibility === 'private' ? 'toggle-btn--primary' : ''}`}
                 disabled={!!pdfSource}
               >
-                🔒 Private
+                Private
               </button>
               <button
                 onClick={() => !pdfSource && setVisibility('public')}
                 className={`toggle-btn ${visibility === 'public' ? 'toggle-btn--accent' : ''}`}
                 disabled={!!pdfSource}
               >
-                🌐 Public
+                Public
               </button>
             </div>
           </div>
@@ -299,13 +299,13 @@ export default function MaterialAddPage() {
                 onClick={() => { setLanguage('Japanese'); setLevel('N3 중급'); }}
                 className={`toggle-btn ${language === 'Japanese' ? 'toggle-btn--primary' : ''}`}
               >
-                🇯🇵 Japanese
+                일본어
               </button>
               <button
                 onClick={() => { setLanguage('English'); setLevel('B1 중급'); }}
                 className={`toggle-btn ${language === 'English' ? 'toggle-btn--primary' : ''}`}
               >
-                🇬🇧 English
+                영어
               </button>
             </div>
           </div>
@@ -344,7 +344,7 @@ export default function MaterialAddPage() {
                 }
               }}
             >
-              📋 클립보드 붙여넣기
+              클립보드 붙여넣기
             </Button>
           </div>
           <textarea
@@ -374,13 +374,13 @@ export default function MaterialAddPage() {
         )}
 
         {/* Error */}
-        {error && <div className="error-banner">⚠️ {error}</div>}
+        {error && <div className="error-banner">{error}</div>}
 
         {/* Actions */}
         {completedId ? (
           <div className="form-actions form-actions--done">
             <Button size="lg" style={{ flex: 2 }} onClick={() => router.push(`/viewer/${completedId}`)}>
-              📖 지금 바로 읽기
+              지금 바로 읽기
             </Button>
             <Button variant="secondary" size="lg" style={{ flex: 1 }} onClick={() => router.push('/materials')}>
               자료실 보기
@@ -394,7 +394,7 @@ export default function MaterialAddPage() {
               size="lg"
               style={{ flex: 3 }}
             >
-              {isProcessing ? 'AI 해부 분석 진행 중...' : '🚀 분석 시작하기'}
+              {isProcessing ? 'AI 해부 분석 진행 중...' : '분석 시작하기'}
             </Button>
             {isProcessing && (
               <Button onClick={handleCancel} variant="danger" size="lg" style={{ flex: 1 }}>

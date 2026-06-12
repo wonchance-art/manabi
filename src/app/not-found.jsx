@@ -11,7 +11,6 @@ export default function NotFound() {
       justifyContent: 'center', minHeight: '70vh', padding: '40px 24px',
       color: 'var(--text-primary)', textAlign: 'center',
     }}>
-      <div style={{ fontSize: '5rem', marginBottom: 12 }}>🔭</div>
       <h1 style={{ fontSize: '2rem', fontWeight: 800, margin: '0 0 8px' }}>404</h1>
       <h2 style={{ fontSize: '1.1rem', fontWeight: 600, margin: '0 0 10px', color: 'var(--text-secondary)' }}>
         길을 잃으셨군요
@@ -20,9 +19,9 @@ export default function NotFound() {
         주소가 잘못됐거나, 삭제된 페이지일 수 있어요. 아래로 돌아가서 계속 학습해보세요.
       </p>
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
-        <Link href="/home" className="btn btn--primary btn--md">🏠 홈으로</Link>
-        <Link href="/materials" className="btn btn--ghost btn--md">📚 자료실</Link>
-        <Link href="/vocab" className="btn btn--ghost btn--md">📖 단어장</Link>
+        <Link href="/home" className="btn btn--primary btn--md">홈으로</Link>
+        <Link href="/materials" className="btn btn--ghost btn--md">자료실</Link>
+        <Link href="/vocab" className="btn btn--ghost btn--md">단어장</Link>
       </div>
     </div>
   );

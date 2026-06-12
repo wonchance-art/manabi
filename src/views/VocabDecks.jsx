@@ -45,7 +45,7 @@ export default function VocabDecks({
                     onClick={() => setDeckLang(lang)}
                     className={`chip ${deckLang === lang ? 'chip--active' : ''}`}
                   >
-                    {lang === 'Japanese' ? '🇯🇵 일본어' : '🇬🇧 영어'}
+                    {lang === 'Japanese' ? '일본어' : '영어'}
                   </button>
                 ))}
               </div>
@@ -66,7 +66,6 @@ export default function VocabDecks({
       {/* 덱 목록 */}
       {publicDecks.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-state__icon">🃏</div>
           <p className="empty-state__msg">아직 공유된 단어장이 없어요</p>
           {user && vocab.length > 0 ? (
             <Button onClick={() => setDeckModal(true)} style={{ marginTop: 12 }}>
@@ -86,7 +85,7 @@ export default function VocabDecks({
               <div key={deck.id} className="card" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                    <span style={{ fontSize: '0.85rem' }}>{deck.language === 'Japanese' ? '🇯🇵' : '🇬🇧'}</span>
+                    <span style={{ fontSize: '0.85rem' }}>{deck.language === 'Japanese' ? '일본어' : '영어'}</span>
                     <h4 style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {deck.title}
                     </h4>

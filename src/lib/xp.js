@@ -48,21 +48,8 @@ export function getXPToNextLevel(xp = 0) {
   return nextCeiling - xp;
 }
 
-/** XP 원자적 증가 (Supabase RPC) + 레벨업 감지 시 알림 */
+/** XP 원자적 증가 (Supabase RPC) */
 export async function awardXP(userId, amount, prevXP = null) {
   if (!userId || typeof amount !== 'number' || amount <= 0 || amount > 1000) return;
   await supabase.rpc('award_xp', { uid: userId, amount });
-
-  // 레벨업 감지: prevXP를 전달받은 경우에만 확인
-  if (prevXP !== null) {
-    const prevLevel = getXPLevel(prevXP);
-    const newLevel  = getXPLevel(prevXP + amount);
-    if (newLevel > prevLevel) {
-      await supabase.from('notifications').insert({
-        user_id: userId,
-        type: 'levelup',
-        message: `🎉 레벨 ${newLevel} 달성! 계속 성장하고 있어요.`,
-      });
-    }
-  }
 }

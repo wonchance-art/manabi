@@ -65,7 +65,6 @@ export default function ReferenceChapterPage({ lang, slug }) {
   if (!data) {
     return (
       <div className="page-container" style={{ maxWidth: 760, textAlign: 'center', paddingTop: 80 }}>
-        <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>🔍</div>
         <h1 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: 8 }}>챕터를 찾을 수 없어요</h1>
         <Link href={backHref} className="btn btn--ghost btn--sm">{ref?.name || ''} 강의 목록으로 →</Link>
       </div>
@@ -143,14 +142,14 @@ export default function ReferenceChapterPage({ lang, slug }) {
       if (related > 0) {
         reviewLinks.push({
           href: `${ref.base}/bunkei/${chapter.level.toLowerCase()}?ch=${chapter.slug}`,
-          label: `📑 연관 문형 ${related}개 복습`,
+          label: `연관 문형 ${related}개 복습`,
         });
       }
     }
     if (ref.countVocab(chapter.level) > 0) {
       reviewLinks.push({
         href: `${ref.base}/vocab/${chapter.level.toLowerCase()}`,
-        label: `📖 ${chapter.level} 어휘`,
+        label: `${chapter.level} 어휘`,
       });
     }
   }
@@ -172,7 +171,7 @@ export default function ReferenceChapterPage({ lang, slug }) {
             {meta?.label} · 문법 #{chapter.order}
           </span>
           {chapter.duration && (
-            <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>⏱ {chapter.duration}</span>
+            <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>{chapter.duration}</span>
           )}
           {/* 문형 사전·어휘 빠른 진입 — 헤더에서 바로 */}
           {ref.getBunkei?.(chapter.level) && (
@@ -180,7 +179,7 @@ export default function ReferenceChapterPage({ lang, slug }) {
               href={`${ref.base}/bunkei/${chapter.level.toLowerCase()}`}
               className="fr-header-bunkei"
             >
-              📑 {chapter.level} 문형 사전
+              {chapter.level} 문형 사전
             </Link>
           )}
           {ref.countVocab(chapter.level) > 0 && (
@@ -188,11 +187,11 @@ export default function ReferenceChapterPage({ lang, slug }) {
               href={`${ref.base}/vocab/${chapter.level.toLowerCase()}`}
               className="fr-header-bunkei"
             >
-              📖 {chapter.level} 어휘
+              {chapter.level} 어휘
             </Link>
           )}
         </div>
-        <h1 style={{ fontSize: '1.45rem', fontWeight: 800, lineHeight: 1.35 }}>{chapter.title}</h1>
+        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.7rem', fontWeight: 700, lineHeight: 1.42, letterSpacing: '-0.01em', wordBreak: 'keep-all' }}>{chapter.title}</h1>
         {(() => {
           // topic이 원어 제목을 이미 포함하면 중복 표기 생략
           const titleFr = chapter.titleFr && !(chapter.topic || '').includes(chapter.titleFr)
@@ -216,7 +215,7 @@ export default function ReferenceChapterPage({ lang, slug }) {
       {/* ── 핵심 패턴 한눈에 ── */}
       {patternIndex.length > 0 && (
         <div className="fr-pattern-summary" style={{ borderColor: meta?.line, background: meta?.bg }}>
-          <div className="fr-pattern-summary__title" style={{ color: meta?.color }}>📌 핵심 패턴 한눈에</div>
+          <div className="fr-pattern-summary__title" style={{ color: meta?.color }}>핵심 패턴 한눈에</div>
           <ol className="fr-pattern-summary__list">
             {patternIndex.map(p => (
               <li key={p.i}>
@@ -289,7 +288,6 @@ export default function ReferenceChapterPage({ lang, slug }) {
             href={related > 0 ? `${base}?ch=${chapter.slug}` : base}
             className="fr-bunkei-cta"
           >
-            <span className="fr-bunkei-cta__icon" aria-hidden="true">📑</span>
             <span className="fr-bunkei-cta__text">
               {related > 0
                 ? <>이 챕터와 연결된 문형 <strong>{related}개</strong>를 {chapter.level} 문형 사전에서 모아 보기</>

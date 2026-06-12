@@ -48,17 +48,17 @@ function AuthForm() {
         if (newPw !== confirmNewPw) { setError('비밀번호 확인이 일치하지 않습니다.'); setLoading(false); return; }
         const { error: updErr } = await supabase.auth.updateUser({ password: newPw });
         if (updErr) throw updErr;
-        setSuccess('🎉 비밀번호가 변경됐어요. 자동으로 로그인됩니다...');
+        setSuccess('비밀번호가 변경됐어요. 자동으로 로그인됩니다...');
         setTimeout(() => router.push('/home'), 1500);
       } else if (isForgot) {
         await resetPassword(email);
-        setSuccess('📧 비밀번호 재설정 링크를 이메일로 보냈습니다. 확인해주세요!');
+        setSuccess('비밀번호 재설정 링크를 이메일로 보냈습니다. 확인해주세요.');
       } else if (isLogin) {
         await signIn(email, password);
         router.push(from);
       } else {
         await signUp(email, password, displayName);
-        setSuccess('🎉 인증 이메일을 발송했습니다! 이메일을 확인해주세요.');
+        setSuccess('인증 이메일을 발송했습니다. 이메일을 확인해주세요.');
       }
     } catch (err) {
       const msg = toKoreanError(err?.message || String(err));
@@ -85,7 +85,6 @@ function AuthForm() {
       <div className="auth-card">
         {/* Header */}
         <div className="auth-header">
-          <div className="auth-header__icon">🧬</div>
           <h1 className="auth-header__title">
             {isReset ? '새 비밀번호 설정' : isForgot ? '비밀번호 찾기' : isLogin ? '다시 오셨군요!' : '함께 성장해요'}
           </h1>
@@ -205,7 +204,7 @@ function AuthForm() {
 
           {error && error === 'ALREADY_REGISTERED' ? (
             <div className="auth-alert auth-alert--error">
-              ⚠️ 이미 가입된 이메일입니다.{' '}
+              이미 가입된 이메일입니다.{' '}
               <button
                 type="button"
                 onClick={() => { setIsLogin(true); setError(''); setSuccess(''); }}
@@ -215,7 +214,7 @@ function AuthForm() {
               </button>
             </div>
           ) : error ? (
-            <div className="auth-alert auth-alert--error">⚠️ {error}</div>
+            <div className="auth-alert auth-alert--error">{error}</div>
           ) : null}
 
           {success && (

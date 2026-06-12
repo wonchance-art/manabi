@@ -179,13 +179,12 @@ export default function VocabWriting({ vocab, toast, awardXPOnSuccess, user }) {
   if (vocab.length === 0) {
     return (
       <div className="card review-card review-card--center">
-        <div className="review-card__emoji">✍️</div>
         <h2 style={{ marginBottom: 10 }}>아직 단어가 없어요</h2>
         <p style={{ color: 'var(--text-secondary)', marginBottom: 16 }}>
           자료를 읽으며 단어를 모은 뒤 쓰기 연습을 할 수 있어요.
         </p>
         <Link href="/materials" className="btn btn--primary btn--md">
-          📰 자료 보러가기
+          자료 보러가기
         </Link>
       </div>
     );
@@ -204,7 +203,7 @@ export default function VocabWriting({ vocab, toast, awardXPOnSuccess, user }) {
               <option value="Japanese">일본어</option>
               <option value="English">영어</option>
             </select>
-            <Button variant="ghost" size="sm" onClick={suggestRandom}>🎲 랜덤 추천</Button>
+            <Button variant="ghost" size="sm" onClick={suggestRandom}>랜덤 추천</Button>
           </div>
         </div>
 
@@ -245,7 +244,7 @@ export default function VocabWriting({ vocab, toast, awardXPOnSuccess, user }) {
             placeholder="여기에 문장을 작성하세요..."
             maxLength={MAX_SENTENCE_LENGTH}
             aria-label="쓰기 연습 문장 입력"
-            className="forum-textarea"
+            className="vw-textarea"
             style={{ minHeight: 100 }}
           />
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
@@ -255,7 +254,7 @@ export default function VocabWriting({ vocab, toast, awardXPOnSuccess, user }) {
             <div style={{ display: 'flex', gap: 8 }}>
               <Button variant="ghost" size="sm" onClick={reset}>초기화</Button>
               <Button onClick={submitForFeedback} disabled={loading || !sentence.trim()}>
-                {loading ? '🤖 AI 교정 중...' : '✨ AI 교정 받기'}
+                {loading ? 'AI 교정 중...' : 'AI 교정 받기'}
               </Button>
             </div>
           </div>
@@ -290,7 +289,7 @@ export default function VocabWriting({ vocab, toast, awardXPOnSuccess, user }) {
 
           {feedback.feedback && (
             <p style={{ margin: '0 0 12px', fontSize: '0.9rem', lineHeight: 1.6, color: 'var(--text-primary)' }}>
-              💬 {feedback.feedback}
+              {feedback.feedback}
             </p>
           )}
 

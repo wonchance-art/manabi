@@ -72,7 +72,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
         }, { onConflict: 'user_id,word_text' });
       if (error) throw error;
       setSavedSet(prev => new Set([...prev, item.pattern]));
-      toast?.(`⭐ "${item.pattern}" 단어장에 저장`, 'success');
+      toast?.(`"${item.pattern}" 단어장에 저장`, 'success');
       queryClient.invalidateQueries({ queryKey: ['vocab-words', user.id] });
     } catch {
       toast?.('저장 실패', 'error');
@@ -144,7 +144,6 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
   if (!bunkei) {
     return (
       <div className="page-container" style={{ maxWidth: 760, textAlign: 'center', paddingTop: 80 }}>
-        <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>🔍</div>
         <h1 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: 8 }}>해당 레벨의 문형 사전이 없어요</h1>
         <Link href={backHref} className="btn btn--ghost btn--sm">{refInfo.name} 강의 목록으로 →</Link>
       </div>
@@ -157,7 +156,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
     <div className="page-container" style={{ maxWidth: 820 }}>
       <nav style={{ marginBottom: 18 }} aria-label="브레드크럼">
         <Link href={backHref} style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-          ← {refInfo.flag} {refInfo.name} 강의 목록
+          ← {refInfo.name} 강의 목록
         </Link>
       </nav>
 
@@ -166,7 +165,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <LevelDot meta={meta} />
           <div>
-            <h1 style={{ fontSize: '1.3rem', fontWeight: 800 }}>{bunkei.title}</h1>
+            <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.4rem', fontWeight: 700 }}>{bunkei.title}</h1>
             <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
               {total}문형 전수 수록 · 주제 {bunkei.themes.length}개
             </p>
@@ -228,7 +227,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
           <>
             <span className="bk-toolbar__sep" aria-hidden="true" />
             <Link href={`${refInfo.base}/vocab/${meta?.key.toLowerCase()}`} className="bk-switch">
-              📖 {meta?.key} 어휘로 →
+              {meta?.key} 어휘로 →
             </Link>
           </>
         )}
@@ -239,7 +238,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
         <input
           type="search"
           className="search-input"
-          placeholder="🔍 문형·뜻·예문 검색"
+          placeholder="문형·뜻·예문 검색"
           value={query}
           onChange={e => setQuery(e.target.value)}
           aria-label="문형 검색"
@@ -255,7 +254,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
       {chFilter && (
         <div className="fr-chfilter">
           <span>
-            🔗 챕터 연관 문형만 보는 중 ({chFilterCount}개)
+            챕터 연관 문형만 보는 중 ({chFilterCount}개)
             {' · '}
             <Link href={`${refInfo.base}/grammar/${chFilter}`} className="fr-chfilter__back">챕터로 돌아가기</Link>
           </span>
@@ -351,7 +350,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
                                   aria-label="예문 발음 듣기"
                                   title="예문 발음 듣기"
                                 >
-                                  🔊
+                                  ▷
                                 </button>
                               )}
                             </div>
@@ -371,7 +370,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
                         title="이 문형을 자세히 다루는 챕터"
                         onClick={e => e.stopPropagation()}
                       >
-                        📖 챕터
+                        챕터
                       </Link>
                     )}
                     {mounted && (
@@ -383,7 +382,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
                         aria-label={savedSet.has(item.pattern) ? '단어장에 저장됨' : '문형을 단어장에 저장'}
                         title={savedSet.has(item.pattern) ? '저장됨' : user ? '단어장에 저장 (FSRS 복습 시작)' : '로그인 필요'}
                       >
-                        {savedSet.has(item.pattern) ? '✓' : '⭐'}
+                        {savedSet.has(item.pattern) ? '✓' : '＋'}
                       </button>
                     )}
                   </div>

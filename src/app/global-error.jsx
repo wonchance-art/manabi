@@ -16,7 +16,6 @@ export default function GlobalError({ error, reset }) {
           justifyContent: 'center', minHeight: '100vh', padding: '40px 24px',
           background: '#0b0d12', color: '#e5e7eb', textAlign: 'center',
         }}>
-          <div style={{ fontSize: '4rem', marginBottom: 16 }}>💥</div>
           <h1 style={{ fontSize: '1.6rem', margin: '0 0 8px' }}>앱이 예상치 못한 오류로 중단됐어요</h1>
           <p style={{ color: '#9ca3af', marginBottom: 28, maxWidth: 460, lineHeight: 1.6 }}>
             문제가 반복되면 페이지를 새로고침하거나 잠시 후 다시 방문해주세요.

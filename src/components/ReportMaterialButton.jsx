@@ -59,13 +59,13 @@ export default function ReportMaterialButton({ materialId, userId, toast }) {
         }}
         title="이 자료를 신고합니다"
       >
-        🚩 신고
+        신고
       </button>
 
       {open && (
         <div className="modal-overlay" onClick={() => !submitting && setOpen(false)}>
           <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 420 }}>
-            <h3 style={{ margin: '0 0 8px' }}>🚩 자료 신고</h3>
+            <h3 style={{ margin: '0 0 8px' }}>자료 신고</h3>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: 14 }}>
               이 자료가 부적절하다고 생각하시면 이유를 선택해주세요.
             </p>

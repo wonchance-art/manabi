@@ -7,7 +7,6 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { LEVELS } from '../lib/constants';
-import { getXPLevel } from '../lib/xp';
 import Button from '../components/Button';
 import AccountSettings from '../components/AccountSettings';
 import InstallPrompt from '../components/InstallPrompt';
@@ -113,8 +112,6 @@ export default function MyPage() {
     );
   }
 
-  const xp = profile?.xp ?? 0;
-  const level = getXPLevel(xp);
   const streak = profile?.streak_count ?? 0;
 
   return (
@@ -122,12 +119,12 @@ export default function MyPage() {
 
       {/* 헤더 */}
       <div className="mypage-profile-header">
-        <div className="mypage-avatar">{profile?.display_name?.[0] || '👤'}</div>
+        <div className="mypage-avatar">{profile?.display_name?.[0] || '?'}</div>
         <div className="mypage-profile-info">
           <h1 className="mypage-profile-info__name">{profile?.display_name || '학습자'}</h1>
           <p className="mypage-profile-info__email">
-            Lv.{level} · {xp.toLocaleString('ko-KR')} XP
-            {streak > 0 && <> · 🔥 {streak}일</>}
+            {user.email}
+            {streak > 0 && <> · {streak}일 연속</>}
           </p>
         </div>
         <Button variant="ghost" size="sm" onClick={signOut}>로그아웃</Button>
@@ -138,18 +135,18 @@ export default function MyPage() {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '14px 16px', marginBottom: 16, textDecoration: 'none', color: 'var(--text-primary)',
       }}>
-        <span style={{ fontSize: '0.9rem' }}>📊 학습 통계 · 업적 · 히트맵</span>
+        <span style={{ fontSize: '0.9rem' }}>학습 통계 · 업적 · 히트맵</span>
         <span style={{ fontSize: '0.85rem', color: 'var(--primary)' }}>더 보기 →</span>
       </Link>
 
       {/* 학습 설정 */}
       <div className="card mypage-section">
-        <h2 className="mypage-section__title">⚙️ 학습 설정</h2>
+        <h2 className="mypage-section__title">학습 설정</h2>
 
         <details className="mypage-collapse" open={openPanel === 'profile'}
           onToggle={e => { if (e.currentTarget.open) setOpenPanel('profile'); else if (openPanel === 'profile') setOpenPanel(null); }}>
           <summary className="mypage-collapse__summary" onClick={e => { e.preventDefault(); togglePanel('profile'); }}>
-            <span>👤 프로필 (닉네임 · 학습 언어 · 수준)</span>
+            <span>프로필 — 닉네임 · 학습 언어 · 수준</span>
             <span className="mypage-collapse__chevron">▾</span>
           </summary>
           <div className="mypage-collapse__body">
@@ -166,14 +163,14 @@ export default function MyPage() {
                     onClick={() => setEditLanguages(prev =>
                       prev.includes(lang) ? prev.length > 1 ? prev.filter(l => l !== lang) : prev : [...prev, lang]
                     )}>
-                    {lang === 'Japanese' ? '🇯🇵 Japanese' : '🇬🇧 English'}
+                    {lang === 'Japanese' ? '일본어' : '영어'}
                   </button>
                 ))}
               </div>
             </div>
             {editLanguages.includes('Japanese') && (
               <div className="form-field">
-                <label className="form-label">🇯🇵 일본어 수준</label>
+                <label className="form-label">일본어 수준</label>
                 <div className="level-group">
                   {LEVELS.Japanese.map(lvl => (
                     <button key={lvl} type="button" className={`level-btn ${editLevelJp === lvl ? 'level-btn--active' : ''}`}
@@ -184,7 +181,7 @@ export default function MyPage() {
             )}
             {editLanguages.includes('English') && (
               <div className="form-field">
-                <label className="form-label">🇬🇧 영어 수준</label>
+                <label className="form-label">영어 수준</label>
                 <div className="level-group">
                   {LEVELS.English.map(lvl => (
                     <button key={lvl} type="button" className={`level-btn ${editLevelEn === lvl ? 'level-btn--active' : ''}`}
@@ -202,16 +199,16 @@ export default function MyPage() {
         <details className="mypage-collapse" open={openPanel === 'goals'}
           onToggle={e => { if (e.currentTarget.open) setOpenPanel('goals'); else if (openPanel === 'goals') setOpenPanel(null); }}>
           <summary className="mypage-collapse__summary" onClick={e => { e.preventDefault(); togglePanel('goals'); }}>
-            <span>🎯 일일 목표 (복습 {profile?.goal_review ?? 5} · 수집 {profile?.goal_words ?? 5} · 완독 {profile?.goal_read ?? 1})</span>
+            <span>일일 목표 (복습 {profile?.goal_review ?? 5} · 수집 {profile?.goal_words ?? 5} · 완독 {profile?.goal_read ?? 1})</span>
             <span className="mypage-collapse__chevron">▾</span>
           </summary>
           <div className="mypage-collapse__body">
             {isEditingGoals ? (
               <>
                 {[
-                  { label: '🧠 단어 복습', value: goalReview, set: setGoalReview, min: 1, max: 50 },
-                  { label: '⭐ 단어 수집', value: goalWords,  set: setGoalWords,  min: 1, max: 30 },
-                  { label: '📖 자료 완독', value: goalRead,   set: setGoalRead,   min: 1, max: 5  },
+                  { label: '단어 복습', value: goalReview, set: setGoalReview, min: 1, max: 50 },
+                  { label: '단어 수집', value: goalWords,  set: setGoalWords,  min: 1, max: 30 },
+                  { label: '자료 완독', value: goalRead,   set: setGoalRead,   min: 1, max: 5  },
                 ].map(({ label, value, set, min, max }) => (
                   <div key={label} className="mypage-goal-slider">
                     <div className="mypage-goal-slider__head"><span>{label}</span><span className="mypage-goal-slider__value">{value}개</span></div>
@@ -234,12 +231,12 @@ export default function MyPage() {
         <details className="mypage-collapse" open={openPanel === 'alarm'}
           onToggle={e => { if (e.currentTarget.open) setOpenPanel('alarm'); else if (openPanel === 'alarm') setOpenPanel(null); }}>
           <summary className="mypage-collapse__summary" onClick={e => { e.preventDefault(); togglePanel('alarm'); }}>
-            <span>🔔 복습 알림 {reminderHour ? `(매일 ${reminderHour}시)` : '(꺼짐)'}</span>
+            <span>복습 알림 {reminderHour ? `(매일 ${reminderHour}시)` : '(꺼짐)'}</span>
             <span className="mypage-collapse__chevron">▾</span>
           </summary>
           <div className="mypage-collapse__body">
             {typeof Notification !== 'undefined' && notifPerm === 'denied' && (
-              <div className="mypage-reminder-blocked">⚠️ 브라우저에서 알림이 차단돼 있어요.</div>
+              <div className="mypage-reminder-blocked">브라우저에서 알림이 차단돼 있어요.</div>
             )}
             <div className="mypage-reminder-options">
               {['', '7', '9', '12', '18', '21'].map(h => (
@@ -260,10 +257,8 @@ export default function MyPage() {
       {/* 바로가기 + 정책 */}
       <div className="card mypage-section" style={{ marginBottom: 16 }}>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
-          <Link href="/guide" className="btn btn--ghost btn--sm">📚 가이드</Link>
-          <Link href="/help" className="btn btn--ghost btn--sm">❓ 도움말</Link>
-          <Link href="/leaderboard" className="btn btn--ghost btn--sm">🏆 랭킹</Link>
-          <Link href="/forum" className="btn btn--ghost btn--sm">💬 포럼</Link>
+          <Link href="/guide" className="btn btn--ghost btn--sm">학습 가이드</Link>
+          <Link href="/help" className="btn btn--ghost btn--sm">도움말</Link>
         </div>
         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center' }}>
           <Link href="/terms" style={{ color: 'inherit' }}>이용약관</Link>

@@ -14,6 +14,7 @@ export function buildRefManifest() {
       legend: ref.legend,
       levels: ref.LEVEL_META.map(m => ({
         key: m.key,
+        short: m.short || null,
         label: m.label,
         focus: m.focus,
         chapters: ref.getGrammarChapters(m.key).map(c => ({

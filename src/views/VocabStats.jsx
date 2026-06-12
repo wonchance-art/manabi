@@ -9,8 +9,8 @@ const LEVEL_MILESTONES = {
 };
 
 const LANG_META = {
-  Japanese: { flag: '🇯🇵', label: '일본어', coverageTitle: 'JLPT 급수 커버리지', defaultTarget: 'N3 중급' },
-  English:  { flag: '🇬🇧', label: '영어',   coverageTitle: 'CEFR 급수 커버리지', defaultTarget: 'B1 중급' },
+  Japanese: { label: '일본어', coverageTitle: 'JLPT 급수 커버리지', defaultTarget: 'N3 중급' },
+  English:  { label: '영어',   coverageTitle: 'CEFR 급수 커버리지', defaultTarget: 'B1 중급' },
 };
 
 function getLangVocab(vocab, lang) {
@@ -35,7 +35,7 @@ function LangTabs({ activeLangs, current, onChange }) {
               cursor: 'pointer', transition: 'all 0.15s',
             }}
           >
-            {meta.flag} {meta.label}
+            {meta.label}
           </button>
         );
       })}
@@ -77,13 +77,13 @@ export default function VocabStats({ vocab, profile, section }) {
         return (
           <div className="card" >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, gap: 10, flexWrap: 'wrap' }}>
-              <h3 style={{ fontSize: '1rem', margin: 0 }}>📈 어휘 레벨</h3>
+              <h3 style={{ fontSize: '1rem', margin: 0 }}>어휘 레벨</h3>
               <LangTabs activeLangs={activeLangs} current={effLevelLang} onChange={setLevelLang} />
             </div>
 
             {/* 진행도 바 */}
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: 6 }}>
-              <span>{meta.flag} {targetLevel} — {total.toLocaleString('ko-KR')} / {targetCount.toLocaleString('ko-KR')}개</span>
+              <span>{targetLevel} — {total.toLocaleString('ko-KR')} / {targetCount.toLocaleString('ko-KR')}개</span>
               <span>{pct}%</span>
             </div>
             <div style={{ background: 'var(--bg-secondary)', borderRadius: 'var(--radius-full)', height: 10, overflow: 'hidden', marginBottom: 18 }}>
@@ -92,7 +92,7 @@ export default function VocabStats({ vocab, profile, section }) {
 
             {/* 커버리지 차트 */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
-              <h3 style={{ fontSize: '1rem', margin: 0 }}>🎯 {meta.coverageTitle}</h3>
+              <h3 style={{ fontSize: '1rem', margin: 0 }}>{meta.coverageTitle}</h3>
               <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>수집 {total} · 숙련 {mastered}</span>
             </div>
             <div style={{ display: 'flex', gap: 6, alignItems: 'flex-end', height: 100, padding: '4px 0' }}>
@@ -125,7 +125,7 @@ export default function VocabStats({ vocab, profile, section }) {
       {/* 요주의 단어 TOP 5 */}
       {showHard && vocab.filter(v => (v.repetitions || 0) > 2).length > 0 && (
         <div className="card" >
-          <h3 style={{ fontSize: '0.95rem', marginBottom: 12 }}>🔥 요주의 단어 TOP 5</h3>
+          <h3 style={{ fontSize: '0.95rem', marginBottom: 12 }}>요주의 단어 TOP 5</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {[...vocab]
               .filter(v => (v.repetitions || 0) > 0)
@@ -176,20 +176,20 @@ export default function VocabStats({ vocab, profile, section }) {
         return (
           <div className="card" >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
-              <h3 style={{ fontSize: '0.95rem' }}>🧠 기억 건강</h3>
+              <h3 style={{ fontSize: '0.95rem' }}>기억 건강</h3>
               <span style={{ fontSize: '0.82rem', fontWeight: 700, color: avgRetention >= 80 ? 'var(--accent)' : avgRetention >= 50 ? 'var(--warning)' : 'var(--danger)' }}>
                 유지율 {avgRetention}%
               </span>
             </div>
             <div className="retention-buckets">
               {[
-                { label: '선명', count: retentionBuckets.high, color: 'var(--accent)', emoji: '🟢' },
-                { label: '양호', count: retentionBuckets.mid, color: 'var(--primary-light)', emoji: '🔵' },
-                { label: '흐릿', count: retentionBuckets.low, color: 'var(--warning)', emoji: '🟡' },
-                { label: '위험', count: retentionBuckets.forgotten, color: 'var(--danger)', emoji: '🔴' },
+                { label: '선명', count: retentionBuckets.high, color: 'var(--accent)', emoji: '●' },
+                { label: '양호', count: retentionBuckets.mid, color: 'var(--primary-light)', emoji: '●' },
+                { label: '흐릿', count: retentionBuckets.low, color: 'var(--warning)', emoji: '●' },
+                { label: '위험', count: retentionBuckets.forgotten, color: 'var(--danger)', emoji: '●' },
               ].map(b => (
                 <div key={b.label} className="retention-bucket">
-                  <span style={{ fontSize: '0.75rem' }}>{b.emoji}</span>
+                  <span style={{ fontSize: '0.75rem', color: b.color }}>{b.emoji}</span>
                   <span className="retention-bucket__count" style={{ color: b.color }}>{b.count}</span>
                   <span className="retention-bucket__label">{b.label}</span>
                 </div>
@@ -230,7 +230,7 @@ export default function VocabStats({ vocab, profile, section }) {
 
       {/* 향후 7일 복습 스케줄 */}
       {showMemory && <div className="card" >
-        <h3 style={{ fontSize: '0.95rem', marginBottom: 16 }}>📅 복습 스케줄 (7일)</h3>
+        <h3 style={{ fontSize: '0.95rem', marginBottom: 16 }}>복습 스케줄 (7일)</h3>
         <div className="forecast-chart">
           {[...Array(7)].map((_, i) => {
             const date = new Date();

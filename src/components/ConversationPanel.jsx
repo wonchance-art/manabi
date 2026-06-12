@@ -153,7 +153,7 @@ Output PART 1, then a blank line, then PART 2 (if any). No labels, no other text
   return (
     <div className={`conversation-panel ${inline ? 'conversation-panel--inline' : ''}`}>
       <div className="conversation-panel__header">
-        <h3 style={{ margin: 0, fontSize: '1.05rem' }}>💬 회화 연습</h3>
+        <h3 style={{ margin: 0, fontSize: '1.05rem' }}>회화 연습</h3>
         <div style={{ display: 'flex', gap: 8 }}>
           {nextLesson && messages.length >= 4 && (
             <Link href={`/viewer/${nextLesson.id}`} className="btn btn--ghost btn--sm" title={nextLesson.title}>
@@ -172,7 +172,6 @@ Output PART 1, then a blank line, then PART 2 (if any). No labels, no other text
       <div className="conversation-panel__messages" ref={scrollRef}>
         {messages.length === 0 && !loading && (
           <div className="conversation-panel__empty">
-            <div style={{ fontSize: '2rem', marginBottom: 8 }}>💬</div>
             <p style={{ margin: '0 0 14px', color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.5 }}>
               {targetLangKo}로 AI 튜터와 본문에 대해 대화해보세요.<br />
               짧고 자연스러운 질문으로 시작합니다.
@@ -193,12 +192,12 @@ Output PART 1, then a blank line, then PART 2 (if any). No labels, no other text
                   onClick={() => speak(m.text, language)}
                   title="발음 듣기"
                   aria-label="발음 듣기"
-                >🔊</button>
+                >▷</button>
               )}
             </div>
             {m.role === 'ai' && m.correction && (
               <div className="conversation-correction">
-                📝 <span>{m.correction}</span>
+                <span>{m.correction}</span>
               </div>
             )}
           </div>
@@ -219,7 +218,7 @@ Output PART 1, then a blank line, then PART 2 (if any). No labels, no other text
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={onKeyDown}
-            placeholder={listening ? '🔴 듣는 중...' : placeholder}
+            placeholder={listening ? '듣는 중...' : placeholder}
             className="conversation-panel__input"
             rows={2}
             disabled={loading}
@@ -233,7 +232,7 @@ Output PART 1, then a blank line, then PART 2 (if any). No labels, no other text
               aria-label={listening ? '음성 입력 중지' : '음성 입력'}
               disabled={loading}
             >
-              {listening ? '⏹' : '🎤'}
+              {listening ? '⏹' : '●'}
             </button>
           )}
           <Button onClick={send} disabled={loading || !input.trim()}>

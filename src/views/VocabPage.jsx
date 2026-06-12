@@ -218,7 +218,7 @@ const VocabDetailCard = memo(function VocabDetailCard({ word: v, onClose, speak,
           <h2 className="vocab-detail-card__word">
             {v.word_text}
             {ttsSupported && (
-              <button className="vocab-detail-card__tts" onClick={() => speak(v.word_text, v.language || 'Japanese')}>🔊</button>
+              <button className="vocab-detail-card__tts" onClick={() => speak(v.word_text, v.language || 'Japanese')}>▷</button>
             )}
           </h2>
           <p className="vocab-detail-card__meaning">{v.meaning}</p>
@@ -232,22 +232,18 @@ const VocabDetailCard = memo(function VocabDetailCard({ word: v, onClose, speak,
 
         <div className="vocab-detail-card__stats">
           <div className="vocab-detail-stat">
-            <span className="vocab-detail-stat__icon">🔄</span>
             <span className="vocab-detail-stat__value">{reps}회</span>
             <span className="vocab-detail-stat__label">복습 횟수</span>
           </div>
           <div className="vocab-detail-stat">
-            <span className="vocab-detail-stat__icon">📏</span>
             <span className="vocab-detail-stat__value">{interval < 1 ? '<1일' : `${Math.round(interval)}일`}</span>
             <span className="vocab-detail-stat__label">복습 간격</span>
           </div>
           <div className="vocab-detail-stat">
-            <span className="vocab-detail-stat__icon">🧠</span>
             <span className="vocab-detail-stat__value">{retention}%</span>
             <span className="vocab-detail-stat__label">기억 강도</span>
           </div>
           <div className="vocab-detail-stat">
-            <span className="vocab-detail-stat__icon">⚙️</span>
             <span className="vocab-detail-stat__value">{ease.toFixed(1)}</span>
             <span className="vocab-detail-stat__label">난이도</span>
           </div>
@@ -299,7 +295,7 @@ const VocabDetailCard = memo(function VocabDetailCard({ word: v, onClose, speak,
         {/* 출처 자료 링크 */}
         {v.source_material_id && (
           <div className="vocab-detail-card__source">
-            <h3 className="vocab-detail-card__section-title">📖 출처 자료</h3>
+            <h3 className="vocab-detail-card__section-title">출처 자료</h3>
             {v.source_sentence && (
               <p style={{
                 fontSize: '0.85rem', color: 'var(--text-secondary)',
@@ -572,7 +568,7 @@ export default function VocabPage() {
       awardXP(user.id, totalXP, prevXP);
       checkLevelUp(prevXP, prevXP + totalXP);
       if (crossedMastery) {
-        celebrate({ type: 'milestone', icon: '🏆', name: '단어 마스터!', desc: `+${XP_REWARDS.MASTERY_REACHED} XP 보너스` });
+        celebrate({ type: 'milestone', icon: '★', name: '단어 마스터!', desc: `+${XP_REWARDS.MASTERY_REACHED} XP 보너스` });
       }
       checkAndAwardAchievements(user.id, { xp: prevXP, streak: profile?.streak_count }).then(newBadges => {
         newBadges.forEach(b => celebrate({ type: 'achievement', icon: b.icon, name: b.name, desc: b.desc }));
@@ -618,7 +614,7 @@ export default function VocabPage() {
     },
     onSuccess: (count) => {
       queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
-      toast(`📥 ${count}개 단어를 가져왔어요! (중복은 자동 스킵)`, 'success', 5000);
+      toast(`${count}개 단어를 가져왔어요. (중복은 자동 스킵)`, 'success', 5000);
     },
     onError: (err) => toast('가져오기 실패 — ' + friendlyToastMessage(err), 'error'),
   });
@@ -862,7 +858,7 @@ export default function VocabPage() {
       setShowAnswer(false);
     } else {
       setReviewFinished(true);
-      toast('🎉 오늘의 복습 완료!', 'celebrate', 5000);
+      toast('오늘의 복습 완료', 'celebrate', 5000);
       // 진행도 정리
       if (user?.id && typeof window !== 'undefined') {
         localStorage.removeItem(`as_review_progress_${user.id}`);
@@ -931,7 +927,7 @@ export default function VocabPage() {
         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
           {tab === 'list' && reviewWords.length > 0 && (
             <Button size="sm" onClick={startReview}>
-              🧠 복습 ({reviewWords.length})
+              복습 ({reviewWords.length})
             </Button>
           )}
           <Button size="sm" variant="ghost" onClick={() => setManualAddOpen(true)}>+ 추가</Button>
@@ -945,19 +941,19 @@ export default function VocabPage() {
                 zIndex: 100, minWidth: 160, overflow: 'hidden',
               }}>
                 <button onClick={() => exportCSV(vocab)} style={{ display: 'block', width: '100%', padding: '10px 14px', border: 'none', background: 'transparent', textAlign: 'left', fontSize: '0.85rem', cursor: 'pointer', color: 'var(--text-primary)' }}>
-                  📤 CSV 내보내기
+                  CSV 내보내기
                 </button>
                 <button onClick={() => exportAnki(vocab)} style={{ display: 'block', width: '100%', padding: '10px 14px', border: 'none', background: 'transparent', textAlign: 'left', fontSize: '0.85rem', cursor: 'pointer', color: 'var(--text-primary)' }}>
-                  🃏 Anki 내보내기
+                  Anki 내보내기
                 </button>
                 <label style={{ display: 'block', padding: '10px 14px', fontSize: '0.85rem', cursor: 'pointer', color: 'var(--text-primary)' }}>
-                  📥 CSV 가져오기
+                  CSV 가져오기
                   <input type="file" accept=".csv,text/csv" disabled={csvImportMutation.isPending}
                     onChange={e => { const f = e.target.files?.[0]; if (f) csvImportMutation.mutate(f); e.target.value = ''; }}
                     style={{ display: 'none' }} />
                 </label>
                 <Link href="/stats" style={{ display: 'block', padding: '10px 14px', fontSize: '0.85rem', textDecoration: 'none', color: 'var(--text-primary)' }}>
-                  📊 학습 통계
+                  학습 통계
                 </Link>
               </div>
             </details>
@@ -1088,7 +1084,7 @@ export default function VocabPage() {
       {manualAddOpen && (
         <div className="modal-overlay" onClick={() => !manualAddMutation.isPending && setManualAddOpen(false)}>
           <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 440 }}>
-            <h3 style={{ margin: '0 0 16px', fontSize: '1.05rem' }}>➕ 단어 직접 추가</h3>
+            <h3 style={{ margin: '0 0 16px', fontSize: '1.05rem' }}>단어 직접 추가</h3>
 
             <label className="u-text-sm u-text-bold" style={{ display: 'block', marginBottom: 4 }}>언어</label>
             <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
@@ -1100,7 +1096,7 @@ export default function VocabPage() {
                   className={`btn btn--sm ${manualDraft.language === lang ? 'btn--primary' : 'btn--ghost'}`}
                   style={{ flex: 1 }}
                 >
-                  {lang === 'Japanese' ? '🇯🇵 일본어' : '🇬🇧 영어'}
+                  {lang === 'Japanese' ? '일본어' : '영어'}
                 </button>
               ))}
             </div>

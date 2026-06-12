@@ -50,14 +50,14 @@ export default function ViewerBottomSheet({
           className={`viewer-sheet-bar__btn ${sheetOpen && leftOpen ? 'is-active' : ''}`}
           onClick={toggleLeft}
         >
-          <span>🌐 번역·맥락</span>
+          <span>번역·맥락</span>
           {leftBadge && <span className="viewer-sheet-bar__badge">{leftBadge}</span>}
         </button>
         <button
           className={`viewer-sheet-bar__btn ${sheetOpen && rightOpen ? 'is-active' : ''}`}
           onClick={toggleRight}
         >
-          <span>📖 단어</span>
+          <span>단어</span>
           {rightBadge && <span className="viewer-sheet-bar__badge">{rightBadge}</span>}
         </button>
       </div>
@@ -76,7 +76,7 @@ export default function ViewerBottomSheet({
                 onClick={() => setLeftOpen(o => !o)}
                 aria-expanded={leftOpen}
               >
-                <span>🌐 번역·맥락</span>
+                <span>번역·맥락</span>
                 <span className="viewer-sheet__chevron">{leftOpen ? '▼' : '▶'}</span>
               </button>
               {leftOpen && <div className="viewer-sheet__section-body">{leftContent}</div>}
@@ -88,7 +88,7 @@ export default function ViewerBottomSheet({
                 onClick={() => setRightOpen(o => !o)}
                 aria-expanded={rightOpen}
               >
-                <span>📖 단어</span>
+                <span>단어</span>
                 <span className="viewer-sheet__chevron">{rightOpen ? '▼' : '▶'}</span>
               </button>
               {rightOpen && <div className="viewer-sheet__section-body">{rightContent}</div>}

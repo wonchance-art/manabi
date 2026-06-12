@@ -41,10 +41,10 @@ function SuggestionCard({ suggestion: s, router }) {
       )}
       <div className="suggestion-card__body">
         <div className="suggestion-card__meta">
-          <span className="card__flag">{s.language === 'English' ? '🇬🇧' : '🇯🇵'}</span>
+          <span className="card__flag">{s.language === 'English' ? '영어' : '일본어'}</span>
           {s.level && <span className="tag">{s.level}</span>}
           <span className="suggestion-card__source">{s.channel_name}</span>
-          {isReady && <span className="suggestion-card__ready">✅ 바로 읽기</span>}
+          {isReady && <span className="suggestion-card__ready">✓ 바로 읽기</span>}
         </div>
         <h3 className="suggestion-card__title">{s.title}</h3>
         <div className="suggestion-card__actions">
@@ -54,7 +54,7 @@ function SuggestionCard({ suggestion: s, router }) {
             title={hasTranscript ? '' : '내용을 가져올 수 없습니다'}
             onClick={handleStudy}
           >
-            {isReady ? '📖 바로 읽기' : '📖 공부하기'}
+            {isReady ? '바로 읽기' : '공부하기'}
           </button>
           {!hasTranscript && (
             <span className="suggestion-card__no-transcript">자막 없음</span>
@@ -99,9 +99,9 @@ async function fetchMaterials({ tab, userId, langFilter, levelFilter, searchQuer
 const PAGE_SIZE = 12;
 
 const LANG_FILTERS = [
-  { key: 'all',      label: '🌍 전체' },
-  { key: 'Japanese', label: '🇯🇵 일본어' },
-  { key: 'English',  label: '🇬🇧 영어' },
+  { key: 'all',      label: '전체' },
+  { key: 'Japanese', label: '일본어' },
+  { key: 'English',  label: '영어' },
 ];
 
 
@@ -323,7 +323,7 @@ export default function MaterialsPage() {
     <div className="page-container">
       <div className="page-header page-header--row">
         <div>
-          <h1 className="page-header__title">📰 자료실</h1>
+          <h1 className="page-header__title">자료실</h1>
           <p className="page-header__subtitle">현지 언어 콘텐츠 (기사·이야기·PDF). 패턴 학습은 <Link href="/lessons" style={{ color: 'var(--primary)' }}>강의</Link>에서</p>
         </div>
         <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
@@ -343,10 +343,10 @@ export default function MaterialsPage() {
               }
             }}
           >
-            📋 붙여넣어 시작
+            붙여넣어 시작
           </button>
           <Link href="/materials/add" className="btn btn--primary btn--md">
-            ➕ 새 자료 추가
+            새 자료 추가
           </Link>
         </div>
       </div>
@@ -354,7 +354,7 @@ export default function MaterialsPage() {
       {/* Search */}
       <div className="filter-row">
         <div className="search-wrap">
-          <span className="search-wrap__icon">🔍</span>
+          <span className="search-wrap__icon" />
           <input
             type="text"
             placeholder="제목으로 자료 찾기..."
@@ -367,16 +367,16 @@ export default function MaterialsPage() {
         <div className="tab-pills">
           <button onClick={() => setTab('public')}
             className={`tab-pills__item ${tab === 'public' ? 'tab-pills__item--accent' : ''}`}>
-            🌐 Public
+            Public
           </button>
           <button onClick={() => setTab('private')}
             className={`tab-pills__item ${tab === 'private' ? 'tab-pills__item--primary' : ''}`}>
-            🔒 Private
+            Private
           </button>
           {user && (
             <button onClick={() => setTab('pdf')}
               className={`tab-pills__item ${tab === 'pdf' ? 'tab-pills__item--primary' : ''}`}>
-              📄 PDF
+              PDF
             </button>
           )}
         </div>
@@ -401,9 +401,9 @@ export default function MaterialsPage() {
             aria-label="정렬"
             style={{ marginLeft: 'auto' }}
           >
-            <option value="newest">🕒 최신순</option>
-            <option value="level">📊 쉬운순</option>
-            <option value="title">🔤 제목순</option>
+            <option value="newest">최신순</option>
+            <option value="level">쉬운순</option>
+            <option value="title">제목순</option>
           </select>
         </div>
 
@@ -435,7 +435,7 @@ export default function MaterialsPage() {
             {pdfs.map(pdf => (
               <Link key={pdf.id} href={`/pdf/${pdf.id}`} className="card card--clickable" style={{ padding: 16, textDecoration: 'none', color: 'inherit' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <span style={{ fontSize: '2rem' }}>📄</span>
+                  <span style={{ fontSize: '2rem' }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 700, fontSize: '0.92rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {pdf.title}
@@ -450,7 +450,6 @@ export default function MaterialsPage() {
           </div>
         ) : (
           <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
-            <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>📄</div>
             <p>업로드된 PDF가 없습니다.</p>
             <Link href="/materials/add" className="btn btn--primary btn--sm" style={{ marginTop: 12 }}>PDF 업로드하기</Link>
           </div>
@@ -501,7 +500,7 @@ export default function MaterialsPage() {
                 <div>
                   <div className="card__row card__row--between">
                     <div className="card__row card__row--gap">
-                      <span className="card__flag">{language === 'English' ? '🇬🇧' : '🇯🇵'}</span>
+                      <span className="card__flag">{language === 'English' ? '영어' : '일본어'}</span>
                       {level && <span className="tag">{level}</span>}
                       {seriesPosition && (
                         <span className="tag" style={{ background: 'var(--bg-secondary)', color: 'var(--text-secondary)', fontVariantNumeric: 'tabular-nums' }} title={`${titleMeta.series} 시리즈`}>
@@ -518,14 +517,14 @@ export default function MaterialsPage() {
                           }}
                           title="이 자료를 읽으면 복습 처리됨"
                         >
-                          🧠 {dueCount} 복습
+                          {dueCount} 복습
                         </span>
                       )}
                     </div>
                     <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
                       {testScores[String(m.id)] && (
                         <span className="badge" style={{ background: 'rgba(212,150,42,0.12)', color: 'var(--warning)', fontWeight: 600 }} title="리딩 테스트 최고 점수">
-                          🏆 {testScores[String(m.id)].score}/{testScores[String(m.id)].total}
+                          {testScores[String(m.id)].score}/{testScores[String(m.id)].total}
                         </span>
                       )}
                       {isCompleted ? (
@@ -539,7 +538,7 @@ export default function MaterialsPage() {
                           const pct = Math.round((lastIdx / total) * 100);
                           return (
                             <span className="badge" style={{ background: 'var(--bg-secondary)', color: 'var(--primary)', fontWeight: 600 }} title="이어서 읽기">
-                              📖 {pct}%
+                              {pct}%
                             </span>
                           );
                         }
@@ -566,7 +565,7 @@ export default function MaterialsPage() {
                       const tokens = m.processed_json?.sequence?.length || 0;
                       if (tokens < 50) return null;
                       const min = Math.max(1, Math.round(tokens / 200));
-                      return <span style={{ marginLeft: 8, color: 'var(--text-muted)' }}>· ⏱ {min}분</span>;
+                      return <span style={{ marginLeft: 8, color: 'var(--text-muted)' }}>· {min}분</span>;
                     })()}
                   </span>
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -583,7 +582,7 @@ export default function MaterialsPage() {
                           });
                         }}
                       >
-                        {m.visibility === 'public' ? '🔒 비공개로' : '🌐 공개로'}
+                        {m.visibility === 'public' ? '비공개로' : '공개로'}
                       </button>
                     ) : (
                       <span>{tab === 'public' ? '공용' : '비공개'}</span>
@@ -624,9 +623,7 @@ export default function MaterialsPage() {
         </>
       ) : (
         <div className="empty-state">
-          <div className="empty-state__icon">
-            {searchQuery || langFilter !== 'all' || levelFilter !== 'all' ? '🔍' : '📖'}
-          </div>
+          <div className="empty-state__icon" />
           <p className="empty-state__msg">
             {searchQuery || langFilter !== 'all' || levelFilter !== 'all'
               ? '조건에 맞는 자료가 없습니다.'
@@ -664,7 +661,7 @@ export default function MaterialsPage() {
         if (filteredSuggestions.length > 0) {
           return (
             <section className="suggestions-section" style={{ marginTop: '40px' }}>
-              <h2 className="suggestions-section__title">✨ 오늘의 추천 자료</h2>
+              <h2 className="suggestions-section__title">오늘의 추천 자료</h2>
               <div className="suggestions-grid">
                 {filteredSuggestions.map(s => (
                   <SuggestionCard key={s.id} suggestion={s} router={router} />
@@ -676,16 +673,15 @@ export default function MaterialsPage() {
         // 추천이 없을 때 — 직접 추가 유도
         return (
           <section className="suggestions-section" style={{ marginTop: '40px' }}>
-            <h2 className="suggestions-section__title">✨ 오늘의 추천 자료</h2>
+            <h2 className="suggestions-section__title">오늘의 추천 자료</h2>
             <div className="card" style={{ padding: '28px 20px', textAlign: 'center' }}>
-              <div style={{ fontSize: '2rem', marginBottom: 8 }}>📚</div>
               <p style={{ color: 'var(--text-secondary)', marginBottom: 16, fontSize: '0.9rem' }}>
                 오늘의 추천이 아직 준비되지 않았어요.
                 <br />직접 관심 있는 텍스트를 추가해보세요!
               </p>
               <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-                <Link href="/materials/add" className="btn btn--primary btn--sm">➕ 자료 추가하기</Link>
-                <Link href="/guide" className="btn btn--secondary btn--sm">📖 학습 로드맵 보기</Link>
+                <Link href="/materials/add" className="btn btn--primary btn--sm">자료 추가하기</Link>
+                <Link href="/guide" className="btn btn--secondary btn--sm">학습 로드맵 보기</Link>
               </div>
             </div>
           </section>
