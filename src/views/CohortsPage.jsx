@@ -334,6 +334,20 @@ function LeaderTeamCard({ team, chapterMaps }) {
 
 function AdminSection({ cohorts, manifest, chapterMaps, toast, refresh }) {
   const [showCreate, setShowCreate] = useState(false);
+
+  // 가입 유저 전체 — 수동 배정용 (관리자만 이 섹션에 도달)
+  const { data: allUsers = [] } = useQuery({
+    queryKey: ['cohort-all-users'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, display_name, last_login_at')
+        .order('last_login_at', { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
   return (
     <section className="cohort-admin">
       <div className="cohort-admin__head">
@@ -346,7 +360,7 @@ function AdminSection({ cohorts, manifest, chapterMaps, toast, refresh }) {
         <CreateCohortForm manifest={manifest} toast={toast} onCreated={() => { setShowCreate(false); refresh(); }} />
       )}
       {cohorts.map(c => (
-        <AdminCohortCard key={c.id} cohort={c} chapterMaps={chapterMaps} toast={toast} refresh={refresh} />
+        <AdminCohortCard key={c.id} cohort={c} chapterMaps={chapterMaps} toast={toast} refresh={refresh} allUsers={allUsers} />
       ))}
       {cohorts.length === 0 && !showCreate && (
         <p className="cohort-card__meta">아직 클래스가 없어요. 첫 기수를 만들어보세요.</p>
@@ -435,7 +449,46 @@ function CreateCohortForm({ manifest, toast, onCreated }) {
   );
 }
 
-function AdminCohortCard({ cohort, chapterMaps, toast, refresh }) {
+/** 가입 유저 검색 → 클래스에 수동 배정 */
+function AddMemberControl({ allUsers, members, onAdd }) {
+  const [q, setQ] = useState('');
+  const memberSet = useMemo(() => new Set(members.map(m => m.user_id)), [members]);
+  const matches = useMemo(() => {
+    const pool = allUsers.filter(u => !memberSet.has(u.id));
+    const needle = q.trim().toLowerCase();
+    if (!needle) return [];
+    return pool.filter(u => (u.display_name || '').toLowerCase().includes(needle)).slice(0, 5);
+  }, [allUsers, memberSet, q]);
+
+  return (
+    <div className="cohort-addmember">
+      <input
+        className="form-input cohort-addmember__input"
+        value={q}
+        onChange={e => setQ(e.target.value)}
+        placeholder="가입 유저 검색해서 직접 추가"
+      />
+      {matches.length > 0 && (
+        <ul className="cohort-addmember__list">
+          {matches.map(u => (
+            <li key={u.id} className="cohort-addmember__item">
+              <span className="cohort-team__name">{u.display_name || u.id.slice(0, 8)}</span>
+              <span className="cohort-team__last">
+                {u.last_login_at ? `최근 접속 ${new Date(u.last_login_at).toLocaleDateString('ko-KR')}` : ''}
+              </span>
+              <Button size="sm" variant="ghost" onClick={() => { onAdd(u.id); setQ(''); }}>추가</Button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {q.trim() && matches.length === 0 && (
+        <p className="cohort-card__meta">일치하는 가입 유저가 없어요.</p>
+      )}
+    </div>
+  );
+}
+
+function AdminCohortCard({ cohort, chapterMaps, toast, refresh, allUsers = [] }) {
   const [open, setOpen] = useState(false);
   const week = weekOf(cohort);
   const members = cohort.cohort_members || [];
@@ -504,6 +557,22 @@ function AdminCohortCard({ cohort, chapterMaps, toast, refresh }) {
     else refresh();
   }
 
+  async function addMember(userId) {
+    const { error } = await supabase.from('cohort_members')
+      .insert({ cohort_id: cohort.id, user_id: userId });
+    if (error) toast('추가 실패 — ' + error.message, 'error');
+    else refresh();
+  }
+
+  async function removeMember(userId) {
+    const name = data?.names?.[userId] || allUsers.find(u => u.id === userId)?.display_name || '이 멤버';
+    if (!window.confirm(`${name}을(를) 클래스에서 제외할까요? 학습 기록은 지워지지 않아요.`)) return;
+    const { error } = await supabase.from('cohort_members')
+      .delete().eq('cohort_id', cohort.id).eq('user_id', userId);
+    if (error) toast('제외 실패 — ' + error.message, 'error');
+    else refresh();
+  }
+
   return (
     <div className="card cohort-card">
       <button type="button" className="cohort-card__head cohort-card__head--btn" onClick={() => setOpen(v => !v)}>
@@ -552,7 +621,8 @@ function AdminCohortCard({ cohort, chapterMaps, toast, refresh }) {
             </div>
           ))}
 
-          <div className="cohort-admin__sub">멤버</div>
+          <div className="cohort-admin__sub">멤버 {members.length > 0 && `(${members.length})`}</div>
+          <AddMemberControl allUsers={allUsers} members={members} onAdd={addMember} />
           {members.map(m => {
             const rows = (data?.progress || []).filter(r => r.user_id === m.user_id);
             const passedCount = rows.filter(r => r.passed).length;
@@ -568,10 +638,19 @@ function AdminCohortCard({ cohort, chapterMaps, toast, refresh }) {
                   <option value="">팀 미배정</option>
                   {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                 </select>
+                <button
+                  type="button"
+                  className="cohort-team__remove"
+                  title="클래스에서 제외"
+                  aria-label="클래스에서 제외"
+                  onClick={() => removeMember(m.user_id)}
+                >
+                  ✕
+                </button>
               </div>
             );
           })}
-          {members.length === 0 && <p className="cohort-card__meta">아직 참가자가 없어요. 참가 코드를 공유하세요.</p>}
+          {members.length === 0 && <p className="cohort-card__meta">아직 참가자가 없어요. 참가 코드를 공유하거나 위에서 직접 추가하세요.</p>}
 
           <div className="cohort-admin__status">
             {cohort.status === 'recruiting' && <Button size="sm" onClick={() => setStatus('active')}>진행 시작</Button>}

@@ -1,5 +1,5 @@
 import HomePage from '@/views/HomePage';
-import { buildContinueManifest } from '@/content/refManifest';
+import { buildContinueManifest, buildRefManifest } from '@/content/refManifest';
 
 export const metadata = {
   title: '홈 — Anatomy Studio',
@@ -8,5 +8,5 @@ export const metadata = {
 };
 
 export default function Page() {
-  return <HomePage continueManifest={buildContinueManifest()} />;
+  return <HomePage continueManifest={buildContinueManifest()} refManifest={buildRefManifest()} />;
 }

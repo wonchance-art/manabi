@@ -143,7 +143,7 @@ export default function VocabReview({
             </Link>
             <Link href="/lessons" className="review-done__card">
               <div className="review-done__card-text">
-                <strong>강의 이어서 보기</strong>
+                <strong>교재 이어서 보기</strong>
                 <span>문법 챕터를 학습하고 패턴 체크에 도전해요</span>
               </div>
             </Link>

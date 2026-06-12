@@ -130,14 +130,6 @@ export default function MyPage() {
         <Button variant="ghost" size="sm" onClick={signOut}>로그아웃</Button>
       </div>
 
-      {/* 통계 요약 → /stats */}
-      <Link href="/stats" className="card" style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '14px 16px', marginBottom: 16, textDecoration: 'none', color: 'var(--text-primary)',
-      }}>
-        <span style={{ fontSize: '0.9rem' }}>학습 통계 · 업적 · 히트맵</span>
-        <span style={{ fontSize: '0.85rem', color: 'var(--primary)' }}>더 보기 →</span>
-      </Link>
 
       {/* 학습 설정 */}
       <div className="card mypage-section">

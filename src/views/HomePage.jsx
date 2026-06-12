@@ -11,6 +11,7 @@ import { parseTitle } from '../lib/seriesMeta';
 import { getIdealLevel } from '../lib/levels';
 import { isPassed } from '../components/RefPatternCheck';
 import { pullProgress } from '../lib/refProgress';
+import ProfileStats from './ProfileStats';
 
 async function fetchHomeData(userId) {
   const todayStr   = new Date().toISOString().split('T')[0];
@@ -37,7 +38,6 @@ async function fetchHomeData(userId) {
     suggestionsRes,
     { data: readProgressRows },
     { data: allVocabRows },
-    { data: publicMaterials },
     { data: seriesMaterials },
     { data: allCompleted },
   ] = await Promise.all([
@@ -53,11 +53,6 @@ async function fetchHomeData(userId) {
       .eq('user_id', userId).eq('is_completed', true).gte('completed_at', prevWeekStartISO),
     supabase.from('user_vocabulary').select('language, word_text')
       .eq('user_id', userId),
-    supabase.from('reading_materials')
-      .select('id, title, language, level')
-      .eq('visibility', 'public')
-      .order('created_at', { ascending: false })
-      .limit(40),
     supabase.from('reading_materials')
       .select('id, title, processed_json')
       .eq('visibility', 'public')
@@ -115,8 +110,6 @@ async function fetchHomeData(userId) {
         total: all.length,
       };
     })(),
-    publicMaterials: publicMaterials || [],
-    readMaterialIds: (recentProgress || []).filter(r => r.is_completed).map(r => r.material_id),
     seriesProgress: (() => {
       const doneSet = new Set((allCompleted || []).map(r => r.material_id));
       const groups = new Map(); // key = level|series
@@ -162,7 +155,7 @@ function ProgressBar({ pct, done }) {
   );
 }
 
-export default function HomePage({ continueManifest = {} }) {
+export default function HomePage({ continueManifest = {}, refManifest = {} }) {
   const { user, profile, fetchProfile } = useAuth();
   const router = useRouter();
 
@@ -294,7 +287,6 @@ export default function HomePage({ continueManifest = {} }) {
   );
 
   const displayName   = profile?.display_name || '학습자';
-  const streak        = profile?.streak_count || 0;
   const hasNoLanguage = profile && !profile.learning_language?.length;
   const isNewUser     = dueCount === 0 && todayVocab === 0 && !data?.recentProgress?.length;
 
@@ -335,69 +327,14 @@ export default function HomePage({ continueManifest = {} }) {
         </div>
       )}
 
-      {/* ① 그리팅 + 간결한 상태 한 줄 */}
+      {/* ① 그리팅 — 인사 + 한 줄 (상태 수치·스트릭은 현황 스택이 담당) */}
       <div className="home-greeting">
-        <div className="home-greeting__top">
-          <div>
-            <h1 className="home-greeting__name">안녕하세요, {displayName}님</h1>
-            <p className="home-greeting__sub">{(() => {
-              const langs = profile?.learning_language || ['Japanese'];
-              const inProgress = (data?.seriesProgress || [])
-                .filter(s => langs.includes(s.language) && s.completed > 0 && s.next);
-              if (inProgress.length > 0) {
-                inProgress.sort((a, b) => (b.completed / b.total) - (a.completed / a.total));
-                const top = inProgress[0];
-                return `${top.level} ${top.series} ${top.completed}/${top.total} 진행 중이에요`;
-              }
-              if (dueCount > 0) return `${dueCount}개 단어가 복습을 기다려요`;
-              if ((data?.vocabByLang?.total || 0) === 0) return '첫 단어를 모아보러 가볼까요?';
-              return '오늘도 한 편 읽어볼까요?';
-            })()}</p>
-          </div>
-          {streak > 0 && (
-            <div className="streak-badge">
-              <span className="streak-badge__count">{streak}</span>
-              <span className="streak-badge__label">일 연속</span>
-            </div>
-          )}
-        </div>
-
-        {/* 컴팩트 상태: 수집 단어 + 복습 대기 */}
-        <div className="u-stat-line u-mt-md">
-          <span>단어 <strong>{data?.vocabByLang?.total ?? 0}</strong> 수집</span>
-          {dueCount > 0 && (
-            <span style={{ color: 'var(--warning)', fontWeight: 600 }}>
-              복습 대기 {dueCount}
-            </span>
-          )}
-        </div>
+        <h1 className="home-greeting__name">안녕하세요, {displayName}님</h1>
+        <p className="home-greeting__sub">{
+          (data?.vocabByLang?.total || 0) === 0 ? '첫 단어를 모아보러 가볼까요?'
+          : '오늘도 한 걸음, 이어가 볼까요?'
+        }</p>
       </div>
-
-      {/* ── 학습 진입점 (1순위만 노출) ──
-          이어서 학습 > 오늘 읽기 (daily suggestion) > 내 레벨 추천
-          진행 중 시리즈가 있으면 그곳으로 직진. 추천은 secondary */}
-      {(() => {
-        const all = data?.seriesProgress || [];
-        const langs = profile?.learning_language || ['Japanese'];
-        const inProgress = all.filter(s => langs.includes(s.language) && s.completed > 0 && s.next);
-        inProgress.sort((a, b) => (b.completed / b.total) - (a.completed / a.total));
-        const top = inProgress[0];
-        if (!top) return null;
-        const pct = Math.round((top.completed / top.total) * 100);
-        return (
-          <Link href={`/viewer/${top.next.id}`} className="home-continue-card">
-            <div className="home-continue-card__head">
-              <span className="home-continue-card__hint">이어서 학습</span>
-              <span className="home-continue-card__progress">{top.completed} / {top.total}</span>
-            </div>
-            <div className="home-continue-card__series">{top.level} {top.series}</div>
-            <div className="home-continue-card__bar">
-              <div className="home-continue-card__bar-fill" style={{ width: `${pct}%` }} />
-            </div>
-            <div className="home-continue-card__next">{top.next.title}</div>
-          </Link>
-        );
-      })()}
 
       {/* 강의 이어서 학습 — 챕터 진행 기록 기반 (미통과 재도전 우선) */}
       {continueCard && (
@@ -407,7 +344,7 @@ export default function HomePage({ continueManifest = {} }) {
         >
           <span className="lessons-continue__body">
             <span className="lessons-continue__kicker">
-              {continueCard.ref.name} 강의 {continueCard.mode === 'retry' ? '재도전 — 패턴 체크 미통과' : '이어서 학습'}
+              {continueCard.mode === 'retry' ? '교재 재도전 — 패턴 체크 미통과' : '교재 이어서 학습'} · {continueCard.ref.name}
             </span>
             <span className="lessons-continue__title">#{continueCard.ch.order} {continueCard.ch.title}</span>
           </span>
@@ -432,10 +369,10 @@ export default function HomePage({ continueManifest = {} }) {
             border: '1px solid var(--border)',
             borderLeft: '3px solid var(--primary)',
           }}>
-            <div style={{ fontSize: '0.72rem', color: 'var(--primary)', fontWeight: 700, marginBottom: 6 }}>
-              오늘 이걸 읽어보세요
+            <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.02em', marginBottom: 6 }}>
+              오늘 읽기
             </div>
-            <h2 style={{ fontSize: '1.15rem', margin: '0 0 8px', lineHeight: 1.4 }}>
+            <h2 style={{ fontSize: '1.05rem', fontWeight: 700, margin: '0 0 8px', lineHeight: 1.45 }}>
               {suggestion.title}
             </h2>
             <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: 16 }}>
@@ -455,105 +392,7 @@ export default function HomePage({ continueManifest = {} }) {
         );
       })()}
 
-      {/* 내 레벨 추천 자료 — 진행 중 시리즈가 없을 때만 */}
-      {(() => {
-        const inProgress = (data?.seriesProgress || []).some(s =>
-          (profile?.learning_language || ['Japanese']).includes(s.language) && s.completed > 0 && s.next
-        );
-        if (inProgress) return null;
-        const all = data?.publicMaterials || [];
-        const readIds = new Set(data?.readMaterialIds || []);
-        const langs = profile?.learning_language || ['Japanese'];
-        const vocabByLang = data?.vocabByLang || {};
-        const idealByLang = Object.fromEntries(langs.map(l => [l, getIdealLevel(l, vocabByLang[l] || 0)]));
-        const matched = all
-          .filter(m => !readIds.has(m.id))
-          .filter(m => langs.includes(m.language))
-          .map(m => {
-            const ideal = idealByLang[m.language];
-            const score = m.level?.startsWith(ideal) ? 100 : (m.level?.[0] === ideal?.[0] ? 50 : 10);
-            return { ...m, score };
-          })
-          .sort((a, b) => b.score - a.score)
-          .slice(0, 3);
-        if (matched.length === 0) return null;
-        return (
-          <div className="card home-card">
-            <h2 className="home-section-title" style={{ fontSize: '0.95rem', marginBottom: 12 }}>
-              내 레벨 추천 자료
-            </h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {matched.map(m => (
-                <Link
-                  key={m.id}
-                  href={`/viewer/${m.id}`}
-                  className="home-recent-item"
-                  style={{ textDecoration: 'none' }}
-                >
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {m.title}
-                    </div>
-                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 2 }}>
-                      {m.language === 'Japanese' ? '일본어' : '영어'} {m.level || '레벨 미정'}
-                    </div>
-                  </div>
-                  <span style={{ color: 'var(--primary)', fontSize: '0.82rem', flexShrink: 0 }}>읽기 →</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        );
-      })()}
-
-      {/* 기억 상태 요약 + 통계 더 보기 */}
-      {dueCount > 0 || todayVocab > 0 ? (
-        <Link href="/stats" className="card" style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '14px 16px', textDecoration: 'none', color: 'var(--text-primary)',
-        }}>
-          <div style={{ display: 'flex', gap: 16, fontSize: '0.88rem' }}>
-            <span>수집 <strong>{todayVocab}</strong></span>
-            <span>복습 <strong>{todayReviews}</strong></span>
-            <span>완독 <strong>{todayReads}</strong></span>
-          </div>
-          <span style={{ fontSize: '0.82rem', color: 'var(--primary)', flexShrink: 0 }}>통계 →</span>
-        </Link>
-      ) : null}
-
-      {/* ③ 최근 읽던 자료 — compact 3개 */}
-      {data?.recentProgress?.length > 0 && (
-        <div className="card home-card">
-          <h2 className="home-section-title" style={{ fontSize: '0.95rem', marginBottom: 12 }}>
-            최근 읽던 자료
-          </h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {data.recentProgress.slice(0, 3).map(r => r.reading_materials && (
-              <Link
-                key={r.material_id}
-                href={`/viewer/${r.material_id}`}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 10,
-                  padding: '10px 12px',
-                  background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)',
-                  textDecoration: 'none', color: 'var(--text-primary)',
-                }}
-              >
-                <span style={{ fontSize: '1rem' }}>{r.is_completed ? '●' : '○'}</span>
-                <span style={{ flex: 1, fontSize: '0.88rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {r.reading_materials.title}
-                </span>
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                  {new Date(r.updated_at || r.completed_at).toLocaleDateString('ko-KR')}
-                </span>
-              </Link>
-            ))}
-          </div>
-          <Link href="/materials" className="btn btn--ghost btn--sm" style={{ marginTop: 10, width: '100%', justifyContent: 'center' }}>
-            전체 자료 보기 →
-          </Link>
-        </div>
-      )}
+      <ProfileStats refManifest={refManifest} />
 
     </div>
   );

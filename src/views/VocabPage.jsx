@@ -9,7 +9,6 @@ import { useToast } from '../lib/ToastContext';
 import { calculateFSRS } from '../lib/fsrs';
 import { recordActivity } from '../lib/streak';
 import { awardXP, XP_REWARDS, getReviewXP } from '../lib/xp';
-import { checkAndAwardAchievements } from '../lib/achievements';
 import { useCelebration } from '../lib/CelebrationContext';
 import { useTTS } from '../lib/useTTS';
 import { callGemini } from '../lib/gemini';
@@ -570,9 +569,6 @@ export default function VocabPage() {
       if (crossedMastery) {
         celebrate({ type: 'milestone', icon: '★', name: '단어 마스터!', desc: `+${XP_REWARDS.MASTERY_REACHED} XP 보너스` });
       }
-      checkAndAwardAchievements(user.id, { xp: prevXP, streak: profile?.streak_count }).then(newBadges => {
-        newBadges.forEach(b => celebrate({ type: 'achievement', icon: b.icon, name: b.name, desc: b.desc }));
-      });
     },
     onError: (err) => toast('업데이트 실패 — ' + friendlyToastMessage(err), 'error'),
   });
@@ -952,7 +948,7 @@ export default function VocabPage() {
                     onChange={e => { const f = e.target.files?.[0]; if (f) csvImportMutation.mutate(f); e.target.value = ''; }}
                     style={{ display: 'none' }} />
                 </label>
-                <Link href="/stats" style={{ display: 'block', padding: '10px 14px', fontSize: '0.85rem', textDecoration: 'none', color: 'var(--text-primary)' }}>
+                <Link href="/home" style={{ display: 'block', padding: '10px 14px', fontSize: '0.85rem', textDecoration: 'none', color: 'var(--text-primary)' }}>
                   학습 통계
                 </Link>
               </div>

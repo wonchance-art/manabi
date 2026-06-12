@@ -11,7 +11,6 @@ import Spinner from '../components/Spinner';
 import Button from '../components/Button';
 import { recordActivity } from '../lib/streak';
 import { awardXP, XP_REWARDS } from '../lib/xp';
-import { checkAndAwardAchievements } from '../lib/achievements';
 import { useCelebration } from '../lib/CelebrationContext';
 import { useTTS } from '../lib/useTTS';
 import { useViewerSettings } from '../lib/useViewerSettings';
@@ -654,9 +653,6 @@ export default function ViewerPage() {
       const prevXP = profile?.xp ?? 0;
       awardXP(user.id, XP_REWARDS.WORD_SAVED, prevXP);
       checkLevelUp(prevXP, prevXP + XP_REWARDS.WORD_SAVED);
-      checkAndAwardAchievements(user.id, { xp: prevXP, streak: profile?.streak_count }).then(newBadges => {
-        newBadges.forEach(b => celebrate({ type: 'achievement', icon: b.icon, name: b.name, desc: b.desc }));
-      });
     } catch (err) {
       toast('단어 추가 실패 — ' + friendlyToastMessage(err), 'error');
     }
