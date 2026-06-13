@@ -74,6 +74,7 @@ export default {
           ex: { en: "I'm liking this approach more as I study it.", ko: "공부할수록 이 접근법이 점점 마음에 든다." },
           ex2: { en: "I'm not seeing the connection you're describing.", ko: "당신이 말하는 그 연관성이 (지금으로서는) 잘 보이지 않는다." },
           note: "❌ She **is knowing** English → ✓ She **knows** English — know·believe 등 순수 상태는 불가. think·see·have는 동적 의미일 때만 진행형(I'm thinking about it / I'm having lunch).",
+          ch: "a1-06-present-continuous",
         },
         {
           pattern: "once you have done",
@@ -82,6 +83,7 @@ export default {
           ex: { en: "Once you have submitted the form, processing will begin.", ko: "양식을 제출하고 나면 처리가 시작됩니다." },
           ex2: { en: "We cannot proceed until the data has been verified.", ko: "데이터 검증이 끝나기 전까지는 진행할 수 없다." },
           note: "시간절에서는 미래 의미라도 will 금지 — ❌ once you **will have** submitted → ✓ once you **have** submitted. 완료형은 '끝낸 후'임을 명시한다.",
+          ch: "b1-02-conditionals-1-2",
         },
       ],
     },
@@ -96,6 +98,7 @@ export default {
           ex: { en: "When I was younger, I could run ten kilometres without stopping.", ko: "젊었을 때는 쉬지 않고 10킬로미터를 달릴 수 있었다." },
           ex2: { en: "Despite the smoke, everyone was able to escape the building.", ko: "연기에도 불구하고 모두가 건물을 빠져나올 수 있었다." },
           note: "❌ I **could finish** the report yesterday (성공 여부 불명) → ✓ I **was able to finish** the report yesterday (완료 확정). 부정형은 couldn't 하나로 둘 다 커버한다.",
+          ch: "a2-04-modals-basic",
         },
         {
           pattern: "needn't have done・didn't need to do",
@@ -104,6 +107,7 @@ export default {
           ex: { en: "I needn't have worried about the exam; it was straightforward.", ko: "시험 걱정을 할 필요가 없었다(걱정했지만 쓸데없었다). 시험은 쉬웠다." },
           ex2: { en: "He didn't need to attend the meeting, so he stayed in the lab.", ko: "그는 회의에 참석할 필요가 없어서 실험실에 남았다." },
           note: "**needn't have done**은 '했는데 불필요'가 확정, **didn't need to**는 했는지 불명(보통 안 함). needn't는 영국식 색채 — 미국식 구어는 didn't have to가 우세.",
+          ch: "b2-01-conditionals-3-mixed",
         },
         {
           pattern: "may・might",
@@ -139,6 +143,7 @@ export default {
           ex: { en: "He can't be the author; the style is completely different.", ko: "그가 저자일 리 없다. 문체가 완전히 다르다." },
           ex2: { en: "She can't have seen the email; she replied to an older thread.", ko: "그녀가 그 이메일을 봤을 리 없다. 이전 스레드에 답장했으니까." },
           note: "❌ He **mustn't be** the thief (추론 의도) → ✓ He **can't be** the thief — must의 추론 짝은 can't다.",
+          ch: "b1-06-modals-speculation",
         },
         {
           pattern: "mustn't・don't have to",
@@ -147,6 +152,7 @@ export default {
           ex: { en: "You mustn't disclose the data before publication.", ko: "출판 전에 데이터를 공개해서는 안 된다." },
           ex2: { en: "You don't have to register in advance; entry is open.", ko: "사전 등록은 하지 않아도 됩니다. 입장은 자유입니다." },
           note: "❌ You must not **to** smoke → ✓ You must not smoke. 의무 must(내적)와 have to(외부 규칙)의 결도 함께 — 구어의 다급한 의무는 **have got to**.",
+          ch: "a2-04-modals-basic",
         },
         {
           pattern: "should have done・ought to have done",
@@ -155,6 +161,7 @@ export default {
           ex: { en: "They ought to have informed us beforehand.", ko: "그들은 사전에 우리에게 알렸어야 했다." },
           ex2: { en: "You shouldn't have signed without reading the terms.", ko: "약관을 읽지 않고 서명하지 말았어야 했다." },
           note: "ought to는 should보다 격식·드묾 — 현대 영어는 should가 기본. ❌ I had better **gone** earlier → ✓ I **should have gone** earlier (과거 후회는 had better 불가).",
+          ch: "b2-01-conditionals-3-mixed",
         },
         {
           pattern: "had better",
@@ -223,6 +230,7 @@ export default {
           ex: { en: "The authors argue that the prevailing model is outdated.", ko: "저자들은 지배적 모델이 낡았다고 주장한다." },
           ex2: { en: "The company stated that no personal data had been compromised.", ko: "회사는 어떤 개인정보도 유출되지 않았다고 발표했다." },
           note: "❌ They claim that it **should work** (가정법 오염) → ✓ They claim that it **works** — 단언 동사 뒤는 직설법. claim은 의심의 여지, state는 공식성, argue는 논증을 신호한다.",
+          ch: "c1-06-academic-writing",
         },
         {
           pattern: "tell・order・ask someone to do",
@@ -258,6 +266,7 @@ export default {
           ex: { en: "He said he had completed the review the night before.", ko: "그는 전날 밤 검토를 마쳤다고 말했다." },
           ex2: { en: "The scientist explained that water boils at 100 degrees.", ko: "그 과학자는 물이 100도에서 끓는다고 설명했다." },
           note: "❌ He said the earth **was** round (불변 진리까지 후퇴) → ✓ the earth **is** round. 조동사는 will→would, can→could, must→had to로 밀린다.",
+          ch: "b1-05-reported-speech",
         },
       ],
     },
@@ -440,6 +449,7 @@ export default {
           ex: { en: "He admitted lying about his qualifications.", ko: "그는 자신의 경력에 대해 거짓말한 것을 인정했다." },
           ex2: { en: "She denies having seen the document.", ko: "그녀는 그 문서를 본 적이 없다고 부인한다." },
           note: "❌ She denies **to cheat** → ✓ She denies **cheating** — deny·admit·avoid·risk·postpone·consider·suggest는 동명사 전용.",
+          ch: "a2-06-infinitive-gerund",
         },
         {
           pattern: "try to do・try doing",
@@ -448,6 +458,7 @@ export default {
           ex: { en: "I tried to reach the director, but the line was busy.", ko: "이사에게 연락하려고 애썼지만 통화 중이었다." },
           ex2: { en: "Have you tried rebooting the system?", ko: "시스템을 재부팅해 보셨나요?" },
           note: "to부정사 = 노력(성공 불확실), 동명사 = 해결책 실험 — like·prefer도 비슷하게 갈린다(like cooking 취미 / like to cook 특정 상황).",
+          ch: "a2-06-infinitive-gerund",
         },
         {
           pattern: "need doing・need to do",
@@ -456,6 +467,7 @@ export default {
           ex: { en: "The methodology section needs rewriting.", ko: "방법론 섹션은 다시 쓸 필요가 있다." },
           ex2: { en: "We need to verify the figures before submission.", ko: "제출 전에 수치를 검증해야 한다." },
           note: "needs rewriting = needs **to be rewritten** — 동명사형이 수동을 함축한다. 영국식에서는 want doing도 같은 용법.",
+          ch: "a2-06-infinitive-gerund",
         },
       ],
     },
@@ -593,6 +605,7 @@ export default {
           ex: { en: "It is clear that further research is needed.", ko: "추가 연구가 필요하다는 것은 분명하다." },
           ex2: { en: "It is not always possible to isolate a single cause.", ko: "단일 원인을 분리해 내는 것이 항상 가능하지는 않다." },
           note: "❌ **Is important** to maintain objectivity → ✓ **It is** important to… — 주어 자리를 비워 두지 않는다. 생략처럼 보이는 I'd like to와 혼동 금지.",
+          ch: "c1-06-academic-writing",
         },
         {
           pattern: "it is a fact that・it is a priority to",
@@ -601,6 +614,7 @@ export default {
           ex: { en: "It is a well-established fact that global temperatures are rising.", ko: "지구 기온이 오르고 있다는 것은 확립된 사실이다." },
           ex2: { en: "It is no coincidence that the two trends emerged together.", ko: "두 추세가 함께 나타난 것은 우연이 아니다." },
           note: "fact・priority・requirement・coincidence 등 평가 명사가 들어간다 — that절을 주어로 앞세우면(That he failed is…) 고도 격식.",
+          ch: "c1-06-academic-writing",
         },
         {
           pattern: "there has been・there have been",
@@ -609,6 +623,7 @@ export default {
           ex: { en: "There has been considerable debate on this issue.", ko: "이 문제를 두고 상당한 논쟁이 있어 왔다." },
           ex2: { en: "There have been no reported cases since 2020.", ko: "2020년 이후 보고된 사례는 없었다." },
           note: "❌ There **is** several issues → ✓ There **are** several issues — 일치는 항상 be 뒤 명사와. 에세이 도입의 단골 프레임.",
+          ch: "a2-08-there-is",
         },
         {
           pattern: "the claim that・the fact that",
@@ -662,6 +677,7 @@ export default {
           ex: { en: "The author whose novel won the prize declined to comment.", ko: "소설이 상을 받은 그 작가는 논평을 거부했다." },
           ex2: { en: "They cited a study the findings of which have since been questioned.", ko: "그들은 이후 결과가 의문시된 연구를 인용했다." },
           note: "무생물에도 whose 가능(the building whose windows…)하지만 고도 격식은 **of which** — 가장 자연스러운 회피는 with(the building with large windows).",
+          ch: "b1-04-relative-clauses",
         },
       ],
     },
@@ -808,6 +824,7 @@ export default {
           ex: { en: "Progress must continue regardless of external pressures.", ko: "외부 압력과 무관하게 진전은 계속되어야 한다." },
           ex2: { en: "The principle applies irrespective of demographic factors.", ko: "그 원칙은 인구학적 요인과 상관없이 적용된다." },
           note: "❌ regardless **to** the outcome → ✓ regardless **of** the outcome. irrespective of가 더 격식 — 구어는 no matter what.",
+          ch: "b2-06-linking-devices",
         },
         {
           pattern: "despite・in spite of",
@@ -816,6 +833,7 @@ export default {
           ex: { en: "Despite the limitations, the study provides valuable insights.", ko: "한계에도 불구하고 그 연구는 귀중한 통찰을 제공한다." },
           ex2: { en: "In spite of repeated warnings, no action was taken.", ko: "거듭된 경고에도 불구하고 아무 조치도 취해지지 않았다." },
           note: "❌ **Despite of** the challenges → ✓ Despite the challenges / ❌ In spite the rain → ✓ In spite **of** the rain. 절을 받으려면 although로.",
+          ch: "b2-06-linking-devices",
         },
         {
           pattern: "between・among",
@@ -824,6 +842,7 @@ export default {
           ex: { en: "The difference between the two groups was statistically significant.", ko: "두 집단 간의 차이는 통계적으로 유의했다." },
           ex2: { en: "Consensus gradually emerged among committee members.", ko: "위원들 사이에서 점차 합의가 형성되었다." },
           note: "셋 이상이라도 항목 간 **개별 관계**가 보이면 between(an agreement between the three states) — among은 덩어리 속 분산.",
+          ch: "a1-08-prepositions-basic",
         },
         {
           pattern: "during・while",
@@ -832,6 +851,7 @@ export default {
           ex: { en: "Several announcements were made during the conference.", ko: "회의 동안 몇 가지 발표가 있었다." },
           ex2: { en: "The network failed while the presentation was in progress.", ko: "발표가 진행되는 동안 네트워크가 끊겼다." },
           note: "❌ during **the presentation was occurring** → ✓ while the presentation was occurring — during 뒤에는 절이 올 수 없다.",
+          ch: "a2-02-past-continuous",
         },
         {
           pattern: "by・until",
@@ -966,6 +986,7 @@ export default {
           ex: { en: "I am certain that she will deliver on time.", ko: "나는 그녀가 제때 해낼 거라고 확신한다." },
           ex2: { en: "Without support, the project is certain to fail.", ko: "지원이 없으면 그 프로젝트는 실패할 수밖에 없다." },
           note: "that절 = 사람의 판단, to부정사 = 사태의 필연 — He is sure to win은 '그가 이길 게 확실하다'이지 '그가 확신한다'가 아니다.",
+          ch: "c1-02-hedging-nuance",
         },
         {
           pattern: "afraid of doing・afraid to do",
@@ -974,6 +995,7 @@ export default {
           ex: { en: "Many employees are afraid of losing their jobs to automation.", ko: "많은 직원이 자동화로 일자리를 잃을까 봐 두려워한다." },
           ex2: { en: "She was afraid to speak up at the meeting.", ko: "그녀는 회의에서 차마 목소리를 내지 못했다." },
           note: "of -ing = 결과에 대한 공포(통제 밖), to do = 행동 회피(선택) — afraid that절은 우려 일반.",
+          ch: "b1-08-preposition-combos",
         },
         {
           pattern: "interested in・capable of・good at",
@@ -982,6 +1004,7 @@ export default {
           ex: { en: "She is interested in pursuing doctoral research.", ko: "그녀는 박사 연구를 이어가는 데 관심이 있다." },
           ex2: { en: "The model is not capable of handling missing data.", ko: "그 모델은 결측 데이터를 처리하지 못한다." },
           note: "❌ interested **to read** → ✓ interested **in reading** / ❌ concerned **at** rising costs → ✓ concerned **about** — afraid of, skilled in, bad at처럼 전치사가 고정된다.",
+          ch: "b1-08-preposition-combos",
         },
         {
           pattern: "aware of how・curious about what",
@@ -990,6 +1013,7 @@ export default {
           ex: { en: "Are you aware of how expensive this procedure is?", ko: "이 절차가 얼마나 비싼지 알고 계십니까?" },
           ex2: { en: "It is still unclear whether the policy achieved its aims.", ko: "그 정책이 목표를 달성했는지는 아직 불분명하다." },
           note: "❌ aware **how** → ✓ aware **of how** / 반대로 unclear·unsure·certain은 전치사 없이 wh절을 받는다(unsure **whether**…).",
+          ch: "b1-08-preposition-combos",
         },
         {
           pattern: "virtually unique・almost impossible",
@@ -998,6 +1022,7 @@ export default {
           ex: { en: "This combination of features is virtually unique.", ko: "이런 특징의 조합은 사실상 유례가 없다." },
           ex2: { en: "Replicating the result proved almost impossible.", ko: "그 결과를 재현하는 것은 거의 불가능한 것으로 드러났다." },
           note: "❌ **most unique / very impossible** → ✓ virtually unique・almost impossible — unique·perfect·dead 같은 비등급 형용사는 비교·very 불가, 완화 부사만 허용.",
+          ch: "c1-02-hedging-nuance",
         },
         {
           pattern: "utter・sheer・mere",
@@ -1040,6 +1065,7 @@ export default {
           ex: { en: "The more data we collect, the more reliable the model becomes.", ko: "데이터를 많이 모을수록 모델은 더 신뢰할 만해진다." },
           ex2: { en: "The longer the delay, the less likely a full recovery becomes.", ko: "지연이 길어질수록 완전한 회복의 가능성은 낮아진다." },
           note: "두 변수의 비례 관계를 한 문장에 — be 동사는 생략 가능(The sooner, the better). ❌ as…**like** 류 혼동 주의(✓ as tall **as**).",
+          ch: "a2-03-comparatives",
         },
       ],
     },

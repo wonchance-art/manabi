@@ -1,7 +1,7 @@
 export default {
   level: "C1",
   title: "C1 고급 어휘",
-  desc: "학술 영어의 골격 60개 — AWL 핵심, 라틴·그리스 어근 패밀리, 격식 동사, 그리고 회화의 윤활유인 관용구까지.",
+  desc: "학술 영어의 골격 237개 — AWL 핵심, 라틴·그리스 어근 패밀리, 격식 동사, 그리고 회화의 윤활유인 관용구까지.",
   themes: [
     {
       name: "학술 어휘 (AWL 핵심)",
@@ -293,6 +293,744 @@ export default {
         {
           en: "read between the lines", ipa: "[ˌriːd bɪˌtwiːn ðə ˈlaɪnz]", ko: "행간을 읽다, 숨은 뜻을 파악하다", pos: "idiom.",
           ex: { en: "Read between the lines of his email.", ko: "그의 이메일 행간을 읽어 보세요." },
+        },
+      ],
+    },
+    {
+      name: "프로젝트와 조직",
+      icon: "🏛️",
+      words: [
+        {
+          en: "project", ipa: "[ˈprɑːdʒekt]", ko: "프로젝트", pos: "n.",
+          ex: { en: "Were the project to fail, the entire team would be held responsible.", ko: "만에 하나 프로젝트가 실패한다면, 팀 전체가 책임을 지게 될 것이다." },
+        },
+        {
+          en: "team", ipa: "[tiːm]", ko: "팀", pos: "n.",
+          ex: { en: "The entire team would be held responsible.", ko: "팀 전체가 책임을 지게 될 것이다." },
+        },
+        {
+          en: "committee", ipa: "[kəˈmɪti]", ko: "위원회", pos: "n.",
+          ex: { en: "The committee demanded that the report not be released.", ko: "위원회는 보고서가 공개되지 않을 것을 요구했다." },
+        },
+        {
+          en: "board", ipa: "[bɔːrd]", ko: "이사회", pos: "n.",
+          ex: { en: "The board appointed her chief executive.", ko: "이사회는 그녀를 최고경영자로 임명했다." },
+        },
+        {
+          en: "executive", ipa: "[ɪɡˈzekjətɪv]", ko: "경영진, 임원; 최고의", pos: "n., adj.",
+          ex: { en: "The board appointed her chief executive.", ko: "이사회는 그녀를 최고경영자로 임명했다." },
+        },
+        {
+          en: "chief", ipa: "[tʃiːf]", ko: "최고의, 주요한; 장(長)", pos: "adj., n.",
+          ex: { en: "She became chief executive last year.", ko: "그녀는 작년에 최고경영자가 되었다." },
+        },
+        {
+          en: "leader", ipa: "[ˈliːdər]", ko: "지도자, 정상", pos: "n.",
+          ex: { en: "The two leaders are to meet next month.", ko: "두 정상은 다음 달 회동할 예정이다." },
+        },
+        {
+          en: "merger", ipa: "[ˈmɜːrdʒər]", ko: "합병", pos: "n.",
+          ex: { en: "It was only after the merger that the problems began to surface.", ko: "문제가 드러나기 시작한 것은 합병 이후에야였다." },
+        },
+        {
+          en: "negotiation", ipa: "[nɪˌɡoʊʃiˈeɪʃn]", ko: "협상", pos: "n.",
+          ex: { en: "Suffice it to say, the negotiations did not go well.", ko: "협상이 잘 풀리지 않았다고만 말해두죠." },
+        },
+        {
+          en: "delay", ipa: "[dɪˈleɪ]", ko: "지연; 미루다", pos: "n., v.",
+          ex: { en: "The failure of the negotiations led to a six-month delay.", ko: "협상 결렬은 6개월의 지연으로 이어졌다." },
+        },
+        {
+          en: "failure", ipa: "[ˈfeɪljər]", ko: "실패", pos: "n.",
+          ex: { en: "Critics declared the experiment a failure.", ko: "비평가들은 그 실험을 실패로 규정했다." },
+        },
+        {
+          en: "proposal", ipa: "[prəˈpoʊzl]", ko: "제안(서)", pos: "n.",
+          ex: { en: "I was wondering if you might have a moment to discuss the proposal.", ko: "제안서 논의를 위해 잠시 시간을 내주실 수 있을까요." },
+        },
+        {
+          en: "draft", ipa: "[dræft]", ko: "초안", pos: "n.",
+          ex: { en: "Could you send over the draft by Wednesday?", ko: "수요일까지 초안을 보내주실 수 있을까요?" },
+        },
+        {
+          en: "timeline", ipa: "[ˈtaɪmlaɪn]", ko: "일정(표), 타임라인", pos: "n.",
+          ex: { en: "We may need to revisit the timeline.", ko: "일정을 재검토해야 할 수도 있겠습니다." },
+        },
+        {
+          en: "stage", ipa: "[steɪdʒ]", ko: "단계; 무대", pos: "n.",
+          ex: { en: "We're not in a position to lower the price at this stage.", ko: "현 단계에서는 가격을 낮춰드릴 수 없습니다." },
+        },
+        {
+          en: "oversight", ipa: "[ˈoʊvərsaɪt]", ko: "감독; 부주의에 의한 누락", pos: "n.",
+          ex: { en: "Never have I seen such a complete failure of oversight.", ko: "이토록 총체적인 감독 부실은 본 적이 없다." },
+        },
+        {
+          en: "scandal", ipa: "[ˈskændl]", ko: "스캔들, 추문", pos: "n.",
+          ex: { en: "After the scandal, his career is at a crossroads.", ko: "스캔들 이후 그의 경력은 갈림길에 서 있다." },
+        },
+        {
+          en: "crossroads", ipa: "[ˈkrɔːsroʊdz]", ko: "갈림길, 기로", pos: "n.",
+          ex: { en: "His career is at a crossroads.", ko: "그의 경력은 갈림길에 서 있다." },
+        },
+        {
+          en: "objection", ipa: "[əbˈdʒekʃn]", ko: "반론, 이의", pos: "n.",
+          ex: { en: "She shot down every objection.", ko: "그녀는 모든 반론을 격추했다." },
+        },
+        {
+          en: "circumstance", ipa: "[ˈsɜːrkəmstæns]", ko: "상황, 사정", pos: "n.",
+          ex: { en: "Under no circumstances should this document leave the building.", ko: "어떤 경우에도 이 문서가 건물 밖으로 나가서는 안 된다." },
+        },
+        {
+          en: "document", ipa: "[ˈdɑːkjəmənt]", ko: "문서", pos: "n.",
+          ex: { en: "This document must not leave the building.", ko: "이 문서는 건물 밖으로 나가서는 안 된다." },
+        },
+        {
+          en: "server", ipa: "[ˈsɜːrvər]", ko: "서버", pos: "n.",
+          ex: { en: "The server crashed during the demo.", ko: "시연 도중에 서버가 죽었어요." },
+        },
+        {
+          en: "demo", ipa: "[ˈdemoʊ]", ko: "시연, 데모", pos: "n.",
+          ex: { en: "The server crashed during the demo.", ko: "시연 도중에 서버가 죽었어요." },
+        },
+        {
+          en: "printer", ipa: "[ˈprɪntər]", ko: "프린터", pos: "n.",
+          ex: { en: "Who broke the printer?", ko: "누가 프린터를 망가뜨렸어?" },
+        },
+        {
+          en: "engine", ipa: "[ˈendʒɪn]", ko: "엔진", pos: "n.",
+          ex: { en: "He left the engine running.", ko: "그는 시동을 켜 둔 채로 뒀다." },
+        },
+        {
+          en: "industry", ipa: "[ˈɪndəstri]", ko: "업계, 산업", pos: "n.",
+          ex: { en: "He knows everyone in the industry.", ko: "그는 업계의 모든 사람을 알아요." },
+        },
+        {
+          en: "quarter", ipa: "[ˈkwɔːrtər]", ko: "분기; 4분의 1", pos: "n.",
+          ex: { en: "Sales are looking up after two quarters of decline.", ko: "두 분기 하락 끝에 매출이 살아나고 있다." },
+        },
+        {
+          en: "decline", ipa: "[dɪˈklaɪn]", ko: "하락; 감소하다; 거절하다", pos: "n., v.",
+          ex: { en: "Sales are looking up after two quarters of decline.", ko: "두 분기 하락 끝에 매출이 살아나고 있다." },
+        },
+        {
+          en: "corridor", ipa: "[ˈkɔːrɪdər]", ko: "복도", pos: "n.",
+          ex: { en: "At the end of the corridor stood a single locked door.", ko: "복도 끝에는 잠긴 문 하나가 서 있었다." },
+        },
+        {
+          en: "visa", ipa: "[ˈviːzə]", ko: "비자", pos: "n.",
+          ex: { en: "We obtained the visa.", ko: "비자를 취득하였습니다." },
+        },
+        {
+          en: "event", ipa: "[ɪˈvent]", ko: "행사; 사건", pos: "n.",
+          ex: { en: "The event will commence at 7 p.m.", ko: "행사는 오후 7시에 시작합니다." },
+        },
+        {
+          en: "court", ipa: "[kɔːrt]", ko: "법원, 법정", pos: "n.",
+          ex: { en: "The court found the contract invalid.", ko: "법원은 그 계약이 무효라고 판단했다." },
+        },
+        {
+          en: "overtime", ipa: "[ˈoʊvərtaɪm]", ko: "야근, 초과 근무", pos: "n.",
+          ex: { en: "I can work overtime, if need be.", ko: "필요하다면 야근도 할 수 있어요." },
+        },
+        {
+          en: "pandemic", ipa: "[pænˈdemɪk]", ko: "팬데믹, 세계적 유행병", pos: "n.",
+          ex: { en: "The pandemic changed everything.", ko: "팬데믹이 모든 걸 바꿔놨어요." },
+        },
+      ],
+    },
+    {
+      name: "학술 어휘 보강",
+      icon: "🎓",
+      words: [
+        {
+          en: "hypothesis", ipa: "[haɪˈpɑːθəsɪs]", ko: "가설", pos: "n.",
+          ex: { en: "The results appear to support the hypothesis.", ko: "결과는 가설을 뒷받침하는 것으로 보인다." },
+        },
+        {
+          en: "framework", ipa: "[ˈfreɪmwɜːrk]", ko: "틀, 프레임워크", pos: "n.",
+          ex: { en: "We argue that this framework overlooks informal labor.", ko: "우리는 이 틀이 비공식 노동을 간과한다고 주장한다." },
+        },
+        {
+          en: "model", ipa: "[ˈmɑːdl]", ko: "모형, 모델", pos: "n.",
+          ex: { en: "The data were analyzed using regression models.", ko: "데이터는 회귀 모형으로 분석되었다." },
+        },
+        {
+          en: "regression", ipa: "[rɪˈɡreʃn]", ko: "회귀 (분석)", pos: "n.",
+          ex: { en: "The data were analyzed using regression models.", ko: "데이터는 회귀 모형으로 분석되었다." },
+        },
+        {
+          en: "sample", ipa: "[ˈsæmpl]", ko: "표본, 샘플", pos: "n.",
+          ex: { en: "The sample was small, but the effect was consistent.", ko: "표본은 작았지만 효과는 일관되었다." },
+        },
+        {
+          en: "effect", ipa: "[ɪˈfekt]", ko: "효과, 영향", pos: "n.",
+          ex: { en: "The effect size was consistent across subgroups.", ko: "효과 크기는 모든 하위 집단에서 일관되었다." },
+        },
+        {
+          en: "subgroup", ipa: "[ˈsʌbɡruːp]", ko: "하위 집단", pos: "n.",
+          ex: { en: "The effect was consistent across all subgroups.", ko: "효과는 모든 하위 집단에서 일관되었다." },
+        },
+        {
+          en: "association", ipa: "[əˌsoʊsiˈeɪʃn]", ko: "연관(성); 협회", pos: "n.",
+          ex: { en: "The findings suggest a strong association.", ko: "결과는 강한 연관성을 시사한다." },
+        },
+        {
+          en: "causality", ipa: "[kɔːˈzæləti]", ko: "인과관계", pos: "n.",
+          ex: { en: "Causality cannot be established from this design.", ko: "본 설계로는 인과관계를 확정할 수 없다." },
+        },
+        {
+          en: "findings", ipa: "[ˈfaɪndɪŋz]", ko: "(연구) 결과, 발견", pos: "n.",
+          ex: { en: "The findings suggest a strong association.", ko: "결과는 강한 연관성을 시사한다." },
+        },
+        {
+          en: "intervention", ipa: "[ˌɪntərˈvenʃn]", ko: "개입", pos: "n.",
+          ex: { en: "Early intervention improves outcomes.", ko: "조기 개입은 결과를 개선한다." },
+        },
+        {
+          en: "outcome", ipa: "[ˈaʊtkʌm]", ko: "결과, 성과", pos: "n.",
+          ex: { en: "Early intervention improves outcomes.", ko: "조기 개입은 결과를 개선한다." },
+        },
+        {
+          en: "interpretation", ipa: "[ɪnˌtɜːrprɪˈteɪʃn]", ko: "해석", pos: "n.",
+          ex: { en: "This interpretation is open to question.", ko: "이 해석은 의문의 여지가 있다." },
+        },
+        {
+          en: "behavior", ipa: "[bɪˈheɪvjər]", ko: "행동", pos: "n.",
+          ex: { en: "This study examines consumer behavior.", ko: "본 연구는 소비자 행동을 검토한다." },
+        },
+        {
+          en: "consumer", ipa: "[kənˈsuːmər]", ko: "소비자", pos: "n.",
+          ex: { en: "This study examines consumer behavior.", ko: "본 연구는 소비자 행동을 검토한다." },
+        },
+        {
+          en: "household", ipa: "[ˈhaʊshoʊld]", ko: "가계, 가구", pos: "n.",
+          ex: { en: "This increase eroded household savings.", ko: "이 상승은 가계 저축을 잠식했다." },
+        },
+        {
+          en: "savings", ipa: "[ˈseɪvɪŋz]", ko: "저축, 예금", pos: "n.",
+          ex: { en: "The increase eroded household savings.", ko: "그 상승은 가계 저축을 잠식했다." },
+        },
+        {
+          en: "increase", ipa: "[ˈɪŋkriːs]", ko: "증가; 증가하다", pos: "n., v.",
+          ex: { en: "This increase eroded household savings.", ko: "이 상승은 가계 저축을 잠식했다." },
+        },
+        {
+          en: "period", ipa: "[ˈpɪriəd]", ko: "기간", pos: "n.",
+          ex: { en: "Data were collected over a six-month period.", ko: "데이터는 6개월에 걸쳐 수집되었다." },
+        },
+        {
+          en: "labor", ipa: "[ˈleɪbər]", ko: "노동", pos: "n.",
+          ex: { en: "This framework overlooks informal labor.", ko: "이 틀은 비공식 노동을 간과한다." },
+        },
+        {
+          en: "thesis", ipa: "[ˈθiːsɪs]", ko: "논문; 논지", pos: "n.",
+          ex: { en: "She was awarded first prize for her thesis.", ko: "그녀는 논문으로 1등상을 받았다." },
+        },
+        {
+          en: "prize", ipa: "[praɪz]", ko: "상", pos: "n.",
+          ex: { en: "She was awarded first prize for her thesis.", ko: "그녀는 논문으로 1등상을 받았다." },
+        },
+        {
+          en: "participant", ipa: "[pɑːrˈtɪsɪpənt]", ko: "참가자", pos: "n.",
+          ex: { en: "Participants tended to overestimate their own performance.", ko: "참가자들은 자신의 수행을 과대평가하는 경향을 보였다." },
+        },
+        {
+          en: "performance", ipa: "[pərˈfɔːrməns]", ko: "수행, 성과; 공연", pos: "n.",
+          ex: { en: "Participants tended to overestimate their own performance.", ko: "참가자들은 자신의 수행을 과대평가하는 경향을 보였다." },
+        },
+        {
+          en: "status", ipa: "[ˈsteɪtəs]", ko: "상태, 진행 상황; 지위", pos: "n.",
+          ex: { en: "I would like to inquire about the status of my application.", ko: "제 지원서의 진행 상황을 문의드리고자 합니다." },
+        },
+        {
+          en: "inquiry", ipa: "[ˈɪŋkwəri]", ko: "조사, 문의", pos: "n.",
+          ex: { en: "The inquiry revealed the truth.", ko: "조사 결과 진실이 드러났다." },
+        },
+        {
+          en: "difference", ipa: "[ˈdɪfrəns]", ko: "차이", pos: "n.",
+          ex: { en: "Long live the difference!", ko: "차이 만세!" },
+        },
+        {
+          en: "truth", ipa: "[truːθ]", ko: "진실", pos: "n.",
+          ex: { en: "The inquiry revealed the truth.", ko: "조사 결과 진실이 드러났다." },
+        },
+        {
+          en: "idea", ipa: "[aɪˈdiːə]", ko: "아이디어, 생각", pos: "n.",
+          ex: { en: "It was the timing, not the idea, that doomed the project.", ko: "프로젝트를 망친 건 아이디어가 아니라 타이밍이었다." },
+        },
+        {
+          en: "issue", ipa: "[ˈɪʃuː]", ko: "문제, 사안", pos: "n.",
+          ex: { en: "The delay was caused by the supply chain issue.", ko: "지연은 공급망 문제 때문이었다." },
+        },
+        {
+          en: "chain", ipa: "[tʃeɪn]", ko: "사슬, 체인; 연쇄", pos: "n.",
+          ex: { en: "The delay was caused by the supply chain issue.", ko: "지연은 공급망 문제 때문이었다." },
+        },
+        {
+          en: "lesson", ipa: "[ˈlesn]", ko: "교훈; 수업", pos: "n.",
+          ex: { en: "Mistakes were made, and lessons have been learned.", ko: "실수가 있었고, 교훈을 얻었습니다." },
+        },
+        {
+          en: "talent", ipa: "[ˈtælənt]", ko: "인재, 재능", pos: "n.",
+          ex: { en: "What this company lacks is not talent but direction.", ko: "이 회사에 부족한 것은 인재가 아니라 방향이다." },
+        },
+        {
+          en: "direction", ipa: "[dəˈrekʃn]", ko: "방향", pos: "n.",
+          ex: { en: "What this company lacks is not talent but direction.", ko: "이 회사에 부족한 것은 인재가 아니라 방향이다." },
+        },
+        {
+          en: "patience", ipa: "[ˈpeɪʃns]", ko: "인내심", pos: "n.",
+          ex: { en: "All I'm asking for is a little patience.", ko: "제가 부탁드리는 건 약간의 인내심뿐이에요." },
+        },
+        {
+          en: "benefit", ipa: "[ˈbenɪfɪt]", ko: "이익, 혜택", pos: "n.",
+          ex: { en: "The risks outweigh the benefits.", ko: "위험이 이익보다 크다." },
+        },
+        {
+          en: "assistance", ipa: "[əˈsɪstəns]", ko: "조력, 도움", pos: "n.",
+          ex: { en: "I greatly appreciate your assistance in this matter.", ko: "이 건에 대한 귀하의 조력에 깊이 감사드립니다." },
+        },
+        {
+          en: "voice", ipa: "[vɔɪs]", ko: "목소리", pos: "n.",
+          ex: { en: "We consider it essential that every voice be heard.", ko: "우리는 모든 목소리가 들리는 것이 필수라고 본다." },
+        },
+        {
+          en: "entry", ipa: "[ˈentri]", ko: "출품작; 입장, 항목", pos: "n.",
+          ex: { en: "All entries are to be submitted electronically.", ko: "모든 출품작은 온라인으로 제출되어야 한다." },
+        },
+        {
+          en: "form", ipa: "[fɔːrm]", ko: "양식; 형태", pos: "n.",
+          ex: { en: "Every applicant must submit the form by Friday.", ko: "모든 지원자는 금요일까지 양식을 제출해야 합니다." },
+        },
+        {
+          en: "dictionary", ipa: "[ˈdɪkʃəneri]", ko: "사전", pos: "n.",
+          ex: { en: "He is, as it were, a walking dictionary.", ko: "그는 말하자면 걸어 다니는 사전이에요." },
+        },
+        {
+          en: "moment", ipa: "[ˈmoʊmənt]", ko: "잠시, 순간", pos: "n.",
+          ex: { en: "Do you have a moment?", ko: "잠시 시간 괜찮으세요?" },
+        },
+        {
+          en: "sec", ipa: "[sek]", ko: "잠깐 (second의 구어)", pos: "n.",
+          ex: { en: "Hey, got a sec?", ko: "야, 잠깐 시간 돼?" },
+        },
+        {
+          en: "mutton", ipa: "[ˈmʌtn]", ko: "양고기", pos: "n.",
+          ex: { en: "The sheep becomes mutton.", ko: "양은 머튼이 된다." },
+        },
+        {
+          en: "ground", ipa: "[ɡraʊnd]", ko: "입장, 근거; 땅", pos: "n.",
+          ex: { en: "She stood her ground.", ko: "그녀는 자기 입장을 사수했다." },
+        },
+        {
+          en: "surface", ipa: "[ˈsɜːrfɪs]", ko: "드러나다; 표면", pos: "v., n.",
+          ex: { en: "The problems began to surface after the merger.", ko: "문제는 합병 후에 드러나기 시작했다." },
+        },
+        {
+          en: "sense", ipa: "[sens]", ko: "의미, 감각", pos: "n.",
+          ex: { en: "That makes sense.", ko: "말이 되네요." },
+        },
+        {
+          en: "bottom", ipa: "[ˈbɑːtəm]", ko: "맨 아래, 바닥", pos: "n.",
+          ex: { en: "The bottom line is, we can't afford another delay.", ko: "결론은, 더 이상의 지연은 감당할 수 없다는 겁니다." },
+        },
+        {
+          en: "detail", ipa: "[ˈdiːteɪl]", ko: "세부 사항", pos: "n.",
+          ex: { en: "Let's not waste time on details.", ko: "세부 사항에 시간을 낭비하지 맙시다." },
+        },
+        {
+          en: "waste", ipa: "[weɪst]", ko: "낭비하다; 낭비", pos: "v., n.",
+          ex: { en: "Let's not waste time on details.", ko: "시간을 낭비하지 맙시다." },
+        },
+      ],
+    },
+    {
+      name: "격식 동사 보강",
+      icon: "🖋️",
+      words: [
+        {
+          en: "become", ipa: "[bɪˈkʌm]", ko: "~이 되다", pos: "v.",
+          ex: { en: "The cow becomes beef.", ko: "소는 비프가 된다." },
+        },
+        {
+          en: "release", ipa: "[rɪˈliːs]", ko: "공개하다, 발표하다", pos: "v.",
+          ex: { en: "The committee demanded that the report not be released.", ko: "위원회는 보고서가 공개되지 않을 것을 요구했다." },
+        },
+        {
+          en: "submit", ipa: "[səbˈmɪt]", ko: "제출하다", pos: "v.",
+          ex: { en: "Every applicant must submit the form by Friday.", ko: "모든 지원자는 금요일까지 양식을 제출해야 합니다." },
+        },
+        {
+          en: "insist", ipa: "[ɪnˈsɪst]", ko: "강력히 요구하다, 고집하다", pos: "v.",
+          ex: { en: "She insisted that the meeting be postponed.", ko: "그녀는 회의를 연기할 것을 강하게 요청했다." },
+        },
+        {
+          en: "postpone", ipa: "[poʊˈspoʊn]", ko: "연기하다", pos: "v.",
+          ex: { en: "She insisted that the meeting be postponed.", ko: "그녀는 회의를 연기할 것을 강하게 요청했다." },
+        },
+        {
+          en: "criticize", ipa: "[ˈkrɪtɪsaɪz]", ko: "비판하다", pos: "v.",
+          ex: { en: "Far be it from me to criticize your work.", ko: "제가 감히 당신 작업을 비판하려는 건 아니지만요." },
+        },
+        {
+          en: "suffice", ipa: "[səˈfaɪs]", ko: "충분하다", pos: "v.",
+          ex: { en: "Suffice it to say, the negotiations did not go well.", ko: "협상이 잘 풀리지 않았다고만 말해두죠." },
+        },
+        {
+          en: "prove", ipa: "[pruːv]", ko: "증명하다", pos: "v.",
+          ex: { en: "This proves the policy failed.", ko: "이것은 정책이 실패했음을 증명한다." },
+        },
+        {
+          en: "intend", ipa: "[ɪnˈtend]", ko: "의도하다", pos: "v.",
+          ex: { en: "The policy was less effective than intended.", ko: "정책은 의도보다 효과가 덜했다." },
+        },
+        {
+          en: "outweigh", ipa: "[ˌaʊtˈweɪ]", ko: "~보다 크다[중요하다]", pos: "v.",
+          ex: { en: "The risks outweigh the benefits.", ko: "위험이 이익보다 크다." },
+        },
+        {
+          en: "revisit", ipa: "[ˌriːˈvɪzɪt]", ko: "재검토하다; 다시 방문하다", pos: "v.",
+          ex: { en: "We may need to revisit the timeline.", ko: "일정을 재검토해야 할 수도 있겠습니다." },
+        },
+        {
+          en: "appear", ipa: "[əˈpɪr]", ko: "~으로 보이다; 나타나다", pos: "v.",
+          ex: { en: "The results appear to support the hypothesis.", ko: "결과는 가설을 뒷받침하는 것으로 보인다." },
+        },
+        {
+          en: "overestimate", ipa: "[ˌoʊvərˈestɪmeɪt]", ko: "과대평가하다", pos: "v.",
+          ex: { en: "Participants tended to overestimate their performance.", ko: "참가자들은 수행을 과대평가하는 경향을 보였다." },
+        },
+        {
+          en: "underestimate", ipa: "[ˌʌndərˈestɪmeɪt]", ko: "과소평가하다", pos: "v.",
+          ex: { en: "I wonder if we're underestimating the risk.", ko: "우리가 리스크를 과소평가하고 있는 건 아닐까요." },
+        },
+        {
+          en: "cause", ipa: "[kɔːz]", ko: "야기하다; 원인", pos: "v., n.",
+          ex: { en: "The delay was caused by the supply chain issue.", ko: "지연은 공급망 문제 때문이었다." },
+        },
+        {
+          en: "lower", ipa: "[ˈloʊər]", ko: "낮추다; 더 낮은", pos: "v., adj.",
+          ex: { en: "We're not in a position to lower the price.", ko: "가격을 낮춰드릴 수 있는 상황이 아닙니다." },
+        },
+        {
+          en: "obtain", ipa: "[əbˈteɪn]", ko: "취득하다, 얻다", pos: "v.",
+          ex: { en: "We obtained the visa.", ko: "비자를 취득하였습니다." },
+        },
+        {
+          en: "inquire", ipa: "[ɪnˈkwaɪər]", ko: "문의하다", pos: "v.",
+          ex: { en: "I would like to inquire about the status of my application.", ko: "제 지원서의 진행 상황을 문의드리고자 합니다." },
+        },
+        {
+          en: "commence", ipa: "[kəˈmens]", ko: "시작되다", pos: "v.",
+          ex: { en: "The event will commence at 7 p.m.", ko: "행사는 오후 7시에 시작합니다." },
+        },
+        {
+          en: "investigate", ipa: "[ɪnˈvestɪɡeɪt]", ko: "조사하다", pos: "v.",
+          ex: { en: "We will investigate the matter thoroughly.", ko: "해당 사안을 철저히 조사하겠습니다." },
+        },
+        {
+          en: "reveal", ipa: "[rɪˈviːl]", ko: "드러내다, 밝히다", pos: "v.",
+          ex: { en: "The inquiry revealed the truth.", ko: "조사 결과 진실이 드러났다." },
+        },
+        {
+          en: "discuss", ipa: "[dɪˈskʌs]", ko: "논의하다", pos: "v.",
+          ex: { en: "Do you have a moment to discuss the proposal?", ko: "제안서를 논의할 시간 있으세요?" },
+        },
+        {
+          en: "appreciate", ipa: "[əˈpriːʃieɪt]", ko: "감사하다; 진가를 알다", pos: "v.",
+          ex: { en: "I greatly appreciate your assistance.", ko: "귀하의 조력에 깊이 감사드립니다." },
+        },
+        {
+          en: "begin", ipa: "[bɪˈɡɪn]", ko: "시작하다", pos: "v.",
+          ex: { en: "The problems began to surface.", ko: "문제가 드러나기 시작했다." },
+        },
+        {
+          en: "challenge", ipa: "[ˈtʃælɪndʒ]", ko: "문제 삼다, 이의를 제기하다; 도전", pos: "v., n.",
+          ex: { en: "It is precisely this assumption that I want to challenge.", ko: "내가 문제 삼고 싶은 것이 바로 이 전제다." },
+        },
+        {
+          en: "doom", ipa: "[duːm]", ko: "망치다, 실패하게 하다", pos: "v.",
+          ex: { en: "It was the timing that doomed the project.", ko: "프로젝트를 망친 건 타이밍이었다." },
+        },
+        {
+          en: "crash", ipa: "[kræʃ]", ko: "(컴퓨터가) 다운되다; 충돌하다", pos: "v.",
+          ex: { en: "The server crashed during the demo.", ko: "시연 도중에 서버가 죽었어요." },
+        },
+        {
+          en: "invest", ipa: "[ɪnˈvest]", ko: "투자하다", pos: "v.",
+          ex: { en: "I've invested three years in this project.", ko: "이 프로젝트에 3년을 투자했어요." },
+        },
+        {
+          en: "shoot", ipa: "[ʃuːt]", ko: "쏘다; (반론을) 격추하다", pos: "v.",
+          ex: { en: "She shot down every objection.", ko: "그녀는 모든 반론을 격추했다." },
+        },
+        {
+          en: "digest", ipa: "[daɪˈdʒest]", ko: "소화하다; 곱씹다", pos: "v.",
+          ex: { en: "Give me a day to digest the proposal.", ko: "제안서를 소화할 시간을 하루 주세요." },
+        },
+        {
+          en: "chew", ipa: "[tʃuː]", ko: "씹다; 곱씹다", pos: "v.",
+          ex: { en: "It's a lot to chew on.", ko: "곱씹을 게 많네요." },
+        },
+        {
+          en: "connect", ipa: "[kəˈnekt]", ko: "연결하다", pos: "v.",
+          ex: { en: "He's incredibly well-connected.", ko: "그는 발이 정말 넓어요." },
+        },
+        {
+          en: "afford", ipa: "[əˈfɔːrd]", ko: "감당하다, ~할 여유가 있다", pos: "v.",
+          ex: { en: "We can't afford another delay.", ko: "더 이상의 지연은 감당할 수 없습니다." },
+        },
+        {
+          en: "behave", ipa: "[bɪˈheɪv]", ko: "행동하다", pos: "v.",
+          ex: { en: "We looked at how people behave when prices go up.", ko: "가격이 오를 때 사람들이 어떻게 행동하는지 살펴봤다." },
+        },
+        {
+          en: "examine", ipa: "[ɪɡˈzæmɪn]", ko: "검토하다, 조사하다", pos: "v.",
+          ex: { en: "This study examines consumer behavior.", ko: "본 연구는 소비자 행동을 검토한다." },
+        },
+        {
+          en: "erode", ipa: "[ɪˈroʊd]", ko: "잠식하다, 침식하다", pos: "v.",
+          ex: { en: "The increase eroded household savings.", ko: "그 상승은 가계 저축을 잠식했다." },
+        },
+        {
+          en: "collect", ipa: "[kəˈlekt]", ko: "수집하다", pos: "v.",
+          ex: { en: "Data were collected over a six-month period.", ko: "데이터는 6개월에 걸쳐 수집되었다." },
+        },
+        {
+          en: "analyze", ipa: "[ˈænəlaɪz]", ko: "분석하다", pos: "v.",
+          ex: { en: "The data were analyzed using regression models.", ko: "데이터는 회귀 모형으로 분석되었다." },
+        },
+        {
+          en: "overlook", ipa: "[ˌoʊvərˈlʊk]", ko: "간과하다", pos: "v.",
+          ex: { en: "This framework overlooks informal labor.", ko: "이 틀은 비공식 노동을 간과한다." },
+        },
+        {
+          en: "propose", ipa: "[prəˈpoʊz]", ko: "제안하다", pos: "v.",
+          ex: { en: "The hypothesis was first proposed by Kim (2019).", ko: "이 가설은 Kim(2019)이 처음 제안했다." },
+        },
+        {
+          en: "accept", ipa: "[əkˈsept]", ko: "받아들이다", pos: "v.",
+          ex: { en: "It is widely accepted that early intervention improves outcomes.", ko: "조기 개입이 결과를 개선한다는 것은 널리 받아들여진다." },
+        },
+        {
+          en: "remain", ipa: "[rɪˈmeɪn]", ko: "여전히 ~이다, 남아 있다", pos: "v.",
+          ex: { en: "The evidence remains limited.", ko: "증거는 여전히 제한적이다." },
+        },
+        {
+          en: "establish", ipa: "[ɪˈstæblɪʃ]", ko: "확립하다, 입증하다", pos: "v.",
+          ex: { en: "Causality cannot be established from this design.", ko: "본 설계로는 인과관계를 확정할 수 없다." },
+        },
+        {
+          en: "confirm", ipa: "[kənˈfɜːrm]", ko: "확인하다, 확증하다", pos: "v.",
+          ex: { en: "Further research is needed to confirm these results.", ko: "이 결과를 확증하기 위해 후속 연구가 필요하다." },
+        },
+        {
+          en: "appoint", ipa: "[əˈpɔɪnt]", ko: "임명하다", pos: "v.",
+          ex: { en: "The board appointed her chief executive.", ko: "이사회는 그녀를 최고경영자로 임명했다." },
+        },
+        {
+          en: "declare", ipa: "[dɪˈkler]", ko: "선언하다, 규정하다", pos: "v.",
+          ex: { en: "Critics declared the experiment a failure.", ko: "비평가들은 그 실험을 실패로 규정했다." },
+        },
+        {
+          en: "consider", ipa: "[kənˈsɪdər]", ko: "여기다, 고려하다", pos: "v.",
+          ex: { en: "We consider it essential that every voice be heard.", ko: "우리는 모든 목소리가 들리는 것이 필수라고 본다." },
+        },
+        {
+          en: "award", ipa: "[əˈwɔːrd]", ko: "수여하다; 상", pos: "v., n.",
+          ex: { en: "She was awarded first prize for her thesis.", ko: "그녀는 논문으로 1등상을 받았다." },
+        },
+        {
+          en: "enable", ipa: "[ɪˈneɪbl]", ko: "~할 수 있게 하다", pos: "v.",
+          ex: { en: "The new policy enables staff to work remotely.", ko: "새 정책은 직원들이 원격 근무를 할 수 있게 한다." },
+        },
+        {
+          en: "resent", ipa: "[rɪˈzent]", ko: "분개하다", pos: "v.",
+          ex: { en: "He resents being treated like a child.", ko: "그는 아이 취급받는 것에 분개해요." },
+        },
+        {
+          en: "treat", ipa: "[triːt]", ko: "대하다, 취급하다; 치료하다", pos: "v.",
+          ex: { en: "He resents being treated like a child.", ko: "그는 아이 취급받는 것에 분개해요." },
+        },
+        {
+          en: "hurry", ipa: "[ˈhɜːri]", ko: "서두르다", pos: "v.",
+          ex: { en: "Hurry — the store is about to close.", ko: "서둘러요. 가게가 막 닫으려는 참이에요." },
+        },
+        {
+          en: "publish", ipa: "[ˈpʌblɪʃ]", ko: "발표하다, 출판하다", pos: "v.",
+          ex: { en: "The report is due to be published on Monday.", ko: "보고서는 월요일에 발표될 예정이다." },
+        },
+        {
+          en: "vote", ipa: "[voʊt]", ko: "표결, 투표; 투표하다", pos: "n., v.",
+          ex: { en: "The committee has decided to postpone the vote.", ko: "위원회는 표결을 연기하기로 결정했다." },
+        },
+        {
+          en: "add", ipa: "[æd]", ko: "더하다; (수가) 맞다", pos: "v.",
+          ex: { en: "The numbers don't add up.", ko: "숫자가 맞지 않아요." },
+        },
+        {
+          en: "stand", ipa: "[stænd]", ko: "서 있다; 견디다", pos: "v.",
+          ex: { en: "At the end of the corridor stood a single locked door.", ko: "복도 끝에는 잠긴 문 하나가 서 있었다." },
+        },
+        {
+          en: "present", ipa: "[ˈpreznt]", ko: "출석한; 현재의", pos: "adj.",
+          ex: { en: "I suggest that he be present at the hearing.", ko: "그가 청문회에 출석할 것을 제안합니다." },
+        },
+      ],
+    },
+    {
+      name: "격식 형용사·부사",
+      icon: "⚖️",
+      words: [
+        {
+          en: "essential", ipa: "[ɪˈsenʃl]", ko: "필수적인", pos: "adj.",
+          ex: { en: "It is essential that every applicant submit the form.", ko: "모든 지원자가 양식을 제출하는 것이 필수입니다." },
+        },
+        {
+          en: "entire", ipa: "[ɪnˈtaɪər]", ko: "전체의", pos: "adj.",
+          ex: { en: "The entire team would be held responsible.", ko: "팀 전체가 책임을 지게 될 것이다." },
+        },
+        {
+          en: "responsible", ipa: "[rɪˈspɑːnsəbl]", ko: "책임이 있는", pos: "adj.",
+          ex: { en: "The team would be held responsible.", ko: "팀이 책임을 지게 될 것이다." },
+        },
+        {
+          en: "wrong", ipa: "[rɔːŋ]", ko: "틀린, 잘못된", pos: "adj.",
+          ex: { en: "Your figures are wrong.", ko: "당신 수치가 틀렸어요." },
+        },
+        {
+          en: "effective", ipa: "[ɪˈfektɪv]", ko: "효과적인", pos: "adj.",
+          ex: { en: "The policy may have been less effective than intended.", ko: "정책은 의도보다 효과가 덜했을 수 있다." },
+        },
+        {
+          en: "legal", ipa: "[ˈliːɡl]", ko: "법무의, 법적인", pos: "adj.",
+          ex: { en: "You might want to run this by the legal team first.", ko: "이건 먼저 법무팀에 검토받으시는 게 좋겠어요." },
+        },
+        {
+          en: "fair", ipa: "[fer]", ko: "타당한, 공정한", pos: "adj.",
+          ex: { en: "That's a fair point.", ko: "타당한 지적이에요." },
+        },
+        {
+          en: "complete", ipa: "[kəmˈpliːt]", ko: "총체적인, 완전한", pos: "adj.",
+          ex: { en: "It was a complete failure of oversight.", ko: "총체적인 감독 부실이었다." },
+        },
+        {
+          en: "single", ipa: "[ˈsɪŋɡl]", ko: "단 하나의", pos: "adj.",
+          ex: { en: "At the end of the corridor stood a single locked door.", ko: "복도 끝에는 잠긴 문 하나가 서 있었다." },
+        },
+        {
+          en: "valuable", ipa: "[ˈvæljuəbl]", ko: "귀중한", pos: "adj.",
+          ex: { en: "Thanks for your time — I know it's valuable.", ko: "시간 내주셔서 감사해요 — 귀한 시간인 거 알아요." },
+        },
+        {
+          en: "invalid", ipa: "[ɪnˈvælɪd]", ko: "무효의", pos: "adj.",
+          ex: { en: "The court found the contract invalid.", ko: "법원은 그 계약이 무효라고 판단했다." },
+        },
+        {
+          en: "final", ipa: "[ˈfaɪnl]", ko: "최종의", pos: "adj.",
+          ex: { en: "She made it clear that the decision was final.", ko: "그녀는 그 결정이 최종임을 분명히 했다." },
+        },
+        {
+          en: "consistent", ipa: "[kənˈsɪstənt]", ko: "일관된", pos: "adj.",
+          ex: { en: "The effect size was consistent across subgroups.", ko: "효과 크기는 하위 집단 전반에서 일관되었다." },
+        },
+        {
+          en: "various", ipa: "[ˈveriəs]", ko: "다양한", pos: "adj.",
+          ex: { en: "The hypothesis has been tested in various contexts.", ko: "이 가설은 다양한 맥락에서 검증되었다." },
+        },
+        {
+          en: "informal", ipa: "[ɪnˈfɔːrml]", ko: "비공식의, 격식 없는", pos: "adj.",
+          ex: { en: "This framework overlooks informal labor.", ko: "이 틀은 비공식 노동을 간과한다." },
+        },
+        {
+          en: "limited", ipa: "[ˈlɪmɪtɪd]", ko: "제한된", pos: "adj.",
+          ex: { en: "The evidence remains limited.", ko: "증거는 여전히 제한적이다." },
+        },
+        {
+          en: "due", ipa: "[duː]", ko: "~할 예정인; 마감인", pos: "adj.",
+          ex: { en: "The report is due to be published on Monday.", ko: "보고서는 월요일에 발표될 예정이다." },
+        },
+        {
+          en: "arguably", ipa: "[ˈɑːrɡjuəbli]", ko: "~이라 할 만하게, 거의 틀림없이", pos: "adv.",
+          ex: { en: "This is arguably the most important finding of the study.", ko: "이것은 이 연구에서 가장 중요한 발견이라 할 만하다." },
+        },
+        {
+          en: "presumably", ipa: "[prɪˈzuːməbli]", ko: "짐작건대", pos: "adv.",
+          ex: { en: "Presumably, the delay was caused by the supply chain issue.", ko: "짐작건대 지연은 공급망 문제 때문이었을 것이다." },
+        },
+        {
+          en: "precisely", ipa: "[prɪˈsaɪsli]", ko: "바로, 정확히", pos: "adv.",
+          ex: { en: "It is precisely this assumption that I want to challenge.", ko: "내가 문제 삼고 싶은 것이 바로 이 전제다." },
+        },
+        {
+          en: "thoroughly", ipa: "[ˈθɜːroʊli]", ko: "철저히", pos: "adv.",
+          ex: { en: "We will investigate the matter thoroughly.", ko: "해당 사안을 철저히 조사하겠습니다." },
+        },
+        {
+          en: "greatly", ipa: "[ˈɡreɪtli]", ko: "깊이, 크게", pos: "adv.",
+          ex: { en: "I greatly appreciate your assistance.", ko: "귀하의 조력에 깊이 감사드립니다." },
+        },
+        {
+          en: "incredibly", ipa: "[ɪnˈkredəbli]", ko: "믿을 수 없을 만큼", pos: "adv.",
+          ex: { en: "He's incredibly well-connected.", ko: "그는 발이 정말 넓어요." },
+        },
+        {
+          en: "widely", ipa: "[ˈwaɪdli]", ko: "널리", pos: "adv.",
+          ex: { en: "It is widely accepted that early intervention improves outcomes.", ko: "조기 개입이 결과를 개선한다는 것은 널리 받아들여진다." },
+        },
+        {
+          en: "remotely", ipa: "[rɪˈmoʊtli]", ko: "원격으로", pos: "adv.",
+          ex: { en: "The new policy enables staff to work remotely.", ko: "새 정책은 직원들이 원격 근무를 할 수 있게 한다." },
+        },
+        {
+          en: "electronically", ipa: "[ɪˌlekˈtrɑːnɪkli]", ko: "전자적으로, 온라인으로", pos: "adv.",
+          ex: { en: "All entries are to be submitted electronically.", ko: "모든 출품작은 온라인으로 제출되어야 한다." },
+        },
+        {
+          en: "across", ipa: "[əˈkrɔːs]", ko: "~ 전반에 걸쳐; 건너", pos: "prep.",
+          ex: { en: "The effect was consistent across subgroups.", ko: "효과는 하위 집단 전반에서 일관되었다." },
+        },
+        {
+          en: "still", ipa: "[stɪl]", ko: "여전히, 그래도", pos: "adv.",
+          ex: { en: "Be that as it may, we still need a decision.", ko: "그렇다 하더라도 여전히 결정이 필요합니다." },
+        },
+        {
+          en: "lest", ipa: "[lest]", ko: "~하지 않도록", pos: "conj.",
+          ex: { en: "He wrote everything down, lest he forget.", ko: "잊지 않도록 그는 모든 것을 적어두었다." },
+        },
+        {
+          en: "nobody", ipa: "[ˈnoʊbədi]", ko: "아무도 ~않다", pos: "pron.",
+          ex: { en: "Nobody likes to be kept waiting.", ko: "기다리게 되는 걸 좋아하는 사람은 없어요." },
+        },
+        {
+          en: "adult", ipa: "[əˈdʌlt]", ko: "성인", pos: "n.",
+          ex: { en: "The evidence for adults remains limited.", ko: "성인 대상 증거는 여전히 제한적이다." },
+        },
+        {
+          en: "critic", ipa: "[ˈkrɪtɪk]", ko: "비평가", pos: "n.",
+          ex: { en: "Critics declared the experiment a failure.", ko: "비평가들은 그 실험을 실패로 규정했다." },
+        },
+        {
+          en: "approach", ipa: "[əˈproʊtʃ]", ko: "접근(법); 다가가다", pos: "n., v.",
+          ex: { en: "He suggested a better approach to the team.", ko: "그는 팀에 더 나은 접근법을 제안했다." },
+        },
+        {
+          en: "process", ipa: "[ˈprɑːses]", ko: "절차, 과정", pos: "n.",
+          ex: { en: "Could you explain the process to me again?", ko: "그 절차를 다시 설명해 주시겠어요?" },
+        },
+      ],
+    },
+    {
+      name: "핵심 개념어 보강",
+      icon: "➕",
+      words: [
+        {
+          en: "limit", ipa: "[ˈlɪmɪt]", ko: "한계; 제한하다", pos: "n., v.",
+          ex: { en: "The limits of my language mean the limits of my world.", ko: "내 언어의 한계는 내 세계의 한계를 뜻한다." },
+        },
+        {
+          en: "tend", ipa: "[tend]", ko: "~하는 경향이 있다", pos: "v.",
+          ex: { en: "Participants tended to overestimate their performance.", ko: "참가자들은 수행을 과대평가하는 경향을 보였다." },
         },
       ],
     },

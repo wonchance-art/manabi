@@ -67,7 +67,7 @@ export default function VocabStats({ vocab, profile, section }) {
         const meta = LANG_META[effLevelLang];
         const langVocab = getLangVocab(vocab, effLevelLang);
         const total = langVocab.length;
-        const mastered = langVocab.filter(v => (v.interval ?? 0) >= 14).length;
+        const mastered = langVocab.filter(v => (v.interval ?? 0) >= 30).length;
         const targetLevel = (effLevelLang === 'Japanese' ? profile?.learning_level_japanese
           : effLevelLang === 'English' ? profile?.learning_level_english
           : profile?.learning_level_french) || meta.defaultTarget;

@@ -2325,27 +2325,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 /* ========= Forum ========= */
 
 
-.vw-textarea {
-  width: 100%;
-  min-height: 80px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 12px;
-  color: var(--text-primary);
-  outline: none;
-  resize: none;
-  font-size: 0.95rem;
-  font-family: inherit;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-.vw-textarea:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--primary-glow);
-}
-
-
 /* ========= Notification Bell ========= */
 
 
@@ -6307,7 +6286,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 
 /* ========= 문법 노트 카드 ========= */
-.grammar-notes-list { display: flex; flex-direction: column; gap: 14px; }
+
 .grammar-note-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -6457,12 +6436,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   flex-direction: column;
   align-items: center;
   gap: 3px;
-}
-.review-score-btn__sub {
-  font-size: 0.65rem;
-  font-weight: 400;
-  opacity: 0.75;
-  line-height: 1;
 }
 
 /* ========= 추천 카드 바로읽기 배지 ========= */
@@ -7876,7 +7849,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .fr-header-bunkei:hover { background: var(--bg-elevated); color: var(--text-primary); }
 
 .lessons-list__bunkei-chip {
-  min-width: 7.4em;
+  min-width: 6em;
   text-align: center;
   font-size: 0.72rem; font-weight: 700;
   color: var(--text-secondary);
@@ -8463,8 +8436,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .hm-day--future { background: transparent; }
 
-@media (max-width: 600px) {
-}
 
 /* 히트맵 — 좌→우 연속 주 스트립 */
 .hm-scroll { overflow-x: auto; margin-top: 10px; }
@@ -8476,3 +8447,25 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   min-width: 320px;
 }
 .hm-strip .hm-day { width: 100%; min-width: 9px; }
+
+/* 어휘 — 복습 히어로 */
+.vocab-hero {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 14px; flex-wrap: wrap;
+  padding: 18px 20px; margin-bottom: 16px;
+}
+.vocab-hero__body { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.vocab-hero__kicker {
+  font-size: 0.74rem; font-weight: 700;
+  color: var(--text-muted); letter-spacing: 0.02em;
+  margin-right: 4px;
+}
+.vocab-hero__num {
+  font-family: var(--font-serif);
+  font-size: 2rem; font-weight: 700; line-height: 1;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+.vocab-hero__sub { font-size: 0.88rem; color: var(--text-secondary); }
+.vocab-hero__done { font-size: 0.92rem; font-weight: 600; color: var(--accent); }
+.vocab-hero__actions { display: flex; align-items: center; gap: 6px; }

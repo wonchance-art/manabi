@@ -62,6 +62,7 @@ export default {
           ex: { en: "I left early; otherwise, I would have missed the flight.", ko: "일찍 나섰기에 망정이지, 안 그랬으면 비행기를 놓쳤을 거예요." },
           ex2: { en: "Write it down — otherwise you'll forget.", ko: "적어 둬. 안 그러면 잊어버릴 거야." },
           note: "if절 없이 조건을 압축하는 장치 — 격식 글에서 유용.",
+          ch: "b2-06-linking-devices",
         },
         {
           pattern: "even if",
@@ -70,6 +71,7 @@ export default {
           ex: { en: "Even if we leave now, we won't arrive on time.", ko: "지금 출발해도 제시간에 못 도착해요." },
           ex2: { en: "I wouldn't have changed my mind even if they had paid me more.", ko: "돈을 더 줬더라도 마음을 바꾸지 않았을 거예요." },
           note: "even though는 실제 사실, even if는 가정 — 혼용 주의.",
+          ch: "b1-02-conditionals-1-2",
         },
         {
           pattern: "suppose・supposing",
@@ -78,6 +80,7 @@ export default {
           ex: { en: "Suppose you won the lottery — what would you do?", ko: "복권에 당첨된다면 뭘 할 거예요?" },
           ex2: { en: "Supposing he hadn't come, who would have given the talk?", ko: "그가 안 왔다면 누가 발표를 했을까요?" },
           note: "if 없는 가정 질문 — 구어에서 흔하다. what if와 같은 결.",
+          ch: "b1-02-conditionals-1-2",
         },
         {
           pattern: "if + were to",
@@ -127,6 +130,7 @@ export default {
           ko: "~할 수 있으면/있었으면 좋을 텐데",
           ex: { en: "I wish I could be there with you.", ko: "너와 함께 거기 있을 수 있으면 좋을 텐데." },
           ex2: { en: "I wish I could have helped more.", ko: "더 도와줄 수 있었더라면 좋았을 텐데요." },
+          ch: "b2-01-conditionals-3-mixed",
         },
         {
           pattern: "if only",
@@ -144,6 +148,7 @@ export default {
           ex: { en: "I'd rather you came a little earlier.", ko: "네가 조금 일찍 와 줬으면 좋겠어." },
           ex2: { en: "She'd rather he didn't mention it.", ko: "그녀는 그가 그 얘기를 안 꺼냈으면 해요." },
           note: "❌ I'd rather you come early → ✓ I'd rather you **came** early (남의 행동은 과거형).",
+          ch: "b2-01-conditionals-3-mixed",
         },
         {
           pattern: "would rather have + p.p.",
@@ -151,6 +156,7 @@ export default {
           ko: "차라리 ~했을 텐데, ~하는 편이 나았을 텐데",
           ex: { en: "I would rather have stayed home last night.", ko: "어젯밤엔 차라리 집에 있을 걸 그랬어요." },
           ex2: { en: "He'd rather not have heard the news at all.", ko: "그는 그 소식을 아예 안 들었으면 했을 거예요." },
+          ch: "b2-01-conditionals-3-mixed",
         },
         {
           pattern: "It's time + past",
@@ -159,6 +165,7 @@ export default {
           ex: { en: "It's time we went home.", ko: "이제 집에 갈 시간이에요." },
           ex2: { en: "It's high time the city did something about the traffic.", ko: "시가 교통 문제에 손을 쓸 때도 한참 지났어요." },
           note: "형태는 과거지만 의미는 현재 — 중립적인 It's time **to go**보다 재촉 뉘앙스가 강하다.",
+          ch: "b2-01-conditionals-3-mixed",
         },
         {
           pattern: "as if・as though",
@@ -167,6 +174,7 @@ export default {
           ex: { en: "He talks as if he knew everything.", ko: "그는 마치 모든 걸 아는 것처럼 말해요. (실제론 모름)" },
           ex2: { en: "They acted as though nothing had happened.", ko: "그들은 아무 일도 없었던 것처럼 행동했어요." },
           note: "실제 가능성을 말할 땐 현재시제도 가능: It looks as if it**'s going** to rain (진짜 올 것 같음).",
+          ch: "c1-01-subjunctive-formality",
         },
       ],
     },
@@ -253,6 +261,7 @@ export default {
           ex: { en: "The car won't start.", ko: "차가 도무지 시동이 안 걸려요." },
           ex2: { en: "He won't listen to anyone.", ko: "그는 누구 말도 들으려 하지 않아요." },
           note: "사물·사람의 '거부' — 과거는 wouldn't: The door **wouldn't** open.",
+          ch: "a2-02-future",
         },
       ],
     },
@@ -320,6 +329,7 @@ export default {
           ex: { en: "You needn't have brought a gift.", ko: "선물까지 안 가져와도 됐는데." },
           ex2: { en: "We needn't have hurried — the meeting started late.", ko: "서두를 필요 없었네요. 회의가 늦게 시작했어요." },
           note: "didn't need to는 '필요 없어서 안 했다'일 수도 — needn't have는 '했는데 불필요'. needn't는 영국식 색채, 미국식은 didn't have to.",
+          ch: "b2-01-conditionals-3-mixed",
         },
         {
           pattern: "was able to・managed to",
@@ -328,6 +338,7 @@ export default {
           ex: { en: "Despite the storm, we were able to land safely.", ko: "폭풍에도 불구하고 무사히 착륙할 수 있었어요." },
           ex2: { en: "I didn't manage to finish everything on time.", ko: "제때 다 끝내지는 못했어요." },
           note: "단발 성공에 could 불가: ❌ I could pass the exam last week → ✓ I **was able to/managed to** pass. 부정은 couldn't 가능.",
+          ch: "a2-04-modals-basic",
         },
         {
           pattern: "will be able to・have been able to",
@@ -336,6 +347,7 @@ export default {
           ex: { en: "You'll be able to check in from 3 p.m.", ko: "오후 3시부터 체크인하실 수 있어요." },
           ex2: { en: "He has been able to work from home since 2020.", ko: "그는 2020년부터 재택근무를 할 수 있었어요." },
           note: "❌ He can been working → ✓ has **been able to** work (can은 완료·미래형이 없다).",
+          ch: "a2-04-modals-basic",
         },
         {
           pattern: "had better",
@@ -344,6 +356,7 @@ export default {
           ex: { en: "You'd better leave now, or you'll miss the train.", ko: "지금 나서는 게 좋을 거야. 안 그러면 기차 놓쳐." },
           ex2: { en: "You'd better not be late again.", ko: "다시는 늦지 않는 게 좋을걸." },
           note: "❌ You had better to go → ✓ had better **go**. should보다 강하고 직설적 — 윗사람에게는 피한다.",
+          ch: "c1-03-discourse-register",
         },
         {
           pattern: "may as well・might as well",
@@ -563,6 +576,7 @@ export default {
           ex: { en: "What matters most is consistency.", ko: "가장 중요한 것은 꾸준함이에요." },
           ex2: { en: "I didn't hear what she said.", ko: "그녀가 한 말을 못 들었어요." },
           note: "❌ All what I want → ✓ All **(that)** I want・**What** I want (all과 what 중복 불가).",
+          ch: "c1-04-cleft-information",
         },
         {
           pattern: "whoever・whatever・whichever",
@@ -578,6 +592,7 @@ export default {
           ex: { en: "We've reached a point where we need outside help.", ko: "외부 도움이 필요한 지점에 이르렀어요." },
           ex2: { en: "There are cases where the rule doesn't apply.", ko: "그 규칙이 적용되지 않는 경우도 있어요." },
           note: "point·case·situation·stage 뒤의 where — in which의 자연스러운 대체.",
+          ch: "b1-04-relative-clauses",
         },
         {
           pattern: "whose (for things)",
@@ -601,6 +616,7 @@ export default {
           ex: { en: "The lecture was boring, so I got bored.", ko: "강의가 지루해서 저도 지루해졌어요." },
           ex2: { en: "The results were disappointing, and we were disappointed.", ko: "결과가 실망스러웠고, 우리는 실망했어요." },
           note: "❌ I'm boring (내가 지루한 사람이라는 뜻) → ✓ I'm **bored** (지루함을 느낌).",
+          ch: "b2-05-participle-clauses",
         },
         {
           pattern: "adjective order",
@@ -684,6 +700,7 @@ export default {
           ex: { en: "Your phone is the same as mine.", ko: "네 휴대폰은 내 것과 같은 거네." },
           ex2: { en: "Prices are not the same as they were last year.", ko: "물가가 작년 같지 않아요." },
           note: "❌ the same with/like → ✓ the same **as**.",
+          ch: "a2-03-comparatives",
         },
       ],
     },

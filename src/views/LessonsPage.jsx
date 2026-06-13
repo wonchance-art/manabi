@@ -264,7 +264,7 @@ export default function LessonsPage({ refManifest = {} }) {
                       onClick={e => { e.stopPropagation(); router.push(`${refLang.base}/bunkei/${meta.key.toLowerCase()}`); }}
                       onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); router.push(`${refLang.base}/bunkei/${meta.key.toLowerCase()}`); } }}
                     >
-                      문형 사전 {bunkeiCount}
+                      문형 {bunkeiCount}
                     </span>
                   )}
                   {vocabCount > 0 && (
@@ -276,7 +276,7 @@ export default function LessonsPage({ refManifest = {} }) {
                       onClick={e => { e.stopPropagation(); router.push(`${refLang.base}/vocab/${meta.key.toLowerCase()}`); }}
                       onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); router.push(`${refLang.base}/vocab/${meta.key.toLowerCase()}`); } }}
                     >
-                      어휘 사전 {vocabCount}
+                      어휘 {vocabCount}
                     </span>
                   )}
                   <span className="lessons-list__group-count">

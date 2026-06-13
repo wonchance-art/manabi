@@ -1,7 +1,7 @@
 export default {
   level: "B1",
   title: "B1 중급 어휘",
-  desc: "직장·의견·기술·관계 — 일상 회화를 한 단계 끌어올리는 80개. 빈출 구동사와 형용사 뉘앙스까지 챙겨요.",
+  desc: "직장·의견·기술·관계 — 일상 회화를 한 단계 끌어올리는 170개. 빈출 구동사와 형용사 뉘앙스까지 챙겨요.",
   themes: [
     {
       name: "일과 직장",
@@ -372,6 +372,408 @@ export default {
         {
           en: "strict", ipa: "[strɪkt]", ko: "엄격한", pos: "adj.",
           ex: { en: "Our teacher is strict but fair.", ko: "우리 선생님은 엄격하지만 공정해요." },
+        },
+      ],
+    },
+    {
+      name: "일과 직장 보강",
+      icon: "💼",
+      words: [
+        {
+          en: "boss", ipa: "[bɔːs]", ko: "상사, 사장", pos: "n.",
+          ex: { en: "What would you do if you were the boss?", ko: "당신이 사장이라면 어떻게 하겠어요?" },
+        },
+        {
+          en: "job", ipa: "[dʒɑːb]", ko: "일, 직장", pos: "n.",
+          ex: { en: "If I won the lottery, I would quit my job.", ko: "복권에 당첨되면 일을 그만둘 텐데요." },
+        },
+        {
+          en: "report", ipa: "[rɪˈpɔːrt]", ko: "보고서; 보고하다", pos: "n., v.",
+          ex: { en: "I haven't finished the report yet.", ko: "보고서를 아직 못 끝냈어요." },
+        },
+        {
+          en: "result", ipa: "[rɪˈzʌlt]", ko: "결과", pos: "n.",
+          ex: { en: "The results will be announced on Friday.", ko: "결과는 금요일에 발표될 거예요." },
+        },
+        {
+          en: "decision", ipa: "[dɪˈsɪʒn]", ko: "결정", pos: "n.",
+          ex: { en: "The decision has been made.", ko: "결정이 내려졌습니다." },
+        },
+        {
+          en: "message", ipa: "[ˈmesɪdʒ]", ko: "메시지", pos: "n.",
+          ex: { en: "I can't figure out this error message.", ko: "이 에러 메시지를 도무지 모르겠어요." },
+        },
+        {
+          en: "error", ipa: "[ˈerər]", ko: "오류, 에러", pos: "n.",
+          ex: { en: "I can't figure out this error message.", ko: "이 에러 메시지를 도무지 모르겠어요." },
+        },
+        {
+          en: "list", ipa: "[lɪst]", ko: "명단, 목록", pos: "n.",
+          ex: { en: "I'm on the list, aren't I?", ko: "저 명단에 있는 거 맞죠?" },
+        },
+        {
+          en: "conference", ipa: "[ˈkɑːnfərəns]", ko: "학회, 회의", pos: "n.",
+          ex: { en: "Who did you meet at the conference?", ko: "학회에서 누구를 만났어요?" },
+        },
+        {
+          en: "designer", ipa: "[dɪˈzaɪnər]", ko: "디자이너", pos: "n.",
+          ex: { en: "She is the designer who made this logo.", ko: "그녀가 이 로고를 만든 디자이너예요." },
+        },
+        {
+          en: "logo", ipa: "[ˈloʊɡoʊ]", ko: "로고", pos: "n.",
+          ex: { en: "She is the designer who made this logo.", ko: "그녀가 이 로고를 만든 디자이너예요." },
+        },
+        {
+          en: "pilot", ipa: "[ˈpaɪlət]", ko: "조종사, 파일럿", pos: "n.",
+          ex: { en: "I have a friend whose father is a pilot.", ko: "아버지가 파일럿인 친구가 있어요." },
+        },
+        {
+          en: "banker", ipa: "[ˈbæŋkər]", ko: "은행원", pos: "n.",
+          ex: { en: "He worked as a banker for ten years.", ko: "그는 10년 동안 은행원으로 일했어요." },
+        },
+        {
+          en: "task", ipa: "[tæsk]", ko: "업무, 과제", pos: "n.",
+          ex: { en: "This task will take about a week.", ko: "이 업무는 일주일쯤 걸릴 거예요." },
+        },
+        {
+          en: "cancel", ipa: "[ˈkænsl]", ko: "취소하다", pos: "v.",
+          ex: { en: "The meeting was canceled.", ko: "회의가 취소됐어요." },
+        },
+        {
+          en: "announce", ipa: "[əˈnaʊns]", ko: "발표하다", pos: "v.",
+          ex: { en: "The results will be announced on Friday.", ko: "결과는 금요일에 발표될 거예요." },
+        },
+        {
+          en: "fire", ipa: "[ˈfaɪər]", ko: "해고하다; 불", pos: "v., n.",
+          ex: { en: "He got fired last month.", ko: "그는 지난달에 해고당했어요." },
+        },
+        {
+          en: "explain", ipa: "[ɪkˈspleɪn]", ko: "설명하다", pos: "v.",
+          ex: { en: "She's really good at explaining difficult things.", ko: "그녀는 어려운 걸 정말 잘 설명해요." },
+        },
+        {
+          en: "improve", ipa: "[ɪmˈpruːv]", ko: "향상시키다, 나아지다", pos: "v.",
+          ex: { en: "He improved his English by watching dramas.", ko: "그는 드라마를 보면서 영어 실력을 늘렸어요." },
+        },
+      ],
+    },
+    {
+      name: "일상 동사 확장",
+      icon: "🔁",
+      words: [
+        {
+          en: "tell", ipa: "[tel]", ko: "말해 주다, 알려 주다", pos: "v.",
+          ex: { en: "This is Mina, who I told you about.", ko: "이쪽은 미나예요, 내가 말했던 그 친구." },
+        },
+        {
+          en: "ask", ipa: "[æsk]", ko: "묻다; 부탁하다", pos: "v.",
+          ex: { en: "She asked if I had eaten lunch.", ko: "그녀가 점심 먹었냐고 물었어요." },
+        },
+        {
+          en: "steal", ipa: "[stiːl]", ko: "훔치다", pos: "v.",
+          ex: { en: "My wallet was stolen on the subway.", ko: "지하철에서 지갑을 도둑맞았어요." },
+        },
+        {
+          en: "build", ipa: "[bɪld]", ko: "짓다, 만들다", pos: "v.",
+          ex: { en: "This building was built in 1925.", ko: "이 건물은 1925년에 지어졌어요." },
+        },
+        {
+          en: "invent", ipa: "[ɪnˈvent]", ko: "발명하다", pos: "v.",
+          ex: { en: "Do you know who invented this machine?", ko: "이 기계를 누가 발명했는지 아세요?" },
+        },
+        {
+          en: "invite", ipa: "[ɪnˈvaɪt]", ko: "초대하다", pos: "v.",
+          ex: { en: "We were invited to the wedding.", ko: "우리는 결혼식에 초대받았어요." },
+        },
+        {
+          en: "lend", ipa: "[lend]", ko: "빌려주다", pos: "v.",
+          ex: { en: "I lost the book which you lent me.", ko: "네가 빌려준 책을 잃어버렸어." },
+        },
+        {
+          en: "bear", ipa: "[ber]", ko: "낳다; 견디다", pos: "v.",
+          ex: { en: "That's the hospital where I was born.", ko: "저기가 내가 태어난 병원이에요." },
+        },
+        {
+          en: "worry", ipa: "[ˈwɜːri]", ko: "걱정하다", pos: "v.",
+          ex: { en: "Don't worry, I won't tell anyone.", ko: "걱정 마요, 아무한테도 말 안 할게요." },
+        },
+        {
+          en: "heat", ipa: "[hiːt]", ko: "가열하다; 열", pos: "v., n.",
+          ex: { en: "If you heat ice, it melts.", ko: "얼음을 가열하면 녹아요." },
+        },
+        {
+          en: "melt", ipa: "[melt]", ko: "녹다, 녹이다", pos: "v.",
+          ex: { en: "If you heat ice, it melts.", ko: "얼음을 가열하면 녹아요." },
+        },
+        {
+          en: "leave", ipa: "[liːv]", ko: "떠나다; 남기다", pos: "v.",
+          ex: { en: "I just found out that she's leaving.", ko: "그녀가 떠난다는 걸 방금 알았어요." },
+        },
+        {
+          en: "hold", ipa: "[hoʊld]", ko: "잡다, 유지하다", pos: "v.",
+          ex: { en: "Hold on a second.", ko: "잠깐만 기다려요." },
+        },
+        {
+          en: "miss", ipa: "[mɪs]", ko: "놓치다; 그리워하다", pos: "v.",
+          ex: { en: "I apologized for missing the deadline.", ko: "마감을 놓친 것에 대해 사과했어요." },
+        },
+        {
+          en: "prevent", ipa: "[prɪˈvent]", ko: "막다, 방지하다", pos: "v.",
+          ex: { en: "The rain prevented us from going hiking.", ko: "비 때문에 등산을 못 갔어요." },
+        },
+        {
+          en: "remind", ipa: "[rɪˈmaɪnd]", ko: "생각나게 하다, 상기시키다", pos: "v.",
+          ex: { en: "This song always reminds me of that summer.", ko: "이 노래를 들으면 항상 그 여름이 떠올라요." },
+        },
+        {
+          en: "wonder", ipa: "[ˈwʌndər]", ko: "궁금하다", pos: "v.",
+          ex: { en: "I wonder if she got my message.", ko: "그녀가 내 메시지를 받았는지 모르겠네요." },
+        },
+        {
+          en: "happen", ipa: "[ˈhæpən]", ko: "일어나다, 생기다", pos: "v.",
+          ex: { en: "What happened at the meeting?", ko: "회의에서 무슨 일이 있었어요?" },
+        },
+        {
+          en: "change", ipa: "[tʃeɪndʒ]", ko: "변경, 변화; 바꾸다", pos: "n., v.",
+          ex: { en: "He may not know about the change yet.", ko: "그는 아직 변경 사항을 모를 수도 있어요." },
+        },
+        {
+          en: "return", ipa: "[rɪˈtɜːrn]", ko: "돌아오다; 반납하다", pos: "v.",
+          ex: { en: "He returned to his hometown.", ko: "그는 고향으로 돌아갔어요." },
+        },
+        {
+          en: "join", ipa: "[dʒɔɪn]", ko: "함께하다, 가입하다", pos: "v.",
+          ex: { en: "Will you be joining us for dinner?", ko: "저녁 함께하실 건가요?" },
+        },
+        {
+          en: "land", ipa: "[lænd]", ko: "착륙하다; 땅", pos: "v., n.",
+          ex: { en: "By the time you land, I'll have finished the slides.", ko: "네가 착륙할 때쯤이면 슬라이드를 다 끝내놨을 거야." },
+        },
+        {
+          en: "lead", ipa: "[liːd]", ko: "이어지다; 이끌다", pos: "v.",
+          ex: { en: "Hard work leads to good results.", ko: "노력은 좋은 결과로 이어져요." },
+        },
+      ],
+    },
+    {
+      name: "생활과 사건",
+      icon: "🎉",
+      words: [
+        {
+          en: "wedding", ipa: "[ˈwedɪŋ]", ko: "결혼식", pos: "n.",
+          ex: { en: "We were invited to the wedding.", ko: "우리는 결혼식에 초대받았어요." },
+        },
+        {
+          en: "barbecue", ipa: "[ˈbɑːrbɪkjuː]", ko: "바비큐", pos: "n.",
+          ex: { en: "Have you ever tried Korean barbecue?", ko: "한국식 바비큐 먹어본 적 있어요?" },
+        },
+        {
+          en: "picnic", ipa: "[ˈpɪknɪk]", ko: "소풍, 피크닉", pos: "n.",
+          ex: { en: "If it rains tomorrow, we will cancel the picnic.", ko: "내일 비가 오면 소풍을 취소할 거예요." },
+        },
+        {
+          en: "lottery", ipa: "[ˈlɑːtəri]", ko: "복권", pos: "n.",
+          ex: { en: "If I won the lottery, I would quit my job.", ko: "복권에 당첨되면 일을 그만둘 텐데요." },
+        },
+        {
+          en: "wallet", ipa: "[ˈwɑːlɪt]", ko: "지갑", pos: "n.",
+          ex: { en: "My wallet was stolen on the subway.", ko: "지하철에서 지갑을 도둑맞았어요." },
+        },
+        {
+          en: "building", ipa: "[ˈbɪldɪŋ]", ko: "건물", pos: "n.",
+          ex: { en: "This building was built in 1925.", ko: "이 건물은 1925년에 지어졌어요." },
+        },
+        {
+          en: "restaurant", ipa: "[ˈrestrɑːnt]", ko: "식당, 레스토랑", pos: "n.",
+          ex: { en: "Do you remember the restaurant that we went to?", ko: "우리가 갔던 식당 기억나?" },
+        },
+        {
+          en: "museum", ipa: "[mjuˈziːəm]", ko: "박물관", pos: "n.",
+          ex: { en: "Could you tell me what time the museum opens?", ko: "박물관이 몇 시에 여는지 알려 주시겠어요?" },
+        },
+        {
+          en: "city", ipa: "[ˈsɪti]", ko: "도시", pos: "n.",
+          ex: { en: "I want to live in a city where it never snows.", ko: "눈이 절대 안 오는 도시에서 살고 싶어요." },
+        },
+        {
+          en: "place", ipa: "[pleɪs]", ko: "장소", pos: "n.",
+          ex: { en: "This must be the place.", ko: "여기가 그 장소임에 틀림없어요." },
+        },
+        {
+          en: "king", ipa: "[kɪŋ]", ko: "왕", pos: "n.",
+          ex: { en: "The palace was built for the king.", ko: "그 궁전은 왕을 위해 지어졌어요." },
+        },
+        {
+          en: "god", ipa: "[ɡɑːd]", ko: "신", pos: "n.",
+          ex: { en: "God save the King.", ko: "국왕 폐하 만세." },
+        },
+        {
+          en: "plane", ipa: "[pleɪn]", ko: "비행기", pos: "n.",
+          ex: { en: "The plane took off on time.", ko: "비행기는 정시에 이륙했어요." },
+        },
+        {
+          en: "afternoon", ipa: "[ˌæftərˈnuːn]", ko: "오후", pos: "n.",
+          ex: { en: "It could rain this afternoon.", ko: "오후에 비가 올 수도 있어요." },
+        },
+        {
+          en: "second", ipa: "[ˈsekənd]", ko: "잠깐, 초; 두 번째의", pos: "n., adj.",
+          ex: { en: "Hold on a second.", ko: "잠깐만 기다려요." },
+        },
+        {
+          en: "end", ipa: "[end]", ko: "끝; 끝나다", pos: "n., v.",
+          ex: { en: "Things will work out in the end.", ko: "결국엔 다 잘 풀릴 거예요." },
+        },
+        {
+          en: "thing", ipa: "[θɪŋ]", ko: "것, 일", pos: "n.",
+          ex: { en: "Things will work out in the end.", ko: "결국엔 다 잘 풀릴 거예요." },
+        },
+        {
+          en: "case", ipa: "[keɪs]", ko: "경우, 사례", pos: "n.",
+          ex: { en: "Your case is similar to mine.", ko: "네 경우는 내 경우와 비슷해." },
+        },
+        {
+          en: "song", ipa: "[sɔːŋ]", ko: "노래", pos: "n.",
+          ex: { en: "This song always reminds me of that summer.", ko: "이 노래를 들으면 항상 그 여름이 떠올라요." },
+        },
+        {
+          en: "interest", ipa: "[ˈɪntrəst]", ko: "흥미; 이자", pos: "n.",
+          ex: { en: "She has an interest in history.", ko: "그녀는 역사에 흥미가 있어요." },
+        },
+        {
+          en: "law", ipa: "[lɔː]", ko: "법", pos: "n.",
+          ex: { en: "The new law starts next month.", ko: "새 법은 다음 달부터 시행돼요." },
+        },
+      ],
+    },
+    {
+      name: "미디어와 기술 보강",
+      icon: "💻",
+      words: [
+        {
+          en: "podcast", ipa: "[ˈpɑːdkæst]", ko: "팟캐스트", pos: "n.",
+          ex: { en: "I'm listening to a new podcast these days.", ko: "요즘 새 팟캐스트를 듣고 있어요." },
+        },
+        {
+          en: "drama", ipa: "[ˈdrɑːmə]", ko: "드라마", pos: "n.",
+          ex: { en: "He improved his English by watching dramas.", ko: "그는 드라마를 보면서 영어 실력을 늘렸어요." },
+        },
+        {
+          en: "subtitle", ipa: "[ˈsʌbtaɪtl]", ko: "자막", pos: "n.",
+          ex: { en: "He watches dramas without subtitles.", ko: "그는 자막 없이 드라마를 봐요." },
+        },
+        {
+          en: "jazz", ipa: "[dʒæz]", ko: "재즈", pos: "n.",
+          ex: { en: "Do you like jazz?", ko: "재즈 좋아해요?" },
+        },
+        {
+          en: "ATM", ipa: "[ˌeɪtiːˈem]", ko: "현금 인출기, ATM", pos: "n.",
+          ex: { en: "Do you know where the nearest ATM is?", ko: "가장 가까운 ATM이 어디 있는지 아세요?" },
+        },
+        {
+          en: "technology", ipa: "[tekˈnɑːlədʒi]", ko: "기술", pos: "n.",
+          ex: { en: "Technology changes our lives.", ko: "기술은 우리 삶을 바꿔요." },
+        },
+        {
+          en: "slide", ipa: "[slaɪd]", ko: "슬라이드; 미끄러지다", pos: "n., v.",
+          ex: { en: "I'll finish the slides tonight.", ko: "오늘 밤에 슬라이드를 끝낼게요." },
+        },
+        {
+          en: "light", ipa: "[laɪt]", ko: "불, 빛; 가벼운", pos: "n., adj.",
+          ex: { en: "The lights are off. They might be asleep.", ko: "불이 꺼져 있네요. 자고 있을지도 몰라요." },
+        },
+      ],
+    },
+    {
+      name: "형용사·부사 보강",
+      icon: "🎨",
+      words: [
+        {
+          en: "great", ipa: "[ɡreɪt]", ko: "아주 좋은, 훌륭한", pos: "adj.",
+          ex: { en: "It would be great if you could send it by Friday.", ko: "금요일까지 보내주시면 정말 감사하겠습니다." },
+        },
+        {
+          en: "careful", ipa: "[ˈkerfl]", ko: "조심하는", pos: "adj.",
+          ex: { en: "Be careful not to get hurt.", ko: "다치지 않게 조심하세요." },
+        },
+        {
+          en: "amazing", ipa: "[əˈmeɪzɪŋ]", ko: "놀라운, 굉장한", pos: "adj.",
+          ex: { en: "The movie we watched last night was amazing.", ko: "어젯밤에 본 영화 진짜 좋았어." },
+        },
+        {
+          en: "exciting", ipa: "[ɪkˈsaɪtɪŋ]", ko: "신나는, 흥미진진한", pos: "adj.",
+          ex: { en: "The game was really exciting.", ko: "그 경기는 정말 흥미진진했어요." },
+        },
+        {
+          en: "exhausted", ipa: "[ɪɡˈzɔːstɪd]", ko: "녹초가 된", pos: "adj.",
+          ex: { en: "You must be exhausted.", ko: "분명 녹초가 됐겠네요." },
+        },
+        {
+          en: "asleep", ipa: "[əˈsliːp]", ko: "잠든", pos: "adj.",
+          ex: { en: "They might be asleep.", ko: "자고 있을지도 몰라요." },
+        },
+        {
+          en: "true", ipa: "[truː]", ko: "사실인, 진실한", pos: "adj.",
+          ex: { en: "That can't be true.", ko: "그럴 리가 없어요." },
+        },
+        {
+          en: "quiet", ipa: "[ˈkwaɪət]", ko: "조용한", pos: "adj.",
+          ex: { en: "The kids are quiet.", ko: "애들이 조용하네." },
+        },
+        {
+          en: "similar", ipa: "[ˈsɪmələr]", ko: "비슷한", pos: "adj.",
+          ex: { en: "Your case is similar to mine.", ko: "네 경우는 내 경우와 비슷해." },
+        },
+        {
+          en: "alike", ipa: "[əˈlaɪk]", ko: "닮은, 비슷한", pos: "adj.",
+          ex: { en: "They look nothing alike.", ko: "하나도 안 닮았어요." },
+        },
+        {
+          en: "little", ipa: "[ˈlɪtl]", ko: "조금(의); 작은", pos: "adj., adv.",
+          ex: { en: "I might be a little late tonight.", ko: "오늘 밤 조금 늦을지도 몰라요." },
+        },
+        {
+          en: "ago", ipa: "[əˈɡoʊ]", ko: "~ 전에", pos: "adv.",
+          ex: { en: "I saw him an hour ago.", ko: "한 시간 전에 그를 봤어요." },
+        },
+      ],
+    },
+    {
+      name: "대명사류 보강",
+      icon: "🔤",
+      words: [
+        {
+          en: "anyone", ipa: "[ˈeniwʌn]", ko: "누구든, 아무도", pos: "pron.",
+          ex: { en: "Don't worry, I won't tell anyone.", ko: "걱정 마요, 아무한테도 말 안 할게요." },
+        },
+        {
+          en: "nothing", ipa: "[ˈnʌθɪŋ]", ko: "아무것도 (~아니다)", pos: "pron.",
+          ex: { en: "They look nothing alike.", ko: "하나도 안 닮았어요." },
+        },
+        {
+          en: "everything", ipa: "[ˈevriθɪŋ]", ko: "모든 것", pos: "pron.",
+          ex: { en: "Everything depends on the test results.", ko: "모든 게 검사 결과에 달려 있어요." },
+        },
+        {
+          en: "neither", ipa: "[ˈniːðər]", ko: "둘 다 ~아니다; ~도 아니다", pos: "adv., pron.",
+          ex: { en: "I can't cook at all. — Neither can I.", ko: "난 요리 정말 못해. — 나도 못해." },
+        },
+      ],
+    },
+    {
+      name: "빈출 동사 보강",
+      icon: "➕",
+      words: [
+        {
+          en: "offer", ipa: "[ˈɔːfər]", ko: "제안하다; 제안", pos: "v., n.",
+          ex: { en: "We are pleased to offer you the position.", ko: "귀하께 합격을 제안드리게 되어 기쁩니다." },
+        },
+        {
+          en: "hike", ipa: "[haɪk]", ko: "하이킹하다, 등산하다; 하이킹", pos: "v., n.",
+          ex: { en: "The rain prevented us from going hiking.", ko: "비 때문에 등산을 못 갔어요." },
+        },
+        {
+          en: "hear", ipa: "[hɪr]", ko: "듣다, 들리다", pos: "v.",
+          ex: { en: "I'm looking forward to hearing from you.", ko: "회신 기다리겠습니다." },
         },
       ],
     },
