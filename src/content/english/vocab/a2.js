@@ -1,7 +1,7 @@
 export default {
   level: "A2",
   title: "A2 초급 어휘",
-  desc: "여행·쇼핑·건강 등 생존 영어의 핵심 90개 — 콩글리시 교정 코너로 굳은 습관까지 바로잡아요.",
+  desc: "여행·쇼핑·건강 등 생존 영어의 핵심 206개 — 콩글리시 교정 코너로 굳은 습관까지 바로잡아요.",
   themes: [
     {
       name: "여행과 길찾기",
@@ -393,6 +393,518 @@ export default {
           en: "Good luck!", ipa: "[ˌɡʊd ˈlʌk]", ko: "파이팅!, 행운을 빌어요", pos: "expr.",
           etym: "'파이팅(fighting)!'은 영어에 없어요 — Good luck! 또는 You can do it!이라고 해요.",
           ex: { en: "Good luck on your test!", ko: "시험 잘 봐요, 파이팅!" },
+        },
+      ],
+    },
+    {
+      name: "시간과 빈도",
+      icon: "⏰",
+      words: [
+        {
+          en: "last", ipa: "[læst]", ko: "지난; 마지막의", pos: "adj.",
+          ex: { en: "We talked for two hours last night.", ko: "어젯밤에 두 시간 동안 얘기했어요." },
+        },
+        {
+          en: "never", ipa: "[ˈnevər]", ko: "결코 ~않다, 한 번도 ~않다", pos: "adv.",
+          ex: { en: "I've never eaten durian.", ko: "두리안은 한 번도 안 먹어봤어요." },
+        },
+        {
+          en: "always", ipa: "[ˈɔːlweɪz]", ko: "항상", pos: "adv.",
+          ex: { en: "I'm always busy on Mondays.", ko: "월요일엔 항상 바빠요." },
+        },
+        {
+          en: "ever", ipa: "[ˈevər]", ko: "(경험) 한 번이라도", pos: "adv.",
+          ex: { en: "Have you ever been to Jeju?", ko: "제주도 가본 적 있어요?" },
+        },
+        {
+          en: "usually", ipa: "[ˈjuːʒuəli]", ko: "보통, 대개", pos: "adv.",
+          ex: { en: "I usually get up at seven.", ko: "보통 7시에 일어나요." },
+        },
+        {
+          en: "sometimes", ipa: "[ˈsʌmtaɪmz]", ko: "가끔", pos: "adv.",
+          ex: { en: "She sometimes skips breakfast.", ko: "그녀는 가끔 아침을 걸러요." },
+        },
+        {
+          en: "often", ipa: "[ˈɔːfn]", ko: "자주", pos: "adv.",
+          ex: { en: "How often do you exercise?", ko: "운동 얼마나 자주 해요?" },
+        },
+        {
+          en: "twice", ipa: "[twaɪs]", ko: "두 번", pos: "adv.",
+          ex: { en: "I've been to Japan twice.", ko: "일본에 두 번 가봤어요." },
+        },
+        {
+          en: "already", ipa: "[ɔːlˈredi]", ko: "이미, 벌써", pos: "adv.",
+          ex: { en: "I've already seen that movie.", ko: "그 영화 이미 봤어요." },
+        },
+        {
+          en: "soon", ipa: "[suːn]", ko: "곧, 빨리", pos: "adv.",
+          ex: { en: "Call me as soon as possible.", ko: "가능한 한 빨리 전화 주세요." },
+        },
+        {
+          en: "late", ipa: "[leɪt]", ko: "늦은; 늦게", pos: "adj., adv.",
+          ex: { en: "He won't be late.", ko: "그는 늦지 않을 거예요." },
+        },
+        {
+          en: "next", ipa: "[nekst]", ko: "다음의", pos: "adj.",
+          ex: { en: "I'm going to study abroad next year.", ko: "내년에 유학 갈 거예요." },
+        },
+        {
+          en: "tonight", ipa: "[təˈnaɪt]", ko: "오늘 밤(에)", pos: "adv.",
+          ex: { en: "I'll call you tonight.", ko: "오늘 밤에 전화할게요." },
+        },
+        {
+          en: "weekend", ipa: "[ˌwiːkˈend]", ko: "주말", pos: "n.",
+          ex: { en: "What did you do on the weekend?", ko: "주말에 뭐 했어요?" },
+        },
+        {
+          en: "day", ipa: "[deɪ]", ko: "날, 하루", pos: "n.",
+          ex: { en: "I exercise every day.", ko: "저는 매일 운동해요." },
+        },
+        {
+          en: "first", ipa: "[fɜːrst]", ko: "먼저; 첫 번째의", pos: "adv., adj.",
+          ex: { en: "I always check my phone first.", ko: "항상 휴대폰부터 확인해요." },
+        },
+        {
+          en: "almost", ipa: "[ˈɔːlmoʊst]", ko: "거의", pos: "adv.",
+          ex: { en: "I almost never exercise.", ko: "운동은 거의 안 해요." },
+        },
+        {
+          en: "eight", ipa: "[eɪt]", ko: "여덟, 8", pos: "num.",
+          ex: { en: "I was watching TV at eight last night.", ko: "어젯밤 8시에 TV를 보고 있었어요." },
+        },
+        {
+          en: "middle", ipa: "[ˈmɪdl]", ko: "중간(의)", pos: "n., adj.",
+          ex: { en: "I read this book in middle school.", ko: "이 책 중학교 때 읽었어요." },
+        },
+        {
+          en: "half", ipa: "[hæf]", ko: "절반", pos: "n.",
+          ex: { en: "I waited for half an hour.", ko: "30분을 기다렸어요." },
+        },
+      ],
+    },
+    {
+      name: "동네와 집",
+      icon: "🏪",
+      words: [
+        {
+          en: "house", ipa: "[haʊs]", ko: "집", pos: "n.",
+          ex: { en: "There are two cafes near my house.", ko: "우리 집 근처에 카페가 두 개 있어요." },
+        },
+        {
+          en: "cafe", ipa: "[kæˈfeɪ]", ko: "카페", pos: "n.",
+          ex: { en: "There are two cafes near my house.", ko: "우리 집 근처에 카페가 두 개 있어요." },
+        },
+        {
+          en: "bakery", ipa: "[ˈbeɪkəri]", ko: "빵집, 베이커리", pos: "n.",
+          ex: { en: "There used to be a bakery here.", ko: "여기 예전에 빵집이 있었어요." },
+        },
+        {
+          en: "pharmacy", ipa: "[ˈfɑːrməsi]", ko: "약국", pos: "n.",
+          ex: { en: "Is there a pharmacy near here?", ko: "이 근처에 약국 있어요?" },
+        },
+        {
+          en: "store", ipa: "[stɔːr]", ko: "가게", pos: "n.",
+          ex: { en: "This is the most expensive item in the store.", ko: "이게 이 가게에서 제일 비싼 물건이에요." },
+        },
+        {
+          en: "fridge", ipa: "[frɪdʒ]", ko: "냉장고", pos: "n.",
+          ex: { en: "There's some milk in the fridge.", ko: "냉장고에 우유가 좀 있어요." },
+        },
+        {
+          en: "stairs", ipa: "[sterz]", ko: "계단", pos: "n.",
+          ex: { en: "Take the stairs to the second floor.", ko: "계단으로 2층까지 가세요." },
+        },
+        {
+          en: "party", ipa: "[ˈpɑːrti]", ko: "파티", pos: "n.",
+          ex: { en: "She didn't come to the party.", ko: "그녀는 파티에 안 왔어요." },
+        },
+        {
+          en: "taxi", ipa: "[ˈtæksi]", ko: "택시", pos: "n.",
+          ex: { en: "We decided to take a taxi.", ko: "우리는 택시를 타기로 했어요." },
+        },
+        {
+          en: "abroad", ipa: "[əˈbrɔːd]", ko: "해외에(서), 해외로", pos: "adv.",
+          ex: { en: "I'm going to study abroad next year.", ko: "내년에 유학 갈 거예요." },
+        },
+        {
+          en: "far", ipa: "[fɑːr]", ko: "먼, 멀리", pos: "adj., adv.",
+          ex: { en: "It's far from here.", ko: "여기서 멀어요." },
+        },
+        {
+          en: "side", ipa: "[saɪd]", ko: "쪽, 편", pos: "n.",
+          ex: { en: "I'm always on your side.", ko: "난 항상 네 편이야." },
+        },
+        {
+          en: "back", ipa: "[bæk]", ko: "다시, 도로; 뒤", pos: "adv., n.",
+          ex: { en: "He promised to call me back.", ko: "그가 다시 전화하기로 약속했어요." },
+        },
+        {
+          en: "field", ipa: "[fiːld]", ko: "들판; 분야", pos: "n.",
+          ex: { en: "The kids are playing in the field.", ko: "아이들이 들판에서 놀고 있어요." },
+        },
+        {
+          en: "hill", ipa: "[hɪl]", ko: "언덕", pos: "n.",
+          ex: { en: "Our school is on a hill.", ko: "우리 학교는 언덕 위에 있어요." },
+        },
+        {
+          en: "beach", ipa: "[biːtʃ]", ko: "해변", pos: "n.",
+          ex: { en: "We walked along the beach.", ko: "우리는 해변을 따라 걸었어요." },
+        },
+        {
+          en: "earth", ipa: "[ɜːrθ]", ko: "지구, 땅", pos: "n.",
+          ex: { en: "The earth goes around the sun.", ko: "지구는 태양 주위를 돌아요." },
+        },
+      ],
+    },
+    {
+      name: "음식 보강",
+      icon: "🍕",
+      words: [
+        {
+          en: "pizza", ipa: "[ˈpiːtsə]", ko: "피자", pos: "n.",
+          ex: { en: "This is the best pizza I've ever had.", ko: "이건 제가 먹어본 것 중 최고의 피자예요." },
+        },
+        {
+          en: "kimchi", ipa: "[ˈkɪmtʃi]", ko: "김치", pos: "n.",
+          ex: { en: "She made kimchi for us.", ko: "그녀가 우리에게 김치를 만들어줬어요." },
+        },
+        {
+          en: "durian", ipa: "[ˈdʊriən]", ko: "두리안", pos: "n.",
+          ex: { en: "I've never eaten durian.", ko: "두리안은 한 번도 안 먹어봤어요." },
+        },
+        {
+          en: "beef", ipa: "[biːf]", ko: "소고기", pos: "n.",
+          ex: { en: "I'd like the beef, please.", ko: "소고기로 주세요." },
+        },
+        {
+          en: "pork", ipa: "[pɔːrk]", ko: "돼지고기", pos: "n.",
+          ex: { en: "This soup is made with pork.", ko: "이 수프는 돼지고기로 만들어요." },
+        },
+        {
+          en: "toast", ipa: "[toʊst]", ko: "토스트; 건배", pos: "n.",
+          ex: { en: "I had toast for breakfast.", ko: "아침으로 토스트를 먹었어요." },
+        },
+        {
+          en: "spicy", ipa: "[ˈspaɪsi]", ko: "매운", pos: "adj.",
+          ex: { en: "Korean food is spicy.", ko: "한국 음식은 매워요." },
+        },
+      ],
+    },
+    {
+      name: "일상 동사 보강",
+      icon: "🔧",
+      words: [
+        {
+          en: "use", ipa: "[juːz]", ko: "사용하다", pos: "v.",
+          ex: { en: "You can use my charger.", ko: "제 충전기 써도 돼요." },
+        },
+        {
+          en: "take", ipa: "[teɪk]", ko: "타다; 가져가다; (시간이) 걸리다", pos: "v.",
+          ex: { en: "We decided to take a taxi.", ko: "우리는 택시를 타기로 했어요." },
+        },
+        {
+          en: "enjoy", ipa: "[ɪnˈdʒɔɪ]", ko: "즐기다", pos: "v.",
+          ex: { en: "I enjoy learning English.", ko: "영어 배우는 게 즐거워요." },
+        },
+        {
+          en: "learn", ipa: "[lɜːrn]", ko: "배우다", pos: "v.",
+          ex: { en: "I enjoy learning English.", ko: "영어 배우는 게 즐거워요." },
+        },
+        {
+          en: "remember", ipa: "[rɪˈmembər]", ko: "기억하다", pos: "v.",
+          ex: { en: "Remember to lock the door.", ko: "문 잠그는 거 잊지 마세요." },
+        },
+        {
+          en: "stay", ipa: "[steɪ]", ko: "머무르다", pos: "v.",
+          ex: { en: "We stayed at home.", ko: "우리는 집에 있었어요." },
+        },
+        {
+          en: "read", ipa: "[riːd]", ko: "읽다", pos: "v.",
+          ex: { en: "I read this book in middle school.", ko: "이 책 중학교 때 읽었어요." },
+        },
+        {
+          en: "walk", ipa: "[wɔːk]", ko: "걷다", pos: "v.",
+          ex: { en: "It started to rain while we were walking home.", ko: "집에 걸어가는 동안 비가 오기 시작했어요." },
+        },
+        {
+          en: "move", ipa: "[muːv]", ko: "이사하다; 움직이다", pos: "v.",
+          ex: { en: "We're going to move in March.", ko: "우리 3월에 이사할 거예요." },
+        },
+        {
+          en: "look", ipa: "[lʊk]", ko: "보다", pos: "v.",
+          ex: { en: "Look at those clouds.", ko: "저 구름 좀 봐요." },
+        },
+        {
+          en: "pass", ipa: "[pæs]", ko: "합격하다; 지나가다; 건네주다", pos: "v.",
+          ex: { en: "I think you'll pass the test.", ko: "시험에 합격할 거라고 생각해요." },
+        },
+        {
+          en: "drop", ipa: "[drɑːp]", ko: "떨어뜨리다", pos: "v.",
+          ex: { en: "Watch out! You're going to drop it!", ko: "조심해요! 떨어뜨리겠어요!" },
+        },
+        {
+          en: "sit", ipa: "[sɪt]", ko: "앉다", pos: "v.",
+          ex: { en: "Can I sit here?", ko: "여기 앉아도 돼요?" },
+        },
+        {
+          en: "help", ipa: "[help]", ko: "돕다; 도움", pos: "v., n.",
+          ex: { en: "Can you help me with this?", ko: "이것 좀 도와줄래요?" },
+        },
+        {
+          en: "smoke", ipa: "[smoʊk]", ko: "담배를 피우다; 연기", pos: "v., n.",
+          ex: { en: "You must not smoke here.", ko: "여기서 담배 피우면 안 돼요." },
+        },
+        {
+          en: "wait", ipa: "[weɪt]", ko: "기다리다", pos: "v.",
+          ex: { en: "I had to wait for an hour.", ko: "한 시간을 기다려야 했어요." },
+        },
+        {
+          en: "rest", ipa: "[rest]", ko: "쉬다; 휴식", pos: "v., n.",
+          ex: { en: "You should get some rest.", ko: "좀 쉬는 게 좋겠어요." },
+        },
+        {
+          en: "bring", ipa: "[brɪŋ]", ko: "가져오다, 데려오다", pos: "v.",
+          ex: { en: "Should I bring anything?", ko: "뭐 가져갈까요?" },
+        },
+        {
+          en: "decide", ipa: "[dɪˈsaɪd]", ko: "결정하다", pos: "v.",
+          ex: { en: "We decided to take a taxi.", ko: "우리는 택시를 타기로 했어요." },
+        },
+        {
+          en: "promise", ipa: "[ˈprɑːmɪs]", ko: "약속하다; 약속", pos: "v., n.",
+          ex: { en: "He promised to call me back.", ko: "그가 다시 전화하기로 약속했어요." },
+        },
+        {
+          en: "keep", ipa: "[kiːp]", ko: "계속하다; 지키다", pos: "v.",
+          ex: { en: "Keep practicing — you're getting better.", ko: "계속 연습하세요 — 점점 늘고 있어요." },
+        },
+        {
+          en: "practice", ipa: "[ˈpræktɪs]", ko: "연습하다; 연습", pos: "v., n.",
+          ex: { en: "Keep practicing — you're getting better.", ko: "계속 연습하세요 — 점점 늘고 있어요." },
+        },
+        {
+          en: "lock", ipa: "[lɑːk]", ko: "잠그다; 자물쇠", pos: "v., n.",
+          ex: { en: "Remember to lock the door.", ko: "문 잠그는 거 잊지 마세요." },
+        },
+        {
+          en: "skip", ipa: "[skɪp]", ko: "거르다, 건너뛰다", pos: "v.",
+          ex: { en: "She sometimes skips breakfast.", ko: "그녀는 가끔 아침을 걸러요." },
+        },
+        {
+          en: "check", ipa: "[tʃek]", ko: "확인하다", pos: "v.",
+          ex: { en: "I always check my phone first.", ko: "항상 휴대폰부터 확인해요." },
+        },
+        {
+          en: "exercise", ipa: "[ˈeksərsaɪz]", ko: "운동하다; 운동", pos: "v., n.",
+          ex: { en: "How often do you exercise?", ko: "운동 얼마나 자주 해요?" },
+        },
+        {
+          en: "ring", ipa: "[rɪŋ]", ko: "(전화·종이) 울리다; 반지", pos: "v., n.",
+          ex: { en: "The phone is ringing.", ko: "전화가 울리고 있어요." },
+        },
+        {
+          en: "set", ipa: "[set]", ko: "(상을) 차리다, 놓다", pos: "v.",
+          ex: { en: "While I was cooking, he set the table.", ko: "제가 요리하는 동안 그가 상을 차렸어요." },
+        },
+        {
+          en: "fly", ipa: "[flaɪ]", ko: "날다; 비행기로 가다", pos: "v.",
+          ex: { en: "Birds fly south in winter.", ko: "새들은 겨울에 남쪽으로 날아가요." },
+        },
+        {
+          en: "catch", ipa: "[kætʃ]", ko: "잡다; (버스를) 타다", pos: "v.",
+          ex: { en: "Let's catch the early bus.", ko: "이른 버스를 타요." },
+        },
+        {
+          en: "pull", ipa: "[pʊl]", ko: "당기다, 끌다", pos: "v.",
+          ex: { en: "Pull the door — don't push.", ko: "문을 당기세요 — 밀지 말고요." },
+        },
+        {
+          en: "cut", ipa: "[kʌt]", ko: "자르다, 줄이다", pos: "v.",
+          ex: { en: "Can you cut the cake?", ko: "케이크 좀 잘라줄래요?" },
+        },
+        {
+          en: "feel", ipa: "[fiːl]", ko: "느끼다", pos: "v.",
+          ex: { en: "I feel much better today.", ko: "오늘은 훨씬 좋아진 것 같아요." },
+        },
+        {
+          en: "fight", ipa: "[faɪt]", ko: "싸우다; 싸움", pos: "v., n.",
+          ex: { en: "Don't fight with your brother.", ko: "동생이랑 싸우지 마." },
+        },
+      ],
+    },
+    {
+      name: "사물과 취미",
+      icon: "🎹",
+      words: [
+        {
+          en: "piano", ipa: "[piˈænoʊ]", ko: "피아노", pos: "n.",
+          ex: { en: "I used to play the piano.", ko: "예전엔 피아노를 쳤어요." },
+        },
+        {
+          en: "test", ipa: "[test]", ko: "시험", pos: "n.",
+          ex: { en: "I think you'll pass the test.", ko: "시험에 합격할 거라고 생각해요." },
+        },
+        {
+          en: "item", ipa: "[ˈaɪtəm]", ko: "물건, 품목", pos: "n.",
+          ex: { en: "This is the most expensive item in the store.", ko: "이게 이 가게에서 제일 비싼 물건이에요." },
+        },
+        {
+          en: "charger", ipa: "[ˈtʃɑːrdʒər]", ko: "충전기", pos: "n.",
+          ex: { en: "You can use my charger.", ko: "제 충전기 써도 돼요." },
+        },
+        {
+          en: "seatbelt", ipa: "[ˈsiːtbelt]", ko: "안전벨트", pos: "n.",
+          ex: { en: "You should always wear a seatbelt.", ko: "항상 안전벨트를 매야 해요." },
+        },
+        {
+          en: "cloud", ipa: "[klaʊd]", ko: "구름", pos: "n.",
+          ex: { en: "Look at those clouds. It's going to rain.", ko: "저 구름 좀 봐요. 비 오겠어요." },
+        },
+        {
+          en: "season", ipa: "[ˈsiːzn]", ko: "계절", pos: "n.",
+          ex: { en: "What's the best season in Korea?", ko: "한국에서 제일 좋은 계절이 뭐예요?" },
+        },
+        {
+          en: "language", ipa: "[ˈlæŋɡwɪdʒ]", ko: "언어", pos: "n.",
+          ex: { en: "She can speak three languages.", ko: "그녀는 3개 국어를 할 수 있어요." },
+        },
+        {
+          en: "email", ipa: "[ˈiːmeɪl]", ko: "이메일", pos: "n.",
+          ex: { en: "I'll send you an email tomorrow.", ko: "내일 이메일 보낼게요." },
+        },
+        {
+          en: "page", ipa: "[peɪdʒ]", ko: "쪽, 페이지", pos: "n.",
+          ex: { en: "Open your book to page ten.", ko: "책 10쪽을 펴세요." },
+        },
+        {
+          en: "line", ipa: "[laɪn]", ko: "줄, 선", pos: "n.",
+          ex: { en: "There's a long line at the cafe.", ko: "카페에 줄이 길어요." },
+        },
+        {
+          en: "sign", ipa: "[saɪn]", ko: "표지판, 간판; 서명하다", pos: "n., v.",
+          ex: { en: "What does that sign say?", ko: "저 표지판에 뭐라고 쓰여 있어요?" },
+        },
+        {
+          en: "alarm", ipa: "[əˈlɑːrm]", ko: "알람, 경보(기)", pos: "n.",
+          ex: { en: "I set my alarm for six.", ko: "알람을 6시로 맞췄어요." },
+        },
+        {
+          en: "date", ipa: "[deɪt]", ko: "날짜; 데이트", pos: "n.",
+          ex: { en: "What's the date today?", ko: "오늘이 며칠이에요?" },
+        },
+        {
+          en: "club", ipa: "[klʌb]", ko: "동아리, 클럽", pos: "n.",
+          ex: { en: "She is in the book club.", ko: "그녀는 독서 동아리에 있어요." },
+        },
+        {
+          en: "skin", ipa: "[skɪn]", ko: "피부; 껍질", pos: "n.",
+          ex: { en: "My skin is dry in winter.", ko: "겨울엔 피부가 건조해요." },
+        },
+        {
+          en: "ghost", ipa: "[ɡoʊst]", ko: "유령, 귀신", pos: "n.",
+          ex: { en: "I used to believe in ghosts.", ko: "예전엔 귀신을 믿었어요." },
+        },
+        {
+          en: "joke", ipa: "[dʒoʊk]", ko: "농담; 농담하다", pos: "n., v.",
+          ex: { en: "Want to hear a joke?", ko: "농담 하나 들어볼래?" },
+        },
+        {
+          en: "problem", ipa: "[ˈprɑːbləm]", ko: "문제", pos: "n.",
+          ex: { en: "Is there a problem? — No, it's fine.", ko: "무슨 문제 있어요? — 아뇨, 괜찮아요." },
+        },
+      ],
+    },
+    {
+      name: "형용사·부사 보강",
+      icon: "🌟",
+      words: [
+        {
+          en: "well", ipa: "[wel]", ko: "잘", pos: "adv.",
+          ex: { en: "I didn't sleep well last night.", ko: "어젯밤에 잠을 잘 못 잤어요." },
+        },
+        {
+          en: "possible", ipa: "[ˈpɑːsəbl]", ko: "가능한", pos: "adj.",
+          ex: { en: "Call me as soon as possible.", ko: "가능한 한 빨리 전화 주세요." },
+        },
+        {
+          en: "alone", ipa: "[əˈloʊn]", ko: "혼자(서)", pos: "adv., adj.",
+          ex: { en: "I enjoy watching movies alone.", ko: "혼자 영화 보는 거 좋아해요." },
+        },
+        {
+          en: "really", ipa: "[ˈriːəli]", ko: "정말", pos: "adv.",
+          ex: { en: "It's really nice.", ko: "정말 괜찮아요." },
+        },
+        {
+          en: "fine", ipa: "[faɪn]", ko: "괜찮은, 좋은", pos: "adj.",
+          ex: { en: "No, it's fine.", ko: "아뇨, 괜찮아요." },
+        },
+        {
+          en: "tall", ipa: "[tɔːl]", ko: "키가 큰", pos: "adj.",
+          ex: { en: "My brother is very tall.", ko: "우리 형은 키가 아주 커요." },
+        },
+        {
+          en: "rich", ipa: "[rɪtʃ]", ko: "부유한", pos: "adj.",
+          ex: { en: "He wants to be rich.", ko: "그는 부자가 되고 싶어 해요." },
+        },
+        {
+          en: "hard", ipa: "[hɑːrd]", ko: "열심히; 어려운, 단단한", pos: "adv., adj.",
+          ex: { en: "She studies very hard.", ko: "그녀는 아주 열심히 공부해요." },
+        },
+        {
+          en: "fast", ipa: "[fæst]", ko: "빠른; 빨리", pos: "adj., adv.",
+          ex: { en: "This train is very fast.", ko: "이 기차는 아주 빨라요." },
+        },
+        {
+          en: "simple", ipa: "[ˈsɪmpl]", ko: "간단한", pos: "adj.",
+          ex: { en: "The recipe is simple.", ko: "그 요리법은 간단해요." },
+        },
+        {
+          en: "real", ipa: "[ˈriːəl]", ko: "진짜의, 실제의", pos: "adj.",
+          ex: { en: "Is that a real diamond?", ko: "그거 진짜 다이아몬드예요?" },
+        },
+        {
+          en: "sure", ipa: "[ʃʊr]", ko: "확신하는; 물론", pos: "adj., adv.",
+          ex: { en: "Are you sure?", ko: "확실해요?" },
+        },
+        {
+          en: "quick", ipa: "[kwɪk]", ko: "빠른, 잠깐의", pos: "adj.",
+          ex: { en: "Let's play a quick game.", ko: "간단한 게임 하나 해요." },
+        },
+        {
+          en: "even", ipa: "[ˈiːvn]", ko: "~조차, 심지어", pos: "adv.",
+          ex: { en: "He didn't even say goodbye.", ko: "그는 인사조차 안 했어요." },
+        },
+        {
+          en: "exactly", ipa: "[ɪɡˈzæktli]", ko: "정확히", pos: "adv.",
+          ex: { en: "That's exactly what I mean.", ko: "제 말이 바로 그거예요." },
+        },
+      ],
+    },
+    {
+      name: "사람과 대명사류",
+      icon: "👥",
+      words: [
+        {
+          en: "someone", ipa: "[ˈsʌmwʌn]", ko: "누군가", pos: "pron.",
+          ex: { en: "There's someone at the door.", ko: "문 앞에 누가 왔어요." },
+        },
+        {
+          en: "anything", ipa: "[ˈeniθɪŋ]", ko: "무엇이든, 아무것도", pos: "pron.",
+          ex: { en: "Should I bring anything?", ko: "뭐 가져갈까요?" },
+        },
+      ],
+    },
+    {
+      name: "탈것과 사람",
+      icon: "➕",
+      words: [
+        {
+          en: "early", ipa: "[ˈɜːrli]", ko: "일찍; 이른", pos: "adv., adj.",
+          ex: { en: "I get up early on weekdays.", ko: "평일엔 일찍 일어나요." },
+        },
+        {
+          en: "driver", ipa: "[ˈdraɪvər]", ko: "운전자, 기사", pos: "n.",
+          ex: { en: "The bus driver was very kind.", ko: "버스 기사님이 아주 친절했어요." },
         },
       ],
     },
