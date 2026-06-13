@@ -73,6 +73,55 @@ for (const f of jaFiles) {
   }
 }
 
+
+// ── 챕터→어휘 커버리지 회귀 가드 (en/fr) ──
+// 규칙: 챕터 예문의 내용어는 같은 레벨 이하 어휘 사전에 수록되어야 한다.
+// 휴리스틱 잔여(활용형·고유명사 등)가 있으므로, 기준선 초과 시에만 경고한다.
+const EN_STOP = new Set(`a an the this that these those i you he she it we they me him her us them my your his its our their mine yours hers ours theirs myself yourself himself herself itself ourselves themselves yourselves who whom whose which what where when why how is are was were be been being am do does did done doing have has had having will would shall should can could may might must let lets not no nor and or but so yet for of in on at by to from with without about against between into through during before after above below up down out off over under again further then once here there all any both each few more most other some such only own same than too very just if because as until while s t don didn doesn isn aren wasn weren hasn haven hadn won wouldn shouldn couldn mustn needn ll ve re d m im id ive youre hes shes its were theyre`.split(/\s+/));
+const FR_STOP = new Set(`le la les un une des du de d l au aux et ou mais donc or ni car que qu qui quoi dont où je tu il elle on nous vous ils elles me te se m t s moi toi lui leur eux y en ne pas plus jamais rien personne mon ma mes ton ta tes son sa ses notre nos votre vos leurs ce cet cette ces ça cela ceci est sont était étaient été être suis es sommes êtes serai sera seront serait a ont avait avaient eu avoir ai as avons avez aura auront aurait dans sur sous avec sans pour par chez vers entre depuis pendant avant après très bien là ici si oui non aussi comme alors quand parce`.split(/\s+/));
+
+const COVER = {
+  english: { field: 'en', stop: EN_STOP, otPool: 'a1',
+    // 기준선: 2026-06 전수 수록 후 잔여 노이즈 + 여유 10
+    base: { ot: 18, a1: 26, a2: 50, b1: 49, b2: 58, c1: 44, c2: 45 },
+    lemmas: w => { const o = [w]; if (w.endsWith('ies')) o.push(w.slice(0,-3)+'y'); if (w.endsWith('es')) o.push(w.slice(0,-2)); if (w.endsWith('s')) o.push(w.slice(0,-1)); if (w.endsWith('ed')) o.push(w.slice(0,-2), w.slice(0,-1)); if (w.endsWith('ing')) o.push(w.slice(0,-3), w.slice(0,-3)+'e'); return o; },
+    tokenize: t => (t.toLowerCase().match(/[a-z']+/g) || []).map(w => w.replace(/^'+|'+$/g, '')) },
+  french: { field: 'fr', stop: FR_STOP, otPool: null,
+    base: { a0: 20, a1: 40, a2: 72, b1: 107, b2: 95, c1: 60, c2: 65 },
+    lemmas: w => { const o = [w]; if (w.endsWith('s')) o.push(w.slice(0,-1)); if (w.endsWith('e')) o.push(w.slice(0,-1)+'er'); if (w.endsWith('es')) o.push(w.slice(0,-2)+'er'); if (w.endsWith('ent')) o.push(w.slice(0,-3)+'er'); if (/ée?s?$/.test(w)) o.push(w.replace(/ée?s?$/, 'er')); return o; },
+    tokenize: t => (t.toLowerCase().replace(/['\u2019]/g, "'").match(/[a-zàâçéèêëîïôùûüœæ'-]+/g) || []).flatMap(w => w.split(/['-]/)).filter(Boolean) },
+};
+
+for (const [lang, cv] of Object.entries(COVER)) {
+  const cfg = LANGS[lang];
+  const vocabSets = {};
+  for (const lv of cfg.v) {
+    const m = await import(new URL(`${lang}/vocab/${lv}.js`, root));
+    const set = new Set();
+    for (const w of (m.default.themes || []).flatMap(t => t.words || []))
+      for (const tok of cv.tokenize(w[cv.field] || '')) if (!cv.stop.has(tok)) set.add(tok);
+    vocabSets[lv] = set;
+  }
+  for (const lv of cfg.g) {
+    const idx = cfg.v.indexOf(lv === 'ot' ? cv.otPool : lv);
+    const pool = new Set();
+    for (let i = 0; i <= Math.max(idx, 0); i++) for (const w of vocabSets[cfg.v[i]]) pool.add(w);
+    const m = await import(new URL(`${lang}/grammar/${lv}.js`, root));
+    const missing = new Set();
+    for (const ch of m.default)
+      for (const ex of (ch.sections || []).flatMap(sec => sec.examples || [])) {
+        const text = ex[cv.field]; if (!text) continue;
+        for (const tok of cv.tokenize(text)) {
+          if (tok.length < 2 || cv.stop.has(tok)) continue;
+          if (!cv.lemmas(tok).some(l => pool.has(l))) missing.add(tok);
+        }
+      }
+    const allow = cv.base[lv] ?? 0;
+    if (missing.size > allow)
+      warns.push(`[${lang}/${lv}] 챕터 어휘 커버리지 회귀 — 미수록 후보 ${missing.size} > 기준선 ${allow} (새 예문 단어를 어휘 사전에 추가하세요)`);
+  }
+}
+
 for (const w of warns) console.warn('⚠', w);
 for (const e of errors) console.error('✗', e);
 console.log(`\n콘텐츠 린트 — 오류 ${errors.length} · 경고 ${warns.length} (요미가나 검사 ${jaFiles.length}파일 중 실패 ${furiFail})`);
