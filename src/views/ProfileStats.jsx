@@ -36,8 +36,43 @@ async function fetchProfileStats(userId) {
 
 const isToday = ts => ts && new Date(ts).toDateString() === new Date().toDateString();
 
+/** 오늘 학습한 챕터 수 — 읽음 날짜·퀴즈 기록(localStorage) 합산, slug 중복 제거 */
+function chapterActivityToday(refManifest) {
+  let n = 0;
+  try {
+    for (const ref of Object.values(refManifest)) {
+      const seen = new Set();
+      const dates = JSON.parse(localStorage.getItem(`${ref.readKey}_dates`) || '{}');
+      for (const [slug, ts] of Object.entries(dates)) if (isToday(ts)) seen.add(slug);
+      const checks = JSON.parse(localStorage.getItem(`${ref.readKey}_check`) || '{}');
+      for (const [slug, r] of Object.entries(checks)) if (isToday(r?.at)) seen.add(slug);
+      n += seen.size;
+    }
+  } catch {}
+  return n;
+}
+
+/** 가장 최근 학습 기록이 있는 언어 — 진도 탭 기본값 */
+function lastActiveLang(refManifest) {
+  let best = null, bestTs = 0;
+  try {
+    for (const [lang, ref] of Object.entries(refManifest)) {
+      let ts = 0;
+      const dates = JSON.parse(localStorage.getItem(`${ref.readKey}_dates`) || '{}');
+      for (const t of Object.values(dates)) ts = Math.max(ts, t || 0);
+      const checks = JSON.parse(localStorage.getItem(`${ref.readKey}_check`) || '{}');
+      for (const r of Object.values(checks)) ts = Math.max(ts, r?.at || 0);
+      if (ts > bestTs) { bestTs = ts; best = lang; }
+    }
+  } catch {}
+  return best;
+}
+
 export default function ProfileStats({ refManifest = {} }) {
   const { user, profile } = useAuth();
+  // localStorage 기반 집계는 마운트 후에만 (SSR 일치)
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const { data } = useQuery({
     queryKey: ['profile-stats', user?.id],
@@ -52,7 +87,8 @@ export default function ProfileStats({ refManifest = {} }) {
   const hasHeatmap = data?.heatmapDayCounts && Object.keys(data.heatmapDayCounts).length > 0;
   const todayActivity =
     vocab.filter(v => isToday(v.created_at)).length +
-    vocab.filter(v => isToday(v.last_reviewed_at)).length;
+    vocab.filter(v => isToday(v.last_reviewed_at)).length +
+    (mounted ? chapterActivityToday(refManifest) : 0);
 
   return (
     <div className="bento">
@@ -307,9 +343,12 @@ function LevelCoverageCard({ refManifest }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
+    // 최근 학습 기록이 있는 언어 우선 → 마지막 선택 언어 폴백
+    const recent = lastActiveLang(refManifest);
     const saved = localStorage.getItem('lessons_lang');
-    if (langs.includes(saved)) setLang(saved);
-    // langs는 정적 매니페스트에서 파생
+    if (recent && langs.includes(recent)) setLang(recent);
+    else if (langs.includes(saved)) setLang(saved);
+    // langs·refManifest는 정적 매니페스트에서 파생
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const ref = refManifest[lang];
