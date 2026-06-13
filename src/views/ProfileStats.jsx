@@ -36,8 +36,43 @@ async function fetchProfileStats(userId) {
 
 const isToday = ts => ts && new Date(ts).toDateString() === new Date().toDateString();
 
+/** 오늘 학습한 챕터 수 — 읽음 날짜·퀴즈 기록(localStorage) 합산, slug 중복 제거 */
+function chapterActivityToday(refManifest) {
+  let n = 0;
+  try {
+    for (const ref of Object.values(refManifest)) {
+      const seen = new Set();
+      const dates = JSON.parse(localStorage.getItem(`${ref.readKey}_dates`) || '{}');
+      for (const [slug, ts] of Object.entries(dates)) if (isToday(ts)) seen.add(slug);
+      const checks = JSON.parse(localStorage.getItem(`${ref.readKey}_check`) || '{}');
+      for (const [slug, r] of Object.entries(checks)) if (isToday(r?.at)) seen.add(slug);
+      n += seen.size;
+    }
+  } catch {}
+  return n;
+}
+
+/** 가장 최근 학습 기록이 있는 언어 — 진도 탭 기본값 */
+function lastActiveLang(refManifest) {
+  let best = null, bestTs = 0;
+  try {
+    for (const [lang, ref] of Object.entries(refManifest)) {
+      let ts = 0;
+      const dates = JSON.parse(localStorage.getItem(`${ref.readKey}_dates`) || '{}');
+      for (const t of Object.values(dates)) ts = Math.max(ts, t || 0);
+      const checks = JSON.parse(localStorage.getItem(`${ref.readKey}_check`) || '{}');
+      for (const r of Object.values(checks)) ts = Math.max(ts, r?.at || 0);
+      if (ts > bestTs) { bestTs = ts; best = lang; }
+    }
+  } catch {}
+  return best;
+}
+
 export default function ProfileStats({ refManifest = {} }) {
   const { user, profile } = useAuth();
+  // localStorage 기반 집계는 마운트 후에만 (SSR 일치)
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const { data } = useQuery({
     queryKey: ['profile-stats', user?.id],
@@ -52,7 +87,8 @@ export default function ProfileStats({ refManifest = {} }) {
   const hasHeatmap = data?.heatmapDayCounts && Object.keys(data.heatmapDayCounts).length > 0;
   const todayActivity =
     vocab.filter(v => isToday(v.created_at)).length +
-    vocab.filter(v => isToday(v.last_reviewed_at)).length;
+    vocab.filter(v => isToday(v.last_reviewed_at)).length +
+    (mounted ? chapterActivityToday(refManifest) : 0);
 
   return (
     <div className="bento">
@@ -157,19 +193,38 @@ function GoalTile({ vocab }) {
   );
 }
 
-/* ── D-Day 타일 — 시험일 등 목표일 설정 (localStorage) ── */
+/* ── D-Day 타일 — 시험일 등 목표일 설정 (서버 동기화, 비로그인·오프라인은 localStorage 폴백) ── */
 
 function DdayTile() {
-  const [dday, setDday] = useState(null);
+  const { user, profile, fetchProfile } = useAuth();
+  const toast = useToast();
+  const [local, setLocal] = useState(null);
   const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState('');
   const [label, setLabel] = useState('');
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    try { setDday(JSON.parse(localStorage.getItem('as_dday') || 'null')); } catch {}
+    try { setLocal(JSON.parse(localStorage.getItem('as_dday') || 'null')); } catch {}
   }, []);
+
+  // 서버 값 우선, 없으면 로컬 폴백
+  const dday = profile?.dday_date
+    ? { date: profile.dday_date, label: profile.dday_label || '' }
+    : local;
+
+  // 서버가 비어 있고 로컬에 있으면 1회 끌어올림 (기기 마이그레이션)
+  useEffect(() => {
+    if (!user?.id || !profile || profile.dday_date || !local?.date) return;
+    supabase.from('profiles')
+      .update({ dday_date: local.date, dday_label: local.label || null })
+      .eq('id', user.id)
+      .then(({ error }) => { if (!error) fetchProfile(user.id, user.user_metadata); }, () => {});
+    // 최초 1회
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, profile?.dday_date, local?.date]);
 
   const diff = useMemo(() => {
     if (!dday?.date) return null;
@@ -184,17 +239,23 @@ function DdayTile() {
     setOpen(true);
   }
 
-  function save() {
-    if (!date) return;
-    const next = { date, label: label.trim() };
-    localStorage.setItem('as_dday', JSON.stringify(next));
-    setDday(next);
-    setOpen(false);
-  }
-
-  function clear() {
-    localStorage.removeItem('as_dday');
-    setDday(null);
+  async function persist(nextDate, nextLabel) {
+    if (busy) return;
+    setBusy(true);
+    // 로컬은 항상 기록 (오프라인 폴백)
+    try {
+      if (nextDate) localStorage.setItem('as_dday', JSON.stringify({ date: nextDate, label: nextLabel }));
+      else localStorage.removeItem('as_dday');
+    } catch {}
+    setLocal(nextDate ? { date: nextDate, label: nextLabel } : null);
+    if (user?.id) {
+      const { error } = await supabase.from('profiles')
+        .update({ dday_date: nextDate || null, dday_label: nextLabel || null })
+        .eq('id', user.id);
+      if (error) toast('동기화 실패 — 이 기기에는 저장됐어요', 'error');
+      else fetchProfile(user.id, user.user_metadata);
+    }
+    setBusy(false);
     setOpen(false);
   }
 
@@ -222,8 +283,10 @@ function DdayTile() {
               placeholder="예: JLPT N3" value={label} onChange={e => setLabel(e.target.value)} />
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <Button size="sm" onClick={save} disabled={!date} style={{ flex: 1 }}>저장</Button>
-            {dday && <Button size="sm" variant="secondary" onClick={clear} style={{ flex: 1 }}>삭제</Button>}
+            <Button size="sm" onClick={() => persist(date, label.trim())} disabled={!date || busy} style={{ flex: 1 }}>
+              {busy ? '저장 중...' : '저장'}
+            </Button>
+            {dday && <Button size="sm" variant="secondary" onClick={() => persist('', '')} disabled={busy} style={{ flex: 1 }}>삭제</Button>}
           </div>
         </TileModal>
       )}
@@ -307,9 +370,12 @@ function LevelCoverageCard({ refManifest }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
+    // 최근 학습 기록이 있는 언어 우선 → 마지막 선택 언어 폴백
+    const recent = lastActiveLang(refManifest);
     const saved = localStorage.getItem('lessons_lang');
-    if (langs.includes(saved)) setLang(saved);
-    // langs는 정적 매니페스트에서 파생
+    if (recent && langs.includes(recent)) setLang(recent);
+    else if (langs.includes(saved)) setLang(saved);
+    // langs·refManifest는 정적 매니페스트에서 파생
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const ref = refManifest[lang];
@@ -355,7 +421,13 @@ function LevelCoverageCard({ refManifest }) {
                 <span className="lvprog__bar-pass" style={{ width: `${total ? (passed / total) * 100 : 0}%` }} />
               </span>
               <span className="lvprog__count">
-                {done ? '수료' : `${passed} / ${total}`}
+                {done ? '수료' : (
+                  <span className="lvprog__frac">
+                    <span className="lvprog__frac-n">{passed}</span>
+                    <span className="lvprog__frac-sep">/</span>
+                    <span className="lvprog__frac-d">{total}</span>
+                  </span>
+                )}
               </span>
             </div>
           );

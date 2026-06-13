@@ -206,12 +206,14 @@ export default function VocabStats({ vocab, profile, section }) {
                       }), 1);
                       return (
                         <div key={i} className="forecast-col">
-                          <div className="forecast-bar" style={{
-                            height: `${(count / maxCount) * 100}%`, minHeight: count > 0 ? '4px' : '0',
-                            background: i === 0 ? 'var(--accent)' : 'var(--primary-light)',
-                          }} />
+                          <div className="forecast-count">{count > 0 ? count : '\u00A0'}</div>
+                          <div className="forecast-bar-area">
+                            <div className="forecast-bar" style={{
+                              height: `${(count / maxCount) * 100}%`, minHeight: count > 0 ? '4px' : '2px',
+                              background: count === 0 ? 'var(--border)' : i === 0 ? 'var(--accent)' : 'var(--primary-light)',
+                            }} />
+                          </div>
                           <div className="forecast-label">{i === 0 ? '오늘' : `${date.getMonth()+1}/${date.getDate()}`}</div>
-                          {count > 0 && <div className="forecast-count">{count}</div>}
                         </div>
                       );
                     })}

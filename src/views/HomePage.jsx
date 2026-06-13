@@ -193,7 +193,34 @@ export default function HomePage({ continueManifest = {}, refManifest = {} }) {
   const continueCard = useMemo(() => {
     if (!refProgress) return null;
     const { prog, lastVisit } = refProgress;
-    // 언어 우선순위: 마지막 학습 언어 → 프로필 학습 언어 → 매니페스트 순서
+
+    // ① 1순위: 가장 최근에 통과한 챕터의 '다음 챕터' (언어 불문 최신 통과 기준)
+    let recent = null; // { name, slug, at }
+    for (const [name, ref] of Object.entries(continueManifest)) {
+      const checkMap = prog[name]?.checkMap || {};
+      for (const [slug, r] of Object.entries(checkMap)) {
+        if (isPassed(r) && r.at && (!recent || r.at > recent.at)) recent = { name, slug, at: r.at };
+      }
+    }
+    if (recent) {
+      const ref = continueManifest[recent.name];
+      const checkMap = prog[recent.name]?.checkMap || {};
+      const flat = ref.levels.flatMap(l => l.chapters.map(ch => ({ ch, levelLabel: l.label })));
+      const idx = flat.findIndex(f => f.ch.slug === recent.slug);
+      for (let i = idx + 1; i < flat.length; i++) {
+        if (!isPassed(checkMap[flat[i].ch.slug])) {
+          return { ref, ch: flat[i].ch, levelLabel: flat[i].levelLabel, mode: 'next' };
+        }
+      }
+      // 최근 통과 이후가 모두 통과 — 앞쪽의 첫 미통과로
+      for (let i = 0; i < idx; i++) {
+        if (!isPassed(checkMap[flat[i].ch.slug])) {
+          return { ref, ch: flat[i].ch, levelLabel: flat[i].levelLabel, mode: 'next' };
+        }
+      }
+    }
+
+    // ② 폴백: 통과 기록이 없으면 — 마지막 학습 언어 → 프로필 언어 순으로 재도전/첫 미읽음
     const order = [
       ...(lastVisit?.lang ? [lastVisit.lang] : []),
       ...(profile?.learning_language || []),

@@ -33,6 +33,12 @@ export default function RefReadMark({ storageKey, slug }) {
           arr.push(slug);
           localStorage.setItem(storageKey, JSON.stringify(arr));
         }
+        // 읽은 날짜 — 홈 '오늘 활동' 집계용 (slug → ts)
+        const dates = JSON.parse(localStorage.getItem(`${storageKey}_dates`) || '{}');
+        if (!dates[slug]) {
+          dates[slug] = Date.now();
+          localStorage.setItem(`${storageKey}_dates`, JSON.stringify(dates));
+        }
         // 홈 '이어서 학습' 카드용 — 마지막으로 학습한 언어·챕터
         if (lang) localStorage.setItem('ref_last_visit', JSON.stringify({ lang, slug, at: Date.now() }));
       } catch {}
