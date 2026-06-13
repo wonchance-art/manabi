@@ -1189,7 +1189,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 /* ========= Forecast Chart ========= */
 .forecast-chart {
   display: flex;
-  align-items: flex-end;
+  align-items: stretch;
   justify-content: space-between;
   height: 150px;
   gap: 12px;
@@ -1201,7 +1201,15 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
+}
+
+/* 개수(위) — 막대(가운데, 아래 정렬) — 날짜(아래 한 줄) */
+.forecast-bar-area {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
 }
 
 .forecast-bar {
@@ -3625,8 +3633,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
     align-items: center;
     gap: 4px;
     color: var(--text-secondary);
-    font-size: 0.7rem;
-    font-weight: 500;
+    font-size: 0.875rem; /* 상단 GNB와 동일 */
+    font-weight: 600;
     padding: 8px 12px;
     min-width: 56px;
   }

@@ -193,19 +193,38 @@ function GoalTile({ vocab }) {
   );
 }
 
-/* ── D-Day 타일 — 시험일 등 목표일 설정 (localStorage) ── */
+/* ── D-Day 타일 — 시험일 등 목표일 설정 (서버 동기화, 비로그인·오프라인은 localStorage 폴백) ── */
 
 function DdayTile() {
-  const [dday, setDday] = useState(null);
+  const { user, profile, fetchProfile } = useAuth();
+  const toast = useToast();
+  const [local, setLocal] = useState(null);
   const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState('');
   const [label, setLabel] = useState('');
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    try { setDday(JSON.parse(localStorage.getItem('as_dday') || 'null')); } catch {}
+    try { setLocal(JSON.parse(localStorage.getItem('as_dday') || 'null')); } catch {}
   }, []);
+
+  // 서버 값 우선, 없으면 로컬 폴백
+  const dday = profile?.dday_date
+    ? { date: profile.dday_date, label: profile.dday_label || '' }
+    : local;
+
+  // 서버가 비어 있고 로컬에 있으면 1회 끌어올림 (기기 마이그레이션)
+  useEffect(() => {
+    if (!user?.id || !profile || profile.dday_date || !local?.date) return;
+    supabase.from('profiles')
+      .update({ dday_date: local.date, dday_label: local.label || null })
+      .eq('id', user.id)
+      .then(({ error }) => { if (!error) fetchProfile(user.id, user.user_metadata); }, () => {});
+    // 최초 1회
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, profile?.dday_date, local?.date]);
 
   const diff = useMemo(() => {
     if (!dday?.date) return null;
@@ -220,17 +239,23 @@ function DdayTile() {
     setOpen(true);
   }
 
-  function save() {
-    if (!date) return;
-    const next = { date, label: label.trim() };
-    localStorage.setItem('as_dday', JSON.stringify(next));
-    setDday(next);
-    setOpen(false);
-  }
-
-  function clear() {
-    localStorage.removeItem('as_dday');
-    setDday(null);
+  async function persist(nextDate, nextLabel) {
+    if (busy) return;
+    setBusy(true);
+    // 로컬은 항상 기록 (오프라인 폴백)
+    try {
+      if (nextDate) localStorage.setItem('as_dday', JSON.stringify({ date: nextDate, label: nextLabel }));
+      else localStorage.removeItem('as_dday');
+    } catch {}
+    setLocal(nextDate ? { date: nextDate, label: nextLabel } : null);
+    if (user?.id) {
+      const { error } = await supabase.from('profiles')
+        .update({ dday_date: nextDate || null, dday_label: nextLabel || null })
+        .eq('id', user.id);
+      if (error) toast('동기화 실패 — 이 기기에는 저장됐어요', 'error');
+      else fetchProfile(user.id, user.user_metadata);
+    }
+    setBusy(false);
     setOpen(false);
   }
 
@@ -258,8 +283,10 @@ function DdayTile() {
               placeholder="예: JLPT N3" value={label} onChange={e => setLabel(e.target.value)} />
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <Button size="sm" onClick={save} disabled={!date} style={{ flex: 1 }}>저장</Button>
-            {dday && <Button size="sm" variant="secondary" onClick={clear} style={{ flex: 1 }}>삭제</Button>}
+            <Button size="sm" onClick={() => persist(date, label.trim())} disabled={!date || busy} style={{ flex: 1 }}>
+              {busy ? '저장 중...' : '저장'}
+            </Button>
+            {dday && <Button size="sm" variant="secondary" onClick={() => persist('', '')} disabled={busy} style={{ flex: 1 }}>삭제</Button>}
           </div>
         </TileModal>
       )}
