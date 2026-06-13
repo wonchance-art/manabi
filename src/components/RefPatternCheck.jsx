@@ -34,16 +34,16 @@ function shuffleDistinct(arr) {
 }
 
 const STAGE_META = {
-  meaning: { num: '①', label: '표현 고르기', hint: '이 말을 하려면? 알맞은 표현을 고르세요' },
+  meaning: { num: '①', label: '빈칸 채우기', hint: '문장의 빈칸에 들어갈 형태를 고르세요' },
   apply:   { num: '②', label: '문장 만들기', hint: '한국어에 맞게 답하세요' },
   produce: { num: '③', label: '입으로 만들기', hint: '문장을 만든 뒤 확인하고 스스로 채점하세요' },
 };
 
 /**
  * 패턴 체크 v2 — 챕터 끝 3단계 퀴즈이자 통과 관문.
- * ① 표현 고르기(한국어 의도→표현·자동 채점) ② 문장 만들기(어순 배열/번역 고르기·자동 채점)
+ * ① 빈칸 채우기(예문 빈칸→형태 선택·자동 채점) ② 문장 만들기(어순 배열/번역 고르기·자동 채점)
  * ③ 입으로 만들기(회상·자가 채점). 정답률 80% 이상이면 통과로 기록하고 다음 챕터를 안내한다.
- * quiz: { meaning:[{ko,correct,distractors}], apply:[{type:'order',tokens,answer,ko,pron}|{type:'choose',ko,correct,distractors,pron}], produce:[{ko,main,pron}] }
+ * quiz: { meaning:[{sentence,full,ko,correct,distractors,pron}], apply:[{type:'order',tokens,answer,ko,pron}|{type:'choose',ko,correct,distractors,pron}], produce:[{ko,main,pron}] }
  */
 export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug, next = null, reviewLinks = [] }) {
   const { user } = useAuth();
@@ -191,10 +191,11 @@ export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug
                   </div>
                 )}
 
-                {/* ① 한국어 의도 → 표현 객관식 */}
+                {/* ① 예문 빈칸 — 문맥에 맞는 형태 고르기 */}
                 {q.type === 'meaning' && (
                   <div className="fr-quiz__q">
-                    <div className="fr-quiz__prompt">“{q.ko}”</div>
+                    <div className="fr-quiz__prompt" lang={langCode}>{q.sentence}</div>
+                    <div className="fr-quiz__sub">“{q.ko}”</div>
                     <div className="fr-quiz__opts fr-quiz__opts--grid">
                       {q.options.map(opt => (
                         <button
@@ -209,6 +210,13 @@ export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug
                         </button>
                       ))}
                     </div>
+                    {ans && (
+                      <div className="fr-quiz__answer">
+                        {ans.ok ? '○' : '×'}{' '}
+                        <span lang={langCode}>{renderMain(q.full, q.pron)}</span>
+                        <RefSpeak text={q.full} lang={lang} size="xs" />
+                      </div>
+                    )}
                   </div>
                 )}
 

@@ -82,27 +82,54 @@ export default function ReferenceChapterPage({ lang, slug }) {
     .flatMap(sec => sec.examples || [])
     .filter(ex => ex && ex.ko && refMain(ex));
 
-  // ① 표현 고르기 — 한국어 의도 → 알맞은 표현 (실전 방향: 쓰고 싶은 말에서 형태를 회상)
-  //    문법 용어 문답 대신, 바로 쓸 표현을 고르는 연습. 오답은 같은 챕터 → 같은 레벨의 다른 표현
-  const ownPatterns = chapter.sections.filter(s => s.pattern && s.patternKo);
-  const levelPatternPool = [...new Set(
+  // ① 빈칸 채우기 — 실제 예문에서 패턴 자리를 비우고, 문맥에 맞는 형태를 고른다
+  //    패턴 문자열에서 리터럴 조각(placeholder 제외)을 뽑아 예문 속 일치 구간을 빈칸으로
+  const coreSegs = pat => String(pat || '')
+    .split(/[〜～()/・+]|\s+|\b(?:N|V|A|Adj|inf|p\.p\.)\b/i)
+    .map(t => t.trim())
+    .filter(t => t.length >= 2);
+  const ownPatterns = chapter.sections.filter(s => s.pattern);
+  const levelCores = [...new Set(
     ref.getGrammarChapters(chapter.level)
       .filter(c => c.slug !== chapter.slug)
       .flatMap(c => c.sections || [])
-      .map(s => s.pattern)
-      .filter(Boolean)
+      .flatMap(s => coreSegs(s.pattern))
   )];
-  const meaning = ownPatterns.slice(0, 2).map(s => {
-    const ownOthers = ownPatterns.map(p => p.pattern).filter(k => k !== s.pattern);
-    const distractors = [...new Set([...ownOthers, ...levelPatternPool])]
-      .filter(k => k !== s.pattern)
-      .slice(0, 3);
-    return { ko: s.patternKo, correct: s.pattern, distractors };
-  }).filter(m => m.distractors.length >= 2);
+  const meaning = [];
+  const usedCloze = new Set();
+  for (const sec of ownPatterns) {
+    if (meaning.length >= 3) break;
+    const segs = coreSegs(sec.pattern).sort((a, b) => b.length - a.length);
+    for (const ex of (sec.examples || [])) {
+      if (!ex || !ex.ko) continue;
+      const main = refMain(ex);
+      if (!main || usedCloze.has(main)) continue;
+      const low = main.toLowerCase();
+      const seg = segs.find(g => low.includes(g.toLowerCase()));
+      if (!seg) continue;
+      const at = low.indexOf(seg.toLowerCase());
+      const actual = main.slice(at, at + seg.length);
+      const ownOther = ownPatterns.filter(o => o !== sec).flatMap(o => coreSegs(o.pattern));
+      const distractors = [...new Set([...ownOther, ...levelCores])]
+        .filter(d => d.toLowerCase() !== actual.toLowerCase() && !low.includes(d.toLowerCase()))
+        .slice(0, 3);
+      if (distractors.length < 2) continue;
+      meaning.push({
+        sentence: main.slice(0, at) + '＿＿＿' + main.slice(at + seg.length),
+        full: main,
+        ko: ex.ko,
+        correct: actual,
+        distractors,
+        pron: refPron(ex),
+      });
+      usedCloze.add(main);
+      break;
+    }
+  }
 
   // ② 적용 — 어순 배열(공백 토큰 3~10개) 우선, 안 되면 번역 고르기
   const apply = [];
-  const usedApply = new Set();
+  const usedApply = new Set(usedCloze);
   for (const ex of exAll) {
     if (apply.length >= 4) break;
     const main = refMain(ex);
