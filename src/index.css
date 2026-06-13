@@ -8469,3 +8469,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .vocab-hero__sub { font-size: 0.88rem; color: var(--text-secondary); }
 .vocab-hero__done { font-size: 0.92rem; font-weight: 600; color: var(--accent); }
 .vocab-hero__actions { display: flex; align-items: center; gap: 6px; }
+
+/* 진도 — n/n 분수 칼럼 정렬 (자릿수가 변해도 슬래시 위치 고정) */
+.lvprog__frac { display: inline-flex; align-items: baseline; }
+.lvprog__frac-n { min-width: 2ch; text-align: right; }
+.lvprog__frac-sep { margin: 0 2px; color: var(--text-muted); }
+.lvprog__frac-d { min-width: 2ch; text-align: left; }

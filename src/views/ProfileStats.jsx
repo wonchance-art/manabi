@@ -394,7 +394,13 @@ function LevelCoverageCard({ refManifest }) {
                 <span className="lvprog__bar-pass" style={{ width: `${total ? (passed / total) * 100 : 0}%` }} />
               </span>
               <span className="lvprog__count">
-                {done ? '수료' : `${passed} / ${total}`}
+                {done ? '수료' : (
+                  <span className="lvprog__frac">
+                    <span className="lvprog__frac-n">{passed}</span>
+                    <span className="lvprog__frac-sep">/</span>
+                    <span className="lvprog__frac-d">{total}</span>
+                  </span>
+                )}
               </span>
             </div>
           );
