@@ -18,10 +18,10 @@ function ScoreSection({ word, onScore }) {
       )}
       <p className="review-score-guide">기억이 얼마나 잘 됐나요?</p>
       <div className="review-score-grid">
-        <button onClick={() => onScore(1)} className="review-score-btn review-score-btn--again" title="전혀 기억 못 했음 — 오늘 다시 나옴 (+5 XP)">다시<span className="review-score-btn__sub">+5 XP</span></button>
-        <button onClick={() => onScore(2)} className="review-score-btn review-score-btn--hard" title="겨우 떠올렸음 — 복습 간격 짧아짐 (+8 XP)">어려움<span className="review-score-btn__sub">+8 XP</span></button>
-        <button onClick={() => onScore(3)} className="review-score-btn review-score-btn--good" title="정확히 기억했음 — 권장 선택 (+12 XP)">알맞음<span className="review-score-btn__sub">+12 XP ★</span></button>
-        <button onClick={() => onScore(4)} className="review-score-btn review-score-btn--easy" title="너무 쉬웠음 — 복습 간격 많이 늘어남 (+8 XP)">쉬움<span className="review-score-btn__sub">+8 XP</span></button>
+        <button onClick={() => onScore(1)} className="review-score-btn review-score-btn--again" title="오늘 다시 나와요">다시</button>
+        <button onClick={() => onScore(2)} className="review-score-btn review-score-btn--hard" title="간격이 짧아져요">어려움</button>
+        <button onClick={() => onScore(3)} className="review-score-btn review-score-btn--good" title="정확히 기억했다면 이걸로">알맞음</button>
+        <button onClick={() => onScore(4)} className="review-score-btn review-score-btn--easy" title="간격이 많이 늘어나요">쉬움</button>
       </div>
     </div>
   );
@@ -51,7 +51,6 @@ export default function VocabReview({
         <div className="review-done">
           <div className="review-done__header">
             <h2 className="review-done__title">오늘의 복습 완료</h2>
-            <p className="review-done__sub">FSRS 알고리즘이 당신의 기억을 강화했습니다.</p>
           </div>
 
           <div className="review-done__stats">
@@ -121,8 +120,6 @@ export default function VocabReview({
             );
           })()}
 
-          <p className="review-done__next-label">다음에 뭘 할까요?</p>
-
           <div className="review-done__actions">
             <Link href="/materials" className="review-done__card">
               <div className="review-done__card-text">
@@ -139,16 +136,30 @@ export default function VocabReview({
           </div>
 
           <Button variant="ghost" onClick={() => setTab('list')} style={{ marginTop: 8 }}>
-            단어장으로 돌아가기
+            목록으로
           </Button>
         </div>
       ) : reviewWords.length > 0 ? (
         <>
-          {/* 복습 모드 안내 — 인라인 복습이 주, 카드는 backup */}
-          <div style={{
-            textAlign: 'center', marginBottom: 16, fontSize: '0.78rem', color: 'var(--text-muted)',
-          }}>
-            자료를 읽으면서 노란 단어 클릭으로 더 자연스럽게 복습할 수 있어요
+          {/* 복습 모드 픽커 */}
+          <div className="chip-group" style={{ justifyContent: 'center', marginBottom: 14 }}>
+            {[['flash', '플래시'], ['typing', '타이핑'], ['context', '문맥'], ['listening', '듣기']].map(([m, label]) => (
+              <button
+                key={m}
+                type="button"
+                className={`chip ${reviewMode === m ? 'chip--active' : ''}`}
+                onClick={() => {
+                  setReviewMode(m);
+                  setShowAnswer(false);
+                  setShowHint(false);
+                  setTypingAnswer('');
+                  setContextSelected(null);
+                }}
+                disabled={m === 'listening' && !ttsSupported}
+              >
+                {label}
+              </button>
+            ))}
           </div>
 
           <div className="card review-card">

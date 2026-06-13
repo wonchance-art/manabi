@@ -124,6 +124,7 @@ function csvToVocabRows(text, userId) {
     if (!word?.trim()) return null;
     const text = word.trim();
     const isJa = /[\u3040-\u30ff\u4e00-\u9fff]/.test(text);
+    const isFr = !isJa && /[àâçéèêëîïôùûüœæ]/i.test(text);
     return {
       user_id: userId,
       word_text: text,
@@ -131,7 +132,7 @@ function csvToVocabRows(text, userId) {
       meaning: meaning.trim(),
       pos: pos.trim(),
       next_review_at: now,
-      language: isJa ? 'Japanese' : 'English',
+      language: isJa ? 'Japanese' : isFr ? 'French' : 'English',
       base_form: isJa ? text : text.toLowerCase(),
     };
   }).filter(Boolean);
@@ -731,11 +732,13 @@ export default function VocabPage() {
       </div>
 
       {/* 복습 히어로 — 이 페이지의 단 하나의 질문: 오늘 복습했나 */}
-      {tab === 'list' && (
+      {tab === 'list' && !isLoading && (
         <div className="card vocab-hero">
           <div className="vocab-hero__body">
-            <span className="vocab-hero__kicker">오늘 복습</span>
-            {reviewWords.length > 0 ? (
+            <span className="vocab-hero__kicker">{vocab.length === 0 ? '어휘' : '오늘 복습'}</span>
+            {vocab.length === 0 ? (
+              <span className="vocab-hero__sub">자료를 읽으며 단어를 모아보세요</span>
+            ) : reviewWords.length > 0 ? (
               <>
                 <span className="vocab-hero__num">{reviewWords.length}</span>
                 <span className="vocab-hero__sub">개 단어가 기다려요</span>
@@ -755,6 +758,9 @@ export default function VocabPage() {
             )}
           </div>
           <div className="vocab-hero__actions">
+            {vocab.length === 0 && (
+              <Link href="/materials" className="btn btn--primary btn--sm">자료 읽기 →</Link>
+            )}
             {reviewWords.length > 0 && (
               <Button onClick={startReview}>복습 시작 →</Button>
             )}
@@ -891,7 +897,7 @@ export default function VocabPage() {
 
             <label className="u-text-sm u-text-bold" style={{ display: 'block', marginBottom: 4 }}>언어</label>
             <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
-              {['Japanese', 'English'].map(lang => (
+              {['Japanese', 'English', 'French'].map(lang => (
                 <button
                   key={lang}
                   type="button"
@@ -899,7 +905,7 @@ export default function VocabPage() {
                   className={`btn btn--sm ${manualDraft.language === lang ? 'btn--primary' : 'btn--ghost'}`}
                   style={{ flex: 1 }}
                 >
-                  {lang === 'Japanese' ? '일본어' : '영어'}
+                  {lang === 'Japanese' ? '일본어' : lang === 'English' ? '영어' : '프랑스어'}
                 </button>
               ))}
             </div>
@@ -910,7 +916,7 @@ export default function VocabPage() {
               value={manualDraft.word_text}
               onChange={e => setManualDraft(d => ({ ...d, word_text: e.target.value }))}
               className="form-input"
-              placeholder={manualDraft.language === 'Japanese' ? '예: 食べる' : 'e.g. eloquent'}
+              placeholder={manualDraft.language === 'Japanese' ? '예: 食べる' : manualDraft.language === 'French' ? 'ex: bonjour' : 'e.g. eloquent'}
               autoFocus
               style={{ marginBottom: 12 }}
             />
