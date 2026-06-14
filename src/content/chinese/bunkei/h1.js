@@ -12,6 +12,7 @@ export default {
       items: [
         {
           pattern: "A 是 B",
+          pinyin: "shì",
           ch: "h1-01-shi",
           conn: "주어 + 是 + 명사",
           ko: "A는 B이다 (명사 술어)",
@@ -20,18 +21,20 @@ export default {
           note: "是는 명사를 잇는 '~이다'. 형용사 앞에는 是를 쓰지 않아요 (×我是高).",
         },
         {
-          pattern: "주어 + 형용사",
+          pattern: "주어 + 很 + 형용사",
+          pinyin: "hěn",
           ch: "h1-01-shi",
-          conn: "주어 + (很) + 형용사",
-          ko: "A는 ~하다 (형용사 술어, 是 없음)",
+          conn: "주어 + (很) + 형용사 (是 없음)",
+          ko: "A는 ~하다 (형용사 술어, 是 없이 很으로)",
           ex: { zh: "今天很热。", pinyin: "jīntiān hěn rè", ko: "오늘은 더워요." },
           ex2: { zh: "她很漂亮。", pinyin: "tā hěn piàoliang", ko: "그녀는 예뻐요." },
           note: "형용사 술어 앞엔 보통 很을 붙여요. 여기서 很은 '매우'보다 어조를 고르는 역할.",
         },
         {
           pattern: "주어 + 동사 + 목적어",
+          pinyin: "—",
           ch: "ot-04-word-order",
-          conn: "주어 + 동사 + 목적어 (SVO)",
+          conn: "주어 + 동사 + 목적어 (SVO 어순)",
           ko: "A가 B를 ~하다",
           ex: { zh: "我喝茶。", pinyin: "wǒ hē chá", ko: "저는 차를 마셔요." },
           ex2: { zh: "他看书。", pinyin: "tā kàn shū", ko: "그는 책을 봐요." },
@@ -39,6 +42,7 @@ export default {
         },
         {
           pattern: "A 有 B",
+          pinyin: "yǒu",
           ch: "h1-02-you",
           conn: "주어 + 有 + 목적어",
           ko: "A는 B가 있다 / B를 가지고 있다 (소유)",
@@ -48,6 +52,7 @@ export default {
         },
         {
           pattern: "장소 + 有 + 명사",
+          pinyin: "yǒu",
           ch: "h1-02-you",
           conn: "장소 + 有 + 명사 (존재)",
           ko: "(어떤 장소)에 ~이 있다",
@@ -57,6 +62,7 @@ export default {
         },
         {
           pattern: "A 在 + 장소",
+          pinyin: "zài",
           ch: "h1-09-time-place",
           conn: "주어 + 在 + 장소",
           ko: "A는 (어떤 장소)에 있다 (소재)",
@@ -66,6 +72,7 @@ export default {
         },
         {
           pattern: "주어 + 在 + 동사",
+          pinyin: "zài",
           ch: "h2-03-zai-progressive",
           conn: "주어 + 在 + 동사 — ~하는 중",
           ko: "~하고 있다",
@@ -75,13 +82,15 @@ export default {
         },
         {
           pattern: "A 叫 + 이름",
+          pinyin: "jiào",
           conn: "주어 + 叫 + 이름",
           ko: "A의 이름은 ~이다",
           ex: { zh: "我叫李明。", pinyin: "wǒ jiào Lǐ Míng", ko: "제 이름은 리밍이에요." },
           ex2: { zh: "你叫什么名字？", pinyin: "nǐ jiào shénme míngzi", ko: "이름이 뭐예요?" },
         },
         {
-          pattern: "주어 + 是 + 的",
+          pattern: "주어 + 是…的",
+          pinyin: "shì…de",
           ch: "h1-07-de-possessive",
           conn: "주어 + 是 + 명사 + 的 (소유·소속)",
           ko: "~의 것이다 / ~에 속하다",
@@ -90,9 +99,10 @@ export default {
           note: "的는 '~의'. 명사를 생략하고 '~의 것'으로도 써요 (我的 = 내 것).",
         },
         {
-          pattern: "주어 + 동사 + 목적어1 + 목적어2",
+          pattern: "주어 + 동사 + 대상 + 사물",
+          pinyin: "—",
           ch: "h2-07-prepositions",
-          conn: "给/教 등 + 사람 + 사물 (이중목적어)",
+          conn: "给/教 등 + 대상(사람) + 사물 (이중목적어)",
           ko: "~에게 ~을 …하다",
           ex: { zh: "老师教我们汉语。", pinyin: "lǎoshī jiāo wǒmen Hànyǔ", ko: "선생님이 우리에게 중국어를 가르쳐요." },
           ex2: { zh: "他给我一本书。", pinyin: "tā gěi wǒ yì běn shū", ko: "그가 저에게 책 한 권을 줘요." },
@@ -100,6 +110,7 @@ export default {
         },
         {
           pattern: "주어 + 喜欢 + 명사/동사",
+          pinyin: "xǐhuan",
           conn: "喜欢 + 명사/동사구 (좋아함)",
           ko: "~을 좋아하다 / ~하기를 좋아하다",
           ex: { zh: "我喜欢中国菜。", pinyin: "wǒ xǐhuan Zhōngguó cài", ko: "저는 중국 요리를 좋아해요." },
@@ -107,9 +118,10 @@ export default {
           note: "喜欢 뒤엔 명사도 동사구도 올 수 있어요.",
         },
         {
-          pattern: "주어 + 동사 + 동사",
+          pattern: "주어 + 去/来 + 동사",
+          pinyin: "qù/lái",
           ch: "h1-08-serial-verbs",
-          conn: "去/来 + 동작 — 잇따른 두 동작",
+          conn: "去/来 + 동작 — 잇따른 두 동작 (연동문)",
           ko: "~하러 가다/오다",
           ex: { zh: "我去商店买东西。", pinyin: "wǒ qù shāngdiàn mǎi dōngxi", ko: "저는 가게에 물건 사러 가요." },
           ex2: { zh: "他来看我。", pinyin: "tā lái kàn wǒ", ko: "그가 저를 보러 와요." },
@@ -122,6 +134,7 @@ export default {
       items: [
         {
           pattern: "不 + 동사/형용사",
+          pinyin: "bù",
           ch: "h1-06-negation",
           conn: "不 + 동사/형용사",
           ko: "~하지 않다 (현재·습관·의지의 부정)",
@@ -131,6 +144,7 @@ export default {
         },
         {
           pattern: "没・没有 + 동사",
+          pinyin: "méi・méiyǒu",
           ch: "h1-06-negation",
           conn: "没(有) + 동사",
           ko: "~하지 않았다 (과거·완료의 부정)",
@@ -139,7 +153,8 @@ export default {
           note: "이미 일어난 일의 부정은 不이 아니라 没. 没 뒤엔 了를 안 써요 (×没吃了).",
         },
         {
-          pattern: "不是 …",
+          pattern: "不是…",
+          pinyin: "bú shì",
           ch: "h1-01-shi",
           conn: "주어 + 不是 + 명사",
           ko: "~이 아니다",

@@ -12,6 +12,7 @@ export default {
       items: [
         {
           pattern: "把 + 목적어 + 동사 + 기타성분",
+          pinyin: "bǎ",
           ch: "h3-01-ba",
           conn: "주어 + 把 + 목적어 + 동사 + 결과/방향/了 등",
           ko: "~을 (어떻게) 처리하다",

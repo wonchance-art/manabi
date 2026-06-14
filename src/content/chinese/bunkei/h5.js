@@ -12,6 +12,7 @@ export default {
       items: [
         {
           pattern: "万一…，就…",
+          pinyin: "wànyī…jiù",
           ch: "h4-02-hypothesis",
           conn: "万一 + 만일의 사태，주어 + 就 + 대비",
           ko: "만일 ~하면, …하다 (낮은 확률·불상사 대비)",
@@ -21,6 +22,7 @@ export default {
         },
         {
           pattern: "哪怕…，也…",
+          pinyin: "nǎpà…yě",
           ch: "h4-02-hypothesis",
           conn: "哪怕 + 극단적 가정，주어 + 也 + 결과",
           ko: "설령 ~하더라도, …하다 (구어 양보)",
@@ -30,6 +32,7 @@ export default {
         },
         {
           pattern: "除非…，否则/不然…",
+          pinyin: "chúfēi…fǒuzé/bùrán",
           ch: "h4-02-hypothesis",
           conn: "除非 + 유일조건，否则/不然 + 부정적 결과",
           ko: "~하지 않는 한, 그렇지 않으면 …하다",
@@ -39,6 +42,7 @@ export default {
         },
         {
           pattern: "一旦…，就…",
+          pinyin: "yídàn…jiù",
           ch: "h4-02-hypothesis",
           conn: "一旦 + 일이 일어나면，주어 + 就 + 결과",
           ko: "일단 ~하면, …하다",
@@ -48,6 +52,7 @@ export default {
         },
         {
           pattern: "假如・假设…，那么…",
+          pinyin: "jiǎrú・jiǎshè…nàme",
           ch: "h4-02-hypothesis",
           conn: "假如/假设 + 가정，那么/就 + 결과",
           ko: "가령 ~라면, 그렇다면 …하다",
@@ -57,6 +62,7 @@ export default {
         },
         {
           pattern: "倘若…，便/就…",
+          pinyin: "tǎngruò…biàn/jiù",
           ch: "h4-02-hypothesis",
           conn: "倘若 + 가정，便/就 + 결과 (서면)",
           ko: "만약 ~라면 (문어)",
@@ -66,6 +72,7 @@ export default {
         },
         {
           pattern: "要不是…，就…",
+          pinyin: "yàobushì…jiù",
           ch: "h4-02-hypothesis",
           conn: "要不是 + 과거 사실，주어 + 就 + 가정 결과",
           ko: "~하지 않았더라면, …했을 것이다",
@@ -80,6 +87,7 @@ export default {
       items: [
         {
           pattern: "尽管…，但/还是…",
+          pinyin: "jǐnguǎn…dàn/háishi",
           ch: "h3-08-complex-sentence",
           conn: "尽管 + 사실，但是/还是 + 상반 결과",
           ko: "비록 ~지만, 그래도 …하다 (서면 양보)",
@@ -89,6 +97,7 @@ export default {
         },
         {
           pattern: "反而",
+          pinyin: "fǎn'ér",
           ch: "h3-08-complex-sentence",
           conn: "예상과 달리，주어 + 反而 + 상반 결과",
           ko: "오히려, 도리어",
@@ -98,6 +107,7 @@ export default {
         },
         {
           pattern: "并 + 不/没",
+          pinyin: "bìng",
           ch: "h5-07-rhetorical-emphasis",
           conn: "주어 + 并 + 不/没 + 술어",
           ko: "결코 ~하지 않다 (예상·통념의 반박)",
@@ -107,6 +117,7 @@ export default {
         },
         {
           pattern: "却",
+          pinyin: "què",
           ch: "h3-08-complex-sentence",
           conn: "주어 + 却 + 상반 결과",
           ko: "그런데도, 오히려 (전환 부사)",
@@ -116,6 +127,7 @@ export default {
         },
         {
           pattern: "然而",
+          pinyin: "rán'ér",
           ch: "h3-08-complex-sentence",
           conn: "앞 문장。然而，주어 + 전환",
           ko: "그러나, 그렇지만 (서면)",
@@ -125,6 +137,7 @@ export default {
         },
         {
           pattern: "总算",
+          pinyin: "zǒngsuàn",
           conn: "주어 + 总算 + 결과 (가까스로·마침내)",
           ko: "겨우, 그럭저럭 (마침내)",
           ex: { zh: "经过几次修改，报告总算完成了。", pinyin: "jīngguò jǐ cì xiūgǎi, bàogào zǒngsuàn wánchéng le", ko: "몇 번 수정한 끝에 보고서가 겨우 완성됐어요." },
@@ -133,6 +146,7 @@ export default {
         },
         {
           pattern: "再怎么…，也…",
+          pinyin: "zài zěnme…yě",
           ch: "h4-07-rhetorical",
           conn: "再怎么 + 동사/형용사，也 + 결과",
           ko: "아무리 ~해도, …하다",
@@ -147,6 +161,7 @@ export default {
       items: [
         {
           pattern: "之所以…，是因为…",
+          pinyin: "zhīsuǒyǐ…shì yīnwèi",
           ch: "h5-06-zhi-qi",
           conn: "주어 + 之所以 + 결과，是因为 + 원인",
           ko: "~한 까닭은 …하기 때문이다",
@@ -155,6 +170,7 @@ export default {
         },
         {
           pattern: "正是・就是",
+          pinyin: "zhèngshì・jiùshì",
           conn: "正是/就是 + 강조 대상",
           ko: "바로 ~이다",
           ex: { zh: "这正是我想说的。", pinyin: "zhè zhèng shì wǒ xiǎng shuō de", ko: "이게 바로 제가 하고 싶었던 말이에요." },
@@ -163,6 +179,7 @@ export default {
         },
         {
           pattern: "连…带…",
+          pinyin: "lián…dài",
           ch: "h4-04-lian-dou",
           conn: "连 + A + 带 + B (A와 B를 한꺼번에)",
           ko: "~까지 (해서), ~와 …를 통째로",
@@ -172,6 +189,7 @@ export default {
         },
         {
           pattern: "再…不过了",
+          pinyin: "zài…bùguò le",
           conn: "再 + 형용사 + 不过了",
           ko: "더할 나위 없이 ~하다",
           ex: { zh: "这个主意再好不过了。", pinyin: "zhège zhǔyi zài hǎo bú guò le", ko: "이 아이디어는 더할 나위 없이 좋아요." },
@@ -180,6 +198,7 @@ export default {
         },
         {
           pattern: "A 是 A，但…",
+          pinyin: "shì…dàn",
           ch: "h3-08-complex-sentence",
           conn: "형용사1 + 是 + 형용사1，但 + 유보",
           ko: "~하긴 한데, 다만 …하다",
@@ -189,6 +208,7 @@ export default {
         },
         {
           pattern: "就连…，也…",
+          pinyin: "jiùlián…yě",
           ch: "h4-04-lian-dou",
           conn: "就连 + 극단적 예，也/都 + 술어",
           ko: "~조차도 …하다 (강조)",
@@ -198,6 +218,7 @@ export default {
         },
         {
           pattern: "正因为…，才…",
+          pinyin: "zhèng yīnwèi…cái",
           ch: "h3-08-complex-sentence",
           conn: "正因为 + 원인，才 + 결과 (원인 강조)",
           ko: "바로 ~하기 때문에 비로소 …하다",
@@ -207,6 +228,7 @@ export default {
         },
         {
           pattern: "何尝・岂",
+          pinyin: "hécháng・qǐ",
           ch: "h4-07-rhetorical",
           conn: "何尝/岂 + 불(반어) + 술어",
           ko: "어찌 ~하겠는가 (반어 강조)",
@@ -221,6 +243,7 @@ export default {
       items: [
         {
           pattern: "凡是…，都…",
+          pinyin: "fánshì…dōu",
           ch: "h3-08-complex-sentence",
           conn: "凡是 + 부류，주어 + 都 + 술어",
           ko: "무릇 ~한 것은 다 …하다",
@@ -230,6 +253,7 @@ export default {
         },
         {
           pattern: "无论如何",
+          pinyin: "wúlùn rúhé",
           ch: "h3-08-complex-sentence",
           conn: "无论如何 + 주어 + 都/也 + 술어",
           ko: "어떻게 해서든, 무슨 일이 있어도",
@@ -238,6 +262,7 @@ export default {
         },
         {
           pattern: "除了…，其余/其他…",
+          pinyin: "chúle…qíyú/qítā",
           ch: "h4-05-chule",
           conn: "除了 + A 以外，其余/其他 + 나머지",
           ko: "~을 제외한 나머지는 …하다",
@@ -246,6 +271,7 @@ export default {
         },
         {
           pattern: "以…为…",
+          pinyin: "yǐ…wéi",
           ch: "h5-01-shumianyu",
           conn: "以 + A + 为 + B (A를 B로 삼다/하다)",
           ko: "~을 …으로 삼다/하다 (서면)",
@@ -255,6 +281,7 @@ export default {
         },
         {
           pattern: "在…方面",
+          pinyin: "zài…fāngmiàn",
           conn: "在 + 분야/측면 + 方面",
           ko: "~ 방면에서, ~ 측면에서",
           ex: { zh: "在学习方面，他很有方法。", pinyin: "zài xuéxí fāngmiàn, tā hěn yǒu fāngfǎ", ko: "공부 방면에서 그는 요령이 있어요." },
@@ -262,6 +289,7 @@ export default {
         },
         {
           pattern: "就…而言",
+          pinyin: "jiù…éryán",
           ch: "h5-01-shumianyu",
           conn: "就 + 화제 + 而言",
           ko: "~에 관해 말하자면 (서면)",
@@ -271,6 +299,7 @@ export default {
         },
         {
           pattern: "总的来说・总之",
+          pinyin: "zǒng de lái shuō・zǒngzhī",
           ch: "h5-02-connectors",
           conn: "总的来说/总之 + 총괄",
           ko: "대체로 말하면, 요컨대",
@@ -285,6 +314,7 @@ export default {
       items: [
         {
           pattern: "不仅…，而且/还…",
+          pinyin: "bùjǐn…érqiě/hái",
           ch: "h4-09-budan-erqie",
           conn: "不仅 + A，而且/还 + 더 나아간 B",
           ko: "~할 뿐만 아니라, 게다가 …하다 (서면)",
@@ -294,6 +324,7 @@ export default {
         },
         {
           pattern: "甚至",
+          pinyin: "shènzhì",
           ch: "h4-09-budan-erqie",
           conn: "주어 + 甚至 + 극단적 예",
           ko: "심지어, ~까지도",
@@ -303,6 +334,7 @@ export default {
         },
         {
           pattern: "与其…，不如…",
+          pinyin: "yǔqí…bùrú",
           ch: "h3-08-complex-sentence",
           conn: "与其 + A，不如 + 더 나은 B",
           ko: "~하느니 차라리 …하는 게 낫다",
@@ -312,6 +344,7 @@ export default {
         },
         {
           pattern: "宁可…，也…",
+          pinyin: "nìngkě…yě",
           ch: "h3-08-complex-sentence",
           conn: "宁可 + 감수하는 선택，也 + 양보 / 也不 + 거부",
           ko: "차라리 ~할지언정, …하다/하지 않다",
