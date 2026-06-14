@@ -10,7 +10,7 @@ import { isPassed } from '../components/RefPatternCheck';
 import Button from '../components/Button';
 import VocabStats from './VocabStats';
 
-const LANG_KO = { Japanese: '일본어', English: '영어', French: '프랑스어' };
+const LANG_KO = { Japanese: '일본어', English: '영어', Chinese: '중국어', French: '프랑스어' };
 
 async function fetchProfileStats(userId) {
   const heatmapStart = new Date();

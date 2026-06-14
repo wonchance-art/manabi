@@ -11,7 +11,7 @@ import Button from '../components/Button';
 
 /* ── 공용 헬퍼 ── */
 
-const LANG_KO = { Japanese: '일본어', English: '영어', French: '프랑스어' };
+const LANG_KO = { Japanese: '일본어', English: '영어', Chinese: '중국어', French: '프랑스어' };
 const STATUS_KO = { recruiting: '모집 중', active: '진행 중', done: '수료' };
 
 /** 오늘 기준 주차 (모집 중 = 0, 진행 중 = 1..weeks 클램프) */
