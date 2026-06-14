@@ -12,6 +12,7 @@ export default {
       items: [
         {
           pattern: "A 是 B",
+          ch: "h1-01-shi",
           conn: "주어 + 是 + 명사",
           ko: "A는 B이다 (명사 술어)",
           ex: { zh: "我是学生。", pinyin: "wǒ shì xuésheng", ko: "저는 학생이에요." },
@@ -20,6 +21,7 @@ export default {
         },
         {
           pattern: "주어 + 형용사",
+          ch: "h1-01-shi",
           conn: "주어 + (很) + 형용사",
           ko: "A는 ~하다 (형용사 술어, 是 없음)",
           ex: { zh: "今天很热。", pinyin: "jīntiān hěn rè", ko: "오늘은 더워요." },
@@ -28,6 +30,7 @@ export default {
         },
         {
           pattern: "주어 + 동사 + 목적어",
+          ch: "ot-04-word-order",
           conn: "주어 + 동사 + 목적어 (SVO)",
           ko: "A가 B를 ~하다",
           ex: { zh: "我喝茶。", pinyin: "wǒ hē chá", ko: "저는 차를 마셔요." },
@@ -36,6 +39,7 @@ export default {
         },
         {
           pattern: "A 有 B",
+          ch: "h1-02-you",
           conn: "주어 + 有 + 목적어",
           ko: "A는 B가 있다 / B를 가지고 있다 (소유)",
           ex: { zh: "我有一个妹妹。", pinyin: "wǒ yǒu yí ge mèimei", ko: "저는 여동생이 한 명 있어요." },
@@ -44,6 +48,7 @@ export default {
         },
         {
           pattern: "장소 + 有 + 명사",
+          ch: "h1-02-you",
           conn: "장소 + 有 + 명사 (존재)",
           ko: "(어떤 장소)에 ~이 있다",
           ex: { zh: "桌子上有书。", pinyin: "zhuōzi shang yǒu shū", ko: "책상 위에 책이 있어요." },
@@ -52,6 +57,7 @@ export default {
         },
         {
           pattern: "A 在 + 장소",
+          ch: "h1-09-time-place",
           conn: "주어 + 在 + 장소",
           ko: "A는 (어떤 장소)에 있다 (소재)",
           ex: { zh: "我在学校。", pinyin: "wǒ zài xuéxiào", ko: "저는 학교에 있어요." },
@@ -60,6 +66,7 @@ export default {
         },
         {
           pattern: "주어 + 在 + 동사",
+          ch: "h2-03-zai-progressive",
           conn: "주어 + 在 + 동사 — ~하는 중",
           ko: "~하고 있다",
           ex: { zh: "我在吃饭。", pinyin: "wǒ zài chī fàn", ko: "저는 밥 먹고 있어요." },
@@ -75,6 +82,7 @@ export default {
         },
         {
           pattern: "주어 + 是 + 的",
+          ch: "h1-07-de-possessive",
           conn: "주어 + 是 + 명사 + 的 (소유·소속)",
           ko: "~의 것이다 / ~에 속하다",
           ex: { zh: "这是我的书。", pinyin: "zhè shì wǒ de shū", ko: "이건 제 책이에요." },
@@ -83,6 +91,7 @@ export default {
         },
         {
           pattern: "주어 + 동사 + 목적어1 + 목적어2",
+          ch: "h2-07-prepositions",
           conn: "给/教 등 + 사람 + 사물 (이중목적어)",
           ko: "~에게 ~을 …하다",
           ex: { zh: "老师教我们汉语。", pinyin: "lǎoshī jiāo wǒmen Hànyǔ", ko: "선생님이 우리에게 중국어를 가르쳐요." },
@@ -99,6 +108,7 @@ export default {
         },
         {
           pattern: "주어 + 동사 + 동사",
+          ch: "h1-08-serial-verbs",
           conn: "去/来 + 동작 — 잇따른 두 동작",
           ko: "~하러 가다/오다",
           ex: { zh: "我去商店买东西。", pinyin: "wǒ qù shāngdiàn mǎi dōngxi", ko: "저는 가게에 물건 사러 가요." },
@@ -112,6 +122,7 @@ export default {
       items: [
         {
           pattern: "不 + 동사/형용사",
+          ch: "h1-06-negation",
           conn: "不 + 동사/형용사",
           ko: "~하지 않다 (현재·습관·의지의 부정)",
           ex: { zh: "我不吃肉。", pinyin: "wǒ bù chī ròu", ko: "저는 고기를 안 먹어요." },
@@ -120,6 +131,7 @@ export default {
         },
         {
           pattern: "没・没有 + 동사",
+          ch: "h1-06-negation",
           conn: "没(有) + 동사",
           ko: "~하지 않았다 (과거·완료의 부정)",
           ex: { zh: "我没吃饭。", pinyin: "wǒ méi chī fàn", ko: "저는 밥을 안 먹었어요." },
@@ -128,6 +140,7 @@ export default {
         },
         {
           pattern: "不是 …",
+          ch: "h1-01-shi",
           conn: "주어 + 不是 + 명사",
           ko: "~이 아니다",
           ex: { zh: "我不是老师。", pinyin: "wǒ bú shì lǎoshī", ko: "저는 선생님이 아니에요." },
@@ -135,6 +148,7 @@ export default {
         },
         {
           pattern: "没有",
+          ch: "h1-02-you",
           conn: "주어 + 没有 + 명사",
           ko: "~이 없다 / 가지고 있지 않다",
           ex: { zh: "我没有钱。", pinyin: "wǒ méiyǒu qián", ko: "저는 돈이 없어요." },
@@ -143,6 +157,7 @@ export default {
         },
         {
           pattern: "别 + 동사",
+          ch: "h1-06-negation",
           conn: "别 + 동사 (금지 명령)",
           ko: "~하지 마",
           ex: { zh: "别去！", pinyin: "bié qù", ko: "가지 마!" },
@@ -151,6 +166,7 @@ export default {
         },
         {
           pattern: "不 + 太 + 형용사",
+          ch: "h1-06-negation",
           conn: "不太 + 형용사 — 완곡한 부정",
           ko: "그다지 ~하지 않다",
           ex: { zh: "我不太喜欢。", pinyin: "wǒ bú tài xǐhuan", ko: "저는 별로 안 좋아해요." },
@@ -159,6 +175,7 @@ export default {
         },
         {
           pattern: "还没・没…呢",
+          ch: "h1-06-negation",
           conn: "还 + 没(有) + 동사 (+ 呢) — 아직 안 함",
           ko: "아직 ~하지 않았다",
           ex: { zh: "他还没来。", pinyin: "tā hái méi lái", ko: "그는 아직 안 왔어요." },
@@ -178,6 +195,7 @@ export default {
       items: [
         {
           pattern: "… 吗？",
+          ch: "h1-05-ma-questions",
           conn: "평서문 + 吗 (예/아니오 의문)",
           ko: "~입니까? / ~해요?",
           ex: { zh: "你是学生吗？", pinyin: "nǐ shì xuésheng ma", ko: "당신은 학생이에요?" },
@@ -186,6 +204,7 @@ export default {
         },
         {
           pattern: "… 呢？",
+          ch: "h1-05-ma-questions",
           conn: "명사/대명사 + 呢 (되묻기·생략 의문)",
           ko: "~는요?",
           ex: { zh: "我很好，你呢？", pinyin: "wǒ hěn hǎo, nǐ ne", ko: "저는 잘 지내요, 당신은요?" },
@@ -193,6 +212,7 @@ export default {
         },
         {
           pattern: "什么",
+          ch: "h1-05-ma-questions",
           conn: "什么 (+ 명사) — 무엇/무슨",
           ko: "무엇 / 무슨",
           ex: { zh: "你叫什么名字？", pinyin: "nǐ jiào shénme míngzi", ko: "이름이 뭐예요?" },
@@ -201,6 +221,7 @@ export default {
         },
         {
           pattern: "谁",
+          ch: "h1-05-ma-questions",
           conn: "谁 — 누구 (주어/목적어 자리 그대로)",
           ko: "누구",
           ex: { zh: "他是谁？", pinyin: "tā shì shéi", ko: "그는 누구예요?" },
@@ -209,6 +230,7 @@ export default {
         },
         {
           pattern: "哪・哪儿",
+          ch: "h1-05-ma-questions",
           conn: "哪 + 양사 (어느) / 哪儿 (어디)",
           ko: "어느 / 어디",
           ex: { zh: "你去哪儿？", pinyin: "nǐ qù nǎr", ko: "어디 가요?" },
@@ -216,6 +238,7 @@ export default {
         },
         {
           pattern: "几・多少",
+          ch: "h1-10-numbers",
           conn: "几 + 양사 (10 미만) / 多少 (수 제한 없음)",
           ko: "몇 / 얼마",
           ex: { zh: "现在几点？", pinyin: "xiànzài jǐ diǎn", ko: "지금 몇 시예요?" },
@@ -224,6 +247,7 @@ export default {
         },
         {
           pattern: "怎么样",
+          ch: "h1-05-ma-questions",
           conn: "주어 + 怎么样 (상태·의향 묻기)",
           ko: "어때(요)?",
           ex: { zh: "你身体怎么样？", pinyin: "nǐ shēntǐ zěnmeyàng", ko: "몸은 좀 어때요?" },
@@ -231,6 +255,7 @@ export default {
         },
         {
           pattern: "为什么",
+          ch: "h1-05-ma-questions",
           conn: "为什么 + 절 — 이유 묻기",
           ko: "왜 ~해요?",
           ex: { zh: "你为什么不来？", pinyin: "nǐ wèishénme bù lái", ko: "왜 안 와요?" },
@@ -238,6 +263,7 @@ export default {
         },
         {
           pattern: "V 不 V",
+          ch: "h1-05-ma-questions",
           conn: "동사/형용사 + 不 + 동사/형용사",
           ko: "~해요, 안 해요? (정반의문)",
           ex: { zh: "你去不去？", pinyin: "nǐ qù bu qù", ko: "갈 거예요, 안 갈 거예요?" },
@@ -246,6 +272,7 @@ export default {
         },
         {
           pattern: "有没有 …？",
+          ch: "h1-02-you",
           conn: "有没有 + 명사 — 有의 정반의문",
           ko: "~이 있어요, 없어요?",
           ex: { zh: "你有没有时间？", pinyin: "nǐ yǒu méiyǒu shíjiān", ko: "시간 있으세요?" },
@@ -253,6 +280,7 @@ export default {
         },
         {
           pattern: "好吗・好不好",
+          ch: "h1-05-ma-questions",
           conn: "제안 + 好吗?/好不好? — 동의 구하기",
           ko: "~할래요? / ~하는 거 어때요?",
           ex: { zh: "我们一起去，好吗？", pinyin: "wǒmen yìqǐ qù, hǎo ma", ko: "우리 같이 가요, 괜찮죠?" },
@@ -260,6 +288,7 @@ export default {
         },
         {
           pattern: "怎么 + 동사",
+          ch: "h1-05-ma-questions",
           conn: "怎么 + 동사 — 방식·이유 묻기",
           ko: "어떻게 / 왜 ~해요?",
           ex: { zh: "这个字怎么读？", pinyin: "zhège zì zěnme dú", ko: "이 글자 어떻게 읽어요?" },
@@ -273,6 +302,7 @@ export default {
       items: [
         {
           pattern: "수사 + 양사 + 명사",
+          ch: "h1-04-measure-words",
           conn: "수사 + 양사 + 명사",
           ko: "~ 몇 개의 …",
           ex: { zh: "三个人", pinyin: "sān ge rén", ko: "세 사람" },
@@ -281,6 +311,7 @@ export default {
         },
         {
           pattern: "一个",
+          ch: "h1-04-measure-words",
           conn: "수사 + 个 + 명사",
           ko: "~ 개/명 (가장 흔한 양사)",
           ex: { zh: "一个苹果", pinyin: "yí ge píngguǒ", ko: "사과 한 개" },
@@ -289,6 +320,7 @@ export default {
         },
         {
           pattern: "这・那 + 양사 + 명사",
+          ch: "h1-03-zhe-na",
           conn: "这/那 (+ 양사) + 명사",
           ko: "이/그(저) ~",
           ex: { zh: "这本书很好。", pinyin: "zhè běn shū hěn hǎo", ko: "이 책 정말 좋아요." },
@@ -297,6 +329,7 @@ export default {
         },
         {
           pattern: "这儿・那儿",
+          ch: "h1-03-zhe-na",
           conn: "这儿(여기) / 那儿(거기·저기)",
           ko: "여기 / 거기·저기",
           ex: { zh: "我在这儿。", pinyin: "wǒ zài zhèr", ko: "저는 여기 있어요." },
@@ -304,6 +337,7 @@ export default {
         },
         {
           pattern: "这些・那些",
+          ch: "h1-03-zhe-na",
           conn: "这些/那些 + 명사 — 이것들/저것들",
           ko: "이 ~들 / 저 ~들",
           ex: { zh: "这些书都是我的。", pinyin: "zhèxiē shū dōu shì wǒ de", ko: "이 책들은 다 제 거예요." },
@@ -311,6 +345,7 @@ export default {
         },
         {
           pattern: "几点・几岁",
+          ch: "h1-10-numbers",
           conn: "几 + 点/岁 (시각·나이 묻기)",
           ko: "몇 시 / 몇 살",
           ex: { zh: "你几岁？", pinyin: "nǐ jǐ suì", ko: "몇 살이에요? (어린이에게)" },
@@ -318,6 +353,7 @@ export default {
         },
         {
           pattern: "양사 중첩",
+          ch: "h1-04-measure-words",
           conn: "每 + 양사 + 명사 — 매~",
           ko: "~마다, 모든 ~",
           ex: { zh: "每个人都有名字。", pinyin: "měi ge rén dōu yǒu míngzi", ko: "사람마다 이름이 있어요." },
@@ -331,6 +367,7 @@ export default {
       items: [
         {
           pattern: "시간사 + 동사",
+          ch: "h1-09-time-place",
           conn: "시간 표현 + 주어/동사 (시간은 동사 앞)",
           ko: "(언제) ~하다",
           ex: { zh: "我今天去。", pinyin: "wǒ jīntiān qù", ko: "저는 오늘 가요." },
@@ -339,6 +376,7 @@ export default {
         },
         {
           pattern: "… 点",
+          ch: "h1-10-numbers",
           conn: "숫자 + 点 (+ 分)",
           ko: "~시 (~분)",
           ex: { zh: "现在八点。", pinyin: "xiànzài bā diǎn", ko: "지금 8시예요." },
@@ -346,6 +384,7 @@ export default {
         },
         {
           pattern: "今天・明天・昨天",
+          ch: "h1-10-numbers",
           conn: "날 표현 (今天/明天/昨天)",
           ko: "오늘 / 내일 / 어제",
           ex: { zh: "昨天我没上班。", pinyin: "zuótiān wǒ méi shàngbān", ko: "어제 저는 출근 안 했어요." },
@@ -353,6 +392,7 @@ export default {
         },
         {
           pattern: "星期 + 숫자",
+          ch: "h1-10-numbers",
           conn: "星期 + 一~六 / 星期天 (요일)",
           ko: "~요일",
           ex: { zh: "今天星期三。", pinyin: "jīntiān xīngqīsān", ko: "오늘은 수요일이에요." },
@@ -361,6 +401,7 @@ export default {
         },
         {
           pattern: "… 月 … 号",
+          ch: "h1-10-numbers",
           conn: "숫자 + 月 + 숫자 + 号",
           ko: "~월 ~일",
           ex: { zh: "今天五月一号。", pinyin: "jīntiān wǔ yuè yī hào", ko: "오늘은 5월 1일이에요." },
@@ -369,6 +410,7 @@ export default {
         },
         {
           pattern: "现在",
+          ch: "h1-09-time-place",
           conn: "现在 + 술어 (지금)",
           ko: "지금 ~하다",
           ex: { zh: "我现在很忙。", pinyin: "wǒ xiànzài hěn máng", ko: "저는 지금 바빠요." },
@@ -376,6 +418,7 @@ export default {
         },
         {
           pattern: "上午・中午・下午・晚上",
+          ch: "h1-10-numbers",
           conn: "하루 시간대 + 동사",
           ko: "오전/점심/오후/저녁에 ~하다",
           ex: { zh: "我上午有课。", pinyin: "wǒ shàngwǔ yǒu kè", ko: "저는 오전에 수업이 있어요." },
@@ -383,6 +426,7 @@ export default {
         },
         {
           pattern: "什么时候",
+          ch: "h1-05-ma-questions",
           conn: "什么时候 + 동사 — 언제",
           ko: "언제 ~해요?",
           ex: { zh: "你什么时候来？", pinyin: "nǐ shénme shíhou lái", ko: "언제 와요?" },
@@ -390,6 +434,7 @@ export default {
         },
         {
           pattern: "… 分",
+          ch: "h1-10-numbers",
           conn: "숫자 + 点 + 숫자 + 分 — 시각의 분",
           ko: "~시 ~분",
           ex: { zh: "现在八点十分。", pinyin: "xiànzài bā diǎn shí fēn", ko: "지금 8시 10분이에요." },
@@ -397,6 +442,7 @@ export default {
         },
         {
           pattern: "半・刻",
+          ch: "h1-10-numbers",
           conn: "点 + 半(30분) / 一刻(15분)",
           ko: "~시 반 / ~시 15분",
           ex: { zh: "现在七点半。", pinyin: "xiànzài qī diǎn bàn", ko: "지금 7시 반이에요." },
@@ -409,6 +455,7 @@ export default {
       items: [
         {
           pattern: "동사 + 了",
+          ch: "h2-01-le-completion",
           conn: "동사 + 了 (동작의 완료·실현)",
           ko: "~했다",
           ex: { zh: "我吃了。", pinyin: "wǒ chī le", ko: "저는 먹었어요." },
@@ -417,6 +464,7 @@ export default {
         },
         {
           pattern: "… 了",
+          ch: "h2-04-le-change",
           conn: "문장 끝 了 (상황의 변화)",
           ko: "~하게 되었다 / 이제 ~다",
           ex: { zh: "下雨了。", pinyin: "xiàyǔ le", ko: "비가 오기 시작했어요." },
@@ -425,6 +473,7 @@ export default {
         },
         {
           pattern: "太 … 了",
+          ch: "h2-04-le-change",
           conn: "太 + 형용사 + 了 (감탄·강조)",
           ko: "너무 ~하다",
           ex: { zh: "太好了！", pinyin: "tài hǎo le", ko: "정말 잘됐다!" },
@@ -433,6 +482,7 @@ export default {
         },
         {
           pattern: "동사 + 了 + 没有？",
+          ch: "h2-01-le-completion",
           conn: "동사 + 了 + 没有? — 완료 여부 묻기",
           ko: "~했어요, 안 했어요?",
           ex: { zh: "你吃了没有？", pinyin: "nǐ chī le méiyǒu", ko: "밥 먹었어요?" },
@@ -446,6 +496,7 @@ export default {
       items: [
         {
           pattern: "想 + 동사",
+          ch: "h2-06-modal-verbs",
           conn: "想 + 동사 (바람·의향)",
           ko: "~하고 싶다",
           ex: { zh: "我想喝水。", pinyin: "wǒ xiǎng hē shuǐ", ko: "물 마시고 싶어요." },
@@ -454,6 +505,7 @@ export default {
         },
         {
           pattern: "会 + 동사",
+          ch: "h2-06-modal-verbs",
           conn: "会 + 동사 (학습으로 익힌 능력)",
           ko: "~할 줄 안다",
           ex: { zh: "我会说汉语。", pinyin: "wǒ huì shuō Hànyǔ", ko: "저는 중국어를 할 줄 알아요." },
@@ -462,6 +514,7 @@ export default {
         },
         {
           pattern: "能 + 동사",
+          ch: "h2-06-modal-verbs",
           conn: "能 + 동사 (가능·여건상 할 수 있음)",
           ko: "~할 수 있다",
           ex: { zh: "我今天能来。", pinyin: "wǒ jīntiān néng lái", ko: "저는 오늘 올 수 있어요." },
@@ -485,6 +538,7 @@ export default {
         },
         {
           pattern: "会 …",
+          ch: "h2-06-modal-verbs",
           conn: "会 + 동사 (+ 的) — 미래 가능성",
           ko: "~할 것이다 (그럴 것이다)",
           ex: { zh: "他明天会来。", pinyin: "tā míngtiān huì lái", ko: "그는 내일 올 거예요." },
@@ -498,6 +552,7 @@ export default {
       items: [
         {
           pattern: "很 + 형용사",
+          ch: "h1-01-shi",
           conn: "很 + 형용사 (정도 부사 + 형용사 술어)",
           ko: "(매우) ~하다",
           ex: { zh: "我很高兴。", pinyin: "wǒ hěn gāoxìng", ko: "저는 기뻐요." },
@@ -548,6 +603,7 @@ export default {
       items: [
         {
           pattern: "在 + 장소 + 동사",
+          ch: "h1-09-time-place",
           conn: "在 + 장소 + 동사 (장소는 동사 앞)",
           ko: "(어디)에서 ~하다",
           ex: { zh: "我在家看电视。", pinyin: "wǒ zài jiā kàn diànshì", ko: "저는 집에서 TV를 봐요." },
@@ -556,6 +612,7 @@ export default {
         },
         {
           pattern: "和 … (一起)",
+          ch: "h2-07-prepositions",
           conn: "和 + 사람 + (一起) + 동사",
           ko: "~와 (함께) …하다",
           ex: { zh: "我和朋友一起去。", pinyin: "wǒ hé péngyou yìqǐ qù", ko: "저는 친구와 함께 가요." },
@@ -564,6 +621,7 @@ export default {
         },
         {
           pattern: "给 + 사람 + 동사",
+          ch: "h2-07-prepositions",
           conn: "给 + 사람 + 동사 (~에게)",
           ko: "~에게 …하다/주다",
           ex: { zh: "我给你打电话。", pinyin: "wǒ gěi nǐ dǎ diànhuà", ko: "제가 전화 드릴게요." },
@@ -571,6 +629,7 @@ export default {
         },
         {
           pattern: "从 + 장소/시간",
+          ch: "h2-07-prepositions",
           conn: "从 + 출발점 + 동사",
           ko: "~에서(부터) …하다",
           ex: { zh: "我从韩国来。", pinyin: "wǒ cóng Hánguó lái", ko: "저는 한국에서 왔어요." },
@@ -578,6 +637,7 @@ export default {
         },
         {
           pattern: "对 + 사람 + 술어",
+          ch: "h2-07-prepositions",
           conn: "对 + 사람 + 술어 — ~에게",
           ko: "~에게 (대하여) …하다",
           ex: { zh: "他对我很好。", pinyin: "tā duì wǒ hěn hǎo", ko: "그는 저에게 잘해 줘요." },
@@ -637,6 +697,7 @@ export default {
       items: [
         {
           pattern: "… 块・… 元",
+          ch: "h1-10-numbers",
           conn: "숫자 + 块/元 (+ 钱) — 위안 단위",
           ko: "~위안",
           ex: { zh: "这个十块钱。", pinyin: "zhège shí kuài qián", ko: "이거 10위안이에요." },
@@ -645,6 +706,7 @@ export default {
         },
         {
           pattern: "주어 + … 岁",
+          ch: "h1-10-numbers",
           conn: "주어 + 숫자 + 岁 — 나이",
           ko: "~살이다",
           ex: { zh: "我二十岁。", pinyin: "wǒ èrshí suì", ko: "저는 스무 살이에요." },
@@ -653,6 +715,7 @@ export default {
         },
         {
           pattern: "两 + 양사",
+          ch: "h1-10-numbers",
           conn: "两 + 양사 (수량으로서의 2)",
           ko: "두 ~",
           ex: { zh: "我要两个。", pinyin: "wǒ yào liǎng ge", ko: "두 개 주세요." },
@@ -661,6 +724,7 @@ export default {
         },
         {
           pattern: "第 + 숫자",
+          ch: "h1-10-numbers",
           conn: "第 + 숫자 (+ 양사) — 순서",
           ko: "~번째",
           ex: { zh: "我是第一个。", pinyin: "wǒ shì dì-yī ge", ko: "제가 첫 번째예요." },

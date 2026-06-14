@@ -12,6 +12,7 @@ export default {
       items: [
         {
           pattern: "万一…，就…",
+          ch: "h4-02-hypothesis",
           conn: "万一 + 만일의 사태，주어 + 就 + 대비",
           ko: "만일 ~하면, …하다 (낮은 확률·불상사 대비)",
           ex: { zh: "万一他不来，我们怎么办？", pinyin: "wànyī tā bù lái, wǒmen zěnme bàn", ko: "만일 그가 안 오면 우리 어떡하죠?" },
@@ -20,6 +21,7 @@ export default {
         },
         {
           pattern: "哪怕…，也…",
+          ch: "h4-02-hypothesis",
           conn: "哪怕 + 극단적 가정，주어 + 也 + 결과",
           ko: "설령 ~하더라도, …하다 (구어 양보)",
           ex: { zh: "哪怕只有一点儿希望，我也要试试。", pinyin: "nǎpà zhǐyǒu yìdiǎnr xīwàng, wǒ yě yào shìshi", ko: "설령 희망이 조금밖에 없더라도 시도해 볼 거예요." },
@@ -28,6 +30,7 @@ export default {
         },
         {
           pattern: "除非…，否则/不然…",
+          ch: "h4-02-hypothesis",
           conn: "除非 + 유일조건，否则/不然 + 부정적 결과",
           ko: "~하지 않는 한, 그렇지 않으면 …하다",
           ex: { zh: "除非你亲自去，否则解决不了。", pinyin: "chúfēi nǐ qīnzì qù, fǒuzé jiějué bu liǎo", ko: "당신이 직접 가지 않는 한 해결할 수 없어요." },
@@ -36,6 +39,7 @@ export default {
         },
         {
           pattern: "一旦…，就…",
+          ch: "h4-02-hypothesis",
           conn: "一旦 + 일이 일어나면，주어 + 就 + 결과",
           ko: "일단 ~하면, …하다",
           ex: { zh: "一旦做出决定，就不要轻易改变。", pinyin: "yídàn zuòchū juédìng, jiù bú yào qīngyì gǎibiàn", ko: "일단 결정을 내리면 쉽게 바꾸지 마세요." },
@@ -44,6 +48,7 @@ export default {
         },
         {
           pattern: "假如・假设…，那么…",
+          ch: "h4-02-hypothesis",
           conn: "假如/假设 + 가정，那么/就 + 결과",
           ko: "가령 ~라면, 그렇다면 …하다",
           ex: { zh: "假如你是我，你会怎么做？", pinyin: "jiǎrú nǐ shì wǒ, nǐ huì zěnme zuò", ko: "가령 당신이 저라면 어떻게 하겠어요?" },
@@ -52,6 +57,7 @@ export default {
         },
         {
           pattern: "倘若…，便/就…",
+          ch: "h4-02-hypothesis",
           conn: "倘若 + 가정，便/就 + 결과 (서면)",
           ko: "만약 ~라면 (문어)",
           ex: { zh: "倘若有机会，我一定再去。", pinyin: "tǎngruò yǒu jīhuì, wǒ yídìng zài qù", ko: "만약 기회가 있다면 꼭 다시 갈 거예요." },
@@ -60,6 +66,7 @@ export default {
         },
         {
           pattern: "要不是…，就…",
+          ch: "h4-02-hypothesis",
           conn: "要不是 + 과거 사실，주어 + 就 + 가정 결과",
           ko: "~하지 않았더라면, …했을 것이다",
           ex: { zh: "要不是你提醒，我就忘了。", pinyin: "yàobushì nǐ tíxǐng, wǒ jiù wàng le", ko: "네가 일러 주지 않았더라면 잊을 뻔했어." },
@@ -73,6 +80,7 @@ export default {
       items: [
         {
           pattern: "尽管…，但/还是…",
+          ch: "h3-08-complex-sentence",
           conn: "尽管 + 사실，但是/还是 + 상반 결과",
           ko: "비록 ~지만, 그래도 …하다 (서면 양보)",
           ex: { zh: "尽管困难重重，他还是坚持了下来。", pinyin: "jǐnguǎn kùnnan chóngchóng, tā háishi jiānchí le xiàlái", ko: "어려움이 거듭됐지만 그는 끝까지 버텼어요." },
@@ -81,6 +89,7 @@ export default {
         },
         {
           pattern: "反而",
+          ch: "h3-08-complex-sentence",
           conn: "예상과 달리，주어 + 反而 + 상반 결과",
           ko: "오히려, 도리어",
           ex: { zh: "吃了药，病反而更重了。", pinyin: "chī le yào, bìng fǎn'ér gèng zhòng le", ko: "약을 먹었는데 병이 오히려 더 심해졌어요." },
@@ -89,6 +98,7 @@ export default {
         },
         {
           pattern: "并 + 不/没",
+          ch: "h5-07-rhetorical-emphasis",
           conn: "주어 + 并 + 不/没 + 술어",
           ko: "결코 ~하지 않다 (예상·통념의 반박)",
           ex: { zh: "事情并不像你想的那么简单。", pinyin: "shìqing bìng bú xiàng nǐ xiǎng de nàme jiǎndān", ko: "일은 결코 네가 생각하는 만큼 간단하지 않아." },
@@ -97,6 +107,7 @@ export default {
         },
         {
           pattern: "却",
+          ch: "h3-08-complex-sentence",
           conn: "주어 + 却 + 상반 결과",
           ko: "그런데도, 오히려 (전환 부사)",
           ex: { zh: "大家都同意了，他却反对。", pinyin: "dàjiā dōu tóngyì le, tā què fǎnduì", ko: "다들 동의했는데 그는 반대했어요." },
@@ -105,6 +116,7 @@ export default {
         },
         {
           pattern: "然而",
+          ch: "h3-08-complex-sentence",
           conn: "앞 문장。然而，주어 + 전환",
           ko: "그러나, 그렇지만 (서면)",
           ex: { zh: "他很努力，然而结果并不理想。", pinyin: "tā hěn nǔlì, rán'ér jiéguǒ bìng bù lǐxiǎng", ko: "그는 노력했지만 그러나 결과는 이상적이지 않았어요." },
@@ -121,6 +133,7 @@ export default {
         },
         {
           pattern: "再怎么…，也…",
+          ch: "h4-07-rhetorical",
           conn: "再怎么 + 동사/형용사，也 + 결과",
           ko: "아무리 ~해도, …하다",
           ex: { zh: "再怎么解释，他也不相信。", pinyin: "zài zěnme jiěshì, tā yě bù xiāngxìn", ko: "아무리 설명해도 그는 안 믿어요." },
@@ -134,6 +147,7 @@ export default {
       items: [
         {
           pattern: "之所以…，是因为…",
+          ch: "h5-06-zhi-qi",
           conn: "주어 + 之所以 + 결과，是因为 + 원인",
           ko: "~한 까닭은 …하기 때문이다",
           ex: { zh: "他之所以失败，是因为太骄傲了。", pinyin: "tā zhī suǒyǐ shībài, shì yīnwèi tài jiāo'ào le", ko: "그가 실패한 까닭은 너무 자만했기 때문이에요." },
@@ -149,6 +163,7 @@ export default {
         },
         {
           pattern: "连…带…",
+          ch: "h4-04-lian-dou",
           conn: "连 + A + 带 + B (A와 B를 한꺼번에)",
           ko: "~까지 (해서), ~와 …를 통째로",
           ex: { zh: "他连说带笑地讲了一个故事。", pinyin: "tā lián shuō dài xiào de jiǎng le yí ge gùshi", ko: "그는 말하면서 웃으며 이야기를 하나 들려줬어요." },
@@ -165,6 +180,7 @@ export default {
         },
         {
           pattern: "A 是 A，但…",
+          ch: "h3-08-complex-sentence",
           conn: "형용사1 + 是 + 형용사1，但 + 유보",
           ko: "~하긴 한데, 다만 …하다",
           ex: { zh: "贵是贵，但质量真的好。", pinyin: "guì shì guì, dàn zhìliàng zhēn de hǎo", ko: "비싸긴 비싼데 품질이 정말 좋아요." },
@@ -173,6 +189,7 @@ export default {
         },
         {
           pattern: "就连…，也…",
+          ch: "h4-04-lian-dou",
           conn: "就连 + 극단적 예，也/都 + 술어",
           ko: "~조차도 …하다 (강조)",
           ex: { zh: "就连专家也无法解释这个现象。", pinyin: "jiùlián zhuānjiā yě wúfǎ jiěshì zhège xiànxiàng", ko: "전문가조차도 이 현상을 설명하지 못해요." },
@@ -181,6 +198,7 @@ export default {
         },
         {
           pattern: "正因为…，才…",
+          ch: "h3-08-complex-sentence",
           conn: "正因为 + 원인，才 + 결과 (원인 강조)",
           ko: "바로 ~하기 때문에 비로소 …하다",
           ex: { zh: "正因为难，才更值得去做。", pinyin: "zhèng yīnwèi nán, cái gèng zhídé qù zuò", ko: "바로 어렵기 때문에 더 해 볼 가치가 있어요." },
@@ -189,6 +207,7 @@ export default {
         },
         {
           pattern: "何尝・岂",
+          ch: "h4-07-rhetorical",
           conn: "何尝/岂 + 불(반어) + 술어",
           ko: "어찌 ~하겠는가 (반어 강조)",
           ex: { zh: "我何尝不想去呢？", pinyin: "wǒ hécháng bù xiǎng qù ne", ko: "제가 어찌 가고 싶지 않겠어요?" },
@@ -202,6 +221,7 @@ export default {
       items: [
         {
           pattern: "凡是…，都…",
+          ch: "h3-08-complex-sentence",
           conn: "凡是 + 부류，주어 + 都 + 술어",
           ko: "무릇 ~한 것은 다 …하다",
           ex: { zh: "凡是来过的人都说好。", pinyin: "fánshì lái guo de rén dōu shuō hǎo", ko: "와 본 사람은 다들 좋다고 해요." },
@@ -210,6 +230,7 @@ export default {
         },
         {
           pattern: "无论如何",
+          ch: "h3-08-complex-sentence",
           conn: "无论如何 + 주어 + 都/也 + 술어",
           ko: "어떻게 해서든, 무슨 일이 있어도",
           ex: { zh: "无论如何我都要完成这个任务。", pinyin: "wúlùn rúhé wǒ dōu yào wánchéng zhège rènwù", ko: "무슨 일이 있어도 이 임무를 완수하겠어요." },
@@ -217,6 +238,7 @@ export default {
         },
         {
           pattern: "除了…，其余/其他…",
+          ch: "h4-05-chule",
           conn: "除了 + A 以外，其余/其他 + 나머지",
           ko: "~을 제외한 나머지는 …하다",
           ex: { zh: "除了周末，其他时间他都在公司。", pinyin: "chúle zhōumò, qítā shíjiān tā dōu zài gōngsī", ko: "주말을 빼고는 그는 늘 회사에 있어요." },
@@ -224,6 +246,7 @@ export default {
         },
         {
           pattern: "以…为…",
+          ch: "h5-01-shumianyu",
           conn: "以 + A + 为 + B (A를 B로 삼다/하다)",
           ko: "~을 …으로 삼다/하다 (서면)",
           ex: { zh: "我们应该以诚信为本。", pinyin: "wǒmen yīnggāi yǐ chéngxìn wéi běn", ko: "우리는 신의를 근본으로 삼아야 해요." },
@@ -239,6 +262,7 @@ export default {
         },
         {
           pattern: "就…而言",
+          ch: "h5-01-shumianyu",
           conn: "就 + 화제 + 而言",
           ko: "~에 관해 말하자면 (서면)",
           ex: { zh: "就目前而言，这是最好的选择。", pinyin: "jiù mùqián ér yán, zhè shì zuì hǎo de xuǎnzé", ko: "현재로 말하자면 이것이 최선의 선택이에요." },
@@ -247,6 +271,7 @@ export default {
         },
         {
           pattern: "总的来说・总之",
+          ch: "h5-02-connectors",
           conn: "总的来说/总之 + 총괄",
           ko: "대체로 말하면, 요컨대",
           ex: { zh: "总的来说，这次旅行很愉快。", pinyin: "zǒng de lái shuō, zhè cì lǚxíng hěn yúkuài", ko: "대체로 말하면 이번 여행은 즐거웠어요." },
@@ -260,6 +285,7 @@ export default {
       items: [
         {
           pattern: "不仅…，而且/还…",
+          ch: "h4-09-budan-erqie",
           conn: "不仅 + A，而且/还 + 더 나아간 B",
           ko: "~할 뿐만 아니라, 게다가 …하다 (서면)",
           ex: { zh: "他不仅成绩好，而且很有礼貌。", pinyin: "tā bùjǐn chéngjì hǎo, érqiě hěn yǒu lǐmào", ko: "그는 성적이 좋을 뿐만 아니라 예의도 발라요." },
@@ -268,6 +294,7 @@ export default {
         },
         {
           pattern: "甚至",
+          ch: "h4-09-budan-erqie",
           conn: "주어 + 甚至 + 극단적 예",
           ko: "심지어, ~까지도",
           ex: { zh: "他忙得甚至忘了吃饭。", pinyin: "tā máng de shènzhì wàng le chīfàn", ko: "그는 바빠서 심지어 밥 먹는 것도 잊었어요." },
@@ -276,6 +303,7 @@ export default {
         },
         {
           pattern: "与其…，不如…",
+          ch: "h3-08-complex-sentence",
           conn: "与其 + A，不如 + 더 나은 B",
           ko: "~하느니 차라리 …하는 게 낫다",
           ex: { zh: "与其等他，不如我们自己去。", pinyin: "yǔqí děng tā, bùrú wǒmen zìjǐ qù", ko: "그를 기다리느니 우리가 직접 가는 게 나아요." },
@@ -284,6 +312,7 @@ export default {
         },
         {
           pattern: "宁可…，也…",
+          ch: "h3-08-complex-sentence",
           conn: "宁可 + 감수하는 선택，也 + 양보 / 也不 + 거부",
           ko: "차라리 ~할지언정, …하다/하지 않다",
           ex: { zh: "他宁可自己吃亏，也不让别人为难。", pinyin: "tā nìngkě zìjǐ chīkuī, yě bú ràng biérén wéinán", ko: "그는 차라리 자기가 손해를 볼지언정 남을 곤란하게 하지 않아요." },
@@ -292,6 +321,7 @@ export default {
         },
         {
           pattern: "要么…，要么…",
+          ch: "h3-08-complex-sentence",
           conn: "要么 + A，要么 + B (양자택일)",
           ko: "~하든가, 아니면 …하든가",
           ex: { zh: "要么你来，要么我去。", pinyin: "yàome nǐ lái, yàome wǒ qù", ko: "네가 오든가 내가 가든가 하자." },
@@ -300,6 +330,7 @@ export default {
         },
         {
           pattern: "不是…，而是…",
+          ch: "h3-08-complex-sentence",
           conn: "不是 + A，而是 + B (정정·강조)",
           ko: "~이 아니라 …이다",
           ex: { zh: "问题不是能力，而是态度。", pinyin: "wèntí bú shì nénglì, ér shì tàidu", ko: "문제는 능력이 아니라 태도예요." },
@@ -307,6 +338,7 @@ export default {
         },
         {
           pattern: "一方面…，另一方面…",
+          ch: "h3-08-complex-sentence",
           conn: "一方面 + A，另一方面 + B (양면 진술)",
           ko: "한편으로는 ~하고, 다른 한편으로는 …하다",
           ex: { zh: "一方面要努力工作，另一方面也要注意休息。", pinyin: "yìfāngmiàn yào nǔlì gōngzuò, lìng yìfāngmiàn yě yào zhùyì xiūxi", ko: "한편으로 열심히 일해야 하고, 다른 한편으로 휴식도 챙겨야 해요." },
@@ -320,6 +352,7 @@ export default {
       items: [
         {
           pattern: "形 + 得 + 결과절",
+          ch: "h3-05-degree-complement",
           conn: "형용사/동사 + 得 + 정도가 어떠한지 묘사하는 절",
           ko: "~해서 (그 결과) …할 정도다",
           ex: { zh: "他高兴得跳了起来。", pinyin: "tā gāoxìng de tiào le qǐlái", ko: "그는 기뻐서 펄쩍 뛰었어요." },
@@ -351,6 +384,7 @@ export default {
         },
         {
           pattern: "V + 得不得了",
+          ch: "h3-05-degree-complement",
           conn: "형용사/동사 + 得不得了 (정도 극대)",
           ko: "~해서 견딜 수 없다, 몹시 ~하다",
           ex: { zh: "听到这个消息，他高兴得不得了。", pinyin: "tīngdào zhège xiāoxi, tā gāoxìng de bùdéliǎo", ko: "이 소식을 듣고 그는 더없이 기뻐했어요." },
@@ -359,6 +393,7 @@ export default {
         },
         {
           pattern: "形 + 极了/死了",
+          ch: "h3-05-degree-complement",
           conn: "형용사 + 极了/死了 (정도 극대)",
           ko: "지극히/엄청 ~하다",
           ex: { zh: "这道菜好吃极了。", pinyin: "zhè dào cài hǎochī jí le", ko: "이 요리 엄청 맛있어요." },
@@ -372,6 +407,7 @@ export default {
       items: [
         {
           pattern: "随着…",
+          ch: "h5-01-shumianyu",
           conn: "随着 + 변화·발전，주어 + 결과",
           ko: "~함에 따라, ~에 따라",
           ex: { zh: "随着年龄的增长，他变得更成熟了。", pinyin: "suízhe niánlíng de zēngzhǎng, tā biàn de gèng chéngshú le", ko: "나이가 들면서 그는 더 성숙해졌어요." },
@@ -387,6 +423,7 @@ export default {
         },
         {
           pattern: "从…起・自…以来",
+          ch: "h5-01-shumianyu",
           conn: "从 + 기점 + 起 / 自(从) + 시점 + 以来",
           ko: "~부터 / ~이래로",
           ex: { zh: "从今天起，我要早睡早起。", pinyin: "cóng jīntiān qǐ, wǒ yào zǎo shuì zǎo qǐ", ko: "오늘부터 저는 일찍 자고 일찍 일어날 거예요." },
@@ -395,6 +432,7 @@ export default {
         },
         {
           pattern: "一…，便…",
+          ch: "h3-08-complex-sentence",
           conn: "주어 + 一 + V1，便 + V2 (서면)",
           ko: "~하자마자 곧 …하다 (서면)",
           ex: { zh: "他一听便明白了。", pinyin: "tā yì tīng biàn míngbai le", ko: "그는 듣자마자 곧 이해했어요." },
@@ -403,6 +441,7 @@ export default {
         },
         {
           pattern: "起初…，后来…",
+          ch: "h3-08-complex-sentence",
           conn: "起初 + 처음 상황，后来 + 이후 변화",
           ko: "처음에는 ~했는데, 나중에는 …했다",
           ex: { zh: "起初我不太习惯，后来慢慢喜欢上了。", pinyin: "qǐchū wǒ bú tài xíguàn, hòulái mànmàn xǐhuan shàng le", ko: "처음에는 잘 적응이 안 됐는데 나중에 점점 좋아졌어요." },
@@ -432,6 +471,7 @@ export default {
       items: [
         {
           pattern: "看来・看样子",
+          ch: "h5-01-shumianyu",
           conn: "看来/看样子 + 판단",
           ko: "보아하니, ~인 것 같다",
           ex: { zh: "看来今天会下雨。", pinyin: "kànlái jīntiān huì xiàyǔ", ko: "보아하니 오늘 비가 올 것 같아요." },
@@ -439,6 +479,7 @@ export default {
         },
         {
           pattern: "据说・据…说",
+          ch: "h5-01-shumianyu",
           conn: "据说 / 据 + 출처 + 说，+ 전언 내용",
           ko: "~라고 한다, ~에 따르면",
           ex: { zh: "据说那家餐厅很有名。", pinyin: "jùshuō nà jiā cāntīng hěn yǒumíng", ko: "그 식당이 유명하다고 해요." },
@@ -470,6 +511,7 @@ export default {
         },
         {
           pattern: "似乎・仿佛",
+          ch: "h5-01-shumianyu",
           conn: "주어 + 似乎/仿佛 + 술어",
           ko: "마치 ~인 듯하다 (서면)",
           ex: { zh: "他似乎有什么心事。", pinyin: "tā sìhū yǒu shénme xīnshì", ko: "그는 무슨 고민이 있는 듯해요." },
@@ -499,6 +541,7 @@ export default {
       items: [
         {
           pattern: "不得不",
+          ch: "h5-07-rhetorical-emphasis",
           conn: "주어 + 不得不 + 동사",
           ko: "~하지 않을 수 없다, 어쩔 수 없이 ~하다",
           ex: { zh: "因为下雨，我们不得不取消了活动。", pinyin: "yīnwèi xiàyǔ, wǒmen bùdébù qǔxiāo le huódòng", ko: "비가 와서 우리는 어쩔 수 없이 행사를 취소했어요." },
@@ -507,6 +550,7 @@ export default {
         },
         {
           pattern: "舍不得",
+          ch: "h2-06-modal-verbs",
           conn: "주어 + 舍不得 + 동사/명사",
           ko: "차마 ~하지 못하다, 아까워하다",
           ex: { zh: "她舍不得离开家乡。", pinyin: "tā shěbude líkāi jiāxiāng", ko: "그녀는 차마 고향을 떠나지 못해요." },
@@ -515,6 +559,7 @@ export default {
         },
         {
           pattern: "恨不得",
+          ch: "h2-06-modal-verbs",
           conn: "恨不得 + 실현 불가능한 강한 바람",
           ko: "당장이라도 ~하고 싶다 (간절함)",
           ex: { zh: "听到这个消息，我恨不得马上飞回去。", pinyin: "tīngdào zhège xiāoxi, wǒ hènbude mǎshàng fēi huíqù", ko: "이 소식을 듣고 당장이라도 날아가고 싶었어요." },
@@ -523,6 +568,7 @@ export default {
         },
         {
           pattern: "免得・以免",
+          ch: "h3-08-complex-sentence",
           conn: "주절，免得/以免 + 피하고 싶은 일",
           ko: "~하지 않도록, ~을 면하기 위해",
           ex: { zh: "早点儿出发，免得迟到。", pinyin: "zǎodiǎnr chūfā, miǎnde chídào", ko: "늦지 않도록 좀 일찍 출발해요." },
@@ -531,6 +577,7 @@ export default {
         },
         {
           pattern: "省得",
+          ch: "h3-08-complex-sentence",
           conn: "주절，省得 + 덜고 싶은 수고·번거로움",
           ko: "~하는 수고를 덜도록, ~하지 않게",
           ex: { zh: "我帮你带过来，省得你跑一趟。", pinyin: "wǒ bāng nǐ dài guòlái, shěngde nǐ pǎo yí tàng", ko: "제가 가져다드릴게요, 한 번 오시는 수고 덜게요." },
@@ -539,6 +586,7 @@ export default {
         },
         {
           pattern: "巴不得",
+          ch: "h2-06-modal-verbs",
           conn: "주어 + 巴不得 + 간절히 바라는 일",
           ko: "~하기를 간절히 바라다, ~하면 더없이 좋다",
           ex: { zh: "他巴不得马上放假。", pinyin: "tā bābude mǎshàng fàngjià", ko: "그는 당장 방학하기를 간절히 바라요." },
@@ -576,6 +624,7 @@ export default {
       items: [
         {
           pattern: "把…当作/看成",
+          ch: "h3-01-ba",
           conn: "把 + A + 当作/看成 + B",
           ko: "A를 B로 여기다/간주하다",
           ex: { zh: "他把我当作自己的家人。", pinyin: "tā bǎ wǒ dàngzuò zìjǐ de jiārén", ko: "그는 저를 자기 가족처럼 여겨요." },
@@ -583,6 +632,7 @@ export default {
         },
         {
           pattern: "对…负责・对…感兴趣",
+          ch: "h4-08-prepositional-frames",
           conn: "对 + 대상 + 동사·형용사 (관련 대상 표시)",
           ko: "~에 대해 …하다",
           ex: { zh: "每个人都要对自己的决定负责。", pinyin: "měi ge rén dōu yào duì zìjǐ de juédìng fùzé", ko: "누구나 자기 결정에 책임을 져야 해요." },
@@ -591,6 +641,7 @@ export default {
         },
         {
           pattern: "拿…来说",
+          ch: "h4-08-prepositional-frames",
           conn: "拿 + 예 + 来说",
           ko: "~을 예로 들면, ~로 말하자면",
           ex: { zh: "拿这件事来说，他做得很好。", pinyin: "ná zhè jiàn shì lái shuō, tā zuò de hěn hǎo", ko: "이 일로 말하자면 그는 아주 잘했어요." },
@@ -598,6 +649,7 @@ export default {
         },
         {
           pattern: "给…带来/造成",
+          ch: "h4-08-prepositional-frames",
           conn: "给 + 대상 + 带来/造成 + 영향·결과",
           ko: "~에게 (영향·결과)를 가져오다/끼치다",
           ex: { zh: "这件事给他带来了很大的麻烦。", pinyin: "zhè jiàn shì gěi tā dàilái le hěn dà de máfan", ko: "이 일은 그에게 큰 골칫거리를 가져왔어요." },
@@ -606,6 +658,7 @@ export default {
         },
         {
           pattern: "由…负责・由…决定",
+          ch: "h5-05-passive",
           conn: "由 + 주체 + 동사 (~이 …을 맡다)",
           ko: "~이/가 (책임지고) …하다",
           ex: { zh: "这次活动由学生会负责。", pinyin: "zhè cì huódòng yóu xuéshēnghuì fùzé", ko: "이번 행사는 학생회가 맡습니다." },
@@ -614,6 +667,7 @@ export default {
         },
         {
           pattern: "拿…当…",
+          ch: "h3-01-ba",
           conn: "拿 + A + 当 + B (구어)",
           ko: "A를 B로 여기다/취급하다 (구어)",
           ex: { zh: "别拿我当外人。", pinyin: "bié ná wǒ dàng wàirén", ko: "저를 남으로 취급하지 마세요." },
@@ -635,6 +689,7 @@ export default {
       items: [
         {
           pattern: "并不・并非",
+          ch: "h5-07-rhetorical-emphasis",
           conn: "并不 + 형용사·동사 / 并非 + 명사·판단",
           ko: "결코 ~한 것이 아니다",
           ex: { zh: "成功并不容易。", pinyin: "chénggōng bìng bù róngyì", ko: "성공은 결코 쉽지 않아요." },
@@ -658,6 +713,7 @@ export default {
         },
         {
           pattern: "未必",
+          ch: "h5-07-rhetorical-emphasis",
           conn: "주어 + 未必 + 판단 (꼭 ~한 건 아니다)",
           ko: "반드시 ~한 것은 아니다",
           ex: { zh: "贵的未必就是好的。", pinyin: "guì de wèibì jiùshì hǎo de", ko: "비싸다고 꼭 좋은 건 아니에요." },
