@@ -282,6 +282,7 @@ export default {
         {
           pattern: "在…方面",
           pinyin: "zài…fāngmiàn",
+          ch: "h4-08-prepositional-frames",
           conn: "在 + 분야/측면 + 方面",
           ko: "~ 방면에서, ~ 측면에서",
           ex: { zh: "在学习方面，他很有方法。", pinyin: "zài xuéxí fāngmiàn, tā hěn yǒu fāngfǎ", ko: "공부 방면에서 그는 요령이 있어요." },
@@ -417,6 +418,7 @@ export default {
         {
           pattern: "동사 + 来 + 동사 + 去",
           pinyin: "lái…qù",
+          ch: "h3-04-direction-complement",
           conn: "동사 + 来 + 동사 + 去 (반복·번복)",
           ko: "이리저리·여러 번 ~하다",
           ex: { zh: "他们讨论来讨论去也没有结果。", pinyin: "tāmen tǎolùn lái tǎolùn qù yě méiyǒu jiéguǒ", ko: "그들은 이리저리 토론했지만 결론이 안 났어요." },
@@ -773,6 +775,7 @@ export default {
         {
           pattern: "再三・一再",
           pinyin: "zàisān・yízài",
+          ch: "h3-13-frequency-adverbs",
           conn: "주어 + 再三/一再 + 동사",
           ko: "거듭, 여러 번 (반복 강조)",
           ex: { zh: "他再三向我表示感谢。", pinyin: "tā zàisān xiàng wǒ biǎoshì gǎnxiè", ko: "그는 거듭 저에게 감사를 표했어요." },
@@ -782,6 +785,7 @@ export default {
         {
           pattern: "格外",
           pinyin: "géwài",
+          ch: "h3-11-degree-scope-adverbs",
           conn: "格外 + 형용사 (유난히)",
           ko: "유난히, 각별히",
           ex: { zh: "今天的月亮格外明亮。", pinyin: "jīntiān de yuèliang géwài míngliàng", ko: "오늘 달이 유난히 밝아요." },
@@ -818,6 +822,7 @@ export default {
         {
           pattern: "顶多・至多",
           pinyin: "dǐngduō・zhìduō",
+          ch: "h3-12-approximate-numbers",
           conn: "顶多/至多 + 수량 (많아야)",
           ko: "기껏해야, 많아야",
           ex: { zh: "这点活儿顶多一个小时就能干完。", pinyin: "zhè diǎn huór dǐngduō yí ge xiǎoshí jiù néng gàn wán", ko: "이 정도 일은 많아야 한 시간이면 끝낼 수 있어요." },

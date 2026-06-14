@@ -370,6 +370,7 @@ export default {
         {
           pattern: "比较 + 형용사",
           pinyin: "bǐjiào",
+          ch: "h3-11-degree-scope-adverbs",
           conn: "比较 + 형용사 — 비교적",
           ko: "비교적 ~하다",
           ex: { zh: "今天比较冷。", pinyin: "jīntiān bǐjiào lěng", ko: "오늘은 비교적 추워요." },
@@ -378,6 +379,7 @@ export default {
         {
           pattern: "非常・特别 + 형용사",
           pinyin: "fēicháng・tèbié",
+          ch: "h3-11-degree-scope-adverbs",
           conn: "非常/特别 + 형용사 — 매우",
           ko: "대단히/특히 ~하다",
           ex: { zh: "这个菜非常好吃。", pinyin: "zhège cài fēicháng hǎochī", ko: "이 요리는 대단히 맛있어요." },
@@ -396,6 +398,7 @@ export default {
         {
           pattern: "几乎 + 술어",
           pinyin: "jīhū",
+          ch: "h3-11-degree-scope-adverbs",
           conn: "几乎 + 술어 — 거의",
           ko: "거의 ~하다",
           ex: { zh: "我几乎每天都运动。", pinyin: "wǒ jīhū měi tiān dōu yùndòng", ko: "저는 거의 매일 운동해요." },
@@ -404,6 +407,7 @@ export default {
         {
           pattern: "只 + 동사 / 只有 + 명사",
           pinyin: "zhǐ / zhǐyǒu",
+          ch: "h3-11-degree-scope-adverbs",
           conn: "只 + 동사 / 只有 + 명사 — 한정",
           ko: "~만 / ~밖에 없다",
           ex: { zh: "我只喝了一杯。", pinyin: "wǒ zhǐ hē le yì bēi", ko: "저는 한 잔만 마셨어요." },
@@ -412,6 +416,7 @@ export default {
         {
           pattern: "一共・总共",
           pinyin: "yígòng・zǒnggòng",
+          ch: "h3-12-approximate-numbers",
           conn: "一共/总共 + 수량 — 합계",
           ko: "모두 합쳐서 ~",
           ex: { zh: "一共多少钱？", pinyin: "yígòng duōshao qián", ko: "모두 얼마예요?" },
@@ -429,6 +434,7 @@ export default {
         {
           pattern: "有点儿 vs 一点儿",
           pinyin: "yǒudiǎnr・yìdiǎnr",
+          ch: "h2-11-degree-mood-adverbs",
           conn: "有点儿 + 형용사(불만) / 형용사 + 一点儿(비교)",
           ko: "좀 ~하다 / 조금 더 ~",
           ex: { zh: "这个有点儿贵，便宜一点儿吧。", pinyin: "zhège yǒudiǎnr guì, piányi yìdiǎnr ba", ko: "이거 좀 비싸요, 좀 깎아 주세요." },
@@ -438,6 +444,7 @@ export default {
         {
           pattern: "差不多 + 술어",
           pinyin: "chàbuduō",
+          ch: "h3-12-approximate-numbers",
           conn: "差不多 + 술어/수량 — 거의·대략",
           ko: "거의/대략 ~",
           ex: { zh: "差不多十点了。", pinyin: "chàbuduō shí diǎn le", ko: "거의 10시가 됐어요." },
@@ -446,6 +453,7 @@ export default {
         {
           pattern: "至少・最多",
           pinyin: "zhìshǎo・zuìduō",
+          ch: "h3-12-approximate-numbers",
           conn: "至少/最多 + 수량 — 최소·최대",
           ko: "적어도 / 많아야 ~",
           ex: { zh: "至少要一个小时。", pinyin: "zhìshǎo yào yí ge xiǎoshí", ko: "적어도 한 시간은 걸려요." },
@@ -454,6 +462,7 @@ export default {
         {
           pattern: "多 + 수량",
           pinyin: "duō",
+          ch: "h3-12-approximate-numbers",
           conn: "수량 + 多 — ~ 남짓·여",
           ko: "~ 남짓, ~여",
           ex: { zh: "他来了一个多小时了。", pinyin: "tā lái le yí ge duō xiǎoshí le", ko: "그가 온 지 한 시간 남짓 됐어요." },
@@ -462,6 +471,7 @@ export default {
         {
           pattern: "左右・前后",
           pinyin: "zuǒyòu・qiánhòu",
+          ch: "h3-12-approximate-numbers",
           conn: "수량 + 左右/前后 — 쯤·가량",
           ko: "~쯤, ~가량",
           ex: { zh: "我五点左右到。", pinyin: "wǒ wǔ diǎn zuǒyòu dào", ko: "저는 5시쯤 도착해요." },
@@ -475,6 +485,7 @@ export default {
         {
           pattern: "一直 + 동사",
           pinyin: "yìzhí",
+          ch: "h3-13-frequency-adverbs",
           conn: "一直 + 동사 — 줄곧",
           ko: "계속/줄곧 ~하다",
           ex: { zh: "我一直在等你。", pinyin: "wǒ yìzhí zài děng nǐ", ko: "저는 계속 당신을 기다리고 있었어요." },
@@ -483,6 +494,7 @@ export default {
         {
           pattern: "经常・常常 + 동사",
           pinyin: "jīngcháng・chángcháng",
+          ch: "h3-13-frequency-adverbs",
           conn: "经常/常常 + 동사 — 자주",
           ko: "자주 ~하다",
           ex: { zh: "我经常去图书馆。", pinyin: "wǒ jīngcháng qù túshūguǎn", ko: "저는 자주 도서관에 가요." },
@@ -535,6 +547,7 @@ export default {
         {
           pattern: "一直・总是",
           pinyin: "yìzhí・zǒngshì",
+          ch: "h3-13-frequency-adverbs",
           conn: "一直(줄곧)/总是(늘) + 술어",
           ko: "줄곧 / 늘 ~하다",
           ex: { zh: "他总是迟到。", pinyin: "tā zǒngshì chídào", ko: "그는 늘 지각해요." },
@@ -645,6 +658,7 @@ export default {
         {
           pattern: "동사 + 来 + 동사 + 去",
           pinyin: "lái…qù",
+          ch: "h3-04-direction-complement",
           conn: "동사 + 来 + 동사 + 去 — 반복",
           ko: "이리저리 ~하다 (반복)",
           ex: { zh: "他想来想去，还是不去了。", pinyin: "tā xiǎng lái xiǎng qù, háishi bú qù le", ko: "그는 이리저리 생각하다가 결국 안 가기로 했어요." },
@@ -692,6 +706,7 @@ export default {
         {
           pattern: "当然・一定",
           pinyin: "dāngrán・yídìng",
+          ch: "h2-11-degree-mood-adverbs",
           conn: "当然(당연) / 一定(반드시) + 술어",
           ko: "당연히 / 반드시 ~",
           ex: { zh: "我当然知道。", pinyin: "wǒ dāngrán zhīdào", ko: "당연히 알죠." },

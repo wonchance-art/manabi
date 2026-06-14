@@ -203,6 +203,7 @@ export default {
         {
           pattern: "형용사 + 了",
           pinyin: "le",
+          ch: "h2-04-le-change",
           conn: "형용사 + 了 — 정도·상태의 변화",
           ko: "~해졌다 (많아지다·따뜻해지다 등)",
           ex: { zh: "今天人多了。", pinyin: "jīntiān rén duō le", ko: "오늘은 사람이 많아졌어요." },
@@ -595,6 +596,7 @@ export default {
         {
           pattern: "愿意 + 동사",
           pinyin: "yuànyì",
+          ch: "h2-06-modal-verbs",
           conn: "愿意 + 동사 — 기꺼이 ~하다",
           ko: "기꺼이 ~하려 하다",
           ex: { zh: "我愿意帮助你。", pinyin: "wǒ yuànyì bāngzhù nǐ", ko: "기꺼이 당신을 도울게요." },
@@ -603,6 +605,7 @@ export default {
         {
           pattern: "需要 + 명사/동사",
           pinyin: "xūyào",
+          ch: "h2-06-modal-verbs",
           conn: "需要 + 명사/동사 — 필요",
           ko: "~이 필요하다 / ~할 필요가 있다",
           ex: { zh: "我需要休息。", pinyin: "wǒ xūyào xiūxi", ko: "저는 쉬어야 해요." },
@@ -635,6 +638,7 @@ export default {
         {
           pattern: "还・还没",
           pinyin: "hái・hái méi",
+          ch: "h2-12-time-expressions",
           conn: "还 + 동사 (아직·여전히) / 还没 (아직 안)",
           ko: "아직 / 여전히 ~",
           ex: { zh: "他还在睡觉。", pinyin: "tā hái zài shuìjiào", ko: "그는 아직 자고 있어요." },
@@ -652,6 +656,7 @@ export default {
         {
           pattern: "真 + 형용사",
           pinyin: "zhēn",
+          ch: "h2-11-degree-mood-adverbs",
           conn: "真 + 형용사 — 진심 어린 감탄",
           ko: "정말 ~하다",
           ex: { zh: "今天真冷！", pinyin: "jīntiān zhēn lěng", ko: "오늘 정말 춥다!" },
@@ -661,6 +666,7 @@ export default {
         {
           pattern: "当然…",
           pinyin: "dāngrán",
+          ch: "h2-11-degree-mood-adverbs",
           conn: "当然 + 절 — 당연히",
           ko: "당연히 ~",
           ex: { zh: "我当然愿意。", pinyin: "wǒ dāngrán yuànyì", ko: "당연히 좋아요." },
@@ -669,6 +675,7 @@ export default {
         {
           pattern: "终于…了",
           pinyin: "zhōngyú…le",
+          ch: "h2-12-time-expressions",
           conn: "终于 + 술어 + 了 — 마침내",
           ko: "마침내 ~했다",
           ex: { zh: "我终于到了。", pinyin: "wǒ zhōngyú dào le", ko: "드디어 도착했어요." },
@@ -677,6 +684,7 @@ export default {
         {
           pattern: "又…又…",
           pinyin: "yòu…yòu…",
+          ch: "h2-11-degree-mood-adverbs",
           conn: "又 + 형용사 + 又 + 형용사 — 두 속성 병렬",
           ko: "~하기도 하고 ~하기도 하다",
           ex: { zh: "这个又便宜又好。", pinyin: "zhège yòu piányi yòu hǎo", ko: "이건 싸기도 하고 좋기도 해요." },
@@ -685,6 +693,7 @@ export default {
         {
           pattern: "有点儿 + 형용사",
           pinyin: "yǒudiǎnr",
+          ch: "h2-11-degree-mood-adverbs",
           conn: "有点儿 + 형용사 — 살짝 부정적 어감",
           ko: "좀 ~하다 (불만·아쉬움)",
           ex: { zh: "今天有点儿累。", pinyin: "jīntiān yǒudiǎnr lèi", ko: "오늘은 좀 피곤해요." },
@@ -735,6 +744,7 @@ export default {
         {
           pattern: "…的时候",
           pinyin: "de shíhou",
+          ch: "h2-12-time-expressions",
           conn: "동사구 + 的时候 — ~할 때",
           ko: "~할 때",
           ex: { zh: "我小的时候很瘦。", pinyin: "wǒ xiǎo de shíhou hěn shòu", ko: "저는 어렸을 때 말랐어요." },
@@ -743,6 +753,7 @@ export default {
         {
           pattern: "以前・以后",
           pinyin: "yǐqián・yǐhòu",
+          ch: "h2-12-time-expressions",
           conn: "동사구 + 以前/以后 — ~전/후에",
           ko: "~하기 전에 / 한 후에",
           ex: { zh: "来中国以前我学过汉语。", pinyin: "lái Zhōngguó yǐqián wǒ xué guo Hànyǔ", ko: "중국에 오기 전에 중국어를 배운 적 있어요." },
@@ -855,6 +866,7 @@ export default {
         {
           pattern: "喜欢・爱 + 동사",
           pinyin: "xǐhuan・ài",
+          ch: "h1-12-modal-wishes",
           conn: "喜欢/爱 + 동사 — 즐겨 하다",
           ko: "~하기를 좋아하다",
           ex: { zh: "我喜欢旅游。", pinyin: "wǒ xǐhuan lǚyóu", ko: "저는 여행을 좋아해요." },

@@ -284,6 +284,7 @@ export default {
         {
           pattern: "相比之下・相对而言",
           pinyin: "xiāngbǐ zhī xià・xiāngduì éryán",
+          ch: "h3-09-comparison",
           conn: "相比之下 / 相对而言 + 비교 결과",
           ko: "그에 비하면 / 상대적으로",
           ex: { zh: "相比之下，这个方案更合理。", pinyin: "xiāngbǐ zhī xià, zhège fāng'àn gèng hélǐ", ko: "그에 비하면 이 방안이 더 합리적입니다." },
@@ -292,6 +293,7 @@ export default {
         {
           pattern: "与…相比",
           pinyin: "yǔ…xiāngbǐ",
+          ch: "h3-09-comparison",
           conn: "与 + 대상 + 相比，주어 + 차이",
           ko: "~와 비교하면",
           ex: { zh: "与去年相比，今年的销量大幅增长。", pinyin: "yǔ qùnián xiāngbǐ, jīnnián de xiāoliàng dàfú zēngzhǎng", ko: "작년과 비교하면 올해 판매량이 크게 늘었습니다." },
@@ -301,6 +303,7 @@ export default {
         {
           pattern: "不亚于",
           pinyin: "bú yà yú",
+          ch: "h3-09-comparison",
           conn: "A + 不亚于 + B",
           ko: "A는 B에 못지않다",
           ex: { zh: "他的能力不亚于任何人。", pinyin: "tā de nénglì bú yà yú rènhé rén", ko: "그의 능력은 누구에게도 못지않아요." },
@@ -319,6 +322,7 @@ export default {
         {
           pattern: "在…看来",
           pinyin: "zài…kànlái",
+          ch: "h4-08-prepositional-frames",
           conn: "在 + 사람 + 看来 (~이 보기에)",
           ko: "~이 보기에는, ~의 견해로는",
           ex: { zh: "在我看来，这种做法并不可取。", pinyin: "zài wǒ kànlái, zhè zhǒng zuòfǎ bìng bù kěqǔ", ko: "제가 보기에 이런 방식은 결코 바람직하지 않아요." },
@@ -328,6 +332,7 @@ export default {
         {
           pattern: "就…来看",
           pinyin: "jiù…lái kàn",
+          ch: "h4-08-prepositional-frames",
           conn: "就 + 근거 + 来看 (~으로 볼 때)",
           ko: "~으로 볼 때, ~에 비추어 보면",
           ex: { zh: "就目前的情况来看，进展比较顺利。", pinyin: "jiù mùqián de qíngkuàng lái kàn, jìnzhǎn bǐjiào shùnlì", ko: "현재 상황으로 볼 때 진행이 비교적 순조로워요." },

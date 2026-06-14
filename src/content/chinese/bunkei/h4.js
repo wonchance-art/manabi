@@ -196,6 +196,7 @@ export default {
         {
           pattern: "동사1 + 동사2",
           pinyin: "—",
+          ch: "h1-08-serial-verbs",
           conn: "주어 + 동사1 + (목적어) + 동사2 + (목적어)",
           ko: "~해서 …하다 (한 주어의 연속·목적 동작)",
           ex: { zh: "我去超市买东西。", pinyin: "wǒ qù chāoshì mǎi dōngxi", ko: "저는 마트에 물건 사러 가요." },
@@ -242,6 +243,7 @@ export default {
         {
           pattern: "请 + 사람 + 동사",
           pinyin: "qǐng",
+          ch: "h1-12-modal-wishes",
           conn: "请 + 사람 + 동사 (~를 …하도록 청하다)",
           ko: "~에게 …해 주십사 청하다, ~를 대접하다",
           ex: { zh: "今天我请你们吃饭。", pinyin: "jīntiān wǒ qǐng nǐmen chīfàn", ko: "오늘은 제가 여러분께 식사를 대접할게요." },
@@ -251,6 +253,7 @@ export default {
         {
           pattern: "동사1 + 是为了 + 동사2",
           pinyin: "shì wèile",
+          ch: "h1-08-serial-verbs",
           conn: "동사1 + 是为了 + 동사2 (목적 연동)",
           ko: "~하는 것은 …하기 위해서이다",
           ex: { zh: "我学汉语是为了去中国工作。", pinyin: "wǒ xué hànyǔ shì wèile qù zhōngguó gōngzuò", ko: "제가 중국어를 배우는 건 중국에 가서 일하기 위해서예요." },
@@ -444,6 +447,7 @@ export default {
         {
           pattern: "其实",
           pinyin: "qíshí",
+          ch: "h4-10-discourse-adverbs",
           conn: "주어 + 其实 + 사실 (예상과 다른 진실)",
           ko: "사실은, 실은",
           ex: { zh: "看起来很难，其实很简单。", pinyin: "kàn qǐlái hěn nán, qíshí hěn jiǎndān", ko: "어려워 보이지만 사실은 아주 쉬워요." },
@@ -452,6 +456,7 @@ export default {
         {
           pattern: "不过",
           pinyin: "búguò",
+          ch: "h4-10-discourse-adverbs",
           conn: "문장，不过 + 가벼운 전환",
           ko: "그런데, 다만",
           ex: { zh: "这件衣服很好看，不过有点儿贵。", pinyin: "zhè jiàn yīfu hěn hǎokàn, búguò yǒudiǎnr guì", ko: "이 옷은 예쁜데 다만 좀 비싸요." },
@@ -461,6 +466,7 @@ export default {
         {
           pattern: "倒",
           pinyin: "dào",
+          ch: "h4-10-discourse-adverbs",
           conn: "주어 + 倒 + 의외·완곡한 전환",
           ko: "오히려, 그런데 (의외·완곡)",
           ex: { zh: "这个办法倒不错。", pinyin: "zhège bànfǎ dào búcuò", ko: "이 방법 의외로 괜찮네요." },
@@ -535,6 +541,7 @@ export default {
         {
           pattern: "又…又…",
           pinyin: "yòu…yòu",
+          ch: "h2-11-degree-mood-adverbs",
           conn: "又 + A + 又 + B (두 성질·동작 병렬)",
           ko: "~하기도 하고 …하기도 하다",
           ex: { zh: "这家店的菜又便宜又好吃。", pinyin: "zhè jiā diàn de cài yòu piányi yòu hǎochī", ko: "이 가게 음식은 싸고도 맛있어요." },
@@ -827,6 +834,7 @@ export default {
         {
           pattern: "差不多",
           pinyin: "chàbuduō",
+          ch: "h3-12-approximate-numbers",
           conn: "差不多 + 수량/형용사 / 동사 + 得差不多了",
           ko: "거의, 대략",
           ex: { zh: "我们差不多到了。", pinyin: "wǒmen chàbuduō dào le", ko: "우리 거의 다 왔어요." },
@@ -835,6 +843,7 @@ export default {
         {
           pattern: "左右・大概・大约",
           pinyin: "zuǒyòu・dàgài・dàyuē",
+          ch: "h3-12-approximate-numbers",
           conn: "수량 + 左右 / 大概·大约 + 수량",
           ko: "~쯤, 대략",
           ex: { zh: "他三十岁左右。", pinyin: "tā sānshí suì zuǒyòu", ko: "그는 서른 살쯤 돼요." },
@@ -844,6 +853,7 @@ export default {
         {
           pattern: "几乎",
           pinyin: "jīhū",
+          ch: "h3-11-degree-scope-adverbs",
           conn: "几乎 + 동사/형용사 (긍정·부정)",
           ko: "거의 (~할 뻔하다/~하지 않다)",
           ex: { zh: "我几乎每天都喝咖啡。", pinyin: "wǒ jīhū měi tiān dōu hē kāfēi", ko: "저는 거의 매일 커피를 마셔요." },
@@ -852,6 +862,7 @@ export default {
         {
           pattern: "至少・最多",
           pinyin: "zhìshǎo・zuìduō",
+          ch: "h3-12-approximate-numbers",
           conn: "至少/最多 + 수량",
           ko: "적어도 / 많아야",
           ex: { zh: "你至少要休息一天。", pinyin: "nǐ zhìshǎo yào xiūxi yì tiān", ko: "당신은 적어도 하루는 쉬어야 해요." },
@@ -921,6 +932,7 @@ export default {
         {
           pattern: "看起来・听起来",
           pinyin: "kàn qǐlái・tīng qǐlái",
+          ch: "h3-04-direction-complement",
           conn: "看/听/说 + 起来 + 형용사·평가",
           ko: "~해 보이다/들리다",
           ex: { zh: "这道菜看起来很好吃。", pinyin: "zhè dào cài kàn qǐlái hěn hǎochī", ko: "이 요리는 맛있어 보여요." },
@@ -982,6 +994,7 @@ export default {
         {
           pattern: "동사 + 起来",
           pinyin: "qǐlái",
+          ch: "h3-04-direction-complement",
           conn: "동사 + 起来 + 평가",
           ko: "막상 ~해 보니 (평가)",
           ex: { zh: "这件事说起来容易，做起来难。", pinyin: "zhè jiàn shì shuō qǐlái róngyì, zuò qǐlái nán", ko: "이 일은 말하기는 쉬워도 막상 하기는 어려워요." },
@@ -1018,6 +1031,7 @@ export default {
         {
           pattern: "终于",
           pinyin: "zhōngyú",
+          ch: "h2-12-time-expressions",
           conn: "주어 + 终于 + 결과 (오랜 끝에 마침내)",
           ko: "마침내, 드디어",
           ex: { zh: "等了很久，他终于来了。", pinyin: "děng le hěn jiǔ, tā zhōngyú lái le", ko: "한참 기다려서 그가 드디어 왔어요." },

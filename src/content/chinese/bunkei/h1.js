@@ -111,6 +111,7 @@ export default {
         {
           pattern: "주어 + 喜欢 + 명사/동사",
           pinyin: "xǐhuan",
+          ch: "h1-12-modal-wishes",
           conn: "喜欢 + 명사/동사구 (좋아함)",
           ko: "~을 좋아하다 / ~하기를 좋아하다",
           ex: { zh: "我喜欢中国菜。", pinyin: "wǒ xǐhuan Zhōngguó cài", ko: "저는 중국 요리를 좋아해요." },
@@ -203,6 +204,7 @@ export default {
         {
           pattern: "不用 + 동사",
           pinyin: "búyòng",
+          ch: "h1-12-modal-wishes",
           conn: "不用 + 동사 — ~할 필요 없다",
           ko: "~할 필요 없다",
           ex: { zh: "不用谢。", pinyin: "búyòng xiè", ko: "고마워할 필요 없어요 (천만에요)." },
@@ -580,6 +582,7 @@ export default {
         {
           pattern: "请 + 동사",
           pinyin: "qǐng",
+          ch: "h1-12-modal-wishes",
           conn: "请 + 동사 (공손한 청유)",
           ko: "~해 주세요",
           ex: { zh: "请坐。", pinyin: "qǐng zuò", ko: "앉으세요." },
@@ -588,6 +591,7 @@ export default {
         {
           pattern: "想 + 명사",
           pinyin: "xiǎng",
+          ch: "h1-12-modal-wishes",
           conn: "想 + 사람/장소 — 그리움",
           ko: "~을 그리워하다/보고 싶다",
           ex: { zh: "我想家。", pinyin: "wǒ xiǎng jiā", ko: "저는 집이 그리워요." },
@@ -622,6 +626,7 @@ export default {
         {
           pattern: "都 + 동사/형용사",
           pinyin: "dōu",
+          ch: "h1-11-adverbs-dou-ye",
           conn: "주어(복수) + 都 + 술어 (모두)",
           ko: "모두 ~하다",
           ex: { zh: "我们都是学生。", pinyin: "wǒmen dōu shì xuésheng", ko: "우리는 모두 학생이에요." },
@@ -631,6 +636,7 @@ export default {
         {
           pattern: "也 + 동사/형용사",
           pinyin: "yě",
+          ch: "h1-11-adverbs-dou-ye",
           conn: "주어 + 也 + 술어 (~도)",
           ko: "~도 (역시) ~하다",
           ex: { zh: "我也是中国人。", pinyin: "wǒ yě shì Zhōngguó rén", ko: "저도 중국인이에요." },
@@ -648,6 +654,7 @@ export default {
         {
           pattern: "真 + 형용사",
           pinyin: "zhēn",
+          ch: "h1-11-adverbs-dou-ye",
           conn: "真 + 형용사 — 감탄 강조",
           ko: "정말 ~하다",
           ex: { zh: "你真好！", pinyin: "nǐ zhēn hǎo", ko: "당신 정말 좋은 사람이에요!" },
@@ -656,6 +663,7 @@ export default {
         {
           pattern: "一起 + 동사",
           pinyin: "yìqǐ",
+          ch: "h1-11-adverbs-dou-ye",
           conn: "(和 …) 一起 + 동사 — 함께",
           ko: "함께 ~하다",
           ex: { zh: "我们一起去吧。", pinyin: "wǒmen yìqǐ qù ba", ko: "우리 같이 가요." },
@@ -721,6 +729,7 @@ export default {
         {
           pattern: "谢谢・不客气",
           pinyin: "xièxie・bú kèqi",
+          ch: "h1-13-greetings",
           conn: "감사와 응답 (고정 표현)",
           ko: "고맙습니다 / 천만에요",
           ex: { zh: "谢谢你！", pinyin: "xièxie nǐ", ko: "고마워요!" },
@@ -729,6 +738,7 @@ export default {
         {
           pattern: "对不起・没关系",
           pinyin: "duìbuqǐ・méi guānxi",
+          ch: "h1-13-greetings",
           conn: "사과와 응답 (고정 표현)",
           ko: "미안합니다 / 괜찮아요",
           ex: { zh: "对不起，我来晚了。", pinyin: "duìbuqǐ, wǒ lái wǎn le", ko: "죄송해요, 늦었어요." },
@@ -737,6 +747,7 @@ export default {
         {
           pattern: "请问…",
           pinyin: "qǐngwèn",
+          ch: "h1-13-greetings",
           conn: "请问 + 질문 (말 걸기)",
           ko: "실례지만 ~",
           ex: { zh: "请问，火车站在哪儿？", pinyin: "qǐngwèn, huǒchēzhàn zài nǎr", ko: "실례지만 기차역이 어디예요?" },
@@ -745,6 +756,7 @@ export default {
         {
           pattern: "再见・明天见",
           pinyin: "zàijiàn・míngtiān jiàn",
+          ch: "h1-13-greetings",
           conn: "헤어질 때 인사 (见 = 보다)",
           ko: "안녕히 가세요 / 내일 봐요",
           ex: { zh: "老师，再见！", pinyin: "lǎoshī, zàijiàn", ko: "선생님, 안녕히 계세요!" },
@@ -753,6 +765,7 @@ export default {
         {
           pattern: "你好吗？",
           pinyin: "nǐ hǎo ma",
+          ch: "h1-13-greetings",
           conn: "안부 묻기 (고정 표현)",
           ko: "잘 지내요?",
           ex: { zh: "你好吗？", pinyin: "nǐ hǎo ma", ko: "잘 지내요?" },
@@ -761,6 +774,7 @@ export default {
         {
           pattern: "认识你很高兴",
           pinyin: "rènshi nǐ hěn gāoxìng",
+          ch: "h1-13-greetings",
           conn: "처음 만났을 때 인사 (고정 표현)",
           ko: "만나서 반가워요",
           ex: { zh: "认识你很高兴。", pinyin: "rènshi nǐ hěn gāoxìng", ko: "만나서 반가워요." },
