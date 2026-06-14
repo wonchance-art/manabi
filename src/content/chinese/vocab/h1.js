@@ -4,7 +4,7 @@
  */
 export default {
   level: "H1",
-  title: "1급 기초 어휘",
+  title: "H1 기초 어휘",
   desc: "你好부터 시작하는 HSK 1급 — 자기소개와 하루 일상에 가장 많이 쓰는 핵심 어휘 110여 개예요.",
   themes: [
     {

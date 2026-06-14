@@ -27,7 +27,7 @@ import bunkeiH4 from './bunkei/h4';
 import bunkeiH5 from './bunkei/h5';
 import bunkeiH6 from './bunkei/h6';
 
-/** 레벨 메타 — 학습 순서대로. key는 ASCII(OT/H1~H6), 화면 표기는 short(OT/1급~6급) */
+/** 레벨 메타 — 학습 순서대로. key·short 모두 OT/H1~H6 (HSK 1~6급) */
 export const ZH_LEVEL_META = [
   {
     key: 'OT', short: 'OT', label: 'OT 오리엔테이션', focus: '시작 전 워밍업',
@@ -35,32 +35,32 @@ export const ZH_LEVEL_META = [
     color: '#868E96', bg: 'rgba(134,142,150,0.12)', line: 'rgba(134,142,150,0.35)',
   },
   {
-    key: 'H1', short: '1급', label: '1급 기초', focus: '첫 문장 만들기',
+    key: 'H1', short: 'H1', label: 'H1 기초', focus: '첫 문장 만들기',
     desc: '是·有와 기본 어순, 这/那와 양사, 의문사 — 자기소개와 일상 표현의 뼈대.',
     color: '#4C6EF5', bg: 'rgba(76,110,245,0.12)', line: 'rgba(76,110,245,0.35)',
   },
   {
-    key: 'H2', short: '2급', label: '2급 초급', focus: '시간과 경험',
+    key: 'H2', short: 'H2', label: 'H2 초급', focus: '시간과 경험',
     desc: '了·过·在, 비교 比, 능원동사 — 했고·하는 중이고·할 수 있다를 말하기.',
     color: '#7048E8', bg: 'rgba(112,72,232,0.12)', line: 'rgba(112,72,232,0.35)',
   },
   {
-    key: 'H3', short: '3급', label: '3급 중급', focus: '연결과 확장',
+    key: 'H3', short: 'H3', label: 'H3 중급', focus: '연결과 확장',
     desc: '把·被구문, 결과·방향·정도 보어, 복문 연결사 — 문장을 길게 엮기.',
     color: '#AE3EC9', bg: 'rgba(174,62,201,0.12)', line: 'rgba(174,62,201,0.35)',
   },
   {
-    key: 'H4', short: '4급', label: '4급 상급', focus: '뉘앙스의 시작',
+    key: 'H4', short: 'H4', label: 'H4 상급', focus: '뉘앙스의 시작',
     desc: '복잡한 보어·가정/양보·관용 구문 — 논리적으로 주장하고 연결하기.',
     color: '#D6336C', bg: 'rgba(214,51,108,0.12)', line: 'rgba(214,51,108,0.35)',
   },
   {
-    key: 'H5', short: '5급', label: '5급 고급', focus: '문어와 격식',
+    key: 'H5', short: 'H5', label: 'H5 고급', focus: '문어와 격식',
     desc: '서면어·성어 입문·고급 연결사 — 신문과 글을 읽고 쓰는 눈.',
     color: '#E03131', bg: 'rgba(224,49,49,0.12)', line: 'rgba(224,49,49,0.35)',
   },
   {
-    key: 'H6', short: '6급', label: '6급 마스터', focus: '원어민의 영역',
+    key: 'H6', short: 'H6', label: 'H6 마스터', focus: '원어민의 영역',
     desc: '고급 성어·수사법·문체 변이 — 언어 너머의 문화까지.',
     color: '#A02840', bg: 'rgba(160,40,64,0.12)', line: 'rgba(160,40,64,0.35)',
   },

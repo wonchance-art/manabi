@@ -4,7 +4,7 @@
  */
 export default {
   level: "H4",
-  title: "4급 어휘",
+  title: "H4 어휘",
   desc: "감정·성격·사회·직장까지 — 한자음으로 단숨에 외우는 HSK4급 핵심 어휘예요.",
   themes: [
     {

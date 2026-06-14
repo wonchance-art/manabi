@@ -4,7 +4,7 @@
  */
 export default {
   level: "H5",
-  title: "5급 어휘",
+  title: "H5 어휘",
   desc: "추상 개념·경제·심리·논리 연결어까지 — 한자음의 힘이 가장 빛나는 HSK5급 어휘예요.",
   themes: [
     {
