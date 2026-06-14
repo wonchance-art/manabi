@@ -132,14 +132,14 @@ export default {
           note: "是…的의 부정은 是를 不是로 — 不是…的 전체가 한 덩어리",
         },
         {
-          pattern: "是 + 대상 + 的 (소속·소유)",
+          pattern: "是 + 대상 + 的",
           conn: "명사 + 是 + 명사 + 的",
           ko: "~의 것이다",
           ex: { zh: "这本词典是图书馆的。", pinyin: "zhè běn cídiǎn shì túshūguǎn de", ko: "이 사전은 도서관 것이에요." },
           ex2: { zh: "这个主意是大家一起想的。", pinyin: "zhège zhǔyi shì dàjiā yìqǐ xiǎng de", ko: "이 아이디어는 다 같이 생각해 낸 거예요." },
         },
         {
-          pattern: "是…的 (목적어 위치)",
+          pattern: "是 + 강조 + 동사 + 的 + 목적어",
           conn: "주어 + 是 + 강조성분 + 동사 + 的 + 목적어",
           ko: "~한 것이다 (목적어가 있을 때)",
           ex: { zh: "我是去年开始学汉语的。", pinyin: "wǒ shì qùnián kāishǐ xué hànyǔ de", ko: "저는 작년에 중국어를 배우기 시작한 거예요." },
@@ -147,7 +147,7 @@ export default {
           note: "목적어가 있으면 的를 목적어 앞(买的票)에 둘 수도 있다",
         },
         {
-          pattern: "是 + 형용사 + 的 (단정)",
+          pattern: "是 + 형용사 + 的",
           conn: "주어 + 是 + 형용사 + 的 (성질의 단정)",
           ko: "~하기 마련이다, ~한 법이다 (단정·확신)",
           ex: { zh: "努力总是有用的。", pinyin: "nǔlì zǒngshì yǒuyòng de", ko: "노력은 늘 도움이 되는 법이에요." },
@@ -160,7 +160,7 @@ export default {
       name: "연동·겸어",
       items: [
         {
-          pattern: "V1 + V2 (연동문)",
+          pattern: "V1 + V2",
           conn: "주어 + 동사1 + (목적어) + 동사2 + (목적어)",
           ko: "~해서 …하다 (한 주어의 연속·목적 동작)",
           ex: { zh: "我去超市买东西。", pinyin: "wǒ qù chāoshì mǎi dōngxi", ko: "저는 마트에 물건 사러 가요." },
@@ -168,7 +168,7 @@ export default {
           note: "동작 순서대로 동사를 늘어놓는다 — 去买(가서 사다), 坐…上班(타고 출근하다)",
         },
         {
-          pattern: "请/让/叫 + 사람 + V (겸어문)",
+          pattern: "请/让/叫 + 사람 + V",
           conn: "동사1 + 사람 + 동사2 — 사람이 V1의 목적어이자 V2의 주어",
           ko: "~에게 …하게 하다/시키다/청하다",
           ex: { zh: "妈妈让我早点儿回家。", pinyin: "māma ràng wǒ zǎodiǎnr huíjiā", ko: "엄마가 저에게 일찍 집에 오라고 했어요." },
@@ -199,7 +199,7 @@ export default {
           note: "帮…(忙)은 부탁·도움의 겸어 — 帮我 + 동사가 통째로 자주 쓰인다",
         },
         {
-          pattern: "请 + 사람 + V (초청)",
+          pattern: "请 + 사람 + V",
           conn: "请 + 사람 + 동사 (~를 …하도록 청하다)",
           ko: "~에게 …해 주십사 청하다, ~를 대접하다",
           ex: { zh: "今天我请你们吃饭。", pinyin: "jīntiān wǒ qǐng nǐmen chīfàn", ko: "오늘은 제가 여러분께 식사를 대접할게요." },
@@ -219,7 +219,7 @@ export default {
       name: "결과·방향·가능 보어",
       items: [
         {
-          pattern: "V + 完/好/到/懂 (결과보어)",
+          pattern: "V + 完/好/到/懂",
           conn: "동사 + 결과보어 + (了)",
           ko: "~해 내다/마치다 (동작의 결과)",
           ex: { zh: "我听懂了老师的话。", pinyin: "wǒ tīngdǒng le lǎoshī de huà", ko: "선생님의 말을 알아들었어요." },
@@ -227,7 +227,7 @@ export default {
           note: "부정은 没 — 听懂의 부정은 没听懂. 不은 거의 안 쓴다",
         },
         {
-          pattern: "V + 上/下/出/起来 (방향보어)",
+          pattern: "V + 上/下/出/起来",
           conn: "동사 + 방향보어 — 동작의 방향·결과 의미 확장",
           ko: "~해 오르다/내리다/나오다 등",
           ex: { zh: "他站起来回答问题。", pinyin: "tā zhàn qǐlái huídá wèntí", ko: "그는 일어나서 질문에 답했어요." },
@@ -235,7 +235,7 @@ export default {
           note: "想起来(생각나다)·看出来(알아보다)처럼 방향보어가 비유적 뜻으로도 쓰인다",
         },
         {
-          pattern: "V + 得/不 + 보어 (가능보어)",
+          pattern: "V + 得/不 + 결과보어",
           conn: "동사 + 得(가능)/不(불가능) + 결과·방향보어",
           ko: "~할 수 있다/없다 (능력·여건상)",
           ex: { zh: "这些菜我一个人吃不完。", pinyin: "zhèxiē cài wǒ yí ge rén chī bu wán", ko: "이 음식들은 저 혼자 다 못 먹어요." },
@@ -251,7 +251,7 @@ export default {
           note: "목적어가 있으면 동사를 한 번 더 반복 — 说汉语 → 汉语说得很流利",
         },
         {
-          pattern: "V + 过 (경험)",
+          pattern: "V + 过",
           conn: "동사 + 过 (~해 본 적 있다)",
           ko: "~한 적이 있다 (경험)",
           ex: { zh: "我去过两次中国。", pinyin: "wǒ qù guo liǎng cì zhōngguó", ko: "저는 중국에 두 번 가 본 적이 있어요." },
@@ -267,7 +267,7 @@ export default {
           note: "V得下/V不下는 '공간이 수용 가능한가'를 나타내는 가능보어",
         },
         {
-          pattern: "V + 得/不 + 了 (실현)",
+          pattern: "V + 得了/不了",
           conn: "동사 + 得了/不了 (~할 수 있다/없다)",
           ko: "~할 수 있다/없다 (실현 가능성)",
           ex: { zh: "今天的事一天做得了吗？", pinyin: "jīntiān de shì yì tiān zuò de liǎo ma", ko: "오늘 일을 하루에 끝낼 수 있어요?" },
@@ -464,6 +464,14 @@ export default {
           ex2: { zh: "他既聪明，也很努力。", pinyin: "tā jì cōngming, yě hěn nǔlì", ko: "그는 똑똑하기도 하고 노력도 많이 해요." },
           note: "既…又…는 又…又…의 서면형 — 既 뒤엔 보통 2음절어",
         },
+        {
+          pattern: "不是…，就是…",
+          conn: "不是 + A，就是 + B (둘 중 하나)",
+          ko: "~ 아니면 …이다 (양자 중 하나)",
+          ex: { zh: "他每天不是看书，就是上网。", pinyin: "tā měi tiān bú shì kàn shū, jiùshì shàngwǎng", ko: "그는 매일 책을 보지 않으면 인터넷을 해요." },
+          ex2: { zh: "周末不是下雨，就是刮风。", pinyin: "zhōumò bú shì xiàyǔ, jiùshì guāfēng", ko: "주말이면 비가 오거나 아니면 바람이 불어요." },
+          note: "不是…就是…는 '둘 중 하나'(추측·범위) — 不是…而是…(정정)와 구별",
+        },
       ],
     },
     {
@@ -538,7 +546,7 @@ export default {
       name: "시간·동작 상태",
       items: [
         {
-          pattern: "V + 着 (지속)",
+          pattern: "V + 着",
           conn: "동사 + 着 — 동작·상태의 지속",
           ko: "~하고 있다, ~한 채로 있다",
           ex: { zh: "门开着，你进来吧。", pinyin: "mén kāizhe, nǐ jìnlái ba", ko: "문이 열려 있으니 들어오세요." },
@@ -561,7 +569,7 @@ export default {
           note: "一…就…는 '~하자마자' 또는 '~하기만 하면 늘'(습관) 두 뜻",
         },
         {
-          pattern: "V + 了 + 수량 + 了 (지속 진행)",
+          pattern: "V + 了 + 수량 + 了",
           conn: "동사 + 了 + 기간 + (목적어) + 了",
           ko: "~한 지 (얼마)가 되었다 (지금도 계속)",
           ex: { zh: "我学汉语学了三年了。", pinyin: "wǒ xué hànyǔ xué le sān nián le", ko: "저는 중국어를 배운 지 3년이 되었어요." },
@@ -598,6 +606,14 @@ export default {
           ex: { zh: "我刚到家，就下起雨来了。", pinyin: "wǒ gāng dào jiā, jiù xià qǐ yǔ lái le", ko: "막 집에 도착했는데 비가 내리기 시작했어요." },
           ex2: { zh: "他刚坐下，电话就响了。", pinyin: "tā gāng zuòxià, diànhuà jiù xiǎng le", ko: "그가 막 앉자마자 전화가 울렸어요." },
           note: "刚(막 ~한)은 시간보어 — 刚才(방금)와 구별. 刚…就…는 '~하자마자'",
+        },
+        {
+          pattern: "V + 了 + 再 + V",
+          conn: "동사1 + 了 + 再 + 동사2 (~하고 나서 …하다)",
+          ko: "~한 다음에 …하다",
+          ex: { zh: "你吃了饭再走吧。", pinyin: "nǐ chī le fàn zài zǒu ba", ko: "밥 먹고 나서 가요." },
+          ex2: { zh: "想清楚了再做决定。", pinyin: "xiǎng qīngchu le zài zuò juédìng", ko: "잘 생각하고 나서 결정해요." },
+          note: "V了再V는 '앞 동작을 끝낸 뒤에' — 미래·권유에서 자주 쓰인다",
         },
       ],
     },
@@ -645,7 +661,7 @@ export default {
           note: "결과를 먼저 말하고 원인을 뒤에 강조 — 因果를 뒤집는 구문",
         },
         {
-          pattern: "为了 + 목적 (부정)",
+          pattern: "为了不 + V",
           conn: "为了不 + 동사，주어 + 동작",
           ko: "~하지 않기 위해 …하다",
           ex: { zh: "为了不打扰别人，他小声说话。", pinyin: "wèile bù dǎrǎo biérén, tā xiǎoshēng shuōhuà", ko: "남을 방해하지 않으려고 그는 작은 소리로 말했어요." },
@@ -724,6 +740,14 @@ export default {
           ex2: { zh: "很多水果都很有营养，例如苹果。", pinyin: "hěn duō shuǐguǒ dōu hěn yǒu yíngyǎng, lìrú píngguǒ", ko: "많은 과일이 영양가가 높아요, 예를 들면 사과요." },
           note: "比如는 구어, 例如는 서면 — 끝에 等(등)을 붙이기도 한다",
         },
+        {
+          pattern: "尤其・特别是",
+          conn: "주절，尤其/特别是 + 두드러진 예",
+          ko: "특히, 그중에서도",
+          ex: { zh: "我喜欢中国菜，尤其是川菜。", pinyin: "wǒ xǐhuan zhōngguó cài, yóuqí shì chuāncài", ko: "저는 중국 음식을 좋아하는데, 특히 쓰촨 요리를 좋아해요." },
+          ex2: { zh: "这里风景很美，特别是秋天。", pinyin: "zhèlǐ fēngjǐng hěn měi, tèbié shì qiūtiān", ko: "여기는 경치가 아름다워요, 특히 가을에요." },
+          note: "尤其·特别是는 '여럿 중에서도 유독' — 뒤에 是를 붙이는 경우가 많다",
+        },
       ],
     },
     {
@@ -790,12 +814,44 @@ export default {
           ex2: { zh: "我会尽量帮你的。", pinyin: "wǒ huì jǐnliàng bāng nǐ de", ko: "최대한 도와드릴게요." },
         },
         {
-          pattern: "V + 起来 (평가)",
+          pattern: "V + 起来",
           conn: "동사 + 起来 + 평가",
           ko: "막상 ~해 보니 (평가)",
           ex: { zh: "这件事说起来容易，做起来难。", pinyin: "zhè jiàn shì shuō qǐlái róngyì, zuò qǐlái nán", ko: "이 일은 말하기는 쉬워도 막상 하기는 어려워요." },
           ex2: { zh: "用起来很方便。", pinyin: "yòng qǐlái hěn fāngbiàn", ko: "써 보니 아주 편리해요." },
           note: "V起来는 '막상 ~해 보니'의 평가 — 看起来(보기에)와 함께 자주 쓰인다",
+        },
+        {
+          pattern: "好像",
+          conn: "주어 + 好像 + 술어 (+ 似的)",
+          ko: "마치 ~인 것 같다",
+          ex: { zh: "他好像生病了。", pinyin: "tā hǎoxiàng shēngbìng le", ko: "그는 아픈 것 같아요." },
+          ex2: { zh: "天好像要下雨了。", pinyin: "tiān hǎoxiàng yào xiàyǔ le", ko: "비가 오려는 것 같아요." },
+          note: "好像은 불확실한 추측·비유 — 끝에 似的를 붙이면 비유가 강해진다",
+        },
+        {
+          pattern: "千万",
+          conn: "千万 + 别/不要/要 + 동사 (당부)",
+          ko: "부디, 절대 ~해라/하지 마라",
+          ex: { zh: "你千万别迟到。", pinyin: "nǐ qiānwàn bié chídào", ko: "절대 늦지 마세요." },
+          ex2: { zh: "过马路千万要小心。", pinyin: "guò mǎlù qiānwàn yào xiǎoxīn", ko: "길 건널 때 부디 조심하세요." },
+          note: "千万은 간곡한 당부 — 别·要와 호응해 '절대·부디'를 강조",
+        },
+        {
+          pattern: "竟然・居然",
+          conn: "주어 + 竟然/居然 + 의외의 사실",
+          ko: "뜻밖에도, 의외로 (놀람)",
+          ex: { zh: "他竟然忘了今天的会议。", pinyin: "tā jìngrán wàng le jīntiān de huìyì", ko: "그가 뜻밖에도 오늘 회의를 잊어버렸어요." },
+          ex2: { zh: "这么简单的题，他居然做错了。", pinyin: "zhème jiǎndān de tí, tā jūrán zuòcuò le", ko: "이렇게 쉬운 문제를 의외로 그가 틀렸어요." },
+          note: "竟然·居然은 '예상 밖이라 놀랍다'는 어기 — 의외성 강조",
+        },
+        {
+          pattern: "终于",
+          conn: "주어 + 终于 + 결과 (오랜 끝에 마침내)",
+          ko: "마침내, 드디어",
+          ex: { zh: "等了很久，他终于来了。", pinyin: "děng le hěn jiǔ, tā zhōngyú lái le", ko: "한참 기다려서 그가 드디어 왔어요." },
+          ex2: { zh: "经过努力，我终于通过了考试。", pinyin: "jīngguò nǔlì, wǒ zhōngyú tōngguò le kǎoshì", ko: "노력 끝에 저는 마침내 시험에 합격했어요." },
+          note: "终于는 오랜 기다림·노력 끝의 결과 — 긍정적 결말에 주로 쓴다",
         },
       ],
     },
