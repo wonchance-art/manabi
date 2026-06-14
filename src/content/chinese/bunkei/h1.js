@@ -59,7 +59,7 @@ export default {
           note: "在의 부정은 不在. '특정한 것이 어디 있다'는 在, '어디에 무엇이 있다'는 有.",
         },
         {
-          pattern: "주어 + 在 + 동사 (진행)",
+          pattern: "주어 + 在 + 동사",
           conn: "주어 + 在 + 동사 — ~하는 중",
           ko: "~하고 있다",
           ex: { zh: "我在吃饭。", pinyin: "wǒ zài chī fàn", ko: "저는 밥 먹고 있어요." },
@@ -98,7 +98,7 @@ export default {
           note: "喜欢 뒤엔 명사도 동사구도 올 수 있어요.",
         },
         {
-          pattern: "주어 + 동사 + 동사 (연동문)",
+          pattern: "주어 + 동사 + 동사",
           conn: "去/来 + 동작 — 잇따른 두 동작",
           ko: "~하러 가다/오다",
           ex: { zh: "我去商店买东西。", pinyin: "wǒ qù shāngdiàn mǎi dōngxi", ko: "저는 가게에 물건 사러 가요." },
@@ -134,7 +134,7 @@ export default {
           ex2: { zh: "这不是茶，是水。", pinyin: "zhè bú shì chá, shì shuǐ", ko: "이건 차가 아니라 물이에요." },
         },
         {
-          pattern: "没有 (소유·존재 부정)",
+          pattern: "没有",
           conn: "주어 + 没有 + 명사",
           ko: "~이 없다 / 가지고 있지 않다",
           ex: { zh: "我没有钱。", pinyin: "wǒ méiyǒu qián", ko: "저는 돈이 없어요." },
@@ -237,7 +237,7 @@ export default {
           ex2: { zh: "他为什么这么高兴？", pinyin: "tā wèishénme zhème gāoxìng", ko: "그는 왜 이렇게 기뻐해요?" },
         },
         {
-          pattern: "V 不 V (정반의문)",
+          pattern: "V 不 V",
           conn: "동사/형용사 + 不 + 동사/형용사",
           ko: "~해요, 안 해요? (정반의문)",
           ex: { zh: "你去不去？", pinyin: "nǐ qù bu qù", ko: "갈 거예요, 안 갈 거예요?" },
@@ -280,7 +280,7 @@ export default {
           note: "명사 셀 땐 반드시 양사가 필요해요 (×三人). '2개'는 二이 아니라 两个.",
         },
         {
-          pattern: "一个 (만능 양사 个)",
+          pattern: "一个",
           conn: "수사 + 个 + 명사",
           ko: "~ 개/명 (가장 흔한 양사)",
           ex: { zh: "一个苹果", pinyin: "yí ge píngguǒ", ko: "사과 한 개" },
@@ -288,7 +288,7 @@ export default {
           note: "양사를 모를 땐 일단 个를 쓰면 대개 통해요. 个는 경성.",
         },
         {
-          pattern: "这・那 + (양사) + 명사",
+          pattern: "这・那 + 양사 + 명사",
           conn: "这/那 (+ 양사) + 명사",
           ko: "이/그(저) ~",
           ex: { zh: "这本书很好。", pinyin: "zhè běn shū hěn hǎo", ko: "이 책 정말 좋아요." },
@@ -317,7 +317,7 @@ export default {
           ex2: { zh: "现在几点了？", pinyin: "xiànzài jǐ diǎn le", ko: "지금 몇 시예요?" },
         },
         {
-          pattern: "양사 중첩 (每个 류)",
+          pattern: "양사 중첩",
           conn: "每 + 양사 + 명사 — 매~",
           ko: "~마다, 모든 ~",
           ex: { zh: "每个人都有名字。", pinyin: "měi ge rén dōu yǒu míngzi", ko: "사람마다 이름이 있어요." },
@@ -338,7 +338,7 @@ export default {
           note: "시간 표현은 동사 앞에 와요. 我去今天은 틀려요.",
         },
         {
-          pattern: "… 点 (시각)",
+          pattern: "… 点",
           conn: "숫자 + 点 (+ 分)",
           ko: "~시 (~분)",
           ex: { zh: "现在八点。", pinyin: "xiànzài bā diǎn", ko: "지금 8시예요." },
@@ -360,7 +360,7 @@ export default {
           note: "요일을 말할 땐 是를 생략하기도 해요 (今天星期三).",
         },
         {
-          pattern: "… 月 … 号 (날짜)",
+          pattern: "… 月 … 号",
           conn: "숫자 + 月 + 숫자 + 号",
           ko: "~월 ~일",
           ex: { zh: "今天五月一号。", pinyin: "jīntiān wǔ yuè yī hào", ko: "오늘은 5월 1일이에요." },
@@ -389,14 +389,14 @@ export default {
           ex2: { zh: "我们什么时候吃饭？", pinyin: "wǒmen shénme shíhou chī fàn", ko: "우리 언제 밥 먹어요?" },
         },
         {
-          pattern: "… 分 (분)",
+          pattern: "… 分",
           conn: "숫자 + 点 + 숫자 + 分 — 시각의 분",
           ko: "~시 ~분",
           ex: { zh: "现在八点十分。", pinyin: "xiànzài bā diǎn shí fēn", ko: "지금 8시 10분이에요." },
           ex2: { zh: "差五分九点。", pinyin: "chà wǔ fēn jiǔ diǎn", ko: "9시 5분 전이에요." },
         },
         {
-          pattern: "半・刻 (시각)",
+          pattern: "半・刻",
           conn: "点 + 半(30분) / 一刻(15분)",
           ko: "~시 반 / ~시 15분",
           ex: { zh: "现在七点半。", pinyin: "xiànzài qī diǎn bàn", ko: "지금 7시 반이에요." },
@@ -408,7 +408,7 @@ export default {
       name: "了·완료",
       items: [
         {
-          pattern: "동사 + 了 (완료)",
+          pattern: "동사 + 了",
           conn: "동사 + 了 (동작의 완료·실현)",
           ko: "~했다",
           ex: { zh: "我吃了。", pinyin: "wǒ chī le", ko: "저는 먹었어요." },
@@ -416,7 +416,7 @@ export default {
           note: "부정은 没 + 동사이고 了를 빼요 (我没吃, ×我没吃了).",
         },
         {
-          pattern: "… 了 (문말, 변화·새 상황)",
+          pattern: "… 了",
           conn: "문장 끝 了 (상황의 변화)",
           ko: "~하게 되었다 / 이제 ~다",
           ex: { zh: "下雨了。", pinyin: "xiàyǔ le", ko: "비가 오기 시작했어요." },
@@ -476,7 +476,7 @@ export default {
           ex2: { zh: "请喝茶。", pinyin: "qǐng hē chá", ko: "차 드세요." },
         },
         {
-          pattern: "想 + 명사 (그리워하다)",
+          pattern: "想 + 명사",
           conn: "想 + 사람/장소 — 그리움",
           ko: "~을 그리워하다/보고 싶다",
           ex: { zh: "我想家。", pinyin: "wǒ xiǎng jiā", ko: "저는 집이 그리워요." },
@@ -484,7 +484,7 @@ export default {
           note: "想은 뒤에 동사면 '~하고 싶다', 사람·장소면 '그립다'예요.",
         },
         {
-          pattern: "会 … (가능성 추측)",
+          pattern: "会 …",
           conn: "会 + 동사 (+ 的) — 미래 가능성",
           ko: "~할 것이다 (그럴 것이다)",
           ex: { zh: "他明天会来。", pinyin: "tā míngtiān huì lái", ko: "그는 내일 올 거예요." },
@@ -636,7 +636,7 @@ export default {
       name: "숫자·돈·나이",
       items: [
         {
-          pattern: "… 块・… 元 (가격)",
+          pattern: "… 块・… 元",
           conn: "숫자 + 块/元 (+ 钱) — 위안 단위",
           ko: "~위안",
           ex: { zh: "这个十块钱。", pinyin: "zhège shí kuài qián", ko: "이거 10위안이에요." },
@@ -652,7 +652,7 @@ export default {
           note: "나이엔 是를 안 써요 (×我是二十岁). 어른에겐 你多大?로 물어요.",
         },
         {
-          pattern: "两 + 양사 (둘)",
+          pattern: "两 + 양사",
           conn: "两 + 양사 (수량으로서의 2)",
           ko: "두 ~",
           ex: { zh: "我要两个。", pinyin: "wǒ yào liǎng ge", ko: "두 개 주세요." },
@@ -660,7 +660,7 @@ export default {
           note: "양사 앞에서 '2'는 二이 아니라 两을 써요.",
         },
         {
-          pattern: "第 + 숫자 (서수)",
+          pattern: "第 + 숫자",
           conn: "第 + 숫자 (+ 양사) — 순서",
           ko: "~번째",
           ex: { zh: "我是第一个。", pinyin: "wǒ shì dì-yī ge", ko: "제가 첫 번째예요." },
