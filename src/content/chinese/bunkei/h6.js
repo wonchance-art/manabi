@@ -397,6 +397,7 @@ export default {
         },
         {
           pattern: "数一数二",
+          pinyin: "shǔyī shǔ'èr",
           ch: "h6-01-advanced-chengyu",
           conn: "주어 + 数一数二 (손꼽히다)",
           ko: "손에 꼽히다, 으뜸가다",
@@ -405,6 +406,7 @@ export default {
         },
         {
           pattern: "微不足道",
+          pinyin: "wēi bù zú dào",
           ch: "h6-01-advanced-chengyu",
           conn: "주어 + 微不足道 (보잘것없다)",
           ko: "하찮다, 보잘것없다",
@@ -418,6 +420,7 @@ export default {
       items: [
         {
           pattern: "全力以赴",
+          pinyin: "quánlì yǐfù",
           ch: "h6-01-advanced-chengyu",
           conn: "全力以赴 + (동사) (전력을 다하다)",
           ko: "전력을 다하다",
@@ -426,6 +429,7 @@ export default {
         },
         {
           pattern: "脚踏实地",
+          pinyin: "jiǎotà shídì",
           ch: "h6-01-advanced-chengyu",
           conn: "脚踏实地 (착실하다) — 술어·부사어",
           ko: "발을 땅에 딛고 착실히 하다",
@@ -434,6 +438,7 @@ export default {
         },
         {
           pattern: "三心二意・全神贯注",
+          pinyin: "sānxīn èryì・quánshén guànzhù",
           ch: "h6-01-advanced-chengyu",
           conn: "三心二意 (산만) ↔ 全神贯注 (몰두)",
           ko: "마음이 산만하다 / 온 정신을 집중하다",
@@ -443,6 +448,7 @@ export default {
         },
         {
           pattern: "实事求是",
+          pinyin: "shíshì qiúshì",
           ch: "h6-01-advanced-chengyu",
           conn: "实事求是 (사실에 입각하다) — 술어·부사어",
           ko: "사실에 근거해 진실을 추구하다",
@@ -451,6 +457,7 @@ export default {
         },
         {
           pattern: "半途而废",
+          pinyin: "bàntú ér fèi",
           ch: "h6-01-advanced-chengyu",
           conn: "주어 + 半途而废 (중도에 포기하다)",
           ko: "하던 일을 중도에 그만두다",
@@ -459,6 +466,7 @@ export default {
         },
         {
           pattern: "一举一动",
+          pinyin: "yìjǔ yídòng",
           ch: "h6-01-advanced-chengyu",
           conn: "一 + 명사1 + 一 + 명사2 (ABAC 성어)",
           ko: "일거수일투족, 하나하나의 행동",
@@ -468,6 +476,7 @@ export default {
         },
         {
           pattern: "千载难逢",
+          pinyin: "qiānzǎi nánféng",
           ch: "h6-01-advanced-chengyu",
           conn: "千载难逢的 + 명사 (좀처럼 만나기 힘든)",
           ko: "천재일우의, 좀처럼 오지 않는",
@@ -481,6 +490,7 @@ export default {
       items: [
         {
           pattern: "说不定",
+          pinyin: "shuōbudìng",
           ch: "h6-02-idioms-xiehouyu",
           conn: "说不定 + 추측",
           ko: "어쩌면 ~일지도 모른다",
@@ -490,6 +500,7 @@ export default {
         },
         {
           pattern: "难怪",
+          pinyin: "nánguài",
           ch: "h6-02-idioms-xiehouyu",
           conn: "难怪/怪不得 + 결과 (+ 原来 + 원인)",
           ko: "어쩐지, 그럴 만도 하다",
@@ -498,6 +509,7 @@ export default {
         },
         {
           pattern: "归根结底",
+          pinyin: "guīgēn jiédǐ",
           ch: "h6-02-idioms-xiehouyu",
           conn: "归根结底 + 본질적 결론",
           ko: "결국, 따지고 보면",
@@ -506,6 +518,7 @@ export default {
         },
         {
           pattern: "一来…，二来…",
+          pinyin: "yìlái…èrlái",
           conn: "一来 + 이유1，二来 + 이유2",
           ko: "첫째는 ~하고, 둘째는 …하고 (이유 나열)",
           ex: { zh: "我不去，一来太远，二来没时间。", pinyin: "wǒ bú qù, yìlái tài yuǎn, èrlái méi shíjiān", ko: "저는 안 가요, 하나는 너무 멀고 또 하나는 시간이 없어서요." },
@@ -513,6 +526,7 @@ export default {
         },
         {
           pattern: "再说",
+          pinyin: "zàishuō",
           conn: "주장，再说 + 보충 이유",
           ko: "게다가, 더구나",
           ex: { zh: "今天太累了，再说也下雨了，就别出去了。", pinyin: "jīntiān tài lèi le, zàishuō yě xiàyǔ le, jiù bié chūqù le", ko: "오늘 너무 피곤하고, 게다가 비도 오니 나가지 맙시다." },
@@ -526,6 +540,7 @@ export default {
       items: [
         {
           pattern: "无不・莫不",
+          pinyin: "wúbù・mòbù",
           conn: "주어 + 无不/莫不 + 술어 (~하지 않는 것이 없다)",
           ko: "모두 다 ~하다 (이중부정 강조)",
           ex: { zh: "听到这个消息，大家无不感到兴奋。", pinyin: "tīngdào zhège xiāoxi, dàjiā wúbù gǎndào xīngfèn", ko: "이 소식을 듣고 모두가 흥분하지 않을 수 없었어요." },
@@ -534,6 +549,7 @@ export default {
         },
         {
           pattern: "唯有・唯独",
+          pinyin: "wéiyǒu・wéidú",
           conn: "唯有/唯独 + 대상 (오직 ~만)",
           ko: "오직 ~만, 유독 ~만",
           ex: { zh: "唯有努力，才能改变命运。", pinyin: "wéiyǒu nǔlì, cái néng gǎibiàn mìngyùn", ko: "오직 노력만이 운명을 바꿀 수 있어요." },
@@ -542,6 +558,7 @@ export default {
         },
         {
           pattern: "未尝不・未必不",
+          pinyin: "wèicháng bù・wèibì bù",
           conn: "未尝/未必 + 不 + 술어 (꼭 ~ 아닌 것은 아니다)",
           ko: "꼭 ~한 것은 아니다, ~ 못 할 것도 없다",
           ex: { zh: "失败未尝不是一件好事。", pinyin: "shībài wèicháng bú shì yí jiàn hǎoshì", ko: "실패가 꼭 나쁜 일인 것만은 아니에요." },
@@ -550,6 +567,7 @@ export default {
         },
         {
           pattern: "仅仅・无非",
+          pinyin: "jǐnjǐn・wúfēi",
           conn: "仅仅 / 无非 + 한정 (단지 ~에 불과하다)",
           ko: "단지 ~에 지나지 않다, 결국 ~일 뿐이다",
           ex: { zh: "这仅仅是一个开始。", pinyin: "zhè jǐnjǐn shì yí ge kāishǐ", ko: "이건 단지 시작일 뿐이에요." },
@@ -563,6 +581,7 @@ export default {
       items: [
         {
           pattern: "为…所…",
+          pinyin: "wéi…suǒ",
           ch: "h5-05-passive",
           conn: "주어 + 为 + 행위자 + 所 + 동사 (서면 피동)",
           ko: "~에 의해 …되다 (서면 피동)",
@@ -572,6 +591,7 @@ export default {
         },
         {
           pattern: "受到・遭到",
+          pinyin: "shòudào・zāodào",
           ch: "h5-05-passive",
           conn: "주어 + 受到/遭到 + 추상 명사",
           ko: "~을 받다 / ~을 당하다 (서면 피동)",
@@ -581,6 +601,7 @@ export default {
         },
         {
           pattern: "对…进行…",
+          pinyin: "duì…jìnxíng",
           ch: "h5-05-passive",
           conn: "对 + 대상 + 进行 + 2음절 동사명사",
           ko: "~에 대해 …을 진행하다/하다 (격식)",
@@ -590,6 +611,7 @@ export default {
         },
         {
           pattern: "把…加以/予以…",
+          pinyin: "bǎ…jiāyǐ/yǔyǐ",
           ch: "h6-01-advanced-chengyu",
           conn: "把/对 + 대상 + 加以/予以 + 2음절 동사",
           ko: "~을 …하다 (서면 처치)",

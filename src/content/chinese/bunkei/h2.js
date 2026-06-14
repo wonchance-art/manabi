@@ -12,6 +12,7 @@ export default {
       items: [
         {
           pattern: "正在・在 + 동사 (+ 呢)",
+          pinyin: "zhèngzài・zài … ne",
           ch: "h2-03-zai-progressive",
           conn: "(正)在 + 동사 (+ 呢) — 동작의 진행",
           ko: "~하고 있다 (진행)",
@@ -21,6 +22,7 @@ export default {
         },
         {
           pattern: "동사 + 过",
+          pinyin: "guo",
           ch: "h2-02-guo-experience",
           conn: "동사 + 过 — 경험",
           ko: "~한 적이 있다 (경험)",
@@ -30,6 +32,7 @@ export default {
         },
         {
           pattern: "동사 + 了 + 수량 + 목적어",
+          pinyin: "le",
           ch: "h2-01-le-completion",
           conn: "동사 + 了 + 수량사 + 목적어 — 완료된 분량",
           ko: "~을 (얼마만큼) 했다",

@@ -5,7 +5,7 @@
 export default {
   level: "H3",
   title: "3급 어휘",
-  desc: "의견을 말하고 계획을 세우는 단계로 — 학습·직장·감정·여행까지 다루는 HSK 3급 핵심 어휘 90여 개예요.",
+  desc: "의견을 말하고 계획을 세우는 단계로 — 학습·직장·감정·여행까지 다루는 HSK 3급 핵심 어휘 110여 개예요.",
   themes: [
     {
       name: "사람과 사회",
@@ -92,6 +92,12 @@ export default {
         { zh: "需要", pinyin: "xūyào", ko: "필요하다", pos: "동사", hanja: "수요(需要) — '需'는 구할 수, '要'는 요긴할 요.", ex: { zh: "你需要帮助吗？", pinyin: "nǐ xūyào bāngzhù ma", ko: "도움이 필요해요?" } },
         { zh: "提高", pinyin: "tígāo", ko: "향상시키다, 높이다", pos: "동사", hanja: "제고(提高) — '提'는 끌 제, '高'는 높을 고.", ex: { zh: "我想提高汉语水平。", pinyin: "wǒ xiǎng tígāo Hànyǔ shuǐpíng", ko: "저는 중국어 실력을 높이고 싶어요." } },
         { zh: "检查", pinyin: "jiǎnchá", ko: "점검하다, 검사하다", pos: "동사", hanja: "검사(檢査) — 한자 그대로.", ex: { zh: "请检查一下你的作业。", pinyin: "qǐng jiǎnchá yíxià nǐ de zuòyè", ko: "숙제를 한번 검사해 보세요." } },
+        { zh: "完", pinyin: "wán", ko: "다 ~하다, 끝나다 (결과보어)", pos: "동사", hanja: "완(完) — '완성·끝'. 동사 뒤에 붙어 '다 ~하다'를 나타내요.", ex: { zh: "我看完这本书了。", pinyin: "wǒ kànwán zhè běn shū le", ko: "저는 이 책을 다 읽었어요." } },
+        { zh: "错", pinyin: "cuò", ko: "틀리다, 잘못 ~하다", pos: "형용사", hanja: "착(錯) — '어긋날 착'. 동사 뒤에 붙어 '잘못 ~하다'.", ex: { zh: "我写错了一个字。", pinyin: "wǒ xiěcuò le yí ge zì", ko: "제가 글자 하나를 잘못 썼어요." } },
+        { zh: "看见", pinyin: "kànjiàn", ko: "보이다, 보다 (보고 인지하다)", pos: "동사", hanja: "간견(看見) — '見'은 볼 견. 看(보다)에 결과보어 见이 붙어 '보여서 알아차리다'.", ex: { zh: "我看了，但是没看见他。", pinyin: "wǒ kàn le, dànshì méi kànjiàn tā", ko: "봤는데 그를 못 봤어요." } },
+        { zh: "听见", pinyin: "tīngjiàn", ko: "들리다 (듣고 인지하다)", pos: "동사", hanja: "청견(聽見) — 听(듣다)에 见이 붙어 '들려서 알아차리다'.", ex: { zh: "你听见了吗？", pinyin: "nǐ tīngjiàn le ma", ko: "들렸어요?" } },
+        { zh: "找到", pinyin: "zhǎodào", ko: "찾아내다 (찾는 데 성공하다)", pos: "동사", hanja: "조도(找到) — 找(찾다)에 결과보어 到가 붙어 '찾아내다'.", ex: { zh: "我找了半天，没找到。", pinyin: "wǒ zhǎo le bàntiān, méi zhǎodào", ko: "한참 찾았는데 못 찾았어요." } },
+        { zh: "半天", pinyin: "bàntiān", ko: "한참, 반나절", pos: "명사", hanja: "반천(半天) — '半'은 반 반, '天'은 날. 직역 '반나절', '한참 동안'.", ex: { zh: "我找了半天。", pinyin: "wǒ zhǎo le bàntiān", ko: "저는 한참 찾았어요." } },
       ],
     },
     {
@@ -112,6 +118,7 @@ export default {
         { zh: "生气", pinyin: "shēngqì", ko: "화나다", pos: "형용사", hanja: "생기(生氣) — '화가 생기다'. 한국 '생기(활력)'와 뜻이 달라요!", ex: { zh: "他生气了。", pinyin: "tā shēngqì le", ko: "그는 화났어요." } },
         { zh: "舒服", pinyin: "shūfu", ko: "편안하다, 몸이 좋다", pos: "형용사", ex: { zh: "我今天不太舒服。", pinyin: "wǒ jīntiān bú tài shūfu", ko: "저는 오늘 몸이 좀 안 좋아요." } },
         { zh: "聪明", pinyin: "cōngming", ko: "똑똑하다", pos: "형용사", hanja: "총명(聰明) — 한자 그대로.", ex: { zh: "这个孩子很聪明。", pinyin: "zhège háizi hěn cōngming", ko: "이 아이는 똑똑해요." } },
+        { zh: "那么", pinyin: "nàme", ko: "그렇게, 그토록", pos: "대사", hanja: "'那(저 나)'+么. 정도를 가리켜 '그렇게 ~한'을 나타내요.", ex: { zh: "我没有他那么高。", pinyin: "wǒ méiyǒu tā nàme gāo", ko: "저는 그만큼 크지 않아요." } },
       ],
     },
     {
