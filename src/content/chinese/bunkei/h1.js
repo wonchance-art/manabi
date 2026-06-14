@@ -59,6 +59,14 @@ export default {
           note: "在의 부정은 不在. '특정한 것이 어디 있다'는 在, '어디에 무엇이 있다'는 有.",
         },
         {
+          pattern: "주어 + 在 + 동사 (진행)",
+          conn: "주어 + 在 + 동사 — ~하는 중",
+          ko: "~하고 있다",
+          ex: { zh: "我在吃饭。", pinyin: "wǒ zài chī fàn", ko: "저는 밥 먹고 있어요." },
+          ex2: { zh: "他在看书。", pinyin: "tā zài kàn shū", ko: "그는 책을 보고 있어요." },
+          note: "在 + 동사는 동작의 진행을 나타내요.",
+        },
+        {
           pattern: "A 叫 + 이름",
           conn: "주어 + 叫 + 이름",
           ko: "A의 이름은 ~이다",
@@ -156,6 +164,13 @@ export default {
           ex: { zh: "他还没来。", pinyin: "tā hái méi lái", ko: "그는 아직 안 왔어요." },
           ex2: { zh: "我还没吃饭呢。", pinyin: "wǒ hái méi chī fàn ne", ko: "저는 아직 밥 안 먹었어요." },
         },
+        {
+          pattern: "不用 + 동사",
+          conn: "不用 + 동사 — ~할 필요 없다",
+          ko: "~할 필요 없다",
+          ex: { zh: "不用谢。", pinyin: "búyòng xiè", ko: "고마워할 필요 없어요 (천만에요)." },
+          ex2: { zh: "你不用来。", pinyin: "nǐ búyòng lái", ko: "당신은 안 와도 돼요." },
+        },
       ],
     },
     {
@@ -213,6 +228,13 @@ export default {
           ko: "어때(요)?",
           ex: { zh: "你身体怎么样？", pinyin: "nǐ shēntǐ zěnmeyàng", ko: "몸은 좀 어때요?" },
           ex2: { zh: "明天去，怎么样？", pinyin: "míngtiān qù, zěnmeyàng", ko: "내일 가는 거 어때요?" },
+        },
+        {
+          pattern: "为什么",
+          conn: "为什么 + 절 — 이유 묻기",
+          ko: "왜 ~해요?",
+          ex: { zh: "你为什么不来？", pinyin: "nǐ wèishénme bù lái", ko: "왜 안 와요?" },
+          ex2: { zh: "他为什么这么高兴？", pinyin: "tā wèishénme zhème gāoxìng", ko: "그는 왜 이렇게 기뻐해요?" },
         },
         {
           pattern: "V 不 V (정반의문)",
@@ -279,6 +301,13 @@ export default {
           ko: "여기 / 거기·저기",
           ex: { zh: "我在这儿。", pinyin: "wǒ zài zhèr", ko: "저는 여기 있어요." },
           ex2: { zh: "你的书在那儿。", pinyin: "nǐ de shū zài nàr", ko: "당신 책은 저기 있어요." },
+        },
+        {
+          pattern: "这些・那些",
+          conn: "这些/那些 + 명사 — 이것들/저것들",
+          ko: "이 ~들 / 저 ~들",
+          ex: { zh: "这些书都是我的。", pinyin: "zhèxiē shū dōu shì wǒ de", ko: "이 책들은 다 제 거예요." },
+          ex2: { zh: "那些人是谁？", pinyin: "nàxiē rén shì shéi", ko: "저 사람들은 누구예요?" },
         },
         {
           pattern: "几点・几岁",
@@ -358,6 +387,20 @@ export default {
           ko: "언제 ~해요?",
           ex: { zh: "你什么时候来？", pinyin: "nǐ shénme shíhou lái", ko: "언제 와요?" },
           ex2: { zh: "我们什么时候吃饭？", pinyin: "wǒmen shénme shíhou chī fàn", ko: "우리 언제 밥 먹어요?" },
+        },
+        {
+          pattern: "… 分 (분)",
+          conn: "숫자 + 点 + 숫자 + 分 — 시각의 분",
+          ko: "~시 ~분",
+          ex: { zh: "现在八点十分。", pinyin: "xiànzài bā diǎn shí fēn", ko: "지금 8시 10분이에요." },
+          ex2: { zh: "差五分九点。", pinyin: "chà wǔ fēn jiǔ diǎn", ko: "9시 5분 전이에요." },
+        },
+        {
+          pattern: "半・刻 (시각)",
+          conn: "点 + 半(30분) / 一刻(15분)",
+          ko: "~시 반 / ~시 15분",
+          ex: { zh: "现在七点半。", pinyin: "xiànzài qī diǎn bàn", ko: "지금 7시 반이에요." },
+          ex2: { zh: "我三点一刻到。", pinyin: "wǒ sān diǎn yí kè dào", ko: "저는 3시 15분에 도착해요." },
         },
       ],
     },

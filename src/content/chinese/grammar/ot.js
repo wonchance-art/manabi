@@ -195,7 +195,7 @@ export default [
     sections: [
       {
         heading: "주어 + 동사 + 목적어 (SVO)",
-        pattern: "주어 + 동사 + 목적어",
+        pattern: "주어 + 동사 + 목적어 (S + V + O)",
         patternKo: "동사가 목적어 앞 — 한국어와 반대",
         body:
           "중국어 문장의 기본 뼈대는 **주어 + 동사 + 목적어(SVO)**예요. 영어(I eat rice)와 같은 순서죠.\n\n" +
