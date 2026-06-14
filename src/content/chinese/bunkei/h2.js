@@ -41,6 +41,7 @@ export default {
         },
         {
           pattern: "동사 + 着",
+          pinyin: "zhe",
           ch: "h3-10-existential",
           conn: "동사 + 着 — 상태의 지속",
           ko: "~한 채로 있다 / ~해 있다",
@@ -49,7 +50,8 @@ export default {
           note: "着는 동작이 끝난 뒤의 '상태 지속'. 진행의 在와 구별해요.",
         },
         {
-          pattern: "동사1 + 着 + 동사2",
+          pattern: "동사 + 着 + 동사",
+          pinyin: "zhe",
           ch: "h3-10-existential",
           conn: "동사1 + 着 + 동사2 — 부수 동작",
           ko: "~한 채로 …하다",
@@ -58,7 +60,8 @@ export default {
           note: "앞 동작이 뒤 동작의 '방식·자세'가 돼요 (V1着 + V2).",
         },
         {
-          pattern: "快 … 了",
+          pattern: "快…了",
+          pinyin: "kuài…le",
           ch: "h2-04-le-change",
           conn: "快(要) + 동사/형용사 + 了 — 임박",
           ko: "곧 ~하려 한다",
@@ -66,7 +69,8 @@ export default {
           ex2: { zh: "快下雨了。", pinyin: "kuài xiàyǔ le", ko: "곧 비가 올 것 같아요." },
         },
         {
-          pattern: "就要 … 了",
+          pattern: "就要…了",
+          pinyin: "jiùyào…le",
           ch: "h2-04-le-change",
           conn: "(시간) + 就要 + 동사 + 了 — 임박 (시점 명시 가능)",
           ko: "곧 ~한다",
@@ -75,7 +79,8 @@ export default {
           note: "快要 … 了와 달리 就要 … 了는 앞에 구체적 시점을 둘 수 있어요.",
         },
         {
-          pattern: "要 … 了",
+          pattern: "要…了",
+          pinyin: "yào…le",
           ch: "h2-04-le-change",
           conn: "要 + 동사 + 了 — 곧 일어남",
           ko: "곧 ~할 것이다",
@@ -83,7 +88,8 @@ export default {
           ex2: { zh: "电影要开始了。", pinyin: "diànyǐng yào kāishǐ le", ko: "영화가 곧 시작해요." },
         },
         {
-          pattern: "正在 … 呢",
+          pattern: "正在…呢",
+          pinyin: "zhèngzài…ne",
           ch: "h2-03-zai-progressive",
           conn: "正在 + 동사 + 呢 — 바로 그때 진행 중",
           ko: "마침 ~하고 있다",
@@ -92,7 +98,8 @@ export default {
           note: "正在은 '바로 그 순간'을 강조하는 진행이에요.",
         },
         {
-          pattern: "동사 + 过 + 几次",
+          pattern: "동사 + 过 + 수량 次",
+          pinyin: "guo … cì",
           ch: "h2-02-guo-experience",
           conn: "동사 + 过 + 횟수 — 경험의 빈도",
           ko: "~한 적이 몇 번 있다",
