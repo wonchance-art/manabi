@@ -9,8 +9,11 @@ import { pullProgress } from '../lib/refProgress';
 const LANG_FILTERS = [
   { key: 'Japanese', label: '일본어' },
   { key: 'English',  label: '영어' },
+  { key: 'Chinese',  label: '중국어' },
   { key: 'French',   label: '프랑스어' },
 ];
+
+const VALID_LANGS = new Set(LANG_FILTERS.map(f => f.key));
 
 /** refManifest: 서버에서 만든 레퍼런스 경량 목차 — lessons/page.jsx 참고 */
 export default function LessonsPage({ refManifest = {} }) {
@@ -20,11 +23,11 @@ export default function LessonsPage({ refManifest = {} }) {
 
   const [langFilter, setLangFilter] = useState(() => {
     const u = searchParams.get('lang');
-    if (u === 'English' || u === 'French' || u === 'Japanese') return u;
+    if (u && VALID_LANGS.has(u)) return u;
     // URL에 없으면 마지막 선택 언어 유지 (챕터 페이지 진입 시에도 갱신됨)
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('lessons_lang');
-      if (saved === 'English' || saved === 'French' || saved === 'Japanese') return saved;
+      if (saved && VALID_LANGS.has(saved)) return saved;
     }
     return 'Japanese';
   });

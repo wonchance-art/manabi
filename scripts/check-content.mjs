@@ -12,6 +12,7 @@ const LANGS = {
   japanese: { g: ['ot', 'n5', 'n4', 'n3', 'n2', 'n1'], b: ['n5', 'n4', 'n3', 'n2', 'n1'], v: ['n5', 'n4', 'n3', 'n2', 'n1'] },
   english:  { g: ['ot', 'a1', 'a2', 'b1', 'b2', 'c1', 'c2'], b: ['a1', 'a2', 'b1', 'b2', 'c1', 'c2'], v: ['a1', 'a2', 'b1', 'b2', 'c1', 'c2'] },
   french:   { g: ['a0', 'a1', 'a2', 'b1', 'b2', 'c1', 'c2'], b: ['a1', 'a2', 'b1', 'b2', 'c1', 'c2'], v: ['a0', 'a1', 'a2', 'b1', 'b2', 'c1', 'c2'] },
+  chinese:  { g: ['ot', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'], b: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'], v: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] },
 };
 const root = new URL('../src/content/', import.meta.url);
 
