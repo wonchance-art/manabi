@@ -172,6 +172,7 @@ export default {
         },
         {
           pattern: "동사 + 一下",
+          pinyin: "yíxià",
           ch: "h2-10-complement-frequency",
           conn: "동사 + 一下 — 가볍게 잠깐",
           ko: "좀 ~하다",
@@ -181,6 +182,7 @@ export default {
         },
         {
           pattern: "동사 + 开・住・好",
+          pinyin: "kāi・zhù・hǎo",
           ch: "h3-03-result-complement",
           conn: "동사 + 开(열림)/住(고정)/好(완성) — 결과보어",
           ko: "~해 열다/붙잡다/완성하다",
@@ -189,7 +191,8 @@ export default {
           note: "好는 '잘 마무리됨'을 보충해요 (做好 = 다 만들다).",
         },
         {
-          pattern: "동사 + 得 + 不 + 보어",
+          pattern: "동사 + 得 + 不 + 형용사",
+          pinyin: "de bù",
           ch: "h3-05-degree-complement",
           conn: "동사 + 得 + 부정 정도보어",
           ko: "~하는 정도가 …하지 않다",
@@ -198,14 +201,16 @@ export default {
           note: "정도보어의 부정은 보어 부분에 不을 넣어요 (得不 + 형용사).",
         },
         {
-          pattern: "동사 + 多/少了",
-          conn: "동사 + 형용사 + 了 — 결과 상태",
-          ko: "~이 많아/적어졌다",
+          pattern: "형용사 + 了",
+          pinyin: "le",
+          conn: "형용사 + 了 — 정도·상태의 변화",
+          ko: "~해졌다 (많아지다·따뜻해지다 등)",
           ex: { zh: "今天人多了。", pinyin: "jīntiān rén duō le", ko: "오늘은 사람이 많아졌어요." },
           ex2: { zh: "天气暖和了。", pinyin: "tiānqì nuǎnhuo le", ko: "날씨가 따뜻해졌어요." },
         },
         {
           pattern: "동사 + 在 + 장소",
+          pinyin: "zài",
           ch: "h3-03-result-complement",
           conn: "동사 + 在 + 장소 — 동작 결과의 위치",
           ko: "~해서 (어디에) 있게 되다",
@@ -220,6 +225,7 @@ export default {
       items: [
         {
           pattern: "A 比 B + 형용사",
+          pinyin: "bǐ",
           ch: "h2-05-comparison-bi",
           conn: "A + 比 + B + 형용사 — 차등 비교",
           ko: "A는 B보다 ~하다",
@@ -229,6 +235,7 @@ export default {
         },
         {
           pattern: "A 比 B + 형용사 + 一点儿・得多",
+          pinyin: "bǐ … yìdiǎnr・de duō",
           ch: "h2-05-comparison-bi",
           conn: "A 比 B + 형용사 + 一点儿/得多 — 차이의 양",
           ko: "A가 B보다 조금/훨씬 ~하다",
@@ -237,6 +244,7 @@ export default {
         },
         {
           pattern: "A 没有 B + 형용사",
+          pinyin: "méiyǒu",
           ch: "h2-05-comparison-bi",
           conn: "A + 没有 + B + 형용사 — 비교의 부정",
           ko: "A는 B만큼 ~하지 않다",
@@ -246,6 +254,7 @@ export default {
         },
         {
           pattern: "A 跟 B 一样",
+          pinyin: "gēn … yíyàng",
           ch: "h2-05-comparison-bi",
           conn: "A + 跟 + B + 一样 (+ 형용사) — 동등 비교",
           ko: "A는 B와 같다 / 똑같이 ~하다",
@@ -254,6 +263,7 @@ export default {
         },
         {
           pattern: "最 + 형용사",
+          pinyin: "zuì",
           ch: "h2-05-comparison-bi",
           conn: "最 + 형용사 — 최상급",
           ko: "가장 ~하다",
@@ -262,6 +272,7 @@ export default {
         },
         {
           pattern: "A 有 B 这么/那么 + 형용사",
+          pinyin: "yǒu … zhème/nàme",
           ch: "h2-05-comparison-bi",
           conn: "A + 有 + B + 这么/那么 + 형용사 — 동급 비교",
           ko: "A는 B만큼 그렇게 ~하다",
@@ -270,6 +281,7 @@ export default {
         },
         {
           pattern: "更 + 형용사",
+          pinyin: "gèng",
           ch: "h2-05-comparison-bi",
           conn: "更 + 형용사 — 한층 더",
           ko: "더욱 ~하다",
@@ -278,6 +290,7 @@ export default {
         },
         {
           pattern: "A 不如 B",
+          pinyin: "bùrú",
           ch: "h2-05-comparison-bi",
           conn: "A + 不如 + B (+ 형용사) — ~만 못함",
           ko: "A는 B만 못하다",
@@ -285,7 +298,8 @@ export default {
           ex2: { zh: "坐车不如走路快。", pinyin: "zuò chē bùrú zǒulù kuài", ko: "차 타는 게 걷는 것보다 빠르지 않아요." },
         },
         {
-          pattern: "和 … 差不多",
+          pattern: "A 和 B 差不多",
+          pinyin: "hé … chàbuduō",
           ch: "h2-05-comparison-bi",
           conn: "A + 和 + B + 差不多 — 거의 비슷",
           ko: "A는 B와 비슷하다",
@@ -299,6 +313,7 @@ export default {
       items: [
         {
           pattern: "从 + 장소/시간",
+          pinyin: "cóng",
           ch: "h2-07-prepositions",
           conn: "从 + 출발점 (+ 到) + 동사",
           ko: "~에서(부터) …하다",
@@ -307,7 +322,8 @@ export default {
           note: "从 … 到 …는 '~에서 ~까지'. 출발점·시작점을 나타내요.",
         },
         {
-          pattern: "离 + 기준점",
+          pattern: "A 离 B + 远/近",
+          pinyin: "lí",
           ch: "h2-07-prepositions",
           conn: "A + 离 + B + 远/近 — 거리",
           ko: "A는 B에서 멀다/가깝다",
@@ -316,7 +332,8 @@ export default {
           note: "거리·간격의 기준점은 离, 출발점은 从으로 구별해요.",
         },
         {
-          pattern: "对 + 대상",
+          pattern: "对 + 대상 + 술어",
+          pinyin: "duì",
           ch: "h2-07-prepositions",
           conn: "对 + 대상 + 술어 — ~에 대해/에게",
           ko: "~에 대해 / ~에게",
@@ -324,7 +341,8 @@ export default {
           ex2: { zh: "我对中国文化很感兴趣。", pinyin: "wǒ duì Zhōngguó wénhuà hěn gǎn xìngqù", ko: "저는 중국 문화에 관심이 많아요." },
         },
         {
-          pattern: "给 + 사람 + 동사",
+          pattern: "给 + 대상 + 동사",
+          pinyin: "gěi",
           ch: "h2-07-prepositions",
           conn: "给 + 대상 + 동사 — ~에게/위해",
           ko: "~에게 …해 주다",
@@ -333,6 +351,7 @@ export default {
         },
         {
           pattern: "为了 + 목적",
+          pinyin: "wèile",
           ch: "h3-08-complex-sentence",
           conn: "为了 + 목적 + 주절",
           ko: "~을 위해 …하다",
@@ -340,7 +359,8 @@ export default {
           ex2: { zh: "为了身体，他每天跑步。", pinyin: "wèile shēntǐ, tā měi tiān pǎobù", ko: "건강을 위해 그는 매일 달리기를 해요." },
         },
         {
-          pattern: "关于 …",
+          pattern: "关于…",
+          pinyin: "guānyú",
           ch: "h2-07-prepositions",
           conn: "关于 + 화제 + 절",
           ko: "~에 관하여",
@@ -349,6 +369,7 @@ export default {
         },
         {
           pattern: "向・往 + 방향",
+          pinyin: "xiàng・wǎng",
           ch: "h2-07-prepositions",
           conn: "向/往 + 방향 + 동사",
           ko: "~쪽으로 …하다",
@@ -356,16 +377,18 @@ export default {
           ex2: { zh: "请向左转。", pinyin: "qǐng xiàng zuǒ zhuǎn", ko: "왼쪽으로 도세요." },
         },
         {
-          pattern: "把 + 사물 + 给 + 사람",
+          pattern: "把 + 목적어 + 给 + 대상",
+          pinyin: "bǎ … gěi",
           ch: "h3-01-ba",
-          conn: "把 + 사물 + 给 + 사람 — ~을 ~에게 주다",
+          conn: "把 + 목적어(사물) + 给 + 대상(사람) — ~을 ~에게 주다",
           ko: "~을 ~에게 건네다/주다",
           ex: { zh: "请把书给我。", pinyin: "qǐng bǎ shū gěi wǒ", ko: "그 책 저에게 주세요." },
           ex2: { zh: "他把礼物给了妈妈。", pinyin: "tā bǎ lǐwù gěi le māma", ko: "그는 선물을 엄마에게 줬어요." },
           note: "2급에서 만나는 把의 가장 쉬운 형태예요 (3급에서 본격적으로 다뤄요).",
         },
         {
-          pattern: "比 + 시간/장소",
+          pattern: "A 比 B",
+          pinyin: "bǐ",
           ch: "h2-05-comparison-bi",
           conn: "A + 比 + B — 비교 개사",
           ko: "A는 B보다 ~",
@@ -374,6 +397,7 @@ export default {
         },
         {
           pattern: "在 + 시간/장소 + 동사",
+          pinyin: "zài",
           ch: "h1-09-time-place",
           conn: "在 + 시점/장소 + 동사",
           ko: "(언제·어디서) ~하다",
@@ -381,7 +405,8 @@ export default {
           ex2: { zh: "我们在七点见面。", pinyin: "wǒmen zài qī diǎn jiànmiàn", ko: "우리는 7시에 만나요." },
         },
         {
-          pattern: "跟・和 + 사람 + 동사",
+          pattern: "跟・和 + 대상 + 동사",
+          pinyin: "gēn・hé",
           ch: "h2-07-prepositions",
           conn: "跟/和 + 대상 + 동사 — ~와",
           ko: "~와 함께/에게 …하다",
@@ -390,6 +415,7 @@ export default {
         },
         {
           pattern: "用 + 도구 + 동사",
+          pinyin: "yòng",
           ch: "h2-07-prepositions",
           conn: "用 + 수단/도구 + 동사 — ~으로",
           ko: "~을 써서/~으로 …하다",
