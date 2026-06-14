@@ -314,6 +314,13 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
                         <span key={fi} className="bk-line">{form}</span>
                       ))}
                     </span>
+                    {item.pinyin && (
+                      <span className="bk-pinyin">
+                        {item.pinyin.split('・').map((p, pi) => (
+                          <span key={pi} className="bk-line">{p}</span>
+                        ))}
+                      </span>
+                    )}
                     {item.conn && (
                       <span className="fr-vrow__pron">
                         {item.conn.split(' / ').map((c, ci) => (

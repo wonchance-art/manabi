@@ -7721,6 +7721,14 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 
 /* ── 문형 사전 행 — 위계: 문형 → 뜻 → 예문 ── */
 .bk-pattern { font-size: 1.04rem; font-weight: 800; letter-spacing: 0.01em; }
+/* 문형 패턴 한자 읽기 — 병음 (중국어) */
+.bk-pinyin {
+  display: block;
+  font-size: 0.82rem; font-weight: 600;
+  color: var(--primary);
+  margin-top: 2px;
+  letter-spacing: 0.01em;
+}
 .bk-ko { font-size: 0.92rem; font-weight: 600; color: var(--text-primary); line-height: 1.5; }
 .bk-note {
   font-size: 0.76rem; color: var(--text-muted);
