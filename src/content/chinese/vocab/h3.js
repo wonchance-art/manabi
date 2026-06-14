@@ -39,6 +39,8 @@ export default {
         { zh: "一直", pinyin: "yìzhí", ko: "줄곧, 계속", pos: "부사", hanja: "일직(一直) — '直'은 곧을 직. '한결같이'.", ex: { zh: "我一直在等你。", pinyin: "wǒ yìzhí zài děng nǐ", ko: "저는 계속 당신을 기다리고 있었어요." } },
         { zh: "总是", pinyin: "zǒngshì", ko: "늘, 항상", pos: "부사", hanja: "총시(總是) — '總'은 거느릴 총.", ex: { zh: "他总是很忙。", pinyin: "tā zǒngshì hěn máng", ko: "그는 늘 바빠요." } },
         { zh: "终于", pinyin: "zhōngyú", ko: "드디어, 마침내", pos: "부사", hanja: "종어(終於) — '終'은 마칠 종.", ex: { zh: "我终于到了。", pinyin: "wǒ zhōngyú dào le", ko: "저는 드디어 도착했어요." } },
+        { zh: "突然", pinyin: "tūrán", ko: "갑자기", pos: "부사", hanja: "돌연(突然) — 한자 그대로.", ex: { zh: "天突然下雨了。", pinyin: "tiān tūrán xià yǔ le", ko: "갑자기 비가 왔어요." } },
+        { zh: "迟到", pinyin: "chídào", ko: "지각하다", pos: "동사", hanja: "지도(遲到) — '遲'는 더딜 지, '到'는 이를 도. '늦게 도착하다'.", ex: { zh: "对不起，我迟到了。", pinyin: "duìbuqǐ, wǒ chídào le", ko: "미안해요, 지각했어요." } },
       ],
     },
     {
@@ -56,6 +58,8 @@ export default {
         { zh: "完成", pinyin: "wánchéng", ko: "완성하다, 끝내다", pos: "동사", hanja: "완성(完成) — 한자 그대로.", ex: { zh: "我已经完成作业了。", pinyin: "wǒ yǐjīng wánchéng zuòyè le", ko: "저는 이미 숙제를 끝냈어요." } },
         { zh: "办公室", pinyin: "bàngōngshì", ko: "사무실", pos: "명사", hanja: "판공실(辦公室) — '辦'은 힘쓸 판, '公'은 공무.", ex: { zh: "经理在办公室。", pinyin: "jīnglǐ zài bàngōngshì", ko: "매니저는 사무실에 있어요." } },
         { zh: "会议", pinyin: "huìyì", ko: "회의", pos: "명사", hanja: "회의(會議) — 한자 그대로.", ex: { zh: "下午有一个会议。", pinyin: "xiàwǔ yǒu yí ge huìyì", ko: "오후에 회의가 하나 있어요." } },
+        { zh: "经验", pinyin: "jīngyàn", ko: "경험", pos: "명사", hanja: "경험(經驗) — 한자 그대로.", ex: { zh: "他有很多工作经验。", pinyin: "tā yǒu hěn duō gōngzuò jīngyàn", ko: "그는 직장 경험이 많아요." } },
+        { zh: "迟", pinyin: "chí", ko: "늦다", pos: "형용사", hanja: "지(遲) — '더딜 지'.", ex: { zh: "你来得太迟了。", pinyin: "nǐ lái de tài chí le", ko: "너무 늦게 오셨네요." } },
       ],
     },
     {
@@ -75,6 +79,8 @@ export default {
         { zh: "记得", pinyin: "jìde", ko: "기억하다", pos: "동사", hanja: "기득(記得) — '記'는 기록할 기.", ex: { zh: "你还记得他吗？", pinyin: "nǐ hái jìde tā ma", ko: "그를 아직 기억해요?" } },
         { zh: "担心", pinyin: "dānxīn", ko: "걱정하다", pos: "동사", hanja: "담심(擔心) — '擔'은 멜 담, '心'은 마음. '마음을 짊어지다'.", ex: { zh: "别担心，没问题。", pinyin: "bié dānxīn, méi wèntí", ko: "걱정 마세요, 괜찮아요." } },
         { zh: "需要", pinyin: "xūyào", ko: "필요하다", pos: "동사", hanja: "수요(需要) — '需'는 구할 수, '要'는 요긴할 요.", ex: { zh: "你需要帮助吗？", pinyin: "nǐ xūyào bāngzhù ma", ko: "도움이 필요해요?" } },
+        { zh: "提高", pinyin: "tígāo", ko: "향상시키다, 높이다", pos: "동사", hanja: "제고(提高) — '提'는 끌 제, '高'는 높을 고.", ex: { zh: "我想提高汉语水平。", pinyin: "wǒ xiǎng tígāo Hànyǔ shuǐpíng", ko: "저는 중국어 실력을 높이고 싶어요." } },
+        { zh: "检查", pinyin: "jiǎnchá", ko: "점검하다, 검사하다", pos: "동사", hanja: "검사(檢査) — 한자 그대로.", ex: { zh: "请检查一下你的作业。", pinyin: "qǐng jiǎnchá yíxià nǐ de zuòyè", ko: "숙제를 한번 검사해 보세요." } },
       ],
     },
     {
@@ -93,6 +99,8 @@ export default {
         { zh: "着急", pinyin: "zháojí", ko: "초조하다, 조급하다", pos: "형용사", hanja: "착급(着急) — '急'은 급할 급.", ex: { zh: "别着急，慢慢来。", pinyin: "bié zháojí, mànmàn lái", ko: "조급해하지 말고 천천히 하세요." } },
         { zh: "害怕", pinyin: "hàipà", ko: "무서워하다, 두렵다", pos: "동사", ex: { zh: "我有点害怕。", pinyin: "wǒ yǒudiǎn hàipà", ko: "저는 좀 무서워요." } },
         { zh: "生气", pinyin: "shēngqì", ko: "화나다", pos: "형용사", hanja: "생기(生氣) — '화가 생기다'. 한국 '생기(활력)'와 뜻이 달라요!", ex: { zh: "他生气了。", pinyin: "tā shēngqì le", ko: "그는 화났어요." } },
+        { zh: "舒服", pinyin: "shūfu", ko: "편안하다, 몸이 좋다", pos: "형용사", ex: { zh: "我今天不太舒服。", pinyin: "wǒ jīntiān bú tài shūfu", ko: "저는 오늘 몸이 좀 안 좋아요." } },
+        { zh: "聪明", pinyin: "cōngming", ko: "똑똑하다", pos: "형용사", hanja: "총명(聰明) — 한자 그대로.", ex: { zh: "这个孩子很聪明。", pinyin: "zhège háizi hěn cōngming", ko: "이 아이는 똑똑해요." } },
       ],
     },
     {
