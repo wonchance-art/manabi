@@ -94,8 +94,10 @@ export default function ReferenceChapterPage({ lang, slug }) {
   const validDistractor = (cand, answer) => {
     const c = String(cand || '').trim();
     if (!c) return false;
-    if (/[가-힣]/.test(c)) return false;                    // 한국어 슬롯·문법용어 제거
-    if (/[→…:;()/,、。]/.test(c)) return false;              // 화살표·구두점 조각 제거
+    if (/[가-힣ㄱ-ㅎㅏ-ㅣ]/.test(c)) return false;          // 한국어 슬롯·문법용어·한글 자모 제거
+    if (/[→…:;()/,、。\[\].?!．？！]/.test(c)) return false;  // 화살표·구두점·발음기호·약어 조각 제거
+    if (/^[-–]|[-–]$/.test(c)) return false;                // 접사 표기(-ing·-é) 제거
+    if (/[a-z][A-Z]/.test(c)) return false;                 // 카멜표기 니모닉(CaReFuL) 제거
     if (isCJK(c) !== isCJK(answer)) return false;           // 정답과 같은 문자종만
     if (c.toLowerCase() === String(answer).toLowerCase()) return false;
     return true;
