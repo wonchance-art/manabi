@@ -424,6 +424,7 @@ export default {
         },
         {
           pattern: "到 + 장소 + 동사",
+          pinyin: "dào",
           ch: "h2-07-prepositions",
           conn: "到 + 도착지 + 동사 — ~에 가서",
           ko: "~에 가서/도착해서 …하다",
@@ -436,7 +437,8 @@ export default {
       name: "연결·접속",
       items: [
         {
-          pattern: "因为 … 所以 …",
+          pattern: "因为…所以…",
+          pinyin: "yīnwèi…suǒyǐ…",
           ch: "h3-08-complex-sentence",
           conn: "因为 + 원인, 所以 + 결과",
           ko: "~ 때문에, 그래서 ~",
@@ -445,7 +447,8 @@ export default {
           note: "한국어와 달리 因为·所以를 둘 다 쓰는 게 자연스러워요.",
         },
         {
-          pattern: "虽然 … 但是 …",
+          pattern: "虽然…但是…",
+          pinyin: "suīrán…dànshì…",
           ch: "h3-08-complex-sentence",
           conn: "虽然 + 사실, 但是 + 반전",
           ko: "비록 ~지만, 그러나 ~",
@@ -453,7 +456,8 @@ export default {
           ex2: { zh: "虽然贵，但是很好。", pinyin: "suīrán guì, dànshì hěn hǎo", ko: "비싸지만 좋아요." },
         },
         {
-          pattern: "如果 … (就) …",
+          pattern: "如果…就…",
+          pinyin: "rúguǒ…jiù…",
           ch: "h3-08-complex-sentence",
           conn: "如果 + 가정, (就) + 결과",
           ko: "만약 ~라면, (그러면) ~",
@@ -461,7 +465,8 @@ export default {
           ex2: { zh: "如果下雨，我们就不去。", pinyin: "rúguǒ xiàyǔ, wǒmen jiù bú qù", ko: "비가 오면 우리는 안 가요." },
         },
         {
-          pattern: "一边 … 一边 …",
+          pattern: "一边…一边…",
+          pinyin: "yìbiān…yìbiān…",
           ch: "h3-08-complex-sentence",
           conn: "一边 + 동사 + 一边 + 동사 — 동시 동작",
           ko: "~하면서 ~하다",
@@ -469,7 +474,8 @@ export default {
           ex2: { zh: "我一边走一边唱歌。", pinyin: "wǒ yìbiān zǒu yìbiān chàng gē", ko: "저는 걸으면서 노래를 불러요." },
         },
         {
-          pattern: "先 … 然后 …",
+          pattern: "先…然后…",
+          pinyin: "xiān…ránhòu…",
           ch: "h3-08-complex-sentence",
           conn: "先 + 동작1, 然后 + 동작2 — 순서",
           ko: "먼저 ~하고, 그다음 ~",
