@@ -12,6 +12,7 @@ export default {
       items: [
         {
           pattern: "把 + 목적어 + 동사 + 기타성분",
+          pinyin: "bǎ",
           ch: "h3-01-ba",
           conn: "주어 + 把 + 목적어 + 동사 + 결과/방향/了 등",
           ko: "~을 (어떻게) 처리하다",
@@ -21,6 +22,7 @@ export default {
         },
         {
           pattern: "把 + 목적어 + 동사 + 방향보어",
+          pinyin: "bǎ",
           ch: "h3-01-ba",
           conn: "把 + 목적어 + 동사 + 来/去/上/下 등",
           ko: "~을 (어디로) …하다",
@@ -29,6 +31,7 @@ export default {
         },
         {
           pattern: "把 + 목적어 + 동사 + 给/在/到 + …",
+          pinyin: "bǎ…gěi・zài・dào",
           ch: "h3-01-ba",
           conn: "把 + 목적어 + 동사 + 在/到/给 + 장소·대상",
           ko: "~을 (어디·누구)에 …하다",
@@ -38,6 +41,7 @@ export default {
         },
         {
           pattern: "把 + 목적어 + 동사 + 成/作",
+          pinyin: "bǎ…chéng・zuò",
           ch: "h3-01-ba",
           conn: "把 + A + 동사 + 成 + B — A를 B로 바꾸다",
           ko: "~을 ~로 …하다",
@@ -46,6 +50,7 @@ export default {
         },
         {
           pattern: "把 + 목적어 + 동사 + 一下/동사중첩",
+          pinyin: "bǎ…yíxià",
           ch: "h3-01-ba",
           conn: "把 + 목적어 + 동사 + 一下 — 가볍게 처치",
           ko: "~을 좀 …하다",
@@ -60,6 +65,7 @@ export default {
       items: [
         {
           pattern: "A 被 (B) + 동사 + 기타성분",
+          pinyin: "bèi",
           ch: "h3-02-bei",
           conn: "주어 + 被 (+ 행위자) + 동사 + 결과/了",
           ko: "A가 (B에게) ~당하다 (피동)",
@@ -69,6 +75,7 @@ export default {
         },
         {
           pattern: "A 让・叫 + B + 동사",
+          pinyin: "ràng・jiào",
           ch: "h3-02-bei",
           conn: "A + 让/叫 + B + 동사 — 구어 피동·사역",
           ko: "A가 B에게 ~당하다/시키다",
@@ -78,6 +85,7 @@ export default {
         },
         {
           pattern: "让 + 사람 + 동사",
+          pinyin: "ràng",
           ch: "h5-04-causative",
           conn: "주어 + 让 + 대상 + 동사 — ~하게 하다",
           ko: "~에게 …하게 하다/시키다",
@@ -86,6 +94,7 @@ export default {
         },
         {
           pattern: "被 + 동사",
+          pinyin: "bèi",
           ch: "h3-02-bei",
           conn: "주어 + 被 + 동사 + 기타성분 (행위자 없음)",
           ko: "~당하다 (누가 했는지는 생략)",
@@ -100,6 +109,7 @@ export default {
       items: [
         {
           pattern: "동사 + 来・去",
+          pinyin: "lái・qù",
           ch: "h3-04-direction-complement",
           conn: "동사 + 来(이쪽)/去(저쪽) — 단순방향보어",
           ko: "~해 오다 / ~해 가다",
@@ -109,6 +119,7 @@ export default {
         },
         {
           pattern: "동사 + 上・下・进・出 + 来/去",
+          pinyin: "shàng・xià・jìn・chū…lái・qù",
           ch: "h3-04-direction-complement",
           conn: "동사 + 上/下/进/出/回/过 (+ 来/去) — 복합방향보어",
           ko: "~해 올라/내려/들어/나오다 등",
@@ -117,6 +128,7 @@ export default {
         },
         {
           pattern: "동사 + 起来",
+          pinyin: "qǐlái",
           ch: "h3-04-direction-complement",
           conn: "동사/형용사 + 起来 — 시작·관점 도입",
           ko: "~하기 시작하다 / ~해 보니",
@@ -126,6 +138,7 @@ export default {
         },
         {
           pattern: "동사 + 上",
+          pinyin: "shàng",
           ch: "h3-04-direction-complement",
           conn: "동사 + 上 — 닿다·이루다",
           ko: "~해 붙이다/이루다",
@@ -135,6 +148,7 @@ export default {
         },
         {
           pattern: "동사 + 下",
+          pinyin: "xià",
           ch: "h3-04-direction-complement",
           conn: "동사 + 下 — 떼다·남기다",
           ko: "~해 내려놓다/남기다",
@@ -143,6 +157,7 @@ export default {
         },
         {
           pattern: "동사 + 下去",
+          pinyin: "xiàqù",
           ch: "h3-04-direction-complement",
           conn: "동사 + 下去 — 계속 이어감",
           ko: "계속 ~해 나가다",
@@ -151,6 +166,7 @@ export default {
         },
         {
           pattern: "동사 + 出来",
+          pinyin: "chūlái",
           ch: "h3-04-direction-complement",
           conn: "동사 + 出来 — 알아내다·만들어내다",
           ko: "~해 내다 (알아보다·생겨나다)",
@@ -160,6 +176,7 @@ export default {
         },
         {
           pattern: "동사 + 过来・过去",
+          pinyin: "guòlái・guòqù",
           ch: "h3-04-direction-complement",
           conn: "동사 + 过来(이쪽으로)/过去(저쪽으로)",
           ko: "~해 오다/가다 (방향·전환)",
@@ -168,6 +185,7 @@ export default {
         },
         {
           pattern: "동사 + 回来・回去",
+          pinyin: "huílái・huíqù",
           ch: "h3-04-direction-complement",
           conn: "동사 + 回来/回去 — 돌아오다/가다",
           ko: "~해서 돌아오다/가다",
@@ -181,6 +199,7 @@ export default {
       items: [
         {
           pattern: "동사 + 得/不 + 결과/방향",
+          pinyin: "de・bù",
           ch: "h3-06-potential-complement",
           conn: "동사 + 得(가능)/不(불가능) + 보어",
           ko: "~할 수 있다/없다 (가능보어)",
@@ -190,6 +209,7 @@ export default {
         },
         {
           pattern: "동사 + 得了・不了",
+          pinyin: "deliǎo・buliǎo",
           ch: "h3-06-potential-complement",
           conn: "동사 + 得了/不了(liǎo) — 가능·완수",
           ko: "~할 수 있다/없다 (해낼 수 있는가)",
@@ -199,6 +219,7 @@ export default {
         },
         {
           pattern: "听得懂・看得见 류",
+          pinyin: "tīngdedǒng・kàndejiàn",
           ch: "h3-06-potential-complement",
           conn: "동사 + 得/不 + 懂/见/到/清楚",
           ko: "알아듣다/보이다 등 가능 여부",
@@ -207,6 +228,7 @@ export default {
         },
         {
           pattern: "동사 + 得/不 + 下・动・起",
+          pinyin: "de・bù…xià・dòng・qǐ",
           ch: "h3-06-potential-complement",
           conn: "동사 + 得/不 + 下(수용)/动(움직임)/起(감당)",
           ko: "담을/움직일/감당할 수 있다/없다",
@@ -216,6 +238,7 @@ export default {
         },
         {
           pattern: "来得及・来不及",
+          pinyin: "láidejí・láibují",
           ch: "h3-06-potential-complement",
           conn: "来得及/来不及 (+ 동사) — 시간이 됨/안 됨",
           ko: "(시간상) 제때 할 수 있다/없다",
@@ -229,6 +252,7 @@ export default {
       items: [
         {
           pattern: "不但 … 而且 …",
+          pinyin: "búdàn…érqiě",
           ch: "h4-09-budan-erqie",
           conn: "不但 + A, 而且 + B — 점층",
           ko: "~할 뿐만 아니라 게다가 ~",
@@ -237,6 +261,7 @@ export default {
         },
         {
           pattern: "只要 … 就 …",
+          pinyin: "zhǐyào…jiù",
           ch: "h3-08-complex-sentence",
           conn: "只要 + 조건, 就 + 결과 — 충분조건",
           ko: "~하기만 하면 ~",
@@ -245,6 +270,7 @@ export default {
         },
         {
           pattern: "只有 … 才 …",
+          pinyin: "zhǐyǒu…cái",
           ch: "h3-08-complex-sentence",
           conn: "只有 + 유일조건, 才 + 결과 — 필요조건",
           ko: "~해야만 비로소 ~",
@@ -254,6 +280,7 @@ export default {
         },
         {
           pattern: "无论・不管 … 都 …",
+          pinyin: "wúlùn・bùguǎn…dōu",
           ch: "h3-08-complex-sentence",
           conn: "无论/不管 + 의문구 + 都/也 — 조건 무관",
           ko: "~에 상관없이 모두 ~",
@@ -263,6 +290,7 @@ export default {
         },
         {
           pattern: "因为 … 才・所以 …",
+          pinyin: "yīnwèi…cái・suǒyǐ",
           ch: "h3-08-complex-sentence",
           conn: "因为 + 원인, 才/所以 + 결과",
           ko: "~ 때문에 (그래서/비로소) ~",
@@ -271,6 +299,7 @@ export default {
         },
         {
           pattern: "越 … 越 …",
+          pinyin: "yuè…yuè",
           ch: "h4-06-yue-yue",
           conn: "越 + A + 越 + B — 정비례",
           ko: "~할수록 ~하다",
@@ -280,6 +309,7 @@ export default {
         },
         {
           pattern: "一 … 也/都 + 不/没 …",
+          pinyin: "yī…yě・dōu…bù・méi",
           ch: "h3-08-complex-sentence",
           conn: "一 + 양사 + 명사 + 也/都 + 부정 — 전면 부정",
           ko: "하나도 ~하지 않다",
@@ -288,6 +318,7 @@ export default {
         },
         {
           pattern: "既 … 又 …",
+          pinyin: "jì…yòu",
           ch: "h3-08-complex-sentence",
           conn: "既 + A + 又 + B — 두 속성 병렬",
           ko: "~하기도 하고 ~하기도 하다",
@@ -296,6 +327,7 @@ export default {
         },
         {
           pattern: "不是 … 而是 …",
+          pinyin: "búshì…érshì",
           ch: "h3-08-complex-sentence",
           conn: "不是 + A + 而是 + B — A가 아니라 B",
           ko: "~이 아니라 ~이다",
@@ -304,6 +336,7 @@ export default {
         },
         {
           pattern: "要是 … 就 …",
+          pinyin: "yàoshi…jiù",
           ch: "h4-02-hypothesis",
           conn: "要是 + 가정, 就 + 결과 (구어)",
           ko: "만약 ~라면 ~",
@@ -313,6 +346,7 @@ export default {
         },
         {
           pattern: "虽然 … 可是 …",
+          pinyin: "suīrán…kěshì",
           ch: "h3-08-complex-sentence",
           conn: "虽然 + 사실, 可是/不过 + 반전",
           ko: "비록 ~지만 그래도 ~",
@@ -321,6 +355,7 @@ export default {
         },
         {
           pattern: "为了 … 而 …",
+          pinyin: "wèile…ér",
           ch: "h3-08-complex-sentence",
           conn: "为了 + 목적, (而) + 동작 — ~을 위해",
           ko: "~을 위하여 ~하다",
@@ -334,6 +369,8 @@ export default {
       items: [
         {
           pattern: "比较 + 형용사",
+          pinyin: "bǐjiào",
+          ch: "h3-11-degree-scope-adverbs",
           conn: "比较 + 형용사 — 비교적",
           ko: "비교적 ~하다",
           ex: { zh: "今天比较冷。", pinyin: "jīntiān bǐjiào lěng", ko: "오늘은 비교적 추워요." },
@@ -341,13 +378,16 @@ export default {
         },
         {
           pattern: "非常・特别 + 형용사",
+          pinyin: "fēicháng・tèbié",
+          ch: "h3-11-degree-scope-adverbs",
           conn: "非常/特别 + 형용사 — 매우",
           ko: "대단히/특히 ~하다",
           ex: { zh: "这个菜非常好吃。", pinyin: "zhège cài fēicháng hǎochī", ko: "이 요리는 대단히 맛있어요." },
           ex2: { zh: "今天特别热。", pinyin: "jīntiān tèbié rè", ko: "오늘은 유난히 더워요." },
         },
         {
-          pattern: "形 + 极了・死了",
+          pattern: "형용사 + 极了・死了",
+          pinyin: "jíle・sǐle",
           ch: "h3-05-degree-complement",
           conn: "형용사 + 极了/死了 — 극단 강조",
           ko: "엄청 ~하다",
@@ -357,6 +397,8 @@ export default {
         },
         {
           pattern: "几乎 + 술어",
+          pinyin: "jīhū",
+          ch: "h3-11-degree-scope-adverbs",
           conn: "几乎 + 술어 — 거의",
           ko: "거의 ~하다",
           ex: { zh: "我几乎每天都运动。", pinyin: "wǒ jīhū měi tiān dōu yùndòng", ko: "저는 거의 매일 운동해요." },
@@ -364,6 +406,8 @@ export default {
         },
         {
           pattern: "只 + 동사 / 只有 + 명사",
+          pinyin: "zhǐ / zhǐyǒu",
+          ch: "h3-11-degree-scope-adverbs",
           conn: "只 + 동사 / 只有 + 명사 — 한정",
           ko: "~만 / ~밖에 없다",
           ex: { zh: "我只喝了一杯。", pinyin: "wǒ zhǐ hē le yì bēi", ko: "저는 한 잔만 마셨어요." },
@@ -371,6 +415,8 @@ export default {
         },
         {
           pattern: "一共・总共",
+          pinyin: "yígòng・zǒnggòng",
+          ch: "h3-12-approximate-numbers",
           conn: "一共/总共 + 수량 — 합계",
           ko: "모두 합쳐서 ~",
           ex: { zh: "一共多少钱？", pinyin: "yígòng duōshao qián", ko: "모두 얼마예요?" },
@@ -378,6 +424,7 @@ export default {
         },
         {
           pattern: "越来越 + 형용사",
+          pinyin: "yuèláiyuè",
           ch: "h3-09-comparison",
           conn: "越来越 + 형용사/동사 — 점점 더",
           ko: "점점 ~해지다",
@@ -386,6 +433,8 @@ export default {
         },
         {
           pattern: "有点儿 vs 一点儿",
+          pinyin: "yǒudiǎnr・yìdiǎnr",
+          ch: "h2-11-degree-mood-adverbs",
           conn: "有点儿 + 형용사(불만) / 형용사 + 一点儿(비교)",
           ko: "좀 ~하다 / 조금 더 ~",
           ex: { zh: "这个有点儿贵，便宜一点儿吧。", pinyin: "zhège yǒudiǎnr guì, piányi yìdiǎnr ba", ko: "이거 좀 비싸요, 좀 깎아 주세요." },
@@ -394,6 +443,8 @@ export default {
         },
         {
           pattern: "差不多 + 술어",
+          pinyin: "chàbuduō",
+          ch: "h3-12-approximate-numbers",
           conn: "差不多 + 술어/수량 — 거의·대략",
           ko: "거의/대략 ~",
           ex: { zh: "差不多十点了。", pinyin: "chàbuduō shí diǎn le", ko: "거의 10시가 됐어요." },
@@ -401,6 +452,8 @@ export default {
         },
         {
           pattern: "至少・最多",
+          pinyin: "zhìshǎo・zuìduō",
+          ch: "h3-12-approximate-numbers",
           conn: "至少/最多 + 수량 — 최소·최대",
           ko: "적어도 / 많아야 ~",
           ex: { zh: "至少要一个小时。", pinyin: "zhìshǎo yào yí ge xiǎoshí", ko: "적어도 한 시간은 걸려요." },
@@ -408,6 +461,8 @@ export default {
         },
         {
           pattern: "多 + 수량",
+          pinyin: "duō",
+          ch: "h3-12-approximate-numbers",
           conn: "수량 + 多 — ~ 남짓·여",
           ko: "~ 남짓, ~여",
           ex: { zh: "他来了一个多小时了。", pinyin: "tā lái le yí ge duō xiǎoshí le", ko: "그가 온 지 한 시간 남짓 됐어요." },
@@ -415,6 +470,8 @@ export default {
         },
         {
           pattern: "左右・前后",
+          pinyin: "zuǒyòu・qiánhòu",
+          ch: "h3-12-approximate-numbers",
           conn: "수량 + 左右/前后 — 쯤·가량",
           ko: "~쯤, ~가량",
           ex: { zh: "我五点左右到。", pinyin: "wǒ wǔ diǎn zuǒyòu dào", ko: "저는 5시쯤 도착해요." },
@@ -427,6 +484,8 @@ export default {
       items: [
         {
           pattern: "一直 + 동사",
+          pinyin: "yìzhí",
+          ch: "h3-13-frequency-adverbs",
           conn: "一直 + 동사 — 줄곧",
           ko: "계속/줄곧 ~하다",
           ex: { zh: "我一直在等你。", pinyin: "wǒ yìzhí zài děng nǐ", ko: "저는 계속 당신을 기다리고 있었어요." },
@@ -434,6 +493,8 @@ export default {
         },
         {
           pattern: "经常・常常 + 동사",
+          pinyin: "jīngcháng・chángcháng",
+          ch: "h3-13-frequency-adverbs",
           conn: "经常/常常 + 동사 — 자주",
           ko: "자주 ~하다",
           ex: { zh: "我经常去图书馆。", pinyin: "wǒ jīngcháng qù túshūguǎn", ko: "저는 자주 도서관에 가요." },
@@ -441,6 +502,7 @@ export default {
         },
         {
           pattern: "又 … 了 / 再 + 동사",
+          pinyin: "yòu…le / zài",
           ch: "h2-04-le-change",
           conn: "又(이미 반복) … 了 / 再(앞으로 반복) + 동사",
           ko: "또 ~했다 / 다시 ~하다",
@@ -450,6 +512,7 @@ export default {
         },
         {
           pattern: "终于 + 동사 + 了",
+          pinyin: "zhōngyú…le",
           ch: "h2-04-le-change",
           conn: "终于 + 술어 + 了 — 마침내",
           ko: "마침내 ~했다",
@@ -458,6 +521,7 @@ export default {
         },
         {
           pattern: "马上・立刻 + 동사",
+          pinyin: "mǎshàng・lìkè",
           conn: "马上/立刻 + 동사 — 즉시",
           ko: "곧/즉시 ~하다",
           ex: { zh: "我马上就来。", pinyin: "wǒ mǎshàng jiù lái", ko: "제가 곧 갈게요." },
@@ -465,6 +529,7 @@ export default {
         },
         {
           pattern: "刚・刚才",
+          pinyin: "gāng・gāngcái",
           conn: "刚 + 동사(방금, 부사) / 刚才(방금 전, 시간명사)",
           ko: "막/방금 ~",
           ex: { zh: "我刚到家。", pinyin: "wǒ gāng dào jiā", ko: "저는 방금 집에 도착했어요." },
@@ -473,6 +538,7 @@ export default {
         },
         {
           pattern: "正好・刚好",
+          pinyin: "zhènghǎo・gānghǎo",
           conn: "正好/刚好 + 술어 — 마침",
           ko: "마침/딱 ~",
           ex: { zh: "你来得正好。", pinyin: "nǐ lái de zhènghǎo", ko: "마침 잘 왔어요." },
@@ -480,6 +546,8 @@ export default {
         },
         {
           pattern: "一直・总是",
+          pinyin: "yìzhí・zǒngshì",
+          ch: "h3-13-frequency-adverbs",
           conn: "一直(줄곧)/总是(늘) + 술어",
           ko: "줄곧 / 늘 ~하다",
           ex: { zh: "他总是迟到。", pinyin: "tā zǒngshì chídào", ko: "그는 늘 지각해요." },
@@ -487,6 +555,7 @@ export default {
         },
         {
           pattern: "突然 + 동사",
+          pinyin: "tūrán",
           conn: "突然 + 동사 — 갑자기",
           ko: "갑자기 ~하다",
           ex: { zh: "他突然不说话了。", pinyin: "tā tūrán bù shuōhuà le", ko: "그가 갑자기 말을 안 했어요." },
@@ -494,6 +563,7 @@ export default {
         },
         {
           pattern: "差点儿 + 동사",
+          pinyin: "chàdiǎnr",
           conn: "差点儿 + 동사 — 하마터면",
           ko: "하마터면 ~할 뻔하다",
           ex: { zh: "我差点儿迟到了。", pinyin: "wǒ chàdiǎnr chídào le", ko: "하마터면 지각할 뻔했어요." },
@@ -501,6 +571,7 @@ export default {
         },
         {
           pattern: "原来 …",
+          pinyin: "yuánlái",
           conn: "原来 + 절 — 알고 보니",
           ko: "알고 보니 ~ / 원래 ~",
           ex: { zh: "原来是你啊！", pinyin: "yuánlái shì nǐ a", ko: "알고 보니 너였구나!" },
@@ -508,6 +579,7 @@ export default {
         },
         {
           pattern: "重新・再 + 동사",
+          pinyin: "chóngxīn・zài",
           conn: "重新/再 + 동사 — 다시·새로",
           ko: "다시 ~하다",
           ex: { zh: "请重新写一遍。", pinyin: "qǐng chóngxīn xiě yí biàn", ko: "다시 한번 써 주세요." },
@@ -519,7 +591,8 @@ export default {
       name: "동작 표현 심화",
       items: [
         {
-          pattern: "동사 중첩 (V V / V 一 V)",
+          pattern: "동사 중첩 (동사+동사 / 동사+一+동사)",
+          pinyin: "yī",
           ch: "h3-05-degree-complement",
           conn: "동사 + 동사 / 동사 + 一 + 동사 — 가볍게·시도",
           ko: "좀 ~해 보다",
@@ -528,7 +601,8 @@ export default {
           note: "동작을 부드럽게·짧게. 2음절 동사는 ABAB로 중첩해요 (休息休息).",
         },
         {
-          pattern: "形 + 형용사 중첩",
+          pattern: "형용사 중첩 (AABB)",
+          pinyin: "—",
           ch: "h3-05-degree-complement",
           conn: "형용사 + 형용사 (AABB) — 생생한 묘사",
           ko: "아주 ~하게",
@@ -537,6 +611,7 @@ export default {
         },
         {
           pattern: "형용사/부사 + 地 + 동사",
+          pinyin: "de",
           ch: "h5-08-de-summary",
           conn: "수식어 + 地 + 동사 — 양태 부사어",
           ko: "~하게 …하다",
@@ -546,6 +621,7 @@ export default {
         },
         {
           pattern: "동사 + 了 + 동사",
+          pinyin: "le",
           ch: "h3-08-complex-sentence",
           conn: "동사1 + 了 + 동사2 — 잇따른 동작",
           ko: "~하고 나서 ~하다",
@@ -554,6 +630,7 @@ export default {
         },
         {
           pattern: "连 … 都/也 …",
+          pinyin: "lián…dōu・yě",
           ch: "h4-04-lian-dou",
           conn: "连 + 강조 대상 + 都/也 + 술어 — ~조차",
           ko: "~조차 …하다",
@@ -562,6 +639,7 @@ export default {
         },
         {
           pattern: "把 + … + 동사 + 결과",
+          pinyin: "bǎ",
           ch: "h3-01-ba",
           conn: "把 + 목적어 + 동사 + 完/好/干净 — 정돈 처치",
           ko: "~을 다/깔끔히 …해 놓다",
@@ -570,6 +648,7 @@ export default {
         },
         {
           pattern: "동사 + 着 + 동사",
+          pinyin: "zhe",
           ch: "h3-04-direction-complement",
           conn: "동사1 + 着 + 동사2 — ~한 채 …하다",
           ko: "~하면서 …하다",
@@ -578,6 +657,8 @@ export default {
         },
         {
           pattern: "동사 + 来 + 동사 + 去",
+          pinyin: "lái…qù",
+          ch: "h3-04-direction-complement",
           conn: "동사 + 来 + 동사 + 去 — 반복",
           ko: "이리저리 ~하다 (반복)",
           ex: { zh: "他想来想去，还是不去了。", pinyin: "tā xiǎng lái xiǎng qù, háishi bú qù le", ko: "그는 이리저리 생각하다가 결국 안 가기로 했어요." },
@@ -590,6 +671,7 @@ export default {
       items: [
         {
           pattern: "… 吧",
+          pinyin: "ba",
           conn: "문말 吧 — 권유·추측·동의",
           ko: "~하자 / ~하죠 / ~겠죠?",
           ex: { zh: "我们走吧。", pinyin: "wǒmen zǒu ba", ko: "우리 가요." },
@@ -598,6 +680,7 @@ export default {
         },
         {
           pattern: "… 了吧・… 是吧",
+          pinyin: "le ba・shì ba",
           conn: "문말 了吧/是吧 — 확인",
           ko: "~했죠? / ~맞죠?",
           ex: { zh: "你是韩国人吧？", pinyin: "nǐ shì Hánguó rén ba", ko: "한국 분이시죠?" },
@@ -605,6 +688,7 @@ export default {
         },
         {
           pattern: "好像 …",
+          pinyin: "hǎoxiàng",
           conn: "好像 + 술어 — 추측·완곡",
           ko: "~인 것 같다",
           ex: { zh: "他好像生病了。", pinyin: "tā hǎoxiàng shēngbìng le", ko: "그는 아픈 것 같아요." },
@@ -612,6 +696,7 @@ export default {
         },
         {
           pattern: "可能・也许 + 술어",
+          pinyin: "kěnéng・yěxǔ",
           ch: "h2-06-modal-verbs",
           conn: "可能/也许 + 술어 — 가능성",
           ko: "아마 ~일 것이다",
@@ -620,6 +705,8 @@ export default {
         },
         {
           pattern: "当然・一定",
+          pinyin: "dāngrán・yídìng",
+          ch: "h2-11-degree-mood-adverbs",
           conn: "当然(당연) / 一定(반드시) + 술어",
           ko: "당연히 / 반드시 ~",
           ex: { zh: "我当然知道。", pinyin: "wǒ dāngrán zhīdào", ko: "당연히 알죠." },
@@ -627,6 +714,7 @@ export default {
         },
         {
           pattern: "其实 …",
+          pinyin: "qíshí",
           conn: "其实 + 절 — 사실은",
           ko: "사실은 ~",
           ex: { zh: "其实我不太喜欢。", pinyin: "qíshí wǒ bú tài xǐhuan", ko: "사실 저는 별로 안 좋아해요." },
@@ -634,6 +722,7 @@ export default {
         },
         {
           pattern: "… 是吗？・… 对吗？",
+          pinyin: "shì ma・duì ma",
           conn: "평서문 + 是吗/对吗 — 확인 부가의문",
           ko: "~죠? / 맞죠?",
           ex: { zh: "你是新来的，对吗？", pinyin: "nǐ shì xīn lái de, duì ma", ko: "새로 오신 분이죠, 맞죠?" },
@@ -641,6 +730,7 @@ export default {
         },
         {
           pattern: "难道 … 吗？",
+          pinyin: "nándào…ma",
           ch: "h4-07-rhetorical",
           conn: "难道 + 절 + 吗 — 반어",
           ko: "설마 ~란 말이에요?",
@@ -650,6 +740,7 @@ export default {
         },
         {
           pattern: "恐怕 …",
+          pinyin: "kǒngpà",
           conn: "恐怕 + 절 — 우려 섞인 추측",
           ko: "아마 ~일 것 같다 (걱정)",
           ex: { zh: "恐怕来不及了。", pinyin: "kǒngpà láibují le", ko: "아마 시간이 안 될 것 같아요." },
@@ -657,6 +748,7 @@ export default {
         },
         {
           pattern: "看来・听说 …",
+          pinyin: "kànlái・tīngshuō",
           conn: "看来(보아하니)/听说(들으니) + 절",
           ko: "보아하니 / 듣자 하니 ~",
           ex: { zh: "看来今天会下雨。", pinyin: "kànlái jīntiān huì xiàyǔ", ko: "보아하니 오늘 비가 올 것 같아요." },
@@ -669,6 +761,7 @@ export default {
       items: [
         {
           pattern: "对于・关于 …",
+          pinyin: "duìyú・guānyú",
           ch: "h4-08-prepositional-frames",
           conn: "对于/关于 + 화제 + 절",
           ko: "~에 대해서는 / ~에 관하여",
@@ -677,6 +770,7 @@ export default {
         },
         {
           pattern: "除了 … 以外, 都/还 …",
+          pinyin: "chúle…yǐwài, dōu・hái",
           ch: "h4-05-chule",
           conn: "除了 + A + 以外, 都(제외)/还(추가) …",
           ko: "~을 제외하고는 모두 / ~말고도 또",
@@ -686,6 +780,7 @@ export default {
         },
         {
           pattern: "A 是 B 的 + 명사",
+          pinyin: "shì…de",
           ch: "h4-03-shi-de",
           conn: "A + 是 + 수식 + 的 + 명사 — 속성 규정",
           ko: "A는 ~한 …이다",
@@ -695,6 +790,7 @@ export default {
         },
         {
           pattern: "동사 + 的时候",
+          pinyin: "de shíhou",
           ch: "h3-08-complex-sentence",
           conn: "동사구 + 的时候 — ~할 때",
           ko: "~할 때",
@@ -703,6 +799,7 @@ export default {
         },
         {
           pattern: "一 … 的时候 / 以前·以后",
+          pinyin: "de shíhou / yǐqián・yǐhòu",
           ch: "h3-08-complex-sentence",
           conn: "동사구 + 以前/以后 — ~하기 전/후에",
           ko: "~하기 전에 / 한 후에",
@@ -711,6 +808,7 @@ export default {
         },
         {
           pattern: "장소 + 동사 + 着 + 명사",
+          pinyin: "zhe",
           ch: "h3-10-existential",
           conn: "장소 + 동사 + 着 + 명사 — ~에 ~이 …해 있다",
           ko: "(어디)에 ~이 …해 있다",
@@ -720,6 +818,7 @@ export default {
         },
         {
           pattern: "장소 + 来/去了 + 명사",
+          pinyin: "lái・qù le",
           ch: "h3-10-existential",
           conn: "장소/시점 + 동사 + 了 + 명사 — 새로 나타남",
           ko: "~에 ~이 생기다/오다",
@@ -728,6 +827,7 @@ export default {
         },
         {
           pattern: "随着 …",
+          pinyin: "suí zhe",
           ch: "h5-01-shumianyu",
           conn: "随着 + 변화 + 주절 — ~에 따라",
           ko: "~함에 따라 ~",
@@ -741,6 +841,7 @@ export default {
       items: [
         {
           pattern: "형용사 + 得 + 정도 묘사",
+          pinyin: "de",
           ch: "h3-05-degree-complement",
           conn: "형용사 + 得 + 결과·정도절",
           ko: "~해서 …할 정도다",
@@ -750,6 +851,7 @@ export default {
         },
         {
           pattern: "동사 + 得 + 多/少了",
+          pinyin: "de…duō・shǎo le",
           ch: "h3-05-degree-complement",
           conn: "동사/형용사 + 得多 / 得多了 — 차이가 큼",
           ko: "훨씬 ~하다",
@@ -758,6 +860,7 @@ export default {
         },
         {
           pattern: "동사 + 成・为",
+          pinyin: "chéng・wéi",
           ch: "h3-03-result-complement",
           conn: "동사 + 成/为 — ~이 되다",
           ko: "~로 되다/변하다",
@@ -766,6 +869,7 @@ export default {
         },
         {
           pattern: "동사 + 在・到",
+          pinyin: "zài・dào",
           ch: "h3-03-result-complement",
           conn: "동사 + 在/到 + 장소·시간 — 결과의 위치·시점",
           ko: "~한 결과 (어디·언제)에 이르다",
@@ -779,6 +883,7 @@ export default {
       items: [
         {
           pattern: "应该 …",
+          pinyin: "yīnggāi",
           ch: "h2-06-modal-verbs",
           conn: "应该 + 술어 — 마땅함·추측",
           ko: "~해야 한다 / ~일 것이다",
@@ -788,6 +893,7 @@ export default {
         },
         {
           pattern: "可能 + 동사",
+          pinyin: "kěnéng",
           ch: "h2-06-modal-verbs",
           conn: "可能 + 동사 — 일어날 수 있음",
           ko: "~일지도 모른다",
@@ -796,6 +902,7 @@ export default {
         },
         {
           pattern: "舍得・舍不得",
+          pinyin: "shěde・shěbude",
           ch: "h2-06-modal-verbs",
           conn: "舍得/舍不得 + 동사 — 아까워하다",
           ko: "기꺼이 ~하다 / 차마 ~하지 못하다",
@@ -804,6 +911,7 @@ export default {
         },
         {
           pattern: "敢 + 동사",
+          pinyin: "gǎn",
           ch: "h2-06-modal-verbs",
           conn: "敢 + 동사 — 감히 ~하다",
           ko: "감히 ~하다 / ~할 엄두를 내다",
@@ -812,6 +920,7 @@ export default {
         },
         {
           pattern: "值得 + 동사",
+          pinyin: "zhídé",
           ch: "h2-06-modal-verbs",
           conn: "值得 + 동사 — ~할 만하다",
           ko: "~할 가치가 있다",
@@ -825,6 +934,7 @@ export default {
       items: [
         {
           pattern: "동사구 + 的 + 명사",
+          pinyin: "de",
           ch: "h1-07-de-possessive",
           conn: "수식절 + 的 + 명사 — ~한 …",
           ko: "~하는 …",
@@ -834,6 +944,7 @@ export default {
         },
         {
           pattern: "的 + 명사 생략 (… 的)",
+          pinyin: "de",
           ch: "h1-07-de-possessive",
           conn: "수식어 + 的 (명사 생략) — ~한 것/사람",
           ko: "~한 것 / ~하는 사람",
@@ -842,6 +953,7 @@ export default {
         },
         {
           pattern: "주제 + 술어",
+          pinyin: "—",
           conn: "주제 + (주어) + 술어 — ~로 말하면",
           ko: "~은 (말이죠) …",
           ex: { zh: "这件事我知道。", pinyin: "zhè jiàn shì wǒ zhīdào", ko: "이 일은 제가 알아요." },
@@ -850,6 +962,7 @@ export default {
         },
         {
           pattern: "对 … 来说",
+          pinyin: "duì…láishuō",
           ch: "h4-08-prepositional-frames",
           conn: "对 + 사람 + 来说 — ~에게는",
           ko: "~에게 있어서는",
@@ -858,6 +971,7 @@ export default {
         },
         {
           pattern: "把 … 当作 …",
+          pinyin: "bǎ…dàngzuò",
           ch: "h3-01-ba",
           conn: "把 + A + 当作/看成 + B — A를 B로 여기다",
           ko: "~을 ~로 여기다/삼다",
@@ -866,6 +980,7 @@ export default {
         },
         {
           pattern: "除了 … 以外",
+          pinyin: "chúle…yǐwài",
           ch: "h4-05-chule",
           conn: "除了 + A + 以外, 都/还 + 절",
           ko: "~을 제외하고는 / ~말고도",
@@ -874,6 +989,7 @@ export default {
         },
         {
           pattern: "由 …",
+          pinyin: "yóu",
           ch: "h5-05-passive",
           conn: "由 + 사람 + 동사 — ~이 (책임지고) 하다",
           ko: "~이/가 (맡아서) ~하다",

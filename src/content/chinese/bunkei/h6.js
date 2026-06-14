@@ -12,6 +12,7 @@ export default {
       items: [
         {
           pattern: "予以・加以",
+          pinyin: "yǔyǐ・jiāyǐ",
           ch: "h5-05-passive",
           conn: "予以/加以 + 2음절 동사 (서면 형식동사)",
           ko: "~을 가하다, ~하다 (격식)",
@@ -21,6 +22,7 @@ export default {
         },
         {
           pattern: "给予",
+          pinyin: "jǐyǔ",
           ch: "h5-05-passive",
           conn: "给予 + 추상 명사 (서면)",
           ko: "~을 주다/베풀다 (격식)",
@@ -30,6 +32,7 @@ export default {
         },
         {
           pattern: "将",
+          pinyin: "jiāng",
           ch: "h5-01-shumianyu",
           conn: "주어 + 将 + 동사 (미래·서면)",
           ko: "~할 것이다 (서면 미래)",
@@ -39,6 +42,7 @@ export default {
         },
         {
           pattern: "于",
+          pinyin: "yú",
           ch: "h5-01-shumianyu",
           conn: "동사 + 于 + 시간/장소/대상 (서면)",
           ko: "~에(서) (서면 개사)",
@@ -48,6 +52,7 @@ export default {
         },
         {
           pattern: "皆・均",
+          pinyin: "jiē・jūn",
           ch: "h5-01-shumianyu",
           conn: "주어 + 皆/均 + 술어 (모두, 서면)",
           ko: "모두, 다 (서면)",
@@ -57,6 +62,7 @@ export default {
         },
         {
           pattern: "此・该・本",
+          pinyin: "cǐ・gāi・běn",
           ch: "h5-01-shumianyu",
           conn: "此/该/本 + 명사 (이, 해당, 본)",
           ko: "이, 해당, 본 (서면 지시)",
@@ -66,6 +72,7 @@ export default {
         },
         {
           pattern: "乃至・以及",
+          pinyin: "nǎizhì・yǐjí",
           ch: "h5-01-shumianyu",
           conn: "A、B 乃至/以及 C (열거·확장)",
           ko: "내지, 그리고, ~까지도 (서면 열거)",
@@ -75,6 +82,7 @@ export default {
         },
         {
           pattern: "之・其",
+          pinyin: "zhī・qí",
           ch: "h5-06-zhi-qi",
           conn: "之(=的/그것) / 其(=그의·그것) — 문어 대사",
           ko: "그것의, 그 (문어 대사)",
@@ -89,6 +97,7 @@ export default {
       items: [
         {
           pattern: "固然…，但…",
+          pinyin: "gùrán…dàn",
           ch: "h6-06-advanced-conjunctions",
           conn: "固然 + 인정하는 사실，但/可 + 더 중요한 점",
           ko: "물론 ~하기는 하지만, …하다",
@@ -98,6 +107,7 @@ export default {
         },
         {
           pattern: "尽管如此",
+          pinyin: "jǐnguǎn rúcǐ",
           ch: "h6-06-advanced-conjunctions",
           conn: "앞 문장。尽管如此，주어 + 결과",
           ko: "그럼에도 불구하고",
@@ -106,6 +116,7 @@ export default {
         },
         {
           pattern: "话虽如此",
+          pinyin: "huà suī rúcǐ",
           conn: "话虽如此，但/可 + 유보·반전",
           ko: "말은 그렇지만",
           ex: { zh: "话虽如此，实际操作起来并不容易。", pinyin: "huà suī rúcǐ, shíjì cāozuò qǐlái bìng bù róngyì", ko: "말은 그렇지만 실제로 해 보면 결코 쉽지 않아요." },
@@ -113,6 +124,7 @@ export default {
         },
         {
           pattern: "与此同时・相反",
+          pinyin: "yǔ cǐ tóngshí・xiāngfǎn",
           ch: "h5-02-connectors",
           conn: "与此同时 / 相反 + 대조·병행 진술",
           ko: "이와 동시에 / 반대로 (서면 접속)",
@@ -122,6 +134,7 @@ export default {
         },
         {
           pattern: "退一步说",
+          pinyin: "tuì yí bù shuō",
           conn: "退一步说，即使 + 양보，也…",
           ko: "한 걸음 양보해서 말하면",
           ex: { zh: "退一步说，即使失败了，也是宝贵的经验。", pinyin: "tuì yí bù shuō, jíshǐ shībài le, yě shì bǎoguì de jīngyàn", ko: "한 걸음 양보해서 말하면, 설령 실패하더라도 귀중한 경험이에요." },
@@ -129,6 +142,7 @@ export default {
         },
         {
           pattern: "倒不如说",
+          pinyin: "dào bùrú shuō",
           conn: "与其说 + A，倒不如说 + B",
           ko: "~라기보다 차라리 …라고 하는 편이 낫다",
           ex: { zh: "与其说他是老师，倒不如说他是朋友。", pinyin: "yǔqí shuō tā shì lǎoshī, dào bùrú shuō tā shì péngyou", ko: "그를 선생님이라기보다 차라리 친구라고 하는 편이 맞아요." },
@@ -142,6 +156,7 @@ export default {
       items: [
         {
           pattern: "不但不/没…，反而…",
+          pinyin: "búdàn bù/méi…fǎn'ér",
           ch: "h5-07-rhetorical-emphasis",
           conn: "不但不/没 + A，反而 + 상반된 B",
           ko: "~하기는커녕 오히려 …하다",
@@ -151,6 +166,7 @@ export default {
         },
         {
           pattern: "非…不可",
+          pinyin: "fēi…bùkě",
           ch: "h5-07-rhetorical-emphasis",
           conn: "非 + 동사/명사 + 不可",
           ko: "반드시 ~해야 한다, ~하지 않으면 안 된다",
@@ -160,6 +176,7 @@ export default {
         },
         {
           pattern: "何况・更不用说",
+          pinyin: "hékuàng・gèng búyòng shuō",
           ch: "h6-06-advanced-conjunctions",
           conn: "앞 사실，何况/更不用说 + 더 분명한 경우",
           ko: "하물며, ~은 말할 것도 없고",
@@ -169,6 +186,7 @@ export default {
         },
         {
           pattern: "莫过于",
+          pinyin: "mòguòyú",
           conn: "최상급 평가 + 莫过于 + 대상",
           ko: "~만 한 것이 없다, 가장 ~한 것은 …이다",
           ex: { zh: "人生最大的幸福莫过于身体健康。", pinyin: "rénshēng zuì dà de xìngfú mòguòyú shēntǐ jiànkāng", ko: "인생 최대의 행복은 건강만 한 것이 없습니다." },
@@ -177,6 +195,7 @@ export default {
         },
         {
           pattern: "无非是・不外乎",
+          pinyin: "wúfēi shì・bùwàihū",
           conn: "无非是/不外乎 + 한정된 범위",
           ko: "결국 ~에 불과하다, ~을 벗어나지 않는다",
           ex: { zh: "他的要求无非是希望得到尊重。", pinyin: "tā de yāoqiú wúfēi shì xīwàng dédào zūnzhòng", ko: "그의 요구는 결국 존중받고 싶다는 것에 불과해요." },
@@ -185,6 +204,7 @@ export default {
         },
         {
           pattern: "何尝・岂",
+          pinyin: "hécháng・qǐ",
           ch: "h4-07-rhetorical",
           conn: "何尝/岂 + 不 + 술어 (반어)",
           ko: "어찌 ~하지 않겠는가 (반어 강조)",
@@ -199,6 +219,7 @@ export default {
       items: [
         {
           pattern: "鉴于",
+          pinyin: "jiànyú",
           ch: "h6-06-advanced-conjunctions",
           conn: "鉴于 + 상황·사실，주어 + 결정·조치",
           ko: "~을 감안하여, ~에 비추어",
@@ -208,6 +229,7 @@ export default {
         },
         {
           pattern: "从而",
+          pinyin: "cóng'ér",
           ch: "h5-02-connectors",
           conn: "앞 동작·조건，从而 + 그로 인한 결과",
           ko: "그리하여, 그로써 (서면 결과)",
@@ -217,6 +239,7 @@ export default {
         },
         {
           pattern: "以至于・以致",
+          pinyin: "yǐzhìyú・yǐzhì",
           ch: "h5-02-connectors",
           conn: "앞 정도·원인，以至于/以致 + 결과",
           ko: "~한 나머지, 그 결과 …하다",
@@ -226,6 +249,7 @@ export default {
         },
         {
           pattern: "总而言之・综上所述",
+          pinyin: "zǒng'éryánzhī・zōng shàng suǒ shù",
           ch: "h5-02-connectors",
           conn: "총괄어 + 결론",
           ko: "요컨대, 이상을 종합하면",
@@ -235,6 +259,7 @@ export default {
         },
         {
           pattern: "可见",
+          pinyin: "kějiàn",
           conn: "앞 근거。可见 + 도출된 결론",
           ko: "~을 보면 알 수 있다, 이로써 ~임을 알 수 있다",
           ex: { zh: "他每次都准时，可见是个守信的人。", pinyin: "tā měi cì dōu zhǔnshí, kějiàn shì ge shǒuxìn de rén", ko: "그는 매번 시간을 지키니 신의 있는 사람임을 알 수 있어요." },
@@ -243,6 +268,7 @@ export default {
         },
         {
           pattern: "之所以…，关键在于…",
+          pinyin: "zhīsuǒyǐ…guānjiàn zàiyú",
           ch: "h6-06-advanced-conjunctions",
           conn: "주어 + 之所以 + 결과，关键在于 + 핵심 원인",
           ko: "~한 까닭은 …에 달려 있다",
@@ -257,6 +283,8 @@ export default {
       items: [
         {
           pattern: "相比之下・相对而言",
+          pinyin: "xiāngbǐ zhī xià・xiāngduì éryán",
+          ch: "h3-09-comparison",
           conn: "相比之下 / 相对而言 + 비교 결과",
           ko: "그에 비하면 / 상대적으로",
           ex: { zh: "相比之下，这个方案更合理。", pinyin: "xiāngbǐ zhī xià, zhège fāng'àn gèng hélǐ", ko: "그에 비하면 이 방안이 더 합리적입니다." },
@@ -264,6 +292,8 @@ export default {
         },
         {
           pattern: "与…相比",
+          pinyin: "yǔ…xiāngbǐ",
+          ch: "h3-09-comparison",
           conn: "与 + 대상 + 相比，주어 + 차이",
           ko: "~와 비교하면",
           ex: { zh: "与去年相比，今年的销量大幅增长。", pinyin: "yǔ qùnián xiāngbǐ, jīnnián de xiāoliàng dàfú zēngzhǎng", ko: "작년과 비교하면 올해 판매량이 크게 늘었습니다." },
@@ -272,6 +302,8 @@ export default {
         },
         {
           pattern: "不亚于",
+          pinyin: "bú yà yú",
+          ch: "h3-09-comparison",
           conn: "A + 不亚于 + B",
           ko: "A는 B에 못지않다",
           ex: { zh: "他的能力不亚于任何人。", pinyin: "tā de nénglì bú yà yú rènhé rén", ko: "그의 능력은 누구에게도 못지않아요." },
@@ -279,6 +311,7 @@ export default {
         },
         {
           pattern: "宁愿…，也不…",
+          pinyin: "nìngyuàn…yěbù",
           ch: "h6-06-advanced-conjunctions",
           conn: "宁愿 + A，也不 + B (감수 vs 거부)",
           ko: "차라리 ~할지언정 …하지 않다",
@@ -288,6 +321,8 @@ export default {
         },
         {
           pattern: "在…看来",
+          pinyin: "zài…kànlái",
+          ch: "h4-08-prepositional-frames",
           conn: "在 + 사람 + 看来 (~이 보기에)",
           ko: "~이 보기에는, ~의 견해로는",
           ex: { zh: "在我看来，这种做法并不可取。", pinyin: "zài wǒ kànlái, zhè zhǒng zuòfǎ bìng bù kěqǔ", ko: "제가 보기에 이런 방식은 결코 바람직하지 않아요." },
@@ -296,6 +331,8 @@ export default {
         },
         {
           pattern: "就…来看",
+          pinyin: "jiù…lái kàn",
+          ch: "h4-08-prepositional-frames",
           conn: "就 + 근거 + 来看 (~으로 볼 때)",
           ko: "~으로 볼 때, ~에 비추어 보면",
           ex: { zh: "就目前的情况来看，进展比较顺利。", pinyin: "jiù mùqián de qíngkuàng lái kàn, jìnzhǎn bǐjiào shùnlì", ko: "현재 상황으로 볼 때 진행이 비교적 순조로워요." },
@@ -309,6 +346,7 @@ export default {
       items: [
         {
           pattern: "一举两得",
+          pinyin: "yìjǔ liǎngdé",
           ch: "h6-01-advanced-chengyu",
           conn: "사자성어 (술어·평어)",
           ko: "일거양득, 한 번에 두 가지를 얻다",
@@ -318,6 +356,7 @@ export default {
         },
         {
           pattern: "千方百计",
+          pinyin: "qiānfāng bǎijì",
           ch: "h6-01-advanced-chengyu",
           conn: "千方百计 + 동사 (온갖 방법으로)",
           ko: "온갖 방법을 다 동원하여",
@@ -326,6 +365,7 @@ export default {
         },
         {
           pattern: "理所当然",
+          pinyin: "lǐsuǒ dāngrán",
           ch: "h6-01-advanced-chengyu",
           conn: "理所当然 (당연하다) — 술어·관형어",
           ko: "지극히 당연하다",
@@ -334,6 +374,7 @@ export default {
         },
         {
           pattern: "迫不及待",
+          pinyin: "pòbùjídài",
           ch: "h6-01-advanced-chengyu",
           conn: "迫不及待地 + 동사",
           ko: "한시도 지체할 수 없을 만큼 조급하다",
@@ -342,6 +383,7 @@ export default {
         },
         {
           pattern: "名副其实",
+          pinyin: "míngfù qíshí",
           ch: "h6-01-advanced-chengyu",
           conn: "名副其实 (이름값을 하다) — 술어·관형어",
           ko: "명실상부하다, 명성에 걸맞다",
@@ -351,6 +393,7 @@ export default {
         },
         {
           pattern: "层出不穷",
+          pinyin: "céngchū bùqióng",
           ch: "h6-01-advanced-chengyu",
           conn: "주어 + 层出不穷 (끊임없이 나타나다)",
           ko: "끊임없이 쏟아져 나오다",
@@ -359,6 +402,7 @@ export default {
         },
         {
           pattern: "数一数二",
+          pinyin: "shǔyī shǔ'èr",
           ch: "h6-01-advanced-chengyu",
           conn: "주어 + 数一数二 (손꼽히다)",
           ko: "손에 꼽히다, 으뜸가다",
@@ -367,6 +411,7 @@ export default {
         },
         {
           pattern: "微不足道",
+          pinyin: "wēi bù zú dào",
           ch: "h6-01-advanced-chengyu",
           conn: "주어 + 微不足道 (보잘것없다)",
           ko: "하찮다, 보잘것없다",
@@ -380,6 +425,7 @@ export default {
       items: [
         {
           pattern: "全力以赴",
+          pinyin: "quánlì yǐfù",
           ch: "h6-01-advanced-chengyu",
           conn: "全力以赴 + (동사) (전력을 다하다)",
           ko: "전력을 다하다",
@@ -388,6 +434,7 @@ export default {
         },
         {
           pattern: "脚踏实地",
+          pinyin: "jiǎotà shídì",
           ch: "h6-01-advanced-chengyu",
           conn: "脚踏实地 (착실하다) — 술어·부사어",
           ko: "발을 땅에 딛고 착실히 하다",
@@ -396,6 +443,7 @@ export default {
         },
         {
           pattern: "三心二意・全神贯注",
+          pinyin: "sānxīn èryì・quánshén guànzhù",
           ch: "h6-01-advanced-chengyu",
           conn: "三心二意 (산만) ↔ 全神贯注 (몰두)",
           ko: "마음이 산만하다 / 온 정신을 집중하다",
@@ -405,6 +453,7 @@ export default {
         },
         {
           pattern: "实事求是",
+          pinyin: "shíshì qiúshì",
           ch: "h6-01-advanced-chengyu",
           conn: "实事求是 (사실에 입각하다) — 술어·부사어",
           ko: "사실에 근거해 진실을 추구하다",
@@ -413,6 +462,7 @@ export default {
         },
         {
           pattern: "半途而废",
+          pinyin: "bàntú ér fèi",
           ch: "h6-01-advanced-chengyu",
           conn: "주어 + 半途而废 (중도에 포기하다)",
           ko: "하던 일을 중도에 그만두다",
@@ -421,6 +471,7 @@ export default {
         },
         {
           pattern: "一举一动",
+          pinyin: "yìjǔ yídòng",
           ch: "h6-01-advanced-chengyu",
           conn: "一 + 명사1 + 一 + 명사2 (ABAC 성어)",
           ko: "일거수일투족, 하나하나의 행동",
@@ -430,6 +481,7 @@ export default {
         },
         {
           pattern: "千载难逢",
+          pinyin: "qiānzǎi nánféng",
           ch: "h6-01-advanced-chengyu",
           conn: "千载难逢的 + 명사 (좀처럼 만나기 힘든)",
           ko: "천재일우의, 좀처럼 오지 않는",
@@ -443,6 +495,7 @@ export default {
       items: [
         {
           pattern: "说不定",
+          pinyin: "shuōbudìng",
           ch: "h6-02-idioms-xiehouyu",
           conn: "说不定 + 추측",
           ko: "어쩌면 ~일지도 모른다",
@@ -452,6 +505,7 @@ export default {
         },
         {
           pattern: "难怪",
+          pinyin: "nánguài",
           ch: "h6-02-idioms-xiehouyu",
           conn: "难怪/怪不得 + 결과 (+ 原来 + 원인)",
           ko: "어쩐지, 그럴 만도 하다",
@@ -460,6 +514,7 @@ export default {
         },
         {
           pattern: "归根结底",
+          pinyin: "guīgēn jiédǐ",
           ch: "h6-02-idioms-xiehouyu",
           conn: "归根结底 + 본질적 결론",
           ko: "결국, 따지고 보면",
@@ -468,6 +523,7 @@ export default {
         },
         {
           pattern: "一来…，二来…",
+          pinyin: "yìlái…èrlái",
           conn: "一来 + 이유1，二来 + 이유2",
           ko: "첫째는 ~하고, 둘째는 …하고 (이유 나열)",
           ex: { zh: "我不去，一来太远，二来没时间。", pinyin: "wǒ bú qù, yìlái tài yuǎn, èrlái méi shíjiān", ko: "저는 안 가요, 하나는 너무 멀고 또 하나는 시간이 없어서요." },
@@ -475,6 +531,7 @@ export default {
         },
         {
           pattern: "再说",
+          pinyin: "zàishuō",
           conn: "주장，再说 + 보충 이유",
           ko: "게다가, 더구나",
           ex: { zh: "今天太累了，再说也下雨了，就别出去了。", pinyin: "jīntiān tài lèi le, zàishuō yě xiàyǔ le, jiù bié chūqù le", ko: "오늘 너무 피곤하고, 게다가 비도 오니 나가지 맙시다." },
@@ -488,6 +545,7 @@ export default {
       items: [
         {
           pattern: "无不・莫不",
+          pinyin: "wúbù・mòbù",
           conn: "주어 + 无不/莫不 + 술어 (~하지 않는 것이 없다)",
           ko: "모두 다 ~하다 (이중부정 강조)",
           ex: { zh: "听到这个消息，大家无不感到兴奋。", pinyin: "tīngdào zhège xiāoxi, dàjiā wúbù gǎndào xīngfèn", ko: "이 소식을 듣고 모두가 흥분하지 않을 수 없었어요." },
@@ -496,6 +554,7 @@ export default {
         },
         {
           pattern: "唯有・唯独",
+          pinyin: "wéiyǒu・wéidú",
           conn: "唯有/唯独 + 대상 (오직 ~만)",
           ko: "오직 ~만, 유독 ~만",
           ex: { zh: "唯有努力，才能改变命运。", pinyin: "wéiyǒu nǔlì, cái néng gǎibiàn mìngyùn", ko: "오직 노력만이 운명을 바꿀 수 있어요." },
@@ -504,6 +563,7 @@ export default {
         },
         {
           pattern: "未尝不・未必不",
+          pinyin: "wèicháng bù・wèibì bù",
           conn: "未尝/未必 + 不 + 술어 (꼭 ~ 아닌 것은 아니다)",
           ko: "꼭 ~한 것은 아니다, ~ 못 할 것도 없다",
           ex: { zh: "失败未尝不是一件好事。", pinyin: "shībài wèicháng bú shì yí jiàn hǎoshì", ko: "실패가 꼭 나쁜 일인 것만은 아니에요." },
@@ -512,6 +572,7 @@ export default {
         },
         {
           pattern: "仅仅・无非",
+          pinyin: "jǐnjǐn・wúfēi",
           conn: "仅仅 / 无非 + 한정 (단지 ~에 불과하다)",
           ko: "단지 ~에 지나지 않다, 결국 ~일 뿐이다",
           ex: { zh: "这仅仅是一个开始。", pinyin: "zhè jǐnjǐn shì yí ge kāishǐ", ko: "이건 단지 시작일 뿐이에요." },
@@ -525,6 +586,7 @@ export default {
       items: [
         {
           pattern: "为…所…",
+          pinyin: "wéi…suǒ",
           ch: "h5-05-passive",
           conn: "주어 + 为 + 행위자 + 所 + 동사 (서면 피동)",
           ko: "~에 의해 …되다 (서면 피동)",
@@ -534,6 +596,7 @@ export default {
         },
         {
           pattern: "受到・遭到",
+          pinyin: "shòudào・zāodào",
           ch: "h5-05-passive",
           conn: "주어 + 受到/遭到 + 추상 명사",
           ko: "~을 받다 / ~을 당하다 (서면 피동)",
@@ -543,6 +606,7 @@ export default {
         },
         {
           pattern: "对…进行…",
+          pinyin: "duì…jìnxíng",
           ch: "h5-05-passive",
           conn: "对 + 대상 + 进行 + 2음절 동사명사",
           ko: "~에 대해 …을 진행하다/하다 (격식)",
@@ -552,6 +616,7 @@ export default {
         },
         {
           pattern: "把…加以/予以…",
+          pinyin: "bǎ…jiāyǐ/yǔyǐ",
           ch: "h6-01-advanced-chengyu",
           conn: "把/对 + 대상 + 加以/予以 + 2음절 동사",
           ko: "~을 …하다 (서면 처치)",

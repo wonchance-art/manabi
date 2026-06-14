@@ -5,7 +5,7 @@
 export default {
   level: "H1",
   title: "1급 기초 어휘",
-  desc: "你好부터 시작하는 HSK 1급 — 자기소개와 하루 일상에 가장 많이 쓰는 핵심 어휘 100여 개예요.",
+  desc: "你好부터 시작하는 HSK 1급 — 자기소개와 하루 일상에 가장 많이 쓰는 핵심 어휘 110여 개예요.",
   themes: [
     {
       name: "인사와 사람",
@@ -27,6 +27,8 @@ export default {
         { zh: "先生", pinyin: "xiānsheng", ko: "~씨, 남편", pos: "명사", hanja: "선생(先生) — 한국과 달리 남성에 대한 '~씨' 호칭이에요. 주의!", ex: { zh: "王先生是医生。", pinyin: "Wáng xiānsheng shì yīshēng", ko: "왕 선생님(왕 씨)은 의사예요." } },
         { zh: "人", pinyin: "rén", ko: "사람", pos: "명사", hanja: "인(人) — 한자 그대로.", ex: { zh: "他是好人。", pinyin: "tā shì hǎo rén", ko: "그는 좋은 사람이에요." } },
         { zh: "名字", pinyin: "míngzi", ko: "이름", pos: "명사", hanja: "명자(名字) — '名'이 이름 명.", ex: { zh: "你叫什么名字？", pinyin: "nǐ jiào shénme míngzi", ko: "이름이 뭐예요?" } },
+        { zh: "老婆", pinyin: "lǎopo", ko: "아내 (구어)", pos: "명사", hanja: "노파(老婆) — 한국어 '노파'가 아니라 구어로 '아내'를 뜻해요. 주의!", ex: { zh: "这是我老婆。", pinyin: "zhè shì wǒ lǎopo", ko: "이쪽은 제 아내예요." } },
+        { zh: "马", pinyin: "mǎ", ko: "말", pos: "명사", hanja: "마(馬) — '말 마'.", ex: { zh: "妈妈骑马。", pinyin: "māma qí mǎ", ko: "엄마가 말을 타요." } },
       ],
     },
     {
@@ -91,6 +93,11 @@ export default {
         { zh: "叫", pinyin: "jiào", ko: "부르다, (이름이) ~이다", pos: "동사", ex: { zh: "我叫小明。", pinyin: "wǒ jiào Xiǎomíng", ko: "제 이름은 샤오밍이에요." } },
         { zh: "睡觉", pinyin: "shuìjiào", ko: "잠을 자다", pos: "동사", ex: { zh: "我十点睡觉。", pinyin: "wǒ shí diǎn shuìjiào", ko: "저는 10시에 자요." } },
         { zh: "回", pinyin: "huí", ko: "돌아가다, 돌아오다", pos: "동사", hanja: "회(回) — '돌아올 회'.", ex: { zh: "我回家。", pinyin: "wǒ huí jiā", ko: "저는 집에 가요." } },
+        { zh: "骑", pinyin: "qí", ko: "(말·자전거를) 타다", pos: "동사", hanja: "기(騎) — '말 탈 기'. 다리를 벌려 올라타는 것에 써요.", ex: { zh: "妈妈骑马。", pinyin: "māma qí mǎ", ko: "엄마가 말을 타요." } },
+        { zh: "走路", pinyin: "zǒulù", ko: "걷다, 길을 걷다", pos: "동사", hanja: "주로(走路) — '走'는 걸을 주, '路'는 길 로.", ex: { zh: "我们走路去。", pinyin: "wǒmen zǒulù qù", ko: "우리는 걸어서 가요." } },
+        { zh: "书", pinyin: "shū", ko: "책", pos: "명사", hanja: "서(書) — '글 서'. '도서(圖書)'의 서.", ex: { zh: "这是我的书。", pinyin: "zhè shì wǒ de shū", ko: "이것은 제 책이에요." } },
+        { zh: "字", pinyin: "zì", ko: "글자", pos: "명사", hanja: "자(字) — '글자 자'. '한자(漢字)'의 자.", ex: { zh: "他在写字。", pinyin: "tā zài xiě zì", ko: "그는 글씨를 쓰고 있어요." } },
+        { zh: "工夫", pinyin: "gōngfu", ko: "(들인) 노력·시간, 무술", pos: "명사", hanja: "공부(工夫) — 한국어 '공부'가 아니라 들인 '노력·시간', 또는 무술(쿵푸)을 뜻해요.", ex: { zh: "这件事要花工夫。", pinyin: "zhè jiàn shì yào huā gōngfu", ko: "이 일은 공이 들어요." } },
       ],
     },
     {
@@ -131,6 +138,10 @@ export default {
         { zh: "出租车", pinyin: "chūzūchē", ko: "택시", pos: "명사", hanja: "출조차(出租車) — '租'는 빌릴 조, '車'는 수레 차. '빌려 타는 차'.", ex: { zh: "我们坐出租车去。", pinyin: "wǒmen zuò chūzūchē qù", ko: "우리 택시 타고 가요." } },
         { zh: "坐", pinyin: "zuò", ko: "앉다, (교통수단을) 타다", pos: "동사", hanja: "좌(坐) — '앉을 좌'. 타는 것도 '앉아 가는' 셈이에요.", ex: { zh: "我坐火车去。", pinyin: "wǒ zuò huǒchē qù", ko: "저는 기차를 타고 가요." } },
         { zh: "在", pinyin: "zài", ko: "~에 있다, ~에서", pos: "동사", hanja: "재(在) — '있을 재'. 위치를 말할 때 핵심이에요.", ex: { zh: "他在家。", pinyin: "tā zài jiā", ko: "그는 집에 있어요." } },
+        { zh: "车", pinyin: "chē", ko: "차, 자동차", pos: "명사", hanja: "차(車) — '수레 차'.", ex: { zh: "我坐车去。", pinyin: "wǒ zuò chē qù", ko: "저는 차를 타고 가요." } },
+        { zh: "这儿", pinyin: "zhèr", ko: "여기", pos: "대사", hanja: "'這(이 저)'에 兒이 붙은 장소 지시. = 这里.", ex: { zh: "我在这儿。", pinyin: "wǒ zài zhèr", ko: "저 여기 있어요." } },
+        { zh: "那儿", pinyin: "nàr", ko: "저기, 거기", pos: "대사", hanja: "'那(저 나)'에 兒이 붙은 장소 지시. = 那里.", ex: { zh: "他在那儿。", pinyin: "tā zài nàr", ko: "그는 저기 있어요." } },
+        { zh: "哪儿", pinyin: "nǎr", ko: "어디", pos: "대사", hanja: "'哪(어느 나)'에 兒이 붙은 의문. 장소를 물어요.", ex: { zh: "你在哪儿？", pinyin: "nǐ zài nǎr", ko: "너 어디 있어?" } },
       ],
     },
   ],
