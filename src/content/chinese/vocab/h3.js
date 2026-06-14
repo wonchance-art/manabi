@@ -4,7 +4,7 @@
  */
 export default {
   level: "H3",
-  title: "3급 어휘",
+  title: "H3 어휘",
   desc: "의견을 말하고 계획을 세우는 단계로 — 학습·직장·감정·여행까지 다루는 HSK 3급 핵심 어휘 110여 개예요.",
   themes: [
     {

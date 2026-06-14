@@ -4,7 +4,7 @@
  */
 export default {
   level: "H2",
-  title: "2급 어휘",
+  title: "H2 어휘",
   desc: "1급에서 한 걸음 더 — 가족·날씨·쇼핑·감정까지 일상 대화를 넓혀 주는 HSK 2급 핵심 어휘 100여 개예요.",
   themes: [
     {

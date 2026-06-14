@@ -4,7 +4,7 @@
  */
 export default {
   level: "H6",
-  title: "6급 어휘",
+  title: "H6 어휘",
   desc: "고급 추상어·정치사회·심리, 그리고 사자성어까지 — 한국 한자음과 그대로 통하는 HSK6급 어휘예요.",
   themes: [
     {

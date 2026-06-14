@@ -7,10 +7,10 @@ import { useAuth } from '../lib/AuthContext';
 import { pullProgress } from '../lib/refProgress';
 
 const LANG_FILTERS = [
-  { key: 'Japanese', label: '일본어' },
   { key: 'English',  label: '영어' },
-  { key: 'Chinese',  label: '중국어' },
   { key: 'French',   label: '프랑스어' },
+  { key: 'Japanese', label: '일본어' },
+  { key: 'Chinese',  label: '중국어' },
 ];
 
 const VALID_LANGS = new Set(LANG_FILTERS.map(f => f.key));
@@ -29,7 +29,7 @@ export default function LessonsPage({ refManifest = {} }) {
       const saved = localStorage.getItem('lessons_lang');
       if (saved && VALID_LANGS.has(saved)) return saved;
     }
-    return 'Japanese';
+    return 'English';
   });
   // 마지막으로 본 챕터 — 복귀 시 자동 스크롤 대상
   const [lastChapter] = useState(() => {
