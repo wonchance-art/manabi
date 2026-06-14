@@ -108,6 +108,7 @@ export default {
         },
         {
           pattern: "没 + 동사",
+          pinyin: "méi",
           ch: "h1-06-negation",
           conn: "没(有) + 동사 — 안 했음",
           ko: "~하지 않았다",
@@ -122,6 +123,7 @@ export default {
       items: [
         {
           pattern: "동사 + 完",
+          pinyin: "wán",
           ch: "h3-03-result-complement",
           conn: "동사 + 完 — 완료 결과보어",
           ko: "다 ~하다",
@@ -131,6 +133,7 @@ export default {
         },
         {
           pattern: "동사 + 到・见",
+          pinyin: "dào・jiàn",
           ch: "h3-03-result-complement",
           conn: "동사 + 到/见 — 도달·지각 결과보어",
           ko: "~해내다 / ~하게 되다",
@@ -140,6 +143,7 @@ export default {
         },
         {
           pattern: "동사 + 错・对",
+          pinyin: "cuò・duì",
           ch: "h3-03-result-complement",
           conn: "동사 + 错(틀림)/对(맞음) — 결과보어",
           ko: "잘못 ~하다 / 제대로 ~하다",
@@ -147,7 +151,8 @@ export default {
           ex2: { zh: "你写对了。", pinyin: "nǐ xiě duì le", ko: "당신은 맞게 썼어요." },
         },
         {
-          pattern: "동사 + 得 + 정도보어",
+          pattern: "동사 + 得 + 형용사",
+          pinyin: "de",
           ch: "h3-05-degree-complement",
           conn: "동사 + 得 + 형용사 — 정도·평가",
           ko: "~하는 정도가 …하다 (잘/빨리 등)",
@@ -156,7 +161,8 @@ export default {
           note: "목적어가 있으면 동사를 반복해요 (他说汉语说得很好).",
         },
         {
-          pattern: "동사 + 시량보어",
+          pattern: "동사 + 시간량",
+          pinyin: "—",
           ch: "h2-08-complement-duration",
           conn: "동사 + 시간량 (얼마 동안)",
           ko: "(얼마 동안) ~하다",
