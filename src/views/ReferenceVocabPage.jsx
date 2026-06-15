@@ -289,9 +289,9 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
                       {w.ko}
                       {lang === 'French' && w.en && <span className="fr-vrow__en"> · EN {w.en}</span>}
                     </div>
-                    {link && <div className="fr-vrow__etym"><strong>{linkIcon}</strong> · {refInline(link)}</div>}
+                    {link && <div className={`fr-vrow__etym ${wordHidden ? 'fr-vrow__hide-extra' : ''}`}><strong>{linkIcon}</strong> · {refInline(link)}</div>}
                     {w.ex && (
-                      <div className="bk-ex">
+                      <div className={`bk-ex ${wordHidden ? 'fr-vrow__hide-extra' : ''}`}>
                         <div className="bk-ex__pair">
                           <div className="bk-ex__ja">
                             {refInfo.langCode === 'ja' ? (
