@@ -7716,6 +7716,13 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   user-select: none;
   pointer-events: none;
 }
+/* 단어 가리기 모드: 뜻만 남기고 설명·예문 가림 (예문 속 단어 노출 방지) */
+.fr-vrow__hide-extra {
+  filter: blur(7px);
+  opacity: 0.45;
+  user-select: none;
+  pointer-events: none;
+}
 
 .fr-vrow--wide { grid-template-columns: clamp(150px, 27%, 240px) 1fr auto; }
 
