@@ -51,6 +51,14 @@ export default [
           { fr: "Vous êtes professeur ?", ipa: "[vuzɛt pʁɔfɛsœʁ]", ko: "선생님이세요?", note: "직업 앞에는 관사를 안 붙여요" },
         ],
         vsEn: "être는 영어 be와 역할이 거의 같아요. I am = je suis, you are = tu es / vous êtes, he is = il est. 영어에서 am/are/is를 외웠듯 suis/es/est/sommes/êtes/sont를 한 세트로 외우면 돼요.",
+        enParallel: {
+          rows: [
+            { en: "I **am** Korean.", fr: "Je **suis** coréen.", ko: "저는 한국인이에요." },
+            { en: "She **is** a teacher.", fr: "Elle **est** professeur.", ko: "그녀는 선생님이에요." },
+            { en: "We **are** in Paris.", fr: "Nous **sommes** à Paris.", ko: "우리는 파리에 있어요." },
+          ],
+          note: "**주어 + be + 보어** 어순이 영어와 완전히 같아요. am/is/are 자리에 suis/est/sommes를 끼우면 끝 — 영어로 만든 문장을 그대로 단어만 바꾸면 됩니다.",
+        },
       },
       {
         heading: "C'est ... — '이것은/그것은 ~이에요'의 만능 공식",
@@ -147,6 +155,13 @@ export default [
           { fr: "Il y a des livres sur la table.", ipa: "[ilja de livʁ syʁ la tabl]", ko: "탁자 위에 책들이 있어요.", note: "복수여도 il y a 그대로" },
           { fr: "Il y a un problème ?", ipa: "[ilja œ̃ pʁɔblɛm]", ko: "무슨 문제 있어요?" },
         ],
+        enParallel: {
+          rows: [
+            { en: "There **is** a café here.", fr: "**Il y a** un café ici.", ko: "여기 카페가 하나 있어요." },
+            { en: "There **are** books on the table.", fr: "**Il y a** des livres sur la table.", ko: "탁자 위에 책들이 있어요." },
+          ],
+          note: "il y a 하나로 there is·there are 둘 다 — 영어처럼 단복수 구분이 없어요.",
+        },
         tip: "il y a의 il은 '그'가 아니라 비인칭 가짜 주어예요. 날씨의 il fait(날씨가 ~하다)처럼, 프랑스어는 주어 없는 문장을 못 견뎌서 il을 채워 넣는다고 생각하면 돼요.",
       },
     ],
@@ -197,6 +212,14 @@ export default [
         },
         pitfall: "ils parlent을 한글 표기 감각으로 '일 빠를렁'이라고 읽는 실수가 정말 많아요. **-ent 어미는 완전한 묵음** — il parle와 ils parlent은 소리가 100% 같아요. 단수인지 복수인지는 리에종이나 문맥으로만 구별됩니다.",
         vsEn: "영어 동사는 3인칭 단수에서만 -s가 붙죠(he speaks). 프랑스어는 여섯 인칭 모두 어미가 다르지만, 발음상으로는 영어 못지않게 단순해요. '철자는 화려하고 소리는 소박하다'가 1군 동사의 본질이에요.",
+        enParallel: {
+          rows: [
+            { en: "I **speak** French.", fr: "Je **parle** français.", ko: "저는 프랑스어를 해요." },
+            { en: "We **study** French.", fr: "Nous **étudions** le français.", ko: "우리는 프랑스어를 공부해요." },
+            { en: "She **works** in Paris.", fr: "Elle **travaille** à Paris.", ko: "그녀는 파리에서 일해요." },
+          ],
+          note: "주어+동사+목적어 어순이 영어와 같아요. 영어 3인칭 -s처럼, 프랑스어는 인칭마다 어미만 바뀔 뿐 골격은 동일.",
+        },
       },
       {
         heading: "자주 쓰는 -er 동사로 문장 만들기",
@@ -580,6 +603,14 @@ export default [
           { fr: "Nous allons visiter Paris.", ipa: "[nuzalɔ̃ vizite paʁi]", ko: "우리는 파리를 구경할 거예요." },
         ],
         vsEn: "영어 be going to와 구조가 완벽하게 평행해요: I'm going to eat = Je vais manger. '가다' 동사가 미래 표현으로 변신하는 발상까지 똑같으니, 영어 감각을 그대로 가져다 쓰면 됩니다.",
+        enParallel: {
+          rows: [
+            { en: "I'm **going to** eat.", fr: "Je **vais** manger.", ko: "나 (이제) 먹을 거야." },
+            { en: "We're **going to** visit Paris.", fr: "Nous **allons** visiter Paris.", ko: "우리는 파리를 구경할 거예요." },
+            { en: "It's **going to** rain.", fr: "**Il va** pleuvoir.", ko: "비가 올 거예요." },
+          ],
+          note: "'가다(aller/go)'가 미래 표현으로 변신하는 발상까지 영어 be going to와 똑같아요. 영어 문장을 그대로 옮기면 됩니다.",
+        },
       },
       {
         heading: "venir(오다)와 passé récent — '방금 ~했어요'",
@@ -593,6 +624,13 @@ export default [
           { fr: "Je viens de manger.", ipa: "[ʒə vjɛ̃ də mɑ̃ʒe]", ko: "나 방금 먹었어.", note: "venir de + 원형 = 방금 ~했다" },
           { fr: "Le train vient de partir.", ipa: "[lə tʁɛ̃ vjɛ̃ də paʁtiʁ]", ko: "기차가 방금 떠났어요." },
         ],
+        enParallel: {
+          rows: [
+            { en: "I **have just** eaten.", fr: "Je **viens de** manger.", ko: "나 방금 먹었어." },
+            { en: "The train **has just** left.", fr: "Le train **vient de** partir.", ko: "기차가 방금 떠났어요." },
+          ],
+          note: "venir de + 원형 = 영어 have just + 과거분사.",
+        },
         etym: "venir는 라틴어 venīre(오다)의 후손이에요. 영어 avenue(다다르는 길), advent(도래)에 같은 뿌리가 살아 있어요. '애비뉴 = 와 닿는 길'을 떠올리면 venir의 뜻이 붙잡혀요.",
       },
     ],
