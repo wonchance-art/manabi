@@ -113,12 +113,14 @@ export default function ReferenceChapterPage({ lang, slug }) {
     return true;
   };
   const ownPatterns = chapter.sections.filter(s => s.pattern);
+  // 교차 챕터 풀 — 다른 챕터의 긴 CJK 구절·성어(说得很好·守株待兔)가 단일 조사 보기로 새지 않게 4자+ CJK 제외.
+  // (같은 챕터의 보기·성어 챕터의 4자 성어는 ownPatterns/sec.distractors로 들어오므로 영향 없음)
   const levelForms = [...new Set(
     ref.getGrammarChapters(chapter.level)
       .filter(c => c.slug !== chapter.slug)
       .flatMap(c => c.sections || [])
       .flatMap(s => [...clozeSegs(s.pattern), ...(s.distractors || [])])
-  )];
+  )].filter(f => !(isCJK(f) && f.length >= 4));
   // seg 위치 찾기 — 라틴은 단어 경계로(부분문자열 오매칭 방지: these 속 the), CJK는 부분문자열
   const findSeg = (low, g) => {
     if (isCJK(g)) return low.indexOf(g.toLowerCase());
