@@ -89,9 +89,9 @@ export default function ReferenceChapterPage({ lang, slug }) {
   const META_TERMS = new Set(['imparfait', 'conditionnel', 'subjonctif', 'indicatif', 'infinitif', 'participe', 'présent', 'passé', 'composé', 'simple', 'futur', 'plus-que-parfait', 'masculin', 'féminin', 'singulier', 'pluriel', 'thèse', 'antithèse', 'synthèse', 'problématique', 'bags']);
   // 보기·정답으로 부적합한 조각 — 메타용어 / 선두 아포스트로피('agit) / 숫자·범위(70·20~69)
   const isJunk = t => META_TERMS.has(String(t).toLowerCase()) || /^['’]/.test(t) || /[\d~]/.test(t);
-  // 빈칸 후보 추출 — 슬롯 라벨(N/V/S/O…)은 '대문자'만 제거(불어 소문자 n/v/a/s/o가 단어를 깨뜨리지 않도록 /i 제거)
+  // 빈칸 후보 추출 — 슬롯 라벨(N/V/S/O·A/B/C…)은 '대문자'만 제거(불어 소문자 n/v/a/s/o가 단어를 깨뜨리지 않도록 /i 제거)
   const clozeSegs = pat => String(pat || '')
-    .split(/[〜～()/・+→…,、。]|\s+|\b(?:N|V|A|S|O|Adj|inf|p\.p\.)\b/)
+    .split(/[〜～()/・+→…,、。]|\s+|\b(?:N|V|A|B|C|S|O|Adj|inf|p\.p\.)\b/)
     .map(t => t.trim())
     .filter(t => t && !/[가-힣]/.test(t) && !isJunk(t) && (isCJK(t) || t.length >= 2));
   // 보기 유효성 — 정답과 같은 문자종의 진짜 형태만 (한글·화살표·구두점 조각 제거)
