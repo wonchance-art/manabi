@@ -752,6 +752,14 @@ export default [
           { fr: "Depuis qu'il habite à Lyon, on se voit moins.", ipa: "[dəpɥi kil abit a ljɔ̃ ɔ̃ sə vwa mwɛ̃]", ko: "그가 리옹에 살게 된 뒤로 우리는 덜 만나요." },
         ],
         vsEn: "영어는 미래 얘기라도 when/as soon as 뒤에 현재형을 쓰죠(I'll call you when I **arrive**). 프랑스어는 시제를 숨기지 않고 **quand j'arriverai**처럼 미래형을 그대로 써요. 영어 습관 때문에 현재형을 쓰는 게 이 구문 최다 오류입니다.",
+        enParallel: {
+          rows: [
+            { en: "I'll call you **as soon as** I **arrive**.", fr: "Je t'appellerai **dès que** j'**arriverai**.", ko: "도착하자마자 전화할게." },
+            { en: "**While** you tidy up, I'll cook.", fr: "**Pendant que** tu ranges, je prépare le dîner.", ko: "네가 정리하는 동안 내가 요리할게." },
+            { en: "**Since** he moved to Lyon, we see each other less.", fr: "**Depuis qu'**il habite à Lyon, on se voit moins.", ko: "그가 리옹에 산 뒤로 덜 만나요." },
+          ],
+          note: "as soon as=**dès que**, while=**pendant que**, since=**depuis que**. 시간 종속절을 붙이는 구조는 평행하지만, **미래 일일 때 영어는 현재형(when I arrive)·프랑스어는 미래형(dès que j'arriverai)**을 쓰는 점만 정반대예요.",
+        },
       },
       {
         heading: "전후 압축 — avant de·après avoir·en attendant",

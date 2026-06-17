@@ -766,6 +766,14 @@ export default [
           { fr: "Il est arrivé quelque chose d'étrange hier soir.", ipa: "[il ɛtaʁive kɛlkə ʃoz detʁɑ̃ʒ jɛʁ swaʁ]", ko: "어젯밤 이상한 일이 일어났어요.", note: "진짜 주어(quelque chose)가 뒤로" },
         ],
         vsEn: "영어의 가주어 it(it turns out that ...)과 존재의 there(there remain three seats)가 프랑스어에서는 전부 **il** 하나로 통합돼요. '뜻 없는 주어'라는 발상 자체는 영어에서 이미 익숙하니, 형태만 il로 갈아 끼우면 됩니다.",
+        enParallel: {
+          rows: [
+            { en: "**It's** raining.", fr: "**Il** pleut.", ko: "비가 와요." },
+            { en: "**There are** three seats left.", fr: "**Il** reste trois places.", ko: "자리가 세 개 남았어요." },
+            { en: "**There's** a signature missing.", fr: "**Il** manque une signature.", ko: "서명이 하나 빠져 있어요." },
+          ],
+          note: "프랑스어 무인칭 **il**은 영어 가짜 주어 **it**(It's raining)과 **there**(There is/are…)를 한꺼번에 덮어요. 아무것도 안 가리키면서 주어 칸만 채우는 발상은 영어에서 이미 익숙 — 형태만 il로 통일하면 됩니다.",
+        },
       },
       {
         heading: "il s'agit de — '~에 관한 것이다'의 대표 함정",
