@@ -7643,6 +7643,50 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .fr-parallel__note strong { color: var(--text-primary); }
 
+/* 🀄 한자 다리 — 중국어 간체 → 번체 → 일본 한자 (한국 한자 지렛대) */
+.hanja-bridge {
+  margin: 12px 0 4px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border-left: 3px solid #E8763C;
+  background: rgba(232,118,60,0.08);
+}
+.hanja-bridge__label {
+  display: block;
+  font-size: 0.74rem; font-weight: 800;
+  letter-spacing: 0.02em; margin-bottom: 8px;
+  color: #E8763C;
+}
+.hanja-bridge__rows { display: flex; flex-direction: column; gap: 9px; }
+.hanja-bridge__row {
+  padding-bottom: 8px;
+  border-bottom: 1px dashed var(--border);
+}
+.hanja-bridge__row:last-child { border-bottom: 0; padding-bottom: 0; }
+.hanja-bridge__forms {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 6px 8px;
+}
+.hanja-bridge__cell {
+  display: inline-flex; align-items: baseline; gap: 4px;
+  font-size: 1.05rem; font-weight: 600; color: var(--text-primary);
+}
+.hanja-bridge__cell b {
+  font-size: 0.6rem; font-weight: 800;
+  padding: 1px 4px; border-radius: 4px;
+  background: rgba(232,118,60,0.18); color: #E8763C;
+  transform: translateY(-2px);
+}
+.hanja-bridge__cell--zh { color: var(--text-muted); }
+.hanja-bridge__arrow { color: var(--text-muted); font-size: 0.8rem; }
+.hanja-bridge__read { font-size: 0.72rem; color: var(--text-muted); margin-left: 1px; }
+.hanja-bridge__ko { font-size: 0.78rem; color: var(--text-secondary); margin-top: 3px; }
+.hanja-bridge__note {
+  font-size: 0.82rem; line-height: 1.6; color: var(--text-secondary);
+  margin-top: 9px; padding-top: 9px; border-top: 1px solid var(--border);
+  word-break: keep-all;
+}
+.hanja-bridge__note strong { color: var(--text-primary); }
+
 .fr-pager {
   display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
   margin: 24px 0 8px;
