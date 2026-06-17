@@ -3633,6 +3633,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
     justify-content: space-around;
     align-items: center;
     z-index: 1000;
+    /* 합성 레이어 승격 — 모바일 스크롤(관성/momentum) 중 fixed 바가 리페인트를 못 따라가
+       화면 중간에 떠 보이는 현상 방지 */
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
   }
 
   .mobile-nav__link {
