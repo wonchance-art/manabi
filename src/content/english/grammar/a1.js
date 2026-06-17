@@ -17,6 +17,7 @@ export default [
         heading: "영어 문장의 제1법칙 — 주어 다음엔 바로 동사",
         pattern: "주어 + am/is/are + 보어 (SVO)",
         patternKo: "주어를 말한 순간, 다음 칸은 무조건 동사",
+        distractors: ["am", "is", "are", "be"],
         body:
           "한국어는 '나는 + 학생 + 이다'처럼 **동사가 맨 끝**(SOV), 영어는 '**나는 + 이다 + 학생**'(SVO)이에요. 단어를 다 알아도 한국어 순서대로 늘어놓으면 문장이 깨져요.\n\n" +
           "'나는 학생이다'의 머릿속 순서: ① 주어 I → ② **동사부터!** am → ③ 나머지 a student. '학생'을 먼저 떠올리고 싶은 충동을 누르는 게 첫 훈련이에요.",
@@ -30,6 +31,7 @@ export default [
       {
         heading: "am / is / are — 주어에 따라 모양이 바뀐다",
         pattern: "I → am · he/she/it → is · you/we/they → are",
+        distractors: ["am", "is", "are", "be"],
         patternKo: "주어와 동사의 짝 맞추기(수일치)",
         body:
           "한국어 '이다'는 누가 주어든 하나지만, 영어 be는 주어와 **짝을 맞춰** 세 가지로 변해요(수일치). 이 짝 맞추기는 영어 전체를 관통하는 습관이라 여기서 단단히 잡아두면 두고두고 편해요.",

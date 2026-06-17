@@ -85,10 +85,15 @@ export default function ReferenceChapterPage({ lang, slug }) {
   // ① 빈칸 채우기 — 실제 예문에서 패턴 자리를 비우고, 문맥에 맞는 형태를 고른다.
   //    보기(오답)는 정답과 같은 종류(실제 단어형)만 — 한국어 슬롯·문법용어·구두점 조각은 배제.
   const isCJK = s => /[぀-ヿ一-鿿]/.test(String(s || ''));
-  // 문법 메타용어(시제·품사·수사 라벨) — 정답·보기 어디에도 쓰지 않는다. 학습 대상 '형태'가 아니라 '설명 라벨'이라서.
-  const META_TERMS = new Set(['imparfait', 'conditionnel', 'subjonctif', 'indicatif', 'infinitif', 'participe', 'présent', 'passé', 'composé', 'simple', 'futur', 'plus-que-parfait', 'masculin', 'féminin', 'singulier', 'pluriel', 'thèse', 'antithèse', 'synthèse', 'problématique', 'bags']);
-  // 보기·정답으로 부적합한 조각 — 메타용어 / 선두 아포스트로피('agit) / 숫자·범위(70·20~69)
-  const isJunk = t => META_TERMS.has(String(t).toLowerCase()) || /^['’]/.test(t) || /[\d~]/.test(t);
+  // 문법·수사 메타용어(시제·품사·수사법 라벨) — 정답·보기 어디에도 쓰지 않는다. 학습 대상 '형태'가 아니라 '설명 라벨'이라서.
+  const META_TERMS = new Set([
+    // 프랑스어 문법 라벨
+    'imparfait', 'conditionnel', 'subjonctif', 'indicatif', 'infinitif', 'participe', 'présent', 'passé', 'composé', 'simple', 'futur', 'plus-que-parfait', 'masculin', 'féminin', 'singulier', 'pluriel', 'thèse', 'antithèse', 'synthèse', 'problématique', 'bags',
+    // 영어 수사·담화 라벨
+    'tricolon', 'alliteration', 'assonance', 'consonance', 'anaphora', 'antithesis', 'understatement', 'overstatement', 'hyperbole', 'litotes', 'irony', 'sarcasm', 'deadpan', 'euphemism', 'simile', 'metonymy', 'oxymoron', 'onomatopoeia', 'parallelism', 'chiasmus', 'end-focus', 'end-weight', 'nominalization',
+  ]);
+  // 보기·정답으로 부적합한 조각 — 메타용어 / 선두 아포스트로피('agit) / 숫자·범위(70·20~69) / 2자+ 연속 대문자 표기(SVO·KJV·ARGUMENT IS WAR)
+  const isJunk = t => META_TERMS.has(String(t).toLowerCase()) || /^['’]/.test(t) || /[\d~]/.test(t) || /[A-Z]{2,}/.test(t);
   // 빈칸 후보 추출 — 슬롯 라벨(N/V/S/O·A/B/C…)은 '대문자'만 제거(불어 소문자 n/v/a/s/o가 단어를 깨뜨리지 않도록 /i 제거)
   const clozeSegs = pat => String(pat || '')
     .split(/[〜～()/・+→…,、。]|\s+|\b(?:N|V|A|B|C|S|O|Adj|inf|p\.p\.)\b/)
