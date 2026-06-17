@@ -384,6 +384,14 @@ export default [
           { fr: "C'est un livre.", ipa: "[sɛtœ̃ livʁ] 세떵 리브흐", ko: "이것은 책이에요.", note: "'하나의' 셀 수 있는 것엔 부정관사" },
         ],
         vsEn: "영어 the≈le/la/les, a≈un/une로 대응되지만 두 가지가 달라요. ① 프랑스어 관사는 명사의 성·수에 따라 모양이 변하고, ② 영어가 관사를 생략하는 자리(I like coffee, in school)에도 프랑스어는 관사를 써요. '영어보다 한 단계 더 깐깐하다'고 기억하세요.",
+        enParallel: {
+          rows: [
+            { en: "**the** book", fr: "**le** livre", ko: "그 책 (정관사)" },
+            { en: "**a** book", fr: "**un** livre", ko: "책 한 권 (부정관사)" },
+            { en: "**an** apple", fr: "**une** pomme", ko: "사과 하나 (부정관사)" },
+          ],
+          note: "le/la/les = the(정관사 '그'), un/une/des = a/an(부정관사 '하나'). 정/부정관사를 구별하는 발상 자체가 영어와 같아요. (차이: 프랑스어 관사는 명사의 성·수에 맞춰 모양이 바뀜.)",
+        },
       },
       {
         heading: "정관사 le, la, les — 그리고 축약 l'",

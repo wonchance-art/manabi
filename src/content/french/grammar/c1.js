@@ -287,6 +287,13 @@ export default [
           { fr: "L'accord signé, les deux délégations se sont séparées.", ko: "협정이 서명되자, 양측 대표단은 헤어졌다.", note: "Une fois를 생략한 더 압축된 형태" },
         ],
         pitfall: "절대분사구문을 한국어로 직역하면 '밤이 떨어진, 마을은...'처럼 깨져요. 읽을 때 머릿속에서 **quand/comme/après que 절로 펼치는** 변환을 습관화하세요. La nuit tombée → Quand la nuit est tombée. 이 펼치기가 자동화되면 르몽드 독해 속도가 눈에 띄게 올라가요.",
+        enParallel: {
+          rows: [
+            { en: "**The meeting over**, they left.", fr: "**La réunion terminée**, ils sont partis.", ko: "회의가 끝나자, 그들은 떠났다." },
+            { en: "**Weather permitting**, we'll go out.", fr: "**Le temps le permettant**, nous sortirons.", ko: "날씨가 허락하면, 우리는 나갈 거예요." },
+          ],
+          note: "주어가 다른 분사구문(절대구문)이 영어에도 있어요(The meeting over…). 명사 + 분사로 배경 상황을 압축하는 구조가 평행.",
+        },
       },
       {
         heading: "굳어진 분사 표현들 — 전치사가 된 분사",
@@ -341,6 +348,13 @@ export default [
           { fr: "Elle a connu son mari à Lyon.", ko: "그녀는 남편을 리옹에서 만났어요.", note: "connaître의 passé composé = 만남의 시작" },
         ],
         tip: "헷갈리면 뒤를 보세요. **절이나 동사원형이면 savoir, 명사면 connaître** — 이 형태 규칙만으로 90%가 해결돼요. 나머지 10%(savoir + 명사: Je sais ma leçon 등)는 '암기해서 외고 있다'는 특수한 뜻이에요.",
+        enParallel: {
+          rows: [
+            { en: "I **know** the answer.", fr: "Je **sais** la réponse.", ko: "나는 답을 알아요. (정보)" },
+            { en: "I **know** Paris.", fr: "Je **connais** Paris.", ko: "나는 파리를 알아요. (경험·친숙)" },
+          ],
+          note: "영어 know 하나가 프랑스어에선 savoir(정보·사실·방법)와 connaître(사람·장소를 겪어 앎)로 갈라져요. 영어로는 같은 단어라 더 헷갈리는 지점.",
+        },
       },
       {
         heading: "amener / emmener / apporter / emporter — 사람이냐 물건이냐, 오느냐 가느냐",

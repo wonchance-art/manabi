@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { getRefLang } from '../content/refLangs';
-import { refInline, refMain, refPron, Callout, CALLOUT_ORDER, LevelDot, JaText } from './refShared';
+import { refInline, refMain, refPron, Callout, CALLOUT_ORDER, RefParallel, LevelDot, JaText } from './refShared';
 import RefReadMark from '../components/RefReadMark';
 import RefSpeak from '../components/RefSpeak';
 import RefPatternCheck from '../components/RefPatternCheck';
@@ -316,6 +316,8 @@ export default function ReferenceChapterPage({ lang, slug }) {
               ))}
             </div>
           )}
+
+          {sec.enParallel && <RefParallel data={sec.enParallel} />}
 
           {CALLOUT_ORDER.map(kind => (
             <Callout key={kind} kind={kind} text={sec[kind]} />

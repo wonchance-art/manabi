@@ -114,6 +114,14 @@ export default [
           { fr: "S'il avait fait beau, on serait allés à la plage.", ko: "날씨가 좋았더라면 해변에 갔을 텐데. (③ — 이미 지나간 일)" },
         ],
         vsEn: "유형별 시제 조합까지 영어와 똑같아요: if + 과거 ↔ si + 반과거, would ↔ 조건법, would have ↔ 조건법 과거. 영어 가정법이 흔들리는 분은 거꾸로 프랑스어로 영어를 복습하게 되는, 일석이조의 지점입니다.",
+        enParallel: {
+          rows: [
+            { en: "If it **rains**, we **will stay** home.", fr: "S'il **pleut**, on **restera** à la maison.", ko: "비가 오면 집에 있을 거예요. (1형)" },
+            { en: "If I **had** time, I **would go**.", fr: "Si j'**avais** le temps, j'**irais**.", ko: "시간이 있다면 갈 텐데. (2형)" },
+            { en: "If I **had known**, I **would have come**.", fr: "Si j'**avais su**, je **serais venu**.", ko: "알았더라면 왔을 텐데. (3형)" },
+          ],
+          note: "if = si. 1형(현재+미래)·2형(과거+would)·3형(과거완료+would have) 세 틀이 영어 조건문 세 유형과 거의 1:1로 대응해요. (단 si 뒤에는 미래·조건법을 쓰지 않음 — 영어 'if … will'을 안 쓰는 것과 같음.)",
+        },
       },
       {
         heading: "①형 — si + 현재: 충분히 일어날 수 있는 일",
@@ -196,6 +204,13 @@ export default [
           { fr: "N'ayant pas reçu de réponse, je vous écris de nouveau.", ko: "답장을 받지 못하여 다시 메일을 드립니다.", note: "격식 이메일 표현" },
         ],
         tip: "현재분사는 '읽고 쓸 줄 알면 되는' 문법이에요. 신문·공문·이메일에서 알아보고, 격식 작문에서 한두 번 써먹는 정도가 B2의 적정선입니다. 말할 때는 qui 관계절이나 comme절로 푸세요.",
+        enParallel: {
+          rows: [
+            { en: "**Not knowing** anyone, I left.", fr: "**Ne connaissant** personne, je suis parti.", ko: "아무도 몰라서 자리를 떴어요." },
+            { en: "the passengers **traveling** with children", fr: "les passagers **voyageant** avec des enfants", ko: "아이를 동반한 승객" },
+          ],
+          note: "동사+-ant = 영어 현재분사 -ing. 이유·동시상황을 분사로 압축하는 용법이 평행.",
+        },
       },
       {
         heading: "동사적 형용사 — 철자까지 달라지는 경우",
@@ -274,6 +289,14 @@ export default [
           { fr: "Je pensais qu'il était français. En fait, il est belge.", ko: "그가 프랑스인인 줄 알았는데, 실은 벨기에 사람이에요.", note: "en fait = 반전·정정" },
         ],
         vsEn: "en effet ≈ indeed(뒷받침), en fait ≈ actually(반전) — 영어 쌍으로 기억하면 헷갈리지 않아요. however ≈ cependant, on the other hand ≈ en revanche, therefore ≈ par conséquent까지, 영어 에세이 연결사 체계가 거의 그대로 대응됩니다.",
+        enParallel: {
+          rows: [
+            { en: "**However**, we decided to go.", fr: "**Cependant**, on a décidé d'y aller.", ko: "그렇지만 우리는 가기로 했어요." },
+            { en: "**Therefore**, the company cut costs.", fr: "**Par conséquent**, l'entreprise a réduit les coûts.", ko: "따라서 그 회사는 비용을 줄였어요." },
+            { en: "**Moreover**, the service was poor.", fr: "**De plus**, le service était décevant.", ko: "게다가 서비스도 실망스러웠어요." },
+          ],
+          note: "however=cependant/pourtant, therefore=donc/par conséquent, moreover=de plus, in fact=en fait. 문장 사이 논리를 잇는 부사라는 역할이 영어와 같아요.",
+        },
       },
       {
         heading: "첨가·전환·구조화 — d'ailleurs, par ailleurs, d'abord...",
@@ -314,6 +337,14 @@ export default [
           { fr: "Ça dépend de toi.", ko: "그건 너한테 달렸어.", note: "영어 depend on ↔ 프랑스어 dépendre de" },
         ],
         tip: "B1까지의 동사 암기가 'attendre = 기다리다'였다면, B2부터는 '**attendre qqch / attendre de + inf**'처럼 전치사 패턴째로 외우세요. 사전의 동사 항목에서 예문 구조를 같이 읽는 습관이 지름길이에요.",
+        enParallel: {
+          rows: [
+            { en: "to **depend on**", fr: "**dépendre de**", ko: "~에 달려 있다" },
+            { en: "to **think about/of**", fr: "**penser à**", ko: "~을 생각하다" },
+            { en: "to **dream of**", fr: "**rêver de**", ko: "~을 꿈꾸다" },
+          ],
+          note: "동사마다 짝 전치사가 정해져 있는 구조는 영어와 같지만, 짝이 다를 때가 많아요(depend ON = dépendre DE, think ABOUT = penser À). 평행하되 전치사는 따로 외울 것.",
+        },
       },
       {
         heading: "penser à vs penser de — 같은 동사, 다른 전치사, 다른 뜻",
@@ -411,6 +442,13 @@ export default [
           { fr: "C'est en forgeant qu'on devient forgeron.", ko: "쇠를 두드려야 대장장이가 된다. (속담)", note: "수단 강조 — B1 제롱디프 챕터의 그 속담이에요" },
         ],
         pitfall: "C'est moi qui 뒤의 **동사는 강조된 사람에 일치**해요: C'est moi qui **ai** raison(O), qui a raison(X). C'est toi qui **as**..., C'est nous qui **avons**... — qui 뒤에서 3인칭으로 굳히는 실수가 정말 흔하니, '일치는 스포트라이트 주인공을 따른다'고 기억하세요.",
+        enParallel: {
+          rows: [
+            { en: "**It's** Paul **who** cooked.", fr: "**C'est** Paul **qui** a cuisiné.", ko: "요리한 사람은 폴이에요." },
+            { en: "**It's** for you **that** I came.", fr: "**C'est** pour toi **que** je suis venu.", ko: "너 때문에 온 거야." },
+          ],
+          note: "It is X who/that … = C'est X qui/que … 특정 성분을 콕 집어 강조하는 분열문 구조가 영어와 평행.",
+        },
       },
       {
         heading: "ce qui ..., c'est ... — 뜸 들이고 공개하기",
@@ -665,6 +703,13 @@ export default [
           { fr: "Elle est non seulement rapide, mais aussi très précise.", ipa: "[ɛl ɛ nɔ̃ sœlmɑ̃ ʁapid mɛ osi tʁɛ pʁesiz]", ko: "그녀는 빠를 뿐 아니라 아주 정확해요.", note: "ni…ni의 긍정 짝" },
         ],
         vsEn: "영어 neither ... nor, not only ... but also와 구조가 그대로 포개져요. 차이 하나 — 프랑스어는 ni 뒤의 관사를 떨어뜨립니다. neither coffee nor tea = ni café ni thé.",
+        enParallel: {
+          rows: [
+            { en: "**neither** wine **nor** beer", fr: "**ni** vin **ni** bière", ko: "와인도 맥주도 아닌" },
+            { en: "He drinks **neither** wine **nor** beer.", fr: "Il ne boit **ni** vin **ni** bière.", ko: "그는 와인도 맥주도 안 마셔요." },
+          ],
+          note: "ne … ni … ni … = neither … nor …. 둘 다 부정하는 상관접속의 짝 구조가 평행(프랑스어는 동사 앞 ne가 추가로 붙는 점만 다름).",
+        },
       },
       {
         heading: "sans 가족 — ~없이, ~하지 못하게, 안 그러면",

@@ -53,6 +53,14 @@ export default [
           { fr: "J'aimerais visiter la Corse un jour.", ko: "언젠가 코르시카에 가보고 싶어요." },
         ],
         vsEn: "영어 would/could와 거의 1:1이에요. I would like = je voudrais, Could you...? = Pourriez-vous...? 영어에서 공손하게 말하던 감각을 그대로 가져오면 됩니다.",
+        enParallel: {
+          rows: [
+            { en: "I **would** like to reserve a table.", fr: "Je **voudrais** réserver une table.", ko: "테이블을 예약하고 싶은데요." },
+            { en: "**Could** you help me?", fr: "**Pourriez**-vous m'aider ?", ko: "저를 도와주시겠어요?" },
+            { en: "If I had time, I **would** visit you.", fr: "Si j'avais le temps, je te **rendrais** visite.", ko: "시간이 있다면 너를 보러 갈 텐데." },
+          ],
+          note: "영어 would/could의 '~할 텐데/해주시겠어요'를 프랑스어는 동사에 조건법 어미(-rais/-rait…)로 표현. 공손·가정의 뉘앙스가 평행.",
+        },
       },
       {
         heading: "용법 2 — 가정: si + 반과거, 조건법",
@@ -197,6 +205,13 @@ export default [
           { fr: "Elle était fatiguée parce qu'elle avait mal dormi.", ko: "그녀는 피곤했어요. 잠을 잘 못 잤었거든요." },
         ],
         vsEn: "영어 past perfect(had + p.p.)와 형태도 용법도 정확히 평행이에요. The train had already left = Le train était déjà parti. 영어에서 had를 쓸 자리면 프랑스어에서는 대과거 — 이 등식은 거의 배신하지 않아요.",
+        enParallel: {
+          rows: [
+            { en: "The train **had** already **left**.", fr: "Le train **était** déjà **parti**.", ko: "기차는 이미 떠난 뒤였어요." },
+            { en: "I **had** never **seen** that.", fr: "Je n'**avais** jamais **vu** ça.", ko: "나는 그걸 본 적이 없었어요." },
+          ],
+          note: "avoir/être 반과거 + 과거분사 = 영어 had + p.p. '과거의 그 시점보다 더 이전'을 가리키는 시제 논리가 같아요.",
+        },
       },
       {
         heading: "형태 — avoir/être의 반과거 + 과거분사",
@@ -299,6 +314,14 @@ export default [
           { fr: "C'était une époque où tout semblait possible.", ko: "모든 게 가능해 보이던 시절이었어요." },
         ],
         pitfall: "영어 the day **when**의 영향으로 le jour quand(X)이라고 쓰기 쉬워요. 관계절을 이끄는 자리에서 quand은 못 써요 — 장소든 시간이든 선행사가 있으면 où입니다.",
+        enParallel: {
+          rows: [
+            { en: "the book I told you **about**", fr: "le livre **dont** je t'ai parlé", ko: "내가 너한테 말했던 그 책" },
+            { en: "the man **whose** son is a doctor", fr: "l'homme **dont** le fils est médecin", ko: "아들이 의사인 그 남자" },
+            { en: "the city **where** I live", fr: "la ville **où** j'habite", ko: "내가 사는 도시" },
+          ],
+          note: "dont = of which/whose(de 포함 관계), où = where(장소·시간). 영어의 whose·where 자리에 대응.",
+        },
       },
       {
         heading: "lequel 계열 — 그 밖의 전치사 뒤에는",
@@ -385,6 +408,13 @@ export default [
           { fr: "Tu peux payer en utilisant ton téléphone.", ko: "휴대폰으로(휴대폰을 사용해서) 결제할 수 있어요." },
         ],
         tip: "한국어 번역을 고르는 요령: 동시면 '~하면서', 수단이면 '~해서/함으로써', 조건이면 '~하면'. 프랑스어는 en + -ant 하나로 셋을 다 커버하니, 해석은 문맥이 결정해요.",
+        enParallel: {
+          rows: [
+            { en: "I learned French **by watching** dramas.", fr: "J'ai appris le français **en regardant** des séries.", ko: "드라마를 보면서 프랑스어를 배웠어요." },
+            { en: "She phones **while walking**.", fr: "Elle téléphone **en marchant**.", ko: "그녀는 걸으면서 통화해요." },
+          ],
+          note: "en + 현재분사(-ant) = 영어 by/while + -ing. 동시동작·수단을 한 덩어리로 표현하는 발상이 평행.",
+        },
       },
       {
         heading: "제약 — 주어가 반드시 일치해야 해요",
@@ -448,6 +478,13 @@ export default [
           { fr: "La maison a été détruite par l'incendie.", ko: "그 집은 화재로 파괴됐어요.", note: "사건 → par" },
         ],
         vsEn: "영어는 행위자를 by 하나로 통일하지만 프랑스어는 par/de 두 갈래예요. 그 외의 구조(be + p.p. ↔ être + p.p.)는 영어와 똑같으니, 차이점인 par/de와 과거분사 일치에만 집중하면 돼요.",
+        enParallel: {
+          rows: [
+            { en: "This building **was built** in 1925.", fr: "Ce bâtiment **a été construit** en 1925.", ko: "이 건물은 1925년에 지어졌어요." },
+            { en: "The results **will be announced** Friday.", fr: "Les résultats **seront annoncés** vendredi.", ko: "결과는 금요일에 발표될 거예요." },
+          ],
+          note: "être + 과거분사 = be + p.p. 행위자는 par(=by)로. 단, 프랑스어는 'My wallet was stolen'을 On m'a volé…(능동)로 더 자주 말하는 점만 주의.",
+        },
       },
       {
         heading: "프랑스어식 습관 — on으로 수동 피하기",
@@ -525,6 +562,13 @@ export default [
           { fr: "Tu m'avais promis que tu viendrais !", ko: "너 온다고 약속했잖아!" },
         ],
         vsEn: "영어 backshift와 완전히 평행이에요. He said he **was** tired = Il a dit qu'il **était** fatigué, he **would** come = qu'il **viendrait**. 영어에서 시제 일치를 익혔다면 표를 외울 필요 없이 그 감각을 그대로 옮기면 됩니다.",
+        enParallel: {
+          rows: [
+            { en: "\"I am busy.\" → He said he **was** busy.", fr: "« Je suis occupé. » → Il a dit qu'il **était** occupé.", ko: "그는 자기가 바쁘다고 말했어요." },
+            { en: "\"I will come.\" → She said she **would** come.", fr: "« Je viendrai. » → Elle a dit qu'elle **viendrait**.", ko: "그녀는 자기가 올 거라고 말했어요." },
+          ],
+          note: "주절이 과거면 종속절 시제가 한 칸 뒤로(현재→반과거, 미래→조건법). 영어 backshift(am→was, will→would)와 규칙이 평행.",
+        },
         pitfall: "한국어는 '피곤하다고 했다'처럼 인용절 시제를 현재로 둬도 자연스러워서, 시제 후퇴를 빼먹는 실수가 정말 잦아요. 주절이 과거인지부터 확인하는 습관을 들이세요.",
       },
       {

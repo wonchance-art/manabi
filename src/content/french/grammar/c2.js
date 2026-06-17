@@ -100,6 +100,13 @@ export default [
           { fr: "Il n'est pas sot.", ko: "그는 어리석지 않다. (= 꽤 영리하다)", note: "문어적 litote" },
         ],
         pitfall: "프랑스인의 pas mal을 한국어 '그냥 그래'로 알아들으면 정반대 오해예요. 부정형 평가는 일단 litote인지 의심하세요. 반대로 한국식으로 '정말 정말 최고예요!'를 남발하면 프랑스 귀에는 과장으로 들릴 수 있어요.",
+        enParallel: {
+          rows: [
+            { en: "**not bad** at all", fr: "**pas mal** du tout", ko: "전혀 나쁘지 않다 (= 꽤 좋다)" },
+            { en: "He's **not** unintelligent.", fr: "Il n'est **pas** sot.", ko: "그는 어리석지 않다 (= 꽤 영리하다)" },
+          ],
+          note: "litote(완서법) — 약하게 부정해 강하게 긍정(not bad = 꽤 좋다)하는 수사가 영어에도 똑같이 있어요(not bad, not unintelligent).",
+        },
       },
       {
         heading: "euphémisme — 완곡어법, 부드럽게 덮는 기술",

@@ -161,3 +161,33 @@ export default {
 - **레지스터(문체) 교차 표기** — 뚜렷한 격식·문어(soutenu) 문형엔 note에 구어 대응을, 뚜렷한 구어(familier) 문형엔 격식 대응을: 「구어에서는 « on » 쪽이 자연스럽다」 / 「격식·문어에서는 « ne … point »」. 중립 문형엔 강요하지 않는다.
 - 예문 ipa 필수 (어휘 발음 표기 100% 기준과 동일). 예문은 그 레벨까지의 어휘·문법으로 짧게.
 - 테마는 기능별 그룹 8~16개. 목표 수: A1 80+ / A2 90+ / B1 100+ / B2 100+ / C1 80+ / C2 60+.
+
+---
+
+## 영어 학습자용 나란히 비교 — `enParallel` (문법 챕터 섹션 선택 필드)
+
+영어를 배운 적 있는 학습자를 위해, **프랑스어 문법 구조가 영어와 평행할 때** 두 언어를 시각적으로 나란히 대조한다. 섹션 객체에 선택 필드로 추가:
+
+```js
+{
+  heading: '...', pattern: '...', patternKo: '...', examples: [...],
+  vsEn: '...(기존 평문 영어 비교 — 유지)',
+  enParallel: {
+    rows: [
+      { en: 'I **am** Korean.',      fr: 'Je **suis** coréen.',      ko: '저는 한국인이에요.' },
+      { en: 'She **is** a teacher.', fr: 'Elle **est** professeur.', ko: '그녀는 선생님이에요.' },
+    ],
+    note: '**주어 + be + 보어** 어순이 영어와 같아요. am/is/are 자리에 suis/est/sommes만 끼우면 끝.',
+  },
+}
+```
+
+### 작성 규칙
+- **평행할 때만** 추가한다. 구조가 어긋나는 지점(부정 do-support, 형용사 위치, his/her, 목적대명사 어순 등)은 기존 `pitfall`/`vsEn` 평문으로 다루고 enParallel은 넣지 않는다.
+- `rows`: 2~4쌍. 각 쌍은 **의미가 같은 영어 문장 + 프랑스어 문장**. 가능하면 그 섹션 `examples`의 프랑스어를 그대로 쓰고 영어를 붙인다.
+- **`**굵게**`로 평행 부분 강조** — en·fr 양쪽에서 서로 대응되는 핵심 단어를 굵게(am↔suis, will↔-ai, have+p.p.↔avoir+p.p.).
+- `ko`(선택): 짧은 한국어 뜻. `note`(선택): 한 줄 구조 요약 — "둘 다 [조동사+과거분사]" 식으로 공유 골격을 명시.
+- en은 자연스러운 표준 영어, fr은 그 레벨까지의 어휘로. 거짓 평행(억지 대응) 금지.
+
+### 평행이 강한 대표 지점
+être=be / aller+inf=be going to / passé composé=present perfect(have+p.p.) / plus-que-parfait=past perfect(had+p.p.) / futur=will / conditionnel=would / 비교급 plus…que=more…than·-er than / 관계대명사 qui·que·dont·où=who·which/that·whose·where / 수동태 être+p.p.=be+p.p. / 간접화법 시제후퇴=reported speech backshift / si 가정문=if-conditionals / 강조 c'est…qui/que=cleft it's…that / 제롱디프 en+-ant=by/while+-ing / 명령법=imperative / ne…ni=neither…nor / litote pas mal=not bad.
