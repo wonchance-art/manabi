@@ -97,6 +97,7 @@ body {
   color: var(--text-primary);
   line-height: 1.6;
   min-height: 100vh;
+  min-height: 100dvh; /* 동적 뷰포트 — 모바일 주소창 show/hide 시 하단 고정바 뜸 방지 */
   -webkit-font-smoothing: antialiased;
 }
 
@@ -329,6 +330,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .app-layout {
   padding-top: var(--gnb-height);
   min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* 모바일 하단 내비 — 데스크톱에선 숨김(미디어쿼리에서 fixed로 노출) */
+.mobile-nav {
+  display: none;
 }
 
 .page-container {
@@ -3617,7 +3624,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
     bottom: 0;
     left: 0;
     right: 0;
-    height: var(--mobile-nav-height);
+    height: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom); /* 노치/홈 인디케이터 영역만큼 안쪽으로 */
     background: var(--mobile-nav-bg);
     backdrop-filter: blur(10px);
     border-top: 1px solid var(--border);
@@ -3625,6 +3633,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
     justify-content: space-around;
     align-items: center;
     z-index: 1000;
+    /* 합성 레이어 승격 — 모바일 스크롤(관성/momentum) 중 fixed 바가 리페인트를 못 따라가
+       화면 중간에 떠 보이는 현상 방지 */
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
   }
 
   .mobile-nav__link {
@@ -3649,7 +3662,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 
   .app-layout {
     padding-top: var(--gnb-height);
-    padding-bottom: var(--mobile-nav-height);
+    padding-bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom));
   }
 
   .page-container {

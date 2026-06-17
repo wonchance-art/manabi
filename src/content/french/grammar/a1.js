@@ -520,6 +520,7 @@ export default [
       {
         heading: "aller(가다) — 최강 불규칙 동사",
         pattern: "je vais · tu vas · il va · nous allons · vous allez · ils vont",
+        distractors: ["vas", "va", "allez", "vont"],
         patternKo: "'가다' aller의 완전 불규칙 활용",
         body:
           "**aller**(가다)는 -er로 끝나지만 1군이 아닌 완전 불규칙 동사예요 — 그만큼 많이 쓰여서 닳고 닳았다는 뜻이죠.\n\n" +
@@ -611,6 +612,7 @@ export default [
         heading: "왜 필요한가 — '빵 하나'도 '빵 전체'도 아닐 때",
         pattern: "du + 남성 · de la + 여성 · de l' + 모음 앞 · des + 복수",
         patternKo: "셀 수 없는 것의 '얼마간, 좀'",
+        distractors: ["de la", "des", "le"],
         body:
           "un pain(한 덩어리 통째)도 le pain(빵이라는 것 전체)도 아닌, **'빵을 좀'**을 담당하는 게 **부분관사**예요. 물·빵·치즈처럼 셀 수 없는 것을 '일부' 먹고 마실 때 써요.\n\n" +
           "형태는 사실 **de + 정관사**라서, de + le = **du**라는 익숙한 축약이 또 등장해요.",
@@ -635,6 +637,7 @@ export default [
         heading: "음식·음료 회화의 주력 엔진",
         pattern: "manger / boire / prendre + du / de la + 음식",
         patternKo: "먹고 마시는 동사와 짝을 이루는 부분관사",
+        distractors: ["de la", "des", "le"],
         body:
           "부분관사가 가장 바쁘게 일하는 곳은 식탁이에요. **manger**(먹다), **boire**(마시다, je bois), **prendre**(시키다, je prends) 같은 동사와 짝을 이뤄요.\n\n" +
           "카페 주문, 장보기, 아침 메뉴 — 전부 부분관사의 무대예요.",
@@ -649,6 +652,7 @@ export default [
         heading: "부정문에서는 전부 de로 변신",
         pattern: "부정문: du / de la / de l' / des → de",
         patternKo: "부정문에서는 부분관사도 전부 de로 통일",
+        distractors: ["du", "des", "de la"],
         body:
           "부정문 챕터의 규칙이 그대로 적용돼요. Je bois du café → Je ne bois pas **de** café.\n\n" +
           "'없음'의 세계에서는 양을 따질 필요가 없으니 전부 중립적인 de로 통일되는 거예요.",
