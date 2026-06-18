@@ -24,6 +24,15 @@ import vocabH6 from './vocab/h6';
 import vocabH1hsk from './vocab/h1_hsk';
 import vocabH2hsk from './vocab/h2_hsk';
 import vocabH3hsk from './vocab/h3_hsk';
+import vocabH4hskA from './vocab/h4_hsk_a';
+import vocabH4hskB from './vocab/h4_hsk_b';
+import vocabH4hskC from './vocab/h4_hsk_c';
+import vocabH5hskA from './vocab/h5_hsk_a';
+import vocabH5hskB from './vocab/h5_hsk_b';
+import vocabH5hskC from './vocab/h5_hsk_c';
+import vocabH5hskD from './vocab/h5_hsk_d';
+import vocabH5hskE from './vocab/h5_hsk_e';
+import vocabH5hskF from './vocab/h5_hsk_f';
 // 같은 이름의 테마는 단어를 합쳐 한 섹션으로 (청크 분할 작성분 통합)
 const mergeVocab = (base, ...adds) => {
   const themes = base.themes.map(t => ({ ...t, words: [...t.words] }));
@@ -89,7 +98,9 @@ const registry = createRegistry(
     H1: mergeVocab(vocabH1, vocabH1hsk),
     H2: mergeVocab(vocabH2, vocabH2hsk),
     H3: mergeVocab(vocabH3, vocabH3hsk),
-    H4: vocabH4, H5: vocabH5, H6: vocabH6,
+    H4: mergeVocab(vocabH4, vocabH4hskA, vocabH4hskB, vocabH4hskC),
+    H5: mergeVocab(vocabH5, vocabH5hskA, vocabH5hskB, vocabH5hskC, vocabH5hskD, vocabH5hskE, vocabH5hskF),
+    H6: vocabH6,
   },
 );
 

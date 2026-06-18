@@ -185,11 +185,8 @@ export default {
         { zh: "自愿", pinyin: "zì yuàn", ko: "자원하다, 자발적이다", pos: "형용사", hanja: "자원(自願) — '自'는 스스로 자, '願'은 원할 원.", ex: { zh: "他自愿参加了这个活动。", pinyin: "tā zìyuàn cānjiā le zhège huódòng", ko: "그는 자발적으로 이 행사에 참가했어요." } },
         { zh: "紫", pinyin: "zǐ", ko: "자줏빛의, 보라색의", pos: "형용사", hanja: "자(紫) — '자줏빛 자'.", ex: { zh: "她穿着一件紫色的裙子。", pinyin: "tā chuān zhe yí jiàn zǐsè de qúnzi", ko: "그녀는 보라색 치마를 입고 있어요." } },
         { zh: "重复", pinyin: "chóng fù", ko: "중복되다, 반복하다", pos: "형용사", hanja: "중복(重複) — '重'은 거듭 중, '複'은 겹칠 복.", ex: { zh: "请不要重复同样的错误。", pinyin: "qǐng búyào chóngfù tóngyàng de cuòwù", ko: "같은 실수를 반복하지 마세요." } },
-        { zh: "真实", pinyin: "zhēn shí", ko: "진실하다, 사실적이다", pos: "형용사", hanja: "진실(真實) — 한자 그대로.", ex: { zh: "他说的都是真实情况。", pinyin: "tā shuō de dōu shì zhēnshí qíngkuàng", ko: "그가 말한 건 모두 실제 상황이에요." } },
         { zh: "整个", pinyin: "zhěng gè", ko: "전체의, 온", pos: "형용사", hanja: "정개(整個) — '整'은 가지런할 정, '個'는 낱 개.", ex: { zh: "整个城市都下雪了。", pinyin: "zhěnggè chéngshì dōu xià xuě le", ko: "도시 전체에 눈이 내렸어요." } },
-        { zh: "雄伟", pinyin: "xióng wěi", ko: "웅장하다, 장엄하다", pos: "형용사", hanja: "웅위(雄偉) — '雄'은 수컷 웅, '偉'는 클 위.", ex: { zh: "宫殿的建筑十分雄伟。", pinyin: "gōngdiàn de jiànzhù shífēn xióngwěi", ko: "궁전의 건축물은 매우 웅장해요." } },
         { zh: "正", pinyin: "zhèng", ko: "바르다, 똑바르다, 마침 ~하다", pos: "형용사", hanja: "정(正) — '바를 정'.", ex: { zh: "请把画挂正。", pinyin: "qǐng bǎ huà guà zhèng", ko: "그림을 똑바로 걸어 주세요." } },
-        { zh: "晕", pinyin: "yūn", ko: "어지럽다, 멍하다", pos: "형용사", hanja: "운(暈) — '어지러울 운'.", ex: { zh: "我头有点晕。", pinyin: "wǒ tóu yǒudiǎn yūn", ko: "저 머리가 좀 어지러워요." } },
       ],
     },
     {
