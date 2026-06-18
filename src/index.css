@@ -7989,10 +7989,15 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .bk-switch:hover { background: var(--bg-elevated); color: var(--text-primary); }
 
 /* 요미가나 가리기 — 행 단위, 탭하면 공개 (루비 rt + 폴백 독음만 — 접속(conn)은 유지) */
-.row-hide-yomi rt { visibility: hidden; }
-.row-hide-yomi .fr-example__ipa { visibility: hidden; }
-.row-hide-yomi .fr-vrow__pron--yomi { visibility: hidden; }
-.row-hide-yomi .bk-pinyin { visibility: hidden; }
+/* 발음 가리기 — 완전 제거가 아니라 흐림 처리(단어/문형 가리기와 동일한 느낌) */
+.row-hide-yomi rt,
+.row-hide-yomi .fr-example__ipa,
+.row-hide-yomi .fr-vrow__pron--yomi,
+.row-hide-yomi .bk-pinyin {
+  filter: blur(5px);
+  opacity: 0.5;
+  user-select: none;
+}
 
 .fr-vrow__chlink {
   display: inline-block;
