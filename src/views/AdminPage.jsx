@@ -11,6 +11,7 @@ import Button from '../components/Button';
 import ConfirmModal from '../components/ConfirmModal';
 import { STARTER_MATERIALS } from '../lib/starter-content';
 import { analyzeText } from '../lib/analyzeText';
+import StudyPlanPanel from './StudyPlanPanel';
 
 const SOURCE_TYPE_LABELS = {
   wikipedia_good:   'Wikipedia 우수 기사',
@@ -614,6 +615,7 @@ export default function AdminPage() {
       <div className="tab-pills" style={{ marginBottom: '32px' }}>
         {[
           { key: 'overview',  label: '📊 대시보드' },
+          { key: 'myplan',    label: '📅 내 진도' },
           { key: 'users',     label: '👥 유저 관리' },
           { key: 'materials', label: '📰 자료 관리' },
           { key: 'sources',   label: '📡 콘텐츠 소스' },
@@ -631,6 +633,9 @@ export default function AdminPage() {
           </button>
         ))}
       </div>
+
+      {/* ── 내 진도 (관리자 전용 학습 진도표) ── */}
+      {tab === 'myplan' && <StudyPlanPanel />}
 
       {/* ── 대시보드 ── */}
       {tab === 'overview' && (

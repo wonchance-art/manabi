@@ -7687,6 +7687,46 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .hanja-bridge__note strong { color: var(--text-primary); }
 
+/* ===== 관리자 내 진도표 ===== */
+.myplan__head { margin-bottom: 18px; }
+.myplan__title { font-size: 1.15rem; font-weight: 800; color: var(--text-primary); }
+.myplan__lead { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; margin-top: 4px; }
+.myplan__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+@media (max-width: 880px) { .myplan__grid { grid-template-columns: 1fr; } }
+
+.myplan-lang { border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px; background: var(--bg-card); }
+.myplan-lang__head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.myplan-lang__title { font-size: 1rem; font-weight: 800; color: var(--text-primary); }
+.myplan-lang__sub { font-size: 0.74rem; color: var(--text-muted); }
+
+.myplan-bar { height: 8px; border-radius: 99px; background: var(--bg-elevated); overflow: hidden; }
+.myplan-bar__fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent, var(--primary))); transition: width 0.3s ease; }
+.myplan-stat { font-size: 0.8rem; color: var(--text-secondary); margin: 7px 0 14px; }
+.myplan-stat strong { color: var(--text-primary); }
+
+.myplan-level { margin-bottom: 12px; }
+.myplan-level__name { font-size: 0.76rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; }
+.myplan-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.myplan-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 9px 4px 6px; border-radius: 99px;
+  border: 1px solid var(--border); background: var(--bg-elevated);
+  font-size: 0.78rem; color: var(--text-secondary); cursor: pointer;
+  transition: all 0.12s ease;
+}
+.myplan-chip:hover { border-color: var(--border-hover); }
+.myplan-chip__n {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 18px; height: 18px; padding: 0 3px;
+  border-radius: 99px; background: var(--bg-card);
+  font-size: 0.68rem; font-weight: 800; color: var(--text-muted);
+}
+.myplan-chip.is-done { background: rgba(74,138,92,0.14); border-color: rgba(74,138,92,0.4); color: var(--text-primary); }
+.myplan-chip.is-done .myplan-chip__n { background: #4A8A5C; color: #fff; }
+.myplan-chip.is-check { border-style: dashed; font-weight: 700; }
+.myplan-chip.is-next { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-glow); }
+.myplan-chip.is-next .myplan-chip__n { color: var(--primary); }
+
 .fr-pager {
   display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
   margin: 24px 0 8px;
