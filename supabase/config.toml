@@ -1,0 +1,4 @@
+# Supabase 로컬 설정 — CI의 `supabase db push`용 최소 구성.
+# project_id는 로컬 식별자일 뿐이고, 실제 적용 대상은
+# 워크플로의 --project-ref(= GitHub Secret SUPABASE_PROJECT_REF)로 지정됩니다.
+project_id = "manabi"
