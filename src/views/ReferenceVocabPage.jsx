@@ -21,14 +21,28 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
   const { speak, supported: ttsSupported } = useTTS();
 
   const [query, setQuery] = useState('');
-  // 가리기: hideMode(단어/뜻 — 배타) + hideYomi(요미가나 — 독립, 일본어 전용)
+  // 가리기: hideMode(단어/뜻 — 배타). '뜻'은 뜻+발음을 함께 가린다(단어만 보고 뜻·발음 떠올리기).
   const [hideMode, setHideMode] = useState(null);
-  const [hideYomi, setHideYomi] = useState(false);
   const [revealed, setRevealed] = useState(() => new Set());
-  const anyHide = hideMode !== null || hideYomi;
+  const anyHide = hideMode !== null;
   const [savedSet, setSavedSet] = useState(() => new Set());
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+
+  // 현장 체크 — 단어장 저장과 별개로 '아는/모르는' 표시 (레벨별 localStorage)
+  const checkKey = `as_vcheck_${lang}_${meta?.key || ''}`;
+  const [checked, setChecked] = useState(() => new Set());
+  useEffect(() => {
+    try { setChecked(new Set(JSON.parse(localStorage.getItem(checkKey) || '[]'))); } catch {}
+  }, [checkKey]);
+  function toggleCheck(id) {
+    setChecked(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      try { localStorage.setItem(checkKey, JSON.stringify([...next])); } catch {}
+      return next;
+    });
+  }
 
   const backHref = `/lessons?lang=${lang}&view=ref`;
   const allWords = useMemo(
@@ -68,8 +82,8 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
       .filter(t => t.words.length > 0);
   }, [vocab, query]);
 
-  function persistHide(mode, yomi) {
-    try { localStorage.setItem('vocab_hide_prefs', JSON.stringify({ mode, yomi })); } catch {}
+  function persistHide(mode) {
+    try { localStorage.setItem('vocab_hide_prefs', JSON.stringify({ mode })); } catch {}
   }
 
   // 가리기 설정 유지 — 레벨 이동·재방문에도 유지
@@ -77,21 +91,13 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
     try {
       const s = JSON.parse(localStorage.getItem('vocab_hide_prefs') || 'null');
       if (s?.mode === 'word' || s?.mode === 'meaning') setHideMode(s.mode);
-      if (s?.yomi) setHideYomi(true);
     } catch {}
   }, []);
 
   function setMode(mode) {
     const next = hideMode === mode ? null : mode;
     setHideMode(next);
-    persistHide(next, hideYomi);
-    setRevealed(new Set());
-  }
-
-  function toggleYomi() {
-    const next = !hideYomi;
-    setHideYomi(next);
-    persistHide(hideMode, next);
+    persistHide(next);
     setRevealed(new Set());
   }
 
@@ -181,27 +187,19 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
         <div className="bk-toolbar__group">
           <button
             type="button"
-            className={`chip ${hideMode === 'word' ? 'chip--active' : ''}`}
-            onClick={() => setMode('word')}
-            aria-pressed={hideMode === 'word'}
-          >
-            단어 가리기
-          </button>
-          <button
-            type="button"
             className={`chip ${hideMode === 'meaning' ? 'chip--active' : ''}`}
             onClick={() => setMode('meaning')}
             aria-pressed={hideMode === 'meaning'}
           >
-            뜻 가리기
+            단어만
           </button>
           <button
             type="button"
-            className={`chip ${hideYomi ? 'chip--active' : ''}`}
-            onClick={toggleYomi}
-            aria-pressed={hideYomi}
+            className={`chip ${hideMode === 'word' ? 'chip--active' : ''}`}
+            onClick={() => setMode('word')}
+            aria-pressed={hideMode === 'word'}
           >
-            {refInfo.langCode === 'ja' ? '요미가나 가리기' : '발음 가리기'}
+            뜻만
           </button>
         </div>
         {hasBunkei && (
@@ -227,7 +225,7 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
       </div>
       {anyHide && (
         <p className="fr-vlist-hint">
-          {hideMode === 'word' ? '뜻을 보고 단어를 떠올린 뒤' : hideMode === 'meaning' ? '단어를 보고 뜻을 떠올린 뒤' : refInfo.langCode === 'ja' ? '한자를 보고 독음을 떠올린 뒤' : '철자를 보고 발음을 떠올린 뒤'}, 행을 탭하면 확인할 수 있어요.
+          {hideMode === 'word' ? '뜻을 보고 단어를 떠올린 뒤' : '단어를 보고 뜻·발음을 떠올린 뒤'}, 행을 탭하면 확인할 수 있어요.
         </p>
       )}
 
@@ -255,11 +253,11 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
               const isRevealed = revealed.has(rowKey);
               const wordHidden = hideMode === 'word' && !isRevealed;
               const meaningHidden = hideMode === 'meaning' && !isRevealed;
-              const yomiHidden = hideYomi && !isRevealed;
+              const yomiHidden = hideMode === 'meaning' && !isRevealed;
               return (
                 <li
                   key={rowKey}
-                  className={`fr-vrow ${anyHide ? 'fr-vrow--quiz' : ''} ${yomiHidden ? 'row-hide-yomi' : ''}`}
+                  className={`fr-vrow ${anyHide ? 'fr-vrow--quiz' : ''} ${yomiHidden ? 'row-hide-yomi' : ''} ${checked.has(text) ? 'is-checked' : ''}`}
                   onClick={() => toggleReveal(rowKey)}
                   {...(anyHide && {
                     role: 'button',
@@ -270,6 +268,16 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
                     },
                   })}
                 >
+                  {/* 현장 체크박스 */}
+                  <label className="fr-vrow__check" onClick={e => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={checked.has(text)}
+                      onChange={() => toggleCheck(text)}
+                      aria-label={`${text} 체크`}
+                    />
+                  </label>
+
                   {/* 단어 열 — 고정 폭으로 정렬, 일본어는 한자 위 요미가나 */}
                   <div className={`fr-vrow__word ${wordHidden ? 'is-hidden' : ''}`}>
                     {refInfo.langCode === 'ja' && alignFurigana(text, pron) ? (
@@ -297,7 +305,10 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
                             {refInfo.langCode === 'ja' ? (
                               <JaText ja={refMain(w.ex)} yomi={w.ex.yomi} />
                             ) : (
-                              <span lang={refInfo.langCode}>{refMain(w.ex)}</span>
+                              <>
+                                <span lang={refInfo.langCode}>{refMain(w.ex)}</span>
+                                {refPron(w.ex) && <span className="fr-example__ipa">{refPron(w.ex)}</span>}
+                              </>
                             )}
                             {mounted && ttsSupported && (
                               <button

@@ -20,6 +20,71 @@ import vocabH4 from './vocab/h4';
 import vocabH5 from './vocab/h5';
 import vocabH6 from './vocab/h6';
 
+// HSK 2.0 공식 어휘표 기반 보강 어휘 — 기존 테마 뒤에 병합
+import vocabH1hsk from './vocab/h1_hsk';
+import vocabH2hsk from './vocab/h2_hsk';
+import vocabH3hsk from './vocab/h3_hsk';
+import vocabH4hskA from './vocab/h4_hsk_a';
+import vocabH4hskB from './vocab/h4_hsk_b';
+import vocabH4hskC from './vocab/h4_hsk_c';
+import vocabH5hskA from './vocab/h5_hsk_a';
+import vocabH5hskB from './vocab/h5_hsk_b';
+import vocabH5hskC from './vocab/h5_hsk_c';
+import vocabH5hskD from './vocab/h5_hsk_d';
+import vocabH5hskE from './vocab/h5_hsk_e';
+import vocabH5hskF from './vocab/h5_hsk_f';
+// 원본 어휘 + HSK 보강 어휘를 '보강' 구분 없이 한 사전으로 — 품사별 자연 분류로 통합.
+const POS_GROUPS = [
+  { name: '명사', icon: '📦', pos: ['명사'] },
+  { name: '대명사·지시', icon: '👉', pos: ['대명사', '대사'] },
+  { name: '동사', icon: '🏃', pos: ['동사'] },
+  { name: '형용사', icon: '🎨', pos: ['형용사'] },
+  { name: '부사', icon: '⚡', pos: ['부사'] },
+  { name: '수사·양사', icon: '🔢', pos: ['수사', '양사'] },
+  { name: '개사·접속사·조사', icon: '🔗', pos: ['개사', '접속사', '조사'] },
+  { name: '성어·관용구', icon: '📜', pos: ['성어', '관용구'] },
+  { name: '표현·인사', icon: '💬', pos: ['표현', '감탄사'] },
+];
+// 한자 숫자값 — 수사를 0부터 크기순으로 정렬하기 위함
+const NUM_VAL = { '零': 0, '〇': 0, '一': 1, '二': 2, '两': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9, '十': 10, '百': 100, '千': 1000, '万': 10000, '亿': 100000000 };
+function cnNumValue(zh) {
+  if (![...zh].every(c => c in NUM_VAL)) return null;     // 순수 숫자 한자만
+  let total = 0, section = 0, num = 0;
+  for (const c of zh) {
+    const v = NUM_VAL[c];
+    if (v === 10 || v === 100 || v === 1000) { section += (num || 1) * v; num = 0; }
+    else if (v >= 10000) { total += (section + num) * v; section = 0; num = 0; }
+    else num = v;
+  }
+  return total + section + num;
+}
+const mergeVocab = (base, ...adds) => {
+  const all = [...base.themes, ...adds.flatMap(a => a.themes)].flatMap(t => t.words);
+  const seen = new Set();
+  const buckets = new Map([...POS_GROUPS.map(g => [g.name, []]), ['기타', []]]);
+  for (const w of all) {
+    if (seen.has(w.zh)) continue;
+    seen.add(w.zh);
+    const g = POS_GROUPS.find(g => g.pos.includes(w.pos));
+    buckets.get(g ? g.name : '기타').push(w);
+  }
+  // 수사·양사 — 숫자(0→)를 값 순으로 앞에, 양사 등은 뒤에 (안정 정렬)
+  const numGroup = buckets.get('수사·양사');
+  if (numGroup) {
+    numGroup.sort((a, b) => {
+      const va = cnNumValue(a.zh), vb = cnNumValue(b.zh);
+      if (va != null && vb != null) return va - vb;
+      if (va != null) return -1;
+      if (vb != null) return 1;
+      return 0;
+    });
+  }
+  const themes = [...POS_GROUPS, { name: '기타', icon: '📚' }]
+    .filter(g => buckets.get(g.name).length)
+    .map(g => ({ name: g.name, icon: g.icon, words: buckets.get(g.name) }));
+  return { ...base, themes };
+};
+
 import bunkeiH1 from './bunkei/h1';
 import bunkeiH2 from './bunkei/h2';
 import bunkeiH3 from './bunkei/h3';
@@ -69,7 +134,14 @@ export const ZH_LEVEL_META = [
 const registry = createRegistry(
   ZH_LEVEL_META,
   { OT: grammarOT, H1: grammarH1, H2: grammarH2, H3: grammarH3, H4: grammarH4, H5: grammarH5, H6: grammarH6 },
-  { H1: vocabH1, H2: vocabH2, H3: vocabH3, H4: vocabH4, H5: vocabH5, H6: vocabH6 },
+  {
+    H1: mergeVocab(vocabH1, vocabH1hsk),
+    H2: mergeVocab(vocabH2, vocabH2hsk),
+    H3: mergeVocab(vocabH3, vocabH3hsk),
+    H4: mergeVocab(vocabH4, vocabH4hskA, vocabH4hskB, vocabH4hskC),
+    H5: mergeVocab(vocabH5, vocabH5hskA, vocabH5hskB, vocabH5hskC, vocabH5hskD, vocabH5hskE, vocabH5hskF),
+    H6: mergeVocab(vocabH6),
+  },
 );
 
 export const ALL_CHAPTERS = registry.ALL_CHAPTERS;
