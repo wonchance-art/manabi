@@ -11,6 +11,17 @@ export const metadata = {
 const THEME = { color: '#3b6ea5', bg: 'rgba(59,110,165,0.12)' };
 const numSlot = { display: 'inline-block', minWidth: '1.4em', textAlign: 'right' };
 
+// 핵심어 형광펜 — **굵게** 구간을 하이라이트
+const HL = {
+  background: 'linear-gradient(transparent 55%, rgba(59,110,165,0.26) 55%)',
+  fontWeight: 700, color: 'var(--text-primary)', borderRadius: 2, padding: '0 1px',
+};
+function Hi(text) {
+  return String(text || '')
+    .split(/\*\*(.+?)\*\*/g)
+    .map((p, i) => (i % 2 === 1 ? <span key={i} style={HL}>{p}</span> : p));
+}
+
 export default function Nihongo42Page() {
   const { title, subtitle, intro, days } = course;
   return (
@@ -64,8 +75,8 @@ export default function Nihongo42Page() {
                     >
                       Ch.{c.n}
                     </span>
-                    <span style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', lineHeight: 1.5, wordBreak: 'keep-all' }}>
-                      {c.title}
+                    <span style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', lineHeight: 1.55, wordBreak: 'keep-all' }}>
+                      {Hi(c.titleHi || c.title)}
                     </span>
                   </li>
                 ))}
