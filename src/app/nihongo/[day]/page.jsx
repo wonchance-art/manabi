@@ -62,6 +62,26 @@ function Chapter({ c, i }) {
         <div className="fr-pattern__ko">{c.ko.join('  /  ')}</div>
       </div>
 
+      {/* 🔄 바꿔 쓰기 — 레지스터를 뒤집은 비슷한 표현 */}
+      {c.alts?.length ? (
+        <div style={{ margin: '10px 0 2px', padding: '10px 12px', borderRadius: 'var(--radius-sm)', background: 'var(--bg-secondary)', border: '1px dashed var(--border)' }}>
+          <div style={{ fontSize: '0.74rem', fontWeight: 800, color: THEME.color, marginBottom: 7 }}>🔄 바꿔 쓰기 · 비슷한 표현</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+            {c.alts.map((a, k) => (
+              <div key={k} style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
+                <span style={{ flex: '0 0 auto', fontSize: '0.68rem', fontWeight: 700, color: THEME.color, background: THEME.bg, padding: '1px 8px', borderRadius: 999 }}>
+                  {a.reg}
+                </span>
+                <span lang="ja" style={{ fontSize: '1rem', fontWeight: 700 }}>
+                  <JaText ja={a.ja} yomi={a.yomi} fallbackPron={false} />
+                </span>
+                <span style={{ fontSize: '0.83rem', color: 'var(--text-secondary)' }}>{a.ko}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
       {/* 설명 */}
       {c.explain && (
         <div className="fr-section__detail">
