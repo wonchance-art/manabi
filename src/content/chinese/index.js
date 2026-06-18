@@ -24,7 +24,17 @@ import vocabH6 from './vocab/h6';
 import vocabH1hsk from './vocab/h1_hsk';
 import vocabH2hsk from './vocab/h2_hsk';
 import vocabH3hsk from './vocab/h3_hsk';
-const mergeVocab = (base, ...adds) => ({ ...base, themes: [...base.themes, ...adds.flatMap(a => a.themes)] });
+// 같은 이름의 테마는 단어를 합쳐 한 섹션으로 (청크 분할 작성분 통합)
+const mergeVocab = (base, ...adds) => {
+  const themes = base.themes.map(t => ({ ...t, words: [...t.words] }));
+  const byName = new Map(themes.map(t => [t.name, t]));
+  for (const a of adds) for (const t of a.themes) {
+    const ex = byName.get(t.name);
+    if (ex) ex.words.push(...t.words);
+    else { const nt = { ...t, words: [...t.words] }; themes.push(nt); byName.set(t.name, nt); }
+  }
+  return { ...base, themes };
+};
 
 import bunkeiH1 from './bunkei/h1';
 import bunkeiH2 from './bunkei/h2';
