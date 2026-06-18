@@ -3901,8 +3901,8 @@ export default [
         }
       },
       {
-        "fr": "familial",
-        "ipa": "[familjal]",
+        "fr": "familial / familiale",
+        "ipa": "[familjal / familjal]",
         "ko": "가족의, 가정의",
         "pos": "adj.",
         "en": "family (관련)",
@@ -3923,8 +3923,8 @@ export default [
         }
       },
       {
-        "fr": "profond",
-        "ipa": "[pʁɔfɔ̃]",
+        "fr": "profond / profonde",
+        "ipa": "[pʁɔfɔ̃ / pʁɔfɔ̃d]",
         "ko": "깊은, 심오한",
         "pos": "adj.",
         "en": "profound",
@@ -3934,8 +3934,8 @@ export default [
         }
       },
       {
-        "fr": "ouvert",
-        "ipa": "[uvɛʁ]",
+        "fr": "ouvert / ouverte",
+        "ipa": "[uvɛʁ / uvɛʁt]",
         "ko": "열린, 개방적인",
         "pos": "adj.",
         "ex": {
@@ -3944,8 +3944,8 @@ export default [
         }
       },
       {
-        "fr": "récent",
-        "ipa": "[ʁesɑ̃]",
+        "fr": "récent / récente",
+        "ipa": "[ʁesɑ̃ / ʁesɑ̃t]",
         "ko": "최근의, 새로운",
         "pos": "adj.",
         "en": "recent",
@@ -3966,8 +3966,8 @@ export default [
         }
       },
       {
-        "fr": "réel",
-        "ipa": "[ʁeɛl]",
+        "fr": "réel / réelle",
+        "ipa": "[ʁeɛl / ʁeɛl]",
         "ko": "실제의, 현실의",
         "pos": "adj.",
         "en": "real",
@@ -3977,8 +3977,8 @@ export default [
         }
       },
       {
-        "fr": "civil",
-        "ipa": "[sivil]",
+        "fr": "civil / civile",
+        "ipa": "[sivil / sivil]",
         "ko": "시민의, 민간의; 민사의",
         "pos": "adj.",
         "en": "civil",
@@ -3988,8 +3988,8 @@ export default [
         }
       },
       {
-        "fr": "religieux",
-        "ipa": "[ʁəliʒjø]",
+        "fr": "religieux / religieuse",
+        "ipa": "[ʁəliʒjø / ʁəliʒjøz]",
         "ko": "종교의, 종교적인",
         "pos": "adj.",
         "en": "religious",
@@ -3999,8 +3999,8 @@ export default [
         }
       },
       {
-        "fr": "silencieux",
-        "ipa": "[silɑ̃sjø]",
+        "fr": "silencieux / silencieuse",
+        "ipa": "[silɑ̃sjø / silɑ̃sjøz]",
         "ko": "조용한, 말없는",
         "pos": "adj.",
         "en": "silent",
@@ -4021,8 +4021,8 @@ export default [
         }
       },
       {
-        "fr": "municipal",
-        "ipa": "[mynisipal]",
+        "fr": "municipal / municipale",
+        "ipa": "[mynisipal / mynisipal]",
         "ko": "시의, 지방 자치의",
         "pos": "adj.",
         "en": "municipal",
@@ -4043,8 +4043,8 @@ export default [
         }
       },
       {
-        "fr": "urbain",
-        "ipa": "[yʁbɛ̃]",
+        "fr": "urbain / urbaine",
+        "ipa": "[yʁbɛ̃ / yʁbɛn]",
         "ko": "도시의",
         "pos": "adj.",
         "en": "urban",
@@ -4054,8 +4054,8 @@ export default [
         }
       },
       {
-        "fr": "majeur",
-        "ipa": "[maʒœʁ]",
+        "fr": "majeur / majeure",
+        "ipa": "[maʒœʁ / maʒœʁ]",
         "ko": "주된, 성인의",
         "pos": "adj.",
         "en": "major",
@@ -4076,8 +4076,8 @@ export default [
         }
       },
       {
-        "fr": "médical",
-        "ipa": "[medikal]",
+        "fr": "médical / médicale",
+        "ipa": "[medikal / medikal]",
         "ko": "의학의, 의료의",
         "pos": "adj.",
         "en": "medical",
@@ -4087,8 +4087,8 @@ export default [
         }
       },
       {
-        "fr": "brillant",
-        "ipa": "[bʁijɑ̃]",
+        "fr": "brillant / brillante",
+        "ipa": "[bʁijɑ̃ / bʁijɑ̃t]",
         "ko": "빛나는, 뛰어난",
         "pos": "adj.",
         "en": "brilliant",
@@ -4108,8 +4108,8 @@ export default [
         }
       },
       {
-        "fr": "vivant",
-        "ipa": "[vivɑ̃]",
+        "fr": "vivant / vivante",
+        "ipa": "[vivɑ̃ / vivɑ̃t]",
         "ko": "살아 있는, 활기찬",
         "pos": "adj.",
         "etym": "동사 vivre(살다)에서 나온 형용사예요.",
@@ -4151,8 +4151,8 @@ export default [
         }
       },
       {
-        "fr": "gai",
-        "ipa": "[ɡe]",
+        "fr": "gai / gaie",
+        "ipa": "[ɡe / ɡe]",
         "ko": "쾌활한, 명랑한",
         "pos": "adj.",
         "en": "gay",
@@ -4163,8 +4163,8 @@ export default [
         }
       },
       {
-        "fr": "central",
-        "ipa": "[sɑ̃tʁal]",
+        "fr": "central / centrale",
+        "ipa": "[sɑ̃tʁal / sɑ̃tʁal]",
         "ko": "중심의, 중앙의",
         "pos": "adj.",
         "en": "central",
@@ -4185,8 +4185,8 @@ export default [
         }
       },
       {
-        "fr": "positif",
-        "ipa": "[pozitif]",
+        "fr": "positif / positive",
+        "ipa": "[pozitif / pozitiv]",
         "ko": "긍정적인",
         "pos": "adj.",
         "en": "positive",
@@ -4207,8 +4207,8 @@ export default [
         }
       },
       {
-        "fr": "étonnant",
-        "ipa": "[etɔnɑ̃]",
+        "fr": "étonnant / étonnante",
+        "ipa": "[etɔnɑ̃ / etɔnɑ̃t]",
         "ko": "놀라운, 의외의",
         "pos": "adj.",
         "ex": {
@@ -4228,8 +4228,8 @@ export default [
         }
       },
       {
-        "fr": "végétal",
-        "ipa": "[veʒetal]",
+        "fr": "végétal / végétale",
+        "ipa": "[veʒetal / veʒetal]",
         "ko": "식물의, 식물성의",
         "pos": "adj.",
         "en": "vegetal",
@@ -4239,8 +4239,8 @@ export default [
         }
       },
       {
-        "fr": "annuel",
-        "ipa": "[anɥɛl]",
+        "fr": "annuel / annuelle",
+        "ipa": "[anɥɛl / anɥɛl]",
         "ko": "연간의, 매년의",
         "pos": "adj.",
         "en": "annual",
@@ -4251,8 +4251,8 @@ export default [
         }
       },
       {
-        "fr": "fréquent",
-        "ipa": "[fʁekɑ̃]",
+        "fr": "fréquent / fréquente",
+        "ipa": "[fʁekɑ̃ / fʁekɑ̃t]",
         "ko": "잦은, 빈번한",
         "pos": "adj.",
         "en": "frequent",
@@ -4294,8 +4294,8 @@ export default [
         }
       },
       {
-        "fr": "moral",
-        "ipa": "[mɔʁal]",
+        "fr": "moral / morale",
+        "ipa": "[mɔʁal / mɔʁal]",
         "ko": "도덕적인, 정신적인",
         "pos": "adj.",
         "en": "moral",
@@ -4305,8 +4305,8 @@ export default [
         }
       },
       {
-        "fr": "mineur",
-        "ipa": "[minœʁ]",
+        "fr": "mineur / mineure",
+        "ipa": "[minœʁ / minœʁ]",
         "ko": "사소한, 미성년의",
         "pos": "adj.",
         "etym": "영어 minor(작은·미성년)와 닮았어요. 단, 명사 le mineur는 '광부'라는 다른 뜻도 있으니 주의.",
@@ -4327,8 +4327,8 @@ export default [
         }
       },
       {
-        "fr": "marin",
-        "ipa": "[maʁɛ̃]",
+        "fr": "marin / marine",
+        "ipa": "[maʁɛ̃ / maʁin]",
         "ko": "바다의, 해양의",
         "pos": "adj.",
         "en": "marine",
@@ -4338,8 +4338,8 @@ export default [
         }
       },
       {
-        "fr": "occidental",
-        "ipa": "[ɔksidɑ̃tal]",
+        "fr": "occidental / occidentale",
+        "ipa": "[ɔksidɑ̃tal / ɔksidɑ̃tal]",
         "ko": "서양의, 서구의",
         "pos": "adj.",
         "en": "occidental",
@@ -4349,8 +4349,8 @@ export default [
         }
       },
       {
-        "fr": "épais",
-        "ipa": "[epɛ]",
+        "fr": "épais / épaisse",
+        "ipa": "[epɛ / epɛs]",
         "ko": "두꺼운, 짙은",
         "pos": "adj.",
         "ex": {
@@ -4359,8 +4359,8 @@ export default [
         }
       },
       {
-        "fr": "banal",
-        "ipa": "[banal]",
+        "fr": "banal / banale",
+        "ipa": "[banal / banal]",
         "ko": "평범한, 진부한",
         "pos": "adj.",
         "en": "banal",
@@ -4370,8 +4370,8 @@ export default [
         }
       },
       {
-        "fr": "négatif",
-        "ipa": "[neɡatif]",
+        "fr": "négatif / négative",
+        "ipa": "[neɡatif / neɡativ]",
         "ko": "부정적인",
         "pos": "adj.",
         "en": "negative",
@@ -4402,8 +4402,8 @@ export default [
         }
       },
       {
-        "fr": "matériel",
-        "ipa": "[mateʁjɛl]",
+        "fr": "matériel / matérielle",
+        "ipa": "[mateʁjɛl / mateʁjɛl]",
         "ko": "물질적인, 물질의",
         "pos": "adj.",
         "en": "material",
@@ -4435,8 +4435,8 @@ export default [
         }
       },
       {
-        "fr": "éternel",
-        "ipa": "[etɛʁnɛl]",
+        "fr": "éternel / éternelle",
+        "ipa": "[etɛʁnɛl / etɛʁnɛl]",
         "ko": "영원한",
         "pos": "adj.",
         "en": "eternal",
@@ -4446,8 +4446,8 @@ export default [
         }
       },
       {
-        "fr": "muet",
-        "ipa": "[mɥɛ]",
+        "fr": "muet / muette",
+        "ipa": "[mɥɛ / mɥɛt]",
         "ko": "말 못 하는, 무성의; (글자) 묵음의",
         "pos": "adj.",
         "ex": {
@@ -4467,8 +4467,8 @@ export default [
         }
       },
       {
-        "fr": "courant",
-        "ipa": "[kuʁɑ̃]",
+        "fr": "courant / courante",
+        "ipa": "[kuʁɑ̃ / kuʁɑ̃t]",
         "ko": "흔한, 일상적인; (물·전기) 흐르는",
         "pos": "adj.",
         "en": "current",
@@ -4478,8 +4478,8 @@ export default [
         }
       },
       {
-        "fr": "familier",
-        "ipa": "[familje]",
+        "fr": "familier / familière",
+        "ipa": "[familje / familjɛʁ]",
         "ko": "친숙한, 격식 없는, 구어의",
         "pos": "adj.",
         "en": "familiar",
@@ -4511,8 +4511,8 @@ export default [
         }
       },
       {
-        "fr": "régulier",
-        "ipa": "[ʁeɡylje]",
+        "fr": "régulier / régulière",
+        "ipa": "[ʁeɡylje / ʁeɡyljɛʁ]",
         "ko": "규칙적인, 일정한",
         "pos": "adj.",
         "en": "regular",
@@ -4533,8 +4533,8 @@ export default [
         }
       },
       {
-        "fr": "correct",
-        "ipa": "[kɔʁɛkt]",
+        "fr": "correct / correcte",
+        "ipa": "[kɔʁɛkt / kɔʁɛkt]",
         "ko": "올바른, 정확한; 적절한",
         "pos": "adj.",
         "en": "correct",

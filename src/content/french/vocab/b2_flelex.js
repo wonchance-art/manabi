@@ -181,8 +181,8 @@ export default [
         }
       },
       {
-        "fr": "hexagonal",
-        "ipa": "[ɛɡzaɡɔnal]",
+        "fr": "hexagonal / hexagonale",
+        "ipa": "[ɛɡzaɡɔnal / ɛɡzaɡɔnal]",
         "ko": "육각형의, 프랑스 본토의",
         "pos": "adj.",
         "etym": "프랑스 본토 모양이 육각형(hexagone)이라 'l'Hexagone'은 프랑스를 가리켜요. 그래서 hexagonal에 '프랑스의'라는 뜻이 있어요.",
@@ -385,8 +385,8 @@ export default [
         }
       },
       {
-        "fr": "constitutionnel",
-        "ipa": "[kɔ̃stitysjɔnɛl]",
+        "fr": "constitutionnel / constitutionnelle",
+        "ipa": "[kɔ̃stitysjɔnɛl / kɔ̃stitysjɔnɛl]",
         "ko": "헌법의, 헌법에 맞는",
         "pos": "adj.",
         "en": "constitutional",
@@ -396,8 +396,8 @@ export default [
         }
       },
       {
-        "fr": "territorial",
-        "ipa": "[teʁitɔʁjal]",
+        "fr": "territorial / territoriale",
+        "ipa": "[teʁitɔʁjal / teʁitɔʁjal]",
         "ko": "영토의, 지역의",
         "pos": "adj.",
         "en": "territorial",
@@ -857,8 +857,8 @@ export default [
         }
       },
       {
-        "fr": "ministériel",
-        "ipa": "[ministeʁjɛl]",
+        "fr": "ministériel / ministérielle",
+        "ipa": "[ministeʁjɛl / ministeʁjɛl]",
         "ko": "장관의, 내각의, 부처의",
         "pos": "adj.",
         "ex": {
@@ -877,8 +877,8 @@ export default [
         }
       },
       {
-        "fr": "franco-allemand",
-        "ipa": "[fʁɑ̃koalmɑ̃]",
+        "fr": "franco-allemand / franco-allemande",
+        "ipa": "[fʁɑ̃koalmɑ̃ / fʁɑ̃koalmɑ̃d]",
         "ko": "프랑스-독일의, 독불의",
         "pos": "adj.",
         "ex": {
@@ -887,8 +887,8 @@ export default [
         }
       },
       {
-        "fr": "villageois",
-        "ipa": "[vilaʒwa]",
+        "fr": "villageois / villageoise",
+        "ipa": "[vilaʒwa / vilaʒwaz]",
         "ko": "마을의, 시골의 (명사로는 '마을 사람')",
         "pos": "adj.",
         "ex": {
@@ -1317,8 +1317,8 @@ export default [
         }
       },
       {
-        "fr": "prévisionnel",
-        "ipa": "[pʁevizjɔnɛl]",
+        "fr": "prévisionnel / prévisionnelle",
+        "ipa": "[pʁevizjɔnɛl / pʁevizjɔnɛl]",
         "ko": "예측의, 예상의 (예산·계획)",
         "pos": "adj.",
         "ex": {
@@ -1337,8 +1337,8 @@ export default [
         }
       },
       {
-        "fr": "salarial",
-        "ipa": "[salaʁjal]",
+        "fr": "salarial / salariale",
+        "ipa": "[salaʁjal / salaʁjal]",
         "ko": "임금의, 급여에 관한",
         "pos": "adj.",
         "ex": {
@@ -2111,8 +2111,8 @@ export default [
         }
       },
       {
-        "fr": "cancéreux",
-        "ipa": "[kɑ̃seʁø]",
+        "fr": "cancéreux / cancéreuse",
+        "ipa": "[kɑ̃seʁø / kɑ̃seʁøz]",
         "ko": "암의, 암에 걸린",
         "pos": "adj.",
         "en": "cancerous",
@@ -2419,8 +2419,8 @@ export default [
         }
       },
       {
-        "fr": "télévisuel",
-        "ipa": "[televizɥɛl]",
+        "fr": "télévisuel / télévisuelle",
+        "ipa": "[televizɥɛl / televizɥɛl]",
         "ko": "텔레비전의, 방송의",
         "pos": "adj.",
         "ex": {
@@ -2483,8 +2483,8 @@ export default [
         }
       },
       {
-        "fr": "théâtral",
-        "ipa": "[teatʁal]",
+        "fr": "théâtral / théâtrale",
+        "ipa": "[teatʁal / teatʁal]",
         "ko": "연극의, 연극적인 (과장된)",
         "pos": "adj.",
         "en": "theatrical",
@@ -6345,8 +6345,8 @@ export default [
         }
       },
       {
-        "fr": "significatif",
-        "ipa": "[siɲifikatif]",
+        "fr": "significatif / significative",
+        "ipa": "[siɲifikatif / siɲifikativ]",
         "ko": "의미 있는, 상당한",
         "pos": "adj.",
         "en": "significant",
@@ -6367,8 +6367,8 @@ export default [
         }
       },
       {
-        "fr": "éventuel",
-        "ipa": "[evɑ̃tɥɛl]",
+        "fr": "éventuel / éventuelle",
+        "ipa": "[evɑ̃tɥɛl / evɑ̃tɥɛl]",
         "ko": "있을 수 있는, 혹시 모를",
         "pos": "adj.",
         "etym": "영어 eventual(결국의)과 달라요! 함정 단어. 프랑스어 éventuel은 '있을 수도 있는(possible)'이라는 뜻이에요.",
@@ -6378,8 +6378,8 @@ export default [
         }
       },
       {
-        "fr": "parental",
-        "ipa": "[paʁɑ̃tal]",
+        "fr": "parental / parentale",
+        "ipa": "[paʁɑ̃tal / paʁɑ̃tal]",
         "ko": "부모의",
         "pos": "adj.",
         "en": "parental",
@@ -6411,8 +6411,8 @@ export default [
         }
       },
       {
-        "fr": "paradoxal",
-        "ipa": "[paʁadɔksal]",
+        "fr": "paradoxal / paradoxale",
+        "ipa": "[paʁadɔksal / paʁadɔksal]",
         "ko": "역설적인",
         "pos": "adj.",
         "en": "paradoxical",
@@ -6444,8 +6444,8 @@ export default [
         }
       },
       {
-        "fr": "performant",
-        "ipa": "[pɛʁfɔʁmɑ̃]",
+        "fr": "performant / performante",
+        "ipa": "[pɛʁfɔʁmɑ̃ / pɛʁfɔʁmɑ̃t]",
         "ko": "성능이 뛰어난, 효율적인",
         "pos": "adj.",
         "etym": "영어 performant이 아니라 performing/high-performance에 해당해요. 영어 performance와 같은 뿌리.",
@@ -6455,8 +6455,8 @@ export default [
         }
       },
       {
-        "fr": "orgueilleux",
-        "ipa": "[ɔʁɡœjø]",
+        "fr": "orgueilleux / orgueilleuse",
+        "ipa": "[ɔʁɡœjø / ɔʁɡœjøz]",
         "ko": "오만한, 자존심이 센",
         "pos": "adj.",
         "ex": {
@@ -6465,8 +6465,8 @@ export default [
         }
       },
       {
-        "fr": "sentimental",
-        "ipa": "[sɑ̃timɑ̃tal]",
+        "fr": "sentimental / sentimentale",
+        "ipa": "[sɑ̃timɑ̃tal / sɑ̃timɑ̃tal]",
         "ko": "감정의, 애정의 (연애 관련)",
         "pos": "adj.",
         "en": "sentimental",
@@ -6477,8 +6477,8 @@ export default [
         }
       },
       {
-        "fr": "étonné",
-        "ipa": "[etɔne]",
+        "fr": "étonné / étonnée",
+        "ipa": "[etɔne / etɔne]",
         "ko": "놀란",
         "pos": "adj.",
         "ex": {
@@ -6508,8 +6508,8 @@ export default [
         }
       },
       {
-        "fr": "proportionnel",
-        "ipa": "[pʁɔpɔʁsjɔnɛl]",
+        "fr": "proportionnel / proportionnelle",
+        "ipa": "[pʁɔpɔʁsjɔnɛl / pʁɔpɔʁsjɔnɛl]",
         "ko": "비례하는",
         "pos": "adj.",
         "en": "proportional",
@@ -6519,8 +6519,8 @@ export default [
         }
       },
       {
-        "fr": "criminel",
-        "ipa": "[kʁiminɛl]",
+        "fr": "criminel / criminelle",
+        "ipa": "[kʁiminɛl / kʁiminɛl]",
         "ko": "범죄의, 형사상의",
         "pos": "adj.",
         "en": "criminal",
@@ -6562,8 +6562,8 @@ export default [
         }
       },
       {
-        "fr": "primordial",
-        "ipa": "[pʁimɔʁdjal]",
+        "fr": "primordial / primordiale",
+        "ipa": "[pʁimɔʁdjal / pʁimɔʁdjal]",
         "ko": "가장 중요한, 핵심적인",
         "pos": "adj.",
         "en": "primordial",
@@ -6574,8 +6574,8 @@ export default [
         }
       },
       {
-        "fr": "respectif",
-        "ipa": "[ʁɛspɛktif]",
+        "fr": "respectif / respective",
+        "ipa": "[ʁɛspɛktif / ʁɛspɛktiv]",
         "ko": "각자의, 각각의",
         "pos": "adj.",
         "en": "respective",
@@ -6596,8 +6596,8 @@ export default [
         }
       },
       {
-        "fr": "infectieux",
-        "ipa": "[ɛ̃fɛksjø]",
+        "fr": "infectieux / infectieuse",
+        "ipa": "[ɛ̃fɛksjø / ɛ̃fɛksjøz]",
         "ko": "전염성의, 감염의",
         "pos": "adj.",
         "en": "infectious",
@@ -6618,8 +6618,8 @@ export default [
         }
       },
       {
-        "fr": "impatient",
-        "ipa": "[ɛ̃pasjɑ̃]",
+        "fr": "impatient / impatiente",
+        "ipa": "[ɛ̃pasjɑ̃ / ɛ̃pasjɑ̃t]",
         "ko": "조급한, 안달하는",
         "pos": "adj.",
         "en": "impatient",
@@ -6629,8 +6629,8 @@ export default [
         }
       },
       {
-        "fr": "existant",
-        "ipa": "[ɛɡzistɑ̃]",
+        "fr": "existant / existante",
+        "ipa": "[ɛɡzistɑ̃ / ɛɡzistɑ̃t]",
         "ko": "기존의, 현존하는",
         "pos": "adj.",
         "en": "existing",
@@ -6640,8 +6640,8 @@ export default [
         }
       },
       {
-        "fr": "distinct",
-        "ipa": "[distɛ̃]",
+        "fr": "distinct / distincte",
+        "ipa": "[distɛ̃ / distɛ̃kt]",
         "ko": "구별되는, 별개의",
         "pos": "adj.",
         "en": "distinct",
@@ -6672,8 +6672,8 @@ export default [
         }
       },
       {
-        "fr": "dévolu",
-        "ipa": "[devɔly]",
+        "fr": "dévolu / dévolue",
+        "ipa": "[devɔly / devɔly]",
         "ko": "(권리·임무가) 맡겨진, 부여된",
         "pos": "adj.",
         "ex": {
@@ -6682,8 +6682,8 @@ export default [
         }
       },
       {
-        "fr": "scandaleux",
-        "ipa": "[skɑ̃dalø]",
+        "fr": "scandaleux / scandaleuse",
+        "ipa": "[skɑ̃dalø / skɑ̃daløz]",
         "ko": "충격적인, 파렴치한",
         "pos": "adj.",
         "en": "scandalous",
@@ -6693,8 +6693,8 @@ export default [
         }
       },
       {
-        "fr": "transversal",
-        "ipa": "[tʁɑ̃svɛʁsal]",
+        "fr": "transversal / transversale",
+        "ipa": "[tʁɑ̃svɛʁsal / tʁɑ̃svɛʁsal]",
         "ko": "횡단의, 여러 분야를 가로지르는",
         "pos": "adj.",
         "en": "transversal",
@@ -6704,8 +6704,8 @@ export default [
         }
       },
       {
-        "fr": "crucial",
-        "ipa": "[kʁysjal]",
+        "fr": "crucial / cruciale",
+        "ipa": "[kʁysjal / kʁysjal]",
         "ko": "결정적인, 매우 중요한",
         "pos": "adj.",
         "en": "crucial",
@@ -6726,8 +6726,8 @@ export default [
         }
       },
       {
-        "fr": "rigoureux",
-        "ipa": "[ʁiɡuʁø]",
+        "fr": "rigoureux / rigoureuse",
+        "ipa": "[ʁiɡuʁø / ʁiɡuʁøz]",
         "ko": "엄격한, 철저한 (날씨) 혹독한",
         "pos": "adj.",
         "en": "rigorous",
@@ -6737,8 +6737,8 @@ export default [
         }
       },
       {
-        "fr": "enclin",
-        "ipa": "[ɑ̃klɛ̃]",
+        "fr": "enclin / encline",
+        "ipa": "[ɑ̃klɛ̃ / ɑ̃klin]",
         "ko": "~하는 경향이 있는, ~하기 쉬운",
         "pos": "adj.",
         "etym": "영어 inclined(~하는 경향이 있는)와 같은 뿌리예요. 여성형은 encline.",
@@ -6759,8 +6759,8 @@ export default [
         }
       },
       {
-        "fr": "compliqué",
-        "ipa": "[kɔ̃plike]",
+        "fr": "compliqué / compliquée",
+        "ipa": "[kɔ̃plike / kɔ̃plike]",
         "ko": "복잡한, 까다로운",
         "pos": "adj.",
         "en": "complicated",
@@ -6793,8 +6793,8 @@ export default [
         }
       },
       {
-        "fr": "inexistant",
-        "ipa": "[inɛɡzistɑ̃]",
+        "fr": "inexistant / inexistante",
+        "ipa": "[inɛɡzistɑ̃ / inɛɡzistɑ̃t]",
         "ko": "존재하지 않는, 전무한",
         "pos": "adj.",
         "en": "inexistent",
@@ -6837,8 +6837,8 @@ export default [
         }
       },
       {
-        "fr": "avantageux",
-        "ipa": "[avɑ̃taʒø]",
+        "fr": "avantageux / avantageuse",
+        "ipa": "[avɑ̃taʒø / avɑ̃taʒøz]",
         "ko": "유리한, 이득이 되는",
         "pos": "adj.",
         "en": "advantageous",
@@ -6859,8 +6859,8 @@ export default [
         }
       },
       {
-        "fr": "cohérent",
-        "ipa": "[kɔeʁɑ̃]",
+        "fr": "cohérent / cohérente",
+        "ipa": "[kɔeʁɑ̃ / kɔeʁɑ̃t]",
         "ko": "일관된, 앞뒤가 맞는",
         "pos": "adj.",
         "en": "coherent",
@@ -6890,8 +6890,8 @@ export default [
         }
       },
       {
-        "fr": "parent",
-        "ipa": "[paʁɑ̃]",
+        "fr": "parent / parente",
+        "ipa": "[paʁɑ̃ / paʁɑ̃t]",
         "ko": "친척 관계인, 유사한, 동류의",
         "pos": "adj.",
         "etym": "영어 parent는 '부모'지만, 형용사 parent은 '친족의·유사한'이라는 뜻이에요. 함정 주의.",
@@ -6912,8 +6912,8 @@ export default [
         }
       },
       {
-        "fr": "apparent",
-        "ipa": "[apaʁɑ̃]",
+        "fr": "apparent / apparente",
+        "ipa": "[apaʁɑ̃ / apaʁɑ̃t]",
         "ko": "겉보기의, 눈에 보이는",
         "pos": "adj.",
         "en": "apparent",
@@ -6934,8 +6934,8 @@ export default [
         }
       },
       {
-        "fr": "vertical",
-        "ipa": "[vɛʁtikal]",
+        "fr": "vertical / verticale",
+        "ipa": "[vɛʁtikal / vɛʁtikal]",
         "ko": "수직의",
         "pos": "adj.",
         "en": "vertical",
@@ -6945,8 +6945,8 @@ export default [
         }
       },
       {
-        "fr": "inadapté",
-        "ipa": "[inadapte]",
+        "fr": "inadapté / inadaptée",
+        "ipa": "[inadapte / inadapte]",
         "ko": "부적합한, 맞지 않는",
         "pos": "adj.",
         "ex": {
@@ -6955,8 +6955,8 @@ export default [
         }
       },
       {
-        "fr": "indirect",
-        "ipa": "[ɛ̃diʁɛkt]",
+        "fr": "indirect / indirecte",
+        "ipa": "[ɛ̃diʁɛkt / ɛ̃diʁɛkt]",
         "ko": "간접적인, 우회적인",
         "pos": "adj.",
         "en": "indirect",
@@ -6977,8 +6977,8 @@ export default [
         }
       },
       {
-        "fr": "instantané",
-        "ipa": "[ɛ̃stɑ̃tane]",
+        "fr": "instantané / instantanée",
+        "ipa": "[ɛ̃stɑ̃tane / ɛ̃stɑ̃tane]",
         "ko": "즉각적인, 순간의",
         "pos": "adj.",
         "en": "instantaneous",
@@ -6988,8 +6988,8 @@ export default [
         }
       },
       {
-        "fr": "émouvant",
-        "ipa": "[emuvɑ̃]",
+        "fr": "émouvant / émouvante",
+        "ipa": "[emuvɑ̃ / emuvɑ̃t]",
         "ko": "감동적인, 가슴 뭉클한",
         "pos": "adj.",
         "ex": {
@@ -6998,8 +6998,8 @@ export default [
         }
       },
       {
-        "fr": "pointu",
-        "ipa": "[pwɛ̃ty]",
+        "fr": "pointu / pointue",
+        "ipa": "[pwɛ̃ty / pwɛ̃ty]",
         "ko": "뾰족한 (지식이) 전문적인, 세밀한",
         "pos": "adj.",
         "ex": {
@@ -7008,8 +7008,8 @@ export default [
         }
       },
       {
-        "fr": "saisonnier",
-        "ipa": "[sezɔnje]",
+        "fr": "saisonnier / saisonnière",
+        "ipa": "[sezɔnje / sezɔnjɛʁ]",
         "ko": "계절의, 계절에 따른",
         "pos": "adj.",
         "en": "seasonal",
@@ -7030,8 +7030,8 @@ export default [
         }
       },
       {
-        "fr": "capricieux",
-        "ipa": "[kapʁisjø]",
+        "fr": "capricieux / capricieuse",
+        "ipa": "[kapʁisjø / kapʁisjøz]",
         "ko": "변덕스러운",
         "pos": "adj.",
         "en": "capricious",
@@ -7041,8 +7041,8 @@ export default [
         }
       },
       {
-        "fr": "racial",
-        "ipa": "[ʁasjal]",
+        "fr": "racial / raciale",
+        "ipa": "[ʁasjal / ʁasjal]",
         "ko": "인종의, 인종적인",
         "pos": "adj.",
         "en": "racial",
@@ -7074,8 +7074,8 @@ export default [
         }
       },
       {
-        "fr": "tournant",
-        "ipa": "[tuʁnɑ̃]",
+        "fr": "tournant / tournante",
+        "ipa": "[tuʁnɑ̃ / tuʁnɑ̃t]",
         "ko": "회전하는, 도는",
         "pos": "adj.",
         "ex": {
@@ -7084,8 +7084,8 @@ export default [
         }
       },
       {
-        "fr": "convivial",
-        "ipa": "[kɔ̃vivjal]",
+        "fr": "convivial / conviviale",
+        "ipa": "[kɔ̃vivjal / kɔ̃vivjal]",
         "ko": "화기애애한, 친근한 (분위기·사용이 편한)",
         "pos": "adj.",
         "en": "convivial",
@@ -7117,8 +7117,8 @@ export default [
         }
       },
       {
-        "fr": "explosif",
-        "ipa": "[ɛksplozif]",
+        "fr": "explosif / explosive",
+        "ipa": "[ɛksplozif / ɛksploziv]",
         "ko": "폭발성의, 폭발적인",
         "pos": "adj.",
         "en": "explosive",
@@ -7128,8 +7128,8 @@ export default [
         }
       },
       {
-        "fr": "prompt",
-        "ipa": "[pʁɔ̃]",
+        "fr": "prompt / prompte",
+        "ipa": "[pʁɔ̃ / pʁɔ̃t]",
         "ko": "신속한, 재빠른",
         "pos": "adj.",
         "en": "prompt",
@@ -7162,8 +7162,8 @@ export default [
         }
       },
       {
-        "fr": "dévastateur",
-        "ipa": "[devastatœʁ]",
+        "fr": "dévastateur / dévastatrice",
+        "ipa": "[devastatœʁ / devastatʁis]",
         "ko": "파괴적인, 큰 피해를 주는",
         "pos": "adj.",
         "en": "devastating",
@@ -7173,8 +7173,8 @@ export default [
         }
       },
       {
-        "fr": "incertain",
-        "ipa": "[ɛ̃sɛʁtɛ̃]",
+        "fr": "incertain / incertaine",
+        "ipa": "[ɛ̃sɛʁtɛ̃ / ɛ̃sɛʁtɛn]",
         "ko": "불확실한, 분명치 않은",
         "pos": "adj.",
         "en": "uncertain",
@@ -7184,8 +7184,8 @@ export default [
         }
       },
       {
-        "fr": "impulsif",
-        "ipa": "[ɛ̃pylsif]",
+        "fr": "impulsif / impulsive",
+        "ipa": "[ɛ̃pylsif / ɛ̃pylsiv]",
         "ko": "충동적인",
         "pos": "adj.",
         "en": "impulsive",
@@ -7195,8 +7195,8 @@ export default [
         }
       },
       {
-        "fr": "déchirant",
-        "ipa": "[deʃiʁɑ̃]",
+        "fr": "déchirant / déchirante",
+        "ipa": "[deʃiʁɑ̃ / deʃiʁɑ̃t]",
         "ko": "가슴 아픈, 비통한",
         "pos": "adj.",
         "ex": {
@@ -7205,8 +7205,8 @@ export default [
         }
       },
       {
-        "fr": "inhumain",
-        "ipa": "[inymɛ̃]",
+        "fr": "inhumain / inhumaine",
+        "ipa": "[inymɛ̃ / inymɛn]",
         "ko": "비인간적인, 잔혹한",
         "pos": "adj.",
         "en": "inhuman",
@@ -7216,8 +7216,8 @@ export default [
         }
       },
       {
-        "fr": "creux",
-        "ipa": "[kʁø]",
+        "fr": "creux / creuse",
+        "ipa": "[kʁø / kʁøz]",
         "ko": "속이 빈, 공허한 (여성형 creuse)",
         "pos": "adj.",
         "ex": {
@@ -7226,8 +7226,8 @@ export default [
         }
       },
       {
-        "fr": "troublant",
-        "ipa": "[tʁublɑ̃]",
+        "fr": "troublant / troublante",
+        "ipa": "[tʁublɑ̃ / tʁublɑ̃t]",
         "ko": "혼란스럽게 하는, 마음을 흔드는",
         "pos": "adj.",
         "en": "troubling",
@@ -7248,8 +7248,8 @@ export default [
         }
       },
       {
-        "fr": "galant",
-        "ipa": "[galɑ̃]",
+        "fr": "galant / galante",
+        "ipa": "[galɑ̃ / galɑ̃t]",
         "ko": "여성에게 정중한, (옛투) 연애의",
         "pos": "adj.",
         "en": "gallant",
@@ -7281,8 +7281,8 @@ export default [
         }
       },
       {
-        "fr": "temporel",
-        "ipa": "[tɑ̃pɔʁɛl]",
+        "fr": "temporel / temporelle",
+        "ipa": "[tɑ̃pɔʁɛl / tɑ̃pɔʁɛl]",
         "ko": "시간의, 시간적인, 세속의",
         "pos": "adj.",
         "en": "temporal",
@@ -7292,8 +7292,8 @@ export default [
         }
       },
       {
-        "fr": "participatif",
-        "ipa": "[paʁtisipatif]",
+        "fr": "participatif / participative",
+        "ipa": "[paʁtisipatif / paʁtisipativ]",
         "ko": "참여형의, 참여를 바탕으로 한",
         "pos": "adj.",
         "en": "participatory",
@@ -7303,8 +7303,8 @@ export default [
         }
       },
       {
-        "fr": "correspondant",
-        "ipa": "[kɔʁɛspɔ̃dɑ̃]",
+        "fr": "correspondant / correspondante",
+        "ipa": "[kɔʁɛspɔ̃dɑ̃ / kɔʁɛspɔ̃dɑ̃t]",
         "ko": "상응하는, 해당하는",
         "pos": "adj.",
         "en": "corresponding",
@@ -7314,8 +7314,8 @@ export default [
         }
       },
       {
-        "fr": "récurrent",
-        "ipa": "[ʁekyʁɑ̃]",
+        "fr": "récurrent / récurrente",
+        "ipa": "[ʁekyʁɑ̃ / ʁekyʁɑ̃t]",
         "ko": "되풀이되는, 반복적인",
         "pos": "adj.",
         "en": "recurrent",
@@ -7325,8 +7325,8 @@ export default [
         }
       },
       {
-        "fr": "passionnel",
-        "ipa": "[pasjɔnɛl]",
+        "fr": "passionnel / passionnelle",
+        "ipa": "[pasjɔnɛl / pasjɔnɛl]",
         "ko": "정념의, 격정에서 비롯된",
         "pos": "adj.",
         "en": "passionate",
@@ -7358,8 +7358,8 @@ export default [
         }
       },
       {
-        "fr": "paternel",
-        "ipa": "[patɛʁnɛl]",
+        "fr": "paternel / paternelle",
+        "ipa": "[patɛʁnɛl / patɛʁnɛl]",
         "ko": "아버지의, 부계의; 부성애적인",
         "pos": "adj.",
         "en": "paternal",
@@ -7369,8 +7369,8 @@ export default [
         }
       },
       {
-        "fr": "ardu",
-        "ipa": "[aʁdy]",
+        "fr": "ardu / ardue",
+        "ipa": "[aʁdy / aʁdy]",
         "ko": "고된, 까다로운, 어려운",
         "pos": "adj.",
         "etym": "라틴어 arduus(가파른)에서 — 영어 arduous(고된)와 같은 뿌리예요.",
@@ -7380,8 +7380,8 @@ export default [
         }
       },
       {
-        "fr": "rassurant",
-        "ipa": "[ʁasyʁɑ̃]",
+        "fr": "rassurant / rassurante",
+        "ipa": "[ʁasyʁɑ̃ / ʁasyʁɑ̃t]",
         "ko": "안심시키는, 마음을 놓이게 하는",
         "pos": "adj.",
         "ex": {
@@ -7390,8 +7390,8 @@ export default [
         }
       },
       {
-        "fr": "orphelin",
-        "ipa": "[ɔʁfəlɛ̃]",
+        "fr": "orphelin / orpheline",
+        "ipa": "[ɔʁfəlɛ̃ / ɔʁfəlin]",
         "ko": "고아의; (명사로) 고아",
         "pos": "adj.",
         "en": "orphan",
@@ -7414,8 +7414,8 @@ export default [
         }
       },
       {
-        "fr": "originel",
-        "ipa": "[ɔʁiʒinɛl]",
+        "fr": "originel / originelle",
+        "ipa": "[ɔʁiʒinɛl / ɔʁiʒinɛl]",
         "ko": "본래의, 최초의, 기원의",
         "pos": "adj.",
         "en": "original",
@@ -7437,8 +7437,8 @@ export default [
         }
       },
       {
-        "fr": "fiscal",
-        "ipa": "[fiskal]",
+        "fr": "fiscal / fiscale",
+        "ipa": "[fiskal / fiskal]",
         "ko": "조세의, 세무의",
         "pos": "adj.",
         "en": "fiscal",
@@ -7448,8 +7448,8 @@ export default [
         }
       },
       {
-        "fr": "inopérant",
-        "ipa": "[inɔpeʁɑ̃]",
+        "fr": "inopérant / inopérante",
+        "ipa": "[inɔpeʁɑ̃ / inɔpeʁɑ̃t]",
         "ko": "효력이 없는, 무용한",
         "pos": "adj.",
         "ex": {
@@ -7458,8 +7458,8 @@ export default [
         }
       },
       {
-        "fr": "oral",
-        "ipa": "[ɔʁal]",
+        "fr": "oral / orale",
+        "ipa": "[ɔʁal / ɔʁal]",
         "ko": "구두의, 말로 하는; (명사로) 구술 시험",
         "pos": "adj.",
         "en": "oral",
@@ -7469,8 +7469,8 @@ export default [
         }
       },
       {
-        "fr": "vigilant",
-        "ipa": "[viʒilɑ̃]",
+        "fr": "vigilant / vigilante",
+        "ipa": "[viʒilɑ̃ / viʒilɑ̃t]",
         "ko": "경계하는, 주의 깊은",
         "pos": "adj.",
         "en": "vigilant",
@@ -7480,8 +7480,8 @@ export default [
         }
       },
       {
-        "fr": "législatif",
-        "ipa": "[leʒislatif]",
+        "fr": "législatif / législative",
+        "ipa": "[leʒislatif / leʒislativ]",
         "ko": "입법의, 법률 제정의",
         "pos": "adj.",
         "en": "legislative",
@@ -7491,8 +7491,8 @@ export default [
         }
       },
       {
-        "fr": "odieux",
-        "ipa": "[ɔdjø]",
+        "fr": "odieux / odieuse",
+        "ipa": "[ɔdjø / ɔdjøz]",
         "ko": "혐오스러운, 가증스러운",
         "pos": "adj.",
         "en": "odious",
@@ -7503,8 +7503,8 @@ export default [
         }
       },
       {
-        "fr": "criard",
-        "ipa": "[kʁijaʁ]",
+        "fr": "criard / criarde",
+        "ipa": "[kʁijaʁ / kʁijaʁd]",
         "ko": "(색이) 요란한, 눈에 거슬리는; 새된",
         "pos": "adj.",
         "ex": {
@@ -7535,8 +7535,8 @@ export default [
         }
       },
       {
-        "fr": "défectueux",
-        "ipa": "[defɛktɥø]",
+        "fr": "défectueux / défectueuse",
+        "ipa": "[defɛktɥø / defɛktɥøz]",
         "ko": "결함이 있는, 불량의",
         "pos": "adj.",
         "en": "defective",
@@ -7577,8 +7577,8 @@ export default [
         }
       },
       {
-        "fr": "formé",
-        "ipa": "[fɔʁme]",
+        "fr": "formé / formée",
+        "ipa": "[fɔʁme / fɔʁme]",
         "ko": "양성된, 교육받은; 형성된",
         "pos": "adj.",
         "ex": {
@@ -7587,8 +7587,8 @@ export default [
         }
       },
       {
-        "fr": "quantitatif",
-        "ipa": "[kɑ̃titatif]",
+        "fr": "quantitatif / quantitative",
+        "ipa": "[kɑ̃titatif / kɑ̃titativ]",
         "ko": "양적인, 수량의",
         "pos": "adj.",
         "en": "quantitative",
@@ -7608,8 +7608,8 @@ export default [
         }
       },
       {
-        "fr": "lancinant",
-        "ipa": "[lɑ̃sinɑ̃]",
+        "fr": "lancinant / lancinante",
+        "ipa": "[lɑ̃sinɑ̃ / lɑ̃sinɑ̃t]",
         "ko": "(통증이) 욱신거리는, (생각이) 집요하게 떠나지 않는",
         "pos": "adj.",
         "ex": {
@@ -7651,8 +7651,8 @@ export default [
         }
       },
       {
-        "fr": "montagnard",
-        "ipa": "[mɔ̃taɲaʁ]",
+        "fr": "montagnard / montagnarde",
+        "ipa": "[mɔ̃taɲaʁ / mɔ̃taɲaʁd]",
         "ko": "산악의, 산에 사는",
         "pos": "adj.",
         "ex": {
@@ -7705,8 +7705,8 @@ export default [
         }
       },
       {
-        "fr": "indonésien",
-        "ipa": "[ɛ̃dɔnezjɛ̃]",
+        "fr": "indonésien / indonésienne",
+        "ipa": "[ɛ̃dɔnezjɛ̃ / ɛ̃dɔnezjɛn]",
         "ko": "인도네시아의",
         "pos": "adj.",
         "en": "Indonesian",
@@ -7716,8 +7716,8 @@ export default [
         }
       },
       {
-        "fr": "injurieux",
-        "ipa": "[ɛ̃ʒyʁjø]",
+        "fr": "injurieux / injurieuse",
+        "ipa": "[ɛ̃ʒyʁjø / ɛ̃ʒyʁjøz]",
         "ko": "모욕적인, 욕설의",
         "pos": "adj.",
         "etym": "injure(모욕)에서. 영어 injurious(해로운)와 닮았지만 뜻이 '모욕적인'이라는 점에 주의해요.",
@@ -7749,8 +7749,8 @@ export default [
         }
       },
       {
-        "fr": "valorisant",
-        "ipa": "[valɔʁizɑ̃]",
+        "fr": "valorisant / valorisante",
+        "ipa": "[valɔʁizɑ̃ / valɔʁizɑ̃t]",
         "ko": "(자존감·가치를) 높여 주는, 보람 있는",
         "pos": "adj.",
         "ex": {
@@ -7759,8 +7759,8 @@ export default [
         }
       },
       {
-        "fr": "informel",
-        "ipa": "[ɛ̃fɔʁmɛl]",
+        "fr": "informel / informelle",
+        "ipa": "[ɛ̃fɔʁmɛl / ɛ̃fɔʁmɛl]",
         "ko": "비공식적인, 격식 없는",
         "pos": "adj.",
         "en": "informal",
@@ -7781,8 +7781,8 @@ export default [
         }
       },
       {
-        "fr": "douteux",
-        "ipa": "[dutø]",
+        "fr": "douteux / douteuse",
+        "ipa": "[dutø / dutøz]",
         "ko": "의심스러운, 미심쩍은",
         "pos": "adj.",
         "en": "doubtful / dubious",
@@ -7792,8 +7792,8 @@ export default [
         }
       },
       {
-        "fr": "déterminant",
-        "ipa": "[detɛʁminɑ̃]",
+        "fr": "déterminant / déterminante",
+        "ipa": "[detɛʁminɑ̃ / detɛʁminɑ̃t]",
         "ko": "결정적인, 핵심적인",
         "pos": "adj.",
         "en": "determinant / determining",
@@ -7803,8 +7803,8 @@ export default [
         }
       },
       {
-        "fr": "révoltant",
-        "ipa": "[ʁevɔltɑ̃]",
+        "fr": "révoltant / révoltante",
+        "ipa": "[ʁevɔltɑ̃ / ʁevɔltɑ̃t]",
         "ko": "분노를 자아내는, 격분케 하는",
         "pos": "adj.",
         "en": "revolting",
@@ -7814,8 +7814,8 @@ export default [
         }
       },
       {
-        "fr": "sud-africain",
-        "ipa": "[sydafʁikɛ̃]",
+        "fr": "sud-africain / sud-africaine",
+        "ipa": "[sydafʁikɛ̃ / sydafʁikɛn]",
         "ko": "남아프리카(공화국)의",
         "pos": "adj.",
         "en": "South African",
@@ -7825,8 +7825,8 @@ export default [
         }
       },
       {
-        "fr": "tardif",
-        "ipa": "[taʁdif]",
+        "fr": "tardif / tardive",
+        "ipa": "[taʁdif / taʁdiv]",
         "ko": "늦은, 뒤늦은",
         "pos": "adj.",
         "etym": "tard(늦게)에서. 영어 tardy(지각한)와 같은 뿌리예요.",
@@ -7836,8 +7836,8 @@ export default [
         }
       },
       {
-        "fr": "justicier",
-        "ipa": "[ʒystisje]",
+        "fr": "justicier / justicière",
+        "ipa": "[ʒystisje / ʒystisjɛʁ]",
         "ko": "정의를 실현하려는, 자경(自警)의 (n.m.로는 정의의 사도)",
         "pos": "adj.",
         "ex": {
@@ -7857,8 +7857,8 @@ export default [
         }
       },
       {
-        "fr": "habillé",
-        "ipa": "[abije]",
+        "fr": "habillé / habillée",
+        "ipa": "[abije / abije]",
         "ko": "옷을 차려입은, (옷이) 격식 있는",
         "pos": "adj.",
         "ex": {
@@ -7867,8 +7867,8 @@ export default [
         }
       },
       {
-        "fr": "handicapé",
-        "ipa": "[ɑ̃dikape]",
+        "fr": "handicapé / handicapée",
+        "ipa": "[ɑ̃dikape / ɑ̃dikape]",
         "ko": "장애가 있는 (n.으로는 장애인)",
         "pos": "adj.",
         "en": "handicapped",
@@ -7889,8 +7889,8 @@ export default [
         }
       },
       {
-        "fr": "malvenu",
-        "ipa": "[malvəny]",
+        "fr": "malvenu / malvenue",
+        "ipa": "[malvəny / malvəny]",
         "ko": "부적절한, 때아닌 (말·행동)",
         "pos": "adj.",
         "ex": {
@@ -7899,8 +7899,8 @@ export default [
         }
       },
       {
-        "fr": "prédominant",
-        "ipa": "[pʁedɔminɑ̃]",
+        "fr": "prédominant / prédominante",
+        "ipa": "[pʁedɔminɑ̃ / pʁedɔminɑ̃t]",
         "ko": "우세한, 지배적인",
         "pos": "adj.",
         "en": "predominant",
@@ -7933,8 +7933,8 @@ export default [
         }
       },
       {
-        "fr": "débraillé",
-        "ipa": "[debʁaje]",
+        "fr": "débraillé / débraillée",
+        "ipa": "[debʁaje / debʁaje]",
         "ko": "옷차림이 흐트러진, 단정치 못한",
         "pos": "adj.",
         "ex": {
@@ -7943,8 +7943,8 @@ export default [
         }
       },
       {
-        "fr": "fondé",
-        "ipa": "[fɔ̃de]",
+        "fr": "fondé / fondée",
+        "ipa": "[fɔ̃de / fɔ̃de]",
         "ko": "근거 있는, 정당한",
         "pos": "adj.",
         "en": "founded / well-founded",
@@ -7965,8 +7965,8 @@ export default [
         }
       },
       {
-        "fr": "signé",
-        "ipa": "[siɲe]",
+        "fr": "signé / signée",
+        "ipa": "[siɲe / siɲe]",
         "ko": "서명된, 사인된",
         "pos": "adj.",
         "en": "signed",
@@ -7987,8 +7987,8 @@ export default [
         }
       },
       {
-        "fr": "ensoleillé",
-        "ipa": "[ɑ̃sɔleje]",
+        "fr": "ensoleillé / ensoleillée",
+        "ipa": "[ɑ̃sɔleje / ɑ̃sɔleje]",
         "ko": "햇볕이 잘 드는, 화창한",
         "pos": "adj.",
         "ex": {
@@ -8008,8 +8008,8 @@ export default [
         }
       },
       {
-        "fr": "omniprésent",
-        "ipa": "[ɔmnipʁezɑ̃]",
+        "fr": "omniprésent / omniprésente",
+        "ipa": "[ɔmnipʁezɑ̃ / ɔmnipʁezɑ̃t]",
         "ko": "어디에나 있는, 편재하는",
         "pos": "adj.",
         "en": "omnipresent",
@@ -8040,8 +8040,8 @@ export default [
         }
       },
       {
-        "fr": "malencontreux",
-        "ipa": "[malɑ̃kɔ̃tʁø]",
+        "fr": "malencontreux / malencontreuse",
+        "ipa": "[malɑ̃kɔ̃tʁø / malɑ̃kɔ̃tʁøz]",
         "ko": "공교로운, 불운한, 거북한",
         "pos": "adj.",
         "ex": {
@@ -8060,8 +8060,8 @@ export default [
         }
       },
       {
-        "fr": "avisé",
-        "ipa": "[avize]",
+        "fr": "avisé / avisée",
+        "ipa": "[avize / avize]",
         "ko": "현명한, 신중한, 분별 있는",
         "pos": "adj.",
         "ex": {
@@ -8070,8 +8070,8 @@ export default [
         }
       },
       {
-        "fr": "inexpérimenté",
-        "ipa": "[inɛkspeʁimɑ̃te]",
+        "fr": "inexpérimenté / inexpérimentée",
+        "ipa": "[inɛkspeʁimɑ̃te / inɛkspeʁimɑ̃te]",
         "ko": "경험이 없는, 미숙한",
         "pos": "adj.",
         "en": "inexperienced",
@@ -8081,8 +8081,8 @@ export default [
         }
       },
       {
-        "fr": "insignifiant",
-        "ipa": "[ɛ̃siɲifjɑ̃]",
+        "fr": "insignifiant / insignifiante",
+        "ipa": "[ɛ̃siɲifjɑ̃ / ɛ̃siɲifjɑ̃t]",
         "ko": "하찮은, 보잘것없는",
         "pos": "adj.",
         "en": "insignificant",
@@ -8103,8 +8103,8 @@ export default [
         }
       },
       {
-        "fr": "clandestin",
-        "ipa": "[klɑ̃dɛstɛ̃]",
+        "fr": "clandestin / clandestine",
+        "ipa": "[klɑ̃dɛstɛ̃ / klɑ̃dɛstin]",
         "ko": "비밀의, 불법의, 밀입국한",
         "pos": "adj.",
         "en": "clandestine",
@@ -8114,8 +8114,8 @@ export default [
         }
       },
       {
-        "fr": "hanté",
-        "ipa": "[ɑ̃te]",
+        "fr": "hanté / hantée",
+        "ipa": "[ɑ̃te / ɑ̃te]",
         "ko": "(귀신이) 들린, 사로잡힌",
         "pos": "adj.",
         "en": "haunted",
@@ -8125,8 +8125,8 @@ export default [
         }
       },
       {
-        "fr": "tranché",
-        "ipa": "[tʁɑ̃ʃe]",
+        "fr": "tranché / tranchée",
+        "ipa": "[tʁɑ̃ʃe / tʁɑ̃ʃe]",
         "ko": "확연한, 분명한, 단호한",
         "pos": "adj.",
         "ex": {
@@ -8155,8 +8155,8 @@ export default [
         }
       },
       {
-        "fr": "maximal",
-        "ipa": "[maksimal]",
+        "fr": "maximal / maximale",
+        "ipa": "[maksimal / maksimal]",
         "ko": "최대의, 최고의",
         "pos": "adj.",
         "en": "maximal",
@@ -8177,8 +8177,8 @@ export default [
         }
       },
       {
-        "fr": "erroné",
-        "ipa": "[eʁɔne]",
+        "fr": "erroné / erronée",
+        "ipa": "[eʁɔne / eʁɔne]",
         "ko": "잘못된, 틀린",
         "pos": "adj.",
         "en": "erroneous",
@@ -8188,8 +8188,8 @@ export default [
         }
       },
       {
-        "fr": "protecteur",
-        "ipa": "[pʁɔtɛktœʁ]",
+        "fr": "protecteur / protectrice",
+        "ipa": "[pʁɔtɛktœʁ / pʁɔtɛktʁis]",
         "ko": "보호하는, 비호하는 (여성형 protectrice)",
         "pos": "adj.",
         "en": "protective",
@@ -8241,8 +8241,8 @@ export default [
         }
       },
       {
-        "fr": "suppliant",
-        "ipa": "[syplijɑ̃]",
+        "fr": "suppliant / suppliante",
+        "ipa": "[syplijɑ̃ / syplijɑ̃t]",
         "ko": "애원하는, 간청하는",
         "pos": "adj.",
         "ex": {

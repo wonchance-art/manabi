@@ -1957,8 +1957,8 @@ export default [
     "icon": "🎨",
     "words": [
       {
-        "fr": "nombreux",
-        "ipa": "[nɔ̃bʁø]",
+        "fr": "nombreux / nombreuse",
+        "ipa": "[nɔ̃bʁø / nɔ̃bʁøz]",
         "ko": "수많은, 다수의 (여성형 nombreuse)",
         "pos": "adj.",
         "en": "numerous",
@@ -1968,8 +1968,8 @@ export default [
         }
       },
       {
-        "fr": "gros",
-        "ipa": "[ɡʁo]",
+        "fr": "gros / grosse",
+        "ipa": "[ɡʁo / ɡʁos]",
         "ko": "큰, 굵은, 뚱뚱한 (여성형 grosse)",
         "pos": "adj.",
         "ex": {
@@ -1978,8 +1978,8 @@ export default [
         }
       },
       {
-        "fr": "blanc",
-        "ipa": "[blɑ̃]",
+        "fr": "blanc / blanche",
+        "ipa": "[blɑ̃ / blɑ̃ʃ]",
         "ko": "흰, 하얀 (여성형 blanche)",
         "pos": "adj.",
         "en": "blank",
@@ -1990,8 +1990,8 @@ export default [
         }
       },
       {
-        "fr": "plein",
-        "ipa": "[plɛ̃]",
+        "fr": "plein / pleine",
+        "ipa": "[plɛ̃ / plɛn]",
         "ko": "가득한, 꽉 찬 (여성형 pleine)",
         "pos": "adj.",
         "ex": {
@@ -2000,8 +2000,8 @@ export default [
         }
       },
       {
-        "fr": "différent",
-        "ipa": "[difeʁɑ̃]",
+        "fr": "différent / différente",
+        "ipa": "[difeʁɑ̃ / difeʁɑ̃t]",
         "ko": "다른, 여러 가지의 (여성형 différente)",
         "pos": "adj.",
         "en": "different",
@@ -2011,8 +2011,8 @@ export default [
         }
       },
       {
-        "fr": "noir",
-        "ipa": "[nwaʁ]",
+        "fr": "noir / noire",
+        "ipa": "[nwaʁ / nwaʁ]",
         "ko": "검은, 까만 (여성형 noire)",
         "pos": "adj.",
         "ex": {
@@ -2021,8 +2021,8 @@ export default [
         }
       },
       {
-        "fr": "général",
-        "ipa": "[ʒeneʁal]",
+        "fr": "général / générale",
+        "ipa": "[ʒeneʁal / ʒeneʁal]",
         "ko": "일반적인, 전반적인 (en général: 보통) (여성형 générale)",
         "pos": "adj.",
         "en": "general",
@@ -2032,8 +2032,8 @@ export default [
         }
       },
       {
-        "fr": "ancien",
-        "ipa": "[ɑ̃sjɛ̃]",
+        "fr": "ancien / ancienne",
+        "ipa": "[ɑ̃sjɛ̃ / ɑ̃sjɛn]",
         "ko": "오래된, 옛, 예전의 (여성형 ancienne)",
         "pos": "adj.",
         "en": "ancient",
@@ -2055,8 +2055,8 @@ export default [
         }
       },
       {
-        "fr": "social",
-        "ipa": "[sɔsjal]",
+        "fr": "social / sociale",
+        "ipa": "[sɔsjal / sɔsjal]",
         "ko": "사회의, 사회적인 (여성형 sociale, 남성복수 sociaux)",
         "pos": "adj.",
         "en": "social",
@@ -2088,8 +2088,8 @@ export default [
         }
       },
       {
-        "fr": "national",
-        "ipa": "[nasjɔnal]",
+        "fr": "national / nationale",
+        "ipa": "[nasjɔnal / nasjɔnal]",
         "ko": "국가의, 전국의 (여성형 nationale, 남성복수 nationaux)",
         "pos": "adj.",
         "en": "national",
@@ -2099,8 +2099,8 @@ export default [
         }
       },
       {
-        "fr": "européen",
-        "ipa": "[øʁɔpeɛ̃]",
+        "fr": "européen / européenne",
+        "ipa": "[øʁɔpeɛ̃ / øʁɔpeɛn]",
         "ko": "유럽의 (여성형 européenne)",
         "pos": "adj.",
         "en": "European",
@@ -2134,8 +2134,8 @@ export default [
         }
       },
       {
-        "fr": "prêt",
-        "ipa": "[pʁɛ]",
+        "fr": "prêt / prête",
+        "ipa": "[pʁɛ / pʁɛt]",
         "ko": "준비된 (여성형 prête)",
         "pos": "adj.",
         "ex": {
@@ -2144,8 +2144,8 @@ export default [
         }
       },
       {
-        "fr": "international",
-        "ipa": "[ɛ̃tɛʁnasjɔnal]",
+        "fr": "international / internationale",
+        "ipa": "[ɛ̃tɛʁnasjɔnal / ɛ̃tɛʁnasjɔnal]",
         "ko": "국제적인 (복수 internationaux)",
         "pos": "adj.",
         "en": "international",
@@ -2155,8 +2155,8 @@ export default [
         }
       },
       {
-        "fr": "bleu",
-        "ipa": "[blø]",
+        "fr": "bleu / bleue",
+        "ipa": "[blø / blø]",
         "ko": "파란 (여성형 bleue)",
         "pos": "adj.",
         "ex": {
@@ -2176,8 +2176,8 @@ export default [
         }
       },
       {
-        "fr": "haut",
-        "ipa": "[o]",
+        "fr": "haut / haute",
+        "ipa": "[o / ot]",
         "ko": "높은 (여성형 haute)",
         "pos": "adj.",
         "ex": {
@@ -2209,8 +2209,8 @@ export default [
         }
       },
       {
-        "fr": "mondial",
-        "ipa": "[mɔ̃djal]",
+        "fr": "mondial / mondiale",
+        "ipa": "[mɔ̃djal / mɔ̃djal]",
         "ko": "세계의, 세계적인 (복수 mondiaux)",
         "pos": "adj.",
         "ex": {
@@ -2219,8 +2219,8 @@ export default [
         }
       },
       {
-        "fr": "culturel",
-        "ipa": "[kyltyʁɛl]",
+        "fr": "culturel / culturelle",
+        "ipa": "[kyltyʁɛl / kyltyʁɛl]",
         "ko": "문화의, 문화적인 (여성형 culturelle)",
         "pos": "adj.",
         "en": "cultural",
@@ -2241,8 +2241,8 @@ export default [
         }
       },
       {
-        "fr": "humain",
-        "ipa": "[ymɛ̃]",
+        "fr": "humain / humaine",
+        "ipa": "[ymɛ̃ / ymɛn]",
         "ko": "인간의, 인간적인 (여성형 humaine)",
         "pos": "adj.",
         "en": "human",
@@ -2263,8 +2263,8 @@ export default [
         }
       },
       {
-        "fr": "vert",
-        "ipa": "[vɛʁ]",
+        "fr": "vert / verte",
+        "ipa": "[vɛʁ / vɛʁt]",
         "ko": "초록의, 녹색의 (여성형 verte)",
         "pos": "adj.",
         "ex": {
