@@ -187,19 +187,19 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
         <div className="bk-toolbar__group">
           <button
             type="button"
-            className={`chip ${hideMode === 'word' ? 'chip--active' : ''}`}
-            onClick={() => setMode('word')}
-            aria-pressed={hideMode === 'word'}
-          >
-            단어
-          </button>
-          <button
-            type="button"
             className={`chip ${hideMode === 'meaning' ? 'chip--active' : ''}`}
             onClick={() => setMode('meaning')}
             aria-pressed={hideMode === 'meaning'}
           >
-            뜻
+            단어만
+          </button>
+          <button
+            type="button"
+            className={`chip ${hideMode === 'word' ? 'chip--active' : ''}`}
+            onClick={() => setMode('word')}
+            aria-pressed={hideMode === 'word'}
+          >
+            뜻만
           </button>
         </div>
         {hasBunkei && (

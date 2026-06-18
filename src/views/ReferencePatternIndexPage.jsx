@@ -206,19 +206,19 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
         <div className="bk-toolbar__group">
           <button
             type="button"
-            className={`chip ${hideMode === 'word' ? 'chip--active' : ''}`}
-            onClick={() => setMode('word')}
-            aria-pressed={hideMode === 'word'}
-          >
-            문형
-          </button>
-          <button
-            type="button"
             className={`chip ${hideMode === 'meaning' ? 'chip--active' : ''}`}
             onClick={() => setMode('meaning')}
             aria-pressed={hideMode === 'meaning'}
           >
-            뜻
+            문형만
+          </button>
+          <button
+            type="button"
+            className={`chip ${hideMode === 'word' ? 'chip--active' : ''}`}
+            onClick={() => setMode('word')}
+            aria-pressed={hideMode === 'word'}
+          >
+            뜻만
           </button>
         </div>
         {hasVocab && (

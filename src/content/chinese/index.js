@@ -33,15 +33,31 @@ import vocabH5hskC from './vocab/h5_hsk_c';
 import vocabH5hskD from './vocab/h5_hsk_d';
 import vocabH5hskE from './vocab/h5_hsk_e';
 import vocabH5hskF from './vocab/h5_hsk_f';
-// 같은 이름의 테마는 단어를 합쳐 한 섹션으로 (청크 분할 작성분 통합)
+// 원본 어휘 + HSK 보강 어휘를 '보강' 구분 없이 한 사전으로 — 품사별 자연 분류로 통합.
+const POS_GROUPS = [
+  { name: '명사', icon: '📦', pos: ['명사'] },
+  { name: '대명사·지시', icon: '👉', pos: ['대명사', '대사'] },
+  { name: '동사', icon: '🏃', pos: ['동사'] },
+  { name: '형용사', icon: '🎨', pos: ['형용사'] },
+  { name: '부사', icon: '⚡', pos: ['부사'] },
+  { name: '수사·양사', icon: '🔢', pos: ['수사', '양사'] },
+  { name: '개사·접속사·조사', icon: '🔗', pos: ['개사', '접속사', '조사'] },
+  { name: '성어·관용구', icon: '📜', pos: ['성어', '관용구'] },
+  { name: '표현·인사', icon: '💬', pos: ['표현', '감탄사'] },
+];
 const mergeVocab = (base, ...adds) => {
-  const themes = base.themes.map(t => ({ ...t, words: [...t.words] }));
-  const byName = new Map(themes.map(t => [t.name, t]));
-  for (const a of adds) for (const t of a.themes) {
-    const ex = byName.get(t.name);
-    if (ex) ex.words.push(...t.words);
-    else { const nt = { ...t, words: [...t.words] }; themes.push(nt); byName.set(t.name, nt); }
+  const all = [...base.themes, ...adds.flatMap(a => a.themes)].flatMap(t => t.words);
+  const seen = new Set();
+  const buckets = new Map([...POS_GROUPS.map(g => [g.name, []]), ['기타', []]]);
+  for (const w of all) {
+    if (seen.has(w.zh)) continue;
+    seen.add(w.zh);
+    const g = POS_GROUPS.find(g => g.pos.includes(w.pos));
+    buckets.get(g ? g.name : '기타').push(w);
   }
+  const themes = [...POS_GROUPS, { name: '기타', icon: '📚' }]
+    .filter(g => buckets.get(g.name).length)
+    .map(g => ({ name: g.name, icon: g.icon, words: buckets.get(g.name) }));
   return { ...base, themes };
 };
 
@@ -100,7 +116,7 @@ const registry = createRegistry(
     H3: mergeVocab(vocabH3, vocabH3hsk),
     H4: mergeVocab(vocabH4, vocabH4hskA, vocabH4hskB, vocabH4hskC),
     H5: mergeVocab(vocabH5, vocabH5hskA, vocabH5hskB, vocabH5hskC, vocabH5hskD, vocabH5hskE, vocabH5hskF),
-    H6: vocabH6,
+    H6: mergeVocab(vocabH6),
   },
 );
 

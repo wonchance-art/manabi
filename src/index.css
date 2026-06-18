@@ -7929,13 +7929,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 /* 사전 툴바 — 레벨 탭 | 가리기 | 상호 이동 을 한 줄에, 구분선으로 분리 */
 .bk-toolbar {
   display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-  position: sticky;
-  top: var(--gnb-height, 64px);
-  z-index: 30;
-  background: var(--bg-primary);
-  padding: 10px 0;
   margin-bottom: 10px;
-  border-bottom: 1px solid var(--border);
 }
 .bk-toolbar__group {
   display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
