@@ -45,6 +45,19 @@ const POS_GROUPS = [
   { name: '성어·관용구', icon: '📜', pos: ['성어', '관용구'] },
   { name: '표현·인사', icon: '💬', pos: ['표현', '감탄사'] },
 ];
+// 한자 숫자값 — 수사를 0부터 크기순으로 정렬하기 위함
+const NUM_VAL = { '零': 0, '〇': 0, '一': 1, '二': 2, '两': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9, '十': 10, '百': 100, '千': 1000, '万': 10000, '亿': 100000000 };
+function cnNumValue(zh) {
+  if (![...zh].every(c => c in NUM_VAL)) return null;     // 순수 숫자 한자만
+  let total = 0, section = 0, num = 0;
+  for (const c of zh) {
+    const v = NUM_VAL[c];
+    if (v === 10 || v === 100 || v === 1000) { section += (num || 1) * v; num = 0; }
+    else if (v >= 10000) { total += (section + num) * v; section = 0; num = 0; }
+    else num = v;
+  }
+  return total + section + num;
+}
 const mergeVocab = (base, ...adds) => {
   const all = [...base.themes, ...adds.flatMap(a => a.themes)].flatMap(t => t.words);
   const seen = new Set();
@@ -54,6 +67,17 @@ const mergeVocab = (base, ...adds) => {
     seen.add(w.zh);
     const g = POS_GROUPS.find(g => g.pos.includes(w.pos));
     buckets.get(g ? g.name : '기타').push(w);
+  }
+  // 수사·양사 — 숫자(0→)를 값 순으로 앞에, 양사 등은 뒤에 (안정 정렬)
+  const numGroup = buckets.get('수사·양사');
+  if (numGroup) {
+    numGroup.sort((a, b) => {
+      const va = cnNumValue(a.zh), vb = cnNumValue(b.zh);
+      if (va != null && vb != null) return va - vb;
+      if (va != null) return -1;
+      if (vb != null) return 1;
+      return 0;
+    });
   }
   const themes = [...POS_GROUPS, { name: '기타', icon: '📚' }]
     .filter(g => buckets.get(g.name).length)
