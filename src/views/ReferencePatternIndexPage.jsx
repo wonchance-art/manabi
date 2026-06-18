@@ -219,7 +219,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
             onClick={() => setMode('word')}
             aria-pressed={hideMode === 'word'}
           >
-            문형 가리기
+            문형
           </button>
           <button
             type="button"
@@ -227,7 +227,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
             onClick={() => setMode('meaning')}
             aria-pressed={hideMode === 'meaning'}
           >
-            뜻 가리기
+            뜻
           </button>
           <button
             type="button"
@@ -235,7 +235,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
             onClick={toggleYomi}
             aria-pressed={hideYomi}
           >
-            {isJa ? '요미가나 가리기' : '발음 가리기'}
+            {isJa ? '요미가나' : '발음'}
           </button>
         </div>
         {hasVocab && (

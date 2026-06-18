@@ -200,7 +200,7 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
             onClick={() => setMode('word')}
             aria-pressed={hideMode === 'word'}
           >
-            단어 가리기
+            단어
           </button>
           <button
             type="button"
@@ -208,7 +208,7 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
             onClick={() => setMode('meaning')}
             aria-pressed={hideMode === 'meaning'}
           >
-            뜻 가리기
+            뜻
           </button>
           <button
             type="button"
@@ -216,7 +216,7 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
             onClick={toggleYomi}
             aria-pressed={hideYomi}
           >
-            {refInfo.langCode === 'ja' ? '요미가나 가리기' : '발음 가리기'}
+            {refInfo.langCode === 'ja' ? '요미가나' : '발음'}
           </button>
         </div>
         {hasBunkei && (
@@ -322,7 +322,10 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
                             {refInfo.langCode === 'ja' ? (
                               <JaText ja={refMain(w.ex)} yomi={w.ex.yomi} />
                             ) : (
-                              <span lang={refInfo.langCode}>{refMain(w.ex)}</span>
+                              <>
+                                <span lang={refInfo.langCode}>{refMain(w.ex)}</span>
+                                {refPron(w.ex) && <span className="fr-example__ipa">{refPron(w.ex)}</span>}
+                              </>
                             )}
                             {mounted && ttsSupported && (
                               <button
