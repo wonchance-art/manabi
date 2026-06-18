@@ -170,7 +170,7 @@ export default [
         }
       },
       {
-        "fr": "titulaire",
+        "fr": "le/la titulaire",
         "ipa": "[titylɛʁ]",
         "ko": "(직위·자격의) 정규 소지자, 정교사",
         "pos": "n.m.",
@@ -344,7 +344,7 @@ export default [
       },
       {
         "fr": "le quinquagénaire",
-        "ipa": "[kɛ̃kaʒenɛʁ]",
+        "ipa": "[kɛ̃kwaʒenɛʁ]",
         "ko": "50대 사람",
         "pos": "n.m.",
         "ex": {
@@ -1057,7 +1057,7 @@ export default [
         "ipa": "[kɔ̃stʁyktœʁ]",
         "ko": "제조사, 건설업자",
         "pos": "n.m.",
-        "en": "constructor",
+        "en": "manufacturer / builder",
         "ex": {
           "fr": "Ce constructeur automobile est très connu.",
           "ko": "이 자동차 제조사는 아주 유명해요."
@@ -1224,7 +1224,7 @@ export default [
       },
       {
         "fr": "l'éboueur (m.)",
-        "ipa": "[ebuœʁ]",
+        "ipa": "[ebwœʁ]",
         "ko": "환경미화원, 청소부",
         "pos": "n.m.",
         "ex": {
@@ -1515,7 +1515,7 @@ export default [
         "ipa": "[sɑ̃dʁ]",
         "ko": "재",
         "pos": "n.f.",
-        "en": "cinder",
+        "en": "ash",
         "ex": {
           "fr": "Le volcan a recouvert la ville de cendre.",
           "ko": "화산이 도시를 재로 뒤덮었어요."
@@ -2167,7 +2167,7 @@ export default [
       },
       {
         "fr": "la magnitude",
-        "ipa": "[maɲityd]",
+        "ipa": "[maɡnityd]",
         "ko": "(지진의) 규모, 진도",
         "pos": "n.f.",
         "en": "magnitude",
@@ -2495,7 +2495,7 @@ export default [
       },
       {
         "fr": "le puzzle",
-        "ipa": "[pœzœl]",
+        "ipa": "[pœzl]",
         "ko": "퍼즐, 조각 그림 맞추기",
         "pos": "n.m.",
         "en": "puzzle",
@@ -6918,7 +6918,7 @@ export default [
         "pos": "adj.",
         "en": "apparent",
         "ex": {
-          "fr": "Sa calme apparent cachait son angoisse.",
+          "fr": "Son calme apparent cachait son angoisse.",
           "ko": "그의 겉보기 평온함은 불안을 감추고 있었어요."
         }
       },

@@ -1206,7 +1206,7 @@ export default [
         "ipa": "[bakteʁi]",
         "ko": "세균, 박테리아",
         "pos": "n.f.",
-        "en": "bacteria",
+        "en": "bacterium",
         "ex": {
           "fr": "Cette bactérie est dangereuse pour l'homme.",
           "ko": "이 세균은 사람에게 위험해요."
@@ -1801,17 +1801,6 @@ export default [
         }
       },
       {
-        "fr": "l'assassin (m.)",
-        "ipa": "[asasɛ̃]",
-        "ko": "살인자, 암살자",
-        "pos": "n.m.",
-        "en": "assassin",
-        "ex": {
-          "fr": "L'assassin a été arrêté hier.",
-          "ko": "살인자가 어제 체포됐어요."
-        }
-      },
-      {
         "fr": "l'orgueil (m.)",
         "ipa": "[ɔʁɡœj]",
         "ko": "자존심, 오만",
@@ -2091,7 +2080,7 @@ export default [
         "ipa": "[ʒɑ̃tijɛs]",
         "ko": "친절, 상냥함",
         "pos": "n.f.",
-        "en": "gentleness",
+        "en": "kindness",
         "etym": "gentil(친절한)에서 — 영어 gentle과 같은 뿌리예요.",
         "ex": {
           "fr": "Merci pour votre gentillesse.",
@@ -4908,17 +4897,6 @@ export default [
         }
       },
       {
-        "fr": "bénéficier",
-        "ipa": "[benefisje]",
-        "ko": "혜택을 받다, 누리다",
-        "pos": "v.",
-        "en": "benefit",
-        "ex": {
-          "fr": "Les étudiants bénéficient d'une réduction.",
-          "ko": "학생들은 할인 혜택을 받아요."
-        }
-      },
-      {
         "fr": "promouvoir",
         "ipa": "[pʁɔmuvwaʁ]",
         "ko": "촉진하다, 승진시키다",
@@ -6986,7 +6964,7 @@ export default [
         "ipa": "[eze / eze]",
         "ko": "수월한, 넉넉한, 부유한",
         "pos": "adj.",
-        "etym": "동사 aider와 같은 계열의 옛말에서. 여성형은 aisée. 'famille aisée'는 '부유한 가정'.",
+        "etym": "aise(편안함, 여유)에서 — 라틴어 adjacens(가까이 있는)에 뿌리를 둬요. 여성형은 aisée. 'famille aisée'는 '부유한 가정'.",
         "ex": {
           "fr": "Ils mènent une vie aisée.",
           "ko": "그들은 넉넉한 생활을 해요."

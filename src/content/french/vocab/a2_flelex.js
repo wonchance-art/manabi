@@ -1773,8 +1773,8 @@ export default [
         "ipa": "[vwa]",
         "ko": "길, 도로, 차선; 방법",
         "pos": "n.f.",
-        "en": "way (어원 동족)",
-        "etym": "라틴어 via(길)에서 — 영어 voyage, way와 같은 뿌리예요.",
+        "en": "way (의미상 유사)",
+        "etym": "라틴어 via(길)에서 — 영어 voyage와 같은 뿌리예요. (영어 way는 게르만어 계열로 어원이 달라요.)",
         "ex": {
           "fr": "Le train part de la voie 3.",
           "ko": "기차는 3번 선로에서 출발해요."

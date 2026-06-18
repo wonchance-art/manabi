@@ -571,7 +571,7 @@ export default [
       {
         "fr": "l'élève (m.)",
         "ipa": "[elɛv]",
-        "ko": "학생 (초·중등) (남녀 동형, la élève도 가능)",
+        "ko": "학생 (초·중등) (남녀 동형: l'élève / une élève)",
         "pos": "n.m.",
         "ex": {
           "fr": "Cet élève travaille bien.",
@@ -587,16 +587,6 @@ export default [
         "ex": {
           "fr": "La population de cette ville augmente.",
           "ko": "이 도시의 인구가 늘어나요."
-        }
-      },
-      {
-        "fr": "juillet",
-        "ipa": "[ʒɥijɛ]",
-        "ko": "7월",
-        "pos": "n.m.",
-        "ex": {
-          "fr": "Les vacances commencent en juillet.",
-          "ko": "방학은 7월에 시작해요."
         }
       },
       {
@@ -758,16 +748,6 @@ export default [
         "ex": {
           "fr": "Elle a la garde des enfants.",
           "ko": "그녀가 아이들을 돌봐요."
-        }
-      },
-      {
-        "fr": "mai",
-        "ipa": "[mɛ]",
-        "ko": "5월",
-        "pos": "n.m.",
-        "ex": {
-          "fr": "Mon anniversaire est en mai.",
-          "ko": "제 생일은 5월이에요."
         }
       }
     ]
@@ -2198,7 +2178,7 @@ export default [
       },
       {
         "fr": "terrible",
-        "ipa": "[teʁibl]",
+        "ipa": "[tɛʁibl]",
         "ko": "끔찍한 / (구어) 굉장한",
         "pos": "adj.",
         "en": "terrible",
@@ -2406,6 +2386,32 @@ export default [
         "ex": {
           "fr": "La gare est là-bas.",
           "ko": "역은 저쪽에 있어요."
+        }
+      }
+    ]
+  },
+  {
+    "name": "달력의 달",
+    "icon": "📅",
+    "words": [
+      {
+        "fr": "juillet",
+        "ipa": "[ʒɥijɛ]",
+        "ko": "7월",
+        "pos": "n.m.",
+        "ex": {
+          "fr": "Les vacances commencent en juillet.",
+          "ko": "방학은 7월에 시작해요."
+        }
+      },
+      {
+        "fr": "mai",
+        "ipa": "[mɛ]",
+        "ko": "5월",
+        "pos": "n.m.",
+        "ex": {
+          "fr": "Mon anniversaire est en mai.",
+          "ko": "제 생일은 5월이에요."
         }
       }
     ]
