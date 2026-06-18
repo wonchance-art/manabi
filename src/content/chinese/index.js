@@ -20,6 +20,12 @@ import vocabH4 from './vocab/h4';
 import vocabH5 from './vocab/h5';
 import vocabH6 from './vocab/h6';
 
+// HSK 2.0 공식 어휘표 기반 보강 어휘 — 기존 테마 뒤에 병합
+import vocabH1hsk from './vocab/h1_hsk';
+import vocabH2hsk from './vocab/h2_hsk';
+import vocabH3hsk from './vocab/h3_hsk';
+const mergeVocab = (base, ...adds) => ({ ...base, themes: [...base.themes, ...adds.flatMap(a => a.themes)] });
+
 import bunkeiH1 from './bunkei/h1';
 import bunkeiH2 from './bunkei/h2';
 import bunkeiH3 from './bunkei/h3';
@@ -69,7 +75,12 @@ export const ZH_LEVEL_META = [
 const registry = createRegistry(
   ZH_LEVEL_META,
   { OT: grammarOT, H1: grammarH1, H2: grammarH2, H3: grammarH3, H4: grammarH4, H5: grammarH5, H6: grammarH6 },
-  { H1: vocabH1, H2: vocabH2, H3: vocabH3, H4: vocabH4, H5: vocabH5, H6: vocabH6 },
+  {
+    H1: mergeVocab(vocabH1, vocabH1hsk),
+    H2: mergeVocab(vocabH2, vocabH2hsk),
+    H3: mergeVocab(vocabH3, vocabH3hsk),
+    H4: vocabH4, H5: vocabH5, H6: vocabH6,
+  },
 );
 
 export const ALL_CHAPTERS = registry.ALL_CHAPTERS;
