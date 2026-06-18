@@ -87,7 +87,7 @@ export default function Nihongo42Page() {
                     <span lang="ja" style={{ fontSize: '0.96rem', fontWeight: 600, color: 'var(--text-primary)', wordBreak: 'keep-all' }}>
                       {c.jp[0]}
                     </span>
-                    <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.5, wordBreak: 'keep-all' }}>
+                    <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.5, wordBreak: 'keep-all', textAlign: 'right' }}>
                       {Hi(c.titleHi || c.title)}
                     </span>
                   </Fragment>
