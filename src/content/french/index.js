@@ -26,6 +26,11 @@ import flelexA1 from './vocab/a1_flelex';
 import flelexA2 from './vocab/a2_flelex';
 import flelexB1 from './vocab/b1_flelex';
 import flelexB2 from './vocab/b2_flelex';
+// 2차 보강 — FLELex 등급을 실제 빈도로 보정(일상어 B1·B2 내림) + C1·C2 채우기
+import flelexB1r from './vocab/b1_flelex2';
+import flelexB2r from './vocab/b2_flelex2';
+import flelexC1 from './vocab/c1_flelex';
+import flelexC2 from './vocab/c2_flelex';
 
 // 표제어 정규화(관사·괄호 제거) — 보강 어휘가 본편과 겹치면 버림
 const _frArt = /^(l'|d'|s'|le |la |les |un |une |des |du |de la |de l'|de |au |aux |à |se |s')+/i;
@@ -35,21 +40,23 @@ function _normFr(s) {
   do { prev = p; p = p.replace(_frArt, '').trim(); } while (p !== prev);
   return p.replace(/[.!?…»«"]/g, '').trim();
 }
-/** 본편 어휘에 보강 테마(FLELex)를 병합. 같은 이름 테마는 합치고, 새 이름은 뒤에 추가. */
-function mergeFrVocab(base, additions) {
-  if (!additions || !additions.length) return base;
+/** 본편 어휘에 보강 테마(FLELex)들을 병합. 같은 이름 테마는 합치고, 새 이름은 뒤에 추가. */
+function mergeFrVocab(base, ...addLists) {
   const themes = base.themes.map((t) => ({ ...t, words: [...t.words] }));
   const byName = new Map(themes.map((t) => [t.name.trim(), t]));
   const seen = new Set();
   for (const t of themes) for (const w of t.words) seen.add(_normFr(w.fr));
-  for (const add of additions) {
-    for (const w of add.words) {
-      const k = _normFr(w.fr);
-      if (seen.has(k)) continue;
-      seen.add(k);
-      let t = byName.get(add.name.trim());
-      if (!t) { t = { name: add.name, icon: add.icon, words: [] }; themes.push(t); byName.set(add.name.trim(), t); }
-      t.words.push(w);
+  for (const additions of addLists) {
+    if (!additions || !additions.length) continue;
+    for (const add of additions) {
+      for (const w of add.words) {
+        const k = _normFr(w.fr);
+        if (seen.has(k)) continue;
+        seen.add(k);
+        let t = byName.get(add.name.trim());
+        if (!t) { t = { name: add.name, icon: add.icon, words: [] }; themes.push(t); byName.set(add.name.trim(), t); }
+        t.words.push(w);
+      }
     }
   }
   return { ...base, themes };
@@ -108,10 +115,10 @@ const registry = createRegistry(
     A0: vocabA0,
     A1: mergeFrVocab(vocabA1, flelexA1),
     A2: mergeFrVocab(vocabA2, flelexA2),
-    B1: mergeFrVocab(vocabB1, flelexB1),
-    B2: mergeFrVocab(vocabB2, flelexB2),
-    C1: vocabC1,
-    C2: vocabC2,
+    B1: mergeFrVocab(vocabB1, flelexB1, flelexB1r),
+    B2: mergeFrVocab(vocabB2, flelexB2, flelexB2r),
+    C1: mergeFrVocab(vocabC1, flelexC1),
+    C2: mergeFrVocab(vocabC2, flelexC2),
   },
 );
 
