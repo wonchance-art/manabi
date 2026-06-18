@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../lib/AuthContext';
 
 /**
  * 내 진도 — 관리자 전용 학습 진도표 (12월까지 중국어 HSK5 · 프랑스어 B2).
@@ -47,20 +49,47 @@ const PLAN = {
 const daysBetween = (a, b) => Math.round((b.getTime() - a.getTime()) / 86400000);
 
 function LangPlan({ plan }) {
+  const { user } = useAuth();
   const storageKey = `myplan_${plan.key}_done`;
   const [done, setDone] = useState(() => new Set());
   const [mounted, setMounted] = useState(false);
+  const [synced, setSynced] = useState(false);
 
+  // 로드: localStorage 즉시 → 로그인 시 서버가 정본(기기 간 동기화)
   useEffect(() => {
     setMounted(true);
-    try { setDone(new Set(JSON.parse(localStorage.getItem(storageKey) || '[]'))); } catch {}
-  }, [storageKey]);
+    let cancel = false;
+    (async () => {
+      try { setDone(new Set(JSON.parse(localStorage.getItem(storageKey) || '[]'))); } catch {}
+      if (user?.id) {
+        const { data } = await supabase
+          .from('study_plan_progress')
+          .select('done')
+          .eq('user_id', user.id)
+          .eq('lang', plan.key)
+          .maybeSingle();
+        if (!cancel && Array.isArray(data?.done)) {
+          setDone(new Set(data.done));
+          try { localStorage.setItem(storageKey, JSON.stringify(data.done)); } catch {}
+        }
+        if (!cancel) setSynced(true);
+      }
+    })();
+    return () => { cancel = true; };
+  }, [user?.id, plan.key, storageKey]);
 
   function toggle(n) {
     setDone(prev => {
       const next = new Set(prev);
       next.has(n) ? next.delete(n) : next.add(n);
-      try { localStorage.setItem(storageKey, JSON.stringify([...next])); } catch {}
+      const arr = [...next].sort((a, b) => a - b);
+      try { localStorage.setItem(storageKey, JSON.stringify(arr)); } catch {}
+      if (user?.id) {
+        supabase.from('study_plan_progress').upsert(
+          { user_id: user.id, lang: plan.key, done: arr, updated_at: new Date().toISOString() },
+          { onConflict: 'user_id,lang' },
+        ).then(() => {}, () => {});
+      }
       return next;
     });
   }
@@ -101,6 +130,7 @@ function LangPlan({ plan }) {
         <strong>{doneCount}/{total}</strong> ({pct}%)
         {mounted && remaining > 0 && <> · 남은 {remaining} · 권장 <strong>주 {perWeek}</strong> · 다음 <strong>#{nextN}</strong></>}
         {mounted && remaining === 0 && <> · 🎉 완주!</>}
+        {synced && <span className="myplan-sync" title="기기 간 동기화됨"> · ☁ 동기화</span>}
       </div>
 
       {plan.levels.map(level => (
@@ -128,6 +158,7 @@ export default function StudyPlanPanel() {
         <p className="myplan__lead">
           번호 클릭 = 완료(이 브라우저 저장). 레벨마다 <strong>문법 챕터 → 그 레벨 문형 테마</strong> 순서.
           문법 한 번호 = 챕터 1개, 문형 한 번호 = 테마 1개(≈10패턴). 어휘는 제외.
+          {' '}진행은 로그인 시 <strong>기기 간 자동 동기화</strong>(Supabase).
           {' '}목표 <strong>{TARGET}</strong> · <strong>D-{dleft}</strong>
         </p>
       </div>

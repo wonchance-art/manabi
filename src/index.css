@@ -7703,6 +7703,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .myplan-bar__fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent, var(--primary))); transition: width 0.3s ease; }
 .myplan-stat { font-size: 0.8rem; color: var(--text-secondary); margin: 7px 0 14px; }
 .myplan-stat strong { color: var(--text-primary); }
+.myplan-sync { color: #4A8A5C; font-weight: 600; }
 
 .myplan-level { margin-bottom: 14px; }
 .myplan-level__name { font-size: 0.78rem; font-weight: 800; color: var(--text-secondary); margin-bottom: 6px; }
