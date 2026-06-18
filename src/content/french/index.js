@@ -21,6 +21,40 @@ import vocabB2 from './vocab/b2';
 import vocabC1 from './vocab/c1';
 import vocabC2 from './vocab/c2';
 
+// FLELex(루뱅대 CEFR 등급 어휘 자원) 기반 보강 — 빈도 상위 어휘를 본편과 자연스럽게 병합
+import flelexA1 from './vocab/a1_flelex';
+import flelexA2 from './vocab/a2_flelex';
+import flelexB1 from './vocab/b1_flelex';
+import flelexB2 from './vocab/b2_flelex';
+
+// 표제어 정규화(관사·괄호 제거) — 보강 어휘가 본편과 겹치면 버림
+const _frArt = /^(l'|d'|s'|le |la |les |un |une |des |du |de la |de l'|de |au |aux |à |se |s')+/i;
+function _normFr(s) {
+  s = String(s || '').trim().toLowerCase().replace(/’/g, "'").replace(/\([^)]*\)/g, ' ');
+  let p = s.split(/[/,]| ou /)[0].trim(), prev;
+  do { prev = p; p = p.replace(_frArt, '').trim(); } while (p !== prev);
+  return p.replace(/[.!?…»«"]/g, '').trim();
+}
+/** 본편 어휘에 보강 테마(FLELex)를 병합. 같은 이름 테마는 합치고, 새 이름은 뒤에 추가. */
+function mergeFrVocab(base, additions) {
+  if (!additions || !additions.length) return base;
+  const themes = base.themes.map((t) => ({ ...t, words: [...t.words] }));
+  const byName = new Map(themes.map((t) => [t.name.trim(), t]));
+  const seen = new Set();
+  for (const t of themes) for (const w of t.words) seen.add(_normFr(w.fr));
+  for (const add of additions) {
+    for (const w of add.words) {
+      const k = _normFr(w.fr);
+      if (seen.has(k)) continue;
+      seen.add(k);
+      let t = byName.get(add.name.trim());
+      if (!t) { t = { name: add.name, icon: add.icon, words: [] }; themes.push(t); byName.set(add.name.trim(), t); }
+      t.words.push(w);
+    }
+  }
+  return { ...base, themes };
+}
+
 import bunkeiA1 from './bunkei/a1';
 import bunkeiA2 from './bunkei/a2';
 import bunkeiB1 from './bunkei/b1';
@@ -70,7 +104,15 @@ export const FR_LEVEL_META = [
 const registry = createRegistry(
   FR_LEVEL_META,
   { A0: grammarA0, A1: grammarA1, A2: grammarA2, B1: grammarB1, B2: grammarB2, C1: grammarC1, C2: grammarC2 },
-  { A0: vocabA0, A1: vocabA1, A2: vocabA2, B1: vocabB1, B2: vocabB2, C1: vocabC1, C2: vocabC2 },
+  {
+    A0: vocabA0,
+    A1: mergeFrVocab(vocabA1, flelexA1),
+    A2: mergeFrVocab(vocabA2, flelexA2),
+    B1: mergeFrVocab(vocabB1, flelexB1),
+    B2: mergeFrVocab(vocabB2, flelexB2),
+    C1: vocabC1,
+    C2: vocabC2,
+  },
 );
 
 export const ALL_CHAPTERS = registry.ALL_CHAPTERS;
