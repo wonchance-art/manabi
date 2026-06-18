@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import course from '@/content/community/nihongo42';
-import { JaText, refInline } from '@/views/refShared';
+import { JaText, refInline, Callout } from '@/views/refShared';
 
 export function generateStaticParams() {
   return course.days.map((d) => ({ day: String(d.day) }));
@@ -34,7 +34,6 @@ function splitForms(f) {
 }
 
 function Chapter({ c, i }) {
-  const forms = c.jp.flatMap(splitForms);
   return (
     <section id={`sec-${i + 1}`} className="card fr-section">
       <h2 className="fr-section__heading">
@@ -42,12 +41,23 @@ function Chapter({ c, i }) {
         {c.title}
       </h2>
 
-      {/* 패턴 공식 박스 */}
+      {/* 패턴 공식 박스 — 한자 위 후리가나 */}
       <div className="fr-pattern" style={{ borderColor: THEME.color }}>
         <div className="fr-pattern__text">
-          {forms.map((line, k) => (
-            <div key={k} lang="ja" style={{ marginTop: k ? 2 : 0 }}>{line}</div>
-          ))}
+          {c.jp.map((form, fi) => {
+            const lines = splitForms(form);
+            return (
+              <div key={fi} lang="ja" style={{ marginTop: fi ? 4 : 0 }}>
+                {lines.length === 1 ? (
+                  <JaText ja={form} yomi={c.jpYomi?.[fi]} fallbackPron={false} />
+                ) : (
+                  lines.map((line, k) => (
+                    <div key={k} style={{ marginTop: k ? 2 : 0 }}>{line}</div>
+                  ))
+                )}
+              </div>
+            );
+          })}
         </div>
         <div className="fr-pattern__ko">{c.ko.join('  /  ')}</div>
       </div>
@@ -58,6 +68,9 @@ function Chapter({ c, i }) {
           <p className="fr-section__para">{refInline(c.explain)}</p>
         </div>
       )}
+
+      {/* 🚨 한국인이 헷갈리는 포인트 */}
+      {c.pitfall ? <Callout kind="pitfall" text={c.pitfall} /> : null}
 
       {/* 예문 — 한자 위 후리가나 */}
       {c.examples?.length ? (
