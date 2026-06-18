@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import Link from 'next/link';
 import course from '@/content/community/nihongo42';
 
@@ -63,24 +64,35 @@ export default function Nihongo42Page() {
                 <span style={{ marginLeft: 'auto', color: 'var(--text-muted)', fontSize: '0.95rem' }}>→</span>
               </div>
 
-              {/* 그날의 표현 3개 — 전부 표시 (잘림 없음) */}
-              <ol style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 5 }}>
+              {/* 그날의 표현 3개 — 일본어 / 한국어 열 정렬 */}
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'auto auto 1fr',
+                  columnGap: 12,
+                  rowGap: 8,
+                  alignItems: 'baseline',
+                }}
+              >
                 {d.chapters.map((c) => (
-                  <li key={c.n} style={{ display: 'flex', gap: 9, alignItems: 'baseline' }}>
+                  <Fragment key={c.n}>
                     <span
                       style={{
-                        flex: '0 0 auto', minWidth: '2.7em', color: THEME.color, fontWeight: 700,
-                        fontSize: '0.82rem', fontVariantNumeric: 'tabular-nums',
+                        color: THEME.color, fontWeight: 700, fontSize: '0.8rem',
+                        fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap',
                       }}
                     >
                       Ch.{c.n}
                     </span>
-                    <span style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', lineHeight: 1.55, wordBreak: 'keep-all' }}>
+                    <span lang="ja" style={{ fontSize: '0.96rem', fontWeight: 600, color: 'var(--text-primary)', wordBreak: 'keep-all' }}>
+                      {c.jp[0]}
+                    </span>
+                    <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.5, wordBreak: 'keep-all' }}>
                       {Hi(c.titleHi || c.title)}
                     </span>
-                  </li>
+                  </Fragment>
                 ))}
-              </ol>
+              </div>
             </Link>
           );
         })}
