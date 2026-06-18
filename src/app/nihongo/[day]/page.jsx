@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import course from '@/content/community/nihongo42';
+import { JaText, refInline } from '@/views/refShared';
 
 export function generateStaticParams() {
   return course.days.map((d) => ({ day: String(d.day) }));
@@ -15,7 +16,8 @@ export function generateMetadata({ params }) {
   };
 }
 
-const JP = { fontFamily: 'var(--font-noto-jp), var(--font-klee), sans-serif' };
+// 특별 페이지 고정 테마색 (레퍼런스의 레벨색 자리)
+const THEME = { color: '#3b6ea5', bg: 'rgba(59,110,165,0.12)', line: 'rgba(59,110,165,0.32)' };
 
 // ・로 구분된 표현은 한 줄씩. 단, 괄호 안의 ・(예: （時間・お金が）)는 나누지 않음
 function splitForms(f) {
@@ -31,68 +33,60 @@ function splitForms(f) {
   return out;
 }
 
-function Example({ ja, yomi, ko }) {
+function Chapter({ c, i }) {
+  const forms = c.jp.flatMap(splitForms);
   return (
-    <li style={{ listStyle: 'none', padding: '8px 0', borderTop: '1px solid var(--border, rgba(0,0,0,0.06))' }}>
-      <div style={{ ...JP, fontSize: '1.05rem', lineHeight: 1.5 }}>{ja}</div>
-      {yomi ? <div style={{ ...JP, fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: 2 }}>{yomi}</div> : null}
-      <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: 3 }}>{ko}</div>
-    </li>
-  );
-}
+    <section id={`sec-${i + 1}`} className="card fr-section">
+      <h2 className="fr-section__heading">
+        <span className="fr-section__num" style={{ background: THEME.bg, color: THEME.color }}>{c.n}</span>
+        {c.title}
+      </h2>
 
-function Chapter({ c }) {
-  return (
-    <div className="card" style={{ padding: '18px 18px 16px' }}>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
-        <span
-          style={{
-            flex: '0 0 auto', minWidth: 30, height: 30, padding: '0 8px', borderRadius: 8,
-            background: 'var(--bg-subtle)', color: 'var(--text-secondary)', fontWeight: 700,
-            fontSize: '0.85rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-            fontVariantNumeric: 'tabular-nums',
-          }}
-        >
-          Ch.{c.n}
-        </span>
-        <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>{c.title}</h3>
+      {/* 패턴 공식 박스 */}
+      <div className="fr-pattern" style={{ borderColor: THEME.color }}>
+        <div className="fr-pattern__text">
+          {forms.map((line, k) => (
+            <div key={k} lang="ja" style={{ marginTop: k ? 2 : 0 }}>{line}</div>
+          ))}
+        </div>
+        <div className="fr-pattern__ko">{c.ko.join('  /  ')}</div>
       </div>
 
-      <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {c.jp.map((f, i) => (
-          <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {splitForms(f).map((part, j) => (
-              <span key={j} style={{ ...JP, fontSize: '1.2rem', fontWeight: 600, lineHeight: 1.45 }}>
-                {part}
-              </span>
-            ))}
-            {c.ko[i] ? <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{c.ko[i]}</span> : null}
-          </div>
-        ))}
-        {c.ko.length === 1 && c.jp.length > 1 ? (
-          <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{c.ko[0]}</span>
-        ) : null}
-      </div>
+      {/* 설명 */}
+      {c.explain && (
+        <div className="fr-section__detail">
+          <p className="fr-section__para">{refInline(c.explain)}</p>
+        </div>
+      )}
 
-      <p style={{ marginTop: 12, lineHeight: 1.75, fontSize: '0.94rem', color: 'var(--text-secondary)' }}>{c.explain}</p>
-
+      {/* 예문 — 한자 위 후리가나 */}
       {c.examples?.length ? (
-        <ul style={{ margin: '12px 0 0', padding: 0 }}>
-          {c.examples.map((e, i) => <Example key={i} {...e} />)}
+        <ul className="fr-examples">
+          {c.examples.map((ex, j) => (
+            <li key={j} className="fr-example">
+              <div className="fr-example__fr">
+                <JaText ja={ex.ja} yomi={ex.yomi} />
+              </div>
+              <div className="fr-example__ko">{ex.ko}</div>
+            </li>
+          ))}
         </ul>
       ) : null}
 
+      {/* 레퍼런스 링크 — 팁 콜아웃 스타일 */}
       {c.links?.length ? (
-        <div style={{ marginTop: 14, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>📖 레퍼런스</span>
-          {c.links.map((l, i) => (
-            <Link key={i} href={`/japanese/grammar/${l.slug}`} className="btn btn--ghost btn--sm">
-              {l.label} ↗
-            </Link>
-          ))}
+        <div className="fr-callout fr-callout--tip">
+          <span className="fr-callout__label">📖 더 깊이 — 레퍼런스</span>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 2 }}>
+            {c.links.map((l, k) => (
+              <Link key={k} href={`/japanese/grammar/${l.slug}`} className="btn btn--ghost btn--sm">
+                {l.label} ↗
+              </Link>
+            ))}
+          </div>
         </div>
       ) : null}
-    </div>
+    </section>
   );
 }
 
@@ -104,30 +98,53 @@ export default function Nihongo42DayPage({ params }) {
   const next = course.days[idx + 1];
 
   return (
-    <div style={{ maxWidth: 720, margin: '0 auto', padding: '28px 20px 90px' }}>
-      <Link href="/nihongo" className="btn btn--ghost btn--sm" style={{ marginBottom: 18, display: 'inline-flex' }}>
+    <div style={{ maxWidth: 720, margin: '0 auto', padding: '24px 16px 90px' }}>
+      <Link href="/nihongo" className="btn btn--ghost btn--sm" style={{ marginBottom: 16, display: 'inline-flex' }}>
         ← 목록
       </Link>
 
-      <h1 style={{ fontSize: '1.55rem', margin: '6px 0 18px', fontVariantNumeric: 'tabular-nums' }}>
-        Day {d.day} <span style={{ color: 'var(--text-muted)', fontWeight: 500, fontSize: '1.1rem' }}>· {d.range}</span>
-      </h1>
+      <header style={{ marginBottom: 18 }}>
+        <div style={{ fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.03em', color: THEME.color }}>
+          일본어 회화 표현 42
+        </div>
+        <h1 style={{ fontSize: '1.6rem', margin: '4px 0 0', fontVariantNumeric: 'tabular-nums' }}>
+          Day {d.day} <span style={{ color: 'var(--text-muted)', fontWeight: 500, fontSize: '1.05rem' }}>· {d.range}</span>
+        </h1>
+      </header>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-        {d.chapters.map((c) => <Chapter key={c.n} c={c} />)}
+      {/* 핵심 표현 한눈에 */}
+      <div className="fr-pattern-summary" style={{ borderColor: THEME.line, background: THEME.bg }}>
+        <div className="fr-pattern-summary__title" style={{ color: THEME.color }}>오늘의 표현 한눈에</div>
+        <ol className="fr-pattern-summary__list">
+          {d.chapters.map((c, i) => (
+            <li key={c.n}>
+              <a href={`#sec-${i + 1}`} className="fr-pattern-summary__item">
+                <span className="fr-pattern-summary__num" style={{ color: THEME.color }}>Ch.{c.n}</span>
+                <span className="fr-pattern-summary__text">{c.title}</span>
+              </a>
+            </li>
+          ))}
+        </ol>
       </div>
 
-      <nav
-        style={{
-          marginTop: 32, display: 'flex', justifyContent: 'space-between', gap: 10,
-          fontVariantNumeric: 'tabular-nums',
-        }}
-      >
+      <div style={{ marginTop: 16 }}>
+        {d.chapters.map((c, i) => (
+          <Chapter key={c.n} c={c} i={i} />
+        ))}
+      </div>
+
+      <nav className="fr-pager" aria-label="Day 이동">
         {prev ? (
-          <Link href={`/nihongo/${prev.day}`} className="btn btn--ghost btn--sm">← Day {prev.day}</Link>
+          <Link href={`/nihongo/${prev.day}`} className="fr-pager__link">
+            <span className="fr-pager__dir">← 이전</span>
+            <span className="fr-pager__title">Day {prev.day} · {prev.range}</span>
+          </Link>
         ) : <span />}
         {next ? (
-          <Link href={`/nihongo/${next.day}`} className="btn btn--ghost btn--sm">Day {next.day} →</Link>
+          <Link href={`/nihongo/${next.day}`} className="fr-pager__link fr-pager__link--next">
+            <span className="fr-pager__dir">다음 →</span>
+            <span className="fr-pager__title">Day {next.day} · {next.range}</span>
+          </Link>
         ) : <span />}
       </nav>
     </div>
