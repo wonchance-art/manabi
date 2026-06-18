@@ -17,6 +17,20 @@ export function generateMetadata({ params }) {
 
 const JP = { fontFamily: 'var(--font-noto-jp), var(--font-klee), sans-serif' };
 
+// ・로 구분된 표현은 한 줄씩. 단, 괄호 안의 ・(예: （時間・お金が）)는 나누지 않음
+function splitForms(f) {
+  const out = [];
+  let buf = '', depth = 0;
+  for (const ch of f) {
+    if (ch === '（' || ch === '(') depth++;
+    else if (ch === '）' || ch === ')') depth = Math.max(0, depth - 1);
+    if (ch === '・' && depth === 0) { out.push(buf); buf = ''; }
+    else buf += ch;
+  }
+  out.push(buf);
+  return out;
+}
+
 function Example({ ja, yomi, ko }) {
   return (
     <li style={{ listStyle: 'none', padding: '8px 0', borderTop: '1px solid var(--border, rgba(0,0,0,0.06))' }}>
@@ -44,10 +58,14 @@ function Chapter({ c }) {
         <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>{c.title}</h3>
       </div>
 
-      <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 8 }}>
         {c.jp.map((f, i) => (
-          <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'baseline', flexWrap: 'wrap' }}>
-            <span style={{ ...JP, fontSize: '1.2rem', fontWeight: 600 }}>{f}</span>
+          <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {splitForms(f).map((part, j) => (
+              <span key={j} style={{ ...JP, fontSize: '1.2rem', fontWeight: 600, lineHeight: 1.45 }}>
+                {part}
+              </span>
+            ))}
             {c.ko[i] ? <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{c.ko[i]}</span> : null}
           </div>
         ))}
