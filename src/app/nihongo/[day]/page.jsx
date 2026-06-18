@@ -19,20 +19,6 @@ export function generateMetadata({ params }) {
 // 특별 페이지 고정 테마색 (레퍼런스의 레벨색 자리)
 const THEME = { color: '#3b6ea5', bg: 'rgba(59,110,165,0.12)', line: 'rgba(59,110,165,0.32)' };
 
-// ・로 구분된 표현은 한 줄씩. 단, 괄호 안의 ・(예: （時間・お金が）)는 나누지 않음
-function splitForms(f) {
-  const out = [];
-  let buf = '', depth = 0;
-  for (const ch of f) {
-    if (ch === '（' || ch === '(') depth++;
-    else if (ch === '）' || ch === ')') depth = Math.max(0, depth - 1);
-    if (ch === '・' && depth === 0) { out.push(buf); buf = ''; }
-    else buf += ch;
-  }
-  out.push(buf);
-  return out;
-}
-
 function Chapter({ c, i }) {
   return (
     <section id={`sec-${i + 1}`} className="card fr-section">
@@ -41,23 +27,14 @@ function Chapter({ c, i }) {
         {c.title}
       </h2>
 
-      {/* 패턴 공식 박스 — 한자 위 후리가나 */}
+      {/* 패턴 공식 박스 — jp 배열의 각 원소가 한 줄, 한자 위 후리가나 */}
       <div className="fr-pattern" style={{ borderColor: THEME.color }}>
         <div className="fr-pattern__text">
-          {c.jp.map((form, fi) => {
-            const lines = splitForms(form);
-            return (
-              <div key={fi} lang="ja" style={{ marginTop: fi ? 4 : 0 }}>
-                {lines.length === 1 ? (
-                  <JaText ja={form} yomi={c.jpYomi?.[fi]} fallbackPron={false} />
-                ) : (
-                  lines.map((line, k) => (
-                    <div key={k} style={{ marginTop: k ? 2 : 0 }}>{line}</div>
-                  ))
-                )}
-              </div>
-            );
-          })}
+          {c.jp.map((form, fi) => (
+            <div key={fi} lang="ja" style={{ marginTop: fi ? 4 : 0 }}>
+              <JaText ja={form} yomi={c.jpYomi?.[fi]} fallbackPron={false} />
+            </div>
+          ))}
         </div>
         <div className="fr-pattern__ko">{c.ko.join('  /  ')}</div>
       </div>
