@@ -30,6 +30,21 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
+  // 현장 체크 — 단어장 저장과 별개로 '아는/모르는' 표시 (레벨별 localStorage)
+  const checkKey = `as_vcheck_${lang}_${meta?.key || ''}`;
+  const [checked, setChecked] = useState(() => new Set());
+  useEffect(() => {
+    try { setChecked(new Set(JSON.parse(localStorage.getItem(checkKey) || '[]'))); } catch {}
+  }, [checkKey]);
+  function toggleCheck(id) {
+    setChecked(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      try { localStorage.setItem(checkKey, JSON.stringify([...next])); } catch {}
+      return next;
+    });
+  }
+
   const backHref = `/lessons?lang=${lang}&view=ref`;
   const allWords = useMemo(
     () => (vocab ? vocab.themes.flatMap(t => t.words) : []),
@@ -259,7 +274,7 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
               return (
                 <li
                   key={rowKey}
-                  className={`fr-vrow ${anyHide ? 'fr-vrow--quiz' : ''} ${yomiHidden ? 'row-hide-yomi' : ''}`}
+                  className={`fr-vrow ${anyHide ? 'fr-vrow--quiz' : ''} ${yomiHidden ? 'row-hide-yomi' : ''} ${checked.has(text) ? 'is-checked' : ''}`}
                   onClick={() => toggleReveal(rowKey)}
                   {...(anyHide && {
                     role: 'button',
@@ -270,6 +285,16 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
                     },
                   })}
                 >
+                  {/* 현장 체크박스 */}
+                  <label className="fr-vrow__check" onClick={e => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={checked.has(text)}
+                      onChange={() => toggleCheck(text)}
+                      aria-label={`${text} 체크`}
+                    />
+                  </label>
+
                   {/* 단어 열 — 고정 폭으로 정렬, 일본어는 한자 위 요미가나 */}
                   <div className={`fr-vrow__word ${wordHidden ? 'is-hidden' : ''}`}>
                     {refInfo.langCode === 'ja' && alignFurigana(text, pron) ? (

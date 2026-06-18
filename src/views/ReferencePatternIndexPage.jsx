@@ -36,6 +36,21 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
   const backHref = `/lessons?lang=${lang}`;
   const isJa = refInfo.langCode === 'ja';
 
+  // 현장 체크 — 단어장 저장과 별개로 '아는/모르는' 표시 (레벨별 localStorage)
+  const checkKey = `as_bkcheck_${lang}_${meta?.key || ''}`;
+  const [checked, setChecked] = useState(() => new Set());
+  useEffect(() => {
+    try { setChecked(new Set(JSON.parse(localStorage.getItem(checkKey) || '[]'))); } catch {}
+  }, [checkKey]);
+  function toggleCheck(id) {
+    setChecked(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      try { localStorage.setItem(checkKey, JSON.stringify([...next])); } catch {}
+      return next;
+    });
+  }
+
   const allItems = useMemo(
     () => (bunkei ? bunkei.themes.flatMap(t => t.items) : []),
     [bunkei]
@@ -296,7 +311,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
               return (
                 <li
                   key={rowKey}
-                  className={`fr-vrow fr-vrow--wide ${anyHide ? 'fr-vrow--quiz' : ''} ${yomiHidden ? 'row-hide-yomi' : ''}`}
+                  className={`fr-vrow fr-vrow--wide ${anyHide ? 'fr-vrow--quiz' : ''} ${yomiHidden ? 'row-hide-yomi' : ''} ${checked.has(item.pattern) ? 'is-checked' : ''}`}
                   onClick={() => toggleReveal(rowKey)}
                   {...(anyHide && {
                     role: 'button',
@@ -307,6 +322,16 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
                     },
                   })}
                 >
+                  {/* 현장 체크박스 */}
+                  <label className="fr-vrow__check" onClick={e => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={checked.has(item.pattern)}
+                      onChange={() => toggleCheck(item.pattern)}
+                      aria-label={`${item.pattern} 체크`}
+                    />
+                  </label>
+
                   {/* 문형 열 — 병기 형태(・)·접속 대안(/)은 줄 구분 */}
                   <div className={`fr-vrow__word ${wordHidden ? 'is-hidden' : ''}`}>
                     <span className="fr-vrow__main bk-pattern" lang={refInfo.langCode}>
