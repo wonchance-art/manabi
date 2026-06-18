@@ -7992,6 +7992,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .row-hide-yomi rt { visibility: hidden; }
 .row-hide-yomi .fr-example__ipa { visibility: hidden; }
 .row-hide-yomi .fr-vrow__pron--yomi { visibility: hidden; }
+.row-hide-yomi .bk-pinyin { visibility: hidden; }
 
 .fr-vrow__chlink {
   display: inline-block;

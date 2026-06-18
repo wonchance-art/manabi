@@ -25,11 +25,10 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
   // ?ch=<챕터 slug> — 챕터 페이지에서 "연관 문형 모아 보기"로 진입한 경우
   const chFilter = searchParams.get('ch') || null;
   const [query, setQuery] = useState('');
-  // 가리기: hideMode(문형/뜻 — 배타) + hideYomi(요미가나 — 독립 조합 가능)
+  // 가리기: hideMode(문형/뜻 — 배타). '뜻'은 뜻+발음을 함께 가린다(문형만 보고 뜻·발음 떠올리기).
   const [hideMode, setHideMode] = useState(null);
-  const [hideYomi, setHideYomi] = useState(false);
   const [revealed, setRevealed] = useState(() => new Set());
-  const anyHide = hideMode !== null || hideYomi;
+  const anyHide = hideMode !== null;
   const [savedSet, setSavedSet] = useState(() => new Set());
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -119,8 +118,8 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
     [filteredThemes]
   );
 
-  function persistHide(mode, yomi) {
-    try { localStorage.setItem('bk_hide_prefs', JSON.stringify({ mode, yomi })); } catch {}
+  function persistHide(mode) {
+    try { localStorage.setItem('bk_hide_prefs', JSON.stringify({ mode })); } catch {}
   }
 
   // 가리기 설정 유지 — 레벨 이동·재방문에도 유지
@@ -128,21 +127,13 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
     try {
       const s = JSON.parse(localStorage.getItem('bk_hide_prefs') || 'null');
       if (s?.mode === 'word' || s?.mode === 'meaning') setHideMode(s.mode);
-      if (s?.yomi) setHideYomi(true);
     } catch {}
   }, []);
 
   function setMode(mode) {
     const next = hideMode === mode ? null : mode;
     setHideMode(next);
-    persistHide(next, hideYomi);
-    setRevealed(new Set());
-  }
-
-  function toggleYomi() {
-    const next = !hideYomi;
-    setHideYomi(next);
-    persistHide(hideMode, next);
+    persistHide(next);
     setRevealed(new Set());
   }
 
@@ -229,14 +220,6 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
           >
             뜻
           </button>
-          <button
-            type="button"
-            className={`chip ${hideYomi ? 'chip--active' : ''}`}
-            onClick={toggleYomi}
-            aria-pressed={hideYomi}
-          >
-            {isJa ? '요미가나' : '발음'}
-          </button>
         </div>
         {hasVocab && (
           <>
@@ -261,7 +244,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
       </div>
       {anyHide && (
         <p className="fr-vlist-hint">
-          {hideMode === 'word' ? '뜻을 보고 문형을 떠올린 뒤' : hideMode === 'meaning' ? '문형을 보고 뜻을 떠올린 뒤' : isJa ? '한자를 보고 독음을 떠올린 뒤' : '철자를 보고 발음을 떠올린 뒤'}, 행을 탭하면 확인할 수 있어요.
+          {hideMode === 'word' ? '뜻을 보고 문형을 떠올린 뒤' : '문형을 보고 뜻·발음을 떠올린 뒤'}, 행을 탭하면 확인할 수 있어요.
         </p>
       )}
 
@@ -307,7 +290,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
               const isRevealed = revealed.has(rowKey);
               const wordHidden = hideMode === 'word' && !isRevealed;
               const meaningHidden = hideMode === 'meaning' && !isRevealed;
-              const yomiHidden = hideYomi && !isRevealed;
+              const yomiHidden = hideMode === 'meaning' && !isRevealed;
               return (
                 <li
                   key={rowKey}
