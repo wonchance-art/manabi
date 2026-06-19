@@ -3,8 +3,17 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useToast } from './ToastContext';
+import { pullProgress } from './refProgress';
 
 const AuthContext = createContext(null);
+
+// 레퍼런스 진도 동기화용 읽음 키 (언어명 → localStorage 키)
+const REF_READ_KEYS = {
+  Japanese: 'ja_read_chapters',
+  English: 'en_read_chapters',
+  French: 'fr_read_chapters',
+  Chinese: 'zh_read_chapters',
+};
 
 const STREAK_MILESTONES = { 7: '🔥 7일 연속 학습 달성!', 30: '🏆 30일 연속 학습 달성!', 100: '🌟 100일 연속 학습 달성!' };
 
@@ -123,6 +132,12 @@ export function AuthProvider({ children }) {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // 로그인 시 앱 어디서든 레퍼런스 진도 동기화 — [강의]/[홈] 외 페이지에서도 기기 간 병합되도록.
+  // (pullProgress 자체에 5분 throttle이 있어 과호출 안 함)
+  useEffect(() => {
+    if (user?.id) pullProgress(user.id, REF_READ_KEYS).catch(() => {});
+  }, [user?.id]);
 
   // 이메일 회원가입
   async function signUp(email, password, displayName) {
