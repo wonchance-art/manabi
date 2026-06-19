@@ -134,9 +134,9 @@ export function AuthProvider({ children }) {
   }, []);
 
   // 로그인 시 앱 어디서든 레퍼런스 진도 동기화 — [강의]/[홈] 외 페이지에서도 기기 간 병합되도록.
-  // (pullProgress 자체에 5분 throttle이 있어 과호출 안 함)
+  // user.id 변경(로그인/앱 진입) 시 1회만 도므로 force로 throttle 무시 — 다른 기기가 방금 올린 진도를 확실히 끌어온다.
   useEffect(() => {
-    if (user?.id) pullProgress(user.id, REF_READ_KEYS).catch(() => {});
+    if (user?.id) pullProgress(user.id, REF_READ_KEYS, { force: true }).catch(() => {});
   }, [user?.id]);
 
   // 이메일 회원가입
