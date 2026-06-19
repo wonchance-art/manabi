@@ -170,13 +170,38 @@ export default function ReferenceChapterPage({ lang, slug }) {
   // ② 적용 — 어순 배열만 (공백 토큰 3~10). '번역 고르기'(의미 찍기)는 가치가 없어 폐기.
   // 자연문이 아닌 예문 제외 — 변형표시(→)·대안형( / )·대화 대시(—)·성수 표기((f.)/(m.)/(pl.))는 어순 배열에 부적합.
   const isOrderable = s => !/→|\s\/\s|—| - |\([fmp][^)]*\.\)/.test(s);
+  // 중국어는 띄어쓰기가 없어 병음 단어 기준으로 어절 분리 — 병음 음절수와 한자수가 맞을 때만(儿化 등 불일치는 안전 스킵)
+  const VOWEL_RUN = /[aeiouüvāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]+/gi;
+  const isQPunct = c => /[。，、？！；：「」『』（）()…—·,.?!]/.test(c);
+  const segByPinyin = (zh, pinyin) => {
+    if (!pinyin) return null;
+    const chars = [...String(zh)].filter(c => !/\s/.test(c));
+    const counts = String(pinyin).trim().split(/\s+/)
+      .map(w => (w.replace(/['’.,。，、？！?!;:：；]/g, '').match(VOWEL_RUN) || []).length)
+      .filter(n => n > 0);
+    if (counts.reduce((a, b) => a + b, 0) !== chars.filter(c => !isQPunct(c)).length) return null;
+    const tokens = []; let ci = 0;
+    for (const s of counts) {
+      let tok = '', taken = 0;
+      while (ci < chars.length && taken < s) { tok += chars[ci]; if (!isQPunct(chars[ci])) taken++; ci++; }
+      while (ci < chars.length && isQPunct(chars[ci])) { tok += chars[ci]; ci++; }
+      tokens.push(tok);
+    }
+    while (ci < chars.length) { tokens[tokens.length - 1] += chars[ci]; ci++; }
+    return tokens;
+  };
   const apply = [];
   const usedApply = new Set(usedCloze);
   for (const ex of exAll) {
     if (apply.length >= 4) break;
     const main = refMain(ex);
-    const tokens = main.split(/[\s　]+/).filter(Boolean);
-    if (tokens.length >= 3 && tokens.length <= 10 && !usedApply.has(main) && isOrderable(main)) {
+    if (usedApply.has(main) || !isOrderable(main)) continue;
+    let tokens = main.split(/[\s　]+/).filter(Boolean);
+    if (tokens.length < 3 && ex.pinyin) {            // 중국어: 병음으로 어절 분리
+      const seg = segByPinyin(main, ex.pinyin);
+      if (seg) tokens = seg;
+    }
+    if (tokens.length >= 3 && tokens.length <= 10) {
       apply.push({ type: 'order', tokens, answer: main, ko: ex.ko, pron: refPron(ex) });
       usedApply.add(main);
     }
