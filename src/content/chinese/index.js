@@ -13,6 +13,32 @@ import grammarH4 from './grammar/h4';
 import grammarH5 from './grammar/h5';
 import grammarH6 from './grammar/h6';
 
+// 섹션별 추가 예문(slug → 섹션index → [예문]) — 본편 챕터에 병합. 본문/원본 예문 불변.
+import exOT from './grammar/ot_examples';
+import exH1 from './grammar/h1_examples';
+import exH2 from './grammar/h2_examples';
+import exH3 from './grammar/h3_examples';
+import exH4 from './grammar/h4_examples';
+import exH5 from './grammar/h5_examples';
+import exH6 from './grammar/h6_examples';
+
+/** 챕터 섹션의 examples에 추가 예문을 덧붙임 (slug→섹션index 매칭) */
+function withExtraExamples(chapters, extra) {
+  if (!extra) return chapters;
+  return chapters.map((ch) => {
+    const e = extra[ch.slug];
+    if (!e) return ch;
+    return {
+      ...ch,
+      sections: (ch.sections || []).map((s, i) => {
+        const add = e[i] || e[String(i)];
+        if (!add || !add.length) return s;
+        return { ...s, examples: [...(s.examples || []), ...add] };
+      }),
+    };
+  });
+}
+
 import vocabH1 from './vocab/h1';
 import vocabH2 from './vocab/h2';
 import vocabH3 from './vocab/h3';
@@ -133,7 +159,15 @@ export const ZH_LEVEL_META = [
 
 const registry = createRegistry(
   ZH_LEVEL_META,
-  { OT: grammarOT, H1: grammarH1, H2: grammarH2, H3: grammarH3, H4: grammarH4, H5: grammarH5, H6: grammarH6 },
+  {
+    OT: withExtraExamples(grammarOT, exOT),
+    H1: withExtraExamples(grammarH1, exH1),
+    H2: withExtraExamples(grammarH2, exH2),
+    H3: withExtraExamples(grammarH3, exH3),
+    H4: withExtraExamples(grammarH4, exH4),
+    H5: withExtraExamples(grammarH5, exH5),
+    H6: withExtraExamples(grammarH6, exH6),
+  },
   {
     H1: mergeVocab(vocabH1, vocabH1hsk),
     H2: mergeVocab(vocabH2, vocabH2hsk),

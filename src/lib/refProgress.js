@@ -6,7 +6,7 @@ import { supabase } from './supabase';
  * - 로그인: 쓰기 시 서버 upsert + 목록 진입 시 양방향 병합(pull)
  * 읽음 키(ja_read_chapters 등)의 접두사로 언어를 판별한다.
  */
-const PREFIX_LANG = { ja: 'Japanese', en: 'English', fr: 'French' };
+const PREFIX_LANG = { ja: 'Japanese', en: 'English', fr: 'French', zh: 'Chinese' };
 
 export function langFromReadKey(readKey) {
   return PREFIX_LANG[String(readKey || '').slice(0, 2)] || null;
