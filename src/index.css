@@ -898,8 +898,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .vocab-row__ex {
   grid-area: ex;
-  margin: 0; font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  margin: 0; font-size: 0.8rem; color: var(--text-muted); line-height: 1.45;
+  word-break: keep-all;   /* 끝까지 — 줄바꿈 허용 */
 }
 .vocab-row__right {
   grid-area: right; align-self: center;
@@ -927,7 +927,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   .vocab-row__pos { font-size: 0.66rem; }
   .vocab-row__tts { width: 28px; height: 28px; }
   .vocab-row__word { font-size: 1.12rem; }
-  .vocab-row__ex { display: none; }   /* 좁은 화면: 예문 접기 */
   .vocab-row__dot { display: none; }
 }
 
