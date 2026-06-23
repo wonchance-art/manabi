@@ -7831,13 +7831,18 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .fr-vrow__word { min-width: 0; }
 .fr-vrow__main {
   display: block;
-  font-size: 1.2rem; font-weight: 700;
+  font-size: 1.3rem; font-weight: 800;
   line-height: 1.4;
   overflow-wrap: break-word;
+  /* 단어장(.vocab-row__word)과 동일한 브랜드 그라데이션 */
+  background: linear-gradient(135deg, var(--text-primary) 60%, var(--primary-light));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
+/* 일본어 요미가나(rt)는 그라데이션 투명 채움에서 제외 — 후리가나 가독성 유지 */
+.fr-vrow__main rt { -webkit-text-fill-color: var(--text-muted); color: var(--text-muted); }
 .fr-vrow__pron {
   display: block;
-  font-size: 0.74rem; color: var(--text-muted);
+  font-size: 0.78rem; color: var(--text-muted); letter-spacing: 0.02em;
   margin-top: 1px;
 }
 .fr-vrow__body { min-width: 0; }
