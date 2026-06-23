@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Button from '../components/Button';
-import { detectLang } from '../lib/constants';
+import { detectLang, displayWord } from '../lib/constants';
 
 const LANG_CODE = { Japanese: 'ja', Chinese: 'zh-Hans', English: 'en', French: 'fr' };
 
@@ -182,7 +182,7 @@ export default function VocabList({
                 onClick={e => { e.stopPropagation(); speak(v.word_text, v.language || detectLang(v.word_text)); }}>▷</button>
             ) : <span className="vocab-row__tts vocab-row__tts--empty" aria-hidden="true" />}
 
-            <h3 className="vocab-row__word" lang={lc}>{v.word_text}</h3>
+            <h3 className="vocab-row__word" lang={lc}>{displayWord(v.word_text, v.pos)}</h3>
             {v.furigana && <span className="vocab-row__reading">{v.furigana}</span>}
 
             <p className="vocab-row__meaning">{v.meaning}</p>

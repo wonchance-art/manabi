@@ -19,7 +19,7 @@ import VocabReview from './VocabReview';
 import { parseTitle } from '../lib/seriesMeta';
 import { CardGridSkeleton } from '../components/Skeleton';
 import { friendlyToastMessage } from '../lib/errorMessage';
-import { detectLang } from '../lib/constants';
+import { detectLang, displayWord } from '../lib/constants';
 
 const MAX_EXAMPLE_CACHE = 50;
 
@@ -223,7 +223,7 @@ const VocabDetailCard = memo(function VocabDetailCard({ word: v, onClose, speak,
         <div className="vocab-detail-card__header">
           {v.furigana && <span className="vocab-detail-card__furigana">{v.furigana}</span>}
           <h2 className="vocab-detail-card__word">
-            {v.word_text}
+            {displayWord(v.word_text, v.pos)}
             {ttsSupported && (
               <button className="vocab-detail-card__tts" onClick={() => speak(v.word_text, v.language || 'Japanese')}>▷</button>
             )}
