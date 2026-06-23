@@ -155,7 +155,7 @@ export default function VocabList({
           return (
           <div
             key={v.id}
-            className="card vocab-row"
+            className={`card vocab-row${selectMode ? ' vocab-row--sel' : ''}`}
             style={{
               cursor: 'pointer',
               outline: selected ? '2px solid var(--primary)' : 'none',
@@ -174,28 +174,20 @@ export default function VocabList({
               }}>{selected ? '✓' : ''}</span>
             )}
 
-            {/* 품사 (고정폭) */}
+            {/* 1행: 품사 · 듣기 · 단어 · 뜻 · 우측 / 2행: 발음 · 예문 */}
             <span className="vocab-row__pos" title={v.pos || ''}>{v.pos || ''}</span>
 
-            {/* 듣기 */}
             {ttsSupported ? (
               <button className="vocab-row__tts" title="발음 듣기"
                 onClick={e => { e.stopPropagation(); speak(v.word_text, v.language || detectLang(v.word_text)); }}>▷</button>
             ) : <span className="vocab-row__tts vocab-row__tts--empty" aria-hidden="true" />}
 
-            {/* 단어 + 읽기(아래 줄), 고정폭 */}
-            <div className="vocab-row__lead">
-              <h3 className="vocab-row__word" lang={lc}>{v.word_text}</h3>
-              {v.furigana && <span className="vocab-row__reading">{v.furigana}</span>}
-            </div>
+            <h3 className="vocab-row__word" lang={lc}>{v.word_text}</h3>
+            {v.furigana && <span className="vocab-row__reading">{v.furigana}</span>}
 
-            {/* 의미 + 예문 (flex) */}
-            <div className="vocab-row__body">
-              <p className="vocab-row__meaning">{v.meaning}</p>
-              {v.source_sentence && <p className="vocab-row__ex" lang={lc}>{v.source_sentence}</p>}
-            </div>
+            <p className="vocab-row__meaning">{v.meaning}</p>
+            {v.source_sentence && <p className="vocab-row__ex" lang={lc}>{v.source_sentence}</p>}
 
-            {/* 우측: 상태 · 편집 · 삭제 */}
             <div className="vocab-row__right" onClick={e => e.stopPropagation()}>
               {due
                 ? <span className="vocab-row__due">복습</span>

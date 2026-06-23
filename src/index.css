@@ -844,48 +844,67 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 
 /* ── 풀폭 단어 행(row) — 섹터 고정폭 정렬, 정보 풍부 ── */
 .vocab-list { display: flex; flex-direction: column; gap: 8px; }
+/* 2행 그리드 — 1행: 품사·듣기·단어·뜻·우측 (한 라인) / 2행: 발음(단어 아래)·예문(뜻 아래) */
 .vocab-row {
-  display: flex; align-items: baseline; gap: 12px;
+  display: grid;
+  grid-template-columns: 52px 30px 150px minmax(0, 1fr) auto;
+  grid-template-areas:
+    "pos tts word meaning right"
+    ".   .   reading ex      .";
+  align-items: baseline;
+  column-gap: 12px; row-gap: 2px;
   padding: 11px 16px;
 }
-.vocab-row__check {
-  display: inline-flex; align-items: center; justify-content: center; align-self: center;
-  width: 22px; height: 22px; border-radius: 4px; border: 2px solid var(--border);
-  color: #fff; font-size: 0.8rem; flex-shrink: 0;
+.vocab-row--sel {
+  grid-template-columns: 26px 52px 30px 150px minmax(0, 1fr) auto;
+  grid-template-areas:
+    "check pos tts word meaning right"
+    "check .   .   reading ex      .";
 }
-/* 품사 — 고정폭 좌측 */
+.vocab-row__check {
+  grid-area: check; align-self: center;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 4px; border: 2px solid var(--border);
+  color: #fff; font-size: 0.8rem;
+}
 .vocab-row__pos {
-  width: 52px; flex-shrink: 0; font-size: 0.72rem; color: var(--text-muted);
+  grid-area: pos; align-self: baseline;
+  font-size: 0.72rem; color: var(--text-muted);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-/* 듣기 버튼 — 고정 */
 .vocab-row__tts {
-  width: 30px; height: 30px; flex-shrink: 0; align-self: center; border-radius: var(--radius-sm);
+  grid-area: tts; align-self: center;
+  width: 30px; height: 30px; border-radius: var(--radius-sm);
   background: transparent; border: 1px solid var(--border); color: var(--text-muted);
   font-size: 0.78rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
   transition: color .12s, border-color .12s;
 }
 .vocab-row__tts:hover { border-color: var(--primary); color: var(--primary); }
 .vocab-row__tts--empty { border-color: transparent; pointer-events: none; }
-/* 단어 + 읽기 — 고정폭 */
-.vocab-row__lead { width: 150px; flex-shrink: 0; display: flex; flex-direction: column; }
 .vocab-row__word {
+  grid-area: word; align-self: baseline;
   font-size: 1.3rem; font-weight: 800; margin: 0; line-height: 1.2; word-break: break-word;
   background: linear-gradient(135deg, var(--text-primary) 60%, var(--primary-light));
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
 .vocab-row__reading {
-  display: block; font-size: 0.78rem; color: var(--text-muted); margin-top: 3px; letter-spacing: 0.02em;
+  grid-area: reading; font-size: 0.78rem; color: var(--text-muted); letter-spacing: 0.02em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-/* 의미 + 예문 — 가변 */
-.vocab-row__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-.vocab-row__meaning { margin: 0; font-size: 0.95rem; color: var(--text-secondary); line-height: 1.45; }
+.vocab-row__meaning {
+  grid-area: meaning; align-self: baseline;
+  margin: 0; font-size: 0.95rem; color: var(--text-secondary); line-height: 1.4;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
 .vocab-row__ex {
+  grid-area: ex;
   margin: 0; font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-/* 우측 — 상태 · 편집 · 삭제 */
-.vocab-row__right { display: flex; align-items: center; gap: 4px; flex-shrink: 0; align-self: center; }
+.vocab-row__right {
+  grid-area: right; align-self: center;
+  display: flex; align-items: center; gap: 4px;
+}
 .vocab-row__dot { width: 9px; height: 9px; border-radius: 50%; }
 .vocab-row__due {
   font-size: 0.68rem; font-weight: 700; color: var(--warning);
@@ -900,10 +919,13 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .vocab-row__act:hover { border-color: var(--primary-light); color: var(--primary-light); }
 .vocab-row__act--danger:hover { border-color: var(--danger); color: var(--danger); }
 @media (max-width: 560px) {
-  .vocab-row { gap: 9px; padding: 10px 12px; }
-  .vocab-row__pos { width: 38px; font-size: 0.66rem; }
+  .vocab-row {
+    grid-template-columns: 38px 28px 92px minmax(0, 1fr) auto;
+    column-gap: 9px; padding: 10px 12px;
+  }
+  .vocab-row--sel { grid-template-columns: 24px 38px 28px 92px minmax(0, 1fr) auto; }
+  .vocab-row__pos { font-size: 0.66rem; }
   .vocab-row__tts { width: 28px; height: 28px; }
-  .vocab-row__lead { width: 96px; }
   .vocab-row__word { font-size: 1.12rem; }
   .vocab-row__ex { display: none; }   /* 좁은 화면: 예문 접기 */
   .vocab-row__dot { display: none; }
