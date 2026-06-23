@@ -23,6 +23,30 @@ import { detectLang, displayWord } from '../lib/constants';
 
 const MAX_EXAMPLE_CACHE = 50;
 
+// 하루 새 단어 한도 — Anki식 신규 큐 제한 (0 = 복습만)
+const NEW_PER_DAY_OPTIONS = [0, 5, 10, 15, 20, 30, 40];
+const DEFAULT_NEW_PER_DAY = 15;
+const INTRO_KEY = 'vocab_new_intro';
+const todayStr = () => new Date().toISOString().slice(0, 10);
+
+// 신규(미학습) 판정 — 한 번이라도 복습하면 last_reviewed_at이 채워진다.
+// (repetitions는 이 스키마에서 lapses라 신규 판정에 쓰면 안 됨)
+const isNewWord = (v) => !v.last_reviewed_at;
+
+// 오늘 새로 시작한 단어 ID 집합 (날짜 바뀌면 리셋)
+function loadIntroIds() {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = JSON.parse(localStorage.getItem(INTRO_KEY) || 'null');
+    if (raw && raw.date === todayStr() && Array.isArray(raw.ids)) return raw.ids;
+  } catch { /* ignore */ }
+  return [];
+}
+function saveIntroIds(ids) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(INTRO_KEY, JSON.stringify({ date: todayStr(), ids }));
+}
+
 // 단어의 "덱" — 교재 단어는 source_ref(예: "중국어 · H3"), 리더 단어는 자료 시리즈로 묶는다.
 function deckOf(v) {
   if (v.source_ref) return { key: v.source_ref, label: v.source_ref };
@@ -370,26 +394,29 @@ export default function VocabPage() {
     if (typeof window !== 'undefined') localStorage.setItem('as_review_mode', reviewMode);
   }, [reviewMode]);
 
-  // reviewIdx 영속화 (같은 날 기준, user별)
+  // 하루 새 단어 한도
+  const [newPerDay, setNewPerDay] = useState(() => {
+    if (typeof window === 'undefined') return DEFAULT_NEW_PER_DAY;
+    const n = parseInt(localStorage.getItem('vocab_new_per_day'), 10);
+    return Number.isFinite(n) ? n : DEFAULT_NEW_PER_DAY;
+  });
   useEffect(() => {
-    if (!user?.id || tab !== 'review' || reviewFinished) return;
-    const key = `as_review_progress_${user.id}`;
-    const today = new Date().toISOString().slice(0, 10);
-    localStorage.setItem(key, JSON.stringify({ date: today, idx: reviewIdx }));
-  }, [reviewIdx, tab, reviewFinished, user?.id]);
+    if (typeof window !== 'undefined') localStorage.setItem('vocab_new_per_day', String(newPerDay));
+  }, [newPerDay]);
 
-  // 재방문 시 같은 날 복원
-  useEffect(() => {
-    if (!user?.id) return;
-    const key = `as_review_progress_${user.id}`;
-    try {
-      const saved = JSON.parse(localStorage.getItem(key) || 'null');
-      const today = new Date().toISOString().slice(0, 10);
-      if (saved?.date === today && saved.idx > 0) {
-        setReviewIdx(saved.idx);
-      }
-    } catch { /* ignore */ }
-  }, [user?.id]);
+  // 오늘 새로 시작한 단어 ID (날짜 바뀌면 자동 리셋)
+  const [introIds, setIntroIds] = useState(loadIntroIds);
+  const registerNewIntro = (id) => {
+    setIntroIds(prev => {
+      if (prev.includes(id)) return prev;
+      const next = [...prev, id];
+      saveIntroIds(next);
+      return next;
+    });
+  };
+
+  // 복습 큐 — startReview에서 스냅샷으로 고정 (채점해도 재배열/스킵 없음)
+  const [reviewQueue, setReviewQueue] = useState([]);
   const [typingAnswer, setTypingAnswer] = useState('');
   const [contextSelected, setContextSelected] = useState(null);
   const exampleCacheRef = useRef(new Map());
@@ -605,24 +632,36 @@ export default function VocabPage() {
   // 현재 덱(시리즈 필터) 범위의 단어 — 히어로·현황·복습 큐가 공유
   const deckScope = useMemo(() => vocab.filter(vocabMatchesSeries), [vocab, seriesFilter]);
 
-  const reviewWords = useMemo(() => {
-    const now = new Date();
-    return deckScope.filter(v => new Date(v.next_review_at) <= now);
-  }, [deckScope]);
-  const currentWord = reviewWords[reviewIdx];
-
-  // 상단 미니 현황 — 복습 대기 / 신규(미학습) / 학습 중 / 숙련, 덱 범위 기준
+  // 덱 범위 구성: 미학습(신규)·학습 중·숙련 (서로 안 겹치게 분할)
   const deckStats = useMemo(() => {
-    const now = new Date();
-    let due = 0, neu = 0, learning = 0, mastered = 0;
+    let neu = 0, learning = 0, mastered = 0;
     for (const v of deckScope) {
-      if (new Date(v.next_review_at) <= now) due++;
-      if ((v.repetitions ?? 0) === 0) neu++;
+      if (isNewWord(v)) neu++;
       else if ((v.interval ?? 0) >= 30) mastered++;
       else learning++;
     }
-    return { total: deckScope.length, due, neu, learning, mastered };
+    return { total: deckScope.length, neu, learning, mastered };
   }, [deckScope]);
+
+  // 오늘 세션 미리보기 — 복습 예정 + (하루 한도 내) 새 단어
+  const remainingNew = Math.max(0, newPerDay - introIds.length);
+  const session = useMemo(() => {
+    const now = new Date();
+    const reviewsDue = deckScope.filter(v => !isNewWord(v) && new Date(v.next_review_at) <= now);
+    const newAvailable = deckScope.filter(v => isNewWord(v) && new Date(v.next_review_at) <= now);
+    const newToday = Math.min(newAvailable.length, remainingNew);
+    return { reviewsDue, newAvailable, newToday, count: reviewsDue.length + newToday };
+  }, [deckScope, remainingNew]);
+
+  // 복습 큐(스냅샷) → 단어 객체. 길이 안정(삭제돼도 null 유지)해 인덱스 정렬 보존.
+  const reviewSessionWords = useMemo(
+    () => reviewQueue.map(id => vocab.find(v => v.id === id) || null),
+    [reviewQueue, vocab]
+  );
+  const currentWord = useMemo(() => {
+    const id = reviewQueue[reviewIdx];
+    return id != null ? vocab.find(v => v.id === id) : undefined;
+  }, [reviewQueue, reviewIdx, vocab]);
 
   const contextOptions = useMemo(() => {
     if (!currentWord) return [];
@@ -634,6 +673,7 @@ export default function VocabPage() {
 
   const handleScore = (rating) => {
     if (!currentWord) return;
+    const wasNew = isNewWord(currentWord);
     const prevInterval = currentWord.interval ?? 0;
     const nextStats = calculateFSRS(rating, {
       interval: prevInterval,
@@ -649,7 +689,8 @@ export default function VocabPage() {
       newInterval: nextStats.interval ?? 0,
     });
     recordActivity(user.id, () => fetchProfile(user.id));
-    goNextReview();
+    if (wasNew) registerNewIntro(currentWord.id);            // 새 단어 첫 학습 → 오늘 한도 차감
+    goNextReview(rating === 1 ? currentWord.id : null);      // '다시'는 이번 세션 끝에 재노출
   };
 
   const handleSkip = () => {
@@ -692,24 +733,28 @@ export default function VocabPage() {
     }
   }
 
-  const goNextReview = () => {
+  const goNextReview = (requeueId = null) => {
     setShowHint(false);
     setTypingAnswer('');
     setContextSelected(null);
-    if (reviewIdx < reviewWords.length - 1) {
+    const newLen = reviewQueue.length + (requeueId ? 1 : 0);
+    if (requeueId) setReviewQueue(q => [...q, requeueId]);
+    if (reviewIdx < newLen - 1) {
       setReviewIdx(i => i + 1);
       setShowAnswer(false);
     } else {
       setReviewFinished(true);
       toast('오늘의 복습 완료', 'celebrate', 5000);
-      // 진행도 정리
-      if (user?.id && typeof window !== 'undefined') {
-        localStorage.removeItem(`as_review_progress_${user.id}`);
-      }
     }
   };
 
   const startReview = () => {
+    // 복습 예정(학습한 단어) 먼저, 그다음 하루 한도 내 새 단어
+    const reviews = session.reviewsDue;
+    const news = session.newAvailable.slice(0, session.newToday);
+    const queue = [...reviews, ...news].map(v => v.id);
+    if (queue.length === 0) return;
+    setReviewQueue(queue);
     setTab('review');
     setReviewIdx(0);
     setShowAnswer(false);
@@ -749,14 +794,18 @@ export default function VocabPage() {
       {tab === 'list' && !isLoading && (
         <div className="card vocab-hero">
           <div className="vocab-hero__body">
-            <span className="vocab-hero__kicker">{vocab.length === 0 ? '어휘' : '오늘 복습'}</span>
+            <span className="vocab-hero__kicker">{vocab.length === 0 ? '어휘' : '오늘 학습'}</span>
             {vocab.length === 0 ? (
               <span className="vocab-hero__sub">자료를 읽으며 단어를 모아보세요</span>
-            ) : reviewWords.length > 0 ? (
+            ) : session.count > 0 ? (
               <>
-                <span className="vocab-hero__num">{reviewWords.length}</span>
-                <span className="vocab-hero__sub">개 단어가 기다려요</span>
+                <span className="vocab-hero__num">{session.count}</span>
+                <span className="vocab-hero__sub">개 — 복습 {session.reviewsDue.length} · 새 단어 {session.newToday}</span>
               </>
+            ) : session.newAvailable.length > 0 ? (
+              <span className="vocab-hero__done">
+                오늘 학습 끝 · 새 단어 {session.newAvailable.length}개는 내일
+              </span>
             ) : (
               <span className="vocab-hero__done">
                 오늘 복습 끝{(() => {
@@ -775,7 +824,7 @@ export default function VocabPage() {
             {vocab.length === 0 && (
               <Link href="/materials" className="btn btn--primary btn--sm">자료 읽기 →</Link>
             )}
-            {reviewWords.length > 0 && (
+            {session.count > 0 && (
               <Button onClick={startReview}>복습 시작 →</Button>
             )}
             <Button size="sm" variant="ghost" onClick={() => setManualAddOpen(true)}>+ 추가</Button>
@@ -803,6 +852,25 @@ export default function VocabPage() {
                   <Link href="/home" style={{ display: 'block', padding: '10px 14px', fontSize: '0.85rem', textDecoration: 'none', color: 'var(--text-primary)' }}>
                     학습 통계
                   </Link>
+                  <div style={{ padding: '10px 14px', borderTop: '1px solid var(--border)' }}>
+                    <label htmlFor="new-per-day" style={{ display: 'block', fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: 5 }}>
+                      하루 새 단어 한도
+                    </label>
+                    <select
+                      id="new-per-day"
+                      value={newPerDay}
+                      onChange={e => setNewPerDay(parseInt(e.target.value, 10))}
+                      style={{
+                        width: '100%', padding: '6px 8px', fontSize: '0.85rem',
+                        borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)',
+                        background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer',
+                      }}
+                    >
+                      {NEW_PER_DAY_OPTIONS.map(n => (
+                        <option key={n} value={n}>{n === 0 ? '없음 (복습만)' : `${n}개`}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </details>
             )}
@@ -810,15 +878,17 @@ export default function VocabPage() {
         </div>
       )}
 
-      {/* 상단 미니 현황 — 복습/신규/학습 중/숙련 (덱 범위 기준) */}
+      {/* 상단 미니 현황 — 내 단어장 구성(미학습·학습 중·숙련) + 오늘 신규 한도 */}
       {tab === 'list' && !isLoading && vocab.length > 0 && (
         <div className="vocab-stat-strip">
-          <span className="vocab-stat" data-tone={deckStats.due > 0 ? 'due' : undefined}>
-            복습 <strong>{deckStats.due}</strong>
-          </span>
-          <span className="vocab-stat">신규 <strong>{deckStats.neu}</strong></span>
+          <span className="vocab-stat">미학습 <strong>{deckStats.neu}</strong></span>
           <span className="vocab-stat">학습 중 <strong>{deckStats.learning}</strong></span>
           <span className="vocab-stat">숙련 <strong>{deckStats.mastered}</strong></span>
+          {newPerDay > 0 && (
+            <span className="vocab-stat" title="오늘 새로 시작한 단어 / 하루 한도">
+              오늘 신규 <strong>{introIds.length}/{newPerDay}</strong>
+            </span>
+          )}
           <span className="vocab-stat vocab-stat--total">{seriesFilter === 'all' ? '전체' : '이 덱'} <strong>{deckStats.total}</strong></span>
         </div>
       )}
@@ -886,7 +956,7 @@ export default function VocabPage() {
       ) : tab === 'review' ? (
         <VocabReview
           vocab={vocab}
-          reviewWords={reviewWords}
+          reviewWords={reviewSessionWords}
           reviewIdx={reviewIdx}
           currentWord={currentWord}
           reviewFinished={reviewFinished}
