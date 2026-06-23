@@ -817,6 +817,31 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   align-items: center;
 }
 
+/* ── 미니멀 단어 카드 ── */
+.vocab-card--min { gap: 0; }
+.vocab-card__head { display: flex; align-items: flex-start; gap: 10px; }
+.vocab-card__text { flex: 1; min-width: 0; }
+.vocab-card__text .vocab-card__word { font-size: 1.3rem; line-height: 1.25; }
+.vocab-card__text .vocab-card__meaning { margin-top: 4px; }
+.vocab-card__side { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.vocab-card__dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.vocab-card__actions { display: flex; gap: 2px; }
+.vocab-card__act {
+  width: 26px; height: 26px; border-radius: var(--radius-sm);
+  background: transparent; border: 1px solid transparent;
+  color: var(--text-muted); font-size: 0.8rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: color .12s, border-color .12s;
+}
+.vocab-card__act:hover { border-color: var(--primary-light); color: var(--primary-light); }
+.vocab-card__act--danger:hover { border-color: var(--danger); color: var(--danger); }
+/* 포인터 기기는 hover 시에만 액션 노출, 터치 기기는 항상 노출 */
+@media (hover: hover) {
+  .vocab-card__actions { opacity: 0; transition: opacity .12s; }
+  .vocab-card:hover .vocab-card__actions,
+  .vocab-card:focus-within .vocab-card__actions { opacity: 1; }
+}
+
 /* ========= Vocab Detail Card ========= */
 .vocab-detail-overlay {
   position: fixed;

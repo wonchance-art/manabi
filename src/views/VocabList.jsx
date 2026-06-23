@@ -145,10 +145,13 @@ export default function VocabList({
             if (selectMode) toggleSelect(v.id);
             else onWordClick?.(v);
           };
+          const itv = v.interval ?? 0;
+          const stageColor = itv >= 30 ? 'var(--accent)' : itv >= 7 ? 'var(--warning)' : 'var(--danger)';
+          const stageLabel = itv >= 30 ? '숙련' : itv >= 7 ? '학습 중' : '초기';
           return (
           <div
             key={v.id}
-            className="card vocab-card"
+            className="card vocab-card vocab-card--min"
             style={{
               cursor: 'pointer',
               outline: selected ? '2px solid var(--primary)' : 'none',
@@ -160,99 +163,43 @@ export default function VocabList({
             onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), handleClick())}
             aria-label={`${v.word_text} — ${v.meaning}${selectMode ? (selected ? ' (선택됨)' : '') : ''}`}
           >
-            <div className="vocab-card__header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                {selectMode && (
-                  <span style={{
-                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                    width: 22, height: 22, borderRadius: 4,
-                    border: `2px solid ${selected ? 'var(--primary)' : 'var(--border)'}`,
-                    background: selected ? 'var(--primary)' : 'transparent',
-                    color: '#fff', fontSize: '0.8rem', flexShrink: 0,
-                  }}>
-                    {selected ? '✓' : ''}
-                  </span>
-                )}
-                <div>
-                  {v.furigana && <div className="vocab-card__furigana">{v.furigana}</div>}
-                  <h3 className="vocab-card__word">{v.word_text}</h3>
-                </div>
+            <div className="vocab-card__head">
+              {selectMode && (
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  width: 22, height: 22, borderRadius: 4, marginTop: 2,
+                  border: `2px solid ${selected ? 'var(--primary)' : 'var(--border)'}`,
+                  background: selected ? 'var(--primary)' : 'transparent',
+                  color: '#fff', fontSize: '0.8rem', flexShrink: 0,
+                }}>
+                  {selected ? '✓' : ''}
+                </span>
+              )}
+              <div className="vocab-card__text">
+                {v.furigana && <span className="vocab-card__furigana">{v.furigana}</span>}
+                <h3 className="vocab-card__word">{v.word_text}</h3>
+                <p className="vocab-card__meaning">{v.meaning}</p>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }} onClick={e => e.stopPropagation()}>
-                <span className="badge" style={{ fontSize: '0.7rem' }}>{v.pos}</span>
-                {!selectMode && ttsSupported && (
-                  <button
-                    onClick={() => speak(v.word_text, v.language || detectLang(v.word_text))}
-                    title="발음 듣기"
-                    style={{
-                      width: '26px', height: '26px', borderRadius: 'var(--radius-sm)',
-                      background: 'transparent', border: '1px solid var(--border)',
-                      color: 'var(--text-muted)', fontSize: '0.8rem', cursor: 'pointer',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}
-                  >
-                    ▷
-                  </button>
-                )}
-                {!selectMode && updateVocabMutation && (
-                  <button
-                    onClick={() => setEditing({
-                      id: v.id,
-                      word_text: v.word_text,
-                      furigana: v.furigana || '',
-                      meaning: v.meaning || '',
-                      pos: v.pos || '',
-                    })}
-                    style={{
-                      width: '26px', height: '26px', borderRadius: 'var(--radius-sm)',
-                      background: 'transparent', border: '1px solid transparent',
-                      color: 'var(--text-muted)', fontSize: '0.82rem', cursor: 'pointer',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--primary-light)'; e.currentTarget.style.color = 'var(--primary-light)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}
-                    title="편집"
-                  >
-                    ✎
-                  </button>
-                )}
+              <div className="vocab-card__side" onClick={e => e.stopPropagation()}>
+                <span className="vocab-card__dot" style={{ background: stageColor }} title={stageLabel} aria-label={stageLabel} />
                 {!selectMode && (
-                  <button
-                    onClick={() => setConfirmAction({
-                      message: `"${v.word_text}" 를 단어장에서 삭제할까요?`,
-                      onConfirm: () => { deleteMutation.mutate(v.id); setConfirmAction(null); },
-                    })}
-                    style={{
-                      width: '26px', height: '26px', borderRadius: 'var(--radius-sm)',
-                      background: 'transparent', border: '1px solid transparent',
-                      color: 'var(--text-muted)', fontSize: '0.85rem', cursor: 'pointer',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      transition: 'all var(--transition-fast)',
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--danger)'; e.currentTarget.style.color = 'var(--danger)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}
-                    title="삭제"
-                  >
-                    ✕
-                  </button>
+                  <div className="vocab-card__actions">
+                    {ttsSupported && (
+                      <button className="vocab-card__act" title="발음 듣기"
+                        onClick={() => speak(v.word_text, v.language || detectLang(v.word_text))}>▷</button>
+                    )}
+                    {updateVocabMutation && (
+                      <button className="vocab-card__act" title="편집"
+                        onClick={() => setEditing({ id: v.id, word_text: v.word_text, furigana: v.furigana || '', meaning: v.meaning || '', pos: v.pos || '' })}>✎</button>
+                    )}
+                    <button className="vocab-card__act vocab-card__act--danger" title="삭제"
+                      onClick={() => setConfirmAction({
+                        message: `"${v.word_text}" 를 단어장에서 삭제할까요?`,
+                        onConfirm: () => { deleteMutation.mutate(v.id); setConfirmAction(null); },
+                      })}>✕</button>
+                  </div>
                 )}
               </div>
-            </div>
-            <p className="vocab-card__meaning">{v.meaning}</p>
-            <div className="vocab-card__footer">
-              <span>{new Date(v.next_review_at) <= new Date()
-                ? '복습 필요'
-                : new Date(v.next_review_at).toLocaleDateString('ko-KR')}
-              </span>
-              <span style={{
-                padding: '2px 8px',
-                borderRadius: 'var(--radius-full)',
-                background: v.interval >= 30 ? 'rgba(74,138,92,0.15)' : v.interval >= 7 ? 'rgba(252,196,25,0.15)' : 'rgba(255,107,107,0.1)',
-                color: v.interval >= 30 ? 'var(--accent)' : v.interval >= 7 ? 'var(--warning)' : 'var(--danger)',
-                fontWeight: 600,
-              }}>
-                {v.interval >= 30 ? '숙련' : v.interval >= 7 ? '학습 중' : '초기'}
-              </span>
             </div>
           </div>
           );
