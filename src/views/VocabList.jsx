@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Button from '../components/Button';
-import { detectLang } from '../lib/constants';
+import { detectLang, displayWord } from '../lib/constants';
+
+const LANG_CODE = { Japanese: 'ja', Chinese: 'zh-Hans', English: 'en', French: 'fr' };
 
 export default function VocabList({
   filteredVocab, visibleCount, setVisibleCount,
@@ -138,17 +140,22 @@ export default function VocabList({
         </div>
       )}
 
-      <div className="feature-grid">
+      <div className="vocab-list">
         {filteredVocab.length > 0 ? filteredVocab.slice(0, visibleCount).map(v => {
           const selected = selectedIds.has(v.id);
           const handleClick = () => {
             if (selectMode) toggleSelect(v.id);
             else onWordClick?.(v);
           };
+          const itv = v.interval ?? 0;
+          const stageColor = itv >= 30 ? 'var(--accent)' : itv >= 7 ? 'var(--warning)' : 'var(--danger)';
+          const stageLabel = itv >= 30 ? '숙련' : itv >= 7 ? '학습 중' : '초기';
+          const due = new Date(v.next_review_at) <= new Date();
+          const lc = LANG_CODE[v.language];
           return (
           <div
             key={v.id}
-            className="card vocab-card"
+            className={`card vocab-row${selectMode ? ' vocab-row--sel' : ''}`}
             style={{
               cursor: 'pointer',
               outline: selected ? '2px solid var(--primary)' : 'none',
@@ -160,104 +167,47 @@ export default function VocabList({
             onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), handleClick())}
             aria-label={`${v.word_text} — ${v.meaning}${selectMode ? (selected ? ' (선택됨)' : '') : ''}`}
           >
-            <div className="vocab-card__header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                {selectMode && (
-                  <span style={{
-                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                    width: 22, height: 22, borderRadius: 4,
-                    border: `2px solid ${selected ? 'var(--primary)' : 'var(--border)'}`,
-                    background: selected ? 'var(--primary)' : 'transparent',
-                    color: '#fff', fontSize: '0.8rem', flexShrink: 0,
-                  }}>
-                    {selected ? '✓' : ''}
-                  </span>
-                )}
-                <div>
-                  {v.furigana && <div className="vocab-card__furigana">{v.furigana}</div>}
-                  <h3 className="vocab-card__word">{v.word_text}</h3>
-                </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }} onClick={e => e.stopPropagation()}>
-                <span className="badge" style={{ fontSize: '0.7rem' }}>{v.pos}</span>
-                {!selectMode && ttsSupported && (
-                  <button
-                    onClick={() => speak(v.word_text, v.language || detectLang(v.word_text))}
-                    title="발음 듣기"
-                    style={{
-                      width: '26px', height: '26px', borderRadius: 'var(--radius-sm)',
-                      background: 'transparent', border: '1px solid var(--border)',
-                      color: 'var(--text-muted)', fontSize: '0.8rem', cursor: 'pointer',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}
-                  >
-                    ▷
-                  </button>
-                )}
-                {!selectMode && updateVocabMutation && (
-                  <button
-                    onClick={() => setEditing({
-                      id: v.id,
-                      word_text: v.word_text,
-                      furigana: v.furigana || '',
-                      meaning: v.meaning || '',
-                      pos: v.pos || '',
-                    })}
-                    style={{
-                      width: '26px', height: '26px', borderRadius: 'var(--radius-sm)',
-                      background: 'transparent', border: '1px solid transparent',
-                      color: 'var(--text-muted)', fontSize: '0.82rem', cursor: 'pointer',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--primary-light)'; e.currentTarget.style.color = 'var(--primary-light)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}
-                    title="편집"
-                  >
-                    ✎
-                  </button>
-                )}
-                {!selectMode && (
-                  <button
-                    onClick={() => setConfirmAction({
-                      message: `"${v.word_text}" 를 단어장에서 삭제할까요?`,
-                      onConfirm: () => { deleteMutation.mutate(v.id); setConfirmAction(null); },
-                    })}
-                    style={{
-                      width: '26px', height: '26px', borderRadius: 'var(--radius-sm)',
-                      background: 'transparent', border: '1px solid transparent',
-                      color: 'var(--text-muted)', fontSize: '0.85rem', cursor: 'pointer',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      transition: 'all var(--transition-fast)',
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--danger)'; e.currentTarget.style.color = 'var(--danger)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; }}
-                    title="삭제"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-            </div>
-            <p className="vocab-card__meaning">{v.meaning}</p>
-            <div className="vocab-card__footer">
-              <span>{new Date(v.next_review_at) <= new Date()
-                ? '복습 필요'
-                : new Date(v.next_review_at).toLocaleDateString('ko-KR')}
-              </span>
-              <span style={{
-                padding: '2px 8px',
-                borderRadius: 'var(--radius-full)',
-                background: v.interval >= 30 ? 'rgba(74,138,92,0.15)' : v.interval >= 7 ? 'rgba(252,196,25,0.15)' : 'rgba(255,107,107,0.1)',
-                color: v.interval >= 30 ? 'var(--accent)' : v.interval >= 7 ? 'var(--warning)' : 'var(--danger)',
-                fontWeight: 600,
-              }}>
-                {v.interval >= 30 ? '숙련' : v.interval >= 7 ? '학습 중' : '초기'}
-              </span>
+            {selectMode && (
+              <span className="vocab-row__check" style={{
+                borderColor: selected ? 'var(--primary)' : 'var(--border)',
+                background: selected ? 'var(--primary)' : 'transparent',
+              }}>{selected ? '✓' : ''}</span>
+            )}
+
+            {/* 1행: 품사 · 듣기 · 단어 · 뜻 · 우측 / 2행: 발음 · 예문 */}
+            <span className="vocab-row__pos" title={v.pos || ''}>{v.pos || ''}</span>
+
+            {ttsSupported ? (
+              <button className="vocab-row__tts" title="발음 듣기"
+                onClick={e => { e.stopPropagation(); speak(v.word_text, v.language || detectLang(v.word_text)); }}>▷</button>
+            ) : <span className="vocab-row__tts vocab-row__tts--empty" aria-hidden="true" />}
+
+            <h3 className="vocab-row__word" lang={lc}>{displayWord(v.word_text, v.pos)}</h3>
+            {v.furigana && <span className="vocab-row__reading">{v.furigana}</span>}
+
+            <p className="vocab-row__meaning">{v.meaning}</p>
+            {v.source_sentence && <p className="vocab-row__ex" lang={lc}>{v.source_sentence}</p>}
+
+            <div className="vocab-row__right" onClick={e => e.stopPropagation()}>
+              {due
+                ? <span className="vocab-row__due">복습</span>
+                : <span className="vocab-row__dot" style={{ background: stageColor }} title={stageLabel} aria-label={stageLabel} />}
+              {!selectMode && updateVocabMutation && (
+                <button className="vocab-row__act" title="편집"
+                  onClick={() => setEditing({ id: v.id, word_text: v.word_text, furigana: v.furigana || '', meaning: v.meaning || '', pos: v.pos || '' })}>✎</button>
+              )}
+              {!selectMode && (
+                <button className="vocab-row__act vocab-row__act--danger" title="삭제"
+                  onClick={() => setConfirmAction({
+                    message: `"${v.word_text}" 를 단어장에서 삭제할까요?`,
+                    onConfirm: () => { deleteMutation.mutate(v.id); setConfirmAction(null); },
+                  })}>✕</button>
+              )}
             </div>
           </div>
           );
         }) : (
-          <div className="empty-state" style={{ gridColumn: '1/-1' }}>
+          <div className="empty-state">
             <p className="empty-state__msg">
               {search
                 ? '검색 결과가 없습니다.'
