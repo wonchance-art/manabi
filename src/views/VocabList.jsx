@@ -176,7 +176,9 @@ export default function VocabList({
             )}
 
             {/* 1행: 품사 · 듣기 · 단어 · 뜻 · 우측 / 2행: 발음 · 예문 */}
-            <span className="vocab-row__pos" title={v.pos || ''}>{v.pos || ''}</span>
+            {v.pos
+              ? <span className="vocab-row__pos" title={v.pos}>{v.pos}</span>
+              : <span className="vocab-row__pos vocab-row__pos--empty" aria-hidden="true" />}
 
             {ttsSupported ? (
               <button className="vocab-row__tts" title="발음 듣기"
