@@ -122,9 +122,11 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
           user_id: user.id,
           word_text: text,
           base_form: text,
+          furigana: refPron(w) || '',                  // 발음 (병음/IPA/요미) — 리더와 동일 컬럼
           meaning: w.ko || '',
           pos: w.pos || '',
           language: lang,
+          source_sentence: w.ex ? (refMain(w.ex) || null) : null,  // 예문(원어) — 복습 카드 맥락
         }, { onConflict: 'user_id,word_text' });
       if (error) throw error;
       setSavedSet(prev => new Set([...prev, text]));
