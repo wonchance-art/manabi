@@ -120,19 +120,27 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
     // 단어장 "덱" 라벨 — 언어·레벨 단위 (예: "중국어 · H3")
     const deck = [LANG_KO[lang] || lang, meta?.short || meta?.key].filter(Boolean).join(' · ');
     try {
-      const { error } = await supabase
+      const base = {
+        user_id: user.id,
+        word_text: text,
+        base_form: text,
+        furigana: refPron(w) || '',                  // 발음 (병음/IPA/요미) — 리더와 동일 컬럼
+        meaning: w.ko || '',
+        pos: w.pos || '',
+        language: lang,
+        source_sentence: w.ex ? (refMain(w.ex) || null) : null,  // 예문(원어) — 복습 카드 맥락
+        source_ref: deck || null,                    // 덱 라벨 — 출처별 집중 복습
+      };
+      // 어원/한자 "연결 지식" — 단어장 초록 노트. 컬럼 마이그레이션 전이면 폴백.
+      const full = { ...base, etym: w.etym || null, hanja: w.hanja || null };
+      let { error } = await supabase
         .from('user_vocabulary')
-        .upsert({
-          user_id: user.id,
-          word_text: text,
-          base_form: text,
-          furigana: refPron(w) || '',                  // 발음 (병음/IPA/요미) — 리더와 동일 컬럼
-          meaning: w.ko || '',
-          pos: w.pos || '',
-          language: lang,
-          source_sentence: w.ex ? (refMain(w.ex) || null) : null,  // 예문(원어) — 복습 카드 맥락
-          source_ref: deck || null,                    // 덱 라벨 — 출처별 집중 복습
-        }, { onConflict: 'user_id,word_text' });
+        .upsert(full, { onConflict: 'user_id,word_text' });
+      if (error && /etym|hanja|column/i.test(error.message || '')) {
+        ({ error } = await supabase
+          .from('user_vocabulary')
+          .upsert(base, { onConflict: 'user_id,word_text' }));
+      }
       if (error) throw error;
       setSavedSet(prev => new Set([...prev, text]));
       toast?.(`"${text}" 단어장에 저장`, 'success');

@@ -800,12 +800,26 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   margin: 0; font-size: 0.95rem; color: var(--text-secondary); line-height: 1.4;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.vocab-row__ex {
+/* 뜻 아래 보조 행 — 초록 노트(어원/한자) + 예문 박스를 세로로 쌓음 */
+.vocab-row__sub {
   grid-area: ex;
+  min-width: 0;
+  display: flex; flex-direction: column; gap: 4px;
+}
+/* 어원/한자 "연결 지식" — 사전 .fr-vrow__etym와 동일한 초록 텍스트 */
+.vocab-row__note {
+  margin: 0; font-size: 0.78rem; color: #51A85C; line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.vocab-row__note strong { font-weight: 700; }
+.vocab-row__ex {
   min-width: 0;           /* 그리드 아이템 기본 min-width:auto 무력화 → 트랙 안에서 접힘 */
   margin: 0; font-size: 0.8rem; color: var(--text-muted); line-height: 1.45;
   word-break: normal;
   overflow-wrap: anywhere; /* 띄어쓰기 없는 CJK 예문도 셀 안에서 줄바꿈 */
+  /* 사전 .bk-ex와 동일한 좌측보더 박스 룩 */
+  padding: 3px 0 3px 10px;
+  border-left: 2px solid var(--primary-glow);
 }
 .vocab-row__right {
   grid-area: right; align-self: center;
