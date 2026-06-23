@@ -842,6 +842,55 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   .vocab-card:focus-within .vocab-card__actions { opacity: 1; }
 }
 
+/* ── 풀폭 단어 행(row) — 한 줄에 한 단어, 정보 풍부 ── */
+.vocab-list { display: flex; flex-direction: column; gap: 8px; }
+.vocab-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 16px;
+}
+.vocab-row__check {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 4px; border: 2px solid var(--border);
+  color: #fff; font-size: 0.8rem; flex-shrink: 0;
+}
+.vocab-row__lead { flex-shrink: 0; min-width: 96px; max-width: 38%; }
+.vocab-row__word {
+  font-size: 1.3rem; font-weight: 800; margin: 0; line-height: 1.2; word-break: break-word;
+  background: linear-gradient(135deg, var(--text-primary) 60%, var(--primary-light));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.vocab-row__reading {
+  display: block; font-size: 0.78rem; color: var(--text-muted); margin-top: 3px; letter-spacing: 0.02em;
+}
+.vocab-row__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.vocab-row__meaning { margin: 0; font-size: 0.95rem; color: var(--text-secondary); line-height: 1.45; }
+.vocab-row__ex {
+  margin: 0; font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.vocab-row__meta { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.vocab-row__pos { font-size: 0.7rem; }
+.vocab-row__dot { width: 9px; height: 9px; border-radius: 50%; }
+.vocab-row__due {
+  font-size: 0.68rem; font-weight: 700; color: var(--warning);
+  background: rgba(252,196,25,0.16); padding: 2px 8px; border-radius: var(--radius-full); white-space: nowrap;
+}
+.vocab-row__actions { display: flex; gap: 2px; flex-shrink: 0; }
+.vocab-row__act {
+  width: 28px; height: 28px; border-radius: var(--radius-sm);
+  background: transparent; border: 1px solid transparent; color: var(--text-muted);
+  font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: color .12s, border-color .12s;
+}
+.vocab-row__act:hover { border-color: var(--primary-light); color: var(--primary-light); }
+.vocab-row__act--danger:hover { border-color: var(--danger); color: var(--danger); }
+@media (max-width: 560px) {
+  .vocab-row { gap: 10px; padding: 11px 13px; }
+  .vocab-row__lead { min-width: 76px; max-width: 44%; }
+  .vocab-row__word { font-size: 1.12rem; }
+  .vocab-row__meta { display: none; } /* 좁은 화면: 메타는 상세에서 (행 공간 확보) */
+}
+
 /* ========= Vocab Detail Card ========= */
 .vocab-detail-overlay {
   position: fixed;
