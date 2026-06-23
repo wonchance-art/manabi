@@ -174,44 +174,44 @@ export default function VocabList({
               }}>{selected ? '✓' : ''}</span>
             )}
 
-            {/* 단어 + 읽기(아래 줄) */}
+            {/* 품사 (고정폭) */}
+            <span className="vocab-row__pos" title={v.pos || ''}>{v.pos || ''}</span>
+
+            {/* 듣기 */}
+            {ttsSupported ? (
+              <button className="vocab-row__tts" title="발음 듣기"
+                onClick={e => { e.stopPropagation(); speak(v.word_text, v.language || detectLang(v.word_text)); }}>▷</button>
+            ) : <span className="vocab-row__tts vocab-row__tts--empty" aria-hidden="true" />}
+
+            {/* 단어 + 읽기(아래 줄), 고정폭 */}
             <div className="vocab-row__lead">
               <h3 className="vocab-row__word" lang={lc}>{v.word_text}</h3>
               {v.furigana && <span className="vocab-row__reading">{v.furigana}</span>}
             </div>
 
-            {/* 의미 + 예문 */}
+            {/* 의미 + 예문 (flex) */}
             <div className="vocab-row__body">
               <p className="vocab-row__meaning">{v.meaning}</p>
               {v.source_sentence && <p className="vocab-row__ex" lang={lc}>{v.source_sentence}</p>}
             </div>
 
-            {/* 메타: 품사 · 상태 */}
-            <div className="vocab-row__meta">
-              {v.pos && <span className="badge vocab-row__pos">{v.pos}</span>}
+            {/* 우측: 상태 · 편집 · 삭제 */}
+            <div className="vocab-row__right" onClick={e => e.stopPropagation()}>
               {due
                 ? <span className="vocab-row__due">복습</span>
                 : <span className="vocab-row__dot" style={{ background: stageColor }} title={stageLabel} aria-label={stageLabel} />}
-            </div>
-
-            {/* 액션 — 항상 노출 */}
-            {!selectMode && (
-              <div className="vocab-row__actions" onClick={e => e.stopPropagation()}>
-                {ttsSupported && (
-                  <button className="vocab-row__act" title="발음 듣기"
-                    onClick={() => speak(v.word_text, v.language || detectLang(v.word_text))}>▷</button>
-                )}
-                {updateVocabMutation && (
-                  <button className="vocab-row__act" title="편집"
-                    onClick={() => setEditing({ id: v.id, word_text: v.word_text, furigana: v.furigana || '', meaning: v.meaning || '', pos: v.pos || '' })}>✎</button>
-                )}
+              {!selectMode && updateVocabMutation && (
+                <button className="vocab-row__act" title="편집"
+                  onClick={() => setEditing({ id: v.id, word_text: v.word_text, furigana: v.furigana || '', meaning: v.meaning || '', pos: v.pos || '' })}>✎</button>
+              )}
+              {!selectMode && (
                 <button className="vocab-row__act vocab-row__act--danger" title="삭제"
                   onClick={() => setConfirmAction({
                     message: `"${v.word_text}" 를 단어장에서 삭제할까요?`,
                     onConfirm: () => { deleteMutation.mutate(v.id); setConfirmAction(null); },
                   })}>✕</button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
           );
         }) : (
