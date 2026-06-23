@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Button from '../components/Button';
-import { detectLang } from '../lib/constants';
+import { detectLang, displayWord } from '../lib/constants';
 
 function ScoreSection({ word, onScore }) {
   return (
@@ -181,7 +181,7 @@ export default function VocabReview({
               {/* 단어 헤더 (문맥 퀴즈는 정답 공개 전까지 숨김) */}
               {currentWord && (reviewMode !== 'context' && reviewMode !== 'listening' || showAnswer) && (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-                  <h2 className="review-card__word">{currentWord.word_text}</h2>
+                  <h2 className="review-card__word">{displayWord(currentWord.word_text, currentWord.pos)}</h2>
                   {ttsSupported && (
                     <button
                       onClick={() => speak(currentWord.word_text, currentWord.language || detectLang(currentWord.word_text))}
