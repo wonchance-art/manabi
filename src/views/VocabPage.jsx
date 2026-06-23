@@ -23,6 +23,17 @@ import { detectLang } from '../lib/constants';
 
 const MAX_EXAMPLE_CACHE = 50;
 
+// 단어의 "덱" — 교재 단어는 source_ref(예: "중국어 · H3"), 리더 단어는 자료 시리즈로 묶는다.
+function deckOf(v) {
+  if (v.source_ref) return { key: v.source_ref, label: v.source_ref };
+  const t = v.reading_materials?.title;
+  if (t) {
+    const m = parseTitle(t);
+    if (m.level && m.series) return { key: `${m.level}|${m.series}`, label: `${m.level} ${m.series}` };
+  }
+  return null;
+}
+
 function fisherYatesShuffle(arr) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -550,12 +561,7 @@ export default function VocabPage() {
       list = list.filter(x => x._item.language === langFilter);
     }
     if (seriesFilter !== 'all') {
-      list = list.filter(x => {
-        const t = x._item.reading_materials?.title;
-        if (!t) return false;
-        const meta = parseTitle(t);
-        return `${meta.level}|${meta.series}` === seriesFilter;
-      });
+      list = list.filter(x => deckOf(x._item)?.key === seriesFilter);
     }
     if (q) {
       list = list.filter(x => x._searchKey.includes(q));
@@ -576,14 +582,10 @@ export default function VocabPage() {
 
   // 단어가 속한 시리즈 집합 (chip filter용)
   const availableSeries = useMemo(() => {
-    const set = new Map(); // key = level|series, val = display
+    const set = new Map(); // key → display label (교재 덱 + 리더 시리즈)
     for (const v of vocab) {
-      const t = v.reading_materials?.title;
-      if (!t) continue;
-      const meta = parseTitle(t);
-      if (!meta.level || !meta.series) continue;
-      const key = `${meta.level}|${meta.series}`;
-      if (!set.has(key)) set.set(key, `${meta.level} ${meta.series}`);
+      const d = deckOf(v);
+      if (d && !set.has(d.key)) set.set(d.key, d.label);
     }
     return [...set.entries()].map(([key, label]) => ({ key, label }));
   }, [vocab]);
@@ -597,10 +599,7 @@ export default function VocabPage() {
 
   function vocabMatchesSeries(v) {
     if (seriesFilter === 'all') return true;
-    const t = v.reading_materials?.title;
-    if (!t) return false;
-    const meta = parseTitle(t);
-    return `${meta.level}|${meta.series}` === seriesFilter;
+    return deckOf(v)?.key === seriesFilter;
   }
 
   const reviewWords = useMemo(() => {
@@ -811,7 +810,7 @@ export default function VocabPage() {
               className={`chip ${seriesFilter === 'all' ? 'chip--active' : ''}`}
               onClick={() => setSeriesFilter('all')}
             >
-              전체 시리즈
+              전체 덱
             </button>
             {availableSeries.map(s => (
               <button
@@ -828,7 +827,7 @@ export default function VocabPage() {
             const due = filtered.filter(v => new Date(v.next_review_at) <= new Date()).length;
             return (
               <div style={{ marginTop: 8, fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                이 시리즈 단어 <strong>{filtered.length}</strong>개 · 복습 대기 <strong style={{ color: due > 0 ? 'var(--warning)' : 'var(--accent)' }}>{due}</strong>개
+이 덱 단어 <strong>{filtered.length}</strong>개 · 복습 대기 <strong style={{ color: due > 0 ? 'var(--warning)' : 'var(--accent)' }}>{due}</strong>개
               </div>
             );
           })()}

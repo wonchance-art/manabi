@@ -9,6 +9,8 @@ import { useToast } from '../lib/ToastContext';
 import { useTTS } from '../lib/useTTS';
 import { refInline, refMain, refPron, LevelDot, JaText, alignFurigana } from './refShared';
 
+const LANG_KO = { Japanese: '일본어', English: '영어', French: '프랑스어', Chinese: '중국어' };
+
 /**
  * 언어 레퍼런스 — 레벨별·주제별 어휘 (프랑스어·일본어·영어 공용)
  * 세로 단일 열 정렬 리스트. 단어 가리기/뜻 가리기 셀프 테스트, 발음(TTS), 단어장(FSRS) 저장.
@@ -115,6 +117,8 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
     if (!user) return toast?.('로그인하면 단어장에 저장할 수 있어요', 'info');
     const text = refMain(w);
     if (savedSet.has(text)) return;
+    // 단어장 "덱" 라벨 — 언어·레벨 단위 (예: "중국어 · H3")
+    const deck = [LANG_KO[lang] || lang, meta?.short || meta?.key].filter(Boolean).join(' · ');
     try {
       const { error } = await supabase
         .from('user_vocabulary')
@@ -127,6 +131,7 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
           pos: w.pos || '',
           language: lang,
           source_sentence: w.ex ? (refMain(w.ex) || null) : null,  // 예문(원어) — 복습 카드 맥락
+          source_ref: deck || null,                    // 덱 라벨 — 출처별 집중 복습
         }, { onConflict: 'user_id,word_text' });
       if (error) throw error;
       setSavedSet(prev => new Set([...prev, text]));
