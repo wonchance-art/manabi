@@ -8672,6 +8672,27 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .vocab-hero__done { font-size: 0.92rem; font-weight: 600; color: var(--accent); }
 .vocab-hero__actions { display: flex; align-items: center; gap: 6px; }
 
+/* 상단 미니 현황 strip — 복습/신규/학습 중/숙련 한눈에 */
+.vocab-stat-strip {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  margin: -4px 0 16px;
+}
+.vocab-stat {
+  font-size: 0.78rem; color: var(--text-muted);
+  padding: 4px 10px; border-radius: var(--radius-full);
+  background: var(--bg-secondary); border: 1px solid var(--border);
+  white-space: nowrap;
+}
+.vocab-stat strong {
+  color: var(--text-primary); font-weight: 700; margin-left: 3px;
+  font-variant-numeric: tabular-nums;
+}
+.vocab-stat[data-tone="due"] {
+  background: rgba(214,158,46,0.12); border-color: var(--warning); color: var(--warning);
+}
+.vocab-stat[data-tone="due"] strong { color: var(--warning); }
+.vocab-stat--total { margin-left: auto; background: transparent; border-color: transparent; }
+
 /* 진도 — n/n 분수 칼럼 정렬 (자릿수가 변해도 슬래시 위치 고정) */
 .lvprog__frac { display: inline-flex; align-items: baseline; }
 .lvprog__frac-n { min-width: 2ch; text-align: right; }

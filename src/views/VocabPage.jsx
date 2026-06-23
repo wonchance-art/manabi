@@ -602,11 +602,27 @@ export default function VocabPage() {
     return deckOf(v)?.key === seriesFilter;
   }
 
+  // 현재 덱(시리즈 필터) 범위의 단어 — 히어로·현황·복습 큐가 공유
+  const deckScope = useMemo(() => vocab.filter(vocabMatchesSeries), [vocab, seriesFilter]);
+
   const reviewWords = useMemo(() => {
     const now = new Date();
-    return vocab.filter(v => new Date(v.next_review_at) <= now && vocabMatchesSeries(v));
-  }, [vocab, seriesFilter]);
+    return deckScope.filter(v => new Date(v.next_review_at) <= now);
+  }, [deckScope]);
   const currentWord = reviewWords[reviewIdx];
+
+  // 상단 미니 현황 — 복습 대기 / 신규(미학습) / 학습 중 / 숙련, 덱 범위 기준
+  const deckStats = useMemo(() => {
+    const now = new Date();
+    let due = 0, neu = 0, learning = 0, mastered = 0;
+    for (const v of deckScope) {
+      if (new Date(v.next_review_at) <= now) due++;
+      if ((v.repetitions ?? 0) === 0) neu++;
+      else if ((v.interval ?? 0) >= 30) mastered++;
+      else learning++;
+    }
+    return { total: deckScope.length, due, neu, learning, mastered };
+  }, [deckScope]);
 
   const contextOptions = useMemo(() => {
     if (!currentWord) return [];
@@ -723,8 +739,7 @@ export default function VocabPage() {
           <h1 className="page-header__title" style={{ margin: 0 }}>어휘</h1>
           {vocab.length > 0 && (
             <div style={{ display: 'flex', gap: 14, fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-              <span>{vocab.length}개</span>
-              <span>숙련 {vocab.filter(v => v.interval >= 30).length}</span>
+              <span>전체 {vocab.length}개</span>
             </div>
           )}
         </div>
@@ -795,6 +810,19 @@ export default function VocabPage() {
         </div>
       )}
 
+      {/* 상단 미니 현황 — 복습/신규/학습 중/숙련 (덱 범위 기준) */}
+      {tab === 'list' && !isLoading && vocab.length > 0 && (
+        <div className="vocab-stat-strip">
+          <span className="vocab-stat" data-tone={deckStats.due > 0 ? 'due' : undefined}>
+            복습 <strong>{deckStats.due}</strong>
+          </span>
+          <span className="vocab-stat">신규 <strong>{deckStats.neu}</strong></span>
+          <span className="vocab-stat">학습 중 <strong>{deckStats.learning}</strong></span>
+          <span className="vocab-stat">숙련 <strong>{deckStats.mastered}</strong></span>
+          <span className="vocab-stat vocab-stat--total">{seriesFilter === 'all' ? '전체' : '이 덱'} <strong>{deckStats.total}</strong></span>
+        </div>
+      )}
+
       {/* 복습 세션 중 — 목록 복귀 */}
       {tab === 'review' && !reviewFinished && (
         <button type="button" className="chip" style={{ marginBottom: 12 }} onClick={() => setTab('list')}>
@@ -822,7 +850,7 @@ export default function VocabPage() {
               </button>
             ))}
           </div>
-          {seriesFilter !== 'all' && (() => {
+          {tab === 'review' && seriesFilter !== 'all' && (() => {
             const filtered = vocab.filter(vocabMatchesSeries);
             const due = filtered.filter(v => new Date(v.next_review_at) <= new Date()).length;
             return (
