@@ -80,6 +80,8 @@ export default function VocabList({
             { value: 'all', label: '전체' },
             { value: 'Japanese', label: '일본어' },
             { value: 'English', label: '영어' },
+            { value: 'French', label: '프랑스어' },
+            { value: 'Chinese', label: '중국어' },
           ].map(f => (
             <button
               key={f.value}
