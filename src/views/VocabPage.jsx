@@ -1,370 +1,38 @@
 'use client';
 
-import { useState, useMemo, useRef, useEffect, memo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { calculateFSRS } from '../lib/fsrs';
 import { recordActivity } from '../lib/streak';
-import { awardXP, XP_REWARDS, getReviewXP } from '../lib/xp';
-import { useCelebration } from '../lib/CelebrationContext';
 import { useTTS } from '../lib/useTTS';
 import { callGemini } from '../lib/gemini';
 import Button from '../components/Button';
 import ConfirmModal from '../components/ConfirmModal';
 import VocabList from './VocabList';
 import VocabReview from './VocabReview';
-import { parseTitle } from '../lib/seriesMeta';
+import VocabDetailCard from './VocabDetailCard';
 import { CardGridSkeleton } from '../components/Skeleton';
 import { friendlyToastMessage } from '../lib/errorMessage';
-import { detectLang, displayWord } from '../lib/constants';
+import { detectLang } from '../lib/constants';
+import { useVocabData } from '../lib/useVocabData';
+import { exportCSV, exportAnki } from '../lib/vocabIO';
+import {
+  deckOf, fisherYatesShuffle, isNewWord,
+  loadIntroIds, saveIntroIds,
+  NEW_PER_DAY_OPTIONS, DEFAULT_NEW_PER_DAY,
+} from '../lib/vocabStudy';
 
 const MAX_EXAMPLE_CACHE = 50;
 
-// 하루 새 단어 한도 — Anki식 신규 큐 제한 (0 = 복습만)
-const NEW_PER_DAY_OPTIONS = [0, 5, 10, 15, 20, 30, 40];
-const DEFAULT_NEW_PER_DAY = 15;
-const INTRO_KEY = 'vocab_new_intro';
-const todayStr = () => new Date().toISOString().slice(0, 10);
-
-// 신규(미학습) 판정 — 한 번이라도 복습하면 last_reviewed_at이 채워진다.
-// (repetitions는 이 스키마에서 lapses라 신규 판정에 쓰면 안 됨)
-const isNewWord = (v) => !v.last_reviewed_at;
-
-// 오늘 새로 시작한 단어 ID 집합 (날짜 바뀌면 리셋)
-function loadIntroIds() {
-  if (typeof window === 'undefined') return [];
-  try {
-    const raw = JSON.parse(localStorage.getItem(INTRO_KEY) || 'null');
-    if (raw && raw.date === todayStr() && Array.isArray(raw.ids)) return raw.ids;
-  } catch { /* ignore */ }
-  return [];
-}
-function saveIntroIds(ids) {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(INTRO_KEY, JSON.stringify({ date: todayStr(), ids }));
-}
-
-// 단어의 "덱" — 교재 단어는 source_ref(예: "중국어 · H3"), 리더 단어는 자료 시리즈로 묶는다.
-function deckOf(v) {
-  if (v.source_ref) return { key: v.source_ref, label: v.source_ref };
-  const t = v.reading_materials?.title;
-  if (t) {
-    const m = parseTitle(t);
-    if (m.level && m.series) return { key: `${m.level}|${m.series}`, label: `${m.level} ${m.series}` };
-  }
-  return null;
-}
-
-function fisherYatesShuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-async function fetchVocab(userId) {
-  // 단어 본체는 무조건 fetch — JOIN 실패 시에도 단어장이 비어 보이지 않게
-  const { data, error } = await supabase
-    .from('user_vocabulary')
-    .select('*')
-    .eq('user_id', userId)
-    .order('next_review_at', { ascending: true });
-  if (error) throw error;
-
-  // language가 비어있는 기존 단어에 자동 감지 적용
-  const needsUpdate = [];
-  const result = (data || []).map(v => {
-    if (v.language) return v;
-    const isJa = /[\u3040-\u30ff\u4e00-\u9fff]/.test(v.word_text);
-    const lang = isJa ? 'Japanese' : 'English';
-    needsUpdate.push({ id: v.id, language: lang });
-    return { ...v, language: lang };
-  });
-
-  // DB에도 반영 (fire-and-forget)
-  if (needsUpdate.length > 0) {
-    Promise.all(needsUpdate.map(u =>
-      supabase.from('user_vocabulary').update({ language: u.language }).eq('id', u.id)
-    )).catch(() => {});
-  }
-
-  // 시리즈 필터용 source material titles 별도 fetch (실패해도 vocab은 그대로)
-  try {
-    const sourceIds = [...new Set(result.map(v => v.source_material_id).filter(Boolean))];
-    if (sourceIds.length > 0) {
-      const titlesMap = new Map();
-      const CHUNK = 30;
-      for (let i = 0; i < sourceIds.length; i += CHUNK) {
-        const slice = sourceIds.slice(i, i + CHUNK);
-        const { data: mats } = await supabase
-          .from('reading_materials')
-          .select('id, title')
-          .in('id', slice);
-        for (const m of (mats || [])) titlesMap.set(m.id, m.title);
-      }
-      for (const v of result) {
-        if (v.source_material_id && titlesMap.has(v.source_material_id)) {
-          v.reading_materials = { title: titlesMap.get(v.source_material_id) };
-        }
-      }
-    }
-  } catch {}
-
-  return result;
-}
-
-// 간단한 CSV 파서 (따옴표 이스케이프 처리)
-function parseCSV(text) {
-  const rows = [];
-  let row = [], cell = '', inQuote = false;
-  for (let i = 0; i < text.length; i++) {
-    const ch = text[i], next = text[i + 1];
-    if (inQuote) {
-      if (ch === '"' && next === '"') { cell += '"'; i++; }
-      else if (ch === '"') inQuote = false;
-      else cell += ch;
-    } else {
-      if (ch === '"') inQuote = true;
-      else if (ch === ',') { row.push(cell); cell = ''; }
-      else if (ch === '\n') { row.push(cell); rows.push(row); row = []; cell = ''; }
-      else if (ch === '\r') { /* skip */ }
-      else cell += ch;
-    }
-  }
-  if (cell || row.length) { row.push(cell); rows.push(row); }
-  return rows.filter(r => r.some(c => c && c.trim()));
-}
-
-/**
- * CSV 파일 → vocab 행 배열
- * 지원 포맷: 우리 exportCSV 형식 ["단어","후리가나","의미","품사","다음 복습","안정도","난이도"]
- *          또는 최소 2열 (단어, 의미)
- */
-function csvToVocabRows(text, userId) {
-  const rows = parseCSV(text);
-  if (rows.length === 0) return [];
-
-  const header = rows[0].map(h => h.trim().toLowerCase());
-  const hasHeader = header.some(h => /단어|word|meaning|의미/.test(h));
-  const dataRows = hasHeader ? rows.slice(1) : rows;
-
-  const now = new Date().toISOString();
-  return dataRows.map(r => {
-    const [word, furigana = '', meaning = '', pos = ''] = r;
-    if (!word?.trim()) return null;
-    const text = word.trim();
-    const isJa = /[\u3040-\u30ff\u4e00-\u9fff]/.test(text);
-    const isFr = !isJa && /[àâçéèêëîïôùûüœæ]/i.test(text);
-    return {
-      user_id: userId,
-      word_text: text,
-      furigana: furigana.trim(),
-      meaning: meaning.trim(),
-      pos: pos.trim(),
-      next_review_at: now,
-      language: isJa ? 'Japanese' : isFr ? 'French' : 'English',
-      base_form: isJa ? text : text.toLowerCase(),
-    };
-  }).filter(Boolean);
-}
-
-function exportCSV(vocab) {
-  const header = ['단어', '후리가나', '의미', '품사', '다음 복습', '안정도(S)', '난이도(D)'];
-  const rows = vocab.map(v => [
-    v.word_text,
-    v.furigana || '',
-    v.meaning || '',
-    v.pos || '',
-    new Date(v.next_review_at).toLocaleDateString('ko-KR'),
-    (v.interval ?? 0).toFixed(1),
-    (v.ease_factor ?? 0).toFixed(1),
-  ]);
-  const csv = [header, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
-  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `anatomy_vocab_${new Date().toISOString().split('T')[0]}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-// Anki 가져오기 호환 TSV (.txt) — Front | Back | Tags 3열
-function exportAnki(vocab) {
-  const escape = (s) => String(s ?? '').replace(/\t/g, ' ').replace(/\r?\n/g, '<br>');
-  const lines = [
-    '#separator:tab',
-    '#html:true',
-    '#columns:Front\tBack\tTags',
-  ];
-  for (const v of vocab) {
-    const isJa = v.language === 'Japanese' && v.furigana;
-    const front = isJa
-      ? `${escape(v.word_text)}<br><small>${escape(v.furigana)}</small>`
-      : escape(v.word_text);
-    const back = [
-      `<b>${escape(v.meaning || '')}</b>`,
-      v.pos ? `<small>${escape(v.pos)}</small>` : '',
-      v.source_sentence ? `<hr><i>${escape(v.source_sentence)}</i>` : '',
-    ].filter(Boolean).join('<br>');
-    const tags = ['anatomy-studio', v.language ? v.language.toLowerCase() : '', v.pos ? v.pos.replace(/\s+/g, '_') : '']
-      .filter(Boolean).join(' ');
-    lines.push(`${front}\t${back}\t${tags}`);
-  }
-  const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/plain;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `anatomy_vocab_anki_${new Date().toISOString().split('T')[0]}.txt`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-const VocabDetailCard = memo(function VocabDetailCard({ word: v, onClose, speak, ttsSupported }) {
-  const now = new Date();
-  const created = new Date(v.created_at);
-  const daysSinceCreated = Math.max(1, Math.round((now - created) / 86400000));
-  const nextReview = new Date(v.next_review_at);
-  const isDue = nextReview <= now;
-  const interval = v.interval ?? 0;
-  const reps = v.repetitions ?? 0;
-  const ease = v.ease_factor ?? 0;
-  const retention = Math.round(Math.exp(-1 / Math.max(interval, 0.5)) * 100);
-
-  const stageLabel = interval >= 30 ? '숙련' : interval >= 7 ? '학습 중' : interval >= 1 ? '초기' : '신규';
-  const stageColor = interval >= 30 ? 'var(--accent)' : interval >= 7 ? 'var(--warning)' : 'var(--danger)';
-
-  return (
-    <div className="vocab-detail-overlay" role="dialog" aria-modal="true" aria-label="단어 상세" onClick={onClose} onKeyDown={e => e.key === 'Escape' && onClose()}>
-      <div className="vocab-detail-card" onClick={e => e.stopPropagation()}>
-        <button className="vocab-detail-card__close" onClick={onClose}>✕</button>
-
-        <div className="vocab-detail-card__header">
-          {v.furigana && <span className="vocab-detail-card__furigana">{v.furigana}</span>}
-          <h2 className="vocab-detail-card__word">
-            {displayWord(v.word_text, v.pos)}
-            {ttsSupported && (
-              <button className="vocab-detail-card__tts" onClick={() => speak(v.word_text, v.language || 'Japanese')}>▷</button>
-            )}
-          </h2>
-          <p className="vocab-detail-card__meaning">{v.meaning}</p>
-          <div className="vocab-detail-card__badges">
-            <span className="badge">{v.pos}</span>
-            <span className="badge" style={{ background: `color-mix(in srgb, ${stageColor} 15%, transparent)`, color: stageColor }}>
-              {stageLabel}
-            </span>
-          </div>
-        </div>
-
-        <div className="vocab-detail-card__stats">
-          <div className="vocab-detail-stat">
-            <span className="vocab-detail-stat__value">{reps}회</span>
-            <span className="vocab-detail-stat__label">복습 횟수</span>
-          </div>
-          <div className="vocab-detail-stat">
-            <span className="vocab-detail-stat__value">{interval < 1 ? '<1일' : `${Math.round(interval)}일`}</span>
-            <span className="vocab-detail-stat__label">복습 간격</span>
-          </div>
-          <div className="vocab-detail-stat">
-            <span className="vocab-detail-stat__value">{retention}%</span>
-            <span className="vocab-detail-stat__label">기억 강도</span>
-          </div>
-          <div className="vocab-detail-stat">
-            <span className="vocab-detail-stat__value">{ease.toFixed(1)}</span>
-            <span className="vocab-detail-stat__label">난이도</span>
-          </div>
-        </div>
-
-        {/* 학습 타임라인 */}
-        <div className="vocab-detail-card__timeline">
-          <h3 className="vocab-detail-card__section-title">학습 여정</h3>
-          <div className="vocab-detail-timeline">
-            <div className="vocab-detail-timeline__item">
-              <span className="vocab-detail-timeline__dot" style={{ background: 'var(--primary)' }} />
-              <span className="vocab-detail-timeline__date">{created.toLocaleDateString('ko-KR')}</span>
-              <span className="vocab-detail-timeline__event">단어 수집</span>
-            </div>
-            {reps > 0 && v.last_reviewed_at && (
-              <div className="vocab-detail-timeline__item">
-                <span className="vocab-detail-timeline__dot" style={{ background: 'var(--accent)' }} />
-                <span className="vocab-detail-timeline__date">{new Date(v.last_reviewed_at).toLocaleDateString('ko-KR')}</span>
-                <span className="vocab-detail-timeline__event">마지막 복습 ({reps}회차)</span>
-              </div>
-            )}
-            <div className="vocab-detail-timeline__item">
-              <span className="vocab-detail-timeline__dot" style={{ background: isDue ? 'var(--danger)' : 'var(--warning)' }} />
-              <span className="vocab-detail-timeline__date">{nextReview.toLocaleDateString('ko-KR')}</span>
-              <span className="vocab-detail-timeline__event">{isDue ? '복습 필요!' : '다음 복습 예정'}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* 성장 시각화 */}
-        <div className="vocab-detail-card__growth">
-          <h3 className="vocab-detail-card__section-title">성장 지표</h3>
-          <div className="vocab-detail-growth-bar">
-            <span className="vocab-detail-growth-bar__label">기억 강도</span>
-            <div className="vocab-detail-growth-bar__track">
-              <div className="vocab-detail-growth-bar__fill" style={{ width: `${retention}%`, background: retention > 70 ? 'var(--accent)' : retention > 40 ? 'var(--warning)' : 'var(--danger)' }} />
-            </div>
-            <span className="vocab-detail-growth-bar__pct">{retention}%</span>
-          </div>
-          <div className="vocab-detail-growth-bar">
-            <span className="vocab-detail-growth-bar__label">학습 기간</span>
-            <div className="vocab-detail-growth-bar__track">
-              <div className="vocab-detail-growth-bar__fill" style={{ width: `${Math.min(100, (daysSinceCreated / 90) * 100)}%`, background: 'var(--primary)' }} />
-            </div>
-            <span className="vocab-detail-growth-bar__pct">{daysSinceCreated}일</span>
-          </div>
-        </div>
-
-        {/* 출처 자료 링크 */}
-        {v.source_material_id && (
-          <div className="vocab-detail-card__source">
-            <h3 className="vocab-detail-card__section-title">출처 자료</h3>
-            {v.source_sentence && (
-              <p style={{
-                fontSize: '0.85rem', color: 'var(--text-secondary)',
-                padding: '8px 12px', background: 'var(--bg-secondary)',
-                borderRadius: 'var(--radius-md)', marginBottom: 8, lineHeight: 1.6,
-              }}>
-                {v.source_sentence.split(v.word_text).map((part, i, arr) =>
-                  i < arr.length - 1
-                    ? <span key={i}>{part}<mark style={{ background: 'var(--primary-glow)', color: 'var(--primary-light)', padding: '0 3px', borderRadius: 3 }}>{v.word_text}</mark></span>
-                    : <span key={i}>{part}</span>
-                )}
-              </p>
-            )}
-            <Link
-              href={`/viewer/${v.source_material_id}`}
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                fontSize: '0.85rem', color: 'var(--primary-light)',
-                textDecoration: 'none', padding: '6px 12px',
-                background: 'var(--bg-secondary)', borderRadius: 'var(--radius-full)',
-                border: '1px solid var(--border)',
-              }}
-            >
-              원본 자료로 이동 →
-            </Link>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-});
-
 export default function VocabPage() {
-  const { user, profile, fetchProfile } = useAuth();
+  const { user, fetchProfile } = useAuth();
   const toast = useToast();
   const queryClient = useQueryClient();
   const { speak, supported: ttsSupported } = useTTS();
-  const { celebrate, checkLevelUp } = useCelebration();
   const [tab, setTab] = useState('list');
   const [reviewIdx, setReviewIdx] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
@@ -426,79 +94,11 @@ export default function VocabPage() {
   const [confirmAction, setConfirmAction] = useState(null);
   const [detailWord, setDetailWord] = useState(null);
 
-  const { data: vocab = [], isLoading } = useQuery({
-    queryKey: ['vocab', user?.id],
-    queryFn: () => fetchVocab(user.id),
-    enabled: !!user,
-  });
-
-  const scoreMutation = useMutation({
-    mutationFn: async ({ id, nextStats }) => {
-      const payload = { ...nextStats, last_reviewed_at: new Date().toISOString() };
-      const { error } = await supabase
-        .from('user_vocabulary')
-        .update(payload)
-        .eq('id', id);
-      if (error) throw error;
-    },
-    onSuccess: (_, { rating, prevInterval, newInterval }) => {
-      queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
-      const prevXP = profile?.xp ?? 0;
-      const reviewXP = getReviewXP(rating);
-      // 마스터(interval 30일 돌파) 보너스
-      const crossedMastery = prevInterval < 30 && newInterval >= 30;
-      const totalXP = reviewXP + (crossedMastery ? XP_REWARDS.MASTERY_REACHED : 0);
-
-      awardXP(user.id, totalXP, prevXP);
-      checkLevelUp(prevXP, prevXP + totalXP);
-      if (crossedMastery) {
-        celebrate({ type: 'milestone', icon: '★', name: '단어 마스터!', desc: `+${XP_REWARDS.MASTERY_REACHED} XP 보너스` });
-      }
-    },
-    onError: (err) => toast('업데이트 실패 — ' + friendlyToastMessage(err), 'error'),
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: async (id) => {
-      const { error } = await supabase
-        .from('user_vocabulary')
-        .delete()
-        .eq('id', id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
-      toast('단어를 삭제했습니다.', 'info');
-    },
-    onError: (err) => toast('삭제 실패 — ' + friendlyToastMessage(err), 'error'),
-  });
-
-  // CSV 불러오기
-  const csvImportMutation = useMutation({
-    mutationFn: async (file) => {
-      const text = await file.text();
-      const rows = csvToVocabRows(text, user.id);
-      if (rows.length === 0) throw new Error('유효한 행이 없습니다.');
-      if (rows.length > 5000) throw new Error('한 번에 5000개까지만 가져올 수 있어요.');
-
-      // 500개씩 배치 upsert
-      let imported = 0;
-      for (let i = 0; i < rows.length; i += 500) {
-        const chunk = rows.slice(i, i + 500);
-        const { error } = await supabase
-          .from('user_vocabulary')
-          .upsert(chunk, { onConflict: 'user_id,word_text', ignoreDuplicates: true });
-        if (error) throw error;
-        imported += chunk.length;
-      }
-      return imported;
-    },
-    onSuccess: (count) => {
-      queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
-      toast(`${count}개 단어를 가져왔어요. (중복은 자동 스킵)`, 'success', 5000);
-    },
-    onError: (err) => toast('가져오기 실패 — ' + friendlyToastMessage(err), 'error'),
-  });
+  const {
+    vocab, isLoading,
+    scoreMutation, deleteMutation, csvImportMutation,
+    updateVocabMutation, bulkDeleteMutation,
+  } = useVocabData();
 
   // 수동 단어 추가 모달
   const [manualAddOpen, setManualAddOpen] = useState(false);
@@ -531,45 +131,6 @@ export default function VocabPage() {
       setManualDraft({ word_text: '', furigana: '', meaning: '', pos: '', language: 'Japanese' });
     },
     onError: (err) => toast('추가 실패 — ' + friendlyToastMessage(err), 'error'),
-  });
-
-  // 개별 단어 편집 (word_text/furigana/meaning/pos)
-  const updateVocabMutation = useMutation({
-    mutationFn: async ({ id, updates }) => {
-      const allowed = {};
-      if (typeof updates.word_text === 'string') allowed.word_text = updates.word_text.trim().slice(0, 200);
-      if (typeof updates.furigana === 'string') allowed.furigana = updates.furigana.trim().slice(0, 200);
-      if (typeof updates.meaning === 'string') allowed.meaning = updates.meaning.trim().slice(0, 500);
-      if (typeof updates.pos === 'string') allowed.pos = updates.pos.trim().slice(0, 50);
-      if (Object.keys(allowed).length === 0) throw new Error('변경할 내용이 없어요');
-      const { error } = await supabase
-        .from('user_vocabulary')
-        .update(allowed)
-        .eq('id', id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
-      toast('단어를 수정했어요', 'success');
-    },
-    onError: (err) => toast('수정 실패 — ' + friendlyToastMessage(err), 'error'),
-  });
-
-  const bulkDeleteMutation = useMutation({
-    mutationFn: async (ids) => {
-      if (!ids?.length) return 0;
-      const { error } = await supabase
-        .from('user_vocabulary')
-        .delete()
-        .in('id', ids);
-      if (error) throw error;
-      return ids.length;
-    },
-    onSuccess: (count) => {
-      queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
-      toast(`${count}개 단어를 삭제했습니다.`, 'info');
-    },
-    onError: (err) => toast('일괄 삭제 실패: ' + err.message, 'error'),
   });
 
   // 검색용 인덱스 사전 계산 (vocab이 바뀔 때만 1회)
