@@ -754,7 +754,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   grid-template-columns: 52px 30px 150px minmax(0, 1fr) auto;
   grid-template-areas:
     "pos tts word meaning right"
-    ".   .   reading ex      .";
+    ".   .   reading ex      ex";
   align-items: baseline;
   column-gap: 12px; row-gap: 2px;
   padding: 11px 16px;
@@ -763,7 +763,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   grid-template-columns: 26px 52px 30px 150px minmax(0, 1fr) auto;
   grid-template-areas:
     "check pos tts word meaning right"
-    "check .   .   reading ex      .";
+    "check .   .   reading ex      ex";
 }
 .vocab-row__check {
   grid-area: check; align-self: center;
