@@ -324,9 +324,6 @@ export default function ReferenceChapterPage({ lang, slug }) {
             {sec.heading}
           </h2>
 
-          {/* 카나 오십음표 — 해당 설명과 함께 (섹션 안에) */}
-          {sec.gojuon && chapter.kana && <GojuonChart kind={chapter.kana} sets={sec.gojuon} />}
-
           {/* 패턴 공식 박스 — 섹션의 핵심을 가장 먼저, 가장 크게 */}
           {sec.pattern && (
             <div className="fr-pattern" style={{ borderColor: meta?.color }}>
@@ -353,6 +350,9 @@ export default function ReferenceChapterPage({ lang, slug }) {
           {CALLOUT_ORDER.map(kind => (
             <Callout key={kind} kind={kind} text={sec[kind]} />
           ))}
+
+          {/* 카나 오십음표 — 설명을 먼저 읽은 뒤 표(버튼) */}
+          {sec.gojuon && chapter.kana && <GojuonChart kind={chapter.kana} sets={sec.gojuon} />}
         </section>
       ))}
 

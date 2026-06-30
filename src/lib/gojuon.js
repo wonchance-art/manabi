@@ -13,8 +13,7 @@ const HIRA_BASIC = [
   ['ま', 'み', 'む', 'め', 'も'],
   ['や', null, 'ゆ', null, 'よ'],
   ['ら', 'り', 'る', 'れ', 'ろ'],
-  ['わ', null, null, null, 'を'],
-  ['ん', null, null, null, null],
+  ['わ', null, 'ん', null, 'を'],
 ];
 
 // ── 탁음·반탁음 ──
