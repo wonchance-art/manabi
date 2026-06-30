@@ -7,7 +7,12 @@ import KanaStroke from './KanaStroke';
 export default function GojuonChart({ kind, sets = ALL_SETS }) {
   const table = GOJUON[kind];
   const setList = ALL_SETS.filter(s => sets.includes(s));
-  const [sel, setSel] = useState(null);   // 클릭 전엔 숨김
+  // 기본 선택 = 세트의 첫 글자 (basic→あ, dakuten→が, yoon→きゃ)
+  const firstKana = (() => {
+    for (const s of setList) for (const row of table[s] || []) for (const k of row) if (k) return k;
+    return null;
+  })();
+  const [sel, setSel] = useState(firstKana);
   const [playN, setPlayN] = useState(0);
   const pick = k => { setSel(k); setPlayN(n => n + 1); };
 

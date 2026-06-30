@@ -8781,14 +8781,19 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .kana-stroke-glyph { width: 150px; height: 150px; }
 .kana-stroke-glyph--empty { background: var(--bg-secondary); border-radius: var(--radius-md); }
 .kana-stroke-glyph svg { width: 100%; height: 100%; display: block; --shadow: var(--border); --stroke: var(--text-primary); }
+/* 휴지 상태: 획은 숨기고 연한 그림자(글자 윤곽)만 */
 .kana-stroke-glyph [data-strokesvg="strokes"] path {
   stroke-dasharray: 4000; stroke-dashoffset: 4000;
+}
+/* 스크롤로 영역이 보일 때 그리기. 글자 사이는 --base로 순서 보장(い단 먼저, 작은 ゃ 나중) */
+.kana-stroke-row.is-drawing [data-strokesvg="strokes"] path {
   animation: kanaDraw 0.55s ease forwards;
-  animation-delay: calc(var(--i, 0) * 0.5s);
+  animation-delay: calc((var(--i, 0) + var(--base, 0)) * 0.5s);
 }
 @keyframes kanaDraw { to { stroke-dashoffset: 0; } }
 @media (prefers-reduced-motion: reduce) {
-  .kana-stroke-glyph [data-strokesvg="strokes"] path { animation: none; stroke-dashoffset: 0; }
+  .kana-stroke-glyph [data-strokesvg="strokes"] path { stroke-dashoffset: 0; }
+  .kana-stroke-row.is-drawing [data-strokesvg="strokes"] path { animation: none; }
 }
 
 .kana-test { padding: 22px 20px; margin-top: 16px; }
