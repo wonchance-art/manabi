@@ -28,7 +28,7 @@ export default function GojuonChart({ kind }) {
       {ALL_SETS.map(setKey => (
         <div key={setKey} className="gojuon-set">
           <h3 className="gojuon-set__label">{SET_LABELS[setKey]}</h3>
-          <div className="gojuon-grid" style={{ gridTemplateColumns: `repeat(${table[setKey][0].length}, 1fr)` }}>
+          <div className="gojuon-grid" style={{ '--cols': table[setKey][0].length }}>
             {table[setKey].map((row, ri) => row.map((k, ci) => (
               k ? (
                 <button
