@@ -88,3 +88,37 @@ export function acceptedRomaji(kana) {
   if (kana === 'ん' || kana === 'ン') set.add('nn');   // n / nn 모두 허용
   return set;
 }
+
+// 한국어 근사음 — 한국인 입문자용(로마자보다 직관적). 헵번 로마자 기준 매핑.
+const KO_BY_ROMAJI = {
+  a: '아', i: '이', u: '우', e: '에', o: '오',
+  ka: '카', ki: '키', ku: '쿠', ke: '케', ko: '코',
+  ga: '가', gi: '기', gu: '구', ge: '게', go: '고',
+  sa: '사', shi: '시', su: '스', se: '세', so: '소',
+  za: '자', ji: '지', zu: '즈', ze: '제', zo: '조',
+  ta: '타', chi: '치', tsu: '츠', te: '테', to: '토',
+  da: '다', de: '데', do: '도',
+  na: '나', ni: '니', nu: '누', ne: '네', no: '노',
+  ha: '하', hi: '히', fu: '후', he: '헤', ho: '호',
+  ba: '바', bi: '비', bu: '부', be: '베', bo: '보',
+  pa: '파', pi: '피', pu: '푸', pe: '페', po: '포',
+  ma: '마', mi: '미', mu: '무', me: '메', mo: '모',
+  ya: '야', yu: '유', yo: '요',
+  ra: '라', ri: '리', ru: '루', re: '레', ro: '로',
+  wa: '와', n: '응',
+  kya: '캬', kyu: '큐', kyo: '쿄',
+  sha: '샤', shu: '슈', sho: '쇼',
+  cha: '차', chu: '추', cho: '초',
+  nya: '냐', nyu: '뉴', nyo: '뇨',
+  hya: '햐', hyu: '휴', hyo: '효',
+  mya: '먀', myu: '뮤', myo: '묘',
+  rya: '랴', ryu: '류', ryo: '료',
+  gya: '갸', gyu: '규', gyo: '교',
+  ja: '자', ju: '주', jo: '조',
+  bya: '뱌', byu: '뷰', byo: '뵤',
+  pya: '퍄', pyu: '퓨', pyo: '표',
+};
+
+export function koReading(kana) {
+  return KO_BY_ROMAJI[toRomaji(kana)] || '';
+}

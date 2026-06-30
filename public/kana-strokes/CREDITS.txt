@@ -1,0 +1,10 @@
+카나 획순(stroke-order) SVG 출처
+================================
+
+이 디렉터리의 히라가나·가타카나 획순 SVG는 strokesvg 프로젝트에서 가져왔습니다.
+
+- 프로젝트: strokesvg — https://github.com/zhengkyl/strokesvg
+- 글자 모양 기반 글꼴: Klee One
+- 라이선스: SIL Open Font License 1.1 (OFL)
+
+OFL 전문: https://scripts.sil.org/OFL

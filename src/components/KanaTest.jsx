@@ -1,6 +1,6 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
-import { kanaList, acceptedRomaji, SET_LABELS, ALL_SETS } from '../lib/gojuon';
+import { kanaList, acceptedRomaji, koReading, SET_LABELS, ALL_SETS } from '../lib/gojuon';
 import { toRomaji } from '../lib/kanaRomaji';
 import Button from './Button';
 
@@ -20,33 +20,28 @@ export default function KanaTest({ kind, slug, storageKey }) {
   const [input, setInput] = useState('');
   const [result, setResult] = useState(null); // null | 'ok' | 'no'
   const [right, setRight] = useState(0);
+  const [wrong, setWrong] = useState([]);
+  const [streak, setStreak] = useState(0);
   const [started, setStarted] = useState(false);
   const [done, setDone] = useState(false);
   const inputRef = useRef(null);
 
   const toggleSet = s => setSets(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
 
-  const start = () => {
-    const list = kanaList(kind, ALL_SETS.filter(s => sets.includes(s)));
+  const begin = list => {
     if (!list.length) return;
     setDeck(shuffle(list));
-    setIdx(0); setInput(''); setResult(null); setRight(0); setDone(false); setStarted(true);
+    setIdx(0); setInput(''); setResult(null); setRight(0); setWrong([]); setStreak(0);
+    setDone(false); setStarted(true);
   };
+  const start = () => begin(kanaList(kind, ALL_SETS.filter(s => sets.includes(s))));
+  const retryWrong = () => begin(wrong);
 
   const current = deck[idx];
 
   useEffect(() => { if (started && !done) inputRef.current?.focus(); }, [idx, started, done]);
 
-  const submit = () => {
-    if (!current || result) return;
-    const ans = input.trim().toLowerCase().replace(/\s+/g, '');
-    if (!ans) return;
-    const ok = acceptedRomaji(current).has(ans);
-    setResult(ok ? 'ok' : 'no');
-    if (ok) setRight(r => r + 1);
-  };
-
-  const finish = (finalRight) => {
+  const finish = finalRight => {
     setDone(true);
     const total = deck.length;
     const passed = total > 0 && finalRight / total >= 0.8;
@@ -59,15 +54,33 @@ export default function KanaTest({ kind, slug, storageKey }) {
     }
   };
 
-  const next = () => {
-    if (idx + 1 >= deck.length) finish(right);
+  const advance = nextRight => {
+    if (idx + 1 >= deck.length) finish(nextRight);
     else { setIdx(i => i + 1); setInput(''); setResult(null); }
   };
+
+  const submit = () => {
+    if (!current || result) return;
+    const ans = input.trim().toLowerCase().replace(/\s+/g, '');
+    if (!ans) return;
+    const ok = acceptedRomaji(current).has(ans);
+    if (ok) { setResult('ok'); setRight(r => r + 1); setStreak(s => s + 1); }
+    else { setResult('no'); setStreak(0); setWrong(w => w.includes(current) ? w : [...w, current]); }
+  };
+
+  // 정답이면 자동으로 다음 (오답은 정답 확인 후 직접 넘김)
+  useEffect(() => {
+    if (result !== 'ok' || done) return;
+    const t = setTimeout(() => advance(right), 600);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [result]);
 
   const onKeyDown = e => {
     if (e.key !== 'Enter') return;
     e.preventDefault();
-    if (result) next(); else submit();
+    if (result === 'no') advance(right);
+    else if (!result) submit();
   };
 
   // ── 시작 전: 범위 선택 ──
@@ -103,9 +116,24 @@ export default function KanaTest({ kind, slug, storageKey }) {
           <span className={`kana-test__pct ${passed ? 'is-ok' : 'is-no'}`}>{pct}%</span>
           <span className="kana-test__frac">{right} / {total}</span>
         </div>
-        <div style={{ textAlign: 'center', marginTop: 12 }}>
-          <Button variant="secondary" onClick={() => setStarted(false)}>범위 다시 고르기</Button>
-          <Button onClick={start} style={{ marginLeft: 8 }}>다시 풀기 →</Button>
+
+        {wrong.length > 0 && (
+          <div className="kana-test__wrong">
+            <p className="kana-test__wrong-title">틀린 글자 {wrong.length}개 — 다시 익혀요</p>
+            <div className="kana-test__wrong-list">
+              {wrong.map(k => (
+                <span key={k} className="kana-test__wrong-item">
+                  <b lang="ja">{k}</b> {koReading(k)} · {toRomaji(k)}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="kana-test__done-actions">
+          {wrong.length > 0 && <Button onClick={retryWrong}>틀린 것만 다시 ({wrong.length}) →</Button>}
+          <Button variant="secondary" onClick={start}>전체 다시</Button>
+          <Button variant="ghost" onClick={() => setStarted(false)}>범위 고르기</Button>
         </div>
       </div>
     );
@@ -116,7 +144,7 @@ export default function KanaTest({ kind, slug, storageKey }) {
     <div className="card kana-test">
       <div className="kana-test__bar">
         <span>{idx + 1} / {deck.length}</span>
-        <span>맞은 개수 {right}</span>
+        <span>{streak >= 2 ? `🔥 연속 ${streak}` : `맞은 개수 ${right}`}</span>
       </div>
 
       <div className="kana-test__prompt" lang="ja">{current}</div>
@@ -130,16 +158,22 @@ export default function KanaTest({ kind, slug, storageKey }) {
         placeholder="로마자 입력 (예: ka)"
         className={`search-input kana-test__input${result === 'ok' ? ' is-correct' : result === 'no' ? ' is-wrong' : ''}`}
         autoComplete="off" autoCapitalize="off" autoCorrect="off" spellCheck="false"
-        disabled={!!result}
+        disabled={result === 'ok'}
       />
 
       {result === 'ok' && <p className="kana-test__feedback is-ok">정답!</p>}
-      {result === 'no' && <p className="kana-test__feedback is-no">정답: <strong>{toRomaji(current)}</strong></p>}
+      {result === 'no' && (
+        <p className="kana-test__feedback is-no">
+          정답: <strong>{toRomaji(current)}</strong> <span className="kana-test__feedback-ko">({koReading(current)})</span>
+        </p>
+      )}
 
-      <div style={{ textAlign: 'center', marginTop: 14 }}>
-        {result
-          ? <Button onClick={next}>{idx + 1 >= deck.length ? '결과 보기 →' : '다음 →'}</Button>
-          : <Button onClick={submit} disabled={!input.trim()}>확인</Button>}
+      <div style={{ textAlign: 'center', marginTop: 14, minHeight: 38 }}>
+        {result === 'no'
+          ? <Button onClick={() => advance(right)}>{idx + 1 >= deck.length ? '결과 보기 →' : '다음 →'}</Button>
+          : result === 'ok'
+            ? null
+            : <Button onClick={submit} disabled={!input.trim()}>확인</Button>}
       </div>
     </div>
   );
