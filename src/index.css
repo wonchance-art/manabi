@@ -8739,8 +8739,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   margin: 0 0 8px;
 }
 /* 표 + 인라인 획순 패널 — 클릭 전엔 패널 숨김, 클릭 시 표 위(좁음)/왼쪽(넓음) */
-.gojuon-board { display: flex; flex-direction: column; align-items: center; gap: 14px; }
-.gojuon-grid { display: grid; gap: 6px; max-width: 560px; margin: 0 auto; }
+.gojuon-board { display: flex; flex-direction: column; gap: 14px; }
+.gojuon-grid { display: grid; gap: 6px; }   /* 페이지 너비를 꽉 채움 */
 .gojuon-cell {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 3px; padding: 9px 2px; min-height: 58px;
@@ -8756,6 +8756,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 /* 인라인 획순 패널 (모달 대체) */
 .gojuon-panel {
   display: flex; flex-direction: column; align-items: center; gap: 8px;
+  align-self: center;   /* 좁은 화면: 표 위 중앙 (표는 꽉 채우고 패널만 컴팩트) */
   padding: 14px 16px; background: var(--bg-secondary);
   border: 1px solid var(--border); border-radius: var(--radius-md);
 }
@@ -8770,9 +8771,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .gojuon-panel__replay:hover { border-color: var(--primary); color: var(--primary); }
 /* 넓은 화면: 패널을 표 왼쪽에 */
 @media (min-width: 760px) {
-  .gojuon-board { flex-direction: row; align-items: flex-start; justify-content: center; gap: 22px; }
-  .gojuon-board .gojuon-grid { margin: 0; max-width: 500px; }
-  .gojuon-panel { position: sticky; top: 16px; }
+  .gojuon-board { flex-direction: row; align-items: flex-start; gap: 22px; }
+  .gojuon-board .gojuon-grid { flex: 1; min-width: 0; }   /* 패널 옆 남은 폭을 표가 채움 */
+  .gojuon-panel { align-self: auto; flex: 0 0 auto; position: sticky; top: 16px; }
 }
 
 /* 획순 stroke-order 애니메이션 (strokesvg, OFL) */
