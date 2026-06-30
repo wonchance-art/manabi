@@ -4,10 +4,17 @@ import { GOJUON, SET_LABELS, ALL_SETS } from '../lib/gojuon';
 import { toRomaji } from '../lib/kanaRomaji';
 import { useTTS } from '../lib/useTTS';
 
-export default function GojuonChart({ kind }) {
+export default function GojuonChart({ kind, sets = ALL_SETS }) {
   const { speak, supported } = useTTS();
   const table = GOJUON[kind];
-  const [sel, setSel] = useState(table.basic[0][0]); // あ / ア
+  const setList = ALL_SETS.filter(s => sets.includes(s));
+
+  // 처음 선택 = 주어진 세트의 첫 글자
+  const firstKana = (() => {
+    for (const s of setList) for (const row of table[s] || []) for (const k of row) if (k) return k;
+    return table.basic[0][0];
+  })();
+  const [sel, setSel] = useState(firstKana);
 
   const say = k => { if (supported && k) speak(k, 'Japanese'); };
 
@@ -25,10 +32,10 @@ export default function GojuonChart({ kind }) {
         </div>
       </div>
 
-      {ALL_SETS.map(setKey => (
+      {setList.map(setKey => (
         <div key={setKey} className="gojuon-set">
-          <h3 className="gojuon-set__label">{SET_LABELS[setKey]}</h3>
-          <div className="gojuon-grid" style={{ '--cols': table[setKey][0].length }}>
+          {setList.length > 1 && <h3 className="gojuon-set__label">{SET_LABELS[setKey]}</h3>}
+          <div className="gojuon-grid" style={{ gridTemplateColumns: `repeat(${table[setKey][0].length}, 1fr)` }}>
             {table[setKey].map((row, ri) => row.map((k, ci) => (
               k ? (
                 <button

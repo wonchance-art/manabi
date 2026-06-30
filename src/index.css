@@ -8760,12 +8760,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-size: 0.85rem; font-weight: 700; color: var(--text-secondary);
   margin: 0 0 8px;
 }
-/* 셀은 고정 크기(사각형)로, 그리드는 가운데 정렬 — 페이지 폭까지 억지로 늘리지 않음 */
-.gojuon-grid {
-  display: grid;
-  grid-template-columns: repeat(var(--cols, 5), clamp(42px, 13vw, 58px));
-  gap: 6px; justify-content: center;
-}
+.gojuon-grid { display: grid; gap: 6px; }
 .gojuon-cell {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 2px; padding: 8px 2px; min-height: 52px;

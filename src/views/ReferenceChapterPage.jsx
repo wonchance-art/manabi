@@ -324,6 +324,9 @@ export default function ReferenceChapterPage({ lang, slug }) {
             {sec.heading}
           </h2>
 
+          {/* 카나 오십음표 — 해당 설명과 함께 (섹션 안에) */}
+          {sec.gojuon && chapter.kana && <GojuonChart kind={chapter.kana} sets={sec.gojuon} />}
+
           {/* 패턴 공식 박스 — 섹션의 핵심을 가장 먼저, 가장 크게 */}
           {sec.pattern && (
             <div className="fr-pattern" style={{ borderColor: meta?.color }}>
@@ -353,12 +356,9 @@ export default function ReferenceChapterPage({ lang, slug }) {
         </section>
       ))}
 
-      {/* ── 카나 챕터: 오십음표 학습 + 카나→로마자 테스트 ── */}
+      {/* ── 카나 챕터: 카나→로마자 테스트 (오십음표 학습 표는 위 섹션 안에) ── */}
       {chapter.kana ? (
-        <>
-          <GojuonChart kind={chapter.kana} />
-          <KanaTest kind={chapter.kana} slug={chapter.slug} storageKey={`${ref.readKey}_check`} />
-        </>
+        <KanaTest kind={chapter.kana} slug={chapter.slug} storageKey={`${ref.readKey}_check`} />
       ) : (
         /* ── 패턴 체크 (3단계 퀴즈 + 통과 관문) ── */
         <RefPatternCheck
