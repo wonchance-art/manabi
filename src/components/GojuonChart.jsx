@@ -2,10 +2,8 @@
 import { useState } from 'react';
 import { GOJUON, SET_LABELS, ALL_SETS } from '../lib/gojuon';
 import { toRomaji } from '../lib/kanaRomaji';
-import { useTTS } from '../lib/useTTS';
 
 export default function GojuonChart({ kind, sets = ALL_SETS }) {
-  const { speak, supported } = useTTS();
   const table = GOJUON[kind];
   const setList = ALL_SETS.filter(s => sets.includes(s));
 
@@ -16,18 +14,13 @@ export default function GojuonChart({ kind, sets = ALL_SETS }) {
   })();
   const [sel, setSel] = useState(firstKana);
 
-  const say = k => { if (supported && k) speak(k, 'Japanese'); };
-
   return (
     <div className="gojuon">
-      {/* 포커스 패널 — 획순 폰트로 크게 + 발음 + 따라쓰기 안내 */}
+      {/* 포커스 패널 — 획순 폰트로 크게 + 따라쓰기 안내 */}
       <div className="card gojuon-focus">
         <div className="gojuon-focus__stroke kana-stroke" lang="ja" aria-label={`${sel} 획순`}>{sel}</div>
         <div className="gojuon-focus__info">
           <div className="gojuon-focus__romaji">{toRomaji(sel)}</div>
-          {supported && (
-            <button type="button" className="gojuon-focus__tts" onClick={() => say(sel)} title="발음 듣기">▷ 발음</button>
-          )}
           <p className="gojuon-focus__hint">획 순서(숫자)대로 따라 써보세요</p>
         </div>
       </div>
@@ -43,7 +36,7 @@ export default function GojuonChart({ kind, sets = ALL_SETS }) {
                   type="button"
                   lang="ja"
                   className={`gojuon-cell${sel === k ? ' is-sel' : ''}`}
-                  onClick={() => { setSel(k); say(k); }}
+                  onClick={() => setSel(k)}
                   aria-label={`${k} ${toRomaji(k)}`}
                 >
                   <span className="gojuon-cell__kana">{k}</span>
