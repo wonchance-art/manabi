@@ -1,6 +1,6 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
-import { kanaList, acceptedRomaji, koReading, SET_LABELS, ALL_SETS } from '../lib/gojuon';
+import { kanaList, acceptedRomaji, SET_LABELS, ALL_SETS } from '../lib/gojuon';
 import { toRomaji } from '../lib/kanaRomaji';
 import Button from './Button';
 
@@ -123,7 +123,7 @@ export default function KanaTest({ kind, slug, storageKey }) {
             <div className="kana-test__wrong-list">
               {wrong.map(k => (
                 <span key={k} className="kana-test__wrong-item">
-                  <b lang="ja">{k}</b> {koReading(k)} · {toRomaji(k)}
+                  <b lang="ja">{k}</b> {toRomaji(k)}
                 </span>
               ))}
             </div>
@@ -164,7 +164,7 @@ export default function KanaTest({ kind, slug, storageKey }) {
       {result === 'ok' && <p className="kana-test__feedback is-ok">정답!</p>}
       {result === 'no' && (
         <p className="kana-test__feedback is-no">
-          정답: <strong>{toRomaji(current)}</strong> <span className="kana-test__feedback-ko">({koReading(current)})</span>
+          정답: <strong>{toRomaji(current)}</strong>
         </p>
       )}
 

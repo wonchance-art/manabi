@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { GOJUON, SET_LABELS, ALL_SETS, koReading } from '../lib/gojuon';
+import { GOJUON, SET_LABELS, ALL_SETS } from '../lib/gojuon';
 import { toRomaji } from '../lib/kanaRomaji';
 import KanaStroke from './KanaStroke';
 
@@ -31,7 +31,6 @@ export default function GojuonChart({ kind, sets = ALL_SETS }) {
                     <KanaStroke key={`${sel}-${playN}`} kana={sel} kind={kind} />
                   </div>
                   <div className="gojuon-panel__read">
-                    <span className="gojuon-panel__ko">{koReading(sel)}</span>
                     <span className="gojuon-panel__roma">{toRomaji(sel)}</span>
                   </div>
                   <button type="button" className="gojuon-panel__replay" onClick={() => setPlayN(n => n + 1)}>다시 그리기 ↻</button>
@@ -58,10 +57,10 @@ function Cell({ k, active, onClick }) {
       type="button"
       className={`gojuon-cell${active ? ' is-sel' : ''}`}
       onClick={onClick}
-      aria-label={`${k} ${koReading(k)} ${toRomaji(k)}`}
+      aria-label={`${k} ${toRomaji(k)}`}
     >
       <span className="gojuon-cell__kana" lang="ja">{k}</span>
-      <span className="gojuon-cell__sub">{koReading(k)} · {toRomaji(k)}</span>
+      <span className="gojuon-cell__sub">{toRomaji(k)}</span>
     </button>
   );
 }

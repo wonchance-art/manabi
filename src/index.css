@@ -8762,8 +8762,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .gojuon-panel__stroke { display: flex; gap: 6px; }
 .gojuon-panel__read { display: flex; align-items: baseline; gap: 8px; }
-.gojuon-panel__ko { font-size: 1.7rem; font-weight: 800; color: var(--text-primary); }
-.gojuon-panel__roma { font-size: 0.95rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.gojuon-panel__roma { font-size: 1.4rem; font-weight: 800; color: var(--text-primary); font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
 .gojuon-panel__replay {
   font-size: 0.78rem; padding: 3px 12px; border-radius: var(--radius-full);
   background: var(--bg-card); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer;
@@ -8818,7 +8817,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .kana-test__pct.is-ok { color: var(--accent); }
 .kana-test__pct.is-no { color: var(--warning); }
 .kana-test__frac { font-size: 0.85rem; color: var(--text-muted); }
-.kana-test__feedback-ko { color: var(--text-muted); font-weight: 400; }
 .kana-test__wrong { margin: 16px 0 4px; padding: 12px 14px; background: var(--bg-secondary); border-radius: var(--radius-md); }
 .kana-test__wrong-title { font-size: 0.82rem; font-weight: 700; color: var(--text-secondary); margin: 0 0 8px; text-align: center; }
 .kana-test__wrong-list { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
