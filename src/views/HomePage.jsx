@@ -396,6 +396,15 @@ export default function HomePage({ continueManifest = {}, refManifest = {} }) {
         </Link>
       )}
 
+      {/* 라이팅 스튜디오 — 산출 연습 진입점 */}
+      <Link href="/writing" className="lessons-continue">
+        <span className="lessons-continue__body">
+          <span className="lessons-continue__kicker">라이팅 스튜디오</span>
+          <span className="lessons-continue__title">오늘 한 문장 — 쓰고 AI 첨삭 받기</span>
+        </span>
+        <span className="lessons-continue__meta">쓰기 →</span>
+      </Link>
+
       {/* 오늘 읽기 — 진행 중 시리즈가 없을 때만 */}
       {(() => {
         const inProgress = (data?.seriesProgress || []).some(s =>

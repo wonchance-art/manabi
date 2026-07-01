@@ -82,7 +82,8 @@ describe('buildChapterQuiz', () => {
 });
 
 describe('buildChapterQuiz — 실제 레지스트리 통합', () => {
-  it('일본어 n4-12-nagara 챕터에서 퀴즈가 나온다', async () => {
+  it('일본어 n4-12-nagara 챕터에서 퀴즈가 나온다', { timeout: 30000 }, async () => {
+    // refLangs는 4개 언어 콘텐츠 전체(~10만 줄)를 로드하므로 기본 5초로는 빠듯하다
     const { getRefLang } = await import('../../content/refLangs');
     const ref = getRefLang('Japanese');
     const { chapter } = ref.getChapter('n4-12-nagara');
