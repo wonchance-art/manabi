@@ -110,9 +110,13 @@ export async function POST(request) {
     return Response.json({ error: { message: '첨삭 요청이 너무 잦아요. 잠시 후 다시 시도해주세요.' } }, { status: 429 });
   }
 
+  // Gemini 키가 없어도 Groq만으로 진행 가능 — 하드 실패는 두 키 모두 없을 때만
   const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    return Response.json({ error: { message: 'Server Configuration Error: API Key missing' } }, { status: 500 });
+  if (!apiKey && !process.env.GROQ_API_KEY) {
+    return Response.json(
+      { error: { message: '서버에 AI 키가 설정되지 않았어요 (GEMINI_API_KEY 또는 GROQ_API_KEY). Vercel 환경 변수를 확인해주세요.' } },
+      { status: 500 }
+    );
   }
 
   let body;
@@ -158,9 +162,12 @@ export async function POST(request) {
   }
 
   try {
-    // flash → flash-lite → Groq
-    let raw = await callGemini('gemini-2.5-flash', promptText, apiKey).catch(() => null);
-    if (!raw) raw = await callGemini('gemini-2.5-flash-lite', promptText, apiKey).catch(() => null);
+    // flash → flash-lite → Groq (Gemini 키 없으면 바로 Groq)
+    let raw = null;
+    if (apiKey) {
+      raw = await callGemini('gemini-2.5-flash', promptText, apiKey).catch(() => null);
+      if (!raw) raw = await callGemini('gemini-2.5-flash-lite', promptText, apiKey).catch(() => null);
+    }
     if (!raw) raw = await callGroqJson(promptText).catch(() => null);
 
     const feedback = validateFeedback(parseModelJson(raw));
