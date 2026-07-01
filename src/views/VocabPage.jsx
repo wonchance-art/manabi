@@ -555,7 +555,7 @@ export default function VocabPage() {
 
             <label className="u-text-sm u-text-bold" style={{ display: 'block', marginBottom: 4 }}>언어</label>
             <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
-              {['Japanese', 'English', 'French'].map(lang => (
+              {['Japanese', 'English', 'French', 'Chinese'].map(lang => (
                 <button
                   key={lang}
                   type="button"
@@ -563,7 +563,7 @@ export default function VocabPage() {
                   className={`btn btn--sm ${manualDraft.language === lang ? 'btn--primary' : 'btn--ghost'}`}
                   style={{ flex: 1 }}
                 >
-                  {lang === 'Japanese' ? '일본어' : lang === 'English' ? '영어' : '프랑스어'}
+                  {({ Japanese: '일본어', English: '영어', French: '프랑스어', Chinese: '중국어' })[lang]}
                 </button>
               ))}
             </div>
@@ -574,7 +574,7 @@ export default function VocabPage() {
               value={manualDraft.word_text}
               onChange={e => setManualDraft(d => ({ ...d, word_text: e.target.value }))}
               className="form-input"
-              placeholder={manualDraft.language === 'Japanese' ? '예: 食べる' : manualDraft.language === 'French' ? 'ex: bonjour' : 'e.g. eloquent'}
+              placeholder={manualDraft.language === 'Japanese' ? '예: 食べる' : manualDraft.language === 'French' ? 'ex: bonjour' : manualDraft.language === 'Chinese' ? '例: 北京' : 'e.g. eloquent'}
               autoFocus
               style={{ marginBottom: 12 }}
             />

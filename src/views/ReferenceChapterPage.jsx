@@ -4,6 +4,8 @@ import { refInline, refMain, refPron, Callout, CALLOUT_ORDER, RefParallel, RefHa
 import RefReadMark from '../components/RefReadMark';
 import RefSpeak from '../components/RefSpeak';
 import RefPatternCheck from '../components/RefPatternCheck';
+import GojuonChart from '../components/GojuonChart';
+import KanaTest from '../components/KanaTest';
 
 function ExampleList({ examples, langCode, lang }) {
   if (!examples?.length) return null;
@@ -348,19 +350,27 @@ export default function ReferenceChapterPage({ lang, slug }) {
           {CALLOUT_ORDER.map(kind => (
             <Callout key={kind} kind={kind} text={sec[kind]} />
           ))}
+
+          {/* 카나 오십음표 — 설명을 먼저 읽은 뒤 표(버튼) */}
+          {sec.gojuon && chapter.kana && <GojuonChart kind={chapter.kana} sets={sec.gojuon} />}
         </section>
       ))}
 
-      {/* ── 패턴 체크 (3단계 퀴즈 + 통과 관문) ── */}
-      <RefPatternCheck
-        quiz={quiz}
-        lang={lang}
-        langCode={ref.langCode}
-        storageKey={`${ref.readKey}_check`}
-        slug={chapter.slug}
-        next={next ? { href: `${ref.base}/grammar/${next.slug}`, title: next.title } : null}
-        reviewLinks={reviewLinks}
-      />
+      {/* ── 카나 챕터: 카나→로마자 테스트 (오십음표 학습 표는 위 섹션 안에) ── */}
+      {chapter.kana ? (
+        <KanaTest kind={chapter.kana} slug={chapter.slug} storageKey={`${ref.readKey}_check`} />
+      ) : (
+        /* ── 패턴 체크 (3단계 퀴즈 + 통과 관문) ── */
+        <RefPatternCheck
+          quiz={quiz}
+          lang={lang}
+          langCode={ref.langCode}
+          storageKey={`${ref.readKey}_check`}
+          slug={chapter.slug}
+          next={next ? { href: `${ref.base}/grammar/${next.slug}`, title: next.title } : null}
+          reviewLinks={reviewLinks}
+        />
+      )}
 
       {/* 읽음 기록 — 여기(챕터 끝)까지 스크롤해야 읽음 처리 */}
       <RefReadMark storageKey={ref.readKey} slug={chapter.slug} />

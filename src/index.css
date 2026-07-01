@@ -754,7 +754,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   grid-template-columns: 52px 30px 150px minmax(0, 1fr) auto;
   grid-template-areas:
     "pos tts word meaning right"
-    ".   .   reading ex      .";
+    ".   .   reading ex      ex";
   align-items: baseline;
   column-gap: 12px; row-gap: 2px;
   padding: 11px 16px;
@@ -763,7 +763,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   grid-template-columns: 26px 52px 30px 150px minmax(0, 1fr) auto;
   grid-template-areas:
     "check pos tts word meaning right"
-    "check .   .   reading ex      .";
+    "check .   .   reading ex      ex";
 }
 .vocab-row__check {
   grid-area: check; align-self: center;
@@ -772,10 +772,15 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   color: #fff; font-size: 0.8rem;
 }
 .vocab-row__pos {
-  grid-area: pos; align-self: baseline;
-  font-size: 0.72rem; color: var(--text-muted);
+  grid-area: pos; align-self: baseline; justify-self: start;
+  max-width: 100%;
+  /* 사전 .fr-vrow__pos와 동일한 테두리 알약 */
+  font-size: 0.66rem; font-weight: 700; color: var(--text-muted);
+  background: var(--bg-secondary); border: 1px solid var(--border);
+  border-radius: var(--radius-full); padding: 1px 7px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+.vocab-row__pos--empty { background: transparent; border-color: transparent; padding: 0; }
 .vocab-row__tts {
   grid-area: tts; align-self: center;
   width: 30px; height: 30px; border-radius: var(--radius-sm);
@@ -797,13 +802,29 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .vocab-row__meaning {
   grid-area: meaning; align-self: baseline;
-  margin: 0; font-size: 0.95rem; color: var(--text-secondary); line-height: 1.4;
+  margin: 0; font-size: 0.95rem; color: var(--text-primary); line-height: 1.4;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.vocab-row__ex {
+/* 뜻 아래 보조 행 — 초록 노트(어원/한자) + 예문 박스를 세로로 쌓음 */
+.vocab-row__sub {
   grid-area: ex;
-  margin: 0; font-size: 0.8rem; color: var(--text-muted); line-height: 1.45;
-  word-break: keep-all;   /* 끝까지 — 줄바꿈 허용 */
+  min-width: 0;
+  display: flex; flex-direction: column; gap: 4px;
+}
+/* 어원/한자 "연결 지식" — 사전 .fr-vrow__etym와 동일한 초록 텍스트 */
+.vocab-row__note {
+  margin: 0; font-size: 0.78rem; color: #51A85C; line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.vocab-row__note strong { font-weight: 700; }
+.vocab-row__ex {
+  min-width: 0;           /* 그리드 아이템 기본 min-width:auto 무력화 → 트랙 안에서 접힘 */
+  margin: 0; font-size: 0.92rem; font-weight: 500; color: var(--text-primary); line-height: 1.6;
+  word-break: normal;
+  overflow-wrap: anywhere; /* 띄어쓰기 없는 CJK 예문도 셀 안에서 줄바꿈 */
+  /* 사전 .bk-ex / .bk-ex__ja와 동일한 좌측보더 박스 + 크기 */
+  padding: 6px 0 6px 10px;
+  border-left: 2px solid var(--primary-glow);
 }
 .vocab-row__right {
   grid-area: right; align-self: center;
@@ -7800,15 +7821,19 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-size: 0.74rem; color: var(--text-muted); font-weight: 500;
   margin-left: 8px;
 }
-.fr-vlist { list-style: none; margin: 0; padding: 0; }
+.fr-vlist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .fr-vrow {
   display: grid;
   /* 체크 | 단어(컨테이너 폭 비례) | 뜻·예문 | 액션 */
   grid-template-columns: auto clamp(132px, 24%, 190px) 1fr auto;
   gap: clamp(14px, 3vw, 24px);
   align-items: start;
-  padding: 12px 4px;
-  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
+  /* 단어장(.card .vocab-row)과 동일한 카드 룩 */
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 }
 .fr-vrow--quiz { cursor: pointer; }
 .fr-vrow--quiz:hover { background: var(--bg-secondary); }
@@ -7829,13 +7854,18 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .fr-vrow__word { min-width: 0; }
 .fr-vrow__main {
   display: block;
-  font-size: 1.2rem; font-weight: 700;
+  font-size: 1.3rem; font-weight: 800;
   line-height: 1.4;
   overflow-wrap: break-word;
+  /* 단어장(.vocab-row__word)과 동일한 브랜드 그라데이션 */
+  background: linear-gradient(135deg, var(--text-primary) 60%, var(--primary-light));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
+/* 일본어 요미가나(rt)는 그라데이션 투명 채움에서 제외 — 후리가나 가독성 유지 */
+.fr-vrow__main rt { -webkit-text-fill-color: var(--text-muted); color: var(--text-muted); }
 .fr-vrow__pron {
   display: block;
-  font-size: 0.74rem; color: var(--text-muted);
+  font-size: 0.78rem; color: var(--text-muted); letter-spacing: 0.02em;
   margin-top: 1px;
 }
 .fr-vrow__body { min-width: 0; }
@@ -8021,7 +8051,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
       "check word actions"
       "check body body";
     column-gap: 10px; row-gap: 5px;
-    padding: 12px 2px;
+    padding: 12px 12px;
   }
   .fr-vrow__check { grid-area: check; }
   .fr-vrow__word {
@@ -8698,3 +8728,107 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .lvprog__frac-n { min-width: 2ch; text-align: right; }
 .lvprog__frac-sep { margin: 0 2px; color: var(--text-muted); }
 .lvprog__frac-d { min-width: 2ch; text-align: left; }
+
+/* ========= 오십음표(카나 학습) + 카나 테스트 ========= */
+.kana-stroke { font-family: 'KanjiStrokeOrders', var(--font-serif), serif; line-height: 1; }
+
+.gojuon { margin: 8px 0 4px; }
+.gojuon-set { margin-bottom: 18px; }
+.gojuon-set__label {
+  font-size: 0.85rem; font-weight: 700; color: var(--text-secondary);
+  margin: 0 0 8px;
+}
+/* 표 + 인라인 획순 패널 — 클릭 전엔 패널 숨김, 클릭 시 표 위(좁음)/왼쪽(넓음) */
+.gojuon-board { display: flex; flex-direction: column; gap: 14px; }
+.gojuon-grid { display: grid; gap: 6px; }   /* 페이지 너비를 꽉 채움 */
+.gojuon-cell {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px; padding: 9px 2px; min-height: 58px;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  cursor: pointer; transition: border-color .12s, background .12s;
+}
+.gojuon-cell:hover { border-color: var(--primary); background: var(--primary-glow); }
+.gojuon-cell.is-sel { border-color: var(--primary); background: var(--primary-glow); }
+.gojuon-cell__kana { font-size: 1.6rem; line-height: 1; color: var(--text-primary); }
+.gojuon-cell__sub { font-size: 0.66rem; color: var(--text-muted); white-space: nowrap; }
+.gojuon-cell--empty { background: transparent; border-color: transparent; cursor: default; }
+
+/* 인라인 획순 패널 (모달 대체) */
+.gojuon-panel {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  align-self: center;   /* 좁은 화면: 표 위 중앙 (표는 꽉 채우고 패널만 컴팩트) */
+  padding: 14px 16px; background: var(--bg-secondary);
+  border: 1px solid var(--border); border-radius: var(--radius-md);
+}
+.gojuon-panel__stroke { display: flex; gap: 6px; }
+.gojuon-panel__read { display: flex; align-items: baseline; gap: 8px; }
+.gojuon-panel__roma { font-size: 1.4rem; font-weight: 800; color: var(--text-primary); font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+.gojuon-panel__replay {
+  font-size: 0.78rem; padding: 3px 12px; border-radius: var(--radius-full);
+  background: var(--bg-card); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer;
+}
+.gojuon-panel__replay:hover { border-color: var(--primary); color: var(--primary); }
+/* 넓은 화면: 패널을 표 왼쪽에 */
+@media (min-width: 760px) {
+  .gojuon-board { flex-direction: row; align-items: flex-start; gap: 22px; }
+  .gojuon-board .gojuon-grid { flex: 1; min-width: 0; }   /* 패널 옆 남은 폭을 표가 채움 */
+  .gojuon-panel { align-self: auto; flex: 0 0 auto; position: sticky; top: 16px; }
+}
+
+/* 획순 stroke-order 애니메이션 (strokesvg, OFL) */
+.kana-stroke-row { display: flex; gap: 6px; align-items: center; justify-content: center; }
+.kana-stroke-glyph { width: 150px; height: 150px; }
+.kana-stroke-glyph--empty { background: var(--bg-secondary); border-radius: var(--radius-md); }
+.kana-stroke-glyph svg { width: 100%; height: 100%; display: block; --shadow: var(--border); --stroke: var(--text-primary); }
+/* 휴지 상태: 획은 숨기고 연한 그림자(글자 윤곽)만 */
+.kana-stroke-glyph [data-strokesvg="strokes"] path {
+  stroke-dasharray: 4000; stroke-dashoffset: 4000;
+}
+/* 스크롤로 영역이 보일 때 그리기. 글자 사이는 --base로 순서 보장(い단 먼저, 작은 ゃ 나중) */
+.kana-stroke-row.is-drawing [data-strokesvg="strokes"] path {
+  animation: kanaDraw 0.55s ease forwards;
+  animation-delay: calc((var(--i, 0) + var(--base, 0)) * 0.5s);
+}
+@keyframes kanaDraw { to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .kana-stroke-glyph [data-strokesvg="strokes"] path { stroke-dashoffset: 0; }
+  .kana-stroke-row.is-drawing [data-strokesvg="strokes"] path { animation: none; }
+}
+
+.kana-test { padding: 22px 20px; margin-top: 16px; }
+.kana-test__title { font-size: 1.1rem; font-weight: 700; margin: 0 0 6px; text-align: center; }
+.kana-test__lead { font-size: 0.88rem; color: var(--text-secondary); text-align: center; margin: 0; }
+.kana-test__bar {
+  display: flex; justify-content: space-between;
+  font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px;
+}
+.kana-test__prompt {
+  font-size: 4.5rem; line-height: 1; text-align: center; color: var(--text-primary);
+  margin: 6px 0 18px;
+}
+.kana-test__input { text-align: center; font-size: 1.1rem; letter-spacing: 0.04em; }
+.kana-test__input.is-correct { border-color: var(--accent); }
+.kana-test__input.is-wrong { border-color: var(--danger); }
+.kana-test__feedback { text-align: center; font-size: 0.95rem; font-weight: 700; margin: 10px 0 0; }
+.kana-test__feedback.is-ok { color: var(--accent); }
+.kana-test__feedback.is-no { color: var(--danger); }
+.kana-test__score { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-top: 8px; }
+.kana-test__pct { font-size: 2.6rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.kana-test__pct.is-ok { color: var(--accent); }
+.kana-test__pct.is-no { color: var(--warning); }
+.kana-test__frac { font-size: 0.85rem; color: var(--text-muted); }
+.kana-test__wrong { margin: 16px 0 4px; padding: 12px 14px; background: var(--bg-secondary); border-radius: var(--radius-md); }
+.kana-test__wrong-title { font-size: 0.82rem; font-weight: 700; color: var(--text-secondary); margin: 0 0 8px; text-align: center; }
+.kana-test__wrong-list { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.kana-test__wrong-item { font-size: 0.82rem; color: var(--text-muted); background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-full); padding: 3px 10px; white-space: nowrap; }
+.kana-test__wrong-item b { font-size: 1rem; color: var(--text-primary); margin-right: 3px; }
+.kana-test__done-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 16px; }
+
+@media (max-width: 560px) {
+  .gojuon-grid { max-width: 100%; }
+  .gojuon-cell { min-height: 50px; padding: 7px 1px; gap: 2px; }
+  .gojuon-cell__kana { font-size: 1.35rem; }
+  .gojuon-cell__sub { font-size: 0.58rem; }
+  .kana-stroke-glyph { width: 120px; height: 120px; }
+  .kana-test__prompt { font-size: 3.6rem; }
+}

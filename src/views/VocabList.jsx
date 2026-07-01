@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Button from '../components/Button';
 import { detectLang, displayWord } from '../lib/constants';
+import { refInline } from './refShared';
 
 const LANG_CODE = { Japanese: 'ja', Chinese: 'zh-Hans', English: 'en', French: 'fr' };
 
@@ -175,7 +176,9 @@ export default function VocabList({
             )}
 
             {/* 1행: 품사 · 듣기 · 단어 · 뜻 · 우측 / 2행: 발음 · 예문 */}
-            <span className="vocab-row__pos" title={v.pos || ''}>{v.pos || ''}</span>
+            {v.pos
+              ? <span className="vocab-row__pos" title={v.pos}>{v.pos}</span>
+              : <span className="vocab-row__pos vocab-row__pos--empty" aria-hidden="true" />}
 
             {ttsSupported ? (
               <button className="vocab-row__tts" title="발음 듣기"
@@ -186,7 +189,16 @@ export default function VocabList({
             {v.furigana && <span className="vocab-row__reading">{v.furigana}</span>}
 
             <p className="vocab-row__meaning">{v.meaning}</p>
-            {v.source_sentence && <p className="vocab-row__ex" lang={lc}>{v.source_sentence}</p>}
+            {(v.etym || v.hanja || v.source_sentence) && (
+              <div className="vocab-row__sub">
+                {(v.etym || v.hanja) && (
+                  <p className="vocab-row__note">
+                    <strong>{v.hanja ? '한자' : '어원'}</strong> · {refInline(v.etym || v.hanja)}
+                  </p>
+                )}
+                {v.source_sentence && <p className="vocab-row__ex" lang={lc}>{v.source_sentence}</p>}
+              </div>
+            )}
 
             <div className="vocab-row__right" onClick={e => e.stopPropagation()}>
               {due

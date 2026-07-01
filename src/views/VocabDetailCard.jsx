@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import Link from 'next/link';
 import { displayWord } from '../lib/constants';
+import { isNewWord } from '../lib/vocabStudy';
 
 const VocabDetailCard = memo(function VocabDetailCard({ word: v, onClose, speak, ttsSupported }) {
   const now = new Date();
@@ -13,8 +14,9 @@ const VocabDetailCard = memo(function VocabDetailCard({ word: v, onClose, speak,
   const ease = v.ease_factor ?? 0;
   const retention = Math.round(Math.exp(-1 / Math.max(interval, 0.5)) * 100);
 
-  const stageLabel = interval >= 30 ? '숙련' : interval >= 7 ? '학습 중' : interval >= 1 ? '초기' : '신규';
-  const stageColor = interval >= 30 ? 'var(--accent)' : interval >= 7 ? 'var(--warning)' : 'var(--danger)';
+  const isNew = isNewWord(v);
+  const stageLabel = isNew ? '신규' : interval >= 30 ? '숙련' : interval >= 7 ? '학습 중' : '초기';
+  const stageColor = isNew ? 'var(--text-muted)' : interval >= 30 ? 'var(--accent)' : interval >= 7 ? 'var(--warning)' : 'var(--danger)';
 
   return (
     <div className="vocab-detail-overlay" role="dialog" aria-modal="true" aria-label="단어 상세" onClick={onClose} onKeyDown={e => e.key === 'Escape' && onClose()}>
@@ -40,8 +42,8 @@ const VocabDetailCard = memo(function VocabDetailCard({ word: v, onClose, speak,
 
         <div className="vocab-detail-card__stats">
           <div className="vocab-detail-stat">
-            <span className="vocab-detail-stat__value">{reps}회</span>
-            <span className="vocab-detail-stat__label">복습 횟수</span>
+            <span className="vocab-detail-stat__value">{isNew ? '아직' : `${reps}회`}</span>
+            <span className="vocab-detail-stat__label">다시 한 횟수</span>
           </div>
           <div className="vocab-detail-stat">
             <span className="vocab-detail-stat__value">{interval < 1 ? '<1일' : `${Math.round(interval)}일`}</span>
@@ -66,11 +68,11 @@ const VocabDetailCard = memo(function VocabDetailCard({ word: v, onClose, speak,
               <span className="vocab-detail-timeline__date">{created.toLocaleDateString('ko-KR')}</span>
               <span className="vocab-detail-timeline__event">단어 수집</span>
             </div>
-            {reps > 0 && v.last_reviewed_at && (
+            {v.last_reviewed_at && (
               <div className="vocab-detail-timeline__item">
                 <span className="vocab-detail-timeline__dot" style={{ background: 'var(--accent)' }} />
                 <span className="vocab-detail-timeline__date">{new Date(v.last_reviewed_at).toLocaleDateString('ko-KR')}</span>
-                <span className="vocab-detail-timeline__event">마지막 복습 ({reps}회차)</span>
+                <span className="vocab-detail-timeline__event">마지막 복습{reps > 0 ? ` · 다시 ${reps}회` : ''}</span>
               </div>
             )}
             <div className="vocab-detail-timeline__item">
