@@ -5,6 +5,8 @@
  * 프롬프트 조립·응답 검증은 서버(/api/study-paragraph) 전용, 문항 매핑은 클라 공용.
  */
 
+import { levelBand } from './writingPrompts';
+
 const LANG_NAME = { Japanese: '일본어', English: '영어', French: '프랑스어', Chinese: '중국어' };
 
 /** Gemini structured output 스키마 */
@@ -62,12 +64,15 @@ export function buildParagraphPrompt(m) {
   (m.newWords || []).forEach(w => parts.push(`- [새 단어] ${w.word} (${w.meaning})`));
   if (parts.length === 0) return null;
 
+  const beginnerKanjiCare = m.language === 'Japanese' && levelBand(m.language, m.level) === 'beginner';
+
   return (
     `당신은 ${name} 교재 집필자입니다. ${m.level} 레벨 한국인 학습자를 위한 오늘의 학습 문단을 만드세요.\n\n` +
     `[반드시 문단에 자연스럽게 녹일 재료]\n${parts.join('\n')}\n\n` +
     `[문단 규칙]\n` +
     `- ${name} 3~5문장, 하나의 일상적 상황·이야기로 자연스럽게 연결 (재료 나열식 금지).\n` +
     `- 재료 외 어휘·문법은 ${m.level} 이하만. 문장은 짧고 명확하게.\n` +
+    (beginnerKanjiCare ? `- 입문 레벨 배려: 한자는 재료 단어에 이미 포함된 것만 쓰고, 그 밖의 단어는 히라가나로 표기하세요. 사용한 한자에는 반드시 정확한 요미가나(pron)가 대응돼야 합니다.\n` : '') +
     `- sentences: 문단을 문장 단위로 나눠 pron(일본어=전체 요미가나 히라가나, 중국어=병음, 영어·프랑스어=빈 문자열), ko(문장 뜻), tokens(어순 조립용 3~10어절 분할 — 일본어·중국어는 의미 단위로 띄어 나누기)를 채우세요. tokens를 공백으로 이으면 원문과 일치해야 합니다(구두점 포함).\n\n` +
     `[문항 규칙 — questions]\n` +
     `- cloze: 새 문법으로 2개(focus=new-grammar, key=새 문법 패턴), 복습 문법마다 1개(focus=due-grammar, key=그 패턴). prompt는 문단의 실제 문장에서 해당 문법 부분만 ＿＿＿로 비운 것, answer는 빈칸 원형, distractors는 같은 자리에 올 법한 오답 3개, ko는 그 문장 뜻.\n` +

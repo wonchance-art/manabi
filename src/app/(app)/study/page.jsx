@@ -5,6 +5,7 @@ import { refMain, refPron } from '@/views/refShared';
 import { buildChapterQuiz } from '@/lib/refQuiz';
 import { composeSession } from '@/lib/studySession';
 import { computeRung, computeEwma, dialFromEwma } from '@/lib/skillRung';
+import { levelBand } from '@/lib/writingPrompts';
 import StudySessionPage from '@/views/StudySessionPage';
 
 export const metadata = { title: '오늘 학습 | Anatomy Studio' };
@@ -131,6 +132,7 @@ export default async function Page({ searchParams }) {
 
   // ── 독해 소재 — 현재 레벨 문형 예문 ──
   const level = newChapter?.meta.level || grammarDue[0]?.meta.level || ref.LEVEL_META[0]?.key;
+  const band = levelBand(lang, level);
   const bunkei = ref.getBunkei?.(level);
   const exPool = (bunkei?.themes || [])
     .flatMap(t => t.items || [])
@@ -197,6 +199,7 @@ export default async function Page({ searchParams }) {
       session={session}
       paragraphMaterials={canGenerate ? paragraphMaterials : null}
       dial={dial}
+      band={band}
       lang={lang}
       langCode={ref.langCode}
       langName={ref.name}
