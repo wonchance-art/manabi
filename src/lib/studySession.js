@@ -1,7 +1,7 @@
 /**
  * 공부 모드 세션 조립기 — 듀오링고(경로·세션) + Anki(FSRS) 하이브리드.
  * 서버가 조회한 재료(due 어휘·due 문법·다음 챕터·독해 예문)를 받아
- * ~12문항짜리 인터리브 세션 payload를 만든다. 순수 함수 — 셔플 없음(렌더 몫).
+ * ~10문항짜리 인터리브 세션 payload를 만든다. 순수 함수 — 셔플 없음(렌더 몫).
  *
  * 문항 타입:
  *  vocab-choice   단어→뜻 4지선다        vocab-typing  뜻→단어 입력
@@ -10,7 +10,9 @@
  *  teach          새 패턴 티칭 카드(문항 아님·집계 제외)
  */
 
-const MAX_ITEMS = 12;
+import { vocabTypeForRung } from './skillRung';
+
+const MAX_ITEMS = 10; // 예산제 하드캡 (기획 H3)
 
 /** 타이핑 판정용 정규화 — 공백·구두점 제거, 소문자화 */
 export function normalizeAnswer(s) {
@@ -43,11 +45,10 @@ function pickDistractors(pool, correct, n) {
 let uidSeq = 0;
 const uid = prefix => `${prefix}-${++uidSeq}`;
 
-/** 어휘 due → 문항 (choice/typing/listening 로테이션) */
-function buildVocabItems(vocab, meaningPool) {
-  const types = ['vocab-choice', 'vocab-typing', 'vocab-listening'];
-  return (vocab || []).slice(0, 3).map((w, i) => {
-    let type = types[i % types.length];
+/** 어휘 due → 문항 (rung + 다이얼로 타입 배정, 인덱스 로테이션 폐기) */
+function buildVocabItems(vocab, meaningPool, vocabRungs = {}, dial = 'normal') {
+  return (vocab || []).slice(0, 3).map(w => {
+    let type = vocabTypeForRung(vocabRungs[w.word_text] ?? 1, dial);
     let options = null;
     if (type === 'vocab-choice') {
       const distractors = pickDistractors(meaningPool || [], w.meaning, 3);
@@ -124,12 +125,18 @@ function buildReadingItems(reading, koPool, max) {
 /**
  * 세션 조립 — 인터리브 배치.
  * 레시피: [티칭, 신규1, 어휘, 신규2, 문법due, 어휘, 신규3, 독해, 문법due, 어휘, 독해…]
+ * @param {Object} p
+ * @param {Object<string, number>} [p.vocabRungs] - word_text → rung(0~4). 어휘 문항 타입 배정에 사용.
+ * @param {'easy'|'normal'|'hard'} [p.dial] - EWMA 난이도 다이얼.
  * @returns {{items: Array, gradedCount: number, newChapter: Object|null}}
  */
-export function composeSession({ vocab, meaningPool, grammarDue, newChapter, reading, koPool }) {
-  const vocabItems = buildVocabItems(vocab, meaningPool);
+export function composeSession({ vocab, meaningPool, grammarDue, newChapter, reading, koPool, vocabRungs = {}, dial = 'normal' }) {
+  const vocabItems = buildVocabItems(vocab, meaningPool, vocabRungs, dial);
   const dueItems = buildGrammarDueItems(grammarDue);
-  const { teach, items: newItems } = buildNewChapterItems(newChapter);
+  // dial 'easy' — 신규 0(재조정 부담 방지). 슬롯은 독해로 채운다.
+  const { teach, items: newItems } = dial === 'easy'
+    ? { teach: null, items: [] }
+    : buildNewChapterItems(newChapter);
 
   // 목표 문항 수까지 독해로 채움 (티칭 카드는 집계 제외)
   const baseCount = vocabItems.length + dueItems.length + newItems.length;
