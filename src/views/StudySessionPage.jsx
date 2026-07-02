@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import Button from '../components/Button';
 import RefSpeak from '../components/RefSpeak';
@@ -42,23 +42,10 @@ export default function StudySessionPage({
   const [firstResults, setFirstResults] = useState({}); // 원본 uid → { ok, item }
   const [requeued, setRequeued] = useState(() => new Set());
   const [finished, setFinished] = useState(false);
+  const [skipped, setSkipped] = useState(() => new Set()); // 건너뛴 문항(듣기) — 집계·SRS 제외
   const effectsFired = useRef(false);
 
-  // 듣기 문항 생략 옵션 — 끄면 듣기 문항이 타이핑으로 전환(세션 밀도 유지)
-  const [noListening, setNoListening] = useState(false);
-  useEffect(() => {
-    try { setNoListening(localStorage.getItem('study_no_listening') === '1'); } catch {}
-  }, []);
-  function toggleListening() {
-    setNoListening(v => {
-      try { localStorage.setItem('study_no_listening', v ? '0' : '1'); } catch {}
-      return !v;
-    });
-  }
-
   const item = queue[idx] || null;
-  // 이 문항의 실효 듣기 여부 — 옵션이 꺼져 있으면 듣기 문항도 타이핑처럼 렌더
-  const listeningActive = item?.type === 'vocab-listening' && !noListening;
 
   // 문항별 셔플 보기·토큰 (uid 기준 1회)
   const prepared = useMemo(() => {
@@ -70,11 +57,18 @@ export default function StudySessionPage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [item?.uid]);
 
-  const gradedTotal = session?.gradedCount || 0;
+  const gradedTotal = Math.max(0, (session?.gradedCount || 0) - skipped.size);
   const firstAnswered = Object.keys(firstResults).length;
   const rightCount = Object.values(firstResults).filter(r => r.ok).length;
 
   function baseUid(u) { return String(u).replace(/-r$/, ''); }
+
+  /** 듣기 문항 건너뛰기 — 채점 없이 다음으로 (집계·SRS 제외) */
+  function skipItem() {
+    if (!item || phase === 'feedback') return;
+    setSkipped(prev => new Set(prev).add(baseUid(item.uid)));
+    next();
+  }
 
   /** 채점 확정 — 첫 시도만 집계, 오답은 재출제 예약 */
   function settle(ok, pickedValue = null) {
@@ -222,7 +216,9 @@ export default function StudySessionPage({
           }}>{pct}%</div>
           <h1 style={{ fontSize: '1.3rem', fontWeight: 700 }}>세션 완료</h1>
           <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', marginTop: 4 }}>
-            {gradedTotal}문항 중 {rightCount}개 정답 · 결과는 복습 스케줄에 반영됐어요
+            {gradedTotal}문항 중 {rightCount}개 정답
+            {skipped.size > 0 && ` · 듣기 ${skipped.size}개 건너뜀`}
+            {' '}· 결과는 복습 스케줄에 반영됐어요
           </p>
         </div>
 
@@ -349,17 +345,11 @@ export default function StudySessionPage({
       {/* ── 어휘: 타이핑 / 듣기 ── */}
       {(item.type === 'vocab-typing' || item.type === 'vocab-listening') && (
         <div className="fr-quiz__q">
-          {!listeningActive ? (
+          {item.type === 'vocab-typing' ? (
             <div className="fr-quiz__prompt">“{item.word.meaning}”</div>
           ) : (
-            <div>
-              <div className="fr-quiz__prompt" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                🔊 듣고 입력하세요 <RefSpeak text={item.word.word_text} lang={lang} size="sm" />
-              </div>
-              <button type="button" onClick={toggleListening}
-                style={{ background: 'none', border: 'none', padding: 0, marginTop: 4, cursor: 'pointer', fontSize: '0.75rem', color: 'var(--text-muted)', textDecoration: 'underline' }}>
-                듣기 어려운 환경이에요 — 듣기 문항 끄기
-              </button>
+            <div className="fr-quiz__prompt" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              🔊 듣고 입력하세요 <RefSpeak text={item.word.word_text} lang={lang} size="sm" />
             </div>
           )}
           <input
@@ -371,9 +361,17 @@ export default function StudySessionPage({
             autoFocus
           />
           {phase === 'answer' && (
-            <Button onClick={() => settle(gradeTyping(typing, item.word), typing)} disabled={!typing.trim()} style={{ marginTop: 10 }}>
-              확인
-            </Button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 10 }}>
+              <Button onClick={() => settle(gradeTyping(typing, item.word), typing)} disabled={!typing.trim()}>
+                확인
+              </Button>
+              {item.type === 'vocab-listening' && (
+                <button type="button" onClick={skipItem}
+                  style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '0.82rem', color: 'var(--text-muted)', textDecoration: 'underline' }}>
+                  넘어가기
+                </button>
+              )}
+            </div>
           )}
           {phase === 'feedback' && (
             <div className="fr-quiz__answer">
@@ -486,24 +484,14 @@ export default function StudySessionPage({
         </div>
       )}
 
-      {/* 세션 설정 (첫 문항에서만) — 언어 전환 · 듣기 문항 온오프 */}
-      {idx === 0 && phase === 'answer' && (
-        <div style={{ marginTop: 26 }}>
-          {languages.length > 1 && (
-            <div className="chip-group" style={{ justifyContent: 'center', marginBottom: 8 }}>
-              {languages.map(l => (
-                l.key === lang
-                  ? <span key={l.key} className="chip chip--active">{l.flag} {l.name}</span>
-                  : <a key={l.key} href={`/study?lang=${l.key}`} className="chip">{l.flag} {l.name}</a>
-              ))}
-            </div>
-          )}
-          <div className="chip-group" style={{ justifyContent: 'center' }}>
-            <button type="button" className={`chip ${noListening ? '' : 'chip--active'}`} onClick={toggleListening}
-              title="끄면 듣기 문항이 타이핑 문항으로 바뀌어요">
-              🔊 듣기 문항 {noListening ? '꺼짐' : '켜짐'}
-            </button>
-          </div>
+      {/* 언어 전환 (세션 시작 전 첫 문항에서만) */}
+      {idx === 0 && phase === 'answer' && languages.length > 1 && (
+        <div className="chip-group" style={{ marginTop: 26, justifyContent: 'center' }}>
+          {languages.map(l => (
+            l.key === lang
+              ? <span key={l.key} className="chip chip--active">{l.flag} {l.name}</span>
+              : <a key={l.key} href={`/study?lang=${l.key}`} className="chip">{l.flag} {l.name}</a>
+          ))}
         </div>
       )}
     </div>
