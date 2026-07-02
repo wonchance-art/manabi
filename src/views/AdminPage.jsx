@@ -222,6 +222,12 @@ export default function AdminPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {[
               {
+                href: '/study',
+                icon: '🎯',
+                title: '오늘 학습 (공부 모드)',
+                desc: '메인 학습 세션 — 어휘·문법·독해가 섞인 ~12문항. 커리큘럼을 따라 새 패턴을 가르치고, due 복습을 소진하며, 통과한 챕터는 자동으로 복습 큐에. (P1: 청해·작문 문항은 다음 단계)',
+              },
+              {
                 href: '/review/grammar',
                 icon: '🔁',
                 title: '문법 SRS 복습',
