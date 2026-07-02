@@ -113,7 +113,7 @@ export function buildParagraphPrompt(m) {
     (beginnerKanjiCare ? `- 입문 레벨 배려: 한자는 재료 단어에 이미 포함된 것만 쓰고, 그 밖의 단어는 히라가나로 표기하세요. 사용한 한자에는 반드시 정확한 요미가나(pron)가 대응돼야 합니다.\n` : '') +
     `- sentences: 문단을 문장 단위로 나눠 pron(일본어=전체 요미가나 히라가나, 중국어=병음, 영어·프랑스어=빈 문자열), ko(문장 뜻), tokens(어순 조립용 3~10어절 분할 — 일본어·중국어는 의미 단위로 띄어 나누기)를 채우세요. tokens를 공백으로 이으면 원문과 일치해야 합니다(구두점 포함).\n\n` +
     `[문항 규칙 — questions]\n` +
-    `- cloze: 새 문법으로 2개(focus=new-grammar, key=새 문법 패턴), 복습 문법마다 1개(focus=due-grammar, key=그 패턴). prompt는 문단의 실제 문장에서 해당 문법 부분만 ＿＿＿로 비운 것, answer는 빈칸 원형, distractors는 같은 자리에 올 법한 오답 3개, ko는 그 문장 뜻.\n` +
+    `- cloze: 새 문법으로 2개(focus=new-grammar, key=새 문법 패턴), 복습 문법마다 1개(focus=due-grammar, key=그 패턴). prompt는 문단의 실제 문장에서 해당 문법 부분만 ＿＿＿로 비운 것, answer는 빈칸 원형, distractors는 같은 자리에 올 법한 오답 3개, ko는 그 문장 뜻. distractors는 정답과 같은 단어의 다른 표기(한자↔가나 표기 차이)나 정답의 읽기여서는 절대 안 됩니다 — 의미나 형태가 실제로 다른 오답만.\n` +
     `- vocab: 복습 단어·새 단어 각각 1개씩(focus=due-word|new-word, key=단어 원문, prompt=단어 원문, answer=한국어 뜻, distractors=그럴듯한 다른 뜻 3개).\n` +
     `- comprehension: 문단 내용 이해 질문 1개 (한국어 질문·선택지 4개 중 answer 1개).\n` +
     `- 문항 순서: cloze(새 문법) → vocab → cloze(복습) → comprehension.\n\n` +
@@ -186,21 +186,49 @@ export function validateParagraph(raw) {
 export function verifyParagraph(para) {
   if (!para || typeof para !== 'object' || !Array.isArray(para.questions)) return null;
   const strip = s => String(s || '').replace(/\s+/g, '');
-  const paraStrip = strip(para.paragraph);
-  const sentTexts = (para.sentences || []).map(s => strip(s.text));
+  // 가타카나 → 히라가나 정규화(같은 단어의 표기 차이를 잡아내기 위함)
+  const kataToHira = s => String(s || '').replace(/[ァ-ヶ]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60));
+  const normJa = s => strip(kataToHira(s));
+  const isPureKana = s => /^[ぁ-ゖー]+$/.test(normJa(s));
+  const hasKanji = s => /[一-鿿]/.test(String(s || ''));
 
-  // ① cloze: 빈칸을 정답으로 복원한 문장이 실제 문단 문장에 부분 포함되는지 / vocab: key가 문단에 실재하는지
-  const questions = para.questions.filter(q => {
-    if (q.type === 'cloze') {
-      const restored = strip(String(q.prompt).replace(/＿+/g, q.answer));
-      return !!restored && sentTexts.some(t => t.includes(restored));
-    }
-    if (q.type === 'vocab') {
-      const key = strip(q.key);
-      return !!key && paraStrip.includes(key);
-    }
-    return true; // comprehension — 결정적 판단 불가, 통과
-  });
+  const paraStrip = strip(para.paragraph);
+  const sentences = para.sentences || [];
+  const sentTexts = sentences.map(s => strip(s.text));
+
+  // 오답이 정답과 같은 단어의 다른 표기이거나 정답의 읽기인지 판별
+  const isSameAnswerDisguised = (d, answer, sentence) => {
+    if (normJa(d) === normJa(answer)) return true; // 표기 차이(한자/가나·가타카나 등) 후 동일
+    // 오답이 순가나이고 정답에 한자가 있는데, 그 가나가 문장 요미가나에 등장하면
+    // 정답의 읽기일 가능성이 높음(요미의 다른 부분과 우연히 겹칠 수 있으나,
+    // 오답 하나를 잃는 것이 정답 2개 문항보다 낫다)
+    if (isPureKana(d) && hasKanji(answer) && sentence?.pron && normJa(sentence.pron).includes(normJa(d))) return true;
+    return false;
+  };
+
+  // ① cloze: 빈칸을 정답으로 복원한 문장이 실제 문단 문장에 부분 포함되는지(매칭된 문장으로 오답 검사)
+  //    vocab: key가 문단에 실재하는지 + 표기·읽기 인지 오답 제거
+  const questions = para.questions
+    .map(q => {
+      if (q.type === 'cloze') {
+        const restored = strip(String(q.prompt).replace(/＿+/g, q.answer));
+        const sentIdx = sentTexts.findIndex(t => t.includes(restored));
+        if (!restored || sentIdx === -1) return null;
+        const sentence = sentences[sentIdx];
+        const distractors = (q.distractors || []).filter(d => !isSameAnswerDisguised(d, q.answer, sentence));
+        if (distractors.length < 2) return null;
+        return { ...q, distractors };
+      }
+      if (q.type === 'vocab') {
+        const key = strip(q.key);
+        if (!key || !paraStrip.includes(key)) return null;
+        const distractors = (q.distractors || []).filter(d => normJa(d) !== normJa(q.answer));
+        if (distractors.length < 2) return null;
+        return { ...q, distractors };
+      }
+      return q; // comprehension — 결정적 판단 불가, 통과
+    })
+    .filter(Boolean);
   if (questions.length < 3) return null;
 
   // ② preQuestion: answerHint가 번역문·문장 뜻 어딘가에 부분일치하면 유지, 아니면 제네릭으로 강등

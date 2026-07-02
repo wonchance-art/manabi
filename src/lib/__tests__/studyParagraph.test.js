@@ -218,4 +218,72 @@ describe('verifyParagraph', () => {
     expect(verifyParagraph(para)).toBeNull();
     expect(verifyParagraph(null)).toBeNull();
   });
+
+  // 아래 verifyParagraph 호출에는 vocab 문항의 key가 paragraph 문자열에 실재해야
+  // (기존 ①단계 검증) 통과하므로, 테스트 문단에 실제로 등장하는 단어를 key로 쓴다.
+  const VOCAB_WEEKEND = { type: 'vocab', focus: 'due-word', key: '週末', prompt: '週末', answer: '주말', distractors: ['여행', '음악', '친구'], ko: '' };
+  const VOCAB_TRAVEL = { type: 'vocab', focus: 'new-word', key: '旅行', prompt: '旅行', answer: '여행', distractors: ['주말', '공부', '산책'], ko: '' };
+
+  it('버그 재현 — cloze 오답이 정답의 읽기(가나)면 제거하고 문항은 생존', () => {
+    const para = {
+      paragraph: '週末、旅行に行きました。',
+      translation: '주말에 여행을 갔습니다.',
+      sentences: [
+        { text: '週末、旅行に行きました。', pron: 'しゅうまつ、りょこうに いきました', ko: '주말에 여행을 갔습니다.', tokens: ['週末、', '旅行に', '行きました。'] },
+      ],
+      questions: [
+        { type: 'cloze', focus: 'new-grammar', key: '行きました', prompt: '週末、旅行に＿＿＿。', answer: '行きました', distractors: ['いきました', '行きます', '行きたいです'], ko: '주말에 여행을 갔습니다.' },
+        VOCAB_WEEKEND,
+        VOCAB_TRAVEL,
+      ],
+      preQuestion: null,
+    };
+    const v = verifyParagraph(para);
+    const cloze = v.questions.find(q => q.type === 'cloze');
+    expect(cloze).toBeDefined();
+    expect(cloze.distractors).not.toContain('いきました');
+    expect(cloze.distractors).toEqual(expect.arrayContaining(['行きます', '行きたいです']));
+    expect(cloze.distractors).toHaveLength(2);
+  });
+
+  it('가타카나 표기 변형 오답도 제거된다', () => {
+    const para = {
+      paragraph: '朝はコーヒーを飲みます。',
+      translation: '아침에는 커피를 마십니다.',
+      sentences: [
+        { text: '朝はコーヒーを飲みます。', pron: 'あさは コーヒーを のみます', ko: '아침에는 커피를 마십니다.', tokens: ['朝は', 'コーヒーを', '飲みます。'] },
+      ],
+      questions: [
+        { type: 'cloze', focus: 'new-grammar', key: 'コーヒー', prompt: '朝は＿＿＿を飲みます。', answer: 'コーヒー', distractors: ['こーひー', '紅茶', '水'], ko: '아침에는 커피를 마십니다.' },
+        { type: 'vocab', focus: 'due-word', key: '朝', prompt: '朝', answer: '아침', distractors: ['저녁', '낮', '밤'], ko: '' },
+        { type: 'vocab', focus: 'new-word', key: '飲みます', prompt: '飲みます', answer: '마십니다', distractors: ['먹습니다', '잡니다', '봅니다'], ko: '' },
+      ],
+      preQuestion: null,
+    };
+    const v = verifyParagraph(para);
+    const cloze = v.questions.find(q => q.type === 'cloze');
+    expect(cloze.distractors).not.toContain('こーひー');
+    expect(cloze.distractors).toEqual(expect.arrayContaining(['紅茶', '水']));
+  });
+
+  it('필터 후 distractors가 1개만 남으면 문항 자체가 제거된다', () => {
+    const para = {
+      paragraph: '週末、旅行に行きました。',
+      translation: '주말에 여행을 갔습니다.',
+      sentences: [
+        { text: '週末、旅行に行きました。', pron: 'しゅうまつ、りょこうに いきました', ko: '주말에 여행을 갔습니다.', tokens: ['週末、', '旅行に', '行きました。'] },
+      ],
+      questions: [
+        // distractors 2개가 표기·읽기로 걸러져 1개만 남음 → 문항 제거
+        { type: 'cloze', focus: 'new-grammar', key: '行きました', prompt: '週末、旅行に＿＿＿。', answer: '行きました', distractors: ['いきました', 'イキマシタ', '行きたいです'], ko: '주말에 여행을 갔습니다.' },
+        VOCAB_WEEKEND,
+        VOCAB_TRAVEL,
+        GOOD.questions[4],
+      ],
+      preQuestion: null,
+    };
+    const v = verifyParagraph(para);
+    expect(v.questions.find(q => q.type === 'cloze')).toBeUndefined();
+    expect(v.questions.length).toBe(3);
+  });
 });
