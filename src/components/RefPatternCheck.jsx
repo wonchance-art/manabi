@@ -6,6 +6,8 @@ import RefSpeak from './RefSpeak';
 import { JaText } from '../views/refShared';
 import { useAuth } from '../lib/AuthContext';
 import { syncCheckRemote } from '../lib/refProgress';
+import { enqueueGrammarReview } from '../lib/grammarSrs';
+import { logReviewEvents } from '../lib/reviewEvents';
 
 /** 통과 기준 — 정답률 80% 이상 */
 export function isPassed(result) {
@@ -146,7 +148,23 @@ export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug
       localStorage.setItem(storageKey, JSON.stringify(map));
     } catch {}
     setLastResult(result);
-    if (user?.id) syncCheckRemote(user.id, lang, slug, result);
+    if (user?.id) {
+      syncCheckRemote(user.id, lang, slug, result);
+      // 통과한 챕터는 문법 SRS 복습 큐로 — 며칠 뒤 되돌아온다
+      if (result.passed) enqueueGrammarReview(user.id, lang, slug);
+      // 정오답 이벤트 로그 — 약점 진단의 데이터
+      logReviewEvents(user.id, (questions || []).map(q => {
+        const a = answers[q.id];
+        if (!a) return null;
+        return {
+          lang,
+          source: 'grammar',
+          item_key: `${slug}#${q.id}`,
+          correct: !!a.ok,
+          detail: { stage: q.stage, ko: q.ko, answer: q.correct ?? q.answer ?? q.main, picked: a.picked },
+        };
+      }).filter(Boolean));
+    }
     // done 전환 시 1회만
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [done]);
