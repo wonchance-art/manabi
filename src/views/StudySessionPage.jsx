@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import Button from '../components/Button';
 import RefSpeak from '../components/RefSpeak';
@@ -44,7 +44,21 @@ export default function StudySessionPage({
   const [finished, setFinished] = useState(false);
   const effectsFired = useRef(false);
 
+  // 듣기 문항 생략 옵션 — 끄면 듣기 문항이 타이핑으로 전환(세션 밀도 유지)
+  const [noListening, setNoListening] = useState(false);
+  useEffect(() => {
+    try { setNoListening(localStorage.getItem('study_no_listening') === '1'); } catch {}
+  }, []);
+  function toggleListening() {
+    setNoListening(v => {
+      try { localStorage.setItem('study_no_listening', v ? '0' : '1'); } catch {}
+      return !v;
+    });
+  }
+
   const item = queue[idx] || null;
+  // 이 문항의 실효 듣기 여부 — 옵션이 꺼져 있으면 듣기 문항도 타이핑처럼 렌더
+  const listeningActive = item?.type === 'vocab-listening' && !noListening;
 
   // 문항별 셔플 보기·토큰 (uid 기준 1회)
   const prepared = useMemo(() => {
@@ -335,11 +349,17 @@ export default function StudySessionPage({
       {/* ── 어휘: 타이핑 / 듣기 ── */}
       {(item.type === 'vocab-typing' || item.type === 'vocab-listening') && (
         <div className="fr-quiz__q">
-          {item.type === 'vocab-typing' ? (
+          {!listeningActive ? (
             <div className="fr-quiz__prompt">“{item.word.meaning}”</div>
           ) : (
-            <div className="fr-quiz__prompt" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              🔊 듣고 입력하세요 <RefSpeak text={item.word.word_text} lang={lang} size="sm" />
+            <div>
+              <div className="fr-quiz__prompt" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                🔊 듣고 입력하세요 <RefSpeak text={item.word.word_text} lang={lang} size="sm" />
+              </div>
+              <button type="button" onClick={toggleListening}
+                style={{ background: 'none', border: 'none', padding: 0, marginTop: 4, cursor: 'pointer', fontSize: '0.75rem', color: 'var(--text-muted)', textDecoration: 'underline' }}>
+                듣기 어려운 환경이에요 — 듣기 문항 끄기
+              </button>
             </div>
           )}
           <input
@@ -466,14 +486,24 @@ export default function StudySessionPage({
         </div>
       )}
 
-      {/* 언어 전환 (세션 시작 전 첫 문항에서만) */}
-      {idx === 0 && phase === 'answer' && languages.length > 1 && (
-        <div className="chip-group" style={{ marginTop: 26, justifyContent: 'center' }}>
-          {languages.map(l => (
-            l.key === lang
-              ? <span key={l.key} className="chip chip--active">{l.flag} {l.name}</span>
-              : <a key={l.key} href={`/study?lang=${l.key}`} className="chip">{l.flag} {l.name}</a>
-          ))}
+      {/* 세션 설정 (첫 문항에서만) — 언어 전환 · 듣기 문항 온오프 */}
+      {idx === 0 && phase === 'answer' && (
+        <div style={{ marginTop: 26 }}>
+          {languages.length > 1 && (
+            <div className="chip-group" style={{ justifyContent: 'center', marginBottom: 8 }}>
+              {languages.map(l => (
+                l.key === lang
+                  ? <span key={l.key} className="chip chip--active">{l.flag} {l.name}</span>
+                  : <a key={l.key} href={`/study?lang=${l.key}`} className="chip">{l.flag} {l.name}</a>
+              ))}
+            </div>
+          )}
+          <div className="chip-group" style={{ justifyContent: 'center' }}>
+            <button type="button" className={`chip ${noListening ? '' : 'chip--active'}`} onClick={toggleListening}
+              title="끄면 듣기 문항이 타이핑 문항으로 바뀌어요">
+              🔊 듣기 문항 {noListening ? '꺼짐' : '켜짐'}
+            </button>
+          </div>
         </div>
       )}
     </div>
