@@ -37,6 +37,11 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);      // 검증된 feedback
+  const [savedId, setSavedId] = useState(null);    // 방금 저장된 writing_practice id
+  const [revisionOf, setRevisionOf] = useState(null); // 재작문 중이면 1차 작문 id
+  const [prevScore, setPrevScore] = useState(null);   // 1차 점수 (재작문 비교용)
+  const [history, setHistory] = useState([]);      // 최근 작문
+  const [expandedId, setExpandedId] = useState(null);
 
   // 언어 기본값 — 프로필 학습 언어 → localStorage 순
   useEffect(() => {
@@ -86,6 +91,31 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [topicChoices]);
 
+  // 최근 작문 히스토리 — 신규 컬럼 미적용 환경은 기본 컬럼으로 폴백
+  async function loadHistory() {
+    if (!user?.id) return;
+    try {
+      const full = await supabase
+        .from('writing_practice')
+        .select('id, created_at, language, level, score, prompt_type, prompt, sentence, corrected, feedback, errors, revision_of')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+      if (!full.error && full.data) { setHistory(full.data); return; }
+      const base = await supabase
+        .from('writing_practice')
+        .select('id, created_at, language, score, sentence, corrected, feedback')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+      if (!base.error && base.data) setHistory(base.data);
+    } catch {}
+  }
+  useEffect(() => {
+    loadHistory();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
   const selectedChapter = langChapters.find(c => c.slug === chapterSlug) || null;
   const promptShown =
     tab === 'chapter' ? (selectedChapter ? `#${selectedChapter.order} ${selectedChapter.title}` : '') :
@@ -131,8 +161,8 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
     }
   }
 
-  /** 저장 + 오류 이벤트 적재 — 실패해도 첨삭 표시는 유지 */
-  function persist(original, fb) {
+  /** 저장(+재작문 링크) + 오류 이벤트 적재 — 실패해도 첨삭 표시는 유지 */
+  async function persist(original, fb) {
     if (!user?.id) return;
     const allErrors = fb.sentences.flatMap(s => s.errors.map(e => ({ ...e, sentence: s.original })));
     const row = {
@@ -147,14 +177,19 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
       level,
       chapter_slug: tab === 'chapter' ? chapterSlug : null,
       errors: allErrors,
+      revision_of: revisionOf,
     };
-    supabase.from('writing_practice').insert(row).then(({ error: err }) => {
-      // 신규 컬럼 미적용 환경 — 기본 컬럼만으로 재시도 (etym/hanja 폴백과 같은 패턴)
+    try {
+      const { data, error: err } = await supabase.from('writing_practice').insert(row).select('id').single();
       if (err && /column|schema/i.test(err.message || '')) {
-        const { prompt_type, prompt, level: lv, chapter_slug, errors, ...base } = row;
-        supabase.from('writing_practice').insert(base).then(() => {}, () => {});
+        // 신규 컬럼 미적용 환경 — 기본 컬럼만으로 재시도 (etym/hanja 폴백과 같은 패턴)
+        const { prompt_type, prompt, level: lv, chapter_slug, errors, revision_of, ...base } = row;
+        const r2 = await supabase.from('writing_practice').insert(base).select('id').single();
+        if (r2.data?.id) setSavedId(r2.data.id);
+      } else if (data?.id) {
+        setSavedId(data.id);
       }
-    }, () => {});
+    } catch {}
 
     const events = allErrors.map(e => ({
       lang: language,
@@ -167,12 +202,24 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
       events.push({ lang: language, source: 'writing', item_key: `${language}:작문`, correct: true, detail: { score: fb.score } });
     }
     logReviewEvents(user.id, events);
+    loadHistory();
   }
 
   function reset() {
     setResult(null);
     setText('');
     setError(null);
+    setSavedId(null);
+    setRevisionOf(null);
+    setPrevScore(null);
+  }
+
+  /** 첨삭 반영 재작문 — 같은 프롬프트, 원문이 남은 textarea에서 고쳐 쓴다 */
+  function startRevision() {
+    if (!result) return;
+    setPrevScore(result.score);
+    setRevisionOf(savedId);           // 저장 실패였다면 null — 링크 없이 진행
+    setResult(null);                  // textarea에는 방금 쓴 원문이 그대로 남아 있음
   }
 
   if (signedOut) {
@@ -301,6 +348,14 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
       {/* 작성 */}
       {!result && (
         <div className="card" style={{ padding: '16px 18px', marginBottom: 14 }}>
+          {prevScore != null && (
+            <div style={{
+              padding: '8px 12px', marginBottom: 10, borderRadius: 'var(--radius-md)',
+              background: 'var(--primary-glow)', fontSize: '0.82rem', fontWeight: 600,
+            }}>
+              ✍️ 재작문 — 1차 {prevScore}점. 첨삭을 반영해 고쳐 써 보세요.
+            </div>
+          )}
           <textarea
             className="form-input"
             value={text}
@@ -321,6 +376,64 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
         </div>
       )}
 
+      {/* 최근 작문 히스토리 */}
+      {!result && history.length > 0 && (
+        <div className="card" style={{ padding: '16px 18px', marginBottom: 14 }}>
+          <div style={{ fontSize: '0.82rem', fontWeight: 700, marginBottom: 10 }}>최근 작문</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {history.map(h => {
+              const open = expandedId === h.id;
+              const flag = LANGS.find(l => l.key === h.language)?.flag || '';
+              return (
+                <div key={h.id} style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-md)' }}>
+                  <button
+                    type="button"
+                    onClick={() => setExpandedId(open ? null : h.id)}
+                    style={{
+                      width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '10px 12px', background: 'transparent', border: 'none',
+                      cursor: 'pointer', color: 'inherit', textAlign: 'left', fontSize: '0.85rem',
+                    }}
+                  >
+                    <span aria-hidden="true">{flag}</span>
+                    {h.score != null && (
+                      <span style={{ fontWeight: 800, color: scoreColor(h.score), flexShrink: 0 }}>{h.score}</span>
+                    )}
+                    <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {h.sentence}
+                    </span>
+                    {h.revision_of && <span className="chip" style={{ fontSize: '0.68rem', padding: '1px 7px', flexShrink: 0 }}>재작문</span>}
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem', flexShrink: 0 }}>
+                      {new Date(h.created_at).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })}
+                    </span>
+                    <span aria-hidden="true" style={{ color: 'var(--text-muted)' }}>{open ? '▴' : '▾'}</span>
+                  </button>
+                  {open && (
+                    <div style={{ padding: '0 12px 12px', fontSize: '0.85rem', lineHeight: 1.65 }}>
+                      {h.prompt && <div style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginBottom: 6 }}>과제: {h.prompt}</div>}
+                      <div lang={LANG_CODE[h.language]} style={{ color: 'var(--text-muted)' }}>{h.sentence}</div>
+                      {h.corrected && h.corrected !== h.sentence && (
+                        <div lang={LANG_CODE[h.language]} style={{ color: 'var(--accent)', fontWeight: 600, marginTop: 4, whiteSpace: 'pre-line' }}>{h.corrected}</div>
+                      )}
+                      {h.feedback && <p style={{ margin: '8px 0 0', color: 'var(--text-secondary)' }}>{h.feedback}</p>}
+                      {Array.isArray(h.errors) && h.errors.length > 0 && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+                          {h.errors.map((e, i) => (
+                            e.href
+                              ? <Link key={i} href={e.href} className="chip" style={{ fontSize: '0.72rem', padding: '2px 8px' }}>{e.tag} →</Link>
+                              : <span key={i} className="chip" style={{ fontSize: '0.72rem', padding: '2px 8px' }}>{e.tag}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* 첨삭 결과 */}
       {result && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -334,6 +447,11 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
               <div>
                 <div style={{ fontSize: '0.82rem', fontWeight: 700 }}>{promptShown || '자유 작문'} · {level}</div>
                 <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{FIT_LABEL[result.levelFit]}</div>
+                {prevScore != null && (
+                  <div style={{ fontSize: '0.78rem', fontWeight: 700, marginTop: 2, color: result.score >= prevScore ? 'var(--accent)' : 'var(--warning)' }}>
+                    재작문: {prevScore}점 → {result.score}점 {result.score > prevScore ? `(+${result.score - prevScore} 🎉)` : result.score === prevScore ? '(유지)' : `(${result.score - prevScore})`}
+                  </div>
+                )}
               </div>
             </div>
             <p style={{ fontSize: '0.92rem', lineHeight: 1.7, margin: 0 }}>{result.summary}</p>
@@ -363,7 +481,13 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
                     <span lang={lc} style={{ color: 'var(--danger)', textDecoration: 'line-through' }}>{e.part}</span>
                     {' → '}
                     <strong lang={lc} style={{ color: 'var(--accent)' }}>{e.fix}</strong>
-                    <span className="chip" style={{ marginLeft: 8, fontSize: '0.72rem', padding: '2px 8px' }}>{e.tag}</span>
+                    {e.href ? (
+                      <Link href={e.href} className="chip" style={{ marginLeft: 8, fontSize: '0.72rem', padding: '2px 8px' }} title="관련 챕터 열기">
+                        {e.tag} →
+                      </Link>
+                    ) : (
+                      <span className="chip" style={{ marginLeft: 8, fontSize: '0.72rem', padding: '2px 8px' }}>{e.tag}</span>
+                    )}
                   </div>
                   <div style={{ color: 'var(--text-secondary)', marginTop: 4 }}>{e.why}</div>
                 </div>
@@ -383,6 +507,9 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
           )}
 
           <div style={{ display: 'flex', gap: 10 }}>
+            {result.score < 5 && (
+              <Button onClick={startRevision} style={{ flex: 1.4 }}>✍️ 고쳐서 다시 쓰기</Button>
+            )}
             <Button variant="secondary" onClick={reset} style={{ flex: 1 }}>새 작문 쓰기</Button>
             {selectedChapter && tab === 'chapter' && (
               <Link href={selectedChapter.href} className="btn btn--ghost btn--md" style={{ flex: 1, textAlign: 'center' }}>
