@@ -40,7 +40,6 @@ async function fetchHomeData(userId) {
     { data: allVocabRows },
     { data: seriesMaterials },
     { data: allCompleted },
-    { count: grammarDue },
   ] = await Promise.all([
     supabase.from('user_vocabulary').select('*', { count: 'exact', head: true })
       .eq('user_id', userId).lte('next_review_at', now),
@@ -63,9 +62,6 @@ async function fetchHomeData(userId) {
       .select('material_id')
       .eq('user_id', userId)
       .eq('is_completed', true),
-    // 문법 SRS 복습 대기 — 테이블 미적용 환경에서는 error와 함께 count null → 0
-    supabase.from('grammar_review').select('*', { count: 'exact', head: true })
-      .eq('user_id', userId).lte('next_review_at', now),
   ]);
 
   const rows = vocabRows || [];
@@ -91,7 +87,6 @@ async function fetchHomeData(userId) {
 
   return {
     dueCount:         dueCount || 0,
-    grammarDueCount:  grammarDue || 0,
     todayVocabCount,
     todayReviewCount,
     todayReadCount,
@@ -268,7 +263,6 @@ export default function HomePage({ continueManifest = {}, refManifest = {} }) {
   const todayReviews = data?.todayReviewCount   ?? 0;
   const todayReads   = data?.todayReadCount     ?? 0;
   const dueCount     = data?.dueCount           ?? 0;
-  const grammarDue   = data?.grammarDueCount    ?? 0;
 
   const suggestion = useMemo(() => {
     const all = data?.suggestions || [];
@@ -384,26 +378,6 @@ export default function HomePage({ continueManifest = {}, refManifest = {} }) {
           <span className="lessons-continue__meta">{continueCard.levelLabel} →</span>
         </Link>
       )}
-
-      {/* 문법 SRS 복습 — 통과한 챕터가 기한이 되어 돌아옴 */}
-      {grammarDue > 0 && (
-        <Link href="/review/grammar" className="lessons-continue">
-          <span className="lessons-continue__body">
-            <span className="lessons-continue__kicker">문법 복습 — 기억이 흐려지기 전에</span>
-            <span className="lessons-continue__title">복습 기한이 된 챕터 {grammarDue}개</span>
-          </span>
-          <span className="lessons-continue__meta">시작 →</span>
-        </Link>
-      )}
-
-      {/* 라이팅 스튜디오 — 산출 연습 진입점 */}
-      <Link href="/writing" className="lessons-continue">
-        <span className="lessons-continue__body">
-          <span className="lessons-continue__kicker">라이팅 스튜디오</span>
-          <span className="lessons-continue__title">오늘 한 문장 — 쓰고 AI 첨삭 받기</span>
-        </span>
-        <span className="lessons-continue__meta">쓰기 →</span>
-      </Link>
 
       {/* 오늘 읽기 — 진행 중 시리즈가 없을 때만 */}
       {(() => {
