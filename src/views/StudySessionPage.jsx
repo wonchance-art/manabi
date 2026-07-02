@@ -31,8 +31,10 @@ function shuffle(arr) {
  */
 export default function StudySessionPage({
   session = null, paragraphMaterials = null, lang, langCode, langName, flag, readKey,
-  languages = [], signedOut = false,
+  band = 'beginner', languages = [], signedOut = false,
 }) {
+  // 입문 레벨(N5 등) 일본어 배려 — 답변 중에도 요미가나·후리가나를 보여준다.
+  const kanjiCare = band === 'beginner' && langCode === 'ja';
   const { user, fetchProfile } = useAuth();
   const [queue, setQueue] = useState(() => session?.items || []);
   const [gradedBase, setGradedBase] = useState(session?.gradedCount || 0);
@@ -493,7 +495,7 @@ export default function StudySessionPage({
             {item.word.word_text}
             <RefSpeak text={item.word.word_text} lang={lang} size="xs" />
           </div>
-          {item.word.furigana && phase === 'feedback' && (
+          {item.word.furigana && (kanjiCare || phase === 'feedback') && (
             <div className="fr-quiz__sub">{item.word.furigana}</div>
           )}
           <div className="fr-quiz__opts fr-quiz__opts--col">
@@ -631,7 +633,7 @@ export default function StudySessionPage({
             <div className="fr-quiz__prompt">{item.sentence.main}</div>
           ) : (
             <div className="fr-quiz__prompt" lang={langCode}>
-              {renderMain(item.sentence.main, phase === 'feedback' ? item.sentence.pron : null)}
+              {renderMain(item.sentence.main, (kanjiCare || phase === 'feedback') ? item.sentence.pron : null)}
               <RefSpeak text={item.sentence.main} lang={lang} size="xs" />
             </div>
           )}

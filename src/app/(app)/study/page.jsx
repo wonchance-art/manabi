@@ -4,6 +4,8 @@ import { getRefLang, REF_LANGS } from '@/content/refLangs';
 import { refMain, refPron } from '@/views/refShared';
 import { buildChapterQuiz } from '@/lib/refQuiz';
 import { composeSession } from '@/lib/studySession';
+import { computeRung, computeEwma, dialFromEwma } from '@/lib/skillRung';
+import { levelBand } from '@/lib/writingPrompts';
 import StudySessionPage from '@/views/StudySessionPage';
 
 export const metadata = { title: '오늘 학습 | Anatomy Studio' };
@@ -53,7 +55,7 @@ export default async function Page({ searchParams }) {
   const nowIso = new Date().toISOString();
 
   // ── 재료 조회 (병렬) ──
-  const [{ data: dueVocabRows }, { data: vocabPoolRows }, { data: dueGrammarRows }, { data: progressRows }] = await Promise.all([
+  const [{ data: dueVocabRows }, { data: vocabPoolRows }, { data: dueGrammarRows }, { data: progressRows }, { data: reviewEventRows }] = await Promise.all([
     supabase.from('user_vocabulary')
       .select('id, word_text, meaning, furigana, language, interval, ease_factor, repetitions, next_review_at')
       .eq('user_id', user.id).eq('language', lang)
@@ -70,9 +72,29 @@ export default async function Page({ searchParams }) {
     supabase.from('user_ref_progress')
       .select('slug, passed')
       .eq('user_id', user.id).eq('lang', lang),
+    supabase.from('review_events')
+      .select('item_key, correct, detail, created_at')
+      .eq('user_id', user.id).eq('lang', lang)
+      .order('created_at', { ascending: false }).limit(400),
   ]);
 
   const passed = new Set((progressRows || []).filter(r => r.passed).map(r => r.slug));
+
+  // ── 숙련 rung · 난이도 다이얼 유도 (review_events 순수 함수) ──
+  // 최근순으로 받아 시간순(오래된 것부터)으로 뒤집는다.
+  const eventsAsc = (reviewEventRows || []).slice().reverse();
+  // 각 due 단어의 item_key(word_text) 이벤트만 골라 rung 유도.
+  const vocabRungs = {};
+  for (const w of dueVocabRows || []) {
+    const evs = eventsAsc
+      .filter(e => e.item_key === w.word_text)
+      .map(e => ({ qtype: e.detail?.qtype, correct: !!e.correct }));
+    vocabRungs[w.word_text] = computeRung(evs);
+  }
+  // 전체 채점 이벤트로 EWMA → 다이얼.
+  const gradedEvents = eventsAsc.map(e => ({ correct: !!e.correct }));
+  const ewma = computeEwma(gradedEvents);
+  const dial = dialFromEwma(ewma, 20, gradedEvents.length);
 
   // ── 문법 due → 미니 퀴즈 ──
   const grammarDue = (dueGrammarRows || []).map(row => {
@@ -110,6 +132,7 @@ export default async function Page({ searchParams }) {
 
   // ── 독해 소재 — 현재 레벨 문형 예문 ──
   const level = newChapter?.meta.level || grammarDue[0]?.meta.level || ref.LEVEL_META[0]?.key;
+  const band = levelBand(lang, level);
   const bunkei = ref.getBunkei?.(level);
   const exPool = (bunkei?.themes || [])
     .flatMap(t => t.items || [])
@@ -136,6 +159,8 @@ export default async function Page({ searchParams }) {
     newChapter,
     reading,
     koPool,
+    vocabRungs,
+    dial,
   });
 
   // ── 오늘의 문단 재료 — 새 문법·새 어휘·복습 문법·복습 어휘를 한 문단으로 ──
@@ -173,6 +198,8 @@ export default async function Page({ searchParams }) {
     <StudySessionPage
       session={session}
       paragraphMaterials={canGenerate ? paragraphMaterials : null}
+      dial={dial}
+      band={band}
       lang={lang}
       langCode={ref.langCode}
       langName={ref.name}

@@ -44,7 +44,7 @@ describe('composeSession', () => {
     expect(s.items.filter(i => i.effect?.kind === 'grammar-due')).toHaveLength(2);
     expect(s.items.filter(i => i.effect?.kind === 'new-chapter')).toHaveLength(3);
     expect(s.items.filter(i => i.type === 'read-meaning').length).toBeGreaterThanOrEqual(1);
-    expect(s.gradedCount).toBeLessThanOrEqual(12);
+    expect(s.gradedCount).toBeLessThanOrEqual(10);
   });
 
   it('due가 없으면 독해로 채워 세션이 성립한다', () => {
@@ -71,6 +71,42 @@ describe('composeSession', () => {
     const r = s.items.find(i => i.type === 'read-meaning');
     expect(new Set(r.options).size).toBe(r.options.length);
     expect(r.options).toContain(r.correct);
+  });
+
+  it('예산 하드캡 10 — 집계 문항이 10을 넘지 않는다', () => {
+    const s = composeSession(FULL);
+    expect(s.gradedCount).toBeLessThanOrEqual(10);
+    expect(s.items.filter(i => i.type !== 'teach').length).toBeLessThanOrEqual(10);
+  });
+
+  it('rung 기반 타입 배정 — rung 2→typing, rung 3→listening', () => {
+    const vocabRungs = { '約束': 2, '家族': 3, '無料': 1 };
+    const s = composeSession({ ...FULL, vocabRungs });
+    const byWord = t => s.items.find(i => i.word?.word_text === t)?.type;
+    expect(byWord('約束')).toBe('vocab-typing');
+    expect(byWord('家族')).toBe('vocab-listening');
+    // rung1 → choice (보기 충분)
+    expect(byWord('無料')).toBe('vocab-choice');
+  });
+
+  it('dial easy — 신규 0, 어휘는 전부 choice', () => {
+    const vocabRungs = { '約束': 3, '家族': 2, '無料': 3 };
+    const s = composeSession({ ...FULL, vocabRungs, dial: 'easy' });
+    expect(s.items.filter(i => i.effect?.kind === 'new-chapter')).toHaveLength(0);
+    expect(s.items.some(i => i.type === 'teach')).toBe(false);
+    const vocabTypes = s.items.filter(i => i.type?.startsWith('vocab')).map(i => i.type);
+    expect(vocabTypes.length).toBeGreaterThan(0);
+    expect(vocabTypes.every(t => t === 'vocab-choice')).toBe(true);
+    // 신규 슬롯은 독해로 채워진다
+    expect(s.items.filter(i => i.type === 'read-meaning').length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('dial hard — 어휘 타입이 한 단계 상향', () => {
+    const vocabRungs = { '約束': 1, '家族': 2, '無料': 1 };
+    const s = composeSession({ ...FULL, vocabRungs, dial: 'hard' });
+    const byWord = t => s.items.find(i => i.word?.word_text === t)?.type;
+    expect(byWord('約束')).toBe('vocab-typing');   // choice→typing
+    expect(byWord('家族')).toBe('vocab-listening'); // typing→listening
   });
 });
 

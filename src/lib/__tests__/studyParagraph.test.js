@@ -41,6 +41,28 @@ describe('buildParagraphPrompt', () => {
     expect(buildParagraphPrompt({ language: 'Japanese', level: 'N5', duePatterns: [], dueWords: [], newWords: [] })).toBeNull();
     expect(buildParagraphPrompt({ language: 'Korean' })).toBeNull();
   });
+
+  it('일본어 입문 레벨(N5)에는 한자 배려 문구가 들어간다', () => {
+    const p = buildParagraphPrompt({ ...MATERIALS, level: 'N5' });
+    expect(p).toContain('입문 레벨 배려');
+  });
+
+  it('일본어 고급 레벨(N2)에는 한자 배려 문구가 없다', () => {
+    const p = buildParagraphPrompt({ ...MATERIALS, level: 'N2' });
+    expect(p).not.toContain('입문 레벨 배려');
+  });
+
+  it('중국어는 입문 레벨이어도 한자 배려 문구가 없다', () => {
+    const p = buildParagraphPrompt({
+      language: 'Chinese',
+      level: 'H1',
+      newPattern: null,
+      duePatterns: [],
+      dueWords: [{ word: '你好', meaning: '안녕' }],
+      newWords: [],
+    });
+    expect(p).not.toContain('입문 레벨 배려');
+  });
 });
 
 describe('validateParagraph', () => {
