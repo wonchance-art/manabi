@@ -125,17 +125,23 @@ export async function POST(request) {
     return Response.json({ error: { message: 'Bad Request: Invalid JSON' } }, { status: 400 });
   }
 
-  const { language, level, text, promptType = 'free', prompt = '', chapterSlug = null } = body || {};
+  const { language, level, text, promptType = 'free', prompt = '', chapterSlug = null, mode = null, targetPattern = null } = body || {};
   if (!WRITING_LEVELS[language]) {
     return Response.json({ error: { message: '지원하지 않는 언어입니다.' } }, { status: 400 });
   }
+  // 문장 채점 경량 모드 — 한 문장이라 200자로 캡
+  const sentenceMode = mode === 'sentence';
+  const maxText = sentenceMode ? 200 : MAX_TEXT;
   const trimmed = String(text || '').trim();
   if (!trimmed) {
     return Response.json({ error: { message: '작문을 입력해주세요.' } }, { status: 400 });
   }
-  if (trimmed.length > MAX_TEXT) {
-    return Response.json({ error: { message: `한 번에 ${MAX_TEXT}자까지 첨삭할 수 있어요.` } }, { status: 400 });
+  if (trimmed.length > maxText) {
+    return Response.json({ error: { message: `한 번에 ${maxText}자까지 첨삭할 수 있어요.` } }, { status: 400 });
   }
+  const safeTarget = sentenceMode && targetPattern && typeof targetPattern === 'object'
+    ? { pattern: String(targetPattern.pattern || '').slice(0, 80), patternKo: String(targetPattern.patternKo || '').slice(0, 80) }
+    : null;
 
   // 챕터 연동 — 패턴 목록은 서버에서만 연다 (클라이언트 번들 무오염)
   let chapterPatterns = null;
@@ -157,6 +163,8 @@ export async function POST(request) {
     promptType,
     prompt: String(prompt || '').slice(0, MAX_PROMPT),
     chapterPatterns,
+    sentenceMode,
+    targetPattern: safeTarget,
   });
   if (!promptText) {
     return Response.json({ error: { message: '지원하지 않는 언어입니다.' } }, { status: 400 });

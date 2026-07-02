@@ -131,6 +131,8 @@ export const FEEDBACK_SCHEMA = {
       },
     },
     naturalness: { type: 'ARRAY', items: { type: 'STRING' }, description: '더 자연스러운 대안 제안 (한국어 설명 포함)' },
+    // 문장 채점(sentenceMode) 전용 — 대상 문법을 정확히 썼는가. required엔 넣지 않아 기존 호출과 호환.
+    targetScore: { type: 'INTEGER', description: '0~3 — 대상 문법을 정확히 썼는가' },
   },
   required: ['score', 'summary', 'levelFit', 'sentences', 'naturalness'],
 };
@@ -139,14 +141,24 @@ export const FEEDBACK_SCHEMA = {
  * 첨삭 지시 프롬프트 조립 (서버 전용)
  * @param {Object} p - { language, level, text, promptType, prompt, chapterPatterns }
  */
-export function buildFeedbackPrompt({ language, level, text, promptType, prompt, chapterPatterns }) {
+export function buildFeedbackPrompt({ language, level, text, promptType, prompt, chapterPatterns, sentenceMode = false, targetPattern = null }) {
   const r = LANG_RUBRIC[language];
   if (!r) return null;
   const band = levelBand(language, level);
   const bandKo = band === 'beginner' ? '초급' : band === 'intermediate' ? '중급' : '고급';
 
   let context = '';
-  if (promptType === 'chapter' && chapterPatterns?.length) {
+  if (sentenceMode) {
+    // 격일 산출 문항 — 문단 상황을 이어 한 문장을 대상 문법으로 쓴 것을 경량 채점한다.
+    const tp = targetPattern
+      ? `${targetPattern.pattern}${targetPattern.patternKo ? ` (${targetPattern.patternKo})` : ''}`
+      : '';
+    context =
+      `\n[과제 — 한 문장 채점] 학습자는 아래 대상 문법을 써서 이야기를 이어가는 한 문장을 작성했습니다:\n` +
+      `- 대상 문법: ${tp}\n` +
+      `targetScore(0=대상 문법 미사용 또는 문장 불성립, 1=시도했으나 오류, 2=사용했고 사소한 오류, 3=정확)를 반드시 채우세요.\n` +
+      `sentences에는 학습자가 쓴 그 한 문장만 담고, naturalness는 최대 1개만 제안하세요.\n`;
+  } else if (promptType === 'chapter' && chapterPatterns?.length) {
     context =
       `\n[과제] 학습자는 방금 배운 아래 문법 패턴을 써서 작문하는 과제를 받았습니다:\n` +
       chapterPatterns.map(p2 => `- ${p2.pattern}${p2.patternKo ? ` (${p2.patternKo})` : ''}`).join('\n') +
@@ -202,11 +214,19 @@ export function validateFeedback(raw) {
   const score = Number.isFinite(scoreNum) ? Math.min(5, Math.max(1, Math.round(scoreNum))) : 3;
   const levelFit = ['below', 'fit', 'above'].includes(raw.levelFit) ? raw.levelFit : 'fit';
 
+  // targetScore — sentenceMode 채점에만 존재. 있으면 0~3 클램프해 보존, 없으면 null.
+  let targetScore = null;
+  if (raw.targetScore != null) {
+    const ts = Number(raw.targetScore);
+    if (Number.isFinite(ts)) targetScore = Math.min(3, Math.max(0, Math.round(ts)));
+  }
+
   return {
     score,
     summary: typeof raw.summary === 'string' ? raw.summary : '',
     levelFit,
     sentences,
     naturalness: (Array.isArray(raw.naturalness) ? raw.naturalness : []).filter(n => typeof n === 'string').slice(0, 3),
+    targetScore,
   };
 }

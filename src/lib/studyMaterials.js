@@ -8,7 +8,7 @@
 import { getRefLang } from '@/content/refLangs';
 import { refMain, refPron } from '@/views/refShared';
 import { buildChapterQuiz } from '@/lib/refQuiz';
-import { composeSession } from '@/lib/studySession';
+import { composeSession, buildWarmupItems } from '@/lib/studySession';
 import { computeRung, computeEwma, dialFromEwma } from '@/lib/skillRung';
 import { levelBand } from '@/lib/writingPrompts';
 import { THEMES } from '@/lib/studyParagraph';
@@ -56,7 +56,7 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
       .select('slug, passed')
       .eq('user_id', userId).eq('lang', lang),
     supabase.from('review_events')
-      .select('item_key, correct, detail, created_at')
+      .select('source, item_key, correct, detail, created_at')
       .eq('user_id', userId).eq('lang', lang)
       .order('created_at', { ascending: false }).limit(400),
   ]);
@@ -131,6 +131,39 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
     });
   }
 
+  // ── 워밍업 재료 — 최근(24~72h) 정답 어휘로 즉시 시작할 인지형 2문항 ──
+  // 문단 AI 생성 레이턴시를 가리기 위한 것. due 어휘와 겹치면 제외한다.
+  const dueWordSet = new Set((dueVocabRows || []).map(r => r.word_text).filter(Boolean));
+  const nowMs = Date.now();
+  const warmLo = nowMs - 72 * 3600 * 1000;
+  const warmHi = nowMs - 24 * 3600 * 1000;
+  const warmupCandidates = [];
+  const warmSeen = new Set();
+  for (const e of reviewEventRows || []) {          // 최신순(desc)
+    if (warmupCandidates.length >= 2) break;
+    if (e.source !== 'vocab' || !e.correct || !e.item_key) continue;
+    const t = new Date(e.created_at).getTime();
+    if (!(t >= warmLo && t <= warmHi)) continue;
+    if (warmSeen.has(e.item_key) || dueWordSet.has(e.item_key)) continue;
+    warmSeen.add(e.item_key);
+    warmupCandidates.push(e.item_key);
+  }
+  // 후보 단어의 뜻·후리가나 조회 (추가 1쿼리 — user+lang 필터, 방어적)
+  let warmupVocabRows = [];
+  if (warmupCandidates.length) {
+    await supabase.from('user_vocabulary')
+      .select('word_text, meaning, furigana')
+      .eq('user_id', userId).eq('language', lang)
+      .in('word_text', warmupCandidates)
+      .then(({ data }) => { warmupVocabRows = data || []; }, () => {});
+  }
+  // 콜드스타트 폴백 — 이력이 없으면 레벨 사전 단어로 (SRS 미반영)
+  const warmupFallback = sample(levelVocabWords, 12)
+    .map(w => ({ word_text: refMain(w), meaning: w.ko || '', furigana: refPron(w) || null }))
+    .filter(w => w.word_text && w.meaning && !dueWordSet.has(w.word_text))
+    .slice(0, 4);
+  const warmup = buildWarmupItems(reviewEventRows || [], warmupVocabRows, meaningPool, dueWordSet, warmupFallback);
+
   // 폴백 세션 — 문단 생성 실패 시 그대로 사용
   const session = composeSession({
     vocab: dueVocabRows || [],
@@ -195,5 +228,5 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
   // 재료가 문법도 단어도 없으면 문단 생성 스킵 (폴백 세션만)
   const canGenerate = !!(paragraphMaterials.newPattern || paragraphMaterials.duePatterns.length || paragraphMaterials.dueWords.length);
 
-  return { session, paragraphMaterials, level, band, canGenerate };
+  return { session, paragraphMaterials, warmup, level, band, dial, canGenerate };
 }
