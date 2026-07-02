@@ -1,0 +1,192 @@
+/**
+ * 공부 모드 세션 조립기 — 듀오링고(경로·세션) + Anki(FSRS) 하이브리드.
+ * 서버가 조회한 재료(due 어휘·due 문법·다음 챕터·독해 예문)를 받아
+ * ~12문항짜리 인터리브 세션 payload를 만든다. 순수 함수 — 셔플 없음(렌더 몫).
+ *
+ * 문항 타입:
+ *  vocab-choice   단어→뜻 4지선다        vocab-typing  뜻→단어 입력
+ *  vocab-listening TTS→단어 입력          grammar-cloze 예문 빈칸(refQuiz.meaning)
+ *  grammar-order  어순 배열(refQuiz.apply) read-meaning 예문→뜻 4지선다
+ *  teach          새 패턴 티칭 카드(문항 아님·집계 제외)
+ */
+
+const MAX_ITEMS = 12;
+
+/** 타이핑 판정용 정규화 — 공백·구두점 제거, 소문자화 */
+export function normalizeAnswer(s) {
+  return String(s || '')
+    .toLowerCase()
+    .replace(/[\s　]+/g, '')
+    .replace(/[。、．，.,!?！？'’\-–]/g, '');
+}
+
+/** 어휘 타이핑 정답 판정 — 표기 또는 발음(후리가나) 일치 */
+export function gradeTyping(input, word) {
+  const n = normalizeAnswer(input);
+  if (!n) return false;
+  return n === normalizeAnswer(word.word_text) || (!!word.furigana && n === normalizeAnswer(word.furigana));
+}
+
+/** 보기 채우기 — 정답 제외 중복 없는 오답 n개 */
+function pickDistractors(pool, correct, n) {
+  const seen = new Set([correct]);
+  const out = [];
+  for (const p of pool) {
+    if (!p || seen.has(p)) continue;
+    seen.add(p);
+    out.push(p);
+    if (out.length >= n) break;
+  }
+  return out;
+}
+
+let uidSeq = 0;
+const uid = prefix => `${prefix}-${++uidSeq}`;
+
+/** 어휘 due → 문항 (choice/typing/listening 로테이션) */
+function buildVocabItems(vocab, meaningPool) {
+  const types = ['vocab-choice', 'vocab-typing', 'vocab-listening'];
+  return (vocab || []).slice(0, 3).map((w, i) => {
+    let type = types[i % types.length];
+    let options = null;
+    if (type === 'vocab-choice') {
+      const distractors = pickDistractors(meaningPool || [], w.meaning, 3);
+      if (distractors.length < 2) type = 'vocab-typing';   // 보기 부족 → 타이핑으로
+      else options = [w.meaning, ...distractors];
+    }
+    return {
+      uid: uid('v'),
+      type,
+      word: w,
+      options,
+      effect: { kind: 'vocab', wordId: w.id },
+    };
+  });
+}
+
+/** 문법 due 챕터 → 문항 (챕터당 최대 perChapter개, 전체 max개) */
+function buildGrammarDueItems(grammarDue, { max = 2, perChapter = 2 } = {}) {
+  const out = [];
+  for (const g of grammarDue || []) {
+    let n = 0;
+    for (const q of g.items || []) {
+      if (out.length >= max || n >= perChapter) break;
+      out.push({
+        uid: uid('g'),
+        type: q.tokens ? 'grammar-order' : 'grammar-cloze',
+        quiz: q,
+        chapter: g.meta,
+        effect: { kind: 'grammar-due', srs: g.srs },
+      });
+      n++;
+    }
+    if (out.length >= max) break;
+  }
+  return out;
+}
+
+/** 새 챕터 → 티칭 카드 + 문항 */
+function buildNewChapterItems(newChapter) {
+  if (!newChapter) return { teach: null, items: [] };
+  const teach = newChapter.teach
+    ? { uid: uid('t'), type: 'teach', chapter: newChapter.meta, ...newChapter.teach }
+    : null;
+  const items = (newChapter.items || []).slice(0, 3).map(q => ({
+    uid: uid('n'),
+    type: q.tokens ? 'grammar-order' : 'grammar-cloze',
+    quiz: q,
+    chapter: newChapter.meta,
+    effect: { kind: 'new-chapter', meta: newChapter.meta },
+  }));
+  return { teach, items };
+}
+
+/** 독해 — 예문→뜻 고르기 */
+function buildReadingItems(reading, koPool, max) {
+  const out = [];
+  for (const r of reading || []) {
+    if (out.length >= max) break;
+    if (!r?.main || !r?.ko) continue;
+    const distractors = pickDistractors(koPool || [], r.ko, 3);
+    if (distractors.length < 2) continue;
+    out.push({
+      uid: uid('r'),
+      type: 'read-meaning',
+      sentence: { main: r.main, pron: r.pron || null },
+      options: [r.ko, ...distractors],
+      correct: r.ko,
+      effect: { kind: 'reading', key: r.main },
+    });
+  }
+  return out;
+}
+
+/**
+ * 세션 조립 — 인터리브 배치.
+ * 레시피: [티칭, 신규1, 어휘, 신규2, 문법due, 어휘, 신규3, 독해, 문법due, 어휘, 독해…]
+ * @returns {{items: Array, gradedCount: number, newChapter: Object|null}}
+ */
+export function composeSession({ vocab, meaningPool, grammarDue, newChapter, reading, koPool }) {
+  const vocabItems = buildVocabItems(vocab, meaningPool);
+  const dueItems = buildGrammarDueItems(grammarDue);
+  const { teach, items: newItems } = buildNewChapterItems(newChapter);
+
+  // 목표 문항 수까지 독해로 채움 (티칭 카드는 집계 제외)
+  const baseCount = vocabItems.length + dueItems.length + newItems.length;
+  const readingItems = buildReadingItems(reading, koPool, Math.max(1, MAX_ITEMS - baseCount));
+
+  // 인터리브 — 신규를 앞쪽에(가르친 직후 확인), 복습·독해를 사이사이에
+  const lanes = [
+    newItems[0], vocabItems[0], newItems[1], dueItems[0],
+    vocabItems[1], newItems[2], readingItems[0], dueItems[1],
+    vocabItems[2], ...readingItems.slice(1),
+  ].filter(Boolean);
+
+  const items = [];
+  if (teach) items.push(teach);
+  for (const it of lanes) {
+    if (items.filter(i => i.type !== 'teach').length >= MAX_ITEMS) break;
+    items.push(it);
+  }
+
+  return {
+    items,
+    gradedCount: items.filter(i => i.type !== 'teach').length,
+    newChapter: newChapter?.meta || null,
+  };
+}
+
+/** 신규 챕터 통과 판정 — 3문항 기준 2개 이상 (문항이 적으면 2/3 비율) */
+export function isChapterPassed(right, total) {
+  if (!total) return false;
+  return right >= Math.ceil(total * (2 / 3));
+}
+
+/** 세션 문항 타입 → review_events qtype (약점 진단 축). 채점 문항이 아니면 null */
+export function qtypeForItem(type) {
+  switch (type) {
+    case 'vocab-choice': return 'choice';
+    case 'vocab-typing': return 'typing';
+    case 'vocab-listening': return 'listening';
+    case 'grammar-cloze': return 'cloze';
+    case 'grammar-order': return 'order';
+    case 'read-meaning': return 'read';
+    default: return null;
+  }
+}
+
+/**
+ * 문법 due 챕터별 문항 수 집계 → { slug: count }.
+ * settle 시점에 "이 챕터의 마지막 문항"을 판정해 챕터 정답률로 재스케줄하기 위한 것.
+ * 재출제(-r) 문항은 첫 시도가 아니므로 호출자가 제외해 넘긴다.
+ */
+export function grammarDueChapterCounts(items) {
+  const counts = {};
+  for (const it of items || []) {
+    if (it?.effect?.kind === 'grammar-due' && it.effect.srs?.slug) {
+      const slug = it.effect.srs.slug;
+      counts[slug] = (counts[slug] || 0) + 1;
+    }
+  }
+  return counts;
+}

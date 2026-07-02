@@ -129,12 +129,14 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
       logReviewEvents(user.id, (questions || []).map(q => {
         const a = answers[q.id];
         if (!a) return null;
+        // qtype: meaning→cloze, order→order, produce→produce
+        const qtype = ({ meaning: 'cloze', order: 'order', produce: 'produce' })[q.type] || 'cloze';
         return {
           lang: item.lang,
           source: 'grammar',
-          item_key: `${item.srs.slug}#${q.id}`,
+          item_key: item.srs.slug,
           correct: !!a.ok,
-          detail: { stage: q.type, ko: q.ko, answer: q.correct ?? q.answer ?? q.main, picked: a.picked },
+          detail: { stage: q.type, qtype, qid: q.id, ko: q.ko, answer: q.correct ?? q.answer ?? q.main, picked: a.picked },
         };
       }).filter(Boolean));
     }
