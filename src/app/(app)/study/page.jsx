@@ -1,31 +1,17 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { getRefLang, REF_LANGS } from '@/content/refLangs';
-import { refMain, refPron } from '@/views/refShared';
-import { buildChapterQuiz } from '@/lib/refQuiz';
-import { composeSession } from '@/lib/studySession';
-import { computeRung, computeEwma, dialFromEwma } from '@/lib/skillRung';
-import { levelBand } from '@/lib/writingPrompts';
+import { assembleStudyMaterials } from '@/lib/studyMaterials';
 import StudySessionPage from '@/views/StudySessionPage';
 
 export const metadata = { title: '오늘 학습 | Anatomy Studio' };
 export const dynamic = 'force-dynamic';
 
-/** 배열에서 대략 고르게 n개 샘플 (요청마다 달라지도록 랜덤 시작점) */
-function sample(arr, n) {
-  if (!arr?.length) return [];
-  const out = [];
-  const start = Math.floor(Math.random() * arr.length);
-  for (let i = 0; i < arr.length && out.length < n; i++) {
-    out.push(arr[(start + i * 7) % arr.length]);
-  }
-  return [...new Set(out)].slice(0, n);
-}
-
 /**
  * 공부 모드 — 메인 학습 세션 (듀오링고 경로 + Anki 스케줄).
- * 서버가 due 어휘·due 문법·커리큘럼의 다음 챕터·독해 예문을 모아
+ * 서버가 due 어휘·due 문법·커리큘럼의 다음 챕터·독해 예문을 모아(studyMaterials)
  * ~12문항 세션을 조립한다. 콘텐츠는 서버에만 열린다.
+ * 프리페치된 문단(status='prefetched')이 있으면 즉시 그것으로 시작한다.
  */
 export default async function Page({ searchParams }) {
   const sp = await searchParams;
@@ -52,153 +38,38 @@ export default async function Page({ searchParams }) {
     lang = REF_LANGS[fromProfile] ? fromProfile : 'Japanese';
   }
   const ref = getRefLang(lang);
-  const nowIso = new Date().toISOString();
 
-  // ── 재료 조회 (병렬) ──
-  const [{ data: dueVocabRows }, { data: vocabPoolRows }, { data: dueGrammarRows }, { data: progressRows }, { data: reviewEventRows }] = await Promise.all([
-    supabase.from('user_vocabulary')
-      .select('id, word_text, meaning, furigana, language, interval, ease_factor, repetitions, next_review_at')
-      .eq('user_id', user.id).eq('language', lang)
-      .lte('next_review_at', nowIso)
-      .order('next_review_at', { ascending: true }).limit(3),
-    supabase.from('user_vocabulary')
-      .select('meaning')
-      .eq('user_id', user.id).eq('language', lang).limit(60),
-    supabase.from('grammar_review')
-      .select('*')
-      .eq('user_id', user.id).eq('lang', lang)
-      .lte('next_review_at', nowIso)
-      .order('next_review_at', { ascending: true }).limit(2),
-    supabase.from('user_ref_progress')
-      .select('slug, passed')
-      .eq('user_id', user.id).eq('lang', lang),
-    supabase.from('review_events')
-      .select('item_key, correct, detail, created_at')
-      .eq('user_id', user.id).eq('lang', lang)
-      .order('created_at', { ascending: false }).limit(400),
-  ]);
+  // ── 재료 조립 (폴백 세션·rung·dial·오늘의 문단 재료) — prefetched를 써도 라이브로 필요 ──
+  const { session, paragraphMaterials, band, canGenerate } = await assembleStudyMaterials(supabase, user.id, lang);
 
-  const passed = new Set((progressRows || []).filter(r => r.passed).map(r => r.slug));
+  // ── 프리페치된 문단 우선 사용 — 최근 48h 내 status='prefetched' 최신 1행 (테이블 부재 시 무해) ──
+  let pregenerated = null;
+  const cutoffIso = new Date(Date.now() - 48 * 3600 * 1000).toISOString();
+  await supabase.from('study_paragraphs')
+    .select('id, materials, paragraph')
+    .eq('user_id', user.id).eq('lang', lang).eq('status', 'prefetched')
+    .gt('created_at', cutoffIso)
+    .order('created_at', { ascending: false }).limit(1)
+    .then(({ data }) => {
+      const row = data && data[0];
+      if (row && row.paragraph && row.materials) {
+        pregenerated = { paragraph: row.paragraph, materials: row.materials };
+        // 사용 처리 (방어적 — 실패해도 세션은 진행)
+        supabase.from('study_paragraphs')
+          .update({ status: 'used', used_at: new Date().toISOString() })
+          .eq('id', row.id)
+          .then(() => {}, () => {});
+      }
+    }, () => {});
 
-  // ── 숙련 rung · 난이도 다이얼 유도 (review_events 순수 함수) ──
-  // 최근순으로 받아 시간순(오래된 것부터)으로 뒤집는다.
-  const eventsAsc = (reviewEventRows || []).slice().reverse();
-  // 각 due 단어의 item_key(word_text) 이벤트만 골라 rung 유도.
-  const vocabRungs = {};
-  for (const w of dueVocabRows || []) {
-    const evs = eventsAsc
-      .filter(e => e.item_key === w.word_text)
-      .map(e => ({ qtype: e.detail?.qtype, correct: !!e.correct }));
-    vocabRungs[w.word_text] = computeRung(evs);
-  }
-  // 전체 채점 이벤트로 EWMA → 다이얼.
-  const gradedEvents = eventsAsc.map(e => ({ correct: !!e.correct }));
-  const ewma = computeEwma(gradedEvents);
-  const dial = dialFromEwma(ewma, 20, gradedEvents.length);
-
-  // ── 문법 due → 미니 퀴즈 ──
-  const grammarDue = (dueGrammarRows || []).map(row => {
-    const found = ref.getChapter(row.slug);
-    if (!found) return null;
-    const q = buildChapterQuiz(found.chapter, ref, { maxMeaning: 1, maxApply: 1, maxProduce: 0 });
-    const items = [...q.meaning, ...q.apply];
-    if (!items.length) return null;
-    return {
-      srs: { lang: row.lang, slug: row.slug, interval: row.interval, ease_factor: row.ease_factor, repetitions: row.repetitions, next_review_at: row.next_review_at },
-      meta: { slug: row.slug, title: found.chapter.title, level: found.chapter.level, order: found.chapter.order, href: `${ref.base}/grammar/${row.slug}` },
-      items,
-    };
-  }).filter(Boolean);
-
-  // ── 다음 새 챕터 — 커리큘럼 순서에서 첫 미통과·퀴즈 가능 챕터 ──
-  let newChapter = null;
-  for (const ch of ref.ALL_CHAPTERS) {
-    if (passed.has(ch.slug)) continue;
-    const q = buildChapterQuiz(ch, ref, { maxMeaning: 2, maxApply: 1, maxProduce: 0 });
-    const items = [...q.meaning, ...q.apply];
-    if (items.length < 2) continue;                    // 퀴즈 못 만드는 챕터(카나 등)는 건너뜀
-    const patternSec = ch.sections.find(s => s.pattern);
-    newChapter = {
-      meta: { lang, slug: ch.slug, title: ch.title, level: ch.level, order: ch.order, href: `${ref.base}/grammar/${ch.slug}` },
-      teach: patternSec ? {
-        pattern: patternSec.pattern,
-        patternKo: patternSec.patternKo || '',
-        examples: (patternSec.examples || []).slice(0, 2).map(ex => ({ main: refMain(ex), pron: refPron(ex), ko: ex.ko })),
-      } : null,
-      items: items.slice(0, 3),
-    };
-    break;
-  }
-
-  // ── 독해 소재 — 현재 레벨 문형 예문 ──
-  const level = newChapter?.meta.level || grammarDue[0]?.meta.level || ref.LEVEL_META[0]?.key;
-  const band = levelBand(lang, level);
-  const bunkei = ref.getBunkei?.(level);
-  const exPool = (bunkei?.themes || [])
-    .flatMap(t => t.items || [])
-    .flatMap(i => [i.ex, i.ex2])
-    .filter(ex => ex && ex.ko && refMain(ex))
-    .map(ex => ({ main: refMain(ex), pron: refPron(ex), ko: ex.ko }));
-  const reading = sample(exPool, 4);
-  const koPool = sample(exPool, 24).map(e => e.ko);
-
-  // ── 어휘 보기 풀 — 내 단어장 뜻 + 부족하면 레벨 어휘 사전 뜻 ──
-  const meaningPool = [...new Set((vocabPoolRows || []).map(r => r.meaning).filter(Boolean))];
-  const levelVocabWords = (ref.getVocab(level)?.themes || []).flatMap(t => t.words || []);
-  if (meaningPool.length < 8) {
-    levelVocabWords.slice(0, 40).forEach(w => {
-      if (w?.ko) meaningPool.push(w.ko);
-    });
-  }
-
-  // 폴백 세션 — 문단 생성 실패 시 그대로 사용
-  const session = composeSession({
-    vocab: dueVocabRows || [],
-    meaningPool,
-    grammarDue,
-    newChapter,
-    reading,
-    koPool,
-    vocabRungs,
-    dial,
-  });
-
-  // ── 오늘의 문단 재료 — 새 문법·새 어휘·복습 문법·복습 어휘를 한 문단으로 ──
-  // 새 단어 2개: 현재 레벨 어휘 사전에서 내 단어장에 없는 것
-  const { data: myWordRows } = await supabase
-    .from('user_vocabulary')
-    .select('word_text')
-    .eq('user_id', user.id).eq('language', lang).limit(800);
-  const myWords = new Set((myWordRows || []).map(r => r.word_text));
-  const newWords = sample(levelVocabWords, 30)
-    .map(w => ({ word: refMain(w), meaning: w.ko || '', pron: refPron(w) || '' }))
-    .filter(w => w.word && w.meaning && !myWords.has(w.word))
-    .slice(0, 2);
-
-  // 복습 문법의 대표 패턴 (챕터 첫 pattern 섹션)
-  const duePatternsForPara = grammarDue.slice(0, 2).map(g => {
-    const ch = ref.getChapter(g.srs.slug)?.chapter;
-    const sec = ch?.sections?.find(s => s.pattern);
-    return sec ? { pattern: sec.pattern, patternKo: sec.patternKo || '', srs: g.srs, meta: g.meta } : null;
-  }).filter(Boolean);
-
-  const paragraphMaterials = {
-    language: lang,
-    level,
-    newPattern: newChapter?.teach ? { pattern: newChapter.teach.pattern, patternKo: newChapter.teach.patternKo } : null,
-    newChapter: newChapter?.meta || null,
-    duePatterns: duePatternsForPara,
-    dueWords: (dueVocabRows || []).slice(0, 3).map(r => ({ word: r.word_text, meaning: r.meaning, row: r })),
-    newWords,
-  };
-  // 재료가 문법도 단어도 없으면 문단 생성 스킵 (폴백 세션만)
-  const canGenerate = !!(paragraphMaterials.newPattern || paragraphMaterials.duePatterns.length || paragraphMaterials.dueWords.length);
+  // pregenerated가 있으면 효과 매핑·새 단어 등록은 저장된 재료를 기준으로.
+  const effectiveMaterials = pregenerated ? pregenerated.materials : (canGenerate ? paragraphMaterials : null);
 
   return (
     <StudySessionPage
       session={session}
-      paragraphMaterials={canGenerate ? paragraphMaterials : null}
-      dial={dial}
+      paragraphMaterials={effectiveMaterials}
+      pregenerated={pregenerated}
       band={band}
       lang={lang}
       langCode={ref.langCode}

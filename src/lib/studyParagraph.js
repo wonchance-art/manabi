@@ -9,6 +9,9 @@ import { levelBand } from './writingPrompts';
 
 const LANG_NAME = { Japanese: '일본어', English: '영어', French: '프랑스어', Chinese: '중국어' };
 
+/** 주제 로테이션 풀 — 매일 다른 상황을 배경으로 (studyMaterials가 avoidThemes를 빼고 하나 고름) */
+export const THEMES = ['일상', '학교', '여행', '음식', '쇼핑', '날씨와 계절', '가족과 친구', '취미', '감정', '계획'];
+
 /** Gemini structured output 스키마 */
 export const PARAGRAPH_SCHEMA = {
   type: 'OBJECT',
@@ -44,8 +47,17 @@ export const PARAGRAPH_SCHEMA = {
         required: ['type', 'focus', 'key', 'prompt', 'answer', 'distractors', 'ko'],
       },
     },
+    preQuestion: {
+      type: 'OBJECT',
+      description: '읽기 전 목적을 주는 질문 (읽기 미션)',
+      properties: {
+        q: { type: 'STRING', description: '문단을 읽기 전 목적을 주는 한국어 질문 1개(답이 문단 안에 있어야 함)' },
+        answerHint: { type: 'STRING', description: '답의 핵심 표현(한국어, 번역문에 그대로 등장하는 말)' },
+      },
+      required: ['q', 'answerHint'],
+    },
   },
-  required: ['paragraph', 'translation', 'sentences', 'questions'],
+  required: ['paragraph', 'translation', 'sentences', 'questions', 'preQuestion'],
 };
 
 /**
@@ -66,9 +78,35 @@ export function buildParagraphPrompt(m) {
 
   const beginnerKanjiCare = m.language === 'Japanese' && levelBand(m.language, m.level) === 'beginner';
 
+  // ── 기지어 제약 — 사용자가 아는 단어 범위 안에서 쓰게 유도 ──
+  const known = Array.isArray(m.knownWords) ? m.knownWords.filter(w => typeof w === 'string' && w.trim()) : [];
+  const whitelist = Array.isArray(m.whitelistWords) ? m.whitelistWords.filter(w => typeof w === 'string' && w.trim()) : [];
+  let vocabConstraint = '';
+  if (known.length >= 30) {
+    vocabConstraint =
+      `\n[어휘 난이도 제약]\n` +
+      `[사용자가 이미 아는 단어 예시 — 이 범위의 쉬운 표현을 우선 사용] ${known.slice(0, 30).join(', ')}\n` +
+      `그 밖의 새 단어는 최소화(문단 전체의 5% 이하).\n`;
+  } else if (whitelist.length) {
+    vocabConstraint =
+      `\n[어휘 난이도 제약]\n` +
+      `[이 단어 목록 안에서 최대한 조합] ${whitelist.slice(0, 40).join(', ')}\n`;
+  }
+
+  // ── 주제 로테이션 — 오늘의 주제, 최근 주제와 겹치지 않게 ──
+  let themeLine = '';
+  if (typeof m.theme === 'string' && m.theme.trim()) {
+    themeLine = `오늘의 주제: ${m.theme.trim()}`;
+    const avoid = Array.isArray(m.avoidThemes) ? m.avoidThemes.filter(t => typeof t === 'string' && t.trim()) : [];
+    if (avoid.length) themeLine += ` (최근 다룬 주제(${avoid.join(', ')})와 겹치지 않게)`;
+    themeLine += '\n\n';
+  }
+
   return (
     `당신은 ${name} 교재 집필자입니다. ${m.level} 레벨 한국인 학습자를 위한 오늘의 학습 문단을 만드세요.\n\n` +
-    `[반드시 문단에 자연스럽게 녹일 재료]\n${parts.join('\n')}\n\n` +
+    themeLine +
+    `[반드시 문단에 자연스럽게 녹일 재료]\n${parts.join('\n')}\n` +
+    vocabConstraint + `\n` +
     `[문단 규칙]\n` +
     `- ${name} 3~5문장, 하나의 일상적 상황·이야기로 자연스럽게 연결 (재료 나열식 금지).\n` +
     `- 재료 외 어휘·문법은 ${m.level} 이하만. 문장은 짧고 명확하게.\n` +
@@ -79,6 +117,8 @@ export function buildParagraphPrompt(m) {
     `- vocab: 복습 단어·새 단어 각각 1개씩(focus=due-word|new-word, key=단어 원문, prompt=단어 원문, answer=한국어 뜻, distractors=그럴듯한 다른 뜻 3개).\n` +
     `- comprehension: 문단 내용 이해 질문 1개 (한국어 질문·선택지 4개 중 answer 1개).\n` +
     `- 문항 순서: cloze(새 문법) → vocab → cloze(복습) → comprehension.\n\n` +
+    `[읽기 미션 — preQuestion]\n` +
+    `- preQuestion: 문단을 읽기 전 목적을 주는 한국어 질문 1개(답이 문단 안에 있어야 함)와 answerHint(답의 핵심 표현 — 번역문에 그대로 등장하는 말).\n\n` +
     `지정된 JSON 스키마로만 응답하세요. 설명·번역은 전부 한국어로.`
   );
 }
@@ -121,12 +161,56 @@ export function validateParagraph(raw) {
     : [];
   if (questions.length < 3) return null;
 
+  const preQuestion = raw.preQuestion && typeof raw.preQuestion === 'object'
+    ? {
+        q: typeof raw.preQuestion.q === 'string' ? raw.preQuestion.q.trim() : '',
+        answerHint: typeof raw.preQuestion.answerHint === 'string' ? raw.preQuestion.answerHint.trim() : '',
+      }
+    : null;
+
   return {
     paragraph: raw.paragraph.trim(),
     translation: typeof raw.translation === 'string' ? raw.translation : '',
     sentences,
     questions,
+    preQuestion,
   };
+}
+
+/**
+ * 결정적 2차 검증 — validateParagraph 통과물을 받아 불량 문항을 제거한다.
+ * 모델이 지어낸(문단에 실재하지 않는) cloze·vocab 문항을 걸러 채점 신뢰도를 지킨다.
+ * comprehension은 주관 판단이라 통과. preQuestion 힌트 불일치는 제네릭으로 우아하게 강등.
+ * @returns {Object|null} 검증 후 questions.length < 3이면 null(재생성 신호)
+ */
+export function verifyParagraph(para) {
+  if (!para || typeof para !== 'object' || !Array.isArray(para.questions)) return null;
+  const strip = s => String(s || '').replace(/\s+/g, '');
+  const paraStrip = strip(para.paragraph);
+  const sentTexts = (para.sentences || []).map(s => strip(s.text));
+
+  // ① cloze: 빈칸을 정답으로 복원한 문장이 실제 문단 문장에 부분 포함되는지 / vocab: key가 문단에 실재하는지
+  const questions = para.questions.filter(q => {
+    if (q.type === 'cloze') {
+      const restored = strip(String(q.prompt).replace(/＿+/g, q.answer));
+      return !!restored && sentTexts.some(t => t.includes(restored));
+    }
+    if (q.type === 'vocab') {
+      const key = strip(q.key);
+      return !!key && paraStrip.includes(key);
+    }
+    return true; // comprehension — 결정적 판단 불가, 통과
+  });
+  if (questions.length < 3) return null;
+
+  // ② preQuestion: answerHint가 번역문·문장 뜻 어딘가에 부분일치하면 유지, 아니면 제네릭으로 강등
+  const koPool = strip(para.translation) + (para.sentences || []).map(s => strip(s.ko)).join('');
+  const hint = para.preQuestion && strip(para.preQuestion.answerHint);
+  const preQuestion = (para.preQuestion && para.preQuestion.q && hint && koPool.includes(hint))
+    ? para.preQuestion
+    : { q: '어떤 이야기인지 그려보며 읽어보세요.', answerHint: '' };
+
+  return { ...para, questions, preQuestion };
 }
 
 /**
@@ -146,6 +230,7 @@ export function mapParagraphToItems(para, materials) {
     paragraph: para.paragraph,
     translation: para.translation,
     sentences: para.sentences,
+    preQuestion: para.preQuestion || null,
     newChapter: materials.newChapter || null,
   });
 

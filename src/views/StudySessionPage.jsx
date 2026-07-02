@@ -30,14 +30,21 @@ function shuffle(arr) {
  * 종료 시: 어휘 FSRS 갱신 · 문법 due 재스케줄 · 신규 챕터 통과 처리 · 이벤트 적재.
  */
 export default function StudySessionPage({
-  session = null, paragraphMaterials = null, lang, langCode, langName, flag, readKey,
+  session = null, paragraphMaterials = null, pregenerated = null, lang, langCode, langName, flag, readKey,
   band = 'beginner', languages = [], signedOut = false,
 }) {
   // 입문 레벨(N5 등) 일본어 배려 — 답변 중에도 요미가나·후리가나를 보여준다.
   const kanjiCare = band === 'beginner' && langCode === 'ja';
   const { user, fetchProfile } = useAuth();
-  const [queue, setQueue] = useState(() => session?.items || []);
-  const [gradedBase, setGradedBase] = useState(session?.gradedCount || 0);
+  // 프리페치된 문단이 있으면 API 없이 즉시 매핑 (마운트 전 결정) — 로딩 화면 스킵.
+  const pregenMapped = useMemo(
+    () => (pregenerated?.paragraph ? mapParagraphToItems(pregenerated.paragraph, pregenerated.materials || {}) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
+  const usePregen = !!(pregenMapped && pregenMapped.gradedCount >= 3);
+  const [queue, setQueue] = useState(() => usePregen ? pregenMapped.items : (session?.items || []));
+  const [gradedBase, setGradedBase] = useState(usePregen ? pregenMapped.gradedCount : (session?.gradedCount || 0));
   const [idx, setIdx] = useState(0);
   const [phase, setPhase] = useState('answer');   // 'answer' | 'feedback'
   const [picked, setPicked] = useState(null);
@@ -48,10 +55,15 @@ export default function StudySessionPage({
   const [finished, setFinished] = useState(false);
   const [skipped, setSkipped] = useState(() => new Set()); // 건너뛴 문항(듣기) — 집계·SRS 제외
   const [showTranslation, setShowTranslation] = useState(false);
+  const [nextPreview, setNextPreview] = useState(''); // 결과 화면 — 내일 문단 예고
   // 문단 생성 — 재료가 있으면 세션 시작 전에 오늘의 문단을 만든다. 실패 시 폴백(조립 세션).
-  const [genStatus, setGenStatus] = useState(paragraphMaterials ? 'loading' : 'off');
+  // 프리페치된 문단이 있으면 이미 매핑 완료 → 'ready'(gradedCount 부족 시 'fallback').
+  const [genStatus, setGenStatus] = useState(
+    pregenerated?.paragraph ? (usePregen ? 'ready' : 'fallback') : (paragraphMaterials ? 'loading' : 'off')
+  );
   const genRan = useRef(false);
   const effectsFired = useRef(false);
+  const prefetchRan = useRef(false);
   // 문항 확정(settle) 시점 사이드이펙트용 refs (렌더 유발 없이 동기 접근)
   const batcherRef = useRef(null);                 // review_events 마이크로배치 큐
   const grammarAggRef = useRef(new Map());         // slug → { srs, right, total } 챕터별 누적
@@ -59,8 +71,11 @@ export default function StudySessionPage({
   const itemShownAtRef = useRef(Date.now());       // 현재 문항 표시 시각 (rt_ms 계산)
 
   useEffect(() => {
-    if (!paragraphMaterials || genRan.current) return;
+    if (genRan.current) return;
     genRan.current = true;
+    // 프리페치된 문단은 초기화에서 이미 매핑됨 — 라이브 생성 스킵.
+    if (pregenerated?.paragraph) return;
+    if (!paragraphMaterials) return;
     (async () => {
       try {
         let authHeader = {};
@@ -78,6 +93,10 @@ export default function StudySessionPage({
             duePatterns: paragraphMaterials.duePatterns.map(p => ({ pattern: p.pattern, patternKo: p.patternKo })),
             dueWords: paragraphMaterials.dueWords.map(w => ({ word: w.word, meaning: w.meaning })),
             newWords: paragraphMaterials.newWords.map(w => ({ word: w.word, meaning: w.meaning })),
+            knownWords: paragraphMaterials.knownWords || [],
+            whitelistWords: paragraphMaterials.whitelistWords || [],
+            theme: paragraphMaterials.theme || '',
+            avoidThemes: paragraphMaterials.avoidThemes || [],
           }),
         });
         const data = await res.json().catch(() => ({}));
@@ -102,6 +121,29 @@ export default function StudySessionPage({
 
   // 문항 표시 시각 기록 — settle까지의 응답 시간(rt_ms) 계산용
   useEffect(() => { itemShownAtRef.current = Date.now(); }, [item?.uid]);
+
+  // 결과 화면 — 내일 문단 프리페치 + 예고 (1회). ready/fallback 무관하게 시도, 실패는 조용히 생략.
+  useEffect(() => {
+    if (!finished || prefetchRan.current || !user?.id) return;
+    prefetchRan.current = true;
+    (async () => {
+      try {
+        let authHeader = {};
+        try {
+          const { data: { session: s } } = await supabase.auth.getSession();
+          if (s?.access_token) authHeader = { Authorization: `Bearer ${s.access_token}` };
+        } catch {}
+        const res = await fetch('/api/study-paragraph', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...authHeader },
+          body: JSON.stringify({ prefetch: true, language: lang }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (data?.ok && data.preview) setNextPreview(data.preview);
+      } catch {}
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [finished, user?.id, lang]);
 
   // 문법 due 챕터별 문항 수 (재출제 제외) — 챕터 마지막 문항 판정에 사용
   const grammarCounts = useMemo(
@@ -389,6 +431,11 @@ export default function StudySessionPage({
           <Link href="/review/grammar" style={{ textDecoration: 'underline' }}>문법 복습</Link> ·{' '}
           <Link href="/writing" style={{ textDecoration: 'underline' }}>작문</Link>
         </p>
+        {nextPreview && (
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textAlign: 'center', marginTop: 12, lineHeight: 1.6 }}>
+            📖 내일 이야기 살짝 보기: {nextPreview}…
+          </p>
+        )}
       </div>
     );
   }
@@ -427,6 +474,19 @@ export default function StudySessionPage({
           <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '0 0 14px' }}>
             새로 배울 것과 복습할 것이 한 이야기에 담겨 있어요. 천천히 읽고, 이어지는 문제로 확인해요.
           </p>
+          {item.preQuestion?.q && (
+            <div style={{
+              display: 'flex', gap: 8, alignItems: 'flex-start',
+              padding: '10px 12px', marginBottom: 14,
+              background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)',
+              borderLeft: '3px solid var(--primary)',
+            }}>
+              <span aria-hidden="true" style={{ fontSize: '1rem', lineHeight: 1.5 }}>🔍</span>
+              <span style={{ fontSize: '0.85rem', lineHeight: 1.6 }}>
+                <strong style={{ color: 'var(--primary)' }}>읽기 미션</strong> — {item.preQuestion.q}
+              </span>
+            </div>
+          )}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {item.sentences.map((s, i) => (
               <div key={i} style={{ fontSize: '1.05rem', lineHeight: 2 }} lang={langCode}>
