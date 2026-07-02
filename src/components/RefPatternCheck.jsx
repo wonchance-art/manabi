@@ -156,12 +156,15 @@ export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug
       logReviewEvents(user.id, (questions || []).map(q => {
         const a = answers[q.id];
         if (!a) return null;
+        // qtype: 문항 유형(meaning=cloze, order, choose=choice, produce)에서 유도
+        const qtype = ({ meaning: 'cloze', order: 'order', choose: 'choice', produce: 'produce' })[q.type]
+          || ({ meaning: 'cloze', apply: 'order', produce: 'produce' })[q.stage] || 'cloze';
         return {
           lang,
           source: 'grammar',
-          item_key: `${slug}#${q.id}`,
+          item_key: slug,
           correct: !!a.ok,
-          detail: { stage: q.stage, ko: q.ko, answer: q.correct ?? q.answer ?? q.main, picked: a.picked },
+          detail: { stage: q.stage, qtype, qid: q.id, ko: q.ko, answer: q.correct ?? q.answer ?? q.main, picked: a.picked },
         };
       }).filter(Boolean));
     }

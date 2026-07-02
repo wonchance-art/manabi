@@ -24,3 +24,31 @@ export function logReviewEvents(userId, events) {
   if (rows.length === 0) return;
   supabase.from('review_events').insert(rows).then(() => {}, () => {});
 }
+
+/**
+ * 마이크로배치 큐 — 문항을 하나씩 쌓다 size개가 되면 flush.
+ * 세션 중도 이탈에도 최근 기록이 남도록 문항 확정(settle) 시점에 조금씩 보낸다.
+ * @param {string} userId
+ * @param {{size?: number, flush?: (userId: string, events: Array) => void}} [opts]
+ *   flush는 테스트 주입용 — 기본은 logReviewEvents.
+ */
+export function createReviewEventBatcher(userId, { size = 4, flush = logReviewEvents } = {}) {
+  let buffer = [];
+  return {
+    /** 이벤트 하나 추가 — 임계치에 닿으면 즉시 flush */
+    add(event) {
+      if (!event) return;
+      buffer.push(event);
+      if (buffer.length >= size) this.flush();
+    },
+    /** 잔여 이벤트 강제 flush (세션 종료·마지막 문항) */
+    flush() {
+      if (buffer.length === 0) return;
+      const pending = buffer;
+      buffer = [];
+      flush(userId, pending);
+    },
+    /** 테스트·디버그용 현재 대기 개수 */
+    get size() { return buffer.length; },
+  };
+}

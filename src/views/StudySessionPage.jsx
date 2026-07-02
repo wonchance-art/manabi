@@ -10,9 +10,9 @@ import { useAuth } from '../lib/AuthContext';
 import { calculateFSRS } from '../lib/fsrs';
 import { gradeGrammarReview, ratingFromScore, enqueueGrammarReview } from '../lib/grammarSrs';
 import { syncCheckRemote, syncReadRemote } from '../lib/refProgress';
-import { logReviewEvents } from '../lib/reviewEvents';
+import { createReviewEventBatcher } from '../lib/reviewEvents';
 import { recordActivity } from '../lib/streak';
-import { gradeTyping, isChapterPassed } from '../lib/studySession';
+import { gradeTyping, isChapterPassed, qtypeForItem, grammarDueChapterCounts } from '../lib/studySession';
 import { mapParagraphToItems } from '../lib/studyParagraph';
 
 function shuffle(arr) {
@@ -50,6 +50,11 @@ export default function StudySessionPage({
   const [genStatus, setGenStatus] = useState(paragraphMaterials ? 'loading' : 'off');
   const genRan = useRef(false);
   const effectsFired = useRef(false);
+  // 문항 확정(settle) 시점 사이드이펙트용 refs (렌더 유발 없이 동기 접근)
+  const batcherRef = useRef(null);                 // review_events 마이크로배치 큐
+  const grammarAggRef = useRef(new Map());         // slug → { srs, right, total } 챕터별 누적
+  const recordedRef = useRef(new Set());           // 이미 기록한 orig uid (중복 방지)
+  const itemShownAtRef = useRef(Date.now());       // 현재 문항 표시 시각 (rt_ms 계산)
 
   useEffect(() => {
     if (!paragraphMaterials || genRan.current) return;
@@ -93,6 +98,15 @@ export default function StudySessionPage({
 
   const item = queue[idx] || null;
 
+  // 문항 표시 시각 기록 — settle까지의 응답 시간(rt_ms) 계산용
+  useEffect(() => { itemShownAtRef.current = Date.now(); }, [item?.uid]);
+
+  // 문법 due 챕터별 문항 수 (재출제 제외) — 챕터 마지막 문항 판정에 사용
+  const grammarCounts = useMemo(
+    () => grammarDueChapterCounts(queue.filter(it => !String(it.uid).endsWith('-r'))),
+    [queue]
+  );
+
   // 문항별 셔플 보기·토큰 (uid 기준 1회)
   const prepared = useMemo(() => {
     if (!item) return null;
@@ -116,18 +130,72 @@ export default function StudySessionPage({
     next();
   }
 
-  /** 채점 확정 — 첫 시도만 집계, 오답은 재출제 예약 */
+  /** review_events 마이크로배치 큐 — user 확정 후 1회 생성 */
+  function getBatcher() {
+    if (!batcherRef.current && user?.id) {
+      batcherRef.current = createReviewEventBatcher(user.id, { size: 4 });
+    }
+    return batcherRef.current;
+  }
+
+  /**
+   * 문항 확정 시점 사이드이펙트 (첫 시도만) —
+   * 이벤트 즉시 적재(마이크로배치) · 어휘 FSRS 갱신 · 문법 챕터 마지막 문항에서 재스케줄.
+   * 중도 이탈해도 여기까지의 기록은 남는다.
+   */
+  function recordSettle(ok, it) {
+    if (!user?.id || !it?.effect) return;
+    const batcher = getBatcher();
+    const rt_ms = Date.now() - itemShownAtRef.current;
+    const qtype = qtypeForItem(it.type);
+    const eff = it.effect;
+
+    if (eff.kind === 'vocab') {
+      const w = it.word;
+      const nextStats = calculateFSRS(ok ? 3 : 1, {
+        interval: w.interval ?? 0, ease_factor: w.ease_factor ?? 0,
+        repetitions: w.repetitions ?? 0, next_review_at: w.next_review_at,
+      });
+      supabase.from('user_vocabulary')
+        .update({ ...nextStats, last_reviewed_at: new Date().toISOString() })
+        .eq('id', w.id).then(() => {}, () => {});
+      batcher?.add({ lang, source: 'vocab', item_key: w.word_text, correct: ok, detail: { word_id: w.id, meaning: w.meaning, mode: 'study', qtype, rt_ms } });
+    } else if (eff.kind === 'grammar-due') {
+      const slug = eff.srs.slug;
+      batcher?.add({ lang, source: 'grammar', item_key: slug, correct: ok, detail: { ko: it.quiz?.ko, mode: 'study', qtype, rt_ms } });
+      // 챕터별 정답 누적 → 마지막 문항에서 챕터 정답률로 재스케줄
+      const agg = grammarAggRef.current.get(slug) || { srs: eff.srs, right: 0, total: 0 };
+      agg.total++; if (ok) agg.right++;
+      grammarAggRef.current.set(slug, agg);
+      if (agg.total >= (grammarCounts[slug] || 0)) {
+        gradeGrammarReview({ ...agg.srs, user_id: user.id }, ratingFromScore(agg.right, agg.total));
+      }
+    } else if (eff.kind === 'new-chapter') {
+      // 통과 판정은 세션 말미(fireEffects)에서 — 여기선 이벤트만 즉시 적재
+      batcher?.add({ lang, source: 'grammar', item_key: eff.meta.slug, correct: ok, detail: { ko: it.quiz?.ko, mode: 'study', qtype, rt_ms } });
+    } else if (eff.kind === 'reading') {
+      batcher?.add({ lang, source: 'reading', item_key: String(eff.key).slice(0, 80), correct: ok, detail: { mode: 'study', qtype, rt_ms } });
+    }
+  }
+
+  /** 채점 확정 — 첫 시도만 집계·기록, 오답은 재출제 예약 */
   function settle(ok, pickedValue = null) {
     if (!item || phase === 'feedback') return;
     setPicked(pickedValue);
     setPhase('feedback');
     const orig = baseUid(item.uid);
+    const isRetryItem = String(item.uid).endsWith('-r');
     if (!(orig in firstResults)) {
       setFirstResults(prev => ({ ...prev, [orig]: { ok, item } }));
       if (!ok && !requeued.has(orig)) {
         setRequeued(prev => new Set(prev).add(orig));
         setQueue(prev => [...prev, { ...item, uid: `${orig}-r` }]);
       }
+    }
+    // 재출제(-r)는 기록·SRS 제외. 첫 시도만 1회 기록.
+    if (!isRetryItem && !recordedRef.current.has(orig)) {
+      recordedRef.current.add(orig);
+      recordSettle(ok, item);
     }
   }
 
@@ -144,40 +212,16 @@ export default function StudySessionPage({
     }
   }
 
-  /** 세션 종료 사이드이펙트 — 1회 */
+  /**
+   * 세션 종료 사이드이펙트 — 1회.
+   * 문항별 기록(이벤트·어휘 FSRS·문법 재스케줄)은 settle 시점에 이미 처리됐고,
+   * 여기선 세션 전체로만 판정 가능한 것들만 남긴다:
+   *  신규 챕터 통과 판정 · 새 단어 자동 등록 · 잔여 이벤트 flush · 활동 기록.
+   */
   function fireEffects() {
     if (effectsFired.current || !user?.id) return;
     effectsFired.current = true;
     const results = Object.values(firstResults);
-    const events = [];
-
-    // 어휘 → FSRS
-    for (const r of results) {
-      if (r.item.effect?.kind !== 'vocab') continue;
-      const w = r.item.word;
-      const nextStats = calculateFSRS(r.ok ? 3 : 1, {
-        interval: w.interval ?? 0, ease_factor: w.ease_factor ?? 0,
-        repetitions: w.repetitions ?? 0, next_review_at: w.next_review_at,
-      });
-      supabase.from('user_vocabulary')
-        .update({ ...nextStats, last_reviewed_at: new Date().toISOString() })
-        .eq('id', w.id).then(() => {}, () => {});
-      events.push({ lang, source: 'vocab', item_key: w.word_text, correct: r.ok, detail: { word_id: w.id, meaning: w.meaning, mode: 'study' } });
-    }
-
-    // 문법 due → 챕터별 정답률로 재스케줄
-    const bySlug = new Map();
-    for (const r of results) {
-      if (r.item.effect?.kind !== 'grammar-due') continue;
-      const key = r.item.effect.srs.slug;
-      const agg = bySlug.get(key) || { srs: r.item.effect.srs, right: 0, total: 0 };
-      agg.total++; if (r.ok) agg.right++;
-      bySlug.set(key, agg);
-      events.push({ lang, source: 'grammar', item_key: `${key}#study`, correct: r.ok, detail: { ko: r.item.quiz?.ko, mode: 'study' } });
-    }
-    for (const agg of bySlug.values()) {
-      gradeGrammarReview({ ...agg.srs, user_id: user.id }, ratingFromScore(agg.right, agg.total));
-    }
 
     // 신규 챕터 → 통과 판정 (통과 시 교재 진도·복습 큐에 연결)
     const newItems = results.filter(r => r.item.effect?.kind === 'new-chapter');
@@ -197,13 +241,7 @@ export default function StudySessionPage({
       syncReadRemote(user.id, lang, meta.slug);
       syncCheckRemote(user.id, lang, meta.slug, checkResult);
       if (passedNow) enqueueGrammarReview(user.id, lang, meta.slug);
-      newItems.forEach(r => events.push({ lang, source: 'grammar', item_key: `${meta.slug}#study-new`, correct: r.ok, detail: { ko: r.item.quiz?.ko, mode: 'study' } }));
     }
-
-    // 독해
-    results.filter(r => r.item.effect?.kind === 'reading').forEach(r =>
-      events.push({ lang, source: 'reading', item_key: String(r.item.effect.key).slice(0, 80), correct: r.ok, detail: { mode: 'study' } })
-    );
 
     // 오늘 배운 새 단어 → 단어장 등록 (FSRS 복습 루프 진입)
     if (genStatus === 'ready' && paragraphMaterials?.newWords?.length) {
@@ -227,7 +265,8 @@ export default function StudySessionPage({
       }
     }
 
-    logReviewEvents(user.id, events);
+    // 잔여 이벤트 flush (마지막 마이크로배치)
+    batcherRef.current?.flush();
     recordActivity(user.id, () => fetchProfile?.(user.id));
   }
 

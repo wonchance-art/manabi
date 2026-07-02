@@ -161,3 +161,32 @@ export function isChapterPassed(right, total) {
   if (!total) return false;
   return right >= Math.ceil(total * (2 / 3));
 }
+
+/** 세션 문항 타입 → review_events qtype (약점 진단 축). 채점 문항이 아니면 null */
+export function qtypeForItem(type) {
+  switch (type) {
+    case 'vocab-choice': return 'choice';
+    case 'vocab-typing': return 'typing';
+    case 'vocab-listening': return 'listening';
+    case 'grammar-cloze': return 'cloze';
+    case 'grammar-order': return 'order';
+    case 'read-meaning': return 'read';
+    default: return null;
+  }
+}
+
+/**
+ * 문법 due 챕터별 문항 수 집계 → { slug: count }.
+ * settle 시점에 "이 챕터의 마지막 문항"을 판정해 챕터 정답률로 재스케줄하기 위한 것.
+ * 재출제(-r) 문항은 첫 시도가 아니므로 호출자가 제외해 넘긴다.
+ */
+export function grammarDueChapterCounts(items) {
+  const counts = {};
+  for (const it of items || []) {
+    if (it?.effect?.kind === 'grammar-due' && it.effect.srs?.slug) {
+      const slug = it.effect.srs.slug;
+      counts[slug] = (counts[slug] || 0) + 1;
+    }
+  }
+  return counts;
+}

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { composeSession, normalizeAnswer, gradeTyping, isChapterPassed } from '../studySession';
+import { composeSession, normalizeAnswer, gradeTyping, isChapterPassed, qtypeForItem, grammarDueChapterCounts } from '../studySession';
 
 const VOCAB = [
   { id: 1, word_text: '約束', meaning: '약속', furigana: 'やくそく', language: 'Japanese' },
@@ -97,5 +97,40 @@ describe('isChapterPassed', () => {
     expect(isChapterPassed(2, 2)).toBe(true);
     expect(isChapterPassed(1, 1)).toBe(true);
     expect(isChapterPassed(0, 0)).toBe(false);
+  });
+});
+
+describe('qtypeForItem — 세션 문항 타입 → qtype', () => {
+  it('어휘/문법/독해 문항 타입을 규약 qtype으로 매핑', () => {
+    expect(qtypeForItem('vocab-choice')).toBe('choice');
+    expect(qtypeForItem('vocab-typing')).toBe('typing');
+    expect(qtypeForItem('vocab-listening')).toBe('listening');
+    expect(qtypeForItem('grammar-cloze')).toBe('cloze');
+    expect(qtypeForItem('grammar-order')).toBe('order');
+    expect(qtypeForItem('read-meaning')).toBe('read');
+  });
+  it('채점 문항이 아니면 null', () => {
+    expect(qtypeForItem('teach')).toBeNull();
+    expect(qtypeForItem('paragraph')).toBeNull();
+    expect(qtypeForItem(undefined)).toBeNull();
+  });
+});
+
+describe('grammarDueChapterCounts — 문법 due 챕터별 문항 수', () => {
+  it('grammar-due만 slug별로 센다', () => {
+    const items = [
+      { effect: { kind: 'grammar-due', srs: { slug: 's1' } } },
+      { effect: { kind: 'grammar-due', srs: { slug: 's1' } } },
+      { effect: { kind: 'grammar-due', srs: { slug: 's2' } } },
+      { effect: { kind: 'vocab' } },
+      { effect: { kind: 'new-chapter', meta: { slug: 'n1' } } },
+      { effect: { kind: 'reading', key: 'x' } },
+    ];
+    expect(grammarDueChapterCounts(items)).toEqual({ s1: 2, s2: 1 });
+  });
+  it('slug 없는 항목·빈 입력은 무시', () => {
+    expect(grammarDueChapterCounts([{ effect: { kind: 'grammar-due', srs: {} } }])).toEqual({});
+    expect(grammarDueChapterCounts([])).toEqual({});
+    expect(grammarDueChapterCounts(null)).toEqual({});
   });
 });

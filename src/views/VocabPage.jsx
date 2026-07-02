@@ -252,12 +252,14 @@ export default function VocabPage() {
     });
     recordActivity(user.id, () => fetchProfile(user.id));
     // 약점 진단 데이터 — 어휘 정오답 적재 ('다시'=오답, 나머지=정답 취급)
+    // qtype: 복습 모드에서 유도 (flash·context=객관식→choice, typing, listening)
+    const qtype = ({ flash: 'choice', context: 'choice', typing: 'typing', listening: 'listening' })[reviewMode] || 'choice';
     logReviewEvents(user.id, [{
       lang: currentWord.language || detectLang(currentWord.word_text),
       source: 'vocab',
       item_key: currentWord.word_text,
       correct: rating > 1,
-      detail: { word_id: currentWord.id, meaning: currentWord.meaning, rating },
+      detail: { word_id: currentWord.id, meaning: currentWord.meaning, rating, mode: reviewMode, qtype },
     }]);
     if (wasNew) registerNewIntro(currentWord.id);            // 새 단어 첫 학습 → 오늘 한도 차감
     goNextReview(rating === 1 ? currentWord.id : null);      // '다시'는 이번 세션 끝에 재노출
