@@ -34,6 +34,36 @@ export function initialQueueRow(userId, lang, slug, now = new Date()) {
   };
 }
 
+/**
+ * 백필 스케줄 계산 — 이미 통과했지만 큐에 없는 챕터를 하루 perDay개씩 분산 등록.
+ * 오래전에 통과한 챕터부터(입력 순서 유지) 첫 묶음은 오늘 바로 due.
+ * @param {string} userId
+ * @param {Array<{lang: string, slug: string}>} passed - 통과 챕터(오래된 순)
+ * @param {Set<string>} existingKeys - 이미 큐에 있는 `${lang}:${slug}`
+ * @returns {Array} grammar_review insert rows
+ */
+export function staggerBackfillRows(userId, passed, existingKeys, now = new Date(), perDay = 10) {
+  const rows = [];
+  let i = 0;
+  for (const p of passed) {
+    if (!p?.lang || !p?.slug) continue;
+    if (existingKeys.has(`${p.lang}:${p.slug}`)) continue;
+    const at = new Date(now);
+    at.setDate(at.getDate() + Math.floor(i / perDay));
+    rows.push({
+      user_id: userId,
+      lang: p.lang,
+      slug: p.slug,
+      interval: 0,
+      ease_factor: 0,
+      repetitions: 0,
+      next_review_at: at.toISOString(),
+    });
+    i++;
+  }
+  return rows;
+}
+
 /** 챕터 퀴즈 통과 → 복습 큐 등록. 이미 있으면 무시(복습 진행 상태 보존). */
 export function enqueueGrammarReview(userId, lang, slug) {
   if (!userId || !lang || !slug) return;
