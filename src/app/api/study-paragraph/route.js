@@ -1,10 +1,16 @@
 import { createClient } from '@supabase/supabase-js';
-import { buildParagraphPrompt, validateParagraph, PARAGRAPH_SCHEMA } from '@/lib/studyParagraph';
+import { buildParagraphPrompt, validateParagraph, verifyParagraph, PARAGRAPH_SCHEMA } from '@/lib/studyParagraph';
+import { assembleStudyMaterials } from '@/lib/studyMaterials';
 
 /**
  * 오늘의 문단 생성 — 공부 모드의 재료(새 문법·새 어휘·복습 문법·복습 어휘)를
  * 하나의 문단으로 녹이고 파생 문항까지 만든다.
  * /api/writing-feedback과 동일한 인증·폴백(flash → flash-lite → Groq JSON) 구조.
+ *
+ * 두 모드:
+ *  - 일반: 클라가 보낸 재료로 생성 → 검증·2차검증 → {paragraph} 응답 + study_paragraphs 저장('used').
+ *  - prefetch(body.prefetch===true): 재료를 클라가 안 보냄 — 라우트가 assembleStudyMaterials(36h)로
+ *    직접 조립해 생성·저장('prefetched')하고 { ok, preview }만 응답(다음 세션 즉시 시작용).
  */
 
 const GROQ_MODEL = 'qwen/qwen3-32b';
@@ -85,17 +91,55 @@ function parseModelJson(text) {
   return null;
 }
 
+/** 1회 생성 시도 — flash → flash-lite → Groq → validate → verify(결정적 2차검증) */
+async function generateOnce(promptText, apiKey) {
+  let raw = null;
+  if (apiKey) {
+    raw = await callGemini('gemini-2.5-flash', promptText, apiKey).catch(() => null);
+    if (!raw) raw = await callGemini('gemini-2.5-flash-lite', promptText, apiKey).catch(() => null);
+  }
+  if (!raw) raw = await callGroqJson(promptText).catch(() => null);
+  const validated = validateParagraph(parseModelJson(raw));
+  if (!validated) return { paragraph: null, raw };
+  return { paragraph: verifyParagraph(validated), raw };
+}
+
+/** 재료 방어 정리 — 클라가 보낸 것을 그대로 되돌려받되 길이만 캡 */
+function cleanMaterials(body) {
+  return {
+    language: body?.language,
+    level: String(body?.level || '').slice(0, 8),
+    newPattern: body?.newPattern && typeof body.newPattern.pattern === 'string'
+      ? { pattern: body.newPattern.pattern.slice(0, 120), patternKo: String(body.newPattern.patternKo || '').slice(0, 120) }
+      : null,
+    duePatterns: (Array.isArray(body?.duePatterns) ? body.duePatterns : []).slice(0, 3)
+      .filter(p => p && typeof p.pattern === 'string')
+      .map(p => ({ pattern: p.pattern.slice(0, 120), patternKo: String(p.patternKo || '').slice(0, 120) })),
+    dueWords: (Array.isArray(body?.dueWords) ? body.dueWords : []).slice(0, 4)
+      .filter(w => w && typeof w.word === 'string' && typeof w.meaning === 'string')
+      .map(w => ({ word: w.word.slice(0, 60), meaning: w.meaning.slice(0, 80) })),
+    newWords: (Array.isArray(body?.newWords) ? body.newWords : []).slice(0, 2)
+      .filter(w => w && typeof w.word === 'string' && typeof w.meaning === 'string')
+      .map(w => ({ word: w.word.slice(0, 60), meaning: w.meaning.slice(0, 80) })),
+    knownWords: (Array.isArray(body?.knownWords) ? body.knownWords : []).slice(0, 30)
+      .filter(w => typeof w === 'string' && w.trim()).map(w => w.slice(0, 60)),
+    whitelistWords: (Array.isArray(body?.whitelistWords) ? body.whitelistWords : []).slice(0, 40)
+      .filter(w => typeof w === 'string' && w.trim()).map(w => w.slice(0, 60)),
+    theme: typeof body?.theme === 'string' ? body.theme.slice(0, 40) : '',
+    avoidThemes: (Array.isArray(body?.avoidThemes) ? body.avoidThemes : []).slice(0, 5)
+      .filter(t => typeof t === 'string' && t.trim()).map(t => t.slice(0, 40)),
+  };
+}
+
 export async function POST(request) {
   const authHeader = request.headers.get('authorization');
   if (!authHeader) {
     return Response.json({ error: { message: '로그인이 필요합니다.' } }, { status: 401 });
   }
   const token = authHeader.replace(/^Bearer\s+/i, '');
-  const authClient = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    { auth: { persistSession: false } }
-  );
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const authClient = createClient(url, anonKey, { auth: { persistSession: false } });
   const { data: { user: authUser }, error: authErr } = await authClient.auth.getUser(token);
   if (authErr || !authUser) {
     return Response.json({ error: { message: '세션이 만료됐어요. 다시 로그인해주세요.' } }, { status: 401 });
@@ -117,48 +161,70 @@ export async function POST(request) {
     return Response.json({ error: { message: 'Bad Request: Invalid JSON' } }, { status: 400 });
   }
 
-  // 재료는 클라이언트가 서버 페이지에서 받은 것을 그대로 되돌려준다 (문자열 길이만 방어)
-  const materials = {
-    language: body?.language,
-    level: String(body?.level || '').slice(0, 8),
-    newPattern: body?.newPattern && typeof body.newPattern.pattern === 'string'
-      ? { pattern: body.newPattern.pattern.slice(0, 120), patternKo: String(body.newPattern.patternKo || '').slice(0, 120) }
-      : null,
-    duePatterns: (Array.isArray(body?.duePatterns) ? body.duePatterns : []).slice(0, 3)
-      .filter(p => p && typeof p.pattern === 'string')
-      .map(p => ({ pattern: p.pattern.slice(0, 120), patternKo: String(p.patternKo || '').slice(0, 120) })),
-    dueWords: (Array.isArray(body?.dueWords) ? body.dueWords : []).slice(0, 4)
-      .filter(w => w && typeof w.word === 'string' && typeof w.meaning === 'string')
-      .map(w => ({ word: w.word.slice(0, 60), meaning: w.meaning.slice(0, 80) })),
-    newWords: (Array.isArray(body?.newWords) ? body.newWords : []).slice(0, 2)
-      .filter(w => w && typeof w.word === 'string' && typeof w.meaning === 'string')
-      .map(w => ({ word: w.word.slice(0, 60), meaning: w.meaning.slice(0, 80) })),
-  };
+  // RLS 조회·저장용 사용자 토큰 클라이언트 (모든 요청에 Authorization 헤더 부착)
+  const userClient = createClient(url, anonKey, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+    auth: { persistSession: false },
+  });
+
+  const isPrefetch = body?.prefetch === true;
+
+  // ── 재료 결정 — prefetch는 라우트가 직접 조립(36h), 아니면 클라가 보낸 것 ──
+  let materials;
+  if (isPrefetch) {
+    const lang = body?.language;
+    if (!lang) return Response.json({ ok: false }, { status: 200 });
+    try {
+      const assembled = await assembleStudyMaterials(userClient, authUser.id, lang, { horizonHours: 36 });
+      if (!assembled.canGenerate) return Response.json({ ok: false }, { status: 200 });
+      materials = assembled.paragraphMaterials;
+    } catch (err) {
+      console.error('[study-paragraph] prefetch assemble error', err?.message);
+      return Response.json({ ok: false }, { status: 200 });
+    }
+  } else {
+    materials = cleanMaterials(body);
+  }
 
   const promptText = buildParagraphPrompt(materials);
   if (!promptText) {
+    if (isPrefetch) return Response.json({ ok: false }, { status: 200 });
     return Response.json({ error: { message: '문단을 만들 재료가 없어요.' } }, { status: 400 });
   }
 
   try {
-    let raw = null;
-    if (apiKey) {
-      raw = await callGemini('gemini-2.5-flash', promptText, apiKey).catch(() => null);
-      if (!raw) raw = await callGemini('gemini-2.5-flash-lite', promptText, apiKey).catch(() => null);
-    }
-    if (!raw) raw = await callGroqJson(promptText).catch(() => null);
-
-    const paragraph = validateParagraph(parseModelJson(raw));
+    // 생성 → 결정적 2차검증. null이면 동일 프롬프트로 1회 재생성.
+    let { paragraph } = await generateOnce(promptText, apiKey);
     if (!paragraph) {
-      console.error('[study-paragraph] unusable model output', String(raw).slice(0, 200));
-      return Response.json(
-        { error: { message: '문단 생성에 실패했어요.' } },
-        { status: 502 }
-      );
+      ({ paragraph } = await generateOnce(promptText, apiKey));
+    }
+    if (!paragraph) {
+      console.error('[study-paragraph] unusable model output after retry');
+      if (isPrefetch) return Response.json({ ok: false }, { status: 200 });
+      return Response.json({ error: { message: '문단 생성에 실패했어요.' } }, { status: 502 });
+    }
+
+    // study_paragraphs 저장 (테이블 부재 등 실패는 무시 — 응답은 정상)
+    const nowIso = new Date().toISOString();
+    await userClient.from('study_paragraphs').insert({
+      user_id: authUser.id,
+      lang: materials.language,
+      level: materials.level || null,
+      status: isPrefetch ? 'prefetched' : 'used',
+      theme: materials.theme || null,
+      materials,
+      paragraph,
+      used_at: isPrefetch ? null : nowIso,
+    }).then(() => {}, () => {});
+
+    if (isPrefetch) {
+      const preview = String(paragraph.translation || '').slice(0, 60);
+      return Response.json({ ok: true, preview }, { status: 200 });
     }
     return Response.json({ paragraph }, { status: 200 });
   } catch (err) {
     console.error('[study-paragraph] error', err?.message);
+    if (isPrefetch) return Response.json({ ok: false }, { status: 200 });
     return Response.json({ error: { message: 'Internal Server Error' } }, { status: 500 });
   }
 }

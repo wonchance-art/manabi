@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildParagraphPrompt, validateParagraph, mapParagraphToItems, PARAGRAPH_SCHEMA } from '../studyParagraph';
+import { buildParagraphPrompt, validateParagraph, verifyParagraph, mapParagraphToItems, PARAGRAPH_SCHEMA, THEMES } from '../studyParagraph';
 
 const MATERIALS = {
   language: 'Japanese',
@@ -25,6 +25,7 @@ const GOOD = {
     { type: 'vocab', focus: 'new-word', key: '散歩', prompt: '散歩', answer: '산책', distractors: ['약속', '공부', '여행'], ko: '' },
     { type: 'comprehension', focus: '', key: '', prompt: '글쓴이는 무엇을 하면서 산책하나요?', answer: '음악 듣기', distractors: ['통화하기', '노래하기', '사진 찍기'], ko: '' },
   ],
+  preQuestion: { q: '글쓴이는 무엇을 하면서 산책하나요?', answerHint: '음악' },
 };
 
 describe('buildParagraphPrompt', () => {
@@ -143,7 +144,146 @@ describe('mapParagraphToItems', () => {
 
 describe('PARAGRAPH_SCHEMA', () => {
   it('Gemini responseSchema 필수 필드', () => {
-    expect(PARAGRAPH_SCHEMA.required).toEqual(['paragraph', 'translation', 'sentences', 'questions']);
+    expect(PARAGRAPH_SCHEMA.required).toEqual(['paragraph', 'translation', 'sentences', 'questions', 'preQuestion']);
     expect(PARAGRAPH_SCHEMA.properties.sentences.items.required).toContain('tokens');
+    expect(PARAGRAPH_SCHEMA.properties.preQuestion.required).toEqual(['q', 'answerHint']);
+  });
+});
+
+describe('buildParagraphPrompt · 기지어 제약 · 주제', () => {
+  it('knownWords 30개 이상이면 기지어 제약 문구가 들어간다', () => {
+    const known = Array.from({ length: 35 }, (_, i) => `단어${i}`);
+    const p = buildParagraphPrompt({ ...MATERIALS, knownWords: known });
+    expect(p).toContain('이미 아는 단어');
+    expect(p).toContain('5% 이하');
+    expect(p).toContain('단어0');
+  });
+
+  it('콜드스타트(knownWords<30)면 whitelist 조합 문구가 들어간다', () => {
+    const p = buildParagraphPrompt({ ...MATERIALS, knownWords: ['あ'], whitelistWords: ['りんご', 'みかん'] });
+    expect(p).toContain('이 단어 목록 안에서 최대한 조합');
+    expect(p).toContain('りんご');
+  });
+
+  it('theme·avoidThemes가 프롬프트에 반영된다', () => {
+    const p = buildParagraphPrompt({ ...MATERIALS, theme: '여행', avoidThemes: ['음식', '학교'] });
+    expect(p).toContain('오늘의 주제: 여행');
+    expect(p).toContain('음식');
+    expect(p).toContain('학교');
+  });
+
+  it('THEMES 풀에 예상 주제가 있다', () => {
+    expect(THEMES).toContain('여행');
+    expect(THEMES.length).toBeGreaterThanOrEqual(10);
+  });
+
+  it('preQuestion 지시가 프롬프트에 들어간다', () => {
+    const p = buildParagraphPrompt(MATERIALS);
+    expect(p).toContain('preQuestion');
+    expect(p).toContain('읽기 미션');
+  });
+});
+
+describe('verifyParagraph', () => {
+  const base = validateParagraph(GOOD);
+
+  it('cloze 복원이 문단 문장에 없으면 그 문항을 제거', () => {
+    const para = { ...base, questions: base.questions.map((q, i) => i === 0 ? { ...q, answer: 'ぜんぜん' } : q) };
+    const v = verifyParagraph(para);
+    expect(v.questions.find(q => q.focus === 'new-grammar')).toBeUndefined();
+    expect(v.questions.length).toBe(base.questions.length - 1);
+  });
+
+  it('vocab key가 문단에 실재하지 않으면 제거', () => {
+    const para = { ...base, questions: base.questions.map(q => (q.type === 'vocab' && q.key === '約束') ? { ...q, key: '存在しない語' } : q) };
+    const v = verifyParagraph(para);
+    expect(v.questions.find(q => q.key === '存在しない語')).toBeUndefined();
+  });
+
+  it('정상 문항·힌트는 유지', () => {
+    const v = verifyParagraph(base);
+    expect(v.questions).toHaveLength(base.questions.length);
+    expect(v.preQuestion.answerHint).toBe('음악');
+  });
+
+  it('preQuestion 힌트가 번역·문장에 없으면 제네릭으로 강등', () => {
+    const para = { ...base, preQuestion: { q: '질문?', answerHint: '전혀없는표현XYZ' } };
+    const v = verifyParagraph(para);
+    expect(v.preQuestion.answerHint).toBe('');
+    expect(v.preQuestion.q).toContain('그려보며');
+  });
+
+  it('검증 후 문항이 3개 미만이면 null (재생성 신호)', () => {
+    const para = { ...base, questions: base.questions.slice(0, 2) };
+    expect(verifyParagraph(para)).toBeNull();
+    expect(verifyParagraph(null)).toBeNull();
+  });
+
+  // 아래 verifyParagraph 호출에는 vocab 문항의 key가 paragraph 문자열에 실재해야
+  // (기존 ①단계 검증) 통과하므로, 테스트 문단에 실제로 등장하는 단어를 key로 쓴다.
+  const VOCAB_WEEKEND = { type: 'vocab', focus: 'due-word', key: '週末', prompt: '週末', answer: '주말', distractors: ['여행', '음악', '친구'], ko: '' };
+  const VOCAB_TRAVEL = { type: 'vocab', focus: 'new-word', key: '旅行', prompt: '旅行', answer: '여행', distractors: ['주말', '공부', '산책'], ko: '' };
+
+  it('버그 재현 — cloze 오답이 정답의 읽기(가나)면 제거하고 문항은 생존', () => {
+    const para = {
+      paragraph: '週末、旅行に行きました。',
+      translation: '주말에 여행을 갔습니다.',
+      sentences: [
+        { text: '週末、旅行に行きました。', pron: 'しゅうまつ、りょこうに いきました', ko: '주말에 여행을 갔습니다.', tokens: ['週末、', '旅行に', '行きました。'] },
+      ],
+      questions: [
+        { type: 'cloze', focus: 'new-grammar', key: '行きました', prompt: '週末、旅行に＿＿＿。', answer: '行きました', distractors: ['いきました', '行きます', '行きたいです'], ko: '주말에 여행을 갔습니다.' },
+        VOCAB_WEEKEND,
+        VOCAB_TRAVEL,
+      ],
+      preQuestion: null,
+    };
+    const v = verifyParagraph(para);
+    const cloze = v.questions.find(q => q.type === 'cloze');
+    expect(cloze).toBeDefined();
+    expect(cloze.distractors).not.toContain('いきました');
+    expect(cloze.distractors).toEqual(expect.arrayContaining(['行きます', '行きたいです']));
+    expect(cloze.distractors).toHaveLength(2);
+  });
+
+  it('가타카나 표기 변형 오답도 제거된다', () => {
+    const para = {
+      paragraph: '朝はコーヒーを飲みます。',
+      translation: '아침에는 커피를 마십니다.',
+      sentences: [
+        { text: '朝はコーヒーを飲みます。', pron: 'あさは コーヒーを のみます', ko: '아침에는 커피를 마십니다.', tokens: ['朝は', 'コーヒーを', '飲みます。'] },
+      ],
+      questions: [
+        { type: 'cloze', focus: 'new-grammar', key: 'コーヒー', prompt: '朝は＿＿＿を飲みます。', answer: 'コーヒー', distractors: ['こーひー', '紅茶', '水'], ko: '아침에는 커피를 마십니다.' },
+        { type: 'vocab', focus: 'due-word', key: '朝', prompt: '朝', answer: '아침', distractors: ['저녁', '낮', '밤'], ko: '' },
+        { type: 'vocab', focus: 'new-word', key: '飲みます', prompt: '飲みます', answer: '마십니다', distractors: ['먹습니다', '잡니다', '봅니다'], ko: '' },
+      ],
+      preQuestion: null,
+    };
+    const v = verifyParagraph(para);
+    const cloze = v.questions.find(q => q.type === 'cloze');
+    expect(cloze.distractors).not.toContain('こーひー');
+    expect(cloze.distractors).toEqual(expect.arrayContaining(['紅茶', '水']));
+  });
+
+  it('필터 후 distractors가 1개만 남으면 문항 자체가 제거된다', () => {
+    const para = {
+      paragraph: '週末、旅行に行きました。',
+      translation: '주말에 여행을 갔습니다.',
+      sentences: [
+        { text: '週末、旅行に行きました。', pron: 'しゅうまつ、りょこうに いきました', ko: '주말에 여행을 갔습니다.', tokens: ['週末、', '旅行に', '行きました。'] },
+      ],
+      questions: [
+        // distractors 2개가 표기·읽기로 걸러져 1개만 남음 → 문항 제거
+        { type: 'cloze', focus: 'new-grammar', key: '行きました', prompt: '週末、旅行に＿＿＿。', answer: '行きました', distractors: ['いきました', 'イキマシタ', '行きたいです'], ko: '주말에 여행을 갔습니다.' },
+        VOCAB_WEEKEND,
+        VOCAB_TRAVEL,
+        GOOD.questions[4],
+      ],
+      preQuestion: null,
+    };
+    const v = verifyParagraph(para);
+    expect(v.questions.find(q => q.type === 'cloze')).toBeUndefined();
+    expect(v.questions.length).toBe(3);
   });
 });
