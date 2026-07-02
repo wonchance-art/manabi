@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { getRefLang } from '@/content/refLangs';
 import { buildFeedbackPrompt, validateFeedback, FEEDBACK_SCHEMA, WRITING_LEVELS } from '@/lib/writingPrompts';
+import { attachTagLinks } from '@/lib/writingTagLink';
 
 /**
  * 작문 AI 첨삭 — /api/gemini와 같은 3단 폴백(flash → flash-lite → Groq)이되,
@@ -178,6 +179,8 @@ export async function POST(request) {
         { status: 502 }
       );
     }
+    // 오류 태그 → 관련 챕터 딥링크 (서버에서만 레지스트리 접근)
+    attachTagLinks(feedback, getRefLang(language));
     return Response.json({ feedback }, { status: 200 });
   } catch (err) {
     console.error('[writing-feedback] error', err?.message);

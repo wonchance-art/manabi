@@ -8,6 +8,7 @@ import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { calculateFSRS } from '../lib/fsrs';
 import { recordActivity } from '../lib/streak';
+import { logReviewEvents } from '../lib/reviewEvents';
 import { useTTS } from '../lib/useTTS';
 import { callGemini } from '../lib/gemini';
 import Button from '../components/Button';
@@ -250,6 +251,14 @@ export default function VocabPage() {
       newInterval: nextStats.interval ?? 0,
     });
     recordActivity(user.id, () => fetchProfile(user.id));
+    // 약점 진단 데이터 — 어휘 정오답 적재 ('다시'=오답, 나머지=정답 취급)
+    logReviewEvents(user.id, [{
+      lang: currentWord.language || detectLang(currentWord.word_text),
+      source: 'vocab',
+      item_key: currentWord.word_text,
+      correct: rating > 1,
+      detail: { word_id: currentWord.id, meaning: currentWord.meaning, rating },
+    }]);
     if (wasNew) registerNewIntro(currentWord.id);            // 새 단어 첫 학습 → 오늘 한도 차감
     goNextReview(rating === 1 ? currentWord.id : null);      // '다시'는 이번 세션 끝에 재노출
   };
