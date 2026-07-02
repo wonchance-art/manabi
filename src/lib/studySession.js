@@ -183,6 +183,63 @@ export function qtypeForItem(type) {
 }
 
 /**
+ * 워밍업 문항 — AI 문단 생성 레이턴시를 가리는 즉시 시작용 인지형(vocab-choice) 2문항.
+ * 최근(24~72h) 정답을 맞힌 어휘를 조기 복습으로 되짚되, 비예정 조기 복습이라
+ * FSRS를 왜곡하지 않도록 effect는 항상 reading/warmup로만 기록한다(SRS 미반영).
+ * 순수 함수 — 재료 조회는 호출자(studyMaterials)가 맡는다.
+ * @param {Array} recentEvents - review_events (created_at desc). {source,item_key,correct,created_at}
+ * @param {Array} vocabRows - 후보 단어의 user_vocabulary 행 {word_text,meaning,furigana}
+ * @param {Array} meaningPool - 보기 오답 풀(뜻 문자열)
+ * @param {Set<string>} dueSet - due 어휘 word_text (중복 제외)
+ * @param {Array} fallbackWords - 콜드스타트 폴백 단어 [{word_text,meaning,furigana}]
+ * @returns {Array} 워밍업 문항 (최대 2, 보기 부족 시 그보다 적을 수 있음)
+ */
+export function buildWarmupItems(recentEvents, vocabRows, meaningPool = [], dueSet = new Set(), fallbackWords = []) {
+  const now = Date.now();
+  const lo = now - 72 * 3600 * 1000;   // 72h 전
+  const hi = now - 24 * 3600 * 1000;   // 24h 전
+  const rowByWord = new Map((vocabRows || []).map(r => [r.word_text, r]));
+  const chosen = [];
+  const seen = new Set();
+  // 최근 정답 우선 — 24~72h 내 correct=true 어휘 이벤트를 최신순으로 최대 2개
+  for (const e of recentEvents || []) {
+    if (chosen.length >= 2) break;
+    if (!e || e.source !== 'vocab' || !e.correct || !e.item_key) continue;
+    const t = new Date(e.created_at).getTime();
+    if (!(t >= lo && t <= hi)) continue;
+    const word = e.item_key;
+    if (seen.has(word) || (dueSet && dueSet.has(word))) continue;
+    const row = rowByWord.get(word);
+    if (!row || !row.meaning) continue;
+    seen.add(word);
+    chosen.push(row);
+  }
+  // 콜드스타트 폴백 — 해당 이력이 없으면 레벨 사전 단어로 채운다
+  if (chosen.length === 0) {
+    for (const w of fallbackWords || []) {
+      if (chosen.length >= 2) break;
+      if (!w || !w.word_text || !w.meaning) continue;
+      if (seen.has(w.word_text) || (dueSet && dueSet.has(w.word_text))) continue;
+      seen.add(w.word_text);
+      chosen.push(w);
+    }
+  }
+  // 인지형(뜻 고르기) 문항으로 — 보기 오답 2개 미만이면 제외
+  return chosen.map(row => {
+    const distractors = pickDistractors(meaningPool || [], row.meaning, 3);
+    if (distractors.length < 2) return null;
+    return {
+      uid: uid('w'),
+      type: 'vocab-choice',
+      word: { word_text: row.word_text, meaning: row.meaning, furigana: row.furigana || null },
+      options: [row.meaning, ...distractors],
+      warmup: true,
+      effect: { kind: 'reading', key: 'warmup:' + row.word_text },
+    };
+  }).filter(Boolean);
+}
+
+/**
  * 문법 due 챕터별 문항 수 집계 → { slug: count }.
  * settle 시점에 "이 챕터의 마지막 문항"을 판정해 챕터 정답률로 재스케줄하기 위한 것.
  * 재출제(-r) 문항은 첫 시도가 아니므로 호출자가 제외해 넘긴다.

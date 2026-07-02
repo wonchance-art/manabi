@@ -56,6 +56,17 @@ describe('buildFeedbackPrompt', () => {
   it('지원하지 않는 언어는 null', () => {
     expect(buildFeedbackPrompt({ language: 'Korean', level: 'A1', text: 'x' })).toBeNull();
   });
+
+  it('sentenceMode면 targetScore 지시와 대상 문법을 포함한다', () => {
+    const p = buildFeedbackPrompt({
+      language: 'Japanese', level: 'N4', text: '音楽を聞きながら歩く。',
+      sentenceMode: true, targetPattern: { pattern: 'ながら', patternKo: '~하면서' },
+    });
+    expect(p).toContain('targetScore');
+    expect(p).toContain('ながら');
+    expect(p).toContain('~하면서');
+    expect(p).toContain('한 문장');
+  });
 });
 
 describe('validateFeedback — 방어 검증', () => {
@@ -108,6 +119,16 @@ describe('validateFeedback — 방어 검증', () => {
     const v = validateFeedback({ ...GOOD, levelFit: 'weird', naturalness: 'not-array' });
     expect(v.levelFit).toBe('fit');
     expect(v.naturalness).toEqual([]);
+  });
+
+  it('targetScore가 있으면 0~3으로 클램프해 보존', () => {
+    expect(validateFeedback({ ...GOOD, targetScore: 2 }).targetScore).toBe(2);
+    expect(validateFeedback({ ...GOOD, targetScore: 9 }).targetScore).toBe(3);
+    expect(validateFeedback({ ...GOOD, targetScore: -1 }).targetScore).toBe(0);
+  });
+
+  it('targetScore가 없으면 null', () => {
+    expect(validateFeedback(GOOD).targetScore).toBeNull();
   });
 });
 

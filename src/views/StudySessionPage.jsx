@@ -15,6 +15,11 @@ import { recordActivity } from '../lib/streak';
 import { gradeTyping, isChapterPassed, qtypeForItem, grammarDueChapterCounts } from '../lib/studySession';
 import { mapParagraphToItems } from '../lib/studyParagraph';
 
+/** 로컬 날짜 YYYY-MM-DD — 격일 산출 문항 노출 판정용 */
+function ymdLocal(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 function shuffle(arr) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -30,7 +35,8 @@ function shuffle(arr) {
  * 종료 시: 어휘 FSRS 갱신 · 문법 due 재스케줄 · 신규 챕터 통과 처리 · 이벤트 적재.
  */
 export default function StudySessionPage({
-  session = null, paragraphMaterials = null, pregenerated = null, lang, langCode, langName, flag, readKey,
+  session = null, paragraphMaterials = null, pregenerated = null, warmup = [], dial = 'normal',
+  lang, langCode, langName, flag, readKey,
   band = 'beginner', languages = [], signedOut = false,
 }) {
   // 입문 레벨(N5 등) 일본어 배려 — 답변 중에도 요미가나·후리가나를 보여준다.
@@ -43,8 +49,16 @@ export default function StudySessionPage({
     []
   );
   const usePregen = !!(pregenMapped && pregenMapped.gradedCount >= 3);
-  const [queue, setQueue] = useState(() => usePregen ? pregenMapped.items : (session?.items || []));
-  const [gradedBase, setGradedBase] = useState(usePregen ? pregenMapped.gradedCount : (session?.gradedCount || 0));
+  // 라이브 생성 경로 — 프리페치가 없고 문단 재료가 있으면 워밍업부터 시작하고
+  // 문단은 뒤에서 생성해 이어붙인다(로딩 화면으로 막지 않는다).
+  const liveGen = !!(paragraphMaterials && !pregenerated?.paragraph);
+  const warmupItems = liveGen ? (warmup || []) : [];
+  const [queue, setQueue] = useState(() =>
+    usePregen ? pregenMapped.items : liveGen ? warmupItems : (session?.items || [])
+  );
+  const [gradedBase, setGradedBase] = useState(() =>
+    usePregen ? pregenMapped.gradedCount : liveGen ? warmupItems.length : (session?.gradedCount || 0)
+  );
   const [idx, setIdx] = useState(0);
   const [phase, setPhase] = useState('answer');   // 'answer' | 'feedback'
   const [picked, setPicked] = useState(null);
@@ -56,6 +70,8 @@ export default function StudySessionPage({
   const [skipped, setSkipped] = useState(() => new Set()); // 건너뛴 문항(듣기) — 집계·SRS 제외
   const [showTranslation, setShowTranslation] = useState(false);
   const [nextPreview, setNextPreview] = useState(''); // 결과 화면 — 내일 문단 예고
+  const [produceState, setProduceState] = useState(null); // 산출 문항 채점: {status:'grading'|'done'|'error', feedback, targetScore}
+  const produceAddedRef = useRef(false);           // 산출 문항 큐 추가 1회 가드
   // 문단 생성 — 재료가 있으면 세션 시작 전에 오늘의 문단을 만든다. 실패 시 폴백(조립 세션).
   // 프리페치된 문단이 있으면 이미 매핑 완료 → 'ready'(gradedCount 부족 시 'fallback').
   const [genStatus, setGenStatus] = useState(
@@ -103,24 +119,75 @@ export default function StudySessionPage({
         if (res.ok && data.paragraph) {
           const mapped = mapParagraphToItems(data.paragraph, paragraphMaterials);
           if (mapped.gradedCount >= 3) {
-            setQueue(mapped.items);
-            setGradedBase(mapped.gradedCount);
+            // 워밍업 뒤에 문단 문항을 이어붙이고 집계 기준을 갱신
+            setQueue(prev => [...prev, ...mapped.items]);
+            setGradedBase(prev => prev + mapped.gradedCount);
             setGenStatus('ready');
             return;
           }
         }
-        setGenStatus('fallback');
+        applyFallback();
       } catch {
-        setGenStatus('fallback');
+        applyFallback();
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  /**
+   * 문단 생성 실패 — 폴백 세션 문항을 워밍업 뒤에 이어붙인다.
+   * 워밍업과 겹치는 어휘 문항은 폴백 쪽에서 제외(중복 출제 방지).
+   */
+  function applyFallback() {
+    const warmupWords = new Set(warmupItems.map(w => w.word?.word_text).filter(Boolean));
+    const fb = (session?.items || []).filter(it => !(it.word && warmupWords.has(it.word.word_text)));
+    setQueue(prev => [...prev, ...fb]);
+    setGradedBase(prev => prev + fb.filter(i => i.type !== 'teach').length);
+    setGenStatus('fallback');
+  }
+
   const item = queue[idx] || null;
 
   // 문항 표시 시각 기록 — settle까지의 응답 시간(rt_ms) 계산용
   useEffect(() => { itemShownAtRef.current = Date.now(); }, [item?.uid]);
+
+  // ── 격일 산출 문항 — 문단(ready)이 준비되면 조건 충족 시 큐 맨 끝에 1개 추가 ──
+  // 조건: 마지막 산출이 오늘·어제가 아니거나 dial이 hard.
+  useEffect(() => {
+    if (produceAddedRef.current || genStatus !== 'ready') return;
+    produceAddedRef.current = true;
+    const today = new Date();
+    const todayStr = ymdLocal(today);
+    const yestStr = ymdLocal(new Date(today.getTime() - 24 * 3600 * 1000));
+    let last = '';
+    try { last = localStorage.getItem(`study_last_produce_${lang}`) || ''; } catch {}
+    const recent = last === todayStr || last === yestStr;
+    if (recent && dial !== 'hard') return;
+    // 대상 문법 — 새 문법 우선, 없으면 복습 문법 첫 번째
+    const tp = paragraphMaterials?.newPattern
+      ? { pattern: paragraphMaterials.newPattern.pattern, patternKo: paragraphMaterials.newPattern.patternKo || '' }
+      : paragraphMaterials?.duePatterns?.[0]
+        ? { pattern: paragraphMaterials.duePatterns[0].pattern, patternKo: paragraphMaterials.duePatterns[0].patternKo || '' }
+        : null;
+    if (!tp?.pattern) return;
+    setQueue(prev => {
+      const para = prev.find(it => it.type === 'paragraph');
+      const context = String(para?.translation || '').slice(0, 80);
+      return [...prev, { uid: 'p-1', type: 'produce-writing', context, targetPattern: tp, effect: { kind: 'produce' } }];
+    });
+    setGradedBase(prev => prev + 1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [genStatus, lang, dial]);
+
+  // ── 워밍업 소진 후 파킹 상태에서 문단이 폴백으로 끝나 이어붙일 게 없으면 종료 ──
+  useEffect(() => {
+    if (finished) return;
+    if (queue.length > 0 && idx >= queue.length && genStatus !== 'loading') {
+      setFinished(true);
+      fireEffects();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idx, queue.length, genStatus]);
 
   // 결과 화면 — 내일 문단 프리페치 + 예고 (1회). ready/fallback 무관하게 시도, 실패는 조용히 생략.
   useEffect(() => {
@@ -247,13 +314,71 @@ export default function StudySessionPage({
     setPicked(null);
     setTyping('');
     setOrderPicks([]);
+    setProduceState(null);
     setPhase('answer');
     if (idx + 1 >= queue.length) {
+      // 큐 끝 — 문단이 아직 생성 중이면 종료하지 않고 파킹(도착 시 이어붙음).
+      if (genStatus === 'loading') { setIdx(i => i + 1); return; }
       setFinished(true);
       fireEffects();
     } else {
       setIdx(i => i + 1);
     }
+  }
+
+  /**
+   * 격일 산출 문항 제출 — /api/writing-feedback 경량 모드로 한 문장 채점.
+   * targetScore>=2면 correct=true로 review_events에 기록(FSRS·챕터 통과 미반영).
+   * API 실패는 집계 제외(skipped)로 우아하게 강등한다.
+   */
+  async function submitProduce() {
+    if (!item || phase === 'feedback') return;
+    const textVal = typing.trim();
+    if (!textVal) return;
+    const rt_ms = Date.now() - itemShownAtRef.current;
+    const orig = baseUid(item.uid);
+    setPhase('feedback');
+    setProduceState({ status: 'grading' });
+    let feedback = null;
+    try {
+      let authHeader = {};
+      try {
+        const { data: { session: s } } = await supabase.auth.getSession();
+        if (s?.access_token) authHeader = { Authorization: `Bearer ${s.access_token}` };
+      } catch {}
+      const res = await fetch('/api/writing-feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeader },
+        body: JSON.stringify({
+          language: lang,
+          level: paragraphMaterials?.level,
+          text: textVal,
+          mode: 'sentence',
+          targetPattern: item.targetPattern,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.feedback) feedback = data.feedback;
+    } catch {}
+
+    if (!feedback) {
+      // 채점 실패 — 집계 제외 처리
+      setSkipped(prev => new Set(prev).add(orig));
+      setProduceState({ status: 'error' });
+      return;
+    }
+    const targetScore = typeof feedback.targetScore === 'number' ? feedback.targetScore : null;
+    const ok = targetScore != null && targetScore >= 2;
+    // review_events 기록 (settle과 동일 소스지만 FSRS·챕터 통과에는 미반영)
+    getBatcher()?.add({
+      lang, source: 'writing',
+      item_key: `${lang}:${String(item.targetPattern?.pattern || '').slice(0, 40)}`,
+      correct: ok,
+      detail: { qtype: 'produce', score: targetScore, rt_ms },
+    });
+    setFirstResults(prev => ({ ...prev, [orig]: { ok, item } }));
+    try { localStorage.setItem(`study_last_produce_${lang}`, ymdLocal(new Date())); } catch {}
+    setProduceState({ status: 'done', feedback, targetScore });
   }
 
   /**
@@ -332,21 +457,21 @@ export default function StudySessionPage({
     );
   }
 
-  // ── 오늘의 문단 생성 중 ──
-  if (genStatus === 'loading') {
+  // ── 워밍업을 다 풀었는데 아직 문단 생성 중 — 그때만 짧은 대기 화면 ──
+  if (genStatus === 'loading' && idx >= queue.length) {
     return (
       <div className="page-container" style={{ maxWidth: 640, textAlign: 'center', paddingTop: 80 }}>
         <div style={{ fontSize: '2rem', marginBottom: 12 }} aria-hidden="true">✍️</div>
-        <h1 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: 8 }}>오늘의 문단을 만드는 중…</h1>
+        <h1 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: 8 }}>문단 마무리 중…</h1>
         <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.7 }}>
-          새로 배울 문법·단어와 복습할 것들을<br />하나의 이야기로 엮고 있어요
+          오늘의 이야기를 거의 다 엮었어요
         </p>
       </div>
     );
   }
 
-  // ── 세션 재료 부족 ──
-  if (gradedBase === 0) {
+  // ── 세션 재료 부족 (생성 대기 중이 아닐 때만) ──
+  if (gradedBase === 0 && genStatus !== 'loading') {
     return (
       <div className="page-container" style={{ maxWidth: 640, textAlign: 'center', paddingTop: 60 }}>
         <h1 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: 10 }}>{flag} {langName} 학습</h1>
@@ -414,6 +539,7 @@ export default function StudySessionPage({
               {wrong.map((r, i) => (
                 <li key={i} style={{ fontSize: '0.85rem', lineHeight: 1.6 }} lang={langCode}>
                   {r.item.word ? `${r.item.word.word_text} — ${r.item.word.meaning}`
+                    : r.item.type === 'produce-writing' ? `작문 — ${r.item.targetPattern?.pattern || ''}`
                     : r.item.quiz ? (r.item.quiz.full || r.item.quiz.answer)
                     : r.item.sentence?.main}
                 </li>
@@ -462,6 +588,10 @@ export default function StudySessionPage({
 
       {isRetry && (
         <div style={{ fontSize: '0.78rem', color: 'var(--warning)', fontWeight: 700, marginBottom: 8 }}>↻ 다시 도전</div>
+      )}
+
+      {item.warmup && !isRetry && (
+        <div style={{ fontSize: '0.78rem', color: 'var(--primary)', fontWeight: 700, marginBottom: 8 }}>몸풀기</div>
       )}
 
       {/* ── 오늘의 문단 (읽기 카드) ── */}
@@ -709,8 +839,88 @@ export default function StudySessionPage({
         </div>
       )}
 
-      {/* 계속 버튼 */}
-      {phase === 'feedback' && (
+      {/* ── 격일 산출: 이야기를 이어서 한 문장 쓰기 ── */}
+      {item.type === 'produce-writing' && (
+        <div className="fr-quiz__q">
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 6 }}>오늘의 산출</div>
+          <div className="fr-quiz__prompt" style={{ fontSize: '1rem', lineHeight: 1.6 }}>
+            ✍️ 이야기를 이어서 — <span lang={langCode} style={{ fontWeight: 700 }}>{item.targetPattern.pattern}</span>
+            {item.targetPattern.patternKo && <span style={{ color: 'var(--text-muted)' }}> ({item.targetPattern.patternKo})</span>}
+            을(를) 써서 한 문장
+          </div>
+          {item.context && (
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginTop: 6 }}>
+              이야기: {item.context}…
+            </p>
+          )}
+
+          {phase === 'answer' && (
+            <>
+              <textarea
+                className="form-input" lang={langCode} value={typing}
+                onChange={e => setTyping(e.target.value.slice(0, 200))}
+                placeholder={`${langName}로 1~2문장`}
+                rows={2} maxLength={200} autoFocus
+                style={{ marginTop: 12, fontSize: '1.05rem', resize: 'vertical', width: '100%' }}
+              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 10 }}>
+                <Button onClick={submitProduce} disabled={!typing.trim()}>제출</Button>
+                <button type="button" onClick={skipItem}
+                  style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '0.82rem', color: 'var(--text-muted)', textDecoration: 'underline' }}>
+                  오늘은 패스
+                </button>
+              </div>
+            </>
+          )}
+
+          {phase === 'feedback' && produceState?.status === 'grading' && (
+            <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginTop: 14 }}>첨삭 확인 중…</p>
+          )}
+
+          {phase === 'feedback' && produceState?.status === 'done' && (() => {
+            const ts = produceState.targetScore;
+            const badgeColor = ts >= 2 ? 'var(--accent)' : ts === 1 ? 'var(--warning)' : 'var(--danger)';
+            const s0 = produceState.feedback?.sentences?.[0];
+            const why = s0?.errors?.[0]?.why || produceState.feedback?.summary || '';
+            return (
+              <div style={{ marginTop: 14 }}>
+                <span style={{
+                  display: 'inline-block', padding: '2px 10px', borderRadius: 'var(--radius-full)',
+                  background: badgeColor, color: '#fff', fontSize: '0.82rem', fontWeight: 800,
+                }}>
+                  {ts != null ? `${ts} / 3` : '채점'}
+                </span>
+                {s0?.corrected && (
+                  <div className="fr-quiz__answer" style={{ marginTop: 10 }} lang={langCode}>
+                    {s0.corrected}
+                    <RefSpeak text={s0.corrected} lang={lang} size="xs" />
+                  </div>
+                )}
+                {why && (
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginTop: 8 }}>{why}</p>
+                )}
+              </div>
+            );
+          })()}
+
+          {phase === 'feedback' && produceState?.status === 'error' && (
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: 14 }}>
+              첨삭을 못 받았어요 — 다음에 다시
+            </p>
+          )}
+
+          {phase === 'feedback' && produceState?.status !== 'grading' && (
+            <div style={{ marginTop: 16 }}>
+              <Button onClick={next} style={{ width: '100%' }}>
+                {idx + 1 >= queue.length ? '결과 보기 →' : '계속 →'}
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 계속 버튼 (산출 문항은 자체 버튼 사용) */}
+      {phase === 'feedback' && item.type !== 'produce-writing' && (
         <div style={{ marginTop: 18 }}>
           <Button onClick={next} style={{ width: '100%' }}>
             {idx + 1 >= queue.length ? '결과 보기 →' : '계속 →'}

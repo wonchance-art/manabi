@@ -40,7 +40,7 @@ export default async function Page({ searchParams }) {
   const ref = getRefLang(lang);
 
   // ── 재료 조립 (폴백 세션·rung·dial·오늘의 문단 재료) — prefetched를 써도 라이브로 필요 ──
-  const { session, paragraphMaterials, band, canGenerate } = await assembleStudyMaterials(supabase, user.id, lang);
+  const { session, paragraphMaterials, warmup, band, dial, canGenerate } = await assembleStudyMaterials(supabase, user.id, lang);
 
   // ── 프리페치된 문단 우선 사용 — 최근 48h 내 status='prefetched' 최신 1행 (테이블 부재 시 무해) ──
   let pregenerated = null;
@@ -70,6 +70,8 @@ export default async function Page({ searchParams }) {
       session={session}
       paragraphMaterials={effectiveMaterials}
       pregenerated={pregenerated}
+      warmup={pregenerated ? [] : warmup}
+      dial={dial}
       band={band}
       lang={lang}
       langCode={ref.langCode}

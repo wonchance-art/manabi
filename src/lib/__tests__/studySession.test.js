@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { composeSession, normalizeAnswer, gradeTyping, isChapterPassed, qtypeForItem, grammarDueChapterCounts } from '../studySession';
+import { composeSession, normalizeAnswer, gradeTyping, isChapterPassed, qtypeForItem, grammarDueChapterCounts, buildWarmupItems } from '../studySession';
 
 const VOCAB = [
   { id: 1, word_text: '約束', meaning: '약속', furigana: 'やくそく', language: 'Japanese' },
@@ -149,6 +149,69 @@ describe('qtypeForItem — 세션 문항 타입 → qtype', () => {
     expect(qtypeForItem('teach')).toBeNull();
     expect(qtypeForItem('paragraph')).toBeNull();
     expect(qtypeForItem(undefined)).toBeNull();
+  });
+});
+
+describe('buildWarmupItems — 워밍업 문항', () => {
+  const now = Date.now();
+  const h = n => new Date(now - n * 3600 * 1000).toISOString();
+  const ROWS = [
+    { word_text: '約束', meaning: '약속', furigana: 'やくそく' },
+    { word_text: '家族', meaning: '가족', furigana: 'かぞく' },
+    { word_text: '会社', meaning: '회사', furigana: 'かいしゃ' },
+  ];
+  const POOL = ['약속', '가족', '회사', '학교', '시간', '친구'];
+
+  it('최근(24~72h) 정답 어휘를 최신순 최대 2개로 만든다', () => {
+    const events = [
+      { source: 'vocab', item_key: '約束', correct: true, created_at: h(30) },
+      { source: 'vocab', item_key: '家族', correct: true, created_at: h(48) },
+      { source: 'vocab', item_key: '会社', correct: true, created_at: h(60) },
+    ];
+    const items = buildWarmupItems(events, ROWS, POOL, new Set());
+    expect(items).toHaveLength(2);
+    expect(items.map(i => i.word.word_text)).toEqual(['約束', '家族']);
+    expect(items[0].type).toBe('vocab-choice');
+    expect(items[0].warmup).toBe(true);
+    expect(items[0].effect).toEqual({ kind: 'reading', key: 'warmup:約束' });
+    expect(items[0].options).toContain('약속');
+    expect(items[0].uid.startsWith('w-')).toBe(true);
+  });
+
+  it('24h 미만·72h 초과·오답·비어휘 이벤트는 제외', () => {
+    const events = [
+      { source: 'vocab', item_key: '約束', correct: true, created_at: h(10) },   // 너무 최근
+      { source: 'vocab', item_key: '家族', correct: true, created_at: h(100) },  // 너무 오래
+      { source: 'vocab', item_key: '会社', correct: false, created_at: h(48) },  // 오답
+      { source: 'grammar', item_key: '約束', correct: true, created_at: h(48) }, // 문법 소스
+    ];
+    expect(buildWarmupItems(events, ROWS, POOL, new Set())).toHaveLength(0);
+  });
+
+  it('due 어휘와 겹치면 제외', () => {
+    const events = [
+      { source: 'vocab', item_key: '約束', correct: true, created_at: h(30) },
+      { source: 'vocab', item_key: '家族', correct: true, created_at: h(40) },
+    ];
+    const items = buildWarmupItems(events, ROWS, POOL, new Set(['約束']));
+    expect(items).toHaveLength(1);
+    expect(items[0].word.word_text).toBe('家族');
+  });
+
+  it('이력이 없으면 폴백 단어로 채운다', () => {
+    const fallback = [
+      { word_text: '水', meaning: '물', furigana: 'みず' },
+      { word_text: '本', meaning: '책', furigana: 'ほん' },
+    ];
+    const items = buildWarmupItems([], [], POOL, new Set(), fallback);
+    expect(items).toHaveLength(2);
+    expect(items[0].effect.key).toBe('warmup:水');
+    expect(items[0].warmup).toBe(true);
+  });
+
+  it('보기 오답이 부족하면 해당 문항 제외', () => {
+    const events = [{ source: 'vocab', item_key: '約束', correct: true, created_at: h(30) }];
+    expect(buildWarmupItems(events, ROWS, ['약속'], new Set())).toHaveLength(0);
   });
 });
 
