@@ -552,6 +552,14 @@ export default function StudySessionPage({
           <a href={`/study?lang=${lang}`} className="btn btn--primary btn--md" style={{ flex: 1.4, textAlign: 'center' }}>한 세션 더 →</a>
           <Link href="/lessons" className="btn btn--ghost btn--md" style={{ flex: 1, textAlign: 'center' }}>교재로</Link>
         </div>
+        <Link href={`/study/library?lang=${lang}`} className="card" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', marginBottom: 14 }}>
+          <span style={{ fontSize: '1.2rem' }} aria-hidden="true">📚</span>
+          <span style={{ flex: 1 }}>
+            <span style={{ display: 'block', fontSize: '0.88rem', fontWeight: 700 }}>내가 읽은 이야기들</span>
+            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>지난 문단을 다시 읽고 성장을 확인해요</span>
+          </span>
+          <span aria-hidden="true" style={{ color: 'var(--text-muted)' }}>→</span>
+        </Link>
         <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', textAlign: 'center' }}>
           파트별 연습: <Link href="/vocab" style={{ textDecoration: 'underline' }}>어휘</Link> ·{' '}
           <Link href="/review/grammar" style={{ textDecoration: 'underline' }}>문법 복습</Link> ·{' '}
@@ -598,7 +606,7 @@ export default function StudySessionPage({
       {item.type === 'paragraph' && (
         <div className="card" style={{ padding: '22px 20px' }}>
           <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--primary)', marginBottom: 4 }}>
-            오늘의 문단
+            {paragraphMaterials?.weekly ? '주간 약점 복습 — 이번 주 헷갈린 것들' : '오늘의 문단'}
             {item.newChapter && <> · 새 문법 {item.newChapter.level} #{item.newChapter.order} {item.newChapter.title}</>}
           </div>
           <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '0 0 14px' }}>

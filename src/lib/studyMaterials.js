@@ -9,7 +9,7 @@ import { getRefLang } from '@/content/refLangs';
 import { refMain, refPron } from '@/views/refShared';
 import { buildChapterQuiz } from '@/lib/refQuiz';
 import { composeSession, buildWarmupItems } from '@/lib/studySession';
-import { computeRung, computeEwma, dialFromEwma } from '@/lib/skillRung';
+import { computeRung, computeEwma, dialFromEwma, computeWeakness } from '@/lib/skillRung';
 import { levelBand } from '@/lib/writingPrompts';
 import { THEMES } from '@/lib/studyParagraph';
 
@@ -22,6 +22,99 @@ function sample(arr, n) {
     out.push(arr[(start + i * 7) % arr.length]);
   }
   return [...new Set(out)].slice(0, n);
+}
+
+/** KST 기준 이번 주 월요일 0시의 UTC 밀리초 */
+function kstWeekStartMs(nowMs = Date.now()) {
+  const kst = new Date(nowMs + 9 * 3600 * 1000);
+  const dow = kst.getUTCDay();                        // 0=일 … 6=토
+  const daysSinceMon = (dow + 6) % 7;
+  // Date.UTC(...)는 'KST 자정을 UTC인 척'한 값 → 9h를 빼 실제 UTC 순간으로 되돌린다.
+  return Date.UTC(kst.getUTCFullYear(), kst.getUTCMonth(), kst.getUTCDate())
+    - daysSinceMon * 86400000 - 9 * 3600 * 1000;
+}
+
+/** KST 기준 일요일인가 */
+function isKstSunday(nowMs = Date.now()) {
+  return new Date(nowMs + 9 * 3600 * 1000).getUTCDay() === 0;
+}
+
+/**
+ * 주간 약점 세션 재료 — KST 일요일이고 이번 주 '약점 복습' 세션이 아직 없을 때만.
+ * 최근 14일 review_events(호출자가 조회한 400건 재사용)에서 오답률 가중 약점 상위를
+ * vocab≤3·grammar≤2로 재료화한다. 약점 항목 2개 미만이거나 조회 실패면 null(일반 세션).
+ * @returns {Promise<{duePatterns: Array, dueWords: Array}|null>}
+ */
+async function buildWeaknessMaterials(supabase, userId, lang, ref, reviewEventRows) {
+  const nowMs = Date.now();
+  if (!isKstSunday(nowMs)) return null;
+  const weekStartIso = new Date(kstWeekStartMs(nowMs)).toISOString();
+
+  // 이번 주에 이미 약점 세션이 있었는지 — 조회 실패(null)면 약점 모드 포기.
+  let already = null;                                 // null=조회실패, true=있음, false=없음
+  await supabase.from('study_paragraphs')
+    .select('id')
+    .eq('user_id', userId).eq('lang', lang).eq('theme', '약점 복습')
+    .gte('created_at', weekStartIso).limit(1)
+    .then(({ data, error }) => { already = error ? null : (data || []).length > 0; }, () => { already = null; });
+  if (already !== false) return null;                 // 실패거나 이미 있음 → 일반 세션
+
+  // 최근 14일 약점 집계 (오답이 있는 것만)
+  const sinceMs = nowMs - 14 * 86400000;
+  const weak = computeWeakness(reviewEventRows, { sinceMs, cap: 20 }).filter(w => w.wrong > 0);
+  const weakVocab = weak.filter(w => w.source === 'vocab').slice(0, 3);
+  const weakGrammar = weak.filter(w => w.source === 'grammar').slice(0, 2);
+  if (weakVocab.length + weakGrammar.length < 2) return null;
+
+  // vocab 약점 → user_vocabulary 행 (dueWords 형태)
+  let dueWords = [];
+  if (weakVocab.length) {
+    const words = weakVocab.map(w => w.item_key);
+    await supabase.from('user_vocabulary')
+      .select('id, word_text, meaning, furigana, interval, ease_factor, repetitions, next_review_at')
+      .eq('user_id', userId).eq('language', lang)
+      .in('word_text', words)
+      .then(({ data }) => {
+        const byWord = new Map((data || []).map(r => [r.word_text, r]));
+        dueWords = weakVocab
+          .map(w => byWord.get(w.item_key))
+          .filter(r => r && r.meaning)
+          .map(r => ({ word: r.word_text, meaning: r.meaning, row: r }));
+      }, () => {});
+  }
+
+  // grammar 약점 → 챕터 첫 pattern 섹션 (duePatterns 형태). grammar_review 있으면 그 srs.
+  let duePatterns = [];
+  if (weakGrammar.length) {
+    const slugs = weakGrammar.map(w => w.item_key);
+    let srsBySlug = new Map();
+    await supabase.from('grammar_review')
+      .select('*')
+      .eq('user_id', userId).eq('lang', lang)
+      .in('slug', slugs)
+      .then(({ data }) => {
+        srsBySlug = new Map((data || []).map(row => [row.slug, row]));
+      }, () => {});
+    duePatterns = weakGrammar.map(w => {
+      const slug = w.item_key;
+      const ch = ref.getChapter(slug)?.chapter;
+      const sec = ch?.sections?.find(s => s.pattern);
+      if (!sec) return null;
+      const row = srsBySlug.get(slug);
+      const srs = row
+        ? { lang: row.lang, slug: row.slug, interval: row.interval, ease_factor: row.ease_factor, repetitions: row.repetitions, next_review_at: row.next_review_at }
+        : { lang, slug };
+      return {
+        pattern: sec.pattern,
+        patternKo: sec.patternKo || '',
+        srs,
+        meta: { slug, title: ch.title, level: ch.level, order: ch.order, href: `${ref.base}/grammar/${slug}` },
+      };
+    }).filter(Boolean);
+  }
+
+  if (dueWords.length + duePatterns.length < 2) return null;
+  return { duePatterns, dueWords };
 }
 
 /**
@@ -137,11 +230,12 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
   const nowMs = Date.now();
   const warmLo = nowMs - 72 * 3600 * 1000;
   const warmHi = nowMs - 24 * 3600 * 1000;
+  // 오답 우선 워밍업(buildWarmupItems)에 맞춰 오답·정답을 가리지 않고 후보를 모은다(행 조회용).
   const warmupCandidates = [];
   const warmSeen = new Set();
   for (const e of reviewEventRows || []) {          // 최신순(desc)
-    if (warmupCandidates.length >= 2) break;
-    if (e.source !== 'vocab' || !e.correct || !e.item_key) continue;
+    if (warmupCandidates.length >= 10) break;
+    if (e.source !== 'vocab' || !e.item_key) continue;
     const t = new Date(e.created_at).getTime();
     if (!(t >= warmLo && t <= warmHi)) continue;
     if (warmSeen.has(e.item_key) || dueWordSet.has(e.item_key)) continue;
@@ -212,7 +306,23 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
   const pool = themePool.length ? themePool : THEMES;
   const theme = pool[Math.floor(Math.random() * pool.length)];
 
-  const paragraphMaterials = {
+  // ── 주간 약점 세션 — KST 일요일·이번 주 미실시면 신규 0·약점 재료로 대체 ──
+  const weakness = await buildWeaknessMaterials(supabase, userId, lang, ref, reviewEventRows || []);
+
+  const paragraphMaterials = weakness ? {
+    language: lang,
+    level,
+    newPattern: null,                                // 신규 0 — 헷갈린 것에 집중
+    newChapter: null,
+    duePatterns: weakness.duePatterns,
+    dueWords: weakness.dueWords,
+    newWords: [],
+    knownWords,
+    whitelistWords,
+    theme: '약점 복습',
+    avoidThemes,
+    weekly: true,
+  } : {
     language: lang,
     level,
     newPattern: newChapter?.teach ? { pattern: newChapter.teach.pattern, patternKo: newChapter.teach.patternKo } : null,

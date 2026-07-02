@@ -96,6 +96,39 @@ export function dialFromEwma(ewma, minSamples = 20, sampleCount = 0) {
 }
 
 /**
+ * 약점 집계 — review_events에서 (source, item_key)별 오답률을 가중해 정렬한다.
+ * 점수 = (wrong/total) * ln(total+1) — 오답 비율이 높고 표본이 많을수록 크다.
+ * 표본이 얕은 항목은 노이즈라 total>=2만 남긴다.
+ * 순수 함수 — 조회는 호출자(studyMaterials) 몫.
+ * @param {Array<{source, item_key, correct, created_at}>} events
+ * @param {{sinceMs?: number, cap?: number}} opts - sinceMs 이후 이벤트만, 상위 cap개
+ * @returns {Array<{source, item_key, wrong, total, score}>} score 내림차순
+ */
+export function computeWeakness(events, { sinceMs = 0, cap = 5 } = {}) {
+  const agg = new Map();
+  for (const e of events || []) {
+    if (!e || !e.source || !e.item_key) continue;
+    if (sinceMs) {
+      const t = new Date(e.created_at).getTime();
+      if (!(t >= sinceMs)) continue;
+    }
+    const key = `${e.source}\u0000${e.item_key}`;
+    const a = agg.get(key) || { source: e.source, item_key: e.item_key, wrong: 0, total: 0 };
+    a.total += 1;
+    if (!e.correct) a.wrong += 1;
+    agg.set(key, a);
+  }
+  const out = [];
+  for (const a of agg.values()) {
+    if (a.total < 2) continue;                       // 표본 부족 — 노이즈 제외
+    const score = (a.wrong / a.total) * Math.log(a.total + 1);
+    out.push({ ...a, score });
+  }
+  out.sort((x, y) => y.score - x.score);
+  return cap ? out.slice(0, cap) : out;
+}
+
+/**
  * rung + 다이얼 → 어휘 문항 타입.
  * 기본: rung≤1→choice, rung 2→typing, rung≥3→listening.
  * dial 'easy'→무조건 choice. dial 'hard'→한 단계 상향(choice→typing→listening, listening 유지).
