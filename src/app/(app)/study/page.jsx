@@ -121,13 +121,14 @@ export default async function Page({ searchParams }) {
 
   // ── 어휘 보기 풀 — 내 단어장 뜻 + 부족하면 레벨 어휘 사전 뜻 ──
   const meaningPool = [...new Set((vocabPoolRows || []).map(r => r.meaning).filter(Boolean))];
+  const levelVocabWords = (ref.getVocab(level)?.themes || []).flatMap(t => t.words || []);
   if (meaningPool.length < 8) {
-    const levelVocab = ref.getVocab(level);
-    (levelVocab?.themes || []).flatMap(t => t.words || []).slice(0, 40).forEach(w => {
+    levelVocabWords.slice(0, 40).forEach(w => {
       if (w?.ko) meaningPool.push(w.ko);
     });
   }
 
+  // 폴백 세션 — 문단 생성 실패 시 그대로 사용
   const session = composeSession({
     vocab: dueVocabRows || [],
     meaningPool,
@@ -137,9 +138,41 @@ export default async function Page({ searchParams }) {
     koPool,
   });
 
+  // ── 오늘의 문단 재료 — 새 문법·새 어휘·복습 문법·복습 어휘를 한 문단으로 ──
+  // 새 단어 2개: 현재 레벨 어휘 사전에서 내 단어장에 없는 것
+  const { data: myWordRows } = await supabase
+    .from('user_vocabulary')
+    .select('word_text')
+    .eq('user_id', user.id).eq('language', lang).limit(800);
+  const myWords = new Set((myWordRows || []).map(r => r.word_text));
+  const newWords = sample(levelVocabWords, 30)
+    .map(w => ({ word: refMain(w), meaning: w.ko || '', pron: refPron(w) || '' }))
+    .filter(w => w.word && w.meaning && !myWords.has(w.word))
+    .slice(0, 2);
+
+  // 복습 문법의 대표 패턴 (챕터 첫 pattern 섹션)
+  const duePatternsForPara = grammarDue.slice(0, 2).map(g => {
+    const ch = ref.getChapter(g.srs.slug)?.chapter;
+    const sec = ch?.sections?.find(s => s.pattern);
+    return sec ? { pattern: sec.pattern, patternKo: sec.patternKo || '', srs: g.srs, meta: g.meta } : null;
+  }).filter(Boolean);
+
+  const paragraphMaterials = {
+    language: lang,
+    level,
+    newPattern: newChapter?.teach ? { pattern: newChapter.teach.pattern, patternKo: newChapter.teach.patternKo } : null,
+    newChapter: newChapter?.meta || null,
+    duePatterns: duePatternsForPara,
+    dueWords: (dueVocabRows || []).slice(0, 3).map(r => ({ word: r.word_text, meaning: r.meaning, row: r })),
+    newWords,
+  };
+  // 재료가 문법도 단어도 없으면 문단 생성 스킵 (폴백 세션만)
+  const canGenerate = !!(paragraphMaterials.newPattern || paragraphMaterials.duePatterns.length || paragraphMaterials.dueWords.length);
+
   return (
     <StudySessionPage
       session={session}
+      paragraphMaterials={canGenerate ? paragraphMaterials : null}
       lang={lang}
       langCode={ref.langCode}
       langName={ref.name}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import Button from '../components/Button';
 import RefSpeak from '../components/RefSpeak';
@@ -13,6 +13,7 @@ import { syncCheckRemote, syncReadRemote } from '../lib/refProgress';
 import { logReviewEvents } from '../lib/reviewEvents';
 import { recordActivity } from '../lib/streak';
 import { gradeTyping, isChapterPassed } from '../lib/studySession';
+import { mapParagraphToItems } from '../lib/studyParagraph';
 
 function shuffle(arr) {
   const a = [...arr];
@@ -29,11 +30,12 @@ function shuffle(arr) {
  * 종료 시: 어휘 FSRS 갱신 · 문법 due 재스케줄 · 신규 챕터 통과 처리 · 이벤트 적재.
  */
 export default function StudySessionPage({
-  session = null, lang, langCode, langName, flag, readKey,
+  session = null, paragraphMaterials = null, lang, langCode, langName, flag, readKey,
   languages = [], signedOut = false,
 }) {
   const { user, fetchProfile } = useAuth();
   const [queue, setQueue] = useState(() => session?.items || []);
+  const [gradedBase, setGradedBase] = useState(session?.gradedCount || 0);
   const [idx, setIdx] = useState(0);
   const [phase, setPhase] = useState('answer');   // 'answer' | 'feedback'
   const [picked, setPicked] = useState(null);
@@ -43,7 +45,51 @@ export default function StudySessionPage({
   const [requeued, setRequeued] = useState(() => new Set());
   const [finished, setFinished] = useState(false);
   const [skipped, setSkipped] = useState(() => new Set()); // 건너뛴 문항(듣기) — 집계·SRS 제외
+  const [showTranslation, setShowTranslation] = useState(false);
+  // 문단 생성 — 재료가 있으면 세션 시작 전에 오늘의 문단을 만든다. 실패 시 폴백(조립 세션).
+  const [genStatus, setGenStatus] = useState(paragraphMaterials ? 'loading' : 'off');
+  const genRan = useRef(false);
   const effectsFired = useRef(false);
+
+  useEffect(() => {
+    if (!paragraphMaterials || genRan.current) return;
+    genRan.current = true;
+    (async () => {
+      try {
+        let authHeader = {};
+        try {
+          const { data: { session: s } } = await supabase.auth.getSession();
+          if (s?.access_token) authHeader = { Authorization: `Bearer ${s.access_token}` };
+        } catch {}
+        const res = await fetch('/api/study-paragraph', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...authHeader },
+          body: JSON.stringify({
+            language: paragraphMaterials.language,
+            level: paragraphMaterials.level,
+            newPattern: paragraphMaterials.newPattern,
+            duePatterns: paragraphMaterials.duePatterns.map(p => ({ pattern: p.pattern, patternKo: p.patternKo })),
+            dueWords: paragraphMaterials.dueWords.map(w => ({ word: w.word, meaning: w.meaning })),
+            newWords: paragraphMaterials.newWords.map(w => ({ word: w.word, meaning: w.meaning })),
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.paragraph) {
+          const mapped = mapParagraphToItems(data.paragraph, paragraphMaterials);
+          if (mapped.gradedCount >= 3) {
+            setQueue(mapped.items);
+            setGradedBase(mapped.gradedCount);
+            setGenStatus('ready');
+            return;
+          }
+        }
+        setGenStatus('fallback');
+      } catch {
+        setGenStatus('fallback');
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const item = queue[idx] || null;
 
@@ -57,7 +103,7 @@ export default function StudySessionPage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [item?.uid]);
 
-  const gradedTotal = Math.max(0, (session?.gradedCount || 0) - skipped.size);
+  const gradedTotal = Math.max(0, gradedBase - skipped.size);
   const firstAnswered = Object.keys(firstResults).length;
   const rightCount = Object.values(firstResults).filter(r => r.ok).length;
 
@@ -159,6 +205,28 @@ export default function StudySessionPage({
       events.push({ lang, source: 'reading', item_key: String(r.item.effect.key).slice(0, 80), correct: r.ok, detail: { mode: 'study' } })
     );
 
+    // 오늘 배운 새 단어 → 단어장 등록 (FSRS 복습 루프 진입)
+    if (genStatus === 'ready' && paragraphMaterials?.newWords?.length) {
+      for (const w of paragraphMaterials.newWords) {
+        const row = {
+          user_id: user.id,
+          word_text: w.word,
+          base_form: w.word,
+          furigana: w.pron || '',
+          meaning: w.meaning,
+          pos: '',
+          language: lang,
+          source_ref: '오늘 학습',
+        };
+        supabase.from('user_vocabulary').insert(row).then(({ error: err }) => {
+          if (err && /column|schema/i.test(err.message || '')) {
+            const { source_ref, base_form, ...base } = row;
+            supabase.from('user_vocabulary').insert(base).then(() => {}, () => {});
+          }
+        }, () => {});
+      }
+    }
+
     logReviewEvents(user.id, events);
     recordActivity(user.id, () => fetchProfile?.(user.id));
   }
@@ -181,8 +249,21 @@ export default function StudySessionPage({
     );
   }
 
+  // ── 오늘의 문단 생성 중 ──
+  if (genStatus === 'loading') {
+    return (
+      <div className="page-container" style={{ maxWidth: 640, textAlign: 'center', paddingTop: 80 }}>
+        <div style={{ fontSize: '2rem', marginBottom: 12 }} aria-hidden="true">✍️</div>
+        <h1 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: 8 }}>오늘의 문단을 만드는 중…</h1>
+        <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.7 }}>
+          새로 배울 문법·단어와 복습할 것들을<br />하나의 이야기로 엮고 있어요
+        </p>
+      </div>
+    );
+  }
+
   // ── 세션 재료 부족 ──
-  if (!session || session.gradedCount === 0) {
+  if (gradedBase === 0) {
     return (
       <div className="page-container" style={{ maxWidth: 640, textAlign: 'center', paddingTop: 60 }}>
         <h1 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: 10 }}>{flag} {langName} 학습</h1>
@@ -220,6 +301,11 @@ export default function StudySessionPage({
             {skipped.size > 0 && ` · 듣기 ${skipped.size}개 건너뜀`}
             {' '}· 결과는 복습 스케줄에 반영됐어요
           </p>
+          {genStatus === 'ready' && paragraphMaterials?.newWords?.length > 0 && (
+            <p style={{ fontSize: '0.82rem', color: 'var(--accent)', marginTop: 6, fontWeight: 600 }}>
+              새 단어 {paragraphMaterials.newWords.length}개({paragraphMaterials.newWords.map(w => w.word).join(' · ')})가 단어장에 추가돼 복습이 시작돼요
+            </p>
+          )}
         </div>
 
         {newMeta && newItems.length > 0 && (
@@ -288,6 +374,47 @@ export default function StudySessionPage({
 
       {isRetry && (
         <div style={{ fontSize: '0.78rem', color: 'var(--warning)', fontWeight: 700, marginBottom: 8 }}>↻ 다시 도전</div>
+      )}
+
+      {/* ── 오늘의 문단 (읽기 카드) ── */}
+      {item.type === 'paragraph' && (
+        <div className="card" style={{ padding: '22px 20px' }}>
+          <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--primary)', marginBottom: 4 }}>
+            오늘의 문단
+            {item.newChapter && <> · 새 문법 {item.newChapter.level} #{item.newChapter.order} {item.newChapter.title}</>}
+          </div>
+          <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '0 0 14px' }}>
+            새로 배울 것과 복습할 것이 한 이야기에 담겨 있어요. 천천히 읽고, 이어지는 문제로 확인해요.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {item.sentences.map((s, i) => (
+              <div key={i} style={{ fontSize: '1.05rem', lineHeight: 2 }} lang={langCode}>
+                {renderMain(s.text, s.pron)}
+                <RefSpeak text={s.text} lang={lang} size="xs" />
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowTranslation(v => !v)}
+            style={{ background: 'none', border: 'none', padding: 0, marginTop: 14, cursor: 'pointer', fontSize: '0.8rem', color: 'var(--text-muted)', textDecoration: 'underline' }}
+          >
+            {showTranslation ? '번역 접기 ▴' : '번역 보기 ▾'}
+          </button>
+          {showTranslation && (
+            <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.7, marginTop: 8, padding: '10px 12px', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)' }}>
+              {item.translation}
+            </p>
+          )}
+          <div style={{ display: 'flex', gap: 10, marginTop: 16, alignItems: 'center' }}>
+            <Button onClick={next} style={{ flex: 1 }}>문제 풀기 →</Button>
+            {item.newChapter && (
+              <Link href={item.newChapter.href} style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textDecoration: 'underline', flexShrink: 0 }}>
+                새 문법 자세히
+              </Link>
+            )}
+          </div>
+        </div>
       )}
 
       {/* ── 티칭 카드 ── */}
@@ -455,14 +582,20 @@ export default function StudySessionPage({
         </div>
       )}
 
-      {/* ── 독해: 뜻 고르기 ── */}
+      {/* ── 독해: 뜻 고르기 / 내용 이해 ── */}
       {item.type === 'read-meaning' && (
         <div className="fr-quiz__q">
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 6 }}>독해</div>
-          <div className="fr-quiz__prompt" lang={langCode}>
-            {renderMain(item.sentence.main, phase === 'feedback' ? item.sentence.pron : null)}
-            <RefSpeak text={item.sentence.main} lang={lang} size="xs" />
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 6 }}>
+            {item.sentence.isKoreanPrompt ? '내용 이해' : '독해'}
           </div>
+          {item.sentence.isKoreanPrompt ? (
+            <div className="fr-quiz__prompt">{item.sentence.main}</div>
+          ) : (
+            <div className="fr-quiz__prompt" lang={langCode}>
+              {renderMain(item.sentence.main, phase === 'feedback' ? item.sentence.pron : null)}
+              <RefSpeak text={item.sentence.main} lang={lang} size="xs" />
+            </div>
+          )}
           <div className="fr-quiz__opts fr-quiz__opts--col">
             {prepared.options.map(opt => (
               <button key={opt} type="button" disabled={phase === 'feedback'}
