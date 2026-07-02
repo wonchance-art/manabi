@@ -7,7 +7,6 @@ import { JaText } from './refShared';
 import { useAuth } from '../lib/AuthContext';
 import { gradeGrammarReview, ratingFromScore } from '../lib/grammarSrs';
 import { logReviewEvents } from '../lib/reviewEvents';
-import { awardXP, getReviewXP } from '../lib/xp';
 
 function shuffle(arr) {
   const a = [...arr];
@@ -115,14 +114,12 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
   const rightCount = Object.values(answers).filter(a => a.ok).length;
   const graded = results.length > idx;             // 현재 챕터 채점 완료 여부
 
-  // 챕터 완료 → FSRS 채점 + XP + 이벤트 로그 (1회)
+  // 챕터 완료 → FSRS 채점 + 이벤트 로그 (1회)
   useEffect(() => {
     if (!done || graded || !item) return;
     const rating = ratingFromScore(rightCount, total);
-    const xp = getReviewXP(rating);
     let nextDays = null;
     if (user?.id) {
-      awardXP(user.id, xp);
       gradeGrammarReview({ ...item.srs, user_id: user.id }, rating).then(updated => {
         if (updated) {
           const d = Math.max(1, Math.round(updated.interval));
@@ -141,7 +138,7 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
         };
       }).filter(Boolean));
     }
-    setResults(prev => [...prev, { item, right: rightCount, total, rating, nextDays, xp }]);
+    setResults(prev => [...prev, { item, right: rightCount, total, rating, nextDays }]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [done]);
 
@@ -212,14 +209,11 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
   if (idx >= items.length) {
     const totalRight = results.reduce((s, r) => s + r.right, 0);
     const totalQ = results.reduce((s, r) => s + r.total, 0);
-    const totalXp = results.reduce((s, r) => s + (r.xp || 0), 0);
     return (
       <div className="page-container" style={{ maxWidth: 640 }}>
         <h1 style={{ fontSize: '1.3rem', fontWeight: 700, margin: '20px 0 6px' }}>복습 완료</h1>
         <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: 20 }}>
-          챕터 {results.length}개 · 정답 {totalRight}/{totalQ}
-          {totalXp > 0 && <> · <strong style={{ color: 'var(--accent)' }}>+{totalXp} XP</strong></>}
-          . 결과에 따라 다음 복습일이 조정됐어요.
+          챕터 {results.length}개 · 정답 {totalRight}/{totalQ}. 결과에 따라 다음 복습일이 조정됐어요.
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
           {results.map((r, i) => (
@@ -371,7 +365,6 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
         <div className={`fr-check__verdict ${rightCount === total ? 'is-pass' : rightCount >= Math.ceil(total * 0.5) ? '' : 'is-fail'}`}>
           <p className="fr-check__result">
             <strong>{rightCount}/{total} — {RATING_LABEL[ratingFromScore(rightCount, total)]}</strong>
-            {results[idx]?.xp > 0 && <> · <span style={{ color: 'var(--accent)', fontWeight: 700 }}>+{results[idx].xp} XP</span></>}
             {results[idx]?.nextDays
               ? <> · 다음 복습은 <strong>{results[idx].nextDays}일 후</strong>에 돌아와요.</>
               : ' · 결과에 따라 다음 복습일이 조정돼요.'}
