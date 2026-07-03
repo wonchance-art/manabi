@@ -1,470 +1,176 @@
-'use client';
-
 import Link from 'next/link';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
-import { parseTitle } from '../lib/seriesMeta';
-import { getIdealLevel } from '../lib/levels';
 
-async function fetchLevelData() {
-  const { data } = await supabase
-    .from('reading_materials')
-    .select('id, title, processed_json')
-    .eq('visibility', 'public')
-    .limit(300);
-  const counts = {};
-  const byLevel = {};
-  for (const m of data || []) {
-    const lvl = m.processed_json?.metadata?.level;
-    if (!lvl) continue;
-    counts[lvl] = (counts[lvl] || 0) + 1;
-    if (!byLevel[lvl]) byLevel[lvl] = [];
-    byLevel[lvl].push(m);
-  }
-  // 레벨별로 시리즈→번호 순 정렬, 상위 6편만 샘플
-  const samples = {};
-  const levelIds = {};
-  for (const lvl of Object.keys(byLevel)) {
-    const arr = byLevel[lvl].slice().sort((a, b) => {
-      const ma = parseTitle(a.title);
-      const mb = parseTitle(b.title);
-      const sa = ma.series || '￿';
-      const sb = mb.series || '￿';
-      if (sa !== sb) return sa.localeCompare(sb);
-      if (ma.num != null && mb.num != null) return ma.num - mb.num;
-      if (ma.num != null) return -1;
-      if (mb.num != null) return 1;
-      return 0;
-    });
-    samples[lvl] = arr.slice(0, 6).map(m => ({ id: m.id, title: m.title }));
-    levelIds[lvl] = arr.map(m => m.id);
-  }
-  return { counts, samples, levelIds };
-}
-
-async function fetchCompletedIds() {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.user) return new Set();
-  const { data } = await supabase
-    .from('reading_progress')
-    .select('material_id')
-    .eq('user_id', session.user.id)
-    .eq('is_completed', true);
-  return new Set((data || []).map(r => r.material_id));
-}
-
-async function fetchVocabByLang() {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.user) return { Japanese: 0, English: 0 };
-  const { data } = await supabase
-    .from('user_vocabulary')
-    .select('language')
-    .eq('user_id', session.user.id);
-  const counts = { Japanese: 0, English: 0 };
-  for (const v of (data || [])) {
-    if (counts[v.language] != null) counts[v.language] += 1;
-  }
-  return counts;
-}
-
-/* ── Warm gradient scale: beginner → advanced ── */
-const W = [
-  { dot: '#F5C34A', bg: 'rgba(245,195,74,0.12)', line: 'rgba(245,195,74,0.35)' },
-  { dot: '#F0A040', bg: 'rgba(240,160,64,0.12)', line: 'rgba(240,160,64,0.35)' },
-  { dot: '#E8763C', bg: 'rgba(232,118,60,0.12)', line: 'rgba(232,118,60,0.35)' },
-  { dot: '#D85840', bg: 'rgba(216,88,64,0.12)', line: 'rgba(216,88,64,0.35)' },
-  { dot: '#C03C42', bg: 'rgba(192,60,66,0.12)', line: 'rgba(192,60,66,0.35)' },
-  { dot: '#A02840', bg: 'rgba(160,40,64,0.12)', line: 'rgba(160,40,64,0.35)' },
-];
-
-const CURRICULUMS = [
+/* ── 파트별 연습실 ── */
+const PRACTICE = [
   {
-    lang: 'Japanese',
-    icon: '',
-    title: '일본어 로드맵',
-    subtitle: 'JLPT N5 → N1',
-    levels: [
-      {
-        name: 'N5', label: 'N5 기초', focus: '기초 입문', duration: '3–6개월',
-        desc: '히라가나·가타카나 완독, 기본 조사와 필수 표현 약 60패턴 습득.',
-        can: ['기본 인사', '숫자·날짜 읽기', '간단한 메뉴 이해'],
-      },
-      {
-        name: 'N4', label: 'N4 기본', focus: '일상 회화', duration: '6–12개월',
-        desc: '비교·이유·가능형·수동형 등 기초 문법 완성 (약 120패턴). 일상 대화 가능.',
-        can: ['편의점·식당 대화', '기본 텍스트 독해', '간단한 SNS 이해'],
-      },
-      {
-        name: 'N3', label: 'N3 중급', focus: '가교 단계', duration: '12–18개월',
-        desc: '경어 체계 이해, 복합적 문법 운용. 일상 텍스트 대부분 이해 (약 200패턴).',
-        can: ['드라마 자막 의존 감소', '간단한 뉴스 이해', '일본인과 문자 교환'],
-      },
-      {
-        name: 'N2', label: 'N2 상급', focus: '사회·직업적 언어', duration: '2–3년',
-        desc: '신문·잡지·비즈니스 문서 독해. 논리적 추론 및 고급 회화 (약 400패턴).',
-        can: ['일본어로 업무', '원작 만화·소설 읽기', '뉴스 대부분 이해'],
-      },
-      {
-        name: 'N1', label: 'N1 심화', focus: '원어민 수준', duration: '3–5년',
-        desc: '추상적·논리적 복잡한 글 이해. 학술 용어·고급 관용구 완전 습득 (약 600패턴).',
-        can: ['원서·학술서 독해', '통역·번역 가능', '일본 기업 취업 자격'],
-      },
-    ],
+    title: '어휘',
+    desc: '저장해 둔 단어를 모아서 집중적으로 복습해요.',
+    href: '/vocab',
   },
   {
-    lang: 'English',
-    icon: '',
-    title: '영어 로드맵',
-    subtitle: 'CEFR A1 → C2',
-    levels: [
-      {
-        name: 'A1', label: 'A1 기초', focus: '생존 영어', duration: '1–3개월',
-        desc: '기초 인사·자기소개·숫자·날짜. 매우 단순한 일상 대화.',
-        can: ['해외여행 기초 회화', '간판·메뉴 읽기', '영어 앱 사용'],
-      },
-      {
-        name: 'A2', label: 'A2 초급', focus: '단순 소통', duration: '3–6개월',
-        desc: '친숙한 주제의 짧은 문장 이해, 일상적인 정보 교환.',
-        can: ['짧은 이메일 작성', '쇼핑·길 묻기', '영어 노래 가사 이해'],
-      },
-      {
-        name: 'B1', label: 'B1 중급', focus: '일상 회화', duration: '6–18개월',
-        desc: '여행 상황 대처, 익숙한 주제에 대해 명확하고 표준적인 언어 구사.',
-        can: ['팝송·드라마 70% 이해', '영어 회의 참여', '여행 완전 자립'],
-      },
-      {
-        name: 'B2', label: 'B2 상급', focus: '전문적 소통', duration: '2–3년',
-        desc: '전문 분야 논의 가능, 원어민과 자연스러운 상호작용 및 논리적 추론.',
-        can: ['원어민과 자연스러운 대화', '영어 프레젠테이션', '해외 취업 지원'],
-      },
-      {
-        name: 'C1', label: 'C1 고급', focus: '유창한 구사', duration: '3–5년',
-        desc: '복잡한 텍스트의 암시적 의미 파악, 학술·직업 상황에서 유연하고 정확한 표현.',
-        can: ['외국 대학 강의 수강', 'IELTS 7.0+ / TOEFL 100+', '원서 속독'],
-      },
-      {
-        name: 'C2', label: 'C2 마스터', focus: '원어민 수준', duration: '5년+',
-        desc: '모든 상황에서 정교하고 완벽한 언어 구사. 뉘앙스·유머·문화적 표현 완전 이해.',
-        can: ['영어권 원어민 수준', '전문 번역·통역', '학술 논문 집필'],
-      },
-    ],
+    title: '문법 복습',
+    desc: '지금까지 배운 문법 패턴을 다시 짚어봐요.',
+    href: '/review/grammar',
+  },
+  {
+    title: '작문',
+    desc: '배운 표현으로 직접 문장을 쓰고 교정을 받아요.',
+    href: '/writing',
   },
 ];
 
+/* ── 소소한 팁 ── */
 const TIPS = [
-  {
-    icon: '',
-    title: '매일 15분 읽기',
-    desc: '관심 있는 주제의 원문을 매일 15분씩 읽는 것만으로 1년 뒤 어휘력이 3배 성장합니다.',
-  },
-  {
-    icon: '',
-    title: '간격 반복 복습',
-    desc: 'FSRS 알고리즘으로 기억이 흐릿해지는 정확한 타이밍에 복습하면 최소 노력으로 최대 기억 효과를 얻습니다.',
-  },
-  {
-    icon: '',
-    title: '문장 단위로 저장',
-    desc: '단어 하나보다 문맥이 담긴 문장을 함께 저장하면 실제 사용 능력이 훨씬 빠르게 늘어납니다.',
-  },
+  '문단 속 문장을 탭하면 발음이 나타나요 (입문 단계에서는 처음부터 보여요).',
+  '듣기 문항은 어려우면 ‘넘어가기’로 지나갈 수 있어요.',
+  '틀린 문제는 세션이 끝날 때 한 번 더 나와요.',
+  '매일 한 세션만 꾸준히 하면 복습 시점은 알아서 돌아가요.',
 ];
 
-/* ── Subcomponent: single roadmap timeline ── */
-function Roadmap({ curr, levelCounts = {}, levelSamples = {}, levelIds = {}, completedIds = new Set() }) {
-  return (
-    <section>
-      <div className="roadmap-header">
-        <span className="roadmap-header__icon">{curr.icon}</span>
-        <div>
-          <h2 className="roadmap-header__title">{curr.title}</h2>
-          <span className="roadmap-header__subtitle">{curr.subtitle}</span>
-        </div>
-      </div>
+const linkStyle = {
+  display: 'inline-block',
+  marginTop: 14,
+  fontSize: '0.85rem',
+  fontWeight: 600,
+  color: '#E8763C',
+  textDecoration: 'none',
+};
 
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
-        {curr.levels.map((level, idx) => {
-          const w = W[idx];
-          const isLast = idx === curr.levels.length - 1;
-          const ids = levelIds[level.label] || [];
-          const lvlCompleted = ids.filter(id => completedIds.has(id)).length;
-          const lvlTotal = ids.length;
-          const lvlPct = lvlTotal > 0 ? (lvlCompleted / lvlTotal) * 100 : 0;
-          return (
-            <div key={level.name} className="roadmap-row">
-              {/* ── dot + connector ── */}
-              <div className="roadmap-track">
-                <div
-                  className="roadmap-dot"
-                  style={{ background: w.bg, border: `2px solid ${w.dot}`, color: w.dot }}
-                >
-                  {level.name}
-                </div>
-                {!isLast && (
-                  <div
-                    className="roadmap-connector"
-                    style={{ background: `linear-gradient(to bottom, ${W[idx].line}, ${W[idx + 1].line})` }}
-                  />
-                )}
-              </div>
-
-              {/* ── content ── */}
-              <div className="roadmap-content" style={{ paddingBottom: isLast ? 0 : '28px' }}>
-                <div className="roadmap-content__head">
-                  <h3 className="roadmap-content__label">{level.label}</h3>
-                  <span
-                    className="roadmap-badge"
-                    style={{ color: w.dot, background: w.bg, border: `1px solid ${w.line}` }}
-                  >
-                    {level.focus}
-                  </span>
-                  <span className="roadmap-badge--duration">{level.duration}</span>
-                </div>
-
-                <p className="roadmap-content__desc">{level.desc}</p>
-
-                <div className="roadmap-cando">
-                  {level.can.map(c => (
-                    <span key={c} className="roadmap-cando__tag">✓ {c}</span>
-                  ))}
-                </div>
-
-                {(levelSamples[level.label] || []).length > 0 && (
-                  <ul className="roadmap-samples">
-                    {levelSamples[level.label].map(s => {
-                      const done = completedIds.has(s.id);
-                      return (
-                        <li key={s.id} className={`roadmap-sample ${done ? 'is-done' : ''}`}>
-                          <Link href={`/viewer/${s.id}`} className="roadmap-sample__link">
-                            <span className="roadmap-sample__status">{done ? '✓' : '○'}</span>
-                            <span className="roadmap-sample__title">{s.title}</span>
-                          </Link>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                )}
-
-                {lvlTotal > 0 && lvlCompleted > 0 && (
-                  <div className="roadmap-progress">
-                    <div className="roadmap-progress__bar">
-                      <div className="roadmap-progress__fill" style={{ width: `${lvlPct}%`, background: w.dot }} />
-                    </div>
-                    <span className="roadmap-progress__text">
-                      {lvlCompleted} / {lvlTotal} 완료
-                    </span>
-                  </div>
-                )}
-
-                <Link
-                  href={`/lessons?lang=${curr.lang}&level=${encodeURIComponent(level.label)}`}
-                  className="roadmap-link"
-                  style={{ color: w.dot }}
-                >
-                  {level.label} 자료 전체 보기
-                  {levelCounts[level.label] > 0 && lvlCompleted === 0 && (
-                    <span style={{ marginLeft: 6, fontSize: '0.78rem', opacity: 0.75 }}>
-                      ({levelCounts[level.label]}편)
-                    </span>
-                  )} →
-                </Link>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
-/* ── Main Page ── */
 export default function GuidePage() {
-  const { data: levelData = { counts: {}, samples: {} } } = useQuery({
-    queryKey: ['guide-level-data'],
-    queryFn: fetchLevelData,
-    staleTime: 1000 * 60 * 10,
-  });
-  const { data: completedIds = new Set() } = useQuery({
-    queryKey: ['guide-completed-ids'],
-    queryFn: fetchCompletedIds,
-    staleTime: 1000 * 60 * 5,
-  });
-  const { data: vocabByLang } = useQuery({
-    queryKey: ['guide-vocab-by-lang'],
-    queryFn: fetchVocabByLang,
-    staleTime: 1000 * 60 * 5,
-  });
-  const recommendedLevels = vocabByLang ? {
-    Japanese: getIdealLevel('Japanese', vocabByLang.Japanese || 0),
-    English: getIdealLevel('English', vocabByLang.English || 0),
-  } : null;
   return (
-    <div className="page-container" style={{ maxWidth: '1100px' }}>
+    <div className="page-container" style={{ maxWidth: '760px' }}>
 
       {/* ── Hero ── */}
-      <div className="guide-hero">
+      <div className="guide-hero" style={{ marginBottom: 36 }}>
         <h1 className="guide-hero__title">
-          외국어를 배운다는 것은<br />
-          <span className="guide-hero__accent">새로운 세계를 여는 것</span>입니다
+          오늘 하루,{' '}
+          <span className="guide-hero__accent">학습 한 번이면 충분해요</span>
         </h1>
         <p className="guide-hero__sub">
-          어느 레벨에 있든 괜찮습니다.
-          지금 이 순간부터의 꾸준함이 전부입니다.
+          복습도, 새 문법도, 새 단어도 — 매일 새로 만들어지는 이야기 한 편에 담겨 있어요.
         </p>
-        {recommendedLevels && ((vocabByLang?.Japanese || 0) + (vocabByLang?.English || 0)) > 0 && (
-          <div className="guide-hero__recommend">
-            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', letterSpacing: '0.04em', textTransform: 'uppercase', fontWeight: 600 }}>
-              현재 추천 레벨
-            </span>
-            <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 6 }}>
-              {(vocabByLang?.Japanese || 0) > 0 && (
-                <span style={{ fontSize: '0.95rem' }}>일본어 <strong>{recommendedLevels.Japanese}</strong></span>
-              )}
-              {(vocabByLang?.English || 0) > 0 && (
-                <span style={{ fontSize: '0.95rem' }}>영어 <strong>{recommendedLevels.English}</strong></span>
-              )}
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* ── 앱 사용법 (현행화) ── */}
-      <section style={{ margin: '40px 0 52px' }}>
-        <h2 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: 20, textAlign: 'center' }}>
-          3단계 사용법
+      {/* ── 1. 하루의 흐름 ── */}
+      <section
+        className="card"
+        style={{
+          padding: '28px 28px 30px',
+          marginBottom: 20,
+          textAlign: 'center',
+          background: 'linear-gradient(135deg, var(--bg-card), var(--bg-elevated))',
+        }}
+      >
+        <div style={{ fontSize: '1.6rem', marginBottom: 10 }}>🌅</div>
+        <h2 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: 10 }}>
+          하루의 흐름
         </h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
-          {[
-            {
-              num: '1', icon: '',
-              title: '자료 가져오기',
-              desc: '텍스트 붙여넣기 또는 PDF 업로드. AI가 형태소 단위로 자동 분석.',
-              sub: '스캔본 PDF도 OCR로 자동 처리 · 페이지 범위 선택',
-              href: '/materials/add', cta: '자료 추가',
-            },
-            {
-              num: '2', icon: '',
-              title: '읽으며 단어 저장',
-              desc: '모르는 단어 클릭 → 뜻·발음 확인 → 단어장에 추가. 문장과 함께 저장됨.',
-              sub: '문맥 해설 버튼으로 이 단어가 왜 이 뜻인지 심화',
-              href: '/materials', cta: '자료실 가기',
-            },
-            {
-              num: '3', icon: '',
-              title: '읽기 = 복습',
-              desc: '단어 저장 후 다시 자료를 읽으면, 복습 시점 된 단어가 노란색으로 표시됨. 클릭해서 바로 평가.',
-              sub: 'FSRS 알고리즘이 최적 복습 간격 자동 계산',
-              href: '/vocab', cta: '단어장 보기',
-            },
-          ].map(step => (
-            <div key={step.num} className="card" style={{ padding: 20 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                <div style={{
-                  width: 36, height: 36, borderRadius: '50%',
-                  background: 'var(--primary-glow)', color: 'var(--primary)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontWeight: 700, fontSize: '1.05rem',
-                }}>
-                  {step.num}
-                </div>
-                <div style={{ fontSize: '1.5rem' }}>{step.icon}</div>
-              </div>
-              <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: 6 }}>{step.title}</h3>
-              <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', marginBottom: 8, lineHeight: 1.6 }}>
-                {step.desc}
-              </p>
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 14, lineHeight: 1.5 }}>
-                {step.sub}
-              </p>
-              <Link href={step.href} className="btn btn--ghost btn--sm" style={{ padding: '6px 14px' }}>
-                {step.cta} →
-              </Link>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── 주요 기능 간략 소개 ── */}
-      <section style={{ marginBottom: 52 }}>
-        <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: 16 }}>
-          이 앱이 특별한 이유
-        </h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
-          {[
-            { icon: '', title: 'AI 형태소 해부', desc: '일본어는 오프라인 분석(kuromoji) + AI 의미. 빠르고 저렴.' },
-            { icon: '', title: '읽기 기반 복습', desc: '별도 카드 복습 없이, 자료 읽다가 노란 단어 클릭하면 끝.' },
-            { icon: '', title: '문맥별 해설 온디맨드', desc: '다의어도 지금 이 문장에서의 뜻을 AI가 설명해줌.' },
-            { icon: '', title: 'PDF 책 한 권을 나눠 읽기', desc: '수백 페이지 PDF도 3~5장씩 분석, 캐시로 빠른 재분석.' },
-            { icon: '', title: '쓰기 연습', desc: '학습한 단어로 문장 만들기 → AI 교정 피드백.' },
-            { icon: '', title: 'AI 분석 수정 가능', desc: '틀린 뜻·후리가나 발견 시 직접 고치기.' },
-          ].map(f => (
-            <div key={f.title} style={{
-              padding: 14,
-              background: 'var(--bg-secondary)',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--border)',
-            }}>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 4 }}>
-                <span style={{ fontSize: '1.1rem' }}>{f.icon}</span>
-                <strong style={{ fontSize: '0.92rem' }}>{f.title}</strong>
-              </div>
-              <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{f.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Divider ── */}
-      <div style={{ margin: '52px 0 36px', borderTop: '1px solid var(--border)' }} />
-
-      {/* ── Roadmaps ── */}
-      <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: 16 }}>
-        언어 레벨 로드맵
-      </h2>
-      <div className="guide-roadmap-grid">
-        {CURRICULUMS.map(curr => (
-          <Roadmap
-            key={curr.lang}
-            curr={curr}
-            levelCounts={levelData.counts}
-            levelSamples={levelData.samples}
-            levelIds={levelData.levelIds}
-            completedIds={completedIds}
-          />
-        ))}
-      </div>
-
-      {/* ── Divider ── */}
-      <div style={{ margin: '52px 0', borderTop: '1px solid var(--border)' }} />
-
-      {/* ── Tips ── */}
-      <div>
-        <h2 style={{
-          fontSize: '1.1rem', fontWeight: 700,
-          marginBottom: '20px', color: 'var(--text-primary)',
-        }}>
-          효과적인 학습을 위한 세 가지 원칙
-        </h2>
-        <div className="guide-tips-grid">
-          {TIPS.map(tip => (
-            <div key={tip.title} className="guide-tip">
-              <div className="guide-tip__icon">{tip.icon}</div>
-              <h4 className="guide-tip__title">{tip.title}</h4>
-              <p className="guide-tip__desc">{tip.desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ── CTA ── */}
-      <div className="guide-cta">
-        <div>
-          <h3 className="guide-cta__title">지금 시작해도 결코 늦지 않았습니다</h3>
-          <p className="guide-cta__desc">관심 있는 자료를 업로드하면 AI가 즉시 분석해드립니다.</p>
-        </div>
-        <Link href="/materials/add" className="btn btn--md guide-cta__btn">
-          첫 자료 업로드하기 →
+        <p
+          style={{
+            fontSize: '0.92rem',
+            color: 'var(--text-secondary)',
+            lineHeight: 1.8,
+            maxWidth: 500,
+            margin: '0 auto 22px',
+          }}
+        >
+          오늘 학습을 한 번 하면 하루치가 모두 끝나요. 복습할 단어와 문법, 새로 배울 것,
+          그리고 읽을 이야기까지 — 매일 새로 만들어지는 문단 한 편에 자연스럽게 녹아 있어요.
+          10문항 안팎, 6~8분이면 충분해요. (격일로 짧은 쓰기도 살짝 섞여요.)
+        </p>
+        <Link href="/study" className="btn btn--md guide-cta__btn">
+          오늘 학습 시작 →
         </Link>
-      </div>
+      </section>
+
+      {/* ── 2. 교재는 참고서 ── */}
+      <section className="card" style={{ padding: 24, marginBottom: 20 }}>
+        <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: 10 }}>
+          📖 교재는 참고서
+        </h2>
+        <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.8 }}>
+          교재는 처음부터 끝까지 정독하는 책이 아니에요. 궁금할 때 찾아보는 참고서에 가까워요.
+          맨 앞 입문 챕터(글자·발음·어순)는 가볍게 훑고 넘어가면 돼요.
+          학습하다 새 문법을 만나면, ‘자세히’ 링크가 이 교재의 해당 페이지로 데려다줘요.
+        </p>
+        <Link href="/lessons" style={linkStyle}>
+          교재 열기 →
+        </Link>
+      </section>
+
+      {/* ── 3. 더 하고 싶은 날 — 파트별 연습실 ── */}
+      <section className="card" style={{ padding: 24, marginBottom: 20 }}>
+        <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: 6 }}>
+          💪 더 하고 싶은 날 — 파트별 연습실
+        </h2>
+        <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.7, marginBottom: 16 }}>
+          오늘 학습만으로 충분하지만, 더 하고 싶은 날엔 파트별로 골라서 연습할 수 있어요.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {PRACTICE.map(p => (
+            <Link
+              key={p.href}
+              href={p.href}
+              style={{
+                display: 'flex',
+                alignItems: 'baseline',
+                gap: 10,
+                padding: '10px 14px',
+                borderRadius: 'var(--radius-md)',
+                background: 'var(--bg-secondary)',
+                border: '1px solid var(--border)',
+                textDecoration: 'none',
+              }}
+            >
+              <strong style={{ fontSize: '0.9rem', color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
+                {p.title}
+              </strong>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                {p.desc}
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* ── 4. 서재와 성장 ── */}
+      <section className="card" style={{ padding: 24, marginBottom: 20 }}>
+        <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: 10 }}>
+          📚 서재와 성장
+        </h2>
+        <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.8 }}>
+          지난 이야기들은 서재에 차곡차곡 쌓여요. 예전에 읽은 문단을 발음 표기 없이 다시 읽어보면,
+          그새 얼마나 늘었는지 몸으로 느껴져요. 지금까지 익힌 단어 수와 통과한 챕터도
+          여기서 한눈에 볼 수 있어요.
+        </p>
+        <Link href="/study/library" style={linkStyle}>
+          서재 →
+        </Link>
+      </section>
+
+      {/* ── 5. 소소한 팁 ── */}
+      <section className="card" style={{ padding: 24 }}>
+        <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: 14 }}>
+          💡 소소한 팁
+        </h2>
+        <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {TIPS.map(tip => (
+            <li
+              key={tip}
+              style={{
+                fontSize: '0.87rem',
+                color: 'var(--text-secondary)',
+                lineHeight: 1.7,
+                paddingLeft: 18,
+                position: 'relative',
+              }}
+            >
+              <span style={{ position: 'absolute', left: 0, color: '#E8763C' }}>·</span>
+              {tip}
+            </li>
+          ))}
+        </ul>
+      </section>
 
     </div>
   );
