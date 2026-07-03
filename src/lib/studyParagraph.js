@@ -56,8 +56,12 @@ export const PARAGRAPH_SCHEMA = {
       },
       required: ['q', 'answerHint'],
     },
+    arcSummary: {
+      type: 'STRING',
+      description: '연재용 — 이 이야기의 인물 이름과 끝난 상황을 담은 한국어 1문장(다음 화가 이어받는다)',
+    },
   },
-  required: ['paragraph', 'translation', 'sentences', 'questions', 'preQuestion'],
+  required: ['paragraph', 'translation', 'sentences', 'questions', 'preQuestion', 'arcSummary'],
 };
 
 /**
@@ -69,6 +73,18 @@ export const PARAGRAPH_SCHEMA = {
 export function buildParagraphPrompt(m) {
   const name = LANG_NAME[m.language];
   if (!name) return null;
+
+  // ── 연재 — 주간 약점 세션은 제외(연속성 없이 매번 독립). 그 외엔 이어지거나 새 이야기로 시작 ──
+  const isWeakness = m.weekly === true || m.theme === '약점 복습';
+  let arcLine = '';
+  let arcOutLine = '';
+  if (!isWeakness) {
+    arcLine = (typeof m.prevArc === 'string' && m.prevArc.trim())
+      ? `[연재 — 이어지는 이야기]\n직전 이야기: ${m.prevArc.trim()} 같은 인물이 이어지는 다음 장면을 쓰세요(요약을 반복하지 말 것).\n\n`
+      : `[연재 — 새 이야기]\n새 이야기를 시작하세요. 1~2명의 인물에게 간단한 이름을 주세요.\n\n`;
+    arcOutLine = `[연재 요약 — arcSummary]\n- arcSummary에 이 이야기의 인물 이름과 끝난 상황을 한국어 한 문장으로 적으세요.\n\n`;
+  }
+
   const parts = [];
   if (m.newPattern) parts.push(`- [새 문법·최우선] ${m.newPattern.pattern}${m.newPattern.patternKo ? ` (${m.newPattern.patternKo})` : ''} — 2번 이상 사용`);
   (m.duePatterns || []).forEach(p => parts.push(`- [복습 문법] ${p.pattern}${p.patternKo ? ` (${p.patternKo})` : ''} — 1번 이상 사용`));
@@ -105,6 +121,7 @@ export function buildParagraphPrompt(m) {
   return (
     `당신은 ${name} 교재 집필자입니다. ${m.level} 레벨 한국인 학습자를 위한 오늘의 학습 문단을 만드세요.\n\n` +
     themeLine +
+    arcLine +
     `[반드시 문단에 자연스럽게 녹일 재료]\n${parts.join('\n')}\n` +
     vocabConstraint + `\n` +
     `[문단 규칙]\n` +
@@ -120,6 +137,7 @@ export function buildParagraphPrompt(m) {
     `- 문항 순서: cloze(새 문법) → vocab → cloze(복습) → comprehension.\n\n` +
     `[읽기 미션 — preQuestion]\n` +
     `- preQuestion: 문단을 읽기 전 목적을 주는 한국어 질문 1개(답이 문단 안에 있어야 함)와 answerHint(답의 핵심 표현 — 번역문에 그대로 등장하는 말).\n\n` +
+    arcOutLine +
     `지정된 JSON 스키마로만 응답하세요. 설명·번역은 전부 한국어로.`
   );
 }
@@ -169,13 +187,18 @@ export function validateParagraph(raw) {
       }
     : null;
 
-  return {
+  // arcSummary — 연재 요약(옵션). 없어도 통과(구모델 응답·기존 저장분 호환) → 독립 문단.
+  const arcSummary = typeof raw.arcSummary === 'string' && raw.arcSummary.trim() ? raw.arcSummary.trim() : null;
+
+  const out = {
     paragraph: raw.paragraph.trim(),
     translation: typeof raw.translation === 'string' ? raw.translation : '',
     sentences,
     questions,
     preQuestion,
   };
+  if (arcSummary) out.arcSummary = arcSummary;
+  return out;
 }
 
 /**

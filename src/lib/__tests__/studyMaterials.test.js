@@ -10,7 +10,7 @@ vi.mock('@/lib/studySession', () => ({ composeSession: () => ({}), buildWarmupIt
 vi.mock('@/lib/writingPrompts', () => ({ levelBand: () => null }));
 vi.mock('@/lib/studyParagraph', () => ({ THEMES: [] }));
 
-const { deriveVocabRungs, gateNewMaterialsByDial, pickTheme, deriveColdStart, INTEREST_GROUPS } = await import('../studyMaterials');
+const { deriveVocabRungs, gateNewMaterialsByDial, pickTheme, deriveColdStart, deriveArc, INTEREST_GROUPS } = await import('../studyMaterials');
 
 // review_events 행 헬퍼 (시간 오름차순으로 넘긴다)
 const ev = (source, item_key, correct, qtype = 'choice') => ({
@@ -121,6 +121,54 @@ describe('pickTheme', () => {
   it('빈 입력에 방어적(null)', () => {
     expect(pickTheme([], [], 'daily', () => 0)).toBe(null);
     expect(pickTheme(undefined, undefined, null, () => 0)).toBe(null);
+  });
+});
+
+describe('deriveArc', () => {
+  const NOW = Date.UTC(2026, 6, 3, 0, 0, 0);
+  const row = (arcSummary, episode, agoMs = 0) => ({
+    paragraph: arcSummary === undefined ? {} : { arcSummary },
+    materials: episode === undefined ? {} : { episode },
+    used_at: new Date(NOW - agoMs).toISOString(),
+  });
+
+  it('arcSummary 있고 7일 이내·10화 미만이면 다음 화로 이어간다', () => {
+    const arc = deriveArc(row('유나가 카페에서 하루토를 만났다.', 2, 2 * 86400000), { now: NOW });
+    expect(arc).toEqual({ prevArc: '유나가 카페에서 하루토를 만났다.', episode: 3 });
+  });
+
+  it('episode 부재(첫 화)는 1화로 간주 → 다음은 2화', () => {
+    const arc = deriveArc(row('유나가 산책을 나섰다.', undefined, 0), { now: NOW });
+    expect(arc).toEqual({ prevArc: '유나가 산책을 나섰다.', episode: 2 });
+  });
+
+  it('arcSummary가 없으면 null(독립 문단)', () => {
+    expect(deriveArc(row(undefined, 3, 0), { now: NOW })).toBeNull();
+    expect(deriveArc(row('   ', 3, 0), { now: NOW })).toBeNull();
+  });
+
+  it('10화 완결이면 null(새 이야기)', () => {
+    expect(deriveArc(row('완결된 이야기.', 10, 0), { now: NOW })).toBeNull();
+    expect(deriveArc(row('9화까지 이어짐.', 9, 0), { now: NOW })).toEqual({ prevArc: '9화까지 이어짐.', episode: 10 });
+  });
+
+  it('7일을 초과하면 null(오래된 이야기)', () => {
+    expect(deriveArc(row('오래된 이야기.', 2, 8 * 86400000), { now: NOW })).toBeNull();
+    expect(deriveArc(row('막차.', 2, 7 * 86400000 - 1000), { now: NOW })).not.toBeNull();
+  });
+
+  it('약점 모드(weekly)면 무조건 null(연재 제외)', () => {
+    expect(deriveArc(row('약점 세션은 제외.', 2, 0), { now: NOW, weekly: true })).toBeNull();
+  });
+
+  it('행이 없으면 null', () => {
+    expect(deriveArc(null, { now: NOW })).toBeNull();
+    expect(deriveArc(undefined, {})).toBeNull();
+  });
+
+  it('used_at 부재 시 created_at으로 신선도를 판정한다', () => {
+    const r = { paragraph: { arcSummary: '생성만 된 문단.' }, materials: { episode: 2 }, created_at: new Date(NOW - 86400000).toISOString() };
+    expect(deriveArc(r, { now: NOW })).toEqual({ prevArc: '생성만 된 문단.', episode: 3 });
   });
 });
 

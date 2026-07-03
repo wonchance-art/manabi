@@ -100,6 +100,27 @@ export function deriveColdStart(progressRows, vocabRows, reviewEventRows, chapte
     && (reviewEventRows || []).length < 3;
 }
 
+/**
+ * 연재 아크 유도 — 가장 최근 used 문단 1행에서 다음 화를 이어갈지 판정(순수 함수).
+ * 계속 조건: arcSummary 존재 && used_at(없으면 created_at) 7일 이내 && episode < 10 && 약점 모드 아님.
+ * 첫 화는 materials.episode가 없어 1로 간주 → 다음은 2화. 10화까지 이어지고 그 뒤엔 새 이야기.
+ * 불충족(첫 화·오래됨·10화 완결·arcSummary 부재·weekly) 시 null → 독립 문단.
+ * @param {{paragraph?: object, materials?: object, used_at?: string, created_at?: string}|null} latestUsedRow
+ * @param {{now?: number, weekly?: boolean}} opts
+ * @returns {{prevArc: string, episode: number}|null}
+ */
+export function deriveArc(latestUsedRow, { now = Date.now(), weekly = false } = {}) {
+  if (weekly || !latestUsedRow) return null;
+  const arcSummary = latestUsedRow.paragraph?.arcSummary;
+  if (typeof arcSummary !== 'string' || !arcSummary.trim()) return null;
+  const prevEpisode = Number(latestUsedRow.materials?.episode) || 1; // episode 부재 → 1화로 간주
+  if (prevEpisode >= 10) return null;                                 // 10화 완결 → 새 이야기
+  const tsRaw = latestUsedRow.used_at || latestUsedRow.created_at;
+  const ts = tsRaw ? new Date(tsRaw).getTime() : NaN;
+  if (!Number.isFinite(ts) || now - ts > 7 * 86400000) return null;   // 7일 경과 → 새 이야기
+  return { prevArc: arcSummary.trim(), episode: prevEpisode + 1 };
+}
+
 /** 배열에서 대략 고르게 n개 샘플 (요청마다 달라지도록 랜덤 시작점) */
 function sample(arr, n) {
   if (!arr?.length) return [];
@@ -396,11 +417,23 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
     .then(({ data }) => {
       avoidThemes = (data || []).map(r => r.theme).filter(Boolean);
     }, () => {});
+
+  // ── 연재 — 가장 최근 used 문단 1행에서 다음 화를 이어갈지 판정 (테이블 부재 시 null → 새 이야기) ──
+  let latestUsedRow = null;
+  await supabase.from('study_paragraphs')
+    .select('paragraph, materials, used_at, created_at')
+    .eq('user_id', userId).eq('lang', lang).eq('status', 'used')
+    .order('used_at', { ascending: false, nullsFirst: false })
+    .order('created_at', { ascending: false }).limit(1)
+    .then(({ data }) => { latestUsedRow = (data && data[0]) || null; }, () => {});
   // 관심사 그룹(쿠키)이 있으면 그 그룹 테마를 70% 가중, 없으면 기존 로테이션 그대로.
   const theme = pickTheme(THEMES, avoidThemes, interestGroup);
 
   // ── 주간 약점 세션 — KST 일요일·이번 주 미실시면 신규 0·약점 재료로 대체 ──
   const weakness = await buildWeaknessMaterials(supabase, userId, lang, ref, reviewEventRows || []);
+
+  // 약점 세션이 아니면 직전 화를 이어 연재. 충족 시 prevArc·episode(prev+1)를 재료에 실어 보낸다.
+  const arc = deriveArc(latestUsedRow, { now: Date.now(), weekly: !!weakness });
 
   const paragraphMaterials = weakness ? {
     language: lang,
@@ -430,6 +463,7 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
     whitelistWords,
     theme,
     avoidThemes,
+    ...(arc ? { prevArc: arc.prevArc, episode: arc.episode } : {}),
   };
   // 재료가 문법도 단어도 없으면 문단 생성 스킵 (폴백 세션만)
   const canGenerate = !!(paragraphMaterials.newPattern || paragraphMaterials.duePatterns.length || paragraphMaterials.dueWords.length);

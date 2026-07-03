@@ -48,7 +48,7 @@ export default async function Page({ searchParams }) {
   // ── 지난 문단 — status='used' 최근 30행 (테이블 부재 시 빈 목록) ──
   let paragraphs = [];
   await supabase.from('study_paragraphs')
-    .select('id, theme, level, paragraph, used_at, created_at')
+    .select('id, theme, level, paragraph, materials, used_at, created_at')
     .eq('user_id', user.id).eq('lang', lang).eq('status', 'used')
     .order('used_at', { ascending: false, nullsFirst: false })
     .order('created_at', { ascending: false })
@@ -60,6 +60,7 @@ export default async function Page({ searchParams }) {
           id: r.id,
           theme: r.theme || '',
           level: r.level || '',
+          episode: Number(r.materials?.episode) || null,   // 연재 — 있으면 'n화' 표기
           at: r.used_at || r.created_at || null,
           paragraph: {
             paragraph: r.paragraph.paragraph || '',

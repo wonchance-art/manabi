@@ -94,6 +94,16 @@ describe('validateParagraph', () => {
     expect(validateParagraph(null)).toBeNull();
   });
 
+  it('arcSummary가 있으면 통과시켜 실어 나르고, 없으면 필드 자체가 없다(옵션)', () => {
+    const withArc = validateParagraph({ ...GOOD, arcSummary: '유나와 하루토가 카페에서 재회했다.' });
+    expect(withArc.arcSummary).toBe('유나와 하루토가 카페에서 재회했다.');
+    const without = validateParagraph(GOOD);
+    expect('arcSummary' in without).toBe(false);
+    // 빈 문자열·비문자열은 무시
+    expect('arcSummary' in validateParagraph({ ...GOOD, arcSummary: '   ' })).toBe(false);
+    expect('arcSummary' in validateParagraph({ ...GOOD, arcSummary: 123 })).toBe(false);
+  });
+
   it('distractors에서 정답과 같은 값·중복 제거', () => {
     const v = validateParagraph({
       ...GOOD,
@@ -271,7 +281,8 @@ describe('mapParagraphToItems · 새 문법 cloze 간격', () => {
 
 describe('PARAGRAPH_SCHEMA', () => {
   it('Gemini responseSchema 필수 필드', () => {
-    expect(PARAGRAPH_SCHEMA.required).toEqual(['paragraph', 'translation', 'sentences', 'questions', 'preQuestion']);
+    expect(PARAGRAPH_SCHEMA.required).toEqual(['paragraph', 'translation', 'sentences', 'questions', 'preQuestion', 'arcSummary']);
+    expect(PARAGRAPH_SCHEMA.properties.arcSummary.type).toBe('STRING');
     expect(PARAGRAPH_SCHEMA.properties.sentences.items.required).toContain('tokens');
     expect(PARAGRAPH_SCHEMA.properties.preQuestion.required).toEqual(['q', 'answerHint']);
   });
@@ -311,6 +322,32 @@ describe('buildParagraphPrompt · 기지어 제약 · 주제', () => {
   });
 });
 
+describe('buildParagraphPrompt · 연재', () => {
+  it('prevArc가 있으면 이어지는 이야기 지시 + 직전 요약이 프롬프트에 들어간다', () => {
+    const p = buildParagraphPrompt({ ...MATERIALS, prevArc: '유나는 도쿄역에서 친구를 기다리다 비를 만났다.', episode: 3 });
+    expect(p).toContain('이어지는 이야기');
+    expect(p).toContain('유나는 도쿄역에서');
+    expect(p).toContain('요약을 반복하지 말 것');
+    expect(p).toContain('arcSummary');
+  });
+
+  it('prevArc가 없으면 새 이야기 시작 지시 + 인물 이름 부여 문구', () => {
+    const p = buildParagraphPrompt(MATERIALS);
+    expect(p).toContain('새 이야기를 시작하세요');
+    expect(p).toContain('이름');
+    expect(p).toContain('arcSummary');
+  });
+
+  it('약점 복습 세션(weekly/theme)은 연재에서 제외 — 아크 문구가 전혀 없다', () => {
+    const p1 = buildParagraphPrompt({ ...MATERIALS, theme: '약점 복습', prevArc: '무시되어야 함' });
+    expect(p1).not.toContain('이어지는 이야기');
+    expect(p1).not.toContain('새 이야기를 시작하세요');
+    expect(p1).not.toContain('arcSummary');
+    const p2 = buildParagraphPrompt({ ...MATERIALS, weekly: true });
+    expect(p2).not.toContain('arcSummary');
+  });
+});
+
 describe('verifyParagraph', () => {
   const base = validateParagraph(GOOD);
 
@@ -331,6 +368,11 @@ describe('verifyParagraph', () => {
     const v = verifyParagraph(base);
     expect(v.questions).toHaveLength(base.questions.length);
     expect(v.preQuestion.answerHint).toBe('음악');
+  });
+
+  it('arcSummary는 검증에서 건드리지 않고 그대로 실어 나른다(문항 검증과 무관)', () => {
+    const v = verifyParagraph({ ...base, arcSummary: '유나가 산책 중 옛 친구를 만났다.' });
+    expect(v.arcSummary).toBe('유나가 산책 중 옛 친구를 만났다.');
   });
 
   it('preQuestion 힌트가 번역·문장에 없으면 제네릭으로 강등', () => {

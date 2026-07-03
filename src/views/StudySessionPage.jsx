@@ -21,6 +21,19 @@ function ymdLocal(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
+/**
+ * KST 기준 이번 주 월요일 0시의 UTC ISO — 주간 회고 조회 하한.
+ * studyMaterials의 kstWeekStartMs가 export되지 않아 로컬 재구현(근사).
+ */
+function kstWeekStartIso(nowMs = Date.now()) {
+  const kst = new Date(nowMs + 9 * 3600 * 1000);
+  const dow = kst.getUTCDay();               // 0=일 … 6=토
+  const daysFromMon = (dow + 6) % 7;         // 월=0 … 일=6
+  const monKstMidnightUtc = Date.UTC(kst.getUTCFullYear(), kst.getUTCMonth(), kst.getUTCDate())
+    - daysFromMon * 24 * 3600 * 1000;        // 'KST 자정을 UTC인 척'한 값
+  return new Date(monKstMidnightUtc - 9 * 3600 * 1000).toISOString(); // 실제 UTC 순간으로 보정
+}
+
 function shuffle(arr) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -77,6 +90,8 @@ export default function StudySessionPage({
   const [activeWord, setActiveWord] = useState(null);      // 재료 단어 팝오버(문맥 확인)
   const [listenFailed, setListenFailed] = useState(false); // 듣기 자동재생 미지원·실패 표시
   const [nextPreview, setNextPreview] = useState(''); // 결과 화면 — 내일 문단 예고
+  const [explainState, setExplainState] = useState(null); // 오답 해설: null | 'loading' | {text} | 'failed'
+  const [weeklyStats, setWeeklyStats] = useState(null);   // 주간 회고: { n, m } (weekly 세션 결과 화면)
   const [produceState, setProduceState] = useState(null); // 산출 문항 채점: {status:'grading'|'done'|'error', feedback, targetScore}
   const [parkingLong, setParkingLong] = useState(false); // 파킹 대기 8초 경과 여부
   const produceAddedRef = useRef(false);           // 산출 문항 큐 추가 1회 가드
@@ -98,6 +113,8 @@ export default function StudySessionPage({
   const itemShownAtRef = useRef(Date.now());       // 현재 문항 표시 시각 (rt_ms 계산)
   const assistSeenRef = useRef(new Set());         // 재료 단어 어시스트 열람 기록(세션당 단어별 1회)
   const listenAutoRef = useRef(null);              // 듣기 자동재생 1회 가드(uid 기준)
+  const explainCountRef = useRef(0);               // 오답 해설 세션당 캡 카운터(3회)
+  const weeklyRan = useRef(false);                 // 주간 회고 조회 1회 가드
 
   useEffect(() => {
     if (genRan.current) return;
@@ -165,8 +182,8 @@ export default function StudySessionPage({
   // 문항 표시 시각 기록 — settle까지의 응답 시간(rt_ms) 계산용
   useEffect(() => { itemShownAtRef.current = Date.now(); }, [item?.uid]);
 
-  // 문항 전환 시 팝오버·듣기 실패표시 리셋
-  useEffect(() => { setActiveWord(null); setListenFailed(false); }, [item?.uid]);
+  // 문항 전환 시 팝오버·듣기 실패표시·오답 해설 리셋
+  useEffect(() => { setActiveWord(null); setListenFailed(false); setExplainState(null); }, [item?.uid]);
 
   // 재료 단어 팝오버 — 바깥 탭 시 닫기(트리거·팝오버는 stopPropagation으로 유지)
   useEffect(() => {
@@ -247,6 +264,26 @@ export default function StudySessionPage({
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finished, user?.id, lang]);
+
+  // 주간 회고 — weekly 세션 결과 화면에서 1회. review_events 본인 이번 주 count(전체·정답) head 카운트 2회.
+  useEffect(() => {
+    if (!finished || !paragraphMaterials?.weekly || !user?.id || weeklyRan.current) return;
+    weeklyRan.current = true;
+    (async () => {
+      try {
+        const sinceIso = kstWeekStartIso();
+        const total = await supabase.from('review_events')
+          .select('correct', { count: 'exact', head: true })
+          .eq('user_id', user.id).gte('created_at', sinceIso);
+        const right = await supabase.from('review_events')
+          .select('correct', { count: 'exact', head: true })
+          .eq('user_id', user.id).eq('correct', true).gte('created_at', sinceIso);
+        if (total.error || right.error) return;
+        setWeeklyStats({ n: total.count || 0, m: right.count || 0 });
+      } catch {}
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [finished, user?.id]);
 
   // ── 파킹 화면(문단 생성 대기) 표시 시점 기준 8초 경과 시 안내 문구 한 단계 전환 ──
   const parking = genStatus === 'loading' && idx >= queue.length;
@@ -344,6 +381,59 @@ export default function StudySessionPage({
       assistSeenRef.current.add(w.word);
       getBatcher()?.add({ lang, source: 'assist', item_key: w.word, correct: false, detail: { qtype: 'assist' } });
     }
+  }
+
+  /**
+   * 오답 해설 페이로드 — 지원 문항(cloze/vocab/comprehension)의 '오답일 때만' 생성.
+   * 정답이거나 미지원 문항이면 null → 링크 자체가 노출되지 않는다.
+   */
+  function buildExplainQuestion() {
+    if (!item || phase !== 'feedback' || picked == null) return null;
+    if (item.type === 'grammar-cloze') {
+      const qz = item.quiz;
+      if (!qz || picked === qz.correct) return null;
+      return { type: 'cloze', sentence: qz.full || qz.sentence, correct: qz.correct, picked, ko: qz.ko || '' };
+    }
+    if (item.type === 'vocab-choice') {
+      const w = item.word;
+      if (!w || picked === w.meaning) return null;
+      return { type: 'vocab', sentence: w.word_text, correct: w.meaning, picked, ko: w.meaning };
+    }
+    if (item.type === 'read-meaning') {
+      if (picked === item.correct) return null;
+      const ko = item.sentence?.isKoreanPrompt ? item.sentence.main : '';
+      return { type: 'comprehension', sentence: item.sentence?.main || '', correct: item.correct, picked, ko };
+    }
+    return null;
+  }
+
+  /**
+   * "왜 이게 답이에요?" — 오답 해설 요청. 세션당 3회 캡(카운터), 열람 시 이벤트 1회 기록.
+   * 실패·타임아웃은 조용히 'failed'(링크만 사라지고 에러 문구 없음).
+   */
+  async function openExplain() {
+    const eq = buildExplainQuestion();
+    if (!eq || explainCountRef.current >= 3) return;
+    explainCountRef.current += 1;
+    setExplainState('loading');
+    getBatcher()?.add({ lang, source: 'assist', item_key: eq.correct, correct: false, detail: { qtype: 'explain' } });
+    let text = '';
+    try {
+      let authHeader = {};
+      try {
+        const { data: { session: s } } = await supabase.auth.getSession();
+        if (s?.access_token) authHeader = { Authorization: `Bearer ${s.access_token}` };
+      } catch {}
+      const res = await fetch('/api/explain', {
+        method: 'POST',
+        signal: AbortSignal.timeout(10000),
+        headers: { 'Content-Type': 'application/json', ...authHeader },
+        body: JSON.stringify({ language: langName, question: eq }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.explanation) text = data.explanation;
+    } catch {}
+    setExplainState(text ? { text } : 'failed');
   }
 
   /** 문장 텍스트를 재료 단어 기준으로 분절(비-ja 인라인 감싸기용) — 긴 단어 우선 매칭 */
@@ -661,6 +751,11 @@ export default function StudySessionPage({
             강해진 기억 {rightCount} · 곧 다시 만날 {wrong.length}
             {skipped.size > 0 && ` · 건너뜀 ${skipped.size}`}
           </p>
+          {paragraphMaterials?.weekly && weeklyStats && (
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: 6, lineHeight: 1.6 }}>
+              이번 주: 세션을 포함해 문항 {weeklyStats.n}개, 강해진 기억 {weeklyStats.m}개
+            </p>
+          )}
         </div>
 
         {/* 2. 새 챕터 */}
@@ -1127,6 +1222,25 @@ export default function StudySessionPage({
                 {idx + 1 >= queue.length ? '결과 보기 →' : '계속 →'}
               </Button>
             </div>
+          )}
+        </div>
+      )}
+
+      {/* 오답 해설 "왜?" — 지원 문항의 오답일 때만, 세션당 3회 캡. 실패 시 조용히 사라짐. */}
+      {phase === 'feedback' && buildExplainQuestion() && (
+        <div style={{ marginTop: 12 }}>
+          {explainState == null && explainCountRef.current < 3 && (
+            <button type="button" className="study-textlink" onClick={openExplain}>
+              왜 이게 답이에요?
+            </button>
+          )}
+          {explainState === 'loading' && (
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>…</p>
+          )}
+          {explainState?.text && (
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
+              {explainState.text}
+            </p>
           )}
         </div>
       )}
