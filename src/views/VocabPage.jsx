@@ -273,8 +273,9 @@ export default function VocabPage() {
     recordActivity(user.id, () => fetchProfile(user.id));
     // 약점 진단 데이터 — 어휘 정오답 적재 ('다시'=오답, 나머지=정답 취급)
     // qtype: 실제 출제된 유형에서 유도 (자동 모드는 rung이 정한 서브모드 → effectiveMode).
-    // flash·context=객관식→choice, typing, listening. 이 qtype이 다음 세션 rung 유도의 입력이 된다.
-    const qtype = ({ flash: 'choice', context: 'choice', typing: 'typing', listening: 'listening' })[effectiveMode] || 'choice';
+    // flash=자기채점(수동 플래시 전용), context=객관식→choice, typing, listening. 이 qtype이 다음 세션 rung 유도의 입력이 된다.
+    // flash는 별도 qtype으로 기록 — 자기채점은 '비대칭 신뢰'(성공은 무시, 오답 자인만 강등)로 rung에서 다르게 다룬다.
+    const qtype = ({ flash: 'flash', context: 'choice', typing: 'typing', listening: 'listening' })[effectiveMode] || 'choice';
     logReviewEvents(user.id, [{
       lang: currentWord.language || detectLang(currentWord.word_text),
       source: 'vocab',
