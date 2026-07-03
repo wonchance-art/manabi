@@ -89,7 +89,7 @@ export default function Layout({ children }) {
 
   // 핵심 네비게이션만 노출 — 부가 기능(가이드·통계)은 프로필 안쪽으로
   const navLinks = [
-    ...(user ? [{ href: '/home', label: '홈' }] : []),
+    ...(user ? [{ href: '/home', label: '홈' }, { href: '/learn', label: '학습' }] : []),
     { href: '/lessons',   label: '교재' },
     { href: '/vocab',     label: '어휘' },
     { href: '/materials', label: '자료' },
@@ -97,7 +97,7 @@ export default function Layout({ children }) {
   ];
 
   const mobileNavLinks = [
-    ...(user ? [{ href: '/home', label: '홈' }] : []),
+    ...(user ? [{ href: '/home', label: '홈' }, { href: '/learn', label: '학습' }] : []),
     { href: '/lessons',   label: '교재' },
     { href: '/vocab',     label: '어휘' },
     { href: '/materials', label: '자료' },

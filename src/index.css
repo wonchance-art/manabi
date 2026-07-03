@@ -8877,3 +8877,61 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   .kana-stroke-glyph { width: 120px; height: 120px; }
   .kana-test__prompt { font-size: 3.6rem; }
 }
+
+/* ========= LearnPage — 학습 허브 색 표정 =========
+   원칙: 기존 팔레트 변수만 사용(--primary/--accent/--warning/--danger/--text-muted).
+   타일별 --tile-accent 인라인 변수로 좌보더·아이콘원·hover 틴트·숫자색을 파생.
+   color-mix 로 라이트·다크 각 테마의 --bg-card 위에 은은한 틴트를 얹어 두 테마 공용. */
+
+/* ① 오늘 학습 주 CTA — 페이지 유일한 '큰' 요소: primary 그라데이션 + 좌측 악센트 밴드 */
+.learn-cta {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 15%, var(--bg-card)) 0%, var(--bg-card) 72%);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--primary);
+}
+.learn-cta:hover {
+  filter: none;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 22%, var(--bg-card)) 0%, var(--bg-card) 78%);
+}
+.learn-cta .lessons-continue__meta { color: var(--primary); font-size: 1.05rem; }
+
+/* ② 이어지는 이야기 카드 — 좌보더 primary 한 줄의 '표정' */
+.learn-story {
+  display: block; text-decoration: none;
+  padding: 20px 22px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--primary);
+  border-radius: var(--radius-lg);
+  transition: all var(--transition-smooth);
+}
+.learn-story:hover { border-color: var(--border-hover); border-left-color: var(--primary); }
+.learn-story__kicker { font-size: 0.74rem; color: var(--text-muted); font-weight: 700; letter-spacing: 0.02em; margin-bottom: 6px; }
+.learn-story__title { font-size: 1.05rem; font-weight: 700; margin: 0 0 8px; line-height: 1.45; }
+.learn-story__more { font-size: 0.82rem; color: var(--text-secondary); }
+
+/* ③ 연습실 그리드 + 타일 — 타일별 고유 악센트 */
+/* 연습실 타일 — 홈 벤토 1x1 셀, 세로 구성(아이콘 위, 제목·설명 아래) */
+.learn-tile {
+  display: flex; flex-direction: column; justify-content: center; gap: 6px;
+  text-decoration: none;
+  padding: 14px;
+  border-left: 3px solid var(--tile-accent, var(--border));
+}
+.learn-tile:hover {
+  background: color-mix(in srgb, var(--tile-accent, var(--text-muted)) 7%, var(--bg-card));
+  border-color: var(--border-hover);
+  border-left-color: var(--tile-accent, var(--border));
+}
+.learn-tile__head { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.learn-tile__icon {
+  width: 30px; height: 30px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.95rem; line-height: 1;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--tile-accent, var(--text-muted)) 14%, transparent);
+}
+.learn-tile__badge { margin-left: 6px; font-size: 0.78rem; font-weight: 700; color: var(--tile-accent, var(--primary)); }
+
+/* ④ 성장 벤토 — 숫자 4개 각기 다른 악센트(타일 매핑과 일관), 라벨은 중립 유지 */
+.learn-stat .mypage-stat-cell__value { color: var(--tile-accent, var(--text-primary)); }
