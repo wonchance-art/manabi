@@ -39,6 +39,17 @@ export function computeRung(events) {
   let upStreak = 0;
   let downStreak = 0;
   for (const ev of events) {
+    // 비대칭 신뢰: 플래시(자기채점)는 훑기용이라 성공은 관대 편향이 커 신뢰 불가 → 완전 무시,
+    // 오답 자인('다시')만 신뢰 가능 → 현재 급의 실패로 인정(강등 신호). 승급 크레딧은 0.
+    if (ev?.qtype === 'flash') {
+      if (!ev?.correct) {
+        downStreak++;
+        upStreak = 0;
+        if (downStreak >= 2) { r = Math.max(1, r - 1); downStreak = 0; }
+      }
+      // 정답은 어떤 스트릭도 건드리지 않음 — 자기채점 성공은 신호로 안 씀
+      continue;
+    }
     const q = qtypeRungLevel(ev?.qtype);
     if (ev?.correct) {
       if (q >= r) {

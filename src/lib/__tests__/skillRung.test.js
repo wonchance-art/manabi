@@ -60,6 +60,25 @@ describe('computeRung', () => {
     // qtype 없는 정답 2번 = choice 2연속 → r2
     expect(computeRung([{ correct: true }, { correct: true }])).toBe(2);
   });
+
+  // 비대칭 신뢰: 플래시(자기채점) 성공은 무시, 오답 자인만 강등 신호
+  it('flash 정답 2연속 → rung 불변(승급 크레딧 0)', () => {
+    // 노출 전(r 시작 1) 상태에서 flash 정답만으로는 승급 없음 → r1 유지
+    expect(computeRung([ok('flash'), ok('flash')])).toBe(1);
+    // r2까지 올린 뒤 flash 정답 2번 — 승급 안 됨 → r2 유지
+    expect(computeRung([ok('choice'), ok('choice'), ok('flash'), ok('flash')])).toBe(2);
+  });
+
+  it('flash 오답 2연속 → 강등', () => {
+    // choice×2 → r2, flash 오답 2연속 → r1
+    expect(computeRung([ok('choice'), ok('choice'), no('flash'), no('flash')])).toBe(1);
+  });
+
+  it('flash 정답은 진행 중인 downStreak을 리셋하지 않음', () => {
+    // choice×2 → r2. choice 오답1 + flash 정답 + choice 오답1 → downStreak 유지되어 강등 → r1
+    const events = [ok('choice'), ok('choice'), no('choice'), ok('flash'), no('choice')];
+    expect(computeRung(events)).toBe(1);
+  });
 });
 
 describe('computeEwma', () => {

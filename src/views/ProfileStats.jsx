@@ -130,16 +130,10 @@ function StatTile({ label, value }) {
   );
 }
 
-/* ── 목표 타일 — 오늘 달성률, 누르면 일일 목표 설정 ── */
+/* ── 목표 타일 — 오늘 달성률 표시 전용. 탭하면 마이페이지에서 목표 편집(정본 슬라이더). ── */
 
 function GoalTile({ vocab }) {
-  const { user, profile, fetchProfile } = useAuth();
-  const toast = useToast();
-  const [open, setOpen] = useState(false);
-  const [goalReview, setGoalReview] = useState(5);
-  const [goalWords, setGoalWords] = useState(5);
-  const [goalRead, setGoalRead] = useState(1);
-  const [busy, setBusy] = useState(false);
+  const { profile } = useAuth();
 
   const gReview = profile?.goal_review ?? 5;
   const gWords = profile?.goal_words ?? 5;
@@ -150,51 +144,11 @@ function GoalTile({ vocab }) {
     (Math.min(1, reviewsToday / Math.max(gReview, 1)) + Math.min(1, wordsToday / Math.max(gWords, 1))) / 2 * 100
   );
 
-  function openModal() {
-    setGoalReview(profile?.goal_review ?? 5);
-    setGoalWords(profile?.goal_words ?? 5);
-    setGoalRead(profile?.goal_read ?? 1);
-    setOpen(true);
-  }
-
-  async function save() {
-    if (busy) return;
-    setBusy(true);
-    const { error } = await supabase.from('profiles').update({
-      goal_review: Math.max(1, goalReview),
-      goal_words: Math.max(1, goalWords),
-      goal_read: Math.max(1, goalRead),
-    }).eq('id', user.id);
-    setBusy(false);
-    if (error) { toast('저장 실패 — ' + error.message, 'error'); return; }
-    fetchProfile(user.id, user.user_metadata);
-    toast('일일 목표를 저장했어요.', 'success');
-    setOpen(false);
-  }
-
   return (
-    <>
-      <button type="button" className="bento-item bento--1x1 card bento-stat bento-stat--btn" onClick={openModal}>
-        <span className="mypage-stat-cell__value">{pct}%</span>
-        <span className="mypage-stat-cell__label">오늘 목표</span>
-      </button>
-      {open && (
-        <TileModal title="일일 목표" onClose={() => setOpen(false)}>
-          {[
-            { label: '단어 복습', value: goalReview, set: setGoalReview, max: 50 },
-            { label: '단어 수집', value: goalWords, set: setGoalWords, max: 30 },
-            { label: '자료 완독', value: goalRead, set: setGoalRead, max: 5 },
-          ].map(g => (
-            <div key={g.label} className="tile-modal__row">
-              <span>{g.label}</span>
-              <input type="number" min={1} max={g.max} className="form-input tile-modal__num"
-                value={g.value} onChange={e => g.set(Math.max(1, Math.min(g.max, Number(e.target.value) || 1)))} />
-            </div>
-          ))}
-          <Button size="sm" onClick={save} disabled={busy}>{busy ? '저장 중...' : '저장'}</Button>
-        </TileModal>
-      )}
-    </>
+    <Link href="/profile" className="bento-item bento--1x1 card bento-stat bento-stat--btn">
+      <span className="mypage-stat-cell__value">{pct}%</span>
+      <span className="mypage-stat-cell__label">오늘 목표</span>
+    </Link>
   );
 }
 

@@ -2,18 +2,10 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { getRefLang, REF_LANGS } from '@/content/refLangs';
 import StudyLibraryPage from '@/views/StudyLibraryPage';
+import { KNOWN_WORD_MIN_INTERVAL, kstWeekStartIso } from '@/lib/growthStats';
 
 export const metadata = { title: '다시 읽기 서재 | Anatomy Studio' };
 export const dynamic = 'force-dynamic';
-
-/** KST 기준 이번 주 월요일 0시의 UTC ISO */
-function kstWeekStartIso() {
-  const kst = new Date(Date.now() + 9 * 3600 * 1000);
-  const daysSinceMon = (kst.getUTCDay() + 6) % 7;
-  const ms = Date.UTC(kst.getUTCFullYear(), kst.getUTCMonth(), kst.getUTCDate())
-    - daysSinceMon * 86400000 - 9 * 3600 * 1000;
-  return new Date(ms).toISOString();
-}
 
 /**
  * 다시 읽기 서재 + 성장 요약 — 지난 '오늘의 문단'을 어시스트 없이 재독하며 성장을 확인한다.
@@ -78,10 +70,10 @@ export default async function Page({ searchParams }) {
     return n;
   };
   const [knownCount, totalVocab, passedChapters, weekSessions] = await Promise.all([
-    // ① 아는 단어 근사 — interval(안정도) 7일 이상
+    // ① 아는 단어 근사 — interval(안정도) 기준 (정의: growthStats.isKnownWord)
     countOf(() => supabase.from('user_vocabulary')
       .select('id', { count: 'exact', head: true })
-      .eq('user_id', user.id).eq('language', lang).gte('interval', 7)),
+      .eq('user_id', user.id).eq('language', lang).gte('interval', KNOWN_WORD_MIN_INTERVAL)),
     // 전체 단어 수
     countOf(() => supabase.from('user_vocabulary')
       .select('id', { count: 'exact', head: true })

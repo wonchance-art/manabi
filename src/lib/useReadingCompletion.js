@@ -3,6 +3,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
 import { recordActivity } from './streak';
 import { friendlyToastMessage } from './errorMessage';
+import { logReviewEvents } from './reviewEvents';
+import { REF_LANGS } from '../content/refLangs';
 
 /**
  * 자료 완독 처리: reading_progress upsert + 퀴즈 생성.
@@ -44,6 +46,17 @@ export function useReadingCompletion({
       queryClient.invalidateQueries({ queryKey: ['reading-progress', user?.id, materialId] });
       queryClient.invalidateQueries({ queryKey: ['reading-progress-list', user?.id] });
       recordActivity(user.id, () => fetchProfile(user.id));
+      // 완독을 학습 기록에 합류 — fire-and-forget, 실패 무해
+      const eventLang = material?.processed_json?.metadata?.language;
+      if (eventLang && REF_LANGS[eventLang]) {
+        logReviewEvents(user.id, [{
+          lang: eventLang,
+          source: 'reading',
+          item_key: 'material:' + materialId,
+          correct: true,
+          detail: { qtype: 'read', mode: 'viewer' },
+        }]);
+      }
       const pendingCompletion = {
         wordsSaved: data.wordsSaved,
         dueCount: data.dueCount,
