@@ -47,11 +47,15 @@ export default async function Page({ searchParams }) {
   const { session, paragraphMaterials, warmup, band, dial, canGenerate, coldStart } =
     await assembleStudyMaterials(supabase, user.id, lang, { interestGroup });
 
+  // ── 내 자료 세션(?source=mine) — 프리페치를 조회·소모하지 않고 라이브 생성을 강제한다. ──
+  // (프리페치 행은 그대로 보존 → 다음 일반 세션이 소비)
+  const sourceMode = sp?.source === 'mine';
+
   // ── 프리페치된 문단 우선 사용 — 최근 48h 내 status='prefetched' 최신 1행 (테이블 부재 시 무해) ──
-  // 단, 이번 세션이 주간 약점 모드(paragraphMaterials.weekly)면 프리페치를 건너뛰고 라이브 생성 경로로.
-  // (프리페치 행은 남겨둠 — 다음 비약점 세션에서 48h 내면 소비, 지나면 자연 만료)
+  // 단, 이번 세션이 주간 약점 모드(paragraphMaterials.weekly)·내 자료 모드면 프리페치를 건너뛰고 라이브 생성 경로로.
+  // (프리페치 행은 남겨둠 — 다음 비약점·일반 세션에서 48h 내면 소비, 지나면 자연 만료)
   let pregenerated = null;
-  if (!paragraphMaterials?.weekly) {
+  if (!paragraphMaterials?.weekly && !sourceMode) {
     const cutoffIso = new Date(Date.now() - 48 * 3600 * 1000).toISOString();
     await supabase.from('study_paragraphs')
       .select('id, materials, paragraph')
@@ -79,6 +83,7 @@ export default async function Page({ searchParams }) {
       session={session}
       paragraphMaterials={effectiveMaterials}
       pregenerated={pregenerated}
+      sourceMode={sourceMode}
       warmup={pregenerated ? [] : warmup}
       dial={dial}
       band={band}

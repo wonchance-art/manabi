@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import RefSpeak from '../components/RefSpeak';
 import { JaText } from './refShared';
 import { stripInlineReadings } from '../lib/studyParagraph';
@@ -93,6 +94,57 @@ function ParagraphCard({ entry, langCode, lang }) {
   );
 }
 
+const SOURCE_MAX = 1500;
+
+/**
+ * 내 자료로 이야기 만들기 — 접힌 영역(기본). 펼치면 붙여넣기 → localStorage 저장 후 라이브 세션으로.
+ * 소재는 그대로 쓰이지 않고, 사용자 레벨·복습 재료를 녹여 재작성된 학습 문단의 소재가 된다.
+ */
+function MySourceComposer({ lang, langCode }) {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState('');
+
+  function start() {
+    const t = text.trim();
+    if (!t) return;
+    try { localStorage.setItem(`study_source_${lang}`, t.slice(0, SOURCE_MAX)); } catch {}
+    router.push(`/study?source=mine&lang=${encodeURIComponent(lang)}`);
+  }
+
+  return (
+    <div style={{ marginBottom: 18 }}>
+      <button
+        type="button"
+        onClick={() => setOpen(v => !v)}
+        style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '0.85rem', fontWeight: 700, color: 'var(--primary)' }}
+      >
+        ＋ 내 자료로 이야기 만들기 {open ? '▴' : '▾'}
+      </button>
+      {open && (
+        <div className="card" style={{ padding: '14px 16px', marginTop: 8 }}>
+          <textarea
+            className="form-input"
+            lang={langCode}
+            value={text}
+            onChange={e => setText(e.target.value.slice(0, SOURCE_MAX))}
+            maxLength={SOURCE_MAX}
+            rows={4}
+            placeholder="기사 한 부분, 좋아하는 문장, 수업 프린트… 붙여넣으면 오늘 문단의 소재가 돼요"
+            style={{ width: '100%', fontSize: '0.95rem', resize: 'vertical' }}
+          />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
+            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{text.length}/{SOURCE_MAX}</span>
+            <button type="button" onClick={start} disabled={!text.trim()} className="btn btn--primary btn--sm">
+              이 자료로 학습 →
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /**
  * 다시 읽기 서재 — 성장 요약 3타일 + 지난 문단 재독 목록.
  * 재독은 어시스트(요미가나) 없이 원문만 보여 성장을 체감하게 한다.
@@ -122,6 +174,9 @@ export default function StudyLibraryPage({
           오늘 학습 →
         </Link>
       </div>
+
+      {/* 내 자료로 학습 — 접힌 입력 영역 */}
+      <MySourceComposer lang={lang} langCode={langCode} />
 
       {/* 성장 요약 */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 18 }}>
