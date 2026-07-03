@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { buildParagraphPrompt, validateParagraph, verifyParagraph, PARAGRAPH_SCHEMA } from '@/lib/studyParagraph';
-import { assembleStudyMaterials } from '@/lib/studyMaterials';
+import { assembleStudyMaterials, deriveArc } from '@/lib/studyMaterials';
 
 /**
  * 오늘의 문단 생성 — 공부 모드의 재료(새 문법·새 어휘·복습 문법·복습 어휘)를
@@ -146,6 +146,11 @@ function cleanMaterials(body) {
     theme: typeof body?.theme === 'string' ? body.theme.slice(0, 40) : '',
     avoidThemes: (Array.isArray(body?.avoidThemes) ? body.avoidThemes : []).slice(0, 5)
       .filter(t => typeof t === 'string' && t.trim()).map(t => t.slice(0, 40)),
+    // 연재 — 클라가 직접 보낸 경우만 채택(대개는 route가 서버에서 보강한다).
+    ...(typeof body?.prevArc === 'string' && body.prevArc.trim()
+      ? { prevArc: body.prevArc.trim().slice(0, 200) } : {}),
+    ...(Number(body?.episode) >= 2 && Number(body?.episode) <= 20
+      ? { episode: Math.floor(Number(body.episode)) } : {}),
   };
 }
 
@@ -204,6 +209,21 @@ export async function POST(request) {
     }
   } else {
     materials = cleanMaterials(body);
+    // ── 연재 서버 보강 ──
+    // 클라(StudySessionPage)는 재료 필드를 명시 나열해 보내므로 prevArc/episode가 body에 실리지 않는다.
+    // 프리페치가 아닌 라이브 경로에서는 route가 직접 최근 used 행에서 다음 화를 유도한다
+    // (약점 세션 제외·클라가 이미 보낸 경우 존중). 실패·부재는 조용히 무시 → 독립 문단.
+    if (!materials.prevArc && materials.theme !== '약점 복습' && materials.language) {
+      let latestUsedRow = null;
+      await userClient.from('study_paragraphs')
+        .select('paragraph, materials, used_at, created_at')
+        .eq('user_id', authUser.id).eq('lang', materials.language).eq('status', 'used')
+        .order('used_at', { ascending: false, nullsFirst: false })
+        .order('created_at', { ascending: false }).limit(1)
+        .then(({ data }) => { latestUsedRow = (data && data[0]) || null; }, () => {});
+      const arc = deriveArc(latestUsedRow, { weekly: materials.theme === '약점 복습' });
+      if (arc) { materials.prevArc = arc.prevArc; materials.episode = arc.episode; }
+    }
   }
 
   const promptText = buildParagraphPrompt(materials);

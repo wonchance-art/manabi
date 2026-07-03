@@ -45,6 +45,9 @@ function ParagraphCard({ entry, langCode, lang }) {
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
           <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{fmtDate(entry.at)}</span>
+          {entry.episode >= 2 && (
+            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{entry.episode}화</span>
+          )}
           {entry.theme && (
             <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--primary)' }}>{entry.theme}</span>
           )}
