@@ -10,7 +10,7 @@ vi.mock('@/lib/studySession', () => ({ composeSession: () => ({}), buildWarmupIt
 vi.mock('@/lib/writingPrompts', () => ({ levelBand: () => null }));
 vi.mock('@/lib/studyParagraph', () => ({ THEMES: [] }));
 
-const { deriveVocabRungs } = await import('../studyMaterials');
+const { deriveVocabRungs, gateNewMaterialsByDial } = await import('../studyMaterials');
 
 // review_events 행 헬퍼 (시간 오름차순으로 넘긴다)
 const ev = (source, item_key, correct, qtype = 'choice') => ({
@@ -48,5 +48,19 @@ describe('deriveVocabRungs', () => {
   it('빈/누락 입력에 방어적', () => {
     expect(deriveVocabRungs(undefined, undefined)).toEqual({});
     expect(deriveVocabRungs([ev('vocab', '猫', true)], [])).toEqual({});
+  });
+});
+
+describe('gateNewMaterialsByDial', () => {
+  const newPattern = { pattern: '～ます', patternKo: '~합니다' };
+  const newWords = [{ word: '猫', meaning: '고양이', pron: 'ねこ' }];
+
+  it("dial 'easy'면 신규 패턴·단어를 비운다 (과부하 방어)", () => {
+    expect(gateNewMaterialsByDial('easy', newPattern, newWords)).toEqual({ newPattern: null, newWords: [] });
+  });
+
+  it("dial 'normal'/'hard'면 신규 재료를 그대로 통과시킨다", () => {
+    expect(gateNewMaterialsByDial('normal', newPattern, newWords)).toEqual({ newPattern, newWords });
+    expect(gateNewMaterialsByDial('hard', newPattern, newWords)).toEqual({ newPattern, newWords });
   });
 });

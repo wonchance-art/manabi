@@ -31,6 +31,18 @@ export function deriveVocabRungs(eventsAsc, dueVocabRows) {
   return rungs;
 }
 
+/**
+ * dial==='easy'면 문단 재료의 신규 학습(newPattern·newWords)을 비운다 — 과부하 방어 밸브.
+ * 복습 재료(duePatterns/dueWords)는 손대지 않는다.
+ * @param {'easy'|'normal'|'hard'} dial
+ * @param {{pattern: string, patternKo: string}|null} newPattern
+ * @param {Array} newWords
+ * @returns {{newPattern: object|null, newWords: Array}}
+ */
+export function gateNewMaterialsByDial(dial, newPattern, newWords) {
+  return dial === 'easy' ? { newPattern: null, newWords: [] } : { newPattern, newWords };
+}
+
 /** 배열에서 대략 고르게 n개 샘플 (요청마다 달라지도록 랜덤 시작점) */
 function sample(arr, n) {
   if (!arr?.length) return [];
@@ -346,11 +358,14 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
   } : {
     language: lang,
     level,
-    newPattern: newChapter?.teach ? { pattern: newChapter.teach.pattern, patternKo: newChapter.teach.patternKo } : null,
+    ...gateNewMaterialsByDial(
+      dial,
+      newChapter?.teach ? { pattern: newChapter.teach.pattern, patternKo: newChapter.teach.patternKo } : null,
+      newWords
+    ),
     newChapter: newChapter?.meta || null,
     duePatterns: duePatternsForPara,
     dueWords: (dueVocabRows || []).slice(0, 3).map(r => ({ word: r.word_text, meaning: r.meaning, row: r })),
-    newWords,
     knownWords,
     whitelistWords,
     theme,

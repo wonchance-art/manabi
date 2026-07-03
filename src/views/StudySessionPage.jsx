@@ -71,7 +71,11 @@ export default function StudySessionPage({
   const [showTranslation, setShowTranslation] = useState(false);
   const [nextPreview, setNextPreview] = useState(''); // 결과 화면 — 내일 문단 예고
   const [produceState, setProduceState] = useState(null); // 산출 문항 채점: {status:'grading'|'done'|'error', feedback, targetScore}
+  const [parkingLong, setParkingLong] = useState(false); // 파킹 대기 8초 경과 여부
   const produceAddedRef = useRef(false);           // 산출 문항 큐 추가 1회 가드
+  const produceDoneRef = useRef(false);            // 산출 문항 확정 1회 가드(늦은 fetch 이중 처리 방지)
+  const transitionAtRef = useRef(0);               // 마지막 문항 전환 시각(연타 tap-through 잠금)
+  const streakSentRef = useRef(false);             // pagehide 스트릭 기록 1회 가드(effectsFired와 분리 — bfcache 복귀 시 종료 이펙트가 억제되지 않게)
   // 문단 생성 — 재료가 있으면 세션 시작 전에 오늘의 문단을 만든다. 실패 시 폴백(조립 세션).
   // 프리페치된 문단이 있으면 이미 매핑 완료 → 'ready'(gradedCount 부족 시 'fallback').
   const [genStatus, setGenStatus] = useState(
@@ -101,6 +105,7 @@ export default function StudySessionPage({
         } catch {}
         const res = await fetch('/api/study-paragraph', {
           method: 'POST',
+          signal: AbortSignal.timeout(20000), // 20초 넘으면 abort → catch → 폴백 세션으로 합류
           headers: { 'Content-Type': 'application/json', ...authHeader },
           body: JSON.stringify({
             language: paragraphMaterials.language,
@@ -212,6 +217,29 @@ export default function StudySessionPage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finished, user?.id, lang]);
 
+  // ── 파킹 화면(문단 생성 대기) 표시 시점 기준 8초 경과 시 안내 문구 한 단계 전환 ──
+  const parking = genStatus === 'loading' && idx >= queue.length;
+  useEffect(() => {
+    if (!parking) { setParkingLong(false); return; }
+    const t = setTimeout(() => setParkingLong(true), 8000);
+    return () => clearTimeout(t);
+  }, [parking]);
+
+  // ── 탭 닫힘·백그라운드 전환 시 잔여 이벤트 flush + 중도 이탈 스트릭(best-effort) ──
+  useEffect(() => {
+    function onPageHide() {
+      batcherRef.current?.flush();
+      // 1문항 이상 답변했고 아직 fireEffects 전이면 활동 기록 시도(스트릭 RPC는 멱등).
+      if (!streakSentRef.current && recordedRef.current.size > 0 && user?.id) {
+        streakSentRef.current = true;
+        recordActivity(user.id, () => fetchProfile?.(user.id));
+      }
+    }
+    window.addEventListener('pagehide', onPageHide);
+    return () => window.removeEventListener('pagehide', onPageHide);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
   // 문법 due 챕터별 문항 수 (재출제 제외) — 챕터 마지막 문항 판정에 사용
   const grammarCounts = useMemo(
     () => grammarDueChapterCounts(queue.filter(it => !String(it.uid).endsWith('-r'))),
@@ -228,11 +256,36 @@ export default function StudySessionPage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [item?.uid]);
 
+  // 집계용 분모 — 결과 화면 통계(기존 정의 유지, 산출 포함).
   const gradedTotal = Math.max(0, gradedBase - skipped.size);
   const firstAnswered = Object.keys(firstResults).length;
   const rightCount = Object.values(firstResults).filter(r => r.ok).length;
 
+  const isRetry = !!(item && String(item.uid).endsWith('-r'));
+
+  // ── 진행 표시용 분모(집계용과 분리) — 산출(보너스) 문항 제외, 라이브 생성 중엔 예상 문단 수 선반영 ──
+  const RESERVED_PARA = 7; // 라이브 생성 중 문단 예상 문항 수(하드캡). 실제 도착 시 실제 수로 교체.
+  const produceInQueue = queue.some(it => it.type === 'produce-writing');
+  const produceSkipped = produceInQueue && skipped.has('p-1');
+  // 산출 제외 집계 분모(도착 후 사용).
+  const nonProduceTotal = Math.max(0, gradedBase - (produceInQueue ? 1 : 0) - (skipped.size - (produceSkipped ? 1 : 0)));
+  // 라이브 생성 대기 중엔 gradedBase가 워밍업만이므로 문단 예상분(7)을 선반영해 분모 급락 방지.
+  const progressTotal = (liveGen && genStatus === 'loading')
+    ? Math.max(0, gradedBase + RESERVED_PARA - skipped.size)
+    : nonProduceTotal;
+  const progressDone = Object.values(firstResults).filter(r => r.item.type !== 'produce-writing').length;
+  const progressPct = progressTotal ? Math.min(100, Math.round((progressDone / progressTotal) * 100)) : 0;
+
   function baseUid(u) { return String(u).replace(/-r$/, ''); }
+
+  /** 진행 중 이탈 방지 — 첫 답변 이후 && 미완료면 1단계 확인 (답변 전·결과 화면은 바로 나감) */
+  function handleExitClick(e) {
+    if (finished || firstAnswered === 0) return;
+    if (!window.confirm('세션을 나갈까요? 진행은 저장돼 있어요.')) e.preventDefault();
+  }
+
+  /** 문항 전환 직후(300ms) 답변 입력 무시 — 계속 버튼 연타 tap-through 방지 */
+  function isTapLocked() { return Date.now() - transitionAtRef.current < 300; }
 
   /** 듣기 문항 건너뛰기 — 채점 없이 다음으로 (집계·SRS 제외) */
   function skipItem() {
@@ -292,6 +345,7 @@ export default function StudySessionPage({
   /** 채점 확정 — 첫 시도만 집계·기록, 오답은 재출제 예약 */
   function settle(ok, pickedValue = null) {
     if (!item || phase === 'feedback') return;
+    if (isTapLocked()) return;
     setPicked(pickedValue);
     setPhase('feedback');
     const orig = baseUid(item.uid);
@@ -311,6 +365,7 @@ export default function StudySessionPage({
   }
 
   function next() {
+    transitionAtRef.current = Date.now();
     setPicked(null);
     setTyping('');
     setOrderPicks([]);
@@ -333,10 +388,12 @@ export default function StudySessionPage({
    */
   async function submitProduce() {
     if (!item || phase === 'feedback') return;
+    if (isTapLocked()) return;
     const textVal = typing.trim();
     if (!textVal) return;
     const rt_ms = Date.now() - itemShownAtRef.current;
     const orig = baseUid(item.uid);
+    produceDoneRef.current = false;
     setPhase('feedback');
     setProduceState({ status: 'grading' });
     let feedback = null;
@@ -348,6 +405,7 @@ export default function StudySessionPage({
       } catch {}
       const res = await fetch('/api/writing-feedback', {
         method: 'POST',
+        signal: AbortSignal.timeout(12000), // 12초 초과 시 abort → error 경로(skipped 강등)
         headers: { 'Content-Type': 'application/json', ...authHeader },
         body: JSON.stringify({
           language: lang,
@@ -361,8 +419,12 @@ export default function StudySessionPage({
       if (res.ok && data.feedback) feedback = data.feedback;
     } catch {}
 
+    // 사용자가 대기 중 "건너뛰고 마치기"로 이미 진행했으면 늦게 도착한 결과는 무시(이중 처리 방지).
+    if (produceDoneRef.current) return;
+    produceDoneRef.current = true;
+
     if (!feedback) {
-      // 채점 실패 — 집계 제외 처리
+      // 채점 실패/타임아웃 — 집계 제외 처리
       setSkipped(prev => new Set(prev).add(orig));
       setProduceState({ status: 'error' });
       return;
@@ -379,6 +441,14 @@ export default function StudySessionPage({
     setFirstResults(prev => ({ ...prev, [orig]: { ok, item } }));
     try { localStorage.setItem(`study_last_produce_${lang}`, ymdLocal(new Date())); } catch {}
     setProduceState({ status: 'done', feedback, targetScore });
+  }
+
+  /** 산출 채점 대기 중 건너뛰기 — 해당 문항 skipped 처리 후 진행(늦게 온 fetch는 무시됨) */
+  function skipProduceGrading() {
+    if (!item) return;
+    produceDoneRef.current = true;
+    setSkipped(prev => new Set(prev).add(baseUid(item.uid)));
+    next();
   }
 
   /**
@@ -458,14 +528,19 @@ export default function StudySessionPage({
   }
 
   // ── 워밍업을 다 풀었는데 아직 문단 생성 중 — 그때만 짧은 대기 화면 ──
-  if (genStatus === 'loading' && idx >= queue.length) {
+  if (parking) {
     return (
-      <div className="page-container" style={{ maxWidth: 640, textAlign: 'center', paddingTop: 80 }}>
-        <div style={{ fontSize: '2rem', marginBottom: 12 }} aria-hidden="true">✍️</div>
-        <h1 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: 8 }}>문단 마무리 중…</h1>
-        <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.7 }}>
-          오늘의 이야기를 거의 다 엮었어요
-        </p>
+      <div className="page-container" style={{ maxWidth: 640 }}>
+        <div style={{ display: 'flex', alignItems: 'center', margin: '10px 0 20px' }}>
+          <Link href="/home" aria-label="나가기" onClick={handleExitClick} style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>✕</Link>
+        </div>
+        <div style={{ textAlign: 'center', paddingTop: 60 }}>
+          <div style={{ fontSize: '2rem', marginBottom: 12 }} aria-hidden="true">✍️</div>
+          <h1 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: 8 }}>문단 마무리 중…</h1>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.7 }}>
+            {parkingLong ? '조금만 더 기다려주세요…' : '오늘의 이야기를 거의 다 엮었어요'}
+          </p>
+        </div>
       </div>
     );
   }
@@ -489,7 +564,7 @@ export default function StudySessionPage({
   // ── 결과 화면 ──
   if (finished) {
     const newItems = Object.values(firstResults).filter(r => r.item.effect?.kind === 'new-chapter');
-    const newMeta = newItems[0]?.item.effect.meta || session.newChapter;
+    const newMeta = newItems[0]?.item.effect.meta || session?.newChapter;
     const newRight = newItems.filter(r => r.ok).length;
     const chapterPassed = newItems.length > 0 && isChapterPassed(newRight, newItems.length);
     const wrong = Object.values(firstResults).filter(r => !r.ok);
@@ -580,22 +655,23 @@ export default function StudySessionPage({
   }
 
   // ── 진행 화면 ──
-  const isRetry = item && item.uid.endsWith('-r');
   const q = item?.quiz;
 
   return (
     <div className="page-container" style={{ maxWidth: 640 }}>
       {/* 헤더 — 나가기 · 진행바 · 언어 */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '10px 0 20px' }}>
-        <Link href="/home" aria-label="나가기" style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>✕</Link>
+        <Link href="/home" aria-label="나가기" onClick={handleExitClick} style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>✕</Link>
         <div style={{ flex: 1, height: 10, borderRadius: 'var(--radius-full)', background: 'var(--bg-secondary)', overflow: 'hidden' }}>
           <div style={{
             height: '100%', borderRadius: 'var(--radius-full)', background: 'var(--accent)',
-            width: `${gradedTotal ? Math.round((firstAnswered / gradedTotal) * 100) : 0}%`, transition: 'width 0.3s ease',
+            width: `${progressPct}%`, transition: 'width 0.3s ease',
           }} />
         </div>
         <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 700, flexShrink: 0 }}>
-          {flag} {firstAnswered}/{gradedTotal}
+          {isRetry ? '오답 다시 풀기'
+            : item.type === 'produce-writing' ? `${flag} 보너스`
+            : `${flag} ${progressDone}/${progressTotal}`}
         </span>
       </div>
 
@@ -727,7 +803,13 @@ export default function StudySessionPage({
             type="text" className="form-input" lang={langCode} value={typing}
             onChange={e => setTyping(e.target.value)} disabled={phase === 'feedback'}
             placeholder={langName + '로 입력'}
-            onKeyDown={e => e.key === 'Enter' && typing.trim() && phase === 'answer' && settle(gradeTyping(typing, item.word), typing)}
+            enterKeyHint="go"
+            onKeyDown={e => {
+              if (e.key !== 'Enter') return;
+              // IME 조합 중(일본어·중국어 변환 확정) Enter는 미확정 텍스트로 채점되므로 무시.
+              if (e.nativeEvent.isComposing || e.keyCode === 229) return;
+              if (typing.trim() && phase === 'answer') settle(gradeTyping(typing, item.word), typing);
+            }}
             style={{ marginTop: 10, fontSize: '1.05rem' }}
             autoFocus
           />
@@ -804,6 +886,7 @@ export default function StudySessionPage({
                 orderPicks.includes(bi) ? null : (
                   <button key={bi} type="button" className="fr-quiz__token" lang={langCode}
                     onClick={() => {
+                      if (isTapLocked()) return;
                       const nextPicks = [...orderPicks, bi];
                       setOrderPicks(nextPicks);
                       if (nextPicks.length === q.tokens.length) {
@@ -887,7 +970,13 @@ export default function StudySessionPage({
           )}
 
           {phase === 'feedback' && produceState?.status === 'grading' && (
-            <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginTop: 14 }}>첨삭 확인 중…</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 14 }}>
+              <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', margin: 0 }}>첨삭 확인 중…</p>
+              <button type="button" onClick={skipProduceGrading}
+                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '0.82rem', color: 'var(--text-muted)', textDecoration: 'underline' }}>
+                건너뛰고 마치기
+              </button>
+            </div>
           )}
 
           {phase === 'feedback' && produceState?.status === 'done' && (() => {
