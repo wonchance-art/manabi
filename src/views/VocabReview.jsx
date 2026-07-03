@@ -182,8 +182,8 @@ export default function VocabReview({
             </div>
 
             <div className="review-card__body">
-              {/* 단어 헤더 (문맥 퀴즈는 정답 공개 전까지 숨김) */}
-              {currentWord && (mode !== 'context' && mode !== 'listening' || showAnswer) && (
+              {/* 단어 헤더 (문맥 퀴즈는 정답 공개 전까지 숨김 — 단, 예문이 없으면 단어 자체가 문제이므로 공개) */}
+              {currentWord && ((mode !== 'context' && mode !== 'listening') || showAnswer || (mode === 'context' && !currentWord.source_sentence)) && (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
                   <h2 className="review-card__word">{displayWord(currentWord.word_text, currentWord.pos)}</h2>
                   {ttsSupported && (
@@ -274,11 +274,7 @@ export default function VocabReview({
                             : <span key={i}>{part}</span>
                         )}
                       </p>
-                    ) : (
-                      <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', textAlign: 'center', marginBottom: '8px' }}>
-                        (예문 없음 — 의미를 선택하세요)
-                      </p>
-                    )}
+                    ) : null /* 예문 없음 — 위 단어 헤더가 문제 역할(뜻 고르기) */}
                   </div>
 
                   {!showAnswer ? (
