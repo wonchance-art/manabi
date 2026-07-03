@@ -532,7 +532,7 @@ export default function StudySessionPage({
     return (
       <div className="page-container" style={{ maxWidth: 640 }}>
         <div style={{ display: 'flex', alignItems: 'center', margin: '10px 0 20px' }}>
-          <Link href="/home" aria-label="나가기" onClick={handleExitClick} style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>✕</Link>
+          <Link href="/home" aria-label="나가기" onClick={handleExitClick} style={{ color: 'var(--text-muted)', fontSize: '1.1rem', padding: '6px 10px', margin: '-6px -10px' }}>✕</Link>
         </div>
         <div style={{ textAlign: 'center', paddingTop: 60 }}>
           <div style={{ fontSize: '2rem', marginBottom: 12 }} aria-hidden="true">✍️</div>
@@ -569,52 +569,44 @@ export default function StudySessionPage({
     const chapterPassed = newItems.length > 0 && isChapterPassed(newRight, newItems.length);
     const wrong = Object.values(firstResults).filter(r => !r.ok);
     const pct = gradedTotal ? Math.round((rightCount / gradedTotal) * 100) : 0;
+    const newWordCount = genStatus === 'ready' ? (paragraphMaterials?.newWords?.length || 0) : 0;
     return (
       <div className="page-container" style={{ maxWidth: 640 }}>
+        {/* 1. 요약 */}
         <div style={{ textAlign: 'center', margin: '28px 0 20px' }}>
           <div style={{
             width: 92, height: 92, borderRadius: '50%', margin: '0 auto 12px',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             border: `6px solid ${pct >= 80 ? 'var(--accent)' : pct >= 50 ? 'var(--warning)' : 'var(--danger)'}`,
-            fontSize: '1.5rem', fontWeight: 800,
+            fontSize: '1.5rem', fontWeight: 700,
           }}>{pct}%</div>
           <h1 style={{ fontSize: '1.3rem', fontWeight: 700 }}>세션 완료</h1>
-          <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', marginTop: 4 }}>
-            {gradedTotal}문항 중 {rightCount}개 정답
-            {skipped.size > 0 && ` · 듣기 ${skipped.size}개 건너뜀`}
-            {' '}· 결과는 복습 스케줄에 반영됐어요
+          <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: 6, fontWeight: 700 }}>
+            강해진 기억 {rightCount} · 곧 다시 만날 {wrong.length}
+            {skipped.size > 0 && ` · 건너뜀 ${skipped.size}`}
           </p>
-          {(rightCount > 0 || wrong.length > 0) && (
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: 6, fontWeight: 600 }}>
-              💪 강해진 기억 {rightCount}개 · ⏰ 곧 다시 만날 {wrong.length}개
-            </p>
-          )}
-          {genStatus === 'ready' && paragraphMaterials?.newWords?.length > 0 && (
-            <p style={{ fontSize: '0.82rem', color: 'var(--accent)', marginTop: 6, fontWeight: 600 }}>
-              새 단어 {paragraphMaterials.newWords.length}개({paragraphMaterials.newWords.map(w => w.word).join(' · ')})가 단어장에 추가돼 복습이 시작돼요
-            </p>
-          )}
         </div>
 
+        {/* 2. 새 챕터 */}
         {newMeta && newItems.length > 0 && (
           <Link href={newMeta.href} className="card" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', marginBottom: 12 }}>
-            <span style={{ fontSize: '1.3rem' }} aria-hidden="true">{chapterPassed ? '🎉' : '📖'}</span>
+            {chapterPassed && <span style={{ fontSize: '1.3rem' }} aria-hidden="true">🎉</span>}
             <span style={{ flex: 1 }}>
-              <span style={{ display: 'block', fontSize: '0.9rem', fontWeight: 700 }}>
+              <span style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600 }}>
                 {chapterPassed ? '새 챕터 통과!' : '새 챕터 — 다음 세션에서 다시'}
               </span>
               <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                 {newMeta.level} #{newMeta.order} {newMeta.title} · {newRight}/{newItems.length}
-                {chapterPassed && ' · 며칠 뒤 복습으로 돌아와요'}
               </span>
             </span>
             <span aria-hidden="true" style={{ color: 'var(--text-muted)' }}>→</span>
           </Link>
         )}
 
+        {/* 3. 다시 볼 것 */}
         {wrong.length > 0 && (
           <div className="card" style={{ padding: '14px 16px', marginBottom: 16 }}>
-            <div style={{ fontSize: '0.82rem', fontWeight: 700, marginBottom: 8 }}>다시 볼 것 {wrong.length}개</div>
+            <div style={{ fontSize: '0.8rem', fontWeight: 600, marginBottom: 8 }}>다시 볼 것 {wrong.length}개</div>
             <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 6 }}>
               {wrong.map((r, i) => (
                 <li key={i} style={{ fontSize: '0.85rem', lineHeight: 1.6 }} lang={langCode}>
@@ -628,27 +620,29 @@ export default function StudySessionPage({
           </div>
         )}
 
-        <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
+        {/* 4. 이어가기 */}
+        <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
           <a href={`/study?lang=${lang}`} className="btn btn--primary btn--md" style={{ flex: 1.4, textAlign: 'center' }}>한 세션 더 →</a>
           <Link href="/lessons" className="btn btn--ghost btn--md" style={{ flex: 1, textAlign: 'center' }}>교재로</Link>
         </div>
-        <Link href={`/study/library?lang=${lang}`} className="card" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', marginBottom: 14 }}>
-          <span style={{ fontSize: '1.2rem' }} aria-hidden="true">📚</span>
-          <span style={{ flex: 1 }}>
-            <span style={{ display: 'block', fontSize: '0.88rem', fontWeight: 700 }}>내가 읽은 이야기들</span>
-            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>지난 문단을 다시 읽고 성장을 확인해요</span>
-          </span>
-          <span aria-hidden="true" style={{ color: 'var(--text-muted)' }}>→</span>
-        </Link>
-        <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', textAlign: 'center' }}>
-          파트별 연습: <Link href="/vocab" style={{ textDecoration: 'underline' }}>어휘</Link> ·{' '}
-          <Link href="/review/grammar" style={{ textDecoration: 'underline' }}>문법 복습</Link> ·{' '}
-          <Link href="/writing" style={{ textDecoration: 'underline' }}>작문</Link>
+        <p style={{ textAlign: 'center', marginBottom: 14 }}>
+          <Link href={`/study/library?lang=${lang}`} className="study-textlink">지난 이야기 다시 읽기 →</Link>
         </p>
-        {nextPreview && (
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', textAlign: 'center', marginTop: 12, lineHeight: 1.6 }}>
-            📖 내일 이야기 살짝 보기: {nextPreview}…
-          </p>
+
+        {/* 5. 내일 */}
+        {(newWordCount > 0 || nextPreview) && (
+          <div style={{ textAlign: 'center' }}>
+            {newWordCount > 0 && (
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: nextPreview ? '0 0 6px' : 0, lineHeight: 1.6 }}>
+                새 단어 {newWordCount}개를 앞으로 만나게 돼요
+              </p>
+            )}
+            {nextPreview && (
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.6 }}>
+                내일 이야기 살짝 보기: {nextPreview}…
+              </p>
+            )}
+          </div>
         )}
       </div>
     );
@@ -661,7 +655,7 @@ export default function StudySessionPage({
     <div className="page-container" style={{ maxWidth: 640 }}>
       {/* 헤더 — 나가기 · 진행바 · 언어 */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '10px 0 20px' }}>
-        <Link href="/home" aria-label="나가기" onClick={handleExitClick} style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>✕</Link>
+        <Link href="/home" aria-label="나가기" onClick={handleExitClick} style={{ color: 'var(--text-muted)', fontSize: '1.1rem', padding: '6px 10px', margin: '-6px -4px -6px -10px' }}>✕</Link>
         <div style={{ flex: 1, height: 10, borderRadius: 'var(--radius-full)', background: 'var(--bg-secondary)', overflow: 'hidden' }}>
           <div style={{
             height: '100%', borderRadius: 'var(--radius-full)', background: 'var(--accent)',
@@ -676,23 +670,19 @@ export default function StudySessionPage({
       </div>
 
       {isRetry && (
-        <div style={{ fontSize: '0.78rem', color: 'var(--warning)', fontWeight: 700, marginBottom: 8 }}>↻ 다시 도전</div>
+        <div style={{ fontSize: '0.75rem', color: 'var(--warning)', fontWeight: 700, marginBottom: 8 }}>↻ 다시 도전</div>
       )}
 
       {item.warmup && !isRetry && (
-        <div style={{ fontSize: '0.78rem', color: 'var(--primary)', fontWeight: 700, marginBottom: 8 }}>몸풀기</div>
+        <div style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 700, marginBottom: 8 }}>몸풀기</div>
       )}
 
       {/* ── 오늘의 문단 (읽기 카드) ── */}
       {item.type === 'paragraph' && (
         <div className="card" style={{ padding: '22px 20px' }}>
-          <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--primary)', marginBottom: 4 }}>
-            {paragraphMaterials?.weekly ? '주간 약점 복습 — 이번 주 헷갈린 것들' : '오늘의 문단'}
-            {item.newChapter && <> · 새 문법 {item.newChapter.level} #{item.newChapter.order} {item.newChapter.title}</>}
+          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary)', marginBottom: 14 }}>
+            {paragraphMaterials?.weekly ? '이번 주 헷갈린 것들' : '오늘의 문단'}
           </div>
-          <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '0 0 14px' }}>
-            새로 배울 것과 복습할 것이 한 이야기에 담겨 있어요. 천천히 읽고, 이어지는 문제로 확인해요.
-          </p>
           {item.preQuestion?.q && (
             <div style={{
               display: 'flex', gap: 8, alignItems: 'flex-start',
@@ -700,7 +690,6 @@ export default function StudySessionPage({
               background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)',
               borderLeft: '3px solid var(--primary)',
             }}>
-              <span aria-hidden="true" style={{ fontSize: '1rem', lineHeight: 1.5 }}>🔍</span>
               <span style={{ fontSize: '0.85rem', lineHeight: 1.6 }}>
                 <strong style={{ color: 'var(--primary)' }}>읽기 미션</strong> — {item.preQuestion.q}
               </span>
@@ -717,19 +706,20 @@ export default function StudySessionPage({
           <button
             type="button"
             onClick={() => setShowTranslation(v => !v)}
-            style={{ background: 'none', border: 'none', padding: 0, marginTop: 14, cursor: 'pointer', fontSize: '0.8rem', color: 'var(--text-muted)', textDecoration: 'underline' }}
+            className="study-textlink"
+            style={{ marginTop: 14 }}
           >
             {showTranslation ? '번역 접기 ▴' : '번역 보기 ▾'}
           </button>
           {showTranslation && (
-            <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.7, marginTop: 8, padding: '10px 12px', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)' }}>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.7, marginTop: 8, padding: '10px 12px', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)' }}>
               {item.translation}
             </p>
           )}
           <div style={{ display: 'flex', gap: 10, marginTop: 16, alignItems: 'center' }}>
             <Button onClick={next} style={{ flex: 1 }}>문제 풀기 →</Button>
             {item.newChapter && (
-              <Link href={item.newChapter.href} style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textDecoration: 'underline', flexShrink: 0 }}>
+              <Link href={item.newChapter.href} className="study-textlink" style={{ flexShrink: 0 }}>
                 새 문법 자세히
               </Link>
             )}
@@ -740,7 +730,7 @@ export default function StudySessionPage({
       {/* ── 티칭 카드 ── */}
       {item.type === 'teach' && (
         <div className="card" style={{ padding: '22px 20px' }}>
-          <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--primary)', marginBottom: 10 }}>
+          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary)', marginBottom: 10 }}>
             새로 배우기 · {item.chapter.level} #{item.chapter.order} {item.chapter.title}
           </div>
           <div className="fr-pattern" style={{ borderColor: 'var(--primary)' }}>
@@ -760,7 +750,7 @@ export default function StudySessionPage({
           </ul>
           <div style={{ display: 'flex', gap: 10, marginTop: 16, alignItems: 'center' }}>
             <Button onClick={next} style={{ flex: 1 }}>바로 문제로 →</Button>
-            <Link href={item.chapter.href} style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textDecoration: 'underline', flexShrink: 0 }}>
+            <Link href={item.chapter.href} className="study-textlink" style={{ flexShrink: 0 }}>
               교재에서 자세히
             </Link>
           </div>
@@ -819,8 +809,7 @@ export default function StudySessionPage({
                 확인
               </Button>
               {item.type === 'vocab-listening' && (
-                <button type="button" onClick={skipItem}
-                  style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '0.82rem', color: 'var(--text-muted)', textDecoration: 'underline' }}>
+                <button type="button" onClick={skipItem} className="study-textlink">
                   넘어가기
                 </button>
               )}
@@ -938,14 +927,14 @@ export default function StudySessionPage({
       {/* ── 격일 산출: 이야기를 이어서 한 문장 쓰기 ── */}
       {item.type === 'produce-writing' && (
         <div className="fr-quiz__q">
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 6 }}>오늘의 산출</div>
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 6 }}>쓰기 한 문장</div>
           <div className="fr-quiz__prompt" style={{ fontSize: '1rem', lineHeight: 1.6 }}>
             ✍️ 이야기를 이어서 — <span lang={langCode} style={{ fontWeight: 700 }}>{item.targetPattern.pattern}</span>
             {item.targetPattern.patternKo && <span style={{ color: 'var(--text-muted)' }}> ({item.targetPattern.patternKo})</span>}
             을(를) 써서 한 문장
           </div>
           {item.context && (
-            <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginTop: 6 }}>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginTop: 6 }}>
               이야기: {item.context}…
             </p>
           )}
@@ -961,8 +950,7 @@ export default function StudySessionPage({
               />
               <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 10 }}>
                 <Button onClick={submitProduce} disabled={!typing.trim()}>제출</Button>
-                <button type="button" onClick={skipItem}
-                  style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '0.82rem', color: 'var(--text-muted)', textDecoration: 'underline' }}>
+                <button type="button" onClick={skipItem} className="study-textlink">
                   오늘은 패스
                 </button>
               </div>
@@ -971,9 +959,8 @@ export default function StudySessionPage({
 
           {phase === 'feedback' && produceState?.status === 'grading' && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 14 }}>
-              <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', margin: 0 }}>첨삭 확인 중…</p>
-              <button type="button" onClick={skipProduceGrading}
-                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '0.82rem', color: 'var(--text-muted)', textDecoration: 'underline' }}>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>첨삭 확인 중…</p>
+              <button type="button" onClick={skipProduceGrading} className="study-textlink">
                 건너뛰고 마치기
               </button>
             </div>
@@ -982,15 +969,16 @@ export default function StudySessionPage({
           {phase === 'feedback' && produceState?.status === 'done' && (() => {
             const ts = produceState.targetScore;
             const badgeColor = ts >= 2 ? 'var(--accent)' : ts === 1 ? 'var(--warning)' : 'var(--danger)';
+            const badgeLabel = ts >= 3 ? '완벽해요' : ts === 2 ? '잘 썼어요' : ts === 1 ? '조금 아쉬워요' : '다시 도전해요';
             const s0 = produceState.feedback?.sentences?.[0];
             const why = s0?.errors?.[0]?.why || produceState.feedback?.summary || '';
             return (
               <div style={{ marginTop: 14 }}>
                 <span style={{
                   display: 'inline-block', padding: '2px 10px', borderRadius: 'var(--radius-full)',
-                  background: badgeColor, color: '#fff', fontSize: '0.82rem', fontWeight: 800,
+                  background: badgeColor, color: '#fff', fontSize: '0.8rem', fontWeight: 700,
                 }}>
-                  {ts != null ? `${ts} / 3` : '채점'}
+                  {ts != null ? badgeLabel : '채점'}
                 </span>
                 {s0?.corrected && (
                   <div className="fr-quiz__answer" style={{ marginTop: 10 }} lang={langCode}>
