@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
-import { kstWeekStartIso } from '../lib/growthStats';
+import { kstWeekStartIso, KNOWN_WORD_MIN_INTERVAL, GROWTH_LABELS } from '../lib/growthStats';
 
 /**
  * 학습 허브 — 오늘 할 학습으로 가는 단일 진입점.
@@ -20,7 +20,7 @@ async function fetchLearnData(userId, lang) {
   // 실패 시 null (문구 생략용) — 홈/서재의 방어적 count 패턴과 동일
   const countOf = (q) => q.then(({ count }) => count ?? null, () => null);
 
-  const [dueVocab, dueGrammar, weekSessions, latestUsed] = await Promise.all([
+  const [dueVocab, dueGrammar, knownWords, passedChapters, weekSessions, latestUsed] = await Promise.all([
     // due 어휘 — 현재 학습 언어, next_review_at <= now
     countOf(supabase.from('user_vocabulary')
       .select('id', { count: 'exact', head: true })
@@ -29,6 +29,14 @@ async function fetchLearnData(userId, lang) {
     countOf(supabase.from('grammar_review')
       .select('slug', { count: 'exact', head: true })
       .eq('user_id', userId).eq('lang', lang).lte('next_review_at', now)),
+    // 아는 단어 — interval(안정도) ≥ 기준 (정의: growthStats.isKnownWord / 서재와 동치)
+    countOf(supabase.from('user_vocabulary')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId).eq('language', lang).gte('interval', KNOWN_WORD_MIN_INTERVAL)),
+    // 통과 챕터 — user_ref_progress passed=true (서재와 동치)
+    countOf(supabase.from('user_ref_progress')
+      .select('slug', { count: 'exact', head: true })
+      .eq('user_id', userId).eq('lang', lang).eq('passed', true)),
     // 이번 주 세션 — study_paragraphs status='used', used_at >= 주 시작 (서재와 동일 정의)
     countOf(supabase.from('study_paragraphs')
       .select('id', { count: 'exact', head: true })
@@ -50,7 +58,7 @@ async function fetchLearnData(userId, lang) {
     if (typeof arc === 'string' && arc.trim() && Number.isFinite(ep) && ep >= 1) episode = ep;
   }
 
-  return { dueVocab, dueGrammar, weekSessions, episode };
+  return { dueVocab, dueGrammar, knownWords, passedChapters, weekSessions, episode };
 }
 
 export default function LearnPage() {
@@ -81,16 +89,20 @@ export default function LearnPage() {
   const displayName  = profile?.display_name || '학습자';
   const dueVocab     = data?.dueVocab;
   const dueGrammar   = data?.dueGrammar;
+  const knownWords   = data?.knownWords;
+  const passedChapters = data?.passedChapters;
   const weekSessions = data?.weekSessions;
   const episode      = data?.episode ?? null;
   const streak       = profile?.streak_count ?? 0;
   const streakFreeze = profile?.streak_freeze_count;
 
   const practice = [
-    { href: '/study/library',  title: '서재',        desc: '지난 문단 다시 읽기' },
-    { href: '/review/grammar', title: '문법 복습',    desc: '오늘의 due 문법', badge: dueGrammar },
-    { href: '/writing',        title: '작문 기록실',  desc: '내 작문 돌아보기' },
-    { href: '/vocab',          title: '어휘 복습',    desc: '단어장 SRS 복습' },
+    { href: '/study/library',  title: '서재',          desc: '지난 문단 다시 읽기' },
+    { href: '/review/grammar', title: '문법 복습',      desc: '오늘의 due 문법', badge: dueGrammar },
+    { href: '/writing',        title: '작문 기록실',    desc: '내 작문 돌아보기' },
+    { href: '/vocab',          title: '어휘 복습',      desc: '단어장 SRS 복습' },
+    { href: '/study/library',  title: '내 자료로 학습', desc: '기사·문장을 붙여넣어 이야기로' },
+    { href: '/guide',          title: '학습 가이드',    desc: '처음이라면 — 하루의 흐름 안내' },
   ];
 
   return (
@@ -157,12 +169,12 @@ export default function LearnPage() {
         ))}
       </div>
 
-      {/* ④ 이번 주 — bento 타일 (ProfileStats 패턴) */}
+      {/* ④ 성장 요약 — bento 타일 (ProfileStats 패턴, 성장 지표는 growthStats 카피 재사용) */}
       <div className="bento">
         {weekSessions != null && (
           <div className="bento-item bento--1x1 card bento-stat">
             <span className="mypage-stat-cell__value">{weekSessions}</span>
-            <span className="mypage-stat-cell__label">이번 주 세션</span>
+            <span className="mypage-stat-cell__label">{GROWTH_LABELS.weekSessions}</span>
           </div>
         )}
         <div className="bento-item bento--1x1 card bento-stat">
@@ -171,6 +183,18 @@ export default function LearnPage() {
           </span>
           <span className="mypage-stat-cell__label">스트릭</span>
         </div>
+        {knownWords != null && (
+          <div className="bento-item bento--1x1 card bento-stat">
+            <span className="mypage-stat-cell__value">{knownWords}</span>
+            <span className="mypage-stat-cell__label">{GROWTH_LABELS.knownWords}</span>
+          </div>
+        )}
+        {passedChapters != null && (
+          <div className="bento-item bento--1x1 card bento-stat">
+            <span className="mypage-stat-cell__value">{passedChapters}</span>
+            <span className="mypage-stat-cell__label">{GROWTH_LABELS.passedChapters}</span>
+          </div>
+        )}
       </div>
 
     </div>
