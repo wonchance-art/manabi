@@ -1,8 +1,8 @@
 import GuidePage from '@/views/GuidePage';
 
 export const metadata = {
-  title: '학습 로드맵 | Anatomy Studio',
-  description: 'JLPT N5~N1, CEFR A1~C2 단계별 학습 로드맵. AI 기반 맞춤형 언어 학습 가이드.',
+  title: '사용 안내 | Anatomy Studio',
+  description: '오늘 학습 한 번이면 하루치 전부. 공부 모드·교재·연습실·서재를 어떻게 쓰는지 안내해요.',
 };
 
 export default function Page() {
