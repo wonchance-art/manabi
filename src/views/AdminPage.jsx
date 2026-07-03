@@ -212,12 +212,12 @@ export default function AdminPage() {
       {/* ── 내 진도 (관리자 전용 학습 진도표) ── */}
       {tab === 'myplan' && <StudyPlanPanel />}
 
-      {/* ── 신기능 — 구현 완료·배치 미정 기능의 임시 허브 ── */}
+      {/* ── 신기능 — 관리자용 바로가기 (학습 기능은 네비 '학습' 탭에 정식 배치됨) ── */}
       {tab === 'features' && (
         <div>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 16, lineHeight: 1.6 }}>
-            구현은 끝났지만 아직 앱 어디에도 배치하지 않은 기능들이에요. 여기서 열어 테스트하고,
-            배치 위치가 정해지면 정식 진입점을 답니다.
+            학습 기능은 네비게이션 «학습» 탭에 정식 배치됐어요. 여기는 관리자용 바로가기 —
+            지표 대시보드와 개인 코스 진입로를 겸해요.
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {[
@@ -231,7 +231,7 @@ export default function AdminPage() {
                 href: '/study',
                 icon: '🎯',
                 title: '오늘 학습 (공부 모드)',
-                desc: '메인 학습 세션 — 어휘·문법·독해가 섞인 ~12문항. 커리큘럼을 따라 새 패턴을 가르치고, due 복습을 소진하며, 통과한 챕터는 자동으로 복습 큐에. (P1: 청해·작문 문항은 다음 단계)',
+                desc: '메인 학습 세션 — 매일 생성되는 이야기 한 편에서 어휘·문법·독해·듣기·격일 작문까지 ~10문항. 통과한 챕터는 자동으로 복습 큐에.',
               },
               {
                 href: '/study/library',
@@ -263,7 +263,6 @@ export default function AdminPage() {
                 <span style={{ flex: 1, minWidth: 0 }}>
                   <span style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                     <strong style={{ fontSize: '0.95rem' }}>{f.title}</strong>
-                    <span className="role-badge role-badge--private" style={{ fontSize: '0.68rem' }}>배치 미정</span>
                   </span>
                   <span style={{ display: 'block', fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>{f.desc}</span>
                   <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 6, fontFamily: 'monospace' }}>{f.href}</span>
