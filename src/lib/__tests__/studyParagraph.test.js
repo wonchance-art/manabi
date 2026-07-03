@@ -143,6 +143,55 @@ describe('mapParagraphToItems', () => {
   });
 });
 
+describe('mapParagraphToItems · cloze 피드백 후리가나(pron)', () => {
+  it('cloze pron이 복원 매칭된 문장의 pron으로 채워진다', () => {
+    const para = validateParagraph(GOOD);
+    const mapped = mapParagraphToItems(para, MATERIALS);
+    const ng = mapped.items.find(i => i.effect?.kind === 'new-chapter'); // 새 문법 cloze
+    expect(ng.quiz.pron).toBe('わたしは おんがくを ききながら さんぽします');
+    const due = mapped.items.find(i => i.effect?.kind === 'grammar-due'); // 복습 cloze
+    expect(due.quiz.pron).toBe('ともだちと やくそくしたことが あります');
+  });
+
+  it('복원문이 어떤 문장에도 매칭되지 않으면 pron은 null 유지', () => {
+    const para = {
+      paragraph: '私は音楽を聞きながら散歩します。',
+      translation: '나는 음악을 들으면서 산책합니다.',
+      sentences: [
+        { text: '私は音楽を聞きながら散歩します。', pron: 'わたしは おんがくを ききながら さんぽします', ko: '나는 음악을 들으면서 산책합니다.', tokens: ['私は', '音楽を', '聞きながら', '散歩します。'] },
+      ],
+      // 복원해도 문단 문장에 없는 cloze(다른 문장) → pron 매칭 실패
+      questions: [
+        { type: 'cloze', focus: 'new-grammar', key: 'k', prompt: '存在しない文＿＿＿です。', answer: 'X', distractors: ['A', 'B', 'C'], ko: '' },
+        GOOD.questions[2], GOOD.questions[4],
+      ],
+      preQuestion: null,
+    };
+    const mapped = mapParagraphToItems(para, {});
+    const cloze = mapped.items.find(i => i.type === 'grammar-cloze');
+    expect(cloze.quiz.pron).toBeNull();
+  });
+});
+
+describe('mapParagraphToItems · 재료 단어 칩(materialWords)', () => {
+  it('readCard에 dueWords·newWords가 word·meaning·pron으로 실린다', () => {
+    const para = validateParagraph(GOOD);
+    const read = mapParagraphToItems(para, MATERIALS).items.find(i => i.type === 'paragraph');
+    expect(read.materialWords).toEqual(
+      expect.arrayContaining([
+        { word: '約束', meaning: '약속', pron: '' },
+        { word: '散歩', meaning: '산책', pron: 'さんぽ' },
+      ])
+    );
+  });
+
+  it('재료가 없으면 빈 배열', () => {
+    const para = validateParagraph(GOOD);
+    const read = mapParagraphToItems(para, {}).items.find(i => i.type === 'paragraph');
+    expect(read.materialWords).toEqual([]);
+  });
+});
+
 describe('mapParagraphToItems · 채점 문항 하드캡 7', () => {
   // 어순 조립용 온전한 문장 1개
   const SENTENCES = [{ text: '私は 学生 です', pron: null, ko: '나는 학생입니다', tokens: ['私は', '学生', 'です'] }];
