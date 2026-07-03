@@ -606,6 +606,28 @@ export default function StudySessionPage({
     });
     setFirstResults(prev => ({ ...prev, [orig]: { ok, item } }));
     try { localStorage.setItem(`study_last_produce_${lang}`, ymdLocal(new Date())); } catch {}
+
+    // 세션에서 쓴 문장을 작문 기록실(writing_practice)에도 남긴다 — /writing 히스토리에 노출.
+    // WritingStudioPage.persist(:171)와 동일한 컬럼·형태. fire-and-forget이라 실패해도 세션 흐름 무영향.
+    if (user?.id) {
+      const allErrors = (feedback.sentences || []).flatMap(
+        s => (s.errors || []).map(e => ({ ...e, sentence: s.original }))
+      );
+      const pat = item.targetPattern?.pattern || '';
+      supabase.from('writing_practice').insert({
+        user_id: user.id,
+        sentence: textVal,
+        corrected: feedback.sentences.map(s => s.corrected).join('\n'),
+        feedback: feedback.summary,
+        score: feedback.score,
+        language: lang,
+        prompt_type: 'produce',
+        prompt: pat ? `이야기 이어쓰기 — ${pat}` : null,
+        level: paragraphMaterials?.level || null,
+        errors: allErrors,
+      }).then(() => {}, () => {});
+    }
+
     setProduceState({ status: 'done', feedback, targetScore });
   }
 
@@ -1216,6 +1238,9 @@ export default function StudySessionPage({
                 {why && (
                   <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginTop: 8 }}>{why}</p>
                 )}
+                <Link href="/writing" className="study-textlink" style={{ display: 'inline-block', marginTop: 8 }}>
+                  작문 기록실에서 더 다듬기 →
+                </Link>
               </div>
             );
           })()}

@@ -4,16 +4,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
 import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
-import { useCelebration } from './CelebrationContext';
-import { awardXP, XP_REWARDS, getReviewXP } from './xp';
 import { friendlyToastMessage } from './errorMessage';
 import { fetchVocab, csvToVocabRows } from './vocabIO';
 
 export function useVocabData() {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const toast = useToast();
   const queryClient = useQueryClient();
-  const { celebrate, checkLevelUp } = useCelebration();
 
   const { data: vocab = [], isLoading } = useQuery({
     queryKey: ['vocab', user?.id],
@@ -30,19 +27,8 @@ export function useVocabData() {
         .eq('id', id);
       if (error) throw error;
     },
-    onSuccess: (_, { rating, prevInterval, newInterval }) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
-      const prevXP = profile?.xp ?? 0;
-      const reviewXP = getReviewXP(rating);
-      // 마스터(interval 30일 돌파) 보너스
-      const crossedMastery = prevInterval < 30 && newInterval >= 30;
-      const totalXP = reviewXP + (crossedMastery ? XP_REWARDS.MASTERY_REACHED : 0);
-
-      awardXP(user.id, totalXP, prevXP);
-      checkLevelUp(prevXP, prevXP + totalXP);
-      if (crossedMastery) {
-        celebrate({ type: 'milestone', icon: '★', name: '단어 마스터!', desc: `+${XP_REWARDS.MASTERY_REACHED} XP 보너스` });
-      }
     },
     onError: (err) => toast('업데이트 실패 — ' + friendlyToastMessage(err), 'error'),
   });

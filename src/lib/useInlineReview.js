@@ -5,9 +5,9 @@ import { recordActivity } from './streak';
 import { friendlyToastMessage } from './errorMessage';
 
 /**
- * 뷰어 인라인 복습: 단어 클릭 후 평가(1/2/3) 시 FSRS 갱신 + XP 부여.
+ * 뷰어 인라인 복습: 단어 클릭 후 평가(1/2/3) 시 FSRS 갱신.
  */
-export function useInlineReview({ user, profile, fetchProfile, toast }) {
+export function useInlineReview({ user, fetchProfile, toast }) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ vocab, rating }) => {
@@ -25,14 +25,10 @@ export function useInlineReview({ user, profile, fetchProfile, toast }) {
       if (error) throw error;
       return { vocab, rating, nextStats };
     },
-    onSuccess: async ({ rating }) => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
-      const prevXP = profile?.xp ?? 0;
-      const xp = rating === 3 ? 12 : rating === 1 ? 5 : 8;
-      const { awardXP } = await import('./xp');
-      awardXP(user.id, xp, prevXP);
       recordActivity(user.id, () => fetchProfile(user.id));
-      toast?.(`복습 완료! +${xp} XP`, 'success', 2000);
+      toast?.('복습 완료!', 'success', 2000);
     },
     onError: (err) => toast?.('복습 저장 실패 — ' + friendlyToastMessage(err), 'error'),
   });
