@@ -47,7 +47,7 @@ const STAGE_META = {
  * ③ 입으로 만들기(회상·자가 채점). 정답률 80% 이상이면 통과로 기록하고 다음 챕터를 안내한다.
  * quiz: { meaning:[{sentence,full,ko,correct,distractors,pron}], apply:[{type:'order',tokens,answer,ko,pron}|{type:'choose',ko,correct,distractors,pron}], produce:[{ko,main,pron}] }
  */
-export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug, next = null, reviewLinks = [] }) {
+export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug, intro = false, next = null, reviewLinks = [] }) {
   const { user } = useAuth();
   const [seed, setSeed] = useState(0);          // 재도전 시 +1 → 보기 재셔플
   const [mounted, setMounted] = useState(false); // SSR 셔플 불일치 방지
@@ -150,8 +150,9 @@ export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug
     setLastResult(result);
     if (user?.id) {
       syncCheckRemote(user.id, lang, slug, result);
-      // 통과한 챕터는 문법 SRS 복습 큐로 — 며칠 뒤 되돌아온다
-      if (result.passed) enqueueGrammarReview(user.id, lang, slug);
+      // 통과한 챕터는 문법 SRS 복습 큐로 — 며칠 뒤 되돌아온다.
+      // 인트로 레벨(OT/A0)은 복습 대상이 아니므로 큐에 넣지 않는다(호출부가 안 렌더하지만 이중 방어).
+      if (result.passed && !intro) enqueueGrammarReview(user.id, lang, slug);
       // 정오답 이벤트 로그 — 약점 진단의 데이터
       logReviewEvents(user.id, (questions || []).map(q => {
         const a = answers[q.id];

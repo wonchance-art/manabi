@@ -14,6 +14,7 @@ function toItem(row) {
   if (!ref) return null;
   const found = ref.getChapter(row.slug);
   if (!found) return null;                       // 콘텐츠 개편으로 사라진 슬러그는 건너뜀
+  if (ref.isIntroLevel(found.chapter.level)) return null; // 인트로 레벨(OT/A0) 잔존 큐는 표시하지 않음
   const quiz = buildReviewQuiz(found.chapter, ref);
   if (!quiz.meaning.length && !quiz.apply.length && !quiz.produce.length) return null;
   return {
@@ -76,6 +77,7 @@ export default async function Page() {
       const ref = getRefLang(p.lang);
       const ch = ref?.getChapter(p.slug)?.chapter;
       if (!ch) return false;
+      if (ref.isIntroLevel(ch.level)) return false;   // 인트로 레벨(OT/A0)은 복습 백필 대상 아님
       const q = buildReviewQuiz(ch, ref);
       return q.meaning.length + q.apply.length + q.produce.length > 0;
     });
@@ -104,6 +106,19 @@ export default async function Page() {
       .limit(30),
   ]);
 
+  // ── 잔존 인트로 레벨(OT/A0) 큐 방어 — 표시하지 않고 본인 행을 삭제(fire-and-forget) ──
+  const isIntroRow = (row) => {
+    const ref = getRefLang(row.lang);
+    const ch = ref?.getChapter(row.slug)?.chapter;
+    return !!(ch && ref.isIntroLevel(ch.level));
+  };
+  const staleIntroRows = [...(dueRows || []), ...(upcomingRows || [])].filter(isIntroRow);
+  for (const row of staleIntroRows) {
+    supabase.from('grammar_review').delete()
+      .eq('user_id', user.id).eq('lang', row.lang).eq('slug', row.slug)
+      .then(() => {}, () => {});   // 실패해도 복습 진행을 막지 않음
+  }
+
   const items = (dueRows || []).map(toItem).filter(Boolean);
 
   // 예정 큐 — 제목만 필요 (퀴즈 조립 없이 가볍게)
@@ -111,6 +126,7 @@ export default async function Page() {
     const ref = getRefLang(row.lang);
     const ch = ref?.getChapter(row.slug)?.chapter;
     if (!ch) return null;
+    if (ref.isIntroLevel(ch.level)) return null;   // 인트로 레벨 잔존 큐는 표시하지 않음
     return {
       flag: ref.flag,
       level: ch.level,

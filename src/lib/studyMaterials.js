@@ -63,7 +63,14 @@ async function buildWeaknessMaterials(supabase, userId, lang, ref, reviewEventRo
   const sinceMs = nowMs - 14 * 86400000;
   const weak = computeWeakness(reviewEventRows, { sinceMs, cap: 20 }).filter(w => w.wrong > 0);
   const weakVocab = weak.filter(w => w.source === 'vocab').slice(0, 3);
-  const weakGrammar = weak.filter(w => w.source === 'grammar').slice(0, 2);
+  // grammar 약점 후보에서 인트로 레벨(OT/A0) 챕터 제외 — 복습 대상이 아니다
+  const weakGrammar = weak
+    .filter(w => w.source === 'grammar')
+    .filter(w => {
+      const ch = ref.getChapter(w.item_key)?.chapter;
+      return ch && !ref.isIntroLevel(ch.level);
+    })
+    .slice(0, 2);
   if (weakVocab.length + weakGrammar.length < 2) return null;
 
   // vocab 약점 → user_vocabulary 행 (dueWords 형태)
@@ -186,6 +193,7 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
   // ── 다음 새 챕터 — 커리큘럼 순서에서 첫 미통과·퀴즈 가능 챕터 ──
   let newChapter = null;
   for (const ch of ref.ALL_CHAPTERS) {
+    if (ref.isIntroLevel(ch.level)) continue;          // 인트로 레벨(OT/A0)은 공부 모드 커리큘럼 대상 아님
     if (passed.has(ch.slug)) continue;
     const q = buildChapterQuiz(ch, ref, { maxMeaning: 2, maxApply: 1, maxProduce: 0 });
     const items = [...q.meaning, ...q.apply];
@@ -204,7 +212,8 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
   }
 
   // ── 독해 소재 — 현재 레벨 문형 예문 ──
-  const level = newChapter?.meta.level || grammarDue[0]?.meta.level || ref.LEVEL_META[0]?.key;
+  // 폴백 레벨 — 인트로(LEVEL_META[0])가 아닌 첫 정규 레벨로(독해·어휘 사전 소재가 인트로가 되지 않게)
+  const level = newChapter?.meta.level || grammarDue[0]?.meta.level || ref.LEVEL_META[1]?.key || ref.LEVEL_META[0]?.key;
   const band = levelBand(lang, level);
   const bunkei = ref.getBunkei?.(level);
   const exPool = (bunkei?.themes || [])

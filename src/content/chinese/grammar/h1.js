@@ -4,9 +4,77 @@
  */
 export default [
   {
-    slug: "h1-01-shi",
+    slug: "ot-05-pronouns",
     level: "H1",
     order: 1,
+    title: "나·너·그를 부르는 법",
+    topic: "인칭대명사",
+    titleFr: "人称代词",
+    summary: "我·你·他 — 중국어 인칭대명사. 복수는 们 하나만 붙이면 끝나는 깔끔한 규칙과, 존댓말 您까지 한 번에 정리해요.",
+    duration: "약 7분",
+    sections: [
+      {
+        heading: "단수 인칭대명사 — 我·你·他",
+        body:
+          "중국어 인칭대명사는 단순해요. **我 wǒ(나), 你 nǐ(너), 他/她/它 tā(그/그녀/그것)** 세 인칭이 기본이에요.\n\n" +
+          "재미있는 건 3인칭이에요. 他(그·남자), 她(그녀·여자), 它(그것·사물)는 **글자는 다르지만 발음은 모두 tā로 똑같아요**. 말할 때는 구별이 안 되고, 글로 쓸 때만 구별돼요. 그래서 듣기로는 문맥으로 누구인지 판단해야 해요.",
+        table: {
+          caption: "단수 인칭대명사",
+          headers: ["한자", "병음", "뜻"],
+          rows: [
+            ["我", "wǒ", "나, 저"],
+            ["你", "nǐ", "너, 당신"],
+            ["他", "tā", "그 (남자)"],
+            ["她", "tā", "그녀 (여자)"],
+            ["它", "tā", "그것 (사물·동물)"],
+          ],
+        },
+        examples: [
+          { zh: "我是学生。", pinyin: "wǒ shì xuésheng", ko: "저는 학생이에요." },
+          { zh: "他是老师。", pinyin: "tā shì lǎoshī", ko: "그는 선생님이에요." },
+        ],
+        hanja: "他 tā에는 '다를 타(他)'가 들어 있어요. '타인(他人), 타국(他國)'의 그 타예요. 원래 '다른 사람'을 가리키던 글자가 3인칭 대명사가 된 거죠.",
+      },
+      {
+        heading: "복수는 们 하나로 — 가장 쉬운 규칙",
+        pattern: "단수 대명사 + 们 = 복수",
+        patternKo: "我们(우리)·你们(너희)·他们(그들)",
+        body:
+          "복수를 만드는 법이 놀랍도록 간단해요. 단수 대명사 뒤에 **们 men만 붙이면** 돼요. 我 → 我们(우리), 你 → 你们(너희), 他 → 他们(그들).\n\n" +
+          "한국어처럼 '들'을 붙이는 것과 발상이 비슷하죠. 단, 们은 경성이라 가볍게 발음해요(wǒmen). 남녀 섞인 무리는 他们을 쓰고, 여자만 있으면 她们을 써요.",
+        table: {
+          caption: "인칭대명사 단수와 복수",
+          headers: ["인칭", "단수", "복수"],
+          rows: [
+            ["1인칭", "我 wǒ (나)", "我们 wǒmen (우리)"],
+            ["2인칭", "你 nǐ (너)", "你们 nǐmen (너희)"],
+            ["3인칭", "他 tā (그)", "他们 tāmen (그들)"],
+          ],
+        },
+        examples: [
+          { zh: "我们是学生。", pinyin: "wǒmen shì xuésheng", ko: "우리는 학생이에요." },
+          { zh: "他们去中国。", pinyin: "tāmen qù Zhōngguó", ko: "그들은 중국에 가요." },
+        ],
+        vsKo: "한국어 '들'과 비슷하지만 더 규칙적이에요. 한국어는 '우리'처럼 아예 다른 단어를 쓰기도 하는데, 중국어는 무조건 们 하나면 돼요. 예외가 거의 없어서 외우기 편한 부분이에요.",
+      },
+      {
+        heading: "존댓말 您 — 윗사람에게는 한 글자 더",
+        body:
+          "你(너)의 **공손한 형태가 您 nín**이에요. 你 아래에 마음 심(心)이 붙은 글자로, '마음을 담아 부르는 당신'이라는 느낌이에요.\n\n" +
+          "처음 만난 사람, 손님, 윗사람, 격식 있는 자리에서 您을 써요. 한국어의 '당신/선생님' 같은 높임의 자리예요. 다만 한국어처럼 동사 형태가 바뀌지는 않아요 — 대명사만 您으로 바꾸면 그게 곧 존댓말이에요.",
+        examples: [
+          { zh: "您好！", pinyin: "nín hǎo", ko: "안녕하세요! (정중하게)", note: "你好보다 공손한 인사" },
+          { zh: "您是老师吗？", pinyin: "nín shì lǎoshī ma", ko: "선생님이세요?", note: "您으로 높임" },
+        ],
+        tip: "您은 你 + 心(마음 심)으로 이루어져 있어요. '마음을 담아 부르는 너'라고 글자 모양으로 외우면 잊히지 않아요. 복수 您们은 거의 쓰지 않고, 여러 사람을 높일 때는 你们 또는 大家(여러분)를 써요.",
+      },
+    ],
+  },
+
+  {
+    slug: "h1-01-shi",
+    level: "H1",
+    order: 2,
     title: "\"저는 학생이에요\" — A는 B다",
     topic: "是자문 (A是B)",
     titleFr: "是字句",
@@ -68,7 +136,7 @@ export default [
   {
     slug: "h1-02-you",
     level: "H1",
-    order: 2,
+    order: 3,
     title: "\"있어요\"와 \"없어요\"",
     topic: "有자문 (소유·존재)",
     titleFr: "有字句",
@@ -130,7 +198,7 @@ export default [
   {
     slug: "h1-03-zhe-na",
     level: "H1",
-    order: 3,
+    order: 4,
     title: "\"이거\"와 \"저거\"",
     topic: "지시대명사 这・那",
     titleFr: "这・那",
@@ -171,7 +239,7 @@ export default [
   {
     slug: "h1-04-measure-words",
     level: "H1",
-    order: 4,
+    order: 5,
     title: "사과 '한 개'의 그 '개'",
     topic: "양사 个・本・张",
     titleFr: "量词",
@@ -241,7 +309,7 @@ export default [
   {
     slug: "h1-05-ma-questions",
     level: "H1",
-    order: 5,
+    order: 6,
     title: "끝에 吗만 붙이면 질문 완성",
     topic: "의문 吗・의문사",
     titleFr: "疑问句 (吗・疑问词)",
@@ -305,7 +373,7 @@ export default [
   {
     slug: "h1-06-negation",
     level: "H1",
-    order: 6,
+    order: 7,
     title: "안 가요 vs 안 갔어요 — 不과 没",
     topic: "부정 不・没",
     titleFr: "否定 不・没",
@@ -359,7 +427,7 @@ export default [
   {
     slug: "h1-07-de-possessive",
     level: "H1",
-    order: 7,
+    order: 8,
     title: "\"제 책\"의 '제' — 的 하나로",
     topic: "구조조사 的 (소유·수식)",
     titleFr: "的",
@@ -421,7 +489,7 @@ export default [
   {
     slug: "h1-08-serial-verbs",
     level: "H1",
-    order: 8,
+    order: 9,
     title: "\"가서 밥 먹어요\" — 동사 두 개 잇기",
     topic: "연동문",
     titleFr: "连动句",
@@ -469,7 +537,7 @@ export default [
   {
     slug: "h1-09-time-place",
     level: "H1",
-    order: 9,
+    order: 10,
     title: "언제・어디서를 어디에 둘까",
     topic: "시간·장소 어순 (在)",
     titleFr: "时间・地点语序",
@@ -531,7 +599,7 @@ export default [
   {
     slug: "h1-10-numbers",
     level: "H1",
-    order: 10,
+    order: 11,
     title: "0부터 100까지, 그리고 시간 묻기",
     topic: "숫자·나이·시간",
     titleFr: "数字",
@@ -598,7 +666,7 @@ export default [
   {
     slug: "h1-11-adverbs-dou-ye",
     level: "H1",
-    order: 11,
+    order: 12,
     title: "\"우리 다 ~\" \"나도 ~\" — 자리가 생명인 부사",
     topic: "부사 都・也・真・一起",
     titleFr: "副词 都・也・真・一起",
@@ -667,7 +735,7 @@ export default [
   {
     slug: "h1-12-modal-wishes",
     level: "H1",
-    order: 12,
+    order: 13,
     title: "\"~하고 싶어요\" \"~해 주세요\" — 마음을 담는 동사",
     topic: "표현·조동사 喜欢・想・请・不用",
     titleFr: "喜欢・想・请・不用",
@@ -736,7 +804,7 @@ export default [
   {
     slug: "h1-13-greetings",
     level: "H1",
-    order: 13,
+    order: 14,
     title: "\"고마워요\" \"미안해요\" — 통째로 외우는 인사말",
     topic: "인사·관용 표현",
     titleFr: "问候・常用语",

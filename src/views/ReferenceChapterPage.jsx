@@ -76,6 +76,10 @@ export default function ReferenceChapterPage({ lang, slug }) {
 
   const { chapter, prev, next } = data;
   const meta = ref.getLevelMeta(chapter.level);
+  // 인트로 레벨(OT/A0) — "간단히 알고 가면 좋을 것". 카나 외에는 관문(패턴 체크) 없이 읽으면 끝.
+  const isIntro = ref.isIntroLevel?.(chapter.level);
+  // 첫 정규 레벨 라벨 — 인트로 안내 카드에서 "본격 학습은 …부터" 문구에 사용
+  const firstRegularLabel = ref.LEVEL_META?.[1]?.label || '다음 레벨';
   // 핵심 패턴 한눈에 — pattern이 있는 섹션만 모아 상단 요약
   const patternIndex = chapter.sections
     .map((sec, i) => ({ i, pattern: sec.pattern }))
@@ -219,9 +223,22 @@ export default function ReferenceChapterPage({ lang, slug }) {
         </section>
       ))}
 
-      {/* ── 카나 챕터: 카나→로마자 테스트 (오십음표 학습 표는 위 섹션 안에) ── */}
+      {/* ── 챕터 마무리 ── */}
       {chapter.kana ? (
+        /* 카나 챕터: 카나→로마자 테스트 (오십음표 학습 표는 위 섹션 안에) — 인트로여도 유지 */
         <KanaTest kind={chapter.kana} slug={chapter.slug} storageKey={`${ref.readKey}_check`} />
+      ) : isIntro ? (
+        /* 인트로 레벨(OT/A0) 비(非)카나 챕터: 관문 없이 가볍게 읽고 넘어가는 안내 카드 */
+        <section className="card fr-section" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <p style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
+            이 챕터는 가볍게 읽고 넘어가면 돼요 — 본격 학습은 <strong>{firstRegularLabel}</strong>부터예요.
+          </p>
+          {next && (
+            <Link href={`${ref.base}/grammar/${next.slug}`} className="fr-check__next">
+              다음 챕터 · {next.title} →
+            </Link>
+          )}
+        </section>
       ) : (
         /* ── 패턴 체크 (3단계 퀴즈 + 통과 관문) ── */
         <RefPatternCheck
@@ -230,6 +247,7 @@ export default function ReferenceChapterPage({ lang, slug }) {
           langCode={ref.langCode}
           storageKey={`${ref.readKey}_check`}
           slug={chapter.slug}
+          intro={isIntro}
           next={next ? { href: `${ref.base}/grammar/${next.slug}`, title: next.title } : null}
           reviewLinks={reviewLinks}
         />

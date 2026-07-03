@@ -388,9 +388,141 @@ export default [
   },
 
   {
-    slug: "a1-06-adjectives",
+    slug: "a0-06-gender",
     level: "A1",
     order: 6,
+    title: "모든 단어에 성별이 있다고?",
+    topic: "명사의 성(genre)",
+    titleFr: "Le genre des noms",
+    summary: "한국인이 가장 낯설어하는 개념. 왜 책상이 '남성'인지, 그리고 단어 끝부분으로 성을 추측하는 요령을 배워요.",
+    duration: "약 9분",
+    sections: [
+      {
+        heading: "문법적 성이란 — '남자답다/여자답다'가 아니에요",
+        pattern: "모든 명사 → masculin(남성) 또는 féminin(여성)",
+        patternKo: "모든 명사는 남성 아니면 여성 — 뜻과는 무관한 칸 나누기",
+        body:
+          "**모든 명사**는 남성 아니면 여성이에요. '책이 왜 남자예요?'라는 질문의 답은 — **아무 이유 없어요**. 뜻과는 상관없이 문법이 정해놓은 칸 나누기일 뿐이라서, '수염'(la barbe 라 바흐브)은 여성, '화장'(le maquillage 르 마끼아주)은 남성이에요.\n\n" +
+          "사람·동물은 대체로 자연 성별을 따라요: le père(르 뻬흐 — 아버지)/la mère(라 메흐 — 어머니).",
+        examples: [
+          { fr: "le livre", ipa: "[livʁ] 리브흐", ko: "책 (남성)", note: "이유는 묻지 않기로 해요" },
+          { fr: "la table", ipa: "[tabl] 따블", ko: "탁자 (여성)" },
+          { fr: "le père / la mère", ipa: "[pɛʁ / mɛʁ] 뻬흐 / 메흐", ko: "아버지 / 어머니", note: "사람은 자연 성별대로" },
+        ],
+        vsEn: "영어도 옛날엔 명사에 성이 있었어요(고대 영어). 지금은 사라져서 the 하나로 통일됐지만, 프랑스어는 라틴어의 성 구분을 그대로 물려받았어요. 영어가 오히려 유럽 언어 중 예외인 셈이에요.",
+      },
+      {
+        heading: "어미를 보면 80%는 맞힌다",
+        pattern: "-tion/-té/-ette/-ie → 여성 · -age/-ment/-eau/-isme → 남성",
+        patternKo: "단어 끝부분만 보고 성을 80% 맞히는 추측 규칙",
+        body:
+          "단어의 **끝부분(어미)을 보면 성을 높은 확률로 추측**할 수 있어요. 아래 표의 대표 패턴만 외워두세요.",
+        table: {
+          caption: "성 추측 치트시트",
+          headers: ["어미", "성", "예시"],
+          rows: [
+            ["-tion / -sion", "여성 (거의 100%)", "la question(께스띠옹), la télévision(뗄레비지옹)"],
+            ["-té", "여성", "la liberté(리베흐떼), la beauté(보떼)"],
+            ["-ette", "여성", "la baguette(바겟), la toilette(뚜알렛)"],
+            ["-ie", "여성", "la vie(비), la boulangerie(불랑즈히)"],
+            ["-age", "남성", "le fromage(프호마주), le voyage(부아야주)"],
+            ["-ment", "남성 (거의 100%)", "le moment(모멍), le appartement → l'appartement(아빠흐뜨멍)"],
+            ["-eau", "남성", "le bureau(뷔호), le cadeau(꺄도)"],
+            ["-isme", "남성", "le tourisme(뚜히즘), l'optimisme(옵띠미즘)"],
+          ],
+        },
+        etym: "-tion(여성)과 -té(여성)는 라틴어 여성 명사 어미 -tiō, -tās의 후손이에요. 영어 -tion, -ty가 같은 뿌리죠. 즉 nation/nationalité처럼 영어에서 -tion/-ty로 끝나는 단어는 프랑스어에서 거의 다 여성이라고 봐도 됩니다.",
+        pitfall: "물론 예외는 있어요. la page(빠주 — 페이지), le squelette(스껠렛 — 해골)처럼요. 그래서 규칙은 '추측용', 암기는 '관사째로' — 다음 섹션에서 이어집니다.",
+      },
+      {
+        heading: "성을 외우는 유일한 정석 — 관사와 한 덩어리로",
+        pattern: "암기 = 관사 + 명사 (livre ✗ → le livre ✓)",
+        patternKo: "성 암기는 관사를 붙인 한 덩어리로",
+        body:
+          "단어는 **반드시 관사를 붙여서** 외우세요. 성을 틀리면 관사·형용사·대명사까지 줄줄이 틀리지만, 관사째 외워두면 나머지는 자동으로 따라와요.\n\n" +
+          "모음으로 시작하는 단어는 l'eau(로)처럼 줄어들어 성이 안 보이니, **une eau(윈 오)처럼 '하나의'를 뜻하는 관사(부정관사)로** 외우는 요령이 있어요.",
+        examples: [
+          { fr: "le livre → un livre", ipa: "[lə livʁ] 르 리브흐", ko: "책 — 남성 세트로 암기" },
+          { fr: "la table → une table", ipa: "[la tabl] 라 따블", ko: "탁자 — 여성 세트로 암기" },
+          { fr: "l'eau (f.) → une eau", ipa: "[lo] 로", ko: "물 — 축약될 땐 부정관사로 성 확인" },
+        ],
+        tip: "단어장에 남성=파랑, 여성=빨강 색 코드를 정해두는 것도 좋지만, 브랜드명도 훌륭한 암기 카드예요. 라네즈(la neige 라 네주, 눈)는 여성이라 la가 맞고, 마몽드(Ma Monde)는 monde(몽드)가 남성이라 문법대로라면 mon monde — 이 '틀린 성'이 오히려 기억에 남죠. 성은 '이해'가 아니라 '습관'의 영역입니다.",
+      },
+    ],
+  },
+
+  {
+    slug: "a0-07-articles",
+    level: "A1",
+    order: 7,
+    title: "'커피 한 잔'의 '한'이 필수인 언어",
+    topic: "관사 입문 le/la·un/une",
+    titleFr: "Les articles",
+    summary: "한국어에는 아예 없는 품사, 관사. 왜 프랑스어 명사는 거의 항상 관사를 데리고 다니는지 감을 잡아요.",
+    duration: "약 8분",
+    sections: [
+      {
+        heading: "관사 없는 명사는 벌거벗은 명사",
+        pattern: "명사 → 거의 항상 관사와 함께 (정관사 le/la/les · 부정관사 un/une/des · 부분관사 du/de la)",
+        patternKo: "명사는 거의 언제나 관사를 입고 다닌다",
+        body:
+          "관사는 명사 앞에 붙는 작은 단어예요. '정해진 그것'을 가리키면 **정관사**(le/la/les), '아무거나 하나'면 **부정관사**(un/une/des)라고 불러요. 한국어엔 관사가 없어서 한국 학습자는 관사를 빼먹는 실수를 정말 오래 해요. 프랑스어 명사는 **거의 언제나 관사와 함께** 다니고, J'aime le café(젬 르 까페)에서 le를 빼면 깨진 문장이 돼요.\n\n" +
+          "영어보다도 철저해서, 영어가 관사 없이 쓰는 I like coffee 같은 문장에도 프랑스어는 관사가 필요해요.",
+        examples: [
+          { fr: "J'aime le café.", ipa: "[ʒɛm lə kafe] 젬 르 까페", ko: "저는 커피를 좋아해요.", note: "좋아하는 대상엔 정관사" },
+          { fr: "C'est un livre.", ipa: "[sɛtœ̃ livʁ] 세떵 리브흐", ko: "이것은 책이에요.", note: "'하나의' 셀 수 있는 것엔 부정관사" },
+        ],
+        vsEn: "영어 the≈le/la/les, a≈un/une로 대응되지만 두 가지가 달라요. ① 프랑스어 관사는 명사의 성·수에 따라 모양이 변하고, ② 영어가 관사를 생략하는 자리(I like coffee, in school)에도 프랑스어는 관사를 써요. '영어보다 한 단계 더 깐깐하다'고 기억하세요.",
+        enParallel: {
+          rows: [
+            { en: "**the** book", fr: "**le** livre", ko: "그 책 (정관사)" },
+            { en: "**a** book", fr: "**un** livre", ko: "책 한 권 (부정관사)" },
+            { en: "**an** apple", fr: "**une** pomme", ko: "사과 하나 (부정관사)" },
+          ],
+          note: "le/la/les = the(정관사 '그'), un/une/des = a/an(부정관사 '하나'). 정/부정관사를 구별하는 발상 자체가 영어와 같아요. (차이: 프랑스어 관사는 명사의 성·수에 맞춰 모양이 바뀜.)",
+        },
+      },
+      {
+        heading: "정관사 le, la, les — 그리고 축약 l'",
+        pattern: "le + 남성 단수 · la + 여성 단수 · l' + 모음 앞 · les + 복수",
+        patternKo: "'정해진 그것'을 가리키는 정관사 네 형태",
+        body:
+          "'정해진 그것'을 가리키는 정관사는 **le**(르) livre, **la**(라) table, **l'**eau(모음/무음 h 앞, 성 불문), **les**(레) livres(모든 복수)예요.\n\n" +
+          "정관사는 ① 이미 아는·특정한 것(그 책), ② 종류 전체(커피란 것), ③ **좋아하고 싫어하는 대상**을 말할 때 써요.",
+        table: {
+          headers: ["", "남성", "여성", "모음 앞", "복수"],
+          rows: [
+            ["정관사", "le", "la", "l'", "les"],
+            ["부정관사", "un", "une", "un/une", "des"],
+          ],
+        },
+        examples: [
+          { fr: "les amis", ipa: "[lezami] 레자미", ko: "친구들", note: "les+모음 = 소리 잇기(리에종)" },
+          { fr: "l'université", ipa: "[lynivɛʁsite] 뤼니베흐시떼", ko: "대학 (여성)", note: "축약되면 성이 숨어요" },
+        ],
+        etym: "le/la는 라틴어 지시사 ille/illa(저것)가 닳아서 된 말로, 스페인어 el/la, 이탈리아어 il/la도 같은 후손이에요. 그리고 이미 한국 마트에 진열돼 있죠 — 라네즈(la neige 라 네주, 여성 단수)의 la, 뚜레쥬르(Tous les jours 뚜 레 주흐, 복수)의 les가 전부 이 정관사예요. 브랜드명을 보며 '왜 la지? 왜 les지?'를 따져보면 그게 곧 관사 공부입니다.",
+      },
+      {
+        heading: "부정관사 un, une, des — '하나' 그리고 영어에 없는 des",
+        pattern: "un + 남성 · une + 여성 · des + 복수",
+        patternKo: "des는 영어에도 없는 '복수 부정관사'",
+        body:
+          "**un**(엉, 남성)/**une**(윈, 여성)은 영어 a/an과 같아요 — 정해지지 않은 '하나의' 무엇.\n\n" +
+          "특이한 건 복수형 **des**(데)예요. 영어로는 I have books처럼 관사 없이 말하는 것을, 프랑스어는 J'ai **des** livres(줴 데 리브흐)처럼 des를 꼭 붙여요. 한국어로는 번역되지 않는 경우가 많아요.",
+        examples: [
+          { fr: "un café, s'il vous plaît", ipa: "[œ̃ kafe sil vu plɛ] 엉 까페 실 부 쁠레", ko: "커피 한 잔 주세요", note: "주문의 만능 공식" },
+          { fr: "une question", ipa: "[yn kɛstjɔ̃] 윈 께스띠옹", ko: "질문 하나", note: "-tion은 여성 → une" },
+          { fr: "J'ai des amis.", ipa: "[ʒe dezami] 줴 데자미", ko: "저는 친구들이 있어요.", note: "영어라면 관사 없이(I have friends) 말하는 자리" },
+        ],
+        pitfall: "한국어 직역 습관으로 'J'aime café'처럼 관사를 빼는 실수가 A1~B1 내내 이어져요. 지금부터 '프랑스어 명사는 옷(관사)을 입어야 외출한다'고 생각하는 습관을 들이면 몇 년 치 교정이 절약됩니다.",
+      },
+    ],
+  },
+
+  {
+    slug: "a1-06-adjectives",
+    level: "A1",
+    order: 8,
     title: "'레드 와인'이 아니라 '와인 레드'",
     topic: "형용사 성수 일치·위치(BAGS)",
     titleFr: "Les adjectifs",
@@ -466,7 +598,7 @@ export default [
   {
     slug: "a1-07-possessives",
     level: "A1",
-    order: 7,
+    order: 9,
     title: "sa mère는 누구의 엄마일까?",
     topic: "소유 형용사 mon/ma/son",
     titleFr: "Les adjectifs possessifs",
@@ -533,7 +665,7 @@ export default [
   {
     slug: "a1-08-aller-venir",
     level: "A1",
-    order: 8,
+    order: 10,
     title: "\"방금 먹었어, 곧 갈 거야\"",
     topic: "aller/venir·근접 미래와 과거",
     titleFr: "Aller, venir et leurs constructions",
@@ -639,7 +771,7 @@ export default [
   {
     slug: "a1-09-partitive",
     level: "A1",
-    order: 9,
+    order: 11,
     title: "\"빵 좀 주세요\"의 '좀'을 문법으로",
     topic: "부분관사 du/de la",
     titleFr: "Les articles partitifs",
@@ -707,7 +839,7 @@ export default [
   {
     slug: "a1-10-numbers-time",
     level: "A1",
-    order: 10,
+    order: 12,
     title: "70을 '60+10'이라 부르는 사람들",
     topic: "숫자·시간·날짜",
     titleFr: "Les nombres, l'heure et la date",
@@ -792,6 +924,68 @@ export default [
           { fr: "Je travaille le lundi.", ipa: "[ʒə tʁavaj lə lœ̃di]", ko: "저는 월요일마다 일해요.", note: "le + 요일 = 매주 반복" },
         ],
         vsEn: "영어는 May 3rd처럼 서수를 쓰지만, 프랑스어는 1일만 빼고 전부 기수예요(le trois mai). 그리고 영어와 달리 요일·달 이름을 **대문자로 쓰지 않는 것**도 작지만 자주 틀리는 차이예요.",
+      },
+    ],
+  },
+
+  {
+    slug: "a0-08-survival",
+    level: "A1",
+    order: 13,
+    title: "\"봉주르\" 없이는 시작도 없다",
+    topic: "인사·생존 표현과 tu/vous",
+    titleFr: "Salutations et expressions de survie",
+    summary: "첫 회화에 필요한 인사·예의 표현 세트. 한국어 존댓말 감각이 그대로 통하는 tu/vous 구분도 함께!",
+    duration: "약 8분",
+    sections: [
+      {
+        heading: "기본 인사 세트",
+        pattern: "Bonjour(봉주흐) → 낮 · Bonsoir(봉수아흐) → 저녁 · Salut(살뤼) → 친한 사이 · Au revoir(오 흐부아) → 작별",
+        patternKo: "때와 친한 정도에 따라 갈리는 기본 인사 세트",
+        body:
+          "**Bonjour** [봉주흐] — 아침~낮의 만능 인사. 가게에 들어갈 때 점원에게 반드시 건네는 게 프랑스 예절이에요.\n" +
+          "**Bonsoir** [봉수아흐] — 저녁 인사.\n" +
+          "**Salut** [살뤼] — 친한 사이의 '안녕!' (만날 때도 헤어질 때도)\n" +
+          "**Au revoir** [오 흐부아] — 헤어질 때.\n" +
+          "**Bonne nuit** [본 뉘] — 자러 갈 때만 쓰는 '잘 자'.",
+        examples: [
+          { fr: "Bonjour, madame.", ipa: "[bɔ̃ʒuʁ madam] 봉주흐 마담", ko: "안녕하세요. (여성에게)", note: "madame(마담)/monsieur(므시외)를 붙이면 한층 정중" },
+          { fr: "Salut, ça va ?", ipa: "[saly sa va] 살뤼 사 바", ko: "안녕, 잘 지내?", note: "친구 사이" },
+          { fr: "Au revoir, merci !", ipa: "[o ʁəvwaʁ mɛʁsi] 오 흐부아 메흐시", ko: "안녕히 계세요, 감사합니다!" },
+        ],
+        pitfall: "Bonne nuit(본 뉘)는 '좋은 밤 되세요'가 아니라 '잘 자요'예요. 저녁에 헤어지며 Bonne nuit라고 하면 어색해요 — 저녁 작별 인사는 Bonne soirée(본 수아헤)를 쓰세요.",
+      },
+      {
+        heading: "tu와 vous — 프랑스어의 반말과 존댓말",
+        pattern: "tu(뛰) = 반말 (친구·가족) · vous(부) = 존댓말 + 복수 '여러분'",
+        patternKo: "한국어 반말/존댓말 감각이 그대로 통하는 구분",
+        body:
+          "**tu**(뛰)는 친구·가족·아이에게, **vous**(부)는 처음 만난 사람·윗사람·격식 상황에서 써요. 한국어 **반말/존댓말 감각 그대로**라 우리에겐 큰 어드밴티지예요.\n\n" +
+          "'말 놓다'에 해당하는 동사(tutoyer 뛰뚜아예)가 따로 있을 만큼 이 전환은 관계의 이정표예요. 확신이 없으면 무조건 vous — 한국에서처럼요.",
+        examples: [
+          { fr: "Comment vous appelez-vous ?", ipa: "[kɔmɑ̃ vuzaple vu] 꼬멍 부자쁠레 부", ko: "성함이 어떻게 되세요? (존대)" },
+          { fr: "Tu t'appelles comment ?", ipa: "[ty tapɛl kɔmɑ̃] 뛰 따뻴 꼬멍", ko: "너 이름이 뭐야? (반말)" },
+          { fr: "Vous allez bien ?", ipa: "[vuzale bjɛ̃] 부잘레 비앵", ko: "잘 지내세요?" },
+        ],
+        vsEn: "영어 you는 하나뿐이라 영어에는 이 구분이 없어요. 영어로 생각하고 말하면 tu/vous 선택을 잊기 쉬우니, 오히려 한국어로 '이 사람한테 존댓말 할 상황인가?'를 떠올리는 게 정확해요.",
+      },
+      {
+        heading: "생존 필수 표현 10",
+        body: "여행이든 수업이든, 이 열 개면 첫날을 버틸 수 있어요.",
+        examples: [
+          { fr: "Merci (beaucoup).", ipa: "[mɛʁsi boku] 메흐시 (보꾸)", ko: "감사합니다 (대단히)." },
+          { fr: "S'il vous plaît.", ipa: "[sil vu plɛ] 실 부 쁠레", ko: "부탁합니다 / 저기요.", note: "주문·부탁의 필수 마무리" },
+          { fr: "Pardon. / Excusez-moi.", ipa: "[paʁdɔ̃ / ɛkskyze mwa] 빠흐동 / 엑스뀌제 무아", ko: "실례합니다 / 죄송합니다." },
+          { fr: "Oui. / Non.", ipa: "[wi / nɔ̃] 위 / 농", ko: "네. / 아니요." },
+          { fr: "Je ne comprends pas.", ipa: "[ʒə nə kɔ̃pʁɑ̃ pa] 즈 느 꽁프헝 빠", ko: "이해하지 못했어요." },
+          { fr: "Plus lentement, s'il vous plaît.", ipa: "[ply lɑ̃tmɑ̃ sil vu plɛ] 쁠뤼 렁뜨멍 실 부 쁠레", ko: "더 천천히 말씀해주세요." },
+          { fr: "Parlez-vous anglais ?", ipa: "[paʁle vu ɑ̃glɛ] 빠흘레 부 엉글레", ko: "영어 하세요?" },
+          { fr: "Je suis coréen(ne).", ipa: "[ʒə sɥi kɔʁeɛ̃ / kɔʁeɛn] 즈 스위 꼬헤앵 / 꼬헤엔", ko: "저는 한국인이에요. (남/녀)" },
+          { fr: "C'est combien ?", ipa: "[sɛ kɔ̃bjɛ̃] 세 꽁비앵", ko: "얼마예요?" },
+          { fr: "Où sont les toilettes ?", ipa: "[u sɔ̃ le twalɛt] 우 쏭 레 뚜알렛", ko: "화장실이 어디예요?" },
+        ],
+        tip: "프랑스에서는 가게에 들어가며 Bonjour(봉주흐), 나오며 Merci, au revoir(메흐시, 오 흐부아)를 말하는 게 기본 매너예요. 이 두 마디만 챙겨도 응대의 온도가 달라집니다.",
+        etym: "merci(메흐시)는 라틴어 mercēs(보수, 호의)에서 왔어요. 영어 mercy(자비)와 같은 뿌리 — '당신의 호의에 감사하다'는 뜻이 압축된 말이에요.",
       },
     ],
   },
