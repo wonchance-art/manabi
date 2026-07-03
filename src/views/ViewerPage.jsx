@@ -29,6 +29,7 @@ import ConversationPanel from '../components/ConversationPanel';
 import ViewerBottomSheet from '../components/ViewerBottomSheet';
 import ListenControls from '../components/ListenControls';
 import { parseTitle } from '../lib/seriesMeta';
+import { REF_LANGS } from '../content/refLangs';
 import { formatDetail } from '../lib/wordDetailFormat';
 import { useSeriesNeighbors } from '../lib/useSeriesNeighbors';
 import { useTitleEdit } from '../lib/useTitleEdit';
@@ -1128,6 +1129,20 @@ export default function ViewerPage() {
                 >
                   {markCompleteMutation.isPending ? '...' : '✓ 읽기 완료 표시'}
                 </button>
+          )}
+
+          {user && material?.raw_text && REF_LANGS[materialLang] && (
+            <Link
+              href={`/study?source=mine&lang=${encodeURIComponent(materialLang)}`}
+              className="study-textlink"
+              onClick={() => {
+                try {
+                  localStorage.setItem(`study_source_${materialLang}`, (material.raw_text || '').slice(0, 1500));
+                } catch {}
+              }}
+            >
+              이 자료로 오늘 세션 만들기
+            </Link>
           )}
         </div>
         </div>{/* viewer-settings__body */}

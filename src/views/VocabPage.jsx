@@ -21,6 +21,8 @@ import { friendlyToastMessage } from '../lib/errorMessage';
 import { detectLang } from '../lib/constants';
 import { stripSourceLangInMeaning } from '../lib/studySession';
 import { useVocabData } from '../lib/useVocabData';
+import { deriveVocabRungs } from '../lib/studyMaterials';
+import { vocabTypeForRung } from '../lib/skillRung';
 import { exportCSV, exportAnki } from '../lib/vocabIO';
 import {
   deckOf, fisherYatesShuffle, isNewWord,
@@ -55,9 +57,12 @@ export default function VocabPage() {
   }, [seriesFilter]);
 
   const [reviewMode, setReviewMode] = useState(() => {
-    if (typeof window === 'undefined') return 'flash';
-    return localStorage.getItem('as_review_mode') || 'flash';
+    if (typeof window === 'undefined') return 'auto';
+    return localStorage.getItem('as_review_mode') || 'auto';
   });
+
+  // 자동 모드용: 복습 시작 시 review_events에서 유도한 단어별 숙련 rung (word_text → rung)
+  const [vocabRungs, setVocabRungs] = useState({});
 
   // reviewMode 영속화
   useEffect(() => {
@@ -226,6 +231,18 @@ export default function VocabPage() {
     return id != null ? vocab.find(v => v.id === id) : undefined;
   }, [reviewQueue, reviewIdx, vocab]);
 
+  // 자동 모드: 단어 rung → 세션과 동일한 문항 유형(vocabTypeForRung)을 복습 서브모드로 매핑.
+  // rung≤1→choice(문맥 객관식), 2→typing, ≥3→listening. TTS 미지원이면 listening은 문맥으로 강등.
+  const autoSubMode = (word) => {
+    if (!word) return 'context';
+    const rung = vocabRungs[word.word_text] ?? 0;
+    const vtype = vocabTypeForRung(rung, 'normal');
+    if (vtype === 'vocab-typing') return 'typing';
+    if (vtype === 'vocab-listening') return ttsSupported ? 'listening' : 'context';
+    return 'context'; // vocab-choice
+  };
+  const effectiveMode = reviewMode === 'auto' ? autoSubMode(currentWord) : reviewMode;
+
   const contextOptions = useMemo(() => {
     if (!currentWord) return [];
     const others = vocab.filter(v => v.id !== currentWord.id && v.meaning);
@@ -255,8 +272,9 @@ export default function VocabPage() {
     });
     recordActivity(user.id, () => fetchProfile(user.id));
     // 약점 진단 데이터 — 어휘 정오답 적재 ('다시'=오답, 나머지=정답 취급)
-    // qtype: 복습 모드에서 유도 (flash·context=객관식→choice, typing, listening)
-    const qtype = ({ flash: 'choice', context: 'choice', typing: 'typing', listening: 'listening' })[reviewMode] || 'choice';
+    // qtype: 실제 출제된 유형에서 유도 (자동 모드는 rung이 정한 서브모드 → effectiveMode).
+    // flash·context=객관식→choice, typing, listening. 이 qtype이 다음 세션 rung 유도의 입력이 된다.
+    const qtype = ({ flash: 'choice', context: 'choice', typing: 'typing', listening: 'listening' })[effectiveMode] || 'choice';
     logReviewEvents(user.id, [{
       lang: currentWord.language || detectLang(currentWord.word_text),
       source: 'vocab',
@@ -323,12 +341,33 @@ export default function VocabPage() {
     }
   };
 
-  const startReview = () => {
+  const startReview = async () => {
     // 복습 예정(학습한 단어) 먼저, 그다음 하루 한도 내 새 단어
     const reviews = session.reviewsDue;
     const news = session.newAvailable.slice(0, session.newToday);
-    const queue = [...reviews, ...news].map(v => v.id);
+    const queueWords = [...reviews, ...news];
+    const queue = queueWords.map(v => v.id);
     if (queue.length === 0) return;
+
+    // 자동(추천) 모드용 rung 유도 — review_events 1회 조회(해당 언어들, 최근 400건, desc→asc).
+    // 조회 실패·이벤트 0건이면 rung 기본 0 → vocabTypeForRung(0)=choice 위주(무해 폴백).
+    let rungs = {};
+    try {
+      const langs = [...new Set(queueWords.map(v => v.language || detectLang(v.word_text)))];
+      const { data, error } = await supabase
+        .from('review_events')
+        .select('source, item_key, correct, detail, created_at')
+        .eq('user_id', user.id)
+        .in('lang', langs)
+        .order('created_at', { ascending: false })
+        .limit(400);
+      if (!error && data) {
+        const eventsAsc = data.slice().reverse();
+        rungs = deriveVocabRungs(eventsAsc, queueWords);
+      }
+    } catch { /* 폴백: 빈 rung → choice 위주 */ }
+    setVocabRungs(rungs);
+
     setReviewQueue(queue);
     setTab('review');
     setReviewIdx(0);
@@ -536,6 +575,7 @@ export default function VocabPage() {
           currentWord={currentWord}
           reviewFinished={reviewFinished}
           reviewMode={reviewMode}
+          effectiveMode={effectiveMode}
           setReviewMode={setReviewMode}
           showAnswer={showAnswer}
           setShowAnswer={setShowAnswer}

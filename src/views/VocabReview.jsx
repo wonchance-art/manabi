@@ -29,21 +29,25 @@ function ScoreSection({ word, onScore }) {
 
 export default function VocabReview({
   vocab, reviewWords, reviewIdx, currentWord,
-  reviewFinished, reviewMode, setReviewMode,
+  reviewFinished, reviewMode, effectiveMode, setReviewMode,
   showAnswer, setShowAnswer, showHint, setShowHint,
   typingAnswer, setTypingAnswer, contextSelected, setContextSelected, contextOptions,
   handleScore, handleSkip, ttsSupported, speak,
   exampleSentences, exampleLoading, loadExamples,
   setTab,
 }) {
+  // 실제 출제 유형 — 자동 모드는 단어별 rung이 정한 서브모드(effectiveMode), 그 외엔 reviewMode.
+  // 픽커의 활성 표시만 reviewMode를 쓰고, 카드 렌더링은 전부 mode를 따른다.
+  const mode = effectiveMode || reviewMode;
+
   // 리스닝 모드: 카드 전환 시 자동 TTS 재생
   const prevIdxRef = useRef(reviewIdx);
   useEffect(() => {
-    if (reviewMode === 'listening' && ttsSupported && currentWord && prevIdxRef.current !== reviewIdx) {
+    if (mode === 'listening' && ttsSupported && currentWord && prevIdxRef.current !== reviewIdx) {
       speak(currentWord.word_text, currentWord.language || detectLang(currentWord.word_text));
     }
     prevIdxRef.current = reviewIdx;
-  }, [reviewIdx, reviewMode, ttsSupported, currentWord, speak]);
+  }, [reviewIdx, mode, ttsSupported, currentWord, speak]);
 
   return (
     <div style={{ maxWidth: '600px', margin: '0 auto' }}>
@@ -143,7 +147,7 @@ export default function VocabReview({
         <>
           {/* 복습 모드 픽커 */}
           <div className="chip-group" style={{ justifyContent: 'center', marginBottom: 14 }}>
-            {[['flash', '플래시'], ['typing', '타이핑'], ['context', '문맥'], ['listening', '듣기']].map(([m, label]) => (
+            {[['auto', '자동'], ['flash', '플래시'], ['typing', '타이핑'], ['context', '문맥'], ['listening', '듣기']].map(([m, label]) => (
               <button
                 key={m}
                 type="button"
@@ -166,7 +170,7 @@ export default function VocabReview({
             <div className="review-card__progress">
               <span>남은 단어: {reviewWords.length - reviewIdx}</span>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                {reviewMode === 'flash' && !showAnswer && currentWord?.source_sentence && (
+                {mode === 'flash' && !showAnswer && currentWord?.source_sentence && (
                   <button className="review-hint-btn" onClick={() => setShowHint(h => !h)}>
                     {showHint ? '힌트 숨기기' : '힌트'}
                   </button>
@@ -179,7 +183,7 @@ export default function VocabReview({
 
             <div className="review-card__body">
               {/* 단어 헤더 (문맥 퀴즈는 정답 공개 전까지 숨김) */}
-              {currentWord && (reviewMode !== 'context' && reviewMode !== 'listening' || showAnswer) && (
+              {currentWord && (mode !== 'context' && mode !== 'listening' || showAnswer) && (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
                   <h2 className="review-card__word">{displayWord(currentWord.word_text, currentWord.pos)}</h2>
                   {ttsSupported && (
@@ -203,7 +207,7 @@ export default function VocabReview({
               )}
 
               {/* 플래시카드 모드 */}
-              {reviewMode === 'flash' && (
+              {mode === 'flash' && (
                 <>
                   {!showAnswer && showHint && currentWord.source_sentence && (
                     <p className="review-card__hint">
@@ -226,7 +230,7 @@ export default function VocabReview({
               )}
 
               {/* 타이핑 모드 */}
-              {reviewMode === 'typing' && (
+              {mode === 'typing' && (
                 <>
                   {!showAnswer ? (
                     <div style={{ marginTop: '30px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -259,7 +263,7 @@ export default function VocabReview({
               )}
 
               {/* 문맥 퀴즈 모드 */}
-              {reviewMode === 'context' && (
+              {mode === 'context' && (
                 <>
                   <div style={{ marginBottom: '20px' }}>
                     {currentWord.source_sentence ? (
@@ -334,7 +338,7 @@ export default function VocabReview({
               )}
 
               {/* 리스닝 모드 */}
-              {reviewMode === 'listening' && (
+              {mode === 'listening' && (
                 <>
                   {ttsSupported ? (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', marginTop: '20px' }}>

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import RefSpeak from '../components/RefSpeak';
 import { JaText } from './refShared';
 import { stripInlineReadings } from '../lib/studyParagraph';
+import { GROWTH_LABELS, GROWTH_COPY } from '../lib/growthStats';
 
 /** 날짜 포맷 — YYYY.M.D (ko) */
 function fmtDate(at) {
@@ -180,9 +181,9 @@ export default function StudyLibraryPage({
 
       {/* 성장 요약 */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 18 }}>
-        <StatTile value={knownCount} label="아는 단어" sub="일주일 넘게 기억한 단어" />
-        <StatTile value={passedChapters} label="통과 챕터" />
-        <StatTile value={weekSessions} label="이번 주 세션" />
+        <StatTile value={knownCount} label={GROWTH_LABELS.knownWords} sub={GROWTH_COPY.knownWordSub} />
+        <StatTile value={passedChapters} label={GROWTH_LABELS.passedChapters} />
+        <StatTile value={weekSessions} label={GROWTH_LABELS.weekSessions} />
       </div>
 
       {/* 문단 목록 */}
