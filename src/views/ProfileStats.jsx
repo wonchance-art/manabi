@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { isPassed } from '../components/RefPatternCheck';
+import { pullProgress } from '../lib/refProgress';
 import Button from '../components/Button';
 import VocabStats from './VocabStats';
 
@@ -368,10 +369,13 @@ function ReviewTile({ vocab }) {
 /* ── 진도 — 레벨별 챕터(교재) 통과 + 어휘 수집 통합, 3개 언어 ── */
 
 function LevelCoverageCard({ refManifest }) {
+  const { user } = useAuth();
   const langs = Object.keys(refManifest);
   const [lang, setLang] = useState(langs[0] || 'Japanese');
   // SSR과 첫 클라이언트 렌더를 일치시키기 위해 localStorage는 마운트 후에만 읽는다
   const [mounted, setMounted] = useState(false);
+  // 서버 병합으로 localStorage가 갱신되면 progress 메모를 재실행하기 위한 카운터
+  const [merged, setMerged] = useState(0);
   useEffect(() => {
     setMounted(true);
     // 최근 학습 기록이 있는 언어 우선 → 마지막 선택 언어 폴백
@@ -382,9 +386,22 @@ function LevelCoverageCard({ refManifest }) {
     // langs·refManifest는 정적 매니페스트에서 파생
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // 로그인 시 서버 기록과 병합 — 다른 기기에서 읽은 챕터 반영 (LessonsPage와 동일 패턴).
+  // 먼저 localStorage로 렌더한 뒤 병합이 끝나면 재읽기(깜빡임 최소). 실패 시 localStorage 유지.
+  useEffect(() => {
+    if (!user?.id) return;
+    const readKeys = Object.fromEntries(
+      Object.entries(refManifest).map(([name, r]) => [name, r.readKey])
+    );
+    pullProgress(user.id, readKeys).then(changed => { if (changed) setMerged(m => m + 1); });
+    // refManifest는 서버에서 내려오는 정적 데이터
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
   const ref = refManifest[lang];
 
-  // 교재 진행 — localStorage (교재 목록과 동일 원본)
+  // 교재 진행 — localStorage (교재 목록과 동일 원본, 로그인 시 서버 병합 반영)
   const progress = useMemo(() => {
     if (!ref || !mounted) return { readSet: new Set(), checkMap: {} };
     try {
@@ -393,7 +410,7 @@ function LevelCoverageCard({ refManifest }) {
         checkMap: JSON.parse(localStorage.getItem(`${ref.readKey}_check`) || '{}'),
       };
     } catch { return { readSet: new Set(), checkMap: {} }; }
-  }, [ref, mounted]);
+  }, [ref, mounted, merged]);
 
   if (!ref) return null;
 

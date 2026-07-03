@@ -2,18 +2,17 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from './supabase';
 import { recordActivity } from './streak';
-import { awardXP, XP_REWARDS } from './xp';
 import { friendlyToastMessage } from './errorMessage';
 
 /**
- * 자료 완독 처리: reading_progress upsert + XP 부여 + 업적 체크 + 퀴즈 생성.
+ * 자료 완독 처리: reading_progress upsert + 퀴즈 생성.
  * deps가 많지만 모두 외부 context/hook에서 받아오므로 hook 자체는 순수.
  *
  * @returns useMutation 결과 (markCompleteMutation)
  */
 export function useReadingCompletion({
   materialId, user, profile, fetchProfile,
-  material, generateQuiz, celebrate, checkLevelUp,
+  material, generateQuiz,
   toast,
 }) {
   const queryClient = useQueryClient();
@@ -45,13 +44,6 @@ export function useReadingCompletion({
       queryClient.invalidateQueries({ queryKey: ['reading-progress', user?.id, materialId] });
       queryClient.invalidateQueries({ queryKey: ['reading-progress-list', user?.id] });
       recordActivity(user.id, () => fetchProfile(user.id));
-      const prevXP = profile?.xp ?? 0;
-      try {
-        await awardXP(user.id, XP_REWARDS.MATERIAL_COMPLETED, prevXP);
-        checkLevelUp(prevXP, prevXP + XP_REWARDS.MATERIAL_COMPLETED);
-      } catch {
-        console.error('XP 부여 실패 — 완독 기록은 저장됨');
-      }
       const pendingCompletion = {
         wordsSaved: data.wordsSaved,
         dueCount: data.dueCount,

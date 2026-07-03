@@ -10,8 +10,6 @@ import { useToast } from '../lib/ToastContext';
 import Spinner from '../components/Spinner';
 import Button from '../components/Button';
 import { recordActivity } from '../lib/streak';
-import { awardXP, XP_REWARDS } from '../lib/xp';
-import { useCelebration } from '../lib/CelebrationContext';
 import { useTTS } from '../lib/useTTS';
 import { useViewerSettings } from '../lib/useViewerSettings';
 import { useGrammarAnalysis, GRAMMAR_ACTIONS } from '../lib/useGrammarAnalysis';
@@ -176,7 +174,6 @@ export default function ViewerPage() {
   const queryClient = useQueryClient();
 
   const { speak, supported: ttsSupported } = useTTS();
-  const { celebrate, checkLevelUp } = useCelebration();
 
   // Custom hooks
   const settings = useViewerSettings();
@@ -342,7 +339,7 @@ export default function ViewerPage() {
 
   const markCompleteMutation = useReadingCompletion({
     materialId: id, user, profile, fetchProfile,
-    material, generateQuiz, celebrate, checkLevelUp,
+    material, generateQuiz,
     toast,
   });
 
@@ -537,7 +534,7 @@ export default function ViewerPage() {
   }
 
   // 인라인 복습: 뷰어에서 단어 보며 바로 FSRS 평가
-  const inlineReviewMutation = useInlineReview({ user, profile, fetchProfile, toast });
+  const inlineReviewMutation = useInlineReview({ user, fetchProfile, toast });
 
   const correctTokenMutation = useMutation({
     mutationFn: async ({ tokenId, corrections }) => {
@@ -639,7 +636,7 @@ export default function ViewerPage() {
       setTimeout(() => {
         setSaveAnim(false);
         setIsSheetOpen(false);
-        toast(`"${selectedToken.text}" 단어장에 추가됐어요! +${XP_REWARDS.WORD_SAVED} XP`, 'success');
+        toast(`"${selectedToken.text}" 단어장에 추가됐어요!`, 'success');
         if (saveCountRef.current === 5) {
           setTimeout(() => toast('단어 5개 모았어요! 복습하러 가볼까요?', 'info', 5000), 600);
         } else if (saveCountRef.current === 10) {
@@ -650,9 +647,6 @@ export default function ViewerPage() {
       queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['vocab', user?.id] });
       recordActivity(user.id, () => fetchProfile(user.id));
-      const prevXP = profile?.xp ?? 0;
-      awardXP(user.id, XP_REWARDS.WORD_SAVED, prevXP);
-      checkLevelUp(prevXP, prevXP + XP_REWARDS.WORD_SAVED);
     } catch (err) {
       toast('단어 추가 실패 — ' + friendlyToastMessage(err), 'error');
     }
@@ -1444,7 +1438,7 @@ export default function ViewerPage() {
             <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>
               이 자료와 관련된 공유 단어장
             </h3>
-            <Link href="/vocab?tab=decks" style={{ fontSize: '0.78rem', color: 'var(--primary-light)' }}>
+            <Link href="/vocab" style={{ fontSize: '0.78rem', color: 'var(--primary-light)' }}>
               전체 보기 →
             </Link>
           </div>
@@ -1452,7 +1446,7 @@ export default function ViewerPage() {
             {relatedDecks.map(deck => (
               <Link
                 key={deck.id}
-                href={`/vocab?tab=decks&deckId=${deck.id}`}
+                href="/vocab"
                 style={{
                   display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                   padding: '10px 14px', background: 'var(--bg-secondary)',
