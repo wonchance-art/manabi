@@ -401,6 +401,10 @@ export default function StudySessionPage({
       batcher?.add({ lang, source: 'grammar', item_key: eff.meta.slug, correct: ok, detail: { ko: it.quiz?.ko, mode: 'study', qtype, rt_ms } });
     } else if (eff.kind === 'reading') {
       batcher?.add({ lang, source: 'reading', item_key: String(eff.key).slice(0, 80), correct: ok, detail: { mode: 'study', qtype, rt_ms } });
+    } else if (eff.kind === 'warmup') {
+      // 비예정 조기 복습 — FSRS(user_vocabulary) 갱신 없이 이벤트만 적재.
+      // source:'vocab'이라 rung 계산에도 흡수된다(qtype 'choice'로 반영 — 의도된 설계).
+      batcher?.add({ lang, source: 'vocab', item_key: eff.key, correct: ok, detail: { qtype: 'choice', warmup: true, rt_ms, mode: 'study' } });
     }
   }
 

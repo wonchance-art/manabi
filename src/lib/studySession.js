@@ -186,7 +186,8 @@ export function qtypeForItem(type) {
 /**
  * 워밍업 문항 — AI 문단 생성 레이턴시를 가리는 즉시 시작용 인지형(vocab-choice) 2문항.
  * 최근(24~72h) 헷갈린(오답) 어휘를 우선 조기 복습하고, 부족분만 정답 어휘로 채우되,
- * 비예정 조기 복습이라 FSRS를 왜곡하지 않도록 effect는 항상 reading/warmup로만 기록한다(SRS 미반영).
+ * 비예정 조기 복습이라 FSRS를 왜곡하지 않도록 effect.kind는 'warmup'으로 두어
+ * 이벤트만 적재하고 user_vocabulary(SRS)는 절대 갱신하지 않는다.
  * 순수 함수 — 재료 조회는 호출자(studyMaterials)가 맡는다.
  * @param {Array} recentEvents - review_events (created_at desc). {source,item_key,correct,created_at}
  * @param {Array} vocabRows - 후보 단어의 user_vocabulary 행 {word_text,meaning,furigana}
@@ -241,7 +242,7 @@ export function buildWarmupItems(recentEvents, vocabRows, meaningPool = [], dueS
       word: { word_text: row.word_text, meaning: row.meaning, furigana: row.furigana || null },
       options: [row.meaning, ...distractors],
       warmup: true,
-      effect: { kind: 'reading', key: 'warmup:' + row.word_text },
+      effect: { kind: 'warmup', key: row.word_text },
     };
   }).filter(Boolean);
 }

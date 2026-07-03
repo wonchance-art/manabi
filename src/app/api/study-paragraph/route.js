@@ -104,6 +104,24 @@ async function generateOnce(promptText, apiKey) {
   return { paragraph: verifyParagraph(validated), raw };
 }
 
+/**
+ * study_paragraphs 보존 정책 — 유저당·언어당 최근 100행만 남기고 정리(best-effort).
+ * 응답 지연 없이 발사만 하고 await하지 않으며, 테이블 부재 등 실패는 조용히 무시한다.
+ */
+function pruneOldParagraphs(userClient, userId, lang) {
+  userClient.from('study_paragraphs')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('lang', lang)
+    .order('created_at', { ascending: false })
+    .range(100, 149)
+    .then(({ data }) => {
+      const ids = (data || []).map(r => r.id);
+      if (!ids.length) return;
+      userClient.from('study_paragraphs').delete().in('id', ids).then(() => {}, () => {});
+    }, () => {});
+}
+
 /** 재료 방어 정리 — 클라가 보낸 것을 그대로 되돌려받되 길이만 캡 */
 function cleanMaterials(body) {
   return {
@@ -216,6 +234,9 @@ export async function POST(request) {
       paragraph,
       used_at: isPrefetch ? null : nowIso,
     }).then(() => {}, () => {});
+
+    // 보존 정책 — 유저당·언어당 최근 100행만 유지(best-effort, 응답 지연 없음)
+    pruneOldParagraphs(userClient, authUser.id, materials.language);
 
     if (isPrefetch) {
       const preview = String(paragraph.translation || '').slice(0, 60);

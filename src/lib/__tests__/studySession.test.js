@@ -192,7 +192,7 @@ describe('buildWarmupItems — 워밍업 문항', () => {
     expect(items.map(i => i.word.word_text)).toEqual(['約束', '家族']);
     expect(items[0].type).toBe('vocab-choice');
     expect(items[0].warmup).toBe(true);
-    expect(items[0].effect).toEqual({ kind: 'reading', key: 'warmup:約束' });
+    expect(items[0].effect).toEqual({ kind: 'warmup', key: '約束' });
     expect(items[0].options).toContain('약속');
     expect(items[0].uid.startsWith('w-')).toBe(true);
   });
@@ -244,7 +244,7 @@ describe('buildWarmupItems — 워밍업 문항', () => {
     ];
     const items = buildWarmupItems([], [], POOL, new Set(), fallback);
     expect(items).toHaveLength(2);
-    expect(items[0].effect.key).toBe('warmup:水');
+    expect(items[0].effect).toEqual({ kind: 'warmup', key: '水' });
     expect(items[0].warmup).toBe(true);
   });
 
