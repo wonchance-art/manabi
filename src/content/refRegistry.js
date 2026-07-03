@@ -16,6 +16,11 @@ export function createRegistry(levelMeta, grammarMap, vocabMap) {
     LEVEL_META: levelMeta,
     ALL_CHAPTERS,
 
+    // 인트로 레벨(각 언어 levelMeta 첫 항목 — JA/EN/ZH의 'OT', FR의 'A0').
+    // "간단히 알고 가면 좋을 것" — 학습 관문·복습 대상이 아니다.
+    INTRO_LEVEL: levelMeta[0]?.key,
+    isIntroLevel(levelKey) { return norm(levelKey) === levelMeta[0]?.key; },
+
     getLevelMeta(key) {
       return levelMeta.find(m => m.key === norm(key)) || null;
     },

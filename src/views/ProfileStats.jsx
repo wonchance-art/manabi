@@ -412,7 +412,9 @@ function LevelCoverageCard({ refManifest }) {
           const total = lv.chapters.length;
           const passed = lv.chapters.filter(c => isPassed(progress.checkMap[c.slug])).length;
           const read = lv.chapters.filter(c => progress.readSet.has(c.slug)).length;
-          const done = total > 0 && passed === total;
+          // 인트로 레벨(OT/A0 — levels 첫 항목)은 관문이 없어 '전부 읽음'이 완료 기준
+          const isIntro = lv.key === ref.levels[0]?.key;
+          const done = total > 0 && (isIntro ? read === total : passed === total);
           return (
             <div key={lv.key} className="lvprog__row">
               <span className={`lvprog__key ${done ? 'is-done' : ''}`}>{lv.short || lv.key}</span>

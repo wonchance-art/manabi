@@ -178,12 +178,32 @@ describe('buildWarmupItems — 워밍업 문항', () => {
     expect(items[0].uid.startsWith('w-')).toBe(true);
   });
 
-  it('24h 미만·72h 초과·오답·비어휘 이벤트는 제외', () => {
+  it('오답(헷갈린 것)을 정답보다 먼저 고른다 — 최신순보다 우선', () => {
+    const events = [
+      { source: 'vocab', item_key: '約束', correct: true, created_at: h(30) },   // 정답·더 최신
+      { source: 'vocab', item_key: '家族', correct: false, created_at: h(48) },  // 오답·더 오래
+    ];
+    const items = buildWarmupItems(events, ROWS, POOL, new Set());
+    // 더 최신 정답(約束)보다 오답(家族)이 먼저
+    expect(items.map(i => i.word.word_text)).toEqual(['家族', '約束']);
+  });
+
+  it('오답이 여럿이면 오답 최신순으로 채운다', () => {
+    const events = [
+      { source: 'vocab', item_key: '約束', correct: false, created_at: h(30) },
+      { source: 'vocab', item_key: '家族', correct: false, created_at: h(48) },
+      { source: 'vocab', item_key: '会社', correct: true, created_at: h(26) },
+    ];
+    const items = buildWarmupItems(events, ROWS, POOL, new Set());
+    expect(items.map(i => i.word.word_text)).toEqual(['約束', '家族']);
+  });
+
+  it('24h 미만·72h 초과·비어휘 이벤트는 제외', () => {
     const events = [
       { source: 'vocab', item_key: '約束', correct: true, created_at: h(10) },   // 너무 최근
       { source: 'vocab', item_key: '家族', correct: true, created_at: h(100) },  // 너무 오래
-      { source: 'vocab', item_key: '会社', correct: false, created_at: h(48) },  // 오답
-      { source: 'grammar', item_key: '約束', correct: true, created_at: h(48) }, // 문법 소스
+      { source: 'vocab', item_key: '会社', correct: false, created_at: h(10) },  // 오답이지만 너무 최근
+      { source: 'grammar', item_key: '約束', correct: false, created_at: h(48) }, // 문법 소스
     ];
     expect(buildWarmupItems(events, ROWS, POOL, new Set())).toHaveLength(0);
   });

@@ -201,19 +201,25 @@ export function buildWarmupItems(recentEvents, vocabRows, meaningPool = [], dueS
   const rowByWord = new Map((vocabRows || []).map(r => [r.word_text, r]));
   const chosen = [];
   const seen = new Set();
-  // 최근 정답 우선 — 24~72h 내 correct=true 어휘 이벤트를 최신순으로 최대 2개
-  for (const e of recentEvents || []) {
-    if (chosen.length >= 2) break;
-    if (!e || e.source !== 'vocab' || !e.correct || !e.item_key) continue;
-    const t = new Date(e.created_at).getTime();
-    if (!(t >= lo && t <= hi)) continue;
-    const word = e.item_key;
-    if (seen.has(word) || (dueSet && dueSet.has(word))) continue;
-    const row = rowByWord.get(word);
-    if (!row || !row.meaning) continue;
-    seen.add(word);
-    chosen.push(row);
-  }
+  // 24~72h 어휘 이벤트를 최신순으로 훑어 최대 2개 — wantCorrect로 오답/정답 패스를 나눈다.
+  const collect = wantCorrect => {
+    for (const e of recentEvents || []) {
+      if (chosen.length >= 2) break;
+      if (!e || e.source !== 'vocab' || !e.item_key) continue;
+      if (!!e.correct !== wantCorrect) continue;
+      const t = new Date(e.created_at).getTime();
+      if (!(t >= lo && t <= hi)) continue;
+      const word = e.item_key;
+      if (seen.has(word) || (dueSet && dueSet.has(word))) continue;
+      const row = rowByWord.get(word);
+      if (!row || !row.meaning) continue;
+      seen.add(word);
+      chosen.push(row);
+    }
+  };
+  // 오답(헷갈린 것) 최신순 우선 → 부족하면 정답 최신순으로 채운다.
+  collect(false);
+  collect(true);
   // 콜드스타트 폴백 — 해당 이력이 없으면 레벨 사전 단어로 채운다
   if (chosen.length === 0) {
     for (const w of fallbackWords || []) {

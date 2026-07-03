@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { qtypeRungLevel, computeRung, computeEwma, dialFromEwma, vocabTypeForRung } from '../skillRung';
+import { qtypeRungLevel, computeRung, computeEwma, dialFromEwma, vocabTypeForRung, computeWeakness } from '../skillRung';
 
 // 정답/오답 이벤트 헬퍼
 const ok = qtype => ({ qtype, correct: true });
@@ -90,6 +90,62 @@ describe('dialFromEwma', () => {
   });
   it('중간이면 normal', () => {
     expect(dialFromEwma(0.8, 20, 40)).toBe('normal');
+  });
+});
+
+describe('computeWeakness', () => {
+  const ev = (source, item_key, correct, agoDays = 0) => ({
+    source, item_key, correct,
+    created_at: new Date(Date.now() - agoDays * 86400000).toISOString(),
+  });
+
+  it('(source,item_key)별 wrong/total 집계 · total<2 제외', () => {
+    const events = [
+      ev('vocab', 'A', false), ev('vocab', 'A', true),      // A: wrong1/total2
+      ev('vocab', 'B', false),                               // B: total1 → 제외
+      ev('grammar', 'C', false), ev('grammar', 'C', false), // C: wrong2/total2
+    ];
+    const out = computeWeakness(events, {});
+    const keys = out.map(o => `${o.source}:${o.item_key}`);
+    expect(keys).toContain('vocab:A');
+    expect(keys).toContain('grammar:C');
+    expect(keys).not.toContain('vocab:B');
+    expect(out.find(o => o.item_key === 'A')).toMatchObject({ wrong: 1, total: 2 });
+  });
+
+  it('오답률·표본 가중으로 score 내림차순 정렬', () => {
+    // C: 2/2·ln3 > A: 1/2·ln3
+    const events = [
+      ev('vocab', 'A', false), ev('vocab', 'A', true),
+      ev('grammar', 'C', false), ev('grammar', 'C', false),
+    ];
+    const out = computeWeakness(events, {});
+    expect(out[0].item_key).toBe('C');
+    expect(out[1].item_key).toBe('A');
+    expect(out[0].score).toBeGreaterThan(out[1].score);
+  });
+
+  it('sinceMs 이전 이벤트는 제외', () => {
+    const events = [
+      ev('vocab', 'A', false, 20), ev('vocab', 'A', false, 20), // 20일 전
+      ev('vocab', 'B', false, 1), ev('vocab', 'B', false, 1),   // 1일 전
+    ];
+    const out = computeWeakness(events, { sinceMs: Date.now() - 14 * 86400000 });
+    const keys = out.map(o => o.item_key);
+    expect(keys).toContain('B');
+    expect(keys).not.toContain('A');
+  });
+
+  it('cap으로 상위 N개만', () => {
+    const events = [];
+    for (const k of ['A', 'B', 'C', 'D']) events.push(ev('vocab', k, false), ev('vocab', k, false));
+    expect(computeWeakness(events, { cap: 2 })).toHaveLength(2);
+  });
+
+  it('source·item_key 없는 이벤트 무시 · 빈 입력 안전', () => {
+    expect(computeWeakness([], {})).toEqual([]);
+    expect(computeWeakness(null)).toEqual([]);
+    expect(computeWeakness([{ correct: false }], {})).toEqual([]);
   });
 });
 

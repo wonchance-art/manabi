@@ -243,6 +243,9 @@ export default function LessonsPage({ refManifest = {} }) {
             const checkMap = refCheck[langFilter] || {};
             const readCount = chapters.filter(c => readSet.has(c.slug)).length;
             const passedCount = chapters.filter(c => isPassed(checkMap[c.slug])).length;
+            // 인트로 레벨(OT/A0 — levels 첫 항목)은 관문이 없어 '전부 읽음'이 수료 기준
+            const isIntroGroup = meta.key === refLang.levels[0]?.key;
+            const groupComplete = chapters.length > 0 && (isIntroGroup ? readCount === chapters.length : passedCount === chapters.length);
             return (
               <section key={groupKey} className={`lessons-list__group ${isOpen ? 'is-open' : ''}`}>
                 <button
@@ -283,7 +286,7 @@ export default function LessonsPage({ refManifest = {} }) {
                     </span>
                   )}
                   <span className="lessons-list__group-count">
-                    {passedCount === chapters.length && chapters.length > 0 ? (
+                    {groupComplete ? (
                       <span className="lessons-list__group-passed">수료</span>
                     ) : (
                       <>
