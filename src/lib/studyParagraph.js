@@ -6,6 +6,7 @@
  */
 
 import { levelBand } from './writingPrompts';
+import { stripSourceLangInMeaning } from './studySession';
 
 const LANG_NAME = { Japanese: '일본어', English: '영어', French: '프랑스어', Chinese: '중국어' };
 
@@ -383,13 +384,17 @@ export function mapParagraphToItems(para, materials) {
     } else if (q.type === 'vocab') {
       const due = q.focus === 'due-word' ? findDueWord(q.key) : null;
       const isNew = q.focus === 'new-word' ? findNewWord(q.key) : null;
+      // normalizeParagraphText가 한자(가나) 인라인 독음은 이미 제거 — 여기선 뜻에 병기된
+      // 원어(라틴·순가나 등)까지 정리해 보기·정답·채점 기준을 정화값으로 통일.
+      const answer = stripSourceLangInMeaning(q.answer);
+      const distractors = q.distractors.map(stripSourceLangInMeaning);
       graded.push({
         uid: uid('v'),
         type: 'vocab-choice',
         word: due
-          ? { ...due.row, meaning: q.answer }
-          : { word_text: q.key || q.prompt, meaning: q.answer, furigana: isNew?.pron || null },
-        options: [q.answer, ...q.distractors],
+          ? { ...due.row, meaning: answer }
+          : { word_text: q.key || q.prompt, meaning: answer, furigana: isNew?.pron || null },
+        options: [answer, ...distractors],
         effect: due ? { kind: 'vocab', wordId: due.row.id } : { kind: 'reading', key: `vocab:${q.key}` },
         _prio: 4,
       });

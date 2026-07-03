@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { composeSession, normalizeAnswer, gradeTyping, isChapterPassed, qtypeForItem, grammarDueChapterCounts, buildWarmupItems } from '../studySession';
+import { composeSession, normalizeAnswer, gradeTyping, isChapterPassed, qtypeForItem, grammarDueChapterCounts, buildWarmupItems, stripSourceLangInMeaning } from '../studySession';
 
 const VOCAB = [
   { id: 1, word_text: '約束', meaning: '약속', furigana: 'やくそく', language: 'Japanese' },
@@ -270,5 +270,46 @@ describe('grammarDueChapterCounts — 문법 due 챕터별 문항 수', () => {
     expect(grammarDueChapterCounts([{ effect: { kind: 'grammar-due', srs: {} } }])).toEqual({});
     expect(grammarDueChapterCounts([])).toEqual({});
     expect(grammarDueChapterCounts(null)).toEqual({});
+  });
+});
+
+describe('stripSourceLangInMeaning — 보기 뜻 정화', () => {
+  it('리포트 케이스: "일하다 (働く)" → "일하다"', () => {
+    expect(stripSourceLangInMeaning('일하다 (働く)')).toBe('일하다');
+  });
+  it('한글 설명 괄호는 보존: "달리다 (과거형)"', () => {
+    expect(stripSourceLangInMeaning('달리다 (과거형)')).toBe('달리다 (과거형)');
+  });
+  it('공백 없는 원어 병기: "먹다(食べる)" → "먹다"', () => {
+    expect(stripSourceLangInMeaning('먹다(食べる)')).toBe('먹다');
+  });
+  it('전각 괄호: "일하다（働く）" → "일하다"', () => {
+    expect(stripSourceLangInMeaning('일하다（働く）')).toBe('일하다');
+  });
+  it('라틴 원어 병기 제거: "일하다 (work)" → "일하다"', () => {
+    expect(stripSourceLangInMeaning('일하다 (work)')).toBe('일하다');
+  });
+  it('순가나 병기 제거: "약속 (やくそく)" → "약속"', () => {
+    expect(stripSourceLangInMeaning('약속 (やくそく)')).toBe('약속');
+  });
+  it('숫자·기호 괄호는 원어가 아니므로 보존: "항목 (1)"', () => {
+    expect(stripSourceLangInMeaning('항목 (1)')).toBe('항목 (1)');
+  });
+  it('멱등: 이미 정화된 값은 그대로', () => {
+    expect(stripSourceLangInMeaning('일하다')).toBe('일하다');
+  });
+  it('비문자열·빈값은 그대로 반환', () => {
+    expect(stripSourceLangInMeaning('')).toBe('');
+    expect(stripSourceLangInMeaning(null)).toBe(null);
+    expect(stripSourceLangInMeaning(undefined)).toBe(undefined);
+  });
+  it('buildWarmupItems 보기·정답이 정화되어 채점 일관: options[0] === word.meaning', () => {
+    const events = [{ source: 'vocab', item_key: '働く', correct: false, created_at: new Date(Date.now() - 36 * 3600 * 1000).toISOString() }];
+    const rows = [{ word_text: '働く', meaning: '일하다 (働く)', furigana: 'はたらく' }];
+    const items = buildWarmupItems(events, rows, ['약속', '가족', '무료'], new Set());
+    expect(items).toHaveLength(1);
+    expect(items[0].word.meaning).toBe('일하다');
+    expect(items[0].options[0]).toBe('일하다');
+    expect(items[0].options).toContain(items[0].word.meaning);
   });
 });

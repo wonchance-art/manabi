@@ -14,6 +14,26 @@ import { vocabTypeForRung } from './skillRung';
 
 const MAX_ITEMS = 10; // 예산제 하드캡 (기획 H3)
 
+/**
+ * 뜻 문자열에서 원어 병기 괄호 제거 — 보기 텍스트 정화.
+ * user_vocabulary.meaning에 "일하다 (働く)"처럼 원어(가나·한자·라틴)를 병기해 저장한 데이터가
+ * 4지선다 보기에 그대로 나오면 정답이 시각적으로 새므로, 사용 시점에 정리한다.
+ * 판정: 괄호(반각 `()`·전각 `（）`) 안에 한글이 하나라도 있으면 보존("달리다 (과거형)"),
+ *       없고 가나/한자/라틴문자가 있으면 원어 병기로 보고 괄호째 제거. 그 외(숫자·기호)는 보존.
+ * 순수 함수·멱등. 남은 공백은 정리해 trim.
+ */
+const MEANING_HANGUL = /[가-힣ㄱ-ㅎㅏ-ㅣ]/;
+const MEANING_SOURCE_SCRIPT = /[ぁ-ゟゔァ-ヿーｦ-ﾟ々〆〤ヶ一-鿿a-zA-Z]/; // 가나·장음·반각가나·한자·라틴
+export function stripSourceLangInMeaning(meaning) {
+  if (typeof meaning !== 'string' || !meaning) return meaning;
+  const out = meaning.replace(/\s*[（(]\s*([^（()）]*?)\s*[)）]/g, (m, inner) => {
+    if (MEANING_HANGUL.test(inner)) return m;          // 한글 설명 괄호 → 보존
+    if (MEANING_SOURCE_SCRIPT.test(inner)) return '';  // 원어(가나·한자·라틴)만 → 제거
+    return m;                                          // 숫자·기호 등 → 보존
+  });
+  return out.replace(/\s{2,}/g, ' ').trim();
+}
+
 /** 타이핑 판정용 정규화 — 공백·구두점 제거, 소문자화 */
 export function normalizeAnswer(s) {
   return String(s || '')
@@ -47,18 +67,20 @@ const uid = prefix => `${prefix}-${++uidSeq}`;
 
 /** 어휘 due → 문항 (rung + 다이얼로 타입 배정, 인덱스 로테이션 폐기) */
 function buildVocabItems(vocab, meaningPool, vocabRungs = {}, dial = 'normal') {
+  const cleanPool = (meaningPool || []).map(stripSourceLangInMeaning);
   return (vocab || []).slice(0, 3).map(w => {
+    const meaning = stripSourceLangInMeaning(w.meaning); // 보기·정답·채점 기준을 정화된 값으로 통일
     let type = vocabTypeForRung(vocabRungs[w.word_text] ?? 1, dial);
     let options = null;
     if (type === 'vocab-choice') {
-      const distractors = pickDistractors(meaningPool || [], w.meaning, 3);
+      const distractors = pickDistractors(cleanPool, meaning, 3);
       if (distractors.length < 2) type = 'vocab-typing';   // 보기 부족 → 타이핑으로
-      else options = [w.meaning, ...distractors];
+      else options = [meaning, ...distractors];
     }
     return {
       uid: uid('v'),
       type,
-      word: w,
+      word: { ...w, meaning },
       options,
       effect: { kind: 'vocab', wordId: w.id },
     };
@@ -233,14 +255,16 @@ export function buildWarmupItems(recentEvents, vocabRows, meaningPool = [], dueS
     }
   }
   // 인지형(뜻 고르기) 문항으로 — 보기 오답 2개 미만이면 제외
+  const cleanPool = (meaningPool || []).map(stripSourceLangInMeaning);
   return chosen.map(row => {
-    const distractors = pickDistractors(meaningPool || [], row.meaning, 3);
+    const meaning = stripSourceLangInMeaning(row.meaning); // 보기·정답·채점 기준 통일
+    const distractors = pickDistractors(cleanPool, meaning, 3);
     if (distractors.length < 2) return null;
     return {
       uid: uid('w'),
       type: 'vocab-choice',
-      word: { word_text: row.word_text, meaning: row.meaning, furigana: row.furigana || null },
-      options: [row.meaning, ...distractors],
+      word: { word_text: row.word_text, meaning, furigana: row.furigana || null },
+      options: [meaning, ...distractors],
       warmup: true,
       effect: { kind: 'warmup', key: row.word_text },
     };

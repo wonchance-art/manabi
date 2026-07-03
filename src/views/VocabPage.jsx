@@ -19,6 +19,7 @@ import VocabDetailCard from './VocabDetailCard';
 import { CardGridSkeleton } from '../components/Skeleton';
 import { friendlyToastMessage } from '../lib/errorMessage';
 import { detectLang } from '../lib/constants';
+import { stripSourceLangInMeaning } from '../lib/studySession';
 import { useVocabData } from '../lib/useVocabData';
 import { exportCSV, exportAnki } from '../lib/vocabIO';
 import {
@@ -229,7 +230,9 @@ export default function VocabPage() {
     if (!currentWord) return [];
     const others = vocab.filter(v => v.id !== currentWord.id && v.meaning);
     const distractors = fisherYatesShuffle(others).slice(0, 3);
-    return fisherYatesShuffle([...distractors, currentWord]);
+    // 보기 텍스트는 원어 병기 괄호를 정리 — 정답 식별은 id 기준이라 채점엔 무영향
+    return fisherYatesShuffle([...distractors, currentWord])
+      .map(v => ({ ...v, meaning: stripSourceLangInMeaning(v.meaning) }));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reviewIdx, currentWord?.id]);
 
