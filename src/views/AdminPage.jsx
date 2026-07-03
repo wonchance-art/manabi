@@ -222,6 +222,12 @@ export default function AdminPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {[
               {
+                href: '/admin/metrics',
+                icon: '📊',
+                title: '학습 지표 — 본인 데이터 기준',
+                desc: '관리자 본인의 학습 이벤트를 집계한 대시보드 — D1/D7 재인률, 불량 문항 후보, rung 분포·산출 게이트, 응답시간, 일별 정답률, 세션 완주율, 프리페치 전환율, 어시스트 상위. (own-only RLS라 본인 데이터만)',
+              },
+              {
                 href: '/study',
                 icon: '🎯',
                 title: '오늘 학습 (공부 모드)',
