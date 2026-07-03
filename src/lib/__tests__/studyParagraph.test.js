@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { buildParagraphPrompt, validateParagraph, verifyParagraph, mapParagraphToItems, PARAGRAPH_SCHEMA, THEMES } from '../studyParagraph';
+import { buildParagraphPrompt, validateParagraph, verifyParagraph, mapParagraphToItems, stripInlineReadings, PARAGRAPH_SCHEMA, THEMES } from '../studyParagraph';
+import { alignFurigana } from '../../views/refShared';
 
 const MATERIALS = {
   language: 'Japanese',
@@ -139,6 +140,83 @@ describe('mapParagraphToItems', () => {
     expect(comp.sentence.isKoreanPrompt).toBe(true);
     const order = mapped.items.find(i => i.type === 'grammar-order');
     expect(order.quiz.tokens.join(' ').replace(/\s/g, '')).toBe(order.quiz.answer.replace(/\s/g, ''));
+  });
+});
+
+describe('mapParagraphToItems · 채점 문항 하드캡 7', () => {
+  // 어순 조립용 온전한 문장 1개
+  const SENTENCES = [{ text: '私は 学生 です', pron: null, ko: '나는 학생입니다', tokens: ['私は', '学生', 'です'] }];
+  const d3 = ['오답1', '오답2', '오답3'];
+
+  it('과잉 questions(12개)를 채점 문항 7개로 절단 + 우선순위 보존', () => {
+    const questions = [
+      { type: 'cloze', focus: 'new-grammar', key: 'k1', prompt: 'a＿b', answer: 'A', distractors: d3, ko: '' },
+      { type: 'cloze', focus: 'new-grammar', key: 'k2', prompt: 'c＿d', answer: 'C', distractors: d3, ko: '' },
+      { type: 'comprehension', focus: '', key: '', prompt: '무엇을 했나요?', answer: '공부', distractors: d3, ko: '' },
+      { type: 'cloze', focus: 'due-grammar', key: 'kd', prompt: 'e＿f', answer: 'E', distractors: d3, ko: '' },
+      // 과잉 vocab 8개 (최하위 우선순위 → 먼저 잘림)
+      ...Array.from({ length: 8 }, (_, i) => ({ type: 'vocab', focus: 'new-word', key: `w${i}`, prompt: `w${i}`, answer: `뜻${i}`, distractors: d3, ko: '' })),
+    ];
+    const para = { paragraph: 'X', translation: 'x', sentences: SENTENCES, questions, preQuestion: null };
+    const mapped = mapParagraphToItems(para, {});
+    const graded = mapped.items.filter(i => i.type !== 'paragraph');
+    expect(mapped.gradedCount).toBe(7);
+    expect(graded).toHaveLength(7);
+    // 새 문법 cloze 2개·comprehension 1개는 반드시 생존
+    expect(graded.filter(i => i.quiz?.correct === 'A' || i.quiz?.correct === 'C')).toHaveLength(2);
+    expect(graded.some(i => i.type === 'read-meaning')).toBe(true);
+    // 어순·복습 cloze 생존 후 vocab은 남은 2슬롯만 (8개 중 6개 잘림)
+    expect(graded.some(i => i.type === 'grammar-order')).toBe(true);
+    expect(graded.filter(i => i.type === 'vocab-choice')).toHaveLength(2);
+  });
+
+  it('7개 이하면 절단하지 않는다', () => {
+    const questions = [
+      { type: 'cloze', focus: 'new-grammar', key: 'k1', prompt: 'a＿b', answer: 'A', distractors: d3, ko: '' },
+      { type: 'vocab', focus: 'new-word', key: 'w', prompt: 'w', answer: '뜻', distractors: d3, ko: '' },
+      { type: 'comprehension', focus: '', key: '', prompt: 'q?', answer: '공부', distractors: d3, ko: '' },
+    ];
+    const para = { paragraph: 'X', translation: 'x', sentences: SENTENCES, questions, preQuestion: null };
+    const mapped = mapParagraphToItems(para, {});
+    // cloze 1 + vocab 1 + comp 1 + order 1 = 4
+    expect(mapped.gradedCount).toBe(4);
+  });
+});
+
+describe('mapParagraphToItems · 새 문법 cloze 간격', () => {
+  const SENTENCES = [{ text: '私は 学生 です', pron: null, ko: '나는 학생입니다', tokens: ['私は', '学生', 'です'] }];
+  const d3 = ['오답1', '오답2', '오답3'];
+  const ng = (k, a) => ({ type: 'cloze', focus: 'new-grammar', key: k, prompt: `${a}＿x`, answer: a, distractors: d3, ko: '' });
+
+  it('새 문법 cloze 2개는 인덱스 간격 ≥4 (첫째 맨 앞)', () => {
+    const questions = [
+      ng('k1', 'A'),
+      ng('k2', 'C'),
+      { type: 'cloze', focus: 'due-grammar', key: 'kd', prompt: 'e＿f', answer: 'E', distractors: d3, ko: '' },
+      { type: 'vocab', focus: 'new-word', key: 'w1', prompt: 'w1', answer: '뜻1', distractors: d3, ko: '' },
+      { type: 'vocab', focus: 'new-word', key: 'w2', prompt: 'w2', answer: '뜻2', distractors: d3, ko: '' },
+      { type: 'comprehension', focus: '', key: '', prompt: 'q?', answer: '공부', distractors: d3, ko: '' },
+    ];
+    const para = { paragraph: 'X', translation: 'x', sentences: SENTENCES, questions, preQuestion: null };
+    const graded = mapParagraphToItems(para, {}).items.filter(i => i.type !== 'paragraph');
+    const idxA = graded.findIndex(i => i.quiz?.correct === 'A');
+    const idxB = graded.findIndex(i => i.quiz?.correct === 'C');
+    expect(idxA).toBe(0);
+    expect(idxB - idxA).toBeGreaterThanOrEqual(4);
+  });
+
+  it('배열이 짧으면 둘째 새 문법 cloze는 맨 뒤로', () => {
+    const questions = [
+      ng('k1', 'A'),
+      ng('k2', 'C'),
+      { type: 'vocab', focus: 'new-word', key: 'w1', prompt: 'w1', answer: '뜻1', distractors: d3, ko: '' },
+    ];
+    // 토큰 없는 문단 → 어순 문항 생성 안 됨. graded = 새문법2 + vocab1 = 3
+    const para = { paragraph: 'X', translation: 'x', sentences: [{ text: 'ab', pron: null, ko: 'x', tokens: [] }], questions, preQuestion: null };
+    const graded = mapParagraphToItems(para, {}).items.filter(i => i.type !== 'paragraph');
+    expect(graded).toHaveLength(3);
+    expect(graded[0].quiz?.correct).toBe('A');
+    expect(graded[graded.length - 1].quiz?.correct).toBe('C');
   });
 });
 
@@ -285,5 +363,64 @@ describe('verifyParagraph', () => {
     const v = verifyParagraph(para);
     expect(v.questions.find(q => q.type === 'cloze')).toBeUndefined();
     expect(v.questions.length).toBe(3);
+  });
+});
+
+describe('stripInlineReadings', () => {
+  it('리포트된 실제 문장의 인라인 괄호 독음을 괄호째 제거한다', () => {
+    expect(stripInlineReadings('友達は「撃墜(げきつい)！」と話しました。')).toBe('友達は「撃墜！」と話しました。');
+    expect(stripInlineReadings('わたしは「供述(きょうじゅつ)」と書きました。')).toBe('わたしは「供述」と書きました。');
+  });
+
+  it('가나만 든 한자 뒤 괄호는 제거하되 일반 괄호(숫자·한자 등)는 보존한다', () => {
+    expect(stripInlineReadings('東京(とうきょう)に行く')).toBe('東京に行く');
+    expect(stripInlineReadings('試験(3月)があります')).toBe('試験(3月)があります');
+    expect(stripInlineReadings('会議(重要)の予定')).toBe('会議(重要)の予定');
+  });
+
+  it('전각 괄호 케이스도 제거한다', () => {
+    expect(stripInlineReadings('友達は「撃墜（げきつい）！」と話しました。')).toBe('友達は「撃墜！」と話しました。');
+  });
+
+  it('한자가 앞에 없으면(순가나 괄호 등) 건드리지 않고, 비문자열은 그대로 반환한다', () => {
+    expect(stripInlineReadings('あ(い)う')).toBe('あ(い)う');
+    expect(stripInlineReadings('')).toBe('');
+    expect(stripInlineReadings(null)).toBe(null);
+  });
+});
+
+describe('mapParagraphToItems · 인라인 독음 정화', () => {
+  const dirty = {
+    paragraph: '友達は「撃墜(げきつい)！」と話しました。',
+    translation: '친구는 "격추!"라고 말했습니다.',
+    sentences: [
+      { text: '友達は「撃墜(げきつい)！」と話しました。', pron: 'ともだちは「げきつい！」とはなしました。', ko: '친구는 "격추!"라고 말했습니다.', tokens: ['友達は', '「撃墜！」と', '話しました。'] },
+    ],
+    questions: [
+      { type: 'cloze', focus: 'new-grammar', key: '話しました', prompt: '友達は「撃墜(げきつい)！」と＿＿＿。', answer: '話しました', distractors: ['聞きました', '見ました', '書きました'], ko: '친구는 말했습니다.' },
+      GOOD.questions[2], GOOD.questions[3], GOOD.questions[4],
+    ],
+    preQuestion: null,
+  };
+
+  it('문항 텍스트 어디에도 괄호 독음이 남지 않는다', () => {
+    const { items } = mapParagraphToItems(dirty, {});
+    const read = items.find(i => i.type === 'paragraph');
+    expect(read.paragraph).toBe('友達は「撃墜！」と話しました。');
+    expect(read.sentences[0].text).toBe('友達は「撃墜！」と話しました。');
+    const cloze = items.find(i => i.type === 'grammar-cloze');
+    expect(cloze.quiz.sentence).not.toMatch(/[（(][ぁ-ゟ]+[)）]/);
+    expect(cloze.quiz.full).toBe('友達は「撃墜！」と話しました。');
+  });
+});
+
+describe('정규화 후 alignFurigana 정렬 성공', () => {
+  it('오염 문장은 정렬 실패하지만 stripInlineReadings 후에는 루비 정렬에 성공한다', () => {
+    const yomi = 'ともだちは「げきつい！」とはなしました。';
+    expect(alignFurigana('友達は「撃墜(げきつい)！」と話しました。', yomi)).toBeNull();
+    const clean = stripInlineReadings('友達は「撃墜(げきつい)！」と話しました。');
+    const segs = alignFurigana(clean, yomi);
+    expect(segs).not.toBeNull();
+    expect(segs.some(s => s.rt)).toBe(true);
   });
 });

@@ -13,6 +13,36 @@ import { computeRung, computeEwma, dialFromEwma, computeWeakness } from '@/lib/s
 import { levelBand } from '@/lib/writingPrompts';
 import { THEMES } from '@/lib/studyParagraph';
 
+/**
+ * due 어휘별 숙련 rung 유도 — 해당 단어의 vocab 소스 이벤트만 시간순으로 모아 computeRung.
+ * source 필터가 없으면 같은 item_key를 쓰는 타 소스(reading/grammar) 이벤트가 섞여 rung이 오염된다.
+ * @param {Array} eventsAsc - review_events (시간 오름차순)
+ * @param {Array} dueVocabRows - due 어휘 행 (word_text)
+ * @returns {Record<string, number>} word_text → rung
+ */
+export function deriveVocabRungs(eventsAsc, dueVocabRows) {
+  const rungs = {};
+  for (const w of dueVocabRows || []) {
+    const evs = (eventsAsc || [])
+      .filter(e => e.source === 'vocab' && e.item_key === w.word_text)
+      .map(e => ({ qtype: e.detail?.qtype, correct: !!e.correct }));
+    rungs[w.word_text] = computeRung(evs);
+  }
+  return rungs;
+}
+
+/**
+ * dial==='easy'면 문단 재료의 신규 학습(newPattern·newWords)을 비운다 — 과부하 방어 밸브.
+ * 복습 재료(duePatterns/dueWords)는 손대지 않는다.
+ * @param {'easy'|'normal'|'hard'} dial
+ * @param {{pattern: string, patternKo: string}|null} newPattern
+ * @param {Array} newWords
+ * @returns {{newPattern: object|null, newWords: Array}}
+ */
+export function gateNewMaterialsByDial(dial, newPattern, newWords) {
+  return dial === 'easy' ? { newPattern: null, newWords: [] } : { newPattern, newWords };
+}
+
 /** 배열에서 대략 고르게 n개 샘플 (요청마다 달라지도록 랜덤 시작점) */
 function sample(arr, n) {
   if (!arr?.length) return [];
@@ -165,13 +195,7 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
 
   // ── 숙련 rung · 난이도 다이얼 유도 (review_events 순수 함수) ──
   const eventsAsc = (reviewEventRows || []).slice().reverse();
-  const vocabRungs = {};
-  for (const w of dueVocabRows || []) {
-    const evs = eventsAsc
-      .filter(e => e.item_key === w.word_text)
-      .map(e => ({ qtype: e.detail?.qtype, correct: !!e.correct }));
-    vocabRungs[w.word_text] = computeRung(evs);
-  }
+  const vocabRungs = deriveVocabRungs(eventsAsc, dueVocabRows);
   const gradedEvents = eventsAsc.map(e => ({ correct: !!e.correct }));
   const ewma = computeEwma(gradedEvents);
   const dial = dialFromEwma(ewma, 20, gradedEvents.length);
@@ -334,11 +358,14 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
   } : {
     language: lang,
     level,
-    newPattern: newChapter?.teach ? { pattern: newChapter.teach.pattern, patternKo: newChapter.teach.patternKo } : null,
+    ...gateNewMaterialsByDial(
+      dial,
+      newChapter?.teach ? { pattern: newChapter.teach.pattern, patternKo: newChapter.teach.patternKo } : null,
+      newWords
+    ),
     newChapter: newChapter?.meta || null,
     duePatterns: duePatternsForPara,
     dueWords: (dueVocabRows || []).slice(0, 3).map(r => ({ word: r.word_text, meaning: r.meaning, row: r })),
-    newWords,
     knownWords,
     whitelistWords,
     theme,

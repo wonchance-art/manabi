@@ -7,6 +7,7 @@ import { JaText } from './refShared';
 import { useAuth } from '../lib/AuthContext';
 import { gradeGrammarReview, ratingFromScore } from '../lib/grammarSrs';
 import { logReviewEvents } from '../lib/reviewEvents';
+import { recordActivity } from '../lib/streak';
 
 function shuffle(arr) {
   const a = [...arr];
@@ -79,7 +80,7 @@ function UpcomingList({ upcoming }) {
  * upcoming: [{ flag, level, order, title, href, dueAt }] — 예정 복습(가시성)
  */
 export default function GrammarReviewSession({ items, upcoming = [], signedOut = false }) {
-  const { user } = useAuth();
+  const { user, fetchProfile } = useAuth();
   const [idx, setIdx] = useState(0);
   const [mounted, setMounted] = useState(false);
   const [answers, setAnswers] = useState({});
@@ -120,6 +121,8 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
     const rating = ratingFromScore(rightCount, total);
     let nextDays = null;
     if (user?.id) {
+      // 챕터 완료 확정 시점 1회 — done&&!graded 가드로 재실행 방지, 스트릭 갱신은 실패해도 흐름 유지(fire-and-forget)
+      recordActivity(user.id, () => fetchProfile(user.id));
       gradeGrammarReview({ ...item.srs, user_id: user.id }, rating).then(updated => {
         if (updated) {
           const d = Math.max(1, Math.round(updated.interval));

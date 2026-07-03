@@ -7,6 +7,7 @@ import { useAuth } from '../lib/AuthContext';
 import Button from '../components/Button';
 import { WRITING_LEVELS, topicsFor } from '../lib/writingPrompts';
 import { logReviewEvents } from '../lib/reviewEvents';
+import { recordActivity } from '../lib/streak';
 
 const LANGS = [
   { key: 'Japanese', label: '일본어', flag: '🇯🇵' },
@@ -25,7 +26,7 @@ const scoreColor = s => (s >= 4 ? 'var(--accent)' : s === 3 ? 'var(--warning)' :
  * 오류는 review_events(약점 진단의 데이터)로 적재된다.
  */
 export default function WritingStudioPage({ recentChapters = [], signedOut = false }) {
-  const { user, profile } = useAuth();
+  const { user, profile, fetchProfile } = useAuth();
 
   const [language, setLanguage] = useState('Japanese');
   const [level, setLevel] = useState('N5');
@@ -164,6 +165,8 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
   /** 저장(+재작문 링크) + 오류 이벤트 적재 — 실패해도 첨삭 표시는 유지 */
   async function persist(original, fb) {
     if (!user?.id) return;
+    // 첨삭 완료 확정 시점 1회(submit()에서만 호출) — 실패해도 첨삭 표시 흐름은 유지(fire-and-forget)
+    recordActivity(user.id, () => fetchProfile(user.id));
     const allErrors = fb.sentences.flatMap(s => s.errors.map(e => ({ ...e, sentence: s.original })));
     const row = {
       user_id: user.id,

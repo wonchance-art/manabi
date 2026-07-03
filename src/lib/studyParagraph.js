@@ -111,6 +111,7 @@ export function buildParagraphPrompt(m) {
     `- ${name} 3~5문장, 하나의 일상적 상황·이야기로 자연스럽게 연결 (재료 나열식 금지).\n` +
     `- 재료 외 어휘·문법은 ${m.level} 이하만. 문장은 짧고 명확하게.\n` +
     (beginnerKanjiCare ? `- 입문 레벨 배려: 한자는 재료 단어에 이미 포함된 것만 쓰고, 그 밖의 단어는 히라가나로 표기하세요. 사용한 한자에는 반드시 정확한 요미가나(pron)가 대응돼야 합니다.\n` : '') +
+    (m.language === 'Japanese' ? `- 문단·문장 text에 「撃墜(げきつい)」처럼 괄호 독음을 절대 넣지 마세요. 읽기는 오직 pron 필드로만 제공합니다.\n` : '') +
     `- sentences: 문단을 문장 단위로 나눠 pron(일본어=전체 요미가나 히라가나, 중국어=병음, 영어·프랑스어=빈 문자열), ko(문장 뜻), tokens(어순 조립용 3~10어절 분할 — 일본어·중국어는 의미 단위로 띄어 나누기)를 채우세요. tokens를 공백으로 이으면 원문과 일치해야 합니다(구두점 포함).\n\n` +
     `[문항 규칙 — questions]\n` +
     `- cloze: 새 문법으로 2개(focus=new-grammar, key=새 문법 패턴), 복습 문법마다 1개(focus=due-grammar, key=그 패턴). prompt는 문단의 실제 문장에서 해당 문법 부분만 ＿＿＿로 비운 것, answer는 빈칸 원형, distractors는 같은 자리에 올 법한 오답 3개, ko는 그 문장 뜻. distractors는 정답과 같은 단어의 다른 표기(한자↔가나 표기 차이)나 정답의 읽기여서는 절대 안 됩니다 — 의미나 형태가 실제로 다른 오답만.\n` +
@@ -178,6 +179,39 @@ export function validateParagraph(raw) {
 }
 
 /**
+ * 인라인 괄호 독음 제거 — 한자 연쇄 바로 뒤에 붙은 괄호(반각·전각) 안이 가나(히라가나·가타카나·장음)뿐이면 괄호째 삭제.
+ * 예: `撃墜(げきつい)！` → `撃墜！`. 일반 괄호(한자·숫자·한글 등)는 그대로 둔다.
+ * AI가 문장 text에 요미가나를 인라인으로 섞어 넣으면 refShared.alignFurigana 정렬이 깨지므로 사용 시점에 정화한다.
+ */
+const INLINE_READING = /([一-鿿々〆ヶ]+)[（(]([ぁ-ゟァ-ヿ]+)[)）]/g;
+export function stripInlineReadings(text) {
+  if (typeof text !== 'string' || !text) return text;
+  return text.replace(INLINE_READING, '$1');
+}
+
+/** 문단의 화면 노출 일본어 텍스트 필드 전부에 stripInlineReadings 적용(순수 함수·멱등) */
+export function normalizeParagraphText(para) {
+  if (!para || typeof para !== 'object') return para;
+  const s = stripInlineReadings;
+  return {
+    ...para,
+    paragraph: s(para.paragraph),
+    sentences: Array.isArray(para.sentences)
+      ? para.sentences.map(x => ({ ...x, text: s(x.text), pron: s(x.pron) }))
+      : para.sentences,
+    questions: Array.isArray(para.questions)
+      ? para.questions.map(q => ({
+          ...q,
+          prompt: s(q.prompt),
+          answer: s(q.answer),
+          key: s(q.key),
+          distractors: Array.isArray(q.distractors) ? q.distractors.map(s) : q.distractors,
+        }))
+      : para.questions,
+  };
+}
+
+/**
  * 결정적 2차 검증 — validateParagraph 통과물을 받아 불량 문항을 제거한다.
  * 모델이 지어낸(문단에 실재하지 않는) cloze·vocab 문항을 걸러 채점 신뢰도를 지킨다.
  * comprehension은 주관 판단이라 통과. preQuestion 힌트 불일치는 제네릭으로 우아하게 강등.
@@ -185,6 +219,7 @@ export function validateParagraph(raw) {
  */
 export function verifyParagraph(para) {
   if (!para || typeof para !== 'object' || !Array.isArray(para.questions)) return null;
+  para = normalizeParagraphText(para); // 정규화 후 문자열끼리 비교(cloze 복원·vocab key 검사 정합) + 저장물도 정화
   const strip = s => String(s || '').replace(/\s+/g, '');
   // 가타카나 → 히라가나 정규화(같은 단어의 표기 차이를 잡아내기 위함)
   const kataToHira = s => String(s || '').replace(/[ァ-ヶ]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60));
@@ -247,12 +282,12 @@ export function verifyParagraph(para) {
  * @returns {{items: Array, gradedCount: number}}
  */
 export function mapParagraphToItems(para, materials) {
+  para = normalizeParagraphText(para); // 이미 저장된 오염 문단(프리페치·서재)도 사용 시점에 정화
   let seq = 0;
   const uid = p => `p${p}-${++seq}`;
-  const items = [];
 
   // ① 문단 읽기 카드 (집계 제외)
-  items.push({
+  const readCard = {
     uid: uid('read'),
     type: 'paragraph',
     paragraph: para.paragraph,
@@ -260,17 +295,21 @@ export function mapParagraphToItems(para, materials) {
     sentences: para.sentences,
     preQuestion: para.preQuestion || null,
     newChapter: materials.newChapter || null,
-  });
+  };
 
   const findDueWord = key => (materials.dueWords || []).find(w => w.word === key || key.includes(w.word));
   const findNewWord = key => (materials.newWords || []).find(w => w.word === key || key.includes(w.word));
   const findDuePattern = key => (materials.duePatterns || []).find(p => p.pattern === key || key.includes(p.pattern) || p.pattern.includes(key));
 
+  // 채점 문항을 _prio(작을수록 보존 우선)로 태깅해 모은다.
+  // 새 문법 cloze 0 > comprehension 1 > 복습 cloze 2 > 어순 3 > vocab 4
+  let graded = [];
+  let ngSeen = 0; // 새 문법 cloze는 최대 2개만 최우선 보존(초과분은 최하위로 강등)
   for (const q of para.questions) {
     if (q.type === 'cloze') {
       const isNew = q.focus === 'new-grammar';
       const due = !isNew ? findDuePattern(q.key) : null;
-      items.push({
+      graded.push({
         uid: uid('c'),
         type: 'grammar-cloze',
         quiz: { sentence: q.prompt, ko: q.ko, correct: q.answer, distractors: q.distractors, full: q.prompt.replace(/＿+/g, q.answer), pron: null },
@@ -282,11 +321,13 @@ export function mapParagraphToItems(para, materials) {
           : due
             ? { kind: 'grammar-due', srs: due.srs }
             : { kind: 'reading', key: q.prompt.slice(0, 60) },
+        _prio: isNew ? (++ngSeen <= 2 ? 0 : 9) : 2,
+        _ng: isNew,
       });
     } else if (q.type === 'vocab') {
       const due = q.focus === 'due-word' ? findDueWord(q.key) : null;
       const isNew = q.focus === 'new-word' ? findNewWord(q.key) : null;
-      items.push({
+      graded.push({
         uid: uid('v'),
         type: 'vocab-choice',
         word: due
@@ -294,15 +335,17 @@ export function mapParagraphToItems(para, materials) {
           : { word_text: q.key || q.prompt, meaning: q.answer, furigana: isNew?.pron || null },
         options: [q.answer, ...q.distractors],
         effect: due ? { kind: 'vocab', wordId: due.row.id } : { kind: 'reading', key: `vocab:${q.key}` },
+        _prio: 4,
       });
     } else {
-      items.push({
+      graded.push({
         uid: uid('q'),
         type: 'read-meaning',
         sentence: { main: q.prompt, pron: null, isKoreanPrompt: true },
         options: [q.answer, ...q.distractors],
         correct: q.answer,
         effect: { kind: 'reading', key: `comp:${q.prompt.slice(0, 60)}` },
+        _prio: 1,
       });
     }
   }
@@ -312,14 +355,38 @@ export function mapParagraphToItems(para, materials) {
     .filter(s => s.tokens.length >= 3 && s.tokens.length <= 10 && s.tokens.join(' ').replace(/\s+/g, '') === s.text.replace(/\s+/g, ''))
     .sort((a, b) => b.tokens.length - a.tokens.length)[0];
   if (orderable) {
-    items.push({
+    graded.push({
       uid: uid('o'),
       type: 'grammar-order',
       quiz: { tokens: orderable.tokens, answer: orderable.tokens.join(' '), ko: orderable.ko, pron: orderable.pron },
       chapter: { title: '오늘의 문단' },
       effect: { kind: 'reading', key: `order:${orderable.text.slice(0, 60)}` },
+      _prio: 3,
     });
   }
 
+  // ③ 채점 문항 하드캡 7 — 초과 시 우선순위 낮은 것부터 절단(남는 것의 상대 순서 유지)
+  if (graded.length > 7) {
+    const keep = new Set(
+      graded.map((it, i) => ({ it, i }))
+        .sort((a, b) => (a.it._prio - b.it._prio) || (a.i - b.i))
+        .slice(0, 7)
+        .map(x => x.i)
+    );
+    graded = graded.filter((_, i) => keep.has(i));
+  }
+
+  // ④ 새 문법 cloze 2개는 "사이 3문항 이상" 간격 — 첫째는 맨 앞, 둘째는 인덱스 ≥4(짧으면 맨 뒤)
+  const ngIdx = [];
+  graded.forEach((it, i) => { if (it._ng) ngIdx.push(i); });
+  if (ngIdx.length === 2) {
+    const [ia, ib] = ngIdx;
+    const rest = graded.filter((_, i) => i !== ia && i !== ib);
+    const result = [graded[ia], ...rest];
+    result.splice(Math.min(4, result.length), 0, graded[ib]);
+    graded = result;
+  }
+
+  const items = [readCard, ...graded.map(({ _prio, _ng, ...it }) => it)];
   return { items, gradedCount: items.filter(i => i.type !== 'paragraph').length };
 }

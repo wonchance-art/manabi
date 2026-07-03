@@ -86,13 +86,13 @@ function buildGrammarDueItems(grammarDue, { max = 2, perChapter = 2 } = {}) {
   return out;
 }
 
-/** 새 챕터 → 티칭 카드 + 문항 */
-function buildNewChapterItems(newChapter) {
+/** 새 챕터 → 티칭 카드 + 문항 (최대 max개) */
+function buildNewChapterItems(newChapter, max = 3) {
   if (!newChapter) return { teach: null, items: [] };
   const teach = newChapter.teach
     ? { uid: uid('t'), type: 'teach', chapter: newChapter.meta, ...newChapter.teach }
     : null;
-  const items = (newChapter.items || []).slice(0, 3).map(q => ({
+  const items = (newChapter.items || []).slice(0, max).map(q => ({
     uid: uid('n'),
     type: q.tokens ? 'grammar-order' : 'grammar-cloze',
     quiz: q,
@@ -134,9 +134,10 @@ export function composeSession({ vocab, meaningPool, grammarDue, newChapter, rea
   const vocabItems = buildVocabItems(vocab, meaningPool, vocabRungs, dial);
   const dueItems = buildGrammarDueItems(grammarDue);
   // dial 'easy' — 신규 0(재조정 부담 방지). 슬롯은 독해로 채운다.
+  // dial 'hard' — 신규 비중↑(상한 3→4). 예산은 독해 슬롯이 자동 상쇄(MAX_ITEMS - baseCount).
   const { teach, items: newItems } = dial === 'easy'
     ? { teach: null, items: [] }
-    : buildNewChapterItems(newChapter);
+    : buildNewChapterItems(newChapter, dial === 'hard' ? 4 : 3);
 
   // 목표 문항 수까지 독해로 채움 (티칭 카드는 집계 제외)
   const baseCount = vocabItems.length + dueItems.length + newItems.length;
@@ -146,7 +147,7 @@ export function composeSession({ vocab, meaningPool, grammarDue, newChapter, rea
   const lanes = [
     newItems[0], vocabItems[0], newItems[1], dueItems[0],
     vocabItems[1], newItems[2], readingItems[0], dueItems[1],
-    vocabItems[2], ...readingItems.slice(1),
+    vocabItems[2], newItems[3], ...readingItems.slice(1),
   ].filter(Boolean);
 
   const items = [];
@@ -184,8 +185,8 @@ export function qtypeForItem(type) {
 
 /**
  * 워밍업 문항 — AI 문단 생성 레이턴시를 가리는 즉시 시작용 인지형(vocab-choice) 2문항.
- * 최근(24~72h) 정답을 맞힌 어휘를 조기 복습으로 되짚되, 비예정 조기 복습이라
- * FSRS를 왜곡하지 않도록 effect는 항상 reading/warmup로만 기록한다(SRS 미반영).
+ * 최근(24~72h) 헷갈린(오답) 어휘를 우선 조기 복습하고, 부족분만 정답 어휘로 채우되,
+ * 비예정 조기 복습이라 FSRS를 왜곡하지 않도록 effect는 항상 reading/warmup로만 기록한다(SRS 미반영).
  * 순수 함수 — 재료 조회는 호출자(studyMaterials)가 맡는다.
  * @param {Array} recentEvents - review_events (created_at desc). {source,item_key,correct,created_at}
  * @param {Array} vocabRows - 후보 단어의 user_vocabulary 행 {word_text,meaning,furigana}
