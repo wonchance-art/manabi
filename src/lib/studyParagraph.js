@@ -286,6 +286,24 @@ export function mapParagraphToItems(para, materials) {
   let seq = 0;
   const uid = p => `p${p}-${++seq}`;
 
+  // cloze 피드백 단계 후리가나용 — 문장 pron 매칭(verifyParagraph와 같은 복원·strip 비교)
+  const stripWs = s => String(s || '').replace(/\s+/g, '');
+  const sentStripped = (para.sentences || []).map(s => stripWs(s.text));
+  const clozePronFor = (prompt, answer) => {
+    const restored = stripWs(String(prompt).replace(/＿+/g, answer));
+    if (!restored) return null;
+    const mi = sentStripped.findIndex(t => t.includes(restored));
+    return mi !== -1 ? (para.sentences[mi].pron || null) : null;
+  };
+
+  // 재료 단어(복습·새 단어) — 문맥 안 탭 확인용(word·meaning·pron). 중복 단어는 1개만.
+  const materialWords = [];
+  const seenWord = new Set();
+  for (const w of (materials.dueWords || []))
+    if (w?.word && w.meaning && !seenWord.has(w.word)) { seenWord.add(w.word); materialWords.push({ word: w.word, meaning: w.meaning, pron: w.row?.furigana || '' }); }
+  for (const w of (materials.newWords || []))
+    if (w?.word && w.meaning && !seenWord.has(w.word)) { seenWord.add(w.word); materialWords.push({ word: w.word, meaning: w.meaning, pron: w.pron || '' }); }
+
   // ① 문단 읽기 카드 (집계 제외)
   const readCard = {
     uid: uid('read'),
@@ -294,6 +312,7 @@ export function mapParagraphToItems(para, materials) {
     translation: para.translation,
     sentences: para.sentences,
     preQuestion: para.preQuestion || null,
+    materialWords,
     newChapter: materials.newChapter || null,
   };
 
@@ -312,7 +331,7 @@ export function mapParagraphToItems(para, materials) {
       graded.push({
         uid: uid('c'),
         type: 'grammar-cloze',
-        quiz: { sentence: q.prompt, ko: q.ko, correct: q.answer, distractors: q.distractors, full: q.prompt.replace(/＿+/g, q.answer), pron: null },
+        quiz: { sentence: q.prompt, ko: q.ko, correct: q.answer, distractors: q.distractors, full: q.prompt.replace(/＿+/g, q.answer), pron: clozePronFor(q.prompt, q.answer) },
         chapter: isNew
           ? (materials.newChapter || { title: '오늘의 문단' })
           : (due?.meta || { title: '복습' }),

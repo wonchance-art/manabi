@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import Button from '../components/Button';
 import RefSpeak from '../components/RefSpeak';
+import { useTTS } from '../lib/useTTS';
 import { JaText } from './refShared';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
@@ -41,7 +42,10 @@ export default function StudySessionPage({
 }) {
   // 입문 레벨(N5 등) 일본어 배려 — 답변 중에도 요미가나·후리가나를 보여준다.
   const kanjiCare = band === 'beginner' && langCode === 'ja';
+  // 문단 발음 상시 노출은 입문에 한정 — 비입문은 문장 탭으로 지연 공개(한자 읽기 인출 기회 확보).
+  const alwaysShowPron = band === 'beginner';
   const { user, fetchProfile } = useAuth();
+  const { speak: ttsSpeak, supported: ttsSupported } = useTTS();
   // 프리페치된 문단이 있으면 API 없이 즉시 매핑 (마운트 전 결정) — 로딩 화면 스킵.
   const pregenMapped = useMemo(
     () => (pregenerated?.paragraph ? mapParagraphToItems(pregenerated.paragraph, pregenerated.materials || {}) : null),
@@ -69,6 +73,9 @@ export default function StudySessionPage({
   const [finished, setFinished] = useState(false);
   const [skipped, setSkipped] = useState(() => new Set()); // 건너뛴 문항(듣기) — 집계·SRS 제외
   const [showTranslation, setShowTranslation] = useState(false);
+  const [revealedPron, setRevealedPron] = useState(() => new Set()); // 비입문 문단 — 발음 공개한 문장 인덱스
+  const [activeWord, setActiveWord] = useState(null);      // 재료 단어 팝오버(문맥 확인)
+  const [listenFailed, setListenFailed] = useState(false); // 듣기 자동재생 미지원·실패 표시
   const [nextPreview, setNextPreview] = useState(''); // 결과 화면 — 내일 문단 예고
   const [produceState, setProduceState] = useState(null); // 산출 문항 채점: {status:'grading'|'done'|'error', feedback, targetScore}
   const [parkingLong, setParkingLong] = useState(false); // 파킹 대기 8초 경과 여부
@@ -89,6 +96,8 @@ export default function StudySessionPage({
   const grammarAggRef = useRef(new Map());         // slug → { srs, right, total } 챕터별 누적
   const recordedRef = useRef(new Set());           // 이미 기록한 orig uid (중복 방지)
   const itemShownAtRef = useRef(Date.now());       // 현재 문항 표시 시각 (rt_ms 계산)
+  const assistSeenRef = useRef(new Set());         // 재료 단어 어시스트 열람 기록(세션당 단어별 1회)
+  const listenAutoRef = useRef(null);              // 듣기 자동재생 1회 가드(uid 기준)
 
   useEffect(() => {
     if (genRan.current) return;
@@ -155,6 +164,28 @@ export default function StudySessionPage({
 
   // 문항 표시 시각 기록 — settle까지의 응답 시간(rt_ms) 계산용
   useEffect(() => { itemShownAtRef.current = Date.now(); }, [item?.uid]);
+
+  // 문항 전환 시 팝오버·듣기 실패표시 리셋
+  useEffect(() => { setActiveWord(null); setListenFailed(false); }, [item?.uid]);
+
+  // 재료 단어 팝오버 — 바깥 탭 시 닫기(트리거·팝오버는 stopPropagation으로 유지)
+  useEffect(() => {
+    if (!activeWord) return;
+    const onDoc = () => setActiveWord(null);
+    window.addEventListener('click', onDoc);
+    return () => window.removeEventListener('click', onDoc);
+  }, [activeWord]);
+
+  // ── 듣기 문항 진입 시 1회 자동 재생 — 직전 "계속" 탭 제스처로 대체로 허용, 실패해도 무해 ──
+  useEffect(() => {
+    if (item?.type !== 'vocab-listening' || phase !== 'answer') return;
+    if (listenAutoRef.current === item.uid) return;
+    listenAutoRef.current = item.uid;
+    if (!ttsSupported) { setListenFailed(true); return; }
+    try { ttsSpeak(item.word.word_text, lang); }
+    catch { setListenFailed(true); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [item?.uid, item?.type, phase]);
 
   // ── 격일 산출 문항 — 문단(ready)이 준비되면 조건 충족 시 큐 맨 끝에 1개 추가 ──
   // 조건: 마지막 산출이 오늘·어제가 아니거나 dial이 hard.
@@ -300,6 +331,37 @@ export default function StudySessionPage({
       batcherRef.current = createReviewEventBatcher(user.id, { size: 4 });
     }
     return batcherRef.current;
+  }
+
+  /**
+   * 재료 단어 팝오버 열기 — 문맥 안 확인 + 어시스트 기록.
+   * source='assist'(vocab 아님)이라 rung 유도(source==='vocab' 필터)엔 영향 없이 데이터만 쌓인다.
+   * 같은 단어 중복 열람은 세션당 1회만 기록.
+   */
+  function openAssist(w) {
+    setActiveWord(prev => (prev?.word === w.word ? null : w));
+    if (!assistSeenRef.current.has(w.word)) {
+      assistSeenRef.current.add(w.word);
+      getBatcher()?.add({ lang, source: 'assist', item_key: w.word, correct: false, detail: { qtype: 'assist' } });
+    }
+  }
+
+  /** 문장 텍스트를 재료 단어 기준으로 분절(비-ja 인라인 감싸기용) — 긴 단어 우선 매칭 */
+  function segmentSentence(text, words) {
+    if (!words || words.length === 0) return [{ t: 'text', s: text }];
+    const sorted = [...words].sort((a, b) => b.word.length - a.word.length);
+    const segs = [];
+    let buf = '', i = 0;
+    while (i < text.length) {
+      const hit = sorted.find(w => w.word && text.startsWith(w.word, i));
+      if (hit) {
+        if (buf) { segs.push({ t: 'text', s: buf }); buf = ''; }
+        segs.push({ t: 'word', s: hit.word, w: hit });
+        i += hit.word.length;
+      } else { buf += text[i]; i++; }
+    }
+    if (buf) segs.push({ t: 'text', s: buf });
+    return segs;
   }
 
   /**
@@ -514,6 +576,16 @@ export default function StudySessionPage({
       ? <JaText ja={text} yomi={pron} />
       : <>{text}{pron && <span className="fr-check__pron"> {pron}</span>}</>;
 
+  // 재료 단어 팝오버 — 단어·발음·뜻 (라벨 없이 값만)
+  const wordPop = (w) => (
+    <span className="study-wordpop" onClick={e => e.stopPropagation()}>
+      <span lang={langCode} style={{ fontWeight: 700 }}>
+        {w.word}{w.pron ? <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}> {w.pron}</span> : null}
+      </span>
+      <span style={{ color: 'var(--text-secondary)' }}>{w.meaning}</span>
+    </span>
+  );
+
   // ── 비로그인 ──
   if (signedOut) {
     return (
@@ -696,13 +768,53 @@ export default function StudySessionPage({
             </div>
           )}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {item.sentences.map((s, i) => (
-              <div key={i} style={{ fontSize: '1.05rem', lineHeight: 2 }} lang={langCode}>
-                {renderMain(s.text, s.pron)}
-                <RefSpeak text={s.text} lang={lang} size="xs" />
-              </div>
-            ))}
+            {item.sentences.map((s, i) => {
+              const showSentPron = alwaysShowPron || revealedPron.has(i);
+              const togglable = !alwaysShowPron && !!s.pron;
+              const toggle = () => setRevealedPron(prev => {
+                const n = new Set(prev); n.has(i) ? n.delete(i) : n.add(i); return n;
+              });
+              return (
+                <div key={i} style={{ fontSize: '1.05rem', lineHeight: 2 }} lang={langCode}>
+                  <span
+                    className={togglable ? (showSentPron ? 'study-sent--tap' : 'study-sent--peek') : undefined}
+                    onClick={togglable ? toggle : undefined}
+                  >
+                    {langCode === 'ja'
+                      ? renderMain(s.text, showSentPron ? s.pron : null)
+                      : <>
+                          {segmentSentence(s.text, item.materialWords).map((seg, si) =>
+                            seg.t === 'word'
+                              ? <span key={si} className="study-word" style={{ position: 'relative' }}
+                                  onClick={e => { e.stopPropagation(); openAssist(seg.w); }}>
+                                  {seg.s}
+                                  {activeWord?.word === seg.w.word && wordPop(activeWord)}
+                                </span>
+                              : <span key={si}>{seg.s}</span>
+                          )}
+                          {showSentPron && s.pron && <span className="fr-check__pron"> {s.pron}</span>}
+                        </>
+                    }
+                  </span>
+                  <RefSpeak text={s.text} lang={lang} size="xs" />
+                </div>
+              );
+            })}
           </div>
+          {/* ja: 루비 정렬을 깨지 않도록 인라인 대신 카드 하단 재료 단어 칩(탭 → 뜻 팝오버) */}
+          {langCode === 'ja' && item.materialWords?.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12 }}>
+              {item.materialWords.map(w => (
+                <span key={w.word} style={{ position: 'relative', display: 'inline-flex' }}>
+                  <button type="button" className="chip" lang={langCode}
+                    onClick={e => { e.stopPropagation(); openAssist(w); }}>
+                    {w.word}
+                  </button>
+                  {activeWord?.word === w.word && wordPop(w)}
+                </span>
+              ))}
+            </div>
+          )}
           <button
             type="button"
             onClick={() => setShowTranslation(v => !v)}
@@ -787,6 +899,7 @@ export default function StudySessionPage({
           ) : (
             <div className="fr-quiz__prompt" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               🔊 듣고 입력하세요 <RefSpeak text={item.word.word_text} lang={lang} size="sm" />
+              {listenFailed && <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>재생이 안 되면 ▷</span>}
             </div>
           )}
           <input
@@ -921,6 +1034,11 @@ export default function StudySessionPage({
               </button>
             ))}
           </div>
+          {/* 읽기 미션 클로징 — 문단 파생 내용이해 문항의 피드백에서 목적 고리를 닫는다(1회) */}
+          {phase === 'feedback' && item.sentence.isKoreanPrompt && (() => {
+            const hint = queue.find(it => it.type === 'paragraph')?.preQuestion?.answerHint;
+            return hint ? <div className="fr-quiz__answer" style={{ color: 'var(--text-secondary)' }}>읽기 미션 — {hint}</div> : null;
+          })()}
         </div>
       )}
 

@@ -8218,6 +8218,33 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .study-textlink:hover { color: var(--text-secondary); }
 
+/* ── 문단 발음 지연 공개 · 재료 단어 탭 ── */
+/* 비입문 문단 문장 — 탭하면 발음 공개(미묘한 점선 단서) */
+.study-sent--peek {
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-decoration-color: var(--border);
+  text-underline-offset: 4px;
+}
+.study-sent--tap { cursor: pointer; }
+/* 비-ja 문장 속 재료 단어 — 탭 가능(미묘한 밑줄) */
+.study-word {
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-decoration-color: var(--border);
+  text-underline-offset: 3px;
+}
+/* 재료 단어 팝오버 — 단어·발음·뜻 */
+.study-wordpop {
+  position: absolute; top: 100%; left: 0; z-index: 50;
+  margin-top: 4px; min-width: 88px; max-width: 220px;
+  padding: 8px 10px; border-radius: var(--radius-md);
+  background: var(--bg-elevated); border: 1px solid var(--border);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
+  display: flex; flex-direction: column; gap: 2px;
+  font-size: 0.82rem; line-height: 1.5; white-space: normal; cursor: default;
+}
+
 /* ── 패턴 체크 (회상 연습) ── */
 .fr-check__toggle-all {
   margin-left: auto;
