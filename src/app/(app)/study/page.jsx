@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { getRefLang, REF_LANGS } from '@/content/refLangs';
 import { assembleStudyMaterials } from '@/lib/studyMaterials';
 import StudySessionPage from '@/views/StudySessionPage';
+import StudyOnboarding from '@/views/StudyOnboarding';
 
 export const metadata = { title: '오늘 학습 | Anatomy Studio' };
 export const dynamic = 'force-dynamic';
@@ -39,8 +40,12 @@ export default async function Page({ searchParams }) {
   }
   const ref = getRefLang(lang);
 
+  // ── 관심사 쿠키 — 온보딩에서 고른 이야기 취향(테마 70% 가중). 없으면 완전히 기존 동작 ──
+  const interestGroup = cookieStore.get('study_interest')?.value || null;
+
   // ── 재료 조립 (폴백 세션·rung·dial·오늘의 문단 재료) — prefetched를 써도 라이브로 필요 ──
-  const { session, paragraphMaterials, warmup, band, dial, canGenerate } = await assembleStudyMaterials(supabase, user.id, lang);
+  const { session, paragraphMaterials, warmup, band, dial, canGenerate, coldStart } =
+    await assembleStudyMaterials(supabase, user.id, lang, { interestGroup });
 
   // ── 프리페치된 문단 우선 사용 — 최근 48h 내 status='prefetched' 최신 1행 (테이블 부재 시 무해) ──
   // 단, 이번 세션이 주간 약점 모드(paragraphMaterials.weekly)면 프리페치를 건너뛰고 라이브 생성 경로로.
@@ -69,7 +74,7 @@ export default async function Page({ searchParams }) {
   // pregenerated가 있으면 효과 매핑·새 단어 등록은 저장된 재료를 기준으로.
   const effectiveMaterials = pregenerated ? pregenerated.materials : (canGenerate ? paragraphMaterials : null);
 
-  return (
+  const studySession = (
     <StudySessionPage
       session={session}
       paragraphMaterials={effectiveMaterials}
@@ -84,5 +89,24 @@ export default async function Page({ searchParams }) {
       readKey={ref.readKey}
       languages={Object.entries(REF_LANGS).map(([key, r]) => ({ key, name: r.name, flag: r.flag }))}
     />
+  );
+
+  if (!coldStart) return studySession;
+
+  // ── 콜드스타트 — 온보딩 데이터를 내려주고 세션 요소를 children으로 감싼다. ──
+  // 표시 여부(localStorage 가드)는 클라가 판단. 정규 레벨(인트로 제외)만 칩으로 노출하되,
+  // 백필용으로는 인트로 포함 전체 레벨의 챕터 slug를 순서대로 함께 넘긴다.
+  const norm = s => String(s || '').toUpperCase();
+  const levels = ref.LEVEL_META.map(m => ({
+    key: m.key,
+    label: m.label || m.key,
+    isIntro: ref.isIntroLevel(m.key),
+    chapterSlugs: ref.ALL_CHAPTERS.filter(c => norm(c.level) === norm(m.key)).map(c => c.slug),
+  }));
+
+  return (
+    <StudyOnboarding lang={lang} langName={ref.name} levels={levels}>
+      {studySession}
+    </StudyOnboarding>
   );
 }

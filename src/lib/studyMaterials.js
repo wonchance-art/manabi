@@ -43,6 +43,63 @@ export function gateNewMaterialsByDial(dial, newPattern, newWords) {
   return dial === 'easy' ? { newPattern: null, newWords: [] } : { newPattern, newWords };
 }
 
+/**
+ * 관심사 그룹 → THEMES 매핑 (온보딩 4택). 그룹키는 쿠키 study_interest 값이며
+ * StudyOnboarding.jsx의 카드 key와 일치해야 한다. 10개 THEMES를 3/2/3/2로 나눈다.
+ */
+export const INTEREST_GROUPS = {
+  daily:  { label: '일상·관계', themes: ['일상', '가족과 친구', '감정'] },
+  travel: { label: '여행·모험', themes: ['여행', '날씨와 계절'] },
+  food:   { label: '음식·취미', themes: ['음식', '쇼핑', '취미'] },
+  work:   { label: '일·학교', themes: ['학교', '계획'] },
+};
+
+/**
+ * 오늘의 주제 선택 — 최근 주제(recent)를 피하고, 관심사 그룹이 있으면 그 그룹 테마를 70% 가중.
+ * 랜덤은 주입 가능(rnd)해 결정적 테스트가 된다. 그룹이 없거나 미매핑이면 기존 로테이션과 동일.
+ * @param {string[]} themes - 전체 THEMES
+ * @param {string[]} recent - 회피할 최근 테마(avoidThemes)
+ * @param {string|null} interestGroup - INTEREST_GROUPS 키
+ * @param {() => number} rnd - [0,1) 난수원 (기본 Math.random)
+ * @returns {string|null}
+ */
+export function pickTheme(themes, recent = [], interestGroup = null, rnd = Math.random) {
+  const all = Array.isArray(themes) ? themes.filter(Boolean) : [];
+  if (!all.length) return null;
+  const avoid = new Set((recent || []).filter(Boolean));
+  const base = all.filter(t => !avoid.has(t));
+  const pool = base.length ? base : all;                 // 전부 회피되면 전체에서
+
+  const group = interestGroup ? INTEREST_GROUPS[interestGroup] : null;
+  if (group) {
+    const groupThemes = group.themes.filter(t => all.includes(t));
+    const groupAvoided = groupThemes.filter(t => !avoid.has(t));
+    const gp = groupAvoided.length ? groupAvoided : groupThemes;
+    // 70% 가중 — 그룹 안에서 우선 고르고, 나머지 30%는 전체 로테이션.
+    if (gp.length && rnd() < 0.7) return gp[Math.floor(rnd() * gp.length)];
+  }
+  return pool[Math.floor(rnd() * pool.length)];
+}
+
+/**
+ * 콜드스타트 판정 — 이 언어 학습 이력이 사실상 0인지(추가 쿼리 없이 이미 조회된 행에서 유도).
+ * ① 이 언어 레지스트리 챕터 slug에 해당하는 진행 행 0개
+ * ② 이 언어 어휘 0개
+ * ③ 리뷰 이벤트 3개 미만
+ * @param {Array} progressRows - user_ref_progress (이 lang)
+ * @param {Array} vocabRows - user_vocabulary (이 lang) 표본
+ * @param {Array} reviewEventRows - review_events (이 lang) 표본
+ * @param {Set<string>|string[]} chapterSlugs - ref.ALL_CHAPTERS의 slug 집합
+ * @returns {boolean}
+ */
+export function deriveColdStart(progressRows, vocabRows, reviewEventRows, chapterSlugs) {
+  const slugSet = chapterSlugs instanceof Set ? chapterSlugs : new Set(chapterSlugs || []);
+  const progressCount = (progressRows || []).filter(r => slugSet.has(r.slug)).length;
+  return progressCount === 0
+    && (vocabRows || []).length === 0
+    && (reviewEventRows || []).length < 3;
+}
+
 /** 배열에서 대략 고르게 n개 샘플 (요청마다 달라지도록 랜덤 시작점) */
 function sample(arr, n) {
   if (!arr?.length) return [];
@@ -162,7 +219,7 @@ async function buildWeaknessMaterials(supabase, userId, lang, ref, reviewEventRo
  * @param {{horizonHours?: number}} opts - 프리페치는 36(미리 due될 것까지 당겨봄)
  * @returns {Promise<{session, paragraphMaterials, level, band, canGenerate}>}
  */
-export async function assembleStudyMaterials(supabase, userId, lang, { horizonHours = 0 } = {}) {
+export async function assembleStudyMaterials(supabase, userId, lang, { horizonHours = 0, interestGroup = null } = {}) {
   const ref = getRefLang(lang);
   // due 기준 시각 — 프리페치는 now + horizonHours 로 미리 당겨 조회.
   const dueIso = new Date(Date.now() + horizonHours * 3600 * 1000).toISOString();
@@ -192,6 +249,10 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
   ]);
 
   const passed = new Set((progressRows || []).filter(r => r.passed).map(r => r.slug));
+
+  // ── 콜드스타트 — 추가 쿼리 없이 이미 조회한 행에서만 유도(온보딩 표시 근거) ──
+  const chapterSlugs = new Set(ref.ALL_CHAPTERS.map(c => c.slug));
+  const coldStart = deriveColdStart(progressRows, vocabPoolRows, reviewEventRows, chapterSlugs);
 
   // ── 숙련 rung · 난이도 다이얼 유도 (review_events 순수 함수) ──
   const eventsAsc = (reviewEventRows || []).slice().reverse();
@@ -335,9 +396,8 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
     .then(({ data }) => {
       avoidThemes = (data || []).map(r => r.theme).filter(Boolean);
     }, () => {});
-  const themePool = THEMES.filter(t => !avoidThemes.includes(t));
-  const pool = themePool.length ? themePool : THEMES;
-  const theme = pool[Math.floor(Math.random() * pool.length)];
+  // 관심사 그룹(쿠키)이 있으면 그 그룹 테마를 70% 가중, 없으면 기존 로테이션 그대로.
+  const theme = pickTheme(THEMES, avoidThemes, interestGroup);
 
   // ── 주간 약점 세션 — KST 일요일·이번 주 미실시면 신규 0·약점 재료로 대체 ──
   const weakness = await buildWeaknessMaterials(supabase, userId, lang, ref, reviewEventRows || []);
@@ -374,5 +434,5 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
   // 재료가 문법도 단어도 없으면 문단 생성 스킵 (폴백 세션만)
   const canGenerate = !!(paragraphMaterials.newPattern || paragraphMaterials.duePatterns.length || paragraphMaterials.dueWords.length);
 
-  return { session, paragraphMaterials, warmup, level, band, dial, canGenerate };
+  return { session, paragraphMaterials, warmup, level, band, dial, canGenerate, coldStart };
 }

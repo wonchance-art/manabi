@@ -10,7 +10,7 @@ vi.mock('@/lib/studySession', () => ({ composeSession: () => ({}), buildWarmupIt
 vi.mock('@/lib/writingPrompts', () => ({ levelBand: () => null }));
 vi.mock('@/lib/studyParagraph', () => ({ THEMES: [] }));
 
-const { deriveVocabRungs, gateNewMaterialsByDial } = await import('../studyMaterials');
+const { deriveVocabRungs, gateNewMaterialsByDial, pickTheme, deriveColdStart, INTEREST_GROUPS } = await import('../studyMaterials');
 
 // review_events 행 헬퍼 (시간 오름차순으로 넘긴다)
 const ev = (source, item_key, correct, qtype = 'choice') => ({
@@ -62,5 +62,97 @@ describe('gateNewMaterialsByDial', () => {
   it("dial 'normal'/'hard'면 신규 재료를 그대로 통과시킨다", () => {
     expect(gateNewMaterialsByDial('normal', newPattern, newWords)).toEqual({ newPattern, newWords });
     expect(gateNewMaterialsByDial('hard', newPattern, newWords)).toEqual({ newPattern, newWords });
+  });
+});
+
+describe('INTEREST_GROUPS 매핑', () => {
+  const THEMES = ['일상', '학교', '여행', '음식', '쇼핑', '날씨와 계절', '가족과 친구', '취미', '감정', '계획'];
+
+  it('4개 그룹이고 그룹 키가 예상대로다', () => {
+    expect(Object.keys(INTEREST_GROUPS)).toEqual(['daily', 'travel', 'food', 'work']);
+  });
+
+  it('그룹 테마 합집합이 THEMES 전체를 정확히 덮는다(중복·누락 없음)', () => {
+    const mapped = Object.values(INTEREST_GROUPS).flatMap(g => g.themes);
+    expect(mapped.slice().sort()).toEqual(THEMES.slice().sort());
+    expect(new Set(mapped).size).toBe(THEMES.length); // 중복 없음
+  });
+
+  it('모든 그룹 테마가 실제 THEMES 안에 있다', () => {
+    for (const g of Object.values(INTEREST_GROUPS)) {
+      for (const t of g.themes) expect(THEMES).toContain(t);
+    }
+  });
+});
+
+describe('pickTheme', () => {
+  const THEMES = ['일상', '학교', '여행', '음식', '쇼핑', '날씨와 계절', '가족과 친구', '취미', '감정', '계획'];
+
+  it('관심사 없으면 최근 회피 후 전체에서 고른다(기존 로테이션)', () => {
+    // rnd=()=>0 → 회피 후 풀의 첫 항목
+    const t = pickTheme(THEMES, ['일상'], null, () => 0);
+    expect(t).toBe('학교');           // '일상' 회피 → 남은 풀 첫 항목
+    expect(t).not.toBe('일상');
+  });
+
+  it('관심사가 있고 난수 < 0.7이면 그 그룹 테마에서 고른다(70% 가중)', () => {
+    // rnd=()=>0.1 (<0.7) → 그룹 경로, index=floor(0.1*len)=0 → travel 그룹 첫 항목
+    const t = pickTheme(THEMES, [], 'travel', () => 0.1);
+    expect(INTEREST_GROUPS.travel.themes).toContain(t);
+    expect(t).toBe('여행');
+  });
+
+  it('관심사가 있어도 난수 >= 0.7이면 전체 로테이션에서 고른다(나머지 30%)', () => {
+    // rnd=()=>0.95 (>=0.7) → 일반 경로, index=floor(0.95*10)=9 → 전체 마지막
+    const t = pickTheme(THEMES, [], 'travel', () => 0.95);
+    expect(t).toBe('계획');
+  });
+
+  it('그룹 테마가 전부 최근 회피면 그룹 전체로 폴백해 여전히 그룹 안에서 고른다', () => {
+    const t = pickTheme(THEMES, INTEREST_GROUPS.travel.themes, 'travel', () => 0.1);
+    expect(INTEREST_GROUPS.travel.themes).toContain(t);
+  });
+
+  it('미매핑 그룹키는 무시하고 일반 로테이션', () => {
+    const t = pickTheme(THEMES, [], 'unknown', () => 0);
+    expect(t).toBe('일상');
+  });
+
+  it('빈 입력에 방어적(null)', () => {
+    expect(pickTheme([], [], 'daily', () => 0)).toBe(null);
+    expect(pickTheme(undefined, undefined, null, () => 0)).toBe(null);
+  });
+});
+
+describe('deriveColdStart', () => {
+  const slugs = ['ja-01', 'ja-02', 'ja-03'];
+
+  it('진행·어휘·이벤트가 전부 비면 콜드스타트', () => {
+    expect(deriveColdStart([], [], [], slugs)).toBe(true);
+  });
+
+  it('레지스트리 챕터 slug 진행이 하나라도 있으면 아니다', () => {
+    expect(deriveColdStart([{ slug: 'ja-01' }], [], [], slugs)).toBe(false);
+  });
+
+  it('레지스트리 밖 slug 진행 행은 콜드스타트를 깨지 않는다', () => {
+    // 다른 언어·구버전 slug만 있으면 이 언어 이력으로 치지 않는다
+    expect(deriveColdStart([{ slug: 'zzz-legacy' }], [], [], slugs)).toBe(true);
+  });
+
+  it('어휘가 있으면 아니다', () => {
+    expect(deriveColdStart([], [{ meaning: '고양이' }], [], slugs)).toBe(false);
+  });
+
+  it('리뷰 이벤트 3개 이상이면 아니다', () => {
+    expect(deriveColdStart([], [], [{}, {}, {}], slugs)).toBe(false);
+  });
+
+  it('리뷰 이벤트 2개까지는 이력으로 치지 않는다', () => {
+    expect(deriveColdStart([], [], [{}, {}], slugs)).toBe(true);
+  });
+
+  it('Set으로 넘겨도 동작한다', () => {
+    expect(deriveColdStart([{ slug: 'ja-02' }], [], [], new Set(slugs))).toBe(false);
   });
 });
