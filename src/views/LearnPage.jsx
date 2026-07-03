@@ -97,12 +97,12 @@ export default function LearnPage() {
   const streakFreeze = profile?.streak_freeze_count;
 
   const practice = [
-    { href: '/study/library',  title: '서재',          desc: '지난 문단 다시 읽기' },
-    { href: '/review/grammar', title: '문법 복습',      desc: '오늘의 due 문법', badge: dueGrammar },
-    { href: '/writing',        title: '작문 기록실',    desc: '내 작문 돌아보기' },
-    { href: '/vocab',          title: '어휘 복습',      desc: '단어장 SRS 복습' },
-    { href: '/study/library',  title: '내 자료로 학습', desc: '기사·문장을 붙여넣어 이야기로' },
-    { href: '/guide',          title: '학습 가이드',    desc: '처음이라면 — 하루의 흐름 안내' },
+    { href: '/study/library',  title: '서재',          desc: '지난 문단 다시 읽기',            accent: 'var(--primary)',    icon: '📖' },
+    { href: '/review/grammar', title: '문법 복습',      desc: '오늘의 due 문법', badge: dueGrammar, accent: 'var(--accent)',   icon: '🧩' },
+    { href: '/writing',        title: '작문 기록실',    desc: '내 작문 돌아보기',              accent: 'var(--warning)',    icon: '✍️' },
+    { href: '/vocab',          title: '어휘 복습',      desc: '단어장 SRS 복습',              accent: 'var(--danger)',     icon: '🗂️' },
+    { href: '/study/library',  title: '내 자료로 학습', desc: '기사·문장을 붙여넣어 이야기로',  accent: 'var(--text-muted)', icon: '📥' },
+    { href: '/guide',          title: '학습 가이드',    desc: '처음이라면 — 하루의 흐름 안내',  accent: 'var(--text-muted)', icon: '🧭' },
   ];
 
   return (
@@ -116,7 +116,7 @@ export default function LearnPage() {
 
       {/* ① 오늘 학습 주 CTA — 홈 이어하기 카드 급 비중 */}
       <div>
-        <Link href="/study" className="lessons-continue">
+        <Link href="/study" className="lessons-continue learn-cta">
           <span className="lessons-continue__body">
             <span className="lessons-continue__kicker">오늘 학습</span>
             <span className="lessons-continue__title">오늘 학습 시작</span>
@@ -132,37 +132,23 @@ export default function LearnPage() {
 
       {/* ② 이어지는 이야기 — 연재가 진행 중일 때만 (홈 '오늘 읽기' 카드 스타일) */}
       {episode != null && (
-        <Link
-          href="/study"
-          className="card"
-          style={{
-            display: 'block',
-            textDecoration: 'none',
-            padding: '20px 22px',
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border)',
-            borderLeft: '3px solid var(--primary)',
-          }}
-        >
-          <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.02em', marginBottom: 6 }}>
-            이어지는 이야기
-          </div>
-          <h2 style={{ fontSize: '1.05rem', fontWeight: 700, margin: '0 0 8px', lineHeight: 1.45 }}>
-            {episode}화까지 읽었어요 — 다음 화가 기다려요
-          </h2>
-          <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>이어서 학습하기 →</div>
+        <Link href="/study" className="learn-story">
+          <div className="learn-story__kicker">이어지는 이야기</div>
+          <h2 className="learn-story__title">{episode}화까지 읽었어요 — 다음 화가 기다려요</h2>
+          <div className="learn-story__more">이어서 학습하기 →</div>
         </Link>
       )}
 
-      {/* ③ 연습실 그리드 — 홈 카드 스타일 2×2 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+      {/* ③ 연습실 그리드 — 타일별 고유 악센트(좌보더·아이콘원·hover 틴트) */}
+      <div className="learn-grid">
         {practice.map(t => (
-          <Link key={t.href} href={t.href} className="card" style={{ display: 'block', textDecoration: 'none', padding: '14px 16px' }}>
-            <div className="home-gs-step__title">
-              {t.title}
-              {t.badge > 0 && (
-                <span style={{ marginLeft: 6, fontSize: '0.72rem', fontWeight: 700, color: 'var(--primary)' }}>{t.badge}</span>
-              )}
+          <Link key={t.title} href={t.href} className="card learn-tile" style={{ '--tile-accent': t.accent }}>
+            <div className="learn-tile__head">
+              <span className="learn-tile__icon" aria-hidden="true">{t.icon}</span>
+              <span className="home-gs-step__title">
+                {t.title}
+                {t.badge > 0 && <span className="learn-tile__badge">{t.badge}</span>}
+              </span>
             </div>
             <div className="home-gs-step__desc">{t.desc}</div>
           </Link>
@@ -172,25 +158,25 @@ export default function LearnPage() {
       {/* ④ 성장 요약 — bento 타일 (ProfileStats 패턴, 성장 지표는 growthStats 카피 재사용) */}
       <div className="bento">
         {weekSessions != null && (
-          <div className="bento-item bento--1x1 card bento-stat">
+          <div className="bento-item bento--1x1 card bento-stat learn-stat" style={{ '--tile-accent': 'var(--accent)' }}>
             <span className="mypage-stat-cell__value">{weekSessions}</span>
             <span className="mypage-stat-cell__label">{GROWTH_LABELS.weekSessions}</span>
           </div>
         )}
-        <div className="bento-item bento--1x1 card bento-stat">
+        <div className="bento-item bento--1x1 card bento-stat learn-stat" style={{ '--tile-accent': 'var(--warning)' }}>
           <span className="mypage-stat-cell__value">
             {streak ? `${streak}일${streakFreeze > 0 ? ` · 🛡${streakFreeze}` : ''}` : '–'}
           </span>
           <span className="mypage-stat-cell__label">스트릭</span>
         </div>
         {knownWords != null && (
-          <div className="bento-item bento--1x1 card bento-stat">
+          <div className="bento-item bento--1x1 card bento-stat learn-stat" style={{ '--tile-accent': 'var(--danger)' }}>
             <span className="mypage-stat-cell__value">{knownWords}</span>
             <span className="mypage-stat-cell__label">{GROWTH_LABELS.knownWords}</span>
           </div>
         )}
         {passedChapters != null && (
-          <div className="bento-item bento--1x1 card bento-stat">
+          <div className="bento-item bento--1x1 card bento-stat learn-stat" style={{ '--tile-accent': 'var(--primary)' }}>
             <span className="mypage-stat-cell__value">{passedChapters}</span>
             <span className="mypage-stat-cell__label">{GROWTH_LABELS.passedChapters}</span>
           </div>
