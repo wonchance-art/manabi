@@ -84,6 +84,7 @@ export default function ProfileStats({ refManifest = {} }) {
   if (!user) return null;
   const vocab = data?.vocab || [];
   const streak = profile?.streak_count ?? 0;
+  const streakFreeze = profile?.streak_freeze_count;
   const hasHeatmap = data?.heatmapDayCounts && Object.keys(data.heatmapDayCounts).length > 0;
   const todayActivity =
     vocab.filter(v => isToday(v.created_at)).length +
@@ -97,7 +98,10 @@ export default function ProfileStats({ refManifest = {} }) {
       <div className="bento-item bento--2x2">
         <ReviewTile vocab={vocab} />
       </div>
-      <StatTile label="스트릭" value={streak ? `${streak}일` : '–'} />
+      <StatTile
+        label="스트릭"
+        value={streak ? `${streak}일${streakFreeze > 0 ? ` · 🛡${streakFreeze}` : ''}` : '–'}
+      />
       <StatTile label="오늘 활동" value={todayActivity} />
       <div className="bento-item bento--2x2">
         <LevelCoverageCard refManifest={refManifest} />
