@@ -940,7 +940,7 @@ export default [
     sections: [
       {
         heading: "기본 인사 세트",
-        pattern: "Bonjour(봉주흐) → 낮 · Bonsoir(봉수아흐) → 저녁 · Salut(살뤼) → 친한 사이 · Au revoir(오 흐부아) → 작별",
+        pattern: "때·친한 정도로 갈리는 인사 — Bonjour(낮), Salut(친한 사이)",
         patternKo: "때와 친한 정도에 따라 갈리는 기본 인사 세트",
         body:
           "**Bonjour** [봉주흐] — 아침~낮의 만능 인사. 가게에 들어갈 때 점원에게 반드시 건네는 게 프랑스 예절이에요.\n" +
