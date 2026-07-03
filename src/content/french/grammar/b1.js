@@ -142,7 +142,7 @@ export default [
       },
       {
         heading: "꼭 외워야 할 불규칙 6총사",
-        pattern: "고빈도 6동사의 불규칙 접속법 — être→sois, avoir→aie (전체는 아래 표)",
+        pattern: "être→sois · avoir→aie",
         patternKo: "고빈도 동사 6개의 불규칙 접속법 (통째로 암기)",
         body:
           "자주 쓰는 동사일수록 불규칙이에요. 이 여섯 개는 사용 빈도가 압도적이니 표째로 암기하세요.\n\n" +
@@ -573,7 +573,7 @@ export default [
       },
       {
         heading: "의문문 옮기기 — si와 ce que",
-        pattern: "의문문은 demander로 — 네/아니오→si, '무엇'→ce que/ce qui",
+        pattern: "네/아니오→si · '무엇'→ce que/ce qui",
         patternKo: "의문문 옮기기 — 네/아니오는 si, '무엇'은 ce que/ce qui",
         body:
           "의문문은 **demander**(묻다)로 옮기고, 종류에 따라 연결사가 달라져요. « Tu viens ? » → Il demande **si** je viens. / « Qu'est-ce que tu fais ? » → Il demande **ce que** je fais.\n\n" +
