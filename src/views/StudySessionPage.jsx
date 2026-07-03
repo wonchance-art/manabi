@@ -509,6 +509,11 @@ export default function StudySessionPage({
             {skipped.size > 0 && ` · 듣기 ${skipped.size}개 건너뜀`}
             {' '}· 결과는 복습 스케줄에 반영됐어요
           </p>
+          {(rightCount > 0 || wrong.length > 0) && (
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: 6, fontWeight: 600 }}>
+              💪 강해진 기억 {rightCount}개 · ⏰ 곧 다시 만날 {wrong.length}개
+            </p>
+          )}
           {genStatus === 'ready' && paragraphMaterials?.newWords?.length > 0 && (
             <p style={{ fontSize: '0.82rem', color: 'var(--accent)', marginTop: 6, fontWeight: 600 }}>
               새 단어 {paragraphMaterials.newWords.length}개({paragraphMaterials.newWords.map(w => w.word).join(' · ')})가 단어장에 추가돼 복습이 시작돼요

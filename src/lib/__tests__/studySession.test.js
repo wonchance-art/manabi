@@ -108,6 +108,25 @@ describe('composeSession', () => {
     expect(byWord('約束')).toBe('vocab-typing');   // choice→typing
     expect(byWord('家族')).toBe('vocab-listening'); // typing→listening
   });
+
+  it('dial hard — 신규 챕터 문항 상한 +1(총량 ≤10), easy/normal 불변', () => {
+    // 신규 후보가 4개 이상이어야 상한 상향이 드러난다
+    const NEW_CHAPTER_4 = { ...NEW_CHAPTER, items: [CLOZE, ORDER, CLOZE, ORDER] };
+    const base = { vocab: VOCAB, meaningPool: MEANING_POOL, grammarDue: GRAMMAR_DUE, newChapter: NEW_CHAPTER_4, reading: READING, koPool: KO_POOL };
+    const newCount = s => s.items.filter(i => i.effect?.kind === 'new-chapter').length;
+
+    const normal = composeSession({ ...base, dial: 'normal' });
+    const hard = composeSession({ ...base, dial: 'hard' });
+    const easy = composeSession({ ...base, dial: 'easy' });
+
+    expect(newCount(normal)).toBe(3);       // 기존 상한 유지
+    expect(newCount(hard)).toBe(4);         // hard는 +1
+    expect(newCount(easy)).toBe(0);         // easy는 신규 0(불변)
+
+    // 예산 하드캡 10 유지
+    expect(hard.gradedCount).toBeLessThanOrEqual(10);
+    expect(normal.gradedCount).toBeLessThanOrEqual(10);
+  });
 });
 
 describe('gradeTyping / normalizeAnswer', () => {

@@ -249,10 +249,9 @@ export function verifyParagraph(para) {
 export function mapParagraphToItems(para, materials) {
   let seq = 0;
   const uid = p => `p${p}-${++seq}`;
-  const items = [];
 
   // ① 문단 읽기 카드 (집계 제외)
-  items.push({
+  const readCard = {
     uid: uid('read'),
     type: 'paragraph',
     paragraph: para.paragraph,
@@ -260,17 +259,21 @@ export function mapParagraphToItems(para, materials) {
     sentences: para.sentences,
     preQuestion: para.preQuestion || null,
     newChapter: materials.newChapter || null,
-  });
+  };
 
   const findDueWord = key => (materials.dueWords || []).find(w => w.word === key || key.includes(w.word));
   const findNewWord = key => (materials.newWords || []).find(w => w.word === key || key.includes(w.word));
   const findDuePattern = key => (materials.duePatterns || []).find(p => p.pattern === key || key.includes(p.pattern) || p.pattern.includes(key));
 
+  // 채점 문항을 _prio(작을수록 보존 우선)로 태깅해 모은다.
+  // 새 문법 cloze 0 > comprehension 1 > 복습 cloze 2 > 어순 3 > vocab 4
+  let graded = [];
+  let ngSeen = 0; // 새 문법 cloze는 최대 2개만 최우선 보존(초과분은 최하위로 강등)
   for (const q of para.questions) {
     if (q.type === 'cloze') {
       const isNew = q.focus === 'new-grammar';
       const due = !isNew ? findDuePattern(q.key) : null;
-      items.push({
+      graded.push({
         uid: uid('c'),
         type: 'grammar-cloze',
         quiz: { sentence: q.prompt, ko: q.ko, correct: q.answer, distractors: q.distractors, full: q.prompt.replace(/＿+/g, q.answer), pron: null },
@@ -282,11 +285,13 @@ export function mapParagraphToItems(para, materials) {
           : due
             ? { kind: 'grammar-due', srs: due.srs }
             : { kind: 'reading', key: q.prompt.slice(0, 60) },
+        _prio: isNew ? (++ngSeen <= 2 ? 0 : 9) : 2,
+        _ng: isNew,
       });
     } else if (q.type === 'vocab') {
       const due = q.focus === 'due-word' ? findDueWord(q.key) : null;
       const isNew = q.focus === 'new-word' ? findNewWord(q.key) : null;
-      items.push({
+      graded.push({
         uid: uid('v'),
         type: 'vocab-choice',
         word: due
@@ -294,15 +299,17 @@ export function mapParagraphToItems(para, materials) {
           : { word_text: q.key || q.prompt, meaning: q.answer, furigana: isNew?.pron || null },
         options: [q.answer, ...q.distractors],
         effect: due ? { kind: 'vocab', wordId: due.row.id } : { kind: 'reading', key: `vocab:${q.key}` },
+        _prio: 4,
       });
     } else {
-      items.push({
+      graded.push({
         uid: uid('q'),
         type: 'read-meaning',
         sentence: { main: q.prompt, pron: null, isKoreanPrompt: true },
         options: [q.answer, ...q.distractors],
         correct: q.answer,
         effect: { kind: 'reading', key: `comp:${q.prompt.slice(0, 60)}` },
+        _prio: 1,
       });
     }
   }
@@ -312,14 +319,38 @@ export function mapParagraphToItems(para, materials) {
     .filter(s => s.tokens.length >= 3 && s.tokens.length <= 10 && s.tokens.join(' ').replace(/\s+/g, '') === s.text.replace(/\s+/g, ''))
     .sort((a, b) => b.tokens.length - a.tokens.length)[0];
   if (orderable) {
-    items.push({
+    graded.push({
       uid: uid('o'),
       type: 'grammar-order',
       quiz: { tokens: orderable.tokens, answer: orderable.tokens.join(' '), ko: orderable.ko, pron: orderable.pron },
       chapter: { title: '오늘의 문단' },
       effect: { kind: 'reading', key: `order:${orderable.text.slice(0, 60)}` },
+      _prio: 3,
     });
   }
 
+  // ③ 채점 문항 하드캡 7 — 초과 시 우선순위 낮은 것부터 절단(남는 것의 상대 순서 유지)
+  if (graded.length > 7) {
+    const keep = new Set(
+      graded.map((it, i) => ({ it, i }))
+        .sort((a, b) => (a.it._prio - b.it._prio) || (a.i - b.i))
+        .slice(0, 7)
+        .map(x => x.i)
+    );
+    graded = graded.filter((_, i) => keep.has(i));
+  }
+
+  // ④ 새 문법 cloze 2개는 "사이 3문항 이상" 간격 — 첫째는 맨 앞, 둘째는 인덱스 ≥4(짧으면 맨 뒤)
+  const ngIdx = [];
+  graded.forEach((it, i) => { if (it._ng) ngIdx.push(i); });
+  if (ngIdx.length === 2) {
+    const [ia, ib] = ngIdx;
+    const rest = graded.filter((_, i) => i !== ia && i !== ib);
+    const result = [graded[ia], ...rest];
+    result.splice(Math.min(4, result.length), 0, graded[ib]);
+    graded = result;
+  }
+
+  const items = [readCard, ...graded.map(({ _prio, _ng, ...it }) => it)];
   return { items, gradedCount: items.filter(i => i.type !== 'paragraph').length };
 }

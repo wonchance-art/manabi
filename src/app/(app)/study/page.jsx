@@ -43,24 +43,28 @@ export default async function Page({ searchParams }) {
   const { session, paragraphMaterials, warmup, band, dial, canGenerate } = await assembleStudyMaterials(supabase, user.id, lang);
 
   // ── 프리페치된 문단 우선 사용 — 최근 48h 내 status='prefetched' 최신 1행 (테이블 부재 시 무해) ──
+  // 단, 이번 세션이 주간 약점 모드(paragraphMaterials.weekly)면 프리페치를 건너뛰고 라이브 생성 경로로.
+  // (프리페치 행은 남겨둠 — 다음 비약점 세션에서 48h 내면 소비, 지나면 자연 만료)
   let pregenerated = null;
-  const cutoffIso = new Date(Date.now() - 48 * 3600 * 1000).toISOString();
-  await supabase.from('study_paragraphs')
-    .select('id, materials, paragraph')
-    .eq('user_id', user.id).eq('lang', lang).eq('status', 'prefetched')
-    .gt('created_at', cutoffIso)
-    .order('created_at', { ascending: false }).limit(1)
-    .then(({ data }) => {
-      const row = data && data[0];
-      if (row && row.paragraph && row.materials) {
-        pregenerated = { paragraph: row.paragraph, materials: row.materials };
-        // 사용 처리 (방어적 — 실패해도 세션은 진행)
-        supabase.from('study_paragraphs')
-          .update({ status: 'used', used_at: new Date().toISOString() })
-          .eq('id', row.id)
-          .then(() => {}, () => {});
-      }
-    }, () => {});
+  if (!paragraphMaterials?.weekly) {
+    const cutoffIso = new Date(Date.now() - 48 * 3600 * 1000).toISOString();
+    await supabase.from('study_paragraphs')
+      .select('id, materials, paragraph')
+      .eq('user_id', user.id).eq('lang', lang).eq('status', 'prefetched')
+      .gt('created_at', cutoffIso)
+      .order('created_at', { ascending: false }).limit(1)
+      .then(async ({ data }) => {
+        const row = data && data[0];
+        if (row && row.paragraph && row.materials) {
+          pregenerated = { paragraph: row.paragraph, materials: row.materials };
+          // 사용 처리 — await로 유실 방지, 실패(테이블 부재 등)해도 세션은 진행
+          await supabase.from('study_paragraphs')
+            .update({ status: 'used', used_at: new Date().toISOString() })
+            .eq('id', row.id)
+            .then(() => {}, () => {});
+        }
+      }, () => {});
+  }
 
   // pregenerated가 있으면 효과 매핑·새 단어 등록은 저장된 재료를 기준으로.
   const effectiveMaterials = pregenerated ? pregenerated.materials : (canGenerate ? paragraphMaterials : null);
