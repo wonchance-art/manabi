@@ -8911,11 +8911,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .learn-story__more { font-size: 0.82rem; color: var(--text-secondary); }
 
 /* ③ 연습실 그리드 + 타일 — 타일별 고유 악센트 */
-/* 연습실 타일 — 홈 벤토 2x2 셀을 채우는 세로 구성(아이콘 위, 제목·설명 아래) */
+/* 연습실 타일 — 홈 벤토 1x1 셀, 세로 구성(아이콘 위, 제목·설명 아래) */
 .learn-tile {
-  display: flex; flex-direction: column; justify-content: center; gap: 10px;
+  display: flex; flex-direction: column; justify-content: center; gap: 6px;
   text-decoration: none;
-  padding: 20px 18px;
+  padding: 14px;
   border-left: 3px solid var(--tile-accent, var(--border));
 }
 .learn-tile:hover {
@@ -8923,11 +8923,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   border-color: var(--border-hover);
   border-left-color: var(--tile-accent, var(--border));
 }
-.learn-tile__head { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.learn-tile__head { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
 .learn-tile__icon {
-  width: 40px; height: 40px; flex-shrink: 0;
+  width: 30px; height: 30px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  font-size: 1.15rem; line-height: 1;
+  font-size: 0.95rem; line-height: 1;
   border-radius: 50%;
   background: color-mix(in srgb, var(--tile-accent, var(--text-muted)) 14%, transparent);
 }

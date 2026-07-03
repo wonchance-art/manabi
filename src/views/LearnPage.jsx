@@ -146,7 +146,7 @@ export default function LearnPage() {
       {/* ③ 연습실 그리드 — 홈 벤토의 2x2 급 타일, 타일별 고유 악센트(좌보더·아이콘원·hover 틴트) */}
       <div className="bento">
         {practice.map(t => (
-          <Link key={t.title} href={t.href} className="bento-item bento--2x2 card learn-tile" style={{ '--tile-accent': t.accent }}>
+          <Link key={t.title} href={t.href} className="bento-item bento--1x1 card learn-tile" style={{ '--tile-accent': t.accent }}>
             <div className="learn-tile__head">
               <span className="learn-tile__icon" aria-hidden="true">{t.icon}</span>
               <span className="home-gs-step__title">
