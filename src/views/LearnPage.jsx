@@ -143,10 +143,10 @@ export default function LearnPage() {
         </Link>
       )}
 
-      {/* ③ 연습실 그리드 — 타일별 고유 악센트(좌보더·아이콘원·hover 틴트) */}
-      <div className="learn-grid">
+      {/* ③ 연습실 그리드 — 홈 벤토의 2x2 급 타일, 타일별 고유 악센트(좌보더·아이콘원·hover 틴트) */}
+      <div className="bento">
         {practice.map(t => (
-          <Link key={t.title} href={t.href} className="card learn-tile" style={{ '--tile-accent': t.accent }}>
+          <Link key={t.title} href={t.href} className="bento-item bento--2x2 card learn-tile" style={{ '--tile-accent': t.accent }}>
             <div className="learn-tile__head">
               <span className="learn-tile__icon" aria-hidden="true">{t.icon}</span>
               <span className="home-gs-step__title">
@@ -162,25 +162,25 @@ export default function LearnPage() {
       {/* ④ 성장 요약 — bento 타일 (ProfileStats 패턴, 성장 지표는 growthStats 카피 재사용) */}
       <div className="bento">
         {weekSessions != null && (
-          <div className="bento-item bento--2x2 card bento-stat learn-stat" style={{ '--tile-accent': 'var(--accent)' }}>
+          <div className="bento-item bento--1x1 card bento-stat learn-stat" style={{ '--tile-accent': 'var(--accent)' }}>
             <span className="mypage-stat-cell__value">{weekSessions}</span>
             <span className="mypage-stat-cell__label">{GROWTH_LABELS.weekSessions}</span>
           </div>
         )}
-        <div className="bento-item bento--2x2 card bento-stat learn-stat" style={{ '--tile-accent': 'var(--warning)' }}>
+        <div className="bento-item bento--1x1 card bento-stat learn-stat" style={{ '--tile-accent': 'var(--warning)' }}>
           <span className="mypage-stat-cell__value">
             {streak ? `${streak}일${streakFreeze > 0 ? ` · 🛡${streakFreeze}` : ''}` : '–'}
           </span>
           <span className="mypage-stat-cell__label">스트릭</span>
         </div>
         {knownWords != null && (
-          <div className="bento-item bento--2x2 card bento-stat learn-stat" style={{ '--tile-accent': 'var(--danger)' }}>
+          <div className="bento-item bento--1x1 card bento-stat learn-stat" style={{ '--tile-accent': 'var(--danger)' }}>
             <span className="mypage-stat-cell__value">{knownWords}</span>
             <span className="mypage-stat-cell__label">{GROWTH_LABELS.knownWords}</span>
           </div>
         )}
         {passedChapters != null && (
-          <div className="bento-item bento--2x2 card bento-stat learn-stat" style={{ '--tile-accent': 'var(--primary)' }}>
+          <div className="bento-item bento--1x1 card bento-stat learn-stat" style={{ '--tile-accent': 'var(--primary)' }}>
             <span className="mypage-stat-cell__value">{passedChapters}</span>
             <span className="mypage-stat-cell__label">{GROWTH_LABELS.passedChapters}</span>
           </div>
