@@ -64,9 +64,6 @@ function ParagraphCard({ entry, langCode, lang }) {
 
       {open && (
         <div style={{ marginTop: 12 }}>
-          <p style={{ fontSize: '0.76rem', color: 'var(--text-muted)', margin: '0 0 12px', lineHeight: 1.6 }}>
-            예전엔 어려웠던 문장이 술술 읽히는지 확인해보세요.
-          </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {sentences.map((s, i) => (
               <div key={i}>
@@ -112,7 +109,7 @@ export default function StudyLibraryPage({
     );
   }
 
-  const { knownCount = 0, totalVocab = 0, passedChapters = 0, weekSessions = 0 } = summary;
+  const { knownCount = 0, passedChapters = 0, weekSessions = 0 } = summary;
 
   return (
     <div className="page-container" style={{ maxWidth: 640 }}>
@@ -125,7 +122,7 @@ export default function StudyLibraryPage({
 
       {/* 성장 요약 */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 18 }}>
-        <StatTile value={knownCount} label="아는 단어" sub={`interval 7일+ 기준 ${knownCount} / 전체 ${totalVocab}`} />
+        <StatTile value={knownCount} label="아는 단어" sub="일주일 넘게 기억한 단어" />
         <StatTile value={passedChapters} label="통과 챕터" />
         <StatTile value={weekSessions} label="이번 주 세션" />
       </div>
