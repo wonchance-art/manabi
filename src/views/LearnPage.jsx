@@ -1,0 +1,178 @@
+'use client';
+
+import Link from 'next/link';
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../lib/AuthContext';
+import { kstWeekStartIso } from '../lib/growthStats';
+
+/**
+ * 학습 허브 — 오늘 할 학습으로 가는 단일 진입점.
+ * 홈(HomePage)의 시각 언어를 그대로 재사용한다: 같은 컨테이너(home-layout)·
+ * 인사 헤더(home-greeting)·이어하기 카드(lessons-continue)·읽기 카드·bento 타일.
+ * 데이터도 홈과 동일하게 클라이언트 useQuery로 페칭한다.
+ */
+async function fetchLearnData(userId, lang) {
+  const now = new Date().toISOString();
+  const weekStartIso = kstWeekStartIso();
+
+  // 실패 시 null (문구 생략용) — 홈/서재의 방어적 count 패턴과 동일
+  const countOf = (q) => q.then(({ count }) => count ?? null, () => null);
+
+  const [dueVocab, dueGrammar, weekSessions, latestUsed] = await Promise.all([
+    // due 어휘 — 현재 학습 언어, next_review_at <= now
+    countOf(supabase.from('user_vocabulary')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId).eq('language', lang).lte('next_review_at', now)),
+    // due 문법 — grammar_review, next_review_at <= now
+    countOf(supabase.from('grammar_review')
+      .select('slug', { count: 'exact', head: true })
+      .eq('user_id', userId).eq('lang', lang).lte('next_review_at', now)),
+    // 이번 주 세션 — study_paragraphs status='used', used_at >= 주 시작 (서재와 동일 정의)
+    countOf(supabase.from('study_paragraphs')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId).eq('lang', lang).eq('status', 'used').gte('used_at', weekStartIso)),
+    // 연재 — 가장 최근 used 문단 1행 (테이블 부재 시 null)
+    supabase.from('study_paragraphs')
+      .select('paragraph, materials, used_at, created_at')
+      .eq('user_id', userId).eq('lang', lang).eq('status', 'used')
+      .order('used_at', { ascending: false, nullsFirst: false })
+      .order('created_at', { ascending: false }).limit(1)
+      .then(({ data }) => (data && data[0]) || null, () => null),
+  ]);
+
+  // 이어지는 이야기 — arcSummary와 episode가 모두 있을 때만
+  let episode = null;
+  if (latestUsed) {
+    const arc = latestUsed.paragraph?.arcSummary;
+    const ep = Number(latestUsed.materials?.episode);
+    if (typeof arc === 'string' && arc.trim() && Number.isFinite(ep) && ep >= 1) episode = ep;
+  }
+
+  return { dueVocab, dueGrammar, weekSessions, episode };
+}
+
+export default function LearnPage() {
+  const { user, profile } = useAuth();
+
+  const lang = useMemo(() => {
+    const fromProfile = Array.isArray(profile?.learning_language)
+      ? profile.learning_language[0]
+      : profile?.learning_language;
+    return fromProfile || 'Japanese';
+  }, [profile]);
+
+  const { data } = useQuery({
+    queryKey: ['learn', user?.id, lang],
+    queryFn: () => fetchLearnData(user.id, lang),
+    enabled: !!user,
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: true,
+  });
+
+  if (!user) return (
+    <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
+      <h2 style={{ marginBottom: '16px' }}>로그인이 필요합니다</h2>
+      <Link href="/auth" className="btn btn--primary btn--md">로그인하러 가기</Link>
+    </div>
+  );
+
+  const displayName  = profile?.display_name || '학습자';
+  const dueVocab     = data?.dueVocab;
+  const dueGrammar   = data?.dueGrammar;
+  const weekSessions = data?.weekSessions;
+  const episode      = data?.episode ?? null;
+  const streak       = profile?.streak_count ?? 0;
+  const streakFreeze = profile?.streak_freeze_count;
+
+  const practice = [
+    { href: '/study/library',  title: '서재',        desc: '지난 문단 다시 읽기' },
+    { href: '/review/grammar', title: '문법 복습',    desc: '오늘의 due 문법', badge: dueGrammar },
+    { href: '/writing',        title: '작문 기록실',  desc: '내 작문 돌아보기' },
+    { href: '/vocab',          title: '어휘 복습',    desc: '단어장 SRS 복습' },
+  ];
+
+  return (
+    <div className="page-container home-page home-layout" style={{ maxWidth: 720 }}>
+
+      {/* 인사 헤더 — 홈 그리팅 패턴 그대로 */}
+      <div className="home-greeting">
+        <h1 className="home-greeting__name">오늘의 학습, {displayName}님</h1>
+        <p className="home-greeting__sub">필요한 연습을 한곳에서 이어가 볼까요?</p>
+      </div>
+
+      {/* ① 오늘 학습 주 CTA — 홈 이어하기 카드 급 비중 */}
+      <div>
+        <Link href="/study" className="lessons-continue">
+          <span className="lessons-continue__body">
+            <span className="lessons-continue__kicker">오늘 학습</span>
+            <span className="lessons-continue__title">오늘 학습 시작</span>
+          </span>
+          <span className="lessons-continue__meta">→</span>
+        </Link>
+        {dueVocab != null && dueGrammar != null && (
+          <p className="home-greeting__sub" style={{ padding: '0 2px' }}>
+            due 어휘 {dueVocab}개 · 문법 {dueGrammar}개
+          </p>
+        )}
+      </div>
+
+      {/* ② 이어지는 이야기 — 연재가 진행 중일 때만 (홈 '오늘 읽기' 카드 스타일) */}
+      {episode != null && (
+        <Link
+          href="/study"
+          className="card"
+          style={{
+            display: 'block',
+            textDecoration: 'none',
+            padding: '20px 22px',
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border)',
+            borderLeft: '3px solid var(--primary)',
+          }}
+        >
+          <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', fontWeight: 700, letterSpacing: '0.02em', marginBottom: 6 }}>
+            이어지는 이야기
+          </div>
+          <h2 style={{ fontSize: '1.05rem', fontWeight: 700, margin: '0 0 8px', lineHeight: 1.45 }}>
+            {episode}화까지 읽었어요 — 다음 화가 기다려요
+          </h2>
+          <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>이어서 학습하기 →</div>
+        </Link>
+      )}
+
+      {/* ③ 연습실 그리드 — 홈 카드 스타일 2×2 */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+        {practice.map(t => (
+          <Link key={t.href} href={t.href} className="card" style={{ display: 'block', textDecoration: 'none', padding: '14px 16px' }}>
+            <div className="home-gs-step__title">
+              {t.title}
+              {t.badge > 0 && (
+                <span style={{ marginLeft: 6, fontSize: '0.72rem', fontWeight: 700, color: 'var(--primary)' }}>{t.badge}</span>
+              )}
+            </div>
+            <div className="home-gs-step__desc">{t.desc}</div>
+          </Link>
+        ))}
+      </div>
+
+      {/* ④ 이번 주 — bento 타일 (ProfileStats 패턴) */}
+      <div className="bento">
+        {weekSessions != null && (
+          <div className="bento-item bento--1x1 card bento-stat">
+            <span className="mypage-stat-cell__value">{weekSessions}</span>
+            <span className="mypage-stat-cell__label">이번 주 세션</span>
+          </div>
+        )}
+        <div className="bento-item bento--1x1 card bento-stat">
+          <span className="mypage-stat-cell__value">
+            {streak ? `${streak}일${streakFreeze > 0 ? ` · 🛡${streakFreeze}` : ''}` : '–'}
+          </span>
+          <span className="mypage-stat-cell__label">스트릭</span>
+        </div>
+      </div>
+
+    </div>
+  );
+}
