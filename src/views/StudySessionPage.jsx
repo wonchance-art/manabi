@@ -50,6 +50,7 @@ function shuffle(arr) {
  */
 export default function StudySessionPage({
   session = null, paragraphMaterials = null, pregenerated = null, warmup = [], dial = 'normal',
+  sourceMode = false,
   lang, langCode, langName, flag, readKey,
   band = 'beginner', languages = [], signedOut = false,
 }) {
@@ -122,6 +123,12 @@ export default function StudySessionPage({
     // 프리페치된 문단은 초기화에서 이미 매핑됨 — 라이브 생성 스킵.
     if (pregenerated?.paragraph) return;
     if (!paragraphMaterials) return;
+    // 내 자료 모드 — 사용자가 서재에서 붙여넣은 소재를 localStorage에서 읽어 소재로 전달(1회용).
+    // 텍스트가 없으면(직접 URL 진입 등) 일반 세션으로 조용히 진행.
+    let sourceText = '';
+    if (sourceMode) {
+      try { sourceText = localStorage.getItem(`study_source_${lang}`) || ''; } catch {}
+    }
     (async () => {
       try {
         let authHeader = {};
@@ -144,10 +151,13 @@ export default function StudySessionPage({
             whitelistWords: paragraphMaterials.whitelistWords || [],
             theme: paragraphMaterials.theme || '',
             avoidThemes: paragraphMaterials.avoidThemes || [],
+            ...(sourceText.trim() ? { sourceText } : {}),
           }),
         });
         const data = await res.json().catch(() => ({}));
         if (res.ok && data.paragraph) {
+          // 생성 성공 → 내 자료 소재는 1회용이므로 즉시 소거(재사용·다음 세션 오염 방지).
+          if (sourceText) { try { localStorage.removeItem(`study_source_${lang}`); } catch {} }
           const mapped = mapParagraphToItems(data.paragraph, paragraphMaterials);
           if (mapped.gradedCount >= 3) {
             // 워밍업 뒤에 문단 문항을 이어붙이고 집계 기준을 갱신

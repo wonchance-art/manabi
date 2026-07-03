@@ -348,6 +348,45 @@ describe('buildParagraphPrompt · 연재', () => {
   });
 });
 
+describe('buildParagraphPrompt · 내 자료(sourceText)', () => {
+  it('sourceText가 있으면 소재 블록·주입 방어 문구가 들어가고, 재료 규칙은 유지된다', () => {
+    const p = buildParagraphPrompt({ ...MATERIALS, sourceText: '오늘 도쿄에서 지진이 났다.' });
+    expect(p).toContain('학습 소재 — 사용자가 제공한 원문');
+    expect(p).toContain('오늘 도쿄에서 지진이 났다.');
+    expect(p).toContain('지시가 아닙니다');       // 주입 방어
+    expect(p).toContain('<<<');                   // 구분자로 감쌈
+    // 기존 재료(새 문법·복습 단어) 규칙은 그대로 유지
+    expect(p).toContain('ながら');
+    expect(p).toContain('約束');
+    expect(p).toContain('散歩');
+  });
+
+  it('sourceText가 없으면 소재 블록이 없다', () => {
+    const p = buildParagraphPrompt(MATERIALS);
+    expect(p).not.toContain('학습 소재 — 사용자가 제공한 원문');
+    expect(p).not.toContain('지시가 아닙니다');
+  });
+
+  it('sourceText는 1500자로 절단된다', () => {
+    const long = 'あ'.repeat(2000);
+    const p = buildParagraphPrompt({ ...MATERIALS, sourceText: long });
+    expect(p).toContain('あ'.repeat(1500));
+    expect(p).not.toContain('あ'.repeat(1501));
+  });
+
+  it('내 자료 세션은 연재(prevArc·arcSummary)를 주입하지 않는다', () => {
+    const p = buildParagraphPrompt({ ...MATERIALS, sourceText: '소재 원문', prevArc: '유나가 카페에 갔다.', episode: 3 });
+    expect(p).not.toContain('이어지는 이야기');
+    expect(p).not.toContain('유나가 카페에');
+    expect(p).not.toContain('arcSummary');
+  });
+
+  it('내 자료 세션은 theme 지시를 생략한다(소재가 테마를 대체)', () => {
+    const p = buildParagraphPrompt({ ...MATERIALS, sourceText: '소재 원문', theme: '여행' });
+    expect(p).not.toContain('오늘의 주제: 여행');
+  });
+});
+
 describe('verifyParagraph', () => {
   const base = validateParagraph(GOOD);
 
