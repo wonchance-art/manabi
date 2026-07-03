@@ -98,9 +98,9 @@ export default function LearnPage() {
 
   const practice = [
     { href: '/study/library',  title: '서재',          desc: '지난 문단 다시 읽기',            accent: 'var(--primary)',    icon: '📖' },
-    { href: '/review/grammar', title: '문법 복습',      desc: '오늘의 due 문법', badge: dueGrammar, accent: 'var(--accent)',   icon: '🧩' },
+    { href: '/review/grammar', title: '문법 복습',      desc: '돌아온 문법 다시 풀기', badge: dueGrammar, accent: 'var(--accent)', icon: '🧩' },
     { href: '/writing',        title: '작문 기록실',    desc: '내 작문 돌아보기',              accent: 'var(--warning)',    icon: '✍️' },
-    { href: '/vocab',          title: '어휘 복습',      desc: '단어장 SRS 복습',              accent: 'var(--danger)',     icon: '🗂️' },
+    { href: '/vocab',          title: '어휘 복습',      desc: '단어장 몰아서 복습', badge: dueVocab, accent: 'var(--danger)',  icon: '🗂️' },
     { href: '/study/library',  title: '내 자료로 학습', desc: '기사·문장을 붙여넣어 이야기로',  accent: 'var(--text-muted)', icon: '📥' },
     { href: '/guide',          title: '학습 가이드',    desc: '처음이라면 — 하루의 흐름 안내',  accent: 'var(--text-muted)', icon: '🧭' },
   ];
@@ -119,13 +119,13 @@ export default function LearnPage() {
         <Link href="/study" className="lessons-continue learn-cta">
           <span className="lessons-continue__body">
             <span className="lessons-continue__kicker">오늘 학습</span>
-            <span className="lessons-continue__title">오늘 학습 시작</span>
+            <span className="lessons-continue__title">이야기 한 편이 준비됐어요</span>
           </span>
           <span className="lessons-continue__meta">→</span>
         </Link>
         {dueVocab != null && dueGrammar != null && (
           <p className="home-greeting__sub" style={{ padding: '0 2px' }}>
-            due 어휘 {dueVocab}개 · 문법 {dueGrammar}개
+            오늘 복습할 단어 {dueVocab}개 · 문법 {dueGrammar}개
           </p>
         )}
       </div>
@@ -134,7 +134,11 @@ export default function LearnPage() {
       {episode != null && (
         <Link href="/study" className="learn-story">
           <div className="learn-story__kicker">이어지는 이야기</div>
-          <h2 className="learn-story__title">{episode}화까지 읽었어요 — 다음 화가 기다려요</h2>
+          <h2 className="learn-story__title">
+            {episode >= 10
+              ? '이야기가 완결됐어요 — 새 이야기가 시작돼요'
+              : `${episode}화까지 읽었어요 — 다음 화가 기다려요`}
+          </h2>
           <div className="learn-story__more">이어서 학습하기 →</div>
         </Link>
       )}
