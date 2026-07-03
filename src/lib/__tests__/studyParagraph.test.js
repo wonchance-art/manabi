@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { buildParagraphPrompt, validateParagraph, verifyParagraph, mapParagraphToItems, PARAGRAPH_SCHEMA, THEMES } from '../studyParagraph';
+import { buildParagraphPrompt, validateParagraph, verifyParagraph, mapParagraphToItems, stripInlineReadings, PARAGRAPH_SCHEMA, THEMES } from '../studyParagraph';
+import { alignFurigana } from '../../views/refShared';
 
 const MATERIALS = {
   language: 'Japanese',
@@ -362,5 +363,64 @@ describe('verifyParagraph', () => {
     const v = verifyParagraph(para);
     expect(v.questions.find(q => q.type === 'cloze')).toBeUndefined();
     expect(v.questions.length).toBe(3);
+  });
+});
+
+describe('stripInlineReadings', () => {
+  it('리포트된 실제 문장의 인라인 괄호 독음을 괄호째 제거한다', () => {
+    expect(stripInlineReadings('友達は「撃墜(げきつい)！」と話しました。')).toBe('友達は「撃墜！」と話しました。');
+    expect(stripInlineReadings('わたしは「供述(きょうじゅつ)」と書きました。')).toBe('わたしは「供述」と書きました。');
+  });
+
+  it('가나만 든 한자 뒤 괄호는 제거하되 일반 괄호(숫자·한자 등)는 보존한다', () => {
+    expect(stripInlineReadings('東京(とうきょう)に行く')).toBe('東京に行く');
+    expect(stripInlineReadings('試験(3月)があります')).toBe('試験(3月)があります');
+    expect(stripInlineReadings('会議(重要)の予定')).toBe('会議(重要)の予定');
+  });
+
+  it('전각 괄호 케이스도 제거한다', () => {
+    expect(stripInlineReadings('友達は「撃墜（げきつい）！」と話しました。')).toBe('友達は「撃墜！」と話しました。');
+  });
+
+  it('한자가 앞에 없으면(순가나 괄호 등) 건드리지 않고, 비문자열은 그대로 반환한다', () => {
+    expect(stripInlineReadings('あ(い)う')).toBe('あ(い)う');
+    expect(stripInlineReadings('')).toBe('');
+    expect(stripInlineReadings(null)).toBe(null);
+  });
+});
+
+describe('mapParagraphToItems · 인라인 독음 정화', () => {
+  const dirty = {
+    paragraph: '友達は「撃墜(げきつい)！」と話しました。',
+    translation: '친구는 "격추!"라고 말했습니다.',
+    sentences: [
+      { text: '友達は「撃墜(げきつい)！」と話しました。', pron: 'ともだちは「げきつい！」とはなしました。', ko: '친구는 "격추!"라고 말했습니다.', tokens: ['友達は', '「撃墜！」と', '話しました。'] },
+    ],
+    questions: [
+      { type: 'cloze', focus: 'new-grammar', key: '話しました', prompt: '友達は「撃墜(げきつい)！」と＿＿＿。', answer: '話しました', distractors: ['聞きました', '見ました', '書きました'], ko: '친구는 말했습니다.' },
+      GOOD.questions[2], GOOD.questions[3], GOOD.questions[4],
+    ],
+    preQuestion: null,
+  };
+
+  it('문항 텍스트 어디에도 괄호 독음이 남지 않는다', () => {
+    const { items } = mapParagraphToItems(dirty, {});
+    const read = items.find(i => i.type === 'paragraph');
+    expect(read.paragraph).toBe('友達は「撃墜！」と話しました。');
+    expect(read.sentences[0].text).toBe('友達は「撃墜！」と話しました。');
+    const cloze = items.find(i => i.type === 'grammar-cloze');
+    expect(cloze.quiz.sentence).not.toMatch(/[（(][ぁ-ゟ]+[)）]/);
+    expect(cloze.quiz.full).toBe('友達は「撃墜！」と話しました。');
+  });
+});
+
+describe('정규화 후 alignFurigana 정렬 성공', () => {
+  it('오염 문장은 정렬 실패하지만 stripInlineReadings 후에는 루비 정렬에 성공한다', () => {
+    const yomi = 'ともだちは「げきつい！」とはなしました。';
+    expect(alignFurigana('友達は「撃墜(げきつい)！」と話しました。', yomi)).toBeNull();
+    const clean = stripInlineReadings('友達は「撃墜(げきつい)！」と話しました。');
+    const segs = alignFurigana(clean, yomi);
+    expect(segs).not.toBeNull();
+    expect(segs.some(s => s.rt)).toBe(true);
   });
 });

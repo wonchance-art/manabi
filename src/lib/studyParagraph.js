@@ -111,6 +111,7 @@ export function buildParagraphPrompt(m) {
     `- ${name} 3~5문장, 하나의 일상적 상황·이야기로 자연스럽게 연결 (재료 나열식 금지).\n` +
     `- 재료 외 어휘·문법은 ${m.level} 이하만. 문장은 짧고 명확하게.\n` +
     (beginnerKanjiCare ? `- 입문 레벨 배려: 한자는 재료 단어에 이미 포함된 것만 쓰고, 그 밖의 단어는 히라가나로 표기하세요. 사용한 한자에는 반드시 정확한 요미가나(pron)가 대응돼야 합니다.\n` : '') +
+    (m.language === 'Japanese' ? `- 문단·문장 text에 「撃墜(げきつい)」처럼 괄호 독음을 절대 넣지 마세요. 읽기는 오직 pron 필드로만 제공합니다.\n` : '') +
     `- sentences: 문단을 문장 단위로 나눠 pron(일본어=전체 요미가나 히라가나, 중국어=병음, 영어·프랑스어=빈 문자열), ko(문장 뜻), tokens(어순 조립용 3~10어절 분할 — 일본어·중국어는 의미 단위로 띄어 나누기)를 채우세요. tokens를 공백으로 이으면 원문과 일치해야 합니다(구두점 포함).\n\n` +
     `[문항 규칙 — questions]\n` +
     `- cloze: 새 문법으로 2개(focus=new-grammar, key=새 문법 패턴), 복습 문법마다 1개(focus=due-grammar, key=그 패턴). prompt는 문단의 실제 문장에서 해당 문법 부분만 ＿＿＿로 비운 것, answer는 빈칸 원형, distractors는 같은 자리에 올 법한 오답 3개, ko는 그 문장 뜻. distractors는 정답과 같은 단어의 다른 표기(한자↔가나 표기 차이)나 정답의 읽기여서는 절대 안 됩니다 — 의미나 형태가 실제로 다른 오답만.\n` +
@@ -178,6 +179,39 @@ export function validateParagraph(raw) {
 }
 
 /**
+ * 인라인 괄호 독음 제거 — 한자 연쇄 바로 뒤에 붙은 괄호(반각·전각) 안이 가나(히라가나·가타카나·장음)뿐이면 괄호째 삭제.
+ * 예: `撃墜(げきつい)！` → `撃墜！`. 일반 괄호(한자·숫자·한글 등)는 그대로 둔다.
+ * AI가 문장 text에 요미가나를 인라인으로 섞어 넣으면 refShared.alignFurigana 정렬이 깨지므로 사용 시점에 정화한다.
+ */
+const INLINE_READING = /([一-鿿々〆ヶ]+)[（(]([ぁ-ゟァ-ヿ]+)[)）]/g;
+export function stripInlineReadings(text) {
+  if (typeof text !== 'string' || !text) return text;
+  return text.replace(INLINE_READING, '$1');
+}
+
+/** 문단의 화면 노출 일본어 텍스트 필드 전부에 stripInlineReadings 적용(순수 함수·멱등) */
+export function normalizeParagraphText(para) {
+  if (!para || typeof para !== 'object') return para;
+  const s = stripInlineReadings;
+  return {
+    ...para,
+    paragraph: s(para.paragraph),
+    sentences: Array.isArray(para.sentences)
+      ? para.sentences.map(x => ({ ...x, text: s(x.text), pron: s(x.pron) }))
+      : para.sentences,
+    questions: Array.isArray(para.questions)
+      ? para.questions.map(q => ({
+          ...q,
+          prompt: s(q.prompt),
+          answer: s(q.answer),
+          key: s(q.key),
+          distractors: Array.isArray(q.distractors) ? q.distractors.map(s) : q.distractors,
+        }))
+      : para.questions,
+  };
+}
+
+/**
  * 결정적 2차 검증 — validateParagraph 통과물을 받아 불량 문항을 제거한다.
  * 모델이 지어낸(문단에 실재하지 않는) cloze·vocab 문항을 걸러 채점 신뢰도를 지킨다.
  * comprehension은 주관 판단이라 통과. preQuestion 힌트 불일치는 제네릭으로 우아하게 강등.
@@ -185,6 +219,7 @@ export function validateParagraph(raw) {
  */
 export function verifyParagraph(para) {
   if (!para || typeof para !== 'object' || !Array.isArray(para.questions)) return null;
+  para = normalizeParagraphText(para); // 정규화 후 문자열끼리 비교(cloze 복원·vocab key 검사 정합) + 저장물도 정화
   const strip = s => String(s || '').replace(/\s+/g, '');
   // 가타카나 → 히라가나 정규화(같은 단어의 표기 차이를 잡아내기 위함)
   const kataToHira = s => String(s || '').replace(/[ァ-ヶ]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60));
@@ -247,6 +282,7 @@ export function verifyParagraph(para) {
  * @returns {{items: Array, gradedCount: number}}
  */
 export function mapParagraphToItems(para, materials) {
+  para = normalizeParagraphText(para); // 이미 저장된 오염 문단(프리페치·서재)도 사용 시점에 정화
   let seq = 0;
   const uid = p => `p${p}-${++seq}`;
 

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import RefSpeak from '../components/RefSpeak';
 import { JaText } from './refShared';
+import { stripInlineReadings } from '../lib/studyParagraph';
 
 /** 날짜 포맷 — YYYY.M.D (ko) */
 function fmtDate(at) {
@@ -30,10 +31,10 @@ function ParagraphCard({ entry, langCode, lang }) {
   const [open, setOpen] = useState(false);
   const [showKo, setShowKo] = useState(false);
   const sentences = entry.paragraph.sentences || [];
-  const firstText = sentences[0]?.text || '';
-  // 요미가나 없이 원문만 (JaText에 yomi 미전달 → 루비 없음)
+  const firstText = stripInlineReadings(sentences[0]?.text || '');
+  // 요미가나 없이 원문만 (JaText에 yomi 미전달 → 루비 없음). 저장된 오염 문단은 인라인 독음 정화 후 렌더.
   const renderMain = text =>
-    langCode === 'ja' ? <JaText ja={text} /> : <>{text}</>;
+    langCode === 'ja' ? <JaText ja={stripInlineReadings(text)} /> : <>{text}</>;
 
   return (
     <div className="card" style={{ padding: '14px 16px' }}>
