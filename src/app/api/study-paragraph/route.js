@@ -193,7 +193,9 @@ export async function POST(request) {
     const lang = body?.language;
     if (!lang) return Response.json({ ok: false }, { status: 200 });
     try {
-      const assembled = await assembleStudyMaterials(userClient, authUser.id, lang, { horizonHours: 36 });
+      // 관심사 쿠키(온보딩에서 고른 취향) — 프리페치 테마도 같은 가중을 받게. 없으면 기존 동작.
+      const interestGroup = request.cookies.get('study_interest')?.value || null;
+      const assembled = await assembleStudyMaterials(userClient, authUser.id, lang, { horizonHours: 36, interestGroup });
       if (!assembled.canGenerate) return Response.json({ ok: false }, { status: 200 });
       materials = assembled.paragraphMaterials;
     } catch (err) {

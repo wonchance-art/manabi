@@ -63,7 +63,7 @@ export default async function Page() {
   try {
     const [{ data: passedRows }, { data: queuedRows }] = await Promise.all([
       supabase.from('user_ref_progress')
-        .select('lang, slug, updated_at')
+        .select('lang, slug, updated_at, check_total')
         .eq('user_id', user.id).eq('passed', true)
         .order('updated_at', { ascending: true }),
       supabase.from('grammar_review')
@@ -72,8 +72,12 @@ export default async function Page() {
     ]);
     const existing = new Set((queuedRows || []).map(r => `${r.lang}:${r.slug}`));
     // 퀴즈를 만들 수 있는 챕터만 (카나 챕터 등 퀴즈 없는 통과 기록은 큐 대상 아님)
+    // check_total이 NULL인 행은 실제 퀴즈 통과가 아니라 온보딩 레벨 스킵 백필(read=true, passed=true,
+    // check_right/check_total=NULL) 표식이므로 제외한다. 실제 퀴즈 통과는 항상 syncCheckRemote가
+    // check_right/check_total을 함께 채운다 (src/lib/refProgress.js:37-39).
     const candidates = (passedRows || []).filter(p => {
       if (existing.has(`${p.lang}:${p.slug}`)) return false;
+      if (p.check_total == null) return false;        // 온보딩 스킵 백필 행 — 복습 큐 대상 아님
       const ref = getRefLang(p.lang);
       const ch = ref?.getChapter(p.slug)?.chapter;
       if (!ch) return false;
