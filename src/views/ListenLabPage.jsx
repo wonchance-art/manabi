@@ -1,9 +1,10 @@
 'use client';
 
-// 🎧 듣고 읽기 (실험) — LingQ식 「영상 + 사용자 자막」 정독 도구.
-// 자막 자동 추출은 하지 않는다(YouTube ToS·기술 리스크). 사용자가 .srt/.vtt를
-// 올리거나 텍스트를 붙여넣으면, 재생 위치에 싱크된 스크립트로 보여주고
-// 모르는 표현을 탭해 단어장(user_vocabulary)에 저장한다.
+// 🎧 듣고 읽기 (실험) — LingQ식 「영상 검색 → 자막 자동 로드 → 정독」 도구.
+// 영상 검색·자막은 서버 라우트(/api/media/*)가 youtubei.js(비공식)로 가져온다
+// — 비상업 개인용 전제의 오너 결정. 라이브러리 파손 시를 대비해 .srt/.vtt
+// 업로드·텍스트 붙여넣기(직접 입력)가 상시 폴백. 재생 위치에 싱크된
+// 스크립트에서 모르는 표현을 탭해 단어장(user_vocabulary)에 저장한다.
 //
 // 접근: 로그인 + profiles.role==='admin'만. admin 🧪 신기능 탭에서만 진입.
 // 영속화 없음(실험) — 저장된 단어만 영구.
@@ -26,13 +27,15 @@ import {
 
 // 언어 선택지 — REF_LANGS를 직접 import하면 교재 콘텐츠 전체가 클라 번들에 딸려 온다(1.8MB).
 // 키는 REF_LANGS와 반드시 일치(user_vocabulary.language·/api/analyze 규약).
+// code = YouTube 자막 언어 코드(/api/media/captions에 넘김)
 const LANG_OPTIONS = [
-  { key: 'Japanese', name: '일본어', flag: '🇯🇵' },
-  { key: 'English',  name: '영어',   flag: '🇬🇧' },
-  { key: 'French',   name: '프랑스어', flag: '🇫🇷' },
-  { key: 'Chinese',  name: '중국어', flag: '🇨🇳' },
+  { key: 'Japanese', name: '일본어', flag: '🇯🇵', code: 'ja' },
+  { key: 'English',  name: '영어',   flag: '🇬🇧', code: 'en' },
+  { key: 'French',   name: '프랑스어', flag: '🇫🇷', code: 'fr' },
+  { key: 'Chinese',  name: '중국어', flag: '🇨🇳', code: 'zh' },
 ];
 const LANG_KEYS = new Set(LANG_OPTIONS.map(l => l.key));
+const LANG_CODE = Object.fromEntries(LANG_OPTIONS.map(l => [l.key, l.code]));
 
 const POLL_MS = 250;
 const MANUAL_SCROLL_SUPPRESS_MS = 3000;
@@ -61,6 +64,17 @@ export default function ListenLabPage() {
   const [inputError, setInputError] = useState('');
   const [started, setStarted] = useState(false);
   const [playerError, setPlayerError] = useState(false);
+
+  // ── 영상 찾기 탭 상태 ──
+  const [inputTab, setInputTab] = useState('search');   // 'search' | 'manual'
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState('');
+  const [loadingVideoId, setLoadingVideoId] = useState(null);   // 자막 로드 중인 카드
+  const [captionError, setCaptionError] = useState('');
+  const [availableTracks, setAvailableTracks] = useState(null); // 요청 언어 없을 때 가용 목록
+  const [pendingVideoId, setPendingVideoId] = useState(null);   // 언어 칩 선택 대기 중인 영상
 
   // 기본 언어 = 프로필 학습 언어 (배열/문자열 모두 대응), 없으면 일본어
   useEffect(() => {
@@ -116,6 +130,80 @@ export default function ListenLabPage() {
     setCues(parsed);
     setTimed(false);
     setInputError('');
+  };
+
+  // ── 인증 헤더 (로그인 세션 Bearer) ──
+  const authHeaders = useCallback(async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const h = { 'Content-Type': 'application/json' };
+    if (session?.access_token) h.Authorization = `Bearer ${session.access_token}`;
+    return h;
+  }, []);
+
+  // ── 영상 검색 ──
+  const runSearch = async () => {
+    const q = searchQuery.trim();
+    if (!q) return;
+    setSearching(true);
+    setSearchError('');
+    setSearchResults([]);
+    setCaptionError('');
+    setAvailableTracks(null);
+    setPendingVideoId(null);
+    try {
+      const res = await fetch('/api/media/search', {
+        method: 'POST',
+        headers: await authHeaders(),
+        body: JSON.stringify({ query: q }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+      const results = Array.isArray(data?.results) ? data.results : [];
+      if (results.length === 0) setSearchError('검색 결과가 없어요. 직접 입력으로도 시작할 수 있어요.');
+      setSearchResults(results);
+    } catch (e) {
+      setSearchError(e?.message || '검색에 실패했어요. 직접 입력을 이용해주세요.');
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  // ── 영상 선택 → 자막 자동 로드 → 성공 시 바로 학습 시작 ──
+  const loadVideo = async (vid, langCode) => {
+    setLoadingVideoId(vid);
+    setCaptionError('');
+    setAvailableTracks(null);
+    try {
+      const res = await fetch('/api/media/captions', {
+        method: 'POST',
+        headers: await authHeaders(),
+        body: JSON.stringify({ videoId: vid, lang: langCode }),
+      });
+      const data = await res.json();
+      if (res.status === 409 && Array.isArray(data?.available) && data.available.length > 0) {
+        // 요청 언어 자막이 없음 — 가용 트랙에서 고르게
+        setAvailableTracks(data.available);
+        setPendingVideoId(vid);
+        setCaptionError('이 언어 자막이 없어요. 아래에서 언어를 골라주세요.');
+        return;
+      }
+      if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+      const cuesRaw = Array.isArray(data?.cues) ? data.cues : [];
+      if (cuesRaw.length === 0) throw new Error('자막이 비어 있어요.');
+      // 서버 큐 {from,to,text} → 앱 큐 {start,end,text,timed}
+      const nextCues = cuesRaw.map((c) => ({ start: c.from, end: c.to, text: c.text, timed: true }));
+      setCues(nextCues);
+      setTimed(true);
+      setVideoId(vid);
+      setInputError('');
+      setPlayerError(false);
+      setStarted(true);
+    } catch {
+      setCaptionError('자막을 가져오지 못했어요 — 직접 붙여넣기로 학습할 수 있어요.');
+      setPendingVideoId(vid);
+    } finally {
+      setLoadingVideoId(null);
+    }
   };
 
   // ── 시작: URL 파싱 + 큐 확인 ──
@@ -300,69 +388,178 @@ export default function ListenLabPage() {
 
       {!started ? (
         // ── 입력 단계 ──
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 18, maxWidth: 640 }}>
-          <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: '18px 20px' }}>
-            <div className="form-field">
-              <label className="form-label">YouTube 주소</label>
-              <input
-                className="form-input"
-                placeholder="https://www.youtube.com/watch?v=…  ·  youtu.be/…  ·  /shorts/…"
-                value={urlInput}
-                onChange={(e) => setUrlInput(e.target.value)}
-              />
-            </div>
-
-            <div className="form-field">
-              <label className="form-label">언어</label>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {LANG_OPTIONS.map(l => (
-                  <button
-                    key={l.key}
-                    type="button"
-                    onClick={() => setLanguage(l.key)}
-                    className={`tab-pills__item ${language === l.key ? 'tab-pills__item--primary' : ''}`}
-                  >
-                    {l.flag} {l.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="form-field">
-              <label className="form-label">자막 — .srt / .vtt 파일</label>
-              <input type="file" accept=".srt,.vtt,text/vtt,application/x-subrip" onChange={handleFile} />
-            </div>
-
-            <div className="form-field">
-              <label className="form-label">또는 텍스트 붙여넣기 (타임스탬프 없이 줄 단위로만 표시)</label>
-              <textarea
-                className="form-input"
-                rows={5}
-                placeholder="자막 텍스트를 줄바꿈으로 붙여넣어 주세요"
-                value={pasteText}
-                onChange={(e) => setPasteText(e.target.value)}
-                style={{ resize: 'vertical', fontFamily: 'inherit' }}
-              />
-              <div style={{ marginTop: 8 }}>
-                <Button size="sm" variant="secondary" onClick={applyPaste} disabled={!pasteText.trim()}>
-                  텍스트 적용
-                </Button>
-              </div>
-            </div>
-
-            {cues.length > 0 && (
-              <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-                ✅ 자막 {cues.length}줄 준비됨 {timed ? '· 타임스탬프 싱크' : '· 싱크 없음(줄만 표시)'}
-              </p>
-            )}
-            {inputError && (
-              <p style={{ fontSize: '0.82rem', color: 'var(--danger, #dc2626)' }}>{inputError}</p>
-            )}
-
-            <div>
-              <Button onClick={start}>시작</Button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 640 }}>
+          {/* 공통: 언어 선택 (검색·직접 입력 모두 사용) */}
+          <div className="form-field">
+            <label className="form-label">언어</label>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {LANG_OPTIONS.map(l => (
+                <button
+                  key={l.key}
+                  type="button"
+                  onClick={() => setLanguage(l.key)}
+                  className={`tab-pills__item ${language === l.key ? 'tab-pills__item--primary' : ''}`}
+                >
+                  {l.flag} {l.name}
+                </button>
+              ))}
             </div>
           </div>
+
+          {/* 탭 전환 */}
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              type="button"
+              onClick={() => setInputTab('search')}
+              className={`tab-pills__item ${inputTab === 'search' ? 'tab-pills__item--primary' : ''}`}
+            >
+              🔎 영상 찾기
+            </button>
+            <button
+              type="button"
+              onClick={() => setInputTab('manual')}
+              className={`tab-pills__item ${inputTab === 'manual' ? 'tab-pills__item--primary' : ''}`}
+            >
+              ✍️ 직접 입력
+            </button>
+          </div>
+
+          {inputTab === 'search' ? (
+            // ── 영상 찾기 ──
+            <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: '18px 20px' }}>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input
+                  className="form-input"
+                  placeholder="검색어 · 영상 링크 · 채널 링크"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') runSearch(); }}
+                  style={{ flex: 1 }}
+                />
+                <Button onClick={runSearch} disabled={searching || !searchQuery.trim()}>
+                  {searching ? '검색 중…' : '검색'}
+                </Button>
+              </div>
+
+              {searchError && (
+                <p style={{ fontSize: '0.82rem', color: 'var(--danger, #dc2626)' }}>{searchError}</p>
+              )}
+
+              {captionError && (
+                <div style={{ fontSize: '0.82rem', color: 'var(--danger, #dc2626)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <span>{captionError}</span>
+                  {availableTracks && availableTracks.length > 0 && (
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                      {availableTracks.map((t) => (
+                        <button
+                          key={`${t.code}:${t.kind}`}
+                          type="button"
+                          onClick={() => pendingVideoId && loadVideo(pendingVideoId, t.code)}
+                          className="tab-pills__item"
+                        >
+                          {t.name || t.code}{t.kind === 'asr' ? ' (자동)' : ''}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  <div>
+                    <Button size="sm" variant="secondary" onClick={() => setInputTab('manual')}>
+                      직접 붙여넣기로 전환
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {searchResults.length > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: '52vh', overflowY: 'auto' }}>
+                  {searchResults.map((v) => {
+                    const busy = loadingVideoId === v.videoId;
+                    return (
+                      <button
+                        key={v.videoId}
+                        type="button"
+                        disabled={!!loadingVideoId}
+                        onClick={() => loadVideo(v.videoId, LANG_CODE[language])}
+                        className="card"
+                        style={{
+                          display: 'flex', gap: 10, alignItems: 'center', textAlign: 'left',
+                          padding: 8, cursor: loadingVideoId ? 'default' : 'pointer',
+                          opacity: loadingVideoId && !busy ? 0.5 : 1,
+                        }}
+                      >
+                        {v.thumbnailUrl && (
+                          <img
+                            src={v.thumbnailUrl}
+                            alt=""
+                            style={{ width: 120, height: 68, objectFit: 'cover', borderRadius: 6, flexShrink: 0, background: '#000' }}
+                          />
+                        )}
+                        <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                          <span style={{ fontSize: '0.9rem', color: 'var(--text-primary)', fontWeight: 500, lineHeight: 1.35 }}>
+                            {v.title || v.videoId}
+                          </span>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                            {v.channel}
+                            {v.durationSec != null ? ` · ${formatCueTime(v.durationSec)}` : ''}
+                            {v.hasCaptions ? ' · 자막' : ''}
+                          </span>
+                        </span>
+                        {busy && <Spinner />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ) : (
+            // ── 직접 입력 (폴백) ──
+            <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: '18px 20px' }}>
+              <div className="form-field">
+                <label className="form-label">YouTube 주소</label>
+                <input
+                  className="form-input"
+                  placeholder="https://www.youtube.com/watch?v=…  ·  youtu.be/…  ·  /shorts/…"
+                  value={urlInput}
+                  onChange={(e) => setUrlInput(e.target.value)}
+                />
+              </div>
+
+              <div className="form-field">
+                <label className="form-label">자막 — .srt / .vtt 파일</label>
+                <input type="file" accept=".srt,.vtt,text/vtt,application/x-subrip" onChange={handleFile} />
+              </div>
+
+              <div className="form-field">
+                <label className="form-label">또는 텍스트 붙여넣기 (타임스탬프 없이 줄 단위로만 표시)</label>
+                <textarea
+                  className="form-input"
+                  rows={5}
+                  placeholder="자막 텍스트를 줄바꿈으로 붙여넣어 주세요"
+                  value={pasteText}
+                  onChange={(e) => setPasteText(e.target.value)}
+                  style={{ resize: 'vertical', fontFamily: 'inherit' }}
+                />
+                <div style={{ marginTop: 8 }}>
+                  <Button size="sm" variant="secondary" onClick={applyPaste} disabled={!pasteText.trim()}>
+                    텍스트 적용
+                  </Button>
+                </div>
+              </div>
+
+              {cues.length > 0 && (
+                <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                  ✅ 자막 {cues.length}줄 준비됨 {timed ? '· 타임스탬프 싱크' : '· 싱크 없음(줄만 표시)'}
+                </p>
+              )}
+              {inputError && (
+                <p style={{ fontSize: '0.82rem', color: 'var(--danger, #dc2626)' }}>{inputError}</p>
+              )}
+
+              <div>
+                <Button onClick={start}>시작</Button>
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         // ── 플레이어 + 스크립트 ──
