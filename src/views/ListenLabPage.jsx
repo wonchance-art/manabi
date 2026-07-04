@@ -37,6 +37,13 @@ const LANG_OPTIONS = [
 const LANG_KEYS = new Set(LANG_OPTIONS.map(l => l.key));
 const LANG_CODE = Object.fromEntries(LANG_OPTIONS.map(l => [l.key, l.code]));
 
+// 자막 트랙 코드(ja-JP·en-US·es 등) → REF_LANGS 키. 지역 접미사를 떼고 기본 언어로 역변환.
+// 매핑되면 그 키(단어장 지원), 안 되면 null(단어장 미지원 언어).
+function langKeyFromCode(code) {
+  const base = String(code || '').split('-')[0].toLowerCase();
+  return LANG_OPTIONS.find(l => l.code === base)?.key || null;
+}
+
 const POLL_MS = 250;
 const MANUAL_SCROLL_SUPPRESS_MS = 3000;
 
@@ -96,6 +103,10 @@ export default function ListenLabPage() {
   const [captionError, setCaptionError] = useState('');
   const [availableTracks, setAvailableTracks] = useState(null); // 요청 언어 없을 때 가용 목록
   const [pendingVideoId, setPendingVideoId] = useState(null);   // 언어 칩 선택 대기 중인 영상
+
+  // 실제 로드된 자막 언어의 REF_LANGS 키 — 분석·저장의 정본(칩으로 다른 언어를
+  // 골라 진입해도 오염되지 않게). LANG_OPTIONS에 없는 언어(es 등)면 null → 단어장 미지원.
+  const [loadedLangKey, setLoadedLangKey] = useState(null);
 
   // 기본 언어 = 프로필 학습 언어 (배열/문자열 모두 대응), 없으면 일본어
   useEffect(() => {
@@ -214,6 +225,15 @@ export default function ListenLabPage() {
       if (cuesRaw.length === 0) throw new Error('자막이 비어 있어요.');
       // 서버 큐 {from,to,text} → 앱 큐 {start,end,text,timed}
       const nextCues = cuesRaw.map((c) => ({ start: c.from, end: c.to, text: c.text, timed: true }));
+      // 로드된 자막 언어를 학습 문맥의 정본으로 확정 (칩으로 다른 언어를 골랐어도).
+      const resolvedKey = langKeyFromCode(langCode);
+      if (resolvedKey && resolvedKey !== language) {
+        // 지원되는 다른 언어로 전환됨 — 안내 1회 + 셀렉터 동기화(재검색 시 그 언어 기준).
+        const nm = LANG_OPTIONS.find((l) => l.key === resolvedKey)?.name || '';
+        toast(`${nm} 자막으로 학습해요 — 단어는 ${nm} 단어장에 저장돼요.`, 'info');
+        setLanguage(resolvedKey);
+      }
+      setLoadedLangKey(resolvedKey);
       setCues(nextCues);
       setTimed(true);
       setVideoId(vid);
@@ -240,6 +260,8 @@ export default function ListenLabPage() {
       return;
     }
     setVideoId(id);
+    // 직접 입력은 사용자가 고른 학습 언어 그대로가 자막 언어 — 그 키를 정본으로.
+    setLoadedLangKey(LANG_KEYS.has(language) ? language : null);
     setInputError('');
     setPlayerError(null);
     setStarted(true);
@@ -253,6 +275,7 @@ export default function ListenLabPage() {
     setCurrentTime(0);
     setOpenCue(-1);
     setPlayerError(null);
+    setLoadedLangKey(null);
   };
 
   // ── 폴링 (재생 중 250ms) — getCurrentTime는 Promise ──
@@ -339,7 +362,7 @@ export default function ListenLabPage() {
       const res = await fetch('/api/analyze', {
         method: 'POST',
         headers,
-        body: JSON.stringify({ lines: [cues[idx].text], language }),
+        body: JSON.stringify({ lines: [cues[idx].text], language: loadedLangKey }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
@@ -353,7 +376,7 @@ export default function ListenLabPage() {
     } catch {
       setAnalyzed((m) => ({ ...m, [idx]: { status: 'error', tokens: [] } }));
     }
-  }, [analyzed, cues, language]);
+  }, [analyzed, cues, loadedLangKey]);
 
   const retryCue = (idx) => {
     setAnalyzed((m) => { const n = { ...m }; delete n[idx]; return n; }); // 캐시 비우고
@@ -374,7 +397,7 @@ export default function ListenLabPage() {
         meaning: token.meaning || '',
         pos: token.pos || '',
         next_review_at: new Date().toISOString(),
-        language,
+        language: loadedLangKey,
         source_sentence: cues[idx]?.text || null,
         source_material_id: null,
       };
@@ -633,6 +656,12 @@ export default function ListenLabPage() {
             <Button size="sm" variant="secondary" onClick={reset}>새로 시작</Button>
           </div>
 
+          {loadedLangKey == null && (
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              이 자막 언어는 단어장 미지원 — 시청·스크립트만
+            </span>
+          )}
+
           {playerError != null ? (
             <div className="card" style={{ padding: 20, textAlign: 'center', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
               <span>{describePlayerError(playerError).text}</span>
@@ -707,19 +736,22 @@ export default function ListenLabPage() {
                       {cue.text}
                     </button>
 
-                    {/* 단어 보기 — seek와 분리된 소형 버튼 (탭 충돌 방지) */}
-                    <button
-                      type="button"
-                      onClick={() => analyzeCue(idx)}
-                      style={{
-                        flexShrink: 0, fontSize: '0.72rem', padding: '4px 8px', borderRadius: 6,
-                        border: '1px solid var(--border, rgba(128,128,128,0.3))',
-                        background: isOpen ? 'var(--accent, #6366f1)' : 'transparent',
-                        color: isOpen ? '#fff' : 'var(--text-secondary)', cursor: 'pointer', whiteSpace: 'nowrap',
-                      }}
-                    >
-                      📖 단어
-                    </button>
+                    {/* 단어 보기 — seek와 분리된 소형 버튼 (탭 충돌 방지).
+                        단어장 미지원 언어(loadedLangKey===null)면 저장 오염 방지로 아예 숨김. */}
+                    {loadedLangKey != null && (
+                      <button
+                        type="button"
+                        onClick={() => analyzeCue(idx)}
+                        style={{
+                          flexShrink: 0, fontSize: '0.72rem', padding: '4px 8px', borderRadius: 6,
+                          border: '1px solid var(--border, rgba(128,128,128,0.3))',
+                          background: isOpen ? 'var(--accent, #6366f1)' : 'transparent',
+                          color: isOpen ? '#fff' : 'var(--text-secondary)', cursor: 'pointer', whiteSpace: 'nowrap',
+                        }}
+                      >
+                        📖 단어
+                      </button>
+                    )}
                   </div>
 
                   {/* 토큰 패널 */}
