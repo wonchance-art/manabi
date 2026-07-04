@@ -8,6 +8,8 @@ import {
   segmentWords,
   matchTokenAt,
   hashText,
+  groupTokensToUnits,
+  layoutUnits,
 } from '../listenSubtitles';
 
 describe('parseYouTubeId', () => {
@@ -244,5 +246,117 @@ describe('hashText', () => {
   });
   it('다른 입력은 다른 해시(대개)', () => {
     expect(hashText('a')).not.toBe(hashText('b'));
+  });
+});
+
+describe('groupTokensToUnits — 일본어 어절 묶기', () => {
+  it('思います → 1단위(思い[동사]+ます[조동사]), base 思う', () => {
+    const tokens = [
+      { text: '思い', base_form: '思う', pos: '동사', furigana: 'おもい' },
+      { text: 'ます', base_form: 'ます', pos: '조동사', furigana: null },
+    ];
+    const units = groupTokensToUnits(tokens);
+    expect(units).toHaveLength(1);
+    expect(units[0].surface).toBe('思います');
+    expect(units[0].base).toBe('思う');
+    expect(units[0].furigana).toBe('おもいます');
+    expect(units[0].tokens).toHaveLength(2);
+  });
+
+  it('届いたら → 1단위(届い[동사]+たら[조동사]), base 届く', () => {
+    const tokens = [
+      { text: '届い', base_form: '届く', pos: '동사', furigana: 'とどい' },
+      { text: 'たら', base_form: 'た', pos: '조동사', furigana: null },
+    ];
+    const units = groupTokensToUnits(tokens);
+    expect(units).toHaveLength(1);
+    expect(units[0].surface).toBe('届いたら');
+    expect(units[0].base).toBe('届く');
+  });
+
+  it('食べています → 1단위(食べ+て[접속조사]+い[補助動詞]+ます[조동사])', () => {
+    const tokens = [
+      { text: '食べ', base_form: '食べる', pos: '동사', furigana: 'たべ' },
+      { text: 'て', base_form: 'て', pos: '조사', furigana: null },
+      { text: 'い', base_form: 'いる', pos: '동사', furigana: null },
+      { text: 'ます', base_form: 'ます', pos: '조동사', furigana: null },
+    ];
+    const units = groupTokensToUnits(tokens);
+    expect(units).toHaveLength(1);
+    expect(units[0].surface).toBe('食べています');
+    expect(units[0].base).toBe('食べる');
+  });
+
+  it('猫が好きです → 3단위(猫 / が / 好きです)', () => {
+    const tokens = [
+      { text: '猫', base_form: '猫', pos: '명사', furigana: 'ねこ' },
+      { text: 'が', base_form: 'が', pos: '조사', furigana: null },
+      { text: '好き', base_form: '好き', pos: '명사', furigana: 'すき' },
+      { text: 'です', base_form: 'です', pos: '조동사', furigana: null },
+    ];
+    const units = groupTokensToUnits(tokens);
+    expect(units.map((u) => u.surface)).toEqual(['猫', 'が', '好きです']);
+    expect(units[1].surface).toBe('が');       // 조사는 단독
+    expect(units[2].base).toBe('好き');         // です는 好き에 붙되 base는 好き
+  });
+
+  it('격조사(を·に)는 用言 뒤여도 단독 단위', () => {
+    const tokens = [
+      { text: '本', base_form: '本', pos: '명사', furigana: null },
+      { text: 'を', base_form: 'を', pos: '조사', furigana: null },
+      { text: '読み', base_form: '読む', pos: '동사', furigana: 'よみ' },
+      { text: 'ます', base_form: 'ます', pos: '조동사', furigana: null },
+    ];
+    const units = groupTokensToUnits(tokens);
+    expect(units.map((u) => u.surface)).toEqual(['本', 'を', '読みます']);
+  });
+
+  it('빈 입력·비배열 방어', () => {
+    expect(groupTokensToUnits([])).toEqual([]);
+    expect(groupTokensToUnits(null)).toEqual([]);
+  });
+});
+
+describe('groupTokensToUnits — 영어(identity + 구두점 분리)', () => {
+  it('영어 문장은 단어별 단위, 구두점은 단독', () => {
+    const tokens = [
+      { text: 'I', base_form: 'i', pos: null, furigana: '' },
+      { text: 'love', base_form: 'love', pos: null, furigana: '' },
+      { text: 'cats', base_form: 'cat', pos: null, furigana: '' },
+      { text: '.', base_form: '.', pos: '기호', furigana: '' },
+    ];
+    const units = groupTokensToUnits(tokens);
+    expect(units.map((u) => u.surface)).toEqual(['I', 'love', 'cats', '.']);
+    expect(units[2].base).toBe('cat');   // 저장은 base(lemma) 우선
+    expect(units[0].furigana).toBeNull();
+  });
+});
+
+describe('layoutUnits — 원문 공백 복원', () => {
+  it('영어: 단위 사이 공백을 gap으로 복원', () => {
+    const units = groupTokensToUnits([
+      { text: 'I', base_form: 'i', pos: null, furigana: '' },
+      { text: 'love', base_form: 'love', pos: null, furigana: '' },
+      { text: 'cats', base_form: 'cat', pos: null, furigana: '' },
+    ]);
+    const pieces = layoutUnits(units, 'I love cats');
+    // 재조립하면 원문과 동일
+    expect(pieces.map((p) => p.text).join('')).toBe('I love cats');
+    expect(pieces.filter((p) => p.type === 'unit').map((p) => p.text)).toEqual(['I', 'love', 'cats']);
+    expect(pieces.some((p) => p.type === 'gap' && p.text === ' ')).toBe(true);
+  });
+
+  it('일본어: gap 없이 단위만', () => {
+    const units = groupTokensToUnits([
+      { text: '猫', base_form: '猫', pos: '명사', furigana: null },
+      { text: 'が', base_form: 'が', pos: '조사', furigana: null },
+    ]);
+    const pieces = layoutUnits(units, '猫が');
+    expect(pieces.map((p) => p.text).join('')).toBe('猫が');
+    expect(pieces.every((p) => p.type === 'unit')).toBe(true);
+  });
+
+  it('빈 단위 방어', () => {
+    expect(layoutUnits([], 'abc')).toEqual([]);
   });
 });

@@ -25,6 +25,8 @@ import {
   formatCueTime,
   segmentWords,
   matchTokenAt,
+  groupTokensToUnits,
+  layoutUnits,
 } from '../lib/listenSubtitles';
 
 // 언어 선택지 — REF_LANGS를 직접 import하면 교재 콘텐츠 전체가 클라 번들에 딸려 온다(1.8MB).
@@ -130,9 +132,12 @@ export default function ListenLabPage() {
   // ── 분석·저장 상태 ──
   // analyzed[idx] = { status: 'loading'|'done'|'error', tokens: [{tokenId, text, furigana, meaning, base_form, pos}] }
   const [analyzed, setAnalyzed] = useState({});
-  const [saved, setSaved] = useState({});         // `${idx}:${tokenId}` → true
-  // 인라인 형태소 탭 — 지금 열린 세그먼트 { idx, start, text } (기존 activeWord 패턴)
+  const [saved, setSaved] = useState({});         // `${idx}:${base}` → true (저장은 base 우선)
+  // 인라인 탭 — 지금 열린 대상. 어절 단위 탭이면 { idx, unitIndex }, 미분석 세그먼트 탭이면
+  // { idx, segStart, segText }(분석 완료 후 그 토큰이 속한 단위로 승격해 팝오버).
   const [activeTok, setActiveTok] = useState(null);
+  // 문맥 해석(지연 로드) — `${idx}:${unitIndex}:${surface}` → { status, text }
+  const [ctxMap, setCtxMap] = useState({});
 
   // ── 문장 번역(기능 1) ──
   const [koMap, setKoMap] = useState({});         // idx → 한국어 번역(부분 도착 즉시 렌더)
@@ -300,6 +305,7 @@ export default function ListenLabPage() {
     setCurrentTime(0);
     setActiveTok(null);
     setAnalyzed({});
+    setCtxMap({});
     setKoMap({});
     setPlayerError(null);
     setLoadedLangKey(null);
@@ -404,11 +410,27 @@ export default function ListenLabPage() {
     }
   }, [analyzed, cues, loadedLangKey]);
 
-  // ── 세그먼트 탭 → 팝오버 열기 + 필요 시 분석 (word-span만; seek와 stopPropagation로 분리) ──
+  // ── 재생 중 자동 분석: 현재+다음 큐를 백그라운드 analyze(큐당 1회 캐시·동시 1개) ──
+  // 사용자가 보는 문장이 대체로 어절 단위가 되도록 미리 분석한다. 실패는 무해(탭 시 재시도).
+  useEffect(() => {
+    if (!started || activeIdx < 0 || !loadedLangKey) return;
+    let cancelled = false;
+    (async () => {
+      // 순차 await = 이 쌍 안에서 동시 1개. ensureAnalyzed가 이미 캐시된 큐는 스킵한다.
+      for (const i of [activeIdx, activeIdx + 1]) {
+        if (cancelled) return;
+        if (i < 0 || i >= cues.length || analyzed[i]) continue;
+        await ensureAnalyzed(i);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [activeIdx, started, loadedLangKey, cues.length, analyzed, ensureAnalyzed]);
+
+  // ── 세그먼트 탭(미분석 큐) → 팝오버 열기 + 분석 (word-span만; seek와 stopPropagation로 분리) ──
   const tapSegment = (idx, seg) => {
     // 같은 세그먼트 재탭이면 닫기(토글)
     setActiveTok((cur) =>
-      cur && cur.idx === idx && cur.start === seg.start ? null : { idx, start: seg.start, text: seg.text }
+      cur && cur.idx === idx && cur.segStart === seg.start ? null : { idx, segStart: seg.start, segText: seg.text }
     );
     // 분석 실패했던 큐면 캐시 비우고 재시도, 아니면 최초 1회 분석
     if (analyzed[idx]?.status === 'error') {
@@ -417,6 +439,13 @@ export default function ListenLabPage() {
     } else {
       ensureAnalyzed(idx);
     }
+  };
+
+  // ── 어절 단위 탭(분석 완료 큐) → 그 단위 팝오버 열기(토글) ──
+  const tapUnit = (idx, unitIndex) => {
+    setActiveTok((cur) =>
+      cur && cur.idx === idx && cur.unitIndex === unitIndex ? null : { idx, unitIndex }
+    );
   };
 
   // 바깥 탭 시 팝오버 닫기 (세그먼트·팝오버는 stopPropagation으로 유지 — 기존 activeWord 패턴)
@@ -434,6 +463,68 @@ export default function ListenLabPage() {
     if (!segLocale) return null;
     return cues.map((c) => segmentWords(c.text, segLocale));
   }, [cues, segLocale]);
+
+  // ── 분석 완료 큐를 어절 단위로 묶는다(형태소 → 학습 단위). idx → units 배열 ──
+  const unitsByCue = useMemo(() => {
+    const out = {};
+    for (const [k, a] of Object.entries(analyzed)) {
+      if (a?.status === 'done') out[k] = groupTokensToUnits(a.tokens);
+    }
+    return out;
+  }, [analyzed]);
+
+  // 현재 열린 팝오버가 가리키는 어절 단위를 해석한다(어절 탭이면 바로, 세그먼트 탭이면
+  // 분석 완료 후 그 토큰이 속한 단위로 승격). 못 찾으면 null.
+  const resolveActiveUnit = useCallback((at) => {
+    if (!at) return null;
+    const units = unitsByCue[at.idx];
+    if (!units) return null;
+    if (typeof at.unitIndex === 'number') {
+      const u = units[at.unitIndex];
+      return u ? { unit: u, unitIndex: at.unitIndex } : null;
+    }
+    const a = analyzed[at.idx];
+    if (a?.status !== 'done') return null;
+    const tk = matchTokenAt(a.tokens, cues[at.idx]?.text || '', at.segStart, at.segText);
+    if (!tk) return null;
+    const ui = units.findIndex((u) => u.tokens.includes(tk));
+    return ui >= 0 ? { unit: units[ui], unitIndex: ui } : null;
+  }, [unitsByCue, analyzed, cues]);
+
+  // ── 문맥 해석(지연) — 팝오버가 단위로 확정되면 1회 호출, ctxMap 캐시 ──
+  const fetchWordContext = useCallback(async (idx, unit, unitIndex) => {
+    const key = `${idx}:${unitIndex}:${unit.surface}`;
+    setCtxMap((m) => ({ ...m, [key]: { status: 'loading', text: '' } }));
+    try {
+      const res = await fetch('/api/media/word-context', {
+        method: 'POST',
+        headers: await authHeaders(),
+        body: JSON.stringify({
+          sentence: cues[idx]?.text || '',
+          surface: unit.surface,
+          base: unit.base || unit.surface,
+          language: loadedLangKey,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data?.context) throw new Error('no context');
+      setCtxMap((m) => ({ ...m, [key]: { status: 'done', text: data.context } }));
+    } catch {
+      // 실패 시 3행만 조용히 생략 — error 상태로 두어 재호출은 막는다.
+      setCtxMap((m) => ({ ...m, [key]: { status: 'error', text: '' } }));
+    }
+  }, [cues, loadedLangKey, authHeaders]);
+
+  // 팝오버가 열려 단위로 확정될 때 문맥 해석을 딱 1회 로드(탭 시에만 — 호버는 비용 0).
+  useEffect(() => {
+    if (!activeTok) return;
+    const resolved = resolveActiveUnit(activeTok);
+    if (!resolved) return;
+    const { unit, unitIndex } = resolved;
+    const key = `${activeTok.idx}:${unitIndex}:${unit.surface}`;
+    if (ctxMap[key] !== undefined) return; // 이미 로딩/완료/실패
+    fetchWordContext(activeTok.idx, unit, unitIndex);
+  }, [activeTok, resolveActiveUnit, ctxMap, fetchWordContext]);
 
   // ── 문장 번역(기능 1): 시작 직후 백그라운드로 40개씩 배치 순차 호출 → koMap 채움 ──
   // 스크립트 표시는 번역을 기다리지 않음. 실패 배치는 조용히 생략(빈 문자열).
@@ -470,19 +561,23 @@ export default function ListenLabPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [started, cues, videoId]);
 
-  // ── 칩 탭 → 단어장 저장 (ViewerPage와 동일 컬럼·onConflict) ──
-  const saveToken = async (idx, token) => {
+  // ── 어절 단위 저장 → 단어장 (ViewerPage와 동일 컬럼·onConflict) ──
+  // 저장은 base(기본형) 우선: word_text=base로 통일해야 활용형(思います·届いたら)이
+  // 각각 별도 등록되는 걸 막는다(onConflict user_id,word_text가 같은 어휘를 1회만 담음).
+  // base가 없으면(영어 lemma 실패 등) surface로 폴백. furigana·source_sentence는 유지.
+  const saveUnit = async (idx, unit) => {
     if (!user) { toast('로그인이 필요해요.', 'warning'); return; }
-    const savedKey = `${idx}:${token.tokenId}`;
+    const base = unit.base || unit.surface;
+    const savedKey = `${idx}:${base}`;
     if (saved[savedKey]) return;
     try {
       const row = {
         user_id: user.id,
-        word_text: token.text,
-        base_form: token.base_form || token.text,
-        furigana: token.furigana || '',
-        meaning: token.meaning || '',
-        pos: token.pos || '',
+        word_text: base,                      // ← base 우선(활용형 중복 등록 방지)
+        base_form: base,
+        furigana: unit.furigana || '',
+        meaning: unit.meaning || '',
+        pos: unit.tokens?.[0]?.pos || '',      // 선두 내용어 품사
         next_review_at: new Date().toISOString(),
         language: loadedLangKey,
         source_sentence: cues[idx]?.text || null,
@@ -499,56 +594,84 @@ export default function ListenLabPage() {
     }
   };
 
-  // ── 탭한 세그먼트의 뜻 팝오버 (기존 재료 단어 팝오버 .study-wordpop 스타일) ──
-  // 분석 로딩/실패/매칭 결과에 따라 내용 분기. 팝오버·버튼은 stopPropagation로 유지.
-  const renderPopover = (idx, seg) => {
-    const a = analyzed[idx];
+  // ── 팝오버 (기존 재료 단어 팝오버 .study-wordpop 스타일) — 어절 단위 기준 ──
+  // activeTok을 어절 단위로 해석: 성공하면 표면형·기본형 구분 + 문맥 해석(지연) 표시.
+  // 미분석/미해석이면 로딩·실패·못 찾음 안내. 팝오버·버튼은 stopPropagation로 유지.
+  const renderPopover = (idx) => {
     const stop = (e) => e.stopPropagation();
-    let inner;
-    if (!a || a.status === 'loading') {
-      inner = <span className="listen-tok__dots" style={{ fontSize: '0.85rem' }} />;
-    } else if (a.status === 'error') {
-      inner = <span style={{ color: 'var(--danger, #dc2626)' }}>분석 실패 — 다시 탭해 주세요</span>;
-    } else {
-      const tk = matchTokenAt(a.tokens, cues[idx].text, seg.start, seg.text);
-      if (!tk) {
-        inner = <span style={{ color: 'var(--text-muted)' }}>뜻을 찾지 못했어요</span>;
+    const resolved = resolveActiveUnit(activeTok);
+
+    if (!resolved) {
+      const a = analyzed[idx];
+      let inner;
+      if (!a || a.status === 'loading') {
+        inner = <span className="listen-tok__dots" style={{ fontSize: '0.85rem' }} />;
+      } else if (a.status === 'error') {
+        inner = <span style={{ color: 'var(--danger, #dc2626)' }}>분석 실패 — 다시 탭해 주세요</span>;
       } else {
-        const isSaved = saved[`${idx}:${tk.tokenId}`];
-        inner = (
-          <>
-            <span lang={segLocale || undefined} style={{ fontWeight: 700 }}>
-              {tk.furigana && (
-                <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: '0.72rem', marginRight: 4 }}>
-                  {tk.furigana}
-                </span>
-              )}
-              {tk.text}
-            </span>
-            {tk.base_form && tk.base_form !== tk.text && (
-              <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>기본형 {tk.base_form}</span>
-            )}
-            <span style={{ color: 'var(--text-secondary)' }}>{tk.meaning || '뜻 정보 없음'}</span>
-            <button
-              type="button"
-              onClick={(e) => { stop(e); saveToken(idx, tk); }}
-              style={{
-                marginTop: 4, alignSelf: 'flex-start',
-                fontSize: '0.76rem', padding: '3px 10px', borderRadius: 999, cursor: 'pointer',
-                border: '1px solid var(--border, rgba(128,128,128,0.3))',
-                background: isSaved ? 'var(--accent-subtle, rgba(99,102,241,0.12))' : 'transparent',
-                color: isSaved ? 'var(--accent, #6366f1)' : 'var(--text-secondary)',
-              }}
-            >
-              {isSaved ? '✓ 담김' : '+ 담기'}
-            </button>
-          </>
-        );
+        inner = <span style={{ color: 'var(--text-muted)' }}>뜻을 찾지 못했어요</span>;
       }
+      return <span className="study-wordpop" onClick={stop}>{inner}</span>;
     }
+
+    const { unit, unitIndex } = resolved;
+    const surface = unit.surface;
+    const base = unit.base || surface;
+    const showBase = base && base !== surface;
+    const ctx = ctxMap[`${idx}:${unitIndex}:${surface}`];
+    const isSaved = saved[`${idx}:${base}`];
+
     return (
       <span className="study-wordpop" onClick={stop}>
-        {inner}
+        {/* 1행: 표면형(문장 속 형태) 크게 + 후리가나, surface≠base면 기본형 병기 */}
+        <span
+          lang={segLocale || undefined}
+          style={{ display: 'flex', alignItems: 'baseline', gap: 6, flexWrap: 'wrap' }}
+        >
+          {unit.furigana && (
+            <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: '0.72rem' }}>
+              {unit.furigana}
+            </span>
+          )}
+          <span style={{ fontWeight: 700, fontSize: '1.02rem' }}>{surface}</span>
+          {showBase && (
+            <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem', fontWeight: 500 }}>
+              기본형 {base}
+            </span>
+          )}
+        </span>
+
+        {/* 2행: 사전 뜻(즉시) */}
+        <span style={{ color: 'var(--text-secondary)' }}>{unit.meaning || '뜻 정보 없음'}</span>
+
+        {/* 3행: 문맥 해석(지연) — 로딩 "…", 실패 시 조용히 생략 */}
+        {ctx?.status === 'loading' && (
+          <span style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>…</span>
+        )}
+        {ctx?.status === 'done' && ctx.text && (
+          <span
+            style={{
+              color: 'var(--text-secondary)', fontSize: '0.82rem', lineHeight: 1.5,
+              borderTop: '1px solid var(--border, rgba(128,128,128,0.2))', paddingTop: 5, marginTop: 1,
+            }}
+          >
+            💡 {ctx.text}
+          </span>
+        )}
+
+        <button
+          type="button"
+          onClick={(e) => { stop(e); saveUnit(idx, unit); }}
+          style={{
+            marginTop: 4, alignSelf: 'flex-start',
+            fontSize: '0.76rem', padding: '3px 10px', borderRadius: 999, cursor: 'pointer',
+            border: '1px solid var(--border, rgba(128,128,128,0.3))',
+            background: isSaved ? 'var(--accent-subtle, rgba(99,102,241,0.12))' : 'transparent',
+            color: isSaved ? 'var(--accent, #6366f1)' : 'var(--text-secondary)',
+          }}
+        >
+          {isSaved ? '✓ 담김' : '+ 담기'}
+        </button>
       </span>
     );
   };
@@ -846,6 +969,10 @@ export default function ListenLabPage() {
             {cues.map((cue, idx) => {
               const active = timed && idx === activeIdx;
               const segs = segmentedCues ? segmentedCues[idx] : null; // null=미지원→통짜 폴백
+              const units = unitsByCue[idx];                          // 분석 완료면 어절 단위
+              // 현재 열린 팝오버가 이 큐의 어느 단위를 가리키는지(어절·세그먼트 탭 모두 해석).
+              const activeUnitIndex =
+                activeTok && activeTok.idx === idx ? (resolveActiveUnit(activeTok)?.unitIndex ?? null) : null;
               const ko = showKo ? koMap[idx] : null;
               return (
                 <div
@@ -877,12 +1004,31 @@ export default function ListenLabPage() {
                         {formatCueTime(cue.start)}
                       </span>
                     )}
-                    {/* 인라인 형태소 탭: segs가 있으면 단어 세그먼트만 탭 가능하게 렌더.
-                        segs===null(Intl.Segmenter 미지원/미지원 언어)면 통짜 텍스트 폴백. */}
-                    {Array.isArray(segs)
+                    {/* 인라인 탭 렌더:
+                        1) 분석 완료 큐 → groupTokensToUnits 어절 단위 span(호버·탭이 어절 단위).
+                        2) 미분석 큐 → Intl.Segmenter 세그먼트 span(임시, 저품질 인지 — 탭하면 분석).
+                        3) 둘 다 없으면(미지원 언어/브라우저) 통짜 텍스트 폴백. */}
+                    {Array.isArray(units)
+                      ? layoutUnits(units, cue.text).map((piece, pIdx) => {
+                          if (piece.type === 'gap') return <span key={pIdx}>{piece.text}</span>;
+                          const tappable = /[\p{L}\p{N}]/u.test(piece.text);
+                          if (!tappable) return <span key={pIdx}>{piece.text}</span>;
+                          const isActive = activeUnitIndex === piece.unitIndex;
+                          return (
+                            <span
+                              key={pIdx}
+                              className={`listen-tok${isActive ? ' listen-tok--active' : ''}`}
+                              onClick={(e) => { e.stopPropagation(); tapUnit(idx, piece.unitIndex); }}
+                            >
+                              {piece.text}
+                              {isActive && renderPopover(idx)}
+                            </span>
+                          );
+                        })
+                      : Array.isArray(segs)
                       ? segs.map((seg, sIdx) => {
                           if (!seg.isWord) return <span key={sIdx}>{seg.text}</span>;
-                          const isActive = activeTok && activeTok.idx === idx && activeTok.start === seg.start;
+                          const isActive = activeTok && activeTok.idx === idx && activeTok.segStart === seg.start;
                           return (
                             <span
                               key={sIdx}
@@ -890,7 +1036,7 @@ export default function ListenLabPage() {
                               onClick={(e) => { e.stopPropagation(); tapSegment(idx, seg); }}
                             >
                               {seg.text}
-                              {isActive && renderPopover(idx, seg)}
+                              {isActive && renderPopover(idx)}
                             </span>
                           );
                         })

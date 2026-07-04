@@ -529,6 +529,41 @@ export function translateLangName(code) {
   return LANG_NAME_KO[base] || base || '외국어';
 }
 
+// REF_LANGS 키(Japanese 등)도 한국어 언어명으로. 코드('ja')·키('Japanese') 둘 다 받는다.
+const REF_LANG_KO = {
+  Japanese: '일본어', English: '영어', French: '프랑스어',
+  Chinese: '중국어', Korean: '한국어', Spanish: '스페인어', German: '독일어',
+};
+export function wordContextLangName(language) {
+  if (!language) return '외국어';
+  if (REF_LANG_KO[language]) return REF_LANG_KO[language];
+  return translateLangName(language);
+}
+
+/**
+ * 「듣고 읽기」 단어 문맥 해석 프롬프트(순수). 문장 속 표면형의 의미·역할을 한국어
+ * 1~2문장으로, 활용형이면 기본형에서 어떻게 변했는지 짧게. 프롬프트 주입 방어로 각
+ * 필드 길이를 캡한다.
+ * @param {{sentence:string, surface:string, base:string, language:string}} p
+ * @returns {string}
+ */
+export function buildWordContextPrompt({ sentence, surface, base, language }) {
+  const name = wordContextLangName(language);
+  const cap = (v, n) => String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, n);
+  const s = cap(sentence, 200);
+  const sf = cap(surface, 40);
+  const bf = cap(base, 40);
+  const baseHint =
+    bf && bf !== sf
+      ? `'${sf}'가 활용·변화형이면 기본형 '${bf}'에서 어떻게 변한 형태인지(예: ~たら 조건형, ~ました 과거정중형) 한 조각만 짧게 덧붙여 주세요. `
+      : '';
+  return (
+    `${name} 문장: "${s}"\n` +
+    `이 문장에서 '${sf}'의 의미와 문장 속 역할을 한국어 1~2문장으로 쉽게 설명해 주세요. ` +
+    `${baseHint}문법 용어는 최소로, 학습자가 바로 이해할 수 있게. 설명 문장만 출력(따옴표·머리말 없이).`
+  );
+}
+
 /**
  * 번역 배치 프롬프트를 만든다(순서 유지 + JSON 배열 응답 지시).
  * @param {string[]} texts 원문 문장 배열
