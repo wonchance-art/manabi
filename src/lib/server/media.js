@@ -510,3 +510,24 @@ export function normalizeVideoList(nodes, limit = 20) {
   }
   return out;
 }
+
+/**
+ * 검색 결과 정렬 — 바로 학습 가능한 것부터.
+ * 0: 요청 언어 자막 확인 + 재생 가능(false 아님) · 1: 재생 가능 확인 · 2: 미확인 · 3: 임베드 차단.
+ * 같은 점수 안에서는 원래 순서 유지(안정 정렬 — 유튜브 관련도 보존).
+ */
+export function sortByUsability(results, langCode) {
+  const base = String(langCode || '').split('-')[0].toLowerCase();
+  const score = (v) => {
+    if (v?.embeddable === false) return 3;
+    const hasLang = base && Array.isArray(v?.captionLangs)
+      && v.captionLangs.some(c => String(c || '').split('-')[0].toLowerCase() === base);
+    if (hasLang) return 0;
+    if (v?.embeddable === true) return 1;
+    return 2;
+  };
+  return results
+    .map((v, i) => ({ v, i, s: score(v) }))
+    .sort((a, b) => (a.s - b.s) || (a.i - b.i))
+    .map(x => x.v);
+}

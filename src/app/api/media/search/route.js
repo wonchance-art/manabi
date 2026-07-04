@@ -11,7 +11,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { Innertube, Log } from 'youtubei.js';
 import { parseYouTubeId } from '@/lib/listenSubtitles';
-import { normalizeVideoList, resolveSearchLang, extractCaptionLangs, extractEmbeddable } from '@/lib/server/media';
+import { normalizeVideoList, resolveSearchLang, extractCaptionLangs, extractEmbeddable, sortByUsability } from '@/lib/server/media';
 import { rateLimit, getClientKey } from '@/lib/server/rateLimit';
 
 export const runtime = 'nodejs';
@@ -164,7 +164,8 @@ export async function POST(request) {
     const results = normalizeVideoList(search?.videos || [], 20);
     // 상위 결과에 자막 언어 뱃지 주석(best-effort, 4초 상한).
     await annotateCaptionLangs(yt, results);
-    return Response.json({ results, langCode });
+    // 바로 학습 가능한 것부터 — 요청 언어 자막 확인 > 재생 가능 > 미확인 > 임베드 차단.
+    return Response.json({ results: sortByUsability(results, langCode), langCode });
   } catch (err) {
     console.error('[api/media/search] error:', err?.message);
     return Response.json(

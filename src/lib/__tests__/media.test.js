@@ -447,3 +447,27 @@ describe('normalizeVideoList', () => {
     expect(normalizeVideoList(nodes, 20)).toHaveLength(20);
   });
 });
+
+describe('sortByUsability — 이용 가능 콘텐츠 우선 정렬', () => {
+  const { sortByUsability } = require('../server/media');
+  it('요청 언어 자막 확인 > 재생 가능 > 미확인 > 임베드 차단 순, 동점은 원래 순서 유지', () => {
+    const results = [
+      { videoId: 'blocked', embeddable: false, captionLangs: ['ja'] },
+      { videoId: 'unknown1' },
+      { videoId: 'playable', embeddable: true },
+      { videoId: 'ja1', embeddable: true, captionLangs: ['ja-JP', 'en'] },
+      { videoId: 'unknown2' },
+      { videoId: 'ja2', captionLangs: ['ja'] },
+    ];
+    const sorted = sortByUsability(results, 'ja').map(v => v.videoId);
+    expect(sorted).toEqual(['ja1', 'ja2', 'playable', 'unknown1', 'unknown2', 'blocked']);
+  });
+  it('langCode 없으면 자막 우선순위 없이 재생 가능 > 미확인 > 차단', () => {
+    const results = [
+      { videoId: 'a', embeddable: false },
+      { videoId: 'b', captionLangs: ['ja'] },
+      { videoId: 'c', embeddable: true },
+    ];
+    expect(sortByUsability(results, '').map(v => v.videoId)).toEqual(['c', 'b', 'a']);
+  });
+});
