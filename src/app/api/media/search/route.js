@@ -11,7 +11,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { Innertube, Log } from 'youtubei.js';
 import { parseYouTubeId } from '@/lib/listenSubtitles';
-import { normalizeVideoList } from '@/lib/server/media';
+import { normalizeVideoList, resolveSearchLang, extractCaptionLangs } from '@/lib/server/media';
 import { rateLimit, getClientKey } from '@/lib/server/rateLimit';
 
 export const runtime = 'nodejs';
@@ -21,15 +21,40 @@ export const maxDuration = 30;
 Log.setLevel(Log.Level.NONE);
 
 // Innertube 인스턴스는 재사용(생성 비용·토큰 획득). 첫 요청에서 lazy 생성.
-let innertubePromise = null;
-function getInnertube() {
-  if (!innertubePromise) {
-    innertubePromise = Innertube.create({ retrieve_player: false }).catch((e) => {
-      innertubePromise = null; // 실패 시 다음 요청에서 재시도
+// 학습 언어별로 세션 lang/location을 달리 심어야 하므로 언어 코드별로 캐시한다
+// (기본 세션은 키 ''). SessionOptions.lang/location — Session.d.ts:111-119 근거.
+const innertubeCache = new Map(); // key(langCode|'') → Promise<Innertube>
+function getInnertube(session) {
+  const key = session ? session.lang : '';
+  if (!innertubeCache.has(key)) {
+    const opts = { retrieve_player: false };
+    if (session) { opts.lang = session.lang; opts.location = session.location; }
+    const p = Innertube.create(opts).catch((e) => {
+      innertubeCache.delete(key); // 실패 시 다음 요청에서 재시도
       throw e;
     });
+    innertubeCache.set(key, p);
   }
-  return innertubePromise;
+  return innertubeCache.get(key);
+}
+
+// 검색어 분기 결과 상위 N개에 한해 caption_tracks 언어 코드를 뽑아 captionLangs로 주석.
+// getBasicInfo는 영상당 watch 엔드포인트 1회 호출(Innertube.js) — 상위 8개 병렬,
+// 개당 실패 무시(allSettled), 전체 4초 상한(Promise.race)으로 검색 응답 지연을 막는다.
+async function annotateCaptionLangs(yt, results, { count = 8, timeoutMs = 4000 } = {}) {
+  const targets = results.slice(0, count);
+  if (targets.length === 0) return results;
+  const work = Promise.allSettled(
+    targets.map(async (v) => {
+      const info = await yt.getBasicInfo(v.videoId);
+      v.captionLangs = extractCaptionLangs(info);
+    })
+  );
+  let timer;
+  const timeout = new Promise((resolve) => { timer = setTimeout(resolve, timeoutMs); });
+  await Promise.race([work, timeout]);
+  clearTimeout(timer);
+  return results;
 }
 
 async function requireUser(request) {
@@ -88,8 +113,11 @@ export async function POST(request) {
   const query = typeof body?.query === 'string' ? body.query.trim() : '';
   if (!query) return Response.json({ error: '검색어를 입력해주세요.' }, { status: 400 });
 
+  // 학습 언어 → 세션 언어/지역 + 뱃지 대조용 코드
+  const { code: langCode, session } = resolveSearchLang(body?.lang);
+
   try {
-    const yt = await getInnertube();
+    const yt = await getInnertube(session);
 
     // 1) 영상 URL/ID → 그 영상 하나
     const directId = parseYouTubeId(query);
@@ -126,10 +154,14 @@ export async function POST(request) {
       return Response.json({ results });
     }
 
-    // 3) 일반 검색
-    const search = await yt.search(query, { type: 'video' });
+    // 3) 일반 검색 — CC 필터(features:['subtitles'])로 자막 있는 영상만.
+    //    SearchFilters.features?: Feature[] 에 'subtitles' 포함(types/Misc.d.ts:9,15).
+    //    ※ URL 직접입력 분기(위)에는 적용하지 않음 — 검색어 분기 전용.
+    const search = await yt.search(query, { type: 'video', features: ['subtitles'] });
     const results = normalizeVideoList(search?.videos || [], 20);
-    return Response.json({ results });
+    // 상위 결과에 자막 언어 뱃지 주석(best-effort, 4초 상한).
+    await annotateCaptionLangs(yt, results);
+    return Response.json({ results, langCode });
   } catch (err) {
     console.error('[api/media/search] error:', err?.message);
     return Response.json(

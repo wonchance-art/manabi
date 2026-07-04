@@ -364,6 +364,62 @@ export function normalizeVideoNode(node) {
   };
 }
 
+// ── 학습 언어 → InnerTube 세션 언어/지역 매핑 ──
+//
+// youtubei.js 세션 옵션 SessionOptions는 lang?/location? 을 받는다
+// (node_modules/youtubei.js/dist/src/core/Session.d.ts:111-119 —
+//  `lang?: string`(언어), `location?: string`(지오로케이션=gl)).
+// 학습 언어별 인스턴스에 lang/location을 심어 검색·자막 응답을 그 언어권으로
+// 편향시킨다. location은 임의 국가 코드 문자열을 받는다(소스 타입: string).
+//   · zh는 대만(TW) — 유튜브가 정상 운영되는 번체 중국어권. 중국(CN)은
+//     유튜브 접근 제한으로 검색 결과가 빈약해 편향 효과가 약하다(판단 근거).
+const LANG_SESSION = {
+  ja: { lang: 'ja', location: 'JP' },
+  en: { lang: 'en', location: 'US' },
+  fr: { lang: 'fr', location: 'FR' },
+  zh: { lang: 'zh', location: 'TW' },
+};
+
+// REF_LANGS 키(클라 LANG_OPTIONS.key와 동일) → BCP-47 기본 코드
+const LANG_KEY_TO_CODE = {
+  Japanese: 'ja', English: 'en', French: 'fr', Chinese: 'zh',
+};
+
+/**
+ * 클라가 보낸 lang(REF_LANGS 키 'Japanese' 또는 코드 'ja'/'ja-JP')을
+ * { code, session }으로 해석한다.
+ *   · code:    정규화된 기본 코드('ja'). 매핑 밖이면 소문자 기본코드 그대로(뱃지용).
+ *   · session: { lang, location } 또는 지원 밖이면 null(기본 세션 사용).
+ * @param {string} input
+ * @returns {{ code: string, session: {lang:string,location:string}|null }}
+ */
+export function resolveSearchLang(input) {
+  const raw = String(input || '').trim();
+  if (!raw) return { code: '', session: null };
+  const code = LANG_KEY_TO_CODE[raw] || raw.toLowerCase().split('-')[0];
+  return { code, session: LANG_SESSION[code] || null };
+}
+
+/**
+ * getBasicInfo 응답에서 caption_tracks의 언어 코드(기본코드) 목록을 뽑는다.
+ * 중복 제거. 자막 없으면 빈 배열.
+ * @param {object} info youtubei.js VideoInfo
+ * @returns {string[]} 예: ['ja','en']
+ */
+export function extractCaptionLangs(info) {
+  const tracks = info?.captions?.caption_tracks;
+  if (!Array.isArray(tracks)) return [];
+  const out = [];
+  const seen = new Set();
+  for (const t of tracks) {
+    const code = String(t?.language_code || '').toLowerCase().split('-')[0];
+    if (!code || seen.has(code)) continue;
+    seen.add(code);
+    out.push(code);
+  }
+  return out;
+}
+
 /**
  * 영상 노드 배열을 정규화하고 videoId 중복 제거 후 상한만큼 자른다.
  * @param {object[]} nodes

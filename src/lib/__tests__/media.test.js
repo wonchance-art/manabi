@@ -9,6 +9,8 @@ import {
   normalizeVideoList,
   normalizeTranscriptSegments,
   matchTranscriptLanguage,
+  resolveSearchLang,
+  extractCaptionLangs,
 } from '../server/media.js';
 
 // ─────────────────────────────────────────────────────────────
@@ -295,6 +297,52 @@ describe('matchTranscriptLanguage', () => {
     expect(matchTranscriptLanguage([], 'ja')).toBeNull();
     expect(matchTranscriptLanguage(null, 'ja')).toBeNull();
     expect(matchTranscriptLanguage(['English'], '')).toBeNull();
+  });
+});
+
+describe('resolveSearchLang', () => {
+  it('REF_LANGS 키 → 코드 + 세션(lang/location)', () => {
+    expect(resolveSearchLang('Japanese')).toEqual({ code: 'ja', session: { lang: 'ja', location: 'JP' } });
+    expect(resolveSearchLang('English')).toEqual({ code: 'en', session: { lang: 'en', location: 'US' } });
+    expect(resolveSearchLang('French')).toEqual({ code: 'fr', session: { lang: 'fr', location: 'FR' } });
+    expect(resolveSearchLang('Chinese')).toEqual({ code: 'zh', session: { lang: 'zh', location: 'TW' } });
+  });
+  it('BCP-47 코드/지역 하위태그도 해석', () => {
+    expect(resolveSearchLang('ja')).toEqual({ code: 'ja', session: { lang: 'ja', location: 'JP' } });
+    expect(resolveSearchLang('ja-JP')).toEqual({ code: 'ja', session: { lang: 'ja', location: 'JP' } });
+    expect(resolveSearchLang('EN')).toEqual({ code: 'en', session: { lang: 'en', location: 'US' } });
+  });
+  it('지원 밖 언어는 코드만, 세션 null(기본 세션)', () => {
+    expect(resolveSearchLang('ko')).toEqual({ code: 'ko', session: null });
+    expect(resolveSearchLang('Korean')).toEqual({ code: 'korean', session: null });
+  });
+  it('빈/널 입력 방어', () => {
+    expect(resolveSearchLang('')).toEqual({ code: '', session: null });
+    expect(resolveSearchLang(null)).toEqual({ code: '', session: null });
+    expect(resolveSearchLang(undefined)).toEqual({ code: '', session: null });
+  });
+});
+
+describe('extractCaptionLangs', () => {
+  it('caption_tracks 언어 코드(기본코드) 중복 제거', () => {
+    const info = {
+      captions: {
+        caption_tracks: [
+          { language_code: 'ja', name: { text: 'Japanese' } },
+          { language_code: 'ja', kind: 'asr' },       // 중복 → 1회
+          { language_code: 'en-US' },                 // 지역 하위태그 → en
+          { language_code: '' },                      // 무시
+          { },                                        // 무시
+        ],
+      },
+    };
+    expect(extractCaptionLangs(info)).toEqual(['ja', 'en']);
+  });
+  it('자막 없음/구조 이상 방어', () => {
+    expect(extractCaptionLangs({ captions: { caption_tracks: [] } })).toEqual([]);
+    expect(extractCaptionLangs({ captions: {} })).toEqual([]);
+    expect(extractCaptionLangs({})).toEqual([]);
+    expect(extractCaptionLangs(null)).toEqual([]);
   });
 });
 

@@ -154,7 +154,8 @@ export default function ListenLabPage() {
       const res = await fetch('/api/media/search', {
         method: 'POST',
         headers: await authHeaders(),
-        body: JSON.stringify({ query: q }),
+        // 학습 언어를 함께 보내 검색을 그 언어권으로 편향 + 자막 뱃지 대조.
+        body: JSON.stringify({ query: q, lang: LANG_CODE[language] }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
@@ -474,6 +475,10 @@ export default function ListenLabPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: '52vh', overflowY: 'auto' }}>
                   {searchResults.map((v) => {
                     const busy = loadingVideoId === v.videoId;
+                    // 요청 언어 자막이 확인된 경우에만 뱃지(미확인·9번째 이후는 불이익 아님).
+                    const hasLangCaption =
+                      Array.isArray(v.captionLangs) && v.captionLangs.includes(LANG_CODE[language]);
+                    const langName = LANG_OPTIONS.find((l) => l.key === language)?.name || '';
                     return (
                       <button
                         key={v.videoId}
@@ -503,6 +508,19 @@ export default function ListenLabPage() {
                             {v.durationSec != null ? ` · ${formatCueTime(v.durationSec)}` : ''}
                             {v.hasCaptions ? ' · 자막' : ''}
                           </span>
+                          {hasLangCaption && (
+                            <span
+                              style={{
+                                alignSelf: 'flex-start', marginTop: 2,
+                                fontSize: '0.68rem', fontWeight: 600, lineHeight: 1.4,
+                                padding: '1px 8px', borderRadius: 999,
+                                background: 'var(--accent-subtle, rgba(99,102,241,0.12))',
+                                color: 'var(--accent, #6366f1)',
+                              }}
+                            >
+                              {langName} 자막
+                            </span>
+                          )}
                         </span>
                         {busy && <Spinner />}
                       </button>
