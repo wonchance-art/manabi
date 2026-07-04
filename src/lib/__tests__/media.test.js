@@ -11,6 +11,8 @@ import {
   matchTranscriptLanguage,
   resolveSearchLang,
   extractCaptionLangs,
+  normalizeSupadataSegments,
+  formatTrackLangs,
 } from '../server/media.js';
 
 // ─────────────────────────────────────────────────────────────
@@ -343,6 +345,66 @@ describe('extractCaptionLangs', () => {
     expect(extractCaptionLangs({ captions: {} })).toEqual([]);
     expect(extractCaptionLangs({})).toEqual([]);
     expect(extractCaptionLangs(null)).toEqual([]);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// Supadata YouTube transcript 폴백 픽스처는 공식 SDK @supadata/js@1.4.0
+// (dist/index.d.ts) 의 TranscriptChunk 타입 { text, offset(ms), duration(ms), lang }
+// 및 Transcript { content, lang, availableLangs } 에 근거한다. offset/duration은
+// 밀리초이므로 1000으로 나눠 초로 환산한다(라이브 응답은 오너가 키 등록 후 최종 검증).
+// ─────────────────────────────────────────────────────────────
+describe('normalizeSupadataSegments', () => {
+  it('offset/duration(ms) → 초, 태그·엔티티·공백 정리', () => {
+    const content = [
+      { text: 'Hello', offset: 0, duration: 1500, lang: 'en' },
+      { text: ' world ', offset: 1500, duration: 2000, lang: 'en' },
+      { text: "it&#39;s   fine", offset: 5000, duration: 2000, lang: 'en' },
+    ];
+    const cues = normalizeSupadataSegments(content);
+    expect(cues).toEqual([
+      { from: 0, to: 1.5, text: 'Hello' },
+      { from: 1.5, to: 3.5, text: 'world' },
+      { from: 5, to: 7, text: "it's fine" },
+    ]);
+  });
+
+  it('duration 없음 → to=from, 빈 텍스트/불량 offset 스킵', () => {
+    const cues = normalizeSupadataSegments([
+      { text: 'a', offset: 3000 },
+      { text: '   ', offset: 4000, duration: 1000 }, // 빈 → 스킵
+      { text: 'b', offset: 'x', duration: 1000 },     // offset 불량 → 스킵
+    ]);
+    expect(cues).toEqual([{ from: 3, to: 3, text: 'a' }]);
+  });
+
+  it('content가 문자열(text=true)/비배열/널이면 []', () => {
+    expect(normalizeSupadataSegments('plain transcript text')).toEqual([]);
+    expect(normalizeSupadataSegments(null)).toEqual([]);
+    expect(normalizeSupadataSegments(undefined)).toEqual([]);
+    expect(normalizeSupadataSegments({})).toEqual([]);
+  });
+
+  it('방어적 별칭(start/dur) 수용', () => {
+    expect(normalizeSupadataSegments([{ text: 'x', start: 2000, dur: 500 }])).toEqual([
+      { from: 2, to: 2.5, text: 'x' },
+    ]);
+  });
+});
+
+describe('formatTrackLangs', () => {
+  it('language_code + ASR([asr]) 목록', () => {
+    const tracks = [
+      { language_code: 'en' },
+      { language_code: 'es-419' },
+      { language_code: 'ko', kind: 'asr' },
+    ];
+    expect(formatTrackLangs(tracks)).toBe('en, es-419, ko[asr]');
+  });
+  it('빈/비배열 → 빈 문자열, 코드 없으면 ?', () => {
+    expect(formatTrackLangs([])).toBe('');
+    expect(formatTrackLangs(null)).toBe('');
+    expect(formatTrackLangs([{ kind: 'asr' }])).toBe('?[asr]');
   });
 });
 

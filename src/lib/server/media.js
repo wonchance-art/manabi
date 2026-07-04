@@ -156,6 +156,60 @@ export function selectCaptionTrack(tracks, langCode) {
   return { track, available };
 }
 
+/**
+ * caption_tracks(또는 그 유사 배열)를 로그용 언어 목록 문자열로 만든다(순수 함수).
+ * 형식: `en, es-419, ko[asr]` — language_code + ASR 여부([asr]). 빈 배열이면 ''.
+ * 라우트의 "no matching track" 진단 로그에서 실제 수신 트랙 언어를 드러내는 데 쓴다.
+ * @param {{language_code?:string, kind?:string}[]} tracks
+ * @returns {string}
+ */
+export function formatTrackLangs(tracks) {
+  const list = Array.isArray(tracks) ? tracks : [];
+  return list
+    .map((t) => {
+      const code = String(t?.language_code || '').trim() || '?';
+      return t?.kind === 'asr' ? `${code}[asr]` : code;
+    })
+    .join(', ');
+}
+
+// ── Supadata YouTube transcript API 응답 정규화 ──
+//
+// 계약 근거: 공식 SDK @supadata/js@1.4.0 (npm) — dist/index.d.ts·index.cjs 실소스 확인.
+//   · 엔드포인트: GET https://api.supadata.ai/v1/youtube/transcript  (헤더 x-api-key)
+//   · 쿼리: videoId | url, lang(선호 언어), text(선택)
+//   · 응답 Transcript: { content: TranscriptChunk[] | string, lang, availableLangs: string[] }
+//   · TranscriptChunk: { text:string, offset:number(ms), duration:number(ms), lang:string }
+//     → offset/duration은 "밀리초"(SDK 타입 주석: start time in ms / duration in ms).
+//   · 요청 lang 미보유 시: 첫 가용 언어로 대체 반환 + availableLangs 동봉(문서/타입 근거).
+// (docs.supadata.ai는 WebFetch 403이라 라이브 미확인 — SDK 타입·구현으로 계약 확정.
+//  실제 라이브 응답은 오너가 SUPADATA_API_KEY 등록 후 첫 검증.)
+
+/**
+ * Supadata transcript content(TranscriptChunk 배열)를 표준 큐로 정규화한다(순수 함수).
+ * offset/duration(밀리초)을 초로 환산한다. content가 문자열(text=true)이거나 배열이
+ * 아니면 [] 반환. 확정 필드(offset/duration/text) 우선, 미세 변형에 방어적 다중 키 대응.
+ * @param {Array<{text?:string, offset?:any, duration?:any}>|any} content
+ * @returns {{from:number,to:number,text:string}[]}
+ */
+export function normalizeSupadataSegments(content) {
+  const list = Array.isArray(content) ? content : [];
+  const cues = [];
+  for (const seg of list) {
+    if (!seg || typeof seg !== 'object') continue;
+    const text = cleanText(seg.text ?? seg.utf8 ?? seg.content ?? '');
+    if (!text) continue;
+    // offset/duration = ms (Supadata 확정). 방어적으로 start/dur 별칭도 수용.
+    const offsetMs = Number(seg.offset ?? seg.start ?? seg.tStartMs);
+    if (!Number.isFinite(offsetMs)) continue;
+    const from = offsetMs / 1000;
+    const durMs = Number(seg.duration ?? seg.dur ?? seg.dDurationMs);
+    const to = Number.isFinite(durMs) ? from + durMs / 1000 : from;
+    cues.push({ from, to, text });
+  }
+  return cues;
+}
+
 // ── get_transcript(InnerTube '스크립트 보기') 경로 정규화 ──
 //
 // youtubei.js@17 의 MediaInfo.getTranscript() → TranscriptInfo 구조(node_modules 실소스 확인):

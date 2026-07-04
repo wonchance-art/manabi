@@ -9,11 +9,14 @@
 //   step 3 (android): getInfo(videoId, { client: 'ANDROID' }) → caption_tracks base_url fetch.
 //       ANDROID/iOS 클라이언트 자막 base_url은 pot 없이 열리는 사례가 커뮤니티에 보고됨(가설).
 //   step 4 (ios): getInfo(videoId, { client: 'IOS' }) 동일 — ANDROID 실패 시.
-//   step 5: 전부 실패 → 404(자막 없음)/409(요청 언어 없음, available 동봉)/502(추출 실패) 안내.
+//   step 5 (supadata): env SUPADATA_API_KEY가 있으면 Supadata YouTube transcript API 폴백.
+//       키 없으면 조용히 스킵(로그도 안 남김 — 기존 동작 불변). 계약 근거는 media.js 참고.
+//   최종: 전부 실패 → 404(자막 없음)/409(요청 언어 없음, available 동봉)/502(추출 실패) 안내.
 //
 // 각 단계 실패는 `[media/captions] step N (label) failed: message`로 로깅해 어느 단계까지
-// 갔는지 로그만으로 판독 가능. 성공 응답에는 `source`('transcript'|'web'|'android'|'ios')를
-// 붙여 디버깅을 돕는다(클라는 무시 가능).
+// 갔는지 로그만으로 판독 가능. "no matching track" 로그엔 실제 수신 트랙 언어 목록(개수 +
+// language_code + [asr])을 함께 남겨 ja 미보유인지 추출 실패인지 구분한다. 성공 응답에는
+// `source`('transcript'|'web'|'android'|'ios'|'supadata')를 붙여 디버깅을 돕는다(클라는 무시 가능).
 //
 // getInfo 시그니처(youtubei.js@17.2.0, node_modules/dist/src/Innertube.js·types 확인):
 //   getInfo(target, options?) / options.client: InnerTubeClient
@@ -32,6 +35,8 @@ import {
   withCaptionFormat,
   normalizeTranscriptSegments,
   matchTranscriptLanguage,
+  normalizeSupadataSegments,
+  formatTrackLangs,
 } from '@/lib/server/media';
 import { rateLimit, getClientKey } from '@/lib/server/rateLimit';
 
@@ -99,6 +104,44 @@ async function fetchTrack(baseUrl) {
     }
   }
   return [];
+}
+
+// 진단 로그용 트랙 요약: `0` / `3 — en, es-419, ko[asr]` (개수 + 언어 목록·ASR 표기).
+function describeTracks(list) {
+  const arr = Array.isArray(list) ? list : [];
+  return arr.length === 0 ? '0' : `${arr.length} — ${formatTrackLangs(arr)}`;
+}
+
+// ── step 5: Supadata YouTube transcript API 폴백 ──
+// 계약 근거: 공식 SDK @supadata/js@1.4.0 — GET /v1/youtube/transcript, 헤더 x-api-key,
+// 쿼리 videoId+lang, 응답 { content:[{text,offset(ms),duration(ms)}], lang, availableLangs }.
+// 타임아웃 8초. 실패 시 throw(호출부가 로깅). 정규화는 순수 함수에 위임.
+async function fetchSupadataCues(videoId, lang) {
+  const url = new URL('https://api.supadata.ai/v1/youtube/transcript');
+  url.searchParams.set('videoId', videoId);
+  if (lang) url.searchParams.set('lang', lang); // 우리 code(ja 등) 그대로 전달
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
+  try {
+    const res = await fetch(url, {
+      headers: { 'x-api-key': process.env.SUPADATA_API_KEY },
+      signal: controller.signal,
+    });
+    if (!res.ok) {
+      // Supadata 에러는 JSON { error, message } — 진단에 error 코드를 남긴다.
+      let detail = String(res.status);
+      try {
+        const j = await res.json();
+        if (j?.error) detail = `${res.status} ${j.error}`;
+      } catch {
+        // JSON 아님 — 상태코드만
+      }
+      throw new Error(`http ${detail}`);
+    }
+    return await res.json();
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 // ① get_transcript 경로 — 요청 언어로 전환 후 세그먼트를 큐로 정규화.
@@ -200,7 +243,10 @@ export async function POST(request) {
         return finish({ cues, lang: lang || '', kind, available, source: 'transcript' });
       }
     } catch (e) {
-      console.error(`[media/captions] step 1 (transcript) failed: ${e?.message}`);
+      // 진단: transcript 패널 실패 원인 + 이 영상의 WEB caption_tracks 유무(교차 판독용).
+      console.error(
+        `[media/captions] step 1 (transcript) failed: ${e?.message} (web caption_tracks: ${describeTracks(trackList)})`
+      );
     }
 
     // ── step 2: WEB caption_tracks base_url fetch ──
@@ -221,7 +267,9 @@ export async function POST(request) {
         console.error(`[media/captions] step 2 (web) failed: ${e?.message}`);
       }
     } else {
-      console.error(`[media/captions] step 2 (web) failed: no matching track for lang="${lang}"`);
+      console.error(
+        `[media/captions] step 2 (web) failed: no matching track for lang="${lang}" (tracks: ${describeTracks(trackList)})`
+      );
     }
 
     // ── step 3·4: ANDROID/iOS 클라이언트 caption base_url fetch (pot 우회 가설) ──
@@ -236,7 +284,7 @@ export async function POST(request) {
         const list = Array.isArray(clientTracks) ? clientTracks : [];
         const sel = selectCaptionTrack(list, lang);
         if (!sel.track) {
-          throw new Error(`no matching track for lang="${lang}" (tracks: ${list.length})`);
+          throw new Error(`no matching track for lang="${lang}" (tracks: ${describeTracks(list)})`);
         }
         const cues = await fetchTrack(sel.track.base_url);
         if (cues.length === 0) throw new Error('0 cues from base_url');
@@ -253,7 +301,38 @@ export async function POST(request) {
       }
     }
 
-    // ── step 5: 전부 실패 → 안내 ──
+    // ── step 5: Supadata 폴백 ──
+    // 키 없으면 조용히 스킵(기존 동작 불변). 있으면 기존 step 전부 실패 시에만 호출.
+    // 성공(요청 언어 일치 + 큐 존재) 시에만 캐시(무료 100콜/월 절약).
+    if (process.env.SUPADATA_API_KEY) {
+      try {
+        const data = await fetchSupadataCues(videoId, lang);
+        const cues = normalizeSupadataSegments(data?.content);
+        const gotLang = String(data?.lang || '').toLowerCase();
+        // 요청 언어 미보유 시 Supadata는 다른 언어로 대체 반환(+availableLangs) → 언어 불일치는
+        // "요청 언어 없음"으로 보고 실패 처리(기존 409/502 안내에 위임). lang 미지정이면 무조건 수용.
+        const langOk = !lang || gotLang.split('-')[0] === lang.split('-')[0];
+        if (cues.length > 0 && langOk) {
+          return finish({
+            cues,
+            lang: data?.lang || lang || '',
+            kind: '', // Supadata는 ASR/사람 자막을 구분하지 않음 → 미상('')
+            available,
+            source: 'supadata',
+          });
+        }
+        const avail = Array.isArray(data?.availableLangs) ? data.availableLangs.join(', ') : '?';
+        throw new Error(
+          cues.length === 0
+            ? `no cues (lang="${gotLang}", available: ${avail})`
+            : `lang mismatch: requested "${lang}", got "${gotLang}" (available: ${avail})`
+        );
+      } catch (e) {
+        console.error(`[media/captions] step 5 (supadata) failed: ${e?.message}`);
+      }
+    }
+
+    // ── 최종: 전부 실패 → 안내 ──
     if (trackList.length === 0) {
       return Response.json({ error: '이 영상에는 자막이 없어요.' }, { status: 404 });
     }
