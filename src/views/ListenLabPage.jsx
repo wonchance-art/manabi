@@ -9,7 +9,7 @@
 // 접근: 로그인 + profiles.role==='admin'만. admin 🧪 신기능 탭에서만 진입.
 // 영속화 없음(실험) — 저장된 단어만 영구.
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import YouTube from 'react-youtube';
 import { supabase } from '../lib/supabase';
@@ -23,6 +23,8 @@ import {
   parsePlainTextCues,
   findActiveCueIndex,
   formatCueTime,
+  segmentWords,
+  matchTokenAt,
 } from '../lib/listenSubtitles';
 
 // 언어 선택지 — REF_LANGS를 직접 import하면 교재 콘텐츠 전체가 클라 번들에 딸려 온다(1.8MB).
@@ -128,8 +130,24 @@ export default function ListenLabPage() {
   // ── 분석·저장 상태 ──
   // analyzed[idx] = { status: 'loading'|'done'|'error', tokens: [{tokenId, text, furigana, meaning, base_form, pos}] }
   const [analyzed, setAnalyzed] = useState({});
-  const [openCue, setOpenCue] = useState(-1);     // 토큰 패널이 열린 큐
   const [saved, setSaved] = useState({});         // `${idx}:${tokenId}` → true
+  // 인라인 형태소 탭 — 지금 열린 세그먼트 { idx, start, text } (기존 activeWord 패턴)
+  const [activeTok, setActiveTok] = useState(null);
+
+  // ── 문장 번역(기능 1) ──
+  const [koMap, setKoMap] = useState({});         // idx → 한국어 번역(부분 도착 즉시 렌더)
+  const [showKo, setShowKo] = useState(true);     // 번역 표시 토글 (localStorage 기억)
+  useEffect(() => {
+    try {
+      const v = localStorage.getItem('listen_show_ko');
+      if (v != null) setShowKo(v === '1');
+    } catch { /* 무해 */ }
+  }, []);
+  const toggleKo = () => setShowKo((v) => {
+    const next = !v;
+    try { localStorage.setItem('listen_show_ko', next ? '1' : '0'); } catch { /* 무해 */ }
+    return next;
+  });
 
   // ── 파일 선택 → 자막 파싱 ──
   const handleFile = async (e) => {
@@ -280,7 +298,9 @@ export default function ListenLabPage() {
     setVideoId(null);
     setActiveIdx(-1);
     setCurrentTime(0);
-    setOpenCue(-1);
+    setActiveTok(null);
+    setAnalyzed({});
+    setKoMap({});
     setPlayerError(null);
     setLoadedLangKey(null);
   };
@@ -355,9 +375,8 @@ export default function ListenLabPage() {
     try { p.seekTo(cue.start, true); p.playVideo?.(); } catch { /* 무해 */ }
   };
 
-  // ── "단어 보기" → 그 줄 분석 (큐당 1회 캐시) ──
-  const analyzeCue = useCallback(async (idx) => {
-    setOpenCue((cur) => (cur === idx ? -1 : idx));   // 토글
+  // ── 인라인 탭 → 그 줄 분석 (큐당 1회 캐시). 상태 토글 없이 "보장"만 한다 ──
+  const ensureAnalyzed = useCallback(async (idx) => {
     if (analyzed[idx]) return;                       // 이미 로딩/완료면 재호출 금지
     setAnalyzed((m) => ({ ...m, [idx]: { status: 'loading', tokens: [] } }));
 
@@ -385,10 +404,71 @@ export default function ListenLabPage() {
     }
   }, [analyzed, cues, loadedLangKey]);
 
-  const retryCue = (idx) => {
-    setAnalyzed((m) => { const n = { ...m }; delete n[idx]; return n; }); // 캐시 비우고
-    analyzeCue(idx);
+  // ── 세그먼트 탭 → 팝오버 열기 + 필요 시 분석 (word-span만; seek와 stopPropagation로 분리) ──
+  const tapSegment = (idx, seg) => {
+    // 같은 세그먼트 재탭이면 닫기(토글)
+    setActiveTok((cur) =>
+      cur && cur.idx === idx && cur.start === seg.start ? null : { idx, start: seg.start, text: seg.text }
+    );
+    // 분석 실패했던 큐면 캐시 비우고 재시도, 아니면 최초 1회 분석
+    if (analyzed[idx]?.status === 'error') {
+      setAnalyzed((m) => { const n = { ...m }; delete n[idx]; return n; });
+      ensureAnalyzed(idx);
+    } else {
+      ensureAnalyzed(idx);
+    }
   };
+
+  // 바깥 탭 시 팝오버 닫기 (세그먼트·팝오버는 stopPropagation으로 유지 — 기존 activeWord 패턴)
+  useEffect(() => {
+    if (!activeTok) return;
+    const onDoc = () => setActiveTok(null);
+    window.addEventListener('click', onDoc);
+    return () => window.removeEventListener('click', onDoc);
+  }, [activeTok]);
+
+  // ── 각 큐를 Intl.Segmenter로 즉시 분할 (의존성 0). 미지원이면 null → 통짜 텍스트 폴백 ──
+  // loadedLangKey null(단어장 미지원 언어)이면 인라인 탭 비활성 → 분할도 생략.
+  const segLocale = loadedLangKey ? LANG_CODE[loadedLangKey] : null;
+  const segmentedCues = useMemo(() => {
+    if (!segLocale) return null;
+    return cues.map((c) => segmentWords(c.text, segLocale));
+  }, [cues, segLocale]);
+
+  // ── 문장 번역(기능 1): 시작 직후 백그라운드로 40개씩 배치 순차 호출 → koMap 채움 ──
+  // 스크립트 표시는 번역을 기다리지 않음. 실패 배치는 조용히 생략(빈 문자열).
+  useEffect(() => {
+    if (!started || cues.length === 0) return;
+    let cancelled = false;
+    const srcCode = LANG_CODE[loadedLangKey] || LANG_CODE[language] || '';
+    (async () => {
+      const headers = await authHeaders();
+      const BATCH = 40;
+      for (let i = 0; i < cues.length; i += BATCH) {
+        if (cancelled) return;
+        const slice = cues.slice(i, i + BATCH);
+        try {
+          const res = await fetch('/api/media/translate', {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ videoId: videoId || null, lang: srcCode, texts: slice.map((c) => c.text) }),
+          });
+          if (!res.ok) continue;
+          const data = await res.json();
+          const arr = Array.isArray(data?.translations) ? data.translations : [];
+          if (cancelled) return;
+          setKoMap((prev) => {
+            const next = { ...prev };
+            arr.forEach((t, j) => { if (t) next[i + j] = t; });
+            return next;
+          });
+        } catch { /* 실패 배치 조용히 생략 */ }
+      }
+    })();
+    return () => { cancelled = true; };
+    // videoId·cues가 확정된 시작 시점에 1회 — authHeaders/language는 그 시점 값 사용.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [started, cues, videoId]);
 
   // ── 칩 탭 → 단어장 저장 (ViewerPage와 동일 컬럼·onConflict) ──
   const saveToken = async (idx, token) => {
@@ -417,6 +497,60 @@ export default function ListenLabPage() {
     } catch {
       toast('저장에 실패했어요. 잠시 후 다시 시도해주세요.', 'error');
     }
+  };
+
+  // ── 탭한 세그먼트의 뜻 팝오버 (기존 재료 단어 팝오버 .study-wordpop 스타일) ──
+  // 분석 로딩/실패/매칭 결과에 따라 내용 분기. 팝오버·버튼은 stopPropagation로 유지.
+  const renderPopover = (idx, seg) => {
+    const a = analyzed[idx];
+    const stop = (e) => e.stopPropagation();
+    let inner;
+    if (!a || a.status === 'loading') {
+      inner = <span className="listen-tok__dots" style={{ fontSize: '0.85rem' }} />;
+    } else if (a.status === 'error') {
+      inner = <span style={{ color: 'var(--danger, #dc2626)' }}>분석 실패 — 다시 탭해 주세요</span>;
+    } else {
+      const tk = matchTokenAt(a.tokens, cues[idx].text, seg.start, seg.text);
+      if (!tk) {
+        inner = <span style={{ color: 'var(--text-muted)' }}>뜻을 찾지 못했어요</span>;
+      } else {
+        const isSaved = saved[`${idx}:${tk.tokenId}`];
+        inner = (
+          <>
+            <span lang={segLocale || undefined} style={{ fontWeight: 700 }}>
+              {tk.furigana && (
+                <span style={{ color: 'var(--text-muted)', fontWeight: 400, fontSize: '0.72rem', marginRight: 4 }}>
+                  {tk.furigana}
+                </span>
+              )}
+              {tk.text}
+            </span>
+            {tk.base_form && tk.base_form !== tk.text && (
+              <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>기본형 {tk.base_form}</span>
+            )}
+            <span style={{ color: 'var(--text-secondary)' }}>{tk.meaning || '뜻 정보 없음'}</span>
+            <button
+              type="button"
+              onClick={(e) => { stop(e); saveToken(idx, tk); }}
+              style={{
+                marginTop: 4, alignSelf: 'flex-start',
+                fontSize: '0.76rem', padding: '3px 10px', borderRadius: 999, cursor: 'pointer',
+                border: '1px solid var(--border, rgba(128,128,128,0.3))',
+                background: isSaved ? 'var(--accent-subtle, rgba(99,102,241,0.12))' : 'transparent',
+                color: isSaved ? 'var(--accent, #6366f1)' : 'var(--text-secondary)',
+              }}
+            >
+              {isSaved ? '✓ 담김' : '+ 담기'}
+            </button>
+          </>
+        );
+      }
+    }
+    return (
+      <span className="study-wordpop" onClick={stop}>
+        {inner}
+      </span>
+    );
   };
 
   // ── 게이트 ──
@@ -660,7 +794,12 @@ export default function ListenLabPage() {
             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
               {timed ? '재생하면 스크립트가 따라가요 · 줄을 탭하면 그 시점으로 이동' : '싱크 없는 텍스트 모드'}
             </span>
-            <Button size="sm" variant="secondary" onClick={reset}>새로 시작</Button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <button type="button" className="study-textlink" onClick={toggleKo}>
+                {showKo ? '번역 끄기' : '번역 켜기'}
+              </button>
+              <Button size="sm" variant="secondary" onClick={reset}>새로 시작</Button>
+            </div>
           </div>
 
           {loadedLangKey == null && (
@@ -706,8 +845,8 @@ export default function ListenLabPage() {
           >
             {cues.map((cue, idx) => {
               const active = timed && idx === activeIdx;
-              const a = analyzed[idx];
-              const isOpen = openCue === idx;
+              const segs = segmentedCues ? segmentedCues[idx] : null; // null=미지원→통짜 폴백
+              const ko = showKo ? koMap[idx] : null;
               return (
                 <div
                   key={idx}
@@ -717,100 +856,49 @@ export default function ListenLabPage() {
                     padding: '10px 12px',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: 8,
+                    gap: 4,
                     borderColor: active ? 'var(--accent, #6366f1)' : undefined,
                     background: active ? 'var(--accent-subtle, rgba(99,102,241,0.10))' : undefined,
                     transition: 'background 0.2s, border-color 0.2s',
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                    {/* 본문 — 탭하면 seek (타임드 모드만) */}
-                    <button
-                      type="button"
-                      onClick={() => timed && seekToCue(cue)}
-                      style={{
-                        flex: 1, minWidth: 0, textAlign: 'left', background: 'none', border: 'none',
-                        padding: 0, cursor: timed ? 'pointer' : 'default', color: 'var(--text-primary)',
-                        fontSize: '0.95rem', lineHeight: 1.6,
-                      }}
-                      title={timed ? '이 시점으로 이동' : undefined}
-                    >
-                      {timed && (
-                        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginRight: 8, fontFamily: 'monospace' }}>
-                          {formatCueTime(cue.start)}
-                        </span>
-                      )}
-                      {cue.text}
-                    </button>
-
-                    {/* 단어 보기 — seek와 분리된 소형 버튼 (탭 충돌 방지).
-                        단어장 미지원 언어(loadedLangKey===null)면 저장 오염 방지로 아예 숨김. */}
-                    {loadedLangKey != null && (
-                      <button
-                        type="button"
-                        onClick={() => analyzeCue(idx)}
-                        style={{
-                          flexShrink: 0, fontSize: '0.72rem', padding: '4px 8px', borderRadius: 6,
-                          border: '1px solid var(--border, rgba(128,128,128,0.3))',
-                          background: isOpen ? 'var(--accent, #6366f1)' : 'transparent',
-                          color: isOpen ? '#fff' : 'var(--text-secondary)', cursor: 'pointer', whiteSpace: 'nowrap',
-                        }}
-                      >
-                        📖 단어
-                      </button>
+                  {/* 본문 — 빈 영역(단어 밖) 탭하면 seek. word-span은 stopPropagation로 seek와 분리. */}
+                  <div
+                    onClick={() => timed && seekToCue(cue)}
+                    style={{
+                      textAlign: 'left', color: 'var(--text-primary)',
+                      cursor: timed ? 'pointer' : 'default',
+                      fontSize: '0.95rem', lineHeight: 1.7,
+                    }}
+                    title={timed ? '이 시점으로 이동' : undefined}
+                  >
+                    {timed && (
+                      <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginRight: 8, fontFamily: 'monospace' }}>
+                        {formatCueTime(cue.start)}
+                      </span>
                     )}
+                    {/* 인라인 형태소 탭: segs가 있으면 단어 세그먼트만 탭 가능하게 렌더.
+                        segs===null(Intl.Segmenter 미지원/미지원 언어)면 통짜 텍스트 폴백. */}
+                    {Array.isArray(segs)
+                      ? segs.map((seg, sIdx) => {
+                          if (!seg.isWord) return <span key={sIdx}>{seg.text}</span>;
+                          const isActive = activeTok && activeTok.idx === idx && activeTok.start === seg.start;
+                          return (
+                            <span
+                              key={sIdx}
+                              className={`listen-tok${isActive ? ' listen-tok--active' : ''}`}
+                              onClick={(e) => { e.stopPropagation(); tapSegment(idx, seg); }}
+                            >
+                              {seg.text}
+                              {isActive && renderPopover(idx, seg)}
+                            </span>
+                          );
+                        })
+                      : cue.text}
                   </div>
 
-                  {/* 토큰 패널 */}
-                  {isOpen && (
-                    <div style={{ borderTop: '1px solid var(--border, rgba(128,128,128,0.2))', paddingTop: 8 }}>
-                      {a?.status === 'loading' && (
-                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>분석 중…</span>
-                      )}
-                      {a?.status === 'error' && (
-                        <button
-                          type="button"
-                          onClick={() => retryCue(idx)}
-                          style={{ fontSize: '0.8rem', color: 'var(--danger, #dc2626)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-                        >
-                          분석 실패 — 다시 시도
-                        </button>
-                      )}
-                      {a?.status === 'done' && (
-                        a.tokens.length === 0 ? (
-                          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>저장할 표현이 없어요.</span>
-                        ) : (
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                            {a.tokens.map((tk) => {
-                              const isSaved = saved[`${idx}:${tk.tokenId}`];
-                              return (
-                                <button
-                                  key={tk.tokenId}
-                                  type="button"
-                                  onClick={() => saveToken(idx, tk)}
-                                  title={tk.meaning || undefined}
-                                  style={{
-                                    display: 'inline-flex', alignItems: 'center', gap: 4,
-                                    padding: '4px 10px', borderRadius: 999, cursor: 'pointer',
-                                    border: '1px solid var(--border, rgba(128,128,128,0.3))',
-                                    background: isSaved ? 'var(--accent-subtle, rgba(99,102,241,0.12))' : 'var(--bg-subtle, rgba(128,128,128,0.06))',
-                                    fontSize: '0.85rem', color: 'var(--text-primary)',
-                                  }}
-                                >
-                                  <span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', lineHeight: 1.1 }}>
-                                    {tk.furigana && <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>{tk.furigana}</span>}
-                                    <span>{tk.text}</span>
-                                  </span>
-                                  {tk.meaning && <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>· {tk.meaning}</span>}
-                                  {isSaved && <span style={{ color: 'var(--accent, #6366f1)' }}>✓</span>}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        )
-                      )}
-                    </div>
-                  )}
+                  {/* 번역 줄(기능 1) — 도착·토글 켜짐일 때만. 원문만 토큰화(이 줄은 분할 대상 아님). */}
+                  {ko && <div className="listen-ko">{ko}</div>}
                 </div>
               );
             })}

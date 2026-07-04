@@ -14,6 +14,9 @@ import {
   extractEmbeddable,
   normalizeSupadataSegments,
   formatTrackLangs,
+  translateLangName,
+  buildTranslatePrompt,
+  parseTranslationArray,
 } from '../server/media.js';
 
 // ─────────────────────────────────────────────────────────────
@@ -445,6 +448,62 @@ describe('normalizeVideoList', () => {
   it('limit', () => {
     const nodes = Array.from({ length: 30 }, (_, i) => ({ video_id: 'v' + i, title: { text: 't' } }));
     expect(normalizeVideoList(nodes, 20)).toHaveLength(20);
+  });
+});
+
+// ── 문장 번역(기능 1) 배치 헬퍼 ──
+describe('translateLangName', () => {
+  it('코드 → 한국어 언어명', () => {
+    expect(translateLangName('ja')).toBe('일본어');
+    expect(translateLangName('en')).toBe('영어');
+    expect(translateLangName('ja-JP')).toBe('일본어'); // 지역 하위태그
+  });
+  it('미지원 코드는 코드 그대로, 빈 입력은 기본어', () => {
+    expect(translateLangName('xx')).toBe('xx');
+    expect(translateLangName('')).toBe('외국어');
+    expect(translateLangName(null)).toBe('외국어');
+  });
+});
+
+describe('buildTranslatePrompt', () => {
+  it('언어명 + 번호 매긴 문장 목록 포함', () => {
+    const p = buildTranslatePrompt(['猫が好き', 'こんにちは'], 'ja');
+    expect(p).toContain('일본어');
+    expect(p).toContain('1. 猫が好き');
+    expect(p).toContain('2. こんにちは');
+    expect(p).toContain('JSON'); // 배열 응답 지시
+  });
+  it('개행·중복 공백은 한 칸으로 정규화', () => {
+    const p = buildTranslatePrompt(['a\n b   c'], 'en');
+    expect(p).toContain('1. a b c');
+  });
+});
+
+describe('parseTranslationArray', () => {
+  it('순수 JSON 배열 파싱', () => {
+    expect(parseTranslationArray('["첫째","둘째"]', 2)).toEqual(['첫째', '둘째']);
+  });
+  it('코드펜스·앞뒤 잡음 제거 후 배열만 추출', () => {
+    const raw = '```json\n["a", "b", "c"]\n```';
+    expect(parseTranslationArray(raw, 3)).toEqual(['a', 'b', 'c']);
+  });
+  it('설명 문장이 섞여도 [ ] 범위로 추출', () => {
+    expect(parseTranslationArray('결과: ["x","y"] 입니다', 2)).toEqual(['x', 'y']);
+  });
+  it('길이 불일치면 null(재시도 신호)', () => {
+    expect(parseTranslationArray('["a","b"]', 3)).toBeNull();
+  });
+  it('비문자 원소는 문자열화, 트림', () => {
+    expect(parseTranslationArray('[" a ", 5, null]', 3)).toEqual(['a', '5', '']);
+  });
+  it('배열 없음/깨진 JSON/빈 입력 → null', () => {
+    expect(parseTranslationArray('그냥 문장', 1)).toBeNull();
+    expect(parseTranslationArray('[깨진', 1)).toBeNull();
+    expect(parseTranslationArray('', 1)).toBeNull();
+    expect(parseTranslationArray(null)).toBeNull();
+  });
+  it('expectedLen 미지정이면 길이 검증 없이 반환', () => {
+    expect(parseTranslationArray('["a","b"]')).toEqual(['a', 'b']);
   });
 });
 

@@ -511,6 +511,68 @@ export function normalizeVideoList(nodes, limit = 20) {
   return out;
 }
 
+// ── 문장 번역(기능 1) — 배치 프롬프트·응답 파싱 순수 헬퍼 ──
+//
+// /api/media/translate가 자막 큐 텍스트를 배치로 한국어 번역할 때 쓴다.
+// 모델 호출·캐시는 라우트가, 프롬프트 조립과 응답 파싱/길이 검증은 여기(순수)에서.
+
+// BCP-47 기본 코드 → 프롬프트에 넣을 한국어 언어명. 미지의 코드는 코드 그대로.
+const LANG_NAME_KO = {
+  ja: '일본어', en: '영어', fr: '프랑스어', zh: '중국어',
+  es: '스페인어', de: '독일어', it: '이탈리아어', pt: '포르투갈어',
+  ru: '러시아어', ko: '한국어',
+};
+
+/** 언어 코드('ja'/'ja-JP')를 프롬프트용 한국어 언어명으로. 미지원이면 코드 그대로. */
+export function translateLangName(code) {
+  const base = String(code || '').toLowerCase().split('-')[0];
+  return LANG_NAME_KO[base] || base || '외국어';
+}
+
+/**
+ * 번역 배치 프롬프트를 만든다(순서 유지 + JSON 배열 응답 지시).
+ * @param {string[]} texts 원문 문장 배열
+ * @param {string} code 원문 언어 코드
+ * @returns {string}
+ */
+export function buildTranslatePrompt(texts, code) {
+  const name = translateLangName(code);
+  const list = (Array.isArray(texts) ? texts : [])
+    .map((t, i) => `${i + 1}. ${String(t ?? '').replace(/\s+/g, ' ').trim()}`)
+    .join('\n');
+  return `다음 ${name} 문장들을 자연스러운 한국어로 번역해 주세요.
+
+${list}
+
+## 규칙
+- 번호(순서)를 그대로 유지하고, 문장 개수와 정확히 같은 길이의 JSON 문자열 배열로만 응답하세요.
+- 각 원소는 해당 번호 문장의 한국어 번역 문자열입니다.
+- 설명·주석·번호·코드펜스 없이 JSON 배열 하나만 출력하세요.
+- 예: ["첫 번째 번역", "두 번째 번역"]`;
+}
+
+/**
+ * 모델 응답 텍스트에서 번역 문자열 배열을 파싱한다(관대한 파싱 + 길이 검증).
+ * @param {string} text 모델 원문 응답
+ * @param {number} [expectedLen] 기대 길이(주면 불일치 시 null)
+ * @returns {string[]|null} 번역 배열 또는 null(파싱 실패/길이 불일치)
+ */
+export function parseTranslationArray(text, expectedLen) {
+  if (!text) return null;
+  let t = String(text).trim();
+  const fence = t.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (fence) t = fence[1].trim();
+  const start = t.indexOf('[');
+  const end = t.lastIndexOf(']');
+  if (start === -1 || end === -1 || end < start) return null;
+  let arr;
+  try { arr = JSON.parse(t.slice(start, end + 1)); } catch { return null; }
+  if (!Array.isArray(arr)) return null;
+  const out = arr.map((v) => (typeof v === 'string' ? v : v == null ? '' : String(v)).trim());
+  if (expectedLen != null && out.length !== expectedLen) return null;
+  return out;
+}
+
 /**
  * 검색 결과 정렬 — 바로 학습 가능한 것부터.
  * 0: 요청 언어 자막 확인 + 재생 가능(false 아님) · 1: 재생 가능 확인 · 2: 미확인 · 3: 임베드 차단.

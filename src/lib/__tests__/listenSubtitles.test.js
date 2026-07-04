@@ -5,6 +5,9 @@ import {
   parsePlainTextCues,
   findActiveCueIndex,
   formatCueTime,
+  segmentWords,
+  matchTokenAt,
+  hashText,
 } from '../listenSubtitles';
 
 describe('parseYouTubeId', () => {
@@ -157,5 +160,89 @@ describe('formatCueTime', () => {
   it('널·음수 방어', () => {
     expect(formatCueTime(null)).toBe('');
     expect(formatCueTime(-1)).toBe('');
+  });
+});
+
+// ── 인라인 형태소 탭 ──
+describe('segmentWords', () => {
+  it('영어 문장을 단어/비단어 세그먼트로 분할(오프셋·isWord)', () => {
+    const segs = segmentWords('I love cats.', 'en');
+    // Intl.Segmenter는 Node에 내장 — 미지원이면 null(그 경우 이 검증은 스킵).
+    if (segs === null) return;
+    const words = segs.filter((s) => s.isWord).map((s) => s.text);
+    expect(words).toContain('love');
+    expect(words).toContain('cats');
+    const love = segs.find((s) => s.text === 'love');
+    expect(love.start).toBe('I love cats.'.indexOf('love'));
+    // 마침표·공백은 비단어
+    expect(segs.some((s) => s.text === '.' && !s.isWord)).toBe(true);
+  });
+  it('일본어 문장 분할 — 시작 오프셋이 원문 인덱스와 일치', () => {
+    const text = '猫が好きです';
+    const segs = segmentWords(text, 'ja');
+    if (segs === null) return;
+    // 각 세그먼트를 이어붙이면 원문 복원 + start 오프셋 정합
+    expect(segs.map((s) => s.text).join('')).toBe(text);
+    for (const s of segs) expect(text.slice(s.start, s.start + s.text.length)).toBe(s.text);
+  });
+  it('빈 문자열/비문자 방어', () => {
+    expect(segmentWords('', 'ja')).toEqual([]);
+    expect(segmentWords(null, 'ja')).toEqual([]);
+  });
+});
+
+describe('matchTokenAt', () => {
+  // analyze 토큰(부호 필터 후) — text만 필요. cueText 오프셋 맵을 순차 탐색으로 만든다.
+  const jaTokens = [
+    { tokenId: 't0', text: '猫', meaning: '고양이' },
+    { tokenId: 't1', text: 'が', meaning: '이/가' },
+    { tokenId: 't2', text: '好き', meaning: '좋아함' },
+    { tokenId: 't3', text: 'です', meaning: '입니다' },
+  ];
+  const cue = '猫が好きです';
+
+  it('세그먼트 시작 오프셋이 속한 토큰 반환', () => {
+    // "好き"는 offset 3에서 시작 → t2
+    expect(matchTokenAt(jaTokens, cue, 3, '好き').tokenId).toBe('t2');
+    // "猫"는 offset 0 → t0
+    expect(matchTokenAt(jaTokens, cue, 0, '猫').tokenId).toBe('t0');
+  });
+
+  it('세그먼트가 토큰 경계와 달라 토큰 중간에서 시작해도 그 토큰 반환', () => {
+    // Intl.Segmenter가 "好きです"를 한 단어로 묶어 offset 3에서 시작 →
+    // analyze는 好き(3)·です(5)로 쪼갬. offset 3은 t2(好き) 스팬 안 → t2.
+    expect(matchTokenAt(jaTokens, cue, 3, '好きです').tokenId).toBe('t2');
+    // 반대로 offset 5(です 시작)면 t3.
+    expect(matchTokenAt(jaTokens, cue, 5, 'です').tokenId).toBe('t3');
+  });
+
+  it('공백 차이로 오프셋이 어긋나면 segText 포함 토큰으로 폴백', () => {
+    // 영어: analyze 토큰엔 공백이 없지만 cueText엔 공백 → 순차 indexOf가 실제 오프셋을 복원.
+    const enTokens = [
+      { tokenId: 'e0', text: 'I' },
+      { tokenId: 'e1', text: 'love' },
+      { tokenId: 'e2', text: 'cats' },
+    ];
+    const enCue = 'I love cats';
+    // "love" 세그먼트 offset 2 → e1
+    expect(matchTokenAt(enTokens, enCue, 2, 'love').tokenId).toBe('e1');
+    // 오프셋을 일부러 -1(불명)로 줘도 segText 폴백으로 e2
+    expect(matchTokenAt(enTokens, enCue, -1, 'cats').tokenId).toBe('e2');
+  });
+
+  it('매칭 없으면 null', () => {
+    expect(matchTokenAt(jaTokens, cue, 99, '犬')).toBeNull();
+    expect(matchTokenAt([], cue, 0, '猫')).toBeNull();
+    expect(matchTokenAt(null, cue, 0, '猫')).toBeNull();
+  });
+});
+
+describe('hashText', () => {
+  it('결정적 8자리 16진수', () => {
+    expect(hashText('hello')).toBe(hashText('hello'));
+    expect(/^[0-9a-f]{8}$/.test(hashText('猫が好き'))).toBe(true);
+  });
+  it('다른 입력은 다른 해시(대개)', () => {
+    expect(hashText('a')).not.toBe(hashText('b'));
   });
 });
