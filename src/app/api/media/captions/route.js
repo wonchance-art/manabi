@@ -1,11 +1,23 @@
 // POST /api/media/captions — 「듣고 읽기」 실험용 자막 트랙 추출.
 // body: { videoId, lang }  — lang은 자막 언어 코드(예: 'ja', 'en', 'fr', 'zh').
-// 처리(시도 순서):
-//   ① getInfo → getTranscript() (InnerTube '스크립트 보기' get_transcript 엔드포인트)
-//      → 요청 언어로 selectLanguage → initial_segments를 큐 [{from,to,text}]로 정규화.
-//      pot/proof-of-origin 토큰이 필요 없는 경로라 base_url 직접 fetch보다 견고하다.
-//   ② ①이 throw하거나 세그먼트 0개면 → caption_tracks base_url fetch(json3 우선, XML 폴백) 폴백.
-//   ③ 요청 언어 트랙이 없으면 409 + available(가용 트랙 목록: code+name+kind)을 줘서 클라가 고르게.
+//
+// 시도 체인(Vercel 데이터센터 IP에서 pot/proof-of-origin 강제로 인한 지속 차단 대응):
+//   step 1 (transcript): getInfo(WEB) → getTranscript() get_transcript 엔드포인트.
+//       pot 불필요 경로지만 DC IP에서 지속 400 확인됨 → 재시도 1회로 축소(시간 절약).
+//   step 2 (web): WEB caption_tracks base_url fetch(json3 우선, XML 폴백).
+//       WEB timedtext는 pot을 요구해 DC IP에서 실패하는 것으로 관측됨.
+//   step 3 (android): getInfo(videoId, { client: 'ANDROID' }) → caption_tracks base_url fetch.
+//       ANDROID/iOS 클라이언트 자막 base_url은 pot 없이 열리는 사례가 커뮤니티에 보고됨(가설).
+//   step 4 (ios): getInfo(videoId, { client: 'IOS' }) 동일 — ANDROID 실패 시.
+//   step 5: 전부 실패 → 404(자막 없음)/409(요청 언어 없음, available 동봉)/502(추출 실패) 안내.
+//
+// 각 단계 실패는 `[media/captions] step N (label) failed: message`로 로깅해 어느 단계까지
+// 갔는지 로그만으로 판독 가능. 성공 응답에는 `source`('transcript'|'web'|'android'|'ios')를
+// 붙여 디버깅을 돕는다(클라는 무시 가능).
+//
+// getInfo 시그니처(youtubei.js@17.2.0, node_modules/dist/src/Innertube.js·types 확인):
+//   getInfo(target, options?) / options.client: InnerTubeClient
+//   InnerTubeClient = 'IOS'|'WEB'|'MWEB'|'ANDROID'|'ANDROID_VR'|... — 'ANDROID'/'IOS' 유효.
 //
 // 비공식 라이브러리(youtubei.js) 사용 — 오너 승인. 서버 전용. 전면 try/catch로
 // 라이브러리 내부 예외가 500 스택으로 새지 않게 하고, 사용자에겐 한국어 안내만.
@@ -175,46 +187,87 @@ export async function POST(request) {
     const trackList = Array.isArray(tracks) ? tracks : [];
     const { track, available } = selectCaptionTrack(trackList, lang);
 
-    // ── 시도 ①: get_transcript (pot 토큰 불필요 경로, 1순위) ──
+    // 성공 payload를 캐시에 저장하고 응답한다(공통 종료 경로).
+    const finish = (payload) => {
+      cacheSet(cacheKey, payload);
+      return Response.json(payload);
+    };
+
+    // ── step 1: get_transcript (pot 불필요 경로 — DC IP 지속 400이라 재시도 1회로 축소) ──
     try {
-      const { cues, kind } = await loadTranscriptCuesWithRetry(info, lang);
+      const { cues, kind } = await loadTranscriptCuesWithRetry(info, lang, 1);
       if (cues.length > 0) {
-        const payload = { cues, lang: lang || '', kind, available };
-        cacheSet(cacheKey, payload);
-        return Response.json(payload);
+        return finish({ cues, lang: lang || '', kind, available, source: 'transcript' });
       }
     } catch (e) {
-      console.error('[media/captions] transcript path failed:', e?.message);
+      console.error(`[media/captions] step 1 (transcript) failed: ${e?.message}`);
     }
 
-    // ── 시도 ②: caption_tracks base_url fetch (폴백) ──
+    // ── step 2: WEB caption_tracks base_url fetch ──
+    if (track) {
+      try {
+        const cues = await fetchTrack(track.base_url);
+        if (cues.length > 0) {
+          return finish({
+            cues,
+            lang: track.language_code || lang,
+            kind: track.kind || 'manual',
+            available,
+            source: 'web',
+          });
+        }
+        throw new Error('0 cues from base_url');
+      } catch (e) {
+        console.error(`[media/captions] step 2 (web) failed: ${e?.message}`);
+      }
+    } else {
+      console.error(`[media/captions] step 2 (web) failed: no matching track for lang="${lang}"`);
+    }
+
+    // ── step 3·4: ANDROID/iOS 클라이언트 caption base_url fetch (pot 우회 가설) ──
+    // WEB과 별개 클라이언트로 getInfo를 다시 호출 → 각자의 caption_tracks에서 요청 언어 선택 후 fetch.
+    for (const { step, label, client } of [
+      { step: 3, label: 'android', client: 'ANDROID' },
+      { step: 4, label: 'ios', client: 'IOS' },
+    ]) {
+      try {
+        const clientInfo = await yt.getInfo(videoId, { client });
+        const clientTracks = clientInfo?.captions?.caption_tracks;
+        const list = Array.isArray(clientTracks) ? clientTracks : [];
+        const sel = selectCaptionTrack(list, lang);
+        if (!sel.track) {
+          throw new Error(`no matching track for lang="${lang}" (tracks: ${list.length})`);
+        }
+        const cues = await fetchTrack(sel.track.base_url);
+        if (cues.length === 0) throw new Error('0 cues from base_url');
+        return finish({
+          cues,
+          lang: sel.track.language_code || lang,
+          kind: sel.track.kind || 'manual',
+          // WEB에서 이미 가용 목록을 얻었으면 UI 일관성 위해 유지, 없으면 이 클라이언트 목록 사용.
+          available: available.length > 0 ? available : sel.available,
+          source: label,
+        });
+      } catch (e) {
+        console.error(`[media/captions] step ${step} (${label}) failed: ${e?.message}`);
+      }
+    }
+
+    // ── step 5: 전부 실패 → 안내 ──
     if (trackList.length === 0) {
       return Response.json({ error: '이 영상에는 자막이 없어요.' }, { status: 404 });
     }
     if (!track) {
-      // ③ 요청 언어 트랙 없음 — 클라가 고르도록 가용 목록 반환
+      // 요청 언어 트랙 없음 — 클라가 고르도록 가용 목록 반환
       return Response.json(
         { error: '요청한 언어 자막이 없어요. 아래에서 언어를 골라주세요.', available },
         { status: 409 }
       );
     }
-
-    const cues = await fetchTrack(track.base_url);
-    if (cues.length === 0) {
-      return Response.json(
-        { error: '자막을 가져오지 못했어요.', available },
-        { status: 502 }
-      );
-    }
-
-    const payload = {
-      cues,
-      lang: track.language_code || lang,
-      kind: track.kind || 'manual',
-      available,
-    };
-    cacheSet(cacheKey, payload);
-    return Response.json(payload);
+    return Response.json(
+      { error: '자막을 가져오지 못했어요.', available },
+      { status: 502 }
+    );
   } catch (err) {
     console.error('[api/media/captions] error:', err?.message);
     return Response.json(
