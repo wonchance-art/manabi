@@ -156,6 +156,112 @@ export function selectCaptionTrack(tracks, langCode) {
   return { track, available };
 }
 
+// ── get_transcript(InnerTube '스크립트 보기') 경로 정규화 ──
+//
+// youtubei.js@17 의 MediaInfo.getTranscript() → TranscriptInfo 구조(node_modules 실소스 확인):
+//   TranscriptInfo.transcript(Transcript)
+//     .content(TranscriptSearchPanel)
+//       .body(TranscriptSegmentList)
+//         .initial_segments : (TranscriptSegment | TranscriptSectionHeader)[]
+//   · TranscriptSegment: { type:'TranscriptSegment', start_ms, end_ms(문자열 ms),
+//                          snippet(Text: .text/.toString()), start_time_text, target_id }
+//   · TranscriptSectionHeader: { type:'TranscriptSectionHeader', start_ms, end_ms, snippet } — 챕터 구분(스킵)
+//   · TranscriptInfo.languages : string[] (언어 메뉴 표시명, 예: 'English'/'Japanese'/'日本語')
+//   · TranscriptInfo.selectLanguage(language:string) : 표시명 문자열로 언어 전환
+// (근거: node_modules/youtubei.js/dist/src/parser/{youtube/TranscriptInfo.js,
+//        classes/Transcript.js, classes/TranscriptSearchPanel.js,
+//        classes/TranscriptSegmentList.js, classes/TranscriptSegment.js})
+
+function snippetText(snippet) {
+  if (snippet == null) return '';
+  if (typeof snippet === 'string') return snippet;
+  if (typeof snippet.text === 'string') return snippet.text;
+  if (typeof snippet.toString === 'function' && snippet.toString !== Object.prototype.toString) {
+    const s = snippet.toString();
+    if (s && s !== '[object Object]' && s !== 'N/A') return s;
+  }
+  return '';
+}
+
+/**
+ * TranscriptInfo의 initial_segments를 표준 큐로 정규화한다(순수 함수).
+ * start_ms/end_ms(문자열 ms)를 초로 환산하고, 섹션 헤더·빈 줄은 스킵한다.
+ * @param {Array<{type?:string,start_ms?:any,end_ms?:any,snippet?:any}>} segments
+ * @returns {{from:number,to:number,text:string}[]}
+ */
+export function normalizeTranscriptSegments(segments) {
+  const list = Array.isArray(segments) ? segments : [];
+  const cues = [];
+  for (const seg of list) {
+    if (!seg || typeof seg !== 'object') continue;
+    if (seg.type === 'TranscriptSectionHeader') continue; // 챕터 구분 헤더 스킵
+    const text = cleanText(snippetText(seg.snippet));
+    if (!text) continue;
+    const startMs = Number(seg.start_ms);
+    if (!Number.isFinite(startMs)) continue;
+    const from = startMs / 1000;
+    const endMs = Number(seg.end_ms);
+    const to = Number.isFinite(endMs) && endMs >= startMs ? endMs / 1000 : from;
+    cues.push({ from, to, text });
+  }
+  return cues;
+}
+
+// BCP-47 코드(예: 'ja')로 만들 수 있는 언어 표시명 후보를 모은다.
+// InnerTube 언어 메뉴는 클라이언트 로케일에 따라 영문('Japanese')·자국어('日本語') 등으로
+// 오므로 여러 로케일의 표시명 + 원시 코드를 후보로 둔다.
+function languageNameCandidates(langCode) {
+  const base = String(langCode || '').toLowerCase().split('-')[0].trim();
+  if (!base) return [];
+  const out = new Set([base]);
+  for (const loc of ['en', base, 'ko']) {
+    try {
+      const name = new Intl.DisplayNames([loc], { type: 'language' }).of(base);
+      if (name && name.toLowerCase() !== base) out.add(name.toLowerCase());
+    } catch {
+      // Intl 미지원 로케일 — 무시
+    }
+  }
+  return [...out];
+}
+
+// 표시명 정규화: 소문자 + 괄호/자동생성 표기 제거 + 공백 정리.
+function normalizeLangLabel(s) {
+  return String(s || '')
+    .toLowerCase()
+    .replace(/\([^)]*\)/g, '')
+    .replace(/auto-?generated|자동\s*생성/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * TranscriptInfo.languages(표시명 배열)에서 요청 BCP-47 코드에 맞는 표시명을 찾는다.
+ * selectLanguage()에 그대로 넘길 수 있는 원본 표시명 문자열을 돌려준다. 없으면 null.
+ * @param {string[]} languages 표시명 배열(예: ['English','Japanese','日本語 (자동 생성)'])
+ * @param {string} langCode 예: 'ja' / 'ja-JP'
+ * @returns {string|null}
+ */
+export function matchTranscriptLanguage(languages, langCode) {
+  const list = Array.isArray(languages) ? languages.filter((x) => typeof x === 'string') : [];
+  if (list.length === 0) return null;
+  const cands = languageNameCandidates(langCode);
+  if (cands.length === 0) return null;
+
+  // 1) 정확 일치(정규화 기준)
+  for (const lang of list) {
+    if (cands.includes(normalizeLangLabel(lang))) return lang;
+  }
+  // 2) 부분 포함(후보/라벨 3자 이상일 때만 — 오탐 방지)
+  for (const lang of list) {
+    const n = normalizeLangLabel(lang);
+    for (const c of cands) {
+      if (c.length >= 3 && (n.includes(c) || c.includes(n))) return lang;
+    }
+  }
+  return null;
+}
+
 /** base_url에 fmt 파라미터를 붙인다(기존 파라미터 유지). */
 export function withCaptionFormat(baseUrl, fmt = 'json3') {
   if (!baseUrl) return baseUrl;

@@ -7,6 +7,8 @@ import {
   durationTextToSeconds,
   normalizeVideoNode,
   normalizeVideoList,
+  normalizeTranscriptSegments,
+  matchTranscriptLanguage,
 } from '../server/media.js';
 
 // ─────────────────────────────────────────────────────────────
@@ -222,6 +224,77 @@ describe('normalizeVideoNode', () => {
   it('id/제목 없으면 null', () => {
     expect(normalizeVideoNode({ title: { text: 'x' } })).toBeNull();
     expect(normalizeVideoNode(null)).toBeNull();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// get_transcript(InnerTube '스크립트 보기') 경로 픽스처는 youtubei.js@17 실소스
+// (node_modules/youtubei.js/dist/src/parser/classes/TranscriptSegment.js 등)의
+// 필드명(type/start_ms/end_ms/snippet)과 Text(.text/.toString()) 형태를 본떴다.
+// start_ms/end_ms는 실제 응답에서 문자열 ms이므로 문자열로 둔다.
+// ─────────────────────────────────────────────────────────────
+describe('normalizeTranscriptSegments', () => {
+  it('start_ms/end_ms(문자열 ms) → 초, 섹션 헤더/빈 줄 스킵, 엔티티·공백 정리', () => {
+    const segments = [
+      { type: 'TranscriptSectionHeader', start_ms: '0', end_ms: '0', snippet: { text: 'Intro' } }, // 스킵
+      { type: 'TranscriptSegment', start_ms: '120', end_ms: '5000', snippet: { text: 'Hello  world' } },
+      { type: 'TranscriptSegment', start_ms: '5000', end_ms: '7000', snippet: { text: "it&#39;s   fine" } },
+      { type: 'TranscriptSegment', start_ms: '7000', end_ms: '8000', snippet: { text: '   ' } }, // 빈 → 스킵
+    ];
+    const cues = normalizeTranscriptSegments(segments);
+    expect(cues).toHaveLength(2);
+    expect(cues[0]).toEqual({ from: 0.12, to: 5, text: 'Hello world' });
+    expect(cues[1]).toEqual({ from: 5, to: 7, text: "it's fine" });
+  });
+
+  it('snippet이 Text 유사 객체(.toString())여도 텍스트 추출', () => {
+    const seg = {
+      type: 'TranscriptSegment',
+      start_ms: '1000',
+      end_ms: '2000',
+      snippet: { toString: () => '日本語' },
+    };
+    expect(normalizeTranscriptSegments([seg])).toEqual([{ from: 1, to: 2, text: '日本語' }]);
+  });
+
+  it('end_ms 없음/역전이면 to=from', () => {
+    const cues = normalizeTranscriptSegments([
+      { type: 'TranscriptSegment', start_ms: '3000', snippet: { text: 'a' } },
+      { type: 'TranscriptSegment', start_ms: '4000', end_ms: '3000', snippet: { text: 'b' } },
+    ]);
+    expect(cues[0]).toEqual({ from: 3, to: 3, text: 'a' });
+    expect(cues[1]).toEqual({ from: 4, to: 4, text: 'b' });
+  });
+
+  it('start_ms 불량/빈 배열/널 방어', () => {
+    expect(normalizeTranscriptSegments([{ type: 'TranscriptSegment', start_ms: 'x', snippet: { text: 'a' } }])).toEqual([]);
+    expect(normalizeTranscriptSegments([])).toEqual([]);
+    expect(normalizeTranscriptSegments(null)).toEqual([]);
+    expect(normalizeTranscriptSegments(undefined)).toEqual([]);
+  });
+});
+
+describe('matchTranscriptLanguage', () => {
+  it('영문 표시명 매칭(BCP-47 코드 → 표시명)', () => {
+    const langs = ['English', 'Japanese', 'Spanish'];
+    expect(matchTranscriptLanguage(langs, 'ja')).toBe('Japanese');
+    expect(matchTranscriptLanguage(langs, 'en')).toBe('English');
+    expect(matchTranscriptLanguage(langs, 'es')).toBe('Spanish');
+  });
+  it('지역 하위태그(ja-JP)는 기본 코드로 매칭', () => {
+    expect(matchTranscriptLanguage(['Japanese', 'English'], 'ja-JP')).toBe('Japanese');
+  });
+  it('자국어(native) 표시명도 매칭', () => {
+    expect(matchTranscriptLanguage(['日本語', 'English'], 'ja')).toBe('日本語');
+  });
+  it('자동 생성/괄호 표기가 붙어도 매칭(원본 문자열 반환)', () => {
+    expect(matchTranscriptLanguage(['English (auto-generated)'], 'en')).toBe('English (auto-generated)');
+  });
+  it('없으면 null', () => {
+    expect(matchTranscriptLanguage(['French', 'German'], 'ko')).toBeNull();
+    expect(matchTranscriptLanguage([], 'ja')).toBeNull();
+    expect(matchTranscriptLanguage(null, 'ja')).toBeNull();
+    expect(matchTranscriptLanguage(['English'], '')).toBeNull();
   });
 });
 

@@ -1,13 +1,16 @@
 // POST /api/media/captions — 「듣고 읽기」 실험용 자막 트랙 추출.
 // body: { videoId, lang }  — lang은 자막 언어 코드(예: 'ja', 'en', 'fr', 'zh').
-// 처리: getInfo → caption_tracks에서 요청 언어(사람 자막 우선, 없으면 ASR) 선택
-//       → 트랙 base_url fetch(json3 우선, XML 폴백) → 큐 [{from,to,text}]로 정규화.
-// 요청 언어 트랙이 없으면 400 + available(가용 트랙 목록)을 줘서 클라가 고르게.
+// 처리(시도 순서):
+//   ① getInfo → getTranscript() (InnerTube '스크립트 보기' get_transcript 엔드포인트)
+//      → 요청 언어로 selectLanguage → initial_segments를 큐 [{from,to,text}]로 정규화.
+//      pot/proof-of-origin 토큰이 필요 없는 경로라 base_url 직접 fetch보다 견고하다.
+//   ② ①이 throw하거나 세그먼트 0개면 → caption_tracks base_url fetch(json3 우선, XML 폴백) 폴백.
+//   ③ 요청 언어 트랙이 없으면 409 + available(가용 트랙 목록: code+name+kind)을 줘서 클라가 고르게.
 //
 // 비공식 라이브러리(youtubei.js) 사용 — 오너 승인. 서버 전용. 전면 try/catch로
 // 라이브러리 내부 예외가 500 스택으로 새지 않게 하고, 사용자에겐 한국어 안내만.
 //
-// 캐시: 라우트 내 메모리 Map(비영속, 키 videoId+lang, 상한 100).
+// 캐시: 라우트 내 메모리 Map(비영속, 키 videoId+lang, 상한 100). 성공 응답만 저장.
 
 import { createClient } from '@supabase/supabase-js';
 import { Innertube } from 'youtubei.js';
@@ -15,6 +18,8 @@ import {
   parseCaptionData,
   selectCaptionTrack,
   withCaptionFormat,
+  normalizeTranscriptSegments,
+  matchTranscriptLanguage,
 } from '@/lib/server/media';
 import { rateLimit, getClientKey } from '@/lib/server/rateLimit';
 
@@ -81,6 +86,28 @@ async function fetchTrack(baseUrl) {
   return [];
 }
 
+// ① get_transcript 경로 — 요청 언어로 전환 후 세그먼트를 큐로 정규화.
+// 요청 언어가 자막 언어 메뉴에 없으면 [] 반환(폴백/409에 위임). throw는 호출부가 캐치.
+async function loadTranscriptCues(info, lang) {
+  const transcript = await info.getTranscript(); // 자막 패널 없으면 throw
+  const languages = Array.isArray(transcript?.languages) ? transcript.languages : [];
+
+  let selected = transcript;
+  if (lang) {
+    const match = matchTranscriptLanguage(languages, lang);
+    if (!match && languages.length > 0) return { cues: [], kind: '' }; // 요청 언어 없음 → 폴백에 위임
+    if (match && match !== transcript.selectedLanguage) {
+      selected = await transcript.selectLanguage(match);
+    }
+  }
+
+  const segments = selected?.transcript?.content?.body?.initial_segments;
+  const cues = normalizeTranscriptSegments(segments);
+  const selName = String(selected?.selectedLanguage || '').toLowerCase();
+  const kind = /auto|자동/.test(selName) ? 'asr' : 'manual';
+  return { cues, kind };
+}
+
 export async function POST(request) {
   const auth = await requireUser(request);
   if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
@@ -122,14 +149,29 @@ export async function POST(request) {
       );
     }
 
+    // available은 클라 언어 선택 UI용 — caption_tracks에서 항상 계산(재요청 식별자 code + 라벨 name).
     const tracks = info?.captions?.caption_tracks;
-    if (!Array.isArray(tracks) || tracks.length === 0) {
-      return Response.json({ error: '이 영상에는 자막이 없어요.' }, { status: 404 });
+    const trackList = Array.isArray(tracks) ? tracks : [];
+    const { track, available } = selectCaptionTrack(trackList, lang);
+
+    // ── 시도 ①: get_transcript (pot 토큰 불필요 경로, 1순위) ──
+    try {
+      const { cues, kind } = await loadTranscriptCues(info, lang);
+      if (cues.length > 0) {
+        const payload = { cues, lang: lang || '', kind, available };
+        cacheSet(cacheKey, payload);
+        return Response.json(payload);
+      }
+    } catch (e) {
+      console.error('[media/captions] transcript path failed:', e?.message);
     }
 
-    const { track, available } = selectCaptionTrack(tracks, lang);
+    // ── 시도 ②: caption_tracks base_url fetch (폴백) ──
+    if (trackList.length === 0) {
+      return Response.json({ error: '이 영상에는 자막이 없어요.' }, { status: 404 });
+    }
     if (!track) {
-      // 요청 언어 트랙 없음 — 클라가 고르도록 가용 목록 반환
+      // ③ 요청 언어 트랙 없음 — 클라가 고르도록 가용 목록 반환
       return Response.json(
         { error: '요청한 언어 자막이 없어요. 아래에서 언어를 골라주세요.', available },
         { status: 409 }
