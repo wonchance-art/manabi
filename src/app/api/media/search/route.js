@@ -9,13 +9,16 @@
 // 서버 전용(클라 번들 금지). 라이브러리 내부 예외가 500 스택으로 새지 않도록 전면 try/catch.
 
 import { createClient } from '@supabase/supabase-js';
-import { Innertube } from 'youtubei.js';
+import { Innertube, Log } from 'youtubei.js';
 import { parseYouTubeId } from '@/lib/listenSubtitles';
 import { normalizeVideoList } from '@/lib/server/media';
 import { rateLimit, getClientKey } from '@/lib/server/rateLimit';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
+
+// youtubei.js 내부 파서 경고([YOUTUBEJS][Text] 등) 소음 억제. 우리 [media/*] 로그는 유지.
+Log.setLevel(Log.Level.NONE);
 
 // Innertube 인스턴스는 재사용(생성 비용·토큰 획득). 첫 요청에서 lazy 생성.
 let innertubePromise = null;

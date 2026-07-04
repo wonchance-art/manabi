@@ -13,7 +13,7 @@
 // 캐시: 라우트 내 메모리 Map(비영속, 키 videoId+lang, 상한 100). 성공 응답만 저장.
 
 import { createClient } from '@supabase/supabase-js';
-import { Innertube } from 'youtubei.js';
+import { Innertube, Log } from 'youtubei.js';
 import {
   parseCaptionData,
   selectCaptionTrack,
@@ -25,6 +25,9 @@ import { rateLimit, getClientKey } from '@/lib/server/rateLimit';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
+
+// youtubei.js 내부 파서 경고([YOUTUBEJS][Text] 등) 소음 억제. 우리 [media/*] 로그는 유지.
+Log.setLevel(Log.Level.NONE);
 
 let innertubePromise = null;
 function getInnertube() {
@@ -108,6 +111,24 @@ async function loadTranscriptCues(info, lang) {
   return { cues, kind };
 }
 
+// get_transcript 엔드포인트는 간헐적으로 400을 낸다(YouTube.js 오픈 이슈 #1102 — 재시도 시
+// 성공하는 사례 보고, 라이브러리·릴리스에 수정 없음). throw(400 등)는 짧은 백오프로 재시도하고,
+// 언어 미스매치 같은 정상적 빈 결과({cues:[]})는 재시도하지 않고 그대로 폴백에 위임한다.
+async function loadTranscriptCuesWithRetry(info, lang, attempts = 3) {
+  let lastErr;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await loadTranscriptCues(info, lang);
+    } catch (e) {
+      lastErr = e;
+      if (i < attempts - 1) {
+        await new Promise((r) => setTimeout(r, 300 * (i + 1)));
+      }
+    }
+  }
+  throw lastErr;
+}
+
 export async function POST(request) {
   const auth = await requireUser(request);
   if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
@@ -156,7 +177,7 @@ export async function POST(request) {
 
     // ── 시도 ①: get_transcript (pot 토큰 불필요 경로, 1순위) ──
     try {
-      const { cues, kind } = await loadTranscriptCues(info, lang);
+      const { cues, kind } = await loadTranscriptCuesWithRetry(info, lang);
       if (cues.length > 0) {
         const payload = { cues, lang: lang || '', kind, available };
         cacheSet(cacheKey, payload);
