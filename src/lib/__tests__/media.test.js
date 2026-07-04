@@ -11,6 +11,7 @@ import {
   matchTranscriptLanguage,
   resolveSearchLang,
   extractCaptionLangs,
+  extractEmbeddable,
   normalizeSupadataSegments,
   formatTrackLangs,
 } from '../server/media.js';
@@ -345,6 +346,28 @@ describe('extractCaptionLangs', () => {
     expect(extractCaptionLangs({ captions: {} })).toEqual([]);
     expect(extractCaptionLangs({})).toEqual([]);
     expect(extractCaptionLangs(null)).toEqual([]);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// extractEmbeddable 픽스처는 youtubei.js 파서가 세팅하는 MediaInfo.playability_status
+// (IPlayabilityStatus) 형태에 근거한다. embeddable은 항상 boolean으로 세팅되며
+// (parser.js:273 `embeddable: !!data.playabilityStatus.playableInEmbed || false`),
+// playability_status 자체가 없으면 미확인(undefined)으로 구분한다.
+// ─────────────────────────────────────────────────────────────
+describe('extractEmbeddable', () => {
+  it('임베드 가능(embeddable:true) → true', () => {
+    expect(extractEmbeddable({ playability_status: { status: 'OK', embeddable: true } })).toBe(true);
+  });
+  it('임베드 차단(embeddable:false) → false — 101/150 사전 신호', () => {
+    expect(extractEmbeddable({ playability_status: { status: 'OK', embeddable: false } })).toBe(false);
+  });
+  it('playability_status 없음/embeddable 비-boolean → undefined(미확인)', () => {
+    expect(extractEmbeddable({})).toBeUndefined();
+    expect(extractEmbeddable({ playability_status: {} })).toBeUndefined();
+    expect(extractEmbeddable({ playability_status: { embeddable: 'yes' } })).toBeUndefined();
+    expect(extractEmbeddable(null)).toBeUndefined();
+    expect(extractEmbeddable(undefined)).toBeUndefined();
   });
 });
 

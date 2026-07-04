@@ -475,6 +475,25 @@ export function extractCaptionLangs(info) {
 }
 
 /**
+ * getBasicInfo 응답에서 "임베드(외부 사이트 iframe) 재생 가능 여부"를 뽑는다.
+ *   · 근거: MediaInfo.playability_status(IPlayabilityStatus).embeddable — boolean.
+ *     이 값은 youtubei.js 파서가 raw playabilityStatus.playableInEmbed로부터
+ *     `embeddable: !!data.playabilityStatus.playableInEmbed || false` 로 세팅한다
+ *     (node_modules/youtubei.js/dist/src/parser/parser.js:270-276,
+ *      types/ParsedResponse.d.ts:90-96 IPlayabilityStatus.embeddable:boolean).
+ *   · playability_status 자체가 없거나 embeddable이 boolean이 아니면 undefined(미확인)
+ *     — 클라에서 "제외"가 아니라 "그대로 표시"로 처리하기 위해 false와 구분한다.
+ * IFrame Player의 임베드 차단 에러(101/150)와 대응하는 서버측 사전 신호다.
+ * @param {object} info youtubei.js VideoInfo
+ * @returns {boolean|undefined} true=임베드 가능, false=임베드 불가, undefined=미확인
+ */
+export function extractEmbeddable(info) {
+  const status = info?.playability_status;
+  if (!status || typeof status.embeddable !== 'boolean') return undefined;
+  return status.embeddable;
+}
+
+/**
  * 영상 노드 배열을 정규화하고 videoId 중복 제거 후 상한만큼 자른다.
  * @param {object[]} nodes
  * @param {number} limit

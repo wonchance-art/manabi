@@ -11,7 +11,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { Innertube, Log } from 'youtubei.js';
 import { parseYouTubeId } from '@/lib/listenSubtitles';
-import { normalizeVideoList, resolveSearchLang, extractCaptionLangs } from '@/lib/server/media';
+import { normalizeVideoList, resolveSearchLang, extractCaptionLangs, extractEmbeddable } from '@/lib/server/media';
 import { rateLimit, getClientKey } from '@/lib/server/rateLimit';
 
 export const runtime = 'nodejs';
@@ -38,7 +38,9 @@ function getInnertube(session) {
   return innertubeCache.get(key);
 }
 
-// 검색어 분기 결과 상위 N개에 한해 caption_tracks 언어 코드를 뽑아 captionLangs로 주석.
+// 검색어 분기 결과 상위 N개에 한해 caption_tracks 언어 코드를 뽑아 captionLangs로,
+// 임베드(외부 재생) 가능 여부를 embeddable로 주석한다. 둘 다 같은 getBasicInfo
+// 응답에서 추출하므로 추가 호출 비용 없음(playability_status·captions 동일 응답 포함).
 // getBasicInfo는 영상당 watch 엔드포인트 1회 호출(Innertube.js) — 상위 8개 병렬,
 // 개당 실패 무시(allSettled), 전체 4초 상한(Promise.race)으로 검색 응답 지연을 막는다.
 async function annotateCaptionLangs(yt, results, { count = 8, timeoutMs = 4000 } = {}) {
@@ -48,6 +50,7 @@ async function annotateCaptionLangs(yt, results, { count = 8, timeoutMs = 4000 }
     targets.map(async (v) => {
       const info = await yt.getBasicInfo(v.videoId);
       v.captionLangs = extractCaptionLangs(info);
+      v.embeddable = extractEmbeddable(info); // true|false|undefined(미확인)
     })
   );
   let timer;

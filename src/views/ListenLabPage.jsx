@@ -40,6 +40,26 @@ const LANG_CODE = Object.fromEntries(LANG_OPTIONS.map(l => [l.key, l.code]));
 const POLL_MS = 250;
 const MANUAL_SCROLL_SUPPRESS_MS = 3000;
 
+// react-youtube onError의 event.data(YouTube IFrame Player API 에러 코드)별 안내.
+//   · 101/150 = 소유자가 외부(임베드) 재생을 차단 → 다른 영상으로 안내
+//   · 100     = 삭제/비공개
+//   · 2       = 잘못된 videoId 파라미터
+//   · 5/그 외 = HTML5 플레이어/일시 오류
+// findAnother=true면 "다른 영상 찾기"로 검색 화면 복귀를 권한다.
+function describePlayerError(code) {
+  switch (code) {
+    case 101:
+    case 150:
+      return { text: '이 영상은 외부 재생이 막혀 있어요 — 다른 영상을 골라주세요.', findAnother: true };
+    case 100:
+      return { text: '영상이 삭제됐거나 비공개예요.', findAnother: false };
+    case 2:
+      return { text: 'YouTube 주소를 다시 확인해주세요.', findAnother: false };
+    default:
+      return { text: '재생에 실패했어요 — 잠시 후 다시 시도해주세요.', findAnother: false };
+  }
+}
+
 // 분석 결과 토큰 칩으로 쓸 만한 토큰만 (기호·개행·공백 제외)
 function isMeaningfulToken(t) {
   if (!t || !t.text) return false;
@@ -63,7 +83,8 @@ export default function ListenLabPage() {
   const [language, setLanguage] = useState('Japanese');
   const [inputError, setInputError] = useState('');
   const [started, setStarted] = useState(false);
-  const [playerError, setPlayerError] = useState(false);
+  // null=정상, 그 외=YouTube IFrame 에러 코드(2/5/100/101/150 등). 코드별로 안내를 분기한다.
+  const [playerError, setPlayerError] = useState(null);
 
   // ── 영상 찾기 탭 상태 ──
   const [inputTab, setInputTab] = useState('search');   // 'search' | 'manual'
@@ -197,7 +218,7 @@ export default function ListenLabPage() {
       setTimed(true);
       setVideoId(vid);
       setInputError('');
-      setPlayerError(false);
+      setPlayerError(null);
       setStarted(true);
     } catch {
       setCaptionError('자막을 가져오지 못했어요 — 직접 붙여넣기로 학습할 수 있어요.');
@@ -220,7 +241,7 @@ export default function ListenLabPage() {
     }
     setVideoId(id);
     setInputError('');
-    setPlayerError(false);
+    setPlayerError(null);
     setStarted(true);
   };
 
@@ -231,7 +252,7 @@ export default function ListenLabPage() {
     setActiveIdx(-1);
     setCurrentTime(0);
     setOpenCue(-1);
-    setPlayerError(false);
+    setPlayerError(null);
   };
 
   // ── 폴링 (재생 중 250ms) — getCurrentTime는 Promise ──
@@ -291,7 +312,11 @@ export default function ListenLabPage() {
     if (e.data === 1) startPoll();
     else stopPoll();
   };
-  const onPlayerError = () => { setPlayerError(true); };
+  // event.data = YouTube IFrame 에러 코드. 코드가 없으면(-1 등) 일반 오류로 처리.
+  const onPlayerError = (e) => {
+    const code = typeof e?.data === 'number' ? e.data : -1;
+    setPlayerError(code);
+  };
 
   // ── 큐 탭 → 해당 시점 seekTo ──
   const seekToCue = (cue) => {
@@ -479,17 +504,23 @@ export default function ListenLabPage() {
                     const hasLangCaption =
                       Array.isArray(v.captionLangs) && v.captionLangs.includes(LANG_CODE[language]);
                     const langName = LANG_OPTIONS.find((l) => l.key === language)?.name || '';
+                    // 서버가 임베드 불가로 확인한 영상(embeddable===false)은 골라도 플레이어에서
+                    // 101/150로 막히므로 미리 흐리게 + 비활성 + 사유 표기(undefined=미확인은 기존대로).
+                    const notEmbeddable = v.embeddable === false;
+                    const disabled = !!loadingVideoId || notEmbeddable;
                     return (
                       <button
                         key={v.videoId}
                         type="button"
-                        disabled={!!loadingVideoId}
+                        disabled={disabled}
                         onClick={() => loadVideo(v.videoId, LANG_CODE[language])}
+                        title={notEmbeddable ? '이 영상은 외부 재생이 막혀 있어요' : undefined}
                         className="card"
                         style={{
                           display: 'flex', gap: 10, alignItems: 'center', textAlign: 'left',
-                          padding: 8, cursor: loadingVideoId ? 'default' : 'pointer',
-                          opacity: loadingVideoId && !busy ? 0.5 : 1,
+                          padding: 8,
+                          cursor: notEmbeddable ? 'not-allowed' : (loadingVideoId ? 'default' : 'pointer'),
+                          opacity: notEmbeddable || (loadingVideoId && !busy) ? 0.5 : 1,
                         }}
                       >
                         {v.thumbnailUrl && (
@@ -519,6 +550,19 @@ export default function ListenLabPage() {
                               }}
                             >
                               {langName} 자막
+                            </span>
+                          )}
+                          {notEmbeddable && (
+                            <span
+                              style={{
+                                alignSelf: 'flex-start', marginTop: 2,
+                                fontSize: '0.68rem', fontWeight: 600, lineHeight: 1.4,
+                                padding: '1px 8px', borderRadius: 999,
+                                background: 'var(--danger-subtle, rgba(220,38,38,0.12))',
+                                color: 'var(--danger, #dc2626)',
+                              }}
+                            >
+                              🚫 외부 재생 불가
                             </span>
                           )}
                         </span>
@@ -589,9 +633,21 @@ export default function ListenLabPage() {
             <Button size="sm" variant="secondary" onClick={reset}>새로 시작</Button>
           </div>
 
-          {playerError ? (
-            <div className="card" style={{ padding: 20, textAlign: 'center', color: 'var(--text-muted)' }}>
-              영상을 불러오지 못했어요. YouTube 주소를 다시 확인해주세요.
+          {playerError != null ? (
+            <div className="card" style={{ padding: 20, textAlign: 'center', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
+              <span>{describePlayerError(playerError).text}</span>
+              {/* 회수 모드 — 재생만 막힌 것: 유튜브에서 보며 아래 스크립트로 학습(단어 저장 가능) */}
+              {cues.length > 0 && (
+                <span style={{ fontSize: '0.8rem' }}>
+                  아래 스크립트로 학습은 계속할 수 있어요 — 영상은{' '}
+                  <a href={`https://www.youtube.com/watch?v=${videoId}`} target="_blank" rel="noreferrer" className="study-textlink">
+                    YouTube에서 열기 ↗
+                  </a>
+                </span>
+              )}
+              {describePlayerError(playerError).findAnother && (
+                <Button size="sm" onClick={reset}>다른 영상 찾기</Button>
+              )}
             </div>
           ) : (
             <div style={{ position: 'relative', width: '100%', aspectRatio: '16 / 9', background: '#000', borderRadius: 12, overflow: 'hidden' }}>
