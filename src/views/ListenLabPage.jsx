@@ -214,10 +214,17 @@ export default function ListenLabPage() {
       });
       const data = await res.json();
       if (res.status === 409 && Array.isArray(data?.available) && data.available.length > 0) {
-        // 요청 언어 자막이 없음 — 가용 트랙에서 고르게
+        // 요청 언어 자막이 없음 — 무엇이 없고 무엇으로 학습 가능한지 명시하고 고르게
+        const wantedName = LANG_OPTIONS.find(l => l.code === langCode)?.name || '선택한 언어';
+        const offerKeys = [...new Set(data.available.map(t => langKeyFromCode(t.code)).filter(Boolean))];
+        const offerNames = offerKeys.map(k => LANG_OPTIONS.find(l => l.key === k)?.name).filter(Boolean);
         setAvailableTracks(data.available);
         setPendingVideoId(vid);
-        setCaptionError('이 언어 자막이 없어요. 아래에서 언어를 골라주세요.');
+        setCaptionError(
+          offerNames.length > 0
+            ? `이 영상은 ${wantedName} 자막이 없어요 — ${offerNames.join('·')} 콘텐츠예요. 아래 언어로 학습할까요?`
+            : `이 영상은 ${wantedName} 자막이 없어요. 아래에서 자막 언어를 골라주세요.`
+        );
         return;
       }
       if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
