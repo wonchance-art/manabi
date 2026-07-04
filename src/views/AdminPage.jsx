@@ -222,6 +222,12 @@ export default function AdminPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {[
               {
+                href: '/listen',
+                icon: '🎧',
+                title: '듣고 읽기 (실험) — YouTube + 자막으로 표현 수집',
+                desc: 'LingQ식 정독 도구 — YouTube 영상에 내 .srt/.vtt(또는 붙여넣은 텍스트)를 얹어 재생 위치에 싱크된 스크립트로 보며, 모르는 표현을 탭해 단어장에 저장. 자막 자동 추출은 하지 않아요(사용자 제공만). 관리자 실험용 — 네비·학습 탭엔 미노출.',
+              },
+              {
                 href: '/admin/metrics',
                 icon: '📊',
                 title: '학습 지표 — 본인 데이터 기준',
