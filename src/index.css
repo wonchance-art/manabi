@@ -8245,6 +8245,38 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-size: 0.82rem; line-height: 1.5; white-space: normal; cursor: default;
 }
 
+/* ── 듣고 읽기(/listen) — 인라인 형태소 탭 & 번역 줄 ── */
+/* 문장 속 단어 세그먼트 — 호버 시 은은한 하이라이트(learn-tile 틴트 톤), 탭하면 뜻 팝오버 */
+.listen-tok {
+  cursor: pointer;
+  border-radius: 3px;
+  padding: 0 1px;
+  position: relative;
+  transition: background 0.12s ease;
+}
+/* 마우스가 있는 환경에서만 hover 배경(모바일은 hover 없이 탭) */
+@media (hover: hover) {
+  .listen-tok:hover { background: var(--accent-subtle, rgba(99, 102, 241, 0.14)); }
+}
+.listen-tok--active { background: var(--accent-subtle, rgba(99, 102, 241, 0.18)); }
+/* 로딩 점 3개(탭한 세그먼트 아래 최소 표시) */
+.listen-tok__dots::after {
+  content: '···';
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  animation: listen-dots 1s steps(1) infinite;
+}
+@keyframes listen-dots {
+  0% { opacity: 0.3; } 50% { opacity: 1; } 100% { opacity: 0.3; }
+}
+/* 번역 줄 — 원문 아래 보조 텍스트(기존 보조 텍스트 톤) */
+.listen-ko {
+  margin-top: 4px;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
 /* ── 패턴 체크 (회상 연습) ── */
 .fr-check__toggle-all {
   margin-left: auto;
