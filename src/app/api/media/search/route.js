@@ -8,11 +8,11 @@
 // 비공식 라이브러리(youtubei.js/Innertube) 사용 — 오너가 비상업 개인용 사용을 승인.
 // 서버 전용(클라 번들 금지). 라이브러리 내부 예외가 500 스택으로 새지 않도록 전면 try/catch.
 
-import { createClient } from '@supabase/supabase-js';
 import { Innertube, Log } from 'youtubei.js';
 import { parseYouTubeId } from '@/lib/listenSubtitles';
 import { normalizeVideoList, resolveSearchLang, extractCaptionLangs, extractEmbeddable, sortByUsability } from '@/lib/server/media';
 import { rateLimit, getClientKey } from '@/lib/server/rateLimit';
+import { requireAdmin } from '@/lib/server/auth';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -60,20 +60,6 @@ async function annotateCaptionLangs(yt, results, { count = 8, timeoutMs = 4000 }
   return results;
 }
 
-async function requireUser(request) {
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader) return { error: '로그인이 필요합니다.', status: 401 };
-  const token = authHeader.replace(/^Bearer\s+/i, '');
-  const anonClient = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    { auth: { persistSession: false } }
-  );
-  const { data: { user }, error } = await anonClient.auth.getUser(token);
-  if (error || !user) return { error: '세션이 만료됐어요. 다시 로그인해주세요.', status: 401 };
-  return { user };
-}
-
 // 채널 URL 판별: /channel/UC…, /@handle, /c/name, /user/name
 function detectChannel(raw) {
   let url;
@@ -96,7 +82,7 @@ function detectChannel(raw) {
 }
 
 export async function POST(request) {
-  const auth = await requireUser(request);
+  const auth = await requireAdmin(request);
   if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
 
   const rl = rateLimit(getClientKey(request, auth.user.id), { limit: 30, windowMs: 60_000 });

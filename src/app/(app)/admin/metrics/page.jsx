@@ -3,8 +3,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { getRefLang, REF_LANGS } from '@/content/refLangs';
-import { deriveVocabRungs } from '@/lib/studyMaterials';
-import { computeEwma, dialFromEwma } from '@/lib/skillRung';
+import { computeEwma, dialFromEwma, deriveVocabRungs } from '@/lib/skillRung';
 import {
   computeRecall,
   computeItemWrongRates,
@@ -234,13 +233,13 @@ export default async function Page({ searchParams }) {
             <div key={r} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ width: 44, fontSize: '0.75rem', color: 'var(--text-muted)' }}>rung {r}</span>
               <div style={{ flex: 1, background: 'var(--bg-subtle, rgba(128,128,128,0.15))', borderRadius: 4, height: 18, overflow: 'hidden' }}>
-                <div style={{ width: `${(cnt / rungMax) * 100}%`, height: '100%', background: r >= 3 ? 'var(--accent, #6366f1)' : 'var(--text-muted)', minWidth: cnt ? 2 : 0 }} />
+                <div style={{ width: `${(cnt / rungMax) * 100}%`, height: '100%', background: r >= 3 ? 'var(--accent)' : 'var(--text-muted)', minWidth: cnt ? 2 : 0 }} />
               </div>
               <span style={{ width: 40, textAlign: 'right', fontSize: '0.8rem' }}>{cnt}</span>
             </div>
           ))}
         </div>
-        <p style={{ fontSize: '0.82rem', fontWeight: 600, color: produceGateMet ? 'var(--accent, #6366f1)' : 'var(--text-secondary)' }}>
+        <p style={{ fontSize: '0.82rem', fontWeight: 600, color: produceGateMet ? 'var(--accent)' : 'var(--text-secondary)' }}>
           어휘 산출 도입 조건: rung 3+ 단어 ≥ 20 — 현재 {rungTop}개{produceGateMet ? ' ✓' : ''}
         </p>
         <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 8 }}>
@@ -296,7 +295,7 @@ export default async function Page({ searchParams }) {
               <div key={`${d.date}-${i}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 26 }} title={`${d.date} · ${pct(d.rate)} · ${d.total}문항`}>
                 <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)' }}>{d.total}</div>
                 <div style={{ width: 16, height: 72, display: 'flex', alignItems: 'flex-end', background: 'var(--bg-subtle, rgba(128,128,128,0.12))', borderRadius: 3, overflow: 'hidden' }}>
-                  <div style={{ width: '100%', height: `${Math.max(d.rate * 100, 2)}%`, background: 'var(--accent, #6366f1)' }} />
+                  <div style={{ width: '100%', height: `${Math.max(d.rate * 100, 2)}%`, background: 'var(--accent)' }} />
                 </div>
                 <div style={{ fontSize: '0.58rem', color: 'var(--text-muted)', marginTop: 3, transform: 'rotate(-45deg)', transformOrigin: 'center', whiteSpace: 'nowrap' }}>{d.date}</div>
               </div>

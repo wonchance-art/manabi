@@ -2,6 +2,10 @@ import { createClient } from '@supabase/supabase-js';
 import { fetchFromSource } from '../../../../lib/content-sources.js';
 
 export async function GET(request) {
+  // CRON_SECRET 미설정 시 "Bearer undefined" 통과 방지 — fail-closed.
+  if (!process.env.CRON_SECRET) {
+    return Response.json({ error: 'CRON_SECRET not configured' }, { status: 500 });
+  }
   const authHeader = request.headers.get('authorization');
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });

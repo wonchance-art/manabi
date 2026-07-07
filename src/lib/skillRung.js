@@ -77,6 +77,26 @@ export function computeRung(events) {
 }
 
 /**
+ * due 어휘별 숙련 rung 유도 — 해당 단어의 vocab 소스 이벤트만 시간순으로 모아 computeRung.
+ * source 필터가 없으면 같은 item_key를 쓰는 타 소스(reading/grammar) 이벤트가 섞여 rung이 오염된다.
+ * 콘텐츠 무의존 순수 함수라 skillRung에 둔다 — 'use client' 소비처(VocabPage)가
+ * studyMaterials(→content 레지스트리 6MB)를 전이 import하지 않도록.
+ * @param {Array} eventsAsc - review_events (시간 오름차순)
+ * @param {Array} dueVocabRows - due 어휘 행 (word_text)
+ * @returns {Record<string, number>} word_text → rung
+ */
+export function deriveVocabRungs(eventsAsc, dueVocabRows) {
+  const rungs = {};
+  for (const w of dueVocabRows || []) {
+    const evs = (eventsAsc || [])
+      .filter(e => e.source === 'vocab' && e.item_key === w.word_text)
+      .map(e => ({ qtype: e.detail?.qtype, correct: !!e.correct }));
+    rungs[w.word_text] = computeRung(evs);
+  }
+  return rungs;
+}
+
+/**
  * 채점 이벤트의 correct(1/0)를 EWMA(지수가중이동평균)로 집계한다.
  * @param {Array<{correct: boolean}>} events - 시간순(오래된 것부터)
  * @param {number} [alpha=0.15] - 평활 계수

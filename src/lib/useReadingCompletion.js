@@ -4,7 +4,11 @@ import { supabase } from './supabase';
 import { recordActivity } from './streak';
 import { friendlyToastMessage } from './errorMessage';
 import { logReviewEvents } from './reviewEvents';
-import { REF_LANGS } from '../content/refLangs';
+
+// 공부 모드 지원 언어 키 — REF_LANGS를 직접 import하면 교재 콘텐츠 전체가 클라 번들에 딸려 온다(1.8MB).
+// 이 훅은 'use client'라 ViewerPage에 물리면 뷰어 번들이 폭발한다. 실사용은 멤버십 체크 1곳뿐.
+// 키는 REF_LANGS와 반드시 일치.
+const STUDY_LANGS = new Set(['Japanese', 'English', 'French', 'Chinese']);
 
 /**
  * 자료 완독 처리: reading_progress upsert + 퀴즈 생성.
@@ -48,7 +52,7 @@ export function useReadingCompletion({
       recordActivity(user.id, () => fetchProfile(user.id));
       // 완독을 학습 기록에 합류 — fire-and-forget, 실패 무해
       const eventLang = material?.processed_json?.metadata?.language;
-      if (eventLang && REF_LANGS[eventLang]) {
+      if (eventLang && STUDY_LANGS.has(eventLang)) {
         logReviewEvents(user.id, [{
           lang: eventLang,
           source: 'reading',

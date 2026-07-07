@@ -59,11 +59,17 @@ export async function fetchWordDetailText(token, language) {
   const raw = await callGemini(prompt);
   const detail = raw?.candidates?.[0]?.content?.parts?.[0]?.text || raw || '';
 
-  // DB + localStorage에 저장
+  // DB + localStorage에 저장 (서버가 requireUser로 검증하므로 세션 토큰 첨부)
   localSet(cacheKey, detail);
+  let authHeader = {};
+  try {
+    const { supabase } = await import('./supabase');
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.access_token) authHeader = { Authorization: `Bearer ${session.access_token}` };
+  } catch {}
   fetch('/api/word-detail', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...authHeader },
     body: JSON.stringify({ base_form: baseForm, language, detail_text: detail }),
   }).catch(() => {}); // fire-and-forget
 

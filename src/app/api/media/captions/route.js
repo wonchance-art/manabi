@@ -27,7 +27,6 @@
 //
 // 캐시: 라우트 내 메모리 Map(비영속, 키 videoId+lang, 상한 100). 성공 응답만 저장.
 
-import { createClient } from '@supabase/supabase-js';
 import { Innertube, Log } from 'youtubei.js';
 import {
   parseCaptionData,
@@ -39,6 +38,7 @@ import {
   formatTrackLangs,
 } from '@/lib/server/media';
 import { rateLimit, getClientKey } from '@/lib/server/rateLimit';
+import { requireAdmin } from '@/lib/server/auth';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -69,20 +69,6 @@ function cacheGet(key) {
 function cacheSet(key, val) {
   cache.set(key, val);
   while (cache.size > CACHE_MAX) cache.delete(cache.keys().next().value);
-}
-
-async function requireUser(request) {
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader) return { error: '로그인이 필요합니다.', status: 401 };
-  const token = authHeader.replace(/^Bearer\s+/i, '');
-  const anonClient = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    { auth: { persistSession: false } }
-  );
-  const { data: { user }, error } = await anonClient.auth.getUser(token);
-  if (error || !user) return { error: '세션이 만료됐어요. 다시 로그인해주세요.', status: 401 };
-  return { user };
 }
 
 async function fetchTrack(baseUrl) {
@@ -185,7 +171,7 @@ async function loadTranscriptCuesWithRetry(info, lang, attempts = 3) {
 }
 
 export async function POST(request) {
-  const auth = await requireUser(request);
+  const auth = await requireAdmin(request);
   if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
 
   const rl = rateLimit(getClientKey(request, auth.user.id), { limit: 30, windowMs: 60_000 });

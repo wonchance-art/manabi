@@ -8237,7 +8237,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 /* 재료 단어 팝오버 — 단어·발음·뜻 */
 .study-wordpop {
   position: absolute; top: 100%; left: 0; z-index: 50;
-  margin-top: 4px; min-width: 88px; max-width: 220px;
+  margin-top: 4px; min-width: 88px; max-width: min(240px, calc(100vw - 32px));
   padding: 8px 10px; border-radius: var(--radius-md);
   background: var(--bg-elevated); border: 1px solid var(--border);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
@@ -8250,15 +8250,18 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .listen-tok {
   cursor: pointer;
   border-radius: 3px;
-  padding: 0 1px;
+  padding: 2px 1px;
   position: relative;
   transition: background 0.12s ease;
+  text-decoration: underline dotted;
+  text-decoration-color: var(--border);
+  text-underline-offset: 3px;
 }
 /* 마우스가 있는 환경에서만 hover 배경(모바일은 hover 없이 탭) */
 @media (hover: hover) {
-  .listen-tok:hover { background: var(--accent-subtle, rgba(99, 102, 241, 0.14)); }
+  .listen-tok:hover { background: var(--accent-glow); }
 }
-.listen-tok--active { background: var(--accent-subtle, rgba(99, 102, 241, 0.18)); }
+.listen-tok--active { background: var(--accent-glow); }
 /* 로딩 점 3개(탭한 세그먼트 아래 최소 표시) */
 .listen-tok__dots::after {
   content: '···';
@@ -8275,6 +8278,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-size: 0.8rem;
   line-height: 1.5;
   color: var(--text-muted);
+}
+/* 오류 문단 — 검색·자막·입력 실패 안내(danger 텍스트) */
+.listen-error {
+  font-size: 0.82rem;
+  color: var(--danger);
 }
 
 /* ── 패턴 체크 (회상 연습) ── */

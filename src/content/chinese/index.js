@@ -59,6 +59,13 @@ import vocabH5hskC from './vocab/h5_hsk_c';
 import vocabH5hskD from './vocab/h5_hsk_d';
 import vocabH5hskE from './vocab/h5_hsk_e';
 import vocabH5hskF from './vocab/h5_hsk_f';
+// HSK 3.0 표준 보강 (drkameleon/complete-hsk-vocabulary, MIT) — 기존에 없던 급별 순증분.
+import vocabH1hsk30 from './vocab/h1_hsk30';
+import vocabH2hsk30 from './vocab/h2_hsk30';
+import vocabH3hsk30 from './vocab/h3_hsk30';
+import vocabH4hsk30 from './vocab/h4_hsk30';
+import vocabH5hsk30 from './vocab/h5_hsk30';
+import vocabH6hsk30 from './vocab/h6_hsk30';
 // 원본 어휘 + HSK 보강 어휘를 '보강' 구분 없이 한 사전으로 — 품사별 자연 분류로 통합.
 const POS_GROUPS = [
   { name: '명사', icon: '📦', pos: ['명사'] },
@@ -169,12 +176,12 @@ const registry = createRegistry(
     H6: withExtraExamples(grammarH6, exH6),
   },
   {
-    H1: mergeVocab(vocabH1, vocabH1hsk),
-    H2: mergeVocab(vocabH2, vocabH2hsk),
-    H3: mergeVocab(vocabH3, vocabH3hsk),
-    H4: mergeVocab(vocabH4, vocabH4hskA, vocabH4hskB, vocabH4hskC),
-    H5: mergeVocab(vocabH5, vocabH5hskA, vocabH5hskB, vocabH5hskC, vocabH5hskD, vocabH5hskE, vocabH5hskF),
-    H6: mergeVocab(vocabH6),
+    H1: mergeVocab(vocabH1, vocabH1hsk, vocabH1hsk30),
+    H2: mergeVocab(vocabH2, vocabH2hsk, vocabH2hsk30),
+    H3: mergeVocab(vocabH3, vocabH3hsk, vocabH3hsk30),
+    H4: mergeVocab(vocabH4, vocabH4hskA, vocabH4hskB, vocabH4hskC, vocabH4hsk30),
+    H5: mergeVocab(vocabH5, vocabH5hskA, vocabH5hskB, vocabH5hskC, vocabH5hskD, vocabH5hskE, vocabH5hskF, vocabH5hsk30),
+    H6: mergeVocab(vocabH6, vocabH6hsk30),
   },
 );
 

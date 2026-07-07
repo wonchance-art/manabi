@@ -5,8 +5,9 @@ export const maxDuration = 60;
 
 export async function GET(request) {
   // 인증: CRON_SECRET (Vercel cron) OR 관리자 세션 (대시보드 수동 실행)
+  // CRON_SECRET 미설정 시 "Bearer undefined" 통과 방지 — isCron은 시크릿이 있을 때만 참.
   const authHeader = request.headers.get('authorization');
-  const isCron = authHeader === `Bearer ${process.env.CRON_SECRET}`;
+  const isCron = !!process.env.CRON_SECRET && authHeader === `Bearer ${process.env.CRON_SECRET}`;
   let isAdmin = false;
   if (!isCron && authHeader?.startsWith('Bearer ')) {
     const token = authHeader.slice('Bearer '.length);

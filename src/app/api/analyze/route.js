@@ -14,6 +14,14 @@ import { rateLimit, getClientKey } from '@/lib/server/rateLimit';
 export const runtime = 'nodejs';
 export const maxDuration = 60; // Vercel Node.js 함수: 최대 60초
 
+// 입력 캡(비용 남용 방지) — 정상 세션은 문단 단위 수 줄이라 캡에 닿지 않는다.
+const MAX_LINES = 100;      // 요청당 줄 수
+const MAX_LINE_LEN = 200;   // 줄당 문자 수
+// 요청당 Gemini 의미 조회 상한(미싱 base_form) — fetchMeanings 배치 폭발 방지.
+// BATCH_SIZE=15 기준 최대 ~7배치. 초과분은 이번 요청에 뜻 없이 넘어가고(빈 meaning) 다음
+// 요청에서 다시 미싱으로 잡혀 점진 백필된다(그레이스풀 디그레이드).
+const MAX_MISSING = 100;
+
 function getServerSupabase() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -56,13 +64,15 @@ export async function POST(request) {
     return Response.json({ error: 'Bad JSON' }, { status: 400 });
   }
 
-  const { lines, language } = body;
-  if (!Array.isArray(lines) || lines.length === 0) {
+  const { lines: rawLines, language } = body;
+  if (!Array.isArray(rawLines) || rawLines.length === 0) {
     return Response.json({ error: 'lines required' }, { status: 400 });
   }
   if (!['Japanese', 'English'].includes(language)) {
     return Response.json({ error: 'language must be Japanese or English' }, { status: 400 });
   }
+  // 줄 수·줄 길이 캡 — 토큰화·Gemini 팬아웃 비용을 상한. 정상 세션(수 줄)은 영향 없음.
+  const lines = rawLines.slice(0, MAX_LINES).map((l) => String(l ?? '').slice(0, MAX_LINE_LEN));
 
   try {
     // 1. 각 줄 토큰화 (언어별)
@@ -108,9 +118,11 @@ export async function POST(request) {
       }
     }
 
-    if (missingList.length > 0) {
+    // 미싱 처리 상한 — 배치 폭발 방지. 초과분은 이번 요청에서 뜻 없이 넘어간다(다음에 백필).
+    const cappedMissing = missingList.slice(0, MAX_MISSING);
+    if (cappedMissing.length > 0) {
       try {
-        const { result: fetched } = await fetchMeaningsForMissing(missingList, language, supabase);
+        const { result: fetched } = await fetchMeaningsForMissing(cappedMissing, language, supabase);
         for (const [baseForm, entry] of fetched) {
           cache.set(baseForm, entry);
         }
@@ -171,13 +183,13 @@ export async function POST(request) {
       stats: {
         totalTokens: [...allBaseForms].length,
         cacheHits: usedBaseForms.length,
-        geminiCalls: missingList.length,
+        geminiCalls: cappedMissing.length,
       },
     });
   } catch (err) {
     console.error('[api/analyze] error:', err);
     return Response.json(
-      { error: err?.message || 'Internal Server Error' },
+      { error: 'Internal Server Error' }, // 내부 err.message 노출 금지
       { status: 500 }
     );
   }

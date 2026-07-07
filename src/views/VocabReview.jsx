@@ -1,21 +1,24 @@
 import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Button from '../components/Button';
-import { detectLang, displayWord } from '../lib/constants';
+import { detectLang, displayWord, splitSentenceAroundWord } from '../lib/constants';
 
 function ScoreSection({ word, onScore }) {
   return (
     <div className="review-card__answer">
       <p className="review-card__meaning">{word.meaning}</p>
-      {word.source_sentence && (
-        <p className="review-card__source">
-          {word.source_sentence.split(word.word_text).map((part, i, arr) =>
-            i < arr.length - 1
-              ? <span key={i}>{part}<mark className="review-card__highlight">{word.word_text}</mark></span>
-              : <span key={i}>{part}</span>
-          )}
-        </p>
-      )}
+      {word.source_sentence && (() => {
+        const { parts, term } = splitSentenceAroundWord(word.source_sentence, word.word_text, word.base_form);
+        return (
+          <p className="review-card__source">
+            {parts.map((part, i, arr) =>
+              i < arr.length - 1
+                ? <span key={i}>{part}<mark className="review-card__highlight">{term}</mark></span>
+                : <span key={i}>{part}</span>
+            )}
+          </p>
+        );
+      })()}
       <p className="review-score-guide">기억이 얼마나 잘 됐나요?</p>
       <div className="review-score-grid">
         <button onClick={() => onScore(1)} className="review-score-btn review-score-btn--again" title="오늘 다시 나와요">다시</button>
@@ -209,15 +212,18 @@ export default function VocabReview({
               {/* 플래시카드 모드 */}
               {mode === 'flash' && (
                 <>
-                  {!showAnswer && showHint && currentWord.source_sentence && (
-                    <p className="review-card__hint">
-                      {currentWord.source_sentence.split(currentWord.word_text).map((part, i, arr) => (
-                        i < arr.length - 1
-                          ? <span key={i}>{part}<mark className="review-card__highlight review-card__highlight--hint">{currentWord.word_text}</mark></span>
-                          : <span key={i}>{part}</span>
-                      ))}
-                    </p>
-                  )}
+                  {!showAnswer && showHint && currentWord.source_sentence && (() => {
+                    const { parts, term } = splitSentenceAroundWord(currentWord.source_sentence, currentWord.word_text, currentWord.base_form);
+                    return (
+                      <p className="review-card__hint">
+                        {parts.map((part, i, arr) => (
+                          i < arr.length - 1
+                            ? <span key={i}>{part}<mark className="review-card__highlight review-card__highlight--hint">{term}</mark></span>
+                            : <span key={i}>{part}</span>
+                        ))}
+                      </p>
+                    );
+                  })()}
                   {showAnswer ? (
                     <ScoreSection word={currentWord} onScore={handleScore} />
                   ) : (
@@ -266,15 +272,18 @@ export default function VocabReview({
               {mode === 'context' && (
                 <>
                   <div style={{ marginBottom: '20px' }}>
-                    {currentWord.source_sentence ? (
-                      <p className="review-card__hint" style={{ fontSize: '1rem', lineHeight: 1.8 }}>
-                        {currentWord.source_sentence.split(currentWord.word_text).map((part, i, arr) =>
-                          i < arr.length - 1
-                            ? <span key={i}>{part}<mark style={{ background: 'var(--bg-elevated)', color: 'transparent', borderRadius: '4px', padding: '0 4px' }}>{'　'.repeat(Math.max(2, currentWord.word_text.length))}</mark></span>
-                            : <span key={i}>{part}</span>
-                        )}
-                      </p>
-                    ) : null /* 예문 없음 — 위 단어 헤더가 문제 역할(뜻 고르기) */}
+                    {currentWord.source_sentence ? (() => {
+                      const { parts, term } = splitSentenceAroundWord(currentWord.source_sentence, currentWord.word_text, currentWord.base_form);
+                      return (
+                        <p className="review-card__hint" style={{ fontSize: '1rem', lineHeight: 1.8 }}>
+                          {parts.map((part, i, arr) =>
+                            i < arr.length - 1
+                              ? <span key={i}>{part}<mark style={{ background: 'var(--bg-elevated)', color: 'transparent', borderRadius: '4px', padding: '0 4px' }}>{'　'.repeat(Math.max(2, term.length))}</mark></span>
+                              : <span key={i}>{part}</span>
+                          )}
+                        </p>
+                      );
+                    })() : null /* 예문 없음 — 위 단어 헤더가 문제 역할(뜻 고르기) */}
                   </div>
 
                   {!showAnswer ? (

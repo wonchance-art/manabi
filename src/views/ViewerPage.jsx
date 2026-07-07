@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -28,8 +28,6 @@ import ReadingTest from '../components/ReadingTest';
 import ConversationPanel from '../components/ConversationPanel';
 import ViewerBottomSheet from '../components/ViewerBottomSheet';
 import ListenControls from '../components/ListenControls';
-import { parseTitle } from '../lib/seriesMeta';
-import { REF_LANGS } from '../content/refLangs';
 import { formatDetail } from '../lib/wordDetailFormat';
 import { useSeriesNeighbors } from '../lib/useSeriesNeighbors';
 import { useTitleEdit } from '../lib/useTitleEdit';
@@ -40,6 +38,11 @@ import { useScrollRestore } from '../lib/useScrollRestore';
 import ViewerComments from './ViewerComments';
 import ViewerGrammarModal from './ViewerGrammarModal';
 import ViewerQuizModal from './ViewerQuizModal';
+
+// 공부 모드 지원 언어 키 — REF_LANGS를 직접 import하면 교재 콘텐츠 전체가 클라 번들에 딸려 온다(1.8MB).
+// 실사용은 '이 자료 언어로 세션 생성 가능한가' 멤버십 체크 1곳뿐이라 정적 키 집합으로 대체한다.
+// 키는 REF_LANGS와 반드시 일치(user_vocabulary.language·/study 규약).
+const STUDY_LANGS = new Set(['Japanese', 'English', 'French', 'Chinese']);
 
 async function fetchMaterial(id) {
   const { data, error } = await supabase
@@ -208,9 +211,9 @@ export default function ViewerPage() {
   const grammar = useGrammarAnalysis({ toast, materialLang });
   const { isGrammarModalOpen, setIsGrammarModalOpen, grammarAnalysis,
           isGrammarLoading, selectedRangeText, checkedActions, setCheckedActions,
-          selectionPopup, grammarFollowUp, setGrammarFollowUp,
-          grammarFollowLoading, openGrammarModal, analyzeGrammar,
-          requestGrammarAnalysis, analyzeWordInContext, askFollowUp,
+          grammarFollowUp, setGrammarFollowUp,
+          grammarFollowLoading, analyzeGrammar,
+          requestGrammarAnalysis, askFollowUp,
           handleTextSelection: handleGrammarTextSelection } = grammar;
 
   const { data: savedWords = { byKey: new Map(), surfaces: new Set(), bases: new Set() } } = useQuery({
@@ -1131,7 +1134,7 @@ export default function ViewerPage() {
                 </button>
           )}
 
-          {user && material?.raw_text && REF_LANGS[materialLang] && (
+          {user && material?.raw_text && STUDY_LANGS.has(materialLang) && (
             <Link
               href={`/study?source=mine&lang=${encodeURIComponent(materialLang)}`}
               className="study-textlink"

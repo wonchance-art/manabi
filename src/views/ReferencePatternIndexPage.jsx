@@ -346,7 +346,8 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
                       <div className="bk-ex">
                         {[item.ex, item.ex2].filter(Boolean).map((ex, ei) => (
                           <div key={ei} className="bk-ex__pair">
-                            <div className="bk-ex__ja">
+                            {/* 뜻만 모드('word' 가림): 예문 원문(정답 문형 포함)만 가리고 예문 뜻은 남긴다 */}
+                            <div className={`bk-ex__ja ${wordHidden ? 'fr-vrow__hide-extra' : ''}`}>
                               {isJa ? (
                                 <JaText ja={ex.ja} yomi={ex.yomi} />
                               ) : (

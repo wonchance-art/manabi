@@ -9,9 +9,9 @@
 // 캐시: 라우트 내 메모리 LRU(상한 200). 키 = `${sentence}∥${surface}∥${language}`.
 // 인증·rate limit은 다른 media 라우트 패턴을 따른다.
 
-import { createClient } from '@supabase/supabase-js';
 import { buildWordContextPrompt } from '@/lib/server/media';
 import { rateLimit, getClientKey } from '@/lib/server/rateLimit';
+import { requireAdmin } from '@/lib/server/auth';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -32,20 +32,6 @@ function cacheGet(key) {
 function cacheSet(key, v) {
   cache.set(key, v);
   while (cache.size > CACHE_MAX) cache.delete(cache.keys().next().value);
-}
-
-async function requireUser(request) {
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader) return { error: '로그인이 필요합니다.', status: 401 };
-  const token = authHeader.replace(/^Bearer\s+/i, '');
-  const anonClient = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    { auth: { persistSession: false } }
-  );
-  const { data: { user }, error } = await anonClient.auth.getUser(token);
-  if (error || !user) return { error: '세션이 만료됐어요. 다시 로그인해주세요.', status: 401 };
-  return { user };
 }
 
 async function callGemini(promptText, apiKey) {
@@ -94,7 +80,7 @@ function cleanText(text) {
 }
 
 export async function POST(request) {
-  const auth = await requireUser(request);
+  const auth = await requireAdmin(request);
   if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
 
   const rl = rateLimit(getClientKey(request, auth.user.id), { limit: 60, windowMs: 60_000 });
