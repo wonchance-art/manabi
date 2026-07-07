@@ -293,7 +293,7 @@ export default function ListenLabPage() {
       setPlayerError(null);
       setStarted(true);
     } catch {
-      setCaptionError('자막을 가져오지 못했어요 — 직접 붙여넣기로 학습할 수 있어요.');
+      setCaptionError('자막을 가져오지 못했어요 — 직접 입력으로 학습할 수 있어요.');
       setPendingVideoId(vid);
     } finally {
       setLoadingVideoId(null);
@@ -308,7 +308,7 @@ export default function ListenLabPage() {
       return;
     }
     if (cues.length === 0) {
-      setInputError('자막을 먼저 올리거나 붙여넣어 주세요.');
+      setInputError('자막을 먼저 올리거나 붙여넣어주세요.');
       return;
     }
     setVideoId(id);
@@ -333,7 +333,7 @@ export default function ListenLabPage() {
     setCtxMap({});
     setKoMap({});
     setSaved({});
-    // H2: cues/timed를 안 지우면 "새로 시작" 후 직접 입력으로 다른 URL 시작 시 이전 자막이 싱크됨.
+    // H2: cues/timed를 안 지우면 "다른 영상 찾기" 후 직접 입력으로 다른 URL 시작 시 이전 자막이 싱크됨.
     setCues([]);
     setTimed(false);
     setCaptionError('');
@@ -668,7 +668,7 @@ export default function ListenLabPage() {
       if (!a || a.status === 'loading') {
         inner = <span className="listen-tok__dots" style={{ fontSize: '0.85rem' }} />;
       } else if (a.status === 'error') {
-        inner = <span style={{ color: 'var(--danger, #dc2626)' }}>분석 실패 — 다시 탭해 주세요</span>;
+        inner = <span style={{ color: 'var(--danger)' }}>뜻을 불러오지 못했어요 — 다시 탭해주세요</span>;
       } else {
         inner = <span style={{ color: 'var(--text-muted)' }}>뜻을 찾지 못했어요</span>;
       }
@@ -703,7 +703,7 @@ export default function ListenLabPage() {
         </span>
 
         {/* 2행: 사전 뜻(즉시) */}
-        <span style={{ color: 'var(--text-secondary)' }}>{unit.meaning || '뜻 정보 없음'}</span>
+        <span style={{ color: 'var(--text-secondary)' }}>{unit.meaning || '뜻을 찾지 못했어요'}</span>
 
         {/* 3행: 문맥 해석(지연) — 로딩 "…", 실패 시 조용히 생략 */}
         {ctx?.status === 'loading' && (
@@ -716,7 +716,7 @@ export default function ListenLabPage() {
               borderTop: '1px solid var(--border, rgba(128,128,128,0.2))', paddingTop: 5, marginTop: 1,
             }}
           >
-            💡 {ctx.text}
+            {ctx.text}
           </span>
         )}
 
@@ -727,11 +727,11 @@ export default function ListenLabPage() {
             marginTop: 4, alignSelf: 'flex-start',
             fontSize: '0.76rem', padding: '3px 10px', borderRadius: 999, cursor: 'pointer',
             border: '1px solid var(--border, rgba(128,128,128,0.3))',
-            background: isSaved ? 'var(--accent-subtle, rgba(99,102,241,0.12))' : 'transparent',
-            color: isSaved ? 'var(--accent, #6366f1)' : 'var(--text-secondary)',
+            background: isSaved ? 'var(--accent-glow)' : 'transparent',
+            color: isSaved ? 'var(--accent)' : 'var(--text-secondary)',
           }}
         >
-          {isSaved ? '✓ 담김' : '+ 담기'}
+          {isSaved ? '✓ 저장됨' : '단어장에 저장'}
         </button>
       </span>
     );
@@ -756,8 +756,8 @@ export default function ListenLabPage() {
   return (
     <div className="page-container">
       <div className="page-header">
-        <h1 className="page-header__title">🎧 듣고 읽기 <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 500 }}>실험</span></h1>
-        <p className="page-header__subtitle">YouTube 영상 + 내 자막으로 표현을 모아요</p>
+        <h1 className="page-header__title">듣고 읽기 <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 500 }}>실험</span></h1>
+        <p className="page-header__subtitle">영상을 보며 모르는 표현을 모아요</p>
       </div>
 
       {!started ? (
@@ -787,14 +787,14 @@ export default function ListenLabPage() {
               onClick={() => setInputTab('search')}
               className={`tab-pills__item ${inputTab === 'search' ? 'tab-pills__item--primary' : ''}`}
             >
-              🔎 영상 찾기
+              영상 찾기
             </button>
             <button
               type="button"
               onClick={() => setInputTab('manual')}
               className={`tab-pills__item ${inputTab === 'manual' ? 'tab-pills__item--primary' : ''}`}
             >
-              ✍️ 직접 입력
+              직접 입력
             </button>
           </div>
 
@@ -816,11 +816,11 @@ export default function ListenLabPage() {
               </div>
 
               {searchError && (
-                <p style={{ fontSize: '0.82rem', color: 'var(--danger, #dc2626)' }}>{searchError}</p>
+                <p className="u-text-sm u-text-muted">{searchError}</p>
               )}
 
               {captionError && (
-                <div style={{ fontSize: '0.82rem', color: 'var(--danger, #dc2626)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div className="listen-error" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <span>{captionError}</span>
                   {availableTracks && availableTracks.length > 0 && (
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
@@ -839,7 +839,7 @@ export default function ListenLabPage() {
                   )}
                   <div>
                     <Button size="sm" variant="secondary" onClick={() => setInputTab('manual')}>
-                      직접 붙여넣기로 전환
+                      직접 입력으로 전환
                     </Button>
                   </div>
                 </div>
@@ -894,8 +894,8 @@ export default function ListenLabPage() {
                                 alignSelf: 'flex-start', marginTop: 2,
                                 fontSize: '0.68rem', fontWeight: 600, lineHeight: 1.4,
                                 padding: '1px 8px', borderRadius: 999,
-                                background: 'var(--accent-subtle, rgba(99,102,241,0.12))',
-                                color: 'var(--accent, #6366f1)',
+                                background: 'var(--accent-glow)',
+                                color: 'var(--accent)',
                               }}
                             >
                               {langName} 자막
@@ -907,11 +907,11 @@ export default function ListenLabPage() {
                                 alignSelf: 'flex-start', marginTop: 2,
                                 fontSize: '0.68rem', fontWeight: 600, lineHeight: 1.4,
                                 padding: '1px 8px', borderRadius: 999,
-                                background: 'var(--danger-subtle, rgba(220,38,38,0.12))',
-                                color: 'var(--danger, #dc2626)',
+                                background: 'color-mix(in srgb, var(--danger) 12%, var(--bg-card))',
+                                color: 'var(--danger)',
                               }}
                             >
-                              🚫 외부 재생 불가
+                              외부 재생 불가
                             </span>
                           )}
                         </span>
@@ -959,11 +959,11 @@ export default function ListenLabPage() {
 
               {cues.length > 0 && (
                 <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-                  ✅ 자막 {cues.length}줄 준비됨 {timed ? '· 타임스탬프 싱크' : '· 싱크 없음(줄만 표시)'}
+                  자막 {cues.length}줄이 준비됐어요 {timed ? '· 재생에 맞춰 따라가요' : '· 싱크 없이 줄만 표시돼요'}
                 </p>
               )}
               {inputError && (
-                <p style={{ fontSize: '0.82rem', color: 'var(--danger, #dc2626)' }}>{inputError}</p>
+                <p className="listen-error">{inputError}</p>
               )}
 
               <div>
@@ -976,20 +976,20 @@ export default function ListenLabPage() {
         // ── 플레이어 + 스크립트 ──
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-              {timed ? '재생하면 스크립트가 따라가요 · 줄을 탭하면 그 시점으로 이동' : '싱크 없는 텍스트 모드'}
+            <span className="u-text-sm u-text-muted">
+              {timed ? '모르는 단어를 탭해 뜻을 보고 담아요 · 줄을 탭하면 그 시점으로 이동해요' : '재생과 연결되지 않은 스크립트예요'}
             </span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
               <button type="button" className="study-textlink" onClick={toggleKo}>
-                {showKo ? '번역 끄기' : '번역 켜기'}
+                {showKo ? '번역 접기 ▴' : '번역 보기 ▾'}
               </button>
-              <Button size="sm" variant="secondary" onClick={reset}>새로 시작</Button>
+              <Button size="sm" variant="secondary" onClick={reset}>다른 영상 찾기</Button>
             </div>
           </div>
 
           {loadedLangKey == null && (
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-              이 자막 언어는 단어장 미지원 — 시청·스크립트만
+            <span className="u-text-sm u-text-muted">
+              이 언어는 아직 단어 저장을 지원하지 않아요 — 읽고 듣기만 할 수 있어요
             </span>
           )}
 
@@ -998,7 +998,7 @@ export default function ListenLabPage() {
               <span>{describePlayerError(playerError).text}</span>
               {/* 회수 모드 — 재생만 막힌 것: 유튜브에서 보며 아래 스크립트로 학습(단어 저장 가능) */}
               {cues.length > 0 && (
-                <span style={{ fontSize: '0.8rem' }}>
+                <span className="u-text-sm">
                   아래 스크립트로 학습은 계속할 수 있어요 — 영상은{' '}
                   <a href={`https://www.youtube.com/watch?v=${videoId}`} target="_blank" rel="noreferrer" className="study-textlink">
                     YouTube에서 열기 ↗
@@ -1016,7 +1016,6 @@ export default function ListenLabPage() {
                 onReady={onReady}
                 onStateChange={onStateChange}
                 onError={onPlayerError}
-                iframeClassName="listen-yt-iframe"
                 style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
                 opts={{ width: '100%', height: '100%', playerVars: { rel: 0, modestbranding: 1 } }}
               />
@@ -1046,8 +1045,8 @@ export default function ListenLabPage() {
                     display: 'flex',
                     flexDirection: 'column',
                     gap: 4,
-                    borderColor: active ? 'var(--accent, #6366f1)' : undefined,
-                    background: active ? 'var(--accent-subtle, rgba(99,102,241,0.10))' : undefined,
+                    borderColor: active ? 'var(--accent)' : undefined,
+                    background: active ? 'var(--accent-glow)' : undefined,
                     transition: 'background 0.2s, border-color 0.2s',
                   }}
                 >

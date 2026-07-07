@@ -71,7 +71,7 @@ export default function LearnPage() {
     return fromProfile || 'Japanese';
   }, [profile]);
 
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['learn', user?.id, lang],
     queryFn: () => fetchLearnData(user.id, lang),
     enabled: !!user,
@@ -87,6 +87,26 @@ export default function LearnPage() {
   );
 
   const displayName  = profile?.display_name || '학습자';
+
+  // 로딩 스켈레톤 — 홈(HomePage)과 동일한 skeleton 유틸 재사용, 타일 자리만 유지
+  if (isLoading) return (
+    <div className="page-container home-page home-layout" style={{ maxWidth: 720 }}>
+      <div className="home-greeting">
+        <h1 className="home-greeting__name">오늘의 학습, {displayName}님</h1>
+        <p className="home-greeting__sub">필요한 연습을 한곳에서 이어가 볼까요?</p>
+      </div>
+      <div className="skeleton--card" style={{ height: 88 }}>
+        <div className="skeleton-line--title skeleton-line" />
+        <div className="skeleton-line--text skeleton-line" />
+      </div>
+      <div className="bento">
+        {[1, 2, 3, 4, 5].map(i => (
+          <div key={i} className="bento-item bento--1x1 card skeleton" style={{ height: 92 }} />
+        ))}
+      </div>
+    </div>
+  );
+
   const dueVocab     = data?.dueVocab;
   const dueGrammar   = data?.dueGrammar;
   const knownWords   = data?.knownWords;
@@ -97,11 +117,10 @@ export default function LearnPage() {
   const streakFreeze = profile?.streak_freeze_count;
 
   const practice = [
-    { href: '/study/library',  title: '서재',          desc: '지난 문단 다시 읽기',            accent: 'var(--primary)',    icon: '📖' },
+    { href: '/study/library',  title: '서재',          desc: '지난 문단 다시 읽기 · 내 자료로 학습', accent: 'var(--primary)', icon: '📖' },
     { href: '/review/grammar', title: '문법 복습',      desc: '돌아온 문법 다시 풀기', badge: dueGrammar, accent: 'var(--accent)', icon: '🧩' },
     { href: '/writing',        title: '작문 기록실',    desc: '내 작문 돌아보기',              accent: 'var(--warning)',    icon: '✍️' },
     { href: '/vocab',          title: '어휘 복습',      desc: '단어장 몰아서 복습', badge: dueVocab, accent: 'var(--danger)',  icon: '🗂️' },
-    { href: '/study/library',  title: '내 자료로 학습', desc: '기사·문장을 붙여넣어 이야기로',  accent: 'var(--text-muted)', icon: '📥' },
     { href: '/guide',          title: '학습 가이드',    desc: '처음이라면 — 하루의 흐름 안내',  accent: 'var(--text-muted)', icon: '🧭' },
   ];
 
@@ -114,36 +133,23 @@ export default function LearnPage() {
         <p className="home-greeting__sub">필요한 연습을 한곳에서 이어가 볼까요?</p>
       </div>
 
-      {/* ① 오늘 학습 주 CTA — 홈 이어하기 카드 급 비중 */}
-      <div>
-        <Link href="/study" className="lessons-continue learn-cta">
-          <span className="lessons-continue__body">
-            <span className="lessons-continue__kicker">오늘 학습</span>
-            <span className="lessons-continue__title">이야기 한 편이 준비됐어요</span>
+      {/* ① 오늘 학습 주 CTA — 연재 중이면 '이어지는 이야기'로 병합(별도 연재 카드 제거).
+          due 수치는 아래 연습 타일 배지로만 노출(문장 중복 제거). */}
+      <Link href="/study" className="lessons-continue learn-cta">
+        <span className="lessons-continue__body">
+          <span className="lessons-continue__kicker">{episode != null ? '이어지는 이야기' : '오늘 학습'}</span>
+          <span className="lessons-continue__title">
+            {episode == null
+              ? '이야기 한 편이 준비됐어요'
+              : episode >= 10
+                ? '새 이야기가 시작됐어요'
+                : `${episode + 1}화가 준비됐어요`}
           </span>
-          <span className="lessons-continue__meta">→</span>
-        </Link>
-        {dueVocab != null && dueGrammar != null && (
-          <p className="home-greeting__sub" style={{ padding: '0 2px' }}>
-            오늘 복습할 단어 {dueVocab}개 · 문법 {dueGrammar}개
-          </p>
-        )}
-      </div>
+        </span>
+        <span className="lessons-continue__meta">→</span>
+      </Link>
 
-      {/* ② 이어지는 이야기 — 연재가 진행 중일 때만 (홈 '오늘 읽기' 카드 스타일) */}
-      {episode != null && (
-        <Link href="/study" className="learn-story">
-          <div className="learn-story__kicker">이어지는 이야기</div>
-          <h2 className="learn-story__title">
-            {episode >= 10
-              ? '이야기가 완결됐어요 — 새 이야기가 시작돼요'
-              : `${episode}화까지 읽었어요 — 다음 화가 기다려요`}
-          </h2>
-          <div className="learn-story__more">이어서 학습하기 →</div>
-        </Link>
-      )}
-
-      {/* ③ 연습실 그리드 — 홈 벤토의 2x2 급 타일, 타일별 고유 악센트(좌보더·아이콘원·hover 틴트) */}
+      {/* ② 연습실 그리드 — 홈 벤토의 2x2 급 타일, 타일별 고유 악센트(좌보더·아이콘원·hover 틴트) */}
       <div className="bento">
         {practice.map(t => (
           <Link key={t.title} href={t.href} className="bento-item bento--1x1 card learn-tile" style={{ '--tile-accent': t.accent }}>
@@ -159,7 +165,7 @@ export default function LearnPage() {
         ))}
       </div>
 
-      {/* ④ 성장 요약 — bento 타일 (ProfileStats 패턴, 성장 지표는 growthStats 카피 재사용) */}
+      {/* ③ 성장 요약 — bento 타일 (ProfileStats 패턴, 성장 지표는 growthStats 카피 재사용) */}
       <div className="bento">
         {weekSessions != null && (
           <div className="bento-item bento--1x1 card bento-stat learn-stat" style={{ '--tile-accent': 'var(--accent)' }}>

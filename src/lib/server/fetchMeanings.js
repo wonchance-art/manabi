@@ -147,7 +147,6 @@ export async function fetchMeaningsForMissing(missing, language, supabase) {
     if (!res.ok) {
       const groqData = await callGroqFallback(prompt);
       if (groqData) {
-        console.log('[fetchMeanings] batch recovered via Groq');
         data = groqData;
         res = { ok: true, status: 200 };
       } else {

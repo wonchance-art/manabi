@@ -1,4 +1,4 @@
-# 배포 체크리스트 (2026-04-14 세션 기준)
+# 배포 체크리스트 (2026-04-14 최초 · 2026-07-07 갱신)
 
 ## 1. 마이그레이션 배포
 
@@ -20,6 +20,17 @@ supabase db push
 | `20260414_writing_practice.sql` | writing_practice 테이블 (RLS 포함) | VocabWriting 히스토리 |
 | `20260414_token_corrections.sql` | token_corrections 테이블 (RLS 포함) | ViewerBottomSheet 교정 히스토리 |
 | `20260414_vocab_decks_source.sql` | vocab_decks.source_material_id 컬럼 | ViewerPage 관련 덱 추천 |
+
+### 이번 웨이브 마이그레이션 (2026-07) — 순서대로 실행
+
+> ⚠️ **이 리포는 마이그레이션 CI 자동 적용이 없습니다.** 아래 4건은 Supabase 대시보드 → SQL Editor 에서 파일 전체를 순서대로 붙여넣어 **수동 실행**하세요. 특히 `20260703_streak_freeze_earn`은 `update_streak`을 `CREATE OR REPLACE`로 덮어쓰고 구 `buy_streak_freeze` RPC를 제거하므로 실행 확인이 필수입니다.
+
+| 파일 | 추가 내용 | 의존 코드 |
+|------|----------|-----------|
+| `20260701_grammar_review.sql` | `grammar_review` 테이블(문법 SRS 큐, FSRS 컬럼) + `review_events` append-only 오답 로그 (둘 다 RLS) | LearnPage 문법 due 배지, `/review/grammar` 복습 큐, 약점 진단 |
+| `20260702_writing_studio.sql` | `writing_practice`에 컬럼 추가(prompt_type·prompt·level·chapter_slug·errors·revision_of) | 라이팅 스튜디오 `/writing` 구조화 첨삭·재작문 |
+| `20260703_study_paragraphs.sql` | `study_paragraphs` 테이블(오늘의 문단 저장소: prefetched/used/expired, RLS) | 공부 모드 `/study` 프리페치·연재, LearnPage 이번 주 세션·연재 화수 |
+| `20260703_streak_freeze_earn.sql` | `update_streak` 재정의(7일 연속마다 프리즈 +1, 최대 2개) + `buy_streak_freeze` 제거 + `streak_freeze_count` 컬럼 재확인 | 스트릭 프리즈 자동 적립, LearnPage 스트릭 타일 |
 
 ### 배포 후 검증 쿼리
 
@@ -46,6 +57,10 @@ WHERE tablename IN ('writing_practice', 'token_corrections');
 - `writing_practice` 실패 → 쓰기 연습 히스토리 로드/저장 실패 (기능 자체는 메모리로 작동)
 - `token_corrections` 실패 → AI 오류 교정 저장은 성공, 히스토리 조회만 빈 배열
 - `vocab_decks_source` 실패 → 덱 생성 시 insert 에러, 관련 덱 추천 섹션 빈 상태
+- `grammar_review` 실패 → 문법 복습 큐·오답 로그 런타임 오류, LearnPage 문법 due 배지 0, `/review/grammar` 빈 상태
+- `writing_studio` 실패 → 라이팅 스튜디오 저장 시 컬럼 누락 오류(구조화 첨삭·재작문 링크 유실)
+- `study_paragraphs` 실패 → 앱은 무해 폴백(프리페치 저장/조회 무시 → 라이브 경로로 생성)하나 연재·이번 주 세션·서재 세션 집계가 0
+- `streak_freeze_earn` 실패 → 스트릭 프리즈 자동 적립 안 됨, 구 `buy_streak_freeze` 잔재 유지
 
 **가장 위험한 것은 `vocab_decks_source`** — 컬럼이 없으면 createDeckMutation이 INSERT 단계에서 실패.
 
@@ -56,7 +71,12 @@ GEMINI_API_KEY=<valid key>
 NEXT_PUBLIC_SUPABASE_URL=<prod url>
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<prod anon key>
 NEXT_PUBLIC_SITE_URL=<prod domain, for robots/sitemap>
+SUPADATA_API_KEY=<optional — 듣고 읽기 자막 폴백>
+CRON_SECRET=<cron 인증 — /api/cron/* Bearer 토큰>
 ```
+
+- `SUPADATA_API_KEY` (선택) — `/api/media/captions` step 5 Supadata 폴백. 없으면 자막 자동 폴백만 조용히 스킵(핵심 정독 흐름·`.srt/.vtt` 직접 업로드는 불변).
+- `CRON_SECRET` (Vercel Cron 사용 시 필수) — `/api/cron/fetch-suggestions`·`/api/cron/backfill-ipa` GET의 `Bearer` 인증. 미설정 시 fail-closed(cron 요청 거부: 500/401)라 자동 수집·IPA 백필이 멈춘다.
 
 ## 3. 배포 후 관찰 포인트
 

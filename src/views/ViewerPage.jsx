@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -28,7 +28,6 @@ import ReadingTest from '../components/ReadingTest';
 import ConversationPanel from '../components/ConversationPanel';
 import ViewerBottomSheet from '../components/ViewerBottomSheet';
 import ListenControls from '../components/ListenControls';
-import { parseTitle } from '../lib/seriesMeta';
 import { formatDetail } from '../lib/wordDetailFormat';
 import { useSeriesNeighbors } from '../lib/useSeriesNeighbors';
 import { useTitleEdit } from '../lib/useTitleEdit';
@@ -212,9 +211,9 @@ export default function ViewerPage() {
   const grammar = useGrammarAnalysis({ toast, materialLang });
   const { isGrammarModalOpen, setIsGrammarModalOpen, grammarAnalysis,
           isGrammarLoading, selectedRangeText, checkedActions, setCheckedActions,
-          selectionPopup, grammarFollowUp, setGrammarFollowUp,
-          grammarFollowLoading, openGrammarModal, analyzeGrammar,
-          requestGrammarAnalysis, analyzeWordInContext, askFollowUp,
+          grammarFollowUp, setGrammarFollowUp,
+          grammarFollowLoading, analyzeGrammar,
+          requestGrammarAnalysis, askFollowUp,
           handleTextSelection: handleGrammarTextSelection } = grammar;
 
   const { data: savedWords = { byKey: new Map(), surfaces: new Set(), bases: new Set() } } = useQuery({
