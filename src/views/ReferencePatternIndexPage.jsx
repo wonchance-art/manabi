@@ -338,10 +338,11 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
                     )}
                   </div>
 
-                  {/* 뜻·예문 열 */}
-                  <div className={`fr-vrow__body ${meaningHidden ? 'is-hidden' : ''}`}>
-                    <div className="bk-ko">{item.ko}</div>
-                    {item.note && <div className="bk-note">⚠️ {refInline(item.note)}</div>}
+                  {/* 뜻·예문 열 — 문형만('meaning' 가림): 뜻·예문뜻만 가리고 예문 원문은 남겨 읽기 연습.
+                      뜻만('word' 가림): 예문 원문(정답 문형 포함)만 가리고 예문 뜻은 남긴다. */}
+                  <div className="fr-vrow__body">
+                    <div className={`bk-ko ${meaningHidden ? 'fr-vrow__hide-extra' : ''}`}>{item.ko}</div>
+                    {item.note && <div className={`bk-note ${meaningHidden ? 'fr-vrow__hide-extra' : ''}`}>⚠️ {refInline(item.note)}</div>}
                     {(item.ex || item.ex2) && (
                       <div className="bk-ex">
                         {[item.ex, item.ex2].filter(Boolean).map((ex, ei) => (
@@ -368,7 +369,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
                                 </button>
                               )}
                             </div>
-                            <div className="bk-ex__ko">{ex.ko}</div>
+                            <div className={`bk-ex__ko ${meaningHidden ? 'fr-vrow__hide-extra' : ''}`}>{ex.ko}</div>
                           </div>
                         ))}
                       </div>
