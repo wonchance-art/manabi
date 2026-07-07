@@ -13,6 +13,9 @@ import { isPassed } from '../components/RefPatternCheck';
 import { pullProgress } from '../lib/refProgress';
 import ProfileStats from './ProfileStats';
 
+// 언어 코드 → 한국어 라벨 (studyParagraph.js의 LANG_NAME과 동일 매핑)
+const LANG_LABEL = { Japanese: '일본어', English: '영어', French: '프랑스어', Chinese: '중국어' };
+
 async function fetchHomeData(userId) {
   const todayStr   = new Date().toISOString().split('T')[0];
   const todayStart = `${todayStr}T00:00:00`;
@@ -103,12 +106,16 @@ async function fetchHomeData(userId) {
     prevWeekXP:      prevWeekVocab * 5 + prevWeekReview * 10 + prevWeekRead * 50,
     vocabByLang: (() => {
       const all = allVocabRows || [];
-      const isJa = (v) => v.language === 'Japanese' || (!v.language && /[\u3040-\u30ff\u4e00-\u9fff]/.test(v.word_text));
-      return {
-        Japanese: all.filter(isJa).length,
-        English: all.filter(v => !isJa(v)).length,
-        total: all.length,
-      };
+      // language가 비어 있는 레거시 행은 표기로 일본어/영어를 추정(기존 동작 유지).
+      // 명시된 행은 언어별(Japanese/English/French/Chinese)로 그룹 집계.
+      const langOf = (v) => v.language
+        || (/[\u3040-\u30ff\u4e00-\u9fff]/.test(v.word_text || '') ? 'Japanese' : 'English');
+      const byLang = all.reduce((acc, v) => {
+        const lang = langOf(v);
+        acc[lang] = (acc[lang] || 0) + 1;
+        return acc;
+      }, {});
+      return { ...byLang, total: all.length };
     })(),
     seriesProgress: (() => {
       const doneSet = new Set((allCompleted || []).map(r => r.material_id));
@@ -333,9 +340,19 @@ export default function HomePage({ continueManifest = {}, refManifest = {} }) {
           <div className="home-getting-started__header">
             <div>
               <h2 className="home-getting-started__title">시작해볼까요, {displayName}님!</h2>
-              <p className="home-getting-started__sub">3단계로 첫 학습 완료</p>
+              <p className="home-getting-started__sub">오늘 학습 한 번이면 하루치가 끝나요 · 6~8분</p>
             </div>
           </div>
+          {/* 주 CTA — v2 단일 학습 진입점(/study) */}
+          <Link href="/study" className="lessons-continue">
+            <span className="lessons-continue__body">
+              <span className="lessons-continue__kicker">오늘 학습</span>
+              <span className="lessons-continue__title">오늘 학습 시작하기</span>
+            </span>
+            <span className="lessons-continue__meta">→</span>
+          </Link>
+          {/* 보조 단계 — 더 둘러보고 싶다면 */}
+          <p className="home-getting-started__sub" style={{ margin: '14px 0 8px' }}>더 둘러보기</p>
           <div className="home-gs-steps">
             {[
               { href: '/guide',     num: 1, title: '학습 로드맵', desc: '내 레벨 파악 →' },
@@ -404,7 +421,7 @@ export default function HomePage({ continueManifest = {}, refManifest = {} }) {
             </h2>
             <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: 16 }}>
               {isIdeal && <span style={{ color: 'var(--accent)', fontWeight: 700 }}>맞춤 </span>}
-              {suggestion.language === 'Japanese' ? '일본어' : '영어'} {suggestion.level}
+              {LANG_LABEL[suggestion.language] || suggestion.language} {suggestion.level}
               {suggestion.channel_name && ` · ${suggestion.channel_name}`}
             </div>
             <Button
