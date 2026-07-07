@@ -305,14 +305,16 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
                     )}
                   </div>
 
-                  {/* 뜻 열 — 학습자 이해 순서: 뜻 → 연결 지식 → 예문 */}
-                  <div className={`fr-vrow__body ${meaningHidden ? 'is-hidden' : ''}`}>
-                    <div className="fr-vrow__ko">
+                  {/* 뜻 열 — 학습자 이해 순서: 뜻 → 연결 지식 → 예문.
+                      단어만('meaning' 가림): 뜻·예문뜻·어원만 가리고 예문 한자는 남겨 읽기 연습.
+                      뜻만('word' 가림): 예문 원문(한자·발음)만 가리고 예문 뜻은 남겨 작문 연습. */}
+                  <div className="fr-vrow__body">
+                    <div className={`fr-vrow__ko ${meaningHidden ? 'fr-vrow__hide-extra' : ''}`}>
                       {w.pos && <span className="fr-vrow__pos">{w.pos}</span>}
                       {w.ko}
                       {lang === 'French' && w.en && <span className="fr-vrow__en"> · EN {w.en}</span>}
                     </div>
-                    {link && <div className={`fr-vrow__etym ${wordHidden ? 'fr-vrow__hide-extra' : ''}`}><strong>{linkIcon}</strong> · {refInline(link)}</div>}
+                    {link && <div className={`fr-vrow__etym ${(wordHidden || meaningHidden) ? 'fr-vrow__hide-extra' : ''}`}><strong>{linkIcon}</strong> · {refInline(link)}</div>}
                     {w.ex && (
                       <div className="bk-ex">
                         <div className="bk-ex__pair">
@@ -338,7 +340,7 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
                               </button>
                             )}
                           </div>
-                          <div className="bk-ex__ko">{w.ex.ko}</div>
+                          <div className={`bk-ex__ko ${meaningHidden ? 'fr-vrow__hide-extra' : ''}`}>{w.ex.ko}</div>
                         </div>
                       </div>
                     )}
