@@ -573,7 +573,7 @@ export function buildWordContextPrompt({ sentence, surface, base, language }) {
 export function buildTranslatePrompt(texts, code) {
   const name = translateLangName(code);
   const list = (Array.isArray(texts) ? texts : [])
-    .map((t, i) => `${i + 1}. ${String(t ?? '').replace(/\s+/g, ' ').trim()}`)
+    .map((t, i) => `${i + 1}. ${String(t ?? '').replace(/\s+/g, ' ').trim().slice(0, 200)}`)
     .join('\n');
   return `다음 ${name} 문장들을 자연스러운 한국어로 번역해 주세요.
 

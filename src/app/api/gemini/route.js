@@ -1,4 +1,19 @@
 import { createClient } from '@supabase/supabase-js';
+import { requireAdmin } from '@/lib/server/auth';
+
+// ── 프록시 잠금(비용 남용 방지) ──
+// 클라가 고를 수 있는 모델 화이트리스트 — flash·flash-lite만(pro 등 고비용 모델 차단).
+const ALLOWED_MODELS = new Set([
+  'models/gemini-2.5-flash',
+  'models/gemini-2.5-flash-lite',
+]);
+const DEFAULT_MODEL = 'models/gemini-2.5-flash';
+// 텍스트 파트 합계 바이트 상한. contents 전체가 아니라 text만 잰다 — PDF OCR 경로가
+// inline_data(base64 이미지, 수백 KB)를 이 프록시로 보내므로 이미지는 캡에서 제외해야
+// 회귀가 없다(pdfExtract.js). 32KB면 ReadingTest 발췌(2.5K자)·대화·긴 CJK 선택을 모두 통과.
+const MAX_TEXT_BYTES = 32 * 1024;
+// 출력 토큰 서버 상한 — 관측된 최대 사용처(단어상세·독해문항·문단번역)보다 넉넉, 출력 폭주 차단.
+const MAX_OUTPUT_TOKENS = 8192;
 
 // Qwen 3 — CJK 언어에 강하고 instruct 모드라 빠름
 // Reasoning 버전이 아닌 function calling(instruct) 카테고리 버전 사용
@@ -47,7 +62,7 @@ async function callGroq(contents, generationConfig) {
 
 // IP별 요청 카운터 (서버리스 인스턴스 재시작 시 초기화 — 충분한 억지력)
 const rateLimitMap = new Map();
-const RATE_LIMIT = 300; // 분당 요청 수 (분석 속도 향상 위해 상향)
+const RATE_LIMIT = 60; // 분당 요청 수 (사용자별) — 비용 남용 방지
 const WINDOW_MS = 60 * 1000;
 const MAX_ENTRIES = 10000;
 let lastCleanup = Date.now();
@@ -146,7 +161,8 @@ export async function POST(request) {
     );
   }
 
-  const { contents, generationConfig, model = 'models/gemini-2.5-flash' } = body;
+  const { contents, generationConfig } = body;
+  const model = body.model ?? DEFAULT_MODEL;
   if (!contents) {
     recordStat('errors');
     stats.errorByStatus['400'] = (stats.errorByStatus['400'] || 0) + 1;
@@ -156,7 +172,44 @@ export async function POST(request) {
     );
   }
 
-  const requestBody = { contents, ...(generationConfig ? { generationConfig } : {}) };
+  // 모델 화이트리스트 — flash·flash-lite만(클라가 pro 등 고비용 모델을 강제하지 못하게).
+  if (!ALLOWED_MODELS.has(model)) {
+    recordStat('errors');
+    stats.errorByStatus['400'] = (stats.errorByStatus['400'] || 0) + 1;
+    return Response.json(
+      { error: { message: 'Bad Request: Unsupported model' } },
+      { status: 400 }
+    );
+  }
+
+  // 텍스트 파트 바이트 상한 — inline_data(이미지)는 제외해 PDF OCR 경로 회귀를 막는다.
+  let textBytes = 0;
+  if (Array.isArray(contents)) {
+    for (const c of contents) {
+      for (const p of (c?.parts || [])) {
+        if (typeof p?.text === 'string') textBytes += Buffer.byteLength(p.text, 'utf8');
+      }
+    }
+  }
+  if (textBytes > MAX_TEXT_BYTES) {
+    recordStat('errors');
+    stats.errorByStatus['400'] = (stats.errorByStatus['400'] || 0) + 1;
+    return Response.json(
+      { error: { message: 'Bad Request: Prompt too large' } },
+      { status: 400 }
+    );
+  }
+
+  // 출력 토큰 서버 상한 강제 — 클라가 maxOutputTokens를 키워 출력 비용을 폭주시키는 것 차단.
+  const safeGenConfig = {
+    ...(generationConfig || {}),
+    maxOutputTokens: Math.min(
+      Number(generationConfig?.maxOutputTokens) || MAX_OUTPUT_TOKENS,
+      MAX_OUTPUT_TOKENS
+    ),
+  };
+
+  const requestBody = { contents, generationConfig: safeGenConfig };
 
   try {
     let url = `https://generativelanguage.googleapis.com/v1beta/${model}:generateContent?key=${apiKey}`;
@@ -216,8 +269,11 @@ export async function POST(request) {
   }
 }
 
-// 관리자용 통계 확인 엔드포인트 (인스턴스 로컬)
-export async function GET() {
+// 관리자용 통계 확인 엔드포인트 (인스턴스 로컬) — 관리자 인증 필수(운영 통계 노출 방지).
+export async function GET(request) {
+  const auth = await requireAdmin(request);
+  if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
+
   const uptimeMs = Date.now() - stats.startedAt;
   const avgLatency = stats.total > 0 ? Math.round(stats.latencySum / stats.total) : 0;
   const errorRate = stats.total > 0 ? ((stats.errors / stats.total) * 100).toFixed(1) : '0.0';

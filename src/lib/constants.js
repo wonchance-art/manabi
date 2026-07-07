@@ -13,6 +13,22 @@ export function displayWord(word, pos) {
   return c.toLowerCase() + word.slice(1);
 }
 
+// \ubb38\uc7a5\uc5d0\uc11c \ub300\uc0c1 \ub2e8\uc5b4\ub97c \uac10\uc2fc \uc870\uac01\ub4e4\ub85c \ubd84\ud560 \u2014 \ubcf5\uc2b5 \ub9c8\uc2a4\ud0b9\u00b7\ud558\uc774\ub77c\uc774\ud2b8 \uacf5\uc6a9 \ud5ec\ud37c.
+// listen \uc800\uc7a5 \ub2e8\uc5b4\ub294 word_text\uac00 \uae30\ubcf8\ud615(\u601d\u3046)\uc778\ub370 source_sentence\ub294 \ud65c\uc6a9\ud615(\u601d\u3044\u307e\u3059)\uc744
+// \ub2f4\uace0 \uc788\uc5b4 word_text\ub85c split\ud558\uba74 \ubd88\uc77c\uce58(\uc870\uac01 1\uac1c)\ud55c\ub2e4. \uadf8\ub798\uc11c \ud3f4\ubc31 \uccb4\uc778:
+//   word_text\ub85c \ub9e4\uce6d \u2192 \uc548 \ub418\uba74 base_form\uc73c\ub85c \u2192 \uadf8\ub798\ub3c4 \uc548 \ub418\uba74 \ud1b5\uc9dc(\ud604\ud589)\ub85c.
+// \ubc18\ud658 { parts, term }: parts\ub294 split \uacb0\uacfc, term\uc740 \uc2e4\uc81c\ub85c \ub9e4\uce6d\ub41c \ud45c\uae30(\ubabb \ucc3e\uc73c\uba74 null).
+// term\uc774 null\uc774\uba74 parts\ub294 [\ubb38\uc7a5] \ud558\ub098\ubfd0 \u2014 \ud638\ucd9c\ubd80\uac00 \ub9c8\ud06c \uc5c6\uc774 \ud1b5\uc9dc\ub85c \ub80c\ub354\ud55c\ub2e4.
+export function splitSentenceAroundWord(sentence, wordText, baseForm) {
+  const s = sentence || '';
+  for (const term of [wordText, baseForm]) {
+    if (!term) continue;
+    const parts = s.split(term);
+    if (parts.length > 1) return { parts, term };
+  }
+  return { parts: [s], term: null };
+}
+
 export const JP_LEVELS = ['N5 기초', 'N4 기본', 'N3 중급', 'N2 상급', 'N1 심화'];
 export const EN_LEVELS = ['A1 기초', 'A2 초급', 'B1 중급', 'B2 상급', 'C1 고급', 'C2 마스터'];
 export const FR_LEVELS = ['A0 입문', 'A1 기초', 'A2 초급', 'B1 중급', 'B2 상급', 'C1 고급', 'C2 마스터'];

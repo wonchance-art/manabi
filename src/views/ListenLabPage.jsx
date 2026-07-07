@@ -139,6 +139,14 @@ export default function ListenLabPage() {
   // 문맥 해석(지연 로드) — `${idx}:${unitIndex}:${surface}` → { status, text }
   const [ctxMap, setCtxMap] = useState({});
 
+  // ── 세션 세대(영상 전환 오염 방지) ──
+  // reset()·loadVideo 성공마다 ++. in-flight 비동기(/api/analyze·word-context·translate)가
+  // 진입 시 캡처한 세대와 어긋나면 setState를 버린다 → 이전 영상 응답이 다음 영상의
+  // 인덱스 키 상태(analyzed/ctxMap/koMap)를 오염시키는 걸 원천 차단(H1·M1·M4·M5).
+  const genRef = useRef(0);
+  // ensureAnalyzed 진행 중인 idx 집합 — 같은 줄 재호출 동기 차단(state 스냅샷은 비동기라 부족).
+  const inflightRef = useRef(new Set());
+
   // ── 문장 번역(기능 1) ──
   const [koMap, setKoMap] = useState({});         // idx → 한국어 번역(부분 도착 즉시 렌더)
   const [showKo, setShowKo] = useState(true);     // 번역 표시 토글 (localStorage 기억)
@@ -263,6 +271,20 @@ export default function ListenLabPage() {
         toast(`${nm} 자막으로 학습해요 — 단어는 ${nm} 단어장에 저장돼요.`, 'info');
         setLanguage(resolvedKey);
       }
+      // 새 영상 시작 — 세대 증가로 이전 영상 in-flight(analyze·translate·word-context)를 무효화 +
+      // 인덱스 키 상태 전부 초기화(재검색 없이 카드→카드 전환 시 이전 자막·토큰·저장표식 잔여 차단).
+      genRef.current++;
+      inflightRef.current.clear();
+      setAnalyzed({});
+      setCtxMap({});
+      setKoMap({});
+      setSaved({});
+      setActiveTok(null);
+      setActiveIdx(-1);
+      setCurrentTime(0);
+      setCaptionError('');
+      setAvailableTracks(null);
+      setPendingVideoId(null);
       setLoadedLangKey(resolvedKey);
       setCues(nextCues);
       setTimed(true);
@@ -299,6 +321,9 @@ export default function ListenLabPage() {
 
   const reset = () => {
     stopPoll();
+    // 세대 증가 → 이전 영상 in-flight 응답이 아래 초기화를 관통해 상태를 되살리지 못하게(H1·M1·M4·M5).
+    genRef.current++;
+    inflightRef.current.clear();
     setStarted(false);
     setVideoId(null);
     setActiveIdx(-1);
@@ -307,6 +332,13 @@ export default function ListenLabPage() {
     setAnalyzed({});
     setCtxMap({});
     setKoMap({});
+    setSaved({});
+    // H2: cues/timed를 안 지우면 "새로 시작" 후 직접 입력으로 다른 URL 시작 시 이전 자막이 싱크됨.
+    setCues([]);
+    setTimed(false);
+    setCaptionError('');
+    setAvailableTracks(null);
+    setPendingVideoId(null);
     setPlayerError(null);
     setLoadedLangKey(null);
   };
@@ -383,7 +415,10 @@ export default function ListenLabPage() {
 
   // ── 인라인 탭 → 그 줄 분석 (큐당 1회 캐시). 상태 토글 없이 "보장"만 한다 ──
   const ensureAnalyzed = useCallback(async (idx) => {
-    if (analyzed[idx]) return;                       // 이미 로딩/완료면 재호출 금지
+    if (analyzed[idx]) return;                       // 이미 로딩/완료면 재호출 금지(비동기 스냅샷)
+    if (inflightRef.current.has(idx)) return;        // 진행 중 재호출 동기 차단(스냅샷 갱신 전 재진입 방지)
+    const gen = genRef.current;                       // 이 호출이 속한 세션 세대
+    inflightRef.current.add(idx);
     setAnalyzed((m) => ({ ...m, [idx]: { status: 'loading', tokens: [] } }));
 
     try {
@@ -404,9 +439,14 @@ export default function ListenLabPage() {
         .map((tid) => ({ tokenId: tid, ...result.dictionary[tid] }))
         .filter(isMeaningfulToken);
 
+      if (gen !== genRef.current) return;             // 영상 전환됨 — 이전 영상 토큰이 다음 영상 줄에 박히는 오염 차단(H1)
       setAnalyzed((m) => ({ ...m, [idx]: { status: 'done', tokens } }));
     } catch {
+      if (gen !== genRef.current) return;
       setAnalyzed((m) => ({ ...m, [idx]: { status: 'error', tokens: [] } }));
+    } finally {
+      // 현재 세대의 마커만 해제 — 이전 세대 응답이 새 세대의 in-flight 마커를 지우지 않게.
+      if (gen === genRef.current) inflightRef.current.delete(idx);
     }
   }, [analyzed, cues, loadedLangKey]);
 
@@ -494,6 +534,7 @@ export default function ListenLabPage() {
   // ── 문맥 해석(지연) — 팝오버가 단위로 확정되면 1회 호출, ctxMap 캐시 ──
   const fetchWordContext = useCallback(async (idx, unit, unitIndex) => {
     const key = `${idx}:${unitIndex}:${unit.surface}`;
+    const gen = genRef.current;                        // 이 호출이 속한 세션 세대
     setCtxMap((m) => ({ ...m, [key]: { status: 'loading', text: '' } }));
     try {
       const res = await fetch('/api/media/word-context', {
@@ -508,9 +549,11 @@ export default function ListenLabPage() {
       });
       const data = await res.json();
       if (!res.ok || !data?.context) throw new Error('no context');
+      if (gen !== genRef.current) return;              // 영상 전환됨 — reset 후 setCtxMap 도착 차단(M1)
       setCtxMap((m) => ({ ...m, [key]: { status: 'done', text: data.context } }));
     } catch {
       // 실패 시 3행만 조용히 생략 — error 상태로 두어 재호출은 막는다.
+      if (gen !== genRef.current) return;
       setCtxMap((m) => ({ ...m, [key]: { status: 'error', text: '' } }));
     }
   }, [cues, loadedLangKey, authHeaders]);
@@ -531,12 +574,13 @@ export default function ListenLabPage() {
   useEffect(() => {
     if (!started || cues.length === 0) return;
     let cancelled = false;
+    const gen = genRef.current;                       // 이 배치 루프가 속한 세션 세대
     const srcCode = LANG_CODE[loadedLangKey] || LANG_CODE[language] || '';
     (async () => {
       const headers = await authHeaders();
       const BATCH = 40;
       for (let i = 0; i < cues.length; i += BATCH) {
-        if (cancelled) return;
+        if (cancelled || gen !== genRef.current) return;
         const slice = cues.slice(i, i + BATCH);
         try {
           const res = await fetch('/api/media/translate', {
@@ -547,7 +591,7 @@ export default function ListenLabPage() {
           if (!res.ok) continue;
           const data = await res.json();
           const arr = Array.isArray(data?.translations) ? data.translations : [];
-          if (cancelled) return;
+          if (cancelled || gen !== genRef.current) return;  // 영상 전환됨 — 이전 영상 번역이 다음 koMap에 박히는 오염 차단
           setKoMap((prev) => {
             const next = { ...prev };
             arr.forEach((t, j) => { if (t) next[i + j] = t; });
@@ -568,9 +612,26 @@ export default function ListenLabPage() {
   const saveUnit = async (idx, unit) => {
     if (!user) { toast('로그인이 필요해요.', 'warning'); return; }
     const base = unit.base || unit.surface;
+    const surface = unit.surface;
     const savedKey = `${idx}:${base}`;
     if (saved[savedKey]) return;
     try {
+      // viewer는 표면형(word_text=surface, 예: 思い)으로, listen은 기본형(思う)으로 저장한다.
+      // onConflict(user_id,word_text)는 표기가 다르면 서로 다른 행 → 같은 단어가 2행 등록됨.
+      // 저장 전에 base·surface 양쪽 표기로 기존 행을 확인해, 이미 있으면 저장을 건너뛰고
+      // ✓만 표시한다(세션 saved 맵이 반영 못 하는 DB 기존행도 이 조회로 부분 보완).
+      const candidates = [...new Set([base, surface].filter(Boolean))];
+      const { data: existing, error: checkError } = await supabase
+        .from('user_vocabulary')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('language', loadedLangKey)
+        .in('word_text', candidates)
+        .limit(1);
+      if (!checkError && existing && existing.length > 0) {
+        setSaved((m) => ({ ...m, [savedKey]: true }));   // 표면형/기본형 어느 쪽으로든 이미 등록됨
+        return;
+      }
       const row = {
         user_id: user.id,
         word_text: base,                      // ← base 우선(활용형 중복 등록 방지)
@@ -767,6 +828,7 @@ export default function ListenLabPage() {
                         <button
                           key={`${t.code}:${t.kind}`}
                           type="button"
+                          disabled={!!loadingVideoId}
                           onClick={() => pendingVideoId && loadVideo(pendingVideoId, t.code)}
                           className="tab-pills__item"
                         >

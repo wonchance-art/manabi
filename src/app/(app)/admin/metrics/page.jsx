@@ -3,8 +3,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { getRefLang, REF_LANGS } from '@/content/refLangs';
-import { deriveVocabRungs } from '@/lib/studyMaterials';
-import { computeEwma, dialFromEwma } from '@/lib/skillRung';
+import { computeEwma, dialFromEwma, deriveVocabRungs } from '@/lib/skillRung';
 import {
   computeRecall,
   computeItemWrongRates,

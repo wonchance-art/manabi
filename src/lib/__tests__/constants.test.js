@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { detectLang, JP_LEVELS, EN_LEVELS, LEVELS } from '../constants';
+import { detectLang, splitSentenceAroundWord, JP_LEVELS, EN_LEVELS, LEVELS } from '../constants';
 
 describe('detectLang', () => {
   it('히라가나 → Japanese', () => {
@@ -36,6 +36,35 @@ describe('detectLang', () => {
 
   it('특수문자만 → English', () => {
     expect(detectLang('!@#$%')).toBe('English');
+  });
+});
+
+describe('splitSentenceAroundWord', () => {
+  it('word_text가 문장에 그대로 있으면 word_text로 분할', () => {
+    const r = splitSentenceAroundWord('本を読む人', '読む', '読む');
+    expect(r.term).toBe('読む');
+    expect(r.parts).toEqual(['本を', '人']);
+  });
+
+  it('활용형 문장 — word_text(기본형)는 불일치, base_form이 문장에 있으면 base_form으로 마스킹', () => {
+    // 문장은 활용형 표기(飲みます가 아니라 기본형 飲む가 등장하는 케이스)이고
+    // 저장된 word_text는 문장에 없는 표기(飲みたい) → base_form(飲む)로 폴백 매칭.
+    const r = splitSentenceAroundWord('毎日水を飲む', '飲みたい', '飲む');
+    expect(r.term).toBe('飲む');
+    expect(r.parts).toEqual(['毎日水を', '']);
+    expect(r.parts.length).toBeGreaterThan(1);   // 마스크가 삽입될 자리가 생김
+  });
+
+  it('word_text·base_form 둘 다 불일치 → 통짜 표시(term null, parts 1개)', () => {
+    const r = splitSentenceAroundWord('思います', '思う', '思う');
+    expect(r.term).toBeNull();
+    expect(r.parts).toEqual(['思います']);
+  });
+
+  it('source_sentence 없음(null) → 빈 문자열 통짜', () => {
+    const r = splitSentenceAroundWord(null, '読む', '読む');
+    expect(r.term).toBeNull();
+    expect(r.parts).toEqual(['']);
   });
 });
 

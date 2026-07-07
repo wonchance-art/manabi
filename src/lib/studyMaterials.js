@@ -9,27 +9,12 @@ import { getRefLang } from '@/content/refLangs';
 import { refMain, refPron } from '@/views/refShared';
 import { buildChapterQuiz } from '@/lib/refQuiz';
 import { composeSession, buildWarmupItems } from '@/lib/studySession';
-import { computeRung, computeEwma, dialFromEwma, computeWeakness } from '@/lib/skillRung';
+import { computeEwma, dialFromEwma, computeWeakness, deriveVocabRungs } from '@/lib/skillRung';
+// deriveVocabRungs는 콘텐츠 무의존 순수 함수라 skillRung으로 이전됐다.
+// 기존 import 경로(테스트·과거 소비처) 호환 위해 re-export — studyMaterials 공개 API 불변.
+export { deriveVocabRungs };
 import { levelBand } from '@/lib/writingPrompts';
 import { THEMES } from '@/lib/studyParagraph';
-
-/**
- * due 어휘별 숙련 rung 유도 — 해당 단어의 vocab 소스 이벤트만 시간순으로 모아 computeRung.
- * source 필터가 없으면 같은 item_key를 쓰는 타 소스(reading/grammar) 이벤트가 섞여 rung이 오염된다.
- * @param {Array} eventsAsc - review_events (시간 오름차순)
- * @param {Array} dueVocabRows - due 어휘 행 (word_text)
- * @returns {Record<string, number>} word_text → rung
- */
-export function deriveVocabRungs(eventsAsc, dueVocabRows) {
-  const rungs = {};
-  for (const w of dueVocabRows || []) {
-    const evs = (eventsAsc || [])
-      .filter(e => e.source === 'vocab' && e.item_key === w.word_text)
-      .map(e => ({ qtype: e.detail?.qtype, correct: !!e.correct }));
-    rungs[w.word_text] = computeRung(evs);
-  }
-  return rungs;
-}
 
 /**
  * dial==='easy'면 문단 재료의 신규 학습(newPattern·newWords)을 비운다 — 과부하 방어 밸브.

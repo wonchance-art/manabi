@@ -21,8 +21,9 @@ import { friendlyToastMessage } from '../lib/errorMessage';
 import { detectLang } from '../lib/constants';
 import { stripSourceLangInMeaning } from '../lib/studySession';
 import { useVocabData } from '../lib/useVocabData';
-import { deriveVocabRungs } from '../lib/studyMaterials';
-import { vocabTypeForRung } from '../lib/skillRung';
+// skillRung은 콘텐츠 무의존 순수 모듈 — studyMaterials(→content 레지스트리)를 끌어오지 않아
+// 'use client' 번들에 교재 전체가 딸려 오지 않는다.
+import { deriveVocabRungs, vocabTypeForRung } from '../lib/skillRung';
 import { exportCSV, exportAnki } from '../lib/vocabIO';
 import {
   deckOf, fisherYatesShuffle, isNewWord,

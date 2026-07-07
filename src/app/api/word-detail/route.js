@@ -1,6 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
+import { requireUser } from '@/lib/server/auth';
 
 export const runtime = 'nodejs';
+
+const MAX_DETAIL_LEN = 4000; // detail_text 길이 캡 — 공유 사전 쓰기 비용/오남용 상한
 
 function getSupabase() {
   return createClient(
@@ -28,9 +31,14 @@ export async function GET(request) {
   return Response.json({ detail: data?.detail_text || null });
 }
 
-// POST — 상세 설명 저장
+// POST — 상세 설명 저장 (미인증 service-role 쓰기 방지 — 로그인 필수)
 export async function POST(request) {
-  const { base_form, language, detail_text } = await request.json();
+  const auth = await requireUser(request);
+  if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
+
+  let body;
+  try { body = await request.json(); } catch { return Response.json({ error: 'Bad JSON' }, { status: 400 }); }
+  const { base_form, language, detail_text } = body || {};
   if (!base_form || !language || !detail_text) {
     return Response.json({ error: 'missing fields' }, { status: 400 });
   }
@@ -38,7 +46,7 @@ export async function POST(request) {
   const supabase = getSupabase();
   await supabase
     .from('morpheme_dictionary')
-    .update({ detail_text })
+    .update({ detail_text: String(detail_text).slice(0, MAX_DETAIL_LEN) }) // 길이 캡
     .eq('base_form', base_form)
     .eq('language', language);
 
