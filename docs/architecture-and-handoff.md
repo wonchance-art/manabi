@@ -68,6 +68,12 @@ kuromoji 상위 품사만 받아 보조동사·접미사 병합이 휴리스틱 
 ### 4.6 베이스 스키마가 리포에 없다
 `user_vocabulary`·`reading_materials`·`profiles`의 CREATE 마이그레이션이 없다(ALTER만). 빈 DB에 `db push` 재현 불가. 신규 컬럼 참조 시 `ADD COLUMN IF NOT EXISTS` + 코드 방어 폴백 필수.
 
+### 4.7 콘텐츠 어휘는 코드 하드코딩 — 확장 방식과 함정
+어휘/문형은 DB가 아니라 `src/content/<lang>/vocab/*.js` 코드가 단일 소스. `index.js`의 `mergeVocab(base, ...adds)`가 `zh`(중국어) 기준 **급 내부** 중복만 제거하고 **급 간 중복은 안 막는다** — 같은 단어가 여러 급에 뜰 수 있으니 소스 큐레이션으로 관리(현재 급간 중복 7건은 손작성 유래·상용어라 방치). 대량 확장 시: ① 어휘 골격(한자·병음·품사)은 **오픈소스에서 그대로**(예: HSK는 drkameleon/complete-hsk-vocabulary MIT), 뜻·예문만 LLM 생성 — 골격을 생성하면 환각. ② 오픈소스의 `exclusive/new`(급별 신규분)는 **다음자에 성씨·부수·희귀 독음만 담기는 파편**이 있다 — 단일 한자 표제어는 상용 독음/뜻으로 반드시 검수(2026-07 HSK 3.0 보강 때 단일 한자 ~65개가 이 함정에 걸려 사후 패치: 뜻/독음 오류 32건 재작성 + 대문자 병음 정규화·성씨 예문 교정). ③ 생성 후 **결정적 검증**(개수·zh·병음 성조부호식·예문에 단어 실재)을 python으로 전수. ④ 급별 `_hsk30.js` 같은 보강 파일로 추가하고 `index.js`의 import + mergeVocab에 등록(기존 파일 무수정). check-content 오류 0 확인.
+
+### 4.8 사전 마스킹('단어만'/'뜻만')의 구조
+`ReferenceVocabPage`·`ReferencePatternIndexPage`의 두 배타 토글은 컨테이너(`fr-vrow__body`) 통짜에 `is-hidden`을 걸면 예문까지 숨는다 — 반드시 **개별 요소별로** 가려라(뜻 텍스트·어원·예문뜻은 `fr-vrow__hide-extra`, 발음은 `row-hide-yomi`가 rt/IPA/병음 함께 처리). 단어만=뜻·발음 가리고 단어+예문원문 노출(읽기 연습), 뜻만=단어·예문원문 가리고 뜻+예문뜻 노출(작문 연습). 정답 누출 방지가 핵심.
+
 ---
 
 ## 5. 관측 & 게이트 (다음 기능의 방아쇠)
