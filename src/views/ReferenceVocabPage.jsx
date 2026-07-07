@@ -314,9 +314,10 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
                     </div>
                     {link && <div className={`fr-vrow__etym ${wordHidden ? 'fr-vrow__hide-extra' : ''}`}><strong>{linkIcon}</strong> · {refInline(link)}</div>}
                     {w.ex && (
-                      <div className={`bk-ex ${wordHidden ? 'fr-vrow__hide-extra' : ''}`}>
+                      <div className="bk-ex">
                         <div className="bk-ex__pair">
-                          <div className="bk-ex__ja">
+                          {/* 뜻만 모드('word' 가림): 예문 원문(한자·발음)만 가려 정답 노출 방지, 예문 뜻은 남겨 작문 연습 */}
+                          <div className={`bk-ex__ja ${wordHidden ? 'fr-vrow__hide-extra' : ''}`}>
                             {refInfo.langCode === 'ja' ? (
                               <JaText ja={refMain(w.ex)} yomi={w.ex.yomi} />
                             ) : (
