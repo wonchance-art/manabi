@@ -103,7 +103,14 @@ export function deriveArc(latestUsedRow, { now = Date.now(), weekly = false } = 
   const tsRaw = latestUsedRow.used_at || latestUsedRow.created_at;
   const ts = tsRaw ? new Date(tsRaw).getTime() : NaN;
   if (!Number.isFinite(ts) || now - ts > 7 * 86400000) return null;   // 7일 경과 → 새 이야기
-  return { prevArc: arcSummary.trim(), episode: prevEpisode + 1 };
+  const out = { prevArc: arcSummary.trim(), episode: prevEpisode + 1 };
+  // 공동 작가 — 직전 행에 사용자가 정한 다음 전개(루브릭 ≥2점)가 있으면 소재로 실어 보낸다.
+  // ≥2점만·소재 한정은 저장 시점(StudySessionPage)과 주입 시점(buildParagraphPrompt) 양쪽에서 지킨다.
+  const un = latestUsedRow.paragraph?.userNext;
+  if (un && typeof un.text === 'string' && un.text.trim() && Number(un.score) >= 2) {
+    out.userNext = un.text.trim();
+  }
+  return out;
 }
 
 /** 배열에서 대략 고르게 n개 샘플 (요청마다 달라지도록 랜덤 시작점) */
@@ -449,6 +456,7 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
     theme,
     avoidThemes,
     ...(arc ? { prevArc: arc.prevArc, episode: arc.episode } : {}),
+    ...(arc?.userNext ? { userNext: arc.userNext } : {}),
   };
   // 재료가 문법도 단어도 없으면 문단 생성 스킵 (폴백 세션만)
   const canGenerate = !!(paragraphMaterials.newPattern || paragraphMaterials.duePatterns.length || paragraphMaterials.dueWords.length);

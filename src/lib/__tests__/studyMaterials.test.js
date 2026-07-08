@@ -170,6 +170,32 @@ describe('deriveArc', () => {
     const r = { paragraph: { arcSummary: '생성만 된 문단.' }, materials: { episode: 2 }, created_at: new Date(NOW - 86400000).toISOString() };
     expect(deriveArc(r, { now: NOW })).toEqual({ prevArc: '생성만 된 문단.', episode: 3 });
   });
+
+  // ── 공동 작가 — userNext는 ≥2점일 때만 소재로 surface(안전장치 ①) ──
+  const rowWithNext = (score) => ({
+    paragraph: { arcSummary: '유나가 카페에서 하루토를 만났다.', userNext: { text: '유나는 하루토에게 편지를 건넸다.', score } },
+    materials: { episode: 2 },
+    used_at: new Date(NOW).toISOString(),
+  });
+
+  it('userNext가 ≥2점이면 arc에 소재로 surface된다', () => {
+    const arc = deriveArc(rowWithNext(3), { now: NOW });
+    expect(arc.userNext).toBe('유나는 하루토에게 편지를 건넸다.');
+    expect(arc.prevArc).toBe('유나가 카페에서 하루토를 만났다.');
+    expect(arc.episode).toBe(3);
+  });
+
+  it('userNext가 1점(<2)이면 surface하지 않는다(조용한 폴백)', () => {
+    const arc = deriveArc(rowWithNext(1), { now: NOW });
+    expect(arc.userNext).toBeUndefined();
+    expect(arc).toEqual({ prevArc: '유나가 카페에서 하루토를 만났다.', episode: 3 });
+  });
+
+  it('userNext가 없는 기존 행은 arc에 userNext 키 없이 그대로 이어간다', () => {
+    const arc = deriveArc(row('예전 이야기.', 2, 0), { now: NOW });
+    expect(arc).toEqual({ prevArc: '예전 이야기.', episode: 3 });
+    expect('userNext' in arc).toBe(false);
+  });
 });
 
 describe('deriveColdStart', () => {
