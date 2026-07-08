@@ -222,6 +222,12 @@ export default function AdminPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {[
               {
+                href: '/world',
+                icon: '🌱',
+                title: '학습 월드 (실험) — 펫과 함께 걷는 2D 광장',
+                desc: '게더타운풍 미니 월드 — 캐릭터를 움직이면 학습으로만 자라는 펫이 따라다녀요. 접속자끼리 서로 보이고, 마이크를 켜면 가까이 있는 사람과 음성 대화(근접 음성). 관리자 실험용 — 네비·학습 탭엔 미노출.',
+              },
+              {
                 href: '/listen',
                 icon: '🎧',
                 title: '듣고 읽기 (실험) — YouTube + 자막으로 표현 수집',
