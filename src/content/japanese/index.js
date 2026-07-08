@@ -43,6 +43,14 @@ import vocabN2jlptF from './vocab/n2_jlpt_f';
 import vocabN2jlptG from './vocab/n2_jlpt_g';
 import vocabN2jlptH from './vocab/n2_jlpt_h';
 import vocabN2jlptI from './vocab/n2_jlpt_i';
+import vocabN1jlptA from './vocab/n1_jlpt_a';
+import vocabN1jlptB from './vocab/n1_jlpt_b';
+import vocabN1jlptC from './vocab/n1_jlpt_c';
+import vocabN1jlptD from './vocab/n1_jlpt_d';
+import vocabN1jlptE from './vocab/n1_jlpt_e';
+import vocabN1jlptF from './vocab/n1_jlpt_f';
+import vocabN1jlptG from './vocab/n1_jlpt_g';
+import vocabN1jlptH from './vocab/n1_jlpt_h';
 
 // 표제어 정규화 — 접미 마커(～〜~)·공백 제거, 복수 표기(;／、)는 첫 형태 기준. 급 내 dedup 키.
 function _normJa(ja) {
@@ -122,7 +130,7 @@ const registry = createRegistry(
     N4: mergeJaVocab(vocabN4, vocabN4jlptA, vocabN4jlptB, vocabN4jlptC),
     N3: mergeJaVocab(vocabN3, vocabN3jlptA, vocabN3jlptB, vocabN3jlptC, vocabN3jlptD, vocabN3jlptE, vocabN3jlptF, vocabN3jlptG, vocabN3jlptH, vocabN3jlptI, vocabN3jlptJ),
     N2: mergeJaVocab(vocabN2, vocabN2jlptA, vocabN2jlptB, vocabN2jlptC, vocabN2jlptD, vocabN2jlptE, vocabN2jlptF, vocabN2jlptG, vocabN2jlptH, vocabN2jlptI),
-    N1: mergeJaVocab(vocabN1),
+    N1: mergeJaVocab(vocabN1, vocabN1jlptA, vocabN1jlptB, vocabN1jlptC, vocabN1jlptD, vocabN1jlptE, vocabN1jlptF, vocabN1jlptG, vocabN1jlptH),
   },
 );
 
