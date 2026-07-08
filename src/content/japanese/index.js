@@ -17,11 +17,13 @@ import vocabN3 from './vocab/n3';
 import vocabN2 from './vocab/n2';
 import vocabN1 from './vocab/n1';
 
-// JLPT 표준 커버리지 보강(W1~) — 표제어 kana·급·품사는 소스 복사, 뜻·예문만 생성.
-// 파일은 별도 파이프라인이 조립한다(이 index는 만들지 않음). 조립 후 import를 열고
-// 아래 registry의 mergeJaVocab(...) 인자로 추가한다.
-// import vocabN5jlptA from './vocab/n5_jlpt_a';
-// import vocabN4jlptA from './vocab/n4_jlpt_a';
+// JLPT 표준 커버리지 보강(W1: N5+N4) — 표제어 kana·급·품사(kuromoji)는 결정적, 뜻·예문만 생성.
+import vocabN5jlptA from './vocab/n5_jlpt_a';
+import vocabN5jlptB from './vocab/n5_jlpt_b';
+import vocabN5jlptC from './vocab/n5_jlpt_c';
+import vocabN4jlptA from './vocab/n4_jlpt_a';
+import vocabN4jlptB from './vocab/n4_jlpt_b';
+import vocabN4jlptC from './vocab/n4_jlpt_c';
 
 // 표제어 정규화 — 접미 마커(～〜~)·공백 제거, 복수 표기(;／、)는 첫 형태 기준. 급 내 dedup 키.
 function _normJa(ja) {
@@ -97,8 +99,8 @@ const registry = createRegistry(
   { OT: grammarOT, N5: grammarN5, N4: grammarN4, N3: grammarN3, N2: grammarN2, N1: grammarN1 },
   {
     // W1 보강: vocabN5jlptA… 조립 후 mergeJaVocab(vocabN5, vocabN5jlptA, …) 형태로 여기 추가
-    N5: mergeJaVocab(vocabN5),
-    N4: mergeJaVocab(vocabN4),
+    N5: mergeJaVocab(vocabN5, vocabN5jlptA, vocabN5jlptB, vocabN5jlptC),
+    N4: mergeJaVocab(vocabN4, vocabN4jlptA, vocabN4jlptB, vocabN4jlptC),
     N3: mergeJaVocab(vocabN3),
     N2: mergeJaVocab(vocabN2),
     N1: mergeJaVocab(vocabN1),
