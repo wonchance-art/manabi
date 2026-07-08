@@ -11,12 +11,14 @@ import { parseTitle } from '../lib/seriesMeta';
 import { getIdealLevel } from '../lib/levels';
 import { isPassed } from '../components/RefPatternCheck';
 import { pullProgress } from '../lib/refProgress';
+import { buildForecast } from '../lib/forecast';
+import ForecastCard from '../components/ForecastCard';
 import ProfileStats from './ProfileStats';
 
 // 언어 코드 → 한국어 라벨 (studyParagraph.js의 LANG_NAME과 동일 매핑)
 const LANG_LABEL = { Japanese: '일본어', English: '영어', French: '프랑스어', Chinese: '중국어' };
 
-async function fetchHomeData(userId) {
+async function fetchHomeData(userId, lang) {
   const todayStr   = new Date().toISOString().split('T')[0];
   const todayStart = `${todayStr}T00:00:00`;
   const now        = new Date().toISOString();
@@ -43,6 +45,7 @@ async function fetchHomeData(userId) {
     { data: allVocabRows },
     { data: seriesMaterials },
     { data: allCompleted },
+    forecastRows,
   ] = await Promise.all([
     supabase.from('user_vocabulary').select('*', { count: 'exact', head: true })
       .eq('user_id', userId).lte('next_review_at', now),
@@ -65,6 +68,12 @@ async function fetchHomeData(userId) {
       .select('material_id')
       .eq('user_id', userId)
       .eq('is_completed', true),
+    // 망각 예보 재료 — 현재 학습 언어, 학습 이력 있는 행만(신규 저장 행은 서버에서 제외)
+    supabase.from('user_vocabulary')
+      .select('word_text, interval, last_reviewed_at')
+      .eq('user_id', userId).eq('language', lang)
+      .not('last_reviewed_at', 'is', null).gt('interval', 0)
+      .then(({ data }) => data || [], () => []),
   ]);
 
   const rows = vocabRows || [];
@@ -95,6 +104,7 @@ async function fetchHomeData(userId) {
     todayReadCount,
     recentProgress:   (recentProgress || []).slice(0, 4),
     suggestions:      suggestionsRes || [],
+    forecast:         buildForecast(forecastRows, new Date()),
     weekVocab,
     weekReviews: weekReview,
     weekReads:   weekRead,
@@ -258,9 +268,17 @@ export default function HomePage({ continueManifest = {}, refManifest = {} }) {
     return null;
   }, [refProgress, profile, continueManifest]);
 
+  // 망각 예보용 현재 학습 언어 — LearnPage와 동일 관례(프로필 첫 언어, 없으면 일본어)
+  const lang = useMemo(() => {
+    const fromProfile = Array.isArray(profile?.learning_language)
+      ? profile.learning_language[0]
+      : profile?.learning_language;
+    return fromProfile || 'Japanese';
+  }, [profile]);
+
   const { data, isLoading } = useQuery({
-    queryKey: ['home', user?.id],
-    queryFn:  () => fetchHomeData(user.id),
+    queryKey: ['home', user?.id, lang],
+    queryFn:  () => fetchHomeData(user.id, lang),
     enabled:  !!user,
     staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: true,
@@ -379,6 +397,9 @@ export default function HomePage({ continueManifest = {}, refManifest = {} }) {
           : '오늘도 한 걸음, 이어가 볼까요?'
         }</p>
       </div>
+
+      {/* 망각 예보 — 오늘 안에 흐려지는 단어가 있을 때만 조용히 등장(0개면 침묵) */}
+      <ForecastCard forecast={data?.forecast} />
 
       {/* 강의 이어서 학습 — 챕터 진행 기록 기반 (미통과 재도전 우선) */}
       {continueCard && (
