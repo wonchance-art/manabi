@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anatomy-studio-v202606130118';
+const CACHE_NAME = 'anatomy-studio-v202607080222';
 
 const PRECACHE_URLS = [
   '/',
@@ -83,6 +83,46 @@ self.addEventListener('fetch', (event) => {
         return response;
       });
       return cached || fetching;
+    })
+  );
+});
+
+// ── 웹 푸시 (기획 v4 §4.2) ──
+// 서버(Vercel Cron)가 보내는 페이로드: { title, body, url }. url 기본 '/study?src=push'.
+self.addEventListener('push', (event) => {
+  let payload = {};
+  try {
+    payload = event.data ? event.data.json() : {};
+  } catch {
+    // JSON이 아니면(텍스트만) 무해하게 본문으로만 처리
+    payload = { body: event.data ? event.data.text() : '' };
+  }
+  const title = payload.title || 'manabi';
+  const body = payload.body || '';
+  const url = payload.url || '/study?src=push';
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      icon: '/icon.svg',
+      badge: '/icon.svg',
+      data: { url },
+    })
+  );
+});
+
+// 알림 클릭 → 열려 있는 탭이 있으면 포커스, 없으면 새 창으로 학습 화면 열기
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url || '/study?src=push';
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if ('focus' in client) {
+          client.navigate?.(url);
+          return client.focus();
+        }
+      }
+      return self.clients.openWindow(url);
     })
   );
 });

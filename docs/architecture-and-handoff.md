@@ -74,6 +74,9 @@ kuromoji 상위 품사만 받아 보조동사·접미사 병합이 휴리스틱 
 ### 4.8 사전 마스킹('단어만'/'뜻만')의 구조
 `ReferenceVocabPage`·`ReferencePatternIndexPage`의 두 배타 토글은 컨테이너(`fr-vrow__body`) 통짜에 `is-hidden`을 걸면 예문까지 숨는다 — 반드시 **개별 요소별로** 가려라(뜻 텍스트·어원·예문뜻은 `fr-vrow__hide-extra`, 발음은 `row-hide-yomi`가 rt/IPA/병음 함께 처리). 단어만=뜻·발음 가리고 단어+예문원문 노출(읽기 연습), 뜻만=단어·예문원문 가리고 뜻+예문뜻 노출(작문 연습). 정답 누출 방지가 핵심.
 
+### 4.9 ui 이벤트 규약 (행동 계측 — review_events 재사용, 마이그레이션 0)
+예보 탭·푸시 같은 **행동 계측**은 신규 테이블 없이 `review_events`에 `source:'ui'`로 적재한다 (헌법 3 — 신규 테이블 최후의 수단). 형태: `{source:'ui', item_key:'-', correct:true, detail:{qtype, ...}}`. `correct`는 NOT NULL이라 의미 없이 `true`로 채우고, **종류는 `detail.qtype`로 구분**한다(집계는 `detail->>'qtype'` 필터 — `admin_v3_metrics`). qtype 종류: `forecast_tap`(예보 카드 탭), `push_optin`(구독 동의), `push_sent`(발송), `push_open`(알림 클릭). **rung·FSRS 계산은 `source:'vocab'`만 보므로 ui 이벤트와 무간섭**(skillRung/fsrs 필터). **EWMA 다이얼은 필터가 없어 구멍이었다** — studyMaterials의 gradedEvents가 `ui`·`dict`를 제외하고 공급한다(2026-07 정정). 새 source 추가 시 이 세 필터(skillRung·fsrs·gradedEvents)를 모두 점검하라. 저용량(하루 수 건) 전제이며, **월 1만 건을 초과하면 분리 테이블로 승격**한다(레드팀 응답 §7). 적재는 `logReviewEvents`(reviewEvents.js) 재사용, 실패는 조용히 무시.
+
 ---
 
 ## 5. 관측 & 게이트 (다음 기능의 방아쇠)

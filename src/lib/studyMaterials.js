@@ -270,7 +270,8 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
   // ── 숙련 rung · 난이도 다이얼 유도 (review_events 순수 함수) ──
   const eventsAsc = (reviewEventRows || []).slice().reverse();
   const vocabRungs = deriveVocabRungs(eventsAsc, dueVocabRows);
-  const gradedEvents = eventsAsc.map(e => ({ correct: !!e.correct }));
+  // 다이얼은 채점 문항만 본다 — ui(행동 계측)·dict(자가 채점)는 정답률 신호가 아니다 (§4.9 무간섭 보장).
+  const gradedEvents = eventsAsc.filter(e => e.source !== 'ui' && e.source !== 'dict').map(e => ({ correct: !!e.correct }));
   const ewma = computeEwma(gradedEvents);
   const dial = dialFromEwma(ewma, 20, gradedEvents.length);
 

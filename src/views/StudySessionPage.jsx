@@ -11,7 +11,8 @@ import { useAuth } from '../lib/AuthContext';
 import { calculateFSRS } from '../lib/fsrs';
 import { gradeGrammarReview, ratingFromScore, enqueueGrammarReview } from '../lib/grammarSrs';
 import { syncCheckRemote, syncReadRemote } from '../lib/refProgress';
-import { createReviewEventBatcher } from '../lib/reviewEvents';
+import { createReviewEventBatcher, logReviewEvents } from '../lib/reviewEvents';
+import { hasVapidKey, isPushSupported, isIosNeedsInstall, getSubscriptionState, subscribePush } from '../lib/push';
 import { sentenceIncludesWord } from '../lib/skillRung';
 import { recordActivity } from '../lib/streak';
 import { gradeTyping, isChapterPassed, qtypeForItem, grammarDueChapterCounts } from '../lib/studySession';
@@ -97,6 +98,9 @@ export default function StudySessionPage({
   const [produceState, setProduceState] = useState(null); // 산출 문항 채점: {status:'grading'|'done'|'error', feedback, targetScore}
   const [produceReflected, setProduceReflected] = useState(false); // 산출 문장이 내일 문단에 반영됨(≥2점·연재 세션)
   const [parkingLong, setParkingLong] = useState(false); // 파킹 대기 8초 경과 여부
+  const [pushPrime, setPushPrime] = useState(null);       // 푸시 프라이밍: null(숨김) | 'show' | 'ios' | 'done'
+  const [pushBusy, setPushBusy] = useState(false);        // 알림 받기 요청 중
+  const pushOpenRef = useRef(false);                      // push_open 계측 1회 가드
   const produceAddedRef = useRef(false);           // 산출 문항 큐 추가 1회 가드
   const produceDoneRef = useRef(false);            // 산출 문항 확정 1회 가드(늦은 fetch 이중 처리 방지)
   const transitionAtRef = useRef(0);               // 마지막 문항 전환 시각(연타 tap-through 잠금)
@@ -280,6 +284,39 @@ export default function StudySessionPage({
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finished, user?.id, lang]);
+
+  // ── push_open 계측 — /study 진입 URL에 src=push면 review_events 1회 적재(기획 v4 §5) ──
+  useEffect(() => {
+    if (pushOpenRef.current || !user?.id) return;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('src') === 'push') {
+        pushOpenRef.current = true;
+        logReviewEvents(user.id, [{ lang, source: 'ui', item_key: '-', correct: true, detail: { qtype: 'push_open' } }]);
+      }
+    } catch {}
+  }, [user?.id, lang]);
+
+  // ── 푸시 프라이밍 노출 판정 — 결과 화면 진입 시 1회(기획 v4 §4, 원칙 3: 가치 먼저 권한 나중) ──
+  useEffect(() => {
+    if (!finished) return;
+    // env 키 부재 → 모든 푸시 표면 조용히 숨김
+    if (!hasVapidKey()) { setPushPrime(null); return; }
+    // iOS Safari + 미설치(PWA) → 버튼 대신 안내 1줄(억지 유도 금지)
+    if (isIosNeedsInstall()) { setPushPrime('ios'); return; }
+    if (!isPushSupported()) { setPushPrime(null); return; }
+    if (Notification.permission !== 'default') { setPushPrime(null); return; }
+    // 거부 이력 30일 침묵
+    try {
+      const ts = Number(localStorage.getItem('pushPrimeDismissed') || 0);
+      if (ts && Date.now() - ts < 30 * 24 * 60 * 60 * 1000) { setPushPrime(null); return; }
+    } catch {}
+    // 미구독일 때만 노출
+    getSubscriptionState().then((s) => {
+      setPushPrime(s.subscribed ? null : 'show');
+    }).catch(() => setPushPrime(null));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [finished]);
 
   // 주간 회고 — weekly 세션 결과 화면에서 1회. review_events 본인 이번 주 count(전체·정답) head 카운트 2회.
   useEffect(() => {
@@ -834,6 +871,30 @@ export default function StudySessionPage({
     const wrong = Object.values(firstResults).filter(r => !r.ok);
     const pct = gradedTotal ? Math.round((rightCount / gradedTotal) * 100) : 0;
     const newWordCount = genStatus === 'ready' ? (paragraphMaterials?.newWords?.length || 0) : 0;
+
+    // 프라이밍 — [알림 받기]: 권한 요청 → 구독. 성공 시 옵트인 계측 + 「내일 만나요」.
+    const acceptPush = async () => {
+      if (pushBusy || !user?.id) return;
+      setPushBusy(true);
+      try {
+        const ok = await subscribePush(user.id, lang);
+        if (ok) {
+          logReviewEvents(user.id, [{ lang, source: 'ui', item_key: '-', correct: true, detail: { qtype: 'push_optin' } }]);
+          setPushPrime('done');
+        } else {
+          // 거부·실패 → 조용히 숨김(권한이 default가 아니게 되면 자연히 재노출 안 됨)
+          setPushPrime(null);
+        }
+      } finally {
+        setPushBusy(false);
+      }
+    };
+    // [나중에]: 30일 침묵
+    const laterPush = () => {
+      try { localStorage.setItem('pushPrimeDismissed', String(Date.now())); } catch {}
+      setPushPrime(null);
+    };
+
     return (
       <div className="page-container" style={{ maxWidth: 640 }}>
         {/* 1. 요약 */}
@@ -917,6 +978,31 @@ export default function StudySessionPage({
               </p>
             )}
           </div>
+        )}
+
+        {/* 5-b. 푸시 프라이밍 — 내일 예고 아래. 가치 먼저 권한 나중(원칙 3). */}
+        {pushPrime === 'show' && (
+          <div style={{ textAlign: 'center', marginTop: 18, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0 0 10px', lineHeight: 1.6 }}>
+              내일 이야기가 도착하면 알려드릴까요?
+            </p>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }}>
+              <Button size="sm" onClick={acceptPush} disabled={pushBusy}>
+                {pushBusy ? '설정 중…' : '알림 받기'}
+              </Button>
+              <Button size="sm" variant="ghost" onClick={laterPush} disabled={pushBusy}>나중에</Button>
+            </div>
+          </div>
+        )}
+        {pushPrime === 'done' && (
+          <p style={{ textAlign: 'center', marginTop: 18, fontSize: '0.85rem', color: 'var(--accent)', fontWeight: 700 }}>
+            내일 만나요.
+          </p>
+        )}
+        {pushPrime === 'ios' && (
+          <p style={{ textAlign: 'center', marginTop: 18, paddingTop: 16, borderTop: '1px solid var(--border)', fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
+            iOS에서는 홈 화면에 추가하면 알림을 받을 수 있어요.
+          </p>
         )}
       </div>
     );
