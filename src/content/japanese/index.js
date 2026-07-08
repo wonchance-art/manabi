@@ -17,6 +17,41 @@ import vocabN3 from './vocab/n3';
 import vocabN2 from './vocab/n2';
 import vocabN1 from './vocab/n1';
 
+// JLPT 표준 커버리지 보강(W1~) — 표제어 kana·급·품사는 소스 복사, 뜻·예문만 생성.
+// 파일은 별도 파이프라인이 조립한다(이 index는 만들지 않음). 조립 후 import를 열고
+// 아래 registry의 mergeJaVocab(...) 인자로 추가한다.
+// import vocabN5jlptA from './vocab/n5_jlpt_a';
+// import vocabN4jlptA from './vocab/n4_jlpt_a';
+
+// 표제어 정규화 — 접미 마커(～〜~)·공백 제거, 복수 표기(;／、)는 첫 형태 기준. 급 내 dedup 키.
+function _normJa(ja) {
+  let s = String(ja || '').trim();
+  s = s.split(/[;；／、]/)[0].trim(); // 복수 표기는 첫 형태만
+  return s.replace(/[～〜~]/g, '').replace(/\s+/g, ''); // 접미 마커·공백 제거
+}
+// 보강 리스트를 테마 배열로 정규화 — 배열(FR식) 또는 { themes }(ZH식) 모두 허용
+const _jaThemes = (add) => (Array.isArray(add) ? add : (add && add.themes) || []);
+/** 손작성 테마(base)에 보강 테마들을 병합. 같은 이름 테마는 합치고, 새 이름은 뒤에 추가. ja 기준 급 내 dedup. */
+function mergeJaVocab(base, ...addLists) {
+  const themes = base.themes.map((t) => ({ ...t, words: [...t.words] }));
+  const byName = new Map(themes.map((t) => [t.name.trim(), t]));
+  const seen = new Set();
+  for (const t of themes) for (const w of t.words) seen.add(_normJa(w.ja));
+  for (const additions of addLists) {
+    for (const add of _jaThemes(additions)) {
+      for (const w of add.words || []) {
+        const k = _normJa(w.ja);
+        if (seen.has(k)) continue;
+        seen.add(k);
+        let t = byName.get(add.name.trim());
+        if (!t) { t = { name: add.name, icon: add.icon, words: [] }; themes.push(t); byName.set(add.name.trim(), t); }
+        t.words.push(w);
+      }
+    }
+  }
+  return { ...base, themes };
+}
+
 import bunkeiN5 from './bunkei/n5';
 import bunkeiN4 from './bunkei/n4';
 import bunkeiN3 from './bunkei/n3';
@@ -60,7 +95,14 @@ export const JA_LEVEL_META = [
 const registry = createRegistry(
   JA_LEVEL_META,
   { OT: grammarOT, N5: grammarN5, N4: grammarN4, N3: grammarN3, N2: grammarN2, N1: grammarN1 },
-  { N5: vocabN5, N4: vocabN4, N3: vocabN3, N2: vocabN2, N1: vocabN1 },
+  {
+    // W1 보강: vocabN5jlptA… 조립 후 mergeJaVocab(vocabN5, vocabN5jlptA, …) 형태로 여기 추가
+    N5: mergeJaVocab(vocabN5),
+    N4: mergeJaVocab(vocabN4),
+    N3: mergeJaVocab(vocabN3),
+    N2: mergeJaVocab(vocabN2),
+    N1: mergeJaVocab(vocabN1),
+  },
 );
 
 export const ALL_CHAPTERS = registry.ALL_CHAPTERS;
@@ -69,6 +111,9 @@ export const getGrammarChapters = registry.getGrammarChapters;
 export const getChapter = registry.getChapter;
 export const getVocab = registry.getVocab;
 export const countVocab = registry.countVocab;
+
+// 어휘 병합 유틸 — 보강 파이프라인·단위테스트에서 사용
+export { mergeJaVocab, _normJa };
 
 /** JLPT 문형 사전 — 챕터(이해)와 별개의 전수 커버 레이어 (SCHEMA.md 참고) */
 const BUNKEI = { N5: bunkeiN5, N4: bunkeiN4, N3: bunkeiN3, N2: bunkeiN2, N1: bunkeiN1 };
