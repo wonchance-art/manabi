@@ -7,6 +7,7 @@
  * 사용: node scripts/check-content.mjs
  */
 import { spawnSync } from 'node:child_process';
+import { readdirSync } from 'node:fs';
 
 const LANGS = {
   japanese: { g: ['ot', 'n5', 'n4', 'n3', 'n2', 'n1'], b: ['n5', 'n4', 'n3', 'n2', 'n1'], v: ['n5', 'n4', 'n3', 'n2', 'n1'] },
@@ -63,7 +64,8 @@ for (const [lang, cfg] of Object.entries(LANGS)) {
 const jaFiles = [
   ...LANGS.japanese.g.map(l => `src/content/japanese/grammar/${l}.js`),
   ...LANGS.japanese.b.map(l => `src/content/japanese/bunkei/${l}.js`),
-  ...LANGS.japanese.v.map(l => `src/content/japanese/vocab/${l}.js`),
+  // vocab은 보강 파일(n5_jlpt_a 등)까지 전부 — 하드코딩 목록이면 신규 파일이 감시망 밖으로 샌다.
+  ...readdirSync('src/content/japanese/vocab').filter(f => f.endsWith('.js')).map(f => `src/content/japanese/vocab/${f}`),
 ];
 let furiFail = 0;
 for (const f of jaFiles) {
