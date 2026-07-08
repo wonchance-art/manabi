@@ -13,6 +13,7 @@ import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import YouTube from 'react-youtube';
 import { supabase } from '../lib/supabase';
+import { normalizeWordText } from '../lib/vocabIO';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import Spinner from '../components/Spinner';
@@ -634,7 +635,8 @@ export default function ListenLabPage() {
       }
       const row = {
         user_id: user.id,
-        word_text: base,                      // ← base 우선(활용형 중복 등록 방지)
+        // 공용 규약 헬퍼 사용(동작 불변): 기본형 우선, 없으면 surface 폴백 → 활용형 중복 등록 방지
+        word_text: normalizeWordText({ surface, base: unit.base }),
         base_form: base,
         furigana: unit.furigana || '',
         meaning: unit.meaning || '',

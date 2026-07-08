@@ -7908,6 +7908,14 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .fr-vrow__save:hover:not(:disabled) { opacity: 1; transform: scale(1.15); }
 .fr-vrow__save.is-saved { opacity: 0.55; cursor: default; color: var(--accent); }
 
+/* 가리기 자가 채점 — 공개 직후 "기억났어/몰랐어" (.fr-check__grade* 버튼 스타일 재사용) */
+.fr-vrow__grade { margin-top: 6px; }
+.fr-vrow__grade-done {
+  font-size: 0.74rem; font-weight: 600;
+}
+.fr-vrow__grade-done.is-ok { color: var(--accent); }
+.fr-vrow__grade-done.is-no { color: var(--text-muted); }
+
 /* 가리기 모드 — 가려진 셀 */
 .fr-vrow__word.is-hidden, .fr-vrow__body.is-hidden {
   position: relative;

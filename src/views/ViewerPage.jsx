@@ -21,6 +21,7 @@ import { useGrammarNoteSave } from '../lib/useGrammarNoteSave';
 import { useInlineReview } from '../lib/useInlineReview';
 import { useMaterialComments } from '../lib/useMaterialComments';
 import { friendlyToastMessage } from '../lib/errorMessage';
+import { normalizeWordText } from '../lib/vocabIO';
 import { callGemini } from '../lib/gemini';
 import { fetchWordDetailText } from '../lib/wordDetail';
 import ReportMaterialButton from '../components/ReportMaterialButton';
@@ -617,7 +618,8 @@ export default function ViewerPage() {
     try {
       const row = {
         user_id: user.id,
-        word_text: selectedToken.text,
+        // 저장 규약: 분석기 기본형(base_form)이 있으면 기본형, 없으면 surface 폴백.
+        word_text: normalizeWordText({ surface: selectedToken.text, base: selectedToken.base_form }),
         base_form: selectedToken.base_form || selectedToken.text, // kuromoji 경로에서 전달됨
         furigana: selectedToken.furigana || selectedToken.reading || '', // 영어는 IPA 저장
         meaning: selectedToken.meaning || '',
@@ -736,7 +738,7 @@ export default function ViewerPage() {
                   onClick={async () => {
                     try {
                       await supabase.from('user_vocabulary').upsert({
-                        user_id: user.id, word_text: t.text, base_form: t.base_form || t.text,
+                        user_id: user.id, word_text: normalizeWordText({ surface: t.text, base: t.base_form }), base_form: t.base_form || t.text,
                         meaning: t.meaning || '', pos: t.pos || '', furigana: t.furigana || t.reading || '',
                         language: materialLang,
                       }, { onConflict: 'user_id,word_text' });
@@ -1562,7 +1564,7 @@ export default function ViewerPage() {
                   onClick={async () => {
                     try {
                       await supabase.from('user_vocabulary').upsert({
-                        user_id: user.id, word_text: t.text, base_form: t.base_form || t.text,
+                        user_id: user.id, word_text: normalizeWordText({ surface: t.text, base: t.base_form }), base_form: t.base_form || t.text,
                         meaning: t.meaning || '', pos: t.pos || '', furigana: t.furigana || t.reading || '',
                         language: materialLang,
                       }, { onConflict: 'user_id,word_text' });

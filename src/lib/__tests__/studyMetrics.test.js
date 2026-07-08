@@ -163,7 +163,10 @@ describe('computeDailyAccuracy', () => {
   });
 
   it('같은 날 이벤트를 묶고 정답률 계산', () => {
-    const now = Date.now();
+    // 정오 고정 — 자정 부근 실행 시 now-HOUR가 전날로 넘어가 이틀로 쪼개지는 플레이크 방지
+    const noon = new Date();
+    noon.setHours(12, 0, 0, 0);
+    const now = noon.getTime();
     const events = [
       ev({ correct: true, t: now }),
       ev({ correct: false, t: now - HOUR }),

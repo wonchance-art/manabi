@@ -12,6 +12,7 @@ import { calculateFSRS } from '../lib/fsrs';
 import { gradeGrammarReview, ratingFromScore, enqueueGrammarReview } from '../lib/grammarSrs';
 import { syncCheckRemote, syncReadRemote } from '../lib/refProgress';
 import { createReviewEventBatcher } from '../lib/reviewEvents';
+import { sentenceIncludesWord } from '../lib/skillRung';
 import { recordActivity } from '../lib/streak';
 import { gradeTyping, isChapterPassed, qtypeForItem, grammarDueChapterCounts } from '../lib/studySession';
 import { mapParagraphToItems } from '../lib/studyParagraph';
@@ -381,6 +382,21 @@ export default function StudySessionPage({
   }
 
   /**
+   * 세션에 등장한 어휘 단어(word_text) 목록 — 산출 문장 포함 판정용.
+   * 문항 재료: 어휘 문항(item.word.word_text) + 문단 재료 단어(dueWords/newWords의 .word).
+   * item_key를 word_text로 두어야 deriveVocabRungs(source==='vocab' && item_key===word_text)에 잡힌다.
+   */
+  function collectSessionVocab() {
+    const seen = new Set();
+    const out = [];
+    const push = wt => { if (wt && !seen.has(wt)) { seen.add(wt); out.push(wt); } };
+    for (const it of queue) if (it?.word?.word_text) push(it.word.word_text);
+    for (const w of paragraphMaterials?.dueWords || []) push(w?.word);
+    for (const w of paragraphMaterials?.newWords || []) push(w?.word);
+    return out;
+  }
+
+  /**
    * 재료 단어 팝오버 열기 — 문맥 안 확인 + 어시스트 기록.
    * source='assist'(vocab 아님)이라 rung 유도(source==='vocab' 필터)엔 영향 없이 데이터만 쌓인다.
    * 같은 단어 중복 열람은 세션당 1회만 기록.
@@ -604,6 +620,20 @@ export default function StudySessionPage({
       correct: ok,
       detail: { qtype: 'produce', score: targetScore, rt_ms },
     });
+    // P1 배선 봉합 — 산출을 어휘 rung 사다리 상단(4)에 반영.
+    // 제출 문장에 실제로 포함된 세션 어휘 단어별로 vocab/produce 이벤트를 추가 발행해
+    // deriveVocabRungs(source==='vocab') 파이프라인에 자연 합류시킨다(위 writing 이벤트는 측정용 유지).
+    // FSRS·챕터 통과에는 절대 반영하지 않는다(v2 헌법 M7).
+    for (const wt of collectSessionVocab()) {
+      if (sentenceIncludesWord(textVal, wt, langCode)) {
+        getBatcher()?.add({
+          lang, source: 'vocab',
+          item_key: wt,
+          correct: ok,
+          detail: { qtype: 'produce', score: targetScore, rt_ms },
+        });
+      }
+    }
     setFirstResults(prev => ({ ...prev, [orig]: { ok, item } }));
     try { localStorage.setItem(`study_last_produce_${lang}`, ymdLocal(new Date())); } catch {}
 

@@ -97,6 +97,45 @@ export function deriveVocabRungs(eventsAsc, dueVocabRows) {
 }
 
 /**
+ * 산출 문장에 세션 어휘 단어가 실제로 포함됐는지 판정 — 언어별 규약.
+ * 산출 채점(settle) 시 제출 문장에 든 단어별로 vocab/produce 이벤트를 발행하기 위한 순수함수.
+ *  - ZH: 정확 부분문자열(공백·경계 개념이 약함).
+ *  - EN/FR: 소문자화 + 단어 경계(라틴 액센트 안전을 위해 \p{L} 경계 검사).
+ *  - JA: 정확 부분문자열 우선, 실패 시 어간 휴리스틱 — word 끝 1자 제거(어간이 최소 2자 남을 때만)
+ *        후 부분문자열. 「食べる→食べ」같은 활용형을 잡기 위한 것으로, 완벽한 형태소 분석이
+ *        아닌 휴리스틱이다(과잉/과소 매칭 가능). 측정·rung 유도용이라 이 정도 근사로 충분하다.
+ *  - 그 외: 정확 부분문자열.
+ * @param {string} sentence 제출 문장
+ * @param {string} word 세션 어휘 단어 (word_text)
+ * @param {string} [langCode] 'ja'|'zh'|'en'|'fr'|...
+ * @returns {boolean}
+ */
+export function sentenceIncludesWord(sentence, word, langCode) {
+  if (!sentence || !word) return false;
+  const s = String(sentence);
+  const w = String(word);
+  if (langCode === 'en' || langCode === 'fr') {
+    const sl = s.toLowerCase();
+    const wl = w.toLowerCase();
+    const escaped = wl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    // \b는 액센트 문자(é 등)에서 오작동 → 앞뒤가 '문자(\p{L})가 아님(또는 문자열 경계)'인지로 경계 판정.
+    const re = new RegExp(`(^|[^\\p{L}])${escaped}([^\\p{L}]|$)`, 'u');
+    return re.test(sl);
+  }
+  if (langCode === 'ja') {
+    if (s.includes(w)) return true;
+    // 어간 휴리스틱(활용형 대응) — 끝 1자 제거, 어간 최소 2자 유지.
+    if (w.length >= 3) {
+      const stem = w.slice(0, -1);
+      if (stem.length >= 2 && s.includes(stem)) return true;
+    }
+    return false;
+  }
+  // ZH·기타 — 정확 부분문자열
+  return s.includes(w);
+}
+
+/**
  * 채점 이벤트의 correct(1/0)를 EWMA(지수가중이동평균)로 집계한다.
  * @param {Array<{correct: boolean}>} events - 시간순(오래된 것부터)
  * @param {number} [alpha=0.15] - 평활 계수
