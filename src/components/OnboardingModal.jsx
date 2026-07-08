@@ -12,6 +12,8 @@ export default function OnboardingModal() {
   const [languages, setLanguages] = useState(['Japanese']);
   const [levelJp, setLevelJp] = useState('N3 중급');
   const [levelEn, setLevelEn] = useState('B1 중급');
+  const [levelFr, setLevelFr] = useState('B1 중급');
+  const [levelZh, setLevelZh] = useState('H3 중급');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -31,6 +33,10 @@ export default function OnboardingModal() {
     setSaving(true);
     setError('');
 
+    // 주의: profiles 테이블에는 아직 learning_level_french / learning_level_chinese 컬럼이 없다
+    // (이번 작업은 스키마·마이그레이션 변경 금지 범위). 존재하지 않는 컬럼을 update payload에 넣으면
+    // PostgREST가 요청 전체를 거부하므로, levelFr/levelZh는 선택 UI만 제공하고 저장은 컬럼이
+    // 추가되는 별도 마이그레이션에서 이어받는다.
     const { error: err } = await supabase
       .from('profiles')
       .update({
@@ -90,6 +96,20 @@ export default function OnboardingModal() {
               >
                 영어
               </button>
+              <button
+                type="button"
+                onClick={() => toggleLanguage('French')}
+                className={`toggle-btn ${languages.includes('French') ? 'toggle-btn--primary' : ''}`}
+              >
+                프랑스어
+              </button>
+              <button
+                type="button"
+                onClick={() => toggleLanguage('Chinese')}
+                className={`toggle-btn ${languages.includes('Chinese') ? 'toggle-btn--primary' : ''}`}
+              >
+                중국어
+              </button>
             </div>
           </div>
 
@@ -123,6 +143,44 @@ export default function OnboardingModal() {
                     type="button"
                     onClick={() => setLevelEn(lvl)}
                     className={`level-btn ${levelEn === lvl ? 'level-btn--active' : ''}`}
+                  >
+                    {lvl}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 프랑스어 레벨 — A0(오리엔테이션)는 온보딩 자가 진단 대상에서 제외, A1부터 */}
+          {languages.includes('French') && (
+            <div className="form-field">
+              <label className="form-label">프랑스어 수준</label>
+              <div className="level-group">
+                {LEVELS.French.slice(1).map(lvl => (
+                  <button
+                    key={lvl}
+                    type="button"
+                    onClick={() => setLevelFr(lvl)}
+                    className={`level-btn ${levelFr === lvl ? 'level-btn--active' : ''}`}
+                  >
+                    {lvl}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 중국어 레벨 — OT(오리엔테이션)는 온보딩 자가 진단 대상에서 제외, H1부터 */}
+          {languages.includes('Chinese') && (
+            <div className="form-field">
+              <label className="form-label">중국어 수준</label>
+              <div className="level-group">
+                {LEVELS.Chinese.slice(1).map(lvl => (
+                  <button
+                    key={lvl}
+                    type="button"
+                    onClick={() => setLevelZh(lvl)}
+                    className={`level-btn ${levelZh === lvl ? 'level-btn--active' : ''}`}
                   >
                     {lvl}
                   </button>

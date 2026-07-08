@@ -32,6 +32,15 @@ supabase db push
 | `20260703_study_paragraphs.sql` | `study_paragraphs` 테이블(오늘의 문단 저장소: prefetched/used/expired, RLS) | 공부 모드 `/study` 프리페치·연재, LearnPage 이번 주 세션·연재 화수 |
 | `20260703_streak_freeze_earn.sql` | `update_streak` 재정의(7일 연속마다 프리즈 +1, 최대 2개) + `buy_streak_freeze` 제거 + `streak_freeze_count` 컬럼 재확인 | 스트릭 프리즈 자동 적립, LearnPage 스트릭 타일 |
 
+### v4 '눈과 목소리' 마이그레이션 (2026-07) — 순서대로 실행
+
+> ⚠️ 위와 동일하게 수동 실행(SQL Editor). 순서 무관하게 독립적이지만, `push_subscriptions`가 없으면 `/api/cron/send-forecast`·`/api/push/test`는 조회 실패로 아무것도 하지 않고 빈 응답을 반환한다(무해 폴백).
+
+| 파일 | 추가 내용 | 의존 코드 |
+|------|----------|-----------|
+| `20260708_admin_metrics_rpc.sql` | 집계 전용 RPC(`admin_funnel`·`admin_daily_metrics`·`admin_v3_metrics`·`admin_content_health` 등, `SECURITY DEFINER`) | `admin/metrics` 대시보드 |
+| `20260708_push_subscriptions.sql` | `push_subscriptions` 테이블(user_id·endpoint unique·keys jsonb·lang·preferred_hour smallint UTC·RLS own-row) | 구독 배관(`sw.js` push 핸들러, 설정 토글), `/api/cron/send-forecast`·`/api/push/test` 발송 회로 |
+
 ### 배포 후 검증 쿼리
 
 ```sql
@@ -61,6 +70,8 @@ WHERE tablename IN ('writing_practice', 'token_corrections');
 - `writing_studio` 실패 → 라이팅 스튜디오 저장 시 컬럼 누락 오류(구조화 첨삭·재작문 링크 유실)
 - `study_paragraphs` 실패 → 앱은 무해 폴백(프리페치 저장/조회 무시 → 라이브 경로로 생성)하나 연재·이번 주 세션·서재 세션 집계가 0
 - `streak_freeze_earn` 실패 → 스트릭 프리즈 자동 적립 안 됨, 구 `buy_streak_freeze` 잔재 유지
+- `admin_metrics_rpc` 실패 → `admin/metrics` 대시보드 RPC 호출 에러(행 단위 조회로 폴백하지 않음 — PII 보호를 위해 의도적으로 대체 경로 없음)
+- `push_subscriptions` 실패 → 구독 생성/조회 실패(무해 폴백, `push.js` 주석 참고), `/api/cron/send-forecast`·`/api/push/test`는 빈 구독 목록으로 취급해 아무것도 보내지 않음(404/checked:0)
 
 **가장 위험한 것은 `vocab_decks_source`** — 컬럼이 없으면 createDeckMutation이 INSERT 단계에서 실패.
 
@@ -73,10 +84,29 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<prod anon key>
 NEXT_PUBLIC_SITE_URL=<prod domain, for robots/sitemap>
 SUPADATA_API_KEY=<optional — 듣고 읽기 자막 폴백>
 CRON_SECRET=<cron 인증 — /api/cron/* Bearer 토큰>
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=<웹 푸시 VAPID 공개키>
+VAPID_PRIVATE_KEY=<웹 푸시 VAPID 비밀키>
+VAPID_SUBJECT=<mailto:운영자 이메일 또는 https://사이트 도메인>
 ```
 
 - `SUPADATA_API_KEY` (선택) — `/api/media/captions` step 5 Supadata 폴백. 없으면 자막 자동 폴백만 조용히 스킵(핵심 정독 흐름·`.srt/.vtt` 직접 업로드는 불변).
-- `CRON_SECRET` (Vercel Cron 사용 시 필수) — `/api/cron/fetch-suggestions`·`/api/cron/backfill-ipa` GET의 `Bearer` 인증. 미설정 시 fail-closed(cron 요청 거부: 500/401)라 자동 수집·IPA 백필이 멈춘다.
+- `CRON_SECRET` (Vercel Cron 사용 시 필수) — `/api/cron/fetch-suggestions`·`/api/cron/backfill-ipa`·`/api/cron/send-forecast` GET/POST의 `Bearer` 인증. 미설정 시 fail-closed(cron 요청 거부: 500/401)라 자동 수집·IPA 백필·푸시 발송이 멈춘다.
+- `NEXT_PUBLIC_VAPID_PUBLIC_KEY` · `VAPID_PRIVATE_KEY` · `VAPID_SUBJECT` (웹 푸시 발송 — 기획 v4 §4.2) — 셋 다 있어야 발송된다. 하나라도 없으면 fail-soft: `/api/cron/send-forecast`는 `{skipped:'no-vapid'}` 200, `/api/push/test`는 `{skipped:'no-vapid'}` 503을 반환하고 아무것도 보내지 않는다(구독·설정 UI 자체는 영향 없음).
+  - 키 쌍 생성: `npx web-push generate-vapid-keys` (로컬에서 1회 실행, 커밋하지 말 것).
+  - 등록 절차: Vercel 대시보드 → 프로젝트 → Settings → Environment Variables에서 **Preview**와 **Production** 두 환경 모두에 3키를 등록한다(Preview 프로덕션 검증에도 `/api/push/test`를 쓰므로 Preview 누락 시 그 환경만 조용히 무발송).
+  - `VAPID_SUBJECT`는 `mailto:` 또는 `https://` 형식이어야 web-push 라이브러리가 허용한다.
+
+### `/api/cron/send-forecast` — vercel.json에 아직 등록하지 않았다
+
+**의도적으로 `vercel.json`을 수정하지 않았다.** 이유: Vercel **Hobby 플랜은 cron 2개·일 1회 스케줄 제한**이 있고, 현재 `vercel.json`에 이미 `fetch-suggestions`(1일 1회)·`backfill-ipa`(1일 1회) 2건이 등록돼 자리가 꽉 차 있다. `send-forecast`는 기획상 **매시 실행**(`preferred_hour` 매칭)이 필요해 Hobby 플랜에서는 등록 자체가 배포를 깨뜨릴 수 있다(cron 개수 초과 또는 매시 스케줄 거부).
+
+**지시:** Vercel 플랜이 **Pro 이상**임을 확인한 뒤에만 `vercel.json`의 `crons` 배열에 아래 항목을 추가하라.
+
+```json
+{ "path": "/api/cron/send-forecast", "schedule": "0 * * * *" }
+```
+
+**그 전까지의 검증 경로:** `vercel.json`에 cron이 없어도 라우트 자체는 배포돼 있다. 로그인 후 `/api/push/test`(POST, Bearer 세션 토큰)를 호출하면 하루 1회 상한을 무시하고 즉시 발송해 발송 회로 전체(카피 엔진·VAPID·구독)를 수동으로 확인할 수 있다. cron 자동 실행(매시·시간대 매칭)만 Pro 전환 후로 미뤄진 것이다.
 
 ## 3. 배포 후 관찰 포인트
 

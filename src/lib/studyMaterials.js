@@ -113,6 +113,43 @@ export function deriveArc(latestUsedRow, { now = Date.now(), weekly = false } = 
   return out;
 }
 
+/**
+ * cloze(단서회상) 빈칸용 예문 맵 조립 (서버 전용) — word_text → { main, pron }.
+ * due 어휘 각각에 대해 ① 콘텐츠 레지스트리(getVocab)에서 word_text 일치 표제어의 ex,
+ * ②(레지스트리에 없으면) user_vocabulary 행의 문맥(source_sentence)을 소스로 삼는다.
+ * 둘 다 없으면 그 단어는 맵에서 빠지고 → buildVocabItems가 typing으로 폴백한다(빈 문항 금지).
+ * 레지스트리 6MB 전이 import는 이 서버 경로 안에 갇혀 있어 클라 번들에 유입되지 않는다(§4.1).
+ * @param {object} ref - getRefLang(lang) 레지스트리
+ * @param {Array} dueVocabRows - user_vocabulary due 행 (word_text·source_sentence 포함)
+ * @returns {Object<string,{main:string,pron:(string|null)}>}
+ */
+export function buildVocabExampleMap(ref, dueVocabRows) {
+  const wanted = new Set((dueVocabRows || []).map(r => r?.word_text).filter(Boolean));
+  const out = {};
+  if (!wanted.size) return out;
+  // ① 레지스트리 — 전 레벨을 훑어 표제어(refMain) 일치 시 예문(ex) 채택. 먼저 잡힌 것 유지.
+  for (const meta of ref?.LEVEL_META || []) {
+    const v = ref.getVocab?.(meta.key);
+    for (const t of v?.themes || []) {
+      for (const w of t.words || []) {
+        const key = refMain(w);
+        if (!key || !wanted.has(key) || out[key]) continue;
+        const ex = w.ex;
+        const main = ex && refMain(ex);
+        if (main) out[key] = { main, pron: refPron(ex) || null };
+      }
+    }
+  }
+  // ② 레지스트리에 없으면 user_vocabulary 문맥(source_sentence) — 단어가 실재하는 문장만.
+  for (const r of dueVocabRows || []) {
+    const wt = r?.word_text;
+    if (!wt || out[wt]) continue;
+    const ctx = r.source_sentence;
+    if (typeof ctx === 'string' && ctx.includes(wt)) out[wt] = { main: ctx, pron: null };
+  }
+  return out;
+}
+
 /** 배열에서 대략 고르게 n개 샘플 (요청마다 달라지도록 랜덤 시작점) */
 function sample(arr, n) {
   if (!arr?.length) return [];
@@ -240,7 +277,7 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
   // ── 재료 조회 (병렬) ──
   const [{ data: dueVocabRows }, { data: vocabPoolRows }, { data: dueGrammarRows }, { data: progressRows }, { data: reviewEventRows }] = await Promise.all([
     supabase.from('user_vocabulary')
-      .select('id, word_text, meaning, furigana, language, interval, ease_factor, repetitions, next_review_at')
+      .select('id, word_text, meaning, furigana, source_sentence, language, interval, ease_factor, repetitions, next_review_at')
       .eq('user_id', userId).eq('language', lang)
       .lte('next_review_at', dueIso)
       .order('next_review_at', { ascending: true }).limit(3),
@@ -270,7 +307,10 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
   // ── 숙련 rung · 난이도 다이얼 유도 (review_events 순수 함수) ──
   const eventsAsc = (reviewEventRows || []).slice().reverse();
   const vocabRungs = deriveVocabRungs(eventsAsc, dueVocabRows);
-  const gradedEvents = eventsAsc.map(e => ({ correct: !!e.correct }));
+  // cloze(rung 2) 빈칸 예문 — 레지스트리 예문/문맥을 서버에서 조립해 payload에 실어 보낸다(§4.1).
+  const exampleByWord = buildVocabExampleMap(ref, dueVocabRows);
+  // 다이얼은 채점 문항만 본다 — ui(행동 계측)·dict(자가 채점)는 정답률 신호가 아니다 (§4.9 무간섭 보장).
+  const gradedEvents = eventsAsc.filter(e => e.source !== 'ui' && e.source !== 'dict').map(e => ({ correct: !!e.correct }));
   const ewma = computeEwma(gradedEvents);
   const dial = dialFromEwma(ewma, 20, gradedEvents.length);
 
@@ -375,6 +415,7 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
     koPool,
     vocabRungs,
     dial,
+    exampleByWord,
   });
 
   // ── 오늘의 문단 재료 — 새 문법·새 어휘·복습 문법·복습 어휘를 한 문단으로 ──

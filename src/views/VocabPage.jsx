@@ -233,7 +233,8 @@ export default function VocabPage() {
   }, [reviewQueue, reviewIdx, vocab]);
 
   // 자동 모드: 단어 rung → 세션과 동일한 문항 유형(vocabTypeForRung)을 복습 서브모드로 매핑.
-  // rung≤1→choice(문맥 객관식), 2→typing, ≥3→listening. TTS 미지원이면 listening은 문맥으로 강등.
+  // rung≤1→choice(문맥 객관식), 2→cloze(단서회상 — 여기선 문맥 객관식으로 수렴), 3→typing, ≥4→listening.
+  // TTS 미지원이면 listening은 문맥으로 강등. (cloze 전용 서브모드가 없어 context로 매핑 — 무해)
   const autoSubMode = (word) => {
     if (!word) return 'context';
     const rung = vocabRungs[word.word_text] ?? 0;

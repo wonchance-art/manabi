@@ -4,13 +4,16 @@ import { describe, it, expect, vi } from 'vitest';
 // deriveVocabRungs가 실제로 쓰는 건 skillRung.computeRung 뿐이라, 그것만 실물로 두고 나머진 목.
 vi.mock('@/lib/skillRung', async () => await vi.importActual('../skillRung'));
 vi.mock('@/content/refLangs', () => ({ getRefLang: () => ({}) }));
-vi.mock('@/views/refShared', () => ({ refMain: () => '', refPron: () => '' }));
+vi.mock('@/views/refShared', () => ({
+  refMain: i => i?.fr ?? i?.ja ?? i?.en ?? i?.zh ?? '',
+  refPron: i => i?.ipa ?? i?.yomi ?? i?.pinyin ?? null,
+}));
 vi.mock('@/lib/refQuiz', () => ({ buildChapterQuiz: () => ({}) }));
 vi.mock('@/lib/studySession', () => ({ composeSession: () => ({}), buildWarmupItems: () => [] }));
 vi.mock('@/lib/writingPrompts', () => ({ levelBand: () => null }));
 vi.mock('@/lib/studyParagraph', () => ({ THEMES: [] }));
 
-const { deriveVocabRungs, gateNewMaterialsByDial, pickTheme, deriveColdStart, deriveArc, INTEREST_GROUPS } = await import('../studyMaterials');
+const { deriveVocabRungs, gateNewMaterialsByDial, pickTheme, deriveColdStart, deriveArc, INTEREST_GROUPS, buildVocabExampleMap } = await import('../studyMaterials');
 
 // review_events 행 헬퍼 (시간 오름차순으로 넘긴다)
 const ev = (source, item_key, correct, qtype = 'choice') => ({
@@ -48,6 +51,42 @@ describe('deriveVocabRungs', () => {
   it('빈/누락 입력에 방어적', () => {
     expect(deriveVocabRungs(undefined, undefined)).toEqual({});
     expect(deriveVocabRungs([ev('vocab', '猫', true)], [])).toEqual({});
+  });
+});
+
+describe('buildVocabExampleMap — cloze 빈칸 예문 소스', () => {
+  // 레지스트리 스텁 — 전 레벨을 훑어 표제어(ja) 일치 시 예문(ex) 채택.
+  const ref = {
+    LEVEL_META: [{ key: 'N5' }, { key: 'N4' }],
+    getVocab: key => key === 'N5'
+      ? { themes: [{ words: [
+          { ja: '約束', yomi: 'やくそく', ex: { ja: '友達と約束をした。', yomi: 'ともだちとやくそくをした' } },
+          { ja: '例文なし', yomi: 'れいぶんなし' }, // ex 없음
+        ] }] }
+      : { themes: [{ words: [{ ja: '家族', ex: { ja: '私の家族は四人です。' } }] }] },
+  };
+
+  it('① 레지스트리 예문을 우선 채택(발음 포함)', () => {
+    const out = buildVocabExampleMap(ref, [{ word_text: '約束' }, { word_text: '家族' }]);
+    expect(out['約束']).toEqual({ main: '友達と約束をした。', pron: 'ともだちとやくそくをした' });
+    expect(out['家族']).toEqual({ main: '私の家族は四人です。', pron: null });
+  });
+
+  it('② 레지스트리에 예문이 없으면 user_vocabulary 문맥(source_sentence) 폴백', () => {
+    const rows = [{ word_text: '例文なし', source_sentence: 'これは例文なしの文です。' }];
+    const out = buildVocabExampleMap(ref, rows);
+    expect(out['例文なし']).toEqual({ main: 'これは例文なしの文です。', pron: null });
+  });
+
+  it('둘 다 없으면 맵에서 제외(→ typing 폴백 유도)', () => {
+    const out = buildVocabExampleMap(ref, [{ word_text: '未収録' }]);
+    expect(out['未収録']).toBeUndefined();
+    expect(buildVocabExampleMap(ref, [])).toEqual({});
+  });
+
+  it('source_sentence가 단어를 포함하지 않으면 폴백하지 않음', () => {
+    const out = buildVocabExampleMap(ref, [{ word_text: '未収録', source_sentence: '関係ない文。' }]);
+    expect(out['未収録']).toBeUndefined();
   });
 });
 

@@ -79,14 +79,39 @@ describe('composeSession', () => {
     expect(s.items.filter(i => i.type !== 'teach').length).toBeLessThanOrEqual(10);
   });
 
-  it('rung 기반 타입 배정 — rung 2→typing, rung 3→listening', () => {
+  // 예문 재료(서버 조립) — cloze 빈칸 소스. word_text가 예문에 실재해야 한다.
+  const EXAMPLES = {
+    '約束': { main: '友達と約束をした。', pron: 'ともだちとやくそくをした' },
+    '家族': { main: '私の家族は四人です。', pron: null },
+  };
+
+  it('rung 기반 타입 배정 — rung 2→cloze(예문 있음), rung 3→typing, rung 1→choice', () => {
     const vocabRungs = { '約束': 2, '家族': 3, '無料': 1 };
-    const s = composeSession({ ...FULL, vocabRungs });
+    const s = composeSession({ ...FULL, vocabRungs, exampleByWord: EXAMPLES });
     const byWord = t => s.items.find(i => i.word?.word_text === t)?.type;
-    expect(byWord('約束')).toBe('vocab-typing');
-    expect(byWord('家族')).toBe('vocab-listening');
-    // rung1 → choice (보기 충분)
-    expect(byWord('無料')).toBe('vocab-choice');
+    expect(byWord('約束')).toBe('vocab-cloze');       // rung2 + 예문 → 단서회상
+    expect(byWord('家族')).toBe('vocab-typing');       // rung3 → 자유회상
+    expect(byWord('無料')).toBe('vocab-choice');       // rung1 → 인지(보기 충분)
+    // cloze 문항엔 빈칸 예문(sentence)이 실려 있다
+    const cloze = s.items.find(i => i.word?.word_text === '約束');
+    expect(cloze.sentence).toMatchObject({ main: EXAMPLES['約束'].main });
+  });
+
+  it('cloze인데 예문 부재 → typing으로 폴백(빈 문항 금지)', () => {
+    // rung2 단어들 — exampleByWord 없음 → 전부 typing 폴백
+    const vocabRungs = { '約束': 2, '家族': 2, '無料': 2 };
+    const s = composeSession({ ...FULL, vocabRungs });     // exampleByWord 미제공
+    const vocabItems = s.items.filter(i => i.word);
+    expect(vocabItems.length).toBeGreaterThan(0);
+    expect(vocabItems.every(i => i.type === 'vocab-typing')).toBe(true);
+    expect(vocabItems.every(i => i.sentence == null)).toBe(true);
+  });
+
+  it('예문이 있어도 단어가 문장에 없으면 typing 폴백', () => {
+    const vocabRungs = { '約束': 2 };
+    const bad = { '約束': { main: '関係ない文章です。', pron: null } }; // 約束 미포함
+    const s = composeSession({ ...FULL, vocabRungs, exampleByWord: bad });
+    expect(s.items.find(i => i.word?.word_text === '約束')?.type).toBe('vocab-typing');
   });
 
   it('dial easy — 신규 0, 어휘는 전부 choice', () => {
@@ -102,11 +127,12 @@ describe('composeSession', () => {
   });
 
   it('dial hard — 어휘 타입이 한 단계 상향', () => {
-    const vocabRungs = { '約束': 1, '家族': 2, '無料': 1 };
-    const s = composeSession({ ...FULL, vocabRungs, dial: 'hard' });
+    const vocabRungs = { '約束': 1, '家族': 2, '無料': 3 };
+    const s = composeSession({ ...FULL, vocabRungs, dial: 'hard', exampleByWord: EXAMPLES });
     const byWord = t => s.items.find(i => i.word?.word_text === t)?.type;
-    expect(byWord('約束')).toBe('vocab-typing');   // choice→typing
-    expect(byWord('家族')).toBe('vocab-listening'); // typing→listening
+    expect(byWord('約束')).toBe('vocab-cloze');     // choice→cloze (예문 있음)
+    expect(byWord('家族')).toBe('vocab-typing');    // cloze→typing
+    expect(byWord('無料')).toBe('vocab-listening');  // typing→listening
   });
 
   it('dial hard — 신규 챕터 문항 상한 +1(총량 ≤10), easy/normal 불변', () => {
@@ -158,6 +184,7 @@ describe('isChapterPassed', () => {
 describe('qtypeForItem — 세션 문항 타입 → qtype', () => {
   it('어휘/문법/독해 문항 타입을 규약 qtype으로 매핑', () => {
     expect(qtypeForItem('vocab-choice')).toBe('choice');
+    expect(qtypeForItem('vocab-cloze')).toBe('cloze');
     expect(qtypeForItem('vocab-typing')).toBe('typing');
     expect(qtypeForItem('vocab-listening')).toBe('listening');
     expect(qtypeForItem('grammar-cloze')).toBe('cloze');

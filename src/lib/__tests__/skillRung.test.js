@@ -6,12 +6,12 @@ const ok = qtype => ({ qtype, correct: true });
 const no = qtype => ({ qtype, correct: false });
 
 describe('qtypeRungLevel', () => {
-  it('qtype을 사다리 레벨로 매핑', () => {
+  it('qtype을 사다리 레벨로 매핑 (0 노출→1 choice→2 cloze→3 typing→4 listening→5 produce)', () => {
     expect(qtypeRungLevel('choice')).toBe(1);
     expect(qtypeRungLevel('cloze')).toBe(2);
-    expect(qtypeRungLevel('typing')).toBe(2);
-    expect(qtypeRungLevel('listening')).toBe(3);
-    expect(qtypeRungLevel('produce')).toBe(4);
+    expect(qtypeRungLevel('typing')).toBe(3);
+    expect(qtypeRungLevel('listening')).toBe(4);
+    expect(qtypeRungLevel('produce')).toBe(5);
   });
   it('그 외/누락은 보수적으로 choice(1)', () => {
     expect(qtypeRungLevel('order')).toBe(1);
@@ -30,15 +30,27 @@ describe('computeRung', () => {
     expect(computeRung([ok('choice'), ok('choice')])).toBe(2);
   });
 
-  it('rung 2에서 typing 2연속 정답 → rung 3', () => {
-    // choice×2 → r2, typing×2 → r3
-    expect(computeRung([ok('choice'), ok('choice'), ok('typing'), ok('typing')])).toBe(3);
+  it('choice→cloze→typing 사다리 승급', () => {
+    // choice×2 → r2, cloze×2 → r3, typing×2 → r4
+    expect(computeRung([ok('choice'), ok('choice'), ok('cloze'), ok('cloze')])).toBe(3);
+    expect(computeRung([ok('choice'), ok('choice'), ok('cloze'), ok('cloze'), ok('typing'), ok('typing')])).toBe(4);
   });
 
-  it('2연속 실패로 강등', () => {
-    // choice×2 → r2, typing×2 정답 → r3, listening 2연속 실패 → r2
-    const events = [ok('choice'), ok('choice'), ok('typing'), ok('typing'), no('listening'), no('listening')];
+  it('cloze는 choice와 typing 사이 완충 단계 — cloze 성공만으론 typing까지 못 건너뜀', () => {
+    // choice×2 → r2, cloze 2연속 → r3(typing 단계). typing은 아직 밟지 않았다.
+    expect(computeRung([ok('choice'), ok('choice'), ok('cloze'), ok('cloze')])).toBe(3);
+  });
+
+  it('2연속 실패로 강등 — 현재 난이도 이하 실패만 인정', () => {
+    // choice×2 → r2, cloze×2 → r3, typing 2연속 실패(q3<=r3) → r2
+    const events = [ok('choice'), ok('choice'), ok('cloze'), ok('cloze'), no('typing'), no('typing')];
     expect(computeRung(events)).toBe(2);
+  });
+
+  it('과난도 실패는 강등 없음 — r3에서 listening(q4) 실패는 무시', () => {
+    // choice×2 → r2, cloze×2 → r3. listening(q4>r3) 오답 2번은 강등 크레딧 없음 → r3 유지.
+    const events = [ok('choice'), ok('choice'), ok('cloze'), ok('cloze'), no('listening'), no('listening')];
+    expect(computeRung(events)).toBe(3);
   });
 
   it('강등은 최소 1까지만', () => {
@@ -78,6 +90,32 @@ describe('computeRung', () => {
     // choice×2 → r2. choice 오답1 + flash 정답 + choice 오답1 → downStreak 유지되어 강등 → r1
     const events = [ok('choice'), ok('choice'), no('choice'), ok('flash'), no('choice')];
     expect(computeRung(events)).toBe(1);
+  });
+});
+
+// 재번호 무회귀(테스트 c) — 새 사다리(cloze 삽입) 재계산이 기존 이력자를 강등시키지 않는지.
+describe('사다리 재번호 — 기존 이벤트 이력 재계산 안전성', () => {
+  it('typing 성공 이력자는 choice로 강등되지 않고 최소 typing 이상을 유지', () => {
+    // 과거 choice·typing만으로 학습해 온 사용자 — 재번호 후에도 typing(자유회상) 유지.
+    const rung = computeRung([ok('choice'), ok('choice'), ok('typing'), ok('typing')]);
+    expect(rung).toBeGreaterThanOrEqual(3);            // r3 이상
+    expect(vocabTypeForRung(rung)).not.toBe('vocab-choice');
+    expect(vocabTypeForRung(rung)).toBe('vocab-typing'); // 정확히 자유회상 단계
+  });
+
+  it('listening 숙련자는 재번호 후에도 listening 유지(강등 없음)', () => {
+    // choice×2→r2, typing×2→r3, listening×2→r4 → listening
+    const rung = computeRung([
+      ok('choice'), ok('choice'), ok('typing'), ok('typing'), ok('listening'), ok('listening'),
+    ]);
+    expect(rung).toBe(4);
+    expect(vocabTypeForRung(rung)).toBe('vocab-listening');
+  });
+
+  it('choice만 성공한 초심자는 cloze(단서회상)로 자연 진입', () => {
+    const rung = computeRung([ok('choice'), ok('choice')]);
+    expect(rung).toBe(2);
+    expect(vocabTypeForRung(rung)).toBe('vocab-cloze');
   });
 });
 
@@ -218,42 +256,51 @@ describe('sentenceIncludesWord', () => {
 
 // P1 배선 봉합 — produce 이벤트가 어휘 rung 사다리 상단(4)에 반영되는지.
 describe('produce → rung 배선', () => {
-  it('rung 3에서 produce 2연속 성공 → rung 4', () => {
-    // choice×2 → r2, typing×2 → r3, produce×2(q4>=r3) → r4
-    const events = [ok('choice'), ok('choice'), ok('typing'), ok('typing'), ok('produce'), ok('produce')];
-    expect(computeRung(events)).toBe(4);
+  it('typing 숙련(r4)에서 produce 2연속 성공 → rung 5', () => {
+    // choice×2 → r2, cloze×2 → r3, typing×2 → r4, produce×2(q5>=r4) → r5
+    const events = [
+      ok('choice'), ok('choice'), ok('cloze'), ok('cloze'),
+      ok('typing'), ok('typing'), ok('produce'), ok('produce'),
+    ];
+    expect(computeRung(events)).toBe(5);
   });
 
-  it('rung 4는 상한 — produce 추가 성공에도 4 유지', () => {
+  it('rung 5는 상한 — produce 추가 성공에도 5 유지', () => {
     const events = [
-      ok('choice'), ok('choice'), ok('typing'), ok('typing'),
-      ok('produce'), ok('produce'), ok('produce'), ok('produce'),
+      ok('choice'), ok('choice'), ok('cloze'), ok('cloze'),
+      ok('typing'), ok('typing'), ok('produce'), ok('produce'),
+      ok('produce'), ok('produce'),
     ];
-    expect(computeRung(events)).toBe(4);
+    expect(computeRung(events)).toBe(5);
   });
 
   it('루브릭<2(correct:false)면 승급 안 됨', () => {
-    // r3 도달 후 produce 오답(루브릭<2) 2연속 — 과난도 실패라 강등 크레딧 없음(q4>r3) → r3 유지, 승급도 없음
-    const events = [ok('choice'), ok('choice'), ok('typing'), ok('typing'), no('produce'), no('produce')];
-    expect(computeRung(events)).toBe(3);
+    // r4 도달 후 produce 오답(루브릭<2) 2연속 — 과난도 실패라 강등 크레딧 없음(q5>r4) → r4 유지, 승급도 없음
+    const events = [
+      ok('choice'), ok('choice'), ok('cloze'), ok('cloze'),
+      ok('typing'), ok('typing'), no('produce'), no('produce'),
+    ];
+    expect(computeRung(events)).toBe(4);
   });
 });
 
 describe('vocabTypeForRung', () => {
-  it('기본 매핑', () => {
+  it('기본 매핑 (choice→cloze→typing→listening)', () => {
     expect(vocabTypeForRung(0)).toBe('vocab-choice');
     expect(vocabTypeForRung(1)).toBe('vocab-choice');
-    expect(vocabTypeForRung(2)).toBe('vocab-typing');
-    expect(vocabTypeForRung(3)).toBe('vocab-listening');
+    expect(vocabTypeForRung(2)).toBe('vocab-cloze');
+    expect(vocabTypeForRung(3)).toBe('vocab-typing');
     expect(vocabTypeForRung(4)).toBe('vocab-listening');
+    expect(vocabTypeForRung(5)).toBe('vocab-listening'); // produce 슬롯 없음 → listening 수렴
   });
   it('easy는 무조건 choice', () => {
     expect(vocabTypeForRung(2, 'easy')).toBe('vocab-choice');
     expect(vocabTypeForRung(3, 'easy')).toBe('vocab-choice');
   });
   it('hard는 한 단계 상향(listening은 유지)', () => {
-    expect(vocabTypeForRung(1, 'hard')).toBe('vocab-typing');
-    expect(vocabTypeForRung(2, 'hard')).toBe('vocab-listening');
-    expect(vocabTypeForRung(3, 'hard')).toBe('vocab-listening');
+    expect(vocabTypeForRung(1, 'hard')).toBe('vocab-cloze');    // choice→cloze
+    expect(vocabTypeForRung(2, 'hard')).toBe('vocab-typing');   // cloze→typing
+    expect(vocabTypeForRung(3, 'hard')).toBe('vocab-listening'); // typing→listening
+    expect(vocabTypeForRung(4, 'hard')).toBe('vocab-listening'); // 최상위 유지
   });
 });

@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { LEVELS } from '../lib/constants';
+import { hasVapidKey, getSubscriptionState, subscribePush, unsubscribePush } from '../lib/push';
 import Button from '../components/Button';
 import AccountSettings from '../components/AccountSettings';
 import InstallPrompt from '../components/InstallPrompt';
@@ -32,6 +33,11 @@ export default function MyPage() {
   const [reminderHour, setReminderHour]   = useState('');
   const [notifPerm, setNotifPerm]         = useState('default');
 
+  // 웹 푸시 구독 (기획 v4 §4). env 키 부재 시 섹션 전체 숨김.
+  const pushEnabled = hasVapidKey();
+  const [pushState, setPushState] = useState(null); // { supported, permission, subscribed }
+  const [pushBusy, setPushBusy]   = useState(false);
+
   useEffect(() => {
     if (!profile) return;
     setEditName(profile.display_name || '');
@@ -45,6 +51,48 @@ export default function MyPage() {
     if (saved !== null) setReminderHour(saved);
     if (typeof Notification !== 'undefined') setNotifPerm(Notification.permission);
   }, []);
+
+  useEffect(() => {
+    if (!pushEnabled) return;
+    getSubscriptionState().then(setPushState).catch(() => {});
+  }, [pushEnabled]);
+
+  async function togglePush() {
+    if (pushBusy || !user?.id) return;
+    setPushBusy(true);
+    try {
+      if (pushState?.subscribed) {
+        await unsubscribePush();
+        toast('알림을 껐어요.', 'success');
+      } else {
+        const ok = await subscribePush(user.id, editLanguages[0]);
+        if (ok) toast('알림을 켰어요. 내일 만나요!', 'success');
+        else toast('알림 권한을 허용해야 켤 수 있어요.', 'error');
+      }
+      setPushState(await getSubscriptionState());
+    } catch {
+      // 조용히
+    } finally {
+      setPushBusy(false);
+    }
+  }
+
+  async function sendTestPush() {
+    if (pushBusy) return;
+    setPushBusy(true);
+    try {
+      const res = await fetch('/api/push/test', { method: 'POST' });
+      if (res.status === 503) { toast('서버에 푸시 키가 아직 등록되지 않았어요.', 'error'); return; }
+      if (!res.ok) { toast('테스트 발송에 실패했어요.', 'error'); return; }
+      const data = await res.json().catch(() => ({}));
+      const n = data?.sent ?? 0;
+      toast(n > 0 ? `테스트 알림을 보냈어요 (${n}건).` : '보낼 구독이 없어요.', n > 0 ? 'success' : 'info');
+    } catch {
+      toast('테스트 발송에 실패했어요.', 'error');
+    } finally {
+      setPushBusy(false);
+    }
+  }
 
   async function handleReminderChange(hour) {
     if (hour === '') {
@@ -240,6 +288,41 @@ export default function MyPage() {
             </div>
           </div>
         </details>
+
+        {/* 알림(웹 푸시) — env 키(NEXT_PUBLIC_VAPID_PUBLIC_KEY) 부재 시 섹션 전체 숨김 */}
+        {pushEnabled && (
+          <details className="mypage-collapse" open={openPanel === 'push'}
+            onToggle={e => { if (e.currentTarget.open) setOpenPanel('push'); else if (openPanel === 'push') setOpenPanel(null); }}>
+            <summary className="mypage-collapse__summary" onClick={e => { e.preventDefault(); togglePanel('push'); }}>
+              <span>알림 {pushState?.subscribed ? '(켜짐)' : '(꺼짐)'}</span>
+              <span className="mypage-collapse__chevron">▾</span>
+            </summary>
+            <div className="mypage-collapse__body">
+              {pushState && !pushState.supported ? (
+                <div className="mypage-reminder-blocked">이 브라우저에서는 알림을 지원하지 않아요.</div>
+              ) : (
+                <>
+                  {pushState?.permission === 'denied' && (
+                    <div className="mypage-reminder-blocked">브라우저에서 알림이 차단돼 있어요.</div>
+                  )}
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: '0 0 12px' }}>
+                    내일 이야기가 도착하거나 오늘 복습할 단어가 있으면 알려드려요.
+                  </p>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <Button size="sm" onClick={togglePush} disabled={pushBusy || pushState?.permission === 'denied'}>
+                      {pushBusy ? '처리 중…' : pushState?.subscribed ? '알림 끄기' : '알림 켜기'}
+                    </Button>
+                    {pushState?.subscribed && (
+                      <Button size="sm" variant="secondary" onClick={sendTestPush} disabled={pushBusy}>
+                        테스트 발송
+                      </Button>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          </details>
+        )}
       </div>
 
       {/* 계정 & 앱 */}

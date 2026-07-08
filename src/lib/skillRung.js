@@ -2,8 +2,13 @@
  * 어휘 숙련 사다리(rung) + EWMA 난이도 다이얼 — 순수 함수 모음.
  *
  * 숙련 사다리(어휘 전용):
- *   0 노출 전 → 1 인지(choice) → 2 회상 타이핑(typing) → 3 청각 회상(listening) → 4 산출(produce)
+ *   0 노출 전 → 1 인지(choice) → 2 단서회상(cloze) → 3 자유회상(typing) → 4 청각 회상(listening) → 5 산출(produce)
+ *   ※ 인지(선다)와 자유회상(타이핑) 사이의 간극이 커(선다는 맞히나 타이핑은 전멸하는 구간)
+ *     단서회상(예문 빈칸 채우기)을 완충 단계로 끼운다 — 학습과학의 cued recall.
  *   ※ produce 문항은 D단계에서 추가되지만 알고리즘은 미리 지원한다.
+ *
+ * 재번호 안전: rung은 이벤트에서 유도되는 순수함수라 이 재번호가 저장 상태를 깨지 않는다 —
+ *   기존 이벤트 이력도 새 qtype→level 매핑으로 전부 재계산될 뿐이다.
  *
  * 설계 원칙(레드팀 반영):
  *  - rung은 DB 컬럼이 아니라 review_events에서 유도되는 순수 함수다.
@@ -15,15 +20,15 @@
  * qtype → 사다리 레벨.
  * 과거 이벤트에는 qtype이 없을 수 있으므로 누락/미지정은 보수적으로 choice(1) 취급.
  * @param {string} [qtype] - review_events detail.qtype
- * @returns {number} 1~4
+ * @returns {number} 1~5
  */
 export function qtypeRungLevel(qtype) {
   switch (qtype) {
     case 'choice': return 1;
-    case 'cloze': return 2;
-    case 'typing': return 2;
-    case 'listening': return 3;
-    case 'produce': return 4;
+    case 'cloze': return 2;     // 단서회상(예문 빈칸)
+    case 'typing': return 3;    // 자유회상(타이핑)
+    case 'listening': return 4;
+    case 'produce': return 5;
     default: return 1; // 그 외/누락 — 과거 이벤트 보수 처리
   }
 }
@@ -31,7 +36,7 @@ export function qtypeRungLevel(qtype) {
 /**
  * 한 항목의 이벤트 이력으로 현재 rung을 유도한다.
  * @param {Array<{qtype?: string, correct: boolean}>} events - 시간순(오래된 것부터)
- * @returns {number} 0(노출 전)~4
+ * @returns {number} 0(노출 전)~5
  */
 export function computeRung(events) {
   if (!events || !events.length) return 0;
@@ -56,7 +61,7 @@ export function computeRung(events) {
         // 현재 난이도 이상에서의 성공 — 승급 크레딧
         upStreak++;
         downStreak = 0;
-        if (upStreak >= 2) { r = Math.min(r + 1, 4); upStreak = 0; }
+        if (upStreak >= 2) { r = Math.min(r + 1, 5); upStreak = 0; }
       } else {
         // 너무 쉬운 성공 — 승급 크레딧 없음, 강등만 리셋
         downStreak = 0;
@@ -200,20 +205,24 @@ export function computeWeakness(events, { sinceMs = 0, cap = 5 } = {}) {
 
 /**
  * rung + 다이얼 → 어휘 문항 타입.
- * 기본: rung≤1→choice, rung 2→typing, rung≥3→listening.
- * dial 'easy'→무조건 choice. dial 'hard'→한 단계 상향(choice→typing→listening, listening 유지).
+ * 기본: rung≤1→choice, rung 2→cloze(단서회상), rung 3→typing(자유회상), rung≥4→listening.
+ *   (rung 5=produce는 세션 슬롯이 없어 listening으로 수렴 — produce는 격일 산출 문항으로 별도 처리.)
+ * dial 'easy'→무조건 choice. dial 'hard'→한 단계 상향(choice→cloze→typing→listening, listening 유지).
+ * ※ cloze는 예문이 있어야 성립한다 — 예문 부재 시 조립부(buildVocabItems)에서 typing으로 폴백한다.
  * @param {number} rung
  * @param {'easy'|'normal'|'hard'} [dial='normal']
- * @returns {'vocab-choice'|'vocab-typing'|'vocab-listening'}
+ * @returns {'vocab-choice'|'vocab-cloze'|'vocab-typing'|'vocab-listening'}
  */
 export function vocabTypeForRung(rung, dial = 'normal') {
   if (dial === 'easy') return 'vocab-choice';
   let base;
   if (rung <= 1) base = 'vocab-choice';
-  else if (rung === 2) base = 'vocab-typing';
+  else if (rung === 2) base = 'vocab-cloze';
+  else if (rung === 3) base = 'vocab-typing';
   else base = 'vocab-listening';
   if (dial === 'hard') {
-    if (base === 'vocab-choice') return 'vocab-typing';
+    if (base === 'vocab-choice') return 'vocab-cloze';
+    if (base === 'vocab-cloze') return 'vocab-typing';
     if (base === 'vocab-typing') return 'vocab-listening';
     return 'vocab-listening'; // 이미 최상위 — 유지
   }

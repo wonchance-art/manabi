@@ -4,10 +4,10 @@
  * ~10문항짜리 인터리브 세션 payload를 만든다. 순수 함수 — 셔플 없음(렌더 몫).
  *
  * 문항 타입:
- *  vocab-choice   단어→뜻 4지선다        vocab-typing  뜻→단어 입력
- *  vocab-listening TTS→단어 입력          grammar-cloze 예문 빈칸(refQuiz.meaning)
- *  grammar-order  어순 배열(refQuiz.apply) read-meaning 예문→뜻 4지선다
- *  teach          새 패턴 티칭 카드(문항 아님·집계 제외)
+ *  vocab-choice   단어→뜻 4지선다        vocab-cloze   예문 빈칸에 단어 입력(단서회상)
+ *  vocab-typing   뜻→단어 입력           vocab-listening TTS→단어 입력
+ *  grammar-cloze  예문 빈칸(refQuiz.meaning) grammar-order 어순 배열(refQuiz.apply)
+ *  read-meaning   예문→뜻 4지선다        teach 새 패턴 티칭 카드(문항 아님·집계 제외)
  */
 
 import { vocabTypeForRung } from './skillRung';
@@ -65,13 +65,38 @@ function pickDistractors(pool, correct, n) {
 let uidSeq = 0;
 const uid = prefix => `${prefix}-${++uidSeq}`;
 
-/** 어휘 due → 문항 (rung + 다이얼로 타입 배정, 인덱스 로테이션 폐기) */
-function buildVocabItems(vocab, meaningPool, vocabRungs = {}, dial = 'normal') {
+/**
+ * 예문에 단어가 실재하는지 — 빈칸을 만들 수 있어야 cloze가 성립한다.
+ * word_text(표기) 또는 furigana(발음) 어느 쪽으로든 예문에서 오려낼 수 있으면 OK.
+ * (렌더는 splitSentenceAroundWord가 word_text→furigana 순으로 빈칸을 뚫는다.)
+ */
+function clozeExampleUsable(main, word) {
+  if (typeof main !== 'string' || !main) return false;
+  if (word?.word_text && main.includes(word.word_text)) return true;
+  if (word?.furigana && main.includes(word.furigana)) return true;
+  return false;
+}
+
+/**
+ * 어휘 due → 문항 (rung + 다이얼로 타입 배정, 인덱스 로테이션 폐기).
+ * @param {Object<string,{main:string,pron?:string|null}>} exampleByWord - word_text → 예문(서버 조립). cloze 재료.
+ */
+function buildVocabItems(vocab, meaningPool, vocabRungs = {}, dial = 'normal', exampleByWord = {}) {
   const cleanPool = (meaningPool || []).map(stripSourceLangInMeaning);
   return (vocab || []).slice(0, 3).map(w => {
     const meaning = stripSourceLangInMeaning(w.meaning); // 보기·정답·채점 기준을 정화된 값으로 통일
+    const word = { ...w, meaning };
     let type = vocabTypeForRung(vocabRungs[w.word_text] ?? 1, dial);
     let options = null;
+    let sentence = null;
+    if (type === 'vocab-cloze') {
+      const ex = exampleByWord[w.word_text];
+      if (ex && clozeExampleUsable(ex.main, word)) {
+        sentence = { main: ex.main, pron: ex.pron || null };
+      } else {
+        type = 'vocab-typing';   // 예문 부재/부적합 → 자유회상으로 폴백 (빈 문항 금지)
+      }
+    }
     if (type === 'vocab-choice') {
       const distractors = pickDistractors(cleanPool, meaning, 3);
       if (distractors.length < 2) type = 'vocab-typing';   // 보기 부족 → 타이핑으로
@@ -80,8 +105,9 @@ function buildVocabItems(vocab, meaningPool, vocabRungs = {}, dial = 'normal') {
     return {
       uid: uid('v'),
       type,
-      word: { ...w, meaning },
+      word,
       options,
+      sentence,
       effect: { kind: 'vocab', wordId: w.id },
     };
   });
@@ -148,12 +174,13 @@ function buildReadingItems(reading, koPool, max) {
  * 세션 조립 — 인터리브 배치.
  * 레시피: [티칭, 신규1, 어휘, 신규2, 문법due, 어휘, 신규3, 독해, 문법due, 어휘, 독해…]
  * @param {Object} p
- * @param {Object<string, number>} [p.vocabRungs] - word_text → rung(0~4). 어휘 문항 타입 배정에 사용.
+ * @param {Object<string, number>} [p.vocabRungs] - word_text → rung(0~5). 어휘 문항 타입 배정에 사용.
  * @param {'easy'|'normal'|'hard'} [p.dial] - EWMA 난이도 다이얼.
+ * @param {Object<string, {main:string, pron?:string|null}>} [p.exampleByWord] - word_text → 예문(cloze 빈칸 소스, 서버 조립).
  * @returns {{items: Array, gradedCount: number, newChapter: Object|null}}
  */
-export function composeSession({ vocab, meaningPool, grammarDue, newChapter, reading, koPool, vocabRungs = {}, dial = 'normal' }) {
-  const vocabItems = buildVocabItems(vocab, meaningPool, vocabRungs, dial);
+export function composeSession({ vocab, meaningPool, grammarDue, newChapter, reading, koPool, vocabRungs = {}, dial = 'normal', exampleByWord = {} }) {
+  const vocabItems = buildVocabItems(vocab, meaningPool, vocabRungs, dial, exampleByWord);
   const dueItems = buildGrammarDueItems(grammarDue);
   // dial 'easy' — 신규 0(재조정 부담 방지). 슬롯은 독해로 채운다.
   // dial 'hard' — 신규 비중↑(상한 3→4). 예산은 독해 슬롯이 자동 상쇄(MAX_ITEMS - baseCount).
@@ -196,6 +223,7 @@ export function isChapterPassed(right, total) {
 export function qtypeForItem(type) {
   switch (type) {
     case 'vocab-choice': return 'choice';
+    case 'vocab-cloze': return 'cloze';
     case 'vocab-typing': return 'typing';
     case 'vocab-listening': return 'listening';
     case 'grammar-cloze': return 'cloze';
