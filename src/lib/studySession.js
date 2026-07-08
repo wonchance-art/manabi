@@ -226,10 +226,13 @@ export function buildWarmupItems(recentEvents, vocabRows, meaningPool = [], dueS
   const chosen = [];
   const seen = new Set();
   // 24~72h 어휘 이벤트를 최신순으로 훑어 최대 2개 — wantCorrect로 오답/정답 패스를 나눈다.
+  // vocab(채점 어휘) + assist(어제 어시스트를 켠 단어)를 후보로 삼는다. assist는 correct:false로
+  // 기록되므로 오답 패스에서 함께 잡힌다. item_key가 실제 단어(word_text)인지는 아래 rowByWord
+  // 조회로 검증돼, 단어 원문이 아닌 assist(예: explain 정답)는 자연히 배제된다.
   const collect = wantCorrect => {
     for (const e of recentEvents || []) {
       if (chosen.length >= 2) break;
-      if (!e || e.source !== 'vocab' || !e.item_key) continue;
+      if (!e || (e.source !== 'vocab' && e.source !== 'assist') || !e.item_key) continue;
       if (!!e.correct !== wantCorrect) continue;
       const t = new Date(e.created_at).getTime();
       if (!(t >= lo && t <= hi)) continue;

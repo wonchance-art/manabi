@@ -1,6 +1,24 @@
 // 단어장 데이터 입출력 — Supabase fetch · CSV/Anki 가져오기·내보내기
 import { supabase } from './supabase';
 
+/**
+ * 저장용 word_text 정규화 — item_key(=user_vocabulary.word_text) 통일 규약.
+ *
+ * 정책(plan-v3 §3-B, P1 어휘 저장 규약 통일):
+ *  - 분석기가 기본형을 제공하면 **기본형(base)** 을, 아니면 **surface(활용형)** 을 저장한다.
+ *  - 같은 단어의 활용형들(食べた·食べます…)이 서로 다른 word_text로 흩어지지 않게 하여
+ *    rung/워밍업/예보가 한 단어를 하나의 기억으로 보게 한다.
+ *  - 언어별 base 가용성: JA=kuromoji basic_form, EN=wink-lemmatizer lemma,
+ *    FR/ZH=분석기가 base를 주면 그것, 없으면 surface 폴백.
+ *  - ListenLabPage.saveUnit의 현행 `base || surface` 방식과 동일 의미(동작 불변).
+ *
+ * @param {{ surface?: string, base?: string }} [param]
+ * @returns {string} 저장할 word_text
+ */
+export function normalizeWordText({ surface, base } = {}) {
+  return base || surface || '';
+}
+
 export async function fetchVocab(userId) {
   // 단어 본체는 무조건 fetch — JOIN 실패 시에도 단어장이 비어 보이지 않게
   const { data, error } = await supabase

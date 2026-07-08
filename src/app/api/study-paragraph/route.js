@@ -225,7 +225,11 @@ export async function POST(request) {
         .order('created_at', { ascending: false }).limit(1)
         .then(({ data }) => { latestUsedRow = (data && data[0]) || null; }, () => {});
       const arc = deriveArc(latestUsedRow, { weekly: materials.theme === '약점 복습' });
-      if (arc) { materials.prevArc = arc.prevArc; materials.episode = arc.episode; }
+      if (arc) {
+        materials.prevArc = arc.prevArc; materials.episode = arc.episode;
+        // 공동 작가 — 직전 화에 사용자가 정한 다음 전개(≥2점)를 소재로 이어받는다(주입은 buildParagraphPrompt에서 정화·인용).
+        if (arc.userNext) materials.userNext = arc.userNext;
+      }
     }
   }
 

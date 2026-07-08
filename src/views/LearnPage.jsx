@@ -6,6 +6,8 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { kstWeekStartIso, KNOWN_WORD_MIN_INTERVAL, GROWTH_LABELS } from '../lib/growthStats';
+import { buildForecast } from '../lib/forecast';
+import ForecastCard from '../components/ForecastCard';
 
 /**
  * 학습 허브 — 오늘 할 학습으로 가는 단일 진입점.
@@ -20,7 +22,7 @@ async function fetchLearnData(userId, lang) {
   // 실패 시 null (문구 생략용) — 홈/서재의 방어적 count 패턴과 동일
   const countOf = (q) => q.then(({ count }) => count ?? null, () => null);
 
-  const [dueVocab, dueGrammar, knownWords, passedChapters, weekSessions, latestUsed] = await Promise.all([
+  const [dueVocab, dueGrammar, knownWords, passedChapters, weekSessions, latestUsed, forecastRows] = await Promise.all([
     // due 어휘 — 현재 학습 언어, next_review_at <= now
     countOf(supabase.from('user_vocabulary')
       .select('id', { count: 'exact', head: true })
@@ -48,7 +50,15 @@ async function fetchLearnData(userId, lang) {
       .order('used_at', { ascending: false, nullsFirst: false })
       .order('created_at', { ascending: false }).limit(1)
       .then(({ data }) => (data && data[0]) || null, () => null),
+    // 망각 예보 재료 — 현재 학습 언어, 학습 이력 있는 행만(신규 저장 행은 서버에서 제외)
+    supabase.from('user_vocabulary')
+      .select('word_text, interval, last_reviewed_at')
+      .eq('user_id', userId).eq('language', lang)
+      .not('last_reviewed_at', 'is', null).gt('interval', 0)
+      .then(({ data }) => data || [], () => []),
   ]);
+
+  const forecast = buildForecast(forecastRows, new Date());
 
   // 이어지는 이야기 — arcSummary와 episode가 모두 있을 때만
   let episode = null;
@@ -58,7 +68,7 @@ async function fetchLearnData(userId, lang) {
     if (typeof arc === 'string' && arc.trim() && Number.isFinite(ep) && ep >= 1) episode = ep;
   }
 
-  return { dueVocab, dueGrammar, knownWords, passedChapters, weekSessions, episode };
+  return { dueVocab, dueGrammar, knownWords, passedChapters, weekSessions, episode, forecast };
 }
 
 export default function LearnPage() {
@@ -148,6 +158,9 @@ export default function LearnPage() {
         </span>
         <span className="lessons-continue__meta">→</span>
       </Link>
+
+      {/* 망각 예보 — 오늘 안에 흐려지는 단어가 있을 때만 조용히 등장(0개면 침묵) */}
+      <ForecastCard forecast={data?.forecast} />
 
       {/* ② 연습실 그리드 — 홈 벤토의 2x2 급 타일, 타일별 고유 악센트(좌보더·아이콘원·hover 틴트) */}
       <div className="bento">

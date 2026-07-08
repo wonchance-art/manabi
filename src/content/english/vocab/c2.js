@@ -33,7 +33,7 @@ export default {
         { en: "ephemeral", ipa: "[ɪˈfemərəl]", ko: "덧없는, 하루살이 같은", pos: "adj.", etym: "그리스어 ephēmeros(하루뿐인) — '하루살이'가 어원 그대로예요.", ex: { en: "Fame on social media is often ephemeral.", ko: "소셜 미디어의 명성은 흔히 덧없다." } },
         { en: "ambivalent", ipa: "[æmˈbɪvələnt]", ko: "양가적인, 마음이 둘로 갈리는", pos: "adj.", ex: { en: "I feel ambivalent about moving abroad.", ko: "해외 이주에 대해 마음이 반반이다." } },
         { en: "quintessential", ipa: "[ˌkwɪntɪˈsenʃl]", ko: "전형의 정수를 보여주는", pos: "adj.", etym: "중세 철학의 '제5원소(quinta essentia)'에서 — 본질 중의 본질.", ex: { en: "the quintessential English village", ko: "영국 시골 마을의 정수를 보여주는 마을" } },
-        { en: "serendipity", ipa: "[ˌserənˈdɪpəti]", ko: "뜻밖의 행운한 발견", pos: "n.", etym: "18세기 소설 «세렌딥의 세 왕자»에서 만들어진 단어 — 사전에 어원 이야기가 실리는 드문 케이스.", ex: { en: "Meeting my mentor was a case of pure serendipity.", ko: "내 멘토를 만난 건 순전한 뜻밖의 행운이었다." } },
+        { en: "serendipity", ipa: "[ˌserənˈdɪpəti]", ko: "뜻밖의 행운, 우연한 발견", pos: "n.", etym: "18세기 소설 «세렌딥의 세 왕자»에서 만들어진 단어 — 사전에 어원 이야기가 실리는 드문 케이스.", ex: { en: "Meeting my mentor was a case of pure serendipity.", ko: "내 멘토를 만난 건 순전한 뜻밖의 행운이었다." } },
         { en: "pragmatic", ipa: "[præɡˈmætɪk]", ko: "실용주의적인", pos: "adj.", ex: { en: "a pragmatic approach to the problem", ko: "문제에 대한 실용주의적 접근" } },
         { en: "tenuous", ipa: "[ˈtenjuəs]", ko: "(근거·관계가) 빈약한, 가느다란", pos: "adj.", etym: "라틴어 tenuis(가는) — thin과 같은 인도유럽 뿌리. '가느다란 논거'.", ex: { en: "The link between the two events is tenuous.", ko: "두 사건 사이의 연관성은 빈약하다." } },
         { en: "exacerbate", ipa: "[ɪɡˈzæsərbeɪt]", ko: "악화시키다", pos: "v.", ex: { en: "The policy exacerbated inequality.", ko: "그 정책은 불평등을 악화시켰다." } },

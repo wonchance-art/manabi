@@ -7908,6 +7908,14 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .fr-vrow__save:hover:not(:disabled) { opacity: 1; transform: scale(1.15); }
 .fr-vrow__save.is-saved { opacity: 0.55; cursor: default; color: var(--accent); }
 
+/* 가리기 자가 채점 — 공개 직후 "기억났어/몰랐어" (.fr-check__grade* 버튼 스타일 재사용) */
+.fr-vrow__grade { margin-top: 6px; }
+.fr-vrow__grade-done {
+  font-size: 0.74rem; font-weight: 600;
+}
+.fr-vrow__grade-done.is-ok { color: var(--accent); }
+.fr-vrow__grade-done.is-no { color: var(--text-muted); }
+
 /* 가리기 모드 — 가려진 셀 */
 .fr-vrow__word.is-hidden, .fr-vrow__body.is-hidden {
   position: relative;
@@ -8949,6 +8957,31 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .learn-story__kicker { font-size: 0.74rem; color: var(--text-muted); font-weight: 700; letter-spacing: 0.02em; margin-bottom: 6px; }
 .learn-story__title { font-size: 1.05rem; font-weight: 700; margin: 0 0 8px; line-height: 1.45; }
 .learn-story__more { font-size: 0.82rem; color: var(--text-secondary); }
+
+/* 망각 예보 카드 — 날씨 은유(안개), 홈/학습 공용. 죄책감 프레임 회피용으로
+   danger/warning이 아닌 중립 text-muted 톤을 악센트로 쓴다(경보가 아니라 예보). */
+.forecast-card {
+  display: flex; align-items: flex-start; gap: 12px;
+  text-decoration: none;
+  padding: 14px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--text-muted);
+  border-radius: var(--radius-lg);
+  transition: all var(--transition-smooth);
+}
+.forecast-card:hover { border-color: var(--border-hover); background: var(--bg-elevated); }
+.forecast-card__icon { font-size: 1.2rem; line-height: 1.4; flex-shrink: 0; }
+.forecast-card__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.forecast-card__kicker { font-size: 0.72rem; color: var(--text-muted); font-weight: 700; letter-spacing: 0.02em; }
+.forecast-card__title { font-size: 0.88rem; font-weight: 600; color: var(--text-primary); line-height: 1.4; }
+.forecast-card__words { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.forecast-card__word {
+  font-size: 0.76rem; color: var(--text-secondary);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-full);
+  padding: 2px 10px;
+}
 
 /* ③ 연습실 그리드 + 타일 — 타일별 고유 악센트 */
 /* 연습실 타일 — 홈 벤토 1x1 셀, 세로 구성(아이콘 위, 제목·설명 아래) */

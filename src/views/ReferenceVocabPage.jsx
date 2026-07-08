@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { useTTS } from '../lib/useTTS';
+import { createReviewEventBatcher } from '../lib/reviewEvents';
 import { refInline, refMain, refPron, LevelDot, JaText, alignFurigana } from './refShared';
 
 const LANG_KO = { Japanese: '일본어', English: '영어', French: '프랑스어', Chinese: '중국어' };
@@ -30,6 +31,37 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
   const [savedSet, setSavedSet] = useState(() => new Set());
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+
+  // 가리기 자가 채점("기억났어"/"몰랐어") — 행 단위 인출 연습 결과를 review_events에 적재.
+  // rung/FSRS는 절대 건드리지 않는다(source:'dict'는 rung 계산 대상 밖) — 이벤트 적재만.
+  const [gradedRows, setGradedRows] = useState(() => new Map()); // rowKey → correct(boolean)
+  const batcherRef = useRef(null);
+  function getBatcher() {
+    if (!batcherRef.current && user?.id) {
+      batcherRef.current = createReviewEventBatcher(user.id, { size: 4 });
+    }
+    return batcherRef.current;
+  }
+  // 페이지 이탈 시 잔여 이벤트 flush (탭 닫힘·백그라운드 전환 포함)
+  useEffect(() => {
+    function flush() { batcherRef.current?.flush(); }
+    window.addEventListener('pagehide', flush);
+    return () => { flush(); window.removeEventListener('pagehide', flush); };
+  }, []);
+  function gradeRow(rowKey, w, correct) {
+    if (!user) return; // 비로그인 — 조용히 무동작
+    if (gradedRows.has(rowKey)) return; // 연타 방지
+    setGradedRows(prev => new Map(prev).set(rowKey, correct));
+    try {
+      getBatcher()?.add({
+        lang,
+        source: 'dict',
+        item_key: refMain(w),
+        correct,
+        detail: { mode: hideMode, lang, level: meta?.key, qtype: 'self' },
+      });
+    } catch {}
+  }
 
   // 현장 체크 — 단어장 저장과 별개로 '아는/모르는' 표시 (레벨별 localStorage)
   const checkKey = `as_vcheck_${lang}_${meta?.key || ''}`;
@@ -101,6 +133,7 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
     setHideMode(next);
     persistHide(next);
     setRevealed(new Set());
+    setGradedRows(new Map());
   }
 
   function toggleReveal(key) {
@@ -342,6 +375,25 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
                           </div>
                           <div className={`bk-ex__ko ${meaningHidden ? 'fr-vrow__hide-extra' : ''}`}>{w.ex.ko}</div>
                         </div>
+                      </div>
+                    )}
+                    {/* 자가 채점 — 가린 걸 공개한 직후, 속으로 맞혔는지 스스로 표시 (로그인 사용자만) */}
+                    {anyHide && isRevealed && user && (
+                      <div className="fr-vrow__grade" onClick={e => e.stopPropagation()}>
+                        {gradedRows.has(rowKey) ? (
+                          <span className={`fr-vrow__grade-done ${gradedRows.get(rowKey) ? 'is-ok' : 'is-no'}`}>
+                            {gradedRows.get(rowKey) ? '기억났어요 ✓' : '괜찮아요, 다음에 또 봐요'}
+                          </span>
+                        ) : (
+                          <span className="fr-check__grade" role="group" aria-label="자가 채점">
+                            <button type="button" className="fr-check__grade-btn" onClick={() => gradeRow(rowKey, w, true)}>
+                              기억났어
+                            </button>
+                            <button type="button" className="fr-check__grade-btn" onClick={() => gradeRow(rowKey, w, false)}>
+                              몰랐어
+                            </button>
+                          </span>
+                        )}
                       </div>
                     )}
                   </div>

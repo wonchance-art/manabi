@@ -11,9 +11,14 @@ import { parseTitle } from '../lib/seriesMeta';
 import { getIdealLevel } from '../lib/levels';
 import { isPassed } from '../components/RefPatternCheck';
 import { pullProgress } from '../lib/refProgress';
+import { buildForecast } from '../lib/forecast';
+import ForecastCard from '../components/ForecastCard';
 import ProfileStats from './ProfileStats';
 
-async function fetchHomeData(userId) {
+// 언어 코드 → 한국어 라벨 (studyParagraph.js의 LANG_NAME과 동일 매핑)
+const LANG_LABEL = { Japanese: '일본어', English: '영어', French: '프랑스어', Chinese: '중국어' };
+
+async function fetchHomeData(userId, lang) {
   const todayStr   = new Date().toISOString().split('T')[0];
   const todayStart = `${todayStr}T00:00:00`;
   const now        = new Date().toISOString();
@@ -40,6 +45,7 @@ async function fetchHomeData(userId) {
     { data: allVocabRows },
     { data: seriesMaterials },
     { data: allCompleted },
+    forecastRows,
   ] = await Promise.all([
     supabase.from('user_vocabulary').select('*', { count: 'exact', head: true })
       .eq('user_id', userId).lte('next_review_at', now),
@@ -62,6 +68,12 @@ async function fetchHomeData(userId) {
       .select('material_id')
       .eq('user_id', userId)
       .eq('is_completed', true),
+    // 망각 예보 재료 — 현재 학습 언어, 학습 이력 있는 행만(신규 저장 행은 서버에서 제외)
+    supabase.from('user_vocabulary')
+      .select('word_text, interval, last_reviewed_at')
+      .eq('user_id', userId).eq('language', lang)
+      .not('last_reviewed_at', 'is', null).gt('interval', 0)
+      .then(({ data }) => data || [], () => []),
   ]);
 
   const rows = vocabRows || [];
@@ -92,6 +104,7 @@ async function fetchHomeData(userId) {
     todayReadCount,
     recentProgress:   (recentProgress || []).slice(0, 4),
     suggestions:      suggestionsRes || [],
+    forecast:         buildForecast(forecastRows, new Date()),
     weekVocab,
     weekReviews: weekReview,
     weekReads:   weekRead,
@@ -103,12 +116,16 @@ async function fetchHomeData(userId) {
     prevWeekXP:      prevWeekVocab * 5 + prevWeekReview * 10 + prevWeekRead * 50,
     vocabByLang: (() => {
       const all = allVocabRows || [];
-      const isJa = (v) => v.language === 'Japanese' || (!v.language && /[\u3040-\u30ff\u4e00-\u9fff]/.test(v.word_text));
-      return {
-        Japanese: all.filter(isJa).length,
-        English: all.filter(v => !isJa(v)).length,
-        total: all.length,
-      };
+      // language가 비어 있는 레거시 행은 표기로 일본어/영어를 추정(기존 동작 유지).
+      // 명시된 행은 언어별(Japanese/English/French/Chinese)로 그룹 집계.
+      const langOf = (v) => v.language
+        || (/[\u3040-\u30ff\u4e00-\u9fff]/.test(v.word_text || '') ? 'Japanese' : 'English');
+      const byLang = all.reduce((acc, v) => {
+        const lang = langOf(v);
+        acc[lang] = (acc[lang] || 0) + 1;
+        return acc;
+      }, {});
+      return { ...byLang, total: all.length };
     })(),
     seriesProgress: (() => {
       const doneSet = new Set((allCompleted || []).map(r => r.material_id));
@@ -251,9 +268,17 @@ export default function HomePage({ continueManifest = {}, refManifest = {} }) {
     return null;
   }, [refProgress, profile, continueManifest]);
 
+  // 망각 예보용 현재 학습 언어 — LearnPage와 동일 관례(프로필 첫 언어, 없으면 일본어)
+  const lang = useMemo(() => {
+    const fromProfile = Array.isArray(profile?.learning_language)
+      ? profile.learning_language[0]
+      : profile?.learning_language;
+    return fromProfile || 'Japanese';
+  }, [profile]);
+
   const { data, isLoading } = useQuery({
-    queryKey: ['home', user?.id],
-    queryFn:  () => fetchHomeData(user.id),
+    queryKey: ['home', user?.id, lang],
+    queryFn:  () => fetchHomeData(user.id, lang),
     enabled:  !!user,
     staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: true,
@@ -333,9 +358,19 @@ export default function HomePage({ continueManifest = {}, refManifest = {} }) {
           <div className="home-getting-started__header">
             <div>
               <h2 className="home-getting-started__title">시작해볼까요, {displayName}님!</h2>
-              <p className="home-getting-started__sub">3단계로 첫 학습 완료</p>
+              <p className="home-getting-started__sub">오늘 학습 한 번이면 하루치가 끝나요 · 6~8분</p>
             </div>
           </div>
+          {/* 주 CTA — v2 단일 학습 진입점(/study) */}
+          <Link href="/study" className="lessons-continue">
+            <span className="lessons-continue__body">
+              <span className="lessons-continue__kicker">오늘 학습</span>
+              <span className="lessons-continue__title">오늘 학습 시작하기</span>
+            </span>
+            <span className="lessons-continue__meta">→</span>
+          </Link>
+          {/* 보조 단계 — 더 둘러보고 싶다면 */}
+          <p className="home-getting-started__sub" style={{ margin: '14px 0 8px' }}>더 둘러보기</p>
           <div className="home-gs-steps">
             {[
               { href: '/guide',     num: 1, title: '학습 로드맵', desc: '내 레벨 파악 →' },
@@ -362,6 +397,9 @@ export default function HomePage({ continueManifest = {}, refManifest = {} }) {
           : '오늘도 한 걸음, 이어가 볼까요?'
         }</p>
       </div>
+
+      {/* 망각 예보 — 오늘 안에 흐려지는 단어가 있을 때만 조용히 등장(0개면 침묵) */}
+      <ForecastCard forecast={data?.forecast} />
 
       {/* 강의 이어서 학습 — 챕터 진행 기록 기반 (미통과 재도전 우선) */}
       {continueCard && (
@@ -404,7 +442,7 @@ export default function HomePage({ continueManifest = {}, refManifest = {} }) {
             </h2>
             <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: 16 }}>
               {isIdeal && <span style={{ color: 'var(--accent)', fontWeight: 700 }}>맞춤 </span>}
-              {suggestion.language === 'Japanese' ? '일본어' : '영어'} {suggestion.level}
+              {LANG_LABEL[suggestion.language] || suggestion.language} {suggestion.level}
               {suggestion.channel_name && ` · ${suggestion.channel_name}`}
             </div>
             <Button

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { qtypeRungLevel, computeRung, computeEwma, dialFromEwma, vocabTypeForRung, computeWeakness } from '../skillRung';
+import { qtypeRungLevel, computeRung, computeEwma, dialFromEwma, vocabTypeForRung, computeWeakness, sentenceIncludesWord } from '../skillRung';
 
 // 정답/오답 이벤트 헬퍼
 const ok = qtype => ({ qtype, correct: true });
@@ -165,6 +165,77 @@ describe('computeWeakness', () => {
     expect(computeWeakness([], {})).toEqual([]);
     expect(computeWeakness(null)).toEqual([]);
     expect(computeWeakness([{ correct: false }], {})).toEqual([]);
+  });
+});
+
+describe('sentenceIncludesWord', () => {
+  it('ZH — 정확 부분문자열', () => {
+    expect(sentenceIncludesWord('我今天很高兴', '高兴', 'zh')).toBe(true);
+    expect(sentenceIncludesWord('我今天很好', '高兴', 'zh')).toBe(false);
+  });
+
+  it('EN — 소문자화 + 단어 경계', () => {
+    expect(sentenceIncludesWord('I made a Promise today', 'promise', 'en')).toBe(true);
+    // 경계 없는 부분일치는 불인정 (promise ≠ promised의 부분문자열로 오탐하지 않음)
+    expect(sentenceIncludesWord('They promised me', 'promise', 'en')).toBe(false);
+    expect(sentenceIncludesWord('a compromise here', 'promise', 'en')).toBe(false);
+    // 문장 끝/문두 경계
+    expect(sentenceIncludesWord('Promise', 'promise', 'en')).toBe(true);
+    expect(sentenceIncludesWord('It is a promise.', 'promise', 'en')).toBe(true);
+  });
+
+  it('FR — 액센트 문자 단어 경계', () => {
+    expect(sentenceIncludesWord('je vais au café', 'café', 'fr')).toBe(true);
+    expect(sentenceIncludesWord('une idée géniale', 'idée', 'fr')).toBe(true);
+    expect(sentenceIncludesWord('cafétéria ouverte', 'café', 'fr')).toBe(false);
+  });
+
+  it('JA — 정확 부분문자열', () => {
+    expect(sentenceIncludesWord('私は約束を守る', '約束', 'ja')).toBe(true);
+    expect(sentenceIncludesWord('私は行く', '約束', 'ja')).toBe(false);
+  });
+
+  it('JA — 활용형은 어간 휴리스틱으로 매칭', () => {
+    // 食べる(사전형)가 食べた(과거)/食べて(테형)로 활용 — 어간 食べ로 매칭
+    expect(sentenceIncludesWord('昨日ラーメンを食べた', '食べる', 'ja')).toBe(true);
+    expect(sentenceIncludesWord('パンを食べています', '食べる', 'ja')).toBe(true);
+    // 관계 없는 문장은 어간으로도 안 잡힘
+    expect(sentenceIncludesWord('水を飲んだ', '食べる', 'ja')).toBe(false);
+  });
+
+  it('JA — 어간이 2자 미만이면 휴리스틱 미적용', () => {
+    // 見る(2자) → 어간 見(1자) < 2자라 휴리스틱 미적용, 정확 매칭만
+    expect(sentenceIncludesWord('映画を見た', '見る', 'ja')).toBe(false);
+    expect(sentenceIncludesWord('映画を見る', '見る', 'ja')).toBe(true);
+  });
+
+  it('빈 입력·누락 안전', () => {
+    expect(sentenceIncludesWord('', '約束', 'ja')).toBe(false);
+    expect(sentenceIncludesWord('私は約束', '', 'ja')).toBe(false);
+    expect(sentenceIncludesWord('hello world', 'world')).toBe(true); // langCode 누락 → 부분문자열
+  });
+});
+
+// P1 배선 봉합 — produce 이벤트가 어휘 rung 사다리 상단(4)에 반영되는지.
+describe('produce → rung 배선', () => {
+  it('rung 3에서 produce 2연속 성공 → rung 4', () => {
+    // choice×2 → r2, typing×2 → r3, produce×2(q4>=r3) → r4
+    const events = [ok('choice'), ok('choice'), ok('typing'), ok('typing'), ok('produce'), ok('produce')];
+    expect(computeRung(events)).toBe(4);
+  });
+
+  it('rung 4는 상한 — produce 추가 성공에도 4 유지', () => {
+    const events = [
+      ok('choice'), ok('choice'), ok('typing'), ok('typing'),
+      ok('produce'), ok('produce'), ok('produce'), ok('produce'),
+    ];
+    expect(computeRung(events)).toBe(4);
+  });
+
+  it('루브릭<2(correct:false)면 승급 안 됨', () => {
+    // r3 도달 후 produce 오답(루브릭<2) 2연속 — 과난도 실패라 강등 크레딧 없음(q4>r3) → r3 유지, 승급도 없음
+    const events = [ok('choice'), ok('choice'), ok('typing'), ok('typing'), no('produce'), no('produce')];
+    expect(computeRung(events)).toBe(3);
   });
 });
 

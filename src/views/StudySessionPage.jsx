@@ -12,6 +12,7 @@ import { calculateFSRS } from '../lib/fsrs';
 import { gradeGrammarReview, ratingFromScore, enqueueGrammarReview } from '../lib/grammarSrs';
 import { syncCheckRemote, syncReadRemote } from '../lib/refProgress';
 import { createReviewEventBatcher } from '../lib/reviewEvents';
+import { sentenceIncludesWord } from '../lib/skillRung';
 import { recordActivity } from '../lib/streak';
 import { gradeTyping, isChapterPassed, qtypeForItem, grammarDueChapterCounts } from '../lib/studySession';
 import { mapParagraphToItems } from '../lib/studyParagraph';
@@ -94,6 +95,7 @@ export default function StudySessionPage({
   const [explainState, setExplainState] = useState(null); // 오답 해설: null | 'loading' | {text} | 'failed'
   const [weeklyStats, setWeeklyStats] = useState(null);   // 주간 회고: { n, m } (weekly 세션 결과 화면)
   const [produceState, setProduceState] = useState(null); // 산출 문항 채점: {status:'grading'|'done'|'error', feedback, targetScore}
+  const [produceReflected, setProduceReflected] = useState(false); // 산출 문장이 내일 문단에 반영됨(≥2점·연재 세션)
   const [parkingLong, setParkingLong] = useState(false); // 파킹 대기 8초 경과 여부
   const produceAddedRef = useRef(false);           // 산출 문항 큐 추가 1회 가드
   const produceDoneRef = useRef(false);            // 산출 문항 확정 1회 가드(늦은 fetch 이중 처리 방지)
@@ -233,10 +235,14 @@ export default function StudySessionPage({
         ? { pattern: paragraphMaterials.duePatterns[0].pattern, patternKo: paragraphMaterials.duePatterns[0].patternKo || '' }
         : null;
     if (!tp?.pattern) return;
+    // 연재 세션(주간 약점·내 자료 아님)이면 산출 슬롯을 '이야기의 다음 문장 쓰기'로 프레이밍한다.
+    const serial = !paragraphMaterials?.weekly && !sourceMode;
     setQueue(prev => {
       const para = prev.find(it => it.type === 'paragraph');
-      const context = String(para?.translation || '').slice(0, 80);
-      return [...prev, { uid: 'p-1', type: 'produce-writing', context, targetPattern: tp, effect: { kind: 'produce' } }];
+      // 오늘 문단의 '마지막 상황' 1줄 — 마지막 문장 뜻 우선, 없으면 번역 요약.
+      const lastKo = para?.sentences?.length ? para.sentences[para.sentences.length - 1]?.ko : '';
+      const context = String(lastKo || para?.translation || '').slice(0, 80);
+      return [...prev, { uid: 'p-1', type: 'produce-writing', context, serial, targetPattern: tp, effect: { kind: 'produce' } }];
     });
     setGradedBase(prev => prev + 1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -378,6 +384,21 @@ export default function StudySessionPage({
       batcherRef.current = createReviewEventBatcher(user.id, { size: 4 });
     }
     return batcherRef.current;
+  }
+
+  /**
+   * 세션에 등장한 어휘 단어(word_text) 목록 — 산출 문장 포함 판정용.
+   * 문항 재료: 어휘 문항(item.word.word_text) + 문단 재료 단어(dueWords/newWords의 .word).
+   * item_key를 word_text로 두어야 deriveVocabRungs(source==='vocab' && item_key===word_text)에 잡힌다.
+   */
+  function collectSessionVocab() {
+    const seen = new Set();
+    const out = [];
+    const push = wt => { if (wt && !seen.has(wt)) { seen.add(wt); out.push(wt); } };
+    for (const it of queue) if (it?.word?.word_text) push(it.word.word_text);
+    for (const w of paragraphMaterials?.dueWords || []) push(w?.word);
+    for (const w of paragraphMaterials?.newWords || []) push(w?.word);
+    return out;
   }
 
   /**
@@ -548,6 +569,29 @@ export default function StudySessionPage({
   }
 
   /**
+   * 공동 작가 — ≥2점 문장을 오늘 세션 행의 paragraph.userNext에 병합 저장(새 컬럼 없음, own-row UPDATE RLS).
+   * 오늘 세션 행 = 이 유저·언어의 최신 status='used' 행(라이브·프리페치 소비 둘 다 used_at=지금).
+   * 내일 문단 프리페치가 이 값을 읽어(deriveArc) 이야기를 이어가므로, 프리페치보다 먼저 커밋돼야 한다
+   * — submitProduce가 이 저장을 await한 뒤에야 '계속' 버튼(→finished→프리페치)이 뜬다.
+   * @returns {Promise<boolean>} 저장 성공 여부(결과 화면 안내 문구 표시용)
+   */
+  async function saveUserNext(text, score) {
+    if (!user?.id) return false;
+    try {
+      const { data } = await supabase.from('study_paragraphs')
+        .select('id, paragraph')
+        .eq('user_id', user.id).eq('lang', lang).eq('status', 'used')
+        .order('used_at', { ascending: false, nullsFirst: false })
+        .order('created_at', { ascending: false }).limit(1);
+      const row = data && data[0];
+      if (!row || !row.paragraph) return false;
+      const merged = { ...row.paragraph, userNext: { text: String(text).slice(0, 200), score } };
+      const { error } = await supabase.from('study_paragraphs').update({ paragraph: merged }).eq('id', row.id);
+      return !error;
+    } catch { return false; }
+  }
+
+  /**
    * 격일 산출 문항 제출 — /api/writing-feedback 경량 모드로 한 문장 채점.
    * targetScore>=2면 correct=true로 review_events에 기록(FSRS·챕터 통과 미반영).
    * API 실패는 집계 제외(skipped)로 우아하게 강등한다.
@@ -604,8 +648,30 @@ export default function StudySessionPage({
       correct: ok,
       detail: { qtype: 'produce', score: targetScore, rt_ms },
     });
+    // P1 배선 봉합 — 산출을 어휘 rung 사다리 상단(4)에 반영.
+    // 제출 문장에 실제로 포함된 세션 어휘 단어별로 vocab/produce 이벤트를 추가 발행해
+    // deriveVocabRungs(source==='vocab') 파이프라인에 자연 합류시킨다(위 writing 이벤트는 측정용 유지).
+    // FSRS·챕터 통과에는 절대 반영하지 않는다(v2 헌법 M7).
+    for (const wt of collectSessionVocab()) {
+      if (sentenceIncludesWord(textVal, wt, langCode)) {
+        getBatcher()?.add({
+          lang, source: 'vocab',
+          item_key: wt,
+          correct: ok,
+          detail: { qtype: 'produce', score: targetScore, rt_ms },
+        });
+      }
+    }
     setFirstResults(prev => ({ ...prev, [orig]: { ok, item } }));
     try { localStorage.setItem(`study_last_produce_${lang}`, ymdLocal(new Date())); } catch {}
+
+    // ── 공동 작가 — ≥2점 && 연재 세션일 때만 오늘 행에 userNext 저장(안전장치 ①≥2점 ②연재 한정). ──
+    // 프리페치보다 먼저 커밋되도록 여기서 await한 뒤 done 상태로 전환(그 뒤에야 '계속'→finished→프리페치).
+    let reflected = false;
+    if (ok && item.serial) {
+      reflected = await saveUserNext(textVal, targetScore);
+    }
+    setProduceReflected(reflected);
 
     // 세션에서 쓴 문장을 작문 기록실(writing_practice)에도 남긴다 — /writing 히스토리에 노출.
     // WritingStudioPage.persist(:171)와 동일한 컬럼·형태. fire-and-forget이라 실패해도 세션 흐름 무영향.
@@ -833,8 +899,13 @@ export default function StudySessionPage({
         </p>
 
         {/* 5. 내일 */}
-        {(newWordCount > 0 || nextPreview) && (
+        {(newWordCount > 0 || nextPreview || produceReflected) && (
           <div style={{ textAlign: 'center' }}>
+            {produceReflected && (
+              <p style={{ fontSize: '0.8rem', color: 'var(--accent)', margin: (newWordCount > 0 || nextPreview) ? '0 0 6px' : 0, fontWeight: 700, lineHeight: 1.6 }}>
+                당신이 정한 전개로 내일 이야기가 이어져요.
+              </p>
+            )}
             {newWordCount > 0 && (
               <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: nextPreview ? '0 0 6px' : 0, lineHeight: 1.6 }}>
                 새 단어 {newWordCount}개를 앞으로 만나게 돼요
@@ -1176,16 +1247,39 @@ export default function StudySessionPage({
       {/* ── 격일 산출: 이야기를 이어서 한 문장 쓰기 ── */}
       {item.type === 'produce-writing' && (
         <div className="fr-quiz__q">
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 6 }}>쓰기 한 문장</div>
-          <div className="fr-quiz__prompt" style={{ fontSize: '1rem', lineHeight: 1.6 }}>
-            ✍️ 이야기를 이어서 — <span lang={langCode} style={{ fontWeight: 700 }}>{item.targetPattern.pattern}</span>
-            {item.targetPattern.patternKo && <span style={{ color: 'var(--text-muted)' }}> ({item.targetPattern.patternKo})</span>}
-            을(를) 써서 한 문장
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 6 }}>
+            {item.serial ? '이야기의 다음 문장' : '쓰기 한 문장'}
           </div>
-          {item.context && (
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginTop: 6 }}>
-              이야기: {item.context}…
-            </p>
+          {item.serial ? (
+            <>
+              <div className="fr-quiz__prompt" style={{ fontSize: '1rem', lineHeight: 1.6 }}>
+                ✍️ 주인공이 다음에 어떻게 할까요? 이야기의 다음 문장을 <span style={{ fontWeight: 700 }}>{langName}</span>로 한 문장 쓰세요.
+              </div>
+              {item.context && (
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginTop: 6 }}>
+                  지금까지: {item.context}…
+                </p>
+              )}
+              {item.targetPattern?.pattern && (
+                <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.6, marginTop: 4 }}>
+                  가능하면 <span lang={langCode} style={{ fontWeight: 700 }}>{item.targetPattern.pattern}</span>
+                  {item.targetPattern.patternKo && <span> ({item.targetPattern.patternKo})</span>} 표현을 써 보세요.
+                </p>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="fr-quiz__prompt" style={{ fontSize: '1rem', lineHeight: 1.6 }}>
+                ✍️ 이야기를 이어서 — <span lang={langCode} style={{ fontWeight: 700 }}>{item.targetPattern.pattern}</span>
+                {item.targetPattern.patternKo && <span style={{ color: 'var(--text-muted)' }}> ({item.targetPattern.patternKo})</span>}
+                을(를) 써서 한 문장
+              </div>
+              {item.context && (
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginTop: 6 }}>
+                  이야기: {item.context}…
+                </p>
+              )}
+            </>
           )}
 
           {phase === 'answer' && (
