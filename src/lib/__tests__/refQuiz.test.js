@@ -92,3 +92,114 @@ describe('buildChapterQuiz — 실제 레지스트리 통합', () => {
     expect(total).toBeGreaterThanOrEqual(3);
   });
 });
+
+// ── 보기 유출 3종 회귀 방지 ──────────────────────────────────────────
+// 유출 판정기(테스트 전용). 엔진 SUFFIX_FRAG와 동일 집합(est/en/on 같은 실단어는 제외).
+const SUFFRAG = new Set(['er', 'es', 'ies', 'ed', 'ing', 'ent', 'ons', 'ez']);
+const MNEMONIC_WORDS = new Set(['beauty', 'age', 'goodness', 'size', 'careful']);
+const hasCaseDup = arr => {
+  const seen = new Set();
+  for (const d of arr) { const k = String(d).toLowerCase(); if (seen.has(k)) return true; seen.add(k); }
+  return false;
+};
+// 한 문항 보기 배열이 3종 결함(니모닉·가운뎃점 / 접미 조각 / 대소문자 중복)에서 자유로운지
+function assertCleanDistractors(m, label) {
+  for (const d of m.distractors) {
+    const s = String(d);
+    expect(/[·・]/.test(s), `${label} 가운뎃점/니모닉 조각 유출: ${JSON.stringify(m.distractors)}`).toBe(false);
+    expect(SUFFRAG.has(s.toLowerCase()), `${label} 비단어 접미 조각 유출: ${JSON.stringify(m.distractors)}`).toBe(false);
+    expect(MNEMONIC_WORDS.has(s.toLowerCase()), `${label} 니모닉 구성어 유출: ${JSON.stringify(m.distractors)}`).toBe(false);
+  }
+  expect(hasCaseDup(m.distractors), `${label} 대소문자 중복 보기: ${JSON.stringify(m.distractors)}`).toBe(false);
+  expect(
+    m.distractors.some(d => String(d).toLowerCase() === String(m.correct).toLowerCase()),
+    `${label} 정답과 같은 보기: correct=${m.correct} distractors=${JSON.stringify(m.distractors)}`,
+  ).toBe(false);
+}
+
+describe('보기 유출 회귀 — 합성 챕터(콘텐츠 독립)', () => {
+  // ① 니모닉(BAGS)·② 접미 조각(+es·y→ies): 다른 섹션 패턴이 오답 풀로 흘러도 새지 않아야 한다.
+  const LEAK = {
+    slug: 'leak-01', level: 'A1', order: 1,
+    sections: [
+      { heading: 'Q', pattern: 'aaa + zzz', examples: [{ fr: 'aaa bbb ccc', ipa: '', ko: '문항용 예문' }] },
+      { heading: 'M', pattern: 'BAGS (Beauty·Age·Goodness·Size) → 명사 앞' },   // 니모닉
+      { heading: 'S', pattern: '+s · +es · y→ies · 불규칙(men, feet)' },          // 접미 조각
+      { heading: 'C', pattern: 'My mom → she · my brother → he' },                // 대소문자 변이
+    ],
+  };
+  const LEAK_REF = { getGrammarChapters: () => [LEAK] };
+
+  it('니모닉·접미 조각·가운뎃점이 오답으로 새지 않는다', () => {
+    const quiz = buildChapterQuiz(LEAK, LEAK_REF);
+    expect(quiz.meaning.length).toBe(1);                 // Q 섹션에서 결정적으로 1문항
+    const m = quiz.meaning[0];
+    expect(m.correct).toBe('aaa');
+    expect(m.distractors.length).toBeGreaterThanOrEqual(2);
+    assertCleanDistractors(m, '[LEAK/Q]');
+    // 통짜 니모닉도, 그 구성어도 없어야 한다
+    expect(m.distractors).not.toContain('Beauty·Age·Goodness·Size');
+    expect(m.distractors.map(s => s.toLowerCase())).not.toContain('beauty');
+  });
+
+  // ③ 대소문자 중복: My/my가 같은 문항 보기에 동시에 뜨지 않아야 한다.
+  const DEDUP = {
+    slug: 'dedup-01', level: 'A1', order: 1,
+    sections: [
+      { heading: 'Q', pattern: 'aaa + zzz', examples: [{ fr: 'aaa bbb ccc', ipa: '', ko: '문항용 예문' }] },
+      { heading: 'C', pattern: 'My · my · mine · yours' },   // My/my 대소문자 변이가 풀 선두에
+    ],
+  };
+  const DEDUP_REF = { getGrammarChapters: () => [DEDUP] };
+
+  it('대소문자만 다른 보기(My/my)는 하나로 합쳐진다', () => {
+    const quiz = buildChapterQuiz(DEDUP, DEDUP_REF);
+    expect(quiz.meaning.length).toBe(1);
+    const m = quiz.meaning[0];
+    assertCleanDistractors(m, '[DEDUP/Q]');
+    const lowers = m.distractors.map(s => String(s).toLowerCase());
+    expect(new Set(lowers).size).toBe(lowers.length);     // 대소문자 무시 시 전부 유일
+  });
+});
+
+describe('보기 유출 회귀 — 실제 콘텐츠', () => {
+  // 재현된 결함 챕터들이 보강 후 깨끗한 보기로 생성되는지 (실제 fr/a1.js·en/a1.js)
+  const CASES = [
+    ['French', 'a1-03-er-verbs'],
+    ['French', 'a1-06-adjectives'],
+    ['English', 'a1-04-plural-countable'],
+    ['English', 'a1-05-pronouns-possessive'],
+  ];
+  it('재현 케이스 챕터가 유출 없이 문항을 생성한다', { timeout: 30000 }, async () => {
+    const { getRefLang } = await import('../../content/refLangs');
+    for (const [lang, slug] of CASES) {
+      const ref = getRefLang(lang);
+      const got = ref.getChapter(slug);
+      expect(got, `${lang}/${slug} 챕터 존재`).toBeTruthy();
+      const quiz = buildChapterQuiz(got.chapter, ref);
+      // 무회귀: 여전히 빈칸 문항이 생성된다
+      expect(quiz.meaning.length, `${lang}/${slug} 빈칸 문항 생성`).toBeGreaterThanOrEqual(1);
+      for (const m of quiz.meaning) {
+        expect(m.distractors.length).toBeGreaterThanOrEqual(2);
+        assertCleanDistractors(m, `[${lang}/${slug}]`);
+      }
+    }
+  });
+
+  // 전 언어 입문 챕터 스윕 — 엔진 불변식(유출 0)이 모든 입문 콘텐츠에서 성립
+  const INTRO = { French: ['A0', 'A1'], English: ['OT', 'A1'], Japanese: ['OT', 'N5'], Chinese: ['OT', 'H1'] };
+  it('전 언어 입문 챕터에 유출이 남지 않는다', { timeout: 60000 }, async () => {
+    const { getRefLang } = await import('../../content/refLangs');
+    let scanned = 0;
+    for (const [lang, levels] of Object.entries(INTRO)) {
+      const ref = getRefLang(lang);
+      for (const lvl of levels) {
+        for (const ch of ref.getGrammarChapters(lvl)) {
+          const quiz = buildChapterQuiz(ch, ref);
+          for (const m of quiz.meaning) { scanned++; assertCleanDistractors(m, `[${lang}/${ch.slug}]`); }
+        }
+      }
+    }
+    expect(scanned).toBeGreaterThan(100);   // 입문 콘텐츠가 실제로 로드·스캔됐음을 보장
+  });
+});

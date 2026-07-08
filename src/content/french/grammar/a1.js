@@ -290,6 +290,7 @@ export default [
           { fr: "Ce n'est pas une question.", ipa: "[sə nɛ pa yn kɛstjɔ̃]", ko: "그건 질문이 아니에요.", note: "être 뒤라 une 유지" },
         ],
         pitfall: "'Je n'ai pas un chat'은 한국 학습자가 가장 오래 끌고 가는 실수예요. **부정의 pas 뒤에서 un/une/des는 de** — 영어에도 한국어에도 없는 규칙이라 의식적으로 연습해야 해요.",
+        tip: "여기서는 '부정문에서 un/une/des가 de로 바뀐다'는 현상만 기억해두세요. 관사 자체(정관사·부정관사의 형태와 쓰임)는 뒤에 나오는 관사 챕터에서 처음부터 차근차근 정리해요.",
       },
       {
         heading: "구어에서는 ne가 사라져요",

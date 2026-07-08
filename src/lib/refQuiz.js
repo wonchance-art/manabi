@@ -11,16 +11,25 @@ const isCJK = s => /[぀-ヿ一-鿿]/.test(String(s || ''));
 const META_TERMS = new Set([
   // 프랑스어 문법 라벨
   'imparfait', 'conditionnel', 'subjonctif', 'indicatif', 'infinitif', 'participe', 'présent', 'passé', 'composé', 'simple', 'futur', 'plus-que-parfait', 'masculin', 'féminin', 'singulier', 'pluriel', 'thèse', 'antithèse', 'synthèse', 'problématique', 'bags',
+  // 니모닉(암기 약어)의 풀어쓴 구성어 — 학습 대상 '형태'가 아니라 암기용 라벨. BAGS(형용사 위치: Beauty·Age·Goodness·Size)·CaReFuL(끝자음)
+  'beauty', 'age', 'goodness', 'size', 'careful',
   // 영어 수사·담화 라벨
   'tricolon', 'alliteration', 'assonance', 'consonance', 'anaphora', 'antithesis', 'understatement', 'overstatement', 'hyperbole', 'litotes', 'irony', 'sarcasm', 'deadpan', 'euphemism', 'simile', 'metonymy', 'oxymoron', 'onomatopoeia', 'parallelism', 'chiasmus', 'end-focus', 'end-weight', 'nominalization',
 ]);
 
-// 보기·정답으로 부적합한 조각 — 메타용어 / 선두 아포스트로피('agit) / 숫자·범위(70·20~69) / 2자+ 연속 대문자 표기(SVO·KJV·ARGUMENT IS WAR)
-const isJunk = t => META_TERMS.has(String(t).toLowerCase()) || /^['’]/.test(t) || /[\d~]/.test(t) || /[A-Z]{2,}/.test(t);
+// 순수 접미/활용 조각 — 어떤 언어에서도 단독 단어가 아닌 굴절 어미. 패턴 표기(+es·y→ies·원형 - er)에서 접두 기호가 떨어져 나가며 새는 조각들.
+// (est=être 3인칭·en/on=대명사처럼 '실단어'인 형태는 넣지 않는다 — 정상 오답을 죽이지 않도록.)
+const SUFFIX_FRAG = new Set(['er', 'es', 'ies', 'ed', 'ing', 'ent', 'ons', 'ez']);
+
+// 보기·정답으로 부적합한 조각 — 메타용어 / 접미 조각 / 선두 아포스트로피('agit) / 숫자·범위(70·20~69) / 2자+ 연속 대문자 표기(SVO·KJV·ARGUMENT IS WAR)
+const isJunk = t => {
+  const s = String(t).toLowerCase();
+  return META_TERMS.has(s) || SUFFIX_FRAG.has(s) || /^['’]/.test(t) || /[\d~]/.test(t) || /[A-Z]{2,}/.test(t);
+};
 
 // 빈칸 후보 추출 — 슬롯 라벨(N/V/S/O·A/B/C…)은 '대문자'만 제거(불어 소문자 n/v/a/s/o가 단어를 깨뜨리지 않도록 /i 제거)
 const clozeSegs = pat => String(pat || '')
-  .split(/[〜～()/・+→…,、。]|\s+|\b(?:N|V|A|B|C|S|O|Adj|inf|p\.p\.)\b/)
+  .split(/[〜～()/／·・+→…,、。]|\s+|\b(?:N|V|A|B|C|S|O|Adj|inf|p\.p\.)\b/)
   .map(t => t.trim())
   .filter(t => t && !/[가-힣]/.test(t) && !isJunk(t) && (isCJK(t) || t.length >= 2));
 
@@ -29,13 +38,26 @@ const validDistractor = (cand, answer) => {
   const c = String(cand || '').trim();
   if (!c) return false;
   if (/[가-힣ㄱ-ㅎㅏ-ㅣ]/.test(c)) return false;          // 한국어 슬롯·문법용어·한글 자모 제거
-  if (/[→…:;()/,、。\[\].?!．？！]/.test(c)) return false;  // 화살표·구두점·발음기호·약어 조각 제거
+  if (/[→…:;()/,、。\[\].?!．？！·・]/.test(c)) return false;  // 화살표·구두점·가운뎃점·발음기호·약어 조각 제거
   if (/^[-–]|[-–]$/.test(c)) return false;                // 접사 표기(-ing·-é) 제거
   if (/[a-z][A-Z]/.test(c)) return false;                 // 카멜표기 니모닉(CaReFuL) 제거
   if (isJunk(c)) return false;                            // 문법 메타용어·숫자·깨진 조각 제거
   if (isCJK(c) !== isCJK(answer)) return false;           // 정답과 같은 문자종만
   if (c.toLowerCase() === String(answer).toLowerCase()) return false;
   return true;
+};
+
+// 대소문자 무시 중복 제거 — 첫 등장 표기 유지 (my/My, Je/je가 같은 문항 보기에 함께 뜨지 않도록)
+const dedupeCI = arr => {
+  const seen = new Set();
+  const out = [];
+  for (const x of arr) {
+    const k = String(x).toLowerCase();
+    if (seen.has(k)) continue;
+    seen.add(k);
+    out.push(x);
+  }
+  return out;
 };
 
 // seg 위치 찾기 — 라틴은 단어 경계로(부분문자열 오매칭 방지: these 속 the), CJK는 부분문자열
@@ -118,7 +140,7 @@ export function buildChapterQuiz(chapter, ref, opts = {}) {
         ...ownPatterns.filter(o => o !== sec).flatMap(o => clozeSegs(o.pattern)),
         ...levelForms,
       ];
-      const distractors = [...new Set(pool)]
+      const distractors = dedupeCI(pool)
         .filter(d => validDistractor(d, actual) && !low.includes(String(d).toLowerCase()))
         .slice(0, 3);
       if (distractors.length < 2) continue;

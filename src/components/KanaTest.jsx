@@ -2,6 +2,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { kanaList, acceptedRomaji, SET_LABELS, ALL_SETS } from '../lib/gojuon';
 import { toRomaji } from '../lib/kanaRomaji';
+import { useAuth } from '../lib/AuthContext';
+import { syncCheckRemote } from '../lib/refProgress';
 import Button from './Button';
 
 function shuffle(arr) {
@@ -13,7 +15,8 @@ function shuffle(arr) {
   return a;
 }
 
-export default function KanaTest({ kind, slug, storageKey }) {
+export default function KanaTest({ kind, slug, storageKey, lang }) {
+  const { user } = useAuth();
   const [sets, setSets] = useState(['basic']);
   const [deck, setDeck] = useState([]);
   const [idx, setIdx] = useState(0);
@@ -51,6 +54,11 @@ export default function KanaTest({ kind, slug, storageKey }) {
         cur[slug] = { right: finalRight, total, passed, at: Date.now() };
         localStorage.setItem(storageKey, JSON.stringify(cur));
       } catch { /* ignore */ }
+    }
+    // 통과 + 로그인 사용자면 서버에도 기록(RefPatternCheck과 같은 경로) — 공부 모드 온보딩이
+    // 카나 통과를 알아채 문자 안내를 건너뛸 수 있게. 비로그인·미통과는 localStorage 단독(현행).
+    if (passed && user?.id && lang && slug) {
+      syncCheckRemote(user.id, lang, slug, { right: finalRight, total, passed });
     }
   };
 

@@ -9,6 +9,22 @@ export const metadata = { title: '오늘 학습 | Anatomy Studio' };
 export const dynamic = 'force-dynamic';
 
 /**
+ * 인트로 문자 트랙 챕터 — '완전 처음' 학습자에게 "문자부터"를 안내할 대상.
+ * 레지스트리에서 동적으로 판별: 인트로 레벨(OT/A0) 챕터 중 kana 필드 보유 첫 챕터(JA 히라가나),
+ * 없으면 슬러그가 병음(pinyin)인 챕터(ZH). 문자 트랙이 없는 언어(EN/FR)는 null.
+ * @returns {{slug:string, href:string, kind:'kana'|'pinyin'}|null}
+ */
+function findScriptTrack(ref) {
+  if (!ref?.ALL_CHAPTERS?.length) return null;
+  const intro = ref.ALL_CHAPTERS.filter(c => ref.isIntroLevel?.(c.level));
+  const kanaCh = intro.find(c => c.kana);
+  if (kanaCh) return { slug: kanaCh.slug, href: `${ref.base}/grammar/${kanaCh.slug}`, kind: 'kana' };
+  const pinyinCh = intro.find(c => /pinyin/i.test(c.slug));
+  if (pinyinCh) return { slug: pinyinCh.slug, href: `${ref.base}/grammar/${pinyinCh.slug}`, kind: 'pinyin' };
+  return null;
+}
+
+/**
  * 공부 모드 — 메인 학습 세션 (듀오링고 경로 + Anki 스케줄).
  * 서버가 due 어휘·due 문법·커리큘럼의 다음 챕터·독해 예문을 모아(studyMaterials)
  * ~12문항 세션을 조립한다. 콘텐츠는 서버에만 열린다.
@@ -109,8 +125,13 @@ export default async function Page({ searchParams }) {
     chapterSlugs: ref.ALL_CHAPTERS.filter(c => norm(c.level) === norm(m.key)).map(c => c.slug),
   }));
 
+  // 문자 트랙 — 인트로 레벨에서 '문자·발음 체계'를 처음 익히는 챕터('완전 처음' 학습자 안내용).
+  // 레지스트리에서 동적으로: kana 필드 보유 첫 챕터(JA 히라가나) → 없으면 병음 챕터(ZH). EN/FR은 null.
+  // 레지스트리(6MB)를 클라 번들에 끌어오지 않도록 slug·href만 서버에서 추려 넘긴다(§4.1).
+  const scriptTrack = findScriptTrack(ref);
+
   return (
-    <StudyOnboarding lang={lang} langName={ref.name} levels={levels}>
+    <StudyOnboarding lang={lang} langName={ref.name} levels={levels} readKey={ref.readKey} scriptTrack={scriptTrack}>
       {studySession}
     </StudyOnboarding>
   );
