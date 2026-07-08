@@ -76,9 +76,9 @@ export default function WorldPage() {
     () => PET_SPECIES.find((p) => p.key === petKey) || PET_SPECIES[0],
     [petKey],
   );
-  // GameCanvas에 흘려보낼 pet prop — 종(이모지)은 즉시, 레벨·기분은 학습 파생.
+  // GameCanvas에 흘려보낼 pet prop — 종 key(도트 스프라이트 선택)·이모지는 즉시, 레벨·기분은 학습 파생.
   const pet = useMemo(
-    () => ({ emoji: species.emoji, level: petState.level, mood: petState.mood }),
+    () => ({ key: species.key, emoji: species.emoji, level: petState.level, mood: petState.mood }),
     [species, petState.level, petState.mood],
   );
 
