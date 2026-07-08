@@ -16,6 +16,7 @@ import { hasVapidKey, isPushSupported, isIosNeedsInstall, getSubscriptionState, 
 import { sentenceIncludesWord } from '../lib/skillRung';
 import { recordActivity } from '../lib/streak';
 import { gradeTyping, isChapterPassed, qtypeForItem, grammarDueChapterCounts } from '../lib/studySession';
+import { splitSentenceAroundWord } from '../lib/constants';
 import { mapParagraphToItems } from '../lib/studyParagraph';
 
 /** 로컬 날짜 YYYY-MM-DD — 격일 산출 문항 노출 판정용 */
@@ -1179,10 +1180,26 @@ export default function StudySessionPage({
         </div>
       )}
 
-      {/* ── 어휘: 타이핑 / 듣기 ── */}
-      {(item.type === 'vocab-typing' || item.type === 'vocab-listening') && (
+      {/* ── 어휘: 단서회상(빈칸) / 타이핑 / 듣기 ── */}
+      {(item.type === 'vocab-cloze' || item.type === 'vocab-typing' || item.type === 'vocab-listening') && (
         <div className="fr-quiz__q">
-          {item.type === 'vocab-typing' ? (
+          {item.type === 'vocab-cloze' ? (
+            <>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 6 }}>빈칸에 알맞은 단어를 입력하세요</div>
+              <div className="fr-quiz__prompt" lang={langCode}>
+                {(() => {
+                  const { parts, term } = splitSentenceAroundWord(item.sentence.main, item.word.word_text, item.word.furigana);
+                  const blankLen = Math.max(2, (term || item.word.word_text || '').length);
+                  return parts.map((part, i, arr) =>
+                    i < arr.length - 1
+                      ? <span key={i}>{part}<mark style={{ background: 'var(--bg-elevated)', color: 'var(--text-muted)', borderRadius: 4, padding: '0 6px', letterSpacing: 2 }}>{'＿'.repeat(blankLen)}</mark></span>
+                      : <span key={i}>{part}</span>
+                  );
+                })()}
+              </div>
+              <div className="fr-quiz__sub">“{item.word.meaning}”</div>
+            </>
+          ) : item.type === 'vocab-typing' ? (
             <div className="fr-quiz__prompt">“{item.word.meaning}”</div>
           ) : (
             <div className="fr-quiz__prompt" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
