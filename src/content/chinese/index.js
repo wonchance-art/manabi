@@ -59,6 +59,12 @@ import vocabH5hskC from './vocab/h5_hsk_c';
 import vocabH5hskD from './vocab/h5_hsk_d';
 import vocabH5hskE from './vocab/h5_hsk_e';
 import vocabH5hskF from './vocab/h5_hsk_f';
+// HSK 2.0 6급 보강 — H6에만 빠져 있던 2.0 계보(빈도순 1,000개, 전 급 교차 중복 배제).
+import vocabH6hskA from './vocab/h6_hsk_a';
+import vocabH6hskB from './vocab/h6_hsk_b';
+import vocabH6hskC from './vocab/h6_hsk_c';
+import vocabH6hskD from './vocab/h6_hsk_d';
+import vocabH6hskE from './vocab/h6_hsk_e';
 // HSK 3.0 표준 보강 (drkameleon/complete-hsk-vocabulary, MIT) — 기존에 없던 급별 순증분.
 import vocabH1hsk30 from './vocab/h1_hsk30';
 import vocabH2hsk30 from './vocab/h2_hsk30';
@@ -181,7 +187,7 @@ const registry = createRegistry(
     H3: mergeVocab(vocabH3, vocabH3hsk, vocabH3hsk30),
     H4: mergeVocab(vocabH4, vocabH4hskA, vocabH4hskB, vocabH4hskC, vocabH4hsk30),
     H5: mergeVocab(vocabH5, vocabH5hskA, vocabH5hskB, vocabH5hskC, vocabH5hskD, vocabH5hskE, vocabH5hskF, vocabH5hsk30),
-    H6: mergeVocab(vocabH6, vocabH6hsk30),
+    H6: mergeVocab(vocabH6, vocabH6hskA, vocabH6hskB, vocabH6hskC, vocabH6hskD, vocabH6hskE, vocabH6hsk30),
   },
 );
 
