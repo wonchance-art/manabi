@@ -10,14 +10,17 @@
 //   on 'peers:update' (원격 렌더) · emit 'peers:dist' (px, 500ms).
 // 내부 표현만 그리드(타일 인덱스)로 다루고, 버스로 오가는 값은 예전과 동일한 32px/타일 월드 px다.
 //
-// ── GB 실규격 뷰포트 ──
-// 게임 캔버스를 160×144(=GB 화면)로 고정하고, 카메라 zoom 0.5로 32px/타일 월드를
-// 화면상 16px/타일로 낮춰 **정확히 10×9타일**(=GB 필드 시야)이 담기게 한다.
-//   · 왜 0.5인가: 월드 1타일=32px는 버스 계약상 불변 → 160px에 10타일을 담으려면
-//     화면상 타일 16px = 32px×0.5. (오케스트레이터 지시의 "zoom 1"은 타일을 16px로 본
-//     계산이나, 실제 월드 타일은 32px이므로 동일한 10×9 시야를 내려면 0.5가 맞다.)
-//   · zoom은 렌더 스케일일 뿐 월드 좌표/버스/음성 근접 게이팅에는 영향 없다(예전 1.5와 동일 원리).
-// 캔버스(160×144)는 컨테이너에 맞춰 **정수 배율**(×2/×3/×4…)로만 CSS 확대한다(도트 보존).
+// ── GB 실규격 뷰포트(2× 백킹) ──
+// 게임 캔버스를 320×288(=GB 화면 160×144의 2배 백킹)로 고정하고, 카메라 zoom 1로
+// 32px/타일 월드를 화면상 그대로 32px/타일로 담아 **정확히 10×9타일**(=GB 필드 시야,
+// 320/32=10, 288/32=9)이 유지되게 한다.
+//   · 왜 2배 백킹인가: zoom 0.5(160×144 백킹)에서는 10px 닉네임 텍스트가 백킹 5px로
+//     축소된 뒤 CSS 정수 확대를 거치며 한글 글리프가 뭉개졌다. 백킹을 2배(320×288)로
+//     올리고 zoom을 1로 하면 화면에 보이는 도트 크기·시야는 완전히 동일하되, 텍스트는
+//     백킹 픽셀을 2배 확보해 선명해진다.
+//   · zoom은 렌더 스케일일 뿐 월드 좌표/버스/음성 근접 게이팅에는 영향 없다(예전과 동일 원리).
+// 캔버스(320×288)는 컨테이너에 맞춰 **정수 배율**(×1/×2/×3…)로만 CSS 확대한다(도트 보존).
+// 이전 160×144×정수배(최소 ×2)와 동일한 화면 크기가 되려면 320×288은 최소 ×1이어야 한다.
 
 import { useEffect, useRef, useState } from 'react';
 import bus from './bus';
@@ -34,10 +37,10 @@ import {
 const TILE = 32;            // 월드 px / 타일 (예전과 동일 — local:state·peers:dist 스케일 유지)
 const TEX = 16;             // 타일 소스 텍스처 크기(px) — 도트 원본
 const TSCALE = TILE / TEX;  // 소스→월드 배율 = 2 (타일·캐릭터·펫 공통: 소스 1px = 월드 2px)
-const ZOOM = 0.5;           // 카메라 줌 → 화면상 타일 32*0.5 = 16px (소스 16px 1:1 = GB 도트 룩)
-const VIEW_W = 160;         // GB 화면 가로(px) = 10타일 × 16px
-const VIEW_H = 144;         // GB 화면 세로(px) = 9타일 × 16px
-const MIN_SCALE = 2;        // 캔버스 최소 정수 배율(×2 미만은 도트가 너무 작아 가독성 저하)
+const ZOOM = 1;             // 카메라 줌 → 화면상 타일 32*1 = 32px (백킹 2배 확보, 시야·도트 크기는 예전과 동일)
+const VIEW_W = 320;         // 백킹 캔버스 가로(px) = 10타일 × 32px (예전 160의 2배)
+const VIEW_H = 288;         // 백킹 캔버스 세로(px) = 9타일 × 32px (예전 144의 2배)
+const MIN_SCALE = 1;        // 캔버스 최소 정수 배율(백킹이 2배가 됐으므로 ×1 = 예전 ×2와 동일 화면 크기)
 const COLS = 40;
 const ROWS = 30;
 const WORLD_W = TILE * COLS;
@@ -506,11 +509,14 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         }
 
         // 닉네임 나메플레이트 — GBC 다이얼로그 문법(크림 박스 + 잉크 모노스페이스, 하드 엣지).
+        // resolution: zoom 1 + 2배 백킹 덕에 텍스트 쿼드가 이제 fontSize와 backing px 1:1이라
+        // (예전 zoom 0.5 땐 5px로 축소돼 resolution 3의 슈퍼샘플 보정이 필요했다) 기본값(1)이면
+        // 충분히 선명하다. 더 올리면 nearest 필터 하에서 다운샘플 아티팩트로 오히려 다시 뭉개진다.
         labelStyle() {
           return {
             fontFamily: 'monospace', fontSize: '10px', color: GBC.ink,
             backgroundColor: GBC.cream, padding: { x: 4, y: 2 },
-            resolution: 3,
+            resolution: 1,
           };
         }
 
@@ -688,9 +694,9 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         }
       }
 
-      // Scale.NONE — Phaser 내부 드로잉 버퍼를 160×144로 고정하고, 화면 확대는 CSS로 직접 제어한다.
+      // Scale.NONE — Phaser 내부 드로잉 버퍼를 320×288(2배 백킹)로 고정하고, 화면 확대는 CSS로 직접 제어한다.
       // (Phaser의 FIT/RESIZE는 비정수 배율을 허용해 도트가 뭉개진다. 정수 배율만 보장하려면
-      //  CSS width/height를 160·144의 정수배로 세팅하고 image-rendering:pixelated로 굽는 편이 견고하다.)
+      //  CSS width/height를 320·288의 정수배로 세팅하고 image-rendering:pixelated로 굽는 편이 견고하다.)
       game = new Phaser.Game({
         type: Phaser.AUTO,
         parent: hostRef.current,
@@ -703,7 +709,8 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       gameRef.current = game;
       if (game.canvas) game.canvas.style.imageRendering = 'pixelated';
 
-      // ── 정수 배율 피팅 — 컨테이너(셸 화면 영역)에 맞춰 ×floor(min(w/160,h/144)), 최소 ×2 ──
+      // ── 정수 배율 피팅 — 컨테이너(셸 화면 영역)에 맞춰 ×floor(min(w/320,h/288)), 최소 ×1 ──
+      // (백킹이 예전 160×144의 2배가 됐으므로 ×1이 예전 ×2와 동일한 화면 크기를 만든다.)
       const fitCanvas = () => {
         const host = hostRef.current;
         const canvas = gameRef.current?.canvas;
@@ -738,7 +745,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', background: '#0b0d08' }}>
-      {/* 캔버스(160×144)를 정수 배율로 확대한 뒤 화면 영역 중앙에 배치. 도트는 pixelated로 보존. */}
+      {/* 캔버스(320×288, 2배 백킹)를 정수 배율로 확대한 뒤 화면 영역 중앙에 배치. 도트는 pixelated로 보존. */}
       <div ref={hostRef} style={{
         width: '100%', height: '100%',
         display: 'grid', placeItems: 'center', imageRendering: 'pixelated',

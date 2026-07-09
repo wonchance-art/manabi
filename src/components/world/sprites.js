@@ -370,18 +370,28 @@ export function petFrameRows(key, frame) {
   return set[frame ? 1 : 0];
 }
 
-// ── 기본 팔레트 (GBC풍 제한 색수·저채도, 0xRRGGBB) ──
+// ── 기본 팔레트 (GBC풍 제한 색수, 0xRRGGBB) ──
 // day 톤 원본. sunset/night는 tonePalette로 톤을 굽는다(런타임 틴트 오버레이 대신
 // 텍스처 자체를 그 톤으로 구워 GBC 감성 보존).
+//
+// 방향성: 젤다 꿈꾸는 섬 DX 야외 톤 — 차분한 초록에서 벗어나 밝고 쨍한 채도로.
+//   · 잔디  : 옐로-그린 필드(밝고 채도 높게), 나무·풀숲은 더 진한 그린 + 웜 브라운 줄기
+//     → 필드(grass1 밝은 옐로그린) vs 수관(leaf1 진한 그린)이 명료히 대비되도록 분리
+//   · 길/광장: 웜 탠-크림(이전보다 밝고 따뜻하게) — 모래-체커 감성
+//   · 물    : 밝은 시안-블루 + 거의 흰 물결 하이라이트
+//   · 꽃    : 선명한 레드 꽃잎 + 옐로 심(원색 포인트)
+//   · 표지판: 웜 레드-브라운 테두리 + 크림 보드
+// (시간대 톤 검수: TONE 계수는 유지 — day 기준색만 밝아져 sunset은 더 따뜻하게,
+//  night는 여전히 명도↓·청 시프트로 자연스럽게 어두워진다. night<day 명도 불변식 통과.)
 export const BASE_TILE_PAL = {
-  grass1: 0x7fb060, grass2: 0x679a4c, grass3: 0x94c56f,
-  path1: 0xd8c48f, path2: 0xc2aa72, pathE: 0xa8895a,
-  water1: 0x5a9fd4, water2: 0x9ccbe8, waterDk: 0x3f7fb0, waterMd: 0x4c8fc4,
-  trunk: 0x8a5a2b, trunkD: 0x6b431f,
-  leaf1: 0x4f9e3c, leaf2: 0x6ec24e, leafD: 0x367a2b,
-  flowerP: 0xe8748e, flowerC: 0xf4d24a, stem: 0x4f9e3c, bushD: 0x367a2b,
+  grass1: 0x8cc152, grass2: 0x6fa63a, grass3: 0xb2db6e,
+  path1: 0xe8d6a0, path2: 0xd4bd82, pathE: 0xb89a68,
+  water1: 0x4bb4e0, water2: 0xd6f0fb, waterDk: 0x2f92c8, waterMd: 0x3ea6d8,
+  trunk: 0x9a5f2a, trunkD: 0x6f4420,
+  leaf1: 0x4aa63a, leaf2: 0x74c84e, leafD: 0x2f7a2a,
+  flowerP: 0xe23f34, flowerC: 0xf6c528, stem: 0x4aa63a, bushD: 0x2f7a2a,
   heart: 0xe0556a, heartHi: 0xf59caa,
-  signPost: 0x8a5a2b, signBoard: 0xd8b483, signBorder: 0x6b431f, signLine: 0x6b431f,
+  signPost: 0x9a5f2a, signBoard: 0xe0c188, signBorder: 0x9c4a2a, signLine: 0x9c4a2a,
   lampGlow: 0xffdd88, lampCore: 0xfff2c4,
 };
 

@@ -43,13 +43,20 @@ const GBC = {
 };
 
 // ── GBC 휴대기 셸 토큰 ──
-// QuestReview의 크림/잉크/그린 팔레트와 어울리는 크림 바디 + 잉크 하드 엣지.
+// 실물 그레이/화이트 GBC 오마주: 밝은 웜 그레이(살짝 아이보리) 바디 + 다크 퍼플-그레이 베젤.
 // 실루엣은 GBC(라운드 바디 + 좌하 십자키 + 우하 대각 A/B + 중앙 START/SELECT + 스피커 그릴).
+// (인게임 다이얼로그/펫 팝오버는 여전히 크림 — GBC도 대화창은 크림이라 GBC 토큰으로 유지.)
 const SHELL = {
-  body: 'linear-gradient(160deg, #fbf3d8 0%, #ecdcac 62%, #dcc890 100%)',
-  bezel: 'linear-gradient(160deg, #33373d 0%, #23262b 100%)',
+  // 웜 그레이 바디: 상단 하이라이트→하단 음영 그라데이션으로 플라스틱 볼륨감.
+  body: 'linear-gradient(168deg, #e6e2db 0%, #d4d0ca 54%, #bfbab0 100%)',
+  bodyEdge: '#9b958a',
+  // 다크 퍼플-그레이 베젤(상단 각인 + 좌측 전원 LED 자리).
+  bezel: 'linear-gradient(160deg, #524d5b 0%, #46424e 58%, #383540 100%)',
   screenOff: '#0b0d08',
-  dpad: '#2f2a24', dpadHi: '#4a4038', dpadDown: '#000000',
+  dpad: '#1c1c1e', dpadHi: '#333336', dpadDown: '#000000',
+  ab: '#b0355c', abHi: '#d5637f', abDown: '#7e2440', // 크림슨-마젠타 A/B
+  pill: 'linear-gradient(#4a4750, #37343b)', pillEdge: '#2a2830', // 다크그레이 알약
+  led: '#e2483a', engrave: '#b7b1c1', label: '#5d584f',
 };
 
 // 십자키 버튼 — 모듈 스코프 컴포넌트(부모 리렌더 중 리마운트 방지 → 홀드 도중 release 유실 없음).
@@ -82,6 +89,32 @@ function DpadButton({ dir, char, onPress, onRelease, style }) {
       }}
     >
       {char}
+    </button>
+  );
+}
+
+// A/B 버튼(원형 크림슨-마젠타) — 동작은 기존과 동일하게 onClick(interact/cancel)에 그대로 배선하고,
+// pointer 이벤트는 "눌림 시 어둡게" 시각 상태(on)만 토글한다(게임/네트워크 배선 무변경).
+function AbButton({ label, ariaLabel, onClick, base, style }) {
+  const [on, setOn] = useState(false);
+  const off = () => setOn(false);
+  return (
+    <button
+      type="button" aria-label={ariaLabel} onClick={onClick}
+      onPointerDown={() => setOn(true)}
+      onPointerUp={off} onPointerLeave={off} onPointerCancel={off}
+      onContextMenu={(e) => e.preventDefault()}
+      style={{
+        ...base,
+        background: on
+          ? `radial-gradient(circle at 38% 32%, ${SHELL.abDown}, #5e1a30)`
+          : `radial-gradient(circle at 38% 32%, ${SHELL.abHi}, ${SHELL.ab})`,
+        boxShadow: on ? 'inset 0 2px 4px rgba(0,0,0,0.5)' : '0 3px 0 rgba(60,40,50,0.5)',
+        transform: on ? 'translateY(1px)' : 'none',
+        ...style,
+      }}
+    >
+      {label}
     </button>
   );
 }
@@ -319,22 +352,27 @@ export default function WorldPage() {
 
   const moodLine = MOOD_LINE[petState.mood] || MOOD_LINE.happy;
 
-  // A/B(원형)·START/SELECT(알약) 버튼 스타일 — GBC 하드 엣지 + 하드 오프셋 그림자.
-  const abBtn = {
+  // A/B 원형 버튼의 정적 뼈대(색·그림자·눌림은 AbButton이 상태로 얹는다).
+  const abBase = {
     width: 40, height: 40, borderRadius: '50%',
-    background: `radial-gradient(circle at 35% 30%, #dc6b58, ${GBC.red})`,
-    color: GBC.creamHi, fontFamily: GBC.font, fontWeight: 800, fontSize: '0.95rem',
-    border: `2px solid ${GBC.border}`, boxShadow: '0 3px 0 rgba(42,33,24,0.45)',
+    color: '#fdeef2', fontFamily: GBC.font, fontWeight: 800, fontSize: '0.95rem',
+    border: '2px solid #7e2440',
     cursor: 'pointer', touchAction: 'manipulation', lineHeight: 1,
   };
-  const pillBtn = {
-    display: 'inline-flex', alignItems: 'center', gap: 6, transform: 'rotate(-18deg)',
-    fontFamily: GBC.font, fontWeight: 700, fontSize: '0.56rem', letterSpacing: '0.4px',
-    color: '#3f382e', background: 'linear-gradient(#bcb3a2, #98907e)',
-    border: `2px solid ${GBC.border}`, borderRadius: 20, padding: '4px 12px',
-    boxShadow: '0 2px 0 rgba(42,33,24,0.35)', cursor: 'pointer',
+  // 버튼 옆 회색 소문자 라벨(실물 GBC의 a/b 각인 오마주).
+  const abLabel = {
+    fontFamily: GBC.font, fontSize: '0.5rem', fontWeight: 700, color: SHELL.label, lineHeight: 1,
   };
-  const pillDot = { width: 6, height: 6, borderRadius: '50%', display: 'inline-block' };
+  // START/SELECT 다크그레이 알약 — 그룹(알약+라벨)을 -25° 기울여 실물 배치 재현.
+  const pillBtn = {
+    display: 'inline-flex', alignItems: 'center', gap: 6,
+    background: SHELL.pill, border: `2px solid ${SHELL.pillEdge}`, borderRadius: 20,
+    padding: '5px 14px', boxShadow: '0 2px 0 rgba(30,28,34,0.5)', cursor: 'pointer',
+  };
+  const pillLabel = {
+    fontFamily: GBC.font, fontWeight: 700, fontSize: '0.5rem', letterSpacing: '0.6px', color: SHELL.label,
+  };
+  const pillDot = { width: 7, height: 7, borderRadius: '50%', display: 'inline-block' };
 
   return (
     <div className="page-container" style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
@@ -353,32 +391,30 @@ export default function WorldPage() {
       {/* ── GBC 휴대기 셸 ── (라운드 바디 + 베젤/화면 + 십자키·A/B·START/SELECT·스피커 그릴) */}
       <div style={{
         width: '100%', maxWidth: 'min(96vw, 540px)',
-        background: SHELL.body, border: `3px solid ${GBC.border}`,
+        background: SHELL.body, border: `3px solid ${SHELL.bodyEdge}`,
         borderRadius: '18px 18px 42px 18px',
-        boxShadow: `inset 0 0 0 2px rgba(255,255,255,0.4), ${GBC.shadow}`,
-        padding: '14px 16px 20px', display: 'flex', flexDirection: 'column', gap: 14,
+        boxShadow: `inset 0 2px 0 rgba(255,255,255,0.65), inset 0 -3px 6px rgba(120,114,104,0.35), ${GBC.shadow}`,
+        padding: '14px 16px 20px', display: 'flex', flexDirection: 'column', gap: 12,
       }}>
         {/* 베젤 + 화면 — QuestReview 오버레이는 GameCanvas 내부(inset:0)라 이 화면 영역만 덮는다 */}
         <div style={{
           position: 'relative', background: SHELL.bezel, borderRadius: '10px 10px 28px 10px',
           padding: '26px 18px 18px', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.55)',
         }}>
-          {/* 전원 LED + 라벨 */}
+          {/* 전원 LED(살짝 글로우) + 라벨 — 좌측 상단 */}
           <span style={{
             position: 'absolute', top: 11, left: 15, width: 7, height: 7, borderRadius: '50%',
-            background: '#e2483a', boxShadow: '0 0 5px #e2483a, inset 0 0 1px #fff',
+            background: SHELL.led, boxShadow: `0 0 5px ${SHELL.led}, inset 0 0 1px #fff`,
           }} />
-          <span style={{ position: 'absolute', top: 8, left: 27, fontFamily: GBC.font, fontSize: '0.5rem', letterSpacing: '0.5px', color: '#7a8088' }}>
+          <span style={{ position: 'absolute', top: 8, left: 27, fontFamily: GBC.font, fontSize: '0.5rem', letterSpacing: '0.5px', color: '#8b8794' }}>
             POWER
           </span>
-          {/* 베젤 각인 (재치) */}
-          <span style={{ position: 'absolute', top: 9, right: 16, fontFamily: GBC.font, fontSize: '0.62rem', fontWeight: 700, fontStyle: 'italic', letterSpacing: '0.4px', color: '#aeb4bc' }}>
-            ANATOMY BOY{' '}
-            <span style={{ color: '#d0563f' }}>C</span>
-            <span style={{ color: '#6fae54' }}>O</span>
-            <span style={{ color: '#4f86c6' }}>L</span>
-            <span style={{ color: '#e0a83f' }}>O</span>
-            <span style={{ color: '#b25fa0' }}>R</span>
+          {/* 베젤 상단 각인(소형 대문자·연회색) — 실물 "DOT MATRIX WITH STEREO SOUND" 자리, 우리 식 문구 */}
+          <span style={{
+            position: 'absolute', top: 9, left: 0, right: 0, textAlign: 'center',
+            fontFamily: GBC.font, fontSize: '0.5rem', fontWeight: 600, letterSpacing: '0.8px', color: SHELL.engrave,
+          }}>
+            DOT MATRIX WITH REVIEW SOUND
           </span>
           {/* 화면 (10:9 = 160×144) */}
           <div style={{
@@ -390,6 +426,27 @@ export default function WorldPage() {
           </div>
         </div>
 
+        {/* 화면 아래 무지개 워드마크 — GBC 로고 오마주. 본체는 다크 그레이 이탤릭 볼드,
+            "COLOR" 다섯 글자는 로고처럼 글자별 원색(빨/노/초/파/보). */}
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', gap: 6, paddingTop: 2 }}>
+          <span style={{
+            fontFamily: '"Trebuchet MS", "Helvetica Neue", Arial, sans-serif',
+            fontStyle: 'italic', fontWeight: 800, fontSize: '0.78rem', letterSpacing: '0.3px', color: '#403c47',
+          }}>
+            ANATOMY BOY
+          </span>
+          <span style={{
+            fontFamily: '"Trebuchet MS", "Helvetica Neue", Arial, sans-serif',
+            fontStyle: 'italic', fontWeight: 800, fontSize: '0.78rem', letterSpacing: '0.6px',
+          }}>
+            <span style={{ color: '#e4392e' }}>C</span>
+            <span style={{ color: '#f7a800' }}>O</span>
+            <span style={{ color: '#3aa53a' }}>L</span>
+            <span style={{ color: '#2a6bd8' }}>O</span>
+            <span style={{ color: '#8a3aa5' }}>R</span>
+          </span>
+        </div>
+
         {/* 컨트롤 행: 십자키(좌) + A/B(우, 대각) */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 8px 0' }}>
           {/* 십자키 — 3×3 그리드, 4방향만 버튼(홀드 연속 이동은 씬이 처리) */}
@@ -399,7 +456,11 @@ export default function WorldPage() {
             <span />
             <DpadButton dir="left" char="◀" onPress={press} onRelease={release} style={{ borderRadius: '6px 0 0 6px' }} />
             <span style={{ background: SHELL.dpad, display: 'grid', placeItems: 'center' }}>
-              <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#1b1712' }} />
+              {/* 중앙 원형 딤플(오목) */}
+              <span style={{
+                width: 11, height: 11, borderRadius: '50%', background: '#0c0c0d',
+                boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.8), inset 0 -1px 1px rgba(90,90,96,0.5)',
+              }} />
             </span>
             <DpadButton dir="right" char="▶" onPress={press} onRelease={release} style={{ borderRadius: '0 6px 6px 0' }} />
             <span />
@@ -407,29 +468,41 @@ export default function WorldPage() {
             <span />
           </div>
 
-          {/* A/B — A=상호작용(말 걸기), B=취소(리뷰 닫기). 대각 배치. */}
+          {/* A/B — A=상호작용(말 걸기), B=취소(리뷰 닫기). 원형 크림슨-마젠타 + 옆 소문자 라벨, 대각 배치. */}
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14, transform: 'rotate(-18deg)' }}>
-            <button type="button" aria-label="B (취소·닫기)" onClick={cancel} style={abBtn}>B</button>
-            <button type="button" aria-label="A (말 걸기·상호작용)" onClick={interact} style={{ ...abBtn, transform: 'translateY(-12px)' }}>A</button>
+            <div style={{ display: 'grid', justifyItems: 'center', gap: 3 }}>
+              <AbButton label="B" ariaLabel="B (취소·닫기)" onClick={cancel} base={abBase} />
+              <span style={abLabel}>b</span>
+            </div>
+            <div style={{ display: 'grid', justifyItems: 'center', gap: 3, transform: 'translateY(-12px)' }}>
+              <AbButton label="A" ariaLabel="A (말 걸기·상호작용)" onClick={interact} base={abBase} />
+              <span style={abLabel}>a</span>
+            </div>
           </div>
         </div>
 
-        {/* START / SELECT — START=마이크 토글, SELECT=펫 선택 */}
-        <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', gap: 22, paddingTop: 2 }}>
-          <button
-            type="button" onClick={toggleMic} disabled={micBusy}
-            aria-pressed={micOn} aria-label={micOn ? '마이크 끄기 (START)' : '마이크 켜기 (START)'}
-            style={{ ...pillBtn, opacity: micBusy ? 0.6 : 1 }}
-          >
-            <span style={{ ...pillDot, background: micOn ? GBC.green : '#8a8f97' }} /> START
-          </button>
-          <button
-            type="button" onClick={() => setPetMenuOpen((v) => !v)}
-            aria-haspopup="true" aria-expanded={petMenuOpen} aria-label="펫 선택 (SELECT)"
-            style={pillBtn}
-          >
-            <span style={{ ...pillDot, background: '#8a8f97' }} /> SELECT
-          </button>
+        {/* START / SELECT — START=마이크 토글, SELECT=펫 선택. 다크그레이 알약을 -25° 기울이고 아래 소형 라벨. */}
+        <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', gap: 34, paddingTop: 4 }}>
+          <div style={{ display: 'grid', justifyItems: 'center', gap: 4, transform: 'rotate(-25deg)' }}>
+            <button
+              type="button" onClick={toggleMic} disabled={micBusy}
+              aria-pressed={micOn} aria-label={micOn ? '마이크 끄기 (START)' : '마이크 켜기 (START)'}
+              style={{ ...pillBtn, opacity: micBusy ? 0.6 : 1 }}
+            >
+              <span style={{ ...pillDot, background: micOn ? GBC.green : '#26242b' }} />
+            </button>
+            <span style={pillLabel}>START</span>
+          </div>
+          <div style={{ display: 'grid', justifyItems: 'center', gap: 4, transform: 'rotate(-25deg)' }}>
+            <button
+              type="button" onClick={() => setPetMenuOpen((v) => !v)}
+              aria-haspopup="true" aria-expanded={petMenuOpen} aria-label="펫 선택 (SELECT)"
+              style={pillBtn}
+            >
+              <span style={{ ...pillDot, background: '#26242b' }} />
+            </button>
+            <span style={pillLabel}>SELECT</span>
+          </div>
 
           {/* 펫 선택 팝오버 (SELECT 위로) */}
           {petMenuOpen && (
@@ -472,7 +545,7 @@ export default function WorldPage() {
           transform: 'rotate(-18deg)', opacity: 0.5, marginRight: 10, marginTop: 2,
         }}>
           {Array.from({ length: 16 }).map((_, i) => (
-            <span key={i} style={{ width: 5, height: 5, borderRadius: '50%', background: '#6b5f4c' }} />
+            <span key={i} style={{ width: 5, height: 5, borderRadius: '50%', background: '#4a4750', boxShadow: 'inset 0 1px 1px rgba(0,0,0,0.6)' }} />
           ))}
         </div>
       </div>
