@@ -32,6 +32,20 @@ import {
   BASE_TILE_PAL, CHAR_PAL_LOCAL, CHAR_PAL_REMOTE, PET_PAL,
   tonePalette, toneColor, timeOfDay,
 } from './sprites';
+// 🌏 독해 트랙 "도쿄 도착" 글 1 → 월드 스토리 씬(하네다 공항). 공항 씬·텍스트박스·문답 오버레이.
+import { buildAirportScene } from './airportScene';
+import { StoryTextbox, AirportQuiz } from './StoryOverlay';
+import { buildStoryScript } from './storyScript';
+import tokyoTrack from '../../content/japanese/reading/n5_tokyo';
+// 통과 기록은 본편 R3와 동일 규약을 그대로 공유(readingProgress·reviewEvents·grammarSrs).
+import { READING_LANG, readingSlug, markReadingPassedLocal, markReadingPassedRemote } from '../../lib/readingProgress';
+import { logReviewEvents } from '../../lib/reviewEvents';
+import { enqueueGrammarReview } from '../../lib/grammarSrs';
+
+// 프로토타입 = 글 1 하나. 원문(n5_tokyo.js) 무수정 — 런타임에 텍스트박스 스텝으로 변환만.
+const READING_TEXT_ID = 'n5-tokyo-01';
+const STORY_TEXT = tokyoTrack?.texts?.find((t) => t.id === READING_TEXT_ID) || null;
+const STORY_STEPS = STORY_TEXT ? buildStoryScript(STORY_TEXT) : [];
 
 // ── 좌표 스케일 (버스 계약 불변: 1타일 = 32 월드 px) ──
 const TILE = 32;            // 월드 px / 타일 (예전과 동일 — local:state·peers:dist 스케일 유지)
@@ -119,23 +133,89 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   const nearQuestRef = useRef(false);   // A(상호작용) 콜백이 최신 근접 상태를 읽도록 미러
   const reviewOpenRef = useRef(false);  // B(취소) 콜백이 최신 오버레이 상태를 읽도록 미러
 
+  // ── 월드 스토리(공항 씬) 상태 ──
+  // storyPhase: 'none'(광장) | 'walking'(줄→심사대) | 'dialogue'(텍스트박스) | 'quiz'(문답) | 'passed'(통과·출구)
+  const [nearGate, setNearGate] = useState(false);       // 광장 "도쿄 여행" 게이트 근접
+  const [storyActive, setStoryActive] = useState(false); // 공항 씬 진입 여부(오버레이 게이팅)
+  const [storyPhase, setStoryPhase] = useState('none');
+  const [storyIdx, setStoryIdx] = useState(0);           // 현재 텍스트박스 스텝
+  const [showKo, setShowKo] = useState(false);           // ja 대사 한국어 뜻 토글
+  const nearGateRef = useRef(false);
+  const storyActiveRef = useRef(false);
+  const storyPhaseRef = useRef('none');
+  // 셸 A/B 콜백이 최신 스토리 조작을 부르도록 함수 미러(렌더마다 갱신).
+  const advanceStoryRef = useRef(null);
+  const toggleKoRef = useRef(null);
+
   useEffect(() => { nickRef.current = nickname || '나'; }, [nickname]);
   useEffect(() => { petRef.current = pet || { key: 'dog', level: 1, mood: 'happy' }; }, [pet]);
   useEffect(() => { nearQuestRef.current = nearQuest; }, [nearQuest]);
   useEffect(() => { reviewOpenRef.current = reviewOpen; }, [reviewOpen]);
+  useEffect(() => { nearGateRef.current = nearGate; }, [nearGate]);
+  useEffect(() => { storyActiveRef.current = storyActive; }, [storyActive]);
+  useEffect(() => { storyPhaseRef.current = storyPhase; }, [storyPhase]);
 
   // ── GBC 셸 입력 주입 인터페이스 등록 ──
-  // press/release → 씬 heldDirs(키보드와 동일 경로). interact=A(표지판 말 걸기), cancel=B(리뷰 닫기).
+  // press/release → 씬 heldDirs(키보드와 동일 경로).
+  // A(interact): 대사 중이면 "다음", 광장 게이트 근접이면 공항 진입, 표지판 근접이면 리뷰.
+  // B(cancel): 대사 중이면 한국어 뜻 토글, 리뷰 열려 있으면 닫기.
   useEffect(() => {
     if (!controlsRef) return undefined;
     controlsRef.current = {
       press: (dir) => sceneRef.current?.extInputDown?.(dir),
       release: (dir) => sceneRef.current?.extInputUp?.(dir),
-      interact: () => { if (!reviewOpenRef.current && nearQuestRef.current) setReviewOpen(true); },
-      cancel: () => { if (reviewOpenRef.current) setReviewOpen(false); },
+      interact: () => {
+        if (storyPhaseRef.current === 'dialogue') { advanceStoryRef.current?.(); return; }
+        if (reviewOpenRef.current || storyActiveRef.current) return;
+        if (nearGateRef.current) { sceneRef.current?.enterAirport?.(); return; }
+        if (nearQuestRef.current) setReviewOpen(true);
+      },
+      cancel: () => {
+        if (storyPhaseRef.current === 'dialogue') { toggleKoRef.current?.(); return; }
+        if (reviewOpenRef.current) setReviewOpen(false);
+      },
     };
     return () => { if (controlsRef) controlsRef.current = null; };
   }, [controlsRef]);
+
+  // ── 스토리 조작(대사 진행·뜻 토글) — 셸 A/B 콜백이 참조하도록 ref에 최신본을 심는다 ──
+  const advanceStory = () => {
+    setShowKo(false);
+    setStoryIdx((i) => {
+      if (i + 1 >= STORY_STEPS.length) { setStoryPhase('quiz'); return i; } // 대사 끝 → 심사관 문답
+      return i + 1;
+    });
+  };
+  advanceStoryRef.current = advanceStory;
+  toggleKoRef.current = () => setShowKo((v) => !v);
+
+  // 대사 스텝이 바뀔 때 연출: 화자 시선 전환 + 도장 장면 가벼운 흔들림(파티클 없음).
+  useEffect(() => {
+    if (storyPhase !== 'dialogue') return;
+    const step = STORY_STEPS[storyIdx];
+    if (!step) return;
+    if (step.kind === 'speech') sceneRef.current?.faceForDialogue?.();
+    if (step.stamp) sceneRef.current?.stampShake?.();
+  }, [storyPhase, storyIdx]);
+
+  // 스토리 페이즈 → 씬 입력 잠금(대사·문답 중 이동 정지, 걷기·통과 후엔 해제).
+  useEffect(() => {
+    const scene = sceneRef.current;
+    if (!scene || !storyActive) return;
+    scene.inputLocked = (storyPhase === 'dialogue' || storyPhase === 'quiz');
+  }, [storyPhase, storyActive]);
+
+  // 통과 기록 — 본편 R3 handlePass와 동일 규약(같은 데이터 공유, 본편 트랙 UI는 존치).
+  const recordPass = (events) => {
+    markReadingPassedLocal(READING_TEXT_ID);
+    if (userId) {
+      markReadingPassedRemote(userId, READING_TEXT_ID);
+      logReviewEvents(userId, events); // lang:'ja', source:'reading'
+      enqueueGrammarReview(userId, READING_LANG, readingSlug(READING_TEXT_ID));
+    }
+    setStoryPhase('passed');
+    sceneRef.current?.openExit?.(); // 출구 게이트 열림 연출
+  };
 
   // 리뷰 오버레이가 열리면 게임 입력을 잠근다(캔버스 이동 정지). 닫히면 해제.
   useEffect(() => {
@@ -149,14 +229,14 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
     let destroyed = false;
     let game = null;
     let ro = null;    // 캔버스 정수 배율 피팅용 ResizeObserver
-    let scene = null; // create()에서 자신을 할당 — 아래 버스 핸들러가 위임 대상으로 참조.
 
     // ── 버스 구독을 컴포넌트 스코프에서 등록/해제한다(리스너 누수 방지). ──
     // 기존엔 씬 'shutdown'에서 off 했지만 Phaser destroy 경로에서 shutdown이 안 뜰 수 있어,
     // 재방문마다 죽은 씬 콜백이 bus에 누적됐다. 이제 React cleanup이 off를 직접 보장한다.
-    const onPeers = (data) => scene?.applyPeers(data);
-    const onQuestScored = (data) => scene?.questScoredFx(data);
-    const onQuestDone = (data) => scene?.questDoneFx(data);
+    // 활성 씬(광장 또는 공항)에 위임 — 공항 씬도 quest:scored/done 연출을 받는다(옵셔널 체이닝으로 무해).
+    const onPeers = (data) => sceneRef.current?.applyPeers?.(data);
+    const onQuestScored = (data) => sceneRef.current?.questScoredFx?.(data);
+    const onQuestDone = (data) => sceneRef.current?.questDoneFx?.(data);
     bus.on('peers:update', onPeers);
     bus.on('quest:scored', onQuestScored);
     bus.on('quest:done', onQuestDone);
@@ -204,6 +284,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           this.buildTree();
           this.buildDecor();
           this.buildSign();
+          this.buildGate();
           this.buildHeart();
           this.buildLamp();
           this.buildCharSet('pc', this.charPal.pc);
@@ -304,6 +385,19 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           g.generateTexture('t_sign', TEX, 20); g.destroy();
         }
 
+        // "도쿄 여행" 게이트(토리이) — 광장에서 A로 상호작용하면 공항 스토리 씬으로 전환한다. 16×24.
+        buildGate() {
+          const red = toneColor(0xc14b38, this.mode);
+          const redD = toneColor(0x8f2f22, this.mode);
+          const cream = toneColor(0xf6edcf, this.mode);
+          const g = this.make.graphics({ add: false });
+          g.fillStyle(redD, 1); g.fillRect(1, 2, 14, 3);          // 가사기(위 보)
+          g.fillStyle(red, 1); g.fillRect(2, 5, 12, 2);           // 시마기(둘째 보)
+          g.fillStyle(redD, 1); g.fillRect(3, 7, 2, 17); g.fillRect(11, 7, 2, 17); // 두 기둥
+          g.fillStyle(cream, 1); g.fillRect(6, 9, 4, 1); g.fillRect(6, 11, 4, 1);  // 현판(글자 힌트)
+          g.generateTexture('t_gate', TEX, TEX + 8); g.destroy();
+        }
+
         buildHeart() {
           const C = this.pal;
           const g = this.make.graphics({ add: false });
@@ -369,8 +463,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         }
 
         create() {
-          scene = this;              // 버스 핸들러 위임 대상
-          sceneRef.current = this;   // React 입력 잠금 갱신용
+          sceneRef.current = this;   // 버스 핸들러 위임 대상 · React 입력 잠금 갱신용
           this.inputLocked = false;  // 리뷰 오버레이 중 이동 잠금
           this.petJumpVal = 0;       // 퀘스트 완료 점프 연출값(0→1→0)
 
@@ -382,6 +475,11 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           const map = buildMap();
           this.map = map;
           this.signTileX = 20; this.signTileY = 11;
+          this.gateTileX = 17; this.gateTileY = 15;  // 광장 "도쿄 여행" 게이트(스폰 근처 길 위)
+          this.wasNearGate = false;
+
+          // 공항 스토리에서 광장으로 복귀 시 create가 다시 도므로 스토리 오버레이 상태를 초기화.
+          setStoryActive(false); setStoryPhase('none'); setNearGate(false);
 
           this.waterImgs = [];
           this.waterFrame = 0;
@@ -413,6 +511,12 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           this.signX = this.signTileX * TILE + TILE / 2;
           this.signY = this.signTileY * TILE + TILE / 2;
           this.add.image(this.signX, this.signTileY * TILE + TILE, 't_sign').setOrigin(0.5, 1).setScale(TSCALE).setDepth(this.signY);
+
+          // "도쿄 여행" 게이트 — 광장 길 위. A로 상호작용 → 공항 스토리 씬.
+          this.gateX = this.gateTileX * TILE + TILE / 2;
+          this.gateY = this.gateTileY * TILE + TILE / 2;
+          this.add.image(this.gateX, this.gateTileY * TILE + TILE, 't_gate')
+            .setOrigin(0.5, 1).setScale(TSCALE).setDepth(this.gateY);
 
           // 밤이면 팻말 곁 랜턴 불빛 하나(포인트 광원). additive로 은은하게 번지게.
           if (this.mode === 'night') {
@@ -530,14 +634,18 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           return Math.min(1 + (lv - 1) * 0.06, 1.6);
         }
 
-        // 타일 충돌 판정: 밖·물·나무·팻말 = 막힘.
+        // 타일 충돌 판정: 밖·물·나무·팻말·게이트 = 막힘.
         blocked(tx, ty) {
           if (tx < 0 || ty < 0 || tx >= COLS || ty >= ROWS) return true;
           const t = this.map[ty][tx];
           if (t === 'water' || t === 'tree') return true;
           if (tx === this.signTileX && ty === this.signTileY) return true;
+          if (tx === this.gateTileX && ty === this.gateTileY) return true;
           return false;
         }
+
+        // 광장 → 공항 스토리 씬 전환(같은 Phaser 게임 내 씬 스위치).
+        enterAirport() { this.scene.start('airport'); }
 
         // 한 타일 이동 시작(플레이어).
         startStep(dir) {
@@ -691,8 +799,24 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           // 표지판 근접 → React 오버레이 토글.
           const near = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.signX, this.signY) < QUEST_RANGE;
           if (near !== this.wasNear) { this.wasNear = near; setNearQuest(near); }
+
+          // "도쿄 여행" 게이트 근접 → React 프롬프트 토글.
+          const nearG = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.gateX, this.gateY) < QUEST_RANGE;
+          if (nearG !== this.wasNearGate) { this.wasNearGate = nearG; setNearGate(nearG); }
         }
       }
+
+      // 공항 스토리 씬 — 같은 게임에 등록(WorldScene가 autostart, airport는 게이트 진입 시 start).
+      // ctx: 씬 ↔ React 브리지(페이즈 통지·sceneRef 바인딩·펫/닉네임 소스). 신규 bus 이벤트 없음.
+      const airportCtx = {
+        petRef, nickRef,
+        bindScene: (s) => { sceneRef.current = s; },
+        notifyPhase: (phase) => {
+          if (phase === 'walking') { setStoryActive(true); setStoryPhase('walking'); setStoryIdx(0); setShowKo(false); }
+          else if (phase === 'arrived') { setStoryPhase('dialogue'); setStoryIdx(0); setShowKo(false); }
+        },
+      };
+      const AirportScene = buildAirportScene(Phaser, airportCtx);
 
       // Scale.NONE — Phaser 내부 드로잉 버퍼를 320×288(2배 백킹)로 고정하고, 화면 확대는 CSS로 직접 제어한다.
       // (Phaser의 FIT/RESIZE는 비정수 배율을 허용해 도트가 뭉개진다. 정수 배율만 보장하려면
@@ -704,7 +828,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         pixelArt: true,
         roundPixels: true,
         scale: { mode: Phaser.Scale.NONE, width: VIEW_W, height: VIEW_H },
-        scene: WorldScene,
+        scene: [WorldScene, AirportScene],
       });
       gameRef.current = game;
       if (game.canvas) game.canvas.style.imageRendering = 'pixelated';
@@ -737,7 +861,6 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       bus.off('quest:scored', onQuestScored);
       bus.off('quest:done', onQuestDone);
       if (ro) { ro.disconnect(); ro = null; }
-      scene = null;
       sceneRef.current = null;
       if (gameRef.current) { gameRef.current.destroy(true); gameRef.current = null; }
     };
@@ -763,7 +886,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       </div>
 
       {/* 표지판 근접 → '말 걸기' 프롬프트. Phaser 내 DOM 금지 → React 오버레이. (오너 지시: 게임 내에서 진행) */}
-      {nearQuest && !reviewOpen && (
+      {nearQuest && !reviewOpen && !storyActive && (
         <div style={{
           position: 'absolute', left: '50%', bottom: 18, transform: 'translateX(-50%)',
           ...gbcPanel, width: 'min(90%, 360px)', padding: '12px 14px',
@@ -783,9 +906,50 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         </div>
       )}
 
+      {/* "도쿄 여행" 게이트 근접 → 공항 스토리 진입 프롬프트. */}
+      {nearGate && !storyActive && !reviewOpen && STORY_TEXT && (
+        <div style={{
+          position: 'absolute', left: '50%', bottom: 18, transform: 'translateX(-50%)',
+          ...gbcPanel, width: 'min(90%, 360px)', padding: '12px 14px',
+          display: 'flex', alignItems: 'center', gap: 10,
+        }}>
+          <span style={{ fontSize: '1.3rem', lineHeight: 1 }}>⛩️</span>
+          <span style={{ flex: 1, fontSize: '0.8rem', lineHeight: 1.5 }}>
+            도쿄 여행 — {STORY_TEXT.place?.name}. 이야기를 시작할까요?
+          </span>
+          <button
+            type="button"
+            onClick={() => sceneRef.current?.enterAirport?.()}
+            style={{ ...gbcButtonPrimary, whiteSpace: 'nowrap' }}
+          >
+            들어가기
+          </button>
+        </div>
+      )}
+
       {/* 인게임 즉석 리뷰 — 캔버스 위 HTML, 열리면 게임 입력 잠금(useEffect). */}
       {reviewOpen && (
         <QuestReview userId={userId} onClose={() => setReviewOpen(false)} />
+      )}
+
+      {/* 공항 스토리 — 텍스트박스(대사) → 심사관 문답(통과 시 출구 개방). */}
+      {storyActive && storyPhase === 'dialogue' && (
+        <StoryTextbox
+          step={STORY_STEPS[storyIdx]}
+          index={storyIdx}
+          total={STORY_STEPS.length}
+          showKo={showKo}
+          onToggleKo={() => setShowKo((v) => !v)}
+          onNext={() => advanceStoryRef.current?.()}
+          onExit={() => sceneRef.current?.returnPlaza?.()}
+        />
+      )}
+      {storyActive && (storyPhase === 'quiz' || storyPhase === 'passed') && STORY_TEXT && (
+        <AirportQuiz
+          text={STORY_TEXT}
+          onPass={(events) => recordPass(events)}
+          onExit={() => sceneRef.current?.returnPlaza?.()}
+        />
       )}
     </div>
   );

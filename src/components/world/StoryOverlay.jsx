@@ -1,0 +1,217 @@
+'use client';
+
+// 🗨️ 월드 스토리 오버레이 — GBC 텍스트박스 + 인게임 문답(캔버스 위 HTML).
+// 오너 결정: 포켓몬식 텍스트박스 연쇄로 이야기를 전달한다. Phaser 내 DOM 금지 규약에 따라
+// 대사·문항은 캔버스 위 React 오버레이로 띄운다(QuestReview 관행 재사용).
+//
+// 두 컴포넌트:
+//   · StoryTextbox — 화면 하단 고정 크림 패널. narr 청크/ja 대사를 한 박스씩. A/탭/스페이스=다음.
+//     ja 대사는 후리가나 루비(JaText 재사용) + 한국어 뜻은 B(토글)로.
+//   · AirportQuiz  — 심사관 출제(문형 4·내용 2). 문형 전부 정답 = 통과. 오답 시 해당 일본어
+//     문장 재생 후 재시도(tries 기록). 채점마다 quest:scored, 완료 시 quest:done.
+
+import { useMemo, useRef, useState } from 'react';
+import { GBC, gbcPanel, gbcButton, gbcButtonPrimary } from './QuestReview';
+import { JaText } from '../../views/refShared';
+import bus from './bus';
+
+const SPEAKER_LABEL = { officer: '심사관', player: '민준', sign: '안내' };
+
+// ── 하단 고정 텍스트박스 ──
+// step: { kind:'narr', text } | { kind:'speech', speaker, ja, yomi, ko }
+export function StoryTextbox({ step, index, total, showKo, onToggleKo, onNext, onExit }) {
+  if (!step) return null;
+  const isSpeech = step.kind === 'speech';
+  return (
+    <div style={{ position: 'absolute', inset: 0, zIndex: 60, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', pointerEvents: 'none' }}>
+      {/* 나가기 — 상단 우측(길게 누르는 B 대체 어포던스) */}
+      <button
+        type="button" onClick={onExit} aria-label="공항에서 나가기"
+        style={{ ...gbcButton, position: 'absolute', top: 6, right: 6, padding: '2px 8px', fontSize: '0.7rem', boxShadow: 'none', pointerEvents: 'auto' }}
+      >
+        나가기
+      </button>
+
+      {/* 화자 이름표(대사일 때만) */}
+      {isSpeech && (
+        <div style={{ pointerEvents: 'none', margin: '0 8px -1px', alignSelf: 'flex-start' }}>
+          <span style={{
+            ...gbcPanel, display: 'inline-block', padding: '2px 10px', fontSize: '0.72rem', fontWeight: 700,
+            borderBottom: 'none', borderRadius: '2px 2px 0 0',
+          }}>
+            {SPEAKER_LABEL[step.speaker] || '안내'}
+          </span>
+        </div>
+      )}
+
+      {/* 텍스트박스 본체 — 클릭/탭하면 다음 */}
+      <div
+        onClick={onNext} role="button" tabIndex={0}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNext(); } }}
+        style={{
+          ...gbcPanel, pointerEvents: 'auto', cursor: 'pointer',
+          margin: 8, padding: '12px 14px 10px', minHeight: 74,
+          display: 'flex', flexDirection: 'column', gap: 6,
+        }}
+      >
+        {isSpeech ? (
+          <>
+            <div lang="ja" style={{ fontSize: '1.05rem', lineHeight: 1.9 }}>
+              <JaText ja={step.ja} yomi={step.yomi} fallbackPron={false} />
+            </div>
+            {showKo && (
+              <div style={{ fontSize: '0.8rem', color: GBC.brown }}>{step.ko}</div>
+            )}
+          </>
+        ) : (
+          <div style={{ fontSize: '0.86rem', lineHeight: 1.6, color: GBC.ink }}>{step.text}</div>
+        )}
+
+        {/* 하단 힌트 줄: 진행 + 조작 */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto', fontSize: '0.62rem', color: GBC.inkSoft }}>
+          <span>
+            {isSpeech && (
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); onToggleKo(); }}
+                style={{ ...gbcButton, padding: '1px 7px', fontSize: '0.62rem', boxShadow: 'none' }}
+              >
+                {showKo ? '뜻 숨기기 Ⓑ' : '한국어 뜻 Ⓑ'}
+              </button>
+            )}
+          </span>
+          <span style={{ whiteSpace: 'nowrap' }}>{index + 1}/{total} · 다음 Ⓐ ▼</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// 정답 보존 셔플(ReadingTextView 관행).
+function shuffled(choices, answerIdx) {
+  const answer = choices[answerIdx];
+  const arr = choices.map((c) => c);
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return { choices: arr, answer };
+}
+
+// ── 심사관 문답(GBC 패널) ──
+// text.questions 소비: pattern(게이팅) 전부 정답 = 통과, content는 출제하되 통과 판정 제외.
+// onPass(events, right, total): 통과 1회 — 부모가 readingProgress·grammar·게이트 개방 처리.
+export function AirportQuiz({ text, onPass, onExit }) {
+  // 문항 셔플은 최초 1회.
+  const qs = useMemo(() => (text.questions || []).map((q, i) => {
+    const s = shuffled(q.choices, q.answer);
+    return {
+      key: `${text.id}-q${i}`,
+      qtype: q.type === 'pattern' ? 'pattern' : 'content',
+      itemKey: q.type === 'pattern' ? q.pattern : 'content',
+      gating: q.type === 'pattern',
+      prompt: q.q,
+      choices: s.choices,
+      answerText: s.answer,
+      why: q.why || '',
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), []);
+
+  const [idx, setIdx] = useState(0);
+  const [picked, setPicked] = useState(null);   // 이번 문항에서 고른 오답(재시도 텍스트박스 표시용)
+  const [tries, setTries] = useState(0);
+  const [done, setDone] = useState(false);
+  const eventsRef = useRef([]);   // 문항별 review_events 페이로드 누적
+  const rightRef = useRef(0);
+  const lockRef = useRef(false);
+
+  const q = qs[idx];
+
+  function pick(opt) {
+    if (!q || lockRef.current) return;
+    const ok = opt === q.answerText;
+    const nextTries = tries + 1;
+    bus.emit('quest:scored', { correct: ok });
+
+    if (!ok && q.gating) {
+      // 오답 → 해당 일본어 문장(정답) 재생 후 재시도. tries 누적.
+      setPicked(opt); setTries(nextTries);
+      return;
+    }
+
+    // 정답(또는 content 첫 응답으로 확정) → 이벤트 기록 후 다음.
+    eventsRef.current.push({
+      lang: 'ja', source: 'reading', item_key: q.itemKey, correct: ok,
+      detail: { text_id: text.id, qtype: q.qtype, tries: nextTries },
+    });
+    if (ok) rightRef.current += 1;
+
+    if (idx < qs.length - 1) {
+      setIdx(idx + 1); setPicked(null); setTries(0);
+    } else {
+      lockRef.current = true;
+      setDone(true);
+      const total = qs.length;
+      bus.emit('quest:done', { right: rightRef.current, total });
+      onPass?.(eventsRef.current, rightRef.current, total);
+    }
+  }
+
+  return (
+    <div style={{ position: 'absolute', inset: 0, zIndex: 60, display: 'grid', placeItems: 'end center', padding: 8, pointerEvents: 'auto' }}>
+      <div style={{ ...gbcPanel, width: '100%', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {done ? (
+          <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 8, padding: '6px 0' }}>
+            <span style={{ fontSize: '1.4rem' }}>🛂✅</span>
+            <p style={{ fontSize: '0.9rem', fontWeight: 700, margin: 0 }}>통과 · 출구가 열렸어요</p>
+            <p style={{ fontSize: '0.72rem', color: GBC.inkSoft, margin: 0, lineHeight: 1.5 }}>
+              심사관이 도장을 찍었어요. 아래 출구로 나가면 광장으로 돌아가요.
+            </p>
+            <button type="button" onClick={onExit} style={{ ...gbcButtonPrimary, alignSelf: 'center', marginTop: 2 }}>
+              출구로 →
+            </button>
+          </div>
+        ) : (
+          <>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '0.72rem', fontWeight: 700 }}>🛂 심사관</span>
+              <span style={{ fontSize: '0.68rem', color: GBC.inkSoft }}>
+                {q.qtype === 'content' ? '내용 확인' : '문형'} · {idx + 1}/{qs.length}
+              </span>
+            </div>
+
+            <div lang="ja" style={{ fontSize: '0.86rem', lineHeight: 1.55 }}>{q.prompt}</div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {q.choices.map((opt) => {
+                const isWrongPick = picked === opt;
+                return (
+                  <button
+                    key={opt} type="button" lang="ja" onClick={() => pick(opt)}
+                    style={{
+                      ...gbcButton, textAlign: 'left',
+                      background: isWrongPick ? GBC.red : GBC.creamHi,
+                      color: isWrongPick ? GBC.creamHi : GBC.ink,
+                    }}
+                  >
+                    {opt}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* 오답 재시도 — 해당 일본어 정답 문장 재생 + 근거 */}
+            {picked && (
+              <div style={{ background: GBC.creamHi, border: `2px solid ${GBC.creamShade}`, borderRadius: 2, padding: '8px 10px' }}>
+                <div style={{ fontSize: '0.72rem', color: GBC.red, fontWeight: 700, marginBottom: 4 }}>× 다시 — 시도 {tries}회</div>
+                <div lang="ja" style={{ fontSize: '0.9rem', marginBottom: 4 }}>{q.answerText}</div>
+                {q.why && <div style={{ fontSize: '0.72rem', color: GBC.inkSoft, lineHeight: 1.5 }}>{q.why}</div>}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
