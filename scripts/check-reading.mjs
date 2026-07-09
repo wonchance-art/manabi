@@ -294,7 +294,7 @@ function runChecks(track, ctx) {
 
   // ── G6(furigana 정렬): 기존 check-furigana.mjs를 spawn ──
   if (!ctx.skipFurigana) {
-    const items = texts.flatMap((t) => (t.body || []).map((b) => ({ ex: { ja: b.ja, yomi: b.yomi } })));
+    const items = texts.flatMap((t) => (t.body || []).filter((b) => b.ja).map((b) => ({ ex: { ja: b.ja, yomi: b.yomi } })));
     const tmpDir = process.env.CLAUDE_SCRATCH || path.join(ROOT, 'scripts', 'reading');
     const tmp = path.join(tmpDir, `.reading-furigana-tmp.mjs`);
     writeFileSync(tmp, `export default { themes: [{ name: 'reading-body', items: ${JSON.stringify(items)} }] };\n`);

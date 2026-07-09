@@ -197,12 +197,15 @@ function PatternCard({ card, onClose }) {
  * 상단 신규 문형 칩 → 사전 카드 팝오버. 읽기 후 "문제 풀기" → 문항 흐름.
  */
 export default function ReadingTextView({ text, onPass, onBack }) {
-  const [levels, setLevels] = useState({}); // 문장 index → 0(원문)/1(+요미)/2(+한국어)
+  const [revealed, setRevealed] = useState({}); // 문장 index → 한국어 뜻 펼침 여부
+  const [furigana, setFurigana] = useState(true); // 후리가나 루비 — 기본 표시(초심자 배려)
   const [card, setCard] = useState(null);
   const [quizOpen, setQuizOpen] = useState(false);
   const bodyRef = useRef(null);
 
-  const cycle = (i) => setLevels((prev) => ({ ...prev, [i]: ((prev[i] || 0) + 1) % 3 }));
+  const toggleKo = (i) => setRevealed((prev) => ({ ...prev, [i]: !prev[i] }));
+  // narr 문단이 섞인 그레이디드 리더 형식인지 — ja 없는 body 항목이 하나라도 있으면 참
+  const graded = (text.body || []).some((b) => b.narr != null);
 
   const questions = useMemo(() => {
     return (text.questions || []).map((q, i) => ({
@@ -244,25 +247,74 @@ export default function ReadingTextView({ text, onPass, onBack }) {
         </div>
       )}
 
-      {/* 본문 — 문장별 어시스트 토글 */}
-      <div ref={bodyRef} className="card" style={{ padding: '16px 16px 20px', marginBottom: 16 }}>
-        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: 10 }}>
-          문장을 탭하면 원문 → 요미 → 한국어 순으로 도움이 늘어나요.
+      {/* 본문 — 이야기(한국어 내레이션) + 학습 문장(일본어 카드) */}
+      <div ref={bodyRef} className="card" style={{ padding: '18px 16px 22px', marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, flexWrap: 'wrap' }}>
+          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', lineHeight: 1.5, flex: '1 1 180px' }}>
+            {graded
+              ? '일본어 문장을 탭하면 한국어 뜻이 열려요. 후리가나(요미)는 위 버튼으로 켜고 끌 수 있어요.'
+              : '일본어 문장을 탭하면 한국어 뜻이 열려요.'}
+          </div>
+          <button
+            type="button"
+            className="chip"
+            aria-pressed={furigana}
+            onClick={() => setFurigana((v) => !v)}
+            style={{ flex: '0 0 auto', opacity: furigana ? 1 : 0.55 }}
+          >
+            {furigana ? '가나 ON' : '가나 OFF'}
+          </button>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {(text.body || []).map((b, i) => {
-            const lv = levels[i] || 0;
+            // 내레이션 문단 — 이야기용 세리프 본문 타이포
+            if (b.narr != null) {
+              return (
+                <p
+                  key={i}
+                  style={{
+                    fontFamily: 'var(--font-serif, Georgia, "Nanum Myeongjo", "Apple SD Gothic Neo", serif)',
+                    fontSize: '1.02rem',
+                    lineHeight: 1.9,
+                    color: 'var(--text-primary, var(--text-secondary))',
+                    margin: '4px 0',
+                    letterSpacing: '0.01em',
+                  }}
+                >
+                  {b.narr}
+                </p>
+              );
+            }
+            // 학습 대상 일본어 문장 카드
+            const open = !!revealed[i];
             return (
-              <div key={i} role="button" tabIndex={0}
-                onClick={() => cycle(i)}
-                onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && cycle(i)}
-                style={{ cursor: 'pointer', borderLeft: '2px solid var(--border)', paddingLeft: 10 }}
+              <div
+                key={i}
+                role="button"
+                tabIndex={0}
+                aria-expanded={open}
+                onClick={() => toggleKo(i)}
+                onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), toggleKo(i))}
+                style={{
+                  cursor: 'pointer',
+                  background: 'var(--surface-2, rgba(127,127,127,0.06))',
+                  borderLeft: '3px solid var(--accent, var(--brand, #6c7cff))',
+                  borderRadius: '4px 8px 8px 4px',
+                  padding: '11px 13px',
+                }}
               >
-                <div style={{ fontSize: '1.08rem', lineHeight: 1.8 }}>
-                  {lv === 0 ? <span lang="ja">{b.ja}</span> : <JaText ja={b.ja} yomi={b.yomi} fallbackPron={false} />}
+                <div lang="ja" style={{ fontSize: '1.12rem', lineHeight: furigana ? 2.1 : 1.7 }}>
+                  {furigana ? (
+                    <JaText ja={b.ja} yomi={b.yomi} fallbackPron={false} />
+                  ) : (
+                    <span lang="ja">{b.ja}</span>
+                  )}
                 </div>
-                {lv >= 2 && (
-                  <div style={{ fontSize: '0.86rem', color: 'var(--text-secondary)', marginTop: 4 }}>{b.ko}</div>
+                {open ? (
+                  <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: 6 }}>{b.ko}</div>
+                ) : (
+                  <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: 4 }}>탭하면 한국어 뜻 ▾</div>
                 )}
               </div>
             );
