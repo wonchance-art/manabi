@@ -10,10 +10,15 @@
  *   독해 통과가 챕터 통계에 섞여 RT-12(오염 0) 를 위반한다.
  */
 import { supabase } from './supabase';
+import { enqueueGrammarReview } from './grammarSrs';
 
 /** 통과 글 id 를 담는 localStorage Set 키 — 챕터용 Set(ja_read_chapters)과 절대 혼합 금지 */
 export const READING_KEY = 'ja_reading_texts';
-/** user_ref_progress·grammar_review 에 쓰는 lang 값(기존 일본어 관행 값) */
+/**
+ * user_ref_progress·grammar_review·review_events 에 쓰는 lang 값 — 독해 트랙의 단일 원천.
+ * 다른 학습 기능이 전부 'Japanese' 를 쓰므로 'ja' 를 섞으면 약점 집계·난이도 다이얼이
+ * lang='Japanese' 조회에서 독해 신호를 통째로 놓친다. 이벤트 생성은 buildReadingEvents 로만.
+ */
 export const READING_LANG = 'Japanese';
 /** 파일럿 단일 트랙 id */
 export const READING_TRACK_ID = 'n5-tokyo';
@@ -49,6 +54,58 @@ export function mergeReadingSet(localSet, rows) {
   const merged = new Set(localSet);
   for (const id of readingIdsFromRows(rows)) merged.add(id);
   return merged;
+}
+
+/** 드릴 합성 id 판별 — drillId() 규칙(-drill-<index>)의 역. 글 단위 SRS 대상 제외에 쓴다 */
+export const isReadingDrillId = (id) => typeof id === 'string' && /-drill-\d+$/.test(id);
+
+/**
+ * 백필 대상 slug 계산(순수) — 통과 집합 중 grammar_review 큐에 아직 없는 '글'만.
+ * - 드릴 제외: 글 단위 재검증 SRS 는 글에만 건다(ReadingTrackPage.handlePass 와 동일 규약).
+ * - queuedSlugs(기존 큐 조회 결과)로 중복 등록을 막는다 — grammarSrs.staggerBackfillRows 의
+ *   existingKeys 관행과 같은 원리. enqueue 자체도 ignoreDuplicates upsert 라 이중 안전으로,
+ *   경합이 나도 기존 SRS 진행(interval·next_review_at)을 절대 덮지 않는다.
+ * @param {Iterable<string>} passedIds - 통과한 글/드릴 id 집합
+ * @param {Iterable<string>} queuedSlugs - grammar_review 에 이미 있는 rt: slug 목록
+ * @returns {string[]} 등록해야 할 rt: slug
+ */
+export function missingReviewSlugs(passedIds, queuedSlugs) {
+  const queued = new Set(queuedSlugs || []);
+  const out = [];
+  for (const id of passedIds || []) {
+    if (!id || isReadingDrillId(id)) continue;
+    const slug = readingSlug(id);
+    if (!queued.has(slug)) out.push(slug);
+  }
+  return out;
+}
+
+/**
+ * 문항 응답 → review_events 페이로드(순수) — 독해 이벤트 계약의 단일 원천.
+ * 소비처(본편 ReadingTextView·월드 AirportQuiz)가 각자 페이로드를 만들면 계약이 갈라지므로
+ * 세 규칙을 여기서 강제한다:
+ * - lang 은 READING_LANG('Japanese') 고정 — 'ja' 표기 혼용 금지(상수 주석 참조).
+ * - correct 는 **최초 시도**의 정오만 기록 — 게이팅 문항을 재시도 끝 정답으로 덮으면 전부
+ *   correct:true 가 되어 약점 신호가 소실된다. 재시도 횟수는 detail.tries 로 남긴다.
+ * - 미응답(tries 0) 문항은 이벤트를 만들지 않는다 — 응답하지 않은 content 를 오답으로
+ *   집계하면 정답률(EWMA·다이얼)이 부당하게 깎인다. 응답한 문항만 기록.
+ * @param {string} textId - 글/드릴 id (detail.text_id 로 실림)
+ * @param {Array<{itemKey: string, qtype: 'pattern'|'content', firstOk: boolean, tries: number}>} results
+ * @returns {Array} logReviewEvents 에 그대로 넘길 수 있는 이벤트 배열
+ */
+export function buildReadingEvents(textId, results) {
+  const out = [];
+  for (const r of results || []) {
+    if (!r || !r.itemKey || !(r.tries > 0)) continue; // 미응답 → 발행 자체를 생략
+    out.push({
+      lang: READING_LANG,
+      source: 'reading',
+      item_key: r.itemKey,
+      correct: !!r.firstOk,
+      detail: { text_id: textId, qtype: r.qtype, tries: r.tries },
+    });
+  }
+  return out;
 }
 
 /**
@@ -194,6 +251,25 @@ export async function pullReadingProgress(userId) {
       .map((id) => ({ user_id: userId, lang: READING_LANG, slug: readingSlug(id), read: true }));
     if (toPush.length) {
       await supabase.from('user_ref_progress').upsert(toPush, { onConflict: 'user_id,lang,slug' });
+    }
+
+    // 로그인 동기화 백필 — 통과(rt:) 글인데 grammar_review 에 재검증 큐가 없는 것을 등록한다.
+    // 통과 시점 등록(handlePass·recordPass)이 비로그인·타기기에서 일어났으면 이 계정 큐가
+    // 비어 있으므로, pull 이 유일한 회복 지점이다. 기존 큐를 먼저 조회해 중복을 걸러낸다
+    // (missingReviewSlugs — grammarSrs 백필 관행). 조회 실패 시엔 건너뛴다: 중복 방지
+    // 근거 없이 enqueue 하지 않는다(다음 pull 에서 자연 재시도).
+    if (merged.size) {
+      const { data: queued, error: qErr } = await supabase
+        .from('grammar_review')
+        .select('slug')
+        .eq('user_id', userId)
+        .eq('lang', READING_LANG)
+        .like('slug', 'rt:%');
+      if (!qErr) {
+        for (const slug of missingReviewSlugs(merged, (queued || []).map((r) => r.slug))) {
+          enqueueGrammarReview(userId, READING_LANG, slug); // fire-and-forget·ignoreDuplicates
+        }
+      }
     }
     return changed;
   } catch {

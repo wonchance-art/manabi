@@ -1,10 +1,13 @@
 import { supabase } from './supabase';
+// rt: 접두 판별의 단일 원천 — 독해 트랙 네임스페이스 규칙은 readingProgress.js 가 소유한다.
+import { isReadingSlug } from './readingProgress';
 
 /**
  * 레퍼런스 학습 진행 동기화 (user_ref_progress)
  * - 비로그인: localStorage 단독 (기존 동작 그대로)
  * - 로그인: 쓰기 시 서버 upsert + 목록 진입 시 양방향 병합(pull)
  * 읽음 키(ja_read_chapters 등)의 접두사로 언어를 판별한다.
+ * 주의: 같은 테이블에 독해 트랙 행(slug 'rt:' 접두)이 공존한다 — 이 파일은 챕터 행만 다룬다.
  */
 const PREFIX_LANG = { ja: 'Japanese', en: 'English', fr: 'French', zh: 'Chinese' };
 
@@ -48,6 +51,29 @@ const PULL_THROTTLE_KEY = 'ref_pull_at';
 const PULL_THROTTLE_MS = 5 * 60 * 1000;
 
 /**
+ * 서버 행 → lang별 챕터 행 Map (순수 — pullProgress 병합 재료).
+ * slug 가 'rt:' 접두인 행은 독해 트랙 전용 네임스페이스라 여기서 걸러낸다 — 같은
+ * user_ref_progress 테이블을 쓰지만 소비자는 readingProgress.js(pullReadingProgress)다.
+ * 거르지 않으면 병합 루프가 rt: 행을 챕터 읽음 Set(ja_read_chapters)·체크 기록에 섞어
+ * 완주율을 오염시킨다(RT-12 위반).
+ */
+export function chapterRowsByLang(rows) {
+  const byLang = {};
+  for (const r of rows || []) {
+    if (!r || typeof r.slug !== 'string' || isReadingSlug(r.slug)) continue;
+    (byLang[r.lang] ||= new Map()).set(r.slug, r);
+  }
+  return byLang;
+}
+
+/** 챕터 읽음 병합(순수) — 서버 read:true 를 합집합. 입력 Set 은 건드리지 않는다. */
+export function mergeChapterRead(localRead, remoteMap) {
+  const merged = new Set(localRead);
+  for (const [slug, r] of remoteMap) if (r.read) merged.add(slug);
+  return merged;
+}
+
+/**
  * 서버 ↔ localStorage 양방향 병합.
  * readKeys: { Japanese: 'ja_read_chapters', ... }
  * 반환: localStorage가 갱신됐으면 true (호출부가 상태 재로딩).
@@ -67,8 +93,8 @@ export async function pullProgress(userId, readKeys, { force = false } = {}) {
       .eq('user_id', userId);
     if (error) return false;
 
-    const byLang = {};
-    (data || []).forEach(r => { (byLang[r.lang] ||= new Map()).set(r.slug, r); });
+    // 독해 트랙(rt:) 행은 챕터 병합에서 제외 — readingProgress.js 몫(chapterRowsByLang 주석 참조)
+    const byLang = chapterRowsByLang(data);
 
     let changed = false;
     const toPush = [];
@@ -81,13 +107,15 @@ export async function pullProgress(userId, readKeys, { force = false } = {}) {
       let localRead;
       try { localRead = new Set(JSON.parse(localStorage.getItem(readKey) || '[]')); }
       catch { localRead = new Set(); }
-      const before = localRead.size;
-      for (const [slug, r] of remote) if (r.read) localRead.add(slug);
-      if (localRead.size !== before) {
-        localStorage.setItem(readKey, JSON.stringify([...localRead]));
+      // 자가 치유 — 과거(필터 이전) 병합이 섞어 넣은 rt: 잔재를 로컬 Set 에서 걷어낸다.
+      // 남겨두면 완주율이 계속 부풀고, 아래 push 루프가 rt: 를 챕터 읽음처럼 되밀어 올린다.
+      const cleanRead = new Set([...localRead].filter(s => !isReadingSlug(s)));
+      const mergedRead = mergeChapterRead(cleanRead, remote);
+      if (cleanRead.size !== localRead.size || mergedRead.size !== cleanRead.size) {
+        localStorage.setItem(readKey, JSON.stringify([...mergedRead]));
         changed = true;
       }
-      for (const slug of localRead) {
+      for (const slug of mergedRead) {
         if (!remote.get(slug)?.read) {
           toPush.push({ user_id: userId, lang, slug, read: true });
         }

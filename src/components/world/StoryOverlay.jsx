@@ -13,6 +13,8 @@
 import { useMemo, useRef, useState } from 'react';
 import { GBC, gbcPanel, gbcButton, gbcButtonPrimary } from './QuestReview';
 import { JaText } from '../../views/refShared';
+// 이벤트 계약 단일 원천 — lang('Japanese')·최초 시도 correct·미응답 제외 규칙을 강제한다.
+import { buildReadingEvents } from '../../lib/readingProgress';
 import bus from './bus';
 
 const SPEAKER_LABEL = { officer: '심사관', player: '민준', sign: '안내' };
@@ -122,7 +124,7 @@ export function AirportQuiz({ text, onPass, onExit }) {
   const [picked, setPicked] = useState(null);   // 이번 문항에서 고른 오답(재시도 텍스트박스 표시용)
   const [tries, setTries] = useState(0);
   const [done, setDone] = useState(false);
-  const eventsRef = useRef([]);   // 문항별 review_events 페이로드 누적
+  const resultsRef = useRef([]);  // 문항별 { itemKey, qtype, firstOk, tries } — 통과 시 buildReadingEvents 로 일괄 변환
   const rightRef = useRef(0);
   const lockRef = useRef(false);
 
@@ -140,12 +142,11 @@ export function AirportQuiz({ text, onPass, onExit }) {
       return;
     }
 
-    // 정답(또는 content 첫 응답으로 확정) → 이벤트 기록 후 다음.
-    eventsRef.current.push({
-      lang: 'ja', source: 'reading', item_key: q.itemKey, correct: ok,
-      detail: { text_id: text.id, qtype: q.qtype, tries: nextTries },
-    });
-    if (ok) rightRef.current += 1;
+    // 정답(또는 content 첫 응답으로 확정) → 결과 누적 후 다음.
+    // correct 는 최초 시도 기준 — 게이팅 재시도는 오답에서만 생기므로
+    // nextTries>1 이면 최초 시도는 반드시 오답(firstOk=false)이다.
+    resultsRef.current.push({ itemKey: q.itemKey, qtype: q.qtype, firstOk: nextTries === 1 && ok, tries: nextTries });
+    if (ok) rightRef.current += 1; // 연출용 right/total 은 종전대로 확정 시점 정오(quest:done 표시 계약 유지)
 
     if (idx < qs.length - 1) {
       setIdx(idx + 1); setPicked(null); setTries(0);
@@ -154,7 +155,7 @@ export function AirportQuiz({ text, onPass, onExit }) {
       setDone(true);
       const total = qs.length;
       bus.emit('quest:done', { right: rightRef.current, total });
-      onPass?.(eventsRef.current, rightRef.current, total);
+      onPass?.(buildReadingEvents(text.id, resultsRef.current), rightRef.current, total);
     }
   }
 

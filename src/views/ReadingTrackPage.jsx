@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../lib/AuthContext';
 import { logReviewEvents } from '../lib/reviewEvents';
 import { enqueueGrammarReview } from '../lib/grammarSrs';
@@ -25,6 +26,7 @@ import ReadingTextView, { ReadingDrillView } from './ReadingTextView';
  */
 export default function ReadingTrackPage({ track }) {
   const { user } = useAuth();
+  const router = useRouter();
   const [passedSet, setPassedSet] = useState(() => new Set());
   const [active, setActive] = useState(null); // 열려 있는 노드 id (null = 목록)
 
@@ -45,6 +47,17 @@ export default function ReadingTrackPage({ track }) {
     [track, passedSet]
   );
 
+  // 훅 순서 보존을 위해 early return 앞에서 파생(훅 아님) — 아래 스트립 가드 effect 가 쓴다
+  const activeNode = active ? stated.find((n) => n.id === active) : null;
+
+  // 스트립 노드 열람 가드 — 서버는 열린 노드까지만 문항을 내려주므로(P2-7, readingPayload.js)
+  // 로컬 진도가 서버 payload 보다 앞서면(멀티 기기·통과 직후 재조회 경합 잔재) 문항 미수신
+  // 상태로 열릴 수 있다. 로그인 상태면 서버 재조회로 자동 회복한다(게스트는 로그인 안내 UI).
+  const activeStripped = !!(activeNode && activeNode.ref?.stripped);
+  useEffect(() => {
+    if (activeStripped && user?.id) router.refresh();
+  }, [activeStripped, user?.id, router]);
+
   if (!track) {
     return (
       <div className="page-container" style={{ maxWidth: 720 }}>
@@ -53,22 +66,55 @@ export default function ReadingTrackPage({ track }) {
     );
   }
 
-  const activeNode = active ? stated.find((n) => n.id === active) : null;
-
   // 통과 시점 기록 배선 — 로컬 Set·서버 upsert·review_events·글 단위 SRS 큐
-  function handlePass(node, events) {
+  async function handlePass(node, events) {
     const next = markReadingPassedLocal(node.id);
     setPassedSet(next);
-    if (user?.id) {
-      markReadingPassedRemote(user.id, node.id);
-      logReviewEvents(user.id, events); // lang:'ja', source:'reading' — rung 미연결(vocab 전용)
-      // 글 단위 재검증: grammar_review 에 rt: slug 등록(드릴은 글 단위 SRS 대상 아님)
-      if (node.kind === 'text') enqueueGrammarReview(user.id, READING_LANG, readingSlug(node.id));
-    }
+    if (!user?.id) return; // 게스트 — 서버 payload 는 order 1 고정이라 재조회 무의미(로그인 안내 UI 담당)
+    markReadingPassedRemote(user.id, node.id);
+    logReviewEvents(user.id, events); // lang:'ja', source:'reading' — rung 미연결(vocab 전용)
+    // 글 단위 재검증: grammar_review 에 rt: slug 등록(드릴은 글 단위 SRS 대상 아님)
+    if (node.kind === 'text') enqueueGrammarReview(user.id, READING_LANG, readingSlug(node.id));
+    // 다음 노드 문항 확보 — 서버는 열린 노드까지만 문항을 내려주므로(P2-7 스트립) 재조회가 필요.
+    // markReadingPassedRemote 는 fire-and-forget 이라 그것만 믿고 refresh 하면 upsert 와 경합한다.
+    // pullReadingProgress 는 로컬 전용 통과분을 await 업서트하므로, 완료 시점엔 서버가 이번
+    // 통과를 반드시 알고 있다 — 그 뒤의 refresh 는 경합 없이 다음 문항을 받는다.
+    const changed = await pullReadingProgress(user.id);
+    if (changed) setPassedSet(loadPassedTexts()); // 병합으로 타 기기 진도가 들어왔으면 반영
+    router.refresh();
   }
 
   // ── 글/드릴 뷰어 ──
   if (activeNode) {
+    // 스트립 노드 — 문항이 서버 payload 에 없다(readingPayload.js 의 stripped 표식).
+    // 원래 빈 문항과 구분되는 명시 표식이므로 뷰어 대신 회복 UI 를 띄운다:
+    // 로그인 사용자는 위 가드 effect 의 재조회를 기다리고, 게스트는 여기가 잠금 경계다.
+    if (activeNode.ref?.stripped) {
+      return (
+        <div className="page-container" style={{ maxWidth: 720 }}>
+          <button type="button" className="chip" onClick={() => setActive(null)} style={{ marginBottom: 12 }}>← 목록</button>
+          <div className="card" style={{ padding: '28px 18px', textAlign: 'center' }}>
+            {user?.id ? (
+              <>
+                <p style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', marginBottom: 14 }}>
+                  문항을 불러오는 중이에요…
+                </p>
+                <button type="button" className="btn btn--secondary btn--sm" onClick={() => router.refresh()}>
+                  다시 시도
+                </button>
+              </>
+            ) : (
+              <>
+                <p style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', marginBottom: 14 }}>
+                  여기서부터는 로그인해야 진도가 저장되고 다음 글의 문항이 열려요.
+                </p>
+                <Link href="/auth" className="btn btn--primary btn--md">로그인하러 가기</Link>
+              </>
+            )}
+          </div>
+        </div>
+      );
+    }
     if (activeNode.kind === 'text') {
       return (
         <div className="page-container" style={{ maxWidth: 720 }}>

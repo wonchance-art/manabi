@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState } from 'react';
 import { JaText } from './refShared';
+import { buildReadingEvents } from '../lib/readingProgress';
 
 /**
  * 독해 글 뷰어 + 문항 흐름 (신규 컴포넌트).
@@ -10,6 +11,8 @@ import { JaText } from './refShared';
  * 문항 흐름 규칙(기획 §5·RT-14):
  * - pattern 문항 전부 정답이 통과 조건. content 문항은 출제하되 통과 판정에서 제외.
  * - 오답 시 근거(본문)로 스크롤·재독 후 재시도(무한). 시도 횟수(tries)를 기록한다.
+ * - 이벤트 계약은 buildReadingEvents(readingProgress.js)가 단일 원천 — correct 는 최초 시도
+ *   기준(재시도 횟수는 detail.tries), 미응답 content 는 발행하지 않는다.
  */
 
 function shuffleWithAnswer(choices, answerIdx) {
@@ -39,7 +42,7 @@ function QuestionFlow({ questions, textId, onScrollToEvidence, onPass, passLabel
     // 최초 1회만
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const [answers, setAnswers] = useState({}); // key → { picked, ok, tries }
+  const [answers, setAnswers] = useState({}); // key → { picked, ok, tries, firstOk }
   const [passed, setPassed] = useState(false);
 
   const gating = shuffled.filter((q) => q.gating);
@@ -52,8 +55,11 @@ function QuestionFlow({ questions, textId, onScrollToEvidence, onPass, passLabel
     if (!q.gating && cur) return;
     const ok = opt === q.answerText;
     setAnswers((prev) => {
-      const tries = (prev[q.key]?.tries || 0) + 1;
-      return { ...prev, [q.key]: { picked: opt, ok, tries } };
+      const before = prev[q.key];
+      const tries = (before?.tries || 0) + 1;
+      // firstOk 는 첫 응답에서 확정·고정 — 재시도 끝의 정답이 최초 시도 기록을 덮지 않는다
+      //(이벤트의 correct 는 최초 시도 기준이라는 계약, buildReadingEvents 참조).
+      return { ...prev, [q.key]: { picked: opt, ok, tries, firstOk: before ? before.firstOk : ok } };
     });
     if (!ok && q.gating && onScrollToEvidence) onScrollToEvidence();
   }
@@ -61,16 +67,15 @@ function QuestionFlow({ questions, textId, onScrollToEvidence, onPass, passLabel
   function finish() {
     if (passed) return;
     setPassed(true);
-    const events = shuffled.map((q) => {
-      const a = answers[q.key];
-      return {
-        lang: 'ja',
-        source: 'reading',
-        item_key: q.itemKey,
-        correct: !!a?.ok,
-        detail: { text_id: textId, qtype: q.qtype, tries: a?.tries || 0 },
-      };
-    });
+    // 페이로드는 buildReadingEvents(단일 원천)가 조립 — lang:'Japanese' 고정,
+    // correct=최초 시도(firstOk), 미응답(tries 0) content 는 이벤트 자체를 내지 않는다.
+    const events = buildReadingEvents(
+      textId,
+      shuffled.map((q) => {
+        const a = answers[q.key];
+        return { itemKey: q.itemKey, qtype: q.qtype, firstOk: !!a?.firstOk, tries: a?.tries || 0 };
+      })
+    );
     onPass?.(events);
   }
 

@@ -210,7 +210,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
     markReadingPassedLocal(READING_TEXT_ID);
     if (userId) {
       markReadingPassedRemote(userId, READING_TEXT_ID);
-      logReviewEvents(userId, events); // lang:'ja', source:'reading'
+      logReviewEvents(userId, events); // AirportQuiz→buildReadingEvents 산출물 — lang:'Japanese', source:'reading'
       enqueueGrammarReview(userId, READING_LANG, readingSlug(READING_TEXT_ID));
     }
     setStoryPhase('passed');
