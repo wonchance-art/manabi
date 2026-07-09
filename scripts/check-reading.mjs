@@ -60,15 +60,17 @@ function normJa(ja) {
 }
 /** 문형 pattern → 본문 실재 검사용 어간 후보 배열(한국어/라틴 플레이스홀더 포함 문형은 검증 불가로 제외) */
 function patternStems(pattern) {
-  // 대안 분리: ・、 외에 /·／(これ/それ/あれ, あります/います)도 경계다.
-  const alts = String(pattern).split(/[・、/／]/);
   const stems = [];
+  let p = String(pattern);
+  // 괄호 병기 독음(何(なん/なに), 〜くらい(ぐらい))을 "분리보다 먼저" 대안으로 추출·제거 —
+  // 괄호 안의 /를 대안 경계로 자르면 何(なん·なに) 같은 깨진 어간이 생긴다.
+  for (const m of p.matchAll(/[（(]([^）)]+)[）)]/g))
+    for (const inner of m[1].split(/[/／・]/))
+      if (inner && !/[가-힣A-Za-z]/.test(inner)) stems.push(inner.replace(/[\s　]/g, ''));
+  p = p.replace(/[（(][^）)]*[）)]/g, '');
+  // 대안 분리: ・、 외에 /·／(これ/それ/あれ, あります/います)도 경계다.
+  const alts = p.split(/[・、/／]/);
   for (let alt of alts) {
-    // 괄호 병기 독음(何(なん/なに), 〜くらい(ぐらい))은 별도 대안으로 승격
-    for (const m of alt.matchAll(/[（(]([^）)]+)[）)]/g))
-      for (const inner of m[1].split(/[/／・]/))
-        if (inner && !/[가-힣A-Za-z]/.test(inner)) stems.push(inner.replace(/[\s　]/g, ''));
-    alt = alt.replace(/[（(][^）)]*[）)]/g, '');
     // 〜(슬롯)·+ 를 경계로 리터럴 조각을 나누고 가장 긴 "일본어" 조각을 어간으로 —
     // 다중 슬롯 문형(〜は 〜に あります)에서 조각을 이어붙이면 본문에 절대 없는 문자열이 되고,
     // 한글 플레이스홀더(あの + 명사)를 alt째 버리면 딸린 일본어 조각(あの)까지 잃는다.
@@ -159,6 +161,8 @@ function runChecks(track, ctx) {
 
   // ── G5: 내용어 커버리지(kuromoji) ──
   const placeJaSet = new Set(Object.keys(ctx.placeYomi));
+  // setPhrases(선언된 통문장 예외 — いらっしゃいませ 등)가 데려오는 단어 면제
+  const setPhraseText = texts.flatMap((t) => t.setPhrases || []).join('');
   // 문형 공급어 면제 — 문형 문자열(〜とき, ぜんぜん 〜ない 등)이 스스로 데려오는 단어는
   // 어휘 카드가 없어도 커버된 것으로 본다(도입 검증은 G1/G4가 담당).
   const patternWordSet = new Set();
@@ -206,6 +210,8 @@ function runChecks(track, ctx) {
           if (joins.some((j) => j && (ctx.vocabPool.has(j) || ctx.vocabPool.has(normJa(j)) || placeJaSet.has(j)))) continue;
           // 미화 접두(お寺·ご飯) — 접두를 벗긴 형태가 풀에 있으면 커버
           if (/^[おご]./.test(surf) && (ctx.vocabPool.has(surf.slice(1)) || ctx.vocabPool.has(base.slice(1)))) continue;
+          // 선언된 통문장 표현(setPhrases)의 구성어 면제
+          if (surf.length >= 2 && setPhraseText.includes(surf)) continue;
           missWords.add(base);
         }
       }
