@@ -89,6 +89,9 @@ import bunkeiN3 from './bunkei/n3';
 import bunkeiN2 from './bunkei/n2';
 import bunkeiN1 from './bunkei/n1';
 
+// 독해 트랙(파일럿) — 챕터·문형 사전과 별개의 "글 이해 완주" 레이어
+import readingN5Tokyo from './reading/n5_tokyo';
+
 /** 레벨 메타 — 가이드 로드맵과 같은 웜 그라데이션 */
 export const JA_LEVEL_META = [
   {
@@ -159,5 +162,12 @@ export function countBunkei(levelKey) {
   return b.themes.reduce((sum, t) => sum + t.items.length, 0);
 }
 
-// default export(레지스트리)에도 문형 사전 API 포함 — refLangs가 default를 펼쳐 쓰므로 필수
-export default { ...registry, getBunkei, countBunkei };
+/** 독해 트랙 레지스트리 — 파일럿은 단일 트랙(n5-tokyo) */
+const READING_TRACKS = { 'n5-tokyo': readingN5Tokyo };
+
+export function getReadingTrack(trackId = 'n5-tokyo') {
+  return READING_TRACKS[trackId] || null;
+}
+
+// default export(레지스트리)에도 문형 사전·독해 API 포함 — refLangs가 default를 펼쳐 쓰므로 필수
+export default { ...registry, getBunkei, countBunkei, getReadingTrack };
