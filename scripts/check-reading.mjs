@@ -60,13 +60,27 @@ function normJa(ja) {
 }
 /** 문형 pattern → 본문 실재 검사용 어간 후보 배열(한국어/라틴 플레이스홀더 포함 문형은 검증 불가로 제외) */
 function patternStems(pattern) {
-  const alts = String(pattern).split(/[・、]/);
+  // 대안 분리: ・、 외에 /·／(これ/それ/あれ, あります/います)도 경계다.
+  const alts = String(pattern).split(/[・、/／]/);
   const stems = [];
   for (let alt of alts) {
-    alt = alt.replace(/[（(][^）)]*[）)]/g, '').replace(/[～〜~＋+\s]/g, '');
-    if (/[가-힣A-Za-z]/.test(alt)) continue; // 명사·형용사·A/B 등 플레이스홀더 → 검증 불가
-    if (!alt) continue;
-    stems.push(alt);
+    // 괄호 병기 독음(何(なん/なに), 〜くらい(ぐらい))은 별도 대안으로 승격
+    for (const m of alt.matchAll(/[（(]([^）)]+)[）)]/g))
+      for (const inner of m[1].split(/[/／・]/))
+        if (inner && !/[가-힣A-Za-z]/.test(inner)) stems.push(inner.replace(/[\s　]/g, ''));
+    alt = alt.replace(/[（(][^）)]*[）)]/g, '');
+    // 〜(슬롯)·+ 를 경계로 리터럴 조각을 나누고 가장 긴 "일본어" 조각을 어간으로 —
+    // 다중 슬롯 문형(〜は 〜に あります)에서 조각을 이어붙이면 본문에 절대 없는 문자열이 되고,
+    // 한글 플레이스홀더(あの + 명사)를 alt째 버리면 딸린 일본어 조각(あの)까지 잃는다.
+    const segs = alt.split(/[～〜~＋+]/)
+      .map((s) => s.replace(/[\s　]/g, ''))
+      .filter((s) => s && !/[가-힣A-Za-z]/.test(s));
+    if (!segs.length) continue;
+    segs.sort((a, b) => b.length - a.length);
+    stems.push(segs[0]);
+    // 조사+용언 조각(がでけます 류)은 부사 삽입(が 少し できます)으로 연속이 깨진다 — 용언부도 대안으로
+    const m2 = segs[0].match(/^[がをにはでとへも]([぀-ヿ一-龯]{3,})$/);
+    if (m2) stems.push(m2[1]);
   }
   return stems;
 }
@@ -123,52 +137,75 @@ function runChecks(track, ctx) {
   if (new Set(orders).size !== orders.length) E('ORD', 'order 중복');
 
   // ── G4: 신규 문형 본문 실재(어간 매칭) ──
+  // 본문은 공백 제거(flat) — 하우스 스타일(단어 사이 띄어쓰기)과 무관하게 매칭.
+  // 대안 문형(これ/それ/あれ 등)은 "합산" 출현으로 판정 — 어느 하나만 여러 번 나와도 정상 사용이다.
   for (const t of texts) {
-    const text = bodyJa(t);
+    const flat = bodyJa(t).replace(/[\s　]/g, '');
+    // 요미(히라가나) 본문도 대조 — 본문이 한자 표기(少し·後で)여도 가나 어간(すこし·あとで)이 잡힌다.
+    const flatYomi = (t.body || []).map((b) => b.yomi || '').join('').replace(/[\s　]/g, '');
+    const countIn = (hay, key) => { let c = 0, i = 0; while ((i = hay.indexOf(key, i)) !== -1) { c++; i += key.length; } return c; };
     for (const p of (t.newPatterns || [])) {
       const stems = patternStems(p);
       if (!stems.length) continue; // 플레이스홀더 문형은 실재 검사 면제
-      let best = 0;
+      let total = 0, minLen = Infinity;
       for (const stem of stems) {
-        const oneChar = stem.length <= 1;
+        minLen = Math.min(minLen, stem.length);
         const key = stem.length >= 3 ? stem.slice(0, -1) : stem; // 활용 어미 1글자 유연화(최소 2자)
-        let count = 0, idx = 0;
-        while ((idx = text.indexOf(key, idx)) !== -1) { count++; idx += key.length; }
-        const need = oneChar ? 1 : 2;
-        if (count >= need) { best = Math.max(best, count); }
-        else best = Math.max(best, -1); // 표시용
+        total += Math.max(countIn(flat, key), countIn(flatYomi, key)); // 표기·요미 중 큰 쪽(이중 계상 방지)
       }
-      // 어느 대안이든 충족하면 통과
-      const ok = stems.some((stem) => {
-        const oneChar = stem.length <= 1;
-        const key = stem.length >= 3 ? stem.slice(0, -1) : stem;
-        let count = 0, idx = 0;
-        while ((idx = text.indexOf(key, idx)) !== -1) { count++; idx += key.length; }
-        return count >= (oneChar ? 1 : 2);
-      });
-      if (!ok) E('G4', `글${t.order} 신규 문형 본문 미실재: ${p}`);
+      if (total < (minLen <= 1 ? 1 : 2)) E('G4', `글${t.order} 신규 문형 본문 미실재: ${p}`);
     }
   }
 
   // ── G5: 내용어 커버리지(kuromoji) ──
   const placeJaSet = new Set(Object.keys(ctx.placeYomi));
+  // 문형 공급어 면제 — 문형 문자열(〜とき, ぜんぜん 〜ない 등)이 스스로 데려오는 단어는
+  // 어휘 카드가 없어도 커버된 것으로 본다(도입 검증은 G1/G4가 담당).
+  const patternWordSet = new Set();
+  for (const p of ctx.patternUniverse) {
+    for (const frag of String(p).replace(/[〜()（）・+]/g, ' ').split(/\s+/)) {
+      const f = frag.trim();
+      if (f && /[぀-ヿ一-龯]/.test(f)) patternWordSet.add(f);
+    }
+  }
   if (ctx.tokenizer) {
     const missWords = new Set();
     for (const t of texts) {
       for (const b of (t.body || [])) {
         if (!b.ja) continue;
-        for (const tok of ctx.tokenizer.tokenize(b.ja)) {
+        const toks = ctx.tokenizer.tokenize(b.ja);
+        for (let i = 0; i < toks.length; i++) {
+          const tok = toks[i];
           if (!CONTENT_POS.has(tok.pos)) continue;
           if (tok.pos_detail_1 === '数') continue; // 수사 면제
           const base = tok.basic_form && tok.basic_form !== '*' ? tok.basic_form : tok.surface_form;
           const surf = tok.surface_form;
-          // 고유명사(지명 등재분) 면제
+          // 비 CJK 토큰(기호·숫자 파편) 면제
+          if (!/[぀-ヿ一-龯]/.test(base) && !/[぀-ヿ一-龯]/.test(surf)) continue;
+          // 고유명사(지명 등재분)·주인공 인명(kuromoji가 ミン+ジュン으로 쪼갬) 면제
           if (tok.pos_detail_1 === '固有名詞' && (placeJaSet.has(base) || placeJaSet.has(surf))) continue;
+          if (surf === 'ミンジュン' || surf === 'ミン' || surf === 'ジュン') continue;
+          // 수·조수사 복합(七月·四時半·三人 등) — 숫자+카운터 결합은 조수사·시간 문형이 공급
+          if (/^[0-90-9一二三四五六七八九十百千]*[月日時分歳円人枚本匹冊回番]半?$/.test(surf)) continue;
           if ([...placeJaSet].some((pj) => pj.includes(surf) || surf.includes(pj))) {
             if (placeJaSet.has(base) || placeJaSet.has(surf)) continue;
           }
           const cand = [base, surf, normJa(base), normJa(surf)];
           if (cand.some((c) => ctx.vocabPool.has(c) || placeJaSet.has(c))) continue;
+          // 문형 공급어 면제 — 한자 표기 토큰은 독음(reading)을 가나로 내려 대조(後で→あとで)
+          if (patternWordSet.has(base) || patternWordSet.has(surf)) continue;
+          const hira = tok.reading ? tok.reading.replace(/[ァ-ヶ]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) - 0x60)) : '';
+          if (hira && (patternWordSet.has(hira) || ctx.vocabPool.has(hira))) continue;
+          if ([...patternWordSet].some((w) => w.length >= 2 && (w.startsWith(surf) || w.startsWith(base) || (hira && w.startsWith(hira))))) continue;
+          // 분리 토큰 결합 매칭 — kuromoji가 관용구·お접두를 쪼갠 경우(おねがい+し+ます,
+          // お+土産)를 인접 표층형 결합으로 복원해 풀과 대조한다.
+          const prev = i > 0 ? toks[i - 1].surface_form : '';
+          const n1 = i + 1 < toks.length ? toks[i + 1].surface_form : '';
+          const n2 = i + 2 < toks.length ? toks[i + 2].surface_form : '';
+          const joins = [prev + surf, surf + n1, surf + n1 + n2, prev + surf + n1];
+          if (joins.some((j) => j && (ctx.vocabPool.has(j) || ctx.vocabPool.has(normJa(j)) || placeJaSet.has(j)))) continue;
+          // 미화 접두(お寺·ご飯) — 접두를 벗긴 형태가 풀에 있으면 커버
+          if (/^[おご]./.test(surf) && (ctx.vocabPool.has(surf.slice(1)) || ctx.vocabPool.has(base.slice(1)))) continue;
           missWords.add(base);
         }
       }
@@ -180,12 +217,16 @@ function runChecks(track, ctx) {
   for (const t of texts) {
     for (const b of (t.body || [])) {
       if (!b.ja) continue;
-      for (const [pja, pyomi] of Object.entries(ctx.placeYomi)) {
-        if (b.ja.includes(pja)) {
-          const y = kataToHira((b.yomi || '').replace(/\s+/g, ''));
-          if (!y.includes(kataToHira(pyomi)))
-            E('G6-place', `글${t.order} 지명 요미 불일치: ${pja} → 요미에 '${pyomi}' 없음 (yomi: ${b.yomi || '(없음)'})`);
-        }
+      // 긴 지명 우선 — 浅草寺 안의 浅草처럼 더 긴 지명의 부분 문자열이면 짧은 쪽 검사를 건너뛴다.
+      const names = Object.keys(ctx.placeYomi).sort((a, c) => c.length - a.length);
+      let masked = b.ja;
+      for (const pja of names) {
+        if (!masked.includes(pja)) continue;
+        masked = masked.split(pja).join(' '.repeat(pja.length));
+        const pyomi = ctx.placeYomi[pja];
+        const y = kataToHira((b.yomi || '').replace(/\s+/g, ''));
+        if (!y.includes(kataToHira(pyomi)))
+          E('G6-place', `글${t.order} 지명 요미 불일치: ${pja} → 요미에 '${pyomi}' 없음 (yomi: ${b.yomi || '(없음)'})`);
       }
     }
   }
@@ -273,6 +314,9 @@ async function buildRealContext() {
     for (const t of (m.themes || [])) for (const w of (t.words || [])) {
       for (const part of String(w.ja).split(/[;；／、]/)) {
         vocabPool.add(part.trim()); vocabPool.add(normJa(part));
+        // 괄호 병기 확장 — '寺 (お寺)' 표제어는 '寺'와 'お寺' 둘 다 풀에 넣는다
+        const paren = part.match(/[（(]([^）)]+)[）)]/);
+        if (paren) { vocabPool.add(paren[1].trim()); vocabPool.add(part.replace(/[（(][^）)]*[）)]/g, '').trim()); }
       }
       if (w.yomi) { vocabPool.add(w.yomi); vocabPool.add(normJa(w.yomi)); }
     }
