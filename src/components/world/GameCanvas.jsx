@@ -14,12 +14,18 @@
 import { useEffect, useRef, useState } from 'react';
 import bus from './bus';
 import QuestReview, { GBC, gbcButtonPrimary, gbcPanel } from './QuestReview';
+import {
+  CHAR_W, CHAR_H, CHAR_ORIGIN_Y, PET_W, PET_H,
+  CHAR_DIRS, CHAR_POSES, CHAR_WALK_CYCLE, charFrameRows,
+  PET_KEYS, petFrameRows,
+  BASE_TILE_PAL, CHAR_PAL_LOCAL, CHAR_PAL_REMOTE, PET_PAL,
+  tonePalette, toneColor, timeOfDay,
+} from './sprites';
 
 // ── 좌표 스케일 (버스 계약 불변: 1타일 = 32 월드 px) ──
 const TILE = 32;            // 월드 px / 타일 (예전과 동일 — local:state·peers:dist 스케일 유지)
-const TEX = 16;             // 타일·캐릭터 소스 텍스처 크기(px) — 도트 원본
-const PTEX = 12;            // 펫 소스 텍스처 크기(px)
-const TSCALE = TILE / TEX;  // 소스→월드 배율 = 2
+const TEX = 16;             // 타일 소스 텍스처 크기(px) — 도트 원본
+const TSCALE = TILE / TEX;  // 소스→월드 배율 = 2 (타일·캐릭터·펫 공통: 소스 1px = 월드 2px)
 const ZOOM = 1.5;           // 카메라 줌 → 화면상 타일 32*1.5 = 48px (소스 16px의 3배 정수 스케일)
 const COLS = 40;
 const ROWS = 30;
@@ -27,116 +33,16 @@ const WORLD_W = TILE * COLS;
 const WORLD_H = TILE * ROWS;
 const STEP_MS = 200;        // 타일 1칸 이동 시간
 const TURN_MS = 90;         // 방향만 바꾸는 유예(이 안에 떼면 제자리에서 돌기만)
-const WALK_MS = 110;        // 걷기 프레임 교차 주기
+const WALK_MS = 110;        // 펫 걷기 프레임 교차 주기
+// 캐릭터 보행 4프레임 사이클[l,n,r,n] 진행 주기. 100ms → 400ms/사이클 = 2타일 스텝(200ms×2)에
+// 딱 맞물려, 한 칸에 "발 한 번" 리듬이 자연스럽게 난다.
+const CHAR_ANIM_MS = 100;
+const PET_IDLE_MS = 480;    // 펫 idle(통통/꼬리) 2프레임 교차 주기 — 걷기보다 느긋하게
 const QUEST_RANGE = 64;     // 표지판 근접 반경(px)
 const LABEL_DY = 18;        // 닉네임 라벨 세로 오프셋(px)
 
-// ── GBC풍 제한 팔레트 (0xRRGGBB) ──
-const C = {
-  grass1: 0x7fb060, grass2: 0x679a4c, grass3: 0x94c56f,
-  path1: 0xd8c48f, path2: 0xc2aa72, pathE: 0xa8895a,
-  water1: 0x5a9fd4, water2: 0x9ccbe8, waterDk: 0x3f7fb0,
-  trunk: 0x8a5a2b, trunkD: 0x6b431f,
-  leaf1: 0x4f9e3c, leaf2: 0x6ec24e, leafD: 0x367a2b,
-  flowerP: 0xe8748e, flowerC: 0xf4d24a, stem: 0x4f9e3c, bushD: 0x367a2b,
-  heart: 0xe0556a, heartHi: 0xf59caa,
-  signPost: 0x8a5a2b, signBoard: 0xd8b483, signBorder: 0x6b431f, signLine: 0x6b431f,
-};
-
-// 캐릭터 팔레트(로컬/원격은 셔츠색 B만 다름)
-const CHAR_PAL_LOCAL = { O: 0x241a12, H: 0x6b4a2a, S: 0xf1c99a, K: 0xd39c6a, P: 0x3b4a86, F: 0x2e2a28, B: 0xd8524a };
-const CHAR_PAL_REMOTE = { ...CHAR_PAL_LOCAL, B: 0x4a86d8 };
-
-// 펫 팔레트(종별 실루엣+고유색이면 충분)
-const PET_PAL = {
-  dog: { O: 0x3a2a1a, B: 0xc8955a, D: 0x9a6a3a, N: 0x2a1e14 },
-  cat: { O: 0x2b2b32, B: 0xb0b4be, D: 0x7c828e, N: 0xe89ab0 },
-  rabbit: { O: 0x4a4642, B: 0xf2f0ec, D: 0xd6d0c6, P: 0xe89ab0 },
-  fox: { O: 0x5a3016, B: 0xe07a34, D: 0xb85a20, W: 0xf5efe2, N: 0x2a2018 },
-  turtle: { O: 0x2f5a28, B: 0x5aa64c, D: 0x3a7a32, W: 0xdfeeb0 },
-};
-const PET_KEYS = ['dog', 'cat', 'rabbit', 'fox', 'turtle'];
-
-// ── 캐릭터 픽셀맵 (16×16) — 상반신(0~13) + 다리(14~15) 조합 ──
-// 문자→색: '.'=투명, 나머지는 팔레트 키. 우향은 좌향(side)을 flipX.
-const CHAR_DOWN_TOP = [
-  '................',
-  '....OOOOOOOO....',
-  '....OHHHHHHO....',
-  '....HHHHHHHH....',
-  '....HSSSSSSH....',
-  '....HSOSSOSH....',
-  '....HSSSSSSH....',
-  '....OSSKKSSO....',
-  '.....OSSSSO.....',
-  '...OBBBBBBBBO...',
-  '..OBBBBBBBBBBO..',
-  '..OSBBBBBBBBSO..',
-  '...OBBBBBBBBO...',
-  '...OPPPPPPPPO...',
-];
-const CHAR_UP_TOP = [
-  '................',
-  '....OOOOOOOO....',
-  '....OHHHHHHO....',
-  '....HHHHHHHH....',
-  '....HHHHHHHH....',
-  '....HHHHHHHH....',
-  '....HHHHHHHH....',
-  '....OHHHHHHO....',
-  '.....OHHHHO.....',
-  '...OBBBBBBBBO...',
-  '..OBBBBBBBBBBO..',
-  '..OBBBBBBBBBBO..',
-  '...OBBBBBBBBO...',
-  '...OPPPPPPPPO...',
-];
-const CHAR_SIDE_TOP = [
-  '................',
-  '....OOOOOO......',
-  '...OHHHHHHO.....',
-  '...HHHHHHHH.....',
-  '...SSSHHHHH.....',
-  '...SOSHHHHH.....',
-  '...SSSHHHHH.....',
-  '...KSSHHHHO.....',
-  '....OSSSO.......',
-  '...OBBBBBBO.....',
-  '..OBBBBBBBBO....',
-  '..SBBBBBBBBO....',
-  '...OBBBBBBO.....',
-  '...OPPPPPPO.....',
-];
-const LEG_DOWN_A = ['...OPPPPPPPPO...', '...OFFO.OFFO....'];
-const LEG_DOWN_B = ['...OPPPPPPPPO...', '....OFFFFFFO....'];
-const LEG_SIDE_A = ['...OPPPPPPO.....', '..OFFO.OFFO.....'];
-const LEG_SIDE_B = ['...OPPPPPPO.....', '...OFFFFO.......'];
-
-// ── 펫 픽셀맵 (12×12) — 몸통(0~8) + 다리(9~11), 뒤뚱 2프레임(다리만 교차) ──
-const PET_LEGS_A = ['.ODDO.ODDO..', '..OO...OO...', '............'];
-const PET_LEGS_B = ['.ODDO.ODDO..', '...OO.OO....', '............'];
-const PET_BODY = {
-  dog: [
-    '............', '.OO......OO.', '.OBO....OBO.', '..OBBBBBBO..',
-    '..OBOBBOBO..', '..OBBNNBBO..', '...OBBBBO...', '.OBBBBBBBBO.', '.OBBBBBBBBO.',
-  ],
-  cat: [
-    '............', '.OO....OO...', '.OBO..OBO...', '..OBBBBBBO..',
-    '..OBOBBOBO..', '..OBBNNBBO..', '...OBBBBO...', '.OBBBBBBBBO.', '.OBBBBBBBBO.',
-  ],
-  rabbit: [
-    '..OO..OO....', '..OB..OB....', '..OB..OB....', '..OBBBBBBO..',
-    '..OBOBBOBO..', '..OBBPPBBO..', '...OBBBBO...', '.OBBBBBBBBO.', '.OBBBBBBBBO.',
-  ],
-  fox: [
-    '............', '.OO....OO...', '.OBO..OBO...', '..OBBBBBBO..',
-    '..OBOBBOBO..', '..OBBNNBBO..', '...OWWWWO...', '.OBWWWWWWBO.', '.OBBBBBBBBO.',
-  ],
-  turtle: [
-    '............', '...OOOOOO...', '..OBBBBBBO..', '.OBBDDBBBBO.',
-    '.OBDBBBBDBO.', '.OBBBBBBBBO.', '..OWWWWWWO..', '.OBBBBBBBBO.', '.OBBBBBBBBO.',
-  ],
-};
+// 팔레트·픽셀맵(16×24 캐릭터·12×16 펫)·시간대 톤은 ./sprites.js로 추출했다
+// (GameCanvas 경량화 + 무결성/팔레트 vitest 검증 가능). 여기선 씬이 그걸 굽기만 한다.
 
 // 방향키/코드 → 4방향. (대각선 없음)
 function keyToDir(key) {
@@ -247,18 +153,31 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         }
 
         preload() {
+          // 시간대(day/sunset/night)를 씬 생성 시 1회 확정하고, 팔레트를 그 톤으로 "구워"
+          // 텍스처 자체에 GBC 감성을 입힌다(런타임 틴트 오버레이 대신 — 저채도·제한 색수 보존).
+          this.mode = timeOfDay();
+          this.pal = tonePalette(BASE_TILE_PAL, this.mode);
+          this.charPal = {
+            pc: tonePalette(CHAR_PAL_LOCAL, this.mode),
+            pr: tonePalette(CHAR_PAL_REMOTE, this.mode),
+          };
+          this.petPal = {};
+          for (const k of PET_KEYS) this.petPal[k] = tonePalette(PET_PAL[k], this.mode);
+
           this.buildGround();
           this.buildTree();
           this.buildDecor();
           this.buildSign();
           this.buildHeart();
-          this.buildCharSet('pc', CHAR_PAL_LOCAL);
-          this.buildCharSet('pr', CHAR_PAL_REMOTE);
+          this.buildLamp();
+          this.buildCharSet('pc', this.charPal.pc);
+          this.buildCharSet('pr', this.charPal.pr);
           this.buildPets();
         }
 
-        // 잔디/흙길/물(2프레임) — 전부 픽셀 절차 생성.
+        // 잔디/흙길/물(3프레임 물결) — 전부 픽셀 절차 생성(this.pal = 시간대 톤).
         buildGround() {
+          const C = this.pal;
           const dither = (seed) => {
             const rng = makeRng(seed); const pts = [];
             for (let y = 0; y < TEX; y++) for (let x = 0; x < TEX; x++) if (rng() < 0.14) pts.push([x, y]);
@@ -281,22 +200,24 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
             g.fillRect(0, 0, TEX, 1); g.fillRect(0, TEX - 1, TEX, 1); g.fillRect(0, 0, 1, TEX); g.fillRect(TEX - 1, 0, 1, TEX);
             g.generateTexture('t_path', TEX, TEX); g.destroy();
           }
-          // water — 밝은 프레임 / 어두운 프레임 교차
+          // water — 물결 하이라이트가 아래로 흐르는 3프레임(shift로 y 이동).
           const water = (key, base, shift) => {
             const g = this.make.graphics({ add: false });
             g.fillStyle(base, 1); g.fillRect(0, 0, TEX, TEX);
             g.fillStyle(C.water2, 0.9);
-            const y1 = 4 + shift, y2 = 11 + shift;
+            const y1 = 3 + shift, y2 = 10 + shift;
             g.fillRect(2, y1, 5, 1); g.fillRect(9, y1 + 1, 4, 1);
             g.fillRect(6, y2, 5, 1); g.fillRect(1, y2 + 1, 3, 1);
             g.generateTexture(key, TEX, TEX); g.destroy();
           };
           water('t_water0', C.water1, 0);
-          water('t_water1', C.waterDk, 1);
+          water('t_water1', C.waterMd, 1);
+          water('t_water2', C.waterDk, 2);
         }
 
         // 나무 — 2타일 높이(수관 위 + 줄기 아래), 16×32.
         buildTree() {
+          const C = this.pal;
           const g = this.make.graphics({ add: false });
           // 수관(위쪽 16px 영역 중심)
           g.fillStyle(C.leafD, 1); g.fillRect(2, 3, 12, 12);
@@ -309,27 +230,35 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           g.generateTexture('t_tree', TEX, TEX * 2); g.destroy();
         }
 
-        // 꽃·풀숲 장식(비충돌).
+        // 꽃(흔들림 2프레임)·풀숲(살랑 2프레임) 장식 — 비충돌, 텍스처 스왑으로 애니.
         buildDecor() {
-          {
+          const C = this.pal;
+          // 꽃: 꽃송이가 좌/우로 1px 기우는 2프레임(sx = 0 / 1).
+          const flower = (key, sx) => {
             const g = this.make.graphics({ add: false });
             g.fillStyle(C.stem, 1); g.fillRect(7, 9, 1, 5);
             g.fillStyle(C.flowerP, 1);
-            g.fillRect(6, 6, 4, 3); g.fillRect(7, 5, 2, 1); g.fillRect(7, 9, 2, 1);
-            g.fillStyle(C.flowerC, 1); g.fillRect(7, 7, 1, 1);
-            g.generateTexture('t_flower', TEX, TEX); g.destroy();
-          }
-          {
+            g.fillRect(6 + sx, 6, 4, 3); g.fillRect(7 + sx, 5, 2, 1); g.fillRect(7, 9, 2, 1);
+            g.fillStyle(C.flowerC, 1); g.fillRect(7 + sx, 7, 1, 1);
+            g.generateTexture(key, TEX, TEX); g.destroy();
+          };
+          flower('t_flower0', 0);
+          flower('t_flower1', 1);
+          // 풀숲: 윗잎 하이라이트가 좌/우로 살랑이는 2프레임.
+          const bush = (key, sx) => {
             const g = this.make.graphics({ add: false });
             g.fillStyle(C.bushD, 1); g.fillRect(3, 9, 10, 6);
             g.fillStyle(C.leaf1, 1); g.fillRect(4, 8, 8, 5);
-            g.fillStyle(C.leaf2, 1); g.fillRect(5, 8, 2, 2); g.fillRect(9, 9, 2, 2);
-            g.generateTexture('t_bush', TEX, TEX); g.destroy();
-          }
+            g.fillStyle(C.leaf2, 1); g.fillRect(5 + sx, 8, 2, 2); g.fillRect(9 - sx, 9, 2, 2);
+            g.generateTexture(key, TEX, TEX); g.destroy();
+          };
+          bush('t_bush0', 0);
+          bush('t_bush1', 1);
         }
 
         // 퀘스트 픽셀 팻말 — 16×20.
         buildSign() {
+          const C = this.pal;
           const g = this.make.graphics({ add: false });
           g.fillStyle(C.signBorder, 1); g.fillRect(2, 2, 12, 9);
           g.fillStyle(C.signBoard, 1); g.fillRect(3, 3, 10, 7);
@@ -340,6 +269,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         }
 
         buildHeart() {
+          const C = this.pal;
           const g = this.make.graphics({ add: false });
           const H = C.heart, I = C.heartHi;
           g.fillStyle(H, 1);
@@ -349,29 +279,41 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           g.generateTexture('t_heart', 8, 7); g.destroy();
         }
 
-        // 4방향×2프레임 캐릭터(우향은 side flipX).
-        buildCharSet(prefix, pal) {
-          this.makeTex(`${prefix}_down_a`, CHAR_DOWN_TOP.concat(LEG_DOWN_A), pal, TEX, TEX);
-          this.makeTex(`${prefix}_down_b`, CHAR_DOWN_TOP.concat(LEG_DOWN_B), pal, TEX, TEX);
-          this.makeTex(`${prefix}_up_a`, CHAR_UP_TOP.concat(LEG_DOWN_A), pal, TEX, TEX);
-          this.makeTex(`${prefix}_up_b`, CHAR_UP_TOP.concat(LEG_DOWN_B), pal, TEX, TEX);
-          this.makeTex(`${prefix}_side_a`, CHAR_SIDE_TOP.concat(LEG_SIDE_A), pal, TEX, TEX);
-          this.makeTex(`${prefix}_side_b`, CHAR_SIDE_TOP.concat(LEG_SIDE_B), pal, TEX, TEX);
+        // 밤 전용 랜턴 불빛 — 부드러운 원형 글로우(중심 밝고 밖으로 번짐). 밤에만 배치.
+        buildLamp() {
+          const C = this.pal;
+          const g = this.make.graphics({ add: false });
+          const cx = 8, cy = 8;
+          g.fillStyle(BASE_TILE_PAL.lampGlow, 0.28); g.fillCircle(cx, cy, 8);
+          g.fillStyle(BASE_TILE_PAL.lampGlow, 0.5); g.fillCircle(cx, cy, 5);
+          g.fillStyle(C.lampCore, 1); g.fillCircle(cx, cy, 2);
+          g.generateTexture('t_lamp', 16, 16); g.destroy();
         }
 
+        // 4방향 × 걷기 3패턴(n/l/r) 캐릭터, 16×24(우향은 side flipX).
+        buildCharSet(prefix, pal) {
+          for (const dir of CHAR_DIRS) {
+            for (const pose of CHAR_POSES) {
+              this.makeTex(`${prefix}_${dir}_${pose}`, charFrameRows(dir, pose), pal, CHAR_W, CHAR_H);
+            }
+          }
+        }
+
+        // 펫 5종 × idle 2프레임(통통/꼬리·귀), 12×16.
         buildPets() {
           for (const key of PET_KEYS) {
-            const pal = PET_PAL[key];
-            this.makeTex(`pet_${key}_0`, PET_BODY[key].concat(PET_LEGS_A), pal, PTEX, PTEX);
-            this.makeTex(`pet_${key}_1`, PET_BODY[key].concat(PET_LEGS_B), pal, PTEX, PTEX);
+            const pal = this.petPal[key];
+            this.makeTex(`pet_${key}_0`, petFrameRows(key, 0), pal, PET_W, PET_H);
+            this.makeTex(`pet_${key}_1`, petFrameRows(key, 1), pal, PET_W, PET_H);
           }
         }
 
         // 텍스처 방향키(down/up/side)로 캐릭터 프레임 이름 계산.
+        // 정지: 중립(n). 이동: 4프레임 사이클[l,n,r,n]을 CHAR_ANIM_MS로 진행.
         charTex(prefix, facing, moving, time) {
           const base = (facing === 'left' || facing === 'right') ? 'side' : facing;
-          const frame = moving ? (Math.floor(time / WALK_MS) % 2 === 0 ? 'a' : 'b') : 'b';
-          return `${prefix}_${base}_${frame}`;
+          const pose = moving ? CHAR_WALK_CYCLE[Math.floor(time / CHAR_ANIM_MS) % CHAR_WALK_CYCLE.length] : 'n';
+          return `${prefix}_${base}_${pose}`;
         }
 
         setCharFrame(sprite, prefix, facing, moving, time) {
@@ -386,7 +328,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           this.petJumpVal = 0;       // 퀘스트 완료 점프 연출값(0→1→0)
 
           this.cameras.main.setBounds(0, 0, WORLD_W, WORLD_H);
-          this.cameras.main.setBackgroundColor('#7fb060');
+          this.cameras.main.setBackgroundColor(toneColor(BASE_TILE_PAL.grass1, this.mode));
           this.cameras.main.setZoom(ZOOM);
           this.cameras.main.setRoundPixels(true);
 
@@ -396,6 +338,9 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
 
           this.waterImgs = [];
           this.waterFrame = 0;
+          this.flowerImgs = [];  // 꽃 흔들림 2프레임 스왑 대상
+          this.bushImgs = [];    // 풀숲 살랑 2프레임 스왑 대상
+          this.decorFrame = 0;
 
           // 지면 + 장식 + 나무 + 팻말.
           const decorRng = makeRng(0xace5);
@@ -412,8 +357,8 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
                 this.add.image(cx, (r + 1) * TILE, 't_tree').setOrigin(0.5, 1).setScale(TSCALE).setDepth((r + 1) * TILE);
               } else if (t === 'grass') {
                 const roll = decorRng();
-                if (roll < 0.04) this.add.image(cx, cy, 't_flower').setScale(TSCALE).setDepth(1);
-                else if (roll < 0.065) this.add.image(cx, cy, 't_bush').setScale(TSCALE).setDepth(cy - 4);
+                if (roll < 0.04) this.flowerImgs.push(this.add.image(cx, cy, 't_flower0').setScale(TSCALE).setDepth(1));
+                else if (roll < 0.065) this.bushImgs.push(this.add.image(cx, cy, 't_bush0').setScale(TSCALE).setDepth(cy - 4));
               }
             }
           }
@@ -422,12 +367,26 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           this.signY = this.signTileY * TILE + TILE / 2;
           this.add.image(this.signX, this.signTileY * TILE + TILE, 't_sign').setOrigin(0.5, 1).setScale(TSCALE).setDepth(this.signY);
 
-          // 물 애니메이션(2프레임 교차).
+          // 밤이면 팻말 곁 랜턴 불빛 하나(포인트 광원). additive로 은은하게 번지게.
+          if (this.mode === 'night') {
+            this.add.image(this.signX + TILE, this.signY, 't_lamp')
+              .setScale(TSCALE).setDepth(this.signY + 1).setBlendMode(Phaser.BlendModes.ADD);
+          }
+
+          // 물 애니메이션(3프레임 물결: 0→1→2→…).
           this.time.addEvent({
-            delay: 700, loop: true, callback: () => {
-              this.waterFrame ^= 1;
-              const key = this.waterFrame ? 't_water1' : 't_water0';
+            delay: 520, loop: true, callback: () => {
+              this.waterFrame = (this.waterFrame + 1) % 3;
+              const key = `t_water${this.waterFrame}`;
               for (const w of this.waterImgs) w.setTexture(key);
+            },
+          });
+          // 꽃·풀숲 흔들림(2프레임 교차, 물결과 다른 주기로 어긋나게).
+          this.time.addEvent({
+            delay: 620, loop: true, callback: () => {
+              this.decorFrame ^= 1;
+              for (const f of this.flowerImgs) f.setTexture(`t_flower${this.decorFrame}`);
+              for (const b of this.bushImgs) b.setTexture(`t_bush${this.decorFrame}`);
             },
           });
 
@@ -438,7 +397,8 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           this.turnGrace = 0;
           const spawnX = this.pTileX * TILE + TILE / 2;
           const spawnY = this.pTileY * TILE + TILE / 2;
-          this.player = this.add.image(spawnX, spawnY, 'pc_down_b').setScale(TSCALE);
+          // 16×24 스프라이트: 하단 16px(=타일)이 발, 상단 8px가 타일 위로. origin Y 보정으로 발을 타일에 정렬.
+          this.player = this.add.image(spawnX, spawnY, 'pc_down_n').setOrigin(0.5, CHAR_ORIGIN_Y).setScale(TSCALE);
 
           this.nick = this.add.text(spawnX, spawnY + LABEL_DY, nickRef.current, this.labelStyle()).setOrigin(0.5, 0).setDepth(10000);
 
@@ -553,7 +513,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
             let p = this.peers.get(id);
             if (!p) {
               const sx = tileX * TILE + TILE / 2, sy = tileY * TILE + TILE / 2;
-              const sprite = this.add.image(sx, sy, 'pr_down_b').setScale(TSCALE);
+              const sprite = this.add.image(sx, sy, 'pr_down_n').setOrigin(0.5, CHAR_ORIGIN_Y).setScale(TSCALE);
               const label = this.add.text(sx, sy + LABEL_DY, st.nick || '', this.labelStyle()).setOrigin(0.5, 0).setDepth(10000);
               p = { sprite, label, tileX, tileY, destTileX: tileX, destTileY: tileY, facing: 'down', moving: false };
               this.peers.set(id, p);
@@ -637,7 +597,9 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
             this.petPX += pdx * k; this.petPY += pdy * k;
             if (Math.abs(pdx) > Math.abs(pdy)) this.petFlip = pdx < 0;
           }
-          this.pet.setTexture(this.petTexKey(petMoving ? Math.floor(time / WALK_MS) % 2 : 0));
+          // 이동 중엔 빠른 뒤뚱(WALK_MS), 정지 중엔 느긋한 idle(PET_IDLE_MS) — 둘 다 2프레임 스왑.
+          const petFrameMs = petMoving ? WALK_MS : PET_IDLE_MS;
+          this.pet.setTexture(this.petTexKey(Math.floor(time / petFrameMs) % 2));
           this.pet.setScale(TSCALE * this.petLevelScale());
           this.pet.setFlipX(this.petFlip);
           let petRenderY = this.petPY;
