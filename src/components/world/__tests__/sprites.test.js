@@ -89,9 +89,9 @@ describe('시간대 GBC 팔레트 (day/sunset/night)', () => {
 
   it('3팔레트 잔디(grass1) 스냅샷 — 톤이 실제로 갈린다', () => {
     const grass = (m) => toneColor(BASE_TILE_PAL.grass1, m).toString(16).padStart(6, '0');
-    expect(grass('day')).toBe('7fb060');
-    expect(grass('sunset')).toBe('99a245'); // 따뜻하게(적/황 up, 청 down)
-    expect(grass('night')).toBe('446c67');  // 어둡게+청 시프트
+    expect(grass('day')).toBe('8cc152');    // LADX DX 옐로-그린 필드
+    expect(grass('sunset')).toBe('a7b23b'); // 따뜻하게(적/황 up, 청 down)
+    expect(grass('night')).toBe('4a765b');  // 어둡게+청 시프트
   });
 
   it('night는 모든 색을 day보다 어둡게(명도 감소)', () => {
