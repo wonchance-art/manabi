@@ -111,8 +111,9 @@ export default [
       },
       {
         heading: "3인칭 단수 -s — 왜 자꾸 빼먹는가",
-        pattern: "he/she/it + 동사-s",
+        pattern: "he/she/it + 동사-s (works / plays / rains)",
         patternKo: "주어가 한 사람·한 개면 동사 끝에 -s",
+        distractors: ["working", "playing", "raining"],
         body:
           "주어가 **he, she, it (또는 한 사람·한 개)**일 때 동사 끝에 **-s**를 붙여요. 한국어 동사는 주어가 누구든 모양이 같아서('나는 마셔요/걔는 마셔요'), 한국어 감각에는 -s를 붙일 이유가 아예 없어요.\n\n" +
           "해결책은 이해가 아니라 **습관**이에요. he/she/it가 떠오르는 순간 '쓰리인칭? 에스!'를 되뇌는 것만으로 교정 속도가 확 빨라져요.",
@@ -150,6 +151,7 @@ export default [
         heading: "예고 — 부정·의문에서는 do가 등판해요",
         pattern: "She likes ~ → She doesn't like ~",
         patternKo: "-s 표시는 문장에 한 번만 — does가 가져가요",
+        distractors: ["don't", "isn't", "not"],
         body:
           "일반동사의 부정·의문은 **조동사 do**의 도움을 받아요 — 'I don't drink coffee.', 'Do you like music?'\n\n" +
           "미리 한 가지만: 3인칭의 -s는 **does가 대신 가져가요**. 'She **doesn't like** coffee.'(likes 아님!) — -s 표시는 문장에 **한 번만**이라는 원리예요. 자세한 건 7챕터에서 다뤄요.",
@@ -259,6 +261,7 @@ export default [
         heading: "복수형 만들기 — 철자와 발음",
         pattern: "+s · +es · y→ies · 불규칙(men, children, feet)",
         patternKo: "복수형 철자 규칙 + 통째로 외울 불규칙들",
+        distractors: ["childs", "mans", "foots"],
         body:
           "철자 규칙은 3인칭 -s와 똑같고, 발음도 같은 삼분법이에요 — 무성음 뒤 [s], 유성음 뒤 [z], 쉭쉭 소리 뒤 [ɪz]. 다만 자주 쓰는 **불규칙 복수** 몇 개는 통째로 외워야 해요.",
         table: {
@@ -287,6 +290,7 @@ export default [
         body:
           "물·쌀 같은 액체·알갱이는 직관적인데, 문제는 **추상명사**예요. **information, advice, homework, furniture**는 영어가 **덩어리(물질)처럼** 취급해서 an information(X), advices(X) 전부 틀려요.\n\n" +
           "세고 싶으면 그릇에 담아요 — **a piece of** information(정보 한 토막), **two pieces of** advice(조언 두 가지).",
+        distractors: ["informations", "advices", "homeworks", "furnitures"],
         examples: [
           { en: "I need some information.", ko: "정보가 좀 필요해요.", note: "informations(X)" },
           { en: "She gave me a piece of advice.", ko: "그녀가 조언을 하나 해줬어요." },
@@ -405,6 +409,7 @@ export default [
         heading: "형태는 be + -ing — be를 빼먹지 마세요",
         pattern: "주어 + am/is/are + 동사-ing",
         patternKo: "시제를 짊어지는 건 be 쪽",
+        distractors: ["Is", "Am", "Do", "Does"],
         body:
           "현재진행형은 **be 동사 + 동사-ing** 두 조각이에요. 한국 학습자의 단골 실수가 be를 빼고 'I studying.'(X)이라고 하는 것 — **시제를 짊어지는 건 be 쪽**이라, be가 빠지면 문장에 시제가 없는 셈이에요.\n\n" +
           "부정은 be 뒤에 not(I'm not studying), 의문은 be를 앞으로(Are you studying?) — 1챕터의 be 동사 규칙 그대로예요.",
@@ -432,8 +437,9 @@ export default [
       },
       {
         heading: "한국어 '-고 있다'와의 대응 — 그리고 어긋남",
-        pattern: "know · love · want · need → 진행형 금지 (상태동사)",
+        pattern: "know · love/loves · want · need → 진행형 금지 (상태동사)",
         patternKo: "'알고 있어요' = I know (I'm knowing X)",
+        distractors: ["knowing", "loving", "wanting"],
         body:
           "현재진행형은 한국어 **'-고 있다'**와 잘 맞아요('공부하고 있어요' = I'm studying). 단, 한국어는 상태에도 '-고 있다'를 붙이지만 영어의 know, love, like, want, need 같은 **상태동사**는 진행형으로 쓰지 않아요 — '알고 있어요' → I know.(O) / I'm knowing.(X)\n\n" +
           "또 한국어 '-고 있다'는 결과 상태도 표현해요('빨간 옷을 입고 있다' = 입은 상태). wearing은 다행히 이 뜻도 커버해요(She's wearing red.).",

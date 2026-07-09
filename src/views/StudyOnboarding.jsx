@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import Button from '../components/Button';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
@@ -26,17 +27,20 @@ const INTEREST_OPTIONS = [
  * 서버는 coldStart만 판단하고, 표시 여부는 클라의 localStorage 가드(study_onboarded_<lang>)로 결정한다.
  * 온보딩을 건너뛰거나 마치면 children(조립된 StudySessionPage)을 그대로 렌더한다.
  *
- * 흐름: ① 지식 3택(처음/기초/배운적) → ② 관심사 4택 → 시작하기.
+ * 흐름: ① 지식 3택(처음/기초/배운적) → [문자 안내] → ② 관심사 4택 → 시작하기.
+ *  - '처음' + 문자 트랙(가나·병음) 보유 언어면 ②로 가기 전 문자 안내 단계를 한 번 끼운다(명시적 선택).
  *  - 백필 없음(처음): 가드만 기록하고 리로드 없이 세션 표시.
  *  - 백필 있음(기초/배운적): 건너뛴 레벨 챕터를 user_ref_progress에 upsert 후 reload(재료 재조립).
  *
  * @param {{lang:string, langName:string,
  *   levels:{key:string,label:string,isIntro:boolean,chapterSlugs:string[]}[],
+ *   readKey?:string,
+ *   scriptTrack?:{slug:string,href:string,kind:'kana'|'pinyin'}|null,
  *   children:React.ReactNode}} props
  */
-export default function StudyOnboarding({ lang, langName, levels = [], children }) {
+export default function StudyOnboarding({ lang, langName, levels = [], readKey = null, scriptTrack = null, children }) {
   const { user } = useAuth();
-  const [phase, setPhase] = useState('loading'); // 'loading'|'q1'|'q2'|'session'
+  const [phase, setPhase] = useState('loading'); // 'loading'|'q1'|'chars'|'q2'|'session'
   const [knowledge, setKnowledge] = useState(null); // 'fresh'|'basics'|'learned'
   const [startKey, setStartKey] = useState(null);
   const [interest, setInterest] = useState(null);
@@ -58,9 +62,26 @@ export default function StudyOnboarding({ lang, langName, levels = [], children 
     return levels.slice(0, idx).flatMap(l => l.chapterSlugs);
   }
 
-  function chooseFresh() { setKnowledge('fresh'); setStartKey(regular[0]?.key || null); setPhase('q2'); }
+  // 이 기기에서 이미 문자 트랙(가나/병음) 챕터를 통과했는지 — 통과했으면 문자 안내를 건너뛴다.
+  // KanaTest·RefPatternCheck과 같은 localStorage 맵(`${readKey}_check`)을 읽는다(교차기기는 coldStart가 담당).
+  function scriptLocallyPassed() {
+    if (!scriptTrack?.slug || !readKey || typeof window === 'undefined') return false;
+    try {
+      const map = JSON.parse(localStorage.getItem(`${readKey}_check`) || '{}');
+      return !!map[scriptTrack.slug]?.passed;
+    } catch { return false; }
+  }
+
+  function chooseFresh() {
+    setKnowledge('fresh');
+    setStartKey(regular[0]?.key || null);
+    // 문자 트랙이 있고 아직 통과 기록이 없으면 문자 안내 단계로(명시적 선택). 없으면(EN/FR·기통과) 바로 관심사로.
+    setPhase(scriptTrack && !scriptLocallyPassed() ? 'chars' : 'q2');
+  }
   function chooseBasics() { setKnowledge('basics'); setStartKey((regular[1] || regular[0])?.key || null); setPhase('q2'); }
   function chooseLevel(key) { setKnowledge('learned'); setStartKey(key); setPhase('q2'); }
+
+  const scriptNoun = scriptTrack?.kind === 'pinyin' ? '병음' : '가나';
 
   async function handleStart() {
     if (!interest || busy) return;
@@ -160,6 +181,37 @@ export default function StudyOnboarding({ lang, langName, levels = [], children 
               </div>
             )}
           </div>
+        </>
+      )}
+
+      {/* ── 문자 안내 (완전 처음 + 가나/병음 트랙) ── */}
+      {phase === 'chars' && scriptTrack && (
+        <>
+          <h1 style={{ fontSize: '1.35rem', fontWeight: 800, marginBottom: 6 }}>
+            {langName}는 {scriptNoun}부터예요
+          </h1>
+          <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.65, marginBottom: 22 }}>
+            {scriptNoun}를 먼저 익히면 이후 학습이 훨씬 수월해요. 오늘 문단에는 발음이 함께 달리지만,
+            {' '}{scriptNoun}를 읽을 수 있으면 훨씬 빨리 늘어요.
+          </p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <Link href={scriptTrack.href} style={{ ...cardStyle(false), textDecoration: 'none', color: 'inherit' }}>
+              <span style={{ display: 'block', fontSize: '1rem', fontWeight: 700, marginBottom: 3 }}>{scriptNoun} 배우러 가기 →</span>
+              <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>표를 보고 따라 쓰고, 발음으로 바로 확인해요</span>
+            </Link>
+
+            <button type="button" style={cardStyle(false)} onClick={() => setPhase('q2')}>
+              <span style={{ display: 'block', fontSize: '1rem', fontWeight: 700, marginBottom: 3 }}>이미 읽을 수 있어요 — 바로 시작</span>
+              <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>{scriptNoun}는 익숙해요. 세션을 시작할게요</span>
+            </button>
+          </div>
+
+          <p style={{ textAlign: 'center', marginTop: 12 }}>
+            <button type="button" className="study-textlink" onClick={() => setPhase('q1')}>
+              ← 이전 질문
+            </button>
+          </p>
         </>
       )}
 

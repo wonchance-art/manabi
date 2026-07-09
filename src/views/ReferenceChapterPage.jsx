@@ -226,7 +226,7 @@ export default function ReferenceChapterPage({ lang, slug }) {
       {/* ── 챕터 마무리 ── */}
       {chapter.kana ? (
         /* 카나 챕터: 카나→로마자 테스트 (오십음표 학습 표는 위 섹션 안에) — 인트로여도 유지 */
-        <KanaTest kind={chapter.kana} slug={chapter.slug} storageKey={`${ref.readKey}_check`} />
+        <KanaTest kind={chapter.kana} slug={chapter.slug} storageKey={`${ref.readKey}_check`} lang={lang} />
       ) : isIntro ? (
         /* 인트로 레벨(OT/A0) 비(非)카나 챕터: 관문 없이 가볍게 읽고 넘어가는 안내 카드 */
         <section className="card fr-section" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
