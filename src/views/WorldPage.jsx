@@ -13,7 +13,7 @@
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { supabase } from '../lib/supabase';
@@ -36,11 +36,55 @@ const PEER_STALE_MS = 10000; // 이 시간 넘게 소식 없는 peer는 유령�
 // GBC 다이얼로그 문법 토큰 — 월드 미니바·펫 팝오버를 캔버스 오버레이와 통일한다.
 // (동적 청크 분리 유지를 위해 QuestReview.jsx를 import하지 않고 동일 팔레트 값만 복제.)
 const GBC = {
-  cream: '#f6edcf', creamHi: '#fffaf0', ink: '#2a2118',
-  border: '#2a2118', green: '#5f9a46',
+  cream: '#f6edcf', creamHi: '#fffaf0', creamShade: '#e4d5a6', ink: '#2a2118',
+  border: '#2a2118', green: '#5f9a46', red: '#c14b38', brown: '#8a5a2b',
   font: 'ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace',
   shadow: '3px 3px 0 rgba(42,33,24,0.30)',
 };
+
+// ── GBC 휴대기 셸 토큰 ──
+// QuestReview의 크림/잉크/그린 팔레트와 어울리는 크림 바디 + 잉크 하드 엣지.
+// 실루엣은 GBC(라운드 바디 + 좌하 십자키 + 우하 대각 A/B + 중앙 START/SELECT + 스피커 그릴).
+const SHELL = {
+  body: 'linear-gradient(160deg, #fbf3d8 0%, #ecdcac 62%, #dcc890 100%)',
+  bezel: 'linear-gradient(160deg, #33373d 0%, #23262b 100%)',
+  screenOff: '#0b0d08',
+  dpad: '#2f2a24', dpadHi: '#4a4038', dpadDown: '#000000',
+};
+
+// 십자키 버튼 — 모듈 스코프 컴포넌트(부모 리렌더 중 리마운트 방지 → 홀드 도중 release 유실 없음).
+// pointer capture로 손가락이 버튼 밖으로 나가도 pointerup을 같은 요소에서 받아 확실히 release한다.
+function DpadButton({ dir, char, onPress, onRelease, style }) {
+  const [on, setOn] = useState(false);
+  const down = (e) => {
+    e.preventDefault();
+    try { e.currentTarget.setPointerCapture?.(e.pointerId); } catch { /* noop */ }
+    setOn(true);
+    onPress(dir);
+  };
+  const up = () => { setOn(false); onRelease(dir); };
+  return (
+    <button
+      type="button"
+      aria-label={dir}
+      onPointerDown={down}
+      onPointerUp={up}
+      onPointerLeave={up}
+      onPointerCancel={up}
+      onContextMenu={(e) => e.preventDefault()}
+      style={{
+        border: 'none', color: '#cfc7bb', fontSize: '0.7rem', cursor: 'pointer',
+        touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none',
+        display: 'grid', placeItems: 'center',
+        background: on ? SHELL.dpadDown : SHELL.dpad,
+        boxShadow: on ? 'inset 0 2px 3px rgba(0,0,0,0.5)' : '0 2px 0 rgba(0,0,0,0.35)',
+        ...style,
+      }}
+    >
+      {char}
+    </button>
+  );
+}
 
 // ssr:false — phaser가 서버에서 window를 건드리지 않게 + 다른 라우트 번들에서 배제.
 const GameCanvas = dynamic(() => import('../components/world/GameCanvas'), {
@@ -77,6 +121,13 @@ export default function WorldPage() {
   const [micOn, setMicOn] = useState(false);
   const [micBusy, setMicBusy] = useState(false);
   const [nearVoiceCount, setNearVoiceCount] = useState(0);
+
+  // GBC 셸 → GameCanvas 입력 주입 핸들. GameCanvas가 마운트 시 { press,release,interact,cancel }를 채운다.
+  const controlsRef = useRef(null);
+  const press = useCallback((d) => controlsRef.current?.press(d), []);
+  const release = useCallback((d) => controlsRef.current?.release(d), []);
+  const interact = useCallback(() => controlsRef.current?.interact(), []);
+  const cancel = useCallback(() => controlsRef.current?.cancel(), []);
 
   // 네트워크·음성 인스턴스(마운트 1회 생성) — 이벤트 핸들러가 참조.
   const voiceRef = useRef(null);
@@ -268,114 +319,162 @@ export default function WorldPage() {
 
   const moodLine = MOOD_LINE[petState.mood] || MOOD_LINE.happy;
 
+  // A/B(원형)·START/SELECT(알약) 버튼 스타일 — GBC 하드 엣지 + 하드 오프셋 그림자.
+  const abBtn = {
+    width: 40, height: 40, borderRadius: '50%',
+    background: `radial-gradient(circle at 35% 30%, #dc6b58, ${GBC.red})`,
+    color: GBC.creamHi, fontFamily: GBC.font, fontWeight: 800, fontSize: '0.95rem',
+    border: `2px solid ${GBC.border}`, boxShadow: '0 3px 0 rgba(42,33,24,0.45)',
+    cursor: 'pointer', touchAction: 'manipulation', lineHeight: 1,
+  };
+  const pillBtn = {
+    display: 'inline-flex', alignItems: 'center', gap: 6, transform: 'rotate(-18deg)',
+    fontFamily: GBC.font, fontWeight: 700, fontSize: '0.56rem', letterSpacing: '0.4px',
+    color: '#3f382e', background: 'linear-gradient(#bcb3a2, #98907e)',
+    border: `2px solid ${GBC.border}`, borderRadius: 20, padding: '4px 12px',
+    boxShadow: '0 2px 0 rgba(42,33,24,0.35)', cursor: 'pointer',
+  };
+  const pillDot = { width: 6, height: 6, borderRadius: '50%', display: 'inline-block' };
+
   return (
-    <div className="page-container" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      {/* ── 상단 미니 바 ── */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+    <div className="page-container" style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
+      {/* ── 상단 미니 바 (뒤로·제목·상태 요약 — 조작은 셸로 이전) ── */}
+      <div style={{ width: '100%', maxWidth: 540, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
         <Button size="sm" variant="secondary" onClick={() => router.back()}>← 뒤로</Button>
         <h1 className="page-header__title" style={{ margin: 0, fontSize: '1.25rem' }}>
           학습 월드 <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 500 }}>실험</span>
         </h1>
-
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }}>
-          {/* 펫 선택 팝오버 + 레벨·기분 한 줄 */}
-          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <button
-              type="button"
-              onClick={() => setPetMenuOpen((v) => !v)}
-              aria-haspopup="true"
-              aria-expanded={petMenuOpen}
-              aria-label="펫 바꾸기"
-              style={{
-                fontSize: '1.4rem', lineHeight: 1, cursor: 'pointer',
-                background: GBC.creamHi, border: `2px solid ${GBC.border}`,
-                boxShadow: GBC.shadow, borderRadius: 2, padding: '4px 8px',
-              }}
-            >
-              {species.emoji}
-            </button>
-            <span style={{ fontFamily: GBC.font, fontSize: '0.72rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
-              Lv.{petState.level} · {moodLine}
-            </span>
-
-            {petMenuOpen && (
-              <>
-                {/* 바깥 클릭 닫기 */}
-                <div
-                  onClick={() => setPetMenuOpen(false)}
-                  style={{ position: 'fixed', inset: 0, zIndex: 40 }}
-                />
-                <div
-                  role="menu"
-                  style={{
-                    position: 'absolute', top: 'calc(100% + 6px)', left: 0, zIndex: 41,
-                    display: 'flex', gap: 6, padding: 8,
-                    background: GBC.cream, color: GBC.ink, fontFamily: GBC.font,
-                    border: `3px solid ${GBC.border}`, borderRadius: 2,
-                    boxShadow: `inset 0 0 0 2px ${GBC.creamHi}, ${GBC.shadow}`,
-                  }}
-                >
-                  {PET_SPECIES.map((p) => (
-                    <button
-                      key={p.key}
-                      type="button"
-                      role="menuitemradio"
-                      aria-checked={p.key === petKey}
-                      aria-label={p.name}
-                      title={p.name}
-                      onClick={() => choosePet(p.key)}
-                      style={{
-                        fontSize: '1.3rem', lineHeight: 1, cursor: 'pointer',
-                        background: p.key === petKey ? GBC.creamHi : 'transparent',
-                        border: p.key === petKey ? `2px solid ${GBC.green}` : '2px solid transparent',
-                        borderRadius: 2, padding: '4px 6px',
-                      }}
-                    >
-                      {p.emoji}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* 마이크 토글 (근접 음성) */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <button
-              type="button"
-              onClick={toggleMic}
-              disabled={micBusy}
-              aria-pressed={micOn}
-              aria-label={micOn ? '마이크 끄기' : '마이크 켜기'}
-              title={micOn ? '마이크 끄기' : '마이크 켜기'}
-              style={{
-                fontSize: '1.2rem', lineHeight: 1, cursor: micBusy ? 'default' : 'pointer',
-                opacity: micBusy ? 0.6 : 1,
-                background: micOn ? GBC.green : GBC.creamHi,
-                border: `2px solid ${GBC.border}`, boxShadow: GBC.shadow,
-                borderRadius: 2, padding: '5px 9px',
-                filter: micOn ? 'none' : 'grayscale(0.4)',
-              }}
-            >
-              {micOn ? '🎤' : '🔇'}
-            </button>
-            {micOn && nearVoiceCount > 0 && (
-              <span style={{ fontFamily: GBC.font, fontSize: '0.72rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
-                근처 {nearVoiceCount}명과 연결됨
-              </span>
-            )}
-          </div>
+        <div style={{ marginLeft: 'auto', fontFamily: GBC.font, fontSize: '0.72rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+          {species.emoji} Lv.{petState.level} · {moodLine}
+          {micOn && nearVoiceCount > 0 && <span> · 🎤 {nearVoiceCount}</span>}
         </div>
       </div>
 
-      {/* ── 게임 캔버스 ── (부모가 높이를 정해줘야 Phaser RESIZE가 채운다) */}
-      {/* GBC 프레임 — 하드 엣지 + 이중 보더(밝은 안/어두운 밖). */}
+      {/* ── GBC 휴대기 셸 ── (라운드 바디 + 베젤/화면 + 십자키·A/B·START/SELECT·스피커 그릴) */}
       <div style={{
-        width: '100%', height: 'min(72vh, 640px)',
-        borderRadius: 2, overflow: 'hidden', background: '#bfe3b5',
-        border: `3px solid ${GBC.border}`, boxShadow: `inset 0 0 0 2px ${GBC.creamHi}`,
+        width: '100%', maxWidth: 'min(96vw, 540px)',
+        background: SHELL.body, border: `3px solid ${GBC.border}`,
+        borderRadius: '18px 18px 42px 18px',
+        boxShadow: `inset 0 0 0 2px rgba(255,255,255,0.4), ${GBC.shadow}`,
+        padding: '14px 16px 20px', display: 'flex', flexDirection: 'column', gap: 14,
       }}>
-        <GameCanvas userId={userId} nickname={nickname} pet={pet} />
+        {/* 베젤 + 화면 — QuestReview 오버레이는 GameCanvas 내부(inset:0)라 이 화면 영역만 덮는다 */}
+        <div style={{
+          position: 'relative', background: SHELL.bezel, borderRadius: '10px 10px 28px 10px',
+          padding: '26px 18px 18px', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.55)',
+        }}>
+          {/* 전원 LED + 라벨 */}
+          <span style={{
+            position: 'absolute', top: 11, left: 15, width: 7, height: 7, borderRadius: '50%',
+            background: '#e2483a', boxShadow: '0 0 5px #e2483a, inset 0 0 1px #fff',
+          }} />
+          <span style={{ position: 'absolute', top: 8, left: 27, fontFamily: GBC.font, fontSize: '0.5rem', letterSpacing: '0.5px', color: '#7a8088' }}>
+            POWER
+          </span>
+          {/* 베젤 각인 (재치) */}
+          <span style={{ position: 'absolute', top: 9, right: 16, fontFamily: GBC.font, fontSize: '0.62rem', fontWeight: 700, fontStyle: 'italic', letterSpacing: '0.4px', color: '#aeb4bc' }}>
+            ANATOMY BOY{' '}
+            <span style={{ color: '#d0563f' }}>C</span>
+            <span style={{ color: '#6fae54' }}>O</span>
+            <span style={{ color: '#4f86c6' }}>L</span>
+            <span style={{ color: '#e0a83f' }}>O</span>
+            <span style={{ color: '#b25fa0' }}>R</span>
+          </span>
+          {/* 화면 (10:9 = 160×144) */}
+          <div style={{
+            position: 'relative', width: '100%', aspectRatio: '10 / 9',
+            background: SHELL.screenOff, borderRadius: 4, overflow: 'hidden',
+            boxShadow: 'inset 0 0 0 2px #12140e',
+          }}>
+            <GameCanvas userId={userId} nickname={nickname} pet={pet} controlsRef={controlsRef} />
+          </div>
+        </div>
+
+        {/* 컨트롤 행: 십자키(좌) + A/B(우, 대각) */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 8px 0' }}>
+          {/* 십자키 — 3×3 그리드, 4방향만 버튼(홀드 연속 이동은 씬이 처리) */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 28px)', gridTemplateRows: 'repeat(3, 28px)' }}>
+            <span />
+            <DpadButton dir="up" char="▲" onPress={press} onRelease={release} style={{ borderRadius: '6px 6px 0 0' }} />
+            <span />
+            <DpadButton dir="left" char="◀" onPress={press} onRelease={release} style={{ borderRadius: '6px 0 0 6px' }} />
+            <span style={{ background: SHELL.dpad, display: 'grid', placeItems: 'center' }}>
+              <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#1b1712' }} />
+            </span>
+            <DpadButton dir="right" char="▶" onPress={press} onRelease={release} style={{ borderRadius: '0 6px 6px 0' }} />
+            <span />
+            <DpadButton dir="down" char="▼" onPress={press} onRelease={release} style={{ borderRadius: '0 0 6px 6px' }} />
+            <span />
+          </div>
+
+          {/* A/B — A=상호작용(말 걸기), B=취소(리뷰 닫기). 대각 배치. */}
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14, transform: 'rotate(-18deg)' }}>
+            <button type="button" aria-label="B (취소·닫기)" onClick={cancel} style={abBtn}>B</button>
+            <button type="button" aria-label="A (말 걸기·상호작용)" onClick={interact} style={{ ...abBtn, transform: 'translateY(-12px)' }}>A</button>
+          </div>
+        </div>
+
+        {/* START / SELECT — START=마이크 토글, SELECT=펫 선택 */}
+        <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', gap: 22, paddingTop: 2 }}>
+          <button
+            type="button" onClick={toggleMic} disabled={micBusy}
+            aria-pressed={micOn} aria-label={micOn ? '마이크 끄기 (START)' : '마이크 켜기 (START)'}
+            style={{ ...pillBtn, opacity: micBusy ? 0.6 : 1 }}
+          >
+            <span style={{ ...pillDot, background: micOn ? GBC.green : '#8a8f97' }} /> START
+          </button>
+          <button
+            type="button" onClick={() => setPetMenuOpen((v) => !v)}
+            aria-haspopup="true" aria-expanded={petMenuOpen} aria-label="펫 선택 (SELECT)"
+            style={pillBtn}
+          >
+            <span style={{ ...pillDot, background: '#8a8f97' }} /> SELECT
+          </button>
+
+          {/* 펫 선택 팝오버 (SELECT 위로) */}
+          {petMenuOpen && (
+            <>
+              <div onClick={() => setPetMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 40 }} />
+              <div
+                role="menu"
+                style={{
+                  position: 'absolute', bottom: 'calc(100% + 8px)', right: 8, zIndex: 41,
+                  display: 'flex', gap: 6, padding: 8,
+                  background: GBC.cream, color: GBC.ink, fontFamily: GBC.font,
+                  border: `3px solid ${GBC.border}`, borderRadius: 2,
+                  boxShadow: `inset 0 0 0 2px ${GBC.creamHi}, ${GBC.shadow}`,
+                }}
+              >
+                {PET_SPECIES.map((p) => (
+                  <button
+                    key={p.key} type="button" role="menuitemradio"
+                    aria-checked={p.key === petKey} aria-label={p.name} title={p.name}
+                    onClick={() => choosePet(p.key)}
+                    style={{
+                      fontSize: '1.3rem', lineHeight: 1, cursor: 'pointer',
+                      background: p.key === petKey ? GBC.creamHi : 'transparent',
+                      border: p.key === petKey ? `2px solid ${GBC.green}` : '2px solid transparent',
+                      borderRadius: 2, padding: '4px 6px',
+                    }}
+                  >
+                    {p.emoji}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* 스피커 그릴 — 점 패턴(대각). */}
+        <div style={{
+          alignSelf: 'flex-end', display: 'grid',
+          gridTemplateColumns: 'repeat(4, 5px)', gridTemplateRows: 'repeat(4, 5px)', gap: 4,
+          transform: 'rotate(-18deg)', opacity: 0.5, marginRight: 10, marginTop: 2,
+        }}>
+          {Array.from({ length: 16 }).map((_, i) => (
+            <span key={i} style={{ width: 5, height: 5, borderRadius: '50%', background: '#6b5f4c' }} />
+          ))}
+        </div>
       </div>
     </div>
   );

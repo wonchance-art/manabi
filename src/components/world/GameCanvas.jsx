@@ -9,7 +9,15 @@
 //   emit 'local:state' {x,y,dir}  (~100ms, x·y는 월드 px, 1타일=32px)
 //   on 'peers:update' (원격 렌더) · emit 'peers:dist' (px, 500ms).
 // 내부 표현만 그리드(타일 인덱스)로 다루고, 버스로 오가는 값은 예전과 동일한 32px/타일 월드 px다.
-// 48px 도트 룩은 카메라 zoom 1.5로 낸다(월드 좌표는 손대지 않아 음성 근접 게이팅이 그대로 유지된다).
+//
+// ── GB 실규격 뷰포트 ──
+// 게임 캔버스를 160×144(=GB 화면)로 고정하고, 카메라 zoom 0.5로 32px/타일 월드를
+// 화면상 16px/타일로 낮춰 **정확히 10×9타일**(=GB 필드 시야)이 담기게 한다.
+//   · 왜 0.5인가: 월드 1타일=32px는 버스 계약상 불변 → 160px에 10타일을 담으려면
+//     화면상 타일 16px = 32px×0.5. (오케스트레이터 지시의 "zoom 1"은 타일을 16px로 본
+//     계산이나, 실제 월드 타일은 32px이므로 동일한 10×9 시야를 내려면 0.5가 맞다.)
+//   · zoom은 렌더 스케일일 뿐 월드 좌표/버스/음성 근접 게이팅에는 영향 없다(예전 1.5와 동일 원리).
+// 캔버스(160×144)는 컨테이너에 맞춰 **정수 배율**(×2/×3/×4…)로만 CSS 확대한다(도트 보존).
 
 import { useEffect, useRef, useState } from 'react';
 import bus from './bus';
@@ -26,7 +34,10 @@ import {
 const TILE = 32;            // 월드 px / 타일 (예전과 동일 — local:state·peers:dist 스케일 유지)
 const TEX = 16;             // 타일 소스 텍스처 크기(px) — 도트 원본
 const TSCALE = TILE / TEX;  // 소스→월드 배율 = 2 (타일·캐릭터·펫 공통: 소스 1px = 월드 2px)
-const ZOOM = 1.5;           // 카메라 줌 → 화면상 타일 32*1.5 = 48px (소스 16px의 3배 정수 스케일)
+const ZOOM = 0.5;           // 카메라 줌 → 화면상 타일 32*0.5 = 16px (소스 16px 1:1 = GB 도트 룩)
+const VIEW_W = 160;         // GB 화면 가로(px) = 10타일 × 16px
+const VIEW_H = 144;         // GB 화면 세로(px) = 9타일 × 16px
+const MIN_SCALE = 2;        // 캔버스 최소 정수 배율(×2 미만은 도트가 너무 작아 가독성 저하)
 const COLS = 40;
 const ROWS = 30;
 const WORLD_W = TILE * COLS;
@@ -90,7 +101,11 @@ function buildMap() {
   return m;
 }
 
-export default function GameCanvas({ userId = null, nickname = '나', pet = { key: 'dog', emoji: '🐕', level: 1, mood: 'happy' } }) {
+// controlsRef: GBC 셸(WorldPage)이 D-pad·A·B를 게임에 주입하는 최소 인터페이스.
+//   셸 마운트 시 GameCanvas가 controlsRef.current = { press, release, interact, cancel }를 채운다.
+//   press/release는 키보드와 동일 경로(씬 heldDirs)로 흘려보내 홀드 연속 이동까지 재사용한다.
+//   버스는 오염시키지 않는다(순수 씬 메서드 호출).
+export default function GameCanvas({ userId = null, nickname = '나', pet = { key: 'dog', emoji: '🐕', level: 1, mood: 'happy' }, controlsRef = null }) {
   const hostRef = useRef(null);
   const gameRef = useRef(null);
   const sceneRef = useRef(null);   // 활성 씬 — React가 입력 잠금을 갱신
@@ -98,9 +113,26 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   const petRef = useRef(pet);
   const [nearQuest, setNearQuest] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false); // 인게임 즉석 리뷰 오버레이
+  const nearQuestRef = useRef(false);   // A(상호작용) 콜백이 최신 근접 상태를 읽도록 미러
+  const reviewOpenRef = useRef(false);  // B(취소) 콜백이 최신 오버레이 상태를 읽도록 미러
 
   useEffect(() => { nickRef.current = nickname || '나'; }, [nickname]);
   useEffect(() => { petRef.current = pet || { key: 'dog', level: 1, mood: 'happy' }; }, [pet]);
+  useEffect(() => { nearQuestRef.current = nearQuest; }, [nearQuest]);
+  useEffect(() => { reviewOpenRef.current = reviewOpen; }, [reviewOpen]);
+
+  // ── GBC 셸 입력 주입 인터페이스 등록 ──
+  // press/release → 씬 heldDirs(키보드와 동일 경로). interact=A(표지판 말 걸기), cancel=B(리뷰 닫기).
+  useEffect(() => {
+    if (!controlsRef) return undefined;
+    controlsRef.current = {
+      press: (dir) => sceneRef.current?.extInputDown?.(dir),
+      release: (dir) => sceneRef.current?.extInputUp?.(dir),
+      interact: () => { if (!reviewOpenRef.current && nearQuestRef.current) setReviewOpen(true); },
+      cancel: () => { if (reviewOpenRef.current) setReviewOpen(false); },
+    };
+    return () => { if (controlsRef) controlsRef.current = null; };
+  }, [controlsRef]);
 
   // 리뷰 오버레이가 열리면 게임 입력을 잠근다(캔버스 이동 정지). 닫히면 해제.
   useEffect(() => {
@@ -113,6 +145,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   useEffect(() => {
     let destroyed = false;
     let game = null;
+    let ro = null;    // 캔버스 정수 배율 피팅용 ResizeObserver
     let scene = null; // create()에서 자신을 할당 — 아래 버스 핸들러가 위임 대상으로 참조.
 
     // ── 버스 구독을 컴포넌트 스코프에서 등록/해제한다(리스너 누수 방지). ──
@@ -319,6 +352,17 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         setCharFrame(sprite, prefix, facing, moving, time) {
           sprite.setTexture(this.charTex(prefix, facing, moving, time));
           sprite.setFlipX(facing === 'right');
+        }
+
+        // ── 외부(GBC 셸 D-pad) 방향 입력 주입 — 키보드 keydown/keyup과 완전히 같은 경로 ──
+        // heldDirs 스택을 그대로 쓰므로 홀드 연속 이동·회전 유예·탭 취소가 자동으로 동일하게 적용된다.
+        extInputDown(d) {
+          if (this.inputLocked || !VALID_DIR.has(d)) return;
+          this.tapTile = null;
+          if (!this.heldDirs.includes(d)) this.heldDirs.push(d);
+        }
+        extInputUp(d) {
+          this.heldDirs = this.heldDirs.filter((x) => x !== d);
         }
 
         create() {
@@ -644,18 +688,39 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         }
       }
 
+      // Scale.NONE — Phaser 내부 드로잉 버퍼를 160×144로 고정하고, 화면 확대는 CSS로 직접 제어한다.
+      // (Phaser의 FIT/RESIZE는 비정수 배율을 허용해 도트가 뭉개진다. 정수 배율만 보장하려면
+      //  CSS width/height를 160·144의 정수배로 세팅하고 image-rendering:pixelated로 굽는 편이 견고하다.)
       game = new Phaser.Game({
         type: Phaser.AUTO,
         parent: hostRef.current,
         backgroundColor: '#7fb060',
         pixelArt: true,
         roundPixels: true,
-        scale: { mode: Phaser.Scale.RESIZE, width: '100%', height: '100%' },
+        scale: { mode: Phaser.Scale.NONE, width: VIEW_W, height: VIEW_H },
         scene: WorldScene,
       });
       gameRef.current = game;
       if (game.canvas) game.canvas.style.imageRendering = 'pixelated';
-      if (destroyed) { game.destroy(true); gameRef.current = null; }
+
+      // ── 정수 배율 피팅 — 컨테이너(셸 화면 영역)에 맞춰 ×floor(min(w/160,h/144)), 최소 ×2 ──
+      const fitCanvas = () => {
+        const host = hostRef.current;
+        const canvas = gameRef.current?.canvas;
+        if (!host || !canvas) return;
+        const w = host.clientWidth, h = host.clientHeight;
+        let s = Math.floor(Math.min(w / VIEW_W, h / VIEW_H));
+        if (!Number.isFinite(s) || s < MIN_SCALE) s = MIN_SCALE;
+        canvas.style.width = `${VIEW_W * s}px`;
+        canvas.style.height = `${VIEW_H * s}px`;
+      };
+      fitCanvas();
+      if (typeof ResizeObserver !== 'undefined' && hostRef.current) {
+        ro = new ResizeObserver(fitCanvas);
+        ro.observe(hostRef.current);
+      }
+
+      if (destroyed) { if (ro) { ro.disconnect(); ro = null; } game.destroy(true); gameRef.current = null; }
     })();
 
     return () => {
@@ -664,6 +729,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       bus.off('peers:update', onPeers);
       bus.off('quest:scored', onQuestScored);
       bus.off('quest:done', onQuestDone);
+      if (ro) { ro.disconnect(); ro = null; }
       scene = null;
       sceneRef.current = null;
       if (gameRef.current) { gameRef.current.destroy(true); gameRef.current = null; }
@@ -671,18 +737,22 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   }, []);
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', borderRadius: 2 }}>
-      <div ref={hostRef} style={{ width: '100%', height: '100%', imageRendering: 'pixelated' }} />
+    <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', background: '#0b0d08' }}>
+      {/* 캔버스(160×144)를 정수 배율로 확대한 뒤 화면 영역 중앙에 배치. 도트는 pixelated로 보존. */}
+      <div ref={hostRef} style={{
+        width: '100%', height: '100%',
+        display: 'grid', placeItems: 'center', imageRendering: 'pixelated',
+      }} />
 
       {/* 조작 힌트 — GBC 다이얼로그 문법(크림 칩, 하드 엣지). */}
       <div style={{
-        position: 'absolute', left: 10, bottom: 10, pointerEvents: 'none',
-        fontFamily: GBC.font, fontSize: '0.66rem', color: GBC.ink,
+        position: 'absolute', left: 6, bottom: 6, pointerEvents: 'none',
+        fontFamily: GBC.font, fontSize: '0.6rem', color: GBC.ink,
         background: GBC.cream, border: `2px solid ${GBC.border}`,
         boxShadow: `inset 0 0 0 1px ${GBC.creamHi}`,
-        padding: '4px 8px', borderRadius: 2, lineHeight: 1.4,
+        padding: '3px 6px', borderRadius: 2, lineHeight: 1.35,
       }}>
-        방향키 · WASD · 화면 탭으로 한 칸씩 이동
+        ✚ 이동 · Ⓐ 말 걸기 · Ⓑ 닫기
       </div>
 
       {/* 표지판 근접 → '말 걸기' 프롬프트. Phaser 내 DOM 금지 → React 오버레이. (오너 지시: 게임 내에서 진행) */}
