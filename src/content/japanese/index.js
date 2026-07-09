@@ -21,6 +21,8 @@ import vocabN1 from './vocab/n1';
 import vocabN5jlptA from './vocab/n5_jlpt_a';
 import vocabN5jlptB from './vocab/n5_jlpt_b';
 import vocabN5jlptC from './vocab/n5_jlpt_c';
+// 여행 코어 화이트리스트(독해 트랙 파일럿) — N5 표준 외 여행 필수어 9개
+import vocabN5travelCore from './vocab/n5_travel_core';
 import vocabN4jlptA from './vocab/n4_jlpt_a';
 import vocabN4jlptB from './vocab/n4_jlpt_b';
 import vocabN4jlptC from './vocab/n4_jlpt_c';
@@ -126,7 +128,7 @@ const registry = createRegistry(
   { OT: grammarOT, N5: grammarN5, N4: grammarN4, N3: grammarN3, N2: grammarN2, N1: grammarN1 },
   {
     // W1 보강: vocabN5jlptA… 조립 후 mergeJaVocab(vocabN5, vocabN5jlptA, …) 형태로 여기 추가
-    N5: mergeJaVocab(vocabN5, vocabN5jlptA, vocabN5jlptB, vocabN5jlptC),
+    N5: mergeJaVocab(vocabN5, vocabN5jlptA, vocabN5jlptB, vocabN5jlptC, vocabN5travelCore),
     N4: mergeJaVocab(vocabN4, vocabN4jlptA, vocabN4jlptB, vocabN4jlptC),
     N3: mergeJaVocab(vocabN3, vocabN3jlptA, vocabN3jlptB, vocabN3jlptC, vocabN3jlptD, vocabN3jlptE, vocabN3jlptF, vocabN3jlptG, vocabN3jlptH, vocabN3jlptI, vocabN3jlptJ),
     N2: mergeJaVocab(vocabN2, vocabN2jlptA, vocabN2jlptB, vocabN2jlptC, vocabN2jlptD, vocabN2jlptE, vocabN2jlptF, vocabN2jlptG, vocabN2jlptH, vocabN2jlptI),

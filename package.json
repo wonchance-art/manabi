@@ -12,6 +12,7 @@
     "prebuild": "node scripts/check-content.mjs && node scripts/update-sw-version.mjs && node scripts/copy-pdf-worker.mjs",
     "build": "next build",
     "start": "next start",
+    "check:reading": "node scripts/check-reading.mjs",
     "test": "vitest run"
   },
   "dependencies": {
