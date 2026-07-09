@@ -33,6 +33,15 @@ import {
 const TILE = 32;             // GameCanvas와 동일 — peers:dist(px)→타일 변환에 사용
 const PEER_STALE_MS = 10000; // 이 시간 넘게 소식 없는 peer는 유령으로 보고 정리
 
+// GBC 다이얼로그 문법 토큰 — 월드 미니바·펫 팝오버를 캔버스 오버레이와 통일한다.
+// (동적 청크 분리 유지를 위해 QuestReview.jsx를 import하지 않고 동일 팔레트 값만 복제.)
+const GBC = {
+  cream: '#f6edcf', creamHi: '#fffaf0', ink: '#2a2118',
+  border: '#2a2118', green: '#5f9a46',
+  font: 'ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace',
+  shadow: '3px 3px 0 rgba(42,33,24,0.30)',
+};
+
 // ssr:false — phaser가 서버에서 window를 건드리지 않게 + 다른 라우트 번들에서 배제.
 const GameCanvas = dynamic(() => import('../components/world/GameCanvas'), {
   ssr: false,
@@ -71,6 +80,8 @@ export default function WorldPage() {
 
   // 네트워크·음성 인스턴스(마운트 1회 생성) — 이벤트 핸들러가 참조.
   const voiceRef = useRef(null);
+  // 펫 파생의 원천 입력(totalCorrect·todayCorrect·sessionsToday) — 인게임 리뷰 완료 시 낙관 성장에 쓴다.
+  const petInputsRef = useRef({ totalCorrect: 0, todayCorrect: 0, sessionsToday: 0 });
 
   const species = useMemo(
     () => PET_SPECIES.find((p) => p.key === petKey) || PET_SPECIES[0],
@@ -100,9 +111,42 @@ export default function WorldPage() {
     if (!userId) return;
     let cancelled = false;
     fetchPetInputs(supabase, userId)
-      .then((inputs) => { if (!cancelled) setPetState(derivePetState(inputs)); })
+      .then((inputs) => {
+        if (cancelled) return;
+        petInputsRef.current = inputs;
+        setPetState(derivePetState(inputs));
+      })
       .catch(() => {});
     return () => { cancelled = true; };
+  }, [userId]);
+
+  // 인게임 즉석 리뷰 완료 → 펫이 그 자리에서 자란다(top5 해결).
+  // 낙관 갱신으로 즉시 성장시키고(이벤트 insert 커밋 레이스 회피), 잠시 뒤 DB 진실과 재조정한다.
+  useEffect(() => {
+    if (!userId) return undefined;
+    const onQuestDone = ({ right = 0 } = {}) => {
+      const cur = petInputsRef.current;
+      const next = {
+        totalCorrect: (cur.totalCorrect || 0) + right,
+        todayCorrect: (cur.todayCorrect || 0) + right,
+        sessionsToday: 1,
+      };
+      petInputsRef.current = next;
+      setPetState(derivePetState(next)); // 즉시 반영 — 펫 레벨/기분이 그 자리에서 갱신
+      // 이벤트 insert가 커밋된 뒤 재조정(카운트 조회가 낙관치 이상일 때만 신뢰 → 레이스로 축소 방지).
+      setTimeout(() => {
+        fetchPetInputs(supabase, userId)
+          .then((inputs) => {
+            if ((inputs.totalCorrect || 0) >= (petInputsRef.current.totalCorrect || 0)) {
+              petInputsRef.current = inputs;
+              setPetState(derivePetState(inputs));
+            }
+          })
+          .catch(() => {});
+      }, 1500);
+    };
+    bus.on('quest:done', onQuestDone);
+    return () => bus.off('quest:done', onQuestDone);
   }, [userId]);
 
   // ── 멀티 + 근접 음성 배선 (로그인 시에만; 비로그인은 솔로) ──
@@ -244,13 +288,13 @@ export default function WorldPage() {
               aria-label="펫 바꾸기"
               style={{
                 fontSize: '1.4rem', lineHeight: 1, cursor: 'pointer',
-                background: 'var(--bg-card, #fff)', border: '1px solid var(--border, rgba(0,0,0,0.12))',
-                borderRadius: 10, padding: '4px 8px',
+                background: GBC.creamHi, border: `2px solid ${GBC.border}`,
+                boxShadow: GBC.shadow, borderRadius: 2, padding: '4px 8px',
               }}
             >
               {species.emoji}
             </button>
-            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+            <span style={{ fontFamily: GBC.font, fontSize: '0.72rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
               Lv.{petState.level} · {moodLine}
             </span>
 
@@ -266,9 +310,9 @@ export default function WorldPage() {
                   style={{
                     position: 'absolute', top: 'calc(100% + 6px)', left: 0, zIndex: 41,
                     display: 'flex', gap: 6, padding: 8,
-                    background: 'var(--bg-card, #fff)',
-                    border: '1px solid var(--border, rgba(0,0,0,0.12))', borderRadius: 12,
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
+                    background: GBC.cream, color: GBC.ink, fontFamily: GBC.font,
+                    border: `3px solid ${GBC.border}`, borderRadius: 2,
+                    boxShadow: `inset 0 0 0 2px ${GBC.creamHi}, ${GBC.shadow}`,
                   }}
                 >
                   {PET_SPECIES.map((p) => (
@@ -282,9 +326,9 @@ export default function WorldPage() {
                       onClick={() => choosePet(p.key)}
                       style={{
                         fontSize: '1.3rem', lineHeight: 1, cursor: 'pointer',
-                        background: p.key === petKey ? 'var(--bg-hover, rgba(0,0,0,0.06))' : 'transparent',
-                        border: p.key === petKey ? '1px solid var(--brand, #6aa84f)' : '1px solid transparent',
-                        borderRadius: 8, padding: '4px 6px',
+                        background: p.key === petKey ? GBC.creamHi : 'transparent',
+                        border: p.key === petKey ? `2px solid ${GBC.green}` : '2px solid transparent',
+                        borderRadius: 2, padding: '4px 6px',
                       }}
                     >
                       {p.emoji}
@@ -307,16 +351,16 @@ export default function WorldPage() {
               style={{
                 fontSize: '1.2rem', lineHeight: 1, cursor: micBusy ? 'default' : 'pointer',
                 opacity: micBusy ? 0.6 : 1,
-                background: micOn ? 'var(--brand, #6aa84f)' : 'var(--bg-card, #fff)',
-                border: '1px solid var(--border, rgba(0,0,0,0.12))',
-                borderRadius: 10, padding: '5px 9px',
+                background: micOn ? GBC.green : GBC.creamHi,
+                border: `2px solid ${GBC.border}`, boxShadow: GBC.shadow,
+                borderRadius: 2, padding: '5px 9px',
                 filter: micOn ? 'none' : 'grayscale(0.4)',
               }}
             >
               {micOn ? '🎤' : '🔇'}
             </button>
             {micOn && nearVoiceCount > 0 && (
-              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+              <span style={{ fontFamily: GBC.font, fontSize: '0.72rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
                 근처 {nearVoiceCount}명과 연결됨
               </span>
             )}
@@ -325,12 +369,13 @@ export default function WorldPage() {
       </div>
 
       {/* ── 게임 캔버스 ── (부모가 높이를 정해줘야 Phaser RESIZE가 채운다) */}
+      {/* GBC 프레임 — 하드 엣지 + 이중 보더(밝은 안/어두운 밖). */}
       <div style={{
         width: '100%', height: 'min(72vh, 640px)',
-        borderRadius: 12, overflow: 'hidden', background: '#bfe3b5',
-        border: '1px solid var(--border)',
+        borderRadius: 2, overflow: 'hidden', background: '#bfe3b5',
+        border: `3px solid ${GBC.border}`, boxShadow: `inset 0 0 0 2px ${GBC.creamHi}`,
       }}>
-        <GameCanvas nickname={nickname} pet={pet} />
+        <GameCanvas userId={userId} nickname={nickname} pet={pet} />
       </div>
     </div>
   );

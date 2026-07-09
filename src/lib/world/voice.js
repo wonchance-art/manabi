@@ -10,7 +10,14 @@
 //
 // 브라우저 전용 API 는 전부 가드해 vitest 에서 순수함수만 임포트 가능하다.
 
-export const VOICE_RADIUS = 6;   // 타일 단위 가청 반경
+export const VOICE_RADIUS = 6;   // 타일 단위 가청 반경(볼륨 감쇠 기준 — 불변)
+
+// 연결 게이팅 히스테리시스: 경계에서의 진동(스래싱)으로 pc 를 붙였다 뗐다 하지 않도록
+// 연결 임계(안으로 들어올 때)와 해제 임계(밖으로 나갈 때)를 벌려 둔다.
+// 볼륨 감쇠(falloffVolume)는 여전히 VOICE_RADIUS 기준이라, 6~8 밴드에서는
+// "연결은 유지되지만 볼륨은 0"인 조용한 상태가 된다.
+export const VOICE_CONNECT_RADIUS = VOICE_RADIUS;  // 6타일 이내로 들어오면 연결
+export const VOICE_RELEASE_RADIUS = 8;             // 8타일 이상 벗어나면 해제
 
 const ICE_CONFIG = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
@@ -31,6 +38,26 @@ export function falloffVolume(dist, radius = VOICE_RADIUS) {
 // glare 방지용 offerer 판정: 사전순으로 앞선 쪽만 offer 를 낸다.
 export function isOfferer(selfId, peerId) {
   return String(selfId) < String(peerId);
+}
+
+// 근접 음성 연결 게이트 판정(순수, 히스테리시스).
+// wasOn: 현재 연결(또는 연결 시도) 중인가. dist: 타일 거리.
+//   · 연결 임계 미만        → 켠다(true)
+//   · 해제 임계 이상/비유한  → 끈다(false)
+//   · 그 사이(밴드)         → 직전 상태 유지(wasOn) — 경계 진동 흡수
+export function voiceGate(wasOn, dist, connectR = VOICE_CONNECT_RADIUS, releaseR = VOICE_RELEASE_RADIUS) {
+  if (!Number.isFinite(dist)) return false;
+  if (dist >= releaseR) return false;
+  if (dist < connectR) return true;
+  return !!wasOn;
+}
+
+// 시그널 세대(epoch) 일치 판정(순수). 오래된 offer 에 대한 answer/ice 가
+// 재생성된 새 pc 에 적용되는 레이스를 막는다. 한쪽이라도 세대 정보가 없으면
+// (구버전 호환) 통과시키고, 둘 다 있으면 동일할 때만 수락한다.
+export function epochMatches(currentEpoch, signalEpoch) {
+  if (signalEpoch == null || currentEpoch == null) return true;
+  return signalEpoch === currentEpoch;
 }
 
 // ── 오디오 메시 팩토리 ───────────────────────────────────────────
@@ -66,7 +93,13 @@ export function createVoiceMesh({ selfId, sendSignal, onSignal }) {
   }
 
   function createPeer(peerId) {
-    const peer = { pc: null, audioEl: makeAudioEl(), distance: Infinity, connected: false, remoteMuted: false };
+    // epoch: 이 peer 로 만든 pc 세대 카운터. sessionEpoch: 현재 협상 세션의 세대
+    //   (오퍼러는 자신의 pc 세대, 앤서러는 받은 offer 의 세대) — 오가는 시그널에 실어
+    //   불일치 시 무시한다.
+    const peer = {
+      pc: null, audioEl: makeAudioEl(), distance: Infinity,
+      connected: false, remoteMuted: false, epoch: 0, sessionEpoch: null,
+    };
     peers.set(peerId, peer);
     return peer;
   }
@@ -81,6 +114,7 @@ export function createVoiceMesh({ selfId, sendSignal, onSignal }) {
 
   function ensurePc(peerId, peer) {
     if (peer.pc || !HAS_WEBRTC) return peer.pc;
+    peer.epoch = (peer.epoch || 0) + 1;   // 새 pc → 세대 증가(재생성 시 이전 세대 시그널 무효화)
     const pc = new RTCPeerConnection(ICE_CONFIG);
     peer.pc = pc;
     pc.addTransceiver('audio', { direction: 'sendrecv' });  // 양방향 m-line 고정 → 재협상 없이 토글
@@ -89,7 +123,7 @@ export function createVoiceMesh({ selfId, sendSignal, onSignal }) {
     pc.onicecandidate = (e) => {
       if (e.candidate) {
         const c = e.candidate.toJSON ? e.candidate.toJSON() : e.candidate;
-        sendSignal(peerId, { kind: 'ice', candidate: c });
+        sendSignal(peerId, { kind: 'ice', candidate: c, epoch: peer.sessionEpoch });
       }
     };
     pc.ontrack = (e) => {
@@ -107,32 +141,39 @@ export function createVoiceMesh({ selfId, sendSignal, onSignal }) {
   async function makeOffer(peerId, peer) {
     const pc = ensurePc(peerId, peer);
     if (!pc) return;
+    peer.sessionEpoch = peer.epoch;   // 오퍼러: 이번 pc 세대를 세션 세대로 고정
     try {
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
-      sendSignal(peerId, { kind: 'offer', sdp: pc.localDescription });
+      sendSignal(peerId, { kind: 'offer', sdp: pc.localDescription, epoch: peer.sessionEpoch });
     } catch { /* 조용히 허용 */ }
   }
 
   async function handleSignal(from, payload) {
-    if (!payload || from === selfId) return;
+    if (destroyed || !payload || from === selfId) return;   // destroy 후 늦은 시그널로 좀비 pc/오디오 생성 차단
     let peer = peers.get(from);
 
     if (payload.kind === 'offer') {
       if (!peer) peer = createPeer(from);
+      // 과거 세대 offer(재협상 이후 뒤늦게 도착)는 무시 — 세션 세대를 되돌리지 않는다.
+      if (payload.epoch != null && peer.sessionEpoch != null && payload.epoch < peer.sessionEpoch) return;
       const pc = ensurePc(from, peer);
       if (!pc) return;
+      if (payload.epoch != null) peer.sessionEpoch = payload.epoch;   // 앤서러: 오퍼러의 세대 채택
       try {
         await pc.setRemoteDescription(payload.sdp);
         attachLocalTrack(peer);
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
-        sendSignal(from, { kind: 'answer', sdp: pc.localDescription });
+        sendSignal(from, { kind: 'answer', sdp: pc.localDescription, epoch: peer.sessionEpoch });
       } catch { /* noop */ }
     } else if (payload.kind === 'answer') {
-      if (peer?.pc) { try { await peer.pc.setRemoteDescription(payload.sdp); } catch { /* noop */ } }
+      // 오래된 offer 의 answer 가 재생성된 새 pc 에 적용되는 레이스 차단(세대 불일치 무시).
+      if (peer?.pc && epochMatches(peer.sessionEpoch, payload.epoch)) {
+        try { await peer.pc.setRemoteDescription(payload.sdp); } catch { /* noop */ }
+      }
     } else if (payload.kind === 'ice') {
-      if (peer?.pc && payload.candidate) {
+      if (peer?.pc && payload.candidate && epochMatches(peer.sessionEpoch, payload.epoch)) {
         try { await peer.pc.addIceCandidate(payload.candidate); } catch { /* noop */ }
       }
     } else if (payload.kind === 'mute') {
@@ -178,7 +219,8 @@ export function createVoiceMesh({ selfId, sendSignal, onSignal }) {
   function setPeerDistance(peerId, dist) {
     if (peerId === selfId || destroyed) return;
     let peer = peers.get(peerId);
-    if (!(dist < VOICE_RADIUS)) {          // 밖(또는 NaN) → 연결 해제/보류
+    const wasOn = !!(peer && peer.pc);         // 현재 연결(또는 연결 시도) 중인가
+    if (!voiceGate(wasOn, dist)) {             // 히스테리시스: 해제 임계 밖(또는 NaN) → 해제/보류
       if (peer) { closePc(peer); peer.distance = dist; }
       emit();
       return;

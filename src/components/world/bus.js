@@ -7,6 +7,10 @@
 //                       (원격 플레이어 렌더·보간·이탈 정리. 솔로에선 아무도 emit 안 하므로 무해)
 //   · 'peers:dist'   ← GameCanvas가 emit  {peerId: distancePx, …}  (음성 근접용, 매 500ms)
 //
+// 인게임 즉석 리뷰 계약 (QuestReview가 emit → GameCanvas 연출 · WorldPage 펫 성장):
+//   · 'quest:scored' ← QuestReview가 emit  {correct}          (문항 채점마다 — 펫 하트 즉시)
+//   · 'quest:done'   ← QuestReview가 emit  {right, total}     (리뷰 완료 — 펫 점프 + 그 자리 성장)
+//
 // API: on(ev, cb) / off(ev, cb) / emit(ev, data). 그게 전부다.
 
 const listeners = new Map(); // ev(string) -> Set<callback>

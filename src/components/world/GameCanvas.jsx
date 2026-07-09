@@ -12,8 +12,8 @@
 // 48px 도트 룩은 카메라 zoom 1.5로 낸다(월드 좌표는 손대지 않아 음성 근접 게이팅이 그대로 유지된다).
 
 import { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
 import bus from './bus';
+import QuestReview, { GBC, gbcButtonPrimary, gbcPanel } from './QuestReview';
 
 // ── 좌표 스케일 (버스 계약 불변: 1타일 = 32 월드 px) ──
 const TILE = 32;            // 월드 px / 타일 (예전과 동일 — local:state·peers:dist 스케일 유지)
@@ -184,19 +184,40 @@ function buildMap() {
   return m;
 }
 
-export default function GameCanvas({ nickname = '나', pet = { key: 'dog', emoji: '🐕', level: 1, mood: 'happy' } }) {
+export default function GameCanvas({ userId = null, nickname = '나', pet = { key: 'dog', emoji: '🐕', level: 1, mood: 'happy' } }) {
   const hostRef = useRef(null);
   const gameRef = useRef(null);
+  const sceneRef = useRef(null);   // 활성 씬 — React가 입력 잠금을 갱신
   const nickRef = useRef(nickname);
   const petRef = useRef(pet);
   const [nearQuest, setNearQuest] = useState(false);
+  const [reviewOpen, setReviewOpen] = useState(false); // 인게임 즉석 리뷰 오버레이
 
   useEffect(() => { nickRef.current = nickname || '나'; }, [nickname]);
   useEffect(() => { petRef.current = pet || { key: 'dog', level: 1, mood: 'happy' }; }, [pet]);
 
+  // 리뷰 오버레이가 열리면 게임 입력을 잠근다(캔버스 이동 정지). 닫히면 해제.
+  useEffect(() => {
+    const scene = sceneRef.current;
+    if (!scene) return;
+    scene.inputLocked = reviewOpen;
+    if (reviewOpen) { if (scene.heldDirs) scene.heldDirs.length = 0; scene.tapTile = null; }
+  }, [reviewOpen]);
+
   useEffect(() => {
     let destroyed = false;
     let game = null;
+    let scene = null; // create()에서 자신을 할당 — 아래 버스 핸들러가 위임 대상으로 참조.
+
+    // ── 버스 구독을 컴포넌트 스코프에서 등록/해제한다(리스너 누수 방지). ──
+    // 기존엔 씬 'shutdown'에서 off 했지만 Phaser destroy 경로에서 shutdown이 안 뜰 수 있어,
+    // 재방문마다 죽은 씬 콜백이 bus에 누적됐다. 이제 React cleanup이 off를 직접 보장한다.
+    const onPeers = (data) => scene?.applyPeers(data);
+    const onQuestScored = (data) => scene?.questScoredFx(data);
+    const onQuestDone = (data) => scene?.questDoneFx(data);
+    bus.on('peers:update', onPeers);
+    bus.on('quest:scored', onQuestScored);
+    bus.on('quest:done', onQuestDone);
 
     (async () => {
       const Phaser = (await import('phaser')).default;
@@ -359,6 +380,11 @@ export default function GameCanvas({ nickname = '나', pet = { key: 'dog', emoji
         }
 
         create() {
+          scene = this;              // 버스 핸들러 위임 대상
+          sceneRef.current = this;   // React 입력 잠금 갱신용
+          this.inputLocked = false;  // 리뷰 오버레이 중 이동 잠금
+          this.petJumpVal = 0;       // 퀘스트 완료 점프 연출값(0→1→0)
+
           this.cameras.main.setBounds(0, 0, WORLD_W, WORLD_H);
           this.cameras.main.setBackgroundColor('#7fb060');
           this.cameras.main.setZoom(ZOOM);
@@ -429,6 +455,7 @@ export default function GameCanvas({ nickname = '나', pet = { key: 'dog', emoji
           this.heldDirs = [];
           this.tapTile = null;
           this.input.keyboard.on('keydown', (e) => {
+            if (this.inputLocked) return; // 리뷰 오버레이 중 이동 잠금
             const d = keyToDir(e.key);
             if (!d) return;
             this.tapTile = null;
@@ -439,14 +466,14 @@ export default function GameCanvas({ nickname = '나', pet = { key: 'dog', emoji
             if (d) this.heldDirs = this.heldDirs.filter((x) => x !== d);
           });
           this.input.on('pointerdown', (p) => {
+            if (this.inputLocked) return; // 리뷰 오버레이 중 탭-이동 잠금
             this.tapTile = { x: Math.floor(p.worldX / TILE), y: Math.floor(p.worldY / TILE) };
             this.heldDirs.length = 0;
           });
 
           // ── 원격 플레이어(그리드 스텝 렌더) ──
+          // 버스 구독('peers:update' 등)은 컴포넌트 스코프에서 등록됨 — 여기선 상태만 준비.
           this.peers = new Map(); // peerId -> { sprite, label, tileX, tileY, destTileX, destTileY, facing, moving }
-          this.onPeers = (incoming) => this.applyPeers(incoming);
-          bus.on('peers:update', this.onPeers);
 
           this.lastEmit = 0;
           this.time.addEvent({ delay: 500, loop: true, callback: () => this.emitDistances() });
@@ -460,17 +487,25 @@ export default function GameCanvas({ nickname = '나', pet = { key: 'dog', emoji
           });
 
           this.wasNear = false;
-
-          this.events.once('shutdown', () => {
-            bus.off('peers:update', this.onPeers);
-            this.peers.clear();
-          });
         }
 
+        // 퀘스트 채점 연출 — 정답이면 펫 자리에 하트 즉시.
+        questScoredFx({ correct } = {}) {
+          if (correct) this.spawnHeart();
+        }
+
+        // 퀘스트 완료 연출 — 펫 점프 + 하트 몇 개.
+        questDoneFx() {
+          if (!this.pet) return;
+          this.tweens.add({ targets: this, petJumpVal: 1, duration: 220, ease: 'Quad.easeOut', yoyo: true, repeat: 1 });
+          for (let i = 0; i < 3; i++) this.time.delayedCall(i * 120, () => this.spawnHeart());
+        }
+
+        // 닉네임 나메플레이트 — GBC 다이얼로그 문법(크림 박스 + 잉크 모노스페이스, 하드 엣지).
         labelStyle() {
           return {
-            fontFamily: 'monospace', fontSize: '10px', color: '#2b2b2b',
-            backgroundColor: 'rgba(255,255,255,0.78)', padding: { x: 3, y: 1 },
+            fontFamily: 'monospace', fontSize: '10px', color: GBC.ink,
+            backgroundColor: GBC.cream, padding: { x: 4, y: 2 },
             resolution: 3,
           };
         }
@@ -564,7 +599,7 @@ export default function GameCanvas({ nickname = '나', pet = { key: 'dog', emoji
 
         update(time, delta) {
           // ── 플레이어 이동 상태기계 (facing→step→hold 연속) ──
-          if (!this.moving) {
+          if (!this.moving && !this.inputLocked) {
             const held = this.heldDirs.length ? this.heldDirs[this.heldDirs.length - 1] : null;
             if (held) {
               if (this.facing !== held) {
@@ -609,6 +644,7 @@ export default function GameCanvas({ nickname = '나', pet = { key: 'dog', emoji
           if (petObj.mood === 'happy' || petObj.mood === 'excited') {
             petRenderY -= Math.abs(Math.sin(time / 1000 * 6)) * 4;
           }
+          petRenderY -= (this.petJumpVal || 0) * 18; // 퀘스트 완료 점프 연출
           this.pet.setPosition(Math.round(this.petPX), Math.round(petRenderY));
           this.pet.setDepth(this.petPY);
 
@@ -662,39 +698,55 @@ export default function GameCanvas({ nickname = '나', pet = { key: 'dog', emoji
 
     return () => {
       destroyed = true;
+      // 버스 off를 파이저 lifecycle과 무관하게 여기서 확실히 수행(재방문 누수 차단).
+      bus.off('peers:update', onPeers);
+      bus.off('quest:scored', onQuestScored);
+      bus.off('quest:done', onQuestDone);
+      scene = null;
+      sceneRef.current = null;
       if (gameRef.current) { gameRef.current.destroy(true); gameRef.current = null; }
     };
   }, []);
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', borderRadius: 12 }}>
+    <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', borderRadius: 2 }}>
       <div ref={hostRef} style={{ width: '100%', height: '100%', imageRendering: 'pixelated' }} />
 
-      {/* 조작 힌트 — 게임 밖 HTML 오버레이 */}
+      {/* 조작 힌트 — GBC 다이얼로그 문법(크림 칩, 하드 엣지). */}
       <div style={{
         position: 'absolute', left: 10, bottom: 10, pointerEvents: 'none',
-        fontSize: '0.72rem', color: '#fff', background: 'rgba(0,0,0,0.35)',
-        padding: '4px 8px', borderRadius: 8, lineHeight: 1.4,
+        fontFamily: GBC.font, fontSize: '0.66rem', color: GBC.ink,
+        background: GBC.cream, border: `2px solid ${GBC.border}`,
+        boxShadow: `inset 0 0 0 1px ${GBC.creamHi}`,
+        padding: '4px 8px', borderRadius: 2, lineHeight: 1.4,
       }}>
         방향키 · WASD · 화면 탭으로 한 칸씩 이동
       </div>
 
-      {/* 퀘스트 말풍선 — 근접 시 표시. Phaser 내 DOM 금지 → React 오버레이로 처리. */}
-      {nearQuest && (
+      {/* 표지판 근접 → '말 걸기' 프롬프트. Phaser 내 DOM 금지 → React 오버레이. (오너 지시: 게임 내에서 진행) */}
+      {nearQuest && !reviewOpen && (
         <div style={{
           position: 'absolute', left: '50%', bottom: 18, transform: 'translateX(-50%)',
-          maxWidth: 'min(88%, 420px)', background: 'var(--bg-card, #fff)',
-          border: '1px solid var(--border, rgba(0,0,0,0.12))', borderRadius: 14,
-          boxShadow: '0 8px 28px rgba(0,0,0,0.22)', padding: '14px 16px',
-          display: 'flex', flexDirection: 'column', gap: 10, textAlign: 'center',
+          ...gbcPanel, width: 'min(90%, 360px)', padding: '12px 14px',
+          display: 'flex', alignItems: 'center', gap: 10,
         }}>
-          <span style={{ fontSize: '0.92rem', color: 'var(--text-primary, #222)', lineHeight: 1.55 }}>
-            📮 오늘의 학습을 마치면 펫이 자라요
+          <span style={{ fontSize: '1.3rem', lineHeight: 1 }}>🪧</span>
+          <span style={{ flex: 1, fontSize: '0.8rem', lineHeight: 1.5 }}>
+            표지판이 말을 걸어와요 — 지금 복습하면 펫이 자라요.
           </span>
-          <Link href="/study" className="btn btn--primary btn--sm" style={{ alignSelf: 'center' }}>
-            학습하러 가기
-          </Link>
+          <button
+            type="button"
+            onClick={() => setReviewOpen(true)}
+            style={{ ...gbcButtonPrimary, whiteSpace: 'nowrap' }}
+          >
+            말 걸기
+          </button>
         </div>
+      )}
+
+      {/* 인게임 즉석 리뷰 — 캔버스 위 HTML, 열리면 게임 입력 잠금(useEffect). */}
+      {reviewOpen && (
+        <QuestReview userId={userId} onClose={() => setReviewOpen(false)} />
       )}
     </div>
   );

@@ -30,6 +30,15 @@ export function throttleGate(lastAt, now, interval) {
   return lastAt == null || now - lastAt >= interval;
 }
 
+// 재구독 지수 백오프 지연(ms) 산출(순수). attempt 는 0부터의 연속 실패 횟수.
+// 1s→2s→4s→8s→16s→30s(상한)로 증가하며 상한을 넘지 않는다.
+// base·max 를 열어 두어 테스트에서 시퀀스를 그대로 검증할 수 있게 한다.
+export function backoffDelay(attempt, base = 1000, max = 30000) {
+  const n = attempt > 0 ? attempt : 0;
+  const d = base * 2 ** n;
+  return d > max ? max : d;
+}
+
 // 리딩+트레일링 스로틀. 마지막 인자는 항상 전송되도록 트레일링 콜을 예약한다.
 export function createThrottle(fn, interval) {
   let lastAt = null;
@@ -57,18 +66,33 @@ export function createThrottle(fn, interval) {
 
 // ── 넷코드 팩토리 ────────────────────────────────────────────────
 
+// 재구독을 포기하고 솔로로 전환하기 전 최대 연속 시도 횟수.
+// 권한 없음/정책 미적용(private 채널 거부)도 CHANNEL_ERROR 로 오므로,
+// 무한 재시도 대신 이 횟수를 넘기면 조용히 'failed' → 솔로로 떨어진다.
+const MAX_RECONNECT_ATTEMPTS = 6;
+
 export function createWorldNet({ userId, name, pet, channelName = 'world-plaza' }) {
   const peers = new Map();        // peerId -> {x,y,dir,name,pet,at}
   let channel = null;
   let peersCb = null;
   let peerLeftCb = null;
   let signalCb = null;
+  let statusCb = null;            // onStatus(cb): 'connected'|'reconnecting'|'failed'
+
+  let reconnectAttempt = 0;       // 연속 실패 횟수(SUBSCRIBED 시 0으로 리셋)
+  let reconnectTimer = null;      // 예약된 재구독 타이머
+  let closed = false;             // leave() 호출됨 — 모든 재연결 중단
+  let joinResolve = null;         // join() Promise 1회성 정착용
+  let joinSettled = false;
 
   const emitPeers = () => { if (peersCb) peersCb(new Map(peers)); };
+  const setStatus = (s) => { if (statusCb) statusCb(s); };
 
   const flushState = createThrottle((state) => {
     if (!channel) return;
-    channel.send({ type: 'broadcast', event: 'pos', payload: { id: userId, ...state } });
+    try {
+      channel.send({ type: 'broadcast', event: 'pos', payload: { id: userId, ...state } });
+    } catch { /* 재연결 창에서의 송신 실패는 조용히 */ }
   }, 100);
 
   // presence 메타(name·pet)를 반영. 좌표는 pos broadcast 로만 갱신하므로 여기선 유지.
@@ -83,10 +107,13 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza' 
     });
   }
 
-  async function join() {
-    if (channel) return;
+  // 채널 생성 + 이벤트 바인딩 + 구독. 최초/재구독의 공통 경로다.
+  // private: true — Supabase Realtime Authorization(realtime.messages RLS)으로
+  // 'world-plaza' 를 관리자 전용으로 잠근다(마이그레이션 참조). 정책 미적용/권한 없으면
+  // 구독이 CHANNEL_ERROR 로 거부되고, 아래 상태기계가 조용히 솔로로 떨어뜨린다.
+  function openChannel() {
     channel = supabase.channel(channelName, {
-      config: { presence: { key: userId }, broadcast: { self: false } },
+      config: { private: true, broadcast: { self: false }, presence: { key: userId } },
     });
 
     channel.on('broadcast', { event: 'pos' }, ({ payload }) => {
@@ -118,26 +145,82 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza' 
       emitPeers();
     });
 
-    await new Promise((resolve, reject) => {
-      channel.subscribe(async (status) => {
-        if (status === 'SUBSCRIBED') {
-          try { await channel.track({ name, pet }); } catch { /* track 실패는 조용히 */ }
-          resolve();
-        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          reject(new Error(`world-net subscribe failed: ${status}`));
-        }
-      });
-    });
+    channel.subscribe((status) => onSubscribeStatus(status));
+  }
+
+  // subscribe 상태 전이 처리(핵심 장애 복구 로직).
+  //   SUBSCRIBED                          → 'connected', 백오프 리셋, presence 재track
+  //   CHANNEL_ERROR/TIMED_OUT/CLOSED      → 백오프 재구독 예약('reconnecting'),
+  //                                         MAX 초과 시 'failed'(솔로)
+  function onSubscribeStatus(status) {
+    if (closed) return;
+    if (status === 'SUBSCRIBED') {
+      reconnectAttempt = 0;
+      clearReconnect();
+      setStatus('connected');
+      // 재구독 후 내 presence 메타(name·pet) 복원 — track 실패는 조용히.
+      try { Promise.resolve(channel.track({ name, pet })).catch(() => {}); } catch { /* noop */ }
+      settleJoin();
+    } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+      scheduleReconnect();
+      settleJoin();   // 최초 시도 실패도 caller(join)를 막지 않고 솔로로 진행시킨다
+    }
+    // 'CLOSING' 등 그 외 상태는 무시.
+  }
+
+  function clearReconnect() {
+    if (reconnectTimer != null) { clearTimeout(reconnectTimer); reconnectTimer = null; }
+  }
+
+  function scheduleReconnect() {
+    if (closed || reconnectTimer != null) return;
+    if (reconnectAttempt >= MAX_RECONNECT_ATTEMPTS) {
+      setStatus('failed');   // 포기 — 조용히 솔로(권한 실패/영구 장애)
+      return;
+    }
+    const delay = backoffDelay(reconnectAttempt);
+    reconnectAttempt += 1;
+    setStatus('reconnecting');
+    reconnectTimer = setTimeout(() => {
+      reconnectTimer = null;
+      if (closed) return;
+      teardownChannel();   // 기존(에러난) 채널 정리 후 새 채널로 재구독 — 좀비 핸들러 방지
+      openChannel();
+    }, delay);
+  }
+
+  function teardownChannel() {
+    if (!channel) return;
+    try { channel.unsubscribe(); } catch { /* noop */ }
+    try { supabase.removeChannel?.(channel); } catch { /* noop */ }
+    channel = null;
+  }
+
+  function settleJoin() {
+    if (joinSettled) return;
+    joinSettled = true;
+    const r = joinResolve;
+    joinResolve = null;
+    r?.();
+  }
+
+  async function join() {
+    if (channel || closed) return;   // 이미 열림 / leave 후 재사용 금지
+    joinSettled = false;
+    await new Promise((resolve) => { joinResolve = resolve; openChannel(); });
   }
 
   function leave() {
+    closed = true;
+    clearReconnect();
     flushState.cancel();
-    if (channel) {
-      try { channel.unsubscribe(); } catch { /* noop */ }
-      try { supabase.removeChannel?.(channel); } catch { /* noop */ }
-      channel = null;
-    }
+    teardownChannel();
     peers.clear();
+    // 콜백 참조 정리 — leave 후 잔존 콜백이 재사용/오인되지 않도록 끊는다.
+    peersCb = null;
+    peerLeftCb = null;
+    signalCb = null;
+    statusCb = null;
   }
 
   function sendState(state) { flushState(state); }
@@ -145,9 +228,13 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza' 
   function onPeerLeft(cb) { peerLeftCb = cb; }
   function sendSignal(toPeerId, payload) {
     if (!channel) return;
-    channel.send({ type: 'broadcast', event: 'rtc', payload: { to: toPeerId, from: userId, payload } });
+    try {
+      channel.send({ type: 'broadcast', event: 'rtc', payload: { to: toPeerId, from: userId, payload } });
+    } catch { /* 재연결 창에서의 시그널 송신 실패는 조용히 */ }
   }
   function onSignal(cb) { signalCb = cb; }
+  // 연결 상태 알림 구독(추가 API, 하위호환). cb('connected'|'reconnecting'|'failed').
+  function onStatus(cb) { statusCb = cb; }
 
-  return { join, leave, sendState, onPeers, onPeerLeft, sendSignal, onSignal };
+  return { join, leave, sendState, onPeers, onPeerLeft, sendSignal, onSignal, onStatus };
 }
