@@ -214,7 +214,13 @@ function removeSmallIslands(grid) {
 // 큰 육지(연결요소 크기 ≥ BIG_LAND) 에만 작용해 강화도·영종도(≈6타일)·제주(≈87타일)·쓰시마 등
 // 소도서는 절대 훼손하지 않는다. Math.random 미사용 → 재생성 byte-identical.
 // grid 는 이 시점에 0(sea)/1(land) 만 담긴다(수계·DMZ·교량·질감 오버레이 이전에 호출).
-const COAST_SMOOTH_BBOX = { x0: 48, x1: 68, y0: 242, y1: 280 }; // 전북 서해안(군산·부안·새만금)
+// 오너 #4: 스무딩 영역을 전북 bbox 한정 → 서해안 전역(경기만~전라) + 부산 남해안으로 확장한다.
+// 계단·직각 마무리를 유기적으로 다듬되, 큰 육지(≥COAST_BIG_LAND)에만 작용해 실섬(강화도 부속·
+// 영종도·제주·쓰시마·거제도 등 소도서)은 절대 훼손하지 않는 불변식은 그대로 유지한다.
+const COAST_SMOOTH_BBOXES = [
+  { x0: 40, x1: 76, y0: 200, y1: 292 }, // 서해안 전역(경기만·강화·태안·군산·부안·목포)
+  { x0: 94, x1: 116, y0: 258, y1: 280 }, // 부산 남해안(만·곶 힌트 · 오너 #8)
+];
 const COAST_BIG_LAND = 300; // 이 타일 수 이상 연결요소만 침식 대상(소도서 보호)
 function smoothCoast(grid) {
   const N4 = [[1, 0], [-1, 0], [0, 1], [0, -1]];
@@ -240,34 +246,109 @@ function smoothCoast(grid) {
     sizes.push(cnt);
   }
   const big = (x, y) => { const c = comp[y * MAP_W + x]; return c >= 0 && sizes[c] >= COAST_BIG_LAND; };
-  const { x0, x1, y0, y1 } = COAST_SMOOTH_BBOX;
   let filled = 0, carved = 0, dith = 0;
   // ① 오목 노치 매움 — 원본(src) 기준으로 판정해 동시 적용(순서 무관·결정적).
   const src0 = grid.slice();
-  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
-    if (src0[y * MAP_W + x] !== 0) continue;
-    let ln = 0, touchBig = false;
-    for (const [dx, dy] of N4) if (isLand(src0, x + dx, y + dy)) { ln++; if (big(x + dx, y + dy)) touchBig = true; }
-    if (ln >= 3 && touchBig) { grid[y * MAP_W + x] = 1; filled++; }
+  for (const { x0, x1, y0, y1 } of COAST_SMOOTH_BBOXES) {
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+      if (src0[y * MAP_W + x] !== 0) continue;
+      let ln = 0, touchBig = false, touchSmall = false;
+      for (const [dx, dy] of N4) if (isLand(src0, x + dx, y + dy)) { ln++; if (big(x + dx, y + dy)) touchBig = true; else touchSmall = true; }
+      // touchSmall 이면 이 sea 타일은 소도서(강화도 부속·영종도 등)와 본토 사이 해협 → 메우면 섬이
+      // 본토에 붙어버린다(영종대교 무의미화). 해협 보존을 위해 대륙에만 접한 노치만 매운다.
+      if (ln >= 3 && touchBig && !touchSmall) { grid[y * MAP_W + x] = 1; filled++; }
+    }
   }
   // ② 고립 돌출 깎기 — ①반영본(grid) 기준, 큰 육지 타일만.
-  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
-    const i = y * MAP_W + x;
-    if (grid[i] !== 1 || !big(x, y)) continue;
-    let sn = 0; for (const [dx, dy] of N4) if (!isLand(grid, x + dx, y + dy)) sn++;
-    if (sn >= 3) { grid[i] = 0; carved++; }
+  for (const { x0, x1, y0, y1 } of COAST_SMOOTH_BBOXES) {
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+      const i = y * MAP_W + x;
+      if (grid[i] !== 1 || !big(x, y)) continue;
+      let sn = 0; for (const [dx, dy] of N4) if (!isLand(grid, x + dx, y + dy)) sn++;
+      if (sn >= 3) { grid[i] = 0; carved++; }
+    }
   }
   // ③ 볼록 코너 1회 디더 — 스냅샷 기준 동시 적용(직선 제방 유기화).
   const src2 = grid.slice();
-  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
-    const i = y * MAP_W + x;
-    if (src2[i] !== 1 || !big(x, y)) continue;
-    const l = !isLand(src2, x - 1, y), r = !isLand(src2, x + 1, y), u = !isLand(src2, x, y - 1), d = !isLand(src2, x, y + 1);
-    const s = (l ? 1 : 0) + (r ? 1 : 0) + (u ? 1 : 0) + (d ? 1 : 0);
-    const corner = (l && u) || (l && d) || (r && u) || (r && d);
-    if (s === 2 && corner && hashNoise(x, y, 555) < 0.5) { grid[i] = 0; dith++; }
+  for (const { x0, x1, y0, y1 } of COAST_SMOOTH_BBOXES) {
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+      const i = y * MAP_W + x;
+      if (src2[i] !== 1 || !big(x, y)) continue;
+      const l = !isLand(src2, x - 1, y), r = !isLand(src2, x + 1, y), u = !isLand(src2, x, y - 1), d = !isLand(src2, x, y + 1);
+      const s = (l ? 1 : 0) + (r ? 1 : 0) + (u ? 1 : 0) + (d ? 1 : 0);
+      const corner = (l && u) || (l && d) || (r && u) || (r && d);
+      if (s === 2 && corner && hashNoise(x, y, 555) < 0.5) { grid[i] = 0; dith++; }
+    }
   }
   return { filled, carved, dith };
+}
+
+// ── 목포 다도해 정리 + 점 섬 흩뿌리기 (오너 #6) ────────────────────────────────
+// MOKPO_BBOX 안에서 ① 대륙(큰 육지 ≥COAST_BIG_LAND)이 아닌 어색한 소덩어리 land 를 바다로 정리하고
+// ② 결정적 해시로 고립된 1타일 점 섬을 흩뿌린다(실제 다도해 느낌). 대륙 해안과 영산강 하구는 보존.
+// grid 는 이 시점에 0/1 만 담긴다(수계·질감 이전 호출). Math.random 미사용 → byte-identical.
+function scatterMokpoArchipelago(grid) {
+  const N4 = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+  const N8 = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]];
+  const inB = (x, y) => x >= 0 && y >= 0 && x < MAP_W && y < MAP_H;
+  // 연결요소 크기 라벨링(대륙 vs 소덩어리).
+  const comp = new Int32Array(MAP_W * MAP_H).fill(-1); const sizes = []; const st = [];
+  for (let i = 0; i < grid.length; i++) {
+    if (grid[i] !== 1 || comp[i] !== -1) continue;
+    const id = sizes.length; let cnt = 0; st.length = 0; st.push(i); comp[i] = id;
+    while (st.length) {
+      const idx = st.pop(); cnt++; const x = idx % MAP_W, y = (idx / MAP_W) | 0;
+      for (const [dx, dy] of N4) {
+        const nx = x + dx, ny = y + dy; if (!inB(nx, ny)) continue;
+        const ni = ny * MAP_W + nx; if (grid[ni] === 1 && comp[ni] === -1) { comp[ni] = id; st.push(ni); }
+      }
+    }
+    sizes.push(cnt);
+  }
+  const { x0, x1, y0, y1 } = MOKPO_BBOX;
+  let cleared = 0, dropped = 0;
+  // ① 소덩어리 정리 — 대륙이 아닌 land 를 바다로.
+  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+    const i = y * MAP_W + x; if (grid[i] !== 1) continue;
+    if (sizes[comp[i]] < COAST_BIG_LAND) { grid[i] = 0; cleared++; }
+  }
+  // ② 점 섬 흩뿌리기 — 사방 8-이웃이 전부 바다인 고립 sea 타일에 결정적 해시로 1타일 섬을 찍는다.
+  //    임계값으로 개수를 조절(≈10여 개). 대륙 인접(8-이웃에 land) 위치는 제외 → 항상 점 섬.
+  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+    const i = y * MAP_W + x; if (grid[i] !== 0) continue;
+    let allSea = true; for (const [dx, dy] of N8) { const nx = x + dx, ny = y + dy; if (inB(nx, ny) && grid[ny * MAP_W + nx] !== 0) { allSea = false; break; } }
+    if (!allSea) continue;
+    if (hashNoise(x, y, 6006) < 0.10) { grid[i] = 1; dropped++; }
+  }
+  return { cleared, dropped };
+}
+
+// ── 내륙 갇힌 바다 → 호수 변환 (오너 #5) ───────────────────────────────────────
+// 맵 가장자리에서 flood-fill 후, 도달 불가한 SEA 포켓을 LAKE(통행 가능 물)로 바꾼다.
+// 오너: "호수가 아닌 이상" 갇힌 바다 금지 — 의도적 lake(신지호류)는 이미 code 3 이라 영향 없음.
+// 최종 지형 단계(교량·앵커 이후)에서 1회 호출해 신규 편집이 만든 포켓까지 잡는다. 결정적.
+//   · flood-fill 은 SEA∪BRIDGE 를 통과한다: 다리는 바다 위를 잇는 구조물이라 그 아래로 바닷물이
+//     흐른다(댐이 아님). 세토대교가 세토내해의 Kii 수로를 막아 내해 전체가 갇힌 바다로 오판돼
+//     LAKE(통행 가능)로 뒤집히면 혼슈↔시코쿠가 다리 없이도 걸어서 이어지는 회귀가 난다 — 이를 막는다.
+//   · 변환은 SEA 타일에만(도달 못 한 SEA→LAKE). BRIDGE 는 통로로만 쓰고 값은 유지.
+function fillLandlockedSea(grid) {
+  const seen = new Uint8Array(grid.length); const q = [];
+  const passable = (i) => grid[i] === TERRAIN.SEA || grid[i] === TERRAIN.BRIDGE;
+  const push = (i) => { if (passable(i) && !seen[i]) { seen[i] = 1; q.push(i); } };
+  for (let x = 0; x < MAP_W; x++) { push(x); push((MAP_H - 1) * MAP_W + x); }
+  for (let y = 0; y < MAP_H; y++) { push(y * MAP_W); push(y * MAP_W + MAP_W - 1); }
+  let head = 0;
+  while (head < q.length) {
+    const idx = q[head++]; const x = idx % MAP_W, y = (idx / MAP_W) | 0;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nx = x + dx, ny = y + dy;
+      if (nx < 0 || ny < 0 || nx >= MAP_W || ny >= MAP_H) continue;
+      push(ny * MAP_W + nx);
+    }
+  }
+  let converted = 0;
+  for (let i = 0; i < grid.length; i++) if (grid[i] === TERRAIN.SEA && !seen[i]) { grid[i] = TERRAIN.LAKE; converted++; }
+  return converted;
 }
 
 // ── 폴리라인 래스터화 (4-연결 연속 · 구멍 0) ──
@@ -412,7 +493,10 @@ function fetchElevation() {
 // ETOPO 실패 시에만 사용. 주요 산맥 능선을 [lon,lat]로 근사하고 좌우 brush 타일로 land 위에 그린다.
 // 태백·소백·낭림·함경·개마고원·일본 알프스·오우·규슈·히다카 — 실측 DEM 아님(경고 출력).
 const MOUNTAIN_RANGES = [
-  [[128.40, 38.60], [128.47, 38.12], [128.54, 37.79], [128.70, 37.40], [128.92, 37.09], [129.00, 36.60], [128.90, 36.10]], // 태백
+  // 태백(백두대간) — 강원 능선을 금강산(128.115,38.667) 경유해 북쪽(원산~낭림 방향)으로 연장해
+  // 백두대간이 DMZ 에서 끊기지 않게 한다(오너 #1 · 낭림 남단 ≈127.15,39.50 에 접속 · 근사).
+  [[127.15, 39.50], [127.35, 39.20], [127.65, 38.95], [128.00, 38.75], [128.115, 38.667],
+   [128.25, 38.62], [128.40, 38.60], [128.47, 38.12], [128.54, 37.79], [128.70, 37.40], [128.92, 37.09], [129.00, 36.60], [128.90, 36.10]], // 태백
   [[128.50, 36.96], [128.10, 36.45], [127.90, 35.95], [127.73, 35.34]],                                                     // 소백(→지리산)
   [[126.50, 41.50], [126.70, 41.00], [126.95, 40.50], [127.05, 40.00], [127.15, 39.50]],                                    // 낭림
   [[129.50, 41.50], [128.80, 41.20], [128.30, 41.00], [127.80, 40.70], [127.30, 40.40]],                                    // 함경
@@ -445,6 +529,7 @@ const NAMED_PEAKS = [
   { key: 'halla', lon: 126.530, lat: 33.370 },
   { key: 'fuji', lon: 138.727, lat: 35.361 },
   { key: 'aso', lon: 131.090, lat: 32.880 },
+  { key: 'daisen', lon: 133.540, lat: 35.370 }, // 다이센(大山 ≈196,263) — 사카이미나토 권역 PEAK 보장(오너 #10)
 ];
 
 // ── 하드코딩 폴백 폴리곤 (출처 없음 · 손그림 근사 · 후속 교체 대상) ──
@@ -480,6 +565,52 @@ const DMZ = [[126.68, 37.96], [127.0, 38.30], [127.5, 38.32], [128.1, 38.33], [1
 // ── 영종대교: 영종도 ↔ 본토(인천 서구)를 잇는 bridge 라인 ([lon,lat]) ──
 // 바다 위 통행 가능 타일. 실제 대교와 유사한 북동향 1라인.
 const YEONGJONG_BRIDGE = [[126.53, 37.50], [126.62, 37.49]];
+
+// ── 신규 하드코딩 지오메트리 (오너 지형 지시 · 전부 근사 · ne_10m 미수록) ──────────────
+// 강 6종(오너 #2) — 실경로 근사 웨이포인트 폴리라인([lon,lat], 각 4~6점). land 위에만 RIVER 를
+// 얹고 하구 웨이포인트는 바다에 두어 마지막 육지 타일이 sea 에 닿게 한다(하구-바다 연결 보장).
+// 임진강은 DMZ 를 가로지르므로, 뒤 단계의 fence 래스터화가 교차 타일을 덮어 fence 우선이 성립한다.
+// 낙동강하구(오너 #7)는 부산 서측 하구를 바다까지 연장하는 보강 세그먼트.
+const HARDCODED_RIVERS = [
+  { name: '북한강', pts: [[128.05, 38.30], [127.80, 38.05], [127.72, 37.87], [127.50, 37.73], [127.33, 37.54]] }, // 금강산 남측→화천→춘천→양수리(한강 합류)
+  { name: '남한강', pts: [[128.90, 37.20], [128.47, 37.18], [128.00, 37.02], [127.63, 37.30], [127.33, 37.54]] }, // 태백→충주→양수리
+  { name: '금강', pts: [[127.52, 35.66], [127.50, 36.10], [127.30, 36.40], [127.00, 36.30], [126.80, 36.05], [126.52, 35.94]] }, // 장수→대전 서측→군산 하구(서해)
+  { name: '영산강', pts: [[126.99, 35.32], [126.85, 35.16], [126.72, 35.02], [126.58, 34.84], [126.34, 34.78]] }, // 담양→나주→목포 하구(서해)
+  { name: '임진강', pts: [[127.20, 38.30], [127.05, 38.08], [126.90, 37.92], [126.75, 37.83], [126.68, 37.78]] }, // 북측→연천→파주→한강 합류(DMZ 관통·fence 우선)
+  { name: '대동강', pts: [[125.95, 39.05], [125.75, 39.02], [125.58, 38.83], [125.38, 38.72], [125.10, 38.64]] }, // 평양 동측→평양→남포 하구(서해)
+  { name: '낙동강하구', pts: [[128.99, 35.30], [128.94, 35.14], [128.89, 35.00], [128.82, 34.88]] }, // 부산 서측 하구를 바다까지 연장(오너 #7)
+];
+
+// 하드코딩 호수(오너 #10·#11) — ne_10m 미수록 석호. 타일좌표 직접(근사). 호수 오버레이 단계에서
+// 해당 land 타일을 LAKE 로 덮는다(통행 가능 물).
+const HARD_LAKE_TILES = [
+  // 신지호(宍道湖 ≈184,261) — 사카이미나토 권역 석호.
+  [183, 261], [184, 261], [185, 261], [184, 260], [184, 262], [183, 262],
+  // 나카우미(中海 ≈189,260) — 사카이미나토 권역 석호.
+  [188, 260], [189, 260], [190, 260], [189, 261],
+  // 코야마호(湖山池 ≈208,259) — 돗토리 소형 석호(1~2타일).
+  [208, 259], [207, 259],
+];
+
+// 하드코딩 교량(오너 #9·#12·간몬) — 타일좌표 직접(근사). sea 타일만 BRIDGE 로 덮어 양끝 육지를
+// 4-연결로 잇는다. 각 폴리라인 양끝은 육지 타일(가운데 sea→bridge)이라 두 육지 성분을 연결한다.
+const HARD_BRIDGES = [
+  { name: '거가대교', pts: [[104, 269], [103, 270], [102, 271], [101, 272], [100, 273]] }, // 부산 가덕도↔거제도(오너 #9)
+  { name: '시마나미해도', pts: [[189, 286], [188, 288], [187, 290], [186, 292], [185, 294], [185, 295]] }, // 오노미치↔이마바리(혼슈↔시코쿠 #12)
+  { name: '세토대교', pts: [[201, 285], [201, 286], [202, 287], [202, 288], [202, 289]] }, // 구라시키↔사카이데(혼슈↔시코쿠 #12)
+  { name: '간몬교', pts: [[145, 297], [145, 298], [145, 299]] }, // 시모노세키↔모지(혼슈↔규슈 · 1타일 해협)
+];
+
+// 돗토리 사구(오너 #11) — 해안 sand(=바다 인접 land · 렌더가 모래로 처리)를 내륙으로 확장한 사구
+// 패치. 이 타일들을 LAND 로 두면 질감 분류가 해안 land 를 건드리지 않아 바다 인접분이 모래로 그려진다.
+// 타일좌표 직접(근사).
+// 해안선(y258) 을 따라 얕게 확장한다 — 각 타일이 바다에 인접(북측 sea)해 모래로 그려지게 하고,
+// 뒤쪽(y257) 은 채우지 않아 사구가 내륙 벽에 막히지 않게 한다(POI TOTTORI(209,258) 도 해안 유지).
+const TOTTORI_DUNE_TILES = [[207, 258], [208, 258], [209, 258], [210, 258], [211, 258]];
+
+// 목포 다도해(오너 #6) — 목포(≈56,277) 앞바다의 어색한 소덩어리를 정리하고 1타일 점 섬 다수를
+// 결정적으로 흩뿌린다(실제 다도해 느낌). Math.random 미사용(hashNoise) → 재생성 byte-identical.
+const MOKPO_BBOX = { x0: 47, x1: 58, y0: 271, y1: 287 };
 
 // ── 실행 ──
 console.log('🗺️  build-map: 한반도+일본 열도 실비율 도트 맵 + 수계·DMZ·교량 생성');
@@ -524,7 +655,9 @@ console.log(`  · 육지 데이터 경로: ${source}`);
 const grid = rasterize(polys);
 const removed = removeSmallIslands(grid);
 const smooth = smoothCoast(grid);
-console.log(`  · 해안 스무딩(전북 서해안): 노치매움 ${smooth.filled} · 돌출깎기 ${smooth.carved} · 코너디더 ${smooth.dith} (소도서 보호 · 결정적)`);
+console.log(`  · 해안 스무딩(서해안 전역+부산): 노치매움 ${smooth.filled} · 돌출깎기 ${smooth.carved} · 코너디더 ${smooth.dith} (소도서 보호 · 결정적)`);
+const mokpo = scatterMokpoArchipelago(grid);
+console.log(`  · 목포 다도해: 소덩어리 정리 ${mokpo.cleared} 타일 · 점 섬 ${mokpo.dropped}개 (결정적)`);
 let landCount = 0; for (const v of grid) if (v) landCount++;
 console.log(`  · 래스터화: land ${landCount} 타일 / ${MAP_W * MAP_H} (소도서 ${removed} 타일 제거)`);
 
@@ -545,6 +678,12 @@ const POI = {
   FUKUOKA_PORT: projR(130.40, 33.60),   // 후쿠오카항
   BAEKDU: projR(128.056, 42.006),       // 백두산(설산 랜드마크 · DMZ 북측 · 도달 불가)
   FUJI: projR(138.727, 35.361),         // 후지산(설산 랜드마크)
+  // 오너 #13 신규 POI(노드 그룹 소비 · 전부 walkable 보장 · 근사 좌표).
+  DONGHAE_PORT: projR(129.14, 37.49),   // 동해항 ≈(110,210)
+  SAKAIMINATO: projR(133.23, 35.54),    // 사카이미나토 ≈(190,259)
+  GEOJE: projR(128.63, 34.95),          // 거제 ≈(100,273) — 거제도 land 타일(다리로만 연결)
+  DAISEN: projR(133.540, 35.370),       // 다이센 ≈(196,263) — PEAK(NAMED_PEAKS 로 승격)
+  TOTTORI: projR(134.230, 35.540),      // 돗토리 ≈(209,258) — 사구 land(모래)
 };
 
 // 2) 호수 오버레이 (code 3) — 폴리곤 래스터화.
@@ -568,9 +707,16 @@ let lakesFetched = false;
     console.warn('  ⚠️  ne_10m_lakes 실패 → 호수 생략(육지/DMZ/교량은 유지)');
     degradedReasons.push('수계: ne_10m_lakes 다운로드 실패 → 호수 생략');
   }
+  // 하드코딩 석호(신지호·나카우미·코야마 — 오너 #10·#11) — land 타일만 LAKE 로(바다 미변경).
+  let hardLake = 0;
+  for (const [x, y] of HARD_LAKE_TILES) if (getTile(x, y) === TERRAIN.LAND) { setTile(x, y, TERRAIN.LAKE); hardLake++; lakeCount++; }
+  console.log(`  · 하드코딩 석호: ${hardLake} 타일 (신지호·나카우미·코야마)`);
 }
 
 // 3) 강 오버레이 (code 2) — 폴리라인 래스터화. land 위에만 그린다(바다로 새지 않게).
+//    POI(공항·항만·도심 등)는 강이 덮지 않는다 — isLandAt 계약(김해공항·부산여객터미널 등 정확히 LAND)
+//    을 지키기 위해 강줄기가 POI 타일을 관통해도 그 타일은 LAND 로 남긴다.
+const poiProtect = new Set(Object.values(POI).map((p) => p.y * MAP_W + p.x));
 let riverCount = 0;
 let riversFetched = false;
 {
@@ -592,7 +738,7 @@ let riversFetched = false;
         if (!lonlat.some(([lo, la]) => inBBox(lo, la))) continue;
         lineN++;
         for (const [x, y] of polylineTiles(line)) {
-          if (getTile(x, y) === TERRAIN.LAND) { setTile(x, y, TERRAIN.RIVER); riverCount++; }
+          if (getTile(x, y) === TERRAIN.LAND && !poiProtect.has(y * MAP_W + x)) { setTile(x, y, TERRAIN.RIVER); riverCount++; }
         }
       }
     }
@@ -600,6 +746,27 @@ let riversFetched = false;
   } else {
     console.warn('  ⚠️  ne_10m_rivers_lake_centerlines 실패 → 강 생략(육지/DMZ/교량은 유지)');
     degradedReasons.push('수계: ne_10m_rivers_lake_centerlines 다운로드 실패 → 강 생략');
+  }
+  // 하드코딩 강(오너 #2·#7) — land/기존 river 위에만 RIVER 를 얹는다. 하구 웨이포인트는 바다에 두어
+  // 마지막 육지 river 타일이 sea 에 닿게 한다. 임진강 교차 fence 는 뒤 DMZ 단계가 덮어 fence 우선.
+  const mouthOK = [];
+  for (const r of HARDCODED_RIVERS) {
+    let n = 0;
+    const tiles = polylineTiles(r.pts.map(([lo, la]) => projF(lo, la)));
+    for (const [x, y] of tiles) {
+      if (poiProtect.has(y * MAP_W + x)) continue; // POI 보존(강이 관통해도 LAND 유지)
+      const c = getTile(x, y);
+      if (c === TERRAIN.LAND || c === TERRAIN.RIVER) { setTile(x, y, TERRAIN.RIVER); if (c === TERRAIN.LAND) { riverCount++; n++; } }
+    }
+    // 하구-바다 연결 확인: 이 강의 river 타일 중 하나라도 sea 에 4-인접해야 한다.
+    let touchesSea = false;
+    for (const [x, y] of tiles) {
+      if (getTile(x, y) !== TERRAIN.RIVER) continue;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (getTile(x + dx, y + dy) === TERRAIN.SEA) { touchesSea = true; break; }
+      if (touchesSea) break;
+    }
+    mouthOK.push(`${r.name}${touchesSea ? '' : '(하구 미연결!)'}`);
+    console.log(`  · 하드코딩 강 ${r.name}: +${n} 타일 · 하구-바다 ${touchesSea ? '연결✓' : '미연결✗'}`);
   }
 }
 
@@ -623,6 +790,28 @@ let bridgeCount = 0;
     if (getTile(x, y) === TERRAIN.SEA) { setTile(x, y, TERRAIN.BRIDGE); bridgeCount++; }
   }
   console.log(`  · 영종대교: ${bridgeCount} 타일 (바다 위 통행)`);
+}
+
+// 5b) 하드코딩 교량(거가대교·시마나미해도·세토대교·간몬교 — 오너 #9·#12·간몬) — sea 타일만 BRIDGE.
+{
+  for (const b of HARD_BRIDGES) {
+    let n = 0;
+    for (const [x, y] of polylineTiles(b.pts)) {
+      if (getTile(x, y) === TERRAIN.SEA) { setTile(x, y, TERRAIN.BRIDGE); bridgeCount++; n++; }
+    }
+    console.log(`  · ${b.name}: +${n} bridge 타일`);
+  }
+}
+
+// 5c) 돗토리 사구(오너 #11) — 해안 land 확장 패치. sea/land 를 LAND 로 만들어 바다 인접분이 모래로
+//     그려지게 한다(질감 분류가 해안 land 를 건드리지 않으므로 유지). 교량 타일은 덮지 않는다.
+{
+  let n = 0;
+  for (const [x, y] of TOTTORI_DUNE_TILES) {
+    const c = getTile(x, y);
+    if (c === TERRAIN.SEA || c === TERRAIN.LAND) { setTile(x, y, TERRAIN.LAND); if (c === TERRAIN.SEA) n++; }
+  }
+  console.log(`  · 돗토리 사구: 해안 확장 ${n} 타일 (사구 land → 모래 렌더)`);
 }
 
 // 6) 지형 질감(고도) 레이어 — 순수 시각. MOUNTAIN·PEAK·PLAIN 전부 walkable(isBlocked 무변경).
@@ -812,6 +1001,13 @@ let mCount = 0, pkCount = 0, plCount = 0;
   anchorEnd(dmzPts[0], termDir(dmzPts[1], dmzPts[0]));         // 서단 → 해안(남서)
   anchorEnd(dmzPts[n - 1], termDir(dmzPts[n - 2], dmzPts[n - 1])); // 동단 → 해안(북동)
   console.log(`  · DMZ 해안 앵커: 연장 ${anchored} 타일 → 철조망 총 ${fenceCount} 타일 (양끝 sea 봉인)`);
+}
+
+// 8) 내륙 갇힌 바다 → 호수 (오너 #5) — 전 지형 편집(교량·앵커 포함) 후 최종 1회. 가장자리 flood-fill
+//    로 도달 불가한 SEA 포켓을 LAKE 로 바꾼다. 신규 편집(사구·다도해 등)이 만든 포켓까지 잡는다.
+{
+  const converted = fillLandlockedSea(grid);
+  console.log(`  · 내륙 갇힌 바다 → 호수: ${converted} 타일 변환 (가장자리 flood-fill 검산)`);
 }
 
 // 지형 타일 통계

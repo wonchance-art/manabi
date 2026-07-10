@@ -84,6 +84,31 @@ describe('게이트 참조 유효성', () => {
     expect(getNode('busan-port').gate.to).toBe('fukuoka-port');
     expect(getNode('fukuoka-port').gate.to).toBe('busan-port');
   });
+
+  it('동해항 ↔ 사카이미나토 왕복', () => {
+    expect(getNode('donghae-port').gate.to).toBe('sakaiminato-port');
+    expect(getNode('sakaiminato-port').gate.to).toBe('donghae-port');
+  });
+});
+
+describe('신규 노드 5종(동해항·사카이미나토·거제·다이센·돗토리)', () => {
+  it('전부 존재하고 kind 가 올바르다', () => {
+    expect(getNode('donghae-port').kind).toBe('port');
+    expect(getNode('sakaiminato-port').kind).toBe('port');
+    expect(getNode('geoje').kind).toBe('city');
+    expect(getNode('daisen').kind).toBe('landmark');
+    expect(getNode('tottori').kind).toBe('landmark');
+  });
+
+  it('거제·다이센·돗토리는 게이트 없음(표지 마커만)', () => {
+    expect(getNode('geoje').gate).toBeUndefined();
+    expect(getNode('daisen').gate).toBeUndefined();
+    expect(getNode('tottori').gate).toBeUndefined();
+  });
+
+  it('다이센은 peak 필드가 없다(전용 조각은 후속, 일반 landmark 마커)', () => {
+    expect(getNode('daisen').peak).toBeUndefined();
+  });
 });
 
 describe('미니맵 다운샘플(순수 함수)', () => {

@@ -519,3 +519,161 @@ describe('해안 스무딩 (전북 서해안) — 각진 돌출 제거 + 실섬 
     expect(spikes).toBe(0);
   });
 });
+
+// 🌊 신규 강 6종(오너 #2) — 실경로 근사 폴리라인. 존재 + 하구-바다 연결(서해 하구 강) 검증.
+describe('신규 강 6종 (북한강·남한강·금강·영산강·임진강·대동강)', () => {
+  const grid = decodeMap();
+  const code = (x, y) => grid[y * MAP_W + x];
+  const nearRiver = (px, py, r = 2) => {
+    for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) if (code(px + dx, py + dy) === TERRAIN.RIVER) return true;
+    return false;
+  };
+  // 강 내륙 표본(경위도 → 타일) 근처에 river 타일이 있는지.
+  it('여섯 강이 모두 river 타일로 존재한다(내륙 표본 근처)', () => {
+    const samples = [
+      ['북한강', 127.73, 37.87], ['남한강', 128.00, 37.02], ['금강', 126.80, 36.05],
+      ['영산강', 126.60, 34.85], ['임진강', 127.05, 38.08], ['대동강', 125.58, 38.83],
+    ];
+    for (const [, lon, lat] of samples) {
+      const p = project(lon, lat);
+      expect(nearRiver(p.x, p.y)).toBe(true);
+    }
+  });
+
+  // 서해 하구 강(금강·영산강·대동강)은 river 타일이 바다에 4-인접한다(하구가 바다에 닿음).
+  it('금강·영산강·대동강 하구가 바다에 닿는다(river 타일이 sea 에 4-인접)', () => {
+    const estuaryTouchesSea = (x0, x1, y0, y1) => {
+      for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+        if (code(x, y) !== TERRAIN.RIVER) continue;
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (code(x + dx, y + dy) === TERRAIN.SEA) return true;
+      }
+      return false;
+    };
+    expect(estuaryTouchesSea(58, 66, 242, 250)).toBe(true); // 금강 하구(군산)
+    expect(estuaryTouchesSea(55, 64, 271, 280)).toBe(true); // 영산강 하구(목포)
+    expect(estuaryTouchesSea(30, 44, 172, 184)).toBe(true); // 대동강 하구(남포)
+  });
+
+  it('강 타일은 통행 가능(isBlocked false)', () => {
+    expect(isBlocked(TERRAIN.RIVER)).toBe(false);
+  });
+});
+
+// 🏞️ 내륙 갇힌 바다 0(오너 #5) — 가장자리에서 flood-fill(SEA∪BRIDGE 통과). 도달 못 한 SEA=0.
+//   다리는 바다 위 구조물이라 그 아래로 바닷물이 흐르므로 통로로 취급한다(세토대교가 세토내해의
+//   수로를 막아 내해 전체가 lake 로 뒤집히면 혼슈↔시코쿠가 다리 없이 이어지는 회귀 — 이를 방지).
+describe('내륙 갇힌 바다 제거 (가장자리 flood-fill)', () => {
+  const grid = decodeMap();
+  it('가장자리에서 도달 불가한 SEA 포켓이 없다(전부 lake 로 변환됨)', () => {
+    const seen = new Uint8Array(grid.length); const q = [];
+    const passable = (i) => grid[i] === TERRAIN.SEA || grid[i] === TERRAIN.BRIDGE;
+    const push = (i) => { if (passable(i) && !seen[i]) { seen[i] = 1; q.push(i); } };
+    for (let x = 0; x < MAP_W; x++) { push(x); push((MAP_H - 1) * MAP_W + x); }
+    for (let y = 0; y < MAP_H; y++) { push(y * MAP_W); push(y * MAP_W + MAP_W - 1); }
+    let h = 0;
+    while (h < q.length) {
+      const i = q[h++]; const x = i % MAP_W, y = (i / MAP_W) | 0;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= MAP_W || ny >= MAP_H) continue;
+        push(ny * MAP_W + nx);
+      }
+    }
+    let landlocked = 0;
+    for (let i = 0; i < grid.length; i++) if (grid[i] === TERRAIN.SEA && !seen[i]) landlocked++;
+    expect(landlocked).toBe(0);
+  });
+});
+
+// 🗻 일본 산인(山陰) 권역 지형(오너 #10·#11) — 석호(신지호·나카우미·코야마) + 다이센 PEAK + 돗토리 사구.
+describe('산인 권역 — 석호·다이센·돗토리 사구', () => {
+  const grid = decodeMap();
+  const code = (x, y) => grid[y * MAP_W + x];
+  it('신지호·나카우미·코야마호가 lake', () => {
+    expect(code(184, 261)).toBe(TERRAIN.LAKE); // 신지호(宍道湖)
+    expect(code(189, 260)).toBe(TERRAIN.LAKE); // 나카우미(中海)
+    expect(code(208, 259)).toBe(TERRAIN.LAKE); // 코야마호(湖山池)
+  });
+  it('다이센(大山 ≈196,263)은 PEAK', () => {
+    expect(code(196, 263)).toBe(TERRAIN.PEAK);
+  });
+  it('돗토리 사구 ≈(207..211,258)는 해안 land(모래로 렌더 — 바다에 4-인접)', () => {
+    let coastalSand = 0;
+    for (let x = 207; x <= 211; x++) {
+      const y = 258;
+      if (code(x, y) !== TERRAIN.LAND) continue;
+      const coastal = code(x - 1, y) === TERRAIN.SEA || code(x + 1, y) === TERRAIN.SEA
+        || code(x, y - 1) === TERRAIN.SEA || code(x, y + 1) === TERRAIN.SEA;
+      if (coastal) coastalSand++;
+    }
+    expect(coastalSand).toBeGreaterThan(2);
+  });
+});
+
+// 🌉 교량 도보 연결(오너 #9·#12·간몬) — 각 다리가 두 육지를 잇는 유일 통로임을 검증.
+//   WALK = !isBlocked(sea·fence 차단). 지정 영역의 BRIDGE 타일을 sea 로 지우면 도보 연결이 끊긴다.
+describe('교량 전용 도보 연결 (거가·시마나미·세토·간몬)', () => {
+  const grid = decodeMap();
+  const idx = (x, y) => y * MAP_W + x;
+  // 지정 bbox 안의 BRIDGE 타일만 골라 sea 로 지운 복사본.
+  const removeBridgesIn = (boxes) => {
+    const g = Uint8Array.from(grid);
+    for (const { x0, x1, y0, y1 } of boxes) {
+      for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) if (g[idx(x, y)] === TERRAIN.BRIDGE) g[idx(x, y)] = TERRAIN.SEA;
+    }
+    return g;
+  };
+  const reaches = (g, ax, ay, bx, by) => {
+    const seen = new Uint8Array(g.length);
+    const st = [idx(ax, ay)]; seen[idx(ax, ay)] = 1;
+    while (st.length) {
+      const i = st.pop(); const x = i % MAP_W, y = (i / MAP_W) | 0;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= MAP_W || ny >= MAP_H) continue;
+        const ni = idx(nx, ny);
+        if (!seen[ni] && !isBlocked(g[ni])) { seen[ni] = 1; st.push(ni); }
+      }
+    }
+    return !!seen[idx(bx, by)];
+  };
+  const SETO = { x0: 184, x1: 203, y0: 284, y1: 296 };
+  const SHIMANAMI = { x0: 184, x1: 194, y0: 284, y1: 296 }; // 세토 박스 서반부
+  const SETOOHASHI = { x0: 195, x1: 203, y0: 284, y1: 296 }; // 세토 박스 동반부
+  const KANMON = { x0: 144, x1: 146, y0: 296, y1: 300 };
+  const GEOGA = { x0: 99, x1: 105, y0: 267, y1: 274 };
+
+  it('거가대교로 거제도↔부산 본토가 이어지고, 제거 시 단절된다', () => {
+    expect(reaches(grid, 100, 273, 109, 267)).toBe(true);
+    expect(reaches(removeBridgesIn([GEOGA]), 100, 273, 109, 267)).toBe(false);
+  });
+
+  it('혼슈↔시코쿠는 세토내해 다리(시마나미·세토대교)로만 이어진다 — 둘 다 제거 시 단절', () => {
+    expect(reaches(grid, 189, 286, 185, 295)).toBe(true);          // 오노미치(혼슈)↔이마바리(시코쿠)
+    expect(reaches(removeBridgesIn([SETO]), 189, 286, 185, 295)).toBe(false); // 둘 다 제거 → 단절
+    // 각 다리 하나만 남아도 연결(두 독립 루트).
+    expect(reaches(removeBridgesIn([SHIMANAMI]), 189, 286, 185, 295)).toBe(true); // 세토대교만 남음
+    expect(reaches(removeBridgesIn([SETOOHASHI]), 189, 286, 185, 295)).toBe(true); // 시마나미만 남음
+  });
+
+  it('혼슈↔규슈는 간몬교로만 이어진다 — 제거 시 단절(세토내해 다리는 시코쿠행이라 무관)', () => {
+    expect(reaches(grid, 135, 307, 189, 286)).toBe(true);           // 규슈(후쿠오카)↔혼슈(오노미치)
+    expect(reaches(removeBridgesIn([KANMON]), 135, 307, 189, 286)).toBe(false); // 간몬 제거 → 단절
+    // 세토내해 다리를 지워도 규슈↔혼슈는 간몬으로 여전히 이어진다(독립).
+    expect(reaches(removeBridgesIn([SETO]), 135, 307, 189, 286)).toBe(true);
+  });
+});
+
+// 📍 신규 POI(오너 #13) — 노드 그룹이 소비. 전부 walkable(!isBlocked) 이어야 한다.
+describe('신규 POI walkable (동해항·사카이미나토·거제·다이센·돗토리)', () => {
+  const grid = decodeMap();
+  const walk = (p) => !isBlocked(grid[p.y * MAP_W + p.x]);
+  it('신규 POI 5종이 정의되고 전부 walkable', () => {
+    for (const k of ['DONGHAE_PORT', 'SAKAIMINATO', 'GEOJE', 'DAISEN', 'TOTTORI']) {
+      expect(POI[k]).toBeTruthy();
+      expect(walk(POI[k])).toBe(true);
+    }
+    // 다이센은 PEAK, 거제는 거제도 land.
+    expect(grid[POI.DAISEN.y * MAP_W + POI.DAISEN.x]).toBe(TERRAIN.PEAK);
+  });
+});
