@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { JaText } from './refShared';
 import { buildReadingEvents, accumulateAnswer } from '../lib/readingProgress';
 
