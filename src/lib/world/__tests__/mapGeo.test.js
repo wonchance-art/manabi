@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { project, POI, decodeMap } from '../../../components/world/mapData';
-import { unproject, isCoastTile } from '../mapGeo';
+import { project, POI, decodeMap, MAP_W, TERRAIN } from '../../../components/world/mapData';
+import { unproject, isCoastTile, isSeaAt } from '../mapGeo';
 
 // 🗺️ 관리자 전체 맵 뷰어(WorldMapPage)가 쓰는 순수 지리 헬퍼 검증.
 // project()/unproject()가 서로 역함수인지, 해안 판정이 sea 인접 land만 골라내는지 확인.
@@ -48,5 +48,30 @@ describe('isCoastTile', () => {
       }
     }
     expect(found).toBe(true);
+  });
+
+  it('강(river)에 인접한 육지는 해안이 아니다 — 내륙 수계는 해안을 만들지 않는다', () => {
+    // 한강 river 타일을 찾아 그 4-이웃 land 가 해안으로 분류되지 않음을 확인.
+    let rIdx = -1;
+    for (let i = 0; i < grid.length; i++) if (grid[i] === TERRAIN.RIVER) { rIdx = i; break; }
+    expect(rIdx).toBeGreaterThanOrEqual(0);
+    const rx = rIdx % MAP_W, ry = (rIdx / MAP_W) | 0;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nx = rx + dx, ny = ry + dy;
+      const code = grid[ny * MAP_W + nx];
+      if (code === TERRAIN.LAND) {
+        // river 만 이웃하고 sea 는 안 닿는 육지라면 해안이 아니어야 한다.
+        if (!isSeaAt(grid, nx - 1, ny) && !isSeaAt(grid, nx + 1, ny) &&
+            !isSeaAt(grid, nx, ny - 1) && !isSeaAt(grid, nx, ny + 1)) {
+          expect(isCoastTile(grid, nx, ny)).toBe(false);
+        }
+      }
+    }
+  });
+
+  it('isSeaAt: sea 타일·범위 밖은 true, land 는 false', () => {
+    expect(isSeaAt(grid, 117, 260)).toBe(true);   // 대한해협
+    expect(isSeaAt(grid, -1, 0)).toBe(true);        // 범위 밖
+    expect(isSeaAt(grid, POI.SEOUL.x, POI.SEOUL.y)).toBe(false); // 서울 land
   });
 });

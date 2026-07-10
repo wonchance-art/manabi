@@ -95,13 +95,15 @@ function DpadButton({ dir, char, onPress, onRelease, style }) {
 
 // A/B 버튼(원형 크림슨-마젠타) — 동작은 기존과 동일하게 onClick(interact/cancel)에 그대로 배선하고,
 // pointer 이벤트는 "눌림 시 어둡게" 시각 상태(on)만 토글한다(게임/네트워크 배선 무변경).
-function AbButton({ label, ariaLabel, onClick, base, style }) {
+// onHoldStart/onHoldEnd(선택) — B 버튼 홀드 달리기용. pointerdown→Start, up/leave/cancel→End.
+// onClick(탭 취소)은 pointerup 뒤에 발생하므로, 홀드 종료 후에도 기존 탭 동작과 충돌하지 않는다.
+function AbButton({ label, ariaLabel, onClick, base, style, onHoldStart, onHoldEnd }) {
   const [on, setOn] = useState(false);
-  const off = () => setOn(false);
+  const off = () => { setOn(false); onHoldEnd?.(); };
   return (
     <button
       type="button" aria-label={ariaLabel} onClick={onClick}
-      onPointerDown={() => setOn(true)}
+      onPointerDown={() => { setOn(true); onHoldStart?.(); }}
       onPointerUp={off} onPointerLeave={off} onPointerCancel={off}
       onContextMenu={(e) => e.preventDefault()}
       style={{
@@ -161,6 +163,9 @@ export default function WorldPage() {
   const release = useCallback((d) => controlsRef.current?.release(d), []);
   const interact = useCallback(() => controlsRef.current?.interact(), []);
   const cancel = useCallback(() => controlsRef.current?.cancel(), []);
+  // B 홀드 → 달리기(씬 플래그). 탭(짧게)의 취소 동작은 onClick=cancel 이 그대로 유지한다.
+  const runOn = useCallback(() => controlsRef.current?.runOn?.(), []);
+  const runOff = useCallback(() => controlsRef.current?.runOff?.(), []);
 
   // 네트워크·음성 인스턴스(마운트 1회 생성) — 이벤트 핸들러가 참조.
   const voiceRef = useRef(null);
@@ -476,7 +481,7 @@ export default function WorldPage() {
           {/* A/B — A=상호작용(말 걸기), B=취소(리뷰 닫기). 원형 크림슨-마젠타 + 옆 소문자 라벨, 대각 배치. */}
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14, transform: 'rotate(-18deg)' }}>
             <div style={{ display: 'grid', justifyItems: 'center', gap: 3 }}>
-              <AbButton label="B" ariaLabel="B (취소·닫기)" onClick={cancel} base={abBase} />
+              <AbButton label="B" ariaLabel="B (취소·닫기·홀드 달리기)" onClick={cancel} base={abBase} onHoldStart={runOn} onHoldEnd={runOff} />
               <span style={abLabel}>b</span>
             </div>
             <div style={{ display: 'grid', justifyItems: 'center', gap: 3, transform: 'translateY(-12px)' }}>

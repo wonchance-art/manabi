@@ -1,10 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import {
-  MAP_W, MAP_H, GEO, project, POI, MAP_RLE, decodeMap, isLandAt,
+  MAP_W, MAP_H, GEO, project, unproject, POI, MAP_RLE, decodeMap, isLandAt,
+  TERRAIN, isBlocked,
 } from '../mapData.js';
 
-// 🗺️ 광장 맵(한반도+일본 실비율 도트 맵) 무결성.
-// build-map.mjs 가 구운 mapData.js 를 검증한다: 투영 검산·RLE 왕복·주요 지점 land/sea.
+// 🗺️ 광장 맵(한반도+일본 실비율 도트 맵 + 수계·DMZ·교량) 무결성.
+// build-map.mjs 가 구운 mapData.js 를 검증한다: 투영·다치 RLE 왕복·지형 계약·주요 지점.
 
 describe('등장방형 투영 (위도 고정 cos38°)', () => {
   it('상수: LON0=123.5, LAT0=46.0, KX=19.5, KY=24.7', () => {
@@ -19,21 +20,48 @@ describe('등장방형 투영 (위도 고정 cos38°)', () => {
   it('부산(129.07E, 35.18N) → (109, 267)', () => {
     expect(project(129.07, 35.18)).toEqual({ x: 109, y: 267 });
   });
+  it('project ↔ unproject 왕복(반올림 오차 이내)', () => {
+    for (const { x, y } of [{ x: 68, y: 208 }, { x: 316, y: 255 }, { x: 0, y: 0 }]) {
+      const { lon, lat } = unproject(x, y);
+      const back = project(lon, lat);
+      expect(back.x).toBeCloseTo(x, 0);
+      expect(back.y).toBeCloseTo(y, 0);
+    }
+  });
   it('POI 주요 지점이 투영값과 일치', () => {
     expect(POI.SEOUL).toEqual({ x: 68, y: 208 });
     expect(POI.TOKYO).toEqual({ x: 316, y: 255 });
     expect(POI.BUSAN).toEqual({ x: 109, y: 267 });
-    // 인천공항은 서울 서쪽, 하네다는 도쿄 곁.
+    // 인천공항(영종도)은 서울 서쪽.
     expect(POI.INCHEON.x).toBeLessThan(POI.SEOUL.x);
+    expect(POI.INCHEON).toEqual({ x: 57, y: 211 });
+    // 신규 POI — 김해공항·부산여객터미널·후쿠오카항.
+    expect(POI.GIMHAE_AIR).toEqual({ x: 106, y: 267 });
+    expect(POI.BUSAN_TERMINAL).toEqual({ x: 108, y: 269 });
+    expect(POI.FUKUOKA_PORT).toBeTruthy();
   });
 });
 
-describe('RLE 디코더 왕복', () => {
+describe('지형 코드 계약', () => {
+  it('TERRAIN 코드 고정값', () => {
+    expect(TERRAIN).toEqual({ SEA: 0, LAND: 1, RIVER: 2, LAKE: 3, FENCE: 4, BRIDGE: 5 });
+  });
+  it('isBlocked 는 sea·fence 만 true (river·lake·bridge·land 는 통행 가능)', () => {
+    expect(isBlocked(TERRAIN.SEA)).toBe(true);
+    expect(isBlocked(TERRAIN.FENCE)).toBe(true);
+    expect(isBlocked(TERRAIN.LAND)).toBe(false);
+    expect(isBlocked(TERRAIN.RIVER)).toBe(false);
+    expect(isBlocked(TERRAIN.LAKE)).toBe(false);
+    expect(isBlocked(TERRAIN.BRIDGE)).toBe(false);
+  });
+});
+
+describe('다치 RLE 디코더 왕복', () => {
   const grid = decodeMap();
 
-  it('디코드 격자는 MAP_W×MAP_H 길이의 0/1 배열', () => {
+  it('디코드 격자는 MAP_W×MAP_H 길이의 0~5 코드 배열', () => {
     expect(grid.length).toBe(MAP_W * MAP_H);
-    for (let i = 0; i < grid.length; i++) expect(grid[i] === 0 || grid[i] === 1).toBe(true);
+    for (let i = 0; i < grid.length; i++) expect(grid[i] >= 0 && grid[i] <= 5).toBe(true);
   });
 
   it('디코드는 결정적(두 번 호출 결과 동일)', () => {
@@ -42,17 +70,17 @@ describe('RLE 디코더 왕복', () => {
   });
 
   it('격자 → RLE 재인코딩이 MAP_RLE 와 완전 일치(왕복 무손실)', () => {
-    // 디코더와 대칭인 인코더로 되감아 원본 문자열과 비교한다.
+    // 디코더와 대칭인 다치 인코더로 되감아 원본 문자열과 비교한다.
     const rows = [];
     for (let y = 0; y < MAP_H; y++) {
       const runs = [];
-      let val = 0, count = 0;
+      let val = grid[y * MAP_W], count = 0;
       for (let x = 0; x < MAP_W; x++) {
         const v = grid[y * MAP_W + x];
         if (v === val) count++;
-        else { runs.push(count.toString(36)); val = v; count = 1; }
+        else { runs.push(String(val) + count.toString(36)); val = v; count = 1; }
       }
-      runs.push(count.toString(36));
+      runs.push(String(val) + count.toString(36));
       rows.push(runs.join(','));
     }
     expect(rows.join(';')).toBe(MAP_RLE);
@@ -62,6 +90,7 @@ describe('RLE 디코더 왕복', () => {
 describe('데이터 무결성 (주요 지점 land / 해협 sea / 제주 존재)', () => {
   const grid = decodeMap();
   const land = (p) => isLandAt(grid, p.x, p.y);
+  const code = (x, y) => grid[y * MAP_W + x];
 
   it('서울·도쿄·부산·후쿠오카는 land', () => {
     expect(land(POI.SEOUL)).toBe(true);
@@ -70,15 +99,24 @@ describe('데이터 무결성 (주요 지점 land / 해협 sea / 제주 존재)'
     expect(land(POI.FUKUOKA)).toBe(true);
   });
 
+  it('김해공항·부산여객터미널은 land', () => {
+    expect(land(POI.GIMHAE_AIR)).toBe(true);
+    expect(land(POI.BUSAN_TERMINAL)).toBe(true);
+  });
+
+  it('인천공항(영종도)은 land', () => {
+    expect(land(POI.INCHEON)).toBe(true);
+  });
+
   it('대한해협 중간(117, 260)은 sea', () => {
-    expect(isLandAt(grid, 117, 260)).toBe(false);
+    expect(code(117, 260)).toBe(TERRAIN.SEA);
   });
 
   it('제주 존재 — 중심부(59, 312) land + 주변 덩어리 확인', () => {
     expect(isLandAt(grid, 59, 312)).toBe(true);
     let n = 0;
     for (let y = 308; y <= 318; y++) for (let x = 54; x <= 66; x++) if (isLandAt(grid, x, y)) n++;
-    expect(n).toBeGreaterThan(30); // 제주는 큰 섬 — 소도서 정리에도 유지
+    expect(n).toBeGreaterThan(30);
   });
 
   it('범위 밖은 sea 취급', () => {
@@ -88,8 +126,120 @@ describe('데이터 무결성 (주요 지점 land / 해협 sea / 제주 존재)'
   });
 
   it('바다가 대부분(실비율 맵 — land 비율 30% 미만)', () => {
-    let land = 0; for (let i = 0; i < grid.length; i++) land += grid[i];
-    expect(land).toBeGreaterThan(1000);
-    expect(land / grid.length).toBeLessThan(0.3);
+    let landN = 0;
+    for (let i = 0; i < grid.length; i++) if (grid[i] === TERRAIN.LAND) landN++;
+    expect(landN).toBeGreaterThan(1000);
+    expect(landN / grid.length).toBeLessThan(0.3);
+  });
+});
+
+describe('수계 — 강·호수(통행 가능 물)', () => {
+  const grid = decodeMap();
+  const code = (x, y) => grid[y * MAP_W + x];
+
+  it('한강이 서울 부근(±3타일)에 river 로 존재', () => {
+    let found = false;
+    for (let dy = -3; dy <= 3 && !found; dy++)
+      for (let dx = -3; dx <= 3 && !found; dx++)
+        if (code(POI.SEOUL.x + dx, POI.SEOUL.y + dy) === TERRAIN.RIVER) found = true;
+    expect(found).toBe(true);
+  });
+
+  it('비와호(琵琶湖, ≈136.1E/35.3N) 부근에 lake 존재', () => {
+    const c = project(136.1, 35.3);
+    let found = false;
+    for (let dy = -4; dy <= 4 && !found; dy++)
+      for (let dx = -4; dx <= 4 && !found; dx++)
+        if (code(c.x + dx, c.y + dy) === TERRAIN.LAKE) found = true;
+    expect(found).toBe(true);
+  });
+
+  it('river·lake 는 isBlocked 아님(걸어서 통과 가능)', () => {
+    let rN = 0, lN = 0;
+    for (let i = 0; i < grid.length; i++) {
+      if (grid[i] === TERRAIN.RIVER) rN++;
+      else if (grid[i] === TERRAIN.LAKE) lN++;
+    }
+    expect(rN).toBeGreaterThan(0);
+    expect(lN).toBeGreaterThan(0);
+    expect(isBlocked(TERRAIN.RIVER)).toBe(false);
+    expect(isBlocked(TERRAIN.LAKE)).toBe(false);
+  });
+});
+
+describe('DMZ 철조망 — 서해~동해 연속 차단벽', () => {
+  const grid = decodeMap();
+
+  it('fence 타일이 다수 존재하고 isBlocked', () => {
+    let n = 0; for (let i = 0; i < grid.length; i++) if (grid[i] === TERRAIN.FENCE) n++;
+    expect(n).toBeGreaterThan(40);
+    expect(isBlocked(TERRAIN.FENCE)).toBe(true);
+  });
+
+  it('fence 는 서(최좌측)에서 동(최우측)까지 4-연결로 이어져 구멍이 없다', () => {
+    const fs = [];
+    for (let i = 0; i < grid.length; i++) if (grid[i] === TERRAIN.FENCE) fs.push(i);
+    let minx = Infinity, maxx = -Infinity;
+    for (const i of fs) { const x = i % MAP_W; if (x < minx) minx = x; if (x > maxx) maxx = x; }
+    // 최좌측 열의 fence 에서 4-연결 BFS.
+    const seen = new Set();
+    const stack = [];
+    for (const i of fs) if (i % MAP_W === minx) { stack.push(i); seen.add(i); }
+    while (stack.length) {
+      const idx = stack.pop();
+      const x = idx % MAP_W, y = (idx / MAP_W) | 0;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= MAP_W || ny >= MAP_H) continue;
+        const ni = ny * MAP_W + nx;
+        if (grid[ni] === TERRAIN.FENCE && !seen.has(ni)) { seen.add(ni); stack.push(ni); }
+      }
+    }
+    let reachedEast = false;
+    for (const i of seen) if (i % MAP_W === maxx) reachedEast = true;
+    expect(reachedEast).toBe(true);
+    // 서-동 폭이 충분히 넓다(반도를 가로지른다).
+    expect(maxx - minx).toBeGreaterThan(40);
+  });
+
+  it('서울에서 북쪽으로 걸으면 fence 에 막힌다(같은 열에 fence 존재)', () => {
+    let hit = false;
+    for (let y = POI.SEOUL.y; y >= 0; y--) if (grid[y * MAP_W + POI.SEOUL.x] === TERRAIN.FENCE) { hit = true; break; }
+    expect(hit).toBe(true);
+  });
+});
+
+describe('영종도 — 본토와 비연결, 영종대교로만 도달', () => {
+  const grid = decodeMap();
+  const WALK = new Set([TERRAIN.LAND, TERRAIN.RIVER, TERRAIN.LAKE, TERRAIN.BRIDGE]);
+
+  // 통행 가능 타일 4-연결 BFS 로 (sx,sy) 에서 도달 가능한 집합.
+  function reachable(g) {
+    const seen = new Uint8Array(g.length);
+    const start = POI.INCHEON.y * MAP_W + POI.INCHEON.x;
+    const stack = [start]; seen[start] = 1;
+    while (stack.length) {
+      const idx = stack.pop();
+      const x = idx % MAP_W, y = (idx / MAP_W) | 0;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= MAP_W || ny >= MAP_H) continue;
+        const ni = ny * MAP_W + nx;
+        if (!seen[ni] && WALK.has(g[ni])) { seen[ni] = 1; stack.push(ni); }
+      }
+    }
+    return seen;
+  }
+
+  it('bridge 포함 시 영종도(인천공항)에서 본토(서울)로 도달 가능', () => {
+    const seen = reachable(grid);
+    expect(seen[POI.SEOUL.y * MAP_W + POI.SEOUL.x]).toBe(1);
+  });
+
+  it('bridge 제거 시 영종도는 본토와 단절(서울에 도달 불가)', () => {
+    const g = Uint8Array.from(grid);
+    for (let i = 0; i < g.length; i++) if (g[i] === TERRAIN.BRIDGE) g[i] = TERRAIN.SEA;
+    const seen = reachable(g);
+    expect(seen[POI.SEOUL.y * MAP_W + POI.SEOUL.x]).toBe(0);
   });
 });

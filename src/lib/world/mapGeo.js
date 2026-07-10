@@ -2,7 +2,7 @@
 // mapData.js(자동 생성 파일, 직접 수정 금지)는 읽기 전용으로만 참조한다.
 // React/Next/Supabase 등 브라우저 의존 없음 — vitest(node 환경)에서 그대로 임포트 가능.
 
-import { GEO, isLandAt } from '../../components/world/mapData';
+import { GEO, MAP_W, MAP_H, TERRAIN, isLandAt } from '../../components/world/mapData';
 
 // 타일 좌표 → [lon, lat] — mapData.project()의 역함수.
 // project: x = (lon - LON0) * KX, y = (LAT0 - lat) * KY
@@ -13,13 +13,21 @@ export function unproject(tx, ty) {
   };
 }
 
+// 타일이 바다(sea)인지 — 범위 밖도 바다로 취급.
+// 주의: 해안 판정은 '바다'와의 인접만 본다. 강(river)·호수(lake)는 내륙 수계라
+// 그 옆의 육지를 해안(모래)으로 만들지 않는다(한강변 서울이 해안이 되지 않도록).
+export function isSeaAt(grid, tx, ty) {
+  if (tx < 0 || ty < 0 || tx >= MAP_W || ty >= MAP_H) return true;
+  return grid[ty * MAP_W + tx] === TERRAIN.SEA;
+}
+
 // land 타일이 4방향 중 하나라도 sea와 맞닿으면 해안(모래) 타일로 분류.
 export function isCoastTile(grid, tx, ty) {
   if (!isLandAt(grid, tx, ty)) return false;
   return (
-    !isLandAt(grid, tx - 1, ty) ||
-    !isLandAt(grid, tx + 1, ty) ||
-    !isLandAt(grid, tx, ty - 1) ||
-    !isLandAt(grid, tx, ty + 1)
+    isSeaAt(grid, tx - 1, ty) ||
+    isSeaAt(grid, tx + 1, ty) ||
+    isSeaAt(grid, tx, ty - 1) ||
+    isSeaAt(grid, tx, ty + 1)
   );
 }

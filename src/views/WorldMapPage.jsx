@@ -4,8 +4,7 @@
 // 캔버스 1장에 통짜로 그려 줌·팬으로 훑어보는 도구. 노드 배치·콘텐츠 마운트 계획용이라
 // 게임 로직은 전혀 배선하지 않는다 — mapData.js는 읽기 전용 상수/함수로만 참조한다.
 //
-// worldNodes.js(주요 지점 노드 데이터)는 다른 작업에서 만들어지는 중일 수 있어 정적 import를
-// 쓰지 않는다 — 동적 import(try/catch)로 있으면 쓰고, 없으면 mapData의 POI 상수로 폴백한다.
+// worldNodes.js(장소 노드 데이터)가 입고되어 정적 import 로 배선한다 — 노드 마커는 그 좌표를 쓴다.
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -13,53 +12,24 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../lib/AuthContext';
 import Spinner from '../components/Spinner';
 import Button from '../components/Button';
-import { MAP_W, MAP_H, POI, decodeMap, isLandAt } from '../components/world/mapData';
+import { MAP_W, MAP_H, decodeMap, TERRAIN } from '../components/world/mapData';
+import { WORLD_NODES } from '../components/world/worldNodes';
 import { unproject, isCoastTile } from '../lib/world/mapGeo';
 
 // 타일당 화면 px — 줌 4단계(×1~×4, 2px 기준 정수 배).
 const ZOOM_LEVELS = [2, 4, 6, 8];
 
-// GBC 톤 3색 — 잔디 그린(육지) · 모래(해안) · 바다 블루.
-const COLORS = { land: '#5f9a46', coast: '#dcc07f', sea: '#3c6e91' };
+// GBC 톤 — 잔디 그린(육지) · 모래(해안) · 바다 블루 + 신규 지형:
+// 강·호수(청록 계열, 통행 가능 물) · DMZ 철조망(적갈) · 교량(다리 갈색).
+const COLORS = {
+  land: '#5f9a46', coast: '#dcc07f', sea: '#3c6e91',
+  river: '#3fb0c4', lake: '#2f97b8', fence: '#a6432f', bridge: '#b07a3c',
+};
 
 const FONT = 'ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace';
 
-// mapData.POI(투영 산출값)의 한국어 표시명 — worldNodes.js가 없을 때 쓰는 폴백 라벨.
-const POI_LABELS = {
-  SEOUL: '서울', INCHEON: '인천공항', BUSAN: '부산', FUKUOKA: '후쿠오카', TOKYO: '도쿄', HANEDA: '하네다공항',
-};
-
-const POI_FALLBACK = Object.entries(POI).map(([key, p]) => ({
-  id: key, name: POI_LABELS[key] || key, x: p.x, y: p.y,
-}));
-
-// worldNodes.js의 export 모양을 모른 채로 방어적으로 정규화한다 —
-// 배열(각 원소에 x/y/name 계열 필드) 또는 POI 스타일 객체 맵(키→{x,y}) 둘 다 지원.
-function normalizeNodes(mod) {
-  const raw = mod?.default ?? mod?.WORLD_NODES ?? mod?.NODES ?? mod?.nodes ?? mod?.worldNodes ?? null;
-  if (!raw) return [];
-  if (Array.isArray(raw)) {
-    return raw
-      .map((n, i) => ({
-        id: n?.id ?? n?.key ?? String(i),
-        name: n?.name ?? n?.label ?? n?.title ?? n?.id ?? `노드 ${i + 1}`,
-        x: Number(n?.x ?? n?.tx ?? n?.pos?.x),
-        y: Number(n?.y ?? n?.ty ?? n?.pos?.y),
-      }))
-      .filter((n) => Number.isFinite(n.x) && Number.isFinite(n.y));
-  }
-  if (typeof raw === 'object') {
-    return Object.entries(raw)
-      .map(([key, n]) => ({
-        id: key,
-        name: n?.name ?? n?.label ?? key,
-        x: Number(n?.x),
-        y: Number(n?.y),
-      }))
-      .filter((n) => Number.isFinite(n.x) && Number.isFinite(n.y));
-  }
-  return [];
-}
+// 장소 노드(worldNodes) → 뷰어 마커 형태. tile:[x,y] → 화면 배치용 x/y.
+const NODE_MARKERS = WORLD_NODES.map((n) => ({ id: n.id, name: n.name, x: n.tile[0], y: n.tile[1] }));
 
 function hexToRgb(hex) {
   const v = parseInt(hex.slice(1), 16);
@@ -118,10 +88,22 @@ export default function WorldMapPage() {
     const seaRgb = hexToRgb(COLORS.sea);
     const landRgb = hexToRgb(COLORS.land);
     const coastRgb = hexToRgb(COLORS.coast);
+    const riverRgb = hexToRgb(COLORS.river);
+    const lakeRgb = hexToRgb(COLORS.lake);
+    const fenceRgb = hexToRgb(COLORS.fence);
+    const bridgeRgb = hexToRgb(COLORS.bridge);
     for (let ty = 0; ty < MAP_H; ty++) {
       for (let tx = 0; tx < MAP_W; tx++) {
-        const land = isLandAt(grid, tx, ty);
-        const rgb = !land ? seaRgb : (isCoastTile(grid, tx, ty) ? coastRgb : landRgb);
+        const code = grid[ty * MAP_W + tx];
+        let rgb;
+        switch (code) {
+          case TERRAIN.RIVER: rgb = riverRgb; break;
+          case TERRAIN.LAKE: rgb = lakeRgb; break;
+          case TERRAIN.FENCE: rgb = fenceRgb; break;
+          case TERRAIN.BRIDGE: rgb = bridgeRgb; break;
+          case TERRAIN.LAND: rgb = isCoastTile(grid, tx, ty) ? coastRgb : landRgb; break;
+          default: rgb = seaRgb; break; // SEA
+        }
         for (let dy = 0; dy < 2; dy++) {
           for (let dx = 0; dx < 2; dx++) {
             const idx = ((ty * 2 + dy) * w + (tx * 2 + dx)) * 4;
@@ -135,9 +117,8 @@ export default function WorldMapPage() {
     setBitmapReady(true);
   }, []);
 
-  // ── 노드 오버레이: mapData.POI 기반. worldNodes.js(장소 노드 시스템)가 입고되면
-  // normalizeNodes로 정적 배선 예정 — 미존재 모듈의 동적 import는 웹팩 빌드가 깨져 제거했다.
-  const nodes = POI_FALLBACK;
+  // ── 노드 오버레이: worldNodes(장소 노드 시스템) 정적 배선. ──
+  const nodes = NODE_MARKERS;
 
   // ── 뷰포트 크기(반응형) ──
   const containerRef = useRef(null);
@@ -334,7 +315,7 @@ export default function WorldMapPage() {
             <Spinner />
           </div>
         )}
-        {/* 주요 지점 마커 — worldNodes.js 로드분 또는 POI 폴백 */}
+        {/* 주요 지점 마커 — worldNodes(장소 노드) 좌표 */}
         {visibleNodes.map((n) => (
           <div
             key={n.id}
@@ -369,6 +350,10 @@ export default function WorldMapPage() {
           <LegendDot color={COLORS.land} label="육지" />
           <LegendDot color={COLORS.coast} label="해안" />
           <LegendDot color={COLORS.sea} label="바다" />
+          <LegendDot color={COLORS.river} label="강" />
+          <LegendDot color={COLORS.lake} label="호수" />
+          <LegendDot color={COLORS.fence} label="DMZ" />
+          <LegendDot color={COLORS.bridge} label="다리" />
         </span>
       </div>
     </div>
