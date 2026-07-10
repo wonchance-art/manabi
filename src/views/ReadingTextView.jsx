@@ -114,6 +114,8 @@ export function checkFill(input, answer, accept) {
 
 /** fill 문항의 빈칸 마커 — 콘텐츠 계약의 전각 대괄호+전각 공백 */
 export const FILL_BLANK = '［　］';
+/** 후리가나 표시 선호(전역 뷰 설정 — 계정 무관) localStorage 키 */
+const FURIGANA_PREF_KEY = 'reading_furigana_pref';
 /** ja 문장을 빈칸 기준 앞/뒤로 분리(마커 없으면 통째로 앞) */
 export function splitFill(ja) {
   const s = String(ja ?? '');
@@ -610,7 +612,13 @@ function PatternCard({ card, onClose }) {
  */
 export default function ReadingTextView({ text, onPass, onBack, saving = false }) {
   const [revealed, setRevealed] = useState({}); // 문장 index → 한국어 뜻 펼침 여부
-  const [furigana, setFurigana] = useState(true); // 후리가나 루비 — 기본 표시(초심자 배려)
+  // 후리가나 루비 — 기본 표시(초심자 배려)하되, 사용자가 끄면 localStorage에 기억한다.
+  // (컴포넌트 상태만 쓰면 글을 열 때마다 ON으로 되살아나 오너 리포트의 "자꾸 자동으로 켜짐"이 된다.)
+  // SSR 하이드레이션 불일치를 피하려고 초기값은 true, 마운트 후 저장값을 적용한다.
+  const [furigana, setFurigana] = useState(true);
+  useEffect(() => {
+    try { if (localStorage.getItem(FURIGANA_PREF_KEY) === '0') setFurigana(false); } catch { /* 무시 */ }
+  }, []);
   const [card, setCard] = useState(null);
   const [quizOpen, setQuizOpen] = useState(false);
   const bodyRef = useRef(null);
@@ -661,7 +669,11 @@ export default function ReadingTextView({ text, onPass, onBack, saving = false }
             type="button"
             className="chip"
             aria-pressed={furigana}
-            onClick={() => setFurigana((v) => !v)}
+            onClick={() => setFurigana((v) => {
+              const next = !v;
+              try { localStorage.setItem(FURIGANA_PREF_KEY, next ? '1' : '0'); } catch { /* 무시 */ }
+              return next;
+            })}
             style={{ flex: '0 0 auto', opacity: furigana ? 1 : 0.55 }}
           >
             {furigana ? '가나 ON' : '가나 OFF'}
