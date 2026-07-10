@@ -44,9 +44,12 @@ function QuestionFlow({ questions, textId, onScrollToEvidence, onPass, passLabel
   }, []);
   const [answers, setAnswers] = useState({}); // key → { picked, ok, tries, firstOk }
   const [passed, setPassed] = useState(false);
+  const [saving, setSaving] = useState(false);      // onPass 대기 중("기록 중…") — 완료·이동 차단(P2-7)
+  const [saveError, setSaveError] = useState(false); // 기록 실패 → 재시도 UI(P2-8)
   // 동기 잠금 — state 반영 전 재클릭이 이중 채점되지 않게 답안을 ref 로도 즉시 확정한다(P2-8).
   const answeringRef = useRef({}); // key → { picked, ok, tries, firstOk }(진실원)
-  const passedRef = useRef(false); // onPass 멱등 — 통과 버튼 이중 클릭에도 1회만 발화
+  const savingRef = useRef(false); // onPass 중복 발화 동기 가드(state 반영 전 이중 클릭 차단)
+  const eventsRef = useRef(null);  // 통과 시 조립한 이벤트 — 재시도가 같은 페이로드로 push 부터 재시도
 
   const gating = shuffled.filter((q) => q.gating);
   const allGatingOk = gating.length > 0 && gating.every((q) => answers[q.key]?.ok);
@@ -63,21 +66,36 @@ function QuestionFlow({ questions, textId, onScrollToEvidence, onPass, passLabel
     if (!ok && q.gating && onScrollToEvidence) onScrollToEvidence();
   }
 
+  // onPass(원격 기록) 를 await — 성공 후에만 완료 화면으로, 실패면 재시도 UI 로 전환(P2-7·P2-8).
+  async function runSave() {
+    if (savingRef.current) return; // 동기 가드 — 저장 중 재클릭·중복 재시도 차단
+    savingRef.current = true;
+    setSaveError(false);
+    setSaving(true);
+    try {
+      await onPass?.(eventsRef.current);
+      setPassed(true); // 성공 뒤에만 완료 화면
+    } catch {
+      setSaveError(true); // 실패 — 재시도 버튼 노출(재-push)
+    } finally {
+      setSaving(false);
+      savingRef.current = false;
+    }
+  }
+
   function finish() {
-    if (passedRef.current) return; // 멱등 가드 — 이중 클릭 2회째 무시
-    passedRef.current = true;
-    setPassed(true);
+    if (passed || savingRef.current) return; // 이미 통과했거나 저장 중이면 무시
     // 페이로드는 buildReadingEvents(단일 원천)가 조립 — lang:'Japanese' 고정,
     // correct=최초 시도(firstOk), 미응답(tries 0) content 는 이벤트 자체를 내지 않는다.
-    // content 는 index 를 넘겨 글별 고유 item_key(textId#c<index>)로 집계된다(P2-9).
-    const events = buildReadingEvents(
+    // content 는 안정 문항 id(q.id)를 넘겨 글별 고유 item_key 로 집계된다(P3-11, index 는 폴백용).
+    eventsRef.current = buildReadingEvents(
       textId,
       shuffled.map((q, idx) => {
         const a = answeringRef.current[q.key];
-        return { itemKey: q.itemKey, qtype: q.qtype, firstOk: !!a?.firstOk, tries: a?.tries || 0, index: idx };
+        return { itemKey: q.itemKey, id: q.id, qtype: q.qtype, firstOk: !!a?.firstOk, tries: a?.tries || 0, index: idx };
       })
     );
-    onPass?.(events);
+    runSave();
   }
 
   return (
@@ -142,6 +160,21 @@ function QuestionFlow({ questions, textId, onScrollToEvidence, onPass, passLabel
           passed ? (
             <div className="fr-check__verdict is-pass" style={{ padding: '14px 16px', borderRadius: 'var(--radius-md)' }}>
               <strong>{passLabel} 완료</strong> — 문형 문항을 전부 맞혔어요.
+            </div>
+          ) : saving ? (
+            // 원격 기록 대기 — 성공 전엔 완료 화면·다음 이동을 열지 않는다(P2-7)
+            <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', padding: '12px 4px' }}>
+              기록 중이에요…
+            </div>
+          ) : saveError ? (
+            // 원격 upsert 실패({error}) — push 부터 다시 시도(P2-8)
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <p style={{ fontSize: '0.86rem', color: 'var(--danger)', margin: 0 }}>
+                기록에 실패했어요. 잠시 후 다시 시도해 주세요.
+              </p>
+              <button type="button" className="btn btn--primary btn--md" onClick={runSave}>
+                다시 시도
+              </button>
             </div>
           ) : (
             <button type="button" className="btn btn--primary btn--md" onClick={finish}>
@@ -216,6 +249,7 @@ export default function ReadingTextView({ text, onPass, onBack }) {
   const questions = useMemo(() => {
     return (text.questions || []).map((q, i) => ({
       key: `${text.id}-q${i}`,
+      id: q.id, // 안정 문항 id(n5-tokyo-NN-qK) — content item_key 고유화용(P3-11)
       qtype: q.type === 'pattern' ? 'pattern' : 'content',
       itemKey: q.type === 'pattern' ? q.pattern : 'content',
       prompt: q.q,

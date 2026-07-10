@@ -6,7 +6,7 @@
  *
  * 실행:
  *   node scripts/check-reading.mjs             트랙 파일 검증(없으면 오류)
- *   node scripts/check-reading.mjs --self-test 내장 픽스처 17종 자가 검출 테스트
+ *   node scripts/check-reading.mjs --self-test 내장 픽스처 22종 자가 검출 테스트
  *
  * 검사 항목(코드):
  *   G1  전 글 newPatterns ∪ 전 드릴 patterns = bunkei N5 pattern 125 전수·중복 0·부재 0
@@ -16,12 +16,19 @@
  *   G4  신규 문형이 그 글 본문에 어간 매칭(P1-2·P1-3): 플레이스홀더(A·B·한글)를 슬롯으로 치환 후
  *       리터럴 조각 추출 → 전 문형 실재 검사(면제 0). alt 그룹 구조로 何(なん/なに)류 이중 계상 차단,
  *       1~2자 가나 어간은 경계(구두점·공백·문말) 요구로 부분 문자열 오계상 차단.
+ *       마지막 글자 완화(slice)는 활용 어미(るすたていうくぐむぶぬ)로 끝나는 조각에만 적용 —
+ *       どちらが 등 조사 종결은 정확 일치를 요구해 どちらも류 치환을 잡는다(P1-3).
  *       'い형용사+명사'는 리터럴 부재 → kuromoji 형태소 인접(形容詞자립·い활용 + 名詞) ≥2회로 검사.
  *   G5  본문 내용어(명사·동사·형용사·부사) 기본형이 어휘 풀 ∪ 지명에 존재
  *   G6  본문 yomi 정렬(check-furigana spawn) + 지명 요미 대조(P2-10: ja·yomi 동시 마스킹·출현 횟수 대응)
  *       + 금지 요미(과거 실제 오독) 블랙리스트 대조(보조)
- *   G7  기대 독음 사전(yomi-map.json) 대조(P1-4): 전 body를 같은 정렬로 분해해 각 한자 표면형 요미가
- *       맵 허용치 중 하나여야 통과. 맵 미등재 표면형 = 오류(신규 콘텐츠 맵 등재 강제·사람 게이트).
+ *   YLOCK 문장 단위 요미 락(yomi-lock.json) 대조 — 주 게이트(P1-1·P1-2·P2-5). 전 body 문장을 같은
+ *       정규화(normLock)로 락과 대조: 락 미등재/수정 = 오류(재생성+검수 강제)·ja 같은데 yomi 불일치 = 오류·
+ *       락에 있는데 사라진 문장 = 경고·KO_MIXED(한글 섞임) = 오류. 문장 전체를 박으므로 가나-온리 무검사·
+ *       오쿠리가나 오독(来ます→くます)·정렬 아티팩트 오염(建物→たても)이 한 번에 소멸한다.
+ *   G7  기대 독음 사전(yomi-map.json) 대조 — 보조 진단(강등). YLOCK이 주 게이트이므로 G7 불일치는
+ *       경고. 신규 문장 초안 작성 시 한자별 허용 독음 참고용으로만 유지한다(완전 삭제 금지).
+ *   ID  전 문항·드릴 item의 id 존재 + 트랙 전체 유일 + 형식 검사(P3-11). 누락·중복·형식 위반 = 오류.
  *   Q   문항 스키마·정답 유효·choices 4개·choices 내 중복 = 오류(P2-10)·pattern 문항 newPatterns 전수 커버
  *   FR  〜ました 도입 order 이전 글에 frame:'narration' 금지
  *   DR  drills[].patterns = 표 2 D군 13개 일치·style·afterOrder가 실존 글 order·items ≥1
@@ -35,7 +42,7 @@ import path from 'node:path';
 
 const require = createRequire(import.meta.url);
 const { getTokenizer } = require('./reading/derive-yomi.cjs');
-const { extractReadings } = require('./reading/align-furigana.cjs');
+const { extractReadings, normLock } = require('./reading/align-furigana.cjs');
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -190,12 +197,16 @@ function runChecks(track, ctx) {
 
   // ── G4: 신규 문형 본문 실재(어간 매칭, P1-2·P1-3) ──
   // 카운트 규칙:
-  //   · 어간 길이 ≥3 → 활용 어미 1글자 유연화(slice) 후 공백 제거 본문(flat)에서 부분 문자열.
+  //   · 어간 길이 ≥3 이고 마지막 글자가 활용 어미(CONJ_END)일 때만 → 1글자 유연화(slice) 후 부분 문자열.
+  //     활용 종결(食べる·行きます류)은 본문에서 활용해 어미가 바뀌므로 완화가 필요하다.
+  //     하지만 どちらが·どちらも처럼 조사·의문사 종결(が·も·の)은 완화하면 どちら만 남아 どちらも가
+  //     どちらが 문형에 오통과된다(P1-3) → 활용 어미가 아닌 종결은 완화 없이 정확 일치를 요구한다.
   //   · 그 외 → 부분 문자열. 조사·접미(は·を·たい·かた)는 문절 중간에 정당히 붙으므로 경계를 강제하지 않는다.
   //   · 예외 〜だ: 절말 종지사라 まだ·まだです의 だ에 오계상되기 쉽다 → "절말 경계(뒤가 종지 구두점·문말)"를
   //     요구해 실제 종지형 〜だ만 센다(P1-3의 まだです 차단). 공백은 절말 경계에서 제외(だ 뒤에 조사가 붙지 않음).
   //   · 그룹 내 별칭(何·なん·なに)은 max(같은 출현의 이표기 이중 계상 차단), 그룹 간은 합산.
   const CLAUSE_END = /[。、！？!?」』]/;
+  const CONJ_END = new Set([...'るすたていうくぐむぶぬ']); // 활용 어미(형용사 ね 제외 — 신중히)
   const countIn = (hay, key) => { let c = 0, i = 0; while ((i = hay.indexOf(key, i)) !== -1) { c++; i += key.length; } return c; };
   const countClauseFinal = (text, key) => {
     let c = 0, i = 0;
@@ -209,7 +220,7 @@ function runChecks(track, ctx) {
     const spacedYomi = (t.body || []).map((b) => b.yomi || '').join('\n');
     const aliasCount = (a, clauseFinal) => {
       if (clauseFinal) return Math.max(countClauseFinal(spacedJa, a), countClauseFinal(spacedYomi, a));
-      if (a.length >= 3) { const key = a.slice(0, -1); return Math.max(countIn(flat, key), countIn(flatYomi, key)); }
+      if (a.length >= 3 && CONJ_END.has(a[a.length - 1])) { const key = a.slice(0, -1); return Math.max(countIn(flat, key), countIn(flatYomi, key)); }
       return Math.max(countIn(flat, a), countIn(flatYomi, a));
     };
     for (const p of (t.newPatterns || [])) {
@@ -343,9 +354,41 @@ function runChecks(track, ctx) {
     }
   }
 
-  // ── G7(기대 독음 사전, P1-4): 전 body 표면형 요미가 맵 허용치 중 하나여야 통과 ──
-  // 맵은 신뢰본에서 같은 정렬로 생성(build-yomi-map.mjs). 미등재 표면형·불일치 요미 = 오류
-  // → 신규 콘텐츠는 맵 등재를 강제하는 사람 게이트. 정렬 실패는 G6-furigana가 별도로 잡는다.
+  // ── YLOCK(문장 단위 요미 락, P1-1·P1-2·P2-5): 주 게이트 ──
+  // 락은 신뢰본에서 같은 정규화로 생성(build-yomi-lock.mjs). 키 = 글 id + body 인덱스.
+  // 전 body 문장(가나-온리 포함)을 락과 대조해 표면형 맵(G7)의 구조적 구멍 3종을 한 번에 막는다.
+  //   ① 락 미등재/수정 문장 = 오류(신규·수정 문장은 락 재생성+검수 강제)
+  //   ② ja는 같은데 yomi 불일치 = 오류(来ます→くます류 오쿠리가나 오독을 문장 단위로 포착)
+  //   ③ 락에 있는데 콘텐츠에서 사라진 문장 = 경고
+  //   · KO_MIXED(요미에 한글 섞임) = 오류(이 트랙에서 요미는 순 일본어 가나)
+  if (ctx.yomiLock) {
+    const seen = new Set();
+    for (const t of texts) {
+      const body = t.body || [];
+      for (let i = 0; i < body.length; i++) {
+        const b = body[i];
+        if (!b.ja || !b.yomi) continue;
+        const jaN = normLock(b.ja), yomiN = normLock(b.yomi);
+        if (/[가-힣]/.test(jaN) || /[가-힣]/.test(yomiN)) {
+          E('YLOCK-komixed', `글${t.order} KO_MIXED(요미에 한글 섞임): ${b.ja} / ${b.yomi}`);
+          continue;
+        }
+        const key = `${t.id}#${i}`;
+        seen.add(key);
+        const lock = ctx.yomiLock[key];
+        if (!lock || lock.ja !== jaN)
+          E('YLOCK-missing', `글${t.order} 락 미등재/수정 문장(${key}) — 락 재생성+검수 필요: ${b.ja}`);
+        else if (lock.yomi !== yomiN)
+          E('YLOCK-yomi', `글${t.order} 요미 불일치(${key}): 락 '${lock.yomi}' ≠ 현재 '${yomiN}' (문장: ${b.ja})`);
+      }
+    }
+    for (const key of Object.keys(ctx.yomiLock))
+      if (!seen.has(key)) W('YLOCK-gone', `락 문장이 콘텐츠에서 사라짐: ${key} (락 ja: ${ctx.yomiLock[key].ja})`);
+  }
+
+  // ── G7(기대 독음 사전) — 보조 진단(강등): YLOCK이 주 게이트이므로 불일치는 경고 ──
+  // 맵은 신뢰본에서 같은 정렬로 생성(build-yomi-map.mjs). 신규 문장 초안 작성 시 한자별 허용
+  // 독음 참고용으로만 유지한다(완전 삭제 금지). 실제 게이트는 위 YLOCK이 담당한다.
   if (ctx.yomiMap) {
     for (const t of texts) {
       for (const b of (t.body || [])) {
@@ -355,9 +398,9 @@ function runChecks(track, ctx) {
         for (const { surface, reading } of readings) {
           const allowed = ctx.yomiMap[surface];
           if (!allowed)
-            E('G7-map', `글${t.order} 맵 미등재 표면형: ${surface}(${reading}) — yomi-map.json 등재 필요 (문장: ${b.ja})`);
+            W('G7-map', `글${t.order} 맵 미등재 표면형(보조 진단): ${surface}(${reading}) (문장: ${b.ja})`);
           else if (!allowed.includes(reading))
-            E('G7-map', `글${t.order} 요미 불일치: ${surface}→${reading} ∉ [${allowed.join(',')}] (문장: ${b.ja})`);
+            W('G7-map', `글${t.order} 요미 불일치(보조 진단): ${surface}→${reading} ∉ [${allowed.join(',')}] (문장: ${b.ja})`);
         }
       }
     }
@@ -367,6 +410,25 @@ function runChecks(track, ctx) {
     if (p.ja && PLACE_YOMI[p.ja] && p.yomi && kataToHira(p.yomi) !== kataToHira(PLACE_YOMI[p.ja]))
       E('G6-place', `places 사전 요미 불일치: ${p.ja} ${p.yomi} ≠ 정답 ${PLACE_YOMI[p.ja]}`);
   }
+
+  // ── ID: 문항·드릴 item id 존재·유일·형식(P3-11) ──
+  // 방금 콘텐츠에 전 문항 id 부여됨(글 문항 <text_id>-qK · 드릴 <track>-drill-N-qK).
+  // id가 없거나 중복이면 진도·SRS 추적이 뒤섞인다 → 누락·중복·형식 위반 = 오류.
+  const idSeen = new Map(); // id → 최초 등장처
+  const checkId = (id, where, re) => {
+    if (!id) { E('ID-missing', `${where} id 누락`); return; }
+    if (!re.test(id)) E('ID-format', `${where} id 형식 위반: ${id}`);
+    if (idSeen.has(id)) E('ID-dup', `id 중복: ${id} @ ${idSeen.get(id)} · ${where}`);
+    else idSeen.set(id, where);
+  };
+  const escapeRe = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  for (const t of texts) {
+    const qRe = new RegExp(`^${escapeRe(t.id)}-q\\d+$`);
+    (t.questions || []).forEach((q, j) => checkId(q.id, `글${t.order} 문항${j + 1}`, qRe));
+  }
+  const drillRe = new RegExp(`^${escapeRe(track?.track || '')}-drill-\\d+-q\\d+$`);
+  for (let i = 0; i < drills.length; i++)
+    (drills[i].items || []).forEach((it, j) => checkId(it.id, `드릴${i + 1} 문항${j + 1}`, drillRe));
 
   // ── Q: 문항 ──
   for (const t of texts) {
@@ -498,7 +560,15 @@ async function buildRealContext() {
     process.exit(1);
   }
   const yomiMap = JSON.parse(readFileSync(mapPath, 'utf8'));
-  return { patternUniverse, dgroup: DGROUP, vocabPool, placeYomi: PLACE_YOMI, tokenizer, yomiMap, skipFurigana: false, travelCoreCount };
+  // 문장 단위 요미 락(P1-1) — 주 게이트. 부재 시 침묵 통과를 허용하지 않고 하드 실패:
+  // 락이 사라지면 표면형 맵의 구조적 구멍(가나-온리·오쿠리가나·아티팩트)이 다시 열린다.
+  const lockPath = path.join(ROOT, 'scripts', 'reading', 'yomi-lock.json');
+  if (!existsSync(lockPath)) {
+    console.error('✗ [YLOCK] 문장 단위 요미 락 없음: scripts/reading/yomi-lock.json — node scripts/reading/build-yomi-lock.mjs 로 생성 필요');
+    process.exit(1);
+  }
+  const yomiLock = JSON.parse(readFileSync(lockPath, 'utf8'));
+  return { patternUniverse, dgroup: DGROUP, vocabPool, placeYomi: PLACE_YOMI, tokenizer, yomiMap, yomiLock, skipFurigana: false, travelCoreCount };
 }
 
 // ── 자가 테스트: 정상 베이스라인 + 결함 주입(기존 10종 + 강화 7종) ──
@@ -518,30 +588,37 @@ async function selfTest() {
     places: [],
     texts: [
       {
+        id: 'st-01',
         order: 1, place: { name: '역', ja: '駅', landmark: 'station' }, frame: 'dialogue',
         newPatterns: ['〜です', '〜ます'],
         body: [
           { ja: '私は学生です。ここは駅です。', yomi: 'わたしはがくせいです。ここはえきです。', ko: '' },
           { ja: '本を読みます。水を飲みます。', yomi: 'ほんをよみます。みずをのみます。', ko: '' },
+          // 오쿠리가나 오독(来ます→くます) 포착용 — 표면형 맵은 来:[き,く]로 くます를 통과시키나 YLOCK은 잡는다.
+          { ja: '父が 来ます。', yomi: 'ちちが きます。', ko: '' },
+          // 가나-온리 문장 — 표면형 맵은 한자 부재로 무검사, YLOCK만 문장 락으로 검사한다.
+          { ja: 'これは ぺんです。', yomi: 'これは ぺんです。', ko: '' },
         ],
         questions: [
-          { type: 'pattern', pattern: '〜です', q: 'Q', choices: ['です', 'ます', 'でした', 'ません'], answer: 0, why: 'w' },
-          { type: 'pattern', pattern: '〜ます', q: 'Q', choices: ['ます', 'です', 'ました', 'ません'], answer: 0, why: 'w' },
-          { type: 'content', q: 'Q', choices: ['学生', '先生', '医者', '駅員'], answer: 0 },
+          { id: 'st-01-q1', type: 'pattern', pattern: '〜です', q: 'Q', choices: ['です', 'ます', 'でした', 'ません'], answer: 0, why: 'w' },
+          { id: 'st-01-q2', type: 'pattern', pattern: '〜ます', q: 'Q', choices: ['ます', 'です', 'ました', 'ません'], answer: 0, why: 'w' },
+          { id: 'st-01-q3', type: 'content', q: 'Q', choices: ['学生', '先生', '医者', '駅員'], answer: 0 },
         ],
       },
       {
+        id: 'st-02',
         order: 2, place: { name: '역', ja: '駅', landmark: 'station' }, frame: 'dialogue',
         newPatterns: ['〜ました'],
         body: [
           { ja: '駅に行きました。バスに乗りました。', yomi: 'えきにいきました。ばすにのりました。', ko: '' },
         ],
         questions: [
-          { type: 'pattern', pattern: '〜ました', q: 'Q', choices: ['ました', 'ます', 'です', 'ません'], answer: 0, why: 'w' },
+          { id: 'st-02-q1', type: 'pattern', pattern: '〜ました', q: 'Q', choices: ['ました', 'ます', 'です', 'ません'], answer: 0, why: 'w' },
         ],
       },
       {
         // P1-2·P1-3·P2-10 검사용: 비교·형용사+명사·何·〜だ + 중첩 지명(東京駅/東京)을 한 글에 담는다.
+        id: 'st-03',
         order: 3, place: { name: '도쿄역', ja: '東京駅', landmark: 'station' }, frame: 'dialogue',
         newPatterns: ['AはBより〜', 'AとBと どちらが', 'い형용사 + 명사', '何(なん/なに)', '〜だ'],
         body: [
@@ -552,18 +629,18 @@ async function selfTest() {
           { ja: '東京駅から 東京へ 行きます。', yomi: 'とうきょうえきから とうきょうへ いきます。', ko: '' },
         ],
         questions: [
-          { type: 'pattern', pattern: 'AはBより〜', q: 'Q', choices: ['より', 'でも', 'だけ', 'ぐらい'], answer: 0, why: 'w' },
-          { type: 'pattern', pattern: 'AとBと どちらが', q: 'Q', choices: ['どちらが', 'どちらも', 'どちらの', 'どちらを'], answer: 0, why: 'w' },
-          { type: 'pattern', pattern: 'い형용사 + 명사', q: 'Q', choices: ['赤い 洋服', '赤の 洋服', '赤く 洋服', '赤 洋服'], answer: 0, why: 'w' },
-          { type: 'pattern', pattern: '何(なん/なに)', q: 'Q', choices: ['何', 'どこ', 'だれ', 'いつ'], answer: 0, why: 'w' },
-          { type: 'pattern', pattern: '〜だ', q: 'Q', choices: ['だ', 'です', 'でした', 'だった'], answer: 0, why: 'w' },
-          { type: 'content', q: 'Q', choices: ['赤', '青', '白', '黒'], answer: 1 },
+          { id: 'st-03-q1', type: 'pattern', pattern: 'AはBより〜', q: 'Q', choices: ['より', 'でも', 'だけ', 'ぐらい'], answer: 0, why: 'w' },
+          { id: 'st-03-q2', type: 'pattern', pattern: 'AとBと どちらが', q: 'Q', choices: ['どちらが', 'どちらも', 'どちらの', 'どちらを'], answer: 0, why: 'w' },
+          { id: 'st-03-q3', type: 'pattern', pattern: 'い형용사 + 명사', q: 'Q', choices: ['赤い 洋服', '赤の 洋服', '赤く 洋服', '赤 洋服'], answer: 0, why: 'w' },
+          { id: 'st-03-q4', type: 'pattern', pattern: '何(なん/なに)', q: 'Q', choices: ['何', 'どこ', 'だれ', 'いつ'], answer: 0, why: 'w' },
+          { id: 'st-03-q5', type: 'pattern', pattern: '〜だ', q: 'Q', choices: ['だ', 'です', 'でした', 'だった'], answer: 0, why: 'w' },
+          { id: 'st-03-q6', type: 'content', q: 'Q', choices: ['赤', '青', '白', '黒'], answer: 1 },
         ],
       },
     ],
     drills: [
-      // afterOrder는 실존 글 order여야 하고(DR-after), item에는 pattern 태그가 있어야 한다(P1-5).
-      { afterOrder: 1, patterns: ['〜は'], style: 'form-choice', items: [{ q: 'Q', ja: 'これ___です。', pattern: '〜は', choices: ['は', 'が', 'を', 'に'], answer: 0 }] },
+      // afterOrder는 실존 글 order여야 하고(DR-after), item에는 pattern 태그·id가 있어야 한다(P1-5·P3-11).
+      { afterOrder: 1, patterns: ['〜は'], style: 'form-choice', items: [{ id: 'st-drill-1-q1', q: 'Q', ja: 'これ___です。', pattern: '〜は', choices: ['は', 'が', 'を', 'に'], answer: 0 }] },
     ],
   };
 
@@ -589,7 +666,19 @@ async function selfTest() {
     }
   }
 
-  const ctx = { patternUniverse: universe, dgroup, vocabPool, placeYomi: PLACE_YOMI, tokenizer, yomiMap, skipFurigana: true };
+  // 문장 단위 요미 락 — 베이스라인 본문에서 실 생성 로직(build-yomi-lock)과 같은 정규화로 구성 →
+  // 베이스라인은 YLOCK 통과, 신규·수정·오독 주입 시에만 YLOCK-*가 뜬다.
+  const yomiLock = {};
+  for (const t of baseline.texts) {
+    const body = t.body || [];
+    for (let i = 0; i < body.length; i++) {
+      const b = body[i];
+      if (!b.ja || !b.yomi) continue;
+      yomiLock[`${t.id}#${i}`] = { ja: normLock(b.ja), yomi: normLock(b.yomi) };
+    }
+  }
+
+  const ctx = { patternUniverse: universe, dgroup, vocabPool, placeYomi: PLACE_YOMI, tokenizer, yomiMap, yomiLock, skipFurigana: true };
 
   // 베이스라인은 오류 0이어야 자가테스트가 유효
   const baseRes = runChecks(clone(baseline), ctx);
@@ -599,7 +688,8 @@ async function selfTest() {
     process.exit(1);
   }
 
-  // 결함 주입 — [이름, 기대 코드, 변형 함수]. 기존 10종 + 강화 7종(P1-2·P1-3·P1-4·P1-5·P2-10).
+  // 결함 주입 — [이름, 기대 코드, 변형 함수, 검사대상('error' 기본 | 'warn')].
+  // 기존 17종(G1·G4·G5·G6·Q·DR + 강화) + 신규 5종(YLOCK 3·G4 조사 정확일치·문항 id) = 22종.
   const fixtures = [
     ['전수 누락', 'G1-missing', (t) => { t.texts[1].newPatterns = []; }],
     ['중복 도입', 'G1-dup', (t) => { t.texts[1].newPatterns.push('〜です'); }],
@@ -611,7 +701,7 @@ async function selfTest() {
     ['드릴 afterOrder 유령', 'DR-after', (t) => { t.drills[0].afterOrder = 99; }],
     ['금지 요미', 'G6-banned', (t) => { t.texts[0].body.push({ ja: '駅です。', yomi: 'ときあいだです。', ko: '' }); }],
     ['중복 distractor', 'Q-dup', (t) => { t.texts[0].questions[2].choices = ['学生', '先生', '先生', '駅員']; }],
-    // ── 강화 7종 ──
+    // ── 강화(P1-2·P1-3·P1-5·P2-10) ──
     // P1-2: 플레이스홀더 문형의 리터럴이 하드 게이트로 복귀 — より/どちらが/형용사+명사가 본문에서 사라지면 오류.
     ['より 제거(P1-2)', 'G4', (t) => { const b = t.texts[2].body[0]; b.ja = b.ja.replaceAll('より', 'だけ'); b.yomi = b.yomi.replaceAll('より', 'だけ'); }],
     ['どちらが 제거(P1-2)', 'G4', (t) => { const b = t.texts[2].body[1]; b.ja = b.ja.replaceAll('どちらが', 'これが'); b.yomi = b.yomi.replaceAll('どちらが', 'これが'); }],
@@ -624,19 +714,31 @@ async function selfTest() {
     ['드릴 문형 미커버(P1-5)', 'DR-pattern', (t) => { delete t.drills[0].items[0].pattern; }],
     // P2-10: 중첩 지명에서 두 번째 東京 오독이 東京駅의 요미에 가려지지 않고 잡힌다.
     ['중첩 지명 오독(P2-10)', 'G6-place', (t) => { t.texts[2].body[4].yomi = 'とうきょうえきから ぎんざへ いきます。'; }],
-    // P1-4: 맵 미등재 표면형 = 오류(사람 게이트).
-    ['맵 미등재(P1-4)', 'G7-map', (t) => { t.texts[0].body.push({ ja: '空港へ行きます。', yomi: 'くうこうへいきます。', ko: '' }); }],
+    // ── 신규 5종(YLOCK 주 게이트·G4 조사 정확일치·문항 id, P1-1·P1-2·P2-5·P1-3·P3-11) ──
+    // 강등된 G7(표면형 맵)은 이제 보조 진단(경고) — 맵 미등재는 warns에서 검출됨을 확인한다.
+    ['맵 미등재→보조 진단 강등(G7 warn)', 'G7-map', (t) => { t.texts[0].body.push({ ja: '空港へ行きます。', yomi: 'くうこうへいきます。', ko: '' }); }, 'warn'],
+    // P2-5: 가나-온리 문장은 표면형 맵이 무검사 → YLOCK만 요미 오염을 잡는다(ja 동일·yomi 변조).
+    ['가나-온리 yomi 오염(P2-5)', 'YLOCK-yomi', (t) => { t.texts[0].body[3].yomi = 'これは ぴんです。'; }],
+    // P1-2: 오쿠리가나 오독 来ます→くます — 맵은 来:[き,く]로 통과시키나 YLOCK은 문장 요미로 잡는다.
+    ['오쿠리가나 오독 くます(P1-2)', 'YLOCK-yomi', (t) => { t.texts[0].body[2].yomi = 'ちちが くます。'; }],
+    // P1-1: 락 미등재 문장 — 신규 문장은 락에 없어 재생성+검수를 강제한다.
+    ['락 미등재 문장(P1-1)', 'YLOCK-missing', (t) => { t.texts[0].body.push({ ja: '母も 来ます。', yomi: 'ははも きます。', ko: '' }); }],
+    // P1-3: 고정 조사 종결(どちらも)은 활용 어미가 아니므로 완화 없이 정확 일치 → どちらが 문형 미실재.
+    ['고정 조사 치환 どちらも(P1-3)', 'G4', (t) => { const b = t.texts[2].body[1]; b.ja = b.ja.replaceAll('どちらが', 'どちらも'); b.yomi = b.yomi.replaceAll('どちらが', 'どちらも'); }],
+    // P3-11: 문항 id 중복.
+    ['문항 id 중복(P3-11)', 'ID-dup', (t) => { t.texts[0].questions[1].id = t.texts[0].questions[0].id; }],
   ];
 
   let detected = 0;
-  for (const [name, code, mutate] of fixtures) {
+  for (const [name, code, mutate, where] of fixtures) {
     const t = clone(baseline);
     mutate(t);
-    const { errors } = runChecks(t, ctx);
-    const hit = errors.some((e) => e.code === code);
-    console.log(`  ${hit ? '✓' : '✗'} ${name} — 기대코드 ${code} ${hit ? '검출' : '미검출'}`);
+    const { errors, warns } = runChecks(t, ctx);
+    const pool = where === 'warn' ? warns : errors;
+    const hit = pool.some((e) => e.code === code);
+    console.log(`  ${hit ? '✓' : '✗'} ${name} — 기대코드 ${code}${where === 'warn' ? '(warn)' : ''} ${hit ? '검출' : '미검출'}`);
     if (hit) detected++;
-    else errors.forEach((e) => console.log(`       (실제: [${e.code}] ${e.msg})`));
+    else { errors.forEach((e) => console.log(`       (실제 err: [${e.code}] ${e.msg})`)); warns.forEach((e) => console.log(`       (실제 warn: [${e.code}] ${e.msg})`)); }
   }
   console.log(`\n자가테스트: ${detected}/${fixtures.length} 검출`);
   process.exit(detected === fixtures.length ? 0 : 1);

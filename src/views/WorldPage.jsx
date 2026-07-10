@@ -422,7 +422,12 @@ export default function WorldPage() {
             background: SHELL.screenOff, borderRadius: 4, overflow: 'hidden',
             boxShadow: 'inset 0 0 0 2px #12140e',
           }}>
-            <GameCanvas userId={userId} nickname={nickname} pet={pet} controlsRef={controlsRef} />
+            {/* 계정 전환 격리(P1-4): userId 기반 key 로 GameCanvas 를 remount 한다. 전환 시 진행 중
+                공항 스토리·AirportQuiz(미완료 문답)가 통째로 언마운트되어 폐기되므로, A 계정에서 시작한
+                문답이 B 계정으로 기록될 여지가 없다. 이 페이지의 net/voice 는 이미 userId effect 로
+                재배선되고, 캔버스 remount 는 침습이 이 한 줄 key 로 국한돼(GameCanvas 내부 상태 리셋
+                로직 불필요) 가장 단순하고 확실한 경계다. */}
+            <GameCanvas key={userId || 'guest'} userId={userId} nickname={nickname} pet={pet} controlsRef={controlsRef} />
           </div>
         </div>
 

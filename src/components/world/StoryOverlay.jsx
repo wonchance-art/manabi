@@ -109,7 +109,8 @@ export function AirportQuiz({ text, onPass, onExit }) {
     const s = shuffled(q.choices, q.answer);
     return {
       key: `${text.id}-q${i}`,
-      index: i, // content item_key 고유화용 위치(P2-9) — buildReadingEvents 가 textId#c<index> 로 조합
+      id: q.id,  // 안정 문항 id(n5-tokyo-NN-qK) — content item_key 고유화용(P3-11)
+      index: i,  // id 부재 시 폴백 위치 — buildReadingEvents 가 textId#c<index> 로 조합
       qtype: q.type === 'pattern' ? 'pattern' : 'content',
       itemKey: q.type === 'pattern' ? q.pattern : 'content',
       gating: q.type === 'pattern',
@@ -125,16 +126,37 @@ export function AirportQuiz({ text, onPass, onExit }) {
   const [picked, setPicked] = useState(null);   // 이번 문항에서 고른 오답(재시도 텍스트박스 표시용)
   const [tries, setTries] = useState(0);
   const [done, setDone] = useState(false);
-  const resultsRef = useRef([]);  // 문항별 { itemKey, qtype, firstOk, tries, index } — 통과 시 buildReadingEvents 로 일괄 변환
+  const [saving, setSaving] = useState(false);      // onPass 대기 중("기록 중…") — 완료 화면 차단(P2-7)
+  const [saveError, setSaveError] = useState(false); // 기록 실패 → 재시도 UI(P2-8)
+  const resultsRef = useRef([]);  // 문항별 { itemKey, id, qtype, firstOk, tries, index } — 통과 시 buildReadingEvents 로 일괄 변환
   const rightRef = useRef(0);
+  const totalRef = useRef(0);     // 통과 확정 시점 문항 수 — 재시도(재-push)가 같은 값으로 재발화
   const lockRef = useRef(false);    // 완료 후 영구 잠금
   const answeringRef = useRef(false); // 응답 처리 진입~다음 문항 전환까지 동기 잠금(P2-8)
-  const passedRef = useRef(false);  // onPass 멱등 — 2회째 호출 무시
+  const passedRef = useRef(false);  // 마지막 문항 확정 멱등 — 2회째 무시
+  const savingRef = useRef(false);  // savePass 중복 발화 동기 가드(재시도 포함)
 
   // 문항 뷰가 갱신되면(다음 문항 전환·재시도 피드백 렌더) 동기 잠금 해제 — 같은 tick 이중 클릭만 막는다
   useEffect(() => { answeringRef.current = false; }, [idx, picked, tries]);
 
   const q = qs[idx];
+
+  // onPass(원격 기록) 를 await — 성공 후에만 통과(done) 화면, 실패면 재시도(재-push, P2-7·P2-8).
+  async function savePass() {
+    if (savingRef.current) return; // 동기 가드 — 저장 중 중복 재시도 차단
+    savingRef.current = true;
+    setSaveError(false);
+    setSaving(true);
+    try {
+      await onPass?.(buildReadingEvents(text.id, resultsRef.current), rightRef.current, totalRef.current);
+      setDone(true); // 성공 뒤에만 통과 화면
+    } catch {
+      setSaveError(true); // 실패 — 재시도 버튼 노출
+    } finally {
+      setSaving(false);
+      savingRef.current = false;
+    }
+  }
 
   function pick(opt) {
     if (!q || lockRef.current || answeringRef.current) return; // 동기 잠금 — state 반영 전 이중 클릭 차단
@@ -152,20 +174,19 @@ export function AirportQuiz({ text, onPass, onExit }) {
     // 정답(또는 content 첫 응답으로 확정) → 결과 누적 후 다음.
     // correct 는 최초 시도 기준 — 게이팅 재시도는 오답에서만 생기므로
     // nextTries>1 이면 최초 시도는 반드시 오답(firstOk=false)이다.
-    // content 는 index 를 실어 글별 고유 item_key(textId#c<index>)로 집계된다(P2-9).
-    resultsRef.current.push({ itemKey: q.itemKey, qtype: q.qtype, firstOk: nextTries === 1 && ok, tries: nextTries, index: q.index });
+    // content 는 안정 문항 id(q.id)를 실어 글별 고유 item_key 로 집계된다(P3-11, index 는 폴백).
+    resultsRef.current.push({ itemKey: q.itemKey, id: q.id, qtype: q.qtype, firstOk: nextTries === 1 && ok, tries: nextTries, index: q.index });
     if (ok) rightRef.current += 1; // 연출용 right/total 은 종전대로 확정 시점 정오(quest:done 표시 계약 유지)
 
     if (idx < qs.length - 1) {
       setIdx(idx + 1); setPicked(null); setTries(0);
     } else {
       lockRef.current = true;
-      if (passedRef.current) return; // 멱등 — onPass 는 1회만
+      if (passedRef.current) return; // 멱등 — 마지막 문항 확정은 1회만
       passedRef.current = true;
-      setDone(true);
-      const total = qs.length;
-      bus.emit('quest:done', { right: rightRef.current, total });
-      onPass?.(buildReadingEvents(text.id, resultsRef.current), rightRef.current, total);
+      totalRef.current = qs.length;
+      bus.emit('quest:done', { right: rightRef.current, total: totalRef.current }); // 펫 낙관 성장(연출)
+      savePass(); // 원격 기록 대기 — 성공 후에만 done 화면(await 는 savePass 내부)
     }
   }
 
@@ -181,6 +202,21 @@ export function AirportQuiz({ text, onPass, onExit }) {
             </p>
             <button type="button" onClick={onExit} style={{ ...gbcButtonPrimary, alignSelf: 'center', marginTop: 2 }}>
               출구로 →
+            </button>
+          </div>
+        ) : saving ? (
+          // 원격 기록 대기 — 성공 전엔 통과 화면·출구를 열지 않는다(P2-7)
+          <div style={{ textAlign: 'center', padding: '10px 0', fontSize: '0.82rem', color: GBC.inkSoft }}>
+            기록 중이에요…
+          </div>
+        ) : saveError ? (
+          // 원격 upsert 실패({error}) — push 부터 다시 시도(P2-8)
+          <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 8, padding: '6px 0' }}>
+            <p style={{ fontSize: '0.82rem', color: GBC.red, margin: 0, lineHeight: 1.5 }}>
+              기록에 실패했어요. 다시 시도해 주세요.
+            </p>
+            <button type="button" onClick={savePass} style={{ ...gbcButtonPrimary, alignSelf: 'center' }}>
+              다시 시도
             </button>
           </div>
         ) : (

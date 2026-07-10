@@ -16,11 +16,21 @@ import { enqueueGrammarReview } from './grammarSrs';
  * 통과 글 id 를 담는 localStorage Set 키의 **베이스**(챕터용 Set 과 절대 혼합 금지).
  * 실제 저장은 사용자 스코프 키(`ja_reading_texts:<uid>`, 게스트는 `:guest`)에 한다 —
  * 계정 전환 시 A 진도가 B 로 복제되는 것을 막기 위해(P2-7). 이 베이스 문자열 자체(콜론 없음)는
- * 스코프 도입 이전의 레거시 무스코프 키이기도 해서, 발견 시 게스트 키로 1회 이관 후 삭제한다.
+ * 스코프 도입 이전의 레거시 무스코프 키이기도 해서, 발견 시 **격리 키**(`:legacy`)로 1회
+ * 이관 후 삭제한다(P2-9 — 아래 legacyReadingKey 주석 참조).
  */
 export const READING_KEY = 'ja_reading_texts';
 /** 게스트(비로그인) 스코프 키 — 로그인 시 사용자 키로 1회 승계 후 비운다 */
 const guestReadingKey = () => `${READING_KEY}:guest`;
+/**
+ * 레거시(무스코프) 격리 키(P2-9) — 스코프 도입 전 저장된 `ja_reading_texts`(콜론 없음)의 이관처.
+ * 이 데이터는 **소유자 불명**이다: 스코프가 없던 시절엔 게스트/여러 계정이 같은 기기에서 한 키를
+ * 공유했을 수 있어, 이걸 `:guest` 로 옮기면 승계 루프가 남의 진도를 임의 계정에 자동 귀속시킨다.
+ * 그래서 별도 격리 키에 가둔다 — **게스트 화면 진도 표시에만** 읽기 병합하고, 계정 승계·서버
+ * upsert·SRS 백필 대상에서는 전면 제외한다(Codex P2-9: 소유자 불명 데이터의 자동 귀속 금지).
+ * 업그레이드 후 정상 생성된 진짜 `:guest` 키만 로그인 시 승계된다.
+ */
+const legacyReadingKey = () => `${READING_KEY}:legacy`;
 /** 사용자 스코프 키 — userId 없으면 게스트 키(GameCanvas 등 userId 미전달 호출 하위호환) */
 const scopedReadingKey = (userId) => (userId ? `${READING_KEY}:${userId}` : guestReadingKey());
 /**
@@ -44,6 +54,16 @@ export const drillId = (i) => `${READING_TRACK_ID}-drill-${i}`;
 /** 0.5 단위 반올림 — 진도 헤더의 "예상 잔여 ~k주" 표기용 */
 export function roundHalf(x) {
   return Math.round(Number(x) * 2) / 2;
+}
+
+/**
+ * 계정 전환 중 stale pull 폐기 판정(순수, P1-4).
+ * pull 요청을 건 시점의 uid(requestUid)와 응답을 반영하려는 시점의 현재 uid(currentUid)가
+ * 같을 때만 true. 전환됐으면(다르거나 로그아웃) 결과를 버려 A 계정의 서버 진도가 B 화면·기록으로
+ * 새지 않게 한다. 호출부(ReadingTrackPage)는 이 판정이 false 면 setPassedSet 을 건너뛴다.
+ */
+export function pullApplies(requestUid, currentUid) {
+  return !!requestUid && requestUid === currentUid;
 }
 
 /**
@@ -99,10 +119,12 @@ export function missingReviewSlugs(passedIds, queuedSlugs) {
  * - 미응답(tries 0) 문항은 이벤트를 만들지 않는다 — 응답하지 않은 content 를 오답으로
  *   집계하면 정답률(EWMA·다이얼)이 부당하게 깎인다. 응답한 문항만 기록.
  * - content 문항의 item_key 는 글마다 'content' 로 겹쳐, 서로 다른 글의 내용 문항이
- *   한 키로 뭉개져 약점 집계가 오염된다 → textId#c<index> 로 글·위치별 고유화(P2-9).
- *   pattern 문항 키는 문형 문자열을 유지한다(의도된 문형 단위 집계).
+ *   한 키로 뭉개져 약점 집계가 오염된다 → **안정 문항 id(q.id)** 로 글·위치별 고유화(P3-11).
+ *   콘텐츠 전 문항에 `n5-tokyo-NN-qK` id 가 부여돼 있어, 호출부가 그 id 를 넘기면 그대로 키가 된다.
+ *   id 부재 시에만 레거시 `textId#c<index>` 로 폴백(index, 없으면 순번) — 위치 파생은 문항 추가·
+ *   재배열에 취약하므로 안정 id 가 우선이다. pattern 문항 키는 문형 문자열을 유지한다(문형 단위 집계).
  * @param {string} textId - 글/드릴 id (detail.text_id 로 실림)
- * @param {Array<{itemKey: string, qtype: 'pattern'|'content', firstOk: boolean, tries: number, index?: number}>} results
+ * @param {Array<{itemKey: string, qtype: 'pattern'|'content', firstOk: boolean, tries: number, index?: number, id?: string}>} results
  * @returns {Array} logReviewEvents 에 그대로 넘길 수 있는 이벤트 배열
  */
 export function buildReadingEvents(textId, results) {
@@ -111,9 +133,9 @@ export function buildReadingEvents(textId, results) {
   for (let i = 0; i < list.length; i++) {
     const r = list[i];
     if (!r || !(r.tries > 0)) continue; // 미응답 → 발행 자체를 생략
-    // content 는 호출부가 넘긴 문항 위치(index, 없으면 순번)로 글별 고유 키를 만든다.
+    // content 는 안정 문항 id(q.id)를 우선 사용, 없으면 위치 파생 키로 폴백(P3-11).
     const itemKey = r.qtype === 'content'
-      ? `${textId}#c${r.index != null ? r.index : i}`
+      ? (r.id || `${textId}#c${r.index != null ? r.index : i}`)
       : r.itemKey;
     if (!itemKey) continue; // pattern 인데 itemKey 없음 → 방어적으로 생략
     out.push({
@@ -239,25 +261,44 @@ function writeSetToKey(key, set) {
 }
 
 /**
- * 레거시 무스코프 키(`ja_reading_texts`) → 게스트 키로 1회 이관 후 삭제(하위 호환).
- * 스코프 도입 전 저장분을 잃지 않으면서, 이후 로직은 스코프 키만 보게 만든다.
+ * 레거시 무스코프 키(`ja_reading_texts`) → **격리 키**(`:legacy`)로 1회 이관 후 삭제(P2-9).
+ * 소유자 불명 데이터라 게스트 키가 아니라 격리 키에 가둔다(legacyReadingKey 주석 참조):
+ * 게스트 화면 표시에만 병합될 뿐, 승계·upsert·백필에는 절대 흘러가지 않는다.
  */
 function migrateLegacyReadingKey() {
   if (typeof window === 'undefined') return;
   try {
     if (localStorage.getItem(READING_KEY) == null) return; // 콜론 없는 정확한 레거시 키
     const legacy = readSetFromKey(READING_KEY);
-    const gk = guestReadingKey();
-    writeSetToKey(gk, new Set([...readSetFromKey(gk), ...legacy]));
+    const lk = legacyReadingKey();
+    writeSetToKey(lk, new Set([...readSetFromKey(lk), ...legacy]));
     localStorage.removeItem(READING_KEY);
   } catch {}
 }
 
-/** 사용자 스코프 통과 Set 로드 — userId 없으면 게스트. 로드 시 레거시 키를 먼저 흡수한다 */
-export function loadPassedTexts(userId) {
+/**
+ * **저장 대상** 순수 스코프 집합(격리 레거시 제외) — write 경로 전용.
+ * loadPassedTexts 가 게스트에 병합하는 레거시 격리분은 여기 포함하지 않는다: 그대로 persist 하면
+ * 소유자 불명 진도가 게스트 키로 새어 승계 대상이 돼 P2-9 를 위반한다.
+ */
+function readScopedSet(userId) {
   if (typeof window === 'undefined') return new Set();
   migrateLegacyReadingKey();
   return readSetFromKey(scopedReadingKey(userId));
+}
+
+/**
+ * 사용자 스코프 통과 Set 로드(**화면 표시용**) — userId 없으면 게스트.
+ * 게스트일 때만 레거시 격리분을 읽기 병합해 진도 표시에 반영한다(P2-9 — 승계·저장엔 미포함).
+ */
+export function loadPassedTexts(userId) {
+  if (typeof window === 'undefined') return new Set();
+  const set = readScopedSet(userId);
+  if (!userId) {
+    // 게스트 화면에만 소유자 불명 레거시 격리분을 병합(진도 표시 용도). 저장·승계 대상 아님.
+    for (const id of readSetFromKey(legacyReadingKey())) set.add(id);
+  }
+  return set;
 }
 
 /** 사용자 스코프 통과 Set 저장 — userId 없으면 게스트 키 */
@@ -265,24 +306,37 @@ export function persistPassedTexts(set, userId) {
   writeSetToKey(scopedReadingKey(userId), set);
 }
 
-/** 통과 시 로컬 Set 갱신 후 반환(호출부가 상태 재설정). userId 없으면 게스트 스코프 */
+/**
+ * 통과 시 로컬 Set 갱신 후 **표시용 집합** 반환(호출부가 상태 재설정). userId 없으면 게스트 스코프.
+ * 저장은 순수 스코프 집합(readScopedSet)에만 하고, 반환은 게스트면 레거시 병합분을 포함한다.
+ */
 export function markReadingPassedLocal(id, userId) {
-  const set = loadPassedTexts(userId);
+  if (typeof window === 'undefined') return new Set([id]);
+  const set = readScopedSet(userId); // 격리 레거시 제외 — 저장 대상은 순수 스코프뿐
   set.add(id);
   persistPassedTexts(set, userId);
-  return set;
+  return loadPassedTexts(userId); // 표시용(게스트면 레거시 병합)
 }
 
-/** 통과 시 서버 반영 — user_ref_progress rt: slug 에 read:true upsert. 실패는 조용히 무시 */
-export function markReadingPassedRemote(userId, id) {
-  if (!userId || !id) return;
-  supabase
-    .from('user_ref_progress')
-    .upsert(
-      { user_id: userId, lang: READING_LANG, slug: readingSlug(id), read: true, updated_at: new Date().toISOString() },
-      { onConflict: 'user_id,lang,slug' }
-    )
-    .then(() => {}, () => {});
+/**
+ * 통과 시 서버 반영 — user_ref_progress rt: slug 에 read:true upsert.
+ * supabase `{error}` 를 확인해 **성공/실패(boolean)를 반환**한다(P2-8): 호출부(handlePass·recordPass)가
+ * 실패 시 재시도 UI 를 띄우고 push 부터 다시 시도할 수 있게. userId/id 누락은 false.
+ * @returns {Promise<boolean>} upsert 성공 여부
+ */
+export async function markReadingPassedRemote(userId, id) {
+  if (!userId || !id) return false;
+  try {
+    const { error } = await supabase
+      .from('user_ref_progress')
+      .upsert(
+        { user_id: userId, lang: READING_LANG, slug: readingSlug(id), read: true, updated_at: new Date().toISOString() },
+        { onConflict: 'user_id,lang,slug' }
+      );
+    return !error;
+  } catch {
+    return false;
+  }
 }
 
 /**

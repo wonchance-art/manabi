@@ -4,11 +4,12 @@
  * 배경: 순차 잠금은 클라이언트 UX 경계일 뿐이라, 트랙 전체를 props 로 내리면
  * 잠긴 글의 questions(answer·why = 정답표)까지 RSC 응답에 통째로 실린다.
  * 그래서 문항 포함 범위를 **서버가 아는 통과 집합** 기준으로 자른다:
- *   포함 = 통과 노드 전부 + 잠금 체인상 다음 열린 노드 1개
- *        + (열린 노드가 글이면) 같은 위치(afterOrder)의 드릴
- * 드릴 선포함 근거: 글 통과 직후 그 위치의 드릴이 즉시 열리는데, 그 시점의
- * 서버 재조회(router.refresh)는 통과 upsert 와 경합할 수 있다 — 한 걸음만
- * 미리 내려 두면 통과→드릴 진입이 왕복 없이 이어진다(그다음 글부터는 재조회).
+ *   포함 = 통과 노드 전부 + 잠금 체인상 다음 열린 노드 1개(그뿐)
+ * 즉 nodeStates 의 passed·open 노드만 — 어떤 노드도 **선전송하지 않는다**(P2-6).
+ * (이전엔 열린 글 다음 드릴을 한 걸음 미리 내렸으나, 그 선전송이 2번째 드릴 정답표를
+ *  조기 노출하거나 통과 체인 직렬화와 어긋났다. 이제 통과→원격 upsert 확인→pull→
+ *  router.refresh 가 성공한 뒤에야 다음 노드가 open 이 되어 문항이 존재한다 — handlePass
+ *  가 그 순서를 보장하므로 왕복이 정합적으로 직렬화된다.)
  *
  * 잠긴 노드는 questions/items 를 빈 배열로 스트립하고 stripped 표식을 남긴다
  * (클라이언트가 "문항 미수신"과 "원래 빈 문항"을 구분해 회복 UI 를 띄우는 근거).
@@ -23,7 +24,9 @@ import { buildNodes, nodeStates, drillId } from './readingProgress';
 
 /**
  * 문항(questions/items)을 포함해도 되는 노드 id 집합(순수).
- * 게스트(빈 통과 집합)는 order 1 글(+그 위치의 드릴)만 열린다.
+ * 순수하게 nodeStates 의 **passed·open 노드만** — 선전송 없음(P2-6). 게스트(빈 통과 집합)는
+ * order 1 글 하나만 열린다(그 위치 드릴조차 글1 통과 전엔 잠금). 다음 노드는 통과→서버 반영→
+ * 재조회 뒤에야 open 이 되어 문항이 존재한다(handlePass 가 순서를 직렬화).
  * @param {object} track - 원본 트랙(getReadingTrack 결과)
  * @param {Iterable<string>} passedIds - 서버가 아는 통과 글/드릴 id 집합
  * @returns {Set<string>}
@@ -31,18 +34,8 @@ import { buildNodes, nodeStates, drillId } from './readingProgress';
 export function questionOpenIds(track, passedIds) {
   const stated = nodeStates(buildNodes(track), passedIds);
   const open = new Set();
-  let openTextIdx = -1;
-  for (let i = 0; i < stated.length; i++) {
-    const n = stated[i];
+  for (const n of stated) {
     if (n.status === 'passed' || n.status === 'open') open.add(n.id);
-    if (n.status === 'open' && n.kind === 'text') openTextIdx = i;
-  }
-  // 열린 글 **바로 다음** 노드가 드릴이면 그 1개만 선포함 — 글 통과 즉시 열리는 "한 걸음"
-  // (열린 노드가 드릴이면 선포함 없음: 드릴 통과 후엔 어차피 재조회가 돈다). 같은 afterOrder 에
-  // 드릴이 여럿이어도 체인상 다음 1개만 — 2번째 드릴은 1번째 통과 후에야 열린다(P2-6).
-  if (openTextIdx >= 0) {
-    const nextNode = stated[openTextIdx + 1];
-    if (nextNode && nextNode.kind === 'drill') open.add(nextNode.id);
   }
   return open;
 }

@@ -209,12 +209,16 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   }, [storyPhase, storyActive]);
 
   // 통과 기록 — 본편 R3 handlePass와 동일 규약(같은 데이터 공유, 본편 트랙 UI는 존치).
-  const recordPass = (events) => {
+  // async 로 원격 upsert 성공을 확인하고 반환한다: AirportQuiz.savePass 가 await 해서 성공 후에만
+  // 통과 화면·출구를 열고, 실패(reject)면 재시도 UI 를 띄운다(P2-7·P2-8).
+  const recordPass = async (events) => {
     // userId를 넘겨 사용자 스코프 키에 기록 — 게스트 키에 남기면 로그아웃→타 계정 로그인 시
-    // 승계 루프가 진도를 복제한다(Codex P2-7 잔여 지점).
+    // 승계 루프가 진도를 복제한다(Codex P2-7). 계정 전환은 WorldPage 가 GameCanvas 를 userId 로
+    // key remount 해 진행 중 AirportQuiz 를 통째로 폐기하므로, 이 recordPass 의 userId 는 항상 현재 계정이다.
     markReadingPassedLocal(READING_TEXT_ID, userId);
     if (userId) {
-      markReadingPassedRemote(userId, READING_TEXT_ID);
+      const ok = await markReadingPassedRemote(userId, READING_TEXT_ID);
+      if (!ok) throw new Error('reading pass upsert failed'); // {error} → savePass 재시도(재-push)
       logReviewEvents(userId, events); // AirportQuiz→buildReadingEvents 산출물 — lang:'Japanese', source:'reading'
       enqueueGrammarReview(userId, READING_LANG, readingSlug(READING_TEXT_ID));
     }

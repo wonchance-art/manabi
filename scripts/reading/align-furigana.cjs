@@ -103,4 +103,17 @@ function extractReadings(ja, yomi) {
   };
 }
 
-module.exports = { alignFurigana, extractReadings, kataToHira };
+/**
+ * 문장 단위 요미 락(YLOCK)용 정규화 — build-yomi-lock와 check-reading의 YLOCK 게이트가 공유한다.
+ * 규칙(P1-1·P1-2·P2-5): 카타카나→히라가나 + 공백(반각·전각)·구두점 제거. 장음부(ー)와 한자·한글은 보존한다.
+ *   - 한자 보존: ja는 표면형(한자 포함) 그대로가 문장의 정체성 키가 된다.
+ *   - 한글 보존: KO_MIXED(요미에 한글 섞임)를 게이트가 검출할 수 있도록 남긴다.
+ *   - 두 스크립트가 반드시 같은 정규화를 써야 락 키가 어긋나지 않는다 → 여기 한 곳에 고정.
+ */
+function normLock(s) {
+  return kataToHira(String(s || ''))
+    .replace(/[\s　]/g, '')
+    .replace(/[。．、，！？!?｡､「」『』（）()〔〕【】・…‥〜~]/g, '');
+}
+
+module.exports = { alignFurigana, extractReadings, kataToHira, normLock };
