@@ -17,6 +17,144 @@ const LANGS = {
 };
 const root = new URL('../src/content/', import.meta.url);
 
+// ── 스토리 섹션(story) 검증 헬퍼 ──
+// grammar 챕터의 story.body {ja,yomi} 대사도 examples와 동일하게 후리가나 정렬을 검사하고,
+// story.questions(order/fill/produce)의 필수 필드를 게이트한다.
+// 후리가나 정렬은 scripts/check-furigana.mjs의 alignFurigana와 동일 로직(그 스크립트는 examples만
+// 순회하므로 story.body는 이 파일에서 동일 규약으로 직접 검사한다).
+const FILL_BLANK = '［　］';
+const isKanjiLike = ch => /[一-鿿々〆ヶ0-9０-９]/.test(ch);
+const kataToHira = s => s.replace(/[ァ-ヶ]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60));
+const FURI_PUNCT = '。、・！？!?,. 　「」『』();（）:〜';
+const isKanaCh = c => (c >= 'ぁ' && c <= 'ゖ') || c === 'ー';
+const RT_BAD_START = 'んっーゃゅょぁぃぅぇぉゎ';
+const UO_VOWEL = 'うくすつぬふむゆるぐずづぶぷぅゅょおこそとのほもよろをごぞどぼぽぉ';
+const SMALL_KANA = 'ぁぃぅぇぉゃゅょゎっー';
+const moraLen = rt => rt.reduce((n, c) => n + (SMALL_KANA.includes(c) ? 0 : 1), 0);
+function alignFurigana(ja, yomiRaw) {
+  if (!ja || !yomiRaw) return null;
+  if (/[가-힣]/.test(yomiRaw)) return 'KO_MIXED';
+  if (![...ja].some(isKanjiLike)) return 'NO_KANJI';
+  const yomi = [...kataToHira(yomiRaw.replace(/[\s　]+/g, ''))];
+  const segs = [];
+  for (const ch of ja) {
+    const t = isKanjiLike(ch) ? 'k' : 'p';
+    if (segs.length && segs[segs.length - 1].t === t) segs[segs.length - 1].s += ch;
+    else segs.push({ t, s: ch });
+  }
+  const N = yomi.length;
+  const memo = new Map();
+  function solve(si, yi, afterRt) {
+    if (si === segs.length) {
+      let j = yi;
+      while (j < N && FURI_PUNCT.includes(yomi[j])) j++;
+      return j === N ? { cost: 0, parts: [] } : null;
+    }
+    const key = (si * 4096 + yi) * 2 + (afterRt ? 1 : 0);
+    if (memo.has(key)) return memo.get(key);
+    const seg = segs[si];
+    let best = null;
+    if (seg.t === 'p') {
+      const norm = kataToHira(seg.s.replace(/[\s　]+/g, ''));
+      let j = yi, ok = true;
+      for (const c of norm) {
+        while (j < N && yomi[j] !== c && FURI_PUNCT.includes(yomi[j])) j++;
+        if (j < N && yomi[j] === c) j++;
+        else if (FURI_PUNCT.includes(c)) continue;
+        else { ok = false; break; }
+      }
+      if (ok) {
+        const rest = solve(si + 1, j, j === yi ? afterRt : false);
+        if (rest) best = { cost: rest.cost, parts: [{ text: seg.s }, ...rest.parts] };
+      }
+    } else {
+      let nextFirst = null;
+      if (segs[si + 1]) {
+        const nn = kataToHira(segs[si + 1].s.replace(/[\s　]+/g, ''));
+        nextFirst = [...nn].find(c => !FURI_PUNCT.includes(c)) || null;
+      }
+      for (let end = N; end > yi; end--) {
+        const rt = yomi.slice(yi, end);
+        if (!rt.every(isKanaCh)) continue;
+        if (RT_BAD_START.includes(rt[0])) continue;
+        if (rt[0] === 'う' && afterRt && yi > 0 && UO_VOWEL.includes(yomi[yi - 1])) continue;
+        const rest = solve(si + 1, end, true);
+        if (!rest) continue;
+        const d = moraLen(rt) - seg.s.length;
+        const cost = rest.cost + 8 * d * d + (nextFirst && rt.includes(nextFirst) ? 1 : 0);
+        if (!best || cost < best.cost)
+          best = { cost, parts: [{ text: seg.s, rt: rt.join('') }, ...rest.parts] };
+      }
+    }
+    memo.set(key, best);
+    return best;
+  }
+  const r = solve(0, 0, false);
+  return r ? r.parts : null;
+}
+
+const nonEmptyStr = x => typeof x === 'string' && x.trim().length > 0;
+const STORY_Q_TYPES = new Set(['order', 'fill', 'produce']);
+function multisetEqual(a, b) {
+  if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
+  const count = new Map();
+  for (const x of a) count.set(x, (count.get(x) || 0) + 1);
+  for (const x of b) { const c = count.get(x) || 0; if (c <= 0) return false; count.set(x, c - 1); }
+  return true;
+}
+/** grammar 챕터의 story 섹션 검증 — body 후리가나 + 문항 스키마. errors 배열에 push. */
+function checkStorySection(sec, chSlug, errors) {
+  const st = sec.story;
+  // ── body: 대사(ja) 줄은 yomi 필수 + 후리가나 정렬 ──
+  (st.body || []).forEach((b, i) => {
+    if (b.ja == null && b.narr == null)
+      errors.push(`[story ${chSlug}] body[${i}]: ja·narr 둘 다 없음`);
+    if (b.ja == null) return; // 내레이션 문단
+    if (!nonEmptyStr(b.yomi)) { errors.push(`[story ${chSlug}] body[${i}] yomi 누락: ${b.ja}`); return; }
+    if (!nonEmptyStr(b.ko)) errors.push(`[story ${chSlug}] body[${i}] ko 누락: ${b.ja}`);
+    if (alignFurigana(b.ja, b.yomi) === null)
+      errors.push(`[furigana-story] ${chSlug} body[${i}] 요미 정렬 실패:\n    ja:   ${b.ja}\n    yomi: ${b.yomi}`);
+  });
+  // ── questions: order/fill/produce 필수 필드 ──
+  const ids = new Set();
+  const idRe = new RegExp(`^${chSlug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}-sq\\d+$`);
+  for (const q of (st.questions || [])) {
+    const id = q.id || '(id 없음)';
+    if (!nonEmptyStr(q.id)) errors.push(`[story ${chSlug}] 문항 id 누락`);
+    else {
+      if (!idRe.test(q.id)) errors.push(`[story ${chSlug}] 문항 id 형식 위반(<slug>-sqN): ${q.id}`);
+      if (ids.has(q.id)) errors.push(`[story ${chSlug}] 문항 id 중복: ${q.id}`);
+      ids.add(q.id);
+    }
+    if (!STORY_Q_TYPES.has(q.type)) { errors.push(`[story ${chSlug}] 문항 type 위반(order/fill/produce): ${q.type} (${id})`); continue; }
+    if (q.type === 'order') {
+      if (!nonEmptyStr(q.q)) errors.push(`[story ${chSlug}] order q 누락: ${id}`);
+      if (!nonEmptyStr(q.pattern)) errors.push(`[story ${chSlug}] order pattern 누락: ${id}`);
+      const tiles = Array.isArray(q.tiles) ? q.tiles : [];
+      const answer = Array.isArray(q.answer) ? q.answer : [];
+      if (!tiles.length || !tiles.every(nonEmptyStr)) errors.push(`[story ${chSlug}] order tiles가 비어있거나 비문자열/빈 원소: ${id}`);
+      if (!answer.length || !answer.every(nonEmptyStr)) errors.push(`[story ${chSlug}] order answer가 비어있거나 비문자열/빈 원소: ${id}`);
+      else if (tiles.every(nonEmptyStr) && !multisetEqual(tiles, answer)) errors.push(`[story ${chSlug}] order answer가 tiles의 순열 아님: ${id}`);
+      if (!nonEmptyStr(q.ko)) errors.push(`[story ${chSlug}] order ko 누락: ${id}`);
+      if (!nonEmptyStr(q.why)) errors.push(`[story ${chSlug}] order why 누락: ${id}`);
+    } else if (q.type === 'fill') {
+      if (!nonEmptyStr(q.q)) errors.push(`[story ${chSlug}] fill q 누락: ${id}`);
+      if (!nonEmptyStr(q.pattern)) errors.push(`[story ${chSlug}] fill pattern 누락: ${id}`);
+      const blanks = (String(q.ja || '').match(/［　］/g) || []).length;
+      if (blanks !== 1) errors.push(`[story ${chSlug}] fill ja에 빈칸 ${FILL_BLANK} ${blanks}개(≠1): ${id}`);
+      if (!nonEmptyStr(q.answer)) errors.push(`[story ${chSlug}] fill answer 누락: ${id}`);
+      if (q.accept !== undefined && (!Array.isArray(q.accept) || !q.accept.every(nonEmptyStr)))
+        errors.push(`[story ${chSlug}] fill accept가 배열이 아니거나 비문자열/빈 원소: ${id}`);
+      if (!nonEmptyStr(q.why)) errors.push(`[story ${chSlug}] fill why 누락: ${id}`);
+    } else if (q.type === 'produce') {
+      if (!nonEmptyStr(q.prompt)) errors.push(`[story ${chSlug}] produce prompt 누락: ${id}`);
+      if (!Array.isArray(q.model) || q.model.length < 1 || !q.model.every(nonEmptyStr))
+        errors.push(`[story ${chSlug}] produce model이 비어있거나(≥1 필요) 비문자열/빈 원소: ${id}`);
+      if (!nonEmptyStr(q.guide)) errors.push(`[story ${chSlug}] produce guide 누락: ${id}`);
+    }
+  }
+}
+
 const errors = [];
 const warns = [];
 
@@ -34,6 +172,8 @@ for (const [lang, cfg] of Object.entries(LANGS)) {
       if (noKo > 0) errors.push(`[${lang}/${lv}] ${ch.slug}: patternKo 없는 패턴 ${noKo}개`);
       if (own < 2) warns.push(`[${lang}/${lv}] ${ch.slug}: 퀴즈 표현 문항 부족 (${own})`);
       if (exs < 4) warns.push(`[${lang}/${lv}] ${ch.slug}: 예문 부족 (${exs})`);
+      // ── 스토리 섹션(story) — body 후리가나 + 문항 스키마 게이트 ──
+      for (const sec of (ch.sections || [])) if (sec.story) checkStorySection(sec, ch.slug, errors);
     }
   }
   // ── 문형 사전: ch 유효성 + 필수 필드 ──

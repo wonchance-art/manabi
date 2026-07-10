@@ -7,6 +7,9 @@ import RefSpeak from '../components/RefSpeak';
 import RefPatternCheck from '../components/RefPatternCheck';
 import GojuonChart from '../components/GojuonChart';
 import KanaTest from '../components/KanaTest';
+// 스토리 모듈(이야기로 확인) — 인터랙티브 채점은 클라이언트 경계로 분리(서버 페이지가 레지스트리를
+// 클라이언트 번들로 끌어오지 않도록). story 는 순수 직렬화 데이터라 props 로 그대로 넘긴다.
+import StoryCheck from './StoryCheck';
 
 function ExampleList({ examples, langCode, lang }) {
   if (!examples?.length) return null;
@@ -197,6 +200,11 @@ export default function ReferenceChapterPage({ lang, slug }) {
               <div className="fr-pattern__text">{refInline(sec.pattern)}</div>
               {sec.patternKo && <div className="fr-pattern__ko">{sec.patternKo}</div>}
             </div>
+          )}
+
+          {/* 스토리 모듈(이야기로 확인) — 내레이션·대사 + 인터랙티브 문항 */}
+          {sec.story && (
+            <StoryCheck story={sec.story} slug={chapter.slug} lang={lang} langCode={ref.langCode} meta={meta} />
           )}
 
           <SectionTable table={sec.table} />

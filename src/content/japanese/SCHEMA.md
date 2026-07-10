@@ -33,6 +33,35 @@
 }
 ```
 
+### 스토리 섹션 (`story`) — 챕터 안의 '이야기로 확인' 모듈
+
+오너 방향(2026-07): 챕터 설명은 문형 사전으로 이관하고, 챕터는 **이야기(독해)** 중심으로 전개한다.
+기존 `sections` 배열에 예문·표 대신 `story` 하나를 실은 섹션을 끼워 넣는다(같은 렌더 루프가 분기).
+
+```js
+{
+  heading: '이야기로 확인 — 처음 뵙겠습니다',   // 다른 섹션과 동일
+  story: {
+    body: [
+      { narr: '한국어 내레이션 — 장면·맥락 설명' },       // ja 없음: 이야기 문단
+      { ja: '…', yomi: '…', ko: '…' },                  // 일본어 대사 (examples와 동일 필드, yomi 필수)
+      // …
+    ],
+    questions: [ /* order · fill · produce — 독해 트랙(reading/n5_tokyo.js)과 동일 계약 */ ],
+  },
+}
+```
+
+- **body**: 내레이션(`narr`)이 장면을 열고, 일본어는 **대화만**(짧은 회화체 — じゃありません을 では~보다 우선). `narr` 2~3개 · 대사 6~10줄. 대사의 `yomi`는 필수이며 grammar `examples`의 yomi 표기 관행(띄어쓰기·후리가나 정렬)을 그대로 따른다.
+- **questions**(문항 계약 — reading 트랙 글 1·2 형식 동일):
+  - `{ id, type:'order', pattern, q, tiles:[], answer:[], ko, why }` — 타일 조립. `answer`는 `tiles`의 순열.
+  - `{ id, type:'fill', pattern, q, ja(빈칸 ［　］ 1개), answer, accept:[], why }` — 타이핑(accept 관용).
+  - `{ id, type:'produce', prompt, model:[], guide }` — 자유 산출(채점 없음).
+  - `id`는 `<slug>-sqN` 형식으로 안정적으로. 발문(`q`)은 **산출 우선** — "본문에서 ~한 문장은?" 같은 회상형 금지.
+  - 문항은 그 챕터에서 배운 것만 사용한다(order 1 챕터라면 です·じゃありません·ですか + 초급 인사·명사).
+- 렌더러(`ReferenceChapterPage.jsx`)는 `section.story`를 분기해 내레이션+대사(요미 토글·ko 병기)와 인터랙티브 문항(`ReadingTextView.jsx`의 채점 헬퍼 재사용)을 그린다. 채점 이벤트·SRS 발행은 하지 않는다(로컬 확인용).
+- 검증: `scripts/check-content.mjs`가 story `body`의 `{ja,yomi}` 후리가나 정렬과 문항 스키마(order/fill/produce 필수 필드)를 게이트한다.
+
 - 한국어 화자의 **최대 자산 = 어순 동일 + 조사 1:1 대응 + 한자어 공유**. `vsKo`/`hanja`로 적극 연결하되 챕터당 1~2개.
 - 반대로 **어긋나는 지점**(수수동사, 피해수동, たら/ば/と/なら, 박자 발음)은 `pitfall`로 정면 처리.
 - N5 초반 챕터(문자·발음·한자 읽기)는 프랑스어 A0처럼 '본격 학습 전 기초 상식' 역할.
