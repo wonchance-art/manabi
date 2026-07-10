@@ -157,6 +157,11 @@ export default function WorldPage() {
   const [micBusy, setMicBusy] = useState(false);
   const [nearVoiceCount, setNearVoiceCount] = useState(0);
 
+  // ── 동일 계정 중복 접속 상태 ──
+  // net.onStatus('duplicate') — 다른 기기/탭에서 이미 접속 중이라 이 세션은 멀티를 포기했다.
+  // 월드 진입 자체는 막지 않는다(솔로는 계속 가능) — 안내 배너 + 재시도만 노출.
+  const [worldDuplicate, setWorldDuplicate] = useState(false);
+
   // GBC 셸 → GameCanvas 입력 주입 핸들. GameCanvas가 마운트 시 { press,release,interact,cancel }를 채운다.
   const controlsRef = useRef(null);
   const press = useCallback((d) => controlsRef.current?.press(d), []);
@@ -169,6 +174,7 @@ export default function WorldPage() {
 
   // 네트워크·음성 인스턴스(마운트 1회 생성) — 이벤트 핸들러가 참조.
   const voiceRef = useRef(null);
+  const netRef = useRef(null); // 중복 접속 배너의 "다시 시도" 버튼이 net.join()을 재호출하는 데 씀.
   // 펫 파생의 원천 입력(totalCorrect·todayCorrect·sessionsToday) — 인게임 리뷰 완료 시 낙관 성장에 쓴다.
   const petInputsRef = useRef({ totalCorrect: 0, todayCorrect: 0, sessionsToday: 0 });
 
@@ -245,12 +251,17 @@ export default function WorldPage() {
 
     const { name, pet: petEmoji } = identityRef.current;
     const net = createWorldNet({ userId, name, pet: petEmoji });
+    netRef.current = net;
     const voice = createVoiceMesh({
       selfId: userId,
       sendSignal: net.sendSignal,
       onSignal: net.onSignal,
     });
     voiceRef.current = voice;
+
+    // 같은 계정의 다른 세션이 이미 접속 중이면 net이 스스로 멀티를 포기(솔로 유지)하고
+    // 'duplicate'를 알려온다 — 배너로 안내하고, 그 외 상태(connected 등)에서는 배너를 접는다.
+    net.onStatus((s) => { if (!cancelled) setWorldDuplicate(s === 'duplicate'); });
 
     // net이 준 원격 목록(Map<id,{x,y,dir,name,pet,at}>)의 최신본 — stale 정리용.
     let latestPeers = new Map();
@@ -308,11 +319,19 @@ export default function WorldPage() {
       net.leave();
       voice.destroy();
       voiceRef.current = null;
+      netRef.current = null;
       setMicOn(false);
       setNearVoiceCount(0);
+      setWorldDuplicate(false);
       bus.emit('peers:update', new Map()); // 남은 원격 캐릭터 정리
     };
   }, [userId]);
+
+  // 중복 접속 배너의 "다시 시도" — net이 스스로 중복 판정을 다시 받도록 join()을 재호출한다.
+  // (leave() 는 호출하지 않음 — leave 후엔 이 net 인스턴스가 영구히 재사용 불가해진다.)
+  const retryWorldNet = useCallback(() => {
+    netRef.current?.join().catch(() => {});
+  }, []);
 
   // 언마운트/페이지 이탈 시 확실히 정리 — pagehide는 모바일 백그라운드 전환도 포함.
   useEffect(() => {
@@ -392,6 +411,25 @@ export default function WorldPage() {
           {micOn && nearVoiceCount > 0 && <span> · 🎤 {nearVoiceCount}</span>}
         </div>
       </div>
+
+      {/* ── 중복 접속 안내 (멀티만 차단 — 월드 진입은 그대로, 솔로로 계속) ── */}
+      {worldDuplicate && (
+        <div
+          role="alert"
+          style={{
+            width: '100%', maxWidth: 540, display: 'flex', alignItems: 'center', gap: 10,
+            flexWrap: 'wrap', background: GBC.cream, color: GBC.ink, fontFamily: GBC.font,
+            border: `3px solid ${GBC.border}`, borderRadius: 2, padding: '10px 12px',
+            boxShadow: `inset 0 0 0 2px ${GBC.creamHi}, ${GBC.shadow}`,
+          }}
+        >
+          <span style={{ fontSize: '1.1rem', lineHeight: 1 }}>⚠️</span>
+          <span style={{ flex: 1, fontSize: '0.78rem', lineHeight: 1.4 }}>
+            다른 기기/탭에서 이미 접속 중이에요 — 그쪽을 닫고 다시 시도해 주세요.
+          </span>
+          <Button size="sm" variant="secondary" onClick={retryWorldNet}>다시 시도</Button>
+        </div>
+      )}
 
       {/* ── GBC 휴대기 셸 ── (라운드 바디 + 베젤/화면 + 십자키·A/B·START/SELECT·스피커 그릴) */}
       <div style={{

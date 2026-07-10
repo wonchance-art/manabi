@@ -301,4 +301,195 @@ describe('영종도 — 본토와 비연결, 영종대교로만 도달', () => {
     const seen = reachable(g);
     expect(seen[POI.SEOUL.y * MAP_W + POI.SEOUL.x]).toBe(0);
   });
+
+  it('영종대교 BRIDGE 타일이 잔존한다(수도권 오버레이에 지워지지 않음)', () => {
+    let n = 0; for (let i = 0; i < grid.length; i++) if (grid[i] === TERRAIN.BRIDGE) n++;
+    expect(n).toBeGreaterThan(0);
+    // 다리는 인천공항(영종도) 인근 바다 위에 놓인다.
+    let nearIncheon = false;
+    for (let i = 0; i < grid.length; i++) {
+      if (grid[i] !== TERRAIN.BRIDGE) continue;
+      const x = i % MAP_W, y = (i / MAP_W) | 0;
+      if (Math.abs(x - POI.INCHEON.x) <= 8 && Math.abs(y - POI.INCHEON.y) <= 8) nearIncheon = true;
+    }
+    expect(nearIncheon).toBe(true);
+  });
+});
+
+// 🚧 국경 도달성 — 진짜 게이트. 펜스 연속성만으론 양끝 우회를 못 잡으므로,
+// 통행 규칙(isBlocked: sea·fence 차단)으로 서울에서 BFS 해 북측 도시 도달 불가를 직접 확인한다.
+describe('국경 도달성 (서울 BFS → 개성·평양 도달 불가)', () => {
+  const grid = decodeMap();
+  // isBlocked 규칙으로 서울에서 4-연결 도달 가능 집합.
+  const reachFromSeoul = (g) => {
+    const seen = new Uint8Array(g.length);
+    const start = POI.SEOUL.y * MAP_W + POI.SEOUL.x;
+    const stack = [start]; seen[start] = 1;
+    while (stack.length) {
+      const idx = stack.pop();
+      const x = idx % MAP_W, y = (idx / MAP_W) | 0;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= MAP_W || ny >= MAP_H) continue;
+        const ni = ny * MAP_W + nx;
+        if (!seen[ni] && !isBlocked(g[ni])) { seen[ni] = 1; stack.push(ni); }
+      }
+    }
+    return seen;
+  };
+  const KAESONG = project(126.55, 37.97);   // 개성
+  const PYONGYANG = project(125.75, 39.03);  // 평양
+
+  it('서울에서 개성·평양에 도달할 수 없다(철조망이 반도를 완전 봉인)', () => {
+    const seen = reachFromSeoul(grid);
+    expect(seen[KAESONG.y * MAP_W + KAESONG.x]).toBe(0);
+    expect(seen[PYONGYANG.y * MAP_W + PYONGYANG.x]).toBe(0);
+  });
+
+  it('서울 도달 영역의 최북단이 철조망 남쪽에 머문다', () => {
+    const seen = reachFromSeoul(grid);
+    // 철조망 최북단 행.
+    let fenceMinY = MAP_H;
+    for (let i = 0; i < grid.length; i++) if (grid[i] === TERRAIN.FENCE) { const y = (i / MAP_W) | 0; if (y < fenceMinY) fenceMinY = y; }
+    let reachMinY = MAP_H;
+    for (let i = 0; i < grid.length; i++) if (seen[i]) { const y = (i / MAP_W) | 0; if (y < reachMinY) reachMinY = y; }
+    // 도달 최북단은 철조망 최북단보다 남쪽(값이 큼)이어야 한다 — 북측으로 새지 않음.
+    expect(reachMinY).toBeGreaterThan(fenceMinY);
+  });
+
+  it('철조망 양끝이 실제 바다에 앵커된다(양끝 sea 인접) + 단일 4-연결 성분', () => {
+    const fs = [];
+    for (let i = 0; i < grid.length; i++) if (grid[i] === TERRAIN.FENCE) fs.push(i);
+    let minx = MAP_W, maxx = -1;
+    for (const i of fs) { const x = i % MAP_W; if (x < minx) minx = x; if (x > maxx) maxx = x; }
+    const seaAdj = (idx) => {
+      const x = idx % MAP_W, y = (idx / MAP_W) | 0;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= MAP_W || ny >= MAP_H) return true; // 맵 밖 = 바다
+        if (grid[ny * MAP_W + nx] === TERRAIN.SEA) return true;
+      }
+      return false;
+    };
+    const westEnd = fs.filter((i) => i % MAP_W === minx).some(seaAdj);
+    const eastEnd = fs.filter((i) => i % MAP_W === maxx).some(seaAdj);
+    expect(westEnd).toBe(true);
+    expect(eastEnd).toBe(true);
+    // 단일 4-연결 성분(구멍 없음).
+    const set = new Set(fs);
+    const seen = new Set([fs[0]]); const stack = [fs[0]];
+    while (stack.length) {
+      const idx = stack.pop(); const x = idx % MAP_W, y = (idx / MAP_W) | 0;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const ni = (y + dy) * MAP_W + (x + dx);
+        if (set.has(ni) && !seen.has(ni)) { seen.add(ni); stack.push(ni); }
+      }
+    }
+    expect(seen.size).toBe(fs.length);
+  });
+});
+
+// 🏙️ 수도권 스폰 광장 "land 강제" 계약 — GameCanvas 런타임 오버레이가 지켜야 할 불변식.
+// 광장 보장은 SEA 타일에만 적용해야 한다. RIVER·LAKE·FENCE·BRIDGE 를 LAND 로 덮으면
+// 한강이 사라지고(#1) 영종대교가 지워지며(#1) 철조망에 구멍이 뚫려 국경이 뚫린다(#2).
+describe('수도권 광장 land 강제 계약 (SEA 타일에만)', () => {
+  const grid = decodeMap();
+  // GameCanvas 와 동일한 광장 사각형 경계(PLAZA_R=5).
+  const PLAZA_R = 5;
+  const px0 = Math.min(POI.INCHEON.x, POI.SEOUL.x) - 1;
+  const px1 = POI.SEOUL.x + PLAZA_R + 1;
+  const py0 = POI.SEOUL.y - PLAZA_R - 1;
+  const py1 = POI.SEOUL.y + PLAZA_R + 1;
+  const inRect = (x, y) => x >= px0 && x <= px1 && y >= py0 && y <= py1;
+  const countIn = (g, code) => {
+    let n = 0; for (let y = py0; y <= py1; y++) for (let x = px0; x <= px1; x++) if (g[y * MAP_W + x] === code) n++;
+    return n;
+  };
+  const reachNorth = (g) => {
+    const seen = new Uint8Array(g.length);
+    const start = POI.SEOUL.y * MAP_W + POI.SEOUL.x; const stack = [start]; seen[start] = 1;
+    while (stack.length) {
+      const idx = stack.pop(); const x = idx % MAP_W, y = (idx / MAP_W) | 0;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= MAP_W || ny >= MAP_H) continue;
+        const ni = ny * MAP_W + nx;
+        if (!seen[ni] && !isBlocked(g[ni])) { seen[ni] = 1; stack.push(ni); }
+      }
+    }
+    const k = project(126.55, 37.97);
+    return !!seen[k.y * MAP_W + k.x]; // 개성 도달?
+  };
+
+  it('광장 사각형 안에 RIVER·FENCE·BRIDGE 타일이 실재한다(맹목적 land 강제의 피해 대상)', () => {
+    expect(countIn(grid, TERRAIN.RIVER)).toBeGreaterThan(0);
+    expect(countIn(grid, TERRAIN.FENCE)).toBeGreaterThan(0);
+    expect(countIn(grid, TERRAIN.BRIDGE)).toBeGreaterThan(0);
+  });
+
+  it('SEA 타일에만 강제 시: 한강·영종대교 보존 + 국경 봉인 유지', () => {
+    const g = Uint8Array.from(grid);
+    for (let y = py0; y <= py1; y++) for (let x = px0; x <= px1; x++) {
+      const i = y * MAP_W + x; if (g[i] === TERRAIN.SEA) g[i] = TERRAIN.LAND;
+    }
+    expect(countIn(g, TERRAIN.RIVER)).toBe(countIn(grid, TERRAIN.RIVER));    // 한강 보존
+    expect(countIn(g, TERRAIN.BRIDGE)).toBe(countIn(grid, TERRAIN.BRIDGE));  // 영종대교 보존
+    expect(countIn(g, TERRAIN.FENCE)).toBe(countIn(grid, TERRAIN.FENCE));    // 철조망 보존
+    expect(reachNorth(g)).toBe(false);                                       // 개성 도달 불가(봉인)
+  });
+
+  it('맹목적 land 강제(전 타일 → LAND)는 국경을 뚫는다 — 그래서 SEA 한정이 필요', () => {
+    const g = Uint8Array.from(grid);
+    for (let y = py0; y <= py1; y++) for (let x = px0; x <= px1; x++) g[y * MAP_W + x] = TERRAIN.LAND;
+    expect(reachNorth(g)).toBe(true); // 철조망 구멍 → 개성 도달(뚫림) — 회귀 방지 문서화
+  });
+});
+
+// 🌊 전라도 서해안 자연화 — 각진 사각 돌출 스무딩. 실제 섬은 훼손 금지(오너 피드백 #3).
+describe('해안 스무딩 (전북 서해안) — 각진 돌출 제거 + 실섬 보존', () => {
+  const grid = decodeMap();
+  const isLandFam = (x, y) => {
+    const c = grid[y * MAP_W + x];
+    return c === TERRAIN.LAND || c === TERRAIN.MOUNTAIN || c === TERRAIN.PEAK || c === TERRAIN.PLAIN;
+  };
+  const bigLandSea = (x, y) => { // land-family 이웃 아님 = 바다측(수계/펜스 없는 서해안 기준)
+    let n = 0;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nx = x + dx, ny = y + dy;
+      if (nx < 0 || ny < 0 || nx >= MAP_W || ny >= MAP_H || !isLandFam(nx, ny)) n++;
+    }
+    return n;
+  };
+
+  it('실제 섬 보존 — 강화도·영종도·제주·쓰시마는 여전히 육지', () => {
+    for (const [lon, lat] of [[126.44, 37.74], [126.53, 37.49], [126.53, 33.38], [129.30, 34.40]]) {
+      const p = project(lon, lat);
+      expect(isLandFam(p.x, p.y)).toBe(true);
+    }
+  });
+
+  it('전북 서해안 bbox 안 대륙(큰 육지)에 ≥3면이 바다인 고립 돌출(각진 사각)이 남아있지 않다', () => {
+    // land-family 연결요소 크기 라벨링 — 소도서(작은 성분)는 스무딩 보호 대상이므로 제외.
+    const comp = new Int32Array(grid.length).fill(-1); const size = [];
+    for (let y = 0; y < MAP_H; y++) for (let x = 0; x < MAP_W; x++) {
+      const i = y * MAP_W + x;
+      if (!isLandFam(x, y) || comp[i] !== -1) continue;
+      const id = size.length; let cnt = 0; const st = [i]; comp[i] = id;
+      while (st.length) {
+        const idx = st.pop(); cnt++; const cx = idx % MAP_W, cy = (idx / MAP_W) | 0;
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const nx = cx + dx, ny = cy + dy;
+          if (nx < 0 || ny < 0 || nx >= MAP_W || ny >= MAP_H) continue;
+          const ni = ny * MAP_W + nx;
+          if (isLandFam(nx, ny) && comp[ni] === -1) { comp[ni] = id; st.push(ni); }
+        }
+      }
+      size.push(cnt);
+    }
+    let spikes = 0;
+    for (let y = 242; y <= 280; y++) for (let x = 48; x <= 68; x++) {
+      if (isLandFam(x, y) && size[comp[y * MAP_W + x]] >= 300 && bigLandSea(x, y) >= 3) spikes++;
+    }
+    expect(spikes).toBe(0);
+  });
 });

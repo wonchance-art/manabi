@@ -4,7 +4,10 @@ import { describe, it, expect, vi } from 'vitest';
 // (여기서 검증하는 건 순수부: lerpState·throttleGate·createThrottle)
 process.env.NEXT_PUBLIC_SUPABASE_URL ||= 'http://localhost:54321';
 process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||= 'test-anon-key';
-const { lerpState, throttleGate, createThrottle, backoffDelay } = await import('../world/net.js');
+const {
+  lerpState, throttleGate, createThrottle, backoffDelay,
+  pickSurvivorSessionId, shouldYieldDuplicate,
+} = await import('../world/net.js');
 
 // voice.js 는 supabase 무관 + 브라우저 API 가드 → 정적 import 로 순수부 사용.
 import {
@@ -109,6 +112,95 @@ describe('backoffDelay — 재구독 지수 백오프(순수)', () => {
     expect(backoffDelay(0, 500, 4000)).toBe(500);
     expect(backoffDelay(3, 500, 4000)).toBe(4000);   // 500*8=4000 = max
     expect(backoffDelay(4, 500, 4000)).toBe(4000);   // 상한
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+describe('pickSurvivorSessionId — 동일 계정 중복 접속 생존자 결정(순수)', () => {
+  it('joinedAt 이 가장 이른 세션이 생존자', () => {
+    const entries = [
+      { sessionId: 'b', joinedAt: 200 },
+      { sessionId: 'a', joinedAt: 100 },
+      { sessionId: 'c', joinedAt: 300 },
+    ];
+    expect(pickSurvivorSessionId(entries)).toBe('a');
+  });
+
+  it('joinedAt 동률이면 sessionId 사전순(결정적 타이브레이커)', () => {
+    const entries = [
+      { sessionId: 'zzz', joinedAt: 100 },
+      { sessionId: 'aaa', joinedAt: 100 },
+    ];
+    expect(pickSurvivorSessionId(entries)).toBe('aaa');
+  });
+
+  it('같은 sessionId 가 여러 항목(재연결 잔존 ref)이어도 한 세션으로 취급', () => {
+    const entries = [
+      { sessionId: 'me', joinedAt: 100 },
+      { sessionId: 'me', joinedAt: 100 },
+    ];
+    expect(pickSurvivorSessionId(entries)).toBe('me');
+  });
+
+  it('빈 목록/sessionId 없는 항목은 무시 — 전부 무시되면 null', () => {
+    expect(pickSurvivorSessionId([])).toBeNull();
+    expect(pickSurvivorSessionId(null)).toBeNull();
+    expect(pickSurvivorSessionId([{ joinedAt: 1 }, {}])).toBeNull();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+describe('shouldYieldDuplicate — 물러나야 하는 세션 판정(순수)', () => {
+  it('나 혼자면(다른 sessionId 없음) 물러나지 않는다', () => {
+    const entries = [{ sessionId: 'me', joinedAt: 100 }];
+    expect(shouldYieldDuplicate(entries, 'me')).toBe(false);
+  });
+
+  it('재연결 유예: 내 이전 세션의 잔존 항목이 여러 개여도 sessionId 가 같으면 자기거부 없음', () => {
+    // 재연결 과도기 — 서버가 아직 청소 못한 이전 presence_ref + 새 presence_ref가 공존해도
+    // sessionId는 재연결 내내 고정이므로 "타 세션"으로 오인되지 않는다.
+    const entries = [
+      { sessionId: 'me', joinedAt: 100 },   // 이전 접속의 잔존 항목(다른 presence_ref)
+      { sessionId: 'me', joinedAt: 100 },   // 재연결 후 새 항목
+    ];
+    expect(shouldYieldDuplicate(entries, 'me')).toBe(false);
+  });
+
+  it('내가 먼저 접속했으면(생존자) 물러나지 않는다', () => {
+    const entries = [
+      { sessionId: 'me', joinedAt: 100 },
+      { sessionId: 'other', joinedAt: 200 },
+    ];
+    expect(shouldYieldDuplicate(entries, 'me')).toBe(false);
+  });
+
+  it('내가 나중에 접속했으면(나중 세션) 물러난다', () => {
+    const entries = [
+      { sessionId: 'other', joinedAt: 100 },
+      { sessionId: 'me', joinedAt: 200 },
+    ];
+    expect(shouldYieldDuplicate(entries, 'me')).toBe(true);
+  });
+
+  it('동시 접속 경합(joinedAt 동률)도 결정적으로 한쪽만 물러난다', () => {
+    const entries = [
+      { sessionId: 'aaa', joinedAt: 100 },
+      { sessionId: 'zzz', joinedAt: 100 },
+    ];
+    // 사전순 뒤(zzz)가 물러나고, 사전순 앞(aaa)은 남는다 — 양쪽에서 독립 계산해도 동일 결론.
+    expect(shouldYieldDuplicate(entries, 'zzz')).toBe(true);
+    expect(shouldYieldDuplicate(entries, 'aaa')).toBe(false);
+  });
+
+  it('selfSessionId 가 없으면(트랙 전) 판정 보류 — false', () => {
+    const entries = [{ sessionId: 'other', joinedAt: 100 }];
+    expect(shouldYieldDuplicate(entries, null)).toBe(false);
+    expect(shouldYieldDuplicate(entries, undefined)).toBe(false);
+  });
+
+  it('entries 가 비어있으면 물러나지 않는다', () => {
+    expect(shouldYieldDuplicate([], 'me')).toBe(false);
+    expect(shouldYieldDuplicate(null, 'me')).toBe(false);
   });
 });
 

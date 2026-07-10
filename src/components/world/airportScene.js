@@ -227,9 +227,8 @@ export function buildAirportScene(Phaser, ctx) {
       this.pTileX = 7; this.pTileY = 10;
       this.facing = 'up'; this.moving = false; this.turnGrace = 0;
       const sx = this.pTileX * TILE + TILE / 2, sy = this.pTileY * TILE + TILE / 2;
+      // 16×16 스프라이트(한 칸): origin 0.5로 타일 중심에 정렬. 플레이어 닉네임 라벨은 없다(깨끗한 화면).
       this.player = this.add.image(sx, sy, 'ax_pc_up_n').setOrigin(0.5, CHAR_ORIGIN_Y).setScale(TSCALE);
-      this.nick = this.add.text(sx, sy + LABEL_DY, ctx.nickRef?.current || '나', this.labelStyle())
-        .setOrigin(0.5, 0).setDepth(10000);
 
       // 아버지(민준 옆 동행, 정지).
       this.dadTileX = 6; this.dadTileY = 10;
@@ -401,7 +400,6 @@ export function buildAirportScene(Phaser, ctx) {
 
       this.setCharFrame(this.player, 'ax_pc', this.facing, this.moving, time);
       this.player.setDepth(this.player.y);
-      this.nick.setPosition(this.player.x, this.player.y + LABEL_DY);
       this.setCharFrame(this.officer, 'ax_officer', this.officerFacing, false, time);
       this.officer.setDepth(this.officer.y);
       this.dad.setDepth(this.dad.y);

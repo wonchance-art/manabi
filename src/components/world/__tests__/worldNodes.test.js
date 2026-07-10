@@ -32,6 +32,16 @@ describe('WORLD_NODES 무결성', () => {
     }
   });
 
+  it('모든 노드·명산은 desc(설명) 1~2문장을 갖는다 — A(말 걸기) 설명 박스용', () => {
+    for (const n of WORLD_NODES) {
+      expect(typeof n.desc).toBe('string');
+      expect(n.desc.trim().length).toBeGreaterThan(0);
+    }
+    // 대표 노드 몇 개는 내용까지 확인(간결 저작).
+    expect(getNode('seoul').desc).toContain('수도');
+    expect(getNode('fuji').desc).toContain('가장 높은 산');
+  });
+
   it('스폰 도시 서울 존재 + 필수 노드 구성', () => {
     expect(getNode('seoul')).toBeTruthy();
     expect(getNode('seoul').kind).toBe('city');

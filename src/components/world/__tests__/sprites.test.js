@@ -4,6 +4,7 @@ import {
   CHAR_DIRS, CHAR_POSES, CHAR_WALK_CYCLE, charFrameRows,
   PET_KEYS, petFrameRows, CHAR_PAL_LOCAL, CHAR_PAL_REMOTE, PET_PAL,
   BASE_TILE_PAL, tonePalette, toneColor, timeOfDay, TONE_MODES,
+  riverStreamRects, RIVER_N, RIVER_E, RIVER_S, RIVER_W,
 } from '../sprites.js';
 
 // 픽셀맵 무결성 — GameCanvas는 클라 전용(Phaser)이라 단위테스트가 어렵다.
@@ -12,10 +13,15 @@ import {
 
 const CHAR_CHARS = new Set(['.', ...Object.keys(CHAR_PAL_LOCAL)]);
 
-describe('캐릭터 픽셀맵 (16×24, 4방향×걷기 3패턴)', () => {
+describe('캐릭터 픽셀맵 (16×16 한 칸, 4방향×걷기 3패턴)', () => {
+  it('규격은 16×16(오리지널 골드 필드 비율)', () => {
+    expect(CHAR_W).toBe(16);
+    expect(CHAR_H).toBe(16);
+  });
+
   for (const dir of CHAR_DIRS) {
     for (const pose of CHAR_POSES) {
-      it(`${dir}/${pose} — 24행 × 16열, 정의된 색문자만`, () => {
+      it(`${dir}/${pose} — 16행 × 16열, 정의된 색문자만`, () => {
         const rows = charFrameRows(dir, pose);
         expect(rows).toHaveLength(CHAR_H);
         for (const row of rows) {
@@ -33,9 +39,9 @@ describe('캐릭터 픽셀맵 (16×24, 4방향×걷기 3패턴)', () => {
     expect(bl).not.toBe(br);
   });
 
-  it('origin Y는 하단 16px(=타일)에 발이 정렬되는 값(=16/24)', () => {
+  it('origin Y는 타일 중심(=0.5) — 16×16 한 칸이 타일에 꼭 맞는다', () => {
     expect(CHAR_ORIGIN_Y).toBeCloseTo((CHAR_H - CHAR_TILE_PX / 2) / CHAR_H, 6);
-    expect(CHAR_ORIGIN_Y).toBeCloseTo(16 / 24, 6);
+    expect(CHAR_ORIGIN_Y).toBeCloseTo(0.5, 6);
   });
 
   it('걷기 사이클은 [l,n,r,n] 4프레임', () => {
@@ -111,5 +117,54 @@ describe('시간대 GBC 팔레트 (day/sunset/night)', () => {
         expect(pal[k]).toBeLessThanOrEqual(0xffffff);
       }
     }
+  });
+});
+
+describe('강 오토타일 변형(riverStreamRects — 순수)', () => {
+  // 16×16 타일에서 (px,py)가 rects 중 하나에 덮이는가.
+  const covers = (rects, px, py) =>
+    rects.some(([x, y, w, h]) => px >= x && px < x + w && py >= y && py < y + h);
+
+  it('16개 마스크(0..15) 모두 비지 않은 사각형 목록을 낸다', () => {
+    for (let m = 0; m < 16; m++) {
+      const rects = riverStreamRects(m);
+      expect(Array.isArray(rects)).toBe(true);
+      expect(rects.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('모든 사각형은 0..16 타일 경계 안', () => {
+    for (let m = 0; m < 16; m++) {
+      for (const [x, y, w, h] of riverStreamRects(m)) {
+        expect(x).toBeGreaterThanOrEqual(0);
+        expect(y).toBeGreaterThanOrEqual(0);
+        expect(x + w).toBeLessThanOrEqual(16);
+        expect(y + h).toBeLessThanOrEqual(16);
+      }
+    }
+  });
+
+  it('중앙 허브(7,7)는 항상 물줄기가 지난다 — 어떤 조합이든 연결점 존재', () => {
+    for (let m = 0; m < 16; m++) expect(covers(riverStreamRects(m), 7, 7)).toBe(true);
+  });
+
+  it('연결된 방향만 변 중앙까지 물줄기가 닿는다(끊김 없이 이어짐)', () => {
+    // N→(7,0), S→(7,15), W→(0,7), E→(15,7). 비트가 없으면 그 변엔 닿지 않는다.
+    const edges = [
+      [RIVER_N, 7, 0], [RIVER_S, 7, 15], [RIVER_W, 0, 7], [RIVER_E, 15, 7],
+    ];
+    for (let m = 0; m < 16; m++) {
+      const rects = riverStreamRects(m);
+      for (const [bit, px, py] of edges) {
+        expect(covers(rects, px, py)).toBe(Boolean(m & bit));
+      }
+    }
+  });
+
+  it('직선(N+S)은 세로 관통, (E+W)는 가로 관통', () => {
+    const ns = riverStreamRects(RIVER_N | RIVER_S);
+    for (let py = 0; py < 16; py++) expect(covers(ns, 7, py)).toBe(true);
+    const ew = riverStreamRects(RIVER_E | RIVER_W);
+    for (let px = 0; px < 16; px++) expect(covers(ew, px, 7)).toBe(true);
   });
 });

@@ -39,6 +39,46 @@ export function backoffDelay(attempt, base = 1000, max = 30000) {
   return d > max ? max : d;
 }
 
+// ── 중복 접속(동일 계정 다중 세션) 판정 — 순수 헬퍼 ──────────────
+// 같은 userId로 두 세션(다른 기기·탭)이 동시에 presence를 track하면 Supabase Realtime
+// presence는 같은 key(userId) 아래 항목을 여러 개(refs) 그대로 들고 있는다(덮어쓰지 않음).
+// 그래서 "누가 남고 누가 물러날지"를 양쪽 클라이언트가 서버 개입 없이 독립적으로, 그러나
+// 반드시 같은 결론으로 계산해야 한다 — 아래 두 함수가 그 결정 규칙이다.
+
+// presence 항목들 중 "생존자"(먼저 접속한 세션)의 sessionId를 고른다.
+// joinedAt 오름차순, 동률이면 sessionId 사전순(완전한 타이브레이커) — 두 세션이 각자
+// 계산해도 항상 같은 승자에 도달하도록 결정적이어야 한다.
+export function pickSurvivorSessionId(entries) {
+  const list = (entries || []).filter((e) => e && e.sessionId);
+  if (list.length === 0) return null;
+  return list.reduce((best, e) => {
+    const a = best.joinedAt ?? 0;
+    const b = e.joinedAt ?? 0;
+    if (b < a) return e;      // e가 더 이르면 e가 새 최선
+    if (b > a) return best;   // best가 더 이르면 유지
+    return e.sessionId < best.sessionId ? e : best; // 동률이면 사전순
+  }).sessionId;
+}
+
+// 같은 presence key(=userId) 아래 나(selfSessionId)와 다른 sessionId가 하나라도 있고,
+// 내가 생존자가 아니면 true(물러나야 함— 이 세션이 leave 해야 하는 "나중 세션").
+// 재연결 과도기에 서버가 아직 청소하지 못한 내 이전 접속의 잔존 presence 항목이 섞여
+// 있어도, sessionId가 재연결 내내 동일하게 유지되므로 "타 세션"으로 오인되지 않는다
+// (=자기거부 self-reject 방지). presence_ref는 재연결마다 바뀌므로 판정 기준으로 쓰지 않는다.
+export function shouldYieldDuplicate(entries, selfSessionId) {
+  if (!selfSessionId) return false;
+  const list = (entries || []).filter((e) => e && e.sessionId);
+  const hasOther = list.some((e) => e.sessionId !== selfSessionId);
+  if (!hasOther) return false;
+  return pickSurvivorSessionId(list) !== selfSessionId;
+}
+
+// 이 net 인스턴스(브라우저 탭/세션)를 구분하는 로컬 ID. 재연결에도 유지된다.
+function makeSessionId() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+}
+
 // 리딩+트레일링 스로틀. 마지막 인자는 항상 전송되도록 트레일링 콜을 예약한다.
 export function createThrottle(fn, interval) {
   let lastAt = null;
@@ -84,6 +124,13 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza' 
   let closed = false;             // leave() 호출됨 — 모든 재연결 중단
   let joinResolve = null;         // join() Promise 1회성 정착용
   let joinSettled = false;
+
+  // 동일 계정 중복 접속 판정용. sessionId는 이 net 인스턴스 생애 내내(재연결 포함) 고정 —
+  // presence_ref(서버가 재연결마다 새로 부여)와 달리 "나"를 일관되게 식별해
+  // 재연결 과도기의 내 잔존 presence를 타 세션으로 오인하지 않게 한다.
+  const sessionId = makeSessionId();
+  const joinedAt = Date.now();
+  let duplicateFlagged = false;   // 이번 접속 사이클에서 이미 중복으로 판정·처리됨(재중복 방지)
 
   const emitPeers = () => { if (peersCb) peersCb(new Map(peers)); };
   const setStatus = (s) => { if (statusCb) statusCb(s); };
@@ -133,6 +180,7 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza' 
 
     channel.on('presence', { event: 'sync' }, () => {
       const state = channel.presenceState();
+      if (checkDuplicate(state)) return;   // 중복 판정되면 peers 반영 없이 즉시 종료
       for (const key of Object.keys(state)) mergePresence(key, state[key]?.[0]);
       emitPeers();
     });
@@ -149,7 +197,7 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza' 
   }
 
   // subscribe 상태 전이 처리(핵심 장애 복구 로직).
-  //   SUBSCRIBED                          → 'connected', 백오프 리셋, presence 재track
+  //   SUBSCRIBED                          → (중복 아니면) 'connected', 백오프 리셋, presence track
   //   CHANNEL_ERROR/TIMED_OUT/CLOSED      → 백오프 재구독 예약('reconnecting'),
   //                                         MAX 초과 시 'failed'(솔로)
   function onSubscribeStatus(status) {
@@ -157,15 +205,45 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza' 
     if (status === 'SUBSCRIBED') {
       reconnectAttempt = 0;
       clearReconnect();
+      // 선체크(최선노력): presence_state가 이미 도착해 있으면 track 없이 즉시 판정해
+      // 중복 세션이 잠깐이라도 서로에게 노출되는 창을 줄인다. 다만 Realtime 클라이언트는
+      // join 'ok' 응답과 presence_state 메시지의 도착 순서를 계약으로 보장하지 않으므로
+      // (둘 다 같은 소켓 위 별개 메시지) 이 시점엔 아직 비어 있을 수 있다 — 그런 경우
+      // 아래에서 무조건 track 하고, 이후 presence 'sync' 핸들러(위)의 지속 검사가
+      // 최종적으로(권위 있게) 중복을 잡아낸다.
+      if (checkDuplicate(safePresenceState())) return;
       setStatus('connected');
       // 재구독 후 내 presence 메타(name·pet) 복원 — track 실패는 조용히.
-      try { Promise.resolve(channel.track({ name, pet })).catch(() => {}); } catch { /* noop */ }
+      try { Promise.resolve(channel.track({ name, pet, sessionId, joinedAt })).catch(() => {}); } catch { /* noop */ }
       settleJoin();
     } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
       scheduleReconnect();
       settleJoin();   // 최초 시도 실패도 caller(join)를 막지 않고 솔로로 진행시킨다
     }
     // 'CLOSING' 등 그 외 상태는 무시.
+  }
+
+  function safePresenceState() {
+    try { return channel.presenceState(); } catch { return {}; }
+  }
+
+  // 같은 계정(userId) 아래 내(sessionId)가 생존자가 아니면 즉시 물러난다:
+  // 채널 leave + onStatus('duplicate'). 자동 재연결(backoff)은 걸지 않는다 — 이건
+  // 네트워크 장애가 아니라 정책적 거부라서, 사용자가 명시적으로 재시도(join() 재호출)해야
+  // 다시 판정을 받는다. 이미 처리됐으면(duplicateFlagged) 재차 teardown하지 않는다.
+  function checkDuplicate(state) {
+    if (duplicateFlagged) return true;
+    const mine = (state && state[userId]) || [];
+    if (!shouldYieldDuplicate(mine, sessionId)) return false;
+    duplicateFlagged = true;
+    clearReconnect();
+    reconnectAttempt = 0;
+    teardownChannel();
+    peers.clear();
+    emitPeers();          // 남아있던 원격 캐릭터 표시 정리
+    setStatus('duplicate');
+    settleJoin();          // join() 대기자를 막지 않음(솔로로 진행)
+    return true;
   }
 
   function clearReconnect() {
@@ -207,6 +285,7 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza' 
   async function join() {
     if (channel || closed) return;   // 이미 열림 / leave 후 재사용 금지
     joinSettled = false;
+    duplicateFlagged = false;        // 재시도(수동 join 재호출) 시 중복 판정을 다시 받는다
     await new Promise((resolve) => { joinResolve = resolve; openChannel(); });
   }
 
@@ -233,7 +312,10 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza' 
     } catch { /* 재연결 창에서의 시그널 송신 실패는 조용히 */ }
   }
   function onSignal(cb) { signalCb = cb; }
-  // 연결 상태 알림 구독(추가 API, 하위호환). cb('connected'|'reconnecting'|'failed').
+  // 연결 상태 알림 구독(추가 API, 하위호환).
+  // cb('connected'|'reconnecting'|'failed'|'duplicate').
+  // 'duplicate' — 같은 계정의 다른 세션이 이미 접속 중이라 이 세션은 멀티를 포기했다(솔로 계속).
+  // 자동 재시도하지 않으므로, 호출부가 UI로 안내하고 join()을 재호출해야 다시 시도한다.
   function onStatus(cb) { statusCb = cb; }
 
   return { join, leave, sendState, onPeers, onPeerLeft, sendSignal, onSignal, onStatus };

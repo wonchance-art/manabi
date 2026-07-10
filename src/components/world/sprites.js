@@ -7,52 +7,45 @@
 //   3) 시간대 팔레트(day/sunset/night)를 순수 함수로 스냅샷 테스트 가능.
 //
 // 픽셀맵 문법: 행 문자열 배열 + 문자→색 매핑. '.'·미정의 = 투명.
-//   캐릭터는 16×24(세로 확장 — 머리가 타일 위로 삐져나오는 포켓몬 GSC 비율),
+//   캐릭터는 16×16(한 칸 — 오리지널 포켓몬 골드 필드 스프라이트 비율),
 //   펫은 12×16. 우향 캐릭터는 side(좌향)를 flipX로 낸다.
 //
-// **좌표 불변**: 타일 16×16 그리드·줌 1.5는 GameCanvas가 그대로 유지한다.
-//   여기서 커지는 건 "그려지는 스프라이트의 세로 픽셀"뿐 — origin 보정으로 발이 타일에 정렬된다.
+// **좌표 불변**: 타일 16×16 그리드·줌은 GameCanvas가 그대로 유지한다.
+//   캐릭터는 이제 딱 한 칸(16×16)이라 origin 0.5로 타일 중심에 정렬된다.
 
 // ── 규격 상수 ──
 export const CHAR_W = 16;
-export const CHAR_H = 24;   // 하단 16px(=1타일)이 점유 타일, 상단 8px가 타일 위로 삐져나옴
-export const CHAR_TILE_PX = 16; // 발이 정렬되는 타일 소스 크기(하단 16px)
+export const CHAR_H = 16;   // 한 칸(1타일) — 골드 필드 스프라이트처럼 타일에 꼭 맞음
+export const CHAR_TILE_PX = 16; // 점유 타일 소스 크기(= CHAR_H)
 export const PET_W = 12;
 export const PET_H = 16;
 
-// 캐릭터가 타일 위로 삐져나오는 만큼(소스 px). origin 계산에 쓴다.
-// 앵커(=타일 중심)는 하단에서 CHAR_TILE_PX/2 위 → 위에서부터 (CHAR_H - 8)번째 행.
-export const CHAR_ORIGIN_Y = (CHAR_H - CHAR_TILE_PX / 2) / CHAR_H; // = 16/24 = 0.6667
+// 앵커 = 타일 중심(0.5). 16×16 스프라이트가 타일 한 칸에 정확히 담긴다.
+export const CHAR_ORIGIN_Y = (CHAR_H - CHAR_TILE_PX / 2) / CHAR_H; // = 8/16 = 0.5
 
-// ── 캐릭터 상반신 (16×18) — 방향별 고정, 아래에 다리 6행을 붙여 24행 완성 ──
-// 재작화 목표: 포켓몬 GSC 주인공(골드) 수준의 명료함.
+// ── 캐릭터 상반신 (16×12) — 방향별 고정, 아래에 다리 4행을 붙여 16행(한 칸) 완성 ──
+// 재작화 목표: 오리지널 포켓몬 골드(GSC) 필드 스프라이트 비율 — 머리 크게, 몸통 압축, 한 칸에 담김.
 //   · 챙 있는 캡(H) — 정면은 이마 위 어두운 챙(O 가로줄), 측면은 앞으로 튀어나온 챙
-//   · 얼굴 2px 눈(O) + 입 음영(K), 몸통(B 셔츠)·팔(양옆 B 소매+S 손)·팔레트 문자 그대로
-//   · up은 캡 뒷면 + 등에 배낭 힌트(P 블록), side는 챙 방향성이 뚜렷한 프로필
-// 1px 어두운 윤곽선(O)으로 실루엣을 또렷하게 유지. 몸통/다리는 cols4~11(정면)·4~9(측면) 정렬.
+//   · 얼굴 눈(O) + 입 음영(K), 몸통(B 셔츠)·팔(양옆 B 소매+S 손)·팔레트 문자 그대로
+//   · up은 캡 뒷면 + 등에 배낭(P 블록), side는 챙 방향성이 뚜렷한 프로필 + 등 배낭(P)
+// 1px 어두운 윤곽선(O)으로 실루엣을 또렷하게 유지. 몸통은 cols4~11(정면)·4~9(측면) 정렬.
 const CHAR_TOP = {
-  // 정면: 캡 크라운(H) → 챙(O 가로줄) → 얼굴(S·눈 O·입 K) → 목(K) → 어깨/팔(B·손 S) → 몸통(B).
+  // 정면: 캡 크라운(H) → 챙(O 가로줄) → 얼굴(S·눈 O·입 K) → 어깨/팔(B·손 S) → 몸통(B).
   down: [
     '................',
     '.....OOOOOO.....',
     '....OHHHHHHO....',
     '....OHHHHHHO....',
-    '...OOOOOOOOOO...',
+    '....OOOOOOOO....',
     '....OSSSSSSO....',
     '....OSOSSOSO....',
-    '....OSSSSSSO....',
     '....OSSKKSSO....',
-    '.....OSSSSO.....',
-    '.....OKKKKO.....',
     '...OBBBBBBBBO...',
-    '..OBBBBBBBBBBO..',
     '..OSBBBBBBBBSO..',
     '..OSBBBBBBBBSO..',
-    '...OBBBBBBBBO...',
-    '...OBBBBBBBBO...',
     '...OBBBBBBBBO...',
   ],
-  // 뒷모습: 캡 뒷면(H, 얼굴 없음) → 목(K) → 어깨/팔(B·손 S) → 등 배낭 힌트(P 블록).
+  // 뒷모습: 캡 뒷면(H, 얼굴 없음) → 목(K) → 어깨/팔(B·손 S) → 등 배낭(P 블록).
   up: [
     '................',
     '.....OOOOOO.....',
@@ -60,17 +53,11 @@ const CHAR_TOP = {
     '....OHHHHHHO....',
     '....OHHHHHHO....',
     '....OHHHHHHO....',
-    '....OHHHHHHO....',
-    '.....OHHHHO.....',
     '.....OKKKKO.....',
     '...OBBBBBBBBO...',
-    '..OBBBBBBBBBBO..',
-    '..OSBBBBBBBBSO..',
     '..OSBPPPPPPBSO..',
     '..OSBPPPPPPBSO..',
     '...OBPPPPPPBO...',
-    '...OBBBBBBBBO...',
-    '...OBBBBBBBBO...',
     '...OBBBBBBBBO...',
   ],
   // 좌향 프로필(우향은 flipX). 앞(왼쪽)으로 캡 챙(O)이 튀어나오고, 얼굴 S·눈 O가 앞을 본다.
@@ -83,27 +70,19 @@ const CHAR_TOP = {
     '.OOOOOHHHHO.....',
     '..OSSSHHHHO.....',
     '..OSOSHHHHO.....',
-    '..OSSSHHHHO.....',
     '..OKSSHHHO......',
-    '...OSSHHO.......',
-    '...OKKKKO.......',
     '...OBBBBBBO.....',
-    '..OSBBBBBBO.....',
     '..OSBBBBPPO.....',
     '...OBBBBPPO.....',
-    '...OBBBBBBO.....',
-    '...OBBBBBBO.....',
     '...OBBBBBBO.....',
   ],
 };
 
-// ── 다리 6행(19~24행 = 인덱스 18~23) — 걷기 3패턴(n:중립/l:왼발/r:오른발) ──
+// ── 다리 4행(13~16행 = 인덱스 12~15) — 걷기 3패턴(n:중립/l:왼발/r:오른발) ──
 // 정면(down·up 공용)과 측면(side)으로 나뉜다. 4프레임 사이클 [l,n,r,n]로 쓴다.
 const CHAR_LEGS = {
   front: {
     n: [
-      '...OPPPPPPPPO...',
-      '...OPPPPPPPPO...',
       '...OPPPPPPPPO...',
       '...OPPPPPPPPO...',
       '....OFFFFFFO....',
@@ -112,14 +91,10 @@ const CHAR_LEGS = {
     l: [
       '...OPPPPPPPPO...',
       '...OPPPPPPPPO...',
-      '...OPPPPPPPPO...',
-      '...OPPPPPPPPO...',
       '..OFFO..OFFO....',
       '...FF....FF.....',
     ],
     r: [
-      '...OPPPPPPPPO...',
-      '...OPPPPPPPPO...',
       '...OPPPPPPPPO...',
       '...OPPPPPPPPO...',
       '....OFFO..OFFO..',
@@ -130,22 +105,16 @@ const CHAR_LEGS = {
     n: [
       '...OPPPPPPO.....',
       '...OPPPPPPO.....',
-      '...OPPPPPPO.....',
-      '...OPPPPPPO.....',
       '...OFFFFFO......',
       '....FFFFF.......',
     ],
     l: [
       '...OPPPPPPO.....',
       '...OPPPPPPO.....',
-      '...OPPPPPPO.....',
-      '...OPPPPPPO.....',
       '..OFFO.OFFO.....',
       '..FF....FF......',
     ],
     r: [
-      '...OPPPPPPO.....',
-      '...OPPPPPPO.....',
       '...OPPPPPPO.....',
       '...OPPPPPPO.....',
       '...OFFFFFO......',
@@ -159,7 +128,7 @@ export const CHAR_POSES = ['n', 'l', 'r'];
 // 걷기 4프레임 사이클(왼발-중립-오른발-중립).
 export const CHAR_WALK_CYCLE = ['l', 'n', 'r', 'n'];
 
-// 한 캐릭터 프레임(24행) = 상반신 18행 + 다리 6행.
+// 한 캐릭터 프레임(16행 = 한 칸) = 상반신 12행 + 다리 4행.
 export function charFrameRows(dir, pose) {
   const top = CHAR_TOP[dir];
   const group = dir === 'side' ? 'side' : 'front';
@@ -448,3 +417,19 @@ export function timeOfDay(date = new Date()) {
   return 'night';
 }
 export const TONE_MODES = ['day', 'sunset', 'night'];
+
+// ── 강(RIVER) 오토타일 — 도트 물줄기 ──
+// RIVER 타일을 "땅 바탕 + 폭 3px 물줄기"로 그린다. 4방향 이웃(RIVER/LAKE/SEA)의 연결 여부를
+// 비트마스크(N=1,E=2,S=4,W=8)로 받아, 중앙 허브에서 연결된 변까지 뻗는 물줄기 사각형 목록을 낸다.
+//   · 직선(N+S·E+W)·코너(NE/NW/SE/SW)·T·십자·끝(단일)·고립(0)이 전부 이 한 함수로 절차 생성돼
+//     이웃 타일과 변 중앙(세로: cols6~8 / 가로: rows6~8)에서 반드시 만나 물줄기가 끊기지 않는다.
+//   · 순수 함수(입력 mask → 출력 rects) — vitest로 경계·연결 불변식을 검증한다. 좌표는 16×16 타일 로컬 px.
+export const RIVER_N = 1, RIVER_E = 2, RIVER_S = 4, RIVER_W = 8;
+export function riverStreamRects(mask) {
+  const rects = [[6, 6, 3, 3]]; // 중앙 허브(cols6~8·rows6~8) — 어떤 조합이든 물줄기가 만나는 지점
+  if (mask & RIVER_N) rects.push([6, 0, 3, 6]); // 위 변까지(rows0~5)
+  if (mask & RIVER_S) rects.push([6, 9, 3, 7]); // 아래 변까지(rows9~15)
+  if (mask & RIVER_W) rects.push([0, 6, 6, 3]); // 왼 변까지(cols0~5)
+  if (mask & RIVER_E) rects.push([9, 6, 7, 3]); // 오른 변까지(cols9~15)
+  return rects;
+}

@@ -166,6 +166,71 @@ function removeSmallIslands(grid) {
   return removed;
 }
 
+// ── 해안 스무딩(자연화) ──────────────────────────────────────────────────────
+// 전북 서해안(새만금 방조제·간척지)은 4.5km/타일 래스터화에서 직선 제방이 각진 사각 돌출로
+// 뭉개진다(오너 피드백 #3). 지정 bbox 안에서 결정적으로 해안 계단을 부드럽게 다듬는다:
+//   ① 오목한 바다 노치(≥3 land 이웃) 매움 — 내향 각 라운딩(섬은 확장 안 됨)
+//   ② 고립 돌출 타일(≥3 sea 이웃) 깎기 — 외향 사각 나비늘 제거
+//   ③ 볼록 코너 1회 침식/디더(해시 <0.5) — 부자연스러운 직선 제방을 유기적으로
+// 큰 육지(연결요소 크기 ≥ BIG_LAND) 에만 작용해 강화도·영종도(≈6타일)·제주(≈87타일)·쓰시마 등
+// 소도서는 절대 훼손하지 않는다. Math.random 미사용 → 재생성 byte-identical.
+// grid 는 이 시점에 0(sea)/1(land) 만 담긴다(수계·DMZ·교량·질감 오버레이 이전에 호출).
+const COAST_SMOOTH_BBOX = { x0: 48, x1: 68, y0: 242, y1: 280 }; // 전북 서해안(군산·부안·새만금)
+const COAST_BIG_LAND = 300; // 이 타일 수 이상 연결요소만 침식 대상(소도서 보호)
+function smoothCoast(grid) {
+  const N4 = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+  const inB = (x, y) => x >= 0 && y >= 0 && x < MAP_W && y < MAP_H;
+  const isLand = (m, x, y) => inB(x, y) && m[y * MAP_W + x] === 1;
+  // 연결요소 크기 라벨링(대륙/소도서 구분).
+  const comp = new Int32Array(MAP_W * MAP_H).fill(-1);
+  const sizes = [];
+  const st = [];
+  for (let i = 0; i < grid.length; i++) {
+    if (grid[i] !== 1 || comp[i] !== -1) continue;
+    const id = sizes.length; let cnt = 0; st.length = 0; st.push(i); comp[i] = id;
+    while (st.length) {
+      const idx = st.pop(); cnt++;
+      const x = idx % MAP_W, y = (idx / MAP_W) | 0;
+      for (const [dx, dy] of N4) {
+        const nx = x + dx, ny = y + dy;
+        if (!inB(nx, ny)) continue;
+        const ni = ny * MAP_W + nx;
+        if (grid[ni] === 1 && comp[ni] === -1) { comp[ni] = id; st.push(ni); }
+      }
+    }
+    sizes.push(cnt);
+  }
+  const big = (x, y) => { const c = comp[y * MAP_W + x]; return c >= 0 && sizes[c] >= COAST_BIG_LAND; };
+  const { x0, x1, y0, y1 } = COAST_SMOOTH_BBOX;
+  let filled = 0, carved = 0, dith = 0;
+  // ① 오목 노치 매움 — 원본(src) 기준으로 판정해 동시 적용(순서 무관·결정적).
+  const src0 = grid.slice();
+  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+    if (src0[y * MAP_W + x] !== 0) continue;
+    let ln = 0, touchBig = false;
+    for (const [dx, dy] of N4) if (isLand(src0, x + dx, y + dy)) { ln++; if (big(x + dx, y + dy)) touchBig = true; }
+    if (ln >= 3 && touchBig) { grid[y * MAP_W + x] = 1; filled++; }
+  }
+  // ② 고립 돌출 깎기 — ①반영본(grid) 기준, 큰 육지 타일만.
+  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+    const i = y * MAP_W + x;
+    if (grid[i] !== 1 || !big(x, y)) continue;
+    let sn = 0; for (const [dx, dy] of N4) if (!isLand(grid, x + dx, y + dy)) sn++;
+    if (sn >= 3) { grid[i] = 0; carved++; }
+  }
+  // ③ 볼록 코너 1회 디더 — 스냅샷 기준 동시 적용(직선 제방 유기화).
+  const src2 = grid.slice();
+  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+    const i = y * MAP_W + x;
+    if (src2[i] !== 1 || !big(x, y)) continue;
+    const l = !isLand(src2, x - 1, y), r = !isLand(src2, x + 1, y), u = !isLand(src2, x, y - 1), d = !isLand(src2, x, y + 1);
+    const s = (l ? 1 : 0) + (r ? 1 : 0) + (u ? 1 : 0) + (d ? 1 : 0);
+    const corner = (l && u) || (l && d) || (r && u) || (r && d);
+    if (s === 2 && corner && hashNoise(x, y, 555) < 0.5) { grid[i] = 0; dith++; }
+  }
+  return { filled, carved, dith };
+}
+
 // ── 폴리라인 래스터화 (4-연결 연속 · 구멍 0) ──
 // 두 부동소수 타일점 사이를 잇는 타일 목록. 대각 이동 시 중간 타일을 끼워 4-연결을 보장한다.
 function lineTiles(x0, y0, x1, y1, out) {
@@ -370,9 +435,8 @@ const LAKE_NAMES = new Set(['Biwa Ko', 'Supung Reservoir']);
 const inBBox = (lon, lat) => lon >= 122 && lon <= 147 && lat >= 29 && lat <= 47;
 
 // ── DMZ 철조망 폴리라인 (오너 스펙 · [lon,lat]) ──
-// 서→동 휴전선 근사. 양끝은 종단 세그먼트 방향으로 연장해 해안 sea 까지 닿게 한다.
+// 서→동 휴전선 근사. 양끝은 최종 단계에서 종단 세그먼트 방향으로 실제 sea 까지 스캔 연장(anchorFenceToCoast).
 const DMZ = [[126.68, 37.96], [127.0, 38.30], [127.5, 38.32], [128.1, 38.33], [128.35, 38.61]];
-const DMZ_EXTEND = 20; // 타일 — 양끝을 종단 방향으로 이만큼 늘려 해안(sea) 밖까지 앵커.
 
 // ── 영종대교: 영종도 ↔ 본토(인천 서구)를 잇는 bridge 라인 ([lon,lat]) ──
 // 바다 위 통행 가능 타일. 실제 대교와 유사한 북동향 1라인.
@@ -413,6 +477,8 @@ console.log(`  · 육지 데이터 경로: ${source}`);
 
 const grid = rasterize(polys);
 const removed = removeSmallIslands(grid);
+const smooth = smoothCoast(grid);
+console.log(`  · 해안 스무딩(전북 서해안): 노치매움 ${smooth.filled} · 돌출깎기 ${smooth.carved} · 코너디더 ${smooth.dith} (소도서 보호 · 결정적)`);
 let landCount = 0; for (const v of grid) if (v) landCount++;
 console.log(`  · 래스터화: land ${landCount} 타일 / ${MAP_W * MAP_H} (소도서 ${removed} 타일 제거)`);
 
@@ -483,25 +549,16 @@ let riverCount = 0;
   }
 }
 
-// 4) DMZ 철조망 (code 4) — 하드코딩 폴리라인, 양끝 sea 앵커, land/river 위를 덮어씀.
+// 4) DMZ 철조망 (code 4) — 하드코딩 폴리라인 본체. 양끝 해안 앵커는 전 지형 패스 후
+//    최종 단계(anchorFenceToCoast)에서 실제 sea 까지 스캔 연장한다(해안선 디더 대비).
 let fenceCount = 0;
+const dmzPts = DMZ.map(([lo, la]) => projF(lo, la));
 {
-  const pts = DMZ.map(([lo, la]) => projF(lo, la));
-  const extend = (far, near, dist) => {
-    const dx = far[0] - near[0], dy = far[1] - near[1];
-    const L = Math.hypot(dx, dy) || 1;
-    return [far[0] + (dx / L) * dist, far[1] + (dy / L) * dist];
-  };
-  const chain = [
-    extend(pts[0], pts[1], DMZ_EXTEND),
-    ...pts,
-    extend(pts[pts.length - 1], pts[pts.length - 2], DMZ_EXTEND),
-  ];
-  for (const [x, y] of polylineTiles(chain)) {
+  for (const [x, y] of polylineTiles(dmzPts)) {
     if (x < 0 || y < 0 || x >= MAP_W || y >= MAP_H) continue;
     if (getTile(x, y) !== TERRAIN.FENCE) { setTile(x, y, TERRAIN.FENCE); fenceCount++; }
   }
-  console.log(`  · DMZ 철조망: ${fenceCount} 타일 (서→동 연속)`);
+  console.log(`  · DMZ 철조망 본체: ${fenceCount} 타일 (서→동 연속)`);
 }
 
 // 5) 영종대교 (code 5) — bridge, sea 타일만 덮어씀(육지는 유지).
@@ -659,6 +716,43 @@ let mCount = 0, pkCount = 0, plCount = 0;
 
   console.log(`  · 지형 질감 경로: ${terrainSource}`);
   console.log(`  · 질감 분류: MOUNTAIN=${mCount} PEAK(분류)=${pkCount} PLAIN=${plCount}`);
+}
+
+// 7) DMZ 철조망 양끝 해안 앵커 (최종 · 전 지형 패스 후) — 오너 피드백 #2.
+//    양끝 종단 세그먼트 방향으로 한 타일씩 스캔 연장해 "실제 sea" 에 첫 도달 시 그 바다 타일까지
+//    FENCE 로 봉인한다(그 한 타일이 앵커). 해안선 디더·세부 해안으로 철조망 끝점이 물에 못 닿아
+//    생기던 land 틈(국경 우회로)을 차단한다. 4-연결 연장이므로 본체와 끊기지 않는다. 결정적.
+{
+  let anchored = 0;
+  const termDir = (near, far) => { // far(끝점)에서 바깥으로 향하는 단위 벡터
+    const dx = far[0] - near[0], dy = far[1] - near[1];
+    const L = Math.hypot(dx, dy) || 1;
+    return [dx / L, dy / L];
+  };
+  const MAX_SCAN = 40;   // 안전 상한(타일) — 종단 방향 개활 바다까진 수십 타일이면 닿는다.
+  const SEA_PAD = 4;     // 최외곽 해안 land 를 지난 뒤 바다로 더 박는 앵커 타일 수(우회 차단 여유).
+  const anchorEnd = (endF, dir) => {
+    // 끝점에서 바깥으로 광선을 4-연결 타일화한 뒤, "마지막 land 타일"(만·하구 안쪽 해안 포함)을
+    // 지나 SEA_PAD 만큼 바다로 더 박아 봉인한다. 첫 sea 에서 멈추면 하구·내만에 걸려 우회로가 남는다.
+    const ray = [];
+    lineTiles(endF[0], endF[1], endF[0] + dir[0] * MAX_SCAN, endF[1] + dir[1] * MAX_SCAN, ray);
+    // 맵 밖 도달 전까지의 유효 구간에서 최후 land 인덱스 탐색.
+    let lastLand = -1, lim = ray.length;
+    for (let i = 0; i < ray.length; i++) {
+      const [x, y] = ray[i];
+      if (x < 0 || y < 0 || x >= MAP_W || y >= MAP_H) { lim = i; break; } // 맵 밖 = 바다 취급
+      if (getTile(x, y) !== TERRAIN.SEA) lastLand = i; // land/river/peak 등 비-sea = 육지측
+    }
+    const end = Math.min(lim - 1, lastLand + SEA_PAD); // 최후 육지 + 바다 여유까지 봉인
+    for (let i = 0; i <= end; i++) {
+      const [x, y] = ray[i];
+      if (getTile(x, y) !== TERRAIN.FENCE) { setTile(x, y, TERRAIN.FENCE); anchored++; fenceCount++; }
+    }
+  };
+  const n = dmzPts.length;
+  anchorEnd(dmzPts[0], termDir(dmzPts[1], dmzPts[0]));         // 서단 → 해안(남서)
+  anchorEnd(dmzPts[n - 1], termDir(dmzPts[n - 2], dmzPts[n - 1])); // 동단 → 해안(북동)
+  console.log(`  · DMZ 해안 앵커: 연장 ${anchored} 타일 → 철조망 총 ${fenceCount} 타일 (양끝 sea 봉인)`);
 }
 
 // 지형 타일 통계

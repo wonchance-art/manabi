@@ -31,6 +31,7 @@ import {
   PET_KEYS, petFrameRows,
   BASE_TILE_PAL, CHAR_PAL_LOCAL, CHAR_PAL_REMOTE, PET_PAL,
   tonePalette, toneColor, timeOfDay,
+  riverStreamRects, RIVER_N, RIVER_E, RIVER_S, RIVER_W,
 } from './sprites';
 // 🗺️ 광장 맵 데이터 — 한반도+일본 열도 실비율 도트 맵(448×384, build-map.mjs 산출).
 import { MAP_W, MAP_H, decodeMap, TERRAIN, isBlocked, POI } from './mapData';
@@ -82,11 +83,12 @@ const WALK_MS = 110;        // 펫 걷기 프레임 교차 주기
 // 딱 맞물려, 한 칸에 "발 한 번" 리듬이 자연스럽게 난다.
 const CHAR_ANIM_MS = 100;
 const PET_IDLE_MS = 480;    // 펫 idle(통통/꼬리) 2프레임 교차 주기 — 걷기보다 느긋하게
-const QUEST_RANGE = 64;     // 표지판·게이트 상호작용 근접 반경(px)
-const NODE_LABEL_RANGE = 96; // 장소 노드 이름 라벨이 뜨는 근접 반경(px)
-const LABEL_DY = 18;        // 닉네임 라벨 세로 오프셋(px)
+const QUEST_RANGE = 64;     // 표지판 상호작용 근접 반경(px)
+const NODE_TALK_RANGE = 96; // 장소 노드/명산 A(말 걸기) 근접 반경(px) — 라벨은 없고 A로 설명 열람
+// 강 오토타일 아틀라스 인덱스 시작. keys[0..14] 뒤에 t_river_0..15 를 15..30 에 이어 붙인다.
+const RIVER_TILE_BASE = 15;
 
-// 팔레트·픽셀맵(16×24 캐릭터·12×16 펫)·시간대 톤은 ./sprites.js로 추출했다
+// 팔레트·픽셀맵(16×16 캐릭터·12×16 펫)·시간대 톤은 ./sprites.js로 추출했다
 // (GameCanvas 경량화 + 무결성/팔레트 vitest 검증 가능). 여기선 씬이 그걸 굽기만 한다.
 
 // 방향키/코드 → 4방향. (대각선 없음)
@@ -210,10 +212,12 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   const reviewOpenRef = useRef(false);  // B(취소) 콜백이 최신 오버레이 상태를 읽도록 미러
 
   // ── 장소 노드 근접 + 페리 + 미니맵 상태 ──
-  const [nearNode, setNearNode] = useState(null);        // 근접한 gate 노드 { id, name, gate } | null
+  const [nearNode, setNearNode] = useState(null);        // 근접한 노드 { id, name, desc, gate? } | null
+  const [descOpen, setDescOpen] = useState(false);       // A로 연 GBC 설명 박스(게이트 없는 노드)
   const [ferryPrompt, setFerryPrompt] = useState(null);  // 페리 확인 다이얼로그 { toId, toName } | null
   const [minimapOpen, setMinimapOpen] = useState(false); // 미니맵 오버레이 열림
   const nearNodeRef = useRef(null);
+  const descOpenRef = useRef(false);
   const ferryPromptRef = useRef(null);
   const minimapOpenRef = useRef(false);
 
@@ -234,6 +238,9 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   useEffect(() => { nearQuestRef.current = nearQuest; }, [nearQuest]);
   useEffect(() => { reviewOpenRef.current = reviewOpen; }, [reviewOpen]);
   useEffect(() => { nearNodeRef.current = nearNode; }, [nearNode]);
+  useEffect(() => { descOpenRef.current = descOpen; }, [descOpen]);
+  // 노드에서 멀어지면(근접 해제) 설명 박스도 닫는다.
+  useEffect(() => { if (!nearNode) setDescOpen(false); }, [nearNode]);
   useEffect(() => { ferryPromptRef.current = ferryPrompt; }, [ferryPrompt]);
   useEffect(() => { minimapOpenRef.current = minimapOpen; }, [minimapOpen]);
   useEffect(() => { storyActiveRef.current = storyActive; }, [storyActive]);
@@ -254,8 +261,10 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       interact: () => {
         if (storyPhaseRef.current === 'dialogue') { advanceStoryRef.current?.(); return; }
         if (reviewOpenRef.current || storyActiveRef.current || ferryPromptRef.current) return;
+        if (descOpenRef.current) { setDescOpen(false); return; } // 설명 박스 열려 있으면 A로도 닫기
         const node = nearNodeRef.current;
         if (node?.gate) {
+          // 게이트 있는 노드는 게이트 동작 우선(설명은 게이트 프롬프트에 병기).
           if (node.gate.type === 'story-scene') { sceneRef.current?.enterAirport?.(); return; }
           if (node.gate.type === 'ferry') {
             const dest = getNode(node.gate.to);
@@ -263,10 +272,12 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
             return;
           }
         }
+        if (node) { setDescOpen(true); return; } // 게이트 없는 노드/명산 → GBC 설명 박스
         if (nearQuestRef.current) setReviewOpen(true);
       },
       cancel: () => {
         if (storyPhaseRef.current === 'dialogue') { toggleKoRef.current?.(); return; }
+        if (descOpenRef.current) { setDescOpen(false); return; }
         if (ferryPromptRef.current) { setFerryPrompt(null); return; }
         if (minimapOpenRef.current) { setMinimapOpen(false); return; }
         if (reviewOpenRef.current) setReviewOpen(false);
@@ -386,6 +397,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           for (const k of PET_KEYS) this.petPal[k] = tonePalette(PET_PAL[k], this.mode);
 
           this.buildGround();
+          this.buildRiver();      // 강 오토타일 16변형(땅+물줄기) — 아틀라스 15..30
           this.buildSand();
           this.buildFence();
           this.buildBridge();
@@ -442,20 +454,47 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           water('t_water1', C.waterMd, 1);
           water('t_water2', C.waterDk, 2);
 
-          // river/lake — 걸어서 건너는 얕은 물. 바다(water1=0x4bb4e0)보다 밝고 옅은 청록으로 구워
-          //   "얕음"을 색으로 알린다(단일 프레임 — 정적). 시간대 톤은 toneColor로 함께 굽는다.
-          const riverBase = toneColor(0x7fd0ec, this.mode);  // 강 — 바다보다 밝은 하늘 청록
-          const lakeBase = toneColor(0x63c1e2, this.mode);   // 호수 — 강보다 아주 살짝 진하게(고인 물)
+          // lake — 걸어서 건너는 얕은 물(고인 물). 바다보다 밝고 옅은 청록 단일 프레임(정적).
+          //   강(RIVER)은 더 이상 타일 전체 물이 아니라 buildRiver 의 "땅+물줄기" 오토타일로 굽는다.
+          const lakeBase = toneColor(0x63c1e2, this.mode);   // 호수 — 옅은 청록
           const shallowHi = C.water2;                        // 흰 물결 하이라이트(바다와 공유 톤)
-          const stream = (key, base) => {
+          {
             const g = this.make.graphics({ add: false });
-            g.fillStyle(base, 1); g.fillRect(0, 0, TEX, TEX);
+            g.fillStyle(lakeBase, 1); g.fillRect(0, 0, TEX, TEX);
             g.fillStyle(shallowHi, 0.7);
             g.fillRect(2, 4, 6, 1); g.fillRect(9, 8, 4, 1); g.fillRect(4, 11, 5, 1);
-            g.generateTexture(key, TEX, TEX); g.destroy();
-          };
-          stream('t_river', riverBase);
-          stream('t_lake', lakeBase);
+            g.generateTexture('t_lake', TEX, TEX); g.destroy();
+          }
+        }
+
+        // ── 강(RIVER) 오토타일 — 땅 바탕 + 폭 3px 도트 물줄기(16변형) ──
+        // 4방향 이웃 연결 비트마스크(0..15)마다 riverStreamRects(순수)로 물줄기 사각형을 받아 굽는다.
+        //   땅 바탕은 잔디 톤(주변 육지와 이음새 연속) — 강은 "타일 전체 물"이 아니라 굽이치는 물줄기로 보인다.
+        //   물줄기는 변 중앙(세로 cols6~8·가로 rows6~8)에서 이웃과 만나 끊기지 않고 이어진다. 통행 규칙 무변경.
+        buildRiver() {
+          const C = this.pal;
+          const water = toneColor(0x5bb8e6, this.mode);   // 물줄기 — 바다보다 밝은 청록
+          const waterD = toneColor(0x3f9fce, this.mode);  // 물줄기 가장자리 음영(오른·아래)
+          const foam = C.water2;                          // 흰 반짝(흐름 힌트)
+          for (let mask = 0; mask < 16; mask++) {
+            const g = this.make.graphics({ add: false });
+            // 땅 바탕(잔디 톤 + 미세 얼룩) — t_grass 와 톤 연속.
+            g.fillStyle(C.grass1, 1); g.fillRect(0, 0, TEX, TEX);
+            g.fillStyle(C.grass2, 0.5);
+            for (const [x, y] of [[2, 3], [12, 2], [4, 13], [13, 11]]) g.fillRect(x, y, 1, 1);
+            const rects = riverStreamRects(mask);
+            // 음영을 먼저 깔고 그 위에 밝은 물을 1px 안쪽으로 → 오른·아래에 얕은 뚝(둑) 그림자.
+            g.fillStyle(waterD, 1);
+            for (const [x, y, w, h] of rects) g.fillRect(x, y, w, h);
+            g.fillStyle(water, 1);
+            for (const [x, y, w, h] of rects) g.fillRect(x, y, Math.max(1, w - 1), Math.max(1, h - 1));
+            // 흐름 반짝(연결된 축 방향에만) — 굽이치는 물줄기 느낌.
+            g.fillStyle(foam, 0.8);
+            if ((mask & RIVER_N) || (mask & RIVER_S)) { g.fillRect(7, 4, 1, 1); g.fillRect(7, 11, 1, 1); }
+            if ((mask & RIVER_E) || (mask & RIVER_W)) { g.fillRect(4, 7, 1, 1); g.fillRect(11, 7, 1, 1); }
+            g.fillRect(7, 7, 1, 1);
+            g.generateTexture(`t_river_${mask}`, TEX, TEX); g.destroy();
+          }
         }
 
         // DMZ 철조망(fence) — 통행 차단. 기둥 + 가시철선 도트 1타일 패턴(위압감 있게).
@@ -546,18 +585,19 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
             for (let i = 0; i < 6; i++) g.fillRect(8 + i, 1 + i, 1, 1);         // 오른 사면 음영
             g.generateTexture('t_peak', TEX, TEX); g.destroy();
           }
-          // 평야 — 밝은 황록 농지 + 밭이랑 격자 힌트.
+          // 평야 — 밝은 황록 단색 + 미세 노이즈만(밭이랑 격자 제거 — 해안 "체크무늬"의 주범이었다).
+          //   격자 라인을 없애고 잔디와 톤이 이어지는 부드러운 얼룩으로 바꿔 타일 이음새가 두드러지지 않게 한다.
           {
             const g = this.make.graphics({ add: false });
-            const base = toneColor(0x9fc85a, this.mode);   // 밝은 황록
-            const line = toneColor(0x84ad46, this.mode);   // 밭이랑(격자)
-            const seed = toneColor(0xc4dd7e, this.mode);   // 밝은 낟알 점
+            const base = toneColor(0x9fc85a, this.mode);   // 밝은 황록(단색 바탕)
+            const n1 = toneColor(0x93bd4e, this.mode);     // 살짝 진한 미세 노이즈
+            const n2 = toneColor(0xaad066, this.mode);     // 살짝 밝은 미세 노이즈
             g.fillStyle(base, 1); g.fillRect(0, 0, TEX, TEX);
-            g.fillStyle(line, 1);
-            g.fillRect(0, 5, TEX, 1); g.fillRect(0, 11, TEX, 1);   // 가로 이랑
-            g.fillRect(5, 0, 1, TEX); g.fillRect(11, 0, 1, TEX);   // 세로 이랑
-            g.fillStyle(seed, 1);
-            for (const [x, y] of [[2, 2], [8, 3], [13, 8], [3, 8], [9, 13], [14, 2]]) g.fillRect(x, y, 1, 1);
+            const rng = makeRng(0x5a);
+            g.fillStyle(n1, 1);
+            for (let y = 0; y < TEX; y++) for (let x = 0; x < TEX; x++) if (rng() < 0.10) g.fillRect(x, y, 1, 1);
+            g.fillStyle(n2, 1);
+            for (let y = 0; y < TEX; y++) for (let x = 0; x < TEX; x++) if (rng() < 0.06) g.fillRect(x, y, 1, 1);
             g.generateTexture('t_plain', TEX, TEX); g.destroy();
           }
         }
@@ -710,14 +750,23 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           }
         }
 
-        // 해안(모래) — land 중 바다에 접한 타일. 잔디 위에 옅은 모래·잔파도 라인.
+        // 해안(모래) — land 중 바다에 접한 타일. 잔디→모래를 "딱 잘린 띠" 대신 아래로 갈수록 짙어지는
+        //   디더 그라데이션으로 깔아 타일 간 이음새(체크무늬)를 없앤다. 톤 연속(잔디 위 → 웜 모래 → 잔파도).
         buildSand() {
           const C = this.pal;
           const g = this.make.graphics({ add: false });
-          g.fillStyle(C.grass1, 1); g.fillRect(0, 0, TEX, TEX);
-          g.fillStyle(C.path1, 0.85); g.fillRect(0, 11, TEX, 5);       // 아래쪽 모래톱
-          g.fillStyle(C.path2, 0.9); for (const [x, y] of [[2, 13], [7, 14], [11, 12], [13, 15]]) g.fillRect(x, y, 2, 1);
-          g.fillStyle(C.water2, 0.55); g.fillRect(1, 15, 4, 1); g.fillRect(8, 15, 5, 1); // 잔파도 라인
+          const sand = toneColor(0xe8d6a0, this.mode);   // 웜 모래
+          const sandD = toneColor(0xd8c088, this.mode);  // 모래 알갱이 음영
+          g.fillStyle(C.grass1, 1); g.fillRect(0, 0, TEX, TEX);        // 잔디 바탕(위쪽 land 와 연속)
+          // 아래로 갈수록 모래 확률↑ — 하드 엣지 없이 잔디↔모래가 자연스럽게 섞인다.
+          const rng = makeRng(0x5d);
+          g.fillStyle(sand, 1);
+          for (let y = 0; y < TEX; y++) {
+            const p = ((y + 2) / (TEX + 2)) * 0.92;
+            for (let x = 0; x < TEX; x++) if (rng() < p) g.fillRect(x, y, 1, 1);
+          }
+          g.fillStyle(sandD, 1); for (const [x, y] of [[2, 13], [7, 14], [11, 12], [13, 15]]) g.fillRect(x, y, 1, 1);
+          g.fillStyle(C.water2, 0.5); g.fillRect(1, 15, 4, 1); g.fillRect(8, 15, 5, 1); // 잔파도 라인
           g.generateTexture('t_sand', TEX, TEX); g.destroy();
         }
 
@@ -725,17 +774,20 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         // 절차 생성 타일 텍스처들을 1장의 캔버스로 합쳐 Phaser tilemap tileset을 만든다.
         // (타일마다 add.image = 172k 오브젝트는 불가 → 레이어 1장 + 내장 컬링으로 전환.)
         // 인덱스: 0=빈칸, 1=잔디(land), 2/3/4=바다 3프레임, 5=모래(해안),
-        //         6=강, 7=호수, 8=DMZ 철조망, 9=교량, 10=산지A, 11=고산/설산, 12=평야,
-        //         13=산지B(쌍봉), 14=산지C(완만) — 산지 3변형은 타일맵 빌드가 좌표 해시로 골라 넣는다.
+        //         6=(미사용 — 강은 오토타일로 이관), 7=호수, 8=DMZ 철조망, 9=교량, 10=산지A, 11=고산/설산,
+        //         12=평야, 13=산지B(쌍봉), 14=산지C(완만), 15..30=강 오토타일 16변형(RIVER_TILE_BASE+mask).
+        //         산지 3변형·강 16변형은 타일맵 빌드가 좌표 해시/이웃 비트마스크로 골라 넣는다.
         buildTileAtlas() {
           // 씬 재시작(공항→광장 복귀) 시 텍스처는 전역 TextureManager에 이미 존재 →
           // createCanvas가 null을 반환하므로, 있으면 재사용(톤은 최초 로드값 유지 — generateTexture와 동일 관례).
           if (this.textures.exists('tiles')) return;
-          const keys = [null, 't_grass', 't_water0', 't_water1', 't_water2', 't_sand', 't_river', 't_lake', 't_fence', 't_bridge', 't_mountain', 't_peak', 't_plain', 't_mountain_b', 't_mountain_c'];
+          const keys = [null, 't_grass', 't_water0', 't_water1', 't_water2', 't_sand', null, 't_lake', 't_fence', 't_bridge', 't_mountain', 't_peak', 't_plain', 't_mountain_b', 't_mountain_c'];
+          for (let m = 0; m < 16; m++) keys.push(`t_river_${m}`); // 15..30
           const cols = keys.length;
           const atlas = this.textures.createCanvas('tiles', cols * TEX, TEX);
           const ctx = atlas.getContext();
           for (let i = 1; i < cols; i++) {
+            if (!keys[i]) continue; // 6번(구 t_river) 자리는 비움
             const src = this.textures.get(keys[i]).getSourceImage();
             ctx.drawImage(src, i * TEX, 0);
           }
@@ -817,7 +869,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           g.generateTexture('t_lamp', 16, 16); g.destroy();
         }
 
-        // 4방향 × 걷기 3패턴(n/l/r) 캐릭터, 16×24(우향은 side flipX).
+        // 4방향 × 걷기 3패턴(n/l/r) 캐릭터, 16×16 한 칸(우향은 side flipX).
         buildCharSet(prefix, pal) {
           for (const dir of CHAR_DIRS) {
             for (const pose of CHAR_POSES) {
@@ -874,14 +926,17 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           // build-map.mjs 가 구운 448×384 다치 격자를 디코드(0=sea·1=land·2=river·3=lake·4=fence·5=bridge).
           // 통행 차단은 isBlocked(sea·fence)만 — river·lake·bridge 는 걸어서 통과 가능(오너 스펙).
           this.grid = decodeMap();
-          // 스폰 광장 보장: 서울(스폰)~인천공항 일대를 land 로 확정한다.
-          //   래스터 결과 영종도 해안이 좁아 광장이 바다에 잘리지 않도록 수도권 사각형만 land 보장.
+          // 스폰 광장 보장: 서울(스폰)~인천공항 일대의 "바다"만 land 로 메꾼다.
+          //   목적이 광장이 바다에 잘리지 않게 하는 것뿐이므로 SEA 한정 — 무차별 LAND 강제는
+          //   한강(RIVER 21타일)·영종대교(BRIDGE)·서측 철조망(FENCE 10타일)을 지워 국경이 뚫렸다
+          //   (오너 리포트 재현 완료 · mapData "수도권 광장 계약" 테스트가 이 SEA 한정 규칙을 게이트).
           const px0 = Math.min(POI.INCHEON.x, POI.SEOUL.x) - 1;
           const px1 = POI.SEOUL.x + PLAZA_R + 1;
           const py0 = POI.SEOUL.y - PLAZA_R - 1, py1 = POI.SEOUL.y + PLAZA_R + 1;
           for (let ty = py0; ty <= py1; ty++) {
             for (let tx = px0; tx <= px1; tx++) {
-              if (tx >= 0 && ty >= 0 && tx < MAP_W && ty < MAP_H) this.grid[ty * MAP_W + tx] = TERRAIN.LAND;
+              const i = ty * MAP_W + tx;
+              if (tx >= 0 && ty >= 0 && tx < MAP_W && ty < MAP_H && this.grid[i] === TERRAIN.SEA) this.grid[i] = TERRAIN.LAND;
             }
           }
           this.signTileX = POI.SEOUL.x + 3; this.signTileY = POI.SEOUL.y - 3;  // 퀘스트 팻말(스폰 곁)
@@ -901,12 +956,22 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           // land 계열(land·mountain·peak·plain)은 통행 가능 — 질감만 다르다. 해안(바다 인접)은 모래로 굽되
           // 산지·설산은 해안이라도 질감을 유지하고, 평야만 해안 시 모래로 접는다(모래 우선순위 보존).
           const seaTile = (tx, ty) => this.tileCode(tx, ty) === TERRAIN.SEA; // 해안 판정용(바다 인접만)
+          // 강 물줄기 연결 판정 — 이웃이 RIVER/LAKE/SEA 면 물로 이어진다(끊김 없이 흐르게).
+          const waterN = (tx, ty) => {
+            const cc = this.tileCode(tx, ty);
+            return cc === TERRAIN.RIVER || cc === TERRAIN.LAKE || cc === TERRAIN.SEA;
+          };
           const data = [];
           for (let y = 0; y < ROWS; y++) {
             const row = new Array(COLS);
             for (let x = 0; x < COLS; x++) {
               const c = this.grid[y * MAP_W + x];
-              if (c === TERRAIN.RIVER) { row[x] = 6; continue; }
+              if (c === TERRAIN.RIVER) {
+                const mask = (waterN(x, y - 1) ? RIVER_N : 0) | (waterN(x + 1, y) ? RIVER_E : 0)
+                  | (waterN(x, y + 1) ? RIVER_S : 0) | (waterN(x - 1, y) ? RIVER_W : 0);
+                row[x] = RIVER_TILE_BASE + mask;
+                continue;
+              }
               if (c === TERRAIN.LAKE) { row[x] = 7; continue; }
               if (c === TERRAIN.FENCE) { row[x] = 8; continue; }
               if (c === TERRAIN.BRIDGE) { row[x] = 9; continue; }
@@ -930,8 +995,8 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           this.signY = this.signTileY * TILE + TILE / 2;
           this.add.image(this.signX, this.signTileY * TILE + TILE, 't_sign').setOrigin(0.5, 1).setScale(TSCALE).setDepth(this.signY);
 
-          // ── 장소 노드 마커 — kind별 절차 마커 + 근접 시 뜨는 이름 라벨(비충돌). ──
-          // gate 있는 노드는 근접 시 A로 상호작용(story-scene·ferry). 마커는 걸어서 통과 가능(스폰 도시가 막히지 않게).
+          // ── 장소 노드 마커 — kind별 절차 마커(비충돌). 이름 라벨은 없다(포켓몬처럼 깨끗한 화면). ──
+          // 근접 시 A(말 걸기)로 설명 박스/게이트를 연다. 마커는 걸어서 통과 가능(스폰 도시가 막히지 않게).
           this.nodeViews = WORLD_NODES.map((node) => {
             const [tx, ty] = node.tile;
             const wx = tx * TILE + TILE / 2, wy = ty * TILE + TILE / 2;
@@ -939,9 +1004,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
             const markerKey = node.peak ? `t_peak_${node.peak}` : `t_node_${node.kind}`;
             const marker = this.add.image(wx, (ty + 1) * TILE, markerKey)
               .setOrigin(0.5, 1).setScale(TSCALE).setDepth(wy);
-            const label = this.add.text(wx, ty * TILE - 2, node.name, this.labelStyle())
-              .setOrigin(0.5, 1).setDepth(10000).setVisible(false);
-            return { node, marker, label, wx, wy };
+            return { node, marker, wx, wy };
           });
 
           // 밤이면 팻말 곁 랜턴 불빛 하나(포인트 광원). additive로 은은하게 번지게.
@@ -971,10 +1034,9 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           this.turnGrace = 0;
           const spawnX = this.pTileX * TILE + TILE / 2;
           const spawnY = this.pTileY * TILE + TILE / 2;
-          // 16×24 스프라이트: 하단 16px(=타일)이 발, 상단 8px가 타일 위로. origin Y 보정으로 발을 타일에 정렬.
+          // 16×16 스프라이트(한 칸): origin 0.5로 타일 중심에 정렬 — 골드 필드 스프라이트 배치.
           this.player = this.add.image(spawnX, spawnY, 'pc_down_n').setOrigin(0.5, CHAR_ORIGIN_Y).setScale(TSCALE);
-
-          this.nick = this.add.text(spawnX, spawnY + LABEL_DY, nickRef.current, this.labelStyle()).setOrigin(0.5, 0).setDepth(10000);
+          // 닉네임 라벨은 없다(포켓몬처럼 깨끗한 화면) — 피어도 동일.
 
           // ── 펫(그리드 추적) ──
           this.petTargetX = this.pTileX - 1; this.petTargetY = this.pTileY;
@@ -1035,18 +1097,6 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           if (!this.pet) return;
           this.tweens.add({ targets: this, petJumpVal: 1, duration: 220, ease: 'Quad.easeOut', yoyo: true, repeat: 1 });
           for (let i = 0; i < 3; i++) this.time.delayedCall(i * 120, () => this.spawnHeart());
-        }
-
-        // 닉네임 나메플레이트 — GBC 다이얼로그 문법(크림 박스 + 잉크 모노스페이스, 하드 엣지).
-        // resolution: zoom 1 + 2배 백킹 덕에 텍스트 쿼드가 이제 fontSize와 backing px 1:1이라
-        // (예전 zoom 0.5 땐 5px로 축소돼 resolution 3의 슈퍼샘플 보정이 필요했다) 기본값(1)이면
-        // 충분히 선명하다. 더 올리면 nearest 필터 하에서 다운샘플 아티팩트로 오히려 다시 뭉개진다.
-        labelStyle() {
-          return {
-            fontFamily: 'monospace', fontSize: '10px', color: GBC.ink,
-            backgroundColor: GBC.cream, padding: { x: 4, y: 2 },
-            resolution: 1,
-          };
         }
 
         petTexKey(frame) {
@@ -1204,13 +1254,12 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
             if (!p) {
               const sx = tileX * TILE + TILE / 2, sy = tileY * TILE + TILE / 2;
               const sprite = this.add.image(sx, sy, 'pr_down_n').setOrigin(0.5, CHAR_ORIGIN_Y).setScale(TSCALE);
-              const label = this.add.text(sx, sy + LABEL_DY, st.nick || '', this.labelStyle()).setOrigin(0.5, 0).setDepth(10000);
-              p = { sprite, label, tileX, tileY, destTileX: tileX, destTileY: tileY, facing: 'down', moving: false };
+              // 피어 닉네임 라벨은 없다(깨끗한 화면). 근접 음성/거리 계산은 스프라이트 좌표로만.
+              p = { sprite, tileX, tileY, destTileX: tileX, destTileY: tileY, facing: 'down', moving: false };
               this.peers.set(id, p);
             }
             p.destTileX = tileX; p.destTileY = tileY;
             if (VALID_DIR.has(st.dir)) p.facing = st.dir;
-            if (st.nick != null) p.label.setText(st.nick);
             // 너무 먼 순간이동은 스냅(길게 기어가지 않게).
             if (!p.moving && (Math.abs(tileX - p.tileX) + Math.abs(tileY - p.tileY)) > 8) {
               p.tileX = tileX; p.tileY = tileY;
@@ -1218,7 +1267,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
             }
           }
           for (const [id, p] of this.peers) {
-            if (!seen.has(id)) { p.sprite.destroy(); p.label.destroy(); this.peers.delete(id); }
+            if (!seen.has(id)) { p.sprite.destroy(); this.peers.delete(id); }
           }
         }
 
@@ -1278,7 +1327,6 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           const charAnimMs = this.runHeld ? RUN_ANIM_MS : CHAR_ANIM_MS;
           this.setCharFrame(this.player, 'pc', this.facing, this.moving, time, charAnimMs);
           this.player.setDepth(this.player.y);
-          this.nick.setPosition(this.player.x, this.player.y + LABEL_DY);
 
           // ── 펫: 목표 타일 중심으로 수동 그리드 추적 + 뒤뚱/바운스 ──
           const petObj = petRef.current || {};
@@ -1326,7 +1374,6 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
             }
             this.setCharFrame(p.sprite, 'pr', p.facing, p.moving, time);
             p.sprite.setDepth(p.sprite.y);
-            p.label.setPosition(p.sprite.x, p.sprite.y + LABEL_DY);
           }
 
           // ── local:state — ~100ms 스로틀 (좌표는 예전과 동일 스케일의 월드 px) ──
@@ -1339,17 +1386,17 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           const near = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.signX, this.signY) < QUEST_RANGE;
           if (near !== this.wasNear) { this.wasNear = near; setNearQuest(near); }
 
-          // ── 장소 노드 근접: 이름 라벨 토글 + 가장 가까운 gate 노드를 React 프롬프트로 통지 ──
-          let nearestGate = null, nearestD = QUEST_RANGE;
+          // ── 장소 노드/명산 근접: 가장 가까운 노드(게이트 유무 무관)를 React 로 통지. ──
+          // 라벨은 없다 — A(말 걸기)로 gate(우선) 또는 desc 설명 박스를 연다. desc/gate 는 노드 데이터에서.
+          let nearest = null, nearestD = NODE_TALK_RANGE;
           for (const v of this.nodeViews) {
             const d = Phaser.Math.Distance.Between(this.player.x, this.player.y, v.wx, v.wy);
-            v.label.setVisible(d < NODE_LABEL_RANGE);
-            if (v.node.gate && d < nearestD) { nearestGate = v.node; nearestD = d; }
+            if (d < nearestD) { nearest = v.node; nearestD = d; }
           }
-          const gid = nearestGate ? nearestGate.id : null;
-          if (gid !== this.wasNearNodeId) {
-            this.wasNearNodeId = gid;
-            setNearNode(nearestGate ? { id: nearestGate.id, name: nearestGate.name, gate: nearestGate.gate } : null);
+          const nid = nearest ? nearest.id : null;
+          if (nid !== this.wasNearNodeId) {
+            this.wasNearNodeId = nid;
+            setNearNode(nearest ? { id: nearest.id, name: nearest.name, desc: nearest.desc, gate: nearest.gate } : null);
           }
         }
       }
@@ -1477,7 +1524,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         <Minimap sceneRef={sceneRef} onClose={() => setMinimapOpen(false)} />
       )}
 
-      {/* 장소 게이트 근접 → 상호작용 프롬프트(story-scene: 공항 진입 · ferry: 페리 확인). */}
+      {/* 장소 게이트 근접 → 상호작용 프롬프트(story-scene: 공항 진입 · ferry: 페리 확인). 설명(desc)은 한 줄 병기. */}
       {nearNode?.gate && !storyActive && !reviewOpen && !ferryPrompt && (
         <div style={{
           position: 'absolute', left: '50%', bottom: 18, transform: 'translateX(-50%)',
@@ -1487,6 +1534,11 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           <span style={{ fontSize: '1.3rem', lineHeight: 1 }}>{nearNode.gate.type === 'ferry' ? '⚓' : '✈'}</span>
           <span style={{ flex: 1, fontSize: '0.8rem', lineHeight: 1.5 }}>
             {nearNode.name} {nearNode.gate.label} — {nearNode.gate.type === 'ferry' ? '페리를 탈까요?' : '탑승할까요?'}
+            {nearNode.desc && (
+              <span style={{ display: 'block', fontSize: '0.68rem', opacity: 0.82, marginTop: 3, lineHeight: 1.45 }}>
+                {nearNode.desc}
+              </span>
+            )}
           </span>
           <button
             type="button"
@@ -1502,6 +1554,39 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           >
             {nearNode.gate.type === 'ferry' ? '타기' : '들어가기'}
           </button>
+        </div>
+      )}
+
+      {/* 게이트 없는 노드/명산 근접 → "Ⓐ 살펴보기" 프롬프트(라벨 대신). A로 설명 박스를 연다. */}
+      {nearNode && !nearNode.gate && !descOpen && !storyActive && !reviewOpen && !ferryPrompt && !minimapOpen && (
+        <div style={{
+          position: 'absolute', left: '50%', bottom: 18, transform: 'translateX(-50%)',
+          fontFamily: GBC.font, fontSize: '0.7rem', color: GBC.ink,
+          background: GBC.cream, border: `2px solid ${GBC.border}`,
+          boxShadow: `inset 0 0 0 1px ${GBC.creamHi}`, borderRadius: 2,
+          padding: '4px 10px', lineHeight: 1.2, whiteSpace: 'nowrap',
+        }}>
+          Ⓐ {nearNode.name} 살펴보기
+        </div>
+      )}
+
+      {/* GBC 설명 박스 — A로 열고 B(또는 A)로 닫는다. 노드/명산 이름 + desc 1~2문장. */}
+      {descOpen && nearNode && !nearNode.gate && (
+        <div style={{
+          position: 'absolute', left: '50%', bottom: 18, transform: 'translateX(-50%)',
+          ...gbcPanel, width: 'min(92%, 380px)', padding: '12px 14px',
+        }}>
+          <div style={{ fontSize: '0.85rem', fontWeight: 'bold', marginBottom: 6 }}>{nearNode.name}</div>
+          <p style={{ fontSize: '0.78rem', lineHeight: 1.6, margin: 0 }}>{nearNode.desc}</p>
+          <div style={{ textAlign: 'right', marginTop: 8 }}>
+            <button
+              type="button"
+              onClick={() => setDescOpen(false)}
+              style={{ ...gbcButtonPrimary, fontSize: '0.7rem', padding: '3px 10px' }}
+            >
+              닫기 Ⓑ
+            </button>
+          </div>
         </div>
       )}
 
