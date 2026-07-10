@@ -12,7 +12,23 @@
 //
 // React/Next/Phaser 의존 0 — vitest(node)에서 그대로 임포트해 무결성을 검증한다.
 
-import { POI, MAP_W, MAP_H, TERRAIN, decodeMap } from './mapData';
+import { POI, MAP_W, MAP_H, TERRAIN, decodeMap, project } from './mapData';
+
+// 명산(名山) — 전용 도트 조각 + 이름 라벨. lon/lat 는 build-map.mjs NAMED_PEAKS 와 동일값이라
+// project() 로 얻는 타일이 build-map 이 PEAK 로 보장한 타일과 정확히 일치한다(오프셋 0). peak 필드는
+// GameCanvas 가 t_peak_<peak> 전용 텍스처를 골라 마커 대신 그리는 키다. 게이트 없음(라벨만).
+//   백두·금강은 DMZ 북측이라 도달 불가 — 철조망 너머로 보이기만 하는 의도된 연출(라벨은 근접 시).
+const NAMED_PEAKS = [
+  { id: 'geumgang', name: '금강산', peak: 'geumgang', lon: 128.115, lat: 38.667 },
+  { id: 'seorak', name: '설악산', peak: 'seorak', lon: 128.470, lat: 38.120 },
+  { id: 'bukhan', name: '북한산', peak: 'bukhan', lon: 126.990, lat: 37.660 },
+  { id: 'jiri', name: '지리산', peak: 'jiri', lon: 127.730, lat: 35.340 },
+  { id: 'halla', name: '한라산', peak: 'halla', lon: 126.530, lat: 33.370 },
+  { id: 'aso', name: '아소산', peak: 'aso', lon: 131.090, lat: 32.880 },
+].map(({ id, name, peak, lon, lat }) => {
+  const { x, y } = project(lon, lat);
+  return { id, name, kind: 'landmark', tile: [x, y], peak };
+});
 
 export const WORLD_NODES = [
   // 서울 — 스폰 도시.
@@ -41,10 +57,12 @@ export const WORLD_NODES = [
   // 하네다 — 랜드마크(표지 마커만).
   { id: 'haneda', name: '하네다', kind: 'landmark', tile: [POI.HANEDA.x, POI.HANEDA.y] },
   // 백두산 — 설산 랜드마크(게이트 없음, 마커+이름 라벨만). DMZ 북측이라 철조망 너머로 보이기만 하고
-  //   실제로는 도달 불가 — 의도된 연출(넘어갈 수 없는, 멀리 보이는 설산). PEAK 타일 위.
-  { id: 'baekdu', name: '백두산', kind: 'landmark', tile: [POI.BAEKDU.x, POI.BAEKDU.y] },
-  // 후지산 — 설산 랜드마크(게이트 없음). PEAK 타일 위, 혼슈에서 도달 가능.
-  { id: 'fuji', name: '후지산', kind: 'landmark', tile: [POI.FUJI.x, POI.FUJI.y] },
+  //   실제로는 도달 불가 — 의도된 연출(넘어갈 수 없는, 멀리 보이는 설산). PEAK 타일 위. peak='baekdu'.
+  { id: 'baekdu', name: '백두산', kind: 'landmark', tile: [POI.BAEKDU.x, POI.BAEKDU.y], peak: 'baekdu' },
+  // 후지산 — 설산 랜드마크(게이트 없음). PEAK 타일 위, 혼슈에서 도달 가능. peak='fuji'.
+  { id: 'fuji', name: '후지산', kind: 'landmark', tile: [POI.FUJI.x, POI.FUJI.y], peak: 'fuji' },
+  // 명산 6종(금강·설악·북한·지리·한라·아소) — 전용 도트 조각 + 이름 라벨.
+  ...NAMED_PEAKS,
 ];
 
 // id → 노드(게이트 참조 해석·페리 목적지 조회용).

@@ -395,6 +395,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           this.buildDecor();
           this.buildSign();
           this.buildNodeMarkers();
+          this.buildNamedPeaks();  // 명산 전용 도트 조각(worldNodes peak 필드 → t_peak_<peak>)
           this.buildHeart();
           this.buildLamp();
           this.buildCharSet('pc', this.charPal.pc);
@@ -496,21 +497,39 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         // 산지(짙은 녹 능선+음영 도트) · 고산/설산(회백 암석+흰 설관) · 평야(밝은 황록 농지 격자 힌트).
         // toneColor 로 시간대 톤을 함께 굽는다 — 밤이면 설산이 푸르스름해지는 것은 톤 함수가 알아서 한다.
         buildTerrain() {
-          // 산지 — 짙은 녹 능선 + 음영 도트.
-          {
+          // ── 산지 3종 변형(능선 방향·밀도 차이) — 타일 좌표 해시로 골라 롤러 자국 같은 단조로움 제거. ──
+          const mBase = toneColor(0x4f7a3a, this.mode);    // 산기슭 녹
+          const mRidge = toneColor(0x35602b, this.mode);   // 능선 그림자(짙은 녹)
+          const mHi = toneColor(0x6fa048, this.mode);      // 능선 양지
+          // 삼각 능선 하나 — 정점(ax,ay)에서 아래로 h줄 계단 도트, hiSide 사면에 양지 하이라이트.
+          const ridgeTri = (g, ax, ay, h, hiSide) => {
+            g.fillStyle(mRidge, 1);
+            for (let i = 0; i < h; i++) g.fillRect(ax - i, ay + i, 1 + i * 2, 1);
+            g.fillStyle(mHi, 1);
+            for (let i = 0; i < h - 2; i++) g.fillRect(hiSide === 'l' ? ax - i : ax + i, ay + i, 1, 1);
+          };
+          const mtn = (key, draw) => {
             const g = this.make.graphics({ add: false });
-            const base = toneColor(0x4f7a3a, this.mode);   // 산기슭 녹
-            const ridge = toneColor(0x35602b, this.mode);  // 능선 그림자(짙은 녹)
-            const hi = toneColor(0x6fa048, this.mode);     // 능선 양지
-            g.fillStyle(base, 1); g.fillRect(0, 0, TEX, TEX);
-            g.fillStyle(ridge, 1);
-            for (let i = 0; i < 8; i++) g.fillRect(8 - i, 4 + i, 1 + i * 2, 1); // 삼각 능선(계단 도트)
-            g.fillStyle(hi, 1);
-            for (let i = 0; i < 6; i++) g.fillRect(8 - i, 4 + i, 1, 1);         // 왼 사면 양지
-            g.fillStyle(ridge, 1);
-            for (const [x, y] of [[3, 12], [11, 13], [6, 14], [13, 10], [2, 9]]) g.fillRect(x, y, 1, 1); // 음영 도트
-            g.generateTexture('t_mountain', TEX, TEX); g.destroy();
-          }
+            g.fillStyle(mBase, 1); g.fillRect(0, 0, TEX, TEX);
+            draw(g);
+            g.generateTexture(key, TEX, TEX); g.destroy();
+          };
+          mtn('t_mountain', (g) => {                        // A: 좌향 단일 능선(중밀도) — 기존 톤
+            ridgeTri(g, 8, 4, 8, 'l');
+            g.fillStyle(mRidge, 1);
+            for (const [x, y] of [[3, 12], [11, 13], [6, 14], [13, 10], [2, 9]]) g.fillRect(x, y, 1, 1);
+          });
+          mtn('t_mountain_b', (g) => {                      // B: 쌍봉(트윈) + 고밀도 음영(울창한 숲)
+            ridgeTri(g, 5, 6, 6, 'l');
+            ridgeTri(g, 11, 3, 9, 'r');
+            g.fillStyle(mRidge, 1);
+            for (const [x, y] of [[2, 11], [4, 14], [7, 13], [9, 15], [12, 12], [14, 14], [1, 13], [6, 10]]) g.fillRect(x, y, 1, 1);
+          });
+          mtn('t_mountain_c', (g) => {                      // C: 우향 낮은 능선(저밀도 · 완만)
+            ridgeTri(g, 9, 6, 6, 'r');
+            g.fillStyle(mRidge, 1);
+            for (const [x, y] of [[4, 13], [12, 14], [8, 12]]) g.fillRect(x, y, 1, 1);
+          });
           // 고산/설산 — 회백 암석 + 흰 설관.
           {
             const g = this.make.graphics({ add: false });
@@ -541,6 +560,100 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
             for (const [x, y] of [[2, 2], [8, 3], [13, 8], [3, 8], [9, 13], [14, 2]]) g.fillRect(x, y, 1, 1);
             g.generateTexture('t_plain', TEX, TEX); g.destroy();
           }
+        }
+
+        // ── 명산(名山) 전용 도트 조각 — 지정 8명산에 개별 실루엣 스프라이트. ──
+        // worldNodes 의 peak 필드(baekdu·geumgang·seorak·bukhan·jiri·halla·fuji·aso)를 키로 t_peak_<peak>
+        // 텍스처를 굽는다. 마커(노드)로 오버레이되며(≤8 스프라이트), 타일맵을 오염시키지 않는다.
+        // 규격: 16×24(노드 마커와 동일 · origin 하단중앙). 후지산만 상징성 위해 32×28(2타일 폭 허용).
+        buildNamedPeaks() {
+          const rock = toneColor(0x8a8f98, this.mode);   // 회백 암석
+          const rockD = toneColor(0x5f636b, this.mode);  // 암석 그림자
+          const snow = toneColor(0xf2f5fa, this.mode);   // 설관(흰)
+          const snowD = toneColor(0xcdd6e2, this.mode);  // 설관 음영
+          const forest = toneColor(0x3f7030, this.mode); // 완만 명산 산체(녹)
+          const forestD = toneColor(0x2c5222, this.mode);
+          const lake = toneColor(0x2f74c8, this.mode);   // 백두산 천지 칼데라
+          const granite = toneColor(0xbcae93, this.mode);// 북한산 화강암 돔
+          const graniteD = toneColor(0x8c7d61, this.mode);
+          const smoke = toneColor(0xbfb7ab, this.mode);  // 아소 분연
+
+          // 삼각 원뿔 — 정점(cx,topY)에서 botY까지 매 줄 grow px씩 좌우로 벌어지는 채움.
+          const cone = (g, color, cx, topY, botY, grow = 1) => {
+            g.fillStyle(color, 1);
+            let half = 0;
+            for (let y = topY; y <= botY; y++) { g.fillRect(Math.round(cx - half), y, Math.round(half * 2) + 1, 1); half += grow; }
+          };
+          // 침봉(뾰족 암탑) — x위치·높이 다발. snowTip 이면 끝에 눈 픽셀.
+          const spires = (g, base, botY, cols, snowTip) => {
+            for (const [x, h] of cols) {
+              g.fillStyle(base, 1); g.fillRect(x, botY - h, 2, h);
+              g.fillStyle(rockD, 1); g.fillRect(x + 1, botY - h, 1, h);
+              if (snowTip) { g.fillStyle(snow, 1); g.fillRect(x, botY - h, 2, 1); }
+            }
+          };
+          const mk = (key, w, h, draw) => {
+            const g = this.make.graphics({ add: false });
+            draw(g, w, h);
+            g.generateTexture(key, w, h); g.destroy();
+          };
+          const W = TEX, H = TEX + 8; // 16×24
+
+          // 백두산 — 천지 칼데라: 회백 산체 + 설관 + 정상 파란 호수 픽셀.
+          mk('t_peak_baekdu', W, H, (g) => {
+            cone(g, rock, 8, 7, 23, 1);
+            cone(g, snow, 8, 7, 13, 1);
+            g.fillStyle(rockD, 1); g.fillRect(6, 8, 1, 1); g.fillRect(10, 8, 1, 1); // 칼데라 벽
+            g.fillStyle(lake, 1); g.fillRect(7, 8, 3, 2);                            // 천지
+          });
+          // 금강산 — 기암 침봉(회백 뾰족 다발), 눈 없음.
+          mk('t_peak_geumgang', W, H, (g) => {
+            cone(g, rockD, 8, 14, 23, 1.4);
+            spires(g, rock, 22, [[2, 8], [5, 12], [8, 15], [11, 11], [13, 7]], false);
+          });
+          // 설악산 — 침봉 + 설관(끝에 눈).
+          mk('t_peak_seorak', W, H, (g) => {
+            cone(g, rockD, 8, 13, 23, 1.4);
+            spires(g, rock, 22, [[2, 7], [5, 11], [8, 14], [11, 12], [13, 8]], true);
+          });
+          // 북한산 — 화강암 돔(둥근 반구).
+          mk('t_peak_bukhan', W, H, (g) => {
+            g.fillStyle(graniteD, 1);
+            for (const [dy, w] of [[0, 4], [1, 8], [2, 10], [3, 12]]) g.fillRect(8 - w / 2, 12 + dy, w, 1);
+            g.fillStyle(granite, 1);
+            for (const [dy, w] of [[4, 14], [5, 14], [6, 14], [7, 14]]) g.fillRect(8 - w / 2, 12 + dy, w, 1);
+            g.fillRect(2, 23, 12, 1);
+            g.fillStyle(snow, 0.5); g.fillRect(6, 13, 2, 1);  // 화강암 반사광
+          });
+          // 지리산 — 완만한 장릉(넓고 낮은 능선).
+          mk('t_peak_jiri', W, H, (g) => {
+            g.fillStyle(forestD, 1);
+            for (const [dy, x0, x1] of [[0, 5, 10], [1, 3, 12], [2, 2, 14]]) g.fillRect(x0, 15 + dy, x1 - x0 + 1, 1);
+            g.fillStyle(forest, 1); g.fillRect(1, 18, 14, 5);
+            g.fillStyle(forestD, 1); g.fillRect(7, 16, 3, 1); g.fillRect(4, 19, 1, 1); g.fillRect(11, 20, 1, 1);
+          });
+          // 한라산 — 방패형(넓은 저각 돔) + 정상 분화구 함몰.
+          mk('t_peak_halla', W, H, (g) => {
+            g.fillStyle(forestD, 1);
+            for (const [dy, w] of [[0, 6], [1, 10], [2, 13]]) g.fillRect(8 - (w >> 1), 13 + dy, w, 1);
+            g.fillStyle(forest, 1); g.fillRect(1, 16, 14, 7);
+            g.fillStyle(rockD, 1); g.fillRect(6, 13, 4, 1); g.fillRect(6, 13, 1, 1); g.fillRect(9, 13, 1, 1); // 백록담 분화구
+          });
+          // 후지산 — 대칭 원뿔 + 넓은 설관(2타일 폭 · 상징성 최대).
+          mk('t_peak_fuji', 32, 28, (g) => {
+            cone(g, rock, 16, 3, 27, 0.62);
+            cone(g, snow, 16, 3, 13, 0.62);
+            g.fillStyle(snowD, 1);
+            for (let i = 0; i < 7; i++) g.fillRect(16 + i, 3 + i, 1, 1);   // 오른 사면 음영
+            g.fillStyle(snow, 1); g.fillRect(11, 13, 3, 3); g.fillRect(19, 14, 3, 2); // 잔설 골(세리)
+          });
+          // 아소산 — 칼데라(넓은 저각 림 + 함몰) + 분연 1픽셀.
+          mk('t_peak_aso', W, H, (g) => {
+            g.fillStyle(rockD, 1); g.fillRect(1, 18, 14, 5);
+            g.fillStyle(rock, 1); g.fillRect(2, 16, 5, 2); g.fillRect(9, 16, 5, 2);  // 칼데라 양 림
+            g.fillStyle(forestD, 1); g.fillRect(6, 17, 4, 2);                         // 화구 함몰(그늘)
+            g.fillStyle(smoke, 1); g.fillRect(8, 10, 1, 6); g.fillRect(7, 11, 1, 1); g.fillRect(9, 13, 1, 1); // 분연
+          });
         }
 
         // 장소 노드 마커 — kind별 절차 생성 도트(외부 에셋 0). 16×24, 발밑(하단 중앙) 정렬.
@@ -612,12 +725,13 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         // 절차 생성 타일 텍스처들을 1장의 캔버스로 합쳐 Phaser tilemap tileset을 만든다.
         // (타일마다 add.image = 172k 오브젝트는 불가 → 레이어 1장 + 내장 컬링으로 전환.)
         // 인덱스: 0=빈칸, 1=잔디(land), 2/3/4=바다 3프레임, 5=모래(해안),
-        //         6=강, 7=호수, 8=DMZ 철조망, 9=교량, 10=산지, 11=고산/설산, 12=평야(TERRAIN 전 코드 커버).
+        //         6=강, 7=호수, 8=DMZ 철조망, 9=교량, 10=산지A, 11=고산/설산, 12=평야,
+        //         13=산지B(쌍봉), 14=산지C(완만) — 산지 3변형은 타일맵 빌드가 좌표 해시로 골라 넣는다.
         buildTileAtlas() {
           // 씬 재시작(공항→광장 복귀) 시 텍스처는 전역 TextureManager에 이미 존재 →
           // createCanvas가 null을 반환하므로, 있으면 재사용(톤은 최초 로드값 유지 — generateTexture와 동일 관례).
           if (this.textures.exists('tiles')) return;
-          const keys = [null, 't_grass', 't_water0', 't_water1', 't_water2', 't_sand', 't_river', 't_lake', 't_fence', 't_bridge', 't_mountain', 't_peak', 't_plain'];
+          const keys = [null, 't_grass', 't_water0', 't_water1', 't_water2', 't_sand', 't_river', 't_lake', 't_fence', 't_bridge', 't_mountain', 't_peak', 't_plain', 't_mountain_b', 't_mountain_c'];
           const cols = keys.length;
           const atlas = this.textures.createCanvas('tiles', cols * TEX, TEX);
           const ctx = atlas.getContext();
@@ -796,7 +910,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
               if (c === TERRAIN.LAKE) { row[x] = 7; continue; }
               if (c === TERRAIN.FENCE) { row[x] = 8; continue; }
               if (c === TERRAIN.BRIDGE) { row[x] = 9; continue; }
-              if (c === TERRAIN.MOUNTAIN) { row[x] = 10; continue; }
+              if (c === TERRAIN.MOUNTAIN) { const mh = tileHash(x, y); row[x] = mh < 0.34 ? 10 : mh < 0.67 ? 13 : 14; continue; } // 산지 3변형(좌표 해시)
               if (c === TERRAIN.PEAK) { row[x] = 11; continue; }
               if (c !== TERRAIN.LAND && c !== TERRAIN.PLAIN) { row[x] = 2; continue; } // sea
               // 해안: land/plain 이면서 4-이웃에 바다(sea)가 있으면 모래(강·호수 인접은 해안 아님).
@@ -821,7 +935,9 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           this.nodeViews = WORLD_NODES.map((node) => {
             const [tx, ty] = node.tile;
             const wx = tx * TILE + TILE / 2, wy = ty * TILE + TILE / 2;
-            const marker = this.add.image(wx, (ty + 1) * TILE, `t_node_${node.kind}`)
+            // 명산(peak 필드)은 전용 도트 조각(t_peak_<peak>)을 마커 대신 얹는다 — 일반 랜드마크 탑 대신.
+            const markerKey = node.peak ? `t_peak_${node.peak}` : `t_node_${node.kind}`;
+            const marker = this.add.image(wx, (ty + 1) * TILE, markerKey)
               .setOrigin(0.5, 1).setScale(TSCALE).setDepth(wy);
             const label = this.add.text(wx, ty * TILE - 2, node.name, this.labelStyle())
               .setOrigin(0.5, 1).setDepth(10000).setVisible(false);

@@ -191,6 +191,14 @@ function polylineTiles(pts) {
   return out;
 }
 
+// 결정적 해시 노이즈(정수 좌표+salt → 0..1). 산지 폴백 브러시의 폭 변조·가장자리 디더링·
+// 지선·PEAK 간격 요동에 쓴다 — Math.random 미사용이므로 재생성 시 byte-identical 이 보장된다.
+function hashNoise(x, y, salt = 0) {
+  let n = (Math.imul(x | 0, 73856093) ^ Math.imul(y | 0, 19349663) ^ Math.imul(salt | 0, 83492791)) >>> 0;
+  n ^= n >>> 13; n = Math.imul(n, 0x5bd1e995) >>> 0; n ^= n >>> 15;
+  return (n >>> 0) / 0xffffffff;
+}
+
 // ── 다치(多値) 행 단위 RLE ──
 // 각 행 = 런들, 런 = `<value 1자리><length base36>`, 런은 ',' · 행은 ';' 구분.
 // 첫 문자로 값(0~5)을, 나머지로 런 길이를 읽는다(단일값 XOR 방식보다 일반화).
@@ -318,6 +326,21 @@ const PEAK_POINTS_FALLBACK = [[128.47, 38.12], [127.73, 35.34], [131.10, 32.88],
 const LANDMARKS = [
   { key: 'BAEKDU', name: '백두산', lon: 128.056, lat: 42.006 },
   { key: 'FUJI', name: '후지산', lon: 138.727, lat: 35.361 },
+];
+// 명산 개별화 — 지정 8명산 좌표의 land 타일을 PEAK 로 보장한다(전용 도트 오버레이 스프라이트 +
+// worldNodes 이름 라벨의 대상). GameCanvas NAMED_PEAKS·worldNodes 와 lon/lat 를 일치시켜(project 동일)
+// 타일 좌표가 어긋나지 않게 한다. 백두·후지는 LANDMARKS 에서 이미 PEAK(여기선 무해한 재보장).
+//   좌표(투영): 백두(89,99) 금강(90,181) 설악(97,195) 북한(68,206) 지리(82,263) 한라(59,312)
+//               후지(297,263) 아소(148,324).
+const NAMED_PEAKS = [
+  { key: 'baekdu', lon: 128.056, lat: 42.006 },
+  { key: 'geumgang', lon: 128.115, lat: 38.667 },
+  { key: 'seorak', lon: 128.470, lat: 38.120 },
+  { key: 'bukhan', lon: 126.990, lat: 37.660 },
+  { key: 'jiri', lon: 127.730, lat: 35.340 },
+  { key: 'halla', lon: 126.530, lat: 33.370 },
+  { key: 'fuji', lon: 138.727, lat: 35.361 },
+  { key: 'aso', lon: 131.090, lat: 32.880 },
 ];
 
 // ── 하드코딩 폴백 폴리곤 (출처 없음 · 손그림 근사 · 후속 교체 대상) ──
@@ -512,21 +535,66 @@ let mCount = 0, pkCount = 0, plCount = 0;
     console.warn('  ⚠️  ETOPO 고도 데이터 실패 → 폴백 산맥 폴리라인 브러시 사용(근사치 · 후속 교체 권장)');
     mountainMask = new Uint8Array(MAP_W * MAP_H);
     peakMask = new Uint8Array(MAP_W * MAP_H);
-    const paint = (mask, pts, brush) => {
-      for (const [x, y] of polylineTiles(pts.map(([lo, la]) => projF(lo, la)))) {
-        for (let dy = -brush; dy <= brush; dy++) for (let dx = -brush; dx <= brush; dx++) {
-          const nx = x + dx, ny = y + dy;
-          if (nx >= 0 && ny >= 0 && nx < MAP_W && ny < MAP_H) mask[ny * MAP_W + nx] = 1;
+    const inB = (x, y) => x >= 0 && y >= 0 && x < MAP_W && y < MAP_H;
+    const setM = (x, y) => { if (inB(x, y)) mountainMask[y * MAP_W + x] = 1; };
+    // 능선 중심선의 한 타일에 유기적 브러시를 찍는다.
+    //   · 다이아몬드(맨해튼 반경 half) 로 채워 사각 롤러 자국을 없앤다.
+    //   · half+1 경계 링은 해시 확률 ~40% 로만 찍어 산지↔육지 전이를 디더링(부드러운 가장자리).
+    const brushAt = (cx, cy, half, salt) => {
+      for (let dy = -half; dy <= half; dy++) {
+        for (let dx = -half; dx <= half; dx++) {
+          if (Math.abs(dx) + Math.abs(dy) <= half) setM(cx + dx, cy + dy);
+        }
+      }
+      const r = half + 1;
+      for (let dy = -r; dy <= r; dy++) {
+        for (let dx = -r; dx <= r; dx++) {
+          if (Math.abs(dx) + Math.abs(dy) !== r) continue;
+          if (hashNoise(cx + dx, cy + dy, salt + 7) < 0.4) setM(cx + dx, cy + dy);
         }
       }
     };
-    for (const r of MOUNTAIN_RANGES) paint(mountainMask, r, MOUNTAIN_BRUSH);
+    let ridgeSalt = 0;
+    for (const range of MOUNTAIN_RANGES) {
+      const salt = (ridgeSalt += 101);
+      const center = polylineTiles(range.map(([lo, la]) => projF(lo, la)));
+      const N = center.length;
+      let sincePeak = 99;
+      for (let i = 0; i < N; i++) {
+        const [cx, cy] = center[i];
+        const t = N > 1 ? i / (N - 1) : 0.5;
+        const taper = Math.sin(Math.PI * t);              // 말단 0 → 중앙 1 (산맥 중심부 두껍게)
+        // 폭 변조: 능선 반폭 1~4타일 요동(중심부 두껍고 말단 가늘게 + 해시 흔들림).
+        let half = 1 + Math.round(taper * 2 + hashNoise(cx, cy, salt) * 1.3);
+        if (half < 1) half = 1; if (half > 4) half = 4;
+        brushAt(cx, cy, half, salt);
+        // 지선(支線): 결정적 앵커에서 능선에 대략 수직으로 짧은 가지 능선(2~5타일, 끝을 가늘게).
+        if (i > 0 && i < N - 1 && hashNoise(cx, cy, salt + 3) < 0.14) {
+          const tx = center[i + 1][0] - center[i - 1][0];
+          const ty = center[i + 1][1] - center[i - 1][1];
+          let px = -Math.sign(ty), py = Math.sign(tx);    // 접선의 수직(부호만)
+          if (px === 0 && py === 0) { px = 1; py = 0; }
+          const side = hashNoise(cx, cy, salt + 5) < 0.5 ? 1 : -1;
+          px *= side; py *= side;
+          const len = 2 + Math.floor(hashNoise(cx, cy, salt + 9) * 4); // 2~5
+          let sx = cx, sy = cy;
+          for (let s = 1; s <= len; s++) {
+            sx += px; sy += py;
+            brushAt(sx, sy, s < len ? 1 : 0, salt + 13);  // 말단 반폭 0 → 뾰족하게 소멸
+          }
+        }
+        // PEAK 배치: 능선 중심선 위에만, 간격 요동(9~18타일). 말단(taper 낮음)은 제외 — 크레스트에만.
+        sincePeak++;
+        const gap = 9 + Math.floor(hashNoise(cx, cy, salt + 17) * 10);
+        if (sincePeak >= gap && taper > 0.35 && inB(cx, cy)) {
+          peakMask[cy * MAP_W + cx] = 1; sincePeak = 0;
+        }
+      }
+    }
+    // 명산 최고봉(설악·지리·아소·일본알프스 근사) — 중심선 밖이라도 단일 타일 PEAK 보장.
     for (const [lo, la] of PEAK_POINTS_FALLBACK) {
       const { x, y } = projR(lo, la);
-      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
-        const nx = x + dx, ny = y + dy;
-        if (nx >= 0 && ny >= 0 && nx < MAP_W && ny < MAP_H) peakMask[ny * MAP_W + nx] = 1;
-      }
+      if (inB(x, y)) peakMask[y * MAP_W + x] = 1;
     }
   }
 
@@ -572,6 +640,23 @@ let mCount = 0, pkCount = 0, plCount = 0;
     }
     console.log(`    랜드마크 ${lm.name}: (${x},${y}) 원래코드=${was} → PEAK 보장 (${was === TERRAIN.SEA ? '⚠️ 원래 바다' : 'land'})`);
   }
+
+  // 명산 개별화 — 지정 8명산 좌표의 land 타일을 PEAK 로 보장한다(GameCanvas 전용 도트 스프라이트가
+  //   이 타일 위에 오버레이되고, worldNodes 이름 라벨이 근접 시 뜬다). 중심 타일만 승격(설관 링 확장 없음)해
+  //   완만한 명산(지리·북한) 주변에 부자연스러운 설산 패치가 생기지 않게 한다. 백두·후지는 이미 PEAK.
+  let namedForced = 0;
+  for (const np of NAMED_PEAKS) {
+    const { x, y } = projR(np.lon, np.lat);
+    const c = getTile(x, y);
+    if (c === TERRAIN.LAND || c === TERRAIN.MOUNTAIN || c === TERRAIN.PLAIN || c === TERRAIN.PEAK) {
+      if (c !== TERRAIN.PEAK) namedForced++;
+      setTile(x, y, TERRAIN.PEAK);
+    } else {
+      console.warn(`    ⚠️ 명산 ${np.key} (${x},${y}) 원래코드=${c} — land 아님, PEAK 보장 생략`);
+    }
+  }
+  console.log(`  · 명산 PEAK 보장: ${NAMED_PEAKS.length}종 (신규 승격 ${namedForced})`);
+
   console.log(`  · 지형 질감 경로: ${terrainSource}`);
   console.log(`  · 질감 분류: MOUNTAIN=${mCount} PEAK(분류)=${pkCount} PLAIN=${plCount}`);
 }
