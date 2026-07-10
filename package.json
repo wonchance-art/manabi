@@ -12,6 +12,7 @@
     "prebuild": "node scripts/check-content.mjs && node scripts/check-reading.mjs && node scripts/update-sw-version.mjs && node scripts/copy-pdf-worker.mjs",
     "build": "next build",
     "start": "next start",
+    "lint": "eslint .",
     "check:reading": "node scripts/check-reading.mjs",
     "test": "vitest run",
     "e2e": "node --test --test-concurrency=1 e2e/smoke.e2e.mjs"
@@ -38,8 +39,11 @@
     "youtubei.js": "17.2.0"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.6",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^15.5.14",
     "playwright-core": "^1.61.0",
     "vitest": "^4.1.4"
   }
