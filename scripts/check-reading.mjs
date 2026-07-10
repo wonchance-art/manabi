@@ -6,7 +6,7 @@
  *
  * 실행:
  *   node scripts/check-reading.mjs             트랙 파일 검증(없으면 오류)
- *   node scripts/check-reading.mjs --self-test 내장 픽스처 36종 자가 검출 테스트
+ *   node scripts/check-reading.mjs --self-test 내장 픽스처 38종 자가 검출 테스트
  *
  * 검사 항목(코드):
  *   G1  전 글 newPatterns ∪ 전 드릴 patterns = bunkei N5 pattern 125 전수·중복 0·부재 0
@@ -38,8 +38,10 @@
  *       빈 값 = 오류, P2-4)으로 유효·치환 후 문장이 일본어·pattern이 그 글 newPatterns에 존재. produce: prompt·
  *       model(≥1)·guide 존재(비게이트).
  *       Q-cover: 게이트 문항(pattern|order|fill) ≥1로 신규 문형 전수 커버 — produce·content는 커버 불인정.
- *       Q-style(오너 지시, P3-7 확장): 게이트 문항 q에 회상형 지시("본문에서/을/을 보고/에 나온/의 문장" 등,
- *       공백·줄바꿈 변형 포함 정규식 매칭) = 오류(정해진 글 회상형 발문 금지, content는 예외). "본문" 단어
+ *       Q-style(오너 지시, P3-7·P3-9 확장): 게이트 문항 q에 회상형 지시("본문에서/을/을 보고/에 나온/의
+ *       문장/에 제시된/속/을 읽고/에 따르면", "지문에서/을 보고" 등, 공백·줄바꿈 변형 포함 정규식 매칭) =
+ *       오류(정해진 글 회상형 발문 금지, content는 예외 — GATE_TYPES 필터가 애초에 content를 이 검사에
+ *       넣지 않으므로 실 콘텐츠의 정당한 "본문에 따르면"(content 문항)은 영향 없음). "본문"·"지문" 단어
  *       자체가 아니라 이 회상 지시 패턴만 차단한다.
  *   FR  〜ました 도입 order 이전 글에 frame:'narration' 금지
  *   DR  drills[].patterns = 표 2 D군 13개 일치·style·afterOrder가 실존 글 order·items ≥1
@@ -550,9 +552,14 @@ function runChecks(track, ctx) {
       // 변형(\s*)까지 허용 매칭한다. "본문" 단어 자체가 아니라 이 회상 지시 패턴만 차단하므로
       // content 예외(위 GATE_TYPES 필터)는 그대로 유지되고, GATE_TYPES 밖의 순수 "본문" 언급은
       // 애초에 이 분기에 들어오지 않는다.
-      const Q_STYLE_RECALL_RE = /본문\s*(을\s*보고|을|에서|에\s*나온|의\s*문장)/;
+      // P3-9: 어휘 확장 — "본문에 제시된"·"본문 속"(Codex 재현: 열거 밖 동의어로 통과)·"본문을 읽고"·
+      // "본문에 따르면"·"지문에서"·"지문을 보고"를 추가한다. "지문"도 "본문"과 같은 회상 지시 접두로
+      // 취급(둘 다 "정해진 글"을 가리키는 동의어). "본문에 따르면"은 실 콘텐츠에서 content 문항(n5_tokyo
+      // 04-q4)이 정당하게 쓰는 표현이지만 GATE_TYPES(pattern|order|fill)에 content가 없어 이 분기에
+      // 애초에 들어오지 않으므로 영향 없음(오탐 없음, self-test로도 실 콘텐츠 오류 0 확인).
+      const Q_STYLE_RECALL_RE = /(본문|지문)\s*(을\s*보고|을\s*읽고|을|에서|에\s*나온|에\s*제시된|에\s*따르면|속|의\s*문장)/;
       if (GATE_TYPES.has(q.type) && typeof q.q === 'string' && Q_STYLE_RECALL_RE.test(q.q))
-        E('Q-style', `글${t.order} 발문에 회상형 지시(본문 참조) 금지(정해진 글 회상형 발문): ${q.q}`);
+        E('Q-style', `글${t.order} 발문에 회상형 지시(본문/지문 참조) 금지(정해진 글 회상형 발문): ${q.q}`);
 
       if (q.type === 'pattern' || q.type === 'content') {
         // 기존 선다 검사(choices 4개·중복·최소쌍 경고)는 type:'pattern'에만 적용(오너 지시, P4-7).
@@ -743,7 +750,7 @@ async function buildRealContext() {
   return { patternUniverse, dgroup: DGROUP, vocabPool, placeYomi: PLACE_YOMI, tokenizer, yomiMap, yomiLock, skipFurigana: false, travelCoreCount };
 }
 
-// ── 자가 테스트: 정상 베이스라인 + 결함 주입 36종(기존 26 + 신유형 order/fill/produce 5, P4
+// ── 자가 테스트: 정상 베이스라인 + 결함 주입 38종(기존 26 + 신유형 order/fill/produce 5, P4
 //    + order/fill 원소 스키마·Q-style 회상형 우회 변형 5, P2-4·P3-7) ──
 async function selfTest() {
   const tokenizer = await getTokenizer();
@@ -915,7 +922,8 @@ async function selfTest() {
   // 결함 주입 — [이름, 기대 코드, 변형 함수, 검사대상('error' 기본 | 'warn'), regenLock?].
   // 기존 22종(G1·G4·G5·G6·Q·DR·YLOCK·ID) + G4 v3·YLOCK-gone 4종 = 26종 + 신유형(order/fill/produce,
   // P4) 5종(order 순열 불일치·fill 빈칸 0개·produce 단독 커버 Q-cover 실패·"본문에서" 발문 Q-style·
-  // 신유형 id 누락) = 31종 + order/fill 원소 스키마·Q-style 회상형 우회 5종(P2-4·P3-7) = 36종.
+  // 신유형 id 누락) = 31종 + order/fill 원소 스키마·Q-style 회상형 우회 5종(P2-4·P3-7) = 36종
+  // + Q-style 어휘 확장(P3-9: "본문에 제시된"·"본문 속" — 열거 밖 동의어) 2종 = 38종.
   const fixtures = [
     ['전수 누락', 'G1-missing', (t) => { t.texts[1].newPatterns = []; }],
     ['중복 도입', 'G1-dup', (t) => { t.texts[1].newPatterns.push('〜です'); }],
@@ -999,6 +1007,9 @@ async function selfTest() {
     ['Q-style 우회 "본문을 보고"(P3-7)', 'Q-style', (t) => { t.texts[0].questions[0].q = '본문을 보고 알맞은 것을 고르세요.'; }],
     // 회상 지시 문구 사이 공백/줄바꿈 변형(정규식 \s* 매칭 확인) — "본문" 과 "에서" 사이 줄바꿈.
     ['Q-style 줄바꿈 변형(P3-7)', 'Q-style', (t) => { t.texts[0].questions[0].q = '본문\n에서 알맞은 것을 고르세요.'; }],
+    // ── P3-9 신규 2종: Q-style 어휘 확장(Codex 재현 — 열거 밖 동의어가 통과했던 두 변형) ──
+    ['Q-style 우회 "본문에 제시된 표현"(P3-9)', 'Q-style', (t) => { t.texts[0].questions[0].q = '본문에 제시된 표현으로 알맞은 것을 고르세요.'; }],
+    ['Q-style 우회 "본문 속 문장"(P3-9)', 'Q-style', (t) => { t.texts[0].questions[0].q = '본문 속 문장으로 알맞은 것을 고르세요.'; }],
   ];
 
   let detected = 0;

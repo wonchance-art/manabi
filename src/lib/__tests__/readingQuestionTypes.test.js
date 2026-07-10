@@ -213,6 +213,43 @@ describe('normalizeQuestion — 유형별 gating·itemKey 매핑', () => {
       );
       expect(n.qtype).toBe('error');
     });
+
+    // ── P2-8: fill accept 원소 런타임 검증(빌드 게이트와 대칭) ──
+    // accept:[{}] 처럼 비문자열 원소가 섞이면 이전엔 fill 로 그대로 정규화됐고, checkFill 이
+    // normalizeFill({}) → "[object Object]" 문자열과 사용자 입력을 비교해 그 문자열을 그대로
+    // 입력하면 정답 처리되는 경로가 열려 있었다(Codex 재현). 이제 qtype:'error'로 갈라져 그
+    // 경로(accept·fillAnswer 필드·checkFill 호출) 자체에 도달하지 않는다.
+    it('fill: accept에 비문자열 원소({}) — [object Object] 입력이 정답 처리되던 경로 봉쇄', () => {
+      const badQ = { id: 'q12', type: 'fill', pattern: '〜の', q: 'Q', ja: `文${FILL_BLANK}です。`, answer: 'の', accept: [{}] };
+      const n = normalizeQuestion(badQ, 'k12');
+      expect(n.qtype).toBe('error');
+      expect(n.gating).toBe(true);
+      // 봉쇄 확인: error 문항은 accept/fillAnswer 필드 자체가 없어 checkFill 채점 경로에 도달하지 않는다.
+      expect(n.accept).toBeUndefined();
+      expect(n.fillAnswer).toBeUndefined();
+    });
+    it('fill: accept에 빈 문자열 원소', () => {
+      const n = normalizeQuestion(
+        { id: 'q13', type: 'fill', pattern: '〜の', q: 'Q', ja: `文${FILL_BLANK}です。`, answer: 'の', accept: ['の', ''] },
+        'k13'
+      );
+      expect(n.qtype).toBe('error');
+    });
+    it('fill: accept가 배열이 아님(단일 값)', () => {
+      const n = normalizeQuestion(
+        { id: 'q14', type: 'fill', pattern: '〜の', q: 'Q', ja: `文${FILL_BLANK}です。`, answer: 'の', accept: 'の' },
+        'k14'
+      );
+      expect(n.qtype).toBe('error');
+    });
+    it('fill: accept 원소가 전부 유효한 문자열이면 정상 fill로 정규화(회귀 방지)', () => {
+      const n = normalizeQuestion(
+        { id: 'q15', type: 'fill', pattern: '〜の', q: 'Q', ja: `文${FILL_BLANK}です。`, answer: 'の', accept: ['の', 'ノ'] },
+        'k15'
+      );
+      expect(n.qtype).toBe('fill');
+      expect(n.accept).toEqual(['の', 'ノ']);
+    });
   });
 });
 

@@ -136,12 +136,25 @@ function isOrderSchemaValid(q) {
   const strOk = (x) => typeof x === 'string' && x.trim().length > 0;
   return tiles.every(strOk) && answer.every(strOk);
 }
-/** fill 문항 런타임 스키마 — ja에 빈칸 마커 정확히 1개 + answer가 비어있지 않은 문자열. */
+/**
+ * fill 문항 런타임 스키마 — ja에 빈칸 마커 정확히 1개 + answer가 비어있지 않은 문자열
+ * + accept(있으면) 배열이고 각 원소도 비어있지 않은 문자열(P2-8).
+ * 빌드 게이트(scripts/check-reading.mjs Q-fill)는 accept 원소를 검증하지만 런타임 정규화는
+ * 그동안 blank·answer만 봤다 — accept:[{}] 같은 문항도 fill 로 정규화돼 checkFill 이
+ * normalizeFill({}) → "[object Object]" 문자열과 비교했고, 사용자가 그 문자열 그대로
+ * 입력하면 정답 처리되는 경로가 열려 있었다(Codex 재현). 여기서 빌드 게이트와 대칭으로
+ * fail-closed — 위반 시 fill 로 정규화하지 않고 qtype:'error'(기존 fail-closed 경로)로 갈라낸다.
+ */
 function isFillSchemaValid(q) {
   const ja = typeof q.ja === 'string' ? q.ja : '';
   const blanks = ja.split(FILL_BLANK).length - 1;
   if (blanks !== 1) return false;
-  return typeof q.answer === 'string' && q.answer.trim().length > 0;
+  if (!(typeof q.answer === 'string' && q.answer.trim().length > 0)) return false;
+  if (q.accept !== undefined) {
+    if (!Array.isArray(q.accept)) return false;
+    if (!q.accept.every((x) => typeof x === 'string' && x.trim().length > 0)) return false;
+  }
+  return true;
 }
 
 /**

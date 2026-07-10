@@ -161,6 +161,9 @@ export default function WorldPage() {
   // net.onStatus('duplicate') — 다른 기기/탭에서 이미 접속 중이라 이 세션은 멀티를 포기했다.
   // 월드 진입 자체는 막지 않는다(솔로는 계속 가능) — 안내 배너 + 재시도만 노출.
   const [worldDuplicate, setWorldDuplicate] = useState(false);
+  // net.onStatus('lease-error') — 임대 판정이 알 수 없는 DB 오류로 실패해 멀티가 차단됐다
+  // (fail-closed, P2-5). presence 강등이 아니라 멀티 자체를 막으므로 안내 + 재시도만 노출.
+  const [worldLeaseError, setWorldLeaseError] = useState(false);
   // 중복 접속 판정 방식: 'lease'(world_sessions 서버 권위) | 'presence'(마이그레이션
   // 미적용 강등 — UX 가드). 강등일 때만 상태줄에 작은 표기(과하지 않게 — 툴팁 수준).
   const [worldGuard, setWorldGuard] = useState(null);
@@ -268,6 +271,7 @@ export default function WorldPage() {
     net.onStatus((s, info) => {
       if (cancelled) return;
       setWorldDuplicate(s === 'duplicate');
+      setWorldLeaseError(s === 'lease-error');
       if (s === 'connected') setWorldGuard(info?.enforcement || null);
     });
 
@@ -331,6 +335,7 @@ export default function WorldPage() {
       setMicOn(false);
       setNearVoiceCount(0);
       setWorldDuplicate(false);
+      setWorldLeaseError(false);
       setWorldGuard(null);
       bus.emit('peers:update', new Map()); // 남은 원격 캐릭터 정리
     };
@@ -444,6 +449,25 @@ export default function WorldPage() {
           <span style={{ fontSize: '1.1rem', lineHeight: 1 }}>⚠️</span>
           <span style={{ flex: 1, fontSize: '0.78rem', lineHeight: 1.4 }}>
             다른 기기/탭에서 이미 접속 중이에요 — 그쪽을 닫고 다시 시도해 주세요.
+          </span>
+          <Button size="sm" variant="secondary" onClick={retryWorldNet}>다시 시도</Button>
+        </div>
+      )}
+
+      {/* ── 임대 오류 안내 (fail-closed — 멀티만 차단, 솔로는 계속) ── */}
+      {worldLeaseError && (
+        <div
+          role="alert"
+          style={{
+            width: '100%', maxWidth: 540, display: 'flex', alignItems: 'center', gap: 10,
+            flexWrap: 'wrap', background: GBC.cream, color: GBC.ink, fontFamily: GBC.font,
+            border: `3px solid ${GBC.border}`, borderRadius: 2, padding: '10px 12px',
+            boxShadow: `inset 0 0 0 2px ${GBC.creamHi}, ${GBC.shadow}`,
+          }}
+        >
+          <span style={{ fontSize: '1.1rem', lineHeight: 1 }}>⚠️</span>
+          <span style={{ flex: 1, fontSize: '0.78rem', lineHeight: 1.4 }}>
+            지금은 멀티 접속을 확인할 수 없어 잠시 멈췄어요 — 혼자서는 계속 즐길 수 있어요. 잠시 뒤 다시 시도해 주세요.
           </span>
           <Button size="sm" variant="secondary" onClick={retryWorldNet}>다시 시도</Button>
         </div>

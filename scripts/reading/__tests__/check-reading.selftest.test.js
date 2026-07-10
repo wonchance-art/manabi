@@ -14,10 +14,11 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '.
 // Q-cover 실패·게이트 문항 "본문에서" 발문 Q-style·신유형 id 누락) = 31종.
 // + order/fill 원소 스키마·Q-style 회상형 우회 5종(P2-4·P3-7: 빈 문자열 타일·비문자열 동일 객체
 // 양배열·불량 accept·"본문을 보고"·줄바꿈 변형) = 36종.
+// + Q-style 어휘 확장 2종(P3-9: "본문에 제시된 표현"·"본문 속 문장" — 열거 밖 동의어 우회) = 38종.
 describe('check-reading --self-test', () => {
-  it('픽스처 36종을 모두 검출한다', () => {
+  it('픽스처 38종을 모두 검출한다', () => {
     const r = spawnSync('node', ['scripts/check-reading.mjs', '--self-test'], { cwd: ROOT, encoding: 'utf8' });
-    expect(r.stdout).toContain('36/36 검출');
+    expect(r.stdout).toContain('38/38 검출');
     expect(r.status).toBe(0);
   }, 30000);
 });

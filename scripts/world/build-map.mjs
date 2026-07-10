@@ -11,16 +11,23 @@
 //   0=sea(차단) 1=land 2=river(통행 가능 물) 3=lake(통행 가능 물)
 //   4=fence(DMZ, 차단) 5=bridge(바다 위 통행). isBlocked = 0·4 만 true.
 //   6=mountain 7=peak(고산/설산) 8=plain — 순수 시각 질감 레이어(전부 walkable · isBlocked 무변경).
-//   질감은 NOAA ETOPO 2022 고도(ERDDAP griddap CSV) → land 타일 분류. 실패 시 하드코딩 산맥 폴리라인 폴백.
+//   질감은 NOAA ETOPO 2022 고도(ERDDAP griddap CSV) → land 타일 분류. 실패 시 하드코딩 산맥 폴리라인 폴백
+//   (P2-7: 이 폴백도 degraded — --allow-degraded 없이는 fail).
 //
 // 데이터 출처(우선순위):
 //   육지: Natural Earth 10m → 50m → 110m admin_0_countries (KR·KP·JP 피처)
 //         · 10m 를 우선한다 — 50m 엔 강화도·영종도 등 경기만 소도서가 없다.
-//         · 모두 실패 시 하드코딩 폴백 폴리곤(파일 하단 FALLBACK — 근사·경고).
+//         · 10m 실패 후 50m/110m 로 넘어가는 것 자체가 degraded(P2-7 — 소도서 유실 위험).
+//         · 모두 실패 시 하드코딩 폴백 폴리곤(파일 하단 FALLBACK — 근사·경고, 마찬가지로 degraded).
 //   수계: ne_10m_rivers_lake_centerlines(한강·낙동강·압록강·두만강·도네가와) + ne_10m_lakes(비와호·수풍호)
-//         · bbox 필터 + 이름 화이트리스트. 실패 시 해당 수계 생략(경고) — 육지/DMZ/교량은 유지.
+//         · bbox 필터 + 이름 화이트리스트. 실패 시 해당 수계 생략(degraded) — 육지/DMZ/교량은 유지.
 //   DMZ 철조망·영종대교: 하드코딩 지오메트리(네트워크 무관·항상 적용).
 // 네트워크는 curl(프록시·CA 번들 자동 적용) 경유. 어떤 경로였는지 콘솔에 보고.
+//
+// 열화(degraded) 정책(P2-7): 체크섬 불일치·해상도 전환(10m→50m/110m)·ETOPO 폴백·수계 생략·
+// 육지 폴백 — 전부 --allow-degraded 없이는 exit 1 · mapData.js 미기록. 핵심 계약(write-before-fail)
+// 은 이와 별개로 항상 강제되며 전 POI(공항·항만·도심 등) walkable 여부도 포함한다 — 하나라도
+// BLOCKED 면 --allow-degraded 여부와 무관하게 exit 1.
 
 import { execFileSync } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
@@ -82,19 +89,23 @@ const SOURCE_SHA256 = {
   ne_10m_rivers_lake_centerlines: 'bb854a900ecbd3b408df46d5e16e3e0f974ba55993f9d8b5c26e855273c0905a',
 };
 const sha256 = (text) => createHash('sha256').update(text, 'utf8').digest('hex');
-// name = SOURCE_SHA256 키(파일명). 불일치 시 경고만(중단 아님 — 상류 변경 감지 신호).
+// 열화(degraded) 생성 허용 플래그(P2-5 #2 · P2-7). 수계 생략·육지 폴백·체크섬 불일치·해상도
+// 전환·ETOPO 폴백 등 실데이터 결손/드리프트를 감수하고 기록하려면 명시적으로 --allow-degraded
+// 를 줘야 한다(오케스트레이터의 의식적 결정) — 없으면 exit 1 · mapData.js 미기록.
+const ALLOW_DEGRADED = process.argv.includes('--allow-degraded');
+const degradedReasons = [];
+// name = SOURCE_SHA256 키(파일명). 불일치 시 명시적 degraded 사유로 등록(P2-7) — 경고만 하고
+// 소비하지 않던 이전 버전은 상류가 조용히 바뀐 콘텐츠도 exit 0으로 통과시켰다. 이제
+// --allow-degraded 없이는 fail. 기록 없는 소스(50m/110m 등 해상도 폴백)는 값만 출력(그 경로
+// 자체는 아래 해상도 전환 검사가 별도로 degraded 처리한다).
 function verifyChecksum(name, text) {
   const got = sha256(text);
   const want = SOURCE_SHA256[name];
   if (!want) { console.log(`  · 체크섬 ${name}: ${got} (기록 없음 — SOURCE_SHA256 에 추가 검토)`); return; }
-  if (got === want) console.log(`  · 체크섬 ${name}: ✓ 일치(${NE_TAG})`);
-  else console.warn(`  ⚠️  체크섬 ${name}: 불일치 — 상류 변경 감지(재생성 byte-identical 깨질 수 있음)\n      기대 ${want}\n      실제 ${got}`);
+  if (got === want) { console.log(`  · 체크섬 ${name}: ✓ 일치(${NE_TAG})`); return; }
+  console.warn(`  ⚠️  체크섬 ${name}: 불일치 — 상류 변경 감지(재생성 byte-identical 깨질 수 있음)\n      기대 ${want}\n      실제 ${got}`);
+  degradedReasons.push(`체크섬 불일치: ${name} — 상류(${NE_TAG}) 콘텐츠가 기록된 SHA-256과 다름(기대 ${want} / 실제 ${got})`);
 }
-
-// 열화(degraded) 생성 허용 플래그(P2-5 #2). 수계 생략·육지 폴백 등 실데이터 결손을 감수하고
-// 기록하려면 명시적으로 --allow-degraded 를 줘야 한다(오케스트레이터의 의식적 결정).
-const ALLOW_DEGRADED = process.argv.includes('--allow-degraded');
-const degradedReasons = [];
 
 // KR·KP·JP 피처만 추출. Natural Earth 속성명 편차(ADM0_A3 / ISO_A2 / NAME) 모두 대응.
 const WANT_A3 = new Set(['KOR', 'PRK', 'JPN']);
@@ -495,6 +506,11 @@ for (const [label, name] of [
   polys = acc;
   source = `Natural Earth ${label} (nvkelso/natural-earth-vector)`;
   console.log(`    ✓ ${label}: ${feats.length}개 피처 → ${acc.length}개 폴리곤`);
+  // 해상도 전환 자체가 degraded(P2-7): 10m 실패 후 50m/110m 로 넘어간 경로는 강화도·영종도
+  // 등 소도서가 없는 저해상도 폴리곤을 실데이터인 척 exit 0 으로 기록하던 구멍이었다.
+  if (label !== 'ne_10m') {
+    degradedReasons.push(`육지 해상도 전환: 10m 실패 → ${label} 사용(소도서(강화도·영종도 등) 누락 위험 · byte-identical 재현성 상실)`);
+  }
   break;
 }
 const usedFallback = !polys;
@@ -628,6 +644,11 @@ let mCount = 0, pkCount = 0, plCount = 0;
   } else {
     terrainSource = '폴백 하드코딩 산맥 폴리라인(근사 · 실측 아님 · 후속 교체 필요)';
     console.warn('  ⚠️  ETOPO 고도 데이터 실패 → 폴백 산맥 폴리라인 브러시 사용(근사치 · 후속 교체 권장)');
+    // P2-7: ETOPO 실패→하드코딩 폴백은 순수 시각 질감(isBlocked 무변경)이라도 명시적 degraded
+    // 사유로 등록한다. 이전 버전은 "설계상 허용된 텍스처 폴백"이라며 열화 게이트 밖에 두어
+    // ETOPO 실패가 정상 경로로 exit 0 을 내는 데 일조했다(Codex 재현: 10m 실패+ETOPO 실패가
+    // 겹친 경로도 degraded 표시 없이 통과) — 육지/해상도 실패와 동일하게 --allow-degraded 없이는 exit 1.
+    degradedReasons.push('지형 질감: ETOPO 2022 고도 데이터(ERDDAP griddap) 전 후보 실패 → 하드코딩 폴백 산맥 폴리라인 브러시(근사치 · 실측 DEM 아님)');
     mountainMask = new Uint8Array(MAP_W * MAP_H);
     peakMask = new Uint8Array(MAP_W * MAP_H);
     const inB = (x, y) => x >= 0 && y >= 0 && x < MAP_W && y < MAP_H;
@@ -883,18 +904,29 @@ if (!ok) { console.error('RLE 왕복 실패 — 중단'); process.exit(1); }
   if (reach[idx(kaesong.x, kaesong.y)]) errors.push('국경 미봉인 — 서울에서 개성 도달 가능(철조망 우회로)');
   if (reach[idx(pyongyang.x, pyongyang.y)]) errors.push('국경 미봉인 — 서울에서 평양 도달 가능(철조망 우회로)');
 
+  // ⑤ 전 POI 통행 가능(P2-7) — 공항·항만·도심 등 플레이 진입점은 예외 없이 walkable(!isBlocked)
+  //    이어야 한다. 이전 버전은 BLOCKED(!) 를 로그에만 찍고 exit 0 으로 파일을 썼다(Codex 재현:
+  //    INCHEON·BUSAN_TERMINAL 이 BLOCKED 인데 핵심 계약을 통과) — 이제 하나라도 BLOCKED 면 fail.
+  //    BAEKDU(DMZ 북측·국경 봉인상 서울에서 도달 불가는 의도)도 타일 자체는 LANDMARKS 단계에서
+  //    무조건 PEAK 로 보장되므로 walkable — "도달 불가"는 이 게이트가 검사하는 성질이 아니다.
+  for (const [k, p] of Object.entries(POI)) {
+    if (!walkable(p)) errors.push(`POI ${k} (${p.x},${p.y}) 가 BLOCKED(코드=${grid[idx(p.x, p.y)]}) — 통행 불가`);
+  }
+
   if (errors.length) {
     console.error('❌ 핵심 계약 위반 — mapData.js 미기록(파일 쓰기 전 중단):');
     for (const e of errors) console.error(`   · ${e}`);
     process.exit(1);
   }
-  console.log(`  · 핵심 계약 검증: ✓ (서울·도쿄 land · 영종대교 · 수계 · 펜스 연속 · 국경 봉인)`);
+  console.log(`  · 핵심 계약 검증: ✓ (서울·도쿄 land · 영종대교 · 수계 · 펜스 연속 · 국경 봉인 · 전 POI walkable)`);
 }
 
-// ── 열화(degraded) 게이트 (P2-5 #2) ──
-// 수계 생략·육지 폴백처럼 실데이터가 빠진 채로 기록하는 건 오케스트레이터의 의식적 결정이어야 한다.
-// --allow-degraded 없이는 exit 1 로 명시적 실패(묵음 폴백 채택 방지). ETOPO 고도 폴백은 설계상
-// 허용된 텍스처 폴백이라 여기 포함하지 않는다(현 커밋본도 이 상태로 정상 생성됨).
+// ── 열화(degraded) 게이트 (P2-5 #2 · P2-7) ──
+// 수계 생략·육지 폴백·체크섬 불일치·10m→50m/110m 해상도 전환·ETOPO 고도 폴백처럼 실데이터가
+// 빠지거나 상류와 어긋난 채로 기록하는 건 오케스트레이터의 의식적 결정이어야 한다.
+// --allow-degraded 없이는 exit 1 로 명시적 실패(묵음 폴백 채택 방지 — Codex 재현: 10m 실패 후
+// 50m 성공 경로가 degraded 표시 없이 exit 0 으로 파일을 쓰던 구멍을 막는다). ETOPO 고도 폴백은
+// 순수 시각 질감이라도 예외 없이 이 게이트에 포함된다(과거엔 "설계상 허용"으로 제외했었음).
 if (degradedReasons.length && !ALLOW_DEGRADED) {
   console.error('❌ 열화 생성 — 실데이터 결손으로 중단(mapData.js 미기록):');
   for (const r of degradedReasons) console.error(`   · ${r}`);

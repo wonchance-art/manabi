@@ -5,9 +5,11 @@
 // 수신값을 그대로 넘기되, 보간용 순수 헬퍼(lerpState)와 송신 스로틀
 // (createThrottle)은 export 해 테스트 가능하게 둔다.
 //
-// 동일 계정 단일 접속은 world_sessions 테이블의 서버 권위 임대(createSessionLease)가
-// 판정을 소유한다(P1-2). presence 휴리스틱(shouldYieldDuplicate)은 보조 방어로 유지.
-// 중복 판정 시엔 영구 종료 상태(terminated)가 서서 자동 재연결·송수신이 봉인된다(P1-1).
+// 동일 계정 단일 접속은 world_sessions 임대(createSessionLease → SECURITY DEFINER RPC)가
+// 판정을 소유한다(P1-2). 임대(db) 모드에선 presence 는 표시 전용이고 퇴장 판정 권한이 없다
+// (P1-1신: 위조 가능한 presence 로 정상 임대를 퇴장시키지 못하게 함). presence 휴리스틱
+// (shouldYieldDuplicate)은 임대 미적용(강등) 모드에서만 집행한다.
+// 중복/임대오류 판정 시엔 영구 종료 상태(terminated)가 서서 자동 재연결·송수신이 봉인된다(P1-1).
 //
 // 브라우저에서만 실제 채널을 연다. supabase.js 는 모듈 로드시 env 를
 // 요구하므로 테스트는 env 를 스텁한 뒤 동적 import 로 순수부만 가져간다.
@@ -78,90 +80,75 @@ export function shouldYieldDuplicate(entries, selfSessionId) {
 }
 
 // 이 net 인스턴스(브라우저 탭/세션)를 구분하는 로컬 ID. 재연결에도 유지된다.
-// world_sessions.session_id 컬럼이 uuid 타입이라 crypto.randomUUID 를 우선 사용한다
-// (fallback 문자열은 uuid 가 아니어서 임대 insert 가 거부되고 presence 강등으로 동작).
+// 강등(presence) 모드의 중복 휴리스틱 판정에만 쓰인다 — 임대 토큰과는 무관.
+// (임대 신원은 이제 서버 토큰이 소유하므로 uuid 여부가 임대 성패를 가르지 않는다.)
 function makeSessionId() {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 }
 
 // ── 서버 권위 세션 임대(world_sessions) — P1-2 ─────────────────────
-// 동일 계정 단일 접속의 "판정 소유"를 presence(클라이언트 제공 sessionId·joinedAt)에서
-// DB 로 옮긴다: 계정당 임대 1행(world_sessions), 신원은 RLS(auth.uid()), 시각은 DB 에
-// 기록된 heartbeat_at. presence 휴리스틱은 보조 방어로만 유지한다.
+// 동일 계정 단일 접속의 "판정 소유"를 presence(클라 제공 sessionId·joinedAt)와 직접 DML 에서
+// SECURITY DEFINER RPC 로 옮긴다: 신원은 서버 auth.uid(), 시각은 DB now(), 세션 식별은
+// 서버가 발급한 비공개 토큰(클라 메모리에만 보관·로그 금지·SELECT 차단으로 복제 불가).
 // 마이그레이션: supabase/migrations/20260710_world_sessions.sql (미적용 시 강등 동작).
 
-export const LEASE_TABLE = 'world_sessions';
-// 만료 창: 이 시간 동안 heartbeat 가 없으면 죽은 세션으로 보고 임대를 인수할 수 있다.
-// 판정은 조회측(UPDATE 의 WHERE 절) — 청소 잡이 필요 없다.
-export const LEASE_TTL_MS = 40000;
-// 갱신 주기. TTL(40s)보다 짧지만 2회 연속 유실(50s)이면 임대를 빼앗길 수 있다 —
-// 인수 주체는 같은 계정의 다른 세션뿐이고, 빼앗긴 쪽은 다음 heartbeat 의 'lost' 로
-// 스스로 물러나므로 두 세션이 동시에 멀티로 남는 일은 없다.
-export const LEASE_HEARTBEAT_MS = 25000;
+// 만료 창(TTL). heartbeat 가 이 시간 넘게 끊기면 죽은 세션으로 보고 다른 세션이 인수한다.
+// 판정은 서버측(claim RPC 의 ON CONFLICT WHERE 절, 기준 시각 = DB now()). SQL 과 일치(60s).
+export const LEASE_TTL_MS = 60000;
+// 갱신 주기(15s). TTL(60s)까지 3회 여유 — 백그라운드 타이머 지연에도 split-brain 창을 줄인다.
+export const LEASE_HEARTBEAT_MS = 15000;
+
+// 마이그레이션 미적용 신호: 함수 부재(42883)·테이블 부재(42P01) → presence 강등.
+const MIGRATION_MISSING_CODES = new Set(['42883', '42P01']);
 
 // 임대 클라이언트 팩토리. client 주입으로 테스트 가능(기본은 실제 supabase).
-// acquire(): 'acquired' | 'duplicate'(살아있는 타 세션 보유) | 'unavailable'(테이블
-// 부재/권한/기타 오류 — presence 휴리스틱으로 강등, UX 가드일 뿐 보안 집행 아님).
-export function createSessionLease({ client, userId, sessionId, table = LEASE_TABLE, ttlMs = LEASE_TTL_MS }) {
-  const nowIso = () => new Date().toISOString();
-  const cutoffIso = () => new Date(Date.now() - ttlMs).toISOString();
+// 토큰은 이 클로저 안에서만 보관 — 밖으로 노출하지 않는다(P1-2: 복제 불가).
+//   claim():     'acquired' | 'duplicate'(살아있는 타 세션) | 'unavailable'(마이그레이션 미적용
+//                → presence 강등) | 'error'(알 수 없는 DB 오류 → fail-closed, P2-5).
+//   heartbeat(): 'ok' | 'lost'(다른 세션이 만료 인수) | 'unavailable' | 'error'.
+//   release():   내 토큰의 행만 서버가 삭제.
+export function createSessionLease({ client, userId }) {
+  let token = null;   // 서버 발급 비공개 세션 토큰 — 메모리만, 로그 금지.
 
-  async function acquire() {
+  const classifyError = (error) => (
+    MIGRATION_MISSING_CODES.has(error?.code) ? 'unavailable' : 'error'
+  );
+
+  async function claim() {
     try {
-      // ① 원자적 UPDATE — "내 세션이거나(재획득) 만료된 임대"만 덮어쓸 수 있다.
-      //    WHERE 절이 곧 원자성 가드: 살아있는 타 세션의 행은 rowcount 0 으로 끝나
-      //    "확인 후 탈취" 레이스가 없다(단일 문장, DB 가 직렬화).
-      const upd = await client.from(table)
-        .update({ session_id: sessionId, heartbeat_at: nowIso() })
-        .eq('user_id', userId)
-        .or(`session_id.eq.${sessionId},heartbeat_at.lt.${cutoffIso()}`)
-        .select('session_id');
-      if (upd.error) return 'unavailable';
-      if (Array.isArray(upd.data) && upd.data.length > 0) return 'acquired';
-      // ② 행이 아예 없으면 INSERT 로 신규 임대. 동시 접속 경합이면 unique 위반(23505).
-      const ins = await client.from(table)
-        .insert({ user_id: userId, session_id: sessionId, heartbeat_at: nowIso() })
-        .select('session_id');
-      if (!ins.error) return 'acquired';
-      if (ins.error.code !== '23505') return 'unavailable';
-      // ③ 살아있는 타 세션이 점유 중이거나 초경합 — 사유 판별.
-      //    RLS 상 내 user_id 행만 보이므로 이 SELECT 는 항상 "내 계정의 임대"다.
-      const sel = await client.from(table)
-        .select('session_id, heartbeat_at')
-        .eq('user_id', userId)
-        .maybeSingle();
-      if (sel.error) return 'unavailable';
-      if (sel.data && sel.data.session_id === sessionId) return 'acquired';
-      return 'duplicate';
+      const { data, error } = await client.rpc('claim_world_session');
+      if (error) return classifyError(error);
+      if (data == null) return 'duplicate';   // 살아있는 타 세션 보유 — 임대 실패
+      token = data;
+      return 'acquired';
     } catch {
-      return 'unavailable';
+      return 'error';
     }
   }
 
-  // 주기 갱신 — 'ok' | 'lost'(다른 세션이 만료 인수) | 'unavailable'(일시 오류).
   async function heartbeat() {
+    if (token == null) return 'lost';
     try {
-      const upd = await client.from(table)
-        .update({ heartbeat_at: nowIso() })
-        .eq('user_id', userId)
-        .eq('session_id', sessionId)
-        .select('session_id');
-      if (upd.error) return 'unavailable';
-      return Array.isArray(upd.data) && upd.data.length > 0 ? 'ok' : 'lost';
+      const { data, error } = await client.rpc('heartbeat_world_session', { p_token: token });
+      if (error) return classifyError(error);
+      return data === true ? 'ok' : 'lost';
     } catch {
-      return 'unavailable';
+      return 'error';
     }
   }
 
-  // 임대 반납 — 내 세션의 행만 지운다(session_id 조건 — 새 세션의 임대는 건드리지 않음).
+  // 임대 반납 — 서버가 내 토큰의 행만 지운다. 반납 후 토큰을 비워 재호출을 막는다.
   async function release() {
+    if (token == null) return;
+    const t = token;
+    token = null;
     try {
-      await client.from(table).delete().eq('user_id', userId).eq('session_id', sessionId);
+      await client.rpc('release_world_session', { p_token: t });
     } catch { /* 반납 실패는 조용히 — TTL 만료로 자연 회수된다 */ }
   }
 
-  return { acquire, heartbeat, release };
+  return { claim, heartbeat, release };
 }
 
 // 리딩+트레일링 스로틀. 마지막 인자는 항상 전송되도록 트레일링 콜을 예약한다.
@@ -202,7 +189,7 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza',
   let peersCb = null;
   let peerLeftCb = null;
   let signalCb = null;
-  let statusCb = null;            // onStatus(cb): 'connected'|'reconnecting'|'failed'|'duplicate'
+  let statusCb = null;            // onStatus(cb): 'connected'|'reconnecting'|'failed'|'duplicate'|'lease-error'
 
   let reconnectAttempt = 0;       // 연속 실패 횟수(SUBSCRIBED 시 0으로 리셋)
   let reconnectTimer = null;      // 예약된 재구독 타이머
@@ -217,16 +204,17 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza',
   const joinedAt = Date.now();
   let duplicateFlagged = false;   // 이번 접속 사이클에서 이미 중복으로 판정·처리됨(재중복 방지)
 
-  // 영구 종료 상태(P1-1). 'duplicate' 가 서면 자동 재연결·모든 송수신이 봉인되고,
-  // 사용자의 명시적 join() 재호출만 이 상태를 풀어 임대/중복 재판정을 받는다.
-  // (예전엔 duplicateFlagged 만으로 막았는데, unsubscribe 가 유발한 CLOSED 콜백이
-  //  scheduleReconnect 를 태워 1초 뒤 새 채널이 열리는 구멍이 있었다 — Codex P1-1.)
-  let terminated = null;          // null | 'duplicate'
+  // 영구 종료 상태(P1-1). 'duplicate'(타 세션 접속) 또는 'lease-error'(fail-closed, P2-5)가
+  // 서면 자동 재연결·모든 송수신이 봉인되고, 사용자의 명시적 join() 재호출만 이 상태를 풀어
+  // 임대 재판정을 받는다. (예전엔 duplicateFlagged 만으로 막았는데, unsubscribe 가 유발한
+  //  CLOSED 콜백이 scheduleReconnect 를 태워 1초 뒤 새 채널이 열리는 구멍이 있었다 — P1-1.)
+  let terminated = null;          // null | 'duplicate' | 'lease-error'
 
-  // 중복 판정의 소유(P1-2): 'db' = world_sessions 임대(서버 권위), 'presence' = 강등.
+  // 임대 판정의 소유(P1-2): 'db' = world_sessions RPC 임대(서버 권위), 'presence' = 강등.
+  // db 모드에선 presence 는 표시 전용이라 checkDuplicate 가 퇴장을 판정하지 않는다(P1-1신).
   let leaseMode = null;
   let heartbeatTimer = null;
-  const lease = createSessionLease({ client, userId, sessionId });
+  const lease = createSessionLease({ client, userId });
 
   const emitPeers = () => { if (peersCb) peersCb(new Map(peers)); };
   const setStatus = (s, info) => { if (statusCb) statusCb(s, info); };
@@ -310,8 +298,10 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza',
   function onSubscribeStatus(status) {
     if (closed || terminated) return;   // 영구 종료 후의 CLOSED/에러 콜백은 재연결을 못 태운다(P1-1)
     if (status === 'SUBSCRIBED') {
-      reconnectAttempt = 0;
       clearReconnect();
+      // ⚠️ reconnectAttempt 는 여기서 리셋하지 않는다(P2-6). SUBSCRIBED 직후 track 이 연속
+      //    실패하면 매번 0으로 되돌아가 상한(MAX)에 도달하지 못하는 구멍이 있었다. 리셋은
+      //    track 성공 시점(trackPresence)으로 옮겨, track 연속 실패도 상한에 합산되게 한다.
       // 선체크(최선노력): presence_state가 이미 도착해 있으면 track 없이 즉시 판정해
       // 중복 세션이 잠깐이라도 서로에게 노출되는 창을 줄인다. 다만 Realtime 클라이언트는
       // join 'ok' 응답과 presence_state 메시지의 도착 순서를 계약으로 보장하지 않으므로
@@ -341,9 +331,13 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza',
       if (ch !== channel || closed || terminated) return;   // 이미 다른 세대/종료면 무시
       scheduleReconnect();   // 'reconnecting' 상태 반영 + 백오프 후 재구독(재시도 시 다시 track)
     };
+    const ok = () => {
+      if (ch !== channel || closed || terminated) return;
+      reconnectAttempt = 0;  // track 성공 시점에만 백오프 리셋(P2-6) — 연속 track 실패가 상한에 쌓이게 함
+    };
     try {
       Promise.resolve(ch.track({ name, pet, sessionId, joinedAt }))
-        .then((res) => { if (res != null && res !== 'ok') fail(); })
+        .then((res) => { if (res != null && res !== 'ok') fail(); else ok(); })
         .catch(fail);
     } catch { fail(); }
   }
@@ -352,35 +346,51 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza',
     try { return channel.presenceState(); } catch { return {}; }
   }
 
-  // presence 휴리스틱 중복 검사 — 보조 방어. 판정 소유는 DB 임대(join 의 lease.acquire)지만,
-  // 임대 성공 후에도 presence 에서 타 세션이 보이면(강등 모드의 상대 세션·초경합 등)
-  // 방어적으로 양보한다. 같은 계정(userId) 아래 내(sessionId)가 생존자가 아니면 즉시 물러남.
+  // presence 휴리스틱 중복 검사 — 강등(presence) 모드에서만 집행한다(P1-1신).
+  //   · db 모드: presence 는 표시 전용. 위조 가능한 presence(클라 제공 sessionId·joinedAt)에
+  //     정상 임대 보유자를 퇴장·반납시키는 권한을 주면 다른 관리자 클라이언트가 피해자 user
+  //     ID 로 이른 joinedAt 을 게시해 임대를 강탈할 수 있다 — 그래서 판정하지 않는다(false).
+  //     서버 권위 판정은 오직 heartbeat 의 'lost'(임대 인수 감지)가 소유한다.
+  //   · presence(강등) 모드: 임대 미적용이라 이 휴리스틱이 유일한 방어 — 내가 생존자가 아니면 물러남.
+  // 반환 true = "peers 반영 없이 sync 를 즉시 종료"(종료/퇴장 처리됨).
   function checkDuplicate(state) {
     if (terminated || duplicateFlagged) return true;
+    if (leaseMode === 'db') return false;   // db 모드: presence 표시 전용 — 퇴장 판정 안 함
     const mine = (state && state[userId]) || [];
     if (!shouldYieldDuplicate(mine, sessionId)) return false;
     markDuplicate();
     return true;
   }
 
-  // 중복 판정 → 영구 종료(P1-1). 자동 재연결(backoff)은 걸지 않는다 — 이건 네트워크
-  // 장애가 아니라 정책적 거부라서, 사용자가 명시적으로 재시도(join() 재호출)해야 임대와
-  // 중복 판정을 다시 받는다. terminated 가 서 있는 동안에는:
+  // 공통 영구 종료(P1-1). 자동 재연결(backoff)은 걸지 않는다 — 이건 네트워크 장애가 아니라
+  // 정책적 거부/보안 차단이라서, 사용자가 명시적으로 재시도(join() 재호출)해야 재판정한다.
+  // terminated 가 서 있는 동안에는:
   //   ① scheduleReconnect·onSubscribeStatus 가 단락되어 새 채널이 생기지 않고
   //   ② sendState/sendSignal 이 no-op 이며
   //   ③ channel 참조가 정리되어 join() 재호출이 정상 동작한다(channel===null 가드 통과).
-  function markDuplicate() {
-    duplicateFlagged = true;
-    terminated = 'duplicate';
+  function terminate(reason) {
+    terminated = reason;
     clearReconnect();
     stopHeartbeat();
     reconnectAttempt = 0;
     teardownChannel();
     peers.clear();
     emitPeers();          // 남아있던 원격 캐릭터 표시 정리
-    lease.release();      // 방어적 양보 시 상대가 임대를 이어받을 수 있게 내 행 반납(실패 무시)
-    setStatus('duplicate');
-    settleJoin();          // join() 대기자를 막지 않음(솔로로 진행)
+    lease.release();      // 내 토큰의 행 반납(실패 무시) — 상대가 임대를 이어받을 수 있게
+    setStatus(reason);
+    settleJoin();         // join() 대기자를 막지 않음(솔로로 진행)
+  }
+
+  // 중복(타 세션 접속) 퇴장. 강등 모드의 방어적 양보 또는 db 모드의 heartbeat 'lost'(서버 권위).
+  function markDuplicate() {
+    duplicateFlagged = true;
+    terminate('duplicate');
+  }
+
+  // 임대 오류 fail-closed(P2-5). 알 수 없는 DB 오류로 임대 판정이 불가하면 presence 로
+  // 강등(fail-open)하지 않고 멀티를 차단한다. "다시 시도"(join 재호출)가 임대를 재판정한다.
+  function markLeaseError() {
+    terminate('lease-error');
   }
 
   function clearReconnect() {
@@ -391,9 +401,9 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza',
     if (heartbeatTimer != null) { clearInterval(heartbeatTimer); heartbeatTimer = null; }
   }
 
-  // 임대 유지(P1-2). 25초마다 heartbeat_at 갱신 — 'lost' 면 다른 세션이 만료 인수한
-  // 것이므로 서버 권위 판정에 따라 이 세션이 물러난다. 일시 오류('unavailable')는
-  // 다음 주기에 재시도(TTL 40초 안이면 임대 유지).
+  // 임대 유지(P1-2). 15초마다 heartbeat RPC — 'lost' 면 다른 세션이 만료 인수한 것이므로
+  // 서버 권위 판정에 따라 이 세션이 물러난다(markDuplicate). 일시 오류('error'/'unavailable')는
+  // 다음 주기에 재시도(TTL 60초 안이면 임대 유지 — 한 번의 실패로 즉시 물러나지 않는다).
   function startHeartbeat() {
     stopHeartbeat();
     heartbeatTimer = setInterval(() => {
@@ -410,16 +420,23 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza',
   function scheduleReconnect() {
     if (closed || terminated || reconnectTimer != null) return;
     if (reconnectAttempt >= MAX_RECONNECT_ATTEMPTS) {
-      setStatus('failed');   // 포기 — 조용히 솔로(권한 실패/영구 장애)
+      // 재연결 상한 도달 — 조용히 솔로(권한 실패/영구 장애). 임대 수명주기도 정리한다(P2-5):
+      // heartbeat 를 멈추고 임대를 반납해 다른 탭이 계속 막히지 않게 한다.
+      stopHeartbeat();
+      teardownChannel();
+      lease.release();
+      setStatus('failed');
       return;
     }
     const delay = backoffDelay(reconnectAttempt);
     reconnectAttempt += 1;
+    // 백오프 진입 전에 teardown 을 먼저(P2-6): 백오프 창 동안 channel===null 이라 pos/RTC
+    // 송신이 봉인된다(presence 없는 채널로 유령 송신 방지). 재구독은 타이머 만료 시 새 채널로.
+    teardownChannel();
     setStatus('reconnecting');
     reconnectTimer = setTimeout(() => {
       reconnectTimer = null;
-      if (closed) return;
-      teardownChannel();   // 기존(에러난) 채널 정리 후 새 채널로 재구독 — 좀비 핸들러 방지
+      if (closed || terminated) return;
       openChannel();
     }, delay);
   }
@@ -445,19 +462,24 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza',
     joinSettled = false;
     duplicateFlagged = false;        // 재시도(수동 join 재호출) 시 중복 판정을 다시 받는다
     terminated = null;               // 영구 종료 해제 — 명시적 재시도만 여기를 지난다
-    // ── 서버 권위 임대(P1-2): 채널을 열기 전에 DB 임대부터 획득한다.
+    leaseMode = null;
+    // ── 서버 권위 임대(P1-2): 채널을 열기 전에 RPC(claim_world_session)로 임대부터 획득한다.
     //    살아있는 다른 세션이 임대를 보유하면 채널을 아예 열지 않고 물러난다 —
-    //    presence 휴리스틱과 달리 신원(RLS)·시각(DB heartbeat)을 클라이언트가 못 만진다.
-    const acquired = await lease.acquire();
-    if (closed) { lease.release(); return; }   // acquire 대기 중 leave 된 경우
-    if (acquired === 'duplicate') {
-      markDuplicate();
-      return;                        // 솔로로 진행 — 배너의 "다시 시도"가 join() 을 재호출한다
+    //    신원(auth.uid())·시각(DB now())·토큰을 서버가 판정해 클라이언트가 못 만진다.
+    const claimed = await lease.claim();
+    if (closed) { lease.release(); return; }   // claim 대기 중 leave 된 경우
+    if (claimed === 'duplicate') {
+      markDuplicate();               // 솔로로 진행 — 배너의 "다시 시도"가 join() 을 재호출한다
+      return;
     }
-    // 'unavailable' — 테이블 미적용(42P01 등)/권한 오류: 현행 presence 휴리스틱으로 강등.
+    if (claimed === 'error') {
+      markLeaseError();              // 알 수 없는 DB 오류 → fail-closed(멀티 차단, 강등 금지 — P2-5)
+      return;
+    }
+    // 'unavailable' — 마이그레이션 미적용(42883/42P01): 현행 presence 휴리스틱으로 강등.
     // ⚠️ 강등 모드는 UX 가드일 뿐 보안 집행이 아니다(변조 클라이언트를 막지 못함).
     //    supabase/migrations/20260710_world_sessions.sql 적용 시 자동으로 서버 권위가 된다.
-    leaseMode = acquired === 'acquired' ? 'db' : 'presence';
+    leaseMode = claimed === 'acquired' ? 'db' : 'presence';
     if (leaseMode === 'db') startHeartbeat();
     await new Promise((resolve) => { joinResolve = resolve; openChannel(); });
   }
@@ -492,11 +514,12 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza',
   }
   function onSignal(cb) { signalCb = cb; }
   // 연결 상태 알림 구독(추가 API, 하위호환).
-  // cb(status, info?) — status: 'connected'|'reconnecting'|'failed'|'duplicate'.
+  // cb(status, info?) — status: 'connected'|'reconnecting'|'failed'|'duplicate'|'lease-error'.
   // 'connected' 의 info.enforcement: 'lease'(world_sessions 서버 권위) | 'presence'
-  //   (테이블 미적용 강등 — UX 가드일 뿐 보안 집행 아님. 호출부는 작게만 표기할 것).
+  //   (마이그레이션 미적용 강등 — UX 가드일 뿐 보안 집행 아님. 호출부는 작게만 표기할 것).
   // 'duplicate' — 같은 계정의 다른 세션이 이미 접속 중이라 이 세션은 멀티를 포기했다(솔로 계속).
-  // 자동 재시도하지 않으므로, 호출부가 UI로 안내하고 join()을 재호출해야 다시 시도한다.
+  // 'lease-error' — 알 수 없는 DB 오류로 임대 판정 불가 → fail-closed(멀티 차단, P2-5). 강등하지
+  //   않는다(보안). 자동 재시도하지 않으므로 호출부가 안내하고 join() 재호출로만 다시 시도한다.
   function onStatus(cb) { statusCb = cb; }
 
   return { join, leave, sendState, onPeers, onPeerLeft, sendSignal, onSignal, onStatus };
