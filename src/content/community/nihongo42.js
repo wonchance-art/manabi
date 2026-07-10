@@ -186,7 +186,7 @@ export default {
           ],
           "links": [
             {
-              "slug": "n5-11-desire-invitation",
+              "slug": "n5-11b-invite-permit",
               "label": "희망·권유·허가"
             }
           ],
