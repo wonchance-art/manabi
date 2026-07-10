@@ -11,9 +11,23 @@ import { JaText } from './refShared';
 import RefSpeak from '../components/RefSpeak';
 import { normalizeQuestion, shuffleOrderTiles, gradeOrder, checkFill, splitFill } from './ReadingTextView';
 
+// 화자 색 — 등장 순서대로 두 색을 배정(결정적). 세 번째 화자부터는 순환.
+const SPEAKER_COLORS = ['var(--brand, #6c7cff)', 'var(--accent2, #e0729a)', 'var(--accent, #3bb0a0)'];
+function buildSpeakerColors(body) {
+  const map = {};
+  let n = 0;
+  for (const b of body || []) {
+    if (b.ja == null || !b.speaker || map[b.speaker]) continue;
+    map[b.speaker] = SPEAKER_COLORS[n % SPEAKER_COLORS.length];
+    n += 1;
+  }
+  return map;
+}
+
 /**
- * body: 내레이션(narr)은 이야기 문단, 대사(ja)는 후리가나 토글 + ko 병기(챕터 예문 톤).
- * questions: order(타일 조립)·fill(타이핑)·produce(모범답 토글).
+ * body: 내레이션(narr)은 은은한 이야기 문단(이탤릭), 대사(ja)는 화자 라벨(speaker)이 붙는
+ *   드라마 대본 톤 — 같은 화자가 이어지면 라벨을 생략한다. 후리가나 토글 + ko 탭 병기.
+ * questions: order(타일 조립)·fill(타이핑)·produce(모범답 토글) — 전부 장면 속 상황 지시형.
  * 챕터 퀴즈와 달리 로컬 확인용이라 채점 이벤트·SRS·통과 게이트를 발행하지 않는다.
  */
 export default function StoryCheck({ story, slug, lang, langCode, meta }) {
@@ -23,52 +37,69 @@ export default function StoryCheck({ story, slug, lang, langCode, meta }) {
     () => (story.questions || []).map((q, i) => normalizeQuestion(q, `${slug}-sq${i}`)),
     [story, slug]
   );
+  const body = story.body || [];
+  const speakerColors = useMemo(() => buildSpeakerColors(body), [body]);
 
   return (
     <div className="fr-story">
-      {/* ── 이야기 본문 ── */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
-        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.5, flex: '1 1 180px' }}>
-          이야기를 읽고, 아래에서 직접 만들어 보며 확인해요. 채점만 로컬로 하고 기록은 남기지 않아요.
+      {/* ── 도입 안내 + 후리가나 토글(우상단 최소) ── */}
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, marginBottom: 10 }}>
+        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+          이야기를 읽고 장면 속에서 직접 만들어 봐요. 채점은 로컬, 기록은 남기지 않아요.
         </div>
         <button
           type="button" className="chip" aria-pressed={furigana}
-          onClick={() => setFurigana(v => !v)} style={{ flex: '0 0 auto', opacity: furigana ? 1 : 0.55 }}
+          onClick={() => setFurigana(v => !v)}
+          title="후리가나 표시 전환"
+          style={{ flex: '0 0 auto', fontSize: '0.66rem', padding: '2px 8px', opacity: furigana ? 1 : 0.5 }}
         >
           {furigana ? '가나 ON' : '가나 OFF'}
         </button>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
-        {(story.body || []).map((b, i) => {
+      {/* ── 이야기 본문(장면) ── */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 22 }}>
+        {body.map((b, i) => {
           if (b.ja == null) {
+            // 내레이션 — 대사와 확실히 구분: 이탤릭·여백, 괘선·카드 없이 은은하게.
             return (
-              <p key={i} style={{ fontFamily: 'var(--font-serif)', fontSize: '0.98rem', lineHeight: 1.9, color: 'var(--text-secondary)', margin: '2px 0', letterSpacing: '0.01em' }}>
+              <p key={i} style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: '0.92rem', lineHeight: 1.85, color: 'var(--text-muted)', margin: '10px 2px', letterSpacing: '0.01em' }}>
                 {b.narr}
               </p>
             );
           }
+          // 같은 화자가 직전 대사와 이어지면 라벨 생략(대본 관행).
+          const prev = body.slice(0, i).reverse().find(x => x.ja != null);
+          const showSpeaker = !!b.speaker && b.speaker !== (prev && prev.speaker);
+          const color = (b.speaker && speakerColors[b.speaker]) || 'var(--text-secondary)';
           const open = !!revealed[i];
           return (
-            <div
-              key={i} role="button" tabIndex={0} aria-expanded={open}
-              onClick={() => setRevealed(p => ({ ...p, [i]: !p[i] }))}
-              onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), setRevealed(p => ({ ...p, [i]: !p[i] })))}
-              style={{ cursor: 'pointer', background: meta?.bg || 'var(--surface-2, rgba(127,127,127,0.06))', borderLeft: `3px solid ${meta?.color || 'var(--brand, #6c7cff)'}`, borderRadius: '4px 8px 8px 4px', padding: '11px 13px' }}
-            >
-              <div style={{ fontSize: '1.08rem', lineHeight: furigana ? 2 : 1.7 }}>
-                {furigana ? <JaText ja={b.ja} yomi={b.yomi} fallbackPron={false} /> : <span lang={langCode}>{b.ja}</span>}
-                <RefSpeak text={b.ja} lang={lang} size="xs" />
+            <div key={i} style={{ margin: '3px 0' }}>
+              {showSpeaker && (
+                <div style={{ fontSize: '0.72rem', fontWeight: 700, color, letterSpacing: '0.02em', marginBottom: 1 }} lang={langCode}>
+                  {b.speaker}
+                </div>
+              )}
+              <div style={{ borderLeft: `2px solid ${color}`, paddingLeft: 10 }}>
+                <div
+                  role="button" tabIndex={0} aria-expanded={open}
+                  onClick={() => setRevealed(p => ({ ...p, [i]: !p[i] }))}
+                  onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), setRevealed(p => ({ ...p, [i]: !p[i] })))}
+                  style={{ cursor: 'pointer', fontSize: '1.06rem', lineHeight: furigana ? 1.95 : 1.7 }}
+                >
+                  {furigana ? <JaText ja={b.ja} yomi={b.yomi} fallbackPron={false} /> : <span lang={langCode}>{b.ja}</span>}
+                  <RefSpeak text={b.ja} lang={lang} size="xs" />
+                </div>
+                {open
+                  ? <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: 2 }}>{b.ko}</div>
+                  : <button type="button" onClick={() => setRevealed(p => ({ ...p, [i]: !p[i] }))} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '0.66rem', color: 'var(--text-muted)', marginTop: 1 }}>뜻 보기 ▾</button>}
               </div>
-              {open
-                ? <div style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', marginTop: 6 }}>{b.ko}</div>
-                : <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: 4 }}>탭하면 한국어 뜻 ▾</div>}
             </div>
           );
         })}
       </div>
 
-      {/* ── 확인 문항(조립·타이핑·산출) ── */}
+      {/* ── 확인 문항(조립·타이핑·산출) — 장면 다음에 조용히 이어짐 ── */}
       <ol className="fr-quiz" style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 18 }}>
         {questions.map(q => <StoryQuestion key={q.key} q={q} langCode={langCode} />)}
       </ol>
@@ -120,19 +151,20 @@ function StoryQuestion({ q, langCode }) {
         return (
           <>
             <div className="fr-quiz__prompt" style={{ marginBottom: 8 }}>{q.prompt}</div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, minHeight: 44, padding: '8px 10px', border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm, 8px)', marginBottom: 8, background: 'var(--surface-2, rgba(127,127,127,0.06))' }}>
+            {/* 조립 행 — 줄바꿈 없이 한 줄 고정 + 가로 스크롤(좁은 화면에서도 옆으로 밀어 봄). */}
+            <div style={{ display: 'flex', flexWrap: 'nowrap', gap: 6, minHeight: 44, alignItems: 'center', padding: '8px 10px', border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm, 8px)', marginBottom: 8, background: 'var(--surface-2, rgba(127,127,127,0.06))', overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'thin' }}>
               {assembled.length === 0
-                ? <span style={{ fontSize: '0.76rem', color: 'var(--text-muted)', alignSelf: 'center' }}>아래 타일을 순서대로 탭하세요</span>
+                ? <span style={{ fontSize: '0.76rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>아래 타일을 순서대로 탭하세요</span>
                 : picks.map((idx, pos) => (
-                    <button key={`${idx}-${pos}`} type="button" lang="ja" disabled={result?.ok} className="chip" onClick={() => tapTile(idx, true)} style={{ fontSize: '1rem' }}>
+                    <button key={`${idx}-${pos}`} type="button" lang="ja" disabled={result?.ok} className="chip" onClick={() => tapTile(idx, true)} style={{ fontSize: '1rem', flex: '0 0 auto', whiteSpace: 'nowrap', padding: '6px 12px' }}>
                       {tiles[idx]}
                     </button>
                   ))}
             </div>
             {!result?.ok && (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+              <div style={{ display: 'flex', flexWrap: 'nowrap', gap: 6, marginBottom: 8, overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'thin', padding: '2px 0' }}>
                 {remaining.map(idx => (
-                  <button key={idx} type="button" lang="ja" className="chip" onClick={() => tapTile(idx, false)} style={{ fontSize: '1rem' }}>
+                  <button key={idx} type="button" lang="ja" className="chip" onClick={() => tapTile(idx, false)} style={{ fontSize: '1rem', flex: '0 0 auto', whiteSpace: 'nowrap', padding: '6px 12px' }}>
                     {tiles[idx]}
                   </button>
                 ))}

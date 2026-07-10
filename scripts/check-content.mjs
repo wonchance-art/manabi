@@ -110,6 +110,8 @@ function checkStorySection(sec, chSlug, errors) {
     if (b.ja == null && b.narr == null)
       errors.push(`[story ${chSlug}] body[${i}]: ja·narr 둘 다 없음`);
     if (b.ja == null) return; // 내레이션 문단
+    if (b.speaker !== undefined && !nonEmptyStr(b.speaker))
+      errors.push(`[story ${chSlug}] body[${i}] speaker가 비어있는 문자열: ${b.ja}`);
     if (!nonEmptyStr(b.yomi)) { errors.push(`[story ${chSlug}] body[${i}] yomi 누락: ${b.ja}`); return; }
     if (!nonEmptyStr(b.ko)) errors.push(`[story ${chSlug}] body[${i}] ko 누락: ${b.ja}`);
     if (alignFurigana(b.ja, b.yomi) === null)

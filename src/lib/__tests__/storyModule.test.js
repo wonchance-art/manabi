@@ -36,6 +36,16 @@ describe('n5-04-desu-da 스토리 모듈 — 콘텐츠 계약', () => {
     }
   });
 
+  it('body: 대사 줄은 화자(speaker) 라벨을 달고, 내레이션엔 speaker가 없다', () => {
+    const narr = story.body.filter(b => b.ja == null);
+    const speech = story.body.filter(b => b.ja != null);
+    for (const s of speech) {
+      expect(typeof s.speaker).toBe('string');
+      expect(s.speaker.trim().length).toBeGreaterThan(0);
+    }
+    for (const n of narr) expect(n.speaker).toBeUndefined();
+  });
+
   it('문항: order 1 + fill 1 + produce 1, id 는 <slug>-sqN', () => {
     const byType = t => story.questions.filter(q => q.type === t);
     expect(byType('order')).toHaveLength(1);
