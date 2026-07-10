@@ -142,6 +142,9 @@ function parseAlt(alt) {
     }
   }
   if (pending.length && frags.length) frags[0].readings.push(...pending);
+  // 구어 별칭 — 오너 정책 "현지 쓰는 말 최우선": 문형 표제는 표준 인용형(では)을 유지하되
+  // 본문은 회화체(じゃ)로 쓴다. では 조각은 じゃ 출현도 같은 조각으로 인정(그룹 내 별칭·max).
+  for (const f of frags) if (f.surface === 'では') f.readings.push('じゃ');
   return frags;
 }
 
