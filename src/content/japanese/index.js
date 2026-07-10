@@ -25,6 +25,8 @@ import vocabN5jlptC from './vocab/n5_jlpt_c';
 import vocabN5travelCore from './vocab/n5_travel_core';
 // 리얼 일본어 — 젊은이 말투·애니 표현·덕질/인터넷 용어·간토vs간사이 (입문 재미 보강)
 import vocabSlangCore from './vocab/slang_core';
+// 여행·문화 일본어 — 브랜드 가타카나·게임·영화 제목(지브리/호소다/신카이) 즉전력 컬렉션
+import vocabCultureCore from './vocab/culture_core';
 import vocabN4jlptA from './vocab/n4_jlpt_a';
 import vocabN4jlptB from './vocab/n4_jlpt_b';
 import vocabN4jlptC from './vocab/n4_jlpt_c';
@@ -133,7 +135,7 @@ const registry = createRegistry(
   { OT: grammarOT, N5: grammarN5, N4: grammarN4, N3: grammarN3, N2: grammarN2, N1: grammarN1 },
   {
     // W1 보강: vocabN5jlptA… 조립 후 mergeJaVocab(vocabN5, vocabN5jlptA, …) 형태로 여기 추가
-    N5: mergeJaVocab(vocabN5, vocabN5jlptA, vocabN5jlptB, vocabN5jlptC, vocabN5travelCore, vocabSlangCore),
+    N5: mergeJaVocab(vocabN5, vocabN5jlptA, vocabN5jlptB, vocabN5jlptC, vocabN5travelCore, vocabSlangCore, vocabCultureCore),
     N4: mergeJaVocab(vocabN4, vocabN4jlptA, vocabN4jlptB, vocabN4jlptC),
     N3: mergeJaVocab(vocabN3, vocabN3jlptA, vocabN3jlptB, vocabN3jlptC, vocabN3jlptD, vocabN3jlptE, vocabN3jlptF, vocabN3jlptG, vocabN3jlptH, vocabN3jlptI, vocabN3jlptJ),
     N2: mergeJaVocab(vocabN2, vocabN2jlptA, vocabN2jlptB, vocabN2jlptC, vocabN2jlptD, vocabN2jlptE, vocabN2jlptF, vocabN2jlptG, vocabN2jlptH, vocabN2jlptI),
