@@ -123,8 +123,13 @@ export function missingReviewSlugs(passedIds, queuedSlugs) {
  *   콘텐츠 전 문항에 `n5-tokyo-NN-qK` id 가 부여돼 있어, 호출부가 그 id 를 넘기면 그대로 키가 된다.
  *   id 부재 시에만 레거시 `textId#c<index>` 로 폴백(index, 없으면 순번) — 위치 파생은 문항 추가·
  *   재배열에 취약하므로 안정 id 가 우선이다. pattern 문항 키는 문형 문자열을 유지한다(문형 단위 집계).
+ * 신유형(산출 우선 전환) 수용:
+ * - 'order'(문장 배열)·'fill'(빈칸 채우기) 은 pattern 문항과 동일 계약 — item_key 는 문형(itemKey),
+ *   correct 는 최초 시도, detail.qtype 로 유형만 구분한다(약점 집계는 문형 단위로 합류).
+ * - 'produce'(문장 산출) 는 **비게이트** — 채점·게이트가 없어 이벤트를 발행하지 않는다.
+ *   correct:null 로 깔지도 않는다(미응답 규약과 동일 — 아예 미발행). 방어적으로 여기서 걸러낸다.
  * @param {string} textId - 글/드릴 id (detail.text_id 로 실림)
- * @param {Array<{itemKey: string, qtype: 'pattern'|'content', firstOk: boolean, tries: number, index?: number, id?: string}>} results
+ * @param {Array<{itemKey: string, qtype: 'pattern'|'content'|'order'|'fill'|'produce', firstOk: boolean, tries: number, index?: number, id?: string}>} results
  * @returns {Array} logReviewEvents 에 그대로 넘길 수 있는 이벤트 배열
  */
 export function buildReadingEvents(textId, results) {
@@ -133,7 +138,9 @@ export function buildReadingEvents(textId, results) {
   for (let i = 0; i < list.length; i++) {
     const r = list[i];
     if (!r || !(r.tries > 0)) continue; // 미응답 → 발행 자체를 생략
+    if (r.qtype === 'produce') continue; // 비게이트(산출) → 채점·이벤트 없음(방어)
     // content 는 안정 문항 id(q.id)를 우선 사용, 없으면 위치 파생 키로 폴백(P3-11).
+    // order·fill 은 pattern 과 같은 else 경로 — item_key = 문형(itemKey), detail.qtype 로만 구분.
     const itemKey = r.qtype === 'content'
       ? (r.id || `${textId}#c${r.index != null ? r.index : i}`)
       : r.itemKey;

@@ -29,8 +29,14 @@
  *       오쿠리가나 오독(来ます→くます)·정렬 아티팩트 오염(建物→たても)이 한 번에 소멸한다.
  *   G7  기대 독음 사전(yomi-map.json) 대조 — 보조 진단(강등). YLOCK이 주 게이트이므로 G7 불일치는
  *       경고. 신규 문장 초안 작성 시 한자별 허용 독음 참고용으로만 유지한다(완전 삭제 금지).
- *   ID  전 문항·드릴 item의 id 존재 + 트랙 전체 유일 + 형식 검사(P3-11). 누락·중복·형식 위반 = 오류.
- *   Q   문항 스키마·정답 유효·choices 4개·choices 내 중복 = 오류(P2-10)·pattern 문항 newPatterns 전수 커버
+ *   ID  전 문항·드릴 item의 id 존재 + 트랙 전체 유일 + 형식 검사(P3-11). 누락·중복·형식 위반 = 오류. 신유형(order·fill·produce)도 대상.
+ *   Q   문항 스키마(신유형 order/fill/produce 포함, P4). pattern: 정답 유효·choices 4개·choices 내 중복 = 오류(P2-10,
+ *       type:'pattern'에만 적용). content: 정답 유효(choices 개수·중복 검사는 면제). order: tiles 비어있지 않음·
+ *       answer가 tiles의 순열(멀티셋)·answer.join이 자연 문장(공백 제거 시 일본어)·pattern이 그 글 newPatterns에
+ *       존재·ko/why 존재. fill: ja에 ［　］ 정확히 1개·answer 비어있지 않음·accept는 배열(있으면)·치환 후 문장이
+ *       일본어·pattern이 그 글 newPatterns에 존재. produce: prompt·model(≥1)·guide 존재(비게이트).
+ *       Q-cover: 게이트 문항(pattern|order|fill) ≥1로 신규 문형 전수 커버 — produce·content는 커버 불인정.
+ *       Q-style(신규, 오너 지시): 게이트 문항 q에 "본문에서" 포함 = 오류(정해진 글 회상형 발문 금지, content는 예외).
  *   FR  〜ました 도입 order 이전 글에 frame:'narration' 금지
  *   DR  drills[].patterns = 표 2 D군 13개 일치·style·afterOrder가 실존 글 order·items ≥1
  *       ·각 item의 q/choices(4)/answer 유효 ·drills[].patterns 전 문형이 items[].pattern으로 ≥1 커버(P1-5)
@@ -218,6 +224,31 @@ function levenshtein(a, b) {
 function simRatio(a, b) {
   const L = Math.max(a.length, b.length) || 1;
   return 1 - levenshtein(a, b) / L;
+}
+
+// ── 신유형(order/fill/produce) 검증 헬퍼(P4 확장) ──
+/** 배열 두 개가 멀티셋으로 동일한지(순서 무관, 중복 개수 일치) — order 문항 answer가 tiles의 순열인지 검증. */
+function isMultisetEqual(a, b) {
+  if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
+  const count = new Map();
+  for (const x of a) count.set(x, (count.get(x) || 0) + 1);
+  for (const x of b) {
+    const c = count.get(x) || 0;
+    if (c <= 0) return false;
+    count.set(x, c - 1);
+  }
+  return true;
+}
+/** 공백 제거 후 순 일본어 문자열인지(한글 섞임 없이 가나·한자 포함) — order/fill 신유형 자연문 간이 검사. */
+function isJaText(s) {
+  const stripped = String(s || '').replace(/[\s　]/g, '');
+  if (!stripped) return false;
+  if (/[가-힣]/.test(stripped)) return false;
+  return /[぀-ヿ一-龯]/.test(stripped);
+}
+/** order|fill 게이트 문항 공용: pattern이 그 글 newPatterns에 존재(P4). */
+function patternInText(t, p) {
+  return !!p && (t.newPatterns || []).includes(p);
 }
 
 /**
@@ -497,37 +528,87 @@ function runChecks(track, ctx) {
   for (let i = 0; i < drills.length; i++)
     (drills[i].items || []).forEach((it, j) => checkId(it.id, `드릴${i + 1} 문항${j + 1}`, drillRe));
 
-  // ── Q: 문항 ──
+  // ── Q: 문항(신유형 order/fill/produce 포함, P4) ──
+  // 게이트 문항(Q-cover 커버 인정) = pattern|order|fill. produce·content는 비게이트(연습·이해 문항).
+  const GATE_TYPES = new Set(['pattern', 'order', 'fill']);
+  const QUESTION_TYPES = new Set(['pattern', 'content', 'order', 'fill', 'produce']);
   for (const t of texts) {
     const patternQ = [];
     for (const q of (t.questions || [])) {
-      if (!['pattern', 'content'].includes(q.type)) E('Q-type', `글${t.order} 문항 type 위반: ${q.type}`);
-      const ch = q.choices || [];
-      if (ch.length !== 4) E('Q-choices', `글${t.order} choices ${ch.length}개(≠4)`);
-      if (!(Number.isInteger(q.answer) && q.answer >= 0 && q.answer < ch.length))
-        E('Q-answer', `글${t.order} 정답 인덱스 무효: ${q.answer}`);
-      else {
-        const ans = ch[q.answer];
-        if (ch.filter((c) => c === ans).length > 1) E('Q-distract', `글${t.order} distractor=정답 중복: ${ans}`);
-      }
-      // distractor끼리의 중복도 오류로 승격(P2-10) — 같은 선택지 2개는 4지선다를 사실상 3지로 만든다.
-      if (new Set(ch).size !== ch.length)
-        E('Q-dup', `글${t.order} choices 내 중복 선택지: ${JSON.stringify(ch)}`);
-      if (q.type === 'pattern') {
-        patternQ.push(q.pattern);
-        // 최소쌍 형식 휴리스틱: choices 간 편집 유사도(공통 접두/접미 공유)
-        if (ch.length === 4) {
-          let sum = 0, cnt = 0;
-          for (let i = 0; i < ch.length; i++)
-            for (let j = i + 1; j < ch.length; j++) { sum += simRatio(ch[i], ch[j]); cnt++; }
-          if (cnt && sum / cnt < 0.34)
-            W('Q-minpair', `글${t.order} pattern 문항 최소쌍 의심(choices 편집 유사도 낮음): ${JSON.stringify(ch)}`);
+      if (!QUESTION_TYPES.has(q.type)) { E('Q-type', `글${t.order} 문항 type 위반: ${q.type}`); continue; }
+
+      // 발문 스타일 린트(오너 지시, 신규): 게이트 문항의 q에 "본문에서"(정해진 글 회상형 발문) 금지.
+      // content는 예외 — 내용 이해 문항은 본문 참조가 정당하다.
+      if (GATE_TYPES.has(q.type) && typeof q.q === 'string' && q.q.includes('본문에서'))
+        E('Q-style', `글${t.order} 발문에 '본문에서' 금지(정해진 글 회상형 발문): ${q.q}`);
+
+      if (q.type === 'pattern' || q.type === 'content') {
+        // 기존 선다 검사(choices 4개·중복·최소쌍 경고)는 type:'pattern'에만 적용(오너 지시, P4-7).
+        const ch = q.choices || [];
+        if (q.type === 'pattern' && ch.length !== 4) E('Q-choices', `글${t.order} choices ${ch.length}개(≠4)`);
+        if (!(Number.isInteger(q.answer) && q.answer >= 0 && q.answer < ch.length))
+          E('Q-answer', `글${t.order} 정답 인덱스 무효: ${q.answer}`);
+        else {
+          const ans = ch[q.answer];
+          if (ch.filter((c) => c === ans).length > 1) E('Q-distract', `글${t.order} distractor=정답 중복: ${ans}`);
         }
+        // distractor끼리의 중복도 오류로 승격(P2-10) — 같은 선택지 2개는 4지선다를 사실상 3지로 만든다.
+        if (q.type === 'pattern' && new Set(ch).size !== ch.length)
+          E('Q-dup', `글${t.order} choices 내 중복 선택지: ${JSON.stringify(ch)}`);
+        if (q.type === 'pattern') {
+          patternQ.push(q.pattern);
+          // 최소쌍 형식 휴리스틱: choices 간 편집 유사도(공통 접두/접미 공유)
+          if (ch.length === 4) {
+            let sum = 0, cnt = 0;
+            for (let i = 0; i < ch.length; i++)
+              for (let j = i + 1; j < ch.length; j++) { sum += simRatio(ch[i], ch[j]); cnt++; }
+            if (cnt && sum / cnt < 0.34)
+              W('Q-minpair', `글${t.order} pattern 문항 최소쌍 의심(choices 편집 유사도 낮음): ${JSON.stringify(ch)}`);
+          }
+        }
+      } else if (q.type === 'order') {
+        // order: tiles 비어있지 않음·answer가 tiles의 순열(멀티셋 일치)·answer.join이 자연 문장(공백 제거
+        // 시 일본어)·pattern이 그 글 newPatterns에 존재·ko/why 존재.
+        const tiles = Array.isArray(q.tiles) ? q.tiles : [];
+        if (!tiles.length) E('Q-order', `글${t.order} order 문항 tiles 비어있음: ${q.id || '(id 없음)'}`);
+        const answer = Array.isArray(q.answer) ? q.answer : [];
+        if (!tiles.length || !answer.length || !isMultisetEqual(tiles, answer))
+          E('Q-order', `글${t.order} order 문항 answer가 tiles의 순열 아님: ${q.id || '(id 없음)'}`);
+        else if (!isJaText(answer.join('')))
+          E('Q-order', `글${t.order} order 문항 answer가 자연 문장 아님(공백 제거 시 일본어 아님): ${answer.join('')}`);
+        if (!patternInText(t, q.pattern))
+          E('Q-order', `글${t.order} order 문항 pattern이 그 글 newPatterns에 없음: ${q.pattern}`);
+        if (!q.ko) E('Q-order', `글${t.order} order 문항 ko 누락: ${q.id || '(id 없음)'}`);
+        if (!q.why) E('Q-order', `글${t.order} order 문항 why 누락: ${q.id || '(id 없음)'}`);
+        if (q.pattern) patternQ.push(q.pattern);
+      } else if (q.type === 'fill') {
+        // fill: ja에 ［　］ 정확히 1개·answer 비어있지 않음·accept는 배열(있으면)·answer를 ［　］에
+        // 넣은 문장이 성립(간이 검사: 치환 후 일본어 문자열)·pattern이 그 글 newPatterns에 존재.
+        const ja = String(q.ja || '');
+        const blanks = (ja.match(/［　］/g) || []).length;
+        if (blanks !== 1) E('Q-fill', `글${t.order} fill 문항 ［　］ ${blanks}개(≠1): ${q.id || '(id 없음)'}`);
+        const answer = typeof q.answer === 'string' ? q.answer.trim() : '';
+        if (!answer) E('Q-fill', `글${t.order} fill 문항 answer 비어있음: ${q.id || '(id 없음)'}`);
+        if (q.accept !== undefined && !Array.isArray(q.accept))
+          E('Q-fill', `글${t.order} fill 문항 accept가 배열 아님: ${q.id || '(id 없음)'}`);
+        if (blanks === 1 && answer) {
+          const filled = ja.replace('［　］', answer);
+          if (!isJaText(filled)) E('Q-fill', `글${t.order} fill 문항 치환 후 문장이 일본어 아님: ${filled}`);
+        }
+        if (!patternInText(t, q.pattern))
+          E('Q-fill', `글${t.order} fill 문항 pattern이 그 글 newPatterns에 없음: ${q.pattern}`);
+        if (q.pattern) patternQ.push(q.pattern);
+      } else if (q.type === 'produce') {
+        // produce: prompt·model(≥1)·guide 존재. 비게이트 — patternQ에 미포함(Q-cover 커버로 인정 안 함).
+        if (!q.prompt) E('Q-produce', `글${t.order} produce 문항 prompt 누락: ${q.id || '(id 없음)'}`);
+        if (!Array.isArray(q.model) || q.model.length < 1)
+          E('Q-produce', `글${t.order} produce 문항 model 비어있음(≥1 필요): ${q.id || '(id 없음)'}`);
+        if (!q.guide) E('Q-produce', `글${t.order} produce 문항 guide 누락: ${q.id || '(id 없음)'}`);
       }
     }
     const covered = new Set(patternQ);
     for (const p of (t.newPatterns || []))
-      if (!covered.has(p)) E('Q-cover', `글${t.order} pattern 문항 미커버 신규 문형: ${p}`);
+      if (!covered.has(p)) E('Q-cover', `글${t.order} 게이트 문항(pattern/order/fill) 미커버 신규 문형: ${p}`);
   }
 
   // ── FR: 〜ました 도입 이전 글 narration 금지 ──
@@ -638,7 +719,7 @@ async function buildRealContext() {
   return { patternUniverse, dgroup: DGROUP, vocabPool, placeYomi: PLACE_YOMI, tokenizer, yomiMap, yomiLock, skipFurigana: false, travelCoreCount };
 }
 
-// ── 자가 테스트: 정상 베이스라인 + 결함 주입 26종(기존 22 + G4 v3·YLOCK-gone 신규 4) ──
+// ── 자가 테스트: 정상 베이스라인 + 결함 주입 31종(기존 26 + 신유형 order/fill/produce 5, P4) ──
 async function selfTest() {
   const tokenizer = await getTokenizer();
   const clone = (o) => JSON.parse(JSON.stringify(o));
@@ -648,6 +729,8 @@ async function selfTest() {
     '〜です', '〜ます', '〜ました', '〜は',
     'AはBより〜', 'AとBと どちらが', 'い형용사 + 명사', '何(なん/なに)', '〜だ',
     '〜たり 〜たり します', 'そして',
+    // 신유형(order/fill/produce, P4) 검증용 — st-05가 이 둘을 도입.
+    '〜ませんか', '〜てください',
   ]);
   const dgroup = ['〜は'];
 
@@ -721,6 +804,33 @@ async function selfTest() {
           { id: 'st-04-q2', type: 'pattern', pattern: 'そして', q: 'Q', choices: ['そして', 'そしたら', 'それで', 'しかし'], answer: 0, why: 'w' },
         ],
       },
+      {
+        // 신유형(order/fill/produce, P4) 정상 표본 — Q-order/Q-fill/Q-produce·Q-cover(게이트 커버)·
+        // Q-style(발문 린트) 베이스라인이 오류 0으로 통과함을 보증.
+        id: 'st-05',
+        order: 5, place: { name: '公園', ja: '公園', landmark: 'park' }, frame: 'dialogue',
+        newPatterns: ['〜ませんか', '〜てください'],
+        body: [
+          { ja: '公園へ 行きませんか。', yomi: 'こうえんへ いきませんか。', ko: '' },
+          { ja: 'ここに 座ってください。', yomi: 'ここに すわってください。', ko: '' },
+        ],
+        questions: [
+          {
+            id: 'st-05-q1', type: 'order', pattern: '〜ませんか', q: '타일을 배열해 문장을 만드세요.',
+            tiles: ['公園', 'へ', '行き', 'ませんか'], answer: ['公園', 'へ', '行き', 'ませんか'],
+            ko: '공원에 가지 않을래요?', why: '권유 표현 〜ませんか는 동사 ます형 뒤에 붙는다.',
+          },
+          {
+            id: 'st-05-q2', type: 'fill', pattern: '〜てください', q: '빈칸에 알맞은 말을 넣으세요.',
+            ja: 'ここに ［　］。', answer: '座ってください', accept: ['すわってください'],
+            why: '〜てください는 요청을 나타낸다.',
+          },
+          {
+            id: 'st-05-q3', type: 'produce', prompt: '오늘 공원에서 한 일을 일본어로 두 문장 이상 써 보세요.',
+            model: ['公園へ 行きました。', '写真を 撮りました。'], guide: '〜ました를 사용해 과거 행동을 표현하세요.',
+          },
+        ],
+      },
     ],
     drills: [
       // afterOrder는 실존 글 order여야 하고(DR-after), item에는 pattern 태그·id가 있어야 한다(P1-5·P3-11).
@@ -778,7 +888,9 @@ async function selfTest() {
   }
 
   // 결함 주입 — [이름, 기대 코드, 변형 함수, 검사대상('error' 기본 | 'warn'), regenLock?].
-  // 기존 22종(G1·G4·G5·G6·Q·DR·YLOCK·ID) + 신규 4종(G4 v3 형태소 3 + YLOCK-gone 승격) = 26종.
+  // 기존 22종(G1·G4·G5·G6·Q·DR·YLOCK·ID) + G4 v3·YLOCK-gone 4종 = 26종 + 신유형(order/fill/produce,
+  // P4) 5종(order 순열 불일치·fill 빈칸 0개·produce 단독 커버 Q-cover 실패·"본문에서" 발문 Q-style·
+  // 신유형 id 누락) = 31종.
   const fixtures = [
     ['전수 누락', 'G1-missing', (t) => { t.texts[1].newPatterns = []; }],
     ['중복 도입', 'G1-dup', (t) => { t.texts[1].newPatterns.push('〜です'); }],
@@ -789,7 +901,8 @@ async function selfTest() {
     ['빈 드릴 items', 'DR-items', (t) => { t.drills[0].items = []; }],
     ['드릴 afterOrder 유령', 'DR-after', (t) => { t.drills[0].afterOrder = 99; }],
     ['금지 요미', 'G6-banned', (t) => { t.texts[0].body.push({ ja: '駅です。', yomi: 'ときあいだです。', ko: '' }); }],
-    ['중복 distractor', 'Q-dup', (t) => { t.texts[0].questions[2].choices = ['学生', '先生', '先生', '駅員']; }],
+    // Q-dup은 type:'pattern'에만 적용(P4-7) — pattern 문항의 choices에 중복 주입.
+    ['중복 distractor', 'Q-dup', (t) => { t.texts[0].questions[0].choices = ['です', 'ます', 'ます', 'ません']; }],
     // ── 강화(P1-2·P1-3·P1-5·P2-10) ──
     // P1-2: 플레이스홀더 문형의 리터럴이 하드 게이트로 복귀 — より/どちらが/형용사+명사가 본문에서 사라지면 오류.
     ['より 제거(P1-2)', 'G4', (t) => { const b = t.texts[2].body[0]; b.ja = b.ja.replaceAll('より', 'だけ'); b.yomi = b.yomi.replaceAll('より', 'だけ'); }],
@@ -827,6 +940,19 @@ async function selfTest() {
     ['③ そして→そしたら(접속사 정확 일치)', 'G4', (t) => { for (const b of t.texts[3].body) { b.ja = b.ja.replaceAll('そして', 'そしたら'); b.yomi = b.yomi.replaceAll('そして', 'そしたら'); } }, 'error', true],
     // ④ 락 문장 삭제 — 락에 있는데 사라진 문장은 경고→오류 승격(P3-7). 락은 원본 그대로(재생성 X)여야 잡힌다.
     ['④ 락 문장 삭제(YLOCK-gone 승격)', 'YLOCK-gone', (t) => { t.texts[3].body.splice(2, 1); }],
+    // ── 신유형(order/fill/produce, P4) 결함 주입 5종 ──
+    // order: answer 길이·구성이 tiles의 멀티셋과 불일치(ませんか 타일 누락) → 순열 아님.
+    ['order 순열 불일치(P4)', 'Q-order', (t) => { t.texts[4].questions[0].answer = ['公園', 'へ', '行き']; }],
+    // fill: ja에서 ［　］를 제거 → 빈칸 0개.
+    ['fill ［　］ 0개(P4)', 'Q-fill', (t) => { t.texts[4].questions[1].ja = 'ここに 座ってください。'; }],
+    // Q-cover: 신규 문형(〜ました)의 유일한 문항을 produce로 교체 — produce는 비게이트라 커버 인정 안 됨.
+    ['produce 단독 커버(Q-cover 실패, P4)', 'Q-cover', (t) => {
+      t.texts[1].questions = [{ id: 'st-02-q1', type: 'produce', prompt: 'P', model: ['M'], guide: 'G' }];
+    }],
+    // Q-style: 게이트 문항 발문에 "본문에서" 등장 — 정해진 글 회상형 발문 금지(오너 지시).
+    ['"본문에서" 발문(Q-style, P4)', 'Q-style', (t) => { t.texts[0].questions[0].q = '본문에서 알맞은 것을 고르세요.'; }],
+    // ID: 신유형(order) 문항의 id 누락 — ID 검사가 신유형에도 적용됨을 확인.
+    ['신유형 id 누락(ID-missing, P4)', 'ID-missing', (t) => { delete t.texts[4].questions[0].id; }],
   ];
 
   let detected = 0;

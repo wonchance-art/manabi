@@ -15,6 +15,8 @@ import { GBC, gbcPanel, gbcButton, gbcButtonPrimary } from './QuestReview';
 import { JaText } from '../../views/refShared';
 // 이벤트 계약 단일 원천 — lang('Japanese')·최초 시도 correct·미응답 제외 규칙을 강제한다.
 import { buildReadingEvents } from '../../lib/readingProgress';
+// 문항 정규화·신유형 채점 규약 단일 원천(본편 뷰어와 공유) — order 채점·결정적 셔플·fill 정규화.
+import { normalizeQuestion, shuffleOrderTiles, gradeOrder, checkFill, splitFill } from '../../views/ReadingTextView';
 import bus from './bus';
 
 const SPEAKER_LABEL = { officer: '심사관', player: '민준', sign: '안내' };
@@ -104,27 +106,28 @@ function shuffled(choices, answerIdx) {
 // text.questions 소비: pattern(게이팅) 전부 정답 = 통과, content는 출제하되 통과 판정 제외.
 // onPass(events, right, total): 통과 1회 — 부모가 readingProgress·grammar·게이트 개방 처리.
 export function AirportQuiz({ text, onPass, onExit }) {
-  // 문항 셔플은 최초 1회.
+  // 문항 셔플은 최초 1회. 정규화(normalizeQuestion)로 본편 뷰어와 같은 형태를 쓰고,
+  // 선다는 랜덤 셔플·order 타일은 문항 id 시드 결정적 셔플(정답 순서로 시작 금지)한다.
   const qs = useMemo(() => (text.questions || []).map((q, i) => {
-    const s = shuffled(q.choices, q.answer);
-    return {
-      key: `${text.id}-q${i}`,
-      id: q.id,  // 안정 문항 id(n5-tokyo-NN-qK) — content item_key 고유화용(P3-11)
-      index: i,  // id 부재 시 폴백 위치 — buildReadingEvents 가 textId#c<index> 로 조합
-      qtype: q.type === 'pattern' ? 'pattern' : 'content',
-      itemKey: q.type === 'pattern' ? q.pattern : 'content',
-      gating: q.type === 'pattern',
-      prompt: q.q,
-      choices: s.choices,
-      answerText: s.answer,
-      why: q.why || '',
-    };
+    const n = normalizeQuestion(q, `${text.id}-q${i}`);
+    n.index = i; // id 부재 시 폴백 위치 — buildReadingEvents 가 textId#c<index> 로 조합
+    if (n.qtype === 'order') {
+      n.tiles = shuffleOrderTiles(n.tiles, n.answerTiles, n.id || n.key);
+    } else if (Array.isArray(n.choices)) {
+      const s = shuffled(n.choices, n.choices.indexOf(n.answerText));
+      n.choices = s.choices; n.answerText = s.answer;
+    }
+    return n;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }), []);
 
   const [idx, setIdx] = useState(0);
-  const [picked, setPicked] = useState(null);   // 이번 문항에서 고른 오답(재시도 텍스트박스 표시용)
+  const [picked, setPicked] = useState(null);   // 이번 선다에서 고른 오답(재시도 텍스트박스 표시용)
   const [tries, setTries] = useState(0);
+  const [orderPicks, setOrderPicks] = useState([]); // 현재 order 문항 조립 타일 인덱스(탭 순서)
+  const [fillInput, setFillInput] = useState('');   // 현재 fill 문항 입력
+  const [produceInput, setProduceInput] = useState(''); // 현재 produce 입력(선택)
+  const [produceShown, setProduceShown] = useState(false); // produce 모범답 공개 여부
   const [done, setDone] = useState(false);
   const [saving, setSaving] = useState(false);      // onPass 대기 중("기록 중…") — 완료 화면 차단(P2-7)
   const [saveError, setSaveError] = useState(false); // 기록 실패 → 재시도 UI(P2-8)
@@ -137,7 +140,7 @@ export function AirportQuiz({ text, onPass, onExit }) {
   const savingRef = useRef(false);  // savePass 중복 발화 동기 가드(재시도 포함)
 
   // 문항 뷰가 갱신되면(다음 문항 전환·재시도 피드백 렌더) 동기 잠금 해제 — 같은 tick 이중 클릭만 막는다
-  useEffect(() => { answeringRef.current = false; }, [idx, picked, tries]);
+  useEffect(() => { answeringRef.current = false; }, [idx, picked, tries, produceShown]);
 
   const q = qs[idx];
 
@@ -158,28 +161,11 @@ export function AirportQuiz({ text, onPass, onExit }) {
     }
   }
 
-  function pick(opt) {
-    if (!q || lockRef.current || answeringRef.current) return; // 동기 잠금 — state 반영 전 이중 클릭 차단
-    answeringRef.current = true; // 응답 처리 진입 즉시 잠금(전환/피드백 렌더 시 위 effect 가 해제)
-    const ok = opt === q.answerText;
-    const nextTries = tries + 1;
-    bus.emit('quest:scored', { correct: ok });
-
-    if (!ok && q.gating) {
-      // 오답 → 해당 일본어 문장(정답) 재생 후 재시도. tries 누적.
-      setPicked(opt); setTries(nextTries);
-      return;
-    }
-
-    // 정답(또는 content 첫 응답으로 확정) → 결과 누적 후 다음.
-    // correct 는 최초 시도 기준 — 게이팅 재시도는 오답에서만 생기므로
-    // nextTries>1 이면 최초 시도는 반드시 오답(firstOk=false)이다.
-    // content 는 안정 문항 id(q.id)를 실어 글별 고유 item_key 로 집계된다(P3-11, index 는 폴백).
-    resultsRef.current.push({ itemKey: q.itemKey, id: q.id, qtype: q.qtype, firstOk: nextTries === 1 && ok, tries: nextTries, index: q.index });
-    if (ok) rightRef.current += 1; // 연출용 right/total 은 종전대로 확정 시점 정오(quest:done 표시 계약 유지)
-
+  // 다음 문항으로 전환(마지막이면 통과 확정·savePass). 문항별 임시 입력 상태를 모두 리셋.
+  function goNext() {
     if (idx < qs.length - 1) {
       setIdx(idx + 1); setPicked(null); setTries(0);
+      setOrderPicks([]); setFillInput(''); setProduceInput(''); setProduceShown(false);
     } else {
       lockRef.current = true;
       if (passedRef.current) return; // 멱등 — 마지막 문항 확정은 1회만
@@ -188,6 +174,62 @@ export function AirportQuiz({ text, onPass, onExit }) {
       bus.emit('quest:done', { right: rightRef.current, total: totalRef.current }); // 펫 낙관 성장(연출)
       savePass(); // 원격 기록 대기 — 성공 후에만 done 화면(await 는 savePass 내부)
     }
+  }
+
+  // 채점 결과 누적 후 다음. produce(비게이트)는 push·quest:scored 없이 전환만 한다.
+  // correct 는 최초 시도 기준 — 게이팅 재시도는 오답에서만 생기므로 nextTries>1 이면 최초는 오답이다.
+  // content 는 안정 문항 id(q.id)를 실어 글별 고유 item_key 로 집계된다(P3-11, index 는 폴백).
+  function recordAndAdvance(ok, nextTries) {
+    if (q.qtype !== 'produce') {
+      resultsRef.current.push({ itemKey: q.itemKey, id: q.id, qtype: q.qtype, firstOk: nextTries === 1 && ok, tries: nextTries, index: q.index });
+    }
+    if (ok) rightRef.current += 1; // 연출용 right/total 은 확정 시점 정오(quest:done 표시 계약 유지)
+    goNext();
+  }
+
+  // 선다(pattern·content) 채점.
+  function pick(opt) {
+    if (!q || lockRef.current || answeringRef.current) return; // 동기 잠금 — state 반영 전 이중 클릭 차단
+    answeringRef.current = true; // 응답 처리 진입 즉시 잠금(전환/피드백 렌더 시 위 effect 가 해제)
+    const ok = opt === q.answerText;
+    const nextTries = tries + 1;
+    bus.emit('quest:scored', { correct: ok });
+    if (!ok && q.gating) { setPicked(opt); setTries(nextTries); return; } // 오답 → 정답 문장 재생·재시도
+    recordAndAdvance(ok, nextTries);
+  }
+
+  // order 타일 탭 — 풀→조립(추가), 조립→풀(되돌리기·재배열).
+  function tapTile(tileIdx, inAssembled) {
+    if (lockRef.current) return;
+    setOrderPicks((cur) => (inAssembled ? cur.filter((x) => x !== tileIdx) : [...cur, tileIdx]));
+  }
+  // order 확정 — 전부 배치했을 때만. 오답이면 tries 만 올리고 재배열 대기(gating).
+  function confirmOrder() {
+    if (!q || lockRef.current || answeringRef.current) return;
+    if (orderPicks.length !== (q.tiles || []).length) return;
+    answeringRef.current = true;
+    const ok = gradeOrder(orderPicks.map((i) => q.tiles[i]), q.answerTiles);
+    const nextTries = tries + 1;
+    bus.emit('quest:scored', { correct: ok });
+    if (!ok) { setTries(nextTries); return; }
+    recordAndAdvance(ok, nextTries);
+  }
+  // fill 제출 — 정규화 비교. 오답이면 tries 만 올리고 재입력 대기(gating).
+  function submitFill() {
+    if (!q || lockRef.current || answeringRef.current) return;
+    answeringRef.current = true;
+    const ok = checkFill(fillInput, q.fillAnswer, q.accept);
+    const nextTries = tries + 1;
+    bus.emit('quest:scored', { correct: ok });
+    if (!ok) { setTries(nextTries); return; }
+    recordAndAdvance(ok, nextTries);
+  }
+  // produce — 비게이트. 1회차: 모범답 공개. 2회차(다음): 채점·이벤트 없이 전환.
+  function revealProduce() { if (!lockRef.current) setProduceShown(true); }
+  function advanceProduce() {
+    if (!q || lockRef.current || answeringRef.current) return;
+    answeringRef.current = true;
+    recordAndAdvance(false, 0); // 비게이트 — push 없음(qtype==='produce'), right 불변
   }
 
   return (
@@ -224,35 +266,140 @@ export function AirportQuiz({ text, onPass, onExit }) {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ fontSize: '0.72rem', fontWeight: 700 }}>🛂 심사관</span>
               <span style={{ fontSize: '0.68rem', color: GBC.inkSoft }}>
-                {q.qtype === 'content' ? '내용 확인' : '문형'} · {idx + 1}/{qs.length}
+                {q.qtype === 'content' ? '내용 확인'
+                  : q.qtype === 'order' ? '문장 만들기'
+                  : q.qtype === 'fill' ? '빈칸 채우기'
+                  : q.qtype === 'produce' ? '만들기(선택)'
+                  : '문형'} · {idx + 1}/{qs.length}
               </span>
             </div>
 
             <div lang="ja" style={{ fontSize: '0.86rem', lineHeight: 1.55 }}>{q.prompt}</div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {q.choices.map((opt) => {
-                const isWrongPick = picked === opt;
-                return (
-                  <button
-                    key={opt} type="button" lang="ja" onClick={() => pick(opt)}
-                    style={{
-                      ...gbcButton, textAlign: 'left',
-                      background: isWrongPick ? GBC.red : GBC.creamHi,
-                      color: isWrongPick ? GBC.creamHi : GBC.ink,
-                    }}
-                  >
-                    {opt}
+            {q.qtype === 'order' ? (() => {
+              // ── order: 좁은 화면 타일 조립(wrap) ──
+              const remaining = q.tiles.map((t, i) => i).filter((i) => !orderPicks.includes(i));
+              const full = orderPicks.length === q.tiles.length;
+              return (
+                <>
+                  <div style={{
+                    display: 'flex', flexWrap: 'wrap', gap: 5, minHeight: 40, padding: '6px 8px',
+                    background: GBC.creamHi, border: `2px solid ${GBC.creamShade}`, borderRadius: 2,
+                  }}>
+                    {orderPicks.length === 0 ? (
+                      <span style={{ fontSize: '0.68rem', color: GBC.inkSoft, alignSelf: 'center' }}>타일을 순서대로 탭</span>
+                    ) : orderPicks.map((tileIdx, pos) => (
+                      <button key={`${tileIdx}-${pos}`} type="button" lang="ja" onClick={() => tapTile(tileIdx, true)}
+                        style={{ ...gbcButton, padding: '5px 9px', fontSize: '0.9rem' }}>
+                        {q.tiles[tileIdx]}
+                      </button>
+                    ))}
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                    {remaining.map((tileIdx) => (
+                      <button key={tileIdx} type="button" lang="ja" onClick={() => tapTile(tileIdx, false)}
+                        style={{ ...gbcButton, padding: '5px 9px', fontSize: '0.9rem' }}>
+                        {q.tiles[tileIdx]}
+                      </button>
+                    ))}
+                  </div>
+                  <button type="button" onClick={confirmOrder} disabled={!full}
+                    style={{ ...gbcButtonPrimary, opacity: full ? 1 : 0.5 }}>
+                    확정
                   </button>
-                );
-              })}
-            </div>
+                </>
+              );
+            })() : q.qtype === 'fill' ? (() => {
+              // ── fill: 인라인 입력(좁은 폭) ──
+              const { before, after } = splitFill(q.ja);
+              return (
+                <>
+                  <div lang="ja" style={{ fontSize: '0.95rem', lineHeight: 1.9, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2 }}>
+                    <span>{before}</span>
+                    <input
+                      type="text" lang="ja" value={fillInput} inputMode="text"
+                      onChange={(e) => setFillInput(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submitFill(); } }}
+                      aria-label="빈칸에 들어갈 말"
+                      style={{ width: '4em', textAlign: 'center', fontFamily: GBC.font, fontSize: '0.95rem', padding: '2px 4px', margin: '0 2px', border: `2px solid ${GBC.border}`, borderRadius: 2, background: GBC.creamHi, color: GBC.ink }}
+                    />
+                    <span>{after}</span>
+                  </div>
+                  <button type="button" onClick={submitFill} style={{ ...gbcButtonPrimary }}>제출</button>
+                </>
+              );
+            })() : q.qtype === 'produce' ? (() => {
+              // ── produce: 비게이트 산출(선택) ──
+              return !produceShown ? (
+                <>
+                  <div style={{ fontSize: '0.66rem', color: GBC.inkSoft }}>선택 문항 — 채점하지 않아요.</div>
+                  <textarea
+                    lang="ja" value={produceInput} rows={2}
+                    onChange={(e) => setProduceInput(e.target.value)}
+                    placeholder="일본어로 써 보세요(선택)"
+                    style={{ width: '100%', fontFamily: GBC.font, fontSize: '0.9rem', padding: '6px 8px', border: `2px solid ${GBC.border}`, borderRadius: 2, background: GBC.creamHi, color: GBC.ink, boxSizing: 'border-box' }}
+                  />
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    <button type="button" onClick={revealProduce} style={{ ...gbcButtonPrimary }}>제출</button>
+                    <button type="button" onClick={revealProduce} style={{ ...gbcButton }}>건너뛰기</button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {produceInput.trim() && (
+                    <div lang="ja" style={{ fontSize: '0.86rem' }}>
+                      <span style={{ fontSize: '0.64rem', color: GBC.inkSoft, display: 'block' }}>내가 쓴 문장</span>
+                      {produceInput}
+                    </div>
+                  )}
+                  {(q.model || []).length > 0 && (
+                    <div>
+                      <span style={{ fontSize: '0.64rem', color: GBC.inkSoft, display: 'block' }}>모범답</span>
+                      {q.model.map((m, mi) => (
+                        <div key={mi} lang="ja" style={{ fontSize: '0.9rem' }}>· {m}</div>
+                      ))}
+                    </div>
+                  )}
+                  {q.guide && <div style={{ fontSize: '0.7rem', color: GBC.inkSoft, lineHeight: 1.5 }}>{q.guide}</div>}
+                  <button type="button" onClick={advanceProduce} style={{ ...gbcButtonPrimary }}>다음 →</button>
+                </>
+              );
+            })() : (
+              // ── pattern·content: 기존 선다 ──
+              <>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {q.choices.map((opt) => {
+                    const isWrongPick = picked === opt;
+                    return (
+                      <button
+                        key={opt} type="button" lang="ja" onClick={() => pick(opt)}
+                        style={{
+                          ...gbcButton, textAlign: 'left',
+                          background: isWrongPick ? GBC.red : GBC.creamHi,
+                          color: isWrongPick ? GBC.creamHi : GBC.ink,
+                        }}
+                      >
+                        {opt}
+                      </button>
+                    );
+                  })}
+                </div>
 
-            {/* 오답 재시도 — 해당 일본어 정답 문장 재생 + 근거 */}
-            {picked && (
+                {/* 오답 재시도 — 해당 일본어 정답 문장 재생 + 근거 */}
+                {picked && (
+                  <div style={{ background: GBC.creamHi, border: `2px solid ${GBC.creamShade}`, borderRadius: 2, padding: '8px 10px' }}>
+                    <div style={{ fontSize: '0.72rem', color: GBC.red, fontWeight: 700, marginBottom: 4 }}>× 다시 — 시도 {tries}회</div>
+                    <div lang="ja" style={{ fontSize: '0.9rem', marginBottom: 4 }}>{q.answerText}</div>
+                    {q.why && <div style={{ fontSize: '0.72rem', color: GBC.inkSoft, lineHeight: 1.5 }}>{q.why}</div>}
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* order·fill 오답 재시도 근거(gating) */}
+            {(q.qtype === 'order' || q.qtype === 'fill') && tries > 0 && (
               <div style={{ background: GBC.creamHi, border: `2px solid ${GBC.creamShade}`, borderRadius: 2, padding: '8px 10px' }}>
                 <div style={{ fontSize: '0.72rem', color: GBC.red, fontWeight: 700, marginBottom: 4 }}>× 다시 — 시도 {tries}회</div>
-                <div lang="ja" style={{ fontSize: '0.9rem', marginBottom: 4 }}>{q.answerText}</div>
                 {q.why && <div style={{ fontSize: '0.72rem', color: GBC.inkSoft, lineHeight: 1.5 }}>{q.why}</div>}
               </div>
             )}

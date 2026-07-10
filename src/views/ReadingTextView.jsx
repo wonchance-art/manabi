@@ -26,6 +26,123 @@ function shuffleWithAnswer(choices, answerIdx) {
   return { choices: arr.map((x) => x.c), answer };
 }
 
+// ── 신유형 순수 헬퍼(단위 테스트 대상) — order 채점·결정적 셔플·fill 정규화 ──
+// 두 뷰어(QuestionFlow·AirportQuiz)가 같은 규약을 쓰도록 단일 원천으로 export 한다.
+
+/** 배열 동치(원소 문자열 비교) — order 채점·"정답 순서로 시작 금지" 판정 공용 */
+export function arraysEqual(a, b) {
+  if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+  return true;
+}
+
+/** order 채점 — 조립한 배열이 정답 순서와 완전히 일치할 때만 정답 */
+export function gradeOrder(assembled, answer) {
+  return arraysEqual(assembled, answer);
+}
+
+// 결정적 PRNG(문항 id 시드) — 셔플이 매 렌더·기기에서 같아 하이드레이션 불일치·재셔플 튐이 없다.
+function hashSeed(str) {
+  let h = 2166136261 >>> 0;
+  const s = String(str);
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** 시드 결정적 Fisher-Yates(원본 불변) */
+export function seededShuffle(arr, seedStr) {
+  const a = Array.isArray(arr) ? arr.slice() : [];
+  const rand = mulberry32(hashSeed(seedStr));
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/**
+ * order 타일 초기 배치 — 시드 결정적 셔플이되 **정답 순서로 시작 금지**.
+ * 셔플 결과가 정답과 같으면 시드를 바꿔 재시도하고, 그래도 같으면(원소 중복 등) 서로 다른
+ * 두 타일을 스왑해 강제로 어긋낸다. 타일이 0·1개면 섞을 여지가 없어 그대로 둔다.
+ */
+export function shuffleOrderTiles(tiles, answer, seedStr) {
+  const arr = Array.isArray(tiles) ? tiles.slice() : [];
+  if (arr.length <= 1) return arr;
+  let out = seededShuffle(arr, seedStr);
+  for (let n = 1; n <= 8 && arraysEqual(out, answer); n++) {
+    out = seededShuffle(arr, `${seedStr}#${n}`);
+  }
+  if (arraysEqual(out, answer)) {
+    for (let i = 1; i < out.length; i++) {
+      if (out[i] !== out[0]) { [out[0], out[i]] = [out[i], out[0]]; break; }
+    }
+  }
+  return out;
+}
+
+/** fill 입력 정규화 — NFKC(전각→반각 통일) 후 공백(半角·全角) 전부 제거 */
+export function normalizeFill(s) {
+  return String(s ?? '').normalize('NFKC').replace(/[\s　]+/g, '').trim();
+}
+
+/** fill 채점 — 정규화한 입력이 answer 또는 accept[] 중 하나와 같으면 정답(빈 입력은 오답) */
+export function checkFill(input, answer, accept) {
+  const norm = normalizeFill(input);
+  if (!norm) return false;
+  const candidates = [answer, ...(Array.isArray(accept) ? accept : [])].filter((x) => x != null);
+  return candidates.some((c) => normalizeFill(c) === norm);
+}
+
+/** fill 문항의 빈칸 마커 — 콘텐츠 계약의 전각 대괄호+전각 공백 */
+export const FILL_BLANK = '［　］';
+/** ja 문장을 빈칸 기준 앞/뒤로 분리(마커 없으면 통째로 앞) */
+export function splitFill(ja) {
+  const s = String(ja ?? '');
+  const i = s.indexOf(FILL_BLANK);
+  if (i < 0) return { before: s, after: '' };
+  return { before: s.slice(0, i), after: s.slice(i + FILL_BLANK.length) };
+}
+
+/**
+ * 콘텐츠 문항 → 뷰어 공용 정규화 형태(단일 원천 — 두 뷰어가 같은 필드를 소비).
+ * gating = order·fill·pattern(전부 정답이 통과 조건). content·produce 는 비게이트.
+ * itemKey = 문형(pattern) — order·fill 도 pattern 과 같은 키로 약점 신호가 합류한다.
+ * 신유형이 없는 기존 글(선다만)은 pattern/content 로 종전과 동일하게 매핑돼 하위 호환된다.
+ */
+export function normalizeQuestion(q, key) {
+  const base = { key, id: q.id, why: q.why || '' };
+  if (q.type === 'order') {
+    return { ...base, qtype: 'order', gating: true, itemKey: q.pattern, prompt: q.q,
+      tiles: Array.isArray(q.tiles) ? q.tiles : [], answerTiles: Array.isArray(q.answer) ? q.answer : [], ko: q.ko || '' };
+  }
+  if (q.type === 'fill') {
+    return { ...base, qtype: 'fill', gating: true, itemKey: q.pattern, prompt: q.q,
+      ja: q.ja || '', fillAnswer: q.answer, accept: Array.isArray(q.accept) ? q.accept : [] };
+  }
+  if (q.type === 'produce') {
+    return { ...base, qtype: 'produce', gating: false, itemKey: null,
+      prompt: q.prompt || q.q || '', model: Array.isArray(q.model) ? q.model : [], guide: q.guide || '' };
+  }
+  if (q.type === 'pattern') {
+    return { ...base, qtype: 'pattern', gating: true, itemKey: q.pattern, prompt: q.q,
+      choices: q.choices, answerText: q.choices[q.answer] };
+  }
+  // content(기본)
+  return { ...base, qtype: 'content', gating: false, itemKey: 'content', prompt: q.q,
+    choices: q.choices, answerText: q.choices[q.answer] };
+}
+
 /**
  * 공용 문항 흐름 — 글·드릴 모두 사용.
  * questions: [{ key, qtype:'pattern'|'content', itemKey, prompt, contextJa?, choices, answerText, gating, why }]
@@ -33,9 +150,15 @@ function shuffleWithAnswer(choices, answerIdx) {
  * onPass(events): 통과(모든 gating 정답) 시 1회 — review_events 페이로드 배열
  */
 function QuestionFlow({ questions, textId, onScrollToEvidence, onPass, passLabel = '통과' }) {
-  // 최초 1회 셔플 — 뷰어는 클라이언트 상태 진입 후에만 렌더되므로 하이드레이션 불일치 없음
+  // 최초 1회 셔플 — 뷰어는 클라이언트 상태 진입 후에만 렌더되므로 하이드레이션 불일치 없음.
+  // 선다(pattern·content)는 랜덤 셔플, order 타일은 문항 id 시드 결정적 셔플(정답 순서로 시작 금지),
+  // fill·produce 는 셔플 대상이 아니다.
   const shuffled = useMemo(() => {
     return questions.map((q) => {
+      if (q.qtype === 'order') {
+        return { ...q, tiles: shuffleOrderTiles(q.tiles, q.answerTiles, q.id || q.key) };
+      }
+      if (!Array.isArray(q.choices)) return q; // fill·produce 는 보기 없음
       const s = shuffleWithAnswer(q.choices, q.choices.indexOf(q.answerText));
       return { ...q, choices: s.choices, answerText: s.answer };
     });
@@ -43,6 +166,10 @@ function QuestionFlow({ questions, textId, onScrollToEvidence, onPass, passLabel
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const [answers, setAnswers] = useState({}); // key → { picked, ok, tries, firstOk }
+  const [orderPicks, setOrderPicks] = useState({}); // order key → 선택 타일 인덱스 배열(탭 순서)
+  const [fillInputs, setFillInputs] = useState({}); // fill key → 현재 입력 문자열
+  const [produceInputs, setProduceInputs] = useState({}); // produce key → 입력(선택)
+  const [produceShown, setProduceShown] = useState({});    // produce key → 모범답 공개 여부
   const [passed, setPassed] = useState(false);
   const [saving, setSaving] = useState(false);      // onPass 대기 중("기록 중…") — 완료·이동 차단(P2-7)
   const [saveError, setSaveError] = useState(false); // 기록 실패 → 재시도 UI(P2-8)
@@ -64,6 +191,43 @@ function QuestionFlow({ questions, textId, onScrollToEvidence, onPass, passLabel
     answeringRef.current[q.key] = rec;                 // 동기 확정(다음 클릭이 즉시 본다)
     setAnswers((prev) => ({ ...prev, [q.key]: rec })); // 렌더 반영
     if (!ok && q.gating && onScrollToEvidence) onScrollToEvidence();
+  }
+
+  // order·fill 공용 채점 확정 — pick 과 같은 accumulateAnswer 규약(선택지가 아니라 조립·입력 채점).
+  function commitGated(q, ok) {
+    const cur = answeringRef.current[q.key];
+    const next = accumulateAnswer(cur, { ok, gating: q.gating });
+    if (!next) return; // 이미 정답 확정 → 무시
+    answeringRef.current[q.key] = next;
+    setAnswers((prev) => ({ ...prev, [q.key]: next }));
+    if (!ok && q.gating && onScrollToEvidence) onScrollToEvidence();
+  }
+
+  // order 타일 탭 — 풀→조립(추가), 조립→풀(되돌리기·재배열). 정답 확정 후엔 잠금.
+  function tapOrderTile(q, tileIdx, inAssembled) {
+    if (answeringRef.current[q.key]?.ok) return;
+    setOrderPicks((prev) => {
+      const cur = prev[q.key] || [];
+      const next = inAssembled ? cur.filter((x) => x !== tileIdx) : [...cur, tileIdx];
+      return { ...prev, [q.key]: next };
+    });
+  }
+  function confirmOrder(q) {
+    if (answeringRef.current[q.key]?.ok) return;
+    const picks = orderPicks[q.key] || [];
+    if (picks.length !== (q.tiles || []).length) return; // 전부 배치해야 채점
+    const assembled = picks.map((i) => q.tiles[i]);
+    commitGated(q, gradeOrder(assembled, q.answerTiles));
+  }
+
+  function submitFill(q) {
+    if (answeringRef.current[q.key]?.ok) return;
+    commitGated(q, checkFill(fillInputs[q.key] || '', q.fillAnswer, q.accept));
+  }
+
+  // produce 는 비게이트 — 제출/건너뛰기 모두 모범답 공개만, 채점·이벤트 없음.
+  function revealProduce(q) {
+    setProduceShown((prev) => ({ ...prev, [q.key]: true }));
   }
 
   // onPass(원격 기록) 를 await — 성공 후에만 완료 화면으로, 실패면 재시도 UI 로 전환(P2-7·P2-8).
@@ -104,50 +268,198 @@ function QuestionFlow({ questions, textId, onScrollToEvidence, onPass, passLabel
         {shuffled.map((q, i) => {
           const a = answers[q.key];
           const locked = a?.ok || (!q.gating && !!a);
+          const label =
+            q.qtype === 'content' ? '내용 확인 (통과 판정 제외)'
+            : q.qtype === 'order' ? '문장 만들기'
+            : q.qtype === 'fill' ? '빈칸 채우기'
+            : q.qtype === 'produce' ? '문장 만들기 (선택 · 통과 판정 제외)'
+            : '문형';
           return (
             <li key={q.key} className="fr-quiz__item">
               <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: 6 }}>
-                {i + 1}. {q.qtype === 'content' ? '내용 확인 (통과 판정 제외)' : '문형'}
+                {i + 1}. {label}
               </div>
               {q.contextJa && (
                 <div lang="ja" style={{ marginBottom: 6, fontSize: '1rem' }}>{q.contextJa}</div>
               )}
-              <div className="fr-quiz__prompt" style={{ marginBottom: 8 }} lang="ja">{q.prompt}</div>
-              <div className="fr-quiz__opts fr-quiz__opts--col">
-                {q.choices.map((opt) => {
-                  const isPicked = a?.picked === opt;
-                  const cls = a
-                    ? opt === q.answerText && (a.ok || locked)
-                      ? 'is-correct'
-                      : isPicked && !a.ok
-                      ? 'is-wrong'
-                      : locked
-                      ? 'is-locked'
-                      : ''
-                    : '';
-                  return (
-                    <button
-                      key={opt}
-                      type="button"
-                      className={`fr-quiz__opt ${cls}`}
-                      onClick={() => pick(q, opt)}
-                      disabled={locked}
-                      lang="ja"
-                    >
-                      {opt}
-                    </button>
-                  );
-                })}
-              </div>
+
+              {/* ── order: 타일 조립 ── */}
+              {q.qtype === 'order' ? (() => {
+                const picks = orderPicks[q.key] || [];
+                const assembled = picks.map((idx) => q.tiles[idx]);
+                const remaining = q.tiles.map((t, idx) => idx).filter((idx) => !picks.includes(idx));
+                const full = picks.length === q.tiles.length;
+                return (
+                  <>
+                    <div className="fr-quiz__prompt" style={{ marginBottom: 8 }}>{q.prompt}</div>
+                    {/* 조립 줄 */}
+                    <div style={{
+                      display: 'flex', flexWrap: 'wrap', gap: 6, minHeight: 44, padding: '8px 10px',
+                      border: '1px dashed var(--border)', borderRadius: 'var(--radius-sm, 8px)', marginBottom: 8,
+                      background: 'var(--surface-2, rgba(127,127,127,0.06))',
+                    }}>
+                      {assembled.length === 0 ? (
+                        <span style={{ fontSize: '0.76rem', color: 'var(--text-muted)', alignSelf: 'center' }}>
+                          아래 타일을 순서대로 탭하세요
+                        </span>
+                      ) : (
+                        picks.map((idx, pos) => (
+                          <button
+                            key={`${idx}-${pos}`} type="button" lang="ja" disabled={a?.ok}
+                            className="chip" onClick={() => tapOrderTile(q, idx, true)}
+                            style={{ fontSize: '1rem' }}
+                          >
+                            {q.tiles[idx]}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                    {/* 풀(남은 타일) */}
+                    {!a?.ok && (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+                        {remaining.map((idx) => (
+                          <button
+                            key={idx} type="button" lang="ja" className="chip"
+                            onClick={() => tapOrderTile(q, idx, false)} style={{ fontSize: '1rem' }}
+                          >
+                            {q.tiles[idx]}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {!a?.ok && (
+                      <button
+                        type="button" className="btn btn--primary btn--sm"
+                        disabled={!full} onClick={() => confirmOrder(q)}
+                      >
+                        확정
+                      </button>
+                    )}
+                  </>
+                );
+              })() : q.qtype === 'fill' ? (() => {
+                // ── fill: 인라인 입력 ──
+                const { before, after } = splitFill(q.ja);
+                const val = fillInputs[q.key] || '';
+                return (
+                  <>
+                    <div className="fr-quiz__prompt" style={{ marginBottom: 8 }}>{q.prompt}</div>
+                    <div lang="ja" style={{ fontSize: '1.05rem', lineHeight: 2, marginBottom: 8, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2 }}>
+                      <span>{before}</span>
+                      {a?.ok ? (
+                        <span style={{ fontWeight: 700, color: 'var(--accent, #6c7cff)', margin: '0 2px' }}>{q.fillAnswer}</span>
+                      ) : (
+                        <input
+                          type="text" lang="ja" value={val} inputMode="text"
+                          onChange={(e) => setFillInputs((prev) => ({ ...prev, [q.key]: e.target.value }))}
+                          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submitFill(q); } }}
+                          aria-label="빈칸에 들어갈 말"
+                          style={{ width: '4.5em', textAlign: 'center', fontSize: '1rem', padding: '2px 6px', margin: '0 2px', border: '1px solid var(--border)', borderRadius: 6 }}
+                        />
+                      )}
+                      <span>{after}</span>
+                    </div>
+                    {!a?.ok && (
+                      <button type="button" className="btn btn--primary btn--sm" onClick={() => submitFill(q)}>
+                        제출
+                      </button>
+                    )}
+                  </>
+                );
+              })() : q.qtype === 'produce' ? (() => {
+                // ── produce: 비게이트 산출(선택) ──
+                const shown = !!produceShown[q.key];
+                const val = produceInputs[q.key] || '';
+                return (
+                  <>
+                    <div className="fr-quiz__prompt" style={{ marginBottom: 6 }}>{q.prompt}</div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: 8 }}>
+                      선택 문항이에요 — 직접 써 보거나 건너뛸 수 있어요. 채점하지 않아요.
+                    </div>
+                    {!shown ? (
+                      <>
+                        <textarea
+                          lang="ja" value={val} rows={2}
+                          onChange={(e) => setProduceInputs((prev) => ({ ...prev, [q.key]: e.target.value }))}
+                          placeholder="여기에 일본어로 써 보세요(선택)"
+                          style={{ width: '100%', fontSize: '1rem', padding: '8px 10px', border: '1px solid var(--border)', borderRadius: 8, marginBottom: 8, boxSizing: 'border-box' }}
+                        />
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <button type="button" className="btn btn--primary btn--sm" onClick={() => revealProduce(q)}>제출</button>
+                          <button type="button" className="chip" onClick={() => revealProduce(q)}>건너뛰기</button>
+                        </div>
+                      </>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        {val.trim() && (
+                          <div style={{ fontSize: '0.9rem' }} lang="ja">
+                            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block', marginBottom: 2 }}>내가 쓴 문장</span>
+                            {val}
+                          </div>
+                        )}
+                        {(q.model || []).length > 0 && (
+                          <div>
+                            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block', marginBottom: 2 }}>모범답</span>
+                            {q.model.map((m, mi) => (
+                              <div key={mi} lang="ja" style={{ fontSize: '1rem', marginBottom: 2 }}>· {m}</div>
+                            ))}
+                          </div>
+                        )}
+                        {q.guide && <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>{q.guide}</div>}
+                      </div>
+                    )}
+                  </>
+                );
+              })() : (
+                // ── pattern·content: 기존 선다 ──
+                <>
+                  <div className="fr-quiz__prompt" style={{ marginBottom: 8 }} lang="ja">{q.prompt}</div>
+                  <div className="fr-quiz__opts fr-quiz__opts--col">
+                    {q.choices.map((opt) => {
+                      const isPicked = a?.picked === opt;
+                      const cls = a
+                        ? opt === q.answerText && (a.ok || locked)
+                          ? 'is-correct'
+                          : isPicked && !a.ok
+                          ? 'is-wrong'
+                          : locked
+                          ? 'is-locked'
+                          : ''
+                        : '';
+                      return (
+                        <button
+                          key={opt}
+                          type="button"
+                          className={`fr-quiz__opt ${cls}`}
+                          onClick={() => pick(q, opt)}
+                          disabled={locked}
+                          lang="ja"
+                        >
+                          {opt}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+
               {a && !a.ok && q.gating && (
                 <div className="fr-quiz__answer" style={{ color: 'var(--danger)' }}>
                   × 다시 — {q.why || '본문을 다시 읽고 재도전하세요.'} (시도 {a.tries}회)
                 </div>
               )}
               {a?.ok && (
-                <div className="fr-quiz__answer">○ {q.why || '정답입니다.'}{a.tries > 1 ? ` (${a.tries}회 시도)` : ''}</div>
+                <div className="fr-quiz__answer">
+                  ○ {q.why || '정답입니다.'}{a.tries > 1 ? ` (${a.tries}회 시도)` : ''}
+                  {q.qtype === 'order' && q.ko && (
+                    <div style={{ marginTop: 4 }}>
+                      <span lang="ja" style={{ fontWeight: 700 }}>{(q.answerTiles || []).join('')}</span>
+                      <span style={{ color: 'var(--text-secondary)', marginLeft: 6 }}>{q.ko}</span>
+                    </div>
+                  )}
+                </div>
               )}
-              {a && !a.ok && !q.gating && (
+              {a && !a.ok && !q.gating && q.qtype === 'content' && (
                 <div className="fr-quiz__answer">정답: <span lang="ja">{q.answerText}</span></div>
               )}
             </li>
@@ -246,19 +558,7 @@ export default function ReadingTextView({ text, onPass, onBack, saving = false }
   // narr 문단이 섞인 그레이디드 리더 형식인지 — ja 없는 body 항목이 하나라도 있으면 참
   const graded = (text.body || []).some((b) => b.narr != null);
 
-  const questions = useMemo(() => {
-    return (text.questions || []).map((q, i) => ({
-      key: `${text.id}-q${i}`,
-      id: q.id, // 안정 문항 id(n5-tokyo-NN-qK) — content item_key 고유화용(P3-11)
-      qtype: q.type === 'pattern' ? 'pattern' : 'content',
-      itemKey: q.type === 'pattern' ? q.pattern : 'content',
-      prompt: q.q,
-      choices: q.choices,
-      answerText: q.choices[q.answer],
-      gating: q.type === 'pattern',
-      why: q.why || '',
-    }));
-  }, [text]);
+  const questions = useMemo(() => (text.questions || []).map((q, i) => normalizeQuestion(q, `${text.id}-q${i}`)), [text]);
 
   const placeName = typeof text.place === 'string' ? text.place : text.place?.ja || text.place?.name;
 
