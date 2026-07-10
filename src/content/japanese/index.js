@@ -27,6 +27,8 @@ import vocabN5travelCore from './vocab/n5_travel_core';
 import vocabSlangCore from './vocab/slang_core';
 // 여행·문화 일본어 — 브랜드 가타카나·게임·영화 제목(지브리/호소다/신카이) 즉전력 컬렉션
 import vocabCultureCore from './vocab/culture_core';
+// 오노마토페 — 한일 첩어 구조가 닮은 의성어·의태어(감정·모습·소리) 컬렉션 (N4)
+import vocabOnomatopeCore from './vocab/onomatope_core';
 import vocabN4jlptA from './vocab/n4_jlpt_a';
 import vocabN4jlptB from './vocab/n4_jlpt_b';
 import vocabN4jlptC from './vocab/n4_jlpt_c';
@@ -136,7 +138,7 @@ const registry = createRegistry(
   {
     // W1 보강: vocabN5jlptA… 조립 후 mergeJaVocab(vocabN5, vocabN5jlptA, …) 형태로 여기 추가
     N5: mergeJaVocab(vocabN5, vocabN5jlptA, vocabN5jlptB, vocabN5jlptC, vocabN5travelCore, vocabSlangCore, vocabCultureCore),
-    N4: mergeJaVocab(vocabN4, vocabN4jlptA, vocabN4jlptB, vocabN4jlptC),
+    N4: mergeJaVocab(vocabN4, vocabN4jlptA, vocabN4jlptB, vocabN4jlptC, vocabOnomatopeCore),
     N3: mergeJaVocab(vocabN3, vocabN3jlptA, vocabN3jlptB, vocabN3jlptC, vocabN3jlptD, vocabN3jlptE, vocabN3jlptF, vocabN3jlptG, vocabN3jlptH, vocabN3jlptI, vocabN3jlptJ),
     N2: mergeJaVocab(vocabN2, vocabN2jlptA, vocabN2jlptB, vocabN2jlptC, vocabN2jlptD, vocabN2jlptE, vocabN2jlptF, vocabN2jlptG, vocabN2jlptH, vocabN2jlptI),
     N1: mergeJaVocab(vocabN1, vocabN1jlptA, vocabN1jlptB, vocabN1jlptC, vocabN1jlptD, vocabN1jlptE, vocabN1jlptF, vocabN1jlptG, vocabN1jlptH),
