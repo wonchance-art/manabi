@@ -10,7 +10,7 @@
 //   · AirportQuiz  — 심사관 출제(문형 4·내용 2). 문형 전부 정답 = 통과. 오답 시 해당 일본어
 //     문장 재생 후 재시도(tries 기록). 채점마다 quest:scored, 완료 시 quest:done.
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { GBC, gbcPanel, gbcButton, gbcButtonPrimary } from './QuestReview';
 import { JaText } from '../../views/refShared';
 // 이벤트 계약 단일 원천 — lang('Japanese')·최초 시도 correct·미응답 제외 규칙을 강제한다.
@@ -109,6 +109,7 @@ export function AirportQuiz({ text, onPass, onExit }) {
     const s = shuffled(q.choices, q.answer);
     return {
       key: `${text.id}-q${i}`,
+      index: i, // content item_key 고유화용 위치(P2-9) — buildReadingEvents 가 textId#c<index> 로 조합
       qtype: q.type === 'pattern' ? 'pattern' : 'content',
       itemKey: q.type === 'pattern' ? q.pattern : 'content',
       gating: q.type === 'pattern',
@@ -124,14 +125,20 @@ export function AirportQuiz({ text, onPass, onExit }) {
   const [picked, setPicked] = useState(null);   // 이번 문항에서 고른 오답(재시도 텍스트박스 표시용)
   const [tries, setTries] = useState(0);
   const [done, setDone] = useState(false);
-  const resultsRef = useRef([]);  // 문항별 { itemKey, qtype, firstOk, tries } — 통과 시 buildReadingEvents 로 일괄 변환
+  const resultsRef = useRef([]);  // 문항별 { itemKey, qtype, firstOk, tries, index } — 통과 시 buildReadingEvents 로 일괄 변환
   const rightRef = useRef(0);
-  const lockRef = useRef(false);
+  const lockRef = useRef(false);    // 완료 후 영구 잠금
+  const answeringRef = useRef(false); // 응답 처리 진입~다음 문항 전환까지 동기 잠금(P2-8)
+  const passedRef = useRef(false);  // onPass 멱등 — 2회째 호출 무시
+
+  // 문항 뷰가 갱신되면(다음 문항 전환·재시도 피드백 렌더) 동기 잠금 해제 — 같은 tick 이중 클릭만 막는다
+  useEffect(() => { answeringRef.current = false; }, [idx, picked, tries]);
 
   const q = qs[idx];
 
   function pick(opt) {
-    if (!q || lockRef.current) return;
+    if (!q || lockRef.current || answeringRef.current) return; // 동기 잠금 — state 반영 전 이중 클릭 차단
+    answeringRef.current = true; // 응답 처리 진입 즉시 잠금(전환/피드백 렌더 시 위 effect 가 해제)
     const ok = opt === q.answerText;
     const nextTries = tries + 1;
     bus.emit('quest:scored', { correct: ok });
@@ -145,13 +152,16 @@ export function AirportQuiz({ text, onPass, onExit }) {
     // 정답(또는 content 첫 응답으로 확정) → 결과 누적 후 다음.
     // correct 는 최초 시도 기준 — 게이팅 재시도는 오답에서만 생기므로
     // nextTries>1 이면 최초 시도는 반드시 오답(firstOk=false)이다.
-    resultsRef.current.push({ itemKey: q.itemKey, qtype: q.qtype, firstOk: nextTries === 1 && ok, tries: nextTries });
+    // content 는 index 를 실어 글별 고유 item_key(textId#c<index>)로 집계된다(P2-9).
+    resultsRef.current.push({ itemKey: q.itemKey, qtype: q.qtype, firstOk: nextTries === 1 && ok, tries: nextTries, index: q.index });
     if (ok) rightRef.current += 1; // 연출용 right/total 은 종전대로 확정 시점 정오(quest:done 표시 계약 유지)
 
     if (idx < qs.length - 1) {
       setIdx(idx + 1); setPicked(null); setTries(0);
     } else {
       lockRef.current = true;
+      if (passedRef.current) return; // 멱등 — onPass 는 1회만
+      passedRef.current = true;
       setDone(true);
       const total = qs.length;
       bus.emit('quest:done', { right: rightRef.current, total });

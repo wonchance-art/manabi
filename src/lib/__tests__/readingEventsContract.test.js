@@ -6,6 +6,7 @@ process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||= 'test-anon-key';
 const {
   READING_LANG,
   buildReadingEvents,
+  accumulateAnswer,
   missingReviewSlugs,
   isReadingDrillId,
   drillId,
@@ -72,6 +73,71 @@ describe('buildReadingEvents — 미응답 문항은 이벤트 미발행', () =>
   it('빈/깨진 입력 방어', () => {
     expect(buildReadingEvents('t1', null)).toEqual([]);
     expect(buildReadingEvents('t1', [null, { qtype: 'pattern', tries: 1 }])).toEqual([]); // itemKey 없음
+  });
+});
+
+// ── P2-9: content 문항 item_key 고유화 — 'content' 는 글마다 겹쳐 약점 집계를 오염시킨다 ──
+describe('buildReadingEvents — content item_key 는 textId#c<index> 로 글·위치별 고유', () => {
+  it('content 는 넘긴 index 로 textId#c<index> 키를 만든다(pattern 은 문형 문자열 유지)', () => {
+    const events = buildReadingEvents('n5-tokyo-03', [
+      { itemKey: '〜か', qtype: 'pattern', firstOk: true, tries: 1, index: 0 },
+      { itemKey: 'content', qtype: 'content', firstOk: false, tries: 1, index: 1 },
+      { itemKey: 'content', qtype: 'content', firstOk: true, tries: 1, index: 2 },
+    ]);
+    expect(events.map((e) => e.item_key)).toEqual(['〜か', 'n5-tokyo-03#c1', 'n5-tokyo-03#c2']);
+  });
+
+  it('다른 글의 같은 위치 content 는 서로 다른 키 — 한 키로 뭉개지지 않는다', () => {
+    const a = buildReadingEvents('n5-tokyo-01', [{ itemKey: 'content', qtype: 'content', firstOk: true, tries: 1, index: 0 }]);
+    const b = buildReadingEvents('n5-tokyo-02', [{ itemKey: 'content', qtype: 'content', firstOk: true, tries: 1, index: 0 }]);
+    expect(a[0].item_key).toBe('n5-tokyo-01#c0');
+    expect(b[0].item_key).toBe('n5-tokyo-02#c0');
+    expect(a[0].item_key).not.toBe(b[0].item_key);
+  });
+
+  it('index 미제공 시 순번(loop i)으로 대체 — 여전히 고유·안정', () => {
+    const events = buildReadingEvents('t1', [
+      { itemKey: 'content', qtype: 'content', firstOk: true, tries: 1 },
+      { itemKey: 'content', qtype: 'content', firstOk: true, tries: 1 },
+    ]);
+    expect(events.map((e) => e.item_key)).toEqual(['t1#c0', 't1#c1']);
+  });
+});
+
+// ── P2-8: 문항 응답 누적·잠금(accumulateAnswer) — 이중 클릭 이중 채점 차단 ──
+describe('accumulateAnswer — 게이팅·잠금·firstOk 규칙(QuestionFlow 단일 원천)', () => {
+  it('첫 응답: cur 없으면 tries 1·firstOk = 이번 정오', () => {
+    expect(accumulateAnswer(undefined, { ok: true, gating: true })).toEqual({ ok: true, tries: 1, firstOk: true });
+    expect(accumulateAnswer(undefined, { ok: false, gating: true })).toEqual({ ok: false, tries: 1, firstOk: false });
+  });
+
+  it('게이팅 재시도: firstOk 는 최초 시도로 고정, tries 만 누적', () => {
+    const first = accumulateAnswer(undefined, { ok: false, gating: true }); // 오답
+    const second = accumulateAnswer(first, { ok: true, gating: true });     // 재시도 정답
+    expect(second).toEqual({ ok: true, tries: 2, firstOk: false }); // 최초 오답 기록 보존
+  });
+
+  it('정답 확정 문항은 재선택 무시(null) — 이중 클릭이 tries 를 늘리지 못한다', () => {
+    const ok = accumulateAnswer(undefined, { ok: true, gating: true });
+    expect(accumulateAnswer(ok, { ok: true, gating: true })).toBeNull();
+    expect(accumulateAnswer(ok, { ok: false, gating: true })).toBeNull();
+  });
+
+  it('content(비게이팅)는 첫 응답으로 잠금 — 이후 클릭 무시(null)', () => {
+    const first = accumulateAnswer(undefined, { ok: false, gating: false });
+    expect(first).toEqual({ ok: false, tries: 1, firstOk: false });
+    expect(accumulateAnswer(first, { ok: true, gating: false })).toBeNull(); // 재응답 차단
+  });
+
+  it('동기 ref 시나리오: 같은 확정 기록에 대한 2회째 pick 은 무시되어 이벤트가 1개로 유지된다', () => {
+    // ref 가 첫 클릭 결과(cur)를 동기 보유 → 2회째 pick 은 accumulateAnswer 가 null → 무시.
+    let cur = accumulateAnswer(undefined, { ok: true, gating: false }); // content 첫 응답 확정
+    const second = accumulateAnswer(cur, { ok: true, gating: false });
+    if (second) cur = second; // 실제 pick 은 null 이면 반영하지 않음
+    // 최종 결과로 buildReadingEvents 를 만들면 문항당 이벤트 1개
+    const events = buildReadingEvents('t1', [{ itemKey: cur.picked, qtype: 'content', firstOk: cur.firstOk, tries: cur.tries, index: 0 }]);
+    expect(events).toHaveLength(1);
+    expect(events[0].detail.tries).toBe(1); // 이중 클릭에도 tries 1 유지
   });
 });
 

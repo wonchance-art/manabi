@@ -31,17 +31,18 @@ import { buildNodes, nodeStates, drillId } from './readingProgress';
 export function questionOpenIds(track, passedIds) {
   const stated = nodeStates(buildNodes(track), passedIds);
   const open = new Set();
-  let openTextOrder = null;
-  for (const n of stated) {
+  let openTextIdx = -1;
+  for (let i = 0; i < stated.length; i++) {
+    const n = stated[i];
     if (n.status === 'passed' || n.status === 'open') open.add(n.id);
-    if (n.status === 'open' && n.kind === 'text') openTextOrder = n.order;
+    if (n.status === 'open' && n.kind === 'text') openTextIdx = i;
   }
-  // 열린 글 위치의 드릴 선포함 — 글 통과 즉시 열리는 노드까지가 "한 걸음"
-  // (열린 노드가 드릴이면 선포함 없음: 드릴 통과 후엔 어차피 재조회가 돈다).
-  if (openTextOrder != null) {
-    for (const n of stated) {
-      if (n.kind === 'drill' && n.afterOrder === openTextOrder) open.add(n.id);
-    }
+  // 열린 글 **바로 다음** 노드가 드릴이면 그 1개만 선포함 — 글 통과 즉시 열리는 "한 걸음"
+  // (열린 노드가 드릴이면 선포함 없음: 드릴 통과 후엔 어차피 재조회가 돈다). 같은 afterOrder 에
+  // 드릴이 여럿이어도 체인상 다음 1개만 — 2번째 드릴은 1번째 통과 후에야 열린다(P2-6).
+  if (openTextIdx >= 0) {
+    const nextNode = stated[openTextIdx + 1];
+    if (nextNode && nextNode.kind === 'drill') open.add(nextNode.id);
   }
   return open;
 }

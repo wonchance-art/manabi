@@ -36,15 +36,18 @@ import {
 import { buildAirportScene } from './airportScene';
 import { StoryTextbox, AirportQuiz } from './StoryOverlay';
 import { buildStoryScript } from './storyScript';
-import tokyoTrack from '../../content/japanese/reading/n5_tokyo';
+// 🔒 월드 번들 정답 격리(P1-1): 전체 트랙(n5_tokyo.js)을 정적 import하면 트리 셰이킹 불가로
+// /world 청크에 30편 전 글의 questions·answer·why가 실린다(서버 스트립 P2-7 무력화).
+// 월드 스토리 씬은 글 1만 쓰므로 그 데이터만 담은 scene1 모듈만 가져온다(글 1은 상시 열림 → 정당).
+import scene1Text from '../../content/japanese/reading/n5_tokyo_scene1';
 // 통과 기록은 본편 R3와 동일 규약을 그대로 공유(readingProgress·reviewEvents·grammarSrs).
 import { READING_LANG, readingSlug, markReadingPassedLocal, markReadingPassedRemote } from '../../lib/readingProgress';
 import { logReviewEvents } from '../../lib/reviewEvents';
 import { enqueueGrammarReview } from '../../lib/grammarSrs';
 
-// 프로토타입 = 글 1 하나. 원문(n5_tokyo.js) 무수정 — 런타임에 텍스트박스 스텝으로 변환만.
+// 프로토타입 = 글 1 하나. scene1 모듈(원본 글 1의 사본) 무수정 — 런타임에 텍스트박스 스텝으로 변환만.
 const READING_TEXT_ID = 'n5-tokyo-01';
-const STORY_TEXT = tokyoTrack?.texts?.find((t) => t.id === READING_TEXT_ID) || null;
+const STORY_TEXT = (scene1Text && scene1Text.id === READING_TEXT_ID) ? scene1Text : null;
 const STORY_STEPS = STORY_TEXT ? buildStoryScript(STORY_TEXT) : [];
 
 // ── 좌표 스케일 (버스 계약 불변: 1타일 = 32 월드 px) ──
@@ -207,7 +210,9 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
 
   // 통과 기록 — 본편 R3 handlePass와 동일 규약(같은 데이터 공유, 본편 트랙 UI는 존치).
   const recordPass = (events) => {
-    markReadingPassedLocal(READING_TEXT_ID);
+    // userId를 넘겨 사용자 스코프 키에 기록 — 게스트 키에 남기면 로그아웃→타 계정 로그인 시
+    // 승계 루프가 진도를 복제한다(Codex P2-7 잔여 지점).
+    markReadingPassedLocal(READING_TEXT_ID, userId);
     if (userId) {
       markReadingPassedRemote(userId, READING_TEXT_ID);
       logReviewEvents(userId, events); // AirportQuiz→buildReadingEvents 산출물 — lang:'Japanese', source:'reading'

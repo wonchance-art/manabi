@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../lib/AuthContext';
@@ -29,13 +29,14 @@ export default function ReadingTrackPage({ track }) {
   const router = useRouter();
   const [passedSet, setPassedSet] = useState(() => new Set());
   const [active, setActive] = useState(null); // 열려 있는 노드 id (null = 목록)
+  const passingRef = useRef(false); // handlePass 재진입 가드(빠른 연속 통과 경합 차단, P2-8)
 
-  // 로컬 로드 + 로그인 시 서버 병합(rt: 행만 — 챕터 진도 오염 0)
+  // 로컬 로드 + 로그인 시 서버 병합(rt: 행만 — 챕터 진도 오염 0). 키는 사용자 스코프(P2-7).
   useEffect(() => {
-    setPassedSet(loadPassedTexts());
+    setPassedSet(loadPassedTexts(user?.id));
     if (user?.id) {
       pullReadingProgress(user.id).then((changed) => {
-        if (changed) setPassedSet(loadPassedTexts());
+        if (changed) setPassedSet(loadPassedTexts(user.id));
       });
     }
   }, [user?.id]);
@@ -68,20 +69,26 @@ export default function ReadingTrackPage({ track }) {
 
   // 통과 시점 기록 배선 — 로컬 Set·서버 upsert·review_events·글 단위 SRS 큐
   async function handlePass(node, events) {
-    const next = markReadingPassedLocal(node.id);
-    setPassedSet(next);
-    if (!user?.id) return; // 게스트 — 서버 payload 는 order 1 고정이라 재조회 무의미(로그인 안내 UI 담당)
-    markReadingPassedRemote(user.id, node.id);
-    logReviewEvents(user.id, events); // lang:'ja', source:'reading' — rung 미연결(vocab 전용)
-    // 글 단위 재검증: grammar_review 에 rt: slug 등록(드릴은 글 단위 SRS 대상 아님)
-    if (node.kind === 'text') enqueueGrammarReview(user.id, READING_LANG, readingSlug(node.id));
-    // 다음 노드 문항 확보 — 서버는 열린 노드까지만 문항을 내려주므로(P2-7 스트립) 재조회가 필요.
-    // markReadingPassedRemote 는 fire-and-forget 이라 그것만 믿고 refresh 하면 upsert 와 경합한다.
-    // pullReadingProgress 는 로컬 전용 통과분을 await 업서트하므로, 완료 시점엔 서버가 이번
-    // 통과를 반드시 알고 있다 — 그 뒤의 refresh 는 경합 없이 다음 문항을 받는다.
-    const changed = await pullReadingProgress(user.id);
-    if (changed) setPassedSet(loadPassedTexts()); // 병합으로 타 기기 진도가 들어왔으면 반영
-    router.refresh();
+    if (passingRef.current) return; // 진행 중 재진입 차단 — 빠른 연속 통과가 이중 기록되지 않게(P2-8)
+    passingRef.current = true;
+    try {
+      const next = markReadingPassedLocal(node.id, user?.id);
+      setPassedSet(next);
+      if (!user?.id) return; // 게스트 — 서버 payload 는 order 1 고정이라 재조회 무의미(로그인 안내 UI 담당)
+      markReadingPassedRemote(user.id, node.id);
+      logReviewEvents(user.id, events); // lang:'ja', source:'reading' — rung 미연결(vocab 전용)
+      // 글 단위 재검증: grammar_review 에 rt: slug 등록(드릴은 글 단위 SRS 대상 아님)
+      if (node.kind === 'text') enqueueGrammarReview(user.id, READING_LANG, readingSlug(node.id));
+      // 다음 노드 문항 확보 — 서버는 열린 노드까지만 문항을 내려주므로(P2-7 스트립) 재조회가 필요.
+      // markReadingPassedRemote 는 fire-and-forget 이라 그것만 믿고 refresh 하면 upsert 와 경합한다.
+      // pullReadingProgress 는 로컬 전용 통과분을 await 업서트하므로, 완료 시점엔 서버가 이번
+      // 통과를 반드시 알고 있다 — 그 뒤의 refresh 는 경합 없이 다음 문항을 받는다.
+      const changed = await pullReadingProgress(user.id);
+      if (changed) setPassedSet(loadPassedTexts(user.id)); // 병합으로 타 기기 진도가 들어왔으면 반영
+      router.refresh();
+    } finally {
+      passingRef.current = false;
+    }
   }
 
   // ── 글/드릴 뷰어 ──

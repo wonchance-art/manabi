@@ -12,8 +12,17 @@
 import { supabase } from './supabase';
 import { enqueueGrammarReview } from './grammarSrs';
 
-/** 통과 글 id 를 담는 localStorage Set 키 — 챕터용 Set(ja_read_chapters)과 절대 혼합 금지 */
+/**
+ * 통과 글 id 를 담는 localStorage Set 키의 **베이스**(챕터용 Set 과 절대 혼합 금지).
+ * 실제 저장은 사용자 스코프 키(`ja_reading_texts:<uid>`, 게스트는 `:guest`)에 한다 —
+ * 계정 전환 시 A 진도가 B 로 복제되는 것을 막기 위해(P2-7). 이 베이스 문자열 자체(콜론 없음)는
+ * 스코프 도입 이전의 레거시 무스코프 키이기도 해서, 발견 시 게스트 키로 1회 이관 후 삭제한다.
+ */
 export const READING_KEY = 'ja_reading_texts';
+/** 게스트(비로그인) 스코프 키 — 로그인 시 사용자 키로 1회 승계 후 비운다 */
+const guestReadingKey = () => `${READING_KEY}:guest`;
+/** 사용자 스코프 키 — userId 없으면 게스트 키(GameCanvas 등 userId 미전달 호출 하위호환) */
+const scopedReadingKey = (userId) => (userId ? `${READING_KEY}:${userId}` : guestReadingKey());
 /**
  * user_ref_progress·grammar_review·review_events 에 쓰는 lang 값 — 독해 트랙의 단일 원천.
  * 다른 학습 기능이 전부 'Japanese' 를 쓰므로 'ja' 를 섞으면 약점 집계·난이도 다이얼이
@@ -89,23 +98,50 @@ export function missingReviewSlugs(passedIds, queuedSlugs) {
  *   correct:true 가 되어 약점 신호가 소실된다. 재시도 횟수는 detail.tries 로 남긴다.
  * - 미응답(tries 0) 문항은 이벤트를 만들지 않는다 — 응답하지 않은 content 를 오답으로
  *   집계하면 정답률(EWMA·다이얼)이 부당하게 깎인다. 응답한 문항만 기록.
+ * - content 문항의 item_key 는 글마다 'content' 로 겹쳐, 서로 다른 글의 내용 문항이
+ *   한 키로 뭉개져 약점 집계가 오염된다 → textId#c<index> 로 글·위치별 고유화(P2-9).
+ *   pattern 문항 키는 문형 문자열을 유지한다(의도된 문형 단위 집계).
  * @param {string} textId - 글/드릴 id (detail.text_id 로 실림)
- * @param {Array<{itemKey: string, qtype: 'pattern'|'content', firstOk: boolean, tries: number}>} results
+ * @param {Array<{itemKey: string, qtype: 'pattern'|'content', firstOk: boolean, tries: number, index?: number}>} results
  * @returns {Array} logReviewEvents 에 그대로 넘길 수 있는 이벤트 배열
  */
 export function buildReadingEvents(textId, results) {
   const out = [];
-  for (const r of results || []) {
-    if (!r || !r.itemKey || !(r.tries > 0)) continue; // 미응답 → 발행 자체를 생략
+  const list = results || [];
+  for (let i = 0; i < list.length; i++) {
+    const r = list[i];
+    if (!r || !(r.tries > 0)) continue; // 미응답 → 발행 자체를 생략
+    // content 는 호출부가 넘긴 문항 위치(index, 없으면 순번)로 글별 고유 키를 만든다.
+    const itemKey = r.qtype === 'content'
+      ? `${textId}#c${r.index != null ? r.index : i}`
+      : r.itemKey;
+    if (!itemKey) continue; // pattern 인데 itemKey 없음 → 방어적으로 생략
     out.push({
       lang: READING_LANG,
       source: 'reading',
-      item_key: r.itemKey,
+      item_key: itemKey,
       correct: !!r.firstOk,
       detail: { text_id: textId, qtype: r.qtype, tries: r.tries },
     });
   }
   return out;
+}
+
+/**
+ * 문항 응답 누적(순수) — QuestionFlow 의 게이팅·잠금 규칙 단일 원천(P2-8).
+ * cur(이전 기록 | undefined)에 이번 선택을 반영해 다음 기록을 만든다. 잠금 규칙:
+ * - cur.ok(정답 확정) → null 반환(무시): 확정 문항 재선택 차단.
+ * - content(비게이팅)이면서 cur 존재 → null: 첫 응답으로 잠금(재응답·이중 클릭 차단).
+ * firstOk 는 첫 응답에서 확정·고정 — 재시도 끝의 정답이 최초 시도 기록을 덮지 않는다
+ * (이벤트 correct 는 최초 시도 기준, buildReadingEvents 참조). 동기 ref 에 이 결과를
+ * 즉시 써 두면 state 반영 전 재클릭이 cur 로 이 값을 보고 이중 채점되지 않는다.
+ * @returns {{ok:boolean, tries:number, firstOk:boolean} | null} null 이면 이번 클릭 무시
+ */
+export function accumulateAnswer(cur, { ok, gating }) {
+  if (cur?.ok) return null;        // 정답 확정 문항은 고정
+  if (!gating && cur) return null; // content 는 첫 응답으로 잠금
+  const tries = (cur?.tries || 0) + 1;
+  return { ok, tries, firstOk: cur ? cur.firstOk : ok };
 }
 
 /**
@@ -184,27 +220,56 @@ export function nodeStates(nodes, passedSet) {
 
 // ── 부수효과(localStorage · 서버) ───────────────────────────────────────────
 
-export function loadPassedTexts() {
+/** 임의 키에서 Set 로드(방어적) */
+function readSetFromKey(key) {
   if (typeof window === 'undefined') return new Set();
   try {
-    return new Set(JSON.parse(localStorage.getItem(READING_KEY) || '[]'));
+    return new Set(JSON.parse(localStorage.getItem(key) || '[]'));
   } catch {
     return new Set();
   }
 }
 
-export function persistPassedTexts(set) {
+/** 임의 키에 Set 저장(방어적) */
+function writeSetToKey(key, set) {
   if (typeof window === 'undefined') return;
   try {
-    localStorage.setItem(READING_KEY, JSON.stringify([...set]));
+    localStorage.setItem(key, JSON.stringify([...set]));
   } catch {}
 }
 
-/** 통과 시 로컬 Set 갱신 후 반환(호출부가 상태 재설정) */
-export function markReadingPassedLocal(id) {
-  const set = loadPassedTexts();
+/**
+ * 레거시 무스코프 키(`ja_reading_texts`) → 게스트 키로 1회 이관 후 삭제(하위 호환).
+ * 스코프 도입 전 저장분을 잃지 않으면서, 이후 로직은 스코프 키만 보게 만든다.
+ */
+function migrateLegacyReadingKey() {
+  if (typeof window === 'undefined') return;
+  try {
+    if (localStorage.getItem(READING_KEY) == null) return; // 콜론 없는 정확한 레거시 키
+    const legacy = readSetFromKey(READING_KEY);
+    const gk = guestReadingKey();
+    writeSetToKey(gk, new Set([...readSetFromKey(gk), ...legacy]));
+    localStorage.removeItem(READING_KEY);
+  } catch {}
+}
+
+/** 사용자 스코프 통과 Set 로드 — userId 없으면 게스트. 로드 시 레거시 키를 먼저 흡수한다 */
+export function loadPassedTexts(userId) {
+  if (typeof window === 'undefined') return new Set();
+  migrateLegacyReadingKey();
+  return readSetFromKey(scopedReadingKey(userId));
+}
+
+/** 사용자 스코프 통과 Set 저장 — userId 없으면 게스트 키 */
+export function persistPassedTexts(set, userId) {
+  writeSetToKey(scopedReadingKey(userId), set);
+}
+
+/** 통과 시 로컬 Set 갱신 후 반환(호출부가 상태 재설정). userId 없으면 게스트 스코프 */
+export function markReadingPassedLocal(id, userId) {
+  const set = loadPassedTexts(userId);
   set.add(id);
-  persistPassedTexts(set);
+  persistPassedTexts(set, userId);
   return set;
 }
 
@@ -226,22 +291,34 @@ export function markReadingPassedRemote(userId, id) {
  */
 export async function pullReadingProgress(userId) {
   if (!userId || typeof window === 'undefined') return false;
+  migrateLegacyReadingKey();
+  const uk = scopedReadingKey(userId);
+  const initial = readSetFromKey(uk); // 승계·병합 전 기준(변경 감지·복제 차단 판정용)
+  let local = initial;
+
+  // 게스트(비로그인) 진행분 1회 승계 — 같은 사람의 로그인 전 진행은 이 계정으로 정당 승계다.
+  // 승계 후 게스트 키를 즉시 비워, 뒤이어 다른 계정(B)이 로그인해도 A 진도가 복제되지 않게 한다.
+  const guestSet = readSetFromKey(guestReadingKey());
+  if (guestSet.size) {
+    local = new Set([...initial, ...guestSet]);
+    if (local.size !== initial.size) writeSetToKey(uk, local); // 승계분 즉시 영속(서버 실패에도 보존)
+    writeSetToKey(guestReadingKey(), new Set());               // 게스트 비움(A→B 복제 차단)
+  }
+
   try {
     const { data, error } = await supabase
       .from('user_ref_progress')
       .select('slug, read')
       .eq('user_id', userId)
       .eq('lang', READING_LANG);
-    if (error) return false;
+    if (error) return local.size !== initial.size; // 서버 실패 — 게스트 승계 변경만 알린다
 
     const rows = (data || []).filter((r) => isReadingSlug(r.slug));
-    const local = loadPassedTexts();
     const merged = mergeReadingSet(local, rows);
 
-    let changed = false;
+    let changed = merged.size !== initial.size;
     if (merged.size !== local.size) {
-      persistPassedTexts(merged);
-      changed = true;
+      persistPassedTexts(merged, userId);
     }
 
     // 로컬 전용(서버 미기록) 통과분은 서버로 밀어 올린다
@@ -273,6 +350,6 @@ export async function pullReadingProgress(userId) {
     }
     return changed;
   } catch {
-    return false;
+    return local.size !== initial.size; // 예외 시에도 게스트 승계 변경은 알린다
   }
 }

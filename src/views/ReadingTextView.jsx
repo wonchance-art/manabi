@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState } from 'react';
 import { JaText } from './refShared';
-import { buildReadingEvents } from '../lib/readingProgress';
+import { buildReadingEvents, accumulateAnswer } from '../lib/readingProgress';
 
 /**
  * 독해 글 뷰어 + 문항 흐름 (신규 컴포넌트).
@@ -44,36 +44,37 @@ function QuestionFlow({ questions, textId, onScrollToEvidence, onPass, passLabel
   }, []);
   const [answers, setAnswers] = useState({}); // key → { picked, ok, tries, firstOk }
   const [passed, setPassed] = useState(false);
+  // 동기 잠금 — state 반영 전 재클릭이 이중 채점되지 않게 답안을 ref 로도 즉시 확정한다(P2-8).
+  const answeringRef = useRef({}); // key → { picked, ok, tries, firstOk }(진실원)
+  const passedRef = useRef(false); // onPass 멱등 — 통과 버튼 이중 클릭에도 1회만 발화
 
   const gating = shuffled.filter((q) => q.gating);
   const allGatingOk = gating.length > 0 && gating.every((q) => answers[q.key]?.ok);
 
   function pick(q, opt) {
-    const cur = answers[q.key];
-    if (cur?.ok) return; // 정답 확정 문항은 고정
-    // content(비게이팅) 은 첫 응답으로 잠금, pattern(게이팅) 은 정답까지 재시도 허용
-    if (!q.gating && cur) return;
+    const cur = answeringRef.current[q.key]; // state 아닌 ref 가 진실원 — 동기 이중 클릭 차단
     const ok = opt === q.answerText;
-    setAnswers((prev) => {
-      const before = prev[q.key];
-      const tries = (before?.tries || 0) + 1;
-      // firstOk 는 첫 응답에서 확정·고정 — 재시도 끝의 정답이 최초 시도 기록을 덮지 않는다
-      //(이벤트의 correct 는 최초 시도 기준이라는 계약, buildReadingEvents 참조).
-      return { ...prev, [q.key]: { picked: opt, ok, tries, firstOk: before ? before.firstOk : ok } };
-    });
+    // 게이팅·잠금·firstOk 규칙은 accumulateAnswer(단일 원천). null 이면 이번 클릭 무시.
+    const next = accumulateAnswer(cur, { ok, gating: q.gating });
+    if (!next) return;
+    const rec = { ...next, picked: opt };
+    answeringRef.current[q.key] = rec;                 // 동기 확정(다음 클릭이 즉시 본다)
+    setAnswers((prev) => ({ ...prev, [q.key]: rec })); // 렌더 반영
     if (!ok && q.gating && onScrollToEvidence) onScrollToEvidence();
   }
 
   function finish() {
-    if (passed) return;
+    if (passedRef.current) return; // 멱등 가드 — 이중 클릭 2회째 무시
+    passedRef.current = true;
     setPassed(true);
     // 페이로드는 buildReadingEvents(단일 원천)가 조립 — lang:'Japanese' 고정,
     // correct=최초 시도(firstOk), 미응답(tries 0) content 는 이벤트 자체를 내지 않는다.
+    // content 는 index 를 넘겨 글별 고유 item_key(textId#c<index>)로 집계된다(P2-9).
     const events = buildReadingEvents(
       textId,
-      shuffled.map((q) => {
-        const a = answers[q.key];
-        return { itemKey: q.itemKey, qtype: q.qtype, firstOk: !!a?.firstOk, tries: a?.tries || 0 };
+      shuffled.map((q, idx) => {
+        const a = answeringRef.current[q.key];
+        return { itemKey: q.itemKey, qtype: q.qtype, firstOk: !!a?.firstOk, tries: a?.tries || 0, index: idx };
       })
     );
     onPass?.(events);
