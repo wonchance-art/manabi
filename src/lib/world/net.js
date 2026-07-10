@@ -224,9 +224,13 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza',
   // db 모드에선 presence 는 표시 전용이라 checkDuplicate 가 퇴장을 판정하지 않는다(P1-1신).
   let leaseMode = null;
   let heartbeatTimer = null;
-  // 마지막으로 서버 접촉이 성공한 시각(claim 성공 또는 heartbeat 'ok'). heartbeat 데드라인
-  // 판정 기준 — 이 값이 오래되면(연속 실패) 서버 인수 전에 자진 봉인한다(P1).
-  let lastLeaseOkAt = 0;
+  let leaseDeadlineTimer = null;
+  // join/임대 세대. 수동 재시도로 새 토큰을 얻은 뒤 늦게 돌아온 구세대 heartbeat 결과가
+  // 새 세션을 종료하거나 새 토큰을 release 하지 못하게 모든 비동기 결과가 이 값을 캡처한다.
+  let leaseGeneration = 0;
+  // 같은 세대에서 성공한 heartbeat 중 가장 최근 요청 시작 시각. 응답 역전으로 오래된 성공이
+  // 최신 deadline 을 덮지 않게 하며, 요청 시작 기준으로 잡아 네트워크 지연만큼 늦어지지 않는다.
+  let lastLeaseSuccessStartedAt = 0;
   let joinInFlight = null;   // 진행 중 join() Promise — 연타 시 중복 claim 발사 차단(P2-4).
   const lease = createSessionLease({ client, userId });
 
@@ -382,7 +386,8 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza',
   //   ① scheduleReconnect·onSubscribeStatus 가 단락되어 새 채널이 생기지 않고
   //   ② sendState/sendSignal 이 no-op 이며
   //   ③ channel 참조가 정리되어 join() 재호출이 정상 동작한다(channel===null 가드 통과).
-  function terminate(reason) {
+  function terminate(reason, generation = leaseGeneration) {
+    if (generation !== leaseGeneration) return;
     terminated = reason;
     clearReconnect();
     stopHeartbeat();
@@ -396,15 +401,17 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza',
   }
 
   // 중복(타 세션 접속) 퇴장. 강등 모드의 방어적 양보 또는 db 모드의 heartbeat 'lost'(서버 권위).
-  function markDuplicate() {
+  function markDuplicate(generation = leaseGeneration) {
+    if (generation !== leaseGeneration) return;
     duplicateFlagged = true;
-    terminate('duplicate');
+    terminate('duplicate', generation);
   }
 
   // 임대 오류 fail-closed(P2-5). 알 수 없는 DB 오류로 임대 판정이 불가하면 presence 로
   // 강등(fail-open)하지 않고 멀티를 차단한다. "다시 시도"(join 재호출)가 임대를 재판정한다.
-  function markLeaseError() {
-    terminate('lease-error');
+  function markLeaseError(generation = leaseGeneration) {
+    if (generation !== leaseGeneration) return;
+    terminate('lease-error', generation);
   }
 
   function clearReconnect() {
@@ -413,33 +420,45 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza',
 
   function stopHeartbeat() {
     if (heartbeatTimer != null) { clearInterval(heartbeatTimer); heartbeatTimer = null; }
+    if (leaseDeadlineTimer != null) { clearTimeout(leaseDeadlineTimer); leaseDeadlineTimer = null; }
+    lastLeaseSuccessStartedAt = 0;
+  }
+
+  // 마지막 성공 서버 접촉으로부터 정확히 (TTL − SAFETY) 뒤에 한 번 실행되는 deadline.
+  // 성공 heartbeat 만 이 타이머를 재설정하며 error/unavailable 은 기존 deadline 을 유지한다.
+  function armLeaseDeadline(generation, successStartedAt) {
+    if (generation !== leaseGeneration || closed || terminated || leaseMode !== 'db') return;
+    if (successStartedAt < lastLeaseSuccessStartedAt) return; // 늦게 온 구 heartbeat 성공 응답
+    lastLeaseSuccessStartedAt = successStartedAt;
+    if (leaseDeadlineTimer != null) clearTimeout(leaseDeadlineTimer);
+    const deadlineAt = successStartedAt + LEASE_TTL_MS - LEASE_DEADLINE_SAFETY_MS;
+    leaseDeadlineTimer = setTimeout(() => {
+      leaseDeadlineTimer = null;
+      if (generation !== leaseGeneration || closed || terminated || leaseMode !== 'db') return;
+      markLeaseError(generation);
+    }, Math.max(0, deadlineAt - Date.now()));
   }
 
   // 임대 유지(P1-2·P1). 15초마다 heartbeat RPC.
   //   · 'lost'                 → 다른 세션이 만료 인수(서버 권위) → 즉시 물러난다(markDuplicate).
-  //   · 'ok'                   → 마지막 성공 시각(lastLeaseOkAt) 갱신.
-  //   · 'error'/'unavailable'  → 이번 실패는 넘기되 데드라인 검사에 맡긴다(P1). 마지막 성공
-  //     이후 (TTL − SAFETY) 넘게 성공이 없으면 서버가 임대를 인수할 수 있는 시점(TTL)에
-  //     도달하기 전에 스스로 봉인한다(markLeaseError, fail-closed). 예전엔 error/unavailable 을
-  //     무기한 무시해 서버 인수 후에도 A 가 connected·송신을 유지하는 split-brain 이 났다.
-  function startHeartbeat() {
+  //   · 'ok'                   → 성공 시각 기준 one-shot deadline 재설정.
+  //   · 'error'/'unavailable'  → 이번 실패는 넘기되 기존 deadline 은 재설정하지 않는다(P1).
+  // interval 격자에서 elapsed 를 검사하지 않고 별도 one-shot 을 쓰므로 55s deadline 이 다음
+  // 15s tick(t=60s)까지 밀리지 않는다. 모든 콜백은 join 세대를 확인해 구세대 결과를 버린다.
+  function startHeartbeat(generation, claimStartedAt) {
     stopHeartbeat();
-    lastLeaseOkAt = Date.now();   // claim 성공 직후 = 최신 서버 접촉 시각
+    armLeaseDeadline(generation, claimStartedAt);
     heartbeatTimer = setInterval(() => {
-      if (closed || terminated) return;
-      // 데드라인 검사(매 주기): 마지막 성공 이후 (TTL − SAFETY) 초과면 서버 인수 전 자진 봉인.
-      if (Date.now() - lastLeaseOkAt > LEASE_TTL_MS - LEASE_DEADLINE_SAFETY_MS) {
-        markLeaseError();
-        return;
-      }
+      if (generation !== leaseGeneration || closed || terminated) return;
+      const startedAt = Date.now();
       lease.heartbeat()
         .then((r) => {
-          if (closed || terminated) return;
-          if (r === 'lost') { markDuplicate(); return; }
-          if (r === 'ok') { lastLeaseOkAt = Date.now(); return; }
-          // 'error'/'unavailable' — 다음 주기 데드라인 검사에 맡긴다(성공 시각 갱신 안 함).
+          if (generation !== leaseGeneration || closed || terminated) return;
+          if (r === 'lost') { markDuplicate(generation); return; }
+          if (r === 'ok') armLeaseDeadline(generation, startedAt);
+          // 'error'/'unavailable' — one-shot deadline 에 맡긴다(타이머 재설정 안 함).
         })
-        .catch(() => { /* 다음 주기 데드라인 검사에 맡긴다 */ });
+        .catch(() => { /* one-shot deadline 에 맡긴다 */ });
     }, LEASE_HEARTBEAT_MS);
   }
 
@@ -493,6 +512,7 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza',
   }
 
   async function joinOnce() {
+    const generation = ++leaseGeneration;
     joinSettled = false;
     duplicateFlagged = false;        // 재시도(수동 join 재호출) 시 중복 판정을 다시 받는다
     terminated = null;               // 영구 종료 해제 — 명시적 재시도만 여기를 지난다
@@ -500,8 +520,9 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza',
     // ── 서버 권위 임대(P1-2): 채널을 열기 전에 RPC(claim_world_session)로 임대부터 획득한다.
     //    살아있는 다른 세션이 임대를 보유하면 채널을 아예 열지 않고 물러난다 —
     //    신원(auth.uid())·시각(DB now())·토큰을 서버가 판정해 클라이언트가 못 만진다.
+    const claimStartedAt = Date.now();
     const claimed = await lease.claim();
-    if (closed) { lease.release(); return; }   // claim 대기 중 leave 된 경우
+    if (closed || generation !== leaseGeneration) { lease.release(); return; }
     if (claimed === 'duplicate') {
       markDuplicate();               // 솔로로 진행 — 배너의 "다시 시도"가 join() 을 재호출한다
       return;
@@ -514,17 +535,18 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza',
     // ⚠️ 강등 모드는 UX 가드일 뿐 보안 집행이 아니다(변조 클라이언트를 막지 못함).
     //    supabase/migrations/20260710_world_sessions.sql 적용 시 자동으로 서버 권위가 된다.
     leaseMode = claimed === 'acquired' ? 'db' : 'presence';
-    if (leaseMode === 'db') startHeartbeat();
+    if (leaseMode === 'db') startHeartbeat(generation, claimStartedAt);
     await new Promise((resolve) => { joinResolve = resolve; openChannel(); });
   }
 
   function leave() {
     closed = true;
+    leaseGeneration += 1;  // 진행 중 claim/heartbeat 결과를 즉시 구세대로 만든다.
     clearReconnect();
     stopHeartbeat();
     flushState.cancel();
     teardownChannel();
-    lease.release();   // 자기 행 반납(비동기·실패 무시) — 실패해도 TTL 40초로 자연 만료
+    lease.release();   // 자기 행 반납(비동기·실패 무시) — 실패해도 TTL 60초로 자연 만료
     peers.clear();
     // 콜백 참조 정리 — leave 후 잔존 콜백이 재사용/오인되지 않도록 끊는다.
     peersCb = null;

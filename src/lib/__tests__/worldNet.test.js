@@ -8,6 +8,7 @@ const {
   lerpState, throttleGate, createThrottle, backoffDelay,
   pickSurvivorSessionId, shouldYieldDuplicate,
   createWorldNet, createSessionLease, LEASE_HEARTBEAT_MS, LEASE_TTL_MS,
+  LEASE_DEADLINE_SAFETY_MS,
 } = await import('../world/net.js');
 
 // voice.js 는 supabase 무관 + 브라우저 API 가드 → 정적 import 로 순수부 사용.
@@ -227,7 +228,7 @@ function createFakeClient({ trackResult = 'ok', rpcError = null, uid = USER } = 
       const row = db.rows.get(uid);
       if (fn === 'claim_world_session') {
         // 살아있는 임대(내것이든 타 세션이든)면 실패(NULL). 없음/만료(60s 초과)면 새 토큰 인수.
-        const alive = row && (now - row.heartbeat_at) < LEASE_TTL_MS;
+        const alive = row && (now - row.heartbeat_at) <= LEASE_TTL_MS;
         if (alive) return { data: null, error: null };
         const token = `tok-${uid}-${(tokenSeq += 1)}`;
         db.rows.set(uid, { session_token: token, heartbeat_at: now });
@@ -480,36 +481,123 @@ describe('createWorldNet — 임대 통합(획득/충돌/만료 인수/강등/he
     vi.useRealTimers();
   });
 
-  it('P1 heartbeat 데드라인 — 연속 error(08006)로 (TTL−SAFETY) 경과 시 서버 인수 전 자진 봉인', async () => {
+  it('P1 heartbeat 데드라인 — 55초 one-shot 봉인 뒤 실제 B claimant가 TTL 시점에 인수한다', async () => {
     // Codex 재현: A claim→heartbeat 연속 08006(마이그레이션 미적용 아님 → 강등 금지) →
     // 마지막 성공 이후 데드라인(TTL−SAFETY=55s) 경과 시 서버가 인수할 수 있는 시점(60s) 전에
-    // A 가 스스로 lease-error 로 봉인(sent 0). 예전엔 error 를 무기한 무시해 split-brain 이 났다.
+    // A 가 스스로 lease-error 로 봉인되고, 60s에 실제 B가 같은 서버 행을 인수한다.
     vi.useFakeTimers();
     const client = createFakeClient();               // db 임대 정상 획득
+    const netA = makeNet(client);
+    const statusesA = [];
+    netA.onStatus((s) => statusesA.push(s));
+    const chA = await joinAndSubscribe(client, netA);
+    expect(statusesA).toEqual(['connected']);
+    const tokenA = client.db.rows.get(USER).session_token;
+    // 이후 heartbeat 를 연속 실패시킨다 — 08006 은 강등 코드가 아니므로 presence 로 내려가지 않는다.
+    client.db.rpcError = { code: '08006', message: 'connection failure' };
+    const deadline = LEASE_TTL_MS - LEASE_DEADLINE_SAFETY_MS;
+    await vi.advanceTimersByTimeAsync(deadline - 1);
+    await flush();
+    expect(statusesA.at(-1)).toBe('connected');
+    expect(client.db.rows.has(USER)).toBe(true);
+    // interval 격자와 무관하게 정확히 t=55s one-shot 이 실행된다(t=60s까지 밀리지 않음).
+    await vi.advanceTimersByTimeAsync(1);
+    await flush();
+    expect(statusesA.at(-1)).toBe('lease-error');
+    expect(chA.unsubCount).toBe(1);
+    expect(client.db.rows.get(USER).session_token).toBe(tokenA); // release 실패 → TTL까지 행 잔존
+
+    // t=60,001ms: 실제 SQL의 strict '< now() - 60s' 경계를 넘겨 B가 만료 행을 인수한다.
+    client.db.rpcError = null;
+    await vi.advanceTimersByTimeAsync(LEASE_TTL_MS - deadline + 1);
+    const netB = makeNet(client);
+    const statusesB = [];
+    netB.onStatus((s) => statusesB.push(s));
+    const chB = await joinAndSubscribe(client, netB);
+    const tokenB = client.db.rows.get(USER).session_token;
+    expect(statusesB).toEqual(['connected']);
+    expect(tokenB).not.toBe(tokenA);
+
+    // B가 인수한 뒤에도 A는 영구 봉인, B만 송신 가능하다.
+    netA.sendState({ x: 1, y: 2, dir: 'down' });
+    netA.sendSignal('peer', { sdp: 'a' });
+    netB.sendState({ x: 3, y: 4, dir: 'up' });
+    expect(chA.sent.length).toBe(0);
+    expect(chB.sent.filter((m) => m.event === 'pos')).toHaveLength(1);
+    expect(client.db.rows.get(USER).session_token).toBe(tokenB);
+    netB.leave();
+    await flush();
+    vi.useRealTimers();
+  });
+
+  it('성공 heartbeat마다 one-shot 데드라인을 다시 arm한다', async () => {
+    vi.useFakeTimers();
+    const client = createFakeClient();
     const net = makeNet(client);
     const statuses = [];
     net.onStatus((s) => statuses.push(s));
-    const ch = await joinAndSubscribe(client, net);
-    expect(statuses).toEqual(['connected']);
-    // 이후 heartbeat 를 연속 실패시킨다 — 08006 은 강등 코드가 아니므로 presence 로 내려가지 않는다.
-    client.db.rpcError = { code: '08006', message: 'connection failure' };
-    // 15s×3(=45s)까지는 데드라인(55s) 이전 → 한 번의 실패로 물러나지 않고 임대를 견딘다.
-    await vi.advanceTimersByTimeAsync(LEASE_HEARTBEAT_MS * 3);
-    await flush();
-    expect(statuses.at(-1)).toBe('connected');
-    expect(client.db.rows.has(USER)).toBe(true);
-    // 4번째 주기(t=60s): 마지막 성공 이후 60s > 55s → markLeaseError 로 봉인.
+    await joinAndSubscribe(client, net);
+
+    // t=15s heartbeat 성공 → 기존 t=55s deadline을 t=70s로 재설정한다.
     await vi.advanceTimersByTimeAsync(LEASE_HEARTBEAT_MS);
     await flush();
-    expect(statuses.at(-1)).toBe('lease-error');     // 강등('connected') 아님 — 멀티 차단 봉인
-    expect(ch.unsubCount).toBe(1);                   // 채널 봉인
-    // (release 도 08006 로 실패하므로 행은 서버 TTL 로 자연 회수된다 — A 는 어느 쪽이든 봉인 유지.)
-    // 이후 B 가 claim 에 성공해도 A 는 봉인 유지: 자동 재연결·송신 없음.
-    net.sendState({ x: 1, y: 2, dir: 'down' });
-    net.sendSignal('peer', { sdp: 'x' });
-    await vi.advanceTimersByTimeAsync(60000);
-    expect(ch.sent.length).toBe(0);                  // 송신 0
-    expect(client.channels.length).toBe(1);          // 새 채널 없음
+    client.db.rpcError = { code: '08006', message: 'connection failure' };
+    await vi.advanceTimersByTimeAsync(LEASE_TTL_MS - LEASE_DEADLINE_SAFETY_MS - LEASE_HEARTBEAT_MS);
+    await flush();
+    expect(statuses.at(-1)).toBe('connected');       // t=55s: 최초 deadline은 취소됨
+    await vi.advanceTimersByTimeAsync(LEASE_HEARTBEAT_MS - 1);
+    expect(statuses.at(-1)).toBe('connected');       // t=69,999ms
+    await vi.advanceTimersByTimeAsync(1);
+    await flush();
+    expect(statuses.at(-1)).toBe('lease-error');     // t=70s: 성공 시점+55s
+    vi.useRealTimers();
+  });
+
+  it('구세대 heartbeat lost가 재join한 새 세션을 종료·release하지 못한다', async () => {
+    vi.useFakeTimers();
+    const client = createFakeClient();
+    const rpc = client.rpc.bind(client);
+    let resolveOldHeartbeat;
+    let heartbeatCount = 0;
+    client.rpc = (fn, args) => {
+      if (fn !== 'heartbeat_world_session') return rpc(fn, args);
+      heartbeatCount += 1;
+      if (heartbeatCount === 1) {
+        return new Promise((resolve) => { resolveOldHeartbeat = resolve; });
+      }
+      return Promise.resolve({ data: null, error: { code: '08006', message: 'connection failure' } });
+    };
+
+    const net = makeNet(client);
+    const statuses = [];
+    net.onStatus((s) => statuses.push(s));
+    await joinAndSubscribe(client, net);
+    await vi.advanceTimersByTimeAsync(LEASE_TTL_MS - LEASE_DEADLINE_SAFETY_MS);
+    await flush();
+    expect(heartbeatCount).toBeGreaterThan(0);
+    expect(statuses.at(-1)).toBe('lease-error');
+    expect(client.db.rows.has(USER)).toBe(false);     // gen1 release 완료
+
+    // 사용자가 명시적으로 재시도해 gen2 토큰과 채널을 얻는다.
+    const retry = net.join();
+    await flush();
+    const ch2 = client.channels.at(-1);
+    ch2.emitStatus('SUBSCRIBED');
+    await retry;
+    await flush();
+    const token2 = client.db.rows.get(USER).session_token;
+    expect(statuses.at(-1)).toBe('connected');
+
+    // 이제 gen1 요청이 lost로 늦게 도착한다. gen2 상태·채널·토큰은 그대로여야 한다.
+    resolveOldHeartbeat({ data: false, error: null });
+    await flush();
+    expect(statuses).toEqual(['connected', 'lease-error', 'connected']);
+    expect(ch2.unsubCount).toBe(0);
+    expect(client.db.rows.get(USER).session_token).toBe(token2);
+    net.sendState({ x: 9, y: 8, dir: 'left' });
+    expect(ch2.sent.filter((m) => m.event === 'pos')).toHaveLength(1);
+    net.leave();
+    await flush();
     vi.useRealTimers();
   });
 
