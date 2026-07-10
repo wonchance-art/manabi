@@ -62,6 +62,29 @@
 - 렌더러(`ReferenceChapterPage.jsx`)는 `section.story`를 분기해 내레이션+대사(요미 토글·ko 병기)와 인터랙티브 문항(`ReadingTextView.jsx`의 채점 헬퍼 재사용)을 그린다. 채점 이벤트·SRS 발행은 하지 않는다(로컬 확인용).
 - 검증: `scripts/check-content.mjs`가 story `body`의 `{ja,yomi}` 후리가나 정렬과 문항 스키마(order/fill/produce 필수 필드)를 게이트한다.
 
+### 미디어 섹션 (`media`) — 챕터 안의 '노래로 만나기(JPOP)' 모듈
+
+챕터에서 배운 문형이 후렴에 그대로 들리는 곡을 붙여, 문형을 한 소절로 각인시키는 훅. `story`와 같은 자리(`sections` 배열)에 얹으면 같은 렌더 루프가 분기한다.
+
+```js
+{
+  heading: '노래로 만나기 — Pretender',              // 다른 섹션과 동일
+  media: {
+    youtubeId: 'TQ8WlA2GXbk',                       // 검증된 공식 영상 ID만 (영숫자·-·_ 11자)
+    songTitle: 'Pretender', artist: 'Official髭男dism',
+    line: { ja: '君は運命の人じゃない', yomi: 'きみは うんめいの ひとじゃない', ko: '너는 운명의 상대가 아니야' },  // 가사 한 줄만
+    point: '문형 연결 해설 (한국어) — 이 소절에서 챕터 문형이 어떻게 쓰였는지 2~3문장',
+    culture: '문화 코멘트 (한국어, 선택)',
+  },
+}
+```
+
+- **저작권**: 가사는 **한 줄만** 인용하고 출처(곡명·아티스트)를 반드시 병기한다. `youtubeId`는 저작권자가 올린 **공식 영상**만 — 검증 없이 임의 ID 금지.
+- **line**: `examples`/`story`와 동일한 `{ja,yomi,ko}` 계약. `yomi`는 grammar `examples`의 후리가나 정렬 관행을 그대로 따른다(루비로 렌더).
+- **필수**: `youtubeId`·`songTitle`·`artist`·`line(ja,yomi,ko)`·`point`. `culture`는 선택.
+- 렌더러(`ReferenceChapterPage.jsx`)는 `section.media`를 분기해 **서버 렌더 `<iframe>`**(youtube-nocookie, 16:9 반응형, `loading="lazy"`)과 곡명·아티스트 캡션, 가사 한 줄(JaText 루비 + ko), point·culture 본문을 그린다. react-youtube 등 클라이언트 컴포넌트를 쓰지 않아 First Load JS 증가가 없다.
+- 검증: `scripts/check-content.mjs`가 `youtubeId` 형식(11자), `line` 후리가나 정렬, `songTitle`/`artist` 필수를 게이트한다.
+
 - 한국어 화자의 **최대 자산 = 어순 동일 + 조사 1:1 대응 + 한자어 공유**. `vsKo`/`hanja`로 적극 연결하되 챕터당 1~2개.
 - 반대로 **어긋나는 지점**(수수동사, 피해수동, たら/ば/と/なら, 박자 발음)은 `pitfall`로 정면 처리.
 - N5 초반 챕터(문자·발음·한자 읽기)는 프랑스어 A0처럼 '본격 학습 전 기초 상식' 역할.

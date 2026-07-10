@@ -155,6 +155,25 @@ function checkStorySection(sec, chSlug, errors) {
   }
 }
 
+// ── 미디어 섹션(media) 검증 헬퍼 ──
+// 챕터의 '노래로 만나기' 모듈: youtubeId 형식(영숫자·-·_ 11자), line{ja,yomi} 후리가나 정렬
+// (story/examples와 동일 로직 재사용), songTitle/artist 필수를 게이트한다.
+const YT_ID_RE = /^[A-Za-z0-9_-]{11}$/;
+function checkMediaSection(sec, chSlug, errors) {
+  const m = sec.media;
+  if (!YT_ID_RE.test(m.youtubeId || ''))
+    errors.push(`[media ${chSlug}] youtubeId 형식 위반(영숫자·-·_ 11자): ${m.youtubeId}`);
+  if (!nonEmptyStr(m.songTitle)) errors.push(`[media ${chSlug}] songTitle 누락`);
+  if (!nonEmptyStr(m.artist)) errors.push(`[media ${chSlug}] artist 누락`);
+  const ln = m.line;
+  if (!ln || typeof ln !== 'object') { errors.push(`[media ${chSlug}] line 누락`); return; }
+  if (!nonEmptyStr(ln.ja)) errors.push(`[media ${chSlug}] line.ja 누락`);
+  if (!nonEmptyStr(ln.yomi)) errors.push(`[media ${chSlug}] line.yomi 누락`);
+  if (!nonEmptyStr(ln.ko)) errors.push(`[media ${chSlug}] line.ko 누락`);
+  if (nonEmptyStr(ln.ja) && nonEmptyStr(ln.yomi) && alignFurigana(ln.ja, ln.yomi) === null)
+    errors.push(`[furigana-media] ${chSlug} line 요미 정렬 실패:\n    ja:   ${ln.ja}\n    yomi: ${ln.yomi}`);
+}
+
 const errors = [];
 const warns = [];
 
@@ -174,6 +193,8 @@ for (const [lang, cfg] of Object.entries(LANGS)) {
       if (exs < 4) warns.push(`[${lang}/${lv}] ${ch.slug}: 예문 부족 (${exs})`);
       // ── 스토리 섹션(story) — body 후리가나 + 문항 스키마 게이트 ──
       for (const sec of (ch.sections || [])) if (sec.story) checkStorySection(sec, ch.slug, errors);
+      // ── 미디어 섹션(media) — youtubeId·line 후리가나·songTitle/artist 게이트 ──
+      for (const sec of (ch.sections || [])) if (sec.media) checkMediaSection(sec, ch.slug, errors);
     }
   }
   // ── 문형 사전: ch 유효성 + 필수 필드 ──
