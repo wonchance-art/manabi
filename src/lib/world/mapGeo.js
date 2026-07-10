@@ -12,13 +12,21 @@ import { GEO, MAP_W, MAP_H, TERRAIN, isLandAt, POI } from '../../components/worl
 // 스폰 반경(타일). GameCanvas 장식 비움 반경과 동일값 — 여기서 단일 정의해 배포한다.
 export const PLAZA_R = 5;
 
-// 광장 SEA→LAND 메꿈 사각형 경계(서울 스폰 ~ 인천공항 일대). POI 에서 결정적으로 산출.
+// 광장 SEA→LAND 메꿈 반경(타일). 서울 스폰 바로 주변만 walkable 로 보장하는 소패치.
+// 예전엔 서울~인천공항을 통째로 덮는 사각형(x≈56–74)이라 buildPlayableGrid 가 경기만(인천 앞바다)
+// SEA 를 전부 LAND 로 메꿔, 데이터에서 강화도·영종도·염하수로를 아무리 다듬어도 런타임·미니맵·관리자
+// playable 뷰에서는 통짜 땅으로 보였다(오너 "안 바뀐다"의 근본 원인). 이제 인천 방향을 포함하지 않는
+// 서울 ±PLAZA_FILL_R 소패치로 축소한다 — 서울은 원래 land 라 사실상 무연산이고, 인천공항 접근은
+// 실지형(영종대교)으로 도달한다. 경기만 SEA 는 playable 격자에서도 보존된다(회귀의 핵심 게이트).
+export const PLAZA_FILL_R = 3;
+
+// 광장 SEA→LAND 메꿈 사각형 경계(서울 스폰 소패치). POI 에서 결정적으로 산출 — 인천 방향 미포함.
 export function plazaBounds() {
   return {
-    x0: Math.min(POI.INCHEON.x, POI.SEOUL.x) - 1,
-    x1: POI.SEOUL.x + PLAZA_R + 1,
-    y0: POI.SEOUL.y - PLAZA_R - 1,
-    y1: POI.SEOUL.y + PLAZA_R + 1,
+    x0: POI.SEOUL.x - PLAZA_FILL_R,
+    x1: POI.SEOUL.x + PLAZA_FILL_R,
+    y0: POI.SEOUL.y - PLAZA_FILL_R,
+    y1: POI.SEOUL.y + PLAZA_FILL_R,
   };
 }
 
