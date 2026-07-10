@@ -726,7 +726,7 @@ describe('산인 권역 — 석호·다이센·돗토리 사구', () => {
 
 // 🌉 교량 도보 연결(오너 #9·#12·간몬) — 각 다리가 두 육지를 잇는 유일 통로임을 검증.
 //   WALK = !isBlocked(sea·fence 차단). 지정 영역의 BRIDGE 타일을 sea 로 지우면 도보 연결이 끊긴다.
-describe('교량 전용 도보 연결 (거가·시마나미·세토·간몬)', () => {
+describe('교량 전용 도보 연결 (부산·거제·가덕 3다리 · 시마나미·세토·간몬)', () => {
   const grid = decodeMap();
   const idx = (x, y) => y * MAP_W + x;
   // 지정 bbox 안의 BRIDGE 타일만 골라 sea 로 지운 복사본.
@@ -755,11 +755,30 @@ describe('교량 전용 도보 연결 (거가·시마나미·세토·간몬)', (
   const SHIMANAMI = { x0: 184, x1: 194, y0: 284, y1: 296 }; // 세토 박스 서반부
   const SETOOHASHI = { x0: 195, x1: 203, y0: 284, y1: 296 }; // 세토 박스 동반부
   const KANMON = { x0: 144, x1: 146, y0: 296, y1: 300 };
-  const GEOGA = { x0: 99, x1: 105, y0: 267, y1: 274 };
+  // 🌉 부산·거제·가덕도 3다리 체계(오너 재지시) — 본토 —(가덕대교)— 가덕도 —(거가대교)— 거제 —(거제대교)— 통영.
+  //   거제는 두 경로(거제대교·거가대교)로 이어져 한쪽만 끊겨도 도달, 둘 다 끊길 때만 단절.
+  //   가덕도는 가덕대교·거가대교 둘 다 끊길 때만 고립(가덕대교만 끊겨도 거가→거제→거제대교→통영 우회).
+  const GADEOK_DAEGYO = { x0: 104, x1: 104, y0: 270, y1: 270 }; // 가덕대교: 본토↔가덕도
+  const GEOGA = { x0: 101, x1: 103, y0: 272, y1: 272 };         // 거가대교: 가덕도↔거제
+  const GEOJE_DAEGYO = { x0: 97, x1: 97, y0: 275, y1: 275 };    // 거제대교: 거제↔통영(견내량)
+  const GEOJE = [100, 273], GADEOK = [104, 271], BUSAN = [109, 267];
 
-  it('거가대교로 거제도↔부산 본토가 이어지고, 제거 시 단절된다', () => {
-    expect(reaches(grid, 100, 273, 109, 267)).toBe(true);
-    expect(reaches(removeBridgesIn([GEOGA]), 100, 273, 109, 267)).toBe(false);
+  it('거제는 두 경로(거제대교·거가대교)로 이어지고, 둘 다 제거해야 부산 본토와 단절된다', () => {
+    expect(reaches(grid, GEOJE[0], GEOJE[1], BUSAN[0], BUSAN[1])).toBe(true);
+    // 거제대교만 제거 → 가덕도 경유 거가대교로 여전히 도달.
+    expect(reaches(removeBridgesIn([GEOJE_DAEGYO]), GEOJE[0], GEOJE[1], BUSAN[0], BUSAN[1])).toBe(true);
+    // 거가대교만 제거 → 통영 경유 거제대교로 여전히 도달.
+    expect(reaches(removeBridgesIn([GEOGA]), GEOJE[0], GEOJE[1], BUSAN[0], BUSAN[1])).toBe(true);
+    // 둘 다 제거 → 단절.
+    expect(reaches(removeBridgesIn([GEOJE_DAEGYO, GEOGA]), GEOJE[0], GEOJE[1], BUSAN[0], BUSAN[1])).toBe(false);
+  });
+
+  it('가덕도는 가덕대교·거가대교 둘 다 제거할 때만 고립(가덕대교만 끊기면 거제 경유 우회)', () => {
+    expect(reaches(grid, GADEOK[0], GADEOK[1], BUSAN[0], BUSAN[1])).toBe(true);
+    // 가덕대교만 제거 → 거가대교→거제→거제대교→통영 우회로 도달 유지(실 BFS 판정).
+    expect(reaches(removeBridgesIn([GADEOK_DAEGYO]), GADEOK[0], GADEOK[1], BUSAN[0], BUSAN[1])).toBe(true);
+    // 가덕대교+거가대교 제거 → 가덕도 완전 고립(단절).
+    expect(reaches(removeBridgesIn([GADEOK_DAEGYO, GEOGA]), GADEOK[0], GADEOK[1], BUSAN[0], BUSAN[1])).toBe(false);
   });
 
   it('혼슈↔시코쿠는 세토내해 다리(시마나미·세토대교)로만 이어진다 — 둘 다 제거 시 단절', () => {
@@ -779,15 +798,65 @@ describe('교량 전용 도보 연결 (거가·시마나미·세토·간몬)', (
 });
 
 // 📍 신규 POI(오너 #13) — 노드 그룹이 소비. 전부 walkable(!isBlocked) 이어야 한다.
-describe('신규 POI walkable (동해항·사카이미나토·거제·다이센·돗토리)', () => {
+describe('신규 POI walkable (동해항·사카이미나토·거제·다이센·돗토리·통영·가덕도)', () => {
   const grid = decodeMap();
   const walk = (p) => !isBlocked(grid[p.y * MAP_W + p.x]);
-  it('신규 POI 5종이 정의되고 전부 walkable', () => {
-    for (const k of ['DONGHAE_PORT', 'SAKAIMINATO', 'GEOJE', 'DAISEN', 'TOTTORI']) {
+  it('신규 POI 7종이 정의되고 전부 walkable', () => {
+    for (const k of ['DONGHAE_PORT', 'SAKAIMINATO', 'GEOJE', 'DAISEN', 'TOTTORI', 'TONGYEONG', 'GADEOK']) {
       expect(POI[k]).toBeTruthy();
       expect(walk(POI[k])).toBe(true);
     }
     // 다이센은 PEAK, 거제는 거제도 land.
     expect(grid[POI.DAISEN.y * MAP_W + POI.DAISEN.x]).toBe(TERRAIN.PEAK);
+    // 통영(본토측)·가덕도(분리 섬)는 land.
+    expect(isLandAt(grid, POI.TONGYEONG.x, POI.TONGYEONG.y)).toBe(true);
+    expect(isLandAt(grid, POI.GADEOK.x, POI.GADEOK.y)).toBe(true);
+    // 좌표 계약(투영 산출값).
+    expect(POI.TONGYEONG).toEqual({ x: 96, y: 275 });
+    expect(POI.GADEOK).toEqual({ x: 104, y: 271 });
+  });
+});
+
+// 🌊 부산 동남 해안 손저작 보정(오너 재지시) — 수영만 만입·이기대 곶·광안대교. 부산 POI·터미널·낙동강 보존.
+describe('부산 동남 해안 — 수영만·이기대·광안대교', () => {
+  const grid = decodeMap();
+  const code = (x, y) => grid[y * MAP_W + x];
+  const idx = (x, y) => y * MAP_W + x;
+
+  it('수영만 만입(광안리 안쪽 바다)이 존재한다', () => {
+    expect(code(112, 264)).toBe(TERRAIN.SEA);
+  });
+
+  it('광안대교 bridge 가 만 어귀에 존재한다(광안리↔이기대)', () => {
+    expect(code(113, 264)).toBe(TERRAIN.BRIDGE);
+    // 이기대 곶(만 남측 육지).
+    expect(isLandAt(grid, 113, 265)).toBe(true);
+  });
+
+  it('부산 POI·김해공항·부산국제여객터미널이 walkable 로 보존된다(편집 무영향)', () => {
+    for (const k of ['BUSAN', 'GIMHAE_AIR', 'BUSAN_TERMINAL']) {
+      expect(isBlocked(code(POI[k].x, POI[k].y))).toBe(false);
+    }
+    // 낙동강 하구(부산 서측 river)도 보존 — 편집은 동측(x≥111)만 건드린다.
+    let river = 0;
+    for (let y = 262; y <= 269; y++) for (let x = 104; x <= 108; x++) if (code(x, y) === TERRAIN.RIVER) river++;
+    expect(river).toBeGreaterThan(0);
+  });
+
+  it('광안대교 제거로도 부산은 단절되지 않는다(우회 육로 존재 — 단절 요건 아님)', () => {
+    const g = Uint8Array.from(grid);
+    g[idx(113, 264)] = TERRAIN.SEA; // 광안대교 제거
+    const seen = new Uint8Array(g.length);
+    const start = idx(POI.BUSAN.x, POI.BUSAN.y); const st = [start]; seen[start] = 1;
+    while (st.length) {
+      const i = st.pop(); const x = i % MAP_W, y = (i / MAP_W) | 0;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= MAP_W || ny >= MAP_H) continue;
+        const ni = idx(nx, ny);
+        if (!seen[ni] && !isBlocked(g[ni])) { seen[ni] = 1; st.push(ni); }
+      }
+    }
+    expect(seen[idx(POI.SEOUL.x, POI.SEOUL.y)]).toBe(1);
   });
 });

@@ -81,8 +81,10 @@ export const WORLD_NODES = [
     gate: { type: 'ferry', to: 'donghae-port', label: '⚓ 동해' },
     desc: '돗토리현의 항구 도시. 신지호와 다이센으로 가는 관문이에요.',
   },
-  // 거제 — 도시(게이트 없음, 표지 마커만).
-  { id: 'geoje', name: '거제', kind: 'city', tile: [POI.GEOJE.x, POI.GEOJE.y], desc: '거가대교로 부산과 이어진 섬. 조선업으로 이름난 항구 도시예요.' },
+  // 거제 — 도시(게이트 없음, 표지 마커만). 두 다리로 이어진 섬(거제대교·통영 / 거가대교·가덕도·부산).
+  { id: 'geoje', name: '거제', kind: 'city', tile: [POI.GEOJE.x, POI.GEOJE.y], desc: '거제대교로 통영과, 거가대교로 가덕도·부산과 이어진 섬. 조선업으로 이름난 항구 도시예요.' },
+  // 통영 — 도시(게이트 없음, 표지 마커만). 견내량 건너 거제대교로 거제와 이어지는 본토측 관문.
+  { id: 'tongyeong', name: '통영', kind: 'city', tile: [POI.TONGYEONG.x, POI.TONGYEONG.y], desc: '한려수도의 항구 도시. 견내량을 건너는 거제대교로 거제와 이어지고, 예부터 이름난 수산의 고장이에요.' },
   // 다이센 — 랜드마크(게이트 없음). peak 필드는 넣지 않음 — 전용 도트 조각은 후속, 일반 마커+라벨.
   { id: 'daisen', name: '다이센', kind: 'landmark', tile: [POI.DAISEN.x, POI.DAISEN.y], desc: '산인 지방의 명봉. 모양이 후지산을 닮아 "호키후지"라고도 불려요.' },
   // 돗토리 — 랜드마크(게이트 없음). 코야마호 곁의 해안 사구.
