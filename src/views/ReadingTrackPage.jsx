@@ -2,10 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../lib/AuthContext';
 import { logReviewEvents } from '../lib/reviewEvents';
 import { enqueueGrammarReview } from '../lib/grammarSrs';
+import { contiguousPassedIds } from '../lib/readingPayload';
 import {
   READING_LANG,
   readingSlug,
@@ -16,7 +17,7 @@ import {
   pullApplies,
   buildNodes,
   nodeStates,
-  computeTrackProgress,
+  roundHalf,
   createPassGate,
 } from '../lib/readingProgress';
 import ReadingTextView, { ReadingDrillView } from './ReadingTextView';
@@ -25,34 +26,50 @@ import ReadingTextView, { ReadingDrillView } from './ReadingTextView';
  * 독해 트랙 페이지 — "도쿄 도착"(JA N5 파일럿).
  *
  * 계정 전환 격리(P1-4): 내부 상태 루트(ReadingTrack)를 `user?.id ?? 'guest'` 키로 **remount** 한다.
- * auth 가 바뀌면 이전 계정의 활성 문항·통과 상태·in-flight 기록이 통째로 폐기되고 새 계정으로
- * 처음부터 재조회된다 — A 계정의 활성 문항 결과가 B 로 기록되는 교차 오염을 막는 가장 확실한 경계다.
- * 서버 payload(track prop)는 이전 계정 기준으로 렌더됐을 수 있어, 전환 감지 시 router.refresh 로
- * 새 계정용 payload 를 다시 받는다(이 바깥 컴포넌트는 전환에도 유지되므로 refresh 를 소유).
+ * auth 가 바뀌면 이전 계정의 문항 상태·통과 상태·in-flight 기록이 통째로 폐기된다.
+ * payload 의 viewerScope 가 현재 uid 와 일치할 때만 URL selection 을 활성화하고, 불일치하면
+ * 목록으로 닫거나 재조회해 A 계정이 허용받은 문항 결과가 B 로 기록되는 교차 오염을 막는다.
  */
 export default function ReadingTrackPage({ track }) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const uid = user?.id ?? 'guest';
-  const prevUidRef = useRef(uid);
-  useEffect(() => {
-    if (prevUidRef.current === uid) return; // 최초 마운트는 서버 payload 가 이미 정합 — refresh 불필요
-    prevUidRef.current = uid;
-    // 계정 전환 — 새 계정용 서버 payload(열린 노드·스트립 범위) 재조회. 상태 폐기는 아래 key remount 담당.
-    router.refresh();
-  }, [uid, router]);
+  const selectedId = searchParams.get('node') || null;
+  const scopeMismatchRef = useRef(null);
 
-  return <ReadingTrack key={uid} track={track} user={user} />;
+  // 서버 payload 와 현재 AuthContext 주체가 다르면 이전 계정이 허용받은 detail 을 절대
+  // 활성화하지 않는다. query 가 있으면 목록으로 닫고, 없으면 같은 URL 을 재조회한다.
+  useEffect(() => {
+    if (loading || !track || track.viewerScope === uid) {
+      scopeMismatchRef.current = null;
+      return;
+    }
+    const mismatch = `${track.viewerScope || 'unknown'}>${uid}`;
+    if (scopeMismatchRef.current === mismatch) return;
+    scopeMismatchRef.current = mismatch;
+    if (selectedId) router.replace('/japanese/reading', { scroll: false });
+    else router.refresh();
+  }, [loading, selectedId, track, uid, router]);
+
+  const payloadReady = !loading && !!track && track.viewerScope === uid;
+  return (
+    <ReadingTrack
+      key={uid}
+      track={track}
+      user={user}
+      selectedId={payloadReady ? selectedId : null}
+    />
+  );
 }
 
 /**
  * 트랙 상태 루트(계정별 remount 단위) — 글 목록·뷰어·통과 기록.
  * 기록: user_ref_progress(rt: slug) + localStorage Set + review_events + 글 단위 grammar_review.
  */
-function ReadingTrack({ track, user }) {
+function ReadingTrack({ track, user, selectedId }) {
   const router = useRouter();
   const [passedSet, setPassedSet] = useState(() => new Set());
-  const [active, setActive] = useState(null); // 열려 있는 노드 id (null = 목록)
   // 통과 저장 게이트(P2-4) — 노드별 진행 중 Promise Map + 직렬 체인을 캡슐화한다. 같은 노드
   // 재진입은 진행 중 Promise 를 그대로 반환해 'await undefined'(성공 오인)를 막고, 서로 다른
   // 노드는 직렬화로 경합 유실을 막는다. useRef 로 계정별 remount 시 새 게이트로 초기화된다.
@@ -81,26 +98,67 @@ function ReadingTrack({ track, user }) {
   }, []);
 
   const nodes = useMemo(() => (track ? buildNodes(track) : []), [track]);
-  const stated = useMemo(() => nodeStates(nodes, passedSet), [nodes, passedSet]);
-  const progress = useMemo(
-    () => (track ? computeTrackProgress(track, passedSet) : null),
+  // 서버 상세 gate 와 같은 연속 prefix만 목록·진도에 반영한다. 비연속 rt: 행이 로컬로
+  // 병합돼도 뒤쪽 노드를 ✓/클릭 가능으로 표시하지 않아 서버 locked 판정과 갈라지지 않는다.
+  const effectivePassedSet = useMemo(
+    () => (track ? contiguousPassedIds(track, passedSet) : new Set()),
     [track, passedSet]
   );
+  const stated = useMemo(() => nodeStates(nodes, effectivePassedSet), [nodes, effectivePassedSet]);
+  const progress = useMemo(() => {
+    if (!track) return null;
+    const texts = track.texts || [];
+    const drills = track.drills || [];
+    const textsPassed = texts.filter((text) => effectivePassedSet.has(text.id)).length;
+    let patternsCovered = 0;
+    for (const text of texts) {
+      if (effectivePassedSet.has(text.id)) patternsCovered += Number(text.patternCount) || 0;
+    }
+    for (let i = 0; i < drills.length; i++) {
+      if (effectivePassedSet.has(drills[i].id)) {
+        patternsCovered += Number(drills[i].patternCount) || 0;
+      }
+    }
+    return {
+      textsTotal: texts.length,
+      textsPassed,
+      patternsTotal: Number(track.patternsTotal) || 0,
+      patternsCovered,
+      weeksRemaining: roundHalf((texts.length - textsPassed) / 7),
+    };
+  }, [track, effectivePassedSet]);
 
   // 훅 순서 보존을 위해 early return 앞에서 파생(훅 아님) — 아래 가드 effect 들이 쓴다
-  const activeNode = active ? stated.find((n) => n.id === active) : null;
+  const activeNode = selectedId ? stated.find((n) => n.id === selectedId) : null;
+  const activeSelection = activeNode && track?.selection?.id === selectedId ? track.selection : null;
+  const activeDetail = activeSelection?.detail || null;
+  const activePending = !!(activeNode && !activeSelection);
+  const viewedNode = activeNode && activeDetail
+    ? { ...activeNode, ref: activeDetail }
+    : activeNode;
 
   // 잠금 회귀 가드(P1-4) — passedSet 재로드(전환·pull) 후 현재 열린 노드가 locked 가 되면 강제 닫기.
   // 선행 노드 미통과 상태로 열려 있던 문항을 그대로 두면 잠금 체인을 우회해 기록될 수 있다.
-  const activeLocked = !!(activeNode && activeNode.status === 'locked');
+  const activeLocked = !!(
+    activeNode
+    && activeNode.status === 'locked'
+    && !activePending
+    && !activeDetail
+  );
+  const activeMissing = !!(
+    selectedId
+    && track?.selection?.id === selectedId
+    && track.selection.status === 'missing'
+  );
   useEffect(() => {
-    if (activeLocked) setActive(null);
-  }, [activeLocked]);
+    if (activeLocked || activeMissing) {
+      router.replace('/japanese/reading', { scroll: false });
+    }
+  }, [activeLocked, activeMissing, router]);
 
-  // 스트립 노드 열람 가드 — 서버는 열린 노드까지만 문항을 내려주므로(P2-7, readingPayload.js)
-  // 로컬 진도가 서버 payload 보다 앞서면(멀티 기기·통과 직후 재조회 경합 잔재) 문항 미수신
-  // 상태로 열릴 수 있다. 로그인 상태면 서버 재조회로 자동 회복한다(게스트는 로그인 안내 UI).
-  const activeStripped = !!(activeNode && activeNode.ref?.stripped);
+  // 서버가 선택 id 를 확인했지만 상세를 거절한 경우(로컬 진도가 서버보다 앞선 상태),
+  // 로그인 사용자는 한 번 더 재조회해 pull 직후 경합을 회복한다. 게스트는 로그인 안내 UI.
+  const activeStripped = !!(activeSelection && !activeDetail && !activeLocked);
   useEffect(() => {
     if (activeStripped && user?.id) router.refresh();
   }, [activeStripped, user?.id, router]);
@@ -113,15 +171,17 @@ function ReadingTrack({ track, user }) {
     );
   }
 
-  // 노드 열기 — 재열람 시 보존된 저장 실패/진행이 있으면 복원 패널로 연다(활성 세션 UI 와 분리).
+  // 노드 열기 — URL 선택을 서버 RSC 재조회 키로 쓴다. 목록 manifest 만 받은 상태에서
+  // 본문·문항은 이 요청 뒤 한 노드분만 도착한다. 재열람 저장 상태는 기존대로 복원한다.
   function openNode(id) {
-    setActive(id);
     setRestore(saveError.has(id) || savingNode === id);
+    router.replace(`/japanese/reading?node=${encodeURIComponent(id)}`, { scroll: false });
   }
-  // 뷰어 닫기 — 복원 플래그도 해제. 저장은 게이트가 계속 진행하므로 이탈해도 유실되지 않는다.
+  // 뷰어 닫기 — query 를 비워 다음 RSC 응답도 목록 manifest 만 유지한다.
+  // 저장은 게이트가 계속 진행하므로 이탈해도 유실되지 않는다.
   function closeViewer() {
-    setActive(null);
     setRestore(false);
+    router.replace('/japanese/reading', { scroll: false });
   }
 
   // 통과 시점 기록 배선 — 로컬 Set·서버 upsert·review_events·글 단위 SRS 큐.
@@ -169,18 +229,18 @@ function ReadingTrack({ track, user }) {
 
   // ── 글/드릴 뷰어 ──
   if (activeNode) {
-    // 스트립 노드 — 문항이 서버 payload 에 없다(readingPayload.js 의 stripped 표식).
-    // 원래 빈 문항과 구분되는 명시 표식이므로 뷰어 대신 회복 UI 를 띄운다:
-    // 로그인 사용자는 위 가드 effect 의 재조회를 기다리고, 게스트는 여기가 잠금 경계다.
-    if (activeNode.ref?.stripped) {
+    // 선택 요청 진행 중이거나 서버 잠금 판정으로 detail 이 없는 상태. 서버 응답 전에는
+    // 로딩을, 응답 후에도 거절된 게스트에게는 기존 잠금 경계인 로그인 안내를 띄운다.
+    if (activePending || !activeDetail) {
+      const deniedGuest = !!(activeSelection && !activeDetail && !user?.id);
       return (
         <div className="page-container" style={{ maxWidth: 720 }}>
           <button type="button" className="chip" onClick={closeViewer} style={{ marginBottom: 12 }}>← 목록</button>
           <div className="card" style={{ padding: '28px 18px', textAlign: 'center' }}>
-            {user?.id ? (
+            {!deniedGuest ? (
               <>
                 <p style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', marginBottom: 14 }}>
-                  문항을 불러오는 중이에요…
+                  글과 문항을 불러오는 중이에요…
                 </p>
                 <button type="button" className="btn btn--secondary btn--sm" onClick={() => router.refresh()}>
                   다시 시도
@@ -206,7 +266,7 @@ function ReadingTrack({ track, user }) {
       const isError = saveError.has(activeNode.id);
       const retry = () => {
         const ev = pendingEventsRef.current.get(activeNode.id);
-        handlePass(activeNode, ev).then(() => closeViewer()).catch(() => {}); // 성공 시 목록 복귀
+        handlePass(viewedNode, ev).then(() => closeViewer()).catch(() => {}); // 성공 시 목록 복귀
       };
       return (
         <div className="page-container" style={{ maxWidth: 720 }}>
@@ -235,9 +295,10 @@ function ReadingTrack({ track, user }) {
       return (
         <div className="page-container" style={{ maxWidth: 720 }}>
           <ReadingTextView
-            text={activeNode.ref}
+            key={activeNode.id}
+            text={viewedNode.ref}
             saving={savingNode === activeNode.id}
-            onPass={(events) => handlePass(activeNode, events)}
+            onPass={(events) => handlePass(viewedNode, events)}
             onBack={closeViewer}
           />
         </div>
@@ -246,10 +307,11 @@ function ReadingTrack({ track, user }) {
     return (
       <div className="page-container" style={{ maxWidth: 720 }}>
         <ReadingDrillView
-          drill={activeNode.ref}
+          key={activeNode.id}
+          drill={viewedNode.ref}
           drillId={activeNode.id}
           saving={savingNode === activeNode.id}
-          onPass={(events) => handlePass(activeNode, events)}
+          onPass={(events) => handlePass(viewedNode, events)}
           onBack={closeViewer}
         />
       </div>
@@ -305,7 +367,7 @@ function ReadingTrack({ track, user }) {
                     <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>드릴 · 통과 요건</span>
                   ) : (
                     <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-                      {n.ref.situation}{n.ref.newPatterns?.length ? ` · 신규 문형 ${n.ref.newPatterns.length}` : ''}
+                      {n.ref.situation}{n.ref.patternCount ? ` · 신규 문형 ${n.ref.patternCount}` : ''}
                     </span>
                   )}
                 </span>

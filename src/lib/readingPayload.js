@@ -1,81 +1,149 @@
 /**
- * 독해 트랙 서버 페이로드 빌더 — 정답표 노출 최소화(P2-7 최소분).
+ * 독해 트랙 RSC 페이로드 빌더.
  *
- * 배경: 순차 잠금은 클라이언트 UX 경계일 뿐이라, 트랙 전체를 props 로 내리면
- * 잠긴 글의 questions(answer·why = 정답표)까지 RSC 응답에 통째로 실린다.
- * 그래서 문항 포함 범위를 **서버가 아는 통과 집합** 기준으로 자른다:
- *   포함 = 통과 노드 전부 + 잠금 체인상 다음 열린 노드 1개(그뿐)
- * 즉 nodeStates 의 passed·open 노드만 — 어떤 노드도 **선전송하지 않는다**(P2-6).
- * (이전엔 열린 글 다음 드릴을 한 걸음 미리 내렸으나, 그 선전송이 2번째 드릴 정답표를
- *  조기 노출하거나 통과 체인 직렬화와 어긋났다. 이제 통과→원격 upsert 확인→pull→
- *  router.refresh 가 성공한 뒤에야 다음 노드가 open 이 되어 문항이 존재한다 — handlePass
- *  가 그 순서를 보장하므로 왕복이 정합적으로 직렬화된다.)
+ * 목록은 잠금 표시·진도 계산에 필요한 메타데이터만 싣고, 본문·문항·문형 카드는
+ * URL 로 선택한 노드 하나에만 붙인다. 선택 노드 상세는 서버가 아는 통과 집합으로
+ * 검증한다: 포함 가능 = 동선의 연속 통과 prefix + 바로 다음 열린 노드 1개.
  *
- * 잠긴 노드는 questions/items 를 빈 배열로 스트립하고 stripped 표식을 남긴다
- * (클라이언트가 "문항 미수신"과 "원래 빈 문항"을 구분해 회복 UI 를 띄우는 근거).
- * 목록·진도 헤더가 쓰는 title·situation·newPatterns·patterns 는 유지해 깨짐 0.
- * 본문 body 는 정답이 아니라 읽기 콘텐츠라 유지 — 이번 최소분의 차단 대상은
- * 통과 판정을 무력화하는 정답표(answer·why)다.
- *
- * 전부 순수 함수(부수효과 0) — 잠금 체인 정의는 readingProgress 의
- * buildNodes/nodeStates 를 그대로 재사용해 클라이언트 잠금 UX 와 갈라지지 않는다.
+ * 따라서 잠긴 노드 id 를 query 로 직접 요청해도 detail 은 null 이며, cardsFor 도
+ * 호출하지 않는다. 다음 노드는 통과 저장 → 서버 pull → router.refresh 뒤에야
+ * open 이 되어 상세를 받을 수 있다.
  */
 import { buildNodes, nodeStates, drillId } from './readingProgress';
 
+/** 선행 동선이 끊기기 전까지의 연속 통과 prefix만 반환한다. */
+export function contiguousPassedIds(track, passedIds) {
+  const passed = passedIds instanceof Set ? passedIds : new Set(passedIds || []);
+  const prefix = new Set();
+  for (const node of buildNodes(track)) {
+    if (!passed.has(node.id)) break;
+    prefix.add(node.id);
+  }
+  return prefix;
+}
+
 /**
- * 문항(questions/items)을 포함해도 되는 노드 id 집합(순수).
- * 순수하게 nodeStates 의 **passed·open 노드만** — 선전송 없음(P2-6). 게스트(빈 통과 집합)는
- * order 1 글 하나만 열린다(그 위치 드릴조차 글1 통과 전엔 잠금). 다음 노드는 통과→서버 반영→
- * 재조회 뒤에야 open 이 되어 문항이 존재한다(handlePass 가 순서를 직렬화).
+ * 문항(questions/items)을 요청할 수 있는 노드 id 집합(순수).
+ * 정상 진도에서는 기존 nodeStates 의 passed·open 집합과 같다. 다만 사용자가 자기
+ * user_ref_progress 에 임의의 후속 rt: 행을 넣어도 선행 체인이 끊긴 뒤의 id 는 무시한다.
+ * 게스트(빈 통과 집합)는 order 1 글 하나만 열린다.
  * @param {object} track - 원본 트랙(getReadingTrack 결과)
  * @param {Iterable<string>} passedIds - 서버가 아는 통과 글/드릴 id 집합
  * @returns {Set<string>}
  */
 export function questionOpenIds(track, passedIds) {
-  const stated = nodeStates(buildNodes(track), passedIds);
-  const open = new Set();
-  for (const n of stated) {
-    if (n.status === 'passed' || n.status === 'open') open.add(n.id);
-  }
+  const prefix = contiguousPassedIds(track, passedIds);
+  const open = new Set(prefix);
+  const next = buildNodes(track).find((node) => !prefix.has(node.id));
+  if (next) open.add(next.id);
   return open;
 }
 
+/** 서버의 bunkei 사전에서 클라이언트 표시용 카드만 뽑는 순수 resolver. */
+export function createPatternCardResolver(bunkei) {
+  const cardByPattern = new Map();
+  for (const theme of bunkei?.themes || []) {
+    for (const item of theme.items || []) {
+      cardByPattern.set(item.pattern, {
+        pattern: item.pattern,
+        ko: item.ko || '',
+        explain: item.explain || '',
+        contrast: item.contrast || '',
+        ex: item.ex || null,
+      });
+    }
+  }
+  return (patterns) => (patterns || []).map((pattern) => cardByPattern.get(pattern)).filter(Boolean);
+}
+
+function summarizePlace(place) {
+  if (!place || typeof place !== 'object') return place || '';
+  return { name: place.name || '', ja: place.ja || '' };
+}
+
+function textSummary(text) {
+  return {
+    id: text.id,
+    order: text.order,
+    title: text.title,
+    place: summarizePlace(text.place),
+    situation: text.situation,
+    patternCount: (text.newPatterns || []).length,
+  };
+}
+
+function drillSummary(drill, index) {
+  return {
+    id: drillId(index),
+    afterOrder: drill.afterOrder,
+    title: drill.title,
+    patternCount: (drill.patterns || []).length,
+  };
+}
+
+function nodeDetail(node, cardsFor) {
+  if (node.kind === 'text') {
+    const text = node.ref;
+    return {
+      ...textSummary(text),
+      newPatterns: text.newPatterns || [],
+      body: text.body || [],
+      questions: text.questions || [],
+      patternCards: cardsFor(text.newPatterns),
+    };
+  }
+
+  const drill = node.ref;
+  return {
+    ...drillSummary(drill, node.index),
+    patterns: drill.patterns || [],
+    items: drill.items || [],
+    patternCards: cardsFor(drill.patterns),
+  };
+}
+
 /**
- * 직렬화 가능한 경량 페이로드(함수·미사용 필드 배제) 조립 — reading/page.jsx 전용.
+ * 직렬화 가능한 목록 manifest + 선택 노드 상세 조립(reading/page.jsx 전용).
+ *
  * @param {object} track - 원본 트랙
- * @param {Iterable<string>} passedIds - 통과 집합(게스트는 빈 집합)
- * @param {(patterns: string[]) => Array} cardsFor - 문형 → 사전 카드(bunkei) 매퍼(서버 주입)
+ * @param {Iterable<string>} passedIds - 서버 통과 집합(게스트는 빈 집합)
+ * @param {(patterns: string[]) => Array} cardsFor - 문형 → 사전 카드 매퍼
+ * @param {string|null} selectedId - query 로 요청한 노드 id
+ * @param {string} viewerScope - 서버 payload 를 만든 인증 주체(uid 또는 guest)
  */
-export function buildTrackPayload(track, passedIds, cardsFor = () => []) {
-  const open = questionOpenIds(track, passedIds);
+export function buildTrackPayload(
+  track,
+  passedIds,
+  cardsFor = () => [],
+  selectedId = null,
+  viewerScope = 'guest'
+) {
+  const texts = track.texts || [];
+  const drills = track.drills || [];
+  const nodes = buildNodes(track);
+  const stated = nodeStates(nodes, passedIds);
+  const allowed = questionOpenIds(track, passedIds);
+  const requestedId = typeof selectedId === 'string' && selectedId ? selectedId : null;
+  const selected = requestedId ? stated.find((node) => node.id === requestedId) : null;
+  const canReadDetail = !!(selected && allowed.has(selected.id));
+
   return {
     track: track.track,
     title: track.title,
     level: track.level,
     estWeeks: track.estWeeks,
-    texts: (track.texts || []).map((t) => ({
-      id: t.id,
-      order: t.order,
-      title: t.title,
-      situation: t.situation,
-      place: t.place,
-      frame: t.frame,
-      newPatterns: t.newPatterns || [],
-      body: t.body || [],
-      // 스트립 — 잠긴 글의 정답표(answer·why)는 응답에 싣지 않는다
-      questions: open.has(t.id) ? t.questions || [] : [],
-      ...(open.has(t.id) ? {} : { stripped: true }),
-      patternCards: cardsFor(t.newPatterns),
-    })),
-    drills: (track.drills || []).map((d, i) => ({
-      afterOrder: d.afterOrder,
-      title: d.title,
-      style: d.style,
-      patterns: d.patterns || [],
-      // 드릴 items 에도 answer·why 가 실리므로 글과 같은 규칙으로 스트립
-      items: open.has(drillId(i)) ? d.items || [] : [],
-      ...(open.has(drillId(i)) ? {} : { stripped: true }),
-      patternCards: cardsFor(d.patterns),
-    })),
+    viewerScope,
+    // check-reading G1 이 125개 문형의 중복 도입 0을 강제한다. 그래서 노드별 count 합으로
+    // 클라이언트가 문자열 목록 없이도 즉시 진도를 계산할 수 있다.
+    patternsTotal: texts.reduce((sum, text) => sum + (text.newPatterns || []).length, 0)
+      + drills.reduce((sum, drill) => sum + (drill.patterns || []).length, 0),
+    texts: texts.map(textSummary),
+    drills: drills.map(drillSummary),
+    selection: requestedId ? {
+      id: requestedId,
+      kind: selected?.kind || null,
+      status: !selected ? 'missing' : canReadDetail ? selected.status : 'locked',
+      detail: canReadDetail ? nodeDetail(selected, cardsFor) : null,
+    } : null,
   };
 }
