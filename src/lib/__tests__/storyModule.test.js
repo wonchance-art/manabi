@@ -9,12 +9,12 @@ process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||= 'test-anon-key';
 const { normalizeQuestion, gradeOrder, checkFill, FILL_BLANK } = await import('../../views/ReadingTextView');
 const n5 = (await import('../../content/japanese/grammar/n5.js')).default;
 
-// n5-04-desu-da 챕터에 끼워 넣은 스토리 섹션(파일럿)을 찾는다.
-const chapter = n5.find(c => c.slug === 'n5-04-desu-da');
+// 스토리 섹션은 じゃありません을 쓰므로 n5-04b-meishi-neg-past(부정·과거) 챕터로 이동했다.
+const chapter = n5.find(c => c.slug === 'n5-04b-meishi-neg-past');
 const storySection = chapter?.sections.find(s => s.story);
 const story = storySection?.story;
 
-describe('n5-04-desu-da 스토리 모듈 — 콘텐츠 계약', () => {
+describe('n5-04b-meishi-neg-past 스토리 모듈 — 콘텐츠 계약', () => {
   it('챕터 안에 story 섹션이 정확히 하나 있다', () => {
     expect(chapter).toBeTruthy();
     expect(chapter.sections.filter(s => s.story)).toHaveLength(1);
@@ -51,7 +51,7 @@ describe('n5-04-desu-da 스토리 모듈 — 콘텐츠 계약', () => {
     expect(byType('order')).toHaveLength(1);
     expect(byType('fill')).toHaveLength(1);
     expect(byType('produce')).toHaveLength(1);
-    for (const q of story.questions) expect(q.id).toMatch(/^n5-04-desu-da-sq\d+$/);
+    for (const q of story.questions) expect(q.id).toMatch(/^n5-04b-meishi-neg-past-sq\d+$/);
     expect(new Set(story.questions.map(q => q.id)).size).toBe(story.questions.length);
   });
 
