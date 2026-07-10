@@ -69,6 +69,26 @@ export const WORLD_NODES = [
   { id: 'fuji', name: '후지산', kind: 'landmark', tile: [POI.FUJI.x, POI.FUJI.y], peak: 'fuji', desc: '일본에서 가장 높은 산. 좌우 대칭의 아름다운 원뿔 모양으로 유명해요.' },
   // 명산 6종(금강·설악·북한·지리·한라·아소) — 전용 도트 조각 + 이름 라벨.
   ...NAMED_PEAKS,
+  // 동해항 — 사카이미나토행 페리(실존 DBS 항로 모티프).
+  {
+    id: 'donghae-port', name: '동해항', kind: 'port', tile: [POI.DONGHAE_PORT.x, POI.DONGHAE_PORT.y],
+    gate: { type: 'ferry', to: 'sakaiminato-port', label: '⚓ 사카이미나토' },
+    desc: '동해 국제여객터미널. 일본 산인 지방으로 가는 항로가 열려 있어요.',
+  },
+  // 사카이미나토 — 동해항행 페리(왕방향 대칭).
+  {
+    id: 'sakaiminato-port', name: '사카이미나토', kind: 'port', tile: [POI.SAKAIMINATO.x, POI.SAKAIMINATO.y],
+    gate: { type: 'ferry', to: 'donghae-port', label: '⚓ 동해' },
+    desc: '돗토리현의 항구 도시. 신지호와 다이센으로 가는 관문이에요.',
+  },
+  // 거제 — 도시(게이트 없음, 표지 마커만). 두 다리로 이어진 섬(거제대교·통영 / 거가대교·가덕도·부산).
+  { id: 'geoje', name: '거제', kind: 'city', tile: [POI.GEOJE.x, POI.GEOJE.y], desc: '거제대교로 통영과, 거가대교로 가덕도·부산과 이어진 섬. 조선업으로 이름난 항구 도시예요.' },
+  // 통영 — 도시(게이트 없음, 표지 마커만). 견내량 건너 거제대교로 거제와 이어지는 본토측 관문.
+  { id: 'tongyeong', name: '통영', kind: 'city', tile: [POI.TONGYEONG.x, POI.TONGYEONG.y], desc: '한려수도의 항구 도시. 견내량을 건너는 거제대교로 거제와 이어지고, 예부터 이름난 수산의 고장이에요.' },
+  // 다이센 — 랜드마크(게이트 없음). peak 필드는 넣지 않음 — 전용 도트 조각은 후속, 일반 마커+라벨.
+  { id: 'daisen', name: '다이센', kind: 'landmark', tile: [POI.DAISEN.x, POI.DAISEN.y], desc: '산인 지방의 명봉. 모양이 후지산을 닮아 "호키후지"라고도 불려요.' },
+  // 돗토리 — 랜드마크(게이트 없음). 코야마호 곁의 해안 사구.
+  { id: 'tottori', name: '돗토리', kind: 'landmark', tile: [POI.TOTTORI.x, POI.TOTTORI.y], desc: '일본 최대의 사구가 펼쳐진 해안 도시. 코야마호를 곁에 두고 있어요.' },
 ];
 
 // id → 노드(게이트 참조 해석·페리 목적지 조회용).
