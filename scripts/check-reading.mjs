@@ -13,18 +13,19 @@
  *   UNI patternUniverse가 정확히 125개(표 2 전제) — 어긋나면 전수 검사 자체가 무의미(P2-11)
  *   CAP 여행 코어(n5_travel_core) 단어 수 ≤40 하드 캡(P2-11)
  *   ORD 글 order 오름차순·중복 없음(i+1 도입 순서)
- *   G4  신규 문형이 그 글 본문에 어간 매칭(P1-2·P1-3): 플레이스홀더(A·B·한글)를 슬롯으로 치환 후
- *       리터럴 조각 추출 → 전 문형 실재 검사(면제 0). alt 그룹 구조로 何(なん/なに)류 이중 계상 차단,
- *       1~2자 가나 어간은 경계(구두점·공백·문말) 요구로 부분 문자열 오계상 차단.
- *       마지막 글자 완화(slice)는 활용 어미(るすたていうくぐむぶぬ)로 끝나는 조각에만 적용 —
- *       どちらが 등 조사 종결은 정확 일치를 요구해 どちらも류 치환을 잡는다(P1-3).
- *       'い형용사+명사'는 리터럴 부재 → kuromoji 형태소 인접(形容詞자립·い활용 + 名詞) ≥2회로 검사.
+ *   G4  신규 문형이 그 글 본문에 형태소(토큰 시퀀스) 매칭(P1-1·P1-2·P1-3): 플레이스홀더(A·B·한글)를
+ *       슬롯 치환 후 리터럴 조각을 본문 kuromoji 토큰 런에 정렬 매칭(면제 0). 조각은 표면형 정확 일치를
+ *       요구하되 양끝 토큰 경계를 존중(まだ의 だ·そして의 そし류 중간 매칭 소멸), 마지막 토큰이 활용어면
+ *       기본형 완화(します↔しました), 가나 별칭(何↔なん)은 max. alt 내 전 조각 AND(たり×2·から·まで 각각),
+ *       alt 간(これ/それ/あれ)은 합산. 〜だ는 POS로 계수(助動詞·종지형 だ ≥2 — まだ·だろ·だっ 제외).
+ *       'い형용사+명사'는 리터럴 부재 → 형태소 인접(形容詞자립·い활용 + 名詞) ≥2회로 검사.
  *   G5  본문 내용어(명사·동사·형용사·부사) 기본형이 어휘 풀 ∪ 지명에 존재
  *   G6  본문 yomi 정렬(check-furigana spawn) + 지명 요미 대조(P2-10: ja·yomi 동시 마스킹·출현 횟수 대응)
  *       + 금지 요미(과거 실제 오독) 블랙리스트 대조(보조)
  *   YLOCK 문장 단위 요미 락(yomi-lock.json) 대조 — 주 게이트(P1-1·P1-2·P2-5). 전 body 문장을 같은
  *       정규화(normLock)로 락과 대조: 락 미등재/수정 = 오류(재생성+검수 강제)·ja 같은데 yomi 불일치 = 오류·
- *       락에 있는데 사라진 문장 = 경고·KO_MIXED(한글 섞임) = 오류. 문장 전체를 박으므로 가나-온리 무검사·
+ *       락에 있는데 사라진 문장 = 오류(P3-7 승격: 삭제도 락 재생성+검수 강제)·KO_MIXED(한글 섞임) = 오류.
+ *       문장 전체를 박으므로 가나-온리 무검사·
  *       오쿠리가나 오독(来ます→くます)·정렬 아티팩트 오염(建物→たても)이 한 번에 소멸한다.
  *   G7  기대 독음 사전(yomi-map.json) 대조 — 보조 진단(강등). YLOCK이 주 게이트이므로 G7 불일치는
  *       경고. 신규 문장 초안 작성 시 한자별 허용 독음 참고용으로만 유지한다(완전 삭제 금지).
@@ -103,39 +104,100 @@ function splitTopLevel(s) {
   return out.map((x) => x.trim()).filter(Boolean);
 }
 
+// ── G4 v3: 형태소(토큰) 시퀀스 매칭 헬퍼(P1-1·P1-2·P1-3) ──
+// 문형 조각은 kuromoji로 안정적으로 단독 토큰화되지 않는다(문맥 의존: 'では'가 단독으로는 접속사,
+// 'いつ'가 'い+つ'로 쪼개짐). 그래서 조각을 토큰화하지 않고 조각 문자열을 본문 토큰 런에 정렬 매칭한다:
+// 표면형 연결이 조각과 정확히 일치(양끝 토큰 경계 정렬)하거나, 마지막 토큰이 활용어(動詞·形容詞·助動詞)
+// 면 기본형으로 완화(します↔しました)하거나, 요미(가나) 연결이 일치(何↔なん 별칭)하면 1회로 센다.
+// 좌·우 모두 토큰 경계를 존중하므로 だ(まだ의 토큰 중간 시작)·そし(そして의 토큰 중간 종료)류
+// 오계상이 원리적으로 소멸한다. 글자 whitelist(CONJ_END slice) 폐기.
+const G4_CONJ_POS = new Set(['動詞', '形容詞', '助動詞']);
+const placeholderSub = (p) => String(p).replace(/[A-Za-z]+/g, '〜').replace(/[가-힣]+/g, '〜');
+
 /**
- * 문형 pattern → alt 그룹 배열(P1-2·P1-3). 각 그룹은 "같은 출현"을 뜻하는 별칭 배열이다.
- *   - 라틴 대문자·한글 단어(플레이스홀더)는 슬롯(〜)으로 치환 후 리터럴만 남긴다 → 면제 없이 전 문형 검사.
- *   - 그룹 내 별칭(何·なん·なに)은 같은 토큰의 이표기/요미 → 카운트는 max(이중 계상 차단).
- *   - 그룹 간(これ/それ/あれ, あります/います)은 서로 다른 출현 → 합산.
- * 리터럴이 하나도 없으면 빈 배열(호출부에서 형태소 검사 또는 하드 오류로 처리).
+ * 문형 alt → 필수 조각 배열(AND). 각 조각 {surface, readings[]}.
+ *   - 슬롯(〜)·공백·+ 를 경계로 리터럴 조각 분해. 같은 조각이 n회면 배열에 n개(たり×2) → 본문 ≥n회 요구.
+ *   - 괄호 독음(何(なん/なに), 上(うえ))은 직전 조각의 별칭 → 카운트 max(이중 계상 차단).
  */
-function patternGroups(pattern) {
-  // 플레이스홀더(라틴·한글 런) → 슬롯. です·のまえに 등 일본어 리터럴은 그대로 남는다.
-  const p = String(pattern).replace(/[A-Za-z]+/g, '〜').replace(/[가-힣]+/g, '〜');
-  const groups = [];
-  for (const alt of splitTopLevel(p)) {
-    // 괄호 독음(같은 토큰의 이표기/요미) → 이 그룹의 별칭
-    const readings = [];
-    for (const m of alt.matchAll(/[（(]([^）)]+)[）)]/g))
-      for (const inner of m[1].split(/[/／・]/)) {
-        const s = inner.replace(/[\s　〜～~＋+]/g, '');
-        if (s && /[぀-ヿ一-龯]/.test(s) && !/[가-힣A-Za-z]/.test(s)) readings.push(s);
-      }
-    const noParen = alt.replace(/[（(][^）)]*[）)]/g, '');
-    // 슬롯·공백·+ 를 경계로 리터럴 조각 분해. 공백도 경계다 —
-    // 'AとBと どちらが'의 と와 どちらが를 붙이면 본문에 없는 'とどちらが'가 된다.
-    const frags = noParen.split(/[～〜~＋+\s　]/)
-      .map((s) => s.trim())
-      .filter((s) => s && /[぀-ヿ一-龯]/.test(s) && !/[가-힣A-Za-z]/.test(s));
-    if (frags.length) {
-      frags.sort((a, b) => b.length - a.length);       // 가장 긴 리터럴 = 대표(조사보다 내용어)
-      groups.push([...new Set([frags[0], ...readings])]);
-    } else if (readings.length) {
-      groups.push([...new Set(readings)]);
+function parseAlt(alt) {
+  const frags = [];
+  let pending = [];
+  const units = alt.match(/（[^）]*）|\([^)]*\)|[^（(]+/g) || [];
+  for (const u of units) {
+    if (/^[（(]/.test(u)) {
+      const inner = u.slice(1, -1);
+      const rs = inner.split(/[/／・]/).map((s) => s.replace(/[\s　〜～~＋+]/g, ''))
+        .filter((s) => s && /[぀-ヿ一-龯]/.test(s) && !/[가-힣A-Za-z]/.test(s));
+      if (frags.length) frags[frags.length - 1].readings.push(...rs); else pending.push(...rs);
+    } else {
+      const parts = u.split(/[～〜~＋+\s　]/).map((s) => s.trim())
+        .filter((s) => s && /[぀-ヿ一-龯]/.test(s) && !/[가-힣A-Za-z]/.test(s));
+      for (const p of parts) { const f = { surface: p, readings: [] }; if (pending.length) { f.readings.push(...pending); pending = []; } frags.push(f); }
     }
   }
-  return groups;
+  if (pending.length && frags.length) frags[0].readings.push(...pending);
+  return frags;
+}
+
+/** 문형 pattern → alt별 필수 조각 배열. splitTopLevel(/／・、)로 나눈 대안은 그룹 간 합산. */
+function patternAlts(pattern) {
+  return splitTopLevel(placeholderSub(pattern)).map(parseAlt).filter((a) => a.length);
+}
+
+/** 본문 토큰 정규화 — 공백 토큰 제거, 표면형·기본형·품사·요미(히라) 보존. */
+function toBodyTokens(tokenizer, ja) {
+  return tokenizer.tokenize(ja).filter((t) => t.pos_detail_1 !== '空白').map((t) => ({
+    surface: t.surface_form,
+    base: t.basic_form && t.basic_form !== '*' ? t.basic_form : t.surface_form,
+    pos: t.pos,
+    read: t.reading && t.reading !== '*' ? kataToHira(t.reading) : t.surface_form,
+  }));
+}
+
+/**
+ * い형용사 활용 어미(古い→古く, 広い→広かっ) 노출 — kuromoji가 어간+어미를 한 형용사 토큰으로 융합하므로
+ * 〜くて·〜かったです 조각이 토큰 경계에서 시작하지 못한다. 어미 꼬리를 드러내 활용 경계에 정렬시킨다.
+ */
+function adjInfl(t) {
+  if (t.pos !== '形容詞' || !/い$/.test(t.base) || t.surface === t.base) return '';
+  const stem = t.base.slice(0, -1);
+  if (stem && t.surface.startsWith(stem) && t.surface.length > stem.length) return t.surface.slice(stem.length);
+  return '';
+}
+
+/** 조각 문자열을 본문 토큰(bts) i부터 정렬 매칭. 소비한 토큰 수 반환(0=불일치). useInfl: 형용사 어미 경계 시작 허용. */
+function matchFragAt(bts, i, frag, useInfl) {
+  let surf = '', read = '';
+  for (let j = i; j < bts.length; j++) {
+    const t = bts[j];
+    let s = t.surface, r = t.read;
+    if (useInfl && j === i) { const inf = adjInfl(t); if (!inf) return 0; s = inf; r = inf; }
+    surf += s; read += r;
+    if (surf === frag) return j - i + 1;                                  // 표면형 정확 일치(양끝 경계)
+    if (read === frag) return j - i + 1;                                  // 요미(가나) 별칭 일치
+    if (G4_CONJ_POS.has(t.pos)) {                                         // 마지막 토큰 활용어 → 기본형 완화
+      const prefix = surf.slice(0, surf.length - s.length);
+      if (prefix + t.base === frag) return j - i + 1;
+    }
+    if (!frag.startsWith(surf) && !frag.startsWith(read)) return 0;       // 더 이상 접두가 아니면 중단
+  }
+  return 0;
+}
+
+/** 한 문장 토큰에서 조각 비중첩 출현 횟수. */
+function countFrag(bts, frag) {
+  let c = 0, i = 0;
+  while (i < bts.length) {
+    const used = matchFragAt(bts, i, frag, false) || matchFragAt(bts, i, frag, true);
+    if (used > 0) { c++; i += used; } else i++;
+  }
+  return c;
+}
+/** 전 문장에서 조각(별칭 포함) 출현 횟수 — 별칭은 max(그룹 내 이중 계상 차단). */
+function aliasCount(sentToks, aliases) {
+  let best = 0;
+  for (const a of aliases) { let c = 0; for (const bts of sentToks) c += countFrag(bts, a); if (c > best) best = c; }
+  return best;
 }
 
 /** 'い형용사 + 명사' 류 — 리터럴 부재로 형태소 인접 검사가 필요한 문형(P1-2). */
@@ -171,7 +233,6 @@ function runChecks(track, ctx) {
 
   const texts = Array.isArray(track?.texts) ? track.texts : [];
   const drills = Array.isArray(track?.drills) ? track.drills : [];
-  const bodyJa = (t) => (t.body || []).map((b) => b.ja || '').join('');
 
   // ── G1: 전수·중복·부재 ──
   const introduced = new Map(); // pattern → 도입처 목록(글/드릴)
@@ -195,39 +256,42 @@ function runChecks(track, ctx) {
     if (!(orders[i] > orders[i - 1])) E('ORD', `order 비오름차순: ${orders[i - 1]} → ${orders[i]}`);
   if (new Set(orders).size !== orders.length) E('ORD', 'order 중복');
 
-  // ── G4: 신규 문형 본문 실재(어간 매칭, P1-2·P1-3) ──
-  // 카운트 규칙:
-  //   · 어간 길이 ≥3 이고 마지막 글자가 활용 어미(CONJ_END)일 때만 → 1글자 유연화(slice) 후 부분 문자열.
-  //     활용 종결(食べる·行きます류)은 본문에서 활용해 어미가 바뀌므로 완화가 필요하다.
-  //     하지만 どちらが·どちらも처럼 조사·의문사 종결(が·も·の)은 완화하면 どちら만 남아 どちらも가
-  //     どちらが 문형에 오통과된다(P1-3) → 활용 어미가 아닌 종결은 완화 없이 정확 일치를 요구한다.
-  //   · 그 외 → 부분 문자열. 조사·접미(は·を·たい·かた)는 문절 중간에 정당히 붙으므로 경계를 강제하지 않는다.
-  //   · 예외 〜だ: 절말 종지사라 まだ·まだです의 だ에 오계상되기 쉽다 → "절말 경계(뒤가 종지 구두점·문말)"를
-  //     요구해 실제 종지형 〜だ만 센다(P1-3의 まだです 차단). 공백은 절말 경계에서 제외(だ 뒤에 조사가 붙지 않음).
-  //   · 그룹 내 별칭(何·なん·なに)은 max(같은 출현의 이표기 이중 계상 차단), 그룹 간은 합산.
-  const CLAUSE_END = /[。、！？!?」』]/;
-  const CONJ_END = new Set([...'るすたていうくぐむぶぬ']); // 활용 어미(형용사 ね 제외 — 신중히)
-  const countIn = (hay, key) => { let c = 0, i = 0; while ((i = hay.indexOf(key, i)) !== -1) { c++; i += key.length; } return c; };
-  const countClauseFinal = (text, key) => {
-    let c = 0, i = 0;
-    while ((i = text.indexOf(key, i)) !== -1) { const a = text[i + key.length]; if (a === undefined || CLAUSE_END.test(a)) c++; i += key.length; }
-    return c;
-  };
-  for (const t of texts) {
-    const flat = bodyJa(t).replace(/[\s　]/g, '');
-    const flatYomi = (t.body || []).map((b) => b.yomi || '').join('').replace(/[\s　]/g, '');
-    const spacedJa = (t.body || []).map((b) => b.ja || '').join('\n');   // 절말 경계 검사용(공백·문말 보존)
-    const spacedYomi = (t.body || []).map((b) => b.yomi || '').join('\n');
-    const aliasCount = (a, clauseFinal) => {
-      if (clauseFinal) return Math.max(countClauseFinal(spacedJa, a), countClauseFinal(spacedYomi, a));
-      if (a.length >= 3 && CONJ_END.has(a[a.length - 1])) { const key = a.slice(0, -1); return Math.max(countIn(flat, key), countIn(flatYomi, key)); }
-      return Math.max(countIn(flat, a), countIn(flatYomi, a));
+  // ── G4 v3: 신규 문형 본문 형태소 실재(토큰 시퀀스 매칭, P1-1·P1-2·P1-3) ──
+  // 규칙(patternAlts/matchFragAt 참조):
+  //   · 조각(surface)은 본문 토큰 런에 정렬 매칭 — 양끝 토큰 경계 존중, 활용어 꼬리는 기본형 완화, 가나 별칭 max.
+  //   · alt 내 전 조각 AND: 패턴에 같은 조각 n회면 본문 ≥n회(たり×2). 〜から〜まで는 から·まで 각각 필수.
+  //   · alt 간(これ/それ/あれ, 〜ても・〜なくても)은 합산 — 적어도 한 alt가 전 조각 충족(대표 조각 ≥1)이면 통과.
+  //   · 〜だ: 문자열이 아니라 POS로 계수 — 助動詞·기본형 だ·표면형 だ(종지형) ≥2회. まだ(부사)·だろ·だっ 원리적 제외.
+  //   · 'い형용사 + 명사': 리터럴 부재 → 形容詞(自立·い) + 直後 名詞 인접 ≥2회.
+  if (ctx.tokenizer) for (const t of texts) {
+    const sentToks = (t.body || []).filter((b) => b.ja).map((b) => toBodyTokens(ctx.tokenizer, b.ja));
+    // alt(필수 조각 배열) 평가 → { allPresent, repCount, fails }
+    const evalAlt = (frags) => {
+      const byKey = new Map();  // surface → {reps, aliases:Set}
+      for (const f of frags) {
+        const e = byKey.get(f.surface) || { reps: 0, aliases: new Set([f.surface]) };
+        e.reps++; for (const r of f.readings) e.aliases.add(r); byKey.set(f.surface, e);
+      }
+      let longestKey = null;
+      for (const k of byKey.keys()) if (!longestKey || k.length > longestKey.length) longestKey = k;
+      let allPresent = true, repCount = 0; const fails = [];
+      for (const [k, e] of byKey) {
+        const bc = aliasCount(sentToks, e.aliases);
+        if (bc < e.reps) { allPresent = false; fails.push(`${k}=${bc}<${e.reps}`); }
+        if (k === longestKey) repCount = bc;
+      }
+      return { allPresent, repCount, fails };
     };
     for (const p of (t.newPatterns || [])) {
-      const clauseFinal = p === '〜だ';                  // 절말 경계 요구 대상(현재 유일)
-      // 'い형용사 + 명사' — 리터럴이 없으므로 형태소 인접(形容詞 자립·い활용 + 直後 名詞)을 kuromoji로 센다.
+      // 〜だ: copula를 POS로 계수(왼쪽 형태소 경계 무시하던 まだ 오계상 차단, P1-3)
+      if (p === '〜だ') {
+        let c = 0;
+        for (const bts of sentToks) for (const tk of bts) if (tk.pos === '助動詞' && tk.base === 'だ' && tk.surface === 'だ') c++;
+        if (c < 2) E('G4', `글${t.order} copula 〜だ ${c}회(<2): 종지형 だ 부족`);
+        continue;
+      }
+      // 'い형용사 + 명사' — 형태소 인접(形容詞 자립·い활용 + 直後 名詞)
       if (isIAdjNounPattern(p)) {
-        if (!ctx.tokenizer) continue;
         let adj = 0;
         for (const b of (t.body || [])) {
           if (!b.ja) continue;
@@ -240,16 +304,17 @@ function runChecks(track, ctx) {
         if (adj < 2) E('G4', `글${t.order} 형용사(い)+명사 인접 ${adj}회(<2): ${p}`);
         continue;
       }
-      const groups = patternGroups(p);
-      if (!groups.length) { E('G4', `글${t.order} 검증 불가 문형(리터럴 부재): ${p}`); continue; } // 하드 게이트(면제 없음)
-      let total = 0, minRep = Infinity;
-      for (const g of groups) {
-        minRep = Math.min(minRep, g[0].length);           // 대표(첫 별칭) 길이 — need 판정용
-        total += Math.max(...g.map((a) => aliasCount(a, clauseFinal)));  // 그룹 내 max
+      const alts = patternAlts(p);
+      if (!alts.length) { E('G4', `글${t.order} 검증 불가 문형(리터럴 부재): ${p}`); continue; } // 하드 게이트
+      if (alts.length === 1) {
+        const r = evalAlt(alts[0]);
+        if (!r.allPresent) E('G4', `글${t.order} 신규 문형 본문 미실재: ${p} (${r.fails.join(' ')})`);
+      } else {
+        // 합산 대안 — 적어도 한 alt가 전 조각 충족
+        let total = 0; const allFails = [];
+        for (const alt of alts) { const r = evalAlt(alt); if (r.allPresent) total += r.repCount; else allFails.push(`[${r.fails.join(' ')}]`); }
+        if (total < 1) E('G4', `글${t.order} 신규 문형 본문 미실재(대안 합산): ${p} (${allFails.join(' ')})`);
       }
-      // 1자 어간(は·を 등 편재 조사)만 ≥1. 〜だ는 정중체 본문에서 저절로 늘지 않으므로 예외 없이 ≥2.
-      const need = (minRep <= 1 && p !== '〜だ') ? 1 : 2;
-      if (total < need) E('G4', `글${t.order} 신규 문형 본문 미실재: ${p} (출현 ${total}<${need})`);
     }
   }
 
@@ -382,8 +447,10 @@ function runChecks(track, ctx) {
           E('YLOCK-yomi', `글${t.order} 요미 불일치(${key}): 락 '${lock.yomi}' ≠ 현재 '${yomiN}' (문장: ${b.ja})`);
       }
     }
+    // P3-7: 락에 있는데 콘텐츠에서 사라진 문장 = 오류로 승격. 전수 고정 보장 — 문장 삭제도
+    // 락 재생성+검수를 강제한다(사라진 문장이 조용히 통과하는 구멍 차단).
     for (const key of Object.keys(ctx.yomiLock))
-      if (!seen.has(key)) W('YLOCK-gone', `락 문장이 콘텐츠에서 사라짐: ${key} (락 ja: ${ctx.yomiLock[key].ja})`);
+      if (!seen.has(key)) E('YLOCK-gone', `락 문장이 콘텐츠에서 사라짐(재생성+검수 필요): ${key} (락 ja: ${ctx.yomiLock[key].ja})`);
   }
 
   // ── G7(기대 독음 사전) — 보조 진단(강등): YLOCK이 주 게이트이므로 불일치는 경고 ──
@@ -571,7 +638,7 @@ async function buildRealContext() {
   return { patternUniverse, dgroup: DGROUP, vocabPool, placeYomi: PLACE_YOMI, tokenizer, yomiMap, yomiLock, skipFurigana: false, travelCoreCount };
 }
 
-// ── 자가 테스트: 정상 베이스라인 + 결함 주입(기존 10종 + 강화 7종) ──
+// ── 자가 테스트: 정상 베이스라인 + 결함 주입 26종(기존 22 + G4 v3·YLOCK-gone 신규 4) ──
 async function selfTest() {
   const tokenizer = await getTokenizer();
   const clone = (o) => JSON.parse(JSON.stringify(o));
@@ -580,6 +647,7 @@ async function selfTest() {
   const universe = new Set([
     '〜です', '〜ます', '〜ました', '〜は',
     'AはBより〜', 'AとBと どちらが', 'い형용사 + 명사', '何(なん/なに)', '〜だ',
+    '〜たり 〜たり します', 'そして',
   ]);
   const dgroup = ['〜は'];
 
@@ -637,6 +705,22 @@ async function selfTest() {
           { id: 'st-03-q6', type: 'content', q: 'Q', choices: ['赤', '青', '白', '黒'], answer: 1 },
         ],
       },
+      {
+        // G4 v3 검사용(Codex 결함 ②③): 〜たり 〜たり します(필수 조각 AND·たり×2)·そして(접속사 정확 일치).
+        id: 'st-04',
+        order: 4, place: { name: '浅草', ja: '浅草', landmark: 'temple' }, frame: 'narration',
+        newPatterns: ['〜たり 〜たり します', 'そして'],
+        body: [
+          { ja: '店を 見たり、写真を 撮ったり しました。', yomi: 'みせを みたり、しゃしんを とったり しました。', ko: '' },
+          { ja: 'パンを 食べたり、水を 飲んだり しました。', yomi: 'ぱんを たべたり、みずを のんだり しました。', ko: '' },
+          { ja: 'そして、ホテルへ 帰りました。', yomi: 'そして、ほてるへ かえりました。', ko: '' },
+          { ja: 'そして、写真を 見ました。', yomi: 'そして、しゃしんを みました。', ko: '' },
+        ],
+        questions: [
+          { id: 'st-04-q1', type: 'pattern', pattern: '〜たり 〜たり します', q: 'Q', choices: ['たり', 'だり', 'たら', 'ても'], answer: 0, why: 'w' },
+          { id: 'st-04-q2', type: 'pattern', pattern: 'そして', q: 'Q', choices: ['そして', 'そしたら', 'それで', 'しかし'], answer: 0, why: 'w' },
+        ],
+      },
     ],
     drills: [
       // afterOrder는 실존 글 order여야 하고(DR-after), item에는 pattern 태그·id가 있어야 한다(P1-5·P3-11).
@@ -653,30 +737,35 @@ async function selfTest() {
         vocabPool.add(base); vocabPool.add(tok.surface_form);
       }
 
-  // 테스트용 기대 독음 사전 — 베이스라인 본문에서 실 생성 로직과 같은 정렬로 구성 →
-  // 베이스라인은 G7 통과, 신규 표면형 주입 시에만 G7-map이 뜬다(맵 미등재 픽스처 유효).
-  const yomiMap = {};
-  for (const t of baseline.texts) for (const b of t.body) {
-    if (!b.ja || !b.yomi) continue;
-    const { ok, readings } = extractReadings(b.ja, b.yomi);
-    if (!ok) continue;
-    for (const { surface, reading } of readings) {
-      (yomiMap[surface] ||= []);
-      if (!yomiMap[surface].includes(reading)) yomiMap[surface].push(reading);
-    }
-  }
-
-  // 문장 단위 요미 락 — 베이스라인 본문에서 실 생성 로직(build-yomi-lock)과 같은 정규화로 구성 →
-  // 베이스라인은 YLOCK 통과, 신규·수정·오독 주입 시에만 YLOCK-*가 뜬다.
-  const yomiLock = {};
-  for (const t of baseline.texts) {
-    const body = t.body || [];
-    for (let i = 0; i < body.length; i++) {
-      const b = body[i];
+  // 테스트용 기대 독음 사전 — 트랙 본문에서 실 생성 로직과 같은 정렬로 구성.
+  const buildMap = (track) => {
+    const m = {};
+    for (const t of track.texts) for (const b of (t.body || [])) {
       if (!b.ja || !b.yomi) continue;
-      yomiLock[`${t.id}#${i}`] = { ja: normLock(b.ja), yomi: normLock(b.yomi) };
+      const { ok, readings } = extractReadings(b.ja, b.yomi);
+      if (!ok) continue;
+      for (const { surface, reading } of readings) {
+        (m[surface] ||= []);
+        if (!m[surface].includes(reading)) m[surface].push(reading);
+      }
     }
-  }
+    return m;
+  };
+  // 문장 단위 요미 락 — 트랙 본문에서 실 생성 로직(build-yomi-lock)과 같은 정규화로 구성.
+  const buildLock = (track) => {
+    const L = {};
+    for (const t of track.texts) {
+      const body = t.body || [];
+      for (let i = 0; i < body.length; i++) {
+        const b = body[i];
+        if (!b.ja || !b.yomi) continue;
+        L[`${t.id}#${i}`] = { ja: normLock(b.ja), yomi: normLock(b.yomi) };
+      }
+    }
+    return L;
+  };
+  const yomiMap = buildMap(baseline);   // 베이스라인은 G7·YLOCK 통과, 결함 주입 시에만 뜬다
+  const yomiLock = buildLock(baseline);
 
   const ctx = { patternUniverse: universe, dgroup, vocabPool, placeYomi: PLACE_YOMI, tokenizer, yomiMap, yomiLock, skipFurigana: true };
 
@@ -688,8 +777,8 @@ async function selfTest() {
     process.exit(1);
   }
 
-  // 결함 주입 — [이름, 기대 코드, 변형 함수, 검사대상('error' 기본 | 'warn')].
-  // 기존 17종(G1·G4·G5·G6·Q·DR + 강화) + 신규 5종(YLOCK 3·G4 조사 정확일치·문항 id) = 22종.
+  // 결함 주입 — [이름, 기대 코드, 변형 함수, 검사대상('error' 기본 | 'warn'), regenLock?].
+  // 기존 22종(G1·G4·G5·G6·Q·DR·YLOCK·ID) + 신규 4종(G4 v3 형태소 3 + YLOCK-gone 승격) = 26종.
   const fixtures = [
     ['전수 누락', 'G1-missing', (t) => { t.texts[1].newPatterns = []; }],
     ['중복 도입', 'G1-dup', (t) => { t.texts[1].newPatterns.push('〜です'); }],
@@ -727,13 +816,26 @@ async function selfTest() {
     ['고정 조사 치환 どちらも(P1-3)', 'G4', (t) => { const b = t.texts[2].body[1]; b.ja = b.ja.replaceAll('どちらが', 'どちらも'); b.yomi = b.yomi.replaceAll('どちらが', 'どちらも'); }],
     // P3-11: 문항 id 중복.
     ['문항 id 중복(P3-11)', 'ID-dup', (t) => { t.texts[0].questions[1].id = t.texts[0].questions[0].id; }],
+    // ── G4 v3 신규 4종(Codex v4 변형 재현, P1-1·P1-2·P1-3·P3-7) ──
+    // 5번째 인자 regenLock=true: 변형 본문에 맞춰 락·맵을 재생성해 YLOCK을 침묵시킨다 →
+    // G4(형태소)가 단독으로 결함을 잡아야 진짜 검출임을 증명한다(Codex 재현 절차와 동일).
+    // ① 종지형 だ 문장을 まだ。로 치환 — 왼쪽 형태소 경계를 무시하던 だ 오계상이 POS 계수로 소멸(copula 0<2).
+    ['① だ→まだ。 copula 오계상(P1-3)', 'G4', (t) => { const b = t.texts[2].body[3]; b.ja = 'まだ。まだ。'; b.yomi = 'まだ。まだ。'; }, 'error', true],
+    // ② 〜たり 〜たり します 조각 유실 — たり 문장 제거 시 최장 조각 します만 보던 결함이 AND(たり×2)로 검출.
+    ['② たり 문장 제거(필수 조각 AND)', 'G4', (t) => { t.texts[3].body = t.texts[3].body.filter((b) => !b.ja.includes('たり')); }, 'error', true],
+    // ③ そして→そしたら — 활용 어미 whitelist로 そし만 보던 결함이 접속사 정확 일치로 검출.
+    ['③ そして→そしたら(접속사 정확 일치)', 'G4', (t) => { for (const b of t.texts[3].body) { b.ja = b.ja.replaceAll('そして', 'そしたら'); b.yomi = b.yomi.replaceAll('そして', 'そしたら'); } }, 'error', true],
+    // ④ 락 문장 삭제 — 락에 있는데 사라진 문장은 경고→오류 승격(P3-7). 락은 원본 그대로(재생성 X)여야 잡힌다.
+    ['④ 락 문장 삭제(YLOCK-gone 승격)', 'YLOCK-gone', (t) => { t.texts[3].body.splice(2, 1); }],
   ];
 
   let detected = 0;
-  for (const [name, code, mutate, where] of fixtures) {
+  for (const [name, code, mutate, where, regenLock] of fixtures) {
     const t = clone(baseline);
     mutate(t);
-    const { errors, warns } = runChecks(t, ctx);
+    // regenLock: 변형 본문 기준으로 락·맵 재생성 → YLOCK/G7 침묵, 대상 게이트(G4)만 판정.
+    const fctx = regenLock ? { ...ctx, yomiLock: buildLock(t), yomiMap: buildMap(t) } : ctx;
+    const { errors, warns } = runChecks(t, fctx);
     const pool = where === 'warn' ? warns : errors;
     const hit = pool.some((e) => e.code === code);
     console.log(`  ${hit ? '✓' : '✗'} ${name} — 기대코드 ${code}${where === 'warn' ? '(warn)' : ''} ${hit ? '검출' : '미검출'}`);

@@ -235,7 +235,7 @@ function PatternCard({ card, onClose }) {
  * 글 뷰어 — 문장별 어시스트 계층(원문 → 요미 → 한국어, 문장 단위 토글).
  * 상단 신규 문형 칩 → 사전 카드 팝오버. 읽기 후 "문제 풀기" → 문항 흐름.
  */
-export default function ReadingTextView({ text, onPass, onBack }) {
+export default function ReadingTextView({ text, onPass, onBack, saving = false }) {
   const [revealed, setRevealed] = useState({}); // 문장 index → 한국어 뜻 펼침 여부
   const [furigana, setFurigana] = useState(true); // 후리가나 루비 — 기본 표시(초심자 배려)
   const [card, setCard] = useState(null);
@@ -264,7 +264,8 @@ export default function ReadingTextView({ text, onPass, onBack }) {
 
   return (
     <div>
-      <button type="button" className="chip" onClick={onBack} style={{ marginBottom: 12 }}>← 목록</button>
+      {/* 저장(기록) 진행 중엔 이탈 비활성(P2-4) — 게이트가 저장을 계속하므로 완료 후 목록으로 */}
+      <button type="button" className="chip" onClick={onBack} disabled={saving} style={{ marginBottom: 12, opacity: saving ? 0.5 : 1, cursor: saving ? 'not-allowed' : 'pointer' }}>← 목록</button>
 
       <header style={{ marginBottom: 14 }}>
         <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', fontWeight: 600 }}>
@@ -388,14 +389,18 @@ export default function ReadingTextView({ text, onPass, onBack }) {
  * 드릴 뷰 — 같은 문항 흐름의 간소판(items 전부 정답 = 통과).
  * 드릴 items: { q, ja?, choices, answer, why }
  */
-export function ReadingDrillView({ drill, drillId, onPass, onBack }) {
+export function ReadingDrillView({ drill, drillId, onPass, onBack, saving = false }) {
   const [card, setCard] = useState(null);
 
   const questions = useMemo(() => {
     return (drill.items || []).map((it, i) => ({
       key: `${drillId}-i${i}`,
+      id: it.id, // 안정 문항 id(detail 보존용) — item_key 는 문형(pattern) 단위 집계(P2-6)
       qtype: 'pattern',
-      itemKey: drillId,
+      // 드릴 이벤트 키는 **문형(it.pattern)** 단위 — drillId 로 뭉치면 드릴 A 의 〜は/〜を 가
+      // 한 키로 합쳐져 문형별 약점 신호가 소실된다. pattern 문항과 같은 키 규약으로 정합(P2-6).
+      // 문형 누락 시에만 drillId 로 폴백(이벤트 유실 방지).
+      itemKey: it.pattern || drillId,
       prompt: it.q,
       contextJa: it.ja || null,
       choices: it.choices,
@@ -407,7 +412,8 @@ export function ReadingDrillView({ drill, drillId, onPass, onBack }) {
 
   return (
     <div>
-      <button type="button" className="chip" onClick={onBack} style={{ marginBottom: 12 }}>← 목록</button>
+      {/* 저장 진행 중엔 이탈 비활성(P2-4) */}
+      <button type="button" className="chip" onClick={onBack} disabled={saving} style={{ marginBottom: 12, opacity: saving ? 0.5 : 1, cursor: saving ? 'not-allowed' : 'pointer' }}>← 목록</button>
       <header style={{ marginBottom: 14 }}>
         <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', fontWeight: 600 }}>드릴</div>
         <h1 style={{ fontSize: '1.25rem', fontWeight: 700, marginTop: 4 }}>{drill.title}</h1>

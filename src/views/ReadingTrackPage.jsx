@@ -17,6 +17,7 @@ import {
   buildNodes,
   nodeStates,
   computeTrackProgress,
+  createPassGate,
 } from '../lib/readingProgress';
 import ReadingTextView, { ReadingDrillView } from './ReadingTextView';
 
@@ -52,10 +53,16 @@ function ReadingTrack({ track, user }) {
   const router = useRouter();
   const [passedSet, setPassedSet] = useState(() => new Set());
   const [active, setActive] = useState(null); // 열려 있는 노드 id (null = 목록)
-  // 노드별 in-flight 기록(P2-7) — 같은 노드 재진입만 차단(다른 노드는 아래 직렬 대기열이 순서 보장).
-  const inFlightRef = useRef(new Map());
-  // 통과 동기화 직렬 대기열 — 직전 통과의 원격 반영이 끝난 뒤 다음 통과를 처리해 유실을 막는다.
-  const chainRef = useRef(Promise.resolve());
+  // 통과 저장 게이트(P2-4) — 노드별 진행 중 Promise Map + 직렬 체인을 캡슐화한다. 같은 노드
+  // 재진입은 진행 중 Promise 를 그대로 반환해 'await undefined'(성공 오인)를 막고, 서로 다른
+  // 노드는 직렬화로 경합 유실을 막는다. useRef 로 계정별 remount 시 새 게이트로 초기화된다.
+  const gateRef = useRef(null);
+  if (!gateRef.current) gateRef.current = createPassGate();
+  // 실패 저장의 재시도 페이로드(events)를 노드 키로 보존 — 이탈 후 재열람 시 같은 페이로드로 재-push.
+  const pendingEventsRef = useRef(new Map());
+  const [saveError, setSaveError] = useState(() => new Set()); // 실패 노드 id 보존(재열람 재시도 UI 복원)
+  const [savingNode, setSavingNode] = useState(null); // 현재 저장 중 node id — 뷰어 '← 목록' 이탈 비활성
+  const [restore, setRestore] = useState(false); // 재열람 시 저장 상태 복원 패널 표시(활성 세션 UI 와 분리)
 
   // 프레시 마운트(계정별) — 로컬 로드 + 로그인 시 서버 병합(rt: 행만, 챕터 진도 오염 0).
   // 계정 전환은 상위 key remount 로 이 effect 가 새 계정에서 처음부터 다시 돈다.
@@ -68,7 +75,7 @@ function ReadingTrack({ track, user }) {
       // 언마운트(전환)됐거나 uid 가 바뀌었으면 결과 폐기 — pullApplies 로 태그 검증.
       if (!alive || !pullApplies(reqUid, user?.id)) return;
       if (changed) setPassedSet(loadPassedTexts(reqUid));
-    });
+    }).catch(() => {}); // bulk push 실패 등은 마운트 경로에선 조용히 무시(다음 pull 이 재시도)
     return () => { alive = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -106,20 +113,38 @@ function ReadingTrack({ track, user }) {
     );
   }
 
+  // 노드 열기 — 재열람 시 보존된 저장 실패/진행이 있으면 복원 패널로 연다(활성 세션 UI 와 분리).
+  function openNode(id) {
+    setActive(id);
+    setRestore(saveError.has(id) || savingNode === id);
+  }
+  // 뷰어 닫기 — 복원 플래그도 해제. 저장은 게이트가 계속 진행하므로 이탈해도 유실되지 않는다.
+  function closeViewer() {
+    setActive(null);
+    setRestore(false);
+  }
+
   // 통과 시점 기록 배선 — 로컬 Set·서버 upsert·review_events·글 단위 SRS 큐.
   // 반환 Promise 는 뷰어(QuestionFlow)가 await 한다: 성공(resolve) 후에만 완료 화면·다음 이동이
-  // 열리고, 실패(reject) 시 뷰어가 "기록 중…"→재시도 UI 로 전환한다(P2-7·P2-8).
-  async function handlePass(node, events) {
-    if (inFlightRef.current.get(node.id)) return; // 같은 노드 재진입만 차단(빠른 이중 클릭)
-    inFlightRef.current.set(node.id, true);
-    // 직전 통과 동기화가 끝난 뒤 이번 통과를 처리(직렬 대기열) — 경합 중 유실 방지(P2-7).
-    const run = chainRef.current.then(() => doPass(node, events));
-    chainRef.current = run.catch(() => {}); // 체인은 실패해도 다음 통과로 계속 이어진다
-    try {
-      return await run; // 성공/실패를 뷰어로 전파(뷰어가 완료/재시도 분기)
-    } finally {
-      inFlightRef.current.delete(node.id); // 실패 시 재시도(재-push)를 허용하기 위해 즉시 해제
-    }
+  // 열리고, 실패(reject) 시 뷰어가 "기록 중…"→재시도 UI 로 전환한다(P2-4·P2-8).
+  // 게이트가 노드별 진행 중 Promise 를 반환하므로 재진입(빠른 이중 클릭·이탈 후 재완료)도
+  // 같은 저장을 await 한다 — 기록·이벤트는 정확히 1회, undefined 즉시 성공 오인 없음(P2-4).
+  function handlePass(node, events) {
+    pendingEventsRef.current.set(node.id, events); // 재시도 페이로드 보존(재-push 시 재사용)
+    setSaveError((s) => { if (!s.has(node.id)) return s; const n = new Set(s); n.delete(node.id); return n; });
+    setSavingNode(node.id); // 저장 시작 — 이탈 비활성
+    return gateRef.current.run(node.id, () => doPass(node, events)).then(
+      (r) => {
+        pendingEventsRef.current.delete(node.id);
+        setSavingNode((c) => (c === node.id ? null : c));
+        return r; // 성공 — 뷰어 완료 화면
+      },
+      (e) => {
+        setSavingNode((c) => (c === node.id ? null : c));
+        setSaveError((s) => new Set(s).add(node.id)); // 실패 보존(재열람 재시도 UI 복원)
+        throw e; // 뷰어(활성 세션)로 전파 — 즉시 재시도 UI
+      }
+    );
   }
 
   // 단일 노드 통과 처리 — 로컬 기록 → 원격 upsert 확인 → pull → refresh 를 이 순서로 직렬화한다.
@@ -150,7 +175,7 @@ function ReadingTrack({ track, user }) {
     if (activeNode.ref?.stripped) {
       return (
         <div className="page-container" style={{ maxWidth: 720 }}>
-          <button type="button" className="chip" onClick={() => setActive(null)} style={{ marginBottom: 12 }}>← 목록</button>
+          <button type="button" className="chip" onClick={closeViewer} style={{ marginBottom: 12 }}>← 목록</button>
           <div className="card" style={{ padding: '28px 18px', textAlign: 'center' }}>
             {user?.id ? (
               <>
@@ -173,13 +198,47 @@ function ReadingTrack({ track, user }) {
         </div>
       );
     }
+    // 재열람 복원 패널(P2-4) — 저장 중 이탈 후 다시 연 노드는 뷰어 대신 저장 상태를 복원한다.
+    // '기록 중…'(진행)이면 이탈 비활성(← 목록 없음), 실패면 같은 페이로드로 재-push 재시도.
+    // 저장은 게이트가 계속 진행하므로 이탈해도 유실되지 않고, 성공 시 목록으로 돌아가 ✓ 로 보인다.
+    if (restore) {
+      const isSaving = savingNode === activeNode.id;
+      const isError = saveError.has(activeNode.id);
+      const retry = () => {
+        const ev = pendingEventsRef.current.get(activeNode.id);
+        handlePass(activeNode, ev).then(() => closeViewer()).catch(() => {}); // 성공 시 목록 복귀
+      };
+      return (
+        <div className="page-container" style={{ maxWidth: 720 }}>
+          {!isSaving && (
+            <button type="button" className="chip" onClick={closeViewer} style={{ marginBottom: 12 }}>← 목록</button>
+          )}
+          <div className="card" style={{ padding: '28px 18px', textAlign: 'center' }}>
+            {isSaving ? (
+              <p style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', margin: 0 }}>기록 중이에요…</p>
+            ) : isError ? (
+              <>
+                <p style={{ fontSize: '0.92rem', color: 'var(--danger)', marginBottom: 14 }}>
+                  기록에 실패했어요. 다시 시도해 주세요.
+                </p>
+                <button type="button" className="btn btn--primary btn--md" onClick={retry}>다시 시도</button>
+              </>
+            ) : (
+              // 저장이 이미 정리된 노드(경합 잔재) — 목록으로 안내
+              <button type="button" className="btn btn--secondary btn--sm" onClick={closeViewer}>목록으로</button>
+            )}
+          </div>
+        </div>
+      );
+    }
     if (activeNode.kind === 'text') {
       return (
         <div className="page-container" style={{ maxWidth: 720 }}>
           <ReadingTextView
             text={activeNode.ref}
+            saving={savingNode === activeNode.id}
             onPass={(events) => handlePass(activeNode, events)}
-            onBack={() => setActive(null)}
+            onBack={closeViewer}
           />
         </div>
       );
@@ -189,8 +248,9 @@ function ReadingTrack({ track, user }) {
         <ReadingDrillView
           drill={activeNode.ref}
           drillId={activeNode.id}
+          saving={savingNode === activeNode.id}
           onPass={(events) => handlePass(activeNode, events)}
-          onBack={() => setActive(null)}
+          onBack={closeViewer}
         />
       </div>
     );
@@ -229,7 +289,7 @@ function ReadingTrack({ track, user }) {
               <button
                 type="button"
                 disabled={locked}
-                onClick={() => setActive(n.id)}
+                onClick={() => openNode(n.id)}
                 className="card"
                 style={{
                   width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 12,

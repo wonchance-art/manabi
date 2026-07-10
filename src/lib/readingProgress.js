@@ -167,6 +167,38 @@ export function accumulateAnswer(cur, { ok, gating }) {
 }
 
 /**
+ * 통과 저장 게이트(P2-4) — 저장 중 재진입이 "저장 성공"으로 오인되는 구멍을 막는다.
+ *
+ * 문제: in-flight 를 boolean 으로만 두고 재진입 시 undefined 를 반환하면, 호출부의
+ * `await onPass()` 가 `await undefined` 로 **즉시 성공처럼** 흘러가 완료 화면이 열린다.
+ * 해결: 노드 키별로 **진행 중 Promise 를 Map 에 저장**하고, 같은 키 재진입 시 그 Promise 를
+ * 그대로 반환한다 — 재진입 호출부도 실제 저장의 성공/실패를 정확히 await 한다.
+ *
+ * 더불어 직렬 체인(직전 저장 완료 후 다음 저장)으로 서로 다른 노드의 경합 유실도 막는다.
+ * settle 시 Map 에서 즉시 해제 → 실패 후 재시도(재-push)가 새 task 로 다시 실행된다.
+ * (React 컴포넌트 밖 순수 팩토리라 단위 테스트로 재진입·재시도 경로를 직접 검증할 수 있다.)
+ */
+export function createPassGate() {
+  const inFlight = new Map(); // key → 진행 중 Promise
+  let chain = Promise.resolve();
+  return {
+    /** key 저장 실행 — 같은 key 가 진행 중이면 그 Promise 를 반환(task 재실행 없음) */
+    run(key, task) {
+      const existing = inFlight.get(key);
+      if (existing) return existing; // 재진입 — 진행 중 Promise 그대로(중복 기록·성공 오인 차단)
+      const p = chain.then(() => task());
+      chain = p.catch(() => {}); // 체인은 실패해도 다음 저장으로 이어진다
+      inFlight.set(key, p);
+      const release = () => { if (inFlight.get(key) === p) inFlight.delete(key); };
+      p.then(release, release); // settle 시 해제 — 실패 후 재시도를 허용
+      return p;
+    },
+    /** 해당 key 가 현재 저장 진행 중인지(이탈 비활성 판단용) */
+    isInFlight(key) { return inFlight.has(key); },
+  };
+}
+
+/**
  * 진도 산식(순수) — 헤더 "글 n/30 · 문형 m/125 · 예상 잔여 ~k주".
  * - n = 통과 글 수
  * - m = 통과한 글의 newPatterns ∪ 통과한 드릴의 patterns (중복 문형은 1회만 계상)
@@ -252,12 +284,20 @@ function readSetFromKey(key) {
   }
 }
 
-/** 임의 키에 Set 저장(방어적) */
+/**
+ * 임의 키에 Set 저장(방어적) — **성공 여부를 반환**한다(P3-8).
+ * setItem 은 용량 초과·프라이빗 모드 등에서 throw 할 수 있어, 레거시 이관·게스트 승계 같은
+ * "목적지 쓰기 성공 후에만 원본 삭제" 패턴이 성공 여부를 확인할 수 있게 boolean 을 돌려준다.
+ * @returns {boolean} 쓰기 성공 여부(SSR·예외 시 false)
+ */
 function writeSetToKey(key, set) {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined') return false;
   try {
     localStorage.setItem(key, JSON.stringify([...set]));
-  } catch {}
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -271,8 +311,11 @@ function migrateLegacyReadingKey() {
     if (localStorage.getItem(READING_KEY) == null) return; // 콜론 없는 정확한 레거시 키
     const legacy = readSetFromKey(READING_KEY);
     const lk = legacyReadingKey();
-    writeSetToKey(lk, new Set([...readSetFromKey(lk), ...legacy]));
-    localStorage.removeItem(READING_KEY);
+    // 목적지(:legacy) 쓰기 성공을 확인한 뒤에만 원본 무스코프 키를 삭제한다(P3-8).
+    // setItem 이 실패(용량·프라이빗 모드)했는데 원본을 지우면 소유자 불명 진도가 유실된다 —
+    // 실패 시 원본을 보존해 다음 기회에 재이관한다.
+    const ok = writeSetToKey(lk, new Set([...readSetFromKey(lk), ...legacy]));
+    if (ok) localStorage.removeItem(READING_KEY);
   } catch {}
 }
 
@@ -301,9 +344,9 @@ export function loadPassedTexts(userId) {
   return set;
 }
 
-/** 사용자 스코프 통과 Set 저장 — userId 없으면 게스트 키 */
+/** 사용자 스코프 통과 Set 저장 — userId 없으면 게스트 키. 쓰기 성공 여부 반환(P3-8) */
 export function persistPassedTexts(set, userId) {
-  writeSetToKey(scopedReadingKey(userId), set);
+  return writeSetToKey(scopedReadingKey(userId), set);
 }
 
 /**
@@ -351,14 +394,19 @@ export async function pullReadingProgress(userId) {
   let local = initial;
 
   // 게스트(비로그인) 진행분 1회 승계 — 같은 사람의 로그인 전 진행은 이 계정으로 정당 승계다.
-  // 승계 후 게스트 키를 즉시 비워, 뒤이어 다른 계정(B)이 로그인해도 A 진도가 복제되지 않게 한다.
+  // uk(목적지)에 병합분을 즉시 영속해 로컬은 서버 실패에도 보존한다. 다만 **게스트 원본 키는
+  // 여기서 비우지 않는다**(P2-5·P3-8): 서버 bulk push 성공 + uk 쓰기 성공을 확인한 뒤에만 비운다.
+  // push 가 실패했는데 게스트를 비우면 재시도 근거가 사라진다.
   const guestSet = readSetFromKey(guestReadingKey());
-  if (guestSet.size) {
+  const hadGuest = guestSet.size > 0;
+  let ukWritten = true; // uk(목적지) 쓰기 성공 여부 — 실패 시 게스트 원본을 지우지 않는다(P3-8)
+  if (hadGuest) {
     local = new Set([...initial, ...guestSet]);
-    if (local.size !== initial.size) writeSetToKey(uk, local); // 승계분 즉시 영속(서버 실패에도 보존)
-    writeSetToKey(guestReadingKey(), new Set());               // 게스트 비움(A→B 복제 차단)
+    if (local.size !== initial.size) ukWritten = writeSetToKey(uk, local);
   }
 
+  let changed = false;
+  let bulkFailed = false; // toPush bulk upsert 의 resolved {error} — try 밖에서 전파(catch 로 안 삼킴)
   try {
     const { data, error } = await supabase
       .from('user_ref_progress')
@@ -370,9 +418,9 @@ export async function pullReadingProgress(userId) {
     const rows = (data || []).filter((r) => isReadingSlug(r.slug));
     const merged = mergeReadingSet(local, rows);
 
-    let changed = merged.size !== initial.size;
+    changed = merged.size !== initial.size;
     if (merged.size !== local.size) {
-      persistPassedTexts(merged, userId);
+      if (!persistPassedTexts(merged, userId)) ukWritten = false; // 목적지 쓰기 실패 반영(P3-8)
     }
 
     // 로컬 전용(서버 미기록) 통과분은 서버로 밀어 올린다
@@ -381,29 +429,41 @@ export async function pullReadingProgress(userId) {
       .filter((id) => !remoteIds.has(id))
       .map((id) => ({ user_id: userId, lang: READING_LANG, slug: readingSlug(id), read: true }));
     if (toPush.length) {
-      await supabase.from('user_ref_progress').upsert(toPush, { onConflict: 'user_id,lang,slug' });
+      const { error: pushErr } = await supabase
+        .from('user_ref_progress')
+        .upsert(toPush, { onConflict: 'user_id,lang,slug' });
+      if (pushErr) bulkFailed = true; // resolved {error} — 게스트 보존·백필 중단·호출부 전파(P2-5)
     }
 
-    // 로그인 동기화 백필 — 통과(rt:) 글인데 grammar_review 에 재검증 큐가 없는 것을 등록한다.
-    // 통과 시점 등록(handlePass·recordPass)이 비로그인·타기기에서 일어났으면 이 계정 큐가
-    // 비어 있으므로, pull 이 유일한 회복 지점이다. 기존 큐를 먼저 조회해 중복을 걸러낸다
-    // (missingReviewSlugs — grammarSrs 백필 관행). 조회 실패 시엔 건너뛴다: 중복 방지
-    // 근거 없이 enqueue 하지 않는다(다음 pull 에서 자연 재시도).
-    if (merged.size) {
-      const { data: queued, error: qErr } = await supabase
-        .from('grammar_review')
-        .select('slug')
-        .eq('user_id', userId)
-        .eq('lang', READING_LANG)
-        .like('slug', 'rt:%');
-      if (!qErr) {
-        for (const slug of missingReviewSlugs(merged, (queued || []).map((r) => r.slug))) {
-          enqueueGrammarReview(userId, READING_LANG, slug); // fire-and-forget·ignoreDuplicates
+    if (!bulkFailed) {
+      // push 성공(또는 push 불필요) + uk 쓰기 성공 → 이제 게스트 승계 완료로 보고 원본을 비운다
+      // (A→B 복제 차단, P2-7). ukWritten 이 false 면 목적지 보존 실패라 게스트를 남긴다(P3-8).
+      if (hadGuest && ukWritten) writeSetToKey(guestReadingKey(), new Set());
+
+      // 로그인 동기화 백필 — 통과(rt:) 글인데 grammar_review 에 재검증 큐가 없는 것을 등록한다.
+      // 통과 시점 등록(handlePass·recordPass)이 비로그인·타기기에서 일어났으면 이 계정 큐가
+      // 비어 있으므로, pull 이 유일한 회복 지점이다. 기존 큐를 먼저 조회해 중복을 걸러낸다
+      // (missingReviewSlugs — grammarSrs 백필 관행). 조회 실패 시엔 건너뛴다: 중복 방지
+      // 근거 없이 enqueue 하지 않는다(다음 pull 에서 자연 재시도).
+      // bulk push 실패 시엔 여기까지 오지 않는다 — 서버가 통과를 모르는 채 SRS 백필을 걸지 않는다.
+      if (merged.size) {
+        const { data: queued, error: qErr } = await supabase
+          .from('grammar_review')
+          .select('slug')
+          .eq('user_id', userId)
+          .eq('lang', READING_LANG)
+          .like('slug', 'rt:%');
+        if (!qErr) {
+          for (const slug of missingReviewSlugs(merged, (queued || []).map((r) => r.slug))) {
+            enqueueGrammarReview(userId, READING_LANG, slug); // fire-and-forget·ignoreDuplicates
+          }
         }
       }
     }
-    return changed;
   } catch {
     return local.size !== initial.size; // 예외 시에도 게스트 승계 변경은 알린다
   }
+  // bulk {error} 는 호출부(doPass)로 전파 — 기존 "push 부터 재시도" UI 에 연결(refresh 반복 금지, P2-5).
+  if (bulkFailed) throw new Error('reading bulk upsert failed');
+  return changed;
 }
