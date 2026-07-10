@@ -61,7 +61,10 @@ async function stopServer() {
 function runtimeErrors(page) {
   const errors = [];
   page.on('console', (message) => {
-    if (message.type() === 'error') errors.push(`console.error: ${message.text()}`);
+    if (message.type() === 'error') {
+      const source = message.location().url;
+      errors.push(`console.error${source ? ` [${source}]` : ''}: ${message.text()}`);
+    }
   });
   page.on('pageerror', (error) => errors.push(`pageerror: ${error.stack || error.message}`));
   return errors;
@@ -89,7 +92,7 @@ function base64urlJson(value) {
   return Buffer.from(JSON.stringify(value)).toString('base64url');
 }
 
-function fakeAdminSession() {
+function fakeSession(role = 'admin') {
   const now = Math.floor(Date.now() / 1000);
   const user = {
     id: '00000000-0000-4000-8000-000000000071',
@@ -107,7 +110,15 @@ function fakeAdminSession() {
   };
   const accessToken = [
     base64urlJson({ alg: 'HS256', typ: 'JWT' }),
-    base64urlJson({ sub: user.id, aud: 'authenticated', role: 'authenticated', email: user.email, iat: now, exp: now + 3600 }),
+    base64urlJson({
+      sub: user.id,
+      aud: 'authenticated',
+      role: 'authenticated',
+      e2e_role: role,
+      email: user.email,
+      iat: now,
+      exp: now + 3600,
+    }),
     'e2e',
   ].join('.');
   return {
@@ -120,7 +131,7 @@ function fakeAdminSession() {
   };
 }
 
-async function mockAdminSupabase(context) {
+async function mockSupabaseSession(context, { role = 'admin' } = {}) {
   // 프로덕션 Next Link가 헤더의 /admin을 viewport prefetch하면 미들웨어의 서버측
   // Supabase 호출은 브라우저 route mock 범위를 벗어난다. 화면 밖 링크의 기회성 prefetch만
   // 막고, 명시적으로 여는 /world와 그 동적 청크는 그대로 실제 네트워크 경로를 탄다.
@@ -137,7 +148,8 @@ async function mockAdminSupabase(context) {
       value: NoopIntersectionObserver,
     });
   });
-  const session = fakeAdminSession();
+  const session = fakeSession(role);
+  const displayName = role === 'admin' ? 'E2E 관리자' : 'E2E 학습자';
   const cors = {
     'access-control-allow-origin': '*',
     'access-control-allow-headers': '*',
@@ -150,6 +162,8 @@ async function mockAdminSupabase(context) {
     headers: { ...cors, ...extraHeaders },
     body: JSON.stringify(body),
   });
+
+  await context.route('**/api/suggestions/today', (route) => json(route, []));
 
   await context.route('**/auth/v1/**', async (route) => {
     if (route.request().method() === 'OPTIONS') {
@@ -176,8 +190,8 @@ async function mockAdminSupabase(context) {
     if (url.pathname.endsWith('/profiles')) {
       await json(route, {
         id: session.user.id,
-        display_name: 'E2E 관리자',
-        role: 'admin',
+        display_name: displayName,
+        role,
         onboarded: true,
         streak_count: 1,
         last_login_at: new Date().toISOString(),
@@ -190,6 +204,27 @@ async function mockAdminSupabase(context) {
     }
     await json(route, []);
   });
+}
+
+async function signInWithMockSession(page, context, role) {
+  await mockSupabaseSession(context, { role });
+  await page.goto('/embed/review', { waitUntil: 'domcontentloaded' });
+  await page.getByPlaceholder('이메일').fill('e2e-admin@example.com');
+  await page.getByPlaceholder('비밀번호').fill('e2e-password');
+  await page.getByRole('button', { name: '로그인', exact: true }).click();
+  await page.waitForFunction(() => document.cookie.includes('auth-token'));
+}
+
+async function seedMockSessionCookie(context, role) {
+  await mockSupabaseSession(context, { role });
+  const projectRef = new URL(config.webServer.env.NEXT_PUBLIC_SUPABASE_URL).hostname.split('.')[0];
+  const value = `base64-${Buffer.from(JSON.stringify(fakeSession(role))).toString('base64url')}`;
+  await context.addCookies([{
+    name: `sb-${projectRef}-auth-token`,
+    value,
+    url: config.use.baseURL,
+    sameSite: 'Lax',
+  }]);
 }
 
 before(async () => {
@@ -214,9 +249,11 @@ after(async () => {
   }
 });
 
-test('reading: 목록에서 글 1을 열고 본문·문항 UI를 렌더한다', { timeout: config.timeout }, async () => {
-  await runInFreshPage(async (page) => {
-    await page.goto('/japanese/reading', { waitUntil: 'domcontentloaded' });
+test('reading: 관리자에게 글 1 본문·문항 UI를 렌더한다', { timeout: config.timeout }, async () => {
+  await runInFreshPage(async (page, context) => {
+    await seedMockSessionCookie(context, 'admin');
+    await page.goto('/japanese/reading', { waitUntil: 'domcontentloaded', timeout: config.timeout });
+    assert.equal(new URL(page.url()).pathname, '/japanese/reading', `admin reading redirected\n${serverOutput}`);
     await assertVisible(page.getByRole('heading', { name: '도쿄 도착', exact: true }), 'reading track heading');
     await page.getByRole('button', { name: /글 1 ·/ }).click();
     await assertVisible(page.getByRole('heading', { name: '여권 확인', exact: true }), 'reading article heading');
@@ -227,14 +264,30 @@ test('reading: 목록에서 글 1을 열고 본문·문항 UI를 렌더한다', 
   });
 });
 
+test('visibility: 일반 사용자에게 미완성 내비와 독해 트랙 진입을 숨긴다', { timeout: config.timeout }, async () => {
+  await runInFreshPage(async (page, context) => {
+    await seedMockSessionCookie(context, 'learner');
+    await page.goto('/lessons?lang=Japanese', { waitUntil: 'domcontentloaded' });
+    await assertVisible(page.getByRole('heading', { name: '교재', exact: true }), 'lessons heading');
+    await assertVisible(page.locator('.gnb__profile-btn[title="E2E 학습자"]'), 'non-admin profile');
+
+    const desktopNav = page.getByRole('navigation', { name: '메인 내비게이션' });
+    const mobileNav = page.getByRole('navigation', { name: '모바일 내비게이션' });
+    assert.equal(await desktopNav.locator('a[href="/learn"]').count(), 0);
+    assert.equal(await desktopNav.locator('a[href="/cohorts"]').count(), 0);
+    assert.equal(await mobileNav.locator('a[href="/learn"]').count(), 0);
+    assert.equal(await page.getByRole('button', { name: /도쿄 도착/ }).count(), 0);
+
+    await page.goto('/japanese/reading', { waitUntil: 'domcontentloaded' });
+    await page.waitForURL((url) => url.pathname === '/home', { timeout: config.timeout });
+    assert.equal(new URL(page.url()).pathname, '/home');
+    assert.equal(await page.getByRole('heading', { name: '도쿄 도착', exact: true }).count(), 0);
+  });
+});
+
 test('world: 가짜 관리자 세션에서 Phaser 캔버스를 마운트한다', { timeout: config.timeout }, async () => {
   await runInFreshPage(async (page, context) => {
-    await mockAdminSupabase(context);
-    await page.goto('/embed/review', { waitUntil: 'domcontentloaded' });
-    await page.getByPlaceholder('이메일').fill('e2e-admin@example.com');
-    await page.getByPlaceholder('비밀번호').fill('e2e-password');
-    await page.getByRole('button', { name: '로그인', exact: true }).click();
-    await page.waitForFunction(() => document.cookie.includes('auth-token'));
+    await signInWithMockSession(page, context, 'admin');
 
     await page.goto('/world', { waitUntil: 'domcontentloaded' });
     await assertVisible(page.getByRole('heading', { name: /^학습 월드/ }), 'world heading');
