@@ -24,6 +24,7 @@
 
 import { execFileSync } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -66,7 +67,34 @@ function fetchText(url) {
     return null;
   }
 }
-const NE = (name) => `https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/${name}.geojson`;
+// 상류 고정(P2-5 #1): master 대신 릴리스 태그로 URL 을 못 박아 상류 드리프트를 차단한다.
+// v5.1.2 의 아래 3개 파일은 현 커밋본 mapData.js 생성에 쓰인 master 판본과 byte-identical 임을
+// 실다운로드로 확인함(SHA-256 일치) — 태그 고정이 재현성을 해치지 않는다.
+const NE_TAG = 'v5.1.2';
+const NE = (name) => `https://raw.githubusercontent.com/nvkelso/natural-earth-vector/${NE_TAG}/geojson/${name}.geojson`;
+
+// ── 다운로드 소스 SHA-256 (P2-5 #1) ──
+// 현 커밋본 생성에 실제로 쓰인 소스의 해시(실다운로드해 계산·기록). 불일치 = 상류 변경 → 경고
+// (상류가 바뀌면 재생성이 더는 byte-identical 이 아닐 수 있다는 조기 신호). 기록 없는 소스는 값만 출력.
+const SOURCE_SHA256 = {
+  ne_10m_admin_0_countries: '239eec57ac17f100a11e2536cffc56752c318b50ae765b0918ff7aab4ce8f255',
+  ne_10m_lakes: '2d036f53dedec578001c5c30c2959ee7d4eebc1306900fa4367c49929ec8f2d9',
+  ne_10m_rivers_lake_centerlines: 'bb854a900ecbd3b408df46d5e16e3e0f974ba55993f9d8b5c26e855273c0905a',
+};
+const sha256 = (text) => createHash('sha256').update(text, 'utf8').digest('hex');
+// name = SOURCE_SHA256 키(파일명). 불일치 시 경고만(중단 아님 — 상류 변경 감지 신호).
+function verifyChecksum(name, text) {
+  const got = sha256(text);
+  const want = SOURCE_SHA256[name];
+  if (!want) { console.log(`  · 체크섬 ${name}: ${got} (기록 없음 — SOURCE_SHA256 에 추가 검토)`); return; }
+  if (got === want) console.log(`  · 체크섬 ${name}: ✓ 일치(${NE_TAG})`);
+  else console.warn(`  ⚠️  체크섬 ${name}: 불일치 — 상류 변경 감지(재생성 byte-identical 깨질 수 있음)\n      기대 ${want}\n      실제 ${got}`);
+}
+
+// 열화(degraded) 생성 허용 플래그(P2-5 #2). 수계 생략·육지 폴백 등 실데이터 결손을 감수하고
+// 기록하려면 명시적으로 --allow-degraded 를 줘야 한다(오케스트레이터의 의식적 결정).
+const ALLOW_DEGRADED = process.argv.includes('--allow-degraded');
+const degradedReasons = [];
 
 // KR·KP·JP 피처만 추출. Natural Earth 속성명 편차(ADM0_A3 / ISO_A2 / NAME) 모두 대응.
 const WANT_A3 = new Set(['KOR', 'PRK', 'JPN']);
@@ -456,6 +484,7 @@ for (const [label, name] of [
   console.log(`  · 시도: Natural Earth ${label} …`);
   const txt = fetchText(NE(name));
   if (!txt) continue;
+  verifyChecksum(name, txt);
   let gj;
   try { gj = JSON.parse(txt); } catch { console.warn('    JSON 파싱 실패'); continue; }
   const feats = (gj.features || []).filter(wantFeature);
@@ -471,6 +500,7 @@ for (const [label, name] of [
 const usedFallback = !polys;
 if (usedFallback) {
   console.warn('  ⚠️  네트워크 데이터 실패 → 하드코딩 폴백 사용(근사치 · 강화도/영종도 없음 · 후속 교체 필요)');
+  degradedReasons.push('육지: NE admin_0_countries 전 후보 실패 → 하드코딩 폴백 폴리곤(강화도·영종도 없음)');
   polys = FALLBACK;
 }
 console.log(`  · 육지 데이터 경로: ${source}`);
@@ -503,9 +533,12 @@ const POI = {
 
 // 2) 호수 오버레이 (code 3) — 폴리곤 래스터화.
 let lakeCount = 0;
+let lakesFetched = false;
 {
   const txt = fetchText(NE('ne_10m_lakes'));
   if (txt) {
+    lakesFetched = true;
+    verifyChecksum('ne_10m_lakes', txt);
     let gj = null; try { gj = JSON.parse(txt); } catch { /* noop */ }
     const lakePolys = [];
     for (const f of (gj?.features || [])) {
@@ -517,14 +550,18 @@ let lakeCount = 0;
     console.log(`  · 호수: ${lakePolys.length}개 폴리곤 → ${lakeCount} 타일 (${[...LAKE_NAMES].join(', ')})`);
   } else {
     console.warn('  ⚠️  ne_10m_lakes 실패 → 호수 생략(육지/DMZ/교량은 유지)');
+    degradedReasons.push('수계: ne_10m_lakes 다운로드 실패 → 호수 생략');
   }
 }
 
 // 3) 강 오버레이 (code 2) — 폴리라인 래스터화. land 위에만 그린다(바다로 새지 않게).
 let riverCount = 0;
+let riversFetched = false;
 {
   const txt = fetchText(NE('ne_10m_rivers_lake_centerlines'));
   if (txt) {
+    riversFetched = true;
+    verifyChecksum('ne_10m_rivers_lake_centerlines', txt);
     let gj = null; try { gj = JSON.parse(txt); } catch { /* noop */ }
     let lineN = 0;
     for (const f of (gj?.features || [])) {
@@ -546,6 +583,7 @@ let riverCount = 0;
     console.log(`  · 강: ${lineN}개 라인 → ${riverCount} 타일 (${[...RIVER_NAMES].join(', ')})`);
   } else {
     console.warn('  ⚠️  ne_10m_rivers_lake_centerlines 실패 → 강 생략(육지/DMZ/교량은 유지)');
+    degradedReasons.push('수계: ne_10m_rivers_lake_centerlines 다운로드 실패 → 강 생략');
   }
 }
 
@@ -789,6 +827,84 @@ let ok = back.length === grid.length;
 for (let i = 0; ok && i < grid.length; i++) if (back[i] !== grid[i]) ok = false;
 console.log(`  · RLE 왕복 무결성: ${ok ? '✓' : '✗ 불일치'} · 인코딩 길이 ${rle.length}자 (${(rle.length / 1024).toFixed(1)} KB)`);
 if (!ok) { console.error('RLE 왕복 실패 — 중단'); process.exit(1); }
+
+// ── 핵심 계약 검증 (P2-5 #2 · write-before-fail) ─────────────────────────────
+// 파일을 쓰기 전에 게임플레이 불변식을 확인한다. 하나라도 깨지면 exit 1 · mapData.js 미기록
+// (묵음 실패 방지 — 깨진 맵을 커밋본으로 덮어쓰지 않는다). grid 는 이 시점에 최종 상태다.
+{
+  const errors = [];
+  const idx = (x, y) => y * MAP_W + x;
+
+  // ① 서울·도쿄 land — POI 는 질감 분류에서 보호되므로 정확히 LAND 여야 한다.
+  if (grid[idx(POI.SEOUL.x, POI.SEOUL.y)] !== TERRAIN.LAND) errors.push(`서울(${POI.SEOUL.x},${POI.SEOUL.y})이 LAND 아님(코드=${grid[idx(POI.SEOUL.x, POI.SEOUL.y)]})`);
+  if (grid[idx(POI.TOKYO.x, POI.TOKYO.y)] !== TERRAIN.LAND) errors.push(`도쿄(${POI.TOKYO.x},${POI.TOKYO.y})이 LAND 아님(코드=${grid[idx(POI.TOKYO.x, POI.TOKYO.y)]})`);
+
+  // ② 영종대교 존재 — bridge 타일 ≥1.
+  let bridgeN = 0; for (const v of grid) if (v === TERRAIN.BRIDGE) bridgeN++;
+  if (bridgeN < 1) errors.push('영종대교(BRIDGE) 타일 0개');
+
+  // ③ 수계 존재(다운로드 성공 시). 다운로드가 됐는데 0타일이면 파이프라인 버그 → 실패.
+  if (riversFetched && riverCount < 1) errors.push('강 소스 다운로드 성공했으나 RIVER 타일 0개(파이프라인 이상)');
+  if (lakesFetched && lakeCount < 1) errors.push('호수 소스 다운로드 성공했으나 LAKE 타일 0개(파이프라인 이상)');
+
+  // ④ 펜스 존재 + 연속 — 단일 4-연결 성분이고, 서울에서 BFS(isBlocked: sea·fence 차단)해도
+  //    개성(126.55,37.97)·평양(125.75,39.03)에 못 닿아야 한다(국경 완전 봉인).
+  const fs = [];
+  for (let i = 0; i < grid.length; i++) if (grid[i] === TERRAIN.FENCE) fs.push(i);
+  if (fs.length <= 40) {
+    errors.push(`펜스 타일 부족(${fs.length}≤40)`);
+  } else {
+    const set = new Set(fs);
+    const seen = new Set([fs[0]]); const stack = [fs[0]];
+    while (stack.length) {
+      const i0 = stack.pop(); const x = i0 % MAP_W, y = (i0 / MAP_W) | 0;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const ni = (y + dy) * MAP_W + (x + dx);
+        if (set.has(ni) && !seen.has(ni)) { seen.add(ni); stack.push(ni); }
+      }
+    }
+    if (seen.size !== fs.length) errors.push(`펜스 불연속(${seen.size}/${fs.length} 만 4-연결)`);
+  }
+  // 국경 봉인 도달성(펜스 양끝 우회까지 잡는 진짜 게이트).
+  const reach = new Uint8Array(grid.length);
+  const start = idx(POI.SEOUL.x, POI.SEOUL.y);
+  const st = [start]; reach[start] = 1;
+  const isBlk = (c) => c === TERRAIN.SEA || c === TERRAIN.FENCE;
+  while (st.length) {
+    const i0 = st.pop(); const x = i0 % MAP_W, y = (i0 / MAP_W) | 0;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nx = x + dx, ny = y + dy;
+      if (nx < 0 || ny < 0 || nx >= MAP_W || ny >= MAP_H) continue;
+      const ni = ny * MAP_W + nx;
+      if (!reach[ni] && !isBlk(grid[ni])) { reach[ni] = 1; st.push(ni); }
+    }
+  }
+  const kaesong = projR(126.55, 37.97), pyongyang = projR(125.75, 39.03);
+  if (reach[idx(kaesong.x, kaesong.y)]) errors.push('국경 미봉인 — 서울에서 개성 도달 가능(철조망 우회로)');
+  if (reach[idx(pyongyang.x, pyongyang.y)]) errors.push('국경 미봉인 — 서울에서 평양 도달 가능(철조망 우회로)');
+
+  if (errors.length) {
+    console.error('❌ 핵심 계약 위반 — mapData.js 미기록(파일 쓰기 전 중단):');
+    for (const e of errors) console.error(`   · ${e}`);
+    process.exit(1);
+  }
+  console.log(`  · 핵심 계약 검증: ✓ (서울·도쿄 land · 영종대교 · 수계 · 펜스 연속 · 국경 봉인)`);
+}
+
+// ── 열화(degraded) 게이트 (P2-5 #2) ──
+// 수계 생략·육지 폴백처럼 실데이터가 빠진 채로 기록하는 건 오케스트레이터의 의식적 결정이어야 한다.
+// --allow-degraded 없이는 exit 1 로 명시적 실패(묵음 폴백 채택 방지). ETOPO 고도 폴백은 설계상
+// 허용된 텍스처 폴백이라 여기 포함하지 않는다(현 커밋본도 이 상태로 정상 생성됨).
+if (degradedReasons.length && !ALLOW_DEGRADED) {
+  console.error('❌ 열화 생성 — 실데이터 결손으로 중단(mapData.js 미기록):');
+  for (const r of degradedReasons) console.error(`   · ${r}`);
+  console.error('   폴백본을 의도적으로 기록하려면 --allow-degraded 로 재실행하세요.');
+  process.exit(1);
+}
+if (degradedReasons.length) {
+  console.warn('  ⚠️  --allow-degraded — 실데이터 결손을 감수하고 기록합니다:');
+  for (const r of degradedReasons) console.warn(`      · ${r}`);
+}
 
 // ── mapData.js 산출 ──
 const banner = `// ⚠️ 자동 생성 파일 — 직접 수정 금지. 재생성: node scripts/world/build-map.mjs

@@ -161,6 +161,9 @@ export default function WorldPage() {
   // net.onStatus('duplicate') — 다른 기기/탭에서 이미 접속 중이라 이 세션은 멀티를 포기했다.
   // 월드 진입 자체는 막지 않는다(솔로는 계속 가능) — 안내 배너 + 재시도만 노출.
   const [worldDuplicate, setWorldDuplicate] = useState(false);
+  // 중복 접속 판정 방식: 'lease'(world_sessions 서버 권위) | 'presence'(마이그레이션
+  // 미적용 강등 — UX 가드). 강등일 때만 상태줄에 작은 표기(과하지 않게 — 툴팁 수준).
+  const [worldGuard, setWorldGuard] = useState(null);
 
   // GBC 셸 → GameCanvas 입력 주입 핸들. GameCanvas가 마운트 시 { press,release,interact,cancel }를 채운다.
   const controlsRef = useRef(null);
@@ -261,7 +264,12 @@ export default function WorldPage() {
 
     // 같은 계정의 다른 세션이 이미 접속 중이면 net이 스스로 멀티를 포기(솔로 유지)하고
     // 'duplicate'를 알려온다 — 배너로 안내하고, 그 외 상태(connected 등)에서는 배너를 접는다.
-    net.onStatus((s) => { if (!cancelled) setWorldDuplicate(s === 'duplicate'); });
+    // connected 의 info.enforcement 로 판정 방식(서버 임대/강등 휴리스틱)도 함께 받는다.
+    net.onStatus((s, info) => {
+      if (cancelled) return;
+      setWorldDuplicate(s === 'duplicate');
+      if (s === 'connected') setWorldGuard(info?.enforcement || null);
+    });
 
     // net이 준 원격 목록(Map<id,{x,y,dir,name,pet,at}>)의 최신본 — stale 정리용.
     let latestPeers = new Map();
@@ -323,6 +331,7 @@ export default function WorldPage() {
       setMicOn(false);
       setNearVoiceCount(0);
       setWorldDuplicate(false);
+      setWorldGuard(null);
       bus.emit('peers:update', new Map()); // 남은 원격 캐릭터 정리
     };
   }, [userId]);
@@ -409,6 +418,15 @@ export default function WorldPage() {
         <div style={{ marginLeft: 'auto', fontFamily: GBC.font, fontSize: '0.72rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
           {species.emoji} Lv.{petState.level} · {moodLine}
           {micOn && nearVoiceCount > 0 && <span> · 🎤 {nearVoiceCount}</span>}
+          {/* 강등 모드(서버 임대 미적용 — presence 휴리스틱) 표기는 작게, 툴팁으로 부연만. */}
+          {worldGuard === 'presence' && (
+            <span
+              title="중복 접속 확인이 간이 방식으로 동작 중이에요 (서버 확인 미적용)"
+              style={{ opacity: 0.65, fontSize: '0.62rem' }}
+            >
+              {' '}· 간이 보호
+            </span>
+          )}
         </div>
       </div>
 

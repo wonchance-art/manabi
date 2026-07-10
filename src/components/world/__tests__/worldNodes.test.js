@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { WORLD_NODES, getNode, downsampleMinimap, buildMinimap } from '../worldNodes.js';
 import { decodeMap, MAP_W, MAP_H, TERRAIN, isBlocked } from '../mapData.js';
+import { buildPlayableGrid } from '../../../lib/world/mapGeo.js';
 
 // 🧭 장소 노드 시스템 무결성 + 미니맵 다운샘플(순수 함수) 검증.
 // mapData(무수정, 소비만)의 실제 디코드 격자에 대해 노드가 통행 가능 타일 위에 있는지,
@@ -140,9 +141,10 @@ describe('미니맵 다운샘플(순수 함수)', () => {
     expect(codes[by * w + bx]).toBe(TERRAIN.FENCE);
   });
 
-  it('buildMinimap() 은 현재 맵을 디코드해 downsample 과 동일 결과', () => {
+  it('buildMinimap() 은 플레이 가능 격자(광장 SEA→LAND)를 downsample 한 결과', () => {
+    // buildMinimap 은 buildPlayableGrid 를 거쳐 런타임·관리자 뷰와 동일 산출을 그린다(P2-6).
     const a = buildMinimap(4);
-    const b = downsampleMinimap(decodeMap(), 4);
+    const b = downsampleMinimap(buildPlayableGrid(decodeMap()), 4);
     expect(a.w).toBe(b.w);
     expect(Array.from(a.codes)).toEqual(Array.from(b.codes));
   });

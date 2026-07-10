@@ -2,7 +2,42 @@
 // mapData.js(자동 생성 파일, 직접 수정 금지)는 읽기 전용으로만 참조한다.
 // React/Next/Supabase 등 브라우저 의존 없음 — vitest(node 환경)에서 그대로 임포트 가능.
 
-import { GEO, MAP_W, MAP_H, TERRAIN, isLandAt } from '../../components/world/mapData';
+import { GEO, MAP_W, MAP_H, TERRAIN, isLandAt, POI } from '../../components/world/mapData';
+
+// ── 스폰 광장 → 플레이 가능 격자 변환 (순수 함수 · 결정적 · 단일 진실원) ──
+// GameCanvas 런타임·관리자 뷰(WorldMapPage)·미니맵(buildMinimap)이 모두 이 함수를 거쳐
+// "플레이 가능 격자"를 얻는다. 예전엔 GameCanvas 안에서만 광장을 메꿔(43타일) 관리자 뷰·
+// 미니맵이 raw 격자를 그려 런타임과 어긋났다(P2-6). 이제 산출을 한 곳에 고정한다.
+//
+// 스폰 반경(타일). GameCanvas 장식 비움 반경과 동일값 — 여기서 단일 정의해 배포한다.
+export const PLAZA_R = 5;
+
+// 광장 SEA→LAND 메꿈 사각형 경계(서울 스폰 ~ 인천공항 일대). POI 에서 결정적으로 산출.
+export function plazaBounds() {
+  return {
+    x0: Math.min(POI.INCHEON.x, POI.SEOUL.x) - 1,
+    x1: POI.SEOUL.x + PLAZA_R + 1,
+    y0: POI.SEOUL.y - PLAZA_R - 1,
+    y1: POI.SEOUL.y + PLAZA_R + 1,
+  };
+}
+
+// rawGrid(mapData.decodeMap() 산출) → 플레이 가능 격자.
+// 스폰 광장 사각형 안의 SEA 타일만 LAND 로 메꾼다(광장이 바다에 잘리지 않게). 목적이 그뿐이므로
+// SEA 한정 — RIVER·LAKE·FENCE·BRIDGE 는 절대 건드리지 않는다(무차별 LAND 강제는 한강을 지우고
+// 영종대교를 없애며 서측 철조망에 구멍을 뚫어 국경을 여는 회귀를 냈다). 입력 불변(복사본 반환).
+export function buildPlayableGrid(rawGrid) {
+  const grid = Uint8Array.from(rawGrid);
+  const { x0, x1, y0, y1 } = plazaBounds();
+  for (let ty = y0; ty <= y1; ty++) {
+    for (let tx = x0; tx <= x1; tx++) {
+      if (tx < 0 || ty < 0 || tx >= MAP_W || ty >= MAP_H) continue;
+      const i = ty * MAP_W + tx;
+      if (grid[i] === TERRAIN.SEA) grid[i] = TERRAIN.LAND;
+    }
+  }
+  return grid;
+}
 
 // 타일 좌표 → [lon, lat] — mapData.project()의 역함수.
 // project: x = (lon - LON0) * KX, y = (LAT0 - lat) * KY

@@ -3,6 +3,9 @@ import {
   MAP_W, MAP_H, GEO, project, unproject, POI, MAP_RLE, decodeMap, isLandAt,
   TERRAIN, isBlocked,
 } from '../mapData.js';
+// 🏙️ 광장 변환의 단일 진실원 — GameCanvas 런타임이 실제로 쓰는 순수 함수. 테스트가 로직을
+// 재구현하지 않고 이 실함수를 import 해 계약을 게이트한다(P2-6 — 런타임 회귀 실검출).
+import { buildPlayableGrid, plazaBounds, PLAZA_R } from '../../../lib/world/mapGeo.js';
 
 // 🗺️ 광장 맵(한반도+일본 실비율 도트 맵 + 수계·DMZ·교량) 무결성.
 // build-map.mjs 가 구운 mapData.js 를 검증한다: 투영·다치 RLE 왕복·지형 계약·주요 지점.
@@ -392,15 +395,15 @@ describe('국경 도달성 (서울 BFS → 개성·평양 도달 불가)', () =>
 // 🏙️ 수도권 스폰 광장 "land 강제" 계약 — GameCanvas 런타임 오버레이가 지켜야 할 불변식.
 // 광장 보장은 SEA 타일에만 적용해야 한다. RIVER·LAKE·FENCE·BRIDGE 를 LAND 로 덮으면
 // 한강이 사라지고(#1) 영종대교가 지워지며(#1) 철조망에 구멍이 뚫려 국경이 뚫린다(#2).
-describe('수도권 광장 land 강제 계약 (SEA 타일에만)', () => {
+describe('수도권 광장 land 강제 계약 (SEA 타일에만 · 실함수 buildPlayableGrid)', () => {
   const grid = decodeMap();
-  // GameCanvas 와 동일한 광장 사각형 경계(PLAZA_R=5).
-  const PLAZA_R = 5;
-  const px0 = Math.min(POI.INCHEON.x, POI.SEOUL.x) - 1;
-  const px1 = POI.SEOUL.x + PLAZA_R + 1;
-  const py0 = POI.SEOUL.y - PLAZA_R - 1;
-  const py1 = POI.SEOUL.y + PLAZA_R + 1;
-  const inRect = (x, y) => x >= px0 && x <= px1 && y >= py0 && y <= py1;
+  // 실함수(GameCanvas 런타임·미니맵·관리자 뷰가 공유)가 산출하는 플레이 격자.
+  const playable = buildPlayableGrid(grid);
+  const { x0: px0, x1: px1, y0: py0, y1: py1 } = plazaBounds();
+  const countAll = (g, code) => {
+    let n = 0; for (let i = 0; i < g.length; i++) if (g[i] === code) n++;
+    return n;
+  };
   const countIn = (g, code) => {
     let n = 0; for (let y = py0; y <= py1; y++) for (let x = px0; x <= px1; x++) if (g[y * MAP_W + x] === code) n++;
     return n;
@@ -421,21 +424,44 @@ describe('수도권 광장 land 강제 계약 (SEA 타일에만)', () => {
     return !!seen[k.y * MAP_W + k.x]; // 개성 도달?
   };
 
+  it('plazaBounds 는 PLAZA_R·POI 로 결정되는 광장 사각형', () => {
+    expect(px0).toBe(Math.min(POI.INCHEON.x, POI.SEOUL.x) - 1);
+    expect(px1).toBe(POI.SEOUL.x + PLAZA_R + 1);
+    expect(py0).toBe(POI.SEOUL.y - PLAZA_R - 1);
+    expect(py1).toBe(POI.SEOUL.y + PLAZA_R + 1);
+  });
+
   it('광장 사각형 안에 RIVER·FENCE·BRIDGE 타일이 실재한다(맹목적 land 강제의 피해 대상)', () => {
     expect(countIn(grid, TERRAIN.RIVER)).toBeGreaterThan(0);
     expect(countIn(grid, TERRAIN.FENCE)).toBeGreaterThan(0);
     expect(countIn(grid, TERRAIN.BRIDGE)).toBeGreaterThan(0);
   });
 
-  it('SEA 타일에만 강제 시: 한강·영종대교 보존 + 국경 봉인 유지', () => {
-    const g = Uint8Array.from(grid);
-    for (let y = py0; y <= py1; y++) for (let x = px0; x <= px1; x++) {
-      const i = y * MAP_W + x; if (g[i] === TERRAIN.SEA) g[i] = TERRAIN.LAND;
+  it('buildPlayableGrid 는 입력 격자를 변형하지 않는다(순수 · 복사본 반환)', () => {
+    const before = Uint8Array.from(grid);
+    buildPlayableGrid(grid);
+    expect(Array.from(grid)).toEqual(Array.from(before));
+  });
+
+  it('실함수: 광장 안 SEA 를 LAND 로 메꾼다(≥1타일) · 사각형 밖은 불변', () => {
+    // 광장 안에서 SEA 는 사라지고 그만큼 LAND 가 늘어난다.
+    expect(countIn(playable, TERRAIN.SEA)).toBeLessThan(countIn(grid, TERRAIN.SEA));
+    // 사각형 밖 타일은 한 개도 바뀌지 않는다.
+    let outsideChanged = 0;
+    for (let y = 0; y < MAP_H; y++) for (let x = 0; x < MAP_W; x++) {
+      const inRect = x >= px0 && x <= px1 && y >= py0 && y <= py1;
+      if (!inRect && playable[y * MAP_W + x] !== grid[y * MAP_W + x]) outsideChanged++;
     }
-    expect(countIn(g, TERRAIN.RIVER)).toBe(countIn(grid, TERRAIN.RIVER));    // 한강 보존
-    expect(countIn(g, TERRAIN.BRIDGE)).toBe(countIn(grid, TERRAIN.BRIDGE));  // 영종대교 보존
-    expect(countIn(g, TERRAIN.FENCE)).toBe(countIn(grid, TERRAIN.FENCE));    // 철조망 보존
-    expect(reachNorth(g)).toBe(false);                                       // 개성 도달 불가(봉인)
+    expect(outsideChanged).toBe(0);
+  });
+
+  it('실함수 계약: 한강(RIVER)·영종대교(BRIDGE)·철조망(FENCE) 전량 보존 + 국경 봉인 유지', () => {
+    // 전 격자 기준으로 수계·다리·펜스 타일 총량이 그대로여야 한다(SEA 한정 강제의 증명).
+    expect(countAll(playable, TERRAIN.RIVER)).toBe(countAll(grid, TERRAIN.RIVER));
+    expect(countAll(playable, TERRAIN.BRIDGE)).toBe(countAll(grid, TERRAIN.BRIDGE));
+    expect(countAll(playable, TERRAIN.FENCE)).toBe(countAll(grid, TERRAIN.FENCE));
+    // 국경 봉인: 플레이 격자에서 서울 BFS → 개성 도달 불가.
+    expect(reachNorth(playable)).toBe(false);
   });
 
   it('맹목적 land 강제(전 타일 → LAND)는 국경을 뚫는다 — 그래서 SEA 한정이 필요', () => {

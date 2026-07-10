@@ -36,8 +36,16 @@ export function arraysEqual(a, b) {
   return true;
 }
 
-/** order 채점 — 조립한 배열이 정답 순서와 완전히 일치할 때만 정답 */
+/**
+ * order 채점 — 조립한 배열이 정답 순서와 완전히 일치할 때만 정답.
+ * fail-closed(P2-4): answer가 비어 있으면(스키마 불충족 문항이 방어망을 뚫고 여기까지 온 경우)
+ * 무조건 오답 — arraysEqual([], [])===true 를 그대로 두면 tiles/answer 가 둘 다 []로 정규화된
+ * 콘텐츠 오류 문항이 "0개 조립"만으로 자동 통과해버린다. normalizeQuestion 이 이런 문항을
+ * qtype:'error'로 갈라내 이 함수 자체가 호출되지 않게 막지만, 이 가드는 그 경로가 우회되거나
+ * 다른 호출부가 생겨도 같은 구멍이 재발하지 않도록 하는 2차 방어선이다.
+ */
 export function gradeOrder(assembled, answer) {
+  if (!Array.isArray(answer) || answer.length === 0) return false;
   return arraysEqual(assembled, answer);
 }
 
@@ -114,6 +122,28 @@ export function splitFill(ja) {
   return { before: s.slice(0, i), after: s.slice(i + FILL_BLANK.length) };
 }
 
+// ── 런타임 스키마 검증(P2-4, fail-closed) ──
+// check-reading.mjs가 콘텐츠 빌드 시점에 order/fill 스키마를 게이트하지만, 뷰어는 그 검증을
+// 다시 거치지 않고 콘텐츠 JSON을 직접 소비한다. 기존 normalizeQuestion은 q.tiles/q.answer가
+// 누락·빈 배열이면 조용히 []/[]로 정규화했고, gradeOrder([], [])===true라 "0개 조립"만으로
+// 자동 통과하는 구멍이 있었다(Codex P2-4). 여기서 스키마를 다시 검증해 불충족 문항은 정상
+// order/fill로 정규화하지 않고 qtype:'error'로 갈라내 게이트를 영구히 막는다(정답 처리 금지).
+/** order 문항 런타임 스키마 — tiles·answer 비어있지 않고 각 원소가 비어있지 않은 문자열. */
+function isOrderSchemaValid(q) {
+  const tiles = q.tiles, answer = q.answer;
+  if (!Array.isArray(tiles) || tiles.length === 0) return false;
+  if (!Array.isArray(answer) || answer.length === 0) return false;
+  const strOk = (x) => typeof x === 'string' && x.trim().length > 0;
+  return tiles.every(strOk) && answer.every(strOk);
+}
+/** fill 문항 런타임 스키마 — ja에 빈칸 마커 정확히 1개 + answer가 비어있지 않은 문자열. */
+function isFillSchemaValid(q) {
+  const ja = typeof q.ja === 'string' ? q.ja : '';
+  const blanks = ja.split(FILL_BLANK).length - 1;
+  if (blanks !== 1) return false;
+  return typeof q.answer === 'string' && q.answer.trim().length > 0;
+}
+
 /**
  * 콘텐츠 문항 → 뷰어 공용 정규화 형태(단일 원천 — 두 뷰어가 같은 필드를 소비).
  * gating = order·fill·pattern(전부 정답이 통과 조건). content·produce 는 비게이트.
@@ -123,10 +153,20 @@ export function splitFill(ja) {
 export function normalizeQuestion(q, key) {
   const base = { key, id: q.id, why: q.why || '' };
   if (q.type === 'order') {
+    // fail-closed(P2-4): 스키마 불충족(tiles/answer 누락·빈 배열·비문자열/빈 문자열 원소)이면
+    // []/[]로 조용히 정규화하지 않고 qtype:'error'로 갈라낸다 — 이 문항은 콘텐츠 오류로 렌더되고
+    // gating:true인 채 채점 경로 자체가 없어(픽커·확정 버튼 미노출) 게이트를 영구히 막는다.
+    if (!isOrderSchemaValid(q)) {
+      return { ...base, qtype: 'error', gating: true, itemKey: q.pattern || null, prompt: q.q || '' };
+    }
     return { ...base, qtype: 'order', gating: true, itemKey: q.pattern, prompt: q.q,
-      tiles: Array.isArray(q.tiles) ? q.tiles : [], answerTiles: Array.isArray(q.answer) ? q.answer : [], ko: q.ko || '' };
+      tiles: q.tiles, answerTiles: q.answer, ko: q.ko || '' };
   }
   if (q.type === 'fill') {
+    // fail-closed(P2-4): 빈칸 마커 부재/복수·answer 누락이면 fill로 정규화하지 않고 콘텐츠 오류로.
+    if (!isFillSchemaValid(q)) {
+      return { ...base, qtype: 'error', gating: true, itemKey: q.pattern || null, prompt: q.q || '' };
+    }
     return { ...base, qtype: 'fill', gating: true, itemKey: q.pattern, prompt: q.q,
       ja: q.ja || '', fillAnswer: q.answer, accept: Array.isArray(q.accept) ? q.accept : [] };
   }
@@ -273,6 +313,7 @@ function QuestionFlow({ questions, textId, onScrollToEvidence, onPass, passLabel
             : q.qtype === 'order' ? '문장 만들기'
             : q.qtype === 'fill' ? '빈칸 채우기'
             : q.qtype === 'produce' ? '문장 만들기 (선택 · 통과 판정 제외)'
+            : q.qtype === 'error' ? '콘텐츠 오류'
             : '문형';
           return (
             <li key={q.key} className="fr-quiz__item">
@@ -410,7 +451,14 @@ function QuestionFlow({ questions, textId, onScrollToEvidence, onPass, passLabel
                     )}
                   </>
                 );
-              })() : (
+              })() : q.qtype === 'error' ? (
+                // ── error: 콘텐츠 스키마 불충족(P2-4 fail-closed) — 게이트 상태로 영구 잠금,
+                // 채점 UI 자체를 노출하지 않는다(정답 처리 금지). "← 목록"으로만 이탈 가능.
+                <div style={{ fontSize: '0.86rem', color: 'var(--danger)', lineHeight: 1.6 }}>
+                  ⚠ 이 문항은 콘텐츠 형식 오류로 표시할 수 없어요. 통과 판정에서 제외되지 않으며
+                  담당자 확인 전까지는 통과할 수 없어요.
+                </div>
+              ) : (
                 // ── pattern·content: 기존 선다 ──
                 <>
                   <div className="fr-quiz__prompt" style={{ marginBottom: 8 }} lang="ja">{q.prompt}</div>

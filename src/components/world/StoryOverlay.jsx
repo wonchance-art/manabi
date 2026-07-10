@@ -270,6 +270,7 @@ export function AirportQuiz({ text, onPass, onExit }) {
                   : q.qtype === 'order' ? '문장 만들기'
                   : q.qtype === 'fill' ? '빈칸 채우기'
                   : q.qtype === 'produce' ? '만들기(선택)'
+                  : q.qtype === 'error' ? '콘텐츠 오류'
                   : '문형'} · {idx + 1}/{qs.length}
               </span>
             </div>
@@ -364,7 +365,16 @@ export function AirportQuiz({ text, onPass, onExit }) {
                   <button type="button" onClick={advanceProduce} style={{ ...gbcButtonPrimary }}>다음 →</button>
                 </>
               );
-            })() : (
+            })() : q.qtype === 'error' ? (
+              // ── error: 콘텐츠 스키마 불충족(P2-4 fail-closed) — 채점 UI 없이 영구 잠금.
+              // 이 문항 자체는 뚫을 방법이 없으므로(정답 처리 금지) 나가기만 제공한다.
+              <>
+                <div style={{ fontSize: '0.8rem', color: GBC.red, lineHeight: 1.6 }}>
+                  ⚠ 이 문항은 콘텐츠 형식 오류로 표시할 수 없어요. 담당자 확인 전까지는 통과할 수 없어요.
+                </div>
+                <button type="button" onClick={onExit} style={{ ...gbcButton }}>나가기</button>
+              </>
+            ) : (
               // ── pattern·content: 기존 선다 ──
               <>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>

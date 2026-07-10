@@ -15,6 +15,7 @@
 // React/Next/Phaser 의존 0 — vitest(node)에서 그대로 임포트해 무결성을 검증한다.
 
 import { POI, MAP_W, MAP_H, TERRAIN, decodeMap, project } from './mapData';
+import { buildPlayableGrid } from '../../lib/world/mapGeo';
 
 // 명산(名山) — 전용 도트 조각. lon/lat 는 build-map.mjs NAMED_PEAKS 와 동일값이라
 // project() 로 얻는 타일이 build-map 이 PEAK 로 보장한 타일과 정확히 일치한다(오프셋 0). peak 필드는
@@ -114,7 +115,9 @@ export function downsampleMinimap(grid, factor = 4) {
   return { w, h, codes };
 }
 
-// 미니맵 편의: 현재 맵을 디코드해 다운샘플(GameCanvas 오버레이가 1회 호출).
+// 미니맵 편의: 현재 맵을 디코드 → 플레이 가능 격자(광장 SEA→LAND)로 변환해 다운샘플.
+// buildPlayableGrid 를 거쳐 런타임 격자·관리자 뷰와 동일 산출을 표시한다(P2-6 — raw 격자 불일치 해소).
+// GameCanvas 미니맵 오버레이가 1회 호출.
 export function buildMinimap(factor = 4) {
-  return downsampleMinimap(decodeMap(), factor);
+  return downsampleMinimap(buildPlayableGrid(decodeMap()), factor);
 }

@@ -6,7 +6,7 @@
  *
  * 실행:
  *   node scripts/check-reading.mjs             트랙 파일 검증(없으면 오류)
- *   node scripts/check-reading.mjs --self-test 내장 픽스처 22종 자가 검출 테스트
+ *   node scripts/check-reading.mjs --self-test 내장 픽스처 36종 자가 검출 테스트
  *
  * 검사 항목(코드):
  *   G1  전 글 newPatterns ∪ 전 드릴 patterns = bunkei N5 pattern 125 전수·중복 0·부재 0
@@ -32,11 +32,15 @@
  *   ID  전 문항·드릴 item의 id 존재 + 트랙 전체 유일 + 형식 검사(P3-11). 누락·중복·형식 위반 = 오류. 신유형(order·fill·produce)도 대상.
  *   Q   문항 스키마(신유형 order/fill/produce 포함, P4). pattern: 정답 유효·choices 4개·choices 내 중복 = 오류(P2-10,
  *       type:'pattern'에만 적용). content: 정답 유효(choices 개수·중복 검사는 면제). order: tiles 비어있지 않음·
- *       answer가 tiles의 순열(멀티셋)·answer.join이 자연 문장(공백 제거 시 일본어)·pattern이 그 글 newPatterns에
- *       존재·ko/why 존재. fill: ja에 ［　］ 정확히 1개·answer 비어있지 않음·accept는 배열(있으면)·치환 후 문장이
- *       일본어·pattern이 그 글 newPatterns에 존재. produce: prompt·model(≥1)·guide 존재(비게이트).
+ *       tiles/answer 각 원소가 비어있지 않은 문자열(비문자열·빈 문자열 = 오류, P2-4)·answer가 tiles의 순열(멀티셋)·
+ *       answer.join이 자연 문장(공백 제거 시 일본어)·pattern이 그 글 newPatterns에 존재·ko/why 존재. fill: ja에
+ *       ［　］ 정확히 1개·answer 비어있지 않음·accept는 배열(있으면)이고 각 원소도 answer와 동일 규칙(비문자열·
+ *       빈 값 = 오류, P2-4)으로 유효·치환 후 문장이 일본어·pattern이 그 글 newPatterns에 존재. produce: prompt·
+ *       model(≥1)·guide 존재(비게이트).
  *       Q-cover: 게이트 문항(pattern|order|fill) ≥1로 신규 문형 전수 커버 — produce·content는 커버 불인정.
- *       Q-style(신규, 오너 지시): 게이트 문항 q에 "본문에서" 포함 = 오류(정해진 글 회상형 발문 금지, content는 예외).
+ *       Q-style(오너 지시, P3-7 확장): 게이트 문항 q에 회상형 지시("본문에서/을/을 보고/에 나온/의 문장" 등,
+ *       공백·줄바꿈 변형 포함 정규식 매칭) = 오류(정해진 글 회상형 발문 금지, content는 예외). "본문" 단어
+ *       자체가 아니라 이 회상 지시 패턴만 차단한다.
  *   FR  〜ました 도입 order 이전 글에 frame:'narration' 금지
  *   DR  drills[].patterns = 표 2 D군 13개 일치·style·afterOrder가 실존 글 order·items ≥1
  *       ·각 item의 q/choices(4)/answer 유효 ·drills[].patterns 전 문형이 items[].pattern으로 ≥1 커버(P1-5)
@@ -540,10 +544,15 @@ function runChecks(track, ctx) {
     for (const q of (t.questions || [])) {
       if (!QUESTION_TYPES.has(q.type)) { E('Q-type', `글${t.order} 문항 type 위반: ${q.type}`); continue; }
 
-      // 발문 스타일 린트(오너 지시, 신규): 게이트 문항의 q에 "본문에서"(정해진 글 회상형 발문) 금지.
-      // content는 예외 — 내용 이해 문항은 본문 참조가 정당하다.
-      if (GATE_TYPES.has(q.type) && typeof q.q === 'string' && q.q.includes('본문에서'))
-        E('Q-style', `글${t.order} 발문에 '본문에서' 금지(정해진 글 회상형 발문): ${q.q}`);
+      // 발문 스타일 린트(오너 지시): 게이트 문항의 q에 정해진 글 회상형 지시("본문에서/을/을 보고/
+      // 에 나온/의 문장" 등) 금지. "본문에서" 문자열 정확 일치만 막으면 "본문을 보고"·"본문에 나온"
+      // 류 동의 회상형 변형이 우회한다(P3-7) — 회상 지시 문구 자체를 정규식으로 커버하되 공백·줄바꿈
+      // 변형(\s*)까지 허용 매칭한다. "본문" 단어 자체가 아니라 이 회상 지시 패턴만 차단하므로
+      // content 예외(위 GATE_TYPES 필터)는 그대로 유지되고, GATE_TYPES 밖의 순수 "본문" 언급은
+      // 애초에 이 분기에 들어오지 않는다.
+      const Q_STYLE_RECALL_RE = /본문\s*(을\s*보고|을|에서|에\s*나온|의\s*문장)/;
+      if (GATE_TYPES.has(q.type) && typeof q.q === 'string' && Q_STYLE_RECALL_RE.test(q.q))
+        E('Q-style', `글${t.order} 발문에 회상형 지시(본문 참조) 금지(정해진 글 회상형 발문): ${q.q}`);
 
       if (q.type === 'pattern' || q.type === 'content') {
         // 기존 선다 검사(choices 4개·중복·최소쌍 경고)는 type:'pattern'에만 적용(오너 지시, P4-7).
@@ -575,9 +584,17 @@ function runChecks(track, ctx) {
         const tiles = Array.isArray(q.tiles) ? q.tiles : [];
         if (!tiles.length) E('Q-order', `글${t.order} order 문항 tiles 비어있음: ${q.id || '(id 없음)'}`);
         const answer = Array.isArray(q.answer) ? q.answer : [];
+        // P2-4: tiles/answer 각 원소가 비어있지 않은 문자열인지 개별 검사(비문자열·빈 문자열·
+        // 동일 객체가 양쪽에 중복 등장하는 경우 포함). isMultisetEqual은 값 동치만 보므로
+        // 같은(비문자열) 원소가 tiles·answer 양쪽에 그대로 들어가면 순열 검사를 통과해버려
+        // 타입 위반이 조용히 새어나간다 — 별도 원소 검사로 막는다.
+        const badTile = tiles.some((x) => typeof x !== 'string' || !x.trim());
+        const badAns = answer.some((x) => typeof x !== 'string' || !x.trim());
+        if (badTile) E('Q-order', `글${t.order} order 문항 tiles에 비문자열/빈 문자열 원소: ${q.id || '(id 없음)'}`);
+        if (badAns) E('Q-order', `글${t.order} order 문항 answer에 비문자열/빈 문자열 원소: ${q.id || '(id 없음)'}`);
         if (!tiles.length || !answer.length || !isMultisetEqual(tiles, answer))
           E('Q-order', `글${t.order} order 문항 answer가 tiles의 순열 아님: ${q.id || '(id 없음)'}`);
-        else if (!isJaText(answer.join('')))
+        else if (!badTile && !badAns && !isJaText(answer.join('')))
           E('Q-order', `글${t.order} order 문항 answer가 자연 문장 아님(공백 제거 시 일본어 아님): ${answer.join('')}`);
         if (!patternInText(t, q.pattern))
           E('Q-order', `글${t.order} order 문항 pattern이 그 글 newPatterns에 없음: ${q.pattern}`);
@@ -594,6 +611,10 @@ function runChecks(track, ctx) {
         if (!answer) E('Q-fill', `글${t.order} fill 문항 answer 비어있음: ${q.id || '(id 없음)'}`);
         if (q.accept !== undefined && !Array.isArray(q.accept))
           E('Q-fill', `글${t.order} fill 문항 accept가 배열 아님: ${q.id || '(id 없음)'}`);
+        // P2-4: accept 배열 각 원소도 answer와 동일 정규화 규칙(비어있지 않은 문자열)으로 유효해야
+        // 한다 — 빈 값·비문자열이 하나라도 섞이면 채점 시 조용히 무시되거나 오탐을 낸다.
+        if (Array.isArray(q.accept) && q.accept.some((x) => typeof x !== 'string' || !x.trim()))
+          E('Q-fill', `글${t.order} fill 문항 accept에 비문자열/빈 값 원소: ${q.id || '(id 없음)'}`);
         if (blanks === 1 && answer) {
           const filled = ja.replace('［　］', answer);
           if (!isJaText(filled)) E('Q-fill', `글${t.order} fill 문항 치환 후 문장이 일본어 아님: ${filled}`);
@@ -722,7 +743,8 @@ async function buildRealContext() {
   return { patternUniverse, dgroup: DGROUP, vocabPool, placeYomi: PLACE_YOMI, tokenizer, yomiMap, yomiLock, skipFurigana: false, travelCoreCount };
 }
 
-// ── 자가 테스트: 정상 베이스라인 + 결함 주입 31종(기존 26 + 신유형 order/fill/produce 5, P4) ──
+// ── 자가 테스트: 정상 베이스라인 + 결함 주입 36종(기존 26 + 신유형 order/fill/produce 5, P4
+//    + order/fill 원소 스키마·Q-style 회상형 우회 변형 5, P2-4·P3-7) ──
 async function selfTest() {
   const tokenizer = await getTokenizer();
   const clone = (o) => JSON.parse(JSON.stringify(o));
@@ -893,7 +915,7 @@ async function selfTest() {
   // 결함 주입 — [이름, 기대 코드, 변형 함수, 검사대상('error' 기본 | 'warn'), regenLock?].
   // 기존 22종(G1·G4·G5·G6·Q·DR·YLOCK·ID) + G4 v3·YLOCK-gone 4종 = 26종 + 신유형(order/fill/produce,
   // P4) 5종(order 순열 불일치·fill 빈칸 0개·produce 단독 커버 Q-cover 실패·"본문에서" 발문 Q-style·
-  // 신유형 id 누락) = 31종.
+  // 신유형 id 누락) = 31종 + order/fill 원소 스키마·Q-style 회상형 우회 5종(P2-4·P3-7) = 36종.
   const fixtures = [
     ['전수 누락', 'G1-missing', (t) => { t.texts[1].newPatterns = []; }],
     ['중복 도입', 'G1-dup', (t) => { t.texts[1].newPatterns.push('〜です'); }],
@@ -956,6 +978,27 @@ async function selfTest() {
     ['"본문에서" 발문(Q-style, P4)', 'Q-style', (t) => { t.texts[0].questions[0].q = '본문에서 알맞은 것을 고르세요.'; }],
     // ID: 신유형(order) 문항의 id 누락 — ID 검사가 신유형에도 적용됨을 확인.
     ['신유형 id 누락(ID-missing, P4)', 'ID-missing', (t) => { delete t.texts[4].questions[0].id; }],
+    // ── P2-4 신규 3종: order tiles/answer 원소 검사·fill accept 원소 검사 ──
+    // 빈 문자열 타일 — tiles·answer 양쪽에 같은 빈 문자열을 넣어 멀티셋 검사는 통과하지만
+    // 원소 자체가 빈 문자열이라 오류다(런타임 []/[] 자동 통과 봉쇄와 짝을 이루는 빌드 게이트).
+    ['order 빈 문자열 타일(P2-4)', 'Q-order', (t) => {
+      t.texts[4].questions[0].tiles = ['公園', '', '行き', 'ませんか'];
+      t.texts[4].questions[0].answer = ['公園', '', '行き', 'ませんか'];
+    }],
+    // 동일 객체 양배열 — 비문자열(객체) 원소를 같은 참조로 tiles·answer 양쪽에 넣으면 값 동치
+    // 기반 멀티셋 검사(isMultisetEqual)는 통과해버린다 — 원소 타입 검사가 독립적으로 잡아야 한다.
+    ['order 비문자열 동일 객체 양배열(P2-4)', 'Q-order', (t) => {
+      const bad = {};
+      t.texts[4].questions[0].tiles = ['公園', bad, '行き', 'ませんか'];
+      t.texts[4].questions[0].answer = ['公園', bad, '行き', 'ませんか'];
+    }],
+    // fill accept 불량 — 빈 문자열·비문자열이 섞이면 answer와 같은 정규화 규칙 위반.
+    ['fill accept 불량(P2-4)', 'Q-fill', (t) => { t.texts[4].questions[1].accept = ['', 42]; }],
+    // ── P3-7 신규 2종: Q-style 정규식 확장(우회 변형·공백/줄바꿈 변형) ──
+    // "본문에서" 정확 일치만 막던 기존 검사를 우회하는 동의 회상형 표현("본문을 보고").
+    ['Q-style 우회 "본문을 보고"(P3-7)', 'Q-style', (t) => { t.texts[0].questions[0].q = '본문을 보고 알맞은 것을 고르세요.'; }],
+    // 회상 지시 문구 사이 공백/줄바꿈 변형(정규식 \s* 매칭 확인) — "본문" 과 "에서" 사이 줄바꿈.
+    ['Q-style 줄바꿈 변형(P3-7)', 'Q-style', (t) => { t.texts[0].questions[0].q = '본문\n에서 알맞은 것을 고르세요.'; }],
   ];
 
   let detected = 0;

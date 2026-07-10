@@ -14,7 +14,7 @@ import Spinner from '../components/Spinner';
 import Button from '../components/Button';
 import { MAP_W, MAP_H, decodeMap, TERRAIN } from '../components/world/mapData';
 import { WORLD_NODES } from '../components/world/worldNodes';
-import { unproject, isCoastTile } from '../lib/world/mapGeo';
+import { unproject, isCoastTile, buildPlayableGrid } from '../lib/world/mapGeo';
 
 // 타일당 화면 px — 줌 4단계(×1~×4, 2px 기준 정수 배).
 const ZOOM_LEVELS = [2, 4, 6, 8];
@@ -75,12 +75,17 @@ export default function WorldMapPage() {
   const { user, isAdmin, loading } = useAuth();
   const router = useRouter();
 
-  // ── 오프스크린 비트맵(2px/타일, 448×384 → 896×768) — 부팅 1회만 그린다 ──
+  // ── 오프스크린 비트맵(2px/타일, 448×384 → 896×768) — 격자 소스 바뀔 때 다시 그린다 ──
+  // playable: GameCanvas 런타임·미니맵과 동일한 buildPlayableGrid(광장 SEA→LAND) 산출을 표시(P2-6).
+  // raw: build-map.mjs 원본 격자(광장 메꿈 이전). 토글로 43타일 차이를 눈으로 확인할 수 있다.
   const bitmapRef = useRef(null);
   const [bitmapReady, setBitmapReady] = useState(false);
+  const [showPlayable, setShowPlayable] = useState(true);
 
   useEffect(() => {
-    const grid = decodeMap();
+    setBitmapReady(false);
+    const raw = decodeMap();
+    const grid = showPlayable ? buildPlayableGrid(raw) : raw;
     const w = MAP_W * 2, h = MAP_H * 2;
     const off = document.createElement('canvas');
     off.width = w; off.height = h;
@@ -123,7 +128,7 @@ export default function WorldMapPage() {
     ctx.putImageData(img, 0, 0);
     bitmapRef.current = off;
     setBitmapReady(true);
-  }, []);
+  }, [showPlayable]);
 
   // ── 노드 오버레이: worldNodes(장소 노드 시스템) 정적 배선. ──
   const nodes = NODE_MARKERS;
@@ -296,6 +301,9 @@ export default function WorldMapPage() {
         </Button>
         <Button size="sm" variant={showGrid ? 'primary' : 'secondary'} onClick={() => setShowGrid((v) => !v)}>
           {showGrid ? '☑' : '☐'} 화면 격자(10×9)
+        </Button>
+        <Button size="sm" variant={showPlayable ? 'primary' : 'secondary'} onClick={() => setShowPlayable((v) => !v)}>
+          {showPlayable ? '플레이 격자' : 'raw 격자'}
         </Button>
         <Button size="sm" variant="secondary" onClick={resetView}>전체 보기</Button>
       </div>

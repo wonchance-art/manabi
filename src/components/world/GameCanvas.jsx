@@ -37,6 +37,8 @@ import {
 import { MAP_W, MAP_H, decodeMap, TERRAIN, isBlocked, POI } from './mapData';
 // 🧭 장소 노드(도시·공항·항구·랜드마크) + 미니맵 다운샘플(순수 함수).
 import { WORLD_NODES, getNode, buildMinimap } from './worldNodes';
+// 🏙️ 광장 SEA→LAND 메꿈(순수 함수·단일 진실원 — 런타임·관리자 뷰·미니맵 공통).
+import { buildPlayableGrid, PLAZA_R } from '../../lib/world/mapGeo';
 // 🌏 독해 트랙 "도쿄 도착" 글 1 → 월드 스토리 씬(하네다 공항). 공항 씬·텍스트박스·문답 오버레이.
 import { buildAirportScene } from './airportScene';
 import { StoryTextbox, AirportQuiz } from './StoryOverlay';
@@ -71,7 +73,7 @@ const WORLD_H = TILE * ROWS;
 // 장식(나무·꽃·풀숲) 동시 스폰 상한 — 카메라 주변만 생성/재활용하므로 화면 밖은 즉시 회수된다.
 const DECOR_CAP = 128;
 // 스폰 광장 반경(타일) — 이 안은 land 보장 + 장식 비움(플레이어가 갇히지 않게).
-const PLAZA_R = 5;
+// PLAZA_R 은 mapGeo(광장 변환의 단일 진실원)에서 import — 값 이원화 방지.
 const STEP_MS = 200;        // 타일 1칸 이동 시간(기본 — 버스 계약 스케일 불변)
 // ── 달리기(B 홀드 한정) ── B가 눌린 상태에서 방향 입력이 들어와 스텝이 시작될 때만 2배속.
 // STEP_MS 200→100, CHAR_ANIM_MS 100→50. B 탭(짧게)은 여전히 취소/뜻 토글일 뿐(스텝이 없으면 무효).
@@ -925,20 +927,12 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           // ── 지형 격자(한반도+일본 실비율 도트 맵) ──
           // build-map.mjs 가 구운 448×384 다치 격자를 디코드(0=sea·1=land·2=river·3=lake·4=fence·5=bridge).
           // 통행 차단은 isBlocked(sea·fence)만 — river·lake·bridge 는 걸어서 통과 가능(오너 스펙).
-          this.grid = decodeMap();
           // 스폰 광장 보장: 서울(스폰)~인천공항 일대의 "바다"만 land 로 메꾼다.
           //   목적이 광장이 바다에 잘리지 않게 하는 것뿐이므로 SEA 한정 — 무차별 LAND 강제는
-          //   한강(RIVER 21타일)·영종대교(BRIDGE)·서측 철조망(FENCE 10타일)을 지워 국경이 뚫렸다
-          //   (오너 리포트 재현 완료 · mapData "수도권 광장 계약" 테스트가 이 SEA 한정 규칙을 게이트).
-          const px0 = Math.min(POI.INCHEON.x, POI.SEOUL.x) - 1;
-          const px1 = POI.SEOUL.x + PLAZA_R + 1;
-          const py0 = POI.SEOUL.y - PLAZA_R - 1, py1 = POI.SEOUL.y + PLAZA_R + 1;
-          for (let ty = py0; ty <= py1; ty++) {
-            for (let tx = px0; tx <= px1; tx++) {
-              const i = ty * MAP_W + tx;
-              if (tx >= 0 && ty >= 0 && tx < MAP_W && ty < MAP_H && this.grid[i] === TERRAIN.SEA) this.grid[i] = TERRAIN.LAND;
-            }
-          }
+          //   한강(RIVER 21타일)·영종대교(BRIDGE)·서측 철조망(FENCE 10타일)을 지워 국경이 뚫렸다.
+          //   변환은 mapGeo.buildPlayableGrid(순수 함수)에 고정 — 관리자 뷰·미니맵과 동일 산출을
+          //   보장하고(P2-6), mapData "수도권 광장 계약" 테스트가 실함수를 import해 계약을 게이트한다.
+          this.grid = buildPlayableGrid(decodeMap());
           this.signTileX = POI.SEOUL.x + 3; this.signTileY = POI.SEOUL.y - 3;  // 퀘스트 팻말(스폰 곁)
           this.wasNearNodeId = null;
 
