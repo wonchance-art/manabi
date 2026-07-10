@@ -21,6 +21,8 @@ import vocabN1 from './vocab/n1';
 import vocabN5jlptA from './vocab/n5_jlpt_a';
 import vocabN5jlptB from './vocab/n5_jlpt_b';
 import vocabN5jlptC from './vocab/n5_jlpt_c';
+// 여행 코어 화이트리스트(독해 트랙 파일럿) — N5 표준 외 여행 필수어 9개
+import vocabN5travelCore from './vocab/n5_travel_core';
 import vocabN4jlptA from './vocab/n4_jlpt_a';
 import vocabN4jlptB from './vocab/n4_jlpt_b';
 import vocabN4jlptC from './vocab/n4_jlpt_c';
@@ -87,6 +89,9 @@ import bunkeiN3 from './bunkei/n3';
 import bunkeiN2 from './bunkei/n2';
 import bunkeiN1 from './bunkei/n1';
 
+// 독해 트랙(파일럿) — 챕터·문형 사전과 별개의 "글 이해 완주" 레이어
+import readingN5Tokyo from './reading/n5_tokyo';
+
 /** 레벨 메타 — 가이드 로드맵과 같은 웜 그라데이션 */
 export const JA_LEVEL_META = [
   {
@@ -126,7 +131,7 @@ const registry = createRegistry(
   { OT: grammarOT, N5: grammarN5, N4: grammarN4, N3: grammarN3, N2: grammarN2, N1: grammarN1 },
   {
     // W1 보강: vocabN5jlptA… 조립 후 mergeJaVocab(vocabN5, vocabN5jlptA, …) 형태로 여기 추가
-    N5: mergeJaVocab(vocabN5, vocabN5jlptA, vocabN5jlptB, vocabN5jlptC),
+    N5: mergeJaVocab(vocabN5, vocabN5jlptA, vocabN5jlptB, vocabN5jlptC, vocabN5travelCore),
     N4: mergeJaVocab(vocabN4, vocabN4jlptA, vocabN4jlptB, vocabN4jlptC),
     N3: mergeJaVocab(vocabN3, vocabN3jlptA, vocabN3jlptB, vocabN3jlptC, vocabN3jlptD, vocabN3jlptE, vocabN3jlptF, vocabN3jlptG, vocabN3jlptH, vocabN3jlptI, vocabN3jlptJ),
     N2: mergeJaVocab(vocabN2, vocabN2jlptA, vocabN2jlptB, vocabN2jlptC, vocabN2jlptD, vocabN2jlptE, vocabN2jlptF, vocabN2jlptG, vocabN2jlptH, vocabN2jlptI),
@@ -157,5 +162,12 @@ export function countBunkei(levelKey) {
   return b.themes.reduce((sum, t) => sum + t.items.length, 0);
 }
 
-// default export(레지스트리)에도 문형 사전 API 포함 — refLangs가 default를 펼쳐 쓰므로 필수
-export default { ...registry, getBunkei, countBunkei };
+/** 독해 트랙 레지스트리 — 파일럿은 단일 트랙(n5-tokyo) */
+const READING_TRACKS = { 'n5-tokyo': readingN5Tokyo };
+
+export function getReadingTrack(trackId = 'n5-tokyo') {
+  return READING_TRACKS[trackId] || null;
+}
+
+// default export(레지스트리)에도 문형 사전·독해 API 포함 — refLangs가 default를 펼쳐 쓰므로 필수
+export default { ...registry, getBunkei, countBunkei, getReadingTrack };

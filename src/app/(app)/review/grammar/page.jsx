@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { getRefLang } from '@/content/refLangs';
+import { getReadingTrack } from '@/content/japanese';
 import { buildReviewQuiz } from '@/lib/refQuiz';
 import { staggerBackfillRows } from '@/lib/grammarSrs';
 import GrammarReviewSession from '@/views/GrammarReviewSession';
@@ -8,8 +9,51 @@ import GrammarReviewSession from '@/views/GrammarReviewSession';
 export const metadata = { title: '문법 복습 | Anatomy Studio' };
 export const dynamic = 'force-dynamic';
 
+/**
+ * 독해 글 단위 재검증(RT-2·기획 §5) — rt: slug 는 챕터 퀴즈 빌더 대신 해당 글의
+ * pattern 문항을 재출제한다. content 문항은 제외(통과 판정 밖 — RT-14).
+ * 문항을 세션이 이해하는 meaning 퀴즈 형태로 매핑(보기=choices, 정답=choices[answer]).
+ */
+function toReadingItem(row) {
+  const track = getReadingTrack('n5-tokyo');
+  if (!track) return null;
+  const id = row.slug.slice(3); // 'rt:' 제거
+  const text = (track.texts || []).find((t) => t.id === id);
+  if (!text) return null;
+  const patternQ = (text.questions || []).filter((q) => q.type === 'pattern');
+  if (!patternQ.length) return null;
+  const meaning = patternQ.map((q) => ({
+    sentence: q.q,
+    full: q.choices[q.answer],
+    ko: q.why || '',
+    correct: q.choices[q.answer],
+    distractors: q.choices.filter((_, i) => i !== q.answer),
+    pron: null,
+  }));
+  return {
+    srs: {
+      lang: row.lang,
+      slug: row.slug,
+      interval: row.interval,
+      ease_factor: row.ease_factor,
+      repetitions: row.repetitions,
+      next_review_at: row.next_review_at,
+    },
+    lang: row.lang,
+    langCode: 'ja',
+    langName: '독해',
+    flag: '📖',
+    title: text.title || id,
+    order: text.order,
+    level: track.level || 'N5',
+    href: '/japanese/reading',
+    quiz: { meaning, apply: [], produce: [] },
+  };
+}
+
 /** 큐 행 → 세션 아이템 (챕터·퀴즈 조립, 퀴즈 불가 챕터는 null) */
 function toItem(row) {
+  if (typeof row.slug === 'string' && row.slug.startsWith('rt:')) return toReadingItem(row); // 독해 분기
   const ref = getRefLang(row.lang);
   if (!ref) return null;
   const found = ref.getChapter(row.slug);
@@ -127,6 +171,12 @@ export default async function Page() {
 
   // 예정 큐 — 제목만 필요 (퀴즈 조립 없이 가볍게)
   const upcoming = (upcomingRows || []).map(row => {
+    if (typeof row.slug === 'string' && row.slug.startsWith('rt:')) {
+      const track = getReadingTrack('n5-tokyo');
+      const text = track?.texts?.find(t => t.id === row.slug.slice(3));
+      if (!text) return null;
+      return { flag: '📖', level: '독해', order: text.order, title: text.title, href: '/japanese/reading', dueAt: row.next_review_at };
+    }
     const ref = getRefLang(row.lang);
     const ch = ref?.getChapter(row.slug)?.chapter;
     if (!ch) return null;

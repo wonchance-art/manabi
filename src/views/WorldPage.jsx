@@ -95,13 +95,15 @@ function DpadButton({ dir, char, onPress, onRelease, style }) {
 
 // A/B 버튼(원형 크림슨-마젠타) — 동작은 기존과 동일하게 onClick(interact/cancel)에 그대로 배선하고,
 // pointer 이벤트는 "눌림 시 어둡게" 시각 상태(on)만 토글한다(게임/네트워크 배선 무변경).
-function AbButton({ label, ariaLabel, onClick, base, style }) {
+// onHoldStart/onHoldEnd(선택) — B 버튼 홀드 달리기용. pointerdown→Start, up/leave/cancel→End.
+// onClick(탭 취소)은 pointerup 뒤에 발생하므로, 홀드 종료 후에도 기존 탭 동작과 충돌하지 않는다.
+function AbButton({ label, ariaLabel, onClick, base, style, onHoldStart, onHoldEnd }) {
   const [on, setOn] = useState(false);
-  const off = () => setOn(false);
+  const off = () => { setOn(false); onHoldEnd?.(); };
   return (
     <button
       type="button" aria-label={ariaLabel} onClick={onClick}
-      onPointerDown={() => setOn(true)}
+      onPointerDown={() => { setOn(true); onHoldStart?.(); }}
       onPointerUp={off} onPointerLeave={off} onPointerCancel={off}
       onContextMenu={(e) => e.preventDefault()}
       style={{
@@ -155,15 +157,32 @@ export default function WorldPage() {
   const [micBusy, setMicBusy] = useState(false);
   const [nearVoiceCount, setNearVoiceCount] = useState(0);
 
+  // ── 동일 계정 중복 접속 상태 ──
+  // net.onStatus('duplicate') — 다른 기기/탭에서 이미 접속 중이라 이 세션은 멀티를 포기했다.
+  // 월드 진입 자체는 막지 않는다(솔로는 계속 가능) — 안내 배너 + 재시도만 노출.
+  const [worldDuplicate, setWorldDuplicate] = useState(false);
+  // net.onStatus('lease-error') — 임대 판정이 알 수 없는 DB 오류로 실패해 멀티가 차단됐다
+  // (fail-closed, P2-5). presence 강등이 아니라 멀티 자체를 막으므로 안내 + 재시도만 노출.
+  const [worldLeaseError, setWorldLeaseError] = useState(false);
+  // 중복 접속 판정 방식: 'lease'(world_sessions 서버 권위) | 'presence'(마이그레이션
+  // 미적용 강등 — UX 가드). 강등일 때만 상태줄에 작은 표기(과하지 않게 — 툴팁 수준).
+  const [worldGuard, setWorldGuard] = useState(null);
+  // "다시 시도" 재판정(join) 진행 중 — 버튼 비활성화로 연타(중복 claim 발사)를 막는다(P2-4).
+  const [worldRetrying, setWorldRetrying] = useState(false);
+
   // GBC 셸 → GameCanvas 입력 주입 핸들. GameCanvas가 마운트 시 { press,release,interact,cancel }를 채운다.
   const controlsRef = useRef(null);
   const press = useCallback((d) => controlsRef.current?.press(d), []);
   const release = useCallback((d) => controlsRef.current?.release(d), []);
   const interact = useCallback(() => controlsRef.current?.interact(), []);
   const cancel = useCallback(() => controlsRef.current?.cancel(), []);
+  // B 홀드 → 달리기(씬 플래그). 탭(짧게)의 취소 동작은 onClick=cancel 이 그대로 유지한다.
+  const runOn = useCallback(() => controlsRef.current?.runOn?.(), []);
+  const runOff = useCallback(() => controlsRef.current?.runOff?.(), []);
 
   // 네트워크·음성 인스턴스(마운트 1회 생성) — 이벤트 핸들러가 참조.
   const voiceRef = useRef(null);
+  const netRef = useRef(null); // 중복 접속 배너의 "다시 시도" 버튼이 net.join()을 재호출하는 데 씀.
   // 펫 파생의 원천 입력(totalCorrect·todayCorrect·sessionsToday) — 인게임 리뷰 완료 시 낙관 성장에 쓴다.
   const petInputsRef = useRef({ totalCorrect: 0, todayCorrect: 0, sessionsToday: 0 });
 
@@ -240,12 +259,23 @@ export default function WorldPage() {
 
     const { name, pet: petEmoji } = identityRef.current;
     const net = createWorldNet({ userId, name, pet: petEmoji });
+    netRef.current = net;
     const voice = createVoiceMesh({
       selfId: userId,
       sendSignal: net.sendSignal,
       onSignal: net.onSignal,
     });
     voiceRef.current = voice;
+
+    // 같은 계정의 다른 세션이 이미 접속 중이면 net이 스스로 멀티를 포기(솔로 유지)하고
+    // 'duplicate'를 알려온다 — 배너로 안내하고, 그 외 상태(connected 등)에서는 배너를 접는다.
+    // connected 의 info.enforcement 로 판정 방식(서버 임대/강등 휴리스틱)도 함께 받는다.
+    net.onStatus((s, info) => {
+      if (cancelled) return;
+      setWorldDuplicate(s === 'duplicate');
+      setWorldLeaseError(s === 'lease-error');
+      if (s === 'connected') setWorldGuard(info?.enforcement || null);
+    });
 
     // net이 준 원격 목록(Map<id,{x,y,dir,name,pet,at}>)의 최신본 — stale 정리용.
     let latestPeers = new Map();
@@ -303,11 +333,27 @@ export default function WorldPage() {
       net.leave();
       voice.destroy();
       voiceRef.current = null;
+      netRef.current = null;
       setMicOn(false);
       setNearVoiceCount(0);
+      setWorldDuplicate(false);
+      setWorldLeaseError(false);
+      setWorldGuard(null);
+      setWorldRetrying(false);
       bus.emit('peers:update', new Map()); // 남은 원격 캐릭터 정리
     };
   }, [userId]);
+
+  // 중복 접속 배너의 "다시 시도" — net이 스스로 중복 판정을 다시 받도록 join()을 재호출한다.
+  // (leave() 는 호출하지 않음 — leave 후엔 이 net 인스턴스가 영구히 재사용 불가해진다.)
+  // 진행 중엔 버튼을 잠가 중복 claim 발사를 막는다(P2-4 — net 쪽 in-flight 가드와 이중 방어).
+  const retryWorldNet = useCallback(() => {
+    if (worldRetrying) return;
+    setWorldRetrying(true);
+    Promise.resolve(netRef.current?.join())
+      .catch(() => {})
+      .finally(() => setWorldRetrying(false));
+  }, [worldRetrying]);
 
   // 언마운트/페이지 이탈 시 확실히 정리 — pagehide는 모바일 백그라운드 전환도 포함.
   useEffect(() => {
@@ -385,8 +431,59 @@ export default function WorldPage() {
         <div style={{ marginLeft: 'auto', fontFamily: GBC.font, fontSize: '0.72rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
           {species.emoji} Lv.{petState.level} · {moodLine}
           {micOn && nearVoiceCount > 0 && <span> · 🎤 {nearVoiceCount}</span>}
+          {/* 강등 모드(서버 임대 미적용 — presence 휴리스틱) 표기는 작게, 툴팁으로 부연만. */}
+          {worldGuard === 'presence' && (
+            <span
+              title="중복 접속 확인이 간이 방식으로 동작 중이에요 (서버 확인 미적용)"
+              style={{ opacity: 0.65, fontSize: '0.62rem' }}
+            >
+              {' '}· 간이 보호
+            </span>
+          )}
         </div>
       </div>
+
+      {/* ── 중복 접속 안내 (멀티만 차단 — 월드 진입은 그대로, 솔로로 계속) ── */}
+      {worldDuplicate && (
+        <div
+          role="alert"
+          style={{
+            width: '100%', maxWidth: 540, display: 'flex', alignItems: 'center', gap: 10,
+            flexWrap: 'wrap', background: GBC.cream, color: GBC.ink, fontFamily: GBC.font,
+            border: `3px solid ${GBC.border}`, borderRadius: 2, padding: '10px 12px',
+            boxShadow: `inset 0 0 0 2px ${GBC.creamHi}, ${GBC.shadow}`,
+          }}
+        >
+          <span style={{ fontSize: '1.1rem', lineHeight: 1 }}>⚠️</span>
+          <span style={{ flex: 1, fontSize: '0.78rem', lineHeight: 1.4 }}>
+            다른 기기/탭에서 이미 접속 중이에요 — 그쪽을 닫고 다시 시도해 주세요.
+          </span>
+          <Button size="sm" variant="secondary" onClick={retryWorldNet} disabled={worldRetrying}>
+            {worldRetrying ? '확인 중…' : '다시 시도'}
+          </Button>
+        </div>
+      )}
+
+      {/* ── 임대 오류 안내 (fail-closed — 멀티만 차단, 솔로는 계속) ── */}
+      {worldLeaseError && (
+        <div
+          role="alert"
+          style={{
+            width: '100%', maxWidth: 540, display: 'flex', alignItems: 'center', gap: 10,
+            flexWrap: 'wrap', background: GBC.cream, color: GBC.ink, fontFamily: GBC.font,
+            border: `3px solid ${GBC.border}`, borderRadius: 2, padding: '10px 12px',
+            boxShadow: `inset 0 0 0 2px ${GBC.creamHi}, ${GBC.shadow}`,
+          }}
+        >
+          <span style={{ fontSize: '1.1rem', lineHeight: 1 }}>⚠️</span>
+          <span style={{ flex: 1, fontSize: '0.78rem', lineHeight: 1.4 }}>
+            지금은 멀티 접속을 확인할 수 없어 잠시 멈췄어요 — 혼자서는 계속 즐길 수 있어요. 잠시 뒤 다시 시도해 주세요.
+          </span>
+          <Button size="sm" variant="secondary" onClick={retryWorldNet} disabled={worldRetrying}>
+            {worldRetrying ? '확인 중…' : '다시 시도'}
+          </Button>
+        </div>
+      )}
 
       {/* ── GBC 휴대기 셸 ── (라운드 바디 + 베젤/화면 + 십자키·A/B·START/SELECT·스피커 그릴) */}
       <div style={{
@@ -422,7 +519,12 @@ export default function WorldPage() {
             background: SHELL.screenOff, borderRadius: 4, overflow: 'hidden',
             boxShadow: 'inset 0 0 0 2px #12140e',
           }}>
-            <GameCanvas userId={userId} nickname={nickname} pet={pet} controlsRef={controlsRef} />
+            {/* 계정 전환 격리(P1-4): userId 기반 key 로 GameCanvas 를 remount 한다. 전환 시 진행 중
+                공항 스토리·AirportQuiz(미완료 문답)가 통째로 언마운트되어 폐기되므로, A 계정에서 시작한
+                문답이 B 계정으로 기록될 여지가 없다. 이 페이지의 net/voice 는 이미 userId effect 로
+                재배선되고, 캔버스 remount 는 침습이 이 한 줄 key 로 국한돼(GameCanvas 내부 상태 리셋
+                로직 불필요) 가장 단순하고 확실한 경계다. */}
+            <GameCanvas key={userId || 'guest'} userId={userId} nickname={nickname} pet={pet} controlsRef={controlsRef} />
           </div>
         </div>
 
@@ -471,7 +573,7 @@ export default function WorldPage() {
           {/* A/B — A=상호작용(말 걸기), B=취소(리뷰 닫기). 원형 크림슨-마젠타 + 옆 소문자 라벨, 대각 배치. */}
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14, transform: 'rotate(-18deg)' }}>
             <div style={{ display: 'grid', justifyItems: 'center', gap: 3 }}>
-              <AbButton label="B" ariaLabel="B (취소·닫기)" onClick={cancel} base={abBase} />
+              <AbButton label="B" ariaLabel="B (취소·닫기·홀드 달리기)" onClick={cancel} base={abBase} onHoldStart={runOn} onHoldEnd={runOff} />
               <span style={abLabel}>b</span>
             </div>
             <div style={{ display: 'grid', justifyItems: 'center', gap: 3, transform: 'translateY(-12px)' }}>

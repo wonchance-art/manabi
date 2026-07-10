@@ -287,6 +287,10 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
     supabase.from('grammar_review')
       .select('*')
       .eq('user_id', userId).eq('lang', lang)
+      // 독해 트랙 행(slug 'rt:' 접두 — readingProgress.js 네임스페이스)은 챕터 복습이 아니다.
+      // 제외하지 않으면 rt: 행이 limit(2) 슬롯을 잠식해 정작 due 인 챕터 복습을 굶기고,
+      // 아래 ref.getChapter(row.slug) 도 실패해 그 슬롯이 통째로 버려진다.
+      .not('slug', 'like', 'rt:%')
       .lte('next_review_at', dueIso)
       .order('next_review_at', { ascending: true }).limit(2),
     supabase.from('user_ref_progress')

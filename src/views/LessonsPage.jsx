@@ -218,6 +218,21 @@ export default function LessonsPage({ refManifest = {} }) {
             </div>
           </div>
 
+          {/* 독해 트랙 진입(파일럿) — 일본어에서만 노출. 챕터 경로와 별개의 "글 이해 완주" 축 */}
+          {langFilter === 'Japanese' && (
+            <button
+              type="button"
+              className="lessons-continue"
+              onClick={() => router.push('/japanese/reading')}
+            >
+              <span className="lessons-continue__body">
+                <span className="lessons-continue__kicker">📖 독해 트랙 · 파일럿</span>
+                <span className="lessons-continue__title">도쿄 도착 — 여행 이야기로 N5 문형 전수</span>
+              </span>
+              <span className="lessons-continue__meta">열기 →</span>
+            </button>
+          )}
+
           {/* 이어서 학습 — 지금 할 챕터로 한 번에 */}
           {continueTarget && (
             <button
