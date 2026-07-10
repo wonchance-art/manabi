@@ -20,10 +20,12 @@ import { unproject, isCoastTile } from '../lib/world/mapGeo';
 const ZOOM_LEVELS = [2, 4, 6, 8];
 
 // GBC 톤 — 잔디 그린(육지) · 모래(해안) · 바다 블루 + 신규 지형:
-// 강·호수(청록 계열, 통행 가능 물) · DMZ 철조망(적갈) · 교량(다리 갈색).
+// 강·호수(청록 계열, 통행 가능 물) · DMZ 철조망(적갈) · 교량(다리 갈색)
+// + 지형 질감: 산(짙은 녹) · 설산(회백) · 평야(밝은 황록).
 const COLORS = {
   land: '#5f9a46', coast: '#dcc07f', sea: '#3c6e91',
   river: '#3fb0c4', lake: '#2f97b8', fence: '#a6432f', bridge: '#b07a3c',
+  mountain: '#3a5c32', peak: '#c8cdd4', plain: '#9fc85a',
 };
 
 const FONT = 'ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace';
@@ -92,6 +94,9 @@ export default function WorldMapPage() {
     const lakeRgb = hexToRgb(COLORS.lake);
     const fenceRgb = hexToRgb(COLORS.fence);
     const bridgeRgb = hexToRgb(COLORS.bridge);
+    const mountainRgb = hexToRgb(COLORS.mountain);
+    const peakRgb = hexToRgb(COLORS.peak);
+    const plainRgb = hexToRgb(COLORS.plain);
     for (let ty = 0; ty < MAP_H; ty++) {
       for (let tx = 0; tx < MAP_W; tx++) {
         const code = grid[ty * MAP_W + tx];
@@ -101,6 +106,9 @@ export default function WorldMapPage() {
           case TERRAIN.LAKE: rgb = lakeRgb; break;
           case TERRAIN.FENCE: rgb = fenceRgb; break;
           case TERRAIN.BRIDGE: rgb = bridgeRgb; break;
+          case TERRAIN.MOUNTAIN: rgb = mountainRgb; break;
+          case TERRAIN.PEAK: rgb = peakRgb; break;
+          case TERRAIN.PLAIN: rgb = plainRgb; break;
           case TERRAIN.LAND: rgb = isCoastTile(grid, tx, ty) ? coastRgb : landRgb; break;
           default: rgb = seaRgb; break; // SEA
         }
@@ -354,6 +362,9 @@ export default function WorldMapPage() {
           <LegendDot color={COLORS.lake} label="호수" />
           <LegendDot color={COLORS.fence} label="DMZ" />
           <LegendDot color={COLORS.bridge} label="다리" />
+          <LegendDot color={COLORS.mountain} label="산" />
+          <LegendDot color={COLORS.peak} label="설산" />
+          <LegendDot color={COLORS.plain} label="평야" />
         </span>
       </div>
     </div>

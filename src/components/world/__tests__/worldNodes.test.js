@@ -85,10 +85,24 @@ describe('미니맵 다운샘플(순수 함수)', () => {
     expect(codes.length).toBe(w * h);
   });
 
-  it('코드는 4색(sea/land/river/fence)으로만 축약된다', () => {
+  it('코드는 6색(sea/land/river/fence/mountain/peak) 이내로만 축약된다', () => {
     const { codes } = downsampleMinimap(grid, 4);
-    const allowed = new Set([TERRAIN.SEA, TERRAIN.LAND, TERRAIN.RIVER, TERRAIN.FENCE]);
+    const allowed = new Set([TERRAIN.SEA, TERRAIN.LAND, TERRAIN.RIVER, TERRAIN.FENCE, TERRAIN.MOUNTAIN, TERRAIN.PEAK]);
     for (let i = 0; i < codes.length; i++) expect(allowed.has(codes[i])).toBe(true);
+  });
+
+  it('산지·설산이 미니맵에 대표색으로 남는다(PLAIN 은 land 로 접힘)', () => {
+    const { w, codes } = downsampleMinimap(grid, 4);
+    let hasMountain = false, hasPeak = false, hasPlain = false;
+    for (let i = 0; i < codes.length; i++) {
+      if (codes[i] === TERRAIN.MOUNTAIN) hasMountain = true;
+      if (codes[i] === TERRAIN.PEAK) hasPeak = true;
+      if (codes[i] === TERRAIN.PLAIN) hasPlain = true;
+    }
+    expect(hasMountain).toBe(true);
+    expect(hasPeak).toBe(true);
+    expect(hasPlain).toBe(false); // PLAIN → LAND 로 접힘
+    expect(w).toBe(112);
   });
 
   it('결정적 — 두 번 호출 결과 동일', () => {

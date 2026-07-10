@@ -10,6 +10,8 @@
 // 지형 코드 계약(게임플레이 그룹과 합의된 고정):
 //   0=sea(차단) 1=land 2=river(통행 가능 물) 3=lake(통행 가능 물)
 //   4=fence(DMZ, 차단) 5=bridge(바다 위 통행). isBlocked = 0·4 만 true.
+//   6=mountain 7=peak(고산/설산) 8=plain — 순수 시각 질감 레이어(전부 walkable · isBlocked 무변경).
+//   질감은 NOAA ETOPO 2022 고도(ERDDAP griddap CSV) → land 타일 분류. 실패 시 하드코딩 산맥 폴리라인 폴백.
 //
 // 데이터 출처(우선순위):
 //   육지: Natural Earth 10m → 50m → 110m admin_0_countries (KR·KP·JP 피처)
@@ -36,7 +38,12 @@ const MAP_W = 448, MAP_H = 384;
 const MIN_ISLAND = 4; // 이 타일 수 미만의 고립 land 덩어리는 소도서로 간주해 제거(주요 영토만 유지)
 
 // 지형 코드 (게임플레이 그룹과 합의된 고정 계약).
-const TERRAIN = { SEA: 0, LAND: 1, RIVER: 2, LAKE: 3, FENCE: 4, BRIDGE: 5 };
+// 0~5 는 불변. 6·7·8 은 순수 시각 질감 레이어(전부 walkable — isBlocked 무변경).
+//   6=mountain(산지) 7=peak(고산/설산) 8=plain(평야). land 타일 위에만 얹는다.
+const TERRAIN = {
+  SEA: 0, LAND: 1, RIVER: 2, LAKE: 3, FENCE: 4, BRIDGE: 5,
+  MOUNTAIN: 6, PEAK: 7, PLAIN: 8,
+};
 
 // 투영: [lon,lat] → 부동소수 타일 좌표(래스터화용, 반올림 전).
 function projF(lon, lat) {
@@ -216,6 +223,103 @@ function decodeRLE(rle) {
   return grid;
 }
 
+// ── 지형 질감(고도) 파이프라인 — 순수 시각 레이어(통행 규칙 무변경) ─────────────
+// 조건 셀(예: 바다·강)로부터 4-연결 최단 타일 거리(BFS). 조건 셀=0, 도달 불가=0xffff.
+function bfsDist(isSource) {
+  const dist = new Uint16Array(MAP_W * MAP_H).fill(0xffff);
+  const q = [];
+  for (let y = 0; y < MAP_H; y++) {
+    for (let x = 0; x < MAP_W; x++) {
+      if (isSource(x, y)) { const i = y * MAP_W + x; dist[i] = 0; q.push(i); }
+    }
+  }
+  let head = 0;
+  while (head < q.length) {
+    const idx = q[head++];
+    const x = idx % MAP_W, y = (idx / MAP_W) | 0, d = dist[idx];
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nx = x + dx, ny = y + dy;
+      if (nx < 0 || ny < 0 || nx >= MAP_W || ny >= MAP_H) continue;
+      const ni = ny * MAP_W + nx;
+      if (dist[ni] > d + 1) { dist[ni] = d + 1; q.push(ni); }
+    }
+  }
+  return dist;
+}
+
+// 1순위: NOAA ETOPO 2022(60초 그리드)를 ERDDAP griddap bbox 서브셋 CSV로 취득.
+// bbox: 위 46.0 / 아래 30.5 / 좌 123.5 / 우 146.5 (맵 커버 영역). ETOPO 위도 방향 편차 대비 두 방향 시도.
+const ETOPO_URLS = [
+  'https://coastwatch.pfeg.noaa.gov/erddap/griddap/ETOPO_2022_v1_60s.csv?z%5B(46.0):(30.5)%5D%5B(123.5):(146.5)%5D',
+  'https://coastwatch.pfeg.noaa.gov/erddap/griddap/ETOPO_2022_v1_60s.csv?z%5B(30.5):(46.0)%5D%5B(123.5):(146.5)%5D',
+  // 대체 ERDDAP 미러(동일/유사 ETOPO 데이터셋).
+  'https://upwell.pfeg.noaa.gov/erddap/griddap/ETOPO_2022_v1_60s.csv?z%5B(46.0):(30.5)%5D%5B(123.5):(146.5)%5D',
+];
+
+// ERDDAP CSV(0=컬럼명,1=단위,2~=데이터: latitude,longitude,z) → 타일별 평균 고도(m). 실패 시 null.
+function parseEtopoCsv(csv) {
+  const lines = csv.split('\n');
+  if (lines.length < 3) return null;
+  const header = lines[0].split(',').map((s) => s.trim().replace(/^"|"$/g, ''));
+  const iLat = header.indexOf('latitude'), iLon = header.indexOf('longitude'), iZ = header.indexOf('z');
+  if (iLat < 0 || iLon < 0 || iZ < 0) return null;
+  const sum = new Float64Array(MAP_W * MAP_H);
+  const cnt = new Uint32Array(MAP_W * MAP_H);
+  let n = 0;
+  for (let li = 2; li < lines.length; li++) {
+    const row = lines[li];
+    if (!row) continue;
+    const parts = row.split(',');
+    const lat = parseFloat(parts[iLat]), lon = parseFloat(parts[iLon]), z = parseFloat(parts[iZ]);
+    if (!Number.isFinite(lat) || !Number.isFinite(lon) || !Number.isFinite(z)) continue;
+    const tx = Math.round((lon - LON0) * KX), ty = Math.round((LAT0 - lat) * KY);
+    if (tx < 0 || ty < 0 || tx >= MAP_W || ty >= MAP_H) continue;
+    const idx = ty * MAP_W + tx;
+    sum[idx] += z; cnt[idx] += 1; n++;
+  }
+  if (n < 1000) return null;
+  const elev = new Float32Array(MAP_W * MAP_H);
+  for (let i = 0; i < elev.length; i++) elev[i] = cnt[i] ? sum[i] / cnt[i] : NaN;
+  return elev;
+}
+
+// ETOPO 우선 → 미러 → null(폴백으로). 반환 { elev, source } | null.
+function fetchElevation() {
+  for (const url of ETOPO_URLS) {
+    console.log(`  · 고도 시도: ${url.split('?')[0]} …`);
+    const csv = fetchText(url);
+    if (!csv) continue;
+    const elev = parseEtopoCsv(csv);
+    if (elev) return { elev, source: url.split('/griddap/')[0].replace('https://', '') };
+    console.warn('    ETOPO CSV 파싱 실패 — 다음 후보로');
+  }
+  return null;
+}
+
+// ── 폴백 산맥 폴리라인 (하드코딩 · 근사 · 후속 교체 대상) ──
+// ETOPO 실패 시에만 사용. 주요 산맥 능선을 [lon,lat]로 근사하고 좌우 brush 타일로 land 위에 그린다.
+// 태백·소백·낭림·함경·개마고원·일본 알프스·오우·규슈·히다카 — 실측 DEM 아님(경고 출력).
+const MOUNTAIN_RANGES = [
+  [[128.40, 38.60], [128.47, 38.12], [128.54, 37.79], [128.70, 37.40], [128.92, 37.09], [129.00, 36.60], [128.90, 36.10]], // 태백
+  [[128.50, 36.96], [128.10, 36.45], [127.90, 35.95], [127.73, 35.34]],                                                     // 소백(→지리산)
+  [[126.50, 41.50], [126.70, 41.00], [126.95, 40.50], [127.05, 40.00], [127.15, 39.50]],                                    // 낭림
+  [[129.50, 41.50], [128.80, 41.20], [128.30, 41.00], [127.80, 40.70], [127.30, 40.40]],                                    // 함경
+  [[126.80, 41.30], [127.30, 41.40], [127.80, 41.30], [128.20, 41.10]],                                                     // 개마고원(고원)
+  [[127.10, 40.90], [127.60, 40.85], [128.00, 40.80]],                                                                       // 개마고원 남연
+  [[137.60, 36.90], [137.85, 36.50], [137.95, 36.15], [138.20, 35.90], [138.40, 35.60]],                                    // 일본 알프스
+  [[140.80, 40.50], [140.75, 39.90], [140.80, 39.30], [140.60, 38.70], [140.50, 38.10]],                                    // 오우(도호쿠)
+  [[130.80, 33.20], [131.10, 32.88], [131.30, 32.60], [131.05, 32.30]],                                                     // 규슈 산지
+  [[142.90, 43.30], [142.80, 42.80], [143.00, 42.40]],                                                                       // 히다카(홋카이도)
+];
+const MOUNTAIN_BRUSH = 2; // 능선 좌우 반경(타일) → 폭 ~2·brush+1
+// 폴백 고봉(설산) — 이 좌표 주변 1링을 PEAK 로 승격(설악·지리·아소·일본알프스 최고봉 근사).
+const PEAK_POINTS_FALLBACK = [[128.47, 38.12], [127.73, 35.34], [131.10, 32.88], [138.10, 36.30]];
+// 랜드마크 고봉 — 타일+1링 PEAK 보장 + POI. (백두산·후지산)
+const LANDMARKS = [
+  { key: 'BAEKDU', name: '백두산', lon: 128.056, lat: 42.006 },
+  { key: 'FUJI', name: '후지산', lon: 138.727, lat: 35.361 },
+];
+
 // ── 하드코딩 폴백 폴리곤 (출처 없음 · 손그림 근사 · 후속 교체 대상) ──
 // 네트워크 실패 시에만 사용. 주요 해안 정점 수십 개로 대륙 실루엣만 근사한다.
 // [lon,lat] 시계열 — 실데이터가 아니므로 정확도 보장 안 함(경고 출력).
@@ -291,6 +395,22 @@ console.log(`  · 래스터화: land ${landCount} 타일 / ${MAP_W * MAP_H} (소
 
 const setTile = (x, y, v) => { if (x >= 0 && y >= 0 && x < MAP_W && y < MAP_H) grid[y * MAP_W + x] = v; };
 const getTile = (x, y) => (x >= 0 && y >= 0 && x < MAP_W && y < MAP_H) ? grid[y * MAP_W + x] : 0;
+
+// 주요 지점(투영 산출) — 도시·공항·항만 + 랜드마크 고봉. 질감 분류 보호(POI 타일은 LAND 유지)에
+// 미리 필요하므로 오버레이 이전에 정의한다. 검산은 실행 후반부에서 수행.
+const POI = {
+  SEOUL: projR(126.98, 37.57),
+  INCHEON: projR(126.44, 37.46),        // 인천국제공항 (영종도)
+  BUSAN: projR(129.07, 35.18),
+  FUKUOKA: projR(130.40, 33.59),
+  TOKYO: projR(139.69, 35.68),
+  HANEDA: projR(139.78, 35.55),         // 하네다 공항
+  GIMHAE_AIR: projR(128.938, 35.179),   // 김해국제공항
+  BUSAN_TERMINAL: projR(129.040, 35.101), // 부산국제여객터미널
+  FUKUOKA_PORT: projR(130.40, 33.60),   // 후쿠오카항
+  BAEKDU: projR(128.056, 42.006),       // 백두산(설산 랜드마크 · DMZ 북측 · 도달 불가)
+  FUJI: projR(138.727, 35.361),         // 후지산(설산 랜드마크)
+};
 
 // 2) 호수 오버레이 (code 3) — 폴리곤 래스터화.
 let lakeCount = 0;
@@ -371,30 +491,105 @@ let bridgeCount = 0;
   console.log(`  · 영종대교: ${bridgeCount} 타일 (바다 위 통행)`);
 }
 
+// 6) 지형 질감(고도) 레이어 — 순수 시각. MOUNTAIN·PEAK·PLAIN 전부 walkable(isBlocked 무변경).
+//    land 타일에만 적용. river/lake/fence/bridge 및 POI·해안(모래)은 보존(고도가 덮어쓰지 않음).
+let terrainSource = '';
+let mCount = 0, pkCount = 0, plCount = 0;
+{
+  // 해안(바다)·강까지의 4-연결 거리 — PLAIN(저지대) 판정용.
+  const distCoast = bfsDist((x, y) => getTile(x, y) === TERRAIN.SEA);
+  const distRiver = bfsDist((x, y) => { const c = getTile(x, y); return c === TERRAIN.RIVER || c === TERRAIN.LAKE; });
+  // POI 타일 보호(도시·공항·항만·랜드마크는 질감 분류 제외 — LAND 유지, isLandAt 계약 보존).
+  const protectedIdx = new Set(Object.values(POI).map((p) => p.y * MAP_W + p.x));
+
+  const elevData = fetchElevation();
+  let mountainMask = null, peakMask = null;
+  if (elevData) {
+    terrainSource = `NOAA ETOPO 2022 60s (${elevData.source})`;
+    console.log(`  · 고도 데이터: ${terrainSource} — 실측 그리드`);
+  } else {
+    terrainSource = '폴백 하드코딩 산맥 폴리라인(근사 · 실측 아님 · 후속 교체 필요)';
+    console.warn('  ⚠️  ETOPO 고도 데이터 실패 → 폴백 산맥 폴리라인 브러시 사용(근사치 · 후속 교체 권장)');
+    mountainMask = new Uint8Array(MAP_W * MAP_H);
+    peakMask = new Uint8Array(MAP_W * MAP_H);
+    const paint = (mask, pts, brush) => {
+      for (const [x, y] of polylineTiles(pts.map(([lo, la]) => projF(lo, la)))) {
+        for (let dy = -brush; dy <= brush; dy++) for (let dx = -brush; dx <= brush; dx++) {
+          const nx = x + dx, ny = y + dy;
+          if (nx >= 0 && ny >= 0 && nx < MAP_W && ny < MAP_H) mask[ny * MAP_W + nx] = 1;
+        }
+      }
+    };
+    for (const r of MOUNTAIN_RANGES) paint(mountainMask, r, MOUNTAIN_BRUSH);
+    for (const [lo, la] of PEAK_POINTS_FALLBACK) {
+      const { x, y } = projR(lo, la);
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        const nx = x + dx, ny = y + dy;
+        if (nx >= 0 && ny >= 0 && nx < MAP_W && ny < MAP_H) peakMask[ny * MAP_W + nx] = 1;
+      }
+    }
+  }
+
+  // land 타일 질감 분류: ≥1200m PEAK · ≥400m MOUNTAIN · ≤80m & (강≤3 또는 해안≤5) PLAIN.
+  for (let ty = 0; ty < MAP_H; ty++) {
+    for (let tx = 0; tx < MAP_W; tx++) {
+      const idx = ty * MAP_W + tx;
+      if (grid[idx] !== TERRAIN.LAND) continue;          // land 타일만(수계·철조망·교량 보존)
+      if (protectedIdx.has(idx)) continue;               // POI 보호
+      // 해안(바다 인접) land 는 렌더가 모래(sand)로 처리 → LAND 유지(sand 우선순위).
+      const seaAdj = getTile(tx - 1, ty) === TERRAIN.SEA || getTile(tx + 1, ty) === TERRAIN.SEA
+        || getTile(tx, ty - 1) === TERRAIN.SEA || getTile(tx, ty + 1) === TERRAIN.SEA;
+      if (seaAdj) continue;
+      let code = TERRAIN.LAND;
+      if (elevData) {
+        const e = elevData.elev[idx];
+        if (Number.isFinite(e)) {
+          if (e >= 1200) code = TERRAIN.PEAK;
+          else if (e >= 400) code = TERRAIN.MOUNTAIN;
+          else if (e <= 80 && (distRiver[idx] <= 3 || distCoast[idx] <= 5)) code = TERRAIN.PLAIN;
+        }
+      } else if (peakMask[idx]) code = TERRAIN.PEAK;
+      else if (mountainMask[idx]) code = TERRAIN.MOUNTAIN;
+      else if (distRiver[idx] <= 3 || distCoast[idx] <= 5) code = TERRAIN.PLAIN;
+      if (code !== TERRAIN.LAND) {
+        grid[idx] = code;
+        if (code === TERRAIN.MOUNTAIN) mCount++; else if (code === TERRAIN.PEAK) pkCount++; else plCount++;
+      }
+    }
+  }
+
+  // 백두산·후지산 — 타일+1링 PEAK 보장 + POI. (DMZ 북측 백두산은 도달 불가 — 철조망 너머 보이는 설산, 의도)
+  for (const lm of LANDMARKS) {
+    const { x, y } = projR(lm.lon, lm.lat);
+    const was = getTile(x, y);
+    grid[y * MAP_W + x] = TERRAIN.PEAK;
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+      const nx = x + dx, ny = y + dy;
+      if (nx < 0 || ny < 0 || nx >= MAP_W || ny >= MAP_H) continue;
+      const ni = ny * MAP_W + nx, c = grid[ni];
+      // 1링은 land 계열만 PEAK 로(바다를 설산으로 만들지 않게). 중심은 무조건 보장.
+      if (c === TERRAIN.LAND || c === TERRAIN.MOUNTAIN || c === TERRAIN.PLAIN || c === TERRAIN.PEAK) grid[ni] = TERRAIN.PEAK;
+    }
+    console.log(`    랜드마크 ${lm.name}: (${x},${y}) 원래코드=${was} → PEAK 보장 (${was === TERRAIN.SEA ? '⚠️ 원래 바다' : 'land'})`);
+  }
+  console.log(`  · 지형 질감 경로: ${terrainSource}`);
+  console.log(`  · 질감 분류: MOUNTAIN=${mCount} PEAK(분류)=${pkCount} PLAIN=${plCount}`);
+}
+
 // 지형 타일 통계
 const counts = {};
 for (const v of grid) counts[v] = (counts[v] || 0) + 1;
 console.log('  · 지형 통계:', JSON.stringify({
   sea: counts[0] || 0, land: counts[1] || 0, river: counts[2] || 0,
   lake: counts[3] || 0, fence: counts[4] || 0, bridge: counts[5] || 0,
+  mountain: counts[6] || 0, peak: counts[7] || 0, plain: counts[8] || 0,
 }));
 
-// 주요 지점(투영 산출) + 검산
-const POI = {
-  SEOUL: projR(126.98, 37.57),
-  INCHEON: projR(126.44, 37.46),        // 인천국제공항 (영종도)
-  BUSAN: projR(129.07, 35.18),
-  FUKUOKA: projR(130.40, 33.59),
-  TOKYO: projR(139.69, 35.68),
-  HANEDA: projR(139.78, 35.55),         // 하네다 공항
-  GIMHAE_AIR: projR(128.938, 35.179),   // 김해국제공항
-  BUSAN_TERMINAL: projR(129.040, 35.101), // 부산국제여객터미널
-  FUKUOKA_PORT: projR(130.40, 33.60),   // 후쿠오카항
-};
+// 주요 지점 검산(POI 는 상단에서 정의 — 질감 분류 보호용).
 console.log('  · 주요 지점(투영):', JSON.stringify(POI));
 const walkable = (p) => {
   const v = getTile(p.x, p.y);
-  return v === TERRAIN.LAND || v === TERRAIN.RIVER || v === TERRAIN.LAKE || v === TERRAIN.BRIDGE;
+  return v !== TERRAIN.SEA && v !== TERRAIN.FENCE; // isBlocked 와 동일(mountain·peak·plain 포함 통행 가능)
 };
 for (const [k, p] of Object.entries(POI)) {
   console.log(`    ${k}: (${p.x}, ${p.y}) → ${walkable(p) ? 'walkable' : 'BLOCKED(!)'}`);
@@ -418,9 +613,10 @@ if (!ok) { console.error('RLE 왕복 실패 — 중단'); process.exit(1); }
 
 // ── mapData.js 산출 ──
 const banner = `// ⚠️ 자동 생성 파일 — 직접 수정 금지. 재생성: node scripts/world/build-map.mjs
-// 한반도+일본 열도 실비율 도트 맵 (${MAP_W}×${MAP_H} 타일, 1타일=4.5km) + 수계·DMZ·교량.
+// 한반도+일본 열도 실비율 도트 맵 (${MAP_W}×${MAP_H} 타일, 1타일=4.5km) + 수계·DMZ·교량·지형 질감.
 // 육지 데이터 경로: ${source}
 // 수계: ne_10m_rivers_lake_centerlines · ne_10m_lakes / DMZ·교량: 하드코딩 지오메트리.
+// 지형 질감(산지·고산·평야) 경로: ${terrainSource}
 // 투영: 등장방형(위도 고정 cos38°) x=(lon-${LON0})×${KX}, y=(${LAT0}-lat)×${KY}.`;
 
 const poiLines = Object.entries(POI)
@@ -434,9 +630,13 @@ export const MAP_H = ${MAP_H};
 
 // ── 지형 코드 (게임플레이 그룹과 합의된 고정 계약) ──
 // 0=sea(차단) 1=land 2=river(통행 가능 물) 3=lake(통행 가능 물) 4=fence(DMZ, 차단) 5=bridge(바다 위 통행).
-export const TERRAIN = { SEA: 0, LAND: 1, RIVER: 2, LAKE: 3, FENCE: 4, BRIDGE: 5 };
+// 6=mountain 7=peak(고산/설산) 8=plain — 순수 시각 질감 레이어(전부 walkable · isBlocked 무변경).
+export const TERRAIN = {
+  SEA: 0, LAND: 1, RIVER: 2, LAKE: 3, FENCE: 4, BRIDGE: 5,
+  MOUNTAIN: 6, PEAK: 7, PLAIN: 8,
+};
 
-// 통행 차단 여부 — sea·fence 만 막는다(river·lake·bridge 는 걸어서 통과 가능).
+// 통행 차단 여부 — sea·fence 만 막는다(river·lake·bridge·mountain·peak·plain 는 걸어서 통과 가능).
 export function isBlocked(code) {
   return code === TERRAIN.SEA || code === TERRAIN.FENCE;
 }
@@ -468,7 +668,7 @@ ${poiLines}
 // 다치 행 단위 RLE: 각 행은 런들, 런='<값 1자리><길이 base36>', 런은 ',' · 행은 ';' 구분.
 export const MAP_RLE = ${JSON.stringify(rle)};
 
-// RLE → Uint8Array(TERRAIN 코드 0~5), 길이 MAP_W*MAP_H. 결정적.
+// RLE → Uint8Array(TERRAIN 코드 0~8), 길이 MAP_W*MAP_H. 결정적.
 export function decodeMap() {
   const grid = new Uint8Array(MAP_W * MAP_H);
   const rows = MAP_RLE.split(';');
@@ -496,6 +696,6 @@ writeFileSync(OUT, js);
 const bytes = Buffer.byteLength(js, 'utf8');
 console.log(`  · 산출: ${OUT}`);
 console.log(`  · 파일 크기: ${bytes} bytes (${(bytes / 1024).toFixed(1)} KB)`);
-if (bytes > 20 * 1024) console.warn('  ⚠️  파일 20KB 초과 — 인코딩 개선 검토 필요');
+if (bytes > 30 * 1024) console.warn('  ⚠️  파일 30KB 초과 — 다치 RLE 인코딩 개선 검토 필요');
 if (usedFallback) console.warn('  ⚠️  폴백 경로였음 — 강화도/영종도/영종대교가 실데이터가 아닐 수 있음(재실행 권장).');
 console.log('✅ 완료');

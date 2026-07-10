@@ -39,29 +39,39 @@ describe('등장방형 투영 (위도 고정 cos38°)', () => {
     expect(POI.GIMHAE_AIR).toEqual({ x: 106, y: 267 });
     expect(POI.BUSAN_TERMINAL).toEqual({ x: 108, y: 269 });
     expect(POI.FUKUOKA_PORT).toBeTruthy();
+    // 랜드마크 고봉 — 백두산(128.056E/42.006N)·후지산(138.727E/35.361N).
+    expect(POI.BAEKDU).toEqual(project(128.056, 42.006));
+    expect(POI.FUJI).toEqual(project(138.727, 35.361));
   });
 });
 
 describe('지형 코드 계약', () => {
-  it('TERRAIN 코드 고정값', () => {
-    expect(TERRAIN).toEqual({ SEA: 0, LAND: 1, RIVER: 2, LAKE: 3, FENCE: 4, BRIDGE: 5 });
+  it('TERRAIN 코드 고정값 (0~5 불변 + 시각 질감 6·7·8)', () => {
+    expect(TERRAIN).toEqual({
+      SEA: 0, LAND: 1, RIVER: 2, LAKE: 3, FENCE: 4, BRIDGE: 5,
+      MOUNTAIN: 6, PEAK: 7, PLAIN: 8,
+    });
   });
-  it('isBlocked 는 sea·fence 만 true (river·lake·bridge·land 는 통행 가능)', () => {
+  it('isBlocked 는 sea·fence 만 true (river·lake·bridge·land·mountain·peak·plain 는 통행 가능)', () => {
     expect(isBlocked(TERRAIN.SEA)).toBe(true);
     expect(isBlocked(TERRAIN.FENCE)).toBe(true);
     expect(isBlocked(TERRAIN.LAND)).toBe(false);
     expect(isBlocked(TERRAIN.RIVER)).toBe(false);
     expect(isBlocked(TERRAIN.LAKE)).toBe(false);
     expect(isBlocked(TERRAIN.BRIDGE)).toBe(false);
+    // 지형 질감 레이어(순수 시각) — 통행 규칙 무변경.
+    expect(isBlocked(TERRAIN.MOUNTAIN)).toBe(false);
+    expect(isBlocked(TERRAIN.PEAK)).toBe(false);
+    expect(isBlocked(TERRAIN.PLAIN)).toBe(false);
   });
 });
 
 describe('다치 RLE 디코더 왕복', () => {
   const grid = decodeMap();
 
-  it('디코드 격자는 MAP_W×MAP_H 길이의 0~5 코드 배열', () => {
+  it('디코드 격자는 MAP_W×MAP_H 길이의 0~8 코드 배열', () => {
     expect(grid.length).toBe(MAP_W * MAP_H);
-    for (let i = 0; i < grid.length; i++) expect(grid[i] >= 0 && grid[i] <= 5).toBe(true);
+    for (let i = 0; i < grid.length; i++) expect(grid[i] >= 0 && grid[i] <= 8).toBe(true);
   });
 
   it('디코드는 결정적(두 번 호출 결과 동일)', () => {
@@ -91,6 +101,11 @@ describe('데이터 무결성 (주요 지점 land / 해협 sea / 제주 존재)'
   const grid = decodeMap();
   const land = (p) => isLandAt(grid, p.x, p.y);
   const code = (x, y) => grid[y * MAP_W + x];
+  // land 계열(육지·산지·설산·평야) — 질감 레이어를 포함한 "걸을 수 있는 육지".
+  const isLandFam = (x, y) => {
+    const c = grid[y * MAP_W + x];
+    return c === TERRAIN.LAND || c === TERRAIN.MOUNTAIN || c === TERRAIN.PEAK || c === TERRAIN.PLAIN;
+  };
 
   it('서울·도쿄·부산·후쿠오카는 land', () => {
     expect(land(POI.SEOUL)).toBe(true);
@@ -112,10 +127,11 @@ describe('데이터 무결성 (주요 지점 land / 해협 sea / 제주 존재)'
     expect(code(117, 260)).toBe(TERRAIN.SEA);
   });
 
-  it('제주 존재 — 중심부(59, 312) land + 주변 덩어리 확인', () => {
-    expect(isLandAt(grid, 59, 312)).toBe(true);
+  it('제주 존재 — 중심부(59, 312) land 계열 + 주변 덩어리 확인', () => {
+    // 제주 중심부는 저지대라 질감 분류에서 PLAIN 이 될 수 있다 → land 계열(걸을 수 있는 육지)로 확인.
+    expect(isLandFam(59, 312)).toBe(true);
     let n = 0;
-    for (let y = 308; y <= 318; y++) for (let x = 54; x <= 66; x++) if (isLandAt(grid, x, y)) n++;
+    for (let y = 308; y <= 318; y++) for (let x = 54; x <= 66; x++) if (isLandFam(x, y)) n++;
     expect(n).toBeGreaterThan(30);
   });
 
@@ -125,11 +141,50 @@ describe('데이터 무결성 (주요 지점 land / 해협 sea / 제주 존재)'
     expect(isLandAt(grid, 0, MAP_H)).toBe(false);
   });
 
-  it('바다가 대부분(실비율 맵 — land 비율 30% 미만)', () => {
+  it('바다가 대부분(실비율 맵 — land 계열 비율 30% 미만)', () => {
     let landN = 0;
-    for (let i = 0; i < grid.length; i++) if (grid[i] === TERRAIN.LAND) landN++;
+    for (let i = 0; i < grid.length; i++) {
+      const c = grid[i];
+      if (c === TERRAIN.LAND || c === TERRAIN.MOUNTAIN || c === TERRAIN.PEAK || c === TERRAIN.PLAIN) landN++;
+    }
     expect(landN).toBeGreaterThan(1000);
     expect(landN / grid.length).toBeLessThan(0.3);
+  });
+});
+
+describe('지형 질감 레이어 (산지·고산·평야 — 순수 시각)', () => {
+  const grid = decodeMap();
+  const code = (x, y) => grid[y * MAP_W + x];
+
+  it('MOUNTAIN·PEAK·PLAIN 타일이 모두 존재한다', () => {
+    let m = 0, pk = 0, pl = 0;
+    for (let i = 0; i < grid.length; i++) {
+      if (grid[i] === TERRAIN.MOUNTAIN) m++;
+      else if (grid[i] === TERRAIN.PEAK) pk++;
+      else if (grid[i] === TERRAIN.PLAIN) pl++;
+    }
+    expect(m).toBeGreaterThan(0);
+    expect(pk).toBeGreaterThan(0);
+    expect(pl).toBeGreaterThan(0);
+  });
+
+  it('백두산·후지산 타일은 PEAK (POI 좌표)', () => {
+    expect(code(POI.BAEKDU.x, POI.BAEKDU.y)).toBe(TERRAIN.PEAK);
+    expect(code(POI.FUJI.x, POI.FUJI.y)).toBe(TERRAIN.PEAK);
+  });
+
+  it('태백산맥 표본(설악산 38.12N/128.47E · 지리산 35.34N/127.73E)은 MOUNTAIN 이상', () => {
+    for (const [lon, lat] of [[128.47, 38.12], [127.73, 35.34]]) {
+      const p = project(lon, lat);
+      const c = code(p.x, p.y);
+      expect(c === TERRAIN.MOUNTAIN || c === TERRAIN.PEAK).toBe(true);
+    }
+  });
+
+  it('질감 코드는 전부 통행 가능(isBlocked false)', () => {
+    expect(isBlocked(TERRAIN.MOUNTAIN)).toBe(false);
+    expect(isBlocked(TERRAIN.PEAK)).toBe(false);
+    expect(isBlocked(TERRAIN.PLAIN)).toBe(false);
   });
 });
 
@@ -211,7 +266,11 @@ describe('DMZ 철조망 — 서해~동해 연속 차단벽', () => {
 
 describe('영종도 — 본토와 비연결, 영종대교로만 도달', () => {
   const grid = decodeMap();
-  const WALK = new Set([TERRAIN.LAND, TERRAIN.RIVER, TERRAIN.LAKE, TERRAIN.BRIDGE]);
+  // 통행 가능(!isBlocked) 타일 — land 계열(육지·산지·설산·평야) + 물(강·호수) + 교량.
+  const WALK = new Set([
+    TERRAIN.LAND, TERRAIN.RIVER, TERRAIN.LAKE, TERRAIN.BRIDGE,
+    TERRAIN.MOUNTAIN, TERRAIN.PEAK, TERRAIN.PLAIN,
+  ]);
 
   // 통행 가능 타일 4-연결 BFS 로 (sx,sy) 에서 도달 가능한 집합.
   function reachable(g) {

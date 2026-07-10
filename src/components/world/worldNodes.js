@@ -40,6 +40,11 @@ export const WORLD_NODES = [
   { id: 'tokyo', name: '도쿄', kind: 'city', tile: [POI.TOKYO.x, POI.TOKYO.y] },
   // 하네다 — 랜드마크(표지 마커만).
   { id: 'haneda', name: '하네다', kind: 'landmark', tile: [POI.HANEDA.x, POI.HANEDA.y] },
+  // 백두산 — 설산 랜드마크(게이트 없음, 마커+이름 라벨만). DMZ 북측이라 철조망 너머로 보이기만 하고
+  //   실제로는 도달 불가 — 의도된 연출(넘어갈 수 없는, 멀리 보이는 설산). PEAK 타일 위.
+  { id: 'baekdu', name: '백두산', kind: 'landmark', tile: [POI.BAEKDU.x, POI.BAEKDU.y] },
+  // 후지산 — 설산 랜드마크(게이트 없음). PEAK 타일 위, 혼슈에서 도달 가능.
+  { id: 'fuji', name: '후지산', kind: 'landmark', tile: [POI.FUJI.x, POI.FUJI.y] },
 ];
 
 // id → 노드(게이트 참조 해석·페리 목적지 조회용).
@@ -49,17 +54,17 @@ export function getNode(id) {
 
 // ── 미니맵 다운샘플(순수 함수) ──
 // mapData 격자(TERRAIN 코드)를 factor×factor 블록으로 묶어 저해상 미니맵 코드 격자를 만든다.
-// 4색(sea/land/river/fence)만 남기며, 블록 대표값은 "눈에 띄어야 하는 것" 우선순위로 고른다:
-//   fence(DMZ 차단벽) > river/lake(내륙 수계) > land/bridge(육지·교량) > sea.
-// (lake→RIVER, bridge→LAND 로 접어 4색으로 축약 — 미니맵 가독성.)
-// 반환: { w, h, codes:Uint8Array(w*h) } — codes[i] ∈ {SEA,LAND,RIVER,FENCE}. 결정적·부작용 없음.
+// 6색 이내(sea/land/river/fence/mountain/peak)로 접으며, 블록 대표값은 "눈에 띄어야 하는 것" 우선순위:
+//   fence(DMZ 차단벽) > river/lake(내륙 수계) > peak(설산) > mountain(산지) > land/plain/bridge(육지) > sea.
+// (lake→RIVER, plain·bridge→LAND 로 접는다 — 평야는 육지와 동색, 산지·설산만 별색으로 강조.)
+// 반환: { w, h, codes:Uint8Array(w*h) } — codes[i] ∈ {SEA,LAND,RIVER,FENCE,MOUNTAIN,PEAK}. 결정적·부작용 없음.
 export function downsampleMinimap(grid, factor = 4) {
   const w = Math.ceil(MAP_W / factor);
   const h = Math.ceil(MAP_H / factor);
   const codes = new Uint8Array(w * h);
   for (let by = 0; by < h; by++) {
     for (let bx = 0; bx < w; bx++) {
-      let hasFence = false, hasWater = false, hasLand = false;
+      let hasFence = false, hasWater = false, hasPeak = false, hasMountain = false, hasLand = false;
       const y0 = by * factor, x0 = bx * factor;
       for (let dy = 0; dy < factor; dy++) {
         const ty = y0 + dy;
@@ -70,13 +75,17 @@ export function downsampleMinimap(grid, factor = 4) {
           const c = grid[ty * MAP_W + tx];
           if (c === TERRAIN.FENCE) hasFence = true;
           else if (c === TERRAIN.RIVER || c === TERRAIN.LAKE) hasWater = true;
-          else if (c === TERRAIN.LAND || c === TERRAIN.BRIDGE) hasLand = true;
+          else if (c === TERRAIN.PEAK) hasPeak = true;
+          else if (c === TERRAIN.MOUNTAIN) hasMountain = true;
+          else if (c === TERRAIN.LAND || c === TERRAIN.BRIDGE || c === TERRAIN.PLAIN) hasLand = true;
         }
       }
       codes[by * w + bx] = hasFence ? TERRAIN.FENCE
         : hasWater ? TERRAIN.RIVER
-          : hasLand ? TERRAIN.LAND
-            : TERRAIN.SEA;
+          : hasPeak ? TERRAIN.PEAK
+            : hasMountain ? TERRAIN.MOUNTAIN
+              : hasLand ? TERRAIN.LAND
+                : TERRAIN.SEA;
     }
   }
   return { w, h, codes };

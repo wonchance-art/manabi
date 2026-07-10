@@ -125,6 +125,8 @@ const MINI_COLORS = {
   [TERRAIN.LAND]: [95, 154, 70],
   [TERRAIN.RIVER]: [63, 176, 196],
   [TERRAIN.FENCE]: [166, 67, 47],
+  [TERRAIN.MOUNTAIN]: [58, 92, 50],   // 짙은 녹(산지)
+  [TERRAIN.PEAK]: [200, 205, 212],    // 회백(설산)
 };
 
 function Minimap({ sceneRef, onClose }) {
@@ -387,6 +389,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           this.buildSand();
           this.buildFence();
           this.buildBridge();
+          this.buildTerrain();    // 산지·고산(설산)·평야 질감 타일(순수 시각 · 통행 가능)
           this.buildTileAtlas();  // 개별 타일 → 1장 캔버스 아틀라스(tilemap tileset)
           this.buildTree();
           this.buildDecor();
@@ -489,6 +492,57 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           g.generateTexture('t_bridge', TEX, TEX); g.destroy();
         }
 
+        // ── 지형 질감 타일(순수 시각 · 전부 통행 가능) ──
+        // 산지(짙은 녹 능선+음영 도트) · 고산/설산(회백 암석+흰 설관) · 평야(밝은 황록 농지 격자 힌트).
+        // toneColor 로 시간대 톤을 함께 굽는다 — 밤이면 설산이 푸르스름해지는 것은 톤 함수가 알아서 한다.
+        buildTerrain() {
+          // 산지 — 짙은 녹 능선 + 음영 도트.
+          {
+            const g = this.make.graphics({ add: false });
+            const base = toneColor(0x4f7a3a, this.mode);   // 산기슭 녹
+            const ridge = toneColor(0x35602b, this.mode);  // 능선 그림자(짙은 녹)
+            const hi = toneColor(0x6fa048, this.mode);     // 능선 양지
+            g.fillStyle(base, 1); g.fillRect(0, 0, TEX, TEX);
+            g.fillStyle(ridge, 1);
+            for (let i = 0; i < 8; i++) g.fillRect(8 - i, 4 + i, 1 + i * 2, 1); // 삼각 능선(계단 도트)
+            g.fillStyle(hi, 1);
+            for (let i = 0; i < 6; i++) g.fillRect(8 - i, 4 + i, 1, 1);         // 왼 사면 양지
+            g.fillStyle(ridge, 1);
+            for (const [x, y] of [[3, 12], [11, 13], [6, 14], [13, 10], [2, 9]]) g.fillRect(x, y, 1, 1); // 음영 도트
+            g.generateTexture('t_mountain', TEX, TEX); g.destroy();
+          }
+          // 고산/설산 — 회백 암석 + 흰 설관.
+          {
+            const g = this.make.graphics({ add: false });
+            const rock = toneColor(0x8a8f98, this.mode);   // 회백 암석
+            const rockD = toneColor(0x5f636b, this.mode);  // 암석 그림자
+            const snow = toneColor(0xf2f5fa, this.mode);   // 설관(흰)
+            const snowD = toneColor(0xcdd6e2, this.mode);  // 설관 음영
+            g.fillStyle(rock, 1); g.fillRect(0, 0, TEX, TEX);
+            g.fillStyle(rockD, 1);
+            for (const [x, y] of [[2, 11], [5, 13], [9, 12], [12, 14], [7, 10]]) g.fillRect(x, y, 2, 1); // 하부 암석 음영
+            g.fillStyle(snow, 1);
+            for (let i = 0; i < 6; i++) g.fillRect(8 - i, 1 + i, 1 + i * 2, 1); // 설관 삼각(상부)
+            g.fillStyle(snowD, 1);
+            for (let i = 0; i < 6; i++) g.fillRect(8 + i, 1 + i, 1, 1);         // 오른 사면 음영
+            g.generateTexture('t_peak', TEX, TEX); g.destroy();
+          }
+          // 평야 — 밝은 황록 농지 + 밭이랑 격자 힌트.
+          {
+            const g = this.make.graphics({ add: false });
+            const base = toneColor(0x9fc85a, this.mode);   // 밝은 황록
+            const line = toneColor(0x84ad46, this.mode);   // 밭이랑(격자)
+            const seed = toneColor(0xc4dd7e, this.mode);   // 밝은 낟알 점
+            g.fillStyle(base, 1); g.fillRect(0, 0, TEX, TEX);
+            g.fillStyle(line, 1);
+            g.fillRect(0, 5, TEX, 1); g.fillRect(0, 11, TEX, 1);   // 가로 이랑
+            g.fillRect(5, 0, 1, TEX); g.fillRect(11, 0, 1, TEX);   // 세로 이랑
+            g.fillStyle(seed, 1);
+            for (const [x, y] of [[2, 2], [8, 3], [13, 8], [3, 8], [9, 13], [14, 2]]) g.fillRect(x, y, 1, 1);
+            g.generateTexture('t_plain', TEX, TEX); g.destroy();
+          }
+        }
+
         // 장소 노드 마커 — kind별 절차 생성 도트(외부 에셋 0). 16×24, 발밑(하단 중앙) 정렬.
         buildNodeMarkers() {
           const C = this.pal;
@@ -558,12 +612,12 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         // 절차 생성 타일 텍스처들을 1장의 캔버스로 합쳐 Phaser tilemap tileset을 만든다.
         // (타일마다 add.image = 172k 오브젝트는 불가 → 레이어 1장 + 내장 컬링으로 전환.)
         // 인덱스: 0=빈칸, 1=잔디(land), 2/3/4=바다 3프레임, 5=모래(해안),
-        //         6=강, 7=호수, 8=DMZ 철조망, 9=교량(지형 계약 TERRAIN 전 코드 커버).
+        //         6=강, 7=호수, 8=DMZ 철조망, 9=교량, 10=산지, 11=고산/설산, 12=평야(TERRAIN 전 코드 커버).
         buildTileAtlas() {
           // 씬 재시작(공항→광장 복귀) 시 텍스처는 전역 TextureManager에 이미 존재 →
           // createCanvas가 null을 반환하므로, 있으면 재사용(톤은 최초 로드값 유지 — generateTexture와 동일 관례).
           if (this.textures.exists('tiles')) return;
-          const keys = [null, 't_grass', 't_water0', 't_water1', 't_water2', 't_sand', 't_river', 't_lake', 't_fence', 't_bridge'];
+          const keys = [null, 't_grass', 't_water0', 't_water1', 't_water2', 't_sand', 't_river', 't_lake', 't_fence', 't_bridge', 't_mountain', 't_peak', 't_plain'];
           const cols = keys.length;
           const atlas = this.textures.createCanvas('tiles', cols * TEX, TEX);
           const ctx = atlas.getContext();
@@ -729,7 +783,9 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
 
           // ── 지형 레이어(Phaser Tilemap 1장 + 내장 컬링) ──
           // 172k 타일을 add.image 로 깔 수 없으므로 tilemap 레이어 1장으로 전환.
-          // 아틀라스 인덱스: 바다=2·해안(모래)=5·강=6·호수=7·철조망=8·교량=9·육지=1.
+          // 아틀라스 인덱스: 바다=2·해안(모래)=5·강=6·호수=7·철조망=8·교량=9·육지=1·산지=10·설산=11·평야=12.
+          // land 계열(land·mountain·peak·plain)은 통행 가능 — 질감만 다르다. 해안(바다 인접)은 모래로 굽되
+          // 산지·설산은 해안이라도 질감을 유지하고, 평야만 해안 시 모래로 접는다(모래 우선순위 보존).
           const seaTile = (tx, ty) => this.tileCode(tx, ty) === TERRAIN.SEA; // 해안 판정용(바다 인접만)
           const data = [];
           for (let y = 0; y < ROWS; y++) {
@@ -740,9 +796,12 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
               if (c === TERRAIN.LAKE) { row[x] = 7; continue; }
               if (c === TERRAIN.FENCE) { row[x] = 8; continue; }
               if (c === TERRAIN.BRIDGE) { row[x] = 9; continue; }
-              if (c !== TERRAIN.LAND) { row[x] = 2; continue; } // sea
-              // 해안: land 이면서 4-이웃에 바다(sea)가 있으면 모래(강·호수 인접은 해안 아님).
+              if (c === TERRAIN.MOUNTAIN) { row[x] = 10; continue; }
+              if (c === TERRAIN.PEAK) { row[x] = 11; continue; }
+              if (c !== TERRAIN.LAND && c !== TERRAIN.PLAIN) { row[x] = 2; continue; } // sea
+              // 해안: land/plain 이면서 4-이웃에 바다(sea)가 있으면 모래(강·호수 인접은 해안 아님).
               const coast = seaTile(x - 1, y) || seaTile(x + 1, y) || seaTile(x, y - 1) || seaTile(x, y + 1);
+              if (c === TERRAIN.PLAIN) { row[x] = coast ? 5 : 12; continue; }
               row[x] = coast ? 5 : 1;
             }
             data.push(row);
@@ -914,14 +973,18 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         }
 
         // 타일 결정적 장식 종류(스폰 광장 근처·비육지는 비움). 'tree'|'flower'|'bush'|null.
-        //   나무·풀숲은 육지에만 — 강·호수·교량·철조망 위에는 나지 않는다.
+        //   나무·풀숲은 land 계열에만 — 강·호수·교량·철조망·설산(PEAK) 위에는 나지 않는다.
+        //   산지(MOUNTAIN)는 나무 확률↑(숲), 평야(PLAIN)는 확률↓(농지) — 간단 조정.
         decorKind(tx, ty) {
-          if (this.tileCode(tx, ty) !== TERRAIN.LAND) return null;
+          const c = this.tileCode(tx, ty);
+          if (c !== TERRAIN.LAND && c !== TERRAIN.MOUNTAIN && c !== TERRAIN.PLAIN) return null;
           if (Math.abs(tx - this.pTileX) <= PLAZA_R && Math.abs(ty - this.pTileY) <= PLAZA_R) return null;
           const r = tileHash(tx, ty);
-          if (r < 0.05) return 'tree';
-          if (r < 0.072) return 'flower';
-          if (r < 0.088) return 'bush';
+          // 나무 임계: 산지 0.16(숲) · 육지 0.05 · 평야 0.02(드문 방풍림).
+          const treeT = c === TERRAIN.MOUNTAIN ? 0.16 : c === TERRAIN.PLAIN ? 0.02 : 0.05;
+          if (r < treeT) return 'tree';
+          if (r < treeT + 0.022) return 'flower';
+          if (r < treeT + 0.038) return 'bush';
           return null;
         }
 
