@@ -98,9 +98,19 @@ function makeSessionId() {
 export const LEASE_TTL_MS = 60000;
 // 갱신 주기(15s). TTL(60s)까지 3회 여유 — 백그라운드 타이머 지연에도 split-brain 창을 줄인다.
 export const LEASE_HEARTBEAT_MS = 15000;
+// heartbeat 데드라인 안전 여유(P1). 마지막 성공 heartbeat 이후 (TTL − 이 여유) 안에 성공이
+// 한 번도 없으면(연속 error/unavailable) 서버가 임대를 인수할 수 있는 시점(TTL)에 도달하기
+// 전에 이 세션이 스스로 봉인한다(markLeaseError, fail-closed). TTL 경과 split-brain 방지 —
+// 예전엔 error/unavailable 을 무기한 무시해 서버 인수 후에도 A 가 계속 송신했다.
+export const LEASE_DEADLINE_SAFETY_MS = 5000;
 
-// 마이그레이션 미적용 신호: 함수 부재(42883)·테이블 부재(42P01) → presence 강등.
-const MIGRATION_MISSING_CODES = new Set(['42883', '42P01']);
+// 마이그레이션 미적용 신호 → presence 강등:
+//   · 42883    함수 부재(DB 오류가 그대로 전달되는 경우)
+//   · 42P01    테이블 부재
+//   · PGRST202 PostgREST 스키마 캐시에 함수 없음 — RPC 미노출(마이그레이션 미적용의 대표 신호).
+//              PostgREST 는 미배포 RPC 를 DB 오류(42883)가 아니라 이 코드로 돌려주므로 동급 취급.
+// 그 외 오류는 fail-closed(멀티 차단) — 강등하지 않는다(P2-5).
+const MIGRATION_MISSING_CODES = new Set(['42883', '42P01', 'PGRST202']);
 
 // 임대 클라이언트 팩토리. client 주입으로 테스트 가능(기본은 실제 supabase).
 // 토큰은 이 클로저 안에서만 보관 — 밖으로 노출하지 않는다(P1-2: 복제 불가).
@@ -214,6 +224,10 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza',
   // db 모드에선 presence 는 표시 전용이라 checkDuplicate 가 퇴장을 판정하지 않는다(P1-1신).
   let leaseMode = null;
   let heartbeatTimer = null;
+  // 마지막으로 서버 접촉이 성공한 시각(claim 성공 또는 heartbeat 'ok'). heartbeat 데드라인
+  // 판정 기준 — 이 값이 오래되면(연속 실패) 서버 인수 전에 자진 봉인한다(P1).
+  let lastLeaseOkAt = 0;
+  let joinInFlight = null;   // 진행 중 join() Promise — 연타 시 중복 claim 발사 차단(P2-4).
   const lease = createSessionLease({ client, userId });
 
   const emitPeers = () => { if (peersCb) peersCb(new Map(peers)); };
@@ -401,19 +415,31 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza',
     if (heartbeatTimer != null) { clearInterval(heartbeatTimer); heartbeatTimer = null; }
   }
 
-  // 임대 유지(P1-2). 15초마다 heartbeat RPC — 'lost' 면 다른 세션이 만료 인수한 것이므로
-  // 서버 권위 판정에 따라 이 세션이 물러난다(markDuplicate). 일시 오류('error'/'unavailable')는
-  // 다음 주기에 재시도(TTL 60초 안이면 임대 유지 — 한 번의 실패로 즉시 물러나지 않는다).
+  // 임대 유지(P1-2·P1). 15초마다 heartbeat RPC.
+  //   · 'lost'                 → 다른 세션이 만료 인수(서버 권위) → 즉시 물러난다(markDuplicate).
+  //   · 'ok'                   → 마지막 성공 시각(lastLeaseOkAt) 갱신.
+  //   · 'error'/'unavailable'  → 이번 실패는 넘기되 데드라인 검사에 맡긴다(P1). 마지막 성공
+  //     이후 (TTL − SAFETY) 넘게 성공이 없으면 서버가 임대를 인수할 수 있는 시점(TTL)에
+  //     도달하기 전에 스스로 봉인한다(markLeaseError, fail-closed). 예전엔 error/unavailable 을
+  //     무기한 무시해 서버 인수 후에도 A 가 connected·송신을 유지하는 split-brain 이 났다.
   function startHeartbeat() {
     stopHeartbeat();
+    lastLeaseOkAt = Date.now();   // claim 성공 직후 = 최신 서버 접촉 시각
     heartbeatTimer = setInterval(() => {
       if (closed || terminated) return;
+      // 데드라인 검사(매 주기): 마지막 성공 이후 (TTL − SAFETY) 초과면 서버 인수 전 자진 봉인.
+      if (Date.now() - lastLeaseOkAt > LEASE_TTL_MS - LEASE_DEADLINE_SAFETY_MS) {
+        markLeaseError();
+        return;
+      }
       lease.heartbeat()
         .then((r) => {
           if (closed || terminated) return;
-          if (r === 'lost') markDuplicate();
+          if (r === 'lost') { markDuplicate(); return; }
+          if (r === 'ok') { lastLeaseOkAt = Date.now(); return; }
+          // 'error'/'unavailable' — 다음 주기 데드라인 검사에 맡긴다(성공 시각 갱신 안 함).
         })
-        .catch(() => { /* 다음 주기에 재시도 */ });
+        .catch(() => { /* 다음 주기 데드라인 검사에 맡긴다 */ });
     }, LEASE_HEARTBEAT_MS);
   }
 
@@ -457,8 +483,16 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza',
     r?.();
   }
 
-  async function join() {
-    if (channel || closed) return;   // 이미 열림 / leave 후 재사용 금지
+  // 연타 방어(P2-4): 진행 중이면 같은 Promise 를 돌려준다 — 둘째 호출이 별도 claim 을 발사해
+  // NULL(중복)을 받고 첫 세션의 토큰을 release 해버리는 자기잠식 경로를 원천 차단한다.
+  function join() {
+    if (joinInFlight) return joinInFlight;
+    if (channel || closed) return Promise.resolve();   // 이미 열림 / leave 후 재사용 금지
+    joinInFlight = joinOnce().finally(() => { joinInFlight = null; });
+    return joinInFlight;
+  }
+
+  async function joinOnce() {
     joinSettled = false;
     duplicateFlagged = false;        // 재시도(수동 join 재호출) 시 중복 판정을 다시 받는다
     terminated = null;               // 영구 종료 해제 — 명시적 재시도만 여기를 지난다

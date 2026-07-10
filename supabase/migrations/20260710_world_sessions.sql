@@ -24,8 +24,9 @@
 --   · 적용: main 병합 시 .github/workflows/supabase-migrations.yml 이 `supabase db push`
 --           로 자동 적용한다(SQL Editor 수동 실행 금지 — migration history 에 안 남아
 --           러너가 재실행하면 중복 오류가 난다). 로컬 검증은 `supabase db reset`.
---   · 재실행 안전: 아래 DDL 은 전면 멱등(CREATE TABLE IF NOT EXISTS · CREATE OR REPLACE
---           FUNCTION · REVOKE/GRANT). 러너가 같은 파일을 다시 밀어도 오류 없이 수렴한다.
+--   · 재실행 안전: 아래 DDL 은 전면 멱등(0단계 구버전 정리 DO 블록 · CREATE TABLE IF NOT
+--           EXISTS · CREATE OR REPLACE FUNCTION · REVOKE/GRANT). 러너가 같은 파일을 다시
+--           밀어도, b630→v6 순서로 적용된 환경에서도 오류 없이 v6 상태로 수렴한다.
 --   · 롤백: 수동 DROP 이 아니라 역방향 마이그레이션 파일을 새로 추가해 러너로 적용한다.
 --           예시(새 파일 20260710b_world_sessions_rollback.sql 로):
 --             DROP FUNCTION IF EXISTS public.release_world_session(uuid);
@@ -53,7 +54,38 @@
 --   4) 임대 왕복(관리자 세션): select public.claim_world_session();  → uuid 반환.
 --      같은 계정 두 번째 세션에서 다시 호출 → NULL(살아있는 타 세션). 60초 뒤 만료 인수.
 
+-- ── 0. 구버전(b630) 잔재 정리 (P3-5 · 조건부·멱등) ──
+-- 사실관계: b630 스키마(session_id 컬럼 + *_own 정책 4종, RLS 로 본인 행 직접 DML 허용)는
+--   어떤 환경에도 적용된 적이 없다(merge·수동 적용 모두 없음). 그럼에도 방어적으로, b630→v6
+--   순서로 적용된 가상 환경에서도 v6(정책 0개 + session_token 컬럼)로 수렴하도록 정리한다.
+--   테이블이 없는 정상 환경에선 to_regclass 가드로 전부 무연산 — 멱등 이중 적용에도 안전하다.
+DO $$
+BEGIN
+  IF to_regclass('public.world_sessions') IS NOT NULL THEN
+    -- 구정책 4종 제거 — v6 는 정책 0개(직접 접근 전면 차단)라야 서버 권위가 성립한다.
+    DROP POLICY IF EXISTS "world_sessions_select_own" ON public.world_sessions;
+    DROP POLICY IF EXISTS "world_sessions_insert_own" ON public.world_sessions;
+    DROP POLICY IF EXISTS "world_sessions_update_own" ON public.world_sessions;
+    DROP POLICY IF EXISTS "world_sessions_delete_own" ON public.world_sessions;
+
+    -- 컬럼 전환: b630 의 session_id → v6 의 session_token(둘 다 uuid NOT NULL). session_id 가
+    -- 있고 session_token 이 없을 때만 rename(이미 v6 면 무연산 — 재적용 안전).
+    IF EXISTS (
+      SELECT 1 FROM information_schema.columns
+       WHERE table_schema = 'public' AND table_name = 'world_sessions' AND column_name = 'session_id'
+    ) AND NOT EXISTS (
+      SELECT 1 FROM information_schema.columns
+       WHERE table_schema = 'public' AND table_name = 'world_sessions' AND column_name = 'session_token'
+    ) THEN
+      ALTER TABLE public.world_sessions RENAME COLUMN session_id TO session_token;
+    END IF;
+  END IF;
+END
+$$;
+
 -- ── 1. 테이블 — 정책 0개(직접 접근 전면 차단), 접근은 오직 RPC 로 ──
+-- (b630 표가 이미 있으면 IF NOT EXISTS 로 건너뛴다. 위 0 단계에서 정책 제거·컬럼 전환을
+--  마쳐 두었고, 아래 RLS ENABLE·REVOKE 는 멱등이라 어느 경로든 v6 상태로 수렴한다.)
 CREATE TABLE IF NOT EXISTS public.world_sessions (
   user_id       uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   session_token uuid        NOT NULL,             -- 서버 발급 비공개 토큰(클라 메모리에만 존재)
@@ -146,10 +178,15 @@ BEGIN
 END;
 $$;
 
--- ── 3. 실행 권한 — authenticated 에만 EXECUTE(anon 제외). public 기본 권한은 선회수 ──
-REVOKE ALL ON FUNCTION public.claim_world_session()            FROM public;
-REVOKE ALL ON FUNCTION public.heartbeat_world_session(uuid)    FROM public;
-REVOKE ALL ON FUNCTION public.release_world_session(uuid)      FROM public;
+-- ── 3. 실행 권한 행렬 — authenticated 만 EXECUTE(anon·public 회수) ──
+-- Postgres 는 함수 생성 시 EXECUTE 를 PUBLIC 에 기본 부여한다. Supabase 가이드
+-- ("Securing your API / Hardening the Data API" — SECURITY DEFINER 함수는 PUBLIC 실행권을
+--  회수하고 원하는 역할에만 부여하라)에 따라 PUBLIC 에서 전량 회수한 뒤, anon 에서도 명시적으로
+-- 회수한다. anon 은 PUBLIC 의 멤버라 PUBLIC 회수만으로도 빠지지만, 나중에 anon 직접 GRANT 가
+-- 섞이더라도 "로그인 세션만 임대를 만진다"는 권한 계약을 못박아 둔다(P2-2). 그 뒤 authenticated 만 GRANT.
+REVOKE ALL ON FUNCTION public.claim_world_session()            FROM public, anon;
+REVOKE ALL ON FUNCTION public.heartbeat_world_session(uuid)    FROM public, anon;
+REVOKE ALL ON FUNCTION public.release_world_session(uuid)      FROM public, anon;
 
 GRANT EXECUTE ON FUNCTION public.claim_world_session()         TO authenticated;
 GRANT EXECUTE ON FUNCTION public.heartbeat_world_session(uuid) TO authenticated;

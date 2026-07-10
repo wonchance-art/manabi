@@ -167,6 +167,8 @@ export default function WorldPage() {
   // 중복 접속 판정 방식: 'lease'(world_sessions 서버 권위) | 'presence'(마이그레이션
   // 미적용 강등 — UX 가드). 강등일 때만 상태줄에 작은 표기(과하지 않게 — 툴팁 수준).
   const [worldGuard, setWorldGuard] = useState(null);
+  // "다시 시도" 재판정(join) 진행 중 — 버튼 비활성화로 연타(중복 claim 발사)를 막는다(P2-4).
+  const [worldRetrying, setWorldRetrying] = useState(false);
 
   // GBC 셸 → GameCanvas 입력 주입 핸들. GameCanvas가 마운트 시 { press,release,interact,cancel }를 채운다.
   const controlsRef = useRef(null);
@@ -337,15 +339,21 @@ export default function WorldPage() {
       setWorldDuplicate(false);
       setWorldLeaseError(false);
       setWorldGuard(null);
+      setWorldRetrying(false);
       bus.emit('peers:update', new Map()); // 남은 원격 캐릭터 정리
     };
   }, [userId]);
 
   // 중복 접속 배너의 "다시 시도" — net이 스스로 중복 판정을 다시 받도록 join()을 재호출한다.
   // (leave() 는 호출하지 않음 — leave 후엔 이 net 인스턴스가 영구히 재사용 불가해진다.)
+  // 진행 중엔 버튼을 잠가 중복 claim 발사를 막는다(P2-4 — net 쪽 in-flight 가드와 이중 방어).
   const retryWorldNet = useCallback(() => {
-    netRef.current?.join().catch(() => {});
-  }, []);
+    if (worldRetrying) return;
+    setWorldRetrying(true);
+    Promise.resolve(netRef.current?.join())
+      .catch(() => {})
+      .finally(() => setWorldRetrying(false));
+  }, [worldRetrying]);
 
   // 언마운트/페이지 이탈 시 확실히 정리 — pagehide는 모바일 백그라운드 전환도 포함.
   useEffect(() => {
@@ -450,7 +458,9 @@ export default function WorldPage() {
           <span style={{ flex: 1, fontSize: '0.78rem', lineHeight: 1.4 }}>
             다른 기기/탭에서 이미 접속 중이에요 — 그쪽을 닫고 다시 시도해 주세요.
           </span>
-          <Button size="sm" variant="secondary" onClick={retryWorldNet}>다시 시도</Button>
+          <Button size="sm" variant="secondary" onClick={retryWorldNet} disabled={worldRetrying}>
+            {worldRetrying ? '확인 중…' : '다시 시도'}
+          </Button>
         </div>
       )}
 
@@ -469,7 +479,9 @@ export default function WorldPage() {
           <span style={{ flex: 1, fontSize: '0.78rem', lineHeight: 1.4 }}>
             지금은 멀티 접속을 확인할 수 없어 잠시 멈췄어요 — 혼자서는 계속 즐길 수 있어요. 잠시 뒤 다시 시도해 주세요.
           </span>
-          <Button size="sm" variant="secondary" onClick={retryWorldNet}>다시 시도</Button>
+          <Button size="sm" variant="secondary" onClick={retryWorldNet} disabled={worldRetrying}>
+            {worldRetrying ? '확인 중…' : '다시 시도'}
+          </Button>
         </div>
       )}
 

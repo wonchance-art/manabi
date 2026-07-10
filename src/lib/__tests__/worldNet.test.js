@@ -322,8 +322,9 @@ describe('createSessionLease — world_sessions RPC 임대(서버 권위)', () =
     vi.useRealTimers();
   });
 
-  it('함수/테이블 부재(42883·42P01)는 unavailable — presence 강등 신호', async () => {
-    for (const code of ['42883', '42P01']) {
+  it('함수/테이블 부재(42883·42P01)·스키마캐시 부재(PGRST202)는 unavailable — presence 강등 신호', async () => {
+    // PGRST202: PostgREST 가 미배포 RPC 를 DB 오류가 아니라 이 코드로 돌려주는 대표 신호(P2-3).
+    for (const code of ['42883', '42P01', 'PGRST202']) {
       const client = createFakeClient({ rpcError: { code, message: 'missing' } });
       const lease = createSessionLease({ client, userId: USER });
       expect(await lease.claim()).toBe('unavailable');
@@ -345,6 +346,8 @@ describe('createSessionLease — world_sessions RPC 임대(서버 권위)', () =
     client.db.rows.get(USER).session_token = 'thief';   // 다른 세션의 만료 인수 시뮬레이트
     expect(await lease.heartbeat()).toBe('lost');
     client.db.rpcError = { code: '42P01' };
+    expect(await lease.heartbeat()).toBe('unavailable');
+    client.db.rpcError = { code: 'PGRST202' };       // 스키마 캐시 부재도 강등 신호(P2-3)
     expect(await lease.heartbeat()).toBe('unavailable');
     client.db.rpcError = { code: '08006' };
     expect(await lease.heartbeat()).toBe('error');
@@ -477,6 +480,39 @@ describe('createWorldNet — 임대 통합(획득/충돌/만료 인수/강등/he
     vi.useRealTimers();
   });
 
+  it('P1 heartbeat 데드라인 — 연속 error(08006)로 (TTL−SAFETY) 경과 시 서버 인수 전 자진 봉인', async () => {
+    // Codex 재현: A claim→heartbeat 연속 08006(마이그레이션 미적용 아님 → 강등 금지) →
+    // 마지막 성공 이후 데드라인(TTL−SAFETY=55s) 경과 시 서버가 인수할 수 있는 시점(60s) 전에
+    // A 가 스스로 lease-error 로 봉인(sent 0). 예전엔 error 를 무기한 무시해 split-brain 이 났다.
+    vi.useFakeTimers();
+    const client = createFakeClient();               // db 임대 정상 획득
+    const net = makeNet(client);
+    const statuses = [];
+    net.onStatus((s) => statuses.push(s));
+    const ch = await joinAndSubscribe(client, net);
+    expect(statuses).toEqual(['connected']);
+    // 이후 heartbeat 를 연속 실패시킨다 — 08006 은 강등 코드가 아니므로 presence 로 내려가지 않는다.
+    client.db.rpcError = { code: '08006', message: 'connection failure' };
+    // 15s×3(=45s)까지는 데드라인(55s) 이전 → 한 번의 실패로 물러나지 않고 임대를 견딘다.
+    await vi.advanceTimersByTimeAsync(LEASE_HEARTBEAT_MS * 3);
+    await flush();
+    expect(statuses.at(-1)).toBe('connected');
+    expect(client.db.rows.has(USER)).toBe(true);
+    // 4번째 주기(t=60s): 마지막 성공 이후 60s > 55s → markLeaseError 로 봉인.
+    await vi.advanceTimersByTimeAsync(LEASE_HEARTBEAT_MS);
+    await flush();
+    expect(statuses.at(-1)).toBe('lease-error');     // 강등('connected') 아님 — 멀티 차단 봉인
+    expect(ch.unsubCount).toBe(1);                   // 채널 봉인
+    // (release 도 08006 로 실패하므로 행은 서버 TTL 로 자연 회수된다 — A 는 어느 쪽이든 봉인 유지.)
+    // 이후 B 가 claim 에 성공해도 A 는 봉인 유지: 자동 재연결·송신 없음.
+    net.sendState({ x: 1, y: 2, dir: 'down' });
+    net.sendSignal('peer', { sdp: 'x' });
+    await vi.advanceTimersByTimeAsync(60000);
+    expect(ch.sent.length).toBe(0);                  // 송신 0
+    expect(client.channels.length).toBe(1);          // 새 채널 없음
+    vi.useRealTimers();
+  });
+
   it('P1-1신 — db 임대 모드에선 위조 presence 로 퇴장하지 않는다(표시 전용)', async () => {
     vi.useFakeTimers();
     const client = createFakeClient();               // 정상 → db 임대(enforcement=lease)
@@ -528,6 +564,31 @@ describe('createWorldNet — 임대 통합(획득/충돌/만료 인수/강등/he
     await vi.advanceTimersByTimeAsync(LEASE_HEARTBEAT_MS * 3);
     await flush();
     expect(client.db.calls.length).toBe(callsBefore); // heartbeat 정지
+    vi.useRealTimers();
+  });
+
+  it('P2-4 join() 연타 — 진행 중이면 같은 Promise, claim 은 한 번만(중복 없음)', async () => {
+    // 예전엔 연타 시 둘째 claim 이 발사돼 NULL(중복)을 받고 첫 세션의 토큰을 release 해버렸다.
+    // in-flight 가드로 "단일 claim·중복 없음" 으로 역전한다.
+    vi.useFakeTimers();
+    const client = createFakeClient();
+    const net = makeNet(client);
+    const statuses = [];
+    net.onStatus((s) => statuses.push(s));
+    const p1 = net.join();
+    const p2 = net.join();               // 연타 — 진행 중이면 같은 Promise
+    expect(p2).toBe(p1);
+    await flush();
+    expect(client.channels.length).toBe(1);   // 채널도 하나만
+    const ch = client.channels[0];
+    ch.emitStatus('SUBSCRIBED');
+    await Promise.all([p1, p2]);
+    await flush();
+    const claimCalls = client.db.calls.filter((c) => c.fn === 'claim_world_session');
+    expect(claimCalls.length).toBe(1);        // 중복 claim 발사 없음
+    expect(statuses.at(-1)).toBe('connected');
+    expect(client.db.rows.has(USER)).toBe(true); // 첫 토큰이 release 되지 않고 유지
+    net.leave();
     vi.useRealTimers();
   });
 });
