@@ -280,11 +280,6 @@ export default function ReferenceChapterPage({ lang, slug }) {
             <StoryCheck story={sec.story} slug={chapter.slug} lang={lang} langCode={ref.langCode} meta={meta} />
           )}
 
-          {/* 노래로 만나기(챕터 미디어) — 서버 렌더 iframe */}
-          {sec.media && (
-            <MediaSection media={sec.media} langCode={ref.langCode} lang={lang} />
-          )}
-
           <SectionTable table={sec.table} />
           <ExampleList examples={sec.examples} langCode={ref.langCode} lang={lang} />
 
@@ -295,6 +290,11 @@ export default function ReferenceChapterPage({ lang, slug }) {
                 <p key={j} className="fr-section__para">{refInline(para)}</p>
               ))}
             </div>
+          )}
+
+          {/* 챕터 미디어 — 설명 흐름 안에 심는 노래/영상 한 컷 (별도 섹션 금지: 오너) */}
+          {sec.media && (
+            <MediaSection media={sec.media} langCode={ref.langCode} lang={lang} />
           )}
 
           {sec.enParallel && <RefParallel data={sec.enParallel} />}
