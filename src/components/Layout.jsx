@@ -9,6 +9,9 @@ import OnboardingModal from './OnboardingModal';
 import { supabase } from '../lib/supabase';
 import { useToast } from '../lib/ToastContext';
 
+// 미완성 기능 임시 숨김 — true로 바꾸면 학습·클래스 내비가 함께 복원된다.
+const SHOW_UNFINISHED_NAV = false;
+
 export default function Layout({ children }) {
   const { user, profile, isAdmin, signOut } = useAuth();
   const router = useRouter();
@@ -89,15 +92,21 @@ export default function Layout({ children }) {
 
   // 핵심 네비게이션만 노출 — 부가 기능(가이드·통계)은 프로필 안쪽으로
   const navLinks = [
-    ...(user ? [{ href: '/home', label: '홈' }, { href: '/learn', label: '학습' }] : []),
+    ...(user ? [
+      { href: '/home', label: '홈' },
+      ...(SHOW_UNFINISHED_NAV ? [{ href: '/learn', label: '학습' }] : []),
+    ] : []),
     { href: '/lessons',   label: '교재' },
     { href: '/vocab',     label: '어휘' },
     { href: '/materials', label: '자료' },
-    ...(user ? [{ href: '/cohorts', label: '클래스' }] : []),
+    ...(user && SHOW_UNFINISHED_NAV ? [{ href: '/cohorts', label: '클래스' }] : []),
   ];
 
   const mobileNavLinks = [
-    ...(user ? [{ href: '/home', label: '홈' }, { href: '/learn', label: '학습' }] : []),
+    ...(user ? [
+      { href: '/home', label: '홈' },
+      ...(SHOW_UNFINISHED_NAV ? [{ href: '/learn', label: '학습' }] : []),
+    ] : []),
     { href: '/lessons',   label: '교재' },
     { href: '/vocab',     label: '어휘' },
     { href: '/materials', label: '자료' },

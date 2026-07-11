@@ -19,7 +19,8 @@ const VALID_LANGS = new Set(LANG_FILTERS.map(f => f.key));
 export default function LessonsPage({ refManifest = {} }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  const isAdmin = profile?.role === 'admin';
 
   const [langFilter, setLangFilter] = useState(() => {
     const u = searchParams.get('lang');
@@ -218,8 +219,8 @@ export default function LessonsPage({ refManifest = {} }) {
             </div>
           </div>
 
-          {/* 독해 트랙 진입(파일럿) — 일본어에서만 노출. 챕터 경로와 별개의 "글 이해 완주" 축 */}
-          {langFilter === 'Japanese' && (
+          {/* 독해 트랙 진입(파일럿) — 관리자·일본어에서만 노출. 챕터와 별개의 "글 이해 완주" 축 */}
+          {isAdmin && langFilter === 'Japanese' && (
             <button
               type="button"
               className="lessons-continue"

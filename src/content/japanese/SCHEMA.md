@@ -33,6 +33,60 @@
 }
 ```
 
+### 스토리 섹션 (`story`) — 챕터 안의 '이야기로 확인' 모듈
+
+오너 방향(2026-07): 챕터 설명은 문형 사전으로 이관하고, 챕터는 **이야기(독해)** 중심으로 전개한다.
+기존 `sections` 배열에 예문·표 대신 `story` 하나를 실은 섹션을 끼워 넣는다(같은 렌더 루프가 분기).
+
+```js
+{
+  heading: '이야기로 확인 — 처음 뵙겠습니다',   // 다른 섹션과 동일
+  story: {
+    body: [
+      { narr: '한국어 내레이션 — 장면·맥락 설명' },                     // ja 없음: 이야기 문단
+      { speaker: 'ハルカ', ja: '…', yomi: '…', ko: '…' },              // 일본어 대사 (examples 필드 + speaker, yomi 필수)
+      // …
+    ],
+    questions: [ /* order · fill · produce — 독해 트랙(reading/n5_tokyo.js)과 동일 계약 */ ],
+  },
+}
+```
+
+- **body**: 내레이션(`narr`)이 장면을 열고, 일본어는 **대화만**(짧은 회화체 — じゃありません을 では~보다 우선). `narr` 2~3개 · 대사 6~10줄. 대사의 `yomi`는 필수이며 grammar `examples`의 yomi 표기 관행(띄어쓰기·후리가나 정렬)을 그대로 따른다.
+  - **`speaker`**(대사 줄에 권장): 화자명(예: `'ハルカ'`·`'ミンジュン'`). 렌더러가 드라마 대본처럼 화자명(작게·화자별 색)+대사로 그리고, **같은 화자가 이어지면 라벨을 생략**한다. 내레이션(`narr` 줄)에는 넣지 않는다. 있으면 비어 있지 않은 문자열이어야 한다(검증). 대사를 **화자별 색·라벨**로 구분해 "장면을 읽는 맛"을 살리려는 필드라, 대화 장면엔 채워 두길 권장한다.
+- **questions**(문항 계약 — reading 트랙 글 1·2 형식 동일):
+  - `{ id, type:'order', pattern, q, tiles:[], answer:[], ko, why }` — 타일 조립. `answer`는 `tiles`의 순열.
+  - `{ id, type:'fill', pattern, q, ja(빈칸 ［　］ 1개), answer, accept:[], why }` — 타이핑(accept 관용).
+  - `{ id, type:'produce', prompt, model:[], guide }` — 자유 산출(채점 없음).
+  - `id`는 `<slug>-sqN` 형식으로 안정적으로. 발문(`q`)은 **산출 우선** — "본문에서 ~한 문장은?" 같은 회상형 금지.
+  - 문항은 그 챕터에서 배운 것만 사용한다(order 1 챕터라면 です·じゃありません·ですか + 초급 인사·명사).
+  - **패턴 체크(챕터 자동 퀴즈)와 역할 분리** — 챕터 퀴즈 = 문형 이해 확인(빈칸 cloze·어순·산출을 예문에서 기계 생성) / 스토리 문항 = **장면 속 실전 산출**. 스토리 문항은 전부 **상황 지시형**(등장인물이 되어 "하루카에게 ~라고 답해 보세요")으로 쓰고, 본문 대사를 그대로 되짚는 회상형·같은 패턴을 같은 방식(조립/빈칸)으로 재확인하는 기계적 중복을 피한다.
+- 렌더러(`ReferenceChapterPage.jsx`)는 `section.story`를 분기해 내레이션(이탤릭 은은한 문단)+대사(화자 라벨·요미 토글·ko 탭 병기)와 인터랙티브 문항(`ReadingTextView.jsx`의 채점 헬퍼 재사용)을 그린다. 채점 이벤트·SRS 발행은 하지 않는다(로컬 확인용).
+- 검증: `scripts/check-content.mjs`가 story `body`의 `{ja,yomi}` 후리가나 정렬·`speaker`(있으면 비어 있지 않은 문자열)와 문항 스키마(order/fill/produce 필수 필드)를 게이트한다.
+
+### 미디어 섹션 (`media`) — 챕터 안의 '노래로 만나기(JPOP)' 모듈
+
+챕터에서 배운 문형이 후렴에 그대로 들리는 곡을 붙여, 문형을 한 소절로 각인시키는 훅. `story`와 같은 자리(`sections` 배열)에 얹으면 같은 렌더 루프가 분기한다.
+
+```js
+{
+  heading: '노래로 만나기 — Pretender',              // 다른 섹션과 동일
+  media: {
+    youtubeId: 'TQ8WlA2GXbk',                       // 검증된 공식 영상 ID만 (영숫자·-·_ 11자)
+    songTitle: 'Pretender', artist: 'Official髭男dism',
+    line: { ja: '君は運命の人じゃない', yomi: 'きみは うんめいの ひとじゃない', ko: '너는 운명의 상대가 아니야' },  // 가사 한 줄만
+    point: '문형 연결 해설 (한국어) — 이 소절에서 챕터 문형이 어떻게 쓰였는지 2~3문장',
+    culture: '문화 코멘트 (한국어, 선택)',
+  },
+}
+```
+
+- **저작권**: 가사는 **한 줄만** 인용하고 출처(곡명·아티스트)를 반드시 병기한다. `youtubeId`는 저작권자가 올린 **공식 영상**만 — 검증 없이 임의 ID 금지.
+- **line**: `examples`/`story`와 동일한 `{ja,yomi,ko}` 계약. `yomi`는 grammar `examples`의 후리가나 정렬 관행을 그대로 따른다(루비로 렌더).
+- **필수**: `youtubeId`·`songTitle`·`artist`·`line(ja,yomi,ko)`·`point`. `culture`는 선택.
+- 렌더러(`ReferenceChapterPage.jsx`)는 `section.media`를 분기해 **서버 렌더 `<iframe>`**(youtube-nocookie, 16:9 반응형, `loading="lazy"`)과 곡명·아티스트 캡션, 가사 한 줄(JaText 루비 + ko), point·culture 본문을 그린다. react-youtube 등 클라이언트 컴포넌트를 쓰지 않아 First Load JS 증가가 없다.
+- 검증: `scripts/check-content.mjs`가 `youtubeId` 형식(11자), `line` 후리가나 정렬, `songTitle`/`artist` 필수를 게이트한다.
+
 - 한국어 화자의 **최대 자산 = 어순 동일 + 조사 1:1 대응 + 한자어 공유**. `vsKo`/`hanja`로 적극 연결하되 챕터당 1~2개.
 - 반대로 **어긋나는 지점**(수수동사, 피해수동, たら/ば/と/なら, 박자 발음)은 `pitfall`로 정면 처리.
 - N5 초반 챕터(문자·발음·한자 읽기)는 프랑스어 A0처럼 '본격 학습 전 기초 상식' 역할.

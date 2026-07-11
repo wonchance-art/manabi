@@ -7,6 +7,9 @@ import RefSpeak from '../components/RefSpeak';
 import RefPatternCheck from '../components/RefPatternCheck';
 import GojuonChart from '../components/GojuonChart';
 import KanaTest from '../components/KanaTest';
+// 스토리 모듈(이야기로 확인) — 인터랙티브 채점은 클라이언트 경계로 분리(서버 페이지가 레지스트리를
+// 클라이언트 번들로 끌어오지 않도록). story 는 순수 직렬화 데이터라 props 로 그대로 넘긴다.
+import StoryCheck from './StoryCheck';
 
 function ExampleList({ examples, langCode, lang }) {
   if (!examples?.length) return null;
@@ -33,6 +36,79 @@ function ExampleList({ examples, langCode, lang }) {
         );
       })}
     </ul>
+  );
+}
+
+// 노래로 만나기(챕터 미디어) — 순수 서버 렌더. react-youtube 등 클라이언트 컴포넌트를 쓰지 않고
+// youtube-nocookie iframe만 심어 First Load JS 증가를 0으로 유지한다. 저작권을 지켜 가사는 한 줄만.
+function MediaSection({ media, langCode, lang }) {
+  if (!media?.youtubeId) return null;
+  const { youtubeId, songTitle, artist, line, point, culture } = media;
+  return (
+    <div className="fr-media">
+      {/* 16:9 반응형 래퍼 — aspect-ratio로 어떤 폭에서도 비율 유지 */}
+      <div
+        style={{
+          position: 'relative',
+          width: '100%',
+          aspectRatio: '16 / 9',
+          borderRadius: 10,
+          overflow: 'hidden',
+          background: '#000',
+        }}
+      >
+        <iframe
+          src={`https://www.youtube-nocookie.com/embed/${youtubeId}`}
+          title={`${songTitle}${artist ? ` — ${artist}` : ''}`}
+          loading="lazy"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowFullScreen
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
+        />
+      </div>
+      {(songTitle || artist) && (
+        <div
+          style={{
+            fontSize: '0.82rem',
+            color: 'var(--text-muted)',
+            marginTop: 8,
+            display: 'flex',
+            alignItems: 'baseline',
+            gap: 6,
+            flexWrap: 'wrap',
+          }}
+        >
+          {songTitle && <strong style={{ color: 'var(--text-secondary)', fontWeight: 700 }}>{songTitle}</strong>}
+          {artist && <span lang={langCode}>{artist}</span>}
+        </div>
+      )}
+
+      {/* 가사 한 줄 — 기존 예문과 동일 톤(루비 + ko) */}
+      {line?.ja && (
+        <div className="fr-example" style={{ marginTop: 12 }}>
+          <div className="fr-example__fr">
+            {langCode === 'ja' ? (
+              <JaText ja={line.ja} yomi={refPron(line)} />
+            ) : (
+              <span lang={langCode}>{line.ja}</span>
+            )}
+          </div>
+          {line.ko && <div className="fr-example__ko">{line.ko}</div>}
+        </div>
+      )}
+
+      {/* point · culture — 본문 스타일 */}
+      {point && (
+        <div className="fr-section__detail" style={{ marginTop: 12 }}>
+          <p className="fr-section__para">{refInline(point)}</p>
+        </div>
+      )}
+      {culture && (
+        <div className="fr-section__detail">
+          <p className="fr-section__para">{refInline(culture)}</p>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -199,6 +275,11 @@ export default function ReferenceChapterPage({ lang, slug }) {
             </div>
           )}
 
+          {/* 스토리 모듈(이야기로 확인) — 내레이션·대사 + 인터랙티브 문항 */}
+          {sec.story && (
+            <StoryCheck story={sec.story} slug={chapter.slug} lang={lang} langCode={ref.langCode} meta={meta} />
+          )}
+
           <SectionTable table={sec.table} />
           <ExampleList examples={sec.examples} langCode={ref.langCode} lang={lang} />
 
@@ -209,6 +290,11 @@ export default function ReferenceChapterPage({ lang, slug }) {
                 <p key={j} className="fr-section__para">{refInline(para)}</p>
               ))}
             </div>
+          )}
+
+          {/* 챕터 미디어 — 설명 흐름 안에 심는 노래/영상 한 컷 (별도 섹션 금지: 오너) */}
+          {sec.media && (
+            <MediaSection media={sec.media} langCode={ref.langCode} lang={lang} />
           )}
 
           {sec.enParallel && <RefParallel data={sec.enParallel} />}

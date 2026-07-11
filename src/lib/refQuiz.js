@@ -169,7 +169,11 @@ export function buildChapterQuiz(chapter, ref, opts = {}) {
       const seg = segByPinyin(main, ex.pinyin);
       if (seg) tokens = seg;
     }
-    if (tokens.length >= 3 && tokens.length <= 10) {
+    // CJK 청크는 8자 초과 시 어순 문항 부적격 — 무공백 예문의 거대 토큰이 타일로
+    // 나가 화면에서 2~3줄로 감기는 것을 원천 차단한다(형태소 재분할은 오분할 위험이
+    // 커서 하지 않는다). 라틴 단어는 단어 단위가 곧 청크라 길이 제한을 두지 않는다.
+    const tilable = tokens.every(t => !/[぀-ヿ㐀-鿿]/.test(t) || t.length <= 8);
+    if (tokens.length >= 3 && tokens.length <= 10 && tilable) {
       apply.push({ type: 'order', tokens, answer: main, ko: ex.ko, pron: refPron(ex) });
       usedApply.add(main);
     }
