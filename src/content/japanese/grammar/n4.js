@@ -6,6 +6,7 @@
 export default [
   {
     slug: "n4-01-plain-form",
+    kanjiExempt: ["野原", "孤独", "腹", "減"],
     level: "N4",
     order: 1,
     title: "です·ます를 벗기면 나오는 민낯 — 반말 보통형",
@@ -84,6 +85,7 @@ export default [
 
   {
     slug: "n4-01b-noun-modification",
+    kanjiExempt: ["背"],
     level: "N4",
     order: 2,
     title: "'어제 본 영화' 그대로 붙이기 — 어순은 한국어 판박이",
@@ -180,6 +182,7 @@ export default [
 
   {
     slug: "n4-03-potential",
+    kanjiExempt: ["絶対", "負", "戦"],
     level: "N4",
     order: 4,
     title: "'이거 나 읽을 수 있어!' — 동사에 능력을 다는 가능형",
@@ -241,7 +244,7 @@ export default [
         pitfall: "見える/聞こえる와 見られる/聞ける는 달라요. **見える**는 의지와 무관하게 '눈에 들어오다'(창밖에 산이 보인다), **見られる**는 조건이 갖춰져 '볼 수 있다'(표를 사면 볼 수 있다)예요. 한국어 '보이다/볼 수 있다'의 구별과 똑같으니, 모어 감각으로 검산하세요.",
       },
       {
-        heading: "らぬき — 회화에서 ら를 빼는 구어 가능형",
+        heading: "회화에서 ら를 빼는 구어 가능형",
         pattern: "食べられる → 食べれる (구어 らぬき)",
         patternKo: "구어에서 ら를 빼는 가능형",
         body:
@@ -329,7 +332,7 @@ export default [
         tip: "헷갈리면 から로 바꿔 말하세요. もらう의 출처는 に/から 둘 다 가능하므로, から를 쓰면 '~에게서'라는 방향이 분명해져 실수가 줄어요.",
       },
       {
-        heading: "〜てあげる/〜てくれる/〜てもらう — 행위를 주고받기",
+        heading: "행위까지 주고받는 세 콤비",
         pattern: "て형 + あげる / くれる / もらう",
         patternKo: "물건이 아니라 행위(호의)를 주고받기",
         body:
@@ -369,7 +372,7 @@ export default [
         vsKo: "한국어 '-면'은 이 넷을 모두 덮는 만능 어미예요. 그래서 '-면이 보이면 たら'식의 1:1 암기가 통하지 않아요. 대신 '필연인가, 가정인가, 일회적인가, 주제 받기인가'라는 **의미 분류**를 먼저 하고 형식을 고르는 습관을 들이세요.",
       },
       {
-        heading: "と — 누르면 나온다, 자연의 법칙",
+        heading: "누르면 나온다, 자연의 법칙",
         pattern: "사전형 + と",
         patternKo: "~하면 반드시 ~된다 (필연)",
         body:
@@ -383,7 +386,7 @@ export default [
         pitfall: "駅に着くと、電話してください(X) — と 뒤에 명령·부탁이 와서 비문이에요. と는 '누르면 자동으로 나온다'는 필연 전용이라 사람의 의지·명령·권유를 뒤에 받지 못해요. 이런 자리를 담당하는 조건형은 다음 챕터에서 만나요 — 지금은 'と 뒤는 자동문'만 확실히 잡아두세요.",
       },
       {
-        heading: "ば — 조건 자체에 초점",
+        heading: "조건 자체에 초점",
         pattern: "동사 う단→え단+ば · い형용사→ければ (行けば · 安ければ)",
         patternKo: "조건이 갖춰진다면",
         body:
@@ -400,6 +403,7 @@ export default [
 
   {
     slug: "n4-05b-conditional-tara-nara",
+    kanjiExempt: ["終了"],
     level: "N4",
     order: 7,
     title: "'포기하면 거기서 끝' — 만능 たら와 받아치는 なら",
@@ -409,7 +413,7 @@ export default [
     duration: "약 8분",
     sections: [
       {
-        heading: "たら — 가장 만능, 그리고 '~했더니'",
+        heading: "가장 만능, 그리고 '~했더니'",
         pattern: "た형 + ら (行ったら · 安かったら)",
         patternKo: "일어난 그다음에 — 만능 조건",
         body:
@@ -425,7 +429,7 @@ export default [
         tip: "넷 중 무엇을 쓸지 0.5초 안에 판단이 안 되면 たら를 고르세요. たら가 어색한 자리는 상대적으로 적어서, '망설여지면 たら'는 실전에서 꽤 믿을 만한 보험이에요.",
       },
       {
-        heading: "なら — '그 얘기라면'으로 받아치기",
+        heading: "'그 얘기라면'으로 받아치기",
         pattern: "N/보통형 + なら",
         patternKo: "'그거라면' — 주제 받기",
         body:
@@ -531,6 +535,7 @@ export default [
 
   {
     slug: "n4-07-causative",
+    kanjiExempt: ["公園"],
     level: "N4",
     order: 9,
     title: "'제가 하게 해 주세요'라는 치트키 — 시키는 문법 사역형",
@@ -589,7 +594,7 @@ export default [
         pitfall: "한국어는 '아들을 가게 했다 / 아들에게 먹게 했다'처럼 조사가 자유로워서, 일본어에서도 아무 쪽이나 쓰기 쉬워요. 판별 질문은 하나 — **문장 안에 を가 이미 있는가?** 있으면 행위자는 に, 없으면 を예요.",
       },
       {
-        heading: "〜させてください — 가장 공손한 '제가 할게요'",
+        heading: "가장 공손한 '제가 할게요'",
         pattern: "사역형 て형 + ください",
         patternKo: "제가 ~하게 해 주세요",
         body:
@@ -651,6 +656,7 @@ export default [
 
   {
     slug: "n4-08b-comparison-superlative",
+    kanjiExempt: ["一番"],
     level: "N4",
     order: 11,
     title: "결국 뭐가 제일 맛있어? — 기노코 vs 다케노코, 최상급",
@@ -838,6 +844,7 @@ export default [
 
   {
     slug: "n4-10b-auxiliary-shimau-miru",
+    kanjiExempt: ["逃"],
     level: "N4",
     order: 15,
     title: "먹어버렸다 vs 먹어봤다 — 후회의 てしまう, 시도의 てみる",

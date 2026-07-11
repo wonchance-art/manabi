@@ -22,20 +22,29 @@ import { allowedKanjiSet, KANJI_TO_LEVEL, isKanjiChar } from './kanji-levels.mjs
     throw new Error('[kanji self-test] 급 배정 불일치');
 }
 
-// P9: 한자 레벨 검사 대상을 '일본어 학습 텍스트' 필드로 한정한다.
-// 왜 전수 재귀가 아니라 화이트리스트인가 —
-//   한국어 ko·note·body(산문)·tip·summary·patternKo 등에는 한국 한자음 브리지로 정자체 한자
-//   (學·爲·增·氣·大槪 등)를 괄호 주석처럼 병기하는 관행이 있어, 이들이 전부 '초과 한자'로
-//   오탐된다. 이 필드들은 학습 대상 일본어 문장이 아니라 해설·인용·메타라 경고 소음만 키운다.
-//   그래서 사용자가 실제로 읽고 따라 쓰는 학습 문장이 실리는 필드만 모은다:
-//     section.pattern · section.examples[].ja · section.table.rows 셀 ·
-//     section.story.body[].ja · section.media.line.ja
-//   (titleFr·heading·tip·body 산문 속 일본어와 story 문항 해설은 인용·메타라 제외 — 오너 방침.)
-//   또한 한글(가-힣)이 섞인 문자열은 검사 대상에서 뺀다 — pattern·table 셀에는 한국어 대조행
-//   ("學生은 學校에서…")·한자음 브리지 주석("約束=약속")이 흔한데, 이는 일본어 학습 문장이
-//   아니라 한국어 해설이라 정자체·상위급 한자가 섞여도 오탐이다("table 셀 중 일본어"만 대상).
-//   ja/story/media 학습 문장은 순수 일본어라 한글이 없어 이 필터에 걸리지 않는다.
+// P9: 한자 레벨 검사 대상 — 두 갈래로 나눠 챕터의 '일본어'를 빠짐없이 검사한다.
+//
+//  (A) 순수 일본어 학습 필드 — 사용자가 읽고 따라 쓰는 학습 문장. 문자열 전체가 일본어라
+//      한자 런을 전부(고립 한자 포함, 예 "渋谷。") 검사한다. 한글이 섞인 문자열은 한국어
+//      대조행/브리지("學生은 學校에서…", "約束=약속")라 통째로 제외.
+//        section.pattern · examples[].ja · table.rows 셀 · story.body[].ja · media.line.ja
+//
+//  (B) 혼합 한국어 산문 필드 — 해설·훅·주석. 한국어 사이에 일본어 인용이 섞인다.
+//      여기서도 '일본어 한자'는 챕터 레벨을 지켜야 한다(정책-검사 정합, P9). 다만 한국
+//      한자음 브리지로 병기한 정자체 한자(學·爲·增·氣·大槪·約束=약속·(大槪) 등)를
+//      오탐하면 안 되므로, '가나 인접' 여부로 일본어 런과 한국어 주석을 가른다:
+//        · 한자 런 바로 앞이나 뒤에 가나(ひらがな·カタカナ·ー)가 있으면 → 일본어 인용 → 검사.
+//          (예 "ちょっと待って" 待↔って, "公です" 公↔で)
+//        · 앞뒤에 가나가 없으면(한글·공백·괄호·=·문장부호·경계로 둘러싸임) → 한국어 한자음
+//          주석 → 면제. 이 한 규칙이 "한자+한글", "약속=약속", "(大槪)", "大槪 이런 식"을
+//          모두 자연스럽게 덮는다.
+//      검사 필드: heading · body · tip · pitfall · summary · vsKo · patternKo ·
+//                 table.caption · examples[].note.
+//
+//  kanjiExempt(챕터별 문화 소재·고유명사·문자 시연)는 (A)(B) 공통으로 면제한다.
 const hasHangul = s => /[가-힣]/.test(s);
+const isKana = c => /[ぁ-ゖァ-ヺ]/.test(c) || c === 'ー';
+// (A) 순수 일본어 학습 필드 — 한글 없는 문자열만, 한자 런 전부 검사
 function collectKanjiCheckStrings(ch, out) {
   const push = s => { if (typeof s === 'string' && !hasHangul(s)) out.push(s); };
   for (const sec of (ch.sections || [])) {
@@ -48,39 +57,72 @@ function collectKanjiCheckStrings(ch, out) {
     if (sec.media && sec.media.line) push(sec.media.line.ja);
   }
 }
-// P9: 챕터 레벨 초과 한자를 집계. kanjiExempt 문자열의 한자는 면제. → Map(kanji→등장수)
+// (B) 혼합 한국어 산문 필드
+function collectProseStrings(ch, out) {
+  const push = s => { if (typeof s === 'string') out.push(s); };
+  for (const sec of (ch.sections || [])) {
+    push(sec.heading); push(sec.body); push(sec.tip); push(sec.pitfall);
+    push(sec.summary); push(sec.vsKo); push(sec.patternKo);
+    if (sec.table) push(sec.table.caption);
+    for (const ex of (sec.examples || [])) if (ex) push(ex.note);
+  }
+}
+// 산문 문자열에서 '가나 인접' 한자 런만 골라 초과분 집계
+function tallyProseKanji(s, allowed, exempt, viol) {
+  if (typeof s !== 'string') return;
+  const a = [...s];
+  for (let i = 0; i < a.length;) {
+    if (!isKanjiChar(a[i])) { i++; continue; }
+    let j = i; while (j < a.length && isKanjiChar(a[j])) j++;
+    const before = i > 0 ? a[i - 1] : '', after = j < a.length ? a[j] : '';
+    if (isKana(before) || isKana(after))          // 일본어 인용 런만 검사(한국어 주석 면제)
+      for (let k = i; k < j; k++) {
+        const c = a[k];
+        if (!allowed.has(c) && !exempt.has(c)) viol.set(c, (viol.get(c) || 0) + 1);
+      }
+    i = j;
+  }
+}
+// P9: 챕터 레벨 초과 한자를 집계((A)+(B)). kanjiExempt 문자열의 한자는 면제. → Map(kanji→등장수)
 function chapterKanjiViolations(ch) {
   const allowed = allowedKanjiSet(ch.level);
   const exempt = new Set();
   for (const s of (ch.kanjiExempt || [])) for (const c of s) if (isKanjiChar(c)) exempt.add(c);
-  const strings = [];
-  collectKanjiCheckStrings(ch, strings);
   const viol = new Map();
-  for (const s of strings)
+  const jaStrings = [];
+  collectKanjiCheckStrings(ch, jaStrings);
+  for (const s of jaStrings)
     for (const c of s) {
       if (!isKanjiChar(c) || allowed.has(c) || exempt.has(c)) continue;
       viol.set(c, (viol.get(c) || 0) + 1);
     }
+  const proseStrings = [];
+  collectProseStrings(ch, proseStrings);
+  for (const s of proseStrings) tallyProseKanji(s, allowed, exempt, viol);
   return viol;
 }
-// ── P9 필드 한정 자가 테스트 ──
-// (1) ko·note 산문의 정자체 한자(學·爲·氣)는 오탐 금지, ja 학습 텍스트의 초과 한자(公=N3)는 검출.
-// (2) 한글 섞인 table 대조행("學生은…")·패턴 한자음 주석은 검사 제외.
-// (3) kanjiExempt로 태깅한 문화 소재 한자(渋·谷)는 면제.
+// ── P9 자가 테스트 ──
+// (1) ja 학습 텍스트의 초과 한자(公=N3)는 검출.
+// (2) 한글 섞인 table 대조행("學生은…")·ko는 (A) 제외.
+// (3) 산문(B) 속 '가나 인접' 일본어 한자(待=N4, 待って)는 검출; 한국어 한자음 브리지
+//     (學·爲·氣·大槪·工夫한다·約束=약속·(大槪))는 가나 비인접이라 면제.
+// (4) kanjiExempt로 태깅한 문화 소재 한자(渋·谷)는 (A)(B) 공통 면제.
 {
   const fake = { level: 'N5', kanjiExempt: ['渋谷'], sections: [{
     pattern: 'AはBです',
+    heading: '待って — 라고 말하고 싶을 때',      // 待(N4) 가나 인접 → 검출
     examples: [
-      { ja: '公です', ko: '學(한국 한자음 브리지) 설명', note: '爲·氣 병기' },
-      { ja: 'まもなく、渋谷。', ko: '곧 시부야' },
+      { ja: '公です', ko: '學(한국 한자음 브리지) 설명', note: '爲·氣 병기' }, // 公(N3) 검출 / 爲·氣 면제
+      { ja: 'まもなく、渋谷。', ko: '곧 시부야' },   // 渋谷 kanjiExempt 면제
     ],
-    table: { rows: [['學生은 學校에서 工夫한다', '토씨']] }, // 한국어 대조행 — 검사 제외
-    tip: '大槪 이런 식',
+    table: { rows: [['學生은 學校에서 工夫한다', '토씨']], caption: '約束=약속 표' }, // 한국어 — 면제
+    tip: '大槪 이런 식, 工夫한다처럼',              // 大·槪·工·夫 가나 비인접 → 면제
   }] };
   const v = chapterKanjiViolations(fake);
   if (!v.has('公')) throw new Error('[kanji self-test] ja 학습텍스트의 초과 한자(公)를 놓침');
-  if (v.has('學') || v.has('爲') || v.has('氣') || v.has('槪') || v.has('工') || v.has('夫'))
-    throw new Error('[kanji self-test] ko/note/tip 산문·한글 table행의 정자체·상위급 한자를 오탐');
+  if (!v.has('待')) throw new Error('[kanji self-test] 산문(heading)의 가나 인접 일본어 한자(待って)를 놓침');
+  if (v.has('學') || v.has('爲') || v.has('氣') || v.has('槪') || v.has('大') || v.has('工') || v.has('夫') || v.has('約') || v.has('束'))
+    throw new Error('[kanji self-test] 한국어 한자음 브리지(정자체·비가나인접)를 오탐');
   if (v.has('渋') || v.has('谷')) throw new Error('[kanji self-test] kanjiExempt 태깅 한자(渋谷)가 면제되지 않음');
 }
 
