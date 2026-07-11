@@ -8377,14 +8377,16 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .fr-quiz__line-hint { font-size: 0.76rem; color: var(--text-muted); }
 /* 단어 토큰 — 균일 폭 그리드로 가지런히 */
 .fr-quiz__tokens {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  /* grid(minmax 1fr)는 타일을 열 폭에 맞춰 늘리고 긴 청크를 내부 줄바꿈시켰다 —
+     자연 폭 flex + 타일 한 줄 고정(nowrap)으로 교체 (오너: 청크는 항상 한 줄) */
+  display: flex; flex-wrap: wrap;
   gap: 8px;
 }
 .fr-quiz__tokens .fr-quiz__token { text-align: center; }
 .fr-quiz__token {
   display: inline-flex; align-items: center; justify-content: center;
   min-height: 44px;
+  white-space: nowrap;
   font-size: 0.88rem; font-weight: 600;
   color: var(--text-primary);
   background: var(--bg-primary);
