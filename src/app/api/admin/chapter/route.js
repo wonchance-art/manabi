@@ -13,7 +13,7 @@
 import { revalidatePath } from 'next/cache';
 import { getRefLang } from '@/content/refLangs';
 import { requireAdmin } from '@/lib/supabaseServer';
-import { mergeChapter, isValidOverride } from '@/lib/contentOverrides';
+import { mergeChapter, isValidOverride, missingStoryIds } from '@/lib/contentOverrides';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -88,6 +88,15 @@ export async function POST(request) {
   // 원본 존재 확인 — 없는 슬러그에 오버라이드를 만들지 않는다.
   const base = getBaseChapter(lang, slug);
   if (!base) return Response.json({ error: '챕터를 찾을 수 없습니다.' }, { status: 404 });
+
+  // story 문항 id 불변 — 학습 기록·채점 키 연동이라 삭제·변경을 서버가 최종 차단.
+  const missing = missingStoryIds(base, data);
+  if (missing.length > 0) {
+    return Response.json(
+      { error: `story 문항 id는 삭제·변경할 수 없습니다 (기록 연동): ${missing.join(', ')}` },
+      { status: 400 }
+    );
+  }
 
   // 불변 필드는 저장 데이터에서도 base로 강제(방어) — 렌더 병합과 이중 안전.
   const safeData = { ...data, slug: base.slug, level: base.level, order: base.order };
