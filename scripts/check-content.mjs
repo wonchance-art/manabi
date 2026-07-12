@@ -47,6 +47,7 @@ const isKana = c => /[ぁ-ゖァ-ヺ]/.test(c) || c === 'ー';
 // (A) 순수 일본어 학습 필드 — 한글 없는 문자열만, 한자 런 전부 검사
 function collectKanjiCheckStrings(ch, out) {
   const push = s => { if (typeof s === 'string' && !hasHangul(s)) out.push(s); };
+  push(ch.titleFr); // 챕터 원어 부제 — ReferenceChapterPage가 제목 바로 아래 렌더
   for (const sec of (ch.sections || [])) {
     push(sec.pattern);
     for (const ex of (sec.examples || [])) if (ex) push(ex.ja);
@@ -54,17 +55,31 @@ function collectKanjiCheckStrings(ch, out) {
       for (const row of sec.table.rows) if (Array.isArray(row)) for (const cell of row) push(cell);
     if (sec.story && Array.isArray(sec.story.body))
       for (const b of sec.story.body) if (b) push(b.ja);
+    // story.questions — 사용자가 읽고 조립·타이핑하는 순수 일본어(문형 라벨·빈칸문·타일·정답·모범답안)
+    if (sec.story) for (const q of (sec.story.questions || [])) {
+      push(q.pattern); push(q.ja);
+      for (const t of (Array.isArray(q.tiles) ? q.tiles : [])) push(t);
+      if (typeof q.answer === 'string') push(q.answer);
+      else for (const t of (Array.isArray(q.answer) ? q.answer : [])) push(t);
+      for (const t of (Array.isArray(q.accept) ? q.accept : [])) push(t);
+      for (const t of (Array.isArray(q.model) ? q.model : [])) push(t);
+    }
     if (sec.media && sec.media.line) push(sec.media.line.ja);
   }
 }
 // (B) 혼합 한국어 산문 필드
 function collectProseStrings(ch, out) {
   const push = s => { if (typeof s === 'string') out.push(s); };
+  push(ch.title); push(ch.topic); push(ch.summary); // 챕터 카드·헤더에 렌더되는 산문
   for (const sec of (ch.sections || [])) {
     push(sec.heading); push(sec.body); push(sec.tip); push(sec.pitfall);
     push(sec.summary); push(sec.vsKo); push(sec.patternKo);
     if (sec.table) push(sec.table.caption);
     for (const ex of (sec.examples || [])) if (ex) push(ex.note);
+    // story.questions의 산문(지시문·산출 프롬프트·가이드·해설)
+    if (sec.story) for (const q of (sec.story.questions || [])) {
+      push(q.q); push(q.prompt); push(q.guide); push(q.why);
+    }
   }
 }
 // 산문 문자열에서 '가나 인접' 한자 런만 골라 초과분 집계
@@ -142,6 +157,26 @@ function chapterKanjiViolations(ch) {
   const jaN4 = { level: 'N4', sections: [{ examples: [{ ja: '人がいます', ko: '사람이 있어요' }] }] };
   if (chapterKanjiViolations(jaN4).has('人'))
     throw new Error('[kanji self-test] N4 챕터에서 N5 허용 한자(人)가 잘못 검출됨');
+}
+// ── 검사 범위 자가 테스트 ── titleFr(챕터 원어 부제)·story.questions(answer 등)도 수집되는지,
+// N4 이상에서는 titleFr의 레벨 허용 한자가 통과하는지 확인한다.
+{
+  const t1 = { level: 'N5', titleFr: '動詞のます形', sections: [] };
+  const v1 = chapterKanjiViolations(t1);
+  if (!v1.has('動') || !v1.has('詞') || !v1.has('形'))
+    throw new Error('[kanji self-test] N5 titleFr(動詞のます形)의 한자를 놓침');
+  const t2 = { level: 'N5', sections: [{ story: { body: [], questions: [
+    { type: 'fill', ja: 'せんせいじゃ［　］。', answer: '公です', accept: ['学生'], tiles: ['先生'], model: ['何ですか'] },
+  ] } }] };
+  const v2 = chapterKanjiViolations(t2);
+  if (!v2.has('公') || !v2.has('学') || !v2.has('先') || !v2.has('何'))
+    throw new Error('[kanji self-test] story.questions(answer/accept/tiles/model)의 한자를 놓침');
+  const t3 = { level: 'N4', titleFr: '動詞のて形', sections: [] }; // 動(N4) 허용 · 詞(N2)·形(N3) 초과
+  const v3 = chapterKanjiViolations(t3);
+  if (v3.has('動'))
+    throw new Error('[kanji self-test] N4 titleFr에서 레벨 허용 한자(動)가 잘못 검출됨');
+  if (!v3.has('詞') || !v3.has('形'))
+    throw new Error('[kanji self-test] N4 titleFr의 상위급 한자(詞=N2·形=N3)를 놓침');
 }
 
 const LANGS = {

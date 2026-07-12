@@ -6,12 +6,12 @@
 const chapters = [
   {
     slug: "n3-01-keigo-intro",
-    kanjiExempt: ["召し上がる", "ご覧"],
+    kanjiExempt: ["召し上がる", "ご覧", "敬語"],
     level: "N3",
     order: 1,
     title: "높임말인데 우리 것과 다르다?",
     topic: "경어 입문 — 3분류·존경어",
-    titleFr: "敬語の基礎",
+    titleFr: "敬語のきそ",
     summary: "일본어 경어의 3분류 지도를 한국어 높임법에 포개 그린 뒤, 상대를 높이는 존경어부터 익혀요.",
     duration: "약 8분",
     sections: [
@@ -54,7 +54,7 @@ const chapters = [
 
   {
     slug: "n3-01b-kenjougo-uchisoto",
-    kanjiExempt: ["伺う", "拝見", "案内"],
+    kanjiExempt: ["伺う", "拝見", "案内", "謙譲語"],
     level: "N3",
     order: 2,
     title: "내 사장님을 남 앞에선 깎아내려야 한다고?",
@@ -102,7 +102,7 @@ const chapters = [
     order: 3,
     title: "\"비 온대\"와 \"비 올 것 같아\"는 한 글자 차이",
     topic: "전문·양태 そうだ",
-    titleFr: "そうだ（伝聞・様態）",
+    titleFr: "そうだ（でんぶん・ようたい）",
     summary: "'~라고 한다'(전문)와 '~할 것 같다'(양태) — 똑같은 そうだ가 붙는 자리 하나로 갈려요. 정보의 출처를 밝히는 によると도 여기서 짝지어요.",
     duration: "약 8분",
     sections: [
@@ -372,7 +372,7 @@ const chapters = [
     order: 8,
     title: "\"억지로 하게 됐어요\"의 문법",
     topic: "사역수동 〜させられる",
-    titleFr: "使役受身 〜させられる",
+    titleFr: "しえきうけみ 〜させられる",
     summary: "'시킴을 당하다'라는, 한국어에 한 단어로 없는 형태. 만드는 법을 분해하고 '억지로'의 뉘앙스를 잡아요.",
     duration: "약 10분",
     sections: [

@@ -536,6 +536,8 @@ const chapters = [
   {
     slug: "n1-04-rhetoric-discourse",
     level: "N1",
+    // P9 한자 예외: 婉曲(완곡) — 이 챕터의 수사 용어(학습 대상). 婉은 非JLPT 한자라 등록, 요미 병기.
+    kanjiExempt: ["婉曲"],
     order: 11,
     title: "끝까지 말하지 않는 언어가 있다",
     topic: "담화·수사 言いさし와 완곡",
@@ -590,6 +592,8 @@ const chapters = [
   {
     slug: "n1-06-translation",
     level: "N1",
+    // P9 한자 예외: 韓 — 국명(韓国·韓日·日韓) 고유명사 한자(非JLPT).
+    kanjiExempt: ["韓"],
     order: 12,
     title: "닮아서 더 위험한 두 언어 사이",
     topic: "한일·일한 번역",
