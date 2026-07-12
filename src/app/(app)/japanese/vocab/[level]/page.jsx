@@ -1,8 +1,7 @@
 import ReferenceVocabPage from '@/views/ReferenceVocabPage';
-import { REF_LANGS } from '@/content/refLangs';
-import { countBunkei } from '@/content/japanese';
+import { JAPANESE_VOCAB_REF } from '@/lib/japaneseVocabRegistry';
 
-const ref = REF_LANGS.Japanese;
+const ref = JAPANESE_VOCAB_REF;
 
 // 어휘가 있는 레벨만 (OT 등 문법 전용 레벨 제외)
 const VOCAB_LEVELS = ref.LEVEL_META.filter(m => ref.countVocab(m.key) > 0);
@@ -29,7 +28,7 @@ export default async function Page({ params }) {
       levelMeta={VOCAB_LEVELS}
       meta={ref.getLevelMeta(level)}
       vocab={ref.getVocab(level)}
-      hasBunkei={countBunkei(level) > 0}
+      hasBunkei={Boolean(ref.getVocab(level))}
     />
   );
 }
