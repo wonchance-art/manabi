@@ -487,11 +487,18 @@ export default function WorldPage() {
     };
     bus.on('peers:dist', onDist);
 
-    // 마이크·연결 상태 표출.
-    voice.onStatus(({ micOn: on, peers }) => {
+    // 마이크·연결 상태 표출. voice-unreachable(대칭형 NAT 등 ICE 실패)은 1회만 토스트로
+    // 안내하고 채팅으로 유도한다 — 조용한 실패 방지(Codex 음성 견고화 라운드의 상태 노출 배선).
+    let voiceUnreachableNotified = false;
+    voice.onStatus(({ micOn: on, peers, status }) => {
       if (cancelled) return;
       setMicOn(on);
       setNearVoiceCount(peers.filter((p) => p.connected).length);
+      if (status === 'voice-unreachable' && on && !voiceUnreachableNotified) {
+        voiceUnreachableNotified = true;
+        toast('지금 네트워크에서는 음성이 안 닿아요. 채팅으로 이야기해 보세요!', 'info');
+      }
+      if (status !== 'voice-unreachable') voiceUnreachableNotified = false;
     });
 
     // presence leave가 안 오고 조용히 사라진 peer(탭 얼음/끊김)를 주기적으로 청소.
