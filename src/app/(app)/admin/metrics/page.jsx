@@ -82,7 +82,7 @@ export default async function Page({ searchParams }) {
         </div>
         <Card title="마이그레이션이 필요해요" hint="집계 함수가 아직 이 환경에 배포되지 않았습니다.">
           <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.7 }}>
-            <code>supabase/migrations/20260708_admin_metrics_rpc.sql</code>을 Supabase 대시보드
+            <code>supabase/migrations/20260708000100_admin_metrics_rpc.sql</code>을 Supabase 대시보드
             SQL Editor에서 실행하면 아래 대시보드가 채워집니다. (집계 전용 함수 — 행·원문은
             반환하지 않습니다.)
           </p>

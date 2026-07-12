@@ -34,21 +34,26 @@ CREATE TRIGGER trg_touch_content_overrides
 -- ── 3. RLS ───────────────────────────────────────────────────
 ALTER TABLE content_overrides ENABLE ROW LEVEL SECURITY;
 
+-- 멱등: DROP POLICY IF EXISTS 뒤 CREATE (러너 재적용 시 42710 방지 — 동작 불변).
 -- SELECT는 모두 허용 — 오버라이드는 공개 렌더(챕터 페이지·목록)에 병합돼 노출된다.
+DROP POLICY IF EXISTS "public_read_overrides" ON content_overrides;
 CREATE POLICY "public_read_overrides"
   ON content_overrides FOR SELECT
   USING (true);
 
 -- 쓰기(INSERT/UPDATE/DELETE)는 어드민만 — is_admin() SECURITY DEFINER 헬퍼로 최종 방어.
+DROP POLICY IF EXISTS "admin_insert_overrides" ON content_overrides;
 CREATE POLICY "admin_insert_overrides"
   ON content_overrides FOR INSERT
   WITH CHECK (is_admin());
 
+DROP POLICY IF EXISTS "admin_update_overrides" ON content_overrides;
 CREATE POLICY "admin_update_overrides"
   ON content_overrides FOR UPDATE
   USING (is_admin())
   WITH CHECK (is_admin());
 
+DROP POLICY IF EXISTS "admin_delete_overrides" ON content_overrides;
 CREATE POLICY "admin_delete_overrides"
   ON content_overrides FOR DELETE
   USING (is_admin());

@@ -8,7 +8,7 @@ import { buildPlayableGrid } from '../../../lib/world/mapGeo.js';
 // 게이트 참조가 유효한지, 페리가 왕방향 대칭인지, 다운샘플이 결정적 4색인지 확인한다.
 
 const grid = decodeMap();
-const KINDS = new Set(['city', 'airport', 'port', 'landmark']);
+const KINDS = new Set(['city', 'airport', 'port', 'landmark', 'npc']);
 
 describe('WORLD_NODES 무결성', () => {
   it('id 는 고유하고 kind 는 허용된 4종', () => {
@@ -125,6 +125,45 @@ describe('통영 노드 + 거제 재연결(오너 재지시)', () => {
     const d = getNode('geoje').desc;
     expect(d).toContain('통영');
     expect(d).toContain('거제대교');
+  });
+});
+
+describe('NPC 대화 노드(마스터플랜 A-1 — 라멘·신사)', () => {
+  it('두 NPC 노드가 kind:npc 이고 npc(스크립트 key) 필드를 가진다', () => {
+    const ramen = getNode('fukuoka-ramen');
+    const shrine = getNode('dazaifu-shrine');
+    expect(ramen.kind).toBe('npc');
+    expect(shrine.kind).toBe('npc');
+    expect(ramen.npc).toBe('ramen');
+    expect(shrine.npc).toBe('shrine');
+  });
+
+  it('NPC 노드는 게이트가 없다(대화는 npc 필드로 — 게이트 프롬프트와 분리)', () => {
+    expect(getNode('fukuoka-ramen').gate).toBeUndefined();
+    expect(getNode('dazaifu-shrine').gate).toBeUndefined();
+  });
+
+  it('후쿠오카 인근 통행 가능 land 위 — 페리 목적지 곁(지리 정합)', () => {
+    for (const id of ['fukuoka-ramen', 'dazaifu-shrine']) {
+      const [x, y] = getNode(id).tile;
+      expect(isBlocked(grid[y * MAP_W + x])).toBe(false);
+      // 후쿠오카항(135,306) 반경 안(수 타일) — 페리로 도착하면 곧장 만난다.
+      const fp = getNode('fukuoka-port').tile;
+      expect(Math.abs(x - fp[0]) + Math.abs(y - fp[1])).toBeLessThan(12);
+    }
+  });
+
+  it('NPC 노드 desc 는 챕터 소재를 반영(라멘=替え玉·신사=참배 예절)', () => {
+    expect(getNode('fukuoka-ramen').desc).toContain('替え玉');
+    expect(getNode('dazaifu-shrine').desc).toContain('二礼二拍手一礼');
+  });
+
+  it('라멘 노드는 고정 점포(券売機 서사 정합) — 포장마차(야타이) 아님(Codex P1-2)', () => {
+    const n = getNode('fukuoka-ramen');
+    expect(n.name).toBe('하카타 라멘 전문점');
+    expect(n.name).not.toContain('포장마차');
+    expect(n.desc).not.toContain('포장마차');
+    expect(n.desc).toContain('券売機'); // 챕터 ot-10 이 가르치는 식권기 첫 단계
   });
 });
 

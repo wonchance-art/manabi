@@ -91,7 +91,7 @@ function makeSessionId() {
 // 동일 계정 단일 접속의 "판정 소유"를 presence(클라 제공 sessionId·joinedAt)와 직접 DML 에서
 // 쿠키 인증 서버 API와 그 내부 SECURITY DEFINER RPC 로 옮긴다: 신원은 서버 auth.uid(),
 // IP는 서버 헤더, 시각은 DB now(), 세션 식별은 서버 발급 비공개 토큰이 소유한다.
-// 마이그레이션: supabase/migrations/20260710_world_sessions.sql (미적용 시 강등 동작).
+// 마이그레이션: supabase/migrations/20260710000100_world_sessions.sql (미적용 시 강등 동작).
 
 // 만료 창(TTL). heartbeat 가 이 시간 넘게 끊기면 죽은 세션으로 보고 다른 세션이 인수한다.
 // 판정은 서버측 claim RPC 의 ON CONFLICT WHERE 절(DB now())이 소유한다. SQL 과 일치(60s).
@@ -549,7 +549,7 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza',
     }
     // 'unavailable' — 마이그레이션 미적용(42883/42P01): 현행 presence 휴리스틱으로 강등.
     // ⚠️ 강등 모드는 UX 가드일 뿐 보안 집행이 아니다(변조 클라이언트를 막지 못함).
-    //    supabase/migrations/20260710_world_sessions.sql 적용 시 자동으로 서버 권위가 된다.
+    //    supabase/migrations/20260710000100_world_sessions.sql 적용 시 자동으로 서버 권위가 된다.
     leaseMode = claimed === 'acquired' ? 'db' : 'presence';
     if (leaseMode === 'db') startHeartbeat(generation, claimStartedAt);
     await new Promise((resolve) => { joinResolve = resolve; openChannel(); });

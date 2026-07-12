@@ -6,6 +6,7 @@ import {
   BASE_TILE_PAL, tonePalette, toneColor, timeOfDay, TONE_MODES,
   riverStreamRects, RIVER_N, RIVER_E, RIVER_S, RIVER_W,
   emitPeerDistances,
+  NPC_KEYS, NPC_W, NPC_H, NPC_PAL, npcMarkerRows,
 } from '../sprites.js';
 
 // 픽셀맵 무결성 — GameCanvas는 클라 전용(Phaser)이라 단위테스트가 어렵다.
@@ -74,6 +75,28 @@ describe('펫 픽셀맵 (12×16, 5종×idle 2프레임)', () => {
 
   it('알 수 없는 종은 dog로 폴백', () => {
     expect(petFrameRows('unknown', 0)).toEqual(petFrameRows('dog', 0));
+  });
+});
+
+describe('NPC 마커 픽셀맵 (24×24, 라멘·미코 + 소품)', () => {
+  for (const key of NPC_KEYS) {
+    it(`${key} — ${NPC_H}행 × ${NPC_W}열, 종 팔레트 색문자만`, () => {
+      const rows = npcMarkerRows(key);
+      const allow = new Set(['.', ...Object.keys(NPC_PAL[key])]);
+      expect(rows).toHaveLength(NPC_H);
+      for (const row of rows) {
+        expect(row).toHaveLength(NPC_W);
+        for (const ch of row) expect(allow.has(ch)).toBe(true);
+      }
+    });
+  }
+
+  it('두 NPC 마커는 서로 다른 도트', () => {
+    expect(npcMarkerRows('ramen').join('\n')).not.toBe(npcMarkerRows('shrine').join('\n'));
+  });
+
+  it('알 수 없는 key 는 ramen 으로 폴백', () => {
+    expect(npcMarkerRows('unknown')).toEqual(npcMarkerRows('ramen'));
   });
 });
 

@@ -33,6 +33,7 @@ import {
   tonePalette, toneColor, timeOfDay,
   riverStreamRects, RIVER_N, RIVER_E, RIVER_S, RIVER_W,
   BOAT_W, BOAT_H, BOAT_PAL, boatFrameRows,
+  NPC_KEYS, NPC_W, NPC_H, NPC_PAL, npcMarkerRows,
   applyPeersToScene, updateScenePeers, peerLabelStyle, emitPeerDistances,
 } from './sprites';
 // 🗾 여행 스탬프 — 노드 첫 방문 수집(fetch 래퍼, 실패 조용히). API: /api/world/stamps.
@@ -49,6 +50,10 @@ import { isSpawnTileValid } from '../../lib/world/session';
 import { buildAirportScene } from './airportScene';
 import { StoryTextbox, AirportQuiz } from './StoryOverlay';
 import { buildStoryScript } from './storyScript';
+// 🗾 NPC 도트 대화(마스터플랜 A-1) — 하카타 라멘 전문점 주인·신사 미코상. 대화 콘텐츠·판정은
+// npcScripts, 오버레이 UI 는 NpcDialog(공항 StoryOverlay 와 같은 GBC 관행). 로컬 전용 파일럿(공유 없음).
+// 완주 스탬프는 보안성 없는 "방문 기념"(P2) — 학습 달성/보상으로 쓰려면 서버 검증 claim(A-4) 필요.
+import NpcDialog from './NpcDialog';
 // 🔒 월드 번들 정답 격리(P1-1): 전체 트랙(n5_tokyo.js)을 정적 import하면 트리 셰이킹 불가로
 // /world 청크에 30편 전 글의 questions·answer·why가 실린다(서버 스트립 P2-7 무력화).
 // 월드 스토리 씬은 글 1만 쓰므로 그 데이터만 담은 scene1 모듈만 가져온다(글 1은 상시 열림 → 정당).
@@ -235,9 +240,18 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   const ferryPromptRef = useRef(null);
   const minimapOpenRef = useRef(false);
 
+  // ── NPC 대화 상태 ── npcDialog: { key, node } | null (열림 = 대화 오버레이 표시)
+  const [npcDialog, setNpcDialog] = useState(null);
+  const npcDialogRef = useRef(null);
+  const npcActionRef = useRef(null);  // 셸 A → 현재 스텝의 기본 동작(대사=다음)
+  const npcCancelRef = useRef(null);  // 셸 B → say=뜻 토글, 그 외 스텝=대화 나가기(P1-1 소프트락 방지)
+
   // ── 여행 스탬프 상태 ──
   // stamps: 수집한 노드 id Set(마운트 시 서버에서 로드). newStamp: 방금 획득한 노드 { id, name } | null
-  // (GBC 다이얼로그에 "🗾 ○○ 스탬프 획득!" 한 줄 플래시). 중복 수집 안 함(Set 가드).
+  // (GBC 다이얼로그에 "🗾 ○○ 기념 스탬프!" 한 줄 플래시). 중복 수집 안 함(Set 가드).
+  // 시맨틱(P2): 스탬프는 보안성 없는 "방문 기념" — 서버(/api/world/stamps)는 실존 노드+본인만
+  // 검증하고 방문/완주 여부는 검증하지 않는다(직접 POST 위조 가능). 달성·증명 뉘앙스 금지
+  // (문구도 "기념 스탬프"). 학습 달성/보상으로 쓰려면 서버 검증 claim(마스터플랜 A-4 원칙) 필요.
   const [stamps, setStamps] = useState(() => new Set());
   const [newStamp, setNewStamp] = useState(null);
   const stampsRef = useRef(stamps);          // interact 콜백(once-effect)이 최신 Set 을 읽도록 미러
@@ -266,6 +280,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   useEffect(() => { if (!nearNode) setDescOpen(false); }, [nearNode]);
   useEffect(() => { ferryPromptRef.current = ferryPrompt; }, [ferryPrompt]);
   useEffect(() => { minimapOpenRef.current = minimapOpen; }, [minimapOpen]);
+  useEffect(() => { npcDialogRef.current = npcDialog; }, [npcDialog]);
   useEffect(() => { storyActiveRef.current = storyActive; }, [storyActive]);
   useEffect(() => { storyPhaseRef.current = storyPhase; }, [storyPhase]);
   useEffect(() => { stampsRef.current = stamps; }, [stamps]);
@@ -306,10 +321,13 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       runOn: () => { if (sceneRef.current) sceneRef.current.runHeld = true; },
       runOff: () => { if (sceneRef.current) sceneRef.current.runHeld = false; },
       interact: () => {
+        if (npcDialogRef.current) { npcActionRef.current?.(); return; } // NPC 대화 중 A → 다음 대사
         if (storyPhaseRef.current === 'dialogue') { advanceStoryRef.current?.(); return; }
         if (reviewOpenRef.current || storyActiveRef.current || ferryPromptRef.current) return;
         if (descOpenRef.current) { setDescOpen(false); return; } // 설명 박스 열려 있으면 A로도 닫기
         const node = nearNodeRef.current;
+        // NPC 노드는 대화 오버레이를 연다(스탬프는 대화 완주 시 — 여기서 수집하지 않는다).
+        if (node?.npc) { setNpcDialog({ key: node.npc, node }); return; }
         if (node) collectStampRef.current?.(node); // 노드 첫 상호작용이면 스탬프 수집
         if (node?.gate) {
           // 게이트 있는 노드는 게이트 동작 우선(설명은 게이트 프롬프트에 병기).
@@ -324,6 +342,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         if (nearQuestRef.current) setReviewOpen(true);
       },
       cancel: () => {
+        if (npcDialogRef.current) { npcCancelRef.current?.(); return; } // NPC 대화 중 B → 뜻 토글
         if (storyPhaseRef.current === 'dialogue') { toggleKoRef.current?.(); return; }
         if (descOpenRef.current) { setDescOpen(false); return; }
         if (ferryPromptRef.current) { setFerryPrompt(null); return; }
@@ -384,10 +403,10 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   useEffect(() => {
     const scene = sceneRef.current;
     if (!scene) return;
-    const lock = reviewOpen || !!ferryPrompt;
+    const lock = reviewOpen || !!ferryPrompt || !!npcDialog;
     scene.inputLocked = lock;
     if (lock) { if (scene.heldDirs) scene.heldDirs.length = 0; scene.tapTile = null; scene.runHeld = false; }
-  }, [reviewOpen, ferryPrompt]);
+  }, [reviewOpen, ferryPrompt, npcDialog]);
 
   useEffect(() => {
     let destroyed = false;
@@ -459,6 +478,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           this.buildBoat();       // 페리 항해·물 위 피어 배 도트
           this.buildSign();
           this.buildNodeMarkers();
+          this.buildNpcMarkers();  // NPC 대화 노드 전용 도트(worldNodes npc 필드 → t_npc_<key>)
           this.buildNamedPeaks();  // 명산 전용 도트 조각(worldNodes peak 필드 → t_peak_<peak>)
           this.buildHeart();
           this.buildLamp();
@@ -802,6 +822,15 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           }
         }
 
+        // NPC 마커(kind:'npc') — sprites.js 픽셀맵(라멘집 앞면+주인장·토리이+미코상)을 시간대 톤으로 굽는다.
+        // 24×24, 발밑(하단 중앙) 정렬은 nodeViews 가 origin(0.5,1) + (ty+1)*TILE 로 처리한다.
+        buildNpcMarkers() {
+          for (const key of NPC_KEYS) {
+            const pal = tonePalette(NPC_PAL[key], this.mode);
+            this.makeTex(`t_npc_${key}`, npcMarkerRows(key), pal, NPC_W, NPC_H);
+          }
+        }
+
         // 해안(모래) — land 중 바다에 접한 타일. 잔디→모래를 "딱 잘린 띠" 대신 아래로 갈수록 짙어지는
         //   디더 그라데이션으로 깔아 타일 간 이음새(체크무늬)를 없앤다. 톤 연속(잔디 위 → 웜 모래 → 잔파도).
         buildSand() {
@@ -1051,8 +1080,9 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           this.nodeViews = WORLD_NODES.map((node) => {
             const [tx, ty] = node.tile;
             const wx = tx * TILE + TILE / 2, wy = ty * TILE + TILE / 2;
-            // 명산(peak 필드)은 전용 도트 조각(t_peak_<peak>)을 마커 대신 얹는다 — 일반 랜드마크 탑 대신.
-            const markerKey = node.peak ? `t_peak_${node.peak}` : `t_node_${node.kind}`;
+            // NPC(npc 필드)는 전용 도트(t_npc_<key>), 명산(peak)은 t_peak_<peak>, 그 외는 kind 마커.
+            const markerKey = node.npc ? `t_npc_${node.npc}`
+              : node.peak ? `t_peak_${node.peak}` : `t_node_${node.kind}`;
             const marker = this.add.image(wx, (ty + 1) * TILE, markerKey)
               .setOrigin(0.5, 1).setScale(TSCALE).setDepth(wy);
             return { node, marker, wx, wy };
@@ -1516,7 +1546,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           const nid = nearest ? nearest.id : null;
           if (nid !== this.wasNearNodeId) {
             this.wasNearNodeId = nid;
-            setNearNode(nearest ? { id: nearest.id, name: nearest.name, desc: nearest.desc, gate: nearest.gate } : null);
+            setNearNode(nearest ? { id: nearest.id, name: nearest.name, desc: nearest.desc, gate: nearest.gate, npc: nearest.npc } : null);
           }
         }
       }
@@ -1662,7 +1692,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
             )}
             {newStamp?.id === nearNode.id && (
               <span style={{ display: 'block', fontSize: '0.7rem', fontWeight: 'bold', color: '#2f7a2a', marginTop: 4 }}>
-                🗾 {nearNode.name} 스탬프 획득!
+                🗾 {nearNode.name} 기념 스탬프!
               </span>
             )}
           </span>
@@ -1684,8 +1714,21 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         </div>
       )}
 
+      {/* NPC 노드 근접 → "Ⓐ 말 걸기" 프롬프트. A로 NPC 대화 오버레이(NpcDialog)를 연다. */}
+      {nearNode?.npc && !npcDialog && !storyActive && !reviewOpen && !ferryPrompt && !minimapOpen && (
+        <div style={{
+          position: 'absolute', left: '50%', bottom: 18, transform: 'translateX(-50%)',
+          fontFamily: GBC.font, fontSize: '0.7rem', color: GBC.ink,
+          background: GBC.cream, border: `2px solid ${GBC.border}`,
+          boxShadow: `inset 0 0 0 1px ${GBC.creamHi}`, borderRadius: 2,
+          padding: '4px 10px', lineHeight: 1.2, whiteSpace: 'nowrap',
+        }}>
+          💬 Ⓐ {nearNode.name}에게 말 걸기
+        </div>
+      )}
+
       {/* 게이트 없는 노드/명산 근접 → "Ⓐ 살펴보기" 프롬프트(라벨 대신). A로 설명 박스를 연다. */}
-      {nearNode && !nearNode.gate && !descOpen && !storyActive && !reviewOpen && !ferryPrompt && !minimapOpen && (
+      {nearNode && !nearNode.gate && !nearNode.npc && !descOpen && !storyActive && !reviewOpen && !ferryPrompt && !minimapOpen && (
         <div style={{
           position: 'absolute', left: '50%', bottom: 18, transform: 'translateX(-50%)',
           fontFamily: GBC.font, fontSize: '0.7rem', color: GBC.ink,
@@ -1708,10 +1751,10 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           {/* 🗾 스탬프 — 방금 획득이면 강조 한 줄, 이미 수집했으면 도장 자국(은은한 한 줄). */}
           {newStamp?.id === nearNode.id ? (
             <div style={{ marginTop: 8, fontSize: '0.76rem', fontWeight: 'bold', color: '#2f7a2a' }}>
-              🗾 {nearNode.name} 스탬프 획득!
+              🗾 {nearNode.name} 기념 스탬프!
             </div>
           ) : stamps.has(nearNode.id) ? (
-            <div style={{ marginTop: 8, fontSize: '0.68rem', opacity: 0.68 }}>· 🗾 스탬프 수집됨 ·</div>
+            <div style={{ marginTop: 8, fontSize: '0.68rem', opacity: 0.68 }}>· 🗾 기념 스탬프 ·</div>
           ) : null}
           <div style={{ textAlign: 'right', marginTop: 8 }}>
             <button
@@ -1737,7 +1780,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
               {ferryPrompt.toName}행 페리를 탈까요?
               {newStamp && (
                 <span style={{ display: 'block', fontSize: '0.72rem', fontWeight: 'bold', color: '#2f7a2a', marginTop: 6 }}>
-                  🗾 {newStamp.name} 스탬프 획득!
+                  🗾 {newStamp.name} 기념 스탬프!
                 </span>
               )}
             </p>
@@ -1783,6 +1826,19 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           text={STORY_TEXT}
           onPass={(events) => recordPass(events)}
           onExit={() => sceneRef.current?.returnPlaza?.()}
+        />
+      )}
+
+      {/* NPC 도트 대화(라멘·신사) — 캔버스 위 HTML, 열리면 게임 입력 잠금(useEffect).
+          완주(onComplete) 시 노드 스탬프 1회 수집(collectStampRef Set 가드 — 재대화해도 중복 없음). */}
+      {npcDialog && (
+        <NpcDialog
+          npcKey={npcDialog.key}
+          npcName={npcDialog.node?.name}
+          actionRef={npcActionRef}
+          cancelRef={npcCancelRef}
+          onComplete={() => collectStampRef.current?.(npcDialog.node)}
+          onExit={() => setNpcDialog(null)}
         />
       )}
     </div>
