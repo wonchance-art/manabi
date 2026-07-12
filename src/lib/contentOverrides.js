@@ -75,14 +75,44 @@ export async function getOverridesForLang(lang) {
   return map;
 }
 
+// 존재한다면 문자열(또는 null)이어야 하는 챕터/섹션 필드 — 렌더가 .split 등 문자열 연산을 함
+const CHAPTER_STRING_FIELDS = ['title', 'topic', 'titleFr', 'summary', 'duration'];
+const SECTION_STRING_FIELDS = ['heading', 'pattern', 'patternKo', 'body', 'tip', 'pitfall', 'vsKo', 'hanja'];
+
+/**
+ * 오버라이드 최소 구조 검증 — 렌더를 크래시시킬 수 있는 형태를 거른다.
+ * 저장 API(POST)와 렌더 병합(mergeChapter) 양쪽에서 사용해, 검증을 뚫고 저장된
+ * 과거 행이 있어도 렌더는 fail-closed(원본)로 버틴다.
+ * 완전한 스키마 검증이 아니라 "공개 페이지를 500으로 만들 수 있는 형태" 차단이 목적.
+ */
+export function isValidOverride(data) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return false;
+  for (const k of CHAPTER_STRING_FIELDS) {
+    if (k in data && data[k] != null && typeof data[k] !== 'string') return false;
+  }
+  if ('sections' in data) {
+    const sections = data.sections;
+    if (!Array.isArray(sections) || sections.length === 0) return false;
+    for (const s of sections) {
+      if (!s || typeof s !== 'object' || Array.isArray(s)) return false;
+      for (const k of SECTION_STRING_FIELDS) {
+        if (k in s && s[k] != null && typeof s[k] !== 'string') return false;
+      }
+      if ('examples' in s && s.examples != null && !Array.isArray(s.examples)) return false;
+    }
+  }
+  return true;
+}
+
 /**
  * 원본 챕터 위에 오버라이드를 얕게 병합.
  * `{ ...base, ...override }` 후 slug·level·order는 base 값으로 강제 복원한다.
- * override가 falsy면 base를 그대로 반환.
+ * override가 falsy거나 구조 검증에 실패하면(fail-closed) base를 그대로 반환.
  */
 export function mergeChapter(base, override) {
   if (!base) return base;
   if (!override || typeof override !== 'object') return base;
+  if (!isValidOverride(override)) return base;
   const merged = { ...base, ...override };
   for (const key of IMMUTABLE_FIELDS) {
     if (key in base) merged[key] = base[key];

@@ -13,7 +13,7 @@
 import { revalidatePath } from 'next/cache';
 import { getRefLang } from '@/content/refLangs';
 import { requireAdmin } from '@/lib/supabaseServer';
-import { mergeChapter } from '@/lib/contentOverrides';
+import { mergeChapter, isValidOverride } from '@/lib/contentOverrides';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -74,6 +74,15 @@ export async function POST(request) {
   const { lang, slug, data } = body || {};
   if (!lang || !slug || !data || typeof data !== 'object') {
     return Response.json({ error: 'lang, slug, data가 필요합니다.' }, { status: 400 });
+  }
+
+  // 구조 검증 — 렌더를 크래시시킬 수 있는 형태(sections가 배열이 아님, 문자열 필드에
+  // 비문자열 등)는 저장 자체를 거부한다. 병합부도 같은 검증으로 fail-closed(이중 방어).
+  if (!isValidOverride(data)) {
+    return Response.json(
+      { error: '챕터 구조가 올바르지 않습니다. sections는 비어있지 않은 배열이어야 하고, 제목·본문 등 텍스트 필드는 문자열이어야 합니다.' },
+      { status: 400 }
+    );
   }
 
   // 원본 존재 확인 — 없는 슬러그에 오버라이드를 만들지 않는다.

@@ -52,3 +52,12 @@ CREATE POLICY "admin_update_overrides"
 CREATE POLICY "admin_delete_overrides"
   ON content_overrides FOR DELETE
   USING (is_admin());
+
+-- ── 4. 명시적 GRANT (Codex 검수 반영) ────────────────────────
+-- default privileges에 암묵 의존하지 않고 최소 권한을 명시한다.
+-- updated_by(관리자 auth uuid)는 공개 SELECT 컬럼에서 제외 — 공개 렌더에 필요한 것은
+-- lang·slug·data(+관리 UI의 updated_at)뿐이다. 행 필터는 RLS, 컬럼 노출은 GRANT가 담당.
+REVOKE ALL ON content_overrides FROM anon, authenticated;
+GRANT SELECT (lang, slug, data, updated_at) ON content_overrides TO anon, authenticated;
+-- 쓰기는 authenticated에 테이블 권한만 열고, 행 단위는 RLS is_admin() 정책이 막는다.
+GRANT INSERT, UPDATE, DELETE ON content_overrides TO authenticated;
