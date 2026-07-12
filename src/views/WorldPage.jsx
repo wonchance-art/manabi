@@ -25,6 +25,7 @@ import { createVoiceMesh } from '../lib/world/voice';
 import { createVoiceUnreachableNotifier } from '../lib/world/voiceNotify';
 import { createWorldChat } from '../lib/world/chat';
 import { getMuted, isMuted, toggleMute, onChange as onMuteChange } from '../lib/world/muteStore';
+import { isPersistablePosition } from '../lib/world/session';
 // 도트 폰트(Galmuri9) @font-face — /world 라우트 전용 client 컴포넌트에서만 로드된다.
 import './galmuri9.css';
 import {
@@ -320,8 +321,18 @@ function NearPeoplePanel({ peers, selfId, mutedSet, onToggleMute, onReport }) {
   const [reportFor, setReportFor] = useState(null); // 사유 선택이 열린 대상 id
   const [notice, setNotice] = useState(null);       // 도트 토스트 문구(자동 소멸)
   const noticeTimer = useRef(null);
+  const mountedRef = useRef(true);                   // 비동기 신고 in-flight 중 언마운트 가드(P2-2)
 
-  useEffect(() => () => { if (noticeTimer.current) clearTimeout(noticeTimer.current); }, []);
+  // 언마운트(패널 접힘) 시: mounted 플래그 내림 + 소멸 타이머 정리. strict-mode 재마운트도 안전하게 true 복원.
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; if (noticeTimer.current) clearTimeout(noticeTimer.current); };
+  }, []);
+
+  // peers 변경으로 사유 선택 중이던 대상이 근처에서 사라지면 열린 선택지를 닫는다(상태 누수 방지, P2-2 ①).
+  useEffect(() => {
+    if (reportFor && !peers.some((p) => p.id === reportFor)) setReportFor(null);
+  }, [peers, reportFor]);
 
   const flash = (msg) => {
     setNotice(msg);
@@ -332,6 +343,7 @@ function NearPeoplePanel({ peers, selfId, mutedSet, onToggleMute, onReport }) {
   const pickReason = async (targetId, reason) => {
     setReportFor(null);
     const ok = await onReport(targetId, reason);
+    if (!mountedRef.current) return; // 응답 도착 전 패널이 닫혔으면 setState/flash 스킵(P2-2 ②)
     flash(ok ? '🚩 접수됐어요. 살펴볼게요.' : '⚠️ 접수하지 못했어요. 잠시 뒤 다시 시도해 주세요.');
   };
 
@@ -565,6 +577,19 @@ export default function WorldPage() {
     });
     voiceRef.current = voice;
 
+    // ── 영속 뮤트 → voice 동기화(P1-3) ──
+    // 재접속(voice 재생성) 직후 저장된 뮤트를 voice 에 seed 하고, 이후 토글도 이 구독으로 일원화한다.
+    // (구독이 muteStore 변경마다 diff 를 voice 에 반영하므로, 패널 토글의 직접 호출은 불필요해졌다.)
+    // mutePeer 는 멱등이라 아직 연결 안 된 상대여도 안전(연결 시 저장된 뮤트 상태로 재생 볼륨이 결정됨).
+    getMuted().forEach((id) => voice.mutePeer?.(id, true));
+    let prevMuted = new Set(getMuted());
+    const unsubscribeMute = onMuteChange((ids) => {
+      const next = new Set(ids);
+      for (const id of next) if (!prevMuted.has(id)) voice.mutePeer?.(id, true);
+      for (const id of prevMuted) if (!next.has(id)) voice.mutePeer?.(id, false);
+      prevMuted = next;
+    });
+
     // 같은 계정의 다른 세션이 이미 접속 중이면 net이 스스로 멀티를 포기(솔로 유지)하고
     // 'duplicate'를 알려온다 — 배너로 안내하고, 그 외 상태(connected 등)에서는 배너를 접는다.
     // connected 의 info.enforcement 로 판정 방식(서버 임대/강등 휴리스틱)도 함께 받는다.
@@ -637,6 +662,7 @@ export default function WorldPage() {
     return () => {
       cancelled = true;
       clearInterval(staleTimer);
+      unsubscribeMute();
       bus.off('local:state', onLocalState);
       bus.off('peers:dist', onDist);
       net.leave();
@@ -689,11 +715,10 @@ export default function WorldPage() {
   }, [chatInput]);
 
   // ── 근처 사람: 음소거 토글 + 신고 ──
-  // 음소거: muteStore 영속(채팅 수신 드랍) + voice.mutePeer 가 있으면 근접 음성까지(feature-detect).
-  //   Codex 병합 전에도 채팅 뮤트는 동작하고, mutePeer 병합 후 음성까지 자동 확장된다.
+  // 음소거: muteStore 영속(채팅 수신 드랍)만 여기서 토글한다. 근접 음성 반영(voice.mutePeer)은
+  //   voice effect 의 onMuteChange 구독으로 일원화돼(P1-3), 이 토글도 그 구독을 거쳐 voice 에 닿는다.
   const onToggleMutePeer = useCallback((id) => {
-    const muted = toggleMute(id);
-    voiceRef.current?.mutePeer?.(id, muted);
+    toggleMute(id);
   }, []);
 
   // 신고: world_reports 에 사용자 세션 클라이언트로 직접 insert(RLS 방어 — reporter=auth.uid()).
@@ -756,7 +781,10 @@ export default function WorldPage() {
     };
 
     const onLocalState = (st) => {
-      if (!st) return;
+      // persistable 계약(session.js): 페리 항해·물 타일·공항 좌표(persistable:false)는 저장에서 제외한다.
+      // livePosRef 갱신까지 스킵해 마지막 유효 플라자 좌표를 유지 → 재접속·재연결 재스폰·pagehide beacon
+      // 모두 그 좌표를 쓴다(beacon 은 livePosRef.current 를 읽으므로 자동으로 동일하게 처리됨).
+      if (!isPersistablePosition(st)) return;
       const scene = st.scene === 'airport' ? 'airport' : 'plaza';
       const x = Math.floor((st.x || 0) / TILE);
       const y = Math.floor((st.y || 0) / TILE);

@@ -8,6 +8,7 @@
 -- 이 파일이 더하는 것:
 --   1) world_reports 테이블 — reporter/target(auth.users FK) · reason · detail · created_at.
 --      UNIQUE(reporter, target, reason) — 같은 사유의 반복 신고를 멱등화(upsert 로 무해).
+--      reason CHECK(3지선다 코드) · detail CHECK(≤500자) — DB 레벨에서 값·길이를 강제(위조·남용 방어).
 --   2) RLS 3정책 — insert 는 본인(reporter=auth.uid())만, select 는 is_admin() 만.
 --      (update/delete 정책 없음 → 그 DML 은 전면 차단 = 신고는 불변 로그.)
 --   3) 명시 GRANT — authenticated 에 SELECT·INSERT 만(행 필터는 RLS). anon 회수.
@@ -26,14 +27,20 @@
 --        select policyname, cmd from pg_policies where tablename='world_reports'; → insert/select 2행.
 --      (열람 select 1 + insert 1 = 2행. update/delete 정책 없음.)
 --   3) 유니크: 같은 (reporter,target,reason) 재신고가 23505 없이 upsert 로 흡수되는지 UI 에서 확인.
+--   4) CHECK 제약 2종:
+--        select conname from pg_constraint
+--          where conrelid='public.world_reports'::regclass and contype='c'; → reason/detail 2행.
+--      (허용 밖 reason 이나 500자 초과 detail insert 는 23514 로 거부되는지 확인.)
 
 -- ── 1. 테이블 ────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.world_reports (
   id         uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
   reporter   uuid        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   target     uuid        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  reason     text        NOT NULL,
-  detail     text,
+  -- reason 은 WorldPage 3지선다 코드로 한정(위조·오타 방어). 라벨은 클라(REPORT_REASONS)에만.
+  reason     text        NOT NULL CHECK (reason IN ('spam_abuse', 'bad_name', 'other')),
+  -- detail 은 선택 자유서술 — 길이 상한으로 남용/거대 payload 차단(현재 UI 미사용, 후속 대비).
+  detail     text        CHECK (detail IS NULL OR char_length(detail) <= 500),
   created_at timestamptz NOT NULL DEFAULT now(),
   UNIQUE (reporter, target, reason)
 );

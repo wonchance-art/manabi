@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { extractClientIp, normalizePosition, isSpawnTileValid } from '../world/session.js';
+import {
+  extractClientIp, normalizePosition, isSpawnTileValid, isPersistablePosition,
+} from '../world/session.js';
 
 // ─────────────────────────────────────────────────────────────
 describe('extractClientIp — 헤더에서 클라이언트 IP 추출(순수)', () => {
@@ -90,5 +92,23 @@ describe('isSpawnTileValid — 스폰 타일 유효성(순수)', () => {
   it('isWalkable 미제공이면 범위만 검사', () => {
     expect(isSpawnTileValid(5, 4, cols, rows)).toBe(true);
     expect(isSpawnTileValid(50, 4, cols, rows)).toBe(false);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+describe('isPersistablePosition — 위치 영속 판정(순수)', () => {
+  it('일반 플라자 좌표(persistable 누락/true)는 영속 대상', () => {
+    expect(isPersistablePosition({ scene: 'plaza', x: 5, y: 6 })).toBe(true);            // 하위호환(필드 없음)
+    expect(isPersistablePosition({ scene: 'plaza', x: 5, y: 6, persistable: true })).toBe(true);
+  });
+
+  it('persistable:false(페리 항해·물 타일·공항 좌표)는 영속 제외', () => {
+    expect(isPersistablePosition({ scene: 'plaza', x: 5, y: 6, persistable: false })).toBe(false);
+    expect(isPersistablePosition({ scene: 'airport', x: 3, y: 4, persistable: false })).toBe(false);
+  });
+
+  it('null/undefined/비객체는 영속 제외(안전)', () => {
+    expect(isPersistablePosition(null)).toBe(false);
+    expect(isPersistablePosition(undefined)).toBe(false);
   });
 });

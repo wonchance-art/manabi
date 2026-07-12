@@ -33,7 +33,7 @@ import {
   tonePalette, toneColor, timeOfDay,
   riverStreamRects, RIVER_N, RIVER_E, RIVER_S, RIVER_W,
   BOAT_W, BOAT_H, BOAT_PAL, boatFrameRows,
-  applyPeersToScene, updateScenePeers, peerLabelStyle,
+  applyPeersToScene, updateScenePeers, peerLabelStyle, emitPeerDistances,
 } from './sprites';
 // 🗾 여행 스탬프 — 노드 첫 방문 수집(fetch 래퍼, 실패 조용히). API: /api/world/stamps.
 import { loadStamps, collectStamp } from '../../lib/world/stamps';
@@ -1393,14 +1393,10 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           this.bubbles.set(userIdOfMsg, { text: txt, target, timer });
         }
 
-        emitDistances() {
-          if (!this.player || this.peers.size === 0) return;
-          const out = {};
-          for (const [id, p] of this.peers) {
-            out[id] = Math.round(Phaser.Math.Distance.Between(this.player.x, this.player.y, p.sprite.x, p.sprite.y));
-          }
-          bus.emit('peers:dist', out);
-        }
+        // 근접 음성 거리 emit — 공용 헬퍼 위임(같은 씬 실거리 · 다른 씬 Infinity).
+        // 페리 항해 중에도 광장 씬이므로 이 경로가 그대로 실거리를 실어, 배 위에서 지나치는
+        // 상대와 대화가 이어진다(의도된 동작). 씬 전환·공항 피어 편입은 헬퍼가 처리한다.
+        emitDistances() { emitPeerDistances(this, bus); }
 
         spawnHeart() {
           if (!this.pet) return;
@@ -1488,10 +1484,19 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           }
 
           // ── local:state — ~100ms 스로틀 (좌표는 예전과 동일 스케일의 월드 px) ──
-          // scene:'plaza' 를 실어 WorldPage 가 저장 씬을 구분한다(공항 씬은 이 emit 을 하지 않음).
+          // scene:'plaza' 를 실어 WorldPage 가 저장 씬을 구분한다(공항 씬은 자체 emit).
+          // ── persistable 계약(session.js isPersistablePosition 참고) ──
+          //   페리 항해 중(this.ferrying)이거나 물 타일 위 좌표는 persistable:false 로 표시한다.
+          //   이 좌표들은 재접속 스폰 검증(plaza 보행 타일만 통과)을 못 넘겨 서울 폴백을 유발하므로,
+          //   WorldPage 위치 기록기가 저장·livePosRef 갱신에서 제외한다(마지막 유효 플라자 좌표 유지).
+          //   네트워크 송신(net.sendState)에는 계속 실려 상대 화면엔 바다를 건너는 연출이 보인다.
           if (time - this.lastEmit > 100) {
             this.lastEmit = time;
-            bus.emit('local:state', { x: Math.round(this.player.x), y: Math.round(this.player.y), dir: this.facing, scene: 'plaza' });
+            const onWater = this.isWaterTile(Math.floor(this.player.x / TILE), Math.floor(this.player.y / TILE));
+            bus.emit('local:state', {
+              x: Math.round(this.player.x), y: Math.round(this.player.y), dir: this.facing, scene: 'plaza',
+              persistable: !this.ferrying && !onWater,
+            });
           }
 
           // 페리 항해 중엔 근접 판정을 보류한다(바다를 지나며 항구 프롬프트가 튀지 않게).

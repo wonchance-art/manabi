@@ -491,9 +491,11 @@ export function applyPeersToScene(scene, incoming, cfg) {
   const sceneName = cfg.sceneName;
   const entries = incoming instanceof Map ? [...incoming.entries()] : Object.entries(incoming || {});
   const seen = new Set();
+  // 다른 씬 피어 id — 이 씬에 렌더하진 않지만 근접 음성 거리 emit 에서 Infinity(해제)로 실어 보낸다.
+  const otherScene = new Set();
   for (const [id, st] of entries) {
     if (!st) continue;
-    if ((st.scene || 'plaza') !== sceneName) continue; // 다른 씬의 피어는 이 씬에 렌더하지 않는다(하위호환)
+    if ((st.scene || 'plaza') !== sceneName) { otherScene.add(id); continue; } // 다른 씬은 렌더 제외(하위호환)
     seen.add(id);
     const tileX = Math.floor(st.x / PEER_TILE);
     const tileY = Math.floor(st.y / PEER_TILE);
@@ -518,6 +520,27 @@ export function applyPeersToScene(scene, incoming, cfg) {
   for (const [id, p] of scene.peers) {
     if (!seen.has(id)) { p.sprite.destroy(); p.label?.destroy(); p.boat?.destroy(); scene.peers.delete(id); }
   }
+  scene.otherScenePeerIds = otherScene;
+}
+
+// ── 근접 음성 거리 emit (광장·공항 공용 헬퍼) ──
+// 두 씬(WorldScene·AirportScene)이 같은 거리 계산·emit 을 재사용한다. 전체 피어 목록을 실어 보낸다:
+//   · 같은 씬 피어(scene.peers 에 렌더 중) → 플레이어와의 실거리(px, 반올림)
+//   · 다른 씬 피어(scene.otherScenePeerIds) → Infinity
+// Infinity 는 voice.setPeerDistance 가 voiceGate(비유한 → 해제)로 자연 정리한다(8타일 릴리스
+// 히스테리시스 밖). 그래서 씬 전환 시 ① 떠나온 씬 피어의 stale 거리로 음성이 유지되지 않고,
+// ② 새 씬 피어는 실거리로 즉시 음성 대상에 편입된다. (Phaser 미의존 — Math.hypot 로 계산.)
+// bus 는 호출부가 주입(sprites.js 는 bus 를 직접 import 하지 않아 순수성을 유지).
+export function emitPeerDistances(scene, bus) {
+  if (!scene.player) return;
+  const out = {};
+  for (const [id, p] of scene.peers) {
+    const dx = scene.player.x - p.sprite.x, dy = scene.player.y - p.sprite.y;
+    out[id] = Math.round(Math.sqrt(dx * dx + dy * dy));
+  }
+  const others = scene.otherScenePeerIds;
+  if (others) for (const id of others) out[id] = Infinity;
+  bus.emit('peers:dist', out);
 }
 
 // 매 프레임 피어 갱신 — 목적 타일까지 축우선 그리드 스텝 + 라벨/배 추적.
