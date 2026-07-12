@@ -30,6 +30,18 @@ const DEFAULT_NEW_SOURCE = {
   config: { lang: 'ja', level: 'N2 상급' },
 };
 
+// 언어 키 → 문법 라우트 베이스 (registry를 클라이언트로 끌어오지 않으려 상수로 둠)
+const LANG_BASE = { Japanese: '/japanese', English: '/english', French: '/french', Chinese: '/chinese' };
+
+async function fetchContentOverrides() {
+  const { data, error } = await supabase
+    .from('content_overrides')
+    .select('lang, slug, updated_at, data')
+    .order('updated_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+
 async function fetchContentSources() {
   const { data, error } = await supabase
     .from('content_sources')
@@ -94,6 +106,32 @@ export default function AdminPage() {
     queryKey: ['admin-sources'],
     queryFn: fetchContentSources,
     enabled: tab === 'sources',
+  });
+
+  const { data: overrides = [], isLoading: overridesLoading } = useQuery({
+    queryKey: ['admin-overrides'],
+    queryFn: fetchContentOverrides,
+    enabled: tab === 'overrides',
+  });
+
+  // 오버라이드 삭제 — API 라우트 경유(파일 버전 복원 + revalidatePath)
+  const deleteOverrideMutation = useMutation({
+    mutationFn: async ({ lang, slug }) => {
+      const res = await fetch('/api/admin/chapter', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lang, slug }),
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        throw new Error(j.error || '삭제 실패');
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-overrides'] });
+      toast('수정본을 삭제하고 파일 버전으로 복원했어요.', 'success');
+    },
+    onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
   });
 
   // 역할 변경
@@ -197,6 +235,7 @@ export default function AdminPage() {
           { key: 'users',     label: '👥 유저 관리' },
           { key: 'materials', label: '📰 자료 관리' },
           { key: 'sources',   label: '📡 콘텐츠 소스' },
+          { key: 'overrides', label: '📝 콘텐츠' },
           { key: 'features',  label: '🧪 신기능' },
         ].map(t => (
           <button
@@ -542,6 +581,74 @@ export default function AdminPage() {
                 </div>
               );
             })}
+          </div>
+        )
+      )}
+
+      {/* ── 콘텐츠 오버라이드 관리 ── */}
+      {tab === 'overrides' && (
+        overridesLoading ? <Spinner message="수정본 목록 로딩 중..." /> : (
+          <div>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 16, lineHeight: 1.6 }}>
+              챕터 편집 모드에서 저장한 수정본(content_overrides) 목록이에요. 각 행에서 챕터로 이동하거나,
+              파일 버전으로 복원(삭제)할 수 있어요. data JSON은 펼쳐서 파일로 수확할 때 사용하세요.
+            </p>
+            {overrides.length === 0 ? (
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>아직 저장된 수정본이 없어요.</p>
+            ) : (
+              <div className="admin-table-wrap">
+                <div className="admin-table-header">
+                  <span>총 {overrides.length}개 수정본</span>
+                </div>
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>언어</th>
+                      <th>slug</th>
+                      <th>수정 시각</th>
+                      <th>data</th>
+                      <th>작업</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {overrides.map(o => {
+                      const base = LANG_BASE[o.lang];
+                      return (
+                        <tr key={`${o.lang}:${o.slug}`}>
+                          <td>{o.lang}</td>
+                          <td className="admin-table__title" style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
+                            {base ? (
+                              <Link href={`${base}/grammar/${o.slug}`}>{o.slug}</Link>
+                            ) : o.slug}
+                          </td>
+                          <td className="admin-table__muted">
+                            {o.updated_at ? new Date(o.updated_at).toLocaleString('ko-KR') : '—'}
+                          </td>
+                          <td>
+                            <details>
+                              <summary style={{ cursor: 'pointer', fontSize: '0.8rem', color: 'var(--text-muted)' }}>펼치기</summary>
+                              <pre style={{ maxWidth: 480, maxHeight: 320, overflow: 'auto', fontSize: '0.72rem', background: 'var(--bg-subtle, rgba(128,128,128,0.1))', padding: 10, borderRadius: 6, marginTop: 8 }}>
+                                {JSON.stringify(o.data, null, 2)}
+                              </pre>
+                            </details>
+                          </td>
+                          <td>
+                            <Button
+                              size="sm"
+                              variant="danger"
+                              disabled={deleteOverrideMutation.isPending}
+                              onClick={() => confirmDelete(`${o.lang} · ${o.slug} 수정본`, () => deleteOverrideMutation.mutate({ lang: o.lang, slug: o.slug }))}
+                            >
+                              복원(삭제)
+                            </Button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )
       )}

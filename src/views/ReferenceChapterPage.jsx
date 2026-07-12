@@ -10,6 +10,8 @@ import KanaTest from '../components/KanaTest';
 // 스토리 모듈(이야기로 확인) — 인터랙티브 채점은 클라이언트 경계로 분리(서버 페이지가 레지스트리를
 // 클라이언트 번들로 끌어오지 않도록). story 는 순수 직렬화 데이터라 props 로 그대로 넘긴다.
 import StoryCheck from './StoryCheck';
+import ChapterEditorBar from '../components/admin/ChapterEditorBar';
+import { getChapterOverride, getOverridesForLang, mergeChapter } from '../lib/contentOverrides';
 
 function ExampleList({ examples, langCode, lang }) {
   if (!examples?.length) return null;
@@ -136,10 +138,16 @@ function SectionTable({ table }) {
 /**
  * 언어 레퍼런스 — 문법 챕터 상세 페이지 (프랑스어·일본어·영어 공용)
  */
-export default function ReferenceChapterPage({ lang, slug }) {
+export default async function ReferenceChapterPage({ lang, slug }) {
   const ref = getRefLang(lang);
   const data = ref?.getChapter(slug);
   const backHref = `/lessons?lang=${lang}&view=ref`;
+
+  // 콘텐츠 오버라이드 — 원본 위에 오너 수정본을 병합(실패 시 조용히 원본 렌더).
+  // 이전/다음 제목도 같은 언어의 오버라이드 맵으로 병합한다.
+  const [override, overrideMap] = data
+    ? await Promise.all([getChapterOverride(lang, slug), getOverridesForLang(lang)])
+    : [null, new Map()];
 
   if (!data) {
     return (
@@ -150,7 +158,11 @@ export default function ReferenceChapterPage({ lang, slug }) {
     );
   }
 
-  const { chapter, prev, next } = data;
+  const { chapter: baseChapter, prev: basePrev, next: baseNext } = data;
+  const chapter = mergeChapter(baseChapter, override);
+  // 이전/다음은 제목만 오버라이드 병합(slug·level은 병합 유틸이 base로 강제).
+  const prev = basePrev ? mergeChapter(basePrev, overrideMap.get(basePrev.slug)) : null;
+  const next = baseNext ? mergeChapter(baseNext, overrideMap.get(baseNext.slug)) : null;
   const meta = ref.getLevelMeta(chapter.level);
   // 인트로 레벨(OT/A0) — "간단히 알고 가면 좋을 것". 카나 외에는 관문(패턴 체크) 없이 읽으면 끝.
   const isIntro = ref.isIntroLevel?.(chapter.level);
@@ -378,6 +390,10 @@ export default function ReferenceChapterPage({ lang, slug }) {
           </Link>
         ) : <span />}
       </nav>
+
+      {/* 관리자 전용 편집 진입 바 — 챕터 데이터는 props로 넘기지 않는다(일반 유저 페이로드 보호).
+          isAdmin이 아니면 null 렌더, 에디터는 클릭 시에만 dynamic 로드. */}
+      <ChapterEditorBar lang={lang} slug={slug} overridden={!!override} />
     </div>
   );
 }
