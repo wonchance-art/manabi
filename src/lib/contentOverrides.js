@@ -79,6 +79,47 @@ export async function getOverridesForLang(lang) {
 const CHAPTER_STRING_FIELDS = ['title', 'topic', 'titleFr', 'summary', 'duration'];
 const SECTION_STRING_FIELDS = ['heading', 'pattern', 'patternKo', 'body', 'tip', 'pitfall', 'vsKo', 'hanja'];
 
+function isPlainObject(v) {
+  return Boolean(v) && typeof v === 'object' && !Array.isArray(v);
+}
+
+/** 존재한다면 "객체들의 배열"이어야 하는 컬렉션 — null/비객체 원소는 렌더에서 크래시 */
+function isObjectArray(v) {
+  return Array.isArray(v) && v.every(isPlainObject);
+}
+
+/**
+ * 섹션 하나의 렌더 가능 최소 구조 검증.
+ * 렌더러가 순회·메서드 호출하는 하위 컬렉션까지 내려간다:
+ *  - examples: ExampleList가 원소를 refPron(ex)·ex.ko로 소비 → 객체 배열
+ *  - table: SectionTable이 headers.map·rows.map(row => row.map) → rows는 배열의 배열
+ *  - story: StoryCheck가 body 원소의 .ja/.narr, questions 원소를 normalizeQuestion으로 소비 → 객체 배열
+ *  - media: MediaSection이 필드 접근 → 객체
+ */
+function isValidSection(s) {
+  if (!isPlainObject(s)) return false;
+  for (const k of SECTION_STRING_FIELDS) {
+    if (k in s && s[k] != null && typeof s[k] !== 'string') return false;
+  }
+  if ('examples' in s && s.examples != null && !isObjectArray(s.examples)) return false;
+  if ('table' in s && s.table != null) {
+    const t = s.table;
+    if (!isPlainObject(t)) return false;
+    if ('headers' in t && t.headers != null && !Array.isArray(t.headers)) return false;
+    if ('rows' in t && t.rows != null) {
+      if (!Array.isArray(t.rows) || !t.rows.every((row) => Array.isArray(row))) return false;
+    }
+  }
+  if ('story' in s && s.story != null) {
+    const st = s.story;
+    if (!isPlainObject(st)) return false;
+    if ('body' in st && st.body != null && !isObjectArray(st.body)) return false;
+    if ('questions' in st && st.questions != null && !isObjectArray(st.questions)) return false;
+  }
+  if ('media' in s && s.media != null && !isPlainObject(s.media)) return false;
+  return true;
+}
+
 /**
  * 오버라이드 최소 구조 검증 — 렌더를 크래시시킬 수 있는 형태를 거른다.
  * 저장 API(POST)와 렌더 병합(mergeChapter) 양쪽에서 사용해, 검증을 뚫고 저장된
@@ -86,20 +127,14 @@ const SECTION_STRING_FIELDS = ['heading', 'pattern', 'patternKo', 'body', 'tip',
  * 완전한 스키마 검증이 아니라 "공개 페이지를 500으로 만들 수 있는 형태" 차단이 목적.
  */
 export function isValidOverride(data) {
-  if (!data || typeof data !== 'object' || Array.isArray(data)) return false;
+  if (!isPlainObject(data)) return false;
   for (const k of CHAPTER_STRING_FIELDS) {
     if (k in data && data[k] != null && typeof data[k] !== 'string') return false;
   }
   if ('sections' in data) {
     const sections = data.sections;
     if (!Array.isArray(sections) || sections.length === 0) return false;
-    for (const s of sections) {
-      if (!s || typeof s !== 'object' || Array.isArray(s)) return false;
-      for (const k of SECTION_STRING_FIELDS) {
-        if (k in s && s[k] != null && typeof s[k] !== 'string') return false;
-      }
-      if ('examples' in s && s.examples != null && !Array.isArray(s.examples)) return false;
-    }
+    if (!sections.every(isValidSection)) return false;
   }
   return true;
 }

@@ -99,4 +99,48 @@ describe('isValidOverride', () => {
     expect(isValidOverride({ sections: [{ examples: {} }] })).toBe(false);
     expect(isValidOverride({ summary: ['배열'] })).toBe(false);
   });
+
+  // ── Codex 재검수 P1: 하위 컬렉션 원소까지 검증 ──
+  it('examples 원소가 객체가 아니면 거부한다', () => {
+    expect(isValidOverride({ sections: [{ heading: 'x', examples: [null] }] })).toBe(false);
+    expect(isValidOverride({ sections: [{ examples: ['문자열'] }] })).toBe(false);
+    expect(isValidOverride({ sections: [{ examples: [[1]] }] })).toBe(false);
+    expect(isValidOverride({ sections: [{ examples: [{ ja: 'ok' }, null] }] })).toBe(false);
+  });
+
+  it('table.rows 원소가 배열이 아니면 거부한다', () => {
+    expect(isValidOverride({ sections: [{ table: { headers: ['h'], rows: [null] } }] })).toBe(false);
+    expect(isValidOverride({ sections: [{ table: { rows: ['행'] } }] })).toBe(false);
+    expect(isValidOverride({ sections: [{ table: 'not-object' }] })).toBe(false);
+    expect(isValidOverride({ sections: [{ table: { headers: 'x' } }] })).toBe(false);
+  });
+
+  it('story.body·questions가 객체 배열이 아니면 거부한다', () => {
+    expect(isValidOverride({ sections: [{ story: { body: 'x' } }] })).toBe(false);
+    expect(isValidOverride({ sections: [{ story: { body: [null] } }] })).toBe(false);
+    expect(isValidOverride({ sections: [{ story: { body: [{ narr: 'ok' }], questions: [null] } }] })).toBe(false);
+    expect(isValidOverride({ sections: [{ story: [] }] })).toBe(false);
+  });
+
+  it('media가 객체가 아니면 거부한다', () => {
+    expect(isValidOverride({ sections: [{ media: 'youtube-id' }] })).toBe(false);
+  });
+
+  it('정상적인 중첩 구조는 통과한다', () => {
+    expect(isValidOverride({
+      sections: [{
+        heading: 'h',
+        examples: [{ ja: 'x', yomi: 'y', ko: 'z' }],
+        table: { caption: 'c', headers: ['a'], rows: [['1', '2']] },
+        story: { body: [{ narr: 'n' }, { ja: 'j', speaker: 's' }], questions: [{ type: 'fill' }] },
+        media: { youtubeId: 'abc' },
+      }],
+    })).toBe(true);
+  });
+
+  it('malformed 하위 컬렉션은 mergeChapter에서도 fail-closed', () => {
+    expect(mergeChapter(base, { sections: [{ examples: [null] }] })).toBe(base);
+    expect(mergeChapter(base, { sections: [{ table: { rows: [null] } }] })).toBe(base);
+    expect(mergeChapter(base, { sections: [{ story: { body: [null] } }] })).toBe(base);
+  });
 });
