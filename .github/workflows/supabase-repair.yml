@@ -5,7 +5,8 @@ name: Supabase Migration Repair (one-shot)
 # 목적: 마이그레이션 개명(YYYYMMDDHHMMSS 형식 전환) 이후, 원격 Supabase 의
 #   supabase_migrations.schema_migrations 히스토리를 로컬 파일과 일치시킨다.
 #   기존 CI(run 15)가 실패한 두 원인을 한 번에 해소한다:
-#     (1) 원격 히스토리에 로컬에 없는 "구식 풀네임 버전" 21건 → repair --status reverted 로 제거.
+#     (1) 원격 히스토리에 로컬에 없는 "구식 풀네임 버전" 21건 → 히스토리 테이블 직접 DELETE 로 제거
+#         (CLI repair 가 풀네임 버전을 파싱 못 함 — 4단계 주석 참조).
 #     (2) 프로덕션에서 이미 실동작해 온 20260703 까지의 기능을 개명된 새 버전으로
 #         --status applied 기록해 재실행을 막는다 — 단, "날짜가 오래됐으니 적용됐겠지"라는
 #         추정이 아니라 **preflight probe(3단계)로 파일별 대표 객체의 실존을 증명한 것만** 기록한다.
@@ -139,35 +140,38 @@ jobs:
           fi
           echo "✓ 행 수 52 · 버전 집합 일치 · MISSING 0 — repair 진행."
 
-      - name: 4) repair reverted — 구식 풀네임 21건 제거
-        # 원격 히스토리에만 있고 로컬에 없는 구식 버전(풀네임이 그대로 버전으로 기록된 항목).
+      - name: 4) 구식 풀네임 21건 제거 — 히스토리 테이블 직접 DELETE
+        # 원격 히스토리에만 있고 로컬에 없는 구식 버전(풀네임이 그대로 version 컬럼에 기록된 항목).
         # CLI 가 "Remote migration versions not found in local migrations directory" 로 push 를
-        # 거부하던 원인. reverted 로 표시하면 히스토리에서 빠져 push 가 진행된다.
-        # (2026-07-12 Codex 프로덕션 실사에서 21건 전부 원격 히스토리와 일치 확인.)
+        # 거부하던 원인. (2026-07-12 Codex 프로덕션 실사에서 21건 전부 원격 히스토리와 일치 확인.)
+        #
+        # ⚠️ `supabase migration repair --status reverted <풀네임>` 은 쓸 수 없다 — CLI 인자 파서가
+        #   숫자 버전만 허용해 "failed to parse 20260327_daily_suggestions: invalid version number"
+        #   로 실패한다(run 29204037389 실증. CLI 가 run 15 에서 스스로 제안한 명령을 스스로 거부).
+        #   repair 의 실체는 supabase_migrations.schema_migrations 히스토리 행 편집(스키마 무변경)
+        #   이므로, 같은 효과를 Management API 로 직접 수행한다. 이 워크플로에서 read_only 없이
+        #   실행되는 유일한 쿼리이며, 대상은 히스토리 테이블의 특정 21행뿐이다(멱등 — 재실행 시
+        #   사전 카운트 0 이면 건너뜀).
         run: |
-          supabase migration repair --status reverted \
-            20260327_daily_suggestions \
-            20260327_likes_rpc \
-            20260328_content_sources \
-            20260329_admin_rls \
-            20260329_forum \
-            20260329_notifications \
-            20260329_onboarding_columns \
-            20260329_reading_progress \
-            20260329_reading_progress_scroll \
-            20260329_streak \
-            20260329_suggestion_material_id \
-            20260329_vocab_source_sentence \
-            20260330_achievements \
-            20260330_xp_system \
-            20260405_daily_goals \
-            20260405_materials_delete_policy \
-            20260405_notifications_expand \
-            20260405_social \
-            20260405_suggestions_insert_policy \
-            20260406_materials_update_policy \
-            20260408_streak_freeze \
-            --password "$SUPABASE_DB_PASSWORD"
+          REVERTED_IN_LIST="'20260327_daily_suggestions','20260327_likes_rpc','20260328_content_sources','20260329_admin_rls','20260329_forum','20260329_notifications','20260329_onboarding_columns','20260329_reading_progress','20260329_reading_progress_scroll','20260329_streak','20260329_suggestion_material_id','20260329_vocab_source_sentence','20260330_achievements','20260330_xp_system','20260405_daily_goals','20260405_materials_delete_policy','20260405_notifications_expand','20260405_social','20260405_suggestions_insert_policy','20260406_materials_update_policy','20260408_streak_freeze'"
+
+          run_query() { # $1=SQL, $2=read_only(true|false)
+            jq -n --arg q "$1" --argjson ro "$2" '{query:$q, read_only:$ro}'               | curl -sf -X POST "https://api.supabase.com/v1/projects/$PROJECT_REF/database/query"                   -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" -H "Content-Type: application/json" -d @-
+          }
+
+          BEFORE=$(run_query "SELECT count(*)::int AS n FROM supabase_migrations.schema_migrations WHERE version IN ($REVERTED_IN_LIST)" true | jq -r '.[0].n')
+          echo "구식 항목 사전 카운트: $BEFORE (기대 21, 재실행 시 0 허용)"
+          if [ "$BEFORE" = "0" ]; then
+            echo "이미 제거됨 — 건너뜀(멱등 재실행)."
+          elif [ "$BEFORE" = "21" ]; then
+            run_query "DELETE FROM supabase_migrations.schema_migrations WHERE version IN ($REVERTED_IN_LIST)" false > /dev/null
+            AFTER=$(run_query "SELECT count(*)::int AS n FROM supabase_migrations.schema_migrations WHERE version IN ($REVERTED_IN_LIST)" true | jq -r '.[0].n')
+            echo "구식 항목 사후 카운트: $AFTER (기대 0)"
+            [ "$AFTER" = "0" ] || { echo "::error title=구식 항목 제거 실패::사후 카운트 $AFTER"; exit 1; }
+          else
+            echo "::error title=구식 항목 카운트 불일치::$BEFORE 건 — 21 또는 0 이어야 합니다. 원격 히스토리가 예상과 다르니 중단합니다."
+            exit 1
+          fi
 
       - name: 5) repair applied — preflight 로 실존 증명된 52건 기록(재실행 방지)
         # APPLIED_LIST(env, 단일 출처)를 그대로 사용 — 3단계에서 이 목록의 전 버전이 probe OK 였음이
