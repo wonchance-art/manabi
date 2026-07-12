@@ -108,8 +108,15 @@ SELECT '20260414000100', 'column grammar_notes.ease_factor',
        CASE WHEN EXISTS (SELECT 1 FROM information_schema.columns
                          WHERE table_schema = 'public' AND table_name = 'grammar_notes' AND column_name = 'ease_factor') THEN 'OK' ELSE 'MISSING' END
 UNION ALL
-SELECT '20260414000200', 'storage bucket user-pdfs (row)',
-       CASE WHEN EXISTS (SELECT 1 FROM storage.buckets WHERE id = 'user-pdfs') THEN 'OK' ELSE 'MISSING' END
+SELECT '20260414000200', 'bucket user-pdfs (private/50MB/pdf) + own-folder policies x3 on storage.objects',
+       CASE WHEN EXISTS (SELECT 1 FROM storage.buckets
+                         WHERE id = 'user-pdfs' AND public = false
+                           AND file_size_limit = 52428800
+                           AND 'application/pdf' = ANY(allowed_mime_types))
+             AND (SELECT count(*) FROM pg_policies
+                  WHERE schemaname = 'storage' AND tablename = 'objects'
+                    AND policyname IN ('user-pdfs select own', 'user-pdfs insert own', 'user-pdfs delete own')) = 3
+            THEN 'OK' ELSE 'MISSING' END
 UNION ALL
 SELECT '20260414000300', 'table token_corrections',
        CASE WHEN to_regclass('public.token_corrections') IS NOT NULL THEN 'OK' ELSE 'MISSING' END
@@ -129,8 +136,11 @@ SELECT '20260414000700', 'table writing_practice',
        CASE WHEN to_regclass('public.writing_practice') IS NOT NULL THEN 'OK' ELSE 'MISSING' END
 UNION ALL
 -- 20260415000100 은 20260414000200 과 같은 버킷의 DO-블록 재시도 — 증거 공유(user-pdfs 행).
-SELECT '20260415000100', 'storage bucket user-pdfs (shared evidence with 20260414000200)',
-       CASE WHEN EXISTS (SELECT 1 FROM storage.buckets WHERE id = 'user-pdfs') THEN 'OK' ELSE 'MISSING' END
+SELECT '20260415000100', 'bucket user-pdfs settings (shared evidence with 20260414000200 — DO-block retry)',
+       CASE WHEN EXISTS (SELECT 1 FROM storage.buckets
+                         WHERE id = 'user-pdfs' AND public = false
+                           AND file_size_limit = 52428800
+                           AND 'application/pdf' = ANY(allowed_mime_types)) THEN 'OK' ELSE 'MISSING' END
 UNION ALL
 SELECT '20260415000200', 'table morpheme_dictionary',
        CASE WHEN to_regclass('public.morpheme_dictionary') IS NOT NULL THEN 'OK' ELSE 'MISSING' END
@@ -146,16 +156,61 @@ SELECT '20260417000100', 'column morpheme_dictionary.detail_text',
        CASE WHEN EXISTS (SELECT 1 FROM information_schema.columns
                          WHERE table_schema = 'public' AND table_name = 'morpheme_dictionary' AND column_name = 'detail_text') THEN 'OK' ELSE 'MISSING' END
 UNION ALL
--- 시드성(데이터 UPDATE 백필) — 스키마 흔적이 없어 전제 테이블 존재만 확인.
-SELECT '20260428000100', 'seed: tables user_vocabulary + morpheme_dictionary exist (backfill prerequisite)',
+-- 시드성(데이터 UPDATE 백필) — 완료 증거: 사전에 IPA(reading)가 있는데도 furigana 가 비어 있는
+-- English 단어장 행이 남아 있지 않아야 한다(2026-07-12 프로덕션 실사에서 0행 확인 — Codex).
+-- 주의: 백필 이후 신규 저장 행은 앱이 채워 넣으므로(analyze 캐시) 정상 운영에선 재발하지 않는다.
+SELECT '20260428000100', 'seed: no English vocab left unfilled where dictionary IPA exists (backfill done)',
        CASE WHEN to_regclass('public.user_vocabulary') IS NOT NULL
-             AND to_regclass('public.morpheme_dictionary') IS NOT NULL THEN 'OK' ELSE 'MISSING' END
+             AND to_regclass('public.morpheme_dictionary') IS NOT NULL
+             AND NOT EXISTS (
+                   SELECT 1 FROM user_vocabulary uv
+                   JOIN morpheme_dictionary md
+                     ON md.language = 'English' AND md.base_form = uv.base_form
+                    AND md.reading IS NOT NULL AND md.reading <> ''
+                   WHERE uv.language = 'English'
+                     AND (uv.furigana IS NULL OR uv.furigana = '')) THEN 'OK' ELSE 'MISSING' END
 UNION ALL
--- 시드성(구 시드 DELETE) — 대표 구 시드 행의 "부재"가 실행 증거.
-SELECT '20260429000100', 'seed: old public seed ''[N5] 私の一日 (하루 일과)'' deleted',
+-- 시드성(구 시드 DELETE) — 삭제 대상 35편 "전체" IN 목록의 부재가 실행 증거
+-- (목록은 20260429000100_cleanup_old_seeds.sql 의 IN 목록에서 기계 추출 — 수기 오탈자 배제).
+SELECT '20260429000100', 'seed: all 35 old public seed titles deleted',
        CASE WHEN to_regclass('public.reading_materials') IS NOT NULL
              AND NOT EXISTS (SELECT 1 FROM reading_materials
-                             WHERE visibility = 'public' AND title = '[N5] 私の一日 (하루 일과)') THEN 'OK' ELSE 'MISSING' END
+                             WHERE visibility = 'public' AND title IN (
+                               '[N5] 私の一日 (하루 일과)',
+                               '[N5] 天気と季節 (날씨와 계절)',
+                               '[N5] 家族の紹介 (가족 소개)',
+                               '[N5] 学校の一日 (학교 하루)',
+                               '[N5] 朝のあいさつ (아침 인사)',
+                               '[N5] 食堂で (식당에서)',
+                               '[N5] 私の趣味 (나의 취미)',
+                               '[N5] 雨の日 (비 오는 날)',
+                               '[N4] 休日の過ごし方 (주말 보내기)',
+                               '[N4] スーパーでの買い物 (마트에서 장 보기)',
+                               '[N4] 日本の四季 (일본의 사계절)',
+                               '[N4] 友達と買い物 (친구와 쇼핑)',
+                               '[N4] 旅行の計画 (여행 계획)',
+                               '[N4] 新しい仕事 (새 직장)',
+                               '[N3] インターネットと現代生活 (인터넷과 현대 생활)',
+                               '[N3] 日本の伝統文化 (일본의 전통문화)',
+                               '[N3] 環境問題への取り組み (환경 문제 대응)',
+                               '[N2] 少子高齢化と社会への影響 (저출산 고령화와 사회 영향)',
+                               '[N2] 人工知能が変える未来 (AI가 바꾸는 미래)',
+                               '[N1] 言語と思考の関係性 (언어와 사고의 관계)',
+                               '[A1] My Daily Routine (나의 하루 일과)',
+                               '[A1] My Room (나의 방)',
+                               '[A1] My Best Friend (나의 가장 친한 친구)',
+                               '[A1] Going to School (학교 가기)',
+                               '[A1] My Pet (나의 반려동물)',
+                               '[A1] Daily Routines (하루 일과)',
+                               '[A2] A Visit to My Grandparents (조부모님 방문)',
+                               '[A2] My Favorite Season (내가 좋아하는 계절)',
+                               '[A2] A Trip to the Beach (해변 여행)',
+                               '[A2] Cooking with My Grandma (할머니와 요리하기)',
+                               '[A2] My Favorite Holiday (내가 좋아하는 명절)',
+                               '[B1] The Benefits of Language Learning (언어 학습의 이점)',
+                               '[B1] Urban Farming: Growing Food in the City (도시 농업)',
+                               '[B2] The Psychology of Procrastination (미루기의 심리학)',
+                               '[C1] Artificial Intelligence and the Question of Consciousness (AI와 의식의 문제)')) THEN 'OK' ELSE 'MISSING' END
 
 -- ── 2026-05 ──────────────────────────────────────────────────
 UNION ALL
@@ -163,15 +218,21 @@ SELECT '20260501000100', 'column reading_materials.lesson_explanation_ko',
        CASE WHEN EXISTS (SELECT 1 FROM information_schema.columns
                          WHERE table_schema = 'public' AND table_name = 'reading_materials' AND column_name = 'lesson_explanation_ko') THEN 'OK' ELSE 'MISSING' END
 UNION ALL
--- N5 레슨 시드 시리즈(20260504~20260511)는 같은 행들을 연속 재작성 — 최종 상태가 증거.
--- 20260504000100/000200 은 id=45 가 '[N5 문법 #1]' 계열 타이틀인지로 공유 판정한다.
-SELECT '20260504000100', 'seed: reading_materials id=45 titled ''[N5 문법 #1]...'' (shared final-state evidence)',
+-- N5/A1 레슨 시드 시리즈(20260504~20260511)는 같은 행들을 연속 재작성 — 최종 상태가 증거.
+-- 20260504000100 고유 증거: A1 통합·재번호(id=113 → '[A1 grammar #1] be 동사')는 이 파일만 수행
+-- (20260504000200 은 "A1은 별도 마이그레이션에서 처리 예정" 명시, 20260509+ 는 N5 전용 — grep 검증).
+SELECT '20260504000100', 'seed: A1 merged/renumbered — id=113 titled ''[A1 grammar #1]...''',
        CASE WHEN to_regclass('public.reading_materials') IS NOT NULL
-             AND EXISTS (SELECT 1 FROM reading_materials WHERE id = 45 AND title LIKE '[N5 문법 #1]%') THEN 'OK' ELSE 'MISSING' END
+             AND EXISTS (SELECT 1 FROM reading_materials WHERE id = 113 AND title LIKE '[A1 grammar #1]%') THEN 'OK' ELSE 'MISSING' END
 UNION ALL
-SELECT '20260504000200', 'seed: reading_materials id=45 titled ''[N5 문법 #1]...'' (shared final-state evidence)',
-       CASE WHEN to_regclass('public.reading_materials') IS NOT NULL
-             AND EXISTS (SELECT 1 FROM reading_materials WHERE id = 45 AND title LIKE '[N5 문법 #1]%') THEN 'OK' ELSE 'MISSING' END
+-- 20260504000200 고유 증거: conversation_script 컬럼(이 파일만 추가) + 실용 10편 private 전환.
+SELECT '20260504000200', 'col conversation_script + 10 practical materials hidden (visibility=private)',
+       CASE WHEN EXISTS (SELECT 1 FROM information_schema.columns
+                         WHERE table_schema = 'public' AND table_name = 'reading_materials'
+                           AND column_name = 'conversation_script')
+             AND NOT EXISTS (SELECT 1 FROM reading_materials
+                             WHERE id IN (68, 159, 158, 69, 70, 71, 72, 160, 162, 161)
+                               AND visibility <> 'private') THEN 'OK' ELSE 'MISSING' END
 UNION ALL
 -- 20260509000100(재배열) 고유 증거: id=49 가 '#4 ここ・そこ・あそこ' 로 재배열됨(이전 시드는 #5/#8).
 SELECT '20260509000100', 'seed: reading_materials id=49 reordered to ''[N5 문법 #4]...''',

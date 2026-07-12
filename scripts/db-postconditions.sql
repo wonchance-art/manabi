@@ -25,17 +25,35 @@ UNION ALL
 SELECT '20260708000200', 'table push_subscriptions',
        CASE WHEN to_regclass('public.push_subscriptions') IS NOT NULL THEN 'OK' ELSE 'MISSING' END
 
--- 20260709/20260712d — realtime 'world-plaza' 정책(20260712000400 이 같은 이름으로 대체)
+-- realtime 'world-plaza' 정책 — 최종 상태의 소유자는 20260712000400(전체 개방)이므로 version 을
+-- 20260712000400 으로 귀속한다(20260709000100 은 같은 이름의 admin-only 구버전 — 존재만 보면
+-- 구버전도 green 이 되는 사각을 막기 위해 qual/with_check 에 admin 조건이 "없어야" OK):
+--   · roles 에 authenticated 포함 + 정의에 'world-plaza' 토픽 조건 포함 + admin 문자열 부재.
 UNION ALL
-SELECT '20260709000100', 'realtime policy world_plaza_admin_receive',
+SELECT '20260712000400', 'realtime policy world_plaza_admin_receive open to all authenticated (no admin cond)',
        CASE WHEN EXISTS (SELECT 1 FROM pg_policies
                          WHERE schemaname = 'realtime' AND tablename = 'messages'
-                           AND policyname = 'world_plaza_admin_receive') THEN 'OK' ELSE 'MISSING' END
+                           AND policyname = 'world_plaza_admin_receive'
+                           AND 'authenticated' = ANY(roles)
+                           AND qual ILIKE '%world-plaza%'
+                           AND qual NOT ILIKE '%admin%') THEN 'OK' ELSE 'MISSING' END
 UNION ALL
-SELECT '20260709000100', 'realtime policy world_plaza_admin_send',
+SELECT '20260712000400', 'realtime policy world_plaza_admin_send open to all authenticated (no admin cond)',
        CASE WHEN EXISTS (SELECT 1 FROM pg_policies
                          WHERE schemaname = 'realtime' AND tablename = 'messages'
-                           AND policyname = 'world_plaza_admin_send') THEN 'OK' ELSE 'MISSING' END
+                           AND policyname = 'world_plaza_admin_send'
+                           AND 'authenticated' = ANY(roles)
+                           AND with_check ILIKE '%world-plaza%'
+                           AND with_check NOT ILIKE '%admin%') THEN 'OK' ELSE 'MISSING' END
+UNION ALL
+-- 20260712000400 고유 검증 2/2: claim_world_session_v2 가 "신버전"(duplicate-ip 거부 제거)인지.
+-- 함수 존재만 보면 구버전(20260712000300, IP 차단 포함)도 통과하므로 정의 본문을 검사한다.
+-- 패턴은 따옴표 포함 리터럴 'duplicate-ip' 의 부재 — 구버전 RETURN jsonb_build_object(...,
+-- 'duplicate-ip') 에만 존재하고, 신버전 본문 "주석"의 따옴표 없는 duplicate-ip 는 걸리지 않는다.
+SELECT '20260712000400', 'fn claim_world_session_v2 is new version (no quoted duplicate-ip literal)',
+       CASE WHEN EXISTS (SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+                         WHERE n.nspname = 'public' AND p.proname = 'claim_world_session_v2'
+                           AND pg_get_functiondef(p.oid) NOT LIKE '%''duplicate-ip''%') THEN 'OK' ELSE 'MISSING' END
 
 -- 20260710 — world_sessions 임대
 UNION ALL
@@ -50,6 +68,20 @@ SELECT '20260710000100', 'function claim_world_session',
 UNION ALL
 SELECT '20260712000100', 'table content_overrides',
        CASE WHEN to_regclass('public.content_overrides') IS NOT NULL THEN 'OK' ELSE 'MISSING' END
+UNION ALL
+-- 20260712000200 harden_admin_fns — is_admin 존재만 보면 20260329000100 구버전(search_path
+-- 미고정)이어도 green 이 되는 사각. 하드닝의 실체인 proconfig 의 search_path 고정을 검사한다.
+SELECT '20260712000200', 'fn is_admin has pinned search_path (proconfig)',
+       CASE WHEN EXISTS (SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+                         WHERE n.nspname = 'public' AND p.proname = 'is_admin'
+                           AND EXISTS (SELECT 1 FROM unnest(p.proconfig) cfg
+                                       WHERE cfg LIKE 'search_path=%')) THEN 'OK' ELSE 'MISSING' END
+UNION ALL
+SELECT '20260712000200', 'fn enforce_role_change_by_admin has pinned search_path (proconfig)',
+       CASE WHEN EXISTS (SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+                         WHERE n.nspname = 'public' AND p.proname = 'enforce_role_change_by_admin'
+                           AND EXISTS (SELECT 1 FROM unnest(p.proconfig) cfg
+                                       WHERE cfg LIKE 'search_path=%')) THEN 'OK' ELSE 'MISSING' END
 UNION ALL
 SELECT '20260712000300', 'function claim_world_session_v2',
        CASE WHEN EXISTS (SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
