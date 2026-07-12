@@ -58,6 +58,20 @@ export const WORLD_NODES = [
     gate: { type: 'ferry', to: 'busan-port', label: '⚓ 부산' },
     desc: '일본 규슈의 관문 항구. 부산행 페리가 오가요.',
   },
+  // ── NPC 도트 대화(마스터플랜 A-1) — 페리 목적지 후쿠오카 인근 land 에 배치. gate 없음, npc 필드로 대화. ──
+  // A(말 걸기) → React NpcDialog 오버레이(npcScripts). 완주 시 스탬프(로컬 전용 파일럿 — 공유 없음).
+  // 나가하마 라멘 포장마차 — 후쿠오카항 곁 해안 land(하카타가 돈코츠·替え玉 본고장이라 지리 정합).
+  {
+    id: 'fukuoka-ramen', name: '나가하마 라멘 포장마차', kind: 'npc', tile: [131, 306],
+    npc: 'ramen',
+    desc: '하카타 돈코츠 라멘 포장마차(屋台, 야타이). 주인아저씨가 면 굳기를 물어봐요 — 「替え玉お願いします」를 써 볼 곳.',
+  },
+  // 다자이후 신사 — 후쿠오카 남동쪽 내륙 land(실제 다자이후텐만구가 후쿠오카 시가지 남동).
+  {
+    id: 'dazaifu-shrine', name: '다자이후 신사', kind: 'npc', tile: [138, 310],
+    npc: 'shrine',
+    desc: '붉은 鳥居(도리이)가 선 신사. 미코상이 참배 예절(二礼二拍手一礼)과 오미쿠지를 알려줘요.',
+  },
   // 도쿄 — 도시.
   { id: 'tokyo', name: '도쿄', kind: 'city', tile: [POI.TOKYO.x, POI.TOKYO.y], desc: '일본의 수도. 세계에서 가장 사람이 많이 사는 대도시권이에요.' },
   // 하네다 — 랜드마크(표지 마커만).

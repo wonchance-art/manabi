@@ -452,6 +452,83 @@ const BOAT_ROWS = [
 ];
 export function boatFrameRows() { return BOAT_ROWS; }
 
+// ── NPC 마커 도트(월드 노드 kind:'npc') ──
+// 후쿠오카 라멘 포장마차 주인(야타이+주인장)과 다자이후 신사 미코상(토리이+미코)을 소품과 함께
+// 한 장의 마커로 굽는다. 24×24, 발밑(하단 중앙) 정렬(GameCanvas buildNpcMarkers 가 origin 0.5,1).
+//   · ramen  : 붉은 노렌·지붕 + 붉은 초롱(ちょうちん) + 머리띠 두른 주인 + 나무 카운터에 김 나는 그릇
+//   · shrine : 붉은 鳥居(토리이) 기둥/가사기 + 그 앞에 선 미코(흰 하카마 상의·緋袴)
+// 픽셀맵 무결성(24행×24열·정의된 색문자만)은 sprites.test 로 검증한다.
+export const NPC_W = 24;
+export const NPC_H = 24;
+export const NPC_KEYS = ['ramen', 'shrine'];
+
+export const NPC_PAL = {
+  // O=윤곽 R=적(노렌/지붕) r=적 음영 C=크림 W=나무카운터 w=나무 음영 Y=초롱 빛 H=머리(검) S=피부 K=콧수염 B=셔츠 N=그릇
+  ramen: { O: 0x2a1e14, R: 0xc14b38, r: 0x8a2f24, C: 0xf6edcf, W: 0xb07a3e, w: 0x6f4420, Y: 0xf2a54a, H: 0x241a12, S: 0xf1c99a, K: 0x3a2a1a, B: 0x3a6ea5, N: 0xcfd6df },
+  // O=윤곽 R=주홍(토리이) r=주홍 음영 H=머리(검) S=피부 W=흰 하카마(白衣) w=흰 음영 P=緋袴(붉은 하의)
+  shrine: { O: 0x2a1e14, R: 0xe24a2e, r: 0xa8331f, H: 0x241a12, S: 0xf1c99a, W: 0xf4f0e6, w: 0xcbc3b4, P: 0xd45a78 },
+};
+
+const NPC_ART = {
+  ramen: [
+    '....OOOOOOOOOOOOOOOO....',
+    '...ORRRRRRRRRRRRRRRRO...',
+    '..ORRRRRRRRRRRRRRRRRRO..',
+    '..OrrrrrrrrrrrrrrrrrrO..',
+    '...w......OOOO......w...',
+    '...w.....OYYYYO.....w...',
+    '...w.....OYCCYO.....w...',
+    '...w.....OYYYYO.....w...',
+    '...w......OOOO......w...',
+    '..ORRRRRRRRRRRRRRRRRRO..',
+    '..OrrCCrrCCrrCCrrCCrrO..',
+    '..OCCrrCCrrCCrrCCrrCCO..',
+    '.......ORRRRRRRRO.......',
+    '.......OHHHHHHHHO.......',
+    '.......OSSOSSOSSO.......',
+    '.......OSSSKKSSSO.......',
+    '.......OSSSSSSSSO.......',
+    '.....OBBBBBBBBBBBBO.....',
+    '.....OBBBBBBBBBBBBO.....',
+    '..OWWWWWWWWWWWWWWWWWWO..',
+    '..OWWWWWWWNNNNWWWWWWWO..',
+    '..OwwwwwwwwwwwwwwwwwwO..',
+    '..OwwwwwwwwwwwwwwwwwwO..',
+    '..w..................w..',
+  ],
+  shrine: [
+    '.RR..................RR.',
+    '.RRRRRRRRRRRRRRRRRRRRRR.',
+    '.rrrrrrrrrrrrrrrrrrrrrr.',
+    '....RRR..........RRR....',
+    '...RRRRRRRRRRRRRRRRRR...',
+    '...rrrrrrrrrrrrrrrrrr...',
+    '....RRR..........RRR....',
+    '....RRR..........RRR....',
+    '....RRR.OHHHHHHO.RRR....',
+    '....RRR.HSSSSSSH.RRR....',
+    '....RRR.SSOSSOSS.RRR....',
+    '....RRR.SSSSSSSS.RRR....',
+    '....RRR.OWWWWWWO.RRR....',
+    '....RRR.OWWWWWWO.RRR....',
+    '....RRR.OWWWWWWO.RRR....',
+    '....RRR.OWwwwwWO.RRR....',
+    '....RRR.OPPPPPPO.RRR....',
+    '....RRR.OPPPPPPO.RRR....',
+    '....RRR.OPPPPPPO.RRR....',
+    '....RRR.OPPPPPPO.RRR....',
+    '....RRR.OPPPPPPO.RRR....',
+    '....RRR.OWWWWWWO.RRR....',
+    '....RRR.OWWWWWWO.RRR....',
+    '....rrr..........rrr....',
+  ],
+};
+
+// NPC 마커 픽셀맵(행 배열). 미지 key 는 ramen 으로 폴백.
+export function npcMarkerRows(key) {
+  return NPC_ART[NPC_KEYS.includes(key) ? key : 'ramen'];
+}
+
 // ── 원격 피어 스프라이트 렌더(광장·공항 공용 헬퍼) ──
 // 두 씬(WorldScene·AirportScene)이 같은 도트 렌더·닉네임 라벨·그리드 보간을 재사용한다.
 //   · scene 에 붙는 상태: scene.peers(Map), scene.fontReady(bool), scene.add/scene.tweens(Phaser).
