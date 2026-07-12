@@ -75,10 +75,27 @@ export async function getOverridesForLang(lang) {
   return map;
 }
 
-// 존재한다면 문자열(또는 null)이어야 하는 챕터/섹션 필드 — 렌더가 .split 등 문자열 연산을 함
-const CHAPTER_STRING_FIELDS = ['title', 'topic', 'titleFr', 'summary', 'duration'];
+// ── 챕터 스키마 화이트리스트 ───────────────────────────────────
+// 전 언어(ja·fr·en·zh) 268챕터 실측 키 인벤토리와 일치(회귀 테스트가 라운드트립으로 고정).
+// 여기 없는 키는 오버라이드에서 명시적으로 거부한다 — 에디터가 여는 키와 검증기의
+// 차집합이 생기지 않게(Codex 4차 검수 종결 조건).
+// 문자열(또는 null) 필드 — 렌더가 React child·.split 등 문자열 연산에 소비
+const CHAPTER_STRING_FIELDS = ['title', 'topic', 'titleFr', 'summary', 'duration', 'kana'];
 // heading·패턴 박스 + 콜아웃 전체(refShared CALLOUT_ORDER: pitfall·vsKo·vsEn·hanja·etym·tip)
 const SECTION_STRING_FIELDS = ['heading', 'pattern', 'patternKo', 'body', 'tip', 'pitfall', 'vsKo', 'vsEn', 'hanja', 'etym'];
+// 스칼라 배열 필드 — distractors(refQuiz 보기 풀)·gojuon(GojuonChart sets)·kanjiExempt(P9 게이트)
+const SECTION_SCALAR_ARRAY_FIELDS = ['distractors', 'gojuon'];
+// 구조 필드 — 아래 isValidSection에서 개별 스키마 검증
+const SECTION_STRUCT_FIELDS = ['examples', 'table', 'story', 'media', 'enParallel', 'hanjaBridge'];
+const CHAPTER_KEYS = new Set([
+  'slug', 'level', 'order', 'sections', 'kanjiExempt',
+  ...CHAPTER_STRING_FIELDS,
+]);
+const SECTION_KEYS = new Set([
+  ...SECTION_STRING_FIELDS,
+  ...SECTION_SCALAR_ARRAY_FIELDS,
+  ...SECTION_STRUCT_FIELDS,
+]);
 
 function isPlainObject(v) {
   return Boolean(v) && typeof v === 'object' && !Array.isArray(v);
@@ -110,17 +127,37 @@ function isFlatObjectArray(v) {
   return Array.isArray(v) && v.every(isFlatObject);
 }
 
+/** rows가 "평평한 객체 배열"인 블록 — enParallel({rows:[{en,fr,ko}], note})·hanjaBridge({rows:[{zh,trad,ja,read,ko}]}) */
+function isFlatRowsBlock(v) {
+  if (!isPlainObject(v)) return false;
+  for (const [k, x] of Object.entries(v)) {
+    if (k === 'rows') {
+      if (x != null && !isFlatObjectArray(x)) return false;
+    } else if (!isScalar(x)) return false;
+  }
+  return true;
+}
+
 /**
  * 섹션 하나의 렌더 가능 구조 검증 — 렌더러가 소비하는 모든 leaf까지 내려간다.
+ * 화이트리스트에 없는 키는 거부(미지의 구조가 렌더러에 닿는 경로 차단).
  *  - examples: ExampleList가 ex.ja/yomi/ko/note를 React child·refPron으로 소비 → 스칼라 leaf의 평평한 객체 배열
  *  - table: caption·headers 원소·rows 셀 전부 <caption>/<th>/<td>의 직접 child → 스칼라
  *  - story: body 원소(ja/narr/speaker…)는 평평한 객체, questions는 스칼라 배열(accept·model)까지 허용
  *  - media: youtubeId·songTitle 등 스칼라 + line(가사 한 줄)만 평평한 객체
+ *  - enParallel·hanjaBridge: RefParallel·RefHanjaBridge가 rows 원소의 .en/.zh 등을 소비 → rows는 평평한 객체 배열
+ *  - gojuon: GojuonChart의 sets prop(sets.includes 호출) → 스칼라 배열
  */
 function isValidSection(s) {
   if (!isPlainObject(s)) return false;
+  for (const k of Object.keys(s)) {
+    if (!SECTION_KEYS.has(k)) return false;
+  }
   for (const k of SECTION_STRING_FIELDS) {
     if (k in s && s[k] != null && typeof s[k] !== 'string') return false;
+  }
+  for (const k of SECTION_SCALAR_ARRAY_FIELDS) {
+    if (k in s && s[k] != null && !isScalarArray(s[k])) return false;
   }
   if ('examples' in s && s.examples != null && !isFlatObjectArray(s.examples)) return false;
   if ('table' in s && s.table != null) {
@@ -149,6 +186,8 @@ function isValidSection(s) {
       } else if (!isScalar(v)) return false;
     }
   }
+  if ('enParallel' in s && s.enParallel != null && !isFlatRowsBlock(s.enParallel)) return false;
+  if ('hanjaBridge' in s && s.hanjaBridge != null && !isFlatRowsBlock(s.hanjaBridge)) return false;
   return true;
 }
 
@@ -160,9 +199,13 @@ function isValidSection(s) {
  */
 export function isValidOverride(data) {
   if (!isPlainObject(data)) return false;
+  for (const k of Object.keys(data)) {
+    if (!CHAPTER_KEYS.has(k)) return false;
+  }
   for (const k of CHAPTER_STRING_FIELDS) {
     if (k in data && data[k] != null && typeof data[k] !== 'string') return false;
   }
+  if ('kanjiExempt' in data && data.kanjiExempt != null && !isScalarArray(data.kanjiExempt)) return false;
   if ('sections' in data) {
     const sections = data.sections;
     if (!Array.isArray(sections) || sections.length === 0) return false;

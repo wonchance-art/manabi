@@ -32,7 +32,8 @@ const SECTION_AREA_FIELDS = [
   { key: 'hanja', label: '한자 연결(hanja)' },
 ];
 // 구조가 복잡해 구조 편집기가 다루지 않는 섹션 필드 — 있으면 "고급 JSON에서 편집" 안내
-const ADVANCED_SECTION_KEYS = ['table', 'story', 'media', 'quiz', 'gojuon', 'enParallel', 'hanjaBridge'];
+// (quiz는 챕터 렌더 소비자가 없어 목록에서 제외 — 검증 화이트리스트와 동일 집합 유지)
+const ADVANCED_SECTION_KEYS = ['table', 'story', 'media', 'gojuon', 'enParallel', 'hanjaBridge'];
 
 // story questions[].id 목록 추출 — 변경 감지용
 function storyIds(chapter) {

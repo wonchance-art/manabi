@@ -168,15 +168,48 @@ describe('isValidOverride', () => {
     expect(isValidOverride({ sections: [{ media: { youtubeId: 'x', line: { ja: 'l', ko: 'k' } } }] })).toBe(true);
     expect(isValidOverride({ sections: [{ media: { youtubeId: 'x', line: { ja: {} } } }] })).toBe(false);
   });
+
+  // ── Codex 4차 P1: 고급 섹션 키(enParallel·hanjaBridge·gojuon) + 화이트리스트 ──
+  it('enParallel.rows 원소가 평평한 객체가 아니면 거부한다', () => {
+    expect(isValidOverride({ sections: [{ heading: 'x', enParallel: { rows: [null] } }] })).toBe(false);
+    expect(isValidOverride({ sections: [{ enParallel: { rows: [{ en: {} }] } }] })).toBe(false);
+    expect(isValidOverride({ sections: [{ enParallel: { rows: [{ en: 'e', fr: 'f', ko: 'k' }], note: 'n' } }] })).toBe(true);
+    expect(isValidOverride({ sections: [{ enParallel: { rows: [{ en: 'e' }], note: {} } }] })).toBe(false);
+  });
+
+  it('hanjaBridge.rows 원소가 평평한 객체가 아니면 거부한다', () => {
+    expect(isValidOverride({ sections: [{ hanjaBridge: { rows: [null] } }] })).toBe(false);
+    expect(isValidOverride({ sections: [{ hanjaBridge: { rows: [{ zh: '简', trad: '繁', ja: '日', read: 'r', ko: 'k' }] } }] })).toBe(true);
+  });
+
+  it('gojuon이 스칼라 배열이 아니면 거부한다 (GojuonChart sets.includes 소비)', () => {
+    expect(isValidOverride({ sections: [{ gojuon: {} }] })).toBe(false);
+    expect(isValidOverride({ sections: [{ gojuon: [{}] }] })).toBe(false);
+    expect(isValidOverride({ sections: [{ gojuon: ['basic', 'dakuten'] }] })).toBe(true);
+  });
+
+  it('화이트리스트 밖의 키는 챕터·섹션 어느 층에서든 거부한다', () => {
+    expect(isValidOverride({ sections: [{ quiz: { anything: 1 } }] })).toBe(false); // 소비자 없는 키
+    expect(isValidOverride({ sections: [{ unknownKey: 'x' }] })).toBe(false);
+    expect(isValidOverride({ title: 'ok', unknownChapterKey: {} })).toBe(false);
+  });
+
+  it('kanjiExempt는 스칼라 배열만 허용한다', () => {
+    expect(isValidOverride({ kanjiExempt: ['新幹線'] })).toBe(true);
+    expect(isValidOverride({ kanjiExempt: [{}] })).toBe(false);
+  });
 });
 
 // 에디터는 전체 챕터 JSON을 저장하므로, 실제 챕터 전부가 무수정 상태로 검증을
 // 통과해야 한다(아니면 정상 저장이 400에 막힘). 전 언어·전 챕터 라운드트립 고정.
-describe('isValidOverride — 실제 챕터 전수 라운드트립', () => {
-  it('일본어 전 챕터가 검증을 통과한다', async () => {
-    const { ALL_CHAPTERS } = await import('../../content/japanese');
-    expect(ALL_CHAPTERS.length).toBeGreaterThan(80);
-    for (const ch of ALL_CHAPTERS) {
+// 새 섹션 키를 콘텐츠에 도입하면 이 테스트가 먼저 깨진다 — 그때 화이트리스트와
+// 검증 규칙을 함께 추가할 것(검증기-렌더러 차집합 방지).
+describe('isValidOverride — 실제 챕터 전수 라운드트립 (4개 언어)', () => {
+  it.each(['japanese', 'french', 'english', 'chinese'])('%s 전 챕터가 검증을 통과한다', async (lang) => {
+    const mod = await import(`../../content/${lang}`);
+    const all = mod.default.ALL_CHAPTERS;
+    expect(all.length).toBeGreaterThan(40);
+    for (const ch of all) {
       expect(isValidOverride(ch), `챕터 ${ch.slug}가 검증에 걸림`).toBe(true);
     }
   });
