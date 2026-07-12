@@ -1,0 +1,115 @@
+name: Supabase Migration Repair (one-shot)
+
+# ⚠️ 일회성 복구 워크플로 — 실행 성공(run green) 후 이 파일은 삭제 예정입니다.
+#
+# 목적: 마이그레이션 개명(YYYYMMDDHHMMSS 형식 전환) 이후, 원격 Supabase 의
+#   supabase_migrations.schema_migrations 히스토리를 로컬 파일과 일치시킨다.
+#   기존 CI(run 15)가 실패한 두 원인을 한 번에 해소한다:
+#     (1) 원격 히스토리에 로컬에 없는 "구식 풀네임 버전" 21건 → repair --status reverted 로 제거.
+#     (2) 프로덕션에서 이미 실동작해 온 20260703 까지의 기능(포럼·스트릭·레슨·독해·study_paragraphs
+#         등)을 개명된 새 버전으로 --status applied 기록해 재실행을 막는다.
+#   그 뒤 나머지(20260708 이후, 전부 멱등 확인분)만 `supabase db push` 로 실제 적용한다.
+#
+# 실행: Actions 탭 → 이 워크플로 → "Run workflow" (workflow_dispatch 전용, 수동).
+#   기존 supabase-migrations.yml 과 동일한 시크릿 3종을 사용한다:
+#     SUPABASE_ACCESS_TOKEN · SUPABASE_PROJECT_REF · SUPABASE_DB_PASSWORD
+#
+# ⚠️ 재적용 안전성 전제(중요):
+#   20260708~20260710 항목은 과거에 SQL Editor 로 수동 적용됐을 가능성이 있으나 불확실하다.
+#   그래도 무해하다 — 이 파일들은 전부 멱등(CREATE TABLE/INDEX IF NOT EXISTS ·
+#   CREATE OR REPLACE FUNCTION · DROP POLICY IF EXISTS 뒤 CREATE · ADD COLUMN IF NOT EXISTS ·
+#   REVOKE/GRANT)으로 감사·수정됐다. 따라서 db push 가 이미 적용된 객체를 다시 밀어도
+#   오류 없이 같은 상태로 수렴한다(멱등성 감사: 20260708000200_push_subscriptions ·
+#   20260712000100_content_overrides 두 파일에 DROP POLICY IF EXISTS 보강).
+
+on:
+  workflow_dispatch:
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+    steps:
+      - name: 시크릿 확인 (미설정 시 실패)
+        run: |
+          if [ -z "$PROJECT_REF" ] || [ -z "$SUPABASE_ACCESS_TOKEN" ] || [ -z "$SUPABASE_DB_PASSWORD" ]; then
+            echo "::error::Supabase 시크릿(SUPABASE_ACCESS_TOKEN·SUPABASE_PROJECT_REF·SUPABASE_DB_PASSWORD) 미설정 — 복구를 진행할 수 없습니다."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: 1) Link
+        run: supabase link --project-ref "$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
+
+      - name: 2) migration list (before — 진단 기록)
+        run: supabase migration list --password "$SUPABASE_DB_PASSWORD"
+
+      - name: 3) repair reverted — 구식 풀네임 21건 제거
+        # 원격 히스토리에만 있고 로컬에 없는 구식 버전(풀네임이 그대로 버전으로 기록된 항목).
+        # CLI 가 "Remote migration versions not found in local migrations directory" 로 push 를
+        # 거부하던 원인. reverted 로 표시하면 히스토리에서 빠져 push 가 진행된다.
+        run: |
+          supabase migration repair --status reverted \
+            20260327_daily_suggestions \
+            20260327_likes_rpc \
+            20260328_content_sources \
+            20260329_admin_rls \
+            20260329_forum \
+            20260329_notifications \
+            20260329_onboarding_columns \
+            20260329_reading_progress \
+            20260329_reading_progress_scroll \
+            20260329_streak \
+            20260329_suggestion_material_id \
+            20260329_vocab_source_sentence \
+            20260330_achievements \
+            20260330_xp_system \
+            20260405_daily_goals \
+            20260405_materials_delete_policy \
+            20260405_notifications_expand \
+            20260405_social \
+            20260405_suggestions_insert_policy \
+            20260406_materials_update_policy \
+            20260408_streak_freeze \
+            --password "$SUPABASE_DB_PASSWORD"
+
+      - name: 4) repair applied — 개명 후 20260703 까지 기록(재실행 방지)
+        # 프로덕션에서 이미 실동작해 온 확실한 적용분(포럼·스트릭·레슨·독해·study_paragraphs 등).
+        # 개명 결과에서 기계 생성한 53개 버전(20260327000100 … 20260703000200)을 applied 로 기록해
+        # db push 가 이 구간을 다시 실행하지 않게 한다. 20260703 이전 SQL 은 내용 무변경(파일명만 개명).
+        run: |
+          supabase migration repair --status applied \
+            20260327000100 20260327000200 20260328000100 \
+            20260329000100 20260329000200 20260329000300 20260329000400 \
+            20260329000500 20260329000600 20260329000700 20260329000800 20260329000900 \
+            20260330000100 20260330000200 \
+            20260405000100 20260405000200 20260405000300 20260405000400 20260405000500 \
+            20260406000100 20260408000100 \
+            20260414000100 20260414000200 20260414000300 20260414000400 \
+            20260414000500 20260414000600 20260414000700 \
+            20260415000100 20260415000200 20260415000300 \
+            20260416000100 20260417000100 20260428000100 20260429000100 20260501000100 \
+            20260504000100 20260504000200 20260509000100 20260509000200 \
+            20260511000100 20260511000200 \
+            20260612000100 20260613000100 20260613000200 20260618000100 20260619000100 \
+            20260623000100 20260623000200 20260701000100 20260702000100 \
+            20260703000100 20260703000200 \
+            --password "$SUPABASE_DB_PASSWORD"
+
+      - name: 5) db push — 나머지(20260708 이후, 멱등 확인분)만 실제 적용
+        # 위 4단계에서 20260703 까지가 applied 로 기록됐으므로 여기서는 20260708000100 이후만 남는다:
+        #   admin_metrics_rpc · push_subscriptions · world_realtime_rls · world_sessions ·
+        #   content_overrides · harden_admin_fns · world_multiplayer · world_open_all_users ·
+        #   world_chat_rls · world_stamps · world_reports (전 11건 · 전부 멱등).
+        run: supabase db push --password "$SUPABASE_DB_PASSWORD"
+
+      - name: 6) migration list (after — 사후 검증)
+        run: supabase migration list --password "$SUPABASE_DB_PASSWORD"

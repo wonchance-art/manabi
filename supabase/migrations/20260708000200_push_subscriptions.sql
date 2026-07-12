@@ -26,14 +26,19 @@ CREATE INDEX IF NOT EXISTS push_subscriptions_hour_idx
 
 ALTER TABLE push_subscriptions ENABLE ROW LEVEL SECURITY;
 
+-- 멱등: DROP POLICY IF EXISTS 뒤 CREATE (러너 재적용 시 42710 방지 — 동작 불변).
+DROP POLICY IF EXISTS "push_subscriptions_select_own" ON push_subscriptions;
 CREATE POLICY "push_subscriptions_select_own" ON push_subscriptions
   FOR SELECT USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "push_subscriptions_insert_own" ON push_subscriptions;
 CREATE POLICY "push_subscriptions_insert_own" ON push_subscriptions
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "push_subscriptions_update_own" ON push_subscriptions;
 CREATE POLICY "push_subscriptions_update_own" ON push_subscriptions
   FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "push_subscriptions_delete_own" ON push_subscriptions;
 CREATE POLICY "push_subscriptions_delete_own" ON push_subscriptions
   FOR DELETE USING (auth.uid() = user_id);

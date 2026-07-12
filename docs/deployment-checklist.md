@@ -16,21 +16,21 @@ supabase db push
 
 | 파일 | 추가 내용 | 의존 코드 |
 |------|----------|-----------|
-| `20260414_grammar_notes_srs.sql` | grammar_notes에 SRS 컬럼 (interval, ease_factor 등) | VocabPage 문법 복습 |
-| `20260414_writing_practice.sql` | writing_practice 테이블 (RLS 포함) | VocabWriting 히스토리 |
-| `20260414_token_corrections.sql` | token_corrections 테이블 (RLS 포함) | ViewerBottomSheet 교정 히스토리 |
-| `20260414_vocab_decks_source.sql` | vocab_decks.source_material_id 컬럼 | ViewerPage 관련 덱 추천 |
+| `20260414000100_grammar_notes_srs.sql` | grammar_notes에 SRS 컬럼 (interval, ease_factor 등) | VocabPage 문법 복습 |
+| `20260414000700_writing_practice.sql` | writing_practice 테이블 (RLS 포함) | VocabWriting 히스토리 |
+| `20260414000300_token_corrections.sql` | token_corrections 테이블 (RLS 포함) | ViewerBottomSheet 교정 히스토리 |
+| `20260414000600_vocab_decks_source.sql` | vocab_decks.source_material_id 컬럼 | ViewerPage 관련 덱 추천 |
 
 ### 이번 웨이브 마이그레이션 (2026-07) — 순서대로 실행
 
-> ⚠️ **이 리포는 마이그레이션 CI 자동 적용이 없습니다.** 아래 4건은 Supabase 대시보드 → SQL Editor 에서 파일 전체를 순서대로 붙여넣어 **수동 실행**하세요. 특히 `20260703_streak_freeze_earn`은 `update_streak`을 `CREATE OR REPLACE`로 덮어쓰고 구 `buy_streak_freeze` RPC를 제거하므로 실행 확인이 필수입니다.
+> ⚠️ **이 리포는 마이그레이션 CI 자동 적용이 없습니다.** 아래 4건은 Supabase 대시보드 → SQL Editor 에서 파일 전체를 순서대로 붙여넣어 **수동 실행**하세요. 특히 `20260703000100_streak_freeze_earn`은 `update_streak`을 `CREATE OR REPLACE`로 덮어쓰고 구 `buy_streak_freeze` RPC를 제거하므로 실행 확인이 필수입니다.
 
 | 파일 | 추가 내용 | 의존 코드 |
 |------|----------|-----------|
-| `20260701_grammar_review.sql` | `grammar_review` 테이블(문법 SRS 큐, FSRS 컬럼) + `review_events` append-only 오답 로그 (둘 다 RLS) | LearnPage 문법 due 배지, `/review/grammar` 복습 큐, 약점 진단 |
-| `20260702_writing_studio.sql` | `writing_practice`에 컬럼 추가(prompt_type·prompt·level·chapter_slug·errors·revision_of) | 라이팅 스튜디오 `/writing` 구조화 첨삭·재작문 |
-| `20260703_study_paragraphs.sql` | `study_paragraphs` 테이블(오늘의 문단 저장소: prefetched/used/expired, RLS) | 공부 모드 `/study` 프리페치·연재, LearnPage 이번 주 세션·연재 화수 |
-| `20260703_streak_freeze_earn.sql` | `update_streak` 재정의(7일 연속마다 프리즈 +1, 최대 2개) + `buy_streak_freeze` 제거 + `streak_freeze_count` 컬럼 재확인 | 스트릭 프리즈 자동 적립, LearnPage 스트릭 타일 |
+| `20260701000100_grammar_review.sql` | `grammar_review` 테이블(문법 SRS 큐, FSRS 컬럼) + `review_events` append-only 오답 로그 (둘 다 RLS) | LearnPage 문법 due 배지, `/review/grammar` 복습 큐, 약점 진단 |
+| `20260702000100_writing_studio.sql` | `writing_practice`에 컬럼 추가(prompt_type·prompt·level·chapter_slug·errors·revision_of) | 라이팅 스튜디오 `/writing` 구조화 첨삭·재작문 |
+| `20260703000200_study_paragraphs.sql` | `study_paragraphs` 테이블(오늘의 문단 저장소: prefetched/used/expired, RLS) | 공부 모드 `/study` 프리페치·연재, LearnPage 이번 주 세션·연재 화수 |
+| `20260703000100_streak_freeze_earn.sql` | `update_streak` 재정의(7일 연속마다 프리즈 +1, 최대 2개) + `buy_streak_freeze` 제거 + `streak_freeze_count` 컬럼 재확인 | 스트릭 프리즈 자동 적립, LearnPage 스트릭 타일 |
 
 ### v4 '눈과 목소리' 마이그레이션 (2026-07) — 순서대로 실행
 
@@ -38,8 +38,8 @@ supabase db push
 
 | 파일 | 추가 내용 | 의존 코드 |
 |------|----------|-----------|
-| `20260708_admin_metrics_rpc.sql` | 집계 전용 RPC(`admin_funnel`·`admin_daily_metrics`·`admin_v3_metrics`·`admin_content_health` 등, `SECURITY DEFINER`) | `admin/metrics` 대시보드 |
-| `20260708_push_subscriptions.sql` | `push_subscriptions` 테이블(user_id·endpoint unique·keys jsonb·lang·preferred_hour smallint UTC·RLS own-row) | 구독 배관(`sw.js` push 핸들러, 설정 토글), `/api/cron/send-forecast`·`/api/push/test` 발송 회로 |
+| `20260708000100_admin_metrics_rpc.sql` | 집계 전용 RPC(`admin_funnel`·`admin_daily_metrics`·`admin_v3_metrics`·`admin_content_health` 등, `SECURITY DEFINER`) | `admin/metrics` 대시보드 |
+| `20260708000200_push_subscriptions.sql` | `push_subscriptions` 테이블(user_id·endpoint unique·keys jsonb·lang·preferred_hour smallint UTC·RLS own-row) | 구독 배관(`sw.js` push 핸들러, 설정 토글), `/api/cron/send-forecast`·`/api/push/test` 발송 회로 |
 
 ### 배포 후 검증 쿼리
 

@@ -9,7 +9,7 @@ import { dirname, resolve } from 'node:path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const SQL = readFileSync(
-  resolve(__dirname, '../../../supabase/migrations/20260708_admin_metrics_rpc.sql'),
+  resolve(__dirname, '../../../supabase/migrations/20260708000100_admin_metrics_rpc.sql'),
   'utf8'
 );
 
