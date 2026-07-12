@@ -133,14 +133,19 @@ const GameCanvas = dynamic(() => import('../components/world/GameCanvas'), {
 
 // 멀티 전용 게이트 차단 화면(오너 요구 1) — GameCanvas 대신 화면 영역(inset:0)을 채운다.
 // status 별 안내 + (해당 시) 재시도 버튼. 연결 중·재연결·스폰 조회 중은 스피너만(자동 진행).
-function WorldGate({ status, spawnLoading, onRetry, retrying }) {
+function WorldGate({ status, reason, spawnLoading, onRetry, retrying }) {
   const COPY = {
     duplicate: { icon: '🔒', title: '이미 접속 중이에요', body: '다른 기기나 탭에서 학습 월드에 접속 중이에요. 그쪽을 닫고 다시 시도해 주세요.' },
     'lease-error': { icon: '⚠️', title: '잠시 확인이 필요해요', body: '지금은 멀티 접속을 확인할 수 없어요. 잠시 뒤 다시 시도해 주세요.' },
     failed: { icon: '📡', title: '연결하지 못했어요', body: '멀티 서버에 연결하지 못했어요. 잠시 뒤 다시 시도해 주세요.' },
   };
+  // duplicate 는 net 이 info.reason 으로 계정/IP 를 구분해 준다(하위호환: reason 없으면 일반 문구).
+  const DUP_COPY = {
+    'duplicate-account': COPY.duplicate,
+    'duplicate-ip': { icon: '🔒', title: '같은 네트워크에서 접속 중이에요', body: '같은 인터넷(IP)에서 이미 다른 접속이 있어요. 그쪽이 끝난 뒤 다시 시도해 주세요.' },
+  };
   // spawn 조회 중이거나 connected 전이라 아직 gate 사유가 없으면(연결 중/재연결) 스피너만.
-  const info = spawnLoading ? null : COPY[status];
+  const info = spawnLoading ? null : (status === 'duplicate' && DUP_COPY[reason]) || COPY[status];
   return (
     <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', padding: 16, background: SHELL.screenOff }}>
       <div style={{ maxWidth: 260, textAlign: 'center', color: '#cfc7bb', fontFamily: GBC.font }}>
@@ -197,6 +202,7 @@ export default function WorldPage() {
   //   'duplicate'(다른 기기/탭 접속 중) | 'lease-error'(임대 판정 불가) |
   //   'failed'(멀티 서버 연결 실패) | 'reconnecting'(재연결 중).
   const [worldStatus, setWorldStatus] = useState('connecting');
+  const [worldStatusReason, setWorldStatusReason] = useState(null); // duplicate-account | duplicate-ip | null
   // 중복 접속 판정 방식: 'lease'(world_sessions 서버 권위) | 'presence'(마이그레이션
   // 미적용 강등 — UX 가드). 강등일 때만 상태줄에 작은 표기(과하지 않게 — 툴팁 수준).
   const [worldGuard, setWorldGuard] = useState(null);
@@ -314,6 +320,8 @@ export default function WorldPage() {
     net.onStatus((s, info) => {
       if (cancelled) return;
       setWorldStatus(s);
+      // duplicate 사유(계정/IP) — 차단 화면 문구 분기용. 그 외 상태에선 초기화.
+      setWorldStatusReason(s === 'duplicate' ? info?.reason || null : null);
       if (s === 'connected') setWorldGuard(info?.enforcement || null);
     });
 
@@ -606,7 +614,7 @@ export default function WorldPage() {
                 initialSpawn={livePosRef.current || worldSpawn || null}
               />
             ) : (
-              <WorldGate status={worldStatus} spawnLoading={worldSpawn === undefined} onRetry={retryWorldNet} retrying={worldRetrying} />
+              <WorldGate status={worldStatus} reason={worldStatusReason} spawnLoading={worldSpawn === undefined} onRetry={retryWorldNet} retrying={worldRetrying} />
             )}
           </div>
         </div>
