@@ -4,19 +4,19 @@
  *  GET  → { position: { scene, x, y } | null }   본인 마지막 좌표(없으면 null).
  *  POST { scene, x, y } → 204   본인 좌표 upsert. 주기 저장(10초 스로틀)·pagehide sendBeacon 겸용.
  *
- * 인증: requireAdmin()(쿠키 세션 + profiles.role='admin'). 쓰기는 사용자 세션 클라이언트로 수행해
+ * 인증: requireUser()(쿠키 세션 — 전체 로그인 유저 개방). 쓰기는 사용자 세션 클라이언트로 수행해
  *   world_positions 의 own-only RLS 가 최종 방어(본인 행만). service_role 키는 쓰지 않는다.
  * 좌표는 타일 인덱스(월드 px 아님) — WorldPage 가 local:state(px)를 /TILE 로 변환해 보낸다.
- * (세션 임대·IP 차단은 별도의 /api/world/session 이 담당 — 이 라우트는 좌표만 다룬다.)
+ * (세션 임대는 별도의 /api/world/session 이 담당 — 이 라우트는 좌표만 다룬다.)
  */
-import { requireAdmin } from '@/lib/supabaseServer';
+import { requireUser } from '@/lib/supabaseServer';
 import { normalizePosition } from '@/lib/world/session';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const auth = await requireAdmin();
+  const auth = await requireUser();
   if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
 
   const { supabase, user } = auth;
@@ -31,7 +31,7 @@ export async function GET() {
 }
 
 export async function POST(request) {
-  const auth = await requireAdmin();
+  const auth = await requireUser();
   if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
 
   let body;

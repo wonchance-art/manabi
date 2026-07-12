@@ -9,16 +9,16 @@
  * ⚠️ 이번 웨이브 미사용(Codex 전환 대기) — 현재 임대 반납은 net.js 가 release_world_session() 를
  *    직접 호출한다. Codex 가 claim 을 라우트로 옮길 때 이 leave 도 함께 배선한다.
  *
- * 인증: requireAdmin(). 좌표 upsert 는 사용자 세션 클라이언트(own-only RLS). service_role 금지.
+ * 인증: requireUser()(전체 로그인 유저 개방). 좌표 upsert 는 사용자 세션 클라이언트(own-only RLS). service_role 금지.
  */
-import { requireAdmin } from '@/lib/supabaseServer';
+import { requireUser } from '@/lib/supabaseServer';
 import { normalizePosition } from '@/lib/world/session';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function POST(request) {
-  const auth = await requireAdmin();
+  const auth = await requireUser();
   if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
 
   let body;

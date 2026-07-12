@@ -1,0 +1,20 @@
+/**
+ * Galmuri9 (OFL-1.1, © Lee Minseo) — 학습 월드 도트 폰트.
+ * 필요한 한 종(Galmuri9, 9px 비트맵 · 한글·가나·라틴)만 npm 로컬 번들(galmuri/dist)에서
+ * @font-face 로 선언한다. 이 CSS 는 WorldPage(=/world 라우트 전용 client 컴포넌트)에서만
+ * import 되어 다른 라우트 번들·CSS 에는 실리지 않는다. woff2 만 참조(ttf 미참조 → payload 최소).
+ */
+@font-face {
+  font-family: 'Galmuri9';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Galmuri9 Regular'),
+       url('../../node_modules/galmuri/dist/Galmuri9.woff2') format('woff2');
+}
+
+/* 포켓몬 대화창 대기 표시(우하단 ▼) 깜빡임 — 인라인 스타일로는 keyframe 을 못 넣어 여기 둔다. */
+@keyframes worldChatBlink {
+  0%, 55% { opacity: 1; }
+  56%, 100% { opacity: 0; }
+}

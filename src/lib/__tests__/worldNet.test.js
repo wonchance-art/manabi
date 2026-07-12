@@ -15,6 +15,7 @@ const {
 import {
   falloffVolume, isOfferer, VOICE_RADIUS,
   voiceGate, epochMatches, VOICE_CONNECT_RADIUS, VOICE_RELEASE_RADIUS,
+  voiceConnectionStatus, selectVoicePeerIds, MAX_VOICE_PEERS,
 } from '../world/voice.js';
 
 // ─────────────────────────────────────────────────────────────
@@ -946,6 +947,63 @@ describe('epochMatches — 시그널 세대 일치 판정(순수)', () => {
     expect(epochMatches(2, null)).toBe(true);
     expect(epochMatches(null, null)).toBe(true);
     expect(epochMatches(2, undefined)).toBe(true);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+describe('voiceConnectionStatus — ICE 실패 표출(순수)', () => {
+  it('connection 또는 ICE 가 failed 면 voice-unreachable', () => {
+    expect(voiceConnectionStatus('failed', 'checking')).toBe('voice-unreachable');
+    expect(voiceConnectionStatus('connecting', 'failed')).toBe('voice-unreachable');
+  });
+  it('connected/completed 는 연결됨', () => {
+    expect(voiceConnectionStatus('connected', 'checking')).toBe('connected');
+    expect(voiceConnectionStatus('connecting', 'completed')).toBe('connected');
+  });
+  it('일시 disconnected 는 복구 가능한 connecting 으로 유지', () => {
+    expect(voiceConnectionStatus('disconnected', 'disconnected')).toBe('connecting');
+    expect(voiceConnectionStatus('connecting', 'checking')).toBe('connecting');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+describe('selectVoicePeerIds — full-mesh 근접 상한(순수)', () => {
+  it('기본 상한 8명까지 거리 가까운 순으로 선택', () => {
+    expect(MAX_VOICE_PEERS).toBe(8);
+    const peers = Array.from({ length: 10 }, (_, i) => ({
+      id: `peer-${i}`,
+      distance: 5 - i * 0.1,
+      active: false,
+    }));
+    expect(selectVoicePeerIds(peers)).toEqual([
+      'peer-9', 'peer-8', 'peer-7', 'peer-6',
+      'peer-5', 'peer-4', 'peer-3', 'peer-2',
+    ]);
+  });
+  it('히스테리시스 밴드의 기존 대상은 유지하되 미선택 대상은 새로 붙이지 않음', () => {
+    expect(selectVoicePeerIds([
+      { id: 'active', distance: 7, active: true },
+      { id: 'inactive', distance: 7, active: false },
+      { id: 'near', distance: 2, active: false },
+    ])).toEqual(['near', 'active']);
+  });
+  it('동거리 id 정렬과 사용자 지정 상한으로 호출 순서에 무관한 결과', () => {
+    const peers = [
+      { id: 'charlie', distance: 3, active: false },
+      { id: 'alpha', distance: 3, active: false },
+      { id: 'bravo', distance: 3, active: false },
+    ];
+    expect(selectVoicePeerIds(peers, 2)).toEqual(['alpha', 'bravo']);
+    expect(selectVoicePeerIds([...peers].reverse(), 2)).toEqual(['alpha', 'bravo']);
+  });
+  it('비유한 거리·해제 반경 밖·0 이하 상한은 안전하게 제외', () => {
+    const peers = [
+      { id: 'nan', distance: NaN, active: true },
+      { id: 'far', distance: VOICE_RELEASE_RADIUS, active: true },
+      { id: 'near', distance: 1, active: false },
+    ];
+    expect(selectVoicePeerIds(peers)).toEqual(['near']);
+    expect(selectVoicePeerIds(peers, 0)).toEqual([]);
   });
 });
 
