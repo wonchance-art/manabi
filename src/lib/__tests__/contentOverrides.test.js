@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { mergeChapter, isValidOverride } from '../contentOverrides';
+import { mergeChapter, isValidOverride, missingStoryIds } from '../contentOverrides';
 
 const base = {
   slug: 'n5-04-desu-da',
@@ -197,6 +197,51 @@ describe('isValidOverride', () => {
   it('kanjiExempt는 스칼라 배열만 허용한다', () => {
     expect(isValidOverride({ kanjiExempt: ['新幹線'] })).toBe(true);
     expect(isValidOverride({ kanjiExempt: [{}] })).toBe(false);
+  });
+});
+
+// ── Codex 검수(#79): story 문항 id 불변 — 저장 API의 최종 방어 ──
+describe('missingStoryIds', () => {
+  const storyBase = {
+    slug: 'x', level: 'N5', order: 1,
+    sections: [
+      { heading: 'a' },
+      { heading: 'b', story: { body: [{ narr: 'n' }], questions: [{ id: 'x-sq1', type: 'fill' }, { id: 'x-sq2', type: 'produce' }] } },
+    ],
+  };
+
+  it('id가 그대로면 위반 없음 (내용 수정·새 문항 추가 허용)', () => {
+    const data = structuredClone(storyBase);
+    data.sections[1].story.questions[0].q = '수정된 질문';
+    data.sections[1].story.questions.push({ id: 'x-sq3', type: 'fill' });
+    expect(missingStoryIds(storyBase, data)).toEqual([]);
+  });
+
+  it('문항 삭제를 잡는다', () => {
+    const data = structuredClone(storyBase);
+    data.sections[1].story.questions.pop();
+    expect(missingStoryIds(storyBase, data)).toEqual(['x-sq2']);
+  });
+
+  it('id 오타(변경)를 잡는다', () => {
+    const data = structuredClone(storyBase);
+    data.sections[1].story.questions[0].id = 'x-sq1-typo';
+    expect(missingStoryIds(storyBase, data)).toEqual(['x-sq1']);
+  });
+
+  it('문항이 다른 섹션으로 이동해도 id가 살아있으면 통과', () => {
+    const data = structuredClone(storyBase);
+    const q = data.sections[1].story.questions.shift();
+    data.sections[0].story = { body: [{ narr: 'moved' }], questions: [q] };
+    expect(missingStoryIds(storyBase, data)).toEqual([]);
+  });
+
+  it('sections 없는 부분 오버라이드는 검증 대상 아님 (얕은 병합이 base 유지)', () => {
+    expect(missingStoryIds(storyBase, { title: '제목만' })).toEqual([]);
+  });
+
+  it('story 없는 챕터는 항상 통과', () => {
+    expect(missingStoryIds(base, { sections: [{ heading: 'h' }] })).toEqual([]);
   });
 });
 

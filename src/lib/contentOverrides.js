@@ -214,6 +214,29 @@ export function isValidOverride(data) {
   return true;
 }
 
+/** 챕터의 story 문항 id 전부 수집 */
+function collectStoryIds(chapter) {
+  const ids = [];
+  for (const s of chapter?.sections || []) {
+    for (const q of s?.story?.questions || []) {
+      if (q && q.id != null) ids.push(String(q.id));
+    }
+  }
+  return ids;
+}
+
+/**
+ * story 문항 id 불변 검증 — 원본(base)의 문항 id가 오버라이드(data)에서 삭제·변경되면
+ * 그 id 목록을 반환한다(빈 배열 = 위반 없음). 학습 기록·채점 키가 id에 연동되므로
+ * 저장 API가 최종 방어한다. data에 sections가 없으면(부분 오버라이드 — 얕은 병합으로
+ * base sections 유지) 검증 대상이 아니다. 새 문항의 새 id 추가는 허용.
+ */
+export function missingStoryIds(base, data) {
+  if (!data || !Array.isArray(data.sections)) return [];
+  const dataIds = new Set(collectStoryIds(data));
+  return collectStoryIds(base).filter((id) => !dataIds.has(id));
+}
+
 /**
  * 원본 챕터 위에 오버라이드를 얕게 병합.
  * `{ ...base, ...override }` 후 slug·level·order는 base 값으로 강제 복원한다.
