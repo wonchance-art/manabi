@@ -32,7 +32,11 @@ import {
   BASE_TILE_PAL, CHAR_PAL_LOCAL, CHAR_PAL_REMOTE, PET_PAL,
   tonePalette, toneColor, timeOfDay,
   riverStreamRects, RIVER_N, RIVER_E, RIVER_S, RIVER_W,
+  BOAT_W, BOAT_H, BOAT_PAL, boatFrameRows,
+  applyPeersToScene, updateScenePeers, peerLabelStyle,
 } from './sprites';
+// 🗾 여행 스탬프 — 노드 첫 방문 수집(fetch 래퍼, 실패 조용히). API: /api/world/stamps.
+import { loadStamps, collectStamp } from '../../lib/world/stamps';
 // 🗺️ 광장 맵 데이터 — 한반도+일본 열도 실비율 도트 맵(448×384, build-map.mjs 산출).
 import { MAP_W, MAP_H, decodeMap, TERRAIN, isBlocked, POI } from './mapData';
 // 🧭 장소 노드(도시·공항·항구·랜드마크) + 미니맵 다운샘플(순수 함수).
@@ -231,6 +235,14 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   const ferryPromptRef = useRef(null);
   const minimapOpenRef = useRef(false);
 
+  // ── 여행 스탬프 상태 ──
+  // stamps: 수집한 노드 id Set(마운트 시 서버에서 로드). newStamp: 방금 획득한 노드 { id, name } | null
+  // (GBC 다이얼로그에 "🗾 ○○ 스탬프 획득!" 한 줄 플래시). 중복 수집 안 함(Set 가드).
+  const [stamps, setStamps] = useState(() => new Set());
+  const [newStamp, setNewStamp] = useState(null);
+  const stampsRef = useRef(stamps);          // interact 콜백(once-effect)이 최신 Set 을 읽도록 미러
+  const collectStampRef = useRef(null);      // 최신 수집 함수 미러(렌더마다 갱신)
+
   // ── 월드 스토리(공항 씬) 상태 ──
   // storyPhase: 'none'(광장) | 'walking'(줄→심사대) | 'dialogue'(텍스트박스) | 'quiz'(문답) | 'passed'(통과·출구)
   const [storyActive, setStoryActive] = useState(false); // 공항 씬 진입 여부(오버레이 게이팅)
@@ -256,6 +268,30 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   useEffect(() => { minimapOpenRef.current = minimapOpen; }, [minimapOpen]);
   useEffect(() => { storyActiveRef.current = storyActive; }, [storyActive]);
   useEffect(() => { storyPhaseRef.current = storyPhase; }, [storyPhase]);
+  useEffect(() => { stampsRef.current = stamps; }, [stamps]);
+
+  // 수집 상태 로드(마운트/계정별 1회) — 실패면 조용히 빈 Set 유지.
+  useEffect(() => {
+    let cancelled = false;
+    loadStamps().then((ids) => { if (!cancelled) setStamps(new Set(ids)); }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [userId]);
+
+  // 노드 첫 방문 스탬프 수집 — 렌더마다 최신본을 ref 에 심어 interact/버튼 콜백이 참조한다.
+  //   이미 수집한 노드면 무시(중복 없음). 낙관 갱신(즉시 Set 추가·플래시) 후 서버 upsert(실패 조용히).
+  collectStampRef.current = (node) => {
+    if (!node || stampsRef.current.has(node.id)) return;
+    setStamps((prev) => { const next = new Set(prev); next.add(node.id); return next; });
+    setNewStamp({ id: node.id, name: node.name });
+    collectStamp(node.id);
+  };
+
+  // "획득!" 플래시는 잠시 뒤 자동으로 걷힌다.
+  useEffect(() => {
+    if (!newStamp) return undefined;
+    const t = setTimeout(() => setNewStamp(null), 3500);
+    return () => clearTimeout(t);
+  }, [newStamp]);
 
   // ── GBC 셸 입력 주입 인터페이스 등록 ──
   // press/release → 씬 heldDirs(키보드와 동일 경로).
@@ -274,6 +310,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         if (reviewOpenRef.current || storyActiveRef.current || ferryPromptRef.current) return;
         if (descOpenRef.current) { setDescOpen(false); return; } // 설명 박스 열려 있으면 A로도 닫기
         const node = nearNodeRef.current;
+        if (node) collectStampRef.current?.(node); // 노드 첫 상호작용이면 스탬프 수집
         if (node?.gate) {
           // 게이트 있는 노드는 게이트 동작 우선(설명은 게이트 프롬프트에 병기).
           if (node.gate.type === 'story-scene') { sceneRef.current?.enterAirport?.(); return; }
@@ -419,6 +456,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           this.buildTileAtlas();  // 개별 타일 → 1장 캔버스 아틀라스(tilemap tileset)
           this.buildTree();
           this.buildDecor();
+          this.buildBoat();       // 페리 항해·물 위 피어 배 도트
           this.buildSign();
           this.buildNodeMarkers();
           this.buildNamedPeaks();  // 명산 전용 도트 조각(worldNodes peak 필드 → t_peak_<peak>)
@@ -849,6 +887,11 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           bush('t_bush1', 1);
         }
 
+        // 배 도트(페리 항해·물 위 피어) — 16×8, 시간대 톤으로 굽는다.
+        buildBoat() {
+          this.makeTex('t_boat', boatFrameRows(), tonePalette(BOAT_PAL, this.mode), BOAT_W, BOAT_H);
+        }
+
         // 퀘스트 픽셀 팻말 — 16×20.
         buildSign() {
           const C = this.pal;
@@ -954,6 +997,8 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           this.waterFrame = 0;
           this.decorFrame = 0;
           this.runHeld = false;     // B 홀드 달리기 플래그
+          this.ferrying = false;    // 페리 항해 중(조작 잠금 · 노드 근접 판정 보류)
+          this.ferryBoat = null;    // 항해 중 캐릭터 아래 배 스프라이트
           this.decor = new Map();   // "tx,ty" → { kind, imgs:[] } — 카메라 주변만 생성/회수(상한 DECOR_CAP)
 
           // ── 지형 레이어(Phaser Tilemap 1장 + 내장 컬링) ──
@@ -1225,17 +1270,49 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         // 광장 → 공항 스토리 씬 전환(같은 Phaser 게임 내 씬 스위치).
         enterAirport() { this.scene.start('airport'); }
 
-        // 페리 탑승 — 페이드 아웃 → 상대 항구 인접 land 로 순간이동 → 페이드 인. 보상·XP 없음.
+        // 페리 탑승 — "함께 보이는 항해". 순간이동 대신 물 위를 3~5초에 걸쳐 tween 이동한다.
+        //   · 이동 중 캐릭터 아래 배 도트, 조작 잠금(this.ferrying), 카메라는 계속 플레이어 추적.
+        //   · update() 의 local:state 는 항해 중에도 계속 스트림되므로(연속 좌표) 상대 화면에서도
+        //     캐릭터가 바다를 건너는 게 보인다(applyPeers 8타일 스냅 임계 밑 → 자연 보간).
+        // 경로는 출발점→도착 항구 인접 land 를 잇는 직선 보간(두 항구 사이는 바다 — 물 위 유지).
         ferryTo(destId) {
           const dest = getNode(destId);
-          if (!dest || !this.player) return;
+          if (!dest || !this.player || this.ferrying) return;
           const [lx, ly] = this.findLandingTile(dest.tile[0], dest.tile[1]);
           this.heldDirs.length = 0; this.tapTile = null; this.runHeld = false;
-          const cam = this.cameras.main;
-          cam.fadeOut(280, 0, 0, 0);
-          cam.once('camerafadeoutcomplete', () => {
-            this.placePlayerAt(lx, ly);
-            cam.fadeIn(280, 0, 0, 0);
+          this.ferrying = true;
+          // 출발 항구 프롬프트를 닫는다(항해 중 근접 판정을 멈추므로 stale 로 남지 않게).
+          this.wasNearNodeId = null; setNearNode(null); setNearQuest(false);
+
+          const fromX = this.player.x, fromY = this.player.y;
+          const destX = lx * TILE + TILE / 2, destY = ly * TILE + TILE / 2;
+          const dist = Math.hypot(destX - fromX, destY - fromY);
+          const dur = Math.min(5000, Math.max(3000, dist * 2)); // 3~5초(거리 비례)
+          // 진행 방향으로 몸을 돌린다(항해 내내 보행 애니).
+          this.facing = Math.abs(destX - fromX) >= Math.abs(destY - fromY)
+            ? (destX > fromX ? 'right' : 'left')
+            : (destY > fromY ? 'down' : 'up');
+          this.moving = true;
+
+          if (this.ferryBoat) this.ferryBoat.destroy();
+          this.ferryBoat = this.add.image(Math.round(fromX), Math.round(fromY) + 8, 't_boat')
+            .setOrigin(0.5, 0.5).setScale(TSCALE).setDepth(fromY - 1);
+
+          this.tweens.killTweensOf(this.player);
+          this.tweens.add({
+            targets: this.player, x: destX, y: destY, duration: dur, ease: 'Sine.easeInOut',
+            onUpdate: () => {
+              // 배는 캐릭터 발밑을 따라오고, 펫도 항해를 뒤따르게 목표 타일을 갱신한다.
+              if (this.ferryBoat) this.ferryBoat.setPosition(Math.round(this.player.x), Math.round(this.player.y) + 8).setDepth(this.player.y - 1);
+              this.petTargetX = Math.floor(this.player.x / TILE);
+              this.petTargetY = Math.floor(this.player.y / TILE);
+            },
+            onComplete: () => {
+              this.moving = false;
+              if (this.ferryBoat) { this.ferryBoat.destroy(); this.ferryBoat = null; }
+              this.ferrying = false;
+              this.placePlayerAt(lx, ly);   // 최종 타일 스냅(펫·카메라 정렬)
+            },
           });
         }
 
@@ -1275,52 +1352,21 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           });
         }
 
+        // 원격 목록 반영 — 광장 씬(scene==='plaza') 피어만 렌더한다(공용 헬퍼 · 공항 씬과 로직 공유).
+        //   scene 필드가 아직 안 오면(Codex 병렬 추가 중) 'plaza' 로 간주 → 기존과 동일 동작(하위호환).
         applyPeers(incoming) {
-          const entries = incoming instanceof Map ? [...incoming.entries()] : Object.entries(incoming || {});
-          const seen = new Set();
-          for (const [id, st] of entries) {
-            if (!st) continue;
-            seen.add(id);
-            const tileX = Math.floor(st.x / TILE);
-            const tileY = Math.floor(st.y / TILE);
-            let p = this.peers.get(id);
-            if (!p) {
-              const sx = tileX * TILE + TILE / 2, sy = tileY * TILE + TILE / 2;
-              const sprite = this.add.image(sx, sy, 'pr_down_n').setOrigin(0.5, CHAR_ORIGIN_Y).setScale(TSCALE);
-              // 머리 위 작은 도트 닉네임 라벨(잉크색 + 크림 스트로크). 폰트 미로드 시 모노 폴백으로
-              // 뜬 뒤 refreshPeerLabels()가 로드 완료 시 Galmuri9 로 다시 굽는다.
-              const label = this.add.text(sx, sy - PEER_LABEL_DY, st.nick || '', this.peerLabelStyle())
-                .setOrigin(0.5, 1).setDepth(PEER_LABEL_DEPTH);
-              p = { sprite, label, nick: st.nick || '', tileX, tileY, destTileX: tileX, destTileY: tileY, facing: 'down', moving: false };
-              this.peers.set(id, p);
-            }
-            // 닉네임이 바뀌면 라벨 갱신(재접속·펫 변경 등으로 presence 메타가 갱신될 수 있음).
-            if (st.nick != null && st.nick !== p.nick) { p.nick = st.nick; p.label?.setText(st.nick); }
-            p.destTileX = tileX; p.destTileY = tileY;
-            if (VALID_DIR.has(st.dir)) p.facing = st.dir;
-            // 너무 먼 순간이동은 스냅(길게 기어가지 않게).
-            if (!p.moving && (Math.abs(tileX - p.tileX) + Math.abs(tileY - p.tileY)) > 8) {
-              p.tileX = tileX; p.tileY = tileY;
-              p.sprite.setPosition(tileX * TILE + TILE / 2, tileY * TILE + TILE / 2);
-            }
-          }
-          for (const [id, p] of this.peers) {
-            if (!seen.has(id)) { p.sprite.destroy(); p.label?.destroy(); this.peers.delete(id); }
-          }
+          applyPeersToScene(this, incoming, { charPrefix: 'pr', sceneName: 'plaza' });
         }
 
-        // 닉네임 라벨 텍스트 스타일 — Galmuri9(도트) 우선, 미로드 시 모노 폴백.
-        peerLabelStyle() {
-          return {
-            fontFamily: this.fontReady ? "'Galmuri9', monospace" : 'monospace',
-            fontSize: '8px', color: '#2a2118',
-            stroke: '#f6edcf', strokeThickness: 3,
-          };
+        // 물 타일(바다·강·호수) 여부 — 물 위 피어에 배 도트를 붙이는 판정(updateScenePeers 에 주입).
+        isWaterTile(tx, ty) {
+          const c = this.tileCode(tx, ty);
+          return c === TERRAIN.SEA || c === TERRAIN.RIVER || c === TERRAIN.LAKE;
         }
 
         // 폰트 로드 완료 후, 이미 떠 있는 라벨·말풍선을 Galmuri9 로 다시 굽는다(폴백→도트 교체).
         refreshPeerLabels() {
-          for (const [, p] of this.peers) p.label?.setStyle(this.peerLabelStyle());
+          for (const [, p] of this.peers) p.label?.setStyle(peerLabelStyle(this.fontReady));
           for (const [, b] of this.bubbles) b.text?.setFontFamily(this.fontReady ? "'Galmuri9', monospace" : 'monospace');
         }
 
@@ -1431,28 +1477,9 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           this.pet.setPosition(Math.round(this.petPX), Math.round(petRenderY));
           this.pet.setDepth(this.petPY);
 
-          // ── 원격 플레이어: 목적 타일까지 축우선 그리드 스텝(동일 tween) ──
-          for (const [, p] of this.peers) {
-            if (!p.moving) {
-              const dtx = p.destTileX - p.tileX, dty = p.destTileY - p.tileY;
-              if (dtx || dty) {
-                const d = Math.abs(dtx) >= Math.abs(dty)
-                  ? (dtx > 0 ? 'right' : 'left')
-                  : (dty > 0 ? 'down' : 'up');
-                const [ddx, ddy] = DIRV[d];
-                p.tileX += ddx; p.tileY += ddy; p.facing = d; p.moving = true;
-                const tx = p.tileX * TILE + TILE / 2, ty = p.tileY * TILE + TILE / 2;
-                this.tweens.add({
-                  targets: p.sprite, x: tx, y: ty, duration: STEP_MS, ease: 'Linear',
-                  onComplete: () => { p.moving = false; },
-                });
-              }
-            }
-            this.setCharFrame(p.sprite, 'pr', p.facing, p.moving, time);
-            p.sprite.setDepth(p.sprite.y);
-            // 닉네임 라벨을 스프라이트 머리 위로 따라붙인다(정수 좌표 — 도트 흔들림 방지).
-            if (p.label) p.label.setPosition(Math.round(p.sprite.x), Math.round(p.sprite.y) - PEER_LABEL_DY);
-          }
+          // ── 원격 플레이어: 목적 타일까지 그리드 스텝 + 라벨/배 추적(공용 헬퍼) ──
+          // 물 위(바다·강·호수) 피어엔 배 도트를 붙인다 — 페리 항해 중인 상대가 바다를 건너는 게 보인다.
+          updateScenePeers(this, time, { charPrefix: 'pr', isWater: (tx, ty) => this.isWaterTile(tx, ty) });
 
           // ── 말풍선: 대상 캐릭터(플레이어/피어) 위로 따라붙인다. 대상이 사라졌으면 정리. ──
           for (const [uid, b] of this.bubbles) {
@@ -1466,6 +1493,9 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
             this.lastEmit = time;
             bus.emit('local:state', { x: Math.round(this.player.x), y: Math.round(this.player.y), dir: this.facing, scene: 'plaza' });
           }
+
+          // 페리 항해 중엔 근접 판정을 보류한다(바다를 지나며 항구 프롬프트가 튀지 않게).
+          if (this.ferrying) return;
 
           // 표지판 근접 → React 오버레이 토글.
           const near = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.signX, this.signY) < QUEST_RANGE;
@@ -1625,10 +1655,16 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
                 {nearNode.desc}
               </span>
             )}
+            {newStamp?.id === nearNode.id && (
+              <span style={{ display: 'block', fontSize: '0.7rem', fontWeight: 'bold', color: '#2f7a2a', marginTop: 4 }}>
+                🗾 {nearNode.name} 스탬프 획득!
+              </span>
+            )}
           </span>
           <button
             type="button"
             onClick={() => {
+              collectStampRef.current?.(nearNode); // 마우스 클릭 경로도 스탬프 수집
               if (nearNode.gate.type === 'ferry') {
                 const dest = getNode(nearNode.gate.to);
                 setFerryPrompt({ toId: nearNode.gate.to, toName: dest?.name || '' });
@@ -1664,6 +1700,14 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         }}>
           <div style={{ fontSize: '0.85rem', fontWeight: 'bold', marginBottom: 6 }}>{nearNode.name}</div>
           <p style={{ fontSize: '0.78rem', lineHeight: 1.6, margin: 0 }}>{nearNode.desc}</p>
+          {/* 🗾 스탬프 — 방금 획득이면 강조 한 줄, 이미 수집했으면 도장 자국(은은한 한 줄). */}
+          {newStamp?.id === nearNode.id ? (
+            <div style={{ marginTop: 8, fontSize: '0.76rem', fontWeight: 'bold', color: '#2f7a2a' }}>
+              🗾 {nearNode.name} 스탬프 획득!
+            </div>
+          ) : stamps.has(nearNode.id) ? (
+            <div style={{ marginTop: 8, fontSize: '0.68rem', opacity: 0.68 }}>· 🗾 스탬프 수집됨 ·</div>
+          ) : null}
           <div style={{ textAlign: 'right', marginTop: 8 }}>
             <button
               type="button"
@@ -1686,6 +1730,11 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
             <div style={{ fontSize: '1.6rem', lineHeight: 1, marginBottom: 8 }}>⚓</div>
             <p style={{ fontSize: '0.85rem', lineHeight: 1.6, margin: '0 0 14px' }}>
               {ferryPrompt.toName}행 페리를 탈까요?
+              {newStamp && (
+                <span style={{ display: 'block', fontSize: '0.72rem', fontWeight: 'bold', color: '#2f7a2a', marginTop: 6 }}>
+                  🗾 {newStamp.name} 스탬프 획득!
+                </span>
+              )}
             </p>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
               <button

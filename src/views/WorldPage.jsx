@@ -586,7 +586,9 @@ export default function WorldPage() {
       const out = new Map();
       for (const [id, p] of map) {
         if (p.at && now - p.at > PEER_STALE_MS) continue; // 유령 제외
-        out.set(id, { x: p.x, y: p.y, dir: p.dir, emoji: p.pet, nick: p.name });
+        // scene — 씬별 피어 렌더 필터(플라자/공항)용. net(Codex) 수신부가 보존한 값을 그대로
+        // 전파하고, 없으면 undefined(수신측 (p.scene||'plaza') 하위호환 규칙이 처리).
+        out.set(id, { x: p.x, y: p.y, dir: p.dir, emoji: p.pet, nick: p.name, scene: p.scene });
       }
       bus.emit('peers:update', out);
       // 근처 사람 패널용 목록({id,name}) — GameCanvas 계약과 별개로 React 상태에도 반영.
