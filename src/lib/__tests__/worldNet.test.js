@@ -207,43 +207,54 @@ describe('shouldYieldDuplicate — 물러나야 하는 세션 판정(순수)', (
 });
 
 // ─────────────────────────────────────────────────────────────
-// ── 하네스용 페이크 Supabase 클라이언트 ──
+// ── 하네스용 페이크 Supabase 클라이언트 + 월드 세션 API 라우트 ──
 // channel(): Realtime 채널 흉내(핸들러 기록 + 테스트가 상태/이벤트를 수동 발화).
-// rpc(): world_sessions SECURITY DEFINER RPC 3종의 서버 의미론을 재현한다 —
-//   claim_world_session()·heartbeat_world_session(p_token)·release_world_session(p_token).
-//   신원(uid)·시각(Date.now)·토큰을 서버측처럼 판정한다(클라는 토큰만 받는다).
-//   rows: user_id -> { session_token, heartbeat_at(ms) }. rpcError 로 오류 주입.
+// fetch(): POST/PATCH /api/world/session·POST /leave 를 재현한다. 서버가 쿠키 사용자·IP로
+// RPC를 호출한 뒤 돌려주는 HTTP 계약만 클라이언트가 보며, 토큰은 응답/요청 body로만 오간다.
+// rows: user_id -> { session_token, heartbeat_at(ms) }. routeStatus 로 HTTP 오류를 주입한다.
 const USER = 'u1';
 
-function createFakeClient({ trackResult = 'ok', rpcError = null, uid = USER } = {}) {
+function createFakeClient({ trackResult = 'ok', routeStatus = null, duplicateReason = null, uid = USER } = {}) {
   const channels = [];
-  const db = { rows: new Map(), rpcError, calls: [] };
+  const db = { rows: new Map(), routeStatus, duplicateReason, calls: [] };
   let tokenSeq = 0;
 
-  function rpc(fn, args) {
-    db.calls.push({ fn, args });
-    return Promise.resolve().then(() => {
-      if (db.rpcError) return { data: null, error: db.rpcError };
-      const now = Date.now();
-      const row = db.rows.get(uid);
-      if (fn === 'claim_world_session') {
-        // 살아있는 임대(내것이든 타 세션이든)면 실패(NULL). 없음/만료(60s 초과)면 새 토큰 인수.
-        const alive = row && (now - row.heartbeat_at) <= LEASE_TTL_MS;
-        if (alive) return { data: null, error: null };
-        const token = `tok-${uid}-${(tokenSeq += 1)}`;
-        db.rows.set(uid, { session_token: token, heartbeat_at: now });
-        return { data: token, error: null };
+  const json = (body, status = 200) => new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  });
+
+  async function fetchRoute(url, options = {}) {
+    const method = options.method || 'GET';
+    let body = null;
+    try { body = options.body ? JSON.parse(options.body) : null; } catch { /* noop */ }
+    db.calls.push({ url, method, body, options });
+    await Promise.resolve();
+    if (db.routeStatus != null) return json({ error: 'route failure' }, db.routeStatus);
+
+    const now = Date.now();
+    const row = db.rows.get(uid);
+    if (url === '/api/world/session' && method === 'POST') {
+      if (db.duplicateReason) return json({ reason: db.duplicateReason }, 409);
+      // 같은 계정의 살아있는 임대면 409 duplicate-account. 없음/만료면 새 토큰을 원자 인수.
+      const alive = row && (now - row.heartbeat_at) <= LEASE_TTL_MS;
+      if (alive) return json({ reason: 'duplicate-account' }, 409);
+      const token = `tok-${uid}-${(tokenSeq += 1)}`;
+      db.rows.set(uid, { session_token: token, heartbeat_at: now });
+      return json({ token, expiresAt: now + LEASE_TTL_MS, spawn: null });
+    }
+    if (url === '/api/world/session' && method === 'PATCH') {
+      if (row && row.session_token === body?.token) {
+        row.heartbeat_at = now;
+        return new Response(null, { status: 204 });
       }
-      if (fn === 'heartbeat_world_session') {
-        if (row && row.session_token === args?.p_token) { row.heartbeat_at = now; return { data: true, error: null }; }
-        return { data: false, error: null };   // 토큰 불일치(만료 인수됨) → 임대 상실
-      }
-      if (fn === 'release_world_session') {
-        if (row && row.session_token === args?.p_token) db.rows.delete(uid);
-        return { data: null, error: null };
-      }
-      return { data: null, error: null };
-    });
+      return json({ error: 'expired' }, 410); // 토큰 불일치(만료 인수됨) → 임대 상실
+    }
+    if (url === '/api/world/session/leave' && method === 'POST') {
+      if (row && row.session_token === body?.token) db.rows.delete(uid);
+      return new Response(null, { status: 204 });
+    }
+    return json({ error: 'not found' }, 404);
   }
 
   return {
@@ -268,17 +279,17 @@ function createFakeClient({ trackResult = 'ok', rpcError = null, uid = USER } = 
       return ch;
     },
     removeChannel() {},
-    rpc(fn, args) { return rpc(fn, args); },
+    fetch(url, options) { return fetchRoute(url, options); },
   };
 }
 
 const freshHb = () => Date.now();                       // 살아있는 임대(방금 heartbeat)
 const staleHb = () => Date.now() - LEASE_TTL_MS - 20000; // 만료(60s 초과) 임대
-// 마이크로태스크 체인(임대 RPC await 연쇄) 소화용.
+// 마이크로태스크 체인(임대 API await 연쇄) 소화용.
 const flush = async (n = 30) => { for (let i = 0; i < n; i += 1) await Promise.resolve(); };
 
 function makeNet(client) {
-  return createWorldNet({ userId: USER, name: '나', pet: '🐶', client });
+  return createWorldNet({ userId: USER, name: '나', pet: '🐶', client, fetchImpl: client.fetch });
 }
 
 // join → openChannel 까지 진행시키고 마지막 채널에 SUBSCRIBED 를 발화한다.
@@ -293,71 +304,75 @@ async function joinAndSubscribe(client, net) {
 }
 
 // ─────────────────────────────────────────────────────────────
-describe('createSessionLease — world_sessions RPC 임대(서버 권위)', () => {
-  it('빈 테이블이면 claim 으로 토큰을 획득하고 행이 생긴다', async () => {
+describe('createSessionLease — 쿠키 인증 월드 세션 API 임대', () => {
+  it('POST claim 성공이면 토큰을 획득하고 same-origin 쿠키 경로를 쓴다', async () => {
     const client = createFakeClient();
-    const lease = createSessionLease({ client, userId: USER });
+    const lease = createSessionLease({ client, userId: USER, fetchImpl: client.fetch });
     expect(await lease.claim()).toBe('acquired');
     expect(client.db.rows.has(USER)).toBe(true);
     // 토큰은 서버 발급 — 클라이언트가 지정·예측할 수 없다(밖으로 노출 안 됨).
     expect(client.db.rows.get(USER).session_token).toMatch(/^tok-/);
+    expect(client.db.calls[0]).toMatchObject({ url: '/api/world/session', method: 'POST' });
+    expect(client.db.calls[0].options.credentials).toBe('same-origin');
   });
 
-  it('살아있는 타 세션이 보유하면 duplicate — 행은 그대로(원자 탈취 방지)', async () => {
+  it('409 duplicate-account를 세분화해 반환하고 기존 행은 그대로 둔다', async () => {
     vi.useFakeTimers();
     const client = createFakeClient();
     client.db.rows.set(USER, { session_token: 'other-live', heartbeat_at: freshHb() });
-    const lease = createSessionLease({ client, userId: USER });
-    expect(await lease.claim()).toBe('duplicate');
+    const lease = createSessionLease({ client, userId: USER, fetchImpl: client.fetch });
+    expect(await lease.claim()).toBe('duplicate-account');
     expect(client.db.rows.get(USER).session_token).toBe('other-live'); // upsert 0행 — 무손상
     vi.useRealTimers();
+  });
+
+  it('409 duplicate-ip도 손실 없이 세분화해 반환한다', async () => {
+    const client = createFakeClient({ duplicateReason: 'duplicate-ip' });
+    const lease = createSessionLease({ client, userId: USER, fetchImpl: client.fetch });
+    expect(await lease.claim()).toBe('duplicate-ip');
+    expect(client.db.rows.has(USER)).toBe(false);
   });
 
   it('만료(60초 초과) 임대는 새 토큰으로 원자적으로 인수한다', async () => {
     vi.useFakeTimers();
     const client = createFakeClient();
     client.db.rows.set(USER, { session_token: 'stale', heartbeat_at: staleHb() });
-    const lease = createSessionLease({ client, userId: USER });
+    const lease = createSessionLease({ client, userId: USER, fetchImpl: client.fetch });
     expect(await lease.claim()).toBe('acquired');
     expect(client.db.rows.get(USER).session_token).not.toBe('stale');
     vi.useRealTimers();
   });
 
-  it('함수/테이블 부재(42883·42P01)·스키마캐시 부재(PGRST202)는 unavailable — presence 강등 신호', async () => {
-    // PGRST202: PostgREST 가 미배포 RPC 를 DB 오류가 아니라 이 코드로 돌려주는 대표 신호(P2-3).
-    for (const code of ['42883', '42P01', 'PGRST202']) {
-      const client = createFakeClient({ rpcError: { code, message: 'missing' } });
-      const lease = createSessionLease({ client, userId: USER });
-      expect(await lease.claim()).toBe('unavailable');
-    }
+  it('라우트 미배포(404)는 unavailable — 구 배포 presence 강등 하위호환', async () => {
+    const client = createFakeClient({ routeStatus: 404 });
+    const lease = createSessionLease({ client, userId: USER, fetchImpl: client.fetch });
+    expect(await lease.claim()).toBe('unavailable');
   });
 
-  it('알 수 없는 DB 오류(예: 42501 권한)는 error — fail-closed 신호(P2-5)', async () => {
-    const client = createFakeClient({ rpcError: { code: '42501', message: 'permission denied' } });
-    const lease = createSessionLease({ client, userId: USER });
+  it('인증·RPC 등 라우트 오류(503)는 error — fail-closed 신호(P2-5)', async () => {
+    const client = createFakeClient({ routeStatus: 503 });
+    const lease = createSessionLease({ client, userId: USER, fetchImpl: client.fetch });
     expect(await lease.claim()).toBe('error');
   });
 
-  it('heartbeat: 내 토큰이면 ok, 다른 세션이 인수했으면 lost, 부재는 unavailable·기타 오류는 error', async () => {
+  it('PATCH heartbeat: 204 ok, 410 lost, 404 unavailable, 기타 오류 error', async () => {
     vi.useFakeTimers();
     const client = createFakeClient();
-    const lease = createSessionLease({ client, userId: USER });
+    const lease = createSessionLease({ client, userId: USER, fetchImpl: client.fetch });
     await lease.claim();
     expect(await lease.heartbeat()).toBe('ok');
     client.db.rows.get(USER).session_token = 'thief';   // 다른 세션의 만료 인수 시뮬레이트
     expect(await lease.heartbeat()).toBe('lost');
-    client.db.rpcError = { code: '42P01' };
+    client.db.routeStatus = 404;
     expect(await lease.heartbeat()).toBe('unavailable');
-    client.db.rpcError = { code: 'PGRST202' };       // 스키마 캐시 부재도 강등 신호(P2-3)
-    expect(await lease.heartbeat()).toBe('unavailable');
-    client.db.rpcError = { code: '08006' };
+    client.db.routeStatus = 503;
     expect(await lease.heartbeat()).toBe('error');
     vi.useRealTimers();
   });
 
-  it('release 는 내 토큰의 행만 지운다 — 후임 세션의 임대는 못 건드림', async () => {
+  it('leave API는 내 토큰의 행만 지운다 — 후임 세션의 임대는 못 건드림', async () => {
     const client = createFakeClient();
-    const lease = createSessionLease({ client, userId: USER });
+    const lease = createSessionLease({ client, userId: USER, fetchImpl: client.fetch });
     await lease.claim();
     expect(client.db.rows.has(USER)).toBe(true);
     // 후임 세션이 인수(토큰 교체)한 상태 → release 가 남의 임대를 못 지운다
@@ -366,12 +381,14 @@ describe('createSessionLease — world_sessions RPC 임대(서버 권위)', () =
     expect(client.db.rows.has(USER)).toBe(true);
   });
 
-  it('release 는 토큰이 일치하면 자기 행을 지운다', async () => {
+  it('leave API는 토큰이 일치하면 keepalive 요청으로 자기 행을 지운다', async () => {
     const client = createFakeClient();
-    const lease = createSessionLease({ client, userId: USER });
+    const lease = createSessionLease({ client, userId: USER, fetchImpl: client.fetch });
     await lease.claim();
     await lease.release();
     expect(client.db.rows.has(USER)).toBe(false);
+    expect(client.db.calls.at(-1)).toMatchObject({ url: '/api/world/session/leave', method: 'POST' });
+    expect(client.db.calls.at(-1).options.keepalive).toBe(true);
   });
 });
 
@@ -389,26 +406,40 @@ describe('createWorldNet — 임대 통합(획득/충돌/만료 인수/강등/he
     const hb0 = client.db.rows.get(USER).heartbeat_at;
     await vi.advanceTimersByTimeAsync(LEASE_HEARTBEAT_MS);
     await flush();
-    expect(client.db.rows.get(USER).heartbeat_at).not.toBe(hb0);  // heartbeat RPC 로 갱신됨
+    expect(client.db.rows.get(USER).heartbeat_at).not.toBe(hb0);  // PATCH 라우트로 갱신됨
     net.leave();
     vi.useRealTimers();
   });
 
-  it('임대 충돌 — 살아있는 타 세션 보유 시 채널을 열지 않고 duplicate 로 물러난다', async () => {
+  it('계정 임대 충돌 — duplicate 하위호환 상태에 duplicate-account 사유를 노출한다', async () => {
     vi.useFakeTimers();
     const client = createFakeClient();
     client.db.rows.set(USER, { session_token: 'other-live', heartbeat_at: freshHb() });
     const net = makeNet(client);
     const statuses = [];
-    net.onStatus((s) => statuses.push(s));
+    net.onStatus((s, info) => statuses.push([s, info]));
     await net.join();
     await flush();
-    expect(statuses).toEqual(['duplicate']);
+    expect(statuses).toEqual([['duplicate', { reason: 'duplicate-account' }]]);
     expect(client.channels.length).toBe(0);          // 채널 생성 0
     expect(client.db.rows.get(USER).session_token).toBe('other-live'); // 임대 무손상
     await vi.advanceTimersByTimeAsync(60000);        // 자동 재연결 없음
     expect(client.channels.length).toBe(0);
-    expect(statuses).toEqual(['duplicate']);
+    expect(statuses).toEqual([['duplicate', { reason: 'duplicate-account' }]]);
+    vi.useRealTimers();
+  });
+
+  it('IP 임대 충돌 — duplicate 상태에 duplicate-ip 사유를 노출하고 채널을 열지 않는다', async () => {
+    vi.useFakeTimers();
+    const client = createFakeClient({ duplicateReason: 'duplicate-ip' });
+    const net = makeNet(client);
+    const statuses = [];
+    net.onStatus((s, info) => statuses.push([s, info]));
+    await net.join();
+    await flush();
+    expect(statuses).toEqual([['duplicate', { reason: 'duplicate-ip' }]]);
+    expect(client.channels.length).toBe(0);
+    expect(client.db.rows.has(USER)).toBe(false);
     vi.useRealTimers();
   });
 
@@ -426,9 +457,9 @@ describe('createWorldNet — 임대 통합(획득/충돌/만료 인수/강등/he
     vi.useRealTimers();
   });
 
-  it('강등 — 마이그레이션 미적용(42883) 시 presence 로 connected(enforcement=presence), heartbeat 없음', async () => {
+  it('강등 — 구 배포에서 세션 라우트가 없으면(404) presence 로 연결하고 heartbeat 없음', async () => {
     vi.useFakeTimers();
-    const client = createFakeClient({ rpcError: { code: '42883' } });
+    const client = createFakeClient({ routeStatus: 404 });
     const net = makeNet(client);
     const statuses = [];
     net.onStatus((s, info) => statuses.push([s, info]));
@@ -442,9 +473,9 @@ describe('createWorldNet — 임대 통합(획득/충돌/만료 인수/강등/he
     vi.useRealTimers();
   });
 
-  it('P2-5 fail-closed — 알 수 없는 DB 오류면 멀티 차단(lease-error): 채널 0·presence 강등 없음·재연결 없음', async () => {
+  it('P2-5 fail-closed — 세션 API 오류면 멀티 차단(lease-error): 채널 0·presence 강등 없음·재연결 없음', async () => {
     vi.useFakeTimers();
-    const client = createFakeClient({ rpcError: { code: '42501', message: 'permission denied' } });
+    const client = createFakeClient({ routeStatus: 503 });
     const net = makeNet(client);
     const statuses = [];
     net.onStatus((s) => statuses.push(s));
@@ -482,7 +513,7 @@ describe('createWorldNet — 임대 통합(획득/충돌/만료 인수/강등/he
   });
 
   it('P1 heartbeat 데드라인 — 55초 one-shot 봉인 뒤 실제 B claimant가 TTL 시점에 인수한다', async () => {
-    // Codex 재현: A claim→heartbeat 연속 08006(마이그레이션 미적용 아님 → 강등 금지) →
+    // Codex 재현: A claim→heartbeat PATCH 연속 503(라우트는 존재 → 강등 금지) →
     // 마지막 성공 이후 데드라인(TTL−SAFETY=55s) 경과 시 서버가 인수할 수 있는 시점(60s) 전에
     // A 가 스스로 lease-error 로 봉인되고, 60s에 실제 B가 같은 서버 행을 인수한다.
     vi.useFakeTimers();
@@ -493,8 +524,8 @@ describe('createWorldNet — 임대 통합(획득/충돌/만료 인수/강등/he
     const chA = await joinAndSubscribe(client, netA);
     expect(statusesA).toEqual(['connected']);
     const tokenA = client.db.rows.get(USER).session_token;
-    // 이후 heartbeat 를 연속 실패시킨다 — 08006 은 강등 코드가 아니므로 presence 로 내려가지 않는다.
-    client.db.rpcError = { code: '08006', message: 'connection failure' };
+    // 이후 heartbeat 를 연속 실패시킨다 — 503은 404가 아니므로 presence 로 내려가지 않는다.
+    client.db.routeStatus = 503;
     const deadline = LEASE_TTL_MS - LEASE_DEADLINE_SAFETY_MS;
     await vi.advanceTimersByTimeAsync(deadline - 1);
     await flush();
@@ -508,7 +539,7 @@ describe('createWorldNet — 임대 통합(획득/충돌/만료 인수/강등/he
     expect(client.db.rows.get(USER).session_token).toBe(tokenA); // release 실패 → TTL까지 행 잔존
 
     // t=60,001ms: 실제 SQL의 strict '< now() - 60s' 경계를 넘겨 B가 만료 행을 인수한다.
-    client.db.rpcError = null;
+    client.db.routeStatus = null;
     await vi.advanceTimersByTimeAsync(LEASE_TTL_MS - deadline + 1);
     const netB = makeNet(client);
     const statusesB = [];
@@ -541,7 +572,7 @@ describe('createWorldNet — 임대 통합(획득/충돌/만료 인수/강등/he
     // t=15s heartbeat 성공 → 기존 t=55s deadline을 t=70s로 재설정한다.
     await vi.advanceTimersByTimeAsync(LEASE_HEARTBEAT_MS);
     await flush();
-    client.db.rpcError = { code: '08006', message: 'connection failure' };
+    client.db.routeStatus = 503;
     await vi.advanceTimersByTimeAsync(LEASE_TTL_MS - LEASE_DEADLINE_SAFETY_MS - LEASE_HEARTBEAT_MS);
     await flush();
     expect(statuses.at(-1)).toBe('connected');       // t=55s: 최초 deadline은 취소됨
@@ -556,16 +587,19 @@ describe('createWorldNet — 임대 통합(획득/충돌/만료 인수/강등/he
   it('구세대 heartbeat lost가 재join한 새 세션을 종료·release하지 못한다', async () => {
     vi.useFakeTimers();
     const client = createFakeClient();
-    const rpc = client.rpc.bind(client);
+    const fetchRoute = client.fetch.bind(client);
     let resolveOldHeartbeat;
     let heartbeatCount = 0;
-    client.rpc = (fn, args) => {
-      if (fn !== 'heartbeat_world_session') return rpc(fn, args);
+    client.fetch = (url, options) => {
+      if (url !== '/api/world/session' || options?.method !== 'PATCH') return fetchRoute(url, options);
       heartbeatCount += 1;
       if (heartbeatCount === 1) {
         return new Promise((resolve) => { resolveOldHeartbeat = resolve; });
       }
-      return Promise.resolve({ data: null, error: { code: '08006', message: 'connection failure' } });
+      return Promise.resolve(new Response(JSON.stringify({ error: 'connection failure' }), {
+        status: 503,
+        headers: { 'Content-Type': 'application/json' },
+      }));
     };
 
     const net = makeNet(client);
@@ -589,7 +623,10 @@ describe('createWorldNet — 임대 통합(획득/충돌/만료 인수/강등/he
     expect(statuses.at(-1)).toBe('connected');
 
     // 이제 gen1 요청이 lost로 늦게 도착한다. gen2 상태·채널·토큰은 그대로여야 한다.
-    resolveOldHeartbeat({ data: false, error: null });
+    resolveOldHeartbeat(new Response(JSON.stringify({ error: 'expired' }), {
+      status: 410,
+      headers: { 'Content-Type': 'application/json' },
+    }));
     await flush();
     expect(statuses).toEqual(['connected', 'lease-error', 'connected']);
     expect(ch2.unsubCount).toBe(0);
@@ -626,7 +663,7 @@ describe('createWorldNet — 임대 통합(획득/충돌/만료 인수/강등/he
 
   it('강등(presence) 모드에선 위조 presence 휴리스틱이 여전히 집행된다(임대 미적용 유일 방어)', async () => {
     vi.useFakeTimers();
-    const client = createFakeClient({ rpcError: { code: '42883' } }); // 미적용 → presence 강등
+    const client = createFakeClient({ routeStatus: 404 }); // 구 배포 → presence 강등
     const net = makeNet(client);
     const statuses = [];
     net.onStatus((s) => statuses.push(s));
@@ -672,7 +709,7 @@ describe('createWorldNet — 임대 통합(획득/충돌/만료 인수/강등/he
     ch.emitStatus('SUBSCRIBED');
     await Promise.all([p1, p2]);
     await flush();
-    const claimCalls = client.db.calls.filter((c) => c.fn === 'claim_world_session');
+    const claimCalls = client.db.calls.filter((c) => c.url === '/api/world/session' && c.method === 'POST');
     expect(claimCalls.length).toBe(1);        // 중복 claim 발사 없음
     expect(statuses.at(-1)).toBe('connected');
     expect(client.db.rows.has(USER)).toBe(true); // 첫 토큰이 release 되지 않고 유지
@@ -687,7 +724,7 @@ describe('createWorldNet — P1-1 하네스: 중복 퇴장 후 자동 재연결 
   // 예전 코드는 statuses=["duplicate","reconnecting"], 두 번째 채널 sent=1 이었다.
   it('중복 판정 후: 상태 duplicate 유지·재연결 없음·두 번째 채널 0·송신 0', async () => {
     vi.useFakeTimers();
-    const client = createFakeClient({ rpcError: { code: '42P01' } }); // 강등 → presence 판정
+    const client = createFakeClient({ routeStatus: 404 }); // 강등 → presence 판정
     const net = makeNet(client);
     const statuses = [];
     net.onStatus((s) => statuses.push(s));
@@ -717,7 +754,7 @@ describe('createWorldNet — P1-1 하네스: 중복 퇴장 후 자동 재연결 
 
   it('join() 명시 재시도만 상태를 리셋하고 재판정을 받아 정상 재구독한다', async () => {
     vi.useFakeTimers();
-    const client = createFakeClient({ rpcError: { code: '42P01' } });
+    const client = createFakeClient({ routeStatus: 404 });
     const net = makeNet(client);
     const statuses = [];
     net.onStatus((s) => statuses.push(s));

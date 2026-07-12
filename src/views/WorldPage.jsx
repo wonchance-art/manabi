@@ -131,6 +131,44 @@ const GameCanvas = dynamic(() => import('../components/world/GameCanvas'), {
   ),
 });
 
+// 멀티 전용 게이트 차단 화면(오너 요구 1) — GameCanvas 대신 화면 영역(inset:0)을 채운다.
+// status 별 안내 + (해당 시) 재시도 버튼. 연결 중·재연결·스폰 조회 중은 스피너만(자동 진행).
+function WorldGate({ status, reason, spawnLoading, onRetry, retrying }) {
+  const COPY = {
+    duplicate: { icon: '🔒', title: '이미 접속 중이에요', body: '다른 기기나 탭에서 학습 월드에 접속 중이에요. 그쪽을 닫고 다시 시도해 주세요.' },
+    'lease-error': { icon: '⚠️', title: '잠시 확인이 필요해요', body: '지금은 멀티 접속을 확인할 수 없어요. 잠시 뒤 다시 시도해 주세요.' },
+    failed: { icon: '📡', title: '연결하지 못했어요', body: '멀티 서버에 연결하지 못했어요. 잠시 뒤 다시 시도해 주세요.' },
+  };
+  // duplicate 는 net 이 info.reason 으로 계정/IP 를 구분해 준다(하위호환: reason 없으면 일반 문구).
+  const DUP_COPY = {
+    'duplicate-account': COPY.duplicate,
+    'duplicate-ip': { icon: '🔒', title: '같은 네트워크에서 접속 중이에요', body: '같은 인터넷(IP)에서 이미 다른 접속이 있어요. 그쪽이 끝난 뒤 다시 시도해 주세요.' },
+  };
+  // spawn 조회 중이거나 connected 전이라 아직 gate 사유가 없으면(연결 중/재연결) 스피너만.
+  const info = spawnLoading ? null : (status === 'duplicate' && DUP_COPY[reason]) || COPY[status];
+  return (
+    <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', padding: 16, background: SHELL.screenOff }}>
+      <div style={{ maxWidth: 260, textAlign: 'center', color: '#cfc7bb', fontFamily: GBC.font }}>
+        {info ? (
+          <>
+            <div style={{ fontSize: '2rem', marginBottom: 10 }}>{info.icon}</div>
+            <div style={{ fontSize: '0.82rem', fontWeight: 700, marginBottom: 6 }}>{info.title}</div>
+            <p style={{ fontSize: '0.68rem', lineHeight: 1.5, opacity: 0.85, marginBottom: 14 }}>{info.body}</p>
+            <Button size="sm" variant="secondary" onClick={onRetry} disabled={retrying}>
+              {retrying ? '확인 중…' : '다시 시도'}
+            </Button>
+          </>
+        ) : (
+          <>
+            <Spinner />
+            <p style={{ fontSize: '0.68rem', lineHeight: 1.5, opacity: 0.85, marginTop: 12 }}>멀티 접속을 준비하고 있어요…</p>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // 펫 기분 → 한 줄 카피(내부 용어 금지, 따뜻한 톤).
 const MOOD_LINE = {
   excited: '오늘도 신나게 공부했어요',
@@ -157,18 +195,27 @@ export default function WorldPage() {
   const [micBusy, setMicBusy] = useState(false);
   const [nearVoiceCount, setNearVoiceCount] = useState(0);
 
-  // ── 동일 계정 중복 접속 상태 ──
-  // net.onStatus('duplicate') — 다른 기기/탭에서 이미 접속 중이라 이 세션은 멀티를 포기했다.
-  // 월드 진입 자체는 막지 않는다(솔로는 계속 가능) — 안내 배너 + 재시도만 노출.
-  const [worldDuplicate, setWorldDuplicate] = useState(false);
-  // net.onStatus('lease-error') — 임대 판정이 알 수 없는 DB 오류로 실패해 멀티가 차단됐다
-  // (fail-closed, P2-5). presence 강등이 아니라 멀티 자체를 막으므로 안내 + 재시도만 노출.
-  const [worldLeaseError, setWorldLeaseError] = useState(false);
+  // ── 멀티 접속 상태 (멀티 전용 게이트) ──
+  // 오너 요구 1: 멀티로만 작동 — 임대 실패/미연결 시 솔로 폴백이 아니라 월드(GameCanvas) 자체를
+  // 렌더하지 않고 차단 화면을 보인다. net.onStatus 가 주는 상태값만으로 판단(net.js 무변경).
+  //   'connecting'(초기·아직 판정 전) | 'connected'(멀티 정상 — 유일한 입장 허용 상태) |
+  //   'duplicate'(다른 기기/탭 접속 중) | 'lease-error'(임대 판정 불가) |
+  //   'failed'(멀티 서버 연결 실패) | 'reconnecting'(재연결 중).
+  const [worldStatus, setWorldStatus] = useState('connecting');
+  const [worldStatusReason, setWorldStatusReason] = useState(null); // duplicate-account | duplicate-ip | null
   // 중복 접속 판정 방식: 'lease'(world_sessions 서버 권위) | 'presence'(마이그레이션
   // 미적용 강등 — UX 가드). 강등일 때만 상태줄에 작은 표기(과하지 않게 — 툴팁 수준).
   const [worldGuard, setWorldGuard] = useState(null);
   // "다시 시도" 재판정(join) 진행 중 — 버튼 비활성화로 연타(중복 claim 발사)를 막는다(P2-4).
   const [worldRetrying, setWorldRetrying] = useState(false);
+
+  // ── 재접속 스폰 좌표 ──
+  // 오너 요구 3: 재접속 시 나간 자리에서 스폰. 입장 시 GET /api/world/position 으로 본인 마지막
+  // 좌표를 받아 GameCanvas initialSpawn 으로 넘긴다. undefined=조회 중(월드 렌더 보류),
+  // null=저장 없음(기본 서울), { scene, x, y }=그 자리 스폰.
+  const [worldSpawn, setWorldSpawn] = useState(undefined);
+  // 실시간 최근 좌표(타일) — local:state 수신마다 갱신. 주기 저장·beacon·재연결 재스폰의 원천.
+  const livePosRef = useRef(null);
 
   // GBC 셸 → GameCanvas 입력 주입 핸들. GameCanvas가 마운트 시 { press,release,interact,cancel }를 채운다.
   const controlsRef = useRef(null);
@@ -272,8 +319,9 @@ export default function WorldPage() {
     // connected 의 info.enforcement 로 판정 방식(서버 임대/강등 휴리스틱)도 함께 받는다.
     net.onStatus((s, info) => {
       if (cancelled) return;
-      setWorldDuplicate(s === 'duplicate');
-      setWorldLeaseError(s === 'lease-error');
+      setWorldStatus(s);
+      // duplicate 사유(계정/IP) — 차단 화면 문구 분기용. 그 외 상태에선 초기화.
+      setWorldStatusReason(s === 'duplicate' ? info?.reason || null : null);
       if (s === 'connected') setWorldGuard(info?.enforcement || null);
     });
 
@@ -336,11 +384,78 @@ export default function WorldPage() {
       netRef.current = null;
       setMicOn(false);
       setNearVoiceCount(0);
-      setWorldDuplicate(false);
-      setWorldLeaseError(false);
+      setWorldStatus('connecting');
       setWorldGuard(null);
       setWorldRetrying(false);
       bus.emit('peers:update', new Map()); // 남은 원격 캐릭터 정리
+    };
+  }, [userId]);
+
+  // ── 재접속 스폰 좌표 조회 (입장 시 1회, userId별) ──
+  // GET /api/world/position → 본인 마지막 좌표. 실패/없음이면 null(기본 서울 스폰).
+  // 조회가 끝나야(undefined→null|obj) GameCanvas 를 렌더한다(create() 가 스폰을 1회 고정하므로).
+  useEffect(() => {
+    if (!userId) { setWorldSpawn(null); return undefined; }
+    let cancelled = false;
+    setWorldSpawn(undefined);
+    livePosRef.current = null;
+    fetch('/api/world/position', { credentials: 'same-origin' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (!cancelled) setWorldSpawn(d?.position ?? null); })
+      .catch(() => { if (!cancelled) setWorldSpawn(null); }); // 조회 실패는 조용히 — 기본 스폰
+    return () => { cancelled = true; };
+  }, [userId]);
+
+  // ── 좌표 실시간 기록 → 주기 저장 + 이탈 시 최종 저장 ──
+  // 오너 요구 3: bus 'local:state'(GameCanvas emit {x,y(px),dir,scene})를 받아 타일좌표로 바꿔
+  // 최근 위치를 보관하고, 10초 스로틀로 POST(변했을 때만) + pagehide 는 sendBeacon + 언마운트 최종 저장.
+  // 이 effect 는 userId 생애 동안 살아 있어(재연결로 GameCanvas 가 잠깐 언마운트돼도) 최근 좌표를 유지한다.
+  useEffect(() => {
+    if (!userId) return undefined;
+    let lastSentAt = 0;
+    let lastSentKey = '';
+
+    const bodyOf = (p) => JSON.stringify({ scene: p.scene, x: p.x, y: p.y });
+    const postPosition = (p) => {
+      // keepalive — 탭 전환 직전 발사돼도 완주하게 한다. 실패는 조용히(스폰은 있으면 좋은 편의).
+      fetch('/api/world/position', {
+        method: 'POST', credentials: 'same-origin',
+        headers: { 'content-type': 'application/json' }, body: bodyOf(p), keepalive: true,
+      }).catch(() => {});
+    };
+    const beaconPosition = (p) => {
+      try {
+        const ok = typeof navigator !== 'undefined' && navigator.sendBeacon
+          && navigator.sendBeacon('/api/world/position', new Blob([bodyOf(p)], { type: 'application/json' }));
+        if (!ok) postPosition(p);
+      } catch { postPosition(p); }
+    };
+
+    const onLocalState = (st) => {
+      if (!st) return;
+      const scene = st.scene === 'airport' ? 'airport' : 'plaza';
+      const x = Math.floor((st.x || 0) / TILE);
+      const y = Math.floor((st.y || 0) / TILE);
+      if (x < 0 || y < 0) return;
+      const pos = { scene, x, y };
+      livePosRef.current = pos;
+      const now = Date.now();
+      const key = `${scene}:${x}:${y}`;
+      // 10초마다, 그리고 자리가 바뀌었을 때만 저장(정지 중 불필요한 왕복 억제).
+      if (now - lastSentAt >= 10000 && key !== lastSentKey) {
+        lastSentAt = now; lastSentKey = key;
+        postPosition(pos);
+      }
+    };
+    bus.on('local:state', onLocalState);
+
+    const onHide = () => { if (livePosRef.current) beaconPosition(livePosRef.current); };
+    window.addEventListener('pagehide', onHide);
+
+    return () => {
+      bus.off('local:state', onLocalState);
+      window.removeEventListener('pagehide', onHide);
+      if (livePosRef.current) beaconPosition(livePosRef.current); // 언마운트(이탈·계정 전환) 최종 저장
     };
   }, [userId]);
 
@@ -398,6 +513,9 @@ export default function WorldPage() {
 
   const moodLine = MOOD_LINE[petState.mood] || MOOD_LINE.happy;
 
+  // 멀티 전용 게이트(오너 요구 1): 멀티 정상 연결 + 스폰 좌표 조회 완료일 때만 월드를 연다.
+  const worldReady = worldStatus === 'connected' && worldSpawn !== undefined;
+
   // A/B 원형 버튼의 정적 뼈대(색·그림자·눌림은 AbButton이 상태로 얹는다).
   const abBase = {
     width: 40, height: 40, borderRadius: '50%',
@@ -443,48 +561,6 @@ export default function WorldPage() {
         </div>
       </div>
 
-      {/* ── 중복 접속 안내 (멀티만 차단 — 월드 진입은 그대로, 솔로로 계속) ── */}
-      {worldDuplicate && (
-        <div
-          role="alert"
-          style={{
-            width: '100%', maxWidth: 540, display: 'flex', alignItems: 'center', gap: 10,
-            flexWrap: 'wrap', background: GBC.cream, color: GBC.ink, fontFamily: GBC.font,
-            border: `3px solid ${GBC.border}`, borderRadius: 2, padding: '10px 12px',
-            boxShadow: `inset 0 0 0 2px ${GBC.creamHi}, ${GBC.shadow}`,
-          }}
-        >
-          <span style={{ fontSize: '1.1rem', lineHeight: 1 }}>⚠️</span>
-          <span style={{ flex: 1, fontSize: '0.78rem', lineHeight: 1.4 }}>
-            다른 기기/탭에서 이미 접속 중이에요 — 그쪽을 닫고 다시 시도해 주세요.
-          </span>
-          <Button size="sm" variant="secondary" onClick={retryWorldNet} disabled={worldRetrying}>
-            {worldRetrying ? '확인 중…' : '다시 시도'}
-          </Button>
-        </div>
-      )}
-
-      {/* ── 임대 오류 안내 (fail-closed — 멀티만 차단, 솔로는 계속) ── */}
-      {worldLeaseError && (
-        <div
-          role="alert"
-          style={{
-            width: '100%', maxWidth: 540, display: 'flex', alignItems: 'center', gap: 10,
-            flexWrap: 'wrap', background: GBC.cream, color: GBC.ink, fontFamily: GBC.font,
-            border: `3px solid ${GBC.border}`, borderRadius: 2, padding: '10px 12px',
-            boxShadow: `inset 0 0 0 2px ${GBC.creamHi}, ${GBC.shadow}`,
-          }}
-        >
-          <span style={{ fontSize: '1.1rem', lineHeight: 1 }}>⚠️</span>
-          <span style={{ flex: 1, fontSize: '0.78rem', lineHeight: 1.4 }}>
-            지금은 멀티 접속을 확인할 수 없어 잠시 멈췄어요 — 혼자서는 계속 즐길 수 있어요. 잠시 뒤 다시 시도해 주세요.
-          </span>
-          <Button size="sm" variant="secondary" onClick={retryWorldNet} disabled={worldRetrying}>
-            {worldRetrying ? '확인 중…' : '다시 시도'}
-          </Button>
-        </div>
-      )}
-
       {/* ── GBC 휴대기 셸 ── (라운드 바디 + 베젤/화면 + 십자키·A/B·START/SELECT·스피커 그릴) */}
       <div style={{
         width: '100%', maxWidth: 'min(96vw, 540px)',
@@ -519,12 +595,27 @@ export default function WorldPage() {
             background: SHELL.screenOff, borderRadius: 4, overflow: 'hidden',
             boxShadow: 'inset 0 0 0 2px #12140e',
           }}>
-            {/* 계정 전환 격리(P1-4): userId 기반 key 로 GameCanvas 를 remount 한다. 전환 시 진행 중
-                공항 스토리·AirportQuiz(미완료 문답)가 통째로 언마운트되어 폐기되므로, A 계정에서 시작한
-                문답이 B 계정으로 기록될 여지가 없다. 이 페이지의 net/voice 는 이미 userId effect 로
-                재배선되고, 캔버스 remount 는 침습이 이 한 줄 key 로 국한돼(GameCanvas 내부 상태 리셋
-                로직 불필요) 가장 단순하고 확실한 경계다. */}
-            <GameCanvas key={userId || 'guest'} userId={userId} nickname={nickname} pet={pet} controlsRef={controlsRef} />
+            {/* 멀티 전용 게이트(오너 요구 1): 멀티가 정상 연결(worldStatus==='connected')되고 스폰
+                좌표 조회가 끝났을 때만 GameCanvas 를 렌더한다. 그 외(연결 중·중복·임대오류·연결실패)엔
+                솔로 폴백 대신 차단 화면을 보인다 — 월드는 멀티로만 작동한다. */}
+            {worldReady ? (
+              /* 계정 전환 격리(P1-4): userId 기반 key 로 GameCanvas 를 remount 한다. 전환 시 진행 중
+                 공항 스토리·AirportQuiz(미완료 문답)가 통째로 언마운트되어 폐기되므로, A 계정에서 시작한
+                 문답이 B 계정으로 기록될 여지가 없다. 이 페이지의 net/voice 는 이미 userId effect 로
+                 재배선되고, 캔버스 remount 는 침습이 이 한 줄 key 로 국한돼(GameCanvas 내부 상태 리셋
+                 로직 불필요) 가장 단순하고 확실한 경계다.
+                 initialSpawn: 재연결 재스폰은 최근 좌표(livePosRef) 우선, 최초 진입은 조회한 저장 좌표. */
+              <GameCanvas
+                key={userId || 'guest'}
+                userId={userId}
+                nickname={nickname}
+                pet={pet}
+                controlsRef={controlsRef}
+                initialSpawn={livePosRef.current || worldSpawn || null}
+              />
+            ) : (
+              <WorldGate status={worldStatus} reason={worldStatusReason} spawnLoading={worldSpawn === undefined} onRetry={retryWorldNet} retrying={worldRetrying} />
+            )}
           </div>
         </div>
 
