@@ -6,21 +6,40 @@ name: Supabase Migration Repair (one-shot)
 #   supabase_migrations.schema_migrations 히스토리를 로컬 파일과 일치시킨다.
 #   기존 CI(run 15)가 실패한 두 원인을 한 번에 해소한다:
 #     (1) 원격 히스토리에 로컬에 없는 "구식 풀네임 버전" 21건 → repair --status reverted 로 제거.
-#     (2) 프로덕션에서 이미 실동작해 온 20260703 까지의 기능(포럼·스트릭·레슨·독해·study_paragraphs
-#         등)을 개명된 새 버전으로 --status applied 기록해 재실행을 막는다.
-#   그 뒤 나머지(20260708 이후, 전부 멱등 확인분)만 `supabase db push` 로 실제 적용한다.
+#     (2) 프로덕션에서 이미 실동작해 온 20260703 까지의 기능을 개명된 새 버전으로
+#         --status applied 기록해 재실행을 막는다 — 단, "날짜가 오래됐으니 적용됐겠지"라는
+#         추정이 아니라 **preflight probe(3단계)로 파일별 대표 객체의 실존을 증명한 것만** 기록한다.
+#
+# 증거 기반 재설계(Codex 검수 반영):
+#   프로덕션 실사 결과 20260613000200_dday 의 profiles.dday_date/dday_label 컬럼이 실존하지
+#   않았다 — 날짜 기반 "적용됨" 가정이 틀린 실사례. 그래서:
+#     · dday 는 applied 목록에서 제외하고 db push 대상으로 옮겼다(파일은 원래부터
+#       ADD COLUMN IF NOT EXISTS 로 멱등 — 수정 불필요).
+#     · applied 후보 52건은 repair 전에 scripts/db-probes.sql 로 각각의 대표 객체를 probe 하고,
+#       MISSING 이 하나라도 있으면 repair 를 실행하지 않고 실패한다(어느 버전인지 출력 —
+#       그 버전을 applied 에서 빼고 push 로 옮기는 다음 반복의 근거).
+#     · push 후에는 scripts/db-postconditions.sql 로 핵심 신규 객체의 실존을 재검증한다.
 #
 # 실행: Actions 탭 → 이 워크플로 → "Run workflow" (workflow_dispatch 전용, 수동).
 #   기존 supabase-migrations.yml 과 동일한 시크릿 3종을 사용한다:
 #     SUPABASE_ACCESS_TOKEN · SUPABASE_PROJECT_REF · SUPABASE_DB_PASSWORD
 #
+# 원격 쿼리 실행 방법(근거):
+#   · supabase CLI 에는 임의 SQL 을 원격 실행하는 명령(`supabase db query`)이 없다.
+#   · psql 직접 연결(db.<ref>.supabase.co:5432)은 신규 Supabase 프로젝트에서 IPv6 전용이라
+#     IPv6 미지원인 GitHub Actions 러너에서 실패할 수 있고, IPv4 pooler 주소
+#     (aws-*-<region>.pooler.supabase.com)는 region 정보가 필요해 시크릿 3종만으로 조립할 수 없다.
+#   · 따라서 supabase link/push 와 같은 인증(SUPABASE_ACCESS_TOKEN)을 쓰는 공식 Management API
+#     `POST https://api.supabase.com/v1/projects/{ref}/database/query` 로 읽기 전용 probe SQL 을
+#     실행한다(러너에서 확실히 동작 — HTTPS 443, jq 는 러너 기본 제공). 응답은 결과 행의 JSON 배열.
+#
 # ⚠️ 재적용 안전성 전제(중요):
 #   20260708~20260710 항목은 과거에 SQL Editor 로 수동 적용됐을 가능성이 있으나 불확실하다.
-#   그래도 무해하다 — 이 파일들은 전부 멱등(CREATE TABLE/INDEX IF NOT EXISTS ·
+#   그래도 무해하다 — push 대상 파일은 전부 멱등(CREATE TABLE/INDEX IF NOT EXISTS ·
 #   CREATE OR REPLACE FUNCTION · DROP POLICY IF EXISTS 뒤 CREATE · ADD COLUMN IF NOT EXISTS ·
 #   REVOKE/GRANT)으로 감사·수정됐다. 따라서 db push 가 이미 적용된 객체를 다시 밀어도
 #   오류 없이 같은 상태로 수렴한다(멱등성 감사: 20260708000200_push_subscriptions ·
-#   20260712000100_content_overrides 두 파일에 DROP POLICY IF EXISTS 보강).
+#   20260712000100_content_overrides 두 파일에 DROP POLICY IF EXISTS 보강. dday 는 원래 멱등).
 
 on:
   workflow_dispatch:
@@ -52,7 +71,28 @@ jobs:
       - name: 2) migration list (before — 진단 기록)
         run: supabase migration list --password "$SUPABASE_DB_PASSWORD"
 
-      - name: 3) repair reverted — 구식 풀네임 21건 제거
+      - name: 3) Preflight probe — applied 후보 52건의 대표 객체 실존 검증
+        # scripts/db-probes.sql 이 (version, probe, status) 행을 반환한다. MISSING 이 있으면
+        # repair 를 실행하기 **전에** 실패하고 해당 버전을 나열한다 — 그 버전은 applied 목록에서
+        # 빼고 push 대상으로 옮겨야 한다(dday 선례). 전부 읽기 전용 SELECT.
+        run: |
+          jq -Rs '{query: .}' scripts/db-probes.sql > /tmp/probe-query.json
+          RESULT=$(curl -sSf -X POST "https://api.supabase.com/v1/projects/$PROJECT_REF/database/query" \
+            -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data @/tmp/probe-query.json)
+          echo "── probe 결과 (version / status / probe) ──"
+          echo "$RESULT" | jq -r '.[] | [.version, .status, .probe] | @tsv'
+          TOTAL=$(echo "$RESULT" | jq 'length')
+          echo "probe 행 수: $TOTAL"
+          MISSING=$(echo "$RESULT" | jq -r '[.[] | select(.status == "MISSING") | .version] | unique | join(" ")')
+          if [ -n "$MISSING" ]; then
+            echo "::error title=Preflight 실패 — applied 가정 반증::다음 버전의 핵심 객체가 프로덕션에 없습니다. 해당 버전을 5단계 applied 목록에서 제외하고 db push 대상으로 옮긴 뒤(파일 멱등성 확인 포함) 재실행하세요: $MISSING"
+            exit 1
+          fi
+          echo "✓ applied 후보 전건의 대표 객체가 프로덕션에 실존 — repair 진행."
+
+      - name: 4) repair reverted — 구식 풀네임 21건 제거
         # 원격 히스토리에만 있고 로컬에 없는 구식 버전(풀네임이 그대로 버전으로 기록된 항목).
         # CLI 가 "Remote migration versions not found in local migrations directory" 로 push 를
         # 거부하던 원인. reverted 로 표시하면 히스토리에서 빠져 push 가 진행된다.
@@ -81,10 +121,11 @@ jobs:
             20260408_streak_freeze \
             --password "$SUPABASE_DB_PASSWORD"
 
-      - name: 4) repair applied — 개명 후 20260703 까지 기록(재실행 방지)
-        # 프로덕션에서 이미 실동작해 온 확실한 적용분(포럼·스트릭·레슨·독해·study_paragraphs 등).
-        # 개명 결과에서 기계 생성한 53개 버전(20260327000100 … 20260703000200)을 applied 로 기록해
-        # db push 가 이 구간을 다시 실행하지 않게 한다. 20260703 이전 SQL 은 내용 무변경(파일명만 개명).
+      - name: 5) repair applied — preflight 로 실존 증명된 52건 기록(재실행 방지)
+        # 개명 결과에서 기계 생성한 버전 목록. 3단계 probe 가 파일별 대표 객체의 실존을 증명한
+        # 것만 포함한다. ⚠️ 20260613000200(dday) 은 제외 — 프로덕션 실사에서 profiles.dday_date/
+        # dday_label 부재 확인 → 6단계 db push 로 실제 적용된다. 20260703 이전 SQL 은 내용
+        # 무변경(파일명만 개명).
         run: |
           supabase migration repair --status applied \
             20260327000100 20260327000200 20260328000100 \
@@ -99,17 +140,38 @@ jobs:
             20260416000100 20260417000100 20260428000100 20260429000100 20260501000100 \
             20260504000100 20260504000200 20260509000100 20260509000200 \
             20260511000100 20260511000200 \
-            20260612000100 20260613000100 20260613000200 20260618000100 20260619000100 \
+            20260612000100 20260613000100 20260618000100 20260619000100 \
             20260623000100 20260623000200 20260701000100 20260702000100 \
             20260703000100 20260703000200 \
             --password "$SUPABASE_DB_PASSWORD"
 
-      - name: 5) db push — 나머지(20260708 이후, 멱등 확인분)만 실제 적용
-        # 위 4단계에서 20260703 까지가 applied 로 기록됐으므로 여기서는 20260708000100 이후만 남는다:
+      - name: 6) db push — 나머지(dday + 20260708 이후, 전부 멱등)만 실제 적용
+        # 5단계에서 52건이 applied 로 기록됐으므로 여기서 실제 실행되는 것은 12건:
+        #   20260613000200_dday (실사에서 부재 확인 — 멱등 ADD COLUMN IF NOT EXISTS) ·
         #   admin_metrics_rpc · push_subscriptions · world_realtime_rls · world_sessions ·
         #   content_overrides · harden_admin_fns · world_multiplayer · world_open_all_users ·
-        #   world_chat_rls · world_stamps · world_reports (전 11건 · 전부 멱등).
+        #   world_chat_rls · world_stamps · world_reports (전부 멱등 감사 완료).
         run: supabase db push --password "$SUPABASE_DB_PASSWORD"
 
-      - name: 6) migration list (after — 사후 검증)
+      - name: 7) Postcondition probe — push 결과 핵심 객체 실존 검증
+        # scripts/db-postconditions.sql: profiles.dday_date/dday_label · claim_world_session_v2 ·
+        # content_overrides · world_positions · world_stamps · world_reports · push_subscriptions ·
+        # realtime 'world-plaza'/'world-chat' 정책 4종 · world_sessions/claim RPC · admin_funnel.
+        # MISSING 이 하나라도 있으면 실패.
+        run: |
+          jq -Rs '{query: .}' scripts/db-postconditions.sql > /tmp/post-query.json
+          RESULT=$(curl -sSf -X POST "https://api.supabase.com/v1/projects/$PROJECT_REF/database/query" \
+            -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data @/tmp/post-query.json)
+          echo "── postcondition 결과 (version / status / probe) ──"
+          echo "$RESULT" | jq -r '.[] | [.version, .status, .probe] | @tsv'
+          MISSING=$(echo "$RESULT" | jq -r '[.[] | select(.status == "MISSING") | "\(.version)(\(.probe))"] | join(", ")')
+          if [ -n "$MISSING" ]; then
+            echo "::error title=Postcondition 실패::push 후에도 다음 객체가 프로덕션에 없습니다: $MISSING"
+            exit 1
+          fi
+          echo "✓ push 대상 핵심 객체 전건 실존 확인."
+
+      - name: 8) migration list (after — 사후 검증)
         run: supabase migration list --password "$SUPABASE_DB_PASSWORD"
