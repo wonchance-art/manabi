@@ -10,17 +10,26 @@ import KanaTest from '../components/KanaTest';
 // 스토리 모듈(이야기로 확인) — 인터랙티브 채점은 클라이언트 경계로 분리(서버 페이지가 레지스트리를
 // 클라이언트 번들로 끌어오지 않도록). story 는 순수 직렬화 데이터라 props 로 그대로 넘긴다.
 import StoryCheck from './StoryCheck';
-import ChapterEditorBar from '../components/admin/ChapterEditorBar';
+import ChapterAdminStrip from '../components/admin/ChapterAdminStrip';
+import InlineEdit from '../components/admin/InlineEdit';
 import { getChapterOverride, getOverridesForLang, mergeChapter } from '../lib/contentOverrides';
 
-function ExampleList({ examples, langCode, lang }) {
+function ExampleList({ examples, langCode, lang, slug, secIndex }) {
   if (!examples?.length) return null;
   return (
     <ul className="fr-examples">
       {examples.map((ex, i) => {
         const pron = refPron(ex);
         return (
-          <li key={i} className="fr-example">
+          <InlineEdit
+            key={i}
+            tag="li"
+            className="fr-example"
+            lang={lang}
+            slug={slug}
+            kind="example"
+            path={`sections.${secIndex}.examples.${i}`}
+          >
             <div className="fr-example__fr">
               {langCode === 'ja' ? (
                 <JaText ja={refMain(ex)} yomi={pron} />
@@ -34,7 +43,7 @@ function ExampleList({ examples, langCode, lang }) {
             </div>
             <div className="fr-example__ko">{ex.ko}</div>
             {ex.note && <div className="fr-example__note">└ {refInline(ex.note)}</div>}
-          </li>
+          </InlineEdit>
         );
       })}
     </ul>
@@ -233,24 +242,31 @@ export default async function ReferenceChapterPage({ lang, slug }) {
             </Link>
           )}
         </div>
-        <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.7rem', fontWeight: 700, lineHeight: 1.42, letterSpacing: '-0.01em', wordBreak: 'keep-all' }}>{chapter.title}</h1>
+        <InlineEdit lang={lang} slug={slug} path="title">
+          <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.7rem', fontWeight: 700, lineHeight: 1.42, letterSpacing: '-0.01em', wordBreak: 'keep-all' }}>{chapter.title}</h1>
+        </InlineEdit>
         {(() => {
           // topic이 원어 제목을 이미 포함하면 중복 표기 생략
           const titleFr = chapter.titleFr && !(chapter.topic || '').includes(chapter.titleFr)
             ? chapter.titleFr : null;
           if (!chapter.topic && !titleFr) return null;
+          // topic·titleFr은 한 줄을 공유 — 하나의 연필로 두 스칼라를 함께 편집(콤마 경로)
           return (
-            <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginTop: 5 }}>
-              {chapter.topic}
-              {chapter.topic && titleFr && ' · '}
-              {titleFr && <span lang={ref.langCode} style={{ fontStyle: 'italic' }}>{titleFr}</span>}
-            </p>
+            <InlineEdit lang={lang} slug={slug} path="topic,titleFr">
+              <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginTop: 5 }}>
+                {chapter.topic}
+                {chapter.topic && titleFr && ' · '}
+                {titleFr && <span lang={ref.langCode} style={{ fontStyle: 'italic' }}>{titleFr}</span>}
+              </p>
+            </InlineEdit>
           );
         })()}
         {chapter.summary && (
-          <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginTop: 10 }}>
-            {chapter.summary}
-          </p>
+          <InlineEdit lang={lang} slug={slug} path="summary">
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginTop: 10 }}>
+              {chapter.summary}
+            </p>
+          </InlineEdit>
         )}
       </header>
 
@@ -274,46 +290,68 @@ export default async function ReferenceChapterPage({ lang, slug }) {
       {/* ── 본문 섹션 ── */}
       {chapter.sections.map((sec, i) => (
         <section key={i} id={`sec-${i + 1}`} className="card fr-section">
-          <h2 className="fr-section__heading">
-            <span className="fr-section__num" style={{ background: meta?.bg, color: meta?.color }}>{i + 1}</span>
-            {sec.heading}
-          </h2>
+          <InlineEdit lang={lang} slug={slug} path={`sections.${i}.heading`}>
+            <h2 className="fr-section__heading">
+              <span className="fr-section__num" style={{ background: meta?.bg, color: meta?.color }}>{i + 1}</span>
+              {sec.heading}
+            </h2>
+          </InlineEdit>
 
-          {/* 패턴 공식 박스 — 섹션의 핵심을 가장 먼저, 가장 크게 */}
+          {/* 패턴 공식 박스 — 섹션의 핵심을 가장 먼저, 가장 크게 (pattern·patternKo 각각 연필) */}
           {sec.pattern && (
             <div className="fr-pattern" style={{ borderColor: meta?.color }}>
-              <div className="fr-pattern__text">{refInline(sec.pattern)}</div>
-              {sec.patternKo && <div className="fr-pattern__ko">{sec.patternKo}</div>}
+              <InlineEdit lang={lang} slug={slug} path={`sections.${i}.pattern`}>
+                <div className="fr-pattern__text">{refInline(sec.pattern)}</div>
+              </InlineEdit>
+              {sec.patternKo && (
+                <InlineEdit lang={lang} slug={slug} path={`sections.${i}.patternKo`}>
+                  <div className="fr-pattern__ko">{sec.patternKo}</div>
+                </InlineEdit>
+              )}
             </div>
           )}
 
           {/* 스토리 모듈(이야기로 확인) — 내레이션·대사 + 인터랙티브 문항 */}
           {sec.story && (
-            <StoryCheck story={sec.story} slug={chapter.slug} lang={lang} langCode={ref.langCode} meta={meta} />
+            <InlineEdit lang={lang} slug={slug} kind="json" path={`sections.${i}.story`}>
+              <StoryCheck story={sec.story} slug={chapter.slug} lang={lang} langCode={ref.langCode} meta={meta} />
+            </InlineEdit>
           )}
 
-          <SectionTable table={sec.table} />
-          <ExampleList examples={sec.examples} langCode={ref.langCode} lang={lang} />
+          {sec.table && (
+            <InlineEdit lang={lang} slug={slug} kind="json" path={`sections.${i}.table`}>
+              <SectionTable table={sec.table} />
+            </InlineEdit>
+          )}
+          <ExampleList examples={sec.examples} langCode={ref.langCode} lang={lang} slug={slug} secIndex={i} />
 
-          {/* 상세 설명 — 패턴·예문 아래의 부가 설명 */}
+          {/* 상세 설명 — 패턴·예문 아래의 부가 설명 (문단별 연필) */}
           {sec.body && (
             <div className="fr-section__detail">
               {sec.body.split(/\n\n/).map((para, j) => (
-                <p key={j} className="fr-section__para">{refInline(para)}</p>
+                <InlineEdit key={j} lang={lang} slug={slug} path={`sections.${i}.body.p${j}`}>
+                  <p className="fr-section__para">{refInline(para)}</p>
+                </InlineEdit>
               ))}
             </div>
           )}
 
           {/* 챕터 미디어 — 설명 흐름 안에 심는 노래/영상 한 컷 (별도 섹션 금지: 오너) */}
           {sec.media && (
-            <MediaSection media={sec.media} langCode={ref.langCode} lang={lang} />
+            <InlineEdit lang={lang} slug={slug} kind="json" path={`sections.${i}.media`}>
+              <MediaSection media={sec.media} langCode={ref.langCode} lang={lang} />
+            </InlineEdit>
           )}
 
           {sec.enParallel && <RefParallel data={sec.enParallel} />}
           {sec.hanjaBridge && <RefHanjaBridge data={sec.hanjaBridge} />}
 
           {CALLOUT_ORDER.map(kind => (
-            <Callout key={kind} kind={kind} text={sec[kind]} />
+            sec[kind] ? (
+              <InlineEdit key={kind} lang={lang} slug={slug} path={`sections.${i}.${kind}`}>
+                <Callout kind={kind} text={sec[kind]} />
+              </InlineEdit>
+            ) : null
           ))}
 
           {/* 카나 오십음표 — 설명을 먼저 읽은 뒤 표(버튼) */}
@@ -391,9 +429,9 @@ export default async function ReferenceChapterPage({ lang, slug }) {
         ) : <span />}
       </nav>
 
-      {/* 관리자 전용 편집 진입 바 — 챕터 데이터는 props로 넘기지 않는다(일반 유저 페이로드 보호).
-          isAdmin이 아니면 null 렌더, 에디터는 클릭 시에만 dynamic 로드. */}
-      <ChapterEditorBar lang={lang} slug={slug} overridden={!!override} />
+      {/* 관리자 전용 슬림 스트립 — 인라인 연필(InlineEdit)로 편집하고, 여기선 상태·복원만.
+          isAdmin이 아니면 null 렌더. 챕터 데이터는 props로 넘기지 않는다(일반 유저 페이로드 보호). */}
+      <ChapterAdminStrip lang={lang} slug={slug} overridden={!!override} />
     </div>
   );
 }

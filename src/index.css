@@ -9010,3 +9010,86 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 
 /* ④ 성장 벤토 — 숫자 4개 각기 다른 악센트(타일 매핑과 일관), 라벨은 중립 유지 */
 .learn-stat .mypage-stat-cell__value { color: var(--tile-accent, var(--text-primary)); }
+
+/* ========= 관리자 인라인 편집 (InlineEdit) =========
+   문장 오른쪽 끝(본문 컬럼 밖 여백)에 은은한 연필. 관리자 계정에서만 렌더된다. */
+.admin-edit__pencil {
+  position: absolute;
+  top: 2px;
+  right: 4px;                 /* 좁은 화면 기본값 — 요소 우상단 겹침 fallback */
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--text-muted);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  opacity: 0.28;              /* 기본은 은은하게 */
+  transition: opacity 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  z-index: 5;
+}
+.admin-edit:hover > .admin-edit__pencil,
+.admin-edit__pencil:focus-visible {
+  opacity: 1;
+  color: var(--text-primary);
+  border-color: var(--border-hover);
+}
+/* 넓은 화면 — 본문 컬럼(760px) 밖 오른쪽 여백으로 밀어낸다 */
+@media (min-width: 900px) {
+  .admin-edit__pencil {
+    right: -38px;
+    top: 3px;
+  }
+}
+/* 편집 폼 — 그 요소 자리에 자연스럽게(배경 살짝 구분, 테두리 최소) */
+.admin-edit--editing {
+  outline: 1px dashed var(--border-hover);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+.admin-edit__form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 0;
+}
+.admin-edit__fields { display: flex; flex-direction: column; gap: 8px; }
+.admin-edit__field { display: flex; flex-direction: column; gap: 3px; }
+.admin-edit__field-label {
+  font-size: 0.72rem; font-weight: 600; color: var(--text-muted);
+  font-family: monospace;
+}
+.admin-edit__hint { font-size: 0.74rem; color: var(--text-muted); margin: 0; }
+.admin-edit__hint code {
+  font-size: 0.72rem; padding: 0 3px; border-radius: 3px;
+  background: var(--bg-elevated);
+}
+.admin-edit__error { font-size: 0.8rem; color: var(--danger, #e05252); margin: 0; }
+.admin-edit__actions { display: flex; gap: 8px; justify-content: flex-end; }
+.admin-edit__loading { font-size: 0.82rem; color: var(--text-muted); }
+
+/* 하단 관리자 슬림 스트립 */
+.admin-strip {
+  margin-top: 28px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 8px 12px;
+  border: 1px dashed var(--border);
+  border-radius: 999px;
+  background: var(--bg-secondary);
+}
+.admin-strip__hint { font-size: 0.76rem; color: var(--text-muted); }
+.admin-strip__badge {
+  font-size: 0.72rem; font-weight: 600; color: var(--accent, var(--primary));
+  padding: 2px 8px; border-radius: 999px;
+  background: var(--accent-soft, rgba(120, 120, 255, 0.12));
+  white-space: nowrap;
+}
