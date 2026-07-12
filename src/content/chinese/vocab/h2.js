@@ -2,7 +2,7 @@
  * H2 (HSK 2급) 어휘 — 일상 화제를 더 풍부하게.
  * 사람과 가족·시간과 날씨·음식과 쇼핑·동작과 표현·형용사와 부사·장소와 교통 여섯 테마.
  */
-export default {
+const themes = {
   level: "H2",
   title: "H2 어휘",
   desc: "1급에서 한 걸음 더 — 가족·날씨·쇼핑·감정까지 일상 대화를 넓혀 주는 HSK 2급 핵심 어휘 100여 개예요.",
@@ -139,3 +139,5 @@ export default {
     },
   ],
 }
+
+export default themes;

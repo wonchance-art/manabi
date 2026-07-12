@@ -2,7 +2,7 @@
  * H3 추가 예문 — 섹션별 보강(slug → 섹션index → 예문).
  * index.js가 본편 챕터 섹션에 병합. 본문/원본 예문은 불변.
  */
-export default {
+const examples = {
   "h3-01-ba": {
     "0": [
       {
@@ -501,3 +501,5 @@ export default {
     ]
   }
 };
+
+export default examples;

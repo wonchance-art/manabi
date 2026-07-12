@@ -2,7 +2,7 @@
  * A2 초급 어휘 — 여행·쇼핑·건강·날씨·직장·감정·하루 일과.
  * 실생활 상황별로 말문을 트는 어휘 100여 개. 대명동사(se ~)도 여기서 본격 등장!
  */
-export default {
+const themes = {
   level: "A2",
   title: "A2 초급 어휘",
   desc: "여행 가서, 쇼핑하며, 아플 때, 감정을 말할 때 — 상황별로 바로 꺼내 쓰는 A2 핵심 어휘예요.",
@@ -867,3 +867,5 @@ export default {
     },
   ],
 }
+
+export default themes;

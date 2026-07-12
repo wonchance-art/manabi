@@ -3,7 +3,7 @@
  * 경어 입문, 추량 표현, 사역수동 등 '일본어다움'이 본격적으로 시작되는 레벨.
  * 한국어와의 평행(조사·어순·높임법)을 최대한 활용하되, 어긋나는 지점을 정면으로 다룬다.
  */
-export default [
+const chapters = [
   {
     slug: "n3-01-keigo-intro",
     kanjiExempt: ["召し上がる", "ご覧"],
@@ -791,3 +791,5 @@ export default [
     ],
   },
 ];
+
+export default chapters;

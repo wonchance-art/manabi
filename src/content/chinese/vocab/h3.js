@@ -2,7 +2,7 @@
  * H3 (HSK 3급) 어휘 — 의견·계획·감정을 말하는 중급 진입 단계.
  * 사람과 사회·시간과 계획·학습과 일·동작과 소통·감정과 형용사·장소와 생활 여섯 테마.
  */
-export default {
+const themes = {
   level: "H3",
   title: "H3 어휘",
   desc: "의견을 말하고 계획을 세우는 단계로 — 학습·직장·감정·여행까지 다루는 HSK 3급 핵심 어휘 110여 개예요.",
@@ -155,3 +155,5 @@ export default {
     },
   ],
 }
+
+export default themes;

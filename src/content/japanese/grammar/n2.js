@@ -3,7 +3,7 @@
  * 비즈니스 경어, 신문·공문서의 문어 표현, 유사 문형의 정밀 구별.
  * 한국 한자어 독해력이 본격적으로 빛을 발하는 레벨 — hanja 콜아웃을 적극 활용한다.
  */
-export default [
+const chapters = [
   {
     slug: "n2-01-keigo-advanced",
     kanjiExempt: ["ご覧", "案内"],
@@ -869,3 +869,5 @@ export default [
     ],
   },
 ];
+
+export default chapters;

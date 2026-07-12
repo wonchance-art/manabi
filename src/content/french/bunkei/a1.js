@@ -2,7 +2,7 @@
  * A1 문형 사전 — DELF A1 수준 핵심 구문·표현 전수 커버 레이어 (SCHEMA.md 참고)
  * 챕터(grammar/a1.js)가 '이해'라면 이 사전은 '전수 검색'.
  */
-export default {
+const patterns = {
   level: "A1",
   title: "A1 문형 사전",
   desc: "c'est·il y a와 avoir 관용구부터 부정 ne…pas, 의문문 3형식, 관사·전치사, 근접미래까지 — DELF A1 핵심 문형을 기능별로 모두 모은 전수 검색 사전.",
@@ -882,3 +882,5 @@ export default {
     },
   ],
 };
+
+export default patterns;

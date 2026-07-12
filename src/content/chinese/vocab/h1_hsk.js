@@ -2,7 +2,7 @@
  * H1 (HSK 1급) 보강 어휘 — 표준 HSK1 어휘 중 기존 h1.js에 빠진 항목을 채우는 보강 세트.
  * 숫자·동사·명사·대명사/의문사·기능어(조사·접속사) 네 갈래로 묶었어요.
  */
-export default {
+const themes = {
   themes: [
     {
       name: "HSK1 보강 — 숫자",
@@ -76,3 +76,5 @@ export default {
     },
   ],
 };
+
+export default themes;

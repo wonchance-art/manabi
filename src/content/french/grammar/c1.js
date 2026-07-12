@@ -2,7 +2,7 @@
  * C1 — 숙달로 가는 길: 문어의 세계, 레지스터, 뉘앙스
  * 읽고 쓰는 프랑스어의 깊이를 더하는 레벨. 문학·시사 텍스트 해독과 격식 작문 능력을 다져요.
  */
-export default [
+const chapters = [
   {
     slug: "c1-01-passe-simple",
     level: "C1",
@@ -488,3 +488,5 @@ export default [
     ],
   },
 ];
+
+export default chapters;

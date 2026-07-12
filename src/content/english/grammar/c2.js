@@ -2,7 +2,7 @@
  * C2 최상급 — 수사·변이·문화·유머·번역
  * 문법의 끝에서 시작하는 언어의 교양. 영어를 '도구'에서 '세계'로 확장하는 마지막 다섯 챕터예요.
  */
-export default [
+const chapters = [
   {
     slug: "c2-01-style-rhetoric",
     level: "C2",
@@ -425,3 +425,5 @@ export default [
     ],
   },
 ];
+
+export default chapters;

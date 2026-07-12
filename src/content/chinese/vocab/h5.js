@@ -2,7 +2,7 @@
  * 5급 어휘 — 추상·논리·전문 영역으로
  * 신문과 토론, 직장 실무를 읽고 말하기 위한 HSK5급 핵심어.
  */
-export default {
+const themes = {
   level: "H5",
   title: "H5 어휘",
   desc: "추상 개념·경제·심리·논리 연결어까지 — 한자음의 힘이 가장 빛나는 HSK5급 어휘예요.",
@@ -1102,3 +1102,5 @@ export default {
     },
   ],
 };
+
+export default themes;

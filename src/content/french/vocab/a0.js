@@ -2,7 +2,7 @@
  * A0 입문 어휘 — 프랑스어 첫걸음에 꼭 필요한 생존 단어들.
  * 명사는 관사째로 외우는 습관을 여기서부터!
  */
-export default {
+const themes = {
   level: "A0",
   title: "A0 입문 어휘",
   desc: "인사·숫자·기본 응답·카페 주문까지, 프랑스어 첫날부터 바로 쓰는 생존 어휘 세트예요.",
@@ -548,3 +548,5 @@ export default {
     },
   ],
 }
+
+export default themes;

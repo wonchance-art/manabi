@@ -2,7 +2,7 @@
  * B2 문형 사전 — CEFR B2 핵심 구문·표현 전수 레이어 (SCHEMA.md 참고)
  * 챕터(grammar/b2.js)가 '이해'라면 이 사전은 '전수 검색'.
  */
-export default {
+const patterns = {
   level: "B2",
   title: "B2 문형 사전",
   desc: "조건 3형·혼합과 wish의 가정 체계, 조동사 완료형, 사역·지각동사, 분사절과 관계절 축약, 격식 연결사와 수일치까지 — CEFR B2 핵심 문형 110여 개를 기능별 12개 테마로 전수 수록.",
@@ -1062,3 +1062,5 @@ export default {
     },
   ],
 };
+
+export default patterns;

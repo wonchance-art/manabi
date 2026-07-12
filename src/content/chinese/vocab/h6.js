@@ -2,7 +2,7 @@
  * 6급 어휘 — 고급 추상어와 성어의 세계
  * 격식 있는 글과 깊이 있는 토론을 위한 HSK6급 핵심어 · 사자성어.
  */
-export default {
+const themes = {
   level: "H6",
   title: "H6 어휘",
   desc: "고급 추상어·정치사회·심리, 그리고 사자성어까지 — 한국 한자음과 그대로 통하는 HSK6급 어휘예요.",
@@ -915,3 +915,5 @@ export default {
     },
   ],
 };
+
+export default themes;

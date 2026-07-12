@@ -3,7 +3,7 @@
  * 챕터(grammar/n5.js)가 '이해'라면 이 사전은 '전수 검색'.
  * 주요 교재(총마토메·TRY·신칸젠·민나노니홍고) 통용 기준으로 N5 문형을 빠짐없이 수록.
  */
-export default {
+const patterns = {
   level: "N5",
   title: "N5 문형 사전",
   desc: "です·だ와 조사부터 て형·ない형 활용, 비교·시간·조수사까지 — N5 문형을 기능별로 모두 모은 전수 검색 사전.",
@@ -1385,3 +1385,5 @@ export default {
     },
   ],
 };
+
+export default patterns;

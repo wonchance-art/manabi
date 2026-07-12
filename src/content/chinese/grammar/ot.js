@@ -2,7 +2,7 @@
  * OT 오리엔테이션 — 중국어를 시작하기 전에
  * 병음·성조·간체자·어순·인칭대명사. 문법을 배우기 전 '소리와 글자와 뼈대'를 먼저 잡아요.
  */
-export default [
+const chapters = [
   {
     slug: "ot-01-pinyin",
     level: "OT",
@@ -279,3 +279,5 @@ export default [
     ],
   },
 ];
+
+export default chapters;

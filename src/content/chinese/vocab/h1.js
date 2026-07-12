@@ -2,7 +2,7 @@
  * H1 (HSK 1급) 기초 어휘 — 자기소개·숫자·시간·음식·일상 동작의 뼈대.
  * 인사와 사람·숫자와 시간·음식과 음료·일상 동사·형용사·장소와 교통 여섯 테마.
  */
-export default {
+const themes = {
   level: "H1",
   title: "H1 기초 어휘",
   desc: "你好부터 시작하는 HSK 1급 — 자기소개와 하루 일상에 가장 많이 쓰는 핵심 어휘 110여 개예요.",
@@ -146,3 +146,5 @@ export default {
     },
   ],
 }
+
+export default themes;

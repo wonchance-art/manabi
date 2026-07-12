@@ -1,4 +1,4 @@
-export default {
+const themes = {
   level: "A2",
   title: "A2 초급 어휘",
   desc: "여행·쇼핑·건강 등 생존 영어의 핵심 206개 — 콩글리시 교정 코너로 굳은 습관까지 바로잡아요.",
@@ -910,3 +910,5 @@ export default {
     },
   ],
 }
+
+export default themes;

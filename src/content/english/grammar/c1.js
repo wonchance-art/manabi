@@ -2,7 +2,7 @@
  * C1 고급 — 격식·뉘앙스·문체의 영어
  * 문법 규칙은 이미 아는 학습자를 위해, '교양 있는 영어'를 가르는 운용의 차원을 다뤄요.
  */
-export default [
+const chapters = [
   {
     slug: "c1-01-subjunctive-formality",
     level: "C1",
@@ -630,3 +630,5 @@ export default [
     ],
   },
 ];
+
+export default chapters;

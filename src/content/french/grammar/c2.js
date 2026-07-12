@@ -2,7 +2,7 @@
  * C2 — 정점: 문학어, 문체, 프랑스어권, 문화 코드, 그리고 번역
  * 언어 지식을 넘어 문화 해독력으로. 레퍼런스 전체를 마무리하는 레벨이에요.
  */
-export default [
+const chapters = [
   {
     slug: "c2-01-subjonctif-litteraire",
     level: "C2",
@@ -364,3 +364,5 @@ export default [
     ],
   },
 ];
+
+export default chapters;

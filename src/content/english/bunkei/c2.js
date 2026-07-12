@@ -4,7 +4,7 @@
  * 문학적 도치·원격 반사실, 대용과 생략, 명사부의 형태 정밀,
  * whether·that 제약, 학술 수사 정형구를 기능별로 수록 — 일부는 '쓰기'보다 '간파'가 목표.
  */
-export default {
+const patterns = {
   level: "C2",
   title: "C2 문형 사전",
   desc: "원어민 문어의 마지막 층 — Such precision the study demands 같은 문학적 도치, but for·were it not for의 반사실, do so·one·so/not의 대용과 생략, mothers-in-law식 복합명사 복수, whether의 문법 제약, alleged·purported의 거리두기, It is fair to say류 학술 수사까지 기능별로 수록. 쓰기보다 간파가 목표인 항목은 note에 명시했고, 격식 정형구마다 평이한 대응 표현을 달았다.",
@@ -594,3 +594,5 @@ export default {
     },
   ],
 };
+
+export default patterns;

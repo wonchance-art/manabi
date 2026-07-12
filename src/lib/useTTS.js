@@ -78,7 +78,7 @@ export function useTTS() {
     const code = langCode(lang);
     const prefix = code.split('-')[0];
     return all.filter(v => v.lang === code || v.lang.startsWith(prefix + '-'));
-  }, [voicesReady]);
+  }, []);
 
   const getSelectedVoice = useCallback((lang = 'Japanese') => {
     return loadStoredVoice(langKey(lang));
@@ -102,7 +102,7 @@ export function useTTS() {
       if (v) utter.voice = v;
     }
     window.speechSynthesis.speak(utter);
-  }, [voicesReady]);
+  }, []);
 
   const speak = useCallback((text, language = 'Japanese', opts = {}) => {
     if (typeof window === 'undefined' || !text) return;

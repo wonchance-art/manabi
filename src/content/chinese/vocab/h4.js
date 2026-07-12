@@ -2,7 +2,7 @@
  * 4급 어휘 — 의견·감정·사회로 넓어지는 단계
  * 일상 생존을 넘어 "생각과 상황을 설명하는" HSK4급 핵심어.
  */
-export default {
+const themes = {
   level: "H4",
   title: "H4 어휘",
   desc: "감정·성격·사회·직장까지 — 한자음으로 단숨에 외우는 HSK4급 핵심 어휘예요.",
@@ -751,3 +751,5 @@ export default {
     },
   ],
 };
+
+export default themes;

@@ -2,7 +2,7 @@
  * C1 고급 어휘 — 학술과 문학을 넘나들기
  * 논문·사설의 정밀한 어휘, 문학적 표현, 그리고 원어민다운 관용구.
  */
-export default {
+const themes = {
   level: "C1",
   title: "C1 고급 어휘",
   desc: "학술적 글과 문학을 자유롭게 넘나드는 어휘 — 정밀한 동사와 관용구로 표현의 해상도를 높여요.",
@@ -592,3 +592,5 @@ export default {
     },
   ],
 };
+
+export default themes;

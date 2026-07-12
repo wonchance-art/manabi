@@ -10,7 +10,7 @@
  *       예문 yomi는 후리가나 정렬(scripts/check-furigana.mjs) 통과 기준의 히라가나 표기.
  * pos:  고유명사·문화어는 명사로 통일.
  */
-export default {
+const themes = {
   level: "N5",
   title: "여행·문화 일본어 — 브랜드·게임·영화",
   desc: "가타카나 간판을 읽으면 여행이 편해지고, 게임·영화 제목의 원문을 읽으면 작품이 깊어진다 — JLPT 밖의 '즉전력' 고유명사·문화어 모음. 게다가 '기스·유도리·곤조'처럼 알고 보니 일본어였던 우리말 속 잔재어까지.",
@@ -191,3 +191,5 @@ export default {
     },
   ],
 };
+
+export default themes;

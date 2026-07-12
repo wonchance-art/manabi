@@ -2,7 +2,7 @@
  * N4 문형 사전 — JLPT N4 표준 문형 전수 수록
  * 챕터(grammar/n4.js)가 '이해'라면 이 사전은 '전수 검색' 레이어.
  */
-export default {
+const patterns = {
   level: "N4",
   title: "N4 문형 사전",
   desc: "JLPT N4 표준 문형 159개를 기능별 19개 테마로 전수 수록한 검색용 사전. 챕터에서 깊이 다룬 문형은 해당 챕터로 연결됩니다.",
@@ -1774,3 +1774,5 @@ export default {
     },
   ],
 };
+
+export default patterns;

@@ -2,7 +2,7 @@
  * B1 중급 어휘 — 의견·사회·추상 개념의 세계로
  * 일상 생존을 넘어 "내 생각을 말하는" 단계의 핵심 어휘.
  */
-export default {
+const themes = {
   level: "B1",
   title: "B1 중급 어휘",
   desc: "의견을 말하고 사회를 논하기 시작하는 단계 — 일·미디어·추상 개념까지 어휘의 지평을 넓혀요.",
@@ -795,3 +795,5 @@ export default {
     },
   ],
 };
+
+export default themes;

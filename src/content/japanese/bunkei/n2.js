@@ -3,7 +3,7 @@
  * 챕터(grammar/n2.js)가 '이해'라면 이 사전은 '전수 검색'.
  * 주요 교재(총마토메·TRY·신칸젠) 통용 기준으로 N2 문형을 빠짐없이 수록.
  */
-export default {
+const patterns = {
   level: "N2",
   title: "N2 문형 사전",
   desc: "N2 시험 범위의 문형을 기능별로 전수 수록한 검색용 사전. 접속·한국어 대응·예문(전체 독음 포함)을 한 줄로 확인하고, 깊은 이해가 필요하면 ch 링크의 챕터로 이동하세요.",
@@ -2132,3 +2132,5 @@ export default {
     },
   ],
 };
+
+export default patterns;

@@ -2,7 +2,7 @@
  * A1 기초 — 영어 문장의 뼈대 세우기
  * 학교 영어로 '아는' 내용을 '쓸 수 있는' 상태로 — 한국어 감각과 정면충돌하는 지점부터 풀어요.
  */
-export default [
+const chapters = [
   {
     slug: "a1-01-be-verb",
     level: "A1",
@@ -635,3 +635,5 @@ export default [
     ],
   },
 ];
+
+export default chapters;

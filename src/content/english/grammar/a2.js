@@ -2,7 +2,7 @@
  * A2 초급 — 시제의 폭을 넓히고 문장에 입체감 더하기
  * 과거·미래·현재완료, 조동사, 비교 — 시험으로만 알던 문법을 입에서 나오는 문법으로.
  */
-export default [
+const chapters = [
   {
     slug: "a2-01-past-simple",
     level: "A2",
@@ -736,3 +736,5 @@ export default [
     ],
   },
 ];
+
+export default chapters;

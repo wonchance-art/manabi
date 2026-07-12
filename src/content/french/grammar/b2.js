@@ -2,7 +2,7 @@
  * B2 중상급 — 뉘앙스와 격식의 세계
  * 접속법의 완성, 가정문 3종, 논리적 글쓰기. DELF B2와 직결되는 실전 레벨이에요.
  */
-export default [
+const chapters = [
   {
     slug: "b2-01-subjonctif-advanced",
     level: "B2",
@@ -861,3 +861,5 @@ export default [
     ],
   },
 ];
+
+export default chapters;

@@ -3,7 +3,7 @@
  * HSK 2.0 6급 표준 목록 순증분(빈도순, 전 급 교차 중복 배제) — drkameleon/complete-hsk-vocabulary(MIT) 골격.
  * zh·pinyin·pos는 소스 그대로(다음자 단일 한자는 상용 독음으로 교정), ko·예문만 생성 후 결정적 전수 검증.
  */
-export default {
+const themes = {
   themes: [
     {
       name: "HSK6 보강 A",
@@ -213,3 +213,5 @@ export default {
     },
   ],
 };
+
+export default themes;

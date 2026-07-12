@@ -1,4 +1,4 @@
-export default {
+const themes = {
   level: "A1",
   title: "A1 기초 어휘",
   desc: "영어의 첫걸음 — 인사부터 기초 동사·형용사까지, 매일 입에 올리는 필수 단어 245개예요.",
@@ -1047,3 +1047,5 @@ export default {
     },
   ],
 }
+
+export default themes;

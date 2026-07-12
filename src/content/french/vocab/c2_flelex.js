@@ -2,7 +2,7 @@
  * C2 보강 어휘 (2차) — FLELex 등급을 실제 빈도로 보정.
  * index.js의 mergeFrVocab가 본편과 병합.
  */
-export default [
+const themes = [
   {
     "name": "시사와 수사의 명사",
     "icon": "📰",
@@ -2582,3 +2582,5 @@ export default [
     ]
   }
 ];
+
+export default themes;

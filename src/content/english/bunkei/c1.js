@@ -4,7 +4,7 @@
  * 학술·시사 영어의 핵심 — 조동사 정밀 운용, 가정법 that절, 비인칭 수동·헤징,
  * 도치, 분열문, 일치·수량, 학술 전치사, 담화 표지를 기능별로 수록.
  */
-export default {
+const patterns = {
   level: "C1",
   title: "C1 문형 사전",
   desc: "학술·시사 영어의 운용 레이어 — could vs was able to 같은 조동사 정밀 구분, insist that he go의 가정법 that절(영미 차이 포함), It is said that의 비인칭 헤징, Never before has의 도치, it·what 분열문, a number of류 일치, in light of류 학술 복합전치사까지 기능별로 전수 수록. 격식 문형마다 구어 대응을, 영미가 갈리는 지점은 양쪽을 note에 표기했다.",
@@ -1071,3 +1071,5 @@ export default {
     },
   ],
 };
+
+export default patterns;

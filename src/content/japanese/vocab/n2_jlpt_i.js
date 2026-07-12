@@ -4,7 +4,7 @@
  * pos는 kuromoji 분류+재검증, ko·예문만 생성. 예문 요미는 kuromoji 파생×독립 판독 삼각측량
  * (불일치 73건 중재 판정). W1과 동일 파이프라인(docs/plan-ja-vocab-expansion.md).
  */
-export default {
+const themes = {
   themes: [
     {
       name: "JLPT 보강 I",
@@ -97,3 +97,5 @@ export default {
     },
   ],
 };
+
+export default themes;

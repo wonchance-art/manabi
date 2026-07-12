@@ -2,7 +2,7 @@
  * H2 문형 사전 — HSK 2급 핵심 구문·표현 전수 커버 레이어 (SCHEMA.md 참고)
  * 챕터(grammar/h2.js)가 '이해'라면 이 사전은 '전수 검색'.
  */
-export default {
+const patterns = {
   level: "H2",
   title: "H2 문형 사전",
   desc: "在 진행·过 경험·정도보어부터 比 비교, 因为·所以 연결, 개사틀(从·离·对·给), 가능보어 입문까지 — HSK 2급 핵심 문형을 기능별로 모두 모은 전수 검색 사전.",
@@ -892,3 +892,5 @@ export default {
     },
   ],
 };
+
+export default patterns;

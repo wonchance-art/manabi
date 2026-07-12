@@ -3,7 +3,7 @@
  * 한국 문화 속 일본어로 흥미를 돋우고, 한국어 화자의 3대 자산(어순 동일·조사 1:1·한자어 공유)을 선언한 뒤
  * 문자·발음·한자 읽기의 기초 상식을 깔아주는 레벨.
  */
-export default [
+const chapters = [
   {
     slug: "ot-01-known-japanese",
     level: "OT",
@@ -455,3 +455,5 @@ export default [
     ],
   },
 ];
+
+export default chapters;

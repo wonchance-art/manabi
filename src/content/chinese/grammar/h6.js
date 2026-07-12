@@ -3,7 +3,7 @@
  * 고급 성어·관용구, 문어체 허사, 수사법, 구어와 서면어의 레지스터, 고급 접속과 압축 표현,
  * 그리고 한국어로는 같아 보이는 유의어의 미세한 차이까지 — 모어 화자에 가까워지는 마지막 결을 다뤄요.
  */
-export default [
+const chapters = [
   {
     slug: "h6-01-advanced-chengyu",
     level: "H6",
@@ -441,3 +441,5 @@ export default [
     ],
   },
 ];
+
+export default chapters;
