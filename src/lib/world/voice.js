@@ -36,6 +36,12 @@ export function falloffVolume(dist, radius = VOICE_RADIUS) {
   return x * x * (3 - 2 * x);           // smoothstep
 }
 
+// 로컬 상대별 음소거를 거리 감쇠와 합성한다. 음소거는 연결/선정에는 영향을
+// 주지 않고 재생 볼륨만 0으로 만든다. 해제하면 현재 거리의 감쇠값으로 복원된다.
+export function peerPlaybackVolume(dist, muted, radius = VOICE_RADIUS) {
+  return muted ? 0 : falloffVolume(dist, radius);
+}
+
 // glare 방지용 offerer 판정: 사전순으로 앞선 쪽만 offer 를 낸다.
 export function isOfferer(selfId, peerId) {
   return String(selfId) < String(peerId);
@@ -99,6 +105,7 @@ export function selectVoicePeerIds(candidates, limit = MAX_VOICE_PEERS) {
 
 export function createVoiceMesh({ selfId, sendSignal, onSignal }) {
   const peers = new Map();   // peerId -> { pc, audioEl, distance, connected, remoteMuted }
+  const mutedPeers = new Set();  // 로컬 세션 동안 유지 — pc 재생성/선정 해제와 독립
   let localStream = null;
   let micOn = false;
   let statusCb = null;
@@ -110,7 +117,8 @@ export function createVoiceMesh({ selfId, sendSignal, onSignal }) {
       id,
       connected: !!p.connected,
       status: p.status,
-      volume: p.distance < VOICE_RADIUS ? falloffVolume(p.distance) : 0,
+      muted: mutedPeers.has(id),
+      volume: peerPlaybackVolume(p.distance, mutedPeers.has(id)),
     }));
     statusCb({
       micOn,
@@ -172,7 +180,7 @@ export function createVoiceMesh({ selfId, sendSignal, onSignal }) {
     pc.ontrack = (e) => {
       if (!peer.audioEl) return;
       peer.audioEl.srcObject = (e.streams && e.streams[0]) || new MediaStream([e.track]);
-      if (peer.distance < VOICE_RADIUS) peer.audioEl.volume = falloffVolume(peer.distance);
+      peer.audioEl.volume = peerPlaybackVolume(peer.distance, mutedPeers.has(peerId));
     };
     const updateConnectionStatus = () => {
       if (peer.pc !== pc) return;   // close/rebalance 뒤 늦은 구 pc 이벤트 무시
@@ -319,8 +327,24 @@ export function createVoiceMesh({ selfId, sendSignal, onSignal }) {
     }
     if (!peer) peer = createPeer(peerId);
     peer.distance = dist;
-    if (peer.audioEl && peer.pc) peer.audioEl.volume = falloffVolume(dist);
+    if (peer.audioEl && peer.pc) peer.audioEl.volume = peerPlaybackVolume(dist, mutedPeers.has(peerId));
     rebalancePeers();
+  }
+
+  function mutePeer(peerId, muted) {
+    if (peerId == null || peerId === selfId || destroyed) return;
+    if (muted) mutedPeers.add(peerId);
+    else mutedPeers.delete(peerId);
+
+    const peer = peers.get(peerId);
+    if (peer?.audioEl) {
+      peer.audioEl.volume = peerPlaybackVolume(peer.distance, mutedPeers.has(peerId));
+    }
+    emit();
+  }
+
+  function getMuted() {
+    return new Set(mutedPeers);
   }
 
   function removePeer(peerId) {
@@ -340,11 +364,15 @@ export function createVoiceMesh({ selfId, sendSignal, onSignal }) {
       if (peer.audioEl) { try { peer.audioEl.remove(); } catch { /* noop */ } }
     }
     peers.clear();
+    mutedPeers.clear();
     micOn = false;
     statusCb = null;
   }
 
   function onStatus(cb) { statusCb = cb; emit(); }
 
-  return { enableMic, disableMic, setPeerDistance, removePeer, destroy, onStatus };
+  return {
+    enableMic, disableMic, setPeerDistance, mutePeer, getMuted,
+    removePeer, destroy, onStatus,
+  };
 }

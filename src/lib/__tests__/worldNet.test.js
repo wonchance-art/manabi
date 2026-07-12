@@ -305,6 +305,57 @@ async function joinAndSubscribe(client, net) {
 }
 
 // ─────────────────────────────────────────────────────────────
+describe('createWorldNet — 피어 scene 수신 하위호환', () => {
+  it('pos payload의 문자열 scene을 보존하고 presence 메타 갱신 뒤에도 유지한다', async () => {
+    const client = createFakeClient({ routeStatus: 404 });
+    const net = makeNet(client);
+    const snapshots = [];
+    net.onPeers((peers) => snapshots.push(peers));
+    const ch = await joinAndSubscribe(client, net);
+
+    ch.emit('broadcast', 'pos', {
+      payload: { id: 'peer-1', x: 10, y: 20, dir: 'right', scene: 'airport' },
+    });
+    expect(snapshots.at(-1).get('peer-1')).toMatchObject({
+      x: 10, y: 20, dir: 'right', scene: 'airport',
+    });
+
+    ch.presence = { 'peer-1': [{ name: '친구', pet: '🐱' }] };
+    ch.emit('presence', 'sync');
+    expect(snapshots.at(-1).get('peer-1')).toMatchObject({
+      scene: 'airport', name: '친구', pet: '🐱',
+    });
+
+    net.leave();
+  });
+
+  it('scene이 없거나 문자열이 아니면 undefined이며 이전 scene을 남기지 않는다', async () => {
+    const client = createFakeClient({ routeStatus: 404 });
+    const net = makeNet(client);
+    let peers = new Map();
+    net.onPeers((next) => { peers = next; });
+    const ch = await joinAndSubscribe(client, net);
+
+    ch.emit('broadcast', 'pos', {
+      payload: { id: 'peer-1', x: 1, y: 2, dir: 'down', scene: 'airport' },
+    });
+    expect(peers.get('peer-1').scene).toBe('airport');
+
+    ch.emit('broadcast', 'pos', {
+      payload: { id: 'peer-1', x: 3, y: 4, dir: 'left' },
+    });
+    expect(peers.get('peer-1').scene).toBeUndefined();
+
+    ch.emit('broadcast', 'pos', {
+      payload: { id: 'peer-1', x: 5, y: 6, dir: 'up', scene: 42 },
+    });
+    expect(peers.get('peer-1').scene).toBeUndefined();
+
+    net.leave();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
 describe('createSessionLease — 쿠키 인증 월드 세션 API 임대', () => {
   it('POST claim 성공이면 토큰을 획득하고 same-origin 쿠키 경로를 쓴다', async () => {
     const client = createFakeClient();

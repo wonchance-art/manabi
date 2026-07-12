@@ -208,7 +208,7 @@ export function createThrottle(fn, interval) {
 const MAX_RECONNECT_ATTEMPTS = 6;
 
 export function createWorldNet({ userId, name, pet, channelName = 'world-plaza', client = supabase, fetchImpl }) {
-  const peers = new Map();        // peerId -> {x,y,dir,name,pet,at}
+  const peers = new Map();        // peerId -> {x,y,dir,scene?,name,pet,at}
   let channel = null;
   let peersCb = null;
   let peerLeftCb = null;
@@ -264,6 +264,7 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza',
     const prev = peers.get(key) || { x: 0, y: 0, dir: 'down', at: 0 };
     peers.set(key, {
       x: prev.x, y: prev.y, dir: prev.dir,
+      ...(typeof prev.scene === 'string' ? { scene: prev.scene } : {}),
       name: meta?.name ?? prev.name,
       pet: meta?.pet ?? prev.pet,
       at: prev.at || Date.now(),
@@ -286,6 +287,7 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza',
       const prev = peers.get(payload.id) || {};
       peers.set(payload.id, {
         x: payload.x, y: payload.y, dir: payload.dir,
+        ...(typeof payload.scene === 'string' ? { scene: payload.scene } : {}),
         name: prev.name, pet: prev.pet, at: Date.now(),
       });
       emitPeers();
