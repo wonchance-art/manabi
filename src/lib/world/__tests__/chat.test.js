@@ -120,6 +120,37 @@ describe('createWorldChat', () => {
     expect(got[0].userId).toBe('peer');
   });
 
+  it('isMuted 로 판정된 발신자의 수신 broadcast 는 드랍한다(말풍선까지 차단)', () => {
+    const { client, emitBroadcast } = makeFakeClient();
+    const muted = new Set(['blocked']);
+    const chat = createWorldChat({
+      client, userId: 'me', name: '나', isMuted: (id) => muted.has(id),
+    });
+    const got = [];
+    chat.onMessage((m) => got.push(m));
+    emitBroadcast({ id: 'a', userId: 'blocked', name: '차단', text: 'spam', at: 1 }); // 드랍
+    emitBroadcast({ id: 'b', userId: 'peer', name: '상대', text: 'hi', at: 2 });      // 통과
+    expect(got).toHaveLength(1);
+    expect(got[0].userId).toBe('peer');
+    // 뮤트 판정은 매 수신 시 호출 → 해제하면 즉시 다시 통과한다(라이브 반영).
+    muted.delete('blocked');
+    emitBroadcast({ id: 'c', userId: 'blocked', name: '차단', text: 'back', at: 3 });
+    expect(got).toHaveLength(2);
+    expect(got[1].userId).toBe('blocked');
+  });
+
+  it('isMuted 는 내 로컬 에코(send)에는 적용되지 않는다', () => {
+    const { client } = makeFakeClient();
+    const chat = createWorldChat({
+      client, userId: 'me', name: '나', isMuted: () => true, // 전부 뮤트로 판정돼도
+    });
+    const got = [];
+    chat.onMessage((m) => got.push(m));
+    expect(chat.send('안녕')).not.toBe(null); // 내 메시지는 그대로 에코
+    expect(got).toHaveLength(1);
+    expect(got[0].userId).toBe('me');
+  });
+
   it('onStatus 는 구독 시 connected 를 통지하고 leave 후 채널을 정리한다', () => {
     const { client } = makeFakeClient();
     const spy = vi.spyOn(client, 'removeChannel');

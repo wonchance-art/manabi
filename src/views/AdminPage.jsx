@@ -33,6 +33,9 @@ const DEFAULT_NEW_SOURCE = {
 // 언어 키 → 문법 라우트 베이스 (registry를 클라이언트로 끌어오지 않으려 상수로 둠)
 const LANG_BASE = { Japanese: '/japanese', English: '/english', French: '/french', Chinese: '/chinese' };
 
+// 월드 신고 사유 코드 → 라벨 (WorldPage 의 REPORT_REASONS 와 동일 코드 집합).
+const REPORT_REASON_LABELS = { spam_abuse: '스팸·욕설', bad_name: '부적절한 이름', other: '기타' };
+
 async function fetchContentOverrides() {
   const { data, error } = await supabase
     .from('content_overrides')
@@ -69,6 +72,27 @@ async function fetchAllMaterials() {
     .order('created_at', { ascending: false });
   if (error) throw error;
   return data || [];
+}
+
+// 월드 신고 목록 — world_reports 는 auth.users FK 라 PostgREST 임베딩이 안 되므로,
+// 신고자·대상 uuid 를 모아 profiles 에서 닉네임을 2차 조회해 매핑한다(관리자 열람 전용, RLS는 is_admin).
+async function fetchWorldReports() {
+  const { data: reports, error } = await supabase
+    .from('world_reports')
+    .select('id, reporter, target, reason, detail, created_at')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  const ids = [...new Set((reports || []).flatMap(r => [r.reporter, r.target]).filter(Boolean))];
+  let names = {};
+  if (ids.length) {
+    const { data: profs } = await supabase.from('profiles').select('id, display_name').in('id', ids);
+    names = Object.fromEntries((profs || []).map(p => [p.id, p.display_name]));
+  }
+  return (reports || []).map(r => ({
+    ...r,
+    reporterName: names[r.reporter] || null,
+    targetName: names[r.target] || null,
+  }));
 }
 
 // ── Component ─────────────────────────────────────
@@ -112,6 +136,12 @@ export default function AdminPage() {
     queryKey: ['admin-overrides'],
     queryFn: fetchContentOverrides,
     enabled: tab === 'overrides',
+  });
+
+  const { data: reports = [], isLoading: reportsLoading } = useQuery({
+    queryKey: ['admin-world-reports'],
+    queryFn: fetchWorldReports,
+    enabled: tab === 'reports',
   });
 
   // 오버라이드 삭제 — API 라우트 경유(파일 버전 복원 + revalidatePath)
@@ -236,6 +266,7 @@ export default function AdminPage() {
           { key: 'materials', label: '📰 자료 관리' },
           { key: 'sources',   label: '📡 콘텐츠 소스' },
           { key: 'overrides', label: '📝 콘텐츠' },
+          { key: 'reports',   label: '🚩 신고' },
           { key: 'features',  label: '🧪 신기능' },
         ].map(t => (
           <button
@@ -645,6 +676,51 @@ export default function AdminPage() {
                         </tr>
                       );
                     })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )
+      )}
+
+      {/* ── 월드 신고 (열람 전용) ── */}
+      {tab === 'reports' && (
+        reportsLoading ? <Spinner message="신고 목록 로딩 중..." /> : (
+          <div>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 16, lineHeight: 1.6 }}>
+              학습 월드에서 접수된 신고 목록이에요(world_reports). 지금은 열람만 가능해요 —
+              처리(차단·경고) 액션은 후속으로 붙일 예정이에요.
+            </p>
+            {reports.length === 0 ? (
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>아직 접수된 신고가 없어요.</p>
+            ) : (
+              <div className="admin-table-wrap">
+                <div className="admin-table-header">
+                  <span>총 {reports.length}건</span>
+                </div>
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>신고자</th>
+                      <th>대상</th>
+                      <th>사유</th>
+                      <th>메모</th>
+                      <th>접수 시각</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {reports.map(r => (
+                      <tr key={r.id}>
+                        <td>{r.reporterName || '—'}</td>
+                        <td>{r.targetName || '—'}</td>
+                        <td className="admin-table__muted">{REPORT_REASON_LABELS[r.reason] || r.reason}</td>
+                        <td className="admin-table__muted">{r.detail || '—'}</td>
+                        <td className="admin-table__muted">
+                          {r.created_at ? new Date(r.created_at).toLocaleString('ko-KR') : '—'}
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
