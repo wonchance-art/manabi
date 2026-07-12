@@ -22,6 +22,7 @@ import Button from '../components/Button';
 import bus from '../components/world/bus';
 import { createWorldNet } from '../lib/world/net';
 import { createVoiceMesh } from '../lib/world/voice';
+import { createVoiceUnreachableNotifier } from '../lib/world/voiceNotify';
 import { createWorldChat } from '../lib/world/chat';
 // 도트 폰트(Galmuri9) @font-face — /world 라우트 전용 client 컴포넌트에서만 로드된다.
 import './galmuri9.css';
@@ -487,18 +488,17 @@ export default function WorldPage() {
     };
     bus.on('peers:dist', onDist);
 
-    // 마이크·연결 상태 표출. voice-unreachable(대칭형 NAT 등 ICE 실패)은 1회만 토스트로
-    // 안내하고 채팅으로 유도한다 — 조용한 실패 방지(Codex 음성 견고화 라운드의 상태 노출 배선).
-    let voiceUnreachableNotified = false;
+    // 마이크·연결 상태 표출. voice-unreachable(대칭형 NAT 등 ICE 실패)은 마이크 on/off와
+    // 무관하게 1회 토스트로 안내하고 채팅으로 유도한다 — 수신 전용(listener-only) 경로도
+    // ICE 실패를 겪으므로 status 자체로 판정(voiceNotify 상태기, 회복 시 재무장).
+    const shouldNotifyVoiceUnreachable = createVoiceUnreachableNotifier();
     voice.onStatus(({ micOn: on, peers, status }) => {
       if (cancelled) return;
       setMicOn(on);
       setNearVoiceCount(peers.filter((p) => p.connected).length);
-      if (status === 'voice-unreachable' && on && !voiceUnreachableNotified) {
-        voiceUnreachableNotified = true;
+      if (shouldNotifyVoiceUnreachable(status)) {
         toast('지금 네트워크에서는 음성이 안 닿아요. 채팅으로 이야기해 보세요!', 'info');
       }
-      if (status !== 'voice-unreachable') voiceUnreachableNotified = false;
     });
 
     // presence leave가 안 오고 조용히 사라진 peer(탭 얼음/끊김)를 주기적으로 청소.
