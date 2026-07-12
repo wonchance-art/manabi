@@ -157,6 +157,14 @@ describe('NPC 대화 노드(마스터플랜 A-1 — 라멘·신사)', () => {
     expect(getNode('fukuoka-ramen').desc).toContain('替え玉');
     expect(getNode('dazaifu-shrine').desc).toContain('二礼二拍手一礼');
   });
+
+  it('라멘 노드는 고정 점포(券売機 서사 정합) — 포장마차(야타이) 아님(Codex P1-2)', () => {
+    const n = getNode('fukuoka-ramen');
+    expect(n.name).toBe('하카타 라멘 전문점');
+    expect(n.name).not.toContain('포장마차');
+    expect(n.desc).not.toContain('포장마차');
+    expect(n.desc).toContain('券売機'); // 챕터 ot-10 이 가르치는 식권기 첫 단계
+  });
 });
 
 describe('미니맵 다운샘플(순수 함수)', () => {

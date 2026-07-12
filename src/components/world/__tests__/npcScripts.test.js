@@ -97,6 +97,13 @@ describe('대화 스크립트 무결성(라멘·신사)', () => {
     expect(flat).toContain('食券');
   });
 
+  it('라멘 서사는 고정 점포 — 포장마차(屋台) 언급 없음(야타이는 식권기 관행과 모순, Codex P1-2)', () => {
+    const flat = JSON.stringify(NPC_SCRIPTS.ramen);
+    expect(flat).not.toContain('포장마차');
+    expect(flat).not.toContain('屋台');
+    expect(flat).not.toContain('야타이');
+  });
+
   it('신사 대화는 챕터 ot-09 표현(二礼二拍手一礼·ご縁·おみくじ)을 쓰고 omikuji 스텝을 포함', () => {
     const flat = JSON.stringify(NPC_SCRIPTS.shrine);
     expect(flat).toContain('二礼二拍手一礼');

@@ -10,6 +10,15 @@
 // 흐름: script.steps 를 한 스텝씩 진행. say/narr = 텍스트박스(A=다음·B=뜻 토글). ask = 정답 게이팅
 //   (오답이면 근거 표시 후 재시도). omikuji = 뽑기 연출(균등 랜덤) + 凶이면 "묶고 가기" 리추얼.
 //   마지막 스텝을 넘기면 onComplete()(스탬프 1회) 후 완료 카드. 재대화 가능(스탬프는 서버 Set 가드).
+//
+// 소프트락 방지(P1-1): GameCanvas 가 대화 중 이동을 잠그므로, 답을 모르는 사용자가 갇히지 않게
+//   「나가기」 버튼을 모든 스텝(ask·omikuji 포함)에 항상 렌더한다. B(cancel)는 say 대사에선 뜻 토글,
+//   그 외 스텝에선 대화 종료. 중도 이탈은 onComplete 미호출(스탬프 미지급 — 완주 조건 유지),
+//   재진입하면 처음부터. 긴 오답 근거·凶 선택지는 패널 maxHeight+overflow 스크롤로 288px 화면을 지킨다.
+//
+// 스탬프 시맨틱(P2): 완주 스탬프는 보안성 없는 "방문 기념"이다 — /api/world/stamps 는 실존 노드+
+//   본인만 검증하고 완주 여부는 검증하지 않는다(직접 POST 로 위조 가능). 학습 달성·보상으로 쓰려면
+//   서버 검증 claim(마스터플랜 A-4 원칙)이 필요하다. UI 문구도 "기념 스탬프"로 통일한다.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { GBC, gbcPanel, gbcButton, gbcButtonPrimary } from './QuestReview';
@@ -87,7 +96,9 @@ export default function NpcDialog({ npcKey, npcName, actionRef, cancelRef, onCom
     }, 75);
   }
 
-  // ── 셸 A/B(하드웨어 버튼) 위임 — say/narr 은 A=다음, say 는 B=뜻 토글. ask/omikuji 는 화면 버튼으로. ──
+  // ── 셸 A/B(하드웨어 버튼) 위임 ──
+  // A: say/narr = 다음, 완료 카드 = 나가기. ask/omikuji 는 화면 버튼으로(오답 게이팅과 충돌 방지).
+  // B: say 대사 = 한국어 뜻 토글, 그 외(narr·ask·omikuji·완료) = 대화 종료(P1-1 — B로 언제든 탈출).
   useEffect(() => {
     if (!actionRef) return undefined;
     actionRef.current = () => {
@@ -98,7 +109,10 @@ export default function NpcDialog({ npcKey, npcName, actionRef, cancelRef, onCom
   });
   useEffect(() => {
     if (!cancelRef) return undefined;
-    cancelRef.current = () => { if (isSpeech) setShowKo((v) => !v); };
+    cancelRef.current = () => {
+      if (isSpeech && !done) { setShowKo((v) => !v); return; }
+      onExit?.();
+    };
     return () => { if (cancelRef) cancelRef.current = null; };
   });
 
@@ -106,15 +120,19 @@ export default function NpcDialog({ npcKey, npcName, actionRef, cancelRef, onCom
 
   const speakerLabel = (who) => (who === 'me' ? WHO_LABEL.me : (npcName || script.label));
 
-  // 공통 셸(상단 이름표 + 나가기).
+  // 「나가기」 — 모든 스텝(ask·omikuji 포함)에서 항상 보인다(P1-1 소프트락 방지).
+  // B(cancel)가 나가기로 배선되는 스텝(say 대사 제외 — 거기선 B=뜻 토글)에서만 Ⓑ 를 병기한다.
   const header = (
     <button
       type="button" onClick={onExit} aria-label="대화 나가기"
-      style={{ ...gbcButton, position: 'absolute', top: 6, right: 6, padding: '2px 8px', fontSize: '0.7rem', boxShadow: 'none', pointerEvents: 'auto' }}
+      style={{ ...gbcButton, position: 'absolute', top: 6, right: 6, zIndex: 1, padding: '2px 8px', fontSize: '0.7rem', boxShadow: 'none', pointerEvents: 'auto' }}
     >
-      나가기
+      {isSpeech && !done ? '나가기' : '나가기 Ⓑ'}
     </button>
   );
+
+  // ask·omikuji 패널 공통 — 긴 오답 근거·凶 리추얼에도 288px 화면을 넘지 않게 스크롤(P1-1).
+  const panelScroll = { maxHeight: '76%', overflowY: 'auto' };
 
   // ── 완료 카드 ──
   if (done) {
@@ -124,6 +142,8 @@ export default function NpcDialog({ npcKey, npcName, actionRef, cancelRef, onCom
         <div style={{ ...gbcPanel, margin: 8, padding: '14px 16px', textAlign: 'center', pointerEvents: 'auto' }}>
           <div style={{ fontSize: '1.5rem', marginBottom: 6 }}>{script.emoji} 🗾</div>
           <p style={{ fontSize: '0.86rem', fontWeight: 700, margin: '0 0 6px' }}>{script.reward}</p>
+          {/* 방문 기념 뉘앙스(P2) — 달성·증명이 아니라 여행 기념 도장. */}
+          <p style={{ fontSize: '0.68rem', color: GBC.inkSoft, margin: '0 0 4px' }}>🗾 방문 기념 스탬프를 받았어요.</p>
           <button type="button" onClick={onExit} style={{ ...gbcButtonPrimary, marginTop: 4 }}>돌아가기 →</button>
         </div>
       </div>
@@ -181,7 +201,8 @@ export default function NpcDialog({ npcKey, npcName, actionRef, cancelRef, onCom
   if (step && step.t === 'omikuji') {
     return (
       <div style={overlayGrid}>
-        <div style={{ ...gbcPanel, width: '100%', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10, pointerEvents: 'auto' }}>
+        {header}
+        <div style={{ ...gbcPanel, ...panelScroll, width: '100%', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10, pointerEvents: 'auto' }}>
           <div style={{ fontSize: '0.72rem', fontWeight: 700 }}>⛩️ おみくじ</div>
           {!omikuji ? (
             <>
@@ -230,7 +251,8 @@ export default function NpcDialog({ npcKey, npcName, actionRef, cancelRef, onCom
   if (step && step.t === 'ask') {
     return (
       <div style={overlayGrid}>
-        <div style={{ ...gbcPanel, width: '100%', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10, pointerEvents: 'auto' }}>
+        {header}
+        <div style={{ ...gbcPanel, ...panelScroll, width: '100%', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 10, pointerEvents: 'auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <span style={{ fontSize: '0.72rem', fontWeight: 700 }}>{script.emoji} {npcName || script.label}</span>
             <span style={{ fontSize: '0.68rem', color: GBC.inkSoft }}>{step.mode === 'type' ? '빈칸 채우기' : '골라 말하기'} · {idx + 1}/{steps.length}</span>

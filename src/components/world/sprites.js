@@ -453,9 +453,12 @@ const BOAT_ROWS = [
 export function boatFrameRows() { return BOAT_ROWS; }
 
 // ── NPC 마커 도트(월드 노드 kind:'npc') ──
-// 후쿠오카 라멘 포장마차 주인(야타이+주인장)과 다자이후 신사 미코상(토리이+미코)을 소품과 함께
+// 하카타 라멘 전문점(고정 점포 앞면+주인장)과 다자이후 신사 미코상(토리이+미코)을 소품과 함께
 // 한 장의 마커로 굽는다. 24×24, 발밑(하단 중앙) 정렬(GameCanvas buildNpcMarkers 가 origin 0.5,1).
-//   · ramen  : 붉은 노렌·지붕 + 붉은 초롱(ちょうちん) + 머리띠 두른 주인 + 나무 카운터에 김 나는 그릇
+//   · ramen  : 상단 간판(크림 보드+붉은 글자 힌트) + 목조 기둥 벽의 점포 앞면 + 붉은 노렌 +
+//              초롱 + 머리띠 두른 주인장 + 카운터의 김 나는 그릇.
+//              (포장마차(屋台) 아님 — 야타이는 직접 주문→식후 현금 계산 관행이라 챕터 ot-10 의
+//               券売機/食券 서사와 모순. 고정 점포로 통일, Codex P1-2.)
 //   · shrine : 붉은 鳥居(토리이) 기둥/가사기 + 그 앞에 선 미코(흰 하카마 상의·緋袴)
 // 픽셀맵 무결성(24행×24열·정의된 색문자만)은 sprites.test 로 검증한다.
 export const NPC_W = 24;
@@ -470,30 +473,32 @@ export const NPC_PAL = {
 };
 
 const NPC_ART = {
+  // 고정 점포 앞면: 간판(rows0-3) → 좌우 목조 기둥 벽(W/w 세로) → 입구 노렌(rows4-7) →
+  // 초롱(Y)·주인장(하치마키 R, rows9-15) → 카운터(rows16-19)와 그릇(N) → 바닥 기둥.
   ramen: [
-    '....OOOOOOOOOOOOOOOO....',
-    '...ORRRRRRRRRRRRRRRRO...',
-    '..ORRRRRRRRRRRRRRRRRRO..',
-    '..OrrrrrrrrrrrrrrrrrrO..',
-    '...w......OOOO......w...',
-    '...w.....OYYYYO.....w...',
-    '...w.....OYCCYO.....w...',
-    '...w.....OYYYYO.....w...',
-    '...w......OOOO......w...',
-    '..ORRRRRRRRRRRRRRRRRRO..',
-    '..OrrCCrrCCrrCCrrCCrrO..',
+    '..OOOOOOOOOOOOOOOOOOOO..',
+    '..OCCRRCCRRCCRRCCRRCCO..',
     '..OCCrrCCrrCCrrCCrrCCO..',
-    '.......ORRRRRRRRO.......',
-    '.......OHHHHHHHHO.......',
-    '.......OSSOSSOSSO.......',
-    '.......OSSSKKSSSO.......',
-    '.......OSSSSSSSSO.......',
-    '.....OBBBBBBBBBBBBO.....',
-    '.....OBBBBBBBBBBBBO.....',
+    '..OOOOOOOOOOOOOOOOOOOO..',
+    '..OWWORRRRRRRRRRRROWWO..',
+    '..OWWORrRRrRRrRRrROWWO..',
+    '..OWWORrRRrRRrRRrROWWO..',
+    '..OWWOrrrrrrrrrrrrOWWO..',
+    '..OWWO............OWWO..',
+    '..OWWOYY.OHHHHHHO.OWWO..',
+    '..OWWOYY.ORRRRRRO.OWWO..',
+    '..OWWO...OSOSSOSO.OWWO..',
+    '..OWWO...OSSKKSSO.OWWO..',
+    '..OWWO...OSSSSSSO.OWWO..',
+    '..OWWO..OBBBBBBBBOOWWO..',
+    '..OWWO..OBBBBBBBBOOWWO..',
     '..OWWWWWWWWWWWWWWWWWWO..',
     '..OWWWWWWWNNNNWWWWWWWO..',
     '..OwwwwwwwwwwwwwwwwwwO..',
     '..OwwwwwwwwwwwwwwwwwwO..',
+    '..Ow................wO..',
+    '..Ow................wO..',
+    '..w..................w..',
     '..w..................w..',
   ],
   shrine: [

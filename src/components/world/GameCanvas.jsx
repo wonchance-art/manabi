@@ -50,8 +50,9 @@ import { isSpawnTileValid } from '../../lib/world/session';
 import { buildAirportScene } from './airportScene';
 import { StoryTextbox, AirportQuiz } from './StoryOverlay';
 import { buildStoryScript } from './storyScript';
-// 🗾 NPC 도트 대화(마스터플랜 A-1) — 라멘 포장마차·신사 미코상. 대화 콘텐츠·판정은 npcScripts,
-// 오버레이 UI 는 NpcDialog(공항 StoryOverlay 와 같은 GBC 관행). 로컬 전용 파일럿(공유 없음).
+// 🗾 NPC 도트 대화(마스터플랜 A-1) — 하카타 라멘 전문점 주인·신사 미코상. 대화 콘텐츠·판정은
+// npcScripts, 오버레이 UI 는 NpcDialog(공항 StoryOverlay 와 같은 GBC 관행). 로컬 전용 파일럿(공유 없음).
+// 완주 스탬프는 보안성 없는 "방문 기념"(P2) — 학습 달성/보상으로 쓰려면 서버 검증 claim(A-4) 필요.
 import NpcDialog from './NpcDialog';
 // 🔒 월드 번들 정답 격리(P1-1): 전체 트랙(n5_tokyo.js)을 정적 import하면 트리 셰이킹 불가로
 // /world 청크에 30편 전 글의 questions·answer·why가 실린다(서버 스트립 P2-7 무력화).
@@ -243,11 +244,14 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   const [npcDialog, setNpcDialog] = useState(null);
   const npcDialogRef = useRef(null);
   const npcActionRef = useRef(null);  // 셸 A → 현재 스텝의 기본 동작(대사=다음)
-  const npcCancelRef = useRef(null);  // 셸 B → 대사 한국어 뜻 토글
+  const npcCancelRef = useRef(null);  // 셸 B → say=뜻 토글, 그 외 스텝=대화 나가기(P1-1 소프트락 방지)
 
   // ── 여행 스탬프 상태 ──
   // stamps: 수집한 노드 id Set(마운트 시 서버에서 로드). newStamp: 방금 획득한 노드 { id, name } | null
-  // (GBC 다이얼로그에 "🗾 ○○ 스탬프 획득!" 한 줄 플래시). 중복 수집 안 함(Set 가드).
+  // (GBC 다이얼로그에 "🗾 ○○ 기념 스탬프!" 한 줄 플래시). 중복 수집 안 함(Set 가드).
+  // 시맨틱(P2): 스탬프는 보안성 없는 "방문 기념" — 서버(/api/world/stamps)는 실존 노드+본인만
+  // 검증하고 방문/완주 여부는 검증하지 않는다(직접 POST 위조 가능). 달성·증명 뉘앙스 금지
+  // (문구도 "기념 스탬프"). 학습 달성/보상으로 쓰려면 서버 검증 claim(마스터플랜 A-4 원칙) 필요.
   const [stamps, setStamps] = useState(() => new Set());
   const [newStamp, setNewStamp] = useState(null);
   const stampsRef = useRef(stamps);          // interact 콜백(once-effect)이 최신 Set 을 읽도록 미러
@@ -818,7 +822,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           }
         }
 
-        // NPC 마커(kind:'npc') — sprites.js 픽셀맵(포장마차 주인·미코상+소품)을 시간대 톤으로 굽는다.
+        // NPC 마커(kind:'npc') — sprites.js 픽셀맵(라멘집 앞면+주인장·토리이+미코상)을 시간대 톤으로 굽는다.
         // 24×24, 발밑(하단 중앙) 정렬은 nodeViews 가 origin(0.5,1) + (ty+1)*TILE 로 처리한다.
         buildNpcMarkers() {
           for (const key of NPC_KEYS) {
@@ -1688,7 +1692,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
             )}
             {newStamp?.id === nearNode.id && (
               <span style={{ display: 'block', fontSize: '0.7rem', fontWeight: 'bold', color: '#2f7a2a', marginTop: 4 }}>
-                🗾 {nearNode.name} 스탬프 획득!
+                🗾 {nearNode.name} 기념 스탬프!
               </span>
             )}
           </span>
@@ -1747,10 +1751,10 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           {/* 🗾 스탬프 — 방금 획득이면 강조 한 줄, 이미 수집했으면 도장 자국(은은한 한 줄). */}
           {newStamp?.id === nearNode.id ? (
             <div style={{ marginTop: 8, fontSize: '0.76rem', fontWeight: 'bold', color: '#2f7a2a' }}>
-              🗾 {nearNode.name} 스탬프 획득!
+              🗾 {nearNode.name} 기념 스탬프!
             </div>
           ) : stamps.has(nearNode.id) ? (
-            <div style={{ marginTop: 8, fontSize: '0.68rem', opacity: 0.68 }}>· 🗾 스탬프 수집됨 ·</div>
+            <div style={{ marginTop: 8, fontSize: '0.68rem', opacity: 0.68 }}>· 🗾 기념 스탬프 ·</div>
           ) : null}
           <div style={{ textAlign: 'right', marginTop: 8 }}>
             <button
@@ -1776,7 +1780,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
               {ferryPrompt.toName}행 페리를 탈까요?
               {newStamp && (
                 <span style={{ display: 'block', fontSize: '0.72rem', fontWeight: 'bold', color: '#2f7a2a', marginTop: 6 }}>
-                  🗾 {newStamp.name} 스탬프 획득!
+                  🗾 {newStamp.name} 기념 스탬프!
                 </span>
               )}
             </p>
