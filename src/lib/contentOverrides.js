@@ -77,46 +77,78 @@ export async function getOverridesForLang(lang) {
 
 // 존재한다면 문자열(또는 null)이어야 하는 챕터/섹션 필드 — 렌더가 .split 등 문자열 연산을 함
 const CHAPTER_STRING_FIELDS = ['title', 'topic', 'titleFr', 'summary', 'duration'];
-const SECTION_STRING_FIELDS = ['heading', 'pattern', 'patternKo', 'body', 'tip', 'pitfall', 'vsKo', 'hanja'];
+// heading·패턴 박스 + 콜아웃 전체(refShared CALLOUT_ORDER: pitfall·vsKo·vsEn·hanja·etym·tip)
+const SECTION_STRING_FIELDS = ['heading', 'pattern', 'patternKo', 'body', 'tip', 'pitfall', 'vsKo', 'vsEn', 'hanja', 'etym'];
 
 function isPlainObject(v) {
   return Boolean(v) && typeof v === 'object' && !Array.isArray(v);
 }
 
-/** 존재한다면 "객체들의 배열"이어야 하는 컬렉션 — null/비객체 원소는 렌더에서 크래시 */
-function isObjectArray(v) {
-  return Array.isArray(v) && v.every(isPlainObject);
+// ── leaf 타입 규칙 ─────────────────────────────────────────────
+// 렌더러는 leaf를 React child(<th>{h}</th> 등) 또는 문자열 연산(.split, refPron)에
+// 소비한다. 객체/배열이 leaf 자리에 오면 "Objects are not valid as a React child"로
+// 공개 렌더가 죽으므로, leaf는 스칼라(string/number/boolean/null)만 허용한다.
+function isScalar(v) {
+  return v == null || typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean';
+}
+
+function isScalarArray(v) {
+  return Array.isArray(v) && v.every(isScalar);
+}
+
+/** 모든 값이 스칼라인 평평한 객체 — examples 원소·story 대사 줄·media.line */
+function isFlatObject(v) {
+  return isPlainObject(v) && Object.values(v).every(isScalar);
+}
+
+/** 값이 스칼라 또는 스칼라 배열인 객체 — story 문항(accept·model 등 문자열 배열 보유) */
+function isShallowObject(v) {
+  return isPlainObject(v) && Object.values(v).every((x) => isScalar(x) || isScalarArray(x));
+}
+
+function isFlatObjectArray(v) {
+  return Array.isArray(v) && v.every(isFlatObject);
 }
 
 /**
- * 섹션 하나의 렌더 가능 최소 구조 검증.
- * 렌더러가 순회·메서드 호출하는 하위 컬렉션까지 내려간다:
- *  - examples: ExampleList가 원소를 refPron(ex)·ex.ko로 소비 → 객체 배열
- *  - table: SectionTable이 headers.map·rows.map(row => row.map) → rows는 배열의 배열
- *  - story: StoryCheck가 body 원소의 .ja/.narr, questions 원소를 normalizeQuestion으로 소비 → 객체 배열
- *  - media: MediaSection이 필드 접근 → 객체
+ * 섹션 하나의 렌더 가능 구조 검증 — 렌더러가 소비하는 모든 leaf까지 내려간다.
+ *  - examples: ExampleList가 ex.ja/yomi/ko/note를 React child·refPron으로 소비 → 스칼라 leaf의 평평한 객체 배열
+ *  - table: caption·headers 원소·rows 셀 전부 <caption>/<th>/<td>의 직접 child → 스칼라
+ *  - story: body 원소(ja/narr/speaker…)는 평평한 객체, questions는 스칼라 배열(accept·model)까지 허용
+ *  - media: youtubeId·songTitle 등 스칼라 + line(가사 한 줄)만 평평한 객체
  */
 function isValidSection(s) {
   if (!isPlainObject(s)) return false;
   for (const k of SECTION_STRING_FIELDS) {
     if (k in s && s[k] != null && typeof s[k] !== 'string') return false;
   }
-  if ('examples' in s && s.examples != null && !isObjectArray(s.examples)) return false;
+  if ('examples' in s && s.examples != null && !isFlatObjectArray(s.examples)) return false;
   if ('table' in s && s.table != null) {
     const t = s.table;
     if (!isPlainObject(t)) return false;
-    if ('headers' in t && t.headers != null && !Array.isArray(t.headers)) return false;
+    if ('caption' in t && !isScalar(t.caption)) return false;
+    if ('headers' in t && t.headers != null && !isScalarArray(t.headers)) return false;
     if ('rows' in t && t.rows != null) {
-      if (!Array.isArray(t.rows) || !t.rows.every((row) => Array.isArray(row))) return false;
+      if (!Array.isArray(t.rows) || !t.rows.every(isScalarArray)) return false;
     }
   }
   if ('story' in s && s.story != null) {
     const st = s.story;
     if (!isPlainObject(st)) return false;
-    if ('body' in st && st.body != null && !isObjectArray(st.body)) return false;
-    if ('questions' in st && st.questions != null && !isObjectArray(st.questions)) return false;
+    if ('body' in st && st.body != null && !isFlatObjectArray(st.body)) return false;
+    if ('questions' in st && st.questions != null) {
+      if (!Array.isArray(st.questions) || !st.questions.every(isShallowObject)) return false;
+    }
   }
-  if ('media' in s && s.media != null && !isPlainObject(s.media)) return false;
+  if ('media' in s && s.media != null) {
+    const m = s.media;
+    if (!isPlainObject(m)) return false;
+    for (const [k, v] of Object.entries(m)) {
+      if (k === 'line') {
+        if (v != null && !isFlatObject(v)) return false;
+      } else if (!isScalar(v)) return false;
+    }
+  }
   return true;
 }
 

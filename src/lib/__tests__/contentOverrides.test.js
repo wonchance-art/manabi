@@ -143,4 +143,41 @@ describe('isValidOverride', () => {
     expect(mergeChapter(base, { sections: [{ table: { rows: [null] } }] })).toBe(base);
     expect(mergeChapter(base, { sections: [{ story: { body: [null] } }] })).toBe(base);
   });
+
+  // ── Codex 3차 P1: leaf가 스칼라가 아니면 거부 (React child 크래시 방지) ──
+  it('table의 header·셀·caption leaf에 객체가 오면 거부한다', () => {
+    expect(isValidOverride({ sections: [{ heading: 'x', table: { headers: [{}], rows: [['ok']] } }] })).toBe(false);
+    expect(isValidOverride({ sections: [{ table: { headers: ['h'], rows: [[{}]] } }] })).toBe(false);
+    expect(isValidOverride({ sections: [{ table: { caption: {}, headers: ['h'], rows: [['a']] } }] })).toBe(false);
+  });
+
+  it('example 텍스트 leaf에 객체가 오면 거부한다', () => {
+    expect(isValidOverride({ sections: [{ examples: [{ ja: {} }] }] })).toBe(false);
+    expect(isValidOverride({ sections: [{ examples: [{ ja: 'ok', ko: ['배열'] }] }] })).toBe(false);
+  });
+
+  it('story 본문·문항 leaf에 객체가 오면 거부한다', () => {
+    expect(isValidOverride({ sections: [{ story: { body: [{ ja: {} }] } }] })).toBe(false);
+    expect(isValidOverride({ sections: [{ story: { body: [{ narr: 'ok' }], questions: [{ why: {} }] } }] })).toBe(false);
+    // 문항의 accept·model 같은 스칼라 배열은 허용
+    expect(isValidOverride({ sections: [{ story: { body: [{ narr: 'ok' }], questions: [{ answer: 'a', accept: ['a', 'b'] }] } }] })).toBe(true);
+  });
+
+  it('media leaf에 객체가 오면 거부한다 (line만 평평한 객체 허용)', () => {
+    expect(isValidOverride({ sections: [{ media: { youtubeId: 'x', songTitle: {} } }] })).toBe(false);
+    expect(isValidOverride({ sections: [{ media: { youtubeId: 'x', line: { ja: 'l', ko: 'k' } } }] })).toBe(true);
+    expect(isValidOverride({ sections: [{ media: { youtubeId: 'x', line: { ja: {} } } }] })).toBe(false);
+  });
+});
+
+// 에디터는 전체 챕터 JSON을 저장하므로, 실제 챕터 전부가 무수정 상태로 검증을
+// 통과해야 한다(아니면 정상 저장이 400에 막힘). 전 언어·전 챕터 라운드트립 고정.
+describe('isValidOverride — 실제 챕터 전수 라운드트립', () => {
+  it('일본어 전 챕터가 검증을 통과한다', async () => {
+    const { ALL_CHAPTERS } = await import('../../content/japanese');
+    expect(ALL_CHAPTERS.length).toBeGreaterThan(80);
+    for (const ch of ALL_CHAPTERS) {
+      expect(isValidOverride(ch), `챕터 ${ch.slug}가 검증에 걸림`).toBe(true);
+    }
+  });
 });
