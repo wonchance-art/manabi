@@ -42,3 +42,14 @@ export function isSpawnTileValid(tx, ty, cols, rows, isWalkable) {
   if (tx < 0 || ty < 0 || tx >= cols || ty >= rows) return false;
   return typeof isWalkable === 'function' ? !!isWalkable(tx, ty) : true;
 }
+
+// 위치 영속 판정(순수) — local:state 페이로드가 재접속 스폰 원천으로 저장될 수 있는가.
+//   ── persistable 계약 ──
+//   GameCanvas 는 페리 항해 중(this.ferrying)·물 타일 위 좌표를, airportScene 은 공항 좌표를
+//   persistable:false 로 emit 한다. 이 좌표들은 재접속 스폰 검증(plaza 보행 타일만 통과)을 못
+//   넘겨 서울 폴백을 유발하므로, 위치 기록기가 저장(그리고 livePosRef 갱신)에서 제외한다.
+//   → 마지막 유효 플라자 좌표(공항 진입 직전 게이트 앞 등)가 스폰 원천으로 유지된다.
+//   payload 에 persistable 이 없으면(하위호환·일반 플라자 좌표) 영속 대상으로 본다.
+export function isPersistablePosition(st) {
+  return !!st && st.persistable !== false;
+}

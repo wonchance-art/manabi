@@ -433,3 +433,142 @@ export function riverStreamRects(mask) {
   if (mask & RIVER_E) rects.push([9, 6, 7, 3]); // 오른 변까지(cols9~15)
   return rects;
 }
+
+// ── 배 도트(페리 항해 연출) ──
+// 캐릭터 아래에 붙는 작은 배. 삼각 돛(S) + 웜 브라운 선체(H·바닥 음영 D·윤곽 O). 16×8.
+// 물 위(바다·강·호수)를 건너는 로컬 플레이어(페리 항해)와, 물 타일 위에 있는 원격 피어에 얹는다.
+export const BOAT_W = 16;
+export const BOAT_H = 8;
+export const BOAT_PAL = { O: 0x2a1e14, H: 0x9a5f2a, D: 0x6f4420, S: 0xf6edcf };
+const BOAT_ROWS = [
+  '................',
+  '.......S........',
+  '......SS........',
+  '.....SSS........',
+  '.OOOOOSOOOOO....',
+  '.OHHHHHHHHHO....',
+  '..ODDDDDDDDO....',
+  '...OOOOOOOO.....',
+];
+export function boatFrameRows() { return BOAT_ROWS; }
+
+// ── 원격 피어 스프라이트 렌더(광장·공항 공용 헬퍼) ──
+// 두 씬(WorldScene·AirportScene)이 같은 도트 렌더·닉네임 라벨·그리드 보간을 재사용한다.
+//   · scene 에 붙는 상태: scene.peers(Map), scene.fontReady(bool), scene.add/scene.tweens(Phaser).
+//   · 좌표 스케일(1타일=32px, 소스16, 배율2, origin 0.5)은 두 씬이 동일 → 여기 상수로 고정한다.
+//   · scene 필터: 피어에 scene 이 없으면 'plaza' 로 간주(하위호환 — Codex 가 net 수신부에 scene 추가 중).
+export const PEER_TILE = 32;
+export const PEER_TSCALE = PEER_TILE / CHAR_TILE_PX; // = 2 (소스16 → 월드32)
+export const PEER_LABEL_DY = 30;
+export const PEER_LABEL_DEPTH = 15000;
+const PEER_STEP_MS = 200;
+const PEER_ANIM_MS = 100;
+const PEER_SNAP_TILES = 8;   // 이보다 먼 목적지 갱신은 스냅(순간이동을 길게 기어가지 않게)
+const PEER_BOAT_DY = 8;      // 피어 발밑 배 오프셋(월드 px)
+const PEER_DIRV = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+const PEER_VALID_DIR = new Set(['up', 'down', 'left', 'right']);
+
+// 닉네임 라벨 스타일 — Galmuri9(도트) 우선, 미로드 시 모노 폴백(잉크색 + 크림 스트로크).
+export function peerLabelStyle(fontReady) {
+  return {
+    fontFamily: fontReady ? "'Galmuri9', monospace" : 'monospace',
+    fontSize: '8px', color: '#2a2118',
+    stroke: '#f6edcf', strokeThickness: 3,
+  };
+}
+
+// 피어 캐릭터 프레임 이름(정지=중립 n, 이동=[l,n,r,n] 사이클). prefix 로 씬별 원격 팔레트를 고른다.
+function peerCharTex(prefix, facing, moving, time) {
+  const base = (facing === 'left' || facing === 'right') ? 'side' : facing;
+  const pose = moving ? CHAR_WALK_CYCLE[Math.floor(time / PEER_ANIM_MS) % CHAR_WALK_CYCLE.length] : 'n';
+  return `${prefix}_${base}_${pose}`;
+}
+
+// 원격 목록('peers:update')을 반영 — cfg.sceneName 에 해당하는 피어만 생성/갱신하고 나머지는 정리한다.
+// incoming: Map|Object<id, { x, y, dir, nick, scene? }> (좌표는 월드 px). cfg: { charPrefix, sceneName }.
+export function applyPeersToScene(scene, incoming, cfg) {
+  const prefix = cfg.charPrefix;
+  const sceneName = cfg.sceneName;
+  const entries = incoming instanceof Map ? [...incoming.entries()] : Object.entries(incoming || {});
+  const seen = new Set();
+  // 다른 씬 피어 id — 이 씬에 렌더하진 않지만 근접 음성 거리 emit 에서 Infinity(해제)로 실어 보낸다.
+  const otherScene = new Set();
+  for (const [id, st] of entries) {
+    if (!st) continue;
+    if ((st.scene || 'plaza') !== sceneName) { otherScene.add(id); continue; } // 다른 씬은 렌더 제외(하위호환)
+    seen.add(id);
+    const tileX = Math.floor(st.x / PEER_TILE);
+    const tileY = Math.floor(st.y / PEER_TILE);
+    let p = scene.peers.get(id);
+    if (!p) {
+      const sx = tileX * PEER_TILE + PEER_TILE / 2, sy = tileY * PEER_TILE + PEER_TILE / 2;
+      const sprite = scene.add.image(sx, sy, `${prefix}_down_n`).setOrigin(0.5, CHAR_ORIGIN_Y).setScale(PEER_TSCALE);
+      const label = scene.add.text(sx, sy - PEER_LABEL_DY, st.nick || '', peerLabelStyle(scene.fontReady))
+        .setOrigin(0.5, 1).setDepth(PEER_LABEL_DEPTH);
+      p = { sprite, label, boat: null, nick: st.nick || '', tileX, tileY, destTileX: tileX, destTileY: tileY, facing: 'down', moving: false };
+      scene.peers.set(id, p);
+    }
+    if (st.nick != null && st.nick !== p.nick) { p.nick = st.nick; p.label?.setText(st.nick); }
+    p.destTileX = tileX; p.destTileY = tileY;
+    if (PEER_VALID_DIR.has(st.dir)) p.facing = st.dir;
+    // 너무 먼 순간이동은 스냅. 페리 항해 좌표는 연속적(100ms당 몇 타일)이라 이 임계 밑에서 자연 보간된다.
+    if (!p.moving && (Math.abs(tileX - p.tileX) + Math.abs(tileY - p.tileY)) > PEER_SNAP_TILES) {
+      p.tileX = tileX; p.tileY = tileY;
+      p.sprite.setPosition(tileX * PEER_TILE + PEER_TILE / 2, tileY * PEER_TILE + PEER_TILE / 2);
+    }
+  }
+  for (const [id, p] of scene.peers) {
+    if (!seen.has(id)) { p.sprite.destroy(); p.label?.destroy(); p.boat?.destroy(); scene.peers.delete(id); }
+  }
+  scene.otherScenePeerIds = otherScene;
+}
+
+// ── 근접 음성 거리 emit (광장·공항 공용 헬퍼) ──
+// 두 씬(WorldScene·AirportScene)이 같은 거리 계산·emit 을 재사용한다. 전체 피어 목록을 실어 보낸다:
+//   · 같은 씬 피어(scene.peers 에 렌더 중) → 플레이어와의 실거리(px, 반올림)
+//   · 다른 씬 피어(scene.otherScenePeerIds) → Infinity
+// Infinity 는 voice.setPeerDistance 가 voiceGate(비유한 → 해제)로 자연 정리한다(8타일 릴리스
+// 히스테리시스 밖). 그래서 씬 전환 시 ① 떠나온 씬 피어의 stale 거리로 음성이 유지되지 않고,
+// ② 새 씬 피어는 실거리로 즉시 음성 대상에 편입된다. (Phaser 미의존 — Math.hypot 로 계산.)
+// bus 는 호출부가 주입(sprites.js 는 bus 를 직접 import 하지 않아 순수성을 유지).
+export function emitPeerDistances(scene, bus) {
+  if (!scene.player) return;
+  const out = {};
+  for (const [id, p] of scene.peers) {
+    const dx = scene.player.x - p.sprite.x, dy = scene.player.y - p.sprite.y;
+    out[id] = Math.round(Math.sqrt(dx * dx + dy * dy));
+  }
+  const others = scene.otherScenePeerIds;
+  if (others) for (const id of others) out[id] = Infinity;
+  bus.emit('peers:dist', out);
+}
+
+// 매 프레임 피어 갱신 — 목적 타일까지 축우선 그리드 스텝 + 라벨/배 추적.
+// cfg: { charPrefix, isWater?(tileX,tileY)=>bool }. isWater 가 주어지면 물 위 피어에 't_boat' 를 붙인다.
+export function updateScenePeers(scene, time, cfg) {
+  const prefix = cfg.charPrefix;
+  for (const [, p] of scene.peers) {
+    if (!p.moving) {
+      const dtx = p.destTileX - p.tileX, dty = p.destTileY - p.tileY;
+      if (dtx || dty) {
+        const d = Math.abs(dtx) >= Math.abs(dty) ? (dtx > 0 ? 'right' : 'left') : (dty > 0 ? 'down' : 'up');
+        const [ddx, ddy] = PEER_DIRV[d];
+        p.tileX += ddx; p.tileY += ddy; p.facing = d; p.moving = true;
+        const tx = p.tileX * PEER_TILE + PEER_TILE / 2, ty = p.tileY * PEER_TILE + PEER_TILE / 2;
+        scene.tweens.add({ targets: p.sprite, x: tx, y: ty, duration: PEER_STEP_MS, ease: 'Linear', onComplete: () => { p.moving = false; } });
+      }
+    }
+    p.sprite.setTexture(peerCharTex(prefix, p.facing, p.moving, time));
+    p.sprite.setFlipX(p.facing === 'right');
+    p.sprite.setDepth(p.sprite.y);
+    if (p.label) p.label.setPosition(Math.round(p.sprite.x), Math.round(p.sprite.y) - PEER_LABEL_DY);
+    // 물 위 피어엔 배 도트를 붙인다(간단한 지형 체크) — 물 밖이면 제거.
+    if (cfg.isWater) {
+      const onWater = cfg.isWater(p.tileX, p.tileY);
+      if (onWater) {
+        if (!p.boat) p.boat = scene.add.image(p.sprite.x, p.sprite.y + PEER_BOAT_DY, 't_boat').setOrigin(0.5, 0.5).setScale(PEER_TSCALE);
+        p.boat.setPosition(Math.round(p.sprite.x), Math.round(p.sprite.y) + PEER_BOAT_DY).setDepth(p.sprite.y - 1);
+      } else if (p.boat) { p.boat.destroy(); p.boat = null; }
+    }
+  }
+}

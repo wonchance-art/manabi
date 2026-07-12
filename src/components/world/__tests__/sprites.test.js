@@ -5,6 +5,7 @@ import {
   PET_KEYS, petFrameRows, CHAR_PAL_LOCAL, CHAR_PAL_REMOTE, PET_PAL,
   BASE_TILE_PAL, tonePalette, toneColor, timeOfDay, TONE_MODES,
   riverStreamRects, RIVER_N, RIVER_E, RIVER_S, RIVER_W,
+  emitPeerDistances,
 } from '../sprites.js';
 
 // 픽셀맵 무결성 — GameCanvas는 클라 전용(Phaser)이라 단위테스트가 어렵다.
@@ -166,5 +167,57 @@ describe('강 오토타일 변형(riverStreamRects — 순수)', () => {
     for (let py = 0; py < 16; py++) expect(covers(ns, 7, py)).toBe(true);
     const ew = riverStreamRects(RIVER_E | RIVER_W);
     for (let px = 0; px < 16; px++) expect(covers(ew, px, 7)).toBe(true);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// 근접 음성 거리 emit — 같은 씬 피어는 실거리, 다른 씬 피어는 Infinity(voice 자연 해제).
+describe('emitPeerDistances — 씬별 거리 emit(공용 헬퍼)', () => {
+  // 페이크 씬: player 좌표 + peers(Map<id,{sprite:{x,y}}>) + otherScenePeerIds(Set). bus 는 emit 캡처.
+  const fakeScene = (player, peers, others) => ({
+    player,
+    peers: new Map(peers),
+    otherScenePeerIds: others ? new Set(others) : undefined,
+  });
+  const capture = () => {
+    const calls = [];
+    return { bus: { emit: (evt, payload) => calls.push([evt, payload]) }, calls };
+  };
+
+  it('같은 씬 피어는 플레이어와의 실거리(px, 반올림)를 emit 한다', () => {
+    const scene = fakeScene({ x: 0, y: 0 }, [
+      ['a', { sprite: { x: 96, y: 0 } }],   // 3타일=96px
+      ['b', { sprite: { x: 0, y: 32 } }],   // 1타일=32px
+    ]);
+    const { bus, calls } = capture();
+    emitPeerDistances(scene, bus);
+    expect(calls).toHaveLength(1);
+    const [evt, payload] = calls[0];
+    expect(evt).toBe('peers:dist');
+    expect(payload).toEqual({ a: 96, b: 32 });
+  });
+
+  it('다른 씬 피어는 Infinity 로 실어 보낸다(voice 해제 트리거)', () => {
+    const scene = fakeScene({ x: 0, y: 0 }, [['a', { sprite: { x: 32, y: 0 } }]], ['c', 'd']);
+    const { bus, calls } = capture();
+    emitPeerDistances(scene, bus);
+    const [, payload] = calls[0];
+    expect(payload.a).toBe(32);         // 같은 씬 실거리
+    expect(payload.c).toBe(Infinity);   // 다른 씬
+    expect(payload.d).toBe(Infinity);
+  });
+
+  it('대각선 거리는 유클리드(hypot)로 반올림', () => {
+    const scene = fakeScene({ x: 0, y: 0 }, [['a', { sprite: { x: 3, y: 4 } }]]); // 5
+    const { bus, calls } = capture();
+    emitPeerDistances(scene, bus);
+    expect(calls[0][1].a).toBe(5);
+  });
+
+  it('player 가 없으면 emit 하지 않는다(씬 파괴 사이 안전)', () => {
+    const scene = fakeScene(null, [['a', { sprite: { x: 1, y: 1 } }]]);
+    const { bus, calls } = capture();
+    emitPeerDistances(scene, bus);
+    expect(calls).toHaveLength(0);
   });
 });

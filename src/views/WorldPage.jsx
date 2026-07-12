@@ -24,6 +24,8 @@ import { createWorldNet } from '../lib/world/net';
 import { createVoiceMesh } from '../lib/world/voice';
 import { createVoiceUnreachableNotifier } from '../lib/world/voiceNotify';
 import { createWorldChat } from '../lib/world/chat';
+import { getMuted, isMuted, toggleMute, onChange as onMuteChange } from '../lib/world/muteStore';
+import { isPersistablePosition } from '../lib/world/session';
 // 도트 폰트(Galmuri9) @font-face — /world 라우트 전용 client 컴포넌트에서만 로드된다.
 import './galmuri9.css';
 import {
@@ -187,6 +189,14 @@ const MOOD_LINE = {
 
 const CHAT_LOG_MAX = 50; // 세션 로그 보관 상한(펼침 스크롤에 보이는 최근 개수)
 
+// 신고 사유 — world_reports.reason 에 저장되는 값(코드)과 사용자에게 보이는 라벨.
+// 3지선다(스팸/욕설 · 부적절한 이름 · 기타)로 단순하게. reason 코드는 마이그레이션·관리 열람과 공유.
+const REPORT_REASONS = [
+  { code: 'spam_abuse', label: '스팸·욕설' },
+  { code: 'bad_name', label: '부적절한 이름' },
+  { code: 'other', label: '기타' },
+];
+
 // ── 포켓몬 대화창풍 도트 채팅 박스 ──
 // 평상시 = 한 칸(최근 메시지, 타자기 효과 + 대기 ▼). 탭하면 아래로 로그(최근 ~50)가 펼쳐진다.
 // 이중 테두리·크림 배경·잉크 텍스트(기존 GBC 다이얼로그 문법 재사용) + 도트 폰트(GBC.font=Galmuri9).
@@ -302,6 +312,114 @@ function WorldChatBox({ messages, selfId, status, expanded, onToggle, inputValue
   );
 }
 
+// ── 근처 사람 패널 (presence 기반) ──
+// "👥 근처 N명" 버튼으로 여닫는 GBC 도트 패널. 각 행 = 닉네임 + [🔇 음소거] + [🚩 신고].
+// 음소거는 muteStore(채팅 수신 드랍) + voice.mutePeer(있으면 음성까지) 를 부모가 배선한다.
+// 신고는 사유 3지선다 → onReport(Promise<bool>) → 성공 시 도트 토스트("접수됐어요").
+// 모듈 스코프 — 부모 리렌더로 리마운트되지 않아 사유 선택·접수 알림 상태가 유지된다.
+function NearPeoplePanel({ peers, selfId, mutedSet, onToggleMute, onReport }) {
+  const [reportFor, setReportFor] = useState(null); // 사유 선택이 열린 대상 id
+  const [notice, setNotice] = useState(null);       // 도트 토스트 문구(자동 소멸)
+  const noticeTimer = useRef(null);
+  const mountedRef = useRef(true);                   // 비동기 신고 in-flight 중 언마운트 가드(P2-2)
+
+  // 언마운트(패널 접힘) 시: mounted 플래그 내림 + 소멸 타이머 정리. strict-mode 재마운트도 안전하게 true 복원.
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; if (noticeTimer.current) clearTimeout(noticeTimer.current); };
+  }, []);
+
+  // peers 변경으로 사유 선택 중이던 대상이 근처에서 사라지면 열린 선택지를 닫는다(상태 누수 방지, P2-2 ①).
+  useEffect(() => {
+    if (reportFor && !peers.some((p) => p.id === reportFor)) setReportFor(null);
+  }, [peers, reportFor]);
+
+  const flash = (msg) => {
+    setNotice(msg);
+    if (noticeTimer.current) clearTimeout(noticeTimer.current);
+    noticeTimer.current = setTimeout(() => setNotice(null), 2600);
+  };
+
+  const pickReason = async (targetId, reason) => {
+    setReportFor(null);
+    const ok = await onReport(targetId, reason);
+    if (!mountedRef.current) return; // 응답 도착 전 패널이 닫혔으면 setState/flash 스킵(P2-2 ②)
+    flash(ok ? '🚩 접수됐어요. 살펴볼게요.' : '⚠️ 접수하지 못했어요. 잠시 뒤 다시 시도해 주세요.');
+  };
+
+  // 나를 뺀 근처 사람들(신고·뮤트 대상은 타인만).
+  const others = peers.filter((p) => p.id && p.id !== selfId);
+
+  const panel = {
+    background: GBC.cream, color: GBC.ink, fontFamily: GBC.font,
+    border: `3px solid ${GBC.border}`, borderRadius: 6,
+    boxShadow: `inset 0 0 0 2px ${GBC.creamHi}, inset 0 0 0 4px ${GBC.border}, ${GBC.shadow}`,
+    padding: '8px 10px',
+  };
+  const chip = {
+    fontFamily: GBC.font, fontSize: '0.6rem', fontWeight: 700, cursor: 'pointer',
+    border: `2px solid ${GBC.border}`, borderRadius: 4, padding: '3px 6px', lineHeight: 1,
+    background: GBC.creamHi, color: GBC.ink,
+  };
+
+  return (
+    <div style={panel} role="region" aria-label="근처 사람">
+      {notice && (
+        <div style={{
+          marginBottom: 6, fontSize: '0.62rem', fontWeight: 700, color: GBC.ink,
+          background: GBC.creamShade, border: `2px solid ${GBC.border}`, borderRadius: 4, padding: '5px 7px',
+        }}>
+          {notice}
+        </div>
+      )}
+      {others.length === 0 ? (
+        <span style={{ fontSize: '0.66rem', color: GBC.inkSoft }}>아직 근처에 아무도 없어요.</span>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 5, maxHeight: 168, overflowY: 'auto' }}>
+          {others.map((p) => {
+            const muted = mutedSet.has(p.id);
+            const picking = reportFor === p.id;
+            return (
+              <div key={p.id} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, opacity: muted ? 0.5 : 1 }}>
+                  <span style={{ flex: 1, minWidth: 0, fontSize: '0.7rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    「{p.name || '익명'}」{muted && <span style={{ fontSize: '0.58rem', color: GBC.inkSoft }}> · 음소거됨</span>}
+                  </span>
+                  <button
+                    type="button"
+                    aria-pressed={muted}
+                    aria-label={muted ? `${p.name || '익명'} 음소거 해제` : `${p.name || '익명'} 음소거`}
+                    onClick={() => onToggleMute(p.id)}
+                    style={{ ...chip, background: muted ? GBC.red : GBC.creamHi, color: muted ? GBC.creamHi : GBC.ink }}
+                  >🔇</button>
+                  <button
+                    type="button"
+                    aria-label={`${p.name || '익명'} 신고`}
+                    onClick={() => setReportFor(picking ? null : p.id)}
+                    style={{ ...chip, background: picking ? GBC.creamShade : GBC.creamHi }}
+                  >🚩</button>
+                </div>
+                {/* 사유 3지선다 — 고르면 즉시 접수 */}
+                {picking && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, paddingLeft: 2 }}>
+                    {REPORT_REASONS.map((r) => (
+                      <button
+                        key={r.code} type="button"
+                        onClick={() => pickReason(p.id, r.code)}
+                        style={{ ...chip, background: GBC.creamHi, fontWeight: 500 }}
+                      >{r.label}</button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function WorldPage() {
   const { user, profile, loading } = useAuth();
   const router = useRouter();
@@ -328,6 +446,14 @@ export default function WorldPage() {
   const [chatInput, setChatInput] = useState('');
   const chatRef = useRef(null);
   const chatInputRef = useRef(null);
+
+  // ── 근처 사람 패널 + 뮤트 상태 ──
+  // peers: presence 기반 근처 사람 목록({id,name}) — net.onPeers 수신분에서 추출.
+  // mutedIds: muteStore 영속 뮤트 목록(로컬) — onChange 구독으로 라이브 반영.
+  const [peers, setPeers] = useState([]);
+  const [peoplePanelOpen, setPeoplePanelOpen] = useState(false);
+  const [mutedIds, setMutedIds] = useState(() => getMuted());
+  const mutedSet = useMemo(() => new Set(mutedIds), [mutedIds]);
 
   // ── 멀티 접속 상태 (멀티 전용 게이트) ──
   // 오너 요구 1: 멀티로만 작동 — 임대 실패/미연결 시 솔로 폴백이 아니라 월드(GameCanvas) 자체를
@@ -390,6 +516,9 @@ export default function WorldPage() {
     setPetKey(getPetChoice());
   }, []);
 
+  // 뮤트 목록 구독 — 등록 즉시 현재값 1회 통지 + 이후 토글마다 갱신(패널 재렌더용).
+  useEffect(() => onMuteChange(setMutedIds), []);
+
   // 학습 파생 펫 상태 — 실패해도 조용히 기본값 유지.
   useEffect(() => {
     if (!userId) return;
@@ -448,6 +577,19 @@ export default function WorldPage() {
     });
     voiceRef.current = voice;
 
+    // ── 영속 뮤트 → voice 동기화(P1-3) ──
+    // 재접속(voice 재생성) 직후 저장된 뮤트를 voice 에 seed 하고, 이후 토글도 이 구독으로 일원화한다.
+    // (구독이 muteStore 변경마다 diff 를 voice 에 반영하므로, 패널 토글의 직접 호출은 불필요해졌다.)
+    // mutePeer 는 멱등이라 아직 연결 안 된 상대여도 안전(연결 시 저장된 뮤트 상태로 재생 볼륨이 결정됨).
+    getMuted().forEach((id) => voice.mutePeer?.(id, true));
+    let prevMuted = new Set(getMuted());
+    const unsubscribeMute = onMuteChange((ids) => {
+      const next = new Set(ids);
+      for (const id of next) if (!prevMuted.has(id)) voice.mutePeer?.(id, true);
+      for (const id of prevMuted) if (!next.has(id)) voice.mutePeer?.(id, false);
+      prevMuted = next;
+    });
+
     // 같은 계정의 다른 세션이 이미 접속 중이면 net이 스스로 멀티를 포기(솔로 유지)하고
     // 'duplicate'를 알려온다 — 배너로 안내하고, 그 외 상태(connected 등)에서는 배너를 접는다.
     // connected 의 info.enforcement 로 판정 방식(서버 임대/강등 휴리스틱)도 함께 받는다.
@@ -469,9 +611,13 @@ export default function WorldPage() {
       const out = new Map();
       for (const [id, p] of map) {
         if (p.at && now - p.at > PEER_STALE_MS) continue; // 유령 제외
-        out.set(id, { x: p.x, y: p.y, dir: p.dir, emoji: p.pet, nick: p.name });
+        // scene — 씬별 피어 렌더 필터(플라자/공항)용. net(Codex) 수신부가 보존한 값을 그대로
+        // 전파하고, 없으면 undefined(수신측 (p.scene||'plaza') 하위호환 규칙이 처리).
+        out.set(id, { x: p.x, y: p.y, dir: p.dir, emoji: p.pet, nick: p.name, scene: p.scene });
       }
       bus.emit('peers:update', out);
+      // 근처 사람 패널용 목록({id,name}) — GameCanvas 계약과 별개로 React 상태에도 반영.
+      setPeers(Array.from(out, ([id, p]) => ({ id, name: p.nick })));
     };
 
     net.onPeers((map) => { if (!cancelled) emitPeers(map); });
@@ -516,6 +662,7 @@ export default function WorldPage() {
     return () => {
       cancelled = true;
       clearInterval(staleTimer);
+      unsubscribeMute();
       bus.off('local:state', onLocalState);
       bus.off('peers:dist', onDist);
       net.leave();
@@ -524,6 +671,7 @@ export default function WorldPage() {
       netRef.current = null;
       setMicOn(false);
       setNearVoiceCount(0);
+      setPeers([]);
       setWorldStatus('connecting');
       setWorldGuard(null);
       setWorldRetrying(false);
@@ -537,7 +685,9 @@ export default function WorldPage() {
   // (닉네임 확정 시 채널을 다시 열지만, 그 시점 로그는 비어 있어 사용자에겐 무해하다.)
   useEffect(() => {
     if (!userId) return undefined;
-    const chat = createWorldChat({ client: supabase, userId, name: nickname });
+    // isMuted 주입 — 수신 broadcast 에서 뮤트한 상대의 메시지를 드랍(로그·말풍선까지 차단).
+    // muteStore.isMuted 는 매 수신 시 최신 localStorage 를 읽으므로 뮤트 토글이 즉시 반영된다.
+    const chat = createWorldChat({ client: supabase, userId, name: nickname, isMuted });
     chatRef.current = chat;
     chat.onMessage((m) => {
       setChatMessages((prev) => {
@@ -563,6 +713,32 @@ export default function WorldPage() {
     if (sent) setChatInput('');
     chatInputRef.current?.focus();
   }, [chatInput]);
+
+  // ── 근처 사람: 음소거 토글 + 신고 ──
+  // 음소거: muteStore 영속(채팅 수신 드랍)만 여기서 토글한다. 근접 음성 반영(voice.mutePeer)은
+  //   voice effect 의 onMuteChange 구독으로 일원화돼(P1-3), 이 토글도 그 구독을 거쳐 voice 에 닿는다.
+  const onToggleMutePeer = useCallback((id) => {
+    toggleMute(id);
+  }, []);
+
+  // 신고: world_reports 에 사용자 세션 클라이언트로 직접 insert(RLS 방어 — reporter=auth.uid()).
+  //   같은 (reporter,target,reason) 재신고는 ignoreDuplicates(ON CONFLICT DO NOTHING)로 무해화한다.
+  //   (테이블에 UPDATE 정책이 없어 — 신고는 불변 로그 — DO UPDATE 대신 DO NOTHING 이어야 한다.)
+  //   반환: 성공 여부(중복 무시도 에러 아님 → true).
+  const onReportPeer = useCallback(async (targetId, reason) => {
+    if (!userId || !targetId) return false;
+    try {
+      const { error } = await supabase
+        .from('world_reports')
+        .upsert(
+          { reporter: userId, target: targetId, reason },
+          { onConflict: 'reporter,target,reason', ignoreDuplicates: true },
+        );
+      return !error;
+    } catch {
+      return false;
+    }
+  }, [userId]);
 
   // ── 재접속 스폰 좌표 조회 (입장 시 1회, userId별) ──
   // GET /api/world/position → 본인 마지막 좌표. 실패/없음이면 null(기본 서울 스폰).
@@ -605,7 +781,10 @@ export default function WorldPage() {
     };
 
     const onLocalState = (st) => {
-      if (!st) return;
+      // persistable 계약(session.js): 페리 항해·물 타일·공항 좌표(persistable:false)는 저장에서 제외한다.
+      // livePosRef 갱신까지 스킵해 마지막 유효 플라자 좌표를 유지 → 재접속·재연결 재스폰·pagehide beacon
+      // 모두 그 좌표를 쓴다(beacon 은 livePosRef.current 를 읽으므로 자동으로 동일하게 처리됨).
+      if (!isPersistablePosition(st)) return;
       const scene = st.scene === 'airport' ? 'airport' : 'plaza';
       const x = Math.floor((st.x || 0) / TILE);
       const y = Math.floor((st.y || 0) / TILE);
@@ -791,6 +970,34 @@ export default function WorldPage() {
               <WorldGate status={worldStatus} reason={worldStatusReason} spawnLoading={worldSpawn === undefined} onRetry={retryWorldNet} retrying={worldRetrying} />
             )}
           </div>
+        </div>
+
+        {/* ── 근처 사람 (presence) — 👥 버튼으로 여닫는 도트 패널: 음소거·신고 ── */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <button
+            type="button"
+            onClick={() => setPeoplePanelOpen((v) => !v)}
+            aria-expanded={peoplePanelOpen}
+            aria-label={peoplePanelOpen ? '근처 사람 닫기' : '근처 사람 열기'}
+            style={{
+              alignSelf: 'flex-start', display: 'inline-flex', alignItems: 'center', gap: 6,
+              fontFamily: GBC.font, fontWeight: 700, fontSize: '0.64rem', color: GBC.ink,
+              background: GBC.cream, border: `2px solid ${GBC.border}`, borderRadius: 4,
+              padding: '5px 9px', cursor: 'pointer',
+              boxShadow: `inset 0 0 0 2px ${GBC.creamHi}`,
+            }}
+          >
+            👥 근처 {peers.filter((p) => p.id !== userId).length}명 {peoplePanelOpen ? '▲' : '▼'}
+          </button>
+          {peoplePanelOpen && (
+            <NearPeoplePanel
+              peers={peers}
+              selfId={userId}
+              mutedSet={mutedSet}
+              onToggleMute={onToggleMutePeer}
+              onReport={onReportPeer}
+            />
+          )}
         </div>
 
         {/* ── 포켓몬 대화창풍 도트 채팅 (게임 화면 바로 아래 · 십자키 위) ── */}

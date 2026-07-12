@@ -60,9 +60,15 @@ function makeMessageId(userId, at) {
 }
 
 // ── 채팅 팩토리 ─────────────────────────────────────────────────
-// createWorldChat({ client, userId, name }) → { send, onMessage, onStatus, leave }.
+// createWorldChat({ client, userId, name, isMuted }) → { send, onMessage, onStatus, leave }.
 // 브라우저에서만 실제 채널을 연다(테스트는 client 를 주입하거나 생략해 순수부만 검증).
-export function createWorldChat({ client = supabase, userId = null, name = '나', channelName = CHANNEL } = {}) {
+//
+// isMuted(userId)?: 뮤트 판정 주입(선택). chat.js 는 muteStore 를 직접 import 하지 않고 이 옵션으로만
+//   참조한다(테스트 용이 + 의존 최소). 수신 broadcast 에서 isMuted(발신자) 가 true 면 그 메시지를
+//   드랍한다 — 로그 미추가이자 bus 'chat:msg'(GameCanvas 말풍선)도 자연히 차단된다. 매 수신 시
+//   호출하므로 판정이 최신값(예: muteStore.isMuted)이면 뮤트 토글이 즉시 반영된다. 내 로컬 에코(send)는
+//   필터하지 않는다(자기 뮤트 개념 없음).
+export function createWorldChat({ client = supabase, userId = null, name = '나', channelName = CHANNEL, isMuted = null } = {}) {
   let channel = null;
   let msgCb = null;
   let statusCb = null;
@@ -83,6 +89,7 @@ export function createWorldChat({ client = supabase, userId = null, name = '나'
         if (closed) return;
         const m = normalizeMessage(payload);
         if (!m || m.userId === userId) return; // 자기 메시지는 로컬 에코로 이미 반영됨
+        if (typeof isMuted === 'function' && isMuted(m.userId)) return; // 뮤트한 상대는 수신 드랍(말풍선까지 차단)
         emitMsg(m);
       });
       channel.subscribe((s) => {

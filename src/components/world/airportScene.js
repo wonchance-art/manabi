@@ -16,10 +16,12 @@ import {
   CHAR_W, CHAR_H, CHAR_ORIGIN_Y, PET_W, PET_H,
   CHAR_DIRS, CHAR_POSES, CHAR_WALK_CYCLE, charFrameRows,
   PET_KEYS, petFrameRows,
-  CHAR_PAL_LOCAL, PET_PAL,
+  CHAR_PAL_LOCAL, CHAR_PAL_REMOTE, PET_PAL,
   tonePalette, toneColor, timeOfDay,
+  applyPeersToScene, updateScenePeers, peerLabelStyle, emitPeerDistances,
 } from './sprites';
 import { GBC } from './QuestReview';
+import bus from './bus';
 
 // ── 좌표 스케일 (광장과 동일 불변) ──
 const TILE = 32;
@@ -135,10 +137,12 @@ export function buildAirportScene(Phaser, ctx) {
         g.generateTexture('ax_heart', 8, 7); g.destroy();
       }
 
-      // ── 캐릭터 3종(플레이어/심사관/아버지) — 시간대 톤 팔레트로 굽는다 ──
+      // ── 캐릭터 3종(플레이어/심사관/아버지) + 원격 피어(ax_pr) — 시간대 톤 팔레트로 굽는다 ──
       this.bakeCharSet('ax_pc', tonePalette(CHAR_PAL_LOCAL, this.mode));
       this.bakeCharSet('ax_officer', tonePalette(CHAR_PAL_OFFICER, this.mode));
       this.bakeCharSet('ax_dad', tonePalette(CHAR_PAL_DAD, this.mode));
+      // 공항에서도 다른 접속자(공항 씬 피어)를 렌더한다 — 원격 셔츠색(파랑) 세트.
+      this.bakeCharSet('ax_pr', tonePalette(CHAR_PAL_REMOTE, this.mode));
 
       // ── 펫(5종 × 2프레임) ──
       for (const k of PET_KEYS) {
@@ -269,10 +273,38 @@ export function buildAirportScene(Phaser, ctx) {
         this.heldDirs.length = 0;
       });
 
-      this.events.once('shutdown', () => { this.heldDirs = []; });
+      // ── 원격 피어(공항 씬 공유) ── 광장과 동일 렌더·닉네임 라벨을 공용 헬퍼로 재사용한다.
+      //   'peers:update'(GameCanvas 버스 위임)에서 scene==='airport' 인 피어만 이 씬에 표시한다.
+      this.peers = new Map();
+      this.lastEmit = 0;
+      this.lastDistEmit = 0;   // 근접 음성 거리 emit 스로틀(광장 500ms 타이머와 동일 주기)
+      // 도트 닉네임 폰트(Galmuri9) 로드 상태 — 미로드 시 모노 폴백, 로드 완료 시 라벨을 다시 굽는다.
+      this.fontReady = false;
+      try {
+        if (typeof document !== 'undefined' && document.fonts?.load) {
+          const done = () => { this.fontReady = true; this.refreshPeerLabels?.(); };
+          if (document.fonts.check("8px 'Galmuri9'")) done();
+          else document.fonts.load("8px 'Galmuri9'").then(done).catch(() => {});
+        }
+      } catch { /* 폰트 API 미지원 — 폴백 유지 */ }
+
+      this.events.once('shutdown', () => {
+        this.heldDirs = [];
+        for (const [, p] of this.peers) { p.sprite.destroy(); p.label?.destroy(); p.boat?.destroy(); }
+        this.peers.clear();
+      });
 
       // 씬 진입 → 걷기 페이즈.
       ctx.notifyPhase('walking');
+    }
+
+    // 'peers:update' 위임 — 공항 씬 피어만(scene==='airport') 렌더(광장 피어는 필터로 제외).
+    applyPeers(incoming) {
+      applyPeersToScene(this, incoming, { charPrefix: 'ax_pr', sceneName: 'airport' });
+    }
+    // 폰트 로드 완료 후 라벨을 Galmuri9 로 다시 굽는다(폴백 → 도트 교체).
+    refreshPeerLabels() {
+      for (const [, p] of this.peers) p.label?.setStyle(peerLabelStyle(this.fontReady));
     }
 
     labelStyle() {
@@ -425,6 +457,31 @@ export function buildAirportScene(Phaser, ctx) {
       petRenderY -= (this.petJumpVal || 0) * 18;
       this.pet.setPosition(Math.round(this.petPX), Math.round(petRenderY));
       this.pet.setDepth(this.petPY);
+
+      // ── 원격 피어(공항 씬) 갱신 — 그리드 스텝 + 닉네임 라벨 추적(공용 헬퍼). ──
+      updateScenePeers(this, time, { charPrefix: 'ax_pr' });
+
+      // ── 근접 음성 거리 emit — 공용 헬퍼(같은 씬=공항 실거리 · 다른 씬=광장 Infinity), 500ms 스로틀. ──
+      // 광장 WorldScene 은 타이머로 이 emit 을 돌리지만, 공항은 자체 update() 에서 스로틀로 돌린다.
+      // 이로써 공항 이동 후 ① 광장 피어의 stale 거리로 음성이 유지되지 않고 ② 공항 피어가 음성에 편입된다.
+      if (time - this.lastDistEmit > 500) {
+        this.lastDistEmit = time;
+        emitPeerDistances(this, bus);
+      }
+
+      // ── local:state — ~100ms 스로틀. scene:'airport' + 공항 좌표계로 실어 보낸다. ──
+      // WorldPage 가 net.sendState 로 중계하면 다른 공항 접속자의 applyPeers(airport 필터)가 렌더하고,
+      // 광장 접속자는 scene 필터로 걸러낸다(하위호환).
+      // ── persistable 계약(session.js isPersistablePosition 참고) ──
+      //   공항 좌표는 항상 persistable:false — 영속 스폰 원천에서 제외한다. 공항 진입 직전의
+      //   플라자 좌표(게이트 앞)가 이미 저장돼 있어, 재접속 시 거기서 스폰되는 게 자연스럽다.
+      if (time - this.lastEmit > 100) {
+        this.lastEmit = time;
+        bus.emit('local:state', {
+          x: Math.round(this.player.x), y: Math.round(this.player.y), dir: this.facing,
+          scene: 'airport', persistable: false,
+        });
+      }
     }
   };
 }
