@@ -210,7 +210,9 @@ jobs:
           # 과거 버전이라, 플래그 없이는 CLI 가 순서 밖 삽입으로 거부한다(run 29204535756 실증).
           # 적용 대상은 6단계 카운트(12)와 8단계 postcondition 이 계속 감시한다.
           supabase db push --dry-run --include-all --password "$SUPABASE_DB_PASSWORD" 2>&1 | tee /tmp/dry-run.log
-          COUNT=$(grep -oE '\b2026[0-9]{10}\b' /tmp/dry-run.log | sort -u | wc -l)
+          # [0-9]{14}: 버전 뒤에 _name.sql 이 붙어 \b 경계가 성립하지 않는다(밑줄=단어문자 —
+          # run 29205379825 에서 12건을 나열하고도 COUNT=0 이 된 원인). 14자리 숫자 런으로 추출.
+          COUNT=$(grep -oE '[0-9]{14}' /tmp/dry-run.log | sort -u | wc -l)
           echo "dry-run 적용 예정 버전 수: $COUNT (기대 $EXPECTED_PUSH_COUNT)"
           if [ "$COUNT" -ne "$EXPECTED_PUSH_COUNT" ]; then
             echo "::error title=push 대상 수 불일치::dry-run 이 $COUNT 건을 보고했습니다(기대 $EXPECTED_PUSH_COUNT: dday + 20260708 이후 11건). 위 로그를 확인하세요."
