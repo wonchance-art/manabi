@@ -176,16 +176,33 @@ jobs:
       - name: 5) repair applied — preflight 로 실존 증명된 52건 기록(재실행 방지)
         # APPLIED_LIST(env, 단일 출처)를 그대로 사용 — 3단계에서 이 목록의 전 버전이 probe OK 였음이
         # 보장된 뒤에만 도달한다. 20260703 이전 SQL 은 내용 무변경(파일명만 개명).
+        # 멱등 재실행: 이미 히스토리에 있는 버전은 제외하고 누락분만 기록한다(부분 성공 후
+        # 재dispatch 시 중복 INSERT 로 실패하지 않게 — run 2 가 5단계까지 성공한 상태의 재실행 대비).
         run: |
-          # shellcheck disable=SC2086 — 공백 구분 버전 목록의 의도된 word-splitting
-          supabase migration repair --status applied $APPLIED_LIST --password "$SUPABASE_DB_PASSWORD"
+          IN_LIST=$(printf "'%s'," $APPLIED_LIST); IN_LIST=${IN_LIST%,}
+          EXISTING=$(jq -n --arg q "SELECT version FROM supabase_migrations.schema_migrations WHERE version IN ($IN_LIST)" '{query:$q, read_only:true}' \
+            | curl -sf -X POST "https://api.supabase.com/v1/projects/$PROJECT_REF/database/query" \
+                -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" -H "Content-Type: application/json" -d @- \
+            | jq -r '.[].version')
+          MISSING=""
+          for v in $APPLIED_LIST; do echo "$EXISTING" | grep -qx "$v" || MISSING="$MISSING $v"; done
+          if [ -z "${MISSING// }" ]; then
+            echo "52건 전부 이미 기록됨 — 건너뜀(멱등 재실행)."
+          else
+            echo "누락 기록 대상:$MISSING"
+            # shellcheck disable=SC2086 — 공백 구분 버전 목록의 의도된 word-splitting
+            supabase migration repair --status applied $MISSING --password "$SUPABASE_DB_PASSWORD"
+          fi
 
       - name: 6) db push --dry-run — 남은 적용 대상이 정확히 12건인지 확인
         # 4·5단계 후 남는 미적용분은 dday + 20260708 이후 11건 = 12건이어야 한다.
         # 다르면(예: repair 누락·중복, 예상 밖 파일) 실제 push 전에 실패시킨다.
         run: |
           set -o pipefail
-          supabase db push --dry-run --password "$SUPABASE_DB_PASSWORD" 2>&1 | tee /tmp/dry-run.log
+          # --include-all: dday(20260613000200)가 히스토리 마지막 applied(20260703000200)보다
+          # 과거 버전이라, 플래그 없이는 CLI 가 순서 밖 삽입으로 거부한다(run 29204535756 실증).
+          # 적용 대상은 6단계 카운트(12)와 8단계 postcondition 이 계속 감시한다.
+          supabase db push --dry-run --include-all --password "$SUPABASE_DB_PASSWORD" 2>&1 | tee /tmp/dry-run.log
           COUNT=$(grep -oE '\b2026[0-9]{10}\b' /tmp/dry-run.log | sort -u | wc -l)
           echo "dry-run 적용 예정 버전 수: $COUNT (기대 $EXPECTED_PUSH_COUNT)"
           if [ "$COUNT" -ne "$EXPECTED_PUSH_COUNT" ]; then
@@ -198,7 +215,7 @@ jobs:
         #   admin_metrics_rpc · push_subscriptions · world_realtime_rls · world_sessions ·
         #   content_overrides · harden_admin_fns · world_multiplayer · world_open_all_users ·
         #   world_chat_rls · world_stamps · world_reports (전부 멱등 감사 완료).
-        run: supabase db push --password "$SUPABASE_DB_PASSWORD"
+        run: supabase db push --include-all --password "$SUPABASE_DB_PASSWORD"
 
       - name: 8) Postcondition probe — push 결과 핵심 객체 실존 검증
         # scripts/db-postconditions.sql (19 probe): profiles.dday_date/dday_label ·
