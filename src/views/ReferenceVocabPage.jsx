@@ -8,6 +8,7 @@ import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { useTTS } from '../lib/useTTS';
 import { createReviewEventBatcher } from '../lib/reviewEvents';
+import { fetchSavedWordSet, REFERENCE_VOCAB_PAGE_SIZE, takeThemeWords } from '../lib/referenceVocab';
 import { refInline, refMain, refPron, LevelDot, JaText, alignFurigana } from './refShared';
 
 const LANG_KO = { Japanese: '일본어', English: '영어', French: '프랑스어', Chinese: '중국어' };
@@ -29,8 +30,10 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
   const [revealed, setRevealed] = useState(() => new Set());
   const anyHide = hideMode !== null;
   const [savedSet, setSavedSet] = useState(() => new Set());
+  const [visibleCount, setVisibleCount] = useState(REFERENCE_VOCAB_PAGE_SIZE);
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+  useEffect(() => setVisibleCount(REFERENCE_VOCAB_PAGE_SIZE), [meta?.key]);
 
   // 가리기 자가 채점("기억났어"/"몰랐어") — 행 단위 인출 연습 결과를 review_events에 적재.
   // rung/FSRS는 절대 건드리지 않는다(source:'dict'는 rung 계산 대상 밖) — 이벤트 적재만.
@@ -89,12 +92,12 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
     if (!user || allWords.length === 0) { setSavedSet(new Set()); return; }
     let cancel = false;
     (async () => {
-      const { data } = await supabase
-        .from('user_vocabulary')
-        .select('word_text')
-        .eq('user_id', user.id)
-        .in('word_text', allWords.map(w => refMain(w)));
-      if (!cancel && data) setSavedSet(new Set(data.map(d => d.word_text)));
+      try {
+        const saved = await fetchSavedWordSet(supabase, user.id, allWords.map(w => refMain(w)));
+        if (!cancel) setSavedSet(saved);
+      } catch {
+        if (!cancel) setSavedSet(new Set());
+      }
     })();
     return () => { cancel = true; };
   }, [user?.id, allWords]);
@@ -115,6 +118,21 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
       }))
       .filter(t => t.words.length > 0);
   }, [vocab, query]);
+
+  const filteredTotal = useMemo(
+    () => filteredThemes.reduce((sum, theme) => sum + theme.words.length, 0),
+    [filteredThemes]
+  );
+  const visibleThemes = useMemo(
+    () => takeThemeWords(filteredThemes, visibleCount),
+    [filteredThemes, visibleCount]
+  );
+  const renderedCount = Math.min(visibleCount, filteredTotal);
+
+  function updateQuery(value) {
+    setQuery(value);
+    setVisibleCount(REFERENCE_VOCAB_PAGE_SIZE);
+  }
 
   function persistHide(mode) {
     try { localStorage.setItem('vocab_hide_prefs', JSON.stringify({ mode })); } catch {}
@@ -267,7 +285,7 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
           className="search-input"
           placeholder="검색"
           value={query}
-          onChange={e => setQuery(e.target.value)}
+          onChange={e => updateQuery(e.target.value)}
           aria-label="단어 검색"
         />
       </div>
@@ -284,11 +302,11 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
       )}
 
       {/* ── 주제별 세로 리스트 ── */}
-      {filteredThemes.map(theme => (
+      {visibleThemes.map(theme => (
         <section key={theme.name} style={{ marginBottom: 26 }}>
           <h2 className="fr-vlist-theme">
             {theme.name}
-            <span className="fr-vlist-theme__count">{theme.words.length}</span>
+            <span className="fr-vlist-theme__count">{theme.totalWords}</span>
           </h2>
           <ul className="fr-vlist">
             {theme.words.map((w, wi) => {
@@ -428,6 +446,23 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
           </ul>
         </section>
       ))}
+
+      {filteredTotal > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, margin: '8px 0 28px' }}>
+          <span aria-live="polite" style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+            {renderedCount.toLocaleString()} / {filteredTotal.toLocaleString()}개 표시
+          </span>
+          {renderedCount < filteredTotal && (
+            <button
+              type="button"
+              className="btn btn--ghost btn--sm"
+              onClick={() => setVisibleCount(count => Math.min(count + REFERENCE_VOCAB_PAGE_SIZE, filteredTotal))}
+            >
+              더 보기 ({(filteredTotal - renderedCount).toLocaleString()}개 남음)
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

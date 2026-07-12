@@ -64,6 +64,11 @@ describe('vocab 병합 무결성 — 레지스트리 실제 병합(getVocab N5)'
     { ja: 'ケツだけ星人', koIncludes: ['엉덩이'] },
     { ja: 'なんでやねん', koIncludes: ['츳코미'] },
     { ja: 'しんどい', koIncludes: ['힘들다'] },
+    // [신규] 죽은 유행어 묘지 — 대표 카드(사어 톤 잔존 확인)
+    { ja: 'ぴえん', koIncludes: ['死語'] },
+    { ja: '蛙化現象', koIncludes: ['개구리화'] },
+    { ja: 'ナウい', koIncludes: ['사어의 제왕'] },
+    { ja: 'きゅんです', koIncludes: ['이타이'] },
   ];
 
   it.each(slangCases)('slang_core: 「$ja」 카드가 컬렉션 sense로 잔존', (c) => {
@@ -86,6 +91,11 @@ describe('vocab 병합 무결성 — 레지스트리 실제 병합(getVocab N5)'
     { ja: '玉ねぎ', koIncludes: ['다마네기'] },
     { ja: '山葵', koIncludes: ['와사비'] },
     { ja: 'ガチャ', koIncludes: ['가챠'] },
+    // [신규] 주문의 고수 — 식당 은어 대표 카드
+    { ja: 'つゆだく', koIncludes: ['규동'] },
+    { ja: 'あがり', koIncludes: ['녹차'] },
+    { ja: 'おあいそ', koIncludes: ['계산'] },
+    { ja: '大盛り', koIncludes: ['곱빼기'] },
   ];
 
   it.each(cultureCases)('culture_core: 「$ja」 카드가 컬렉션 sense로 잔존', (c) => {
