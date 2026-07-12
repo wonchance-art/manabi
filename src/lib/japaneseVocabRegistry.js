@@ -49,6 +49,14 @@ const LEVEL_META = [
   { key: 'N1', label: 'N1 심화', focus: '원어민 수준', color: '#C03C42', bg: 'rgba(192,60,66,0.12)', line: 'rgba(192,60,66,0.35)' },
 ];
 
+const BUNKEI_BY_LEVEL = Object.freeze({
+  N5: true,
+  N4: true,
+  N3: true,
+  N2: true,
+  N1: true,
+});
+
 const normalize = value => String(value || '').toUpperCase();
 const normalizeWord = value => String(value || '')
   .trim()
@@ -102,6 +110,9 @@ export const JAPANESE_VOCAB_REF = Object.freeze({
   },
   getVocab(level) {
     return VOCAB[normalize(level)] || null;
+  },
+  hasBunkei(level) {
+    return BUNKEI_BY_LEVEL[normalize(level)] === true;
   },
   countVocab(level) {
     const vocab = VOCAB[normalize(level)];
