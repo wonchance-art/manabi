@@ -10,7 +10,7 @@
    (14자리 **고유** 타임스탬프, 문자 접미 금지). 재적용에 안전하도록 **멱등**으로 작성:
    `CREATE TABLE/INDEX IF NOT EXISTS` · `CREATE OR REPLACE FUNCTION` ·
    `DROP POLICY IF EXISTS` 뒤 `CREATE POLICY` · `ADD COLUMN IF NOT EXISTS` · `REVOKE/GRANT`.
-   (전 파일 개명 이력은 `supabase/migrations/RENAME-MAP.md` 참고.)
+   (전 파일 개명 이력은 `supabase/MIGRATION-RENAME-MAP.md` 참고.)
 2. **main 병합 시 CI 가 자동 적용한다** — `.github/workflows/supabase-migrations.yml` 이
    `supabase db push` 를 실행한다(GitHub Secrets `SUPABASE_ACCESS_TOKEN` ·
    `SUPABASE_PROJECT_REF` · `SUPABASE_DB_PASSWORD` 3종 전제). 시크릿 미설정이면 skip 하되
