@@ -39,6 +39,8 @@ import { MAP_W, MAP_H, decodeMap, TERRAIN, isBlocked, POI } from './mapData';
 import { WORLD_NODES, getNode, buildMinimap } from './worldNodes';
 // 🏙️ 광장 SEA→LAND 메꿈(순수 함수·단일 진실원 — 런타임·관리자 뷰·미니맵 공통).
 import { buildPlayableGrid, PLAZA_R } from '../../lib/world/mapGeo';
+// 🧭 재접속 스폰 좌표 검증(순수) — 저장된 타일이 맵 안·보행 가능일 때만 사용, 아니면 서울 폴백.
+import { isSpawnTileValid } from '../../lib/world/session';
 // 🌏 독해 트랙 "도쿄 도착" 글 1 → 월드 스토리 씬(하네다 공항). 공항 씬·텍스트박스·문답 오버레이.
 import { buildAirportScene } from './airportScene';
 import { StoryTextbox, AirportQuiz } from './StoryOverlay';
@@ -202,12 +204,15 @@ function Minimap({ sceneRef, onClose }) {
 //   셸 마운트 시 GameCanvas가 controlsRef.current = { press, release, interact, cancel }를 채운다.
 //   press/release는 키보드와 동일 경로(씬 heldDirs)로 흘려보내 홀드 연속 이동까지 재사용한다.
 //   버스는 오염시키지 않는다(순수 씬 메서드 호출).
-export default function GameCanvas({ userId = null, nickname = '나', pet = { key: 'dog', emoji: '🐕', level: 1, mood: 'happy' }, controlsRef = null }) {
+export default function GameCanvas({ userId = null, nickname = '나', pet = { key: 'dog', emoji: '🐕', level: 1, mood: 'happy' }, controlsRef = null, initialSpawn = null }) {
   const hostRef = useRef(null);
   const gameRef = useRef(null);
   const sceneRef = useRef(null);   // 활성 씬 — React가 입력 잠금을 갱신
   const nickRef = useRef(nickname);
   const petRef = useRef(pet);
+  // 재접속 스폰 — { scene:'plaza'|'airport', x, y(타일) } | null. WorldScene create()가 읽는다.
+  // ref 로 흘려 게임 재생성 없이 최신값을 쓰되, 실제 사용은 씬 생성 1회(mount) 시점에 고정된다.
+  const initialSpawnRef = useRef(initialSpawn);
   const [nearQuest, setNearQuest] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false); // 인게임 즉석 리뷰 오버레이
   const nearQuestRef = useRef(false);   // A(상호작용) 콜백이 최신 근접 상태를 읽도록 미러
@@ -237,6 +242,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
 
   useEffect(() => { nickRef.current = nickname || '나'; }, [nickname]);
   useEffect(() => { petRef.current = pet || { key: 'dog', level: 1, mood: 'happy' }; }, [pet]);
+  useEffect(() => { initialSpawnRef.current = initialSpawn; }, [initialSpawn]);
   useEffect(() => { nearQuestRef.current = nearQuest; }, [nearQuest]);
   useEffect(() => { reviewOpenRef.current = reviewOpen; }, [reviewOpen]);
   useEffect(() => { nearNodeRef.current = nearNode; }, [nearNode]);
@@ -1021,8 +1027,23 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
             }
           } });
 
-          // ── 플레이어(그리드) — 서울(68,208) 스폰 ──
-          this.pTileX = POI.SEOUL.x; this.pTileY = POI.SEOUL.y;
+          // ── 플레이어(그리드) — 재접속 스폰(저장된 자리) 또는 서울(68,208) 기본 ──
+          // 저장된 좌표가 '광장(plaza)' 씬이고 맵 안·보행 가능이면 그 타일에서 스폰한다.
+          //   · scene==='airport' 저장은 광장 씬에 직접 배치할 수 없어 단순화 — 기본(서울 허브)로
+          //     스폰한다(공항은 게이트 노드로 다시 진입). 실제로 local:state 는 광장에서만 emit 하므로
+          //     저장 씬은 사실상 항상 'plaza' 다(airport 분기는 방어적 폴백).
+          //   · 무효(범위 밖·바다·울타리·팻말 타일)면 기본 서울로 폴백한다.
+          let spawnTileX = POI.SEOUL.x;
+          let spawnTileY = POI.SEOUL.y;
+          const savedSpawn = initialSpawnRef.current;
+          if (
+            savedSpawn && savedSpawn.scene === 'plaza' &&
+            isSpawnTileValid(savedSpawn.x, savedSpawn.y, COLS, ROWS, (tx, ty) => !this.blocked(tx, ty))
+          ) {
+            spawnTileX = savedSpawn.x;
+            spawnTileY = savedSpawn.y;
+          }
+          this.pTileX = spawnTileX; this.pTileY = spawnTileY;
           this.facing = 'down';
           this.moving = false;
           this.turnGrace = 0;
@@ -1371,9 +1392,10 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           }
 
           // ── local:state — ~100ms 스로틀 (좌표는 예전과 동일 스케일의 월드 px) ──
+          // scene:'plaza' 를 실어 WorldPage 가 저장 씬을 구분한다(공항 씬은 이 emit 을 하지 않음).
           if (time - this.lastEmit > 100) {
             this.lastEmit = time;
-            bus.emit('local:state', { x: Math.round(this.player.x), y: Math.round(this.player.y), dir: this.facing });
+            bus.emit('local:state', { x: Math.round(this.player.x), y: Math.round(this.player.y), dir: this.facing, scene: 'plaza' });
           }
 
           // 표지판 근접 → React 오버레이 토글.
