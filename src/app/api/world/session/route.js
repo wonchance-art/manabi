@@ -1,9 +1,9 @@
 /**
- * 학습 월드 세션 임대 API — 계정 + IP 단위 동시 접속 차단(서버 권위).
+ * 학습 월드 세션 임대 API — 계정 단위 동시 접속 차단(서버 권위).
  *
  *  POST  (입장)         → claim_world_session_v2(p_ip) 로 임대 획득.
  *                          성공 { token, expiresAt, spawn }  (spawn = 본인 마지막 좌표 | null)
- *                          중복  409 { reason: 'duplicate-account' | 'duplicate-ip' }
+ *                          중복  409 { reason: 'duplicate-account' }
  *                          기타 오류 503.
  *  PATCH (하트비트+좌표) → { token, scene, x, y } → heartbeat_world_session + world_positions upsert.
  *                          토큰 상실(다른 세션 인수) 410. 성공 204.
@@ -11,13 +11,15 @@
  * ⚠️ 이번 웨이브에서는 아직 호출되지 않는다(미사용·Codex 전환 대기).
  *    현재 임대는 net.js(src/lib/world/net.js)가 claim_world_session() 를 직접 부른다. 이 라우트로
  *    이중 임대를 하면 서로 충돌하므로, WorldPage 는 지금 이 POST 를 부르지 않는다. Codex 후속
- *    라운드에서 net.js 의 claim 을 "POST /api/world/session" 경유로 바꿔(서버가 IP 추출·전달)
- *    IP 단위 차단을 활성화하고 사유를 세분화한다. 계약은 docs/world-multiplayer.md 참조.
+ *    라운드에서 net.js 의 claim 을 "POST /api/world/session" 경유로 바꾼다.
+ *    IP 는 계속 기록하되(p_ip) 동시접속 차단은 계정 단위만 유지한다 — 같은 IP 다중 접속은 허용
+ *    (오너 확정). duplicate-ip 는 더 이상 발생하지 않는다(미래 재활성 시 v2 에 복원).
  *
- * 인증: requireAdmin(). IP 는 서버만 신뢰 가능하므로 라우트가 헤더에서 추출해 RPC 에 넘긴다.
- * 좌표 upsert 는 사용자 세션 클라이언트로(world_positions own-only RLS 방어). service_role 금지.
+ * 인증: requireUser()(쿠키 세션 — 전체 로그인 유저 개방). IP 는 서버만 신뢰 가능하므로 라우트가
+ * 헤더에서 추출해 RPC 에 넘긴다(기록용). 좌표 upsert 는 사용자 세션 클라이언트로(world_positions
+ * own-only RLS 방어). service_role 금지.
  */
-import { requireAdmin } from '@/lib/supabaseServer';
+import { requireUser } from '@/lib/supabaseServer';
 import { extractClientIp, normalizePosition } from '@/lib/world/session';
 
 export const runtime = 'nodejs';
@@ -27,7 +29,7 @@ export const dynamic = 'force-dynamic';
 const LEASE_TTL_MS = 60000;
 
 export async function POST(request) {
-  const auth = await requireAdmin();
+  const auth = await requireUser();
   if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
 
   const { supabase, user } = auth;
@@ -38,7 +40,7 @@ export async function POST(request) {
 
   const reason = data?.reason || null;
   if (!data?.token) {
-    // 계정/IP 중복 — 멀티 입장 차단. WorldPage 가 사유별 안내를 띄운다.
+    // 계정 중복 — 멀티 입장 차단(같은 IP 는 허용). WorldPage 가 사유별 안내를 띄운다.
     return Response.json({ reason: reason || 'duplicate-account' }, { status: 409 });
   }
 
@@ -54,7 +56,7 @@ export async function POST(request) {
 }
 
 export async function PATCH(request) {
-  const auth = await requireAdmin();
+  const auth = await requireUser();
   if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
 
   let body;

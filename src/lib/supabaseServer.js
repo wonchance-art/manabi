@@ -59,3 +59,21 @@ export async function requireAdmin() {
 
   return { supabase, user };
 }
+
+/**
+ * 로그인 인증 게이트 — 쿠키 세션에서 유저만 확인한다(권한 검사 없음).
+ * requireAdmin 과 동일한 반환 계약을 따르되 role 검사를 하지 않아, 전체 로그인 유저에게
+ * 개방된 기능(학습 월드 등)의 라우트에서 쓴다. 반환된 supabase 는 사용자 세션 클라이언트이므로
+ * 이걸로 쓰기하면 RLS(own-only 등)가 그대로 적용된다. service_role 키는 절대 쓰지 않는다.
+ * @returns {Promise<{ supabase, user } | { error: string, status: number }>}
+ */
+export async function requireUser() {
+  const supabase = await createSupabaseServerClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: '로그인이 필요합니다.', status: 401 };
+
+  return { supabase, user };
+}

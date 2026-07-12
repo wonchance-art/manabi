@@ -91,10 +91,13 @@ export default function Layout({ children }) {
     '?';
 
   // 핵심 네비게이션만 노출 — 부가 기능(가이드·통계)은 프로필 안쪽으로
+  // 학습 월드(/world)는 전체 로그인 유저에게 개방된 정식 기능이므로
+  // SHOW_UNFINISHED_NAV 플래그와 무관하게 로그인 유저 네비에 노출한다.
   const navLinks = [
     ...(user ? [
       { href: '/home', label: '홈' },
       ...(SHOW_UNFINISHED_NAV ? [{ href: '/learn', label: '학습' }] : []),
+      { href: '/world', label: '월드' },
     ] : []),
     { href: '/lessons',   label: '교재' },
     { href: '/vocab',     label: '어휘' },
@@ -106,6 +109,7 @@ export default function Layout({ children }) {
     ...(user ? [
       { href: '/home', label: '홈' },
       ...(SHOW_UNFINISHED_NAV ? [{ href: '/learn', label: '학습' }] : []),
+      { href: '/world', label: '월드' },
     ] : []),
     { href: '/lessons',   label: '교재' },
     { href: '/vocab',     label: '어휘' },
