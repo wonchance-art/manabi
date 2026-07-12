@@ -2,7 +2,7 @@
  * H2 (HSK 2급) HSK 3.0 표준 보강 어휘 — 공식 어휘표(drkameleon/complete-hsk-vocabulary, MIT)에서
  * 기존에 없던 333개를 채웠어요. 한자·병음·품사는 표준 데이터, 뜻·예문은 학습용으로 작성.
  */
-export default {
+const themes = {
   themes: [
     {
       name: "HSK2 3.0 보강",
@@ -345,3 +345,5 @@ export default {
     },
   ],
 }
+
+export default themes;

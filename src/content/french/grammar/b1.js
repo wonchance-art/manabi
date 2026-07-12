@@ -2,7 +2,7 @@
  * B1 중급 — 문장의 입체화
  * 시제·법(法)이 본격적으로 갈라지는 단계. 영어 문법 지식이 가장 큰 지렛대가 되는 레벨이에요.
  */
-export default [
+const chapters = [
   {
     slug: "b1-01-conditionnel-present",
     level: "B1",
@@ -779,3 +779,5 @@ export default [
     ],
   },
 ];
+
+export default chapters;

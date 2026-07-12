@@ -2,7 +2,7 @@
  * N1 심화 — 문어 문법, 뉘앙스의 정점, 고전의 흔적, 그리고 번역
  * 일본어 레퍼런스를 마무리하는 레벨. 읽어내는 힘과 옮기는 힘을 완성해요.
  */
-export default [
+const chapters = [
   {
     slug: "n1-01-literary-grammar",
     level: "N1",
@@ -640,3 +640,5 @@ export default [
     ],
   },
 ];
+
+export default chapters;

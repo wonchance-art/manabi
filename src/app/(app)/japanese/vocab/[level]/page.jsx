@@ -28,7 +28,7 @@ export default async function Page({ params }) {
       levelMeta={VOCAB_LEVELS}
       meta={ref.getLevelMeta(level)}
       vocab={ref.getVocab(level)}
-      hasBunkei={Boolean(ref.getVocab(level))}
+      hasBunkei={ref.hasBunkei(level)}
     />
   );
 }

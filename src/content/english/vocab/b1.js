@@ -1,4 +1,4 @@
-export default {
+const themes = {
   level: "B1",
   title: "B1 중급 어휘",
   desc: "직장·의견·기술·관계 — 일상 회화를 한 단계 끌어올리는 170개. 빈출 구동사와 형용사 뉘앙스까지 챙겨요.",
@@ -779,3 +779,5 @@ export default {
     },
   ],
 }
+
+export default themes;

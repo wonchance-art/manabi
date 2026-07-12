@@ -2,7 +2,7 @@
  * B1 문형 사전 — DELF B1 수준 핵심 구문·표현 전수 레이어 (SCHEMA.md 참고)
  * 챕터(grammar/b1.js)가 '이해'라면 이 사전은 '전수 검색'.
  */
-export default {
+const patterns = {
   level: "B1",
   title: "B1 문형 사전",
   desc: "조건법·접속법 입문부터 간접화법·수동태·관계대명사까지 — DELF B1 핵심 문형 121개를 기능별 15개 테마로 전수 수록한 중급 문형 사전. 모든 예문에 IPA 병기.",
@@ -1115,3 +1115,5 @@ export default {
     },
   ],
 };
+
+export default patterns;

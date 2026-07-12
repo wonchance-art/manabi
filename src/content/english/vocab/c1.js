@@ -1,4 +1,4 @@
-export default {
+const themes = {
   level: "C1",
   title: "C1 고급 어휘",
   desc: "학술 영어의 골격 237개 — AWL 핵심, 라틴·그리스 어근 패밀리, 격식 동사, 그리고 회화의 윤활유인 관용구까지.",
@@ -1036,3 +1036,5 @@ export default {
     },
   ],
 }
+
+export default themes;

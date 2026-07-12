@@ -2,7 +2,7 @@
  * N3 문형 사전 — JLPT N3 표준 문형 전수 커버 (총마토메·TRY 통용 기준)
  * 챕터(grammar/n3.js)가 '이해'라면 이 사전은 '전수 검색'.
  */
-export default {
+const patterns = {
   level: "N3",
   title: "N3 문형 사전",
   desc: "목적·추량·경어부터 복합동사까지 — N3 표준 문형 195개를 기능별 19개 테마로 전수 수록한 중급 문형 사전. 모든 문형에 예문 2개(전체 독음 포함).",
@@ -1981,3 +1981,5 @@ export default {
     },
   ],
 };
+
+export default patterns;

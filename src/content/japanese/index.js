@@ -176,4 +176,6 @@ export function getReadingTrack(trackId = 'n5-tokyo') {
 }
 
 // default export(레지스트리)에도 문형 사전·독해 API 포함 — refLangs가 default를 펼쳐 쓰므로 필수
-export default { ...registry, getBunkei, countBunkei, getReadingTrack };
+const api = { ...registry, getBunkei, countBunkei, getReadingTrack };
+
+export default api;

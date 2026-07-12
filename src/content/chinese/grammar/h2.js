@@ -2,7 +2,7 @@
  * H2 (HSK 2급) — 시간·상태·비교를 말하는 문법
  * 완료 了·경험 过·진행 在·변화 了·비교 比·능원동사·개사·보어 입문·선택의문.
  */
-export default [
+const chapters = [
   {
     slug: "h2-01-le-completion",
     level: "H2",
@@ -607,3 +607,5 @@ export default [
     ],
   },
 ];
+
+export default chapters;

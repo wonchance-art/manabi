@@ -1,4 +1,4 @@
-export default {
+const themes = {
   level: "N2",
   title: "N2 상급 어휘",
   desc: "JLPT N2 핵심 어휘 약 235개 — 신문·뉴스 한자어, 비즈니스 표현, 동음 유사어 구별(変える/替える/換える류), 관용 표현, 감정·심리 한자어, 정도·태도 부사.",
@@ -1030,3 +1030,5 @@ export default {
     },
   ],
 };
+
+export default themes;

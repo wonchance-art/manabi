@@ -2,7 +2,7 @@
  * C1 보강 어휘 (2차) — FLELex 등급을 실제 빈도로 보정.
  * index.js의 mergeFrVocab가 본편과 병합.
  */
-export default [
+const themes = [
   {
     "name": "학술·지성 어휘",
     "icon": "📚",
@@ -5682,3 +5682,5 @@ export default [
     ]
   }
 ];
+
+export default themes;

@@ -2,7 +2,7 @@
  * A2 초급 — 시제와 대명사로 문장에 입체감 더하기
  * 과거·미래 시제, 대명동사, 목적 대명사, 관계대명사까지 — 진짜 이야기를 할 수 있게 되는 레벨.
  */
-export default [
+const chapters = [
   {
     slug: "a2-01-passe-compose-avoir",
     level: "A2",
@@ -940,3 +940,5 @@ export default [
     ],
   },
 ];
+
+export default chapters;

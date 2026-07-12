@@ -2,7 +2,7 @@
  * H3 문형 사전 — HSK 3급 핵심 구문·표현 전수 커버 레이어 (SCHEMA.md 참고)
  * 챕터(grammar/h3.js)가 '이해'라면 이 사전은 '전수 검색'.
  */
-export default {
+const patterns = {
   level: "H3",
   title: "H3 문형 사전",
   desc: "把·被 처치/피동, 방향·가능보어, 复句 접속(不但·只要·无论)부터 정도·범위·시태 부사, 동사 중첩까지 — HSK 3급 핵심 문형을 기능별로 모두 모은 전수 검색 사전.",
@@ -1000,3 +1000,5 @@ export default {
     },
   ],
 };
+
+export default patterns;

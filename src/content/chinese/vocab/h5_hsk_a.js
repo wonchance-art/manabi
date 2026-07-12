@@ -3,7 +3,7 @@
  * 표준 HSK5 단어 목록 보강분. 품사·의미별 4개 테마.
  * pinyin은 표준 표기로 교정(성씨·이체자·다음자 오독 정정), ko는 실제 HSK 의미 기준.
  */
-export default {
+const themes = {
   themes: [
     {
       name: "HSK5 보강 — 동사",
@@ -231,3 +231,5 @@ export default {
     },
   ],
 };
+
+export default themes;

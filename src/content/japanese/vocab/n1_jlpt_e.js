@@ -4,7 +4,7 @@
  * 기존 n1.js(faux-friends 큐레이션)는 무수정 — 표준 레이어를 옆에 얹는다.
  * 예문 요미는 kuromoji 파생×독립 판독 삼각측량(96.7% 일치)+불일치 50건 중재.
  */
-export default {
+const themes = {
   themes: [
     {
       name: "JLPT 보강 E",
@@ -214,3 +214,5 @@ export default {
     },
   ],
 };
+
+export default themes;

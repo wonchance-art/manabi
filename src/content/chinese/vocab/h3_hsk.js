@@ -2,7 +2,7 @@
  * H3 (HSK 3급) 보강 어휘 — 표준 HSK3 단어 목록 중 본편(h3.js)에 없던 200개를 보충.
  * 품사·의미별 6개 테마. pinyin은 원본 표기를 그대로 보존했어요.
  */
-export default {
+const themes = {
   themes: [
     {
       name: "HSK3 보강 — 동사",
@@ -236,3 +236,5 @@ export default {
     },
   ],
 };
+
+export default themes;

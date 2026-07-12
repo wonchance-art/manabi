@@ -3,7 +3,7 @@
  * 표준 HSK4 단어 목록 중 본편에 없던 161개를 품사·의미별 4개 테마로 보충.
  * pinyin은 원본 표기를 보존하되, 성씨·이체자·다음자 오독은 실제 HSK 의미의 표준 병음으로 교정했어요.
  */
-export default {
+const themes = {
   themes: [
     {
       name: "HSK4 보강 — 동사",
@@ -192,3 +192,5 @@ export default {
     },
   ],
 };
+
+export default themes;

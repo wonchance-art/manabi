@@ -2,7 +2,7 @@
  * H2 (HSK 2급) 보강 어휘 — 표준 HSK2 어휘표 대비 누락분 53개를 채워요.
  * 동사·기능어(대명사·개사·접속사·조사)·명사와 기타 세 갈래로 묶었어요.
  */
-export default {
+const themes = {
   themes: [
     {
       name: "HSK2 보강 — 동사",
@@ -77,3 +77,5 @@ export default {
     },
   ],
 };
+
+export default themes;

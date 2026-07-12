@@ -3,7 +3,7 @@
  * 동사 하나로 끝나던 문장이, 보어와 把/被를 만나 입체적으로 자라나요.
  * 한국어 어순(SOV)과 가장 크게 부딪치는 구간이라, 어순 함정을 집중적으로 짚어요.
  */
-export default [
+const chapters = [
   {
     slug: "h3-01-ba",
     level: "H3",
@@ -722,3 +722,5 @@ export default [
     ],
   },
 ];
+
+export default chapters;

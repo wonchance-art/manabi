@@ -2,7 +2,7 @@
  * B2 중상급 — 정확함을 넘어 '격'을 만드는 문법
  * 후회의 가정법, 관사의 빈칸, 도치와 분사구문 — 작문·스피킹 점수를 가르는 장치들을 다지는 레벨.
  */
-export default [
+const chapters = [
   {
     slug: "b2-01-conditionals-3-mixed",
     level: "B2",
@@ -738,3 +738,5 @@ export default [
     ],
   },
 ];
+
+export default chapters;

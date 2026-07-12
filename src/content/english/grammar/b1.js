@@ -2,7 +2,7 @@
  * B1 중급 — 시험영어를 '쓰는 영어'로 바꾸는 핵심 문법
  * 규칙은 이미 아는데 입과 손에서 안 나오는 지점을 정면 공략하는 레벨.
  */
-export default [
+const chapters = [
   {
     slug: "b1-01-present-perfect-past",
     level: "B1",
@@ -713,3 +713,5 @@ export default [
     ],
   },
 ];
+
+export default chapters;

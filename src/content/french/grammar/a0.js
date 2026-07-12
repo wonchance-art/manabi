@@ -2,7 +2,7 @@
  * A0 입문 — 본격 학습 전 프랑스어 기초 상식
  * 한국어 화자가 프랑스어를 처음 만날 때 막히는 지점을 먼저 풀어주는 오리엔테이션 레벨.
  */
-export default [
+const chapters = [
   {
     slug: "a0-02-alphabet",
     level: "A0",
@@ -310,3 +310,5 @@ export default [
     ],
   },
 ];
+
+export default chapters;

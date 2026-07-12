@@ -2,7 +2,7 @@
  * B2 상급 어휘 — 신문 사설과 토론의 언어
  * DELF B2 논증 표현, 뉘앙스 형용사, 그리고 faux amis(가짜 친구) 특집.
  */
-export default {
+const themes = {
   level: "B2",
   title: "B2 상급 어휘",
   desc: "신문 사설과 토론의 언어 — 논증 표현과 faux amis(영어와 닮았지만 뜻이 다른 단어들)까지 정면 돌파해요.",
@@ -854,3 +854,5 @@ export default {
     },
   ],
 };
+
+export default themes;

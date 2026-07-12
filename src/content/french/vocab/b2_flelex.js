@@ -2,7 +2,7 @@
  * B2 보강 어휘 — FLELex(루뱅대 CEFR 등급 어휘 자원) 기반.
  * 빈도 상위 어휘를 한국어 학습 사전 형식으로 보강. index.js의 mergeFrVocab가 본편과 병합.
  */
-export default [
+const themes = [
   {
     "name": "정치·사회·시사",
     "icon": "🏛️",
@@ -8920,3 +8920,5 @@ export default [
     ]
   }
 ];
+
+export default themes;

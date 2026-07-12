@@ -4,7 +4,7 @@
  * pos는 kuromoji 결정적 분류, ko·예문만 생성. 예문 요미는 kuromoji 파생×독립 판독 삼각측량으로 확정
  * (불일치 52건은 중재 판정). 소스 교정 4건은 커밋 메시지에 문서화.
  */
-export default {
+const themes = {
   themes: [
     {
       name: "JLPT 보강 C",
@@ -148,3 +148,5 @@ export default {
     },
   ],
 };
+
+export default themes;

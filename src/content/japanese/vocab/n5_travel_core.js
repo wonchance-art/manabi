@@ -7,7 +7,7 @@
  *       예문 yomi는 scripts/reading/derive-yomi.cjs(kuromoji)로 파생(손저작 금지).
  * pos:  kuromoji 결정적 분류(전 항목 명사).
  */
-export default {
+const themes = {
   themes: [
     {
       name: "여행 코어",
@@ -26,3 +26,5 @@ export default {
     },
   ],
 };
+
+export default themes;

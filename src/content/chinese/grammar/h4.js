@@ -3,7 +3,7 @@
  * 보어 체계를 정리하고, 가정·양보·강조·관용 틀로 문장의 논리 관계를 섬세하게 표현해요.
  * 짝을 이루는 관련사(关联词)가 본격적으로 늘어나는 단계예요.
  */
-export default [
+const chapters = [
   {
     slug: "h4-01-complement-review",
     level: "H4",
@@ -500,3 +500,5 @@ export default [
     ],
   },
 ];
+
+export default chapters;

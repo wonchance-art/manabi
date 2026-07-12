@@ -1,4 +1,4 @@
-export default {
+const themes = {
   level: "B2",
   title: "B2 상급 어휘",
   desc: "뉴스·에세이·토론에 필요한 198개 — 추상 명사와 imply/suggest/indicate 같은 뉘앙스 동사를 가려 써요.",
@@ -885,3 +885,5 @@ export default {
     },
   ],
 }
+
+export default themes;

@@ -1,4 +1,4 @@
-export default {
+const themes = {
   level: "N4",
   title: "N4 기본 어휘",
   desc: "JLPT N4 핵심 어휘 약 185개 — 일상 동사 확장, 학교·직장, 교통, 감정 표현, 부사·접속사, 몸과 건강, 쇼핑, 그리고 한국 외래어와 미묘하게 다른 가타카나어까지.",
@@ -851,3 +851,5 @@ export default {
     },
   ],
 };
+
+export default themes;

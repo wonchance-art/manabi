@@ -2,7 +2,7 @@
  * A1 기초 어휘 — 일상 회화의 뼈대가 되는 최고빈도 어휘.
  * 가족·동사·음식·집·시간·형용사·장소 일곱 테마.
  */
-export default {
+const themes = {
   level: "A1",
   title: "A1 기초 어휘",
   desc: "자기소개부터 하루 일상까지 — A1 회화와 시험에 가장 자주 나오는 핵심 어휘 150여 개예요.",
@@ -864,3 +864,5 @@ export default {
     },
   ],
 }
+
+export default themes;

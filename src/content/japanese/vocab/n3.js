@@ -1,4 +1,4 @@
-export default {
+const themes = {
   level: "N3",
   title: "N3 중급 어휘",
   desc: "JLPT N3 핵심 어휘 약 255개 — 사회생활 한자어, 추상 명사, 복합동사, 의성어·의태어 입문, な형용사·부사 확장, 생활 한자어, 동사 확장.",
@@ -1130,3 +1130,5 @@ export default {
     },
   ],
 };
+
+export default themes;

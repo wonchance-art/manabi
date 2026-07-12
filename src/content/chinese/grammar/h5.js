@@ -3,7 +3,7 @@
  * 회화의 벽을 넘어 신문·논설·격식 글을 읽고 쓰는 단계. 서면어 연결어, 성어 활용,
  * 사역·피동의 격식형, 문어 대명사 之/其, 반어·강조의 심화, 그리고 的/得/地 총정리를 다뤄요.
  */
-export default [
+const chapters = [
   {
     slug: "h5-01-shumianyu",
     level: "H5",
@@ -515,3 +515,5 @@ export default [
     ],
   },
 ];
+
+export default chapters;

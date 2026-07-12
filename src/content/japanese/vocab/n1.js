@@ -1,4 +1,4 @@
-export default {
+const themes = {
   level: "N1",
   title: "N1 심화 어휘",
   desc: "JLPT N1 심화 어휘 약 140개 — 한국 한자어와 뜻이 어긋나는 위험한 한자어(faux friends), 문어·논설 어휘, 관용구·사자성어, 미묘한 부사, 고급 복합동사, 고급 형용사.",
@@ -646,3 +646,5 @@ export default {
     },
   ],
 };
+
+export default themes;

@@ -1,7 +1,7 @@
 // N5 문법 #1 (id=45) — 기본 단정문 ~は~です
 // 어휘 8개 · 패턴 4가지(긍정/의문/응답/부정)로 첫 만남 회화 한 컷.
 
-export default {
+const lesson = {
   id: 45,
   title: '[N5 문법 #1] ~は~です (기본 단정문)',
 
@@ -152,3 +152,5 @@ export default {
     },
   ],
 };
+
+export default lesson;
