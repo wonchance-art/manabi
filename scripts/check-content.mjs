@@ -83,9 +83,17 @@ function tallyProseKanji(s, allowed, exempt, viol) {
     i = j;
   }
 }
+// P9-1: OT·N5(생초보) 챕터는 한자 최소화 — kanjiExempt(문화 소재·고유명사·문자 시연) 외
+// 한자는 전부 오류로 잡는다(레벨 허용 N5 한자라도 일반 어휘는 가나로). N4 이상은 P9의
+// 레벨별 누적 허용을 그대로 유지한다.
+function allowedChapterKanji(level) {
+  const norm = String(level || '').toUpperCase();
+  if (norm === 'OT' || norm === 'N5') return new Set(); // 생초보: kanjiExempt만 허용
+  return allowedKanjiSet(level);
+}
 // P9: 챕터 레벨 초과 한자를 집계((A)+(B)). kanjiExempt 문자열의 한자는 면제. → Map(kanji→등장수)
 function chapterKanjiViolations(ch) {
-  const allowed = allowedKanjiSet(ch.level);
+  const allowed = allowedChapterKanji(ch.level);
   const exempt = new Set();
   for (const s of (ch.kanjiExempt || [])) for (const c of s) if (isKanjiChar(c)) exempt.add(c);
   const viol = new Map();
@@ -124,6 +132,16 @@ function chapterKanjiViolations(ch) {
   if (v.has('學') || v.has('爲') || v.has('氣') || v.has('槪') || v.has('大') || v.has('工') || v.has('夫') || v.has('約') || v.has('束'))
     throw new Error('[kanji self-test] 한국어 한자음 브리지(정자체·비가나인접)를 오탐');
   if (v.has('渋') || v.has('谷')) throw new Error('[kanji self-test] kanjiExempt 태깅 한자(渋谷)가 면제되지 않음');
+}
+// ── P9-1 자가 테스트 ── OT·N5는 kanjiExempt 외 한자를 전부 오류로(레벨 허용 N5 한자라도 검출),
+// N4 이상은 레벨별 누적 허용(N5 한자 人은 통과)을 유지한다.
+{
+  const jaN5 = { level: 'N5', sections: [{ examples: [{ ja: '人がいます', ko: '사람이 있어요' }] }] };
+  if (!chapterKanjiViolations(jaN5).has('人'))
+    throw new Error('[kanji self-test] N5 챕터에서 N5 허용 한자(人)가 P9-1로 검출되지 않음');
+  const jaN4 = { level: 'N4', sections: [{ examples: [{ ja: '人がいます', ko: '사람이 있어요' }] }] };
+  if (chapterKanjiViolations(jaN4).has('人'))
+    throw new Error('[kanji self-test] N4 챕터에서 N5 허용 한자(人)가 잘못 검출됨');
 }
 
 const LANGS = {
