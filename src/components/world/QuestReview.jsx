@@ -34,7 +34,9 @@ export const GBC = {
   green: '#5f9a46',
   greenInk: '#12290c',
   red: '#c14b38',
-  font: 'ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace',
+  // 도트 폰트(Galmuri9, OFL) 우선 — @font-face 는 WorldPage 가 galmuri9.css 로 로드한다.
+  // 미로드 창에는 기존 모노스페이스로 폴백. 이 토큰이 월드 내 모든 대화창·게이트·팝오버에 퍼진다.
+  font: '"Galmuri9", ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace',
   shadow: '4px 4px 0 rgba(42,33,24,0.35)',
 };
 
