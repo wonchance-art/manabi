@@ -440,10 +440,11 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       runOn: () => { if (sceneRef.current) sceneRef.current.runHeld = true; },
       runOff: () => { if (sceneRef.current) sceneRef.current.runHeld = false; },
       interact: () => {
+        // 🗾 앨범 열림 중 A → 최우선 무시(닫기는 칩/B/ESC). 숨은 배경 오버레이가 A를 가로채지 않게 맨 앞에서 소비.
+        if (albumOpenRef.current) return;
         if (npcDialogRef.current) { npcActionRef.current?.(); return; } // NPC 대화 중 A → 다음 대사
         if (storyPhaseRef.current === 'dialogue') { advanceStoryRef.current?.(); return; }
         if (reviewOpenRef.current || storyActiveRef.current || ferryPromptRef.current || cityPromptRef.current) return;
-        if (albumOpenRef.current) return; // 앨범 열림 중 A → 뒤 노드/퀘스트로 새지 않게 무시(B로 닫기)
         if (stationSelectRef.current) return; // 행선지 오버레이는 버튼으로 선택(B로 닫기) — A는 무시
         if (descOpenRef.current) { setDescOpen(false); return; } // 설명 박스 열려 있으면 A로도 닫기
         const node = nearNodeRef.current;
@@ -472,13 +473,13 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         if (nearQuestRef.current) setReviewOpen(true);
       },
       cancel: () => {
+        if (albumOpenRef.current) { setAlbumOpen(false); return; } // 🗾 앨범 최우선 닫기(숨은 배경 오버레이보다 먼저)
         if (npcDialogRef.current) { npcCancelRef.current?.(); return; } // NPC 대화 중 B → 뜻 토글
         if (storyPhaseRef.current === 'dialogue') { toggleKoRef.current?.(); return; }
         if (descOpenRef.current) { setDescOpen(false); return; }
         if (stationSelectRef.current) { setStationSelect(null); return; } // 🚃 행선지 오버레이 나가기(소프트락 방지)
         if (ferryPromptRef.current) { setFerryPrompt(null); return; }
         if (cityPromptRef.current) { setCityPrompt(null); return; }
-        if (albumOpenRef.current) { setAlbumOpen(false); return; } // 🗾 앨범 나가기
         if (minimapOpenRef.current) { setMinimapOpen(false); return; }
         if (reviewOpenRef.current) setReviewOpen(false);
       },
@@ -531,15 +532,16 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
     sceneRef.current?.openExit?.(); // 출구 게이트 열림 연출
   };
 
-  // 리뷰·페리 확인 오버레이가 열리면 게임 입력을 잠근다(캔버스 이동 정지). 닫히면 해제.
-  // (미니맵은 잠그지 않는다 — 살짝 훑어보는 오버레이라 이동을 막지 않는다.)
+  // 리뷰·페리 확인·NPC 대화·앨범 등 전체 화면 오버레이가 열리면 게임 입력을 잠근다(캔버스 이동 정지).
+  // 닫히면 해제. 잠글 때 heldDirs/tapTile/runHeld 를 비워 오버레이 뒤로 이동이 새지 않게 한다(Codex #91 P1).
+  // (미니맵만 예외 — 살짝 훑어보는 오버레이라 이동을 막지 않는다. 앨범은 전체 모달이라 잠근다.)
   useEffect(() => {
     const scene = sceneRef.current;
     if (!scene) return;
-    const lock = reviewOpen || !!ferryPrompt || !!npcDialog || !!cityPrompt || !!stationSelect;
+    const lock = reviewOpen || !!ferryPrompt || !!npcDialog || !!cityPrompt || !!stationSelect || albumOpen;
     scene.inputLocked = lock;
     if (lock) { if (scene.heldDirs) scene.heldDirs.length = 0; scene.tapTile = null; scene.runHeld = false; }
-  }, [reviewOpen, ferryPrompt, npcDialog, cityPrompt, stationSelect]);
+  }, [reviewOpen, ferryPrompt, npcDialog, cityPrompt, stationSelect, albumOpen]);
 
   useEffect(() => {
     let destroyed = false;
@@ -1887,8 +1889,9 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         </button>
       )}
 
-      {/* 🗾 여행 스탬프 앨범 버튼(GBC 칩) — 미니맵 칩 왼쪽. 수집한 방문 기념을 배지 케이스로. */}
-      {!reviewOpen && !storyActive && !ferryPrompt && !cityPrompt && !minimapOpen && !albumOpen && (
+      {/* 🗾 여행 스탬프 앨범 버튼(GBC 칩) — 미니맵 칩 왼쪽. 모든 모달 상태와 상호 배타(겹침 방지·Codex #91 P1). */}
+      {!reviewOpen && !storyActive && !ferryPrompt && !cityPrompt && !minimapOpen && !albumOpen
+        && !descOpen && !npcDialog && !stationSelect && (
         <button
           type="button"
           aria-label="여행 스탬프 앨범 열기"
