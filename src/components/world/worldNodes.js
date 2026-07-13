@@ -69,6 +69,19 @@ const KYUSHU_SPOTS = [
   { id: 'ibusuki-onsen', name: '이부스키 온천', tile: [139, 365], desc: '데워진 모래에 몸을 묻는 ‘스나무시(砂むし·모래찜질)’ 온천으로 알려진 온천지 「指宿温泉」(いぶすきおんせん).' },
 ].map((s) => ({ id: s.id, name: s.name, kind: 'landmark', tile: s.tile, desc: s.desc }));
 
+// 규슈 현(県) 마스코트(ゆるキャラ) — 각 현 인근에 전용 도트 마커(mascot 필드 → t_mascot_<key>).
+//   kind:'landmark' 라 A로 desc 만(대화 없음). 스팟 노드와 ≥3타일 이격(마커 겹침 회피).
+//   전부 규슈 소속 검증(리서치). 佐賀 壺侍는 현 관광연맹 PR 캐릭터(단일 현 공식 대표격).
+const MASCOTS = [
+  { id: 'mascot-ecoton', name: '에코톤(福岡)', mascot: 'ecoton', tile: [138, 304], desc: '후쿠오카현의 캐릭터 「エコトン」(에코톤). 돈코쓰 라멘 그릇을 쓴 흰 돼지 모습이에요.' },
+  { id: 'mascot-tsubo', name: '쓰보자무라이(佐賀)', mascot: 'tsubo', tile: [132, 316], desc: '사가현 관광 캐릭터 「壺侍」(쓰보자무라이). 아리타야키(有田焼) 항아리에 든 사무라이 소년이에요.' },
+  { id: 'mascot-ganba', name: '간바쿤·란바짱(長崎)', mascot: 'ganba', tile: [125, 325], desc: '나가사키현 홍보 캐릭터 「がんばくん・らんばちゃん」. 현조(県鳥) 오시도리(원앙)를 형상화했고, 이름은 방언 ‘간바란바(힘내자)’에서 왔어요.' },
+  { id: 'mascot-kumamon', name: '쿠마몬(熊本)', mascot: 'kumamon', tile: [138, 324], desc: '구마모토현의 캐릭터 「くまモン」(쿠마몬). 검은 곰에 빨간 볼 — 규슈 신칸센 개통을 계기로 태어나 전국구로 알려졌어요.' },
+  { id: 'mascot-mejiron', name: '메지론(大分)', mascot: 'mejiron', tile: [159, 315], desc: '오이타현 캐릭터 「めじろん」(메지론). 현조(県鳥) 메지로(동박새)를 형상화했어요.' },
+  { id: 'mascot-miyaken', name: '미야자키견(宮崎)', mascot: 'miyaken', tile: [154, 348], desc: '미야자키현 심볼 캐릭터 「みやざき犬」(미야자키켄). 개 세 마리(ひぃ·むぅ·かぁ)가 휴가나쓰·피닉스 같은 명물을 머리에 얹었어요. 犬↔県 말장난이에요.' },
+  { id: 'mascot-guriboo', name: '구리부(鹿児島)', mascot: 'guriboo', tile: [136, 358], desc: '가고시마현 PR 캐릭터 「ぐりぶー」(구리부). 가고시마 흑돼지(黒豚)를 형상화했어요.' },
+].map((m) => ({ id: m.id, name: m.name, kind: 'landmark', mascot: m.mascot, tile: m.tile, desc: m.desc }));
+
 export const WORLD_NODES = [
   // 서울 — 스폰 도시.
   { id: 'seoul', name: '서울', kind: 'city', tile: [POI.SEOUL.x, POI.SEOUL.y], desc: '대한민국의 수도. 한강이 도시를 가로지르고, 예부터 지금까지 나라의 중심지예요.' },
@@ -137,6 +150,8 @@ export const WORLD_NODES = [
   ...NAMED_PEAKS,
   // 규슈 대표 관광지 20종(福岡~鹿児島) — 전국맵 규슈 지역 채우기(마커+desc).
   ...KYUSHU_SPOTS,
+  // 규슈 현 마스코트 7종 — 각 현 인근 전용 도트 마커.
+  ...MASCOTS,
   // 동해항 — 사카이미나토행 페리(실존 DBS 항로 모티프).
   {
     id: 'donghae-port', name: '동해항', kind: 'port', tile: [POI.DONGHAE_PORT.x, POI.DONGHAE_PORT.y],
