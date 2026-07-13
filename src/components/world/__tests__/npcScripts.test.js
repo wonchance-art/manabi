@@ -54,9 +54,9 @@ describe('오미쿠지(drawOmikuji — 균등, 서열 단정 없음)', () => {
   });
 });
 
-describe('대화 스크립트 무결성(라멘·신사)', () => {
-  it('두 스크립트가 존재하고 label·steps 를 갖는다', () => {
-    for (const key of ['ramen', 'shrine']) {
+describe('대화 스크립트 무결성(라멘·신사·편의점·이자카야)', () => {
+  it('네 스크립트가 존재하고 label·steps 를 갖는다', () => {
+    for (const key of ['ramen', 'shrine', 'konbini', 'izakaya']) {
       const s = getNpcScript(key);
       expect(s).toBeTruthy();
       expect(typeof s.label).toBe('string');
@@ -110,6 +110,26 @@ describe('대화 스크립트 무결성(라멘·신사)', () => {
     expect(flat).toContain('ご縁');
     expect(flat).toContain('おみくじ');
     expect(NPC_SCRIPTS.shrine.steps.some((s) => s.t === 'omikuji')).toBe(true);
+  });
+
+  it('편의점 대화는 챕터 ot-07 표현(お願いします·大丈夫です·肉まん)을 쓴다', () => {
+    const s = getNpcScript('konbini');
+    expect(s).toBeTruthy();
+    expect(s.steps.length).toBeGreaterThanOrEqual(4);
+    const flat = JSON.stringify(s);
+    expect(flat).toContain('おねがいします');   // 받을 때 만능 대답
+    expect(flat).toContain('大丈夫です');        // 사양(type 정답)
+    expect(flat).toContain('肉まん');            // 편의점 소재(챕터 정합)
+  });
+
+  it('이자카야 대화는 챕터 ot-08 표현(お通し·とりあえず生で·すみません)을 쓴다', () => {
+    const s = getNpcScript('izakaya');
+    expect(s).toBeTruthy();
+    expect(s.steps.length).toBeGreaterThanOrEqual(4);
+    const flat = JSON.stringify(s);
+    expect(flat).toContain('お通し');            // 유료 기본 안주(정체)
+    expect(flat).toContain('とりあえず生で');     // 국민 첫 주문(choice 정답)
+    expect(flat).toContain('すみません');        // 점원 부르기(type 정답)
   });
 
   it('선택지(choice)와 타이핑(type)이 둘 다 등장(입력 2단 병행)', () => {

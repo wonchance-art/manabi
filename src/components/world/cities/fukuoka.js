@@ -66,17 +66,31 @@ export const CITY_NODES = [
     tile: [213, 71], facing: 'down', noStamp: true,
     desc: '하카타항의 붉은 전망탑 「博多ポートタワー」(はかたぽーとたわー). 항만 베이 지구를 내려다보는 오래된 랜드마크예요.',
   },
-  // ② 天神(서핵·백화점군) 인접 — アクロス福岡.
+  // ② 天神(서핵·백화점군) 인접 — アクロス福岡 + 편의점 NPC(ot-07 편의점 도어 무대).
   {
     id: 'acros-fukuoka', kind: 'spot', name: 'アクロス福岡', facade: 'depart',
     tile: [250, 134], facing: 'down', noStamp: true,
     desc: '계단식 옥상 정원으로 유명한 복합 문화시설 「アクロス福岡」(あくろすふくおか). 텐진 도심에서 산처럼 초록으로 덮인 건물이에요.',
+  },
+  // ローソン(편의점 NPC) — 텐진 도심. ot-07 편의점 도어의 무대: 만능 대답 お願いします/大丈夫です.
+  //   nodeId 는 WORLD_NODES 에 없어 스탬프 미대상(noStamp) — 대화 학습 경험만(스탬프 우주는 25 국내 노드 유지).
+  {
+    id: 'fukuoka-konbini', kind: 'npc', npc: 'konbini', name: 'ローソン',
+    tile: [247, 137], facing: 'down', noStamp: true,
+    desc: '24시간 불이 켜진 편의점(コンビニ) 「ローソン」(로손). 계산대에서 뭘 묻든 대답은 딱 두 개 — お願いします(네)·大丈夫です(됐어요). 명물 からあげクン도 있어요.',
   },
   // ③ 中洲 — 야타이 거리 + 돈키호테 中洲店(免税 도어 무대) + 一蘭 본사.
   {
     id: 'nakasu', kind: 'shop', name: 'ドン・キホーテ中洲店', facade: 'donki',
     tile: [268, 128], facing: 'down', noStamp: true,
     desc: '두 강 사이 세로 섬 中洲(なかす)의 밤거리 — 야타이(屋台) 노점과 24시간 대형 할인점 「ドン・キホーテ中洲店」(どんきほーて なかすてん). 免税(めんぜい·면세) 카운터에서 여권을 보이면 세금을 돌려받아요. 근처엔 一蘭 본사도. (ot-12 면세 도어의 무대 — 아직 점원은 없어요.)',
+  },
+  // 居酒屋(이자카야 NPC) — 나카스 밤거리. ot-08 이자카야 도어의 무대: お通し의 정체 + 첫 주문 とりあえず生で.
+  //   nodeId 는 WORLD_NODES 에 없어 스탬프 미대상(noStamp) — 대화 학습 경험만.
+  {
+    id: 'fukuoka-izakaya', kind: 'npc', npc: 'izakaya', name: '居酒屋',
+    tile: [273, 129], facing: 'down', noStamp: true,
+    desc: '나카스 밤거리의 이자카야(居酒屋). 안 시켜도 나오는 유료 기본 안주 お通し(오토시)와, 앉자마자 외치는 첫 주문 「とりあえず生で」를 써 볼 곳이에요.',
   },
   {
     id: 'kushida-jinja', kind: 'spot', name: '櫛田神社', facade: 'torii',

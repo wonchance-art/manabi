@@ -463,13 +463,17 @@ export function boatFrameRows() { return BOAT_ROWS; }
 // 픽셀맵 무결성(24행×24열·정의된 색문자만)은 sprites.test 로 검증한다.
 export const NPC_W = 24;
 export const NPC_H = 24;
-export const NPC_KEYS = ['ramen', 'shrine'];
+export const NPC_KEYS = ['ramen', 'shrine', 'konbini', 'izakaya'];
 
 export const NPC_PAL = {
   // O=윤곽 R=적(노렌/지붕) r=적 음영 C=크림 W=나무카운터 w=나무 음영 Y=초롱 빛 H=머리(검) S=피부 K=콧수염 B=셔츠 N=그릇
   ramen: { O: 0x2a1e14, R: 0xc14b38, r: 0x8a2f24, C: 0xf6edcf, W: 0xb07a3e, w: 0x6f4420, Y: 0xf2a54a, H: 0x241a12, S: 0xf1c99a, K: 0x3a2a1a, B: 0x3a6ea5, N: 0xcfd6df },
   // O=윤곽 R=주홍(토리이) r=주홍 음영 H=머리(검) S=피부 W=흰 하카마(白衣) w=흰 음영 P=緋袴(붉은 하의)
   shrine: { O: 0x2a1e14, R: 0xe24a2e, r: 0xa8331f, H: 0x241a12, S: 0xf1c99a, W: 0xf4f0e6, w: 0xcbc3b4, P: 0xd45a78 },
+  // O=윤곽 B=파란 사인/모자 C=크림 사인·카운터 G=유리창 Y=실내 조명 S=피부 H=머리 V=초록 조끼(로손) R=이름표 N=진열 W=카운터목 w=목 음영
+  konbini: { O: 0x2a2a2a, B: 0x2f6fb0, C: 0xf6edcf, G: 0xbfe3f2, Y: 0xfff0a8, S: 0xf1c99a, H: 0x241a12, V: 0x39a06a, R: 0xc14b38, N: 0xcfd6df, W: 0xb07a3e, w: 0x6f4420 },
+  // O=윤곽 R=붉은 초롱(提灯)·하치마키 C=초롱 종이띠 D=남색 노렌 Y=초롱 온광 S=피부 H=머리·콧수염 A=쪽빛 앞치마 N=술병 W=카운터목 w=목 음영
+  izakaya: { O: 0x2a1e14, R: 0xd23b2e, C: 0xf6edcf, D: 0x27324a, Y: 0xffcf6a, S: 0xf1c99a, H: 0x241a12, A: 0x3a4a6a, N: 0xcfd6df, W: 0xb07a3e, w: 0x6f4420 },
 };
 
 const NPC_ART = {
@@ -526,6 +530,62 @@ const NPC_ART = {
     '....RRR.OWWWWWWO.RRR....',
     '....RRR.OWWWWWWO.RRR....',
     '....rrr..........rrr....',
+  ],
+  // 편의점 앞면: 파란 사인(rows1-3) → 유리창(G)·실내 조명(Y) → 초록 조끼 점원(rows8-15,
+  // 이름표 R) → 크림 카운터(N 진열)와 목조 앞판 → 바닥 기둥.
+  konbini: [
+    'OOOOOOOOOOOOOOOOOOOOOOOO',
+    'OBBBBBBBBBBBBBBBBBBBBBBO',
+    'OBCCCCCCCCCCCCCCCCCCCCBO',
+    'OBBBBBBBBBBBBBBBBBBBBBBO',
+    'OOOOOOOOOOOOOOOOOOOOOOOO',
+    'OGGGGGGGGGGGGGGGGGGGGGGO',
+    'OGGYYGGGGGGGGGGGGGGYYGGO',
+    'OGGGGGGGGGGGGGGGGGGGGGGO',
+    'OGGGGGGGOHHHHHHOGGGGGGGO',
+    'OGGGGGGGOBBBBBBOGGGGGGGO',
+    'OGGGGGGGOSOSSOSOGGGGGGGO',
+    'OGGGGGGGOSSSSSSOGGGGGGGO',
+    'OGGGGGGGOSSOOSSOGGGGGGGO',
+    'OGGGGGGGOVVVVVVOGGGGGGGO',
+    'OGGGGGGGOVRRVVVOGGGGGGGO',
+    'OGGGGGGGOVVVVVVOGGGGGGGO',
+    'OOOOOOOOOOOOOOOOOOOOOOOO',
+    'OCCCCCCCCCCCCCCCCCCCCCCO',
+    'OCCNNCCCCCNNCCCCCNNCCCCO',
+    'OWWWWWWWWWWWWWWWWWWWWWWO',
+    'OWWWWWWWWWWWWWWWWWWWWWWO',
+    'OwwwwwwwwwwwwwwwwwwwwwwO',
+    '.w....................w.',
+    '.w....................w.',
+  ],
+  // 이자카야 앞면: 남색 노렌(rows1-2) → 좌우 붉은 초롱(提灯, 종이띠 C·온광 Y) 사이 하치마키
+  // 주인장(rows8-15, 쪽빛 앞치마 A) → 카운터(N 술병)와 목조 앞판 → 바닥 기둥.
+  izakaya: [
+    'OOOOOOOOOOOOOOOOOOOOOOOO',
+    'ODDDDDDDDDDDDDDDDDDDDDDO',
+    'ODDDDDDDDDDDDDDDDDDDDDDO',
+    'OOOOOOOOOOOOOOOOOOOOOOOO',
+    'O.RRRRR.ODDDDDDO.RRRRR.O',
+    'ORCCCCCRODDDDDDORCCCCCRO',
+    'ORRRRRRRODDDDDDORRRRRRRO',
+    'ORYYYYYRODDDDDDORYYYYYRO',
+    'ORRRRRRROHHHHHHORRRRRRRO',
+    'ORYYYYYRORRRRRRORYYYYYRO',
+    'ORRRRRRROSOSSOSORRRRRRRO',
+    'ORCCCCCROSSSSSSORCCCCCRO',
+    'ORRRRRRROSSHHSSORRRRRRRO',
+    'ORRRRRRROAAAAAAORRRRRRRO',
+    'O.RRRRR.OAAAAAAO.RRRRR.O',
+    'O..RRR..OAAAAAAO..RRR..O',
+    'OOOOOOOOOOOOOOOOOOOOOOOO',
+    'OWWWWWWWWWWWWWWWWWWWWWWO',
+    'OWWNNWWWWWNNWWWWWNNWWWWO',
+    'OwwwwwwwwwwwwwwwwwwwwwwO',
+    'OwwwwwwwwwwwwwwwwwwwwwwO',
+    'OwwwwwwwwwwwwwwwwwwwwwwO',
+    '.w....................w.',
+    '.w....................w.',
   ],
 };
 

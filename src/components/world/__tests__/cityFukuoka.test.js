@@ -96,11 +96,25 @@ describe('가게/NPC 노드 (geo POI 매핑)', () => {
     expect(CITY_NODES.every((n) => !/総本店/.test(n.name || ''))).toBe(true);
   });
 
+  it('편의점·이자카야 NPC 가 도시맵에 추가된다(대화 도어, 스탬프 우주 밖 → noStamp)', () => {
+    const konbini = CITY_NODES.find((n) => n.id === 'fukuoka-konbini');
+    expect(konbini?.kind).toBe('npc');
+    expect(konbini?.npc).toBe('konbini');     // npcScripts key
+    expect(konbini?.noStamp).toBe(true);      // WORLD_NODES 밖 — 서버 미검증(유령 스탬프 방지)
+    const izakaya = CITY_NODES.find((n) => n.id === 'fukuoka-izakaya');
+    expect(izakaya?.kind).toBe('npc');
+    expect(izakaya?.npc).toBe('izakaya');
+    expect(izakaya?.noStamp).toBe(true);
+    // 스탬프 대상(WORLD_NODES) NPC 는 fukuoka-ramen 하나뿐 — 도시 학습 NPC 는 스탬프 우주를 넓히지 않는다.
+    const stampNpc = CITY_NODES.filter((n) => n.kind === 'npc' && !n.noStamp).map((n) => n.id);
+    expect(stampNpc).toEqual(['fukuoka-ramen']);
+  });
+
   it('13개 geo POI 가 전부 노드로 매핑된다', () => {
     const nodeIds = new Set(CITY_NODES.map((n) => n.id));
     for (const poi of FUKUOKA_GEO.pois) expect(nodeIds.has(poi.id)).toBe(true);
-    // geo POI(13) + 라멘 NPC + 一風堂 = 15
-    expect(CITY_NODES.length).toBe(FUKUOKA_GEO.pois.length + 2);
+    // geo POI(13) + 라멘 NPC + 一風堂 + 편의점 NPC + 이자카야 NPC = 17
+    expect(CITY_NODES.length).toBe(FUKUOKA_GEO.pois.length + 4);
   });
 
   it('모든 노드 타일은 보행 가능 + 보행 인접(플레이어가 다가설 수 있다)', () => {
