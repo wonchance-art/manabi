@@ -73,6 +73,24 @@ describe('출입구', () => {
     for (let i = 0; i < grid.length; i++) if (grid[i] === CITY_TILE.EXIT) { exits++; expect(isCityBlocked(grid[i])).toBe(false); }
     expect(exits).toBeGreaterThan(0);
   });
+
+  // e2e 스모크(전국맵→시내→EXIT 복귀)는 스폰 후 '위로 직진'만으로 EXIT 를 밟는다. 그 계약이 성립하려면
+  //   EXIT 가 ENTRANCE 와 같은 x열의 북쪽이고, 그 사이 세로 회랑이 전부 보행 가능해야 한다(끊기면 e2e 가
+  //   30초 타임아웃 — 느리게 실패). 이 불변식을 단위에서 빠르게 고정한다(Codex #93 P1).
+  it('EXIT 는 ENTRANCE 와 같은 x열 북쪽 + 사이 세로 회랑이 전부 보행 가능(스모크 위-직진 계약)', () => {
+    const exitTiles = [];
+    for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) if (grid[y * COLS + x] === CITY_TILE.EXIT) exitTiles.push([x, y]);
+    expect(exitTiles.length).toBeGreaterThan(0);
+    for (const [ex, ey] of exitTiles) {
+      expect(ex).toBe(ENTRANCE.x);          // 같은 x열
+      expect(ey).toBeLessThan(ENTRANCE.y);  // ENTRANCE 북쪽(위)
+    }
+    const topExitY = Math.min(...exitTiles.map(([, y]) => y));
+    // ENTRANCE 에서 최북단 EXIT 까지 같은 열의 모든 칸이 보행 가능(위-직진으로 도달).
+    for (let y = topExitY; y <= ENTRANCE.y; y++) {
+      expect(isCityWalkable(at(ENTRANCE.x, y))).toBe(true);
+    }
+  });
 });
 
 describe('가게/NPC 노드 (geo POI 매핑)', () => {
