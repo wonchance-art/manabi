@@ -167,6 +167,40 @@ describe('NPC 대화 노드(마스터플랜 A-1 — 라멘·신사)', () => {
   });
 });
 
+describe('계층형 맵 — 후쿠오카 도시 노드 + 라멘 NPC 이전', () => {
+  it('후쿠오카 도시 노드가 존재하고 city 게이트(도시 정밀맵 진입)를 갖는다', () => {
+    const f = getNode('fukuoka');
+    expect(f).toBeTruthy();
+    expect(f.kind).toBe('city');
+    expect(f.gate).toMatchObject({ type: 'city', to: 'fukuoka' });
+    expect(typeof f.gate.label).toBe('string');
+    expect(f.desc.trim().length).toBeGreaterThan(0);
+  });
+
+  it('라멘 NPC 는 도시 소속(city:fukuoka) 으로 표시 — 전국맵 렌더에서 제외, nodeId 유지(스탬프 연속성)', () => {
+    const ramen = getNode('fukuoka-ramen');
+    expect(ramen.city).toBe('fukuoka');   // 도시 소속 스탬프 행(문서 §2)
+    expect(ramen.id).toBe('fukuoka-ramen'); // 스탬프 연속성
+    expect(ramen.npc).toBe('ramen');        // npcScripts 무수정
+  });
+
+  it('다자이후 신사는 전국맵 유지(도시 소속 아님 — city 필드 없음)', () => {
+    const shrine = getNode('dazaifu-shrine');
+    expect(shrine.city).toBeUndefined();
+  });
+
+  it('전국맵 렌더 대상(city 필드 없는 노드)에 라멘은 빠지고 후쿠오카 도시 노드는 남는다', () => {
+    const national = WORLD_NODES.filter((n) => !n.city);
+    expect(national.some((n) => n.id === 'fukuoka')).toBe(true);
+    expect(national.some((n) => n.id === 'fukuoka-ramen')).toBe(false);
+  });
+
+  it("city 게이트의 to 는 실존 도시 데이터('fukuoka')를 가리킨다", () => {
+    // getNode('fukuoka') 자체가 도시 노드(returnNode 대상) — 게이트 to 는 cities/<id> 키.
+    expect(getNode('fukuoka').gate.to).toBe('fukuoka');
+  });
+});
+
 describe('미니맵 다운샘플(순수 함수)', () => {
   it('4타일→1px 로 112×96 격자를 만든다', () => {
     const { w, h, codes } = downsampleMinimap(grid, 4);

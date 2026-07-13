@@ -20,8 +20,11 @@ export function extractClientIp(getHeader) {
   return null;
 }
 
+// 도시 정밀맵 씬 식별자('city:<id>') 형식 — 임의 문자열 저장을 막는 화이트 패턴(소문자·숫자·하이픈).
+const CITY_SCENE_RE = /^city:[a-z0-9-]+$/;
+
 // 저장/조회한 좌표 payload 를 정수 타일좌표로 정규화한다. 유효하지 않으면 null.
-//   scene 은 'plaza' | 'airport' 만 허용(그 외는 'plaza' 로 강제 — 알 수 없는 씬 방어).
+//   scene 은 'plaza' | 'airport' | 'city:<id>'(계층형 맵) 만 허용(그 외는 'plaza' 로 강제 — 알 수 없는 씬 방어).
 //   x·y 는 유한 정수(음수 불가). 반올림해 정수로 만든다.
 export function normalizePosition(raw) {
   if (!raw || typeof raw !== 'object') return null;
@@ -31,7 +34,8 @@ export function normalizePosition(raw) {
   const xi = Math.round(x);
   const yi = Math.round(y);
   if (xi < 0 || yi < 0) return null;
-  const scene = raw.scene === 'airport' ? 'airport' : 'plaza';
+  const s = typeof raw.scene === 'string' ? raw.scene : '';
+  const scene = s === 'airport' ? 'airport' : (CITY_SCENE_RE.test(s) ? s : 'plaza');
   return { scene, x: xi, y: yi };
 }
 
@@ -45,11 +49,14 @@ export function isSpawnTileValid(tx, ty, cols, rows, isWalkable) {
 
 // 위치 영속 판정(순수) — local:state 페이로드가 재접속 스폰 원천으로 저장될 수 있는가.
 //   ── persistable 계약 ──
-//   GameCanvas 는 페리 항해 중(this.ferrying)·물 타일 위 좌표를, airportScene 은 공항 좌표를
-//   persistable:false 로 emit 한다. 이 좌표들은 재접속 스폰 검증(plaza 보행 타일만 통과)을 못
-//   넘겨 서울 폴백을 유발하므로, 위치 기록기가 저장(그리고 livePosRef 갱신)에서 제외한다.
-//   → 마지막 유효 플라자 좌표(공항 진입 직전 게이트 앞 등)가 스폰 원천으로 유지된다.
+//   저장 허용 씬은 'plaza' 와 'city:<id>'(도시 정밀맵 — 도시 내 위치도 저장 대상)뿐이다.
+//   · GameCanvas 는 페리 항해 중(this.ferrying)·물 타일 위 좌표를, airportScene 은 공항 좌표를
+//     persistable:false 로 emit 한다 → 여기서 제외돼 서울/게이트 앞 폴백이 유지된다.
+//   · 공항 씬(scene:'airport')은 플래그와 무관하게 영속 대상에서 제외한다(방어적 — 광장에 직접
+//     배치 불가한 좌표). 플라자·도시 좌표만 재접속 스폰 원천이 된다.
 //   payload 에 persistable 이 없으면(하위호환·일반 플라자 좌표) 영속 대상으로 본다.
 export function isPersistablePosition(st) {
-  return !!st && st.persistable !== false;
+  if (!st || st.persistable === false) return false;
+  const scene = typeof st.scene === 'string' ? st.scene : 'plaza';
+  return scene === 'plaza' || scene.startsWith('city:');
 }

@@ -48,6 +48,10 @@ import { buildPlayableGrid, PLAZA_R } from '../../lib/world/mapGeo';
 import { isSpawnTileValid } from '../../lib/world/session';
 // 🌏 독해 트랙 "도쿄 도착" 글 1 → 월드 스토리 씬(하네다 공항). 공항 씬·텍스트박스·문답 오버레이.
 import { buildAirportScene } from './airportScene';
+// 🏙️ 도시 정밀맵(계층형 맵) — CityScene 은 1개, cityId 로 파라미터화. 도시 추가 = cities/<id>.js 1개.
+//   도시 데이터는 이 청크(GameCanvas 는 next/dynamic ssr:false) 안에서만 로드된다 — /world First Load JS 무영향.
+import { buildCityScene } from './CityScene';
+import FUKUOKA from './cities/fukuoka';
 import { StoryTextbox, AirportQuiz } from './StoryOverlay';
 import { buildStoryScript } from './storyScript';
 // 🗾 NPC 도트 대화(마스터플랜 A-1) — 하카타 라멘 전문점 주인·신사 미코상. 대화 콘텐츠·판정은
@@ -67,6 +71,10 @@ import { enqueueGrammarReview } from '../../lib/grammarSrs';
 const READING_TEXT_ID = 'n5-tokyo-01';
 const STORY_TEXT = (scene1Text && scene1Text.id === READING_TEXT_ID) ? scene1Text : null;
 const STORY_STEPS = STORY_TEXT ? buildStoryScript(STORY_TEXT) : [];
+
+// 🏙️ 도시 정밀맵 레지스트리 — 도시 추가 = 여기 한 줄 + cities/<id>.js. 씬 키 'city:<id>'.
+const CITY_DATA = { fukuoka: FUKUOKA };
+const CITY_FADE_MS = 260; // 도시 진입/이탈 페이드(페리와 동일 감성 · 조작 잠금)
 
 // ── 좌표 스케일 (버스 계약 불변: 1타일 = 32 월드 px) ──
 const TILE = 32;            // 월드 px / 타일 (예전과 동일 — local:state·peers:dist 스케일 유지)
@@ -147,11 +155,74 @@ const MINI_COLORS = {
   [TERRAIN.PEAK]: [200, 205, 212],    // 회백(설산)
 };
 
-function Minimap({ sceneRef, onClose }) {
+// 도시 미니맵 타일색(코드→RGB) — 도시 정밀맵 전용(전국 4색과 별개, 구역 라벨 포함).
+const CITY_MINI_COLORS = {
+  0: [70, 74, 84],     // road
+  1: [190, 182, 164],  // sidewalk
+  2: [230, 224, 210],  // crosswalk
+  3: [216, 196, 140],  // plaza
+  4: [120, 180, 90],   // park
+  5: [150, 120, 80],   // bridge
+  6: [140, 100, 60],   // dock
+  7: [90, 200, 90],    // exit
+  8: [60, 130, 170],   // water
+  9: [110, 104, 96],   // building
+};
+const CITY_MINI_SCALE = 3;
+
+function Minimap({ sceneRef, activeScene, onClose }) {
   const canvasRef = useRef(null);
+  const city = typeof activeScene === 'string' && activeScene.startsWith('city:')
+    ? CITY_DATA[activeScene.slice(5)] : null;
 
   useEffect(() => {
-    // 베이스 비트맵 1회 생성(오프스크린) — 다운샘플 코드 → 4색 픽셀.
+    // ── 도시 미니맵 — 도시 정밀맵(구역 라벨 포함) ──
+    if (city) {
+      const grid = city.buildGrid();
+      const w = city.cols, h = city.rows;
+      const off = document.createElement('canvas');
+      off.width = w; off.height = h;
+      const octx = off.getContext('2d');
+      const img = octx.createImageData(w, h);
+      const d = img.data;
+      for (let i = 0; i < grid.length; i++) {
+        const c = CITY_MINI_COLORS[grid[i]] || CITY_MINI_COLORS[1];
+        d[i * 4] = c[0]; d[i * 4 + 1] = c[1]; d[i * 4 + 2] = c[2]; d[i * 4 + 3] = 255;
+      }
+      octx.putImageData(img, 0, 0);
+      const W = w * CITY_MINI_SCALE, H = h * CITY_MINI_SCALE;
+      const drawFrame = (blinkOn) => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        canvas.width = W; canvas.height = H;
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(off, 0, 0, W, H);
+        // 구역 라벨.
+        ctx.font = '9px monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        for (const z of (city.zones || [])) {
+          const lx = z.labelTile[0] * CITY_MINI_SCALE, ly = z.labelTile[1] * CITY_MINI_SCALE;
+          ctx.fillStyle = 'rgba(20,22,26,0.55)';
+          const tw = ctx.measureText(z.label).width + 6;
+          ctx.fillRect(Math.round(lx - tw / 2), Math.round(ly - 7), Math.round(tw), 13);
+          ctx.fillStyle = '#f6edcf';
+          ctx.fillText(z.label, Math.round(lx), Math.round(ly));
+        }
+        // 플레이어 점(노랑, 깜빡).
+        const s = sceneRef.current;
+        if (blinkOn && s && Number.isFinite(s.pTileX)) {
+          const px = s.pTileX * CITY_MINI_SCALE, py = s.pTileY * CITY_MINI_SCALE;
+          ctx.fillStyle = '#ffe24a';
+          ctx.fillRect(Math.round(px) - 1, Math.round(py) - 1, 4, 4);
+        }
+      };
+      let blinkOn = true;
+      drawFrame(blinkOn);
+      const timer = setInterval(() => { blinkOn = !blinkOn; drawFrame(blinkOn); }, 260);
+      return () => clearInterval(timer);
+    }
+
+    // ── 전국 미니맵 — mapData 다운샘플 4색 + 노드 점(도시 소속 노드 제외) ──
     const { w, h, codes } = buildMinimap(MINI_FACTOR);
     const off = document.createElement('canvas');
     off.width = w; off.height = h;
@@ -172,9 +243,10 @@ function Minimap({ sceneRef, onClose }) {
       const ctx = canvas.getContext('2d');
       ctx.imageSmoothingEnabled = false;
       ctx.drawImage(off, 0, 0, W, H);
-      // 노드 점(크림).
+      // 노드 점(크림) — 도시 소속(city 필드) 노드는 전국맵에 없으므로 제외.
       ctx.fillStyle = '#fff4cf';
       for (const n of WORLD_NODES) {
+        if (n.city) continue;
         const nx = (n.tile[0] / MINI_FACTOR) * MINI_SCALE, ny = (n.tile[1] / MINI_FACTOR) * MINI_SCALE;
         ctx.fillRect(Math.round(nx) - 1, Math.round(ny) - 1, 2, 2);
       }
@@ -191,7 +263,7 @@ function Minimap({ sceneRef, onClose }) {
     drawFrame(blinkOn);
     const timer = setInterval(() => { blinkOn = !blinkOn; drawFrame(blinkOn); }, 260);
     return () => clearInterval(timer);
-  }, [sceneRef]);
+  }, [sceneRef, city]);
 
   return (
     <div style={{ position: 'absolute', inset: 0, zIndex: 5, display: 'grid', placeItems: 'center', background: 'rgba(11,13,8,0.6)' }}>
@@ -235,10 +307,16 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   const [descOpen, setDescOpen] = useState(false);       // A로 연 GBC 설명 박스(게이트 없는 노드)
   const [ferryPrompt, setFerryPrompt] = useState(null);  // 페리 확인 다이얼로그 { toId, toName } | null
   const [minimapOpen, setMinimapOpen] = useState(false); // 미니맵 오버레이 열림
+  // ── 도시 정밀맵(계층형 맵) ──
+  // cityPrompt: 전국맵 도시 노드 A → "시내로 들어가기" 확인 { to, name } | null
+  // activeScene: 활성 씬 식별자('plaza'|'airport'|'city:<id>') — 미니맵·오버레이 분기.
+  const [cityPrompt, setCityPrompt] = useState(null);
+  const [activeScene, setActiveScene] = useState('plaza');
   const nearNodeRef = useRef(null);
   const descOpenRef = useRef(false);
   const ferryPromptRef = useRef(null);
   const minimapOpenRef = useRef(false);
+  const cityPromptRef = useRef(null);
 
   // ── NPC 대화 상태 ── npcDialog: { key, node } | null (열림 = 대화 오버레이 표시)
   const [npcDialog, setNpcDialog] = useState(null);
@@ -280,6 +358,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   useEffect(() => { if (!nearNode) setDescOpen(false); }, [nearNode]);
   useEffect(() => { ferryPromptRef.current = ferryPrompt; }, [ferryPrompt]);
   useEffect(() => { minimapOpenRef.current = minimapOpen; }, [minimapOpen]);
+  useEffect(() => { cityPromptRef.current = cityPrompt; }, [cityPrompt]);
   useEffect(() => { npcDialogRef.current = npcDialog; }, [npcDialog]);
   useEffect(() => { storyActiveRef.current = storyActive; }, [storyActive]);
   useEffect(() => { storyPhaseRef.current = storyPhase; }, [storyPhase]);
@@ -323,12 +402,13 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       interact: () => {
         if (npcDialogRef.current) { npcActionRef.current?.(); return; } // NPC 대화 중 A → 다음 대사
         if (storyPhaseRef.current === 'dialogue') { advanceStoryRef.current?.(); return; }
-        if (reviewOpenRef.current || storyActiveRef.current || ferryPromptRef.current) return;
+        if (reviewOpenRef.current || storyActiveRef.current || ferryPromptRef.current || cityPromptRef.current) return;
         if (descOpenRef.current) { setDescOpen(false); return; } // 설명 박스 열려 있으면 A로도 닫기
         const node = nearNodeRef.current;
         // NPC 노드는 대화 오버레이를 연다(스탬프는 대화 완주 시 — 여기서 수집하지 않는다).
         if (node?.npc) { setNpcDialog({ key: node.npc, node }); return; }
-        if (node) collectStampRef.current?.(node); // 노드 첫 상호작용이면 스탬프 수집
+        // 노드 첫 상호작용이면 스탬프 수집 — 단 noStamp(도시 파사드 등 실존 노드 아님)는 제외.
+        if (node && !node.noStamp) collectStampRef.current?.(node);
         if (node?.gate) {
           // 게이트 있는 노드는 게이트 동작 우선(설명은 게이트 프롬프트에 병기).
           if (node.gate.type === 'story-scene') { sceneRef.current?.enterAirport?.(); return; }
@@ -337,6 +417,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
             setFerryPrompt({ toId: node.gate.to, toName: dest?.name || '' });
             return;
           }
+          if (node.gate.type === 'city') { setCityPrompt({ to: node.gate.to, name: node.name }); return; }
         }
         if (node) { setDescOpen(true); return; } // 게이트 없는 노드/명산 → GBC 설명 박스
         if (nearQuestRef.current) setReviewOpen(true);
@@ -346,6 +427,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         if (storyPhaseRef.current === 'dialogue') { toggleKoRef.current?.(); return; }
         if (descOpenRef.current) { setDescOpen(false); return; }
         if (ferryPromptRef.current) { setFerryPrompt(null); return; }
+        if (cityPromptRef.current) { setCityPrompt(null); return; }
         if (minimapOpenRef.current) { setMinimapOpen(false); return; }
         if (reviewOpenRef.current) setReviewOpen(false);
       },
@@ -403,10 +485,10 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   useEffect(() => {
     const scene = sceneRef.current;
     if (!scene) return;
-    const lock = reviewOpen || !!ferryPrompt || !!npcDialog;
+    const lock = reviewOpen || !!ferryPrompt || !!npcDialog || !!cityPrompt;
     scene.inputLocked = lock;
     if (lock) { if (scene.heldDirs) scene.heldDirs.length = 0; scene.tapTile = null; scene.runHeld = false; }
-  }, [reviewOpen, ferryPrompt, npcDialog]);
+  }, [reviewOpen, ferryPrompt, npcDialog, cityPrompt]);
 
   useEffect(() => {
     let destroyed = false;
@@ -998,9 +1080,22 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           this.heldDirs = this.heldDirs.filter((x) => x !== d);
         }
 
-        create() {
+        create(bootData) {
           sceneRef.current = this;   // 버스 핸들러 위임 대상 · React 입력 잠금 갱신용
+          // ── 직행 재접속(문서 §4) — 저장 씬이 'city:<id>' 면 도시맵으로 바로 스폰 ──
+          // bootData 없이(autostart) 진입한 경우에만 판정한다(도시→전국 복귀는 bootData.spawn 을 실어 오므로 재귀 없음).
+          // 도시 데이터가 없으면 전국맵 폴백(계속 진행)한다.
+          if (!bootData) {
+            const saved = initialSpawnRef.current;
+            const sc = saved && typeof saved.scene === 'string' ? saved.scene : '';
+            if (sc.startsWith('city:') && CITY_DATA[sc.slice(5)]) {
+              this.scene.start(sc, { spawn: saved });
+              return;
+            }
+          }
+          setActiveScene('plaza');
           this.inputLocked = false;  // 리뷰 오버레이 중 이동 잠금
+          this.enteringCity = false; // 도시 진입 페이드 가드(씬 인스턴스 재사용 — 복귀 시 리셋 필수)
           this.petJumpVal = 0;       // 퀘스트 완료 점프 연출값(0→1→0)
 
           this.cameras.main.setBounds(0, 0, WORLD_W, WORLD_H);
@@ -1077,7 +1172,8 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
 
           // ── 장소 노드 마커 — kind별 절차 마커(비충돌). 이름 라벨은 없다(포켓몬처럼 깨끗한 화면). ──
           // 근접 시 A(말 걸기)로 설명 박스/게이트를 연다. 마커는 걸어서 통과 가능(스폰 도시가 막히지 않게).
-          this.nodeViews = WORLD_NODES.map((node) => {
+          // 도시 소속 노드(city 필드 — 라멘 등)는 전국맵에 렌더하지 않는다(도시 정밀맵으로 이전).
+          this.nodeViews = WORLD_NODES.filter((node) => !node.city).map((node) => {
             const [tx, ty] = node.tile;
             const wx = tx * TILE + TILE / 2, wy = ty * TILE + TILE / 2;
             // NPC(npc 필드)는 전용 도트(t_npc_<key>), 명산(peak)은 t_peak_<peak>, 그 외는 kind 마커.
@@ -1116,13 +1212,16 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           //   · 무효(범위 밖·바다·울타리·팻말 타일)면 기본 서울로 폴백한다.
           let spawnTileX = POI.SEOUL.x;
           let spawnTileY = POI.SEOUL.y;
+          // 스폰 우선순위: 도시맵 복귀(data.spawn — 도시 노드 앞) > 저장된 플라자 좌표 > 서울 허브.
           const savedSpawn = initialSpawnRef.current;
+          const override = (bootData && bootData.spawn && bootData.spawn.scene === 'plaza') ? bootData.spawn
+            : (savedSpawn && savedSpawn.scene === 'plaza' ? savedSpawn : null);
           if (
-            savedSpawn && savedSpawn.scene === 'plaza' &&
-            isSpawnTileValid(savedSpawn.x, savedSpawn.y, COLS, ROWS, (tx, ty) => !this.blocked(tx, ty))
+            override &&
+            isSpawnTileValid(override.x, override.y, COLS, ROWS, (tx, ty) => !this.blocked(tx, ty))
           ) {
-            spawnTileX = savedSpawn.x;
-            spawnTileY = savedSpawn.y;
+            spawnTileX = override.x;
+            spawnTileY = override.y;
           }
           this.pTileX = spawnTileX; this.pTileY = spawnTileY;
           this.facing = 'down';
@@ -1193,6 +1292,19 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           });
 
           this.wasNear = false;
+
+          // 도시맵에서 복귀(bootData.spawn)했으면 페이드인으로 자연스럽게 등장.
+          if (bootData && bootData.spawn) this.cameras.main.fadeIn(CITY_FADE_MS, 0, 0, 0);
+        }
+
+        // 전국맵 → 도시 정밀맵 진입(페이드 아웃 + 씬 전환). React 프롬프트 "들어가기"가 호출.
+        enterCity(id) {
+          if (!CITY_DATA[id] || this.enteringCity) return;
+          this.enteringCity = true;
+          this.inputLocked = true;
+          this.heldDirs.length = 0; this.tapTile = null; this.runHeld = false;
+          this.cameras.main.fadeOut(CITY_FADE_MS, 0, 0, 0);
+          this.cameras.main.once('camerafadeoutcomplete', () => { this.scene.start(`city:${id}`); });
         }
 
         // 퀘스트 채점 연출 — 정답이면 펫 자리에 하트 즉시.
@@ -1563,6 +1675,27 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       };
       const AirportScene = buildAirportScene(Phaser, airportCtx);
 
+      // 🏙️ 도시 정밀맵 씬(들) — CityScene 은 1개 팩토리를 cityId 로 파라미터화. 씬 키 'city:<id>'.
+      // ctx: 씬 ↔ React 브리지(sceneRef 바인딩 · 근접 노드 통지 · 진입 통지 · 전국맵 복귀 스폰).
+      const cityScenes = Object.values(CITY_DATA).map((cityData) => {
+        const rn = getNode(cityData.returnNode);
+        const cityCtx = {
+          userId, petRef, nickRef,
+          bindScene: (s) => { sceneRef.current = s; },
+          onEnter: () => {
+            setActiveScene(`city:${cityData.id}`);
+            setNearNode(null); setNearQuest(false); setCityPrompt(null); setDescOpen(false); setMinimapOpen(false);
+          },
+          setNear: (node) => setNearNode(node),
+          worldReturn: {
+            scene: 'plaza',
+            x: rn ? rn.tile[0] : POI.SEOUL.x,
+            y: rn ? rn.tile[1] : POI.SEOUL.y,
+          },
+        };
+        return buildCityScene(Phaser, cityData, cityCtx);
+      });
+
       // Scale.NONE — Phaser 내부 드로잉 버퍼를 320×288(2배 백킹)로 고정하고, 화면 확대는 CSS로 직접 제어한다.
       // (Phaser의 FIT/RESIZE는 비정수 배율을 허용해 도트가 뭉개진다. 정수 배율만 보장하려면
       //  CSS width/height를 320·288의 정수배로 세팅하고 image-rendering:pixelated로 굽는 편이 견고하다.)
@@ -1573,7 +1706,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         pixelArt: true,
         roundPixels: true,
         scale: { mode: Phaser.Scale.NONE, width: VIEW_W, height: VIEW_H },
-        scene: [WorldScene, AirportScene],
+        scene: [WorldScene, AirportScene, ...cityScenes],
       });
       gameRef.current = game;
       if (game.canvas) game.canvas.style.imageRendering = 'pixelated';
@@ -1653,7 +1786,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       )}
 
       {/* 우상단 미니맵 버튼(GBC 칩) — 셸 START/SELECT와 충돌 없게 게임 화면 안에 별도 배치. */}
-      {!reviewOpen && !storyActive && !ferryPrompt && (
+      {!reviewOpen && !storyActive && !ferryPrompt && !cityPrompt && (
         <button
           type="button"
           aria-label={minimapOpen ? '지도 닫기' : '지도 열기'}
@@ -1670,21 +1803,23 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         </button>
       )}
 
-      {/* 미니맵 오버레이 — mapData 다운샘플 4색 + 플레이어/노드 점. B로도 닫힘(cancel). */}
+      {/* 미니맵 오버레이 — 전국(다운샘플 4색) 또는 도시(구역 라벨) + 플레이어/노드 점. B로도 닫힘. */}
       {minimapOpen && (
-        <Minimap sceneRef={sceneRef} onClose={() => setMinimapOpen(false)} />
+        <Minimap sceneRef={sceneRef} activeScene={activeScene} onClose={() => setMinimapOpen(false)} />
       )}
 
-      {/* 장소 게이트 근접 → 상호작용 프롬프트(story-scene: 공항 진입 · ferry: 페리 확인). 설명(desc)은 한 줄 병기. */}
-      {nearNode?.gate && !storyActive && !reviewOpen && !ferryPrompt && (
+      {/* 장소 게이트 근접 → 상호작용 프롬프트(story-scene: 공항 진입 · ferry: 페리 · city: 도시 진입). 설명 병기. */}
+      {nearNode?.gate && !storyActive && !reviewOpen && !ferryPrompt && !cityPrompt && (
         <div style={{
           position: 'absolute', left: '50%', bottom: 18, transform: 'translateX(-50%)',
           ...gbcPanel, width: 'min(90%, 360px)', padding: '12px 14px',
           display: 'flex', alignItems: 'center', gap: 10,
         }}>
-          <span style={{ fontSize: '1.3rem', lineHeight: 1 }}>{nearNode.gate.type === 'ferry' ? '⚓' : '✈'}</span>
+          <span style={{ fontSize: '1.3rem', lineHeight: 1 }}>
+            {nearNode.gate.type === 'ferry' ? '⚓' : nearNode.gate.type === 'city' ? '🏙️' : '✈'}
+          </span>
           <span style={{ flex: 1, fontSize: '0.8rem', lineHeight: 1.5 }}>
-            {nearNode.name} {nearNode.gate.label} — {nearNode.gate.type === 'ferry' ? '페리를 탈까요?' : '탑승할까요?'}
+            {nearNode.name} {nearNode.gate.label} — {nearNode.gate.type === 'ferry' ? '페리를 탈까요?' : nearNode.gate.type === 'city' ? '시내로 들어갈까요?' : '탑승할까요?'}
             {nearNode.desc && (
               <span style={{ display: 'block', fontSize: '0.68rem', opacity: 0.82, marginTop: 3, lineHeight: 1.45 }}>
                 {nearNode.desc}
@@ -1703,6 +1838,8 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
               if (nearNode.gate.type === 'ferry') {
                 const dest = getNode(nearNode.gate.to);
                 setFerryPrompt({ toId: nearNode.gate.to, toName: dest?.name || '' });
+              } else if (nearNode.gate.type === 'city') {
+                setCityPrompt({ to: nearNode.gate.to, name: nearNode.name });
               } else {
                 sceneRef.current?.enterAirport?.();
               }
@@ -1711,6 +1848,37 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           >
             {nearNode.gate.type === 'ferry' ? '타기' : '들어가기'}
           </button>
+        </div>
+      )}
+
+      {/* 도시 진입 확인 다이얼로그 — 페이드 후 도시 정밀맵으로 전환. B(cancel)로 닫힘(페리와 동일 문법). */}
+      {cityPrompt && (
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 6, display: 'grid', placeItems: 'center',
+          background: 'rgba(11,13,8,0.55)',
+        }}>
+          <div style={{ ...gbcPanel, width: 'min(86%, 320px)', padding: '16px 16px 14px', textAlign: 'center' }}>
+            <div style={{ fontSize: '1.6rem', lineHeight: 1, marginBottom: 8 }}>🏙️</div>
+            <p style={{ fontSize: '0.85rem', lineHeight: 1.6, margin: '0 0 14px' }}>
+              {cityPrompt.name} 시내로 들어갈까요?
+            </p>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+              <button
+                type="button"
+                onClick={() => { const to = cityPrompt.to; setCityPrompt(null); sceneRef.current?.enterCity?.(to); }}
+                style={{ ...gbcButtonPrimary, whiteSpace: 'nowrap' }}
+              >
+                들어가기
+              </button>
+              <button
+                type="button"
+                onClick={() => setCityPrompt(null)}
+                style={{ ...gbcButtonPrimary, whiteSpace: 'nowrap', background: GBC.cream, color: GBC.ink }}
+              >
+                취소
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

@@ -46,6 +46,13 @@ describe('normalizePosition — 저장 좌표 정규화(순수)', () => {
     expect(normalizePosition({ x: 1, y: 2 }).scene).toBe('plaza'); // 씬 누락 → plaza
   });
 
+  it('도시 정밀맵 씬(city:<id>)은 그대로 보존한다(계층형 맵)', () => {
+    expect(normalizePosition({ scene: 'city:fukuoka', x: 47, y: 60 })).toEqual({ scene: 'city:fukuoka', x: 47, y: 60 });
+    // 형식 밖(대문자·공백·빈 id)은 plaza 로 강등(임의 문자열 저장 차단).
+    expect(normalizePosition({ scene: 'city:', x: 1, y: 2 }).scene).toBe('plaza');
+    expect(normalizePosition({ scene: 'City:Fukuoka', x: 1, y: 2 }).scene).toBe('plaza');
+  });
+
   it('소수 좌표는 반올림', () => {
     expect(normalizePosition({ scene: 'plaza', x: 5.6, y: 9.2 })).toEqual({ scene: 'plaza', x: 6, y: 9 });
   });
@@ -105,6 +112,17 @@ describe('isPersistablePosition — 위치 영속 판정(순수)', () => {
   it('persistable:false(페리 항해·물 타일·공항 좌표)는 영속 제외', () => {
     expect(isPersistablePosition({ scene: 'plaza', x: 5, y: 6, persistable: false })).toBe(false);
     expect(isPersistablePosition({ scene: 'airport', x: 3, y: 4, persistable: false })).toBe(false);
+  });
+
+  it('도시 정밀맵(city:<id>) 좌표는 영속 대상(도시 내 위치 저장)', () => {
+    expect(isPersistablePosition({ scene: 'city:fukuoka', x: 47, y: 60 })).toBe(true);
+    expect(isPersistablePosition({ scene: 'city:fukuoka', x: 47, y: 60, persistable: true })).toBe(true);
+    expect(isPersistablePosition({ scene: 'city:fukuoka', x: 47, y: 60, persistable: false })).toBe(false);
+  });
+
+  it('공항 씬은 플래그와 무관하게 영속 제외(플라자·도시만 스폰 원천)', () => {
+    expect(isPersistablePosition({ scene: 'airport', x: 3, y: 4 })).toBe(false);
+    expect(isPersistablePosition({ scene: 'airport', x: 3, y: 4, persistable: true })).toBe(false);
   });
 
   it('null/undefined/비객체는 영속 제외(안전)', () => {
