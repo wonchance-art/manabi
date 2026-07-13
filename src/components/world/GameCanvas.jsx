@@ -168,6 +168,7 @@ const CITY_MINI_COLORS = {
   7: [90, 200, 90],    // exit
   8: [60, 130, 170],   // water
   9: [110, 104, 96],   // building
+  10: [110, 165, 80],  // island(섬 실루엣 — 도달 불가 배경)
 };
 const CITY_MINI_SCALE = 3;
 

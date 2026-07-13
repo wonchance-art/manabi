@@ -183,6 +183,15 @@ export function buildCityScene(Phaser, city, ctx) {
       water('ct_water1', 0x3e93c4, 1);
       water('ct_water2', 0x347ba0, 2);
 
+      // 섬 실루엣(하카타만 노코노시마/시카노시마 · 오호리 연못 섬) — 초지 + 기슭(차단·배경).
+      this.bakeTile('ct_island', (g) => {
+        g.fillStyle(C(0x6fa63a), 1); g.fillRect(0, 0, TEX, TEX);
+        g.fillStyle(C(0x4a8a2a), 1);
+        for (const [x, y] of [[2, 3], [6, 2], [10, 4], [12, 9], [4, 11], [8, 12]]) g.fillRect(x, y, 2, 2);
+        g.fillStyle(C(0x8cc152), 1); g.fillRect(3, 5, 3, 2); g.fillRect(9, 7, 3, 2);
+        g.fillStyle(C(0xd8c48a), 1); g.fillRect(0, TEX - 2, TEX, 2); // 모래 기슭
+      });
+
       // ── 건물 파사드 2종(창격자 · 벽돌 변형) — 도트 감성 top-down 건물 ──
       const bldg = (key, wall, wallD, roof, win) => this.bakeTile(key, (g) => {
         g.fillStyle(C(wall), 1); g.fillRect(0, 0, TEX, TEX);
@@ -196,9 +205,9 @@ export function buildCityScene(Phaser, city, ctx) {
       bldg('ct_bldg_b', 0xc09a72, 0x93724e, 0x7a5a3a, 0xe6d8b0); // 벽돌/타일 + 밝은 창
 
       // ── 타일 아틀라스(1장) — 172k 미만이라 add.image 도 되지만 광장과 동일 tilemap 레이어 방식 ──
-      // 인덱스: 0도로 1보도 2횡단 3광장 4공원 5다리 6부두 7출구 8·9·10수면3프레임 11건물A 12건물B.
+      // 인덱스: 0도로 1보도 2횡단 3광장 4공원 5다리 6부두 7출구 8·9·10수면3프레임 11건물A 12건물B 13섬.
       if (!this.textures.exists('city_tiles')) {
-        const keys = ['ct_road', 'ct_sidewalk', 'ct_crosswalk', 'ct_plaza', 'ct_park', 'ct_bridge', 'ct_dock', 'ct_exit', 'ct_water0', 'ct_water1', 'ct_water2', 'ct_bldg_a', 'ct_bldg_b'];
+        const keys = ['ct_road', 'ct_sidewalk', 'ct_crosswalk', 'ct_plaza', 'ct_park', 'ct_bridge', 'ct_dock', 'ct_exit', 'ct_water0', 'ct_water1', 'ct_water2', 'ct_bldg_a', 'ct_bldg_b', 'ct_island'];
         const atlas = this.textures.createCanvas('city_tiles', keys.length * TEX, TEX);
         const actx = atlas.getContext();
         for (let i = 0; i < keys.length; i++) actx.drawImage(this.textures.get(keys[i]).getSourceImage(), i * TEX, 0);
@@ -237,6 +246,50 @@ export function buildCityScene(Phaser, city, ctx) {
         g.fillStyle(C(0xf2c400), 1); g.fillRect(2, 2, 20, 4);        // 노란 간판
         g.fillStyle(C(0xc14b38), 1); for (const x of [4, 9, 14, 19]) g.fillRect(x, 3, 2, 2); // 붉은 글자 힌트
         g.fillStyle(C(0x8fb8d0), 1); for (const x of [4, 10, 16]) g.fillRect(x, 10, 4, 4); g.fillRect(4, 16, 16, 4); // 유리 파사드/입구
+      }, NPC_W, NPC_H);
+
+      // 신사 토리이(櫛田神社) 16×16 — 붉은 문.
+      this.bakeTile('ct_prop_torii', (g) => {
+        g.fillStyle(C(0xc1352b), 1);
+        g.fillRect(2, 3, 12, 2);                                   // 카사기(상단 보)
+        g.fillRect(3, 6, 10, 1);                                   // 시마기
+        g.fillRect(4, 3, 2, 12); g.fillRect(10, 3, 2, 12);         // 두 기둥
+        g.fillStyle(C(0x8a221b), 1); g.fillRect(2, 3, 12, 1);
+        g.fillStyle(C(0x2a1e14), 1); g.fillRect(6, 8, 4, 1);       // 편액
+      });
+      // 운하 분수(キャナルシティ) 16×16 — 수반 + 물줄기.
+      this.bakeTile('ct_prop_fountain', (g) => {
+        g.fillStyle(C(0x9aa7b0), 1); g.fillRect(3, 10, 10, 5);     // 수반
+        g.fillStyle(C(0x7d8890), 1); g.fillRect(3, 14, 10, 1);
+        g.fillStyle(C(0x3e93c4), 1); g.fillRect(5, 11, 6, 3);      // 고인 물
+        g.fillStyle(C(0xd6f0fb), 1); g.fillRect(7, 2, 2, 8);       // 물줄기
+        g.fillRect(5, 5, 1, 5); g.fillRect(10, 5, 1, 5);
+      });
+      // 백화점(天神 岩田屋·PARCO) 24×24 — 간판 띠 얹은 상업동.
+      this.bakeTile('ct_prop_depart', (g) => {
+        g.fillStyle(C(0xcbb48f), 1); g.fillRect(2, 4, 20, 20);
+        g.fillStyle(C(0x9c8560), 1); g.fillRect(2, 22, 20, 2);
+        g.fillStyle(C(0x2a1e14), 1); g.fillRect(2, 4, 20, 4);      // 간판 띠
+        g.fillStyle(C(0xe0b64a), 1); g.fillRect(3, 5, 18, 2);
+        g.fillStyle(C(0x8fb8d0), 1); for (const wy of [10, 15, 20]) for (const wx of [4, 9, 14, 18]) g.fillRect(wx, wy, 3, 3);
+      }, NPC_W, NPC_H);
+      // 역사(JR博多シティ) 24×24 — 지붕 + 시계 + 입구.
+      this.bakeTile('ct_prop_station', (g) => {
+        g.fillStyle(C(0xb0a89a), 1); g.fillRect(2, 8, 20, 16);
+        g.fillStyle(C(0x8a8274), 1); g.fillRect(2, 22, 20, 2);
+        g.fillStyle(C(0x6f4a28), 1); g.fillRect(1, 5, 22, 4);      // 지붕
+        g.fillStyle(C(0xf6edcf), 1); g.fillRect(10, 9, 4, 4);      // 시계
+        g.fillStyle(C(0x2a1e14), 1); g.fillRect(11, 10, 1, 2);
+        g.fillStyle(C(0x8fb8d0), 1); for (const wx of [4, 9, 15, 19]) g.fillRect(wx, 15, 3, 6); // 창/입구
+      }, NPC_W, NPC_H);
+      // 성터 석벽(福岡城跡/舞鶴公園) 24×24 — 돌쌓기 + 벚꽃.
+      this.bakeTile('ct_prop_castle', (g) => {
+        g.fillStyle(C(0x9a9384), 1); g.fillRect(2, 10, 20, 14);    // 석벽
+        g.fillStyle(C(0x7d7669), 1); for (let y = 13; y < 24; y += 4) g.fillRect(2, y, 20, 1);
+        for (let x = 7; x < 22; x += 6) g.fillRect(x, 10, 1, 14);
+        g.fillStyle(C(0x6b6456), 1); g.fillRect(2, 10, 20, 2);     // 상단 그림자
+        g.fillStyle(C(0x4aa63a), 1); g.fillRect(3, 7, 5, 3); g.fillRect(16, 7, 5, 3); // 나무
+        g.fillStyle(C(0xf3c6d6), 1); g.fillRect(4, 6, 2, 2); g.fillRect(18, 6, 2, 2); // 벚꽃
       }, NPC_W, NPC_H);
 
       // ── 캐릭터(플레이어 ct_pc · 원격 피어 ct_pr) + 펫 + NPC 마커 ──
@@ -288,7 +341,7 @@ export function buildCityScene(Phaser, city, ctx) {
     }
     blocked(tx, ty) {
       const c = this.tileCode(tx, ty);
-      return c === T.WATER || c === T.BUILDING;
+      return c === T.WATER || c === T.BUILDING || c === T.ISLAND;
     }
     isWaterTile(tx, ty) { return this.tileCode(tx, ty) === T.WATER; }
 
@@ -329,6 +382,7 @@ export function buildCityScene(Phaser, city, ctx) {
           case T.EXIT: return 7;
           case T.WATER: return 8;
           case T.BUILDING: return tileHash(x, y) < 0.5 ? 11 : 12;
+          case T.ISLAND: return 13;
           default: return 1;
         }
       };
@@ -380,8 +434,9 @@ export function buildCityScene(Phaser, city, ctx) {
       this.nodeViews = (city.nodes || []).map((node) => {
         const [tx, ty] = node.tile;
         const wx = tx * TILE + TILE / 2, wy = ty * TILE + TILE / 2;
-        const markerKey = node.facade === 'donki' ? 'ct_prop_donki'
-          : node.npc ? `t_npc_${node.npc}` : 'ct_prop_sign';
+        // NPC 노드는 캐릭터 마커(대화 대상), 그 외는 파사드 프리팹(node.facade → ct_prop_<facade>), 폴백 간판.
+        const markerKey = node.npc ? `t_npc_${node.npc}`
+          : node.facade ? `ct_prop_${node.facade}` : 'ct_prop_sign';
         const marker = this.add.image(wx, (ty + 1) * TILE, markerKey).setOrigin(0.5, 1).setScale(TSCALE).setDepth(wy);
         if (node.name) {
           this.add.text(wx, ty * TILE - 4, node.name, this.labelStyle()).setOrigin(0.5, 1).setDepth(10000);
