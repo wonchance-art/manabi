@@ -58,15 +58,28 @@ export const WORLD_NODES = [
     gate: { type: 'ferry', to: 'busan-port', label: '⚓ 부산' },
     desc: '일본 규슈의 관문 항구. 부산행 페리가 오가요.',
   },
+  // 후쿠오카(도시) — 계층형 맵 진입 노드. A → 도시 정밀맵(CityScene 'city:fukuoka')으로 들어간다.
+  //   gate.type:'city' 는 story-scene(공항)·ferry 와 나란한 세 번째 게이트 종류(도시 진입). 도시맵
+  //   하카타항 출구 타일 → 이 노드 앞으로 복귀(CityScene worldReturn). 페리 하선점(항구) 곁이라 동선 정합.
+  {
+    id: 'fukuoka', name: '후쿠오카', kind: 'city', tile: [POI.FUKUOKA.x, POI.FUKUOKA.y],
+    gate: { type: 'city', to: 'fukuoka', label: '🏙️ 시내' },
+    desc: '규슈 최대 도시. 하카타항·라멘 골목·텐진 상점가를 걸어서 돌아볼 수 있어요.',
+  },
   // ── NPC 도트 대화(마스터플랜 A-1) — 페리 목적지 후쿠오카 인근 land 에 배치. gate 없음, npc 필드로 대화. ──
   // A(말 걸기) → React NpcDialog 오버레이(npcScripts). 완주 시 방문 기념 스탬프(로컬 전용 파일럿 — 공유 없음).
   // 하카타 라멘 전문점(고정 점포) — 후쿠오카항 곁 land. 하카타가 돈코츠·替え玉 본고장이라 지리 정합.
   //   포장마차(屋台)가 아닌 이유: 야타이는 직접 주문→식후 현금 계산이 관행(후쿠오카시 공식 안내)이라
   //   챕터 ot-10 이 가르치는 券売機/食券 첫 단계와 모순 — 식권기가 있는 고정 점포로 통일(Codex P1-2).
   //   (id 'fukuoka-ramen' 은 유지 — 미배포·미수집 상태 확인, 스크립트 key 'ramen' 과 일관.)
+  //   ── 도시 이전(계층형 맵) ── 이 라멘 NPC 는 후쿠오카 도시 정밀맵(하카타 라멘 골목)으로 이전됐다.
+  //   city:'fukuoka' 필드로 "도시 소속"을 표시한다 — 전국맵 렌더/미니맵에서는 제외되고(GameCanvas 가
+  //   !node.city 로 필터), 도시맵(CityScene)이 cities/fukuoka.js 의 로컬 좌표로 배치한다. nodeId 는
+  //   'fukuoka-ramen' 그대로 유지해 스탬프 연속성을 지킨다(getNode 로 이름/스탬프 해석은 여기서 계속).
+  //   npcScripts(대화 내용)·다자이후 신사(전국맵 유지)는 무수정. tile 은 전국 좌표(테스트 정합용 · 미렌더).
   {
     id: 'fukuoka-ramen', name: '하카타 라멘 전문점', kind: 'npc', tile: [131, 306],
-    npc: 'ramen',
+    npc: 'ramen', city: 'fukuoka',
     desc: '입구에 券売機(켄바이키)가 놓인 하카타 돈코츠 라멘 전문점. 주인장이 면 굳기를 물어봐요 — 「替え玉お願いします」를 써 볼 곳.',
   },
   // 다자이후 신사 — 후쿠오카 남동쪽 내륙 land(실제 다자이후텐만구가 후쿠오카 시가지 남동).

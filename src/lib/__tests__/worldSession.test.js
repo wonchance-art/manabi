@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  extractClientIp, normalizePosition, isSpawnTileValid, isPersistablePosition,
+  extractClientIp, normalizePosition, isSpawnTileValid, isPersistablePosition, cityRedirectScene,
 } from '../world/session.js';
 
 // ─────────────────────────────────────────────────────────────
@@ -44,6 +44,13 @@ describe('normalizePosition — 저장 좌표 정규화(순수)', () => {
   it('알 수 없는 씬은 plaza 로 강제', () => {
     expect(normalizePosition({ scene: 'moon', x: 1, y: 2 }).scene).toBe('plaza');
     expect(normalizePosition({ x: 1, y: 2 }).scene).toBe('plaza'); // 씬 누락 → plaza
+  });
+
+  it('도시 정밀맵 씬(city:<id>)은 그대로 보존한다(계층형 맵)', () => {
+    expect(normalizePosition({ scene: 'city:fukuoka', x: 47, y: 60 })).toEqual({ scene: 'city:fukuoka', x: 47, y: 60 });
+    // 형식 밖(대문자·공백·빈 id)은 plaza 로 강등(임의 문자열 저장 차단).
+    expect(normalizePosition({ scene: 'city:', x: 1, y: 2 }).scene).toBe('plaza');
+    expect(normalizePosition({ scene: 'City:Fukuoka', x: 1, y: 2 }).scene).toBe('plaza');
   });
 
   it('소수 좌표는 반올림', () => {
@@ -107,8 +114,71 @@ describe('isPersistablePosition — 위치 영속 판정(순수)', () => {
     expect(isPersistablePosition({ scene: 'airport', x: 3, y: 4, persistable: false })).toBe(false);
   });
 
+  it('도시 정밀맵(city:<id>) 좌표는 영속 대상(도시 내 위치 저장)', () => {
+    expect(isPersistablePosition({ scene: 'city:fukuoka', x: 47, y: 60 })).toBe(true);
+    expect(isPersistablePosition({ scene: 'city:fukuoka', x: 47, y: 60, persistable: true })).toBe(true);
+    expect(isPersistablePosition({ scene: 'city:fukuoka', x: 47, y: 60, persistable: false })).toBe(false);
+  });
+
+  it('공항 씬은 플래그와 무관하게 영속 제외(플라자·도시만 스폰 원천)', () => {
+    expect(isPersistablePosition({ scene: 'airport', x: 3, y: 4 })).toBe(false);
+    expect(isPersistablePosition({ scene: 'airport', x: 3, y: 4, persistable: true })).toBe(false);
+  });
+
   it('null/undefined/비객체는 영속 제외(안전)', () => {
     expect(isPersistablePosition(null)).toBe(false);
     expect(isPersistablePosition(undefined)).toBe(false);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+describe('cityRedirectScene — 초기 부팅 시 도시 직행 스폰 판별(순수, Codex P1-1)', () => {
+  const hasCity = (id) => id === 'fukuoka'; // CITY_DATA 레지스트리 페이크
+  const savedCity = { scene: 'city:fukuoka', x: 47, y: 60 };
+
+  it('Phaser autostart 기본 데이터 {} 에서도 저장 city 씬으로 리다이렉트한다(핵심 회귀)', () => {
+    // Phaser 3 는 초기 autostart 에도 Scene Settings 기본 `{}` 를 create 에 전달한다 —
+    // `!bootData` 판별이면 이 케이스가 무시돼 서울 폴백이 났다(P1-1 재현).
+    expect(cityRedirectScene({}, savedCity, hasCity)).toBe('city:fukuoka');
+  });
+
+  it('bootData 가 undefined 여도 리다이렉트한다 — 단, 순수 초기 부팅에만 해당', () => {
+    // 실전에서 씬 재시작(도시 출구·공항 출구)은 **항상 { spawn }** 을 전달한다(WorldScene.enterAirport
+    // 가 returnSpawn 을 실어 보내고 airportScene.returnPlaza 가 그대로 { spawn } 으로 복귀). undefined
+    // 는 Phaser 가 데이터 없이 부팅하는 순수 초기 진입에만 해당하는 방어적 동등 취급이다.
+    expect(cityRedirectScene(undefined, savedCity, hasCity)).toBe('city:fukuoka');
+  });
+
+  it('복귀 데이터({spawn:...})가 있으면 리다이렉트하지 않는다 — 도시→전국 복귀 재귀 방지', () => {
+    const back = { spawn: { scene: 'plaza', x: 135, y: 307 } };
+    expect(cityRedirectScene(back, savedCity, hasCity)).toBeNull();
+  });
+
+  it('회귀 시퀀스(Codex 재검수 P1): 저장 city → 초기 redirect({}) → 도시 출구({spawn}) → 공항 출구({spawn:returnSpawn})', () => {
+    // 저장 씬이 city:fukuoka 인 사용자의 실제 이동 경로를 순서대로 검증한다.
+    // ① 초기 부팅(Phaser autostart 기본 {}) — 도시 직행 리다이렉트.
+    expect(cityRedirectScene({}, savedCity, hasCity)).toBe('city:fukuoka');
+    // ② 도시 출구 → 전국 복귀({spawn: 도시 노드 앞}) — 리다이렉트 없음.
+    expect(cityRedirectScene({ spawn: { scene: 'plaza', x: 135, y: 307 } }, savedCity, hasCity)).toBeNull();
+    // ③ 전국 → 공항 진입(enterAirport 가 게이트 앞 타일을 returnSpawn 으로 전달) → 공항 출구가
+    //    { spawn: returnSpawn } 으로 복귀 — 저장 씬이 여전히 city:* 여도 **다시 도시로 튕기지 않는다**
+    //    (공항 출구가 데이터 없이 start('world') 하던 회귀의 고정 테스트 — 마지막이 null 이어야 한다).
+    const returnSpawn = { scene: 'plaza', x: 57, y: 211 }; // 인천공항 게이트 앞
+    expect(cityRedirectScene({ spawn: returnSpawn }, savedCity, hasCity)).toBeNull();
+  });
+
+  it('저장 씬이 plaza/airport/없음이면 null(전국맵 진행)', () => {
+    expect(cityRedirectScene({}, { scene: 'plaza', x: 68, y: 208 }, hasCity)).toBeNull();
+    expect(cityRedirectScene({}, { scene: 'airport', x: 7, y: 10 }, hasCity)).toBeNull();
+    expect(cityRedirectScene({}, null, hasCity)).toBeNull();
+    expect(cityRedirectScene({}, undefined, hasCity)).toBeNull();
+  });
+
+  it('도시 데이터가 없는 city id 는 null(전국맵 폴백)', () => {
+    expect(cityRedirectScene({}, { scene: 'city:tokyo', x: 1, y: 1 }, hasCity)).toBeNull();
+  });
+
+  it('hasCity 미제공(비함수)이면 안전하게 null', () => {
+    expect(cityRedirectScene({}, savedCity, null)).toBeNull();
   });
 });
