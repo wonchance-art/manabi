@@ -1,251 +1,178 @@
-// 🏙️ 학습 월드 — 후쿠오카 도시 정밀맵 데이터 (1호 도시 · 실지리 격상판).
+// 🏙️ 학습 월드 — 후쿠오카 도시 정밀맵 데이터 (1호 도시 · **실지형 geo 격상판**).
 //
-// 설계 문서: docs/world-city-maps.md · 리서치: docs/research-fukuoka-map.md(§조사3 7구역 추천안).
+// 설계 문서: docs/world-city-maps.md · 리서치: docs/research-fukuoka-map.md.
 // CityScene(파라미터화된 도시 씬)이 이 데이터를 읽어 렌더한다. **도시 추가 = 데이터 파일 1개** 원칙.
 //
-// 규모: 128×96 타일(전국맵과 동일 1타일=32 월드 px). 동네 7구역(리서치 §조사3-1):
-//   ① 博多港/베이사이드(북·만 접점) — 페리 부두=전국맵 복귀 출구(EXIT).
-//   ② 天神(서핵) — 백화점·지하상가·면세.
-//   ③ 中洲(중앙·두 물줄기 사이) — 야타이·ドン・キホーテ中洲店·一蘭·櫛田神社.
-//   ④ キャナルシティ(나카스–하카타역 사이) — 운하 분수.
-//   ⑤ 博多駅(동남·미카사강 옆) — JR博多シティ.
-//   ⑥ ラーメン/大名 골목(서·다이묘) — 一風堂 大名本店·라멘집 NPC(nodeId 'fukuoka-ramen' 유지).
-//   ⑦ 大濠公園/福岡城跡(서편 내륙) — 연못(중앙 섬·다리)·성터 석벽.
-// 지형: 북쪽 하카타만 바다띠 + 노코노시마/시카노시마 실루엣 섬(배경·도달 불가), 나카강·하카타강·
-//   미카사강 3선(다리로 연결), 오호리공원 연못, 캐널시티 운하. 다자이후 신사는 전국맵 유지.
+// ── 실지형 전환(손그림 128×96 → Codex geo 388×254) ──
+//   지형·좌표계는 이제 cities/fukuoka.geo.js(§6.4 계약, Codex 소유·수정 금지)가 단일 진실원.
+//   FUKUOKA_GEO = { meta:{grid:{w,h},metersPerTile:20,bbox,...}, terrain:<디코드된 Uint8Array 388×254>,
+//                   pois:[13], stations:[11] }. terrain 은 이미 RLE 디코드된 표준 지형 코드 배열이라
+//   buildGrid 는 이를 복사해 EXIT(게임 기믹) 타일만 얹어 반환한다(지형 재생성 없음).
+//   · COLS/ROWS = geo grid.w/h(388×254). metersPerTile=20 실축척.
+//   · STATIONS = geo.stations(11) 매핑(전철 fast-travel — 실좌표·BFS 검증본).
+//   · CITY_NODES = geo.pois(13) + 라멘 NPC + 一風堂 — geo 좌표에 한국어 desc/facade/kind 를 얹는다.
+//     geo POI 가 물/건물 위(도달 불가)면 메인 보행 성분의 최근접 보행칸으로 스냅한 좌표를 쓴다
+//     (오프라인 결정적 계산 — scripts/scratch 로 산출, geo 결정성이라 하드코딩 안전).
+//   · ENTRANCE/EXIT = 博多港 부두(하카타항) — geo DOCK 클러스터 인근 보행칸/선착장.
 //
-// 인코딩(문서 §4-3): 선언적 구획 그리드 + 프리팹 배치. 순수 함수(buildFukuokaGrid)라 Phaser 의존 0 —
-//   vitest(node)에서 그리드 무결성(크기·출입구 보행·NPC 인접·연결성)을 그대로 검증한다.
+// 인코딩(문서 §4-3 정신 유지): 순수 함수(buildFukuokaGrid)라 Phaser 의존 0 — vitest(node)에서
+//   그리드 무결성(크기·출입구 보행·NPC 인접·연결성·BFS 도달성)을 그대로 검증한다.
 
-// ── 표준 지형 코드 — 공용 단일 진실원(cities/terrain.js, docs §6.4)에서 가져온다 ──
-//   렌더러·충돌·미니맵·향후 geo.js 가 같은 코드를 쓴다. 후쿠오카는 이 코드로 그리드를 그린다.
+// ── 표준 지형 코드 — 공용 단일 진실원(cities/terrain.js, docs §6.4) ──
 import { CITY_TILE, isCityBlocked, isCityWalkable, isCityWater } from './terrain.js';
+// ── 실지형 데이터(Codex 소유·읽기 전용) — 지형·POI·역의 단일 진실원 ──
+import { FUKUOKA_GEO } from './fukuoka.geo.js';
 
 export { CITY_TILE, isCityBlocked, isCityWalkable, isCityWater };
 
-export const COLS = 128;
-export const ROWS = 96;
+export const COLS = FUKUOKA_GEO.meta.grid.w; // 388
+export const ROWS = FUKUOKA_GEO.meta.grid.h; // 254
 
-// 도시 진입 스폰(하카타항 부두 광장 — 페리에서 내려 도심을 향해 down). 직행 재접속 폴백 좌표.
-export const ENTRANCE = { x: 62, y: 14, facing: 'down' };
+// 전국맵 복귀 출구(EXIT) — geo terrain 엔 EXIT 코드가 없어(게임 기믹) 여기서 배치한다.
+//   博多港 베이사이드 부두(geo DOCK 클러스터)의 선착장 데크 2칸을 EXIT 로 승격 — 밟으면 전국맵 복귀.
+//   (부두 인근이라 페리 하선/복귀 동선 정합. 진입 스폰과는 떨어져 있어 즉시 이탈 없음.)
+const EXIT_TILES = [[237, 62], [237, 63]];
 
-// ── 구역(동네) — 미니맵 라벨(일본어 간판) + 지역 식별 ──
-// bounds 는 미니맵 색조 힌트, label/labelTile 은 미니맵 텍스트 배치.
+// 도시 진입 스폰(하카타항 부두 광장 남쪽 보행칸 — 페리에서 내려 도심을 향해 down). 직행 재접속 폴백 좌표.
+//   geo DOCK 클러스터(x235..237,y62..69) 남단에 붙은 보도칸 — 메인 보행 성분에 속해 전역 도달 가능.
+export const ENTRANCE = { x: 237, y: 70, facing: 'down' };
+
+// ── 구역(동네) — 미니맵 라벨(일본어 간판) + 지역 식별. geo 실좌표 기준 7구역 재배치 ──
+//   bounds 는 미니맵 색조 힌트(그리드 범위 안), label/labelTile 은 미니맵 텍스트 배치.
 export const ZONES = [
-  { id: 'hakata-port', label: '博多港', bounds: [2, 8, 125, 17], labelTile: [40, 11] },
-  { id: 'tenjin', label: '天神', bounds: [4, 20, 42, 38], labelTile: [20, 22] },
-  { id: 'nakasu', label: '中洲', bounds: [46, 26, 61, 76], labelTile: [53, 30] },
-  { id: 'canalcity', label: 'キャナルシティ博多', bounds: [66, 42, 86, 64], labelTile: [76, 43] },
-  { id: 'hakata-sta', label: '博多駅', bounds: [88, 58, 102, 90], labelTile: [95, 60] },
-  { id: 'daimyo-ramen', label: '大名／ラーメン', bounds: [4, 42, 40, 56], labelTile: [20, 43] },
-  { id: 'ohori', label: '大濠公園／福岡城跡', bounds: [4, 60, 40, 92], labelTile: [26, 61] },
+  { id: 'hakata-port', label: '博多港', bounds: [205, 55, 265, 92], labelTile: [228, 66] },
+  { id: 'tenjin', label: '天神', bounds: [212, 120, 252, 162], labelTile: [220, 128] },
+  { id: 'nakasu', label: '中洲', bounds: [256, 108, 284, 146], labelTile: [262, 116] },
+  { id: 'canalcity', label: 'キャナルシティ博多', bounds: [283, 136, 318, 166], labelTile: [290, 141] },
+  { id: 'hakata-sta', label: '博多駅', bounds: [312, 122, 362, 166], labelTile: [322, 130] },
+  { id: 'daimyo-ramen', label: '大名／ラーメン', bounds: [178, 144, 222, 176], labelTile: [188, 151] },
+  { id: 'ohori', label: '大濠公園／福岡城跡', bounds: [98, 158, 178, 202], labelTile: [116, 166] },
 ];
 
-// ── 가게/NPC·스팟 노드 (도시 로컬 좌표) ──
-//   · npc(fukuoka-ramen): 기존 라멘집 NPC 이전(nodeId 유지 — 스탬프 연속성). NpcDialog(npcScripts 무수정).
+// ── 가게/NPC·스팟 노드 (도시 로컬 좌표 = geo POI 스냅 좌표) ──
+//   · npc(fukuoka-ramen): 라멘집 NPC(nodeId 유지 — 스탬프 연속성). NpcDialog(npcScripts 무수정).
 //   · shop/spot(noStamp): 파사드+간판. A 로 짧은 desc(한국어 설명 + 일본어 명칭/요미). 스탬프 없음.
+//   · tile 은 geo POI 좌표를 메인 보행 성분 최근접 보행칸으로 스냅한 값(물/건물 위 POI 대응).
 //   · desc 는 리서치 검증 표기만 — 단정 금지(우동 발상·노포 우열·야타이 상호 등) 회피.
 export const CITY_NODES = [
-  // ⑥ ラーメン/大名 골목 — 라멘집 NPC(이전 유지) + 一風堂 大名本店.
+  // ① 博多港/베이사이드 — 페리 부두·포트타워.
+  {
+    id: 'bayside-place', kind: 'spot', name: 'ベイサイドプレイス博多', facade: 'sign',
+    tile: [235, 65], facing: 'down', noStamp: true,
+    desc: '페리 부두에 면한 베이사이드 「ベイサイドプレイス博多」(べいさいどぷれいす はかた). 하카타 부두에서 배로 시카노시마(志賀島) 쪽으로 나가요. (노코노시마 能古島는 메이노하마 姪浜 나루에서 따로 가요.)',
+  },
+  {
+    id: 'hakata-port-tower', kind: 'spot', name: '博多ポートタワー', facade: 'sign',
+    tile: [213, 71], facing: 'down', noStamp: true,
+    desc: '하카타항의 붉은 전망탑 「博多ポートタワー」(はかたぽーとたわー). 항만 베이 지구를 내려다보는 오래된 랜드마크예요.',
+  },
+  // ② 天神(서핵·백화점군) 인접 — アクロス福岡.
+  {
+    id: 'acros-fukuoka', kind: 'spot', name: 'アクロス福岡', facade: 'depart',
+    tile: [250, 134], facing: 'down', noStamp: true,
+    desc: '계단식 옥상 정원으로 유명한 복합 문화시설 「アクロス福岡」(あくろすふくおか). 텐진 도심에서 산처럼 초록으로 덮인 건물이에요.',
+  },
+  // ③ 中洲 — 야타이 거리 + 돈키호테 中洲店(免税 도어 무대) + 一蘭 본사.
+  {
+    id: 'nakasu', kind: 'shop', name: 'ドン・キホーテ中洲店', facade: 'donki',
+    tile: [268, 128], facing: 'down', noStamp: true,
+    desc: '두 강 사이 세로 섬 中洲(なかす)의 밤거리 — 야타이(屋台) 노점과 24시간 대형 할인점 「ドン・キホーテ中洲店」(どんきほーて なかすてん). 免税(めんぜい·면세) 카운터에서 여권을 보이면 세금을 돌려받아요. 근처엔 一蘭 본사도. (ot-12 면세 도어의 무대 — 아직 점원은 없어요.)',
+  },
+  {
+    id: 'kushida-jinja', kind: 'spot', name: '櫛田神社', facade: 'torii',
+    tile: [289, 125], facing: 'down', noStamp: true,
+    desc: '하카타의 총사(総鎮守) 「櫛田神社」(くしだじんじゃ). 여름 祇園山笠(ぎおんやまかさ)의 신사 — 붉은 토리이를 지나 참배해요.',
+  },
+  // ④ キャナルシティ — 운하 분수.
+  {
+    id: 'canal-city', kind: 'spot', name: 'キャナルシティ博多', facade: 'fountain',
+    tile: [296, 149], facing: 'down', noStamp: true,
+    desc: '운하(캐널)를 낀 복합몰 「キャナルシティ博多」(きゃなるしてぃはかた). 분수쇼가 시간마다 물을 뿜어 올려요.',
+  },
+  // ⑥ 大名/ラーメン 골목 — 라멘집 NPC(이전 유지) + 一風堂 大名本店.
   {
     id: 'fukuoka-ramen', kind: 'npc', npc: 'ramen', name: '博多ラーメン',
-    tile: [26, 47], facing: 'down',
+    tile: [205, 158], facing: 'down',
     desc: '뽀얀 김이 오르는 돈코츠 라멘집(博多ラーメン·はかたラーメン). 입구 券売機(켄바이키)에서 식권부터 — 「替え玉お願いします」를 써 볼 곳.',
   },
   {
     id: 'fukuoka-ippudo', kind: 'shop', name: '一風堂 大名本店', facade: 'noren',
-    tile: [12, 49], facing: 'down', noStamp: true,
+    tile: [200, 160], facing: 'down', noStamp: true,
     desc: '다이묘에서 시작한 돈코츠 라멘집 「一風堂 大名本店」(いっぷうどう だいみょうほんてん). 붉은 노렌 아래 白丸·赤丸.',
   },
-  // ③ 中洲 — 야타이 거리 + 돈키호테(텐진→나카스 이전) + 一蘭 + 櫛田神社.
+  // ⑦ 大濠公園/福岡城跡 — 연못 공원·성터.
   {
-    id: 'fukuoka-donki', kind: 'shop', name: 'ドン・キホーテ中洲店', facade: 'donki',
-    tile: [54, 44], facing: 'down', noStamp: true,
-    desc: '노란 간판이 번쩍이는 24시간 대형 할인점 「ドン・キホーテ中洲店」(どんきほーて なかすてん). 免税(めんぜい·면세) 카운터에서 여권을 보이면 세금을 돌려받아요. (ot-12 면세 도어의 무대 — 아직 점원은 없어요.)',
-  },
-  {
-    id: 'fukuoka-ichiran', kind: 'shop', name: '一蘭 本社総本店', facade: 'noren',
-    tile: [51, 62], facing: 'down', noStamp: true,
-    desc: '칸막이 1인 부스에서 먹는 돈코츠 라멘 「一蘭 本社総本店」(いちらん ほんしゃそうほんてん). 주문표에 味の濃さ·こってり度를 골라 적어요.',
-  },
-  {
-    id: 'fukuoka-kushida', kind: 'spot', name: '櫛田神社', facade: 'torii',
-    tile: [57, 68], facing: 'down', noStamp: true,
-    desc: '하카타의 총사(総鎮守) 「櫛田神社」(くしだじんじゃ). 여름 祇園山笠(ぎおんやまかさ)의 신사 — 붉은 토리이를 지나 참배해요.',
-  },
-  // ② 天神 — 백화점군·지하상가.
-  {
-    id: 'fukuoka-tenjin', kind: 'spot', name: '天神地下街', facade: 'depart',
-    tile: [20, 26], facing: 'down', noStamp: true,
-    desc: '남북으로 길게 이어진 지하상가 「天神地下街」(てんじんちかがい)와 岩田屋·福岡PARCO 백화점군. 텐진은 후쿠오카 도심의 서핵.',
-  },
-  // ④ キャナルシティ — 운하 분수.
-  {
-    id: 'fukuoka-canalcity', kind: 'spot', name: 'キャナルシティ博多', facade: 'fountain',
-    tile: [74, 50], facing: 'down', noStamp: true,
-    desc: '운하(캐널)를 낀 복합몰 「キャナルシティ博多」(きゃなるしてぃはかた). 분수쇼가 시간마다 물을 뿜어 올려요.',
-  },
-  // ⑤ 博多駅 — JR博多シティ.
-  {
-    id: 'fukuoka-hakata-sta', kind: 'spot', name: 'JR博多シティ', facade: 'station',
-    tile: [94, 58], facing: 'down', noStamp: true,
-    desc: '하카타역 직결 상업동 「JR博多シティ」(はかたシティ)·博多阪急. 신칸센·지하철이 모이는 도시의 관문.',
-  },
-  // ⑦ 大濠公園/福岡城跡.
-  {
-    id: 'fukuoka-ohori', kind: 'spot', name: '大濠公園', facade: 'sign',
-    tile: [31, 64], facing: 'down', noStamp: true,
+    id: 'ohori-park', kind: 'spot', name: '大濠公園', facade: 'sign',
+    tile: [122, 177], facing: 'down', noStamp: true,
     desc: '후쿠오카성 외호(外堀)를 정비한 큰 연못 공원 「大濠公園」(おおほりこうえん). 연못을 두른 산책로와 스타벅스 뷰.',
   },
   {
     id: 'fukuoka-castle', kind: 'spot', name: '福岡城跡', facade: 'castle',
-    tile: [26, 87], facing: 'down', noStamp: true,
+    tile: [160, 175], facing: 'down', noStamp: true,
     desc: '오호리공원과 잇닿은 성터 「福岡城跡／舞鶴公園」(ふくおかじょうあと／まいづるこうえん). 봄이면 벚꽃이 석벽을 덮어요.',
   },
-  // ① 博多港/베이사이드.
   {
-    id: 'fukuoka-bayside', kind: 'spot', name: 'ベイサイドプレイス博多', facade: 'sign',
-    tile: [40, 12], facing: 'down', noStamp: true,
-    desc: '페리 부두에 면한 베이사이드 「ベイサイドプレイス博多」(べいさいどぷれいす はかた). 하카타 부두에서 배로 시카노시마(志賀島) 쪽으로 나가요. (노코노시마 能古島는 메이노하마 姪浜 나루에서 따로 가요.)',
+    id: 'fukuoka-museum', kind: 'spot', name: '福岡市博物館', facade: 'depart',
+    tile: [21, 146], facing: 'down', noStamp: true,
+    desc: '금인(金印·한위노국왕 金印)으로 알려진 「福岡市博物館」(ふくおかしはくぶつかん). 시사이드 모모치의 넓은 뮤지엄이에요.',
+  },
+  // ⑧ シーサイドももち/福岡タワー — 서쪽 해안 워터프런트.
+  {
+    id: 'momochi-seaside', kind: 'spot', name: 'シーサイドももち海浜公園', facade: 'sign',
+    tile: [13, 115], facing: 'down', noStamp: true,
+    desc: '인공 백사장이 펼쳐진 「シーサイドももち海浜公園」(しーさいどももち かいひんこうえん). 하카타만을 바라보는 산책 해변이에요.',
+  },
+  {
+    id: 'fukuoka-tower', kind: 'spot', name: '福岡タワー', facade: 'sign',
+    tile: [17, 125], facing: 'down', noStamp: true,
+    desc: '해안에 우뚝 선 전망탑 「福岡タワー」(ふくおかたわー). 삼각 거울 외벽이 바다를 비추는 모모치의 상징이에요.',
+  },
+  {
+    id: 'marizon', kind: 'spot', name: 'マリゾン', facade: 'sign',
+    tile: [14, 115], facing: 'down', noStamp: true,
+    desc: '모모치 해변의 워터프런트 「マリゾン」(まりぞん). 예배당·상점이 모인 바닷가 소구역이에요.',
+  },
+  {
+    id: 'paypay-dome', kind: 'spot', name: 'PayPayドーム', facade: 'sign',
+    tile: [61, 118], facing: 'down', noStamp: true,
+    desc: '개폐식 지붕의 대형 구장 「PayPayドーム」(ぺいぺいどーむ). 후쿠오카 소프트뱅크 호크스의 홈구장이에요.',
   },
 ];
 
 // ── 🚃 전철 fast-travel 역(駅) — 무분할 대형 도시맵의 이동 수단(docs §6.2) ──
 //   역 근접 → A → 행선지 선택 오버레이 → 페이드 후 도착역 인접 보행칸으로 순간이동(씬 유지).
-//   인터페이스는 stations 배열({ id, nameJa, yomi, tile:[x,y], line? })로 통일 — geo 통합 시
-//   cities/fukuoka.geo.js 의 stations[](11곳·§6.4 계약)로 목록만 갈아끼우면 자동 동작한다.
-//   (기존 CITY_NODES 의 fukuoka-hakata-sta 스팟 노드는 '살펴보기' 설명용 — fast-travel 역과 역할 구분.)
-//   · tile 은 도착 지점이자 마커 위치 — 반드시 보행 가능·보행 인접(순수 그리드 테스트로 검증).
+//   인터페이스는 stations 배열({ id, nameJa, yomi, tile:[x,y], line? }) — geo.stations(11·§6.4 계약)를
+//   그대로 매핑. tile 은 geo BFS 로 검증된 실좌표(전부 보행 가능·보행 인접)라 그대로 쓴다.
 //   · yomi 는 학습 소재(역명 일본어 읽기) — 오버레이에 「博多駅 はかたえき」 형태로 병기.
-export const STATIONS = [
-  // ⑤ 博多駅 — JR·지하철이 모이는 도시의 관문(하카타역 구역, VROAD/블록 밖 보도).
-  { id: 'st-hakata', nameJa: '博多駅', yomi: 'はかたえき', tile: [86, 78], line: '空港線' },
-  // ② 天神駅 — 도심 서핵(텐진 중앙 소공원 가장자리).
-  { id: 'st-tenjin', nameJa: '天神駅', yomi: 'てんじんえき', tile: [34, 34], line: '空港線' },
-  // ③ 中洲川端駅 — 나카스(두 강 사이 세로 섬) 북부 대로변.
-  { id: 'st-nakasu', nameJa: '中洲川端駅', yomi: 'なかすかわばたえき', tile: [53, 32], line: '空港線・箱崎線' },
-  // ⑦ 大濠公園駅 — 오호리공원 연못 북안 녹지.
-  { id: 'st-ohori', nameJa: '大濠公園駅', yomi: 'おおほりこうえんえき', tile: [16, 66], line: '空港線' },
-];
+export const STATIONS = FUKUOKA_GEO.stations.map((s) => ({
+  id: s.id,
+  nameJa: `${s.nameJa}駅`,
+  yomi: `${s.yomi}えき`,
+  tile: [s.tile[0], s.tile[1]],
+  line: s.line,
+}));
 
 // 프리팹 파사드(노렌·간판·토리이·분수 등) 배치 — 건물 프론티지에 얹는 도트 소품(순수 시각·비상호작용).
-// kind → CityScene 이 ct_prop_<kind> 텍스처로 굽는다.
+// kind → CityScene 이 ct_prop_<kind> 텍스처로 굽는다. geo POI 좌표 인근에 배치.
 export const PROPS = [
-  { kind: 'sign', tile: [30, 22] }, { kind: 'depart', tile: [10, 22] },
-  { kind: 'noren', tile: [48, 40] }, { kind: 'noren', tile: [58, 58] },
-  { kind: 'noren', tile: [20, 45] }, { kind: 'torii', tile: [55, 65] },
-  { kind: 'fountain', tile: [78, 52] }, { kind: 'sign', tile: [24, 62] },
-  { kind: 'castle', tile: [10, 74] }, { kind: 'station', tile: [98, 64] },
-  { kind: 'sign', tile: [90, 12] }, { kind: 'sign', tile: [70, 12] },
+  { kind: 'sign', tile: [230, 68] },        // 博多港
+  { kind: 'depart', tile: [248, 132] },     // 天神/アクロス
+  { kind: 'torii', tile: [287, 124] },      // 櫛田神社
+  { kind: 'fountain', tile: [298, 150] },   // キャナルシティ 운하
+  { kind: 'noren', tile: [203, 159] },      // 大名/ラーメン
+  { kind: 'station', tile: [333, 146] },    // 博多駅
+  { kind: 'sign', tile: [124, 178] },       // 大濠公園
+  { kind: 'sign', tile: [17, 123] },        // 福岡タワー/모모치
 ];
 
-const idx = (x, y) => y * COLS + x;
-
-function paint(g, x0, y0, x1, y1, code) {
-  for (let y = y0; y <= y1; y++) {
-    for (let x = x0; x <= x1; x++) {
-      if (x < 0 || y < 0 || x >= COLS || y >= ROWS) continue;
-      g[idx(x, y)] = code;
-    }
-  }
-}
-
-// 둥근 섬/연못 실루엣 — 중심(cx,cy)·반경 r 의 마름모+사각 근사(도트 블롭).
-function blob(g, cx, cy, rx, ry, code) {
-  for (let y = cy - ry; y <= cy + ry; y++) {
-    for (let x = cx - rx; x <= cx + rx; x++) {
-      if (x < 0 || y < 0 || x >= COLS || y >= ROWS) continue;
-      const nx = (x - cx) / (rx + 0.0001), ny = (y - cy) / (ry + 0.0001);
-      if (nx * nx + ny * ny <= 1.05) g[idx(x, y)] = code;
-    }
-  }
-}
-
-// 선언적 구획 그리드 빌더 — 결정적·순수. 반환: Uint8Array(COLS*ROWS), 값 ∈ CITY_TILE.
+// 선언적 그리드 빌더 — 결정적·순수. 반환: Uint8Array(COLS*ROWS), 값 ∈ CITY_TILE.
+//   geo terrain(이미 디코드된 표준 지형 코드 Uint8Array)을 복사해 EXIT 게임 기믹 타일만 얹는다.
+//   (공유 geo.terrain 을 변경하지 않도록 반드시 복사한다.)
 export function buildFukuokaGrid() {
-  const T = CITY_TILE;
-  const g = new Uint8Array(COLS * ROWS).fill(T.SIDEWALK);
-
-  // ── ① 하카타만(북쪽 바다띠) + 섬 실루엣 + 항 광장 + 페리 부두 ──
-  paint(g, 0, 0, COLS - 1, 7, T.WATER);            // 만 수면
-  blob(g, 22, 3, 8, 3, T.ISLAND);                  // 노코노시마(🌸 꽃섬 — 만 안쪽 서)
-  blob(g, 98, 3, 9, 3, T.ISLAND);                  // 시카노시마(만 입구 동)
-  paint(g, 106, 3, 118, 4, T.ISLAND);              // 우미노나카미치(가는 사주 실루엣)
-  paint(g, 2, 8, 125, 17, T.PLAZA);                // 博多港 부두 광장(베이사이드)
-  paint(g, 60, 4, 65, 9, T.DOCK);                  // 페리 부두 데크(북으로 돌출)
-  paint(g, 61, 3, 64, 3, T.EXIT);                  // 페리 선착장 — 밟으면 전국맵 복귀
-
-  // ── 구역별 지면(공원·광장) ──
-  paint(g, 30, 26, 38, 34, T.PARK);                // 天神 중앙 소공원(가로수)
-  paint(g, 66, 44, 86, 64, T.PLAZA);               // キャナルシティ 광장(운하 낀 몰 앞마당)
-  paint(g, 4, 60, 40, 92, T.PARK);                 // 大濠公園/福岡城跡 녹지
-
-  // ── 건물 블록(구역별) — 프론티지 보도 1타일 남기고 카빙(도로는 뒤에서 위에 카빙) ──
-  const BLOCKS = [
-    // ② 天神(x4..42) — 백화점·지하상가 상부. 중앙 소공원 좌우로 건물열.
-    [6, 20, 14, 24], [22, 20, 28, 24], [4, 28, 14, 36], [18, 30, 28, 36], [34, 20, 40, 30],
-    // ⑥ 大名/ラーメン(x4..40, y42..56) — 라멘·카페 골목.
-    [6, 44, 14, 50], [18, 44, 24, 50], [30, 44, 38, 52], [6, 52, 22, 55],
-    // ③ 中洲(x46..61, y26..76) — 야타이·환락가 블록(두 강 사이 세로 섬).
-    [46, 28, 52, 36], [56, 28, 61, 36], [46, 46, 52, 54], [56, 46, 61, 56], [46, 64, 52, 74], [56, 70, 61, 74],
-    // ④ キャナルシティ 주변 상업동(광장 밖 테두리).
-    [66, 40, 74, 42], [80, 40, 86, 42], [66, 66, 78, 72],
-    // ⑤ 博多駅(x88..102, y58..90) — 역사·아뮤플라자.
-    [88, 60, 96, 68], [98, 60, 102, 70], [88, 74, 96, 84], [98, 76, 102, 88],
-    // 동쪽 미카사강 건너(x108..125) — 주택/상업 소블록.
-    [110, 30, 118, 40], [110, 60, 120, 72],
-  ];
-  for (const [x0, y0, x1, y1] of BLOCKS) paint(g, x0, y0, x1, y1, T.BUILDING);
-
-  // 성터 석벽(福岡城跡) — 오호리 녹지 남서에 ㄷ자 석벽(건물 코드로 렌더).
-  paint(g, 10, 76, 22, 78, T.BUILDING);
-  paint(g, 10, 78, 12, 88, T.BUILDING);
-
-  // ── 차도(2타일 폭) — 동서 대로 5 + 남북 거리 8 ──
-  const HROADS = [24, 40, 56, 72, 88];             // 동서 대로 시작 y(각 y, y+1)
-  const VROADS = [10, 24, 38, 52, 68, 82, 100, 114]; // 남북 거리 시작 x(각 x, x+1)
-  for (const y of HROADS) paint(g, 2, y, COLS - 3, y + 1, T.ROAD);
-  for (const x of VROADS) paint(g, x, 18, x + 1, 92, T.ROAD);
-
-  // 횡단보도 — 교차로마다 대로 위 지브라(교차점 셀).
-  for (const y of HROADS) for (const x of VROADS) paint(g, x, y, x + 1, y + 1, T.CROSSWALK);
-
-  // ── 하천 3선(세로 수면) + 대로 교차점 다리 ── (RIVER = 강 톤·차단, 만 WATER 와 구분)
-  // 那珂川(나카강) — 텐진(서)과 나카스(중앙) 사이.
-  paint(g, 44, 20, 45, 80, T.RIVER);
-  // 博多川(하카타강) — 나카스를 동에서 감싸는 두 번째 물줄기(나카스=두 강 사이 섬).
-  paint(g, 62, 28, 63, 78, T.RIVER);
-  // 御笠川(미카사강) — 동쪽 테두리, 하카타역 곁을 지나 만으로.
-  paint(g, 104, 22, 105, 92, T.RIVER);
-  for (const y of HROADS) {
-    for (const [rx0, rx1] of [[44, 45], [62, 63], [104, 105]]) {
-      // 강 범위 안의 대로 교차 지점에만 다리.
-      paint(g, rx0, y, rx1, y + 1, T.BRIDGE);
-    }
+  const g = Uint8Array.from(FUKUOKA_GEO.terrain);
+  for (const [x, y] of EXIT_TILES) {
+    if (x >= 0 && y >= 0 && x < COLS && y < ROWS) g[y * COLS + x] = CITY_TILE.EXIT;
   }
-
-  // ── 大濠公園 연못(중앙 섬 + 가로지르는 다리) ──
-  blob(g, 20, 76, 13, 9, T.WATER);                 // 원형 연못
-  paint(g, 6, 82, 30, 83, T.BRIDGE);               // 연못을 동서로 가로지르는 다리(양안 연결)
-  blob(g, 13, 79, 2, 1, T.ISLAND);                 // 연못 섬 실루엣(다리 곁)
-  blob(g, 27, 73, 2, 1, T.ISLAND);
-
-  // ── キャナルシティ 운하(분수) — 광장 안 작은 물길 + 다리 ── (운하 = RIVER 강 톤)
-  paint(g, 70, 50, 78, 53, T.RIVER);
-  paint(g, 73, 50, 74, 53, T.BRIDGE);
-
-  // ── 노드 프론티지 확보 — 마커 타일·주변을 보도로(보행 인접·접근 보장) ──
-  for (const n of CITY_NODES) {
-    const [nx, ny] = n.tile;
-    for (const [dx, dy] of [[0, 0], [0, 1], [-1, 0], [1, 0], [0, -1]]) {
-      const x = nx + dx, y = ny + dy;
-      if (x < 0 || y < 0 || x >= COLS || y >= ROWS) continue;
-      if (isCityBlocked(g[idx(x, y)])) g[idx(x, y)] = T.SIDEWALK;
-    }
-  }
-  // 진입 스폰 타일도 보도/광장 보장.
-  if (isCityBlocked(g[idx(ENTRANCE.x, ENTRANCE.y)])) g[idx(ENTRANCE.x, ENTRANCE.y)] = T.PLAZA;
-
   return g;
 }
 
@@ -258,7 +185,7 @@ export const FUKUOKA = {
   returnNode: 'fukuoka',   // 전국맵 복귀 시 이 노드 앞에서 스폰(worldNodes 의 fukuoka 도시 노드)
   zones: ZONES,
   nodes: CITY_NODES,
-  stations: STATIONS,   // 🚃 전철 fast-travel 노드(geo 통합 시 geo.stations 로 교체)
+  stations: STATIONS,   // 🚃 전철 fast-travel 노드(geo.stations 매핑)
   props: PROPS,
   CITY_TILE,
   buildGrid: buildFukuokaGrid,
