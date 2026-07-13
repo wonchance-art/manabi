@@ -185,8 +185,13 @@ export function buildAirportScene(Phaser, ctx) {
       return m;
     }
 
-    create() {
+    create(data) {
       ctx.bindScene(this);
+      // 복귀 스폰(진입 게이트 앞 전국맵 타일) — WorldScene.enterAirport 가 실어 보낸다.
+      // returnPlaza 가 { spawn: returnSpawn } 으로 복귀해 ① cityRedirectScene 이 초기 부팅과
+      // 구분하고(저장 씬이 city:* 인 사용자가 공항 출구에서 도시로 튕기지 않음 — Codex 재검수 P1)
+      // ② 부수 효과로 기존 "공항 출구 = 데이터 없음 → 저장 좌표/서울 스폰" 동작이 게이트 앞 복귀로 개선된다.
+      this.returnSpawn = (data && data.returnSpawn) ? data.returnSpawn : null;
       this.inputLocked = false;
       this.exitOpen = false;
       this.petJumpVal = 0;
@@ -398,7 +403,14 @@ export function buildAirportScene(Phaser, ctx) {
     // 대사·문답이 끝나 다시 걸을 수 있게(출구로 이동).
     unlockWalk() { this.inputLocked = false; }
 
-    returnPlaza() { this.scene.start('world'); }
+    // 광장 복귀 — 진입 시 받은 returnSpawn(게이트 앞 타일)을 { spawn } 으로 실어 보낸다.
+    // WorldScene 은 spawn 존재로 "복귀"를 판별해 도시 직행 리다이렉트를 건너뛰고(cityRedirectScene
+    // → null) 게이트 앞에서 스폰한다. returnSpawn 미전달(구 경로·예외 방어)이면 기존처럼 데이터
+    // 없이 시작한다 — 진입 경로는 WorldScene.enterAirport 하나뿐이라 실전에서는 항상 전달된다.
+    returnPlaza() {
+      if (this.returnSpawn) this.scene.start('world', { spawn: this.returnSpawn });
+      else this.scene.start('world');
+    }
 
     // 버스 연출(광장과 동일 시그니처 — quest:scored/done 재사용).
     questScoredFx({ correct } = {}) { if (correct) this.spawnHeart(); }

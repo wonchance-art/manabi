@@ -1227,7 +1227,8 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           //   · 무효(범위 밖·바다·울타리·팻말 타일)면 기본 서울로 폴백한다.
           let spawnTileX = POI.SEOUL.x;
           let spawnTileY = POI.SEOUL.y;
-          // 스폰 우선순위: 도시맵 복귀(data.spawn — 도시 노드 앞) > 저장된 플라자 좌표 > 서울 허브.
+          // 스폰 우선순위: 씬 복귀(bootData.spawn — 도시 출구=도시 노드 앞 · 공항 출구=게이트 앞
+          // returnSpawn) > 저장된 플라자 좌표 > 서울 허브.
           const savedSpawn = initialSpawnRef.current;
           const override = (bootData && bootData.spawn && bootData.spawn.scene === 'plaza') ? bootData.spawn
             : (savedSpawn && savedSpawn.scene === 'plaza' ? savedSpawn : null);
@@ -1308,7 +1309,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
 
           this.wasNear = false;
 
-          // 도시맵에서 복귀(bootData.spawn)했으면 페이드인으로 자연스럽게 등장.
+          // 씬 복귀(bootData.spawn — 도시 출구·공항 출구)면 페이드인으로 자연스럽게 등장.
           if (bootData && bootData.spawn) this.cameras.main.fadeIn(CITY_FADE_MS, 0, 0, 0);
 
           // 씬 전환 직후 피어 스냅샷 재적용 + 전체 키 거리 1회 emit(타 씬 음성 잔류 차단 — Codex P1-2).
@@ -1428,7 +1429,14 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         }
 
         // 광장 → 공항 스토리 씬 전환(같은 Phaser 게임 내 씬 스위치).
-        enterAirport() { this.scene.start('airport'); }
+        // 게이트 앞 타일(현재 플레이어 타일)을 returnSpawn 으로 실어 보낸다 — 공항 출구가
+        // { spawn: returnSpawn } 으로 복귀해 cityRedirectScene 이 "초기 부팅"으로 오인하지 않게
+        // (Codex 재검수 P1: 저장 씬이 city:* 인 사용자가 공항 출구에서 도시로 튕기던 회귀 차단).
+        // 공항 진입 경로는 이 메서드 하나뿐이다(interact() A버튼·게이트 프롬프트 버튼 모두 여기로) —
+        // returnSpawn 전달이 항상 보장된다.
+        enterAirport() {
+          this.scene.start('airport', { returnSpawn: { scene: 'plaza', x: this.pTileX, y: this.pTileY } });
+        }
 
         // 페리 탑승 — "함께 보이는 항해". 순간이동 대신 물 위를 3~5초에 걸쳐 tween 이동한다.
         //   · 이동 중 캐릭터 아래 배 도트, 조작 잠금(this.ferrying), 카메라는 계속 플레이어 추적.
