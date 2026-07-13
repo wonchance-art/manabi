@@ -38,3 +38,10 @@ export function isCityWalkable(code) { return !CITY_BLOCKED.has(code); }
 
 // 수면(물결 애니 대상) — WATER/RIVER 둘 다 흐르는 물. RIVER 는 강 톤으로 렌더.
 export function isCityWater(code) { return code === CITY_TILE.WATER || code === CITY_TILE.RIVER; }
+
+// 🚃 전철 fast-travel — 행선지 목록(현재 역 제외)을 만드는 공용 순수 로직.
+//   도시 데이터의 stations 배열(현 fukuoka.js STATIONS · 향후 geo.js stations[])을 그대로 소비한다.
+//   인터페이스가 stations 배열로 통일돼 있어 geo 통합 시 목록만 갈아끼우면 자동 동작(docs §6.2·§6.4).
+export function fastTravelDestinations(stations, fromId) {
+  return (Array.isArray(stations) ? stations : []).filter((s) => s && s.id !== fromId);
+}

@@ -86,6 +86,8 @@ function tileHash(tx, ty) {
  *   onEnter(),                       씬 진입 통지(React 오버레이 초기화 · activeScene 갱신)
  *   onReady?(),                      create 말미 통지 — 피어 스냅샷 재적용 + 전체 키 거리 1회 emit(P1-2)
  *   setNear(node|null),              근접 노드 → React(nearNode) — { id, name, desc, npc?, noStamp? }
+ *   setNearStation?(station|null),   🚃 근접 역 → React(nearStation) — { id, nameJa, yomi, line? }
+ *   arrivedStation?({ nameJa, yomi }),  🚃 fast-travel 도착 확인 토스트("🚃 博多駅")
  *   worldReturn: { scene:'plaza', x, y },   전국맵 복귀 스폰(도시 노드 앞)
  * }
  */
@@ -388,6 +390,7 @@ export function buildCityScene(Phaser, city, ctx) {
       this.runHeld = false;
       this.petJumpVal = 0;
       this.exiting = false;
+      this.traveling = false;   // 🚃 전철 fast-travel 순간이동 중(페이드) 플래그 — 재진입 가드
 
       this.grid = city.buildGrid();
 
@@ -452,6 +455,18 @@ export function buildCityScene(Phaser, city, ctx) {
         }
         return { node, wx, wy };
       });
+
+      // ── 🚃 전철 fast-travel 역 마커 — 근접 A 로 행선지 선택(순간이동). 역사 프리팹 재사용. ──
+      //   stations 배열({ id, nameJa, yomi, tile, line? })을 소비 — geo 통합 시 목록만 교체(docs §6.2).
+      this.stationViews = (city.stations || []).map((st) => {
+        const [tx, ty] = st.tile;
+        const wx = tx * TILE + TILE / 2, wy = ty * TILE + TILE / 2;
+        this.add.image(wx, (ty + 1) * TILE, 'ct_prop_station').setOrigin(0.5, 1).setScale(TSCALE).setDepth(wy);
+        // 🚃 마커 위 역명(일본어 간판) — 노드 라벨과 동일 도트 문법.
+        this.add.text(wx, ty * TILE - 4, `🚃 ${st.nameJa}`, this.labelStyle()).setOrigin(0.5, 1).setDepth(10000);
+        return { station: st, wx, wy };
+      });
+      this.wasNearStationId = null;
 
       // ── 플레이어 스폰 — data.spawn(직행 재접속) 검증, 실패/미지정 시 도시 입구 ──
       let sx = city.entrance.x, sy = city.entrance.y, sfacing = city.entrance.facing || 'down';
@@ -715,6 +730,44 @@ export function buildCityScene(Phaser, city, ctx) {
       });
     }
 
+    // ── 🚃 전철 fast-travel — 같은 도시 씬 안에서 도착역 인접 보행칸으로 순간이동(씬 변경 아님) ──
+    //   페이드아웃 → placeAt(도착 타일) → 페이드인. 씬을 바꾸지 않으므로 피어/좌표영속/멀티는
+    //   placePlayerAt 처럼 자동 유지(resetScenePeers 불필요 — 같은 씬). 이동 중 조작 잠금.
+    placeAt(tx, ty) {
+      this.pTileX = tx; this.pTileY = ty; this.moving = false; this.turnGrace = 0;
+      this.heldDirs.length = 0; this.tapTile = null;
+      const wx = tx * TILE + TILE / 2, wy = ty * TILE + TILE / 2;
+      this.player.setPosition(wx, wy);
+      this.player.setDepth(wy);
+      // 펫·카메라를 도착 지점으로 스냅(추적 보간 잔상 방지).
+      this.petTargetX = tx - 1; this.petTargetY = ty;
+      this.petPX = this.petTargetX * TILE + TILE / 2; this.petPY = this.petTargetY * TILE + TILE / 2;
+      this.pet.setPosition(Math.round(this.petPX), Math.round(this.petPY));
+      this.cameras.main.centerOn(wx, wy);
+      this.refreshChunks(true);      // 도착 지점 청크 즉시 bake(순간이동 후 빈 화면 방지)
+      this.refreshWaterOverlay();
+    }
+
+    // 행선지 역으로 이동. React 오버레이의 「행선지」 선택이 호출. 소프트락 없음(중복 호출 가드).
+    travelToStation(id) {
+      if (this.exiting || this.traveling) return;
+      const st = (city.stations || []).find((s) => s.id === id);
+      if (!st) return;
+      this.traveling = true;
+      this.inputLocked = true;
+      this.heldDirs.length = 0; this.tapTile = null; this.runHeld = false;
+      ctx.setNear?.(null); ctx.setNearStation?.(null);
+      this.cameras.main.fadeOut(FADE_MS, 0, 0, 0);
+      this.cameras.main.once('camerafadeoutcomplete', () => {
+        const [tx, ty] = st.tile;
+        this.placeAt(tx, ty);
+        this.wasNearNodeId = null; this.wasNearStationId = st.id; // 도착역엔 이미 근접 — 재프롬프트 억제
+        this.cameras.main.fadeIn(FADE_MS, 0, 0, 0);
+        this.cameras.main.once('camerafadeincomplete', () => { this.inputLocked = false; this.traveling = false; });
+        ctx.arrivedStation?.({ nameJa: st.nameJa, yomi: st.yomi }); // 짧은 확인 "🚃 博多駅"
+      });
+    }
+
     emitDistances() { emitPeerDistances(this, bus); }
 
     update(time, delta) {
@@ -723,7 +776,8 @@ export function buildCityScene(Phaser, city, ctx) {
       this.refreshWaterOverlay();
 
       // 이동 상태기계(광장과 동일 — 달리기 B 홀드 포함).
-      if (!this.moving && !this.inputLocked) {
+      //   traveling(🚃 fast-travel 페이드) 중엔 React 입력잠금 효과와의 경합과 무관하게 이동 금지.
+      if (!this.moving && !this.inputLocked && !this.traveling) {
         const held = this.heldDirs.length ? this.heldDirs[this.heldDirs.length - 1] : null;
         if (held) {
           if (this.facing !== held) { this.facing = held; this.turnGrace = time + TURN_MS; }
@@ -803,6 +857,18 @@ export function buildCityScene(Phaser, city, ctx) {
       if (nid !== this.wasNearNodeId) {
         this.wasNearNodeId = nid;
         ctx.setNear?.(nearest ? { id: nearest.id, name: nearest.name, desc: nearest.desc, npc: nearest.npc, noStamp: nearest.noStamp } : null);
+      }
+
+      // 🚃 역 근접 → React(nearStation). A 로 행선지 선택 오버레이. (노드와 별개 목록·별개 상태.)
+      let nearSt = null, nearStD = NODE_TALK_RANGE;
+      for (const v of this.stationViews) {
+        const d = Phaser.Math.Distance.Between(this.player.x, this.player.y, v.wx, v.wy);
+        if (d < nearStD) { nearSt = v.station; nearStD = d; }
+      }
+      const sid = nearSt ? nearSt.id : null;
+      if (sid !== this.wasNearStationId) {
+        this.wasNearStationId = sid;
+        ctx.setNearStation?.(nearSt ? { id: nearSt.id, nameJa: nearSt.nameJa, yomi: nearSt.yomi, line: nearSt.line } : null);
       }
     }
   };

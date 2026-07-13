@@ -110,6 +110,24 @@ export const CITY_NODES = [
   },
 ];
 
+// ── 🚃 전철 fast-travel 역(駅) — 무분할 대형 도시맵의 이동 수단(docs §6.2) ──
+//   역 근접 → A → 행선지 선택 오버레이 → 페이드 후 도착역 인접 보행칸으로 순간이동(씬 유지).
+//   인터페이스는 stations 배열({ id, nameJa, yomi, tile:[x,y], line? })로 통일 — geo 통합 시
+//   cities/fukuoka.geo.js 의 stations[](11곳·§6.4 계약)로 목록만 갈아끼우면 자동 동작한다.
+//   (기존 CITY_NODES 의 fukuoka-hakata-sta 스팟 노드는 '살펴보기' 설명용 — fast-travel 역과 역할 구분.)
+//   · tile 은 도착 지점이자 마커 위치 — 반드시 보행 가능·보행 인접(순수 그리드 테스트로 검증).
+//   · yomi 는 학습 소재(역명 일본어 읽기) — 오버레이에 「博多駅 はかたえき」 형태로 병기.
+export const STATIONS = [
+  // ⑤ 博多駅 — JR·지하철이 모이는 도시의 관문(하카타역 구역, VROAD/블록 밖 보도).
+  { id: 'st-hakata', nameJa: '博多駅', yomi: 'はかたえき', tile: [86, 78], line: '空港線' },
+  // ② 天神駅 — 도심 서핵(텐진 중앙 소공원 가장자리).
+  { id: 'st-tenjin', nameJa: '天神駅', yomi: 'てんじんえき', tile: [34, 34], line: '空港線' },
+  // ③ 中洲川端駅 — 나카스(두 강 사이 세로 섬) 북부 대로변.
+  { id: 'st-nakasu', nameJa: '中洲川端駅', yomi: 'なかすかわばたえき', tile: [53, 32], line: '空港線・箱崎線' },
+  // ⑦ 大濠公園駅 — 오호리공원 연못 북안 녹지.
+  { id: 'st-ohori', nameJa: '大濠公園駅', yomi: 'おおほりこうえんえき', tile: [16, 66], line: '空港線' },
+];
+
 // 프리팹 파사드(노렌·간판·토리이·분수 등) 배치 — 건물 프론티지에 얹는 도트 소품(순수 시각·비상호작용).
 // kind → CityScene 이 ct_prop_<kind> 텍스처로 굽는다.
 export const PROPS = [
@@ -240,6 +258,7 @@ export const FUKUOKA = {
   returnNode: 'fukuoka',   // 전국맵 복귀 시 이 노드 앞에서 스폰(worldNodes 의 fukuoka 도시 노드)
   zones: ZONES,
   nodes: CITY_NODES,
+  stations: STATIONS,   // 🚃 전철 fast-travel 노드(geo 통합 시 geo.stations 로 교체)
   props: PROPS,
   CITY_TILE,
   buildGrid: buildFukuokaGrid,

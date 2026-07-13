@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import FUKUOKA, {
   buildFukuokaGrid, isCityWalkable, isCityBlocked,
-  COLS, ROWS, CITY_TILE, ENTRANCE, ZONES, CITY_NODES, PROPS,
+  COLS, ROWS, CITY_TILE, ENTRANCE, ZONES, CITY_NODES, PROPS, STATIONS,
 } from '../cities/fukuoka.js';
+import { fastTravelDestinations } from '../cities/terrain.js';
 
 // 🏙️ 후쿠오카 도시 정밀맵 데이터 무결성 — 순수 그리드 빌더(Phaser 미의존)를 그대로 검증한다.
 //   그리드 크기 · 출입구 보행 가능 · NPC/가게 좌표 보행 인접 · 전 보행칸 연결성(입구→가게·출구).
@@ -113,6 +114,70 @@ describe('프리팹 파사드', () => {
       const [x, y] = p.tile;
       expect(x >= 0 && x < COLS && y >= 0 && y < ROWS).toBe(true);
     }
+  });
+});
+
+describe('🚃 전철 fast-travel 역(STATIONS)', () => {
+  it('3~4개 역이 필수 필드(id·nameJa·yomi·tile)를 갖는다', () => {
+    expect(STATIONS.length).toBeGreaterThanOrEqual(3);
+    expect(STATIONS.length).toBeLessThanOrEqual(4);
+    for (const s of STATIONS) {
+      expect(typeof s.id).toBe('string');
+      expect(s.nameJa.trim().length).toBeGreaterThan(0);
+      expect(s.yomi.trim().length).toBeGreaterThan(0);
+      expect(Array.isArray(s.tile) && s.tile.length === 2).toBe(true);
+    }
+    // 실제 후쿠오카 역명(데모 4곳)이 들어 있다.
+    const names = STATIONS.map((s) => s.nameJa);
+    expect(names).toEqual(expect.arrayContaining(['博多駅', '天神駅', '中洲川端駅', '大濠公園駅']));
+  });
+
+  it('역 id 는 유일 + CITY_NODES id 와 충돌하지 않는다', () => {
+    const ids = STATIONS.map((s) => s.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    const nodeIds = new Set(CITY_NODES.map((n) => n.id));
+    for (const id of ids) expect(nodeIds.has(id)).toBe(false);
+  });
+
+  it('모든 역 도착 tile 은 보행 가능 + 보행 인접 + 입구에서 도달 가능', () => {
+    for (const s of STATIONS) {
+      const [x, y] = s.tile;
+      expect(x >= 0 && x < COLS && y >= 0 && y < ROWS).toBe(true);
+      expect(isCityWalkable(at(x, y))).toBe(true);
+      expect(adjWalkable(x, y)).toBe(true);
+    }
+  });
+
+  it('역은 노드로부터 A버튼 근접반경(2.75타일=88px) 밖 — A 상호작용 모호성 없음', () => {
+    for (const s of STATIONS) {
+      for (const n of CITY_NODES) {
+        const d = Math.hypot(s.tile[0] - n.tile[0], s.tile[1] - n.tile[1]);
+        expect(d).toBeGreaterThan(2.75);
+      }
+    }
+  });
+
+  it('FUKUOKA.stations 가 STATIONS 를 노출한다(stations 계약 — geo 통합 대상)', () => {
+    expect(FUKUOKA.stations).toBe(STATIONS);
+  });
+});
+
+describe('🚃 행선지 목록 순수 로직(fastTravelDestinations)', () => {
+  it('행선지 = 전체 역 − 현재 역', () => {
+    for (const cur of STATIONS) {
+      const dests = fastTravelDestinations(STATIONS, cur.id);
+      expect(dests.length).toBe(STATIONS.length - 1);
+      expect(dests.find((s) => s.id === cur.id)).toBeUndefined();
+      expect(new Set(dests.map((s) => s.id))).toEqual(
+        new Set(STATIONS.filter((s) => s.id !== cur.id).map((s) => s.id)),
+      );
+    }
+  });
+
+  it('빈/누락 입력에 안전(빈 배열 반환)', () => {
+    expect(fastTravelDestinations(undefined, 'x')).toEqual([]);
+    expect(fastTravelDestinations(null, 'x')).toEqual([]);
+    expect(fastTravelDestinations([], 'x')).toEqual([]);
   });
 });
 
