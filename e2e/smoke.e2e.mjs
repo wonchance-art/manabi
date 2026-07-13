@@ -5,6 +5,7 @@ import { after, before, test } from 'node:test';
 import { setTimeout as delay } from 'node:timers/promises';
 import { chromium } from 'playwright-core';
 import config from '../playwright.config.mjs';
+import { runPeerLoadBenchmark } from './world-peer-bench.mjs';
 
 let browser;
 let server;
@@ -228,7 +229,14 @@ async function seedMockSessionCookie(context, role, options = {}) {
   }]);
 }
 
-async function mockWorldShellRuntime(context) {
+async function mockWorldShellRuntime(context, { position = null, positionWrites = null } = {}) {
+  await context.route('**/api/world/stamps', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(route.request().method() === 'GET' ? { stamps: [] } : { ok: true }),
+    });
+  });
   await context.route('**/api/world/session', async (route) => {
     if (route.request().method() === 'PATCH') {
       await route.fulfill({ status: 204 });
@@ -246,13 +254,36 @@ async function mockWorldShellRuntime(context) {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ position: null }),
+        body: JSON.stringify({ position }),
       });
       return;
     }
+    try {
+      positionWrites?.push(route.request().postDataJSON());
+    } catch { /* sendBeacon 등 JSON 본문이 아닌 최종 저장은 벤치에서 제외 */ }
     await route.fulfill({ status: 204 });
   });
-  await context.routeWebSocket('**/realtime/v1/websocket**', () => {});
+  await context.routeWebSocket('**/realtime/v1/websocket**', (socket) => {
+    socket.onMessage((message) => {
+      if (typeof message !== 'string') return;
+      let frame;
+      try {
+        frame = JSON.parse(message);
+      } catch {
+        return;
+      }
+      if (!Array.isArray(frame) || frame.length < 5) return;
+      const [joinRef, ref, topic, event] = frame;
+      if (!['phx_join', 'phx_leave', 'heartbeat', 'presence', 'access_token'].includes(event)) return;
+      socket.send(JSON.stringify([
+        joinRef,
+        ref,
+        topic,
+        'phx_reply',
+        { status: 'ok', response: {} },
+      ]));
+    });
+  });
 }
 
 before(async () => {
@@ -477,6 +508,76 @@ test('world: 일반 로그인 세션에서 GBC 게임 셸을 렌더한다', { ti
     await assertVisible(page.getByRole('button', { name: 'A (말 걸기·상호작용)', exact: true }), 'GBC A button');
     await assertVisible(page.getByRole('button', { name: '펫 선택 (SELECT)', exact: true }), 'GBC SELECT button');
   });
+});
+
+test('world: 후쿠오카 노드에서 시내로 들어가 하카타항 EXIT로 복귀한다', { timeout: config.timeout * 2 }, async () => {
+  await runInFreshPage(async (page, context) => {
+    const positionWrites = [];
+    await mockWorldShellRuntime(context, {
+      position: { scene: 'plaza', x: 135, y: 307 },
+      positionWrites,
+    });
+    await signInWithMockSession(page, context, 'learner');
+
+    await page.goto('/world', { waitUntil: 'domcontentloaded' });
+    await assertVisible(page.getByRole('heading', { name: /^학습 월드/ }), 'world heading');
+    const spawnDeadline = Date.now() + 5000;
+    while (!positionWrites.length && Date.now() < spawnDeadline) await page.waitForTimeout(50);
+    assert.deepEqual(
+      positionWrites[0],
+      { scene: 'plaza', x: 135, y: 307 },
+      `world should spawn at the mocked Fukuoka node: ${JSON.stringify(positionWrites)}`
+    );
+    await assertVisible(page.getByRole('button', { name: '들어가기', exact: true }), 'Fukuoka city gate');
+
+    await page.getByRole('button', { name: '지도 열기', exact: true }).click();
+    await assertVisible(page.getByRole('button', { name: '닫기 Ⓑ', exact: true }), 'national minimap');
+    const nationalMapSize = await page.locator('canvas').last().evaluate((canvas) => ({
+      width: canvas.width,
+      height: canvas.height,
+    }));
+    await page.getByRole('button', { name: '닫기 Ⓑ', exact: true }).click();
+
+    await page.getByRole('button', { name: '들어가기', exact: true }).click();
+    await assertVisible(page.getByText('후쿠오카 시내로 들어갈까요?', { exact: true }), 'city confirmation');
+    await page.getByRole('button', { name: '들어가기', exact: true }).click();
+
+    await page.waitForTimeout(1200);
+    await page.getByRole('button', { name: '지도 열기', exact: true }).click();
+    await assertVisible(page.getByRole('button', { name: '닫기 Ⓑ', exact: true }), 'Fukuoka city minimap');
+    const cityMapSize = await page.locator('canvas').last().evaluate((canvas) => ({
+      width: canvas.width,
+      height: canvas.height,
+    }));
+    assert.notDeepEqual(cityMapSize, nationalMapSize, 'city shell should render the city minimap');
+    assert.ok(cityMapSize.width > nationalMapSize.width, 'Fukuoka minimap should be wider than national minimap');
+    assert.ok(cityMapSize.height > nationalMapSize.height, 'Fukuoka minimap should be taller than national minimap');
+    await page.getByRole('button', { name: '닫기 Ⓑ', exact: true }).click();
+
+    await page.waitForTimeout(350);
+    await page.keyboard.down('b');
+    await page.keyboard.down('ArrowUp');
+    await page.waitForTimeout(1800);
+    await page.keyboard.up('ArrowUp');
+    await page.keyboard.up('b');
+
+    await assertVisible(page.getByRole('button', { name: '들어가기', exact: true }), 'returned Fukuoka city gate');
+    await page.getByRole('button', { name: '지도 열기', exact: true }).click();
+    await assertVisible(page.getByRole('button', { name: '닫기 Ⓑ', exact: true }), 'returned national minimap');
+    const returnedMapSize = await page.locator('canvas').last().evaluate((canvas) => ({
+      width: canvas.width,
+      height: canvas.height,
+    }));
+    assert.deepEqual(returnedMapSize, nationalMapSize, 'Hakata Port EXIT should return to national map');
+  });
+});
+
+test('world peers: 수십 명 렌더·거리·라벨 순수 부하를 측정한다', () => {
+  const result = runPeerLoadBenchmark({ peerCount: 64, frames: 600, distancePasses: 200 });
+  assert.equal(result.displayObjects, 128);
+  assert.equal(result.distanceSamples, 64 * 200);
+  assert.ok(result.totalMs < 5000, `peer pure benchmark exceeded 5s: ${JSON.stringify(result)}`);
+  console.log(`[world-peer-bench] ${JSON.stringify(result)}`);
 });
 
 test('embed/review: 비로그인 즉석 복습 로그인 UI를 렌더한다', { timeout: config.timeout }, async () => {
