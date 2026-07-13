@@ -30,6 +30,10 @@ import {
 } from './sprites';
 import { GBC } from './QuestReview';
 import bus from './bus';
+// 🗺️ 표준 지형 코드·충돌 — 공용 단일 진실원(cities/terrain.js, docs §6.4). 렌더·충돌 공용.
+import { CITY_TILE as TERRAIN, isCityBlocked, isCityWater } from './cities/terrain';
+// 🧱 청크 RenderTexture 렌더의 순수 로직(가시성·용량·LRU) — docs §6.3. 대형 맵 메모리 상한.
+import { CHUNK_TILES, chunkDims, visibleChunks, chunkCapacity, ChunkLRU } from './cityChunks';
 
 // ── 좌표 스케일 (광장·공항과 동일 불변) ──
 const TILE = 32;
@@ -182,6 +186,17 @@ export function buildCityScene(Phaser, city, ctx) {
       water('ct_water0', 0x3a86b0, 0);
       water('ct_water1', 0x3e93c4, 1);
       water('ct_water2', 0x347ba0, 2);
+      // 강·운하(RIVER) — 바다보다 탁한 청록 강 톤(WATER 와 시각 구분).
+      water('ct_river0', 0x3f7a6a, 0);
+      water('ct_river1', 0x468a76, 1);
+      water('ct_river2', 0x386e60, 2);
+
+      // 해변(BEACH · 보행 가능) — 젖은 모래 + 잔물결 자국.
+      this.bakeTile('ct_beach', (g) => {
+        g.fillStyle(C(0xe8d6a6), 1); g.fillRect(0, 0, TEX, TEX);
+        g.fillStyle(C(0xd8c48a), 1); for (const [x, y] of [[3, 4], [10, 6], [6, 11], [13, 12]]) g.fillRect(x, y, 2, 1);
+        g.fillStyle(C(0xf2e6c2), 0.7); g.fillRect(0, 13, TEX, 1);
+      });
 
       // 섬 실루엣(하카타만 노코노시마/시카노시마 · 오호리 연못 섬) — 초지 + 기슭(차단·배경).
       this.bakeTile('ct_island', (g) => {
@@ -204,15 +219,7 @@ export function buildCityScene(Phaser, city, ctx) {
       bldg('ct_bldg_a', 0xb9b2a4, 0x8f887a, 0x7a7266, 0x8fb8d0); // 콘크리트 + 유리창
       bldg('ct_bldg_b', 0xc09a72, 0x93724e, 0x7a5a3a, 0xe6d8b0); // 벽돌/타일 + 밝은 창
 
-      // ── 타일 아틀라스(1장) — 172k 미만이라 add.image 도 되지만 광장과 동일 tilemap 레이어 방식 ──
-      // 인덱스: 0도로 1보도 2횡단 3광장 4공원 5다리 6부두 7출구 8·9·10수면3프레임 11건물A 12건물B 13섬.
-      if (!this.textures.exists('city_tiles')) {
-        const keys = ['ct_road', 'ct_sidewalk', 'ct_crosswalk', 'ct_plaza', 'ct_park', 'ct_bridge', 'ct_dock', 'ct_exit', 'ct_water0', 'ct_water1', 'ct_water2', 'ct_bldg_a', 'ct_bldg_b', 'ct_island'];
-        const atlas = this.textures.createCanvas('city_tiles', keys.length * TEX, TEX);
-        const actx = atlas.getContext();
-        for (let i = 0; i < keys.length; i++) actx.drawImage(this.textures.get(keys[i]).getSourceImage(), i * TEX, 0);
-        atlas.refresh();
-      }
+      // (지형은 청크 RenderTexture 로 굽는다 — tilemap/아틀라스 폐기. 개별 ct_* 텍스처를 청크에 draw.)
 
       // 가로수(2타일 높이 · 16×32).
       this.bakeTile('ct_tree', (g) => {
@@ -336,14 +343,34 @@ export function buildCityScene(Phaser, city, ctx) {
     }
 
     tileCode(tx, ty) {
-      if (tx < 0 || ty < 0 || tx >= COLS || ty >= ROWS) return T.WATER; // 범위 밖 = 물(차단)
+      if (tx < 0 || ty < 0 || tx >= COLS || ty >= ROWS) return TERRAIN.WATER; // 범위 밖 = 물(차단)
       return this.grid[ty * COLS + tx];
     }
-    blocked(tx, ty) {
+    // 충돌은 공용 표준 규칙(isCityBlocked: WATER·RIVER·BUILDING·ISLAND) — 렌더·데이터와 단일 진실원.
+    blocked(tx, ty) { return isCityBlocked(this.tileCode(tx, ty)); }
+    isWaterTile(tx, ty) { return isCityWater(this.tileCode(tx, ty)); }
+
+    // 지형 코드 → 굽기용 개별 텍스처 키. 청크 베이킹·물 오버레이가 공용으로 쓴다.
+    //   물/강은 정적 프레임0을 청크에 굽고(항상 물처럼 보임), 애니는 별도 오버레이가 얹는다.
+    terrainTexKey(tx, ty) {
       const c = this.tileCode(tx, ty);
-      return c === T.WATER || c === T.BUILDING || c === T.ISLAND;
+      switch (c) {
+        case TERRAIN.ROAD: return 'ct_road';
+        case TERRAIN.SIDEWALK: return 'ct_sidewalk';
+        case TERRAIN.CROSSWALK: return 'ct_crosswalk';
+        case TERRAIN.PLAZA: return 'ct_plaza';
+        case TERRAIN.PARK: return 'ct_park';
+        case TERRAIN.BEACH: return 'ct_beach';
+        case TERRAIN.BRIDGE: return 'ct_bridge';
+        case TERRAIN.DOCK: return 'ct_dock';
+        case TERRAIN.EXIT: return 'ct_exit';
+        case TERRAIN.WATER: return 'ct_water0';
+        case TERRAIN.RIVER: return 'ct_river0';
+        case TERRAIN.BUILDING: return tileHash(tx, ty) < 0.5 ? 'ct_bldg_a' : 'ct_bldg_b';
+        case TERRAIN.ISLAND: return 'ct_island';
+        default: return 'ct_sidewalk';
+      }
     }
-    isWaterTile(tx, ty) { return this.tileCode(tx, ty) === T.WATER; }
 
     petTexKey(frame) {
       const key = PET_KEYS.includes(ctx.petRef?.current?.key) ? ctx.petRef.current.key : 'dog';
@@ -369,39 +396,30 @@ export function buildCityScene(Phaser, city, ctx) {
       this.cameras.main.setZoom(ZOOM);
       this.cameras.main.setRoundPixels(true);
 
-      // ── 지형 레이어(tilemap 1장) ──
-      const codeToIdx = (c, x, y) => {
-        switch (c) {
-          case T.ROAD: return 0;
-          case T.SIDEWALK: return 1;
-          case T.CROSSWALK: return 2;
-          case T.PLAZA: return 3;
-          case T.PARK: return 4;
-          case T.BRIDGE: return 5;
-          case T.DOCK: return 6;
-          case T.EXIT: return 7;
-          case T.WATER: return 8;
-          case T.BUILDING: return tileHash(x, y) < 0.5 ? 11 : 12;
-          case T.ISLAND: return 13;
-          default: return 1;
-        }
-      };
-      const mapData = [];
-      for (let y = 0; y < ROWS; y++) {
-        const row = new Array(COLS);
-        for (let x = 0; x < COLS; x++) row[x] = codeToIdx(this.grid[y * COLS + x], x, y);
-        mapData.push(row);
-      }
-      const tmap = this.make.tilemap({ data: mapData, tileWidth: TEX, tileHeight: TEX });
-      const tileset = tmap.addTilesetImage('city_tiles', 'city_tiles', TEX, TEX, 0, 0);
-      this.layer = tmap.createLayer(0, tileset, 0, 0).setScale(TSCALE).setDepth(0);
+      // ── 지형 렌더 — 청크 RenderTexture 베이킹(docs §6.3) ──
+      //   grid 를 CHUNK_TILES 정사각 청크로 나눠 각 청크를 오프스크린 RT 1장에 한 번 굽고
+      //   (셀당 Tile 객체 0개 → 600²=36만 객체 폭발 회피), 카메라에 겹치는 청크만 표시한다.
+      //   상주 텍스처는 LRU 로 화면+여유(chunkCapacity)만 유지 → 맵이 커져도 메모리 상한 일정.
+      const { chunkCols, chunkRows } = chunkDims(COLS, ROWS);
+      this.chunkCols = chunkCols; this.chunkRows = chunkRows;
+      this.chunks = new Map();               // key → { rt, cx, cy }
+      this.chunkLRU = new ChunkLRU();
+      this.chunkCap = chunkCapacity(this.scale.width, this.scale.height, { tile: TILE });
+      // RT 에 타일을 찍는 재사용 스탬프(디스플레이 리스트 밖). 소스 16px → 월드 32px 배율.
+      this.chunkStamp = this.make.image({ add: false, key: 'ct_sidewalk' }).setOrigin(0, 0).setScale(TSCALE);
+      this.lastCamCX = null; this.lastCamCY = null;
 
-      // 수면 물결 애니(화면 안 물 타일만).
+      // 수면 물결 — 지형 청크엔 정적 프레임0을 굽고, 애니는 **뷰포트 안 물 타일에만** 얹는
+      //   경량 오버레이 풀(뷰포트 크기로 상한 · 재사용)로 처리한다. 청크 재bake 없이 물이 흐른다.
       this.waterFrame = 0;
+      this.waterPool = [];                   // 재사용 Image 풀(뷰포트 타일 수로 상한)
       this.time.addEvent({ delay: 520, loop: true, callback: () => {
         this.waterFrame = (this.waterFrame + 1) % 3;
-        this.animateWater();
+        this.refreshWaterOverlay();
       } });
+
+      this.refreshChunks(true);              // 초기 가시 청크 bake
+      this.refreshWaterOverlay();            // 초기 물 오버레이
 
       // ── 가로수(공원 + 대로 변) — 도시가 작아 정적 배치(컬링 불필요) ──
       for (let y = 0; y < ROWS; y++) {
@@ -505,6 +523,12 @@ export function buildCityScene(Phaser, city, ctx) {
         this.peers.clear();
         for (const [, b] of this.bubbles) { b.timer?.remove(); b.text?.destroy(); }
         this.bubbles.clear();
+        // 청크 RT·물 오버레이·스탬프 회수(텍스처 메모리 해제).
+        for (const [, ch] of this.chunks) ch.rt.destroy();
+        this.chunks.clear();
+        for (const img of this.waterPool) img.destroy();
+        this.waterPool.length = 0;
+        this.chunkStamp?.destroy();
       });
 
       // 페이드인 → 조작 해제.
@@ -515,14 +539,71 @@ export function buildCityScene(Phaser, city, ctx) {
       ctx.onReady?.();
     }
 
-    // 화면 안 수면 타일만 물결 프레임 교체.
-    animateWater() {
-      if (!this.layer) return;
+    // ── 청크 RT 베이킹 ── 한 청크(CHUNK_TILES²)를 오프스크린 RT 1장에 타일을 batchDraw.
+    bakeChunk(cx, cy) {
+      const wPx = CHUNK_TILES * TILE, hPx = CHUNK_TILES * TILE; // 512×512
+      const ox = cx * CHUNK_TILES, oy = cy * CHUNK_TILES;
+      const rt = this.add.renderTexture(ox * TILE, oy * TILE, wPx, hPx).setOrigin(0, 0).setDepth(-10);
+      rt.setRoundPixels?.(true);
+      const stamp = this.chunkStamp;
+      const x1 = Math.min(COLS, ox + CHUNK_TILES), y1 = Math.min(ROWS, oy + CHUNK_TILES);
+      rt.beginDraw();
+      for (let ty = oy; ty < y1; ty++) {
+        for (let tx = ox; tx < x1; tx++) {
+          stamp.setTexture(this.terrainTexKey(tx, ty));
+          rt.batchDraw(stamp, (tx - ox) * TILE, (ty - oy) * TILE);
+        }
+      }
+      rt.endDraw();
+      return rt;
+    }
+
+    // 카메라에 겹치는 청크만 표시 — 최초 1회 지연 bake, 밖은 숨김, LRU 초과분은 destroy.
+    //   force: 카메라 청크 이동이 없어도 강제 갱신(create 초기화).
+    refreshChunks(force = false) {
+      const view = this.cameras.main.worldView;
+      const chunkPx = CHUNK_TILES * TILE;
+      const camCX = Math.floor((view.x + view.width / 2) / chunkPx);
+      const camCY = Math.floor((view.y + view.height / 2) / chunkPx);
+      if (!force && camCX === this.lastCamCX && camCY === this.lastCamCY) return;
+      this.lastCamCX = camCX; this.lastCamCY = camCY;
+
+      const vis = visibleChunks(view, { tile: TILE, chunkCols: this.chunkCols, chunkRows: this.chunkRows, pad: 1 });
+      const protect = new Set(vis.map((c) => c.key));
+      // 이번에 안 보이는 청크는 숨김.
+      for (const [key, ch] of this.chunks) if (!protect.has(key)) ch.rt.setVisible(false);
+      // 보이는 청크 bake/표시 + LRU 사용 표시.
+      for (const c of vis) {
+        let ch = this.chunks.get(c.key);
+        if (!ch) { ch = { rt: this.bakeChunk(c.cx, c.cy), cx: c.cx, cy: c.cy }; this.chunks.set(c.key, ch); }
+        ch.rt.setVisible(true);
+        this.chunkLRU.touch(c.key);
+      }
+      // LRU 상한 초과 시 가장 오래된 비가시 청크 destroy(텍스처 회수).
+      for (const key of this.chunkLRU.evict(this.chunkCap, protect)) {
+        const ch = this.chunks.get(key);
+        if (ch) { ch.rt.destroy(); this.chunks.delete(key); }
+      }
+    }
+
+    // 뷰포트 안 물(WATER·RIVER) 타일에만 애니 프레임을 얹는 경량 오버레이(풀 재사용 · 뷰포트 상한).
+    refreshWaterOverlay() {
       const v = this.cameras.main.worldView;
-      const x0 = Math.max(0, Math.floor(v.x / TILE)), x1 = Math.min(COLS - 1, Math.ceil(v.right / TILE));
-      const y0 = Math.max(0, Math.floor(v.y / TILE)), y1 = Math.min(ROWS - 1, Math.ceil(v.bottom / TILE));
-      const idx = 8 + this.waterFrame; // 8·9·10
-      for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) if (this.isWaterTile(tx, ty)) this.layer.putTileAt(idx, tx, ty);
+      const x0 = Math.max(0, Math.floor(v.x / TILE)), x1 = Math.min(COLS - 1, Math.floor((v.right - 1e-4) / TILE));
+      const y0 = Math.max(0, Math.floor(v.y / TILE)), y1 = Math.min(ROWS - 1, Math.floor((v.bottom - 1e-4) / TILE));
+      let n = 0;
+      for (let ty = y0; ty <= y1; ty++) {
+        for (let tx = x0; tx <= x1; tx++) {
+          const c = this.tileCode(tx, ty);
+          if (c !== TERRAIN.WATER && c !== TERRAIN.RIVER) continue;
+          let img = this.waterPool[n];
+          if (!img) { img = this.add.image(0, 0, 'ct_water0').setOrigin(0, 0).setScale(TSCALE).setDepth(-5); this.waterPool.push(img); }
+          img.setVisible(true).setPosition(tx * TILE, ty * TILE)
+            .setTexture(`${c === TERRAIN.RIVER ? 'ct_river' : 'ct_water'}${this.waterFrame}`);
+          n++;
+        }
+      }
+      for (let i = n; i < this.waterPool.length; i++) this.waterPool[i].setVisible(false);
     }
 
     // ── 외부(GBC 셸) 입력 주입 — 광장·공항과 동일 인터페이스 ──
@@ -614,6 +695,10 @@ export function buildCityScene(Phaser, city, ctx) {
     emitDistances() { emitPeerDistances(this, bus); }
 
     update(time, delta) {
+      // 지형 청크 가시성(카메라 청크 이동 시에만 bake/축출) + 물 오버레이(뷰포트 안 물 타일 추종).
+      this.refreshChunks();
+      this.refreshWaterOverlay();
+
       // 이동 상태기계(광장과 동일 — 달리기 B 홀드 포함).
       if (!this.moving && !this.inputLocked) {
         const held = this.heldDirs.length ? this.heldDirs[this.heldDirs.length - 1] : null;
