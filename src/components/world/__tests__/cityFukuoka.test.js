@@ -110,10 +110,10 @@ describe('가게/NPC 노드 (geo POI 매핑)', () => {
     expect(stampNpc).toEqual(['fukuoka-ramen']);
   });
 
-  it('13개 geo POI 가 전부 노드로 매핑된다', () => {
+  it('전 geo POI(국제선 터미널 포함)가 노드로 매핑된다', () => {
     const nodeIds = new Set(CITY_NODES.map((n) => n.id));
     for (const poi of FUKUOKA_GEO.pois) expect(nodeIds.has(poi.id)).toBe(true);
-    // geo POI(13) + 라멘 NPC + 一風堂 + 편의점 NPC + 이자카야 NPC = 17
+    // geo POI(14·국제선 터미널 포함) + 라멘 NPC + 一風堂 + 편의점 NPC + 이자카야 NPC = 18
     expect(CITY_NODES.length).toBe(FUKUOKA_GEO.pois.length + 4);
   });
 
@@ -336,13 +336,13 @@ describe('연결성 — 입구에서 노드·역·출구에 도달', () => {
 });
 
 describe('🏠 재접속 spawn 연결성(resolveRespawnTile) — 구 좌표 소프트락 방지', () => {
-  // 구 손그림 128×96 지도에서 유효 보행 좌표였던 (57,95)·(58,95)는 새 388×254 실지형에서
-  //   메인 성분과 끊긴 고립 포켓이다(Codex #90 P1). 이 좌표로 직행 재접속하면 역·EXIT 에 닿지
-  //   못하므로, resolveRespawnTile 이 null 을 반환해 CityScene 이 ENTRANCE 로 폴백해야 한다.
-  it('구 지도 좌표 (57,95)·(58,95) 는 메인 성분 밖 → null(입구 폴백)', () => {
-    for (const [x, y] of [[57, 95], [58, 95]]) {
-      // 전제: 새 지형에서 여전히 보행 가능한 칸이어야 함(차단이면 이 회귀가 성립 안 함).
-      expect(isCityWalkable(at(x, y))).toBe(true);
+  // geo v2.1(건물 실 래스터) 재생성으로, 이전 맵 버전에서 유효했던 저장 좌표가 이제 건물 안(차단)이
+  //   될 수 있다. 예: 구 ENTRANCE [237,70]·구 EXIT [237,63]·구 konbini [247,137] 는 v2.1 에서 BUILDING.
+  //   이런 좌표로 직행 재접속하면 resolveRespawnTile 이 null 을 반환해 CityScene 이 ENTRANCE 로 폴백한다.
+  //   (v2.1 은 전 보행 타일이 단일 BFS 성분이라, 고립-포켓 경로는 합성 그리드 테스트로 따로 검증한다.)
+  it('맵 버전 교체로 차단 타일이 된 구 저장 좌표 → null(입구 폴백)', () => {
+    for (const [x, y] of [[237, 70], [237, 63], [247, 137]]) {
+      expect(isCityWalkable(at(x, y))).toBe(false); // 전제: v2.1 에서 차단(건물)
       expect(resolveRespawnTile(grid, COLS, ROWS, ENTRANCE, { x, y })).toBeNull();
     }
   });
