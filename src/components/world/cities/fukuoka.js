@@ -17,28 +17,14 @@
 // 인코딩(문서 §4-3): 선언적 구획 그리드 + 프리팹 배치. 순수 함수(buildFukuokaGrid)라 Phaser 의존 0 —
 //   vitest(node)에서 그리드 무결성(크기·출입구 보행·NPC 인접·연결성)을 그대로 검증한다.
 
+// ── 표준 지형 코드 — 공용 단일 진실원(cities/terrain.js, docs §6.4)에서 가져온다 ──
+//   렌더러·충돌·미니맵·향후 geo.js 가 같은 코드를 쓴다. 후쿠오카는 이 코드로 그리드를 그린다.
+import { CITY_TILE, isCityBlocked, isCityWalkable, isCityWater } from './terrain.js';
+
+export { CITY_TILE, isCityBlocked, isCityWalkable, isCityWater };
+
 export const COLS = 128;
 export const ROWS = 96;
-
-// ── 도시 전용 타일 코드 (전국맵 mapData TERRAIN 와 별개 — 도시 규모에 맞춘 단순 인코딩) ──
-export const CITY_TILE = {
-  ROAD: 0,       // 아스팔트 차도(보행 가능)
-  SIDEWALK: 1,   // 보도(기본 지면)
-  CROSSWALK: 2,  // 횡단보도
-  PLAZA: 3,      // 광장/부두 지면
-  PARK: 4,       // 공원 잔디(가로수 스폰)
-  BRIDGE: 5,     // 강 다리(보행 가능)
-  DOCK: 6,       // 부두 데크
-  EXIT: 7,       // 전국맵 복귀 출구(밟으면 이탈)
-  WATER: 8,      // 강·연못·항만 수면(차단)
-  BUILDING: 9,   // 건물 블록(차단 · 파사드 렌더)
-  ISLAND: 10,    // 바다/연못 위 섬 실루엣(차단 · 배경 · 도달 불가)
-};
-
-// 차단 타일 — 물·건물·섬만 막는다(도로·보도·횡단보도·다리·부두·공원·광장·출구는 통행 가능).
-const CITY_BLOCKED = new Set([CITY_TILE.WATER, CITY_TILE.BUILDING, CITY_TILE.ISLAND]);
-export function isCityBlocked(code) { return CITY_BLOCKED.has(code); }
-export function isCityWalkable(code) { return !CITY_BLOCKED.has(code); }
 
 // 도시 진입 스폰(하카타항 부두 광장 — 페리에서 내려 도심을 향해 down). 직행 재접속 폴백 좌표.
 export const ENTRANCE = { x: 62, y: 14, facing: 'down' };
@@ -124,6 +110,24 @@ export const CITY_NODES = [
   },
 ];
 
+// ── 🚃 전철 fast-travel 역(駅) — 무분할 대형 도시맵의 이동 수단(docs §6.2) ──
+//   역 근접 → A → 행선지 선택 오버레이 → 페이드 후 도착역 인접 보행칸으로 순간이동(씬 유지).
+//   인터페이스는 stations 배열({ id, nameJa, yomi, tile:[x,y], line? })로 통일 — geo 통합 시
+//   cities/fukuoka.geo.js 의 stations[](11곳·§6.4 계약)로 목록만 갈아끼우면 자동 동작한다.
+//   (기존 CITY_NODES 의 fukuoka-hakata-sta 스팟 노드는 '살펴보기' 설명용 — fast-travel 역과 역할 구분.)
+//   · tile 은 도착 지점이자 마커 위치 — 반드시 보행 가능·보행 인접(순수 그리드 테스트로 검증).
+//   · yomi 는 학습 소재(역명 일본어 읽기) — 오버레이에 「博多駅 はかたえき」 형태로 병기.
+export const STATIONS = [
+  // ⑤ 博多駅 — JR·지하철이 모이는 도시의 관문(하카타역 구역, VROAD/블록 밖 보도).
+  { id: 'st-hakata', nameJa: '博多駅', yomi: 'はかたえき', tile: [86, 78], line: '空港線' },
+  // ② 天神駅 — 도심 서핵(텐진 중앙 소공원 가장자리).
+  { id: 'st-tenjin', nameJa: '天神駅', yomi: 'てんじんえき', tile: [34, 34], line: '空港線' },
+  // ③ 中洲川端駅 — 나카스(두 강 사이 세로 섬) 북부 대로변.
+  { id: 'st-nakasu', nameJa: '中洲川端駅', yomi: 'なかすかわばたえき', tile: [53, 32], line: '空港線・箱崎線' },
+  // ⑦ 大濠公園駅 — 오호리공원 연못 북안 녹지.
+  { id: 'st-ohori', nameJa: '大濠公園駅', yomi: 'おおほりこうえんえき', tile: [16, 66], line: '空港線' },
+];
+
 // 프리팹 파사드(노렌·간판·토리이·분수 등) 배치 — 건물 프론티지에 얹는 도트 소품(순수 시각·비상호작용).
 // kind → CityScene 이 ct_prop_<kind> 텍스처로 굽는다.
 export const PROPS = [
@@ -206,13 +210,13 @@ export function buildFukuokaGrid() {
   // 횡단보도 — 교차로마다 대로 위 지브라(교차점 셀).
   for (const y of HROADS) for (const x of VROADS) paint(g, x, y, x + 1, y + 1, T.CROSSWALK);
 
-  // ── 하천 3선(세로 수면) + 대로 교차점 다리 ──
+  // ── 하천 3선(세로 수면) + 대로 교차점 다리 ── (RIVER = 강 톤·차단, 만 WATER 와 구분)
   // 那珂川(나카강) — 텐진(서)과 나카스(중앙) 사이.
-  paint(g, 44, 20, 45, 80, T.WATER);
+  paint(g, 44, 20, 45, 80, T.RIVER);
   // 博多川(하카타강) — 나카스를 동에서 감싸는 두 번째 물줄기(나카스=두 강 사이 섬).
-  paint(g, 62, 28, 63, 78, T.WATER);
+  paint(g, 62, 28, 63, 78, T.RIVER);
   // 御笠川(미카사강) — 동쪽 테두리, 하카타역 곁을 지나 만으로.
-  paint(g, 104, 22, 105, 92, T.WATER);
+  paint(g, 104, 22, 105, 92, T.RIVER);
   for (const y of HROADS) {
     for (const [rx0, rx1] of [[44, 45], [62, 63], [104, 105]]) {
       // 강 범위 안의 대로 교차 지점에만 다리.
@@ -226,8 +230,8 @@ export function buildFukuokaGrid() {
   blob(g, 13, 79, 2, 1, T.ISLAND);                 // 연못 섬 실루엣(다리 곁)
   blob(g, 27, 73, 2, 1, T.ISLAND);
 
-  // ── キャナルシティ 운하(분수) — 광장 안 작은 물길 + 다리 ──
-  paint(g, 70, 50, 78, 53, T.WATER);
+  // ── キャナルシティ 운하(분수) — 광장 안 작은 물길 + 다리 ── (운하 = RIVER 강 톤)
+  paint(g, 70, 50, 78, 53, T.RIVER);
   paint(g, 73, 50, 74, 53, T.BRIDGE);
 
   // ── 노드 프론티지 확보 — 마커 타일·주변을 보도로(보행 인접·접근 보장) ──
@@ -254,6 +258,7 @@ export const FUKUOKA = {
   returnNode: 'fukuoka',   // 전국맵 복귀 시 이 노드 앞에서 스폰(worldNodes 의 fukuoka 도시 노드)
   zones: ZONES,
   nodes: CITY_NODES,
+  stations: STATIONS,   // 🚃 전철 fast-travel 노드(geo 통합 시 geo.stations 로 교체)
   props: PROPS,
   CITY_TILE,
   buildGrid: buildFukuokaGrid,

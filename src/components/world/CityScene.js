@@ -30,6 +30,10 @@ import {
 } from './sprites';
 import { GBC } from './QuestReview';
 import bus from './bus';
+// 🗺️ 표준 지형 코드·충돌 — 공용 단일 진실원(cities/terrain.js, docs §6.4). 렌더·충돌 공용.
+import { CITY_TILE as TERRAIN, isCityBlocked, isCityWater, resolveArrivalTile } from './cities/terrain';
+// 🧱 청크 RenderTexture 렌더의 순수 로직(가시성·용량·LRU) — docs §6.3. 대형 맵 메모리 상한.
+import { CHUNK_TILES, chunkDims, chunkTileBounds, visibleChunks, chunkCapacity, ChunkLRU, planChunkUpdate } from './cityChunks';
 
 // ── 좌표 스케일 (광장·공항과 동일 불변) ──
 const TILE = 32;
@@ -82,6 +86,8 @@ function tileHash(tx, ty) {
  *   onEnter(),                       씬 진입 통지(React 오버레이 초기화 · activeScene 갱신)
  *   onReady?(),                      create 말미 통지 — 피어 스냅샷 재적용 + 전체 키 거리 1회 emit(P1-2)
  *   setNear(node|null),              근접 노드 → React(nearNode) — { id, name, desc, npc?, noStamp? }
+ *   setNearStation?(station|null),   🚃 근접 역 → React(nearStation) — { id, nameJa, yomi, line? }
+ *   arrivedStation?({ nameJa, yomi }),  🚃 fast-travel 도착 확인 토스트("🚃 博多駅")
  *   worldReturn: { scene:'plaza', x, y },   전국맵 복귀 스폰(도시 노드 앞)
  * }
  */
@@ -182,6 +188,17 @@ export function buildCityScene(Phaser, city, ctx) {
       water('ct_water0', 0x3a86b0, 0);
       water('ct_water1', 0x3e93c4, 1);
       water('ct_water2', 0x347ba0, 2);
+      // 강·운하(RIVER) — 바다보다 탁한 청록 강 톤(WATER 와 시각 구분).
+      water('ct_river0', 0x3f7a6a, 0);
+      water('ct_river1', 0x468a76, 1);
+      water('ct_river2', 0x386e60, 2);
+
+      // 해변(BEACH · 보행 가능) — 젖은 모래 + 잔물결 자국.
+      this.bakeTile('ct_beach', (g) => {
+        g.fillStyle(C(0xe8d6a6), 1); g.fillRect(0, 0, TEX, TEX);
+        g.fillStyle(C(0xd8c48a), 1); for (const [x, y] of [[3, 4], [10, 6], [6, 11], [13, 12]]) g.fillRect(x, y, 2, 1);
+        g.fillStyle(C(0xf2e6c2), 0.7); g.fillRect(0, 13, TEX, 1);
+      });
 
       // 섬 실루엣(하카타만 노코노시마/시카노시마 · 오호리 연못 섬) — 초지 + 기슭(차단·배경).
       this.bakeTile('ct_island', (g) => {
@@ -204,15 +221,7 @@ export function buildCityScene(Phaser, city, ctx) {
       bldg('ct_bldg_a', 0xb9b2a4, 0x8f887a, 0x7a7266, 0x8fb8d0); // 콘크리트 + 유리창
       bldg('ct_bldg_b', 0xc09a72, 0x93724e, 0x7a5a3a, 0xe6d8b0); // 벽돌/타일 + 밝은 창
 
-      // ── 타일 아틀라스(1장) — 172k 미만이라 add.image 도 되지만 광장과 동일 tilemap 레이어 방식 ──
-      // 인덱스: 0도로 1보도 2횡단 3광장 4공원 5다리 6부두 7출구 8·9·10수면3프레임 11건물A 12건물B 13섬.
-      if (!this.textures.exists('city_tiles')) {
-        const keys = ['ct_road', 'ct_sidewalk', 'ct_crosswalk', 'ct_plaza', 'ct_park', 'ct_bridge', 'ct_dock', 'ct_exit', 'ct_water0', 'ct_water1', 'ct_water2', 'ct_bldg_a', 'ct_bldg_b', 'ct_island'];
-        const atlas = this.textures.createCanvas('city_tiles', keys.length * TEX, TEX);
-        const actx = atlas.getContext();
-        for (let i = 0; i < keys.length; i++) actx.drawImage(this.textures.get(keys[i]).getSourceImage(), i * TEX, 0);
-        atlas.refresh();
-      }
+      // (지형은 청크 RenderTexture 로 굽는다 — tilemap/아틀라스 폐기. 개별 ct_* 텍스처를 청크에 draw.)
 
       // 가로수(2타일 높이 · 16×32).
       this.bakeTile('ct_tree', (g) => {
@@ -336,14 +345,34 @@ export function buildCityScene(Phaser, city, ctx) {
     }
 
     tileCode(tx, ty) {
-      if (tx < 0 || ty < 0 || tx >= COLS || ty >= ROWS) return T.WATER; // 범위 밖 = 물(차단)
+      if (tx < 0 || ty < 0 || tx >= COLS || ty >= ROWS) return TERRAIN.WATER; // 범위 밖 = 물(차단)
       return this.grid[ty * COLS + tx];
     }
-    blocked(tx, ty) {
+    // 충돌은 공용 표준 규칙(isCityBlocked: WATER·RIVER·BUILDING·ISLAND) — 렌더·데이터와 단일 진실원.
+    blocked(tx, ty) { return isCityBlocked(this.tileCode(tx, ty)); }
+    isWaterTile(tx, ty) { return isCityWater(this.tileCode(tx, ty)); }
+
+    // 지형 코드 → 굽기용 개별 텍스처 키. 청크 베이킹·물 오버레이가 공용으로 쓴다.
+    //   물/강은 정적 프레임0을 청크에 굽고(항상 물처럼 보임), 애니는 별도 오버레이가 얹는다.
+    terrainTexKey(tx, ty) {
       const c = this.tileCode(tx, ty);
-      return c === T.WATER || c === T.BUILDING || c === T.ISLAND;
+      switch (c) {
+        case TERRAIN.ROAD: return 'ct_road';
+        case TERRAIN.SIDEWALK: return 'ct_sidewalk';
+        case TERRAIN.CROSSWALK: return 'ct_crosswalk';
+        case TERRAIN.PLAZA: return 'ct_plaza';
+        case TERRAIN.PARK: return 'ct_park';
+        case TERRAIN.BEACH: return 'ct_beach';
+        case TERRAIN.BRIDGE: return 'ct_bridge';
+        case TERRAIN.DOCK: return 'ct_dock';
+        case TERRAIN.EXIT: return 'ct_exit';
+        case TERRAIN.WATER: return 'ct_water0';
+        case TERRAIN.RIVER: return 'ct_river0';
+        case TERRAIN.BUILDING: return tileHash(tx, ty) < 0.5 ? 'ct_bldg_a' : 'ct_bldg_b';
+        case TERRAIN.ISLAND: return 'ct_island';
+        default: return 'ct_sidewalk';
+      }
     }
-    isWaterTile(tx, ty) { return this.tileCode(tx, ty) === T.WATER; }
 
     petTexKey(frame) {
       const key = PET_KEYS.includes(ctx.petRef?.current?.key) ? ctx.petRef.current.key : 'dog';
@@ -361,6 +390,7 @@ export function buildCityScene(Phaser, city, ctx) {
       this.runHeld = false;
       this.petJumpVal = 0;
       this.exiting = false;
+      this.traveling = false;   // 🚃 전철 fast-travel 순간이동 중(페이드) 플래그 — 재진입 가드
 
       this.grid = city.buildGrid();
 
@@ -369,52 +399,34 @@ export function buildCityScene(Phaser, city, ctx) {
       this.cameras.main.setZoom(ZOOM);
       this.cameras.main.setRoundPixels(true);
 
-      // ── 지형 레이어(tilemap 1장) ──
-      const codeToIdx = (c, x, y) => {
-        switch (c) {
-          case T.ROAD: return 0;
-          case T.SIDEWALK: return 1;
-          case T.CROSSWALK: return 2;
-          case T.PLAZA: return 3;
-          case T.PARK: return 4;
-          case T.BRIDGE: return 5;
-          case T.DOCK: return 6;
-          case T.EXIT: return 7;
-          case T.WATER: return 8;
-          case T.BUILDING: return tileHash(x, y) < 0.5 ? 11 : 12;
-          case T.ISLAND: return 13;
-          default: return 1;
-        }
-      };
-      const mapData = [];
-      for (let y = 0; y < ROWS; y++) {
-        const row = new Array(COLS);
-        for (let x = 0; x < COLS; x++) row[x] = codeToIdx(this.grid[y * COLS + x], x, y);
-        mapData.push(row);
-      }
-      const tmap = this.make.tilemap({ data: mapData, tileWidth: TEX, tileHeight: TEX });
-      const tileset = tmap.addTilesetImage('city_tiles', 'city_tiles', TEX, TEX, 0, 0);
-      this.layer = tmap.createLayer(0, tileset, 0, 0).setScale(TSCALE).setDepth(0);
+      // ── 지형 렌더 — 청크 RenderTexture 베이킹(docs §6.3) ──
+      //   grid 를 CHUNK_TILES 정사각 청크로 나눠 각 청크를 오프스크린 RT 1장에 한 번 굽고
+      //   (셀당 Tile 객체 0개 → 600²=36만 객체 폭발 회피), 카메라에 겹치는 청크만 표시한다.
+      //   상주 텍스처는 LRU 로 화면+여유(chunkCapacity)만 유지 → 맵이 커져도 메모리 상한 일정.
+      const { chunkCols, chunkRows } = chunkDims(COLS, ROWS);
+      this.chunkCols = chunkCols; this.chunkRows = chunkRows;
+      this.chunks = new Map();               // key → { rt, cx, cy }
+      this.chunkLRU = new ChunkLRU();
+      this.chunkCap = chunkCapacity(this.scale.width, this.scale.height, { tile: TILE });
+      // RT 에 타일을 찍는 재사용 스탬프(디스플레이 리스트 밖). 소스 16px → 월드 32px 배율.
+      this.chunkStamp = this.make.image({ add: false, key: 'ct_sidewalk' }).setOrigin(0, 0).setScale(TSCALE);
+      this.lastCamCX = null; this.lastCamCY = null;
 
-      // 수면 물결 애니(화면 안 물 타일만).
+      // 수면 물결 — 지형 청크엔 정적 프레임0을 굽고, 애니는 **뷰포트 안 물 타일에만** 얹는
+      //   경량 오버레이 풀(뷰포트 크기로 상한 · 재사용)로 처리한다. 청크 재bake 없이 물이 흐른다.
       this.waterFrame = 0;
+      this.waterPool = [];                   // 재사용 Image 풀(뷰포트 타일 수로 상한)
       this.time.addEvent({ delay: 520, loop: true, callback: () => {
         this.waterFrame = (this.waterFrame + 1) % 3;
-        this.animateWater();
+        this.refreshWaterOverlay();
       } });
 
-      // ── 가로수(공원 + 대로 변) — 도시가 작아 정적 배치(컬링 불필요) ──
-      for (let y = 0; y < ROWS; y++) {
-        for (let x = 0; x < COLS; x++) {
-          const c = this.grid[y * COLS + x];
-          const isPark = c === T.PARK && tileHash(x, y) < 0.28;
-          const isVerge = c === T.SIDEWALK && this.tileCode(x, y - 1) === T.ROAD && tileHash(x, y) < 0.16;
-          if (!isPark && !isVerge) continue;
-          this.add.image(x * TILE + TILE / 2, (y + 1) * TILE, 'ct_tree').setOrigin(0.5, 1).setScale(TSCALE).setDepth((y + 1) * TILE);
-        }
-      }
+      this.refreshChunks(true);              // 초기 가시 청크 bake(+가시 청크 트리 생성)
+      this.refreshWaterOverlay();            // 초기 물 오버레이
+      // (가로수는 청크 생명주기에 묶어 **가시 청크 범위만** 생성/회수한다 — buildChunkTrees.
+      //  create 전역 트리 루프를 제거해 트리 수가 맵 면적이 아니라 화면+pad 에 비례하게 함 — Codex P1.)
 
-      // ── 프리팹 파사드(노렌·간판) — 프론티지 소품(비상호작용) ──
+      // ── 프리팹 파사드(노렌·간판) — 프론티지 소품(비상호작용, city.props 는 명시 목록이라 개수 유한) ──
       for (const p of (city.props || [])) {
         const [px, py] = p.tile;
         this.add.image(px * TILE + TILE / 2, (py + 1) * TILE, `ct_prop_${p.kind}`)
@@ -444,6 +456,18 @@ export function buildCityScene(Phaser, city, ctx) {
         return { node, wx, wy };
       });
 
+      // ── 🚃 전철 fast-travel 역 마커 — 근접 A 로 행선지 선택(순간이동). 역사 프리팹 재사용. ──
+      //   stations 배열({ id, nameJa, yomi, tile, line? })을 소비 — geo 통합 시 목록만 교체(docs §6.2).
+      this.stationViews = (city.stations || []).map((st) => {
+        const [tx, ty] = st.tile;
+        const wx = tx * TILE + TILE / 2, wy = ty * TILE + TILE / 2;
+        this.add.image(wx, (ty + 1) * TILE, 'ct_prop_station').setOrigin(0.5, 1).setScale(TSCALE).setDepth(wy);
+        // 🚃 마커 위 역명(일본어 간판) — 노드 라벨과 동일 도트 문법.
+        this.add.text(wx, ty * TILE - 4, `🚃 ${st.nameJa}`, this.labelStyle()).setOrigin(0.5, 1).setDepth(10000);
+        return { station: st, wx, wy };
+      });
+      this.wasNearStationId = null;
+
       // ── 플레이어 스폰 — data.spawn(직행 재접속) 검증, 실패/미지정 시 도시 입구 ──
       let sx = city.entrance.x, sy = city.entrance.y, sfacing = city.entrance.facing || 'down';
       const sp = data && data.spawn;
@@ -466,9 +490,12 @@ export function buildCityScene(Phaser, city, ctx) {
       // ── 입력(광장과 동일 경로) ──
       this.heldDirs = [];
       this.tapTile = null;
+      // P2: 모든 입력 진입점은 UI 잠금(inputLocked)과 씬 페이드 잠금(traveling)을 **둘 다** 확인한다.
+      //   페이드 중 들어온 입력은 버퍼링하지 않고 드롭 — React 오버레이 잠금 해제 경합과 무관하게
+      //   페이드인 직후 의도치 않은 이동이 없다(heldDirs 에 쌓이지 않음).
       this.input.keyboard.on('keydown', (e) => {
         if (e.key === 'b' || e.key === 'B') { this.runHeld = true; return; }
-        if (this.inputLocked) return;
+        if (this.inputLocked || this.traveling) return;
         const d = keyToDir(e.key); if (!d) return;
         this.tapTile = null;
         if (!this.heldDirs.includes(d)) this.heldDirs.push(d);
@@ -478,7 +505,7 @@ export function buildCityScene(Phaser, city, ctx) {
         const d = keyToDir(e.key); if (d) this.heldDirs = this.heldDirs.filter((x) => x !== d);
       });
       this.input.on('pointerdown', (p) => {
-        if (this.inputLocked) return;
+        if (this.inputLocked || this.traveling) return;
         this.tapTile = { x: Math.floor(p.worldX / TILE), y: Math.floor(p.worldY / TILE) };
         this.heldDirs.length = 0;
       });
@@ -505,6 +532,12 @@ export function buildCityScene(Phaser, city, ctx) {
         this.peers.clear();
         for (const [, b] of this.bubbles) { b.timer?.remove(); b.text?.destroy(); }
         this.bubbles.clear();
+        // 청크 RT·물 오버레이·스탬프 회수(텍스처 메모리 해제).
+        for (const [, ch] of this.chunks) ch.rt.destroy();
+        this.chunks.clear();
+        for (const img of this.waterPool) img.destroy();
+        this.waterPool.length = 0;
+        this.chunkStamp?.destroy();
       });
 
       // 페이드인 → 조작 해제.
@@ -515,19 +548,108 @@ export function buildCityScene(Phaser, city, ctx) {
       ctx.onReady?.();
     }
 
-    // 화면 안 수면 타일만 물결 프레임 교체.
-    animateWater() {
-      if (!this.layer) return;
+    // ── 청크 RT 베이킹 ── 한 청크(CHUNK_TILES²)를 오프스크린 RT 1장에 타일을 batchDraw.
+    bakeChunk(cx, cy) {
+      const wPx = CHUNK_TILES * TILE, hPx = CHUNK_TILES * TILE; // 512×512
+      const ox = cx * CHUNK_TILES, oy = cy * CHUNK_TILES;
+      const rt = this.add.renderTexture(ox * TILE, oy * TILE, wPx, hPx).setOrigin(0, 0).setDepth(-10);
+      rt.setRoundPixels?.(true);
+      const stamp = this.chunkStamp;
+      const x1 = Math.min(COLS, ox + CHUNK_TILES), y1 = Math.min(ROWS, oy + CHUNK_TILES);
+      rt.beginDraw();
+      for (let ty = oy; ty < y1; ty++) {
+        for (let tx = ox; tx < x1; tx++) {
+          stamp.setTexture(this.terrainTexKey(tx, ty));
+          rt.batchDraw(stamp, (tx - ox) * TILE, (ty - oy) * TILE);
+        }
+      }
+      rt.endDraw();
+      return rt;
+    }
+
+    // 가시 청크 범위의 가로수(공원·대로변) — 청크 생명주기에 묶어 화면+pad 밖엔 존재하지 않음(Codex P1).
+    //   위치 결정성(tileHash)·2타일 높이 오버행·캐릭터 depth 정렬은 정적 스프라이트라 그대로 유지.
+    buildChunkTrees(cx, cy) {
+      const b = chunkTileBounds(cx, cy, COLS, ROWS);
+      const trees = [];
+      for (let y = b.y0; y < b.y1; y++) {
+        for (let x = b.x0; x < b.x1; x++) {
+          const c = this.grid[y * COLS + x];
+          const isPark = c === TERRAIN.PARK && tileHash(x, y) < 0.28;
+          const isVerge = c === TERRAIN.SIDEWALK && this.tileCode(x, y - 1) === TERRAIN.ROAD && tileHash(x, y) < 0.16;
+          if (!isPark && !isVerge) continue;
+          trees.push(this.add.image(x * TILE + TILE / 2, (y + 1) * TILE, 'ct_tree')
+            .setOrigin(0.5, 1).setScale(TSCALE).setDepth((y + 1) * TILE));
+        }
+      }
+      return trees;
+    }
+
+    setChunkVisible(ch, vis) {
+      ch.rt.setVisible(vis);
+      for (const t of ch.decor) t.setVisible(vis);
+    }
+
+    destroyChunk(key) {
+      const ch = this.chunks.get(key);
+      if (!ch) return;
+      ch.rt.destroy();
+      for (const t of ch.decor) t.destroy();
+      this.chunks.delete(key);
+      this.chunkLRU.delete(key);
+    }
+
+    // 카메라에 겹치는 청크만 표시 — 지연 bake, 밖은 숨김. **bake 전에 선축출**(planChunkUpdate)해
+    //   순간이동 시에도 상주 RT peak 가 cap 을 넘지 않는다(Codex P2). force: create 초기화.
+    refreshChunks(force = false) {
+      const view = this.cameras.main.worldView;
+      const chunkPx = CHUNK_TILES * TILE;
+      const camCX = Math.floor((view.x + view.width / 2) / chunkPx);
+      const camCY = Math.floor((view.y + view.height / 2) / chunkPx);
+      if (!force && camCX === this.lastCamCX && camCY === this.lastCamCY) return;
+      this.lastCamCX = camCX; this.lastCamCY = camCY;
+
+      const vis = visibleChunks(view, { tile: TILE, chunkCols: this.chunkCols, chunkRows: this.chunkRows, pad: 1 });
+      const visKeys = vis.map((c) => c.key);
+      const protect = new Set(visKeys);
+      // 이번에 안 보이는 청크는 숨김(회수는 아래 선축출이 담당).
+      for (const [key, ch] of this.chunks) if (!protect.has(key)) this.setChunkVisible(ch, false);
+
+      // 계획: 새 청크를 bake 하기 전에 비가시부터 선축출 → 매 순간 상주 ≤ cap.
+      const plan = planChunkUpdate(this.chunkLRU, this.chunks, visKeys, this.chunkCap);
+      for (const key of plan.toDestroy) this.destroyChunk(key);
+      for (const c of vis) {
+        if (!this.chunks.has(c.key)) {
+          this.chunks.set(c.key, { rt: this.bakeChunk(c.cx, c.cy), decor: this.buildChunkTrees(c.cx, c.cy), cx: c.cx, cy: c.cy });
+        }
+        this.setChunkVisible(this.chunks.get(c.key), true);
+        this.chunkLRU.touch(c.key);
+      }
+    }
+
+    // 뷰포트 안 물(WATER·RIVER) 타일에만 애니 프레임을 얹는 경량 오버레이(풀 재사용 · 뷰포트 상한).
+    refreshWaterOverlay() {
       const v = this.cameras.main.worldView;
-      const x0 = Math.max(0, Math.floor(v.x / TILE)), x1 = Math.min(COLS - 1, Math.ceil(v.right / TILE));
-      const y0 = Math.max(0, Math.floor(v.y / TILE)), y1 = Math.min(ROWS - 1, Math.ceil(v.bottom / TILE));
-      const idx = 8 + this.waterFrame; // 8·9·10
-      for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) if (this.isWaterTile(tx, ty)) this.layer.putTileAt(idx, tx, ty);
+      const x0 = Math.max(0, Math.floor(v.x / TILE)), x1 = Math.min(COLS - 1, Math.floor((v.right - 1e-4) / TILE));
+      const y0 = Math.max(0, Math.floor(v.y / TILE)), y1 = Math.min(ROWS - 1, Math.floor((v.bottom - 1e-4) / TILE));
+      let n = 0;
+      for (let ty = y0; ty <= y1; ty++) {
+        for (let tx = x0; tx <= x1; tx++) {
+          const c = this.tileCode(tx, ty);
+          if (c !== TERRAIN.WATER && c !== TERRAIN.RIVER) continue;
+          let img = this.waterPool[n];
+          if (!img) { img = this.add.image(0, 0, 'ct_water0').setOrigin(0, 0).setScale(TSCALE).setDepth(-5); this.waterPool.push(img); }
+          img.setVisible(true).setPosition(tx * TILE, ty * TILE)
+            .setTexture(`${c === TERRAIN.RIVER ? 'ct_river' : 'ct_water'}${this.waterFrame}`);
+          n++;
+        }
+      }
+      for (let i = n; i < this.waterPool.length; i++) this.waterPool[i].setVisible(false);
     }
 
     // ── 외부(GBC 셸) 입력 주입 — 광장·공항과 동일 인터페이스 ──
     extInputDown(d) {
-      if (this.inputLocked || !VALID_DIR.has(d)) return;
+      if (this.inputLocked || this.traveling || !VALID_DIR.has(d)) return; // P2: 페이드 중 입력 드롭
       this.tapTile = null;
       if (!this.heldDirs.includes(d)) this.heldDirs.push(d);
     }
@@ -611,11 +733,57 @@ export function buildCityScene(Phaser, city, ctx) {
       });
     }
 
+    // ── 🚃 전철 fast-travel — 같은 도시 씬 안에서 도착역 인접 보행칸으로 순간이동(씬 변경 아님) ──
+    //   페이드아웃 → placeAt(도착 타일) → 페이드인. 씬을 바꾸지 않으므로 피어/좌표영속/멀티는
+    //   placePlayerAt 처럼 자동 유지(resetScenePeers 불필요 — 같은 씬). 이동 중 조작 잠금.
+    placeAt(tx, ty) {
+      this.pTileX = tx; this.pTileY = ty; this.moving = false; this.turnGrace = 0;
+      this.heldDirs.length = 0; this.tapTile = null;
+      const wx = tx * TILE + TILE / 2, wy = ty * TILE + TILE / 2;
+      this.player.setPosition(wx, wy);
+      this.player.setDepth(wy);
+      // 펫·카메라를 도착 지점으로 스냅(추적 보간 잔상 방지).
+      this.petTargetX = tx - 1; this.petTargetY = ty;
+      this.petPX = this.petTargetX * TILE + TILE / 2; this.petPY = this.petTargetY * TILE + TILE / 2;
+      this.pet.setPosition(Math.round(this.petPX), Math.round(this.petPY));
+      this.cameras.main.centerOn(wx, wy);
+      this.refreshChunks(true);      // 도착 지점 청크 즉시 bake(순간이동 후 빈 화면 방지)
+      this.refreshWaterOverlay();
+    }
+
+    // 행선지 역으로 이동. React 오버레이의 「행선지」 선택이 호출. 소프트락 없음(중복 호출 가드).
+    travelToStation(id) {
+      if (this.exiting || this.traveling) return;
+      const st = (city.stations || []).find((s) => s.id === id);
+      if (!st) return;
+      // P1: 페이드 시작 **전에** 도착 tile 검증(순수 헬퍼). 차단/범위밖이면 인근 보행칸으로 재배치,
+      //   그래도 없으면 이동 취소(플레이어 그대로 · 잠금 유지 안 함 · 토스트) — 어떤 경우에도 소프트락 없음.
+      const arrival = resolveArrivalTile(this.grid, COLS, ROWS, st.tile);
+      if (!arrival) { ctx.travelBlocked?.(); return; }
+      this.traveling = true;
+      this.inputLocked = true;
+      this.heldDirs.length = 0; this.tapTile = null; this.runHeld = false;
+      ctx.setNear?.(null); ctx.setNearStation?.(null);
+      this.cameras.main.fadeOut(FADE_MS, 0, 0, 0);
+      this.cameras.main.once('camerafadeoutcomplete', () => {
+        this.placeAt(arrival[0], arrival[1]);
+        this.wasNearNodeId = null; this.wasNearStationId = st.id; // 도착역엔 이미 근접 — 재프롬프트 억제
+        this.cameras.main.fadeIn(FADE_MS, 0, 0, 0);
+        this.cameras.main.once('camerafadeincomplete', () => { this.inputLocked = false; this.traveling = false; });
+        ctx.arrivedStation?.({ nameJa: st.nameJa, yomi: st.yomi }); // 짧은 확인 "🚃 博多駅"
+      });
+    }
+
     emitDistances() { emitPeerDistances(this, bus); }
 
     update(time, delta) {
+      // 지형 청크 가시성(카메라 청크 이동 시에만 bake/축출) + 물 오버레이(뷰포트 안 물 타일 추종).
+      this.refreshChunks();
+      this.refreshWaterOverlay();
+
       // 이동 상태기계(광장과 동일 — 달리기 B 홀드 포함).
-      if (!this.moving && !this.inputLocked) {
+      //   traveling(🚃 fast-travel 페이드) 중엔 React 입력잠금 효과와의 경합과 무관하게 이동 금지.
+      if (!this.moving && !this.inputLocked && !this.traveling) {
         const held = this.heldDirs.length ? this.heldDirs[this.heldDirs.length - 1] : null;
         if (held) {
           if (this.facing !== held) { this.facing = held; this.turnGrace = time + TURN_MS; }
@@ -695,6 +863,18 @@ export function buildCityScene(Phaser, city, ctx) {
       if (nid !== this.wasNearNodeId) {
         this.wasNearNodeId = nid;
         ctx.setNear?.(nearest ? { id: nearest.id, name: nearest.name, desc: nearest.desc, npc: nearest.npc, noStamp: nearest.noStamp } : null);
+      }
+
+      // 🚃 역 근접 → React(nearStation). A 로 행선지 선택 오버레이. (노드와 별개 목록·별개 상태.)
+      let nearSt = null, nearStD = NODE_TALK_RANGE;
+      for (const v of this.stationViews) {
+        const d = Phaser.Math.Distance.Between(this.player.x, this.player.y, v.wx, v.wy);
+        if (d < nearStD) { nearSt = v.station; nearStD = d; }
+      }
+      const sid = nearSt ? nearSt.id : null;
+      if (sid !== this.wasNearStationId) {
+        this.wasNearStationId = sid;
+        ctx.setNearStation?.(nearSt ? { id: nearSt.id, nameJa: nearSt.nameJa, yomi: nearSt.yomi, line: nearSt.line } : null);
       }
     }
   };

@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import FUKUOKA, {
   buildFukuokaGrid, isCityWalkable, isCityBlocked,
-  COLS, ROWS, CITY_TILE, ENTRANCE, ZONES, CITY_NODES, PROPS,
+  COLS, ROWS, CITY_TILE, ENTRANCE, ZONES, CITY_NODES, PROPS, STATIONS,
 } from '../cities/fukuoka.js';
+import { fastTravelDestinations, resolveArrivalTile } from '../cities/terrain.js';
 
 // 🏙️ 후쿠오카 도시 정밀맵 데이터 무결성 — 순수 그리드 빌더(Phaser 미의존)를 그대로 검증한다.
 //   그리드 크기 · 출입구 보행 가능 · NPC/가게 좌표 보행 인접 · 전 보행칸 연결성(입구→가게·출구).
@@ -113,6 +114,129 @@ describe('프리팹 파사드', () => {
       const [x, y] = p.tile;
       expect(x >= 0 && x < COLS && y >= 0 && y < ROWS).toBe(true);
     }
+  });
+});
+
+describe('🚃 전철 fast-travel 역(STATIONS)', () => {
+  it('3~4개 역이 필수 필드(id·nameJa·yomi·tile)를 갖는다', () => {
+    expect(STATIONS.length).toBeGreaterThanOrEqual(3);
+    expect(STATIONS.length).toBeLessThanOrEqual(4);
+    for (const s of STATIONS) {
+      expect(typeof s.id).toBe('string');
+      expect(s.nameJa.trim().length).toBeGreaterThan(0);
+      expect(s.yomi.trim().length).toBeGreaterThan(0);
+      expect(Array.isArray(s.tile) && s.tile.length === 2).toBe(true);
+    }
+    // 실제 후쿠오카 역명(데모 4곳)이 들어 있다.
+    const names = STATIONS.map((s) => s.nameJa);
+    expect(names).toEqual(expect.arrayContaining(['博多駅', '天神駅', '中洲川端駅', '大濠公園駅']));
+  });
+
+  it('역 id 는 유일 + CITY_NODES id 와 충돌하지 않는다', () => {
+    const ids = STATIONS.map((s) => s.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    const nodeIds = new Set(CITY_NODES.map((n) => n.id));
+    for (const id of ids) expect(nodeIds.has(id)).toBe(false);
+  });
+
+  it('모든 역 도착 tile 은 보행 가능 + 보행 인접 + 입구에서 도달 가능', () => {
+    for (const s of STATIONS) {
+      const [x, y] = s.tile;
+      expect(x >= 0 && x < COLS && y >= 0 && y < ROWS).toBe(true);
+      expect(isCityWalkable(at(x, y))).toBe(true);
+      expect(adjWalkable(x, y)).toBe(true);
+    }
+  });
+
+  it('역은 노드로부터 A버튼 근접반경(2.75타일=88px) 밖 — A 상호작용 모호성 없음', () => {
+    for (const s of STATIONS) {
+      for (const n of CITY_NODES) {
+        const d = Math.hypot(s.tile[0] - n.tile[0], s.tile[1] - n.tile[1]);
+        expect(d).toBeGreaterThan(2.75);
+      }
+    }
+  });
+
+  it('FUKUOKA.stations 가 STATIONS 를 노출한다(stations 계약 — geo 통합 대상)', () => {
+    expect(FUKUOKA.stations).toBe(STATIONS);
+  });
+});
+
+describe('🚃 행선지 목록 순수 로직(fastTravelDestinations)', () => {
+  it('행선지 = 전체 역 − 현재 역', () => {
+    for (const cur of STATIONS) {
+      const dests = fastTravelDestinations(STATIONS, cur.id);
+      expect(dests.length).toBe(STATIONS.length - 1);
+      expect(dests.find((s) => s.id === cur.id)).toBeUndefined();
+      expect(new Set(dests.map((s) => s.id))).toEqual(
+        new Set(STATIONS.filter((s) => s.id !== cur.id).map((s) => s.id)),
+      );
+    }
+  });
+
+  it('빈/누락 입력에 안전(빈 배열 반환)', () => {
+    expect(fastTravelDestinations(undefined, 'x')).toEqual([]);
+    expect(fastTravelDestinations(null, 'x')).toEqual([]);
+    expect(fastTravelDestinations([], 'x')).toEqual([]);
+  });
+});
+
+describe('🚃 도착 tile 해석(resolveArrivalTile) — 소프트락 방지 게이트', () => {
+  const walkableAt = (x, y) => isCityWalkable(at(x, y));
+  // 유효 도착점 = 보행 가능 + cardinal 보행 인접(걸어서 벗어날 수 있음).
+  const usableAt = (g, cols, rows, x, y) => {
+    const cell = (cx, cy) => cx >= 0 && cy >= 0 && cx < cols && cy < rows && isCityWalkable(g[cy * cols + cx]);
+    return cell(x, y) && (cell(x + 1, y) || cell(x - 1, y) || cell(x, y + 1) || cell(x, y - 1));
+  };
+
+  it('정확 tile 이 유효(보행+인접)하면 그대로 반환', () => {
+    for (const s of STATIONS) {
+      expect(resolveArrivalTile(grid, COLS, ROWS, s.tile)).toEqual(s.tile);
+    }
+  });
+
+  it('차단 tile(WATER)이면 인근 유효칸으로 결정적 재배치(재배치 결과도 보행 인접)', () => {
+    // [10,2]는 하카타만 수면(WATER·차단).
+    expect(isCityBlocked(at(10, 2))).toBe(true);
+    const r = resolveArrivalTile(grid, COLS, ROWS, [10, 2]);
+    expect(r).not.toBeNull();
+    expect(walkableAt(r[0], r[1])).toBe(true);
+    expect(usableAt(grid, COLS, ROWS, r[0], r[1])).toBe(true); // 걸어서 벗어날 수 있음
+    expect(resolveArrivalTile(grid, COLS, ROWS, [10, 2])).toEqual(r); // 결정적(재호출 동일)
+  });
+
+  it('차단 tile(BUILDING)이면 인근 유효칸으로 재배치(보행 인접 보강)', () => {
+    // [90,62]는 하카타역 건물 블록(BUILDING·차단).
+    expect(isCityBlocked(at(90, 62))).toBe(true);
+    const r = resolveArrivalTile(grid, COLS, ROWS, [90, 62]);
+    expect(r).not.toBeNull();
+    expect(walkableAt(r[0], r[1])).toBe(true);
+    expect(usableAt(grid, COLS, ROWS, r[0], r[1])).toBe(true);
+  });
+
+  it('범위 밖·비정수 tile 은 취소(null) 또는 인근 재배치 — 소프트락 없음', () => {
+    expect(resolveArrivalTile(grid, COLS, ROWS, [99999, 99999])).toBeNull(); // 완전 범위 밖 → 취소
+    expect(resolveArrivalTile(grid, COLS, ROWS, [1.5, 2])).toBeNull();       // 비정수 → 취소
+    expect(resolveArrivalTile(grid, COLS, ROWS, null)).toBeNull();
+    const near = resolveArrivalTile(grid, COLS, ROWS, [-1, 40]);             // 살짝 밖 → 인근 유효칸
+    if (near) expect(usableAt(grid, COLS, ROWS, near[0], near[1])).toBe(true);
+  });
+
+  it('고립 보행칸(5×5 건물 한가운데 SIDEWALK 1칸)은 도착점으로 채택 안 함', () => {
+    // 사방이 BUILDING(차단)으로 막힌 중앙 보도 1칸 — 걸어서 못 나오는 소프트락 지형.
+    const C = 5, Rw = 5;
+    const g = new Uint8Array(C * Rw).fill(CITY_TILE.BUILDING);
+    g[2 * C + 2] = CITY_TILE.SIDEWALK; // 중앙만 보행 가능(고립)
+    // 정확히 그 칸을 지정해도 반환하지 않는다(유효 도착점 없음 → null).
+    expect(resolveArrivalTile(g, C, Rw, [2, 2])).toBeNull();
+
+    // 고립칸에 붙은 탈출로 1칸이 생기면 그 칸은 유효 → 채택.
+    const g2 = new Uint8Array(C * Rw).fill(CITY_TILE.BUILDING);
+    g2[2 * C + 2] = CITY_TILE.SIDEWALK;
+    g2[2 * C + 3] = CITY_TILE.SIDEWALK; // 오른쪽 이웃 개통
+    const r2 = resolveArrivalTile(g2, C, Rw, [2, 2]);
+    expect(r2).toEqual([2, 2]);
+    expect(usableAt(g2, C, Rw, r2[0], r2[1])).toBe(true);
   });
 });
 

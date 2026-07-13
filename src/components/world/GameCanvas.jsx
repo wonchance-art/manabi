@@ -53,6 +53,8 @@ import { buildAirportScene } from './airportScene';
 //   도시 데이터는 이 청크(GameCanvas 는 next/dynamic ssr:false) 안에서만 로드된다 — /world First Load JS 무영향.
 import { buildCityScene } from './CityScene';
 import FUKUOKA from './cities/fukuoka';
+// 🚃 전철 fast-travel — 행선지 목록(현재 역 제외) 공용 순수 로직(도시·geo 공통).
+import { fastTravelDestinations } from './cities/terrain';
 import { StoryTextbox, AirportQuiz } from './StoryOverlay';
 import { buildStoryScript } from './storyScript';
 // 🗾 NPC 도트 대화(마스터플랜 A-1) — 하카타 라멘 전문점 주인·신사 미코상. 대화 콘텐츠·판정은
@@ -166,9 +168,11 @@ const CITY_MINI_COLORS = {
   5: [150, 120, 80],   // bridge
   6: [140, 100, 60],   // dock
   7: [90, 200, 90],    // exit
-  8: [60, 130, 170],   // water
+  8: [60, 130, 170],   // water(바다·항만)
   9: [110, 104, 96],   // building
   10: [110, 165, 80],  // island(섬 실루엣 — 도달 불가 배경)
+  11: [63, 122, 106],  // river(강·운하 — 바다보다 탁한 강 톤)
+  12: [232, 214, 166], // beach(모래 해변)
 };
 const CITY_MINI_SCALE = 3;
 
@@ -209,6 +213,14 @@ function Minimap({ sceneRef, activeScene, onClose }) {
           ctx.fillRect(Math.round(lx - tw / 2), Math.round(ly - 7), Math.round(tw), 13);
           ctx.fillStyle = '#f6edcf';
           ctx.fillText(z.label, Math.round(lx), Math.round(ly));
+        }
+        // 🚃 전철역 아이콘(청록 점 + 흰 테두리) — fast-travel 노드 위치 표시.
+        for (const st of (city.stations || [])) {
+          const sx = st.tile[0] * CITY_MINI_SCALE, sy = st.tile[1] * CITY_MINI_SCALE;
+          ctx.fillStyle = '#f6edcf';
+          ctx.fillRect(Math.round(sx) - 2, Math.round(sy) - 2, 5, 5);
+          ctx.fillStyle = '#2f9ad0';
+          ctx.fillRect(Math.round(sx) - 1, Math.round(sy) - 1, 3, 3);
         }
         // 플레이어 점(노랑, 깜빡).
         const s = sceneRef.current;
@@ -320,6 +332,17 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   const minimapOpenRef = useRef(false);
   const cityPromptRef = useRef(null);
 
+  // ── 🚃 전철 fast-travel(도시맵 이동 수단, docs §6.2) ──
+  //   nearStation: 근접한 역 { id, nameJa, yomi, line? } | null (A → 행선지 선택 오버레이)
+  //   stationSelect: 행선지 선택 오버레이 { cityId, fromId, fromName } | null (B/취소로 항상 닫힘 — 소프트락 방지)
+  //   stationToast: 도착 확인 토스트 { nameJa, yomi } | null (짧게 표시 후 자동 소멸)
+  const [nearStation, setNearStation] = useState(null);
+  const [stationSelect, setStationSelect] = useState(null);
+  const [stationToast, setStationToast] = useState(null);
+  const nearStationRef = useRef(null);
+  const stationSelectRef = useRef(null);
+  const activeSceneRef = useRef('plaza');   // interact 콜백(once-effect)이 현재 씬을 읽도록 미러
+
   // ── NPC 대화 상태 ── npcDialog: { key, node } | null (열림 = 대화 오버레이 표시)
   const [npcDialog, setNpcDialog] = useState(null);
   const npcDialogRef = useRef(null);
@@ -361,6 +384,17 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   useEffect(() => { ferryPromptRef.current = ferryPrompt; }, [ferryPrompt]);
   useEffect(() => { minimapOpenRef.current = minimapOpen; }, [minimapOpen]);
   useEffect(() => { cityPromptRef.current = cityPrompt; }, [cityPrompt]);
+  useEffect(() => { nearStationRef.current = nearStation; }, [nearStation]);
+  useEffect(() => { stationSelectRef.current = stationSelect; }, [stationSelect]);
+  useEffect(() => { activeSceneRef.current = activeScene; }, [activeScene]);
+  // 역에서 멀어지면 열려 있던 행선지 오버레이도 닫는다(근접 해제 = 취소).
+  useEffect(() => { if (!nearStation) setStationSelect(null); }, [nearStation]);
+  // 도착 확인 토스트는 잠시 뒤 자동으로 걷힌다.
+  useEffect(() => {
+    if (!stationToast) return undefined;
+    const t = setTimeout(() => setStationToast(null), 1800);
+    return () => clearTimeout(t);
+  }, [stationToast]);
   useEffect(() => { npcDialogRef.current = npcDialog; }, [npcDialog]);
   useEffect(() => { storyActiveRef.current = storyActive; }, [storyActive]);
   useEffect(() => { storyPhaseRef.current = storyPhase; }, [storyPhase]);
@@ -405,8 +439,16 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         if (npcDialogRef.current) { npcActionRef.current?.(); return; } // NPC 대화 중 A → 다음 대사
         if (storyPhaseRef.current === 'dialogue') { advanceStoryRef.current?.(); return; }
         if (reviewOpenRef.current || storyActiveRef.current || ferryPromptRef.current || cityPromptRef.current) return;
+        if (stationSelectRef.current) return; // 행선지 오버레이는 버튼으로 선택(B로 닫기) — A는 무시
         if (descOpenRef.current) { setDescOpen(false); return; } // 설명 박스 열려 있으면 A로도 닫기
         const node = nearNodeRef.current;
+        // 🚃 역 근접(상호작용 노드가 A를 가져가지 않을 때) → 행선지 선택 오버레이.
+        const st = nearStationRef.current;
+        if (st && !node) {
+          const cityId = typeof activeSceneRef.current === 'string' && activeSceneRef.current.startsWith('city:')
+            ? activeSceneRef.current.slice(5) : null;
+          if (cityId) { setStationSelect({ cityId, fromId: st.id, fromName: st.nameJa }); return; }
+        }
         // NPC 노드는 대화 오버레이를 연다(스탬프는 대화 완주 시 — 여기서 수집하지 않는다).
         if (node?.npc) { setNpcDialog({ key: node.npc, node }); return; }
         // 노드 첫 상호작용이면 스탬프 수집 — 단 noStamp(도시 파사드 등 실존 노드 아님)는 제외.
@@ -428,6 +470,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         if (npcDialogRef.current) { npcCancelRef.current?.(); return; } // NPC 대화 중 B → 뜻 토글
         if (storyPhaseRef.current === 'dialogue') { toggleKoRef.current?.(); return; }
         if (descOpenRef.current) { setDescOpen(false); return; }
+        if (stationSelectRef.current) { setStationSelect(null); return; } // 🚃 행선지 오버레이 나가기(소프트락 방지)
         if (ferryPromptRef.current) { setFerryPrompt(null); return; }
         if (cityPromptRef.current) { setCityPrompt(null); return; }
         if (minimapOpenRef.current) { setMinimapOpen(false); return; }
@@ -487,10 +530,10 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   useEffect(() => {
     const scene = sceneRef.current;
     if (!scene) return;
-    const lock = reviewOpen || !!ferryPrompt || !!npcDialog || !!cityPrompt;
+    const lock = reviewOpen || !!ferryPrompt || !!npcDialog || !!cityPrompt || !!stationSelect;
     scene.inputLocked = lock;
     if (lock) { if (scene.heldDirs) scene.heldDirs.length = 0; scene.tapTile = null; scene.runHeld = false; }
-  }, [reviewOpen, ferryPrompt, npcDialog, cityPrompt]);
+  }, [reviewOpen, ferryPrompt, npcDialog, cityPrompt, stationSelect]);
 
   useEffect(() => {
     let destroyed = false;
@@ -1714,8 +1757,12 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           onEnter: () => {
             setActiveScene(`city:${cityData.id}`);
             setNearNode(null); setNearQuest(false); setCityPrompt(null); setDescOpen(false); setMinimapOpen(false);
+            setNearStation(null); setStationSelect(null); setStationToast(null); // 🚃 역 상태 초기화
           },
           setNear: (node) => setNearNode(node),
+          setNearStation: (st) => setNearStation(st),           // 🚃 역 근접 → 행선지 프롬프트
+          arrivedStation: (st) => setStationToast(st),          // 🚃 fast-travel 도착 확인 토스트
+          travelBlocked: () => setStationToast({ icon: '⚠', nameJa: '지금은 이동할 수 없어요', yomi: '' }), // P1: 도착 불가 취소
           // create 말미 — 피어 스냅샷 재적용 + 전체 키 거리 1회 emit(씬 전환 음성 잔류 차단, Codex P1-2).
           onReady: () => resetScenePeers(),
           worldReturn: {
@@ -1910,6 +1957,82 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* 🚃 역 근접 → "Ⓐ 전철 타기" 프롬프트. A로 행선지 선택 오버레이를 연다. */}
+      {nearStation && !stationSelect && !nearNode && !npcDialog && !storyActive && !reviewOpen && !ferryPrompt && !cityPrompt && !minimapOpen && (
+        <div style={{
+          position: 'absolute', left: '50%', bottom: 18, transform: 'translateX(-50%)',
+          fontFamily: GBC.font, fontSize: '0.7rem', color: GBC.ink,
+          background: GBC.cream, border: `2px solid ${GBC.border}`,
+          boxShadow: `inset 0 0 0 1px ${GBC.creamHi}`, borderRadius: 2,
+          padding: '4px 10px', lineHeight: 1.2, whiteSpace: 'nowrap',
+        }}>
+          🚃 Ⓐ {nearStation.nameJa} 전철 타기
+        </div>
+      )}
+
+      {/* 🚃 전철 행선지 선택 오버레이 — 현재 역을 제외한 역 목록. 선택 시 페이드 후 순간이동.
+          항상 나가기(B/취소) 버튼 — NPC 대화 소프트락 수정과 같은 원칙(막다른 상태 없음). */}
+      {stationSelect && (() => {
+        const cityData = CITY_DATA[stationSelect.cityId];
+        const dests = fastTravelDestinations(cityData?.stations, stationSelect.fromId);
+        return (
+          <div style={{
+            position: 'absolute', inset: 0, zIndex: 6, display: 'grid', placeItems: 'center',
+            background: 'rgba(11,13,8,0.55)',
+          }}>
+            <div style={{ ...gbcPanel, width: 'min(88%, 340px)', padding: '14px 14px 12px' }}>
+              <div style={{ fontSize: '0.82rem', fontWeight: 'bold', textAlign: 'center', marginBottom: 2 }}>
+                🚃 전철 — 행선지
+              </div>
+              <div style={{ fontSize: '0.66rem', opacity: 0.72, textAlign: 'center', marginBottom: 10 }}>
+                지금 「{stationSelect.fromName}」 · 갈 역을 고르세요
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 200, overflowY: 'auto' }}>
+                {dests.map((st) => (
+                  <button
+                    key={st.id}
+                    type="button"
+                    onClick={() => { setStationSelect(null); sceneRef.current?.travelToStation?.(st.id); }}
+                    style={{
+                      ...gbcButtonPrimary, textAlign: 'left', whiteSpace: 'nowrap',
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8,
+                    }}
+                  >
+                    <span style={{ fontWeight: 'bold' }}>{st.nameJa}</span>
+                    <span style={{ fontSize: '0.66rem', opacity: 0.82 }}>
+                      {st.yomi}{st.line ? ` · ${st.line}` : ''}
+                    </span>
+                  </button>
+                ))}
+              </div>
+              <div style={{ textAlign: 'right', marginTop: 10 }}>
+                <button
+                  type="button"
+                  onClick={() => setStationSelect(null)}
+                  style={{ ...gbcButtonPrimary, fontSize: '0.7rem', padding: '3px 10px', background: GBC.cream, color: GBC.ink }}
+                >
+                  닫기 Ⓑ
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* 🚃 fast-travel 도착 확인 토스트 — "🚃 博多駅"(요미 병기). 잠시 뒤 자동 소멸. */}
+      {stationToast && (
+        <div style={{
+          position: 'absolute', left: '50%', top: 16, transform: 'translateX(-50%)',
+          fontFamily: GBC.font, fontSize: '0.74rem', color: GBC.ink,
+          background: GBC.cream, border: `2px solid ${GBC.border}`,
+          boxShadow: `inset 0 0 0 1px ${GBC.creamHi}`, borderRadius: 2,
+          padding: '5px 12px', lineHeight: 1.2, whiteSpace: 'nowrap', zIndex: 7,
+        }}>
+          {stationToast.icon || '🚃'} {stationToast.nameJa}
+          {stationToast.yomi && <span style={{ fontSize: '0.62rem', opacity: 0.75 }}> {stationToast.yomi}</span>}
         </div>
       )}
 
