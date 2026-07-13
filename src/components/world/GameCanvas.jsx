@@ -1762,6 +1762,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           setNear: (node) => setNearNode(node),
           setNearStation: (st) => setNearStation(st),           // 🚃 역 근접 → 행선지 프롬프트
           arrivedStation: (st) => setStationToast(st),          // 🚃 fast-travel 도착 확인 토스트
+          travelBlocked: () => setStationToast({ icon: '⚠', nameJa: '지금은 이동할 수 없어요', yomi: '' }), // P1: 도착 불가 취소
           // create 말미 — 피어 스냅샷 재적용 + 전체 키 거리 1회 emit(씬 전환 음성 잔류 차단, Codex P1-2).
           onReady: () => resetScenePeers(),
           worldReturn: {
@@ -2030,7 +2031,8 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           boxShadow: `inset 0 0 0 1px ${GBC.creamHi}`, borderRadius: 2,
           padding: '5px 12px', lineHeight: 1.2, whiteSpace: 'nowrap', zIndex: 7,
         }}>
-          🚃 {stationToast.nameJa} <span style={{ fontSize: '0.62rem', opacity: 0.75 }}>{stationToast.yomi}</span>
+          {stationToast.icon || '🚃'} {stationToast.nameJa}
+          {stationToast.yomi && <span style={{ fontSize: '0.62rem', opacity: 0.75 }}> {stationToast.yomi}</span>}
         </div>
       )}
 

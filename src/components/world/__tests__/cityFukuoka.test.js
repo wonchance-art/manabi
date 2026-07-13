@@ -3,7 +3,7 @@ import FUKUOKA, {
   buildFukuokaGrid, isCityWalkable, isCityBlocked,
   COLS, ROWS, CITY_TILE, ENTRANCE, ZONES, CITY_NODES, PROPS, STATIONS,
 } from '../cities/fukuoka.js';
-import { fastTravelDestinations } from '../cities/terrain.js';
+import { fastTravelDestinations, resolveArrivalTile } from '../cities/terrain.js';
 
 // 🏙️ 후쿠오카 도시 정밀맵 데이터 무결성 — 순수 그리드 빌더(Phaser 미의존)를 그대로 검증한다.
 //   그리드 크기 · 출입구 보행 가능 · NPC/가게 좌표 보행 인접 · 전 보행칸 연결성(입구→가게·출구).
@@ -178,6 +178,41 @@ describe('🚃 행선지 목록 순수 로직(fastTravelDestinations)', () => {
     expect(fastTravelDestinations(undefined, 'x')).toEqual([]);
     expect(fastTravelDestinations(null, 'x')).toEqual([]);
     expect(fastTravelDestinations([], 'x')).toEqual([]);
+  });
+});
+
+describe('🚃 도착 tile 해석(resolveArrivalTile) — 소프트락 방지 게이트', () => {
+  const walkableAt = (x, y) => isCityWalkable(at(x, y));
+
+  it('정확 tile 이 보행 가능하면 그대로 반환', () => {
+    for (const s of STATIONS) {
+      expect(resolveArrivalTile(grid, COLS, ROWS, s.tile)).toEqual(s.tile);
+    }
+  });
+
+  it('차단 tile(WATER)이면 인근 보행칸으로 결정적 재배치', () => {
+    // [10,2]는 하카타만 수면(WATER·차단).
+    expect(isCityBlocked(at(10, 2))).toBe(true);
+    const r = resolveArrivalTile(grid, COLS, ROWS, [10, 2]);
+    expect(r).not.toBeNull();
+    expect(walkableAt(r[0], r[1])).toBe(true);
+    expect(resolveArrivalTile(grid, COLS, ROWS, [10, 2])).toEqual(r); // 결정적(재호출 동일)
+  });
+
+  it('차단 tile(BUILDING)이면 인근 보행칸으로 재배치', () => {
+    // [90,62]는 하카타역 건물 블록(BUILDING·차단).
+    expect(isCityBlocked(at(90, 62))).toBe(true);
+    const r = resolveArrivalTile(grid, COLS, ROWS, [90, 62]);
+    expect(r).not.toBeNull();
+    expect(walkableAt(r[0], r[1])).toBe(true);
+  });
+
+  it('범위 밖·비정수 tile 은 취소(null) 또는 인근 재배치 — 소프트락 없음', () => {
+    expect(resolveArrivalTile(grid, COLS, ROWS, [99999, 99999])).toBeNull(); // 완전 범위 밖 → 취소
+    expect(resolveArrivalTile(grid, COLS, ROWS, [1.5, 2])).toBeNull();       // 비정수 → 취소
+    expect(resolveArrivalTile(grid, COLS, ROWS, null)).toBeNull();
+    const near = resolveArrivalTile(grid, COLS, ROWS, [-1, 40]);             // 살짝 밖 → 인근 보행칸
+    if (near) expect(walkableAt(near[0], near[1])).toBe(true);
   });
 });
 

@@ -31,7 +31,7 @@ import {
 import { GBC } from './QuestReview';
 import bus from './bus';
 // 🗺️ 표준 지형 코드·충돌 — 공용 단일 진실원(cities/terrain.js, docs §6.4). 렌더·충돌 공용.
-import { CITY_TILE as TERRAIN, isCityBlocked, isCityWater } from './cities/terrain';
+import { CITY_TILE as TERRAIN, isCityBlocked, isCityWater, resolveArrivalTile } from './cities/terrain';
 // 🧱 청크 RenderTexture 렌더의 순수 로직(가시성·용량·LRU) — docs §6.3. 대형 맵 메모리 상한.
 import { CHUNK_TILES, chunkDims, chunkTileBounds, visibleChunks, chunkCapacity, ChunkLRU, planChunkUpdate } from './cityChunks';
 
@@ -490,9 +490,12 @@ export function buildCityScene(Phaser, city, ctx) {
       // ── 입력(광장과 동일 경로) ──
       this.heldDirs = [];
       this.tapTile = null;
+      // P2: 모든 입력 진입점은 UI 잠금(inputLocked)과 씬 페이드 잠금(traveling)을 **둘 다** 확인한다.
+      //   페이드 중 들어온 입력은 버퍼링하지 않고 드롭 — React 오버레이 잠금 해제 경합과 무관하게
+      //   페이드인 직후 의도치 않은 이동이 없다(heldDirs 에 쌓이지 않음).
       this.input.keyboard.on('keydown', (e) => {
         if (e.key === 'b' || e.key === 'B') { this.runHeld = true; return; }
-        if (this.inputLocked) return;
+        if (this.inputLocked || this.traveling) return;
         const d = keyToDir(e.key); if (!d) return;
         this.tapTile = null;
         if (!this.heldDirs.includes(d)) this.heldDirs.push(d);
@@ -502,7 +505,7 @@ export function buildCityScene(Phaser, city, ctx) {
         const d = keyToDir(e.key); if (d) this.heldDirs = this.heldDirs.filter((x) => x !== d);
       });
       this.input.on('pointerdown', (p) => {
-        if (this.inputLocked) return;
+        if (this.inputLocked || this.traveling) return;
         this.tapTile = { x: Math.floor(p.worldX / TILE), y: Math.floor(p.worldY / TILE) };
         this.heldDirs.length = 0;
       });
@@ -646,7 +649,7 @@ export function buildCityScene(Phaser, city, ctx) {
 
     // ── 외부(GBC 셸) 입력 주입 — 광장·공항과 동일 인터페이스 ──
     extInputDown(d) {
-      if (this.inputLocked || !VALID_DIR.has(d)) return;
+      if (this.inputLocked || this.traveling || !VALID_DIR.has(d)) return; // P2: 페이드 중 입력 드롭
       this.tapTile = null;
       if (!this.heldDirs.includes(d)) this.heldDirs.push(d);
     }
@@ -753,14 +756,17 @@ export function buildCityScene(Phaser, city, ctx) {
       if (this.exiting || this.traveling) return;
       const st = (city.stations || []).find((s) => s.id === id);
       if (!st) return;
+      // P1: 페이드 시작 **전에** 도착 tile 검증(순수 헬퍼). 차단/범위밖이면 인근 보행칸으로 재배치,
+      //   그래도 없으면 이동 취소(플레이어 그대로 · 잠금 유지 안 함 · 토스트) — 어떤 경우에도 소프트락 없음.
+      const arrival = resolveArrivalTile(this.grid, COLS, ROWS, st.tile);
+      if (!arrival) { ctx.travelBlocked?.(); return; }
       this.traveling = true;
       this.inputLocked = true;
       this.heldDirs.length = 0; this.tapTile = null; this.runHeld = false;
       ctx.setNear?.(null); ctx.setNearStation?.(null);
       this.cameras.main.fadeOut(FADE_MS, 0, 0, 0);
       this.cameras.main.once('camerafadeoutcomplete', () => {
-        const [tx, ty] = st.tile;
-        this.placeAt(tx, ty);
+        this.placeAt(arrival[0], arrival[1]);
         this.wasNearNodeId = null; this.wasNearStationId = st.id; // 도착역엔 이미 근접 — 재프롬프트 억제
         this.cameras.main.fadeIn(FADE_MS, 0, 0, 0);
         this.cameras.main.once('camerafadeincomplete', () => { this.inputLocked = false; this.traveling = false; });
