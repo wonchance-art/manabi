@@ -53,5 +53,51 @@
 
 ## 5. 비원칙 (하지 않는 것)
 - 도시맵에서의 채팅 분리(전역 유지 — 분리는 수요 확인 후).
-- 실측 지도 재현(게임적 압축 — 동네의 '감성'이 목적, 정확도가 아님).
+- ~~실측 지도 재현(게임적 압축 — 동네의 '감성'이 목적, 정확도가 아님).~~ **← §6에서 폐기.**
 - 파일럿 단계의 실내(가게 내부) 맵 — 가게는 파사드+대화/도어로. 실내는 후속.
+
+---
+
+## 6. v2 표준 — 실지형·고정 축척·무분할 (2026-07-13 오너 확정)
+
+> 오너 지시: "실제 지도로 확인할 수 있는 지형. 다녀온 사람은 추억하고, 갈 사람은 지리·관광지
+> 위치를 익히는 용도. 화끈하게 넓게. 도트를 낮춘 건 바로 이 지형·시스템을 극도로 올리기 위함."
+> **§5의 '실측 재현 금지'를 폐기하고, 실좌표 기반 지형으로 전환한다.**
+
+### 6.1 고정 축척 — 1타일 = 20m (전 도시 공통·불변)
+- 모든 도시가 같은 m/타일 → 후쿠오카의 한 블록과 시부야의 한 블록이 같은 타일 크기.
+  **일관성 = 타일 수가 아니라 축척이 같은 것.** 맵 타일 수는 도시 실측 폭÷20m로 자연히 달라진다.
+- 예: 나하 3km→150 · 후쿠오카(타워/돔까지) 7.5km→375 · 도쿄 코어 12km→600.
+
+### 6.2 무분할 — 도시 하나 = 맵 하나
+- 도시를 동네로 쪼개지 않는다. 실측 전 범위를 한 맵에. (천장·분할 개념 폐기.)
+- 대형 맵 도보 지루함은 **맵 안 전철역 fast-travel**로 해결(실제 대도시 경험 = 걷다가 전철,
+  노선명이 학습 소재).
+
+### 6.3 렌더 — 청크 RenderTexture 베이킹 (크기 무제한)
+- Phaser 타일맵(셀당 Tile 객체 1개)은 600²=36만 객체로 메모리 폭발 → 폐기.
+- 지형을 큰 오프스크린 RenderTexture 청크(예 512px)로 굽고 **보이는 청크만** 카메라에 그린다.
+  1000²+ 도 프레임 비용 일정. 캐릭터·NPC·프리팹은 기존 스프라이트 그대로 그 위에.
+
+### 6.4 지형 데이터 계약 (Codex geo 엔진 ↔ Claude 렌더/통합)
+Codex가 실좌표에서 산출하는 `src/components/world/cities/<city>.geo.js`:
+```
+export const <CITY>_GEO = {
+  meta: { city, bbox:[minLon,minLat,maxLon,maxLat], grid:{w,h}, metersPerTile:20, projection:'webmercator' },
+  terrain: <길이 w*h 인코딩>,   // 값 = 아래 표준 지형 코드
+  pois:    [ { id, nameJa, yomi, lat, lon, tile:[x,y], kind, facade? } ],
+  stations:[ { id, nameJa, yomi, lat, lon, tile:[x,y], line? } ],  // fast-travel 노드
+};
+```
+**표준 지형 코드**(현 `cities/fukuoka.js` CITY_TILE 승격 — 렌더·충돌 공용):
+`ROAD · SIDEWALK · CROSSWALK · PLAZA · PARK · BEACH · WATER(차단) · RIVER(차단) · BUILDING(차단) · ISLAND(차단·배경) · BRIDGE · DOCK`.
+- Codex: 해안선·강·도로·공원을 실좌표로 래스터화, POI/역 tile좌표를 투영으로 산출, **공식 자료 대조**로 상대 위치 충실도 + 육지 BFS 연결성(다리 포함) 검증.
+- Claude: geo.js를 import해 청크 렌더 + POI/역에 일본어 간판·desc·프리팹·전철 fast-travel 배선.
+
+### 6.5 접합 (기존 유지 — 회귀 금지)
+scene `city:<id>` 씬별 피어/음성, city:* 좌표 영속·재접속 직행 스폰, resetScenePeers,
+cityRedirectScene, EXIT→전국맵 복귀, NPC nodeId·스탬프 연속. 전 도시 공통.
+
+### 6.6 시퀀스
+후쿠오카를 이 표준의 레퍼런스로 실지형 구축(Codex geo + Claude 청크렌더·콘텐츠) →
+검증 후 도쿄(같은 20m, 노선 fast-travel) 상속 → 오사카·교토·삿포로·나하….
