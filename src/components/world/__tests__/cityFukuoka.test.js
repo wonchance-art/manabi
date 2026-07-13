@@ -4,7 +4,7 @@ import FUKUOKA, {
   COLS, ROWS, CITY_TILE, ENTRANCE, ZONES, CITY_NODES, PROPS, STATIONS,
 } from '../cities/fukuoka.js';
 import { FUKUOKA_GEO } from '../cities/fukuoka.geo.js';
-import { fastTravelDestinations, resolveArrivalTile } from '../cities/terrain.js';
+import { fastTravelDestinations, resolveArrivalTile, resolveRespawnTile } from '../cities/terrain.js';
 
 // 🏙️ 후쿠오카 도시 정밀맵 — **실지형 geo 격상판(388×254)** 데이터 무결성.
 //   지형은 cities/fukuoka.geo.js(§6.4 계약)가 단일 진실원. buildGrid 는 geo terrain(디코드된 표준
@@ -318,5 +318,51 @@ describe('연결성 — 입구에서 노드·역·출구에 도달', () => {
     let exitReached = false;
     for (let i = 0; i < grid.length; i++) if (grid[i] === CITY_TILE.EXIT && seen[i]) exitReached = true;
     expect(exitReached).toBe(true);
+  });
+});
+
+describe('🏠 재접속 spawn 연결성(resolveRespawnTile) — 구 좌표 소프트락 방지', () => {
+  // 구 손그림 128×96 지도에서 유효 보행 좌표였던 (57,95)·(58,95)는 새 388×254 실지형에서
+  //   메인 성분과 끊긴 고립 포켓이다(Codex #90 P1). 이 좌표로 직행 재접속하면 역·EXIT 에 닿지
+  //   못하므로, resolveRespawnTile 이 null 을 반환해 CityScene 이 ENTRANCE 로 폴백해야 한다.
+  it('구 지도 좌표 (57,95)·(58,95) 는 메인 성분 밖 → null(입구 폴백)', () => {
+    for (const [x, y] of [[57, 95], [58, 95]]) {
+      // 전제: 새 지형에서 여전히 보행 가능한 칸이어야 함(차단이면 이 회귀가 성립 안 함).
+      expect(isCityWalkable(at(x, y))).toBe(true);
+      expect(resolveRespawnTile(grid, COLS, ROWS, ENTRANCE, { x, y })).toBeNull();
+    }
+  });
+
+  it('ENTRANCE·메인 성분 노드/역 좌표는 그대로 수용', () => {
+    expect(resolveRespawnTile(grid, COLS, ROWS, ENTRANCE, { x: ENTRANCE.x, y: ENTRANCE.y }))
+      .toEqual([ENTRANCE.x, ENTRANCE.y]);
+    for (const s of STATIONS) {
+      expect(resolveRespawnTile(grid, COLS, ROWS, ENTRANCE, { x: s.tile[0], y: s.tile[1] }))
+        .toEqual([s.tile[0], s.tile[1]]);
+    }
+    for (const n of CITY_NODES) {
+      expect(resolveRespawnTile(grid, COLS, ROWS, ENTRANCE, { x: n.tile[0], y: n.tile[1] }))
+        .toEqual([n.tile[0], n.tile[1]]);
+    }
+  });
+
+  it('차단·범위 밖·비정수·null spawn 은 거부(null)', () => {
+    const water = firstTile(CITY_TILE.WATER);
+    expect(resolveRespawnTile(grid, COLS, ROWS, ENTRANCE, { x: water[0], y: water[1] })).toBeNull();
+    expect(resolveRespawnTile(grid, COLS, ROWS, ENTRANCE, { x: -1, y: 10 })).toBeNull();
+    expect(resolveRespawnTile(grid, COLS, ROWS, ENTRANCE, { x: 1.5, y: 2 })).toBeNull();
+    expect(resolveRespawnTile(grid, COLS, ROWS, ENTRANCE, null)).toBeNull();
+  });
+
+  it('고립 포켓은 거부, 개통된 이웃은 수용(합성 그리드)', () => {
+    const C = 5, Rw = 5;
+    const g = new Uint8Array(C * Rw).fill(CITY_TILE.BUILDING);
+    g[0] = CITY_TILE.SIDEWALK;          // (0,0) = 입구 성분
+    g[2 * C + 2] = CITY_TILE.SIDEWALK;  // (2,2) = 끊긴 고립 포켓
+    const ent = { x: 0, y: 0 };
+    expect(resolveRespawnTile(g, C, Rw, ent, { x: 2, y: 2 })).toBeNull();
+    // (0,0)→(1,0) 개통하면 (1,0) 은 입구 성분 → 수용.
+    g[1] = CITY_TILE.SIDEWALK;
+    expect(resolveRespawnTile(g, C, Rw, ent, { x: 1, y: 0 })).toEqual([1, 0]);
   });
 });

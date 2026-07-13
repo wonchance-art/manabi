@@ -78,3 +78,40 @@ export function resolveArrivalTile(grid, cols, rows, tile) {
   }
   return null;
 }
+
+// 🏠 직행 재접속 spawn 연결성 검증(순수·결정적) — 저장 좌표가 ENTRANCE 와 같은 보행 성분인지.
+//   맵 버전 교체(후쿠오카 손그림 128×96 → 실지형 388×254 등)로 구 city:* 저장 좌표가 새 지형의
+//   고립 포켓으로 재해석되면, 역·EXIT 에 닿지 못하는 재접속 소프트락이 생긴다(Codex #90 P1).
+//   ENTRANCE 에서 4방 BFS 로 도달 가능한 보행 성분을 구하고, spawn 이 그 안일 때만 수용한다.
+//   실패(범위 밖·차단·비정수·성분 불일치) 시 null → 호출부가 ENTRANCE 로 폴백.
+//   구 저장 좌표가 유효 보행칸이라도 메인 성분과 끊겨 있으면 거부돼 다음 접속부터 입구 스폰.
+export function resolveRespawnTile(grid, cols, rows, entrance, spawn) {
+  if (!spawn || !Number.isInteger(spawn.x) || !Number.isInteger(spawn.y)) return null;
+  const sx = spawn.x, sy = spawn.y;
+  if (sx < 0 || sy < 0 || sx >= cols || sy >= rows) return null;
+  if (isCityBlocked(grid[sy * cols + sx])) return null;
+  if (!entrance || !Number.isInteger(entrance.x) || !Number.isInteger(entrance.y)) return null;
+  const ex = entrance.x, ey = entrance.y;
+  if (ex < 0 || ey < 0 || ex >= cols || ey >= rows) return null;
+  if (sx === ex && sy === ey) return [sx, sy];
+  // ENTRANCE 보행 성분 4방 BFS — spawn 에 닿으면 조기 종료.
+  const seen = new Uint8Array(cols * rows);
+  const start = ey * cols + ex;
+  seen[start] = 1;
+  const stack = [start];
+  while (stack.length) {
+    const i = stack.pop();
+    const x = i % cols, y = (i - x) / cols;
+    if (x === sx && y === sy) return [sx, sy];
+    const nb = [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]];
+    for (let k = 0; k < 4; k++) {
+      const nx = nb[k][0], ny = nb[k][1];
+      if (nx < 0 || ny < 0 || nx >= cols || ny >= rows) continue;
+      const ni = ny * cols + nx;
+      if (seen[ni] || isCityBlocked(grid[ni])) continue;
+      seen[ni] = 1;
+      stack.push(ni);
+    }
+  }
+  return null;
+}

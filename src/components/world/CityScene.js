@@ -31,7 +31,7 @@ import {
 import { GBC } from './QuestReview';
 import bus from './bus';
 // 🗺️ 표준 지형 코드·충돌 — 공용 단일 진실원(cities/terrain.js, docs §6.4). 렌더·충돌 공용.
-import { CITY_TILE as TERRAIN, isCityBlocked, isCityWater, resolveArrivalTile } from './cities/terrain';
+import { CITY_TILE as TERRAIN, isCityBlocked, isCityWater, resolveArrivalTile, resolveRespawnTile } from './cities/terrain';
 // 🧱 청크 RenderTexture 렌더의 순수 로직(가시성·용량·LRU) — docs §6.3. 대형 맵 메모리 상한.
 import { CHUNK_TILES, chunkDims, chunkTileBounds, visibleChunks, chunkCapacity, ChunkLRU, planChunkUpdate } from './cityChunks';
 
@@ -469,12 +469,12 @@ export function buildCityScene(Phaser, city, ctx) {
       this.wasNearStationId = null;
 
       // ── 플레이어 스폰 — data.spawn(직행 재접속) 검증, 실패/미지정 시 도시 입구 ──
+      //   spawn 은 ENTRANCE 와 같은 보행 성분일 때만 수용한다. 맵 버전 교체(손그림 128×96 →
+      //   실지형 388×254)로 구 city:* 좌표가 새 지형의 고립 포켓으로 재해석되면, 역·EXIT 에 닿지
+      //   못하고 같은 좌표를 다시 저장하는 재접속 소프트락이 생긴다 → 입구 폴백(Codex #90 P1).
       let sx = city.entrance.x, sy = city.entrance.y, sfacing = city.entrance.facing || 'down';
-      const sp = data && data.spawn;
-      if (sp && Number.isInteger(sp.x) && Number.isInteger(sp.y)
-        && sp.x >= 0 && sp.y >= 0 && sp.x < COLS && sp.y < ROWS && !this.blocked(sp.x, sp.y)) {
-        sx = sp.x; sy = sp.y; sfacing = 'down';
-      }
+      const rs = resolveRespawnTile(this.grid, COLS, ROWS, city.entrance, data && data.spawn);
+      if (rs) { sx = rs[0]; sy = rs[1]; sfacing = 'down'; }
       this.pTileX = sx; this.pTileY = sy; this.facing = sfacing; this.moving = false; this.turnGrace = 0;
       const px = sx * TILE + TILE / 2, py = sy * TILE + TILE / 2;
       this.player = this.add.image(px, py, 'ct_pc_down_n').setOrigin(0.5, CHAR_ORIGIN_Y).setScale(TSCALE);
