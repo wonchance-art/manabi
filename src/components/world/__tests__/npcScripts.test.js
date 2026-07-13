@@ -54,9 +54,9 @@ describe('오미쿠지(drawOmikuji — 균등, 서열 단정 없음)', () => {
   });
 });
 
-describe('대화 스크립트 무결성(라멘·신사)', () => {
-  it('두 스크립트가 존재하고 label·steps 를 갖는다', () => {
-    for (const key of ['ramen', 'shrine']) {
+describe('대화 스크립트 무결성(라멘·신사·편의점·이자카야)', () => {
+  it('네 스크립트가 존재하고 label·steps 를 갖는다', () => {
+    for (const key of ['ramen', 'shrine', 'konbini', 'izakaya']) {
       const s = getNpcScript(key);
       expect(s).toBeTruthy();
       expect(typeof s.label).toBe('string');
@@ -110,6 +110,31 @@ describe('대화 스크립트 무결성(라멘·신사)', () => {
     expect(flat).toContain('ご縁');
     expect(flat).toContain('おみくじ');
     expect(NPC_SCRIPTS.shrine.steps.some((s) => s.t === 'omikuji')).toBe(true);
+  });
+
+  it('편의점 대화는 챕터 ot-07 표현(お願いします·大丈夫です)을 쓰고, 데움 대상은 おべんとう(肉まん 아님)', () => {
+    const s = getNpcScript('konbini');
+    expect(s).toBeTruthy();
+    expect(s.steps.length).toBeGreaterThanOrEqual(4);
+    const flat = JSON.stringify(s);
+    expect(flat).toContain('おねがいします');   // 받을 때 만능 대답
+    expect(flat).toContain('大丈夫です');        // 사양(type 정답)
+    // あたため 문답 대상은 도시락(おべんとう) — 肉まん은 계산대 스티머에서 이미 쪄 보온 판매라
+    //   전자레인지 데움 대상이 아니다(Codex #92 P1). 데움 문답에 肉まん이 붙지 않아야 한다.
+    const heat = s.steps.find((st) => st.t === 'say' && /あたため/.test(st.ja || ''));
+    expect(heat).toBeTruthy();
+    expect(heat.ja).toContain('おべんとう');
+    expect(heat.ja).not.toContain('肉まん');
+  });
+
+  it('이자카야 대화는 챕터 ot-08 표현(お通し·とりあえず生で·すみません)을 쓴다', () => {
+    const s = getNpcScript('izakaya');
+    expect(s).toBeTruthy();
+    expect(s.steps.length).toBeGreaterThanOrEqual(4);
+    const flat = JSON.stringify(s);
+    expect(flat).toContain('お通し');            // 유료 기본 안주(정체)
+    expect(flat).toContain('とりあえず生で');     // 국민 첫 주문(choice 정답)
+    expect(flat).toContain('すみません');        // 점원 부르기(type 정답)
   });
 
   it('선택지(choice)와 타이핑(type)이 둘 다 등장(입력 2단 병행)', () => {

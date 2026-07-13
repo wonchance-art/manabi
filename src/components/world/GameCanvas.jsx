@@ -2183,15 +2183,18 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         />
       )}
 
-      {/* NPC 도트 대화(라멘·신사) — 캔버스 위 HTML, 열리면 게임 입력 잠금(useEffect).
-          완주(onComplete) 시 노드 스탬프 1회 수집(collectStampRef Set 가드 — 재대화해도 중복 없음). */}
+      {/* NPC 도트 대화(라멘·신사·편의점·이자카야) — 캔버스 위 HTML, 열리면 게임 입력 잠금(useEffect).
+          완주(onComplete) 시 노드 스탬프 1회 수집(collectStampRef Set 가드 — 재대화해도 중복 없음).
+          단 noStamp 노드(WORLD_NODES 밖 도시 NPC — 편의점·이자카야)는 수집하지 않는다: 서버는
+          실존 노드(getNode)만 upsert 하므로 미등록 id 는 400 이 되고, 낙관 갱신이 유령 스탬프를
+          남긴다. noStamp 를 여기서도 존중해 도시 학습 NPC 는 대화 경험만 준다. */}
       {npcDialog && (
         <NpcDialog
           npcKey={npcDialog.key}
           npcName={npcDialog.node?.name}
           actionRef={npcActionRef}
           cancelRef={npcCancelRef}
-          onComplete={() => collectStampRef.current?.(npcDialog.node)}
+          onComplete={() => { if (!npcDialog.node?.noStamp) collectStampRef.current?.(npcDialog.node); }}
           onExit={() => setNpcDialog(null)}
         />
       )}
