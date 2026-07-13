@@ -112,14 +112,19 @@ describe('대화 스크립트 무결성(라멘·신사·편의점·이자카야)
     expect(NPC_SCRIPTS.shrine.steps.some((s) => s.t === 'omikuji')).toBe(true);
   });
 
-  it('편의점 대화는 챕터 ot-07 표현(お願いします·大丈夫です·肉まん)을 쓴다', () => {
+  it('편의점 대화는 챕터 ot-07 표현(お願いします·大丈夫です)을 쓰고, 데움 대상은 おべんとう(肉まん 아님)', () => {
     const s = getNpcScript('konbini');
     expect(s).toBeTruthy();
     expect(s.steps.length).toBeGreaterThanOrEqual(4);
     const flat = JSON.stringify(s);
     expect(flat).toContain('おねがいします');   // 받을 때 만능 대답
     expect(flat).toContain('大丈夫です');        // 사양(type 정답)
-    expect(flat).toContain('肉まん');            // 편의점 소재(챕터 정합)
+    // あたため 문답 대상은 도시락(おべんとう) — 肉まん은 계산대 스티머에서 이미 쪄 보온 판매라
+    //   전자레인지 데움 대상이 아니다(Codex #92 P1). 데움 문답에 肉まん이 붙지 않아야 한다.
+    const heat = s.steps.find((st) => st.t === 'say' && /あたため/.test(st.ja || ''));
+    expect(heat).toBeTruthy();
+    expect(heat.ja).toContain('おべんとう');
+    expect(heat.ja).not.toContain('肉まん');
   });
 
   it('이자카야 대화는 챕터 ot-08 표현(お通し·とりあえず生で·すみません)을 쓴다', () => {
