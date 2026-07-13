@@ -33,7 +33,7 @@ import bus from './bus';
 // 🗺️ 표준 지형 코드·충돌 — 공용 단일 진실원(cities/terrain.js, docs §6.4). 렌더·충돌 공용.
 import { CITY_TILE as TERRAIN, isCityBlocked, isCityWater } from './cities/terrain';
 // 🧱 청크 RenderTexture 렌더의 순수 로직(가시성·용량·LRU) — docs §6.3. 대형 맵 메모리 상한.
-import { CHUNK_TILES, chunkDims, visibleChunks, chunkCapacity, ChunkLRU } from './cityChunks';
+import { CHUNK_TILES, chunkDims, chunkTileBounds, visibleChunks, chunkCapacity, ChunkLRU, planChunkUpdate } from './cityChunks';
 
 // ── 좌표 스케일 (광장·공항과 동일 불변) ──
 const TILE = 32;
@@ -418,21 +418,12 @@ export function buildCityScene(Phaser, city, ctx) {
         this.refreshWaterOverlay();
       } });
 
-      this.refreshChunks(true);              // 초기 가시 청크 bake
+      this.refreshChunks(true);              // 초기 가시 청크 bake(+가시 청크 트리 생성)
       this.refreshWaterOverlay();            // 초기 물 오버레이
+      // (가로수는 청크 생명주기에 묶어 **가시 청크 범위만** 생성/회수한다 — buildChunkTrees.
+      //  create 전역 트리 루프를 제거해 트리 수가 맵 면적이 아니라 화면+pad 에 비례하게 함 — Codex P1.)
 
-      // ── 가로수(공원 + 대로 변) — 도시가 작아 정적 배치(컬링 불필요) ──
-      for (let y = 0; y < ROWS; y++) {
-        for (let x = 0; x < COLS; x++) {
-          const c = this.grid[y * COLS + x];
-          const isPark = c === T.PARK && tileHash(x, y) < 0.28;
-          const isVerge = c === T.SIDEWALK && this.tileCode(x, y - 1) === T.ROAD && tileHash(x, y) < 0.16;
-          if (!isPark && !isVerge) continue;
-          this.add.image(x * TILE + TILE / 2, (y + 1) * TILE, 'ct_tree').setOrigin(0.5, 1).setScale(TSCALE).setDepth((y + 1) * TILE);
-        }
-      }
-
-      // ── 프리팹 파사드(노렌·간판) — 프론티지 소품(비상호작용) ──
+      // ── 프리팹 파사드(노렌·간판) — 프론티지 소품(비상호작용, city.props 는 명시 목록이라 개수 유한) ──
       for (const p of (city.props || [])) {
         const [px, py] = p.tile;
         this.add.image(px * TILE + TILE / 2, (py + 1) * TILE, `ct_prop_${p.kind}`)
@@ -558,8 +549,40 @@ export function buildCityScene(Phaser, city, ctx) {
       return rt;
     }
 
-    // 카메라에 겹치는 청크만 표시 — 최초 1회 지연 bake, 밖은 숨김, LRU 초과분은 destroy.
-    //   force: 카메라 청크 이동이 없어도 강제 갱신(create 초기화).
+    // 가시 청크 범위의 가로수(공원·대로변) — 청크 생명주기에 묶어 화면+pad 밖엔 존재하지 않음(Codex P1).
+    //   위치 결정성(tileHash)·2타일 높이 오버행·캐릭터 depth 정렬은 정적 스프라이트라 그대로 유지.
+    buildChunkTrees(cx, cy) {
+      const b = chunkTileBounds(cx, cy, COLS, ROWS);
+      const trees = [];
+      for (let y = b.y0; y < b.y1; y++) {
+        for (let x = b.x0; x < b.x1; x++) {
+          const c = this.grid[y * COLS + x];
+          const isPark = c === TERRAIN.PARK && tileHash(x, y) < 0.28;
+          const isVerge = c === TERRAIN.SIDEWALK && this.tileCode(x, y - 1) === TERRAIN.ROAD && tileHash(x, y) < 0.16;
+          if (!isPark && !isVerge) continue;
+          trees.push(this.add.image(x * TILE + TILE / 2, (y + 1) * TILE, 'ct_tree')
+            .setOrigin(0.5, 1).setScale(TSCALE).setDepth((y + 1) * TILE));
+        }
+      }
+      return trees;
+    }
+
+    setChunkVisible(ch, vis) {
+      ch.rt.setVisible(vis);
+      for (const t of ch.decor) t.setVisible(vis);
+    }
+
+    destroyChunk(key) {
+      const ch = this.chunks.get(key);
+      if (!ch) return;
+      ch.rt.destroy();
+      for (const t of ch.decor) t.destroy();
+      this.chunks.delete(key);
+      this.chunkLRU.delete(key);
+    }
+
+    // 카메라에 겹치는 청크만 표시 — 지연 bake, 밖은 숨김. **bake 전에 선축출**(planChunkUpdate)해
+    //   순간이동 시에도 상주 RT peak 가 cap 을 넘지 않는다(Codex P2). force: create 초기화.
     refreshChunks(force = false) {
       const view = this.cameras.main.worldView;
       const chunkPx = CHUNK_TILES * TILE;
@@ -569,20 +592,20 @@ export function buildCityScene(Phaser, city, ctx) {
       this.lastCamCX = camCX; this.lastCamCY = camCY;
 
       const vis = visibleChunks(view, { tile: TILE, chunkCols: this.chunkCols, chunkRows: this.chunkRows, pad: 1 });
-      const protect = new Set(vis.map((c) => c.key));
-      // 이번에 안 보이는 청크는 숨김.
-      for (const [key, ch] of this.chunks) if (!protect.has(key)) ch.rt.setVisible(false);
-      // 보이는 청크 bake/표시 + LRU 사용 표시.
+      const visKeys = vis.map((c) => c.key);
+      const protect = new Set(visKeys);
+      // 이번에 안 보이는 청크는 숨김(회수는 아래 선축출이 담당).
+      for (const [key, ch] of this.chunks) if (!protect.has(key)) this.setChunkVisible(ch, false);
+
+      // 계획: 새 청크를 bake 하기 전에 비가시부터 선축출 → 매 순간 상주 ≤ cap.
+      const plan = planChunkUpdate(this.chunkLRU, this.chunks, visKeys, this.chunkCap);
+      for (const key of plan.toDestroy) this.destroyChunk(key);
       for (const c of vis) {
-        let ch = this.chunks.get(c.key);
-        if (!ch) { ch = { rt: this.bakeChunk(c.cx, c.cy), cx: c.cx, cy: c.cy }; this.chunks.set(c.key, ch); }
-        ch.rt.setVisible(true);
+        if (!this.chunks.has(c.key)) {
+          this.chunks.set(c.key, { rt: this.bakeChunk(c.cx, c.cy), decor: this.buildChunkTrees(c.cx, c.cy), cx: c.cx, cy: c.cy });
+        }
+        this.setChunkVisible(this.chunks.get(c.key), true);
         this.chunkLRU.touch(c.key);
-      }
-      // LRU 상한 초과 시 가장 오래된 비가시 청크 destroy(텍스처 회수).
-      for (const key of this.chunkLRU.evict(this.chunkCap, protect)) {
-        const ch = this.chunks.get(key);
-        if (ch) { ch.rt.destroy(); this.chunks.delete(key); }
       }
     }
 

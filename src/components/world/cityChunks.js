@@ -11,6 +11,12 @@ export const CHUNK_TILES = 16; // 청크 한 변 타일 수(= 512 월드 px @ TI
 
 export function chunkKey(cx, cy) { return `${cx},${cy}`; }
 
+// 청크(cx,cy)가 덮는 타일 범위(그리드 밖 클램프) — 청크 단위 장식(트리) 생성에 사용.
+export function chunkTileBounds(cx, cy, cols, rows, chunkTiles = CHUNK_TILES) {
+  const x0 = cx * chunkTiles, y0 = cy * chunkTiles;
+  return { x0, y0, x1: Math.min(cols, x0 + chunkTiles), y1: Math.min(rows, y0 + chunkTiles) };
+}
+
 // 그리드(타일 cols×rows) → 청크 격자 크기.
 export function chunkDims(cols, rows, chunkTiles = CHUNK_TILES) {
   return {
@@ -51,7 +57,6 @@ export function chunkCapacity(viewW, viewH, {
 }
 
 // 청크 텍스처 LRU — 순수(Phaser 무의존). 상주 키의 최근 사용 순서만 관리.
-//   씬은 evict() 가 돌려준 키의 실제 RenderTexture 를 destroy 해 메모리를 회수한다.
 export class ChunkLRU {
   constructor() {
     this.used = new Map(); // key → tick(최근 사용 시각). Map 은 삽입 순서 보존.
@@ -83,4 +88,21 @@ export class ChunkLRU {
     }
     return victims;
   }
+}
+
+// 새 가시 set 반영 계획(P2 순간이동 peak 누수 차단) — **bake 전에 선축출**해 매 순간 상주 ≤ cap.
+//   lru·resident 는 씬과 동기(상주 청크 == lru 키). visible: 이번 가시 청크 키 배열.
+//   반환 { toDestroy(먼저), toCreate(그 다음 bake), cap }. 씬은 이 순서를 지켜 peak 를 상한 안에 둔다.
+//   대형 뷰포트 방어: 가시 청크가 baseCap 보다 많으면 cap 을 가시 수까지 상향(가시는 절대 축출 안 함).
+export function planChunkUpdate(lru, resident, visible, baseCap) {
+  const res = resident instanceof Set ? resident
+    : resident instanceof Map ? new Set(resident.keys())
+      : new Set(resident);
+  const protect = new Set(visible);
+  const cap = Math.max(baseCap, protect.size);
+  const toCreate = visible.filter((k) => !res.has(k));
+  // 새로 만들 수(N) 만큼 미리 자리를 비운다 → 만든 뒤에도 ≤ cap.
+  const target = Math.max(0, cap - toCreate.length);
+  const toDestroy = (res.size > target) ? lru.evict(target, protect) : [];
+  return { toDestroy, toCreate, cap };
 }
