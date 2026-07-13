@@ -184,11 +184,19 @@ export const PROPS = [
   { kind: 'sign', tile: [230, 68] },        // 博多港
   { kind: 'depart', tile: [248, 132] },     // 天神/アクロス
   { kind: 'torii', tile: [287, 124] },      // 櫛田神社
-  { kind: 'fountain', tile: [298, 150] },   // キャナルシティ 운하
   { kind: 'noren', tile: [203, 159] },      // 大名/ラーメン
-  { kind: 'station', tile: [333, 146] },    // 博多駅
   { kind: 'sign', tile: [124, 178] },       // 大濠公園
   { kind: 'sign', tile: [17, 123] },        // 福岡タワー/모모치
+  // ── 🛳️ 렌더크래프트(오너 지시) — 페리선·캐널 내부 컷어웨이·하카타역 디테일(geo v2.1 좌표) ──
+  { kind: 'ferry_intl', tile: [236, 47] },  // 博多港国際ターミナル 앞바다 — 부산행 대형 카페리
+  { kind: 'ferry_dom', tile: [240, 67] },   // ベイサイド 국내선 부두 앞바다 — 시가시마行 소형선
+  { kind: 'fountain', tile: [293, 148] },   // キャナルシティ 운하 분수(외곽 ring 내부)
+  { kind: 'bus', tile: [293, 145] },        // キャナルシティ 버스터미널(내부 컷어웨이)
+  { kind: 'stall', tile: [291, 147] },      // キャナルシティ 내부 몰 가게
+  { kind: 'stall', tile: [295, 146] },      // キャナルシティ 내부 몰 가게
+  { kind: 'hakata_sta', tile: [335, 141] }, // 博多駅 대형 역사(JR博多シティ) — 허브
+  { kind: 'platform', tile: [331, 146] },   // 博多駅 승강장
+  { kind: 'platform', tile: [339, 146] },   // 博多駅 승강장
 ];
 
 // 선언적 그리드 빌더 — 결정적·순수. 반환: Uint8Array(COLS*ROWS), 값 ∈ CITY_TILE.
