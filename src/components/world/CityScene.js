@@ -301,6 +301,69 @@ export function buildCityScene(Phaser, city, ctx) {
         g.fillStyle(C(0xf3c6d6), 1); g.fillRect(4, 6, 2, 2); g.fillRect(18, 6, 2, 2); // 벚꽃
       }, NPC_W, NPC_H);
 
+      // ── 🛳️ 렌더크래프트 프롭(오너 지시: 페리선·캐널 내부·하카타역 디테일) ──
+      // 국제선 페리(부산행 대형 카페리) — 하얀 선체·다층 갑판·붉은 굴뚝. 32×20, 물 위 배치.
+      this.bakeTile('ct_prop_ferry_intl', (g) => {
+        g.fillStyle(C(0x2a3340), 1); g.fillRect(2, 14, 28, 4);        // 흘수(선체 하부)
+        g.fillStyle(C(0xf2efe6), 1); g.fillRect(3, 9, 26, 6);         // 선체(흰)
+        g.fillStyle(C(0xc9c3b4), 1); g.fillRect(3, 13, 26, 1);        // 워터라인 음영
+        g.fillStyle(C(0x3a6ea5), 1); for (let x = 5; x < 28; x += 3) g.fillRect(x, 11, 2, 2); // 현측 창렬
+        g.fillStyle(C(0xf6edcf), 1); g.fillRect(7, 4, 18, 5);         // 상부 선교/객실
+        g.fillStyle(C(0xd9d2c0), 1); g.fillRect(7, 8, 18, 1);
+        g.fillStyle(C(0x8fb8d0), 1); for (let x = 9; x < 24; x += 3) g.fillRect(x, 5, 2, 2); // 선실 창
+        g.fillStyle(C(0xc14b38), 1); g.fillRect(19, 1, 4, 4);         // 붉은 굴뚝
+        g.fillStyle(C(0x2a1e14), 1); g.fillRect(19, 1, 4, 1);
+        g.fillStyle(C(0xf6edcf), 1); g.fillRect(3, 6, 3, 3);         // 뱃머리 램프 힌트
+      }, 32, 20);
+      // 국내선 페리(志賀島/능고도行 소형선) — 파란 띠 흰 선체. 24×14, 물 위.
+      this.bakeTile('ct_prop_ferry_dom', (g) => {
+        g.fillStyle(C(0x2a3340), 1); g.fillRect(2, 10, 20, 3);        // 흘수
+        g.fillStyle(C(0xf2efe6), 1); g.fillRect(3, 6, 18, 4);         // 선체
+        g.fillStyle(C(0x3a6ea5), 1); g.fillRect(3, 8, 18, 1);         // 파란 띠
+        g.fillStyle(C(0xf6edcf), 1); g.fillRect(7, 2, 10, 4);         // 조타실
+        g.fillStyle(C(0x8fb8d0), 1); for (const x of [8, 11, 14]) g.fillRect(x, 3, 2, 2); // 창
+        g.fillStyle(C(0xc14b38), 1); g.fillRect(17, 1, 2, 3);         // 마스트/등
+        g.fillStyle(C(0x2a1e14), 1); g.fillRect(3, 9, 18, 1);
+      }, 24, 14);
+      // 시내버스(캐널시티 버스터미널·니시테츠풍) — 붉은 차체. 24×12.
+      this.bakeTile('ct_prop_bus', (g) => {
+        g.fillStyle(C(0xc14b38), 1); g.fillRect(2, 2, 20, 8);         // 차체
+        g.fillStyle(C(0x8a2f24), 1); g.fillRect(2, 9, 20, 1);
+        g.fillStyle(C(0xf6edcf), 1); g.fillRect(3, 2, 19, 1);         // 지붕 라인
+        g.fillStyle(C(0x8fb8d0), 1); for (let x = 4; x < 20; x += 3) g.fillRect(x, 4, 2, 3); // 창
+        g.fillStyle(C(0x2a1e14), 1); g.fillRect(5, 10, 3, 2); g.fillRect(15, 10, 3, 2); // 바퀴
+        g.fillStyle(C(0xf2c400), 1); g.fillRect(20, 4, 2, 2);         // 전조등/행선막
+      }, 24, 12);
+      // 상점 매대(캐널시티 내부 몰 가게) — 붉은 차양 + 진열창. 16×16.
+      this.bakeTile('ct_prop_stall', (g) => {
+        g.fillStyle(C(0xcbb48f), 1); g.fillRect(2, 6, 12, 10);        // 점포 몸통
+        g.fillStyle(C(0x9c8560), 1); g.fillRect(2, 15, 12, 1);
+        g.fillStyle(C(0xc14b38), 1); g.fillRect(1, 3, 14, 3);         // 붉은 차양
+        g.fillStyle(C(0xf6edcf), 1); for (let x = 2; x < 15; x += 2) g.fillRect(x, 3, 1, 3); // 차양 줄무늬
+        g.fillStyle(C(0x8fb8d0), 1); g.fillRect(3, 8, 4, 5); g.fillRect(9, 8, 4, 5); // 진열창
+      });
+      // 하카타역 대형 역사(JR博多シティ) — 유리 파사드·시계·역명 띠. 32×28, 허브.
+      this.bakeTile('ct_prop_hakata_sta', (g) => {
+        g.fillStyle(C(0xb0a89a), 1); g.fillRect(2, 8, 28, 20);        // 역사 몸통
+        g.fillStyle(C(0x8a8274), 1); g.fillRect(2, 26, 28, 2);        // 하단 그림자
+        g.fillStyle(C(0x6f4a28), 1); g.fillRect(1, 4, 30, 5);         // 지붕 처마
+        g.fillStyle(C(0x2a1e14), 1); g.fillRect(2, 9, 28, 3);         // 역명 띠
+        g.fillStyle(C(0xf6edcf), 1); g.fillRect(4, 10, 24, 1);        // 역명 띠 하이라이트
+        g.fillStyle(C(0xf6edcf), 1); g.fillRect(14, 13, 4, 4);        // 대형 시계
+        g.fillStyle(C(0x2a1e14), 1); g.fillRect(15, 14, 1, 2); g.fillRect(16, 15, 1, 1);
+        g.fillStyle(C(0x8fb8d0), 1); for (let x = 4; x < 28; x += 4) g.fillRect(x, 18, 3, 7); // 유리 파사드
+        g.fillStyle(C(0x3a2a1a), 1); g.fillRect(13, 21, 6, 5);        // 중앙 대형 입구
+      }, 32, 28);
+      // 승강장(하카타역 플랫폼) — 지붕·선로·황색 점자블록. 24×16.
+      this.bakeTile('ct_prop_platform', (g) => {
+        g.fillStyle(C(0x9aa7b0), 1); g.fillRect(2, 8, 20, 6);         // 플랫폼 상판
+        g.fillStyle(C(0xf2c400), 1); g.fillRect(2, 8, 20, 1);         // 황색 점자블록
+        g.fillStyle(C(0x6f4a28), 1); g.fillRect(3, 1, 18, 3);         // 지붕
+        g.fillStyle(C(0x3a2a1a), 1); for (const x of [5, 11, 17]) g.fillRect(x, 4, 1, 4); // 지붕 기둥
+        g.fillStyle(C(0x4a5560), 1); g.fillRect(2, 14, 20, 2);        // 선로 자갈
+        g.fillStyle(C(0xc9c3b4), 1); g.fillRect(3, 15, 18, 1);        // 레일
+      }, 24, 16);
+
       // ── 캐릭터(플레이어 ct_pc · 원격 피어 ct_pr) + 펫 + NPC 마커 ──
       this.bakeCharSet('ct_pc', tonePalette(CHAR_PAL_LOCAL, this.mode));
       this.bakeCharSet('ct_pr', tonePalette(CHAR_PAL_REMOTE, this.mode));
