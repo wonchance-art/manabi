@@ -47,17 +47,21 @@ export function fastTravelDestinations(stations, fromId) {
 }
 
 // 🚃 fast-travel 도착 tile 해석(순수·결정적) — 소프트락 방지 게이트.
-//   정확 tile 이 정수·범위 안·보행 가능이면 그대로. 아니면(WATER/BUILDING/범위밖 등) 반경 확장
-//   링(Chebyshev)으로 **최근접 보행칸**을 결정적으로 탐색해 재배치. 그래도 없으면 null(이동 취소).
-//   반환: [x,y] 보행칸 | null. travelToStation 이 페이드 시작 전에 호출해 차단 좌표 스냅을 막는다.
-//   geo stations[] 상속·이후 도시 데이터의 잘못된 tile 도 런타임에서 안전하게 걸러낸다.
+//   유효 도착점 = 자기 셀이 보행 가능 **AND** cardinal 4방 중 최소 1칸이 보행 가능(걸어서 벗어날 수
+//   있음). 자기만 보행이면 5×5 건물 한가운데 고립된 1칸 같은 곳에 스냅돼 못 나오는 소프트락이 남는다.
+//   정확 tile 이 이 조건 실패면 반경 확장 링(Chebyshev)으로 **같은 조건**을 만족하는 최근접 칸을
+//   결정적으로 탐색해 재배치. 그래도 없으면 null(이동 취소 → travelBlocked).
+//   반환: [x,y] (보행 가능 + 보행 인접) | null. travelToStation 이 페이드 시작 전에 호출.
+//   geo stations[] 상속·이후 도시 데이터의 잘못된/고립된 tile 도 런타임에서 안전하게 걸러낸다.
 export function resolveArrivalTile(grid, cols, rows, tile) {
   if (!Array.isArray(tile) || tile.length !== 2) return null;
   const [tx, ty] = tile;
   if (!Number.isInteger(tx) || !Number.isInteger(ty)) return null;
   const inB = (x, y) => x >= 0 && y >= 0 && x < cols && y < rows;
-  const walk = (x, y) => inB(x, y) && isCityWalkable(grid[y * cols + x]);
-  if (walk(tx, ty)) return [tx, ty];
+  const cell = (x, y) => inB(x, y) && isCityWalkable(grid[y * cols + x]);
+  // 유효 도착점 — 보행 가능 + cardinal 보행 인접(걸어서 벗어날 수 있어야 함).
+  const usable = (x, y) => cell(x, y) && (cell(x + 1, y) || cell(x - 1, y) || cell(x, y + 1) || cell(x, y - 1));
+  if (usable(tx, ty)) return [tx, ty];
   const R = Math.max(cols, rows);
   for (let r = 1; r <= R; r++) {
     let best = null, bestD = Infinity;
@@ -65,7 +69,7 @@ export function resolveArrivalTile(grid, cols, rows, tile) {
       for (let dx = -r; dx <= r; dx++) {
         if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue; // 이번 링 테두리만
         const x = tx + dx, y = ty + dy;
-        if (!walk(x, y)) continue;
+        if (!usable(x, y)) continue;
         const d = dx * dx + dy * dy;                              // 유클리드² 최근접(동률 → 결정적 순서)
         if (d < bestD) { bestD = d; best = [x, y]; }
       }
