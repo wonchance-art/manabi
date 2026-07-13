@@ -25,6 +25,7 @@
 import { useEffect, useRef, useState } from 'react';
 import bus from './bus';
 import QuestReview, { GBC, gbcButtonPrimary, gbcPanel } from './QuestReview';
+import StampAlbum from './StampAlbum';
 import {
   CHAR_W, CHAR_H, CHAR_ORIGIN_Y, PET_W, PET_H,
   CHAR_DIRS, CHAR_POSES, CHAR_WALK_CYCLE, charFrameRows,
@@ -321,6 +322,8 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   const [descOpen, setDescOpen] = useState(false);       // A로 연 GBC 설명 박스(게이트 없는 노드)
   const [ferryPrompt, setFerryPrompt] = useState(null);  // 페리 확인 다이얼로그 { toId, toName } | null
   const [minimapOpen, setMinimapOpen] = useState(false); // 미니맵 오버레이 열림
+  const [albumOpen, setAlbumOpen] = useState(false);     // 🗾 여행 스탬프 앨범 오버레이 열림
+  const albumOpenRef = useRef(false);   // 앨범 열림 동안 A 입력 잠금 + B로 닫기
   // ── 도시 정밀맵(계층형 맵) ──
   // cityPrompt: 전국맵 도시 노드 A → "시내로 들어가기" 확인 { to, name } | null
   // activeScene: 활성 씬 식별자('plaza'|'airport'|'city:<id>') — 미니맵·오버레이 분기.
@@ -383,6 +386,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   useEffect(() => { if (!nearNode) setDescOpen(false); }, [nearNode]);
   useEffect(() => { ferryPromptRef.current = ferryPrompt; }, [ferryPrompt]);
   useEffect(() => { minimapOpenRef.current = minimapOpen; }, [minimapOpen]);
+  useEffect(() => { albumOpenRef.current = albumOpen; }, [albumOpen]);
   useEffect(() => { cityPromptRef.current = cityPrompt; }, [cityPrompt]);
   useEffect(() => { nearStationRef.current = nearStation; }, [nearStation]);
   useEffect(() => { stationSelectRef.current = stationSelect; }, [stationSelect]);
@@ -436,6 +440,8 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       runOn: () => { if (sceneRef.current) sceneRef.current.runHeld = true; },
       runOff: () => { if (sceneRef.current) sceneRef.current.runHeld = false; },
       interact: () => {
+        // 🗾 앨범 열림 중 A → 최우선 무시(닫기는 칩/B/ESC). 숨은 배경 오버레이가 A를 가로채지 않게 맨 앞에서 소비.
+        if (albumOpenRef.current) return;
         if (npcDialogRef.current) { npcActionRef.current?.(); return; } // NPC 대화 중 A → 다음 대사
         if (storyPhaseRef.current === 'dialogue') { advanceStoryRef.current?.(); return; }
         if (reviewOpenRef.current || storyActiveRef.current || ferryPromptRef.current || cityPromptRef.current) return;
@@ -467,6 +473,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         if (nearQuestRef.current) setReviewOpen(true);
       },
       cancel: () => {
+        if (albumOpenRef.current) { setAlbumOpen(false); return; } // 🗾 앨범 최우선 닫기(숨은 배경 오버레이보다 먼저)
         if (npcDialogRef.current) { npcCancelRef.current?.(); return; } // NPC 대화 중 B → 뜻 토글
         if (storyPhaseRef.current === 'dialogue') { toggleKoRef.current?.(); return; }
         if (descOpenRef.current) { setDescOpen(false); return; }
@@ -525,15 +532,16 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
     sceneRef.current?.openExit?.(); // 출구 게이트 열림 연출
   };
 
-  // 리뷰·페리 확인 오버레이가 열리면 게임 입력을 잠근다(캔버스 이동 정지). 닫히면 해제.
-  // (미니맵은 잠그지 않는다 — 살짝 훑어보는 오버레이라 이동을 막지 않는다.)
+  // 리뷰·페리 확인·NPC 대화·앨범 등 전체 화면 오버레이가 열리면 게임 입력을 잠근다(캔버스 이동 정지).
+  // 닫히면 해제. 잠글 때 heldDirs/tapTile/runHeld 를 비워 오버레이 뒤로 이동이 새지 않게 한다(Codex #91 P1).
+  // (미니맵만 예외 — 살짝 훑어보는 오버레이라 이동을 막지 않는다. 앨범은 전체 모달이라 잠근다.)
   useEffect(() => {
     const scene = sceneRef.current;
     if (!scene) return;
-    const lock = reviewOpen || !!ferryPrompt || !!npcDialog || !!cityPrompt || !!stationSelect;
+    const lock = reviewOpen || !!ferryPrompt || !!npcDialog || !!cityPrompt || !!stationSelect || albumOpen;
     scene.inputLocked = lock;
     if (lock) { if (scene.heldDirs) scene.heldDirs.length = 0; scene.tapTile = null; scene.runHeld = false; }
-  }, [reviewOpen, ferryPrompt, npcDialog, cityPrompt, stationSelect]);
+  }, [reviewOpen, ferryPrompt, npcDialog, cityPrompt, stationSelect, albumOpen]);
 
   useEffect(() => {
     let destroyed = false;
@@ -1864,7 +1872,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       )}
 
       {/* 우상단 미니맵 버튼(GBC 칩) — 셸 START/SELECT와 충돌 없게 게임 화면 안에 별도 배치. */}
-      {!reviewOpen && !storyActive && !ferryPrompt && !cityPrompt && (
+      {!reviewOpen && !storyActive && !ferryPrompt && !cityPrompt && !albumOpen && (
         <button
           type="button"
           aria-label={minimapOpen ? '지도 닫기' : '지도 열기'}
@@ -1878,6 +1886,25 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           }}
         >
           🗺
+        </button>
+      )}
+
+      {/* 🗾 여행 스탬프 앨범 버튼(GBC 칩) — 미니맵 칩 왼쪽. 모든 모달 상태와 상호 배타(겹침 방지·Codex #91 P1). */}
+      {!reviewOpen && !storyActive && !ferryPrompt && !cityPrompt && !minimapOpen && !albumOpen
+        && !descOpen && !npcDialog && !stationSelect && (
+        <button
+          type="button"
+          aria-label="여행 스탬프 앨범 열기"
+          onClick={() => setAlbumOpen(true)}
+          style={{
+            position: 'absolute', top: 6, right: 36, zIndex: 5,
+            fontFamily: GBC.font, fontSize: '0.7rem', color: GBC.ink, cursor: 'pointer',
+            background: GBC.cream, border: `2px solid ${GBC.border}`,
+            boxShadow: `inset 0 0 0 1px ${GBC.creamHi}`, borderRadius: 2,
+            padding: '3px 6px', lineHeight: 1,
+          }}
+        >
+          🗾
         </button>
       )}
 
@@ -2129,6 +2156,11 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       {/* 인게임 즉석 리뷰 — 캔버스 위 HTML, 열리면 게임 입력 잠금(useEffect). */}
       {reviewOpen && (
         <QuestReview userId={userId} onClose={() => setReviewOpen(false)} />
+      )}
+
+      {/* 🗾 여행 스탬프 앨범 — 수집한 방문 기념 배지 케이스. A 입력 잠금(interact 가드) + B/ESC로 닫기. */}
+      {albumOpen && (
+        <StampAlbum stamps={stamps} onClose={() => setAlbumOpen(false)} />
       )}
 
       {/* 공항 스토리 — 텍스트박스(대사) → 심사관 문답(통과 시 출구 개방). */}
