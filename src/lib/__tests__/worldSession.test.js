@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  extractClientIp, normalizePosition, isSpawnTileValid, isPersistablePosition,
+  extractClientIp, normalizePosition, isSpawnTileValid, isPersistablePosition, cityRedirectScene,
 } from '../world/session.js';
 
 // ─────────────────────────────────────────────────────────────
@@ -128,5 +128,41 @@ describe('isPersistablePosition — 위치 영속 판정(순수)', () => {
   it('null/undefined/비객체는 영속 제외(안전)', () => {
     expect(isPersistablePosition(null)).toBe(false);
     expect(isPersistablePosition(undefined)).toBe(false);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+describe('cityRedirectScene — 초기 부팅 시 도시 직행 스폰 판별(순수, Codex P1-1)', () => {
+  const hasCity = (id) => id === 'fukuoka'; // CITY_DATA 레지스트리 페이크
+  const savedCity = { scene: 'city:fukuoka', x: 47, y: 60 };
+
+  it('Phaser autostart 기본 데이터 {} 에서도 저장 city 씬으로 리다이렉트한다(핵심 회귀)', () => {
+    // Phaser 3 는 초기 autostart 에도 Scene Settings 기본 `{}` 를 create 에 전달한다 —
+    // `!bootData` 판별이면 이 케이스가 무시돼 서울 폴백이 났다(P1-1 재현).
+    expect(cityRedirectScene({}, savedCity, hasCity)).toBe('city:fukuoka');
+  });
+
+  it('bootData 가 undefined(데이터 미전달) 여도 리다이렉트한다', () => {
+    expect(cityRedirectScene(undefined, savedCity, hasCity)).toBe('city:fukuoka');
+  });
+
+  it('복귀 데이터({spawn:...})가 있으면 리다이렉트하지 않는다 — 도시→전국 복귀 재귀 방지', () => {
+    const back = { spawn: { scene: 'plaza', x: 135, y: 307 } };
+    expect(cityRedirectScene(back, savedCity, hasCity)).toBeNull();
+  });
+
+  it('저장 씬이 plaza/airport/없음이면 null(전국맵 진행)', () => {
+    expect(cityRedirectScene({}, { scene: 'plaza', x: 68, y: 208 }, hasCity)).toBeNull();
+    expect(cityRedirectScene({}, { scene: 'airport', x: 7, y: 10 }, hasCity)).toBeNull();
+    expect(cityRedirectScene({}, null, hasCity)).toBeNull();
+    expect(cityRedirectScene({}, undefined, hasCity)).toBeNull();
+  });
+
+  it('도시 데이터가 없는 city id 는 null(전국맵 폴백)', () => {
+    expect(cityRedirectScene({}, { scene: 'city:tokyo', x: 1, y: 1 }, hasCity)).toBeNull();
+  });
+
+  it('hasCity 미제공(비함수)이면 안전하게 null', () => {
+    expect(cityRedirectScene({}, savedCity, null)).toBeNull();
   });
 });

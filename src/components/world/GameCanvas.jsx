@@ -45,7 +45,8 @@ import { WORLD_NODES, getNode, buildMinimap } from './worldNodes';
 // 🏙️ 광장 SEA→LAND 메꿈(순수 함수·단일 진실원 — 런타임·관리자 뷰·미니맵 공통).
 import { buildPlayableGrid, PLAZA_R } from '../../lib/world/mapGeo';
 // 🧭 재접속 스폰 좌표 검증(순수) — 저장된 타일이 맵 안·보행 가능일 때만 사용, 아니면 서울 폴백.
-import { isSpawnTileValid } from '../../lib/world/session';
+// cityRedirectScene: 초기 부팅 시 저장 씬이 'city:<id>' 면 도시맵 직행 판별(순수 — Codex P1-1 회귀 게이트).
+import { isSpawnTileValid, cityRedirectScene } from '../../lib/world/session';
 // 🌏 독해 트랙 "도쿄 도착" 글 1 → 월드 스토리 씬(하네다 공항). 공항 씬·텍스트박스·문답 오버레이.
 import { buildAirportScene } from './airportScene';
 // 🏙️ 도시 정밀맵(계층형 맵) — CityScene 은 1개, cityId 로 파라미터화. 도시 추가 = cities/<id>.js 1개.
@@ -498,8 +499,22 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
     // ── 버스 구독을 컴포넌트 스코프에서 등록/해제한다(리스너 누수 방지). ──
     // 기존엔 씬 'shutdown'에서 off 했지만 Phaser destroy 경로에서 shutdown이 안 뜰 수 있어,
     // 재방문마다 죽은 씬 콜백이 bus에 누적됐다. 이제 React cleanup이 off를 직접 보장한다.
-    // 활성 씬(광장 또는 공항)에 위임 — 공항 씬도 quest:scored/done 연출을 받는다(옵셔널 체이닝으로 무해).
-    const onPeers = (data) => sceneRef.current?.applyPeers?.(data);
+    // 활성 씬(광장·공항·도시)에 위임 — 공항 씬도 quest:scored/done 연출을 받는다(옵셔널 체이닝으로 무해).
+    // ── 씬 전환 직후 음성 잔류 차단(Codex P1-2) ──
+    // 씬 shutdown 은 렌더 피어를 지우지만, 새 씬은 다음 'peers:update' 까지 peers/otherScenePeerIds 가
+    // 비어 emitPeerDistances 가 {} 만 emit 한다 — WorldPage 거리 수신부는 전달된 key 만 갱신하므로
+    // 이전 씬에서의 근거리 값이 voice 에 남는다(상대가 백그라운드면 stale 정리까지 최대 10초 음성 지속).
+    // 해법: 최신 피어 스냅샷을 캐시해 두고, 각 씬 create 말미(onReady)에 ① 스냅샷을 새 씬에 즉시
+    // 재적용(applyPeers — 같은 씬 피어 렌더 + 타 씬 id 는 otherScenePeerIds)하고 ② 전체 키를 1회
+    // emit(emitPeerDistances — 같은 씬=실거리 · 타 씬=Infinity)한다. 첫 프레임부터 거리가 올바르다.
+    let latestPeersSnapshot = null;
+    const onPeers = (data) => { latestPeersSnapshot = data; sceneRef.current?.applyPeers?.(data); };
+    const resetScenePeers = () => {
+      const scene = sceneRef.current;
+      if (!scene || latestPeersSnapshot == null) return;
+      scene.applyPeers?.(latestPeersSnapshot);
+      if (scene.player) emitPeerDistances(scene, bus); // 전체 키 1회 emit(씬 전환 직후 보장)
+    };
     const onQuestScored = (data) => sceneRef.current?.questScoredFx?.(data);
     const onQuestDone = (data) => sceneRef.current?.questDoneFx?.(data);
     // 채팅 메시지 → 해당 유저 캐릭터 위 3초 도트 말풍선(공항 씬엔 메서드 없어 옵셔널 체이닝으로 무해).
@@ -1083,13 +1098,13 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         create(bootData) {
           sceneRef.current = this;   // 버스 핸들러 위임 대상 · React 입력 잠금 갱신용
           // ── 직행 재접속(문서 §4) — 저장 씬이 'city:<id>' 면 도시맵으로 바로 스폰 ──
-          // bootData 없이(autostart) 진입한 경우에만 판정한다(도시→전국 복귀는 bootData.spawn 을 실어 오므로 재귀 없음).
-          // 도시 데이터가 없으면 전국맵 폴백(계속 진행)한다.
-          if (!bootData) {
-            const saved = initialSpawnRef.current;
-            const sc = saved && typeof saved.scene === 'string' ? saved.scene : '';
-            if (sc.startsWith('city:') && CITY_DATA[sc.slice(5)]) {
-              this.scene.start(sc, { spawn: saved });
+          // 판별은 순수 함수 cityRedirectScene(session.js)에 위임한다(Codex P1-1): Phaser 3 는
+          // autostart 초기 부팅에도 기본 데이터 `{}` 를 전달하므로 `!bootData` 로는 부팅을 못 가른다 —
+          // 복귀 데이터(bootData.spawn) 유무로 가른다. 도시 데이터가 없으면 전국맵 폴백(계속 진행).
+          {
+            const redirect = cityRedirectScene(bootData, initialSpawnRef.current, (id) => !!CITY_DATA[id]);
+            if (redirect) {
+              this.scene.start(redirect, { spawn: initialSpawnRef.current });
               return;
             }
           }
@@ -1295,6 +1310,9 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
 
           // 도시맵에서 복귀(bootData.spawn)했으면 페이드인으로 자연스럽게 등장.
           if (bootData && bootData.spawn) this.cameras.main.fadeIn(CITY_FADE_MS, 0, 0, 0);
+
+          // 씬 전환 직후 피어 스냅샷 재적용 + 전체 키 거리 1회 emit(타 씬 음성 잔류 차단 — Codex P1-2).
+          resetScenePeers();
         }
 
         // 전국맵 → 도시 정밀맵 진입(페이드 아웃 + 씬 전환). React 프롬프트 "들어가기"가 호출.
@@ -1668,6 +1686,8 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       const airportCtx = {
         petRef, nickRef,
         bindScene: (s) => { sceneRef.current = s; },
+        // create 말미 — 피어 스냅샷 재적용 + 전체 키 거리 1회 emit(씬 전환 음성 잔류 차단, Codex P1-2).
+        onReady: () => resetScenePeers(),
         notifyPhase: (phase) => {
           if (phase === 'walking') { setStoryActive(true); setStoryPhase('walking'); setStoryIdx(0); setShowKo(false); }
           else if (phase === 'arrived') { setStoryPhase('dialogue'); setStoryIdx(0); setShowKo(false); }
@@ -1687,6 +1707,8 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
             setNearNode(null); setNearQuest(false); setCityPrompt(null); setDescOpen(false); setMinimapOpen(false);
           },
           setNear: (node) => setNearNode(node),
+          // create 말미 — 피어 스냅샷 재적용 + 전체 키 거리 1회 emit(씬 전환 음성 잔류 차단, Codex P1-2).
+          onReady: () => resetScenePeers(),
           worldReturn: {
             scene: 'plaza',
             x: rn ? rn.tile[0] : POI.SEOUL.x,

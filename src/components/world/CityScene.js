@@ -80,6 +80,7 @@ function tileHash(tx, ty) {
  *   userId, petRef, nickRef,
  *   bindScene(scene|null),           씬 → sceneRef.current 갱신(입력 잠금·버스 위임 대상)
  *   onEnter(),                       씬 진입 통지(React 오버레이 초기화 · activeScene 갱신)
+ *   onReady?(),                      create 말미 통지 — 피어 스냅샷 재적용 + 전체 키 거리 1회 emit(P1-2)
  *   setNear(node|null),              근접 노드 → React(nearNode) — { id, name, desc, npc?, noStamp? }
  *   worldReturn: { scene:'plaza', x, y },   전국맵 복귀 스폰(도시 노드 앞)
  * }
@@ -454,6 +455,9 @@ export function buildCityScene(Phaser, city, ctx) {
       // 페이드인 → 조작 해제.
       this.cameras.main.fadeIn(FADE_MS, 0, 0, 0);
       this.cameras.main.once('camerafadeincomplete', () => { this.inputLocked = false; });
+
+      // create 말미 — 피어 스냅샷 재적용 + 전체 키 거리 1회 emit(씬 전환 음성 잔류 차단, Codex P1-2).
+      ctx.onReady?.();
     }
 
     // 화면 안 수면 타일만 물결 프레임 교체.

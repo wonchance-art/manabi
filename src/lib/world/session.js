@@ -39,6 +39,21 @@ export function normalizePosition(raw) {
   return { scene, x: xi, y: yi };
 }
 
+// ── 초기 부팅 시 도시 정밀맵 직행 여부(순수) — WorldScene.create(bootData) 가 판별(Codex P1-1) ──
+// Phaser 3 는 autostart 초기 부팅에도 Scene Settings 기본 데이터 `{}` 를 create 에 전달하므로,
+// "초기 부팅인가"를 bootData 유무(!bootData)로 판별하면 안 된다 — **복귀 데이터(bootData.spawn)
+// 유무**로 판별한다: spawn 이 실려 있으면 도시→전국 복귀(리다이렉트 금지 — 재귀 방지), 없으면
+// 초기 부팅이므로 저장 씬이 'city:<id>' 이고 해당 도시 데이터가 실존하면 그 씬 키를 반환한다.
+// hasCity(id)=>bool 은 호출부가 주입(GameCanvas 는 CITY_DATA 레지스트리로, 테스트는 페이크로).
+// 반환: 리다이렉트할 씬 키('city:<id>') | null(전국맵 진행 — 도시 데이터 없음 폴백 포함).
+export function cityRedirectScene(bootData, savedSpawn, hasCity) {
+  if (bootData && bootData.spawn) return null; // 도시→전국 복귀 — 리다이렉트하지 않음
+  const sc = savedSpawn && typeof savedSpawn.scene === 'string' ? savedSpawn.scene : '';
+  if (!sc.startsWith('city:')) return null;
+  const id = sc.slice(5);
+  return (typeof hasCity === 'function' && hasCity(id)) ? sc : null;
+}
+
 // 스폰 타일이 맵 안이고 걸을 수 있는지(순수). isWalkable(tx,ty)=>bool 은 호출부가 주입
 // (GameCanvas 는 씬의 tileCode/blocked 로, 테스트는 페이크로). 범위 밖·비보행이면 false.
 export function isSpawnTileValid(tx, ty, cols, rows, isWalkable) {

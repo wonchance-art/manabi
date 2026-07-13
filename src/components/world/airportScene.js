@@ -59,7 +59,7 @@ function keyToDir(key) {
 
 /**
  * 공항 씬 클래스를 빌드한다(Phaser는 동적 import라 팩토리로 주입).
- * ctx: { notifyPhase(phase), petRef, nickRef, bindScene(scene|null) }
+ * ctx: { notifyPhase(phase), petRef, nickRef, bindScene(scene|null), onReady?() }
  *   · notifyPhase: 씬 → React (walking→arrived 등 스토리 페이즈 전달)
  *   · bindScene  : 씬 → React (sceneRef.current 갱신, 입력 잠금·명령 위임 대상)
  *   · petRef/nickRef: 플레이어 펫/닉네임(광장과 동일 소스)
@@ -296,6 +296,9 @@ export function buildAirportScene(Phaser, ctx) {
 
       // 씬 진입 → 걷기 페이즈.
       ctx.notifyPhase('walking');
+
+      // create 말미 — 피어 스냅샷 재적용 + 전체 키 거리 1회 emit(씬 전환 음성 잔류 차단, Codex P1-2).
+      ctx.onReady?.();
     }
 
     // 'peers:update' 위임 — 공항 씬 피어만(scene==='airport') 렌더(광장 피어는 필터로 제외).
