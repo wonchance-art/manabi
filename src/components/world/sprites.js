@@ -594,6 +594,26 @@ export function npcMarkerRows(key) {
   return NPC_ART[NPC_KEYS.includes(key) ? key : 'ramen'];
 }
 
+// ── 맛집(名物) 마커 도트 — 규슈 각 현 명물 요리 노드(gourmet 필드 → t_gourmet). ──
+//   (공식 지자체 마스코트는 컴플라이언스상 미사용 — 각 현을 명물 요리 "가게"로 표현·현실정보 융합.)
+// 공식 캐릭터 대신 "찾아가는 가게"로 자연스럽게 — 붉은 노렌 포장마차 + 김 나는 그릇. 전 맛집 공용 1종.
+// (현실 정보 융합 원칙: desc 에 실제 명물 요리 정보를 담고, 마커는 이 공용 포장마차.)
+export const GOURMET_PAL = { O: 0x2a1e14, R: 0xc14b38, r: 0x8a2f24, C: 0xf6edcf, W: 0xb07a3e, w: 0x6f4420, Y: 0xf2a54a, N: 0xe8dcc0, S: 0xd8cbb0 };
+const GOURMET_ART = [
+  '........................', '...OOOOOOOOOOOOOOOOOO...', '...ORRRRRRRRRRRRRRRRO...',
+  '...ORrRRrRRrRRrRRrRRO...', '...ORRrRRrRRrRRrRRrRO...', '...OrrrrrrrrrrrrrrrrO...',
+  '...OYYO..........OYYO...', '...OYYO..........OYYO...', '...OWWWWWWWWWWWWWWWWO...',
+  '...OWWWWWWWWWWWWWWWWO...', '....OwwwwwwwwwwwwwwO....', '.....O..SSSSSSSS..O.....',
+  '......O.SNNNNNNS.O......', '.......OSNNNNNNSO.......', '.......OSNNNNNNSO.......',
+  '........OSNNNNSO........', '.........OSSSSO.........', '.........OWWWWO.........',
+  '........OWWWWWWO........', '........OwwwwwwO........', '.........OO..OO.........',
+  '.........O....O.........', '.........O....O.........', '........................',
+];
+
+export function gourmetMarkerRows() {
+  return GOURMET_ART;
+}
+
 // ── 원격 피어 스프라이트 렌더(광장·공항 공용 헬퍼) ──
 // 두 씬(WorldScene·AirportScene)이 같은 도트 렌더·닉네임 라벨·그리드 보간을 재사용한다.
 //   · scene 에 붙는 상태: scene.peers(Map), scene.fontReady(bool), scene.add/scene.tweens(Phaser).
