@@ -16,6 +16,7 @@ export function toInteractiveNode(node) {
     noStamp: node.noStamp,
     chapter: node.chapter,
     reading: node.reading,
+    openNow: node.openNow,
   };
 }
 

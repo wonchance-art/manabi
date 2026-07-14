@@ -25,7 +25,7 @@ import {
   PET_KEYS, petFrameRows, PET_W, PET_H,
   CHAR_PAL_LOCAL, CHAR_PAL_REMOTE, PET_PAL,
   NPC_KEYS, NPC_PAL, NPC_W, NPC_H, npcMarkerRows,
-  tonePalette, toneColor, timeOfDay,
+  tonePalette, toneColor,
   applyPeersToScene, updateScenePeers, peerLabelStyle, emitPeerDistances,
 } from './sprites';
 import { GBC } from './QuestReview';
@@ -35,6 +35,8 @@ import { CITY_TILE as TERRAIN, isCityBlocked, isCityWater, resolveArrivalTile, r
 // 🧱 청크 RenderTexture 렌더의 순수 로직(가시성·용량·LRU) — docs §6.3. 대형 맵 메모리 상한.
 import { CHUNK_TILES, chunkDims, chunkTileBounds, visibleChunks, chunkCapacity, ChunkLRU, planChunkUpdate } from './cityChunks';
 import { toInteractiveNode } from './cultureDoors';
+import { activeVehiclesAt, planTransitTrip, tripStateAt } from '../../lib/world/transit';
+import { cityWeatherAt, nodeLifeAt } from '../../lib/world/worldLife';
 
 // ── 좌표 스케일 (광장·공항과 동일 불변) ──
 const TILE = 32;
@@ -88,7 +90,7 @@ function tileHash(tx, ty) {
  *   onReady?(),                      create 말미 통지 — 피어 스냅샷 재적용 + 전체 키 거리 1회 emit(P1-2)
  *   setNear(node|null),              근접 노드 → React(nearNode) — { id, name, desc, npc?, noStamp?, chapter? }
  *   setNearStation?(station|null),   🚃 근접 역 → React(nearStation) — { id, nameJa, yomi, line? }
- *   arrivedStation?({ nameJa, yomi }),  🚃 fast-travel 도착 확인 토스트("🚃 博多駅")
+ *   arrivedStation?({ nameJa, yomi }),  🚃 정기 교통 도착 확인 토스트("🚃 博多駅")
  *   worldReturn: { scene:'plaza', x, y },   전국맵 복귀 스폰(도시 노드 앞)
  * }
  */
@@ -126,16 +128,28 @@ export function buildCityScene(Phaser, city, ctx) {
     }
 
     preload() {
-      this.mode = timeOfDay();
+      // 지형은 항상 주간 원색으로 굽고, 시간대는 update의 전역 조명 오버레이로 표현한다.
+      // 한 씬에 오래 머물러도 새벽/낮/밤 경계가 즉시 바뀌어 서버 월드 시계와 어긋나지 않는다.
+      this.mode = 'day';
       const C = (hex) => toneColor(hex, this.mode);
 
       // ── 지면 타일(도로·보도·횡단보도·광장·공원·다리·부두·출구·수면) ──
-      // 도로 — 짙은 아스팔트 + 점선 중앙선.
-      this.bakeTile('ct_road', (g) => {
+      // 도로 — 방향별 차선으로 보행면과 즉시 구분한다.
+      const roadBase = (g) => {
         g.fillStyle(C(0x4a4d55), 1); g.fillRect(0, 0, TEX, TEX);
         g.fillStyle(C(0x3d4048), 1); for (const [x, y] of [[2, 3], [11, 5], [5, 12], [13, 10]]) g.fillRect(x, y, 1, 1);
-        g.fillStyle(C(0xd9d2b0), 0.85); g.fillRect(7, 2, 2, 4); g.fillRect(7, 10, 2, 4); // 중앙 점선
+      };
+      this.bakeTile('ct_road_v', (g) => {
+        roadBase(g);
+        g.fillStyle(C(0xd9d2b0), 0.9); g.fillRect(7, 1, 2, 4); g.fillRect(7, 11, 2, 4);
+        g.fillStyle(C(0x777a82), 1); g.fillRect(0, 0, 1, TEX); g.fillRect(TEX - 1, 0, 1, TEX);
       });
+      this.bakeTile('ct_road_h', (g) => {
+        roadBase(g);
+        g.fillStyle(C(0xd9d2b0), 0.9); g.fillRect(1, 7, 4, 2); g.fillRect(11, 7, 4, 2);
+        g.fillStyle(C(0x777a82), 1); g.fillRect(0, 0, TEX, 1); g.fillRect(0, TEX - 1, TEX, 1);
+      });
+      this.bakeTile('ct_road_x', (g) => { roadBase(g); });
       // 보도 — 밝은 웜 그레이 + 이음새 격자.
       this.bakeTile('ct_sidewalk', (g) => {
         g.fillStyle(C(0xcfc7b4), 1); g.fillRect(0, 0, TEX, TEX);
@@ -143,9 +157,13 @@ export function buildCityScene(Phaser, city, ctx) {
         g.fillStyle(C(0xdcd5c4), 0.5); g.fillRect(1, 1, 5, 5); g.fillRect(9, 9, 5, 5);
       });
       // 횡단보도 — 도로 바탕 + 흰 지브라.
-      this.bakeTile('ct_crosswalk', (g) => {
+      this.bakeTile('ct_crosswalk_v', (g) => {
         g.fillStyle(C(0x4a4d55), 1); g.fillRect(0, 0, TEX, TEX);
         g.fillStyle(C(0xeae4d2), 0.92); for (const x of [1, 5, 9, 13]) g.fillRect(x, 0, 2, TEX);
+      });
+      this.bakeTile('ct_crosswalk_h', (g) => {
+        g.fillStyle(C(0x4a4d55), 1); g.fillRect(0, 0, TEX, TEX);
+        g.fillStyle(C(0xeae4d2), 0.92); for (const y of [1, 5, 9, 13]) g.fillRect(0, y, TEX, 2);
       });
       // 광장 — 웜 탠 포석.
       this.bakeTile('ct_plaza', (g) => {
@@ -210,17 +228,46 @@ export function buildCityScene(Phaser, city, ctx) {
         g.fillStyle(C(0xd8c48a), 1); g.fillRect(0, TEX - 2, TEX, 2); // 모래 기슭
       });
 
-      // ── 건물 파사드 2종(창격자 · 벽돌 변형) — 도트 감성 top-down 건물 ──
-      const bldg = (key, wall, wallD, roof, win) => this.bakeTile(key, (g) => {
-        g.fillStyle(C(wall), 1); g.fillRect(0, 0, TEX, TEX);
-        g.fillStyle(C(roof), 1); g.fillRect(0, 0, TEX, 3);            // 지붕 처마
-        g.fillStyle(C(wallD), 1); g.fillRect(0, TEX - 2, TEX, 2);     // 하단 그림자
-        g.fillStyle(C(win), 1);                                       // 창 격자
-        for (const wy of [5, 10]) for (const wx of [2, 7, 12]) g.fillRect(wx, wy, 3, 3);
-        g.fillStyle(C(wallD), 0.7); for (const wy of [5, 10]) for (const wx of [2, 7, 12]) { g.fillRect(wx, wy, 3, 1); }
+      // 건물은 창문 반복 대신 하나의 어두운 지붕 덩어리로 묶고 외곽선만 강조한다.
+      for (let mask = 0; mask < 16; mask++) {
+        this.bakeTile(`ct_bldg_${mask}`, (g) => {
+          g.fillStyle(C(0x716d68), 1); g.fillRect(0, 0, TEX, TEX);
+          g.fillStyle(C(0x827d76), 1); g.fillRect(2, 2, TEX - 4, TEX - 4);
+          g.fillStyle(C(0x5a5652), 1);
+          if (mask & 1) g.fillRect(0, 0, TEX, 2);
+          if (mask & 2) g.fillRect(TEX - 2, 0, 2, TEX);
+          if (mask & 4) g.fillRect(0, TEX - 2, TEX, 2);
+          if (mask & 8) g.fillRect(0, 0, 2, TEX);
+          if ((mask & 15) === 0 && tileHash(mask, 7) > 0.5) {
+            g.fillStyle(C(0x969088), 1); g.fillRect(6, 6, 4, 4);
+          }
+        });
+      }
+
+      this.bakeTile('ct_rail_area', (g) => {
+        // OSM 철도 마스크는 역 구내의 다수 선로까지 포함한다. 선로·침목을 개별 타일에
+        // 반복하지 않고 투명한 철도 부지 색으로만 표시해 정확한 위치와 보행 판독을 함께 지킨다.
+        g.fillStyle(C(0xcbb46c), 0.18); g.fillRect(0, 0, TEX, TEX);
       });
-      bldg('ct_bldg_a', 0xb9b2a4, 0x8f887a, 0x7a7266, 0x8fb8d0); // 콘크리트 + 유리창
-      bldg('ct_bldg_b', 0xc09a72, 0x93724e, 0x7a5a3a, 0xe6d8b0); // 벽돌/타일 + 밝은 창
+
+      this.bakeTile('ct_vehicle_train', (g) => {
+        g.fillStyle(C(0xf0ead4), 1); g.fillRect(2, 4, 12, 8);
+        g.fillStyle(C(0x4f96c8), 1); g.fillRect(3, 6, 10, 3);
+        g.fillStyle(C(0x2c3038), 1); g.fillRect(4, 11, 3, 2); g.fillRect(9, 11, 3, 2);
+      });
+      this.bakeTile('ct_vehicle_bus', (g) => {
+        g.fillStyle(C(0x4f8f62), 1); g.fillRect(2, 3, 12, 10);
+        g.fillStyle(C(0xe7eadb), 1); g.fillRect(4, 5, 8, 3);
+      });
+      this.bakeTile('ct_vehicle_ferry', (g) => {
+        g.fillStyle(C(0xf4f0d0), 1); g.fillRect(2, 8, 12, 5);
+        g.fillStyle(C(0xd95f4f), 1); g.fillRect(6, 3, 5, 5);
+        g.fillStyle(C(0x345a78), 1); g.fillRect(3, 13, 10, 2);
+      });
+      this.bakeTile('ct_player_halo', (g) => {
+        g.fillStyle(C(0xffe36a), 0.9); g.fillCircle(8, 8, 7);
+        g.fillStyle(C(0x4d4222), 0.85); g.fillCircle(8, 8, 4);
+      });
 
       // (지형은 청크 RenderTexture 로 굽는다 — tilemap/아틀라스 폐기. 개별 ct_* 텍스처를 청크에 draw.)
 
@@ -416,14 +463,39 @@ export function buildCityScene(Phaser, city, ctx) {
     blocked(tx, ty) { return isCityBlocked(this.tileCode(tx, ty)); }
     isWaterTile(tx, ty) { return isCityWater(this.tileCode(tx, ty)); }
 
+    roadDirection(tx, ty) {
+      const roadLike = (x, y) => {
+        const code = this.tileCode(x, y);
+        return code === TERRAIN.ROAD || code === TERRAIN.CROSSWALK || code === TERRAIN.BRIDGE;
+      };
+      const horizontal = Number(roadLike(tx - 1, ty)) + Number(roadLike(tx + 1, ty));
+      const vertical = Number(roadLike(tx, ty - 1)) + Number(roadLike(tx, ty + 1));
+      if (horizontal > vertical) return 'h';
+      if (vertical > horizontal) return 'v';
+      return 'x';
+    }
+
+    buildingEdgeMask(tx, ty) {
+      const open = (x, y) => this.tileCode(x, y) !== TERRAIN.BUILDING;
+      return Number(open(tx, ty - 1))
+        | (Number(open(tx + 1, ty)) << 1)
+        | (Number(open(tx, ty + 1)) << 2)
+        | (Number(open(tx - 1, ty)) << 3);
+    }
+
+    railwayAt(tx, ty) {
+      if (!city.railways?.mask || tx < 0 || ty < 0 || tx >= COLS || ty >= ROWS) return false;
+      return city.railways.mask[ty * COLS + tx] !== 0;
+    }
+
     // 지형 코드 → 굽기용 개별 텍스처 키. 청크 베이킹·물 오버레이가 공용으로 쓴다.
     //   물/강은 정적 프레임0을 청크에 굽고(항상 물처럼 보임), 애니는 별도 오버레이가 얹는다.
     terrainTexKey(tx, ty) {
       const c = this.tileCode(tx, ty);
       switch (c) {
-        case TERRAIN.ROAD: return 'ct_road';
+        case TERRAIN.ROAD: return `ct_road_${this.roadDirection(tx, ty)}`;
         case TERRAIN.SIDEWALK: return 'ct_sidewalk';
-        case TERRAIN.CROSSWALK: return 'ct_crosswalk';
+        case TERRAIN.CROSSWALK: return `ct_crosswalk_${this.roadDirection(tx, ty) === 'h' ? 'h' : 'v'}`;
         case TERRAIN.PLAZA: return 'ct_plaza';
         case TERRAIN.PARK: return 'ct_park';
         case TERRAIN.BEACH: return 'ct_beach';
@@ -432,7 +504,7 @@ export function buildCityScene(Phaser, city, ctx) {
         case TERRAIN.EXIT: return 'ct_exit';
         case TERRAIN.WATER: return 'ct_water0';
         case TERRAIN.RIVER: return 'ct_river0';
-        case TERRAIN.BUILDING: return tileHash(tx, ty) < 0.5 ? 'ct_bldg_a' : 'ct_bldg_b';
+        case TERRAIN.BUILDING: return `ct_bldg_${this.buildingEdgeMask(tx, ty)}`;
         case TERRAIN.ISLAND: return 'ct_island';
         default: return 'ct_sidewalk';
       }
@@ -454,7 +526,10 @@ export function buildCityScene(Phaser, city, ctx) {
       this.runHeld = false;
       this.petJumpVal = 0;
       this.exiting = false;
-      this.traveling = false;   // 🚃 전철 fast-travel 순간이동 중(페이드) 플래그 — 재진입 가드
+      this.traveling = false;   // 🚃 정기 교통 승차 중 플래그 — 재진입 가드
+      this.transitTrip = null;
+      this.transitState = 'none';
+      this.lastVehicleUpdate = -Infinity;
 
       this.grid = city.buildGrid();
 
@@ -487,6 +562,19 @@ export function buildCityScene(Phaser, city, ctx) {
 
       this.refreshChunks(true);              // 초기 가시 청크 bake(+가시 청크 트리 생성)
       this.refreshWaterOverlay();            // 초기 물 오버레이
+      // 원본 철도 마스크가 없는 도시(후쿠오카)는 실제 역 좌표를 잇는 노선 가이드로 보완한다.
+      if (!city.railways?.mask && city.transit?.length) {
+        const stops = new Map([...(city.stations || []), ...(city.transitPoints || [])].map((stop) => [stop.id, stop]));
+        this.transitGuide = this.add.graphics().setDepth(-7).setAlpha(0.78);
+        for (const line of city.transit) {
+          if (line.mode === 'ferry') continue;
+          const points = line.stopIds.map((id) => stops.get(id)?.tile).filter(Boolean)
+            .map(([x, y]) => new Phaser.Math.Vector2(x * TILE + TILE / 2, y * TILE + TILE / 2));
+          if (points.length < 2) continue;
+          this.transitGuide.lineStyle(3, line.color || 0xe58d2f, 0.9);
+          this.transitGuide.strokePoints(points, false, false);
+        }
+      }
       // (가로수는 청크 생명주기에 묶어 **가시 청크 범위만** 생성/회수한다 — buildChunkTrees.
       //  create 전역 트리 루프를 제거해 트리 수가 맵 면적이 아니라 화면+pad 에 비례하게 함 — Codex P1.)
 
@@ -498,13 +586,14 @@ export function buildCityScene(Phaser, city, ctx) {
       }
 
       // ── 구역(동네) 라벨 — 은은한 도트 표지(오리엔테이션) ──
-      for (const z of (city.zones || [])) {
+      this.zoneLabels = (city.zones || []).map((z) => {
         const [lx, ly] = z.labelTile;
-        this.add.text(lx * TILE + TILE / 2, ly * TILE + TILE / 2, z.label, {
+        const label = this.add.text(lx * TILE + TILE / 2, ly * TILE + TILE / 2, z.label, {
           fontFamily: 'monospace', fontSize: '10px', color: GBC.cream,
           backgroundColor: 'rgba(20,22,26,0.55)', padding: { x: 4, y: 2 }, resolution: 1,
-        }).setOrigin(0.5, 0.5).setDepth(9000).setAlpha(0.9);
-      }
+        }).setOrigin(0.5, 0.5).setDepth(9000).setAlpha(0.72);
+        return { label, wx: lx * TILE + TILE / 2, wy: ly * TILE + TILE / 2 };
+      });
 
       // ── 가게/NPC 노드 마커 — 발밑(하단 중앙) 정렬. 근접 A 로 대화(npc)/설명(desc). ──
       this.nodeViews = (city.nodes || []).map((node) => {
@@ -514,21 +603,22 @@ export function buildCityScene(Phaser, city, ctx) {
         const markerKey = node.npc ? `t_npc_${node.npc}`
           : node.facade ? `ct_prop_${node.facade}` : 'ct_prop_sign';
         const marker = this.add.image(wx, (ty + 1) * TILE, markerKey).setOrigin(0.5, 1).setScale(TSCALE).setDepth(wy);
-        if (node.name) {
-          this.add.text(wx, ty * TILE - 4, node.name, this.labelStyle()).setOrigin(0.5, 1).setDepth(10000);
-        }
-        return { node, wx, wy };
+        const label = node.name
+          ? this.add.text(wx, ty * TILE - 4, node.name, this.labelStyle()).setOrigin(0.5, 1).setDepth(10000).setAlpha(0)
+          : null;
+        return { node, marker, label, wx, wy };
       });
 
-      // ── 🚃 전철 fast-travel 역 마커 — 근접 A 로 행선지 선택(순간이동). 역사 프리팹 재사용. ──
+      // ── 🚃 정기 교통 역 마커 — 근접 A 로 행선지와 다음 운행편 선택. 역사 프리팹 재사용. ──
       //   stations 배열({ id, nameJa, yomi, tile, line? })을 소비 — geo 통합 시 목록만 교체(docs §6.2).
       this.stationViews = (city.stations || []).map((st) => {
         const [tx, ty] = st.tile;
         const wx = tx * TILE + TILE / 2, wy = ty * TILE + TILE / 2;
-        this.add.image(wx, (ty + 1) * TILE, 'ct_prop_station').setOrigin(0.5, 1).setScale(TSCALE).setDepth(wy);
+        const marker = this.add.image(wx, (ty + 1) * TILE, 'ct_prop_station').setOrigin(0.5, 1).setScale(TSCALE).setDepth(wy);
         // 🚃 마커 위 역명(일본어 간판) — 노드 라벨과 동일 도트 문법.
-        this.add.text(wx, ty * TILE - 4, `🚃 ${st.nameJa}`, this.labelStyle()).setOrigin(0.5, 1).setDepth(10000);
-        return { station: st, wx, wy };
+        const label = this.add.text(wx, ty * TILE - 4, `🚃 ${st.nameJa}`, this.labelStyle())
+          .setOrigin(0.5, 1).setDepth(10000).setAlpha(0);
+        return { station: st, marker, label, wx, wy };
       });
       this.wasNearStationId = null;
 
@@ -541,6 +631,7 @@ export function buildCityScene(Phaser, city, ctx) {
       if (rs) { sx = rs[0]; sy = rs[1]; sfacing = 'down'; }
       this.pTileX = sx; this.pTileY = sy; this.facing = sfacing; this.moving = false; this.turnGrace = 0;
       const px = sx * TILE + TILE / 2, py = sy * TILE + TILE / 2;
+      this.playerHalo = this.add.image(px, py + 9, 'ct_player_halo').setScale(TSCALE).setAlpha(0.72).setDepth(py - 1);
       this.player = this.add.image(px, py, 'ct_pc_down_n').setOrigin(0.5, CHAR_ORIGIN_Y).setScale(TSCALE);
 
       // 펫.
@@ -550,6 +641,12 @@ export function buildCityScene(Phaser, city, ctx) {
       this.pet = this.add.image(this.petPX, this.petPY, this.petTexKey(0)).setScale(TSCALE * this.petLevelScale());
 
       this.cameras.main.startFollow(this.player, true, 0.18, 0.18);
+
+      this.vehicleViews = new Map();
+      this.weatherOverlay = this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x44576b, 1)
+        .setOrigin(0, 0).setScrollFactor(0).setDepth(14000).setAlpha(0);
+      this.lightingOverlay = this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x18254a, 1)
+        .setOrigin(0, 0).setScrollFactor(0).setDepth(13999).setAlpha(0);
 
       // ── 입력(광장과 동일 경로) ──
       this.heldDirs = [];
@@ -602,6 +699,10 @@ export function buildCityScene(Phaser, city, ctx) {
         for (const img of this.waterPool) img.destroy();
         this.waterPool.length = 0;
         this.chunkStamp?.destroy();
+        this.transitGuide?.destroy();
+        for (const [, view] of this.vehicleViews) view.destroy();
+        this.vehicleViews.clear();
+        ctx.setTransitStatus?.(null);
       });
 
       // 페이드인 → 조작 해제.
@@ -625,6 +726,15 @@ export function buildCityScene(Phaser, city, ctx) {
         for (let tx = ox; tx < x1; tx++) {
           stamp.setTexture(this.terrainTexKey(tx, ty));
           rt.batchDraw(stamp, (tx - ox) * TILE, (ty - oy) * TILE);
+        }
+      }
+      if (city.railways?.mask) {
+        for (let ty = oy; ty < y1; ty++) {
+          for (let tx = ox; tx < x1; tx++) {
+            if (!this.railwayAt(tx, ty)) continue;
+            stamp.setTexture('ct_rail_area');
+            rt.batchDraw(stamp, (tx - ox) * TILE, (ty - oy) * TILE);
+          }
         }
       }
       rt.endDraw();
@@ -797,45 +907,112 @@ export function buildCityScene(Phaser, city, ctx) {
       });
     }
 
-    // ── 🚃 전철 fast-travel — 같은 도시 씬 안에서 도착역 인접 보행칸으로 순간이동(씬 변경 아님) ──
-    //   페이드아웃 → placeAt(도착 타일) → 페이드인. 씬을 바꾸지 않으므로 피어/좌표영속/멀티는
-    //   placePlayerAt 처럼 자동 유지(resetScenePeers 불필요 — 같은 씬). 이동 중 조작 잠금.
+    // ── 🚃 정기 교통 도착 배치 — 운행이 끝나면 같은 도시 씬의 역 인접 보행칸에 내린다. ──
     placeAt(tx, ty) {
       this.pTileX = tx; this.pTileY = ty; this.moving = false; this.turnGrace = 0;
       this.heldDirs.length = 0; this.tapTile = null;
       const wx = tx * TILE + TILE / 2, wy = ty * TILE + TILE / 2;
       this.player.setPosition(wx, wy);
       this.player.setDepth(wy);
+      this.playerHalo.setPosition(wx, wy + 9).setDepth(wy - 1);
       // 펫·카메라를 도착 지점으로 스냅(추적 보간 잔상 방지).
       this.petTargetX = tx - 1; this.petTargetY = ty;
       this.petPX = this.petTargetX * TILE + TILE / 2; this.petPY = this.petTargetY * TILE + TILE / 2;
       this.pet.setPosition(Math.round(this.petPX), Math.round(this.petPY));
       this.cameras.main.centerOn(wx, wy);
-      this.refreshChunks(true);      // 도착 지점 청크 즉시 bake(순간이동 후 빈 화면 방지)
+      this.refreshChunks(true);      // 도착 지점 청크 즉시 bake(도착 직후 빈 화면 방지)
       this.refreshWaterOverlay();
     }
 
-    // 행선지 역으로 이동. React 오버레이의 「행선지」 선택이 호출. 소프트락 없음(중복 호출 가드).
-    travelToStation(id) {
-      if (this.exiting || this.traveling) return;
-      const st = (city.stations || []).find((s) => s.id === id);
-      if (!st) return;
-      // P1: 페이드 시작 **전에** 도착 tile 검증(순수 헬퍼). 차단/범위밖이면 인근 보행칸으로 재배치,
-      //   그래도 없으면 이동 취소(플레이어 그대로 · 잠금 유지 안 함 · 토스트) — 어떤 경우에도 소프트락 없음.
-      const arrival = resolveArrivalTile(this.grid, COLS, ROWS, st.tile);
-      if (!arrival) { ctx.travelBlocked?.(); return; }
-      this.traveling = true;
-      this.inputLocked = true;
-      this.heldDirs.length = 0; this.tapTile = null; this.runHeld = false;
-      ctx.setNear?.(null); ctx.setNearStation?.(null);
-      this.cameras.main.fadeOut(FADE_MS, 0, 0, 0);
-      this.cameras.main.once('camerafadeoutcomplete', () => {
-        this.placeAt(arrival[0], arrival[1]);
-        this.wasNearNodeId = null; this.wasNearStationId = st.id; // 도착역엔 이미 근접 — 재프롬프트 억제
-        this.cameras.main.fadeIn(FADE_MS, 0, 0, 0);
-        this.cameras.main.once('camerafadeincomplete', () => { this.inputLocked = false; this.traveling = false; });
-        ctx.arrivedStation?.({ nameJa: st.nameJa, yomi: st.yomi }); // 짧은 확인 "🚃 博多駅"
+    reserveTransit(fromId, toId) {
+      const now = ctx.worldClockRef?.current?.totalGameMinutes;
+      if (!Number.isFinite(now) || this.exiting || this.traveling || this.transitTrip) return false;
+      const trip = planTransitTrip(city.transit || [], city.stations || [], fromId, toId, now);
+      if (!trip) { ctx.travelBlocked?.(); return false; }
+      this.transitTrip = trip;
+      this.transitState = 'waiting';
+      ctx.setTransitStatus?.({
+        state: 'waiting', line: trip.line.nameJa, from: trip.origin.nameJa, to: trip.destination.nameJa,
+        departureMinute: trip.departureMinute, arrivalMinute: trip.arrivalMinute,
       });
+      return true;
+    }
+
+    cancelTransit(reason = 'cancelled') {
+      this.transitTrip = null;
+      this.transitState = 'none';
+      if (reason === 'missed') ctx.setTransitStatus?.({ state: 'missed', message: '출발 시각을 놓쳤어요.' });
+      else ctx.setTransitStatus?.(null);
+    }
+
+    updateTransitVehicles(totalGameMinutes) {
+      const stops = [...(city.stations || []), ...(city.transitPoints || [])];
+      const active = activeVehiclesAt(city.transit || [], stops, totalGameMinutes);
+      const alive = new Set();
+      for (const vehicle of active) {
+        alive.add(vehicle.runId);
+        let view = this.vehicleViews.get(vehicle.runId);
+        if (!view) {
+          const texture = vehicle.line.mode === 'ferry' ? 'ct_vehicle_ferry'
+            : vehicle.line.mode === 'bus' ? 'ct_vehicle_bus' : 'ct_vehicle_train';
+          view = this.add.image(0, 0, texture).setScale(TSCALE).setDepth(8500);
+          this.vehicleViews.set(vehicle.runId, view);
+        }
+        const wx = vehicle.tile[0] * TILE + TILE / 2;
+        const wy = vehicle.tile[1] * TILE + TILE / 2;
+        view.setPosition(wx, wy).setDepth(Math.max(8500, wy + 2)).setVisible(true);
+      }
+      for (const [runId, view] of this.vehicleViews) {
+        if (alive.has(runId)) continue;
+        view.destroy();
+        this.vehicleViews.delete(runId);
+      }
+    }
+
+    updateReservedTrip(totalGameMinutes) {
+      const trip = this.transitTrip;
+      if (!trip) return;
+      const state = tripStateAt(trip, totalGameMinutes);
+      if (state === 'waiting') return;
+      if (state === 'riding' && this.transitState !== 'riding') {
+        const origin = (city.stations || []).find((station) => station.id === trip.fromId);
+        const ox = origin.tile[0] * TILE + TILE / 2;
+        const oy = origin.tile[1] * TILE + TILE / 2;
+        if (Phaser.Math.Distance.Between(this.player.x, this.player.y, ox, oy) >= NODE_TALK_RANGE) {
+          this.cancelTransit('missed');
+          return;
+        }
+        this.transitState = 'riding';
+        this.traveling = true;
+        this.inputLocked = true;
+        this.player.setVisible(false); this.playerHalo.setVisible(false); this.pet.setVisible(false);
+        this.cameras.main.stopFollow();
+        ctx.setTransitStatus?.({
+          state: 'riding', line: trip.line.nameJa, from: trip.origin.nameJa, to: trip.destination.nameJa,
+          departureMinute: trip.departureMinute, arrivalMinute: trip.arrivalMinute,
+        });
+      }
+      if (state === 'riding') {
+        const vehicle = this.vehicleViews.get(trip.runId);
+        if (vehicle) this.cameras.main.centerOn(vehicle.x, vehicle.y);
+        return;
+      }
+      if (state === 'arrived') {
+        if (this.transitState !== 'riding') {
+          this.cancelTransit('missed');
+          return;
+        }
+        const arrival = resolveArrivalTile(this.grid, COLS, ROWS, trip.destination.tile);
+        if (arrival) this.placeAt(arrival[0], arrival[1]);
+        this.player.setVisible(true); this.playerHalo.setVisible(true); this.pet.setVisible(true);
+        this.cameras.main.startFollow(this.player, true, 0.18, 0.18);
+        this.traveling = false;
+        this.inputLocked = false;
+        ctx.arrivedStation?.({ nameJa: trip.destination.nameJa, yomi: trip.destination.yomi });
+        ctx.setTransitStatus?.({ state: 'arrived', message: `${trip.destination.nameJa} 도착` });
+        this.transitTrip = null;
+        this.transitState = 'none';
+      }
     }
 
     emitDistances() { emitPeerDistances(this, bus); }
@@ -844,9 +1021,19 @@ export function buildCityScene(Phaser, city, ctx) {
       // 지형 청크 가시성(카메라 청크 이동 시에만 bake/축출) + 물 오버레이(뷰포트 안 물 타일 추종).
       this.refreshChunks();
       this.refreshWaterOverlay();
+      const worldSnapshot = ctx.worldClockRef?.current;
+      if (worldSnapshot && time - this.lastVehicleUpdate > 500) {
+        this.lastVehicleUpdate = time;
+        this.updateTransitVehicles(worldSnapshot.totalGameMinutes);
+        const weather = cityWeatherAt(city.id, worldSnapshot);
+        this.weatherOverlay.setAlpha(weather.id === 'rain' ? 0.16 : weather.id === 'fog' ? 0.22 : weather.id === 'cloudy' ? 0.08 : 0);
+        this.lightingOverlay.setAlpha(['night', 'late-night'].includes(worldSnapshot.phase) ? 0.24
+          : worldSnapshot.phase === 'dawn' || worldSnapshot.phase === 'evening' ? 0.1 : 0);
+      }
+      if (worldSnapshot) this.updateReservedTrip(worldSnapshot.totalGameMinutes);
 
       // 이동 상태기계(광장과 동일 — 달리기 B 홀드 포함).
-      //   traveling(🚃 fast-travel 페이드) 중엔 React 입력잠금 효과와의 경합과 무관하게 이동 금지.
+      //   traveling(🚃 승차) 중엔 React 입력잠금 효과와의 경합과 무관하게 이동 금지.
       if (!this.moving && !this.inputLocked && !this.traveling) {
         const held = this.heldDirs.length ? this.heldDirs[this.heldDirs.length - 1] : null;
         if (held) {
@@ -869,6 +1056,7 @@ export function buildCityScene(Phaser, city, ctx) {
       const charAnimMs = this.runHeld ? RUN_ANIM_MS : CHAR_ANIM_MS;
       this.setCharFrame(this.player, 'ct_pc', this.facing, this.moving, time, charAnimMs);
       this.player.setDepth(this.player.y);
+      this.playerHalo.setPosition(this.player.x, this.player.y + 9).setDepth(this.player.y - 1);
 
       // 펫 추적(광장과 동일 — 달리기 시 동속).
       const petObj = ctx.petRef?.current || {};
@@ -917,16 +1105,35 @@ export function buildCityScene(Phaser, city, ctx) {
 
       if (this.exiting) return;
 
-      // 노드 근접 → React(nearNode). 라벨은 마커에 상시 표시, 프롬프트/설명은 A 로.
+      const labelRange = TILE * 6;
+      for (const view of this.nodeViews) {
+        const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, view.wx, view.wy);
+        view.label?.setAlpha(distance < labelRange ? 1 : 0);
+        if (worldSnapshot) {
+          const life = nodeLifeAt(view.node, worldSnapshot);
+          view.marker.setAlpha(life.open ? 1 : 0.42).setTint(life.open ? 0xffffff : 0x7a7a82);
+        }
+      }
+      for (const view of this.stationViews) {
+        const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, view.wx, view.wy);
+        view.label.setAlpha(distance < labelRange ? 1 : 0);
+      }
+
+      // 노드 근접 → React(nearNode). 라벨은 6타일 안에서만, 프롬프트/설명은 A 로.
       let nearest = null, nearestD = NODE_TALK_RANGE;
       for (const v of this.nodeViews) {
         const d = Phaser.Math.Distance.Between(this.player.x, this.player.y, v.wx, v.wy);
         if (d < nearestD) { nearest = v.node; nearestD = d; }
       }
-      const nid = nearest ? nearest.id : null;
+      const nearestLife = nearest && worldSnapshot ? nodeLifeAt(nearest, worldSnapshot) : { open: true };
+      const nid = nearest ? `${nearest.id}:${nearestLife.open}` : null;
       if (nid !== this.wasNearNodeId) {
         this.wasNearNodeId = nid;
-        ctx.setNear?.(toInteractiveNode(nearest));
+        ctx.setNear?.(toInteractiveNode(nearest ? {
+          ...nearest,
+          openNow: nearestLife.open,
+          desc: nearestLife.open ? nearest.desc : `${nearest.desc}\n지금은 영업이 끝났어요. 세계 시각에 맞춰 다시 열려요.`,
+        } : null));
       }
 
       // 🚃 역 근접 → React(nearStation). A 로 행선지 선택 오버레이. (노드와 별개 목록·별개 상태.)

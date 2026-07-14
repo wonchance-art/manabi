@@ -39,19 +39,19 @@ export function isCityWalkable(code) { return !CITY_BLOCKED.has(code); }
 // 수면(물결 애니 대상) — WATER/RIVER 둘 다 흐르는 물. RIVER 는 강 톤으로 렌더.
 export function isCityWater(code) { return code === CITY_TILE.WATER || code === CITY_TILE.RIVER; }
 
-// 🚃 전철 fast-travel — 행선지 목록(현재 역 제외)을 만드는 공용 순수 로직.
+// 🚃 정기 교통 — 행선지 목록(현재 역 제외)을 만드는 공용 순수 로직.
 //   도시 데이터의 stations 배열(현 fukuoka.js STATIONS · 향후 geo.js stations[])을 그대로 소비한다.
 //   인터페이스가 stations 배열로 통일돼 있어 geo 통합 시 목록만 갈아끼우면 자동 동작(docs §6.2·§6.4).
 export function fastTravelDestinations(stations, fromId) {
   return (Array.isArray(stations) ? stations : []).filter((s) => s && s.id !== fromId);
 }
 
-// 🚃 fast-travel 도착 tile 해석(순수·결정적) — 소프트락 방지 게이트.
+// 🚃 정기 교통 도착 tile 해석(순수·결정적) — 소프트락 방지 게이트.
 //   유효 도착점 = 자기 셀이 보행 가능 **AND** cardinal 4방 중 최소 1칸이 보행 가능(걸어서 벗어날 수
 //   있음). 자기만 보행이면 5×5 건물 한가운데 고립된 1칸 같은 곳에 스냅돼 못 나오는 소프트락이 남는다.
 //   정확 tile 이 이 조건 실패면 반경 확장 링(Chebyshev)으로 **같은 조건**을 만족하는 최근접 칸을
 //   결정적으로 탐색해 재배치. 그래도 없으면 null(이동 취소 → travelBlocked).
-//   반환: [x,y] (보행 가능 + 보행 인접) | null. travelToStation 이 페이드 시작 전에 호출.
+//   반환: [x,y] (보행 가능 + 보행 인접) | null. 운행 종료 시 하차 위치를 정할 때 호출.
 //   geo stations[] 상속·이후 도시 데이터의 잘못된/고립된 tile 도 런타임에서 안전하게 걸러낸다.
 export function resolveArrivalTile(grid, cols, rows, tile) {
   if (!Array.isArray(tile) || tile.length !== 2) return null;

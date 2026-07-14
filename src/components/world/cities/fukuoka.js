@@ -9,7 +9,7 @@
 //                   terrain:<디코드된 Uint8Array 388×254·건물/도로 실 래스터>, pois:[14], stations:[11] }.
 //   terrain 은 이미 RLE 디코드된 표준 지형 코드 배열이라 buildGrid 는 복사해 EXIT 타일만 얹어 반환.
 //   · COLS/ROWS = geo grid.w/h(388×254). metersPerTile=20 실축척.
-//   · STATIONS = geo.stations(11) 매핑(전철 fast-travel — 실좌표·BFS 검증본).
+//   · STATIONS = geo.stations(11) 매핑(정기 교통 — 실좌표·BFS 검증본).
 //   · CITY_NODES = geo.pois(14·국제선 터미널 포함, tile=poiTile 로 자동 정합) + 라멘/一風堂/편의점/
 //     이자카야 NPC·상점 4. geo POI 는 전부 보행·카디널 인접·단일 성분으로 스냅됨(Codex 계약).
 //   · ENTRANCE/EXIT = 博多港 부두 인근 보행칸(v2.1 건물 실 래스터 반영해 재배치).
@@ -166,8 +166,8 @@ export const CITY_NODES = [
   },
 ];
 
-// ── 🚃 전철 fast-travel 역(駅) — 무분할 대형 도시맵의 이동 수단(docs §6.2) ──
-//   역 근접 → A → 행선지 선택 오버레이 → 페이드 후 도착역 인접 보행칸으로 순간이동(씬 유지).
+// ── 🚃 정기 교통 역(駅) — 무분할 대형 도시맵의 이동 수단(docs §8) ──
+//   역 근접 → A → 행선지/운행편 선택 → 출발 대기 → 승차 → 도착역 하차(씬 유지).
 //   인터페이스는 stations 배열({ id, nameJa, yomi, tile:[x,y], line? }) — geo.stations(11·§6.4 계약)를
 //   그대로 매핑. tile 은 geo BFS 로 검증된 실좌표(전부 보행 가능·보행 인접)라 그대로 쓴다.
 //   · yomi 는 학습 소재(역명 일본어 읽기) — 오버레이에 「博多駅 はかたえき」 형태로 병기.
@@ -178,6 +178,60 @@ export const STATIONS = FUKUOKA_GEO.stations.map((s) => ({
   tile: [s.tile[0], s.tile[1]],
   line: s.line,
 }));
+
+export const TRANSIT_POINTS = [
+  { id: 'bayside-ferry', tile: [240, 67], nameJa: '博多ふ頭' },
+  { id: 'bayside-channel', tile: [226, 42], nameJa: '博多湾' },
+  { id: 'international-ferry', tile: [236, 47], nameJa: '国際ターミナル' },
+  { id: 'international-channel', tile: [247, 19], nameJa: '国際航路' },
+];
+
+export const TRANSIT = [
+  {
+    id: 'fukuoka-airport-line', nameJa: '福岡市地下鉄空港線', mode: 'subway', color: 0xe58d2f,
+    stopIds: ['tojinmachi', 'ohori-koen', 'akasaka', 'tenjin', 'nakasu-kawabata', 'gion', 'hakata'],
+    segmentMinutes: [3, 3, 3, 3, 3, 3], dwellMinutes: 1,
+    serviceWindows: [
+      { startMinute: 0, endMinute: 300, headwayMinutes: 24 },
+      { startMinute: 300, endMinute: 1440, headwayMinutes: 8 },
+    ],
+  },
+  {
+    id: 'fukuoka-nanakuma-line', nameJa: '福岡市地下鉄七隈線', mode: 'subway', color: 0x55a64a,
+    stopIds: ['tenjin-minami', 'kushida-jinja-mae', 'hakata'], segmentMinutes: [3, 3], dwellMinutes: 1,
+    serviceWindows: [
+      { startMinute: 0, endMinute: 300, headwayMinutes: 28 },
+      { startMinute: 300, endMinute: 1440, headwayMinutes: 10 },
+    ],
+  },
+  {
+    id: 'fukuoka-hakozaki-line', nameJa: '福岡市地下鉄箱崎線', mode: 'subway', color: 0x4f93c3,
+    stopIds: ['nakasu-kawabata', 'gofukumachi'], segmentMinutes: [3],
+    serviceWindows: [
+      { startMinute: 0, endMinute: 300, headwayMinutes: 30 },
+      { startMinute: 300, endMinute: 1440, headwayMinutes: 10 },
+    ],
+  },
+  {
+    id: 'tenjin-transfer', nameJa: '天神連絡通路', mode: 'subway', color: 0xb4669d,
+    stopIds: ['nishitetsu-fukuoka', 'tenjin'], segmentMinutes: [2],
+    serviceWindows: [{ startMinute: 0, endMinute: 1440, headwayMinutes: 12 }],
+  },
+  {
+    id: 'hakata-domestic-ferry', nameJa: '博多湾内航路', mode: 'ferry', color: 0xf4f0d0,
+    stopIds: ['bayside-ferry', 'bayside-channel'], segmentMinutes: [18],
+    serviceWindows: [
+      { startMinute: 360, endMinute: 1320, headwayMinutes: 60 },
+      { startMinute: 0, endMinute: 360, headwayMinutes: 180 },
+      { startMinute: 1320, endMinute: 1440, headwayMinutes: 180 },
+    ],
+  },
+  {
+    id: 'hakata-international-ferry', nameJa: '博多国際航路', mode: 'ferry', color: 0xf0c55a,
+    stopIds: ['international-ferry', 'international-channel'], segmentMinutes: [35],
+    serviceWindows: [{ startMinute: 420, endMinute: 1260, headwayMinutes: 180 }],
+  },
+];
 
 // 프리팹 파사드(노렌·간판·토리이·분수 등) 배치 — 건물 프론티지에 얹는 도트 소품(순수 시각·비상호작용).
 // kind → CityScene 이 ct_prop_<kind> 텍스처로 굽는다. geo POI 좌표 인근에 배치.
@@ -220,7 +274,9 @@ export const FUKUOKA = {
   returnNode: 'fukuoka',   // 전국맵 복귀 시 이 노드 앞에서 스폰(worldNodes 의 fukuoka 도시 노드)
   zones: ZONES,
   nodes: CITY_NODES,
-  stations: STATIONS,   // 🚃 전철 fast-travel 노드(geo.stations 매핑)
+  stations: STATIONS,   // 🚃 정기 교통 노드(geo.stations 매핑)
+  transit: TRANSIT,
+  transitPoints: TRANSIT_POINTS,
   props: PROPS,
   CITY_TILE,
   buildGrid: buildFukuokaGrid,

@@ -5,6 +5,7 @@ import TOKYO, {
 } from '../cities/tokyo.js';
 import { TOKYO_GEO } from '../cities/tokyo.geo.js';
 import { fastTravelDestinations, resolveArrivalTile, resolveRespawnTile } from '../cities/terrain.js';
+import { directTransitDestinations } from '../../../lib/world/transit.js';
 
 const grid = buildTokyoGrid();
 const at = (x, y) => ((x < 0 || y < 0 || x >= COLS || y >= ROWS) ? -1 : grid[y * COLS + x]);
@@ -206,5 +207,14 @@ describe('구역·연결성·재접속 안전', () => {
       x: buildingIndex % COLS,
       y: Math.floor(buildingIndex / COLS),
     })).toBeNull();
+  });
+});
+
+describe('세계시 교통 배선', () => {
+  it('山手線과 하네다 접근선을 OSM 철도 위에 함께 노출한다', () => {
+    expect(TOKYO.transit.map((line) => line.id)).toEqual(['tokyo-yamanote', 'tokyo-haneda-access']);
+    expect(TOKYO.railways.tileCount).toBe(20_154);
+    expect(directTransitDestinations(TOKYO.transit, STATIONS, 'shinagawa').map((station) => station.id))
+      .toEqual(expect.arrayContaining(['shibuya', 'hamamatsucho']));
   });
 });
