@@ -4,13 +4,14 @@
 //
 // 노드 모양:
 //   { id, name, desc, kind:'city'|'airport'|'port'|'landmark', tile:[x,y],
-//     gate?: { type:'story-scene', scene:'airport', label } | { type:'ferry', to:'<node id>', label } }
+//     gate?: { type:'story-scene', scene:'airport', label } | { type:'ferry'|'city', to:'<node id>', label } }
 //   desc: A(말 걸기)로 여는 GBC 설명 박스에 이름과 함께 표시하는 1~2문장(전 노드·명산 필수).
 //
-// gate 없는 노드는 표지 마커만(김해공항·도시·랜드마크) — 이름 라벨은 없고, A로 desc를 읽는다.
+// gate 없는 노드는 표지 마커만(김해공항·랜드마크) — 이름 라벨은 없고, A로 desc를 읽는다.
 // gate 있는 노드는 근접 시 A로 상호작용(desc는 게이트 프롬프트에 한 줄 병기):
 //   · story-scene : 같은 Phaser 게임의 씬으로 전환(인천공항 → 공항 스토리 씬 → 도쿄 독해).
 //   · ferry       : 확인 다이얼로그 → 페이드 → 상대 항구 인접 land 로 이동(보상·XP 없음, 왕방향 대칭).
+//   · city        : 확인 다이얼로그 → cities/<id>.js의 실지형 CityScene으로 진입.
 //
 // React/Next/Phaser 의존 0 — vitest(node)에서 그대로 임포트해 무결성을 검증한다.
 
@@ -158,7 +159,11 @@ export const WORLD_NODES = [
     desc: '붉은 鳥居(도리이)가 선 신사. 미코상이 참배 예절(二礼二拍手一礼)과 오미쿠지를 알려줘요.',
   },
   // 도쿄 — 도시.
-  { id: 'tokyo', name: '도쿄', kind: 'city', tile: [POI.TOKYO.x, POI.TOKYO.y], desc: '일본의 수도. 세계에서 가장 사람이 많이 사는 대도시권이에요.' },
+  {
+    id: 'tokyo', name: '도쿄', kind: 'city', tile: [POI.TOKYO.x, POI.TOKYO.y],
+    gate: { type: 'city', to: 'tokyo', label: '🏙️ 시내' },
+    desc: '일본의 수도. 하네다·시나가와·시부야와 도쿄만을 실제 지형으로 걸어볼 수 있어요.',
+  },
   // 하네다 — 랜드마크(표지 마커만).
   { id: 'haneda', name: '하네다', kind: 'landmark', tile: [POI.HANEDA.x, POI.HANEDA.y], reading: 'n5-tokyo-01', desc: '도쿄의 바닷가 국제공항. 일본에서 가장 붐비는 하늘길이에요.' },
   // 백두산 — 설산 랜드마크(게이트 없음, 마커만). DMZ 북측이라 철조망 너머로 보이기만 하고
