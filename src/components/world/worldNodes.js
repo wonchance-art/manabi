@@ -69,18 +69,22 @@ const KYUSHU_SPOTS = [
   { id: 'ibusuki-onsen', name: '이부스키 온천', tile: [139, 365], desc: '데워진 모래에 몸을 묻는 ‘스나무시(砂むし·모래찜질)’ 온천으로 알려진 온천지 「指宿温泉」(いぶすきおんせん).' },
 ].map((s) => ({ id: s.id, name: s.name, kind: 'landmark', tile: s.tile, desc: s.desc }));
 
-// 규슈 현(県) 마스코트(ゆるキャラ) — 각 현 인근에 전용 도트 마커(mascot 필드 → t_mascot_<key>).
-//   kind:'landmark' 라 A로 desc 만(대화 없음). 스팟 노드와 ≥3타일 이격(마커 겹침 회피).
-//   전부 규슈 소속 검증(리서치). 佐賀 壺侍는 현 관광연맹 PR 캐릭터(단일 현 공식 대표격).
+// 熊本 마스코트 쿠마몬 — 오너 방침으로 유지(전국구 대표 유루캐라). kind:'landmark'(A로 desc).
+//   나머지 현은 공식 캐릭터(승인 필요) 대신 아래 "맛집(명물 요리)" 노드로 대체(컴플라이언스).
 const MASCOTS = [
-  { id: 'mascot-ecoton', name: '에코톤(福岡)', mascot: 'ecoton', tile: [138, 304], desc: '후쿠오카현의 캐릭터 「エコトン」(에코톤). 돈코쓰 라멘 그릇을 쓴 흰 돼지 모습이에요.' },
-  { id: 'mascot-tsubo', name: '쓰보자무라이(佐賀)', mascot: 'tsubo', tile: [132, 316], desc: '사가현 관광 캐릭터 「壺侍」(쓰보자무라이). 아리타야키(有田焼) 항아리에 든 사무라이 소년이에요.' },
-  { id: 'mascot-ganba', name: '간바쿤·란바짱(長崎)', mascot: 'ganba', tile: [125, 325], desc: '나가사키현 홍보 캐릭터 「がんばくん・らんばちゃん」. 현조(県鳥) 오시도리(원앙)를 형상화했고, 이름은 방언 ‘간바란바(힘내자)’에서 왔어요.' },
-  { id: 'mascot-kumamon', name: '쿠마몬(熊本)', mascot: 'kumamon', tile: [138, 324], desc: '구마모토현의 캐릭터 「くまモン」(쿠마몬). 검은 곰에 빨간 볼 — 규슈 신칸센 개통을 계기로 태어나 전국구로 알려졌어요.' },
-  { id: 'mascot-mejiron', name: '메지론(大分)', mascot: 'mejiron', tile: [159, 315], desc: '오이타현 캐릭터 「めじろん」(메지론). 현조(県鳥) 메지로(동박새)를 형상화했어요.' },
-  { id: 'mascot-miyaken', name: '미야자키견(宮崎)', mascot: 'miyaken', tile: [154, 348], desc: '미야자키현 심볼 캐릭터 「みやざき犬」(미야자키켄). 개 세 마리(ひぃ·むぅ·かぁ)가 휴가나쓰·피닉스 같은 명물을 머리에 얹었어요. 犬↔県 말장난이에요.' },
-  { id: 'mascot-guriboo', name: '구리부(鹿児島)', mascot: 'guriboo', tile: [136, 358], desc: '가고시마현 PR 캐릭터 「ぐりぶー」(구리부). 가고시마 흑돼지(黒豚)를 형상화했어요.' },
-].map((m) => ({ id: m.id, name: m.name, kind: 'landmark', mascot: m.mascot, tile: m.tile, desc: m.desc }));
+  { id: 'mascot-kumamon', name: '쿠마몬(熊本)', kind: 'landmark', mascot: 'kumamon', tile: [138, 324], desc: '구마모토현의 캐릭터 「くまモン」(쿠마몬). 검은 곰에 빨간 볼이 특징이에요.' },
+];
+
+// 규슈 명물 맛집 노드 — "현실 정보 융합" 원칙: 각 현 대표 명물 요리를 찾아가는 가게로(gourmet → t_gourmet).
+//   kind:'landmark'(A로 desc). 요리 자체(郷土料理/名物) 중심·검증본, 확실한 노포만 상호 병기. 단정 회피.
+const GOURMET = [
+  { id: 'gourmet-fukuoka', name: '하카타 모츠나베(福岡)', tile: [138, 304], desc: '소·돼지 곱창(모츠)과 부추를 간장·된장 국물에 끓이는 후쿠오카 대표 나베 「もつ鍋」(모츠나베). 명란 「明太子」(멘타이코)도 하카타의 상징 — ふくや(福岡市博多区)가 1949년 처음 만든 것으로 알려졌어요.' },
+  { id: 'gourmet-saga', name: '시시리안 라이스(佐賀)', tile: [132, 316], desc: '밥 위에 볶은 고기·생채소를 올리고 마요네즈를 뿌리는 사가시의 향토 그루메 「シシリアンライス」(시시리안 라이스). 브랜드 소고기 「佐賀牛」(사가규)도 알려져 있어요.' },
+  { id: 'gourmet-nagasaki', name: '나가사키 짬뽕(長崎)', tile: [125, 325], desc: '면·해산물·채소를 돼지·닭 육수로 끓인 나가사키 대표 면 「ちゃんぽん」(찬폰). 1899년 노포 四海樓(시카이로)에서 고안된 것으로 전해져요. 튀긴 면의 「皿うどん」(사라우동)도.' },
+  { id: 'gourmet-oita', name: '도리텐(大分)', tile: [159, 315], desc: '닭고기에 튀김옷을 입혀 튀긴 오이타 향토요리 「とり天」(도리텐). 벳푸 노포 東洋軒(도요켄) 발상으로 알려졌어요. 브랜드어 「関あじ・関さば」(세키아지·세키사바)도.' },
+  { id: 'gourmet-miyazaki', name: '치킨난반(宮崎)', tile: [154, 348], desc: '튀긴 닭을 단촛물에 담가 타르타르 소스를 얹는 미야자키 대표 요리 「チキン南蛮」(치킨난반). 노베오카·미야자키시에 발상 이야기가 함께 전해져요. 여름엔 찬 된장국밥 「冷や汁」(히야지루)도.' },
+  { id: 'gourmet-kagoshima', name: '흑돼지·시로쿠마(鹿児島)', tile: [136, 358], desc: '가고시마산 「黒豚」(구로부타·흑돼지) 돈카츠·샤부샤부가 대표적. 곱게 간 얼음에 연유·과일·팥을 얹은 빙과 「白熊」(시로쿠마)는 天文館むじゃき(1947)가 고안한 것으로 전해져요.' },
+].map((m) => ({ id: m.id, name: m.name, kind: 'landmark', gourmet: true, tile: m.tile, desc: m.desc }));
 
 export const WORLD_NODES = [
   // 서울 — 스폰 도시.
@@ -150,8 +154,9 @@ export const WORLD_NODES = [
   ...NAMED_PEAKS,
   // 규슈 대표 관광지 20종(福岡~鹿児島) — 전국맵 규슈 지역 채우기(마커+desc).
   ...KYUSHU_SPOTS,
-  // 규슈 현 마스코트 7종 — 각 현 인근 전용 도트 마커.
+  // 熊本 쿠마몬 마스코트(1) + 규슈 6현 명물 맛집 노드(현실 정보 융합).
   ...MASCOTS,
+  ...GOURMET,
   // 동해항 — 사카이미나토행 페리(실존 DBS 항로 모티프).
   {
     id: 'donghae-port', name: '동해항', kind: 'port', tile: [POI.DONGHAE_PORT.x, POI.DONGHAE_PORT.y],

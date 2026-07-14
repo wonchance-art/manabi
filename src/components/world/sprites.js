@@ -594,21 +594,13 @@ export function npcMarkerRows(key) {
   return NPC_ART[NPC_KEYS.includes(key) ? key : 'ramen'];
 }
 
-// ── 규슈 현 마스코트(ゆるキャラ) 마커 도트 — 전국맵 worldNodes mascot 필드 → t_mascot_<key> ──
-// 각 현 대표 캐릭터의 상징(색·형태)을 24×24 도트로 아이코닉하게. 대화 없음(kind:'landmark' — A로 desc).
-//   kumamon 熊本(검은 곰·빨간 볼) · ecoton 福岡(흰 돼지) · tsubo 佐賀(아리타 항아리 사무라이) ·
-//   ganba 長崎(오시도리) · mejiron 大分(동박새) · miyaken 宮崎(개+감귤) · guriboo 鹿児島(흑돼지).
-// 픽셀맵 무결성(24×24·정의된 색문자만)은 sprites.test 로 검증.
-export const MASCOT_KEYS = ['kumamon', 'ecoton', 'tsubo', 'ganba', 'mejiron', 'miyaken', 'guriboo'];
+// ── 규슈 마스코트 마커 도트 — kumamon(熊本)만. worldNodes mascot 필드 → t_mascot_<key> ──
+// 나머지 현은 공식 캐릭터 대신 "맛집(명물 요리)" 노드로(컴플라이언스·오너 방침). kumamon 만 유지.
+//   검은 곰 + 빨간 볼 실루엣을 24×24 도트로. 대화 없음(kind:'landmark' — A로 desc).
+export const MASCOT_KEYS = ['kumamon'];
 
 export const MASCOT_PAL = {
   kumamon: { O: 0x141414, K: 0x2b2b2b, W: 0xf6edcf, R: 0xd0342b, P: 0x0a0a0a, Y: 0xf2c400 },
-  ecoton: { O: 0x6b5030, W: 0xf6edcf, w: 0xe4d5a6, P: 0xe79aa6, p: 0xc76f7e, E: 0x2a1e14, R: 0xc14b38 },
-  tsubo: { O: 0x2a2a3a, C: 0xf4f4ec, B: 0x3a6ea5, b: 0x28527c, S: 0xf1c99a, H: 0x241a12, R: 0xc14b38 },
-  ganba: { O: 0x2a1e14, H: 0x3a2a1a, S: 0xf1c99a, R: 0xc14b38, Y: 0xf2a54a, G: 0x3f8a4a, W: 0xf6edcf, B: 0x3a6ea5 },
-  mejiron: { O: 0x2a3a1a, G: 0x6cae3e, g: 0x4f8a2c, W: 0xf6edcf, P: 0x141414, Y: 0xf2c400, S: 0xe4d5a6 },
-  miyaken: { O: 0x2a1e14, K: 0x6f4a28, k: 0x4a3018, W: 0xf6edcf, P: 0x141414, Y: 0xf2c400, G: 0x3f8a4a },
-  guriboo: { O: 0x141414, K: 0x2b2b2b, k: 0x1a1a1a, P: 0xe79aa6, p: 0xc76f7e, W: 0xf6edcf, E: 0x0a0a0a },
 };
 
 const MASCOT_ART = {
@@ -622,70 +614,29 @@ const MASCOT_ART = {
     '...OKKKKKKKKKKKKKKO.....', '...OKKKKKKKKKKKKKKO.....', '...OKKKKO....OKKKKO.....',
     '...OKKKO......OKKKO.....', '....OOO........OOO......', '........................',
   ],
-  ecoton: [
-    '........................', '.....pp.......pp........', '....pPPp.....pPPp.......',
-    '....pPPp.....pPPp.......', '...OWWWWWWWWWWWWWWO.....', '..OWWWWWWWWWWWWWWWWO....',
-    '..OWWWWWWWWWWWWWWWWO....', '..OWWEEWWWWWWWWEEWWO....', '..OWWEEWWWWWWWWEEWWO....',
-    '..OWWWWWWPPPPWWWWWWO....', '..OWWWWWPppppPWWWWWO....', '..OWWWWWPpEEpPWWWWWO....',
-    '..OWWWWWPppppPWWWWWO....', '..OWWWWWWPPPPWWWWWWO....', '...OWWWWWWWWWWWWWWO.....',
-    '....OWWWWWWWWWWWWO......', '....OwwwwwwwwwwwwO......', '...OWWWWWWWWWWWWWWO.....',
-    '...OWWWWWWWWWWWWWWO.....', '...OWWWWWWWWWWWWWWO.....', '...OWWWWO....OWWWWO.....',
-    '...OWWWO......OWWWO.....', '....OOO........OOO......', '........................',
-  ],
-  tsubo: [
-    '........................', '..........HH............', '.........HHHH...........',
-    '........HHSSHH..........', '........HSSSSH..........', '........SSOOSS..........',
-    '........SSSSSS..........', '.......OSSSSSSO.........', '......OCCCCCCCCO........',
-    '.....OCCCBBBBCCCO.......', '....OCCBBBBBBBBCCO......', '...OCCBBBBBBBBBBCCO.....',
-    '...OCBBBBbbbbBBBBCO.....', '...OCBBBbbbbbbBBBCO.....', '...OCCBBBbbbbBBBCCO.....',
-    '...OCCCBBBBBBBBCCCO.....', '....OCCCCBBBBCCCCO......', '....OCCCCCCCCCCCCO......',
-    '.....OCCCCCCCCCCO.......', '.....OCCCCCCCCCCO.......', '......OCCCCCCCCO........',
-    '.......OOOOOOOO.........', '........................', '........................',
-  ],
-  ganba: [
-    '........................', '..............OOO.......', '.............OYYYO......',
-    '............OYYYYYO.....', '...........OWWYYYYO.....', '..........OW.WYYYO......',
-    '.........OWWWWOO........', '........OHHHHW..........', '.......OHHHHHHO.........',
-    '......OHRRHHHHHO........', '.....OHRRRRHHHHHO.......', '....OHHRRRRRHHHHHO......',
-    '....OHHHRRRRHHHHHHO.....', '...OHHHHHRRHHHHGGGHO....', '...OHHHHHHHHHGGGGGGO....',
-    '...OBBHHHHHGGGGGGGGO....', '...OBBBBHGGGGGGYYGGO....', '....OBBBBGGGGGGYYGO.....',
-    '.....OBBBBGGGGGGGO......', '......OOBBBGGGGOO.......', '........OOYYYYO.........',
-    '.........OYYYYO.........', '..........OOOO..........', '........................',
-  ],
-  mejiron: [
-    '........................', '.........OOOO...........', '.......OOGGGGOO.........',
-    '......OGGGGGGGGO........', '.....OGGGGGGGGGGO.......', '....OGGGGGGGGGGGGO......',
-    '....OGGWWGGGGWWGGO......', '....OGWWPWGGWPWWGGO.....', '....OGWWPWGGWPWWGGO.....',
-    '....OGGWWGGGGWWGGO......', '....OGGGGYYYYGGGGO......', '....OGGGGYYYYGGGGO......',
-    '....OgGGGGGGGGGGgO......', '...OggGGGGGGGGGGggO.....', '...OggggGGGGGGggggO.....',
-    '...OggggggGGggggggO.....', '....OgggggggggggO.......', '.....OggggggggggO.......',
-    '......OggggggggO........', '.......OggYYggO.........', '........OYYYYO..........',
-    '........OYYYYO..........', '.........OOOO...........', '........................',
-  ],
-  miyaken: [
-    '........................', '.........GYYG...........', '........GYYYYG..........',
-    '.........GGGG...........', '....KK...OOOO...KK......', '...KKKK.OKKKKO.KKKK.....',
-    '...KKKKKKKKKKKKKKKK.....', '..OKKKKKKKKKKKKKKKKO....', '..OKKKKKKKKKKKKKKKKO....',
-    '..OKKWWKKKKKKKKWWKKO....', '..OKWPWKKKKKKKKWPWKO....', '..OKKWKKKKKKKKKKWKKO....',
-    '..OKKKKKKPPPPKKKKKKO....', '..OKKKKKKPWWPKKKKKKO....', '...OKKKKKKWWKKKKKKO.....',
-    '....OKKKKKKKKKKKKO......', '....OkKKKKKKKKKKkO......', '...OkkKKKKKKKKKKkkO.....',
-    '...OkkKKKKKKKKKKkkO.....', '...OkkKKO....OKKkkO.....', '...OkkkO......Okkk.O....',
-    '...Okkk........kkkO.....', '....OOO........OOO......', '........................',
-  ],
-  guriboo: [
-    '........................', '.....KK.......KK........', '....KKKK.....KKKK.......',
-    '....KKkK.....KkKK.......', '...OKKKKKKKKKKKKKKO.....', '..OKKKKKKKKKKKKKKKKO....',
-    '..OKKKKKKKKKKKKKKKKO....', '..OKKWWKKKKKKKKWWKKO....', '..OKWEWKKKKKKKKWEWKO....',
-    '..OKKKKKKKKKKKKKKKKO....', '..OKKKKKPPPPPPKKKKKO....', '..OKKKKKPpppppPKKKKO....',
-    '..OKKKKKPpEppEpPKKKO....', '..OKKKKKPpppppPKKKKO....', '..OKKKKKKPPPPPPKKKKO....',
-    '...OKKKKKKKKKKKKKKO.....', '....OKKKKKKKKKKKKO......', '...OKKKKKKKKKKKKKKO.....',
-    '...OKKKKKKKKKKKKKKO.....', '...OKKKKKKKKKKKKKKO.....', '...OKKKKO....OKKKKO.....',
-    '...OKKKO......OKKKO.....', '....OOO........OOO......', '........................',
-  ],
 };
 
 export function mascotMarkerRows(key) {
   return MASCOT_ART[MASCOT_KEYS.includes(key) ? key : 'kumamon'];
+}
+
+// ── 맛집(名物) 마커 도트 — 규슈 각 현 명물 요리 노드(gourmet 필드 → t_gourmet). ──
+// 공식 캐릭터 대신 "찾아가는 가게"로 자연스럽게 — 붉은 노렌 포장마차 + 김 나는 그릇. 전 맛집 공용 1종.
+// (현실 정보 융합 원칙: desc 에 실제 명물 요리 정보를 담고, 마커는 이 공용 포장마차.)
+export const GOURMET_PAL = { O: 0x2a1e14, R: 0xc14b38, r: 0x8a2f24, C: 0xf6edcf, W: 0xb07a3e, w: 0x6f4420, Y: 0xf2a54a, N: 0xe8dcc0, S: 0xd8cbb0 };
+const GOURMET_ART = [
+  '........................', '...OOOOOOOOOOOOOOOOOO...', '...ORRRRRRRRRRRRRRRRO...',
+  '...ORrRRrRRrRRrRRrRRO...', '...ORRrRRrRRrRRrRRrRO...', '...OrrrrrrrrrrrrrrrrO...',
+  '...OYYO..........OYYO...', '...OYYO..........OYYO...', '...OWWWWWWWWWWWWWWWWO...',
+  '...OWWWWWWWWWWWWWWWWO...', '....OwwwwwwwwwwwwwwO....', '.....O..SSSSSSSS..O.....',
+  '......O.SNNNNNNS.O......', '.......OSNNNNNNSO.......', '.......OSNNNNNNSO.......',
+  '........OSNNNNSO........', '.........OSSSSO.........', '.........OWWWWO.........',
+  '........OWWWWWWO........', '........OwwwwwwO........', '.........OO..OO.........',
+  '.........O....O.........', '.........O....O.........', '........................',
+];
+
+export function gourmetMarkerRows() {
+  return GOURMET_ART;
 }
 
 // ── 원격 피어 스프라이트 렌더(광장·공항 공용 헬퍼) ──

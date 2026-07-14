@@ -35,7 +35,7 @@ import {
   riverStreamRects, RIVER_N, RIVER_E, RIVER_S, RIVER_W,
   BOAT_W, BOAT_H, BOAT_PAL, boatFrameRows,
   NPC_KEYS, NPC_W, NPC_H, NPC_PAL, npcMarkerRows,
-  MASCOT_KEYS, MASCOT_PAL, mascotMarkerRows,
+  MASCOT_KEYS, MASCOT_PAL, mascotMarkerRows, GOURMET_PAL, gourmetMarkerRows,
   applyPeersToScene, updateScenePeers, peerLabelStyle, emitPeerDistances,
 } from './sprites';
 // 🗾 여행 스탬프 — 노드 첫 방문 수집(fetch 래퍼, 실패 조용히). API: /api/world/stamps.
@@ -982,12 +982,14 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           }
         }
 
-        // 규슈 현 마스코트 전용 도트(worldNodes mascot 필드 → t_mascot_<key>). NPC 와 같은 24×24 문법.
+        // 규슈 마스코트(쿠마몬) 전용 도트 + 맛집 포장마차 공용 마커(worldNodes mascot/gourmet 필드).
         buildMascotMarkers() {
           for (const key of MASCOT_KEYS) {
             const pal = tonePalette(MASCOT_PAL[key], this.mode);
             this.makeTex(`t_mascot_${key}`, mascotMarkerRows(key), pal, NPC_W, NPC_H);
           }
+          // 맛집(명물 요리) 노드 공용 마커 — 붉은 노렌 포장마차(gourmet 필드 → t_gourmet).
+          this.makeTex('t_gourmet', gourmetMarkerRows(), tonePalette(GOURMET_PAL, this.mode), NPC_W, NPC_H);
         }
 
         // 해안(모래) — land 중 바다에 접한 타일. 잔디→모래를 "딱 잘린 띠" 대신 아래로 갈수록 짙어지는
@@ -1253,10 +1255,11 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           this.nodeViews = WORLD_NODES.filter((node) => !node.city).map((node) => {
             const [tx, ty] = node.tile;
             const wx = tx * TILE + TILE / 2, wy = ty * TILE + TILE / 2;
-            // NPC(npc)→t_npc_<key>, 마스코트(mascot)→t_mascot_<key>, 명산(peak)→t_peak_<peak>, 그 외 kind 마커.
+            // npc→t_npc, mascot→t_mascot, gourmet(맛집)→t_gourmet, 명산(peak)→t_peak, 그 외 kind 마커.
             const markerKey = node.npc ? `t_npc_${node.npc}`
               : node.mascot ? `t_mascot_${node.mascot}`
-                : node.peak ? `t_peak_${node.peak}` : `t_node_${node.kind}`;
+                : node.gourmet ? 't_gourmet'
+                  : node.peak ? `t_peak_${node.peak}` : `t_node_${node.kind}`;
             const marker = this.add.image(wx, (ty + 1) * TILE, markerKey)
               .setOrigin(0.5, 1).setScale(TSCALE).setDepth(wy);
             return { node, marker, wx, wy };
