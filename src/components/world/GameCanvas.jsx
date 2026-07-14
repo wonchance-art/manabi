@@ -58,6 +58,7 @@ import FUKUOKA from './cities/fukuoka';
 import TOKYO from './cities/tokyo';
 // 🚃 전철 fast-travel — 행선지 목록(현재 역 제외) 공용 순수 로직(도시·geo 공통).
 import { fastTravelDestinations } from './cities/terrain';
+import { toInteractiveNode } from './cultureDoors';
 import { StoryTextbox, AirportQuiz } from './StoryOverlay';
 import { buildStoryScript } from './storyScript';
 // 🗾 NPC 도트 대화(마스터플랜 A-1) — 하카타 라멘 전문점 주인·신사 미코상. 대화 콘텐츠·판정은
@@ -305,7 +306,7 @@ function Minimap({ sceneRef, activeScene, onClose }) {
 //   셸 마운트 시 GameCanvas가 controlsRef.current = { press, release, interact, cancel }를 채운다.
 //   press/release는 키보드와 동일 경로(씬 heldDirs)로 흘려보내 홀드 연속 이동까지 재사용한다.
 //   버스는 오염시키지 않는다(순수 씬 메서드 호출).
-export default function GameCanvas({ userId = null, nickname = '나', pet = { key: 'dog', emoji: '🐕', level: 1, mood: 'happy' }, controlsRef = null, initialSpawn = null }) {
+export default function GameCanvas({ userId = null, nickname = '나', pet = { key: 'dog', emoji: '🐕', level: 1, mood: 'happy' }, controlsRef = null, initialSpawn = null, onOpenChapter = null, onOpenReading = null }) {
   const hostRef = useRef(null);
   const gameRef = useRef(null);
   const sceneRef = useRef(null);   // 활성 씬 — React가 입력 잠금을 갱신
@@ -330,12 +331,14 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   // cityPrompt: 전국맵 도시 노드 A → "시내로 들어가기" 확인 { to, name } | null
   // activeScene: 활성 씬 식별자('plaza'|'airport'|'city:<id>') — 미니맵·오버레이 분기.
   const [cityPrompt, setCityPrompt] = useState(null);
+  const [chapterPrompt, setChapterPrompt] = useState(null); // 학습 도어 확인 { chapter|reading, node } | null
   const [activeScene, setActiveScene] = useState('plaza');
   const nearNodeRef = useRef(null);
   const descOpenRef = useRef(false);
   const ferryPromptRef = useRef(null);
   const minimapOpenRef = useRef(false);
   const cityPromptRef = useRef(null);
+  const chapterPromptRef = useRef(null);
 
   // ── 🚃 전철 fast-travel(도시맵 이동 수단, docs §6.2) ──
   //   nearStation: 근접한 역 { id, nameJa, yomi, line? } | null (A → 행선지 선택 오버레이)
@@ -390,6 +393,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   useEffect(() => { minimapOpenRef.current = minimapOpen; }, [minimapOpen]);
   useEffect(() => { albumOpenRef.current = albumOpen; }, [albumOpen]);
   useEffect(() => { cityPromptRef.current = cityPrompt; }, [cityPrompt]);
+  useEffect(() => { chapterPromptRef.current = chapterPrompt; }, [chapterPrompt]);
   useEffect(() => { nearStationRef.current = nearStation; }, [nearStation]);
   useEffect(() => { stationSelectRef.current = stationSelect; }, [stationSelect]);
   useEffect(() => { activeSceneRef.current = activeScene; }, [activeScene]);
@@ -446,7 +450,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         if (albumOpenRef.current) return;
         if (npcDialogRef.current) { npcActionRef.current?.(); return; } // NPC 대화 중 A → 다음 대사
         if (storyPhaseRef.current === 'dialogue') { advanceStoryRef.current?.(); return; }
-        if (reviewOpenRef.current || storyActiveRef.current || ferryPromptRef.current || cityPromptRef.current) return;
+        if (reviewOpenRef.current || storyActiveRef.current || ferryPromptRef.current || cityPromptRef.current || chapterPromptRef.current) return;
         if (stationSelectRef.current) return; // 행선지 오버레이는 버튼으로 선택(B로 닫기) — A는 무시
         if (descOpenRef.current) { setDescOpen(false); return; } // 설명 박스 열려 있으면 A로도 닫기
         const node = nearNodeRef.current;
@@ -457,6 +461,11 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
             ? activeSceneRef.current.slice(5) : null;
           if (cityId) { setStationSelect({ cityId, fromId: st.id, fromName: st.nameJa }); return; }
         }
+        // A-2 독해 도어는 관리자 파일럿에 콜백이 열린 경우에만 활성화한다.
+        // 일반 학습자에게는 같은 노드를 기존 설명 표지로 남겨 막힌 관리자 경로를 노출하지 않는다.
+        if (node?.reading && onOpenReading) { setChapterPrompt({ reading: node.reading, node }); return; }
+        // 문화 도어는 NPC 대화보다 우선한다. 확인 후 문법 챕터로 이동한다.
+        if (node?.chapter) { setChapterPrompt({ chapter: node.chapter, node }); return; }
         // NPC 노드는 대화 오버레이를 연다(스탬프는 대화 완주 시 — 여기서 수집하지 않는다).
         if (node?.npc) { setNpcDialog({ key: node.npc, node }); return; }
         // 노드 첫 상호작용이면 스탬프 수집 — 단 noStamp(도시 파사드 등 실존 노드 아님)는 제외.
@@ -482,12 +491,13 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         if (stationSelectRef.current) { setStationSelect(null); return; } // 🚃 행선지 오버레이 나가기(소프트락 방지)
         if (ferryPromptRef.current) { setFerryPrompt(null); return; }
         if (cityPromptRef.current) { setCityPrompt(null); return; }
+        if (chapterPromptRef.current) { setChapterPrompt(null); return; }
         if (minimapOpenRef.current) { setMinimapOpen(false); return; }
         if (reviewOpenRef.current) setReviewOpen(false);
       },
     };
     return () => { if (controlsRef) controlsRef.current = null; };
-  }, [controlsRef]);
+  }, [controlsRef, onOpenChapter, onOpenReading]);
 
   // ── 스토리 조작(대사 진행·뜻 토글) — 셸 A/B 콜백이 참조하도록 ref에 최신본을 심는다 ──
   const advanceStory = () => {
@@ -540,10 +550,10 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   useEffect(() => {
     const scene = sceneRef.current;
     if (!scene) return;
-    const lock = reviewOpen || !!ferryPrompt || !!npcDialog || !!cityPrompt || !!stationSelect || albumOpen;
+    const lock = reviewOpen || !!ferryPrompt || !!npcDialog || !!cityPrompt || !!chapterPrompt || !!stationSelect || albumOpen;
     scene.inputLocked = lock;
     if (lock) { if (scene.heldDirs) scene.heldDirs.length = 0; scene.tapTile = null; scene.runHeld = false; }
-  }, [reviewOpen, ferryPrompt, npcDialog, cityPrompt, stationSelect, albumOpen]);
+  }, [reviewOpen, ferryPrompt, npcDialog, cityPrompt, chapterPrompt, stationSelect, albumOpen]);
 
   useEffect(() => {
     let destroyed = false;
@@ -1191,7 +1201,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           this.wasNearNodeId = null;
 
           // 공항 스토리에서 광장으로 복귀 시 create가 다시 도므로 스토리·노드 오버레이 상태를 초기화.
-          setStoryActive(false); setStoryPhase('none'); setNearNode(null); setFerryPrompt(null);
+          setStoryActive(false); setStoryPhase('none'); setNearNode(null); setFerryPrompt(null); setChapterPrompt(null);
 
           this.waterFrame = 0;
           this.decorFrame = 0;
@@ -1745,7 +1755,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           const nid = nearest ? nearest.id : null;
           if (nid !== this.wasNearNodeId) {
             this.wasNearNodeId = nid;
-            setNearNode(nearest ? { id: nearest.id, name: nearest.name, desc: nearest.desc, gate: nearest.gate, npc: nearest.npc } : null);
+            setNearNode(toInteractiveNode(nearest));
           }
         }
       }
@@ -1773,7 +1783,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           bindScene: (s) => { sceneRef.current = s; },
           onEnter: () => {
             setActiveScene(`city:${cityData.id}`);
-            setNearNode(null); setNearQuest(false); setCityPrompt(null); setDescOpen(false); setMinimapOpen(false);
+            setNearNode(null); setNearQuest(false); setCityPrompt(null); setChapterPrompt(null); setDescOpen(false); setMinimapOpen(false);
             setNearStation(null); setStationSelect(null); setStationToast(null); // 🚃 역 상태 초기화
           },
           setNear: (node) => setNearNode(node),
@@ -1860,7 +1870,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       </div>
 
       {/* 표지판 근접 → '말 걸기' 프롬프트. Phaser 내 DOM 금지 → React 오버레이. (오너 지시: 게임 내에서 진행) */}
-      {nearQuest && !reviewOpen && !storyActive && (
+      {nearQuest && !reviewOpen && !storyActive && !chapterPrompt && (
         <div style={{
           position: 'absolute', left: '50%', bottom: 18, transform: 'translateX(-50%)',
           ...gbcPanel, width: 'min(90%, 360px)', padding: '12px 14px',
@@ -1881,7 +1891,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       )}
 
       {/* 우상단 미니맵 버튼(GBC 칩) — 셸 START/SELECT와 충돌 없게 게임 화면 안에 별도 배치. */}
-      {!reviewOpen && !storyActive && !ferryPrompt && !cityPrompt && !albumOpen && (
+      {!reviewOpen && !storyActive && !ferryPrompt && !cityPrompt && !chapterPrompt && !albumOpen && (
         <button
           type="button"
           aria-label={minimapOpen ? '지도 닫기' : '지도 열기'}
@@ -1899,7 +1909,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       )}
 
       {/* 🗾 여행 스탬프 앨범 버튼(GBC 칩) — 미니맵 칩 왼쪽. 모든 모달 상태와 상호 배타(겹침 방지·Codex #91 P1). */}
-      {!reviewOpen && !storyActive && !ferryPrompt && !cityPrompt && !minimapOpen && !albumOpen
+      {!reviewOpen && !storyActive && !ferryPrompt && !cityPrompt && !chapterPrompt && !minimapOpen && !albumOpen
         && !descOpen && !npcDialog && !stationSelect && (
         <button
           type="button"
@@ -1923,7 +1933,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       )}
 
       {/* 장소 게이트 근접 → 상호작용 프롬프트(story-scene: 공항 진입 · ferry: 페리 · city: 도시 진입). 설명 병기. */}
-      {nearNode?.gate && !storyActive && !reviewOpen && !ferryPrompt && !cityPrompt && (
+      {nearNode?.gate && !storyActive && !reviewOpen && !ferryPrompt && !cityPrompt && !chapterPrompt && (
         <div style={{
           position: 'absolute', left: '50%', bottom: 18, transform: 'translateX(-50%)',
           ...gbcPanel, width: 'min(90%, 360px)', padding: '12px 14px',
@@ -1996,8 +2006,47 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         </div>
       )}
 
+      {/* 학습 도어 확인 — 문화 챕터/장소 독해 A → 확인 후 안전 경로로 이동. B(cancel)로 닫힘. */}
+      {chapterPrompt && (
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 6, display: 'grid', placeItems: 'center',
+          background: 'rgba(11,13,8,0.55)',
+        }}>
+          <div style={{ ...gbcPanel, width: 'min(86%, 320px)', padding: '16px 16px 14px', textAlign: 'center' }}>
+            <div style={{ fontSize: '1.6rem', lineHeight: 1, marginBottom: 8 }}>🚪</div>
+            <p style={{ fontSize: '0.85rem', lineHeight: 1.6, margin: '0 0 14px' }}>
+              {chapterPrompt.reading
+                ? `${chapterPrompt.node.name}에서 이어지는 이야기를 읽을까요?`
+                : `${chapterPrompt.node.name} 문화 챕터를 시작할까요?`}
+            </p>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  const { chapter, reading, node } = chapterPrompt;
+                  setChapterPrompt(null);
+                  if (!node.noStamp) collectStampRef.current?.(node);
+                  if (reading) onOpenReading?.(reading);
+                  else onOpenChapter?.(chapter);
+                }}
+                style={{ ...gbcButtonPrimary, whiteSpace: 'nowrap' }}
+              >
+                {chapterPrompt.reading ? '읽기' : '시작'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setChapterPrompt(null)}
+                style={{ ...gbcButtonPrimary, whiteSpace: 'nowrap', background: GBC.cream, color: GBC.ink }}
+              >
+                취소
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 🚃 역 근접 → "Ⓐ 전철 타기" 프롬프트. A로 행선지 선택 오버레이를 연다. */}
-      {nearStation && !stationSelect && !nearNode && !npcDialog && !storyActive && !reviewOpen && !ferryPrompt && !cityPrompt && !minimapOpen && (
+      {nearStation && !stationSelect && !nearNode && !npcDialog && !storyActive && !reviewOpen && !ferryPrompt && !cityPrompt && !chapterPrompt && !minimapOpen && (
         <div style={{
           position: 'absolute', left: '50%', bottom: 18, transform: 'translateX(-50%)',
           fontFamily: GBC.font, fontSize: '0.7rem', color: GBC.ink,
@@ -2072,8 +2121,34 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         </div>
       )}
 
-      {/* NPC 노드 근접 → "Ⓐ 말 걸기" 프롬프트. A로 NPC 대화 오버레이(NpcDialog)를 연다. */}
-      {nearNode?.npc && !npcDialog && !storyActive && !reviewOpen && !ferryPrompt && !minimapOpen && (
+      {/* A-2 장소 독해 도어 — 관리자 파일럿 콜백이 있을 때만 노출한다. */}
+      {nearNode?.reading && onOpenReading && !chapterPrompt && !npcDialog && !storyActive && !reviewOpen && !ferryPrompt && !cityPrompt && !minimapOpen && (
+        <div style={{
+          position: 'absolute', left: '50%', bottom: 18, transform: 'translateX(-50%)',
+          fontFamily: GBC.font, fontSize: '0.7rem', color: GBC.ink,
+          background: GBC.cream, border: `2px solid ${GBC.border}`,
+          boxShadow: `inset 0 0 0 1px ${GBC.creamHi}`, borderRadius: 2,
+          padding: '4px 10px', lineHeight: 1.2, whiteSpace: 'nowrap',
+        }}>
+          📖 Ⓐ 이 장소의 이야기 읽기
+        </div>
+      )}
+
+      {/* 문화 도어 근접 → 챕터 확인 프롬프트. NPC 필드가 함께 있어도 문화 도어가 우선한다. */}
+      {nearNode?.chapter && !chapterPrompt && !npcDialog && !storyActive && !reviewOpen && !ferryPrompt && !cityPrompt && !minimapOpen && (
+        <div style={{
+          position: 'absolute', left: '50%', bottom: 18, transform: 'translateX(-50%)',
+          fontFamily: GBC.font, fontSize: '0.7rem', color: GBC.ink,
+          background: GBC.cream, border: `2px solid ${GBC.border}`,
+          boxShadow: `inset 0 0 0 1px ${GBC.creamHi}`, borderRadius: 2,
+          padding: '4px 10px', lineHeight: 1.2, whiteSpace: 'nowrap',
+        }}>
+          🚪 Ⓐ {nearNode.name} 문화 챕터
+        </div>
+      )}
+
+      {/* NPC 노드 근접 → "Ⓐ 말 걸기" 프롬프트. chapter 없는 NPC만 대화 오버레이를 연다. */}
+      {nearNode?.npc && !nearNode.chapter && !(nearNode.reading && onOpenReading) && !npcDialog && !storyActive && !reviewOpen && !ferryPrompt && !chapterPrompt && !minimapOpen && (
         <div style={{
           position: 'absolute', left: '50%', bottom: 18, transform: 'translateX(-50%)',
           fontFamily: GBC.font, fontSize: '0.7rem', color: GBC.ink,
@@ -2086,7 +2161,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       )}
 
       {/* 게이트 없는 노드/명산 근접 → "Ⓐ 살펴보기" 프롬프트(라벨 대신). A로 설명 박스를 연다. */}
-      {nearNode && !nearNode.gate && !nearNode.npc && !descOpen && !storyActive && !reviewOpen && !ferryPrompt && !minimapOpen && (
+      {nearNode && !nearNode.gate && !nearNode.npc && !nearNode.chapter && !(nearNode.reading && onOpenReading) && !descOpen && !storyActive && !reviewOpen && !ferryPrompt && !chapterPrompt && !minimapOpen && (
         <div style={{
           position: 'absolute', left: '50%', bottom: 18, transform: 'translateX(-50%)',
           fontFamily: GBC.font, fontSize: '0.7rem', color: GBC.ink,
@@ -2099,7 +2174,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       )}
 
       {/* GBC 설명 박스 — A로 열고 B(또는 A)로 닫는다. 노드/명산 이름 + desc 1~2문장. */}
-      {descOpen && nearNode && !nearNode.gate && (
+      {descOpen && nearNode && !nearNode.gate && !nearNode.chapter && !(nearNode.reading && onOpenReading) && (
         <div style={{
           position: 'absolute', left: '50%', bottom: 18, transform: 'translateX(-50%)',
           ...gbcPanel, width: 'min(92%, 380px)', padding: '12px 14px',
@@ -2192,7 +2267,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         />
       )}
 
-      {/* NPC 도트 대화(라멘·신사·편의점·이자카야) — 캔버스 위 HTML, 열리면 게임 입력 잠금(useEffect).
+      {/* NPC 도트 대화(chapter 없는 NPC) — 캔버스 위 HTML, 열리면 게임 입력 잠금(useEffect).
           완주(onComplete) 시 노드 스탬프 1회 수집(collectStampRef Set 가드 — 재대화해도 중복 없음).
           단 noStamp 노드(WORLD_NODES 밖 도시 NPC — 편의점·이자카야)는 수집하지 않는다: 서버는
           실존 노드(getNode)만 upsert 하므로 미등록 id 는 400 이 되고, 낙관 갱신이 유령 스탬프를

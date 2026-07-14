@@ -58,7 +58,7 @@ export const ZONES = [
 ];
 
 // ── 가게/NPC·스팟 노드 (도시 로컬 좌표 = geo POI 스냅 좌표) ──
-//   · npc(fukuoka-ramen): 라멘집 NPC(nodeId 유지 — 스탬프 연속성). NpcDialog(npcScripts 무수정).
+//   · npc(fukuoka-ramen): 라멘집 마커·nodeId 유지(스탬프 연속성). chapter 상호작용이 NPC 대화보다 우선.
 //   · shop/spot(noStamp): 파사드+간판. A 로 짧은 desc(한국어 설명 + 일본어 명칭/요미). 스탬프 없음.
 //   · tile 은 geo POI 좌표를 메인 보행 성분 최근접 보행칸으로 스냅한 값(물/건물 위 POI 대응).
 //   · desc 는 리서치 검증 표기만 — 단정 금지(우동 발상·노포 우열·야타이 상호 등) 회피.
@@ -88,20 +88,20 @@ export const CITY_NODES = [
   // ローソン(편의점 NPC) — 텐진 도심. ot-07 편의점 도어의 무대: 만능 대답 お願いします/大丈夫です.
   //   nodeId 는 WORLD_NODES 에 없어 스탬프 미대상(noStamp) — 대화 학습 경험만(스탬프 우주는 25 국내 노드 유지).
   {
-    id: 'fukuoka-konbini', kind: 'npc', npc: 'konbini', name: 'ローソン',
+    id: 'fukuoka-konbini', kind: 'npc', npc: 'konbini', chapter: 'ot-07-konbini', name: 'ローソン',
     tile: [248, 140], facing: 'down', noStamp: true,
     desc: '24시간 불이 켜진 편의점(コンビニ) 「ローソン」(로손). 계산대에서 뭘 묻든 대답은 딱 두 개 — お願いします(네)·大丈夫です(됐어요). 명물 からあげクン도 있어요.',
   },
   // ③ 中洲 — 야타이 거리 + 돈키호테 中洲店(免税 도어 무대) + 一蘭 본사.
   {
-    id: 'nakasu', kind: 'shop', name: 'ドン・キホーテ中洲店', facade: 'donki',
+    id: 'nakasu', kind: 'shop', name: 'ドン・キホーテ中洲店', facade: 'donki', chapter: 'ot-12-menzei',
     tile: poiTile('nakasu'), facing: 'down', noStamp: true,
-    desc: '두 강 사이 세로 섬 中洲(なかす)의 밤거리 — 야타이(屋台) 노점과 24시간 대형 할인점 「ドン・キホーテ中洲店」(どんきほーて なかすてん). 免税(めんぜい·면세) 카운터에서 여권을 보이면 세금을 돌려받아요. 근처엔 一蘭 본사도. (ot-12 면세 도어의 무대 — 아직 점원은 없어요.)',
+    desc: '두 강 사이 세로 섬 中洲(なかす)의 밤거리 — 야타이(屋台) 노점과 24시간 대형 할인점 「ドン・キホーテ中洲店」(どんきほーて なかすてん). 免税(めんぜい·면세) 카운터에서 여권을 보이면 세금을 돌려받아요. 근처엔 一蘭 본사도. (ot-12 면세 문화 챕터로 이어져요.)',
   },
   // 居酒屋(이자카야 NPC) — 나카스 밤거리. ot-08 이자카야 도어의 무대: お通し의 정체 + 첫 주문 とりあえず生で.
   //   nodeId 는 WORLD_NODES 에 없어 스탬프 미대상(noStamp) — 대화 학습 경험만.
   {
-    id: 'fukuoka-izakaya', kind: 'npc', npc: 'izakaya', name: '居酒屋',
+    id: 'fukuoka-izakaya', kind: 'npc', npc: 'izakaya', chapter: 'ot-08-izakaya', name: '居酒屋',
     tile: [272, 132], facing: 'down', noStamp: true,
     desc: '나카스 밤거리의 이자카야(居酒屋). 안 시켜도 나오는 유료 기본 안주 お通し(오토시)와, 앉자마자 외치는 첫 주문 「とりあえず生で」를 써 볼 곳이에요.',
   },
@@ -118,7 +118,7 @@ export const CITY_NODES = [
   },
   // ⑥ 大名/ラーメン 골목 — 라멘집 NPC(이전 유지) + 一風堂 大名本店.
   {
-    id: 'fukuoka-ramen', kind: 'npc', npc: 'ramen', name: '博多ラーメン',
+    id: 'fukuoka-ramen', kind: 'npc', npc: 'ramen', chapter: 'ot-10-ramen', name: '博多ラーメン',
     tile: [205, 158], facing: 'down',
     desc: '뽀얀 김이 오르는 돈코츠 라멘집(博多ラーメン·はかたラーメン). 입구 券売機(켄바이키)에서 식권부터 — 「替え玉お願いします」를 써 볼 곳.',
   },

@@ -34,6 +34,7 @@ import bus from './bus';
 import { CITY_TILE as TERRAIN, isCityBlocked, isCityWater, resolveArrivalTile, resolveRespawnTile } from './cities/terrain';
 // 🧱 청크 RenderTexture 렌더의 순수 로직(가시성·용량·LRU) — docs §6.3. 대형 맵 메모리 상한.
 import { CHUNK_TILES, chunkDims, chunkTileBounds, visibleChunks, chunkCapacity, ChunkLRU, planChunkUpdate } from './cityChunks';
+import { toInteractiveNode } from './cultureDoors';
 
 // ── 좌표 스케일 (광장·공항과 동일 불변) ──
 const TILE = 32;
@@ -85,7 +86,7 @@ function tileHash(tx, ty) {
  *   bindScene(scene|null),           씬 → sceneRef.current 갱신(입력 잠금·버스 위임 대상)
  *   onEnter(),                       씬 진입 통지(React 오버레이 초기화 · activeScene 갱신)
  *   onReady?(),                      create 말미 통지 — 피어 스냅샷 재적용 + 전체 키 거리 1회 emit(P1-2)
- *   setNear(node|null),              근접 노드 → React(nearNode) — { id, name, desc, npc?, noStamp? }
+ *   setNear(node|null),              근접 노드 → React(nearNode) — { id, name, desc, npc?, noStamp?, chapter? }
  *   setNearStation?(station|null),   🚃 근접 역 → React(nearStation) — { id, nameJa, yomi, line? }
  *   arrivedStation?({ nameJa, yomi }),  🚃 fast-travel 도착 확인 토스트("🚃 博多駅")
  *   worldReturn: { scene:'plaza', x, y },   전국맵 복귀 스폰(도시 노드 앞)
@@ -925,7 +926,7 @@ export function buildCityScene(Phaser, city, ctx) {
       const nid = nearest ? nearest.id : null;
       if (nid !== this.wasNearNodeId) {
         this.wasNearNodeId = nid;
-        ctx.setNear?.(nearest ? { id: nearest.id, name: nearest.name, desc: nearest.desc, npc: nearest.npc, noStamp: nearest.noStamp } : null);
+        ctx.setNear?.(toInteractiveNode(nearest));
       }
 
       // 🚃 역 근접 → React(nearStation). A 로 행선지 선택 오버레이. (노드와 별개 목록·별개 상태.)
