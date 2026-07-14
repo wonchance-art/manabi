@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { WORLD_NODES, getNode, downsampleMinimap, buildMinimap } from '../worldNodes.js';
-import { decodeMap, MAP_W, MAP_H, TERRAIN, isBlocked } from '../mapData.js';
+import { decodeMap, MAP_W, MAP_H, TERRAIN, isBlocked, project } from '../mapData.js';
 import { buildPlayableGrid } from '../../../lib/world/mapGeo.js';
 
 // 🧭 장소 노드 시스템 무결성 + 미니맵 다운샘플(순수 함수) 검증.
@@ -198,6 +198,63 @@ describe('계층형 맵 — 후쿠오카 도시 노드 + 라멘 NPC 이전', () 
   it("city 게이트의 to 는 실존 도시 데이터('fukuoka')를 가리킨다", () => {
     // getNode('fukuoka') 자체가 도시 노드(returnNode 대상) — 게이트 to 는 cities/<id> 키.
     expect(getNode('fukuoka').gate.to).toBe('fukuoka');
+  });
+});
+
+describe('혼슈 현실정보 노드 + 독해 A-2 역방향 문', () => {
+  const coords = {
+    'hiroshima-peace': [132.4536, 34.3955],
+    'okayama-korakuen': [133.935, 34.667],
+    'himeji-castle': [134.6939, 34.8394],
+    kenrokuen: [136.6625, 36.562],
+    'nikko-toshogu': [139.5988, 36.7578],
+    'hirosaki-castle': [140.467, 40.607],
+    'gourmet-osaka': [135.5019, 34.6687],
+    'gourmet-nagoya': [136.9066, 35.1815],
+    'gourmet-nagano': [138.181, 36.648],
+    'gourmet-sendai': [140.8719, 38.2682],
+    'gourmet-akita': [140.102, 39.72],
+  };
+  const ids = Object.keys(coords);
+
+  it('11개 대표점 tile은 실좌표 투영값과 같고 전부 보행 가능하다', () => {
+    for (const [id, [lon, lat]] of Object.entries(coords)) {
+      const node = getNode(id);
+      const { x, y } = project(lon, lat);
+      expect(node.tile).toEqual([x, y]);
+      expect(isBlocked(grid[y * MAP_W + x])).toBe(false);
+    }
+  });
+
+  it('신규 마커는 다른 전국맵 마커와 Chebyshev 3타일 이상 떨어진다', () => {
+    const national = WORLD_NODES.filter((node) => !node.city);
+    for (const id of ids) {
+      const node = getNode(id);
+      let nearest = Infinity;
+      for (const other of national) {
+        if (other.id === id) continue;
+        nearest = Math.min(nearest, Math.max(
+          Math.abs(node.tile[0] - other.tile[0]),
+          Math.abs(node.tile[1] - other.tile[1]),
+        ));
+      }
+      expect(nearest, `${id} 마커 최소 간격`).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it('향토요리 5종은 gourmet이며 이름·요미가 있는 사실 설명을 갖는다', () => {
+    for (const id of ids.filter((value) => value.startsWith('gourmet-'))) {
+      const node = getNode(id);
+      expect(node.gourmet).toBe(true);
+      expect(node.desc).toMatch(/[ぁ-んァ-ヶ]/);
+      expect(node.desc).toMatch(/\([ぁ-んァ-ヶ·]+\)|「[ぁ-んー]+」/);
+    }
+  });
+
+  it('하네다 장소 문이 독해 트랙의 정확한 공항 글을 가리킨다', () => {
+    expect(getNode('haneda').reading).toBe('n5-tokyo-01');
+    expect(getNode('haneda').gate).toBeUndefined();
+    expect(getNode('tokyo').reading).toBeUndefined();
   });
 });
 

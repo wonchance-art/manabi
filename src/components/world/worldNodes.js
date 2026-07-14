@@ -82,6 +82,26 @@ const GOURMET = [
   { id: 'gourmet-kagoshima', name: '흑돼지·시로쿠마(鹿児島)', tile: [136, 358], desc: '가고시마산 「黒豚」(구로부타·흑돼지) 돈카츠·샤부샤부가 대표적. 곱게 간 얼음에 연유·과일·팥을 얹은 빙과 「白熊」(시로쿠마)는 天文館むじゃき(1947)가 고안한 것으로 전해져요.' },
 ].map((m) => ({ id: m.id, name: m.name, kind: 'landmark', gourmet: true, tile: m.tile, desc: m.desc }));
 
+// 혼슈 주요도시 현실정보 노드 — 공식 관광 자료로 확인한 장소·향토요리만 사용한다.
+// tile 은 실좌표 project(lon,lat) 산출값이며 전부 보행 가능 칸이라 별도 스냅 오프셋이 없다.
+// 상호·로고·마스코트는 넣지 않고, 전국맵 축척에서 서로 3타일 이상 떨어지는 대표점만 고른다.
+const HONSHU_SPOTS = [
+  { id: 'hiroshima-peace', name: '히로시마 평화기념공원', tile: [175, 287], desc: '원폭 돔 「原爆ドーム」(げんばくドーム)과 자료관을 품고, 핵무기 없는 평화를 전하는 공원 「平和記念公園」(へいわきねんこうえん).' },
+  { id: 'okayama-korakuen', name: '오카야마 고라쿠엔', tile: [203, 280], desc: '약 300년 전 오카야마 번주가 만든 회유식 정원 「岡山後楽園」(おかやまこうらくえん). 연못·물길·산책길 너머로 오카야마성이 보여요.' },
+  { id: 'himeji-castle', name: '히메지성', tile: [218, 276], desc: '흰 회벽과 보존된 성곽으로 알려진 세계문화유산 「姫路城」(ひめじじょう). 흰 새를 닮아 ‘시라사기성’이라고도 불려요.' },
+  { id: 'kenrokuen', name: '가나자와 겐로쿠엔', tile: [257, 233], desc: '넓음·고요함을 비롯한 여섯 경관을 한데 갖췄다는 이름의 정원 「兼六園」(けんろくえん). 연못과 겨울 유키쓰리(雪吊り·ゆきづり)로 알려져요.' },
+  { id: 'nikko-toshogu', name: '닛코 도쇼구', tile: [314, 228], desc: '도쿠가와 이에야스를 모시며 화려한 조각 건축으로 알려진 신사 「日光東照宮」(にっこうとうしょうぐう). 닛코의 신사와 사찰 세계유산에 들어요.' },
+  { id: 'hirosaki-castle', name: '히로사키성', tile: [331, 133], desc: '해자·성문·망루와 에도 시대 천수각이 남은 북쪽 성 「弘前城」(ひろさきじょう). 봄 벚꽃과 겨울 눈 풍경으로 알려져요.' },
+].map((s) => ({ ...s, kind: 'landmark' }));
+
+const HONSHU_GOURMET = [
+  { id: 'gourmet-osaka', name: '다코야키(大阪)', tile: [234, 280], desc: '다시 국물 반죽에 문어를 넣어 둥글게 굽는 오사카 명물 「たこ焼き」(たこやき). 겉은 노릇하고 속은 부드러운 길거리 음식이에요.' },
+  { id: 'gourmet-nagoya', name: '미소카쓰(名古屋)', tile: [261, 267], desc: '튀긴 돼지고기 커틀릿에 진한 된장 소스를 곁들이는 나고야 음식 「味噌カツ」(みそカツ). ‘나고야메시’로 불리는 지역 요리의 하나예요.' },
+  { id: 'gourmet-nagano', name: '신슈 소바(長野)', tile: [286, 231], desc: '메밀이 잘 자라는 나가노의 대표 면 「信州そば」(しんしゅうそば). 차갑거나 따뜻하게 먹고 계절 재료를 곁들이기도 해요.' },
+  { id: 'gourmet-sendai', name: '규탄(仙台)', tile: [339, 191], desc: '얇게 썬 소 혀를 구워 먹는 센다이 대표 음식 「牛タン」(ぎゅうタン). 센다이역 주변에도 전문 식당이 모여 있어요.' },
+  { id: 'gourmet-akita', name: '기리탄포(秋田)', tile: [324, 155], desc: '갓 지은 쌀을 찧어 꼬치에 감고 구운 아키타 향토음식 「きりたんぽ」. 된장을 바르거나 닭고기·채소 전골에 넣어 먹어요.' },
+].map((m) => ({ ...m, kind: 'landmark', gourmet: true }));
+
 export const WORLD_NODES = [
   // 서울 — 스폰 도시.
   { id: 'seoul', name: '서울', kind: 'city', tile: [POI.SEOUL.x, POI.SEOUL.y], desc: '대한민국의 수도. 한강이 도시를 가로지르고, 예부터 지금까지 나라의 중심지예요.' },
@@ -140,7 +160,7 @@ export const WORLD_NODES = [
   // 도쿄 — 도시.
   { id: 'tokyo', name: '도쿄', kind: 'city', tile: [POI.TOKYO.x, POI.TOKYO.y], desc: '일본의 수도. 세계에서 가장 사람이 많이 사는 대도시권이에요.' },
   // 하네다 — 랜드마크(표지 마커만).
-  { id: 'haneda', name: '하네다', kind: 'landmark', tile: [POI.HANEDA.x, POI.HANEDA.y], desc: '도쿄의 바닷가 국제공항. 일본에서 가장 붐비는 하늘길이에요.' },
+  { id: 'haneda', name: '하네다', kind: 'landmark', tile: [POI.HANEDA.x, POI.HANEDA.y], reading: 'n5-tokyo-01', desc: '도쿄의 바닷가 국제공항. 일본에서 가장 붐비는 하늘길이에요.' },
   // 백두산 — 설산 랜드마크(게이트 없음, 마커만). DMZ 북측이라 철조망 너머로 보이기만 하고
   //   실제로는 도달 불가 — 의도된 연출(넘어갈 수 없는, 멀리 보이는 설산). PEAK 타일 위. peak='baekdu'.
   { id: 'baekdu', name: '백두산', kind: 'landmark', tile: [POI.BAEKDU.x, POI.BAEKDU.y], peak: 'baekdu', desc: '한반도에서 가장 높은 산. 정상에 천지라는 큰 화산 호수가 있어요.' },
@@ -152,6 +172,9 @@ export const WORLD_NODES = [
   ...KYUSHU_SPOTS,
   // 규슈 7현 명물 맛집 노드(현실 정보 융합 — 공식 마스코트 미사용).
   ...GOURMET,
+  // 혼슈 6개 대표 명소 + 5개 향토요리(현실정보 융합, 공식 캐릭터·브랜드 미사용).
+  ...HONSHU_SPOTS,
+  ...HONSHU_GOURMET,
   // 동해항 — 사카이미나토행 페리(실존 DBS 항로 모티프).
   {
     id: 'donghae-port', name: '동해항', kind: 'port', tile: [POI.DONGHAE_PORT.x, POI.DONGHAE_PORT.y],

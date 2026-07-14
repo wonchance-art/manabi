@@ -305,7 +305,7 @@ function Minimap({ sceneRef, activeScene, onClose }) {
 //   셸 마운트 시 GameCanvas가 controlsRef.current = { press, release, interact, cancel }를 채운다.
 //   press/release는 키보드와 동일 경로(씬 heldDirs)로 흘려보내 홀드 연속 이동까지 재사용한다.
 //   버스는 오염시키지 않는다(순수 씬 메서드 호출).
-export default function GameCanvas({ userId = null, nickname = '나', pet = { key: 'dog', emoji: '🐕', level: 1, mood: 'happy' }, controlsRef = null, initialSpawn = null, onOpenChapter = null }) {
+export default function GameCanvas({ userId = null, nickname = '나', pet = { key: 'dog', emoji: '🐕', level: 1, mood: 'happy' }, controlsRef = null, initialSpawn = null, onOpenChapter = null, onOpenReading = null }) {
   const hostRef = useRef(null);
   const gameRef = useRef(null);
   const sceneRef = useRef(null);   // 활성 씬 — React가 입력 잠금을 갱신
@@ -330,7 +330,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   // cityPrompt: 전국맵 도시 노드 A → "시내로 들어가기" 확인 { to, name } | null
   // activeScene: 활성 씬 식별자('plaza'|'airport'|'city:<id>') — 미니맵·오버레이 분기.
   const [cityPrompt, setCityPrompt] = useState(null);
-  const [chapterPrompt, setChapterPrompt] = useState(null); // 문화 도어 확인 { chapter, node } | null
+  const [chapterPrompt, setChapterPrompt] = useState(null); // 학습 도어 확인 { chapter|reading, node } | null
   const [activeScene, setActiveScene] = useState('plaza');
   const nearNodeRef = useRef(null);
   const descOpenRef = useRef(false);
@@ -460,6 +460,9 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
             ? activeSceneRef.current.slice(5) : null;
           if (cityId) { setStationSelect({ cityId, fromId: st.id, fromName: st.nameJa }); return; }
         }
+        // A-2 독해 도어는 관리자 파일럿에 콜백이 열린 경우에만 활성화한다.
+        // 일반 학습자에게는 같은 노드를 기존 설명 표지로 남겨 막힌 관리자 경로를 노출하지 않는다.
+        if (node?.reading && onOpenReading) { setChapterPrompt({ reading: node.reading, node }); return; }
         // 문화 도어는 NPC 대화보다 우선한다. 확인 후 문법 챕터로 이동한다.
         if (node?.chapter) { setChapterPrompt({ chapter: node.chapter, node }); return; }
         // NPC 노드는 대화 오버레이를 연다(스탬프는 대화 완주 시 — 여기서 수집하지 않는다).
@@ -493,7 +496,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       },
     };
     return () => { if (controlsRef) controlsRef.current = null; };
-  }, [controlsRef]);
+  }, [controlsRef, onOpenChapter, onOpenReading]);
 
   // ── 스토리 조작(대사 진행·뜻 토글) — 셸 A/B 콜백이 참조하도록 ref에 최신본을 심는다 ──
   const advanceStory = () => {
@@ -2002,7 +2005,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         </div>
       )}
 
-      {/* 문화 도어 확인 — 파사드/NPC A → 확인 후 해당 문법 챕터로 이동. B(cancel)로 닫힘. */}
+      {/* 학습 도어 확인 — 문화 챕터/장소 독해 A → 확인 후 안전 경로로 이동. B(cancel)로 닫힘. */}
       {chapterPrompt && (
         <div style={{
           position: 'absolute', inset: 0, zIndex: 6, display: 'grid', placeItems: 'center',
@@ -2011,20 +2014,23 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           <div style={{ ...gbcPanel, width: 'min(86%, 320px)', padding: '16px 16px 14px', textAlign: 'center' }}>
             <div style={{ fontSize: '1.6rem', lineHeight: 1, marginBottom: 8 }}>🚪</div>
             <p style={{ fontSize: '0.85rem', lineHeight: 1.6, margin: '0 0 14px' }}>
-              {chapterPrompt.node.name} 문화 챕터를 시작할까요?
+              {chapterPrompt.reading
+                ? `${chapterPrompt.node.name}에서 이어지는 이야기를 읽을까요?`
+                : `${chapterPrompt.node.name} 문화 챕터를 시작할까요?`}
             </p>
             <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
               <button
                 type="button"
                 onClick={() => {
-                  const { chapter, node } = chapterPrompt;
+                  const { chapter, reading, node } = chapterPrompt;
                   setChapterPrompt(null);
                   if (!node.noStamp) collectStampRef.current?.(node);
-                  onOpenChapter?.(chapter);
+                  if (reading) onOpenReading?.(reading);
+                  else onOpenChapter?.(chapter);
                 }}
                 style={{ ...gbcButtonPrimary, whiteSpace: 'nowrap' }}
               >
-                시작
+                {chapterPrompt.reading ? '읽기' : '시작'}
               </button>
               <button
                 type="button"
@@ -2114,6 +2120,19 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         </div>
       )}
 
+      {/* A-2 장소 독해 도어 — 관리자 파일럿 콜백이 있을 때만 노출한다. */}
+      {nearNode?.reading && onOpenReading && !chapterPrompt && !npcDialog && !storyActive && !reviewOpen && !ferryPrompt && !cityPrompt && !minimapOpen && (
+        <div style={{
+          position: 'absolute', left: '50%', bottom: 18, transform: 'translateX(-50%)',
+          fontFamily: GBC.font, fontSize: '0.7rem', color: GBC.ink,
+          background: GBC.cream, border: `2px solid ${GBC.border}`,
+          boxShadow: `inset 0 0 0 1px ${GBC.creamHi}`, borderRadius: 2,
+          padding: '4px 10px', lineHeight: 1.2, whiteSpace: 'nowrap',
+        }}>
+          📖 Ⓐ 이 장소의 이야기 읽기
+        </div>
+      )}
+
       {/* 문화 도어 근접 → 챕터 확인 프롬프트. NPC 필드가 함께 있어도 문화 도어가 우선한다. */}
       {nearNode?.chapter && !chapterPrompt && !npcDialog && !storyActive && !reviewOpen && !ferryPrompt && !cityPrompt && !minimapOpen && (
         <div style={{
@@ -2128,7 +2147,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       )}
 
       {/* NPC 노드 근접 → "Ⓐ 말 걸기" 프롬프트. chapter 없는 NPC만 대화 오버레이를 연다. */}
-      {nearNode?.npc && !nearNode.chapter && !npcDialog && !storyActive && !reviewOpen && !ferryPrompt && !chapterPrompt && !minimapOpen && (
+      {nearNode?.npc && !nearNode.chapter && !(nearNode.reading && onOpenReading) && !npcDialog && !storyActive && !reviewOpen && !ferryPrompt && !chapterPrompt && !minimapOpen && (
         <div style={{
           position: 'absolute', left: '50%', bottom: 18, transform: 'translateX(-50%)',
           fontFamily: GBC.font, fontSize: '0.7rem', color: GBC.ink,
@@ -2141,7 +2160,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       )}
 
       {/* 게이트 없는 노드/명산 근접 → "Ⓐ 살펴보기" 프롬프트(라벨 대신). A로 설명 박스를 연다. */}
-      {nearNode && !nearNode.gate && !nearNode.npc && !nearNode.chapter && !descOpen && !storyActive && !reviewOpen && !ferryPrompt && !chapterPrompt && !minimapOpen && (
+      {nearNode && !nearNode.gate && !nearNode.npc && !nearNode.chapter && !(nearNode.reading && onOpenReading) && !descOpen && !storyActive && !reviewOpen && !ferryPrompt && !chapterPrompt && !minimapOpen && (
         <div style={{
           position: 'absolute', left: '50%', bottom: 18, transform: 'translateX(-50%)',
           fontFamily: GBC.font, fontSize: '0.7rem', color: GBC.ink,
@@ -2154,7 +2173,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       )}
 
       {/* GBC 설명 박스 — A로 열고 B(또는 A)로 닫는다. 노드/명산 이름 + desc 1~2문장. */}
-      {descOpen && nearNode && !nearNode.gate && !nearNode.chapter && (
+      {descOpen && nearNode && !nearNode.gate && !nearNode.chapter && !(nearNode.reading && onOpenReading) && (
         <div style={{
           position: 'absolute', left: '50%', bottom: 18, transform: 'translateX(-50%)',
           ...gbcPanel, width: 'min(92%, 380px)', padding: '12px 14px',

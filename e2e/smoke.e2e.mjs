@@ -600,6 +600,51 @@ test('world: 로그인 픽스처에서 라멘 문화 도어를 확인·취소한
   });
 });
 
+test('world A-2: 관리자는 하네다 장소 문을 확인·취소한 뒤 정확한 독해 글로 이동한다', { timeout: config.timeout * 2 }, async () => {
+  await runInFreshPage(async (page, context) => {
+    await mockWorldShellRuntime(context, {
+      position: { scene: 'plaza', x: 317, y: 258 },
+    });
+    await signInWithMockSession(page, context, 'admin');
+
+    await page.goto('/world', { waitUntil: 'domcontentloaded' });
+    await assertVisible(page.getByRole('heading', { name: /^학습 월드/ }), 'world heading');
+    await assertVisible(page.getByText('📖 Ⓐ 이 장소의 이야기 읽기', { exact: true }), 'Haneda reading door');
+
+    const interact = page.getByRole('button', { name: 'A (말 걸기·상호작용)', exact: true });
+    const confirmation = page.getByText('하네다에서 이어지는 이야기를 읽을까요?', { exact: true });
+    await interact.click();
+    await assertVisible(confirmation, 'Haneda reading confirmation');
+
+    await page.getByRole('button', { name: 'B (취소·닫기·홀드 달리기)', exact: true }).click();
+    await confirmation.waitFor({ state: 'hidden', timeout: config.timeout });
+
+    await interact.click();
+    await assertVisible(confirmation, 'Haneda reading confirmation after cancel');
+    await page.getByRole('button', { name: '읽기', exact: true }).click();
+    await page.waitForURL('**/japanese/reading?node=n5-tokyo-01', { timeout: config.timeout });
+    const url = new URL(page.url());
+    assert.equal(url.pathname, '/japanese/reading');
+    assert.equal(url.searchParams.get('node'), 'n5-tokyo-01');
+    await assertVisible(page.getByRole('heading', { name: '여권 확인', exact: true }), 'exact Haneda reading text');
+  });
+});
+
+test('world A-2: 일반 학습자에게 하네다는 막힌 독해 문 대신 기존 설명 표지로 남는다', { timeout: config.timeout * 2 }, async () => {
+  await runInFreshPage(async (page, context) => {
+    await mockWorldShellRuntime(context, {
+      position: { scene: 'plaza', x: 317, y: 258 },
+    });
+    await signInWithMockSession(page, context, 'learner');
+
+    await page.goto('/world', { waitUntil: 'domcontentloaded' });
+    await assertVisible(page.getByText('Ⓐ 하네다 살펴보기', { exact: true }), 'Haneda description marker');
+    assert.equal(await page.getByText('📖 Ⓐ 이 장소의 이야기 읽기', { exact: true }).count(), 0);
+    await page.getByRole('button', { name: 'A (말 걸기·상호작용)', exact: true }).click();
+    await assertVisible(page.getByText('도쿄의 바닷가 국제공항. 일본에서 가장 붐비는 하늘길이에요.', { exact: true }), 'Haneda description');
+  });
+});
+
 test('world peers: 수십 명 렌더·거리·라벨 순수 부하를 측정한다', () => {
   const result = runPeerLoadBenchmark({ peerCount: 64, frames: 600, distancePasses: 200 });
   assert.equal(result.displayObjects, 128);

@@ -3,6 +3,7 @@
 // 라우터에는 고정된 ot-XX-slug 형식만 전달한다.
 
 const CULTURE_CHAPTER_RE = /^ot-\d{2}-[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const READING_TEXT_RE = /^n5-tokyo-\d{2}$/;
 
 export function toInteractiveNode(node) {
   if (!node) return null;
@@ -14,10 +15,16 @@ export function toInteractiveNode(node) {
     npc: node.npc,
     noStamp: node.noStamp,
     chapter: node.chapter,
+    reading: node.reading,
   };
 }
 
 export function cultureChapterHref(chapter) {
   if (typeof chapter !== 'string' || !CULTURE_CHAPTER_RE.test(chapter)) return null;
   return `/japanese/grammar/${encodeURIComponent(chapter)}`;
+}
+
+export function readingTextHref(reading) {
+  if (typeof reading !== 'string' || !READING_TEXT_RE.test(reading)) return null;
+  return `/japanese/reading?node=${encodeURIComponent(reading)}`;
 }
