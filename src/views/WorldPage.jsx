@@ -26,7 +26,7 @@ import { createVoiceUnreachableNotifier } from '../lib/world/voiceNotify';
 import { createWorldChat } from '../lib/world/chat';
 import { getMuted, isMuted, toggleMute, onChange as onMuteChange } from '../lib/world/muteStore';
 import { isPersistablePosition } from '../lib/world/session';
-import { cultureChapterHref } from '../components/world/cultureDoors';
+import { cultureChapterHref, readingTextHref } from '../components/world/cultureDoors';
 // 도트 폰트(Galmuri9) @font-face — /world 라우트 전용 client 컴포넌트에서만 로드된다.
 import './galmuri9.css';
 import {
@@ -486,6 +486,10 @@ export default function WorldPage() {
   const cancel = useCallback(() => controlsRef.current?.cancel(), []);
   const openCultureChapter = useCallback((chapter) => {
     const href = cultureChapterHref(chapter);
+    if (href) router.push(href);
+  }, [router]);
+  const openReadingText = useCallback((reading) => {
+    const href = readingTextHref(reading);
     if (href) router.push(href);
   }, [router]);
   // B 홀드 → 달리기(씬 플래그). 탭(짧게)의 취소 동작은 onClick=cancel 이 그대로 유지한다.
@@ -974,6 +978,7 @@ export default function WorldPage() {
                 controlsRef={controlsRef}
                 initialSpawn={livePosRef.current || worldSpawn || null}
                 onOpenChapter={openCultureChapter}
+                onOpenReading={profile?.role === 'admin' ? openReadingText : null}
               />
             ) : (
               <WorldGate status={worldStatus} reason={worldStatusReason} spawnLoading={worldSpawn === undefined} onRetry={retryWorldNet} retrying={worldRetrying} />
