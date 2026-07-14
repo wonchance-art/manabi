@@ -55,6 +55,7 @@ import { buildAirportScene } from './airportScene';
 //   도시 데이터는 이 청크(GameCanvas 는 next/dynamic ssr:false) 안에서만 로드된다 — /world First Load JS 무영향.
 import { buildCityScene } from './CityScene';
 import FUKUOKA from './cities/fukuoka';
+import TOKYO from './cities/tokyo';
 // 🚃 전철 fast-travel — 행선지 목록(현재 역 제외) 공용 순수 로직(도시·geo 공통).
 import { fastTravelDestinations } from './cities/terrain';
 import { StoryTextbox, AirportQuiz } from './StoryOverlay';
@@ -78,7 +79,7 @@ const STORY_TEXT = (scene1Text && scene1Text.id === READING_TEXT_ID) ? scene1Tex
 const STORY_STEPS = STORY_TEXT ? buildStoryScript(STORY_TEXT) : [];
 
 // 🏙️ 도시 정밀맵 레지스트리 — 도시 추가 = 여기 한 줄 + cities/<id>.js. 씬 키 'city:<id>'.
-const CITY_DATA = { fukuoka: FUKUOKA };
+const CITY_DATA = { fukuoka: FUKUOKA, tokyo: TOKYO };
 const CITY_FADE_MS = 260; // 도시 진입/이탈 페이드(페리와 동일 감성 · 조작 잠금)
 
 // ── 좌표 스케일 (버스 계약 불변: 1타일 = 32 월드 px) ──

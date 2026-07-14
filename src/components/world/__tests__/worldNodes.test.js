@@ -201,6 +201,18 @@ describe('계층형 맵 — 후쿠오카 도시 노드 + 라멘 NPC 이전', () 
   });
 });
 
+describe('계층형 맵 — 도쿄 도시 노드', () => {
+  it('도쿄 도시 노드가 tokyo CityScene으로 들어가는 게이트를 갖는다', () => {
+    const tokyo = getNode('tokyo');
+    expect(tokyo).toBeTruthy();
+    expect(tokyo.kind).toBe('city');
+    expect(tokyo.gate).toMatchObject({ type: 'city', to: 'tokyo' });
+    expect(tokyo.gate.label).toContain('시내');
+    expect(tokyo.desc).toContain('하네다');
+    expect(tokyo.desc).toContain('시부야');
+  });
+});
+
 describe('미니맵 다운샘플(순수 함수)', () => {
   it('4타일→1px 로 112×96 격자를 만든다', () => {
     const { w, h, codes } = downsampleMinimap(grid, 4);
