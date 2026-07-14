@@ -128,6 +128,17 @@ describe('가게/NPC 노드 (geo POI 매핑)', () => {
     expect(stampNpc).toEqual(['fukuoka-ramen']);
   });
 
+  it('네 문화 도어가 지정된 문법 챕터에 정확히 연결된다', () => {
+    expect(Object.fromEntries(
+      CITY_NODES.filter((n) => n.chapter).map((n) => [n.id, n.chapter]),
+    )).toEqual({
+      'fukuoka-konbini': 'ot-07-konbini',
+      nakasu: 'ot-12-menzei',
+      'fukuoka-izakaya': 'ot-08-izakaya',
+      'fukuoka-ramen': 'ot-10-ramen',
+    });
+  });
+
   it('전 geo POI(국제선 터미널 포함)가 노드로 매핑된다', () => {
     const nodeIds = new Set(CITY_NODES.map((n) => n.id));
     for (const poi of FUKUOKA_GEO.pois) expect(nodeIds.has(poi.id)).toBe(true);
