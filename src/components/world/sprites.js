@@ -594,33 +594,8 @@ export function npcMarkerRows(key) {
   return NPC_ART[NPC_KEYS.includes(key) ? key : 'ramen'];
 }
 
-// ── 규슈 마스코트 마커 도트 — kumamon(熊本)만. worldNodes mascot 필드 → t_mascot_<key> ──
-// 나머지 현은 공식 캐릭터 대신 "맛집(명물 요리)" 노드로(컴플라이언스·오너 방침). kumamon 만 유지.
-//   검은 곰 + 빨간 볼 실루엣을 24×24 도트로. 대화 없음(kind:'landmark' — A로 desc).
-export const MASCOT_KEYS = ['kumamon'];
-
-export const MASCOT_PAL = {
-  kumamon: { O: 0x141414, K: 0x2b2b2b, W: 0xf6edcf, R: 0xd0342b, P: 0x0a0a0a, Y: 0xf2c400 },
-};
-
-const MASCOT_ART = {
-  kumamon: [
-    '........................', '.....KK.......KK........', '....KKKK.....KKKK.......',
-    '....KKKK.....KKKK.......', '...OKKKKKKKKKKKKKKO.....', '..OKKKKKKKKKKKKKKKKO....',
-    '..OKKKKKKKKKKKKKKKKO....', '..OKKWWKKKKKKKKWWKKO....', '..OKWWWWKKKKKKWWWWKO....',
-    '..OKWWPWKKKKKKWPWWKO....', '..OKKWWKKKKKKKKWWKKO....', '..ORRKKKKKKKKKKKKRRO....',
-    '..ORRKKKKWWWWKKKKRRO....', '..OKKKKKWWWWWWKKKKKO....', '...OKKKKWWWWWWKKKKO.....',
-    '....OKKKKKKKKKKKKO......', '.....OKKKKKKKKKKO.......', '....OKKKKKKKKKKKKO......',
-    '...OKKKKKKKKKKKKKKO.....', '...OKKKKKKKKKKKKKKO.....', '...OKKKKO....OKKKKO.....',
-    '...OKKKO......OKKKO.....', '....OOO........OOO......', '........................',
-  ],
-};
-
-export function mascotMarkerRows(key) {
-  return MASCOT_ART[MASCOT_KEYS.includes(key) ? key : 'kumamon'];
-}
-
 // ── 맛집(名物) 마커 도트 — 규슈 각 현 명물 요리 노드(gourmet 필드 → t_gourmet). ──
+//   (공식 지자체 마스코트는 컴플라이언스상 미사용 — 각 현을 명물 요리 "가게"로 표현·현실정보 융합.)
 // 공식 캐릭터 대신 "찾아가는 가게"로 자연스럽게 — 붉은 노렌 포장마차 + 김 나는 그릇. 전 맛집 공용 1종.
 // (현실 정보 융합 원칙: desc 에 실제 명물 요리 정보를 담고, 마커는 이 공용 포장마차.)
 export const GOURMET_PAL = { O: 0x2a1e14, R: 0xc14b38, r: 0x8a2f24, C: 0xf6edcf, W: 0xb07a3e, w: 0x6f4420, Y: 0xf2a54a, N: 0xe8dcc0, S: 0xd8cbb0 };

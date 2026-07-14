@@ -7,7 +7,7 @@ import {
   riverStreamRects, RIVER_N, RIVER_E, RIVER_S, RIVER_W,
   emitPeerDistances,
   NPC_KEYS, NPC_W, NPC_H, NPC_PAL, npcMarkerRows,
-  MASCOT_KEYS, MASCOT_PAL, mascotMarkerRows, GOURMET_PAL, gourmetMarkerRows,
+  GOURMET_PAL, gourmetMarkerRows,
 } from '../sprites.js';
 
 // 픽셀맵 무결성 — GameCanvas는 클라 전용(Phaser)이라 단위테스트가 어렵다.
@@ -101,20 +101,8 @@ describe('NPC 마커 픽셀맵 (24×24, 라멘·미코 + 소품)', () => {
   });
 });
 
-describe('규슈 마커 픽셀맵 (24×24) — 쿠마몬 + 맛집 포장마차', () => {
-  for (const key of MASCOT_KEYS) {
-    it(`mascot ${key} — ${NPC_H}행 × ${NPC_W}열, 종 팔레트 색문자만`, () => {
-      const rows = mascotMarkerRows(key);
-      const allow = new Set(['.', ...Object.keys(MASCOT_PAL[key])]);
-      expect(rows).toHaveLength(NPC_H);
-      for (const row of rows) {
-        expect(row).toHaveLength(NPC_W);
-        for (const ch of row) expect(allow.has(ch)).toBe(true);
-      }
-    });
-  }
-
-  it('맛집(gourmet) 마커도 24×24·팔레트 색문자만', () => {
+describe('규슈 맛집 마커 픽셀맵 (24×24, 포장마차)', () => {
+  it('맛집(gourmet) 마커는 24×24·팔레트 색문자만', () => {
     const rows = gourmetMarkerRows();
     const allow = new Set(['.', ...Object.keys(GOURMET_PAL)]);
     expect(rows).toHaveLength(NPC_H);
@@ -122,14 +110,6 @@ describe('규슈 마커 픽셀맵 (24×24) — 쿠마몬 + 맛집 포장마차',
       expect(row).toHaveLength(NPC_W);
       for (const ch of row) expect(allow.has(ch)).toBe(true);
     }
-  });
-
-  it('쿠마몬과 맛집 마커는 서로 다른 도트', () => {
-    expect(mascotMarkerRows('kumamon').join('\n')).not.toBe(gourmetMarkerRows().join('\n'));
-  });
-
-  it('알 수 없는 mascot key 는 kumamon 으로 폴백', () => {
-    expect(mascotMarkerRows('unknown')).toEqual(mascotMarkerRows('kumamon'));
   });
 });
 
