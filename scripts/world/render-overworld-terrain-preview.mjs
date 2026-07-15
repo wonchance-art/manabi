@@ -36,6 +36,7 @@ export async function renderTerrainPreview({
   outputFile,
   targetWidth = 1200,
   transportDir = null,
+  playabilityDir = null,
 }) {
   const manifest = JSON.parse(await readFile(path.join(inputDir, 'content-manifest.json'), 'utf8'));
   const raw = Buffer.alloc(manifest.width * manifest.height * 3);
@@ -52,6 +53,29 @@ export async function renderTerrainPreview({
         raw[offset] = color[0];
         raw[offset + 1] = color[1];
         raw[offset + 2] = color[2];
+      }
+    }
+  }
+
+  let viewOnlyLandTileCount = 0;
+  if (playabilityDir) {
+    const playability = JSON.parse(await readFile(path.join(playabilityDir, 'content-manifest.json'), 'utf8'));
+    if (playability.width !== manifest.width || playability.height !== manifest.height) {
+      throw new Error('playability preview dimensions do not match terrain');
+    }
+    for (const entry of playability.chunks) {
+      const chunk = decodeOverworldChunkV1(await readFile(path.join(playabilityDir, entry.path)));
+      const originX = entry.cx * OVERWORLD_STORAGE_CHUNK_TILES;
+      const originY = entry.cy * OVERWORLD_STORAGE_CHUNK_TILES;
+      for (let y = 0; y < entry.validBounds.y1; y += 1) {
+        for (let x = 0; x < entry.validBounds.x1; x += 1) {
+          if (chunk.surfaceAt(x, y) === 0 || chunk.viewOnlyAt(x, y) !== 1) continue;
+          viewOnlyLandTileCount += 1;
+          const offset = ((originY + y) * manifest.width + originX + x) * 3;
+          raw[offset] = 184;
+          raw[offset + 1] = 98;
+          raw[offset + 2] = 150;
+        }
       }
     }
   }
@@ -99,19 +123,21 @@ export async function renderTerrainPreview({
     height: targetHeight,
     riverSegmentCount: uniqueSegments.size,
     railSegmentCount,
+    viewOnlyLandTileCount,
   });
 }
 
 async function main() {
-  const [inputDir, outputFile, widthInput, transportDir] = process.argv.slice(2);
+  const [inputDir, outputFile, widthInput, transportDir, playabilityDir] = process.argv.slice(2);
   if (!inputDir || !outputFile) {
-    throw new Error('usage: node scripts/world/render-overworld-terrain-preview.mjs <input-dir> <output.png> [width] [transport-dir]');
+    throw new Error('usage: node scripts/world/render-overworld-terrain-preview.mjs <input-dir> <output.png> [width] [transport-dir] [playability-dir]');
   }
   const result = await renderTerrainPreview({
     inputDir: path.resolve(inputDir),
     outputFile: path.resolve(outputFile),
     targetWidth: widthInput === undefined ? 1200 : Number(widthInput),
     transportDir: transportDir ? path.resolve(transportDir) : null,
+    playabilityDir: playabilityDir ? path.resolve(playabilityDir) : null,
   });
   process.stdout.write(`${JSON.stringify(result)}\n`);
 }

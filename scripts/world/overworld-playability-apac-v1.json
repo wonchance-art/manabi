@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "releaseEligible": false,
+  "generatorGitSha": null,
+  "regionId": "asia-pacific-playability-preview-v1",
+  "baseTerrain": {
+    "manifestPath": "scripts/world/overworld-region-apac-v1.json",
+    "directory": "public/assets/overworld/asia-pacific-terrain-preview-v1",
+    "contentManifest": "content-manifest.json",
+    "contentManifestSha256": "df9f8953b161d8c5c04364b92b02a665e0be45c84c16599fa000796c080d392a",
+    "contentManifestBytes": 30899
+  },
+  "terrainClasses": {
+    "sea": 0,
+    "lowland": 1,
+    "highland": 2,
+    "mountain": 3,
+    "alpine": 4
+  },
+  "componentRules": {
+    "connectivity": 4,
+    "minimumWalkableTiles": 256,
+    "seaCollision": "blocked",
+    "seaViewOnly": false,
+    "smallIsland": "view-only",
+    "remoteOverride": "view-only",
+    "anchorSnapMaxTiles": 2
+  },
+  "policyAnchors": [
+    { "id": "amami-oshima", "lon": 129.5, "lat": 28.3, "policy": "walkable", "maxSnapTiles": 2 },
+    { "id": "bali", "lon": 115.188, "lat": -8.409, "policy": "walkable", "maxSnapTiles": 2 },
+    { "id": "cebu", "lon": 123.89, "lat": 10.32, "policy": "walkable", "maxSnapTiles": 2 },
+    { "id": "guadalcanal", "lon": 160.0, "lat": -9.6, "policy": "view-only", "maxSnapTiles": 2 },
+    { "id": "guam", "lon": 144.79, "lat": 13.44, "policy": "view-only", "maxSnapTiles": 2 },
+    { "id": "hong-kong", "lon": 114.17, "lat": 22.32, "policy": "walkable", "maxSnapTiles": 2 },
+    { "id": "jeju", "lon": 126.53, "lat": 33.36, "policy": "walkable", "maxSnapTiles": 2 },
+    { "id": "lombok", "lon": 116.12, "lat": -8.58, "policy": "walkable", "maxSnapTiles": 2 },
+    { "id": "new-caledonia", "lon": 165.62, "lat": -21.3, "policy": "view-only", "maxSnapTiles": 2 },
+    { "id": "okinawa", "lon": 127.68, "lat": 26.21, "policy": "walkable", "maxSnapTiles": 2 },
+    { "id": "palawan", "lon": 118.74, "lat": 9.83, "policy": "walkable", "maxSnapTiles": 2 },
+    { "id": "penang", "lon": 100.33, "lat": 5.41, "policy": "walkable", "maxSnapTiles": 2 },
+    { "id": "sado", "lon": 138.37, "lat": 38.0, "policy": "walkable", "maxSnapTiles": 2 },
+    { "id": "singapore", "lon": 103.82, "lat": 1.35, "policy": "walkable", "maxSnapTiles": 2 },
+    { "id": "tsushima", "lon": 129.3, "lat": 34.4, "policy": "walkable", "maxSnapTiles": 2 },
+    { "id": "vanuatu-efate", "lon": 168.3, "lat": -17.7, "policy": "view-only", "maxSnapTiles": 2 },
+    { "id": "viti-levu", "lon": 178.1, "lat": -17.8, "policy": "view-only", "maxSnapTiles": 2 },
+    { "id": "yakushima", "lon": 130.52, "lat": 30.36, "policy": "walkable", "maxSnapTiles": 2 }
+  ]
+}

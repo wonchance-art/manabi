@@ -239,3 +239,41 @@ node scripts/world/render-overworld-terrain-preview.mjs \
   <preview.png> 1600 \
   public/assets/overworld/asia-pacific-transport-preview-v1
 ```
+
+## 13. 지역 ① 이동·view-only preview v1
+
+`scripts/world/overworld-playability-apac-v1.json`과
+`scripts/world/build-overworld-playability.mjs`는 fail-closed terrain 청크를 검증한 뒤 이동 마스크만 파생한다.
+이 단계는 실제 항공·선박 게이트, 역·항구 노드, 시간표, DB를 만들지 않으며 `releaseEligible=false`다.
+
+- 육지 연결 성분은 행 우선 스캔과 4방향 연결로 한 번만 분류한다. 대각선으로 맞닿은 섬은 같은 성분으로
+  합치지 않는다.
+- 256타일 이상 성분은 기본 보행 가능, 그보다 작은 섬은 기본 view-only다. 1타일은 약 20.25km²의
+  명목 면적이므로 이 기준은 약 5,184km²다.
+- 핵심 생활·콘텐츠 섬은 WGS84 policy anchor로 명시 허용한다. 원양 섬은 크기가 기준 이상이어도
+  `view-only` anchor가 우선한다. 한 성분에 두 정책이 동시에 지정되면 생성 자체를 거부한다.
+- anchor는 manifest의 최대 2타일 안에서 결정적인 거리·행·열 순으로 가장 가까운 육지에 스냅한다.
+  범위 안에 육지가 없으면 묵시적으로 좌표를 바꾸지 않고 실패한다.
+- 유효 바다는 `collision=1, view-only=0`, 보행 육지는 `0,0`, 관람 전용 육지는 `1,1`이다.
+  bbox 밖 청크 패딩은 기존 포맷 계약대로 `1,1`을 유지한다.
+- 산지 등급과 강·철도 오버레이는 이동 마스크를 바꾸지 않는다. 4.5km 타일의 전역 로밍을 유지하고,
+  통행 비용·교통수단·게이트는 후속 노드 계약에서 별도로 정의한다.
+- 체크인 산출물은 `public/assets/overworld/asia-pacific-playability-preview-v1/`의 121개 청크,
+  연결 성분·anchor 감사 보고서, content manifest다.
+
+```bash
+node scripts/world/build-overworld-playability.mjs \
+  --manifest scripts/world/overworld-playability-apac-v1.json \
+  --output-dir public/assets/overworld/asia-pacific-playability-preview-v1
+
+node scripts/world/build-overworld-playability.mjs \
+  --manifest scripts/world/overworld-playability-apac-v1.json \
+  --output-dir public/assets/overworld/asia-pacific-playability-preview-v1 \
+  --check
+
+node scripts/world/render-overworld-terrain-preview.mjs \
+  public/assets/overworld/asia-pacific-terrain-preview-v1 \
+  <preview.png> 1600 \
+  public/assets/overworld/asia-pacific-transport-preview-v1 \
+  public/assets/overworld/asia-pacific-playability-preview-v1
+```
