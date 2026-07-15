@@ -306,6 +306,10 @@ describe('오버월드 terrain 생성', () => {
       const bytes = readFileSync(path.join(CHECKED_IN_EMEA_TERRAIN_DIR, entry.path));
       expect(bytes.byteLength, entry.path).toBe(entry.bytes);
       expect(sha256(bytes), entry.path).toBe(entry.sha256);
+      if (entry.path.startsWith('rivers/')) {
+        const document = JSON.parse(bytes.toString('utf8'));
+        expect(document.segments.every((segment) => !Object.hasOwn(segment, 'name')), entry.path).toBe(true);
+      }
     }
 
     const surfaceAtGeo = (lon, lat) => {
