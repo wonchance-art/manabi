@@ -1,12 +1,16 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  PhaserOverworldOverlayLayer,
   PhaserOverworldPageRenderer,
   cameraWorldViewToRenderView,
   createLegacyOverworldChunkLoader,
 } from '../overworldPageRenderer.js';
+import { createOverworldRoute } from '../../../lib/world/overworldOverlay.js';
 
 function fakeScene() {
   const renderTextures = [];
+  const images = [];
+  const graphics = [];
   const stamp = {
     key: null,
     destroyed: false,
@@ -22,6 +26,40 @@ function fakeScene() {
       }),
     },
     add: {
+      image: vi.fn((x, y, key) => {
+        const image = {
+          x,
+          y,
+          key,
+          visible: true,
+          destroyed: false,
+          setScale: vi.fn(function setScale(scale) { this.scale = scale; return this; }),
+          setDepth: vi.fn(function setDepth(depth) { this.depth = depth; return this; }),
+          setPosition: vi.fn(function setPosition(px, py) { this.x = px; this.y = py; return this; }),
+          setVisible: vi.fn(function setVisible(visible) { this.visible = visible; return this; }),
+          destroy: vi.fn(function destroy() { this.destroyed = true; }),
+        };
+        images.push(image);
+        return image;
+      }),
+      graphics: vi.fn(() => {
+        const graphic = {
+          commands: [],
+          visible: true,
+          destroyed: false,
+          setDepth: vi.fn(function setDepth(depth) { this.depth = depth; return this; }),
+          setVisible: vi.fn(function setVisible(visible) { this.visible = visible; return this; }),
+          clear: vi.fn(function clear() { this.commands.length = 0; return this; }),
+          lineStyle: vi.fn(function lineStyle(width, color, alpha) { this.commands.push(['style', width, color, alpha]); return this; }),
+          beginPath: vi.fn(function beginPath() { return this; }),
+          moveTo: vi.fn(function moveTo(x, y) { this.commands.push(['move', x, y]); return this; }),
+          lineTo: vi.fn(function lineTo(x, y) { this.commands.push(['line', x, y]); return this; }),
+          strokePath: vi.fn(function strokePath() { return this; }),
+          destroy: vi.fn(function destroy() { this.destroyed = true; }),
+        };
+        graphics.push(graphic);
+        return graphic;
+      }),
       renderTexture: vi.fn((x, y, width, height) => {
         const texture = {
           x,
@@ -47,7 +85,7 @@ function fakeScene() {
       }),
     },
   };
-  return { scene, stamp, renderTextures };
+  return { scene, stamp, renderTextures, images, graphics };
 }
 
 describe('legacy 오버월드 저장 청크 adapter', () => {
@@ -137,5 +175,45 @@ describe('Phaser 오버월드 렌더 페이지 adapter', () => {
     renderer.destroy();
     expect(renderTextures.every((texture) => texture.destroyed)).toBe(true);
     expect(stamp.destroyed).toBe(true);
+  });
+});
+
+describe('Phaser 오버월드 오버레이·차량 adapter', () => {
+  it('노선을 전역 좌표로 그리고 같은 차량 객체가 페이지·저장 청크 경계를 통과한다', () => {
+    const { scene, images, graphics } = fakeScene();
+    const route = createOverworldRoute({
+      id: 'fixture-ferry',
+      mode: 'ferry',
+      points: [[255, 4], [257, 4]],
+      color: 0xf4f0d0,
+    });
+    const layer = new PhaserOverworldOverlayLayer(scene, {
+      routes: [route],
+      vehicleTextureKeyAt: () => 'boat',
+      tilePixels: 16,
+      worldScale: 2,
+      haloTiles: 0,
+    });
+    const view = { x: 250 * 32, y: 0, width: 20 * 32, height: 10 * 32 };
+    layer.updateCamera(view);
+    expect(graphics[0].commands.filter(([command]) => command === 'move' || command === 'line'))
+      .toEqual([['move', 255.5 * 32, 4.5 * 32], ['line', 257.5 * 32, 4.5 * 32]]);
+
+    layer.updateVehicles([{ id: 'run-1', routeId: route.id, progress: 0.49 }], view);
+    const sprite = images[0];
+    expect(layer.vehicleViews.get('run-1').position).toMatchObject({ pageX: 7, chunkX: 0 });
+    layer.updateVehicles([{ id: 'run-1', routeId: route.id, progress: 0.51 }], view);
+    expect(images).toHaveLength(1);
+    expect(layer.vehicleViews.get('run-1').sprite).toBe(sprite);
+    expect(layer.vehicleViews.get('run-1').position).toMatchObject({ pageX: 8, chunkX: 1 });
+
+    layer.updateVehicles([{ id: 'run-1', routeId: route.id, progress: 1 }], {
+      x: 0, y: 0, width: 320, height: 288,
+    });
+    expect(sprite.visible).toBe(false);
+    expect(sprite.destroyed).toBe(false);
+    layer.destroy();
+    expect(sprite.destroyed).toBe(true);
+    expect(graphics[0].destroyed).toBe(true);
   });
 });

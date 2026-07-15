@@ -48,7 +48,12 @@ import { MAP_W, MAP_H, decodeMap, TERRAIN, isBlocked, POI } from './mapData';
 import { WORLD_NODES, getNode, buildMinimap } from './worldNodes';
 // 🏙️ 광장 SEA→LAND 메꿈(순수 함수·단일 진실원 — 런타임·관리자 뷰·미니맵 공통).
 import { buildPlayableGrid, PLAZA_R } from '../../lib/world/mapGeo';
-import { createLegacyOverworldChunkLoader, PhaserOverworldPageRenderer } from './overworldPageRenderer';
+import {
+  createLegacyOverworldChunkLoader,
+  PhaserOverworldOverlayLayer,
+  PhaserOverworldPageRenderer,
+} from './overworldPageRenderer';
+import { activeOverworldVehiclesAt, OVERWORLD_ROUTES } from './overworldTransit';
 // 🧭 재접속 스폰 좌표 검증(순수) — 저장된 타일이 맵 안·보행 가능일 때만 사용, 아니면 서울 폴백.
 // cityRedirectScene: 초기 부팅 시 저장 씬이 'city:<id>' 면 도시맵 직행 판별(순수 — Codex P1-1 회귀 게이트).
 import { isSpawnTileValid, cityRedirectScene } from '../../lib/world/session';
@@ -1264,9 +1269,19 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
             worldScale: TSCALE,
             depth: 0,
           });
+          this.overworldOverlay = new PhaserOverworldOverlayLayer(this, {
+            routes: OVERWORLD_ROUTES,
+            vehicleTextureKeyAt: () => 't_boat',
+            tilePixels: TEX,
+            worldScale: TSCALE,
+          });
+          this.overworldVehicles = [];
+          this.lastOverworldVehicleUpdate = -Infinity;
           this.events.once('shutdown', () => {
             this.terrainPages?.destroy();
             this.terrainPages = null;
+            this.overworldOverlay?.destroy();
+            this.overworldOverlay = null;
             this.terrainLoader?.clear();
             this.terrainLoader = null;
             for (const image of this.waterPool) image.destroy();
@@ -1362,6 +1377,12 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
             width: initialViewWidth,
             height: initialViewHeight,
           });
+          this.overworldOverlay.updateCamera({
+            x: Math.max(0, Math.min(WORLD_W - initialViewWidth, spawnX - initialViewWidth / 2)),
+            y: Math.max(0, Math.min(WORLD_H - initialViewHeight, spawnY - initialViewHeight / 2)),
+            width: initialViewWidth,
+            height: initialViewHeight,
+          }, { force: true });
 
           // ── 입력: 방향키/WASD 스택(마지막 키 우선) + 탭-투-무브 ──
           this.heldDirs = [];
@@ -1755,8 +1776,14 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           }
           // 카메라 주변 장식 생성/회수(매 프레임 — 컬링·상한으로 저비용).
           this.refreshTerrainPages();
+          this.overworldOverlay?.updateCamera(this.cameras.main);
           this.animateWater();
           this.updateDecor();
+          if (time - this.lastOverworldVehicleUpdate > 500) {
+            this.lastOverworldVehicleUpdate = time;
+            this.overworldVehicles = activeOverworldVehiclesAt(worldClockRef.current?.totalGameMinutes);
+            this.overworldOverlay?.updateVehicles(this.overworldVehicles, this.cameras.main);
+          }
 
           // ── 플레이어 이동 상태기계 (facing→step→hold 연속) ──
           if (!this.moving && !this.inputLocked) {

@@ -5,6 +5,11 @@ import {
   OverworldRenderPagerStaleError,
   planOverworldRenderPages,
 } from '../../lib/world/overworldRenderPages.js';
+import {
+  OVERWORLD_ROUTE_QUANTIZATION,
+  overworldRoutePosition,
+  planOverworldOverlaySegments,
+} from '../../lib/world/overworldOverlay.js';
 
 function assertPositiveInteger(value, label) {
   if (!Number.isInteger(value) || value < 1) throw new RangeError(`${label} must be a positive integer`);
@@ -226,6 +231,121 @@ export class PhaserOverworldPageRenderer {
     this.pager.destroy();
     this.stamp.destroy();
     this.lastSignature = null;
+  }
+}
+
+export class PhaserOverworldOverlayLayer {
+  constructor(scene, {
+    routes = [],
+    vehicleTextureKeyAt,
+    tilePixels = 16,
+    worldScale = 2,
+    routeDepth = 0.75,
+    vehicleDepth = 8500,
+    haloTiles = 1,
+  } = {}) {
+    if (!scene?.add?.graphics || !scene?.add?.image) {
+      throw new TypeError('scene must provide Phaser graphics and image factories');
+    }
+    if (typeof vehicleTextureKeyAt !== 'function') {
+      throw new TypeError('vehicleTextureKeyAt must be a function');
+    }
+    assertPositiveInteger(tilePixels, 'tilePixels');
+    if (!Number.isFinite(worldScale) || worldScale <= 0) throw new RangeError('worldScale must be positive');
+    if (!Number.isFinite(haloTiles) || haloTiles < 0) throw new RangeError('haloTiles must be non-negative');
+    this.scene = scene;
+    this.routes = Object.freeze([...routes]);
+    this.routeById = new Map(this.routes.map((route) => [route.id, route]));
+    this.vehicleTextureKeyAt = vehicleTextureKeyAt;
+    this.tilePixels = tilePixels;
+    this.worldScale = worldScale;
+    this.vehicleDepth = vehicleDepth;
+    this.haloTiles = haloTiles;
+    this.destroyed = false;
+    this.routeSignature = null;
+    this.routeGraphics = scene.add.graphics().setDepth(routeDepth);
+    this.vehicleViews = new Map();
+  }
+
+  routeWorldCoordinate(valueQ) {
+    return (valueQ / OVERWORLD_ROUTE_QUANTIZATION + 0.5) * this.tilePixels * this.worldScale;
+  }
+
+  updateCamera(cameraOrView, { force = false } = {}) {
+    if (this.destroyed) return;
+    const worldView = cameraOrView?.worldView ?? cameraOrView;
+    const view = cameraWorldViewToRenderView(worldView, this.worldScale);
+    const segments = planOverworldOverlaySegments(view, this.routes, {
+      tilePixels: this.tilePixels,
+      haloTiles: this.haloTiles,
+    });
+    const signature = segments.map((segment) => segment.key).join('|');
+    if (!force && signature === this.routeSignature) return;
+    this.routeSignature = signature;
+    this.routeGraphics.clear();
+    for (const segment of segments) {
+      const route = segment.route;
+      this.routeGraphics.lineStyle(
+        Math.max(1, route.widthTiles * this.tilePixels * this.worldScale),
+        route.color,
+        route.alpha,
+      );
+      this.routeGraphics.beginPath();
+      this.routeGraphics.moveTo(
+        this.routeWorldCoordinate(segment.start[0]),
+        this.routeWorldCoordinate(segment.start[1]),
+      );
+      this.routeGraphics.lineTo(
+        this.routeWorldCoordinate(segment.end[0]),
+        this.routeWorldCoordinate(segment.end[1]),
+      );
+      this.routeGraphics.strokePath();
+    }
+    this.routeGraphics.setVisible(segments.length > 0);
+  }
+
+  updateVehicles(vehicles, cameraOrView) {
+    if (this.destroyed) return;
+    const view = cameraOrView?.worldView ?? cameraOrView;
+    const halo = this.haloTiles * this.tilePixels * this.worldScale;
+    const alive = new Set();
+    for (const vehicle of vehicles || []) {
+      const id = vehicle?.id ?? vehicle?.runId;
+      const route = this.routeById.get(vehicle?.routeId);
+      if (typeof id !== 'string' || !route) continue;
+      const position = overworldRoutePosition(route, vehicle.progress);
+      let entry = this.vehicleViews.get(id);
+      if (!entry) {
+        const textureKey = this.vehicleTextureKeyAt(vehicle, route);
+        if (typeof textureKey !== 'string' || textureKey.length === 0) continue;
+        const sprite = this.scene.add.image(0, 0, textureKey).setScale(this.worldScale).setDepth(this.vehicleDepth);
+        entry = { sprite, routeId: route.id, position };
+        this.vehicleViews.set(id, entry);
+      }
+      alive.add(id);
+      const worldX = this.routeWorldCoordinate(position.xQ);
+      const worldY = this.routeWorldCoordinate(position.yQ);
+      const visible = worldX >= view.x - halo && worldX <= view.x + view.width + halo
+        && worldY >= view.y - halo && worldY <= view.y + view.height + halo;
+      entry.position = position;
+      entry.sprite.setPosition(worldX, worldY)
+        .setDepth(Math.max(this.vehicleDepth, worldY + 2))
+        .setVisible(visible);
+    }
+    for (const [id, entry] of this.vehicleViews) {
+      if (alive.has(id)) continue;
+      entry.sprite.destroy();
+      this.vehicleViews.delete(id);
+    }
+  }
+
+  destroy() {
+    if (this.destroyed) return;
+    this.destroyed = true;
+    this.routeGraphics.destroy();
+    for (const [, entry] of this.vehicleViews) entry.sprite.destroy();
+    this.vehicleViews.clear();
+    this.routeSignature = null;
   }
 }
 
