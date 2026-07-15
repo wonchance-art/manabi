@@ -7,8 +7,8 @@
     "manifestPath": "scripts/world/overworld-region-apac-v1.json",
     "directory": "public/assets/overworld/asia-pacific-terrain-preview-v1",
     "contentManifest": "content-manifest.json",
-    "contentManifestSha256": "df9f8953b161d8c5c04364b92b02a665e0be45c84c16599fa000796c080d392a",
-    "contentManifestBytes": 30899
+    "contentManifestSha256": "2f50416132c1bb28ac9039ff105bc0b0a9800a3244438cef9bffce2d1154a3a7",
+    "contentManifestBytes": 30898
   },
   "railSource": {
     "id": "natural-earth-railroads-10m",
