@@ -1,6 +1,8 @@
 // 학습 월드 세션·좌표 API 의 순수 헬퍼 — IP 추출/좌표 검증(라우트·WorldPage·테스트 공용).
 // 부수효과 0(브라우저/서버 API 미의존)이라 유닛 테스트가 쉽다.
 
+import { isCorridorPlatformTile } from './transsibCorridor';
+
 // x-forwarded-for(첫 항목)·x-real-ip 순으로 클라이언트 IP 를 고른다. 서버 라우트만 신뢰 가능한
 // 값이므로(클라 위조 무의미) 라우트에서 request 헤더로 이 함수를 부른다. getHeader(name)=>value|null.
 //   · x-forwarded-for: "client, proxy1, proxy2" — 첫 항목이 원 클라이언트.
@@ -22,9 +24,18 @@ export function extractClientIp(getHeader) {
 
 // 도시 정밀맵 씬 식별자('city:<id>') 형식 — 임의 문자열 저장을 막는 화이트 패턴(소문자·숫자·하이픈).
 const CITY_SCENE_RE = /^city:[a-z0-9-]+$/;
+const TRANSIT_TERMINAL_SCENES = new Set(['transsib-corridor']);
+
+export function normalizePositionScene(rawScene) {
+  if (rawScene === 'airport') return 'airport';
+  if (TRANSIT_TERMINAL_SCENES.has(rawScene)) return rawScene;
+  if (CITY_SCENE_RE.test(rawScene)) return rawScene;
+  return 'plaza';
+}
 
 // 저장/조회한 좌표 payload 를 정수 타일좌표로 정규화한다. 유효하지 않으면 null.
-//   scene 은 'plaza' | 'airport' | 'city:<id>'(계층형 맵) 만 허용(그 외는 'plaza' 로 강제 — 알 수 없는 씬 방어).
+//   scene 은 'plaza' | 'airport' | 'city:<id>' | 'transsib-corridor' 만 허용한다.
+//   transsib-corridor 는 정차 플랫폼 좌표에만 쓰며, 운행 중 heartbeat 는 persistable:false 로 막는다.
 //   x·y 는 유한 정수(음수 불가). 반올림해 정수로 만든다.
 export function normalizePosition(raw) {
   if (!raw || typeof raw !== 'object') return null;
@@ -34,8 +45,8 @@ export function normalizePosition(raw) {
   const xi = Math.round(x);
   const yi = Math.round(y);
   if (xi < 0 || yi < 0) return null;
-  const s = typeof raw.scene === 'string' ? raw.scene : '';
-  const scene = s === 'airport' ? 'airport' : (CITY_SCENE_RE.test(s) ? s : 'plaza');
+  const scene = normalizePositionScene(typeof raw.scene === 'string' ? raw.scene : '');
+  if (scene === 'transsib-corridor' && !isCorridorPlatformTile(xi, yi)) return null;
   return { scene, x: xi, y: yi };
 }
 
@@ -64,14 +75,16 @@ export function isSpawnTileValid(tx, ty, cols, rows, isWalkable) {
 
 // 위치 영속 판정(순수) — local:state 페이로드가 재접속 스폰 원천으로 저장될 수 있는가.
 //   ── persistable 계약 ──
-//   저장 허용 씬은 'plaza' 와 'city:<id>'(도시 정밀맵 — 도시 내 위치도 저장 대상)뿐이다.
+//   저장 허용 씬은 'plaza', 'city:<id>', 'transsib-corridor'의 정차 플랫폼이다.
 //   · GameCanvas 는 페리 항해 중(this.ferrying)·물 타일 위 좌표를, airportScene 은 공항 좌표를
 //     persistable:false 로 emit 한다 → 여기서 제외돼 서울/게이트 앞 폴백이 유지된다.
 //   · 공항 씬(scene:'airport')은 플래그와 무관하게 영속 대상에서 제외한다(방어적 — 광장에 직접
-//     배치 불가한 좌표). 플라자·도시 좌표만 재접속 스폰 원천이 된다.
+//     배치 불가한 좌표). 플라자·도시·횡단철도 플랫폼만 재접속 스폰 원천이 된다.
+//   · transsib-corridor 운행 중에는 반드시 persistable:false 를 emit 한다. 플랫폼 하차 좌표와
+//     탑승 전 미리 저장하는 종착 플랫폼 좌표만 true/필드 없음으로 통과한다.
 //   payload 에 persistable 이 없으면(하위호환·일반 플라자 좌표) 영속 대상으로 본다.
 export function isPersistablePosition(st) {
   if (!st || st.persistable === false) return false;
   const scene = typeof st.scene === 'string' ? st.scene : 'plaza';
-  return scene === 'plaza' || scene.startsWith('city:');
+  return scene === 'plaza' || CITY_SCENE_RE.test(scene) || TRANSIT_TERMINAL_SCENES.has(scene);
 }

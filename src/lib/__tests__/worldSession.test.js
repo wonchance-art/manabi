@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
-  extractClientIp, normalizePosition, isSpawnTileValid, isPersistablePosition, cityRedirectScene,
+  extractClientIp, normalizePosition, normalizePositionScene, isSpawnTileValid,
+  isPersistablePosition, cityRedirectScene,
 } from '../world/session.js';
 
 // ─────────────────────────────────────────────────────────────
@@ -51,6 +52,14 @@ describe('normalizePosition — 저장 좌표 정규화(순수)', () => {
     // 형식 밖(대문자·공백·빈 id)은 plaza 로 강등(임의 문자열 저장 차단).
     expect(normalizePosition({ scene: 'city:', x: 1, y: 2 }).scene).toBe('plaza');
     expect(normalizePosition({ scene: 'City:Fukuoka', x: 1, y: 2 }).scene).toBe('plaza');
+  });
+
+  it('횡단철도 플랫폼 씬은 보존하고 임의 transit 씬은 거부한다', () => {
+    expect(normalizePosition({ scene: 'transsib-corridor', x: 8, y: 8 }))
+      .toEqual({ scene: 'transsib-corridor', x: 8, y: 8 });
+    expect(normalizePositionScene('transsib-corridor')).toBe('transsib-corridor');
+    expect(normalizePositionScene('transsib-admin')).toBe('plaza');
+    expect(normalizePosition({ scene: 'transsib-corridor', x: 9, y: 8 })).toBeNull();
   });
 
   it('소수 좌표는 반올림', () => {
@@ -123,6 +132,12 @@ describe('isPersistablePosition — 위치 영속 판정(순수)', () => {
   it('공항 씬은 플래그와 무관하게 영속 제외(플라자·도시만 스폰 원천)', () => {
     expect(isPersistablePosition({ scene: 'airport', x: 3, y: 4 })).toBe(false);
     expect(isPersistablePosition({ scene: 'airport', x: 3, y: 4, persistable: true })).toBe(false);
+  });
+
+  it('횡단철도는 플랫폼만 저장하고 운행 중 좌표는 저장하지 않는다', () => {
+    expect(isPersistablePosition({ scene: 'transsib-corridor', x: 8, y: 8, persistable: true })).toBe(true);
+    expect(isPersistablePosition({ scene: 'transsib-corridor', x: 90, y: 8, persistable: false })).toBe(false);
+    expect(isPersistablePosition({ scene: 'transsib-admin', x: 8, y: 8, persistable: true })).toBe(false);
   });
 
   it('null/undefined/비객체는 영속 제외(안전)', () => {
