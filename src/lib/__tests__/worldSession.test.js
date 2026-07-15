@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   extractClientIp, normalizePosition, normalizePositionScene, isSpawnTileValid,
   isPersistablePosition, cityRedirectScene, corridorRedirectScene,
+  overworldRegionRedirectScene,
 } from '../world/session.js';
 
 // ─────────────────────────────────────────────────────────────
@@ -60,6 +61,16 @@ describe('normalizePosition — 저장 좌표 정규화(순수)', () => {
     expect(normalizePositionScene('transsib-corridor')).toBe('transsib-corridor');
     expect(normalizePositionScene('transsib-admin')).toBe('plaza');
     expect(normalizePosition({ scene: 'transsib-corridor', x: 9, y: 8 })).toBeNull();
+  });
+
+  it('확장 지역 씬은 등록된 범위 안 좌표만 보존한다', () => {
+    expect(normalizePosition({ scene: 'overworld:asia-pacific', x: 1576, y: 442 }))
+      .toEqual({ scene: 'overworld:asia-pacific', x: 1576, y: 442 });
+    expect(normalizePosition({ scene: 'overworld:emea', x: 768, y: 253 }))
+      .toEqual({ scene: 'overworld:emea', x: 768, y: 253 });
+    expect(normalizePosition({ scene: 'overworld:emea', x: 964, y: 253 })).toBeNull();
+    expect(normalizePosition({ scene: 'overworld:asia-pacific', x: 1576, y: 2669 })).toBeNull();
+    expect(normalizePositionScene('overworld:unknown')).toBe('plaza');
   });
 
   it('소수 좌표는 반올림', () => {
@@ -140,6 +151,13 @@ describe('isPersistablePosition — 위치 영속 판정(순수)', () => {
     expect(isPersistablePosition({ scene: 'transsib-admin', x: 8, y: 8, persistable: true })).toBe(false);
   });
 
+  it('등록된 확장 지역 좌표만 영속 대상으로 삼는다', () => {
+    expect(isPersistablePosition({ scene: 'overworld:asia-pacific', x: 1576, y: 442 })).toBe(true);
+    expect(isPersistablePosition({ scene: 'overworld:emea', x: 768, y: 253, persistable: true })).toBe(true);
+    expect(isPersistablePosition({ scene: 'overworld:emea', x: 768, y: 253, persistable: false })).toBe(false);
+    expect(isPersistablePosition({ scene: 'overworld:unknown', x: 1, y: 1 })).toBe(false);
+  });
+
   it('null/undefined/비객체는 영속 제외(안전)', () => {
     expect(isPersistablePosition(null)).toBe(false);
     expect(isPersistablePosition(undefined)).toBe(false);
@@ -210,5 +228,23 @@ describe('corridorRedirectScene — 초기 부팅 시 횡단철도 플랫폼 복
     expect(corridorRedirectScene({ spawn: { scene: 'plaza', x: 68, y: 208 } }, saved)).toBeNull();
     expect(corridorRedirectScene({}, { scene: 'transsib-corridor', x: 81, y: 8 })).toBeNull();
     expect(corridorRedirectScene({}, { scene: 'plaza', x: 68, y: 208 })).toBeNull();
+  });
+});
+
+describe('overworldRegionRedirectScene — 초기 부팅 시 확장 지역 복귀', () => {
+  it('순수 초기 부팅이면 저장된 아시아·태평양/유럽 지역으로 직행한다', () => {
+    expect(overworldRegionRedirectScene({}, {
+      scene: 'overworld:asia-pacific', x: 1576, y: 442,
+    })).toBe('overworld:asia-pacific');
+    expect(overworldRegionRedirectScene(undefined, {
+      scene: 'overworld:emea', x: 768, y: 253,
+    })).toBe('overworld:emea');
+  });
+
+  it('다른 씬에서 복귀 중이거나 미등록/범위 밖 좌표면 직행하지 않는다', () => {
+    const saved = { scene: 'overworld:emea', x: 768, y: 253 };
+    expect(overworldRegionRedirectScene({ spawn: { scene: 'transsib-corridor', x: 208, y: 8 } }, saved)).toBeNull();
+    expect(overworldRegionRedirectScene({}, { scene: 'overworld:unknown', x: 1, y: 1 })).toBeNull();
+    expect(overworldRegionRedirectScene({}, { scene: 'overworld:emea', x: 964, y: 253 })).toBeNull();
   });
 });

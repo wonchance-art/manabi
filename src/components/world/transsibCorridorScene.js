@@ -12,6 +12,10 @@ import {
   persistCorridorTerminalBeforeBoard,
   prepareCorridorTrip,
 } from '../../lib/world/transsibCorridor';
+import {
+  overworldRegionForCorridorStop,
+  overworldRegionSpawnForCorridorStop,
+} from '../../lib/world/overworldRegions';
 import bus from './bus';
 
 const TILE = 32;
@@ -186,7 +190,31 @@ export function buildTranssibCorridorScene(Phaser, ctx) {
       if (this.trip || !this.nearStopId) return;
       const currentIndex = TRANS_SIBERIAN_CORRIDOR.stops.findIndex((stop) => stop.id === this.nearStopId);
       const options = terminalStops().filter((stop, index) => (index === 0 ? currentIndex > 0 : currentIndex < TRANS_SIBERIAN_CORRIDOR.stops.length - 1));
-      ctx.requestBoarding?.({ stop: stopById(this.nearStopId), options });
+      ctx.requestBoarding?.({
+        stop: stopById(this.nearStopId),
+        options,
+        regionGate: overworldRegionForCorridorStop(this.nearStopId),
+      });
+    }
+
+    async leaveToRegion() {
+      if (this.trip || !this.nearStopId || this.inputLocked) return;
+      const region = overworldRegionForCorridorStop(this.nearStopId);
+      const spawn = overworldRegionSpawnForCorridorStop(this.nearStopId);
+      if (!region || !spawn) return;
+      this.inputLocked = true;
+      this.heldDirs.length = 0;
+      ctx.setNearStop?.(null);
+      ctx.setStatus?.({ phase: 'saving-region', message: `${region.label} 진입 위치를 저장하고 있어요.` });
+      const persisted = await ctx.persistPosition(spawn);
+      if (!persisted) {
+        this.inputLocked = false;
+        this.refreshNearStop(true);
+        ctx.setStatus?.({ phase: 'error', message: '지역 진입 위치를 저장하지 못했어요. 연결을 확인해 주세요.' });
+        return;
+      }
+      ctx.setStatus?.(null);
+      this.scene.start(region.sceneId, { spawn });
     }
 
     async boardTo(terminalId) {

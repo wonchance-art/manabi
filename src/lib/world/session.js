@@ -2,6 +2,7 @@
 // 부수효과 0(브라우저/서버 API 미의존)이라 유닛 테스트가 쉽다.
 
 import { isCorridorPlatformTile } from './transsibCorridor';
+import { isOverworldRegionTile, overworldRegionByScene } from './overworldRegions';
 
 // x-forwarded-for(첫 항목)·x-real-ip 순으로 클라이언트 IP 를 고른다. 서버 라우트만 신뢰 가능한
 // 값이므로(클라 위조 무의미) 라우트에서 request 헤더로 이 함수를 부른다. getHeader(name)=>value|null.
@@ -29,6 +30,7 @@ const TRANSIT_TERMINAL_SCENES = new Set(['transsib-corridor']);
 export function normalizePositionScene(rawScene) {
   if (rawScene === 'airport') return 'airport';
   if (TRANSIT_TERMINAL_SCENES.has(rawScene)) return rawScene;
+  if (overworldRegionByScene(rawScene)) return rawScene;
   if (CITY_SCENE_RE.test(rawScene)) return rawScene;
   return 'plaza';
 }
@@ -47,6 +49,7 @@ export function normalizePosition(raw) {
   if (xi < 0 || yi < 0) return null;
   const scene = normalizePositionScene(typeof raw.scene === 'string' ? raw.scene : '');
   if (scene === 'transsib-corridor' && !isCorridorPlatformTile(xi, yi)) return null;
+  if (overworldRegionByScene(scene) && !isOverworldRegionTile(scene, xi, yi)) return null;
   return { scene, x: xi, y: yi };
 }
 
@@ -71,6 +74,13 @@ export function corridorRedirectScene(bootData, savedSpawn) {
   return isCorridorPlatformTile(Number(savedSpawn.x), Number(savedSpawn.y)) ? 'transsib-corridor' : null;
 }
 
+export function overworldRegionRedirectScene(bootData, savedSpawn) {
+  if (bootData && bootData.spawn) return null;
+  const scene = typeof savedSpawn?.scene === 'string' ? savedSpawn.scene : '';
+  if (!overworldRegionByScene(scene)) return null;
+  return isOverworldRegionTile(scene, Number(savedSpawn.x), Number(savedSpawn.y)) ? scene : null;
+}
+
 // 스폰 타일이 맵 안이고 걸을 수 있는지(순수). isWalkable(tx,ty)=>bool 은 호출부가 주입
 // (GameCanvas 는 씬의 tileCode/blocked 로, 테스트는 페이크로). 범위 밖·비보행이면 false.
 export function isSpawnTileValid(tx, ty, cols, rows, isWalkable) {
@@ -92,5 +102,6 @@ export function isSpawnTileValid(tx, ty, cols, rows, isWalkable) {
 export function isPersistablePosition(st) {
   if (!st || st.persistable === false) return false;
   const scene = typeof st.scene === 'string' ? st.scene : 'plaza';
-  return scene === 'plaza' || CITY_SCENE_RE.test(scene) || TRANSIT_TERMINAL_SCENES.has(scene);
+  return scene === 'plaza' || CITY_SCENE_RE.test(scene)
+    || TRANSIT_TERMINAL_SCENES.has(scene) || !!overworldRegionByScene(scene);
 }
