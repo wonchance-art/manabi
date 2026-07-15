@@ -164,3 +164,44 @@ node scripts/world/build-overworld-region.mjs \
   --output-dir public/assets/overworld/asia-pacific-surface-preview-v1 \
   --check
 ```
+
+## 11. 지역 ① terrain·river preview v1
+
+`scripts/world/overworld-terrain-apac-v1.json`과 `scripts/world/build-overworld-terrain.mjs`는 surface preview를
+기준으로 고도 등급과 주요 강 중심선을 파생한다. 이 단계도 이동 마스크를 열지 않으며
+`releaseEligible=false`다.
+
+- 고도 원본은 NOAA ETOPO 2022 v1 60 arc-second bed GeoTIFF다.
+  전체 원본 `478,386,633`바이트와
+  `SHA-256=a2cc72f8a4292dee928f439069457cdefc1fba319876807c626edce40258ba7a`를 먼저 검증한다.
+- 원격 WCS 재표본화는 사용하지 않는다. 고정 원본에서 `left=14400, top=1740, width=7200,
+  height=6481`을 로컬 추출한다.
+- 타일마다 `[0.125,0.375,0.625,0.875]²`의 16개 지점을 가장 가까운 native 픽셀로 표본화해 평균하고
+  half-away-from-zero로 반올림한다. ceil 격자의 동·남쪽 미세 초과분은 원본 끝 픽셀로 명시적으로 clamp한다.
+- 바다는 surface preview의 바다 값을 그대로 보존한다. 육지는 `<300m=lowland`, `300–999m=highland`,
+  `1000–2499m=mountain`, `≥2500m=alpine`의 4개 등급으로 기록한다.
+- 강 원본은 Natural Earth 10m rivers/lake centerlines v5.1.2,
+  `SHA-256=bb854a900ecbd3b408df46d5e16e3e0f974ba55993f9d8b5c26e855273c0905a`다.
+  `scalerank≤5`만 선택하고 단순화 없이 전역 타일 1/1024 정수 좌표로 한 번 양자화한다. 각 256타일
+  청크에는 1타일 halo를 포함하며, 경계를 공유하는 파일은 같은 전역 endpoint를 가진다.
+- 체크인 산출물은 `public/assets/overworld/asia-pacific-terrain-preview-v1/`의 121개 terrain 청크,
+  32개 river overlay, 보고서와 content manifest다. 모든 collision/view-only 비트는 계속 `1`이다.
+
+검증된 두 원본을 캐시 디렉터리에 둔 뒤 다음 명령으로 생성·검증한다.
+
+```bash
+node scripts/world/build-overworld-terrain.mjs \
+  --manifest scripts/world/overworld-terrain-apac-v1.json \
+  --input-dir <verified-source-cache> \
+  --output-dir public/assets/overworld/asia-pacific-terrain-preview-v1
+
+node scripts/world/build-overworld-terrain.mjs \
+  --manifest scripts/world/overworld-terrain-apac-v1.json \
+  --input-dir <verified-source-cache> \
+  --output-dir public/assets/overworld/asia-pacific-terrain-preview-v1 \
+  --check
+
+node scripts/world/render-overworld-terrain-preview.mjs \
+  public/assets/overworld/asia-pacific-terrain-preview-v1 \
+  <preview.png>
+```
