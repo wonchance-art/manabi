@@ -19,7 +19,7 @@ export const ZONES = [
 // POI 별 검증 desc(공식 소스 리서치 2026-07-15 — 단정 회피·전승 헤지·상표 지리참조만)와 전용 파사드.
 //   geo pois 와 자동 동기(목록은 geo 가 진실원, 여기선 표현만 얹음). 미등재 id 는 안전 폴백.
 const POI_FACADE = {
-  'osaka-castle': 'castle', ebisubashi: 'bigscreen', tsutenkaku: 'tokyotower',
+  'osaka-castle': 'castle', ebisubashi: 'bigscreen', tsutenkaku: 'tsutenkaku',
   'kuromon-market': 'stall', shitennoji: 'sign', 'osaka-aquarium': 'sign', 'nakanoshima-park': 'sign',
 };
 const POI_DESC = {
@@ -71,7 +71,18 @@ export const TRANSIT = [
   },
 ];
 
-export const PROPS = [];
+export const PROPS = [
+  // 도톤보리 — 무브랜드 네온 거리(戎橋 노드 곁, ≥3 이격·상호 비겹침 간격 계산).
+  { kind: 'neon', tile: [439, 364] },
+  { kind: 'bigscreen', tile: [441, 364] },
+  { kind: 'neon', tile: [443, 364] },
+  // 신세카이 — 通天閣 아래 상점가 네온.
+  { kind: 'neon', tile: [460, 455] },
+  { kind: 'neon', tile: [462, 455] },
+  // 黒門市場 — 아케이드 매대 열.
+  { kind: 'stall', tile: [463, 384] },
+  { kind: 'stall', tile: [465, 384] },
+];
 
 export function buildOsakaGrid() {
   const grid = Uint8Array.from(OSAKA_GEO.terrain);

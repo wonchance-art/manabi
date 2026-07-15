@@ -22,6 +22,7 @@ export const ZONES = [
 //   전승 연도는 "전해짐" 헤지. geo pois 와 자동 동기, 미등재 id 는 안전 폴백.
 const POI_FACADE = {
   'nijo-castle': 'castle', 'fushimi-inari-taisha': 'torii', 'yasaka-shrine': 'torii', 'heian-shrine': 'torii',
+  kinkakuji: 'kinkaku',
 };
 const POI_DESC = {
   'nijo-castle': '1603년 도쿠가와 이에야스가 세운 성 「二条城」(にじょうじょう). 1867년 니노마루 고텐에서 대정봉환이 표명됐고, 세계유산 \'고도 교토의 문화재\'의 구성 자산이에요.',
@@ -82,7 +83,20 @@ export const TRANSIT = [
   },
 ];
 
-export const PROPS = [];
+export const PROPS = [
+  // 伏見稲荷 센본토리이 — 참배로를 따라 토리이 열(노드 남측, ≥3 이격).
+  { kind: 'torii', tile: [486, 520] },
+  { kind: 'torii', tile: [488, 520] },
+  { kind: 'torii', tile: [486, 522] },
+  { kind: 'torii', tile: [488, 522] },
+  // 祇園 — 노렌 거리(八坂 서측).
+  { kind: 'noren', tile: [491, 311] },
+  { kind: 'noren', tile: [493, 311] },
+  // 嵐山 — 대나무 숲(渡月橋 인근).
+  { kind: 'bamboo', tile: [31, 258] },
+  { kind: 'bamboo', tile: [33, 258] },
+  { kind: 'bamboo', tile: [38, 265] },
+];
 
 export function buildKyotoGrid() {
   const grid = Uint8Array.from(KYOTO_GEO.terrain);

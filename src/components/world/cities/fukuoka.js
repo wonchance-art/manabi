@@ -252,6 +252,9 @@ export const PROPS = [
   { kind: 'hakata_sta', tile: [335, 141] }, // 博多駅 대형 역사(JR博多シティ) — 허브
   { kind: 'platform', tile: [331, 146] },   // 博多駅 승강장
   { kind: 'platform', tile: [339, 146] },   // 博多駅 승강장
+  // 中洲 강변 야타이(屋台) 열 — 나카스 밤거리 감성(장식·무상호, 노드와 ≥3 이격).
+  { kind: 'stall', tile: [266, 122] },
+  { kind: 'stall', tile: [268, 122] },
 ];
 
 // 선언적 그리드 빌더 — 결정적·순수. 반환: Uint8Array(COLS*ROWS), 값 ∈ CITY_TILE.

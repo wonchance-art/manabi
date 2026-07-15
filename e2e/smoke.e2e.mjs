@@ -726,6 +726,98 @@ test('world: 저장된 도쿄 시내에서 하네다 EXIT 세로회랑으로 전
   });
 });
 
+test('world: 저장된 오사카 시내에서 梅田 EXIT 세로회랑으로 전국맵에 복귀한다', { timeout: config.timeout * 2 }, async () => {
+  await runInFreshPage(async (page, context) => {
+    const positionWrites = [];
+    await mockWorldShellRuntime(context, {
+      position: { scene: 'city:osaka', x: 414, y: 187 },
+      positionWrites,
+    });
+    await signInWithMockSession(page, context, 'learner');
+
+    await page.goto('/world', { waitUntil: 'domcontentloaded' });
+    await assertVisible(page.getByRole('heading', { name: /^학습 월드/ }), 'world heading');
+    const spawnDeadline = Date.now() + 5000;
+    while (!positionWrites.length && Date.now() < spawnDeadline) await page.waitForTimeout(50);
+    assert.deepEqual(
+      positionWrites[0],
+      { scene: 'city:osaka', x: 414, y: 187 },
+      `world should restore the mocked osaka entrance: ${JSON.stringify(positionWrites)}`
+    );
+
+    await page.getByRole('button', { name: '지도 열기', exact: true }).click();
+    await assertVisible(page.getByRole('button', { name: '닫기 Ⓑ', exact: true }), 'osaka city minimap');
+    const cityMapSize = await page.locator('canvas').last().evaluate((canvas) => ({
+      width: canvas.width,
+      height: canvas.height,
+    }));
+    assert.deepEqual(cityMapSize, { width: 641 * 3, height: 668 * 3 }, 'osaka geo minimap dimensions');
+    await page.getByRole('button', { name: '닫기 Ⓑ', exact: true }).click();
+
+    await page.waitForTimeout(350);
+    await page.keyboard.down('b');
+    await page.keyboard.down('ArrowUp');
+    await page.waitForTimeout(2200);
+    await page.keyboard.up('ArrowUp');
+    await page.keyboard.up('b');
+
+    await assertVisible(page.getByRole('button', { name: '들어가기', exact: true }), 'returned osaka city gate');
+    await page.getByRole('button', { name: '지도 열기', exact: true }).click();
+    await assertVisible(page.getByRole('button', { name: '닫기 Ⓑ', exact: true }), 'returned national minimap');
+    const returnedMapSize = await page.locator('canvas').last().evaluate((canvas) => ({
+      width: canvas.width,
+      height: canvas.height,
+    }));
+    assert.notDeepEqual(returnedMapSize, cityMapSize, 'Osaka EXIT should return to national map');
+  });
+});
+
+test('world: 저장된 교토 시내에서 京都駅 EXIT 세로회랑으로 전국맵에 복귀한다', { timeout: config.timeout * 2 }, async () => {
+  await runInFreshPage(async (page, context) => {
+    const positionWrites = [];
+    await mockWorldShellRuntime(context, {
+      position: { scene: 'city:kyoto', x: 404, y: 422 },
+      positionWrites,
+    });
+    await signInWithMockSession(page, context, 'learner');
+
+    await page.goto('/world', { waitUntil: 'domcontentloaded' });
+    await assertVisible(page.getByRole('heading', { name: /^학습 월드/ }), 'world heading');
+    const spawnDeadline = Date.now() + 5000;
+    while (!positionWrites.length && Date.now() < spawnDeadline) await page.waitForTimeout(50);
+    assert.deepEqual(
+      positionWrites[0],
+      { scene: 'city:kyoto', x: 404, y: 422 },
+      `world should restore the mocked kyoto entrance: ${JSON.stringify(positionWrites)}`
+    );
+
+    await page.getByRole('button', { name: '지도 열기', exact: true }).click();
+    await assertVisible(page.getByRole('button', { name: '닫기 Ⓑ', exact: true }), 'kyoto city minimap');
+    const cityMapSize = await page.locator('canvas').last().evaluate((canvas) => ({
+      width: canvas.width,
+      height: canvas.height,
+    }));
+    assert.deepEqual(cityMapSize, { width: 639 * 3, height: 668 * 3 }, 'kyoto geo minimap dimensions');
+    await page.getByRole('button', { name: '닫기 Ⓑ', exact: true }).click();
+
+    await page.waitForTimeout(350);
+    await page.keyboard.down('b');
+    await page.keyboard.down('ArrowUp');
+    await page.waitForTimeout(2200);
+    await page.keyboard.up('ArrowUp');
+    await page.keyboard.up('b');
+
+    await assertVisible(page.getByRole('button', { name: '들어가기', exact: true }), 'returned kyoto city gate');
+    await page.getByRole('button', { name: '지도 열기', exact: true }).click();
+    await assertVisible(page.getByRole('button', { name: '닫기 Ⓑ', exact: true }), 'returned national minimap');
+    const returnedMapSize = await page.locator('canvas').last().evaluate((canvas) => ({
+      width: canvas.width,
+      height: canvas.height,
+    }));
+    assert.notDeepEqual(returnedMapSize, cityMapSize, 'Kyoto EXIT should return to national map');
+  });
+});
+
 test('world peers: 수십 명 렌더·거리·라벨 순수 부하를 측정한다', () => {
   const result = runPeerLoadBenchmark({ peerCount: 64, frames: 600, distancePasses: 200 });
   assert.equal(result.displayObjects, 128);
