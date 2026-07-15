@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   extractClientIp, normalizePosition, normalizePositionScene, isSpawnTileValid,
-  isPersistablePosition, cityRedirectScene,
+  isPersistablePosition, cityRedirectScene, corridorRedirectScene,
 } from '../world/session.js';
 
 // ─────────────────────────────────────────────────────────────
@@ -195,5 +195,20 @@ describe('cityRedirectScene — 초기 부팅 시 도시 직행 스폰 판별(�
 
   it('hasCity 미제공(비함수)이면 안전하게 null', () => {
     expect(cityRedirectScene({}, savedCity, null)).toBeNull();
+  });
+});
+
+describe('corridorRedirectScene — 초기 부팅 시 횡단철도 플랫폼 복귀', () => {
+  const saved = { scene: 'transsib-corridor', x: 80, y: 8 };
+
+  it('순수 초기 부팅이면 저장된 플랫폼 씬으로 직행한다', () => {
+    expect(corridorRedirectScene({}, saved)).toBe('transsib-corridor');
+    expect(corridorRedirectScene(undefined, saved)).toBe('transsib-corridor');
+  });
+
+  it('다른 씬에서 복귀 중이거나 플랫폼 밖 좌표면 직행하지 않는다', () => {
+    expect(corridorRedirectScene({ spawn: { scene: 'plaza', x: 68, y: 208 } }, saved)).toBeNull();
+    expect(corridorRedirectScene({}, { scene: 'transsib-corridor', x: 81, y: 8 })).toBeNull();
+    expect(corridorRedirectScene({}, { scene: 'plaza', x: 68, y: 208 })).toBeNull();
   });
 });

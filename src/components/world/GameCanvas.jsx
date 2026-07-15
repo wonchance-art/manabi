@@ -60,14 +60,16 @@ import {
 import { activeOverworldVehiclesAt, OVERWORLD_ROUTES } from './overworldTransit';
 // 🧭 재접속 스폰 좌표 검증(순수) — 저장된 타일이 맵 안·보행 가능일 때만 사용, 아니면 서울 폴백.
 // cityRedirectScene: 초기 부팅 시 저장 씬이 'city:<id>' 면 도시맵 직행 판별(순수 — Codex P1-1 회귀 게이트).
-import { isSpawnTileValid, cityRedirectScene } from '../../lib/world/session';
+import { isSpawnTileValid, cityRedirectScene, corridorRedirectScene } from '../../lib/world/session';
 // 🌏 독해 트랙 "도쿄 도착" 글 1 → 월드 스토리 씬(하네다 공항). 공항 씬·텍스트박스·문답 오버레이.
 import { buildAirportScene } from './airportScene';
+import { buildTranssibCorridorScene } from './transsibCorridorScene';
 // 🏙️ 도시 정밀맵(계층형 맵) — CityScene 은 1개, cityId 로 파라미터화. 도시 추가 = cities/<id>.js 1개.
 //   도시 데이터는 이 청크(GameCanvas 는 next/dynamic ssr:false) 안에서만 로드된다 — /world First Load JS 무영향.
 import { buildCityScene } from './CityScene';
 import { CITY_DATA } from './cities/index.js';
 import { directTransitDestinations } from '../../lib/world/transit';
+import { corridorStopSpawn } from '../../lib/world/transsibCorridor';
 import { formatWorldTime, WORLD_TIME_SCALE } from '../../lib/world/worldClock';
 import { cityWeatherAt, worldEventAt } from '../../lib/world/worldLife';
 import { useWorldClock } from '../../lib/world/useWorldClock';
@@ -380,7 +382,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   const gameMenuOpenRef = useRef(false);
   // ── 도시 정밀맵(계층형 맵) ──
   // cityPrompt: 전국맵 도시 노드 A → "시내로 들어가기" 확인 { to, name } | null
-  // activeScene: 활성 씬 식별자('plaza'|'airport'|'city:<id>') — 미니맵·오버레이 분기.
+  // activeScene: 활성 씬 식별자('plaza'|'airport'|'city:<id>'|'transsib-corridor') — 오버레이 분기.
   const [cityPrompt, setCityPrompt] = useState(null);
   const [chapterPrompt, setChapterPrompt] = useState(null); // 학습 도어 확인 { chapter|reading, node } | null
   const [activeScene, setActiveScene] = useState('plaza');
@@ -402,6 +404,12 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   const nearStationRef = useRef(null);
   const stationSelectRef = useRef(null);
   const activeSceneRef = useRef('plaza');   // interact 콜백(once-effect)이 현재 씬을 읽도록 미러
+
+  // ── 🚆 시베리아 횡단 연결선(장거리 직접 하차) ──
+  const [corridorNear, setCorridorNear] = useState(null);
+  const [corridorPrompt, setCorridorPrompt] = useState(null);
+  const [corridorStatus, setCorridorStatus] = useState(null);
+  const corridorPromptRef = useRef(null);
 
   // ── NPC 대화 상태 ── npcDialog: { key, node } | null (열림 = 대화 오버레이 표시)
   const [npcDialog, setNpcDialog] = useState(null);
@@ -465,6 +473,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   useEffect(() => { nearStationRef.current = nearStation; }, [nearStation]);
   useEffect(() => { stationSelectRef.current = stationSelect; }, [stationSelect]);
   useEffect(() => { activeSceneRef.current = activeScene; }, [activeScene]);
+  useEffect(() => { corridorPromptRef.current = corridorPrompt; }, [corridorPrompt]);
   // 역에서 멀어지면 열려 있던 행선지 오버레이도 닫는다(근접 해제 = 취소).
   useEffect(() => { if (!nearStation) setStationSelect(null); }, [nearStation]);
   // 도착 확인 토스트는 잠시 뒤 자동으로 걷힌다.
@@ -525,6 +534,8 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         if (npcDialogRef.current) { npcActionRef.current?.(); return; } // NPC 대화 중 A → 다음 대사
         if (storyPhaseRef.current === 'dialogue') { advanceStoryRef.current?.(); return; }
         if (reviewOpenRef.current || storyActiveRef.current || ferryPromptRef.current || cityPromptRef.current || chapterPromptRef.current) return;
+        if (corridorPromptRef.current) return;
+        if (activeSceneRef.current === 'transsib-corridor') { sceneRef.current?.corridorInteract?.(); return; }
         if (stationSelectRef.current) return; // 행선지 오버레이는 버튼으로 선택(B로 닫기) — A는 무시
         if (descOpenRef.current) { setDescOpen(false); return; } // 설명 박스 열려 있으면 A로도 닫기
         const node = nearNodeRef.current;
@@ -568,12 +579,14 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         if (ferryPromptRef.current) { setFerryPrompt(null); return; }
         if (cityPromptRef.current) { setCityPrompt(null); return; }
         if (chapterPromptRef.current) { setChapterPrompt(null); return; }
+        if (corridorPromptRef.current) { setCorridorPrompt(null); return; }
+        if (corridorStatus?.phase === 'error') { setCorridorStatus(null); return; }
         if (minimapOpenRef.current) { setMinimapOpen(false); return; }
         if (reviewOpenRef.current) setReviewOpen(false);
       },
     };
     return () => { if (controlsRef) controlsRef.current = null; };
-  }, [controlsRef, onOpenChapter, onOpenReading]);
+  }, [controlsRef, onOpenChapter, onOpenReading, corridorStatus?.phase]);
 
   // ── 스토리 조작(대사 진행·뜻 토글) — 셸 A/B 콜백이 참조하도록 ref에 최신본을 심는다 ──
   const advanceStory = () => {
@@ -626,10 +639,11 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   useEffect(() => {
     const scene = sceneRef.current;
     if (!scene) return;
-    const lock = reviewOpen || !!ferryPrompt || !!npcDialog || !!cityPrompt || !!chapterPrompt || !!stationSelect || albumOpen || gameMenuOpen;
+    const lock = reviewOpen || !!ferryPrompt || !!npcDialog || !!cityPrompt || !!chapterPrompt
+      || !!stationSelect || !!corridorPrompt || albumOpen || gameMenuOpen;
     scene.inputLocked = lock;
     if (lock) { if (scene.heldDirs) scene.heldDirs.length = 0; scene.tapTile = null; scene.runHeld = false; }
-  }, [reviewOpen, ferryPrompt, npcDialog, cityPrompt, chapterPrompt, stationSelect, albumOpen, gameMenuOpen]);
+  }, [reviewOpen, ferryPrompt, npcDialog, cityPrompt, chapterPrompt, stationSelect, corridorPrompt, albumOpen, gameMenuOpen]);
 
   useEffect(() => {
     let destroyed = false;
@@ -1219,6 +1233,11 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
 
         create(bootData) {
           sceneRef.current = this;   // 버스 핸들러 위임 대상 · React 입력 잠금 갱신용
+          const corridorRedirect = corridorRedirectScene(bootData, initialSpawnRef.current);
+          if (corridorRedirect) {
+            this.scene.start(corridorRedirect, { spawn: initialSpawnRef.current });
+            return;
+          }
           // ── 직행 재접속(문서 §4) — 저장 씬이 'city:<id>' 면 도시맵으로 바로 스폰 ──
           // 판별은 순수 함수 cityRedirectScene(session.js)에 위임한다(Codex P1-1): Phaser 3 는
           // autostart 초기 부팅에도 기본 데이터 `{}` 를 전달하므로 `!bootData` 로는 부팅을 못 가른다 —
@@ -1231,6 +1250,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
             }
           }
           setActiveScene('plaza');
+          setCorridorNear(null); setCorridorPrompt(null); setCorridorStatus(null);
           this.inputLocked = false;  // 리뷰 오버레이 중 이동 잠금
           this.enteringCity = false; // 도시 진입 페이드 가드(씬 인스턴스 재사용 — 복귀 시 리셋 필수)
           this.petJumpVal = 0;       // 퀘스트 완료 점프 연출값(0→1→0)
@@ -1641,6 +1661,12 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           this.scene.start('airport', { returnSpawn: { scene: 'plaza', x: this.pTileX, y: this.pTileY } });
         }
 
+        enterTranssib(stopId = 'vladivostok') {
+          const spawn = corridorStopSpawn(stopId);
+          if (!spawn) return;
+          this.scene.start('transsib-corridor', { spawn });
+        }
+
         // 페리 탑승 — "함께 보이는 항해". 순간이동 대신 물 위를 3~5초에 걸쳐 tween 이동한다.
         //   · 이동 중 캐릭터 아래 배 도트, 조작 잠금(this.ferrying), 카메라는 계속 플레이어 추적.
         //   · update() 의 local:state 는 항해 중에도 계속 스트림되므로(연속 좌표) 상대 화면에서도
@@ -1953,6 +1979,33 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       };
       const AirportScene = buildAirportScene(Phaser, airportCtx);
 
+      const corridorCtx = {
+        userId, avatarRef, worldClockRef,
+        bindScene: (scene) => { sceneRef.current = scene; },
+        onEnter: () => {
+          setActiveScene('transsib-corridor');
+          setNearNode(null); setNearQuest(false); setDescOpen(false); setMinimapOpen(false);
+          setNearStation(null); setStationSelect(null); setTransitStatus(null);
+          setCorridorPrompt(null); setCorridorStatus(null);
+        },
+        setNearStop: (stop) => setCorridorNear(stop),
+        setStatus: (status) => setCorridorStatus(status),
+        requestBoarding: (prompt) => setCorridorPrompt(prompt),
+        persistPosition: async (position) => {
+          if (!userId || !position) return false;
+          try {
+            const response = await fetch('/api/world/position', {
+              method: 'POST', credentials: 'same-origin',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify(position), keepalive: true,
+            });
+            return response.ok;
+          } catch { return false; }
+        },
+        onReady: () => resetScenePeers(),
+      };
+      const TranssibCorridorScene = buildTranssibCorridorScene(Phaser, corridorCtx);
+
       // 🏙️ 도시 정밀맵 씬(들) — CityScene 은 1개 팩토리를 cityId 로 파라미터화. 씬 키 'city:<id>'.
       // ctx: 씬 ↔ React 브리지(sceneRef 바인딩 · 근접 노드 통지 · 진입 통지 · 전국맵 복귀 스폰).
       const cityScenes = Object.values(CITY_DATA).map((cityData) => {
@@ -1964,6 +2017,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
             setActiveScene(`city:${cityData.id}`);
             setNearNode(null); setNearQuest(false); setCityPrompt(null); setChapterPrompt(null); setDescOpen(false); setMinimapOpen(false);
             setNearStation(null); setStationSelect(null); setStationToast(null); setTransitStatus(null);
+            setCorridorNear(null); setCorridorPrompt(null); setCorridorStatus(null);
           },
           setNear: (node) => setNearNode(node),
           setNearStation: (st) => setNearStation(st),           // 🚃 역 근접 → 행선지 프롬프트
@@ -1992,7 +2046,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         pixelArt: true,
         roundPixels: true,
         scale: { mode: Phaser.Scale.NONE, width: VIEW_W, height: VIEW_H },
-        scene: [WorldScene, AirportScene, ...cityScenes],
+        scene: [WorldScene, AirportScene, TranssibCorridorScene, ...cityScenes],
       });
       gameRef.current = game;
       if (game.canvas) game.canvas.style.imageRendering = 'pixelated';
@@ -2001,6 +2055,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           snapshot: () => sceneRef.current?.overworldRuntimeSnapshot?.() ?? null,
           teleport: (x, y) => sceneRef.current?.debugTeleportTo?.(x, y)
             ?? Promise.reject(new Error('world scene is not ready')),
+          enterTranssib: (stopId) => sceneRef.current?.enterTranssib?.(stopId),
         });
         window.__MANABI_WORLD_DEBUG__ = debugBridge;
       }
@@ -2064,6 +2119,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           const event = worldEventAt(cityId, worldClock);
           return <span style={{ display: 'block', opacity: 0.78 }}>{weather.icon} {weather.label} · {event.label}</span>;
         })()}
+        {activeScene === 'transsib-corridor' && <span style={{ display: 'block', opacity: 0.78 }}>🚆 횡단열차 회랑</span>}
       </div>
 
       {/* 조작 힌트 — GBC 다이얼로그 문법(크림 칩, 하드 엣지). */}
@@ -2074,7 +2130,9 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         boxShadow: `inset 0 0 0 1px ${GBC.creamHi}`,
         padding: '3px 6px', borderRadius: 2, lineHeight: 1.35,
       }}>
-        ✚ 이동 · Ⓐ 말 걸기 · Ⓑ 닫기 · Ⓑ홀드 달리기
+        {activeScene === 'transsib-corridor'
+          ? '✚ 플랫폼 이동 · Ⓐ 탑승/하차 · Ⓑ 닫기'
+          : '✚ 이동 · Ⓐ 말 걸기 · Ⓑ 닫기 · Ⓑ홀드 달리기'}
       </div>
 
       {/* 표지판 근접 → '말 걸기' 프롬프트. Phaser 내 DOM 금지 → React 오버레이. (오너 지시: 게임 내에서 진행) */}
@@ -2099,7 +2157,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       )}
 
       {/* 우상단 미니맵 버튼(GBC 칩) — 셸 START/SELECT와 충돌 없게 게임 화면 안에 별도 배치. */}
-      {!reviewOpen && !storyActive && !ferryPrompt && !cityPrompt && !chapterPrompt && !albumOpen && !gameMenuOpen && (
+      {activeScene !== 'transsib-corridor' && !reviewOpen && !storyActive && !ferryPrompt && !cityPrompt && !chapterPrompt && !albumOpen && !gameMenuOpen && (
         <button
           type="button"
           aria-label={minimapOpen ? '지도 닫기' : '지도 열기'}
@@ -2250,6 +2308,97 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {corridorNear && !corridorPrompt && !corridorStatus && activeScene === 'transsib-corridor' && (
+        <div style={{
+          position: 'absolute', left: '50%', bottom: 18, transform: 'translateX(-50%)',
+          fontFamily: GBC.font, fontSize: '0.7rem', color: GBC.ink,
+          background: GBC.cream, border: `2px solid ${GBC.border}`,
+          boxShadow: `inset 0 0 0 1px ${GBC.creamHi}`, borderRadius: 2,
+          padding: '4px 10px', lineHeight: 1.2, whiteSpace: 'nowrap',
+        }}>
+          🚆 Ⓐ {corridorNear.name} 횡단열차
+        </div>
+      )}
+
+      {corridorPrompt && (
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 8, display: 'grid', placeItems: 'center',
+          background: 'rgba(11,13,8,0.62)',
+        }}>
+          <div style={{ ...gbcPanel, width: 'min(88%, 340px)', padding: '14px 14px 12px' }}>
+            <div style={{ fontSize: '0.84rem', fontWeight: 'bold', textAlign: 'center', marginBottom: 4 }}>
+              🚆 {corridorPrompt.stop.name} 출발
+            </div>
+            <div style={{ fontSize: '0.66rem', opacity: 0.75, textAlign: 'center', marginBottom: 10 }}>
+              탑승 전에 종착 플랫폼을 안전하게 저장해요
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+              {corridorPrompt.options.map((terminal) => (
+                <button
+                  key={terminal.id}
+                  type="button"
+                  onClick={() => {
+                    setCorridorPrompt(null);
+                    sceneRef.current?.boardTo?.(terminal.id);
+                  }}
+                  style={{ ...gbcButtonPrimary, textAlign: 'left', display: 'flex', justifyContent: 'space-between' }}
+                >
+                  <span>{terminal.name}행</span><span style={{ opacity: 0.72 }}>직접 하차</span>
+                </button>
+              ))}
+            </div>
+            <div style={{ textAlign: 'right', marginTop: 10 }}>
+              <button
+                type="button"
+                onClick={() => setCorridorPrompt(null)}
+                style={{ ...gbcButtonPrimary, background: GBC.cream, color: GBC.ink, fontSize: '0.7rem', padding: '3px 10px' }}
+              >
+                취소 Ⓑ
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {corridorStatus && activeScene === 'transsib-corridor' && (
+        <div style={{
+          position: 'absolute', left: '50%', top: 42, transform: 'translateX(-50%)', zIndex: 7,
+          fontFamily: GBC.font, fontSize: '0.68rem', color: GBC.ink, textAlign: 'center',
+          background: GBC.cream, border: `2px solid ${GBC.border}`,
+          boxShadow: `inset 0 0 0 1px ${GBC.creamHi}`, borderRadius: 2,
+          padding: '6px 11px', lineHeight: 1.5, minWidth: 220,
+        }}>
+          {corridorStatus.phase === 'saving' && <>💾 종착 플랫폼 저장 중…</>}
+          {corridorStatus.phase === 'saving-stop' && <>💾 하차 위치 저장 중…</>}
+          {corridorStatus.phase === 'waiting' && (
+            <>🚉 {corridorStatus.terminal?.name}행<br />
+              {formatTransitMinute(corridorStatus.departureMinute)} 출발 · 현실 약 {Math.max(0, Math.ceil((corridorStatus.departureMinute - worldClock.totalGameMinutes) * 60 / WORLD_TIME_SCALE))}초
+            </>
+          )}
+          {corridorStatus.phase === 'riding' && <>🚆 {corridorStatus.terminal?.name} 방면 이동 중</>}
+          {corridorStatus.phase === 'stopped' && (
+            <>🚉 {corridorStatus.stop?.name} 정차 · Ⓐ 지금 내리기<br /><span style={{ opacity: 0.72 }}>내리지 않으면 다음 구간으로 계속 가요</span></>
+          )}
+          {corridorStatus.phase === 'terminal' && (
+            <>🚉 {corridorStatus.stop?.name} 종착 · Ⓐ 내리기<br /><span style={{ opacity: 0.72 }}>종착 플랫폼은 이미 안전하게 저장됐어요</span></>
+          )}
+          {corridorStatus.phase === 'error' && (
+            <>
+              ⚠ {corridorStatus.message || '요청을 완료하지 못했어요.'}
+              <div style={{ marginTop: 6 }}>
+                <button
+                  type="button"
+                  onClick={() => setCorridorStatus(null)}
+                  style={{ ...gbcButtonPrimary, fontSize: '0.66rem', padding: '2px 8px' }}
+                >
+                  닫기 Ⓑ
+                </button>
+              </div>
+            </>
+          )}
         </div>
       )}
 

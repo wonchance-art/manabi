@@ -65,6 +65,12 @@ export function cityRedirectScene(bootData, savedSpawn, hasCity) {
   return (typeof hasCity === 'function' && hasCity(id)) ? sc : null;
 }
 
+export function corridorRedirectScene(bootData, savedSpawn) {
+  if (bootData && bootData.spawn) return null;
+  if (savedSpawn?.scene !== 'transsib-corridor') return null;
+  return isCorridorPlatformTile(Number(savedSpawn.x), Number(savedSpawn.y)) ? 'transsib-corridor' : null;
+}
+
 // 스폰 타일이 맵 안이고 걸을 수 있는지(순수). isWalkable(tx,ty)=>bool 은 호출부가 주입
 // (GameCanvas 는 씬의 tileCode/blocked 로, 테스트는 페이크로). 범위 밖·비보행이면 false.
 export function isSpawnTileValid(tx, ty, cols, rows, isWalkable) {
