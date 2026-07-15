@@ -72,12 +72,12 @@ export const CITY_NODES = [
   },
   // ── v2.2 확장 POI 10 (검증 리서치 2026-07-15 — 전승은 헤지, 상표는 지리 참조만) ──
   {
-    id: 'sensoji', kind: 'spot', name: '浅草寺', facade: 'sign',
+    id: 'sensoji', kind: 'spot', name: '浅草寺', facade: 'kaminarimon',
     tile: poiTile('sensoji'), facing: 'down', noStamp: true,
     desc: '관음보살을 본존으로 하는 다이토구의 사찰 「浅草寺」(せんそうじ). 연기(縁起)에 따르면 628년 창건으로 전해지고, 가미나리몬(雷門)의 현재 문은 1960년 재건이에요.',
   },
   {
-    id: 'tokyo-skytree', kind: 'spot', name: '東京スカイツリー', facade: 'sign',
+    id: 'tokyo-skytree', kind: 'spot', name: '東京スカイツリー', facade: 'skytree',
     tile: poiTile('tokyo-skytree'), facing: 'down', noStamp: true,
     desc: '스미다구의 높이 634m 전파탑 「東京スカイツリー」(とうきょうすかいつりー). 2012년 5월에 문을 열었어요.',
   },

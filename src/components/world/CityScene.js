@@ -412,6 +412,68 @@ export function buildCityScene(Phaser, city, ctx) {
         g.fillStyle(C(0x4a5560), 1); g.fillRect(2, 14, 20, 2);        // 선로 자갈
         g.fillStyle(C(0xc9c3b4), 1); g.fillRect(3, 15, 18, 1);        // 레일
       }, 24, 16);
+      // 🏮 세로 네온 간판(도톤보리·신세카이 — 무브랜드). 16×24.
+      this.bakeTile('ct_prop_neon', (g) => {
+        g.fillStyle(C(0x2a2a3a), 1); g.fillRect(5, 1, 7, 20);          // 간판 몸통(세로)
+        g.fillStyle(C(0xff5a8a), 1); g.fillRect(6, 2, 5, 4);           // 네온 블록(핑크)
+        g.fillStyle(C(0x3ec4e0), 1); g.fillRect(6, 7, 5, 4);           // 청록
+        g.fillStyle(C(0xf2c400), 1); g.fillRect(6, 12, 5, 4);          // 노랑
+        g.fillStyle(C(0x8dbb45), 1); g.fillRect(6, 17, 5, 3);          // 연두
+        g.fillStyle(C(0x141414), 1); g.fillRect(7, 21, 3, 3);          // 지주
+      }, 16, 24);
+      // 🌟 금각(금색 파빌리온 — 鹿苑寺 사리전). 24×24, 노드 파사드.
+      this.bakeTile('ct_prop_kinkaku', (g) => {
+        g.fillStyle(C(0x6f4a28), 1); g.fillRect(3, 20, 18, 3);         // 기단(수변)
+        g.fillStyle(C(0x3e93c4), 1); g.fillRect(1, 22, 22, 2);         // 경호지(연못)
+        g.fillStyle(C(0xd9a520), 1); g.fillRect(5, 12, 14, 8);         // 1·2층 금색 몸체
+        g.fillStyle(C(0xf2c94c), 1); g.fillRect(6, 13, 12, 2);         // 금 하이라이트
+        g.fillStyle(C(0x8a6a1a), 1); g.fillRect(4, 11, 16, 1);         // 처마
+        g.fillStyle(C(0xd9a520), 1); g.fillRect(7, 6, 10, 5);          // 3층
+        g.fillStyle(C(0x8a6a1a), 1); g.fillRect(6, 5, 12, 1);          // 상층 처마
+        g.fillStyle(C(0xf2c94c), 1); g.fillRect(11, 2, 2, 3);          // 봉황 장식
+      }, NPC_W, NPC_H);
+      // 🎋 대나무 숲(아라시야마). 16×32, 세로 줄기 3본.
+      this.bakeTile('ct_prop_bamboo', (g) => {
+        for (const [x, h] of [[3, 28], [7, 31], [12, 26]]) {
+          g.fillStyle(C(0x4f8a2c), 1); g.fillRect(x, 31 - h, 3, h);    // 줄기
+          g.fillStyle(C(0x6cae3e), 1); g.fillRect(x, 31 - h, 1, h);    // 명부
+          g.fillStyle(C(0x2a3a1a), 1);
+          for (let y = 31 - h + 4; y < 30; y += 6) g.fillRect(x, y, 3, 1); // 마디
+        }
+        g.fillStyle(C(0x6cae3e), 1); g.fillRect(1, 2, 5, 2); g.fillRect(10, 4, 5, 2); // 잎 힌트
+      }, 16, 32);
+      // 🏮 가미나리몬(浅草寺 대초롱 문). 24×24, 노드 파사드.
+      this.bakeTile('ct_prop_kaminarimon', (g) => {
+        g.fillStyle(C(0x8a2f24), 1); g.fillRect(2, 3, 3, 20); g.fillRect(19, 3, 3, 20); // 주홍 기둥
+        g.fillStyle(C(0x5a3a1a), 1); g.fillRect(0, 1, 24, 4);          // 지붕 보
+        g.fillStyle(C(0x3a2a14), 1); g.fillRect(1, 4, 22, 1);
+        g.fillStyle(C(0xc1352b), 1); g.fillRect(7, 6, 10, 13);         // 대초롱
+        g.fillStyle(C(0xe2543e), 1); g.fillRect(8, 7, 3, 11);          // 초롱 명부
+        g.fillStyle(C(0x141414), 1); g.fillRect(7, 11, 10, 3);         // 초롱 검은 띠(문자 힌트·무문자)
+        g.fillStyle(C(0x2a1e14), 1); g.fillRect(9, 19, 6, 2);          // 초롱 하단 골조
+      }, NPC_W, NPC_H);
+      // 🗼 스카이트리(흰 격자탑 — 붉은 도쿄타워와 구분). 24×32, 노드 파사드.
+      this.bakeTile('ct_prop_skytree', (g) => {
+        g.fillStyle(C(0xe8ecef), 1);
+        g.fillRect(11, 0, 2, 6);                                       // 첨탑
+        g.fillRect(10, 6, 4, 6); g.fillRect(9, 13, 6, 6); g.fillRect(8, 20, 8, 6); g.fillRect(7, 27, 10, 4);
+        g.fillStyle(C(0x9aa7b0), 1); g.fillRect(11, 7, 1, 24);         // 격자 음영선
+        g.fillStyle(C(0x3ec4e0), 1); g.fillRect(9, 12, 6, 1); g.fillRect(8, 19, 8, 1); // 전망데크 2단(청색광)
+        g.fillStyle(C(0x6b7680), 1); g.fillRect(7, 30, 10, 1);
+      }, 24, 32);
+      // 🗼 츠텐카쿠(通天閣) — 은회색 몸체 + 상부 원반 전망대(도쿄타워와 별개 실루엣·무브랜드). 24×32.
+      this.bakeTile('ct_prop_tsutenkaku', (g) => {
+        g.fillStyle(C(0xc9ced4), 1); g.fillRect(11, 0, 2, 4);          // 첨탑 안테나
+        g.fillStyle(C(0xaeb6bd), 1); g.fillRect(7, 4, 10, 5);          // 원반 전망대(상부 넓음)
+        g.fillStyle(C(0xe8ecef), 1); g.fillRect(8, 5, 8, 1);           // 전망대 하이라이트
+        g.fillStyle(C(0x2a2a3a), 1); g.fillRect(8, 7, 8, 1);           // 전망대 창 띠(무문자)
+        g.fillStyle(C(0xc9ced4), 1); g.fillRect(10, 9, 4, 12);         // 세장한 몸통(은회색)
+        g.fillStyle(C(0x8a929a), 1); g.fillRect(11, 9, 1, 12);         // 몸통 음영
+        g.fillStyle(C(0xc9ced4), 1);                                    // 하부 4각 벌어진 다리
+        g.fillRect(8, 21, 2, 9); g.fillRect(14, 21, 2, 9);
+        g.fillRect(6, 27, 2, 4); g.fillRect(16, 27, 2, 4);
+        g.fillStyle(C(0x8a929a), 1); g.fillRect(9, 24, 6, 1);          // 다리 가로 보강재
+      }, 24, 32);
       // ✈️ 여객기(하네다 에이프런 주기) — 흰 동체·수직 꼬리날개·엔진. 32×20, 무브랜드.
       this.bakeTile('ct_prop_airplane', (g) => {
         g.fillStyle(C(0xd9d2c0), 1); g.fillRect(4, 16, 24, 2);        // 지면 그림자
