@@ -511,6 +511,41 @@ test('world: 일반 로그인 세션에서 GBC 게임 셸을 렌더한다', { ti
   });
 });
 
+test('world UI: 여행 수첩에서 캐릭터·가방·도감·임무를 사용할 수 있다', { timeout: config.timeout }, async () => {
+  await runInFreshPage(async (page, context) => {
+    await mockWorldShellRuntime(context);
+    await signInWithMockSession(page, context, 'learner');
+    await page.goto('/world', { waitUntil: 'domcontentloaded' });
+
+    await page.getByRole('button', { name: '여행 수첩 열기', exact: true }).click();
+    await assertVisible(page.getByRole('dialog', { name: '여행 수첩', exact: true }), 'travel notebook dialog');
+    await assertVisible(page.getByRole('img', { name: '캐릭터 미리보기', exact: true }), 'avatar preview');
+    await page.getByRole('button', { name: '네이비', exact: true }).click();
+    await page.getByRole('button', { name: '블루', exact: true }).click();
+    if (process.env.E2E_WORLD_UI_SCREENSHOT) {
+      await page.screenshot({ path: process.env.E2E_WORLD_UI_SCREENSHOT, fullPage: true });
+    }
+    await page.getByRole('button', { name: '이 모습으로 적용', exact: true }).click();
+    const savedAvatar = await page.evaluate(() => JSON.parse(localStorage.getItem('manabi-world-avatar-v1')));
+    assert.equal(savedAvatar.hair, 'navy');
+    assert.equal(savedAvatar.top, 'blue');
+
+    await page.getByRole('button', { name: /가방/, exact: true }).click();
+    await page.getByRole('textbox', { name: '가방 검색', exact: true }).fill('すみません');
+    await assertVisible(page.getByText('회화 카드「すみません」', { exact: true }), 'phrase inventory item');
+    await page.getByRole('button', { name: '회화 카드「すみません」 즐겨찾기', exact: true }).click();
+    const favorites = await page.evaluate(() => JSON.parse(localStorage.getItem('manabi-world-inventory-favorites-v1')));
+    assert.deepEqual(favorites, ['phrase-sumimasen']);
+
+    await page.getByRole('button', { name: /도감/, exact: true }).click();
+    await assertVisible(page.getByText('방문 기념 스탬프 0/', { exact: false }), 'codex stamp progress');
+    await page.getByRole('button', { name: /임무/, exact: true }).click();
+    await assertVisible(page.getByText('오늘의 즉석 복습', { exact: true }), 'quest list');
+    await page.getByRole('button', { name: '닫기 Ⓑ', exact: true }).click();
+    await page.getByRole('dialog', { name: '여행 수첩', exact: true }).waitFor({ state: 'hidden', timeout: config.timeout });
+  });
+});
+
 test('world: 후쿠오카 노드에서 시내로 들어가 하카타항 EXIT로 복귀한다', { timeout: config.timeout * 2 }, async () => {
   await runInFreshPage(async (page, context) => {
     const positionWrites = [];

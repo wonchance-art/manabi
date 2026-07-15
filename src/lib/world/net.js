@@ -14,6 +14,7 @@
 // 브라우저에서만 실제 채널을 연다. supabase.js 는 모듈 로드시 env 를
 // 요구하므로 테스트는 env 를 스텁한 뒤 동적 import 로 순수부만 가져간다.
 import { supabase } from '../supabase';
+import { normalizeWorldAvatar } from './avatar';
 
 // ── 순수 헬퍼 (테스트 대상) ──────────────────────────────────────
 
@@ -265,6 +266,7 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza',
     peers.set(key, {
       x: prev.x, y: prev.y, dir: prev.dir,
       ...(typeof prev.scene === 'string' ? { scene: prev.scene } : {}),
+      ...(prev.avatar ? { avatar: prev.avatar } : {}),
       name: meta?.name ?? prev.name,
       pet: meta?.pet ?? prev.pet,
       at: prev.at || Date.now(),
@@ -288,6 +290,7 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza',
       peers.set(payload.id, {
         x: payload.x, y: payload.y, dir: payload.dir,
         ...(typeof payload.scene === 'string' ? { scene: payload.scene } : {}),
+        ...(payload.avatar && typeof payload.avatar === 'object' ? { avatar: normalizeWorldAvatar(payload.avatar) } : {}),
         name: prev.name, pet: prev.pet, at: Date.now(),
       });
       emitPeers();

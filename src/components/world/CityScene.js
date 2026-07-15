@@ -37,6 +37,7 @@ import { CHUNK_TILES, chunkDims, chunkTileBounds, visibleChunks, chunkCapacity, 
 import { toInteractiveNode } from './cultureDoors';
 import { activeVehiclesAt, planTransitTrip, tripStateAt } from '../../lib/world/transit';
 import { cityWeatherAt, nodeLifeAt } from '../../lib/world/worldLife';
+import { avatarPalette } from '../../lib/world/avatar';
 
 // ── 좌표 스케일 (광장·공항과 동일 불변) ──
 const TILE = 32;
@@ -413,7 +414,7 @@ export function buildCityScene(Phaser, city, ctx) {
       }, 24, 16);
 
       // ── 캐릭터(플레이어 ct_pc · 원격 피어 ct_pr) + 펫 + NPC 마커 ──
-      this.bakeCharSet('ct_pc', tonePalette(CHAR_PAL_LOCAL, this.mode));
+      this.bakeCharSet('ct_pc', tonePalette(avatarPalette(ctx.avatarRef?.current), this.mode));
       this.bakeCharSet('ct_pr', tonePalette(CHAR_PAL_REMOTE, this.mode));
       for (const k of PET_KEYS) {
         const pal = tonePalette(PET_PAL[k], this.mode);

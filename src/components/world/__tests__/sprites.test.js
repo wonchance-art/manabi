@@ -8,7 +8,9 @@ import {
   emitPeerDistances,
   NPC_KEYS, NPC_W, NPC_H, NPC_PAL, npcMarkerRows,
   GOURMET_PAL, gourmetMarkerRows,
+  ensureAvatarCharSet,
 } from '../sprites.js';
+import { avatarPalette, DEFAULT_AVATAR } from '../../../lib/world/avatar.js';
 
 // 픽셀맵 무결성 — GameCanvas는 클라 전용(Phaser)이라 단위테스트가 어렵다.
 // 여기선 "텍스처로 굽기 전" 픽셀맵 데이터가 규격 크기이고 미정의 색문자가 0임을 보장한다.
@@ -50,6 +52,32 @@ describe('캐릭터 픽셀맵 (16×16 한 칸, 4방향×걷기 3패턴)', () => 
   it('걷기 사이클은 [l,n,r,n] 4프레임', () => {
     expect(CHAR_WALK_CYCLE).toEqual(['l', 'n', 'r', 'n']);
     for (const p of CHAR_WALK_CYCLE) expect(CHAR_POSES).toContain(p);
+  });
+
+  it('커스텀 외형은 3방향×3포즈 텍스처로 굽고 같은 키를 재사용한다', () => {
+    const keys = new Set();
+    let generated = 0;
+    const scene = {
+      textures: {
+        exists: (key) => keys.has(key),
+        remove: (key) => keys.delete(key),
+      },
+      make: {
+        graphics: () => ({
+          fillStyle() {},
+          fillRect() {},
+          generateTexture(key) { keys.add(key); generated += 1; },
+          destroy() {},
+        }),
+      },
+    };
+    expect(ensureAvatarCharSet(scene, 'pc_test', avatarPalette(DEFAULT_AVATAR))).toBe(true);
+    expect(keys.size).toBe(9);
+    expect(generated).toBe(9);
+    ensureAvatarCharSet(scene, 'pc_test', avatarPalette(DEFAULT_AVATAR));
+    expect(generated).toBe(9);
+    ensureAvatarCharSet(scene, 'pc_test', avatarPalette(DEFAULT_AVATAR), { replace: true });
+    expect(generated).toBe(18);
   });
 });
 

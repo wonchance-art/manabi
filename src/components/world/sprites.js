@@ -1,3 +1,5 @@
+import { avatarPalette, avatarSignature, normalizeWorldAvatar } from '../../lib/world/avatar.js';
+
 // 🌱 학습 월드 — 절차 생성 스프라이트/팔레트 데이터 (외부 에셋 0).
 //
 // GameCanvas.jsx가 부팅 시 1회 generateTexture로 굽는 "도트 원본"을 여기 모았다.
@@ -134,6 +136,32 @@ export function charFrameRows(dir, pose) {
   const group = dir === 'side' ? 'side' : 'front';
   const legs = CHAR_LEGS[group][pose];
   return top.concat(legs);
+}
+
+export function ensureAvatarCharSet(scene, prefix, palette, { replace = false } = {}) {
+  if (!scene?.make?.graphics || !scene?.textures) return false;
+  for (const dir of CHAR_DIRS) {
+    for (const pose of CHAR_POSES) {
+      const key = `${prefix}_${dir}_${pose}`;
+      if (scene.textures.exists(key)) {
+        if (!replace) continue;
+        scene.textures.remove(key);
+      }
+      const rows = charFrameRows(dir, pose);
+      const graphics = scene.make.graphics({ add: false });
+      for (let y = 0; y < rows.length; y += 1) {
+        for (let x = 0; x < rows[y].length; x += 1) {
+          const color = palette[rows[y][x]];
+          if (color == null) continue;
+          graphics.fillStyle(color, 1);
+          graphics.fillRect(x, y, 1, 1);
+        }
+      }
+      graphics.generateTexture(key, CHAR_W, CHAR_H);
+      graphics.destroy();
+    }
+  }
+  return true;
 }
 
 // ── 펫 (12×16) — 5종, 각 2프레임(idle 통통 튀기/꼬리·귀 흔들기 = 종별 개성) ──
@@ -661,15 +689,24 @@ export function applyPeersToScene(scene, incoming, cfg) {
     seen.add(id);
     const tileX = Math.floor(st.x / PEER_TILE);
     const tileY = Math.floor(st.y / PEER_TILE);
+    let charPrefix = prefix;
+    if (st.avatar) {
+      const avatar = normalizeWorldAvatar(st.avatar);
+      const candidate = `${prefix}_a${avatarSignature(avatar)}`;
+      if (ensureAvatarCharSet(scene, candidate, tonePalette(avatarPalette(avatar), scene.mode || 'day'))) {
+        charPrefix = candidate;
+      }
+    }
     let p = scene.peers.get(id);
     if (!p) {
       const sx = tileX * PEER_TILE + PEER_TILE / 2, sy = tileY * PEER_TILE + PEER_TILE / 2;
-      const sprite = scene.add.image(sx, sy, `${prefix}_down_n`).setOrigin(0.5, CHAR_ORIGIN_Y).setScale(PEER_TSCALE);
+      const sprite = scene.add.image(sx, sy, `${charPrefix}_down_n`).setOrigin(0.5, CHAR_ORIGIN_Y).setScale(PEER_TSCALE);
       const label = scene.add.text(sx, sy - PEER_LABEL_DY, st.nick || '', peerLabelStyle(scene.fontReady))
         .setOrigin(0.5, 1).setDepth(PEER_LABEL_DEPTH);
-      p = { sprite, label, boat: null, nick: st.nick || '', tileX, tileY, destTileX: tileX, destTileY: tileY, facing: 'down', moving: false };
+      p = { sprite, label, boat: null, nick: st.nick || '', charPrefix, tileX, tileY, destTileX: tileX, destTileY: tileY, facing: 'down', moving: false };
       scene.peers.set(id, p);
     }
+    p.charPrefix = charPrefix;
     if (st.nick != null && st.nick !== p.nick) { p.nick = st.nick; p.label?.setText(st.nick); }
     p.destTileX = tileX; p.destTileY = tileY;
     if (PEER_VALID_DIR.has(st.dir)) p.facing = st.dir;
@@ -720,7 +757,7 @@ export function updateScenePeers(scene, time, cfg) {
         scene.tweens.add({ targets: p.sprite, x: tx, y: ty, duration: PEER_STEP_MS, ease: 'Linear', onComplete: () => { p.moving = false; } });
       }
     }
-    p.sprite.setTexture(peerCharTex(prefix, p.facing, p.moving, time));
+    p.sprite.setTexture(peerCharTex(p.charPrefix || prefix, p.facing, p.moving, time));
     p.sprite.setFlipX(p.facing === 'right');
     p.sprite.setDepth(p.sprite.y);
     if (p.label) p.label.setPosition(Math.round(p.sprite.x), Math.round(p.sprite.y) - PEER_LABEL_DY);

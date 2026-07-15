@@ -306,6 +306,24 @@ async function joinAndSubscribe(client, net) {
 
 // ─────────────────────────────────────────────────────────────
 describe('createWorldNet — 피어 scene 수신 하위호환', () => {
+  it('pos payload의 외형은 허용값으로 정규화하고 presence 갱신 뒤에도 유지한다', async () => {
+    const client = createFakeClient({ routeStatus: 404 });
+    const net = makeNet(client);
+    let peers = new Map();
+    net.onPeers((next) => { peers = next; });
+    const ch = await joinAndSubscribe(client, net);
+
+    ch.emit('broadcast', 'pos', {
+      payload: { id: 'peer-1', x: 10, y: 20, dir: 'right', avatar: { skin: 'bad', hair: 'navy', top: 'blue', bottom: 'olive' } },
+    });
+    expect(peers.get('peer-1').avatar).toEqual({ skin: 'warm', hair: 'navy', top: 'blue', bottom: 'olive' });
+
+    ch.presence = { 'peer-1': [{ name: '친구', pet: '🐱' }] };
+    ch.emit('presence', 'sync');
+    expect(peers.get('peer-1').avatar).toEqual({ skin: 'warm', hair: 'navy', top: 'blue', bottom: 'olive' });
+    net.leave();
+  });
+
   it('pos payload의 문자열 scene을 보존하고 presence 메타 갱신 뒤에도 유지한다', async () => {
     const client = createFakeClient({ routeStatus: 404 });
     const net = makeNet(client);

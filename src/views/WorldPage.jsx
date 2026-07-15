@@ -36,6 +36,7 @@ import {
   derivePetState,
   fetchPetInputs,
 } from '../lib/world/pet';
+import { DEFAULT_AVATAR, loadWorldAvatar, saveWorldAvatar } from '../lib/world/avatar';
 
 const TILE = 32;             // GameCanvas와 동일 — peers:dist(px)→타일 변환에 사용
 const PEER_STALE_MS = 10000; // 이 시간 넘게 소식 없는 peer는 유령으로 보고 정리
@@ -434,6 +435,8 @@ export default function WorldPage() {
   const [petKey, setPetKey] = useState(PET_SPECIES[0].key);
   const [petState, setPetState] = useState({ level: 1, xp: 0, xpToNext: 10, mood: 'happy' });
   const [petMenuOpen, setPetMenuOpen] = useState(false);
+  const [avatar, setAvatar] = useState(DEFAULT_AVATAR);
+  const avatarRef = useRef(DEFAULT_AVATAR);
 
   // ── 음성 UI 상태 ──
   const [micOn, setMicOn] = useState(false);
@@ -492,6 +495,12 @@ export default function WorldPage() {
     const href = readingTextHref(reading);
     if (href) router.push(href);
   }, [router]);
+  const openDictionary = useCallback(() => router.push('/vocab'), [router]);
+  const applyAvatar = useCallback((next) => {
+    const saved = saveWorldAvatar(next);
+    avatarRef.current = saved;
+    setAvatar(saved);
+  }, []);
   // B 홀드 → 달리기(씬 플래그). 탭(짧게)의 취소 동작은 onClick=cancel 이 그대로 유지한다.
   const runOn = useCallback(() => controlsRef.current?.runOn?.(), []);
   const runOff = useCallback(() => controlsRef.current?.runOff?.(), []);
@@ -523,6 +532,9 @@ export default function WorldPage() {
   // 저장된 펫 선택 로드(마운트 1회).
   useEffect(() => {
     setPetKey(getPetChoice());
+    const savedAvatar = loadWorldAvatar();
+    avatarRef.current = savedAvatar;
+    setAvatar(savedAvatar);
   }, []);
 
   // 뮤트 목록 구독 — 등록 즉시 현재값 1회 통지 + 이후 토글마다 갱신(패널 재렌더용).
@@ -622,7 +634,7 @@ export default function WorldPage() {
         if (p.at && now - p.at > PEER_STALE_MS) continue; // 유령 제외
         // scene — 씬별 피어 렌더 필터(플라자/공항)용. net(Codex) 수신부가 보존한 값을 그대로
         // 전파하고, 없으면 undefined(수신측 (p.scene||'plaza') 하위호환 규칙이 처리).
-        out.set(id, { x: p.x, y: p.y, dir: p.dir, emoji: p.pet, nick: p.name, scene: p.scene });
+        out.set(id, { x: p.x, y: p.y, dir: p.dir, emoji: p.pet, nick: p.name, scene: p.scene, avatar: p.avatar });
       }
       bus.emit('peers:update', out);
       // 근처 사람 패널용 목록({id,name}) — GameCanvas 계약과 별개로 React 상태에도 반영.
@@ -633,7 +645,7 @@ export default function WorldPage() {
     net.onPeerLeft((id) => { voice.removePeer(id); });
 
     // 내 위치 → net 송신.
-    const onLocalState = (st) => net.sendState(st);
+    const onLocalState = (st) => net.sendState({ ...st, avatar: avatarRef.current });
     bus.on('local:state', onLocalState);
 
     // 거리(px) → 타일(/TILE) → 음성 근접 게이팅.
@@ -975,10 +987,13 @@ export default function WorldPage() {
                 userId={userId}
                 nickname={nickname}
                 pet={pet}
+                avatar={avatar}
                 controlsRef={controlsRef}
                 initialSpawn={livePosRef.current || worldSpawn || null}
                 onOpenChapter={openCultureChapter}
                 onOpenReading={profile?.role === 'admin' ? openReadingText : null}
+                onOpenDictionary={openDictionary}
+                onAvatarChange={applyAvatar}
               />
             ) : (
               <WorldGate status={worldStatus} reason={worldStatusReason} spawnLoading={worldSpawn === undefined} onRetry={retryWorldNet} retrying={worldRetrying} />
