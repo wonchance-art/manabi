@@ -22,6 +22,10 @@ const CHECKED_IN_TRANSPORT_DIR = path.join(
   REPO_ROOT,
   'public/assets/overworld/asia-pacific-transport-preview-v1',
 );
+const CHECKED_IN_EMEA_TRANSPORT_DIR = path.join(
+  REPO_ROOT,
+  'public/assets/overworld/europe-mediterranean-middle-east-transport-preview-v1',
+);
 
 function distanceToSegment(point, start, end) {
   const dx = end[0] - start[0];
@@ -225,6 +229,66 @@ describe('오버월드 rail overlay 생성', () => {
       [151.209, -33.869],
     ]) {
       expect(nearestRailTiles(...coordinate), coordinate.join(',')).toBeLessThan(5);
+    }
+  });
+
+  it('체크인된 지역 ② rail overlay와 대표 철도권 표본을 검증한다', () => {
+    const base = JSON.parse(readFileSync(path.join(
+      REPO_ROOT,
+      'scripts/world/overworld-region-emea-v1.json',
+    ), 'utf8'));
+    const frame = createEquirectangularTileFrame(base);
+    const content = JSON.parse(readFileSync(
+      path.join(CHECKED_IN_EMEA_TRANSPORT_DIR, 'content-manifest.json'),
+      'utf8',
+    ));
+    expect(content).toMatchObject({
+      releaseEligible: false,
+      width: 964,
+      height: 1137,
+      chunkColumns: 4,
+      chunkRows: 5,
+      railRules: {
+        maxScaleRank: 5,
+        quantization: 1024,
+        haloTiles: 1,
+        simplification: { method: 'rdp-global-quantized', toleranceQuantized: 128 },
+      },
+    });
+    expect(content.overlays).toHaveLength(16);
+    for (const entry of [content.report, ...content.overlays]) {
+      const bytes = readFileSync(path.join(CHECKED_IN_EMEA_TRANSPORT_DIR, entry.path));
+      expect(bytes.byteLength, entry.path).toBe(entry.bytes);
+      expect(sha256(bytes), entry.path).toBe(entry.sha256);
+    }
+
+    const nearestRailTiles = (lon, lat) => {
+      const point = frame.project(lon, lat);
+      const cx = Math.floor(point.x / 256);
+      const cy = Math.floor(point.y / 256);
+      const entry = content.overlays.find(({ path: overlayPath }) => (
+        overlayPath === `rail/${cx}/${cy}.json`
+      ));
+      expect(entry, `${lon},${lat}`).toBeDefined();
+      const overlay = JSON.parse(readFileSync(
+        path.join(CHECKED_IN_EMEA_TRANSPORT_DIR, entry.path),
+        'utf8',
+      ));
+      const quantization = content.railRules.quantization;
+      const pointQ = [point.x * quantization, point.y * quantization];
+      return Math.min(...overlay.segments.map((segment) => (
+        distanceToSegment(pointQ, segment.start, segment.end) / quantization
+      )));
+    };
+    for (const coordinate of [
+      [-0.1276, 51.5072],
+      [2.3522, 48.8566],
+      [13.405, 52.52],
+      [12.4964, 41.9028],
+      [37.6173, 55.7558],
+      [31.2357, 30.0444],
+    ]) {
+      expect(nearestRailTiles(...coordinate), coordinate.join(',')).toBeLessThan(2);
     }
   });
 });

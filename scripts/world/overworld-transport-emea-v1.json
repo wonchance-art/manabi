@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "releaseEligible": false,
+  "generatorGitSha": null,
+  "regionId": "europe-mediterranean-middle-east-transport-preview-v1",
+  "baseTerrain": {
+    "manifestPath": "scripts/world/overworld-region-emea-v1.json",
+    "directory": "public/assets/overworld/europe-mediterranean-middle-east-terrain-preview-v1",
+    "contentManifest": "content-manifest.json",
+    "contentManifestSha256": "4f0079e3ec0795bdca372c28127237df2e24bbe7aea7b1c0f40304518d7d1340",
+    "contentManifestBytes": 8436
+  },
+  "railSource": {
+    "id": "natural-earth-railroads-10m",
+    "cacheFile": "ne_10m_railroads.geojson",
+    "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/geojson/ne_10m_railroads.geojson",
+    "version": "natural-earth-vector-v5.1.2",
+    "sha256": "a0962d7866060ae3e24df255f6d662389ac9ba7e0df40cf329c2281190b861e6",
+    "bytes": 39598080,
+    "license": "Natural Earth public domain",
+    "role": "rail-centerlines",
+    "required": true
+  },
+  "railRules": {
+    "maxScaleRank": 5,
+    "quantization": 1024,
+    "haloTiles": 1,
+    "simplification": {
+      "method": "rdp-global-quantized",
+      "toleranceQuantized": 128
+    }
+  }
+}

@@ -105,7 +105,7 @@ export function normalizeOverworldRegionManifest(manifest) {
 
   assertExactKeys(manifest.projection, ['id', 'method', 'axisMode', 'lon0', 'lat0', 'standardLat'], 'projection');
   if (manifest.projection.method !== 'equirectangular' || manifest.projection.axisMode !== 'screen-axis') {
-    throw new Error('region ① projection must be equirectangular + screen-axis');
+    throw new Error('overworld region projection must be equirectangular + screen-axis');
   }
   if (typeof manifest.projection.id !== 'string' || manifest.projection.id.length === 0) {
     throw new TypeError('projection.id must be a non-empty string');
