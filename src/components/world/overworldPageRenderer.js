@@ -10,6 +10,7 @@ import {
   overworldRoutePosition,
   planOverworldOverlaySegments,
 } from '../../lib/world/overworldOverlay.js';
+import { collectOverworldRuntimeMetrics } from '../../lib/world/overworldRuntimeMetrics.js';
 
 function assertPositiveInteger(value, label) {
   if (!Number.isInteger(value) || value < 1) throw new RangeError(`${label} must be a positive integer`);
@@ -143,6 +144,10 @@ export class PhaserOverworldPageRenderer {
     this.depth = depth;
     this.destroyed = false;
     this.lastSignature = null;
+    this.lastUpdate = Promise.resolve(null);
+    this.committedUpdates = 0;
+    this.blankFrameCount = 0;
+    this.lastError = null;
     this.stamp = scene.make.image({ add: false, key: fallbackTextureKey }).setOrigin(0, 0);
     this.pager = new OverworldRenderPager({
       loader,
@@ -217,12 +222,46 @@ export class PhaserOverworldPageRenderer {
     if (!force && signature === this.lastSignature) return Promise.resolve(null);
     this.lastSignature = signature;
     const update = this.pager.update(view, { direction: movement, padding, prefetch })
+      .then((result) => {
+        if (result) {
+          this.committedUpdates += 1;
+          if (this.pager.visible.length === 0) this.blankFrameCount += 1;
+          this.lastError = null;
+        }
+        return result;
+      })
       .catch((error) => {
         if (error instanceof OverworldRenderPagerStaleError) return null;
         if (this.lastSignature === signature) this.lastSignature = null;
+        this.lastError = Object.freeze({
+          name: error?.name ?? 'Error',
+          message: error?.message ?? String(error),
+          code: error?.code ?? null,
+        });
         throw error;
       });
+    this.lastUpdate = update;
     return update;
+  }
+
+  async waitForIdle() {
+    await this.lastUpdate;
+    await this.pager.background;
+    return this.snapshot();
+  }
+
+  snapshot({ heapUsedBytes = null } = {}) {
+    return Object.freeze({
+      ...collectOverworldRuntimeMetrics({
+        loader: this.pager.loader,
+        pager: this.pager,
+        heapUsedBytes,
+        committedUpdates: this.committedUpdates,
+        blankFrameCount: this.blankFrameCount,
+      }),
+      destroyed: this.destroyed,
+      lastError: this.lastError,
+    });
   }
 
   destroy() {
@@ -231,6 +270,7 @@ export class PhaserOverworldPageRenderer {
     this.pager.destroy();
     this.stamp.destroy();
     this.lastSignature = null;
+    this.lastUpdate = Promise.resolve(null);
   }
 }
 

@@ -136,7 +136,7 @@ export class OverworldChunkLoader {
     if (!(cache instanceof PackedChunkCache)) throw new TypeError('cache must be a PackedChunkCache');
     this.baseUrl = normalizeRoot(baseUrl);
     this.manifest = normalizeManifest(manifest);
-    this.fetchImpl = fetchImpl;
+    this.fetchImpl = fetchImpl === globalThis.fetch ? fetchImpl.bind(globalThis) : fetchImpl;
     this.cache = cache;
     this.inflight = new Map();
     this.generation = 1;

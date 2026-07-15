@@ -156,6 +156,17 @@ describe('Phaser 오버월드 렌더 페이지 adapter', () => {
     expect(renderTextures[0].draws).toHaveLength(32 * 32);
     expect(renderTextures[0].draws[0]).toEqual({ key: 'tile-0-0', x: 0, y: 0 });
     expect(renderTextures[0].draws.at(-1)).toEqual({ key: 'tile-31-31', x: 496, y: 496 });
+    expect(renderer.snapshot({ heapUsedBytes: 123456 })).toMatchObject({
+      renderPages: 1,
+      renderPageBytes: 1024 * 1024,
+      visiblePages: 1,
+      runtimeBytes: 1024 * 1024,
+      estimatedGpuTextureBytes: 1024 * 1024,
+      heapUsedBytes: 123456,
+      committedUpdates: 1,
+      blankFrameCount: 0,
+      destroyed: false,
+    });
 
     await renderer.updateCamera({ worldView: { x: 0, y: 0, width: 320, height: 288 } }, {
       padding: 0,
@@ -171,6 +182,7 @@ describe('Phaser 오버월드 렌더 페이지 adapter', () => {
     expect(renderTextures).toHaveLength(2);
     expect(renderTextures[1]).toMatchObject({ x: 1024, y: 0, visible: true });
     expect(renderTextures[0].visible).toBe(false);
+    expect((await renderer.waitForIdle()).committedUpdates).toBe(2);
 
     renderer.destroy();
     expect(renderTextures.every((texture) => texture.destroyed)).toBe(true);

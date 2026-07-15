@@ -75,6 +75,26 @@ describe('OverworldChunkLoader', () => {
     expect(() => overworldChunkUrl('/assets', 'apac', 1.5, 0)).toThrow(/safe integer/);
   });
 
+  it('브라우저 기본 fetch를 Window에 바인딩해 illegal invocation을 막는다', async () => {
+    const bytes = buildTinyOverworldChunkV1();
+    const fetchImpl = vi.fn(function fetchWithReceiver() {
+      if (this !== globalThis) throw new TypeError('Illegal invocation');
+      return Promise.resolve(responseFor(bytes));
+    });
+    vi.stubGlobal('fetch', fetchImpl);
+    try {
+      const loader = new OverworldChunkLoader({
+        baseUrl: '/assets/overworld',
+        manifest: MANIFEST,
+      });
+      const chunk = await loader.load(TINY_CHUNK_COORDINATE.cx, TINY_CHUNK_COORDINATE.cy);
+      expect(chunk.surfaceAt(2, 1)).toBe(3);
+      expect(fetchImpl).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('동일 세대·좌표 요청을 같은 Promise와 단일 fetch로 합치고 결과를 cache한다', async () => {
     const pending = deferred();
     const fetchImpl = vi.fn(() => pending.promise);
