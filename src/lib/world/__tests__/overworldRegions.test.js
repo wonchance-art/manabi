@@ -65,10 +65,10 @@ describe('오버월드 지역 레지스트리', () => {
       .toEqual({ scene: region.sceneId, x, y });
   });
 
-  it.each(OVERWORLD_REGION_LIST)('$label 게이트 청크의 강·철도 오버레이를 검증한다', (region) => {
+  it.each(OVERWORLD_REGION_LIST)('$label의 체크인된 희소 오버레이를 검증한다', (region) => {
     const cx = Math.floor(region.gate.tile.x / OVERWORLD_STORAGE_CHUNK_TILES);
     const cy = Math.floor(region.gate.tile.y / OVERWORLD_STORAGE_CHUNK_TILES);
-    expect(region.overlaySources).toHaveLength(2);
+    expect(region.overlaySources).toHaveLength(region.id === 'emea' ? 3 : 2);
     for (const source of region.overlaySources) {
       const manifest = JSON.parse(readFileSync(path.join(
         ROOT, 'public/assets/overworld', source.regionId, 'content-manifest.json',
@@ -80,11 +80,16 @@ describe('오버월드 지역 레지스트리', () => {
         width: region.width,
         height: region.height,
       });
-      const overlayPath = `${source.pathPrefix}/${cx}/${cy}.json`;
-      expect(manifest.overlays.some(({ path: entry }) => entry === overlayPath)).toBe(true);
+      const gateOverlayPath = `${source.pathPrefix}/${cx}/${cy}.json`;
+      const overlayPath = manifest.overlays.some(({ path: entry }) => entry === gateOverlayPath)
+        ? gateOverlayPath
+        : manifest.overlays.find(({ path: entry }) => entry.startsWith(`${source.pathPrefix}/`))?.path;
+      expect(overlayPath).toBeDefined();
+      const [, overlayCx, overlayFile] = overlayPath.split('/');
+      const overlayCy = overlayFile.replace(/\.json$/, '');
       const document = normalizeOverworldOverlayDocument(JSON.parse(readFileSync(path.join(
         ROOT, 'public/assets/overworld', source.regionId, overlayPath,
-      ), 'utf8')), { kind: source.kind, cx, cy });
+      ), 'utf8')), { kind: source.kind, cx: Number(overlayCx), cy: Number(overlayCy) });
       expect(document.segments.length).toBeGreaterThan(0);
     }
   });

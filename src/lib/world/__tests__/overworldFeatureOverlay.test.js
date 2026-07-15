@@ -54,6 +54,31 @@ describe('오버월드 피처 오버레이 문서', () => {
       { ...segment('river:0', [0, 0], [1024, 0]), name: 'unexpected' },
     ]))).toThrow(/unsupported field: name/);
   });
+
+  it('경계 선분은 고정된 중립 분류만 허용한다', () => {
+    const boundary = {
+      ...document(0, []),
+      kind: 'boundary-segments',
+      segments: [{
+        id: 'boundary:0',
+        routeId: 'boundary',
+        sourceKind: 'disputed',
+        sourceFeatureIndex: 0,
+        partIndex: 0,
+        segmentIndex: 0,
+        scaleRank: 1,
+        boundaryClass: 'neutral-disputed',
+        start: [0, 0],
+        end: [1024, 0],
+      }],
+    };
+    expect(normalizeOverworldOverlayDocument(boundary).segments[0].boundaryClass)
+      .toBe('neutral-disputed');
+    expect(() => normalizeOverworldOverlayDocument({
+      ...boundary,
+      segments: [{ ...boundary.segments[0], boundaryClass: 'claimed-by-a-country' }],
+    })).toThrow(/boundaryClass is unsupported/);
+  });
 });
 
 describe('오버월드 피처 오버레이 가시 범위', () => {

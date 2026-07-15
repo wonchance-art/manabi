@@ -279,3 +279,41 @@ node scripts/world/render-overworld-terrain-preview.mjs \
   public/assets/overworld/asia-pacific-transport-preview-v1 \
   public/assets/overworld/asia-pacific-playability-preview-v1
 ```
+
+## 14. 지역 ② 중립 경계 preview v1
+
+`scripts/world/overworld-boundary-emea-v1.json`과 `scripts/world/build-overworld-boundary.mjs`는 경계를
+충돌·국가 채색·소유권 라벨과 분리된 희소 오버레이로 생성한다. 이 단계도
+`releaseEligible=false`다.
+
+- 원본은 Natural Earth 10m admin-0 boundary lines land v5.1.2
+  (`2,284,669`바이트,
+  `SHA-256=74d9c16229c095fde65943a9919e337682f044bcebccb120764f38edf3b70f4a`)와
+  admin-0 boundary lines disputed areas v5.1.2 (`183,831`바이트,
+  `SHA-256=69f19da764e6982b43aebae4b1a356ffe74c33f2a3cdb462637c0ba8e969c30b`)다.
+- land 원본 안의 `International boundary (verify)`만 `de-facto` 실선으로 분류한다. 분쟁·휴전·미확정·
+  통제·참조선 분류와 disputed 원본 전체는 귀속 주체와 무관하게 `neutral-disputed` 한 종류의 점선으로
+  강제한다. manifest에 없는 분류가 나오면 생성은 실패한다.
+- 원본의 국가명·경계명·좌우 행정 주체·주장·주석 속성은 전부 버린다. 산출물에는 결정적 ID,
+  `sourceFeatureIndex`, 기하 인덱스, 축척 등급, 중립 렌더 분류만 기록한다.
+- 국가별 면 채색과 수도·귀속 라벨은 금지한다. 경계는 이동·충돌·view-only를 바꾸지 않는다.
+- 좌표열은 단순화하지 않고 전역 타일 1/1024 정수로 먼저 양자화한다. 256타일 청크는 1타일 halo를
+  공유하며 양쪽 파일은 같은 전역 endpoint와 segment ID를 가진다.
+- 체크인 산출물은
+  `public/assets/overworld/europe-mediterranean-middle-east-boundary-preview-v1/`의 17개 경계 overlay,
+  보고서와 content manifest다.
+- 고지문: “지도상의 경계·명칭·표시는 특정 지역의 법적 지위나 경계 주장에 대한 승인 또는 지지를
+  의미하지 않습니다.”
+
+```bash
+node scripts/world/build-overworld-boundary.mjs \
+  --manifest scripts/world/overworld-boundary-emea-v1.json \
+  --input-dir <verified-source-cache> \
+  --output-dir public/assets/overworld/europe-mediterranean-middle-east-boundary-preview-v1
+
+node scripts/world/build-overworld-boundary.mjs \
+  --manifest scripts/world/overworld-boundary-emea-v1.json \
+  --input-dir <verified-source-cache> \
+  --output-dir public/assets/overworld/europe-mediterranean-middle-east-boundary-preview-v1 \
+  --check
+```

@@ -5,6 +5,26 @@ import {
   visibleOverworldOverlaySegments,
 } from '../../lib/world/overworldFeatureOverlay.js';
 
+export function overworldDashedLineSegments(start, end, dashPixels, gapPixels) {
+  if (![...start, ...end, dashPixels, gapPixels].every(Number.isFinite)
+    || dashPixels <= 0 || gapPixels < 0) {
+    throw new RangeError('dashed line inputs must be finite with a positive dash');
+  }
+  const dx = end[0] - start[0];
+  const dy = end[1] - start[1];
+  const length = Math.hypot(dx, dy);
+  if (length === 0) return Object.freeze([]);
+  const pieces = [];
+  for (let offset = 0; offset < length; offset += dashPixels + gapPixels) {
+    const dashEnd = Math.min(length, offset + dashPixels);
+    pieces.push(Object.freeze([
+      Object.freeze([start[0] + (dx * offset) / length, start[1] + (dy * offset) / length]),
+      Object.freeze([start[0] + (dx * dashEnd) / length, start[1] + (dy * dashEnd) / length]),
+    ]));
+  }
+  return Object.freeze(pieces);
+}
+
 export class PhaserOverworldChunkOverlayRenderer {
   constructor(scene, {
     sources = [],
@@ -41,22 +61,46 @@ export class PhaserOverworldChunkOverlayRenderer {
       worldScale: this.worldScale,
     })) {
       const rank = Math.min(maxScaleRank, segment.scaleRank);
-      if (!groups.has(rank)) groups.set(rank, []);
-      groups.get(rank).push(segment);
+      const boundaryClass = segment.boundaryClass ?? 'solid';
+      const key = `${String(rank).padStart(3, '0')}:${boundaryClass}`;
+      if (!groups.has(key)) groups.set(key, { rank, boundaryClass, segments: [] });
+      groups.get(key).segments.push(segment);
     }
     graphics.clear();
-    for (const [rank, segments] of [...groups.entries()].sort((left, right) => right[0] - left[0])) {
+    for (const { rank, boundaryClass, segments } of [...groups.values()]
+      .sort((left, right) => right.rank - left.rank
+        || (left.boundaryClass < right.boundaryClass ? -1 : left.boundaryClass > right.boundaryClass ? 1 : 0))) {
       const widthTiles = (style.widthTiles ?? 0.06)
         + (maxScaleRank - rank) * (style.rankStepTiles ?? 0.01);
       graphics.lineStyle(
         Math.max(1, widthTiles * this.tilePixels * this.worldScale),
-        style.color ?? 0xffffff,
-        style.alpha ?? 0.8,
+        boundaryClass === 'neutral-disputed'
+          ? (style.neutralDisputedColor ?? style.color ?? 0xffffff)
+          : (style.color ?? 0xffffff),
+        boundaryClass === 'neutral-disputed'
+          ? (style.neutralDisputedAlpha ?? style.alpha ?? 0.8)
+          : (style.alpha ?? 0.8),
       );
       graphics.beginPath();
       for (const segment of segments) {
-        graphics.moveTo(this.worldCoordinate(segment.start[0]), this.worldCoordinate(segment.start[1]));
-        graphics.lineTo(this.worldCoordinate(segment.end[0]), this.worldCoordinate(segment.end[1]));
+        const start = [this.worldCoordinate(segment.start[0]), this.worldCoordinate(segment.start[1])];
+        const end = [this.worldCoordinate(segment.end[0]), this.worldCoordinate(segment.end[1])];
+        if (boundaryClass === 'neutral-disputed') {
+          const dashPixels = (style.dashTiles ?? 0.18) * this.tilePixels * this.worldScale;
+          const gapPixels = (style.gapTiles ?? 0.14) * this.tilePixels * this.worldScale;
+          for (const [dashStart, dashEnd] of overworldDashedLineSegments(
+            start,
+            end,
+            dashPixels,
+            gapPixels,
+          )) {
+            graphics.moveTo(...dashStart);
+            graphics.lineTo(...dashEnd);
+          }
+        } else {
+          graphics.moveTo(...start);
+          graphics.lineTo(...end);
+        }
       }
       graphics.strokePath();
     }

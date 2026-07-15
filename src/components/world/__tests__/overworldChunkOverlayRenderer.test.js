@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import { PhaserOverworldChunkOverlayRenderer } from '../overworldChunkOverlayRenderer.js';
+import {
+  PhaserOverworldChunkOverlayRenderer,
+  overworldDashedLineSegments,
+} from '../overworldChunkOverlayRenderer.js';
 
 const SOURCE = Object.freeze({
   regionId: 'test-terrain-v1',
@@ -19,6 +22,13 @@ function graphics() {
 }
 
 describe('PhaserOverworldChunkOverlayRenderer', () => {
+  it('중립 분쟁선을 고정 길이 점선 조각으로 나눈다', () => {
+    expect(overworldDashedLineSegments([0, 0], [10, 0], 3, 2)).toEqual([
+      [[0, 0], [3, 0]],
+      [[5, 0], [8, 0]],
+    ]);
+  });
+
   it('한 청크가 실패해도 성공한 청크로 레이어를 갱신한다', async () => {
     const layerGraphics = graphics();
     const renderer = new PhaserOverworldChunkOverlayRenderer({

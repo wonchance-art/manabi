@@ -15,6 +15,10 @@ const OVERLAY_SEGMENT_KEYS = Object.freeze({
     'id', 'routeId', 'sourceFeatureIndex', 'segmentIndex', 'scaleRank',
     'category', 'electric', 'multiTrack', 'start', 'end',
   ]),
+  'boundary-segments': new Set([
+    'id', 'routeId', 'sourceKind', 'sourceFeatureIndex', 'partIndex',
+    'segmentIndex', 'scaleRank', 'boundaryClass', 'start', 'end',
+  ]),
 });
 
 function assertKnownKeys(value, allowed, label) {
@@ -61,7 +65,7 @@ export function normalizeOverworldOverlayDocument(input, expected = {}) {
   }
   assertKnownKeys(input, OVERLAY_DOCUMENT_KEYS, 'overworld overlay document');
   if (input.formatVersion !== 1) throw new Error(`unsupported overworld overlay format: ${input.formatVersion}`);
-  if (!['river-segments', 'rail-segments'].includes(input.kind)) {
+  if (!['river-segments', 'rail-segments', 'boundary-segments'].includes(input.kind)) {
     throw new Error(`unsupported overworld overlay kind: ${input.kind}`);
   }
   if (!Number.isInteger(input.cx) || !Number.isInteger(input.cy) || input.cx < 0 || input.cy < 0) {
@@ -92,6 +96,14 @@ export function normalizeOverworldOverlayDocument(input, expected = {}) {
     }
     if (!Number.isInteger(segment.scaleRank) || segment.scaleRank < 0) {
       throw new RangeError(`segments[${index}].scaleRank must be non-negative`);
+    }
+    if (input.kind === 'boundary-segments') {
+      if (!['land', 'disputed'].includes(segment.sourceKind)) {
+        throw new Error(`segments[${index}].sourceKind is unsupported`);
+      }
+      if (!['de-facto', 'neutral-disputed'].includes(segment.boundaryClass)) {
+        throw new Error(`segments[${index}].boundaryClass is unsupported`);
+      }
     }
   }
   return Object.freeze({ ...input, segments: Object.freeze([...input.segments]) });
