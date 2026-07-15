@@ -48,6 +48,7 @@ import { MAP_W, MAP_H, decodeMap, TERRAIN, isBlocked, POI } from './mapData';
 import { WORLD_NODES, getNode, buildMinimap } from './worldNodes';
 // 🏙️ 광장 SEA→LAND 메꿈(순수 함수·단일 진실원 — 런타임·관리자 뷰·미니맵 공통).
 import { buildPlayableGrid, PLAZA_R } from '../../lib/world/mapGeo';
+import { createLegacyOverworldChunkLoader, PhaserOverworldPageRenderer } from './overworldPageRenderer';
 // 🧭 재접속 스폰 좌표 검증(순수) — 저장된 타일이 맵 안·보행 가능일 때만 사용, 아니면 서울 폴백.
 // cityRedirectScene: 초기 부팅 시 저장 씬이 'city:<id>' 면 도시맵 직행 판별(순수 — Codex P1-1 회귀 게이트).
 import { isSpawnTileValid, cityRedirectScene } from '../../lib/world/session';
@@ -121,8 +122,6 @@ const CHAR_ANIM_MS = 100;
 const PET_IDLE_MS = 480;    // 펫 idle(통통/꼬리) 2프레임 교차 주기 — 걷기보다 느긋하게
 const QUEST_RANGE = 64;     // 표지판 상호작용 근접 반경(px)
 const NODE_TALK_RANGE = 96; // 장소 노드/명산 A(말 걸기) 근접 반경(px) — 라벨은 없고 A로 설명 열람
-// 강 오토타일 아틀라스 인덱스 시작. keys[0..14] 뒤에 t_river_0..15 를 15..30 에 이어 붙인다.
-const RIVER_TILE_BASE = 15;
 
 // 팔레트·픽셀맵(16×16 캐릭터·12×16 펫)·시간대 톤은 ./sprites.js로 추출했다
 // (GameCanvas 경량화 + 무결성/팔레트 vitest 검증 가능). 여기선 씬이 그걸 굽기만 한다.
@@ -695,7 +694,6 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           this.buildFence();
           this.buildBridge();
           this.buildTerrain();    // 산지·고산(설산)·평야 질감 타일(순수 시각 · 통행 가능)
-          this.buildTileAtlas();  // 개별 타일 → 1장 캔버스 아틀라스(tilemap tileset)
           this.buildTree();
           this.buildDecor();
           this.buildBoat();       // 페리 항해·물 위 피어 배 도트
@@ -1080,30 +1078,6 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           g.generateTexture('t_sand', TEX, TEX); g.destroy();
         }
 
-        // ── 타일 아틀라스 ──
-        // 절차 생성 타일 텍스처들을 1장의 캔버스로 합쳐 Phaser tilemap tileset을 만든다.
-        // (타일마다 add.image = 172k 오브젝트는 불가 → 레이어 1장 + 내장 컬링으로 전환.)
-        // 인덱스: 0=빈칸, 1=잔디(land), 2/3/4=바다 3프레임, 5=모래(해안),
-        //         6=(미사용 — 강은 오토타일로 이관), 7=호수, 8=DMZ 철조망, 9=교량, 10=산지A, 11=고산/설산,
-        //         12=평야, 13=산지B(쌍봉), 14=산지C(완만), 15..30=강 오토타일 16변형(RIVER_TILE_BASE+mask).
-        //         산지 3변형·강 16변형은 타일맵 빌드가 좌표 해시/이웃 비트마스크로 골라 넣는다.
-        buildTileAtlas() {
-          // 씬 재시작(공항→광장 복귀) 시 텍스처는 전역 TextureManager에 이미 존재 →
-          // createCanvas가 null을 반환하므로, 있으면 재사용(톤은 최초 로드값 유지 — generateTexture와 동일 관례).
-          if (this.textures.exists('tiles')) return;
-          const keys = [null, 't_grass', 't_water0', 't_water1', 't_water2', 't_sand', null, 't_lake', 't_fence', 't_bridge', 't_mountain', 't_peak', 't_plain', 't_mountain_b', 't_mountain_c'];
-          for (let m = 0; m < 16; m++) keys.push(`t_river_${m}`); // 15..30
-          const cols = keys.length;
-          const atlas = this.textures.createCanvas('tiles', cols * TEX, TEX);
-          const ctx = atlas.getContext();
-          for (let i = 1; i < cols; i++) {
-            if (!keys[i]) continue; // 6번(구 t_river) 자리는 비움
-            const src = this.textures.get(keys[i]).getSourceImage();
-            ctx.drawImage(src, i * TEX, 0);
-          }
-          atlas.refresh();
-        }
-
         // 나무 — 2타일 높이(수관 위 + 줄기 아래), 16×32.
         buildTree() {
           const C = this.pal;
@@ -1272,45 +1246,32 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           this.ferryBoat = null;    // 항해 중 캐릭터 아래 배 스프라이트
           this.decor = new Map();   // "tx,ty" → { kind, imgs:[] } — 카메라 주변만 생성/회수(상한 DECOR_CAP)
 
-          // ── 지형 레이어(Phaser Tilemap 1장 + 내장 컬링) ──
-          // 172k 타일을 add.image 로 깔 수 없으므로 tilemap 레이어 1장으로 전환.
-          // 아틀라스 인덱스: 바다=2·해안(모래)=5·강=6·호수=7·철조망=8·교량=9·육지=1·산지=10·설산=11·평야=12.
-          // land 계열(land·mountain·peak·plain)은 통행 가능 — 질감만 다르다. 해안(바다 인접)은 모래로 굽되
-          // 산지·설산은 해안이라도 질감을 유지하고, 평야만 해안 시 모래로 접는다(모래 우선순위 보존).
-          const seaTile = (tx, ty) => this.tileCode(tx, ty) === TERRAIN.SEA; // 해안 판정용(바다 인접만)
-          // 강 물줄기 연결 판정 — 이웃이 RIVER/LAKE/SEA 면 물로 이어진다(끊김 없이 흐르게).
-          const waterN = (tx, ty) => {
-            const cc = this.tileCode(tx, ty);
-            return cc === TERRAIN.RIVER || cc === TERRAIN.LAKE || cc === TERRAIN.SEA;
-          };
-          const data = [];
-          for (let y = 0; y < ROWS; y++) {
-            const row = new Array(COLS);
-            for (let x = 0; x < COLS; x++) {
-              const c = this.grid[y * MAP_W + x];
-              if (c === TERRAIN.RIVER) {
-                const mask = (waterN(x, y - 1) ? RIVER_N : 0) | (waterN(x + 1, y) ? RIVER_E : 0)
-                  | (waterN(x, y + 1) ? RIVER_S : 0) | (waterN(x - 1, y) ? RIVER_W : 0);
-                row[x] = RIVER_TILE_BASE + mask;
-                continue;
-              }
-              if (c === TERRAIN.LAKE) { row[x] = 7; continue; }
-              if (c === TERRAIN.FENCE) { row[x] = 8; continue; }
-              if (c === TERRAIN.BRIDGE) { row[x] = 9; continue; }
-              if (c === TERRAIN.MOUNTAIN) { const mh = tileHash(x, y); row[x] = mh < 0.34 ? 10 : mh < 0.67 ? 13 : 14; continue; } // 산지 3변형(좌표 해시)
-              if (c === TERRAIN.PEAK) { row[x] = 11; continue; }
-              if (c !== TERRAIN.LAND && c !== TERRAIN.PLAIN) { row[x] = 2; continue; } // sea
-              // 해안: land/plain 이면서 4-이웃에 바다(sea)가 있으면 모래(강·호수 인접은 해안 아님).
-              const coast = seaTile(x - 1, y) || seaTile(x + 1, y) || seaTile(x, y - 1) || seaTile(x, y + 1);
-              if (c === TERRAIN.PLAIN) { row[x] = coast ? 5 : 12; continue; }
-              row[x] = coast ? 5 : 1;
-            }
-            data.push(row);
-          }
-          const tmap = this.make.tilemap({ data, tileWidth: TEX, tileHeight: TEX });
-          const tileset = tmap.addTilesetImage('tiles', 'tiles', TEX, TEX, 0, 0);
-          this.tmap = tmap;
-          this.layer = tmap.createLayer(0, tileset, 0, 0).setScale(TSCALE).setDepth(0);
+          // ── 지형 렌더 페이지 ── 기존 448×384 격자를 256 저장 청크 계약으로 감싼 뒤,
+          // 카메라 주변 32×32 RenderTexture만 굽는다. 충돌·노드 좌표는 기존 격자를 계속 사용한다.
+          this.waterPool = [];
+          this.waterSignature = null;
+          this.terrainLoader = createLegacyOverworldChunkLoader({
+            width: COLS,
+            height: ROWS,
+            surfaceAt: (tx, ty) => this.tileCode(tx, ty),
+            collisionAt: (tx, ty) => isBlocked(this.tileCode(tx, ty)),
+          });
+          this.terrainPages = new PhaserOverworldPageRenderer(this, {
+            loader: this.terrainLoader,
+            textureKeyAt: ({ globalX, globalY }) => this.terrainTexKey(globalX, globalY),
+            fallbackTextureKey: 't_water0',
+            tilePixels: TEX,
+            worldScale: TSCALE,
+            depth: 0,
+          });
+          this.events.once('shutdown', () => {
+            this.terrainPages?.destroy();
+            this.terrainPages = null;
+            this.terrainLoader?.clear();
+            this.terrainLoader = null;
+            for (const image of this.waterPool) image.destroy();
+            this.waterPool.length = 0;
+          });
 
           // 팻말 — 스폰 광장 곁.
           this.signX = this.signTileX * TILE + TILE / 2;
@@ -1389,7 +1350,18 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           this.petFlip = false;
           this.pet = this.add.image(this.petPX, this.petPY, this.petTexKey(0)).setScale(TSCALE * this.petLevelScale());
 
+          this.cameras.main.centerOn(spawnX, spawnY);
           this.cameras.main.startFollow(this.player, true, 0.18, 0.18);
+          // Phaser centerOn은 scroll만 바꾸고 첫 preRender 전 worldView는 갱신하지 않는다.
+          // 첫 화면은 스폰 중심 bounds를 직접 넘겨 좌상단 페이지가 잠깐 구워지는 일을 막는다.
+          const initialViewWidth = VIEW_W / ZOOM;
+          const initialViewHeight = VIEW_H / ZOOM;
+          this.refreshTerrainPages(true, {
+            x: Math.max(0, Math.min(WORLD_W - initialViewWidth, spawnX - initialViewWidth / 2)),
+            y: Math.max(0, Math.min(WORLD_H - initialViewHeight, spawnY - initialViewHeight / 2)),
+            width: initialViewWidth,
+            height: initialViewHeight,
+          });
 
           // ── 입력: 방향키/WASD 스택(마지막 키 우선) + 탭-투-무브 ──
           this.heldDirs = [];
@@ -1490,6 +1462,35 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           return this.grid[ty * MAP_W + tx];
         }
 
+        // 전역 타일 → 절차 텍스처. 페이지 경계에서도 전역 이웃을 조회해 해안·강 마스크가 이어진다.
+        terrainTexKey(tx, ty) {
+          const c = this.tileCode(tx, ty);
+          if (c === TERRAIN.RIVER) {
+            const waterNeighbor = (x, y) => {
+              const code = this.tileCode(x, y);
+              return code === TERRAIN.RIVER || code === TERRAIN.LAKE || code === TERRAIN.SEA;
+            };
+            const mask = (waterNeighbor(tx, ty - 1) ? RIVER_N : 0)
+              | (waterNeighbor(tx + 1, ty) ? RIVER_E : 0)
+              | (waterNeighbor(tx, ty + 1) ? RIVER_S : 0)
+              | (waterNeighbor(tx - 1, ty) ? RIVER_W : 0);
+            return `t_river_${mask}`;
+          }
+          if (c === TERRAIN.LAKE) return 't_lake';
+          if (c === TERRAIN.FENCE) return 't_fence';
+          if (c === TERRAIN.BRIDGE) return 't_bridge';
+          if (c === TERRAIN.MOUNTAIN) {
+            const hash = tileHash(tx, ty);
+            return hash < 0.34 ? 't_mountain' : hash < 0.67 ? 't_mountain_b' : 't_mountain_c';
+          }
+          if (c === TERRAIN.PEAK) return 't_peak';
+          if (c !== TERRAIN.LAND && c !== TERRAIN.PLAIN) return 't_water0';
+          const coast = this.isSea(tx - 1, ty) || this.isSea(tx + 1, ty)
+            || this.isSea(tx, ty - 1) || this.isSea(tx, ty + 1);
+          if (coast) return 't_sand';
+          return c === TERRAIN.PLAIN ? 't_plain' : 't_grass';
+        }
+
         // 바다 타일 여부(범위 밖 = 바다) — 물결 애니 대상. river·lake 는 바다가 아니다(정적).
         isSea(tx, ty) { return this.tileCode(tx, ty) === TERRAIN.SEA; }
 
@@ -1501,15 +1502,42 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           return false;
         }
 
-        // 화면 안 sea 타일만 물결 프레임(2/3/4) 교체 — 전 바다(수만 타일) 갱신 회피.
+        // 카메라가 새 페이지로 넘어갈 때만 렌더 계획을 갱신한다. stale 요청은 pager가 폐기한다.
+        refreshTerrainPages(force = false, cameraOrView = this.cameras.main) {
+          if (!this.terrainPages) return;
+          const vector = this.moving && DIRV[this.facing] ? DIRV[this.facing] : [0, 0];
+          this.terrainPages.updateCamera(cameraOrView, {
+            direction: { x: vector[0], y: vector[1] },
+            force,
+          }).catch(() => {});
+        }
+
+        // 화면 안 sea 타일만 별도 스프라이트 풀로 물결 프레임을 덮는다.
         animateWater() {
-          if (!this.layer) return;
+          if (!this.waterPool) return;
           const v = this.cameras.main.worldView;
           const x0 = Math.max(0, Math.floor(v.x / TILE)), x1 = Math.min(COLS - 1, Math.ceil(v.right / TILE));
           const y0 = Math.max(0, Math.floor(v.y / TILE)), y1 = Math.min(ROWS - 1, Math.ceil(v.bottom / TILE));
-          const idx = 2 + this.waterFrame; // 2·3·4
+          const signature = `${x0},${y0},${x1},${y1},${this.waterFrame}`;
+          if (signature === this.waterSignature) return;
+          this.waterSignature = signature;
+          let used = 0;
           for (let ty = y0; ty <= y1; ty++) {
-            for (let tx = x0; tx <= x1; tx++) if (this.isSea(tx, ty)) this.layer.putTileAt(idx, tx, ty);
+            for (let tx = x0; tx <= x1; tx++) {
+              if (!this.isSea(tx, ty)) continue;
+              let image = this.waterPool[used];
+              if (!image) {
+                image = this.add.image(0, 0, 't_water0').setOrigin(0, 0).setScale(TSCALE).setDepth(0.5);
+                this.waterPool.push(image);
+              }
+              image.setTexture(`t_water${this.waterFrame}`)
+                .setPosition(tx * TILE, ty * TILE)
+                .setVisible(true);
+              used += 1;
+            }
+          }
+          for (let index = used; index < this.waterPool.length; index += 1) {
+            this.waterPool[index].setVisible(false);
           }
         }
 
@@ -1726,6 +1754,8 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
               : phase === 'dawn' || phase === 'evening' ? 0.1 : 0);
           }
           // 카메라 주변 장식 생성/회수(매 프레임 — 컬링·상한으로 저비용).
+          this.refreshTerrainPages();
+          this.animateWater();
           this.updateDecor();
 
           // ── 플레이어 이동 상태기계 (facing→step→hold 연속) ──
