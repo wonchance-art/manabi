@@ -79,8 +79,12 @@ export class PhaserOverworldChunkOverlayRenderer {
     this.lastSignature = signature;
     const generation = ++this.generation;
     return Promise.all(this.layers.map(async (layer) => {
-      const documents = (await Promise.all(chunks.map(({ cx, cy }) => layer.loader.load(cx, cy))))
-        .filter(Boolean);
+      const results = await Promise.allSettled(
+        chunks.map(({ cx, cy }) => layer.loader.load(cx, cy)),
+      );
+      const documents = results
+        .filter((result) => result.status === 'fulfilled' && result.value)
+        .map((result) => result.value);
       if (this.destroyed || generation !== this.generation) return;
       this.drawLayer(layer, documents, worldView);
     }));

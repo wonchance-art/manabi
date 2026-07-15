@@ -3,6 +3,26 @@ import { OVERWORLD_ROUTE_QUANTIZATION } from './overworldOverlay.js';
 
 const compareText = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
 
+const OVERLAY_DOCUMENT_KEYS = new Set([
+  'formatVersion', 'kind', 'quantization', 'haloTiles', 'cx', 'cy', 'segments',
+]);
+const OVERLAY_SEGMENT_KEYS = Object.freeze({
+  'river-segments': new Set([
+    'id', 'routeId', 'sourceFeatureIndex', 'partIndex', 'segmentIndex',
+    'scaleRank', 'start', 'end',
+  ]),
+  'rail-segments': new Set([
+    'id', 'routeId', 'sourceFeatureIndex', 'segmentIndex', 'scaleRank',
+    'category', 'electric', 'multiTrack', 'start', 'end',
+  ]),
+});
+
+function assertKnownKeys(value, allowed, label) {
+  for (const key of Object.keys(value)) {
+    if (!allowed.has(key)) throw new Error(`${label} contains unsupported field: ${key}`);
+  }
+}
+
 function assertPositiveInteger(value, label) {
   if (!Number.isInteger(value) || value < 1) throw new RangeError(`${label} must be a positive integer`);
 }
@@ -39,6 +59,7 @@ export function normalizeOverworldOverlayDocument(input, expected = {}) {
   if (!input || typeof input !== 'object' || Array.isArray(input)) {
     throw new TypeError('overworld overlay document must be an object');
   }
+  assertKnownKeys(input, OVERLAY_DOCUMENT_KEYS, 'overworld overlay document');
   if (input.formatVersion !== 1) throw new Error(`unsupported overworld overlay format: ${input.formatVersion}`);
   if (!['river-segments', 'rail-segments'].includes(input.kind)) {
     throw new Error(`unsupported overworld overlay kind: ${input.kind}`);
@@ -59,6 +80,7 @@ export function normalizeOverworldOverlayDocument(input, expected = {}) {
   for (let index = 0; index < input.segments.length; index += 1) {
     const segment = input.segments[index];
     if (!segment || typeof segment !== 'object') throw new TypeError(`segments[${index}] must be an object`);
+    assertKnownKeys(segment, OVERLAY_SEGMENT_KEYS[input.kind], `segments[${index}]`);
     if (typeof segment.id !== 'string' || segment.id.length === 0 || seen.has(segment.id)) {
       throw new Error(`segments[${index}].id must be unique and non-empty`);
     }

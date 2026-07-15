@@ -46,6 +46,14 @@ describe('오버월드 피처 오버레이 문서', () => {
     ]))).toThrow(/unique/);
     expect(() => normalizeOverworldOverlayDocument(document(0, [segment('x', [1, 1], [1, 1])]))).toThrow(/zero length/);
   });
+
+  it('문서와 선분의 미지 필드를 거부해 무지명 계약을 강제한다', () => {
+    expect(() => normalizeOverworldOverlayDocument({ ...document(0, []), name: 'unexpected' }))
+      .toThrow(/unsupported field: name/);
+    expect(() => normalizeOverworldOverlayDocument(document(0, [
+      { ...segment('river:0', [0, 0], [1024, 0]), name: 'unexpected' },
+    ]))).toThrow(/unsupported field: name/);
+  });
 });
 
 describe('오버월드 피처 오버레이 가시 범위', () => {
