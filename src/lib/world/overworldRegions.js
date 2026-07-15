@@ -20,6 +20,10 @@ function freezeRegion(region) {
     bbox: Object.freeze([...region.bbox]),
     projection: Object.freeze({ ...region.projection }),
     manifest: Object.freeze({ ...region.manifest }),
+    overlaySources: Object.freeze((region.overlaySources || []).map((source) => Object.freeze({
+      ...source,
+      style: Object.freeze({ ...source.style }),
+    }))),
     gate: Object.freeze({ ...region.gate, tile: gateTile }),
   });
 }
@@ -48,6 +52,28 @@ export const OVERWORLD_REGIONS = Object.freeze({
       regionHash: '17e9935e9c81775d8b4e0f91b9f67259458444e78d17b6933243bf07e889fdf1',
       projectionManifestHash: 'ef9de068363aa70971dc7beda5128690d4d0c6f3b052b9a43bd1a2f1d10a4d1c',
     },
+    overlaySources: [
+      {
+        regionId: 'asia-pacific-terrain-preview-v1',
+        regionHash: '55a7c3d2665600dc5bf5def2368b005f7b7b2fbbc5cf37f2a8cbdc9c52e32610',
+        projectionManifestHash: 'ef9de068363aa70971dc7beda5128690d4d0c6f3b052b9a43bd1a2f1d10a4d1c',
+        width: 2631,
+        height: 2669,
+        kind: 'river-segments',
+        pathPrefix: 'rivers',
+        style: { color: 0x4f8faa, alpha: 0.88, widthTiles: 0.08, rankStepTiles: 0.018, maxScaleRank: 5, depth: 1 },
+      },
+      {
+        regionId: 'asia-pacific-transport-preview-v1',
+        regionHash: '362f2f38416475d75232c1d73d22c9931d4e4d2a43769b529fc96de98718201b',
+        projectionManifestHash: 'ef9de068363aa70971dc7beda5128690d4d0c6f3b052b9a43bd1a2f1d10a4d1c',
+        width: 2631,
+        height: 2669,
+        kind: 'rail-segments',
+        pathPrefix: 'rail',
+        style: { color: 0x5b4638, alpha: 0.84, widthTiles: 0.045, rankStepTiles: 0.006, maxScaleRank: 5, depth: 2 },
+      },
+    ],
     gate: {
       id: 'vladivostok-transsib',
       label: '블라디보스토크 횡단열차역',
@@ -79,6 +105,28 @@ export const OVERWORLD_REGIONS = Object.freeze({
       regionHash: '1cbab17ae4f9c8631aa74f2c8d3c42c39c54d8b651e81f72267d67e1bcde5fb3',
       projectionManifestHash: '7e579e41f15467366187c478f0dcd48e02a3c17ea9e0d0265dfc537e8208aeb9',
     },
+    overlaySources: [
+      {
+        regionId: 'europe-mediterranean-middle-east-terrain-preview-v1',
+        regionHash: '4232e35ecbd9c53fb5fd7f184377a8ca7867588ce030673d62edb018484fee28',
+        projectionManifestHash: '7e579e41f15467366187c478f0dcd48e02a3c17ea9e0d0265dfc537e8208aeb9',
+        width: 964,
+        height: 1137,
+        kind: 'river-segments',
+        pathPrefix: 'rivers',
+        style: { color: 0x4f8faa, alpha: 0.88, widthTiles: 0.08, rankStepTiles: 0.018, maxScaleRank: 5, depth: 1 },
+      },
+      {
+        regionId: 'europe-mediterranean-middle-east-transport-preview-v1',
+        regionHash: 'af317944cf983ac8cf36f2d24d8d2fe714c832d6d9d54c93360fafe3acc2e961',
+        projectionManifestHash: '7e579e41f15467366187c478f0dcd48e02a3c17ea9e0d0265dfc537e8208aeb9',
+        width: 964,
+        height: 1137,
+        kind: 'rail-segments',
+        pathPrefix: 'rail',
+        style: { color: 0x5b4638, alpha: 0.84, widthTiles: 0.045, rankStepTiles: 0.006, maxScaleRank: 5, depth: 2 },
+      },
+    ],
     gate: {
       id: 'moscow-transsib',
       label: '모스크바 횡단열차역',

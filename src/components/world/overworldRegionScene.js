@@ -4,6 +4,7 @@ import { OVERWORLD_STORAGE_CHUNK_TILES } from '../../lib/world/overworldChunk';
 import { corridorStopSpawn } from '../../lib/world/transsibCorridor';
 import { overworldRegionSpawn } from '../../lib/world/overworldRegions';
 import { PhaserOverworldPageRenderer } from './overworldPageRenderer';
+import { PhaserOverworldChunkOverlayRenderer } from './overworldChunkOverlayRenderer';
 import {
   CHAR_ORIGIN_Y,
   CHAR_WALK_CYCLE,
@@ -100,6 +101,12 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
         worldScale: WORLD_SCALE,
         depth: 0,
       });
+      this.featureOverlays = new PhaserOverworldChunkOverlayRenderer(this, {
+        sources: region.overlaySources,
+        baseUrl: region.assetBaseUrl,
+        tilePixels: TEXTURE_TILE,
+        worldScale: WORLD_SCALE,
+      });
 
       const requested = bootData?.spawn?.scene === region.sceneId
         ? bootData.spawn
@@ -132,6 +139,8 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
         ctx.setStatus?.(null);
         this.terrainPages?.destroy();
         this.terrainPages = null;
+        this.featureOverlays?.destroy();
+        this.featureOverlays = null;
         this.chunkLoader?.destroy();
         this.chunkLoader = null;
         this.loadedChunks.clear();
@@ -162,6 +171,12 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
         width: 320,
         height: 288,
       });
+      await this.refreshFeatureOverlays(true, {
+        x: Math.max(0, this.player.x - 160),
+        y: Math.max(0, this.player.y - 144),
+        width: 320,
+        height: 288,
+      }).catch(() => null);
       if (this.destroyed) return;
       this.ready = true;
       this.inputLocked = false;
@@ -223,6 +238,7 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
             this.moving = false;
             this.refreshNearGate();
             this.refreshTerrainPages();
+            this.refreshFeatureOverlays();
           },
         });
       } finally {
@@ -286,6 +302,13 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
         prefetch: atEdge ? 0 : 1,
         force,
       });
+      update.catch(() => {});
+      return update;
+    }
+
+    refreshFeatureOverlays(force = false, cameraOrView = this.cameras.main) {
+      if (!this.featureOverlays) return Promise.resolve(null);
+      const update = this.featureOverlays.updateCamera(cameraOrView, { force });
       update.catch(() => {});
       return update;
     }

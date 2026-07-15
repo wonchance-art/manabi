@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { decodeOverworldChunkV1, OVERWORLD_STORAGE_CHUNK_TILES } from '../overworldChunk.js';
+import { normalizeOverworldOverlayDocument } from '../overworldFeatureOverlay.js';
 import {
   OVERWORLD_REGION_LIST,
   isOverworldRegionTile,
@@ -62,6 +63,30 @@ describe('오버월드 지역 레지스트리', () => {
     expect(overworldRegionSpawn(region)).toEqual({ scene: region.sceneId, x, y });
     expect(overworldRegionSpawnForCorridorStop(region.gate.corridorStopId))
       .toEqual({ scene: region.sceneId, x, y });
+  });
+
+  it.each(OVERWORLD_REGION_LIST)('$label 게이트 청크의 강·철도 오버레이를 검증한다', (region) => {
+    const cx = Math.floor(region.gate.tile.x / OVERWORLD_STORAGE_CHUNK_TILES);
+    const cy = Math.floor(region.gate.tile.y / OVERWORLD_STORAGE_CHUNK_TILES);
+    expect(region.overlaySources).toHaveLength(2);
+    for (const source of region.overlaySources) {
+      const manifest = JSON.parse(readFileSync(path.join(
+        ROOT, 'public/assets/overworld', source.regionId, 'content-manifest.json',
+      ), 'utf8'));
+      expect(manifest).toMatchObject({
+        regionId: source.regionId,
+        regionHash: source.regionHash,
+        projectionManifestHash: source.projectionManifestHash,
+        width: region.width,
+        height: region.height,
+      });
+      const overlayPath = `${source.pathPrefix}/${cx}/${cy}.json`;
+      expect(manifest.overlays.some(({ path: entry }) => entry === overlayPath)).toBe(true);
+      const document = normalizeOverworldOverlayDocument(JSON.parse(readFileSync(path.join(
+        ROOT, 'public/assets/overworld', source.regionId, overlayPath,
+      ), 'utf8')), { kind: source.kind, cx, cy });
+      expect(document.segments.length).toBeGreaterThan(0);
+    }
   });
 
   it('미등록 지역과 범위 밖 좌표는 거부한다', () => {
