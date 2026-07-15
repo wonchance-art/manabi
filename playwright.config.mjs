@@ -19,6 +19,7 @@ export default Object.freeze({
     baseURL,
     launchOptions: {
       headless: true,
+      args: ['--enable-precise-memory-info'],
       ...(executablePath ? { executablePath } : { channel: browserChannel }),
     },
   },

@@ -229,7 +229,11 @@ async function seedMockSessionCookie(context, role, options = {}) {
   }]);
 }
 
-async function mockWorldShellRuntime(context, { position = null, positionWrites = null } = {}) {
+async function mockWorldShellRuntime(context, {
+  position = null,
+  positionState = null,
+  positionWrites = null,
+} = {}) {
   await context.route('**/api/world/stamps', async (route) => {
     await route.fulfill({
       status: 200,
@@ -254,13 +258,20 @@ async function mockWorldShellRuntime(context, { position = null, positionWrites 
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ position }),
+        body: JSON.stringify({ position: positionState?.current ?? position }),
       });
       return;
     }
+    let nextPosition = null;
     try {
-      positionWrites?.push(route.request().postDataJSON());
-    } catch { /* sendBeacon 등 JSON 본문이 아닌 최종 저장은 벤치에서 제외 */ }
+      nextPosition = route.request().postDataJSON();
+    } catch {
+      try { nextPosition = JSON.parse(route.request().postData() || 'null'); } catch { /* ignore */ }
+    }
+    if (nextPosition) {
+      positionWrites?.push(nextPosition);
+      if (positionState) positionState.current = nextPosition;
+    }
     await route.fulfill({ status: 204 });
   });
   await context.routeWebSocket('**/realtime/v1/websocket**', (socket) => {
@@ -284,6 +295,49 @@ async function mockWorldShellRuntime(context, { position = null, positionWrites 
       ]));
     });
   });
+}
+
+async function waitForWorldDebug(page) {
+  try {
+    await page.waitForFunction(() => Boolean(window.__MANABI_WORLD_DEBUG__?.snapshot?.()), null, {
+      timeout: config.timeout,
+    });
+    const initial = await page.evaluate(() => window.__MANABI_WORLD_DEBUG__.snapshot());
+    if (initial.committedUpdates === 0) {
+      await page.evaluate(({ x, y }) => window.__MANABI_WORLD_DEBUG__.teleport(x, y), initial.tile);
+    }
+    await page.waitForFunction(() => {
+      const snapshot = window.__MANABI_WORLD_DEBUG__?.snapshot?.();
+      return snapshot?.committedUpdates > 0 && snapshot.visiblePages > 0;
+    }, null, { timeout: config.timeout });
+  } catch (error) {
+    const diagnostic = await page.evaluate(() => ({
+      url: window.location.href,
+      title: document.title,
+      text: document.body.innerText.slice(0, 500),
+      canvases: document.querySelectorAll('canvas').length,
+      bridge: Boolean(window.__MANABI_WORLD_DEBUG__),
+      snapshot: window.__MANABI_WORLD_DEBUG__?.snapshot?.() ?? null,
+      overlay: document.querySelector('[data-nextjs-dialog]')?.textContent ?? null,
+    })).catch((diagnosticError) => ({ diagnosticError: diagnosticError.message }));
+    throw new Error(`world debug did not become ready: ${JSON.stringify(diagnostic)}`, { cause: error });
+  }
+}
+
+async function readJsHeapUsedBytes(cdp) {
+  const { metrics } = await cdp.send('Performance.getMetrics');
+  return Math.floor(metrics.find(({ name }) => name === 'JSHeapUsedSize')?.value ?? -1);
+}
+
+function assertWorldRuntimeCheckpoint(checkpoint) {
+  assert.ok(checkpoint.visiblePages > 0, `${checkpoint.label}: visible pages disappeared`);
+  assert.equal(checkpoint.blankFrameCount, 0, `${checkpoint.label}: renderer reported a blank commit`);
+  assert.equal(checkpoint.sampledBlankFrames ?? 0, 0, `${checkpoint.label}: browser sampled a blank frame`);
+  assert.ok(checkpoint.renderPages <= checkpoint.limits.renderPages, `${checkpoint.label}: page count exceeded limit`);
+  assert.ok(checkpoint.renderPageBytes <= checkpoint.limits.renderPageBytes, `${checkpoint.label}: page bytes exceeded limit`);
+  assert.ok(checkpoint.runtimeBytes <= checkpoint.limits.runtimeBytes, `${checkpoint.label}: 32 MiB runtime target exceeded`);
+  assert.equal(checkpoint.estimatedGpuTextureBytes, checkpoint.renderPageBytes, `${checkpoint.label}: GPU estimate drifted`);
+  assert.ok(checkpoint.cdpHeapUsedBytes > 0, `${checkpoint.label}: browser heap metric unavailable`);
 }
 
 before(async () => {
@@ -723,6 +777,94 @@ test('world: 저장된 도쿄 시내에서 하네다 EXIT 세로회랑으로 전
       height: canvas.height,
     }));
     assert.notDeepEqual(returnedMapSize, cityMapSize, 'Haneda EXIT should return to national map');
+  });
+});
+
+test('world runtime: 로그인 상태에서 장거리·왕복·순간이동·재접속에도 32 MiB와 무공백 계약을 지킨다', { timeout: config.timeout * 3 }, async () => {
+  await runInFreshPage(async (page, context) => {
+    const positionState = { current: { scene: 'plaza', x: 68, y: 208 } };
+    const positionWrites = [];
+    await mockWorldShellRuntime(context, { positionState, positionWrites });
+    await signInWithMockSession(page, context, 'learner');
+    await page.goto('/world?worldDebug=1', { waitUntil: 'domcontentloaded' });
+    await waitForWorldDebug(page);
+
+    const cdp = await context.newCDPSession(page);
+    await cdp.send('Performance.enable');
+    const checkpoints = [];
+    const checkpoint = async (label, extra = {}) => {
+      await page.waitForFunction(() => {
+        const snapshot = window.__MANABI_WORLD_DEBUG__?.snapshot?.();
+        return snapshot && snapshot.pendingPages === 0 && snapshot.pendingChunks === 0;
+      }, null, { timeout: config.timeout });
+      await cdp.send('HeapProfiler.collectGarbage').catch(() => {});
+      const runtime = await page.evaluate(() => window.__MANABI_WORLD_DEBUG__.snapshot());
+      const measured = {
+        label,
+        ...runtime,
+        ...extra,
+        cdpHeapUsedBytes: await readJsHeapUsedBytes(cdp),
+      };
+      assertWorldRuntimeCheckpoint(measured);
+      checkpoints.push(measured);
+      return measured;
+    };
+
+    const baseline = await checkpoint('initial-seoul');
+    for (const [label, x, y] of [
+      ['long-fukuoka', 135, 307],
+      ['long-osaka', 234, 276],
+      ['long-haneda', 317, 258],
+    ]) {
+      await page.evaluate(([tx, ty]) => window.__MANABI_WORLD_DEBUG__.teleport(tx, ty), [x, y]);
+      await checkpoint(label);
+    }
+
+    await page.evaluate(() => window.__MANABI_WORLD_DEBUG__.teleport(68, 208));
+    await checkpoint('direct-teleport-seoul');
+
+    const rapid = await page.evaluate(async (destinations) => {
+      let done = false;
+      let sampledBlankFrames = 0;
+      let sampledFrames = 0;
+      const monitor = (async () => {
+        while (!done) {
+          const snapshot = window.__MANABI_WORLD_DEBUG__.snapshot();
+          if (snapshot.committedUpdates > 0 && snapshot.visiblePages === 0) sampledBlankFrames += 1;
+          sampledFrames += 1;
+          await new Promise((resolve) => requestAnimationFrame(resolve));
+        }
+      })();
+      await Promise.all(destinations.map(([x, y]) => window.__MANABI_WORLD_DEBUG__.teleport(x, y)));
+      done = true;
+      await monitor;
+      return { sampledBlankFrames, sampledFrames };
+    }, [[317, 258], [135, 307], [317, 258], [135, 307], [317, 258]]);
+    assert.ok(rapid.sampledFrames > 0, 'rapid round trip should sample at least one rendered frame');
+    const rapidCheckpoint = await checkpoint('rapid-round-trip', rapid);
+    assert.deepEqual(rapidCheckpoint.tile, { x: 317, y: 258 }, 'rapid round trip should end at Haneda');
+    positionState.current = { scene: 'plaza', ...rapidCheckpoint.tile };
+
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await waitForWorldDebug(page);
+    const reconnect = await checkpoint('reconnect-haneda');
+    assert.deepEqual(reconnect.tile, { x: 317, y: 258 }, 'reconnect should restore final Haneda tile');
+
+    const maxHeapGrowth = Math.max(...checkpoints.map(({ cdpHeapUsedBytes }) => cdpHeapUsedBytes))
+      - baseline.cdpHeapUsedBytes;
+    assert.ok(maxHeapGrowth < 48 * 1024 * 1024, `GC heap growth exceeded 48 MiB: ${maxHeapGrowth}`);
+    console.log(`[world-runtime-metrics] ${JSON.stringify({
+      checkpoints: checkpoints.map((item) => ({
+        label: item.label,
+        tile: item.tile,
+        runtimeBytes: item.runtimeBytes,
+        renderPages: item.renderPages,
+        estimatedGpuTextureBytes: item.estimatedGpuTextureBytes,
+        cdpHeapUsedBytes: item.cdpHeapUsedBytes,
+      })),
+      maxHeapGrowth,
+      persistedWrites: positionWrites.length,
+    })}`);
   });
 });
 

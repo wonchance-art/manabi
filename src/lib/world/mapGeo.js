@@ -2,7 +2,7 @@
 // mapData.js(자동 생성 파일, 직접 수정 금지)는 읽기 전용으로만 참조한다.
 // React/Next/Supabase 등 브라우저 의존 없음 — vitest(node 환경)에서 그대로 임포트 가능.
 
-import { GEO, MAP_W, MAP_H, TERRAIN, isLandAt, POI } from '../../components/world/mapData';
+import { GEO, MAP_W, MAP_H, TERRAIN, isLandAt, POI } from '../../components/world/mapData.js';
 
 // ── 스폰 광장 → 플레이 가능 격자 변환 (순수 함수 · 결정적 · 단일 진실원) ──
 // GameCanvas 런타임·관리자 뷰(WorldMapPage)·미니맵(buildMinimap)이 모두 이 함수를 거쳐
