@@ -12,7 +12,9 @@ function assertPositiveInteger(value, label) {
 }
 
 function assertCoordinate(value, label) {
-  if (!Number.isSafeInteger(value)) throw new RangeError(`${label} must be a safe integer`);
+  if (!Number.isSafeInteger(value) || value < -0x80000000 || value > 0x7fffffff) {
+    throw new RangeError(`${label} must be a safe integer in the signed 32-bit range`);
+  }
 }
 
 function normalizeRoot(baseUrl) {

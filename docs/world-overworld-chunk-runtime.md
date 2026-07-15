@@ -63,7 +63,7 @@ WorldScene
 - ✅ `MOWC` v1 헤더·4+1+1bit 무복사 디코더·tiny fixture
 - ✅ 저장 청크 loader·동일 요청 Promise 중복 제거·packed LRU
 - ✅ AbortController + generation token stale 응답 폐기
-- ⏳ 3×3 decoded 충돌 창·전역 타일 질의
+- ✅ 3×3 decoded 충돌 창·전역 타일 질의·fail-closed 경계 처리
 - ⏳ 32×32 렌더 페이지·오버레이·차량 경계 처리
 
 ## 5. 로드와 교체 순서

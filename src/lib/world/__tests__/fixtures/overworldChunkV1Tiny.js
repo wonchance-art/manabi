@@ -33,7 +33,16 @@ function setBit(bytes, layerOffset, x, y, value) {
   bytes[offset] = value ? bytes[offset] | mask : bytes[offset] & ~mask;
 }
 
-export function buildTinyOverworldChunkV1() {
+export function buildOverworldChunkV1Fixture({
+  cx = TINY_CHUNK_COORDINATE.cx,
+  cy = TINY_CHUNK_COORDINATE.cy,
+  validBounds = TINY_CHUNK_VALID_BOUNDS,
+  regionHash = TINY_CHUNK_REGION_HASH,
+  projectionManifestHash = TINY_CHUNK_PROJECTION_HASH,
+  defaultCollision = 1,
+  defaultViewOnly = 1,
+  cells = [],
+} = {}) {
   const bytes = new Uint8Array(OVERWORLD_CHUNK_FILE_BYTES);
   const view = new DataView(bytes.buffer);
   bytes.set([0x4d, 0x4f, 0x57, 0x43], 0);
@@ -41,33 +50,38 @@ export function buildTinyOverworldChunkV1() {
   view.setUint16(6, 1, true);
   view.setUint16(8, OVERWORLD_CHUNK_HEADER_BYTES, true);
   view.setUint16(10, 0, true);
-  view.setInt32(12, TINY_CHUNK_COORDINATE.cx, true);
-  view.setInt32(16, TINY_CHUNK_COORDINATE.cy, true);
-  view.setUint16(20, TINY_CHUNK_VALID_BOUNDS.x0, true);
-  view.setUint16(22, TINY_CHUNK_VALID_BOUNDS.y0, true);
-  view.setUint16(24, TINY_CHUNK_VALID_BOUNDS.x1, true);
-  view.setUint16(26, TINY_CHUNK_VALID_BOUNDS.y1, true);
+  view.setInt32(12, cx, true);
+  view.setInt32(16, cy, true);
+  view.setUint16(20, validBounds.x0, true);
+  view.setUint16(22, validBounds.y0, true);
+  view.setUint16(24, validBounds.x1, true);
+  view.setUint16(26, validBounds.y1, true);
   view.setUint32(28, OVERWORLD_CHUNK_PAYLOAD_BYTES, true);
-  writeHash(bytes, 32, TINY_CHUNK_REGION_HASH);
-  writeHash(bytes, 64, TINY_CHUNK_PROJECTION_HASH);
+  writeHash(bytes, 32, regionHash);
+  writeHash(bytes, 64, projectionManifestHash);
 
   const collisionOffset = OVERWORLD_CHUNK_HEADER_BYTES + OVERWORLD_SURFACE_BYTES;
   const viewOnlyOffset = collisionOffset + OVERWORLD_COLLISION_BYTES;
-  bytes.fill(0xff, collisionOffset, viewOnlyOffset);
-  bytes.fill(0xff, viewOnlyOffset);
+  bytes.fill(defaultCollision ? 0xff : 0x00, collisionOffset, viewOnlyOffset);
+  bytes.fill(defaultViewOnly ? 0xff : 0x00, viewOnlyOffset);
 
-  setSurface(bytes, 2, 1, 3);
-  setBit(bytes, collisionOffset, 2, 1, 0);
-  setBit(bytes, viewOnlyOffset, 2, 1, 0);
-
-  setSurface(bytes, 3, 1, 12);
-  setBit(bytes, viewOnlyOffset, 3, 1, 0);
-
-  setSurface(bytes, 4, 2, 5);
-  setBit(bytes, collisionOffset, 4, 2, 0);
-
-  setSurface(bytes, 5, 4, 15);
-  setBit(bytes, collisionOffset, 5, 4, 0);
-  setBit(bytes, viewOnlyOffset, 5, 4, 0);
+  for (const cell of cells) {
+    if (cell.surface !== undefined) setSurface(bytes, cell.x, cell.y, cell.surface);
+    if (cell.collision !== undefined) {
+      setBit(bytes, collisionOffset, cell.x, cell.y, cell.collision);
+    }
+    if (cell.viewOnly !== undefined) setBit(bytes, viewOnlyOffset, cell.x, cell.y, cell.viewOnly);
+  }
   return bytes;
+}
+
+export function buildTinyOverworldChunkV1() {
+  return buildOverworldChunkV1Fixture({
+    cells: [
+      { x: 2, y: 1, surface: 3, collision: 0, viewOnly: 0 },
+      { x: 3, y: 1, surface: 12, viewOnly: 0 },
+      { x: 4, y: 2, surface: 5, collision: 0 },
+      { x: 5, y: 4, surface: 15, collision: 0, viewOnly: 0 },
+    ],
+  });
 }
