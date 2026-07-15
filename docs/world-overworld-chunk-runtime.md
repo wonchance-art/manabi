@@ -58,6 +58,14 @@ WorldScene
 `WorldScene`은 전역 `mapData` 배열이나 Phaser Tilemap을 소유하지 않는다. 이동·상호작용은 컨트롤러의
 전역 타일 질의만 사용한다. 씬 전환 시 컨트롤러가 모든 요청을 취소하고 캐시를 파기한다.
 
+### 수직 슬라이스 구현 상태
+
+- ✅ `MOWC` v1 헤더·4+1+1bit 무복사 디코더·tiny fixture
+- ✅ 저장 청크 loader·동일 요청 Promise 중복 제거·packed LRU
+- ✅ AbortController + generation token stale 응답 폐기
+- ⏳ 3×3 decoded 충돌 창·전역 타일 질의
+- ⏳ 32×32 렌더 페이지·오버레이·차량 경계 처리
+
 ## 5. 로드와 교체 순서
 
 1. 스폰 전에 현재 저장 청크의 헤더·payload·충돌 창을 로드한다. 실패하면 이동을 시작하지 않는다.
