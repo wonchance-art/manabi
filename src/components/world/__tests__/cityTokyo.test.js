@@ -38,8 +38,8 @@ function reachableFrom([startX, startY]) {
 }
 
 describe('도쿄 CityScene 데이터 계약', () => {
-  it('geo v2.1의 666×668 단일 격자와 20m 축척을 그대로 쓴다', () => {
-    expect([COLS, ROWS]).toEqual([666, 668]);
+  it('geo v2.2의 824×1086 단일 격자와 20m 축척을 그대로 쓴다', () => {
+    expect([COLS, ROWS]).toEqual([824, 1086]);
     expect([COLS, ROWS]).toEqual([TOKYO_GEO.meta.grid.w, TOKYO_GEO.meta.grid.h]);
     expect(TOKYO_GEO.meta.metersPerTile).toBe(20);
     expect(grid).toBeInstanceOf(Uint8Array);
@@ -79,7 +79,7 @@ describe('도쿄 CityScene 데이터 계약', () => {
 
 describe('출입구 세로 회랑', () => {
   it('ENTRANCE와 EXIT가 보행 가능하고 위로 직진해 복귀할 수 있다', () => {
-    expect(ENTRANCE).toEqual({ x: 402, y: 629, facing: 'down' });
+    expect(ENTRANCE).toEqual({ x: 543, y: 1040, facing: 'down' });
     expect(isCityWalkable(at(ENTRANCE.x, ENTRANCE.y))).toBe(true);
     const exits = [];
     for (let y = 0; y < ROWS; y += 1) {
@@ -87,13 +87,13 @@ describe('출입구 세로 회랑', () => {
         if (at(x, y) === CITY_TILE.EXIT) exits.push([x, y]);
       }
     }
-    expect(exits).toEqual([[402, 619], [402, 620]]);
+    expect(exits).toEqual([[543, 1031], [543, 1032]]);
     for (const [x, y] of exits) {
       expect(x).toBe(ENTRANCE.x);
       expect(y).toBeLessThan(ENTRANCE.y);
       expect(isCityWalkable(at(x, y))).toBe(true);
     }
-    for (let y = 619; y <= ENTRANCE.y; y += 1) {
+    for (let y = 1031; y <= ENTRANCE.y; y += 1) {
       expect(isCityWalkable(at(ENTRANCE.x, y))).toBe(true);
     }
   });
@@ -123,8 +123,8 @@ describe('geo POI·山手線 fast-travel 배선', () => {
     }
   });
 
-  it('9개 山手線 역은 geo tile·일본어 읽기를 그대로 잇는다', () => {
-    expect(STATIONS).toHaveLength(9);
+  it('山手線 전 30역은 geo tile·일본어 읽기를 그대로 잇는다', () => {
+    expect(STATIONS).toHaveLength(30);
     for (const station of STATIONS) {
       const source = TOKYO_GEO.stations.find((entry) => entry.id === station.id);
       expect(source).toBeTruthy();
@@ -188,7 +188,7 @@ describe('구역·연결성·재접속 안전', () => {
       walkable += 1;
       reached += seen[index];
     }
-    expect(walkable).toBe(266_627);
+    expect(walkable).toBe(655_988);
     expect(reached).toBe(walkable);
     for (const marker of [...CITY_NODES, ...STATIONS]) {
       expect(seen[marker.tile[1] * COLS + marker.tile[0]], marker.id).toBe(1);
@@ -213,7 +213,7 @@ describe('구역·연결성·재접속 안전', () => {
 describe('세계시 교통 배선', () => {
   it('山手線과 하네다 접근선을 OSM 철도 위에 함께 노출한다', () => {
     expect(TOKYO.transit.map((line) => line.id)).toEqual(['tokyo-yamanote', 'tokyo-haneda-access']);
-    expect(TOKYO.railways.tileCount).toBe(20_154);
+    expect(TOKYO.railways.tileCount).toBe(53_798);
     expect(directTransitDestinations(TOKYO.transit, STATIONS, 'shinagawa').map((station) => station.id))
       .toEqual(expect.arrayContaining(['shibuya', 'hamamatsucho']));
   });

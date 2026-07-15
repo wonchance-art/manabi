@@ -684,7 +684,7 @@ test('world: 저장된 도쿄 시내에서 하네다 EXIT 세로회랑으로 전
   await runInFreshPage(async (page, context) => {
     const positionWrites = [];
     await mockWorldShellRuntime(context, {
-      position: { scene: 'city:tokyo', x: 402, y: 629 },
+      position: { scene: 'city:tokyo', x: 543, y: 1040 },
       positionWrites,
     });
     await signInWithMockSession(page, context, 'learner');
@@ -695,7 +695,7 @@ test('world: 저장된 도쿄 시내에서 하네다 EXIT 세로회랑으로 전
     while (!positionWrites.length && Date.now() < spawnDeadline) await page.waitForTimeout(50);
     assert.deepEqual(
       positionWrites[0],
-      { scene: 'city:tokyo', x: 402, y: 629 },
+      { scene: 'city:tokyo', x: 543, y: 1040 },
       `world should restore the mocked Tokyo entrance: ${JSON.stringify(positionWrites)}`
     );
 
@@ -705,7 +705,7 @@ test('world: 저장된 도쿄 시내에서 하네다 EXIT 세로회랑으로 전
       width: canvas.width,
       height: canvas.height,
     }));
-    assert.deepEqual(cityMapSize, { width: 666 * 3, height: 668 * 3 }, 'Tokyo geo minimap dimensions');
+    assert.deepEqual(cityMapSize, { width: 824 * 3, height: 1086 * 3 }, 'Tokyo geo minimap dimensions');
     await page.getByRole('button', { name: '닫기 Ⓑ', exact: true }).click();
 
     await page.waitForTimeout(350);

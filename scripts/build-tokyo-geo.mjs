@@ -6,9 +6,9 @@ import { CITY_TILE, isCityBlocked } from '../src/components/world/cities/terrain
 const EARTH_RADIUS = 6378137;
 const DEG = Math.PI / 180;
 const METERS_PER_TILE = 20;
-const BBOX = Object.freeze([139.695, 35.545, 139.842, 35.665]);
+const BBOX = Object.freeze([139.66, 35.545, 139.842, 35.74]);
 const OSM_SNAPSHOT = JSON.parse(fs.readFileSync(
-  new URL('./data/tokyo-osm-v21.json', import.meta.url),
+  new URL('./data/tokyo-osm-v22.json', import.meta.url),
   'utf8',
 ));
 
@@ -19,7 +19,7 @@ const POI_SOURCE = Object.freeze([
   },
   {
     id: 'shinagawa-station', nameJa: '品川駅', yomi: 'しながわえき',
-    lat: 35.6280038, lon: 139.7380078, kind: 'station-landmark',
+    lat: 35.6286974, lon: 139.7391291, kind: 'station-landmark',
   },
   {
     id: 'shibuya-scramble', nameJa: '渋谷スクランブル交差点', yomi: 'しぶやすくらんぶるこうさてん',
@@ -49,6 +49,46 @@ const POI_SOURCE = Object.freeze([
     id: 'ebisu-garden-place', nameJa: '恵比寿ガーデンプレイス', yomi: 'えびすがーでんぷれいす',
     lat: 35.6419968, lon: 139.7136138, kind: 'landmark',
   },
+  {
+    id: 'sensoji', nameJa: '浅草寺', yomi: 'せんそうじ',
+    lat: 35.71416, lon: 139.796376, kind: 'temple',
+  },
+  {
+    id: 'tokyo-skytree', nameJa: '東京スカイツリー', yomi: 'とうきょうすかいつりー',
+    lat: 35.7100456, lon: 139.8107074, kind: 'landmark',
+  },
+  {
+    id: 'ueno-park', nameJa: '上野恩賜公園', yomi: 'うえのおんしこうえん',
+    lat: 35.7140825, lon: 139.7724045, kind: 'park',
+  },
+  {
+    id: 'tokyo-station-marunouchi', nameJa: '東京駅丸の内駅舎', yomi: 'とうきょうえきまるのうちえきしゃ',
+    lat: 35.6811678, lon: 139.7659746, kind: 'station-landmark',
+  },
+  {
+    id: 'ginza-4-chome', nameJa: '銀座四丁目', yomi: 'ぎんざよんちょうめ',
+    lat: 35.6712743, lon: 139.7664472, kind: 'crossing',
+  },
+  {
+    id: 'meiji-jingu', nameJa: '明治神宮', yomi: 'めいじじんぐう',
+    lat: 35.6758626, lon: 139.7004497, kind: 'shrine',
+  },
+  {
+    id: 'tokyo-metropolitan-government', nameJa: '東京都庁', yomi: 'とうきょうとちょう',
+    lat: 35.689142, lon: 139.6920272, kind: 'landmark',
+  },
+  {
+    id: 'ryogoku-kokugikan', nameJa: '両国国技館', yomi: 'りょうごくこくぎかん',
+    lat: 35.696961, lon: 139.7932196, kind: 'landmark',
+  },
+  {
+    id: 'nakameguro-meguro-river', nameJa: '中目黒（目黒川）', yomi: 'なかめぐろ（めぐろがわ）',
+    lat: 35.6442558, lon: 139.6989794, kind: 'riverfront',
+  },
+  {
+    id: 'kanda-myojin', nameJa: '神田明神', yomi: 'かんだみょうじん',
+    lat: 35.7019993, lon: 139.7677748, kind: 'shrine',
+  },
 ]);
 
 const STATION_SOURCE = Object.freeze([
@@ -57,7 +97,7 @@ const STATION_SOURCE = Object.freeze([
   { id: 'meguro', nameJa: '目黒', yomi: 'めぐろ', lat: 35.6340669, lon: 139.7157332, line: '山手線' },
   { id: 'gotanda', nameJa: '五反田', yomi: 'ごたんだ', lat: 35.6262562, lon: 139.7236303, line: '山手線' },
   { id: 'osaki', nameJa: '大崎', yomi: 'おおさき', lat: 35.6193903, lon: 139.7284866, line: '山手線' },
-  { id: 'shinagawa', nameJa: '品川', yomi: 'しながわ', lat: 35.6280038, lon: 139.7380078, line: '山手線' },
+  { id: 'shinagawa', nameJa: '品川', yomi: 'しながわ', lat: 35.6286974, lon: 139.7391291, line: '山手線' },
   {
     id: 'takanawa-gateway', nameJa: '高輪ゲートウェイ', yomi: 'たかなわげーとうぇい',
     lat: 35.635399, lon: 139.7406642, line: '山手線',
@@ -67,6 +107,27 @@ const STATION_SOURCE = Object.freeze([
     id: 'hamamatsucho', nameJa: '浜松町', yomi: 'はままつちょう',
     lat: 35.6551111, lon: 139.7570622, line: '山手線',
   },
+  { id: 'shimbashi', nameJa: '新橋', yomi: 'しんばし', lat: 35.6661689, lon: 139.7582206, line: '山手線' },
+  { id: 'yurakucho', nameJa: '有楽町', yomi: 'ゆうらくちょう', lat: 35.6749598, lon: 139.7630483, line: '山手線' },
+  { id: 'tokyo', nameJa: '東京', yomi: 'とうきょう', lat: 35.6812546, lon: 139.766706, line: '山手線' },
+  { id: 'kanda', nameJa: '神田', yomi: 'かんだ', lat: 35.6917939, lon: 139.7709112, line: '山手線' },
+  { id: 'akihabara', nameJa: '秋葉原', yomi: 'あきはばら', lat: 35.6983609, lon: 139.7731217, line: '山手線' },
+  { id: 'okachimachi', nameJa: '御徒町', yomi: 'おかちまち', lat: 35.7069531, lon: 139.7746303, line: '山手線' },
+  { id: 'ueno', nameJa: '上野', yomi: 'うえの', lat: 35.7134128, lon: 139.7765418, line: '山手線' },
+  { id: 'uguisudani', nameJa: '鶯谷', yomi: 'うぐいすだに', lat: 35.7217035, lon: 139.7779166, line: '山手線' },
+  { id: 'nippori', nameJa: '日暮里', yomi: 'にっぽり', lat: 35.7281495, lon: 139.7706579, line: '山手線' },
+  { id: 'nishi-nippori', nameJa: '西日暮里', yomi: 'にしにっぽり', lat: 35.7322021, lon: 139.7666684, line: '山手線' },
+  { id: 'tabata', nameJa: '田端', yomi: 'たばた', lat: 35.7373723, lon: 139.761707, line: '山手線' },
+  { id: 'komagome', nameJa: '駒込', yomi: 'こまごめ', lat: 35.7365848, lon: 139.7472412, line: '山手線' },
+  { id: 'sugamo', nameJa: '巣鴨', yomi: 'すがも', lat: 35.7334119, lon: 139.7394273, line: '山手線' },
+  { id: 'otsuka', nameJa: '大塚', yomi: 'おおつか', lat: 35.7316851, lon: 139.7285879, line: '山手線' },
+  { id: 'ikebukuro', nameJa: '池袋', yomi: 'いけぶくろ', lat: 35.730185, lon: 139.7111512, line: '山手線' },
+  { id: 'mejiro', nameJa: '目白', yomi: 'めじろ', lat: 35.7211919, lon: 139.7064645, line: '山手線' },
+  { id: 'takadanobaba', nameJa: '高田馬場', yomi: 'たかだのばば', lat: 35.7126839, lon: 139.7036425, line: '山手線' },
+  { id: 'shin-okubo', nameJa: '新大久保', yomi: 'しんおおくぼ', lat: 35.7013007, lon: 139.7002421, line: '山手線' },
+  { id: 'shinjuku', nameJa: '新宿', yomi: 'しんじゅく', lat: 35.6902618, lon: 139.7005142, line: '山手線' },
+  { id: 'yoyogi', nameJa: '代々木', yomi: 'よよぎ', lat: 35.6839514, lon: 139.7020806, line: '山手線' },
+  { id: 'harajuku', nameJa: '原宿', yomi: 'はらじゅく', lat: 35.6702145, lon: 139.7024266, line: '山手線' },
 ]);
 
 export function webMercatorMeters(lon, lat) {
@@ -198,7 +259,7 @@ function paintLandmarkPlazas(grid) {
   const scramble = POI_SOURCE.find((entry) => entry.id === 'shibuya-scramble');
   const scramblePoint = projectLatLonToGrid(scramble.lat, scramble.lon);
   fillCircle(grid, scramblePoint.x, scramblePoint.y, 2.1, CITY_TILE.CROSSWALK);
-  fillEllipse(grid, 35.62805, 139.7373, 4.5, 6.5, CITY_TILE.PLAZA);
+  fillEllipse(grid, 35.6286974, 139.7391291, 4.5, 6.5, CITY_TILE.PLAZA);
   fillEllipse(grid, 35.5491583, 139.7845527, 3.8, 5.4, CITY_TILE.PLAZA);
 }
 
@@ -412,7 +473,7 @@ export function buildTokyoGeo() {
 function generatedModule(geo) {
   const terrainRuns = encodeTerrainRle(geo.terrain);
   const railwayRuns = encodeTerrainRle(geo.railways.mask);
-  return `// Generated by scripts/build-tokyo-geo.mjs. Do not edit by hand.\n// Geometry: © OpenStreetMap contributors, ODbL 1.0 (snapshot 2026-07-14).\n\nconst META = Object.freeze(${JSON.stringify(geo.meta, null, 2)});\nconst TERRAIN_RLE = ${JSON.stringify(terrainRuns)};\nconst RAILWAY_RLE = ${JSON.stringify(railwayRuns)};\n\nfunction decodeTerrain(runs, length) {\n  const terrain = new Uint8Array(length);\n  let offset = 0;\n  for (const [code, count] of runs) {\n    terrain.fill(code, offset, offset + count);\n    offset += count;\n  }\n  if (offset !== length) throw new Error(\`terrain RLE length mismatch: \${offset} !== \${length}\`);\n  return terrain;\n}\n\nconst LENGTH = META.grid.w * META.grid.h;\n\nexport const TOKYO_GEO = Object.freeze({\n  meta: META,\n  terrain: decodeTerrain(TERRAIN_RLE, LENGTH),\n  pois: Object.freeze(${JSON.stringify(geo.pois, null, 2)}),\n  stations: Object.freeze(${JSON.stringify(geo.stations, null, 2)}),\n  railways: Object.freeze({\n    mask: decodeTerrain(RAILWAY_RLE, LENGTH),\n    tileCount: ${geo.railways.tileCount},\n  }),\n});\n`;
+  return `// Generated by scripts/build-tokyo-geo.mjs. Do not edit by hand.\n// Geometry: © OpenStreetMap contributors, ODbL 1.0 (snapshot ${geo.meta.source.snapshot}).\n\nconst META = Object.freeze(${JSON.stringify(geo.meta, null, 2)});\nconst TERRAIN_RLE = ${JSON.stringify(terrainRuns)};\nconst RAILWAY_RLE = ${JSON.stringify(railwayRuns)};\n\nfunction decodeTerrain(runs, length) {\n  const terrain = new Uint8Array(length);\n  let offset = 0;\n  for (const [code, count] of runs) {\n    terrain.fill(code, offset, offset + count);\n    offset += count;\n  }\n  if (offset !== length) throw new Error(\`terrain RLE length mismatch: \${offset} !== \${length}\`);\n  return terrain;\n}\n\nconst LENGTH = META.grid.w * META.grid.h;\n\nexport const TOKYO_GEO = Object.freeze({\n  meta: META,\n  terrain: decodeTerrain(TERRAIN_RLE, LENGTH),\n  pois: Object.freeze(${JSON.stringify(geo.pois, null, 2)}),\n  stations: Object.freeze(${JSON.stringify(geo.stations, null, 2)}),\n  railways: Object.freeze({\n    mask: decodeTerrain(RAILWAY_RLE, LENGTH),\n    tileCount: ${geo.railways.tileCount},\n  }),\n});\n`;
 }
 
 export function writeTokyoGeo(outputPath = path.resolve(
