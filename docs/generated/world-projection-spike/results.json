@@ -1,0 +1,2564 @@
+{
+  "schemaVersion": 1,
+  "inputManifestSha256": "0fd5b37939a8b48217ffdb731c6698bc8b63a886f1a0feb952651ca7048f8bd6",
+  "projectionParameters": {
+    "apac": {
+      "lon0": 125,
+      "lat0": 27.5,
+      "standardLat": 27.5
+    },
+    "emea": {
+      "lon0": 25,
+      "lat0": 45,
+      "standardLat": 45
+    }
+  },
+  "inverseCostUnits": {
+    "equirectangular": 1,
+    "sinusoidal": 2,
+    "laea": 8
+  },
+  "rankings": {
+    "apacUniform": [
+      {
+        "projection": "equirectangular",
+        "score": 10.662304815076
+      },
+      {
+        "projection": "laea",
+        "score": 19.382208342161
+      },
+      {
+        "projection": "sinusoidal",
+        "score": 26.533899548212
+      }
+    ],
+    "apacContentWeighted": [
+      {
+        "projection": "equirectangular",
+        "score": 9.895279683441
+      },
+      {
+        "projection": "laea",
+        "score": 12.585708233137
+      },
+      {
+        "projection": "sinusoidal",
+        "score": 18.845354527476
+      }
+    ],
+    "emea": [
+      {
+        "projection": "laea",
+        "score": 10.898248964331
+      },
+      {
+        "projection": "equirectangular",
+        "score": 20.342246803507
+      },
+      {
+        "projection": "sinusoidal",
+        "score": 25.152480671738
+      }
+    ]
+  },
+  "analyses": {
+    "apac": [
+      {
+        "projection": "equirectangular",
+        "region": "apac",
+        "rows": [
+          {
+            "projection": "equirectangular",
+            "fixture": "apac",
+            "region": "apac",
+            "metrics": {
+              "eastScaleErrorPct": {
+                "p50": 10.330428224988,
+                "p95": 48.372981689172,
+                "max": 69.418776435778
+              },
+              "northScaleErrorPct": {
+                "p50": 0,
+                "p95": 4.657e-9,
+                "max": 4.657e-9
+              },
+              "northDeviationDeg": {
+                "p50": 0,
+                "p95": 0,
+                "max": 0
+              },
+              "shearDeg": {
+                "p50": 0,
+                "p95": 0,
+                "max": 0
+              },
+              "shapeDistortionPct": {
+                "p50": 11.520550416933,
+                "p95": 48.372981689172,
+                "max": 69.418776435778
+              },
+              "areaErrorPct": {
+                "p50": 10.330428224988,
+                "p95": 48.372981689172,
+                "max": 69.418776435778
+              },
+              "screenNorthErrorDeg": {
+                "p50": 0,
+                "p95": 0,
+                "max": 0
+              },
+              "geoAxisHorizontalShare": {
+                "p50": 0,
+                "p95": 0,
+                "max": 0
+              }
+            },
+            "roundTripTile": {
+              "p50": 0,
+              "p95": 1e-12,
+              "max": 1e-12
+            }
+          },
+          {
+            "projection": "equirectangular",
+            "fixture": "japan",
+            "region": "apac",
+            "metrics": {
+              "eastScaleErrorPct": {
+                "p50": 12.563290443504,
+                "p95": 26.072520072339,
+                "max": 27.910570767126
+              },
+              "northScaleErrorPct": {
+                "p50": 2.328e-9,
+                "p95": 4.657e-9,
+                "max": 4.657e-9
+              },
+              "northDeviationDeg": {
+                "p50": 0,
+                "p95": 0,
+                "max": 0
+              },
+              "shearDeg": {
+                "p50": 0,
+                "p95": 0,
+                "max": 0
+              },
+              "shapeDistortionPct": {
+                "p50": 12.563290443504,
+                "p95": 26.072520066468,
+                "max": 27.91057076117
+              },
+              "areaErrorPct": {
+                "p50": 12.563290443504,
+                "p95": 26.07252007821,
+                "max": 27.910570773082
+              },
+              "screenNorthErrorDeg": {
+                "p50": 0,
+                "p95": 0,
+                "max": 0
+              },
+              "geoAxisHorizontalShare": {
+                "p50": 0,
+                "p95": 0,
+                "max": 0
+              }
+            },
+            "roundTripTile": {
+              "p50": 0,
+              "p95": 0,
+              "max": 0
+            },
+            "curvature": null
+          },
+          {
+            "projection": "equirectangular",
+            "fixture": "korea",
+            "region": "apac",
+            "metrics": {
+              "eastScaleErrorPct": {
+                "p50": 12.563290431397,
+                "p95": 20.72355006334,
+                "max": 21.756295912783
+              },
+              "northScaleErrorPct": {
+                "p50": 2.328e-9,
+                "p95": 4.657e-9,
+                "max": 4.657e-9
+              },
+              "northDeviationDeg": {
+                "p50": 0,
+                "p95": 0,
+                "max": 0
+              },
+              "shearDeg": {
+                "p50": 0,
+                "p95": 0,
+                "max": 0
+              },
+              "shapeDistortionPct": {
+                "p50": 12.563290431397,
+                "p95": 20.72355006334,
+                "max": 21.756295912783
+              },
+              "areaErrorPct": {
+                "p50": 12.563290431397,
+                "p95": 20.72355006334,
+                "max": 21.756295912783
+              },
+              "screenNorthErrorDeg": {
+                "p50": 0,
+                "p95": 0,
+                "max": 0
+              },
+              "geoAxisHorizontalShare": {
+                "p50": 0,
+                "p95": 0,
+                "max": 0
+              }
+            },
+            "roundTripTile": {
+              "p50": 0,
+              "p95": 0,
+              "max": 1e-12
+            },
+            "curvature": null
+          },
+          {
+            "projection": "equirectangular",
+            "fixture": "indonesia",
+            "region": "apac",
+            "metrics": {
+              "eastScaleErrorPct": {
+                "p50": 10.9792350317,
+                "p95": 11.28899008716,
+                "max": 11.298794154736
+              },
+              "northScaleErrorPct": {
+                "p50": 0,
+                "p95": 5.82e-10,
+                "max": 1.164e-9
+              },
+              "northDeviationDeg": {
+                "p50": 0,
+                "p95": 0,
+                "max": 0
+              },
+              "shearDeg": {
+                "p50": 0,
+                "p95": 0,
+                "max": 0
+              },
+              "shapeDistortionPct": {
+                "p50": 12.333341593045,
+                "p95": 12.725579494787,
+                "max": 12.73803895569
+              },
+              "areaErrorPct": {
+                "p50": 10.979235031182,
+                "p95": 11.288990087224,
+                "max": 11.298794154736
+              },
+              "screenNorthErrorDeg": {
+                "p50": 0,
+                "p95": 0,
+                "max": 0
+              },
+              "geoAxisHorizontalShare": {
+                "p50": 0,
+                "p95": 0,
+                "max": 0
+              }
+            },
+            "roundTripTile": {
+              "p50": 0,
+              "p95": 0,
+              "max": 0
+            },
+            "curvature": null
+          },
+          {
+            "projection": "equirectangular",
+            "fixture": "new-zealand",
+            "region": "apac",
+            "metrics": {
+              "eastScaleErrorPct": {
+                "p50": 16.649641543627,
+                "p95": 29.887009444647,
+                "max": 31.652845949866
+              },
+              "northScaleErrorPct": {
+                "p50": 2.328e-9,
+                "p95": 4.657e-9,
+                "max": 4.657e-9
+              },
+              "northDeviationDeg": {
+                "p50": 0,
+                "p95": 0,
+                "max": 0
+              },
+              "shearDeg": {
+                "p50": 0,
+                "p95": 0,
+                "max": 0
+              },
+              "shapeDistortionPct": {
+                "p50": 16.649641538195,
+                "p95": 29.887009438598,
+                "max": 31.652845949866
+              },
+              "areaErrorPct": {
+                "p50": 16.649641549059,
+                "p95": 29.887009450695,
+                "max": 31.652845949866
+              },
+              "screenNorthErrorDeg": {
+                "p50": 0,
+                "p95": 0,
+                "max": 0
+              },
+              "geoAxisHorizontalShare": {
+                "p50": 0,
+                "p95": 0,
+                "max": 0
+              }
+            },
+            "roundTripTile": {
+              "p50": 0,
+              "p95": 1e-12,
+              "max": 1e-12
+            },
+            "curvature": null
+          },
+          {
+            "projection": "equirectangular",
+            "fixture": "transsib",
+            "region": "apac",
+            "metrics": {
+              "eastScaleErrorPct": {
+                "p50": 51.950107915327,
+                "p95": 62.240949062631,
+                "max": 62.775059780106
+              },
+              "northScaleErrorPct": {
+                "p50": 0,
+                "p95": 4.657e-9,
+                "max": 4.657e-9
+              },
+              "northDeviationDeg": {
+                "p50": 0,
+                "p95": 0,
+                "max": 0
+              },
+              "shearDeg": {
+                "p50": 0,
+                "p95": 0,
+                "max": 0
+              },
+              "shapeDistortionPct": {
+                "p50": 51.950107908251,
+                "p95": 62.240949056587,
+                "max": 62.775059772526
+              },
+              "areaErrorPct": {
+                "p50": 51.950107922403,
+                "p95": 62.240949068674,
+                "max": 62.775059787686
+              },
+              "screenNorthErrorDeg": {
+                "p50": 0,
+                "p95": 0,
+                "max": 0
+              },
+              "geoAxisHorizontalShare": {
+                "p50": 0,
+                "p95": 0,
+                "max": 0
+              }
+            },
+            "roundTripTile": {
+              "p50": 0,
+              "p95": 0,
+              "max": 0
+            },
+            "curvature": {
+              "totalDeg": 75.583810757304,
+              "maxStepDeg": 11.656759227852
+            }
+          },
+          {
+            "projection": "equirectangular",
+            "fixture": "australia-east",
+            "region": "apac",
+            "metrics": {
+              "eastScaleErrorPct": {
+                "p50": 7.048972763587,
+                "p95": 19.426132047083,
+                "max": 22.646512303036
+              },
+              "northScaleErrorPct": {
+                "p50": 2.328e-9,
+                "p95": 4.657e-9,
+                "max": 4.657e-9
+              },
+              "northDeviationDeg": {
+                "p50": 0,
+                "p95": 0,
+                "max": 0
+              },
+              "shearDeg": {
+                "p50": 0,
+                "p95": 0,
+                "max": 0
+              },
+              "shapeDistortionPct": {
+                "p50": 7.583534006747,
+                "p95": 19.426132041522,
+                "max": 22.646512297325
+              },
+              "areaErrorPct": {
+                "p50": 7.048972766833,
+                "p95": 19.426132052644,
+                "max": 22.646512308747
+              },
+              "screenNorthErrorDeg": {
+                "p50": 0,
+                "p95": 0,
+                "max": 0
+              },
+              "geoAxisHorizontalShare": {
+                "p50": 0,
+                "p95": 0,
+                "max": 0
+              }
+            },
+            "roundTripTile": {
+              "p50": 0,
+              "p95": 0,
+              "max": 1e-12
+            },
+            "curvature": null
+          }
+        ],
+        "seam": {
+          "crossings": 53,
+          "cracks": 0,
+          "maxErrorTile": 0
+        },
+        "assignments": [
+          {
+            "id": "Chita",
+            "tile": [
+              1172,
+              221
+            ],
+            "chunk": [
+              4,
+              0
+            ]
+          },
+          {
+            "id": "Irkutsk",
+            "tile": [
+              971,
+              215
+            ],
+            "chunk": [
+              3,
+              0
+            ]
+          },
+          {
+            "id": "Jakarta",
+            "tile": [
+              1026,
+              1660
+            ],
+            "chunk": [
+              4,
+              6
+            ]
+          },
+          {
+            "id": "Khabarovsk",
+            "tile": [
+              1646,
+              310
+            ],
+            "chunk": [
+              6,
+              1
+            ]
+          },
+          {
+            "id": "Krasnoyarsk",
+            "tile": [
+              720,
+              123
+            ],
+            "chunk": [
+              2,
+              0
+            ]
+          },
+          {
+            "id": "Moscow",
+            "tile": [
+              -491,
+              130
+            ],
+            "chunk": [
+              -2,
+              0
+            ]
+          },
+          {
+            "id": "Novosibirsk",
+            "tile": [
+              503,
+              147
+            ],
+            "chunk": [
+              1,
+              0
+            ]
+          },
+          {
+            "id": "Omsk",
+            "tile": [
+              294,
+              148
+            ],
+            "chunk": [
+              1,
+              0
+            ]
+          },
+          {
+            "id": "Seoul",
+            "tile": [
+              1468,
+              579
+            ],
+            "chunk": [
+              5,
+              2
+            ]
+          },
+          {
+            "id": "Sydney",
+            "tile": [
+              5256,
+              369
+            ],
+            "chunk": [
+              20,
+              1
+            ]
+          },
+          {
+            "id": "Tokyo",
+            "tile": [
+              1748,
+              625
+            ],
+            "chunk": [
+              6,
+              2
+            ]
+          },
+          {
+            "id": "Ulan-Ude",
+            "tile": [
+              1044,
+              227
+            ],
+            "chunk": [
+              4,
+              0
+            ]
+          },
+          {
+            "id": "Vladivostok",
+            "tile": [
+              1576,
+              442
+            ],
+            "chunk": [
+              6,
+              1
+            ]
+          },
+          {
+            "id": "Wellington",
+            "tile": [
+              2516,
+              2528
+            ],
+            "chunk": [
+              9,
+              9
+            ]
+          },
+          {
+            "id": "Yekaterinburg",
+            "tile": [
+              13,
+              102
+            ],
+            "chunk": [
+              0,
+              0
+            ]
+          }
+        ],
+        "direction": {
+          "screenAxis": true,
+          "geoAxis": true,
+          "maxScreenDeg": 0,
+          "maxGeoHorizontalShare": 0
+        },
+        "hardGates": {
+          "common": {
+            "roundTrip": true,
+            "chunkSeams": true,
+            "deterministicAssignments": true,
+            "pass": true
+          },
+          "modes": {
+            "screenAxis": {
+              "direction": true,
+              "pass": true
+            },
+            "geoAxis": {
+              "direction": true,
+              "pass": true
+            }
+          },
+          "pass": true
+        }
+      },
+      {
+        "projection": "sinusoidal",
+        "region": "apac",
+        "rows": [
+          {
+            "projection": "sinusoidal",
+            "fixture": "apac",
+            "region": "apac",
+            "metrics": {
+              "eastScaleErrorPct": {
+                "p50": 4.657e-9,
+                "p95": 1.6298e-8,
+                "max": 2.3283e-8
+              },
+              "northScaleErrorPct": {
+                "p50": 1.587256549689,
+                "p95": 18.168998034478,
+                "max": 36.157796867463
+              },
+              "northDeviationDeg": {
+                "p50": 10.141651376635,
+                "p95": 32.194356903736,
+                "max": 42.739916037539
+              },
+              "shearDeg": {
+                "p50": 10.141651376635,
+                "p95": 32.194356903736,
+                "max": 42.739916037539
+              },
+              "shapeDistortionPct": {
+                "p50": 19.558979990383,
+                "p95": 85.825068391611,
+                "max": 144.487583919994
+              },
+              "areaErrorPct": {
+                "p50": 4.657e-9,
+                "p95": 1.7462e-8,
+                "max": 2.3283e-8
+              },
+              "screenNorthErrorDeg": {
+                "p50": 10.141651375248,
+                "p95": 32.194356904338,
+                "max": 42.739916038204
+              },
+              "geoAxisHorizontalShare": {
+                "p50": 0.151735261064,
+                "p95": 0.386350998727,
+                "max": 0.480266810867
+              }
+            },
+            "roundTripTile": {
+              "p50": 0,
+              "p95": 0,
+              "max": 1e-12
+            }
+          },
+          {
+            "projection": "sinusoidal",
+            "fixture": "japan",
+            "region": "apac",
+            "metrics": {
+              "eastScaleErrorPct": {
+                "p50": 5.821e-9,
+                "p95": 1.6298e-8,
+                "max": 1.8626e-8
+              },
+              "northScaleErrorPct": {
+                "p50": 0.865968990728,
+                "p95": 2.606290150715,
+                "max": 3.450984515833
+              },
+              "northDeviationDeg": {
+                "p50": 7.513247097632,
+                "p95": 12.941529857419,
+                "max": 14.840774388174
+              },
+              "shearDeg": {
+                "p50": 7.513247097632,
+                "p95": 12.941529857419,
+                "max": 14.840774388174
+              },
+              "shapeDistortionPct": {
+                "p50": 14.087135447442,
+                "p95": 25.770790398964,
+                "max": 30.239354825643
+              },
+              "areaErrorPct": {
+                "p50": 6.112e-9,
+                "p95": 1.8044e-8,
+                "max": 2.3283e-8
+              },
+              "screenNorthErrorDeg": {
+                "p50": 7.513247097372,
+                "p95": 12.941529856836,
+                "max": 14.840774388504
+              },
+              "geoAxisHorizontalShare": {
+                "p50": 0.116520141986,
+                "p95": 0.186855390436,
+                "max": 0.209469209177
+              }
+            },
+            "roundTripTile": {
+              "p50": 0,
+              "p95": 0,
+              "max": 1e-12
+            },
+            "curvature": null
+          },
+          {
+            "projection": "sinusoidal",
+            "fixture": "korea",
+            "region": "apac",
+            "metrics": {
+              "eastScaleErrorPct": {
+                "p50": 3.201e-9,
+                "p95": 1.3097e-8,
+                "max": 2.0373e-8
+              },
+              "northScaleErrorPct": {
+                "p50": 0.051944363051,
+                "p95": 0.289217563871,
+                "max": 0.378676854088
+              },
+              "northDeviationDeg": {
+                "p50": 1.846345055582,
+                "p95": 4.352384602731,
+                "max": 4.978378385015
+              },
+              "shearDeg": {
+                "p50": 1.846345055582,
+                "p95": 4.352384602731,
+                "max": 4.978378385015
+              },
+              "shapeDistortionPct": {
+                "p50": 3.275972501315,
+                "p95": 7.906134236618,
+                "max": 9.0984939413
+              },
+              "areaErrorPct": {
+                "p50": 3.82e-9,
+                "p95": 1.4916e-8,
+                "max": 2.0373e-8
+              },
+              "screenNorthErrorDeg": {
+                "p50": 1.846345055507,
+                "p95": 4.35238460263,
+                "max": 4.97837838539
+              },
+              "geoAxisHorizontalShare": {
+                "p50": 0.031229254484,
+                "p95": 0.070726878713,
+                "max": 0.080128548058
+              }
+            },
+            "roundTripTile": {
+              "p50": 0,
+              "p95": 1e-12,
+              "max": 1e-12
+            },
+            "curvature": null
+          },
+          {
+            "projection": "sinusoidal",
+            "fixture": "indonesia",
+            "region": "apac",
+            "metrics": {
+              "eastScaleErrorPct": {
+                "p50": 5.821e-9,
+                "p95": 1.688e-8,
+                "max": 2.0955e-8
+              },
+              "northScaleErrorPct": {
+                "p50": 0.009812901434,
+                "p95": 0.188056633702,
+                "max": 0.540420912754
+              },
+              "northDeviationDeg": {
+                "p50": 0.802635915218,
+                "p95": 3.511089810231,
+                "max": 5.943305841619
+              },
+              "shearDeg": {
+                "p50": 0.802635915218,
+                "p95": 3.511089810231,
+                "max": 5.943305841619
+              },
+              "shapeDistortionPct": {
+                "p50": 1.41080333738,
+                "p95": 6.326810157647,
+                "max": 10.966365467608
+              },
+              "areaErrorPct": {
+                "p50": 5.821e-9,
+                "p95": 1.6298e-8,
+                "max": 2.0955e-8
+              },
+              "screenNorthErrorDeg": {
+                "p50": 0.802635915145,
+                "p95": 3.511089809987,
+                "max": 5.943305841207
+              },
+              "geoAxisHorizontalShare": {
+                "p50": 0.013815999827,
+                "p95": 0.057809866032,
+                "max": 0.094288144035
+              }
+            },
+            "roundTripTile": {
+              "p50": 0,
+              "p95": 0,
+              "max": 0
+            },
+            "curvature": null
+          },
+          {
+            "projection": "sinusoidal",
+            "fixture": "new-zealand",
+            "region": "apac",
+            "metrics": {
+              "eastScaleErrorPct": {
+                "p50": 4.657e-9,
+                "p95": 1.6298e-8,
+                "max": 2.3283e-8
+              },
+              "northScaleErrorPct": {
+                "p50": 13.173983212691,
+                "p95": 19.20905902876,
+                "max": 21.97667480033
+              },
+              "northDeviationDeg": {
+                "p50": 27.920848563185,
+                "p95": 32.979811546537,
+                "max": 34.932332911929
+              },
+              "shearDeg": {
+                "p50": 27.920848563185,
+                "p95": 32.979811546537,
+                "max": 34.932332911929
+              },
+              "shapeDistortionPct": {
+                "p50": 68.864387172647,
+                "p95": 89.274747951057,
+                "max": 98.373007916227
+              },
+              "areaErrorPct": {
+                "p50": 4.657e-9,
+                "p95": 1.6298e-8,
+                "max": 2.3283e-8
+              },
+              "screenNorthErrorDeg": {
+                "p50": 27.92084856484,
+                "p95": 32.979811545319,
+                "max": 34.932332912556
+              },
+              "geoAxisHorizontalShare": {
+                "p50": 0.346379049989,
+                "p95": 0.393537568123,
+                "max": 0.411227516236
+              }
+            },
+            "roundTripTile": {
+              "p50": 0,
+              "p95": 1e-12,
+              "max": 1e-12
+            },
+            "curvature": null
+          },
+          {
+            "projection": "sinusoidal",
+            "fixture": "transsib",
+            "region": "apac",
+            "metrics": {
+              "eastScaleErrorPct": {
+                "p50": 2.328e-9,
+                "p95": 7.916e-9,
+                "max": 1.6298e-8
+              },
+              "northScaleErrorPct": {
+                "p50": 6.654021327179,
+                "p95": 50.700246935798,
+                "max": 60.91975504363
+              },
+              "northDeviationDeg": {
+                "p50": 20.345825433544,
+                "p95": 48.42687718379,
+                "max": 51.579529126247
+              },
+              "shearDeg": {
+                "p50": 20.345825433544,
+                "p95": 48.42687718379,
+                "max": 51.579529126247
+              },
+              "shapeDistortionPct": {
+                "p50": 44.589475716685,
+                "p95": 192.973751133534,
+                "max": 228.511324731331
+              },
+              "areaErrorPct": {
+                "p50": 3.492e-9,
+                "p95": 9.313e-9,
+                "max": 1.6298e-8
+              },
+              "screenNorthErrorDeg": {
+                "p50": 20.345825433544,
+                "p95": 48.426877183525,
+                "max": 51.579529126247
+              },
+              "geoAxisHorizontalShare": {
+                "p50": 0.270510019509,
+                "p95": 0.529941022563,
+                "max": 0.557670947686
+              }
+            },
+            "roundTripTile": {
+              "p50": 0,
+              "p95": 0,
+              "max": 0
+            },
+            "curvature": {
+              "totalDeg": 40.821832897864,
+              "maxStepDeg": 6.042979598941
+            }
+          },
+          {
+            "projection": "sinusoidal",
+            "fixture": "australia-east",
+            "region": "apac",
+            "metrics": {
+              "eastScaleErrorPct": {
+                "p50": 6.985e-9,
+                "p95": 1.5134e-8,
+                "max": 2.3283e-8
+              },
+              "northScaleErrorPct": {
+                "p50": 1.831154253759,
+                "p95": 4.773428880257,
+                "max": 6.230130203399
+              },
+              "northDeviationDeg": {
+                "p50": 10.882100137139,
+                "p95": 17.361613435222,
+                "max": 19.720051991936
+              },
+              "shearDeg": {
+                "p50": 10.882100137139,
+                "p95": 17.361613435222,
+                "max": 19.720051991936
+              },
+              "shapeDistortionPct": {
+                "p50": 21.161096331126,
+                "p95": 36.531592769939,
+                "max": 42.840009047528
+              },
+              "areaErrorPct": {
+                "p50": 6.985e-9,
+                "p95": 1.6298e-8,
+                "max": 2.5611e-8
+              },
+              "screenNorthErrorDeg": {
+                "p50": 10.88210013615,
+                "p95": 17.361613434462,
+                "max": 19.720051994055
+              },
+              "geoAxisHorizontalShare": {
+                "p50": 0.161246691774,
+                "p95": 0.238179627518,
+                "max": 0.263865133597
+              }
+            },
+            "roundTripTile": {
+              "p50": 0,
+              "p95": 1e-12,
+              "max": 1e-12
+            },
+            "curvature": null
+          }
+        ],
+        "seam": {
+          "crossings": 52,
+          "cracks": 0,
+          "maxErrorTile": 0
+        },
+        "assignments": [
+          {
+            "id": "Chita",
+            "tile": [
+              1431,
+              221
+            ],
+            "chunk": [
+              5,
+              0
+            ]
+          },
+          {
+            "id": "Irkutsk",
+            "tile": [
+              1293,
+              215
+            ],
+            "chunk": [
+              5,
+              0
+            ]
+          },
+          {
+            "id": "Jakarta",
+            "tile": [
+              1160,
+              1660
+            ],
+            "chunk": [
+              4,
+              6
+            ]
+          },
+          {
+            "id": "Khabarovsk",
+            "tile": [
+              1772,
+              310
+            ],
+            "chunk": [
+              6,
+              1
+            ]
+          },
+          {
+            "id": "Krasnoyarsk",
+            "tile": [
+              1162,
+              123
+            ],
+            "chunk": [
+              4,
+              0
+            ]
+          },
+          {
+            "id": "Moscow",
+            "tile": [
+              391,
+              130
+            ],
+            "chunk": [
+              1,
+              0
+            ]
+          },
+          {
+            "id": "Novosibirsk",
+            "tile": [
+              1011,
+              147
+            ],
+            "chunk": [
+              3,
+              0
+            ]
+          },
+          {
+            "id": "Omsk",
+            "tile": [
+              875,
+              148
+            ],
+            "chunk": [
+              3,
+              0
+            ]
+          },
+          {
+            "id": "Seoul",
+            "tile": [
+              1645,
+              579
+            ],
+            "chunk": [
+              6,
+              2
+            ]
+          },
+          {
+            "id": "Sydney",
+            "tile": [
+              4603,
+              369
+            ],
+            "chunk": [
+              17,
+              1
+            ]
+          },
+          {
+            "id": "Tokyo",
+            "tile": [
+              1902,
+              625
+            ],
+            "chunk": [
+              7,
+              2
+            ]
+          },
+          {
+            "id": "Ulan-Ude",
+            "tile": [
+              1341,
+              227
+            ],
+            "chunk": [
+              5,
+              0
+            ]
+          },
+          {
+            "id": "Vladivostok",
+            "tile": [
+              1731,
+              442
+            ],
+            "chunk": [
+              6,
+              1
+            ]
+          },
+          {
+            "id": "Wellington",
+            "tile": [
+              2530,
+              2528
+            ],
+            "chunk": [
+              9,
+              9
+            ]
+          },
+          {
+            "id": "Yekaterinburg",
+            "tile": [
+              736,
+              102
+            ],
+            "chunk": [
+              2,
+              0
+            ]
+          }
+        ],
+        "direction": {
+          "screenAxis": true,
+          "geoAxis": true,
+          "maxScreenDeg": 14.840774388504,
+          "maxGeoHorizontalShare": 0.209469209177
+        },
+        "hardGates": {
+          "common": {
+            "roundTrip": true,
+            "chunkSeams": true,
+            "deterministicAssignments": true,
+            "pass": true
+          },
+          "modes": {
+            "screenAxis": {
+              "direction": true,
+              "pass": true
+            },
+            "geoAxis": {
+              "direction": true,
+              "pass": true
+            }
+          },
+          "pass": true
+        }
+      },
+      {
+        "projection": "laea",
+        "region": "apac",
+        "rows": [
+          {
+            "projection": "laea",
+            "fixture": "apac",
+            "region": "apac",
+            "metrics": {
+              "eastScaleErrorPct": {
+                "p50": 3.622727932573,
+                "p95": 16.474137124538,
+                "max": 23.54841803483
+              },
+              "northScaleErrorPct": {
+                "p50": 3.649079037114,
+                "p95": 13.532643375648,
+                "max": 20.516715988707
+              },
+              "northDeviationDeg": {
+                "p50": 8.668200273621,
+                "p95": 31.587109158803,
+                "max": 47.716579157689
+              },
+              "shearDeg": {
+                "p50": 4.869546060422,
+                "p95": 25.871375826855,
+                "max": 37.365827604897
+              },
+              "shapeDistortionPct": {
+                "p50": 16.136845542593,
+                "p95": 65.881536269036,
+                "max": 105.602363304458
+              },
+              "areaErrorPct": {
+                "p50": 5.518e-9,
+                "p95": 1.9343e-8,
+                "max": 2.9132e-8
+              },
+              "screenNorthErrorDeg": {
+                "p50": 8.327219049512,
+                "p95": 34.908199072976,
+                "max": 51.808793093589
+              },
+              "geoAxisHorizontalShare": {
+                "p50": 0.132286065644,
+                "p95": 0.380764313126,
+                "max": 0.523724405628
+              }
+            },
+            "roundTripTile": {
+              "p50": 0,
+              "p95": 1e-12,
+              "max": 1e-12
+            }
+          },
+          {
+            "projection": "laea",
+            "fixture": "japan",
+            "region": "apac",
+            "metrics": {
+              "eastScaleErrorPct": {
+                "p50": 0.399286392621,
+                "p95": 1.107355902027,
+                "max": 1.311999386693
+              },
+              "northScaleErrorPct": {
+                "p50": 0.407335558628,
+                "p95": 1.116154255263,
+                "max": 1.329655742688
+              },
+              "northDeviationDeg": {
+                "p50": 7.22689241533,
+                "p95": 12.34654280009,
+                "max": 14.231150061349
+              },
+              "shearDeg": {
+                "p50": 0.778411829579,
+                "p95": 2.117689336397,
+                "max": 2.709145042725
+              },
+              "shapeDistortionPct": {
+                "p50": 1.992436622877,
+                "p95": 3.862939765251,
+                "max": 4.895227019248
+              },
+              "areaErrorPct": {
+                "p50": 6.532e-9,
+                "p95": 1.8626e-8,
+                "max": 2.6343e-8
+              },
+              "screenNorthErrorDeg": {
+                "p50": 7.184377366259,
+                "p95": 12.420497038505,
+                "max": 14.176868815574
+              },
+              "geoAxisHorizontalShare": {
+                "p50": 0.112535990616,
+                "p95": 0.179578968288,
+                "max": 0.202308495151
+              }
+            },
+            "roundTripTile": {
+              "p50": 0,
+              "p95": 0,
+              "max": 1e-12
+            },
+            "curvature": null
+          },
+          {
+            "projection": "laea",
+            "fixture": "korea",
+            "region": "apac",
+            "metrics": {
+              "eastScaleErrorPct": {
+                "p50": 0.374662947799,
+                "p95": 0.871609708004,
+                "max": 0.950594296058
+              },
+              "northScaleErrorPct": {
+                "p50": 0.36875166324,
+                "p95": 0.863090807141,
+                "max": 0.941643087426
+              },
+              "northDeviationDeg": {
+                "p50": 1.75280108111,
+                "p95": 4.119306295446,
+                "max": 4.707723388046
+              },
+              "shearDeg": {
+                "p50": 0.219830875319,
+                "p95": 0.673120901467,
+                "max": 0.886500394189
+              },
+              "shapeDistortionPct": {
+                "p50": 0.935156390567,
+                "p95": 1.918673845789,
+                "max": 2.181876177772
+              },
+              "areaErrorPct": {
+                "p50": 5.041e-9,
+                "p95": 1.5367e-8,
+                "max": 2.5416e-8
+              },
+              "screenNorthErrorDeg": {
+                "p50": 1.73898155745,
+                "p95": 4.085796631876,
+                "max": 4.632396251882
+              },
+              "geoAxisHorizontalShare": {
+                "p50": 0.029693039689,
+                "p95": 0.06718122502,
+                "max": 0.076085023745
+              }
+            },
+            "roundTripTile": {
+              "p50": 0,
+              "p95": 1e-12,
+              "max": 1e-12
+            },
+            "curvature": null
+          },
+          {
+            "projection": "laea",
+            "fixture": "indonesia",
+            "region": "apac",
+            "metrics": {
+              "eastScaleErrorPct": {
+                "p50": 2.765070845018,
+                "p95": 5.48589885283,
+                "max": 6.09262109876
+              },
+              "northScaleErrorPct": {
+                "p50": 2.462615186677,
+                "p95": 5.12379922329,
+                "max": 5.742705144954
+              },
+              "northDeviationDeg": {
+                "p50": 0.892841393121,
+                "p95": 4.428321475204,
+                "max": 6.748444941498
+              },
+              "shearDeg": {
+                "p50": 2.830674437365,
+                "p95": 7.582385082365,
+                "max": 10.06514691514
+              },
+              "shapeDistortionPct": {
+                "p50": 8.908994898354,
+                "p95": 15.548440247437,
+                "max": 20.37140550185
+              },
+              "areaErrorPct": {
+                "p50": 6.079e-9,
+                "p95": 1.7088e-8,
+                "max": 2.4507e-8
+              },
+              "screenNorthErrorDeg": {
+                "p50": 0.850047045332,
+                "p95": 4.417473302397,
+                "max": 6.981077242874
+              },
+              "geoAxisHorizontalShare": {
+                "p50": 0.015345140456,
+                "p95": 0.071876703521,
+                "max": 0.105809778108
+              }
+            },
+            "roundTripTile": {
+              "p50": 0,
+              "p95": 0,
+              "max": 1e-12
+            },
+            "curvature": null
+          },
+          {
+            "projection": "laea",
+            "fixture": "new-zealand",
+            "region": "apac",
+            "metrics": {
+              "eastScaleErrorPct": {
+                "p50": 10.531854978266,
+                "p95": 15.483773206772,
+                "max": 17.530355858492
+              },
+              "northScaleErrorPct": {
+                "p50": 3.908092139534,
+                "p95": 10.212553986985,
+                "max": 12.63520323759
+              },
+              "northDeviationDeg": {
+                "p50": 22.066552879156,
+                "p95": 28.654972943424,
+                "max": 30.906931111954
+              },
+              "shearDeg": {
+                "p50": 29.598321426105,
+                "p95": 34.599497283675,
+                "max": 36.453499028324
+              },
+              "shapeDistortionPct": {
+                "p50": 73.224808574483,
+                "p95": 90.565932506409,
+                "max": 98.264499006619
+              },
+              "areaErrorPct": {
+                "p50": 7.71e-9,
+                "p95": 2.3152e-8,
+                "max": 3.8953e-8
+              },
+              "screenNorthErrorDeg": {
+                "p50": 19.403291062263,
+                "p95": 25.341556484405,
+                "max": 27.771726889829
+              },
+              "geoAxisHorizontalShare": {
+                "p50": 0.288447682752,
+                "p95": 0.353363134846,
+                "max": 0.374472980355
+              }
+            },
+            "roundTripTile": {
+              "p50": 1e-12,
+              "p95": 1e-12,
+              "max": 1e-12
+            },
+            "curvature": null
+          },
+          {
+            "projection": "laea",
+            "fixture": "transsib",
+            "region": "apac",
+            "metrics": {
+              "eastScaleErrorPct": {
+                "p50": 1.804893481648,
+                "p95": 13.219084372447,
+                "max": 13.708721415322
+              },
+              "northScaleErrorPct": {
+                "p50": 1.852925780373,
+                "p95": 15.442158364624,
+                "max": 17.46486912736
+              },
+              "northDeviationDeg": {
+                "p50": 20.16428728522,
+                "p95": 56.472058356561,
+                "max": 62.243770798642
+              },
+              "shearDeg": {
+                "p50": 3.478028996067,
+                "p95": 5.884094602906,
+                "max": 9.822362905191
+              },
+              "shapeDistortionPct": {
+                "p50": 8.717394562173,
+                "p95": 33.889493503123,
+                "max": 42.403797560239
+              },
+              "areaErrorPct": {
+                "p50": 4.216e-9,
+                "p95": 1.1424e-8,
+                "max": 1.5254e-8
+              },
+              "screenNorthErrorDeg": {
+                "p50": 19.729797497739,
+                "p95": 65.676455790554,
+                "max": 75.644419571828
+              },
+              "geoAxisHorizontalShare": {
+                "p50": 0.268589264878,
+                "p95": 0.601473983728,
+                "max": 0.655194527563
+              }
+            },
+            "roundTripTile": {
+              "p50": 0,
+              "p95": 1e-12,
+              "max": 1e-12
+            },
+            "curvature": {
+              "totalDeg": 78.496489746575,
+              "maxStepDeg": 4.420575199594
+            }
+          },
+          {
+            "projection": "laea",
+            "fixture": "australia-east",
+            "region": "apac",
+            "metrics": {
+              "eastScaleErrorPct": {
+                "p50": 10.53743703626,
+                "p95": 19.456248674516,
+                "max": 21.217389820972
+              },
+              "northScaleErrorPct": {
+                "p50": 7.22624561998,
+                "p95": 12.638657178839,
+                "max": 14.657022055618
+              },
+              "northDeviationDeg": {
+                "p50": 6.615036363347,
+                "p95": 14.849468561002,
+                "max": 17.703746241151
+              },
+              "shearDeg": {
+                "p50": 12.422545748585,
+                "p95": 19.097112787709,
+                "max": 21.9179262637
+              },
+              "shapeDistortionPct": {
+                "p50": 32.871371787722,
+                "p95": 56.425204393706,
+                "max": 61.53337528718
+              },
+              "areaErrorPct": {
+                "p50": 7.611e-9,
+                "p95": 1.985e-8,
+                "max": 3.3811e-8
+              },
+              "screenNorthErrorDeg": {
+                "p50": 5.522165514824,
+                "p95": 11.030299655069,
+                "max": 13.113739037751
+              },
+              "geoAxisHorizontalShare": {
+                "p50": 0.103918486324,
+                "p95": 0.209570687711,
+                "max": 0.24197215609
+              }
+            },
+            "roundTripTile": {
+              "p50": 0,
+              "p95": 1e-12,
+              "max": 1e-12
+            },
+            "curvature": null
+          }
+        ],
+        "seam": {
+          "crossings": 55,
+          "cracks": 0,
+          "maxErrorTile": 0
+        },
+        "assignments": [
+          {
+            "id": "Chita",
+            "tile": [
+              1396,
+              471
+            ],
+            "chunk": [
+              5,
+              1
+            ]
+          },
+          {
+            "id": "Irkutsk",
+            "tile": [
+              1258,
+              443
+            ],
+            "chunk": [
+              4,
+              1
+            ]
+          },
+          {
+            "id": "Jakarta",
+            "tile": [
+              1110,
+              1879
+            ],
+            "chunk": [
+              4,
+              7
+            ]
+          },
+          {
+            "id": "Khabarovsk",
+            "tile": [
+              1743,
+              560
+            ],
+            "chunk": [
+              6,
+              2
+            ]
+          },
+          {
+            "id": "Krasnoyarsk",
+            "tile": [
+              1131,
+              312
+            ],
+            "chunk": [
+              4,
+              1
+            ]
+          },
+          {
+            "id": "Moscow",
+            "tile": [
+              625,
+              -136
+            ],
+            "chunk": [
+              2,
+              -1
+            ]
+          },
+          {
+            "id": "Novosibirsk",
+            "tile": [
+              995,
+              282
+            ],
+            "chunk": [
+              3,
+              1
+            ]
+          },
+          {
+            "id": "Omsk",
+            "tile": [
+              883,
+              219
+            ],
+            "chunk": [
+              3,
+              0
+            ]
+          },
+          {
+            "id": "Seoul",
+            "tile": [
+              1614,
+              834
+            ],
+            "chunk": [
+              6,
+              3
+            ]
+          },
+          {
+            "id": "Sydney",
+            "tile": [
+              1722,
+              -1178
+            ],
+            "chunk": [
+              6,
+              -5
+            ]
+          },
+          {
+            "id": "Tokyo",
+            "tile": [
+              1870,
+              862
+            ],
+            "chunk": [
+              7,
+              3
+            ]
+          },
+          {
+            "id": "Ulan-Ude",
+            "tile": [
+              1306,
+              464
+            ],
+            "chunk": [
+              5,
+              1
+            ]
+          },
+          {
+            "id": "Vladivostok",
+            "tile": [
+              1700,
+              694
+            ],
+            "chunk": [
+              6,
+              2
+            ]
+          },
+          {
+            "id": "Wellington",
+            "tile": [
+              2657,
+              2611
+            ],
+            "chunk": [
+              10,
+              10
+            ]
+          },
+          {
+            "id": "Yekaterinburg",
+            "tile": [
+              793,
+              79
+            ],
+            "chunk": [
+              3,
+              0
+            ]
+          }
+        ],
+        "direction": {
+          "screenAxis": true,
+          "geoAxis": true,
+          "maxScreenDeg": 14.176868815574,
+          "maxGeoHorizontalShare": 0.202308495151
+        },
+        "hardGates": {
+          "common": {
+            "roundTrip": true,
+            "chunkSeams": true,
+            "deterministicAssignments": true,
+            "pass": true
+          },
+          "modes": {
+            "screenAxis": {
+              "direction": true,
+              "pass": true
+            },
+            "geoAxis": {
+              "direction": true,
+              "pass": true
+            }
+          },
+          "pass": true
+        }
+      }
+    ],
+    "emea": [
+      {
+        "projection": "equirectangular",
+        "region": "emea",
+        "rows": [
+          {
+            "projection": "equirectangular",
+            "fixture": "emea",
+            "region": "emea",
+            "metrics": {
+              "eastScaleErrorPct": {
+                "p50": 18.467456351791,
+                "p95": 54.245991479256,
+                "max": 66.721646671649
+              },
+              "northScaleErrorPct": {
+                "p50": 0,
+                "p95": 4.657e-9,
+                "max": 4.657e-9
+              },
+              "northDeviationDeg": {
+                "p50": 0,
+                "p95": 0,
+                "max": 0
+              },
+              "shearDeg": {
+                "p50": 0,
+                "p95": 0,
+                "max": 0
+              },
+              "shapeDistortionPct": {
+                "p50": 20.162775479257,
+                "p95": 54.245991472074,
+                "max": 66.721646671649
+              },
+              "areaErrorPct": {
+                "p50": 18.467456353689,
+                "p95": 54.245991486439,
+                "max": 66.721646671649
+              },
+              "screenNorthErrorDeg": {
+                "p50": 0,
+                "p95": 0,
+                "max": 0
+              },
+              "geoAxisHorizontalShare": {
+                "p50": 0,
+                "p95": 0,
+                "max": 0
+              }
+            },
+            "roundTripTile": {
+              "p50": 0,
+              "p95": 0,
+              "max": 0
+            }
+          }
+        ],
+        "seam": {
+          "crossings": 30,
+          "cracks": 0,
+          "maxErrorTile": 0
+        },
+        "assignments": [
+          {
+            "id": "Chita",
+            "tile": [
+              2175,
+              345
+            ],
+            "chunk": [
+              8,
+              1
+            ]
+          },
+          {
+            "id": "Irkutsk",
+            "tile": [
+              2014,
+              339
+            ],
+            "chunk": [
+              7,
+              1
+            ]
+          },
+          {
+            "id": "Jakarta",
+            "tile": [
+              2059,
+              1783
+            ],
+            "chunk": [
+              8,
+              6
+            ]
+          },
+          {
+            "id": "Khabarovsk",
+            "tile": [
+              2553,
+              434
+            ],
+            "chunk": [
+              9,
+              1
+            ]
+          },
+          {
+            "id": "Krasnoyarsk",
+            "tile": [
+              1815,
+              247
+            ],
+            "chunk": [
+              7,
+              0
+            ]
+          },
+          {
+            "id": "Moscow",
+            "tile": [
+              849,
+              253
+            ],
+            "chunk": [
+              3,
+              0
+            ]
+          },
+          {
+            "id": "Novosibirsk",
+            "tile": [
+              1642,
+              271
+            ],
+            "chunk": [
+              6,
+              1
+            ]
+          },
+          {
+            "id": "Omsk",
+            "tile": [
+              1475,
+              272
+            ],
+            "chunk": [
+              5,
+              1
+            ]
+          },
+          {
+            "id": "Seoul",
+            "tile": [
+              2411,
+              703
+            ],
+            "chunk": [
+              9,
+              2
+            ]
+          },
+          {
+            "id": "Sydney",
+            "tile": [
+              -859,
+              493
+            ],
+            "chunk": [
+              -4,
+              1
+            ]
+          },
+          {
+            "id": "Tokyo",
+            "tile": [
+              2634,
+              749
+            ],
+            "chunk": [
+              10,
+              2
+            ]
+          },
+          {
+            "id": "Ulan-Ude",
+            "tile": [
+              2073,
+              350
+            ],
+            "chunk": [
+              8,
+              1
+            ]
+          },
+          {
+            "id": "Vladivostok",
+            "tile": [
+              2497,
+              565
+            ],
+            "chunk": [
+              9,
+              2
+            ]
+          },
+          {
+            "id": "Wellington",
+            "tile": [
+              3246,
+              2651
+            ],
+            "chunk": [
+              12,
+              10
+            ]
+          },
+          {
+            "id": "Yekaterinburg",
+            "tile": [
+              1251,
+              226
+            ],
+            "chunk": [
+              4,
+              0
+            ]
+          }
+        ],
+        "direction": {
+          "screenAxis": true,
+          "geoAxis": true,
+          "maxScreenDeg": 0,
+          "maxGeoHorizontalShare": 0
+        },
+        "hardGates": {
+          "common": {
+            "roundTrip": true,
+            "chunkSeams": true,
+            "deterministicAssignments": true,
+            "pass": true
+          },
+          "modes": {
+            "screenAxis": {
+              "direction": true,
+              "pass": true
+            },
+            "geoAxis": {
+              "direction": true,
+              "pass": true
+            }
+          },
+          "pass": true
+        }
+      },
+      {
+        "projection": "sinusoidal",
+        "region": "emea",
+        "rows": [
+          {
+            "projection": "sinusoidal",
+            "fixture": "emea",
+            "region": "emea",
+            "metrics": {
+              "eastScaleErrorPct": {
+                "p50": 8.73e-10,
+                "p95": 2.91e-9,
+                "max": 6.985e-9
+              },
+              "northScaleErrorPct": {
+                "p50": 1.334536221176,
+                "p95": 8.327771438654,
+                "max": 13.937376348509
+              },
+              "northDeviationDeg": {
+                "p50": 9.308974700011,
+                "p95": 22.612803706622,
+                "max": 28.636826734118
+              },
+              "shearDeg": {
+                "p50": 9.308974700011,
+                "p95": 22.612803706622,
+                "max": 28.636826734118
+              },
+              "shapeDistortionPct": {
+                "p50": 17.790114536764,
+                "p95": 51.220429553068,
+                "max": 71.51245305101
+              },
+              "areaErrorPct": {
+                "p50": 1.164e-9,
+                "p95": 5.239e-9,
+                "max": 7.567e-9
+              },
+              "screenNorthErrorDeg": {
+                "p50": 9.308974700011,
+                "p95": 22.612803706385,
+                "max": 28.636826734118
+              },
+              "geoAxisHorizontalShare": {
+                "p50": 0.140832297685,
+                "p95": 0.294045574601,
+                "max": 0.353191143237
+              }
+            },
+            "roundTripTile": {
+              "p50": 0,
+              "p95": 0,
+              "max": 0
+            }
+          }
+        ],
+        "seam": {
+          "crossings": 33,
+          "cracks": 0,
+          "maxErrorTile": 0
+        },
+        "assignments": [
+          {
+            "id": "Chita",
+            "tile": [
+              2180,
+              345
+            ],
+            "chunk": [
+              8,
+              1
+            ]
+          },
+          {
+            "id": "Irkutsk",
+            "tile": [
+              2034,
+              339
+            ],
+            "chunk": [
+              7,
+              1
+            ]
+          },
+          {
+            "id": "Jakarta",
+            "tile": [
+              2846,
+              1783
+            ],
+            "chunk": [
+              11,
+              6
+            ]
+          },
+          {
+            "id": "Khabarovsk",
+            "tile": [
+              2641,
+              434
+            ],
+            "chunk": [
+              10,
+              1
+            ]
+          },
+          {
+            "id": "Krasnoyarsk",
+            "tile": [
+              1773,
+              247
+            ],
+            "chunk": [
+              6,
+              0
+            ]
+          },
+          {
+            "id": "Moscow",
+            "tile": [
+              1011,
+              253
+            ],
+            "chunk": [
+              3,
+              0
+            ]
+          },
+          {
+            "id": "Novosibirsk",
+            "tile": [
+              1657,
+              271
+            ],
+            "chunk": [
+              6,
+              1
+            ]
+          },
+          {
+            "id": "Omsk",
+            "tile": [
+              1522,
+              272
+            ],
+            "chunk": [
+              5,
+              1
+            ]
+          },
+          {
+            "id": "Seoul",
+            "tile": [
+              2834,
+              703
+            ],
+            "chunk": [
+              11,
+              2
+            ]
+          },
+          {
+            "id": "Sydney",
+            "tile": [
+              -624,
+              493
+            ],
+            "chunk": [
+              -3,
+              1
+            ]
+          },
+          {
+            "id": "Tokyo",
+            "tile": [
+              3139,
+              749
+            ],
+            "chunk": [
+              12,
+              2
+            ]
+          },
+          {
+            "id": "Ulan-Ude",
+            "tile": [
+              2098,
+              350
+            ],
+            "chunk": [
+              8,
+              1
+            ]
+          },
+          {
+            "id": "Vladivostok",
+            "tile": [
+              2764,
+              565
+            ],
+            "chunk": [
+              10,
+              2
+            ]
+          },
+          {
+            "id": "Wellington",
+            "tile": [
+              3617,
+              2651
+            ],
+            "chunk": [
+              14,
+              10
+            ]
+          },
+          {
+            "id": "Yekaterinburg",
+            "tile": [
+              1317,
+              226
+            ],
+            "chunk": [
+              5,
+              0
+            ]
+          }
+        ],
+        "direction": {
+          "screenAxis": false,
+          "geoAxis": true,
+          "maxScreenDeg": 28.636826734118,
+          "maxGeoHorizontalShare": 0.353191143237
+        },
+        "hardGates": {
+          "common": {
+            "roundTrip": true,
+            "chunkSeams": true,
+            "deterministicAssignments": true,
+            "pass": true
+          },
+          "modes": {
+            "screenAxis": {
+              "direction": false,
+              "pass": false
+            },
+            "geoAxis": {
+              "direction": true,
+              "pass": true
+            }
+          },
+          "pass": true
+        }
+      },
+      {
+        "projection": "laea",
+        "region": "emea",
+        "rows": [
+          {
+            "projection": "laea",
+            "fixture": "emea",
+            "region": "emea",
+            "metrics": {
+              "eastScaleErrorPct": {
+                "p50": 0.575246147511,
+                "p95": 1.813635427141,
+                "max": 2.215913326931
+              },
+              "northScaleErrorPct": {
+                "p50": 0.5716479874,
+                "p95": 1.818516917711,
+                "max": 2.167841661148
+              },
+              "northDeviationDeg": {
+                "p50": 10.063334894413,
+                "p95": 23.539357243002,
+                "max": 30.387799949767
+              },
+              "shearDeg": {
+                "p50": 0.809599699456,
+                "p95": 3.322992073464,
+                "max": 6.052522255877
+              },
+              "shapeDistortionPct": {
+                "p50": 2.419156278111,
+                "p95": 6.511958627978,
+                "max": 11.241990334906
+              },
+              "areaErrorPct": {
+                "p50": 2.5e-9,
+                "p95": 7.289e-9,
+                "max": 1.6023e-8
+              },
+              "screenNorthErrorDeg": {
+                "p50": 10.007694925231,
+                "p95": 24.066133364066,
+                "max": 30.441951730437
+              },
+              "geoAxisHorizontalShare": {
+                "p50": 0.150719279612,
+                "p95": 0.303441404292,
+                "max": 0.369646059816
+              }
+            },
+            "roundTripTile": {
+              "p50": 0,
+              "p95": 0,
+              "max": 1e-12
+            }
+          }
+        ],
+        "seam": {
+          "crossings": 31,
+          "cracks": 0,
+          "maxErrorTile": 0
+        },
+        "assignments": [
+          {
+            "id": "Chita",
+            "tile": [
+              1812,
+              -269
+            ],
+            "chunk": [
+              7,
+              -2
+            ]
+          },
+          {
+            "id": "Irkutsk",
+            "tile": [
+              1769,
+              -145
+            ],
+            "chunk": [
+              6,
+              -1
+            ]
+          },
+          {
+            "id": "Jakarta",
+            "tile": [
+              2776,
+              952
+            ],
+            "chunk": [
+              10,
+              3
+            ]
+          },
+          {
+            "id": "Khabarovsk",
+            "tile": [
+              1895,
+              -578
+            ],
+            "chunk": [
+              7,
+              -3
+            ]
+          },
+          {
+            "id": "Krasnoyarsk",
+            "tile": [
+              1616,
+              -61
+            ],
+            "chunk": [
+              6,
+              -1
+            ]
+          },
+          {
+            "id": "Moscow",
+            "tile": [
+              1004,
+              324
+            ],
+            "chunk": [
+              3,
+              1
+            ]
+          },
+          {
+            "id": "Novosibirsk",
+            "tile": [
+              1555,
+              59
+            ],
+            "chunk": [
+              6,
+              0
+            ]
+          },
+          {
+            "id": "Omsk",
+            "tile": [
+              1461,
+              147
+            ],
+            "chunk": [
+              5,
+              0
+            ]
+          },
+          {
+            "id": "Seoul",
+            "tile": [
+              2183,
+              -353
+            ],
+            "chunk": [
+              8,
+              -2
+            ]
+          },
+          {
+            "id": "Sydney",
+            "tile": [
+              -283,
+              -149
+            ],
+            "chunk": [
+              -2,
+              -1
+            ]
+          },
+          {
+            "id": "Tokyo",
+            "tile": [
+              2193,
+              -604
+            ],
+            "chunk": [
+              8,
+              -3
+            ]
+          },
+          {
+            "id": "Ulan-Ude",
+            "tile": [
+              1796,
+              -184
+            ],
+            "chunk": [
+              7,
+              -1
+            ]
+          },
+          {
+            "id": "Vladivostok",
+            "tile": [
+              2040,
+              -495
+            ],
+            "chunk": [
+              7,
+              -2
+            ]
+          },
+          {
+            "id": "Wellington",
+            "tile": [
+              3607,
+              659
+            ],
+            "chunk": [
+              14,
+              2
+            ]
+          },
+          {
+            "id": "Yekaterinburg",
+            "tile": [
+              1291,
+              201
+            ],
+            "chunk": [
+              5,
+              0
+            ]
+          }
+        ],
+        "direction": {
+          "screenAxis": false,
+          "geoAxis": true,
+          "maxScreenDeg": 30.441951730437,
+          "maxGeoHorizontalShare": 0.369646059816
+        },
+        "hardGates": {
+          "common": {
+            "roundTrip": true,
+            "chunkSeams": true,
+            "deterministicAssignments": true,
+            "pass": true
+          },
+          "modes": {
+            "screenAxis": {
+              "direction": false,
+              "pass": false
+            },
+            "geoAxis": {
+              "direction": true,
+              "pass": true
+            }
+          },
+          "pass": true
+        }
+      }
+    ]
+  }
+}
