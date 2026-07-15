@@ -164,6 +164,16 @@ export const WORLD_NODES = [
     gate: { type: 'city', to: 'tokyo', label: '🏙️ 시내' },
     desc: '일본의 수도. 하네다·시나가와·시부야와 도쿄만을 실제 지형으로 걸어볼 수 있어요.',
   },
+  {
+    id: 'osaka', name: '오사카', kind: 'city', tile: [234, 276],
+    gate: { type: 'city', to: 'osaka', label: '🏙️ 시내' },
+    desc: '오사카만에서 우메다·도톤보리·오사카성까지 실제 지형과 환상선으로 이어지는 도시예요.',
+  },
+  {
+    id: 'kyoto', name: '교토', kind: 'city', tile: [239, 271],
+    gate: { type: 'city', to: 'kyoto', label: '🏙️ 시내' },
+    desc: '교토역·기온·후시미이나리·아라시야마를 철도와 버스로 잇는 옛 수도예요.',
+  },
   // 하네다 — 랜드마크(표지 마커만).
   { id: 'haneda', name: '하네다', kind: 'landmark', tile: [POI.HANEDA.x, POI.HANEDA.y], reading: 'n5-tokyo-01', desc: '도쿄의 바닷가 국제공항. 일본에서 가장 붐비는 하늘길이에요.' },
   // 백두산 — 설산 랜드마크(게이트 없음, 마커만). DMZ 북측이라 철조망 너머로 보이기만 하고

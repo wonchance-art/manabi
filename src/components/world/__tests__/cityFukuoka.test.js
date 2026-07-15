@@ -5,6 +5,7 @@ import FUKUOKA, {
 } from '../cities/fukuoka.js';
 import { FUKUOKA_GEO } from '../cities/fukuoka.geo.js';
 import { fastTravelDestinations, resolveArrivalTile, resolveRespawnTile } from '../cities/terrain.js';
+import { directTransitDestinations } from '../../../lib/world/transit.js';
 
 // 🏙️ 후쿠오카 도시 정밀맵 — **실지형 geo 격상판(388×254)** 데이터 무결성.
 //   지형은 cities/fukuoka.geo.js(§6.4 계약)가 단일 진실원. buildGrid 는 geo terrain(디코드된 표준
@@ -256,6 +257,18 @@ describe('🚃 전철 fast-travel 역(STATIONS = geo.stations 11)', () => {
 
   it('FUKUOKA.stations 가 STATIONS 를 노출한다(stations 계약)', () => {
     expect(FUKUOKA.stations).toBe(STATIONS);
+  });
+});
+
+describe('세계시 교통 배선', () => {
+  it('공항선·나나쿠마선과 국내/국제 페리가 분리되어 있다', () => {
+    expect(FUKUOKA.transit.map((line) => line.id)).toEqual([
+      'fukuoka-airport-line', 'fukuoka-nanakuma-line', 'fukuoka-hakozaki-line', 'tenjin-transfer',
+      'hakata-domestic-ferry', 'hakata-international-ferry',
+    ]);
+    expect(FUKUOKA.transit.filter((line) => line.mode === 'ferry')).toHaveLength(2);
+    expect(directTransitDestinations(FUKUOKA.transit, STATIONS, 'tenjin').map((station) => station.id))
+      .toContain('hakata');
   });
 });
 

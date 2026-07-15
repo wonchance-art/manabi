@@ -27,7 +27,7 @@ export const ZONES = [
   { id: 'haneda', label: '羽田空港', bounds: [350, 560, 470, 667], labelTile: [390, 600] },
 ];
 
-// 品川駅 POI는 같은 geo 좌표의 山手線 fast-travel 역으로 한 번만 렌더한다.
+// 品川駅 POI는 같은 geo 좌표의 山手線 정기 교통 역으로 한 번만 렌더한다.
 // 나머지 POI는 실좌표에서 스냅된 geo tile을 그대로 쓰는 설명 마커다.
 export const CITY_NODES = [
   {
@@ -81,6 +81,30 @@ export const STATIONS = TOKYO_GEO.stations.map((station) => ({
   ...(station.id === 'shinagawa' ? { poiId: 'shinagawa-station' } : {}),
 }));
 
+export const TRANSIT_POINTS = [
+  { id: 'haneda-airport', tile: poiTile('haneda-airport'), nameJa: '羽田空港' },
+];
+
+export const TRANSIT = [
+  {
+    id: 'tokyo-yamanote', nameJa: '山手線', mode: 'train', color: 0x8dbb45,
+    stopIds: ['shibuya', 'ebisu', 'meguro', 'gotanda', 'osaki', 'shinagawa', 'takanawa-gateway', 'tamachi', 'hamamatsucho'],
+    segmentMinutes: [3, 3, 3, 3, 4, 3, 3, 3], dwellMinutes: 1,
+    serviceWindows: [
+      { startMinute: 0, endMinute: 300, headwayMinutes: 24 },
+      { startMinute: 300, endMinute: 1440, headwayMinutes: 6 },
+    ],
+  },
+  {
+    id: 'tokyo-haneda-access', nameJa: '羽田アクセス線', mode: 'train', color: 0x4ba4d8,
+    stopIds: ['haneda-airport', 'shinagawa', 'shibuya'], segmentMinutes: [14, 12], dwellMinutes: 2,
+    serviceWindows: [
+      { startMinute: 0, endMinute: 300, headwayMinutes: 30 },
+      { startMinute: 300, endMinute: 1440, headwayMinutes: 10 },
+    ],
+  },
+];
+
 // 하네다·시부야·시나가와의 전용 렌더크래프트는 후속 작업으로 남긴다.
 // 현재는 CITY_NODES와 STATIONS의 공용 마커만 사용해 실제 장소를 중복 렌더하지 않는다.
 export const PROPS = [];
@@ -103,6 +127,9 @@ export const TOKYO = {
   zones: ZONES,
   nodes: CITY_NODES,
   stations: STATIONS,
+  transit: TRANSIT,
+  transitPoints: TRANSIT_POINTS,
+  railways: TOKYO_GEO.railways,
   props: PROPS,
   CITY_TILE,
   buildGrid: buildTokyoGrid,

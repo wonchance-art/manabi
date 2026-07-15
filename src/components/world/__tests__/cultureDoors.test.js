@@ -5,10 +5,10 @@ describe('문화 도어 상호작용 계약', () => {
   it('Phaser 노드의 chapter·NPC·스탬프 필드를 React 근접 상태까지 보존한다', () => {
     expect(toInteractiveNode({
       id: 'ramen', name: 'ラーメン', desc: '설명', npc: 'ramen', noStamp: false,
-      chapter: 'ot-10-ramen', reading: 'n5-tokyo-01', extra: '렌더 전용',
+      chapter: 'ot-10-ramen', reading: 'n5-tokyo-01', openNow: false, extra: '렌더 전용',
     })).toEqual({
       id: 'ramen', name: 'ラーメン', desc: '설명', gate: undefined,
-      npc: 'ramen', noStamp: false, chapter: 'ot-10-ramen', reading: 'n5-tokyo-01',
+      npc: 'ramen', noStamp: false, chapter: 'ot-10-ramen', reading: 'n5-tokyo-01', openNow: false,
     });
     expect(toInteractiveNode(null)).toBeNull();
   });

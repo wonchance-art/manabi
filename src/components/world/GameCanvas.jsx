@@ -31,7 +31,7 @@ import {
   CHAR_DIRS, CHAR_POSES, CHAR_WALK_CYCLE, charFrameRows,
   PET_KEYS, petFrameRows,
   BASE_TILE_PAL, CHAR_PAL_LOCAL, CHAR_PAL_REMOTE, PET_PAL,
-  tonePalette, toneColor, timeOfDay,
+  tonePalette, toneColor,
   riverStreamRects, RIVER_N, RIVER_E, RIVER_S, RIVER_W,
   BOAT_W, BOAT_H, BOAT_PAL, boatFrameRows,
   NPC_KEYS, NPC_W, NPC_H, NPC_PAL, npcMarkerRows,
@@ -56,8 +56,12 @@ import { buildAirportScene } from './airportScene';
 import { buildCityScene } from './CityScene';
 import FUKUOKA from './cities/fukuoka';
 import TOKYO from './cities/tokyo';
-// 🚃 전철 fast-travel — 행선지 목록(현재 역 제외) 공용 순수 로직(도시·geo 공통).
-import { fastTravelDestinations } from './cities/terrain';
+import OSAKA from './cities/osaka';
+import KYOTO from './cities/kyoto';
+import { directTransitDestinations } from '../../lib/world/transit';
+import { formatWorldTime, WORLD_TIME_SCALE } from '../../lib/world/worldClock';
+import { cityWeatherAt, worldEventAt } from '../../lib/world/worldLife';
+import { useWorldClock } from '../../lib/world/useWorldClock';
 import { toInteractiveNode } from './cultureDoors';
 import { StoryTextbox, AirportQuiz } from './StoryOverlay';
 import { buildStoryScript } from './storyScript';
@@ -80,8 +84,12 @@ const STORY_TEXT = (scene1Text && scene1Text.id === READING_TEXT_ID) ? scene1Tex
 const STORY_STEPS = STORY_TEXT ? buildStoryScript(STORY_TEXT) : [];
 
 // 🏙️ 도시 정밀맵 레지스트리 — 도시 추가 = 여기 한 줄 + cities/<id>.js. 씬 키 'city:<id>'.
-const CITY_DATA = { fukuoka: FUKUOKA, tokyo: TOKYO };
+const CITY_DATA = { fukuoka: FUKUOKA, tokyo: TOKYO, osaka: OSAKA, kyoto: KYOTO };
 const CITY_FADE_MS = 260; // 도시 진입/이탈 페이드(페리와 동일 감성 · 조작 잠금)
+const formatTransitMinute = (totalGameMinutes) => {
+  const minute = ((Math.floor(totalGameMinutes) % 1440) + 1440) % 1440;
+  return `${String(Math.floor(minute / 60)).padStart(2, '0')}:${String(minute % 60).padStart(2, '0')}`;
+};
 
 // ── 좌표 스케일 (버스 계약 불변: 1타일 = 32 월드 px) ──
 const TILE = 32;            // 월드 px / 타일 (예전과 동일 — local:state·peers:dist 스케일 유지)
@@ -164,8 +172,8 @@ const MINI_COLORS = {
 
 // 도시 미니맵 타일색(코드→RGB) — 도시 정밀맵 전용(전국 4색과 별개, 구역 라벨 포함).
 const CITY_MINI_COLORS = {
-  0: [70, 74, 84],     // road
-  1: [190, 182, 164],  // sidewalk
+  0: [55, 60, 70],     // road
+  1: [213, 203, 181],  // sidewalk
   2: [230, 224, 210],  // crosswalk
   3: [216, 196, 140],  // plaza
   4: [120, 180, 90],   // park
@@ -173,7 +181,7 @@ const CITY_MINI_COLORS = {
   6: [140, 100, 60],   // dock
   7: [90, 200, 90],    // exit
   8: [60, 130, 170],   // water(바다·항만)
-  9: [110, 104, 96],   // building
+  9: [82, 78, 74],     // building
   10: [110, 165, 80],  // island(섬 실루엣 — 도달 불가 배경)
   11: [63, 122, 106],  // river(강·운하 — 바다보다 탁한 강 톤)
   12: [232, 214, 166], // beach(모래 해변)
@@ -200,6 +208,25 @@ function Minimap({ sceneRef, activeScene, onClose }) {
         d[i * 4] = c[0]; d[i * 4 + 1] = c[1]; d[i * 4 + 2] = c[2]; d[i * 4 + 3] = 255;
       }
       octx.putImageData(img, 0, 0);
+      if (city.railways?.mask) {
+        octx.fillStyle = '#3d3028';
+        for (let index = 0; index < city.railways.mask.length; index += 1) {
+          if (!city.railways.mask[index]) continue;
+          octx.fillRect(index % w, Math.floor(index / w), 1, 1);
+        }
+      } else if (city.transit?.length) {
+        const stops = new Map([...(city.stations || []), ...(city.transitPoints || [])].map((stop) => [stop.id, stop]));
+        octx.lineWidth = 1;
+        for (const line of city.transit) {
+          if (line.mode === 'ferry') continue;
+          const points = line.stopIds.map((id) => stops.get(id)?.tile).filter(Boolean);
+          if (points.length < 2) continue;
+          octx.strokeStyle = '#c66e2c';
+          octx.beginPath(); octx.moveTo(points[0][0], points[0][1]);
+          for (const [x, y] of points.slice(1)) octx.lineTo(x, y);
+          octx.stroke();
+        }
+      }
       const W = w * CITY_MINI_SCALE, H = h * CITY_MINI_SCALE;
       const drawFrame = (blinkOn) => {
         const canvas = canvasRef.current;
@@ -218,7 +245,7 @@ function Minimap({ sceneRef, activeScene, onClose }) {
           ctx.fillStyle = '#f6edcf';
           ctx.fillText(z.label, Math.round(lx), Math.round(ly));
         }
-        // 🚃 전철역 아이콘(청록 점 + 흰 테두리) — fast-travel 노드 위치 표시.
+        // 🚃 전철역 아이콘(청록 점 + 흰 테두리) — 정기 교통 승차 위치 표시.
         for (const st of (city.stations || [])) {
           const sx = st.tile[0] * CITY_MINI_SCALE, sy = st.tile[1] * CITY_MINI_SCALE;
           ctx.fillStyle = '#f6edcf';
@@ -226,8 +253,17 @@ function Minimap({ sceneRef, activeScene, onClose }) {
           ctx.fillStyle = '#2f9ad0';
           ctx.fillRect(Math.round(sx) - 1, Math.round(sy) - 1, 3, 3);
         }
+        const scene = sceneRef.current;
+        if (scene?.vehicleViews) {
+          ctx.fillStyle = '#ffe24a';
+          for (const [, vehicle] of scene.vehicleViews) {
+            const vx = vehicle.x / TILE * CITY_MINI_SCALE;
+            const vy = vehicle.y / TILE * CITY_MINI_SCALE;
+            ctx.fillRect(Math.round(vx) - 1, Math.round(vy) - 1, 3, 3);
+          }
+        }
         // 플레이어 점(노랑, 깜빡).
-        const s = sceneRef.current;
+        const s = scene;
         if (blinkOn && s && Number.isFinite(s.pTileX)) {
           const px = s.pTileX * CITY_MINI_SCALE, py = s.pTileY * CITY_MINI_SCALE;
           ctx.fillStyle = '#ffe24a';
@@ -315,6 +351,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   // 재접속 스폰 — { scene:'plaza'|'airport', x, y(타일) } | null. WorldScene create()가 읽는다.
   // ref 로 흘려 게임 재생성 없이 최신값을 쓰되, 실제 사용은 씬 생성 1회(mount) 시점에 고정된다.
   const initialSpawnRef = useRef(initialSpawn);
+  const { snapshot: worldClock, clockRef: worldClockRef } = useWorldClock();
   const [nearQuest, setNearQuest] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false); // 인게임 즉석 리뷰 오버레이
   const nearQuestRef = useRef(false);   // A(상호작용) 콜백이 최신 근접 상태를 읽도록 미러
@@ -340,13 +377,14 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   const cityPromptRef = useRef(null);
   const chapterPromptRef = useRef(null);
 
-  // ── 🚃 전철 fast-travel(도시맵 이동 수단, docs §6.2) ──
+  // ── 🚃 정기 교통(도시맵 이동 수단, docs §8) ──
   //   nearStation: 근접한 역 { id, nameJa, yomi, line? } | null (A → 행선지 선택 오버레이)
   //   stationSelect: 행선지 선택 오버레이 { cityId, fromId, fromName } | null (B/취소로 항상 닫힘 — 소프트락 방지)
   //   stationToast: 도착 확인 토스트 { nameJa, yomi } | null (짧게 표시 후 자동 소멸)
   const [nearStation, setNearStation] = useState(null);
   const [stationSelect, setStationSelect] = useState(null);
   const [stationToast, setStationToast] = useState(null);
+  const [transitStatus, setTransitStatus] = useState(null);
   const nearStationRef = useRef(null);
   const stationSelectRef = useRef(null);
   const activeSceneRef = useRef('plaza');   // interact 콜백(once-effect)이 현재 씬을 읽도록 미러
@@ -405,6 +443,11 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
     const t = setTimeout(() => setStationToast(null), 1800);
     return () => clearTimeout(t);
   }, [stationToast]);
+  useEffect(() => {
+    if (!['arrived', 'missed'].includes(transitStatus?.state)) return undefined;
+    const timer = setTimeout(() => setTransitStatus(null), 2600);
+    return () => clearTimeout(timer);
+  }, [transitStatus]);
   useEffect(() => { npcDialogRef.current = npcDialog; }, [npcDialog]);
   useEffect(() => { storyActiveRef.current = storyActive; }, [storyActive]);
   useEffect(() => { storyPhaseRef.current = storyPhase; }, [storyPhase]);
@@ -461,6 +504,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
             ? activeSceneRef.current.slice(5) : null;
           if (cityId) { setStationSelect({ cityId, fromId: st.id, fromName: st.nameJa }); return; }
         }
+        if (node?.openNow === false) { setDescOpen(true); return; }
         // A-2 독해 도어는 관리자 파일럿에 콜백이 열린 경우에만 활성화한다.
         // 일반 학습자에게는 같은 노드를 기존 설명 표지로 남겨 막힌 관리자 경로를 노출하지 않는다.
         if (node?.reading && onOpenReading) { setChapterPrompt({ reading: node.reading, node }); return; }
@@ -616,9 +660,9 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         }
 
         preload() {
-          // 시간대(day/sunset/night)를 씬 생성 시 1회 확정하고, 팔레트를 그 톤으로 "구워"
-          // 텍스처 자체에 GBC 감성을 입힌다(런타임 틴트 오버레이 대신 — 저채도·제한 색수 보존).
-          this.mode = timeOfDay();
+          // 지형은 주간 팔레트로 고정하고 글로벌 월드 시각은 런타임 조명으로 표현한다.
+          // 장시간 접속해도 시간대 경계에서 다시 들어올 필요 없이 모든 플레이어가 같은 빛을 본다.
+          this.mode = 'day';
           this.pal = tonePalette(BASE_TILE_PAL, this.mode);
           this.charPal = {
             pc: tonePalette(CHAR_PAL_LOCAL, this.mode),
@@ -1379,6 +1423,9 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           });
 
           this.wasNear = false;
+          this.lastWorldLightingUpdate = -Infinity;
+          this.worldLightingOverlay = this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x18254a, 1)
+            .setOrigin(0, 0).setScrollFactor(0).setDepth(14000).setAlpha(0);
 
           // 씬 복귀(bootData.spawn — 도시 출구·공항 출구)면 페이드인으로 자연스럽게 등장.
           if (bootData && bootData.spawn) this.cameras.main.fadeIn(CITY_FADE_MS, 0, 0, 0);
@@ -1654,6 +1701,12 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         }
 
         update(time, delta) {
+          if (time - this.lastWorldLightingUpdate > 500) {
+            this.lastWorldLightingUpdate = time;
+            const phase = worldClockRef.current?.phase;
+            this.worldLightingOverlay.setAlpha(['night', 'late-night'].includes(phase) ? 0.24
+              : phase === 'dawn' || phase === 'evening' ? 0.1 : 0);
+          }
           // 카메라 주변 장식 생성/회수(매 프레임 — 컬링·상한으로 저비용).
           this.updateDecor();
 
@@ -1784,11 +1837,13 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           onEnter: () => {
             setActiveScene(`city:${cityData.id}`);
             setNearNode(null); setNearQuest(false); setCityPrompt(null); setChapterPrompt(null); setDescOpen(false); setMinimapOpen(false);
-            setNearStation(null); setStationSelect(null); setStationToast(null); // 🚃 역 상태 초기화
+            setNearStation(null); setStationSelect(null); setStationToast(null); setTransitStatus(null);
           },
           setNear: (node) => setNearNode(node),
           setNearStation: (st) => setNearStation(st),           // 🚃 역 근접 → 행선지 프롬프트
-          arrivedStation: (st) => setStationToast(st),          // 🚃 fast-travel 도착 확인 토스트
+          arrivedStation: (st) => setStationToast(st),          // 🚃 정기 교통 도착 확인 토스트
+          setTransitStatus: (status) => setTransitStatus(status),
+          worldClockRef,
           travelBlocked: () => setStationToast({ icon: '⚠', nameJa: '지금은 이동할 수 없어요', yomi: '' }), // P1: 도착 불가 취소
           // create 말미 — 피어 스냅샷 재적용 + 전체 키 거리 1회 emit(씬 전환 음성 잔류 차단, Codex P1-2).
           onReady: () => resetScenePeers(),
@@ -1857,6 +1912,22 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         width: '100%', height: '100%',
         display: 'grid', placeItems: 'center', imageRendering: 'pixelated',
       }} />
+
+      <div style={{
+        position: 'absolute', left: 6, top: 6, zIndex: 5, pointerEvents: 'none',
+        fontFamily: GBC.font, fontSize: '0.62rem', color: GBC.ink,
+        background: GBC.cream, border: `2px solid ${GBC.border}`,
+        boxShadow: `inset 0 0 0 1px ${GBC.creamHi}`, borderRadius: 2,
+        padding: '3px 6px', lineHeight: 1.35,
+      }}>
+        🕰 {formatWorldTime(worldClock)}
+        {activeScene.startsWith('city:') && (() => {
+          const cityId = activeScene.slice(5);
+          const weather = cityWeatherAt(cityId, worldClock);
+          const event = worldEventAt(cityId, worldClock);
+          return <span style={{ display: 'block', opacity: 0.78 }}>{weather.icon} {weather.label} · {event.label}</span>;
+        })()}
+      </div>
 
       {/* 조작 힌트 — GBC 다이얼로그 문법(크림 칩, 하드 엣지). */}
       <div style={{
@@ -2046,7 +2117,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       )}
 
       {/* 🚃 역 근접 → "Ⓐ 전철 타기" 프롬프트. A로 행선지 선택 오버레이를 연다. */}
-      {nearStation && !stationSelect && !nearNode && !npcDialog && !storyActive && !reviewOpen && !ferryPrompt && !cityPrompt && !chapterPrompt && !minimapOpen && (
+      {nearStation && !transitStatus && !stationSelect && !nearNode && !npcDialog && !storyActive && !reviewOpen && !ferryPrompt && !cityPrompt && !chapterPrompt && !minimapOpen && (
         <div style={{
           position: 'absolute', left: '50%', bottom: 18, transform: 'translateX(-50%)',
           fontFamily: GBC.font, fontSize: '0.7rem', color: GBC.ink,
@@ -2058,11 +2129,10 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         </div>
       )}
 
-      {/* 🚃 전철 행선지 선택 오버레이 — 현재 역을 제외한 역 목록. 선택 시 페이드 후 순간이동.
-          항상 나가기(B/취소) 버튼 — NPC 대화 소프트락 수정과 같은 원칙(막다른 상태 없음). */}
+      {/* 🚃 현재 역에서 직통으로 갈 수 있는 다음 운행편. 선택 후 실제 출발 시각까지 기다린다. */}
       {stationSelect && (() => {
         const cityData = CITY_DATA[stationSelect.cityId];
-        const dests = fastTravelDestinations(cityData?.stations, stationSelect.fromId);
+        const dests = directTransitDestinations(cityData?.transit, cityData?.stations, stationSelect.fromId);
         return (
           <div style={{
             position: 'absolute', inset: 0, zIndex: 6, display: 'grid', placeItems: 'center',
@@ -2070,17 +2140,21 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           }}>
             <div style={{ ...gbcPanel, width: 'min(88%, 340px)', padding: '14px 14px 12px' }}>
               <div style={{ fontSize: '0.82rem', fontWeight: 'bold', textAlign: 'center', marginBottom: 2 }}>
-                🚃 전철 — 행선지
+                🚃 시간표 — 행선지
               </div>
               <div style={{ fontSize: '0.66rem', opacity: 0.72, textAlign: 'center', marginBottom: 10 }}>
-                지금 「{stationSelect.fromName}」 · 갈 역을 고르세요
+                지금 「{stationSelect.fromName}」 · 출발 시각까지 역에서 기다려요
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 200, overflowY: 'auto' }}>
                 {dests.map((st) => (
                   <button
                     key={st.id}
                     type="button"
-                    onClick={() => { setStationSelect(null); sceneRef.current?.travelToStation?.(st.id); }}
+                    onClick={() => {
+                      const scene = sceneRef.current;
+                      setStationSelect(null);
+                      scene?.reserveTransit?.(stationSelect.fromId, st.id);
+                    }}
                     style={{
                       ...gbcButtonPrimary, textAlign: 'left', whiteSpace: 'nowrap',
                       display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8,
@@ -2107,7 +2181,27 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         );
       })()}
 
-      {/* 🚃 fast-travel 도착 확인 토스트 — "🚃 博多駅"(요미 병기). 잠시 뒤 자동 소멸. */}
+      {transitStatus && (
+        <div style={{
+          position: 'absolute', left: '50%', top: 42, transform: 'translateX(-50%)', zIndex: 7,
+          fontFamily: GBC.font, fontSize: '0.66rem', color: GBC.ink, textAlign: 'center',
+          background: GBC.cream, border: `2px solid ${GBC.border}`,
+          boxShadow: `inset 0 0 0 1px ${GBC.creamHi}`, borderRadius: 2,
+          padding: '5px 10px', lineHeight: 1.45, minWidth: 190,
+        }}>
+          {transitStatus.state === 'waiting' && (
+            <>
+              🚉 {transitStatus.line} · {transitStatus.to}<br />
+              {formatTransitMinute(transitStatus.departureMinute)} 출발 · 현실 약 {Math.max(0, Math.ceil((transitStatus.departureMinute - worldClock.totalGameMinutes) * 60 / WORLD_TIME_SCALE))}초
+            </>
+          )}
+          {transitStatus.state === 'riding' && <>🚃 {transitStatus.line} 이동 중 · {transitStatus.to}행</>}
+          {transitStatus.state === 'arrived' && <>✅ {transitStatus.message}</>}
+          {transitStatus.state === 'missed' && <>⚠ {transitStatus.message}</>}
+        </div>
+      )}
+
+      {/* 🚃 정기 교통 도착 확인 토스트 — "🚃 博多駅"(요미 병기). 잠시 뒤 자동 소멸. */}
       {stationToast && (
         <div style={{
           position: 'absolute', left: '50%', top: 16, transform: 'translateX(-50%)',
