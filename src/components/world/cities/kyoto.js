@@ -17,15 +17,33 @@ export const ZONES = [
   { id: 'arashiyama', label: '嵐山', bounds: [0, 180, 150, 320], labelTile: [55, 205] },
 ];
 
+// POI 별 검증 desc(공식 소스 리서치 2026-07-15). 세계유산('고도 교토의 문화재' 1994) 표기는
+//   구성 자산 4곳(二条城·清水寺·金閣 鹿苑寺·銀閣 慈照寺)에만 — 御所·伏見稲荷·八坂·平安神宮·渡月橋 금지.
+//   전승 연도는 "전해짐" 헤지. geo pois 와 자동 동기, 미등재 id 는 안전 폴백.
+const POI_FACADE = {
+  'nijo-castle': 'castle', 'fushimi-inari-taisha': 'torii', 'yasaka-shrine': 'torii', 'heian-shrine': 'torii',
+};
+const POI_DESC = {
+  'nijo-castle': '1603년 도쿠가와 이에야스가 세운 성 「二条城」(にじょうじょう). 1867년 니노마루 고텐에서 대정봉환이 표명됐고, 세계유산 \'고도 교토의 문화재\'의 구성 자산이에요.',
+  'kyoto-imperial-palace': '메이지 초까지 약 500년간 역대 천황이 거처한 궁 「京都御所」(きょうとごしょ). 현재 건물은 대체로 1855년에 지어졌어요.',
+  'fushimi-inari-taisha': '붉은 도리이가 늘어선 센본토리이로 알려진 신사 「伏見稲荷大社」(ふしみいなりたいしゃ). 711년 이나리산 진좌가 기원이고, 약 3만으로 일컬어지는 전국 이나리 신사의 총본궁이에요.',
+  'yasaka-shrine': '기온마쓰리의 무대가 되는 신사 「八坂神社」(やさかじんじゃ). 창건은 656년으로 전해지고, 본전은 2020년 국보로 지정됐어요.',
+  'heian-shrine': '헤이안 천도 1100년을 기념해 1895년 창건된 신사 「平安神宮」(へいあんじんぐう). 헤이안쿄 조당원을 8분의 5 규모로 재현했어요.',
+  kiyomizudera: '벼랑 위 목조 무대로 알려진 사찰 「清水寺」(きよみずでら). 778년 개창으로 전해지고 현재 본당은 1633년 재건 — 세계유산 \'고도 교토의 문화재\'의 구성 자산이에요.',
+  togetsukyo: '아라시야마의 풍경을 대표하는 길이 155m의 다리 「渡月橋」(とげつきょう). 현재 다리는 1934년에 놓였고, 이름은 달이 건너는 듯하다는 옛 노래에서 유래한 것으로 전해져요.',
+  kinkakuji: '금박 사리전으로 알려진 선종 사찰 「金閣寺」(きんかくじ) — 정식 명칭은 로쿠온지(鹿苑寺). 1397년 아시카가 요시미쓰가 조영했고, 사리전은 1950년 소실 후 1955년 재건 — 세계유산 구성 자산이에요.',
+  ginkakuji: '검박한 정취의 관음전으로 알려진 선종 사찰 「銀閣寺」(ぎんかくじ) — 정식 명칭은 지쇼지(慈照寺). 1482년 아시카가 요시마사가 산장으로 짓기 시작했고, 관음전과 동구당은 국보 — 세계유산 구성 자산이에요.',
+};
+
 export const CITY_NODES = KYOTO_GEO.pois.map((poi) => ({
   id: poi.id,
   kind: 'spot',
   name: poi.nameJa,
-  facade: poi.kind === 'shrine' ? 'torii' : 'sign',
+  facade: POI_FACADE[poi.id] || (poi.kind === 'shrine' ? 'torii' : 'sign'),
   tile: [poi.tile[0], poi.tile[1]],
   facing: 'down',
   noStamp: true,
-  desc: `교토의 대표 장소 「${poi.nameJa}」(${poi.yomi}). 실제 지도 위치를 따라 걸어가 볼 수 있어요.`,
+  desc: POI_DESC[poi.id] || `교토의 대표 장소 「${poi.nameJa}」(${poi.yomi}). 실제 지도 위치를 따라 걸어가 볼 수 있어요.`,
 }));
 
 export const STATIONS = KYOTO_GEO.stations.map((station) => ({
