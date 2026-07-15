@@ -432,7 +432,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
     ];
     for (const [prefix, scene] of candidates) {
       if (!scene?.textures?.exists(`${prefix}_down_n`)) continue;
-      ensureAvatarCharSet(scene, prefix, tonePalette(avatarPalette(next), scene.mode || 'day'), { replace: true });
+      ensureAvatarCharSet(scene, prefix, tonePalette(avatarPalette(next), scene.mode || 'day'), { replace: true, shape: next });
     }
   }, [avatar]);
   useEffect(() => { initialSpawnRef.current = initialSpawn; }, [initialSpawn]);
@@ -706,7 +706,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           this.buildNamedPeaks();  // 명산 전용 도트 조각(worldNodes peak 필드 → t_peak_<peak>)
           this.buildHeart();
           this.buildLamp();
-          this.buildCharSet('pc', this.charPal.pc);
+          this.buildCharSet('pc', this.charPal.pc, avatarRef.current);
           this.buildCharSet('pr', this.charPal.pr);
           this.buildPets();
         }
@@ -1185,10 +1185,10 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         }
 
         // 4방향 × 걷기 3패턴(n/l/r) 캐릭터, 16×16 한 칸(우향은 side flipX).
-        buildCharSet(prefix, pal) {
+        buildCharSet(prefix, pal, shape) {
           for (const dir of CHAR_DIRS) {
             for (const pose of CHAR_POSES) {
-              this.makeTex(`${prefix}_${dir}_${pose}`, charFrameRows(dir, pose), pal, CHAR_W, CHAR_H);
+              this.makeTex(`${prefix}_${dir}_${pose}`, charFrameRows(dir, pose, shape), pal, CHAR_W, CHAR_H);
             }
           }
         }

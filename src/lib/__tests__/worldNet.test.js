@@ -316,11 +316,13 @@ describe('createWorldNet — 피어 scene 수신 하위호환', () => {
     ch.emit('broadcast', 'pos', {
       payload: { id: 'peer-1', x: 10, y: 20, dir: 'right', avatar: { skin: 'bad', hair: 'navy', top: 'blue', bottom: 'olive' } },
     });
-    expect(peers.get('peer-1').avatar).toEqual({ skin: 'warm', hair: 'navy', top: 'blue', bottom: 'olive' });
+    // v1(4키) payload 는 기본 실루엣(cap/tee/none)으로 채워진다 — 구버전 클라 하위호환.
+    const expected = { skin: 'warm', hair: 'navy', top: 'blue', bottom: 'olive', style: 'cap', outfit: 'tee', acc: 'none' };
+    expect(peers.get('peer-1').avatar).toEqual(expected);
 
     ch.presence = { 'peer-1': [{ name: '친구', pet: '🐱' }] };
     ch.emit('presence', 'sync');
-    expect(peers.get('peer-1').avatar).toEqual({ skin: 'warm', hair: 'navy', top: 'blue', bottom: 'olive' });
+    expect(peers.get('peer-1').avatar).toEqual(expected);
     net.leave();
   });
 

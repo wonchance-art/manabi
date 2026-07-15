@@ -28,6 +28,24 @@ export const AVATAR_OPTIONS = {
     { id: 'olive', label: '올리브', color: 0x59643c },
     { id: 'brown', label: '브라운', color: 0x75533d },
   ],
+  // ── 실루엣 그룹(v2) — 색이 아니라 도트 형태를 바꾼다. 첫 옵션 = 기존 외형(v1 저장본 하위호환). ──
+  style: [
+    { id: 'cap', label: '캡 모자' },
+    { id: 'short', label: '숏컷' },
+    { id: 'bob', label: '단발' },
+    { id: 'long', label: '롱헤어' },
+  ],
+  outfit: [
+    { id: 'tee', label: '티셔츠' },
+    { id: 'coat', label: '코트' },
+    { id: 'dress', label: '원피스' },
+  ],
+  acc: [
+    { id: 'none', label: '없음' },
+    { id: 'glasses', label: '안경' },
+    { id: 'scarf_red', label: '빨간 목도리', color: 0xc23b3b },
+    { id: 'scarf_mint', label: '민트 목도리', color: 0x3fae8c },
+  ],
 };
 
 export const DEFAULT_AVATAR = Object.freeze({
@@ -35,6 +53,9 @@ export const DEFAULT_AVATAR = Object.freeze({
   hair: 'brown',
   top: 'coral',
   bottom: 'denim',
+  style: 'cap',
+  outfit: 'tee',
+  acc: 'none',
 });
 
 const optionFor = (group, id) => (
@@ -48,6 +69,9 @@ export function normalizeWorldAvatar(value) {
     hair: optionFor('hair', source.hair).id,
     top: optionFor('top', source.top).id,
     bottom: optionFor('bottom', source.bottom).id,
+    style: optionFor('style', source.style).id,
+    outfit: optionFor('outfit', source.outfit).id,
+    acc: optionFor('acc', source.acc).id,
   };
 }
 
@@ -62,12 +86,14 @@ export function avatarPalette(value) {
     P: optionFor('bottom', avatar.bottom).color,
     F: 0x2e2a28,
     B: optionFor('top', avatar.top).color,
+    G: 0xb7c9de,                                        // 안경 렌즈(밝은 유리색 — 어두운 눈이 렌즈 안에 떠 보임)
+    C: optionFor('acc', avatar.acc).color ?? 0xc23b3b,  // 목도리색(스카프 옵션에서)
   };
 }
 
 export function avatarSignature(value) {
   const avatar = normalizeWorldAvatar(value);
-  return ['skin', 'hair', 'top', 'bottom']
+  return ['skin', 'hair', 'top', 'bottom', 'style', 'outfit', 'acc']
     .map((group) => AVATAR_OPTIONS[group].findIndex((option) => option.id === avatar[group]))
     .join('');
 }

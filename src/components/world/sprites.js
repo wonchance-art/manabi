@@ -25,59 +25,189 @@ export const PET_H = 16;
 // 앵커 = 타일 중심(0.5). 16×16 스프라이트가 타일 한 칸에 정확히 담긴다.
 export const CHAR_ORIGIN_Y = (CHAR_H - CHAR_TILE_PX / 2) / CHAR_H; // = 8/16 = 0.5
 
-// ── 캐릭터 상반신 (16×12) — 방향별 고정, 아래에 다리 4행을 붙여 16행(한 칸) 완성 ──
+// ── 캐릭터 상반신 — 헤드(스타일별)·토르소(의상별) 분해 합성, 아래에 다리 4행을 붙여 16행 완성 ──
 // 재작화 목표: 오리지널 포켓몬 골드(GSC) 필드 스프라이트 비율 — 머리 크게, 몸통 압축, 한 칸에 담김.
-//   · 챙 있는 캡(H) — 정면은 이마 위 어두운 챙(O 가로줄), 측면은 앞으로 튀어나온 챙
-//   · 얼굴 눈(O) + 입 음영(K), 몸통(B 셔츠)·팔(양옆 B 소매+S 손)·팔레트 문자 그대로
-//   · up은 캡 뒷면 + 등에 배낭(P 블록), side는 챙 방향성이 뚜렷한 프로필 + 등 배낭(P)
+//   · 헤드 행수는 방향별 고정(down 8 · up 7 · side 8) — 토르소가 이어받아 12행을 채운다.
+//   · 얼굴 눈(O)은 모든 스타일에서 같은 행·열(down/side 6행)에 있다 — 안경 오버레이 계약.
+//   · up은 등에 배낭(P 블록), side는 방향성이 뚜렷한 프로필(우향은 flipX).
 // 1px 어두운 윤곽선(O)으로 실루엣을 또렷하게 유지. 몸통은 cols4~11(정면)·4~9(측면) 정렬.
-const CHAR_TOP = {
-  // 정면: 캡 크라운(H) → 챙(O 가로줄) → 얼굴(S·눈 O·입 K) → 어깨/팔(B·손 S) → 몸통(B).
-  down: [
-    '................',
-    '.....OOOOOO.....',
-    '....OHHHHHHO....',
-    '....OHHHHHHO....',
-    '....OOOOOOOO....',
-    '....OSSSSSSO....',
-    '....OSOSSOSO....',
-    '....OSSKKSSO....',
-    '...OBBBBBBBBO...',
-    '..OSBBBBBBBBSO..',
-    '..OSBBBBBBBBSO..',
-    '...OBBBBBBBBO...',
-  ],
-  // 뒷모습: 캡 뒷면(H, 얼굴 없음) → 목(K) → 어깨/팔(B·손 S) → 등 배낭(P 블록).
-  up: [
-    '................',
-    '.....OOOOOO.....',
-    '....OHHHHHHO....',
-    '....OHHHHHHO....',
-    '....OHHHHHHO....',
-    '....OHHHHHHO....',
-    '.....OKKKKO.....',
-    '...OBBBBBBBBO...',
-    '..OSBPPPPPPBSO..',
-    '..OSBPPPPPPBSO..',
-    '...OBPPPPPPBO...',
-    '...OBBBBBBBBO...',
-  ],
-  // 좌향 프로필(우향은 flipX). 앞(왼쪽)으로 캡 챙(O)이 튀어나오고, 얼굴 S·눈 O가 앞을 본다.
-  // 뒤통수 쪽(오른쪽)은 캡(H), 등에는 배낭(P). 몸통은 cols4~9로 측면 다리와 정렬.
-  side: [
-    '................',
-    '....OOOOO.......',
-    '...OHHHHHHO.....',
-    '...OHHHHHHO.....',
-    '.OOOOOHHHHO.....',
-    '..OSSSHHHHO.....',
-    '..OSOSHHHHO.....',
-    '..OKSSHHHO......',
-    '...OBBBBBBO.....',
-    '..OSBBBBPPO.....',
-    '...OBBBBPPO.....',
-    '...OBBBBBBO.....',
-  ],
+const CHAR_HEAD = {
+  // 챙 있는 캡(v1 기본) — 정면 이마 위 어두운 챙(O 가로줄), 측면은 앞으로 튀어나온 챙.
+  cap: {
+    down: [
+      '................',
+      '.....OOOOOO.....',
+      '....OHHHHHHO....',
+      '....OHHHHHHO....',
+      '....OOOOOOOO....',
+      '....OSSSSSSO....',
+      '....OSOSSOSO....',
+      '....OSSKKSSO....',
+    ],
+    up: [
+      '................',
+      '.....OOOOOO.....',
+      '....OHHHHHHO....',
+      '....OHHHHHHO....',
+      '....OHHHHHHO....',
+      '....OHHHHHHO....',
+      '.....OKKKKO.....',
+    ],
+    side: [
+      '................',
+      '....OOOOO.......',
+      '...OHHHHHHO.....',
+      '...OHHHHHHO.....',
+      '.OOOOOHHHHO.....',
+      '..OSSSHHHHO.....',
+      '..OSOSHHHHO.....',
+      '..OKSSHHHO......',
+    ],
+  },
+  // 숏컷 — 모자 없이 짧은 머리, 정면 앞머리 지그재그(HSHHSH)가 포인트.
+  short: {
+    down: [
+      '................',
+      '.....OOOOOO.....',
+      '....OHHHHHHO....',
+      '....OHHHHHHO....',
+      '....OHSHHSHO....',
+      '....OSSSSSSO....',
+      '....OSOSSOSO....',
+      '....OSSKKSSO....',
+    ],
+    up: [
+      '................',
+      '.....OOOOOO.....',
+      '....OHHHHHHO....',
+      '....OHHHHHHO....',
+      '....OHHHHHHO....',
+      '....OHHHHHHO....',
+      '.....OKKKKO.....',
+    ],
+    side: [
+      '................',
+      '....OOOOO.......',
+      '...OHHHHHHO.....',
+      '...OHHHHHHO.....',
+      '..OHHHHHHHO.....',
+      '..OSSSHHHHO.....',
+      '..OSOSHHHHO.....',
+      '..OKSSHHHO......',
+    ],
+  },
+  // 단발(밥) — 사이드 머리가 볼까지, 뒷모습은 목까지 덮는다.
+  bob: {
+    down: [
+      '................',
+      '.....OOOOOO.....',
+      '....OHHHHHHO....',
+      '....OHHHHHHO....',
+      '....OHHHHHHO....',
+      '....OHSSSSHO....',
+      '....OHOSSOHO....',
+      '....OSSKKSSO....',
+    ],
+    up: [
+      '................',
+      '.....OOOOOO.....',
+      '....OHHHHHHO....',
+      '....OHHHHHHO....',
+      '....OHHHHHHO....',
+      '....OHHHHHHO....',
+      '....OHHHHHHO....',
+    ],
+    side: [
+      '................',
+      '....OOOOO.......',
+      '...OHHHHHHO.....',
+      '...OHHHHHHO.....',
+      '..OHHHHHHHO.....',
+      '..OSSSHHHHO.....',
+      '..OSOSHHHHO.....',
+      '..OKSSHHHHO.....',
+    ],
+  },
+  // 롱헤어 — 얼굴 양옆으로 흘러내려 어깨 폭까지, 측면은 뒤로 1px 더 길게.
+  long: {
+    down: [
+      '................',
+      '.....OOOOOO.....',
+      '....OHHHHHHO....',
+      '....OHHHHHHO....',
+      '....OHHHHHHO....',
+      '...OHSSSSSSHO...',
+      '...OHSOSSOSHO...',
+      '...OHSSKKSSHO...',
+    ],
+    up: [
+      '................',
+      '.....OOOOOO.....',
+      '....OHHHHHHO....',
+      '....OHHHHHHO....',
+      '....OHHHHHHO....',
+      '...OHHHHHHHHO...',
+      '...OHHHHHHHHO...',
+    ],
+    side: [
+      '................',
+      '....OOOOO.......',
+      '...OHHHHHHO.....',
+      '...OHHHHHHO.....',
+      '..OHHHHHHHO.....',
+      '..OSSSHHHHHO....',
+      '..OSOSHHHHHO....',
+      '..OKSSHHHHHO....',
+    ],
+  },
+};
+
+// 토르소(의상별) — down 4행 · up 5행(배낭 포함) · side 4행. 원피스(dress)는 티셔츠 토르소를 쓰고
+// 다리 상단 2행을 B로 잇는다(charFrameRows에서 변환) — 몸통색이 허벅지까지 이어져 원피스로 읽힘.
+const CHAR_TORSO = {
+  tee: {
+    down: [
+      '...OBBBBBBBBO...',
+      '..OSBBBBBBBBSO..',
+      '..OSBBBBBBBBSO..',
+      '...OBBBBBBBBO...',
+    ],
+    up: [
+      '...OBBBBBBBBO...',
+      '..OSBPPPPPPBSO..',
+      '..OSBPPPPPPBSO..',
+      '...OBPPPPPPBO...',
+      '...OBBBBBBBBO...',
+    ],
+    side: [
+      '...OBBBBBBO.....',
+      '..OSBBBBPPO.....',
+      '...OBBBBPPO.....',
+      '...OBBBBBBO.....',
+    ],
+  },
+  // 코트 — 정면 가운데 여밈선(O 세로줄). 뒷·측면은 실루엣 동일(여밈이 안 보임).
+  coat: {
+    down: [
+      '...OBBBBBBBBO...',
+      '..OSBBBBOBBBSO..',
+      '..OSBBBBOBBBSO..',
+      '...OBBBBOBBBO...',
+    ],
+    up: [
+      '...OBBBBBBBBO...',
+      '..OSBPPPPPPBSO..',
+      '..OSBPPPPPPBSO..',
+      '...OBPPPPPPBO...',
+      '...OBBBBBBBBO...',
+    ],
+    side: [
+      '...OBBBBBBO.....',
+      '..OSBBBBPPO.....',
+      '...OBBBBPPO.....',
+      '...OBBBBBBO.....',
+    ],
+  },
 };
 
 // ── 다리 4행(13~16행 = 인덱스 12~15) — 걷기 3패턴(n:중립/l:왼발/r:오른발) ──
@@ -130,15 +260,30 @@ export const CHAR_POSES = ['n', 'l', 'r'];
 // 걷기 4프레임 사이클(왼발-중립-오른발-중립).
 export const CHAR_WALK_CYCLE = ['l', 'n', 'r', 'n'];
 
-// 한 캐릭터 프레임(16행 = 한 칸) = 상반신 12행 + 다리 4행.
-export function charFrameRows(dir, pose) {
-  const top = CHAR_TOP[dir];
+// 한 캐릭터 프레임(16행 = 한 칸) = 헤드(스타일) + 토르소(의상) + 다리 4행, 소품 오버레이 후처리.
+// shape 미지정 = 기본 실루엣(캡·티셔츠·소품 없음) — NPC·원격 폴백 베이크가 v1 그대로 유지된다.
+export function charFrameRows(dir, pose, shape) {
+  const { style, outfit, acc } = normalizeWorldAvatar(shape);
+  const head = CHAR_HEAD[style][dir];
+  const torso = CHAR_TORSO[outfit === 'dress' ? 'tee' : outfit][dir];
   const group = dir === 'side' ? 'side' : 'front';
-  const legs = CHAR_LEGS[group][pose];
-  return top.concat(legs);
+  let legs = CHAR_LEGS[group][pose];
+  if (outfit === 'dress') legs = legs.map((row, i) => (i < 2 ? row.replace(/P/g, 'B') : row));
+  const rows = head.concat(torso, legs);
+  if (acc === 'glasses' && dir !== 'up') {
+    // 눈 행(6행) 계약: down 눈=cols6·9, side 눈=col4 — 렌즈 프레임(G)이 눈(O)을 감싼다.
+    rows[6] = dir === 'side'
+      ? rows[6].slice(0, 3) + 'GOG' + rows[6].slice(6)
+      : rows[6].slice(0, 5) + 'GOGGOG' + rows[6].slice(11);
+  }
+  if (acc.startsWith('scarf')) {
+    const shoulder = head.length; // 첫 토르소 행 = 어깨선 — B를 목도리색 C로 감는다.
+    rows[shoulder] = rows[shoulder].replace(/B/g, 'C');
+  }
+  return rows;
 }
 
-export function ensureAvatarCharSet(scene, prefix, palette, { replace = false } = {}) {
+export function ensureAvatarCharSet(scene, prefix, palette, { replace = false, shape } = {}) {
   if (!scene?.make?.graphics || !scene?.textures) return false;
   for (const dir of CHAR_DIRS) {
     for (const pose of CHAR_POSES) {
@@ -147,7 +292,7 @@ export function ensureAvatarCharSet(scene, prefix, palette, { replace = false } 
         if (!replace) continue;
         scene.textures.remove(key);
       }
-      const rows = charFrameRows(dir, pose);
+      const rows = charFrameRows(dir, pose, shape);
       const graphics = scene.make.graphics({ add: false });
       for (let y = 0; y < rows.length; y += 1) {
         for (let x = 0; x < rows[y].length; x += 1) {
@@ -393,7 +538,7 @@ export const BASE_TILE_PAL = {
 };
 
 // 캐릭터 팔레트(로컬/원격은 셔츠색 B만 다름).
-export const CHAR_PAL_LOCAL = { O: 0x241a12, H: 0x6b4a2a, S: 0xf1c99a, K: 0xd39c6a, P: 0x3b4a86, F: 0x2e2a28, B: 0xd8524a };
+export const CHAR_PAL_LOCAL = { O: 0x241a12, H: 0x6b4a2a, S: 0xf1c99a, K: 0xd39c6a, P: 0x3b4a86, F: 0x2e2a28, B: 0xd8524a, G: 0xb7c9de, C: 0xc23b3b };
 export const CHAR_PAL_REMOTE = { ...CHAR_PAL_LOCAL, B: 0x4a86d8 };
 
 // 펫 팔레트(종별 실루엣+고유색).
@@ -693,7 +838,7 @@ export function applyPeersToScene(scene, incoming, cfg) {
     if (st.avatar) {
       const avatar = normalizeWorldAvatar(st.avatar);
       const candidate = `${prefix}_a${avatarSignature(avatar)}`;
-      if (ensureAvatarCharSet(scene, candidate, tonePalette(avatarPalette(avatar), scene.mode || 'day'))) {
+      if (ensureAvatarCharSet(scene, candidate, tonePalette(avatarPalette(avatar), scene.mode || 'day'), { shape: avatar })) {
         charPrefix = candidate;
       }
     }
