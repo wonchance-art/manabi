@@ -205,3 +205,37 @@ node scripts/world/render-overworld-terrain-preview.mjs \
   public/assets/overworld/asia-pacific-terrain-preview-v1 \
   <preview.png>
 ```
+
+## 12. 지역 ① rail preview v1
+
+`scripts/world/overworld-transport-apac-v1.json`과 `scripts/world/build-overworld-transport.mjs`는 지형 청크를
+수정하지 않고 철도를 별도 희소 오버레이로 생성한다.
+
+- 원본은 Natural Earth 10m railroads v5.1.2의 고정 `39,598,080`바이트,
+  `SHA-256=a0962d7866060ae3e24df255f6d662389ac9ba7e0df40cf329c2281190b861e6`다.
+- 오버월드 축척에서 주요 간선만 보이도록 `scalerank≤5`를 선택한다. 이 기하 데이터로 실제 운행 여부,
+  여객 서비스, 역 위치, 시간표 또는 보행 가능 여부를 추론하지 않는다.
+- 원본 좌표열을 날짜변경선 기준으로 unwrap하고 전역 타일 1/1024 정수로 양자화한 뒤, 전역 정수 좌표에서
+  Ramer–Douglas–Peucker를 적용한다. 허용 오차는 128/1024타일(1/8타일)로 고정한다.
+- 단순화는 청크 분할 전에 한 번만 수행한다. 256타일 청크는 1타일 halo를 공유하며 양쪽 파일은 같은
+  route ID와 전역 endpoint를 가진다.
+- 체크인 산출물은 `public/assets/overworld/asia-pacific-transport-preview-v1/`의 41개 rail overlay,
+  보고서와 content manifest다. 노드·DB·게이트·이동 마스크는 변경하지 않는다.
+
+```bash
+node scripts/world/build-overworld-transport.mjs \
+  --manifest scripts/world/overworld-transport-apac-v1.json \
+  --input-dir <verified-source-cache> \
+  --output-dir public/assets/overworld/asia-pacific-transport-preview-v1
+
+node scripts/world/build-overworld-transport.mjs \
+  --manifest scripts/world/overworld-transport-apac-v1.json \
+  --input-dir <verified-source-cache> \
+  --output-dir public/assets/overworld/asia-pacific-transport-preview-v1 \
+  --check
+
+node scripts/world/render-overworld-terrain-preview.mjs \
+  public/assets/overworld/asia-pacific-terrain-preview-v1 \
+  <preview.png> 1600 \
+  public/assets/overworld/asia-pacific-transport-preview-v1
+```

@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "releaseEligible": false,
+  "generatorGitSha": null,
+  "regionId": "asia-pacific-transport-preview-v1",
+  "baseTerrain": {
+    "manifestPath": "scripts/world/overworld-region-apac-v1.json",
+    "directory": "public/assets/overworld/asia-pacific-terrain-preview-v1",
+    "contentManifest": "content-manifest.json",
+    "contentManifestSha256": "df9f8953b161d8c5c04364b92b02a665e0be45c84c16599fa000796c080d392a",
+    "contentManifestBytes": 30899
+  },
+  "railSource": {
+    "id": "natural-earth-railroads-10m",
+    "cacheFile": "ne_10m_railroads.geojson",
+    "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/geojson/ne_10m_railroads.geojson",
+    "version": "natural-earth-vector-v5.1.2",
+    "sha256": "a0962d7866060ae3e24df255f6d662389ac9ba7e0df40cf329c2281190b861e6",
+    "bytes": 39598080,
+    "license": "Natural Earth public domain",
+    "role": "rail-centerlines",
+    "required": true
+  },
+  "railRules": {
+    "maxScaleRank": 5,
+    "quantization": 1024,
+    "haloTiles": 1,
+    "simplification": {
+      "method": "rdp-global-quantized",
+      "toleranceQuantized": 128
+    }
+  }
+}

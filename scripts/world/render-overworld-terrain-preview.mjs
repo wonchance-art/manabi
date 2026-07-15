@@ -12,7 +12,31 @@ const COLORS = Object.freeze([
   [224, 226, 218],
 ]);
 
-export async function renderTerrainPreview({ inputDir, outputFile, targetWidth = 1200 }) {
+async function readUniqueSegments(directory, content) {
+  const unique = new Map();
+  for (const entry of content.overlays) {
+    const overlay = JSON.parse(await readFile(path.join(directory, entry.path), 'utf8'));
+    for (const segment of overlay.segments) unique.set(segment.id, segment);
+  }
+  return unique;
+}
+
+function segmentPaths({ segments, quantization, scaleX, scaleY, color, widthAtRank }) {
+  return [...segments.values()].map((segment) => {
+    const x1 = segment.start[0] / quantization * scaleX;
+    const y1 = segment.start[1] / quantization * scaleY;
+    const x2 = segment.end[0] / quantization * scaleX;
+    const y2 = segment.end[1] / quantization * scaleY;
+    return `<path d="M${x1.toFixed(2)} ${y1.toFixed(2)}L${x2.toFixed(2)} ${y2.toFixed(2)}" stroke="${color}" stroke-width="${widthAtRank(segment.scaleRank).toFixed(2)}"/>`;
+  }).join('');
+}
+
+export async function renderTerrainPreview({
+  inputDir,
+  outputFile,
+  targetWidth = 1200,
+  transportDir = null,
+}) {
   const manifest = JSON.parse(await readFile(path.join(inputDir, 'content-manifest.json'), 'utf8'));
   const raw = Buffer.alloc(manifest.width * manifest.height * 3);
   for (const entry of manifest.chunks) {
@@ -32,42 +56,62 @@ export async function renderTerrainPreview({ inputDir, outputFile, targetWidth =
     }
   }
 
-  const uniqueSegments = new Map();
-  for (const entry of manifest.overlays) {
-    const overlay = JSON.parse(await readFile(path.join(inputDir, entry.path), 'utf8'));
-    for (const segment of overlay.segments) uniqueSegments.set(segment.id, segment);
-  }
+  const uniqueSegments = await readUniqueSegments(inputDir, manifest);
   const targetHeight = Math.max(1, Math.round(targetWidth * manifest.height / manifest.width));
   const scaleX = targetWidth / manifest.width;
   const scaleY = targetHeight / manifest.height;
   const quantization = manifest.riverRules.quantization;
-  const lines = [...uniqueSegments.values()].map((segment) => {
-    const x1 = segment.start[0] / quantization * scaleX;
-    const y1 = segment.start[1] / quantization * scaleY;
-    const x2 = segment.end[0] / quantization * scaleX;
-    const y2 = segment.end[1] / quantization * scaleY;
-    const width = Math.max(0.35, (6 - segment.scaleRank) * 0.14);
-    return `<path d="M${x1.toFixed(2)} ${y1.toFixed(2)}L${x2.toFixed(2)} ${y2.toFixed(2)}" stroke="#72b8d5" stroke-width="${width.toFixed(2)}"/>`;
-  }).join('');
-  const riverSvg = Buffer.from(`<svg width="${targetWidth}" height="${targetHeight}" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke-linecap="round">${lines}</g></svg>`);
+  const lines = segmentPaths({
+    segments: uniqueSegments,
+    quantization,
+    scaleX,
+    scaleY,
+    color: '#72b8d5',
+    widthAtRank: (scaleRank) => Math.max(0.35, (6 - scaleRank) * 0.14),
+  });
+  let railSegmentCount = 0;
+  let railLines = '';
+  if (transportDir) {
+    const transport = JSON.parse(await readFile(path.join(transportDir, 'content-manifest.json'), 'utf8'));
+    if (transport.width !== manifest.width || transport.height !== manifest.height) {
+      throw new Error('transport preview dimensions do not match terrain');
+    }
+    const railSegments = await readUniqueSegments(transportDir, transport);
+    railSegmentCount = railSegments.size;
+    railLines = segmentPaths({
+      segments: railSegments,
+      quantization: transport.railRules.quantization,
+      scaleX,
+      scaleY,
+      color: '#493d34',
+      widthAtRank: (scaleRank) => Math.max(0.45, (7 - scaleRank) * 0.18),
+    });
+  }
+  const riverSvg = Buffer.from(`<svg width="${targetWidth}" height="${targetHeight}" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke-linecap="round">${lines}${railLines}</g></svg>`);
 
   await sharp(raw, { raw: { width: manifest.width, height: manifest.height, channels: 3 } })
     .resize(targetWidth, targetHeight, { kernel: sharp.kernel.nearest })
     .composite([{ input: riverSvg }])
     .png()
     .toFile(outputFile);
-  return Object.freeze({ width: targetWidth, height: targetHeight, riverSegmentCount: uniqueSegments.size });
+  return Object.freeze({
+    width: targetWidth,
+    height: targetHeight,
+    riverSegmentCount: uniqueSegments.size,
+    railSegmentCount,
+  });
 }
 
 async function main() {
-  const [inputDir, outputFile, widthInput] = process.argv.slice(2);
+  const [inputDir, outputFile, widthInput, transportDir] = process.argv.slice(2);
   if (!inputDir || !outputFile) {
-    throw new Error('usage: node scripts/world/render-overworld-terrain-preview.mjs <input-dir> <output.png> [width]');
+    throw new Error('usage: node scripts/world/render-overworld-terrain-preview.mjs <input-dir> <output.png> [width] [transport-dir]');
   }
   const result = await renderTerrainPreview({
     inputDir: path.resolve(inputDir),
     outputFile: path.resolve(outputFile),
     targetWidth: widthInput === undefined ? 1200 : Number(widthInput),
+    transportDir: transportDir ? path.resolve(transportDir) : null,
   });
   process.stdout.write(`${JSON.stringify(result)}\n`);
 }
