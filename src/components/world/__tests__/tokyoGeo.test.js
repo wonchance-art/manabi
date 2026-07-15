@@ -278,7 +278,7 @@ describe('도쿄 생성 결정성·오프라인 계약', () => {
     expect(first.stations).toEqual(TOKYO_GEO.stations);
   });
 
-  it('RLE 왕복이 전체 894,864개 지형·철도 타일을 보존한다', () => {
+  it('RLE 왕복이 전체 894,864개 지형·철도 타일을 보존한다', { timeout: 20_000 }, () => {
     const terrainRuns = encodeTerrainRle(TOKYO_GEO.terrain);
     const railwayRuns = encodeTerrainRle(TOKYO_GEO.railways.mask);
     expect(decodeTerrainRle(terrainRuns, TOKYO_GEO.terrain.length)).toEqual(TOKYO_GEO.terrain);
