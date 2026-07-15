@@ -104,7 +104,6 @@ export function buildRiverOverlayArtifacts({ frame, geojson, rules }) {
           partIndex,
           segmentIndex,
           scaleRank,
-          name: typeof feature.properties.name === 'string' ? feature.properties.name : null,
           start,
           end,
         });
