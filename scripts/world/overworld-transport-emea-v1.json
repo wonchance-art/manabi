@@ -7,7 +7,7 @@
     "manifestPath": "scripts/world/overworld-region-emea-v1.json",
     "directory": "public/assets/overworld/europe-mediterranean-middle-east-terrain-preview-v1",
     "contentManifest": "content-manifest.json",
-    "contentManifestSha256": "4f0079e3ec0795bdca372c28127237df2e24bbe7aea7b1c0f40304518d7d1340",
+    "contentManifestSha256": "cf70d61acfee495a124b2c2c24a0d449ae0cc9527a915c43dae018e31adc7c8b",
     "contentManifestBytes": 8436
   },
   "railSource": {
