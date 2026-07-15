@@ -18,26 +18,57 @@ const tileIndex = ([x, y]) => y * TOKYO_GEO.meta.grid.w + x;
 
 const FIXED_TILES = Object.freeze({
   pois: {
-    'haneda-airport': [405, 644],
-    'shinagawa-station': [194, 206],
-    'shibuya-scramble': [25, 30],
-    'tokyo-tower': [228, 35],
-    'rainbow-bridge': [307, 157],
-    'odaiba-seaside-park': [378, 195],
-    'hamarikyu-gardens': [315, 30],
-    zojoji: [241, 43],
-    'ebisu-garden-place': [84, 128],
+    'haneda-airport': [563, 1062],
+    'shinagawa-station': [357, 619],
+    'shibuya-scramble': [183, 448],
+    'tokyo-tower': [386, 453],
+    'rainbow-bridge': [466, 575],
+    'odaiba-seaside-park': [537, 613],
+    'hamarikyu-gardens': [473, 447],
+    zojoji: [399, 461],
+    'ebisu-garden-place': [242, 545],
+    sensoji: [616, 143],
+    'tokyo-skytree': [681, 166],
+    'ueno-park': [508, 144],
+    'tokyo-station-marunouchi': [479, 327],
+    'ginza-4-chome': [481, 382],
+    'meiji-jingu': [182, 357],
+    'tokyo-metropolitan-government': [144, 283],
+    'ryogoku-kokugikan': [602, 239],
+    'nakameguro-meguro-river': [176, 533],
+    'kanda-myojin': [487, 211],
   },
   stations: {
-    shibuya: [30, 38],
-    ebisu: [68, 103],
-    meguro: [93, 172],
-    gotanda: [129, 215],
-    osaki: [151, 253],
-    shinagawa: [194, 206],
-    'takanawa-gateway': [206, 164],
-    tamachi: [238, 107],
-    hamamatsucho: [280, 55],
+    shibuya: [188, 456],
+    ebisu: [227, 521],
+    meguro: [252, 589],
+    gotanda: [287, 633],
+    osaki: [309, 671],
+    shinagawa: [357, 619],
+    'takanawa-gateway': [364, 582],
+    tamachi: [396, 525],
+    hamamatsucho: [439, 472],
+    shimbashi: [444, 411],
+    yurakucho: [466, 362],
+    tokyo: [482, 327],
+    kanda: [501, 268],
+    akihabara: [511, 231],
+    okachimachi: [518, 184],
+    ueno: [527, 148],
+    uguisudani: [533, 101],
+    nippori: [500, 66],
+    'nishi-nippori': [482, 43],
+    tabata: [460, 14],
+    komagome: [394, 19],
+    sugamo: [359, 36],
+    otsuka: [310, 46],
+    ikebukuro: [231, 54],
+    mejiro: [210, 104],
+    takadanobaba: [197, 152],
+    'shin-okubo': [182, 215],
+    shinjuku: [183, 277],
+    yoyogi: [190, 312],
+    harajuku: [191, 388],
   },
 });
 
@@ -68,14 +99,14 @@ function reachableFrom(terrain, startTile) {
 }
 
 describe('도쿄 실지형 데이터 계약', () => {
-  it('20m 고정 축척과 코어 bbox의 단일 격자를 고정한다', () => {
+  it('20m 고정 축척과 확장 bbox의 단일 격자를 고정한다', () => {
     expect(TOKYO_GEO.meta).toEqual(TOKYO_META);
-    expect(TOKYO_GEO.meta.bbox).toEqual([139.695, 35.545, 139.842, 35.665]);
-    expect(TOKYO_GEO.meta.grid).toEqual({ w: 666, h: 668 });
+    expect(TOKYO_GEO.meta.bbox).toEqual([139.66, 35.545, 139.842, 35.74]);
+    expect(TOKYO_GEO.meta.grid).toEqual({ w: 824, h: 1086 });
     expect(TOKYO_GEO.meta.metersPerTile).toBe(20);
     expect(TOKYO_GEO.meta.projection).toBe('webmercator');
     expect(TOKYO_GEO.terrain).toBeInstanceOf(Uint8Array);
-    expect(TOKYO_GEO.terrain.length).toBe(444_888);
+    expect(TOKYO_GEO.terrain.length).toBe(894_864);
   });
 
   it('위경도 → 보정 Web Mercator 투영이 결정적이며 방향을 보존한다', () => {
@@ -104,14 +135,22 @@ describe('도쿄 실지형 데이터 계약', () => {
     }
   });
 
-  it('필수 POI와 코어 구간 山手線 fast-travel 역을 포함한다', () => {
-    expect(TOKYO_GEO.pois.map((poi) => poi.id)).toEqual(expect.arrayContaining([
+  it('기존 9개 ID와 OSM 확인 신규 POI, 山手線 30역 전체를 포함한다', () => {
+    expect(TOKYO_GEO.pois.map((poi) => poi.id)).toEqual([
       'haneda-airport', 'shinagawa-station', 'shibuya-scramble', 'tokyo-tower',
-      'rainbow-bridge', 'odaiba-seaside-park',
-    ]));
+      'rainbow-bridge', 'odaiba-seaside-park', 'hamarikyu-gardens', 'zojoji',
+      'ebisu-garden-place', 'sensoji', 'tokyo-skytree', 'ueno-park',
+      'tokyo-station-marunouchi', 'ginza-4-chome', 'meiji-jingu',
+      'tokyo-metropolitan-government', 'ryogoku-kokugikan',
+      'nakameguro-meguro-river', 'kanda-myojin',
+    ]);
     expect(TOKYO_GEO.stations.map((station) => station.id)).toEqual([
       'shibuya', 'ebisu', 'meguro', 'gotanda', 'osaki', 'shinagawa',
       'takanawa-gateway', 'tamachi', 'hamamatsucho',
+      'shimbashi', 'yurakucho', 'tokyo', 'kanda', 'akihabara', 'okachimachi',
+      'ueno', 'uguisudani', 'nippori', 'nishi-nippori', 'tabata', 'komagome',
+      'sugamo', 'otsuka', 'ikebukuro', 'mejiro', 'takadanobaba', 'shin-okubo',
+      'shinjuku', 'yoyogi', 'harajuku',
     ]);
     expect(TOKYO_GEO.stations.every((station) => station.line === '山手線')).toBe(true);
   });
@@ -140,13 +179,13 @@ describe('도쿄 지형 충실도·도시 구조·철도', () => {
     ]) {
       expect(counts.get(code)).toBeGreaterThan(0);
     }
-    expect(counts.get(CITY_TILE.BUILDING)).toBeGreaterThan(35_000);
-    expect(counts.get(CITY_TILE.ROAD)).toBeGreaterThan(120_000);
-    expect(counts.get(CITY_TILE.ROAD) / TOKYO_GEO.terrain.length).toBeLessThan(0.4);
+    expect(counts.get(CITY_TILE.BUILDING)).toBeGreaterThan(80_000);
+    expect(counts.get(CITY_TILE.ROAD)).toBeGreaterThan(350_000);
+    expect(counts.get(CITY_TILE.ROAD) / TOKYO_GEO.terrain.length).toBeLessThan(0.5);
     expect(counts.get(CITY_TILE.SIDEWALK) / TOKYO_GEO.terrain.length).toBeLessThan(0.3);
     expect(TOKYO_GEO.railways.mask).toBeInstanceOf(Uint8Array);
     expect(TOKYO_GEO.railways.mask.length).toBe(TOKYO_GEO.terrain.length);
-    expect(TOKYO_GEO.railways.tileCount).toBe(20_154);
+    expect(TOKYO_GEO.railways.tileCount).toBe(53_798);
   });
 
   it('도쿄만·스미다/아라카와 하구 수역은 동·남측에 집중되고 서측 코어는 육지다', () => {
@@ -163,41 +202,42 @@ describe('도쿄 지형 충실도·도시 구조·철도', () => {
       }
       return water / cells;
     };
-    expect(waterRatio(Math.floor(w * 0.75), w, 0, h)).toBeGreaterThan(0.55);
-    expect(waterRatio(0, w, Math.floor(h * 0.75), h)).toBeGreaterThan(0.3);
+    expect(waterRatio(Math.floor(w * 0.75), w, 0, h)).toBeGreaterThan(0.35);
+    expect(waterRatio(0, w, Math.floor(h * 0.75), h)).toBeGreaterThan(0.25);
+    expect(waterRatio(Math.floor(w * 0.55), w, Math.floor(h * 0.55), h)).toBeGreaterThan(0.55);
     expect(waterRatio(0, Math.floor(w * 0.25), 0, h)).toBeLessThan(0.02);
   });
 
   it('OSM 건물·도로·해안·철도 스냅샷과 핵심 간선 계층을 고정한다', () => {
     expect(TOKYO_GEO.meta.source).toMatchObject({
-      buildingWays: 218_863,
+      buildingWays: 678_934,
       buildingRelations: 1_478,
-      roadWays: 47_994,
-      crossingNodes: 8_678,
+      roadWays: 148_558,
+      crossingNodes: 25_210,
       coastlineWays: 123,
-      riverWays: 138,
-      railwayWays: 2_208,
+      riverWays: 316,
+      railwayWays: 5_952,
       namedRoadWays: {
-        '第一京浜': 193,
+        '第一京浜': 198,
         '東京湾岸道路': 151,
-        '海岸通り': 108,
-        '桜田通り': 90,
-        '山手通り': 73,
-        '明治通り': 58,
+        '海岸通り': 112,
+        '桜田通り': 101,
+        '山手通り': 186,
+        '明治通り': 264,
       },
-      namedRailwayWays: { '山手線': 149, '東京モノレール': 52 },
+      namedRailwayWays: { '山手線': 395, '東京モノレール': 52 },
     });
     const snapshot = JSON.parse(fs.readFileSync(
-      new URL('../../../../scripts/data/tokyo-osm-v21.json', import.meta.url),
+      new URL('../../../../scripts/data/tokyo-osm-v22.json', import.meta.url),
       'utf8',
     ));
     expect(snapshot.hashes).toEqual({
-      building: '06f5a1cdfd218f7dad511a66dcf7ec76fb1e7d9e2d8b4b18acac970f0f2ae9bd',
-      road: 'df0afa1ecd69dfcc4a4acaf195f43ca706cc831c3be14c609fc0da39149df6c8',
-      water: 'd5ccb4c96ccbab6f793a6cb3e9cea4d7c2450be972157fbe9ac0e1672262e87c',
-      river: 'cc17badffbdd7d33c60a8e29b3b4811c5b0eaed64333aeda7605b15d91bada3a',
-      park: '3c63bd39ee6da95e18a49f0f7fda036f54e17ff4cf5638bd1e2108915080cd13',
-      railway: 'bd71b1a988d2d34f472b6f9115ff2d4dc00e792683f73d1c200a84ab9638e010',
+      building: 'e34bc99fa9895dc5f49a59df7d4161d15ba1a9bbb8e499f4404f55ad7e3d199f',
+      road: 'db10428fe3687a36eefd573289d9fc5da6bbeba7e6a7741afa90e877305ff5ba',
+      water: '5fd3ed37b51f68740458e1ece1fc73cb4b6819a838ae30e64223373232be1f16',
+      river: 'a72cb1ab1d97b2da4c4afdd813628ea189bdcc6478baca36c2e99c2801678266',
+      park: '47262f9d1f7cd4e2cf63354f3e8d0b00ea1d7138af7e92dde0a694e3107dc921',
+      railway: '4402851971f1f1bf389a9623e7d1ae53291160ce8ab5a9b53ab55917c4f26a89',
     });
   });
 
@@ -222,7 +262,7 @@ describe('도쿄 지형 충실도·도시 구조·철도', () => {
       walkable += 1;
       reached += seen[index];
     }
-    expect(walkable).toBe(266_627);
+    expect(walkable).toBe(655_988);
     expect(reached).toBe(walkable);
   });
 });
@@ -238,7 +278,7 @@ describe('도쿄 생성 결정성·오프라인 계약', () => {
     expect(first.stations).toEqual(TOKYO_GEO.stations);
   });
 
-  it('RLE 왕복이 전체 444,888개 지형·철도 타일을 보존한다', () => {
+  it('RLE 왕복이 전체 894,864개 지형·철도 타일을 보존한다', () => {
     const terrainRuns = encodeTerrainRle(TOKYO_GEO.terrain);
     const railwayRuns = encodeTerrainRle(TOKYO_GEO.railways.mask);
     expect(decodeTerrainRle(terrainRuns, TOKYO_GEO.terrain.length)).toEqual(TOKYO_GEO.terrain);
@@ -249,7 +289,7 @@ describe('도쿄 생성 결정성·오프라인 계약', () => {
   it('런타임 산출물·생성기·스냅샷에 네트워크 fetch가 없다', () => {
     const generatedSource = fs.readFileSync(new URL('../cities/tokyo.geo.js', import.meta.url), 'utf8');
     const generatorSource = fs.readFileSync(new URL('../../../../scripts/build-tokyo-geo.mjs', import.meta.url), 'utf8');
-    const snapshotSource = fs.readFileSync(new URL('../../../../scripts/data/tokyo-osm-v21.json', import.meta.url), 'utf8');
+    const snapshotSource = fs.readFileSync(new URL('../../../../scripts/data/tokyo-osm-v22.json', import.meta.url), 'utf8');
     expect(generatedSource).not.toMatch(/\bfetch\s*\(/);
     expect(generatorSource).not.toMatch(/\bfetch\s*\(/);
     expect(snapshotSource).not.toMatch(/\bfetch\s*\(/);
