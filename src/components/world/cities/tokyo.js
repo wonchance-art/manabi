@@ -41,7 +41,7 @@ export const CITY_NODES = [
     desc: '여러 방향의 보행 신호가 함께 열리는 「渋谷スクランブル交差点」(しぶや すくらんぶる こうさてん).',
   },
   {
-    id: 'tokyo-tower', kind: 'spot', name: '東京タワー', facade: 'sign',
+    id: 'tokyo-tower', kind: 'spot', name: '東京タワー', facade: 'tokyotower',
     tile: poiTile('tokyo-tower'), facing: 'down', noStamp: true,
     desc: '시바공원 곁에 선 전파탑 「東京タワー」(とうきょうたわー). 도쿄만 쪽 도심을 내려다봐요.',
   },
@@ -107,7 +107,16 @@ export const TRANSIT = [
 
 // 하네다·시부야·시나가와의 전용 렌더크래프트는 후속 작업으로 남긴다.
 // 현재는 CITY_NODES와 STATIONS의 공용 마커만 사용해 실제 장소를 중복 렌더하지 않는다.
-export const PROPS = [];
+// 렌더크래프트 프롭(Claude — #96 후속): 하네다 항공기·시부야 전광판·시나가와 승강장.
+//   전부 무브랜드(컴플라이언스), 노드·역과 ≥3타일 이격, geo 지형 코드 확인 좌표(에이프런 ROAD·
+//   스크램블 곁 SIDEWALK·시나가와 앞 PLAZA). 장식 전용(비상호작용).
+export const PROPS = [
+  { kind: 'airplane', tile: [409, 638] },   // 羽田 에이프런 주기 여객기
+  { kind: 'airplane', tile: [399, 636] },   // 羽田 제2 주기
+  { kind: 'bigscreen', tile: [29, 22] },    // 渋谷 스크램블 대형 전광판(무브랜드)
+  { kind: 'platform', tile: [190, 200] },   // 品川 승강장
+  { kind: 'platform', tile: [192, 200] },   // 品川 승강장(연속 홈)
+];
 
 export function buildTokyoGrid() {
   const grid = Uint8Array.from(TOKYO_GEO.terrain);

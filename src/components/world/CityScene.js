@@ -412,6 +412,42 @@ export function buildCityScene(Phaser, city, ctx) {
         g.fillStyle(C(0x4a5560), 1); g.fillRect(2, 14, 20, 2);        // 선로 자갈
         g.fillStyle(C(0xc9c3b4), 1); g.fillRect(3, 15, 18, 1);        // 레일
       }, 24, 16);
+      // ✈️ 여객기(하네다 에이프런 주기) — 흰 동체·수직 꼬리날개·엔진. 32×20, 무브랜드.
+      this.bakeTile('ct_prop_airplane', (g) => {
+        g.fillStyle(C(0xd9d2c0), 1); g.fillRect(4, 16, 24, 2);        // 지면 그림자
+        g.fillStyle(C(0xf2efe6), 1); g.fillRect(4, 9, 24, 5);         // 동체
+        g.fillStyle(C(0xc9c3b4), 1); g.fillRect(4, 12, 24, 1);        // 동체 하부 음영
+        g.fillStyle(C(0xf2efe6), 1); g.fillRect(24, 3, 3, 7);         // 수직 꼬리
+        g.fillStyle(C(0x3a6ea5), 1); g.fillRect(24, 3, 3, 3);         // 꼬리 파란 띠(무브랜드)
+        g.fillStyle(C(0x2a3340), 1); g.fillRect(5, 10, 3, 2);         // 조종석 창
+        g.fillStyle(C(0x8fb8d0), 1); for (let x = 10; x < 23; x += 3) g.fillRect(x, 10, 1, 1); // 객실 창렬
+        g.fillStyle(C(0xb9b2a4), 1); g.fillRect(12, 13, 8, 3);        // 주익(아래로)
+        g.fillStyle(C(0x4a5560), 1); g.fillRect(14, 15, 3, 3); g.fillRect(9, 14, 2, 3); // 엔진·기수 랜딩기어
+      }, 32, 20);
+      // 🖥️ 대형 전광판(시부야 스크램블) — 빌딩 코너의 빛나는 스크린. 24×24, 무브랜드.
+      this.bakeTile('ct_prop_bigscreen', (g) => {
+        g.fillStyle(C(0x8f887a), 1); g.fillRect(3, 2, 18, 22);        // 빌딩 몸통
+        g.fillStyle(C(0x6b6456), 1); g.fillRect(3, 22, 18, 2);
+        g.fillStyle(C(0x141414), 1); g.fillRect(4, 3, 16, 12);        // 스크린 베젤
+        g.fillStyle(C(0x3ec4e0), 1); g.fillRect(5, 4, 14, 10);        // 스크린 발광(청록)
+        g.fillStyle(C(0xf2c400), 1); g.fillRect(6, 6, 5, 2); g.fillRect(13, 9, 5, 2); // 화면 그래픽 힌트
+        g.fillStyle(C(0xf6edcf), 1); g.fillRect(6, 11, 9, 1);
+        g.fillStyle(C(0x8fb8d0), 1); for (const y of [17, 20]) for (const x of [5, 10, 15]) g.fillRect(x, y, 3, 2); // 하부 창
+      });
+      // 🗼 도쿄타워 — 붉은 격자 전파탑(위로 좁아지는 실루엣 + 백색 띠). 24×32, 파사드 마커.
+      this.bakeTile('ct_prop_tokyotower', (g) => {
+        g.fillStyle(C(0xc1352b), 1);
+        g.fillRect(11, 1, 2, 5);                                      // 첨탑 안테나
+        g.fillRect(10, 6, 4, 5);                                      // 상부 몸통
+        g.fillRect(9, 12, 6, 5);                                      // 중상부
+        g.fillRect(8, 18, 8, 5);                                      // 중하부
+        g.fillRect(6, 24, 12, 6);                                     // 하부(다리 벌어짐)
+        g.fillStyle(C(0xf6edcf), 1); g.fillRect(9, 11, 6, 1); g.fillRect(8, 17, 8, 1); // 백색 띠
+        g.fillStyle(C(0xf2efe6), 1); g.fillRect(9, 13, 6, 2);         // 대전망대(흰 박스)
+        g.fillStyle(C(0x8a221b), 1);                                  // 격자 음영
+        g.fillRect(7, 26, 1, 4); g.fillRect(16, 26, 1, 4); g.fillRect(11, 19, 2, 3);
+        g.fillStyle(C(0x2a1e14), 1); g.fillRect(5, 30, 5, 2); g.fillRect(14, 30, 5, 2); // 다리 발치
+      }, 24, 32);
 
       // ── 캐릭터(플레이어 ct_pc · 원격 피어 ct_pr) + 펫 + NPC 마커 ──
       this.bakeCharSet('ct_pc', tonePalette(avatarPalette(ctx.avatarRef?.current), this.mode));
