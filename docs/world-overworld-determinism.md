@@ -184,6 +184,8 @@ node scripts/world/build-overworld-region.mjs \
   `SHA-256=bb854a900ecbd3b408df46d5e16e3e0f974ba55993f9d8b5c26e855273c0905a`다.
   `scalerank≤5`만 선택하고 단순화 없이 전역 타일 1/1024 정수 좌표로 한 번 양자화한다. 각 256타일
   청크에는 1타일 halo를 포함하며, 경계를 공유하는 파일은 같은 전역 endpoint를 가진다.
+- 원본 수계 지명은 민감지역 중립 정책 검수 전 산출물에 기록하지 않는다. 역추적에는 이름 대신
+  `sourceFeatureIndex`와 결정적 route/segment ID만 사용한다.
 - 체크인 산출물은 `public/assets/overworld/asia-pacific-terrain-preview-v1/`의 121개 terrain 청크,
   32개 river overlay, 보고서와 content manifest다. 모든 collision/view-only 비트는 계속 `1`이다.
 
