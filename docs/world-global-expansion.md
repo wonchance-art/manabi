@@ -64,7 +64,7 @@
    바이너리 로드.
 4. **선행 공사**: 오버월드 청크 런타임 완성 전 ① 본생성 금지. (현 WorldScene 은 전체 격자를
    Phaser Tilemap 으로 변환 — 대형화 불가 구조. CityScene 청크 RT 경험 재사용 + 비트패킹·충돌·
-   노드 인덱스 신설.)
+   노드 인덱스 신설.) 설계 초안: `docs/world-overworld-chunk-runtime.md`.
 5. **래스터 규칙**: 타일 4×4 supersampling. 소도서는 전역 임계 제거 금지(면적 임계+whitelist,
    원양은 view-only 전환). 강은 scale rank 상위만. 국경은 충돌과 완전 분리.
 6. **마이그레이션**(기존 한일맵): 노드 ID 불변 · 전 노드에 lon/lat+regionId 백필 · legacy 한일 씬과
@@ -79,7 +79,7 @@
 9. **결정성 계약**(§6.4 오버월드판): 입력 manifest(URL·버전·SHA-256·라이선스) · 투영 ID·파라미터 ·
    bbox·표본 위치·반올림·피처 정렬·supersampling 위치·레이어 우선순위 고정 · 동일 입력→전 파일·청크
    SHA byte-identical · degraded 시 출시 미기록 · 인접 청크 경계 일치(철도·강·해안 연속) · 전역
-   content hash manifest.
+   content hash manifest. 실행 가능한 초안: `docs/world-overworld-determinism.md`.
 10. **멀티**: "화면에 보이는 사람만 동기화"(오너 확정). 현 단일 채널 유지, 대량 접속 시 셀 단위 AOI
     구독으로 승격(후순위 백로그 — 셀 크기·hysteresis 는 그때 Codex 설계).
 11. **실행 순서**: 투영 스파이크 → 한일 범위 **수직 슬라이스**(새 파이프라인+청크 런타임) → ① 지형
@@ -88,6 +88,9 @@
     ② 지형 생성은 수직 슬라이스 후 ①과 병렬 가능.
 
 ## 4. OPEN — 투영 (스파이크 판정 대기 · 2~3일)
+
+> Codex 측정 보고서: `docs/world-projection-spike.md`. ①은 등장방형+screen-axis 권고, ②는 수치 1위
+> LAEA의 방향 하드 게이트가 남아 있어 미확정이다. Claude 1p 의견 후 일치 시 확정, 불일치 시 오너 판정.
 
 - 후보 3종, **지역별 상이 투영 허용**: 등장방형(표준위도) / Sinusoidal / LAEA.
 - **사전 가설(양측 수렴)**: ①=등장방형(그리드 의미론 완전 — 위=북·전단 0; 고위도 팽창은 저밀도
