@@ -56,10 +56,7 @@ import { buildAirportScene } from './airportScene';
 // 🏙️ 도시 정밀맵(계층형 맵) — CityScene 은 1개, cityId 로 파라미터화. 도시 추가 = cities/<id>.js 1개.
 //   도시 데이터는 이 청크(GameCanvas 는 next/dynamic ssr:false) 안에서만 로드된다 — /world First Load JS 무영향.
 import { buildCityScene } from './CityScene';
-import FUKUOKA from './cities/fukuoka';
-import TOKYO from './cities/tokyo';
-import OSAKA from './cities/osaka';
-import KYOTO from './cities/kyoto';
+import { CITY_DATA } from './cities/index.js';
 import { directTransitDestinations } from '../../lib/world/transit';
 import { formatWorldTime, WORLD_TIME_SCALE } from '../../lib/world/worldClock';
 import { cityWeatherAt, worldEventAt } from '../../lib/world/worldLife';
@@ -85,8 +82,6 @@ const READING_TEXT_ID = 'n5-tokyo-01';
 const STORY_TEXT = (scene1Text && scene1Text.id === READING_TEXT_ID) ? scene1Text : null;
 const STORY_STEPS = STORY_TEXT ? buildStoryScript(STORY_TEXT) : [];
 
-// 🏙️ 도시 정밀맵 레지스트리 — 도시 추가 = 여기 한 줄 + cities/<id>.js. 씬 키 'city:<id>'.
-const CITY_DATA = { fukuoka: FUKUOKA, tokyo: TOKYO, osaka: OSAKA, kyoto: KYOTO };
 const CITY_FADE_MS = 260; // 도시 진입/이탈 페이드(페리와 동일 감성 · 조작 잠금)
 const formatTransitMinute = (totalGameMinutes) => {
   const minute = ((Math.floor(totalGameMinutes) % 1440) + 1440) % 1440;
