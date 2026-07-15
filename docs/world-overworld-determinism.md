@@ -120,6 +120,11 @@ manifest를 대신하지 않는다.
 6. 누락 원본·잘못된 해시·미지원 manifest 필드가 성공으로 종료되지 않아야 한다.
 7. 본생성 manifest와 content manifest의 SHA를 PR에 기록한다.
 
+한일 수직 슬라이스는 `scripts/world/build-overworld-fixture.mjs`가 위 포맷의 4개 `.owc`와
+`content-manifest.json`을 생성한다. manifest 청크 항목은 상대 경로순이며 생성 시각·호스트명·절대
+경로가 없다. `--check`는 재생성 결과와 체크인 바이트를 비교하고, 전체 유효 셀은 기존 playable 격자와,
+bbox 밖은 `sea/blocked/view-only` 패딩과 대조한다. 이 fixture는 본생성 또는 노드 마이그레이션이 아니다.
+
 ## 9. 변경 관리
 
 입력 버전, 투영 파라미터, 클래스 표, 반올림, 우선순위, 오버라이드 중 하나라도 바뀌면 전체 content hash를

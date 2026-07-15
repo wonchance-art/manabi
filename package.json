@@ -7,13 +7,14 @@
     "node": "20.x"
   },
   "scripts": {
-    "predev": "node scripts/copy-pdf-worker.mjs",
+    "predev": "node scripts/world/build-overworld-fixture.mjs --check && node scripts/copy-pdf-worker.mjs",
     "dev": "next dev",
-    "prebuild": "node scripts/check-content.mjs && node scripts/check-reading.mjs && node scripts/update-sw-version.mjs && node scripts/copy-pdf-worker.mjs",
+    "prebuild": "node scripts/check-content.mjs && node scripts/check-reading.mjs && node scripts/world/build-overworld-fixture.mjs --check && node scripts/update-sw-version.mjs && node scripts/copy-pdf-worker.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
     "check:reading": "node scripts/check-reading.mjs",
+    "check:overworld-fixture": "node scripts/world/build-overworld-fixture.mjs --check",
     "test": "vitest run",
     "e2e": "node --test --test-concurrency=1 e2e/smoke.e2e.mjs"
   },

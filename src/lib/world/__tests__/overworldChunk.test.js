@@ -8,6 +8,7 @@ import {
   OVERWORLD_VIEW_ONLY_BYTES,
   decodeOverworldChunkV1,
 } from '../overworldChunk.js';
+import { encodeOverworldChunkV1 } from '../overworldChunkEncoder.js';
 import {
   TINY_CHUNK_COORDINATE,
   TINY_CHUNK_PROJECTION_HASH,
@@ -17,6 +18,27 @@ import {
 } from './fixtures/overworldChunkV1Tiny.js';
 
 describe('오버월드 청크 포맷 v1', () => {
+  it('canonical encoder가 동일한 헤더·nibble·LSB-first 바이트를 재현한다', () => {
+    const cells = new Map([
+      ['2,1', { surface: 3, collision: 0, viewOnly: 0 }],
+      ['3,1', { surface: 12, collision: 1, viewOnly: 0 }],
+      ['4,2', { surface: 5, collision: 0, viewOnly: 1 }],
+      ['5,4', { surface: 15, collision: 0, viewOnly: 0 }],
+    ]);
+    const read = (x, y) => cells.get(`${x},${y}`);
+    const encoded = encodeOverworldChunkV1({
+      schemaVersion: 1,
+      ...TINY_CHUNK_COORDINATE,
+      validBounds: TINY_CHUNK_VALID_BOUNDS,
+      regionHash: TINY_CHUNK_REGION_HASH,
+      projectionManifestHash: TINY_CHUNK_PROJECTION_HASH,
+      surfaceAt: (x, y) => read(x, y)?.surface ?? 0,
+      collisionAt: (x, y) => read(x, y)?.collision ?? 1,
+      viewOnlyAt: (x, y) => read(x, y)?.viewOnly ?? 1,
+    });
+    expect(encoded).toEqual(buildTinyOverworldChunkV1());
+  });
+
   it('96바이트 헤더와 canonical 4+1+1bit payload를 읽는다', () => {
     const decoded = decodeOverworldChunkV1(buildTinyOverworldChunkV1());
     expect(decoded.header).toEqual({
@@ -108,5 +130,22 @@ describe('오버월드 청크 포맷 v1', () => {
     expect(() => decoded.surfaceAt(-1, 0)).toThrow(/x must be between/);
     expect(() => decoded.collisionAt(0, 256)).toThrow(/y must be between/);
     expect(() => decoded.viewOnlyAt(1.5, 0)).toThrow(/x must be an integer/);
+  });
+
+  it('encoder가 범위·해시·레이어 값을 fail-closed 검증한다', () => {
+    const valid = {
+      cx: 0,
+      cy: 0,
+      validBounds: { x0: 0, y0: 0, x1: 1, y1: 1 },
+      regionHash: TINY_CHUNK_REGION_HASH,
+      projectionManifestHash: TINY_CHUNK_PROJECTION_HASH,
+      surfaceAt: () => 0,
+      collisionAt: () => 0,
+    };
+    expect(() => encodeOverworldChunkV1({ ...valid, validBounds: { x0: 0, y0: 0, x1: 257, y1: 1 } }))
+      .toThrow(/validBounds/);
+    expect(() => encodeOverworldChunkV1({ ...valid, regionHash: 'ABC' })).toThrow(/regionHash/);
+    expect(() => encodeOverworldChunkV1({ ...valid, surfaceAt: () => 16 })).toThrow(/surfaceAt/);
+    expect(() => encodeOverworldChunkV1({ ...valid, collisionAt: () => 2 })).toThrow(/collisionAt/);
   });
 });

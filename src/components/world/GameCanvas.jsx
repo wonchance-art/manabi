@@ -49,10 +49,14 @@ import { WORLD_NODES, getNode, buildMinimap } from './worldNodes';
 // 🏙️ 광장 SEA→LAND 메꿈(순수 함수·단일 진실원 — 런타임·관리자 뷰·미니맵 공통).
 import { buildPlayableGrid, PLAZA_R } from '../../lib/world/mapGeo';
 import {
-  createLegacyOverworldChunkLoader,
   PhaserOverworldOverlayLayer,
   PhaserOverworldPageRenderer,
 } from './overworldPageRenderer';
+import { OverworldChunkLoader } from '../../lib/world/overworldChunkLoader';
+import {
+  OVERWORLD_FIXTURE_BASE_URL,
+  OVERWORLD_FIXTURE_MANIFEST,
+} from '../../lib/world/overworldFixture';
 import { activeOverworldVehiclesAt, OVERWORLD_ROUTES } from './overworldTransit';
 // 🧭 재접속 스폰 좌표 검증(순수) — 저장된 타일이 맵 안·보행 가능일 때만 사용, 아니면 서울 폴백.
 // cityRedirectScene: 초기 부팅 시 저장 씬이 'city:<id>' 면 도시맵 직행 판별(순수 — Codex P1-1 회귀 게이트).
@@ -1251,19 +1255,18 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           this.ferryBoat = null;    // 항해 중 캐릭터 아래 배 스프라이트
           this.decor = new Map();   // "tx,ty" → { kind, imgs:[] } — 카메라 주변만 생성/회수(상한 DECOR_CAP)
 
-          // ── 지형 렌더 페이지 ── 기존 448×384 격자를 256 저장 청크 계약으로 감싼 뒤,
-          // 카메라 주변 32×32 RenderTexture만 굽는다. 충돌·노드 좌표는 기존 격자를 계속 사용한다.
+          // ── 지형 렌더 페이지 ── canonical .owc 256 저장 청크를 검증해 읽고,
+          // 카메라 주변 32×32 RenderTexture만 굽는다. 충돌·노드 좌표는 마이그레이션 게이트 전까지
+          // 기존 격자를 계속 사용하며, fixture 동일성 테스트가 두 표현의 셀 단위 일치를 보장한다.
           this.waterPool = [];
           this.waterSignature = null;
-          this.terrainLoader = createLegacyOverworldChunkLoader({
-            width: COLS,
-            height: ROWS,
-            surfaceAt: (tx, ty) => this.tileCode(tx, ty),
-            collisionAt: (tx, ty) => isBlocked(this.tileCode(tx, ty)),
+          this.terrainLoader = new OverworldChunkLoader({
+            baseUrl: OVERWORLD_FIXTURE_BASE_URL,
+            manifest: OVERWORLD_FIXTURE_MANIFEST,
           });
           this.terrainPages = new PhaserOverworldPageRenderer(this, {
             loader: this.terrainLoader,
-            textureKeyAt: ({ globalX, globalY }) => this.terrainTexKey(globalX, globalY),
+            textureKeyAt: ({ globalX, globalY, surface }) => this.terrainTexKey(globalX, globalY, surface),
             fallbackTextureKey: 't_water0',
             tilePixels: TEX,
             worldScale: TSCALE,
@@ -1282,7 +1285,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
             this.terrainPages = null;
             this.overworldOverlay?.destroy();
             this.overworldOverlay = null;
-            this.terrainLoader?.clear();
+            this.terrainLoader?.destroy();
             this.terrainLoader = null;
             for (const image of this.waterPool) image.destroy();
             this.waterPool.length = 0;
@@ -1484,8 +1487,8 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         }
 
         // 전역 타일 → 절차 텍스처. 페이지 경계에서도 전역 이웃을 조회해 해안·강 마스크가 이어진다.
-        terrainTexKey(tx, ty) {
-          const c = this.tileCode(tx, ty);
+        terrainTexKey(tx, ty, surface = this.tileCode(tx, ty)) {
+          const c = surface;
           if (c === TERRAIN.RIVER) {
             const waterNeighbor = (x, y) => {
               const code = this.tileCode(x, y);
