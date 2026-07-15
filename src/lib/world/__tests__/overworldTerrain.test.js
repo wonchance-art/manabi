@@ -188,7 +188,11 @@ describe('오버월드 terrain 생성', () => {
     expect(chunk.surfaceAt(2, 0)).toBe(3);
     expect(chunk.collisionAt(1, 0)).toBe(1);
     expect(chunk.viewOnlyAt(1, 0)).toBe(1);
-    expect(first.some(({ path }) => path.startsWith('rivers/'))).toBe(true);
+    const riverDocument = JSON.parse(new TextDecoder().decode(
+      first.find(({ path }) => path.startsWith('rivers/')).bytes,
+    ));
+    expect(riverDocument.segments.length).toBeGreaterThan(0);
+    expect(riverDocument.segments.every((segment) => !Object.hasOwn(segment, 'name'))).toBe(true);
   });
 
   it('256 청크 경계 양쪽 river 파일이 같은 전역 양자화 endpoint를 가진다', () => {
@@ -223,6 +227,8 @@ describe('오버월드 terrain 생성', () => {
     ));
     expect(left.segments[0].start).toEqual(right.segments[0].start);
     expect(left.segments[0].end).toEqual(right.segments[0].end);
+    expect(Object.hasOwn(left.segments[0], 'name')).toBe(false);
+    expect(Object.hasOwn(right.segments[0], 'name')).toBe(false);
   });
 
   it('체크인된 지역 ① terrain 121청크·강 overlay·대표 산지를 검증한다', () => {
@@ -247,6 +253,10 @@ describe('오버월드 terrain 생성', () => {
       const bytes = readFileSync(path.join(CHECKED_IN_TERRAIN_DIR, entry.path));
       expect(bytes.byteLength, entry.path).toBe(entry.bytes);
       expect(sha256(bytes), entry.path).toBe(entry.sha256);
+      if (entry.path.startsWith('rivers/')) {
+        const document = JSON.parse(bytes.toString('utf8'));
+        expect(document.segments.every((segment) => !Object.hasOwn(segment, 'name')), entry.path).toBe(true);
+      }
     }
 
     const surfaceAtGeo = (lon, lat) => {

@@ -37,6 +37,12 @@ describe('EMEA equirectangular standard-latitude sweep', () => {
       .toThrow(/exactly seven/);
     expect(() => normalizeProjectionSweepManifest({ ...manifest, axisModes: ['geo-axis'] }))
       .toThrow(/axisModes/);
+    expect(() => normalizeProjectionSweepManifest({
+      ...manifest,
+      fixtures: manifest.fixtures.map((fixture, index) => (
+        index === 0 ? { ...fixture, weight: 2 } : fixture
+      )),
+    })).toThrow(/must remain 1/);
   });
 
   it('등장방형은 screen·geo 방향 오차를 0으로 유지한다', () => {

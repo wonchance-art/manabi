@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -210,9 +210,7 @@ describe('overworld playability preview', () => {
     expect(chunk.cellAt(255, 255)).toMatchObject({ collision: 1, viewOnly: 1 });
   });
 
-  it.runIf(existsSync(path.join(CHECKED_IN_DIR, 'content-manifest.json')))(
-    '체크인된 지역 ① 이동 마스크·대표 섬 정책을 검증한다',
-    () => {
+  it('체크인된 지역 ① 이동 마스크·대표 섬 정책을 검증한다', () => {
     const base = JSON.parse(readFileSync(path.join(
       REPO_ROOT,
       'scripts/world/overworld-region-apac-v1.json',
@@ -248,12 +246,9 @@ describe('overworld playability preview', () => {
     expect(cellAtGeo(126.53, 33.36)).toMatchObject({ collision: 0, viewOnly: 0 });
     expect(cellAtTile(guam.tileX, guam.tileY)).toMatchObject({ collision: 1, viewOnly: 1 });
     expect(cellAtGeo(150, 0)).toMatchObject({ surface: 0, collision: 1, viewOnly: 0 });
-    },
-  );
+  });
 
-  it.runIf(existsSync(path.join(CHECKED_IN_EMEA_DIR, 'content-manifest.json')))(
-    '체크인된 지역 ② 이동 마스크·대표 섬 정책을 검증한다',
-    () => {
+  it('체크인된 지역 ② 이동 마스크·대표 섬 정책을 검증한다', () => {
     const base = JSON.parse(readFileSync(path.join(
       REPO_ROOT,
       'scripts/world/overworld-region-emea-v1.json',
@@ -297,6 +292,5 @@ describe('overworld playability preview', () => {
     expect(cellAtGeo(2.99, 39.6)).toMatchObject({ collision: 0, viewOnly: 0 });
     expect(cellAtTile(faroe.tileX, faroe.tileY)).toMatchObject({ collision: 1, viewOnly: 1 });
     expect(cellAtGeo(15, 35)).toMatchObject({ surface: 0, collision: 1, viewOnly: 0 });
-    },
-  );
+  });
 });

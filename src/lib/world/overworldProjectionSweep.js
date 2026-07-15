@@ -124,6 +124,9 @@ export function normalizeProjectionSweepManifest(manifest) {
       throw new RangeError(`${label}.bbox must stay inside the region bbox`);
     }
     assertFinite(fixture.weight, `${label}.weight`, { positive: true });
+    if (fixture.weight !== 1) {
+      throw new Error(`${label}.weight must remain 1 for the uniform seven-fixture score`);
+    }
     return Object.freeze({ ...fixture, bbox: fixtureBbox });
   });
   if (new Set(fixtures.map(({ id }) => id)).size !== fixtures.length) {
