@@ -636,7 +636,7 @@ export function boatFrameRows() { return BOAT_ROWS; }
 // 픽셀맵 무결성(24행×24열·정의된 색문자만)은 sprites.test 로 검증한다.
 export const NPC_W = 24;
 export const NPC_H = 24;
-export const NPC_KEYS = ['ramen', 'shrine', 'konbini', 'izakaya'];
+export const NPC_KEYS = ['ramen', 'shrine', 'konbini', 'izakaya', 'ekiin', 'menzei'];
 
 export const NPC_PAL = {
   // O=윤곽 R=적(노렌/지붕) r=적 음영 C=크림 W=나무카운터 w=나무 음영 Y=초롱 빛 H=머리(검) S=피부 K=콧수염 B=셔츠 N=그릇
@@ -647,6 +647,10 @@ export const NPC_PAL = {
   konbini: { O: 0x2a2a2a, B: 0x2f6fb0, C: 0xf6edcf, G: 0xbfe3f2, Y: 0xfff0a8, S: 0xf1c99a, H: 0x241a12, V: 0x39a06a, R: 0xc14b38, N: 0xcfd6df, W: 0xb07a3e, w: 0x6f4420 },
   // O=윤곽 R=붉은 초롱(提灯)·하치마키 C=초롱 종이띠 D=남색 노렌 Y=초롱 온광 S=피부 H=머리·콧수염 A=쪽빛 앞치마 N=술병 W=카운터목 w=목 음영
   izakaya: { O: 0x2a1e14, R: 0xd23b2e, C: 0xf6edcf, D: 0x27324a, Y: 0xffcf6a, S: 0xf1c99a, H: 0x241a12, A: 0x3a4a6a, N: 0xcfd6df, W: 0xb07a3e, w: 0x6f4420 },
+  // O=윤곽 C=크림 사인·플랫폼 G=사인 초록 라인(무문자) W=기둥목 w=목 음영 B=네이비 제복·모자 S=피부 K=입 음영 Y=배지·점자블록
+  ekiin: { O: 0x241a12, C: 0xf6edcf, G: 0x3f9a5f, W: 0xb07a3e, w: 0x6f4420, B: 0x2f4468, S: 0xf1c99a, K: 0xc98f62, Y: 0xf2c14e },
+  // O=윤곽 C=크림 간판·카운터 R=빨간 사각(면세 간판 모티프·무문자)·소책자 G=유리 Y=실내 조명 S=피부 H=머리 K=입 음영 B=셔츠 N=진열 W=카운터목 w=목 음영
+  menzei: { O: 0x2a2a2a, C: 0xf6edcf, R: 0xc14b38, G: 0xbfe3f2, Y: 0xfff0a8, S: 0xf1c99a, H: 0x241a12, K: 0xc98f62, B: 0x3a6ea5, N: 0xcfd6df, W: 0xb07a3e, w: 0x6f4420 },
 };
 
 const NPC_ART = {
@@ -756,6 +760,62 @@ const NPC_ART = {
     'OWWNNWWWWWNNWWWWWNNWWWWO',
     'OwwwwwwwwwwwwwwwwwwwwwwO',
     'OwwwwwwwwwwwwwwwwwwwwwwO',
+    'OwwwwwwwwwwwwwwwwwwwwwwO',
+    '.w....................w.',
+    '.w....................w.',
+  ],
+  // 역 플랫폼: 크림 사인(초록 라인, 무문자) → 좌우 목조 기둥 사이 네이비 제복 역무원(배지 Y) →
+  // 점자블록(Y)이 깔린 플랫폼 바닥. 실제 노선 컬러/로고 재현 없음 — 색 블록만.
+  ekiin: [
+    '........................',
+    '.OOOOOOOOOOOOOOOOOOOOOO.',
+    '.OCCCCCCCCCCCCCCCCCCCCO.',
+    '.OCGGGGGGGGGGGGGGGGGGCO.',
+    '.OCCCCCCCCCCCCCCCCCCCCO.',
+    '.OOOOOOOOOOOOOOOOOOOOOO.',
+    '...OWWO..........OWWO...',
+    '...OWWO.OBBBBBBO.OWWO...',
+    '...OWWO.OOOOOOOO.OWWO...',
+    '...OWWO.OSSSSSSO.OWWO...',
+    '...OWWO.OSOSSOSO.OWWO...',
+    '...OWWO.OSSKKSSO.OWWO...',
+    '...OWWO.OBBBBBBO.OWWO...',
+    '...OWWO.OBYBBBBO.OWWO...',
+    '...OWWO.OBBBBBBO.OWWO...',
+    '...OWWO.OBBBBBBO.OWWO...',
+    '...OWWO.OSBBBBSO.OWWO...',
+    '...OwwO.OBBBBBBO.OwwO...',
+    '.OOOOOOOOOOOOOOOOOOOOOO.',
+    '.OCCCCCCCCCCCCCCCCCCCCO.',
+    '.OCYYCCCCYYCCCCYYCCCCCO.',
+    '.OwwwwwwwwwwwwwwwwwwwwO.',
+    '.w....................w.',
+    '.w....................w.',
+  ],
+  // 면세 카운터: 크림 간판의 빨간 사각 두 개(면세 간판 모티프, 문자 없음) → 유리창·조명 →
+  // 스카프(R) 두른 카운터 직원 → 진열(N)과 빨간 소책자(RR) 얹힌 크림 카운터.
+  menzei: [
+    'OOOOOOOOOOOOOOOOOOOOOOOO',
+    'OCCCCCCCCCCCCCCCCCCCCCCO',
+    'OCRRRRCCCCCCCCCCCRRRRCCO',
+    'OCCCCCCCCCCCCCCCCCCCCCCO',
+    'OOOOOOOOOOOOOOOOOOOOOOOO',
+    'OGGGGGGGGGGGGGGGGGGGGGGO',
+    'OGGYYGGGGGGGGGGGGGGYYGGO',
+    'OGGGGGGGGGGGGGGGGGGGGGGO',
+    'OGGGGGGGOHHHHHHOGGGGGGGO',
+    'OGGGGGGGOHSSSSHOGGGGGGGO',
+    'OGGGGGGGOSOSSOSOGGGGGGGO',
+    'OGGGGGGGOSSKKSSOGGGGGGGO',
+    'OGGGGGGGOBBBBBBOGGGGGGGO',
+    'OGGGGGGGOBRRRRBOGGGGGGGO',
+    'OGGGGGGGOBBBBBBOGGGGGGGO',
+    'OGGGGGGGOBBBBBBOGGGGGGGO',
+    'OOOOOOOOOOOOOOOOOOOOOOOO',
+    'OCCCCCCCCCCCCCCCCCCCCCCO',
+    'OCCNNCCCCRRCCCCCNNCCCCCO',
+    'OWWWWWWWWWWWWWWWWWWWWWWO',
+    'OWWWWWWWWWWWWWWWWWWWWWWO',
     'OwwwwwwwwwwwwwwwwwwwwwwO',
     '.w....................w.',
     '.w....................w.',
