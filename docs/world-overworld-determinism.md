@@ -67,7 +67,21 @@ manifest를 대신하지 않는다.
 
 ## 6. 청크 바이트 포맷 v1 제안
 
-정식 확정 전까지 소비 코드에 연결하지 않는다.
+수직 슬라이스 디코더의 v1 헤더는 96바이트 little-endian으로 고정한다.
+
+| offset | bytes | field |
+|---:|---:|---|
+| 0 | 4 | magic `MOWC` |
+| 4 | 2 | format version (`1`) |
+| 6 | 2 | schema version |
+| 8 | 2 | header bytes (`96`) |
+| 10 | 2 | flags (`0`, 미지원 비트는 거부) |
+| 12 | 4 | signed `cx` |
+| 16 | 4 | signed `cy` |
+| 20 | 8 | valid half-open bbox `x0,y0,x1,y1` (`uint16` ×4) |
+| 28 | 4 | payload bytes (`49,152`) |
+| 32 | 32 | region ID SHA-256 |
+| 64 | 32 | projection manifest SHA-256 |
 
 - 파일명: `<region>/<cx>/<cy>.owc`, `cx`·`cy`는 signed decimal.
 - byte order: little-endian, 전체 저장 청크는 256×256 고정.
@@ -77,6 +91,7 @@ manifest를 대신하지 않는다.
 - view-only payload: 행 우선 LSB-first, 8,192 bytes.
 - full chunk canonical payload는 49,152 bytes다. 지역 bbox 밖 패딩은 표면=manifest의 바다 ID,
   충돌=1, view-only=1로 고정한다.
+- 전체 canonical 파일은 헤더 포함 49,248 bytes이며 trailing bytes를 허용하지 않는다.
 - canonical 파일은 압축하지 않는다. CDN 전송 압축은 가능하지만 content hash 대상은 원본 `.owc`다.
 
 희소 오버레이와 노드 인덱스는 청크별 canonical JSON 또는 후속 고정 바이너리 포맷으로 분리한다. JSON을
