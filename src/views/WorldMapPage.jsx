@@ -1,10 +1,7 @@
 'use client';
 
-// 🗺️ 전체 맵 뷰어 (관리자 전용, 실험) — 학습 월드(WorldPage/GameCanvas)의 448×384 도트 맵을
-// 캔버스 1장에 통짜로 그려 줌·팬으로 훑어보는 도구. 노드 배치·콘텐츠 마운트 계획용이라
-// 게임 로직은 전혀 배선하지 않는다 — mapData.js는 읽기 전용 상수/함수로만 참조한다.
-//
-// worldNodes.js(장소 노드 데이터)가 입고되어 정적 import 로 배선한다 — 노드 마커는 그 좌표를 쓴다.
+// 🗺️ 전체 맵 뷰어 (관리자 전용, 실험) — 전국 월드와 도시 정밀맵을 한 화면에서 골라
+// 줌·팬으로 훑어보는 도구. 노드 배치·콘텐츠 마운트 계획용이며 게임 로직은 배선하지 않는다.
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -14,7 +11,9 @@ import Spinner from '../components/Spinner';
 import Button from '../components/Button';
 import { MAP_W, MAP_H, decodeMap, TERRAIN } from '../components/world/mapData';
 import { WORLD_NODES } from '../components/world/worldNodes';
+import { CITY_MAPS } from '../components/world/cities/index.js';
 import { unproject, isCoastTile, buildPlayableGrid } from '../lib/world/mapGeo';
+import { cityMapMarkers, worldMapMarkers } from '../lib/world/mapViewer';
 
 // 타일당 화면 px — 줌 4단계(×1~×4, 2px 기준 정수 배).
 const ZOOM_LEVELS = [2, 4, 6, 8];
@@ -28,15 +27,48 @@ const COLORS = {
   mountain: '#3a5c32', peak: '#c8cdd4', plain: '#9fc85a',
 };
 
+const CITY_COLORS = {
+  0: '#373c46', 1: '#d5cbb5', 2: '#e6e0d2', 3: '#d8c48c', 4: '#78b45a',
+  5: '#967850', 6: '#8c643c', 7: '#5ac85a', 8: '#3c82aa', 9: '#524e4a',
+  10: '#6ea550', 11: '#3f7a6a', 12: '#e8d6a6',
+};
+
+const WORLD_LEGEND = [
+  [COLORS.land, '육지'], [COLORS.coast, '해안'], [COLORS.sea, '바다'],
+  [COLORS.river, '강'], [COLORS.lake, '호수'], [COLORS.fence, 'DMZ'],
+  [COLORS.bridge, '다리'], [COLORS.mountain, '산'], [COLORS.peak, '설산'],
+  [COLORS.plain, '평야'],
+];
+
+const CITY_LEGEND = [
+  [CITY_COLORS[0], '도로'], [CITY_COLORS[1], '보도'], [CITY_COLORS[3], '광장'],
+  [CITY_COLORS[4], '공원'], [CITY_COLORS[8], '바다'], [CITY_COLORS[11], '강'],
+  [CITY_COLORS[9], '건물'], [CITY_COLORS[12], '해변'], [CITY_COLORS[7], '출구'],
+];
+
 const FONT = 'ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace';
 
-// 장소 노드(worldNodes) → 뷰어 마커 형태. tile:[x,y] → 화면 배치용 x/y.
-const NODE_MARKERS = WORLD_NODES.map((n) => ({ id: n.id, name: n.name, x: n.tile[0], y: n.tile[1] }));
+const MAP_OPTIONS = Object.freeze([
+  { id: 'world', name: '전국 월드', icon: '🗾', kind: 'world', cols: MAP_W, rows: MAP_H },
+  ...CITY_MAPS.map((city) => ({
+    id: city.id,
+    name: city.name,
+    icon: '🏙️',
+    kind: 'city',
+    cols: city.cols,
+    rows: city.rows,
+    city,
+  })),
+]);
 
 function hexToRgb(hex) {
   const v = parseInt(hex.slice(1), 16);
   return [(v >> 16) & 255, (v >> 8) & 255, v & 255];
 }
+
+const CITY_RGB = Object.freeze(
+  Object.fromEntries(Object.entries(CITY_COLORS).map(([code, color]) => [code, hexToRgb(color)])),
+);
 
 // 화면(뷰포트) 공간에 10×9 격자를 그린다 — 오너가 "몇 화면"으로 사고하는 단위(GBC 화면 10:9 비율).
 function drawScreenGrid(ctx, w, h) {
@@ -75,7 +107,15 @@ export default function WorldMapPage() {
   const { user, isAdmin, loading } = useAuth();
   const router = useRouter();
 
-  // ── 오프스크린 비트맵(2px/타일, 448×384 → 896×768) — 격자 소스 바뀔 때 다시 그린다 ──
+  const [activeMapId, setActiveMapId] = useState('world');
+  const activeMap = useMemo(
+    () => MAP_OPTIONS.find((map) => map.id === activeMapId) || MAP_OPTIONS[0],
+    [activeMapId],
+  );
+  const mapCols = activeMap.cols;
+  const mapRows = activeMap.rows;
+
+  // ── 오프스크린 비트맵(2px/타일) — 선택 지도·격자 소스가 바뀔 때 다시 그린다 ──
   // playable: GameCanvas 런타임·미니맵과 동일한 buildPlayableGrid(광장 SEA→LAND) 산출을 표시(P2-6).
   // raw: build-map.mjs 원본 격자(광장 메꿈 이전). 토글로 43타일 차이를 눈으로 확인할 수 있다.
   const bitmapRef = useRef(null);
@@ -84,9 +124,11 @@ export default function WorldMapPage() {
 
   useEffect(() => {
     setBitmapReady(false);
-    const raw = decodeMap();
-    const grid = showPlayable ? buildPlayableGrid(raw) : raw;
-    const w = MAP_W * 2, h = MAP_H * 2;
+    const raw = activeMap.kind === 'world' ? decodeMap() : null;
+    const grid = activeMap.kind === 'world'
+      ? (showPlayable ? buildPlayableGrid(raw) : raw)
+      : activeMap.city.buildGrid();
+    const w = mapCols * 2, h = mapRows * 2;
     const off = document.createElement('canvas');
     off.width = w; off.height = h;
     const ctx = off.getContext('2d');
@@ -102,20 +144,24 @@ export default function WorldMapPage() {
     const mountainRgb = hexToRgb(COLORS.mountain);
     const peakRgb = hexToRgb(COLORS.peak);
     const plainRgb = hexToRgb(COLORS.plain);
-    for (let ty = 0; ty < MAP_H; ty++) {
-      for (let tx = 0; tx < MAP_W; tx++) {
-        const code = grid[ty * MAP_W + tx];
+    for (let ty = 0; ty < mapRows; ty++) {
+      for (let tx = 0; tx < mapCols; tx++) {
+        const code = grid[ty * mapCols + tx];
         let rgb;
-        switch (code) {
-          case TERRAIN.RIVER: rgb = riverRgb; break;
-          case TERRAIN.LAKE: rgb = lakeRgb; break;
-          case TERRAIN.FENCE: rgb = fenceRgb; break;
-          case TERRAIN.BRIDGE: rgb = bridgeRgb; break;
-          case TERRAIN.MOUNTAIN: rgb = mountainRgb; break;
-          case TERRAIN.PEAK: rgb = peakRgb; break;
-          case TERRAIN.PLAIN: rgb = plainRgb; break;
-          case TERRAIN.LAND: rgb = isCoastTile(grid, tx, ty) ? coastRgb : landRgb; break;
-          default: rgb = seaRgb; break; // SEA
+        if (activeMap.kind === 'city') {
+          rgb = CITY_RGB[code] || CITY_RGB[1];
+        } else {
+          switch (code) {
+            case TERRAIN.RIVER: rgb = riverRgb; break;
+            case TERRAIN.LAKE: rgb = lakeRgb; break;
+            case TERRAIN.FENCE: rgb = fenceRgb; break;
+            case TERRAIN.BRIDGE: rgb = bridgeRgb; break;
+            case TERRAIN.MOUNTAIN: rgb = mountainRgb; break;
+            case TERRAIN.PEAK: rgb = peakRgb; break;
+            case TERRAIN.PLAIN: rgb = plainRgb; break;
+            case TERRAIN.LAND: rgb = isCoastTile(grid, tx, ty) ? coastRgb : landRgb; break;
+            default: rgb = seaRgb; break;
+          }
         }
         for (let dy = 0; dy < 2; dy++) {
           for (let dx = 0; dx < 2; dx++) {
@@ -126,12 +172,15 @@ export default function WorldMapPage() {
       }
     }
     ctx.putImageData(img, 0, 0);
+    if (activeMap.kind === 'city') drawCityTransit(ctx, activeMap.city);
     bitmapRef.current = off;
     setBitmapReady(true);
-  }, [showPlayable]);
+  }, [activeMap, mapCols, mapRows, showPlayable]);
 
-  // ── 노드 오버레이: worldNodes(장소 노드 시스템) 정적 배선. ──
-  const nodes = NODE_MARKERS;
+  const nodes = useMemo(
+    () => activeMap.kind === 'world' ? worldMapMarkers(WORLD_NODES) : cityMapMarkers(activeMap.city),
+    [activeMap],
+  );
 
   // ── 뷰포트 크기(반응형) ──
   const containerRef = useRef(null);
@@ -155,11 +204,10 @@ export default function WorldMapPage() {
   const [hover, setHover] = useState(null); // { tx, ty, lon, lat }
 
   useEffect(() => {
-    if (offset) return;
-    const pxPerTile = ZOOM_LEVELS[zoomIdx];
-    setOffset({ x: (size.w - MAP_W * pxPerTile) / 2, y: (size.h - MAP_H * pxPerTile) / 2 });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [size]);
+    setZoomIdx(0);
+    setOffset({ x: (size.w - mapCols * 2) / 2, y: (size.h - mapRows * 2) / 2 });
+    setHover(null);
+  }, [activeMapId, mapCols, mapRows, size.h, size.w]);
 
   const zoomAt = useCallback((screenX, screenY, dir) => {
     setZoomIdx((prevIdx) => {
@@ -181,8 +229,8 @@ export default function WorldMapPage() {
 
   const resetView = useCallback(() => {
     setZoomIdx(0);
-    setOffset({ x: (size.w - MAP_W * 2) / 2, y: (size.h - MAP_H * 2) / 2 });
-  }, [size]);
+    setOffset({ x: (size.w - mapCols * 2) / 2, y: (size.h - mapRows * 2) / 2 });
+  }, [mapCols, mapRows, size.h, size.w]);
 
   // 휠 줌 — React onWheel은 기본 passive라 preventDefault가 무시되므로 수동 리스너로 배선.
   useEffect(() => {
@@ -200,13 +248,15 @@ export default function WorldMapPage() {
   // ── 마우스오버/탭 → 타일 좌표 + 위경도 역산 ──
   const updateHover = useCallback((mx, my) => {
     if (!offset) return;
-    const scale = ZOOM_LEVELS[zoomIdx] / 2;
-    const tx = Math.floor((mx - offset.x) / scale / 2);
-    const ty = Math.floor((my - offset.y) / scale / 2);
-    if (tx < 0 || ty < 0 || tx >= MAP_W || ty >= MAP_H) return;
-    const { lon, lat } = unproject(tx, ty);
-    setHover({ tx, ty, lon, lat });
-  }, [offset, zoomIdx]);
+    const pxPerTile = ZOOM_LEVELS[zoomIdx];
+    const tx = Math.floor((mx - offset.x) / pxPerTile);
+    const ty = Math.floor((my - offset.y) / pxPerTile);
+    if (tx < 0 || ty < 0 || tx >= mapCols || ty >= mapRows) {
+      setHover(null);
+      return;
+    }
+    setHover(activeMap.kind === 'world' ? { tx, ty, ...unproject(tx, ty) } : { tx, ty });
+  }, [activeMap.kind, mapCols, mapRows, offset, zoomIdx]);
 
   // ── 드래그 팬 (포인터 이벤트 — 마우스/터치 공용, 핀치 줌은 버튼 줌으로 갈음) ──
   const dragRef = useRef(null);
@@ -285,8 +335,25 @@ export default function WorldMapPage() {
         </h1>
       </div>
       <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
-        월드 전체 지도(관리자) — 노드 배치·콘텐츠 마운트 계획용.
+        전국 월드와 도시 정밀맵을 하나씩 골라 노드 배치와 동선을 확인해요.
       </p>
+
+      <div className="world-map-viewer__maps" role="tablist" aria-label="확인할 지도 선택">
+        {MAP_OPTIONS.map((map) => (
+          <button
+            key={map.id}
+            type="button"
+            role="tab"
+            aria-selected={activeMap.id === map.id}
+            className={`world-map-viewer__map-tab${activeMap.id === map.id ? ' world-map-viewer__map-tab--active' : ''}`}
+            onClick={() => setActiveMapId(map.id)}
+          >
+            <span aria-hidden="true">{map.icon}</span>
+            <span>{map.name}</span>
+            <small>{map.cols}×{map.rows}</small>
+          </button>
+        ))}
+      </div>
 
       {/* 컨트롤 행 */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -302,10 +369,15 @@ export default function WorldMapPage() {
         <Button size="sm" variant={showGrid ? 'primary' : 'secondary'} onClick={() => setShowGrid((v) => !v)}>
           {showGrid ? '☑' : '☐'} 화면 격자(10×9)
         </Button>
-        <Button size="sm" variant={showPlayable ? 'primary' : 'secondary'} onClick={() => setShowPlayable((v) => !v)}>
-          {showPlayable ? '플레이 격자' : 'raw 격자'}
-        </Button>
+        {activeMap.kind === 'world' && (
+          <Button size="sm" variant={showPlayable ? 'primary' : 'secondary'} onClick={() => setShowPlayable((v) => !v)}>
+            {showPlayable ? '플레이 격자' : 'raw 격자'}
+          </Button>
+        )}
         <Button size="sm" variant="secondary" onClick={resetView}>전체 보기</Button>
+        <span className="world-map-viewer__active-map">
+          {activeMap.icon} {activeMap.name} · {mapCols}×{mapRows}
+        </span>
       </div>
 
       {/* 지도 뷰포트 */}
@@ -331,24 +403,19 @@ export default function WorldMapPage() {
             <Spinner />
           </div>
         )}
-        {/* 주요 지점 마커 — worldNodes(장소 노드) 좌표 */}
+        {/* 주요 지점 마커 — 이름은 핀 hover/focus 때만 노출 */}
         {visibleNodes.map((n) => (
-          <div
+          <span
             key={n.id}
-            style={{
-              position: 'absolute', left: n.sx, top: n.sy, transform: 'translate(-50%, -100%)',
-              pointerEvents: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center',
-              filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.6))',
-            }}
+            className="world-map-viewer__pin"
+            style={{ left: n.sx, top: n.sy }}
+            role="img"
+            tabIndex={0}
+            aria-label={`${n.name} 위치`}
           >
-            <span style={{ fontSize: '1rem', lineHeight: 1 }}>📍</span>
-            <span style={{
-              fontFamily: FONT, fontSize: '0.6rem', color: '#fffaf0', background: 'rgba(42,33,24,0.75)',
-              padding: '1px 4px', borderRadius: 2, whiteSpace: 'nowrap', marginTop: 1,
-            }}>
-              {n.name}
-            </span>
-          </div>
+            <span className="world-map-viewer__pin-label" aria-hidden="true">{n.name}</span>
+            <span className="world-map-viewer__pin-icon" aria-hidden="true">📍</span>
+          </span>
         ))}
       </div>
 
@@ -359,24 +426,46 @@ export default function WorldMapPage() {
       }}>
         <span>
           {hover
-            ? `타일 (${hover.tx}, ${hover.ty}) · 경도 ${hover.lon.toFixed(3)}° · 위도 ${hover.lat.toFixed(3)}°`
+            ? (activeMap.kind === 'world'
+              ? `타일 (${hover.tx}, ${hover.ty}) · 경도 ${hover.lon.toFixed(3)}° · 위도 ${hover.lat.toFixed(3)}°`
+              : `${activeMap.name} 타일 (${hover.tx}, ${hover.ty})`)
             : '지도 위에서 움직이거나 탭하면 좌표가 표시돼요'}
         </span>
         <span style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-          <LegendDot color={COLORS.land} label="육지" />
-          <LegendDot color={COLORS.coast} label="해안" />
-          <LegendDot color={COLORS.sea} label="바다" />
-          <LegendDot color={COLORS.river} label="강" />
-          <LegendDot color={COLORS.lake} label="호수" />
-          <LegendDot color={COLORS.fence} label="DMZ" />
-          <LegendDot color={COLORS.bridge} label="다리" />
-          <LegendDot color={COLORS.mountain} label="산" />
-          <LegendDot color={COLORS.peak} label="설산" />
-          <LegendDot color={COLORS.plain} label="평야" />
+          {(activeMap.kind === 'world' ? WORLD_LEGEND : CITY_LEGEND).map(([color, label]) => (
+            <LegendDot key={label} color={color} label={label} />
+          ))}
         </span>
       </div>
     </div>
   );
+}
+
+function drawCityTransit(ctx, city) {
+  const scale = 2;
+  if (city.railways?.mask) {
+    ctx.fillStyle = '#3d3028';
+    for (let index = 0; index < city.railways.mask.length; index += 1) {
+      if (!city.railways.mask[index]) continue;
+      ctx.fillRect((index % city.cols) * scale, Math.floor(index / city.cols) * scale, scale, scale);
+    }
+    return;
+  }
+  if (!city.transit?.length) return;
+  const stops = new Map(
+    [...(city.stations || []), ...(city.transitPoints || [])].map((stop) => [stop.id, stop]),
+  );
+  ctx.lineWidth = 2;
+  for (const line of city.transit) {
+    if (line.mode === 'ferry') continue;
+    const points = line.stopIds.map((id) => stops.get(id)?.tile).filter(Boolean);
+    if (points.length < 2) continue;
+    ctx.strokeStyle = '#c66e2c';
+    ctx.beginPath();
+    ctx.moveTo(points[0][0] * scale, points[0][1] * scale);
+    for (const [x, y] of points.slice(1)) ctx.lineTo(x * scale, y * scale);
+    ctx.stroke();
+  }
 }
 
 function scaleLabel(zoomIdx) {

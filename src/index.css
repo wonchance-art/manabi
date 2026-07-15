@@ -9093,3 +9093,94 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   background: var(--accent-soft, rgba(120, 120, 255, 0.12));
   white-space: nowrap;
 }
+.world-map-viewer__maps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.world-map-viewer__map-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 7px 10px;
+  border: 1px solid var(--border-color, rgba(128, 128, 128, 0.3));
+  border-radius: 8px;
+  background: var(--surface, rgba(255, 255, 255, 0.04));
+  color: var(--text-secondary, inherit);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+
+.world-map-viewer__map-tab:hover,
+.world-map-viewer__map-tab:focus-visible {
+  border-color: var(--accent, #6b9b52);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.world-map-viewer__map-tab--active {
+  border-color: var(--accent, #6b9b52);
+  background: color-mix(in srgb, var(--accent, #6b9b52) 16%, transparent);
+  color: var(--text-primary, inherit);
+}
+
+.world-map-viewer__map-tab small,
+.world-map-viewer__active-map {
+  color: var(--text-muted);
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.7rem;
+}
+
+.world-map-viewer__pin {
+  position: absolute;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 24px;
+  transform: translate(-50%, -100%);
+  cursor: help;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.65));
+  outline: none;
+}
+
+.world-map-viewer__pin-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.world-map-viewer__pin-label {
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  padding: 2px 5px;
+  border: 1px solid rgba(255, 250, 240, 0.3);
+  border-radius: 3px;
+  background: rgba(42, 33, 24, 0.9);
+  color: #fffaf0;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.64rem;
+  line-height: 1.25;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(-50%, 4px);
+  transition: opacity 0.12s ease, transform 0.12s ease, visibility 0.12s;
+  pointer-events: none;
+}
+
+.world-map-viewer__pin:hover .world-map-viewer__pin-label,
+.world-map-viewer__pin:focus-visible .world-map-viewer__pin-label {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, 0);
+}
+
+.world-map-viewer__pin:focus-visible {
+  border-radius: 4px;
+  box-shadow: 0 0 0 2px #fffaf0;
+}
