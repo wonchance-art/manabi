@@ -6,6 +6,7 @@
 import zlib from 'node:zlib';
 import fs from 'node:fs';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { CITY_MAPS } from '../../src/components/world/cities/index.js';
 import { CITY_TILE } from '../../src/components/world/cities/terrain.js';
 
@@ -87,12 +88,15 @@ export function renderCityPng(city) {
   ]);
 }
 
-const [outDir = './tmp-city-maps', ...only] = process.argv.slice(2);
-fs.mkdirSync(outDir, { recursive: true });
-for (const city of CITY_MAPS) {
-  if (only.length && !only.includes(city.id)) continue;
-  const png = renderCityPng(city);
-  const file = path.join(outDir, `${city.id}.png`);
-  fs.writeFileSync(file, png);
-  console.log(`${city.id}: ${city.cols}x${city.rows} → ${file} (${(png.length / 1024).toFixed(0)}KB)`);
+// CLI 엔트리 — import 시에는 실행되지 않음(순수 모듈 계약: renderCityPng 만 노출).
+if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
+  const [outDir = './tmp-city-maps', ...only] = process.argv.slice(2);
+  fs.mkdirSync(outDir, { recursive: true });
+  for (const city of CITY_MAPS) {
+    if (only.length && !only.includes(city.id)) continue;
+    const png = renderCityPng(city);
+    const file = path.join(outDir, `${city.id}.png`);
+    fs.writeFileSync(file, png);
+    console.log(`${city.id}: ${city.cols}x${city.rows} → ${file} (${(png.length / 1024).toFixed(0)}KB)`);
+  }
 }
