@@ -5,6 +5,7 @@ import {
   boardEmeaRailTrip,
   continueEmeaRailTrip,
   disembarkEmeaRailTrip,
+  emeaRailDestinations,
   persistEmeaRailTerminalBeforeBoard,
   planEmeaRailRoute,
   prepareEmeaRailTrip,
@@ -381,8 +382,9 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
     regionInteract() {
       if (this.inputLocked) return;
       if (this.nearGate?.type === 'rail-hub') {
+        const destinationIds = new Set(emeaRailDestinations(this.nearGate.id).map(({ id }) => id));
         const options = railHubs
-          .filter((hub) => hub.id !== this.nearGate.id)
+          .filter((hub) => destinationIds.has(hub.id))
           .map((hub) => Object.freeze({
             ...hub,
             stopIds: planEmeaRailRoute(this.nearGate.id, hub.id),

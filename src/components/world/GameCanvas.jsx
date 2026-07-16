@@ -2708,6 +2708,11 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
             </div>
             {regionGatePrompt.gate.type === 'rail-hub' ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 7, maxHeight: 210, overflowY: 'auto' }}>
+                {regionGatePrompt.options.length === 0 && (
+                  <div style={{ fontSize: '0.64rem', lineHeight: 1.5, textAlign: 'center', opacity: 0.78 }}>
+                    영불해협 철도 연결 방식이 확정될 때까지 이 허브의 대륙 노선은 운행하지 않아요.
+                  </div>
+                )}
                 {regionGatePrompt.options.map((destination) => (
                   <button
                     key={destination.id}
