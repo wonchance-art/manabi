@@ -41,13 +41,13 @@ export function cityMapMarkers(city) {
 }
 
 export function overworldRegionMarkers(region) {
-  const gate = region?.gate;
-  if (!gate || !Number.isFinite(gate.tile?.x) || !Number.isFinite(gate.tile?.y)) return [];
-  return [{
+  return [region?.gate, region?.airGate].filter((gate) => (
+    gate && Number.isFinite(gate.tile?.x) && Number.isFinite(gate.tile?.y)
+  )).map((gate) => ({
     id: `gate:${gate.id}`,
     source: 'gate',
     name: gate.label || gate.id,
     x: gate.tile.x,
     y: gate.tile.y,
-  }];
+  }));
 }

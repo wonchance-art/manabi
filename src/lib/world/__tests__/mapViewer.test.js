@@ -32,13 +32,27 @@ describe('전체 맵 뷰어 마커', () => {
   it('신규 오버월드 지역은 연결 게이트를 핀으로 표시한다', () => {
     expect(overworldRegionMarkers({
       gate: { id: 'moscow', label: '모스크바 횡단열차역', tile: { x: 768, y: 253 } },
-    })).toEqual([{
-      id: 'gate:moscow',
-      source: 'gate',
-      name: '모스크바 횡단열차역',
-      x: 768,
-      y: 253,
-    }]);
+      airGate: { id: 'paris-cdg', label: '파리 샤를 드골 공항', tile: { x: 214, y: 420 } },
+    })).toEqual([
+      {
+        id: 'gate:moscow',
+        source: 'gate',
+        name: '모스크바 횡단열차역',
+        x: 768,
+        y: 253,
+      },
+      {
+        id: 'gate:paris-cdg',
+        source: 'gate',
+        name: '파리 샤를 드골 공항',
+        x: 214,
+        y: 420,
+      },
+    ]);
+    expect(overworldRegionMarkers({
+      gate: { id: 'valid', tile: { x: 1, y: 2 } },
+      airGate: { id: 'broken', tile: { x: Number.NaN, y: 2 } },
+    })).toHaveLength(1);
     expect(overworldRegionMarkers(null)).toEqual([]);
   });
 });
