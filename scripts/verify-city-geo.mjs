@@ -70,6 +70,36 @@ const CITY_GATES = {
       { name: '반포대교', lon: 126.9965, lat: 37.5125, windowTiles: 5 },
     ],
   },
+  // ── 유럽 1차 (Codex-2 착수 전 선제 정의 — 파일명이 다르면 --file 로 대입) ──
+  'grand-paris': {
+    file: 'src/components/world/cities/grandparis.geo.js',
+    snapshot: null, // FR 파이프라인 스냅샷 경로는 Codex-2 산출 확인 후 고정
+    expectedLocale: 'fr',
+    expectedMpt: 20,
+    buildingPct: null, // 오스만 시가지는 KR 9~11% 프로필과 다름 — report로 관찰 후 게이트 확정
+    greenMinPct: 6, // 불로뉴+뱅센+베르사유 정원 등 ≈40km²/483km²
+    poiMaxDevTiles: 2.5,
+    downtown: { label: '샤틀레', lon: 2.3467, lat: 48.8586 },
+    riverSections: [
+      { name: '센강(트로카데로 단면)', lon: 2.28, latRange: [48.875, 48.850], sumMinM: 120, runMinM: 100 },
+      { name: '센강(루브르 단면)', lon: 2.33, latRange: [48.870, 48.850], sumMinM: 120, runMinM: 100 },
+    ],
+    streamCourses: [],
+    reportCourses: [],
+  },
+  'mont-saint-michel': {
+    file: 'src/components/world/cities/montsaintmichel.geo.js',
+    snapshot: null,
+    expectedLocale: 'fr',
+    expectedMpt: 4, // 정밀 티어 1호 — mpt 계약 자체가 게이트
+    buildingPct: null,
+    greenMinPct: null, // 갯벌 지형 — 녹지 프로필 부적용
+    poiMaxDevTiles: 6, // 4m/타일 기준 24m
+    downtown: null,
+    riverSections: [],
+    streamCourses: [],
+    reportCourses: [],
+  },
 };
 
 // ── 투영(도시 geo 생성 계약과 동일: webmercator + aspectCorrection) ─────────
@@ -183,13 +213,29 @@ async function main() {
   const gate = (name, pass, detail) => results.push({ name, pass, detail, hard: true });
   const report = (name, detail) => results.push({ name, pass: null, detail, hard: false });
 
-  // ① 건물 비중
+  // ⓪ 계약 게이트 — 타일 해상도·언어 앵커 (정의된 도시만)
+  if (gates.expectedMpt != null) {
+    gate(`m/타일 계약 = ${gates.expectedMpt}`, geo.meta.metersPerTile === gates.expectedMpt, `${geo.meta.metersPerTile}m`);
+  }
+  if (gates.expectedLocale != null) {
+    gate(`contentLocale = ${gates.expectedLocale}`, geo.meta.contentLocale === gates.expectedLocale, `${geo.meta.contentLocale}`);
+  }
+
+  // ① 건물 비중 (프로필 미확정 도시는 report)
   const building = pct(T.BUILDING);
-  gate(`건물 ${gates.buildingPct[0]}~${gates.buildingPct[1]}%`, building >= gates.buildingPct[0] && building <= gates.buildingPct[1], `${building.toFixed(1)}%`);
+  if (gates.buildingPct) {
+    gate(`건물 ${gates.buildingPct[0]}~${gates.buildingPct[1]}%`, building >= gates.buildingPct[0] && building <= gates.buildingPct[1], `${building.toFixed(1)}%`);
+  } else {
+    report('건물 비중(프로필 관찰)', `${building.toFixed(1)}%`);
+  }
 
   // ② 녹지(산+공원) 질량
   const green = pct(T.MOUNTAIN) + pct(T.PARK);
-  gate(`녹지(M+P) ≥${gates.greenMinPct}%`, green >= gates.greenMinPct, `${green.toFixed(1)}%`);
+  if (gates.greenMinPct != null) {
+    gate(`녹지(M+P) ≥${gates.greenMinPct}%`, green >= gates.greenMinPct, `${green.toFixed(1)}%`);
+  } else {
+    report('녹지(M+P)', `${green.toFixed(1)}%`);
+  }
 
   // ③ POI 재투영 정합
   let worstDev = 0;
@@ -241,13 +287,13 @@ async function main() {
   }
 
   // ⑦ 스냅샷·분류 계약 (파일이 있을 때만 — main 등 부재 브랜치에선 SKIP)
-  const snapPath = path.join(root, gates.snapshot);
-  if (fs.existsSync(snapPath)) {
+  const snapPath = gates.snapshot ? path.join(root, gates.snapshot) : null;
+  if (snapPath && fs.existsSync(snapPath)) {
     const head = fs.readFileSync(snapPath, 'utf8').slice(0, 4096);
     const version = Number((head.match(/"version"\s*:\s*(\d+)/) || [])[1] || 0);
     gate('스냅샷 계약 v2+ (가시 도로 분류)', version >= 2, `version ${version}`);
   } else {
-    report('스냅샷 계약', `SKIP (${gates.snapshot} 없음)`);
+    report('스냅샷 계약', gates.snapshot ? `SKIP (${gates.snapshot} 없음)` : 'SKIP (경로 미확정)');
   }
   try {
     const { roadStyle } = await import(path.join(root, 'scripts/build-korean-city-osm-snapshot.mjs'));
@@ -258,7 +304,9 @@ async function main() {
   }
 
   // report: 도심 가시도로 (게이트 아님 — 버퍼 정책 변경에 민감해 참고 수치)
-  report(`도심(${gates.downtown.label}) 4km 가시도로`, `${downtownRoadPct(geo, proj, gates.downtown).toFixed(1)}%`);
+  if (gates.downtown) {
+    report(`도심(${gates.downtown.label}) 4km 가시도로`, `${downtownRoadPct(geo, proj, gates.downtown).toFixed(1)}%`);
+  }
 
   // ── 출력 ──
   let failed = 0;
