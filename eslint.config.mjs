@@ -16,5 +16,6 @@ export default defineConfig([
     'coverage/**',
     'next-env.d.ts',
     'public/pdf.worker.min.mjs',
+    'src/components/world/cities/*.geo.js',
   ]),
 ]);

@@ -15,11 +15,20 @@ const CITY_CONFIG = Object.freeze({
       { lon: 129.175, lat: 35.05 },
     ]),
     output: 'scripts/data/busan-osm-v21.json',
+    sourceDetails: Object.freeze({
+      providers: Object.freeze(['overpass-api.de', 'overpass.kumi.systems']),
+    }),
   }),
   seoul: Object.freeze({
-    bbox: Object.freeze([126.88, 37.46, 127.13, 37.63]),
+    bbox: Object.freeze([126.79, 37.43, 127.18, 37.69]),
     oceanSeeds: Object.freeze([]),
     output: 'scripts/data/seoul-osm-v21.json',
+    sourceDetails: Object.freeze({
+      providers: Object.freeze(['overpass-api.de']),
+      partitionCount: 16,
+      queryCount: 48,
+      mergeStrategy: 'type-id-largest-geometry-v1',
+    }),
   }),
 });
 
@@ -399,7 +408,12 @@ export function buildSnapshot(city, rawText) {
     grid: metrics.grid,
     source: {
       geometry: 'OpenStreetMap', license: 'ODbL 1.0', snapshot: '2026-07-16',
-      providers: ['overpass-api.de', 'overpass.kumi.systems'], rawOverpassSha256: hash(rawText),
+      providers: config.sourceDetails?.providers ?? ['overpass.kumi.systems'], rawOverpassSha256: hash(rawText),
+      ...(config.sourceDetails?.partitionCount ? {
+        partitionCount: config.sourceDetails.partitionCount,
+        queryCount: config.sourceDetails.queryCount,
+        mergeStrategy: config.sourceDetails.mergeStrategy,
+      } : {}),
       roadSelection: 'all-highway-tagged-ways',
       roadWaysByClass: Object.fromEntries(Object.entries(roadWaysByClass).sort(([left], [right]) => left.localeCompare(right))),
       mountainSelection: 'landuse=forest|natural=wood,scrub,heath,grassland|landcover=trees',

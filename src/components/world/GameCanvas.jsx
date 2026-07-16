@@ -76,6 +76,7 @@ import { AVATAR_REBAKE_STATIC_TARGETS } from './avatarRebake';
 //   도시 데이터는 이 청크(GameCanvas 는 next/dynamic ssr:false) 안에서만 로드된다 — /world First Load JS 무영향.
 import { buildCityScene } from './CityScene';
 import { CITY_DATA } from './cities/index.js';
+import { CITY_MINI_SCALE, cityMinimapLayout, downsampleCityGrid } from './cityMinimap';
 import { directTransitDestinations } from '../../lib/world/transit';
 import { corridorStopSpawn } from '../../lib/world/transsibCorridor';
 import {
@@ -216,8 +217,8 @@ const CITY_MINI_COLORS = {
   10: [110, 165, 80],  // island(섬 실루엣 — 도달 불가 배경)
   11: [63, 122, 106],  // river(강·운하 — 바다보다 탁한 강 톤)
   12: [232, 214, 166], // beach(모래 해변)
+  13: [58, 92, 76],    // mountain(산지 — PARK와 구분되는 어두운 청록)
 };
-const CITY_MINI_SCALE = 3;
 
 function Minimap({ sceneRef, activeScene, onClose }) {
   const canvasRef = useRef(null);
@@ -229,13 +230,15 @@ function Minimap({ sceneRef, activeScene, onClose }) {
     if (city) {
       const grid = city.buildGrid();
       const w = city.cols, h = city.rows;
+      const layout = cityMinimapLayout(w, h);
+      const sampled = downsampleCityGrid(grid, w, h, layout.factor);
       const off = document.createElement('canvas');
-      off.width = w; off.height = h;
+      off.width = sampled.width; off.height = sampled.height;
       const octx = off.getContext('2d');
-      const img = octx.createImageData(w, h);
+      const img = octx.createImageData(sampled.width, sampled.height);
       const d = img.data;
-      for (let i = 0; i < grid.length; i++) {
-        const c = CITY_MINI_COLORS[grid[i]] || CITY_MINI_COLORS[1];
+      for (let i = 0; i < sampled.codes.length; i++) {
+        const c = CITY_MINI_COLORS[sampled.codes[i]] || CITY_MINI_COLORS[1];
         d[i * 4] = c[0]; d[i * 4 + 1] = c[1]; d[i * 4 + 2] = c[2]; d[i * 4 + 3] = 255;
       }
       octx.putImageData(img, 0, 0);
@@ -243,7 +246,12 @@ function Minimap({ sceneRef, activeScene, onClose }) {
         octx.fillStyle = '#3d3028';
         for (let index = 0; index < city.railways.mask.length; index += 1) {
           if (!city.railways.mask[index]) continue;
-          octx.fillRect(index % w, Math.floor(index / w), 1, 1);
+          octx.fillRect(
+            Math.floor((index % w) / layout.factor),
+            Math.floor(Math.floor(index / w) / layout.factor),
+            1,
+            1,
+          );
         }
       } else if (city.transit?.length) {
         const stops = new Map([...(city.stations || []), ...(city.transitPoints || [])].map((stop) => [stop.id, stop]));
@@ -253,12 +261,13 @@ function Minimap({ sceneRef, activeScene, onClose }) {
           const points = line.stopIds.map((id) => stops.get(id)?.tile).filter(Boolean);
           if (points.length < 2) continue;
           octx.strokeStyle = '#c66e2c';
-          octx.beginPath(); octx.moveTo(points[0][0], points[0][1]);
-          for (const [x, y] of points.slice(1)) octx.lineTo(x, y);
+          octx.beginPath(); octx.moveTo(points[0][0] / layout.factor, points[0][1] / layout.factor);
+          for (const [x, y] of points.slice(1)) octx.lineTo(x / layout.factor, y / layout.factor);
           octx.stroke();
         }
       }
-      const W = w * CITY_MINI_SCALE, H = h * CITY_MINI_SCALE;
+      const W = layout.width, H = layout.height;
+      const miniPosition = (tile) => (tile / layout.factor) * CITY_MINI_SCALE;
       const drawFrame = (blinkOn) => {
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -269,7 +278,7 @@ function Minimap({ sceneRef, activeScene, onClose }) {
         // 구역 라벨.
         ctx.font = '9px monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         for (const z of (city.zones || [])) {
-          const lx = z.labelTile[0] * CITY_MINI_SCALE, ly = z.labelTile[1] * CITY_MINI_SCALE;
+          const lx = miniPosition(z.labelTile[0]), ly = miniPosition(z.labelTile[1]);
           ctx.fillStyle = 'rgba(20,22,26,0.55)';
           const tw = ctx.measureText(z.label).width + 6;
           ctx.fillRect(Math.round(lx - tw / 2), Math.round(ly - 7), Math.round(tw), 13);
@@ -278,7 +287,7 @@ function Minimap({ sceneRef, activeScene, onClose }) {
         }
         // 🚃 전철역 아이콘(청록 점 + 흰 테두리) — 정기 교통 승차 위치 표시.
         for (const st of (city.stations || [])) {
-          const sx = st.tile[0] * CITY_MINI_SCALE, sy = st.tile[1] * CITY_MINI_SCALE;
+          const sx = miniPosition(st.tile[0]), sy = miniPosition(st.tile[1]);
           ctx.fillStyle = '#f6edcf';
           ctx.fillRect(Math.round(sx) - 2, Math.round(sy) - 2, 5, 5);
           ctx.fillStyle = '#2f9ad0';
@@ -288,15 +297,15 @@ function Minimap({ sceneRef, activeScene, onClose }) {
         if (scene?.vehicleViews) {
           ctx.fillStyle = '#ffe24a';
           for (const [, vehicle] of scene.vehicleViews) {
-            const vx = vehicle.x / TILE * CITY_MINI_SCALE;
-            const vy = vehicle.y / TILE * CITY_MINI_SCALE;
+            const vx = miniPosition(vehicle.x / TILE);
+            const vy = miniPosition(vehicle.y / TILE);
             ctx.fillRect(Math.round(vx) - 1, Math.round(vy) - 1, 3, 3);
           }
         }
         // 플레이어 점(노랑, 깜빡).
         const s = scene;
         if (blinkOn && s && Number.isFinite(s.pTileX)) {
-          const px = s.pTileX * CITY_MINI_SCALE, py = s.pTileY * CITY_MINI_SCALE;
+          const px = miniPosition(s.pTileX), py = miniPosition(s.pTileY);
           ctx.fillStyle = '#ffe24a';
           ctx.fillRect(Math.round(px) - 1, Math.round(py) - 1, 4, 4);
         }
