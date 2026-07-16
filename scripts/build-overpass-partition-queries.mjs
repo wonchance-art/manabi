@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-function overpassQueries([minLon, minLat, maxLon, maxLat]) {
+export function overpassQueries([minLon, minLat, maxLon, maxLat]) {
   const bbox = `${minLat},${minLon},${maxLat},${maxLon}`;
   const header = '[out:json][timeout:900][maxsize:536870912];\n';
   return {
@@ -28,8 +28,10 @@ out geom;
   relation["leisure"="park"](${bbox});
   way["landuse"~"^(grass|recreation_ground|forest)$"](${bbox});
   relation["landuse"~"^(grass|recreation_ground|forest)$"](${bbox});
-  way["natural"="wood"](${bbox});
-  relation["natural"="wood"](${bbox});
+  way["natural"~"^(wood|scrub|heath|grassland)$"](${bbox});
+  relation["natural"~"^(wood|scrub|heath|grassland)$"](${bbox});
+  way["landcover"="trees"](${bbox});
+  relation["landcover"="trees"](${bbox});
 );
 out geom;
 `,

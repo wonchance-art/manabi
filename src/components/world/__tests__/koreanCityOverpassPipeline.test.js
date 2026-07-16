@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { mergeOverpassDocuments } from '../../../../scripts/merge-overpass-json.mjs';
+import { overpassQueries } from '../../../../scripts/build-overpass-partition-queries.mjs';
 
 const PARTITIONS = JSON.parse(fs.readFileSync(
   new URL('../../../../scripts/data/seoul-overpass-partitions.json', import.meta.url),
@@ -42,5 +43,15 @@ describe('서울 Overpass 분할 계약', () => {
     expect(first).toEqual(second);
     expect(first.elements.map(({ type, id }) => `${type}:${id}`)).toEqual(['node:5', 'way:9', 'relation:2']);
     expect(first.elements[1]).toEqual(longWay);
+  });
+
+  it('산림 relation과 한국 산지 녹지 태그를 area geometry 쿼리에 포함한다', () => {
+    const { areas } = overpassQueries(PARTITIONS.partitions[0].bbox);
+    expect(areas).toContain('relation["landuse"~"^(grass|recreation_ground|forest)$"]');
+    expect(areas).toContain('way["natural"~"^(wood|scrub|heath|grassland)$"]');
+    expect(areas).toContain('relation["natural"~"^(wood|scrub|heath|grassland)$"]');
+    expect(areas).toContain('way["landcover"="trees"]');
+    expect(areas).toContain('relation["landcover"="trees"]');
+    expect(areas).toContain('out geom;');
   });
 });
