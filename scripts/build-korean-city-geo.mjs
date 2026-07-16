@@ -305,7 +305,9 @@ function applySnapshotMasks(grid, snapshot, meta) {
   for (let index = 0; index < length; index += 1) {
     const roadClass = masks.road[index];
     if (!roadClass) continue;
-    if (grid[index] === CITY_TILE.WATER || grid[index] === CITY_TILE.RIVER) grid[index] = CITY_TILE.BRIDGE;
+    if (grid[index] === CITY_TILE.WATER || grid[index] === CITY_TILE.RIVER) {
+      if (roadClass >= 3) grid[index] = CITY_TILE.BRIDGE;
+    }
     else if (roadClass >= 2) grid[index] = CITY_TILE.ROAD;
     else if (grid[index] !== CITY_TILE.BUILDING) grid[index] = CITY_TILE.SIDEWALK;
   }

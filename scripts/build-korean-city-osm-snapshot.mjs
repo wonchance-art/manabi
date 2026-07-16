@@ -15,6 +15,9 @@ const CITY_CONFIG = Object.freeze({
       { lon: 129.175, lat: 35.05 },
     ]),
     output: 'scripts/data/busan-osm-v21.json',
+    sourceDetails: Object.freeze({
+      providers: Object.freeze(['overpass-api.de', 'overpass.kumi.systems']),
+    }),
   }),
   seoul: Object.freeze({
     bbox: Object.freeze([126.79, 37.43, 127.18, 37.69]),
@@ -198,22 +201,56 @@ function encodeRle(values) {
   return runs;
 }
 
+function hydrologyCoverage(elements, masks, metrics, name, sampleCount) {
+  const segments = [];
+  for (const element of elements) {
+    if (element.tags?.name !== name || !/^(river|canal|stream)$/.test(element.tags?.waterway ?? '')) continue;
+    const geometry = element.geometry ?? [];
+    for (let index = 1; index < geometry.length; index += 1) {
+      const a = project(geometry[index - 1].lat, geometry[index - 1].lon, metrics);
+      const b = project(geometry[index].lat, geometry[index].lon, metrics);
+      if ([a, b].some((point) => point.x < 0 || point.y < 0 || point.x >= metrics.grid.w || point.y >= metrics.grid.h)) continue;
+      const length = Math.hypot(b.x - a.x, b.y - a.y);
+      if (length > 0) segments.push({ a, b, length });
+    }
+  }
+  const totalLength = segments.reduce((sum, segment) => sum + segment.length, 0);
+  if (totalLength === 0) return null;
+  let coveredSamples = 0;
+  for (let sample = 0; sample < sampleCount; sample += 1) {
+    let distance = ((sample + 0.5) / sampleCount) * totalLength;
+    let segment = segments.at(-1);
+    for (const candidate of segments) {
+      if (distance <= candidate.length) {
+        segment = candidate;
+        break;
+      }
+      distance -= candidate.length;
+    }
+    const ratio = Math.min(1, distance / segment.length);
+    const x = Math.round(segment.a.x + (segment.b.x - segment.a.x) * ratio);
+    const y = Math.round(segment.a.y + (segment.b.y - segment.a.y) * ratio);
+    const index = y * metrics.grid.w + x;
+    if (masks.water[index] || masks.river[index]) coveredSamples += 1;
+  }
+  return {
+    name,
+    sampleCount,
+    coveredSamples,
+    coverage: Number((coveredSamples / sampleCount).toFixed(6)),
+  };
+}
+
 function hash(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
 }
 
-export function roadStyle(highway, city = 'busan') {
-  if (city === 'seoul') {
-    if (/^(motorway|trunk)$/.test(highway)) return { radius: 2, value: 2 };
-    if (/^(primary|secondary)$/.test(highway)) return { radius: 1, value: 2 };
-    if (/^(tertiary|residential|living_street|unclassified|pedestrian)$/.test(highway)) return { radius: 1, value: 1 };
-    if (/^(service|footway|path|steps|cycleway|track)$/.test(highway)) return { radius: 0, value: 1 };
-    return { radius: 0, value: 1 };
-  }
+export function roadStyle(highway) {
   if (/^(motorway|trunk)$/.test(highway)) return { radius: 2, value: 2 };
   if (/^(primary|secondary)$/.test(highway)) return { radius: 1, value: 2 };
   if (/^(motorway_link|trunk_link|primary_link|secondary_link|tertiary_link)$/.test(highway)) return { radius: 0, value: 2 };
-  if (/^(tertiary|residential|living_street|unclassified)$/.test(highway)) return { radius: 1, value: 2 };
+  if (highway === 'tertiary') return { radius: 1, value: 2 };
+  if (/^(residential|living_street|unclassified)$/.test(highway)) return { radius: 0, value: 2 };
   if (highway === 'service') return { radius: 0, value: 2 };
   if (highway === 'pedestrian') return { radius: 1, value: 1 };
   if (/^(footway|path|steps|cycleway|track)$/.test(highway)) return { radius: 0, value: 1 };
@@ -280,7 +317,8 @@ export function buildSnapshot(city, rawText) {
   };
   const counts = {
     buildingWays: 0, roadWays: 0, waterAreas: 0, riverWays: 0, parkAreas: 0,
-    mountainAreas: 0, railwayWays: 0, coastlineWays: 0,
+    mountainAreas: 0, railwayWays: 0, coastlineWays: 0, bridgeWays: 0,
+    excludedCoveredWaterways: 0,
   };
   const roadWaysByClass = {};
   const mountainAreasByClass = {};
@@ -288,7 +326,18 @@ export function buildSnapshot(city, rawText) {
   let mountainRelationsWithGeometry = 0;
   const crossings = [];
   const elements = [...(raw.elements ?? [])].sort((a, b) => `${a.type}:${a.id}`.localeCompare(`${b.type}:${b.id}`));
-  for (const element of elements) {
+  const elementByKey = new Map(elements.map((element) => [`${element.type}:${element.id}`, element]));
+  for (const rawElement of elements) {
+    const element = rawElement.type === 'relation'
+      ? {
+          ...rawElement,
+          members: (rawElement.members ?? []).map((member) => {
+            if (Array.isArray(member.geometry)) return member;
+            const referenced = elementByKey.get(`${member.type}:${member.ref}`);
+            return Array.isArray(referenced?.geometry) ? { ...member, geometry: referenced.geometry } : member;
+          }),
+        }
+      : rawElement;
     const tags = element.tags ?? {};
     if (element.type === 'node' && tags.highway === 'crossing' && Number.isFinite(element.lat) && Number.isFinite(element.lon)) {
       const point = project(element.lat, element.lon, metrics);
@@ -300,9 +349,11 @@ export function buildSnapshot(city, rawText) {
       counts.buildingWays += 1;
     }
     if (tags.highway && Array.isArray(element.geometry)) {
-      const style = roadStyle(tags.highway, city);
-      drawPolyline(masks.road, element.geometry, metrics, style.radius, style.value);
+      const style = roadStyle(tags.highway);
+      const bridge = tags.bridge && tags.bridge !== 'no';
+      drawPolyline(masks.road, element.geometry, metrics, style.radius, bridge ? 3 : style.value);
       counts.roadWays += 1;
+      if (bridge) counts.bridgeWays += 1;
       roadWaysByClass[tags.highway] = (roadWaysByClass[tags.highway] || 0) + 1;
     }
     if (tags.natural === 'water') {
@@ -310,8 +361,11 @@ export function buildSnapshot(city, rawText) {
       counts.waterAreas += 1;
     }
     if (/^(river|canal|stream)$/.test(tags.waterway ?? '') && Array.isArray(element.geometry)) {
-      drawPolyline(masks.river, element.geometry, metrics, tags.waterway === 'river' ? 2 : 1, 1);
-      counts.riverWays += 1;
+      if (tags.tunnel === 'culvert' || tags.covered === 'yes') counts.excludedCoveredWaterways += 1;
+      else {
+        drawPolyline(masks.river, element.geometry, metrics, tags.waterway === 'river' ? 1 : 0, 1);
+        counts.riverWays += 1;
+      }
     }
     if (tags.leisure === 'park' || /^(grass|recreation_ground)$/.test(tags.landuse ?? '')) {
       paintPolygonElement(masks.park, element, metrics);
@@ -339,6 +393,9 @@ export function buildSnapshot(city, rawText) {
     }
   }
   floodOcean(masks.water, masks.coastline, metrics, config.oceanSeeds);
+  const hydrologyQuality = city === 'busan'
+    ? hydrologyCoverage(elements, masks, metrics, '온천천', 105)
+    : null;
   const uniqueCrossings = [...new Map(crossings.map((tile) => [tile.join(','), tile])).values()]
     .sort(([ax, ay], [bx, by]) => ay - by || ax - bx);
   const rles = Object.fromEntries(Object.entries(masks)
@@ -363,6 +420,7 @@ export function buildSnapshot(city, rawText) {
       mountainAreasByClass: Object.fromEntries(Object.entries(mountainAreasByClass).sort(([left], [right]) => left.localeCompare(right))),
       mountainRelations,
       mountainRelationsWithGeometry,
+      ...(hydrologyQuality ? { hydrologyQuality } : {}),
       ...counts, crossingNodes: uniqueCrossings.length, crossingTiles: uniqueCrossings.length,
     },
     hashes: Object.fromEntries(Object.entries(rles).map(([name, value]) => [name, hash(JSON.stringify(value))])),
