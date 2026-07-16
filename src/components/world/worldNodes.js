@@ -15,9 +15,9 @@
 //
 // React/Next/Phaser 의존 0 — vitest(node)에서 그대로 임포트해 무결성을 검증한다.
 
-import { POI, MAP_W, MAP_H, TERRAIN, decodeMap, project } from './mapData';
-import { buildPlayableGrid } from '../../lib/world/mapGeo';
-import { migrateLegacyWorldNode } from '../../lib/world/worldNodeGeo';
+import { POI, MAP_W, MAP_H, TERRAIN, decodeMap, project } from './mapData.js';
+import { buildPlayableGrid } from '../../lib/world/mapGeo.js';
+import { migrateLegacyWorldNode } from '../../lib/world/worldNodeGeo.js';
 
 // 명산(名山) — 전용 도트 조각. lon/lat 는 build-map.mjs NAMED_PEAKS 와 동일값이라
 // project() 로 얻는 타일이 build-map 이 PEAK 로 보장한 타일과 정확히 일치한다(오프셋 0). peak 필드는

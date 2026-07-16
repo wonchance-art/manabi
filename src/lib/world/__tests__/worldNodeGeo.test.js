@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { serializeWorldNodeGeoDocument } from '../../../../scripts/world/build-world-node-geo-manifest.mjs';
 import { WORLD_NODES } from '../../../components/world/worldNodes.js';
 import {
   LEGACY_WORLD_REGION_ID,
@@ -19,6 +20,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '../../../..');
 const APAC = overworldRegionById(LEGACY_WORLD_REGION_ID);
 const PLAYABILITY_DIR = path.join(ROOT, 'public/assets/overworld', APAC.manifest.regionId);
+const GEO_MANIFEST_PATH = path.join(ROOT, 'public/assets/overworld/world-node-geo-migration-v1.json');
 const LEGACY_ID_TILE_SHA256 = '7d2b2debf9398957c196474b927f0b998c96d02f2ce2b888f1f3112ee9efd1cf';
 
 function sha256(value) {
@@ -115,6 +117,20 @@ describe('기존 WORLD_NODES 오버월드 좌표 이중 운용', () => {
     expect(reverse).toEqual(forward);
     expect(forward.map(({ id }) => id)).toEqual([...forward.map(({ id }) => id)].sort());
     expect(Object.isFrozen(forward)).toBe(true);
+  });
+
+  it('체크인된 migration manifest가 생성기와 byte-identical이고 preview 전용이다', () => {
+    const bytes = readFileSync(GEO_MANIFEST_PATH, 'utf8');
+    expect(bytes).toBe(serializeWorldNodeGeoDocument());
+    expect(JSON.parse(bytes)).toMatchObject({
+      schemaVersion: 1,
+      regionId: LEGACY_WORLD_REGION_ID,
+      source: 'WORLD_NODES',
+      releaseEligible: false,
+      legacyIdTileSha256: LEGACY_ID_TILE_SHA256,
+      nodeCount: WORLD_NODES.length,
+      geoSourceCounts: { 'legacy-tile-derived': 48, 'verified-input': 17 },
+    });
   });
 
   it('잘못된 legacy tile·offset·node를 fail-closed로 거부한다', () => {

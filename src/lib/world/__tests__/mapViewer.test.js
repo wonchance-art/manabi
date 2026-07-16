@@ -55,4 +55,20 @@ describe('전체 맵 뷰어 마커', () => {
     })).toHaveLength(1);
     expect(overworldRegionMarkers(null)).toEqual([]);
   });
+
+  it('기존 월드 노드는 같은 지역의 새 오버월드 타일로 비교 표시한다', () => {
+    const region = {
+      id: 'asia-pacific',
+      gate: { id: 'vladivostok', label: '블라디보스토크역', tile: { x: 100, y: 200 } },
+    };
+    expect(overworldRegionMarkers(region, [
+      { id: 'seoul', name: '서울', regionId: 'asia-pacific', overworldTile: [10, 20] },
+      { id: 'fukuoka-npc', name: '후쿠오카 NPC', regionId: 'asia-pacific', overworldTile: [11, 21], city: 'fukuoka' },
+      { id: 'paris', name: '파리', regionId: 'emea', overworldTile: [30, 40] },
+      { id: 'broken', name: '잘못된 노드', regionId: 'asia-pacific', overworldTile: [Number.NaN, 1] },
+    ])).toEqual([
+      { id: 'gate:vladivostok', source: 'gate', name: '블라디보스토크역', x: 100, y: 200 },
+      { id: 'world-node:seoul', source: 'world-node', name: '서울', x: 10, y: 20 },
+    ]);
+  });
 });

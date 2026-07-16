@@ -228,7 +228,7 @@ export default function WorldMapPage() {
 
   const nodes = useMemo(() => {
     if (activeMap.kind === 'world') return worldMapMarkers(WORLD_NODES);
-    if (activeMap.kind === 'overworld') return overworldRegionMarkers(activeMap.region);
+    if (activeMap.kind === 'overworld') return overworldRegionMarkers(activeMap.region, WORLD_NODES);
     return cityMapMarkers(activeMap.city);
   }, [activeMap]);
 
