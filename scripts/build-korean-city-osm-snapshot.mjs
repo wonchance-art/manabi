@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 const EARTH_RADIUS = 6378137;
 const DEG = Math.PI / 180;
-const METERS_PER_TILE = 20;
+const DEFAULT_METERS_PER_TILE = 20;
 const CITY_CONFIG = Object.freeze({
   busan: Object.freeze({
     bbox: Object.freeze([128.89, 35.04, 129.18, 35.24]),
@@ -26,6 +26,19 @@ const CITY_CONFIG = Object.freeze({
       mergeStrategy: 'type-id-largest-geometry-v1',
     }),
   }),
+  'grand-paris': Object.freeze({
+    bbox: Object.freeze([2.10, 48.78, 2.47, 48.94]),
+    metersPerTile: 20,
+    forestLayer: 'park',
+    oceanSeeds: Object.freeze([]),
+    output: 'scripts/data/grand-paris-osm-v21.json',
+    sourceDetails: Object.freeze({
+      providers: Object.freeze(['overpass-api.de']),
+      partitionCount: 16,
+      queryCount: 48,
+      mergeStrategy: 'type-id-largest-geometry-compact-v1',
+    }),
+  }),
 });
 
 function parseArgs(argv) {
@@ -37,7 +50,7 @@ function parseArgs(argv) {
   const input = read('--input');
   const config = CITY_CONFIG[city];
   if (!config || !input) {
-    throw new Error('Usage: node scripts/build-korean-city-osm-snapshot.mjs --city <busan|seoul> --input <overpass.json> [--output <snapshot.json>]');
+    throw new Error('Usage: node scripts/build-korean-city-osm-snapshot.mjs --city <busan|seoul|grand-paris> --input <overpass.json> [--output <snapshot.json>]');
   }
   return { city, input, output: read('--output') || config.output, config };
 }
@@ -50,7 +63,7 @@ function webMercatorMeters(lon, lat) {
   };
 }
 
-function projectionMetrics(bbox) {
+function projectionMetrics(bbox, metersPerTile = DEFAULT_METERS_PER_TILE) {
   const [minLon, minLat, maxLon, maxLat] = bbox;
   const southWest = webMercatorMeters(minLon, minLat);
   const northEast = webMercatorMeters(maxLon, maxLat);
@@ -59,9 +72,10 @@ function projectionMetrics(bbox) {
     southWest,
     northEast,
     correction,
+    metersPerTile,
     grid: {
-      w: Math.ceil(((northEast.x - southWest.x) * correction) / METERS_PER_TILE),
-      h: Math.ceil(((northEast.y - southWest.y) * correction) / METERS_PER_TILE),
+      w: Math.ceil(((northEast.x - southWest.x) * correction) / metersPerTile),
+      h: Math.ceil(((northEast.y - southWest.y) * correction) / metersPerTile),
     },
   };
 }
@@ -69,8 +83,8 @@ function projectionMetrics(bbox) {
 function project(lat, lon, metrics) {
   const point = webMercatorMeters(lon, lat);
   return {
-    x: ((point.x - metrics.southWest.x) * metrics.correction) / METERS_PER_TILE,
-    y: ((metrics.northEast.y - point.y) * metrics.correction) / METERS_PER_TILE,
+    x: ((point.x - metrics.southWest.x) * metrics.correction) / metrics.metersPerTile,
+    y: ((metrics.northEast.y - point.y) * metrics.correction) / metrics.metersPerTile,
   };
 }
 
@@ -244,7 +258,8 @@ export function buildSnapshot(city, rawText) {
   const config = CITY_CONFIG[city];
   if (!config) throw new Error(`Unknown city: ${city}`);
   const raw = JSON.parse(rawText);
-  const metrics = projectionMetrics(config.bbox);
+  const metersPerTile = config.metersPerTile ?? DEFAULT_METERS_PER_TILE;
+  const metrics = projectionMetrics(config.bbox, metersPerTile);
   const length = metrics.grid.w * metrics.grid.h;
   const masks = {
     building: new Uint8Array(length), road: new Uint8Array(length), water: new Uint8Array(length),
@@ -287,8 +302,10 @@ export function buildSnapshot(city, rawText) {
       counts.parkAreas += 1;
     }
     if (tags.landuse === 'forest' || tags.natural === 'wood') {
-      paintPolygonElement(masks.mountain, element, metrics);
-      counts.mountainAreas += 1;
+      const forestLayer = config.forestLayer === 'park' ? 'park' : 'mountain';
+      paintPolygonElement(masks[forestLayer], element, metrics);
+      if (forestLayer === 'park') counts.parkAreas += 1;
+      else counts.mountainAreas += 1;
     }
     if (/^(rail|subway|light_rail|tram)$/.test(tags.railway ?? '') && Array.isArray(element.geometry)) {
       drawPolyline(masks.railway, element.geometry, metrics, 0, 1);
@@ -309,6 +326,7 @@ export function buildSnapshot(city, rawText) {
     version: 1,
     city,
     bbox: config.bbox,
+    metersPerTile,
     grid: metrics.grid,
     source: {
       geometry: 'OpenStreetMap', license: 'ODbL 1.0', snapshot: '2026-07-16',
