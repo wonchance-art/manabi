@@ -633,14 +633,14 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         if (regionGatePromptRef.current) { setRegionGatePrompt(null); return; }
         if (airHubPromptRef.current) { setAirHubPrompt(null); return; }
         if (corridorStatus?.phase === 'error') { setCorridorStatus(null); return; }
-        if (regionStatus?.phase === 'error') { setRegionStatus(null); return; }
+        if (regionStatus?.phase === 'error' && !regionStatus?.preview) { setRegionStatus(null); return; }
         if (airHubStatus?.phase === 'error') { setAirHubStatus(null); return; }
         if (minimapOpenRef.current) { setMinimapOpen(false); return; }
         if (reviewOpenRef.current) setReviewOpen(false);
       },
     };
     return () => { if (controlsRef) controlsRef.current = null; };
-  }, [controlsRef, onOpenChapter, onOpenReading, corridorStatus?.phase, regionStatus?.phase, airHubStatus?.phase]);
+  }, [controlsRef, onOpenChapter, onOpenReading, corridorStatus?.phase, regionStatus?.phase, regionStatus?.preview, airHubStatus?.phase]);
 
   // ── 스토리 조작(대사 진행·뜻 토글) — 셸 A/B 콜백이 참조하도록 ref에 최신본을 심는다 ──
   const advanceStory = () => {
@@ -696,8 +696,9 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
     const lock = reviewOpen || !!ferryPrompt || !!npcDialog || !!cityPrompt || !!chapterPrompt
       || !!stationSelect || !!corridorPrompt || !!regionGatePrompt || !!airHubPrompt
       || airHubStatus?.phase === 'saving' || albumOpen || gameMenuOpen;
-    scene.inputLocked = lock;
-    if (lock) { if (scene.heldDirs) scene.heldDirs.length = 0; scene.tapTile = null; scene.runHeld = false; }
+    const locked = lock || !!scene.railTrip;
+    scene.inputLocked = locked;
+    if (locked) { if (scene.heldDirs) scene.heldDirs.length = 0; scene.tapTile = null; scene.runHeld = false; }
   }, [reviewOpen, ferryPrompt, npcDialog, cityPrompt, chapterPrompt, stationSelect, corridorPrompt, regionGatePrompt, airHubPrompt, airHubStatus?.phase, albumOpen, gameMenuOpen]);
 
   useEffect(() => {
@@ -2701,20 +2702,48 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
             <div style={{ fontSize: '0.66rem', opacity: 0.75, textAlign: 'center', marginBottom: 10 }}>
               {regionGatePrompt.gate.type === 'air-gate'
                 ? '인천공항으로 돌아갈까요?'
-                : '횡단열차 회랑 플랫폼으로 이동할까요?'}
+                : regionGatePrompt.gate.type === 'rail-hub'
+                  ? '관리자 미리보기 · 실제 운행 시간은 아직 확정되지 않았어요.'
+                  : '횡단열차 회랑 플랫폼으로 이동할까요?'}
             </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 7 }}>
-              <button
-                type="button"
-                onClick={() => {
-                  setRegionGatePrompt(null);
-                  if (regionGatePrompt.gate.type === 'air-gate') sceneRef.current?.leaveByAir?.();
-                  else sceneRef.current?.enterCorridor?.();
-                }}
-                style={gbcButtonPrimary}
-              >
-                이동
-              </button>
+            {regionGatePrompt.gate.type === 'rail-hub' ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 7, maxHeight: 210, overflowY: 'auto' }}>
+                {regionGatePrompt.options.map((destination) => (
+                  <button
+                    key={destination.id}
+                    type="button"
+                    onClick={() => {
+                      setRegionGatePrompt(null);
+                      sceneRef.current?.boardRailTo?.(destination.id);
+                    }}
+                    style={{ ...gbcButtonPrimary, textAlign: 'left' }}
+                  >
+                    <span style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                      <strong>{destination.label}행</strong>
+                      <span style={{ opacity: 0.72 }}>{destination.stopIds.length - 1}구간</span>
+                    </span>
+                    <span style={{ display: 'block', marginTop: 3, fontSize: '0.6rem', opacity: 0.72 }}>
+                      {destination.stopLabels.join(' → ')}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 7 }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRegionGatePrompt(null);
+                    if (regionGatePrompt.gate.type === 'air-gate') sceneRef.current?.leaveByAir?.();
+                    else sceneRef.current?.enterCorridor?.();
+                  }}
+                  style={gbcButtonPrimary}
+                >
+                  이동
+                </button>
+              </div>
+            )}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 7, marginTop: 8 }}>
               <button
                 type="button"
                 onClick={() => setRegionGatePrompt(null)}
@@ -2739,17 +2768,63 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           {regionStatus.phase === 'saving-gate' && <>💾 횡단열차 플랫폼 저장 중…</>}
           {regionStatus.phase === 'saving-air' && <>💾 귀환 공항 저장 중…</>}
           {regionStatus.phase === 'saving-ferry' && <>💾 도착 항구 저장 중…</>}
+          {regionStatus.phase === 'saving-rail' && <>💾 종착 철도 허브 저장 중…</>}
+          {regionStatus.phase === 'saving-rail-stop' && <>💾 {regionStatus.stopHub?.label || '철도 허브'} 하차 위치 저장 중…</>}
+          {regionStatus.phase === 'riding' && regionStatus.preview && (
+            <>
+              🚆 {regionStatus.toHub?.label} 방면 이동 중
+              <br /><span style={{ opacity: 0.72 }}>관리자 수동 진행 · 실제 운행 시간 미확정</span>
+              <div style={{ marginTop: 6 }}>
+                <button type="button" onClick={() => sceneRef.current?.advanceRailPreview?.()} style={gbcButtonPrimary}>
+                  다음 역 도착
+                </button>
+              </div>
+            </>
+          )}
+          {regionStatus.phase === 'stopped' && regionStatus.preview && (
+            <>
+              🚉 {regionStatus.stopHub?.label} 정차
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 7, marginTop: 6 }}>
+                <button type="button" onClick={() => sceneRef.current?.disembarkRailPreview?.()} style={gbcButtonPrimary}>
+                  지금 내리기
+                </button>
+                <button type="button" onClick={() => sceneRef.current?.continueRailPreview?.()} style={gbcButtonPrimary}>
+                  다음 구간
+                </button>
+              </div>
+            </>
+          )}
+          {regionStatus.phase === 'terminal' && regionStatus.preview && (
+            <>
+              🚉 {regionStatus.stopHub?.label} 종착
+              <div style={{ marginTop: 6 }}>
+                <button type="button" onClick={() => sceneRef.current?.disembarkRailPreview?.()} style={gbcButtonPrimary}>
+                  내리기
+                </button>
+              </div>
+            </>
+          )}
           {regionStatus.phase === 'error' && (
             <>
               ⚠ {regionStatus.message || '요청을 완료하지 못했어요.'}
               <div style={{ marginTop: 6 }}>
-                <button
-                  type="button"
-                  onClick={() => setRegionStatus(null)}
-                  style={{ ...gbcButtonPrimary, fontSize: '0.66rem', padding: '2px 8px' }}
-                >
-                  닫기 Ⓑ
-                </button>
+                {regionStatus.preview && regionStatus.canDisembark ? (
+                  <button
+                    type="button"
+                    onClick={() => sceneRef.current?.disembarkRailPreview?.()}
+                    style={{ ...gbcButtonPrimary, fontSize: '0.66rem', padding: '2px 8px' }}
+                  >
+                    하차 저장 다시 시도
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setRegionStatus(null)}
+                    style={{ ...gbcButtonPrimary, fontSize: '0.66rem', padding: '2px 8px' }}
+                  >
+                    닫기 Ⓑ
+                  </button>
+                )}
               </div>
             </>
           )}
