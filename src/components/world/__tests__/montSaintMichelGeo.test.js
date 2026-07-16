@@ -44,19 +44,31 @@ function reachableFrom(startTile) {
   return seen;
 }
 
+function countWithinRadius(center, radius, predicate) {
+  const { w, h } = MONT_SAINT_MICHEL_GEO.meta.grid;
+  let count = 0;
+  for (let y = Math.max(0, center[1] - radius); y <= Math.min(h - 1, center[1] + radius); y += 1) {
+    for (let x = Math.max(0, center[0] - radius); x <= Math.min(w - 1, center[0] + radius); x += 1) {
+      if ((x - center[0]) ** 2 + (y - center[1]) ** 2 > radius ** 2) continue;
+      if (predicate(MONT_SAINT_MICHEL_GEO.terrain[y * w + x])) count += 1;
+    }
+  }
+  return count;
+}
+
 describe('Mont-Saint-Michel precision geo contract', () => {
   it('pins the approved bbox, 4m grid, French schema, and shuttle entrance', () => {
     expect(MONT_SAINT_MICHEL_GEO.meta).toMatchObject({
-      city: 'mont-saint-michel', bbox: [-1.527, 48.611, -1.503, 48.642],
-      grid: { w: 442, h: 863 }, metersPerTile: 4, projection: 'webmercator', contentLocale: 'fr',
+      city: 'mont-saint-michel', bbox: [-1.527, 48.605, -1.503, 48.642],
+      grid: { w: 442, h: 1030 }, metersPerTile: 4, projection: 'webmercator', contentLocale: 'fr',
       schema: { nameField: 'nameFr', localeSlots: 'central-lookup-expandable' },
       buildingTexture: {
         publicDatasetProbe: { provider: 'OpenStreetMap', outcome: 'fixed-offline-snapshot' },
-        finalRatioRange: [0.005, 0.012], generatedTileCount: 0, finalLandBuildingRatio: 0.007629,
+        finalRatioRange: [0.005, 0.012], generatedTileCount: 0, finalLandBuildingRatio: 0.007701,
       },
     });
     expect(MONT_SAINT_MICHEL_GEO.tileSkins).toEqual({ beach: 'mudflat' });
-    expect(MONT_SAINT_MICHEL_GEO.terrain).toHaveLength(381_446);
+    expect(MONT_SAINT_MICHEL_GEO.terrain).toHaveLength(455_260);
     expect(MONT_SAINT_MICHEL_GEO.entrance).toEqual({ x: 380, y: 840, facing: 'down' });
     expect(MONT_SAINT_MICHEL_GEO.exitTiles).toEqual([[380, 830], [380, 831]]);
   });
@@ -75,29 +87,55 @@ describe('Mont-Saint-Michel precision geo contract', () => {
 
   it('pins the official OSM snapshot, static tidal flat, and terrain mass', () => {
     expect(SNAPSHOT).toMatchObject({
-      city: 'mont-saint-michel', bbox: [-1.527, 48.611, -1.503, 48.642],
-      metersPerTile: 4, grid: { w: 442, h: 863 },
+      city: 'mont-saint-michel', bbox: [-1.527, 48.605, -1.503, 48.642],
+      metersPerTile: 4, grid: { w: 442, h: 1030 },
       source: {
         providers: ['api.openstreetmap.org'], queryCount: 1,
         mergeStrategy: 'official-osm-xml-conversion-v1',
-        rawOverpassSha256: '127ab483c9232cfc45db615e050f187c74af409671cec0ed990fff5b7110dbb3',
-        sourceArtifactSha256: '3224e38d4993d78bb82f0d77e60a4539c9d5d5f5ac0ff2d639c79c189c8730ce',
-        buildingWays: 173, roadWays: 755, waterAreas: 3, riverWays: 44,
-        parkAreas: 47, coastlineWays: 9, bridgeWays: 7, tidalFlatAreas: 1,
+        sourceUrl: 'https://api.openstreetmap.org/api/0.6/map?bbox=-1.527,48.605,-1.503,48.642',
+        rawOverpassSha256: 'e5357b422164bf4327f8363e7a7a7b9eefddde207242e9f1c40761af219c5b98',
+        sourceArtifactSha256: 'f0ca5b97cdebeb8e7fad99e3826d18776b9a33291c923a1ef47dc69645477c68',
+        parkSelection: 'leisure=park|landuse=farmland,grass,meadow,recreation_ground',
+        coastlineMainland: {
+          method: 'coastline-mainland-side-v1', side: 'south', minYFraction: 0.5,
+          recoveredTileCount: 192_556, boundaryMinY: 516, boundaryMaxY: 687,
+        },
+        buildingWays: 189, roadWays: 827, waterAreas: 4, riverWays: 44,
+        parkAreas: 83, coastlineWays: 9, bridgeWays: 10, tidalFlatAreas: 1,
       },
     });
     expect(SNAPSHOT.hashes.tidalFlatRle)
-      .toBe('2b23179ce6aeb67af11abcaab6b409537fc00f8718af72bdcd13afa7eda8b8f6');
+      .toBe('315f91fc951f8be210a951ba8ddbdb97a6d30c346d22165b4706bb130b5913d4');
     expect(SNAPSHOT.hashes.waterRle)
-      .toBe('284082ab157b5872c25710ae3838c6ebb404a6ef1ebb23e6c7b9ab7a0a6f4011');
+      .toBe('1a093197de4a129046c76a01376dd2c31d0c6ae0c80f9154a19207cdf6794e1c');
     const counts = {};
     for (const code of MONT_SAINT_MICHEL_GEO.terrain) counts[code] = (counts[code] || 0) + 1;
     expect(counts).toEqual({
-      [CITY_TILE.ROAD]: 339, [CITY_TILE.SIDEWALK]: 1_997, [CITY_TILE.PLAZA]: 5,
-      [CITY_TILE.PARK]: 744, [CITY_TILE.BRIDGE]: 730, [CITY_TILE.WATER]: 258_575,
-      [CITY_TILE.BUILDING]: 925, [CITY_TILE.RIVER]: 1_620, [CITY_TILE.BEACH]: 116_511,
+      [CITY_TILE.ROAD]: 4_840, [CITY_TILE.SIDEWALK]: 47_384, [CITY_TILE.CROSSWALK]: 5,
+      [CITY_TILE.PLAZA]: 4, [CITY_TILE.PARK]: 140_878, [CITY_TILE.BRIDGE]: 412,
+      [CITY_TILE.WATER]: 140_699, [CITY_TILE.BUILDING]: 2_406,
+      [CITY_TILE.RIVER]: 2_114, [CITY_TILE.BEACH]: 116_518,
     });
     expect(MONT_SAINT_MICHEL_GEO.railways.tileCount).toBe(0);
+  });
+
+  it('keeps the island isolated while restoring La Caserne and salt-meadow mass', () => {
+    const abbey = byId(MONT_SAINT_MICHEL_GEO.pois, 'abbey').tile;
+    let ringTiles = 0;
+    let waterOrMudflatTiles = 0;
+    for (let y = abbey[1] - 55; y <= abbey[1] + 55; y += 1) {
+      for (let x = abbey[0] - 55; x <= abbey[0] + 55; x += 1) {
+        const distance = Math.hypot(x - abbey[0], y - abbey[1]);
+        if (distance < 40 || distance > 55) continue;
+        ringTiles += 1;
+        const code = MONT_SAINT_MICHEL_GEO.terrain[y * MONT_SAINT_MICHEL_GEO.meta.grid.w + x];
+        if ([CITY_TILE.WATER, CITY_TILE.RIVER, CITY_TILE.BEACH].includes(code)) waterOrMudflatTiles += 1;
+      }
+    }
+    const entrance = [MONT_SAINT_MICHEL_GEO.entrance.x, MONT_SAINT_MICHEL_GEO.entrance.y];
+    expect(waterOrMudflatTiles / ringTiles).toBeGreaterThanOrEqual(0.9);
+    expect(countWithinRadius(entrance, 30, (code) => code === CITY_TILE.BUILDING)).toBeGreaterThanOrEqual(40);
+    expect(countWithinRadius(entrance, 75, (code) => code === CITY_TILE.PARK)).toBeGreaterThanOrEqual(1_000);
   });
 
   it('keeps every POI and walkable tile in the entrance 4-way BFS component', () => {
@@ -119,9 +157,9 @@ describe('Mont-Saint-Michel precision geo contract', () => {
     const first = buildKoreanCityGeo('mont-saint-michel');
     const second = buildKoreanCityGeo('mont-saint-michel');
     expect(hash(first.terrain)).toBe(hash(second.terrain));
-    expect(hash(first.terrain)).toBe('4cc184c2a82a6b2f0e3710df0d74a4009eeacca2eb835f1ab7b3145c2fdfce7f');
-    expect(hash(first.railways.mask)).toBe('5b45b5b0f704e3c4a529a1fb253547dc87673e7ac95c0024ce619b40a9661b48');
-    expect(encodeTerrainRle(first.terrain)).toHaveLength(5_634);
+    expect(hash(first.terrain)).toBe('31191d0a7e34e175b1a40ab071d81886137affe2cb5dceeb53393ec5e295a75d');
+    expect(hash(first.railways.mask)).toBe('39e13945e587b244868de8b50a3d03f4ca810ffb89d6b88cccb07fa1ebe06b37');
+    expect(encodeTerrainRle(first.terrain)).toHaveLength(14_365);
     expect(encodeTerrainRle(first.railways.mask)).toHaveLength(1);
     expect(first.pois).toEqual(MONT_SAINT_MICHEL_GEO.pois);
   });

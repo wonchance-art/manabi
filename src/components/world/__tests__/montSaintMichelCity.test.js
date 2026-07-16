@@ -12,7 +12,7 @@ describe('Mont-Saint-Michel runtime city wiring', () => {
       metersPerTile: 4,
       tileSkins: { beach: 'mudflat' },
       cols: 442,
-      rows: 863,
+      rows: 1030,
     });
     expect(CITY_NODES).toHaveLength(4);
     expect(CITY_NODES.every((node) => !Object.hasOwn(node, 'desc'))).toBe(true);
@@ -27,7 +27,7 @@ describe('Mont-Saint-Michel runtime city wiring', () => {
   it('preserves the generated terrain and overlays only the city exit tiles', () => {
     const grid = buildMontSaintMichelGrid();
     expect(grid).toBeInstanceOf(Uint8Array);
-    expect(grid).toHaveLength(442 * 863);
+    expect(grid).toHaveLength(442 * 1030);
     expect(Array.from(grid).filter((code) => code === CITY_TILE.EXIT)).toHaveLength(2);
   });
 });

@@ -5,6 +5,7 @@ import {
   MSM_ABBEY_SCENE_KEY,
   nextMsmAbbeyActIndex,
 } from '../msmAbbeyScene.js';
+import { MSM_ABBEY_ACT_COPY, msmAbbeyActCopy } from '../msmAbbeyContent.js';
 
 describe('Mont-Saint-Michel abbey scene skeleton', () => {
   it('locks the requested four-act order to stable structural ids', () => {
@@ -23,6 +24,17 @@ describe('Mont-Saint-Michel abbey scene skeleton', () => {
     expect(nextMsmAbbeyActIndex(2)).toBe(3);
     expect(nextMsmAbbeyActIndex(3)).toBeNull();
     expect(nextMsmAbbeyActIndex(-1)).toBeNull();
+  });
+
+  it('maps every structural act to Claude-owned bilingual copy', () => {
+    expect(Object.keys(MSM_ABBEY_ACT_COPY)).toEqual(MSM_ABBEY_ACTS.map((act) => act.id));
+    for (const act of MSM_ABBEY_ACTS) {
+      expect(msmAbbeyActCopy(act.id)).toMatchObject({
+        title: expect.any(String), ko: expect.any(String), fr: expect.any(String),
+        reading: expect.any(String), gloss: expect.any(String),
+      });
+    }
+    expect(msmAbbeyActCopy('unknown')).toBeNull();
   });
 
   it('returns to the originating city tile after the final act', () => {

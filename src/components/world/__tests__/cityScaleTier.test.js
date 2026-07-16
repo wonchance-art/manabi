@@ -35,17 +35,17 @@ describe('city geo scale tier contract', () => {
 
   it('keeps the approved Mont-Saint-Michel 4m grid under the 24 MiB minimap peak gate', () => {
     const cols = 442;
-    const rows = 863;
+    const rows = 1030;
     const cells = cols * rows;
     const layout = cityMinimapLayout(cols, rows);
     const sourceCanvasBytes = layout.sourceWidth * layout.sourceHeight * 4;
     const estimatedCoreArrayBytes = cells * 3;
     const estimatedPeakBytes = estimatedCoreArrayBytes + layout.backingBytes + sourceCanvasBytes * 2;
-    expect(cells).toBe(381_446);
+    expect(cells).toBe(455_260);
     expect(layout).toMatchObject({
-      factor: 1, sourceWidth: 442, sourceHeight: 863, width: 1326, height: 2589,
+      factor: 1, sourceWidth: 442, sourceHeight: 1030, width: 1326, height: 3090,
     });
-    expect(estimatedPeakBytes).toBe(17_927_962);
+    expect(estimatedPeakBytes).toBe(21_397_220);
     expect(estimatedPeakBytes).toBeLessThan(24 * 1024 * 1024);
   });
 });

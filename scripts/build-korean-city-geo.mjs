@@ -153,7 +153,7 @@ const CITY_CONFIG = Object.freeze({
     ]),
   }),
   'mont-saint-michel': Object.freeze({
-    bbox: Object.freeze([-1.527, 48.611, -1.503, 48.642]),
+    bbox: Object.freeze([-1.527, 48.605, -1.503, 48.642]),
     metersPerTile: 4,
     snapshot: new URL('./data/mont-saint-michel-osm-v21.json', import.meta.url),
     output: '../src/components/world/cities/mont-saint-michel.geo.js',

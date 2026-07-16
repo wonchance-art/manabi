@@ -70,6 +70,7 @@ import {
 // 🌏 독해 트랙 "도쿄 도착" 글 1 → 월드 스토리 씬(하네다 공항). 공항 씬·텍스트박스·문답 오버레이.
 import { buildAirportScene } from './airportScene';
 import { buildMsmAbbeyScene, MSM_ABBEY_SCENE_KEY } from './msmAbbeyScene';
+import { msmAbbeyActCopy } from './msmAbbeyContent';
 import { buildTranssibCorridorScene } from './transsibCorridorScene';
 import { buildOverworldRegionScene } from './overworldRegionScene';
 import { AVATAR_REBAKE_STATIC_TARGETS } from './avatarRebake';
@@ -415,6 +416,8 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   const [cityPrompt, setCityPrompt] = useState(null);
   const [chapterPrompt, setChapterPrompt] = useState(null); // 학습 도어 확인 { chapter|reading, node } | null
   const [activeScene, setActiveScene] = useState('plaza');
+  const [abbeyAct, setAbbeyAct] = useState(null);
+  const [abbeyAssist, setAbbeyAssist] = useState('reading');
   const nearNodeRef = useRef(null);
   const descOpenRef = useRef(false);
   const ferryPromptRef = useRef(null);
@@ -2131,10 +2134,16 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         bindScene: (scene) => { sceneRef.current = scene; },
         onEnter: () => {
           setActiveScene(MSM_ABBEY_SCENE_KEY);
+          setAbbeyAct(null); setAbbeyAssist('reading');
           setNearNode(null); setDescOpen(false); setMinimapOpen(false);
           setNearStation(null); setStationSelect(null); setTransitStatus(null);
         },
-        onReturn: (scene) => setActiveScene(scene),
+        onActChange: ({ actId, index, total }) => {
+          const copy = msmAbbeyActCopy(actId);
+          setAbbeyAct(copy ? { actId, index, total, ...copy } : null);
+          setAbbeyAssist('reading');
+        },
+        onReturn: (scene) => { setAbbeyAct(null); setActiveScene(scene); },
       });
 
       const corridorCtx = {
@@ -3125,6 +3134,46 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           onOpenReview={() => { setGameMenuOpen(false); setReviewOpen(true); }}
           onOpenDictionary={() => onOpenDictionary?.()}
         />
+      )}
+
+      {activeScene === MSM_ABBEY_SCENE_KEY && abbeyAct && (
+        <div
+          role="region"
+          aria-label={`${abbeyAct.title} 학습 패널`}
+          style={{
+            position: 'absolute', left: 10, right: 10, bottom: 10, zIndex: 42,
+            ...gbcPanel, padding: '11px 13px', display: 'grid', gap: 7,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 }}>
+            <strong style={{ color: GBC.ink }}>{abbeyAct.title}</strong>
+            <span style={{ fontSize: '0.68rem', opacity: 0.7 }}>{abbeyAct.index + 1}/{abbeyAct.total}</span>
+          </div>
+          <p style={{ margin: 0, fontSize: '0.76rem', lineHeight: 1.45 }}>{abbeyAct.ko}</p>
+          <p style={{ margin: 0, fontSize: '1rem', fontWeight: 800, lineHeight: 1.35, color: '#244d72' }}>
+            {abbeyAct.fr}
+          </p>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            {['reading', 'gloss'].map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                aria-pressed={abbeyAssist === mode}
+                onClick={() => setAbbeyAssist(mode)}
+                style={{
+                  ...gbcButtonPrimary, padding: '4px 8px', minWidth: 0,
+                  ...(abbeyAssist === mode ? {} : { background: GBC.cream, color: GBC.ink }),
+                }}
+              >
+                {mode === 'reading' ? '발음' : '뜻'}
+              </button>
+            ))}
+            <span style={{ fontSize: '0.76rem', lineHeight: 1.35 }}>
+              {abbeyAct[abbeyAssist]}
+            </span>
+          </div>
+          <span style={{ fontSize: '0.65rem', opacity: 0.65 }}>A 다음 막 · B 수도원 나가기</span>
+        </div>
       )}
 
       {/* 공항 스토리 — 텍스트박스(대사) → 심사관 문답(통과 시 출구 개방). */}

@@ -54,6 +54,9 @@ export function renderCityPng(city) {
   const W = city.cols, H = city.rows;
   const grid = city.buildGrid();
   const rail = city.railways?.mask || null;
+  const palette = city.tileSkins?.beach === 'mudflat'
+    ? { ...PALETTE, [CITY_TILE.BEACH]: [199, 184, 155] }
+    : PALETTE;
   const px = Buffer.alloc(W * SCALE * H * SCALE * 3);
   const put = (x, y, [r, g, b]) => {
     if (x < 0 || y < 0 || x >= W * SCALE || y >= H * SCALE) return;
@@ -62,7 +65,7 @@ export function renderCityPng(city) {
   };
   for (let y = 0; y < H; y += 1) {
     for (let x = 0; x < W; x += 1) {
-      const c = rail && rail[y * W + x] ? RAIL : (PALETTE[grid[y * W + x]] || [0, 0, 0]);
+      const c = rail && rail[y * W + x] ? RAIL : (palette[grid[y * W + x]] || [0, 0, 0]);
       for (let dy = 0; dy < SCALE; dy += 1) for (let dx = 0; dx < SCALE; dx += 1) put(x * SCALE + dx, y * SCALE + dy, c);
     }
   }

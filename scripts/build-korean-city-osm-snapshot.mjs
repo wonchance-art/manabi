@@ -45,9 +45,11 @@ const CITY_CONFIG = Object.freeze({
     }),
   }),
   'mont-saint-michel': Object.freeze({
-    bbox: Object.freeze([-1.527, 48.611, -1.503, 48.642]),
+    bbox: Object.freeze([-1.527, 48.605, -1.503, 48.642]),
     metersPerTile: 4,
     forestLayer: 'park',
+    parkLanduse: Object.freeze(['grass', 'recreation_ground', 'meadow', 'farmland']),
+    coastlineMainland: Object.freeze({ side: 'south', minYFraction: 0.5 }),
     oceanSeeds: Object.freeze([
       { lon: -1.5265, lat: 48.6415 },
       { lon: -1.5035, lat: 48.6415 },
@@ -58,7 +60,8 @@ const CITY_CONFIG = Object.freeze({
       providers: Object.freeze(['api.openstreetmap.org']),
       queryCount: 1,
       mergeStrategy: 'official-osm-xml-conversion-v1',
-      sourceArtifactSha256: '3224e38d4993d78bb82f0d77e60a4539c9d5d5f5ac0ff2d639c79c189c8730ce',
+      sourceUrl: 'https://api.openstreetmap.org/api/0.6/map?bbox=-1.527,48.605,-1.503,48.642',
+      sourceArtifactSha256: 'f0ca5b97cdebeb8e7fad99e3826d18776b9a33291c923a1ef47dc69645477c68',
     }),
   }),
 });
@@ -336,6 +339,56 @@ function floodOcean(waterMask, coastlineMask, metrics, seeds) {
   }
 }
 
+function recoverCoastalMainland(waterMask, coastlineMask, metrics, contract) {
+  if (!contract) return null;
+  const { w, h } = metrics.grid;
+  const boundary = new Int32Array(w).fill(-1);
+  const minY = Math.floor(h * contract.minYFraction);
+  for (let y = minY; y < h; y += 1) {
+    for (let x = 0; x < w; x += 1) {
+      if (!coastlineMask[y * w + x]) continue;
+      boundary[x] = contract.side === 'south'
+        ? Math.max(boundary[x], y)
+        : boundary[x] < 0 ? y : Math.min(boundary[x], y);
+    }
+  }
+  const known = [];
+  for (let x = 0; x < w; x += 1) if (boundary[x] >= 0) known.push(x);
+  if (known.length < 2) throw new Error('Coastline mainland recovery requires a cross-bbox coastline');
+  for (let x = 0; x < w; x += 1) {
+    if (boundary[x] >= 0) continue;
+    let left = x - 1;
+    let right = x + 1;
+    while (left >= 0 && boundary[left] < 0) left -= 1;
+    while (right < w && boundary[right] < 0) right += 1;
+    if (left < 0) boundary[x] = boundary[right];
+    else if (right >= w) boundary[x] = boundary[left];
+    else {
+      const ratio = (x - left) / (right - left);
+      boundary[x] = Math.round(boundary[left] + (boundary[right] - boundary[left]) * ratio);
+    }
+  }
+  let recoveredTileCount = 0;
+  for (let x = 0; x < w; x += 1) {
+    const startY = contract.side === 'south' ? boundary[x] + 1 : 0;
+    const endY = contract.side === 'south' ? h : boundary[x];
+    for (let y = startY; y < endY; y += 1) {
+      const index = y * w + x;
+      if (!waterMask[index]) continue;
+      waterMask[index] = 0;
+      recoveredTileCount += 1;
+    }
+  }
+  return Object.freeze({
+    method: 'coastline-mainland-side-v1',
+    side: contract.side,
+    minYFraction: contract.minYFraction,
+    recoveredTileCount,
+    boundaryMinY: Math.min(...boundary),
+    boundaryMaxY: Math.max(...boundary),
+  });
+}
+
 export function buildSnapshot(city, rawText) {
   const config = CITY_CONFIG[city];
   if (!config) throw new Error(`Unknown city: ${city}`);
@@ -360,6 +413,7 @@ export function buildSnapshot(city, rawText) {
   let mountainRelations = 0;
   let mountainRelationsWithGeometry = 0;
   const crossings = [];
+  const parkLanduse = new Set(config.parkLanduse ?? ['grass', 'recreation_ground']);
   const elements = [...(raw.elements ?? [])].sort((a, b) => `${a.type}:${a.id}`.localeCompare(`${b.type}:${b.id}`));
   const elementByKey = new Map(elements.map((element) => [`${element.type}:${element.id}`, element]));
   for (const rawElement of elements) {
@@ -406,7 +460,7 @@ export function buildSnapshot(city, rawText) {
         counts.riverWays += 1;
       }
     }
-    if (tags.leisure === 'park' || /^(grass|recreation_ground)$/.test(tags.landuse ?? '')) {
+    if (tags.leisure === 'park' || parkLanduse.has(tags.landuse)) {
       paintPolygonElement(masks.park, element, metrics);
       counts.parkAreas += 1;
     }
@@ -436,6 +490,9 @@ export function buildSnapshot(city, rawText) {
     }
   }
   floodOcean(masks.water, masks.coastline, metrics, config.oceanSeeds);
+  const coastlineMainland = recoverCoastalMainland(
+    masks.water, masks.coastline, metrics, config.coastlineMainland,
+  );
   for (let index = 0; index < masks.coastline.length; index += 1) {
     if (masks.coastline[index]) masks.water[index] = 1;
   }
@@ -459,12 +516,17 @@ export function buildSnapshot(city, rawText) {
       ...(config.sourceDetails?.partitionCount ? { partitionCount: config.sourceDetails.partitionCount } : {}),
       ...(config.sourceDetails?.queryCount ? { queryCount: config.sourceDetails.queryCount } : {}),
       ...(config.sourceDetails?.mergeStrategy ? { mergeStrategy: config.sourceDetails.mergeStrategy } : {}),
+      ...(config.sourceDetails?.sourceUrl ? { sourceUrl: config.sourceDetails.sourceUrl } : {}),
       ...(config.sourceDetails?.sourceArtifactSha256 ? {
         sourceArtifactSha256: config.sourceDetails.sourceArtifactSha256,
       } : {}),
       roadSelection: 'all-highway-tagged-ways',
       roadWaysByClass: Object.fromEntries(Object.entries(roadWaysByClass).sort(([left], [right]) => left.localeCompare(right))),
       mountainSelection: 'landuse=forest|natural=wood,scrub,heath,grassland|landcover=trees',
+      ...(config.parkLanduse ? {
+        parkSelection: `leisure=park|landuse=${[...parkLanduse].sort().join(',')}`,
+      } : {}),
+      ...(coastlineMainland ? { coastlineMainland } : {}),
       mountainAreasByClass: Object.fromEntries(Object.entries(mountainAreasByClass).sort(([left], [right]) => left.localeCompare(right))),
       mountainRelations,
       mountainRelationsWithGeometry,
