@@ -71,6 +71,7 @@ import {
 import { buildAirportScene } from './airportScene';
 import { buildTranssibCorridorScene } from './transsibCorridorScene';
 import { buildOverworldRegionScene } from './overworldRegionScene';
+import { AVATAR_REBAKE_STATIC_TARGETS } from './avatarRebake';
 // 🏙️ 도시 정밀맵(계층형 맵) — CityScene 은 1개, cityId 로 파라미터화. 도시 추가 = cities/<id>.js 1개.
 //   도시 데이터는 이 청크(GameCanvas 는 next/dynamic ssr:false) 안에서만 로드된다 — /world First Load JS 무영향.
 import { buildCityScene } from './CityScene';
@@ -484,9 +485,10 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
     avatarRef.current = next;
     const game = gameRef.current;
     if (!game) return;
+    // 정적 대상은 avatarRebake.js 공유 계약(월드·공항·횡단열차·전 지역 씬 — Codex #113 P1),
+    // ct_pc(도시 정밀맵)만 활성 도시 탐색이 필요해 특수 처리.
     const candidates = [
-      ['pc', game.scene.getScene('world')],
-      ['ax_pc', game.scene.getScene('airport')],
+      ...AVATAR_REBAKE_STATIC_TARGETS.map(([prefix, sceneKey]) => [prefix, game.scene.getScene(sceneKey)]),
       ['ct_pc', Object.values(CITY_DATA).map((city) => game.scene.getScene(`city:${city.id}`)).find((scene) => scene?.textures?.exists('ct_pc_down_n'))],
     ];
     for (const [prefix, scene] of candidates) {
