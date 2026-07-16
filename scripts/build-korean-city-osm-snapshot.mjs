@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 const EARTH_RADIUS = 6378137;
 const DEG = Math.PI / 180;
 const METERS_PER_TILE = 20;
+const MOUNTAIN_NATURAL_TAGS = new Set(['wood', 'scrub', 'heath', 'grassland']);
 const CITY_CONFIG = Object.freeze({
   busan: Object.freeze({
     bbox: Object.freeze([128.89, 35.04, 129.18, 35.24]),
@@ -142,6 +143,7 @@ function paintPolygonElement(mask, element, metrics, value = 1) {
   const polygons = polygonsFor(element);
   for (const outer of polygons.outer) fillPolygon(mask, outer, metrics, value);
   for (const inner of polygons.inner) fillPolygon(mask, inner, metrics, 0);
+  return polygons.outer.filter((ring) => ring.length >= 3).length;
 }
 
 function paintPoint(mask, x, y, radius, value) {
@@ -205,6 +207,19 @@ export function roadStyle(highway) {
   return { radius: 0, value: 1 };
 }
 
+export function isMountainTags(tags = {}) {
+  return tags.landuse === 'forest'
+    || MOUNTAIN_NATURAL_TAGS.has(tags.natural)
+    || tags.landcover === 'trees';
+}
+
+function mountainClass(tags) {
+  if (tags.landuse === 'forest') return 'landuse=forest';
+  if (MOUNTAIN_NATURAL_TAGS.has(tags.natural)) return `natural=${tags.natural}`;
+  if (tags.landcover === 'trees') return 'landcover=trees';
+  return null;
+}
+
 function floodOcean(waterMask, coastlineMask, metrics, seeds) {
   const { w, h } = metrics.grid;
   const seen = new Uint8Array(w * h);
@@ -255,6 +270,9 @@ export function buildSnapshot(city, rawText) {
     mountainAreas: 0, railwayWays: 0, coastlineWays: 0,
   };
   const roadWaysByClass = {};
+  const mountainAreasByClass = {};
+  let mountainRelations = 0;
+  let mountainRelationsWithGeometry = 0;
   const crossings = [];
   const elements = [...(raw.elements ?? [])].sort((a, b) => `${a.type}:${a.id}`.localeCompare(`${b.type}:${b.id}`));
   for (const element of elements) {
@@ -286,9 +304,17 @@ export function buildSnapshot(city, rawText) {
       paintPolygonElement(masks.park, element, metrics);
       counts.parkAreas += 1;
     }
-    if (tags.landuse === 'forest' || tags.natural === 'wood') {
-      paintPolygonElement(masks.mountain, element, metrics);
-      counts.mountainAreas += 1;
+    if (isMountainTags(tags)) {
+      const paintedOuterRings = paintPolygonElement(masks.mountain, element, metrics);
+      if (paintedOuterRings > 0) {
+        counts.mountainAreas += 1;
+        const key = mountainClass(tags);
+        mountainAreasByClass[key] = (mountainAreasByClass[key] || 0) + 1;
+      }
+      if (element.type === 'relation') {
+        mountainRelations += 1;
+        if (paintedOuterRings > 0) mountainRelationsWithGeometry += 1;
+      }
     }
     if (/^(rail|subway|light_rail|tram)$/.test(tags.railway ?? '') && Array.isArray(element.geometry)) {
       drawPolyline(masks.railway, element.geometry, metrics, 0, 1);
@@ -315,6 +341,10 @@ export function buildSnapshot(city, rawText) {
       providers: ['overpass.kumi.systems'], rawOverpassSha256: hash(rawText),
       roadSelection: 'all-highway-tagged-ways',
       roadWaysByClass: Object.fromEntries(Object.entries(roadWaysByClass).sort(([left], [right]) => left.localeCompare(right))),
+      mountainSelection: 'landuse=forest|natural=wood,scrub,heath,grassland|landcover=trees',
+      mountainAreasByClass: Object.fromEntries(Object.entries(mountainAreasByClass).sort(([left], [right]) => left.localeCompare(right))),
+      mountainRelations,
+      mountainRelationsWithGeometry,
       ...counts, crossingNodes: uniqueCrossings.length, crossingTiles: uniqueCrossings.length,
     },
     hashes: Object.fromEntries(Object.entries(rles).map(([name, value]) => [name, hash(JSON.stringify(value))])),
