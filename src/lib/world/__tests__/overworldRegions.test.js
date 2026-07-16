@@ -69,7 +69,7 @@ describe('오버월드 지역 레지스트리', () => {
       .toEqual({ scene: region.sceneId, x, y });
   });
 
-  it('EMEA 항공 도착점은 파리의 별도 보행 게이트를 사용한다', () => {
+  it('EMEA는 파리 게이트, APAC은 인천 도착 타일을 사용한다', () => {
     const region = overworldRegionById('emea');
     expect(region.airGate).toMatchObject({
       id: 'paris-cdg-air', type: 'air-gate', airportCode: 'CDG', contentLocale: 'fr',
@@ -80,7 +80,16 @@ describe('오버월드 지역 레지스트리', () => {
     expect(overworldRegionAirSpawn(region)).toEqual({
       scene: region.sceneId, x: region.airGate.tile.x, y: region.airGate.tile.y,
     });
-    expect(overworldRegionAirSpawn('asia-pacific')).toEqual(overworldRegionSpawn('asia-pacific'));
+    const apac = overworldRegionById('asia-pacific');
+    expect(apac.airArrival).toMatchObject({
+      id: 'incheon-air-arrival', airportCode: 'ICN', contentLocale: 'ko', arrivalOffset: [4, 0],
+    });
+    expect(checkedInGateCell(apac, apac.airArrival)).toMatchObject({
+      valid: true, collision: 0, viewOnly: 0,
+    });
+    expect(overworldRegionAirSpawn(apac)).toEqual({
+      scene: apac.sceneId, x: 1460, y: 582,
+    });
   });
 
   it.each(OVERWORLD_REGION_LIST)('$label의 위경도와 타일 좌표를 뷰어용으로 왕복한다', (region) => {

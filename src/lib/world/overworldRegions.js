@@ -24,10 +24,24 @@ function unprojectedCoordinate({ bbox, projection }, x, y) {
 }
 
 function freezeRegion(region) {
-  const gateTile = projectedTile(region, region.gate.lon, region.gate.lat);
+  const projectedArrival = (point) => {
+    if (!point) return null;
+    const projected = projectedTile(region, point.lon, point.lat);
+    const offset = point.arrivalOffset || [0, 0];
+    if (!Array.isArray(offset) || offset.length !== 2 || !offset.every(Number.isInteger)) {
+      throw new TypeError(`${point.id}.arrivalOffset must be an integer [x, y] pair`);
+    }
+    return Object.freeze({
+      ...point,
+      ...(point.arrivalOffset ? { arrivalOffset: Object.freeze([...point.arrivalOffset]) } : {}),
+      tile: Object.freeze({ x: projected.x + offset[0], y: projected.y + offset[1] }),
+    });
+  };
+  const gate = projectedArrival(region.gate);
   const airGate = region.airGate
-    ? Object.freeze({ ...region.airGate, tile: projectedTile(region, region.airGate.lon, region.airGate.lat) })
-    : null;
+    ? projectedArrival(region.airGate) : null;
+  const airArrival = region.airArrival
+    ? projectedArrival(region.airArrival) : null;
   return Object.freeze({
     ...region,
     bbox: Object.freeze([...region.bbox]),
@@ -38,8 +52,9 @@ function freezeRegion(region) {
       ...source,
       style: Object.freeze({ ...source.style }),
     }))),
-    gate: Object.freeze({ ...region.gate, tile: gateTile }),
+    gate,
     airGate,
+    airArrival,
   });
 }
 
@@ -105,6 +120,15 @@ export const OVERWORLD_REGIONS = Object.freeze({
       corridorStopId: 'vladivostok',
       lon: 131.8855,
       lat: 43.1155,
+    },
+    airArrival: {
+      id: 'incheon-air-arrival',
+      label: '인천공항',
+      contentLocale: 'ko',
+      airportCode: 'ICN',
+      lon: 126.4407,
+      lat: 37.4602,
+      arrivalOffset: [4, 0],
     },
   }),
   emea: freezeRegion({
@@ -243,7 +267,7 @@ export function overworldRegionSpawn(regionOrId) {
 export function overworldRegionAirSpawn(regionOrId) {
   const region = typeof regionOrId === 'string' ? overworldRegionById(regionOrId) : regionOrId;
   if (!region) return null;
-  const gate = region.airGate || region.gate;
+  const gate = region.airArrival || region.airGate || region.gate;
   return Object.freeze({ scene: region.sceneId, x: gate.tile.x, y: gate.tile.y });
 }
 

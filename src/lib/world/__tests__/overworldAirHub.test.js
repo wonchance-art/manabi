@@ -16,6 +16,7 @@ const releasedRegion = Object.freeze({
   releaseEligible: true,
   gate: Object.freeze({ tile: Object.freeze({ x: 3, y: 4 }) }),
   airGate: Object.freeze({ tile: Object.freeze({ x: 5, y: 6 }) }),
+  airArrival: Object.freeze({ tile: Object.freeze({ x: 7, y: 8 }) }),
 });
 
 const previewRegion = Object.freeze({
@@ -52,9 +53,9 @@ describe('overworld air hub destinations', () => {
     expect(Object.isFrozen(destinations[0])).toBe(true);
   });
 
-  it('uses dedicated air gates while keeping corridor spawns independent', () => {
+  it('uses dedicated arrivals before air gates while keeping corridor spawns independent', () => {
     expect(overworldAirDestinations({ regions: [releasedRegion] })[0].spawn).toEqual({
-      scene: 'overworld:released', x: 5, y: 6,
+      scene: 'overworld:released', x: 7, y: 8,
     });
     expect(overworldRegionSpawn(releasedRegion)).toEqual({
       scene: 'overworld:released', x: 3, y: 4,
@@ -71,6 +72,8 @@ describe('overworld air hub destinations', () => {
     });
     expect(destinations.find(({ id }) => id === 'emea')?.spawn)
       .toEqual({ scene: 'overworld:emea', x: 214, y: 420 });
+    expect(destinations.find(({ id }) => id === 'asia-pacific')?.spawn)
+      .toEqual({ scene: 'overworld:asia-pacific', x: 1460, y: 582 });
   });
 
   it('fails closed on duplicate or malformed region definitions', () => {
