@@ -52,7 +52,7 @@ describe('Grand Paris Overpass 분할 계약', () => {
       { type: 'node', id: 5, lat: 1, lon: 1 },
     ] }));
     fs.writeFileSync(secondInput, JSON.stringify({ elements: [
-      { type: 'way', id: 9, geometry: [{ lat: 1, lon: 1 }, { lat: 2, lon: 2 }] },
+      { type: 'way', id: 9, tags: { highway: 'primary', bridge: 'yes', name: 'dropped' }, geometry: [{ lat: 1, lon: 1 }, { lat: 2, lon: 2 }] },
       { type: 'relation', id: 2, members: [] },
     ] }));
     mergeOverpassFiles([firstInput, secondInput], firstOutput);
@@ -63,6 +63,7 @@ describe('Grand Paris Overpass 분할 계약', () => {
     expect(JSON.parse(fs.readFileSync(firstOutput, 'utf8')).elements[1]).toEqual({
       type: 'way',
       id: 9,
+      tags: { bridge: 'yes', highway: 'primary' },
       geometry: [{ lat: 1, lon: 1 }, { lat: 2, lon: 2 }],
     });
     fs.rmSync(directory, { recursive: true, force: true });
@@ -79,7 +80,7 @@ describe('Grand Paris Overpass 분할 계약', () => {
         license: 'ODbL 1.0',
         snapshot: '2026-07-16',
         providers: ['overpass-api.de'],
-        rawOverpassSha256: '284d9c8cbf1ad5b9fd993c4e13eab33c67241fde4ff8ec0a2cf09d42cdaad375',
+        rawOverpassSha256: 'e6d605f435376a26d46674f20b755ab1ee95e6cbd4fc6482eb8c6a5656333de5',
         partitionCount: 16,
         queryCount: 48,
         mergeStrategy: 'type-id-largest-geometry-compact-v1',
@@ -87,19 +88,21 @@ describe('Grand Paris Overpass 분할 계약', () => {
         roadWays: 304_406,
         waterAreas: 1_251,
         riverWays: 627,
-        parkAreas: 22_006,
+        parkAreas: 22_014,
         mountainAreas: 0,
         railwayWays: 9_523,
         coastlineWays: 0,
+        bridgeWays: 3_049,
+        excludedCoveredWaterways: 0,
         crossingNodes: 53_861,
         crossingTiles: 53_861,
       },
     });
     expect(SNAPSHOT.hashes).toEqual({
       buildingRle: '0c9a01f099dc8d4bd1f6ed54feea575cd15ece7ab8279c8246f189c4d94553d4',
-      roadRle: '19025c261cb6ffe2fd6ee97eff7dc780354141a44a941b0cbb85cdb04b213c17',
+      roadRle: '74b2a07dce76dbb1e6b53c26582ea3e0268c2e491bcd2ff9e798117a74296127',
       waterRle: 'ffcd1b4bfefd728abc0e7164cd4b75f4f01da5d2bb86964bbf034e45f984e27c',
-      riverRle: 'dbc158df3b2380bc28cfe14e47ca169aa20fbce3d2b31b2477f9e77ec018fe58',
+      riverRle: '8684f5379f06af19de15456660d61eb79d24b73ffdb072704ea6ed5681e7704e',
       parkRle: '3a9ca86fe105a9f1e896294467cdb0ed854ed1b770a6bf59a5372351e78aef6d',
       mountainRle: '9d60fd2bd2bb93dfac2eb710f3768b12dc9244cdf0c6b30d47fb4698902e68c0',
       railwayRle: '455c40c6022c3a7ac21eb68d34d23dd73d6ec916377531f227662d951f22e1b2',
@@ -110,7 +113,7 @@ describe('Grand Paris Overpass 분할 계약', () => {
     const png = renderCitySnapshotPng(SNAPSHOT);
     expect(png.subarray(0, 8)).toEqual(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
     expect(createHash('sha256').update(png).digest('hex'))
-      .toBe('fe00f83f2f086a9af7147de9d6c024d77c27012f1032a629143ab7c221626fa4');
+      .toBe('7636558ea03861b9544dfbbae2899c319b1b02e6c370035577799411774f70d4');
   });
 
   it('완성 geo의 핵심 배열·적응형 미니맵 추정 피크가 24 MiB 안이다', () => {

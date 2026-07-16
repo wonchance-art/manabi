@@ -10,11 +10,15 @@ const DOCUMENT_HEADER = Object.freeze({
 });
 const RELEVANT_TAGS = Object.freeze([
   'building',
+  'bridge',
+  'covered',
   'highway',
+  'landcover',
   'landuse',
   'leisure',
   'natural',
   'railway',
+  'tunnel',
   'waterway',
 ]);
 
