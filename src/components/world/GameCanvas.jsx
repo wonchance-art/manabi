@@ -379,6 +379,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   const nickRef = useRef(nickname);
   const petRef = useRef(pet);
   const avatarRef = useRef(normalizeWorldAvatar(avatar));
+  const canAccessPreviewRegionsRef = useRef(canAccessPreviewRegions);
   // 재접속 스폰 — { scene:'plaza'|'airport', x, y(타일) } | null. WorldScene create()가 읽는다.
   // ref 로 흘려 게임 재생성 없이 최신값을 쓰되, 실제 사용은 씬 생성 1회(mount) 시점에 고정된다.
   const initialSpawnRef = useRef(initialSpawn);
@@ -494,6 +495,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
     }
   }, [avatar]);
   useEffect(() => { initialSpawnRef.current = initialSpawn; }, [initialSpawn]);
+  useEffect(() => { canAccessPreviewRegionsRef.current = canAccessPreviewRegions; }, [canAccessPreviewRegions]);
   useEffect(() => { nearQuestRef.current = nearQuest; }, [nearQuest]);
   useEffect(() => { reviewOpenRef.current = reviewOpen; }, [reviewOpen]);
   useEffect(() => { nearNodeRef.current = nearNode; }, [nearNode]);
@@ -2137,7 +2139,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       const TranssibCorridorScene = buildTranssibCorridorScene(Phaser, corridorCtx);
 
       const regionScenes = OVERWORLD_REGION_LIST.map((region) => buildOverworldRegionScene(Phaser, region, {
-        userId, avatarRef,
+        userId, avatarRef, canAccessPreviewRegionsRef,
         bindScene: (scene) => { sceneRef.current = scene; },
         onEnter: () => {
           setActiveScene(region.sceneId);
@@ -2281,6 +2283,8 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
     };
   }, []);
 
+  const activeOverworldRegion = overworldRegionByScene(activeScene);
+
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', background: '#0b0d08' }}>
       {/* 캔버스(320×288, 2배 백킹)를 정수 배율로 확대한 뒤 화면 영역 중앙에 배치. 도트는 pixelated로 보존. */}
@@ -2305,9 +2309,24 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         })()}
         {activeScene === 'transsib-corridor' && <span style={{ display: 'block', opacity: 0.78 }}>🚆 횡단열차 회랑</span>}
         {activeScene.startsWith('overworld:') && (
-          <span style={{ display: 'block', opacity: 0.78 }}>🌍 {overworldRegionByScene(activeScene)?.label}</span>
+          <span style={{ display: 'block', opacity: 0.78 }}>🌍 {activeOverworldRegion?.label}</span>
         )}
       </div>
+
+      {activeOverworldRegion?.boundaryNotice && (
+        <div
+          role="note"
+          style={{
+            position: 'absolute', right: 6, top: 6, zIndex: 4, pointerEvents: 'none',
+            width: 'min(62%, 280px)', fontFamily: GBC.font, fontSize: '0.5rem',
+            color: GBC.ink, background: 'rgba(245, 238, 202, 0.88)',
+            border: `1px solid ${GBC.border}`, borderRadius: 2,
+            padding: '3px 5px', lineHeight: 1.4,
+          }}
+        >
+          경계 표기 안내 · {activeOverworldRegion.boundaryNotice}
+        </div>
+      )}
 
       {/* 조작 힌트 — GBC 다이얼로그 문법(크림 칩, 하드 엣지). */}
       <div style={{
@@ -2708,6 +2727,11 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
             </div>
             {regionGatePrompt.gate.type === 'rail-hub' ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 7, maxHeight: 210, overflowY: 'auto' }}>
+                {regionGatePrompt.options.length === 0 && (
+                  <div style={{ fontSize: '0.64rem', lineHeight: 1.5, textAlign: 'center', opacity: 0.78 }}>
+                    영불해협 철도 연결 방식이 확정될 때까지 이 허브의 대륙 노선은 운행하지 않아요.
+                  </div>
+                )}
                 {regionGatePrompt.options.map((destination) => (
                   <button
                     key={destination.id}
