@@ -513,7 +513,7 @@ export function buildCityScene(Phaser, city, ctx) {
       }, 24, 32);
 
       // ── 캐릭터(플레이어 ct_pc · 원격 피어 ct_pr) + 펫 + NPC 마커 ──
-      this.bakeCharSet('ct_pc', tonePalette(avatarPalette(ctx.avatarRef?.current), this.mode));
+      this.bakeCharSet('ct_pc', tonePalette(avatarPalette(ctx.avatarRef?.current), this.mode), ctx.avatarRef?.current);
       this.bakeCharSet('ct_pr', tonePalette(CHAR_PAL_REMOTE, this.mode));
       for (const k of PET_KEYS) {
         const pal = tonePalette(PET_PAL[k], this.mode);
@@ -532,10 +532,10 @@ export function buildCityScene(Phaser, city, ctx) {
       }, 8, 7);
     }
 
-    bakeCharSet(prefix, pal) {
+    bakeCharSet(prefix, pal, shape) {
       for (const dir of CHAR_DIRS)
         for (const pose of CHAR_POSES)
-          this.makeTex(`${prefix}_${dir}_${pose}`, charFrameRows(dir, pose), pal, 16, 16);
+          this.makeTex(`${prefix}_${dir}_${pose}`, charFrameRows(dir, pose, shape), pal, 16, 16);
     }
 
     charTex(prefix, facing, moving, time, animMs = CHAR_ANIM_MS) {

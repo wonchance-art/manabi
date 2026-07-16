@@ -140,7 +140,7 @@ export function buildAirportScene(Phaser, ctx) {
       }
 
       // ── 캐릭터 3종(플레이어/심사관/아버지) + 원격 피어(ax_pr) — 시간대 톤 팔레트로 굽는다 ──
-      this.bakeCharSet('ax_pc', tonePalette(avatarPalette(ctx.avatarRef?.current), this.mode));
+      this.bakeCharSet('ax_pc', tonePalette(avatarPalette(ctx.avatarRef?.current), this.mode), ctx.avatarRef?.current);
       this.bakeCharSet('ax_officer', tonePalette(CHAR_PAL_OFFICER, this.mode));
       this.bakeCharSet('ax_dad', tonePalette(CHAR_PAL_DAD, this.mode));
       // 공항에서도 다른 접속자(공항 씬 피어)를 렌더한다 — 원격 셔츠색(파랑) 세트.
@@ -154,10 +154,10 @@ export function buildAirportScene(Phaser, ctx) {
       }
     }
 
-    bakeCharSet(prefix, pal) {
+    bakeCharSet(prefix, pal, shape) {
       for (const dir of CHAR_DIRS)
         for (const pose of CHAR_POSES)
-          this.makeTex(`${prefix}_${dir}_${pose}`, charFrameRows(dir, pose), pal, CHAR_W, CHAR_H);
+          this.makeTex(`${prefix}_${dir}_${pose}`, charFrameRows(dir, pose, shape), pal, CHAR_W, CHAR_H);
     }
 
     charTex(prefix, facing, moving, time) {

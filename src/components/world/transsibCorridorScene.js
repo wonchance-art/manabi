@@ -53,7 +53,7 @@ export function buildTranssibCorridorScene(Phaser, ctx) {
 
     preload() {
       this.mode = 'day';
-      ensureAvatarCharSet(this, 'ts_pc', tonePalette(avatarPalette(ctx.avatarRef?.current), this.mode));
+      ensureAvatarCharSet(this, 'ts_pc', tonePalette(avatarPalette(ctx.avatarRef?.current), this.mode), { shape: ctx.avatarRef?.current });
       const train = this.make.graphics({ add: false });
       train.fillStyle(toneColor(0x263a5f, this.mode), 1).fillRect(0, 2, 48, 18);
       train.fillStyle(toneColor(0xe8dec2, this.mode), 1).fillRect(5, 5, 10, 6);
