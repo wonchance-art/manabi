@@ -50,7 +50,10 @@ function projectedNodes(manifest, frame) {
       id: node.id,
       type: node.type,
       label: node.label,
-      corridorStopId: node.corridorStopId,
+      contentLocale: node.contentLocale,
+      ...(node.type === 'transsib-gate'
+        ? { corridorStopId: node.corridorStopId }
+        : { airportCode: node.airportCode }),
       tile: Object.freeze(tile),
     });
   }).sort((left, right) => compareCodePoint(left.id, right.id));
@@ -91,7 +94,7 @@ export function buildTransportNodeArtifacts({
   for (const key of [...buckets.keys()].sort(compareCodePoint)) {
     const [cx, cy] = key.split('/').map(Number);
     const document = normalizeOverworldTransportNodeDocument({
-      formatVersion: 1,
+      formatVersion: 2,
       kind: 'transport-nodes',
       cx,
       cy,

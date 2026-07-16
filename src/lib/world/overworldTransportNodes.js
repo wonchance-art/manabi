@@ -18,13 +18,13 @@ const BASE_REGION_KEYS = Object.freeze([
   'contentManifestSha256',
   'contentManifestBytes',
 ]);
-const SOURCE_NODE_KEYS = Object.freeze([
-  'id', 'type', 'label', 'corridorStopId', 'lon', 'lat',
-]);
 const DOCUMENT_KEYS = Object.freeze(['formatVersion', 'kind', 'cx', 'cy', 'nodes']);
-const DOCUMENT_NODE_KEYS = Object.freeze([
-  'id', 'type', 'label', 'corridorStopId', 'tile',
-]);
+const COMMON_SOURCE_NODE_KEYS = Object.freeze(['id', 'type', 'label', 'contentLocale', 'lon', 'lat']);
+const COMMON_DOCUMENT_NODE_KEYS = Object.freeze(['id', 'type', 'label', 'contentLocale', 'tile']);
+const NODE_VARIANT_KEYS = Object.freeze({
+  'transsib-gate': Object.freeze(['corridorStopId']),
+  'air-gate': Object.freeze(['airportCode']),
+});
 
 function assertPlainObject(value, label) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -53,6 +53,30 @@ function assertSafeId(value, label) {
   }
 }
 
+function nodeKeys(type, commonKeys, label) {
+  const variantKeys = NODE_VARIANT_KEYS[type];
+  if (!variantKeys) throw new Error(`${label}.type is unsupported`);
+  return [...commonKeys, ...variantKeys];
+}
+
+function normalizeNodeCommon(value, label) {
+  assertSafeId(value.id, `${label}.id`);
+  if (typeof value.label !== 'string' || value.label.length === 0) {
+    throw new TypeError(`${label}.label must be a non-empty string`);
+  }
+  if (typeof value.contentLocale !== 'string'
+    || !/^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(value.contentLocale)) {
+    throw new TypeError(`${label}.contentLocale must be a BCP 47 language anchor`);
+  }
+  if (value.type === 'transsib-gate') {
+    assertSafeId(value.corridorStopId, `${label}.corridorStopId`);
+  } else if (value.type === 'air-gate') {
+    if (typeof value.airportCode !== 'string' || !/^[A-Z]{3}$/.test(value.airportCode)) {
+      throw new TypeError(`${label}.airportCode must be a three-letter uppercase code`);
+    }
+  }
+}
+
 function normalizeBaseRegion(value) {
   assertExactKeys(value, BASE_REGION_KEYS, 'baseRegion');
   for (const key of ['manifestPath', 'directory', 'contentManifest']) {
@@ -69,13 +93,9 @@ function normalizeBaseRegion(value) {
 
 function normalizeSourceNode(value, index) {
   const label = `nodes[${index}]`;
-  assertExactKeys(value, SOURCE_NODE_KEYS, label);
-  assertSafeId(value.id, `${label}.id`);
-  if (value.type !== 'transsib-gate') throw new Error(`${label}.type must be transsib-gate`);
-  if (typeof value.label !== 'string' || value.label.length === 0) {
-    throw new TypeError(`${label}.label must be a non-empty string`);
-  }
-  assertSafeId(value.corridorStopId, `${label}.corridorStopId`);
+  assertPlainObject(value, label);
+  assertExactKeys(value, nodeKeys(value.type, COMMON_SOURCE_NODE_KEYS, label), label);
+  normalizeNodeCommon(value, label);
   if (!Number.isFinite(value.lon) || value.lon < -180 || value.lon > 180) {
     throw new RangeError(`${label}.lon must be between -180 and 180`);
   }
@@ -87,7 +107,7 @@ function normalizeSourceNode(value, index) {
 
 export function normalizeOverworldTransportNodeManifest(input) {
   assertExactKeys(input, MANIFEST_KEYS, 'transport node manifest');
-  if (input.schemaVersion !== 1) throw new Error('transport node schemaVersion must be 1');
+  if (input.schemaVersion !== 2) throw new Error('transport node schemaVersion must be 2');
   if (input.releaseEligible !== false) throw new Error('transport node preview must remain releaseEligible=false');
   if (input.generatorGitSha !== null
     && (typeof input.generatorGitSha !== 'string' || !/^[0-9a-f]{40}$/.test(input.generatorGitSha))) {
@@ -103,14 +123,15 @@ export function normalizeOverworldTransportNodeManifest(input) {
   }
   const nodes = input.nodes.map(normalizeSourceNode);
   const ids = new Set();
-  const stops = new Set();
+  const routeKeys = new Set();
   for (const node of nodes) {
     if (ids.has(node.id)) throw new Error(`duplicate transport node id: ${node.id}`);
-    if (stops.has(node.corridorStopId)) {
-      throw new Error(`duplicate transport corridor stop: ${node.corridorStopId}`);
-    }
+    const routeKey = node.type === 'transsib-gate'
+      ? `corridor:${node.corridorStopId}`
+      : `airport:${node.airportCode}`;
+    if (routeKeys.has(routeKey)) throw new Error(`duplicate transport route key: ${routeKey}`);
     ids.add(node.id);
-    stops.add(node.corridorStopId);
+    routeKeys.add(routeKey);
   }
   return Object.freeze({
     ...input,
@@ -122,13 +143,9 @@ export function normalizeOverworldTransportNodeManifest(input) {
 
 function normalizeDocumentNode(value, index, expected) {
   const label = `nodes[${index}]`;
-  assertExactKeys(value, DOCUMENT_NODE_KEYS, label);
-  assertSafeId(value.id, `${label}.id`);
-  if (value.type !== 'transsib-gate') throw new Error(`${label}.type must be transsib-gate`);
-  if (typeof value.label !== 'string' || value.label.length === 0) {
-    throw new TypeError(`${label}.label must be a non-empty string`);
-  }
-  assertSafeId(value.corridorStopId, `${label}.corridorStopId`);
+  assertPlainObject(value, label);
+  assertExactKeys(value, nodeKeys(value.type, COMMON_DOCUMENT_NODE_KEYS, label), label);
+  normalizeNodeCommon(value, label);
   if (!Array.isArray(value.tile) || value.tile.length !== 2
     || !value.tile.every(Number.isSafeInteger)) {
     throw new TypeError(`${label}.tile must be a safe-integer [x, y] pair`);
@@ -146,7 +163,7 @@ function normalizeDocumentNode(value, index, expected) {
 
 export function normalizeOverworldTransportNodeDocument(input, expected = {}) {
   assertExactKeys(input, DOCUMENT_KEYS, 'transport node document');
-  if (input.formatVersion !== 1 || input.kind !== 'transport-nodes') {
+  if (input.formatVersion !== 2 || input.kind !== 'transport-nodes') {
     throw new Error('unsupported transport node document format');
   }
   for (const key of ['cx', 'cy']) {

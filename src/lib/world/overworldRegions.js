@@ -25,6 +25,9 @@ function unprojectedCoordinate({ bbox, projection }, x, y) {
 
 function freezeRegion(region) {
   const gateTile = projectedTile(region, region.gate.lon, region.gate.lat);
+  const airGate = region.airGate
+    ? Object.freeze({ ...region.airGate, tile: projectedTile(region, region.airGate.lon, region.airGate.lat) })
+    : null;
   return Object.freeze({
     ...region,
     bbox: Object.freeze([...region.bbox]),
@@ -36,6 +39,7 @@ function freezeRegion(region) {
       style: Object.freeze({ ...source.style }),
     }))),
     gate: Object.freeze({ ...region.gate, tile: gateTile }),
+    airGate,
   });
 }
 
@@ -95,7 +99,9 @@ export const OVERWORLD_REGIONS = Object.freeze({
     ],
     gate: {
       id: 'vladivostok-transsib',
+      type: 'transsib-gate',
       label: '블라디보스토크 횡단열차역',
+      contentLocale: 'ru',
       corridorStopId: 'vladivostok',
       lon: 131.8855,
       lat: 43.1155,
@@ -177,10 +183,21 @@ export const OVERWORLD_REGIONS = Object.freeze({
     ],
     gate: {
       id: 'moscow-transsib',
+      type: 'transsib-gate',
       label: '모스크바 횡단열차역',
+      contentLocale: 'ru',
       corridorStopId: 'moscow',
       lon: 37.6173,
       lat: 55.7558,
+    },
+    airGate: {
+      id: 'paris-cdg-air',
+      type: 'air-gate',
+      label: '파리 샤를 드골 공항',
+      contentLocale: 'fr',
+      airportCode: 'CDG',
+      lon: 2.55,
+      lat: 49.0097,
     },
   }),
 });
@@ -221,6 +238,13 @@ export function overworldRegionSpawn(regionOrId) {
   const region = typeof regionOrId === 'string' ? overworldRegionById(regionOrId) : regionOrId;
   if (!region) return null;
   return Object.freeze({ scene: region.sceneId, x: region.gate.tile.x, y: region.gate.tile.y });
+}
+
+export function overworldRegionAirSpawn(regionOrId) {
+  const region = typeof regionOrId === 'string' ? overworldRegionById(regionOrId) : regionOrId;
+  if (!region) return null;
+  const gate = region.airGate || region.gate;
+  return Object.freeze({ scene: region.sceneId, x: gate.tile.x, y: gate.tile.y });
 }
 
 export function overworldRegionSpawnForCorridorStop(stopId) {

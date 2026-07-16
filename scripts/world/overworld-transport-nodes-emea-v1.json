@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "releaseEligible": false,
   "generatorGitSha": null,
   "regionId": "europe-mediterranean-middle-east-transport-nodes-preview-v1",
@@ -18,9 +18,19 @@
       "id": "moscow-transsib",
       "type": "transsib-gate",
       "label": "모스크바 횡단열차역",
+      "contentLocale": "ru",
       "corridorStopId": "moscow",
       "lon": 37.6173,
       "lat": 55.7558
+    },
+    {
+      "id": "paris-cdg-air",
+      "type": "air-gate",
+      "label": "파리 샤를 드골 공항",
+      "contentLocale": "fr",
+      "airportCode": "CDG",
+      "lon": 2.55,
+      "lat": 49.0097
     }
   ]
 }

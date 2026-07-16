@@ -54,7 +54,8 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
   const worldWidth = region.width * TILE;
   const worldHeight = region.height * TILE;
   const avatarPrefix = `region_pc_${region.id.replace(/[^a-z0-9]/g, '_')}`;
-  const gateTexture = `region_gate_${region.id}`;
+  const railGateTexture = `region_rail_gate_${region.id}`;
+  const airGateTexture = `region_air_gate_${region.id}`;
 
   return class OverworldRegionScene extends Phaser.Scene {
     constructor() { super(region.sceneId); }
@@ -62,13 +63,22 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
     preload() {
       this.mode = 'day';
       ensureAvatarCharSet(this, avatarPrefix, tonePalette(avatarPalette(ctx.avatarRef?.current), this.mode));
-      if (!this.textures.exists(gateTexture)) {
+      if (!this.textures.exists(railGateTexture)) {
         const gate = this.make.graphics({ add: false });
         gate.fillStyle(toneColor(0x3b2e2a, this.mode), 1).fillRect(2, 4, 12, 12);
         gate.fillStyle(toneColor(0xd7c59b, this.mode), 1).fillRect(3, 5, 10, 5);
         gate.fillStyle(toneColor(0x9f315d, this.mode), 1).fillRect(1, 2, 14, 4);
         gate.fillStyle(toneColor(0xf5ecd3, this.mode), 1).fillRect(5, 11, 6, 5);
-        gate.generateTexture(gateTexture, 16, 20);
+        gate.generateTexture(railGateTexture, 16, 20);
+        gate.destroy();
+      }
+      if (!this.textures.exists(airGateTexture)) {
+        const gate = this.make.graphics({ add: false });
+        gate.fillStyle(toneColor(0xf5ecd3, this.mode), 1).fillRect(1, 7, 14, 3);
+        gate.fillStyle(toneColor(0x285a77, this.mode), 1).fillRect(6, 1, 4, 15);
+        gate.fillStyle(toneColor(0x285a77, this.mode), 1).fillRect(2, 5, 12, 4);
+        gate.fillStyle(toneColor(0x9f315d, this.mode), 1).fillRect(7, 14, 2, 4);
+        gate.generateTexture(airGateTexture, 16, 20);
         gate.destroy();
       }
     }
@@ -86,8 +96,9 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
       this.heldDirs = [];
       this.lastEmit = -Infinity;
       this.lastDistanceEmit = -Infinity;
-      this.nearGate = false;
+      this.nearGate = null;
       this.activeGate = null;
+      this.transportGates = [];
       this.loadedChunks = new Map();
       this.otherScenePeerIds = new Set();
 
@@ -124,11 +135,7 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
         this.pTileY * TILE + TILE / 2,
         `${avatarPrefix}_down_n`,
       ).setOrigin(0.5, CHAR_ORIGIN_Y).setScale(2).setDepth(1000).setVisible(false);
-      this.gateMarker = this.add.image(
-        region.gate.tile.x * TILE + TILE / 2,
-        (region.gate.tile.y + 1) * TILE,
-        gateTexture,
-      ).setOrigin(0.5, 1).setScale(2).setDepth(900).setVisible(false);
+      this.gateMarkers = new Map();
 
       this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
       this.cameras.main.setBackgroundColor('#6ba9cc');
@@ -162,26 +169,39 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
     }
 
     async initializeSpawn() {
-      const matchingNodes = await this.transportNodes.loadAtTile(region.gate.tile.x, region.gate.tile.y);
-      const node = matchingNodes.find(({ id }) => id === region.gate.id);
-      if (!node || node.type !== 'transsib-gate'
-        || node.label !== region.gate.label
-        || node.corridorStopId !== region.gate.corridorStopId) {
-        throw new Error('region gate transport node contract drifted');
+      const configuredGates = [region.gate, region.airGate].filter(Boolean);
+      const resolvedGates = await Promise.all(configuredGates.map(async (configured) => {
+        const matchingNodes = await this.transportNodes.loadAtTile(configured.tile.x, configured.tile.y);
+        const node = matchingNodes.find(({ id }) => id === configured.id);
+        const variantMatches = configured.type === 'transsib-gate'
+          ? node?.corridorStopId === configured.corridorStopId
+          : node?.airportCode === configured.airportCode;
+        if (!node || node.type !== configured.type || node.label !== configured.label
+          || node.contentLocale !== configured.contentLocale || !variantMatches) {
+          throw new Error('region gate transport node contract drifted');
+        }
+        return Object.freeze({
+          ...configured,
+          tile: Object.freeze({ x: node.tile[0], y: node.tile[1] }),
+        });
+      }));
+      this.transportGates = resolvedGates;
+      this.activeGate = resolvedGates.find(({ type }) => type === 'transsib-gate') || null;
+      for (const gate of resolvedGates) {
+        const texture = gate.type === 'air-gate' ? airGateTexture : railGateTexture;
+        const marker = this.add.image(
+          gate.tile.x * TILE + TILE / 2,
+          (gate.tile.y + 1) * TILE,
+          texture,
+        ).setOrigin(0.5, 1).setScale(2).setDepth(900).setVisible(true);
+        this.gateMarkers.set(gate.id, marker);
       }
-      this.activeGate = Object.freeze({
-        ...region.gate,
-        tile: Object.freeze({ x: node.tile[0], y: node.tile[1] }),
-      });
-      this.gateMarker.setPosition(
-        this.activeGate.tile.x * TILE + TILE / 2,
-        (this.activeGate.tile.y + 1) * TILE,
-      ).setVisible(true);
       let spawnX = this.pTileX;
       let spawnY = this.pTileY;
       if (!await this.isWalkable(spawnX, spawnY)) {
-        spawnX = this.activeGate.tile.x;
-        spawnY = this.activeGate.tile.y;
+        const fallbackGate = this.activeGate || this.transportGates[0];
+        spawnX = fallbackGate.tile.x;
+        spawnY = fallbackGate.tile.y;
       }
       if (!await this.isWalkable(spawnX, spawnY)) throw new Error('region gate spawn is not walkable');
       this.pTileX = spawnX;
@@ -279,21 +299,27 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
 
     refreshNearGate(force = false) {
       const near = this.ready
-        && this.activeGate
-        && Math.abs(this.pTileX - this.activeGate.tile.x) <= 1
-        && Math.abs(this.pTileY - this.activeGate.tile.y) <= 1;
-      if (!force && near === this.nearGate) return;
+        ? this.transportGates
+          .filter((gate) => Math.abs(this.pTileX - gate.tile.x) <= 1
+            && Math.abs(this.pTileY - gate.tile.y) <= 1)
+          .sort((left, right) => (
+            Math.abs(this.pTileX - left.tile.x) + Math.abs(this.pTileY - left.tile.y)
+          ) - (
+            Math.abs(this.pTileX - right.tile.x) + Math.abs(this.pTileY - right.tile.y)
+          ))[0] || null
+        : null;
+      if (!force && near?.id === this.nearGate?.id) return;
       this.nearGate = near;
-      ctx.setNearGate?.(near ? { region, gate: this.activeGate } : null);
+      ctx.setNearGate?.(near ? { region, gate: near } : null);
     }
 
     regionInteract() {
-      if (this.nearGate && !this.inputLocked) ctx.requestGate?.({ region, gate: this.activeGate });
+      if (this.nearGate && !this.inputLocked) ctx.requestGate?.({ region, gate: this.nearGate });
     }
 
     async enterCorridor() {
-      if (!this.nearGate || this.inputLocked) return;
-      const spawn = corridorStopSpawn(this.activeGate?.corridorStopId);
+      if (this.nearGate?.type !== 'transsib-gate' || this.inputLocked) return;
+      const spawn = corridorStopSpawn(this.nearGate.corridorStopId);
       if (!spawn) return;
       this.inputLocked = true;
       this.heldDirs.length = 0;
@@ -308,6 +334,25 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
       }
       ctx.setStatus?.(null);
       this.scene.start('transsib-corridor', { spawn });
+    }
+
+    async leaveByAir() {
+      if (this.nearGate?.type !== 'air-gate' || this.inputLocked) return;
+      const spawn = ctx.airReturnSpawn?.();
+      if (!spawn) return;
+      this.inputLocked = true;
+      this.heldDirs.length = 0;
+      ctx.setNearGate?.(null);
+      ctx.setStatus?.({ phase: 'saving-air', message: '귀환 공항을 저장하고 있어요.' });
+      const persisted = await ctx.persistPosition?.(spawn);
+      if (!persisted || this.destroyed) {
+        this.inputLocked = false;
+        this.refreshNearGate(true);
+        ctx.setStatus?.({ phase: 'error', message: '귀환 위치 저장에 실패했어요. 연결을 확인해 주세요.' });
+        return;
+      }
+      ctx.setStatus?.(null);
+      this.scene.start('world', { spawn });
     }
 
     refreshTerrainPages(force = false, cameraOrView = this.cameras.main) {

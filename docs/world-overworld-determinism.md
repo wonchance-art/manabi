@@ -319,22 +319,24 @@ node scripts/world/build-overworld-boundary.mjs \
   --check
 ```
 
-## 15. 지역 교통 노드 인덱스 preview v1
+## 15. 지역 교통 노드 인덱스 preview v2
 
 `scripts/world/overworld-transport-nodes-{apac,emea}-v1.json`과
-`scripts/world/build-overworld-transport-nodes.mjs`는 확정된 횡단철도 종착 게이트만 256타일 청크별
+`scripts/world/build-overworld-transport-nodes.mjs`는 승인된 횡단철도·항공 게이트를 256타일 청크별
 canonical JSON 인덱스로 생성한다.
 
 - 입력 위경도는 각 지역의 확정 projection manifest로 투영하고 `nearest-half-away-from-zero`로 한 번만
   반올림한다. 결과 타일은 half-open 규칙으로 단 하나의 `nodes/<cx>/<cy>.json`에 속한다.
 - 생성기는 기준 playability content manifest와 모든 청크의 크기·SHA-256을 먼저 검증한다. 노드 타일이
   체크인된 보행 가능 셀이 아니면 임의 스냅 없이 실패한다.
-- 문서 키·노드 키는 exact schema이며 노드는 ID code-point 순이다. 생성 시각·호스트명·절대 경로·DB ID는
-  기록하지 않는다.
-- 현재 인덱스는 기존 확정 ID인 `vladivostok-transsib`, `moscow-transsib`만 포함한다. 신규 공항·항구·역,
-  운임·시간표·운행 여부·콘텐츠는 별도 승인 전 포함하지 않는다.
-- 런타임은 content manifest에 등록된 청크만 요청하고, 지역 레지스트리의 게이트 ID·표시명·corridor stop·
-  타일과 모두 일치해야 씬을 연다. 불일치나 누락은 fail closed다.
+- 문서 키·노드 키는 타입별 exact schema이며 노드는 ID code-point 순이다. 공통 필드는 ID·타입·표시명·
+  `contentLocale`·타일이고, 횡단철도는 `corridorStopId`, 항공은 3자리 `airportCode`만 추가한다. 생성 시각·
+  호스트명·절대 경로·DB ID는 기록하지 않는다.
+- 현재 인덱스는 기존 `vladivostok-transsib`, `moscow-transsib`와 관리자 미리보기 전용
+  `paris-cdg-air`를 포함한다. 파리 게이트는 교통 지리 참조일 뿐 운임·시간표·운행 여부·학습 콘텐츠를
+  주장하지 않는다.
+- 런타임은 content manifest에 등록된 청크만 요청하고, 지역 레지스트리의 게이트 ID·타입·표시명·
+  언어 앵커·타입별 route key·타일이 모두 일치해야 씬을 연다. 불일치나 누락은 fail closed다.
 - 두 산출물 모두 `releaseEligible=false`이며 기존 저장 좌표·DB·지역 공개 상태를 바꾸지 않는다.
 
 ```bash

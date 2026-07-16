@@ -55,7 +55,7 @@ function baseManifest() {
 
 function nodeManifest(overrides = {}) {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     releaseEligible: false,
     generatorGitSha: null,
     regionId: 'node-preview-v1',
@@ -71,6 +71,7 @@ function nodeManifest(overrides = {}) {
       id: 'fixture-transsib',
       type: 'transsib-gate',
       label: '시험 횡단열차역',
+      contentLocale: 'ru',
       corridorStopId: 'fixture',
       lon: 1,
       lat: 1,
@@ -92,7 +93,7 @@ describe('오버월드 교통 노드 계약', () => {
 
   it('문서 미지 필드·범위 밖 좌표·잘못된 청크 소속을 거부한다', () => {
     const valid = {
-      formatVersion: 1,
+      formatVersion: 2,
       kind: 'transport-nodes',
       cx: 0,
       cy: 0,
@@ -100,6 +101,7 @@ describe('오버월드 교통 노드 계약', () => {
         id: 'fixture-transsib',
         type: 'transsib-gate',
         label: '시험 횡단열차역',
+        contentLocale: 'ru',
         corridorStopId: 'fixture',
         tile: [12, 34],
       }],
@@ -113,6 +115,26 @@ describe('오버월드 교통 노드 계약', () => {
       ...valid,
       nodes: [{ ...valid.nodes[0], tile: [300, 34] }],
     }, { cx: 0, cy: 0, width: 512, height: 256 })).toThrow(/document chunk/);
+  });
+
+  it('항공 게이트의 공항 코드·언어 앵커를 타입별로 검증한다', () => {
+    const airGate = {
+      id: 'fixture-air',
+      type: 'air-gate',
+      label: '시험 공항',
+      contentLocale: 'fr',
+      airportCode: 'CDG',
+      lon: 1,
+      lat: 1,
+    };
+    expect(normalizeOverworldTransportNodeManifest(nodeManifest({ nodes: [airGate] })).nodes[0])
+      .toMatchObject({ type: 'air-gate', airportCode: 'CDG', contentLocale: 'fr' });
+    expect(() => normalizeOverworldTransportNodeManifest(nodeManifest({
+      nodes: [{ ...airGate, airportCode: 'cdg' }],
+    }))).toThrow(/airportCode/);
+    expect(() => normalizeOverworldTransportNodeManifest(nodeManifest({
+      nodes: [{ ...airGate, contentLocale: 'French' }],
+    }))).toThrow(/contentLocale/);
   });
 
   it('같은 manifest에서 byte-identical 노드 인덱스를 만든다', () => {
@@ -162,7 +184,7 @@ describe('OverworldTransportNodeLoader', () => {
         if (url.endsWith('nodes/0/0.json')) return {
           ok: true,
           json: async () => ({
-            formatVersion: 1,
+            formatVersion: 2,
             kind: 'transport-nodes',
             cx: 0,
             cy: 0,
@@ -170,6 +192,7 @@ describe('OverworldTransportNodeLoader', () => {
               id: 'fixture-transsib',
               type: 'transsib-gate',
               label: '시험 횡단열차역',
+              contentLocale: 'ru',
               corridorStopId: 'fixture',
               tile: [12, 34],
             }],

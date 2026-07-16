@@ -2129,6 +2129,10 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         setNearGate: (gate) => setRegionNearGate(gate),
         setStatus: (status) => setRegionStatus(status),
         requestGate: (prompt) => setRegionGatePrompt(prompt),
+        airReturnSpawn: () => {
+          const airport = getNode('incheon-airport');
+          return airport ? { scene: 'plaza', x: airport.tile[0], y: airport.tile[1] } : null;
+        },
         persistPosition: async (position) => {
           if (!userId || !position) return false;
           try {
@@ -2641,7 +2645,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           boxShadow: `inset 0 0 0 1px ${GBC.creamHi}`, borderRadius: 2,
           padding: '4px 10px', lineHeight: 1.2, whiteSpace: 'nowrap',
         }}>
-          🚆 Ⓐ {regionNearGate.gate.label}
+          {regionNearGate.gate.type === 'air-gate' ? '✈️' : '🚆'} Ⓐ {regionNearGate.gate.label}
         </div>
       )}
 
@@ -2652,17 +2656,20 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         }}>
           <div style={{ ...gbcPanel, width: 'min(88%, 340px)', padding: '14px 14px 12px' }}>
             <div style={{ fontSize: '0.84rem', fontWeight: 'bold', textAlign: 'center', marginBottom: 4 }}>
-              🚆 {regionGatePrompt.gate.label}
+              {regionGatePrompt.gate.type === 'air-gate' ? '✈️' : '🚆'} {regionGatePrompt.gate.label}
             </div>
             <div style={{ fontSize: '0.66rem', opacity: 0.75, textAlign: 'center', marginBottom: 10 }}>
-              횡단열차 회랑 플랫폼으로 이동할까요?
+              {regionGatePrompt.gate.type === 'air-gate'
+                ? '인천공항으로 돌아갈까요?'
+                : '횡단열차 회랑 플랫폼으로 이동할까요?'}
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 7 }}>
               <button
                 type="button"
                 onClick={() => {
                   setRegionGatePrompt(null);
-                  sceneRef.current?.enterCorridor?.();
+                  if (regionGatePrompt.gate.type === 'air-gate') sceneRef.current?.leaveByAir?.();
+                  else sceneRef.current?.enterCorridor?.();
                 }}
                 style={gbcButtonPrimary}
               >
@@ -2690,6 +2697,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         }}>
           {regionStatus.phase === 'loading' && <>🌍 지역 지형 불러오는 중…</>}
           {regionStatus.phase === 'saving-gate' && <>💾 횡단열차 플랫폼 저장 중…</>}
+          {regionStatus.phase === 'saving-air' && <>💾 귀환 공항 저장 중…</>}
           {regionStatus.phase === 'error' && (
             <>
               ⚠ {regionStatus.message || '요청을 완료하지 못했어요.'}
