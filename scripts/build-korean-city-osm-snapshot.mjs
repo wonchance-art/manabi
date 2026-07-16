@@ -197,8 +197,11 @@ function hash(value) {
 export function roadStyle(highway) {
   if (/^(motorway|trunk)$/.test(highway)) return { radius: 2, value: 2 };
   if (/^(primary|secondary)$/.test(highway)) return { radius: 1, value: 2 };
-  if (/^(tertiary|residential|living_street|unclassified|pedestrian)$/.test(highway)) return { radius: 1, value: 1 };
-  if (/^(service|footway|path|steps|cycleway|track)$/.test(highway)) return { radius: 0, value: 1 };
+  if (/^(motorway_link|trunk_link|primary_link|secondary_link|tertiary_link)$/.test(highway)) return { radius: 0, value: 2 };
+  if (/^(tertiary|residential|living_street|unclassified)$/.test(highway)) return { radius: 1, value: 2 };
+  if (highway === 'service') return { radius: 0, value: 2 };
+  if (highway === 'pedestrian') return { radius: 1, value: 1 };
+  if (/^(footway|path|steps|cycleway|track)$/.test(highway)) return { radius: 0, value: 1 };
   return { radius: 0, value: 1 };
 }
 
@@ -251,6 +254,7 @@ export function buildSnapshot(city, rawText) {
     buildingWays: 0, roadWays: 0, waterAreas: 0, riverWays: 0, parkAreas: 0,
     mountainAreas: 0, railwayWays: 0, coastlineWays: 0,
   };
+  const roadWaysByClass = {};
   const crossings = [];
   const elements = [...(raw.elements ?? [])].sort((a, b) => `${a.type}:${a.id}`.localeCompare(`${b.type}:${b.id}`));
   for (const element of elements) {
@@ -268,6 +272,7 @@ export function buildSnapshot(city, rawText) {
       const style = roadStyle(tags.highway);
       drawPolyline(masks.road, element.geometry, metrics, style.radius, style.value);
       counts.roadWays += 1;
+      roadWaysByClass[tags.highway] = (roadWaysByClass[tags.highway] || 0) + 1;
     }
     if (tags.natural === 'water') {
       paintPolygonElement(masks.water, element, metrics);
@@ -301,13 +306,15 @@ export function buildSnapshot(city, rawText) {
     .filter(([name]) => name !== 'coastline')
     .map(([name, values]) => [`${name}Rle`, encodeRle(values)]));
   return {
-    version: 1,
+    version: 2,
     city,
     bbox: config.bbox,
     grid: metrics.grid,
     source: {
       geometry: 'OpenStreetMap', license: 'ODbL 1.0', snapshot: '2026-07-16',
       providers: ['overpass.kumi.systems'], rawOverpassSha256: hash(rawText),
+      roadSelection: 'all-highway-tagged-ways',
+      roadWaysByClass: Object.fromEntries(Object.entries(roadWaysByClass).sort(([left], [right]) => left.localeCompare(right))),
       ...counts, crossingNodes: uniqueCrossings.length, crossingTiles: uniqueCrossings.length,
     },
     hashes: Object.fromEntries(Object.entries(rles).map(([name, value]) => [name, hash(JSON.stringify(value))])),
