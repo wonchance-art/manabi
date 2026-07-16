@@ -3,7 +3,10 @@ import { describe, expect, it } from 'vitest';
 import { GRAND_PARIS_GEO } from '../cities/grand-paris.geo.js';
 import { CITY_TILE, fastTravelDestinations, isCityBlocked } from '../cities/terrain.js';
 import { encodeTerrainRle } from '../../../../scripts/build-korean-city-geo.mjs';
-import { buildFrenchCityGeo } from '../../../../scripts/build-french-city-geo.mjs';
+import {
+  buildFrenchCityGeo,
+  normalizeFrenchBridgeTerrain,
+} from '../../../../scripts/build-french-city-geo.mjs';
 
 const hash = (values) => createHash('sha256').update(values).digest('hex');
 const byId = (entries, id) => entries.find((entry) => entry.id === id);
@@ -90,6 +93,12 @@ describe('Grand Paris 상세 geo 계약', () => {
         publicDatasetProbe: { provider: 'OpenStreetMap', outcome: 'fixed-offline-snapshot' },
         finalRatioRange: [0.14, 0.17], generatedTileCount: 0, finalLandBuildingRatio: 0.150625,
       },
+      bridgeNormalization: {
+        method: 'france-bridge-three-way-v1', sourceBridgeTileCount: 1_844,
+        componentCount: 370, roadComponentCount: 362, absorbedComponentCount: 8,
+        roadTileCount: 1_834, absorbedWaterTileCount: 2, absorbedRiverTileCount: 8,
+        finalBridgeTileCount: 0,
+      },
     });
     expect(GRAND_PARIS_GEO.terrain).toHaveLength(1_207_305);
     expect(GRAND_PARIS_GEO.entrance).toEqual({ x: 934, y: 329, facing: 'down' });
@@ -126,16 +135,40 @@ describe('Grand Paris 상세 geo 계약', () => {
     expect(destinations.map(({ id }) => id)).toContain('versailles-rive-gauche');
   });
 
-  it('최종 terrain 질량과 실제 bridge 태그 결과를 고정한다', () => {
+  it('최종 terrain 질량과 프랑스 교량 3분류 결과를 고정한다', () => {
     const counts = {};
     for (const code of GRAND_PARIS_GEO.terrain) counts[code] = (counts[code] || 0) + 1;
     expect(counts).toEqual({
-      [CITY_TILE.ROAD]: 431_720, [CITY_TILE.SIDEWALK]: 405_007, [CITY_TILE.CROSSWALK]: 45_560,
-      [CITY_TILE.PLAZA]: 13, [CITY_TILE.PARK]: 110_769, [CITY_TILE.BRIDGE]: 1_844,
-      [CITY_TILE.WATER]: 18_706, [CITY_TILE.BUILDING]: 176_434, [CITY_TILE.RIVER]: 17_252,
+      [CITY_TILE.ROAD]: 433_554, [CITY_TILE.SIDEWALK]: 405_007, [CITY_TILE.CROSSWALK]: 45_560,
+      [CITY_TILE.PLAZA]: 13, [CITY_TILE.PARK]: 110_769, [CITY_TILE.WATER]: 18_708,
+      [CITY_TILE.BUILDING]: 176_434, [CITY_TILE.RIVER]: 17_260,
     });
+    expect(counts[CITY_TILE.BRIDGE] ?? 0).toBe(0);
     expect(GRAND_PARIS_GEO.meta.source.bridgeWays).toBe(3_049);
     expect(GRAND_PARIS_GEO.railways.tileCount).toBe(51_813);
+    expect(GRAND_PARIS_GEO.terrain[byId(GRAND_PARIS_GEO.pois, 'pont-neuf').tile[1]
+      * GRAND_PARIS_GEO.meta.grid.w + byId(GRAND_PARIS_GEO.pois, 'pont-neuf').tile[0]])
+      .toBe(CITY_TILE.ROAD);
+  });
+
+  it('양안 접속·도로 접속·강심 조각을 결정적으로 3분류한다', () => {
+    const meta = { grid: { w: 5, h: 3 } };
+    const crossing = new Uint8Array(15).fill(CITY_TILE.WATER);
+    crossing[7] = CITY_TILE.BRIDGE;
+    crossing[6] = CITY_TILE.SIDEWALK;
+    crossing[8] = CITY_TILE.SIDEWALK;
+    expect(normalizeFrenchBridgeTerrain(crossing, meta).terrain[7]).toBe(CITY_TILE.ROAD);
+
+    const roadAttached = new Uint8Array(15).fill(CITY_TILE.WATER);
+    roadAttached[7] = CITY_TILE.BRIDGE;
+    roadAttached[6] = CITY_TILE.ROAD;
+    expect(normalizeFrenchBridgeTerrain(roadAttached, meta).terrain[7]).toBe(CITY_TILE.ROAD);
+
+    const isolated = new Uint8Array(15).fill(CITY_TILE.WATER);
+    isolated[7] = CITY_TILE.BRIDGE;
+    isolated[6] = CITY_TILE.SIDEWALK;
+    isolated[8] = CITY_TILE.RIVER;
+    expect(normalizeFrenchBridgeTerrain(isolated, meta).terrain[7]).toBe(CITY_TILE.RIVER);
   });
 
   it('POI·역과 모든 보행 타일이 Gare du Nord 단일 4방 BFS 성분이다', () => {
@@ -157,9 +190,9 @@ describe('Grand Paris 상세 geo 계약', () => {
     const first = buildFrenchCityGeo('grand-paris');
     const second = buildFrenchCityGeo('grand-paris');
     expect(hash(first.terrain)).toBe(hash(second.terrain));
-    expect(hash(first.terrain)).toBe('a069ff27ec35cbf36f2737ce83edf0017bae4eabfe628cdf1588f0782873ea0a');
+    expect(hash(first.terrain)).toBe('c081ba149f187436901f450c7f10751bb8d0778edd10112c01e5faa311ae5fdd');
     expect(hash(first.railways.mask)).toBe('404de62e1c5b3f5b92e53688c8389c2a3cf37e7e80e974d60bf606b518a21e75');
-    expect(encodeTerrainRle(first.terrain)).toHaveLength(540_708);
+    expect(encodeTerrainRle(first.terrain)).toHaveLength(540_186);
     expect(encodeTerrainRle(first.railways.mask)).toHaveLength(34_573);
     expect(first.pois).toEqual(GRAND_PARIS_GEO.pois);
     expect(first.stations).toEqual(GRAND_PARIS_GEO.stations);
