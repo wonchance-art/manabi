@@ -72,6 +72,7 @@ import { buildAirportScene } from './airportScene';
 import { buildMsmAbbeyScene, MSM_ABBEY_SCENE_KEY } from './msmAbbeyScene';
 import { buildTranssibCorridorScene } from './transsibCorridorScene';
 import { buildOverworldRegionScene } from './overworldRegionScene';
+import { AVATAR_REBAKE_STATIC_TARGETS } from './avatarRebake';
 // 🏙️ 도시 정밀맵(계층형 맵) — CityScene 은 1개, cityId 로 파라미터화. 도시 추가 = cities/<id>.js 1개.
 //   도시 데이터는 이 청크(GameCanvas 는 next/dynamic ssr:false) 안에서만 로드된다 — /world First Load JS 무영향.
 import { buildCityScene } from './CityScene';
@@ -494,14 +495,15 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
     avatarRef.current = next;
     const game = gameRef.current;
     if (!game) return;
+    // 정적 대상은 avatarRebake.js 공유 계약(월드·공항·횡단열차·전 지역 씬 — Codex #113 P1),
+    // ct_pc(도시 정밀맵)만 활성 도시 탐색이 필요해 특수 처리.
     const candidates = [
-      ['pc', game.scene.getScene('world')],
-      ['ax_pc', game.scene.getScene('airport')],
+      ...AVATAR_REBAKE_STATIC_TARGETS.map(([prefix, sceneKey]) => [prefix, game.scene.getScene(sceneKey)]),
       ['ct_pc', Object.values(CITY_DATA).map((city) => game.scene.getScene(`city:${city.id}`)).find((scene) => scene?.textures?.exists('ct_pc_down_n'))],
     ];
     for (const [prefix, scene] of candidates) {
       if (!scene?.textures?.exists(`${prefix}_down_n`)) continue;
-      ensureAvatarCharSet(scene, prefix, tonePalette(avatarPalette(next), scene.mode || 'day'), { replace: true });
+      ensureAvatarCharSet(scene, prefix, tonePalette(avatarPalette(next), scene.mode || 'day'), { replace: true, shape: next });
     }
   }, [avatar]);
   useEffect(() => { initialSpawnRef.current = initialSpawn; }, [initialSpawn]);
@@ -808,7 +810,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           this.buildNamedPeaks();  // 명산 전용 도트 조각(worldNodes peak 필드 → t_peak_<peak>)
           this.buildHeart();
           this.buildLamp();
-          this.buildCharSet('pc', this.charPal.pc);
+          this.buildCharSet('pc', this.charPal.pc, avatarRef.current);
           this.buildCharSet('pr', this.charPal.pr);
           this.buildPets();
         }
@@ -1263,10 +1265,10 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         }
 
         // 4방향 × 걷기 3패턴(n/l/r) 캐릭터, 16×16 한 칸(우향은 side flipX).
-        buildCharSet(prefix, pal) {
+        buildCharSet(prefix, pal, shape) {
           for (const dir of CHAR_DIRS) {
             for (const pose of CHAR_POSES) {
-              this.makeTex(`${prefix}_${dir}_${pose}`, charFrameRows(dir, pose), pal, CHAR_W, CHAR_H);
+              this.makeTex(`${prefix}_${dir}_${pose}`, charFrameRows(dir, pose, shape), pal, CHAR_W, CHAR_H);
             }
           }
         }

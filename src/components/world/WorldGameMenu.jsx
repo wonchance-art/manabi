@@ -19,7 +19,9 @@ const TABS = [
   { id: 'quests', icon: '🪧', label: '임무' },
 ];
 
-const fieldLabel = { skin: '피부색', hair: '머리색', top: '상의', bottom: '하의' };
+const fieldLabel = { skin: '피부색', hair: '머리색', top: '상의', bottom: '하의', style: '헤어스타일', outfit: '의상', acc: '소품' };
+// 색 견본 버튼으로 그리는 그룹 — 나머지(실루엣 그룹)는 라벨 칩으로 그린다.
+const COLOR_FIELDS = new Set(['skin', 'hair', 'top', 'bottom']);
 
 function AvatarPreview({ avatar }) {
   const canvasRef = useRef(null);
@@ -28,7 +30,7 @@ function AvatarPreview({ avatar }) {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const context = canvas.getContext('2d');
-    const rows = charFrameRows('down', 'n');
+    const rows = charFrameRows('down', 'n', avatar);
     const palette = avatarPalette(avatar);
     context.clearRect(0, 0, canvas.width, canvas.height);
     for (let y = 0; y < rows.length; y += 1) {
@@ -59,22 +61,40 @@ function AvatarPanel({ avatar, onApply }) {
           <fieldset key={field} style={{ border: 0, margin: '0 0 7px', padding: 0 }}>
             <legend style={{ fontSize: '0.62rem', fontWeight: 700, marginBottom: 3 }}>{fieldLabel[field]}</legend>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-              {options.map((option) => (
-                <button
-                  key={option.id}
-                  type="button"
-                  aria-label={option.label}
-                  aria-pressed={draft[field] === option.id}
-                  onClick={() => setDraft((current) => ({ ...current, [field]: option.id }))}
-                  title={option.label}
-                  style={{
-                    width: 27, height: 22, padding: 2, cursor: 'pointer',
-                    background: `#${option.color.toString(16).padStart(6, '0')}`,
-                    border: draft[field] === option.id ? `3px solid ${GBC.green}` : `2px solid ${GBC.border}`,
-                    boxShadow: draft[field] === option.id ? `0 0 0 1px ${GBC.creamHi}` : 'none',
-                  }}
-                />
-              ))}
+              {options.map((option) => {
+                const selected = draft[field] === option.id;
+                const swatch = COLOR_FIELDS.has(field);
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    aria-label={option.label}
+                    aria-pressed={selected}
+                    onClick={() => setDraft((current) => ({ ...current, [field]: option.id }))}
+                    title={option.label}
+                    style={{
+                      ...(swatch
+                        ? { width: 27, height: 22, background: `#${option.color.toString(16).padStart(6, '0')}` }
+                        : {
+                          height: 22, padding: '0 7px', fontSize: '0.58rem', fontWeight: 700,
+                          color: GBC.ink, background: GBC.creamShade, display: 'inline-flex', alignItems: 'center', gap: 4,
+                        }),
+                      padding: swatch ? 2 : '0 7px', cursor: 'pointer',
+                      border: selected ? `3px solid ${GBC.green}` : `2px solid ${GBC.border}`,
+                      boxShadow: selected ? `0 0 0 1px ${GBC.creamHi}` : 'none',
+                    }}
+                  >
+                    {!swatch && (
+                      <>
+                        {option.color != null && (
+                          <span aria-hidden style={{ width: 8, height: 8, background: `#${option.color.toString(16).padStart(6, '0')}`, border: `1px solid ${GBC.border}`, display: 'inline-block' }} />
+                        )}
+                        {option.label}
+                      </>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </fieldset>
         ))}

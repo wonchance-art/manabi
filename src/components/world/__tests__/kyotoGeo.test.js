@@ -299,7 +299,8 @@ describe('교토 생성 결정성·오프라인 계약', () => {
     expect(first.stations).toEqual(KYOTO_GEO.stations);
   });
 
-  it('RLE 왕복이 전체 지형·철도 타일을 보존한다', () => {
+  // 전 타일 왕복 비교라 병렬 실행 시 이 호스트에서 기본 5초를 넘길 수 있다(tokyoGeo와 동일 패턴).
+  it('RLE 왕복이 전체 지형·철도 타일을 보존한다', { timeout: 20_000 }, () => {
     const terrainRuns = encodeTerrainRle(KYOTO_GEO.terrain);
     const railwayRuns = encodeTerrainRle(KYOTO_GEO.railways.mask);
     expect(decodeTerrainRle(terrainRuns, KYOTO_GEO.terrain.length)).toEqual(KYOTO_GEO.terrain);
