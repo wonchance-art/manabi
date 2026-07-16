@@ -91,6 +91,17 @@ export function overworldRenderPageKey(pageX, pageY) {
   return `${pageX},${pageY}`;
 }
 
+export function overworldRenderPageKeyAtWorldPixel(worldX, worldY, { tilePixels = 32 } = {}) {
+  assertFinite(worldX, 'worldX');
+  assertFinite(worldY, 'worldY');
+  assertPositiveInteger(tilePixels, 'tilePixels');
+  const pagePixels = OVERWORLD_RENDER_PAGE_TILES * tilePixels;
+  return overworldRenderPageKey(
+    Math.floor(worldX / pagePixels),
+    Math.floor(worldY / pagePixels),
+  );
+}
+
 export function renderPageToStorageChunk(pageX, pageY) {
   const key = overworldRenderPageKey(pageX, pageY);
   const { cx, cy, localX, localY } = globalTileToStorageChunk(
