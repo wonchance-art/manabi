@@ -23,7 +23,6 @@ export const EMEA_RAIL_NETWORK = Object.freeze({
     freezeHub({ id: 'vienna-rail-hub', label: '빈 철도 허브', contentLocale: 'de', tile: [433, 440] }),
   ]),
   links: Object.freeze([
-    freezeLink(['london-rail-hub', 'paris-rail-hub']),
     freezeLink(['madrid-rail-hub', 'paris-rail-hub']),
     freezeLink(['paris-rail-hub', 'berlin-rail-hub']),
     freezeLink(['berlin-rail-hub', 'vienna-rail-hub']),
@@ -75,6 +74,21 @@ export function planEmeaRailRoute(originId, terminalId, config = EMEA_RAIL_NETWO
   const stops = [];
   for (let current = terminalId; current !== null; current = previous.get(current)) stops.push(current);
   return Object.freeze(stops.reverse());
+}
+
+export function emeaRailDestinations(originId, config = EMEA_RAIL_NETWORK) {
+  if (!hubById(config, originId)) throw new Error(`unknown EMEA rail origin: ${originId}`);
+  const neighbors = neighborsByHub(config);
+  const reachable = new Set([originId]);
+  const queue = [originId];
+  for (let cursor = 0; cursor < queue.length; cursor += 1) {
+    for (const next of neighbors.get(queue[cursor])) {
+      if (reachable.has(next)) continue;
+      reachable.add(next);
+      queue.push(next);
+    }
+  }
+  return Object.freeze(config.hubs.filter(({ id }) => id !== originId && reachable.has(id)));
 }
 
 export function prepareEmeaRailTrip({ originId, terminalId }, config = EMEA_RAIL_NETWORK) {
