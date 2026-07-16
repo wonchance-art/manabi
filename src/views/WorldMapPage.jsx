@@ -10,7 +10,7 @@ import { useAuth } from '../lib/AuthContext';
 import Spinner from '../components/Spinner';
 import Button from '../components/Button';
 import { MAP_W, MAP_H, decodeMap, TERRAIN } from '../components/world/mapData';
-import { WORLD_NODES } from '../components/world/worldNodes';
+import { ALL_WORLD_NODES, WORLD_NODES } from '../components/world/worldNodes';
 import { CITY_MAPS } from '../components/world/cities/index.js';
 import { unproject, isCoastTile, buildPlayableGrid } from '../lib/world/mapGeo';
 import { cityMapMarkers, overworldRegionMarkers, worldMapMarkers } from '../lib/world/mapViewer';
@@ -231,7 +231,7 @@ export default function WorldMapPage() {
     if (activeMap.kind === 'world') return worldMapMarkers(WORLD_NODES);
     if (activeMap.kind === 'overworld') {
       const transportNodes = activeMap.region.id === 'emea' ? EMEA_RAIL_NETWORK.hubs : [];
-      return overworldRegionMarkers(activeMap.region, WORLD_NODES, transportNodes);
+      return overworldRegionMarkers(activeMap.region, ALL_WORLD_NODES, transportNodes);
     }
     return cityMapMarkers(activeMap.city);
   }, [activeMap]);

@@ -1,14 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { WORLD_NODES } from '../../../components/world/worldNodes.js';
+import {
+  ALL_WORLD_NODES,
+  WORLD_NODES,
+  getNode,
+} from '../../../components/world/worldNodes.js';
 import {
   nearestOverworldRegionWorldNode,
   overworldRegionWorldNodeMode,
   overworldRegionWorldNodes,
   resolveOverworldRegionFerry,
 } from '../overworldRegionWorldNodes.js';
+import { EMEA_RAIL_NETWORK } from '../emeaRail.js';
 import { overworldRegionById } from '../overworldRegions.js';
 
 const APAC = overworldRegionById('asia-pacific');
+const EMEA = overworldRegionById('emea');
 
 describe('APAC 월드 노드 런타임 인덱스', () => {
   it('도시 소속 노드를 제외하고 새 좌표를 id 순으로 고정한다', () => {
@@ -77,5 +83,27 @@ describe('APAC 월드 노드 런타임 인덱스', () => {
       destination.id,
       APAC.sceneId,
     )).toBeNull();
+  });
+});
+
+describe('EMEA 도시 게이트 런타임 인덱스', () => {
+  it('파리 노드를 지역 좌표로 색인하고 그랑파리 도시 게이트를 연다', () => {
+    const paris = getNode('paris');
+    const entries = overworldRegionWorldNodes(EMEA, ALL_WORLD_NODES);
+
+    expect(paris).toMatchObject({
+      regionId: EMEA.id,
+      contentLocale: 'fr',
+      overworldTile: [213, 424],
+      gate: { type: 'city', to: 'grand-paris' },
+    });
+    expect(entries.map(({ node }) => node.id)).toContain(paris.id);
+    expect(nearestOverworldRegionWorldNode(entries, 213, 424, 0)).toBe(paris);
+    expect(overworldRegionWorldNodeMode(paris)).toBe('city');
+    const railHub = EMEA_RAIL_NETWORK.hubs.find(({ id }) => id === 'paris-rail-hub');
+    expect(Math.max(
+      Math.abs(paris.overworldTile[0] - railHub.tile[0]),
+      Math.abs(paris.overworldTile[1] - railHub.tile[1]),
+    )).toBeGreaterThan(1);
   });
 });

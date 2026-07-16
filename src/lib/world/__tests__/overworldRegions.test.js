@@ -3,7 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { decodeOverworldChunkV1, OVERWORLD_STORAGE_CHUNK_TILES } from '../overworldChunk.js';
-import { WORLD_NODES } from '../../../components/world/worldNodes.js';
+import { WORLD_NODES, getNode } from '../../../components/world/worldNodes.js';
 import { normalizeOverworldOverlayDocument } from '../overworldFeatureOverlay.js';
 import { normalizeOverworldTransportNodeDocument } from '../overworldTransportNodes.js';
 import {
@@ -89,6 +89,16 @@ describe('오버월드 지역 레지스트리', () => {
     expect(overworldRegionAirSpawn(region)).toEqual({
       scene: region.sceneId, x: region.airGate.tile.x, y: region.airGate.tile.y,
     });
+    const paris = getNode('paris');
+    expect(paris.overworldTile).toEqual([213, 424]);
+    expect(checkedInGateCell(region, {
+      tile: { x: paris.overworldTile[0], y: paris.overworldTile[1] },
+    })).toMatchObject({ valid: true, collision: 0, viewOnly: 0 });
+    expect(projectOverworldRegionCoordinate(region, paris.lon, paris.lat))
+      .toEqual({
+        x: paris.overworldTile[0] - paris.arrivalOffset[0],
+        y: paris.overworldTile[1] - paris.arrivalOffset[1],
+      });
     const apac = overworldRegionById('asia-pacific');
     expect(apac.airArrival).toMatchObject({
       id: 'incheon-air-arrival', airportCode: 'ICN', contentLocale: 'ko', arrivalOffset: [4, 0],

@@ -32,11 +32,24 @@ const CITY_GATES = {
       { name: '낙동강(을숙도 단면)', lat: 35.10, lonRange: [128.90, 129.00], sumMinM: 1200, runMinM: 600 },
     ],
     streamCourses: [
+<<<<<<< HEAD
       {
         // 유로 점은 OSM 중심선 굴곡을 따라 조밀하게 pin(직선 보간이 굽은 구간을 벗어나지
         // 않도록 — Codex #156 P1 반영). 종점은 수영강 합류부 직전(relation bbox 내)까지만.
         name: '온천천', presenceMin: 0.8, windowTiles: 4,
         pts: [[129.0895, 35.2295], [129.0855, 35.2195], [129.0845, 35.2120], [129.0865, 35.2050], [129.0885, 35.2000], [129.0900, 35.1950], [129.0950, 35.1900], [129.1000, 35.1870], [129.1050, 35.1830]],
+=======
+      // 온천천은 OSM relation 6994989 지표 수면 기준 2분절 — 세병교 35.2030~35.2083 구간은
+      // 실제 복개(way 577576476: tunnel=culvert·layer=-1)라 표본에서 제외(계약과 일치,
+      // Codex-1 #151 재반박 수용). 하류 pin은 relation 실굴곡(수영강 합류 방면 남동 커브).
+      {
+        name: '온천천(상류·복개 이북)', presenceMin: 0.8, windowTiles: 4,
+        pts: [[129.0893, 35.2308], [129.0884, 35.2237], [129.0869, 35.2208], [129.0849, 35.2179], [129.0817, 35.2151], [129.0805, 35.2136], [129.0787, 35.2107], [129.0786, 35.2085]],
+      },
+      {
+        name: '온천천(하류·복개 이남)', presenceMin: 0.8, windowTiles: 4,
+        pts: [[129.0785, 35.2028], [129.0792, 35.2007], [129.0802, 35.1993], [129.0836, 35.1960], [129.0851, 35.1950], [129.0876, 35.1940], [129.0908, 35.1935], [129.0943, 35.1930], [129.0985, 35.1920], [129.1029, 35.1910], [129.1073, 35.1906]],
+>>>>>>> origin/main
       },
     ],
     reportCourses: [
@@ -72,7 +85,11 @@ const CITY_GATES = {
   },
   // ── 유럽 1차 (Codex-2 착수 전 선제 정의 — 파일명이 다르면 --file 로 대입) ──
   'grand-paris': {
+<<<<<<< HEAD
     file: 'src/components/world/cities/grandparis.geo.js',
+=======
+    file: 'src/components/world/cities/grand-paris.geo.js',
+>>>>>>> origin/main
     snapshot: null, // FR 파이프라인 스냅샷 경로는 Codex-2 산출 확인 후 고정
     expectedLocale: 'fr',
     expectedMpt: 20,
@@ -86,9 +103,38 @@ const CITY_GATES = {
     ],
     streamCourses: [],
     reportCourses: [],
+<<<<<<< HEAD
   },
   'mont-saint-michel': {
     file: 'src/components/world/cities/montsaintmichel.geo.js',
+=======
+    // 오너 확정(2026-07-16): 프랑스 도시도 한국식 교량 정리 — BRIDGE 잔존 0, 다리=차도, 강심=수면.
+    bridgeMaxTiles: 0,
+    bridgeCrossings: [
+      { name: '퐁뇌프', lon: 2.3413, lat: 48.8567, windowTiles: 5 },
+      { name: '퐁드베르시', lon: 2.3745, lat: 48.8375, windowTiles: 6 },
+    ],
+  },
+  'cote-dazur': {
+    file: 'src/components/world/cities/cote-dazur.geo.js',
+    snapshot: null,
+    expectedLocale: 'fr',
+    expectedMpt: 20,
+    buildingPct: null, // 리비에라 프로필 관찰 후 확정
+    greenMinPct: null, // 해안 구릉 관목 프로필 미확정 — report 관찰
+    poiMaxDevTiles: 2.5,
+    downtown: { label: '니스 구시가', lon: 7.2755, lat: 43.6955 },
+    riverSections: [
+      { name: '바르강 하구 단면', lat: 43.665, lonRange: [7.19, 7.21], sumMinM: 100, runMinM: 60 },
+    ],
+    streamCourses: [],
+    reportCourses: [],
+    bridgeMaxTiles: 0, // 오너 확정: 프랑스도 한국식 교량 정리
+    bridgeCrossings: [],
+  },
+  'mont-saint-michel': {
+    file: 'src/components/world/cities/mont-saint-michel.geo.js',
+>>>>>>> origin/main
     snapshot: null,
     expectedLocale: 'fr',
     expectedMpt: 4, // 정밀 티어 1호 — mpt 계약 자체가 게이트
@@ -125,6 +171,7 @@ function terrainShares(geo) {
   return { counts, land, pct };
 }
 
+<<<<<<< HEAD
 function scanSection(geo, proj, section) {
   const W = geo.meta.grid.w;
   const mpt = geo.meta.metersPerTile;
@@ -145,6 +192,38 @@ function scanSection(geo, proj, section) {
   }
   if (run > 0) runs.push(run);
   return { sumM: sum * mpt, runM: Math.max(0, ...runs) * mpt };
+=======
+// 단면은 스캔 축 ±2 오프셋 5개 중 최적값 — 교량 데크(→KR 정리 후엔 차도)가 pin 열과 정확히
+// 겹치면 수면이 0으로 나오는 false FAIL 방지(그랑파리 루브르 단면 = 퐁뒤카루젤 사례, Codex-2 진단).
+function scanSection(geo, proj, section) {
+  const W = geo.meta.grid.w;
+  const mpt = geo.meta.metersPerTile;
+  const scanOnce = (offset) => {
+    const runs = [];
+    let run = 0;
+    let sum = 0;
+    const push = (v) => {
+      if (isWaterTile(v)) { sum += 1; run += 1; } else if (run > 0) { runs.push(run); run = 0; }
+    };
+    if (section.lat != null) { // 가로 단면(고정 위도, 경도 스캔) — 오프셋은 y축
+      const y = Math.floor(proj.tile(section.lonRange[0], section.lat)[1]) + offset;
+      const [x0, x1] = section.lonRange.map((lon) => Math.floor(proj.tile(lon, section.lat)[0]));
+      for (let x = x0; x <= x1; x += 1) push(geo.terrain[y * W + x]);
+    } else { // 세로 단면(고정 경도, 위도 스캔 — latRange는 북→남) — 오프셋은 x축
+      const x = Math.floor(proj.tile(section.lon, section.latRange[0])[0]) + offset;
+      const [y0, y1] = section.latRange.map((lat) => Math.floor(proj.tile(section.lon, lat)[1]));
+      for (let y = y0; y <= y1; y += 1) push(geo.terrain[y * W + x]);
+    }
+    if (run > 0) runs.push(run);
+    return { sumM: sum * mpt, runM: Math.max(0, ...runs) * mpt };
+  };
+  let best = { sumM: 0, runM: 0 };
+  for (const offset of [-2, -1, 0, 1, 2]) {
+    const result = scanOnce(offset);
+    if (result.sumM > best.sumM || (result.sumM === best.sumM && result.runM > best.runM)) best = result;
+  }
+  return best;
+>>>>>>> origin/main
 }
 
 function coursePresence(geo, proj, course) {
