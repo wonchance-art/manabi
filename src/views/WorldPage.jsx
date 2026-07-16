@@ -25,7 +25,7 @@ import { createVoiceMesh } from '../lib/world/voice';
 import { createVoiceUnreachableNotifier } from '../lib/world/voiceNotify';
 import { createWorldChat } from '../lib/world/chat';
 import { getMuted, isMuted, toggleMute, onChange as onMuteChange } from '../lib/world/muteStore';
-import { isPersistablePosition } from '../lib/world/session';
+import { isPersistablePosition, normalizePositionScene } from '../lib/world/session';
 import { cultureChapterHref, readingTextHref } from '../components/world/cultureDoors';
 // 도트 폰트(Galmuri9) @font-face — /world 라우트 전용 client 컴포넌트에서만 로드된다.
 import './galmuri9.css';
@@ -806,10 +806,10 @@ export default function WorldPage() {
       // livePosRef 갱신까지 스킵해 마지막 유효 플라자 좌표를 유지 → 재접속·재연결 재스폰·pagehide beacon
       // 모두 그 좌표를 쓴다(beacon 은 livePosRef.current 를 읽으므로 자동으로 동일하게 처리됨).
       if (!isPersistablePosition(st)) return;
-      // 저장 씬 보존 — 'city:<id>'(도시 정밀맵)은 그대로 실어 재접속 시 도시맵으로 직행 스폰하게 한다.
-      // (isPersistablePosition 이 이미 airport·비영속을 걸렀으므로 여기 도달값은 plaza 또는 city:* 뿐.)
+      // 저장 씬 보존 — 도시 정밀맵과 횡단철도 플랫폼은 그대로 실어 재접속 스폰에 쓴다.
+      // isPersistablePosition 이 공항·운행 중·알 수 없는 씬을 먼저 걸러낸다.
       const rawScene = typeof st.scene === 'string' ? st.scene : '';
-      const scene = rawScene.startsWith('city:') ? rawScene : 'plaza';
+      const scene = normalizePositionScene(rawScene);
       const x = Math.floor((st.x || 0) / TILE);
       const y = Math.floor((st.y || 0) / TILE);
       if (x < 0 || y < 0) return;
@@ -990,6 +990,7 @@ export default function WorldPage() {
                 avatar={avatar}
                 controlsRef={controlsRef}
                 initialSpawn={livePosRef.current || worldSpawn || null}
+                canAccessPreviewRegions={profile?.role === 'admin'}
                 onOpenChapter={openCultureChapter}
                 onOpenReading={profile?.role === 'admin' ? openReadingText : null}
                 onOpenDictionary={openDictionary}

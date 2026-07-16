@@ -15,6 +15,18 @@ import { normalizePosition } from '@/lib/world/session';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+async function normalizePositionForUser(raw, supabase, userId) {
+  const released = normalizePosition(raw);
+  if (released) return released;
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', userId)
+    .maybeSingle();
+  if (profile?.role !== 'admin') return null;
+  return normalizePosition(raw, { allowPreview: true });
+}
+
 export async function GET() {
   const auth = await requireUser();
   if (auth.error) return Response.json({ error: auth.error }, { status: auth.status });
@@ -26,7 +38,9 @@ export async function GET() {
     .eq('user_id', user.id)
     .maybeSingle();
 
-  const position = data ? { scene: data.scene, x: data.x, y: data.y } : null;
+  const position = data
+    ? await normalizePositionForUser({ scene: data.scene, x: data.x, y: data.y }, supabase, user.id)
+    : null;
   return Response.json({ position });
 }
 
@@ -40,10 +54,10 @@ export async function POST(request) {
   } catch {
     return Response.json({ error: '잘못된 JSON입니다.' }, { status: 400 });
   }
-  const pos = normalizePosition(body);
+  const { supabase, user } = auth;
+  const pos = await normalizePositionForUser(body, supabase, user.id);
   if (!pos) return Response.json({ error: 'scene, x, y가 올바르지 않습니다.' }, { status: 400 });
 
-  const { supabase, user } = auth;
   const { error } = await supabase
     .from('world_positions')
     .upsert(

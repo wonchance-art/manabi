@@ -38,6 +38,7 @@ import { toInteractiveNode } from './cultureDoors';
 import { activeVehiclesAt, planTransitTrip, tripStateAt } from '../../lib/world/transit';
 import { cityWeatherAt, nodeLifeAt } from '../../lib/world/worldLife';
 import { avatarPalette } from '../../lib/world/avatar';
+import { worldSceneReturnTarget } from '../../lib/world/worldSceneReturn';
 
 // ── 좌표 스케일 (광장·공항과 동일 불변) ──
 const TILE = 32;
@@ -92,7 +93,7 @@ function tileHash(tx, ty) {
  *   setNear(node|null),              근접 노드 → React(nearNode) — { id, name, desc, npc?, noStamp?, chapter? }
  *   setNearStation?(station|null),   🚃 근접 역 → React(nearStation) — { id, nameJa, yomi, line? }
  *   arrivedStation?({ nameJa, yomi }),  🚃 정기 교통 도착 확인 토스트("🚃 博多駅")
- *   worldReturn: { scene:'plaza', x, y },   전국맵 복귀 스폰(도시 노드 앞)
+ *   worldReturn: { scene:'plaza', x, y },   기본 전국맵 복귀 스폰(도시 노드 앞)
  * }
  */
 export function buildCityScene(Phaser, city, ctx) {
@@ -629,6 +630,7 @@ export function buildCityScene(Phaser, city, ctx) {
       this.transitTrip = null;
       this.transitState = 'none';
       this.lastVehicleUpdate = -Infinity;
+      this.worldReturn = data?.worldReturn || ctx.worldReturn;
 
       this.grid = city.buildGrid();
 
@@ -1002,7 +1004,8 @@ export function buildCityScene(Phaser, city, ctx) {
       ctx.setNear?.(null);
       this.cameras.main.fadeOut(FADE_MS, 0, 0, 0);
       this.cameras.main.once('camerafadeoutcomplete', () => {
-        this.scene.start('world', { spawn: ctx.worldReturn });
+        const returnScene = worldSceneReturnTarget(this.worldReturn);
+        this.scene.start(returnScene, { spawn: this.worldReturn });
       });
     }
 

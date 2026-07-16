@@ -23,6 +23,7 @@ import {
 import { avatarPalette } from '../../lib/world/avatar';
 import { GBC } from './QuestReview';
 import bus from './bus';
+import { worldSceneReturnTarget } from '../../lib/world/worldSceneReturn';
 
 // ── 좌표 스케일 (광장과 동일 불변) ──
 const TILE = 32;
@@ -409,7 +410,9 @@ export function buildAirportScene(Phaser, ctx) {
     // → null) 게이트 앞에서 스폰한다. returnSpawn 미전달(구 경로·예외 방어)이면 기존처럼 데이터
     // 없이 시작한다 — 진입 경로는 WorldScene.enterAirport 하나뿐이라 실전에서는 항상 전달된다.
     returnPlaza() {
-      if (this.returnSpawn) this.scene.start('world', { spawn: this.returnSpawn });
+      if (this.returnSpawn) {
+        this.scene.start(worldSceneReturnTarget(this.returnSpawn), { spawn: this.returnSpawn });
+      }
       else this.scene.start('world');
     }
 
