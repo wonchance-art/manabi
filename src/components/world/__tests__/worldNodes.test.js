@@ -50,7 +50,7 @@ describe('WORLD_NODES 무결성', () => {
     expect(getNode('incheon-airport').kind).toBe('airport');
     expect(getNode('gimhae-airport').gate).toBeUndefined();
     expect(getNode('haneda').kind).toBe('landmark');
-    for (const id of ['fukuoka', 'tokyo', 'osaka', 'kyoto', 'busan']) {
+    for (const id of ['fukuoka', 'tokyo', 'osaka', 'kyoto', 'busan', 'seoul']) {
       expect(getNode(id).gate).toMatchObject({ type: 'city', to: id });
     }
   });

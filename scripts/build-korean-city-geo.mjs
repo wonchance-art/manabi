@@ -39,7 +39,7 @@ const CITY_CONFIG = Object.freeze({
     ]),
   }),
   seoul: Object.freeze({
-    bbox: Object.freeze([126.88, 37.46, 127.13, 37.63]),
+    bbox: Object.freeze([126.79, 37.43, 127.18, 37.69]),
     snapshot: new URL('./data/seoul-osm-v21.json', import.meta.url),
     output: '../src/components/world/cities/seoul.geo.js',
     exportName: 'SEOUL_GEO',
@@ -59,6 +59,14 @@ const CITY_CONFIG = Object.freeze({
       { id: 'yeouido-63', nameKo: '63스퀘어', lat: 37.5198, lon: 126.9404, kind: 'landmark' },
       { id: 'coex', nameKo: '코엑스', lat: 37.5116, lon: 127.0587, kind: 'landmark' },
       { id: 'lotte-world-tower', nameKo: '롯데월드타워', lat: 37.5126, lon: 127.1025, kind: 'landmark' },
+      { id: 'changdeokgung', nameKo: '창덕궁', lat: 37.5794, lon: 126.9910, kind: 'historic' },
+      { id: 'jongmyo', nameKo: '종묘', lat: 37.5748, lon: 126.9940, kind: 'historic' },
+      { id: 'seonjeongneung', nameKo: '선릉·정릉', lat: 37.5087, lon: 127.0489, kind: 'historic' },
+      { id: 'gimpo-airport', nameKo: '김포공항', lat: 37.5585, lon: 126.7906, kind: 'airport' },
+      { id: 'seoul-nat-univ', nameKo: '서울대학교', lat: 37.4599, lon: 126.9520, kind: 'campus' },
+      { id: 'amsa-dong', nameKo: '암사동 선사유적', lat: 37.5566, lon: 127.1300, kind: 'historic' },
+      { id: 'seoul-forest', nameKo: '서울숲', lat: 37.5444, lon: 127.0374, kind: 'park' },
+      { id: 'itaewon', nameKo: '이태원', lat: 37.5345, lon: 126.9946, kind: 'district' },
     ]),
     stations: Object.freeze([
       { id: 'seoul', nameKo: '서울역', lat: 37.5547, lon: 126.9707, line: 'KTX·수도권 전철' },
@@ -300,6 +308,37 @@ function withTile(entry, meta, metrics) {
   };
 }
 
+function separateMarkerTiles(entries, meta, minDistance = 3) {
+  const claimed = [];
+  for (const entry of entries) {
+    const [originX, originY] = entry.tile;
+    const available = ([x, y]) => claimed.every(([claimedX, claimedY]) => (
+      Math.max(Math.abs(x - claimedX), Math.abs(y - claimedY)) >= minDistance
+    ));
+    if (available(entry.tile)) {
+      claimed.push(entry.tile);
+      continue;
+    }
+    let snapped = null;
+    for (let radius = 1; radius <= 8 && !snapped; radius += 1) {
+      for (let dy = -radius; dy <= radius && !snapped; dy += 1) {
+        for (let dx = -radius; dx <= radius; dx += 1) {
+          if (Math.max(Math.abs(dx), Math.abs(dy)) !== radius) continue;
+          const candidate = [originX + dx, originY + dy];
+          if (candidate[0] < 0 || candidate[1] < 0 || candidate[0] >= meta.grid.w || candidate[1] >= meta.grid.h) continue;
+          if (available(candidate)) {
+            snapped = candidate;
+            break;
+          }
+        }
+      }
+    }
+    if (!snapped) throw new Error(`Unable to separate marker ${entry.id}`);
+    entry.tile = snapped;
+    claimed.push(snapped);
+  }
+}
+
 export function buildKoreanCityGeo(city) {
   const config = CITY_CONFIG[city];
   if (!config) throw new Error(`Unknown city: ${city}`);
@@ -321,6 +360,7 @@ export function buildKoreanCityGeo(city) {
   }
   const pois = config.pois.map((entry) => withTile(entry, meta, metrics));
   const stations = config.stations.map((entry) => withTile(entry, meta, metrics));
+  separateMarkerTiles([...pois, ...stations], meta);
   const mainStation = stations.find((entry) => entry.id === config.mainStationId);
   const entrance = { x: mainStation.tile[0], y: mainStation.tile[1], facing: 'down' };
   const exitTiles = [[entrance.x, entrance.y - 10], [entrance.x, entrance.y - 9]];
