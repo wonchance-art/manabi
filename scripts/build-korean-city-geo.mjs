@@ -298,6 +298,13 @@ function applySnapshotMasks(grid, snapshot, meta) {
   }
 }
 
+export function buildTerrainFromSnapshot(snapshot) {
+  const meta = { grid: snapshot.grid };
+  const terrain = new Uint8Array(meta.grid.w * meta.grid.h).fill(CITY_TILE.SIDEWALK);
+  applySnapshotMasks(terrain, snapshot, meta);
+  return terrain;
+}
+
 function withTile(entry, meta, metrics) {
   return {
     ...entry,
@@ -367,8 +374,7 @@ export function buildKoreanCityGeo(city) {
   const mainStation = stations.find((entry) => entry.id === config.mainStationId);
   const entrance = { x: mainStation.tile[0], y: mainStation.tile[1], facing: 'down' };
   const exitTiles = [[entrance.x, entrance.y - 10], [entrance.x, entrance.y - 9]];
-  const terrain = new Uint8Array(meta.grid.w * meta.grid.h).fill(CITY_TILE.SIDEWALK);
-  applySnapshotMasks(terrain, snapshot, meta);
+  const terrain = buildTerrainFromSnapshot(snapshot);
   const protectedEntries = [...pois, ...stations];
   for (const entry of protectedEntries) ensureWalkableAnchor(terrain, entry.tile, meta);
   for (let y = exitTiles[0][1]; y <= entrance.y; y += 1) terrain[y * meta.grid.w + entrance.x] = CITY_TILE.ROAD;

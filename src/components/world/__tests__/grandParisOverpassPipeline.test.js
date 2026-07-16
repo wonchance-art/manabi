@@ -1,8 +1,10 @@
 import fs from 'node:fs';
+import { createHash } from 'node:crypto';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { mergeOverpassFiles } from '../../../../scripts/merge-overpass-json.mjs';
+import { renderCitySnapshotPng } from '../../../../scripts/world/render-city-snapshot.mjs';
 
 const PARTITIONS = JSON.parse(fs.readFileSync(
   new URL('../../../../scripts/data/grand-paris-overpass-partitions.json', import.meta.url),
@@ -101,5 +103,12 @@ describe('Grand Paris Overpass 분할 계약', () => {
       mountainRle: '9d60fd2bd2bb93dfac2eb710f3768b12dc9244cdf0c6b30d47fb4698902e68c0',
       railwayRle: '455c40c6022c3a7ac21eb68d34d23dd73d6ec916377531f227662d951f22e1b2',
     });
+  });
+
+  it('지형 전용 검수 PNG를 결정적으로 렌더링한다', () => {
+    const png = renderCitySnapshotPng(SNAPSHOT);
+    expect(png.subarray(0, 8)).toEqual(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
+    expect(createHash('sha256').update(png).digest('hex'))
+      .toBe('fe00f83f2f086a9af7147de9d6c024d77c27012f1032a629143ab7c221626fa4');
   });
 });
