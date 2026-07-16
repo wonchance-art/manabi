@@ -33,8 +33,10 @@ const CITY_GATES = {
     ],
     streamCourses: [
       {
-        name: '온천천', presenceMin: 0.8, windowTiles: 3,
-        pts: [[129.0895, 35.2295], [129.0855, 35.2195], [129.0865, 35.2050], [129.0900, 35.1950], [129.1000, 35.1870], [129.1080, 35.1800]],
+        // 유로 점은 OSM 중심선 굴곡을 따라 조밀하게 pin(직선 보간이 굽은 구간을 벗어나지
+        // 않도록 — Codex #156 P1 반영). 종점은 수영강 합류부 직전(relation bbox 내)까지만.
+        name: '온천천', presenceMin: 0.8, windowTiles: 4,
+        pts: [[129.0895, 35.2295], [129.0855, 35.2195], [129.0845, 35.2120], [129.0865, 35.2050], [129.0885, 35.2000], [129.0900, 35.1950], [129.0950, 35.1900], [129.1000, 35.1870], [129.1050, 35.1830]],
       },
     ],
     reportCourses: [
@@ -105,7 +107,7 @@ function scanSection(geo, proj, section) {
 }
 
 function coursePresence(geo, proj, course) {
-  const W = geo.meta.grid.w;
+  const { w: W, h: H } = geo.meta.grid;
   const win = course.windowTiles;
   let hit = 0;
   let total = 0;
@@ -119,7 +121,10 @@ function coursePresence(geo, proj, course) {
       let found = 0;
       for (let dy = -win; dy <= win; dy += 1) {
         for (let dx = -win; dx <= win; dx += 1) {
-          const v = geo.terrain[(cy + dy) * W + (cx + dx)];
+          const nx = cx + dx;
+          const ny = cy + dy;
+          if (nx < 0 || nx >= W || ny < 0 || ny >= H) continue; // 경계 wrap 방지(#156 P2)
+          const v = geo.terrain[ny * W + nx];
           if (isWaterTile(v) || v === T.BRIDGE) found = 1; // 하천 위 다리는 수면 증거로 인정
         }
       }
@@ -131,14 +136,14 @@ function coursePresence(geo, proj, course) {
 }
 
 function downtownRoadPct(geo, proj, downtown) {
-  const W = geo.meta.grid.w;
+  const { w: W, h: H } = geo.meta.grid;
   const [fx, fy] = proj.tile(downtown.lon, downtown.lat);
   const cx = Math.floor(fx);
   const cy = Math.floor(fy);
   let road = 0;
   let land = 0;
-  for (let y = cy - 100; y < cy + 100; y += 1) {
-    for (let x = cx - 100; x < cx + 100; x += 1) {
+  for (let y = Math.max(0, cy - 100); y < Math.min(H, cy + 100); y += 1) {
+    for (let x = Math.max(0, cx - 100); x < Math.min(W, cx + 100); x += 1) {
       const v = geo.terrain[y * W + x];
       if (v === T.WATER || v === T.RIVER || v === T.ISLAND) continue;
       land += 1;
