@@ -71,4 +71,21 @@ describe('전체 맵 뷰어 마커', () => {
       { id: 'world-node:seoul', source: 'world-node', name: '서울', x: 10, y: 20 },
     ]);
   });
+
+  it('유럽 철도 허브를 별도 핀으로 모두 표시한다', () => {
+    const region = {
+      id: 'emea',
+      gate: { id: 'moscow', label: '모스크바 횡단열차역', tile: { x: 768, y: 253 } },
+      airGate: { id: 'paris-cdg', label: '파리 샤를 드골 공항', tile: { x: 214, y: 420 } },
+    };
+    expect(overworldRegionMarkers(region, [], [
+      { id: 'paris-rail-hub', label: '파리 철도 허브', tile: [211, 424] },
+      { id: 'berlin-rail-hub', label: '베를린 철도 허브', tile: [386, 333] },
+    ])).toEqual([
+      { id: 'gate:moscow', source: 'gate', name: '모스크바 횡단열차역', x: 768, y: 253 },
+      { id: 'gate:paris-cdg', source: 'gate', name: '파리 샤를 드골 공항', x: 214, y: 420 },
+      { id: 'transport:paris-rail-hub', source: 'transport', name: '파리 철도 허브', x: 211, y: 424 },
+      { id: 'transport:berlin-rail-hub', source: 'transport', name: '베를린 철도 허브', x: 386, y: 333 },
+    ]);
+  });
 });

@@ -24,6 +24,7 @@ const COMMON_DOCUMENT_NODE_KEYS = Object.freeze(['id', 'type', 'label', 'content
 const NODE_VARIANT_KEYS = Object.freeze({
   'transsib-gate': Object.freeze(['corridorStopId']),
   'air-gate': Object.freeze(['airportCode']),
+  'rail-hub': Object.freeze(['arrivalOffset']),
 });
 
 function assertPlainObject(value, label) {
@@ -74,6 +75,9 @@ function normalizeNodeCommon(value, label) {
     if (typeof value.airportCode !== 'string' || !/^[A-Z]{3}$/.test(value.airportCode)) {
       throw new TypeError(`${label}.airportCode must be a three-letter uppercase code`);
     }
+  } else if (!Array.isArray(value.arrivalOffset) || value.arrivalOffset.length !== 2
+    || !value.arrivalOffset.every(Number.isSafeInteger)) {
+    throw new TypeError(`${label}.arrivalOffset must be a safe-integer [x, y] pair`);
   }
 }
 
@@ -128,7 +132,9 @@ export function normalizeOverworldTransportNodeManifest(input) {
     if (ids.has(node.id)) throw new Error(`duplicate transport node id: ${node.id}`);
     const routeKey = node.type === 'transsib-gate'
       ? `corridor:${node.corridorStopId}`
-      : `airport:${node.airportCode}`;
+      : node.type === 'air-gate'
+        ? `airport:${node.airportCode}`
+        : `rail-hub:${node.id}`;
     if (routeKeys.has(routeKey)) throw new Error(`duplicate transport route key: ${routeKey}`);
     ids.add(node.id);
     routeKeys.add(routeKey);
@@ -158,7 +164,13 @@ function normalizeDocumentNode(value, index, expected) {
     || Math.floor(y / OVERWORLD_STORAGE_CHUNK_TILES) !== expected.cy) {
     throw new Error(`${label}.tile does not belong to document chunk`);
   }
-  return Object.freeze({ ...value, tile: Object.freeze([...value.tile]) });
+  return Object.freeze({
+    ...value,
+    ...(value.type === 'rail-hub'
+      ? { arrivalOffset: Object.freeze([...value.arrivalOffset]) }
+      : {}),
+    tile: Object.freeze([...value.tile]),
+  });
 }
 
 export function normalizeOverworldTransportNodeDocument(input, expected = {}) {

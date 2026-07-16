@@ -1,0 +1,1 @@
+{"formatVersion":2,"kind":"transport-nodes","cx":1,"cy":1,"nodes":[{"id":"berlin-rail-hub","type":"rail-hub","label":"베를린 철도 허브","contentLocale":"de","arrivalOffset":[0,0],"tile":[386,333]},{"id":"vienna-rail-hub","type":"rail-hub","label":"빈 철도 허브","contentLocale":"de","arrivalOffset":[0,0],"tile":[433,440]}]}
