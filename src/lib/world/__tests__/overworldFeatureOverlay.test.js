@@ -54,6 +54,31 @@ describe('오버월드 피처 오버레이 문서', () => {
       { ...segment('river:0', [0, 0], [1024, 0]), name: 'unexpected' },
     ]))).toThrow(/unsupported field: name/);
   });
+
+  it('경계 선분은 고정된 중립 분류만 허용한다', () => {
+    const boundary = {
+      ...document(0, []),
+      kind: 'boundary-segments',
+      segments: [{
+        id: 'boundary:0',
+        routeId: 'boundary',
+        sourceKind: 'disputed',
+        sourceFeatureIndex: 0,
+        partIndex: 0,
+        segmentIndex: 0,
+        scaleRank: 1,
+        boundaryClass: 'neutral-disputed',
+        start: [0, 0],
+        end: [1024, 0],
+      }],
+    };
+    expect(normalizeOverworldOverlayDocument(boundary).segments[0].boundaryClass)
+      .toBe('neutral-disputed');
+    expect(() => normalizeOverworldOverlayDocument({
+      ...boundary,
+      segments: [{ ...boundary.segments[0], boundaryClass: 'claimed-by-a-country' }],
+    })).toThrow(/boundaryClass is unsupported/);
+  });
 });
 
 describe('오버월드 피처 오버레이 가시 범위', () => {
@@ -106,6 +131,42 @@ describe('OverworldFeatureOverlayLoader', () => {
       fetchImpl: async () => response({ ...SOURCE, regionHash: 'wrong', overlays: [] }),
     });
     await expect(loader.load(0, 0)).rejects.toThrow(/regionHash mismatch/);
+    loader.destroy();
+  });
+
+  it('전체 오버레이 문서를 경로순으로 한 번 로드하고 LRU와 별도로 고정한다', async () => {
+    const calls = [];
+    const fetchImpl = async (url) => {
+      calls.push(url);
+      if (url.endsWith('content-manifest.json')) return response({
+        ...SOURCE,
+        overlays: [
+          { path: 'rivers/1/0.json' },
+          { path: 'rivers/0/0.json' },
+        ],
+      });
+      if (url.endsWith('rivers/0/0.json')) return response(document(0, [segment('a', [0, 0], [1024, 0])]));
+      if (url.endsWith('rivers/1/0.json')) return response(document(1, [segment('b', [256 * 1024, 0], [257 * 1024, 0])]));
+      return response(null, false);
+    };
+    const loader = new OverworldFeatureOverlayLoader({ source: SOURCE, fetchImpl, maxDocuments: 1 });
+    const [first, concurrent] = await Promise.all([loader.loadAll(), loader.loadAll()]);
+    expect(first).toBe(concurrent);
+    expect(first.map(({ segments }) => segments[0].id)).toEqual(['a', 'b']);
+    expect(Object.isFrozen(first)).toBe(true);
+    expect(loader.documents.size).toBe(1);
+    expect(await loader.loadAll()).toBe(first);
+    expect(calls.filter((url) => url.endsWith('.json'))).toHaveLength(3);
+    loader.destroy();
+    await expect(loader.loadAll()).rejects.toThrow(/destroyed/);
+  });
+
+  it('전체 로드에서 청크가 아닌 매니페스트 경로를 거부한다', async () => {
+    const loader = new OverworldFeatureOverlayLoader({
+      source: SOURCE,
+      fetchImpl: async () => response({ ...SOURCE, overlays: [{ path: 'rivers/not-a-chunk.json' }] }),
+    });
+    await expect(loader.loadAll()).rejects.toThrow(/not a chunk/);
     loader.destroy();
   });
 });

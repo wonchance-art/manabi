@@ -31,12 +31,26 @@ function segmentPaths({ segments, quantization, scaleX, scaleY, color, widthAtRa
   }).join('');
 }
 
+function boundaryPaths({ segments, quantization, scaleX, scaleY }) {
+  return [...segments.values()].map((segment) => {
+    const x1 = segment.start[0] / quantization * scaleX;
+    const y1 = segment.start[1] / quantization * scaleY;
+    const x2 = segment.end[0] / quantization * scaleX;
+    const y2 = segment.end[1] / quantization * scaleY;
+    const disputed = segment.boundaryClass === 'neutral-disputed';
+    const dash = disputed ? ' stroke-dasharray="2.4 2"' : '';
+    const color = disputed ? '#8a817a' : '#6f665f';
+    return `<path d="M${x1.toFixed(2)} ${y1.toFixed(2)}L${x2.toFixed(2)} ${y2.toFixed(2)}" stroke="${color}" stroke-width="${disputed ? '0.75' : '0.6'}"${dash}/>`;
+  }).join('');
+}
+
 export async function renderTerrainPreview({
   inputDir,
   outputFile,
   targetWidth = 1200,
   transportDir = null,
   playabilityDir = null,
+  boundaryDir = null,
 }) {
   const manifest = JSON.parse(await readFile(path.join(inputDir, 'content-manifest.json'), 'utf8'));
   const raw = Buffer.alloc(manifest.width * manifest.height * 3);
@@ -111,7 +125,23 @@ export async function renderTerrainPreview({
       widthAtRank: (scaleRank) => Math.max(0.45, (7 - scaleRank) * 0.18),
     });
   }
-  const riverSvg = Buffer.from(`<svg width="${targetWidth}" height="${targetHeight}" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke-linecap="round">${lines}${railLines}</g></svg>`);
+  let boundarySegmentCount = 0;
+  let boundaryLines = '';
+  if (boundaryDir) {
+    const boundary = JSON.parse(await readFile(path.join(boundaryDir, 'content-manifest.json'), 'utf8'));
+    if (boundary.width !== manifest.width || boundary.height !== manifest.height) {
+      throw new Error('boundary preview dimensions do not match terrain');
+    }
+    const boundarySegments = await readUniqueSegments(boundaryDir, boundary);
+    boundarySegmentCount = boundarySegments.size;
+    boundaryLines = boundaryPaths({
+      segments: boundarySegments,
+      quantization: boundary.boundaryRules.quantization,
+      scaleX,
+      scaleY,
+    });
+  }
+  const riverSvg = Buffer.from(`<svg width="${targetWidth}" height="${targetHeight}" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke-linecap="round">${lines}${boundaryLines}${railLines}</g></svg>`);
 
   await sharp(raw, { raw: { width: manifest.width, height: manifest.height, channels: 3 } })
     .resize(targetWidth, targetHeight, { kernel: sharp.kernel.nearest })
@@ -123,14 +153,15 @@ export async function renderTerrainPreview({
     height: targetHeight,
     riverSegmentCount: uniqueSegments.size,
     railSegmentCount,
+    boundarySegmentCount,
     viewOnlyLandTileCount,
   });
 }
 
 async function main() {
-  const [inputDir, outputFile, widthInput, transportDir, playabilityDir] = process.argv.slice(2);
+  const [inputDir, outputFile, widthInput, transportDir, playabilityDir, boundaryDir] = process.argv.slice(2);
   if (!inputDir || !outputFile) {
-    throw new Error('usage: node scripts/world/render-overworld-terrain-preview.mjs <input-dir> <output.png> [width] [transport-dir] [playability-dir]');
+    throw new Error('usage: node scripts/world/render-overworld-terrain-preview.mjs <input-dir> <output.png> [width] [transport-dir] [playability-dir] [boundary-dir]');
   }
   const result = await renderTerrainPreview({
     inputDir: path.resolve(inputDir),
@@ -138,6 +169,7 @@ async function main() {
     targetWidth: widthInput === undefined ? 1200 : Number(widthInput),
     transportDir: transportDir ? path.resolve(transportDir) : null,
     playabilityDir: playabilityDir ? path.resolve(playabilityDir) : null,
+    boundaryDir: boundaryDir ? path.resolve(boundaryDir) : null,
   });
   process.stdout.write(`${JSON.stringify(result)}\n`);
 }
