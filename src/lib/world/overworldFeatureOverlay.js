@@ -177,6 +177,8 @@ export class OverworldFeatureOverlayLoader {
     this.inflight = new Map();
     this.availablePaths = null;
     this.manifestPromise = null;
+    this.allDocuments = null;
+    this.allPromise = null;
     this.controllers = new Set();
     this.destroyed = false;
   }
@@ -263,6 +265,37 @@ export class OverworldFeatureOverlayLoader {
     return pending;
   }
 
+  async loadAll() {
+    if (this.destroyed) throw new Error('overworld overlay loader is destroyed');
+    if (this.allDocuments) return this.allDocuments;
+    if (this.allPromise) return this.allPromise;
+    this.allPromise = (async () => {
+      const prefix = `${this.source.pathPrefix}/`;
+      const paths = [...await this.loadManifest()].sort(compareText);
+      const coordinates = paths.map((path) => {
+        const parts = path.slice(prefix.length).split('/');
+        const file = parts[1];
+        if (parts.length !== 2 || !/^\d+$/.test(parts[0]) || !/^\d+\.json$/.test(file || '')) {
+          throw new Error(`overworld overlay manifest path is not a chunk: ${path}`);
+        }
+        return Object.freeze({
+          cx: Number(parts[0]),
+          cy: Number(file.slice(0, -5)),
+        });
+      });
+      const documents = await Promise.all(coordinates.map(({ cx, cy }) => this.load(cx, cy)));
+      if (this.destroyed) throw new Error('overworld overlay loader is destroyed');
+      if (documents.some((document) => !document)) {
+        throw new Error('overworld overlay manifest path disappeared while loading all chunks');
+      }
+      this.allDocuments = Object.freeze(documents);
+      return this.allDocuments;
+    })().finally(() => {
+      this.allPromise = null;
+    });
+    return this.allPromise;
+  }
+
   destroy() {
     if (this.destroyed) return;
     this.destroyed = true;
@@ -271,5 +304,7 @@ export class OverworldFeatureOverlayLoader {
     this.documents.clear();
     this.inflight.clear();
     this.availablePaths = null;
+    this.allDocuments = null;
+    this.allPromise = null;
   }
 }
