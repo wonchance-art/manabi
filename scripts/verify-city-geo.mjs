@@ -43,6 +43,12 @@ const CITY_GATES = {
       { name: '수영강(참고)', windowTiles: 3, pts: [[129.1150, 35.1900], [129.1180, 35.1730], [129.1230, 35.1640]] },
       { name: '동천(참고)', windowTiles: 3, pts: [[129.0590, 35.1560], [129.0550, 35.1450], [129.0480, 35.1330]] },
     ],
+    // 오너 지시(2026-07-16): KR 도시에서 BRIDGE(5) 잔존 0 — 진짜 교량은 차도(ROAD)로,
+    // 강심 고립·애매 조각은 수면/도로 중 자연스러운 쪽으로 흡수. 교량 회랑 생존은 pin으로 검증.
+    bridgeMaxTiles: 0,
+    bridgeCrossings: [
+      { name: '광안대교', lon: 129.1150, lat: 35.1470, windowTiles: 5 },
+    ],
   },
   seoul: {
     file: 'src/components/world/cities/seoul.geo.js',
@@ -57,6 +63,11 @@ const CITY_GATES = {
     streamCourses: [],
     reportCourses: [
       { name: '청계천(참고)', windowTiles: 3, pts: [[126.9787, 37.5692], [127.0093, 37.5713], [127.0400, 37.5610]] },
+    ],
+    bridgeMaxTiles: 0,
+    bridgeCrossings: [
+      { name: '마포대교', lon: 126.9480, lat: 37.5285, windowTiles: 5 },
+      { name: '반포대교', lon: 126.9965, lat: 37.5125, windowTiles: 5 },
     ],
   },
 };
@@ -206,7 +217,30 @@ async function main() {
     report(`${course.name} 유로 수면 존재율`, `${(coursePresence(geo, proj, course) * 100).toFixed(0)}%`);
   }
 
-  // ⑥ 스냅샷·분류 계약 (파일이 있을 때만 — main 등 부재 브랜치에선 SKIP)
+  // ⑥ 교량 정리(오너 지시): BRIDGE 잔존 0 + 주요 교량이 차도 회랑으로 생존
+  if (gates.bridgeMaxTiles != null) {
+    const bridgeCount = (terrainShares(geo).counts[T.BRIDGE] || 0);
+    gate(`BRIDGE 잔존 ≤${gates.bridgeMaxTiles}타일 (교량→차도/수면 흡수)`, bridgeCount <= gates.bridgeMaxTiles, `${bridgeCount}타일`);
+    const { w: W2, h: H2 } = geo.meta.grid;
+    for (const pin of gates.bridgeCrossings || []) {
+      const [fx, fy] = proj.tile(pin.lon, pin.lat);
+      const cx = Math.floor(fx);
+      const cy = Math.floor(fy);
+      let paved = false;
+      for (let dy = -pin.windowTiles; dy <= pin.windowTiles && !paved; dy += 1) {
+        for (let dx = -pin.windowTiles; dx <= pin.windowTiles; dx += 1) {
+          const nx = cx + dx;
+          const ny = cy + dy;
+          if (nx < 0 || nx >= W2 || ny < 0 || ny >= H2) continue;
+          const v = geo.terrain[ny * W2 + nx];
+          if (v === T.ROAD || v === T.CROSSWALK || v === T.BRIDGE) { paved = true; break; }
+        }
+      }
+      gate(`${pin.name} 교량 회랑 생존`, paved, paved ? '차도 확인' : `±${pin.windowTiles}타일 내 차도 없음`);
+    }
+  }
+
+  // ⑦ 스냅샷·분류 계약 (파일이 있을 때만 — main 등 부재 브랜치에선 SKIP)
   const snapPath = path.join(root, gates.snapshot);
   if (fs.existsSync(snapPath)) {
     const head = fs.readFileSync(snapPath, 'utf8').slice(0, 4096);
