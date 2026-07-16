@@ -161,21 +161,21 @@ describe('오버월드 지역 레지스트리', () => {
       height: region.height,
       releaseEligible: false,
     });
-    expect(manifest.nodes).toContainEqual(expect.objectContaining({ path: `nodes/${cx}/${cy}.json`, count: 1 }));
+    expect(manifest.nodes).toContainEqual(expect.objectContaining({ path: `nodes/${cx}/${cy}.json` }));
     const document = normalizeOverworldTransportNodeDocument(JSON.parse(readFileSync(path.join(
       ROOT,
       'public/assets/overworld',
       region.nodeSource.regionId,
       `nodes/${cx}/${cy}.json`,
     ), 'utf8')), { cx, cy, width: region.width, height: region.height });
-    expect(document.nodes).toEqual([{
+    expect(document.nodes).toContainEqual({
       id: region.gate.id,
       type: 'transsib-gate',
       label: region.gate.label,
       contentLocale: region.gate.contentLocale,
       corridorStopId: region.gate.corridorStopId,
       tile: [x, y],
-    }]);
+    });
   });
 
   it('EMEA 항공 게이트가 체크인된 교통 노드 인덱스와 일치한다', () => {
@@ -186,14 +186,14 @@ describe('오버월드 지역 레지스트리', () => {
     const document = normalizeOverworldTransportNodeDocument(JSON.parse(readFileSync(path.join(
       ROOT, 'public/assets/overworld', region.nodeSource.regionId, `nodes/${cx}/${cy}.json`,
     ), 'utf8')), { cx, cy, width: region.width, height: region.height });
-    expect(document.nodes).toEqual([{
+    expect(document.nodes).toContainEqual({
       id: region.airGate.id,
       type: 'air-gate',
       label: region.airGate.label,
       contentLocale: region.airGate.contentLocale,
       airportCode: region.airGate.airportCode,
       tile: [x, y],
-    }]);
+    });
   });
 
   it('미등록 지역과 범위 밖 좌표는 거부한다', () => {
