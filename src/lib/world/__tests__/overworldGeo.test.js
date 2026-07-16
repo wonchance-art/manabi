@@ -31,6 +31,10 @@ const CHECKED_IN_REGION_DIR = path.join(
   REPO_ROOT,
   'public/assets/overworld/asia-pacific-surface-preview-v1',
 );
+const CHECKED_IN_EMEA_REGION_DIR = path.join(
+  REPO_ROOT,
+  'public/assets/overworld/europe-mediterranean-middle-east-surface-preview-v1',
+);
 
 function sha256(bytes) {
   return createHash('sha256').update(bytes).digest('hex');
@@ -122,6 +126,35 @@ describe('지역 ① geo 입력·투영 계약', () => {
         cx: Math.floor(tile.x / 256),
         cy: Math.floor(tile.y / 256),
       });
+    }
+  });
+
+  it('지역 ② preview v1 확정 투영 격자를 964×1137과 4×5 청크로 고정한다', () => {
+    const emea = manifest({
+      regionId: 'europe-mediterranean-middle-east-surface-preview-v1',
+      bbox: [-11, 20, 50, 66],
+      metersPerTile: 4500,
+      projection: {
+        id: 'emea-equirectangular-screen-axis-v1',
+        method: 'equirectangular',
+        axisMode: 'screen-axis',
+        lon0: 25,
+        lat0: 45,
+        standardLat: 50.25,
+      },
+    });
+    const frame = createEquirectangularTileFrame(emea);
+    expect(frame).toMatchObject({ width: 964, height: 1137, chunkColumns: 4, chunkRows: 5 });
+    for (const point of [
+      { lon: -0.1276, lat: 51.5072 },
+      { lon: 12.4964, lat: 41.9028 },
+      { lon: 31.2357, lat: 30.0444 },
+      { lon: 37.6173, lat: 55.7558 },
+    ]) {
+      const tile = frame.project(point.lon, point.lat);
+      const restored = frame.unproject(tile.x, tile.y);
+      expect(restored.lon).toBeCloseTo(point.lon, 10);
+      expect(restored.lat).toBeCloseTo(point.lat, 10);
     }
   });
 
@@ -226,6 +259,50 @@ describe('지역 surface preview 생성', () => {
       expect(surfaceAtGeo(lon, lat), `${lon},${lat}`).toBe(input.surfaceClasses.land);
     }
     for (const [lon, lat] of [[100, -20], [150, 0]]) {
+      expect(surfaceAtGeo(lon, lat), `${lon},${lat}`).toBe(input.surfaceClasses.sea);
+    }
+  });
+
+  it('체크인된 지역 ② 20청크와 대표 육지·바다 표본이 manifest와 일치한다', () => {
+    const input = JSON.parse(readFileSync(path.join(
+      REPO_ROOT,
+      'scripts/world/overworld-region-emea-v1.json',
+    ), 'utf8'));
+    const frame = createEquirectangularTileFrame(input);
+    const content = JSON.parse(readFileSync(
+      path.join(CHECKED_IN_EMEA_REGION_DIR, 'content-manifest.json'),
+      'utf8',
+    ));
+    expect(content).toMatchObject({
+      releaseEligible: false,
+      width: 964,
+      height: 1137,
+      chunkColumns: 4,
+      chunkRows: 5,
+    });
+    expect(content.chunks).toHaveLength(20);
+    for (const entry of [content.report, ...content.chunks]) {
+      const bytes = readFileSync(path.join(CHECKED_IN_EMEA_REGION_DIR, entry.path));
+      expect(bytes.byteLength, entry.path).toBe(entry.bytes);
+      expect(sha256(bytes), entry.path).toBe(entry.sha256);
+    }
+
+    const surfaceAtGeo = (lon, lat) => {
+      const point = frame.project(lon, lat);
+      const tileX = Math.floor(point.x);
+      const tileY = Math.floor(point.y);
+      const { cx, cy } = frame.tileToChunk(tileX, tileY);
+      const chunk = decodeOverworldChunkV1(readFileSync(
+        path.join(CHECKED_IN_EMEA_REGION_DIR, `${cx}/${cy}.owc`),
+      ));
+      expect(chunk.collisionAt(tileX - cx * 256, tileY - cy * 256)).toBe(1);
+      expect(chunk.viewOnlyAt(tileX - cx * 256, tileY - cy * 256)).toBe(1);
+      return chunk.surfaceAt(tileX - cx * 256, tileY - cy * 256);
+    };
+    for (const [lon, lat] of [[-0.1276, 51.5072], [12.4964, 41.9028], [31.2357, 30.0444], [37.6173, 55.7558]]) {
+      expect(surfaceAtGeo(lon, lat), `${lon},${lat}`).toBe(input.surfaceClasses.land);
+    }
+    for (const [lon, lat] of [[-10, 30], [15, 35]]) {
       expect(surfaceAtGeo(lon, lat), `${lon},${lat}`).toBe(input.surfaceClasses.sea);
     }
   });

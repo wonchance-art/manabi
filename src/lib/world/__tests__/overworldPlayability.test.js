@@ -19,6 +19,10 @@ const CHECKED_IN_DIR = path.join(
   REPO_ROOT,
   'public/assets/overworld/asia-pacific-playability-preview-v1',
 );
+const CHECKED_IN_EMEA_DIR = path.join(
+  REPO_ROOT,
+  'public/assets/overworld/europe-mediterranean-middle-east-playability-preview-v1',
+);
 
 function sha256(input) {
   return createHash('sha256').update(input).digest('hex');
@@ -242,5 +246,51 @@ describe('overworld playability preview', () => {
     expect(cellAtGeo(126.53, 33.36)).toMatchObject({ collision: 0, viewOnly: 0 });
     expect(cellAtTile(guam.tileX, guam.tileY)).toMatchObject({ collision: 1, viewOnly: 1 });
     expect(cellAtGeo(150, 0)).toMatchObject({ surface: 0, collision: 1, viewOnly: 0 });
+  });
+
+  it('체크인된 지역 ② 이동 마스크·대표 섬 정책을 검증한다', () => {
+    const base = JSON.parse(readFileSync(path.join(
+      REPO_ROOT,
+      'scripts/world/overworld-region-emea-v1.json',
+    ), 'utf8'));
+    const frame = createEquirectangularTileFrame(base);
+    const content = JSON.parse(readFileSync(
+      path.join(CHECKED_IN_EMEA_DIR, 'content-manifest.json'),
+      'utf8',
+    ));
+    expect(content).toMatchObject({
+      releaseEligible: false,
+      width: 964,
+      height: 1137,
+      chunkColumns: 4,
+      chunkRows: 5,
+      componentRules: { connectivity: 4, minimumWalkableTiles: 256 },
+    });
+    expect(content.chunks).toHaveLength(20);
+    for (const entry of [content.report, ...content.chunks]) {
+      const bytes = readFileSync(path.join(CHECKED_IN_EMEA_DIR, entry.path));
+      expect(bytes.byteLength, entry.path).toBe(entry.bytes);
+      expect(sha256(bytes), entry.path).toBe(entry.sha256);
+    }
+    const cellAtTile = (tileX, tileY) => {
+      const { cx, cy } = frame.tileToChunk(tileX, tileY);
+      const chunk = decodeOverworldChunkV1(readFileSync(
+        path.join(CHECKED_IN_EMEA_DIR, `${cx}/${cy}.owc`),
+      ));
+      return chunk.cellAt(tileX - cx * 256, tileY - cy * 256);
+    };
+    const cellAtGeo = (lon, lat) => {
+      const point = frame.project(lon, lat);
+      return cellAtTile(Math.floor(point.x), Math.floor(point.y));
+    };
+    const report = JSON.parse(readFileSync(
+      path.join(CHECKED_IN_EMEA_DIR, content.report.path),
+      'utf8',
+    ));
+    const faroe = report.resolvedAnchors.find(({ id }) => id === 'faroe');
+    expect(cellAtGeo(-0.1276, 51.5072)).toMatchObject({ collision: 0, viewOnly: 0 });
+    expect(cellAtGeo(2.99, 39.6)).toMatchObject({ collision: 0, viewOnly: 0 });
+    expect(cellAtTile(faroe.tileX, faroe.tileY)).toMatchObject({ collision: 1, viewOnly: 1 });
+    expect(cellAtGeo(15, 35)).toMatchObject({ surface: 0, collision: 1, viewOnly: 0 });
   });
 });
