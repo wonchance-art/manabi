@@ -379,6 +379,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   const nickRef = useRef(nickname);
   const petRef = useRef(pet);
   const avatarRef = useRef(normalizeWorldAvatar(avatar));
+  const canAccessPreviewRegionsRef = useRef(canAccessPreviewRegions);
   // 재접속 스폰 — { scene:'plaza'|'airport', x, y(타일) } | null. WorldScene create()가 읽는다.
   // ref 로 흘려 게임 재생성 없이 최신값을 쓰되, 실제 사용은 씬 생성 1회(mount) 시점에 고정된다.
   const initialSpawnRef = useRef(initialSpawn);
@@ -494,6 +495,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
     }
   }, [avatar]);
   useEffect(() => { initialSpawnRef.current = initialSpawn; }, [initialSpawn]);
+  useEffect(() => { canAccessPreviewRegionsRef.current = canAccessPreviewRegions; }, [canAccessPreviewRegions]);
   useEffect(() => { nearQuestRef.current = nearQuest; }, [nearQuest]);
   useEffect(() => { reviewOpenRef.current = reviewOpen; }, [reviewOpen]);
   useEffect(() => { nearNodeRef.current = nearNode; }, [nearNode]);
@@ -2137,7 +2139,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       const TranssibCorridorScene = buildTranssibCorridorScene(Phaser, corridorCtx);
 
       const regionScenes = OVERWORLD_REGION_LIST.map((region) => buildOverworldRegionScene(Phaser, region, {
-        userId, avatarRef,
+        userId, avatarRef, canAccessPreviewRegionsRef,
         bindScene: (scene) => { sceneRef.current = scene; },
         onEnter: () => {
           setActiveScene(region.sceneId);

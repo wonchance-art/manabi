@@ -12,7 +12,7 @@ import {
 } from '../../lib/world/emeaRail';
 import { OverworldChunkLoader, overworldChunkKey } from '../../lib/world/overworldChunkLoader';
 import { OVERWORLD_STORAGE_CHUNK_TILES } from '../../lib/world/overworldChunk';
-import { corridorStopSpawn } from '../../lib/world/transsibCorridor';
+import { canAccessCorridor, corridorStopSpawn } from '../../lib/world/transsibCorridor';
 import { overworldRegionSpawn } from '../../lib/world/overworldRegions';
 import { OverworldTransportNodeLoader } from '../../lib/world/overworldTransportNodes';
 import {
@@ -490,8 +490,15 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
 
     async enterCorridor() {
       if (this.nearGate?.type !== 'transsib-gate' || this.inputLocked) return;
+      if (!canAccessCorridor({ allowPreview: ctx.canAccessPreviewRegionsRef?.current })) {
+        ctx.setStatus?.({
+          phase: 'error',
+          message: '횡단열차 회랑은 아직 열리지 않았어요.',
+        });
+        return false;
+      }
       const spawn = corridorStopSpawn(this.nearGate.corridorStopId);
-      if (!spawn) return;
+      if (!spawn) return false;
       this.inputLocked = true;
       this.heldDirs.length = 0;
       ctx.setNearGate?.(null);
@@ -501,10 +508,11 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
         this.inputLocked = false;
         this.refreshNearInteraction(true);
         ctx.setStatus?.({ phase: 'error', message: '플랫폼 저장에 실패했어요. 연결을 확인해 주세요.' });
-        return;
+        return false;
       }
       ctx.setStatus?.(null);
       this.scene.start('transsib-corridor', { spawn });
+      return true;
     }
 
     railStatus(trip) {
