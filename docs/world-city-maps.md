@@ -98,6 +98,12 @@ export const <CITY>_GEO = {
 scene `city:<id>` 씬별 피어/음성, city:* 좌표 영속·재접속 직행 스폰, resetScenePeers,
 cityRedirectScene, EXIT→전국맵 복귀, NPC nodeId·스탬프 연속. 전 도시 공통.
 
+### 6.5.1 한국 도시 스키마 확장 예약 (2026-07-16)
+- 한국 도시의 지리 소스는 `nameKo`와 `contentLocale: 'ko'`를 사용하고 `yomi`는 두지 않는다.
+- 화면 문구는 도시 모듈의 중앙 locale 슬롯에서 소비하며, 현재 `{ ko }`를 향후 `{ ko, ja }`로
+  확장할 수 있다. 표기 읽기가 필요해지면 별도 필드를 추가한다.
+- 기존 일본 도시의 `{ nameJa, yomi, ko }` 필드는 호환성 계약이므로 이름을 바꾸지 않는다.
+
 ### 6.6 시퀀스
 후쿠오카를 이 표준의 레퍼런스로 실지형 구축(Codex geo + Claude 청크렌더·콘텐츠) →
 검증 후 도쿄(같은 20m, 정기 교통) 상속 → 오사카·교토·삿포로·나하….

@@ -116,7 +116,11 @@ const LEGACY_WORLD_NODES = [
   // 김해공항 — 게이트 없음(표지 마커만).
   { id: 'gimhae-airport', name: '김해공항', kind: 'airport', tile: [POI.GIMHAE_AIR.x, POI.GIMHAE_AIR.y], desc: '부산 곁의 국제공항. 영남 지방 하늘길의 중심이에요.' },
   // 부산 — 도시.
-  { id: 'busan', name: '부산', kind: 'city', tile: [POI.BUSAN.x, POI.BUSAN.y], desc: '한국 제2의 도시이자 최대 항구도시. 바다와 산이 어우러져 있어요.' },
+  {
+    id: 'busan', name: '부산', kind: 'city', tile: [POI.BUSAN.x, POI.BUSAN.y],
+    gate: { type: 'city', to: 'busan', label: '🏙️ 시내' },
+    desc: '한국 제2의 도시이자 최대 항구도시. 바다와 산이 어우러져 있어요.',
+  },
   // 부산국제여객터미널 — 후쿠오카항행 페리.
   {
     id: 'busan-port', name: '부산국제여객터미널', kind: 'port', tile: [POI.BUSAN_TERMINAL.x, POI.BUSAN_TERMINAL.y], arrivalOffset: [0, -1],
