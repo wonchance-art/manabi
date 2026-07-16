@@ -55,6 +55,7 @@ describe('Mont-Saint-Michel precision geo contract', () => {
         finalRatioRange: [0.005, 0.012], generatedTileCount: 0, finalLandBuildingRatio: 0.007629,
       },
     });
+    expect(MONT_SAINT_MICHEL_GEO.tileSkins).toEqual({ beach: 'mudflat' });
     expect(MONT_SAINT_MICHEL_GEO.terrain).toHaveLength(381_446);
     expect(MONT_SAINT_MICHEL_GEO.entrance).toEqual({ x: 380, y: 840, facing: 'down' });
     expect(MONT_SAINT_MICHEL_GEO.exitTiles).toEqual([[380, 830], [380, 831]]);

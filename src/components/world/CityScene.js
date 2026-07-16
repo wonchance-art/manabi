@@ -40,6 +40,7 @@ import { activeVehiclesAt, planTransitTrip, tripStateAt } from '../../lib/world/
 import { cityWeatherAt, nodeLifeAt } from '../../lib/world/worldLife';
 import { avatarPalette } from '../../lib/world/avatar';
 import { worldSceneReturnTarget } from '../../lib/world/worldSceneReturn';
+import { cityBeachTextureKey } from './cityTileSkins';
 
 // ── 좌표 스케일 (광장·공항과 동일 불변) ──
 const TILE = 32;
@@ -234,6 +235,18 @@ export function buildCityScene(Phaser, city, ctx) {
         g.fillStyle(C(0xe8d6a6), 1); g.fillRect(0, 0, TEX, TEX);
         g.fillStyle(C(0xd8c48a), 1); for (const [x, y] of [[3, 4], [10, 6], [6, 11], [13, 12]]) g.fillRect(x, y, 2, 1);
         g.fillStyle(C(0xf2e6c2), 0.7); g.fillRect(0, 13, TEX, 1);
+      });
+      // 몽생미셸 대면적 갯벌 — 기존 BEACH 코드·모래 스킨은 유지하고 도시 선택 필드로만 분기한다.
+      this.bakeTile('ct_beach_mudflat', (g) => {
+        const rng = makeRng(0x4d534d);
+        g.fillStyle(C(0xc7b89b), 1); g.fillRect(0, 0, TEX, TEX);
+        g.fillStyle(C(0xb3a284), 1); for (const [x, y] of [[3, 4], [10, 6], [6, 11], [13, 12]]) g.fillRect(x, y, 2, 1);
+        g.fillStyle(C(0xd6cbb2), 0.7); g.fillRect(0, 13, TEX, 1);
+        g.fillStyle(C(0x8fa5a8), 0.8);
+        const speckleCount = 2 + Number(rng() >= 0.5);
+        for (let index = 0; index < speckleCount; index += 1) {
+          g.fillRect(Math.floor(rng() * (TEX - 1)), 2 + Math.floor(rng() * (TEX - 4)), 2, 1);
+        }
       });
 
       // 섬 실루엣(하카타만 노코노시마/시카노시마 · 오호리 연못 섬) — 초지 + 기슭(차단·배경).
@@ -613,7 +626,7 @@ export function buildCityScene(Phaser, city, ctx) {
         case TERRAIN.CROSSWALK: return `ct_crosswalk_${this.roadDirection(tx, ty) === 'h' ? 'h' : 'v'}`;
         case TERRAIN.PLAZA: return 'ct_plaza';
         case TERRAIN.PARK: return 'ct_park';
-        case TERRAIN.BEACH: return 'ct_beach';
+        case TERRAIN.BEACH: return cityBeachTextureKey(city);
         case TERRAIN.BRIDGE: return 'ct_bridge';
         case TERRAIN.DOCK: return 'ct_dock';
         case TERRAIN.EXIT: return 'ct_exit';

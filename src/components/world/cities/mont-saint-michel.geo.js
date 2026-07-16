@@ -126,6 +126,7 @@ const LENGTH = META.grid.w * META.grid.h;
 export const MONT_SAINT_MICHEL_GEO = Object.freeze({
   meta: META,
   terrain: decodeTerrain(TERRAIN_RLE, LENGTH),
+  tileSkins: Object.freeze({"beach":"mudflat"}),
   pois: Object.freeze([
   {
     "id": "abbey",
