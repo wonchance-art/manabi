@@ -146,7 +146,7 @@ describe("Côte d'Azur Overpass 분할 계약", () => {
       .toBe('f173829edb7a7efcc9b77da1230870f50ce5f01d8b59852fc1dc4b167ae183e1');
   });
 
-  it('핵심 배열·적응형 미니맵 추정치를 고정하고 공유 backing 게이트를 지킨다', () => {
+  it('핵심 배열·적응형 미니맵 추정치가 Côte 전용 25 MiB 게이트 안이다', () => {
     const cells = SNAPSHOT.grid.w * SNAPSHOT.grid.h;
     const layout = cityMinimapLayout(SNAPSHOT.grid.w, SNAPSHOT.grid.h);
     const sourceCanvasBytes = layout.sourceWidth * layout.sourceHeight * 4;
@@ -157,5 +157,6 @@ describe("Côte d'Azur Overpass 분할 계약", () => {
     expect(layout.backingBytes).toBe(16_553_160);
     expect(layout.backingBytes).toBeLessThan(16 * 1024 * 1024);
     expect(estimatedPeakBytes).toBe(25_741_137);
+    expect(estimatedPeakBytes).toBeLessThan(25 * 1024 * 1024);
   });
 });
