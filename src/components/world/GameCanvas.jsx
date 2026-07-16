@@ -2140,7 +2140,14 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           } else if (interactive?.gate?.type === 'ferry') {
             const destination = getNode(interactive.gate.to);
             setFerryPrompt({ toId: interactive.gate.to, toName: destination?.name || '' });
+          } else if (interactive?.gate?.type === 'story-scene' && interactive.gate.scene === 'airport') {
+            sceneRef.current?.enterAirport?.();
           } else if (interactive) setDescOpen(true);
+        },
+        onAirportEnter: () => {
+          setActiveScene('airport');
+          setNearNode(null); setRegionNearGate(null); setRegionGatePrompt(null); setRegionStatus(null);
+          setAirHubPrompt(null); setAirHubStatus(null);
         },
         airReturnSpawn: () => {
           const airport = getNode('incheon-airport');

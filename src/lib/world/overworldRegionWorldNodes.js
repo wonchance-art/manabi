@@ -6,6 +6,7 @@ export function overworldRegionWorldNodeMode(node) {
   if (!node?.gate) return 'description';
   if (node.gate.type === 'city') return 'city';
   if (node.gate.type === 'ferry') return 'ferry';
+  if (node.gate.type === 'story-scene' && node.gate.scene === 'airport') return 'airport';
   return 'blocked';
 }
 

@@ -377,6 +377,20 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
       });
     }
 
+    enterAirport() {
+      if (this.inputLocked || this.nearWorldNode?.gate?.type !== 'story-scene'
+        || this.nearWorldNode.gate.scene !== 'airport') return;
+      this.inputLocked = true;
+      this.heldDirs.length = 0;
+      const returnSpawn = Object.freeze({
+        scene: region.sceneId,
+        x: this.pTileX,
+        y: this.pTileY,
+      });
+      ctx.onAirportEnter?.();
+      this.scene.start('airport', { returnSpawn });
+    }
+
     async ferryTo(destinationId) {
       if (this.inputLocked || this.ferrying) return false;
       const route = resolveOverworldRegionFerry(
