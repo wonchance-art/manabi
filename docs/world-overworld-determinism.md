@@ -1,7 +1,8 @@
 # 오버월드 §6.4 결정성 계약 초안
 
 > 상태: **DRAFT — ① 투영 확정, 수직 슬라이스만 허용**
-> 범위: 오버월드 지형·충돌·view-only·희소 오버레이 생성 산출물. 노드 마이그레이션과 DB는 범위 밖이다.
+> 범위: 오버월드 지형·충돌·view-only·희소 오버레이·신규 지역 교통 노드 인덱스 생성 산출물.
+> legacy 노드 마이그레이션과 DB는 범위 밖이다.
 
 ## 1. 목표와 비목표
 
@@ -316,4 +317,27 @@ node scripts/world/build-overworld-boundary.mjs \
   --input-dir <verified-source-cache> \
   --output-dir public/assets/overworld/europe-mediterranean-middle-east-boundary-preview-v1 \
   --check
+```
+
+## 15. 지역 교통 노드 인덱스 preview v1
+
+`scripts/world/overworld-transport-nodes-{apac,emea}-v1.json`과
+`scripts/world/build-overworld-transport-nodes.mjs`는 확정된 횡단철도 종착 게이트만 256타일 청크별
+canonical JSON 인덱스로 생성한다.
+
+- 입력 위경도는 각 지역의 확정 projection manifest로 투영하고 `nearest-half-away-from-zero`로 한 번만
+  반올림한다. 결과 타일은 half-open 규칙으로 단 하나의 `nodes/<cx>/<cy>.json`에 속한다.
+- 생성기는 기준 playability content manifest와 모든 청크의 크기·SHA-256을 먼저 검증한다. 노드 타일이
+  체크인된 보행 가능 셀이 아니면 임의 스냅 없이 실패한다.
+- 문서 키·노드 키는 exact schema이며 노드는 ID code-point 순이다. 생성 시각·호스트명·절대 경로·DB ID는
+  기록하지 않는다.
+- 현재 인덱스는 기존 확정 ID인 `vladivostok-transsib`, `moscow-transsib`만 포함한다. 신규 공항·항구·역,
+  운임·시간표·운행 여부·콘텐츠는 별도 승인 전 포함하지 않는다.
+- 런타임은 content manifest에 등록된 청크만 요청하고, 지역 레지스트리의 게이트 ID·표시명·corridor stop·
+  타일과 모두 일치해야 씬을 연다. 불일치나 누락은 fail closed다.
+- 두 산출물 모두 `releaseEligible=false`이며 기존 저장 좌표·DB·지역 공개 상태를 바꾸지 않는다.
+
+```bash
+npm run build:overworld-transport-nodes
+npm run check:overworld-transport-nodes
 ```

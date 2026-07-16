@@ -30,6 +30,7 @@ function freezeRegion(region) {
     bbox: Object.freeze([...region.bbox]),
     projection: Object.freeze({ ...region.projection }),
     manifest: Object.freeze({ ...region.manifest }),
+    nodeSource: Object.freeze({ ...region.nodeSource }),
     overlaySources: Object.freeze((region.overlaySources || []).map((source) => Object.freeze({
       ...source,
       style: Object.freeze({ ...source.style }),
@@ -61,6 +62,14 @@ export const OVERWORLD_REGIONS = Object.freeze({
       schemaVersion: 1,
       regionHash: '17e9935e9c81775d8b4e0f91b9f67259458444e78d17b6933243bf07e889fdf1',
       projectionManifestHash: 'ef9de068363aa70971dc7beda5128690d4d0c6f3b052b9a43bd1a2f1d10a4d1c',
+    },
+    nodeSource: {
+      regionId: 'asia-pacific-transport-nodes-preview-v1',
+      regionHash: 'ac65a1b4c1b4ea371c0e010adab69d9155f7fdfd038c1bd4aeed5e11fded8f5b',
+      projectionManifestHash: 'ef9de068363aa70971dc7beda5128690d4d0c6f3b052b9a43bd1a2f1d10a4d1c',
+      width: 2631,
+      height: 2669,
+      pathPrefix: 'nodes',
     },
     overlaySources: [
       {
@@ -114,6 +123,14 @@ export const OVERWORLD_REGIONS = Object.freeze({
       schemaVersion: 1,
       regionHash: '1cbab17ae4f9c8631aa74f2c8d3c42c39c54d8b651e81f72267d67e1bcde5fb3',
       projectionManifestHash: '7e579e41f15467366187c478f0dcd48e02a3c17ea9e0d0265dfc537e8208aeb9',
+    },
+    nodeSource: {
+      regionId: 'europe-mediterranean-middle-east-transport-nodes-preview-v1',
+      regionHash: '68e92866ef5556d5a0251bc6038e82d2c95d9a9d2d0b858151547bbcfe117697',
+      projectionManifestHash: '7e579e41f15467366187c478f0dcd48e02a3c17ea9e0d0265dfc537e8208aeb9',
+      width: 964,
+      height: 1137,
+      pathPrefix: 'nodes',
     },
     overlaySources: [
       {

@@ -16,6 +16,8 @@
     "check:reading": "node scripts/check-reading.mjs",
     "check:overworld-fixture": "node scripts/world/build-overworld-fixture.mjs --check",
     "build:overworld-map-previews": "node scripts/world/build-overworld-map-previews.mjs",
+    "build:overworld-transport-nodes": "node scripts/world/build-overworld-transport-nodes.mjs --manifest scripts/world/overworld-transport-nodes-apac-v1.json --output-dir public/assets/overworld/asia-pacific-transport-nodes-preview-v1 && node scripts/world/build-overworld-transport-nodes.mjs --manifest scripts/world/overworld-transport-nodes-emea-v1.json --output-dir public/assets/overworld/europe-mediterranean-middle-east-transport-nodes-preview-v1",
+    "check:overworld-transport-nodes": "node scripts/world/build-overworld-transport-nodes.mjs --check --manifest scripts/world/overworld-transport-nodes-apac-v1.json --output-dir public/assets/overworld/asia-pacific-transport-nodes-preview-v1 && node scripts/world/build-overworld-transport-nodes.mjs --check --manifest scripts/world/overworld-transport-nodes-emea-v1.json --output-dir public/assets/overworld/europe-mediterranean-middle-east-transport-nodes-preview-v1",
     "test": "vitest run",
     "e2e": "node --test --test-concurrency=1 e2e/smoke.e2e.mjs"
   },

@@ -3,6 +3,7 @@ import { OverworldChunkLoader, overworldChunkKey } from '../../lib/world/overwor
 import { OVERWORLD_STORAGE_CHUNK_TILES } from '../../lib/world/overworldChunk';
 import { corridorStopSpawn } from '../../lib/world/transsibCorridor';
 import { overworldRegionSpawn } from '../../lib/world/overworldRegions';
+import { OverworldTransportNodeLoader } from '../../lib/world/overworldTransportNodes';
 import { PhaserOverworldPageRenderer } from './overworldPageRenderer';
 import { PhaserOverworldChunkOverlayRenderer } from './overworldChunkOverlayRenderer';
 import {
@@ -86,6 +87,7 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
       this.lastEmit = -Infinity;
       this.lastDistanceEmit = -Infinity;
       this.nearGate = false;
+      this.activeGate = null;
       this.loadedChunks = new Map();
       this.otherScenePeerIds = new Set();
 
@@ -107,6 +109,10 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
         tilePixels: TEXTURE_TILE,
         worldScale: WORLD_SCALE,
       });
+      this.transportNodes = new OverworldTransportNodeLoader({
+        baseUrl: region.assetBaseUrl,
+        source: region.nodeSource,
+      });
 
       const requested = bootData?.spawn?.scene === region.sceneId
         ? bootData.spawn
@@ -122,7 +128,7 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
         region.gate.tile.x * TILE + TILE / 2,
         (region.gate.tile.y + 1) * TILE,
         gateTexture,
-      ).setOrigin(0.5, 1).setScale(2).setDepth(900);
+      ).setOrigin(0.5, 1).setScale(2).setDepth(900).setVisible(false);
 
       this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
       this.cameras.main.setBackgroundColor('#6ba9cc');
@@ -141,6 +147,8 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
         this.terrainPages = null;
         this.featureOverlays?.destroy();
         this.featureOverlays = null;
+        this.transportNodes?.destroy();
+        this.transportNodes = null;
         this.chunkLoader?.destroy();
         this.chunkLoader = null;
         this.loadedChunks.clear();
@@ -154,11 +162,26 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
     }
 
     async initializeSpawn() {
+      const matchingNodes = await this.transportNodes.loadAtTile(region.gate.tile.x, region.gate.tile.y);
+      const node = matchingNodes.find(({ id }) => id === region.gate.id);
+      if (!node || node.type !== 'transsib-gate'
+        || node.label !== region.gate.label
+        || node.corridorStopId !== region.gate.corridorStopId) {
+        throw new Error('region gate transport node contract drifted');
+      }
+      this.activeGate = Object.freeze({
+        ...region.gate,
+        tile: Object.freeze({ x: node.tile[0], y: node.tile[1] }),
+      });
+      this.gateMarker.setPosition(
+        this.activeGate.tile.x * TILE + TILE / 2,
+        (this.activeGate.tile.y + 1) * TILE,
+      ).setVisible(true);
       let spawnX = this.pTileX;
       let spawnY = this.pTileY;
       if (!await this.isWalkable(spawnX, spawnY)) {
-        spawnX = region.gate.tile.x;
-        spawnY = region.gate.tile.y;
+        spawnX = this.activeGate.tile.x;
+        spawnY = this.activeGate.tile.y;
       }
       if (!await this.isWalkable(spawnX, spawnY)) throw new Error('region gate spawn is not walkable');
       this.pTileX = spawnX;
@@ -256,20 +279,21 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
 
     refreshNearGate(force = false) {
       const near = this.ready
-        && Math.abs(this.pTileX - region.gate.tile.x) <= 1
-        && Math.abs(this.pTileY - region.gate.tile.y) <= 1;
+        && this.activeGate
+        && Math.abs(this.pTileX - this.activeGate.tile.x) <= 1
+        && Math.abs(this.pTileY - this.activeGate.tile.y) <= 1;
       if (!force && near === this.nearGate) return;
       this.nearGate = near;
-      ctx.setNearGate?.(near ? { region, gate: region.gate } : null);
+      ctx.setNearGate?.(near ? { region, gate: this.activeGate } : null);
     }
 
     regionInteract() {
-      if (this.nearGate && !this.inputLocked) ctx.requestGate?.({ region, gate: region.gate });
+      if (this.nearGate && !this.inputLocked) ctx.requestGate?.({ region, gate: this.activeGate });
     }
 
     async enterCorridor() {
       if (!this.nearGate || this.inputLocked) return;
-      const spawn = corridorStopSpawn(region.gate.corridorStopId);
+      const spawn = corridorStopSpawn(this.activeGate?.corridorStopId);
       if (!spawn) return;
       this.inputLocked = true;
       this.heldDirs.length = 0;

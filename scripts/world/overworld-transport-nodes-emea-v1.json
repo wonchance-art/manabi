@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "releaseEligible": false,
+  "generatorGitSha": null,
+  "regionId": "europe-mediterranean-middle-east-transport-nodes-preview-v1",
+  "baseRegion": {
+    "manifestPath": "scripts/world/overworld-region-emea-v1.json",
+    "directory": "public/assets/overworld/europe-mediterranean-middle-east-playability-preview-v1",
+    "contentManifest": "content-manifest.json",
+    "contentManifestSha256": "cb0b3f489c46c8dd0ac2fb9fbeae774ec56b94f9fff0ae665f7d58278364a110",
+    "contentManifestBytes": 6392
+  },
+  "nodeRules": {
+    "chunkTiles": 256
+  },
+  "nodes": [
+    {
+      "id": "moscow-transsib",
+      "type": "transsib-gate",
+      "label": "모스크바 횡단열차역",
+      "corridorStopId": "moscow",
+      "lon": 37.6173,
+      "lat": 55.7558
+    }
+  ]
+}
