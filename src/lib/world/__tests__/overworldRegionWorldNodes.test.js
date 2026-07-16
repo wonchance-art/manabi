@@ -36,18 +36,21 @@ describe('APAC 월드 노드 런타임 인덱스', () => {
     expect(overworldRegionWorldNodes(APAC, nodes).map(({ node }) => node.id)).toEqual(['ok']);
   });
 
-  it('설명·도시·페리는 열고 공항 스토리 게이트는 다음 단계까지 닫는다', () => {
+  it('설명·도시·페리·공항은 열고 알 수 없는 스토리 게이트는 닫는다', () => {
     const entries = overworldRegionWorldNodes(APAC, [
       { id: 'landmark', regionId: APAC.id, overworldTile: [10, 10] },
       { id: 'city', regionId: APAC.id, overworldTile: [11, 10], gate: { type: 'city' } },
-      { id: 'airport', regionId: APAC.id, overworldTile: [12, 10], gate: { type: 'story-scene' } },
+      { id: 'airport', regionId: APAC.id, overworldTile: [12, 10], gate: { type: 'story-scene', scene: 'airport' } },
+      { id: 'unknown', regionId: APAC.id, overworldTile: [13, 10], gate: { type: 'story-scene', scene: 'unknown' } },
     ]);
 
     expect(nearestOverworldRegionWorldNode(entries, 10, 10)).toMatchObject({ id: 'landmark' });
     expect(nearestOverworldRegionWorldNode(entries, 11, 10, 0)).toMatchObject({ id: 'city' });
-    expect(nearestOverworldRegionWorldNode(entries, 12, 10, 0)).toBeNull();
+    expect(nearestOverworldRegionWorldNode(entries, 12, 10, 0)).toMatchObject({ id: 'airport' });
+    expect(nearestOverworldRegionWorldNode(entries, 13, 10, 0)).toBeNull();
     expect(overworldRegionWorldNodeMode({ gate: { type: 'ferry' } })).toBe('ferry');
-    expect(overworldRegionWorldNodeMode({ gate: { type: 'story-scene' } })).toBe('blocked');
+    expect(overworldRegionWorldNodeMode({ gate: { type: 'story-scene', scene: 'airport' } })).toBe('airport');
+    expect(overworldRegionWorldNodeMode({ gate: { type: 'story-scene', scene: 'unknown' } })).toBe('blocked');
   });
 
   it('페리는 같은 지역의 상호 왕복 게이트와 새 도착 좌표만 허용한다', () => {

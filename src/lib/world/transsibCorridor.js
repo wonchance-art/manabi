@@ -36,6 +36,10 @@ const finiteMinute = (value, label) => {
 };
 const nextDepartureMinute = (minute, headway) => Math.ceil(minute / headway) * headway;
 
+export function canAccessCorridor({ allowPreview = false } = {}, config = TRANS_SIBERIAN_CORRIDOR) {
+  return config.releaseEligible === true || allowPreview === true;
+}
+
 export function corridorStopSpawn(stopId, config = TRANS_SIBERIAN_CORRIDOR) {
   const stop = stopById(config, stopId);
   if (!stop) return null;
