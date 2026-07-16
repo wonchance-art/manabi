@@ -6,6 +6,7 @@ import {
   confirmEmeaRailTerminalPersistence,
   continueEmeaRailTrip,
   disembarkEmeaRailTrip,
+  emeaRailDestinations,
   emeaRailHubSpawn,
   emeaRailLogoutFallback,
   persistEmeaRailTerminalBeforeBoard,
@@ -29,7 +30,8 @@ describe('유럽 철도 시간 중립 노선·여정 계약', () => {
       'rome-rail-hub',
       'vienna-rail-hub',
     ]);
-    expect(EMEA_RAIL_NETWORK.links).toHaveLength(6);
+    expect(EMEA_RAIL_NETWORK.links).toHaveLength(5);
+    expect(EMEA_RAIL_NETWORK.links.flat()).not.toContain('london-rail-hub');
     expect(EMEA_RAIL_NETWORK).not.toHaveProperty('headwayMinutes');
     expect(EMEA_RAIL_NETWORK).not.toHaveProperty('dwellMinutes');
     expect(EMEA_RAIL_NETWORK).not.toHaveProperty('segmentMinutes');
@@ -50,8 +52,8 @@ describe('유럽 철도 시간 중립 노선·여정 계약', () => {
   });
 
   it('분기형 네트워크에서 항상 같은 최소 환승 경로를 만든다', () => {
-    expect(planEmeaRailRoute('london-rail-hub', 'istanbul-rail-hub')).toEqual([
-      'london-rail-hub',
+    expect(planEmeaRailRoute('madrid-rail-hub', 'istanbul-rail-hub')).toEqual([
+      'madrid-rail-hub',
       'paris-rail-hub',
       'berlin-rail-hub',
       'vienna-rail-hub',
@@ -64,11 +66,20 @@ describe('유럽 철도 시간 중립 노선·여정 계약', () => {
       'paris-rail-hub',
       'madrid-rail-hub',
     ]);
+    expect(emeaRailDestinations('london-rail-hub')).toEqual([]);
+    expect(emeaRailDestinations('paris-rail-hub').map(({ id }) => id)).toEqual([
+      'berlin-rail-hub',
+      'istanbul-rail-hub',
+      'madrid-rail-hub',
+      'rome-rail-hub',
+      'vienna-rail-hub',
+    ]);
+    expect(() => planEmeaRailRoute('london-rail-hub', 'paris-rail-hub')).toThrow('disconnected');
   });
 
   it('종착 오버월드 좌표를 저장하기 전에는 탑승할 수 없다', () => {
     const prepared = prepareEmeaRailTrip({
-      originId: 'london-rail-hub',
+      originId: 'paris-rail-hub',
       terminalId: 'rome-rail-hub',
     });
     expect(prepared).toMatchObject({
@@ -99,35 +110,35 @@ describe('유럽 철도 시간 중립 노선·여정 계약', () => {
 
   it('운행 중에는 저장·하차를 막고 중간 정차에서만 직접 하차한다', () => {
     const prepared = prepareEmeaRailTrip({
-      originId: 'london-rail-hub',
+      originId: 'paris-rail-hub',
       terminalId: 'rome-rail-hub',
     });
     const ready = confirmEmeaRailTerminalPersistence(prepared, emeaRailHubSpawn('rome-rail-hub'));
     const riding = boardEmeaRailTrip(ready);
     expect(riding).toMatchObject({
       phase: 'riding',
-      fromId: 'london-rail-hub',
-      toId: 'paris-rail-hub',
+      fromId: 'paris-rail-hub',
+      toId: 'berlin-rail-hub',
     });
     expect(() => disembarkEmeaRailTrip(riding)).toThrow('must be stopped');
 
     const stopped = arriveEmeaRailTrip(riding);
     expect(stopped).toMatchObject({
       phase: 'stopped',
-      stopId: 'paris-rail-hub',
+      stopId: 'berlin-rail-hub',
       canDisembark: true,
       persistable: false,
     });
     expect(disembarkEmeaRailTrip(stopped)).toMatchObject({
       phase: 'disembarked',
-      stopId: 'paris-rail-hub',
-      localState: { scene: 'overworld:emea', x: 211, y: 424, persistable: true },
+      stopId: 'berlin-rail-hub',
+      localState: { scene: 'overworld:emea', x: 386, y: 333, persistable: true },
     });
   });
 
   it('미하차 시 다음 구간으로 진행하고 종착·로그아웃 폴백을 보존한다', () => {
     const prepared = prepareEmeaRailTrip({
-      originId: 'london-rail-hub',
+      originId: 'madrid-rail-hub',
       terminalId: 'berlin-rail-hub',
     });
     const ready = confirmEmeaRailTerminalPersistence(prepared, emeaRailHubSpawn('berlin-rail-hub'));
@@ -156,9 +167,9 @@ describe('유럽 철도 시간 중립 노선·여정 계약', () => {
     expect(() => planEmeaRailRoute('paris-rail-hub', 'paris-rail-hub')).toThrow('must differ');
     const prepared = prepareEmeaRailTrip({
       originId: 'paris-rail-hub',
-      terminalId: 'london-rail-hub',
+      terminalId: 'berlin-rail-hub',
     });
-    const ready = confirmEmeaRailTerminalPersistence(prepared, emeaRailHubSpawn('london-rail-hub'));
+    const ready = confirmEmeaRailTerminalPersistence(prepared, emeaRailHubSpawn('berlin-rail-hub'));
     const terminal = arriveEmeaRailTrip(boardEmeaRailTrip(ready));
     expect(() => continueEmeaRailTrip(terminal)).toThrow('intermediate');
   });

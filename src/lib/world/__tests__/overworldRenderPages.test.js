@@ -8,6 +8,7 @@ import {
   collectRenderPageStorageChunks,
   createOverworldRenderPageSource,
   planOverworldRenderPages,
+  overworldRenderPageKeyAtWorldPixel,
   renderPageTileBounds,
   renderPageToStorageChunk,
 } from '../overworldRenderPages.js';
@@ -104,6 +105,16 @@ describe('오버월드 32×32 렌더 페이지 좌표 계약', () => {
     expect(renderPageToStorageChunk(-1, -1)).toMatchObject({
       cx: -1, cy: -1, localPageX: 7, localPageY: 7, localTileX: 224, localTileY: 224,
     });
+  });
+
+  it('연속 이동 좌표는 32타일 렌더 페이지 경계를 넘을 때만 새 키를 만든다', () => {
+    const tilePixels = 32;
+    const pagePixels = OVERWORLD_RENDER_PAGE_TILES * tilePixels;
+    expect(overworldRenderPageKeyAtWorldPixel(0, 0, { tilePixels })).toBe('0,0');
+    expect(overworldRenderPageKeyAtWorldPixel(pagePixels - 0.01, pagePixels - 0.01, { tilePixels }))
+      .toBe('0,0');
+    expect(overworldRenderPageKeyAtWorldPixel(pagePixels, pagePixels, { tilePixels })).toBe('1,1');
+    expect(overworldRenderPageKeyAtWorldPixel(-0.01, -0.01, { tilePixels })).toBe('-1,-1');
   });
 
   it('여러 페이지가 공유하는 저장 청크 요청을 우선순위 보존 상태로 합친다', () => {
