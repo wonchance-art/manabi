@@ -72,7 +72,7 @@ const CITY_GATES = {
   },
   // ── 유럽 1차 (Codex-2 착수 전 선제 정의 — 파일명이 다르면 --file 로 대입) ──
   'grand-paris': {
-    file: 'src/components/world/cities/grandparis.geo.js',
+    file: 'src/components/world/cities/grand-paris.geo.js',
     snapshot: null, // FR 파이프라인 스냅샷 경로는 Codex-2 산출 확인 후 고정
     expectedLocale: 'fr',
     expectedMpt: 20,
@@ -131,26 +131,36 @@ function terrainShares(geo) {
   return { counts, land, pct };
 }
 
+// 단면은 스캔 축 ±2 오프셋 5개 중 최적값 — 교량 데크(→KR 정리 후엔 차도)가 pin 열과 정확히
+// 겹치면 수면이 0으로 나오는 false FAIL 방지(그랑파리 루브르 단면 = 퐁뒤카루젤 사례, Codex-2 진단).
 function scanSection(geo, proj, section) {
   const W = geo.meta.grid.w;
   const mpt = geo.meta.metersPerTile;
-  const runs = [];
-  let run = 0;
-  let sum = 0;
-  const push = (v) => {
-    if (isWaterTile(v)) { sum += 1; run += 1; } else if (run > 0) { runs.push(run); run = 0; }
+  const scanOnce = (offset) => {
+    const runs = [];
+    let run = 0;
+    let sum = 0;
+    const push = (v) => {
+      if (isWaterTile(v)) { sum += 1; run += 1; } else if (run > 0) { runs.push(run); run = 0; }
+    };
+    if (section.lat != null) { // 가로 단면(고정 위도, 경도 스캔) — 오프셋은 y축
+      const y = Math.floor(proj.tile(section.lonRange[0], section.lat)[1]) + offset;
+      const [x0, x1] = section.lonRange.map((lon) => Math.floor(proj.tile(lon, section.lat)[0]));
+      for (let x = x0; x <= x1; x += 1) push(geo.terrain[y * W + x]);
+    } else { // 세로 단면(고정 경도, 위도 스캔 — latRange는 북→남) — 오프셋은 x축
+      const x = Math.floor(proj.tile(section.lon, section.latRange[0])[0]) + offset;
+      const [y0, y1] = section.latRange.map((lat) => Math.floor(proj.tile(section.lon, lat)[1]));
+      for (let y = y0; y <= y1; y += 1) push(geo.terrain[y * W + x]);
+    }
+    if (run > 0) runs.push(run);
+    return { sumM: sum * mpt, runM: Math.max(0, ...runs) * mpt };
   };
-  if (section.lat != null) { // 가로 단면(고정 위도, 경도 스캔)
-    const y = Math.floor(proj.tile(section.lonRange[0], section.lat)[1]);
-    const [x0, x1] = section.lonRange.map((lon) => Math.floor(proj.tile(lon, section.lat)[0]));
-    for (let x = x0; x <= x1; x += 1) push(geo.terrain[y * W + x]);
-  } else { // 세로 단면(고정 경도, 위도 스캔 — latRange는 북→남)
-    const x = Math.floor(proj.tile(section.lon, section.latRange[0])[0]);
-    const [y0, y1] = section.latRange.map((lat) => Math.floor(proj.tile(section.lon, lat)[1]));
-    for (let y = y0; y <= y1; y += 1) push(geo.terrain[y * W + x]);
+  let best = { sumM: 0, runM: 0 };
+  for (const offset of [-2, -1, 0, 1, 2]) {
+    const result = scanOnce(offset);
+    if (result.sumM > best.sumM || (result.sumM === best.sumM && result.runM > best.runM)) best = result;
   }
-  if (run > 0) runs.push(run);
-  return { sumM: sum * mpt, runM: Math.max(0, ...runs) * mpt };
+  return best;
 }
 
 function coursePresence(geo, proj, course) {
