@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
   extractClientIp, normalizePosition, normalizePositionScene, isSpawnTileValid,
-  isPersistablePosition, cityRedirectScene,
+  isPersistablePosition, cityRedirectScene, corridorRedirectScene,
+  defaultOverworldRegionSpawn, overworldRegionRedirectScene,
 } from '../world/session.js';
 
 // ─────────────────────────────────────────────────────────────
@@ -54,12 +55,39 @@ describe('normalizePosition — 저장 좌표 정규화(순수)', () => {
     expect(normalizePosition({ scene: 'City:Fukuoka', x: 1, y: 2 }).scene).toBe('plaza');
   });
 
-  it('횡단철도 플랫폼 씬은 보존하고 임의 transit 씬은 거부한다', () => {
-    expect(normalizePosition({ scene: 'transsib-corridor', x: 8, y: 8 }))
-      .toEqual({ scene: 'transsib-corridor', x: 8, y: 8 });
-    expect(normalizePositionScene('transsib-corridor')).toBe('transsib-corridor');
+  it('미출시 횡단철도 씬은 플랫폼 좌표여도 서버 저장을 거부한다', () => {
+    expect(normalizePosition({ scene: 'transsib-corridor', x: 8, y: 8 })).toBeNull();
+    expect(normalizePositionScene('transsib-corridor')).toBe('plaza');
     expect(normalizePositionScene('transsib-admin')).toBe('plaza');
     expect(normalizePosition({ scene: 'transsib-corridor', x: 9, y: 8 })).toBeNull();
+  });
+
+  it('출시된 APAC은 저장하고 미출시 EMEA는 거부한다', () => {
+    expect(normalizePosition({ scene: 'overworld:asia-pacific', x: 1576, y: 442 })).toEqual({
+      scene: 'overworld:asia-pacific', x: 1576, y: 442,
+    });
+    expect(normalizePosition({ scene: 'overworld:emea', x: 768, y: 253 })).toBeNull();
+    expect(normalizePosition({ scene: 'overworld:emea', x: 964, y: 253 })).toBeNull();
+    expect(normalizePosition({ scene: 'overworld:asia-pacific', x: 1576, y: 2669 })).toBeNull();
+    expect(normalizePositionScene('overworld:unknown')).toBe('plaza');
+  });
+
+  it('명시적인 관리자 미리보기 권한에서만 등록된 미출시 지역 좌표를 허용한다', () => {
+    expect(normalizePosition({
+      scene: 'overworld:asia-pacific', x: 1576, y: 442,
+    }, { allowPreview: true })).toEqual({
+      scene: 'overworld:asia-pacific', x: 1576, y: 442,
+    });
+    expect(normalizePosition({
+      scene: 'overworld:emea', x: 768, y: 253,
+    }, { allowPreview: true })).toEqual({
+      scene: 'overworld:emea', x: 768, y: 253,
+    });
+    expect(normalizePosition({
+      scene: 'overworld:emea', x: 964, y: 253,
+    }, { allowPreview: true })).toBeNull();
+    expect(normalizePositionScene('overworld:emea', { allowPreview: true })).toBe('overworld:emea');
+    expect(normalizePositionScene('overworld:unknown', { allowPreview: true })).toBe('plaza');
   });
 
   it('소수 좌표는 반올림', () => {
@@ -134,10 +162,17 @@ describe('isPersistablePosition — 위치 영속 판정(순수)', () => {
     expect(isPersistablePosition({ scene: 'airport', x: 3, y: 4, persistable: true })).toBe(false);
   });
 
-  it('횡단철도는 플랫폼만 저장하고 운행 중 좌표는 저장하지 않는다', () => {
-    expect(isPersistablePosition({ scene: 'transsib-corridor', x: 8, y: 8, persistable: true })).toBe(true);
+  it('미출시 횡단철도는 플랫폼과 운행 중 좌표를 모두 저장하지 않는다', () => {
+    expect(isPersistablePosition({ scene: 'transsib-corridor', x: 8, y: 8, persistable: true })).toBe(false);
     expect(isPersistablePosition({ scene: 'transsib-corridor', x: 90, y: 8, persistable: false })).toBe(false);
     expect(isPersistablePosition({ scene: 'transsib-admin', x: 8, y: 8, persistable: true })).toBe(false);
+  });
+
+  it('출시된 APAC 좌표만 확장 지역 영속 대상으로 삼는다', () => {
+    expect(isPersistablePosition({ scene: 'overworld:asia-pacific', x: 1576, y: 442 })).toBe(true);
+    expect(isPersistablePosition({ scene: 'overworld:emea', x: 768, y: 253, persistable: true })).toBe(false);
+    expect(isPersistablePosition({ scene: 'overworld:emea', x: 768, y: 253, persistable: false })).toBe(false);
+    expect(isPersistablePosition({ scene: 'overworld:unknown', x: 1, y: 1 })).toBe(false);
   });
 
   it('null/undefined/비객체는 영속 제외(안전)', () => {
@@ -195,5 +230,85 @@ describe('cityRedirectScene — 초기 부팅 시 도시 직행 스폰 판별(�
 
   it('hasCity 미제공(비함수)이면 안전하게 null', () => {
     expect(cityRedirectScene({}, savedCity, null)).toBeNull();
+  });
+});
+
+describe('corridorRedirectScene — 초기 부팅 시 횡단철도 플랫폼 복귀', () => {
+  const saved = { scene: 'transsib-corridor', x: 80, y: 8 };
+
+  it('미출시 상태에서는 저장된 플랫폼이 있어도 직행하지 않는다', () => {
+    expect(corridorRedirectScene({}, saved)).toBeNull();
+    expect(corridorRedirectScene(undefined, saved)).toBeNull();
+  });
+
+  it('다른 씬에서 복귀 중이거나 플랫폼 밖 좌표면 직행하지 않는다', () => {
+    expect(corridorRedirectScene({ spawn: { scene: 'plaza', x: 68, y: 208 } }, saved)).toBeNull();
+    expect(corridorRedirectScene({}, { scene: 'transsib-corridor', x: 81, y: 8 })).toBeNull();
+    expect(corridorRedirectScene({}, { scene: 'plaza', x: 68, y: 208 })).toBeNull();
+  });
+
+  it('관리자 미리보기 복귀만 명시적 권한으로 허용한다', () => {
+    expect(corridorRedirectScene({}, saved, { allowPreview: true })).toBe('transsib-corridor');
+    expect(corridorRedirectScene({}, {
+      scene: 'transsib-corridor', x: 81, y: 8,
+    }, { allowPreview: true })).toBeNull();
+    expect(corridorRedirectScene({ spawn: { scene: 'plaza', x: 1, y: 1 } }, saved, {
+      allowPreview: true,
+    })).toBeNull();
+  });
+});
+
+describe('overworldRegionRedirectScene — 초기 부팅 시 확장 지역 복귀', () => {
+  it('출시된 APAC 저장 위치로 직행하고 미출시 EMEA는 거부한다', () => {
+    expect(overworldRegionRedirectScene({}, {
+      scene: 'overworld:asia-pacific', x: 1576, y: 442,
+    })).toBe('overworld:asia-pacific');
+    expect(overworldRegionRedirectScene(undefined, {
+      scene: 'overworld:emea', x: 768, y: 253,
+    })).toBeNull();
+  });
+
+  it('다른 씬에서 복귀 중이거나 미등록/범위 밖 좌표면 직행하지 않는다', () => {
+    const saved = { scene: 'overworld:emea', x: 768, y: 253 };
+    expect(overworldRegionRedirectScene({ spawn: { scene: 'transsib-corridor', x: 208, y: 8 } }, saved)).toBeNull();
+    expect(overworldRegionRedirectScene({}, { scene: 'overworld:unknown', x: 1, y: 1 })).toBeNull();
+    expect(overworldRegionRedirectScene({}, { scene: 'overworld:emea', x: 964, y: 253 })).toBeNull();
+  });
+
+  it('관리자 미리보기 복귀만 명시적 권한으로 허용한다', () => {
+    expect(overworldRegionRedirectScene({}, {
+      scene: 'overworld:emea', x: 768, y: 253,
+    }, { allowPreview: true })).toBe('overworld:emea');
+    expect(overworldRegionRedirectScene({}, {
+      scene: 'overworld:emea', x: 964, y: 253,
+    }, { allowPreview: true })).toBeNull();
+    expect(overworldRegionRedirectScene({ spawn: { scene: 'plaza', x: 1, y: 1 } }, {
+      scene: 'overworld:emea', x: 768, y: 253,
+    }, { allowPreview: true })).toBeNull();
+  });
+});
+
+describe('defaultOverworldRegionSpawn — 신규 사용자 기본 지역 진입', () => {
+  const seoul = { scene: 'overworld:asia-pacific', x: 1468, y: 579 };
+
+  it('저장 위치와 복귀 데이터가 없는 최초 진입만 서울로 보낸다', () => {
+    expect(defaultOverworldRegionSpawn({}, null, seoul)).toEqual(seoul);
+    expect(defaultOverworldRegionSpawn(undefined, undefined, seoul)).toEqual(seoul);
+  });
+
+  it('기존 plaza·도시·지역 저장 위치는 건드리지 않는다', () => {
+    expect(defaultOverworldRegionSpawn({}, { scene: 'plaza', x: 68, y: 208 }, seoul)).toBeNull();
+    expect(defaultOverworldRegionSpawn({}, { scene: 'city:fukuoka', x: 47, y: 60 }, seoul)).toBeNull();
+    expect(defaultOverworldRegionSpawn({}, seoul, seoul)).toBeNull();
+  });
+
+  it('씬 복귀 데이터와 미출시·범위 밖 기본값은 닫는다', () => {
+    expect(defaultOverworldRegionSpawn({ spawn: seoul }, null, seoul)).toBeNull();
+    expect(defaultOverworldRegionSpawn({}, null, {
+      scene: 'overworld:emea', x: 214, y: 420,
+    })).toBeNull();
+    expect(defaultOverworldRegionSpawn({}, null, {
+      scene: 'overworld:asia-pacific', x: 2631, y: 579,
+    })).toBeNull();
   });
 });
