@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { decodeOverworldChunkV1, OVERWORLD_STORAGE_CHUNK_TILES } from '../overworldChunk.js';
+import { WORLD_NODES } from '../../../components/world/worldNodes.js';
 import { normalizeOverworldOverlayDocument } from '../overworldFeatureOverlay.js';
 import { normalizeOverworldTransportNodeDocument } from '../overworldTransportNodes.js';
 import {
@@ -54,6 +55,12 @@ describe('오버월드 지역 레지스트리', () => {
     expect(overworldRegionForCorridorStop('moscow')?.id).toBe('emea');
     expect(overworldRegionById('unknown')).toBeNull();
     expect(overworldRegionByScene('overworld:unknown')).toBeNull();
+    expect(overworldRegionById('asia-pacific')?.releaseEligible).toBe(true);
+    expect(overworldRegionById('emea')?.releaseEligible).toBe(false);
+    expect(overworldRegionById('asia-pacific')?.boundaryNotice).toBeUndefined();
+    expect(overworldRegionById('emea')?.boundaryNotice).toBe(
+      '지도상의 경계·명칭·표시는 특정 지역의 법적 지위나 경계 주장에 대한 승인 또는 지지를 의미하지 않습니다.',
+    );
   });
 
   it.each(OVERWORLD_REGION_LIST)('$label 게이트가 범위 안의 체크인된 보행 타일이다', (region) => {
@@ -69,7 +76,7 @@ describe('오버월드 지역 레지스트리', () => {
       .toEqual({ scene: region.sceneId, x, y });
   });
 
-  it('EMEA 항공 도착점은 파리의 별도 보행 게이트를 사용한다', () => {
+  it('EMEA는 파리 게이트, APAC은 인천 도착 타일을 사용한다', () => {
     const region = overworldRegionById('emea');
     expect(region.airGate).toMatchObject({
       id: 'paris-cdg-air', type: 'air-gate', airportCode: 'CDG', contentLocale: 'fr',
@@ -77,10 +84,33 @@ describe('오버월드 지역 레지스트리', () => {
     expect(checkedInGateCell(region, region.airGate)).toMatchObject({
       valid: true, collision: 0, viewOnly: 0,
     });
+    expect(projectOverworldRegionCoordinate(region, region.airGate.lon, region.airGate.lat))
+      .toEqual(region.airGate.tile);
     expect(overworldRegionAirSpawn(region)).toEqual({
       scene: region.sceneId, x: region.airGate.tile.x, y: region.airGate.tile.y,
     });
-    expect(overworldRegionAirSpawn('asia-pacific')).toEqual(overworldRegionSpawn('asia-pacific'));
+    const apac = overworldRegionById('asia-pacific');
+    expect(apac.airArrival).toMatchObject({
+      id: 'incheon-air-arrival', airportCode: 'ICN', contentLocale: 'ko', arrivalOffset: [4, 0],
+    });
+    expect(checkedInGateCell(apac, apac.airArrival)).toMatchObject({
+      valid: true, collision: 0, viewOnly: 0,
+    });
+    expect(overworldRegionAirSpawn(apac)).toEqual({
+      scene: apac.sceneId, x: 1460, y: 582,
+    });
+  });
+
+  it('신규 사용자의 APAC 서울 기본 진입점이 체크인된 보행 타일이다', () => {
+    const apac = overworldRegionById('asia-pacific');
+    const seoul = WORLD_NODES.find(({ id }) => id === 'seoul');
+    expect(seoul).toMatchObject({
+      regionId: apac.id,
+      overworldTile: [1468, 579],
+    });
+    expect(checkedInGateCell(apac, {
+      tile: { x: seoul.overworldTile[0], y: seoul.overworldTile[1] },
+    })).toMatchObject({ valid: true, collision: 0, viewOnly: 0 });
   });
 
   it.each(OVERWORLD_REGION_LIST)('$label의 위경도와 타일 좌표를 뷰어용으로 왕복한다', (region) => {
@@ -137,21 +167,21 @@ describe('오버월드 지역 레지스트리', () => {
       height: region.height,
       releaseEligible: false,
     });
-    expect(manifest.nodes).toContainEqual(expect.objectContaining({ path: `nodes/${cx}/${cy}.json`, count: 1 }));
+    expect(manifest.nodes).toContainEqual(expect.objectContaining({ path: `nodes/${cx}/${cy}.json` }));
     const document = normalizeOverworldTransportNodeDocument(JSON.parse(readFileSync(path.join(
       ROOT,
       'public/assets/overworld',
       region.nodeSource.regionId,
       `nodes/${cx}/${cy}.json`,
     ), 'utf8')), { cx, cy, width: region.width, height: region.height });
-    expect(document.nodes).toEqual([{
+    expect(document.nodes).toContainEqual({
       id: region.gate.id,
       type: 'transsib-gate',
       label: region.gate.label,
       contentLocale: region.gate.contentLocale,
       corridorStopId: region.gate.corridorStopId,
       tile: [x, y],
-    }]);
+    });
   });
 
   it('EMEA 항공 게이트가 체크인된 교통 노드 인덱스와 일치한다', () => {
@@ -162,14 +192,14 @@ describe('오버월드 지역 레지스트리', () => {
     const document = normalizeOverworldTransportNodeDocument(JSON.parse(readFileSync(path.join(
       ROOT, 'public/assets/overworld', region.nodeSource.regionId, `nodes/${cx}/${cy}.json`,
     ), 'utf8')), { cx, cy, width: region.width, height: region.height });
-    expect(document.nodes).toEqual([{
+    expect(document.nodes).toContainEqual({
       id: region.airGate.id,
       type: 'air-gate',
       label: region.airGate.label,
       contentLocale: region.airGate.contentLocale,
       airportCode: region.airGate.airportCode,
       tile: [x, y],
-    }]);
+    });
   });
 
   it('미등록 지역과 범위 밖 좌표는 거부한다', () => {

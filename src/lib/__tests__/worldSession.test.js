@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   extractClientIp, normalizePosition, normalizePositionScene, isSpawnTileValid,
   isPersistablePosition, cityRedirectScene, corridorRedirectScene,
-  overworldRegionRedirectScene,
+  defaultOverworldRegionSpawn, overworldRegionRedirectScene,
 } from '../world/session.js';
 
 // ─────────────────────────────────────────────────────────────
@@ -62,8 +62,10 @@ describe('normalizePosition — 저장 좌표 정규화(순수)', () => {
     expect(normalizePosition({ scene: 'transsib-corridor', x: 9, y: 8 })).toBeNull();
   });
 
-  it('미출시 확장 지역은 등록된 범위 안 좌표도 서버 저장을 거부한다', () => {
-    expect(normalizePosition({ scene: 'overworld:asia-pacific', x: 1576, y: 442 })).toBeNull();
+  it('출시된 APAC은 저장하고 미출시 EMEA는 거부한다', () => {
+    expect(normalizePosition({ scene: 'overworld:asia-pacific', x: 1576, y: 442 })).toEqual({
+      scene: 'overworld:asia-pacific', x: 1576, y: 442,
+    });
     expect(normalizePosition({ scene: 'overworld:emea', x: 768, y: 253 })).toBeNull();
     expect(normalizePosition({ scene: 'overworld:emea', x: 964, y: 253 })).toBeNull();
     expect(normalizePosition({ scene: 'overworld:asia-pacific', x: 1576, y: 2669 })).toBeNull();
@@ -166,8 +168,8 @@ describe('isPersistablePosition — 위치 영속 판정(순수)', () => {
     expect(isPersistablePosition({ scene: 'transsib-admin', x: 8, y: 8, persistable: true })).toBe(false);
   });
 
-  it('미출시 확장 지역 좌표는 영속 대상으로 삼지 않는다', () => {
-    expect(isPersistablePosition({ scene: 'overworld:asia-pacific', x: 1576, y: 442 })).toBe(false);
+  it('출시된 APAC 좌표만 확장 지역 영속 대상으로 삼는다', () => {
+    expect(isPersistablePosition({ scene: 'overworld:asia-pacific', x: 1576, y: 442 })).toBe(true);
     expect(isPersistablePosition({ scene: 'overworld:emea', x: 768, y: 253, persistable: true })).toBe(false);
     expect(isPersistablePosition({ scene: 'overworld:emea', x: 768, y: 253, persistable: false })).toBe(false);
     expect(isPersistablePosition({ scene: 'overworld:unknown', x: 1, y: 1 })).toBe(false);
@@ -257,10 +259,10 @@ describe('corridorRedirectScene — 초기 부팅 시 횡단철도 플랫폼 복
 });
 
 describe('overworldRegionRedirectScene — 초기 부팅 시 확장 지역 복귀', () => {
-  it('미출시 상태에서는 저장된 아시아·태평양/유럽 지역으로 직행하지 않는다', () => {
+  it('출시된 APAC 저장 위치로 직행하고 미출시 EMEA는 거부한다', () => {
     expect(overworldRegionRedirectScene({}, {
       scene: 'overworld:asia-pacific', x: 1576, y: 442,
-    })).toBeNull();
+    })).toBe('overworld:asia-pacific');
     expect(overworldRegionRedirectScene(undefined, {
       scene: 'overworld:emea', x: 768, y: 253,
     })).toBeNull();
@@ -283,5 +285,30 @@ describe('overworldRegionRedirectScene — 초기 부팅 시 확장 지역 복�
     expect(overworldRegionRedirectScene({ spawn: { scene: 'plaza', x: 1, y: 1 } }, {
       scene: 'overworld:emea', x: 768, y: 253,
     }, { allowPreview: true })).toBeNull();
+  });
+});
+
+describe('defaultOverworldRegionSpawn — 신규 사용자 기본 지역 진입', () => {
+  const seoul = { scene: 'overworld:asia-pacific', x: 1468, y: 579 };
+
+  it('저장 위치와 복귀 데이터가 없는 최초 진입만 서울로 보낸다', () => {
+    expect(defaultOverworldRegionSpawn({}, null, seoul)).toEqual(seoul);
+    expect(defaultOverworldRegionSpawn(undefined, undefined, seoul)).toEqual(seoul);
+  });
+
+  it('기존 plaza·도시·지역 저장 위치는 건드리지 않는다', () => {
+    expect(defaultOverworldRegionSpawn({}, { scene: 'plaza', x: 68, y: 208 }, seoul)).toBeNull();
+    expect(defaultOverworldRegionSpawn({}, { scene: 'city:fukuoka', x: 47, y: 60 }, seoul)).toBeNull();
+    expect(defaultOverworldRegionSpawn({}, seoul, seoul)).toBeNull();
+  });
+
+  it('씬 복귀 데이터와 미출시·범위 밖 기본값은 닫는다', () => {
+    expect(defaultOverworldRegionSpawn({ spawn: seoul }, null, seoul)).toBeNull();
+    expect(defaultOverworldRegionSpawn({}, null, {
+      scene: 'overworld:emea', x: 214, y: 420,
+    })).toBeNull();
+    expect(defaultOverworldRegionSpawn({}, null, {
+      scene: 'overworld:asia-pacific', x: 2631, y: 579,
+    })).toBeNull();
   });
 });

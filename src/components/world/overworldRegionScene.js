@@ -1,7 +1,19 @@
 import { avatarPalette } from '../../lib/world/avatar';
+import {
+  EMEA_RAIL_NETWORK,
+  arriveEmeaRailTrip,
+  boardEmeaRailTrip,
+  continueEmeaRailTrip,
+  disembarkEmeaRailTrip,
+  emeaRailDestinations,
+  persistEmeaRailTerminalBeforeBoard,
+  planEmeaRailRoute,
+  prepareEmeaRailTrip,
+} from '../../lib/world/emeaRail';
 import { OverworldChunkLoader, overworldChunkKey } from '../../lib/world/overworldChunkLoader';
 import { OVERWORLD_STORAGE_CHUNK_TILES } from '../../lib/world/overworldChunk';
-import { corridorStopSpawn } from '../../lib/world/transsibCorridor';
+import { overworldRenderPageKeyAtWorldPixel } from '../../lib/world/overworldRenderPages';
+import { canAccessCorridor, corridorStopSpawn } from '../../lib/world/transsibCorridor';
 import { overworldRegionSpawn } from '../../lib/world/overworldRegions';
 import { OverworldTransportNodeLoader } from '../../lib/world/overworldTransportNodes';
 import {
@@ -63,6 +75,14 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
   const airGateTexture = `region_air_gate_${region.id}`;
   const worldNodeTexture = `region_world_node_${region.id}`;
   const ferryTexture = `region_ferry_${region.id}`;
+  const railHubs = region.sceneId === EMEA_RAIL_NETWORK.sceneId
+    ? EMEA_RAIL_NETWORK.hubs.map((hub) => Object.freeze({
+      ...hub,
+      type: 'rail-hub',
+      tile: Object.freeze({ x: hub.tile[0], y: hub.tile[1] }),
+    }))
+    : [];
+  const railHubById = (hubId) => railHubs.find((hub) => hub.id === hubId) || null;
 
   return class OverworldRegionScene extends Phaser.Scene {
     constructor() { super(region.sceneId); }
@@ -117,6 +137,8 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
       this.moving = false;
       this.stepPending = false;
       this.ferrying = false;
+      this.railTrip = null;
+      this.railDisembarking = false;
       this.ferryBoat = null;
       this.facing = 'down';
       this.heldDirs = [];
@@ -198,13 +220,15 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
     }
 
     async initializeSpawn() {
-      const configuredGates = [region.gate, region.airGate].filter(Boolean);
+      const configuredGates = [region.gate, region.airGate, ...railHubs].filter(Boolean);
       const resolvedGates = await Promise.all(configuredGates.map(async (configured) => {
         const matchingNodes = await this.transportNodes.loadAtTile(configured.tile.x, configured.tile.y);
         const node = matchingNodes.find(({ id }) => id === configured.id);
         const variantMatches = configured.type === 'transsib-gate'
           ? node?.corridorStopId === configured.corridorStopId
-          : node?.airportCode === configured.airportCode;
+          : configured.type === 'air-gate'
+            ? node?.airportCode === configured.airportCode
+            : configured.type === 'rail-hub' && Array.isArray(node?.arrivalOffset);
         if (!node || node.type !== configured.type || node.label !== configured.label
           || node.contentLocale !== configured.contentLocale || !variantMatches) {
           throw new Error('region gate transport node contract drifted');
@@ -358,7 +382,20 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
 
     regionInteract() {
       if (this.inputLocked) return;
-      if (this.nearGate) ctx.requestGate?.({ region, gate: this.nearGate });
+      if (this.nearGate?.type === 'rail-hub') {
+        const destinationIds = new Set(emeaRailDestinations(this.nearGate.id).map(({ id }) => id));
+        const options = railHubs
+          .filter((hub) => destinationIds.has(hub.id))
+          .map((hub) => Object.freeze({
+            ...hub,
+            stopIds: planEmeaRailRoute(this.nearGate.id, hub.id),
+          }))
+          .map((option) => Object.freeze({
+            ...option,
+            stopLabels: Object.freeze(option.stopIds.map((hubId) => railHubById(hubId)?.label || hubId)),
+          }));
+        ctx.requestGate?.({ region, gate: this.nearGate, options });
+      } else if (this.nearGate) ctx.requestGate?.({ region, gate: this.nearGate });
       else if (this.nearWorldNode) ctx.requestNode?.(this.nearWorldNode);
     }
 
@@ -425,6 +462,9 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
       this.ferryBoat = this.add.image(this.player.x, this.player.y + 8, ferryTexture)
         .setOrigin(0.5, 0.5).setScale(2).setDepth(999);
       this.moving = true;
+      let streamedPageKey = overworldRenderPageKeyAtWorldPixel(this.player.x, this.player.y, {
+        tilePixels: TILE,
+      });
       this.tweens.add({
         targets: this.player,
         x: targetX,
@@ -433,6 +473,11 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
         ease: 'Sine.easeInOut',
         onUpdate: () => {
           this.ferryBoat?.setPosition(this.player.x, this.player.y + 8);
+          const nextPageKey = overworldRenderPageKeyAtWorldPixel(this.player.x, this.player.y, {
+            tilePixels: TILE,
+          });
+          if (nextPageKey === streamedPageKey) return;
+          streamedPageKey = nextPageKey;
           this.refreshTerrainPages();
           this.refreshFeatureOverlays();
         },
@@ -454,8 +499,15 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
 
     async enterCorridor() {
       if (this.nearGate?.type !== 'transsib-gate' || this.inputLocked) return;
+      if (!canAccessCorridor({ allowPreview: ctx.canAccessPreviewRegionsRef?.current })) {
+        ctx.setStatus?.({
+          phase: 'error',
+          message: '횡단열차 회랑은 아직 열리지 않았어요.',
+        });
+        return false;
+      }
       const spawn = corridorStopSpawn(this.nearGate.corridorStopId);
-      if (!spawn) return;
+      if (!spawn) return false;
       this.inputLocked = true;
       this.heldDirs.length = 0;
       ctx.setNearGate?.(null);
@@ -465,10 +517,94 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
         this.inputLocked = false;
         this.refreshNearInteraction(true);
         ctx.setStatus?.({ phase: 'error', message: '플랫폼 저장에 실패했어요. 연결을 확인해 주세요.' });
-        return;
+        return false;
       }
       ctx.setStatus?.(null);
       this.scene.start('transsib-corridor', { spawn });
+      return true;
+    }
+
+    railStatus(trip) {
+      return Object.freeze({
+        ...trip,
+        preview: true,
+        terminalHub: railHubById(trip.terminalId),
+        stopHub: railHubById(trip.stopId),
+        fromHub: railHubById(trip.fromId),
+        toHub: railHubById(trip.toId),
+      });
+    }
+
+    async boardRailTo(terminalId) {
+      if (this.inputLocked || this.nearGate?.type !== 'rail-hub' || this.railTrip) return false;
+      this.inputLocked = true;
+      this.heldDirs.length = 0;
+      ctx.setNearGate?.(null);
+      ctx.setStatus?.({ phase: 'saving-rail', message: '종착 철도 허브를 저장하고 있어요.' });
+      try {
+        const prepared = prepareEmeaRailTrip({ originId: this.nearGate.id, terminalId });
+        const ready = await persistEmeaRailTerminalBeforeBoard(prepared, ctx.persistPosition);
+        this.railTrip = boardEmeaRailTrip(ready);
+        this.player.setVisible(false);
+        ctx.setStatus?.(this.railStatus(this.railTrip));
+        return true;
+      } catch (error) {
+        this.railTrip = null;
+        this.inputLocked = false;
+        this.player.setVisible(true);
+        this.refreshNearInteraction(true);
+        ctx.setStatus?.({
+          phase: 'error',
+          message: error?.message || '종착 철도 허브를 저장하지 못했어요.',
+        });
+        return false;
+      }
+    }
+
+    advanceRailPreview() {
+      if (this.railTrip?.phase !== 'riding') return false;
+      this.railTrip = arriveEmeaRailTrip(this.railTrip);
+      ctx.setStatus?.(this.railStatus(this.railTrip));
+      return true;
+    }
+
+    continueRailPreview() {
+      if (this.railTrip?.phase !== 'stopped') return false;
+      this.railTrip = continueEmeaRailTrip(this.railTrip);
+      ctx.setStatus?.(this.railStatus(this.railTrip));
+      return true;
+    }
+
+    async disembarkRailPreview() {
+      if (this.railDisembarking || !this.railTrip?.canDisembark) return false;
+      this.railDisembarking = true;
+      const trip = this.railTrip;
+      const result = disembarkEmeaRailTrip(trip);
+      ctx.setStatus?.({ phase: 'saving-rail-stop', stopHub: railHubById(trip.stopId) });
+      try {
+        const alreadyPersisted = trip.stopId === trip.terminalId;
+        const saved = alreadyPersisted || await ctx.persistPosition?.(result.spawn);
+        if (!saved) throw new Error('하차 위치를 저장하지 못했어요. 열차에서 다시 시도해 주세요.');
+        this.railTrip = null;
+        this.pTileX = result.spawn.x;
+        this.pTileY = result.spawn.y;
+        this.player.setPosition(
+          this.pTileX * TILE + TILE / 2,
+          this.pTileY * TILE + TILE / 2,
+        ).setVisible(true);
+        this.cameras.main.centerOn(this.player.x, this.player.y);
+        await this.refreshTerrainPages(true);
+        await this.refreshFeatureOverlays(true).catch(() => null);
+        this.inputLocked = false;
+        ctx.setStatus?.(null);
+        this.refreshNearInteraction(true);
+        return true;
+      } catch (error) {
+        ctx.setStatus?.({ ...this.railStatus(trip), phase: 'error', message: error?.message });
+        return false;
+      } finally {
+        this.railDisembarking = false;
+      }
     }
 
     async leaveByAir() {
@@ -563,7 +699,7 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
           y: Math.round(this.player.y),
           dir: this.facing,
           scene: region.sceneId,
-          persistable: !this.ferrying,
+          persistable: !this.ferrying && !this.railTrip,
         });
       }
       if (time - this.lastDistanceEmit >= 500) {
