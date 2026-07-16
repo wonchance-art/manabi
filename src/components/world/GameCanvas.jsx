@@ -69,6 +69,7 @@ import {
 } from '../../lib/world/session';
 // 🌏 독해 트랙 "도쿄 도착" 글 1 → 월드 스토리 씬(하네다 공항). 공항 씬·텍스트박스·문답 오버레이.
 import { buildAirportScene } from './airportScene';
+import { buildMsmAbbeyScene, MSM_ABBEY_SCENE_KEY } from './msmAbbeyScene';
 import { buildTranssibCorridorScene } from './transsibCorridorScene';
 import { buildOverworldRegionScene } from './overworldRegionScene';
 // 🏙️ 도시 정밀맵(계층형 맵) — CityScene 은 1개, cityId 로 파라미터화. 도시 추가 = cities/<id>.js 1개.
@@ -589,6 +590,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         if (airHubPromptRef.current) return;
         if (activeSceneRef.current === 'transsib-corridor') { sceneRef.current?.corridorInteract?.(); return; }
         if (activeSceneRef.current.startsWith('overworld:')) { sceneRef.current?.regionInteract?.(); return; }
+        if (activeSceneRef.current === MSM_ABBEY_SCENE_KEY) { sceneRef.current?.abbeyInteract?.(); return; }
         if (stationSelectRef.current) return; // 행선지 오버레이는 버튼으로 선택(B로 닫기) — A는 무시
         if (descOpenRef.current) { setDescOpen(false); return; } // 설명 박스 열려 있으면 A로도 닫기
         const node = nearNodeRef.current;
@@ -612,12 +614,16 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         if (node?.gate) {
           // 게이트 있는 노드는 게이트 동작 우선(설명은 게이트 프롬프트에 병기).
           if (node.gate.type === 'story-scene') {
-            const destinations = airDestinationsRef.current;
-            if (destinations.length > 0) {
-              setAirHubPrompt({ node, destinations });
-              return;
+            if (node.gate.scene === 'airport') {
+              const destinations = airDestinationsRef.current;
+              if (destinations.length > 0) {
+                setAirHubPrompt({ node, destinations });
+                return;
+              }
+              sceneRef.current?.enterAirport?.();
+            } else {
+              sceneRef.current?.enterStoryScene?.(node.gate.scene);
             }
-            sceneRef.current?.enterAirport?.();
             return;
           }
           if (node.gate.type === 'ferry') {
@@ -632,6 +638,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       },
       cancel: () => {
         if (gameMenuOpenRef.current) { setGameMenuOpen(false); return; }
+        if (activeSceneRef.current === MSM_ABBEY_SCENE_KEY) { sceneRef.current?.abbeyCancel?.(); return; }
         if (albumOpenRef.current) { setAlbumOpen(false); return; } // 🗾 앨범 최우선 닫기(숨은 배경 오버레이보다 먼저)
         if (npcDialogRef.current) { npcCancelRef.current?.(); return; } // NPC 대화 중 B → 뜻 토글
         if (storyPhaseRef.current === 'dialogue') { toggleKoRef.current?.(); return; }
@@ -2118,6 +2125,15 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         },
       };
       const AirportScene = buildAirportScene(Phaser, airportCtx);
+      const MsmAbbeyScene = buildMsmAbbeyScene(Phaser, {
+        bindScene: (scene) => { sceneRef.current = scene; },
+        onEnter: () => {
+          setActiveScene(MSM_ABBEY_SCENE_KEY);
+          setNearNode(null); setDescOpen(false); setMinimapOpen(false);
+          setNearStation(null); setStationSelect(null); setTransitStatus(null);
+        },
+        onReturn: (scene) => setActiveScene(scene),
+      });
 
       const corridorCtx = {
         userId, avatarRef, worldClockRef,
@@ -2221,6 +2237,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           travelBlocked: () => setStationToast({ icon: '⚠', nameJa: '지금은 이동할 수 없어요', yomi: '' }), // P1: 도착 불가 취소
           // create 말미 — 피어 스냅샷 재적용 + 전체 키 거리 1회 emit(씬 전환 음성 잔류 차단, Codex P1-2).
           onReady: () => resetScenePeers(),
+          onStoryEnter: (sceneId) => setActiveScene(sceneId),
           worldReturn: {
             scene: 'plaza',
             x: rn ? rn.tile[0] : POI.SEOUL.x,
@@ -2240,7 +2257,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         pixelArt: true,
         roundPixels: true,
         scale: { mode: Phaser.Scale.NONE, width: VIEW_W, height: VIEW_H },
-        scene: [WorldScene, AirportScene, TranssibCorridorScene, ...regionScenes, ...cityScenes],
+        scene: [WorldScene, AirportScene, MsmAbbeyScene, TranssibCorridorScene, ...regionScenes, ...cityScenes],
       });
       gameRef.current = game;
       if (game.canvas) game.canvas.style.imageRendering = 'pixelated';
@@ -2423,10 +2440,14 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           display: 'flex', alignItems: 'center', gap: 10,
         }}>
           <span style={{ fontSize: '1.3rem', lineHeight: 1 }}>
-            {nearNode.gate.type === 'ferry' ? '⚓' : nearNode.gate.type === 'city' ? '🏙️' : '✈'}
+            {nearNode.gate.type === 'ferry' ? '⚓'
+              : nearNode.gate.type === 'city' ? '🏙️'
+                : nearNode.gate.scene === 'airport' ? '✈' : '🏛️'}
           </span>
           <span style={{ flex: 1, fontSize: '0.8rem', lineHeight: 1.5 }}>
-            {nearNode.name} {nearNode.gate.label} — {nearNode.gate.type === 'ferry' ? '페리를 탈까요?' : nearNode.gate.type === 'city' ? '시내로 들어갈까요?' : '탑승할까요?'}
+            {nearNode.name} {nearNode.gate.label || ''} — {nearNode.gate.type === 'ferry' ? '페리를 탈까요?'
+              : nearNode.gate.type === 'city' ? '시내로 들어갈까요?'
+                : nearNode.gate.scene === 'airport' ? '탑승할까요?' : '들어갈까요?'}
             {nearNode.desc && (
               <span style={{ display: 'block', fontSize: '0.68rem', opacity: 0.82, marginTop: 3, lineHeight: 1.45 }}>
                 {nearNode.desc}
@@ -2447,8 +2468,10 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
                 setFerryPrompt({ toId: nearNode.gate.to, toName: dest?.name || '' });
               } else if (nearNode.gate.type === 'city') {
                 setCityPrompt({ to: nearNode.gate.to, name: nearNode.name });
-              } else {
+              } else if (nearNode.gate.scene === 'airport') {
                 sceneRef.current?.enterAirport?.();
+              } else {
+                sceneRef.current?.enterStoryScene?.(nearNode.gate.scene);
               }
             }}
             style={{ ...gbcButtonPrimary, whiteSpace: 'nowrap' }}

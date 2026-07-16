@@ -1024,6 +1024,20 @@ export function buildCityScene(Phaser, city, ctx) {
       return null;
     }
 
+    enterStoryScene(sceneId) {
+      if (this.exiting || this.traveling || typeof sceneId !== 'string' || !sceneId) return false;
+      this.inputLocked = true;
+      this.heldDirs.length = 0; this.tapTile = null; this.runHeld = false;
+      ctx.setNear?.(null);
+      ctx.onStoryEnter?.(sceneId);
+      this.scene.start(sceneId, {
+        returnScene: SCENE_KEY,
+        returnSpawn: { scene: SCENE_KEY, x: this.pTileX, y: this.pTileY },
+        worldReturn: this.worldReturn,
+      });
+      return true;
+    }
+
     // 출구 타일 → 전국맵 복귀(도시 노드 앞 스폰). 페이드 아웃 + 조작 잠금(페리와 동일 문법).
     returnToWorld() {
       if (this.exiting) return;
