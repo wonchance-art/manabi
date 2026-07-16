@@ -5,10 +5,10 @@
 //
 // §6.4 표준 지형 코드:
 //   ROAD · SIDEWALK · CROSSWALK · PLAZA · PARK · BEACH · WATER(차단) · RIVER(차단) ·
-//   BUILDING(차단) · ISLAND(차단·배경) · BRIDGE · DOCK
+//   BUILDING(차단) · ISLAND(차단·배경) · MOUNTAIN(차단) · BRIDGE · DOCK
 // + EXIT: 게임 기믹(전국맵 복귀). geo terrain 배열엔 없고 도시 로직이 배치하는 보행 타일.
 //
-// 숫자값은 기존 후쿠오카 인코딩(0..10)을 보존하고 RIVER·BEACH만 뒤에 덧붙인다
+// 숫자값은 기존 후쿠오카 인코딩(0..10)을 보존하고 RIVER·BEACH·MOUNTAIN만 뒤에 덧붙인다
 //   → 미니맵 색표·저장 그리드·회귀 테스트가 그대로 유효(무회귀).
 
 export const CITY_TILE = {
@@ -25,12 +25,13 @@ export const CITY_TILE = {
   ISLAND: 10,    // 바다/연못 위 섬 실루엣(차단 · 배경 · 도달 불가)
   RIVER: 11,     // 강·운하 수면(차단 · WATER 와 구분해 강 톤)
   BEACH: 12,     // 모래 해변(보행 가능 · 해안선)
+  MOUNTAIN: 13,  // 도시 산지·급경사 녹지(차단 · 배경)
 };
 
-// 차단 타일 — 물·강·건물·섬만 막는다.
+// 차단 타일 — 물·강·건물·섬·산지를 막는다.
 //   (도로·보도·횡단보도·다리·부두·공원·광장·해변·출구는 통행 가능.)
 const CITY_BLOCKED = new Set([
-  CITY_TILE.WATER, CITY_TILE.RIVER, CITY_TILE.BUILDING, CITY_TILE.ISLAND,
+  CITY_TILE.WATER, CITY_TILE.RIVER, CITY_TILE.BUILDING, CITY_TILE.ISLAND, CITY_TILE.MOUNTAIN,
 ]);
 
 export function isCityBlocked(code) { return CITY_BLOCKED.has(code); }

@@ -23,6 +23,7 @@ const PALETTE = {
   [CITY_TILE.DOCK]: [122, 86, 48],
   [CITY_TILE.BEACH]: [226, 204, 150],
   [CITY_TILE.ISLAND]: [110, 110, 110],
+  [CITY_TILE.MOUNTAIN]: [70, 96, 58],
   [CITY_TILE.EXIT]: [230, 60, 200],
 };
 const RAIL = [122, 64, 58];
