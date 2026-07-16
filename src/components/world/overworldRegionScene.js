@@ -12,6 +12,7 @@ import {
 } from '../../lib/world/emeaRail';
 import { OverworldChunkLoader, overworldChunkKey } from '../../lib/world/overworldChunkLoader';
 import { OVERWORLD_STORAGE_CHUNK_TILES } from '../../lib/world/overworldChunk';
+import { overworldRenderPageKeyAtWorldPixel } from '../../lib/world/overworldRenderPages';
 import { canAccessCorridor, corridorStopSpawn } from '../../lib/world/transsibCorridor';
 import { overworldRegionSpawn } from '../../lib/world/overworldRegions';
 import { OverworldTransportNodeLoader } from '../../lib/world/overworldTransportNodes';
@@ -461,6 +462,9 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
       this.ferryBoat = this.add.image(this.player.x, this.player.y + 8, ferryTexture)
         .setOrigin(0.5, 0.5).setScale(2).setDepth(999);
       this.moving = true;
+      let streamedPageKey = overworldRenderPageKeyAtWorldPixel(this.player.x, this.player.y, {
+        tilePixels: TILE,
+      });
       this.tweens.add({
         targets: this.player,
         x: targetX,
@@ -469,6 +473,11 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
         ease: 'Sine.easeInOut',
         onUpdate: () => {
           this.ferryBoat?.setPosition(this.player.x, this.player.y + 8);
+          const nextPageKey = overworldRenderPageKeyAtWorldPixel(this.player.x, this.player.y, {
+            tilePixels: TILE,
+          });
+          if (nextPageKey === streamedPageKey) return;
+          streamedPageKey = nextPageKey;
           this.refreshTerrainPages();
           this.refreshFeatureOverlays();
         },
