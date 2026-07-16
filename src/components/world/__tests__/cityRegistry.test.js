@@ -36,10 +36,21 @@ describe('도시 정밀맵 레지스트리', () => {
     });
   });
 
+  it('몽생미셸 게이트와 EXIT가 EMEA 노르망디 노드의 같은 타일로 왕복한다', () => {
+    const montSaintMichel = getNode('mont-saint-michel');
+    expect(montSaintMichel).toMatchObject({
+      regionId: 'emea',
+      overworldTile: [150, 429],
+      gate: { type: 'city', to: 'mont-saint-michel' },
+    });
+    expect(CITY_DATA[montSaintMichel.gate.to].returnNode).toBe(montSaintMichel.id);
+    expect(worldNodeReturnSpawn(montSaintMichel)).toEqual({
+      scene: 'overworld:emea', x: 150, y: 429,
+    });
+  });
+
   it('기존 APAC 도시 EXIT는 plaza의 기존 도시 노드 타일로 그대로 복귀한다', () => {
-    // mont-saint-michel 은 오버월드 게이트 후속(EMEA 노르망디 노드) — 연결 시 파리형 왕복 테스트 추가.
-    const pendingGate = new Set(['grand-paris', 'mont-saint-michel']);
-    for (const city of CITY_MAPS.filter(({ id }) => !pendingGate.has(id))) {
+    for (const city of CITY_MAPS.filter(({ returnNode }) => getNode(returnNode)?.regionId === 'asia-pacific')) {
       const node = getNode(city.returnNode);
       expect(node, city.id).toBeTruthy();
       expect(worldNodeReturnSpawn(node), city.id).toEqual({
