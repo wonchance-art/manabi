@@ -90,13 +90,19 @@ export const <CITY>_GEO = {
 };
 ```
 **표준 지형 코드**(현 `cities/fukuoka.js` CITY_TILE 승격 — 렌더·충돌 공용):
-`ROAD · SIDEWALK · CROSSWALK · PLAZA · PARK · BEACH · WATER(차단) · RIVER(차단) · BUILDING(차단) · ISLAND(차단·배경) · BRIDGE · DOCK`.
+`ROAD · SIDEWALK · CROSSWALK · PLAZA · PARK · BEACH · WATER(차단) · RIVER(차단) · BUILDING(차단) · ISLAND(차단·배경) · MOUNTAIN(차단·배경) · BRIDGE · DOCK`.
 - Codex: 해안선·강·도로·공원을 실좌표로 래스터화, POI/역 tile좌표를 투영으로 산출, **공식 자료 대조**로 상대 위치 충실도 + 육지 BFS 연결성(다리 포함) 검증.
 - Claude: geo.js를 import해 청크 렌더 + POI/역에 일본어 간판·desc·프리팹·정기 교통 배선.
 
 ### 6.5 접합 (기존 유지 — 회귀 금지)
 scene `city:<id>` 씬별 피어/음성, city:* 좌표 영속·재접속 직행 스폰, resetScenePeers,
 cityRedirectScene, EXIT→전국맵 복귀, NPC nodeId·스탬프 연속. 전 도시 공통.
+
+### 6.5.1 한국 도시 스키마 확장 예약 (2026-07-16)
+- 한국 도시의 지리 소스는 `nameKo`와 `contentLocale: 'ko'`를 사용하고 `yomi`는 두지 않는다.
+- 화면 문구는 도시 모듈의 중앙 locale 슬롯에서 소비하며, 현재 `{ ko }`를 향후 `{ ko, ja }`로
+  확장할 수 있다. 표기 읽기가 필요해지면 별도 필드를 추가한다.
+- 기존 일본 도시의 `{ nameJa, yomi, ko }` 필드는 호환성 계약이므로 이름을 바꾸지 않는다.
 
 ### 6.6 시퀀스
 후쿠오카를 이 표준의 레퍼런스로 실지형 구축(Codex geo + Claude 청크렌더·콘텐츠) →

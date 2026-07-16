@@ -179,6 +179,14 @@ export function buildCityScene(Phaser, city, ctx) {
         g.fillStyle(C(0x6fa63a), 1); for (let y = 0; y < TEX; y++) for (let x = 0; x < TEX; x++) if (rng() < 0.14) g.fillRect(x, y, 1, 1);
         g.fillStyle(C(0xb2db6e), 1); g.fillRect(3, 4, 1, 2); g.fillRect(11, 9, 1, 2);
       });
+      // 산지 — 짙은 수림 능선(차단·배경).
+      this.bakeTile('ct_mountain', (g) => {
+        const rng = makeRng(0x91);
+        g.fillStyle(C(0x526b43), 1); g.fillRect(0, 0, TEX, TEX);
+        g.fillStyle(C(0x3f5635), 1);
+        for (let y = 0; y < TEX; y++) for (let x = 0; x < TEX; x++) if (rng() < 0.16) g.fillRect(x, y, 1, 1);
+        g.fillStyle(C(0x71845a), 0.8); g.fillRect(2, 11, 5, 1); g.fillRect(9, 6, 5, 1);
+      });
       // 다리 — 목조 데크(나카강 위).
       this.bakeTile('ct_bridge', (g) => {
         g.fillStyle(C(0xb89058), 1); g.fillRect(0, 0, TEX, TEX);
@@ -606,6 +614,7 @@ export function buildCityScene(Phaser, city, ctx) {
         case TERRAIN.RIVER: return 'ct_river0';
         case TERRAIN.BUILDING: return `ct_bldg_${this.buildingEdgeMask(tx, ty)}`;
         case TERRAIN.ISLAND: return 'ct_island';
+        case TERRAIN.MOUNTAIN: return 'ct_mountain';
         default: return 'ct_sidewalk';
       }
     }
