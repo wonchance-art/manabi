@@ -86,6 +86,12 @@ const CITY_GATES = {
     ],
     streamCourses: [],
     reportCourses: [],
+    // 오너 확정(2026-07-16): 프랑스 도시도 한국식 교량 정리 — BRIDGE 잔존 0, 다리=차도, 강심=수면.
+    bridgeMaxTiles: 0,
+    bridgeCrossings: [
+      { name: '퐁뇌프', lon: 2.3413, lat: 48.8567, windowTiles: 5 },
+      { name: '퐁드베르시', lon: 2.3745, lat: 48.8375, windowTiles: 6 },
+    ],
   },
   'mont-saint-michel': {
     file: 'src/components/world/cities/montsaintmichel.geo.js',
