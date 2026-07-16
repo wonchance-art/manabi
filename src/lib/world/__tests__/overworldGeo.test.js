@@ -129,7 +129,7 @@ describe('지역 ① geo 입력·투영 계약', () => {
     }
   });
 
-  it('지역 ② 잠정 투영 격자를 964×1137과 4×5 청크로 고정한다', () => {
+  it('지역 ② preview v1 확정 투영 격자를 964×1137과 4×5 청크로 고정한다', () => {
     const emea = manifest({
       regionId: 'europe-mediterranean-middle-east-surface-preview-v1',
       bbox: [-11, 20, 50, 66],
