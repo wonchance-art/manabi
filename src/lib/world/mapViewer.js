@@ -40,14 +40,24 @@ export function cityMapMarkers(city) {
   ]);
 }
 
-export function overworldRegionMarkers(region) {
-  const gate = region?.gate;
-  if (!gate || !Number.isFinite(gate.tile?.x) || !Number.isFinite(gate.tile?.y)) return [];
-  return [{
+export function overworldRegionMarkers(region, worldNodes = [], transportNodes = []) {
+  const gates = [region?.gate, region?.airGate].filter((gate) => (
+    gate && Number.isFinite(gate.tile?.x) && Number.isFinite(gate.tile?.y)
+  )).map((gate) => ({
     id: `gate:${gate.id}`,
     source: 'gate',
     name: gate.label || gate.id,
     x: gate.tile.x,
     y: gate.tile.y,
-  }];
+  }));
+  const migratedNodes = (Array.isArray(worldNodes) ? worldNodes : [])
+    .filter((node) => node?.regionId === region?.id && !node.city)
+    .map((node) => ({ ...node, tile: node.overworldTile }));
+  return [
+    ...gates,
+    ...uniqueMarkers([
+      ['transport', transportNodes],
+      ['world-node', migratedNodes],
+    ]),
+  ];
 }

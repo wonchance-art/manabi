@@ -24,7 +24,24 @@ function unprojectedCoordinate({ bbox, projection }, x, y) {
 }
 
 function freezeRegion(region) {
-  const gateTile = projectedTile(region, region.gate.lon, region.gate.lat);
+  const projectedArrival = (point) => {
+    if (!point) return null;
+    const projected = projectedTile(region, point.lon, point.lat);
+    const offset = point.arrivalOffset || [0, 0];
+    if (!Array.isArray(offset) || offset.length !== 2 || !offset.every(Number.isInteger)) {
+      throw new TypeError(`${point.id}.arrivalOffset must be an integer [x, y] pair`);
+    }
+    return Object.freeze({
+      ...point,
+      ...(point.arrivalOffset ? { arrivalOffset: Object.freeze([...point.arrivalOffset]) } : {}),
+      tile: Object.freeze({ x: projected.x + offset[0], y: projected.y + offset[1] }),
+    });
+  };
+  const gate = projectedArrival(region.gate);
+  const airGate = region.airGate
+    ? projectedArrival(region.airGate) : null;
+  const airArrival = region.airArrival
+    ? projectedArrival(region.airArrival) : null;
   return Object.freeze({
     ...region,
     bbox: Object.freeze([...region.bbox]),
@@ -35,7 +52,9 @@ function freezeRegion(region) {
       ...source,
       style: Object.freeze({ ...source.style }),
     }))),
-    gate: Object.freeze({ ...region.gate, tile: gateTile }),
+    gate,
+    airGate,
+    airArrival,
   });
 }
 
@@ -44,7 +63,7 @@ export const OVERWORLD_REGIONS = Object.freeze({
     id: 'asia-pacific',
     sceneId: 'overworld:asia-pacific',
     label: '아시아·태평양',
-    releaseEligible: false,
+    releaseEligible: true,
     width: 2631,
     height: 2669,
     bbox: [60, -47, 180, 61],
@@ -95,16 +114,28 @@ export const OVERWORLD_REGIONS = Object.freeze({
     ],
     gate: {
       id: 'vladivostok-transsib',
+      type: 'transsib-gate',
       label: '블라디보스토크 횡단열차역',
+      contentLocale: 'ru',
       corridorStopId: 'vladivostok',
       lon: 131.8855,
       lat: 43.1155,
+    },
+    airArrival: {
+      id: 'incheon-air-arrival',
+      label: '인천공항',
+      contentLocale: 'ko',
+      airportCode: 'ICN',
+      lon: 126.4407,
+      lat: 37.4602,
+      arrivalOffset: [4, 0],
     },
   }),
   emea: freezeRegion({
     id: 'emea',
     sceneId: 'overworld:emea',
     label: '유럽·지중해·중동',
+    boundaryNotice: '지도상의 경계·명칭·표시는 특정 지역의 법적 지위나 경계 주장에 대한 승인 또는 지지를 의미하지 않습니다.',
     releaseEligible: false,
     width: 964,
     height: 1137,
@@ -177,10 +208,21 @@ export const OVERWORLD_REGIONS = Object.freeze({
     ],
     gate: {
       id: 'moscow-transsib',
+      type: 'transsib-gate',
       label: '모스크바 횡단열차역',
+      contentLocale: 'ru',
       corridorStopId: 'moscow',
       lon: 37.6173,
       lat: 55.7558,
+    },
+    airGate: {
+      id: 'paris-cdg-air',
+      type: 'air-gate',
+      label: '파리 샤를 드골 공항',
+      contentLocale: 'fr',
+      airportCode: 'CDG',
+      lon: 2.55,
+      lat: 49.0097,
     },
   }),
 });
@@ -221,6 +263,13 @@ export function overworldRegionSpawn(regionOrId) {
   const region = typeof regionOrId === 'string' ? overworldRegionById(regionOrId) : regionOrId;
   if (!region) return null;
   return Object.freeze({ scene: region.sceneId, x: region.gate.tile.x, y: region.gate.tile.y });
+}
+
+export function overworldRegionAirSpawn(regionOrId) {
+  const region = typeof regionOrId === 'string' ? overworldRegionById(regionOrId) : regionOrId;
+  if (!region) return null;
+  const gate = region.airArrival || region.airGate || region.gate;
+  return Object.freeze({ scene: region.sceneId, x: gate.tile.x, y: gate.tile.y });
 }
 
 export function overworldRegionSpawnForCorridorStop(stopId) {

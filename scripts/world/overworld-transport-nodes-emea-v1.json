@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "releaseEligible": false,
   "generatorGitSha": null,
   "regionId": "europe-mediterranean-middle-east-transport-nodes-preview-v1",
@@ -15,12 +15,85 @@
   },
   "nodes": [
     {
+      "id": "berlin-rail-hub",
+      "type": "rail-hub",
+      "label": "베를린 철도 허브",
+      "contentLocale": "de",
+      "arrivalOffset": [0, 0],
+      "lon": 13.405,
+      "lat": 52.52
+    },
+    {
+      "id": "istanbul-rail-hub",
+      "type": "rail-hub",
+      "label": "이스탄불 철도 허브",
+      "contentLocale": "tr",
+      "arrivalOffset": [0, -1],
+      "lon": 28.9784,
+      "lat": 41.0082
+    },
+    {
+      "id": "london-rail-hub",
+      "type": "rail-hub",
+      "label": "런던 철도 허브",
+      "contentLocale": "en",
+      "arrivalOffset": [0, 0],
+      "lon": -0.1276,
+      "lat": 51.5072
+    },
+    {
+      "id": "madrid-rail-hub",
+      "type": "rail-hub",
+      "label": "마드리드 철도 허브",
+      "contentLocale": "es",
+      "arrivalOffset": [0, 0],
+      "lon": -3.7038,
+      "lat": 40.4168
+    },
+    {
       "id": "moscow-transsib",
       "type": "transsib-gate",
       "label": "모스크바 횡단열차역",
+      "contentLocale": "ru",
       "corridorStopId": "moscow",
       "lon": 37.6173,
       "lat": 55.7558
+    },
+    {
+      "id": "paris-cdg-air",
+      "type": "air-gate",
+      "label": "파리 샤를 드골 공항",
+      "contentLocale": "fr",
+      "airportCode": "CDG",
+      "lon": 2.55,
+      "lat": 49.0097
+    },
+    {
+      "id": "paris-rail-hub",
+      "type": "rail-hub",
+      "label": "파리 철도 허브",
+      "contentLocale": "fr",
+      "arrivalOffset": [0, 0],
+      "lon": 2.3522,
+      "lat": 48.8566
+    },
+    {
+      "id": "rome-rail-hub",
+      "type": "rail-hub",
+      "label": "로마 철도 허브",
+      "contentLocale": "it",
+      "arrivalOffset": [0, 0],
+      "lon": 12.4964,
+      "lat": 41.9028
+    },
+    {
+      "id": "vienna-rail-hub",
+      "type": "rail-hub",
+      "label": "빈 철도 허브",
+      "contentLocale": "de",
+      "arrivalOffset": [0, 0],
+      "lon": 16.3738,
+      "lat": 48.2082
     }
   ]
 }
