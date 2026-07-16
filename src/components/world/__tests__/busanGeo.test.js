@@ -61,9 +61,11 @@ describe('부산 실지형 데이터 계약', () => {
       schema: { nameField: 'nameKo', localeSlots: 'central-lookup-expandable' },
       buildingTexture: {
         method: 'deterministic-road-block-infill', version: 1, targetLandRatio: 0.1,
-        seed: 'manabi-korean-city-buildings-v1:busan', generatedTileCount: 70_807,
-        finalLandTileCount: 1_053_296, finalBuildingTileCount: 106_871,
-        finalLandBuildingRatio: 0.101463,
+        seed: 'manabi-korean-city-buildings-v1:busan', generatedTileCount: 69_306,
+        baselineNormalizationBuildingTiles: 1_534, finalTargetBuildingTileCount: 105_330,
+        preNormalizationTargetBuildingTileCount: 103_796,
+        finalLandTileCount: 1_053_296, finalBuildingTileCount: 105_369,
+        finalLandBuildingRatio: 0.100037,
       },
     });
     expect(BUSAN_GEO.terrain).toBeInstanceOf(Uint8Array);
@@ -92,13 +94,13 @@ describe('부산 실지형 데이터 계약', () => {
     for (const code of BUSAN_GEO.terrain) counts.set(code, (counts.get(code) || 0) + 1);
     expect(Object.fromEntries(counts)).toEqual({
       [CITY_TILE.ROAD]: 108_765,
-      [CITY_TILE.SIDEWALK]: 786_128,
+      [CITY_TILE.SIDEWALK]: 787_630,
       [CITY_TILE.CROSSWALK]: 1_305,
       [CITY_TILE.PLAZA]: 4,
       [CITY_TILE.PARK]: 28_152,
       [CITY_TILE.BRIDGE]: 18_063,
       [CITY_TILE.WATER]: 394_874,
-      [CITY_TILE.BUILDING]: 106_871,
+      [CITY_TILE.BUILDING]: 105_369,
       [CITY_TILE.RIVER]: 22_310,
       [CITY_TILE.MOUNTAIN]: 4_008,
     });
@@ -131,7 +133,7 @@ describe('부산 실지형 데이터 계약', () => {
       walkable += 1;
       reached += seen[index];
     }
-    expect(walkable).toBe(942_417);
+    expect(walkable).toBe(943_919);
     expect(reached).toBe(walkable);
   });
 });
@@ -162,18 +164,18 @@ describe('부산 생성 결정성·오프라인 계약', () => {
     const second = buildKoreanCityGeo('busan');
     expect(terrainHash(first.terrain)).toBe(terrainHash(second.terrain));
     expect(terrainHash(first.terrain)).toBe(terrainHash(BUSAN_GEO.terrain));
-    expect(terrainHash(first.terrain)).toBe('1669f96b5ac54c837dd56f006f7cc1cff52b130089eb4f68dc9913b4159f9d3b');
+    expect(terrainHash(first.terrain)).toBe('09b9aa8b35f38280301a64db0d91979e7e477a077d146d1685c6eadb558c2331');
     expect(terrainHash(first.railways.mask)).toBe('16fbb812507b2d62ab0f467ccac2659565bcc5c4185213508c140972dab9e020');
     expect(first.pois).toEqual(BUSAN_GEO.pois);
     expect(first.stations).toEqual(BUSAN_GEO.stations);
-  });
+  }, 30_000);
 
   it('RLE 왕복이 전체 지형·철도를 보존하고 런타임 산출물은 오프라인이다', () => {
     const terrainRuns = encodeTerrainRle(BUSAN_GEO.terrain);
     const railwayRuns = encodeTerrainRle(BUSAN_GEO.railways.mask);
     expect(decodeTerrainRle(terrainRuns, BUSAN_GEO.terrain.length)).toEqual(BUSAN_GEO.terrain);
     expect(decodeTerrainRle(railwayRuns, BUSAN_GEO.railways.mask.length)).toEqual(BUSAN_GEO.railways.mask);
-    expect(terrainRuns).toHaveLength(167_158);
+    expect(terrainRuns).toHaveLength(166_060);
     expect(railwayRuns).toHaveLength(11_647);
     expect(fs.readFileSync(new URL('../cities/busan.geo.js', import.meta.url), 'utf8')).not.toMatch(/\bfetch\s*\(/);
     expect(fs.readFileSync(new URL('../../../../scripts/build-korean-city-geo.mjs', import.meta.url), 'utf8')).not.toMatch(/\bfetch\s*\(/);

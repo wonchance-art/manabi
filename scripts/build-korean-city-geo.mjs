@@ -378,11 +378,8 @@ function footprintIsEligible(terrain, roadMask, meta, footprint) {
   return true;
 }
 
-function augmentBuildingTexture(terrain, masks, meta, city) {
+function augmentBuildingTexture(terrain, masks, meta, city, targetBuildingTileCount) {
   const initial = terrainBuildingStats(terrain);
-  const targetBuildingTileCount = Math.ceil(
-    initial.landTileCount * BUILDING_TEXTURE_CONTRACT.targetLandRatio,
-  );
   if (initial.buildingTileCount >= targetBuildingTileCount) {
     return { ...initial, targetBuildingTileCount, generatedTileCount: 0, candidateFootprintCount: 0 };
   }
@@ -420,6 +417,42 @@ function augmentBuildingTexture(terrain, masks, meta, city) {
       }
     }
   }
+  let candidateFootprintCount = candidates.length;
+  const secondaryOrigins = [[0, 0], [0, 2], [2, 0]];
+  for (let phase = 0; buildingTileCount < targetBuildingTileCount && phase < secondaryOrigins.length; phase += 1) {
+    const [originX, originY] = secondaryOrigins[phase];
+    const phaseSeed = seed ^ Math.imul(phase + 1, 0x27d4eb2d);
+    const phaseCandidates = [];
+    for (let blockY = originY; blockY < h - 4; blockY += 4) {
+      for (let blockX = originX; blockX < w - 4; blockX += 4) {
+        const score = tileHash32(phaseSeed, blockX, blockY);
+        const footprint = {
+          x: blockX + ((score >>> 3) & 1),
+          y: blockY + ((score >>> 4) & 1),
+          width: 2 + ((score >>> 1) & 1),
+          height: 2 + ((score >>> 2) & 1),
+          score,
+        };
+        const centerX = footprint.x + Math.floor(footprint.width / 2);
+        const centerY = footprint.y + Math.floor(footprint.height / 2);
+        if (!isClosedRoadBlock(masks.road, meta, centerX, centerY)) continue;
+        if (!footprintIsEligible(terrain, masks.road, meta, footprint)) continue;
+        phaseCandidates.push(footprint);
+      }
+    }
+    phaseCandidates.sort((left, right) => left.score - right.score || left.y - right.y || left.x - right.x);
+    candidateFootprintCount += phaseCandidates.length;
+    for (const footprint of phaseCandidates) {
+      if (buildingTileCount >= targetBuildingTileCount) break;
+      if (!footprintIsEligible(terrain, masks.road, meta, footprint)) continue;
+      for (let dy = 0; dy < footprint.height; dy += 1) {
+        for (let dx = 0; dx < footprint.width; dx += 1) {
+          terrain[(footprint.y + dy) * w + footprint.x + dx] = CITY_TILE.BUILDING;
+          buildingTileCount += 1;
+        }
+      }
+    }
+  }
   if (buildingTileCount < targetBuildingTileCount) {
     throw new Error(`${city} building infill candidates exhausted: ${buildingTileCount} < ${targetBuildingTileCount}`);
   }
@@ -427,7 +460,7 @@ function augmentBuildingTexture(terrain, masks, meta, city) {
     ...initial,
     targetBuildingTileCount,
     generatedTileCount: buildingTileCount - initial.buildingTileCount,
-    candidateFootprintCount: candidates.length,
+    candidateFootprintCount,
   };
 }
 
@@ -472,6 +505,13 @@ function separateMarkerTiles(entries, meta, minDistance = 3) {
   }
 }
 
+function normalizeCityTerrain(terrain, protectedEntries, mainStation, entrance, exitTiles, meta, city) {
+  for (const entry of protectedEntries) ensureWalkableAnchor(terrain, entry.tile, meta);
+  for (let y = exitTiles[0][1]; y <= entrance.y; y += 1) terrain[y * meta.grid.w + entrance.x] = CITY_TILE.ROAD;
+  normalizeWalkableComponents(terrain, protectedEntries.map((entry) => entry.tile), mainStation.tile, meta, city);
+  for (const entry of protectedEntries) ensureWalkableAnchor(terrain, entry.tile, meta);
+}
+
 export function buildKoreanCityGeo(city) {
   const config = CITY_CONFIG[city];
   if (!config) throw new Error(`Unknown city: ${city}`);
@@ -499,20 +539,36 @@ export function buildKoreanCityGeo(city) {
   const exitTiles = [[entrance.x, entrance.y - 10], [entrance.x, entrance.y - 9]];
   const terrain = new Uint8Array(baseMeta.grid.w * baseMeta.grid.h).fill(CITY_TILE.SIDEWALK);
   const masks = applySnapshotMasks(terrain, snapshot, baseMeta);
-  const buildingTexture = augmentBuildingTexture(terrain, masks, baseMeta, city);
   const protectedEntries = [...pois, ...stations];
-  for (const entry of protectedEntries) ensureWalkableAnchor(terrain, entry.tile, baseMeta);
-  for (let y = exitTiles[0][1]; y <= entrance.y; y += 1) terrain[y * baseMeta.grid.w + entrance.x] = CITY_TILE.ROAD;
-  normalizeWalkableComponents(terrain, protectedEntries.map((entry) => entry.tile), mainStation.tile, baseMeta, city);
-  for (const entry of protectedEntries) ensureWalkableAnchor(terrain, entry.tile, baseMeta);
+  const baselineTerrain = terrain.slice();
+  normalizeCityTerrain(baselineTerrain, protectedEntries, mainStation, entrance, exitTiles, baseMeta, city);
+  const initialBuildingStats = terrainBuildingStats(terrain);
+  const baselineBuildingStats = terrainBuildingStats(baselineTerrain);
+  const baselineNormalizationBuildingTiles = baselineBuildingStats.buildingTileCount - initialBuildingStats.buildingTileCount;
+  const finalTargetBuildingTileCount = Math.ceil(
+    baselineBuildingStats.landTileCount * BUILDING_TEXTURE_CONTRACT.targetLandRatio,
+  );
+  const preNormalizationTargetBuildingTileCount = Math.max(
+    initialBuildingStats.buildingTileCount,
+    finalTargetBuildingTileCount - baselineNormalizationBuildingTiles,
+  );
+  const buildingTexture = augmentBuildingTexture(
+    terrain, masks, baseMeta, city, preNormalizationTargetBuildingTileCount,
+  );
+  normalizeCityTerrain(terrain, protectedEntries, mainStation, entrance, exitTiles, baseMeta, city);
   const finalBuildingStats = terrainBuildingStats(terrain);
+  if (finalBuildingStats.landBuildingRatio < 0.09 || finalBuildingStats.landBuildingRatio > 0.11) {
+    throw new Error(`${city} final land/building ratio outside 10%±1pp gate: ${finalBuildingStats.landBuildingRatio}`);
+  }
   const meta = Object.freeze({
     ...baseMeta,
     buildingTexture: Object.freeze({
       ...BUILDING_TEXTURE_CONTRACT,
       seed: `${BUILDING_TEXTURE_CONTRACT.seedNamespace}:${city}`,
       initialLandBuildingRatio: buildingTexture.landBuildingRatio,
-      targetBuildingTileCount: buildingTexture.targetBuildingTileCount,
+      baselineNormalizationBuildingTiles,
+      finalTargetBuildingTileCount,
+      preNormalizationTargetBuildingTileCount: buildingTexture.targetBuildingTileCount,
       generatedTileCount: buildingTexture.generatedTileCount,
       candidateFootprintCount: buildingTexture.candidateFootprintCount,
       finalLandTileCount: finalBuildingStats.landTileCount,
