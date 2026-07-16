@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "releaseEligible": false,
+  "generatorGitSha": null,
+  "regionId": "europe-mediterranean-middle-east-boundary-preview-v1",
+  "baseTerrain": {
+    "manifestPath": "scripts/world/overworld-region-emea-v1.json",
+    "directory": "public/assets/overworld/europe-mediterranean-middle-east-terrain-preview-v1",
+    "contentManifest": "content-manifest.json",
+    "contentManifestSha256": "cf70d61acfee495a124b2c2c24a0d449ae0cc9527a915c43dae018e31adc7c8b",
+    "contentManifestBytes": 8436
+  },
+  "boundarySources": [
+    {
+      "id": "natural-earth-admin0-boundary-lines-land-10m",
+      "cacheFile": "ne_10m_admin_0_boundary_lines_land.geojson",
+      "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/geojson/ne_10m_admin_0_boundary_lines_land.geojson",
+      "version": "natural-earth-vector-v5.1.2",
+      "sha256": "74d9c16229c095fde65943a9919e337682f044bcebccb120764f38edf3b70f4a",
+      "bytes": 2284669,
+      "license": "Natural Earth public domain",
+      "role": "admin0-boundary-lines",
+      "required": true,
+      "sourceKind": "land"
+    },
+    {
+      "id": "natural-earth-admin0-boundary-lines-disputed-areas-10m",
+      "cacheFile": "ne_10m_admin_0_boundary_lines_disputed_areas.geojson",
+      "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/geojson/ne_10m_admin_0_boundary_lines_disputed_areas.geojson",
+      "version": "natural-earth-vector-v5.1.2",
+      "sha256": "69f19da764e6982b43aebae4b1a356ffe74c33f2a3cdb462637c0ba8e969c30b",
+      "bytes": 183831,
+      "license": "Natural Earth public domain",
+      "role": "admin0-disputed-boundary-lines",
+      "required": true,
+      "sourceKind": "disputed"
+    }
+  ],
+  "boundaryRules": {
+    "quantization": 1024,
+    "haloTiles": 1,
+    "simplification": "none",
+    "defaultScaleRank": 10
+  },
+  "policy": {
+    "id": "neutral-boundary-policy-v1",
+    "solidFeatureClasses": [
+      "International boundary (verify)"
+    ],
+    "neutralFeatureClasses": [
+      "Breakaway",
+      "Claim boundary",
+      "Disputed (please verify)",
+      "Elusive frontier",
+      "Indefinite (please verify)",
+      "Indeterminant frontier",
+      "Lease limit",
+      "Line of control (please verify)",
+      "Overlay limit",
+      "Reference line",
+      "Unrecognized"
+    ],
+    "countryFill": "none",
+    "ownershipLabels": "forbidden",
+    "sourceProperties": "discard-all",
+    "disclaimer": "지도상의 경계·명칭·표시는 특정 지역의 법적 지위나 경계 주장에 대한 승인 또는 지지를 의미하지 않습니다."
+  }
+}

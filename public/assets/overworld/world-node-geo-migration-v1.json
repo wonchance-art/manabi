@@ -1,0 +1,1249 @@
+{
+  "schemaVersion": 1,
+  "regionId": "asia-pacific",
+  "source": "WORLD_NODES",
+  "releaseEligible": false,
+  "legacyIdTileSha256": "7d2b2debf9398957c196474b927f0b998c96d02f2ce2b888f1f3112ee9efd1cf",
+  "nodeCount": 65,
+  "geoSourceCounts": {
+    "legacy-tile-derived": 48,
+    "verified-input": 17
+  },
+  "nodes": [
+    {
+      "id": "amakusa-sakitsu",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        127,
+        338
+      ],
+      "lon": 130.012821,
+      "lat": 32.315789,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        4,
+        4
+      ],
+      "overworldTile": [
+        1539,
+        713
+      ]
+    },
+    {
+      "id": "aoshima-jinja",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        155,
+        351
+      ],
+      "lon": 131.448718,
+      "lat": 31.789474,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1566,
+        722
+      ]
+    },
+    {
+      "id": "aso",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        148,
+        324
+      ],
+      "lon": 131.09,
+      "lat": 32.88,
+      "geoSource": "verified-input",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1558,
+        695
+      ]
+    },
+    {
+      "id": "baekdu",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        89,
+        99
+      ],
+      "lon": 128.064103,
+      "lat": 41.991903,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1492,
+        470
+      ]
+    },
+    {
+      "id": "beppu-onsen",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        156,
+        314
+      ],
+      "lon": 131.5,
+      "lat": 33.287449,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1567,
+        685
+      ]
+    },
+    {
+      "id": "bukhan",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        68,
+        206
+      ],
+      "lon": 126.99,
+      "lat": 37.66,
+      "geoSource": "verified-input",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1468,
+        577
+      ]
+    },
+    {
+      "id": "busan",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        109,
+        267
+      ],
+      "lon": 129.089744,
+      "lat": 35.190283,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1514,
+        638
+      ]
+    },
+    {
+      "id": "busan-port",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        108,
+        269
+      ],
+      "lon": 129.038462,
+      "lat": 35.109312,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        -1
+      ],
+      "overworldTile": [
+        1513,
+        639
+      ]
+    },
+    {
+      "id": "daisen",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        196,
+        263
+      ],
+      "lon": 133.551282,
+      "lat": 35.352227,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1612,
+        634
+      ]
+    },
+    {
+      "id": "dazaifu-shrine",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        138,
+        310
+      ],
+      "lon": 130.576923,
+      "lat": 33.449393,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1547,
+        681
+      ]
+    },
+    {
+      "id": "donghae-port",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        110,
+        210
+      ],
+      "lon": 129.141026,
+      "lat": 37.497976,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1515,
+        581
+      ]
+    },
+    {
+      "id": "fuji",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        297,
+        263
+      ],
+      "lon": 138.730769,
+      "lat": 35.352227,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1726,
+        634
+      ]
+    },
+    {
+      "id": "fukuoka",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        135,
+        307
+      ],
+      "lon": 130.423077,
+      "lat": 33.57085,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1544,
+        678
+      ]
+    },
+    {
+      "id": "fukuoka-port",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        135,
+        306
+      ],
+      "lon": 130.423077,
+      "lat": 33.611336,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1544,
+        677
+      ]
+    },
+    {
+      "id": "fukuoka-ramen",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        131,
+        306
+      ],
+      "lon": 130.217949,
+      "lat": 33.611336,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1539,
+        677
+      ]
+    },
+    {
+      "id": "geoje",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        100,
+        273
+      ],
+      "lon": 128.628205,
+      "lat": 34.947368,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        -1,
+        -4
+      ],
+      "overworldTile": [
+        1503,
+        640
+      ]
+    },
+    {
+      "id": "geumgang",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        90,
+        181
+      ],
+      "lon": 128.115,
+      "lat": 38.667,
+      "geoSource": "verified-input",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1493,
+        552
+      ]
+    },
+    {
+      "id": "gimhae-airport",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        106,
+        267
+      ],
+      "lon": 128.935897,
+      "lat": 35.190283,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1511,
+        638
+      ]
+    },
+    {
+      "id": "glover-garden",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        124,
+        328
+      ],
+      "lon": 129.858974,
+      "lat": 32.720648,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1531,
+        699
+      ]
+    },
+    {
+      "id": "gourmet-akita",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        324,
+        155
+      ],
+      "lon": 140.102,
+      "lat": 39.72,
+      "geoSource": "verified-input",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1756,
+        526
+      ]
+    },
+    {
+      "id": "gourmet-fukuoka",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        138,
+        304
+      ],
+      "lon": 130.576923,
+      "lat": 33.692308,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1547,
+        675
+      ]
+    },
+    {
+      "id": "gourmet-kagoshima",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        136,
+        358
+      ],
+      "lon": 130.474359,
+      "lat": 31.506073,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1545,
+        729
+      ]
+    },
+    {
+      "id": "gourmet-kumamoto",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        138,
+        324
+      ],
+      "lon": 130.576923,
+      "lat": 32.882591,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1547,
+        695
+      ]
+    },
+    {
+      "id": "gourmet-miyazaki",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        154,
+        348
+      ],
+      "lon": 131.397436,
+      "lat": 31.910931,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1565,
+        719
+      ]
+    },
+    {
+      "id": "gourmet-nagano",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        286,
+        231
+      ],
+      "lon": 138.181,
+      "lat": 36.648,
+      "geoSource": "verified-input",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1714,
+        602
+      ]
+    },
+    {
+      "id": "gourmet-nagasaki",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        125,
+        325
+      ],
+      "lon": 129.910256,
+      "lat": 32.842105,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1532,
+        696
+      ]
+    },
+    {
+      "id": "gourmet-nagoya",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        261,
+        267
+      ],
+      "lon": 136.9066,
+      "lat": 35.1815,
+      "geoSource": "verified-input",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1686,
+        638
+      ]
+    },
+    {
+      "id": "gourmet-oita",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        159,
+        315
+      ],
+      "lon": 131.653846,
+      "lat": 33.246964,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1571,
+        686
+      ]
+    },
+    {
+      "id": "gourmet-osaka",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        234,
+        280
+      ],
+      "lon": 135.5019,
+      "lat": 34.6687,
+      "geoSource": "verified-input",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1655,
+        651
+      ]
+    },
+    {
+      "id": "gourmet-saga",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        132,
+        316
+      ],
+      "lon": 130.269231,
+      "lat": 33.206478,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1540,
+        687
+      ]
+    },
+    {
+      "id": "gourmet-sendai",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        339,
+        191
+      ],
+      "lon": 140.8719,
+      "lat": 38.2682,
+      "geoSource": "verified-input",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1773,
+        562
+      ]
+    },
+    {
+      "id": "gunkanjima",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        122,
+        324
+      ],
+      "lon": 129.75641,
+      "lat": 32.882591,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1529,
+        695
+      ]
+    },
+    {
+      "id": "halla",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        59,
+        312
+      ],
+      "lon": 126.53,
+      "lat": 33.37,
+      "geoSource": "verified-input",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1458,
+        683
+      ]
+    },
+    {
+      "id": "haneda",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        317,
+        258
+      ],
+      "lon": 139.75641,
+      "lat": 35.554656,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1748,
+        629
+      ]
+    },
+    {
+      "id": "himeji-castle",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        218,
+        276
+      ],
+      "lon": 134.6939,
+      "lat": 34.8394,
+      "geoSource": "verified-input",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1637,
+        646
+      ]
+    },
+    {
+      "id": "hirosaki-castle",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        331,
+        133
+      ],
+      "lon": 140.467,
+      "lat": 40.607,
+      "geoSource": "verified-input",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1764,
+        504
+      ]
+    },
+    {
+      "id": "hiroshima-peace",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        175,
+        287
+      ],
+      "lon": 132.4536,
+      "lat": 34.3955,
+      "geoSource": "verified-input",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1588,
+        657
+      ]
+    },
+    {
+      "id": "huis-ten-bosch",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        123,
+        319
+      ],
+      "lon": 129.807692,
+      "lat": 33.08502,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1530,
+        690
+      ]
+    },
+    {
+      "id": "ibusuki-onsen",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        139,
+        365
+      ],
+      "lon": 130.628205,
+      "lat": 31.222672,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        -1
+      ],
+      "overworldTile": [
+        1548,
+        735
+      ]
+    },
+    {
+      "id": "incheon-airport",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        57,
+        211
+      ],
+      "lon": 126.423077,
+      "lat": 37.45749,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        4,
+        0
+      ],
+      "overworldTile": [
+        1460,
+        582
+      ]
+    },
+    {
+      "id": "jiri",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        82,
+        263
+      ],
+      "lon": 127.73,
+      "lat": 35.34,
+      "geoSource": "verified-input",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1485,
+        634
+      ]
+    },
+    {
+      "id": "karatsu-castle",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        126,
+        310
+      ],
+      "lon": 129.961538,
+      "lat": 33.449393,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1533,
+        681
+      ]
+    },
+    {
+      "id": "kenrokuen",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        257,
+        233
+      ],
+      "lon": 136.6625,
+      "lat": 36.562,
+      "geoSource": "verified-input",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1680,
+        604
+      ]
+    },
+    {
+      "id": "kirishima-jingu",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        144,
+        349
+      ],
+      "lon": 130.884615,
+      "lat": 31.870445,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1554,
+        720
+      ]
+    },
+    {
+      "id": "kumamoto-castle",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        141,
+        326
+      ],
+      "lon": 130.730769,
+      "lat": 32.801619,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1550,
+        697
+      ]
+    },
+    {
+      "id": "kyoto",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        239,
+        271
+      ],
+      "lon": 135.75641,
+      "lat": 35.02834,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1660,
+        642
+      ]
+    },
+    {
+      "id": "mojiko-retro",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        145,
+        298
+      ],
+      "lon": 130.935897,
+      "lat": 33.935223,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1555,
+        669
+      ]
+    },
+    {
+      "id": "nikko-toshogu",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        314,
+        228
+      ],
+      "lon": 139.5988,
+      "lat": 36.7578,
+      "geoSource": "verified-input",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1745,
+        599
+      ]
+    },
+    {
+      "id": "okayama-korakuen",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        203,
+        280
+      ],
+      "lon": 133.935,
+      "lat": 34.667,
+      "geoSource": "verified-input",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1621,
+        651
+      ]
+    },
+    {
+      "id": "osaka",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        234,
+        276
+      ],
+      "lon": 135.5,
+      "lat": 34.825911,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1655,
+        647
+      ]
+    },
+    {
+      "id": "sakaiminato-port",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        190,
+        258
+      ],
+      "lon": 133.24359,
+      "lat": 35.554656,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1605,
+        629
+      ]
+    },
+    {
+      "id": "sakurajima",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        141,
+        357
+      ],
+      "lon": 130.730769,
+      "lat": 31.546559,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1550,
+        728
+      ]
+    },
+    {
+      "id": "sengan-en",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        138,
+        355
+      ],
+      "lon": 130.576923,
+      "lat": 31.62753,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1547,
+        726
+      ]
+    },
+    {
+      "id": "seorak",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        97,
+        195
+      ],
+      "lon": 128.47,
+      "lat": 38.12,
+      "geoSource": "verified-input",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1501,
+        565
+      ]
+    },
+    {
+      "id": "seoul",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        68,
+        208
+      ],
+      "lon": 126.987179,
+      "lat": 37.578947,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1468,
+        579
+      ]
+    },
+    {
+      "id": "takachiho",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        152,
+        328
+      ],
+      "lon": 131.294872,
+      "lat": 32.720648,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1563,
+        699
+      ]
+    },
+    {
+      "id": "tokyo",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        316,
+        255
+      ],
+      "lon": 139.705128,
+      "lat": 35.676113,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1747,
+        626
+      ]
+    },
+    {
+      "id": "tongyeong",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        96,
+        275
+      ],
+      "lon": 128.423077,
+      "lat": 34.866397,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        -1,
+        0
+      ],
+      "overworldTile": [
+        1499,
+        646
+      ]
+    },
+    {
+      "id": "tottori",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        209,
+        258
+      ],
+      "lon": 134.217949,
+      "lat": 35.554656,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1627,
+        629
+      ]
+    },
+    {
+      "id": "udo-jingu",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        155,
+        355
+      ],
+      "lon": 131.448718,
+      "lat": 31.62753,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        -1,
+        0
+      ],
+      "overworldTile": [
+        1565,
+        726
+      ]
+    },
+    {
+      "id": "usa-jingu",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        154,
+        308
+      ],
+      "lon": 131.397436,
+      "lat": 33.530364,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1565,
+        679
+      ]
+    },
+    {
+      "id": "yanagawa",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        135,
+        317
+      ],
+      "lon": 130.423077,
+      "lat": 33.165992,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1544,
+        688
+      ]
+    },
+    {
+      "id": "yoshinogari",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        134,
+        313
+      ],
+      "lon": 130.371795,
+      "lat": 33.327935,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1542,
+        684
+      ]
+    },
+    {
+      "id": "yufuin",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        153,
+        315
+      ],
+      "lon": 131.346154,
+      "lat": 33.246964,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1564,
+        686
+      ]
+    },
+    {
+      "id": "yutoku-inari",
+      "regionId": "asia-pacific",
+      "legacyTile": [
+        128,
+        319
+      ],
+      "lon": 130.064103,
+      "lat": 33.08502,
+      "geoSource": "legacy-tile-derived",
+      "arrivalOffset": [
+        0,
+        0
+      ],
+      "overworldTile": [
+        1536,
+        690
+      ]
+    }
+  ]
+}
