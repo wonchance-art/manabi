@@ -106,7 +106,11 @@ const HONSHU_GOURMET = [
 
 const LEGACY_WORLD_NODES = [
   // 서울 — 스폰 도시.
-  { id: 'seoul', name: '서울', kind: 'city', tile: [POI.SEOUL.x, POI.SEOUL.y], desc: '대한민국의 수도. 한강이 도시를 가로지르고, 예부터 지금까지 나라의 중심지예요.' },
+  {
+    id: 'seoul', name: '서울', kind: 'city', tile: [POI.SEOUL.x, POI.SEOUL.y],
+    gate: { type: 'city', to: 'seoul', label: '🏙️ 시내' },
+    desc: '대한민국의 수도. 한강이 도시를 가로지르고, 예부터 지금까지 나라의 중심지예요.',
+  },
   // 인천공항(영종도) — 기존 하드코딩 "도쿄 여행" 게이트를 이 노드로 이관. A → 공항 스토리 씬.
   {
     id: 'incheon-airport', name: '인천공항', kind: 'airport', tile: [POI.INCHEON.x, POI.INCHEON.y], arrivalOffset: [4, 0],
