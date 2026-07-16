@@ -63,12 +63,17 @@ describe('서울 실지형 데이터 계약', () => {
       metersPerTile: 20, projection: 'webmercator', contentLocale: 'ko',
       schema: { nameField: 'nameKo', localeSlots: 'central-lookup-expandable' },
       buildingTexture: {
-        method: 'deterministic-road-block-infill', version: 1, targetLandRatio: 0.1,
-        seed: 'manabi-korean-city-buildings-v1:seoul', generatedTileCount: 28_710,
+        method: 'deterministic-road-block-infill', version: 2, targetLandRatio: 0.1,
+        blockFillRatioMin: 0.7, blockFillRatioMax: 0.85,
+        blockMinTiles: 12, blockMaxTiles: 2_000,
+        minorRoadClasses: ['service', 'footway', 'path', 'steps', 'cycleway', 'track'],
+        seed: 'manabi-korean-city-buildings-v2:seoul', generatedTileCount: 28_732,
         baselineNormalizationBuildingTiles: 44_602, finalTargetBuildingTileCount: 237_236,
         preNormalizationTargetBuildingTileCount: 192_634,
-        finalLandTileCount: 2_372_357, finalBuildingTileCount: 237_655,
-        finalLandBuildingRatio: 0.100177,
+        candidateBlockCount: 9_009, selectedBlockCount: 964, preservedAlleyTileCount: 3_172,
+        selectedBlockFillRatioMin: 0.7, selectedBlockFillRatioMax: 0.85,
+        finalLandTileCount: 2_372_357, finalBuildingTileCount: 237_839,
+        finalLandBuildingRatio: 0.100254,
       },
     });
     expect(SEOUL_GEO.terrain).toBeInstanceOf(Uint8Array);
@@ -98,16 +103,16 @@ describe('서울 실지형 데이터 계약', () => {
     const counts = new Map();
     for (const code of SEOUL_GEO.terrain) counts.set(code, (counts.get(code) || 0) + 1);
     expect(Object.fromEntries(counts)).toEqual({
-      [CITY_TILE.ROAD]: 280_032,
-      [CITY_TILE.SIDEWALK]: 1_189_316,
+      [CITY_TILE.ROAD]: 279_974,
+      [CITY_TILE.SIDEWALK]: 1_189_182,
       [CITY_TILE.CROSSWALK]: 8_464,
       [CITY_TILE.PLAZA]: 14,
-      [CITY_TILE.PARK]: 58_116,
-      [CITY_TILE.BRIDGE]: 57_831,
+      [CITY_TILE.PARK]: 58_099,
+      [CITY_TILE.BRIDGE]: 57_800,
       [CITY_TILE.WATER]: 77_752,
-      [CITY_TILE.BUILDING]: 237_655,
+      [CITY_TILE.BUILDING]: 237_839,
       [CITY_TILE.RIVER]: 41_899,
-      [CITY_TILE.MOUNTAIN]: 540_929,
+      [CITY_TILE.MOUNTAIN]: 540_985,
     });
     expect(SEOUL_GEO.meta.buildingTexture.finalLandBuildingRatio).toBeGreaterThanOrEqual(0.09);
     expect(SEOUL_GEO.meta.buildingTexture.finalLandBuildingRatio).toBeLessThanOrEqual(0.11);
@@ -130,7 +135,7 @@ describe('서울 실지형 데이터 계약', () => {
       walkable += 1;
       reached += seen[index];
     }
-    expect(walkable).toBe(1_593_773);
+    expect(walkable).toBe(1_593_533);
     expect(reached).toBe(walkable);
   });
 });
@@ -162,7 +167,7 @@ describe('서울 생성 결정성·오프라인 계약', () => {
     const second = buildKoreanCityGeo('seoul');
     expect(terrainHash(first.terrain)).toBe(terrainHash(second.terrain));
     expect(terrainHash(first.terrain)).toBe(terrainHash(SEOUL_GEO.terrain));
-    expect(terrainHash(first.terrain)).toBe('95f7a1328f946b00fd55af6d15c2e254de8cf1fae53779fd8a08ba107bc5b819');
+    expect(terrainHash(first.terrain)).toBe('4a79921607dc1adf4258c538957814ffb1448ed3d7395ae4a1d4cd98aaaa72e3');
     expect(terrainHash(first.railways.mask)).toBe('5a252fa3aeee8197edce6b9658807a08eb814750434f632d5977353bded6779a');
     expect(first.pois).toEqual(SEOUL_GEO.pois);
     expect(first.stations).toEqual(SEOUL_GEO.stations);
@@ -173,7 +178,7 @@ describe('서울 생성 결정성·오프라인 계약', () => {
     const railwayRuns = encodeTerrainRle(SEOUL_GEO.railways.mask);
     expect(decodeTerrainRle(terrainRuns, SEOUL_GEO.terrain.length)).toEqual(SEOUL_GEO.terrain);
     expect(decodeTerrainRle(railwayRuns, SEOUL_GEO.railways.mask.length)).toEqual(SEOUL_GEO.railways.mask);
-    expect(terrainRuns).toHaveLength(504_294);
+    expect(terrainRuns).toHaveLength(492_839);
     expect(railwayRuns).toHaveLength(41_629);
     expect(fs.readFileSync(new URL('../cities/seoul.geo.js', import.meta.url), 'utf8')).not.toMatch(/\bfetch\s*\(/);
   }, 30_000);

@@ -8,10 +8,14 @@ const DEG = Math.PI / 180;
 const METERS_PER_TILE = 20;
 const BUILDING_TEXTURE_CONTRACT = Object.freeze({
   method: 'deterministic-road-block-infill',
-  version: 1,
+  version: 2,
   targetLandRatio: 0.10,
-  blockSearchRadiusTiles: 20,
-  seedNamespace: 'manabi-korean-city-buildings-v1',
+  blockFillRatioMin: 0.70,
+  blockFillRatioMax: 0.85,
+  blockMinTiles: 12,
+  blockMaxTiles: 2_000,
+  seedNamespace: 'manabi-korean-city-buildings-v2',
+  minorRoadClasses: Object.freeze(['service', 'footway', 'path', 'steps', 'cycleway', 'track']),
   publicDatasetProbe: Object.freeze({
     provider: 'MOLIT VWorld',
     datasetId: '30162',
@@ -346,112 +350,140 @@ function terrainBuildingStats(terrain) {
   };
 }
 
-function hasRoadInDirection(roadMask, meta, x, y, dx, dy, maxDistance) {
+function collectClosedRoadBlocks(roadMask, meta, seed) {
   const { w, h } = meta.grid;
-  for (let distance = 2; distance <= maxDistance; distance += 1) {
-    for (let offset = -1; offset <= 1; offset += 1) {
-      const nx = x + dx * distance + (dy === 0 ? 0 : offset);
-      const ny = y + dy * distance + (dx === 0 ? 0 : offset);
-      if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
-      if (roadMask[ny * w + nx]) return true;
+  const seen = new Uint8Array(roadMask.length);
+  const queue = new Int32Array(roadMask.length);
+  const blocks = [];
+  for (let start = 0; start < roadMask.length; start += 1) {
+    if (roadMask[start] || seen[start]) continue;
+    let head = 0;
+    let tail = 0;
+    let touchesBoundary = false;
+    let minX = w;
+    let minY = h;
+    let maxX = 0;
+    let maxY = 0;
+    queue[tail++] = start;
+    seen[start] = 1;
+    while (head < tail) {
+      const index = queue[head++];
+      const x = index % w;
+      const y = Math.floor(index / w);
+      minX = Math.min(minX, x);
+      minY = Math.min(minY, y);
+      maxX = Math.max(maxX, x);
+      maxY = Math.max(maxY, y);
+      if (x === 0 || y === 0 || x === w - 1 || y === h - 1) touchesBoundary = true;
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = x + dx;
+        const ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+        const next = ny * w + nx;
+        if (roadMask[next] || seen[next]) continue;
+        seen[next] = 1;
+        queue[tail++] = next;
+      }
+    }
+    if (touchesBoundary || tail < BUILDING_TEXTURE_CONTRACT.blockMinTiles
+      || tail > BUILDING_TEXTURE_CONTRACT.blockMaxTiles) continue;
+    blocks.push({
+      indexes: Array.from(queue.subarray(0, tail)),
+      minX, minY, maxX, maxY,
+      score: (tileHash32(seed, minX, minY) ^ tileHash32(seed, maxX, maxY)) >>> 0,
+    });
+  }
+  blocks.sort((left, right) => left.score - right.score
+    || left.minY - right.minY || left.minX - right.minX);
+  return blocks;
+}
+
+function touchesRoad(roadMask, meta, index) {
+  const { w, h } = meta.grid;
+  const x = index % w;
+  const y = Math.floor(index / w);
+  for (let dy = -1; dy <= 1; dy += 1) {
+    for (let dx = -1; dx <= 1; dx += 1) {
+      if (dx === 0 && dy === 0) continue;
+      const nx = x + dx;
+      const ny = y + dy;
+      if (nx >= 0 && ny >= 0 && nx < w && ny < h && roadMask[ny * w + nx]) return true;
     }
   }
   return false;
 }
 
-function isClosedRoadBlock(roadMask, meta, x, y) {
-  const radius = BUILDING_TEXTURE_CONTRACT.blockSearchRadiusTiles;
-  return hasRoadInDirection(roadMask, meta, x, y, -1, 0, radius)
-    && hasRoadInDirection(roadMask, meta, x, y, 1, 0, radius)
-    && hasRoadInDirection(roadMask, meta, x, y, 0, -1, radius)
-    && hasRoadInDirection(roadMask, meta, x, y, 0, 1, radius);
-}
-
-function footprintIsEligible(terrain, roadMask, meta, footprint) {
+function blockFillCandidates(terrain, roadMask, meta, block) {
   const { w } = meta.grid;
-  for (let dy = 0; dy < footprint.height; dy += 1) {
-    for (let dx = 0; dx < footprint.width; dx += 1) {
-      const index = (footprint.y + dy) * w + footprint.x + dx;
-      if (terrain[index] !== CITY_TILE.SIDEWALK || roadMask[index]) return false;
+  const width = block.maxX - block.minX + 1;
+  const height = block.maxY - block.minY + 1;
+  const alleyX = block.minX + 2 + (block.score % Math.max(1, width - 4));
+  const alleyY = block.minY + 2 + ((block.score >>> 8) % Math.max(1, height - 4));
+  const preserveVerticalAlley = width >= 8 && (width >= height || block.indexes.length >= 240);
+  const preserveHorizontalAlley = height >= 8 && (height > width || block.indexes.length >= 240);
+  const candidates = [];
+  let preservedAlleyTileCount = 0;
+  for (const index of block.indexes) {
+    if (terrain[index] !== CITY_TILE.SIDEWALK || roadMask[index] || touchesRoad(roadMask, meta, index)) continue;
+    const x = index % w;
+    const y = Math.floor(index / w);
+    if ((preserveVerticalAlley && x === alleyX) || (preserveHorizontalAlley && y === alleyY)) {
+      preservedAlleyTileCount += 1;
+      continue;
     }
+    candidates.push(index);
   }
-  return true;
+  const corner = block.score & 3;
+  const anchorX = corner & 1 ? block.maxX : block.minX;
+  const anchorY = corner & 2 ? block.maxY : block.minY;
+  candidates.sort((left, right) => {
+    const leftX = left % w;
+    const leftY = Math.floor(left / w);
+    const rightX = right % w;
+    const rightY = Math.floor(right / w);
+    const leftDistance = Math.abs(leftX - anchorX) + Math.abs(leftY - anchorY);
+    const rightDistance = Math.abs(rightX - anchorX) + Math.abs(rightY - anchorY);
+    return leftDistance - rightDistance || leftY - rightY || leftX - rightX;
+  });
+  return { candidates, preservedAlleyTileCount };
 }
 
 function augmentBuildingTexture(terrain, masks, meta, city, targetBuildingTileCount) {
   const initial = terrainBuildingStats(terrain);
   if (initial.buildingTileCount >= targetBuildingTileCount) {
-    return { ...initial, targetBuildingTileCount, generatedTileCount: 0, candidateFootprintCount: 0 };
+    return {
+      ...initial, targetBuildingTileCount, generatedTileCount: 0,
+      candidateBlockCount: 0, selectedBlockCount: 0, preservedAlleyTileCount: 0,
+      selectedBlockFillRatioMin: 0, selectedBlockFillRatioMax: 0,
+    };
   }
 
   const seed = hashString32(`${BUILDING_TEXTURE_CONTRACT.seedNamespace}:${city}`);
-  const candidates = [];
-  const { w, h } = meta.grid;
-  for (let blockY = 2; blockY < h - 4; blockY += 4) {
-    for (let blockX = 2; blockX < w - 4; blockX += 4) {
-      const score = tileHash32(seed, blockX, blockY);
-      const footprint = {
-        x: blockX + ((score >>> 3) & 1),
-        y: blockY + ((score >>> 4) & 1),
-        width: 2 + ((score >>> 1) & 1),
-        height: 2 + ((score >>> 2) & 1),
-        score,
-      };
-      const centerX = footprint.x + Math.floor(footprint.width / 2);
-      const centerY = footprint.y + Math.floor(footprint.height / 2);
-      if (!isClosedRoadBlock(masks.road, meta, centerX, centerY)) continue;
-      if (!footprintIsEligible(terrain, masks.road, meta, footprint)) continue;
-      candidates.push(footprint);
-    }
-  }
-  candidates.sort((left, right) => left.score - right.score || left.y - right.y || left.x - right.x);
-
+  const blocks = collectClosedRoadBlocks(masks.road, meta, seed);
   let buildingTileCount = initial.buildingTileCount;
-  for (const footprint of candidates) {
+  let selectedBlockCount = 0;
+  let preservedAlleyTileCount = 0;
+  let selectedBlockFillRatioMin = 1;
+  let selectedBlockFillRatioMax = 0;
+  for (const block of blocks) {
     if (buildingTileCount >= targetBuildingTileCount) break;
-    if (!footprintIsEligible(terrain, masks.road, meta, footprint)) continue;
-    for (let dy = 0; dy < footprint.height; dy += 1) {
-      for (let dx = 0; dx < footprint.width; dx += 1) {
-        terrain[(footprint.y + dy) * w + footprint.x + dx] = CITY_TILE.BUILDING;
-        buildingTileCount += 1;
-      }
+    const { candidates, preservedAlleyTileCount: blockAlleyTileCount } = blockFillCandidates(
+      terrain, masks.road, meta, block,
+    );
+    if (candidates.length === 0) continue;
+    const minimumFill = Math.ceil(candidates.length * BUILDING_TEXTURE_CONTRACT.blockFillRatioMin);
+    const maximumFill = Math.floor(candidates.length * BUILDING_TEXTURE_CONTRACT.blockFillRatioMax);
+    if (minimumFill > maximumFill) continue;
+    const fillCount = minimumFill + ((block.score >>> 16) % (maximumFill - minimumFill + 1));
+    for (let index = 0; index < fillCount; index += 1) {
+      terrain[candidates[index]] = CITY_TILE.BUILDING;
+      buildingTileCount += 1;
     }
-  }
-  let candidateFootprintCount = candidates.length;
-  const secondaryOrigins = [[0, 0], [0, 2], [2, 0]];
-  for (let phase = 0; buildingTileCount < targetBuildingTileCount && phase < secondaryOrigins.length; phase += 1) {
-    const [originX, originY] = secondaryOrigins[phase];
-    const phaseSeed = seed ^ Math.imul(phase + 1, 0x27d4eb2d);
-    const phaseCandidates = [];
-    for (let blockY = originY; blockY < h - 4; blockY += 4) {
-      for (let blockX = originX; blockX < w - 4; blockX += 4) {
-        const score = tileHash32(phaseSeed, blockX, blockY);
-        const footprint = {
-          x: blockX + ((score >>> 3) & 1),
-          y: blockY + ((score >>> 4) & 1),
-          width: 2 + ((score >>> 1) & 1),
-          height: 2 + ((score >>> 2) & 1),
-          score,
-        };
-        const centerX = footprint.x + Math.floor(footprint.width / 2);
-        const centerY = footprint.y + Math.floor(footprint.height / 2);
-        if (!isClosedRoadBlock(masks.road, meta, centerX, centerY)) continue;
-        if (!footprintIsEligible(terrain, masks.road, meta, footprint)) continue;
-        phaseCandidates.push(footprint);
-      }
-    }
-    phaseCandidates.sort((left, right) => left.score - right.score || left.y - right.y || left.x - right.x);
-    candidateFootprintCount += phaseCandidates.length;
-    for (const footprint of phaseCandidates) {
-      if (buildingTileCount >= targetBuildingTileCount) break;
-      if (!footprintIsEligible(terrain, masks.road, meta, footprint)) continue;
-      for (let dy = 0; dy < footprint.height; dy += 1) {
-        for (let dx = 0; dx < footprint.width; dx += 1) {
-          terrain[(footprint.y + dy) * w + footprint.x + dx] = CITY_TILE.BUILDING;
-          buildingTileCount += 1;
-        }
-      }
-    }
+    const fillRatio = fillCount / candidates.length;
+    selectedBlockFillRatioMin = Math.min(selectedBlockFillRatioMin, fillRatio);
+    selectedBlockFillRatioMax = Math.max(selectedBlockFillRatioMax, fillRatio);
+    preservedAlleyTileCount += blockAlleyTileCount;
+    selectedBlockCount += 1;
   }
   if (buildingTileCount < targetBuildingTileCount) {
     throw new Error(`${city} building infill candidates exhausted: ${buildingTileCount} < ${targetBuildingTileCount}`);
@@ -460,7 +492,11 @@ function augmentBuildingTexture(terrain, masks, meta, city, targetBuildingTileCo
     ...initial,
     targetBuildingTileCount,
     generatedTileCount: buildingTileCount - initial.buildingTileCount,
-    candidateFootprintCount,
+    candidateBlockCount: blocks.length,
+    selectedBlockCount,
+    preservedAlleyTileCount,
+    selectedBlockFillRatioMin: Number(selectedBlockFillRatioMin.toFixed(6)),
+    selectedBlockFillRatioMax: Number(selectedBlockFillRatioMax.toFixed(6)),
   };
 }
 
@@ -570,7 +606,11 @@ export function buildKoreanCityGeo(city) {
       finalTargetBuildingTileCount,
       preNormalizationTargetBuildingTileCount: buildingTexture.targetBuildingTileCount,
       generatedTileCount: buildingTexture.generatedTileCount,
-      candidateFootprintCount: buildingTexture.candidateFootprintCount,
+      candidateBlockCount: buildingTexture.candidateBlockCount,
+      selectedBlockCount: buildingTexture.selectedBlockCount,
+      preservedAlleyTileCount: buildingTexture.preservedAlleyTileCount,
+      selectedBlockFillRatioMin: buildingTexture.selectedBlockFillRatioMin,
+      selectedBlockFillRatioMax: buildingTexture.selectedBlockFillRatioMax,
       finalLandTileCount: finalBuildingStats.landTileCount,
       finalBuildingTileCount: finalBuildingStats.buildingTileCount,
       finalLandBuildingRatio: finalBuildingStats.landBuildingRatio,
