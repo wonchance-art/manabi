@@ -1,4 +1,4 @@
-import { OVERWORLD_REGION_LIST, overworldRegionSpawn } from './overworldRegions';
+import { OVERWORLD_REGION_LIST, overworldRegionAirSpawn } from './overworldRegions';
 
 const compareCodePoint = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
 
@@ -29,7 +29,7 @@ export function overworldAirDestinations({
     ids.add(region.id);
     if (!region.releaseEligible && !includePreview) return;
 
-    const spawn = overworldRegionSpawn(region);
+    const spawn = overworldRegionAirSpawn(region);
     if (!spawn) throw new Error(`overworld air destination has no spawn: ${region.id}`);
     destinations.push(Object.freeze({
       id: region.id,
