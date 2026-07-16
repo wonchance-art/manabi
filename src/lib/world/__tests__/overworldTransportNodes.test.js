@@ -1,4 +1,7 @@
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { buildTransportNodeArtifacts } from '../../../../scripts/world/build-overworld-transport-nodes.mjs';
 import { createEquirectangularTileFrame } from '../overworldGeo.js';
@@ -10,6 +13,25 @@ import {
 
 const sha256 = (input) => createHash('sha256').update(input).digest('hex');
 const canonicalJson = (value) => new TextEncoder().encode(`${JSON.stringify(value)}\n`);
+const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
+const EMEA_NODE_DIR = path.join(
+  REPO_ROOT,
+  'public/assets/overworld/europe-mediterranean-middle-east-transport-nodes-preview-v1',
+);
+const EMEA_RAIL_DIR = path.join(
+  REPO_ROOT,
+  'public/assets/overworld/europe-mediterranean-middle-east-transport-preview-v1',
+);
+
+function distanceToSegment(point, start, end) {
+  const dx = end[0] - start[0];
+  const dy = end[1] - start[1];
+  if (dx === 0 && dy === 0) return Math.hypot(point[0] - start[0], point[1] - start[1]);
+  const t = Math.max(0, Math.min(1, (
+    (point[0] - start[0]) * dx + (point[1] - start[1]) * dy
+  ) / (dx * dx + dy * dy)));
+  return Math.hypot(point[0] - (start[0] + t * dx), point[1] - (start[1] + t * dy));
+}
 
 function baseManifest() {
   return {
@@ -137,6 +159,26 @@ describe('오버월드 교통 노드 계약', () => {
     }))).toThrow(/contentLocale/);
   });
 
+  it('유럽 철도 허브는 별도 노선 키 없이 지리·언어 앵커만 허용한다', () => {
+    const railHub = {
+      id: 'fixture-rail-hub',
+      type: 'rail-hub',
+      label: '시험 철도 허브',
+      contentLocale: 'de',
+      arrivalOffset: [0, 0],
+      lon: 1,
+      lat: 1,
+    };
+    expect(normalizeOverworldTransportNodeManifest(nodeManifest({ nodes: [railHub] })).nodes[0])
+      .toEqual(railHub);
+    expect(() => normalizeOverworldTransportNodeManifest(nodeManifest({
+      nodes: [{ ...railHub, routeId: 'invented' }],
+    }))).toThrow(/exactly/);
+    expect(() => normalizeOverworldTransportNodeManifest(nodeManifest({
+      nodes: [{ ...railHub, arrivalOffset: [0.5, 0] }],
+    }))).toThrow(/arrivalOffset/);
+  });
+
   it('같은 manifest에서 byte-identical 노드 인덱스를 만든다', () => {
     const manifest = nodeManifest();
     const manifestBytes = canonicalJson(manifest);
@@ -159,6 +201,56 @@ describe('오버월드 교통 노드 계약', () => {
     const second = buildTransportNodeArtifacts(args);
     expect(first.map(({ path }) => path)).toEqual(second.map(({ path }) => path));
     expect(first.map(({ bytes }) => sha256(bytes))).toEqual(second.map(({ bytes }) => sha256(bytes)));
+  });
+
+  it('체크인된 유럽 7개 철도 허브가 보행 셀과 철도 오버레이를 함께 따른다', () => {
+    const nodeContent = JSON.parse(readFileSync(path.join(EMEA_NODE_DIR, 'content-manifest.json'), 'utf8'));
+    const railContent = JSON.parse(readFileSync(path.join(EMEA_RAIL_DIR, 'content-manifest.json'), 'utf8'));
+    const nodes = nodeContent.nodes.flatMap((entry) => (
+      JSON.parse(readFileSync(path.join(EMEA_NODE_DIR, entry.path), 'utf8')).nodes
+    ));
+    const hubs = nodes.filter(({ type }) => type === 'rail-hub');
+    expect(hubs.map(({ id }) => id).sort()).toEqual([
+      'berlin-rail-hub',
+      'istanbul-rail-hub',
+      'london-rail-hub',
+      'madrid-rail-hub',
+      'paris-rail-hub',
+      'rome-rail-hub',
+      'vienna-rail-hub',
+    ]);
+    expect(JSON.parse(readFileSync(path.join(EMEA_NODE_DIR, 'build-report.json'), 'utf8')))
+      .toEqual({
+        releaseEligible: false,
+        nodeCount: 9,
+        chunkCount: 6,
+        nodeTypes: ['air-gate', 'rail-hub', 'transsib-gate'],
+      });
+
+    const quantization = railContent.railRules.quantization;
+    for (const hub of hubs) {
+      const [x, y] = hub.tile;
+      const railPath = `rail/${Math.floor(x / 256)}/${Math.floor(y / 256)}.json`;
+      expect(railContent.overlays.some(({ path: entry }) => entry === railPath), hub.id).toBe(true);
+      const overlay = JSON.parse(readFileSync(path.join(EMEA_RAIL_DIR, railPath), 'utf8'));
+      const point = [x * quantization, y * quantization];
+      const nearest = Math.min(...overlay.segments.map(({ start, end }) => (
+        distanceToSegment(point, start, end) / quantization
+      )));
+      expect(nearest, hub.id).toBeLessThan(2);
+      expect(Object.isFrozen(normalizeOverworldTransportNodeDocument({
+        formatVersion: 2,
+        kind: 'transport-nodes',
+        cx: Math.floor(x / 256),
+        cy: Math.floor(y / 256),
+        nodes: [hub],
+      }, {
+        cx: Math.floor(x / 256),
+        cy: Math.floor(y / 256),
+        width: nodeContent.width,
+        height: nodeContent.height,
+      }).nodes[0].arrivalOffset)).toBe(true);
+    }
   });
 });
 

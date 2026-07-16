@@ -40,8 +40,8 @@ export function cityMapMarkers(city) {
   ]);
 }
 
-export function overworldRegionMarkers(region) {
-  return [region?.gate, region?.airGate].filter((gate) => (
+export function overworldRegionMarkers(region, worldNodes = [], transportNodes = []) {
+  const gates = [region?.gate, region?.airGate].filter((gate) => (
     gate && Number.isFinite(gate.tile?.x) && Number.isFinite(gate.tile?.y)
   )).map((gate) => ({
     id: `gate:${gate.id}`,
@@ -50,4 +50,14 @@ export function overworldRegionMarkers(region) {
     x: gate.tile.x,
     y: gate.tile.y,
   }));
+  const migratedNodes = (Array.isArray(worldNodes) ? worldNodes : [])
+    .filter((node) => node?.regionId === region?.id && !node.city)
+    .map((node) => ({ ...node, tile: node.overworldTile }));
+  return [
+    ...gates,
+    ...uniqueMarkers([
+      ['transport', transportNodes],
+      ['world-node', migratedNodes],
+    ]),
+  ];
 }

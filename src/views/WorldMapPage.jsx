@@ -14,6 +14,7 @@ import { WORLD_NODES } from '../components/world/worldNodes';
 import { CITY_MAPS } from '../components/world/cities/index.js';
 import { unproject, isCoastTile, buildPlayableGrid } from '../lib/world/mapGeo';
 import { cityMapMarkers, overworldRegionMarkers, worldMapMarkers } from '../lib/world/mapViewer';
+import { EMEA_RAIL_NETWORK } from '../lib/world/emeaRail';
 import { OVERWORLD_REGION_LIST, unprojectOverworldRegionTile } from '../lib/world/overworldRegions';
 
 // 타일당 화면 px — 줌 4단계(×1~×4, 2px 기준 정수 배).
@@ -228,7 +229,10 @@ export default function WorldMapPage() {
 
   const nodes = useMemo(() => {
     if (activeMap.kind === 'world') return worldMapMarkers(WORLD_NODES);
-    if (activeMap.kind === 'overworld') return overworldRegionMarkers(activeMap.region);
+    if (activeMap.kind === 'overworld') {
+      const transportNodes = activeMap.region.id === 'emea' ? EMEA_RAIL_NETWORK.hubs : [];
+      return overworldRegionMarkers(activeMap.region, WORLD_NODES, transportNodes);
+    }
     return cityMapMarkers(activeMap.city);
   }, [activeMap]);
 
@@ -484,6 +488,20 @@ export default function WorldMapPage() {
           </span>
         ))}
       </div>
+
+      {activeMap.kind === 'overworld' && activeMap.region.boundaryNotice && (
+        <p
+          role="note"
+          style={{
+            margin: 0, padding: '8px 10px', borderRadius: 6,
+            border: '1px solid var(--border-color, rgba(128,128,128,0.3))',
+            background: 'var(--bg-secondary, rgba(128,128,128,0.08))',
+            color: 'var(--text-muted)', fontSize: '0.72rem', lineHeight: 1.5,
+          }}
+        >
+          경계 표기 안내 · {activeMap.region.boundaryNotice}
+        </p>
+      )}
 
       {/* 하단 정보 바 — 좌표/위경도 역산 + 범례 */}
       <div style={{
