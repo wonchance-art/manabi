@@ -97,6 +97,54 @@ const CITY_CONFIG = Object.freeze({
       { id: 'jamsil', nameKo: '잠실역', lat: 37.5133, lon: 127.1000, line: '수도권 전철 2·8호선' },
     ]),
   }),
+  'grand-paris': Object.freeze({
+    bbox: Object.freeze([2.10, 48.78, 2.47, 48.94]),
+    snapshot: new URL('./data/grand-paris-osm-v21.json', import.meta.url),
+    output: '../src/components/world/cities/grand-paris.geo.js',
+    exportName: 'GRAND_PARIS_GEO',
+    mainStationId: 'gare-du-nord',
+    contentLocale: 'fr',
+    nameField: 'nameFr',
+    finalBuildingRatioRange: Object.freeze([0.14, 0.17]),
+    buildingDatasetProbe: Object.freeze({
+      provider: 'OpenStreetMap', datasetId: 'building=*', checkedAt: '2026-07-16',
+      outcome: 'fixed-offline-snapshot',
+    }),
+    pois: Object.freeze([
+      { id: 'eiffel-tower', nameFr: 'Tour Eiffel', lat: 48.8584, lon: 2.2945, kind: 'landmark' },
+      { id: 'louvre', nameFr: 'Musée du Louvre', lat: 48.8606, lon: 2.3364, kind: 'museum' },
+      { id: 'notre-dame', nameFr: 'Cathédrale Notre-Dame de Paris', lat: 48.8530, lon: 2.3499, kind: 'historic' },
+      { id: 'arc-de-triomphe', nameFr: 'Arc de Triomphe', lat: 48.8738, lon: 2.2950, kind: 'landmark' },
+      { id: 'champs-elysees', nameFr: 'Avenue des Champs-Élysées', lat: 48.8698, lon: 2.3077, kind: 'district' },
+      { id: 'sacre-coeur', nameFr: 'Basilique du Sacré-Cœur', lat: 48.8867, lon: 2.3431, kind: 'historic' },
+      { id: 'musee-orsay', nameFr: "Musée d'Orsay", lat: 48.8600, lon: 2.3266, kind: 'museum' },
+      { id: 'pompidou', nameFr: 'Centre Pompidou', lat: 48.8607, lon: 2.3522, kind: 'museum' },
+      { id: 'luxembourg', nameFr: 'Jardin du Luxembourg', lat: 48.8462, lon: 2.3372, kind: 'park' },
+      { id: 'pantheon', nameFr: 'Panthéon', lat: 48.8462, lon: 2.3462, kind: 'historic' },
+      { id: 'invalides', nameFr: 'Hôtel des Invalides', lat: 48.8560, lon: 2.3126, kind: 'historic' },
+      { id: 'concorde', nameFr: 'Place de la Concorde', lat: 48.8656, lon: 2.3212, kind: 'plaza' },
+      { id: 'opera-garnier', nameFr: 'Palais Garnier', lat: 48.8720, lon: 2.3316, kind: 'landmark' },
+      { id: 'pont-neuf', nameFr: 'Pont Neuf', lat: 48.8567, lon: 2.3413, kind: 'bridge-landmark' },
+      { id: 'marais', nameFr: 'Le Marais', lat: 48.8575, lon: 2.3610, kind: 'district' },
+      { id: 'quartier-latin', nameFr: 'Quartier latin', lat: 48.8500, lon: 2.3430, kind: 'district' },
+      { id: 'montparnasse-tower', nameFr: 'Tour Montparnasse', lat: 48.8422, lon: 2.3219, kind: 'landmark' },
+      { id: 'versailles', nameFr: 'Château de Versailles', lat: 48.8049, lon: 2.1204, kind: 'historic' },
+      { id: 'grande-arche', nameFr: 'Grande Arche de la Défense', lat: 48.8925, lon: 2.2360, kind: 'landmark' },
+      { id: 'saint-denis-basilica', nameFr: 'Basilique cathédrale de Saint-Denis', lat: 48.9354, lon: 2.3599, kind: 'historic' },
+      { id: 'bois-de-boulogne', nameFr: 'Bois de Boulogne', lat: 48.8620, lon: 2.2530, kind: 'park' },
+      { id: 'vincennes', nameFr: 'Château de Vincennes', lat: 48.8420, lon: 2.4358, kind: 'historic' },
+    ]),
+    stations: Object.freeze([
+      { id: 'gare-du-nord', nameFr: 'Gare du Nord', lat: 48.8809, lon: 2.3553, line: 'RER B·D · Transilien' },
+      { id: 'gare-de-lyon', nameFr: 'Gare de Lyon', lat: 48.8443, lon: 2.3734, line: 'RER A·D · Transilien' },
+      { id: 'montparnasse', nameFr: 'Gare Montparnasse', lat: 48.8404, lon: 2.3219, line: 'Transilien' },
+      { id: 'saint-lazare', nameFr: 'Gare Saint-Lazare', lat: 48.8764, lon: 2.3254, line: 'Transilien' },
+      { id: 'gare-de-l-est', nameFr: "Gare de l'Est", lat: 48.8768, lon: 2.3590, line: 'Transilien' },
+      { id: 'chatelet', nameFr: 'Châtelet–Les Halles', lat: 48.8586, lon: 2.3467, line: 'RER A·B·D' },
+      { id: 'la-defense', nameFr: 'La Défense', lat: 48.8918, lon: 2.2380, line: 'RER A · Transilien' },
+      { id: 'versailles-rive-gauche', nameFr: 'Versailles Château Rive Gauche', lat: 48.7996, lon: 2.1290, line: 'RER C' },
+    ]),
+  }),
 });
 
 function webMercatorMeters(lon, lat) {
@@ -605,13 +653,17 @@ export function buildKoreanCityGeo(city) {
   );
   normalizeCityTerrain(terrain, protectedEntries, mainStation, entrance, exitTiles, baseMeta, city);
   const finalBuildingStats = terrainBuildingStats(terrain);
-  if (finalBuildingStats.landBuildingRatio < 0.09 || finalBuildingStats.landBuildingRatio > 0.11) {
-    throw new Error(`${city} final land/building ratio outside 10%±1pp gate: ${finalBuildingStats.landBuildingRatio}`);
+  const finalBuildingRatioRange = config.finalBuildingRatioRange ?? [0.09, 0.11];
+  if (finalBuildingStats.landBuildingRatio < finalBuildingRatioRange[0]
+    || finalBuildingStats.landBuildingRatio > finalBuildingRatioRange[1]) {
+    throw new Error(`${city} final land/building ratio outside ${finalBuildingRatioRange.join('..')} gate: ${finalBuildingStats.landBuildingRatio}`);
   }
   const meta = Object.freeze({
     ...baseMeta,
     buildingTexture: Object.freeze({
       ...BUILDING_TEXTURE_CONTRACT,
+      ...(config.buildingDatasetProbe ? { publicDatasetProbe: config.buildingDatasetProbe } : {}),
+      ...(config.finalBuildingRatioRange ? { finalRatioRange: finalBuildingRatioRange } : {}),
       seed: `${BUILDING_TEXTURE_CONTRACT.seedNamespace}:${city}`,
       initialLandBuildingRatio: buildingTexture.landBuildingRatio,
       baselineNormalizationBuildingTiles,
@@ -656,6 +708,6 @@ export function writeKoreanCityGeo(city) {
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const cityIndex = process.argv.indexOf('--city');
-  if (cityIndex < 0 || !process.argv[cityIndex + 1]) throw new Error('Usage: node scripts/build-korean-city-geo.mjs --city <busan|seoul>');
+  if (cityIndex < 0 || !process.argv[cityIndex + 1]) throw new Error('Usage: node scripts/build-korean-city-geo.mjs --city <busan|seoul|grand-paris>');
   console.log(JSON.stringify(writeKoreanCityGeo(process.argv[cityIndex + 1])));
 }
