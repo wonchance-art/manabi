@@ -6,6 +6,19 @@ import { CITY_TILE, isCityBlocked } from '../src/components/world/cities/terrain
 const EARTH_RADIUS = 6378137;
 const DEG = Math.PI / 180;
 const METERS_PER_TILE = 20;
+const BUILDING_TEXTURE_CONTRACT = Object.freeze({
+  method: 'deterministic-road-block-infill',
+  version: 1,
+  targetLandRatio: 0.10,
+  blockSearchRadiusTiles: 20,
+  seedNamespace: 'manabi-korean-city-buildings-v1',
+  publicDatasetProbe: Object.freeze({
+    provider: 'MOLIT VWorld',
+    datasetId: '30162',
+    checkedAt: '2026-07-16',
+    outcome: 'login-and-desktop-downloader-required',
+  }),
+});
 const CITY_CONFIG = Object.freeze({
   busan: Object.freeze({
     bbox: Object.freeze([128.89, 35.04, 129.18, 35.24]),
@@ -288,6 +301,126 @@ function applySnapshotMasks(grid, snapshot, meta) {
     const index = y * meta.grid.w + x;
     if (masks.road[index] >= 2 && grid[index] === CITY_TILE.ROAD) grid[index] = CITY_TILE.CROSSWALK;
   }
+  return masks;
+}
+
+function hashString32(value) {
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193);
+  }
+  return hash >>> 0;
+}
+
+function tileHash32(seed, x, y) {
+  let hash = seed ^ Math.imul(x + 1, 0x9e3779b1) ^ Math.imul(y + 1, 0x85ebca6b);
+  hash ^= hash >>> 16;
+  hash = Math.imul(hash, 0x7feb352d);
+  hash ^= hash >>> 15;
+  hash = Math.imul(hash, 0x846ca68b);
+  hash ^= hash >>> 16;
+  return hash >>> 0;
+}
+
+function terrainBuildingStats(terrain) {
+  let landTileCount = 0;
+  let buildingTileCount = 0;
+  for (const code of terrain) {
+    if (code === CITY_TILE.WATER || code === CITY_TILE.RIVER) continue;
+    landTileCount += 1;
+    if (code === CITY_TILE.BUILDING) buildingTileCount += 1;
+  }
+  return {
+    landTileCount,
+    buildingTileCount,
+    landBuildingRatio: Number((buildingTileCount / landTileCount).toFixed(6)),
+  };
+}
+
+function hasRoadInDirection(roadMask, meta, x, y, dx, dy, maxDistance) {
+  const { w, h } = meta.grid;
+  for (let distance = 2; distance <= maxDistance; distance += 1) {
+    for (let offset = -1; offset <= 1; offset += 1) {
+      const nx = x + dx * distance + (dy === 0 ? 0 : offset);
+      const ny = y + dy * distance + (dx === 0 ? 0 : offset);
+      if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+      if (roadMask[ny * w + nx]) return true;
+    }
+  }
+  return false;
+}
+
+function isClosedRoadBlock(roadMask, meta, x, y) {
+  const radius = BUILDING_TEXTURE_CONTRACT.blockSearchRadiusTiles;
+  return hasRoadInDirection(roadMask, meta, x, y, -1, 0, radius)
+    && hasRoadInDirection(roadMask, meta, x, y, 1, 0, radius)
+    && hasRoadInDirection(roadMask, meta, x, y, 0, -1, radius)
+    && hasRoadInDirection(roadMask, meta, x, y, 0, 1, radius);
+}
+
+function footprintIsEligible(terrain, roadMask, meta, footprint) {
+  const { w } = meta.grid;
+  for (let dy = 0; dy < footprint.height; dy += 1) {
+    for (let dx = 0; dx < footprint.width; dx += 1) {
+      const index = (footprint.y + dy) * w + footprint.x + dx;
+      if (terrain[index] !== CITY_TILE.SIDEWALK || roadMask[index]) return false;
+    }
+  }
+  return true;
+}
+
+function augmentBuildingTexture(terrain, masks, meta, city) {
+  const initial = terrainBuildingStats(terrain);
+  const targetBuildingTileCount = Math.ceil(
+    initial.landTileCount * BUILDING_TEXTURE_CONTRACT.targetLandRatio,
+  );
+  if (initial.buildingTileCount >= targetBuildingTileCount) {
+    return { ...initial, targetBuildingTileCount, generatedTileCount: 0, candidateFootprintCount: 0 };
+  }
+
+  const seed = hashString32(`${BUILDING_TEXTURE_CONTRACT.seedNamespace}:${city}`);
+  const candidates = [];
+  const { w, h } = meta.grid;
+  for (let blockY = 2; blockY < h - 4; blockY += 4) {
+    for (let blockX = 2; blockX < w - 4; blockX += 4) {
+      const score = tileHash32(seed, blockX, blockY);
+      const footprint = {
+        x: blockX + ((score >>> 3) & 1),
+        y: blockY + ((score >>> 4) & 1),
+        width: 2 + ((score >>> 1) & 1),
+        height: 2 + ((score >>> 2) & 1),
+        score,
+      };
+      const centerX = footprint.x + Math.floor(footprint.width / 2);
+      const centerY = footprint.y + Math.floor(footprint.height / 2);
+      if (!isClosedRoadBlock(masks.road, meta, centerX, centerY)) continue;
+      if (!footprintIsEligible(terrain, masks.road, meta, footprint)) continue;
+      candidates.push(footprint);
+    }
+  }
+  candidates.sort((left, right) => left.score - right.score || left.y - right.y || left.x - right.x);
+
+  let buildingTileCount = initial.buildingTileCount;
+  for (const footprint of candidates) {
+    if (buildingTileCount >= targetBuildingTileCount) break;
+    if (!footprintIsEligible(terrain, masks.road, meta, footprint)) continue;
+    for (let dy = 0; dy < footprint.height; dy += 1) {
+      for (let dx = 0; dx < footprint.width; dx += 1) {
+        terrain[(footprint.y + dy) * w + footprint.x + dx] = CITY_TILE.BUILDING;
+        buildingTileCount += 1;
+      }
+    }
+  }
+  if (buildingTileCount < targetBuildingTileCount) {
+    throw new Error(`${city} building infill candidates exhausted: ${buildingTileCount} < ${targetBuildingTileCount}`);
+  }
+  return {
+    ...initial,
+    targetBuildingTileCount,
+    generatedTileCount: buildingTileCount - initial.buildingTileCount,
+    candidateFootprintCount: candidates.length,
+  };
 }
 
 function withTile(entry, meta, metrics) {
@@ -305,7 +438,7 @@ export function buildKoreanCityGeo(city) {
   if (!config) throw new Error(`Unknown city: ${city}`);
   const snapshot = JSON.parse(fs.readFileSync(config.snapshot, 'utf8'));
   const metrics = projectionMetrics(config.bbox);
-  const meta = Object.freeze({
+  const baseMeta = Object.freeze({
     city,
     bbox: config.bbox,
     grid: Object.freeze(metrics.grid),
@@ -316,21 +449,37 @@ export function buildKoreanCityGeo(city) {
     schema: Object.freeze({ nameField: 'nameKo', localeSlots: 'central-lookup-expandable' }),
     source: Object.freeze({ ...snapshot.source }),
   });
-  if (JSON.stringify(snapshot.bbox) !== JSON.stringify(meta.bbox) || snapshot.grid.w !== meta.grid.w || snapshot.grid.h !== meta.grid.h) {
+  if (JSON.stringify(snapshot.bbox) !== JSON.stringify(baseMeta.bbox) || snapshot.grid.w !== baseMeta.grid.w || snapshot.grid.h !== baseMeta.grid.h) {
     throw new Error(`${city} OSM snapshot projection contract mismatch`);
   }
-  const pois = config.pois.map((entry) => withTile(entry, meta, metrics));
-  const stations = config.stations.map((entry) => withTile(entry, meta, metrics));
+  const pois = config.pois.map((entry) => withTile(entry, baseMeta, metrics));
+  const stations = config.stations.map((entry) => withTile(entry, baseMeta, metrics));
   const mainStation = stations.find((entry) => entry.id === config.mainStationId);
   const entrance = { x: mainStation.tile[0], y: mainStation.tile[1], facing: 'down' };
   const exitTiles = [[entrance.x, entrance.y - 10], [entrance.x, entrance.y - 9]];
-  const terrain = new Uint8Array(meta.grid.w * meta.grid.h).fill(CITY_TILE.SIDEWALK);
-  applySnapshotMasks(terrain, snapshot, meta);
+  const terrain = new Uint8Array(baseMeta.grid.w * baseMeta.grid.h).fill(CITY_TILE.SIDEWALK);
+  const masks = applySnapshotMasks(terrain, snapshot, baseMeta);
+  const buildingTexture = augmentBuildingTexture(terrain, masks, baseMeta, city);
   const protectedEntries = [...pois, ...stations];
-  for (const entry of protectedEntries) ensureWalkableAnchor(terrain, entry.tile, meta);
-  for (let y = exitTiles[0][1]; y <= entrance.y; y += 1) terrain[y * meta.grid.w + entrance.x] = CITY_TILE.ROAD;
-  normalizeWalkableComponents(terrain, protectedEntries.map((entry) => entry.tile), mainStation.tile, meta, city);
-  for (const entry of protectedEntries) ensureWalkableAnchor(terrain, entry.tile, meta);
+  for (const entry of protectedEntries) ensureWalkableAnchor(terrain, entry.tile, baseMeta);
+  for (let y = exitTiles[0][1]; y <= entrance.y; y += 1) terrain[y * baseMeta.grid.w + entrance.x] = CITY_TILE.ROAD;
+  normalizeWalkableComponents(terrain, protectedEntries.map((entry) => entry.tile), mainStation.tile, baseMeta, city);
+  for (const entry of protectedEntries) ensureWalkableAnchor(terrain, entry.tile, baseMeta);
+  const finalBuildingStats = terrainBuildingStats(terrain);
+  const meta = Object.freeze({
+    ...baseMeta,
+    buildingTexture: Object.freeze({
+      ...BUILDING_TEXTURE_CONTRACT,
+      seed: `${BUILDING_TEXTURE_CONTRACT.seedNamespace}:${city}`,
+      initialLandBuildingRatio: buildingTexture.landBuildingRatio,
+      targetBuildingTileCount: buildingTexture.targetBuildingTileCount,
+      generatedTileCount: buildingTexture.generatedTileCount,
+      candidateFootprintCount: buildingTexture.candidateFootprintCount,
+      finalLandTileCount: finalBuildingStats.landTileCount,
+      finalBuildingTileCount: finalBuildingStats.buildingTileCount,
+      finalLandBuildingRatio: finalBuildingStats.landBuildingRatio,
+    }),
+  });
   const railwayMask = decodeTerrainRle(snapshot.railwayRle, terrain.length);
   return {
     meta, terrain, pois, stations, entrance, exitTiles,
