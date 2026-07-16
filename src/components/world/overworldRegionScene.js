@@ -31,6 +31,7 @@ import {
   tonePalette,
 } from './sprites';
 import bus from './bus';
+import { overworldRegionAvatarPrefix } from './avatarRebake';
 
 const TILE = 32;
 const TEXTURE_TILE = 16;
@@ -70,7 +71,7 @@ const terrainTextureKey = ({ surface, globalX, globalY, valid }) => {
 export function buildOverworldRegionScene(Phaser, region, ctx) {
   const worldWidth = region.width * TILE;
   const worldHeight = region.height * TILE;
-  const avatarPrefix = `region_pc_${region.id.replace(/[^a-z0-9]/g, '_')}`;
+  const avatarPrefix = overworldRegionAvatarPrefix(region.id); // avatarRebake.js 공유 계약과 단일 소스
   const railGateTexture = `region_rail_gate_${region.id}`;
   const airGateTexture = `region_air_gate_${region.id}`;
   const worldNodeTexture = `region_world_node_${region.id}`;
@@ -89,7 +90,7 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
 
     preload() {
       this.mode = 'day';
-      ensureAvatarCharSet(this, avatarPrefix, tonePalette(avatarPalette(ctx.avatarRef?.current), this.mode));
+      ensureAvatarCharSet(this, avatarPrefix, tonePalette(avatarPalette(ctx.avatarRef?.current), this.mode), { shape: ctx.avatarRef?.current });
       if (!this.textures.exists(railGateTexture)) {
         const gate = this.make.graphics({ add: false });
         gate.fillStyle(toneColor(0x3b2e2a, this.mode), 1).fillRect(2, 4, 12, 12);

@@ -102,7 +102,8 @@ describe('출입구 세로 회랑', () => {
 describe('geo POI·山手線 fast-travel 배선', () => {
   it('POI를 노드 또는 중복 없는 品川駅 마커로 모두 배선한다', () => {
     const represented = new Set([
-      ...CITY_NODES.map((node) => node.id),
+      // NPC 대화 노드는 geo POI 가 아니라 가공 무대 — geo 대표성 집합에서 제외.
+      ...CITY_NODES.filter((node) => node.kind !== 'npc').map((node) => node.id),
       ...STATIONS.map((station) => station.poiId).filter(Boolean),
     ]);
     expect(represented).toEqual(new Set(TOKYO_GEO.pois.map((poi) => poi.id)));
@@ -111,12 +112,25 @@ describe('geo POI·山手線 fast-travel 배선', () => {
   });
 
   it('모든 POI 노드는 geo tile을 그대로 쓰고 설명·요미를 갖는다', () => {
-    for (const node of CITY_NODES) {
+    // geo 1:1 계약은 spot 노드에만 — NPC 대화 노드(가공 무대)는 아래 별도 케이스에서 검증한다.
+    for (const node of CITY_NODES.filter((entry) => entry.kind !== 'npc')) {
       const source = TOKYO_GEO.pois.find((poi) => poi.id === node.id);
       expect(source).toBeTruthy();
       expect(node.tile).toEqual(source.tile);
       expect(node.name).toBe(source.nameJa);
       expect(node.desc.replaceAll(' ', '')).toContain(source.yomi);
+      expect(node.noStamp).toBe(true);
+      expect(isCityWalkable(at(node.tile[0], node.tile[1]))).toBe(true);
+      expect(adjacentWalkable(node.tile[0], node.tile[1])).toBe(true);
+    }
+  });
+
+  it('NPC 노드는 스크립트 키·챕터를 갖고 보행 가능 타일에 선다(스탬프 미대상)', () => {
+    const npcs = CITY_NODES.filter((node) => node.kind === 'npc');
+    expect(npcs.map((node) => node.id)).toEqual(['tokyo-ekiin', 'tokyo-menzei', 'tokyo-konbini']);
+    for (const node of npcs) {
+      expect(typeof node.npc).toBe('string');
+      expect(node.chapter).toMatch(/^ot-\d{2}-/);
       expect(node.noStamp).toBe(true);
       expect(isCityWalkable(at(node.tile[0], node.tile[1]))).toBe(true);
       expect(adjacentWalkable(node.tile[0], node.tile[1])).toBe(true);

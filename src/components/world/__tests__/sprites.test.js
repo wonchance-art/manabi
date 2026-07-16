@@ -10,7 +10,7 @@ import {
   GOURMET_PAL, gourmetMarkerRows,
   ensureAvatarCharSet,
 } from '../sprites.js';
-import { avatarPalette, DEFAULT_AVATAR } from '../../../lib/world/avatar.js';
+import { AVATAR_OPTIONS, avatarPalette, DEFAULT_AVATAR } from '../../../lib/world/avatar.js';
 
 // 픽셀맵 무결성 — GameCanvas는 클라 전용(Phaser)이라 단위테스트가 어렵다.
 // 여기선 "텍스처로 굽기 전" 픽셀맵 데이터가 규격 크기이고 미정의 색문자가 0임을 보장한다.
@@ -36,6 +36,62 @@ describe('캐릭터 픽셀맵 (16×16 한 칸, 4방향×걷기 3패턴)', () => 
       });
     }
   }
+
+  // 실루엣 조합(스타일 4 × 의상 3 × 소품 4) 전수 — 모든 방향·포즈가 규격 유지.
+  for (const style of AVATAR_OPTIONS.style) {
+    for (const outfit of AVATAR_OPTIONS.outfit) {
+      for (const acc of AVATAR_OPTIONS.acc) {
+        it(`실루엣 ${style.id}/${outfit.id}/${acc.id} — 전 방향·포즈 16×16, 정의된 색문자만`, () => {
+          const shape = { style: style.id, outfit: outfit.id, acc: acc.id };
+          for (const dir of CHAR_DIRS) {
+            for (const pose of CHAR_POSES) {
+              const rows = charFrameRows(dir, pose, shape);
+              expect(rows).toHaveLength(CHAR_H);
+              for (const row of rows) {
+                expect(row).toHaveLength(CHAR_W);
+                for (const ch of row) expect(CHAR_CHARS.has(ch)).toBe(true);
+              }
+            }
+          }
+        });
+      }
+    }
+  }
+
+  it('실루엣 그룹은 실제로 도트를 바꾼다(스타일·의상·소품 각각)', () => {
+    const base = charFrameRows('down', 'n').join('\n');
+    for (const style of AVATAR_OPTIONS.style.slice(1)) {
+      expect(charFrameRows('down', 'n', { style: style.id }).join('\n')).not.toBe(base);
+    }
+    for (const outfit of AVATAR_OPTIONS.outfit.slice(1)) {
+      expect(charFrameRows('down', 'n', { outfit: outfit.id }).join('\n')).not.toBe(base);
+    }
+    for (const acc of AVATAR_OPTIONS.acc.slice(1)) {
+      expect(charFrameRows('down', 'n', { acc: acc.id }).join('\n')).not.toBe(base);
+    }
+  });
+
+  it('안경은 눈(O)을 가리지 않고 렌즈 프레임(G)으로 감싼다', () => {
+    for (const style of AVATAR_OPTIONS.style) {
+      const eyeRow = charFrameRows('down', 'n', { style: style.id, acc: 'glasses' })[6];
+      expect(eyeRow[6]).toBe('O');
+      expect(eyeRow[9]).toBe('O');
+      expect(eyeRow).toContain('G');
+      const sideRow = charFrameRows('side', 'n', { style: style.id, acc: 'glasses' })[6];
+      expect(sideRow[4]).toBe('O');
+      expect(sideRow).toContain('G');
+    }
+  });
+
+  it('shape 미지정은 v1 기본 실루엣과 동일(NPC·원격 폴백 불변)', () => {
+    for (const dir of CHAR_DIRS) {
+      for (const pose of CHAR_POSES) {
+        expect(charFrameRows(dir, pose)).toEqual(
+          charFrameRows(dir, pose, { style: 'cap', outfit: 'tee', acc: 'none' }),
+        );
+      }
+    }
+  });
 
   it('로컬/원격 팔레트는 셔츠색(B)만 다르다', () => {
     const { B: bl, ...restL } = CHAR_PAL_LOCAL;

@@ -32,16 +32,30 @@ const POI_DESC = {
   shitennoji: '쇼토쿠 태자가 593년에 세운 것으로 전해지는 사찰 「四天王寺」(してんのうじ). 중문·오중탑·금당·강당이 일직선으로 늘어서는 가람배치로 유명해요.',
 };
 
-export const CITY_NODES = OSAKA_GEO.pois.map((poi) => ({
-  id: poi.id,
-  kind: 'spot',
-  name: poi.nameJa,
-  facade: POI_FACADE[poi.id] || 'sign',
-  tile: [poi.tile[0], poi.tile[1]],
-  facing: 'down',
-  noStamp: true,
-  desc: POI_DESC[poi.id] || `오사카의 대표 장소 「${poi.nameJa}」(${poi.yomi}). 실제 지도 위치를 따라 걸어가 볼 수 있어요.`,
-}));
+export const CITY_NODES = [
+  ...OSAKA_GEO.pois.map((poi) => ({
+    id: poi.id,
+    kind: 'spot',
+    name: poi.nameJa,
+    facade: POI_FACADE[poi.id] || 'sign',
+    tile: [poi.tile[0], poi.tile[1]],
+    facing: 'down',
+    noStamp: true,
+    desc: POI_DESC[poi.id] || `오사카의 대표 장소 「${poi.nameJa}」(${poi.yomi}). 실제 지도 위치를 따라 걸어가 볼 수 있어요.`,
+  })),
+  // ── NPC 대화 노드(가공 무대 — geo POI 아님) — 후쿠오카 패턴 재사용(스크립트는 도시 불문 제네릭).
+  //   타일은 보행+보행인접+기존 마커 Chebyshev ≥3 이격을 스크립트로 검증해 고정.
+  {
+    id: 'osaka-izakaya', kind: 'npc', npc: 'izakaya', chapter: 'ot-08-izakaya', name: '居酒屋',
+    tile: [437, 366], facing: 'down', noStamp: true,
+    desc: '도톤보리 골목의 이자카야(居酒屋). 안 시켜도 나오는 유료 기본 안주 お通し(오토시)와 첫 주문 「とりあえず生で」를 써 볼 곳이에요.',
+  },
+  {
+    id: 'osaka-konbini', kind: 'npc', npc: 'konbini', chapter: 'ot-07-konbini', name: 'コンビニ',
+    tile: [469, 385], facing: 'down', noStamp: true,
+    desc: '黒門市場 곁 24시간 편의점(コンビニ). 계산대 대답은 딱 두 개 — お願いします(네)·大丈夫です(됐어요).',
+  },
+];
 
 export const STATIONS = OSAKA_GEO.stations.map((station) => ({
   id: station.id,

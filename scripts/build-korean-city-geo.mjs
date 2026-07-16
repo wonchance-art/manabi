@@ -6,6 +6,12 @@ import { CITY_TILE, isCityBlocked } from '../src/components/world/cities/terrain
 const EARTH_RADIUS = 6378137;
 const DEG = Math.PI / 180;
 const DEFAULT_METERS_PER_TILE = 20;
+const CARDINAL = Object.freeze([[1, 0], [-1, 0], [0, 1], [0, -1]]);
+const KOREAN_BRIDGE_CONTRACT = Object.freeze({
+  method: 'korea-bridge-three-way-v1',
+  roadRule: 'two-land-contact-components-or-road-contact',
+  absorptionRule: 'river-before-water',
+});
 const BUILDING_TEXTURE_CONTRACT = Object.freeze({
   method: 'deterministic-road-block-infill',
   version: 2,
@@ -366,6 +372,112 @@ function applySnapshotMasks(grid, snapshot, meta) {
   return masks;
 }
 
+function isBridgeLandContact(code) {
+  return code !== CITY_TILE.WATER
+    && code !== CITY_TILE.RIVER
+    && code !== CITY_TILE.BUILDING
+    && code !== CITY_TILE.ISLAND
+    && code !== CITY_TILE.MOUNTAIN
+    && code !== CITY_TILE.BRIDGE;
+}
+
+function contactComponentCount(contacts, width, height) {
+  const remaining = new Set(contacts);
+  let components = 0;
+  while (remaining.size > 0) {
+    components += 1;
+    const start = remaining.values().next().value;
+    remaining.delete(start);
+    const queue = [start];
+    for (let head = 0; head < queue.length; head += 1) {
+      const index = queue[head];
+      const x = index % width;
+      const y = Math.floor(index / width);
+      for (const [dx, dy] of CARDINAL) {
+        const nx = x + dx;
+        const ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= width || ny >= height) continue;
+        const next = ny * width + nx;
+        if (!remaining.delete(next)) continue;
+        queue.push(next);
+      }
+    }
+  }
+  return components;
+}
+
+export function normalizeKoreanBridgeTerrain(sourceTerrain, meta) {
+  const terrain = sourceTerrain.slice();
+  const { w: width, h: height } = meta.grid;
+  const seen = new Uint8Array(terrain.length);
+  const report = {
+    ...KOREAN_BRIDGE_CONTRACT,
+    sourceBridgeTileCount: 0,
+    componentCount: 0,
+    roadComponentCount: 0,
+    absorbedComponentCount: 0,
+    roadTileCount: 0,
+    absorbedWaterTileCount: 0,
+    absorbedRiverTileCount: 0,
+    finalBridgeTileCount: 0,
+  };
+
+  for (let start = 0; start < terrain.length; start += 1) {
+    if (terrain[start] !== CITY_TILE.BRIDGE || seen[start]) continue;
+    report.componentCount += 1;
+    const component = [start];
+    const landContacts = new Set();
+    seen[start] = 1;
+    let roadContacts = 0;
+    let riverContacts = 0;
+    for (let head = 0; head < component.length; head += 1) {
+      const index = component[head];
+      const x = index % width;
+      const y = Math.floor(index / width);
+      for (const [dx, dy] of CARDINAL) {
+        const nx = x + dx;
+        const ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= width || ny >= height) continue;
+        const next = ny * width + nx;
+        const code = terrain[next];
+        if (code === CITY_TILE.BRIDGE) {
+          if (!seen[next]) {
+            seen[next] = 1;
+            component.push(next);
+          }
+          continue;
+        }
+        if (isBridgeLandContact(code)) landContacts.add(next);
+        if (code === CITY_TILE.ROAD || code === CITY_TILE.CROSSWALK) roadContacts += 1;
+        if (code === CITY_TILE.RIVER) riverContacts += 1;
+      }
+    }
+
+    report.sourceBridgeTileCount += component.length;
+    const landSides = contactComponentCount(landContacts, width, height);
+    if (landSides >= 2 || roadContacts > 0) {
+      report.roadComponentCount += 1;
+      report.roadTileCount += component.length;
+      for (const index of component) terrain[index] = CITY_TILE.ROAD;
+      continue;
+    }
+
+    report.absorbedComponentCount += 1;
+    const replacement = riverContacts > 0 ? CITY_TILE.RIVER : CITY_TILE.WATER;
+    if (replacement === CITY_TILE.RIVER) report.absorbedRiverTileCount += component.length;
+    else report.absorbedWaterTileCount += component.length;
+    for (const index of component) terrain[index] = replacement;
+  }
+
+  for (const code of terrain) {
+    if (code === CITY_TILE.BRIDGE) report.finalBridgeTileCount += 1;
+  }
+  if (report.finalBridgeTileCount > 0) {
+    throw new Error(`Korean bridge normalization left ${report.finalBridgeTileCount} bridge tiles`);
+  }
+  return { terrain, report: Object.freeze(report) };
+}
+
 function hashString32(value) {
   let hash = 0x811c9dc5;
   for (let index = 0; index < value.length; index += 1) {
@@ -652,6 +764,10 @@ export function buildKoreanCityGeo(city) {
     terrain, masks, baseMeta, city, preNormalizationTargetBuildingTileCount,
   );
   normalizeCityTerrain(terrain, protectedEntries, mainStation, entrance, exitTiles, baseMeta, city);
+  const bridges = city === 'busan' || city === 'seoul'
+    ? normalizeKoreanBridgeTerrain(terrain, baseMeta)
+    : null;
+  if (bridges) terrain.set(bridges.terrain);
   const finalBuildingStats = terrainBuildingStats(terrain);
   const finalBuildingRatioRange = config.finalBuildingRatioRange ?? [0.09, 0.11];
   if (finalBuildingStats.landBuildingRatio < finalBuildingRatioRange[0]
@@ -660,6 +776,7 @@ export function buildKoreanCityGeo(city) {
   }
   const meta = Object.freeze({
     ...baseMeta,
+    ...(bridges ? { bridgeNormalization: bridges.report } : {}),
     buildingTexture: Object.freeze({
       ...BUILDING_TEXTURE_CONTRACT,
       ...(config.buildingDatasetProbe ? { publicDatasetProbe: config.buildingDatasetProbe } : {}),
