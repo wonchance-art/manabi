@@ -202,11 +202,21 @@ function hash(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
 }
 
-export function roadStyle(highway) {
+export function roadStyle(highway, city = 'busan') {
+  if (city === 'seoul') {
+    if (/^(motorway|trunk)$/.test(highway)) return { radius: 2, value: 2 };
+    if (/^(primary|secondary)$/.test(highway)) return { radius: 1, value: 2 };
+    if (/^(tertiary|residential|living_street|unclassified|pedestrian)$/.test(highway)) return { radius: 1, value: 1 };
+    if (/^(service|footway|path|steps|cycleway|track)$/.test(highway)) return { radius: 0, value: 1 };
+    return { radius: 0, value: 1 };
+  }
   if (/^(motorway|trunk)$/.test(highway)) return { radius: 2, value: 2 };
   if (/^(primary|secondary)$/.test(highway)) return { radius: 1, value: 2 };
-  if (/^(tertiary|residential|living_street|unclassified|pedestrian)$/.test(highway)) return { radius: 1, value: 1 };
-  if (/^(service|footway|path|steps|cycleway|track)$/.test(highway)) return { radius: 0, value: 1 };
+  if (/^(motorway_link|trunk_link|primary_link|secondary_link|tertiary_link)$/.test(highway)) return { radius: 0, value: 2 };
+  if (/^(tertiary|residential|living_street|unclassified)$/.test(highway)) return { radius: 1, value: 2 };
+  if (highway === 'service') return { radius: 0, value: 2 };
+  if (highway === 'pedestrian') return { radius: 1, value: 1 };
+  if (/^(footway|path|steps|cycleway|track)$/.test(highway)) return { radius: 0, value: 1 };
   return { radius: 0, value: 1 };
 }
 
@@ -272,6 +282,7 @@ export function buildSnapshot(city, rawText) {
     buildingWays: 0, roadWays: 0, waterAreas: 0, riverWays: 0, parkAreas: 0,
     mountainAreas: 0, railwayWays: 0, coastlineWays: 0,
   };
+  const roadWaysByClass = {};
   const mountainAreasByClass = {};
   let mountainRelations = 0;
   let mountainRelationsWithGeometry = 0;
@@ -289,9 +300,10 @@ export function buildSnapshot(city, rawText) {
       counts.buildingWays += 1;
     }
     if (tags.highway && Array.isArray(element.geometry)) {
-      const style = roadStyle(tags.highway);
+      const style = roadStyle(tags.highway, city);
       drawPolyline(masks.road, element.geometry, metrics, style.radius, style.value);
       counts.roadWays += 1;
+      roadWaysByClass[tags.highway] = (roadWaysByClass[tags.highway] || 0) + 1;
     }
     if (tags.natural === 'water') {
       paintPolygonElement(masks.water, element, metrics);
@@ -333,7 +345,7 @@ export function buildSnapshot(city, rawText) {
     .filter(([name]) => name !== 'coastline')
     .map(([name, values]) => [`${name}Rle`, encodeRle(values)]));
   return {
-    version: 1,
+    version: 2,
     city,
     bbox: config.bbox,
     grid: metrics.grid,
@@ -345,6 +357,8 @@ export function buildSnapshot(city, rawText) {
         queryCount: config.sourceDetails.queryCount,
         mergeStrategy: config.sourceDetails.mergeStrategy,
       } : {}),
+      roadSelection: 'all-highway-tagged-ways',
+      roadWaysByClass: Object.fromEntries(Object.entries(roadWaysByClass).sort(([left], [right]) => left.localeCompare(right))),
       mountainSelection: 'landuse=forest|natural=wood,scrub,heath,grassland|landcover=trees',
       mountainAreasByClass: Object.fromEntries(Object.entries(mountainAreasByClass).sort(([left], [right]) => left.localeCompare(right))),
       mountainRelations,

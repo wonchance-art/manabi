@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { SEOUL_GEO } from '../cities/seoul.geo.js';
 import { CITY_TILE, isCityBlocked } from '../cities/terrain.js';
 import { buildKoreanCityGeo, decodeTerrainRle, encodeTerrainRle } from '../../../../scripts/build-korean-city-geo.mjs';
+import { isMountainTags, roadStyle } from '../../../../scripts/build-korean-city-osm-snapshot.mjs';
 
 const terrainHash = (terrain) => createHash('sha256').update(terrain).digest('hex');
 const byId = (entries, id) => entries.find((entry) => entry.id === id);
@@ -143,17 +144,38 @@ describe('서울 실지형 데이터 계약', () => {
     expect(walkable).toBe(1_593_533);
     expect(reached).toBe(walkable);
   });
+
+  it('서울 도로 밀도는 기존 분류를 유지하고 확장 산지 태그를 인식한다', () => {
+    expect(roadStyle('residential', 'seoul')).toEqual({ radius: 1, value: 1 });
+    expect(roadStyle('service', 'seoul')).toEqual({ radius: 0, value: 1 });
+    for (const tags of [
+      { landuse: 'forest' }, { natural: 'wood' }, { natural: 'scrub' },
+      { natural: 'heath' }, { natural: 'grassland' }, { landcover: 'trees' },
+    ]) expect(isMountainTags(tags), JSON.stringify(tags)).toBe(true);
+  });
 });
 
 describe('서울 생성 결정성·오프라인 계약', () => {
   it('분할 Overpass 출처·객체 수·레이어 해시를 보존한다', () => {
-    expect(SNAPSHOT.source).toEqual({
+    expect(SNAPSHOT.version).toBe(2);
+    expect(SNAPSHOT.source).toMatchObject({
       geometry: 'OpenStreetMap', license: 'ODbL 1.0', snapshot: '2026-07-16',
       providers: ['overpass-api.de'],
       rawOverpassSha256: '21194f18f97a787578203222ac2f3bbd30e07e5ca5ce2a90be8acc2cdd79a1e5',
       partitionCount: 16, queryCount: 48, mergeStrategy: 'type-id-largest-geometry-v1',
+      roadSelection: 'all-highway-tagged-ways',
+      roadWaysByClass: {
+        residential: 41_945, service: 38_594, footway: 41_897,
+        path: 5_617, track: 953,
+      },
+      mountainSelection: 'landuse=forest|natural=wood,scrub,heath,grassland|landcover=trees',
+      mountainAreasByClass: {
+        'landuse=forest': 490, 'natural=grassland': 1,
+        'natural=scrub': 4, 'natural=wood': 1_684,
+      },
+      mountainRelations: 166, mountainRelationsWithGeometry: 166,
       buildingWays: 218_847, roadWays: 163_661, waterAreas: 611, riverWays: 728,
-      parkAreas: 4_855, mountainAreas: 2_174, railwayWays: 3_593, coastlineWays: 0,
+      parkAreas: 4_855, mountainAreas: 2_179, railwayWays: 3_593, coastlineWays: 0,
       crossingNodes: 14_219, crossingTiles: 14_219,
     });
     expect(SNAPSHOT.hashes).toEqual({
@@ -162,7 +184,7 @@ describe('서울 생성 결정성·오프라인 계약', () => {
       waterRle: '0d59ba26c7331c1c16d2f9dbc018f980649447c7478cc531cc200741942401c1',
       riverRle: '0a0cd25c0196bb1365a1fb8a238fb4879278b519a893da287766f36410a49d9d',
       parkRle: '3baf50195fe54d7f4fe5167d8da8c6ad1e80814cfb963dfb594423a86b76149b',
-      mountainRle: 'c8462b2caf4adde6340b61b9d449c8b7583b0f7cd8c459979c9272a94641274f',
+      mountainRle: '29d0b46c28c292a1e6580719d07a95c351691fddbf6bb8167ffbbf7cb3990192',
       railwayRle: '47a906573d8ee6efb01cc85e27fc75b08761b501f31c07a86e80a4c4c55baa9f',
     });
   });
