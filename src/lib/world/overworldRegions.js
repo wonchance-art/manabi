@@ -13,6 +13,16 @@ function projectedTile({ bbox, projection }, lon, lat) {
   return Object.freeze({ x: roundHalfAwayFromZero(x), y: roundHalfAwayFromZero(y) });
 }
 
+function unprojectedCoordinate({ bbox, projection }, x, y) {
+  const standardCos = Math.cos(projection.standardLat * DEG);
+  const minX = EARTH_RADIUS_METERS * (bbox[0] - projection.lon0) * DEG * standardCos;
+  const maxY = EARTH_RADIUS_METERS * bbox[3] * DEG;
+  return Object.freeze({
+    lon: ((x * METERS_PER_TILE + minX) / (EARTH_RADIUS_METERS * DEG * standardCos)) + projection.lon0,
+    lat: (maxY - y * METERS_PER_TILE) / (EARTH_RADIUS_METERS * DEG),
+  });
+}
+
 function freezeRegion(region) {
   const gateTile = projectedTile(region, region.gate.lon, region.gate.lat);
   return Object.freeze({
@@ -170,6 +180,18 @@ export function overworldRegionByScene(sceneId) {
 
 export function overworldRegionForCorridorStop(stopId) {
   return OVERWORLD_REGION_LIST.find((region) => region.gate.corridorStopId === stopId) || null;
+}
+
+export function projectOverworldRegionCoordinate(regionOrId, lon, lat) {
+  const region = typeof regionOrId === 'string' ? overworldRegionById(regionOrId) : regionOrId;
+  if (!region || !Number.isFinite(lon) || !Number.isFinite(lat)) return null;
+  return projectedTile(region, lon, lat);
+}
+
+export function unprojectOverworldRegionTile(regionOrId, x, y) {
+  const region = typeof regionOrId === 'string' ? overworldRegionById(regionOrId) : regionOrId;
+  if (!region || !Number.isFinite(x) || !Number.isFinite(y)) return null;
+  return unprojectedCoordinate(region, x, y);
 }
 
 export function isOverworldRegionTile(sceneId, x, y) {

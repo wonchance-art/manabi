@@ -39,3 +39,15 @@ export function cityMapMarkers(city) {
     ['transit', city.transitPoints],
   ]);
 }
+
+export function overworldRegionMarkers(region) {
+  const gate = region?.gate;
+  if (!gate || !Number.isFinite(gate.tile?.x) || !Number.isFinite(gate.tile?.y)) return [];
+  return [{
+    id: `gate:${gate.id}`,
+    source: 'gate',
+    name: gate.label || gate.id,
+    x: gate.tile.x,
+    y: gate.tile.y,
+  }];
+}

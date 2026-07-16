@@ -15,6 +15,7 @@
     "lint": "eslint .",
     "check:reading": "node scripts/check-reading.mjs",
     "check:overworld-fixture": "node scripts/world/build-overworld-fixture.mjs --check",
+    "build:overworld-map-previews": "node scripts/world/build-overworld-map-previews.mjs",
     "test": "vitest run",
     "e2e": "node --test --test-concurrency=1 e2e/smoke.e2e.mjs"
   },

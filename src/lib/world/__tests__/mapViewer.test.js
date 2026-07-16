@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cityMapMarkers, worldMapMarkers } from '../mapViewer.js';
+import { cityMapMarkers, overworldRegionMarkers, worldMapMarkers } from '../mapViewer.js';
 
 describe('전체 맵 뷰어 마커', () => {
   it('전국 지도에는 전국 노드만 남기고 잘못된 좌표를 제외한다', () => {
@@ -27,5 +27,18 @@ describe('전체 맵 뷰어 마커', () => {
 
   it('도시 데이터가 아직 없으면 빈 목록을 반환한다', () => {
     expect(cityMapMarkers(null)).toEqual([]);
+  });
+
+  it('신규 오버월드 지역은 연결 게이트를 핀으로 표시한다', () => {
+    expect(overworldRegionMarkers({
+      gate: { id: 'moscow', label: '모스크바 횡단열차역', tile: { x: 768, y: 253 } },
+    })).toEqual([{
+      id: 'gate:moscow',
+      source: 'gate',
+      name: '모스크바 횡단열차역',
+      x: 768,
+      y: 253,
+    }]);
+    expect(overworldRegionMarkers(null)).toEqual([]);
   });
 });

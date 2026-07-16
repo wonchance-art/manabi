@@ -13,10 +13,12 @@ import { MAP_W, MAP_H, decodeMap, TERRAIN } from '../components/world/mapData';
 import { WORLD_NODES } from '../components/world/worldNodes';
 import { CITY_MAPS } from '../components/world/cities/index.js';
 import { unproject, isCoastTile, buildPlayableGrid } from '../lib/world/mapGeo';
-import { cityMapMarkers, worldMapMarkers } from '../lib/world/mapViewer';
+import { cityMapMarkers, overworldRegionMarkers, worldMapMarkers } from '../lib/world/mapViewer';
+import { OVERWORLD_REGION_LIST, unprojectOverworldRegionTile } from '../lib/world/overworldRegions';
 
 // 타일당 화면 px — 줌 4단계(×1~×4, 2px 기준 정수 배).
-const ZOOM_LEVELS = [2, 4, 6, 8];
+const DEFAULT_ZOOM_LEVELS = Object.freeze([2, 4, 6, 8]);
+const OVERWORLD_ZOOM_MULTIPLIERS = Object.freeze([0.94, 1.88, 3.76, 7.52]);
 
 // GBC 톤 — 잔디 그린(육지) · 모래(해안) · 바다 블루 + 신규 지형:
 // 강·호수(청록 계열, 통행 가능 물) · DMZ 철조망(적갈) · 교량(다리 갈색)
@@ -46,10 +48,26 @@ const CITY_LEGEND = [
   [CITY_COLORS[9], '건물'], [CITY_COLORS[12], '해변'], [CITY_COLORS[7], '출구'],
 ];
 
+const OVERWORLD_LEGEND = [
+  ['#336791', '바다'], ['#729e5f', '저지대'], ['#a19c5b', '고지대'],
+  ['#8b6747', '산악'], ['#e0e2da', '고산'], ['#b86296', '관망 전용 섬'],
+  ['#72b8d5', '강'], ['#493d34', '철도'], ['#6f665f', '경계'],
+];
+
 const FONT = 'ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace';
 
 const MAP_OPTIONS = Object.freeze([
   { id: 'world', name: '전국 월드', icon: '🗾', kind: 'world', cols: MAP_W, rows: MAP_H },
+  ...OVERWORLD_REGION_LIST.map((region) => ({
+    id: `overworld-${region.id}`,
+    name: region.label,
+    icon: '🌍',
+    kind: 'overworld',
+    cols: region.width,
+    rows: region.height,
+    previewUrl: `/assets/overworld/map-previews/${region.id}.png`,
+    region,
+  })),
   ...CITY_MAPS.map((city) => ({
     id: city.id,
     name: city.name,
@@ -60,6 +78,12 @@ const MAP_OPTIONS = Object.freeze([
     city,
   })),
 ]);
+
+function zoomLevelsFor(map, size) {
+  if (map.kind !== 'overworld') return DEFAULT_ZOOM_LEVELS;
+  const fit = Math.min(size.w / map.cols, size.h / map.rows);
+  return OVERWORLD_ZOOM_MULTIPLIERS.map((multiplier) => fit * multiplier);
+}
 
 function hexToRgb(hex) {
   const v = parseInt(hex.slice(1), 16);
@@ -115,15 +139,38 @@ export default function WorldMapPage() {
   const mapCols = activeMap.cols;
   const mapRows = activeMap.rows;
 
-  // ── 오프스크린 비트맵(2px/타일) — 선택 지도·격자 소스가 바뀔 때 다시 그린다 ──
+  // ── 오프스크린 비트맵 — 기존 지도는 2px/타일, 대륙 지도는 생성된 축소 미리보기를 쓴다 ──
   // playable: GameCanvas 런타임·미니맵과 동일한 buildPlayableGrid(광장 SEA→LAND) 산출을 표시(P2-6).
   // raw: build-map.mjs 원본 격자(광장 메꿈 이전). 토글로 43타일 차이를 눈으로 확인할 수 있다.
   const bitmapRef = useRef(null);
+  const bitmapScaleRef = useRef({ x: 2, y: 2 });
   const [bitmapReady, setBitmapReady] = useState(false);
+  const [bitmapError, setBitmapError] = useState('');
   const [showPlayable, setShowPlayable] = useState(true);
 
   useEffect(() => {
     setBitmapReady(false);
+    setBitmapError('');
+    bitmapRef.current = null;
+    if (activeMap.kind === 'overworld') {
+      let cancelled = false;
+      const image = new Image();
+      image.decoding = 'async';
+      image.onload = () => {
+        if (cancelled) return;
+        bitmapRef.current = image;
+        bitmapScaleRef.current = {
+          x: image.naturalWidth / mapCols,
+          y: image.naturalHeight / mapRows,
+        };
+        setBitmapReady(true);
+      };
+      image.onerror = () => {
+        if (!cancelled) setBitmapError('대륙 지도 미리보기를 불러오지 못했어요.');
+      };
+      image.src = activeMap.previewUrl;
+      return () => { cancelled = true; };
+    }
     const raw = activeMap.kind === 'world' ? decodeMap() : null;
     const grid = activeMap.kind === 'world'
       ? (showPlayable ? buildPlayableGrid(raw) : raw)
@@ -174,18 +221,22 @@ export default function WorldMapPage() {
     ctx.putImageData(img, 0, 0);
     if (activeMap.kind === 'city') drawCityTransit(ctx, activeMap.city);
     bitmapRef.current = off;
+    bitmapScaleRef.current = { x: 2, y: 2 };
     setBitmapReady(true);
+    return undefined;
   }, [activeMap, mapCols, mapRows, showPlayable]);
 
-  const nodes = useMemo(
-    () => activeMap.kind === 'world' ? worldMapMarkers(WORLD_NODES) : cityMapMarkers(activeMap.city),
-    [activeMap],
-  );
+  const nodes = useMemo(() => {
+    if (activeMap.kind === 'world') return worldMapMarkers(WORLD_NODES);
+    if (activeMap.kind === 'overworld') return overworldRegionMarkers(activeMap.region);
+    return cityMapMarkers(activeMap.city);
+  }, [activeMap]);
 
   // ── 뷰포트 크기(반응형) ──
   const containerRef = useRef(null);
   const canvasRef = useRef(null);
   const [size, setSize] = useState({ w: 900, h: 560 });
+  const zoomLevels = useMemo(() => zoomLevelsFor(activeMap, size), [activeMap, size]);
   useEffect(() => {
     const el = containerRef.current;
     if (!el || typeof ResizeObserver === 'undefined') return;
@@ -197,7 +248,7 @@ export default function WorldMapPage() {
     return () => ro.disconnect();
   }, []);
 
-  // ── 줌(정수 px/타일, 2~8) · 팬(offset, 화면 px) ──
+  // ── 줌 · 팬(offset, 화면 px) ──
   const [zoomIdx, setZoomIdx] = useState(0);
   const [offset, setOffset] = useState(null); // 최초 1회 중앙 정렬 후 세팅
   const [showGrid, setShowGrid] = useState(false);
@@ -205,16 +256,19 @@ export default function WorldMapPage() {
 
   useEffect(() => {
     setZoomIdx(0);
-    setOffset({ x: (size.w - mapCols * 2) / 2, y: (size.h - mapRows * 2) / 2 });
+    setOffset({
+      x: (size.w - mapCols * zoomLevels[0]) / 2,
+      y: (size.h - mapRows * zoomLevels[0]) / 2,
+    });
     setHover(null);
-  }, [activeMapId, mapCols, mapRows, size.h, size.w]);
+  }, [activeMapId, mapCols, mapRows, size.h, size.w, zoomLevels]);
 
   const zoomAt = useCallback((screenX, screenY, dir) => {
     setZoomIdx((prevIdx) => {
-      const nextIdx = Math.max(0, Math.min(ZOOM_LEVELS.length - 1, prevIdx + dir));
+      const nextIdx = Math.max(0, Math.min(zoomLevels.length - 1, prevIdx + dir));
       if (nextIdx === prevIdx) return prevIdx;
-      const oldScale = ZOOM_LEVELS[prevIdx] / 2;
-      const newScale = ZOOM_LEVELS[nextIdx] / 2;
+      const oldScale = zoomLevels[prevIdx];
+      const newScale = zoomLevels[nextIdx];
       setOffset((prevOffset) => {
         if (!prevOffset) return prevOffset;
         const ratio = newScale / oldScale;
@@ -225,12 +279,15 @@ export default function WorldMapPage() {
       });
       return nextIdx;
     });
-  }, []);
+  }, [zoomLevels]);
 
   const resetView = useCallback(() => {
     setZoomIdx(0);
-    setOffset({ x: (size.w - mapCols * 2) / 2, y: (size.h - mapRows * 2) / 2 });
-  }, [mapCols, mapRows, size.h, size.w]);
+    setOffset({
+      x: (size.w - mapCols * zoomLevels[0]) / 2,
+      y: (size.h - mapRows * zoomLevels[0]) / 2,
+    });
+  }, [mapCols, mapRows, size.h, size.w, zoomLevels]);
 
   // 휠 줌 — React onWheel은 기본 passive라 preventDefault가 무시되므로 수동 리스너로 배선.
   useEffect(() => {
@@ -248,15 +305,23 @@ export default function WorldMapPage() {
   // ── 마우스오버/탭 → 타일 좌표 + 위경도 역산 ──
   const updateHover = useCallback((mx, my) => {
     if (!offset) return;
-    const pxPerTile = ZOOM_LEVELS[zoomIdx];
+    const pxPerTile = zoomLevels[zoomIdx];
     const tx = Math.floor((mx - offset.x) / pxPerTile);
     const ty = Math.floor((my - offset.y) / pxPerTile);
     if (tx < 0 || ty < 0 || tx >= mapCols || ty >= mapRows) {
       setHover(null);
       return;
     }
-    setHover(activeMap.kind === 'world' ? { tx, ty, ...unproject(tx, ty) } : { tx, ty });
-  }, [activeMap.kind, mapCols, mapRows, offset, zoomIdx]);
+    if (activeMap.kind === 'world') {
+      setHover({ tx, ty, ...unproject(tx, ty) });
+      return;
+    }
+    if (activeMap.kind === 'overworld') {
+      setHover({ tx, ty, ...unprojectOverworldRegionTile(activeMap.region, tx + 0.5, ty + 0.5) });
+      return;
+    }
+    setHover({ tx, ty });
+  }, [activeMap, mapCols, mapRows, offset, zoomIdx, zoomLevels]);
 
   // ── 드래그 팬 (포인터 이벤트 — 마우스/터치 공용, 핀치 줌은 버튼 줌으로 갈음) ──
   const dragRef = useRef(null);
@@ -295,15 +360,16 @@ export default function WorldMapPage() {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.fillStyle = '#0b0d08';
     ctx.fillRect(0, 0, size.w, size.h);
-    const scale = ZOOM_LEVELS[zoomIdx] / 2;
+    const { x: bitmapScaleX, y: bitmapScaleY } = bitmapScaleRef.current;
+    const pxPerTile = zoomLevels[zoomIdx];
     ctx.translate(offset.x, offset.y);
-    ctx.scale(scale, scale);
+    ctx.scale(pxPerTile / bitmapScaleX, pxPerTile / bitmapScaleY);
     ctx.drawImage(bitmapRef.current, 0, 0);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     if (showGrid) drawScreenGrid(ctx, size.w, size.h);
-  }, [bitmapReady, size, zoomIdx, offset, showGrid]);
+  }, [bitmapReady, size, zoomIdx, offset, showGrid, zoomLevels]);
 
-  const pxPerTile = ZOOM_LEVELS[zoomIdx];
+  const pxPerTile = zoomLevels[zoomIdx];
   const visibleNodes = useMemo(() => {
     if (!offset) return [];
     return nodes
@@ -335,7 +401,7 @@ export default function WorldMapPage() {
         </h1>
       </div>
       <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>
-        전국 월드와 도시 정밀맵을 하나씩 골라 노드 배치와 동선을 확인해요.
+        전국 월드, 대륙 오버월드와 도시 정밀맵을 하나씩 골라 노드 배치와 동선을 확인해요.
       </p>
 
       <div className="world-map-viewer__maps" role="tablist" aria-label="확인할 지도 선택">
@@ -361,9 +427,9 @@ export default function WorldMapPage() {
           － 축소
         </Button>
         <span style={{ fontFamily: FONT, fontSize: '0.75rem', color: 'var(--text-muted)', minWidth: 84, textAlign: 'center' }}>
-          타일당 {pxPerTile}px (×{scaleLabel(zoomIdx)})
+          타일당 {formatTileScale(pxPerTile)}px (×{scaleLabel(zoomIdx)})
         </span>
-        <Button size="sm" variant="secondary" onClick={() => zoomAt(size.w / 2, size.h / 2, 1)} disabled={zoomIdx === ZOOM_LEVELS.length - 1}>
+        <Button size="sm" variant="secondary" onClick={() => zoomAt(size.w / 2, size.h / 2, 1)} disabled={zoomIdx === zoomLevels.length - 1}>
           ＋ 확대
         </Button>
         <Button size="sm" variant={showGrid ? 'primary' : 'secondary'} onClick={() => setShowGrid((v) => !v)}>
@@ -400,7 +466,7 @@ export default function WorldMapPage() {
         />
         {!bitmapReady && (
           <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center' }}>
-            <Spinner />
+            {bitmapError || <Spinner />}
           </div>
         )}
         {/* 주요 지점 마커 — 이름은 핀 hover/focus 때만 노출 */}
@@ -426,13 +492,15 @@ export default function WorldMapPage() {
       }}>
         <span>
           {hover
-            ? (activeMap.kind === 'world'
+            ? (activeMap.kind === 'world' || activeMap.kind === 'overworld'
               ? `타일 (${hover.tx}, ${hover.ty}) · 경도 ${hover.lon.toFixed(3)}° · 위도 ${hover.lat.toFixed(3)}°`
               : `${activeMap.name} 타일 (${hover.tx}, ${hover.ty})`)
             : '지도 위에서 움직이거나 탭하면 좌표가 표시돼요'}
         </span>
         <span style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-          {(activeMap.kind === 'world' ? WORLD_LEGEND : CITY_LEGEND).map(([color, label]) => (
+          {(activeMap.kind === 'world'
+            ? WORLD_LEGEND
+            : activeMap.kind === 'overworld' ? OVERWORLD_LEGEND : CITY_LEGEND).map(([color, label]) => (
             <LegendDot key={label} color={color} label={label} />
           ))}
         </span>
@@ -469,5 +537,9 @@ function drawCityTransit(ctx, city) {
 }
 
 function scaleLabel(zoomIdx) {
-  return zoomIdx + 1; // ZOOM_LEVELS 인덱스(0~3) → 사용자 표기(×1~×4)
+  return [1, 2, 4, 8][zoomIdx] || 1;
+}
+
+function formatTileScale(value) {
+  return value >= 1 ? value.toFixed(value >= 2 ? 0 : 1) : value.toFixed(2);
 }

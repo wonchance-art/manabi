@@ -12,6 +12,8 @@ import {
   overworldRegionForCorridorStop,
   overworldRegionSpawn,
   overworldRegionSpawnForCorridorStop,
+  projectOverworldRegionCoordinate,
+  unprojectOverworldRegionTile,
 } from '../overworldRegions.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -63,6 +65,16 @@ describe('오버월드 지역 레지스트리', () => {
     expect(overworldRegionSpawn(region)).toEqual({ scene: region.sceneId, x, y });
     expect(overworldRegionSpawnForCorridorStop(region.gate.corridorStopId))
       .toEqual({ scene: region.sceneId, x, y });
+  });
+
+  it.each(OVERWORLD_REGION_LIST)('$label의 위경도와 타일 좌표를 뷰어용으로 왕복한다', (region) => {
+    const tile = projectOverworldRegionCoordinate(region.id, region.gate.lon, region.gate.lat);
+    expect(tile).toEqual(region.gate.tile);
+    const geo = unprojectOverworldRegionTile(region.id, tile.x, tile.y);
+    expect(geo.lon).toBeCloseTo(region.gate.lon, 1);
+    expect(geo.lat).toBeCloseTo(region.gate.lat, 1);
+    expect(projectOverworldRegionCoordinate('unknown', 0, 0)).toBeNull();
+    expect(unprojectOverworldRegionTile('unknown', 0, 0)).toBeNull();
   });
 
   it.each(OVERWORLD_REGION_LIST)('$label의 체크인된 희소 오버레이를 검증한다', (region) => {
