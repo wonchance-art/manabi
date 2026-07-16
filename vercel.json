@@ -1,4 +1,11 @@
 {
+  "git": {
+    "deploymentEnabled": {
+      "codex/*": false,
+      "codex2/*": false,
+      "claude/*": false
+    }
+  },
   "ignoreCommand": "bash scripts/vercel-ignore.sh",
   "crons": [
     {
