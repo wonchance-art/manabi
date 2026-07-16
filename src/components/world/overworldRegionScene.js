@@ -4,6 +4,10 @@ import { OVERWORLD_STORAGE_CHUNK_TILES } from '../../lib/world/overworldChunk';
 import { corridorStopSpawn } from '../../lib/world/transsibCorridor';
 import { overworldRegionSpawn } from '../../lib/world/overworldRegions';
 import { OverworldTransportNodeLoader } from '../../lib/world/overworldTransportNodes';
+import {
+  nearestOverworldRegionWorldNode,
+  overworldRegionWorldNodes,
+} from '../../lib/world/overworldRegionWorldNodes';
 import { PhaserOverworldPageRenderer } from './overworldPageRenderer';
 import { PhaserOverworldChunkOverlayRenderer } from './overworldChunkOverlayRenderer';
 import {
@@ -56,6 +60,7 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
   const avatarPrefix = `region_pc_${region.id.replace(/[^a-z0-9]/g, '_')}`;
   const railGateTexture = `region_rail_gate_${region.id}`;
   const airGateTexture = `region_air_gate_${region.id}`;
+  const worldNodeTexture = `region_world_node_${region.id}`;
 
   return class OverworldRegionScene extends Phaser.Scene {
     constructor() { super(region.sceneId); }
@@ -81,6 +86,14 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
         gate.generateTexture(airGateTexture, 16, 20);
         gate.destroy();
       }
+      if (!this.textures.exists(worldNodeTexture)) {
+        const marker = this.make.graphics({ add: false });
+        marker.fillStyle(toneColor(0xf5ecd3, this.mode), 1).fillCircle(8, 7, 6);
+        marker.fillStyle(toneColor(0x9f315d, this.mode), 1).fillCircle(8, 7, 3);
+        marker.fillStyle(toneColor(0x3b2e2a, this.mode), 1).fillTriangle(5, 10, 11, 10, 8, 17);
+        marker.generateTexture(worldNodeTexture, 16, 18);
+        marker.destroy();
+      }
     }
 
     create(bootData) {
@@ -97,8 +110,10 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
       this.lastEmit = -Infinity;
       this.lastDistanceEmit = -Infinity;
       this.nearGate = null;
+      this.nearWorldNode = null;
       this.activeGate = null;
       this.transportGates = [];
+      this.worldNodeEntries = overworldRegionWorldNodes(region, ctx.worldNodes);
       this.loadedChunks = new Map();
       this.otherScenePeerIds = new Set();
 
@@ -149,6 +164,7 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
         this.destroyed = true;
         this.heldDirs.length = 0;
         ctx.setNearGate?.(null);
+        ctx.setNearNode?.(null);
         ctx.setStatus?.(null);
         this.terrainPages?.destroy();
         this.terrainPages = null;
@@ -196,6 +212,13 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
         ).setOrigin(0.5, 1).setScale(2).setDepth(900).setVisible(true);
         this.gateMarkers.set(gate.id, marker);
       }
+      this.worldNodeMarkers = this.worldNodeEntries
+        .filter(({ interactive }) => interactive)
+        .map(({ node, tile }) => this.add.image(
+          tile[0] * TILE + TILE / 2,
+          (tile[1] + 1) * TILE,
+          worldNodeTexture,
+        ).setOrigin(0.5, 1).setScale(2).setDepth(850).setVisible(true).setData('nodeId', node.id));
       let spawnX = this.pTileX;
       let spawnY = this.pTileY;
       if (!await this.isWalkable(spawnX, spawnY)) {
@@ -224,7 +247,7 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
       this.ready = true;
       this.inputLocked = false;
       ctx.setStatus?.(null);
-      this.refreshNearGate(true);
+      this.refreshNearInteraction(true);
       ctx.onReady?.();
     }
 
@@ -279,7 +302,7 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
           ease: 'Linear',
           onComplete: () => {
             this.moving = false;
-            this.refreshNearGate();
+            this.refreshNearInteraction();
             this.refreshTerrainPages();
             this.refreshFeatureOverlays();
           },
@@ -297,7 +320,7 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
       return `${avatarPrefix}_${base}_${pose}`;
     }
 
-    refreshNearGate(force = false) {
+    refreshNearInteraction(force = false) {
       const near = this.ready
         ? this.transportGates
           .filter((gate) => Math.abs(this.pTileX - gate.tile.x) <= 1
@@ -308,13 +331,22 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
             Math.abs(this.pTileX - right.tile.x) + Math.abs(this.pTileY - right.tile.y)
           ))[0] || null
         : null;
-      if (!force && near?.id === this.nearGate?.id) return;
+      const nearWorldNode = this.ready && !near
+        ? nearestOverworldRegionWorldNode(this.worldNodeEntries, this.pTileX, this.pTileY)
+        : null;
+      const gateChanged = near?.id !== this.nearGate?.id;
+      const nodeChanged = nearWorldNode?.id !== this.nearWorldNode?.id;
+      if (!force && !gateChanged && !nodeChanged) return;
       this.nearGate = near;
-      ctx.setNearGate?.(near ? { region, gate: near } : null);
+      this.nearWorldNode = nearWorldNode;
+      if (force || gateChanged) ctx.setNearGate?.(near ? { region, gate: near } : null);
+      if (force || nodeChanged) ctx.setNearNode?.(nearWorldNode);
     }
 
     regionInteract() {
-      if (this.nearGate && !this.inputLocked) ctx.requestGate?.({ region, gate: this.nearGate });
+      if (this.inputLocked) return;
+      if (this.nearGate) ctx.requestGate?.({ region, gate: this.nearGate });
+      else if (this.nearWorldNode) ctx.requestNode?.(this.nearWorldNode);
     }
 
     async enterCorridor() {
@@ -328,7 +360,7 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
       const persisted = await ctx.persistPosition?.(spawn);
       if (!persisted || this.destroyed) {
         this.inputLocked = false;
-        this.refreshNearGate(true);
+        this.refreshNearInteraction(true);
         ctx.setStatus?.({ phase: 'error', message: '플랫폼 저장에 실패했어요. 연결을 확인해 주세요.' });
         return;
       }
@@ -347,7 +379,7 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
       const persisted = await ctx.persistPosition?.(spawn);
       if (!persisted || this.destroyed) {
         this.inputLocked = false;
-        this.refreshNearGate(true);
+        this.refreshNearInteraction(true);
         ctx.setStatus?.({ phase: 'error', message: '귀환 위치 저장에 실패했어요. 연결을 확인해 주세요.' });
         return;
       }
@@ -384,6 +416,34 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
 
     applyPeers(incoming) {
       this.otherScenePeerIds = new Set(Object.keys(incoming || {}));
+    }
+
+    overworldRuntimeSnapshot() {
+      return Object.freeze({
+        scene: region.sceneId,
+        ready: this.ready,
+        playerTile: Object.freeze([this.pTileX, this.pTileY]),
+        nearGateId: this.nearGate?.id || null,
+        nearWorldNodeId: this.nearWorldNode?.id || null,
+        worldNodeCount: this.worldNodeEntries.length,
+        interactiveWorldNodeCount: this.worldNodeMarkers?.length || 0,
+      });
+    }
+
+    async debugTeleportTo(tx, ty) {
+      if (!this.ready || this.inputLocked || !Number.isInteger(tx) || !Number.isInteger(ty)
+        || !await this.isWalkable(tx, ty)) throw new Error('debug destination is not walkable');
+      this.heldDirs.length = 0;
+      this.moving = false;
+      this.stepPending = false;
+      this.pTileX = tx;
+      this.pTileY = ty;
+      this.player.setPosition(tx * TILE + TILE / 2, ty * TILE + TILE / 2);
+      this.cameras.main.centerOn(this.player.x, this.player.y);
+      await this.refreshTerrainPages(true);
+      await this.refreshFeatureOverlays(true).catch(() => null);
+      this.refreshNearInteraction(true);
+      return this.overworldRuntimeSnapshot();
     }
 
     update(time) {

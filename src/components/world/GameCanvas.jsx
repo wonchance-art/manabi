@@ -2126,9 +2126,16 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           setRegionNearGate(null); setRegionGatePrompt(null); setRegionStatus(null);
           setAirHubPrompt(null); setAirHubStatus(null);
         },
+        worldNodes: WORLD_NODES,
         setNearGate: (gate) => setRegionNearGate(gate),
+        setNearNode: (node) => setNearNode(toInteractiveNode(node)),
         setStatus: (status) => setRegionStatus(status),
         requestGate: (prompt) => setRegionGatePrompt(prompt),
+        requestNode: (node) => {
+          const interactive = toInteractiveNode(node);
+          if (!interactive?.noStamp) collectStampRef.current?.(interactive);
+          if (interactive) setDescOpen(true);
+        },
         airReturnSpawn: () => {
           const airport = getNode('incheon-airport');
           return airport ? { scene: 'plaza', x: airport.tile[0], y: airport.tile[1] } : null;
