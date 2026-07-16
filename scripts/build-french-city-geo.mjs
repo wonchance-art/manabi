@@ -64,6 +64,42 @@ const FRENCH_CITY_CONFIG = Object.freeze({
       'monte-carlo-casino': 'Casino de Monte-Carlo',
     }),
   }),
+  london: Object.freeze({
+    output: '../src/components/world/cities/london.geo.js',
+    exportName: 'LONDON_GEO',
+    nameField: 'nameEn',
+    bridgeContract: Object.freeze({
+      method: 'korean-bridge-three-way-mirror-v1',
+      roadRule: 'two-land-contact-components-or-road-contact',
+      absorptionRule: 'river-before-water',
+    }),
+    poiNames: Object.freeze({
+      'westminster-abbey': 'Westminster Abbey',
+      'houses-of-parliament': 'Houses of Parliament',
+      'buckingham-palace': 'Buckingham Palace',
+      'tower-of-london': 'Tower of London',
+      'tower-bridge': 'Tower Bridge',
+      'st-pauls': "St Paul's Cathedral",
+      'british-museum': 'British Museum',
+      'trafalgar-square': 'Trafalgar Square',
+      'covent-garden': 'Covent Garden',
+      'piccadilly-circus': 'Piccadilly Circus',
+      'london-eye': 'London Eye',
+      'tate-modern': 'Tate Modern',
+      'borough-market': 'Borough Market',
+      'the-shard': 'The Shard',
+      'camden-town': 'Camden Town',
+      'notting-hill': 'Notting Hill',
+      'hyde-park': 'Hyde Park',
+      'natural-history-museum': 'Natural History Museum',
+      greenwich: 'Maritime Greenwich',
+      'kew-gardens': 'Kew Gardens',
+      wimbledon: 'Wimbledon',
+      'hampstead-heath': 'Hampstead Heath',
+      wembley: 'Wembley Stadium',
+      'olympic-park': 'Queen Elizabeth Olympic Park',
+    }),
+  }),
 });
 
 function isLandContact(code) {
@@ -100,12 +136,12 @@ function contactComponentCount(contacts, width, height) {
   return components;
 }
 
-export function normalizeFrenchBridgeTerrain(sourceTerrain, meta) {
+export function normalizeFrenchBridgeTerrain(sourceTerrain, meta, contract = FRENCH_BRIDGE_CONTRACT) {
   const terrain = sourceTerrain.slice();
   const { w: width, h: height } = meta.grid;
   const seen = new Uint8Array(terrain.length);
   const report = {
-    ...FRENCH_BRIDGE_CONTRACT,
+    ...contract,
     sourceBridgeTileCount: 0,
     componentCount: 0,
     roadComponentCount: 0,
@@ -167,7 +203,7 @@ export function normalizeFrenchBridgeTerrain(sourceTerrain, meta) {
     if (code === CITY_TILE.BRIDGE) report.finalBridgeTileCount += 1;
   }
   if (report.finalBridgeTileCount > 0) {
-    throw new Error(`French bridge normalization left ${report.finalBridgeTileCount} bridge tiles`);
+    throw new Error(`City bridge normalization left ${report.finalBridgeTileCount} bridge tiles`);
   }
   return { terrain, report: Object.freeze(report) };
 }
@@ -177,16 +213,17 @@ export function buildFrenchCityGeo(city) {
   if (!config) throw new Error(`Unknown French city: ${city}`);
   const geo = buildFrenchCityGeoBase(city);
   const poiNames = config.poiNames;
+  const nameField = config.nameField ?? 'nameFr';
   const pois = geo.pois.map((poi) => {
-    const nameFr = poiNames[poi.id];
-    if (!nameFr) throw new Error(`${city} missing nameFr for POI ${poi.id}`);
-    return { ...poi, nameFr };
+    const localizedName = poiNames[poi.id];
+    if (!localizedName) throw new Error(`${city} missing ${nameField} for POI ${poi.id}`);
+    return { ...poi, [nameField]: localizedName };
   });
   const configuredIds = Object.keys(poiNames);
   if (configuredIds.length !== pois.length || configuredIds.some((id) => !pois.some((poi) => poi.id === id))) {
     throw new Error(`${city} POI name contract does not match generated POIs`);
   }
-  const bridges = normalizeFrenchBridgeTerrain(geo.terrain, geo.meta);
+  const bridges = normalizeFrenchBridgeTerrain(geo.terrain, geo.meta, config.bridgeContract);
   return {
     ...geo,
     meta: Object.freeze({ ...geo.meta, bridgeNormalization: bridges.report }),
@@ -252,7 +289,7 @@ export function writeFrenchCityGeo(city) {
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const cityIndex = process.argv.indexOf('--city');
   if (cityIndex < 0 || !process.argv[cityIndex + 1]) {
-    throw new Error('Usage: node scripts/build-french-city-geo.mjs --city <grand-paris|cote-dazur>');
+    throw new Error('Usage: node scripts/build-french-city-geo.mjs --city <grand-paris|cote-dazur|london>');
   }
   console.log(JSON.stringify(writeFrenchCityGeo(process.argv[cityIndex + 1])));
 }
