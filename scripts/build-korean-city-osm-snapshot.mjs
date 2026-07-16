@@ -2,10 +2,11 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { CITY_SCALE_TIERS, cityScaleTier } from '../src/components/world/cities/scale.js';
 
 const EARTH_RADIUS = 6378137;
 const DEG = Math.PI / 180;
-const DEFAULT_METERS_PER_TILE = 20;
+const DEFAULT_METERS_PER_TILE = CITY_SCALE_TIERS.standard.metersPerTile;
 const CITY_CONFIG = Object.freeze({
   busan: Object.freeze({
     bbox: Object.freeze([128.89, 35.04, 129.18, 35.24]),
@@ -63,7 +64,8 @@ function webMercatorMeters(lon, lat) {
   };
 }
 
-function projectionMetrics(bbox, metersPerTile = DEFAULT_METERS_PER_TILE) {
+export function projectionMetrics(bbox, metersPerTile = DEFAULT_METERS_PER_TILE) {
+  const tileMeters = cityScaleTier(metersPerTile).metersPerTile;
   const [minLon, minLat, maxLon, maxLat] = bbox;
   const southWest = webMercatorMeters(minLon, minLat);
   const northEast = webMercatorMeters(maxLon, maxLat);
@@ -72,15 +74,15 @@ function projectionMetrics(bbox, metersPerTile = DEFAULT_METERS_PER_TILE) {
     southWest,
     northEast,
     correction,
-    metersPerTile,
+    metersPerTile: tileMeters,
     grid: {
-      w: Math.ceil(((northEast.x - southWest.x) * correction) / metersPerTile),
-      h: Math.ceil(((northEast.y - southWest.y) * correction) / metersPerTile),
+      w: Math.ceil(((northEast.x - southWest.x) * correction) / tileMeters),
+      h: Math.ceil(((northEast.y - southWest.y) * correction) / tileMeters),
     },
   };
 }
 
-function project(lat, lon, metrics) {
+export function project(lat, lon, metrics) {
   const point = webMercatorMeters(lon, lat);
   return {
     x: ((point.x - metrics.southWest.x) * metrics.correction) / metrics.metersPerTile,
@@ -258,7 +260,7 @@ export function buildSnapshot(city, rawText) {
   const config = CITY_CONFIG[city];
   if (!config) throw new Error(`Unknown city: ${city}`);
   const raw = JSON.parse(rawText);
-  const metersPerTile = config.metersPerTile ?? DEFAULT_METERS_PER_TILE;
+  const metersPerTile = cityScaleTier(config.metersPerTile ?? DEFAULT_METERS_PER_TILE).metersPerTile;
   const metrics = projectionMetrics(config.bbox, metersPerTile);
   const length = metrics.grid.w * metrics.grid.h;
   const masks = {

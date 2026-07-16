@@ -32,6 +32,7 @@ import { GBC } from './QuestReview';
 import bus from './bus';
 // 🗺️ 표준 지형 코드·충돌 — 공용 단일 진실원(cities/terrain.js, docs §6.4). 렌더·충돌 공용.
 import { CITY_TILE as TERRAIN, isCityBlocked, isCityWater, resolveArrivalTile, resolveRespawnTile } from './cities/terrain';
+import { cityMetersPerTile, cityScaleTier } from './cities/scale';
 // 🧱 청크 RenderTexture 렌더의 순수 로직(가시성·용량·LRU) — docs §6.3. 대형 맵 메모리 상한.
 import { CHUNK_TILES, chunkDims, chunkTileBounds, visibleChunks, chunkCapacity, ChunkLRU, planChunkUpdate } from './cityChunks';
 import { toInteractiveNode } from './cultureDoors';
@@ -101,9 +102,15 @@ export function buildCityScene(Phaser, city, ctx) {
   const COLS = city.cols;
   const ROWS = city.rows;
   const SCENE_KEY = `city:${city.id}`;
+  const METERS_PER_TILE = cityMetersPerTile(city);
+  const SCALE_TIER = cityScaleTier(METERS_PER_TILE).id;
 
   return class CityScene extends Phaser.Scene {
-    constructor() { super(SCENE_KEY); }
+    constructor() {
+      super(SCENE_KEY);
+      this.metersPerTile = METERS_PER_TILE;
+      this.scaleTier = SCALE_TIER;
+    }
 
     // ── 도트 굽기 유틸 ──
     drawMap(g, rows, pal) {
