@@ -57,6 +57,10 @@ describe('오버월드 지역 레지스트리', () => {
     expect(overworldRegionByScene('overworld:unknown')).toBeNull();
     expect(overworldRegionById('asia-pacific')?.releaseEligible).toBe(true);
     expect(overworldRegionById('emea')?.releaseEligible).toBe(false);
+    expect(overworldRegionById('asia-pacific')?.boundaryNotice).toBeUndefined();
+    expect(overworldRegionById('emea')?.boundaryNotice).toBe(
+      '지도상의 경계·명칭·표시는 특정 지역의 법적 지위나 경계 주장에 대한 승인 또는 지지를 의미하지 않습니다.',
+    );
   });
 
   it.each(OVERWORLD_REGION_LIST)('$label 게이트가 범위 안의 체크인된 보행 타일이다', (region) => {

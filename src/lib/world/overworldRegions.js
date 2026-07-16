@@ -135,6 +135,7 @@ export const OVERWORLD_REGIONS = Object.freeze({
     id: 'emea',
     sceneId: 'overworld:emea',
     label: '유럽·지중해·중동',
+    boundaryNotice: '지도상의 경계·명칭·표시는 특정 지역의 법적 지위나 경계 주장에 대한 승인 또는 지지를 의미하지 않습니다.',
     releaseEligible: false,
     width: 964,
     height: 1137,
