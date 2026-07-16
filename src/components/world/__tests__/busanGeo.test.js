@@ -3,7 +3,12 @@ import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { BUSAN_GEO } from '../cities/busan.geo.js';
 import { CITY_TILE, isCityBlocked } from '../cities/terrain.js';
-import { buildKoreanCityGeo, decodeTerrainRle, encodeTerrainRle } from '../../../../scripts/build-korean-city-geo.mjs';
+import {
+  buildKoreanCityGeo,
+  decodeTerrainRle,
+  encodeTerrainRle,
+  normalizeKoreanBridgeTerrain,
+} from '../../../../scripts/build-korean-city-geo.mjs';
 import { buildSnapshot, isMountainTags, roadStyle } from '../../../../scripts/build-korean-city-osm-snapshot.mjs';
 
 const terrainHash = (terrain) => createHash('sha256').update(terrain).digest('hex');
@@ -102,11 +107,50 @@ function waterWidthAtLatitude(terrain, latitude, [minLongitude, maxLongitude]) {
 }
 
 describe('부산 실지형 데이터 계약', () => {
+  it('한국식 교량 3분류는 횡단 회랑을 도로로, 고립 조각을 수면으로 흡수한다', () => {
+    const meta = { grid: { w: 7, h: 5 } };
+    const terrain = new Uint8Array(35).fill(CITY_TILE.WATER);
+    terrain[2 * 7] = CITY_TILE.ROAD;
+    terrain[2 * 7 + 1] = CITY_TILE.BRIDGE;
+    terrain[2 * 7 + 2] = CITY_TILE.BRIDGE;
+    terrain[2 * 7 + 3] = CITY_TILE.BRIDGE;
+    terrain[2 * 7 + 4] = CITY_TILE.BRIDGE;
+    terrain[2 * 7 + 5] = CITY_TILE.BRIDGE;
+    terrain[2 * 7 + 6] = CITY_TILE.ROAD;
+    terrain[3 * 7 + 3] = CITY_TILE.RIVER;
+    terrain[4 * 7 + 3] = CITY_TILE.BRIDGE;
+
+    const normalized = normalizeKoreanBridgeTerrain(terrain, meta);
+    expect(Array.from(normalized.terrain.slice(2 * 7 + 1, 2 * 7 + 6)))
+      .toEqual(Array(5).fill(CITY_TILE.ROAD));
+    expect(normalized.terrain[4 * 7 + 3]).toBe(CITY_TILE.RIVER);
+    expect(normalized.report).toMatchObject({
+      method: 'korea-bridge-three-way-v1',
+      sourceBridgeTileCount: 6,
+      roadTileCount: 5,
+      absorbedRiverTileCount: 1,
+      finalBridgeTileCount: 0,
+    });
+  });
+
   it('20m bbox와 한국 로케일 스키마를 고정한다', () => {
     expect(BUSAN_GEO.meta).toMatchObject({
       city: 'busan', bbox: [128.89, 35.04, 129.18, 35.24], grid: { w: 1320, h: 1114 },
       metersPerTile: 20, projection: 'webmercator', contentLocale: 'ko',
       schema: { nameField: 'nameKo', localeSlots: 'central-lookup-expandable' },
+      bridgeNormalization: {
+        method: 'korea-bridge-three-way-v1',
+        roadRule: 'two-land-contact-components-or-road-contact',
+        absorptionRule: 'river-before-water',
+        sourceBridgeTileCount: 4_817,
+        componentCount: 469,
+        roadComponentCount: 459,
+        absorbedComponentCount: 10,
+        roadTileCount: 4_796,
+        absorbedWaterTileCount: 13,
+        absorbedRiverTileCount: 8,
+        finalBridgeTileCount: 0,
+      },
       buildingTexture: {
         method: 'deterministic-road-block-infill', version: 2, targetLandRatio: 0.1,
         blockFillRatioMin: 0.7, blockFillRatioMax: 0.85,
@@ -117,8 +161,8 @@ describe('부산 실지형 데이터 계약', () => {
         preNormalizationTargetBuildingTileCount: 78_407,
         candidateBlockCount: 5_476, selectedBlockCount: 1_479, preservedAlleyTileCount: 5_835,
         selectedBlockFillRatioMin: 0.7, selectedBlockFillRatioMax: 0.849462,
-        finalLandTileCount: 1_034_410, finalBuildingTileCount: 104_287,
-        finalLandBuildingRatio: 0.100818,
+        finalLandTileCount: 1_034_389, finalBuildingTileCount: 104_287,
+        finalLandBuildingRatio: 0.10082,
       },
     });
     expect(BUSAN_GEO.terrain).toBeInstanceOf(Uint8Array);
@@ -146,23 +190,23 @@ describe('부산 실지형 데이터 계약', () => {
     const counts = new Map();
     for (const code of BUSAN_GEO.terrain) counts.set(code, (counts.get(code) || 0) + 1);
     expect(Object.fromEntries(counts)).toEqual({
-      [CITY_TILE.ROAD]: 269_700,
+      [CITY_TILE.ROAD]: 274_496,
       [CITY_TILE.SIDEWALK]: 379_008,
       [CITY_TILE.CROSSWALK]: 2_040,
       [CITY_TILE.PLAZA]: 2,
       [CITY_TILE.PARK]: 29_963,
-      [CITY_TILE.BRIDGE]: 4_817,
-      [CITY_TILE.WATER]: 420_234,
+      [CITY_TILE.WATER]: 420_247,
       [CITY_TILE.BUILDING]: 104_287,
-      [CITY_TILE.RIVER]: 15_836,
+      [CITY_TILE.RIVER]: 15_844,
       [CITY_TILE.MOUNTAIN]: 244_593,
     });
+    expect(counts.get(CITY_TILE.BRIDGE) || 0).toBe(0);
     expect(BUSAN_GEO.meta.buildingTexture.finalLandBuildingRatio).toBeGreaterThanOrEqual(0.09);
     expect(BUSAN_GEO.meta.buildingTexture.finalLandBuildingRatio).toBeLessThanOrEqual(0.11);
     const landTiles = BUSAN_GEO.terrain.length
       - counts.get(CITY_TILE.WATER) - counts.get(CITY_TILE.RIVER);
     const greenRatio = (counts.get(CITY_TILE.MOUNTAIN) + counts.get(CITY_TILE.PARK)) / landTiles;
-    expect(greenRatio).toBeCloseTo(0.265423, 6);
+    expect(greenRatio).toBeCloseTo(0.265428, 6);
     expect(greenRatio).toBeGreaterThanOrEqual(0.20);
     expect(BUSAN_GEO.railways.mask).toBeInstanceOf(Uint8Array);
     expect(BUSAN_GEO.railways.mask).toHaveLength(BUSAN_GEO.terrain.length);
@@ -298,7 +342,7 @@ describe('부산 실지형 데이터 계약', () => {
       walkable += 1;
       reached += seen[index];
     }
-    expect(walkable).toBe(685_530);
+    expect(walkable).toBe(685_509);
     expect(reached).toBe(walkable);
   });
 });
@@ -342,7 +386,7 @@ describe('부산 생성 결정성·오프라인 계약', () => {
     const second = buildKoreanCityGeo('busan');
     expect(terrainHash(first.terrain)).toBe(terrainHash(second.terrain));
     expect(terrainHash(first.terrain)).toBe(terrainHash(BUSAN_GEO.terrain));
-    expect(terrainHash(first.terrain)).toBe('91150cf20b716197ad0d3f36b40dedc7b48ca18765e3e9b7c56a4ed83b64d7f8');
+    expect(terrainHash(first.terrain)).toBe('d42cd6c769e9a01de4f90c0c31dfcbe386d6d57b4b56b358be7e06cb4bc5fe59');
     expect(terrainHash(first.railways.mask)).toBe('16fbb812507b2d62ab0f467ccac2659565bcc5c4185213508c140972dab9e020');
     expect(first.pois).toEqual(BUSAN_GEO.pois);
     expect(first.stations).toEqual(BUSAN_GEO.stations);
@@ -353,7 +397,7 @@ describe('부산 생성 결정성·오프라인 계약', () => {
     const railwayRuns = encodeTerrainRle(BUSAN_GEO.railways.mask);
     expect(decodeTerrainRle(terrainRuns, BUSAN_GEO.terrain.length)).toEqual(BUSAN_GEO.terrain);
     expect(decodeTerrainRle(railwayRuns, BUSAN_GEO.railways.mask.length)).toEqual(BUSAN_GEO.railways.mask);
-    expect(terrainRuns).toHaveLength(277_242);
+    expect(terrainRuns).toHaveLength(275_995);
     expect(railwayRuns).toHaveLength(11_647);
     expect(fs.readFileSync(new URL('../cities/busan.geo.js', import.meta.url), 'utf8')).not.toMatch(/\bfetch\s*\(/);
     expect(fs.readFileSync(new URL('../../../../scripts/build-korean-city-geo.mjs', import.meta.url), 'utf8')).not.toMatch(/\bfetch\s*\(/);
