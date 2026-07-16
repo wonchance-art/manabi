@@ -990,6 +990,7 @@ export default function WorldPage() {
                 avatar={avatar}
                 controlsRef={controlsRef}
                 initialSpawn={livePosRef.current || worldSpawn || null}
+                canAccessPreviewRegions={profile?.role === 'admin'}
                 onOpenChapter={openCultureChapter}
                 onOpenReading={profile?.role === 'admin' ? openReadingText : null}
                 onOpenDictionary={openDictionary}
