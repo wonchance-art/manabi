@@ -111,7 +111,7 @@ const CITY_GATES = {
     bridgeCrossings: [],
   },
   'mont-saint-michel': {
-    file: 'src/components/world/cities/montsaintmichel.geo.js',
+    file: 'src/components/world/cities/mont-saint-michel.geo.js',
     snapshot: null,
     expectedLocale: 'fr',
     expectedMpt: 4, // 정밀 티어 1호 — mpt 계약 자체가 게이트
