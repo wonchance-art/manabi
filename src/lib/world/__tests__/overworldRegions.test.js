@@ -80,6 +80,8 @@ describe('오버월드 지역 레지스트리', () => {
     expect(checkedInGateCell(region, region.airGate)).toMatchObject({
       valid: true, collision: 0, viewOnly: 0,
     });
+    expect(projectOverworldRegionCoordinate(region, region.airGate.lon, region.airGate.lat))
+      .toEqual(region.airGate.tile);
     expect(overworldRegionAirSpawn(region)).toEqual({
       scene: region.sceneId, x: region.airGate.tile.x, y: region.airGate.tile.y,
     });
