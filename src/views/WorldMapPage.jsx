@@ -489,6 +489,20 @@ export default function WorldMapPage() {
         ))}
       </div>
 
+      {activeMap.kind === 'overworld' && activeMap.region.boundaryNotice && (
+        <p
+          role="note"
+          style={{
+            margin: 0, padding: '8px 10px', borderRadius: 6,
+            border: '1px solid var(--border-color, rgba(128,128,128,0.3))',
+            background: 'var(--bg-secondary, rgba(128,128,128,0.08))',
+            color: 'var(--text-muted)', fontSize: '0.72rem', lineHeight: 1.5,
+          }}
+        >
+          경계 표기 안내 · {activeMap.region.boundaryNotice}
+        </p>
+      )}
+
       {/* 하단 정보 바 — 좌표/위경도 역산 + 범례 */}
       <div style={{
         display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12,
