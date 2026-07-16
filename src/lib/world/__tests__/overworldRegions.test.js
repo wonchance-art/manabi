@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { decodeOverworldChunkV1, OVERWORLD_STORAGE_CHUNK_TILES } from '../overworldChunk.js';
+import { WORLD_NODES } from '../../../components/world/worldNodes.js';
 import { normalizeOverworldOverlayDocument } from '../overworldFeatureOverlay.js';
 import { normalizeOverworldTransportNodeDocument } from '../overworldTransportNodes.js';
 import {
@@ -54,6 +55,8 @@ describe('오버월드 지역 레지스트리', () => {
     expect(overworldRegionForCorridorStop('moscow')?.id).toBe('emea');
     expect(overworldRegionById('unknown')).toBeNull();
     expect(overworldRegionByScene('overworld:unknown')).toBeNull();
+    expect(overworldRegionById('asia-pacific')?.releaseEligible).toBe(true);
+    expect(overworldRegionById('emea')?.releaseEligible).toBe(false);
   });
 
   it.each(OVERWORLD_REGION_LIST)('$label 게이트가 범위 안의 체크인된 보행 타일이다', (region) => {
@@ -90,6 +93,18 @@ describe('오버월드 지역 레지스트리', () => {
     expect(overworldRegionAirSpawn(apac)).toEqual({
       scene: apac.sceneId, x: 1460, y: 582,
     });
+  });
+
+  it('신규 사용자의 APAC 서울 기본 진입점이 체크인된 보행 타일이다', () => {
+    const apac = overworldRegionById('asia-pacific');
+    const seoul = WORLD_NODES.find(({ id }) => id === 'seoul');
+    expect(seoul).toMatchObject({
+      regionId: apac.id,
+      overworldTile: [1468, 579],
+    });
+    expect(checkedInGateCell(apac, {
+      tile: { x: seoul.overworldTile[0], y: seoul.overworldTile[1] },
+    })).toMatchObject({ valid: true, collision: 0, viewOnly: 0 });
   });
 
   it.each(OVERWORLD_REGION_LIST)('$label의 위경도와 타일 좌표를 뷰어용으로 왕복한다', (region) => {

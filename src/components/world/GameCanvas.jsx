@@ -64,6 +64,7 @@ import {
   isSpawnTileValid,
   cityRedirectScene,
   corridorRedirectScene,
+  defaultOverworldRegionSpawn,
   overworldRegionRedirectScene,
 } from '../../lib/world/session';
 // 🌏 독해 트랙 "도쿄 도착" 글 1 → 월드 스토리 씬(하네다 공항). 공항 씬·텍스트박스·문답 오버레이.
@@ -1309,6 +1310,25 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
             const redirect = cityRedirectScene(bootData, initialSpawnRef.current, (id) => !!CITY_DATA[id]);
             if (redirect) {
               this.scene.start(redirect, { spawn: initialSpawnRef.current });
+              return;
+            }
+          }
+          {
+            const defaultNode = getNode('seoul');
+            const defaultSpawn = defaultNode?.overworldTile
+              ? {
+                  scene: `overworld:${defaultNode.regionId}`,
+                  x: defaultNode.overworldTile[0],
+                  y: defaultNode.overworldTile[1],
+                }
+              : null;
+            const redirect = defaultOverworldRegionSpawn(
+              bootData,
+              initialSpawnRef.current,
+              defaultSpawn,
+            );
+            if (redirect) {
+              this.scene.start(redirect.scene, { spawn: redirect });
               return;
             }
           }

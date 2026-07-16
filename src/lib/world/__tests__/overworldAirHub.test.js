@@ -68,7 +68,7 @@ describe('overworld air hub destinations', () => {
     destinations.forEach((destination) => {
       const region = OVERWORLD_REGION_LIST.find(({ id }) => id === destination.id);
       expect(destination.spawn).toEqual(overworldRegionAirSpawn(region));
-      expect(destination.preview).toBe(true);
+      expect(destination.preview).toBe(!region.releaseEligible);
     });
     expect(destinations.find(({ id }) => id === 'emea')?.spawn)
       .toEqual({ scene: 'overworld:emea', x: 214, y: 420 });

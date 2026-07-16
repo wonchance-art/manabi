@@ -63,7 +63,7 @@ export const OVERWORLD_REGIONS = Object.freeze({
     id: 'asia-pacific',
     sceneId: 'overworld:asia-pacific',
     label: '아시아·태평양',
-    releaseEligible: false,
+    releaseEligible: true,
     width: 2631,
     height: 2669,
     bbox: [60, -47, 180, 61],

@@ -93,6 +93,16 @@ export function overworldRegionRedirectScene(bootData, savedSpawn, { allowPrevie
   return isOverworldRegionTile(scene, Number(savedSpawn.x), Number(savedSpawn.y)) ? scene : null;
 }
 
+export function defaultOverworldRegionSpawn(bootData, savedSpawn, defaultSpawn) {
+  if (bootData?.spawn || savedSpawn != null || !defaultSpawn || typeof defaultSpawn !== 'object') return null;
+  const scene = typeof defaultSpawn.scene === 'string' ? defaultSpawn.scene : '';
+  const region = overworldRegionByScene(scene);
+  const x = Number(defaultSpawn.x);
+  const y = Number(defaultSpawn.y);
+  if (!region || region.releaseEligible !== true || !isOverworldRegionTile(scene, x, y)) return null;
+  return Object.freeze({ scene, x, y });
+}
+
 // 스폰 타일이 맵 안이고 걸을 수 있는지(순수). isWalkable(tx,ty)=>bool 은 호출부가 주입
 // (GameCanvas 는 씬의 tileCode/blocked 로, 테스트는 페이크로). 범위 밖·비보행이면 false.
 export function isSpawnTileValid(tx, ty, cols, rows, isWalkable) {
