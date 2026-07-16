@@ -8,8 +8,11 @@ const DEG = Math.PI / 180;
 const METERS_PER_TILE = 20;
 const CITY_CONFIG = Object.freeze({
   busan: Object.freeze({
-    bbox: Object.freeze([129.00, 35.04, 129.18, 35.18]),
-    oceanSeeds: Object.freeze([{ lon: 129.175, lat: 35.05 }]),
+    bbox: Object.freeze([128.89, 35.04, 129.18, 35.24]),
+    oceanSeeds: Object.freeze([
+      { lon: 128.895, lat: 35.045 },
+      { lon: 129.175, lat: 35.05 },
+    ]),
     output: 'scripts/data/busan-osm-v21.json',
   }),
   seoul: Object.freeze({
@@ -239,10 +242,14 @@ export function buildSnapshot(city, rawText) {
   const length = metrics.grid.w * metrics.grid.h;
   const masks = {
     building: new Uint8Array(length), road: new Uint8Array(length), water: new Uint8Array(length),
-    river: new Uint8Array(length), park: new Uint8Array(length), railway: new Uint8Array(length),
+    river: new Uint8Array(length), park: new Uint8Array(length), mountain: new Uint8Array(length),
+    railway: new Uint8Array(length),
     coastline: new Uint8Array(length),
   };
-  const counts = { buildingWays: 0, roadWays: 0, waterAreas: 0, riverWays: 0, parkAreas: 0, railwayWays: 0, coastlineWays: 0 };
+  const counts = {
+    buildingWays: 0, roadWays: 0, waterAreas: 0, riverWays: 0, parkAreas: 0,
+    mountainAreas: 0, railwayWays: 0, coastlineWays: 0,
+  };
   const crossings = [];
   const elements = [...(raw.elements ?? [])].sort((a, b) => `${a.type}:${a.id}`.localeCompare(`${b.type}:${b.id}`));
   for (const element of elements) {
@@ -269,9 +276,13 @@ export function buildSnapshot(city, rawText) {
       drawPolyline(masks.river, element.geometry, metrics, tags.waterway === 'river' ? 2 : 1, 1);
       counts.riverWays += 1;
     }
-    if (tags.leisure === 'park' || /^(grass|recreation_ground|forest)$/.test(tags.landuse ?? '')) {
+    if (tags.leisure === 'park' || /^(grass|recreation_ground)$/.test(tags.landuse ?? '')) {
       paintPolygonElement(masks.park, element, metrics);
       counts.parkAreas += 1;
+    }
+    if (tags.landuse === 'forest' || tags.natural === 'wood') {
+      paintPolygonElement(masks.mountain, element, metrics);
+      counts.mountainAreas += 1;
     }
     if (/^(rail|subway|light_rail|tram)$/.test(tags.railway ?? '') && Array.isArray(element.geometry)) {
       drawPolyline(masks.railway, element.geometry, metrics, 0, 1);

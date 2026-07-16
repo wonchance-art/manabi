@@ -7,8 +7,8 @@ const grid = buildBusanGrid();
 const at = (x, y) => grid[y * COLS + x];
 
 describe('부산 플레이 도시 계약', () => {
-  it('820×780·20m geo 격자를 EXIT 두 칸 외 그대로 쓴다', () => {
-    expect([COLS, ROWS]).toEqual([820, 780]);
+  it('1320×1114·20m geo 격자를 EXIT 두 칸 외 그대로 쓴다', () => {
+    expect([COLS, ROWS]).toEqual([1320, 1114]);
     expect(BUSAN_GEO.meta.metersPerTile).toBe(20);
     expect(grid).toHaveLength(COLS * ROWS);
     let diffs = 0;
@@ -21,8 +21,8 @@ describe('부산 플레이 도시 계약', () => {
   });
 
   it('부산역에서 북쪽 EXIT까지 세로 보행 회랑이 열린다', () => {
-    expect(ENTRANCE).toEqual({ x: 183, y: 361, facing: 'down' });
-    for (let y = 351; y <= 361; y += 1) expect(isCityWalkable(at(183, y))).toBe(true);
+    expect(ENTRANCE).toEqual({ x: 684, y: 695, facing: 'down' });
+    for (let y = 685; y <= 695; y += 1) expect(isCityWalkable(at(684, y))).toBe(true);
   });
 
   it('한국 source exact-key와 중앙 locale 슬롯을 유지한다', () => {
@@ -56,11 +56,11 @@ describe('부산 플레이 도시 계약', () => {
   it('부산항 페리 접점과 두 도시철도 축을 배선한다', () => {
     expect(BUSAN.returnNode).toBe('busan');
     expect(BUSAN_GEO.pois.find((poi) => poi.id === 'busan-port-intl')).toMatchObject({
-      nameKo: '부산항국제여객터미널', lon: 129.0403, lat: 35.1194, tile: [183, 337],
+      nameKo: '부산항국제여객터미널', lon: 129.0403, lat: 35.1194, tile: [684, 671],
     });
     expect(TRANSIT.map((line) => line.id)).toEqual(['busan-line-1', 'busan-line-2']);
     const stationIds = new Set(STATIONS.map((station) => station.id));
     for (const line of TRANSIT) for (const stopId of line.stopIds) expect(stationIds.has(stopId)).toBe(true);
-    expect(BUSAN.railways.tileCount).toBe(6_693);
+    expect(BUSAN.railways.tileCount).toBe(13_315);
   });
 });

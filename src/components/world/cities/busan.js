@@ -54,7 +54,8 @@ export const STATIONS = BUSAN_GEO.stations.map((station) => ({
 export const TRANSIT = [
   {
     id: 'busan-line-1', nameJa: '부산도시철도 1호선', mode: 'subway', color: 0xe38b2c,
-    stopIds: ['nampo', 'busan', 'seomyeon'], segmentMinutes: [5, 10], dwellMinutes: 1,
+    stopIds: ['nampo', 'busan', 'seomyeon', 'dongnae-station', 'pnu-station'],
+    segmentMinutes: [5, 10, 18, 7], dwellMinutes: 1,
     serviceWindows: [
       { startMinute: 0, endMinute: 300, headwayMinutes: 30 },
       { startMinute: 300, endMinute: 1440, headwayMinutes: 10 },
@@ -62,7 +63,8 @@ export const TRANSIT = [
   },
   {
     id: 'busan-line-2', nameJa: '부산도시철도 2호선', mode: 'subway', color: 0x59a44b,
-    stopIds: ['seomyeon', 'haeundae-station'], segmentMinutes: [35], dwellMinutes: 1,
+    stopIds: ['seomyeon', 'centum-city-station', 'haeundae-station'],
+    segmentMinutes: [25, 10], dwellMinutes: 1,
     serviceWindows: [
       { startMinute: 0, endMinute: 300, headwayMinutes: 30 },
       { startMinute: 300, endMinute: 1440, headwayMinutes: 10 },

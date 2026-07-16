@@ -90,7 +90,7 @@ export const <CITY>_GEO = {
 };
 ```
 **표준 지형 코드**(현 `cities/fukuoka.js` CITY_TILE 승격 — 렌더·충돌 공용):
-`ROAD · SIDEWALK · CROSSWALK · PLAZA · PARK · BEACH · WATER(차단) · RIVER(차단) · BUILDING(차단) · ISLAND(차단·배경) · BRIDGE · DOCK`.
+`ROAD · SIDEWALK · CROSSWALK · PLAZA · PARK · BEACH · WATER(차단) · RIVER(차단) · BUILDING(차단) · ISLAND(차단·배경) · MOUNTAIN(차단·배경) · BRIDGE · DOCK`.
 - Codex: 해안선·강·도로·공원을 실좌표로 래스터화, POI/역 tile좌표를 투영으로 산출, **공식 자료 대조**로 상대 위치 충실도 + 육지 BFS 연결성(다리 포함) 검증.
 - Claude: geo.js를 import해 청크 렌더 + POI/역에 일본어 간판·desc·프리팹·정기 교통 배선.
 

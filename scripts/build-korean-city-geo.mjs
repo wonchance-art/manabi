@@ -8,7 +8,7 @@ const DEG = Math.PI / 180;
 const METERS_PER_TILE = 20;
 const CITY_CONFIG = Object.freeze({
   busan: Object.freeze({
-    bbox: Object.freeze([129.00, 35.04, 129.18, 35.18]),
+    bbox: Object.freeze([128.89, 35.04, 129.18, 35.24]),
     snapshot: new URL('./data/busan-osm-v21.json', import.meta.url),
     output: '../src/components/world/cities/busan.geo.js',
     exportName: 'BUSAN_GEO',
@@ -23,12 +23,19 @@ const CITY_CONFIG = Object.freeze({
       { id: 'busan-tower', nameKo: '부산타워(용두산공원)', lat: 35.1006, lon: 129.0324, kind: 'landmark' },
       { id: 'taejongdae', nameKo: '태종대', lat: 35.0532, lon: 129.0866, kind: 'coast' },
       { id: 'busan-port-intl', nameKo: '부산항국제여객터미널', lat: 35.1194, lon: 129.0403, kind: 'port' },
+      { id: 'dadaepo', nameKo: '다대포해수욕장', lat: 35.0467, lon: 128.9655, kind: 'beach' },
+      { id: 'eulsukdo', nameKo: '을숙도', lat: 35.1000, lon: 128.9450, kind: 'nature' },
+      { id: 'dongnae-eupseong', nameKo: '동래읍성', lat: 35.2100, lon: 129.0850, kind: 'historic' },
+      { id: 'pnu-street', nameKo: '부산대앞 젊음의 거리', lat: 35.2300, lon: 129.0840, kind: 'district' },
     ]),
     stations: Object.freeze([
       { id: 'busan', nameKo: '부산역', lat: 35.1151, lon: 129.0403, line: 'KTX·부산도시철도 1호선' },
       { id: 'seomyeon', nameKo: '서면역', lat: 35.1579, lon: 129.0593, line: '부산도시철도 1·2호선' },
       { id: 'nampo', nameKo: '남포역', lat: 35.0987, lon: 129.0338, line: '부산도시철도 1호선' },
       { id: 'haeundae-station', nameKo: '해운대역', lat: 35.1637, lon: 129.1443, line: '부산도시철도 2호선' },
+      { id: 'dongnae-station', nameKo: '동래역', lat: 35.2050, lon: 129.0790, line: '부산도시철도 1호선' },
+      { id: 'pnu-station', nameKo: '부산대역', lat: 35.2295, lon: 129.0900, line: '부산도시철도 1호선' },
+      { id: 'centum-city-station', nameKo: '센텀시티역', lat: 35.1690, lon: 129.1320, line: '부산도시철도 2호선' },
     ]),
   }),
   seoul: Object.freeze({
@@ -257,9 +264,13 @@ function applySnapshotMasks(grid, snapshot, meta) {
     water: decodeTerrainRle(snapshot.waterRle, length),
     river: decodeTerrainRle(snapshot.riverRle, length),
     park: decodeTerrainRle(snapshot.parkRle, length),
+    mountain: decodeTerrainRle(snapshot.mountainRle, length),
   };
   for (let index = 0; index < length; index += 1) if (masks.water[index]) grid[index] = CITY_TILE.WATER;
   for (let index = 0; index < length; index += 1) if (masks.river[index]) grid[index] = CITY_TILE.RIVER;
+  for (let index = 0; index < length; index += 1) {
+    if (masks.mountain[index] && grid[index] !== CITY_TILE.WATER && grid[index] !== CITY_TILE.RIVER) grid[index] = CITY_TILE.MOUNTAIN;
+  }
   for (let index = 0; index < length; index += 1) {
     if (masks.park[index] && grid[index] !== CITY_TILE.WATER && grid[index] !== CITY_TILE.RIVER) grid[index] = CITY_TILE.PARK;
   }
