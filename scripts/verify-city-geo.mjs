@@ -93,6 +93,23 @@ const CITY_GATES = {
       { name: '퐁드베르시', lon: 2.3745, lat: 48.8375, windowTiles: 6 },
     ],
   },
+  'cote-dazur': {
+    file: 'src/components/world/cities/cote-dazur.geo.js',
+    snapshot: null,
+    expectedLocale: 'fr',
+    expectedMpt: 20,
+    buildingPct: null, // 리비에라 프로필 관찰 후 확정
+    greenMinPct: null, // 해안 구릉 관목 프로필 미확정 — report 관찰
+    poiMaxDevTiles: 2.5,
+    downtown: { label: '니스 구시가', lon: 7.2755, lat: 43.6955 },
+    riverSections: [
+      { name: '바르강 하구 단면', lat: 43.665, lonRange: [7.19, 7.21], sumMinM: 100, runMinM: 60 },
+    ],
+    streamCourses: [],
+    reportCourses: [],
+    bridgeMaxTiles: 0, // 오너 확정: 프랑스도 한국식 교량 정리
+    bridgeCrossings: [],
+  },
   'mont-saint-michel': {
     file: 'src/components/world/cities/montsaintmichel.geo.js',
     snapshot: null,
