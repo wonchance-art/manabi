@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "releaseEligible": false,
+  "generatorGitSha": null,
+  "regionId": "asia-pacific-terrain-preview-v1",
+  "baseSurface": {
+    "manifestPath": "scripts/world/overworld-region-apac-v1.json",
+    "directory": "public/assets/overworld/asia-pacific-surface-preview-v1",
+    "contentManifest": "content-manifest.json",
+    "contentManifestSha256": "356de7e0527bedc76ec42ef05271ed6ddb41e4c69d1a7ab231c42015e9d08597",
+    "contentManifestBytes": 25021
+  },
+  "elevationSource": {
+    "id": "noaa-etopo-2022-bed-60s",
+    "cacheFile": "ETOPO_2022_v1_60s_N90W180_bed.tif",
+    "url": "https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO2022/data/60s/60s_bed_elev_gtif/ETOPO_2022_v1_60s_N90W180_bed.tif",
+    "version": "ETOPO-2022-v1-60s-bed",
+    "sha256": "a2cc72f8a4292dee928f439069457cdefc1fba319876807c626edce40258ba7a",
+    "bytes": 478386633,
+    "license": "NOAA public domain / CC0-1.0",
+    "role": "elevation",
+    "required": true,
+    "width": 21600,
+    "height": 10800,
+    "pixelSizeDegrees": 0.016666666666666666,
+    "originCenterLon": -179.99166666666667,
+    "originCenterLat": 89.99166666666666,
+    "dataType": "float32",
+    "crop": {
+      "left": 14400,
+      "top": 1740,
+      "width": 7200,
+      "height": 6481
+    }
+  },
+  "riverSource": {
+    "id": "natural-earth-rivers-10m",
+    "cacheFile": "ne_10m_rivers_lake_centerlines.geojson",
+    "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/geojson/ne_10m_rivers_lake_centerlines.geojson",
+    "version": "natural-earth-vector-v5.1.2",
+    "sha256": "bb854a900ecbd3b408df46d5e16e3e0f974ba55993f9d8b5c26e855273c0905a",
+    "bytes": 7307743,
+    "license": "Natural Earth public domain",
+    "role": "river-centerlines",
+    "required": true
+  },
+  "terrainClasses": {
+    "sea": 0,
+    "lowland": 1,
+    "highland": 2,
+    "mountain": 3,
+    "alpine": 4
+  },
+  "terrainThresholdsMeters": {
+    "highland": 300,
+    "mountain": 1000,
+    "alpine": 2500
+  },
+  "elevationSampling": {
+    "method": "nearest-native-mean-4x4",
+    "offsets": [0.125, 0.375, 0.625, 0.875],
+    "rounding": "nearest-half-away-from-zero",
+    "edgeHandling": "clamp-to-source-edge"
+  },
+  "riverRules": {
+    "maxScaleRank": 5,
+    "quantization": 1024,
+    "haloTiles": 1,
+    "simplification": "none"
+  },
+  "previewMasks": {
+    "collision": "all-blocked",
+    "viewOnly": "all-view-only"
+  }
+}

@@ -7,14 +7,20 @@
     "node": "20.x"
   },
   "scripts": {
-    "predev": "node scripts/world/build-overworld-fixture.mjs --check && node scripts/copy-pdf-worker.mjs",
+    "predev": "node scripts/world/build-overworld-fixture.mjs --check && node scripts/world/build-world-node-geo-manifest.mjs --check && node scripts/copy-pdf-worker.mjs",
     "dev": "next dev",
-    "prebuild": "node scripts/check-content.mjs && node scripts/check-reading.mjs && node scripts/world/build-overworld-fixture.mjs --check && node scripts/update-sw-version.mjs && node scripts/copy-pdf-worker.mjs",
+    "prebuild": "node scripts/check-content.mjs && node scripts/check-reading.mjs && node scripts/world/build-overworld-fixture.mjs --check && node scripts/world/build-world-node-geo-manifest.mjs --check && node scripts/world/check-overworld-assets.mjs && node scripts/update-sw-version.mjs && node scripts/copy-pdf-worker.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
     "check:reading": "node scripts/check-reading.mjs",
     "check:overworld-fixture": "node scripts/world/build-overworld-fixture.mjs --check",
+    "build:overworld-map-previews": "node scripts/world/build-overworld-map-previews.mjs",
+    "build:world-node-geo": "node scripts/world/build-world-node-geo-manifest.mjs",
+    "check:world-node-geo": "node scripts/world/build-world-node-geo-manifest.mjs --check",
+    "build:overworld-transport-nodes": "node scripts/world/build-overworld-transport-nodes.mjs --manifest scripts/world/overworld-transport-nodes-apac-v1.json --output-dir public/assets/overworld/asia-pacific-transport-nodes-preview-v1 && node scripts/world/build-overworld-transport-nodes.mjs --manifest scripts/world/overworld-transport-nodes-emea-v1.json --output-dir public/assets/overworld/europe-mediterranean-middle-east-transport-nodes-preview-v1",
+    "check:overworld-transport-nodes": "node scripts/world/build-overworld-transport-nodes.mjs --check --manifest scripts/world/overworld-transport-nodes-apac-v1.json --output-dir public/assets/overworld/asia-pacific-transport-nodes-preview-v1 && node scripts/world/build-overworld-transport-nodes.mjs --check --manifest scripts/world/overworld-transport-nodes-emea-v1.json --output-dir public/assets/overworld/europe-mediterranean-middle-east-transport-nodes-preview-v1",
+    "check:overworld-assets": "node scripts/world/check-overworld-assets.mjs",
     "test": "vitest run",
     "e2e": "node --test --test-concurrency=1 e2e/smoke.e2e.mjs"
   },
