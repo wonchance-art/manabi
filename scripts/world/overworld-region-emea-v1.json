@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "releaseEligible": false,
+  "generatorGitSha": null,
+  "regionId": "europe-mediterranean-middle-east-surface-preview-v1",
+  "bbox": [-11, 20, 50, 66],
+  "earthRadiusMeters": 6371008.8,
+  "metersPerTile": 4500,
+  "chunkTiles": 256,
+  "projection": {
+    "id": "emea-equirectangular-screen-axis-v1",
+    "method": "equirectangular",
+    "axisMode": "screen-axis",
+    "lon0": 25,
+    "lat0": 45,
+    "standardLat": 50.25
+  },
+  "tileFrame": {
+    "origin": "projected-bbox-north-west",
+    "yAxis": "south",
+    "boundary": "half-open",
+    "rounding": "nearest-half-away-from-zero"
+  },
+  "supersampling": {
+    "width": 4,
+    "height": 4,
+    "offsets": [0.125, 0.375, 0.625, 0.875]
+  },
+  "surfaceClasses": {
+    "sea": 0,
+    "land": 1
+  },
+  "surfacePriority": ["land", "sea"],
+  "previewMasks": {
+    "collision": "all-blocked",
+    "viewOnly": "all-view-only"
+  },
+  "sources": [
+    {
+      "id": "natural-earth-land-10m",
+      "cacheFile": "ne_10m_land.geojson",
+      "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/geojson/ne_10m_land.geojson",
+      "version": "natural-earth-vector-v5.1.2",
+      "sha256": "1ac90796408bc6ad6911d69448485d3c4dbf2190370080368a09976e1c9f7416",
+      "bytes": 10157965,
+      "license": "Natural Earth public domain",
+      "role": "land",
+      "required": true
+    }
+  ]
+}

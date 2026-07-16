@@ -24,6 +24,10 @@ const CHECKED_IN_TERRAIN_DIR = path.join(
   REPO_ROOT,
   'public/assets/overworld/asia-pacific-terrain-preview-v1',
 );
+const CHECKED_IN_EMEA_TERRAIN_DIR = path.join(
+  REPO_ROOT,
+  'public/assets/overworld/europe-mediterranean-middle-east-terrain-preview-v1',
+);
 
 function baseManifest(overrides = {}) {
   return {
@@ -275,5 +279,58 @@ describe('오버월드 terrain 생성', () => {
     expect(surfaceAtGeo(103.85, 46.86)).toBe(content.terrainClasses.mountain);
     expect(surfaceAtGeo(139.692, 35.69)).toBe(content.terrainClasses.lowland);
     expect(surfaceAtGeo(150, 0)).toBe(content.terrainClasses.sea);
+  });
+
+  it('체크인된 지역 ② terrain 20청크·강 overlay·대표 산지를 검증한다', () => {
+    const base = JSON.parse(readFileSync(path.join(
+      REPO_ROOT,
+      'scripts/world/overworld-region-emea-v1.json',
+    ), 'utf8'));
+    const frame = createEquirectangularTileFrame(base);
+    const content = JSON.parse(readFileSync(
+      path.join(CHECKED_IN_EMEA_TERRAIN_DIR, 'content-manifest.json'),
+      'utf8',
+    ));
+    expect(content).toMatchObject({
+      releaseEligible: false,
+      width: 964,
+      height: 1137,
+      chunkColumns: 4,
+      chunkRows: 5,
+      previewMasks: { collision: 'all-blocked', viewOnly: 'all-view-only' },
+      elevationSampling: { edgeHandling: 'clamp-to-source-edge' },
+    });
+    expect(content.chunks).toHaveLength(20);
+    expect(content.overlays).toHaveLength(13);
+    for (const entry of [content.report, ...content.chunks, ...content.overlays]) {
+      const bytes = readFileSync(path.join(CHECKED_IN_EMEA_TERRAIN_DIR, entry.path));
+      expect(bytes.byteLength, entry.path).toBe(entry.bytes);
+      expect(sha256(bytes), entry.path).toBe(entry.sha256);
+      if (entry.path.startsWith('rivers/')) {
+        const document = JSON.parse(bytes.toString('utf8'));
+        expect(document.segments.every((segment) => !Object.hasOwn(segment, 'name')), entry.path).toBe(true);
+      }
+    }
+
+    const surfaceAtGeo = (lon, lat) => {
+      const point = frame.project(lon, lat);
+      const tileX = Math.floor(point.x);
+      const tileY = Math.floor(point.y);
+      const { cx, cy } = frame.tileToChunk(tileX, tileY);
+      const chunk = decodeOverworldChunkV1(readFileSync(path.join(
+        CHECKED_IN_EMEA_TERRAIN_DIR,
+        `${cx}/${cy}.owc`,
+      )));
+      const localX = tileX - cx * 256;
+      const localY = tileY - cy * 256;
+      expect(chunk.collisionAt(localX, localY)).toBe(1);
+      expect(chunk.viewOnlyAt(localX, localY)).toBe(1);
+      return chunk.surfaceAt(localX, localY);
+    };
+    expect(surfaceAtGeo(6.865, 45.832)).toBe(content.terrainClasses.alpine);
+    expect(surfaceAtGeo(42.44, 43.35)).toBe(content.terrainClasses.alpine);
+    expect(surfaceAtGeo(-0.1276, 51.5072)).toBe(content.terrainClasses.lowland);
+    expect(surfaceAtGeo(31.2357, 30.0444)).toBe(content.terrainClasses.lowland);
+    expect(surfaceAtGeo(15, 35)).toBe(content.terrainClasses.sea);
   });
 });
