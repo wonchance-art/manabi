@@ -116,6 +116,11 @@ describe('서울 실지형 데이터 계약', () => {
     });
     expect(SEOUL_GEO.meta.buildingTexture.finalLandBuildingRatio).toBeGreaterThanOrEqual(0.09);
     expect(SEOUL_GEO.meta.buildingTexture.finalLandBuildingRatio).toBeLessThanOrEqual(0.11);
+    const landTiles = SEOUL_GEO.terrain.length
+      - counts.get(CITY_TILE.WATER) - counts.get(CITY_TILE.RIVER);
+    const greenRatio = (counts.get(CITY_TILE.MOUNTAIN) + counts.get(CITY_TILE.PARK)) / landTiles;
+    expect(greenRatio).toBeCloseTo(0.252527, 6);
+    expect(greenRatio).toBeGreaterThanOrEqual(0.20);
     expect(SEOUL_GEO.railways.mask).toBeInstanceOf(Uint8Array);
     expect(SEOUL_GEO.railways.mask).toHaveLength(SEOUL_GEO.terrain.length);
     expect(SEOUL_GEO.railways.tileCount).toBe(50_983);
