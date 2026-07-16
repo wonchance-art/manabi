@@ -127,6 +127,32 @@ describe('대화 스크립트 무결성(라멘·신사·편의점·이자카야)
     expect(heat.ja).not.toContain('肉まん');
   });
 
+  it('역무원 대화는 챕터 ot-11 표현(〜行き·まもなく·뛰어들기 방송·IC카드)을 쓴다', () => {
+    const s = getNpcScript('ekiin');
+    expect(s).toBeTruthy();
+    const flat = JSON.stringify(s);
+    expect(flat).toContain('行き');          // 행선지 확인(choice 정답)
+    expect(flat).toContain('まもなく');       // 방송 청해(type 정답)
+    expect(flat).toContain('かけこみ');       // 국민 방송문(뜻만 알기)
+    expect(flat).toContain('ICカード');       // 개찰 탭
+    // 뛰어들기 문항의 정답은 "기다린다" — 위험 행동이 정답이 되면 안 된다.
+    const jump = s.steps.find((st) => st.t === 'ask' && /뛰어든다/.test(JSON.stringify(st.choices || '')));
+    expect(jump.choices.find((c) => c.correct).text).toContain('기다린다');
+  });
+
+  it('면세 대화는 챕터 ot-12 표현(おねがいします·これです·출국 시 환급)을 쓴다', () => {
+    const s = getNpcScript('menzei');
+    expect(s).toBeTruthy();
+    const flat = JSON.stringify(s);
+    expect(flat).toContain('おねがいします');   // 만능 부탁(type 정답)
+    expect(flat).toContain('これです');         // 여권 내밀기(choice 정답)
+    expect(flat).toContain('しゅっこく');       // 환급은 출국 때(듣기 맛보기)
+    expect(flat).toContain('2026년 11월');      // 신방식 시점(챕터 검증 사실)
+    // 챕터 스토리의 실제 점포명(돈키호테)은 게임 무대에 재현하지 않는다(IP 정책).
+    expect(flat).not.toContain('ドン・キホーテ');
+    expect(flat).not.toContain('돈키');
+  });
+
   it('이자카야 대화는 챕터 ot-08 표현(お通し·とりあえず生で·すみません)을 쓴다', () => {
     const s = getNpcScript('izakaya');
     expect(s).toBeTruthy();

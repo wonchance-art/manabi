@@ -36,16 +36,25 @@ const POI_DESC = {
   ginkakuji: '검박한 정취의 관음전으로 알려진 선종 사찰 「銀閣寺」(ぎんかくじ) — 정식 명칭은 지쇼지(慈照寺). 1482년 아시카가 요시마사가 산장으로 짓기 시작했고, 관음전과 동구당은 국보 — 세계유산 구성 자산이에요.',
 };
 
-export const CITY_NODES = KYOTO_GEO.pois.map((poi) => ({
-  id: poi.id,
-  kind: 'spot',
-  name: poi.nameJa,
-  facade: POI_FACADE[poi.id] || (poi.kind === 'shrine' ? 'torii' : 'sign'),
-  tile: [poi.tile[0], poi.tile[1]],
-  facing: 'down',
-  noStamp: true,
-  desc: POI_DESC[poi.id] || `교토의 대표 장소 「${poi.nameJa}」(${poi.yomi}). 실제 지도 위치를 따라 걸어가 볼 수 있어요.`,
-}));
+export const CITY_NODES = [
+  ...KYOTO_GEO.pois.map((poi) => ({
+    id: poi.id,
+    kind: 'spot',
+    name: poi.nameJa,
+    facade: POI_FACADE[poi.id] || (poi.kind === 'shrine' ? 'torii' : 'sign'),
+    tile: [poi.tile[0], poi.tile[1]],
+    facing: 'down',
+    noStamp: true,
+    desc: POI_DESC[poi.id] || `교토의 대표 장소 「${poi.nameJa}」(${poi.yomi}). 실제 지도 위치를 따라 걸어가 볼 수 있어요.`,
+  })),
+  // ── NPC 대화 노드(가공 무대 — geo POI 아님) — 미코상 스크립트는 도시 불문 제네릭(참배 예절·오미쿠지).
+  //   타일은 보행+보행인접+기존 마커 Chebyshev ≥3 이격을 스크립트로 검증해 고정.
+  {
+    id: 'kyoto-shrine', kind: 'npc', npc: 'shrine', chapter: 'ot-09-jinja', name: '巫女',
+    tile: [485, 514], facing: 'down', noStamp: true,
+    desc: '「伏見稲荷大社」(ふしみいなりたいしゃ) 참배로 곁의 미코(巫女)상. 참배 예절 二礼二拍手一礼(통설)과 오미쿠지를 배워요.',
+  },
+];
 
 export const STATIONS = KYOTO_GEO.stations.map((station) => ({
   id: station.id,

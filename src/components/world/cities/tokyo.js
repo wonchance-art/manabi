@@ -121,6 +121,24 @@ export const CITY_NODES = [
     tile: poiTile('kanda-myojin'), facing: 'down', noStamp: true,
     desc: '정식 명칭이 간다신사(神田神社)인 지요다구의 신사 「神田明神」(かんだみょうじん). 사전(社伝)에 따르면 730년 창건으로 전해지고, 간다마쓰리(神田祭)로 알려져 있어요.',
   },
+  // ── NPC 대화 노드(가공 무대 — geo POI 아님) — ot-11(전철)·ot-12(면세)·ot-07(편의점) 문화 도어.
+  //   후쿠오카 패턴 그대로: kind:'npc' + npc 스크립트 키 + noStamp(스탬프 우주는 오너 결정 전 미확장).
+  //   타일은 보행+보행인접+기존 마커 Chebyshev ≥3 이격을 스크립트로 검증해 고정.
+  {
+    id: 'tokyo-ekiin', kind: 'npc', npc: 'ekiin', chapter: 'ot-11-densha', name: '駅係員',
+    tile: [185, 453], facing: 'down', noStamp: true,
+    desc: '시부야역 플랫폼의 역무원(駅係員·えきかかりいん). 방송은 まもなく(곧)와 〜行き(~행) 두 개만 잡아도 내릴 역을 안 놓쳐요.',
+  },
+  {
+    id: 'tokyo-menzei', kind: 'npc', npc: 'menzei', chapter: 'ot-12-menzei', name: '免税カウンター',
+    tile: [479, 379], facing: 'down', noStamp: true,
+    desc: '긴자 상업가의 면세(免税·めんぜい) 카운터. 여권과 「めんぜい、おねがいします」 한마디면 절차 시작 — 2026년 11월부터는 출국할 때 세금을 돌려받아요.',
+  },
+  {
+    id: 'tokyo-konbini', kind: 'npc', npc: 'konbini', chapter: 'ot-07-konbini', name: 'コンビニ',
+    tile: [181, 274], facing: 'down', noStamp: true,
+    desc: '신주쿠의 24시간 편의점(コンビニ). 계산대 대답은 딱 두 개 — お願いします(네)·大丈夫です(됐어요).',
+  },
 ];
 
 export const STATIONS = TOKYO_GEO.stations.map((station) => ({

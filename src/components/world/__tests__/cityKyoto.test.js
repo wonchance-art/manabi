@@ -27,7 +27,8 @@ describe('교토 플레이 도시 계약', () => {
   });
 
   it('모든 geo POI·역을 요미와 함께 배선하고 마커 간격을 유지한다', () => {
-    expect(CITY_NODES).toHaveLength(KYOTO_GEO.pois.length);
+    // geo POI 1:1 은 spot 노드에만 적용 — NPC 대화 노드(가공 무대)는 별도 케이스에서 검증한다.
+    expect(CITY_NODES.filter((node) => node.kind !== 'npc')).toHaveLength(KYOTO_GEO.pois.length);
     expect(STATIONS).toHaveLength(KYOTO_GEO.stations.length);
     const markers = [...CITY_NODES, ...STATIONS];
     for (const marker of markers) {
@@ -37,6 +38,16 @@ describe('교토 플레이 도시 계약', () => {
     for (let a = 0; a < markers.length; a += 1) for (let b = a + 1; b < markers.length; b += 1) {
       expect(Math.max(Math.abs(markers[a].tile[0] - markers[b].tile[0]), Math.abs(markers[a].tile[1] - markers[b].tile[1])))
         .toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it('NPC 노드는 스크립트 키·챕터를 갖고 스탬프 미대상이다', () => {
+    const npcs = CITY_NODES.filter((node) => node.kind === 'npc');
+    expect(npcs.map((node) => node.id)).toEqual(['kyoto-shrine']);
+    for (const node of npcs) {
+      expect(typeof node.npc).toBe('string');
+      expect(node.chapter).toMatch(/^ot-\d{2}-/);
+      expect(node.noStamp).toBe(true);
     }
   });
 
