@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { WORLD_NODES } from '../../../components/world/worldNodes.js';
 import {
   nearestOverworldRegionWorldNode,
+  overworldRegionWorldNodeMode,
   overworldRegionWorldNodes,
+  resolveOverworldRegionFerry,
 } from '../overworldRegionWorldNodes.js';
 import { overworldRegionById } from '../overworldRegions.js';
 
@@ -34,13 +36,43 @@ describe('APAC 월드 노드 런타임 인덱스', () => {
     expect(overworldRegionWorldNodes(APAC, nodes).map(({ node }) => node.id)).toEqual(['ok']);
   });
 
-  it('설명 노드만 근접 상호작용 대상으로 삼고 게이트는 다음 단계까지 닫는다', () => {
+  it('설명·도시·페리는 열고 공항 스토리 게이트는 다음 단계까지 닫는다', () => {
     const entries = overworldRegionWorldNodes(APAC, [
       { id: 'landmark', regionId: APAC.id, overworldTile: [10, 10] },
-      { id: 'gate', regionId: APAC.id, overworldTile: [11, 10], gate: { type: 'city' } },
+      { id: 'city', regionId: APAC.id, overworldTile: [11, 10], gate: { type: 'city' } },
+      { id: 'airport', regionId: APAC.id, overworldTile: [12, 10], gate: { type: 'story-scene' } },
     ]);
 
     expect(nearestOverworldRegionWorldNode(entries, 10, 10)).toMatchObject({ id: 'landmark' });
-    expect(nearestOverworldRegionWorldNode(entries, 11, 10, 0)).toBeNull();
+    expect(nearestOverworldRegionWorldNode(entries, 11, 10, 0)).toMatchObject({ id: 'city' });
+    expect(nearestOverworldRegionWorldNode(entries, 12, 10, 0)).toBeNull();
+    expect(overworldRegionWorldNodeMode({ gate: { type: 'ferry' } })).toBe('ferry');
+    expect(overworldRegionWorldNodeMode({ gate: { type: 'story-scene' } })).toBe('blocked');
+  });
+
+  it('페리는 같은 지역의 상호 왕복 게이트와 새 도착 좌표만 허용한다', () => {
+    const source = {
+      id: 'source', regionId: APAC.id, overworldTile: [20, 20],
+      gate: { type: 'ferry', to: 'destination' },
+    };
+    const destination = {
+      id: 'destination', regionId: APAC.id, overworldTile: [30, 30],
+      gate: { type: 'ferry', to: 'source' },
+    };
+    const entries = overworldRegionWorldNodes(APAC, [source, destination]);
+
+    expect(resolveOverworldRegionFerry(entries, source, destination.id, APAC.sceneId)).toMatchObject({
+      source,
+      destination,
+      spawn: { scene: APAC.sceneId, x: 30, y: 30 },
+    });
+    expect(resolveOverworldRegionFerry(entries, source, 'other', APAC.sceneId)).toBeNull();
+    expect(resolveOverworldRegionFerry(entries, source, destination.id, '')).toBeNull();
+    expect(resolveOverworldRegionFerry(
+      overworldRegionWorldNodes(APAC, [source, { ...destination, gate: { type: 'ferry', to: 'other' } }]),
+      source,
+      destination.id,
+      APAC.sceneId,
+    )).toBeNull();
   });
 });

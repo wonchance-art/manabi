@@ -7,6 +7,7 @@ import { OverworldTransportNodeLoader } from '../../lib/world/overworldTransport
 import {
   nearestOverworldRegionWorldNode,
   overworldRegionWorldNodes,
+  resolveOverworldRegionFerry,
 } from '../../lib/world/overworldRegionWorldNodes';
 import { PhaserOverworldPageRenderer } from './overworldPageRenderer';
 import { PhaserOverworldChunkOverlayRenderer } from './overworldChunkOverlayRenderer';
@@ -61,6 +62,7 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
   const railGateTexture = `region_rail_gate_${region.id}`;
   const airGateTexture = `region_air_gate_${region.id}`;
   const worldNodeTexture = `region_world_node_${region.id}`;
+  const ferryTexture = `region_ferry_${region.id}`;
 
   return class OverworldRegionScene extends Phaser.Scene {
     constructor() { super(region.sceneId); }
@@ -94,6 +96,15 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
         marker.generateTexture(worldNodeTexture, 16, 18);
         marker.destroy();
       }
+      if (!this.textures.exists(ferryTexture)) {
+        const ferry = this.make.graphics({ add: false });
+        ferry.fillStyle(toneColor(0x285a77, this.mode), 1).fillRect(1, 10, 14, 5);
+        ferry.fillStyle(toneColor(0xf5ecd3, this.mode), 1).fillRect(3, 5, 10, 6);
+        ferry.fillStyle(toneColor(0x9f315d, this.mode), 1).fillRect(9, 2, 3, 4);
+        ferry.fillStyle(toneColor(0x8fc7dd, this.mode), 1).fillRect(4, 7, 2, 2).fillRect(7, 7, 2, 2);
+        ferry.generateTexture(ferryTexture, 16, 16);
+        ferry.destroy();
+      }
     }
 
     create(bootData) {
@@ -105,6 +116,8 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
       this.runHeld = false;
       this.moving = false;
       this.stepPending = false;
+      this.ferrying = false;
+      this.ferryBoat = null;
       this.facing = 'down';
       this.heldDirs = [];
       this.lastEmit = -Infinity;
@@ -349,6 +362,82 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
       else if (this.nearWorldNode) ctx.requestNode?.(this.nearWorldNode);
     }
 
+    enterCity(cityId) {
+      if (this.inputLocked || !ctx.hasCity?.(cityId)) return;
+      this.inputLocked = true;
+      this.heldDirs.length = 0;
+      const worldReturn = Object.freeze({
+        scene: region.sceneId,
+        x: this.pTileX,
+        y: this.pTileY,
+      });
+      this.cameras.main.fadeOut(260, 0, 0, 0);
+      this.cameras.main.once('camerafadeoutcomplete', () => {
+        this.scene.start(`city:${cityId}`, { worldReturn });
+      });
+    }
+
+    async ferryTo(destinationId) {
+      if (this.inputLocked || this.ferrying) return false;
+      const route = resolveOverworldRegionFerry(
+        this.worldNodeEntries,
+        this.nearWorldNode,
+        destinationId,
+        region.sceneId,
+      );
+      if (!route) return false;
+
+      const { x: destinationX, y: destinationY } = route.spawn;
+      const spawn = route.spawn;
+      this.inputLocked = true;
+      this.ferrying = true;
+      this.heldDirs.length = 0;
+      ctx.setNearNode?.(null);
+      ctx.setStatus?.({ phase: 'saving-ferry', message: '도착 항구를 저장하고 있어요.' });
+      const persisted = await ctx.persistPosition?.(spawn);
+      if (!persisted || this.destroyed) {
+        this.inputLocked = false;
+        this.ferrying = false;
+        this.refreshNearInteraction(true);
+        ctx.setStatus?.({ phase: 'error', message: '도착 항구를 저장하지 못했어요. 다시 시도해 주세요.' });
+        return false;
+      }
+
+      ctx.setStatus?.(null);
+      const targetX = destinationX * TILE + TILE / 2;
+      const targetY = destinationY * TILE + TILE / 2;
+      const distance = Math.hypot(targetX - this.player.x, targetY - this.player.y);
+      const duration = Math.min(5000, Math.max(3000, distance * 0.15));
+      this.ferryBoat = this.add.image(this.player.x, this.player.y + 8, ferryTexture)
+        .setOrigin(0.5, 0.5).setScale(2).setDepth(999);
+      this.moving = true;
+      this.tweens.add({
+        targets: this.player,
+        x: targetX,
+        y: targetY,
+        duration,
+        ease: 'Sine.easeInOut',
+        onUpdate: () => {
+          this.ferryBoat?.setPosition(this.player.x, this.player.y + 8);
+          this.refreshTerrainPages();
+          this.refreshFeatureOverlays();
+        },
+        onComplete: () => {
+          this.pTileX = destinationX;
+          this.pTileY = destinationY;
+          this.moving = false;
+          this.ferrying = false;
+          this.inputLocked = false;
+          this.ferryBoat?.destroy();
+          this.ferryBoat = null;
+          this.refreshNearInteraction(true);
+          this.refreshTerrainPages(true);
+          this.refreshFeatureOverlays(true);
+        },
+      });
+      return true;
+    }
+
     async enterCorridor() {
       if (this.nearGate?.type !== 'transsib-gate' || this.inputLocked) return;
       const spawn = corridorStopSpawn(this.nearGate.corridorStopId);
@@ -460,7 +549,7 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
           y: Math.round(this.player.y),
           dir: this.facing,
           scene: region.sceneId,
-          persistable: true,
+          persistable: !this.ferrying,
         });
       }
       if (time - this.lastDistanceEmit >= 500) {

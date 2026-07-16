@@ -2127,6 +2127,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           setAirHubPrompt(null); setAirHubStatus(null);
         },
         worldNodes: WORLD_NODES,
+        hasCity: (cityId) => !!CITY_DATA[cityId],
         setNearGate: (gate) => setRegionNearGate(gate),
         setNearNode: (node) => setNearNode(toInteractiveNode(node)),
         setStatus: (status) => setRegionStatus(status),
@@ -2134,7 +2135,12 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         requestNode: (node) => {
           const interactive = toInteractiveNode(node);
           if (!interactive?.noStamp) collectStampRef.current?.(interactive);
-          if (interactive) setDescOpen(true);
+          if (interactive?.gate?.type === 'city') {
+            setCityPrompt({ to: interactive.gate.to, name: interactive.name });
+          } else if (interactive?.gate?.type === 'ferry') {
+            const destination = getNode(interactive.gate.to);
+            setFerryPrompt({ toId: interactive.gate.to, toName: destination?.name || '' });
+          } else if (interactive) setDescOpen(true);
         },
         airReturnSpawn: () => {
           const airport = getNode('incheon-airport');
@@ -2705,6 +2711,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           {regionStatus.phase === 'loading' && <>🌍 지역 지형 불러오는 중…</>}
           {regionStatus.phase === 'saving-gate' && <>💾 횡단열차 플랫폼 저장 중…</>}
           {regionStatus.phase === 'saving-air' && <>💾 귀환 공항 저장 중…</>}
+          {regionStatus.phase === 'saving-ferry' && <>💾 도착 항구 저장 중…</>}
           {regionStatus.phase === 'error' && (
             <>
               ⚠ {regionStatus.message || '요청을 완료하지 못했어요.'}
