@@ -194,10 +194,11 @@ function hash(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
 }
 
-function roadStyle(highway) {
+export function roadStyle(highway) {
   if (/^(motorway|trunk)$/.test(highway)) return { radius: 2, value: 2 };
   if (/^(primary|secondary)$/.test(highway)) return { radius: 1, value: 2 };
   if (/^(tertiary|residential|living_street|unclassified|pedestrian)$/.test(highway)) return { radius: 1, value: 1 };
+  if (/^(service|footway|path|steps|cycleway|track)$/.test(highway)) return { radius: 0, value: 1 };
   return { radius: 0, value: 1 };
 }
 
