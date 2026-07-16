@@ -37,7 +37,9 @@ describe('도시 정밀맵 레지스트리', () => {
   });
 
   it('기존 APAC 도시 EXIT는 plaza의 기존 도시 노드 타일로 그대로 복귀한다', () => {
-    for (const city of CITY_MAPS.filter(({ id }) => id !== 'grand-paris')) {
+    // mont-saint-michel 은 오버월드 게이트 후속(EMEA 노르망디 노드) — 연결 시 파리형 왕복 테스트 추가.
+    const pendingGate = new Set(['grand-paris', 'mont-saint-michel']);
+    for (const city of CITY_MAPS.filter(({ id }) => !pendingGate.has(id))) {
       const node = getNode(city.returnNode);
       expect(node, city.id).toBeTruthy();
       expect(worldNodeReturnSpawn(node), city.id).toEqual({
