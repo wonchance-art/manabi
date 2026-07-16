@@ -45,7 +45,7 @@ import { loadStamps, collectStamp } from '../../lib/world/stamps';
 // 🗺️ 광장 맵 데이터 — 한반도+일본 열도 실비율 도트 맵(448×384, build-map.mjs 산출).
 import { MAP_W, MAP_H, decodeMap, TERRAIN, isBlocked, POI } from './mapData';
 // 🧭 장소 노드(도시·공항·항구·랜드마크) + 미니맵 다운샘플(순수 함수).
-import { WORLD_NODES, getNode, buildMinimap } from './worldNodes';
+import { ALL_WORLD_NODES, WORLD_NODES, getNode, buildMinimap } from './worldNodes';
 // 🏙️ 광장 SEA→LAND 메꿈(순수 함수·단일 진실원 — 런타임·관리자 뷰·미니맵 공통).
 import { buildPlayableGrid, PLAZA_R } from '../../lib/world/mapGeo';
 import {
@@ -85,6 +85,7 @@ import {
   overworldRegionByScene,
   overworldRegionSpawn,
 } from '../../lib/world/overworldRegions';
+import { worldNodeReturnSpawn } from '../../lib/world/worldNodeGeo';
 import {
   overworldAirDestinationById,
   overworldAirDestinations,
@@ -2160,7 +2161,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           setRegionNearGate(null); setRegionGatePrompt(null); setRegionStatus(null);
           setAirHubPrompt(null); setAirHubStatus(null);
         },
-        worldNodes: WORLD_NODES,
+        worldNodes: ALL_WORLD_NODES,
         hasCity: (cityId) => !!CITY_DATA[cityId],
         setNearGate: (gate) => setRegionNearGate(gate),
         setNearNode: (node) => setNearNode(toInteractiveNode(node)),
@@ -2205,6 +2206,9 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       // ctx: 씬 ↔ React 브리지(sceneRef 바인딩 · 근접 노드 통지 · 진입 통지 · 전국맵 복귀 스폰).
       const cityScenes = Object.values(CITY_DATA).map((cityData) => {
         const rn = getNode(cityData.returnNode);
+        const returnSpawn = worldNodeReturnSpawn(rn) || {
+          scene: 'plaza', x: POI.SEOUL.x, y: POI.SEOUL.y,
+        };
         const cityCtx = {
           userId, petRef, nickRef, avatarRef,
           bindScene: (s) => { sceneRef.current = s; },
@@ -2223,11 +2227,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           travelBlocked: () => setStationToast({ icon: '⚠', nameJa: '지금은 이동할 수 없어요', yomi: '' }), // P1: 도착 불가 취소
           // create 말미 — 피어 스냅샷 재적용 + 전체 키 거리 1회 emit(씬 전환 음성 잔류 차단, Codex P1-2).
           onReady: () => resetScenePeers(),
-          worldReturn: {
-            scene: 'plaza',
-            x: rn ? rn.tile[0] : POI.SEOUL.x,
-            y: rn ? rn.tile[1] : POI.SEOUL.y,
-          },
+          worldReturn: returnSpawn,
         };
         return buildCityScene(Phaser, cityData, cityCtx);
       });

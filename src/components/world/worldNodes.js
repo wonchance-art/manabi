@@ -17,7 +17,10 @@
 
 import { POI, MAP_W, MAP_H, TERRAIN, decodeMap, project } from './mapData.js';
 import { buildPlayableGrid } from '../../lib/world/mapGeo.js';
-import { migrateLegacyWorldNode } from '../../lib/world/worldNodeGeo.js';
+import {
+  createRegionalWorldNode,
+  migrateLegacyWorldNode,
+} from '../../lib/world/worldNodeGeo.js';
 
 // 명산(名山) — 전용 도트 조각. lon/lat 는 build-map.mjs NAMED_PEAKS 와 동일값이라
 // project() 로 얻는 타일이 build-map 이 PEAK 로 보장한 타일과 정확히 일치한다(오프셋 0). peak 필드는
@@ -223,9 +226,33 @@ const LEGACY_WORLD_NODES = [
 
 export const WORLD_NODES = Object.freeze(LEGACY_WORLD_NODES.map(migrateLegacyWorldNode));
 
+const PARIS_NAME = '파리';
+
+export const REGIONAL_WORLD_NODES = Object.freeze([
+  createRegionalWorldNode({
+    id: 'paris',
+    name: PARIS_NAME,
+    desc: PARIS_NAME,
+    kind: 'city',
+    regionId: 'emea',
+    contentLocale: 'fr',
+    lon: 2.3522,
+    lat: 48.8566,
+    // 파리 철도 허브([211,424])의 ±1 상호작용 우선권과 겹치지 않는 보행칸.
+    arrivalOffset: [2, 0],
+    noStamp: true,
+    gate: { type: 'city', to: 'grand-paris', label: '🏙️ 시내' },
+  }),
+]);
+
+export const ALL_WORLD_NODES = Object.freeze([
+  ...WORLD_NODES,
+  ...REGIONAL_WORLD_NODES,
+]);
+
 // id → 노드(게이트 참조 해석·페리 목적지 조회용).
 export function getNode(id) {
-  return WORLD_NODES.find((n) => n.id === id) || null;
+  return ALL_WORLD_NODES.find((n) => n.id === id) || null;
 }
 
 // ── 미니맵 다운샘플(순수 함수) ──
