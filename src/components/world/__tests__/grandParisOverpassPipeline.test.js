@@ -5,6 +5,7 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { mergeOverpassFiles } from '../../../../scripts/merge-overpass-json.mjs';
 import { renderCitySnapshotPng } from '../../../../scripts/world/render-city-snapshot.mjs';
+import { cityMinimapLayout } from '../cityMinimap.js';
 
 const PARTITIONS = JSON.parse(fs.readFileSync(
   new URL('../../../../scripts/data/grand-paris-overpass-partitions.json', import.meta.url),
@@ -110,5 +111,17 @@ describe('Grand Paris Overpass 분할 계약', () => {
     expect(png.subarray(0, 8)).toEqual(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
     expect(createHash('sha256').update(png).digest('hex'))
       .toBe('fe00f83f2f086a9af7147de9d6c024d77c27012f1032a629143ab7c221626fa4');
+  });
+
+  it('완성 geo의 핵심 배열·적응형 미니맵 추정 피크가 24 MiB 안이다', () => {
+    const cells = SNAPSHOT.grid.w * SNAPSHOT.grid.h;
+    const layout = cityMinimapLayout(SNAPSHOT.grid.w, SNAPSHOT.grid.h);
+    const sourceCanvasBytes = layout.sourceWidth * layout.sourceHeight * 4;
+    const estimatedCoreArrayBytes = cells * 3;
+    const estimatedPeakBytes = estimatedCoreArrayBytes + layout.backingBytes + sourceCanvasBytes * 2;
+    expect(cells).toBe(1_207_305);
+    expect(layout).toMatchObject({ factor: 2, sourceWidth: 678, sourceHeight: 446, width: 2034, height: 1338 });
+    expect(estimatedPeakBytes).toBe(16_926_987);
+    expect(estimatedPeakBytes).toBeLessThan(24 * 1024 * 1024);
   });
 });
