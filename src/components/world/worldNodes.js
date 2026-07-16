@@ -17,6 +17,7 @@
 
 import { POI, MAP_W, MAP_H, TERRAIN, decodeMap, project } from './mapData';
 import { buildPlayableGrid } from '../../lib/world/mapGeo';
+import { migrateLegacyWorldNode } from '../../lib/world/worldNodeGeo';
 
 // 명산(名山) — 전용 도트 조각. lon/lat 는 build-map.mjs NAMED_PEAKS 와 동일값이라
 // project() 로 얻는 타일이 build-map 이 PEAK 로 보장한 타일과 정확히 일치한다(오프셋 0). peak 필드는
@@ -31,7 +32,7 @@ const NAMED_PEAKS = [
   { id: 'aso', name: '아소산', peak: 'aso', lon: 131.090, lat: 32.880, desc: '일본 규슈의 활화산. 세계에서 손꼽히는 거대한 칼데라를 품고 있어요.' },
 ].map(({ id, name, peak, lon, lat, desc }) => {
   const { x, y } = project(lon, lat);
-  return { id, name, kind: 'landmark', tile: [x, y], peak, desc };
+  return { id, name, kind: 'landmark', tile: [x, y], lon, lat, peak, desc };
 });
 
 // 규슈(九州) 대표 관광지 — 전국맵 규슈 지역을 실좌표로 채운다(도시 정밀맵과 별개, 마커+desc).
@@ -54,7 +55,7 @@ const KYUSHU_SPOTS = [
   { id: 'huis-ten-bosch', name: '하우스텐보스', tile: [123, 319], desc: '네덜란드 거리·건물을 재현한 대형 테마파크 「ハウステンボス」. 사세보시.' },
   // 熊本
   { id: 'kumamoto-castle', name: '구마모토성', tile: [141, 326], desc: '가토 기요마사가 축성한 성 「熊本城」(くまもとじょう). 2016년 지진 피해 후 복구가 진행되고 있어요.' },
-  { id: 'amakusa-sakitsu', name: '아마쿠사 사키쓰', tile: [127, 338], desc: '잠복 기리시탄 관련 유산 「天草／崎津集落」(あまくさ／さきつしゅうらく). 사키쓰 집락·교회가 세계문화유산에 포함돼요.' },
+  { id: 'amakusa-sakitsu', name: '아마쿠사 사키쓰', tile: [127, 338], arrivalOffset: [4, 4], desc: '잠복 기리시탄 관련 유산 「天草／崎津集落」(あまくさ／さきつしゅうらく). 사키쓰 집락·교회가 세계문화유산에 포함돼요.' },
   // 大分
   { id: 'beppu-onsen', name: '벳푸 온천', tile: [156, 314], desc: '색·형태가 다른 원천을 도는 ‘지고쿠메구리(地獄めぐり·지옥순례)’로 알려진 온천지 「別府温泉」(べっぷおんせん).' },
   { id: 'yufuin', name: '유후인', tile: [153, 315], desc: '유후다케 기슭의 온천 마을 「由布院（湯布院）」(ゆふいん). 료칸과 거리 산책으로 찾는 관광지예요.' },
@@ -62,13 +63,13 @@ const KYUSHU_SPOTS = [
   // 宮崎
   { id: 'takachiho', name: '다카치호 협곡', tile: [152, 328], desc: '아소 화산의 화쇄류(火砕流) 퇴적물이 식어 굳고 침식되어 형성된 주상절리 협곡 「高千穂峡」(たかちほきょう). 마나이 폭포(真名井の滝)와 보트 놀이로 알려져요.' },
   { id: 'aoshima-jinja', name: '아오시마 신사', tile: [155, 351], desc: '파식대(鬼の洗濯板)에 둘러싸인 아오시마 섬에 자리한 신사 「青島神社」(あおしまじんじゃ).' },
-  { id: 'udo-jingu', name: '우도 신궁', tile: [155, 355], desc: '해안 절벽의 동굴 안에 본전이 있는 신사 「鵜戸神宮」(うどじんぐう).' },
+  { id: 'udo-jingu', name: '우도 신궁', tile: [155, 355], arrivalOffset: [-1, 0], desc: '해안 절벽의 동굴 안에 본전이 있는 신사 「鵜戸神宮」(うどじんぐう).' },
   // 鹿児島
   { id: 'sakurajima', name: '사쿠라지마', tile: [141, 357], desc: '가고시마만에 있는 활화산 「桜島」(さくらじま). 지금도 분화 활동이 이어지는 상징적 화산이에요.' },
   { id: 'sengan-en', name: '센간엔', tile: [138, 355], desc: '사쓰마 번주 시마즈 가문의 별저 정원 「仙巌園」(せんがんえん). 사쿠라지마를 차경(借景)으로 삼아요.' },
   { id: 'kirishima-jingu', name: '기리시마 신궁', tile: [144, 349], desc: '니니기노미코토를 모시는 신사 「霧島神宮」(きりしまじんぐう). 주칠 사전(社殿)으로 알려져요.' },
-  { id: 'ibusuki-onsen', name: '이부스키 온천', tile: [139, 365], desc: '데워진 모래에 몸을 묻는 ‘스나무시(砂むし·모래찜질)’ 온천으로 알려진 온천지 「指宿温泉」(いぶすきおんせん).' },
-].map((s) => ({ id: s.id, name: s.name, kind: 'landmark', tile: s.tile, desc: s.desc }));
+  { id: 'ibusuki-onsen', name: '이부스키 온천', tile: [139, 365], arrivalOffset: [0, -1], desc: '데워진 모래에 몸을 묻는 ‘스나무시(砂むし·모래찜질)’ 온천으로 알려진 온천지 「指宿温泉」(いぶすきおんせん).' },
+].map((s) => ({ ...s, kind: 'landmark' }));
 
 // 규슈 명물 맛집 노드 — "현실 정보 융합" 원칙: 각 현 대표 명물 요리를 찾아가는 가게로(gourmet → t_gourmet).
 //   kind:'landmark'(A로 desc). 공식 지자체 마스코트는 컴플라이언스상 미사용 — 7현 전부 명물 요리로 표현.
@@ -87,28 +88,28 @@ const GOURMET = [
 // tile 은 실좌표 project(lon,lat) 산출값이며 전부 보행 가능 칸이라 별도 스냅 오프셋이 없다.
 // 상호·로고·마스코트는 넣지 않고, 전국맵 축척에서 서로 3타일 이상 떨어지는 대표점만 고른다.
 const HONSHU_SPOTS = [
-  { id: 'hiroshima-peace', name: '히로시마 평화기념공원', tile: [175, 287], desc: '원폭 돔 「原爆ドーム」(げんばくドーム)과 자료관을 품고, 핵무기 없는 평화를 전하는 공원 「平和記念公園」(へいわきねんこうえん).' },
-  { id: 'okayama-korakuen', name: '오카야마 고라쿠엔', tile: [203, 280], desc: '약 300년 전 오카야마 번주가 만든 회유식 정원 「岡山後楽園」(おかやまこうらくえん). 연못·물길·산책길 너머로 오카야마성이 보여요.' },
-  { id: 'himeji-castle', name: '히메지성', tile: [218, 276], desc: '흰 회벽과 보존된 성곽으로 알려진 세계문화유산 「姫路城」(ひめじじょう). 흰 새를 닮아 ‘시라사기성’이라고도 불려요.' },
-  { id: 'kenrokuen', name: '가나자와 겐로쿠엔', tile: [257, 233], desc: '넓음·고요함을 비롯한 여섯 경관을 한데 갖췄다는 이름의 정원 「兼六園」(けんろくえん). 연못과 겨울 유키쓰리(雪吊り·ゆきづり)로 알려져요.' },
-  { id: 'nikko-toshogu', name: '닛코 도쇼구', tile: [314, 228], desc: '도쿠가와 이에야스를 모시며 화려한 조각 건축으로 알려진 신사 「日光東照宮」(にっこうとうしょうぐう). 닛코의 신사와 사찰 세계유산에 들어요.' },
-  { id: 'hirosaki-castle', name: '히로사키성', tile: [331, 133], desc: '해자·성문·망루와 에도 시대 천수각이 남은 북쪽 성 「弘前城」(ひろさきじょう). 봄 벚꽃과 겨울 눈 풍경으로 알려져요.' },
+  { id: 'hiroshima-peace', name: '히로시마 평화기념공원', tile: [175, 287], lon: 132.4536, lat: 34.3955, desc: '원폭 돔 「原爆ドーム」(げんばくドーム)과 자료관을 품고, 핵무기 없는 평화를 전하는 공원 「平和記念公園」(へいわきねんこうえん).' },
+  { id: 'okayama-korakuen', name: '오카야마 고라쿠엔', tile: [203, 280], lon: 133.935, lat: 34.667, desc: '약 300년 전 오카야마 번주가 만든 회유식 정원 「岡山後楽園」(おかやまこうらくえん). 연못·물길·산책길 너머로 오카야마성이 보여요.' },
+  { id: 'himeji-castle', name: '히메지성', tile: [218, 276], lon: 134.6939, lat: 34.8394, desc: '흰 회벽과 보존된 성곽으로 알려진 세계문화유산 「姫路城」(ひめじじょう). 흰 새를 닮아 ‘시라사기성’이라고도 불려요.' },
+  { id: 'kenrokuen', name: '가나자와 겐로쿠엔', tile: [257, 233], lon: 136.6625, lat: 36.562, desc: '넓음·고요함을 비롯한 여섯 경관을 한데 갖췄다는 이름의 정원 「兼六園」(けんろくえん). 연못과 겨울 유키쓰리(雪吊り·ゆきづり)로 알려져요.' },
+  { id: 'nikko-toshogu', name: '닛코 도쇼구', tile: [314, 228], lon: 139.5988, lat: 36.7578, desc: '도쿠가와 이에야스를 모시며 화려한 조각 건축으로 알려진 신사 「日光東照宮」(にっこうとうしょうぐう). 닛코의 신사와 사찰 세계유산에 들어요.' },
+  { id: 'hirosaki-castle', name: '히로사키성', tile: [331, 133], lon: 140.467, lat: 40.607, desc: '해자·성문·망루와 에도 시대 천수각이 남은 북쪽 성 「弘前城」(ひろさきじょう). 봄 벚꽃과 겨울 눈 풍경으로 알려져요.' },
 ].map((s) => ({ ...s, kind: 'landmark' }));
 
 const HONSHU_GOURMET = [
-  { id: 'gourmet-osaka', name: '다코야키(大阪)', tile: [234, 280], desc: '다시 국물 반죽에 문어를 넣어 둥글게 굽는 오사카 명물 「たこ焼き」(たこやき). 겉은 노릇하고 속은 부드러운 길거리 음식이에요.' },
-  { id: 'gourmet-nagoya', name: '미소카쓰(名古屋)', tile: [261, 267], desc: '튀긴 돼지고기 커틀릿에 진한 된장 소스를 곁들이는 나고야 음식 「味噌カツ」(みそカツ). ‘나고야메시’로 불리는 지역 요리의 하나예요.' },
-  { id: 'gourmet-nagano', name: '신슈 소바(長野)', tile: [286, 231], desc: '메밀이 잘 자라는 나가노의 대표 면 「信州そば」(しんしゅうそば). 차갑거나 따뜻하게 먹고 계절 재료를 곁들이기도 해요.' },
-  { id: 'gourmet-sendai', name: '규탄(仙台)', tile: [339, 191], desc: '얇게 썬 소 혀를 구워 먹는 센다이 대표 음식 「牛タン」(ぎゅうタン). 센다이역 주변에도 전문 식당이 모여 있어요.' },
-  { id: 'gourmet-akita', name: '기리탄포(秋田)', tile: [324, 155], desc: '갓 지은 쌀을 찧어 꼬치에 감고 구운 아키타 향토음식 「きりたんぽ」. 된장을 바르거나 닭고기·채소 전골에 넣어 먹어요.' },
+  { id: 'gourmet-osaka', name: '다코야키(大阪)', tile: [234, 280], lon: 135.5019, lat: 34.6687, desc: '다시 국물 반죽에 문어를 넣어 둥글게 굽는 오사카 명물 「たこ焼き」(たこやき). 겉은 노릇하고 속은 부드러운 길거리 음식이에요.' },
+  { id: 'gourmet-nagoya', name: '미소카쓰(名古屋)', tile: [261, 267], lon: 136.9066, lat: 35.1815, desc: '튀긴 돼지고기 커틀릿에 진한 된장 소스를 곁들이는 나고야 음식 「味噌カツ」(みそカツ). ‘나고야메시’로 불리는 지역 요리의 하나예요.' },
+  { id: 'gourmet-nagano', name: '신슈 소바(長野)', tile: [286, 231], lon: 138.181, lat: 36.648, desc: '메밀이 잘 자라는 나가노의 대표 면 「信州そば」(しんしゅうそば). 차갑거나 따뜻하게 먹고 계절 재료를 곁들이기도 해요.' },
+  { id: 'gourmet-sendai', name: '규탄(仙台)', tile: [339, 191], lon: 140.8719, lat: 38.2682, desc: '얇게 썬 소 혀를 구워 먹는 센다이 대표 음식 「牛タン」(ぎゅうタン). 센다이역 주변에도 전문 식당이 모여 있어요.' },
+  { id: 'gourmet-akita', name: '기리탄포(秋田)', tile: [324, 155], lon: 140.102, lat: 39.72, desc: '갓 지은 쌀을 찧어 꼬치에 감고 구운 아키타 향토음식 「きりたんぽ」. 된장을 바르거나 닭고기·채소 전골에 넣어 먹어요.' },
 ].map((m) => ({ ...m, kind: 'landmark', gourmet: true }));
 
-export const WORLD_NODES = [
+const LEGACY_WORLD_NODES = [
   // 서울 — 스폰 도시.
   { id: 'seoul', name: '서울', kind: 'city', tile: [POI.SEOUL.x, POI.SEOUL.y], desc: '대한민국의 수도. 한강이 도시를 가로지르고, 예부터 지금까지 나라의 중심지예요.' },
   // 인천공항(영종도) — 기존 하드코딩 "도쿄 여행" 게이트를 이 노드로 이관. A → 공항 스토리 씬.
   {
-    id: 'incheon-airport', name: '인천공항', kind: 'airport', tile: [POI.INCHEON.x, POI.INCHEON.y],
+    id: 'incheon-airport', name: '인천공항', kind: 'airport', tile: [POI.INCHEON.x, POI.INCHEON.y], arrivalOffset: [4, 0],
     gate: { type: 'story-scene', scene: 'airport', label: '✈ 도쿄' },
     desc: '한국의 관문 국제공항. 여기서 비행기를 타고 도쿄로 떠나요.',
   },
@@ -118,7 +119,7 @@ export const WORLD_NODES = [
   { id: 'busan', name: '부산', kind: 'city', tile: [POI.BUSAN.x, POI.BUSAN.y], desc: '한국 제2의 도시이자 최대 항구도시. 바다와 산이 어우러져 있어요.' },
   // 부산국제여객터미널 — 후쿠오카항행 페리.
   {
-    id: 'busan-port', name: '부산국제여객터미널', kind: 'port', tile: [POI.BUSAN_TERMINAL.x, POI.BUSAN_TERMINAL.y],
+    id: 'busan-port', name: '부산국제여객터미널', kind: 'port', tile: [POI.BUSAN_TERMINAL.x, POI.BUSAN_TERMINAL.y], arrivalOffset: [0, -1],
     gate: { type: 'ferry', to: 'fukuoka-port', label: '⚓ 후쿠오카' },
     desc: '일본으로 가는 국제여객선이 드나드는 항구. 후쿠오카행 페리가 출발해요.',
   },
@@ -203,14 +204,16 @@ export const WORLD_NODES = [
     desc: '돗토리현의 항구 도시. 신지호와 다이센으로 가는 관문이에요.',
   },
   // 거제 — 도시(게이트 없음, 표지 마커만). 두 다리로 이어진 섬(거제대교·통영 / 거가대교·가덕도·부산).
-  { id: 'geoje', name: '거제', kind: 'city', tile: [POI.GEOJE.x, POI.GEOJE.y], desc: '거제대교로 통영과, 거가대교로 가덕도·부산과 이어진 섬. 조선업으로 이름난 항구 도시예요.' },
+  { id: 'geoje', name: '거제', kind: 'city', tile: [POI.GEOJE.x, POI.GEOJE.y], arrivalOffset: [-1, -4], desc: '거제대교로 통영과, 거가대교로 가덕도·부산과 이어진 섬. 조선업으로 이름난 항구 도시예요.' },
   // 통영 — 도시(게이트 없음, 표지 마커만). 견내량 건너 거제대교로 거제와 이어지는 본토측 관문.
-  { id: 'tongyeong', name: '통영', kind: 'city', tile: [POI.TONGYEONG.x, POI.TONGYEONG.y], desc: '한려수도의 항구 도시. 견내량을 건너는 거제대교로 거제와 이어지고, 예부터 이름난 수산의 고장이에요.' },
+  { id: 'tongyeong', name: '통영', kind: 'city', tile: [POI.TONGYEONG.x, POI.TONGYEONG.y], arrivalOffset: [-1, 0], desc: '한려수도의 항구 도시. 견내량을 건너는 거제대교로 거제와 이어지고, 예부터 이름난 수산의 고장이에요.' },
   // 다이센 — 랜드마크(게이트 없음). peak 필드는 넣지 않음 — 전용 도트 조각은 후속, 일반 마커+라벨.
   { id: 'daisen', name: '다이센', kind: 'landmark', tile: [POI.DAISEN.x, POI.DAISEN.y], desc: '산인 지방의 명봉. 모양이 후지산을 닮아 "호키후지"라고도 불려요.' },
   // 돗토리 — 랜드마크(게이트 없음). 코야마호 곁의 해안 사구.
   { id: 'tottori', name: '돗토리', kind: 'landmark', tile: [POI.TOTTORI.x, POI.TOTTORI.y], desc: '일본 최대의 사구가 펼쳐진 해안 도시. 코야마호를 곁에 두고 있어요.' },
 ];
+
+export const WORLD_NODES = Object.freeze(LEGACY_WORLD_NODES.map(migrateLegacyWorldNode));
 
 // id → 노드(게이트 참조 해석·페리 목적지 조회용).
 export function getNode(id) {
