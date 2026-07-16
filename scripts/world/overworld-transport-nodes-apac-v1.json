@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 2,
+  "releaseEligible": false,
+  "generatorGitSha": null,
+  "regionId": "asia-pacific-transport-nodes-preview-v1",
+  "baseRegion": {
+    "manifestPath": "scripts/world/overworld-region-apac-v1.json",
+    "directory": "public/assets/overworld/asia-pacific-playability-preview-v1",
+    "contentManifest": "content-manifest.json",
+    "contentManifestSha256": "062213f0cc7ae64b3fff5b0dff34819dc107632c0cbd428fc297db3697e94fcd",
+    "contentManifestBytes": 27256
+  },
+  "nodeRules": {
+    "chunkTiles": 256
+  },
+  "nodes": [
+    {
+      "id": "vladivostok-transsib",
+      "type": "transsib-gate",
+      "label": "블라디보스토크 횡단열차역",
+      "contentLocale": "ru",
+      "corridorStopId": "vladivostok",
+      "lon": 131.8855,
+      "lat": 43.1155
+    }
+  ]
+}

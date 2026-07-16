@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "releaseEligible": false,
+  "regionId": "europe-mediterranean-middle-east-projection-sweep-v1",
+  "bbox": [-11, 20, 50, 66],
+  "anchor": { "lon0": 25, "lat0": 45 },
+  "earthRadiusMeters": 6371008.8,
+  "metersPerTile": 4500,
+  "chunkTiles": 256,
+  "axisModes": ["screen-axis", "geo-axis"],
+  "sampleGrid": { "columns": 21, "rows": 21, "offset": 0.5 },
+  "scoreWeights": {
+    "scaleP95": 0.25,
+    "northDeviationP95": 0.2,
+    "shearP95": 0.15,
+    "shapeDistortionP95": 0.25,
+    "screenNorthErrorP95": 0.15
+  },
+  "standardLatitudeSweep": {
+    "min": 45,
+    "max": 55,
+    "step": 0.25,
+    "reportCandidates": [45, 47.5, 50, 50.25, 52.5, 55],
+    "recommendationPolicy": "minimum-uniform-fixture-score-then-minimax"
+  },
+  "fixtures": [
+    { "id": "iberia", "label": "Iberian Peninsula", "bbox": [-11, 35, 4, 44], "weight": 1 },
+    { "id": "british-isles", "label": "British Isles", "bbox": [-11, 49, 3, 61], "weight": 1 },
+    { "id": "scandinavia", "label": "Scandinavia", "bbox": [5, 54, 32, 66], "weight": 1 },
+    { "id": "central-europe", "label": "Central Europe", "bbox": [4, 43, 25, 55], "weight": 1 },
+    { "id": "mediterranean", "label": "Mediterranean", "bbox": [-6, 30, 36, 46], "weight": 1 },
+    { "id": "middle-east", "label": "Middle East", "bbox": [25, 20, 50, 42], "weight": 1 },
+    { "id": "western-russia", "label": "Western Russia", "bbox": [25, 50, 50, 66], "weight": 1 }
+  ],
+  "priorBaseline": {
+    "sourceCommit": "9dbd60f06f987cc65011dd53436e30ed22216a3e",
+    "reportPath": "docs/world-projection-spike.md",
+    "equirectangularStandardLat": 45,
+    "sinusoidalScreenAxisPass": false,
+    "laeaScreenAxisPass": false
+  }
+}
