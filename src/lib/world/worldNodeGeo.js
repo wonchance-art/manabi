@@ -1,12 +1,19 @@
 import { unproject } from './mapGeo.js';
-import { projectOverworldRegionCoordinate } from './overworldRegions.js';
+import {
+  overworldRegionById,
+  projectOverworldRegionCoordinate,
+} from './overworldRegions.js';
 
 export const LEGACY_WORLD_REGION_ID = 'asia-pacific';
 
 const roundCoordinate = (value) => Number(value.toFixed(6));
 
+function integerPair(value) {
+  return Array.isArray(value) && value.length === 2 && value.every(Number.isInteger);
+}
+
 function immutablePair(value, label) {
-  if (!Array.isArray(value) || value.length !== 2 || !value.every(Number.isInteger)) {
+  if (!integerPair(value)) {
     throw new TypeError(`${label} must be an integer [x, y] pair`);
   }
   return Object.freeze([...value]);
@@ -43,6 +50,54 @@ export function migrateLegacyWorldNode(node) {
     geoSource: hasVerifiedCoordinate ? 'verified-input' : 'legacy-tile-derived',
     arrivalOffset,
     overworldTile,
+  });
+}
+
+export function createRegionalWorldNode(node) {
+  if (!node || typeof node.id !== 'string' || node.id.length === 0) {
+    throw new TypeError('regional world node must have a non-empty id');
+  }
+  if (typeof node.regionId !== 'string' || node.regionId === LEGACY_WORLD_REGION_ID) {
+    throw new TypeError('regional world node must target a non-legacy region');
+  }
+  const region = overworldRegionById(node.regionId);
+  if (!region) throw new TypeError(`unknown overworld region: ${node.regionId}`);
+  if (!Number.isFinite(node.lon) || !Number.isFinite(node.lat)) {
+    throw new TypeError(`${node.id} must have verified lon/lat`);
+  }
+
+  const lon = roundCoordinate(node.lon);
+  const lat = roundCoordinate(node.lat);
+  const projected = projectOverworldRegionCoordinate(region, lon, lat);
+  if (!projected) throw new Error(`failed to project regional world node ${node.id}`);
+  const arrivalOffset = immutablePair(node.arrivalOffset || [0, 0], `${node.id}.arrivalOffset`);
+  const overworldTile = Object.freeze([
+    projected.x + arrivalOffset[0],
+    projected.y + arrivalOffset[1],
+  ]);
+
+  return Object.freeze({
+    ...node,
+    lon,
+    lat,
+    geoSource: 'verified-input',
+    arrivalOffset,
+    overworldTile,
+  });
+}
+
+export function worldNodeReturnSpawn(node) {
+  if (!node) return null;
+  if (node.regionId === LEGACY_WORLD_REGION_ID) {
+    if (!integerPair(node.tile)) return null;
+    return Object.freeze({ scene: 'plaza', x: node.tile[0], y: node.tile[1] });
+  }
+  const region = overworldRegionById(node.regionId);
+  if (!region || !integerPair(node.overworldTile)) return null;
+  return Object.freeze({
+    scene: region.sceneId,
+    x: node.overworldTile[0],
+    y: node.overworldTile[1],
   });
 }
 
