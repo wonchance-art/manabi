@@ -3,8 +3,8 @@ import { projectionMetrics, project } from '../../../../scripts/build-korean-cit
 import { cityMinimapLayout } from '../cityMinimap.js';
 import { CITY_SCALE_TIERS, cityMetersPerTile, cityScaleTier } from '../cities/scale.js';
 
-describe('도시 geo 축척 티어 계약', () => {
-  it('표준 20m와 정밀 4m만 허용한다', () => {
+describe('city geo scale tier contract', () => {
+  it('allows only standard 20m and precision 4m tiers', () => {
     expect(CITY_SCALE_TIERS).toEqual({
       standard: { id: 'city-standard-20m-v1', metersPerTile: 20 },
       precision: { id: 'city-precision-4m-v1', metersPerTile: 4 },
@@ -18,7 +18,7 @@ describe('도시 geo 축척 티어 계약', () => {
     expect(() => cityScaleTier('4')).toThrow(/finite number/);
   });
 
-  it('같은 bbox를 4m에서 축별 5배 해상도로 결정적으로 투영한다', () => {
+  it('projects the same bbox at five times each axis resolution for 4m', () => {
     const bbox = [0, 0, 0.01, 0.01];
     const standard = projectionMetrics(bbox, 20);
     const precision = projectionMetrics(bbox, 4);
@@ -33,17 +33,19 @@ describe('도시 geo 축척 티어 계약', () => {
     expect(precisionPoint.y).toBeCloseTo(standardPoint.y * 5, 10);
   });
 
-  it('몽생미셸 목표급 0.08M 격자의 미니맵 추정 피크가 24 MiB 아래다', () => {
-    const cols = 400;
-    const rows = 200;
+  it('keeps the approved Mont-Saint-Michel 4m grid under the 24 MiB minimap peak gate', () => {
+    const cols = 442;
+    const rows = 863;
     const cells = cols * rows;
     const layout = cityMinimapLayout(cols, rows);
     const sourceCanvasBytes = layout.sourceWidth * layout.sourceHeight * 4;
     const estimatedCoreArrayBytes = cells * 3;
     const estimatedPeakBytes = estimatedCoreArrayBytes + layout.backingBytes + sourceCanvasBytes * 2;
-    expect(cells).toBe(80_000);
-    expect(layout).toMatchObject({ factor: 1, sourceWidth: 400, sourceHeight: 200 });
-    expect(estimatedPeakBytes).toBe(3_760_000);
+    expect(cells).toBe(381_446);
+    expect(layout).toMatchObject({
+      factor: 1, sourceWidth: 442, sourceHeight: 863, width: 1326, height: 2589,
+    });
+    expect(estimatedPeakBytes).toBe(17_927_962);
     expect(estimatedPeakBytes).toBeLessThan(24 * 1024 * 1024);
   });
 });

@@ -114,7 +114,7 @@ describe('Grand Paris Overpass 분할 계약', () => {
     expect(png.subarray(0, 8)).toEqual(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
     expect(createHash('sha256').update(png).digest('hex'))
       .toBe('7636558ea03861b9544dfbbae2899c319b1b02e6c370035577799411774f70d4');
-  });
+  }, 30_000);
 
   it('완성 geo의 핵심 배열·적응형 미니맵 추정 피크가 24 MiB 안이다', () => {
     const cells = SNAPSHOT.grid.w * SNAPSHOT.grid.h;

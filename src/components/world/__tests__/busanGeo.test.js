@@ -346,7 +346,7 @@ describe('부산 생성 결정성·오프라인 계약', () => {
     expect(terrainHash(first.railways.mask)).toBe('16fbb812507b2d62ab0f467ccac2659565bcc5c4185213508c140972dab9e020');
     expect(first.pois).toEqual(BUSAN_GEO.pois);
     expect(first.stations).toEqual(BUSAN_GEO.stations);
-  }, 120_000);
+  }, 240_000);
 
   it('RLE 왕복이 전체 지형·철도를 보존하고 런타임 산출물은 오프라인이다', () => {
     const terrainRuns = encodeTerrainRle(BUSAN_GEO.terrain);

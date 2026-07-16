@@ -146,6 +146,29 @@ const CITY_CONFIG = Object.freeze({
       { id: 'versailles-rive-gauche', nameFr: 'Versailles Château Rive Gauche', lat: 48.7996, lon: 2.1290, line: 'RER C' },
     ]),
   }),
+  'mont-saint-michel': Object.freeze({
+    bbox: Object.freeze([-1.527, 48.611, -1.503, 48.642]),
+    metersPerTile: 4,
+    snapshot: new URL('./data/mont-saint-michel-osm-v21.json', import.meta.url),
+    output: '../src/components/world/cities/mont-saint-michel.geo.js',
+    exportName: 'MONT_SAINT_MICHEL_GEO',
+    mainEntranceId: 'causeway-shuttle',
+    contentLocale: 'fr',
+    nameField: 'nameFr',
+    buildingTargetLandRatio: 0,
+    finalBuildingRatioRange: Object.freeze([0.005, 0.012]),
+    buildingDatasetProbe: Object.freeze({
+      provider: 'OpenStreetMap', datasetId: 'official-map-api-bbox', checkedAt: '2026-07-16',
+      outcome: 'fixed-offline-snapshot',
+    }),
+    pois: Object.freeze([
+      { id: 'abbey', nameFr: 'Abbaye du Mont-Saint-Michel', lat: 48.63610, lon: -1.51145, kind: 'historic' },
+      { id: 'grande-rue', nameFr: 'Grande Rue', lat: 48.63580, lon: -1.51050, kind: 'district' },
+      { id: 'ramparts', nameFr: 'Chemin des Remparts', lat: 48.63620, lon: -1.50975, kind: 'historic' },
+      { id: 'causeway-shuttle', nameFr: 'Place des Navettes', lat: 48.61180, lon: -1.50631, kind: 'transport' },
+    ]),
+    stations: Object.freeze([]),
+  }),
 });
 
 function webMercatorMeters(lon, lat) {
@@ -340,9 +363,13 @@ function applySnapshotMasks(grid, snapshot, meta) {
     river: decodeTerrainRle(snapshot.riverRle, length),
     park: decodeTerrainRle(snapshot.parkRle, length),
     mountain: decodeTerrainRle(snapshot.mountainRle, length),
+    tidalFlat: snapshot.tidalFlatRle
+      ? decodeTerrainRle(snapshot.tidalFlatRle, length)
+      : new Uint8Array(length),
   };
   for (let index = 0; index < length; index += 1) if (masks.water[index]) grid[index] = CITY_TILE.WATER;
   for (let index = 0; index < length; index += 1) if (masks.river[index]) grid[index] = CITY_TILE.RIVER;
+  for (let index = 0; index < length; index += 1) if (masks.tidalFlat[index]) grid[index] = CITY_TILE.BEACH;
   for (let index = 0; index < length; index += 1) {
     if (masks.mountain[index] && grid[index] !== CITY_TILE.WATER && grid[index] !== CITY_TILE.RIVER) grid[index] = CITY_TILE.MOUNTAIN;
   }
@@ -632,20 +659,21 @@ export function buildKoreanCityGeo(city) {
   const pois = config.pois.map((entry) => withTile(entry, baseMeta, metrics));
   const stations = config.stations.map((entry) => withTile(entry, baseMeta, metrics));
   separateMarkerTiles([...pois, ...stations], baseMeta);
-  const mainStation = stations.find((entry) => entry.id === config.mainStationId);
-  const entrance = { x: mainStation.tile[0], y: mainStation.tile[1], facing: 'down' };
+  const mainAnchor = stations.find((entry) => entry.id === config.mainStationId)
+    ?? pois.find((entry) => entry.id === config.mainEntranceId);
+  if (!mainAnchor) throw new Error(`${city} requires a main station or entrance anchor`);
+  const entrance = { x: mainAnchor.tile[0], y: mainAnchor.tile[1], facing: 'down' };
   const exitTiles = [[entrance.x, entrance.y - 10], [entrance.x, entrance.y - 9]];
   const terrain = new Uint8Array(baseMeta.grid.w * baseMeta.grid.h).fill(CITY_TILE.SIDEWALK);
   const masks = applySnapshotMasks(terrain, snapshot, baseMeta);
   const protectedEntries = [...pois, ...stations];
   const baselineTerrain = terrain.slice();
-  normalizeCityTerrain(baselineTerrain, protectedEntries, mainStation, entrance, exitTiles, baseMeta, city);
+  normalizeCityTerrain(baselineTerrain, protectedEntries, mainAnchor, entrance, exitTiles, baseMeta, city);
   const initialBuildingStats = terrainBuildingStats(terrain);
   const baselineBuildingStats = terrainBuildingStats(baselineTerrain);
   const baselineNormalizationBuildingTiles = baselineBuildingStats.buildingTileCount - initialBuildingStats.buildingTileCount;
-  const finalTargetBuildingTileCount = Math.ceil(
-    baselineBuildingStats.landTileCount * BUILDING_TEXTURE_CONTRACT.targetLandRatio,
-  );
+  const buildingTargetLandRatio = config.buildingTargetLandRatio ?? BUILDING_TEXTURE_CONTRACT.targetLandRatio;
+  const finalTargetBuildingTileCount = Math.ceil(baselineBuildingStats.landTileCount * buildingTargetLandRatio);
   const preNormalizationTargetBuildingTileCount = Math.max(
     initialBuildingStats.buildingTileCount,
     finalTargetBuildingTileCount - baselineNormalizationBuildingTiles,
@@ -653,7 +681,7 @@ export function buildKoreanCityGeo(city) {
   const buildingTexture = augmentBuildingTexture(
     terrain, masks, baseMeta, city, preNormalizationTargetBuildingTileCount,
   );
-  normalizeCityTerrain(terrain, protectedEntries, mainStation, entrance, exitTiles, baseMeta, city);
+  normalizeCityTerrain(terrain, protectedEntries, mainAnchor, entrance, exitTiles, baseMeta, city);
   const finalBuildingStats = terrainBuildingStats(terrain);
   const finalBuildingRatioRange = config.finalBuildingRatioRange ?? [0.09, 0.11];
   if (finalBuildingStats.landBuildingRatio < finalBuildingRatioRange[0]
@@ -664,6 +692,7 @@ export function buildKoreanCityGeo(city) {
     ...baseMeta,
     buildingTexture: Object.freeze({
       ...BUILDING_TEXTURE_CONTRACT,
+      targetLandRatio: buildingTargetLandRatio,
       ...(config.buildingDatasetProbe ? { publicDatasetProbe: config.buildingDatasetProbe } : {}),
       ...(config.finalBuildingRatioRange ? { finalRatioRange: finalBuildingRatioRange } : {}),
       seed: `${BUILDING_TEXTURE_CONTRACT.seedNamespace}:${city}`,
@@ -710,6 +739,6 @@ export function writeKoreanCityGeo(city) {
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const cityIndex = process.argv.indexOf('--city');
-  if (cityIndex < 0 || !process.argv[cityIndex + 1]) throw new Error('Usage: node scripts/build-korean-city-geo.mjs --city <busan|seoul|grand-paris>');
+  if (cityIndex < 0 || !process.argv[cityIndex + 1]) throw new Error('Usage: node scripts/build-korean-city-geo.mjs --city <busan|seoul|grand-paris|mont-saint-michel>');
   console.log(JSON.stringify(writeKoreanCityGeo(process.argv[cityIndex + 1])));
 }

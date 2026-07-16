@@ -44,6 +44,23 @@ const CITY_CONFIG = Object.freeze({
       mergeStrategy: 'type-id-largest-geometry-compact-v1',
     }),
   }),
+  'mont-saint-michel': Object.freeze({
+    bbox: Object.freeze([-1.527, 48.611, -1.503, 48.642]),
+    metersPerTile: 4,
+    forestLayer: 'park',
+    oceanSeeds: Object.freeze([
+      { lon: -1.5265, lat: 48.6415 },
+      { lon: -1.5035, lat: 48.6415 },
+      { lon: -1.5265, lat: 48.6250 },
+    ]),
+    output: 'scripts/data/mont-saint-michel-osm-v21.json',
+    sourceDetails: Object.freeze({
+      providers: Object.freeze(['api.openstreetmap.org']),
+      queryCount: 1,
+      mergeStrategy: 'official-osm-xml-conversion-v1',
+      sourceArtifactSha256: '3224e38d4993d78bb82f0d77e60a4539c9d5d5f5ac0ff2d639c79c189c8730ce',
+    }),
+  }),
 });
 
 function parseArgs(argv) {
@@ -55,7 +72,7 @@ function parseArgs(argv) {
   const input = read('--input');
   const config = CITY_CONFIG[city];
   if (!config || !input) {
-    throw new Error('Usage: node scripts/build-korean-city-osm-snapshot.mjs --city <busan|seoul|grand-paris> --input <overpass.json> [--output <snapshot.json>]');
+    throw new Error('Usage: node scripts/build-korean-city-osm-snapshot.mjs --city <busan|seoul|grand-paris|mont-saint-michel> --input <overpass.json> [--output <snapshot.json>]');
   }
   return { city, input, output: read('--output') || config.output, config };
 }
@@ -329,12 +346,13 @@ export function buildSnapshot(city, rawText) {
   const masks = {
     building: new Uint8Array(length), road: new Uint8Array(length), water: new Uint8Array(length),
     river: new Uint8Array(length), park: new Uint8Array(length), mountain: new Uint8Array(length),
+    tidalFlat: new Uint8Array(length),
     railway: new Uint8Array(length),
     coastline: new Uint8Array(length),
   };
   const counts = {
     buildingWays: 0, roadWays: 0, waterAreas: 0, riverWays: 0, parkAreas: 0,
-    mountainAreas: 0, railwayWays: 0, coastlineWays: 0, bridgeWays: 0,
+    mountainAreas: 0, railwayWays: 0, coastlineWays: 0, bridgeWays: 0, tidalFlatAreas: 0,
     excludedCoveredWaterways: 0,
   };
   const roadWaysByClass = {};
@@ -377,6 +395,10 @@ export function buildSnapshot(city, rawText) {
       paintPolygonElement(masks.water, element, metrics);
       counts.waterAreas += 1;
     }
+    if (tags.natural === 'wetland' && tags.wetland === 'tidalflat') {
+      const paintedOuterRings = paintPolygonElement(masks.tidalFlat, element, metrics);
+      if (paintedOuterRings > 0) counts.tidalFlatAreas += 1;
+    }
     if (/^(river|canal|stream)$/.test(tags.waterway ?? '') && Array.isArray(element.geometry)) {
       if (tags.tunnel === 'culvert' || tags.covered === 'yes') counts.excludedCoveredWaterways += 1;
       else {
@@ -414,13 +436,16 @@ export function buildSnapshot(city, rawText) {
     }
   }
   floodOcean(masks.water, masks.coastline, metrics, config.oceanSeeds);
+  for (let index = 0; index < masks.coastline.length; index += 1) {
+    if (masks.coastline[index]) masks.water[index] = 1;
+  }
   const hydrologyQuality = city === 'busan'
     ? hydrologyCoverage(elements, masks, metrics, '온천천', 105)
     : null;
   const uniqueCrossings = [...new Map(crossings.map((tile) => [tile.join(','), tile])).values()]
     .sort(([ax, ay], [bx, by]) => ay - by || ax - bx);
   const rles = Object.fromEntries(Object.entries(masks)
-    .filter(([name]) => name !== 'coastline')
+    .filter(([name, values]) => name !== 'coastline' && (name !== 'tidalFlat' || values.some(Boolean)))
     .map(([name, values]) => [`${name}Rle`, encodeRle(values)]));
   return {
     version: 2,
@@ -431,10 +456,11 @@ export function buildSnapshot(city, rawText) {
     source: {
       geometry: 'OpenStreetMap', license: 'ODbL 1.0', snapshot: '2026-07-16',
       providers: config.sourceDetails?.providers ?? ['overpass.kumi.systems'], rawOverpassSha256: hash(rawText),
-      ...(config.sourceDetails?.partitionCount ? {
-        partitionCount: config.sourceDetails.partitionCount,
-        queryCount: config.sourceDetails.queryCount,
-        mergeStrategy: config.sourceDetails.mergeStrategy,
+      ...(config.sourceDetails?.partitionCount ? { partitionCount: config.sourceDetails.partitionCount } : {}),
+      ...(config.sourceDetails?.queryCount ? { queryCount: config.sourceDetails.queryCount } : {}),
+      ...(config.sourceDetails?.mergeStrategy ? { mergeStrategy: config.sourceDetails.mergeStrategy } : {}),
+      ...(config.sourceDetails?.sourceArtifactSha256 ? {
+        sourceArtifactSha256: config.sourceDetails.sourceArtifactSha256,
       } : {}),
       roadSelection: 'all-highway-tagged-ways',
       roadWaysByClass: Object.fromEntries(Object.entries(roadWaysByClass).sort(([left], [right]) => left.localeCompare(right))),
