@@ -35,9 +35,10 @@ function previewSceneReleaseEligibility(scene) {
   return region ? region.releaseEligible === true : null;
 }
 
-export function normalizePositionScene(rawScene) {
+export function normalizePositionScene(rawScene, { allowPreview = false } = {}) {
   if (rawScene === 'airport') return 'airport';
-  if (previewSceneReleaseEligibility(rawScene) === true) return rawScene;
+  const previewEligibility = previewSceneReleaseEligibility(rawScene);
+  if (previewEligibility === true || (allowPreview && previewEligibility === false)) return rawScene;
   if (CITY_SCENE_RE.test(rawScene)) return rawScene;
   return 'plaza';
 }
@@ -46,17 +47,17 @@ export function normalizePositionScene(rawScene) {
 //   scene 은 'plaza' | 'airport' | 'city:<id>'와 출시 허용된 확장 씬만 허용한다.
 //   알려진 미출시 씬은 plaza 로 강등하지 않고 null 처리해 임의 좌표 저장을 막는다.
 //   x·y 는 유한 정수(음수 불가). 반올림해 정수로 만든다.
-export function normalizePosition(raw) {
+export function normalizePosition(raw, { allowPreview = false } = {}) {
   if (!raw || typeof raw !== 'object') return null;
   const rawScene = typeof raw.scene === 'string' ? raw.scene : '';
-  if (previewSceneReleaseEligibility(rawScene) === false) return null;
+  if (previewSceneReleaseEligibility(rawScene) === false && !allowPreview) return null;
   const x = Number(raw.x);
   const y = Number(raw.y);
   if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
   const xi = Math.round(x);
   const yi = Math.round(y);
   if (xi < 0 || yi < 0) return null;
-  const scene = normalizePositionScene(rawScene);
+  const scene = normalizePositionScene(rawScene, { allowPreview });
   if (scene === 'transsib-corridor' && !isCorridorPlatformTile(xi, yi)) return null;
   if (overworldRegionByScene(scene) && !isOverworldRegionTile(scene, xi, yi)) return null;
   return { scene, x: xi, y: yi };
@@ -77,18 +78,18 @@ export function cityRedirectScene(bootData, savedSpawn, hasCity) {
   return (typeof hasCity === 'function' && hasCity(id)) ? sc : null;
 }
 
-export function corridorRedirectScene(bootData, savedSpawn) {
+export function corridorRedirectScene(bootData, savedSpawn, { allowPreview = false } = {}) {
   if (bootData && bootData.spawn) return null;
-  if (TRANS_SIBERIAN_CORRIDOR.releaseEligible !== true) return null;
+  if (TRANS_SIBERIAN_CORRIDOR.releaseEligible !== true && !allowPreview) return null;
   if (savedSpawn?.scene !== 'transsib-corridor') return null;
   return isCorridorPlatformTile(Number(savedSpawn.x), Number(savedSpawn.y)) ? 'transsib-corridor' : null;
 }
 
-export function overworldRegionRedirectScene(bootData, savedSpawn) {
+export function overworldRegionRedirectScene(bootData, savedSpawn, { allowPreview = false } = {}) {
   if (bootData && bootData.spawn) return null;
   const scene = typeof savedSpawn?.scene === 'string' ? savedSpawn.scene : '';
   const region = overworldRegionByScene(scene);
-  if (!region || region.releaseEligible !== true) return null;
+  if (!region || (region.releaseEligible !== true && !allowPreview)) return null;
   return isOverworldRegionTile(scene, Number(savedSpawn.x), Number(savedSpawn.y)) ? scene : null;
 }
 

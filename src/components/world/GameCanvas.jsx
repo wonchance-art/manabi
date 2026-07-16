@@ -82,6 +82,10 @@ import {
   overworldRegionByScene,
   overworldRegionSpawn,
 } from '../../lib/world/overworldRegions';
+import {
+  overworldAirDestinationById,
+  overworldAirDestinations,
+} from '../../lib/world/overworldAirHub';
 import { formatWorldTime, WORLD_TIME_SCALE } from '../../lib/world/worldClock';
 import { cityWeatherAt, worldEventAt } from '../../lib/world/worldLife';
 import { useWorldClock } from '../../lib/world/useWorldClock';
@@ -367,7 +371,7 @@ function Minimap({ sceneRef, activeScene, onClose }) {
 //   셸 마운트 시 GameCanvas가 controlsRef.current = { press, release, interact, cancel }를 채운다.
 //   press/release는 키보드와 동일 경로(씬 heldDirs)로 흘려보내 홀드 연속 이동까지 재사용한다.
 //   버스는 오염시키지 않는다(순수 씬 메서드 호출).
-export default function GameCanvas({ userId = null, nickname = '나', pet = { key: 'dog', emoji: '🐕', level: 1, mood: 'happy' }, avatar = DEFAULT_AVATAR, controlsRef = null, initialSpawn = null, onOpenChapter = null, onOpenReading = null, onOpenDictionary = null, onAvatarChange = null }) {
+export default function GameCanvas({ userId = null, nickname = '나', pet = { key: 'dog', emoji: '🐕', level: 1, mood: 'happy' }, avatar = DEFAULT_AVATAR, controlsRef = null, initialSpawn = null, canAccessPreviewRegions = false, onOpenChapter = null, onOpenReading = null, onOpenDictionary = null, onAvatarChange = null }) {
   const hostRef = useRef(null);
   const gameRef = useRef(null);
   const sceneRef = useRef(null);   // 활성 씬 — React가 입력 잠금을 갱신
@@ -428,6 +432,19 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   const [regionGatePrompt, setRegionGatePrompt] = useState(null);
   const [regionStatus, setRegionStatus] = useState(null);
   const regionGatePromptRef = useRef(null);
+
+  // ── ✈️ 광장 공항 노드 → 확장 오버월드 항공 허브 ──
+  // releaseEligible 지역은 모두에게, preview 지역은 관리자에게만 노출한다. 목적지 선택 뒤에는
+  // 도착 좌표 저장이 성공해야 씬을 전환해 공항 좌표가 마지막 영속 위치를 덮지 않게 한다.
+  const airDestinationsRef = useRef(overworldAirDestinations({ includePreview: canAccessPreviewRegions }));
+  const [airHubPrompt, setAirHubPrompt] = useState(null);
+  const [airHubStatus, setAirHubStatus] = useState(null);
+  const airHubPromptRef = useRef(null);
+
+  useEffect(() => {
+    airDestinationsRef.current = overworldAirDestinations({ includePreview: canAccessPreviewRegions });
+    setAirHubPrompt(null);
+  }, [canAccessPreviewRegions]);
 
   // ── NPC 대화 상태 ── npcDialog: { key, node } | null (열림 = 대화 오버레이 표시)
   const [npcDialog, setNpcDialog] = useState(null);
@@ -493,6 +510,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   useEffect(() => { activeSceneRef.current = activeScene; }, [activeScene]);
   useEffect(() => { corridorPromptRef.current = corridorPrompt; }, [corridorPrompt]);
   useEffect(() => { regionGatePromptRef.current = regionGatePrompt; }, [regionGatePrompt]);
+  useEffect(() => { airHubPromptRef.current = airHubPrompt; }, [airHubPrompt]);
   // 역에서 멀어지면 열려 있던 행선지 오버레이도 닫는다(근접 해제 = 취소).
   useEffect(() => { if (!nearStation) setStationSelect(null); }, [nearStation]);
   // 도착 확인 토스트는 잠시 뒤 자동으로 걷힌다.
@@ -548,6 +566,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       runOff: () => { if (sceneRef.current) sceneRef.current.runHeld = false; },
       interact: () => {
         if (gameMenuOpenRef.current) return;
+        if (airHubStatus?.phase === 'saving') return;
         // 🗾 앨범 열림 중 A → 최우선 무시(닫기는 칩/B/ESC). 숨은 배경 오버레이가 A를 가로채지 않게 맨 앞에서 소비.
         if (albumOpenRef.current) return;
         if (npcDialogRef.current) { npcActionRef.current?.(); return; } // NPC 대화 중 A → 다음 대사
@@ -555,6 +574,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         if (reviewOpenRef.current || storyActiveRef.current || ferryPromptRef.current || cityPromptRef.current || chapterPromptRef.current) return;
         if (corridorPromptRef.current) return;
         if (regionGatePromptRef.current) return;
+        if (airHubPromptRef.current) return;
         if (activeSceneRef.current === 'transsib-corridor') { sceneRef.current?.corridorInteract?.(); return; }
         if (activeSceneRef.current.startsWith('overworld:')) { sceneRef.current?.regionInteract?.(); return; }
         if (stationSelectRef.current) return; // 행선지 오버레이는 버튼으로 선택(B로 닫기) — A는 무시
@@ -579,7 +599,15 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         if (node && !node.noStamp) collectStampRef.current?.(node);
         if (node?.gate) {
           // 게이트 있는 노드는 게이트 동작 우선(설명은 게이트 프롬프트에 병기).
-          if (node.gate.type === 'story-scene') { sceneRef.current?.enterAirport?.(); return; }
+          if (node.gate.type === 'story-scene') {
+            const destinations = airDestinationsRef.current;
+            if (destinations.length > 0) {
+              setAirHubPrompt({ node, destinations });
+              return;
+            }
+            sceneRef.current?.enterAirport?.();
+            return;
+          }
           if (node.gate.type === 'ferry') {
             const dest = getNode(node.gate.to);
             setFerryPrompt({ toId: node.gate.to, toName: dest?.name || '' });
@@ -602,14 +630,16 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         if (chapterPromptRef.current) { setChapterPrompt(null); return; }
         if (corridorPromptRef.current) { setCorridorPrompt(null); return; }
         if (regionGatePromptRef.current) { setRegionGatePrompt(null); return; }
+        if (airHubPromptRef.current) { setAirHubPrompt(null); return; }
         if (corridorStatus?.phase === 'error') { setCorridorStatus(null); return; }
         if (regionStatus?.phase === 'error') { setRegionStatus(null); return; }
+        if (airHubStatus?.phase === 'error') { setAirHubStatus(null); return; }
         if (minimapOpenRef.current) { setMinimapOpen(false); return; }
         if (reviewOpenRef.current) setReviewOpen(false);
       },
     };
     return () => { if (controlsRef) controlsRef.current = null; };
-  }, [controlsRef, onOpenChapter, onOpenReading, corridorStatus?.phase, regionStatus?.phase]);
+  }, [controlsRef, onOpenChapter, onOpenReading, corridorStatus?.phase, regionStatus?.phase, airHubStatus?.phase]);
 
   // ── 스토리 조작(대사 진행·뜻 토글) — 셸 A/B 콜백이 참조하도록 ref에 최신본을 심는다 ──
   const advanceStory = () => {
@@ -663,10 +693,11 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
     const scene = sceneRef.current;
     if (!scene) return;
     const lock = reviewOpen || !!ferryPrompt || !!npcDialog || !!cityPrompt || !!chapterPrompt
-      || !!stationSelect || !!corridorPrompt || !!regionGatePrompt || albumOpen || gameMenuOpen;
+      || !!stationSelect || !!corridorPrompt || !!regionGatePrompt || !!airHubPrompt
+      || airHubStatus?.phase === 'saving' || albumOpen || gameMenuOpen;
     scene.inputLocked = lock;
     if (lock) { if (scene.heldDirs) scene.heldDirs.length = 0; scene.tapTile = null; scene.runHeld = false; }
-  }, [reviewOpen, ferryPrompt, npcDialog, cityPrompt, chapterPrompt, stationSelect, corridorPrompt, regionGatePrompt, albumOpen, gameMenuOpen]);
+  }, [reviewOpen, ferryPrompt, npcDialog, cityPrompt, chapterPrompt, stationSelect, corridorPrompt, regionGatePrompt, airHubPrompt, airHubStatus?.phase, albumOpen, gameMenuOpen]);
 
   useEffect(() => {
     let destroyed = false;
@@ -1256,12 +1287,16 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
 
         create(bootData) {
           sceneRef.current = this;   // 버스 핸들러 위임 대상 · React 입력 잠금 갱신용
-          const corridorRedirect = corridorRedirectScene(bootData, initialSpawnRef.current);
+          const corridorRedirect = corridorRedirectScene(bootData, initialSpawnRef.current, {
+            allowPreview: canAccessPreviewRegions,
+          });
           if (corridorRedirect) {
             this.scene.start(corridorRedirect, { spawn: initialSpawnRef.current });
             return;
           }
-          const regionRedirect = overworldRegionRedirectScene(bootData, initialSpawnRef.current);
+          const regionRedirect = overworldRegionRedirectScene(bootData, initialSpawnRef.current, {
+            allowPreview: canAccessPreviewRegions,
+          });
           if (regionRedirect) {
             this.scene.start(regionRedirect, { spawn: initialSpawnRef.current });
             return;
@@ -1303,11 +1338,13 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
 
           // 공항 스토리에서 광장으로 복귀 시 create가 다시 도므로 스토리·노드 오버레이 상태를 초기화.
           setStoryActive(false); setStoryPhase('none'); setNearNode(null); setFerryPrompt(null); setChapterPrompt(null);
+          setAirHubPrompt(null); setAirHubStatus(null);
 
           this.waterFrame = 0;
           this.decorFrame = 0;
           this.runHeld = false;     // B 홀드 달리기 플래그
           this.ferrying = false;    // 페리 항해 중(조작 잠금 · 노드 근접 판정 보류)
+          this.airTravelPending = false;
           this.ferryBoat = null;    // 항해 중 캐릭터 아래 배 스프라이트
           this.decor = new Map();   // "tx,ty" → { kind, imgs:[] } — 카메라 주변만 생성/회수(상한 DECOR_CAP)
 
@@ -1687,6 +1724,8 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         // 공항 진입 경로는 이 메서드 하나뿐이다(interact() A버튼·게이트 프롬프트 버튼 모두 여기로) —
         // returnSpawn 전달이 항상 보장된다.
         enterAirport() {
+          setActiveScene('airport');
+          setAirHubPrompt(null); setAirHubStatus(null);
           this.scene.start('airport', { returnSpawn: { scene: 'plaza', x: this.pTileX, y: this.pTileY } });
         }
 
@@ -1701,6 +1740,39 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           const spawn = overworldRegionSpawn(region);
           if (!region || !spawn) return;
           this.scene.start(region.sceneId, { spawn });
+        }
+
+        async flyToOverworldRegion(regionId) {
+          if (this.airTravelPending) return false;
+          const destination = overworldAirDestinationById(airDestinationsRef.current, regionId);
+          if (!destination || !userId) return false;
+          this.airTravelPending = true;
+          this.inputLocked = true;
+          this.heldDirs.length = 0;
+          this.tapTile = null;
+          setAirHubPrompt(null);
+          setAirHubStatus({ phase: 'saving', destination });
+          try {
+            const response = await fetch('/api/world/position', {
+              method: 'POST', credentials: 'same-origin',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify(destination.spawn), keepalive: true,
+            });
+            if (!response.ok) throw new Error('air destination save failed');
+            setAirHubStatus(null);
+            this.scene.start(destination.sceneId, { spawn: destination.spawn });
+            return true;
+          } catch {
+            setAirHubStatus({
+              phase: 'error',
+              destination,
+              message: '도착 위치를 저장하지 못했어요. 다시 시도해 주세요.',
+            });
+            this.inputLocked = false;
+            return false;
+          } finally {
+            this.airTravelPending = false;
+          }
         }
 
         // 페리 탑승 — "함께 보이는 항해". 순간이동 대신 물 위를 3~5초에 걸쳐 tween 이동한다.
@@ -2052,6 +2124,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           setNearStation(null); setStationSelect(null); setTransitStatus(null);
           setCorridorNear(null); setCorridorPrompt(null); setCorridorStatus(null);
           setRegionNearGate(null); setRegionGatePrompt(null); setRegionStatus(null);
+          setAirHubPrompt(null); setAirHubStatus(null);
         },
         setNearGate: (gate) => setRegionNearGate(gate),
         setStatus: (status) => setRegionStatus(status),
@@ -2379,6 +2452,80 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {airHubPrompt && activeScene === 'plaza' && (
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 8, display: 'grid', placeItems: 'center',
+          background: 'rgba(11,13,8,0.62)',
+        }}>
+          <div style={{ ...gbcPanel, width: 'min(90%, 350px)', padding: '14px 14px 12px' }}>
+            <div style={{ fontSize: '0.84rem', fontWeight: 'bold', textAlign: 'center', marginBottom: 4 }}>
+              ✈️ {airHubPrompt.node.name} 여행 터미널
+            </div>
+            <div style={{ fontSize: '0.66rem', opacity: 0.75, textAlign: 'center', marginBottom: 10 }}>
+              도착 위치를 먼저 안전하게 저장한 뒤 출발해요
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+              {airHubPrompt.destinations.map((destination) => (
+                <button
+                  key={destination.id}
+                  type="button"
+                  onClick={() => sceneRef.current?.flyToOverworldRegion?.(destination.id)}
+                  style={{ ...gbcButtonPrimary, textAlign: 'left', display: 'flex', justifyContent: 'space-between', gap: 8 }}
+                >
+                  <span>{destination.label}</span>
+                  <span style={{ opacity: 0.72 }}>{destination.preview ? '관리자 미리보기' : '항공편'}</span>
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => {
+                  setAirHubPrompt(null);
+                  sceneRef.current?.enterAirport?.();
+                }}
+                style={{ ...gbcButtonPrimary, textAlign: 'left', display: 'flex', justifyContent: 'space-between', gap: 8 }}
+              >
+                <span>하네다 입국심사 학습</span><span style={{ opacity: 0.72 }}>스토리</span>
+              </button>
+            </div>
+            <div style={{ textAlign: 'right', marginTop: 10 }}>
+              <button
+                type="button"
+                onClick={() => setAirHubPrompt(null)}
+                style={{ ...gbcButtonPrimary, background: GBC.cream, color: GBC.ink, fontSize: '0.7rem', padding: '3px 10px' }}
+              >
+                취소 Ⓑ
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {airHubStatus && activeScene === 'plaza' && (
+        <div style={{
+          position: 'absolute', left: '50%', top: 42, transform: 'translateX(-50%)', zIndex: 9,
+          fontFamily: GBC.font, fontSize: '0.68rem', color: GBC.ink, textAlign: 'center',
+          background: GBC.cream, border: `2px solid ${GBC.border}`,
+          boxShadow: `inset 0 0 0 1px ${GBC.creamHi}`, borderRadius: 2,
+          padding: '6px 11px', lineHeight: 1.5, minWidth: 220,
+        }}>
+          {airHubStatus.phase === 'saving' && <>💾 {airHubStatus.destination.label} 도착 위치 저장 중…</>}
+          {airHubStatus.phase === 'error' && (
+            <>
+              ⚠ {airHubStatus.message}
+              <div style={{ marginTop: 6 }}>
+                <button
+                  type="button"
+                  onClick={() => setAirHubStatus(null)}
+                  style={{ ...gbcButtonPrimary, fontSize: '0.66rem', padding: '2px 8px' }}
+                >
+                  닫기 Ⓑ
+                </button>
+              </div>
+            </>
+          )}
         </div>
       )}
 
