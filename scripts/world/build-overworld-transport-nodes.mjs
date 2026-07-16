@@ -42,7 +42,11 @@ async function listOutputPaths(directory, prefix = '') {
 function projectedNodes(manifest, frame) {
   return manifest.nodes.map((node) => {
     const projected = frame.project(node.lon, node.lat);
-    const tile = [roundHalfAwayFromZero(projected.x), roundHalfAwayFromZero(projected.y)];
+    const offset = node.type === 'rail-hub' ? node.arrivalOffset : [0, 0];
+    const tile = [
+      roundHalfAwayFromZero(projected.x) + offset[0],
+      roundHalfAwayFromZero(projected.y) + offset[1],
+    ];
     if (tile[0] < 0 || tile[1] < 0 || tile[0] >= frame.width || tile[1] >= frame.height) {
       throw new Error(`transport node projects outside region: ${node.id}`);
     }
@@ -53,7 +57,9 @@ function projectedNodes(manifest, frame) {
       contentLocale: node.contentLocale,
       ...(node.type === 'transsib-gate'
         ? { corridorStopId: node.corridorStopId }
-        : { airportCode: node.airportCode }),
+        : node.type === 'air-gate'
+          ? { airportCode: node.airportCode }
+          : { arrivalOffset: Object.freeze([...node.arrivalOffset]) }),
       tile: Object.freeze(tile),
     });
   }).sort((left, right) => compareCodePoint(left.id, right.id));

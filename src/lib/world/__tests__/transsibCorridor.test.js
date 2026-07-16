@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   TRANS_SIBERIAN_CORRIDOR,
+  canAccessCorridor,
   confirmCorridorTerminalPersistence,
   corridorLogoutFallback,
   corridorStopSpawn,
@@ -11,6 +12,13 @@ import {
 } from '../transsibCorridor.js';
 
 describe('시베리아 횡단 연결선 무스키마 상태기계', () => {
+  it('미출시 회랑은 일반 사용자에게 닫고 관리자 미리보기만 허용한다', () => {
+    expect(canAccessCorridor()).toBe(false);
+    expect(canAccessCorridor({ allowPreview: false })).toBe(false);
+    expect(canAccessCorridor({ allowPreview: true })).toBe(true);
+    expect(canAccessCorridor({}, { ...TRANS_SIBERIAN_CORRIDOR, releaseEligible: true })).toBe(true);
+  });
+
   it('출시 비활성·임시 시간표와 주요 9개 정차역을 명시한다', () => {
     expect(TRANS_SIBERIAN_CORRIDOR).toMatchObject({
       releaseEligible: false,
