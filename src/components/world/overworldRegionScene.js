@@ -5,13 +5,15 @@ import {
   boardEmeaRailTrip,
   continueEmeaRailTrip,
   disembarkEmeaRailTrip,
+  emeaRailDestinations,
   persistEmeaRailTerminalBeforeBoard,
   planEmeaRailRoute,
   prepareEmeaRailTrip,
 } from '../../lib/world/emeaRail';
 import { OverworldChunkLoader, overworldChunkKey } from '../../lib/world/overworldChunkLoader';
 import { OVERWORLD_STORAGE_CHUNK_TILES } from '../../lib/world/overworldChunk';
-import { corridorStopSpawn } from '../../lib/world/transsibCorridor';
+import { overworldRenderPageKeyAtWorldPixel } from '../../lib/world/overworldRenderPages';
+import { canAccessCorridor, corridorStopSpawn } from '../../lib/world/transsibCorridor';
 import { overworldRegionSpawn } from '../../lib/world/overworldRegions';
 import { OverworldTransportNodeLoader } from '../../lib/world/overworldTransportNodes';
 import {
@@ -381,8 +383,9 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
     regionInteract() {
       if (this.inputLocked) return;
       if (this.nearGate?.type === 'rail-hub') {
+        const destinationIds = new Set(emeaRailDestinations(this.nearGate.id).map(({ id }) => id));
         const options = railHubs
-          .filter((hub) => hub.id !== this.nearGate.id)
+          .filter((hub) => destinationIds.has(hub.id))
           .map((hub) => Object.freeze({
             ...hub,
             stopIds: planEmeaRailRoute(this.nearGate.id, hub.id),
@@ -459,6 +462,9 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
       this.ferryBoat = this.add.image(this.player.x, this.player.y + 8, ferryTexture)
         .setOrigin(0.5, 0.5).setScale(2).setDepth(999);
       this.moving = true;
+      let streamedPageKey = overworldRenderPageKeyAtWorldPixel(this.player.x, this.player.y, {
+        tilePixels: TILE,
+      });
       this.tweens.add({
         targets: this.player,
         x: targetX,
@@ -467,6 +473,11 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
         ease: 'Sine.easeInOut',
         onUpdate: () => {
           this.ferryBoat?.setPosition(this.player.x, this.player.y + 8);
+          const nextPageKey = overworldRenderPageKeyAtWorldPixel(this.player.x, this.player.y, {
+            tilePixels: TILE,
+          });
+          if (nextPageKey === streamedPageKey) return;
+          streamedPageKey = nextPageKey;
           this.refreshTerrainPages();
           this.refreshFeatureOverlays();
         },
@@ -488,8 +499,15 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
 
     async enterCorridor() {
       if (this.nearGate?.type !== 'transsib-gate' || this.inputLocked) return;
+      if (!canAccessCorridor({ allowPreview: ctx.canAccessPreviewRegionsRef?.current })) {
+        ctx.setStatus?.({
+          phase: 'error',
+          message: '횡단열차 회랑은 아직 열리지 않았어요.',
+        });
+        return false;
+      }
       const spawn = corridorStopSpawn(this.nearGate.corridorStopId);
-      if (!spawn) return;
+      if (!spawn) return false;
       this.inputLocked = true;
       this.heldDirs.length = 0;
       ctx.setNearGate?.(null);
@@ -499,10 +517,11 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
         this.inputLocked = false;
         this.refreshNearInteraction(true);
         ctx.setStatus?.({ phase: 'error', message: '플랫폼 저장에 실패했어요. 연결을 확인해 주세요.' });
-        return;
+        return false;
       }
       ctx.setStatus?.(null);
       this.scene.start('transsib-corridor', { spawn });
+      return true;
     }
 
     railStatus(trip) {

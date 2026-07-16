@@ -65,6 +65,10 @@ describe('오버월드 철도 그래프 자동 감사', () => {
   it('halo 사본 drift·양자화 drift·스냅 임계 초과를 거부한다', () => {
     const segment = fixtureSegment('a', [0, 0], [1024, 0]);
     expect(() => auditOverworldRailGraph({
+      documents: [fixtureDocument([])],
+      hubs: [{ id: 'hub', tile: [0, 0] }],
+    })).toThrow('no segments');
+    expect(() => auditOverworldRailGraph({
       documents: [fixtureDocument([segment]), fixtureDocument([{ ...segment, end: [2048, 0] }])],
       hubs: [{ id: 'hub', tile: [0, 0] }],
     })).toThrow('halo copy drifted');
