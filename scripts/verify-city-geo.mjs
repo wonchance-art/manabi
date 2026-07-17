@@ -155,6 +155,25 @@ const CITY_GATES = {
     // 정체(canonical)/간체(학습 트랙) 복수 앵커 — 브뤼셀 fr/nl 문법 재사용.
     multilingual: { anchors: ['zh-Hant', 'zh-Hans'], nameFields: ['nameZhHant', 'nameZhHans'] },
   },
+  'hong-kong': {
+    file: 'src/components/world/cities/hong-kong.geo.js',
+    snapshot: null,
+    expectedLocale: 'zh',
+    expectedMpt: 20,
+    buildingPct: null, // 홍콩 고밀도 프로필 관찰 후 확정
+    greenMinPct: null, // 픽 산지 — report 관찰
+    poiMaxDevTiles: 2.5,
+    downtown: { label: '침사추이', lon: 114.1722, lat: 22.2975 },
+    riverSections: [
+      // 빅토리아항(침사추이~센트럴) — 실측 1,540m 연속.
+      { name: '빅토리아항 단면', lon: 114.163, latRange: [22.298, 22.278], sumMinM: 1000, runMinM: 1000 },
+    ],
+    streamCourses: [],
+    reportCourses: [],
+    bridgeMaxTiles: 0,
+    bridgeCrossings: [],
+    multilingual: { anchors: ['zh-Hant', 'zh-Hans'], nameFields: ['nameZhHant', 'nameZhHans'] },
+  },
   'mont-saint-michel': {
     file: 'src/components/world/cities/mont-saint-michel.geo.js',
     snapshot: null,
