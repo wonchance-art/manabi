@@ -5,6 +5,7 @@
 
 import { CITY_TILE, isCityBlocked, isCityWalkable, isCityWater } from './terrain.js';
 import { TAIPEI_GEO } from './taipei.geo.js';
+import { ZH_DOORS } from '../zhDoors.js';
 
 export { CITY_TILE, isCityBlocked, isCityWalkable, isCityWater };
 
@@ -55,22 +56,50 @@ export const ZONES = [
   { id: 'daan', label: '다안', bounds: [192, 401, 277, 490], labelTile: [235, 446] },
 ];
 
-export const CITY_NODES = TAIPEI_GEO.pois.map((poi) => {
-  const copy = poiCopy(poi.id);
-  return {
-    id: poi.id,
+// 중국어 도어 배치 타일 — geo 보행 타일 나선 탐색 계산치(기존 노드와 체비쇼프 ≥2 이격).
+// 중국어권 1호 도시가 공용 도어 6종을 싣는다(파리 fr·런던 en 선례).
+const TAIPEI_DOOR_TILES = Object.freeze({
+  'zh-01': [100, 293], // 찻집(디화제 — 차 상가)
+  'zh-02': [171, 121], // 야시장 노점(스린야시장)
+  'zh-03': [90, 376],  // 지하철 매표기(시먼역)
+  'zh-04': [47, 403],  // 사원 향로(용산사)
+  'zh-05': [83, 375],  // 식당(시먼딩)
+  'zh-06': [439, 326], // 시장 골목(라오허제야시장)
+});
+
+export const CITY_NODES = [
+  ...TAIPEI_GEO.pois.map((poi) => {
+    const copy = poiCopy(poi.id);
+    return {
+      id: poi.id,
+      kind: 'spot',
+      name: copy.name,
+      nameZhHant: poi.nameZhHant,
+      nameZhHans: poi.nameZhHans,
+      contentLocale: poi.contentLocale,
+      facade: 'sign',
+      tile: [poi.tile[0], poi.tile[1]],
+      facing: 'down',
+      noStamp: true,
+      desc: copy.desc,
+    };
+  }),
+  // 중국어 문화 도어 6종 — track 명시 라우팅(trackChapterHref), 문화 사실은 desc 미리보기로.
+  ...ZH_DOORS.map((door) => ({
+    id: door.id,
     kind: 'spot',
-    name: copy.name,
-    nameZhHant: poi.nameZhHant,
-    nameZhHans: poi.nameZhHans,
-    contentLocale: poi.contentLocale,
+    name: door.name,
+    nameZh: door.nameZh,
+    contentLocale: 'zh',
     facade: 'sign',
-    tile: [poi.tile[0], poi.tile[1]],
+    tile: [...TAIPEI_DOOR_TILES[door.id]],
     facing: 'down',
     noStamp: true,
-    desc: copy.desc,
-  };
-});
+    track: door.track,
+    chapter: door.chapter,
+    desc: `${door.name} — ${door.lines[0].zh} ${door.lines[0].pinyin} (${door.lines[0].gloss})`,
+  })),
+];
 
 // ⚠️ nameJa = 레거시 표기 필드. 정체 canonical, 간체 병기 보존.
 export const STATIONS = TAIPEI_GEO.stations.map((station) => ({

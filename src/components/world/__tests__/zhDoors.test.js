@@ -49,3 +49,20 @@ describe('중국어 도어 6종 — 중국어 트랙 연결 계약', () => {
     expect(zhDoorById('zh-99')).toBeNull();
   });
 });
+
+describe('타이베이 도시 배선 — 도어가 보행 타일 위에 있다 (중국어권 1호)', () => {
+  // 대형 geo 동적 임포트 — kyotoGeo/parisDoors 선례대로 타임아웃 확장.
+  it('도어 6종이 CITY_NODES에 track·chapter와 함께 배선되고 타일이 보행 가능', { timeout: 20000 }, async () => {
+    const { TAIPEI } = await import('../cities/taipei.js');
+    const { isCityWalkable } = await import('../cities/terrain.js');
+    const grid = TAIPEI.buildGrid();
+    const doorNodes = TAIPEI.nodes.filter((node) => node.id.startsWith('zh-0'));
+    expect(doorNodes).toHaveLength(6);
+    for (const node of doorNodes) {
+      expect(node.chapter, node.id).toBeTruthy();
+      expect(node.track).toBe('chinese');
+      const [x, y] = node.tile;
+      expect(isCityWalkable(grid[y * TAIPEI.cols + x]), `${node.id} @${x},${y}`).toBe(true);
+    }
+  });
+});
