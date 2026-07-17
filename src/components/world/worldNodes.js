@@ -228,6 +228,7 @@ export const WORLD_NODES = Object.freeze(LEGACY_WORLD_NODES.map(migrateLegacyWor
 
 const PARIS_NAME = '파리';
 const MONT_SAINT_MICHEL_NAME = '몽생미셸';
+const NICE_NAME = '니스';
 
 export const REGIONAL_WORLD_NODES = Object.freeze([
   createRegionalWorldNode({
@@ -254,6 +255,19 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
     lat: 48.636,
     noStamp: true,
     gate: { type: 'city', to: 'mont-saint-michel', label: '🏙️ 시내' },
+  }),
+  createRegionalWorldNode({
+    id: 'nice',
+    name: NICE_NAME,
+    kind: 'city',
+    regionId: 'emea',
+    contentLocale: 'fr',
+    lon: 7.262,
+    lat: 43.7045,
+    // Nice-Ville 투영칸([289,551])의 충돌을 피해 바로 북쪽 보행칸으로 도착한다.
+    arrivalOffset: [0, -1],
+    noStamp: true,
+    gate: { type: 'city', to: 'cote-dazur', label: '🏙️ 시내' },
   }),
 ]);
 
