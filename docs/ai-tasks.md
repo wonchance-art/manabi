@@ -21,6 +21,7 @@
   EMEA St Pancras 후보 [172,356] PR #175 독립 검증 PASS, runtime node 후속 인계 대기)
 - 상하이 geo (stacked draft PR #188 exact 46dd50859bc947f398d65b0288846e9c09c3a9c9,
   snapshot PR #185 exact b7508ac332a439fd5bbed1a2ba4752f7180b89fa 기반 신규 3파일;
+  latest main b5caca66557f3db8c0c61a4f2964994ea08d2c9d + #185 + #188 detached 결합
   targeted 11/11·전체 139 files/1,672 tests·BFS 131,179/131,179·결정성·PNG PASS,
   official verifier Shanghai 프로필과 #185 merge 후 main retarget 대기)
 ### todo
