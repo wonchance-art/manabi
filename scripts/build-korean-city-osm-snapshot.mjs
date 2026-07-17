@@ -389,8 +389,7 @@ function recoverCoastalMainland(waterMask, coastlineMask, metrics, contract) {
   });
 }
 
-export function buildSnapshot(city, rawText) {
-  const config = CITY_CONFIG[city];
+export function buildSnapshotFromConfig(city, config, rawText) {
   if (!config) throw new Error(`Unknown city: ${city}`);
   const raw = JSON.parse(rawText);
   const metersPerTile = cityScaleTier(config.metersPerTile ?? DEFAULT_METERS_PER_TILE).metersPerTile;
@@ -511,7 +510,7 @@ export function buildSnapshot(city, rawText) {
     metersPerTile,
     grid: metrics.grid,
     source: {
-      geometry: 'OpenStreetMap', license: 'ODbL 1.0', snapshot: '2026-07-16',
+      geometry: 'OpenStreetMap', license: 'ODbL 1.0', snapshot: config.snapshotDate ?? '2026-07-16',
       providers: config.sourceDetails?.providers ?? ['overpass.kumi.systems'], rawOverpassSha256: hash(rawText),
       ...(config.sourceDetails?.partitionCount ? { partitionCount: config.sourceDetails.partitionCount } : {}),
       ...(config.sourceDetails?.queryCount ? { queryCount: config.sourceDetails.queryCount } : {}),
@@ -537,6 +536,10 @@ export function buildSnapshot(city, rawText) {
     ...rles,
     crossings: uniqueCrossings,
   };
+}
+
+export function buildSnapshot(city, rawText) {
+  return buildSnapshotFromConfig(city, CITY_CONFIG[city], rawText);
 }
 
 export function writeSnapshot({ city, input, output }) {
