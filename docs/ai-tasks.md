@@ -23,9 +23,10 @@
   나머지 후보는 2.949~16.321MiB 예상 — bbox 축소·왜곡 없이 오너 상한/범위 확정 대기.
 ### done (최근)
 - 베이징 geo (#194 snapshot merge, ancestry 재작성으로 stacked #197 superseded close,
-  exact-main replacement #199 head 439e60f1a72f0974aaa37cdeffe1243a7d602e13 OPEN/READY/CLEAN,
+  exact-main replacement #199 head 439e60f1a72f0974aaa37cdeffe1243a7d602e13 →
+  main merge aeddc1f6684fd759ab7270a4a45bf3306ee95340 byte-identical 3파일,
   official verifier main d0d0b27 전 gate·141 files/1,694 tests·BFS·결정성·PNG PASS,
-  #150 CODEX_DONE 5003858711; merge·runtime·desc·overworld node는 후속)
+  #150 CODEX_DONE 5003858711; runtime·desc·overworld node는 후속)
 - 런던권 geo (#160 main merge e69a98bb0c78fea277425259de01db0e17282c50,
   main fa40fae official verifier 전 gate·타워브리지 260m/260m·targeted 18/18 PASS,
   #150 CODEX_DONE 5003344796; EMEA runtime node는 후속 별도 범위)
