@@ -19,13 +19,13 @@
 - 런던권 geo (PR #160 main 반입 완료, exact head e69a98bb0c78fea277425259de01db0e17282c50.
   타워브리지 원본 수면 240~300m 정상, 공식 verifier 교량 회피창 오탐 보정 대기;
   EMEA St Pancras 후보 [172,356] PR #175 독립 검증 PASS, runtime node 후속 인계 대기)
+- 상하이 geo (stacked draft PR #188 exact 46dd50859bc947f398d65b0288846e9c09c3a9c9,
+  snapshot PR #185 exact b7508ac332a439fd5bbed1a2ba4752f7180b89fa 기반 신규 3파일;
+  targeted 11/11·전체 139 files/1,672 tests·BFS 131,179/131,179·결정성·PNG PASS,
+  official verifier Shanghai 프로필과 #185 merge 후 main retarget 대기)
 ### todo
-- 상하이 geo — Claude 상세 SPEC #150 댓글 5002084201 수신
-  (bbox [121.45,31.19,121.54,31.26], 20m/zh, POI 10·역 4, 황푸강 단면·BRIDGE 0).
-  선제 계약 감사: grid 429×390, 14개 마커 투영 충돌 없음, 예상 피크 7,863,570 bytes <24MiB,
-  2호선 인민광장→난징둥루→루자쭈이·10호선 예원→난징둥루 환승과 황푸강 ferry virtual edge 후보 확인.
-  Codex-1 비콘텐츠 snapshot exact handoff 전 본생성 금지
-  (현재 Shanghai 관련 open PR·remote branch 없음, 다음 인계 요청은 댓글 5001479887에서 완료).
+- 베이징 geo — Claude가 상하이 산출 무렵 상세 SPEC 게시 예정.
+  exact SPEC과 Codex-1 비콘텐츠 snapshot handoff 전 POI·역·본생성 금지.
 ### done (최근)
 - 홍콩 geo (#182·#183 main merge e52130f3, 구현 exact 1e53bcabae6b381bf763ecb54ac4a79c87ef5dee,
   merged main official verifier·137 files/1,661 tests·Star Ferry 포함 BFS·결정성 PASS,
