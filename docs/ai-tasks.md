@@ -19,8 +19,9 @@
 - 코트다쥐르 마감(CODEX_DONE 게시 대기 — geo는 Claude 선제 검수 전 게이트 PASS 완료)
 - 런던권 geo (codex2/london-geo — Claude 선제 실측: **타워브리지 단면 160m 1건만 FAIL**,
   실폭 ~250m 대비 얇음 → 소스 마스크 대조 요청. verify 게이트는 main에 배치 완료)
-### todo
 - 템스 타워브리지 구간 수면 폭 원인 확인(마스크 vs terrain — 온천천 선례)
+### todo
+- (없음)
 ### done (최근)
 - 그랑파리 geo+교량 3분류 (#157 merge), frenchCityRuntimeAdapter(스코프 클린 확인)
 
