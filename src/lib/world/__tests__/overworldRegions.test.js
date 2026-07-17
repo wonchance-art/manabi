@@ -118,6 +118,24 @@ describe('오버월드 지역 레지스트리', () => {
     });
   });
 
+  it('코트다쥐르 니스 게이트 후보가 투영 충돌을 피해 체크인된 보행 타일에 도착한다', () => {
+    const region = overworldRegionById('emea');
+    const projected = projectOverworldRegionCoordinate(region, 7.262, 43.7045);
+    const arrivalOffset = [0, -1];
+    const tile = {
+      x: projected.x + arrivalOffset[0],
+      y: projected.y + arrivalOffset[1],
+    };
+
+    expect(projected).toEqual({ x: 289, y: 551 });
+    expect(tile).toEqual({ x: 289, y: 550 });
+    expect(checkedInGateCell(region, { tile })).toMatchObject({
+      valid: true,
+      collision: 0,
+      viewOnly: 0,
+    });
+  });
+
   it('신규 사용자의 APAC 서울 기본 진입점이 체크인된 보행 타일이다', () => {
     const apac = overworldRegionById('asia-pacific');
     const seoul = WORLD_NODES.find(({ id }) => id === 'seoul');
