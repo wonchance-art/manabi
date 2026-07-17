@@ -49,6 +49,19 @@ describe('도시 정밀맵 레지스트리', () => {
     });
   });
 
+  it('코트다쥐르 게이트와 EXIT가 EMEA 니스 노드의 같은 타일로 왕복한다', () => {
+    const nice = getNode('nice');
+    expect(nice).toMatchObject({
+      regionId: 'emea',
+      overworldTile: [289, 550],
+      gate: { type: 'city', to: 'cote-dazur' },
+    });
+    expect(CITY_DATA[nice.gate.to].returnNode).toBe(nice.id);
+    expect(worldNodeReturnSpawn(nice)).toEqual({
+      scene: 'overworld:emea', x: 289, y: 550,
+    });
+  });
+
   it('기존 APAC 도시 EXIT는 plaza의 기존 도시 노드 타일로 그대로 복귀한다', () => {
     for (const city of CITY_MAPS.filter(({ returnNode }) => getNode(returnNode)?.regionId === 'asia-pacific')) {
       const node = getNode(city.returnNode);

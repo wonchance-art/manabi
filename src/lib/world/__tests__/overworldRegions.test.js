@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { decodeOverworldChunkV1, OVERWORLD_STORAGE_CHUNK_TILES } from '../overworldChunk.js';
 import { WORLD_NODES, getNode } from '../../../components/world/worldNodes.js';
+import { EMEA_RAIL_NETWORK } from '../emeaRail.js';
 import { normalizeOverworldOverlayDocument } from '../overworldFeatureOverlay.js';
 import { normalizeOverworldTransportNodeDocument } from '../overworldTransportNodes.js';
 import {
@@ -116,6 +117,32 @@ describe('오버월드 지역 레지스트리', () => {
     expect(overworldRegionAirSpawn(apac)).toEqual({
       scene: apac.sceneId, x: 1460, y: 582,
     });
+  });
+
+  it('코트다쥐르 니스 게이트가 투영 충돌을 피해 체크인된 보행 타일에 도착한다', () => {
+    const region = overworldRegionById('emea');
+    const nice = getNode('nice');
+    const projected = projectOverworldRegionCoordinate(region, nice.lon, nice.lat);
+    const tile = {
+      x: projected.x + nice.arrivalOffset[0],
+      y: projected.y + nice.arrivalOffset[1],
+    };
+
+    expect(nice).toMatchObject({ lon: 7.262, lat: 43.7045, arrivalOffset: [0, -1] });
+    expect(projected).toEqual({ x: 289, y: 551 });
+    expect(tile).toEqual({ x: 289, y: 550 });
+    expect(nice.overworldTile).toEqual([tile.x, tile.y]);
+    expect(checkedInGateCell(region, { tile })).toMatchObject({
+      valid: true,
+      collision: 0,
+      viewOnly: 0,
+    });
+    for (const hub of EMEA_RAIL_NETWORK.hubs) {
+      expect(Math.max(
+        Math.abs(tile.x - hub.tile[0]),
+        Math.abs(tile.y - hub.tile[1]),
+      ), hub.id).toBeGreaterThan(1);
+    }
   });
 
   it('신규 사용자의 APAC 서울 기본 진입점이 체크인된 보행 타일이다', () => {
