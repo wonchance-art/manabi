@@ -16,12 +16,15 @@
 
 ## Codex-2 (codex2/*)
 ### doing
+- 호주 1호 브리즈번 geo — snapshot #208 exact
+  a79d3be435dc7a88d380b2c976194f0e2bfb12c3 인계 후 draft #211
+  head b8ef57cd9b32d87f16843126e6b80715a4174783 구현 완료:
+  전용 신규 3파일, 20m/en·POI 11·역 4·ferry 2·BRIDGE 0,
+  targeted 13/13·전체 146 files/1,721 tests·BFS 250,235/250,235·
+  14,241,376 bytes <24MiB·결정성·전체 PNG PASS.
+  #150 핸드오프 5007858288 게시, latest main 공식 verifier profile 대기.
 ### todo
-- 호주 1호 브리즈번 geo — 상세 SPEC #150 댓글 5004841997 수신 완료:
-  bbox `[152.98,-27.52,153.09,-27.42]`, 20m/en, nameEn canonical, POI 11·역 4,
-  CityCat 도선·브리즈번강 단면·BRIDGE 0. 남반구 aspectCorrection 검산
-  `cos(-27.47°)=0.887252482586`, grid 544×557, 예상 13.582MiB <24MiB PASS.
-  Codex-1 비콘텐츠 4×4 Overpass 48/48 snapshot exact handoff 전 본생성·재수집 금지.
+- (없음)
 ### done (최근)
 - 베이징 geo (#194 snapshot merge, ancestry 재작성으로 stacked #197 superseded close,
   exact-main replacement #199 head 439e60f1a72f0974aaa37cdeffe1243a7d602e13 →
