@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { worldNodeReturnSpawn } from '../../../lib/world/worldNodeGeo.js';
 import { CITY_DATA, CITY_MAPS } from '../cities/index.js';
-import { getNode } from '../worldNodes.js';
+import { ALL_WORLD_NODES, getNode } from '../worldNodes.js';
 
 describe('도시 정밀맵 레지스트리', () => {
   it('현재 플레이 가능한 도시를 전체 맵 뷰어와 같은 순서로 노출한다', () => {
@@ -20,6 +20,19 @@ describe('도시 정밀맵 레지스트리', () => {
       expect(grid).toBeInstanceOf(Uint8Array);
       expect(grid).toHaveLength(city.cols * city.rows);
       expect(CITY_DATA[city.id]).toBe(city);
+    }
+  });
+
+  it('모든 city gate가 등록 도시의 returnNode로 왕복한다', () => {
+    for (const node of ALL_WORLD_NODES.filter(({ gate }) => gate?.type === 'city')) {
+      const city = CITY_DATA[node.gate.to];
+      expect(city, `${node.id} → ${node.gate.to}`).toBeTruthy();
+      expect(city.returnNode, node.id).toBe(node.id);
+      expect(worldNodeReturnSpawn(node), node.id).toEqual(
+        node.regionId === 'asia-pacific'
+          ? { scene: 'plaza', x: node.tile[0], y: node.tile[1] }
+          : { scene: `overworld:${node.regionId}`, x: node.overworldTile[0], y: node.overworldTile[1] },
+      );
     }
   });
 
