@@ -17,9 +17,10 @@
 ## Codex-2 (codex2/*)
 ### doing
 - 코트다쥐르 마감(CODEX_DONE 게시 대기 — geo는 Claude 선제 검수 전 게이트 PASS 완료)
-- 런던권 geo (codex2/london-geo — 스펙 #150 기게시)
+- 런던권 geo (codex2/london-geo — Claude 선제 실측: **타워브리지 단면 160m 1건만 FAIL**,
+  실폭 ~250m 대비 얇음 → 소스 마스크 대조 요청. verify 게이트는 main에 배치 완료)
 ### todo
-- 런던 자가검: verify에 london 게이트 추가는 Claude가 CODEX_DONE 전 반영 예정
+- 템스 타워브리지 구간 수면 폭 원인 확인(마스크 vs terrain — 온천천 선례)
 ### done (최근)
 - 그랑파리 geo+교량 3분류 (#157 merge), frenchCityRuntimeAdapter(스코프 클린 확인)
 
@@ -27,7 +28,7 @@
 ### doing
 - 사이클 운영(웹훅+cron+Routine), 코트다쥐르 CODEX_DONE 시 desc 18종 주입(검증 완료 대기 중)
 ### todo
-- verify에 london 게이트 추가(템스 2단면·BRIDGE 0·en 로케일) / 런던 desc 24종 주입(검증 완료 대기)
+- 런던 desc 24종 주입(검증 완료 — geo merge 대기)
 - 코트다쥐르 도시 콘텐츠 파일(cote-dazur.js — 파리 패턴) / 영어 도어 en-01~06 저작(track 필드 라우터 일반화 포함)
 - 몽생미셸 도어 msm-01~06 tile 배선(geo 좌표 확정) / 렌더크래프트: 파리·MSM 프롭
 ### done (최근)
