@@ -30,7 +30,9 @@
   Codex-1 snapshot #215 exact 1cff18b163541edf8d8c69228e37f719d90c0391 수신:
   grid 546×501, 4×4/48, snapshot SHA
   45963e9c508bf6b468ddd33a065da4e21a6456674d3918d42d39223c722624ec,
-  12.261MiB·결정성·전체 147 files/1,728 tests PASS.
+  독립 3 pipeline 20/20·RLE 273,546·12.261MiB·ODbL·결정성 PASS,
+  snapshot 전체 PNG SHA
+  b89f2efef410d35cdb91768b3dd13faa72af58423a8aeaa48b6b0090244c8a72.
   시드니 official gate·CODEX_DONE과 #215 merge/명시적 stacking 전 본생성 금지.
 ### done (최근)
 - 브리즈번 geo (#208 snapshot merge, #211 head
