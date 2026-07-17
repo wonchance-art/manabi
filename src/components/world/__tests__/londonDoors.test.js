@@ -46,3 +46,20 @@ describe('런던 도어 6종 — 영어 트랙 연결 계약', () => {
     expect(londonDoorById('en-99')).toBeNull();
   });
 });
+
+describe('런던 도시 배선 — 도어가 보행 타일 위에 있다', () => {
+  // 대형 geo 동적 임포트 — kyotoGeo/parisDoors 선례대로 타임아웃 확장.
+  it('도어 6종이 CITY_NODES에 track·chapter와 함께 배선되고 타일이 보행 가능', { timeout: 20000 }, async () => {
+    const { LONDON } = await import('../cities/london.js');
+    const { isCityWalkable } = await import('../cities/terrain.js');
+    const grid = LONDON.buildGrid();
+    const doorNodes = LONDON.nodes.filter((node) => node.id.startsWith('en-0'));
+    expect(doorNodes).toHaveLength(6);
+    for (const node of doorNodes) {
+      expect(node.chapter, node.id).toBeTruthy();
+      expect(node.track).toBe('english');
+      const [x, y] = node.tile;
+      expect(isCityWalkable(grid[y * LONDON.cols + x]), `${node.id} @${x},${y}`).toBe(true);
+    }
+  });
+});
