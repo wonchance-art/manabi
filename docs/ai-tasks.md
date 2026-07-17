@@ -20,8 +20,8 @@
   90fcda4164b6129e35d58b34c62a3cfb5630c7e3 소비 후 draft #216
   head 3fb2dd1b9db86a139e86463add1baaad7fbbbb03 구현 완료:
   전용 신규 3파일, 20m/en·POI 14·역 5·하버 페리 3노선·BRIDGE 0,
-  targeted 14/14·전체 147 files/1,728 tests·BFS 284,607/284,607·
-  23,755,680 bytes <24MiB·결정성·전체 PNG PASS.
+  targeted 14/14·latest main 19dd18b 결합 전체 148 files/1,735 tests·
+  BFS 284,607/284,607·23,755,680 bytes <24MiB·결정성·전체 PNG PASS.
   #150 핸드오프 5008243315 게시, latest main 공식 verifier profile 대기.
 ### todo
 - 호주 3호 캔버라 geo — SPEC #150 댓글 5008080789:
@@ -36,7 +36,8 @@
   시드니 official gate·CODEX_DONE과 #215 merge/명시적 stacking 전 본생성 금지.
 ### done (최근)
 - 브리즈번 geo (#208 snapshot merge, #211 head
-  b8ef57cd9b32d87f16843126e6b80715a4174783, official verifier
+  b8ef57cd9b32d87f16843126e6b80715a4174783 → main merge
+  19dd18bda66b5b8e27c39444897e8d0f97984dbb, official verifier
   main 1cb9166 전 gate·latest-main 147 files/1,728 tests·BFS·결정성·PNG PASS,
   #150 CODEX_DONE 5008140889; runtime·desc·overworld node와 merge는 후속)
 - 베이징 geo (#194 snapshot merge, ancestry 재작성으로 stacked #197 superseded close,
