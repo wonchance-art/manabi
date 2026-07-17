@@ -238,6 +238,27 @@ const CITY_GATES = {
       { name: '빅토리아교', lon: 153.0203, lat: -27.4738, windowTiles: 5 },
     ],
   },
+  sydney: {
+    file: 'src/components/world/cities/sydney.geo.js',
+    snapshot: 'scripts/data/sydney-osm-v21.json',
+    expectedLocale: 'en',
+    expectedMpt: 20,
+    buildingPct: null, // 시드니 프로필 관찰 후 확정
+    greenMinPct: null, // 왕립식물원·센테니얼 — report 관찰
+    poiMaxDevTiles: 2.5,
+    downtown: { label: '서큘러키', lon: 151.2110, lat: -33.8610 },
+    riverSections: [
+      // 포트잭슨(하버브리지 동측 개수면) — 경도 스캔 실측 151.24에서 2300m/연속 2280m.
+      { name: '포트잭슨 단면', lon: 151.24, latRange: [-33.84, -33.875], sumMinM: 1600, runMinM: 1600 },
+    ],
+    streamCourses: [],
+    reportCourses: [],
+    bridgeMaxTiles: 0,
+    bridgeCrossings: [
+      { name: '하버브리지', lon: 151.2108, lat: -33.8523, windowTiles: 5 },
+      { name: '안작브리지', lon: 151.1870, lat: -33.8700, windowTiles: 6 },
+    ],
+  },
   'mont-saint-michel': {
     file: 'src/components/world/cities/mont-saint-michel.geo.js',
     snapshot: null,
