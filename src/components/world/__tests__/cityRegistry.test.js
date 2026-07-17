@@ -92,6 +92,19 @@ describe('도시 정밀맵 레지스트리', () => {
     });
   });
 
+  it('런던 게이트와 EXIT가 EMEA 세인트판크라스 노드의 같은 타일로 왕복한다', () => {
+    const london = getNode('london');
+    expect(london).toMatchObject({
+      regionId: 'emea',
+      overworldTile: [172, 356],
+      gate: { type: 'city', to: 'london' },
+    });
+    expect(CITY_DATA[london.gate.to].returnNode).toBe(london.id);
+    expect(worldNodeReturnSpawn(london)).toEqual({
+      scene: 'overworld:emea', x: 172, y: 356,
+    });
+  });
+
   it('기존 APAC 도시 EXIT는 plaza의 기존 도시 노드 타일로 그대로 복귀한다', () => {
     for (const city of CITY_MAPS.filter(({ returnNode }) => getNode(returnNode)?.legacyTile)) {
       const node = getNode(city.returnNode);
