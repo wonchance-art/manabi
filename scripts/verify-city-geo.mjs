@@ -115,6 +115,26 @@ const CITY_GATES = {
     bridgeMaxTiles: 0, // 오너 확정: 프랑스도 한국식 교량 정리
     bridgeCrossings: [],
   },
+  brussels: {
+    file: 'src/components/world/cities/brussels.geo.js',
+    snapshot: null,
+    expectedLocale: 'fr',
+    expectedMpt: 20,
+    buildingPct: null, // 브뤼셀 프로필 관찰 후 확정
+    greenMinPct: null, // 생캉트네르·라켄 — report 관찰
+    poiMaxDevTiles: 2.5,
+    downtown: { label: '그랑플라스', lon: 4.3525, lat: 50.8467 },
+    riverSections: [
+      // 브뤼셀-샤를루아 운하(센느는 복개 — culvert 제외 계약). 실측 120/80에 마진.
+      { name: '운하 단면', lat: 50.825, lonRange: [4.32, 4.35], sumMinM: 100, runMinM: 60 },
+    ],
+    streamCourses: [],
+    reportCourses: [],
+    bridgeMaxTiles: 0,
+    bridgeCrossings: [],
+    // 다언어 복수 앵커 첫 실전(§3-8): fr canonical + nl 병기 전수.
+    multilingual: { anchors: ['fr', 'nl'], nameFields: ['nameFr', 'nameNl'] },
+  },
   'mont-saint-michel': {
     file: 'src/components/world/cities/mont-saint-michel.geo.js',
     snapshot: null,
@@ -321,6 +341,18 @@ async function main() {
   }
   for (const course of gates.reportCourses || []) {
     report(`${course.name} 유로 수면 존재율`, `${(coursePresence(geo, proj, course) * 100).toFixed(0)}%`);
+  }
+
+  // ⑤-b 다언어 앵커(브뤼셀 §3-8): localeAnchors 선언 + 병기 필드 전수 커버리지
+  if (gates.multilingual) {
+    const anchors = geo.meta.localeAnchors || [];
+    gate(`localeAnchors = [${gates.multilingual.anchors.join(',')}]`,
+      gates.multilingual.anchors.every((a) => anchors.includes(a)), JSON.stringify(anchors));
+    for (const field of gates.multilingual.nameFields) {
+      const markers = [...(geo.pois || []), ...(geo.stations || [])];
+      const covered = markers.filter((m) => typeof m[field] === 'string' && m[field].length > 0).length;
+      gate(`${field} 커버리지 100%`, covered === markers.length, `${covered}/${markers.length}`);
+    }
   }
 
   // ⑥ 교량 정리(오너 지시): BRIDGE 잔존 0 + 주요 교량이 차도 회랑으로 생존
