@@ -53,6 +53,7 @@ export const CITY_NODES = [
     tile: [...MSM_DOOR_TILES[door.id]],
     facing: 'down',
     noStamp: true,
+    track: 'french',
     chapter: door.chapter,
     desc: `${door.name} — ${door.lines[0].fr} (${door.lines[0].gloss})`,
   })),

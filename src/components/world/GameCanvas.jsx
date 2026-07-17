@@ -2544,7 +2544,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
                   setChapterPrompt(null);
                   if (!node.noStamp) collectStampRef.current?.(node);
                   if (reading) onOpenReading?.(reading);
-                  else onOpenChapter?.(chapter);
+                  else onOpenChapter?.(chapter, node.track);
                 }}
                 style={{ ...gbcButtonPrimary, whiteSpace: 'nowrap' }}
               >
