@@ -243,7 +243,8 @@ describe('서울 생성 결정성·오프라인 계약', () => {
     });
   });
 
-  it('두 번 재생성한 결과와 커밋 산출물 해시가 같다', () => {
+  // 서울 2회 재생성 ≈130초 — 저속 환경에서 120초 기본 상한 경계에 걸림(관측 2026-07-17).
+  it('두 번 재생성한 결과와 커밋 산출물 해시가 같다', { timeout: 240000 }, () => {
     const first = buildKoreanCityGeo('seoul');
     const second = buildKoreanCityGeo('seoul');
     expect(terrainHash(first.terrain)).toBe(terrainHash(second.terrain));
