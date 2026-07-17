@@ -23,7 +23,8 @@
   #173 snapshot exact 8a32fd33d9fe944fb7caf7e64b403cde12006819 접합; 13 POI·5역·BRIDGE 0·
   4방 BFS·24MiB·결정성·123 tests PASS, main 공식 Taipei verifier 게시 대기)
 ### todo
-- (없음)
+- 홍콩 geo — #150 댓글 5000127412에서 Claude 상세 중영/정체·간체 SPEC과 Codex-1 비콘텐츠
+  snapshot exact handoff 요청 완료. 두 인계 수신 전 POI·역·본생성 착수 금지.
 ### done (최근)
 - 브뤼셀 geo (#169 main merge 55d3aa0, main verifier ebf658f 전 gate green·CODEX_DONE)
 - 코트다쥐르 geo (#158 merge, CODEX_DONE·공식 gate 완료)
