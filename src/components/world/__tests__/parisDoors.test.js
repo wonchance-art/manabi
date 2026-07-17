@@ -43,7 +43,8 @@ describe('그랑파리 도어 6종 — 프랑스어 트랙 연결 계약', () =>
 });
 
 describe('그랑파리 도시 배선 — 도어가 보행 타일 위에 있다', () => {
-  it('도어 6종이 CITY_NODES에 track·chapter와 함께 배선되고 타일이 보행 가능', async () => {
+  // 대형 geo(3.4MB) 동적 임포트 — kyotoGeo 선례대로 타임아웃 확장.
+  it('도어 6종이 CITY_NODES에 track·chapter와 함께 배선되고 타일이 보행 가능', { timeout: 20000 }, async () => {
     const { GRAND_PARIS } = await import('../cities/grand-paris.js');
     const { isCityWalkable } = await import('../cities/terrain.js');
     const grid = GRAND_PARIS.buildGrid();
