@@ -231,6 +231,7 @@ const MONT_SAINT_MICHEL_NAME = '몽생미셸';
 const NICE_NAME = '니스';
 const HONG_KONG_NAME = '홍콩';
 const TAIPEI_NAME = '타이베이';
+const SHANGHAI_NAME = '상하이';
 const BRUSSELS_NAME = '브뤼셀';
 const LONDON_NAME = '런던';
 
@@ -260,6 +261,19 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
     lat: 25.0478,
     noStamp: true,
     gate: { type: 'city', to: 'taipei', label: '🏙️ 시내' },
+  }),
+  createRegionalWorldNode({
+    id: 'shanghai',
+    name: SHANGHAI_NAME,
+    desc: SHANGHAI_NAME,
+    kind: 'city',
+    regionId: 'asia-pacific',
+    contentLocale: 'zh',
+    // 상하이 도시 ENTRANCE인 인민광장 입구의 확정 좌표와 체크인된 보행칸([1347,736]).
+    lon: 121.4737,
+    lat: 31.2323,
+    noStamp: true,
+    gate: { type: 'city', to: 'shanghai', label: '🏙️ 시내' },
   }),
   createRegionalWorldNode({
     id: 'paris',
