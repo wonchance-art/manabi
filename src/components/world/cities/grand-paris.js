@@ -6,6 +6,7 @@
 
 import { CITY_TILE, isCityBlocked, isCityWalkable, isCityWater } from './terrain.js';
 import { GRAND_PARIS_GEO } from './grand-paris.geo.js';
+import { PARIS_DOORS } from '../parisDoors.js';
 
 export { CITY_TILE, isCityBlocked, isCityWalkable, isCityWater };
 
@@ -71,21 +72,48 @@ export const ZONES = [
   { id: 'saint-denis', label: '생드니', bounds: [879, 0, 1025, 111], labelTile: [952, 56] },
 ];
 
-export const CITY_NODES = GRAND_PARIS_GEO.pois.map((poi) => {
-  const copy = poiCopy(poi.id);
-  return {
-    id: poi.id,
+// 프랑스어 도어 배치 타일 — geo 보행 타일 나선 탐색 계산치(앵커: 라탱·몽마르트르·샤틀레·마레·루브르·북역).
+const PARIS_DOOR_TILES = Object.freeze({
+  'fr-01': [887, 499], // 카페(라탱 지구)
+  'fr-02': [887, 293], // 불랑제리(몽마르트르)
+  'fr-03': [901, 451], // 메트로 승강장(샤틀레)
+  'fr-04': [953, 457], // 마르셰(마레)
+  'fr-05': [862, 439], // 미술관 매표소(루브르 곁)
+  'fr-06': [931, 326], // 호텔 체크인(북역 곁 — entrance 인근)
+});
+
+export const CITY_NODES = [
+  ...GRAND_PARIS_GEO.pois.map((poi) => {
+    const copy = poiCopy(poi.id);
+    return {
+      id: poi.id,
+      kind: 'spot',
+      name: copy.name,
+      nameFr: poi.nameFr,
+      contentLocale: poi.contentLocale,
+      facade: 'sign',
+      tile: [poi.tile[0], poi.tile[1]],
+      facing: 'down',
+      noStamp: true,
+      desc: copy.desc,
+    };
+  }),
+  // 프랑스어 문화 도어 6종 — track 명시 라우팅(trackChapterHref), 문화 사실은 desc 미리보기로.
+  ...PARIS_DOORS.map((door) => ({
+    id: door.id,
     kind: 'spot',
-    name: copy.name,
-    nameFr: poi.nameFr,
-    contentLocale: poi.contentLocale,
+    name: door.nameFr,
+    nameFr: door.nameFr,
+    contentLocale: 'fr',
     facade: 'sign',
-    tile: [poi.tile[0], poi.tile[1]],
+    tile: [...PARIS_DOOR_TILES[door.id]],
     facing: 'down',
     noStamp: true,
-    desc: copy.desc,
-  };
-});
+    track: 'french',
+    chapter: door.chapter,
+    desc: `${door.name} — ${door.lines[0].fr} (${door.lines[0].gloss})`,
+  })),
+];
 
 // ⚠️ nameJa 필드는 CityScene 레거시 계약 — 프랑스 도시는 nameFr를 그대로 싣는다(yomi 공란).
 export const STATIONS = GRAND_PARIS_GEO.stations.map((station) => ({
