@@ -6,7 +6,7 @@ import { getNode } from '../worldNodes.js';
 describe('도시 정밀맵 레지스트리', () => {
   it('현재 플레이 가능한 도시를 전체 맵 뷰어와 같은 순서로 노출한다', () => {
     expect(CITY_MAPS.map((city) => city.id)).toEqual([
-      'fukuoka', 'tokyo', 'osaka', 'kyoto', 'busan', 'seoul', 'grand-paris', 'mont-saint-michel',
+      'fukuoka', 'tokyo', 'osaka', 'kyoto', 'busan', 'seoul', 'grand-paris', 'mont-saint-michel', 'cote-dazur',
     ]);
     expect(Object.keys(CITY_DATA)).toEqual(CITY_MAPS.map((city) => city.id));
   });
