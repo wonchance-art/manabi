@@ -7,8 +7,10 @@ import { serializeWorldNodeGeoDocument } from '../../../../scripts/world/build-w
 import { WORLD_NODES } from '../../../components/world/worldNodes.js';
 import {
   LEGACY_WORLD_REGION_ID,
+  createRegionalWorldNode,
   migrateLegacyWorldNode,
   worldNodeGeoManifest,
+  worldNodeReturnSpawn,
 } from '../worldNodeGeo.js';
 import {
   OVERWORLD_STORAGE_CHUNK_TILES,
@@ -138,5 +140,31 @@ describe('기존 WORLD_NODES 오버월드 좌표 이중 운용', () => {
     expect(() => migrateLegacyWorldNode({ id: 'bad', tile: [1.2, 3] })).toThrow(/integer/);
     expect(() => migrateLegacyWorldNode({ id: 'bad', tile: [1, 3], arrivalOffset: [0.5, 0] }))
       .toThrow(/integer/);
+  });
+
+  it('신규 APAC 지역 노드는 legacy plaza가 아닌 APAC 오버월드로 복귀한다', () => {
+    const node = createRegionalWorldNode({
+      id: 'verified-apac-city',
+      regionId: LEGACY_WORLD_REGION_ID,
+      lon: 114.1722,
+      lat: 22.2975,
+    });
+
+    expect(node).toMatchObject({
+      regionId: LEGACY_WORLD_REGION_ID,
+      geoSource: 'verified-input',
+      overworldTile: [1187, 956],
+    });
+    expect(node.legacyTile).toBeUndefined();
+    expect(worldNodeReturnSpawn(node)).toEqual({
+      scene: APAC.sceneId,
+      x: 1187,
+      y: 956,
+    });
+    expect(worldNodeReturnSpawn(WORLD_NODES.find(({ id }) => id === 'seoul'))).toEqual({
+      scene: 'plaza',
+      x: WORLD_NODES.find(({ id }) => id === 'seoul').legacyTile[0],
+      y: WORLD_NODES.find(({ id }) => id === 'seoul').legacyTile[1],
+    });
   });
 });

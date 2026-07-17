@@ -57,8 +57,8 @@ export function createRegionalWorldNode(node) {
   if (!node || typeof node.id !== 'string' || node.id.length === 0) {
     throw new TypeError('regional world node must have a non-empty id');
   }
-  if (typeof node.regionId !== 'string' || node.regionId === LEGACY_WORLD_REGION_ID) {
-    throw new TypeError('regional world node must target a non-legacy region');
+  if (typeof node.regionId !== 'string' || node.regionId.length === 0) {
+    throw new TypeError('regional world node must target a region');
   }
   const region = overworldRegionById(node.regionId);
   if (!region) throw new TypeError(`unknown overworld region: ${node.regionId}`);
@@ -88,9 +88,8 @@ export function createRegionalWorldNode(node) {
 
 export function worldNodeReturnSpawn(node) {
   if (!node) return null;
-  if (node.regionId === LEGACY_WORLD_REGION_ID) {
-    if (!integerPair(node.tile)) return null;
-    return Object.freeze({ scene: 'plaza', x: node.tile[0], y: node.tile[1] });
+  if (node.regionId === LEGACY_WORLD_REGION_ID && integerPair(node.legacyTile)) {
+    return Object.freeze({ scene: 'plaza', x: node.legacyTile[0], y: node.legacyTile[1] });
   }
   const region = overworldRegionById(node.regionId);
   if (!region || !integerPair(node.overworldTile)) return null;

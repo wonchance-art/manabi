@@ -145,6 +145,38 @@ describe('오버월드 지역 레지스트리', () => {
     }
   });
 
+  it.each([
+    ['hong-kong', 'asia-pacific', 114.1722, 22.2975, [1187, 956]],
+    ['taipei', 'asia-pacific', 121.517, 25.0478, [1348, 888]],
+    ['brussels', 'emea', 4.3355, 50.8358, [242, 375]],
+  ])('%s 도시 게이트가 확정 역 좌표의 체크인된 보행 타일에 도착한다', (
+    nodeId,
+    regionId,
+    lon,
+    lat,
+    tile,
+  ) => {
+    const region = overworldRegionById(regionId);
+    const node = getNode(nodeId);
+
+    expect(node).toMatchObject({
+      regionId,
+      lon,
+      lat,
+      arrivalOffset: [0, 0],
+      overworldTile: tile,
+    });
+    expect(projectOverworldRegionCoordinate(region, lon, lat))
+      .toEqual({ x: tile[0], y: tile[1] });
+    expect(checkedInGateCell(region, {
+      tile: { x: tile[0], y: tile[1] },
+    })).toMatchObject({
+      valid: true,
+      collision: 0,
+      viewOnly: 0,
+    });
+  });
+
   it('신규 사용자의 APAC 서울 기본 진입점이 체크인된 보행 타일이다', () => {
     const apac = overworldRegionById('asia-pacific');
     const seoul = WORLD_NODES.find(({ id }) => id === 'seoul');

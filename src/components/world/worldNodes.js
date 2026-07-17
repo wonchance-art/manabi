@@ -229,8 +229,37 @@ export const WORLD_NODES = Object.freeze(LEGACY_WORLD_NODES.map(migrateLegacyWor
 const PARIS_NAME = '파리';
 const MONT_SAINT_MICHEL_NAME = '몽생미셸';
 const NICE_NAME = '니스';
+const HONG_KONG_NAME = '홍콩';
+const TAIPEI_NAME = '타이베이';
+const BRUSSELS_NAME = '브뤼셀';
 
 export const REGIONAL_WORLD_NODES = Object.freeze([
+  createRegionalWorldNode({
+    id: 'hong-kong',
+    name: HONG_KONG_NAME,
+    desc: HONG_KONG_NAME,
+    kind: 'city',
+    regionId: 'asia-pacific',
+    contentLocale: 'zh',
+    // 홍콩 도시 ENTRANCE인 침사추이역의 확정 좌표. 투영칸 자체가 체크인된 보행칸이다.
+    lon: 114.1722,
+    lat: 22.2975,
+    noStamp: true,
+    gate: { type: 'city', to: 'hong-kong', label: '🏙️ 시내' },
+  }),
+  createRegionalWorldNode({
+    id: 'taipei',
+    name: TAIPEI_NAME,
+    desc: TAIPEI_NAME,
+    kind: 'city',
+    regionId: 'asia-pacific',
+    contentLocale: 'zh',
+    // 타이베이 도시 ENTRANCE인 타이베이 메인역의 확정 좌표.
+    lon: 121.517,
+    lat: 25.0478,
+    noStamp: true,
+    gate: { type: 'city', to: 'taipei', label: '🏙️ 시내' },
+  }),
   createRegionalWorldNode({
     id: 'paris',
     name: PARIS_NAME,
@@ -268,6 +297,19 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
     arrivalOffset: [0, -1],
     noStamp: true,
     gate: { type: 'city', to: 'cote-dazur', label: '🏙️ 시내' },
+  }),
+  createRegionalWorldNode({
+    id: 'brussels',
+    name: BRUSSELS_NAME,
+    desc: BRUSSELS_NAME,
+    kind: 'city',
+    regionId: 'emea',
+    contentLocale: 'fr',
+    // 브뤼셀 도시 ENTRANCE인 Bruxelles-Midi의 확정 좌표와 체크인된 보행칸([242,375]).
+    lon: 4.3355,
+    lat: 50.8358,
+    noStamp: true,
+    gate: { type: 'city', to: 'brussels', label: '🏙️ 시내' },
   }),
 ]);
 
