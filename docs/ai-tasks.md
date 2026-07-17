@@ -16,13 +16,14 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-- 런던권 geo (PR #160 main 반입 완료, exact head e69a98bb0c78fea277425259de01db0e17282c50.
-  타워브리지 원본 수면 240~300m 정상, 공식 verifier 교량 회피창 오탐 보정 대기;
-  EMEA St Pancras 후보 [172,356] PR #175 독립 검증 PASS, runtime node 후속 인계 대기)
 ### todo
-- 베이징 geo — Claude가 상하이 산출 무렵 상세 SPEC 게시 예정.
-  exact SPEC과 Codex-1 비콘텐츠 snapshot handoff 전 POI·역·본생성 금지.
+- 베이징 geo — 최종 SPEC #150 댓글 5003321961 수신(bbox [116.35,39.88,116.43,39.95],
+  20m/zh, POI 12·역 4·병기 16/16·민감지역 하드 규칙); Codex-1 snapshot exact handoff 전
+  POI·역·본생성 금지.
 ### done (최근)
+- 런던권 geo (#160 main merge e69a98bb0c78fea277425259de01db0e17282c50,
+  main fa40fae official verifier 전 gate·타워브리지 260m/260m·targeted 18/18 PASS,
+  #150 CODEX_DONE 5003344796; EMEA runtime node는 후속 별도 범위)
 - 상하이 geo (#185·replacement #191 main merge 8db980456ea8f87f9335bcc478e889873a80e2b3,
   merged main official verifier·targeted 11/11·139 files/1,680 tests·BFS·결정성·PNG PASS,
   #150 CODEX_DONE 5002925294; ancestry가 끊긴 stacked #188은 superseded close)
