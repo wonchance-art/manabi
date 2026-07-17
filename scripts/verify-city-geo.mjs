@@ -221,7 +221,9 @@ const CITY_GATES = {
     downtown: { label: '트래펄가', lon: -0.1281, lat: 51.5080 },
     riverSections: [
       { name: '템스(웨스트민스터 단면)', lon: -0.1220, latRange: [51.515, 51.495], sumMinM: 200, runMinM: 160 },
-      { name: '템스(타워브리지 단면)', lon: -0.0750, latRange: [51.515, 51.498], sumMinM: 200, runMinM: 160 },
+      // 타워브리지(-0.0754)는 남북 교량이라 고정 lon 스캔과 평행 겹침(퐁뒤카루젤 선례의 세로판) —
+      // 런던브리지(-0.0878)와의 중간 개수면으로 이동. Codex-2 감사: 원본 수면 240~300m 정상.
+      { name: '템스(타워브리지 하류 단면)', lon: -0.0810, latRange: [51.515, 51.498], sumMinM: 200, runMinM: 160 },
     ],
     streamCourses: [],
     reportCourses: [],
