@@ -135,6 +135,26 @@ const CITY_GATES = {
     // 다언어 복수 앵커 첫 실전(§3-8): fr canonical + nl 병기 전수.
     multilingual: { anchors: ['fr', 'nl'], nameFields: ['nameFr', 'nameNl'] },
   },
+  taipei: {
+    file: 'src/components/world/cities/taipei.geo.js',
+    snapshot: 'scripts/data/taipei-osm-v21.json',
+    expectedLocale: 'zh',
+    expectedMpt: 20,
+    buildingPct: null, // 타이베이 프로필 관찰 후 확정
+    greenMinPct: null, // 샹산·다안 — report 관찰
+    poiMaxDevTiles: 2.5,
+    downtown: { label: '시먼딩', lon: 121.5070, lat: 25.0421 },
+    riverSections: [
+      // 담수하(서측 경계 하천) — 실측 460~920m.
+      { name: '담수하 단면', lat: 25.06, lonRange: [121.49, 121.53], sumMinM: 400, runMinM: 400 },
+    ],
+    streamCourses: [],
+    reportCourses: [],
+    bridgeMaxTiles: 0,
+    bridgeCrossings: [],
+    // 정체(canonical)/간체(학습 트랙) 복수 앵커 — 브뤼셀 fr/nl 문법 재사용.
+    multilingual: { anchors: ['zh-Hant', 'zh-Hans'], nameFields: ['nameZhHant', 'nameZhHans'] },
+  },
   'mont-saint-michel': {
     file: 'src/components/world/cities/mont-saint-michel.geo.js',
     snapshot: null,
