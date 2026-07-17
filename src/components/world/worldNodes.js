@@ -232,6 +232,7 @@ const NICE_NAME = '니스';
 const HONG_KONG_NAME = '홍콩';
 const TAIPEI_NAME = '타이베이';
 const BRUSSELS_NAME = '브뤼셀';
+const LONDON_NAME = '런던';
 
 export const REGIONAL_WORLD_NODES = Object.freeze([
   createRegionalWorldNode({
@@ -310,6 +311,20 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
     lat: 50.8358,
     noStamp: true,
     gate: { type: 'city', to: 'brussels', label: '🏙️ 시내' },
+  }),
+  createRegionalWorldNode({
+    id: 'london',
+    name: LONDON_NAME,
+    desc: LONDON_NAME,
+    kind: 'city',
+    regionId: 'emea',
+    contentLocale: 'en',
+    // 세인트판크라스 투영칸([172,358])의 철도 허브를 피해 북쪽 보행칸([172,356])에 도착한다.
+    lon: -0.1258,
+    lat: 51.5316,
+    arrivalOffset: [0, -2],
+    noStamp: true,
+    gate: { type: 'city', to: 'london', label: '🏙️ 시내' },
   }),
 ]);
 

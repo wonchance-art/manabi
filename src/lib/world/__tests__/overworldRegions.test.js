@@ -3,7 +3,11 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { decodeOverworldChunkV1, OVERWORLD_STORAGE_CHUNK_TILES } from '../overworldChunk.js';
-import { WORLD_NODES, getNode } from '../../../components/world/worldNodes.js';
+import {
+  ALL_WORLD_NODES,
+  WORLD_NODES,
+  getNode,
+} from '../../../components/world/worldNodes.js';
 import { EMEA_RAIL_NETWORK } from '../emeaRail.js';
 import { normalizeOverworldOverlayDocument } from '../overworldFeatureOverlay.js';
 import { normalizeOverworldTransportNodeDocument } from '../overworldTransportNodes.js';
@@ -142,6 +146,42 @@ describe('오버월드 지역 레지스트리', () => {
         Math.abs(tile.x - hub.tile[0]),
         Math.abs(tile.y - hub.tile[1]),
       ), hub.id).toBeGreaterThan(1);
+    }
+  });
+
+  it('런던 세인트판크라스 게이트가 철도 허브를 피해 체크인된 보행 타일에 도착한다', () => {
+    const region = overworldRegionById('emea');
+    const london = getNode('london');
+    const projected = projectOverworldRegionCoordinate(region, london.lon, london.lat);
+    const tile = {
+      x: projected.x + london.arrivalOffset[0],
+      y: projected.y + london.arrivalOffset[1],
+    };
+    const londonHub = EMEA_RAIL_NETWORK.hubs.find(({ id }) => id === 'london-rail-hub');
+
+    expect(london).toMatchObject({ lon: -0.1258, lat: 51.5316, arrivalOffset: [0, -2] });
+    expect(projected).toEqual({ x: 172, y: 358 });
+    expect([projected.x, projected.y]).toEqual(londonHub.tile);
+    expect(tile).toEqual({ x: 172, y: 356 });
+    expect(london.overworldTile).toEqual([tile.x, tile.y]);
+    expect(checkedInGateCell(region, { tile })).toMatchObject({
+      valid: true,
+      collision: 0,
+      viewOnly: 0,
+    });
+    for (const hub of EMEA_RAIL_NETWORK.hubs) {
+      expect(Math.max(
+        Math.abs(tile.x - hub.tile[0]),
+        Math.abs(tile.y - hub.tile[1]),
+      ), hub.id).toBeGreaterThan(1);
+    }
+    for (const city of ALL_WORLD_NODES.filter(
+      ({ id, regionId }) => id !== london.id && regionId === region.id,
+    )) {
+      expect(Math.max(
+        Math.abs(tile.x - city.overworldTile[0]),
+        Math.abs(tile.y - city.overworldTile[1]),
+      ), city.id).toBeGreaterThan(1);
     }
   });
 
