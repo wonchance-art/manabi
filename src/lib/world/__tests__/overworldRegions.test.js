@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { decodeOverworldChunkV1, OVERWORLD_STORAGE_CHUNK_TILES } from '../overworldChunk.js';
 import { WORLD_NODES, getNode } from '../../../components/world/worldNodes.js';
+import { EMEA_RAIL_NETWORK } from '../emeaRail.js';
 import { normalizeOverworldOverlayDocument } from '../overworldFeatureOverlay.js';
 import { normalizeOverworldTransportNodeDocument } from '../overworldTransportNodes.js';
 import {
@@ -134,6 +135,12 @@ describe('오버월드 지역 레지스트리', () => {
       collision: 0,
       viewOnly: 0,
     });
+    for (const hub of EMEA_RAIL_NETWORK.hubs) {
+      expect(Math.max(
+        Math.abs(tile.x - hub.tile[0]),
+        Math.abs(tile.y - hub.tile[1]),
+      ), hub.id).toBeGreaterThan(1);
+    }
   });
 
   it('신규 사용자의 APAC 서울 기본 진입점이 체크인된 보행 타일이다', () => {
