@@ -16,25 +16,27 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-- 호주 1호 브리즈번 geo — snapshot #208 exact
-  a79d3be435dc7a88d380b2c976194f0e2bfb12c3 인계 후 draft #211
-  head b8ef57cd9b32d87f16843126e6b80715a4174783 구현 완료:
-  전용 신규 3파일, 20m/en·POI 11·역 4·ferry 2·BRIDGE 0,
-  targeted 13/13·전체 146 files/1,721 tests·BFS 250,235/250,235·
-  14,241,376 bytes <24MiB·결정성·전체 PNG PASS.
-  #150 핸드오프 5007858288 게시, latest main 공식 verifier profile 대기.
+- 호주 2호 시드니 geo — merged snapshot #212 exact
+  90fcda4164b6129e35d58b34c62a3cfb5630c7e3 소비 후 draft #216
+  head 3fb2dd1b9db86a139e86463add1baaad7fbbbb03 구현 완료:
+  전용 신규 3파일, 20m/en·POI 14·역 5·하버 페리 3노선·BRIDGE 0,
+  targeted 14/14·전체 147 files/1,728 tests·BFS 284,607/284,607·
+  23,755,680 bytes <24MiB·결정성·전체 PNG PASS.
+  #150 핸드오프 5008243315 게시, latest main 공식 verifier profile 대기.
 ### todo
-- 호주 2호 시드니 geo — OWNER_DIRECTIVE/SPEC #150 댓글 5007708795:
-  bbox `[151.17,-33.93,151.31,-33.79]`, 20m/en, nameEn canonical,
-  POI 14·역 5·하버 페리 3노선·포트잭슨 단면·BRIDGE 0.
-  Web Mercator exact 선제 감사: aspectCorrection 0.830401462336,
-  grid 648×780, 505,440 cells, 22.655MiB <24MiB(1.345MiB 여유).
-  다중 ferry는 기존 transit 배열·transitPoints로 표현 가능해 공유 runtime 변경 불요.
-  Codex-1 snapshot #212 exact 90fcda4164b6129e35d58b34c62a3cfb5630c7e3 수신:
-  4×4/48·snapshot SHA 05ef072f5cd19d2767dcb86ef7b66dfdf03e5505623f341cf8a200f6d2160b32,
-  독립 영어권 파이프라인 19/19·ODbL·비콘텐츠 범위·임시 전체 렌더 PASS.
-  브리즈번 official gate·CODEX_DONE과 #212 merge/명시적 stacking 전 본생성 금지.
+- 호주 3호 캔버라 geo — SPEC #150 댓글 5008080789:
+  bbox `[149.06,-35.33,149.18,-35.24]`, 20m/en, nameEn canonical,
+  POI 10·역/라이트레일·벌리그리핀호 단면·BRIDGE 0.
+  Codex-1 snapshot #215 exact 1cff18b163541edf8d8c69228e37f719d90c0391 수신:
+  grid 546×501, 4×4/48, snapshot SHA
+  45963e9c508bf6b468ddd33a065da4e21a6456674d3918d42d39223c722624ec,
+  12.261MiB·결정성·전체 147 files/1,728 tests PASS.
+  시드니 official gate·CODEX_DONE과 #215 merge/명시적 stacking 전 본생성 금지.
 ### done (최근)
+- 브리즈번 geo (#208 snapshot merge, #211 head
+  b8ef57cd9b32d87f16843126e6b80715a4174783, official verifier
+  main 1cb9166 전 gate·latest-main 147 files/1,728 tests·BFS·결정성·PNG PASS,
+  #150 CODEX_DONE 5008140889; runtime·desc·overworld node와 merge는 후속)
 - 베이징 geo (#194 snapshot merge, ancestry 재작성으로 stacked #197 superseded close,
   exact-main replacement #199 head 439e60f1a72f0974aaa37cdeffe1243a7d602e13 →
   main merge aeddc1f6684fd759ab7270a4a45bf3306ee95340 byte-identical 3파일,
