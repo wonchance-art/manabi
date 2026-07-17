@@ -216,6 +216,28 @@ const CITY_GATES = {
     bridgeCrossings: [],
     multilingual: { anchors: ['zh-Hant', 'zh-Hans'], nameFields: ['nameZhHant', 'nameZhHans'] },
   },
+  brisbane: {
+    file: 'src/components/world/cities/brisbane.geo.js',
+    snapshot: 'scripts/data/brisbane-osm-v21.json',
+    expectedLocale: 'en',
+    expectedMpt: 20,
+    buildingPct: null, // 브리즈번 프로필 관찰 후 확정
+    greenMinPct: null, // 보태닉·로마스트리트·뉴팜 — report 관찰
+    poiMaxDevTiles: 2.5,
+    downtown: { label: '퀸스트리트몰', lon: 153.0258, lat: -27.4695 },
+    riverSections: [
+      // 브리즈번강 S자 사행 — 위도 스캔 실측 -27.476에서 합계 1600m/최대 연속 800m(다중 관통).
+      // 이웃 위도 run 260~320 변동이라 run은 보수 마진(240), sum은 사행 합산 특성 반영(800).
+      { name: '브리즈번강 단면', lat: -27.476, lonRange: [153.00, 153.05], sumMinM: 800, runMinM: 240 },
+    ],
+    streamCourses: [],
+    reportCourses: [],
+    bridgeMaxTiles: 0,
+    bridgeCrossings: [
+      { name: '스토리브리지', lon: 153.0351, lat: -27.4636, windowTiles: 5 },
+      { name: '빅토리아교', lon: 153.0203, lat: -27.4738, windowTiles: 5 },
+    ],
+  },
   'mont-saint-michel': {
     file: 'src/components/world/cities/mont-saint-michel.geo.js',
     snapshot: null,
