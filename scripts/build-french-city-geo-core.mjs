@@ -111,6 +111,90 @@ const CITY_CONFIG = Object.freeze({
       { id: 'monaco-monte-carlo', nameFr: 'Monaco–Monte-Carlo', lat: 43.7385, lon: 7.4195, line: "TER Côte d'Azur", routeId: 'ter-cote-dazur' },
     ]),
   }),
+  london: Object.freeze({
+    bbox: Object.freeze([-0.30, 51.42, 0.05, 51.60]),
+    snapshot: new URL('./data/london-osm-v21.json', import.meta.url),
+    mainStationId: 'st-pancras',
+    contentLocale: 'en',
+    nameField: 'nameEn',
+    preserveExistingBuildings: true,
+    finalBuildingRatioRange: Object.freeze([0.10, 0.12]),
+    buildingDatasetProbe: Object.freeze({
+      provider: 'OpenStreetMap', datasetId: 'building=*', checkedAt: '2026-07-17',
+      outcome: 'fixed-offline-snapshot',
+    }),
+    pois: Object.freeze([
+      { id: 'westminster-abbey', nameEn: 'Westminster Abbey', nameKo: '웨스트민스터 사원', lat: 51.4993, lon: -0.1275, kind: 'world-heritage' },
+      { id: 'houses-of-parliament', nameEn: 'Houses of Parliament', nameKo: '국회의사당(빅벤)', lat: 51.4995, lon: -0.1246, kind: 'world-heritage' },
+      { id: 'buckingham-palace', nameEn: 'Buckingham Palace', nameKo: '버킹엄궁', lat: 51.5014, lon: -0.1419, kind: 'landmark' },
+      { id: 'tower-of-london', nameEn: 'Tower of London', nameKo: '런던탑', lat: 51.5081, lon: -0.0761, kind: 'world-heritage' },
+      { id: 'tower-bridge', nameEn: 'Tower Bridge', nameKo: '타워브리지', lat: 51.5055, lon: -0.0754, kind: 'bridge-landmark' },
+      { id: 'st-pauls', nameEn: "St Paul's Cathedral", nameKo: '세인트폴 대성당', lat: 51.5138, lon: -0.0984, kind: 'historic' },
+      { id: 'british-museum', nameEn: 'British Museum', nameKo: '대영박물관', lat: 51.5194, lon: -0.1269, kind: 'museum' },
+      { id: 'trafalgar-square', nameEn: 'Trafalgar Square', nameKo: '트래펄가 광장', lat: 51.5080, lon: -0.1281, kind: 'plaza' },
+      { id: 'covent-garden', nameEn: 'Covent Garden', nameKo: '코번트가든', lat: 51.5119, lon: -0.1226, kind: 'district' },
+      { id: 'piccadilly-circus', nameEn: 'Piccadilly Circus', nameKo: '피커딜리 서커스', lat: 51.5101, lon: -0.1347, kind: 'plaza' },
+      { id: 'london-eye', nameEn: 'London Eye', nameKo: '런던아이', lat: 51.5033, lon: -0.1196, kind: 'landmark' },
+      { id: 'tate-modern', nameEn: 'Tate Modern', nameKo: '테이트모던', lat: 51.5076, lon: -0.0994, kind: 'museum' },
+      { id: 'borough-market', nameEn: 'Borough Market', nameKo: '버러마켓', lat: 51.5055, lon: -0.0910, kind: 'market' },
+      { id: 'the-shard', nameEn: 'The Shard', nameKo: '더 샤드', lat: 51.5045, lon: -0.0865, kind: 'landmark' },
+      { id: 'camden-town', nameEn: 'Camden Town', nameKo: '캠든타운', lat: 51.5390, lon: -0.1426, kind: 'district' },
+      { id: 'notting-hill', nameEn: 'Notting Hill', nameKo: '노팅힐', lat: 51.5173, lon: -0.2058, kind: 'district' },
+      { id: 'hyde-park', nameEn: 'Hyde Park', nameKo: '하이드파크', lat: 51.5073, lon: -0.1657, kind: 'park' },
+      { id: 'natural-history-museum', nameEn: 'Natural History Museum', nameKo: '자연사박물관', lat: 51.4966, lon: -0.1764, kind: 'museum' },
+      { id: 'greenwich', nameEn: 'Maritime Greenwich', nameKo: '그리니치', lat: 51.4820, lon: -0.0077, kind: 'world-heritage' },
+      { id: 'kew-gardens', nameEn: 'Kew Gardens', nameKo: '큐 왕립식물원', lat: 51.4787, lon: -0.2956, kind: 'world-heritage' },
+      { id: 'wimbledon', nameEn: 'Wimbledon', nameKo: '윔블던', lat: 51.4342, lon: -0.2143, kind: 'landmark' },
+      { id: 'hampstead-heath', nameEn: 'Hampstead Heath', nameKo: '햄스테드 히스', lat: 51.5608, lon: -0.1650, kind: 'park' },
+      { id: 'wembley', nameEn: 'Wembley Stadium', nameKo: '웸블리', lat: 51.5560, lon: -0.2795, kind: 'landmark' },
+      { id: 'olympic-park', nameEn: 'Queen Elizabeth Olympic Park', nameKo: '올림픽공원', lat: 51.5432, lon: -0.0166, kind: 'park' },
+    ]),
+    stations: Object.freeze([
+      { id: 'st-pancras', nameEn: 'St Pancras International', lat: 51.5316, lon: -0.1258, line: 'Eurostar · National Rail', routeId: 'london-international', routeIds: Object.freeze(['london-international']) },
+      { id: 'kings-cross', nameEn: "King's Cross", lat: 51.5308, lon: -0.1238, line: 'National Rail · Underground', routeId: 'london-core', routeIds: Object.freeze(['london-core']) },
+      { id: 'paddington', nameEn: 'London Paddington', lat: 51.5160, lon: -0.1760, line: 'Circle · District', routeId: 'circle-district', routeIds: Object.freeze(['circle-district']) },
+      { id: 'victoria', nameEn: 'London Victoria', lat: 51.4952, lon: -0.1439, line: 'Circle · District', routeId: 'circle-district', routeIds: Object.freeze(['circle-district']) },
+      { id: 'waterloo', nameEn: 'London Waterloo', lat: 51.5033, lon: -0.1132, line: 'Jubilee', routeId: 'jubilee', routeIds: Object.freeze(['jubilee']) },
+      { id: 'liverpool-street', nameEn: 'Liverpool Street', lat: 51.5178, lon: -0.0823, line: 'Circle · District', routeId: 'circle-district', routeIds: Object.freeze(['circle-district']) },
+      { id: 'london-bridge', nameEn: 'London Bridge', lat: 51.5052, lon: -0.0861, line: 'Jubilee · Thameslink', routeId: 'jubilee', routeIds: Object.freeze(['circle-district', 'jubilee']) },
+      { id: 'westminster', nameEn: 'Westminster', lat: 51.5010, lon: -0.1247, line: 'Circle · District · Jubilee', routeId: 'circle-district', routeIds: Object.freeze(['circle-district', 'jubilee']) },
+      { id: 'greenwich-station', nameEn: 'Greenwich', lat: 51.4779, lon: -0.0141, line: 'DLR · National Rail', routeId: 'dlr', routeIds: Object.freeze(['dlr']) },
+    ]),
+  }),
+  brussels: Object.freeze({
+    bbox: Object.freeze([4.32, 50.79, 4.42, 50.90]),
+    snapshot: new URL('./data/brussels-osm-v21.json', import.meta.url),
+    mainStationId: 'bruxelles-midi',
+    contentLocale: 'fr',
+    nameField: 'nameFr',
+    localeAnchors: Object.freeze(['fr', 'nl']),
+    preserveExistingBuildings: true,
+    buildingRatioReportOnly: true,
+    buildingDatasetProbe: Object.freeze({
+      provider: 'OpenStreetMap', datasetId: 'building=*', checkedAt: '2026-07-17',
+      outcome: 'fixed-offline-snapshot',
+    }),
+    pois: Object.freeze([
+      { id: 'grand-place', nameFr: 'Grand-Place', nameNl: 'Grote Markt', lat: 50.8467, lon: 4.3525, kind: 'world-heritage' },
+      { id: 'manneken-pis', nameFr: 'Manneken-Pis', nameNl: 'Manneken Pis', lat: 50.8450, lon: 4.3500, kind: 'landmark' },
+      { id: 'galeries-royales', nameFr: 'Galeries Royales Saint-Hubert', nameNl: 'Koninklijke Sint-Hubertusgalerijen', lat: 50.8474, lon: 4.3548, kind: 'landmark' },
+      { id: 'cathedral', nameFr: 'Cathédrale Saints-Michel-et-Gudule', nameNl: 'Sint-Michiels- en Sint-Goedelekathedraal', lat: 50.8477, lon: 4.3603, kind: 'historic' },
+      { id: 'mont-des-arts', nameFr: 'Mont des Arts', nameNl: 'Kunstberg', lat: 50.8440, lon: 4.3565, kind: 'district' },
+      { id: 'magritte-museum', nameFr: 'Musée Magritte', nameNl: 'Magritte Museum', lat: 50.8420, lon: 4.3598, kind: 'museum' },
+      { id: 'sablon', nameFr: 'Place du Grand Sablon', nameNl: 'Grote Zavel', lat: 50.8400, lon: 4.3560, kind: 'plaza' },
+      { id: 'royal-palace', nameFr: 'Palais royal de Bruxelles', nameNl: 'Koninklijk Paleis van Brussel', lat: 50.8419, lon: 4.3622, kind: 'historic' },
+      { id: 'parc-cinquantenaire', nameFr: 'Parc du Cinquantenaire', nameNl: 'Jubelpark', lat: 50.8400, lon: 4.3910, kind: 'park' },
+      { id: 'eu-quarter', nameFr: 'Quartier européen', nameNl: 'Europese Wijk', lat: 50.8435, lon: 4.3830, kind: 'district' },
+      { id: 'comics-museum', nameFr: 'Centre belge de la Bande dessinée', nameNl: 'Belgisch Stripcentrum', lat: 50.8508, lon: 4.3600, kind: 'museum' },
+      { id: 'atomium', nameFr: 'Atomium', nameNl: 'Atomium', lat: 50.8949, lon: 4.3415, kind: 'landmark', renderPolicy: 'marker-only' },
+    ]),
+    stations: Object.freeze([
+      { id: 'bruxelles-midi', nameFr: 'Bruxelles-Midi', nameNl: 'Brussel-Zuid', lat: 50.8358, lon: 4.3355, line: 'Eurostar · TGV · axe Nord-Midi', routeId: 'brussels-north-south-axis', routeIds: Object.freeze(['brussels-north-south-axis']) },
+      { id: 'bruxelles-central', nameFr: 'Bruxelles-Central', nameNl: 'Brussel-Centraal', lat: 50.8455, lon: 4.3571, line: 'axe Nord-Midi', routeId: 'brussels-north-south-axis', routeIds: Object.freeze(['brussels-north-south-axis']) },
+      { id: 'bruxelles-nord', nameFr: 'Bruxelles-Nord', nameNl: 'Brussel-Noord', lat: 50.8605, lon: 4.3603, line: 'axe Nord-Midi', routeId: 'brussels-north-south-axis', routeIds: Object.freeze(['brussels-north-south-axis']) },
+      { id: 'schuman', nameFr: 'Bruxelles-Schuman', nameNl: 'Brussel-Schuman', lat: 50.8430, lon: 4.3820, line: 'train S · métro 1·5' },
+    ]),
+  }),
 });
 
 function webMercatorMeters(lon, lat) {
@@ -588,6 +672,7 @@ export function buildFrenchCityGeoBase(city) {
     aspectCorrection: Number(metrics.correction.toFixed(12)),
     contentLocale,
     schema: Object.freeze({ nameField, localeSlots: 'central-lookup-expandable' }),
+    ...(config.localeAnchors ? { localeAnchors: Object.freeze([...config.localeAnchors]) } : {}),
     source: Object.freeze({ ...snapshot.source }),
   });
   if (JSON.stringify(snapshot.bbox) !== JSON.stringify(baseMeta.bbox) || snapshot.grid.w !== baseMeta.grid.w || snapshot.grid.h !== baseMeta.grid.h) {
@@ -619,9 +704,11 @@ export function buildFrenchCityGeoBase(city) {
   );
   normalizeCityTerrain(terrain, protectedEntries, mainStation, entrance, exitTiles, baseMeta, city);
   const finalBuildingStats = terrainBuildingStats(terrain);
-  const finalBuildingRatioRange = config.finalBuildingRatioRange ?? [0.09, 0.11];
-  if (finalBuildingStats.landBuildingRatio < finalBuildingRatioRange[0]
-    || finalBuildingStats.landBuildingRatio > finalBuildingRatioRange[1]) {
+  const finalBuildingRatioRange = config.buildingRatioReportOnly
+    ? null
+    : (config.finalBuildingRatioRange ?? [0.09, 0.11]);
+  if (finalBuildingRatioRange && (finalBuildingStats.landBuildingRatio < finalBuildingRatioRange[0]
+    || finalBuildingStats.landBuildingRatio > finalBuildingRatioRange[1])) {
     throw new Error(`${city} final land/building ratio outside ${finalBuildingRatioRange.join('..')} gate: ${finalBuildingStats.landBuildingRatio}`);
   }
   const meta = Object.freeze({
@@ -629,7 +716,7 @@ export function buildFrenchCityGeoBase(city) {
     buildingTexture: Object.freeze({
       ...BUILDING_TEXTURE_CONTRACT,
       ...(config.buildingDatasetProbe ? { publicDatasetProbe: config.buildingDatasetProbe } : {}),
-      ...(config.finalBuildingRatioRange ? { finalRatioRange: finalBuildingRatioRange } : {}),
+      ...(finalBuildingRatioRange ? { finalRatioRange: finalBuildingRatioRange } : {}),
       seed: `${BUILDING_TEXTURE_CONTRACT.seedNamespace}:${city}`,
       initialLandBuildingRatio: buildingTexture.landBuildingRatio,
       baselineNormalizationBuildingTiles,

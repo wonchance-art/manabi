@@ -40,6 +40,34 @@ const CITY_CONFIG = Object.freeze({
       mergeStrategy: 'type-id-largest-geometry-compact-v1',
     }),
   }),
+  london: Object.freeze({
+    bbox: Object.freeze([-0.30, 51.42, 0.05, 51.60]),
+    metersPerTile: 20,
+    forestLayer: 'park',
+    oceanSeeds: Object.freeze([]),
+    output: 'scripts/data/london-osm-v21.json',
+    snapshotDate: '2026-07-17',
+    sourceDetails: Object.freeze({
+      providers: Object.freeze(['overpass-api.de']),
+      partitionCount: 16,
+      queryCount: 48,
+      mergeStrategy: 'type-id-largest-geometry-compact-v1',
+    }),
+  }),
+  brussels: Object.freeze({
+    bbox: Object.freeze([4.32, 50.79, 4.42, 50.90]),
+    metersPerTile: 20,
+    forestLayer: 'park',
+    oceanSeeds: Object.freeze([]),
+    output: 'scripts/data/brussels-osm-v21.json',
+    snapshotDate: '2026-07-17',
+    sourceDetails: Object.freeze({
+      providers: Object.freeze(['overpass-api.de']),
+      partitionCount: 4,
+      queryCount: 12,
+      mergeStrategy: 'type-id-largest-geometry-compact-v1',
+    }),
+  }),
 });
 
 function parseArgs(argv) {
@@ -51,7 +79,7 @@ function parseArgs(argv) {
   const input = read('--input');
   const config = CITY_CONFIG[city];
   if (!config || !input) {
-    throw new Error('Usage: node scripts/build-french-city-osm-snapshot.mjs --city <grand-paris|cote-dazur> --input <overpass.json> [--output <snapshot.json>]');
+    throw new Error('Usage: node scripts/build-french-city-osm-snapshot.mjs --city <grand-paris|cote-dazur|london|brussels> --input <overpass.json> [--output <snapshot.json>]');
   }
   return { city, input, output: read('--output') || config.output, config };
 }
