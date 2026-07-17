@@ -23,8 +23,8 @@
 - 베이징 geo — Claude가 상하이 산출 무렵 상세 SPEC 게시 예정.
   exact SPEC과 Codex-1 비콘텐츠 snapshot handoff 전 POI·역·본생성 금지.
 ### done (최근)
-- 상하이 geo (#185 main merge·replacement PR #191 exact 319718e84a038a23fb92f6b915bfc7c00684f87c,
-  main b2b1f991 official verifier 전 gate·139 files/1,680 tests·BFS·결정성·PNG PASS,
+- 상하이 geo (#185·replacement #191 main merge 8db980456ea8f87f9335bcc478e889873a80e2b3,
+  merged main official verifier·targeted 11/11·139 files/1,680 tests·BFS·결정성·PNG PASS,
   #150 CODEX_DONE 5002925294; ancestry가 끊긴 stacked #188은 superseded close)
 - 홍콩 geo (#182·#183 main merge e52130f3, 구현 exact 1e53bcabae6b381bf763ecb54ac4a79c87ef5dee,
   merged main official verifier·137 files/1,661 tests·Star Ferry 포함 BFS·결정성 PASS,
