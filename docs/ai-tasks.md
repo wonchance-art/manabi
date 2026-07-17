@@ -19,14 +19,12 @@
 - 런던권 geo (PR #160 main 반입 완료, exact head e69a98bb0c78fea277425259de01db0e17282c50.
   타워브리지 원본 수면 240~300m 정상, 공식 verifier 교량 회피창 오탐 보정 대기;
   EMEA St Pancras 후보 [172,356] PR #175 독립 검증 PASS, runtime node 후속 인계 대기)
-- 홍콩 geo (stacked draft PR #183 exact 1e53bcabae6b381bf763ecb54ac4a79c87ef5dee,
-  snapshot PR #182 exact 741981fc7d4c68a7ce11d06d85900a0f26220ed6 기반 Hong Kong 전용 3파일;
-  POI 12·역 4·zh-Hant/zh-Hans 16/16·BRIDGE 0·Star Ferry 포함 BFS 85,090/85,090·
-  11.33MB<24MiB·137 files/1,661 tests·전체 PNG 결정성 PASS.
-  #182 merge 후 main retarget 및 main 공식 verifier Hong Kong 프로필 exact 재검증 대기)
 ### todo
 - (없음)
 ### done (최근)
+- 홍콩 geo (stacked draft PR #183 exact 1e53bcabae6b381bf763ecb54ac4a79c87ef5dee,
+  main verifier 2ca8ca7c 전 gate·137 files/1,661 tests·Star Ferry 포함 BFS·결정성 PASS,
+  #150 CODEX_DONE 5001551674; #182 merge 후 main retarget과 runtime·desc 배선만 후속 의존)
 - 타이베이 geo (#173·#179 main merge 67216edf, 구현 exact d5c8650c2be9ed922b4b9c5d4c31ea09ec43ea0d,
   main verifier 54a9927d 전 gate·130 files/1,619 tests·결정성 PASS, #150 CODEX_DONE 5000243893;
   Claude desc 13종 콘텐츠 배선만 후속 의존)
