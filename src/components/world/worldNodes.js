@@ -232,6 +232,7 @@ const NICE_NAME = '니스';
 const HONG_KONG_NAME = '홍콩';
 const TAIPEI_NAME = '타이베이';
 const SHANGHAI_NAME = '상하이';
+const BEIJING_NAME = '베이징';
 const BRUSSELS_NAME = '브뤼셀';
 const LONDON_NAME = '런던';
 
@@ -274,6 +275,19 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
     lat: 31.2323,
     noStamp: true,
     gate: { type: 'city', to: 'shanghai', label: '🏙️ 시내' },
+  }),
+  createRegionalWorldNode({
+    id: 'beijing',
+    name: BEIJING_NAME,
+    desc: BEIJING_NAME,
+    kind: 'city',
+    regionId: 'asia-pacific',
+    contentLocale: 'zh',
+    // 베이징 도시 ENTRANCE인 전문역 입구의 확정 좌표와 체크인된 보행칸([1236,521]).
+    lon: 116.3925,
+    lat: 39.899,
+    noStamp: true,
+    gate: { type: 'city', to: 'beijing', label: '🏙️ 시내' },
   }),
   createRegionalWorldNode({
     id: 'paris',

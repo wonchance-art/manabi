@@ -14,7 +14,6 @@ import {
   overworldRegionById,
   projectOverworldRegionCoordinate,
 } from '../overworldRegions.js';
-import { createRegionalWorldNode } from '../worldNodeGeo.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '../../../..');
@@ -24,15 +23,6 @@ const TRANSPORT_MANIFEST = JSON.parse(readFileSync(
   path.join(ROOT, 'scripts/world/overworld-transport-nodes-apac-v1.json'),
   'utf8',
 ));
-const CANDIDATE = Object.freeze({
-  id: 'beijing-qianmen-gate-candidate',
-  regionId: APAC.id,
-  lon: 116.3925,
-  lat: 39.899,
-  arrivalOffset: Object.freeze([0, 0]),
-  expectedProjection: Object.freeze([1236, 521]),
-  expectedArrival: Object.freeze([1236, 521]),
-});
 
 function cellAt(x, y) {
   const cx = Math.floor(x / OVERWORLD_STORAGE_CHUNK_TILES);
@@ -58,25 +48,32 @@ function interactionDistance(left, right) {
   return Math.max(Math.abs(left[0] - right[0]), Math.abs(left[1] - right[1]));
 }
 
-describe('베이징 APAC 도시 게이트 후보', () => {
+describe('베이징 APAC 도시 게이트', () => {
   it('전문역 입구를 결정적으로 투영하고 원점의 체크인된 보행 타일에 도착한다', () => {
-    const projected = projectOverworldRegionCoordinate(APAC, CANDIDATE.lon, CANDIDATE.lat);
-    const node = createRegionalWorldNode(CANDIDATE);
+    const node = getNode('beijing');
+    const projected = projectOverworldRegionCoordinate(APAC, node.lon, node.lat);
 
-    expect([projected.x, projected.y]).toEqual(CANDIDATE.expectedProjection);
-    expect(CANDIDATE.arrivalOffset).toEqual([0, 0]);
-    expect(node.overworldTile).toEqual(CANDIDATE.expectedArrival);
+    expect(node).toMatchObject({
+      regionId: APAC.id,
+      lon: 116.3925,
+      lat: 39.899,
+      arrivalOffset: [0, 0],
+      gate: { type: 'city', to: 'beijing' },
+    });
+    expect([projected.x, projected.y]).toEqual([1236, 521]);
+    expect(node.overworldTile).toEqual([1236, 521]);
     expect(cellAt(...node.overworldTile)).toMatchObject({
       valid: true,
       collision: 0,
       viewOnly: 0,
     });
-    expect(getNode('beijing')).toBeNull();
   });
 
   it('도착점은 기존 APAC 월드·수송 노드의 상호작용 반경을 침범하지 않는다', () => {
-    const node = createRegionalWorldNode(CANDIDATE);
-    const committedWorldNodes = ALL_WORLD_NODES.filter(({ regionId }) => regionId === APAC.id);
+    const node = getNode('beijing');
+    const committedWorldNodes = ALL_WORLD_NODES.filter(
+      ({ id, regionId }) => id !== node.id && regionId === APAC.id,
+    );
     const committedTransportNodes = TRANSPORT_MANIFEST.nodes.map((transportNode) => {
       const projected = projectOverworldRegionCoordinate(APAC, transportNode.lon, transportNode.lat);
       return {
