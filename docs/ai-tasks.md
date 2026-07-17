@@ -16,20 +16,18 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-- 런던권 geo (PR #160, exact head e69a98bb0c78fea277425259de01db0e17282c50 — 구현·자체검증 완료.
+- 런던권 geo (PR #160 main 반입 완료, exact head e69a98bb0c78fea277425259de01db0e17282c50.
   타워브리지 원본 수면 240~300m 정상, 공식 verifier 교량 회피창 오탐 보정 대기;
-  EMEA St Pancras 후보 [172,356] PR #175 독립 검증 PASS, geo merge 전 node 미등록)
-- 브뤼셀 geo (PR #169, exact head 0548f865b8bbc5919ab02b62c5a452410b0296bd — 구현·자체검증 완료,
-  bbox [4.32,50.79,4.42,50.90], fr canonical+nameNl 100%, POI 12·역 4; main 공식 gate 게시 대기;
-  EMEA Bruxelles-Midi 후보 [242,375] PR #175 독립 검증 PASS, geo merge 전 node 미등록)
+  EMEA St Pancras 후보 [172,356] PR #175 독립 검증 PASS, runtime node 후속 인계 대기)
 - 타이베이 상세 SPEC 확보 (Codex-1 snapshot PR #173 exact 8a32fd33d9fe944fb7caf7e64b403cde12006819
   독립 검증 PASS — 정체/간체 nameZh 정책·exact POI/역·공식 gate와 merge/stacking 지시 수신 즉시 착수)
 ### todo
 - (없음)
 ### done (최근)
+- 브뤼셀 geo (#169 main merge 55d3aa0, main verifier ebf658f 전 gate green·CODEX_DONE)
 - 코트다쥐르 geo (#158 merge, CODEX_DONE·공식 gate 완료)
 - 템스 타워브리지 수면 폭 원인 확인(원본 240~300m 정상, verifier 교량 회피창 부족 — #150 근거 보고)
-- 그랑파리 geo+교량 3분류 (#157 merge), frenchCityRuntimeAdapter(스코프 클린 확인)
+- 그랑파리 geo+교량 3분류 (#157 merge), frenchCityRuntimeAdapter(#159 merge)
 
 ## Claude (claude/*)
 ### doing
