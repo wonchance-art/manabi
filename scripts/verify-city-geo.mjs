@@ -174,6 +174,28 @@ const CITY_GATES = {
     bridgeCrossings: [],
     multilingual: { anchors: ['zh-Hant', 'zh-Hans'], nameFields: ['nameZhHant', 'nameZhHans'] },
   },
+  shanghai: {
+    file: 'src/components/world/cities/shanghai.geo.js',
+    snapshot: null,
+    expectedLocale: 'zh',
+    expectedMpt: 20,
+    buildingPct: null, // 상하이 프로필 관찰 후 확정
+    greenMinPct: null, // 인민공원·와이탄 수변 — report 관찰
+    poiMaxDevTiles: 2.5,
+    downtown: { label: '인민광장', lon: 121.4737, lat: 31.2323 },
+    riverSections: [
+      // 황푸강(와이탄~루자쭈이) — Codex-2 실측 합계 520m/연속 420m에 마진.
+      { name: '황푸강 단면', lat: 31.235, lonRange: [121.47, 121.53], sumMinM: 400, runMinM: 360 },
+    ],
+    streamCourses: [],
+    reportCourses: [],
+    bridgeMaxTiles: 0,
+    bridgeCrossings: [
+      // 와이바이두교(쑤저우허 하구) — 차도 회랑 보존 pin.
+      { name: '와이바이두교', lon: 121.4903, lat: 31.2446, windowTiles: 5 },
+    ],
+    multilingual: { anchors: ['zh-Hant', 'zh-Hans'], nameFields: ['nameZhHant', 'nameZhHans'] },
+  },
   'mont-saint-michel': {
     file: 'src/components/world/cities/mont-saint-michel.geo.js',
     snapshot: null,
