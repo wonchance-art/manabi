@@ -119,17 +119,19 @@ describe('오버월드 지역 레지스트리', () => {
     });
   });
 
-  it('코트다쥐르 니스 게이트 후보가 투영 충돌을 피해 체크인된 보행 타일에 도착한다', () => {
+  it('코트다쥐르 니스 게이트가 투영 충돌을 피해 체크인된 보행 타일에 도착한다', () => {
     const region = overworldRegionById('emea');
-    const projected = projectOverworldRegionCoordinate(region, 7.262, 43.7045);
-    const arrivalOffset = [0, -1];
+    const nice = getNode('nice');
+    const projected = projectOverworldRegionCoordinate(region, nice.lon, nice.lat);
     const tile = {
-      x: projected.x + arrivalOffset[0],
-      y: projected.y + arrivalOffset[1],
+      x: projected.x + nice.arrivalOffset[0],
+      y: projected.y + nice.arrivalOffset[1],
     };
 
+    expect(nice).toMatchObject({ lon: 7.262, lat: 43.7045, arrivalOffset: [0, -1] });
     expect(projected).toEqual({ x: 289, y: 551 });
     expect(tile).toEqual({ x: 289, y: 550 });
+    expect(nice.overworldTile).toEqual([tile.x, tile.y]);
     expect(checkedInGateCell(region, { tile })).toMatchObject({
       valid: true,
       collision: 0,
