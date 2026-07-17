@@ -16,15 +16,14 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-- 베이징 geo — 최종 SPEC #150 댓글 5003321961 수신(bbox [116.35,39.88,116.43,39.95],
-  20m/zh, POI 12·역 4·병기 16/16·민감지역 하드 규칙); 선제 감사 grid 342×390,
-  예상 6,268,860 bytes <24MiB PASS. 타이베이·홍콩·상하이 선례 비교로 전용 generator·geo·test
-  3파일, 4방 BFS·BRIDGE 0·결정성/PNG 검증 체크리스트 확정. snapshot PR #194 exact
-  4871069f27b6a9b9c89aae94af4b9d04ad8fbe28 기반 draft #197 exact
-  d3d0809484b2269982cf7d2bbbda2b89658ce487 구현 완료(신규 3파일, 141 files/1,692 tests,
-  BFS 112,482/112,482, BRIDGE 0, PNG 결정성 PASS); 공식 verifier·#194 merge 대기.
 ### todo
+- 호주 4 다음 큐 — 백로그 제안 순서는 시드니→멜버른→브리즈번권→오너 픽이나, 첫 도시 오너
+  확정·exact bbox/POI/역·en-AU 정책 SPEC과 Codex-1 비콘텐츠 snapshot exact 전 본생성 금지.
 ### done (최근)
+- 베이징 geo (#194 snapshot merge, ancestry 재작성으로 stacked #197 superseded close,
+  exact-main replacement #199 head 439e60f1a72f0974aaa37cdeffe1243a7d602e13 OPEN/READY/CLEAN,
+  official verifier main d0d0b27 전 gate·141 files/1,694 tests·BFS·결정성·PNG PASS,
+  #150 CODEX_DONE 5003858711; merge·runtime·desc·overworld node는 후속)
 - 런던권 geo (#160 main merge e69a98bb0c78fea277425259de01db0e17282c50,
   main fa40fae official verifier 전 gate·타워브리지 260m/260m·targeted 18/18 PASS,
   #150 CODEX_DONE 5003344796; EMEA runtime node는 후속 별도 범위)
