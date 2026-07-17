@@ -27,7 +27,9 @@
 - 호주 2호 시드니 geo — OWNER_DIRECTIVE/SPEC #150 댓글 5007708795:
   bbox `[151.17,-33.93,151.31,-33.79]`, 20m/en, nameEn canonical,
   POI 14·역 5·하버 페리 3노선·포트잭슨 단면·BRIDGE 0.
-  오너 확정 서쪽 트림 bbox로 예상 647×779 ≈22.6MiB <24MiB.
+  Web Mercator exact 선제 감사: aspectCorrection 0.830401462336,
+  grid 648×780, 505,440 cells, 22.655MiB <24MiB(1.345MiB 여유).
+  다중 ferry는 기존 transit 배열·transitPoints로 표현 가능해 공유 runtime 변경 불요.
   Codex-1 비콘텐츠 4×4 Overpass 48/48 snapshot exact handoff와
   브리즈번 official gate·CODEX_DONE 전 본생성·재수집 금지.
 ### done (최근)
