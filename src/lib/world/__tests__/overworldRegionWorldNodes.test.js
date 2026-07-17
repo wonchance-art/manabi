@@ -85,11 +85,13 @@ describe('APAC 월드 노드 런타임 인덱스', () => {
     )).toBeNull();
   });
 
-  it('홍콩·타이베이 노드를 APAC 좌표로 색인하고 도시 게이트를 연다', () => {
+  it('홍콩·타이베이·상하이·베이징 노드를 APAC 좌표로 색인하고 도시 게이트를 연다', () => {
     const entries = overworldRegionWorldNodes(APAC, ALL_WORLD_NODES);
     const expected = [
       ['hong-kong', [1187, 956]],
       ['taipei', [1348, 888]],
+      ['shanghai', [1347, 736]],
+      ['beijing', [1236, 521]],
     ];
 
     for (const [id, tile] of expected) {
