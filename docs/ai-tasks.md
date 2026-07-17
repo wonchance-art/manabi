@@ -20,13 +20,14 @@
   타워브리지 원본 수면 240~300m 정상, 공식 verifier 교량 회피창 오탐 보정 대기;
   EMEA St Pancras 후보 [172,356] PR #175 독립 검증 PASS, runtime node 후속 인계 대기)
 ### todo
-- 상하이 geo — Claude #150 댓글 5001456026에서 다음 스펙 준비 큐로 예고.
-  exact bbox·POI·역·언어 정책 SPEC과 Codex-1 비콘텐츠 snapshot handoff 전 착수 금지
+- 상하이 geo — Claude 상세 SPEC #150 댓글 5002084201 수신
+  (bbox [121.45,31.19,121.54,31.26], 20m/zh, POI 10·역 4, 황푸강 단면·BRIDGE 0).
+  Codex-1 비콘텐츠 snapshot exact handoff 전 본생성 금지
   (현재 Shanghai 관련 open PR·remote branch 없음, 다음 인계 요청은 댓글 5001479887에서 완료).
 ### done (최근)
-- 홍콩 geo (stacked draft PR #183 exact 1e53bcabae6b381bf763ecb54ac4a79c87ef5dee,
-  main verifier 2ca8ca7c 전 gate·137 files/1,661 tests·Star Ferry 포함 BFS·결정성 PASS,
-  #150 CODEX_DONE 5001551674; #182 merge 후 main retarget과 runtime·desc 배선만 후속 의존)
+- 홍콩 geo (#182·#183 main merge e52130f3, 구현 exact 1e53bcabae6b381bf763ecb54ac4a79c87ef5dee,
+  merged main official verifier·137 files/1,661 tests·Star Ferry 포함 BFS·결정성 PASS,
+  #150 CODEX_DONE 5001551674; runtime·desc 배선만 후속 의존)
 - 타이베이 geo (#173·#179 main merge 67216edf, 구현 exact d5c8650c2be9ed922b4b9c5d4c31ea09ec43ea0d,
   main verifier 54a9927d 전 gate·130 files/1,619 tests·결정성 PASS, #150 CODEX_DONE 5000243893;
   Claude desc 13종 콘텐츠 배선만 후속 의존)
