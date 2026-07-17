@@ -128,6 +128,28 @@ const CITY_GATES = {
     streamCourses: [],
     reportCourses: [],
   },
+  // ── 1.5차 런던권 B안 (#150 스펙 — Codex-2 착수분 선제 정의) ──
+  london: {
+    file: 'src/components/world/cities/london.geo.js',
+    snapshot: null,
+    expectedLocale: 'en',
+    expectedMpt: 20,
+    buildingPct: null, // 런던 프로필 관찰 후 확정
+    greenMinPct: 8, // 하이드·리젠츠·큐·리치먼드·햄스테드 — 관찰 후 상향 검토
+    poiMaxDevTiles: 2.5,
+    downtown: { label: '트래펄가', lon: -0.1281, lat: 51.5080 },
+    riverSections: [
+      { name: '템스(웨스트민스터 단면)', lon: -0.1220, latRange: [51.515, 51.495], sumMinM: 200, runMinM: 160 },
+      { name: '템스(타워브리지 단면)', lon: -0.0750, latRange: [51.515, 51.498], sumMinM: 200, runMinM: 160 },
+    ],
+    streamCourses: [],
+    reportCourses: [],
+    bridgeMaxTiles: 0, // 한국식 교량 정리 — 템스 다리 = 차도
+    bridgeCrossings: [
+      { name: '타워브리지', lon: -0.0754, lat: 51.5055, windowTiles: 5 },
+      { name: '웨스트민스터교', lon: -0.1220, lat: 51.5008, windowTiles: 5 },
+    ],
+  },
 };
 
 // ── 투영(도시 geo 생성 계약과 동일: webmercator + aspectCorrection) ─────────
