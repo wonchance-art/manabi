@@ -19,6 +19,8 @@
 ### todo
 - 호주 4 다음 큐 — 백로그 제안 순서는 시드니→멜버른→브리즈번권→오너 픽이나, 첫 도시 오너
   확정·exact bbox/POI/역·en-AU 정책 SPEC과 Codex-1 비콘텐츠 snapshot exact 전 본생성 금지.
+  백로그 bbox 20m 선제 감사상 시드니 27.480MiB·퍼스 28.074MiB로 기본 24MiB 초과,
+  나머지 후보는 2.949~16.321MiB 예상 — bbox 축소·왜곡 없이 오너 상한/범위 확정 대기.
 ### done (최근)
 - 베이징 geo (#194 snapshot merge, ancestry 재작성으로 stacked #197 superseded close,
   exact-main replacement #199 head 439e60f1a72f0974aaa37cdeffe1243a7d602e13 OPEN/READY/CLEAN,
