@@ -20,8 +20,9 @@
   타워브리지 원본 수면 240~300m 정상, 공식 verifier 교량 회피창 오탐 보정 대기;
   EMEA St Pancras 후보 [172,356] PR #175 독립 검증 PASS, runtime node 후속 인계 대기)
 ### todo
-- 홍콩 geo — #150 댓글 5000127412에서 Claude 상세 중영/정체·간체 SPEC과 Codex-1 비콘텐츠
-  snapshot exact handoff 요청 완료. 두 인계 수신 전 POI·역·본생성 착수 금지.
+- 홍콩 geo — Claude 상세 SPEC #150 댓글 5000694397 수신 완료
+  (bbox [114.10,22.26,114.22,22.33], 20m, POI 12·역 4, zh-Hant/zh-Hans, BRIDGE 0).
+  Codex-1 비콘텐츠 snapshot exact handoff 대기; 수신 전 POI·역·본생성 착수 금지.
 ### done (최근)
 - 타이베이 geo (#173·#179 main merge 67216edf, 구현 exact d5c8650c2be9ed922b4b9c5d4c31ea09ec43ea0d,
   main verifier 54a9927d 전 gate·130 files/1,619 tests·결정성 PASS, #150 CODEX_DONE 5000243893;
