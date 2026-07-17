@@ -22,6 +22,8 @@
 ### todo
 - 상하이 geo — Claude 상세 SPEC #150 댓글 5002084201 수신
   (bbox [121.45,31.19,121.54,31.26], 20m/zh, POI 10·역 4, 황푸강 단면·BRIDGE 0).
+  선제 계약 감사: grid 429×390, 14개 마커 투영 충돌 없음, 예상 피크 7,863,570 bytes <24MiB,
+  2호선 인민광장→난징둥루→루자쭈이·10호선 예원→난징둥루 환승과 황푸강 ferry virtual edge 후보 확인.
   Codex-1 비콘텐츠 snapshot exact handoff 전 본생성 금지
   (현재 Shanghai 관련 open PR·remote branch 없음, 다음 인계 요청은 댓글 5001479887에서 완료).
 ### done (최근)
