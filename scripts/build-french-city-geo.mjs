@@ -100,6 +100,25 @@ const FRENCH_CITY_CONFIG = Object.freeze({
       'olympic-park': 'Queen Elizabeth Olympic Park',
     }),
   }),
+  brussels: Object.freeze({
+    output: '../src/components/world/cities/brussels.geo.js',
+    exportName: 'BRUSSELS_GEO',
+    requiredLocaleFields: Object.freeze(['nameNl']),
+    poiNames: Object.freeze({
+      'grand-place': 'Grand-Place',
+      'manneken-pis': 'Manneken-Pis',
+      'galeries-royales': 'Galeries Royales Saint-Hubert',
+      cathedral: 'Cathédrale Saints-Michel-et-Gudule',
+      'mont-des-arts': 'Mont des Arts',
+      'magritte-museum': 'Musée Magritte',
+      sablon: 'Place du Grand Sablon',
+      'royal-palace': 'Palais royal de Bruxelles',
+      'parc-cinquantenaire': 'Parc du Cinquantenaire',
+      'eu-quarter': 'Quartier européen',
+      'comics-museum': 'Centre belge de la Bande dessinée',
+      atomium: 'Atomium',
+    }),
+  }),
 });
 
 function isLandContact(code) {
@@ -223,6 +242,13 @@ export function buildFrenchCityGeo(city) {
   if (configuredIds.length !== pois.length || configuredIds.some((id) => !pois.some((poi) => poi.id === id))) {
     throw new Error(`${city} POI name contract does not match generated POIs`);
   }
+  for (const field of config.requiredLocaleFields ?? []) {
+    for (const entry of [...pois, ...geo.stations]) {
+      if (typeof entry[field] !== 'string' || entry[field].length === 0) {
+        throw new Error(`${city} missing ${field} for ${entry.id}`);
+      }
+    }
+  }
   const bridges = normalizeFrenchBridgeTerrain(geo.terrain, geo.meta, config.bridgeContract);
   return {
     ...geo,
@@ -289,7 +315,7 @@ export function writeFrenchCityGeo(city) {
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const cityIndex = process.argv.indexOf('--city');
   if (cityIndex < 0 || !process.argv[cityIndex + 1]) {
-    throw new Error('Usage: node scripts/build-french-city-geo.mjs --city <grand-paris|cote-dazur|london>');
+    throw new Error('Usage: node scripts/build-french-city-geo.mjs --city <grand-paris|cote-dazur|london|brussels>');
   }
   console.log(JSON.stringify(writeFrenchCityGeo(process.argv[cityIndex + 1])));
 }

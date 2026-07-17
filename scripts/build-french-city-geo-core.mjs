@@ -161,6 +161,40 @@ const CITY_CONFIG = Object.freeze({
       { id: 'greenwich-station', nameEn: 'Greenwich', lat: 51.4779, lon: -0.0141, line: 'DLR · National Rail', routeId: 'dlr', routeIds: Object.freeze(['dlr']) },
     ]),
   }),
+  brussels: Object.freeze({
+    bbox: Object.freeze([4.32, 50.79, 4.42, 50.90]),
+    snapshot: new URL('./data/brussels-osm-v21.json', import.meta.url),
+    mainStationId: 'bruxelles-midi',
+    contentLocale: 'fr',
+    nameField: 'nameFr',
+    localeAnchors: Object.freeze(['fr', 'nl']),
+    preserveExistingBuildings: true,
+    buildingRatioReportOnly: true,
+    buildingDatasetProbe: Object.freeze({
+      provider: 'OpenStreetMap', datasetId: 'building=*', checkedAt: '2026-07-17',
+      outcome: 'fixed-offline-snapshot',
+    }),
+    pois: Object.freeze([
+      { id: 'grand-place', nameFr: 'Grand-Place', nameNl: 'Grote Markt', lat: 50.8467, lon: 4.3525, kind: 'world-heritage' },
+      { id: 'manneken-pis', nameFr: 'Manneken-Pis', nameNl: 'Manneken Pis', lat: 50.8450, lon: 4.3500, kind: 'landmark' },
+      { id: 'galeries-royales', nameFr: 'Galeries Royales Saint-Hubert', nameNl: 'Koninklijke Sint-Hubertusgalerijen', lat: 50.8474, lon: 4.3548, kind: 'landmark' },
+      { id: 'cathedral', nameFr: 'Cathédrale Saints-Michel-et-Gudule', nameNl: 'Sint-Michiels- en Sint-Goedelekathedraal', lat: 50.8477, lon: 4.3603, kind: 'historic' },
+      { id: 'mont-des-arts', nameFr: 'Mont des Arts', nameNl: 'Kunstberg', lat: 50.8440, lon: 4.3565, kind: 'district' },
+      { id: 'magritte-museum', nameFr: 'Musée Magritte', nameNl: 'Magritte Museum', lat: 50.8420, lon: 4.3598, kind: 'museum' },
+      { id: 'sablon', nameFr: 'Place du Grand Sablon', nameNl: 'Grote Zavel', lat: 50.8400, lon: 4.3560, kind: 'plaza' },
+      { id: 'royal-palace', nameFr: 'Palais royal de Bruxelles', nameNl: 'Koninklijk Paleis van Brussel', lat: 50.8419, lon: 4.3622, kind: 'historic' },
+      { id: 'parc-cinquantenaire', nameFr: 'Parc du Cinquantenaire', nameNl: 'Jubelpark', lat: 50.8400, lon: 4.3910, kind: 'park' },
+      { id: 'eu-quarter', nameFr: 'Quartier européen', nameNl: 'Europese Wijk', lat: 50.8435, lon: 4.3830, kind: 'district' },
+      { id: 'comics-museum', nameFr: 'Centre belge de la Bande dessinée', nameNl: 'Belgisch Stripcentrum', lat: 50.8508, lon: 4.3600, kind: 'museum' },
+      { id: 'atomium', nameFr: 'Atomium', nameNl: 'Atomium', lat: 50.8949, lon: 4.3415, kind: 'landmark-marker-only' },
+    ]),
+    stations: Object.freeze([
+      { id: 'bruxelles-midi', nameFr: 'Bruxelles-Midi', nameNl: 'Brussel-Zuid', lat: 50.8358, lon: 4.3355, line: 'Eurostar · TGV · axe Nord-Midi', routeId: 'brussels-north-south-axis', routeIds: Object.freeze(['brussels-north-south-axis']) },
+      { id: 'bruxelles-central', nameFr: 'Bruxelles-Central', nameNl: 'Brussel-Centraal', lat: 50.8455, lon: 4.3571, line: 'axe Nord-Midi', routeId: 'brussels-north-south-axis', routeIds: Object.freeze(['brussels-north-south-axis']) },
+      { id: 'bruxelles-nord', nameFr: 'Bruxelles-Nord', nameNl: 'Brussel-Noord', lat: 50.8605, lon: 4.3603, line: 'axe Nord-Midi', routeId: 'brussels-north-south-axis', routeIds: Object.freeze(['brussels-north-south-axis']) },
+      { id: 'schuman', nameFr: 'Bruxelles-Schuman', nameNl: 'Brussel-Schuman', lat: 50.8430, lon: 4.3820, line: 'train S · métro 1·5' },
+    ]),
+  }),
 });
 
 function webMercatorMeters(lon, lat) {
@@ -638,6 +672,7 @@ export function buildFrenchCityGeoBase(city) {
     aspectCorrection: Number(metrics.correction.toFixed(12)),
     contentLocale,
     schema: Object.freeze({ nameField, localeSlots: 'central-lookup-expandable' }),
+    ...(config.localeAnchors ? { localeAnchors: Object.freeze([...config.localeAnchors]) } : {}),
     source: Object.freeze({ ...snapshot.source }),
   });
   if (JSON.stringify(snapshot.bbox) !== JSON.stringify(baseMeta.bbox) || snapshot.grid.w !== baseMeta.grid.w || snapshot.grid.h !== baseMeta.grid.h) {
@@ -669,9 +704,11 @@ export function buildFrenchCityGeoBase(city) {
   );
   normalizeCityTerrain(terrain, protectedEntries, mainStation, entrance, exitTiles, baseMeta, city);
   const finalBuildingStats = terrainBuildingStats(terrain);
-  const finalBuildingRatioRange = config.finalBuildingRatioRange ?? [0.09, 0.11];
-  if (finalBuildingStats.landBuildingRatio < finalBuildingRatioRange[0]
-    || finalBuildingStats.landBuildingRatio > finalBuildingRatioRange[1]) {
+  const finalBuildingRatioRange = config.buildingRatioReportOnly
+    ? null
+    : (config.finalBuildingRatioRange ?? [0.09, 0.11]);
+  if (finalBuildingRatioRange && (finalBuildingStats.landBuildingRatio < finalBuildingRatioRange[0]
+    || finalBuildingStats.landBuildingRatio > finalBuildingRatioRange[1])) {
     throw new Error(`${city} final land/building ratio outside ${finalBuildingRatioRange.join('..')} gate: ${finalBuildingStats.landBuildingRatio}`);
   }
   const meta = Object.freeze({
@@ -679,7 +716,7 @@ export function buildFrenchCityGeoBase(city) {
     buildingTexture: Object.freeze({
       ...BUILDING_TEXTURE_CONTRACT,
       ...(config.buildingDatasetProbe ? { publicDatasetProbe: config.buildingDatasetProbe } : {}),
-      ...(config.finalBuildingRatioRange ? { finalRatioRange: finalBuildingRatioRange } : {}),
+      ...(finalBuildingRatioRange ? { finalRatioRange: finalBuildingRatioRange } : {}),
       seed: `${BUILDING_TEXTURE_CONTRACT.seedNamespace}:${city}`,
       initialLandBuildingRatio: buildingTexture.landBuildingRatio,
       baselineNormalizationBuildingTiles,

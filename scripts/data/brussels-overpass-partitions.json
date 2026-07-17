@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "bbox": [4.32, 50.79, 4.42, 50.90],
+  "provider": "overpass-api.de",
+  "endpoint": "https://overpass-api.de/api/interpreter",
+  "partitions": [
+    { "id": "r0c0", "bbox": [4.32, 50.79, 4.37, 50.845] },
+    { "id": "r0c1", "bbox": [4.37, 50.79, 4.42, 50.845] },
+    { "id": "r1c0", "bbox": [4.32, 50.845, 4.37, 50.90] },
+    { "id": "r1c1", "bbox": [4.37, 50.845, 4.42, 50.90] }
+  ]
+}
