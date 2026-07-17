@@ -19,15 +19,13 @@
 - 런던권 geo (PR #160 main 반입 완료, exact head e69a98bb0c78fea277425259de01db0e17282c50.
   타워브리지 원본 수면 240~300m 정상, 공식 verifier 교량 회피창 오탐 보정 대기;
   EMEA St Pancras 후보 [172,356] PR #175 독립 검증 PASS, runtime node 후속 인계 대기)
-- 상하이 geo (stacked draft PR #188 exact 46dd50859bc947f398d65b0288846e9c09c3a9c9,
-  snapshot PR #185 exact b7508ac332a439fd5bbed1a2ba4752f7180b89fa 기반 신규 3파일;
-  latest main b5caca66557f3db8c0c61a4f2964994ea08d2c9d + #185 + #188 detached 결합
-  targeted 11/11·전체 139 files/1,672 tests·BFS 131,179/131,179·결정성·PNG PASS,
-  official verifier Shanghai 프로필과 #185 merge 후 main retarget 대기)
 ### todo
 - 베이징 geo — Claude가 상하이 산출 무렵 상세 SPEC 게시 예정.
   exact SPEC과 Codex-1 비콘텐츠 snapshot handoff 전 POI·역·본생성 금지.
 ### done (최근)
+- 상하이 geo (#185 main merge·replacement PR #191 exact 319718e84a038a23fb92f6b915bfc7c00684f87c,
+  main b2b1f991 official verifier 전 gate·139 files/1,680 tests·BFS·결정성·PNG PASS,
+  #150 CODEX_DONE 5002925294; ancestry가 끊긴 stacked #188은 superseded close)
 - 홍콩 geo (#182·#183 main merge e52130f3, 구현 exact 1e53bcabae6b381bf763ecb54ac4a79c87ef5dee,
   merged main official verifier·137 files/1,661 tests·Star Ferry 포함 BFS·결정성 PASS,
   #150 CODEX_DONE 5001551674; runtime·desc 배선만 후속 의존)
