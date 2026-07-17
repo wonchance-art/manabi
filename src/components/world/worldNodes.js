@@ -227,6 +227,7 @@ const LEGACY_WORLD_NODES = [
 export const WORLD_NODES = Object.freeze(LEGACY_WORLD_NODES.map(migrateLegacyWorldNode));
 
 const PARIS_NAME = '파리';
+const MONT_SAINT_MICHEL_NAME = '몽생미셸';
 
 export const REGIONAL_WORLD_NODES = Object.freeze([
   createRegionalWorldNode({
@@ -242,6 +243,17 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
     arrivalOffset: [2, 0],
     noStamp: true,
     gate: { type: 'city', to: 'grand-paris', label: '🏙️ 시내' },
+  }),
+  createRegionalWorldNode({
+    id: 'mont-saint-michel',
+    name: MONT_SAINT_MICHEL_NAME,
+    kind: 'city',
+    regionId: 'emea',
+    contentLocale: 'fr',
+    lon: -1.511,
+    lat: 48.636,
+    noStamp: true,
+    gate: { type: 'city', to: 'mont-saint-michel', label: '🏙️ 시내' },
   }),
 ]);
 

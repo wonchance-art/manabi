@@ -76,7 +76,7 @@ describe('오버월드 지역 레지스트리', () => {
       .toEqual({ scene: region.sceneId, x, y });
   });
 
-  it('EMEA는 파리 게이트, APAC은 인천 도착 타일을 사용한다', () => {
+  it('EMEA는 파리·몽생미셸 게이트, APAC은 인천 도착 타일을 사용한다', () => {
     const region = overworldRegionById('emea');
     expect(region.airGate).toMatchObject({
       id: 'paris-cdg-air', type: 'air-gate', airportCode: 'CDG', contentLocale: 'fr',
@@ -99,6 +99,13 @@ describe('오버월드 지역 레지스트리', () => {
         x: paris.overworldTile[0] - paris.arrivalOffset[0],
         y: paris.overworldTile[1] - paris.arrivalOffset[1],
       });
+    const montSaintMichel = getNode('mont-saint-michel');
+    expect(montSaintMichel.overworldTile).toEqual([150, 429]);
+    expect(checkedInGateCell(region, {
+      tile: { x: montSaintMichel.overworldTile[0], y: montSaintMichel.overworldTile[1] },
+    })).toMatchObject({ valid: true, collision: 0, viewOnly: 0 });
+    expect(projectOverworldRegionCoordinate(region, montSaintMichel.lon, montSaintMichel.lat))
+      .toEqual({ x: 150, y: 429 });
     const apac = overworldRegionById('asia-pacific');
     expect(apac.airArrival).toMatchObject({
       id: 'incheon-air-arrival', airportCode: 'ICN', contentLocale: 'ko', arrivalOffset: [4, 0],

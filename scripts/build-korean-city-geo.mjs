@@ -2,10 +2,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CITY_TILE, isCityBlocked } from '../src/components/world/cities/terrain.js';
+import { CITY_SCALE_TIERS, cityScaleTier } from '../src/components/world/cities/scale.js';
 
 const EARTH_RADIUS = 6378137;
 const DEG = Math.PI / 180;
-const DEFAULT_METERS_PER_TILE = 20;
+const DEFAULT_METERS_PER_TILE = CITY_SCALE_TIERS.standard.metersPerTile;
 const CARDINAL = Object.freeze([[1, 0], [-1, 0], [0, 1], [0, -1]]);
 const KOREAN_BRIDGE_CONTRACT = Object.freeze({
   method: 'korea-bridge-three-way-v1',
@@ -151,6 +152,30 @@ const CITY_CONFIG = Object.freeze({
       { id: 'versailles-rive-gauche', nameFr: 'Versailles Château Rive Gauche', lat: 48.7996, lon: 2.1290, line: 'RER C' },
     ]),
   }),
+  'mont-saint-michel': Object.freeze({
+    bbox: Object.freeze([-1.527, 48.605, -1.503, 48.642]),
+    metersPerTile: 4,
+    snapshot: new URL('./data/mont-saint-michel-osm-v21.json', import.meta.url),
+    output: '../src/components/world/cities/mont-saint-michel.geo.js',
+    exportName: 'MONT_SAINT_MICHEL_GEO',
+    mainEntranceId: 'causeway-shuttle',
+    contentLocale: 'fr',
+    nameField: 'nameFr',
+    tileSkins: Object.freeze({ beach: 'mudflat' }),
+    buildingTargetLandRatio: 0,
+    finalBuildingRatioRange: Object.freeze([0.005, 0.012]),
+    buildingDatasetProbe: Object.freeze({
+      provider: 'OpenStreetMap', datasetId: 'official-map-api-bbox', checkedAt: '2026-07-16',
+      outcome: 'fixed-offline-snapshot',
+    }),
+    pois: Object.freeze([
+      { id: 'abbey', nameFr: 'Abbaye du Mont-Saint-Michel', lat: 48.63610, lon: -1.51145, kind: 'historic' },
+      { id: 'grande-rue', nameFr: 'Grande Rue', lat: 48.63580, lon: -1.51050, kind: 'district' },
+      { id: 'ramparts', nameFr: 'Chemin des Remparts', lat: 48.63620, lon: -1.50975, kind: 'historic' },
+      { id: 'causeway-shuttle', nameFr: 'Place des Navettes', lat: 48.61180, lon: -1.50631, kind: 'transport' },
+    ]),
+    stations: Object.freeze([]),
+  }),
 });
 
 function webMercatorMeters(lon, lat) {
@@ -162,6 +187,7 @@ function webMercatorMeters(lon, lat) {
 }
 
 function projectionMetrics(bbox, metersPerTile = DEFAULT_METERS_PER_TILE) {
+  const tileMeters = cityScaleTier(metersPerTile).metersPerTile;
   const [minLon, minLat, maxLon, maxLat] = bbox;
   const southWest = webMercatorMeters(minLon, minLat);
   const northEast = webMercatorMeters(maxLon, maxLat);
@@ -169,8 +195,8 @@ function projectionMetrics(bbox, metersPerTile = DEFAULT_METERS_PER_TILE) {
   return {
     southWest, northEast, correction,
     grid: {
-      w: Math.ceil(((northEast.x - southWest.x) * correction) / metersPerTile),
-      h: Math.ceil(((northEast.y - southWest.y) * correction) / metersPerTile),
+      w: Math.ceil(((northEast.x - southWest.x) * correction) / tileMeters),
+      h: Math.ceil(((northEast.y - southWest.y) * correction) / tileMeters),
     },
   };
 }
@@ -344,9 +370,13 @@ function applySnapshotMasks(grid, snapshot, meta) {
     river: decodeTerrainRle(snapshot.riverRle, length),
     park: decodeTerrainRle(snapshot.parkRle, length),
     mountain: decodeTerrainRle(snapshot.mountainRle, length),
+    tidalFlat: snapshot.tidalFlatRle
+      ? decodeTerrainRle(snapshot.tidalFlatRle, length)
+      : new Uint8Array(length),
   };
   for (let index = 0; index < length; index += 1) if (masks.water[index]) grid[index] = CITY_TILE.WATER;
   for (let index = 0; index < length; index += 1) if (masks.river[index]) grid[index] = CITY_TILE.RIVER;
+  for (let index = 0; index < length; index += 1) if (masks.tidalFlat[index]) grid[index] = CITY_TILE.BEACH;
   for (let index = 0; index < length; index += 1) {
     if (masks.mountain[index] && grid[index] !== CITY_TILE.WATER && grid[index] !== CITY_TILE.RIVER) grid[index] = CITY_TILE.MOUNTAIN;
   }
@@ -721,7 +751,7 @@ export function buildKoreanCityGeo(city) {
   const config = CITY_CONFIG[city];
   if (!config) throw new Error(`Unknown city: ${city}`);
   const snapshot = JSON.parse(fs.readFileSync(config.snapshot, 'utf8'));
-  const metersPerTile = config.metersPerTile ?? DEFAULT_METERS_PER_TILE;
+  const metersPerTile = cityScaleTier(config.metersPerTile ?? DEFAULT_METERS_PER_TILE).metersPerTile;
   const contentLocale = config.contentLocale ?? 'ko';
   const nameField = config.nameField ?? 'nameKo';
   const metrics = projectionMetrics(config.bbox, metersPerTile);
@@ -742,20 +772,21 @@ export function buildKoreanCityGeo(city) {
   const pois = config.pois.map((entry) => withTile(entry, baseMeta, metrics));
   const stations = config.stations.map((entry) => withTile(entry, baseMeta, metrics));
   separateMarkerTiles([...pois, ...stations], baseMeta);
-  const mainStation = stations.find((entry) => entry.id === config.mainStationId);
-  const entrance = { x: mainStation.tile[0], y: mainStation.tile[1], facing: 'down' };
+  const mainAnchor = stations.find((entry) => entry.id === config.mainStationId)
+    ?? pois.find((entry) => entry.id === config.mainEntranceId);
+  if (!mainAnchor) throw new Error(`${city} requires a main station or entrance anchor`);
+  const entrance = { x: mainAnchor.tile[0], y: mainAnchor.tile[1], facing: 'down' };
   const exitTiles = [[entrance.x, entrance.y - 10], [entrance.x, entrance.y - 9]];
   const terrain = new Uint8Array(baseMeta.grid.w * baseMeta.grid.h).fill(CITY_TILE.SIDEWALK);
   const masks = applySnapshotMasks(terrain, snapshot, baseMeta);
   const protectedEntries = [...pois, ...stations];
   const baselineTerrain = terrain.slice();
-  normalizeCityTerrain(baselineTerrain, protectedEntries, mainStation, entrance, exitTiles, baseMeta, city);
+  normalizeCityTerrain(baselineTerrain, protectedEntries, mainAnchor, entrance, exitTiles, baseMeta, city);
   const initialBuildingStats = terrainBuildingStats(terrain);
   const baselineBuildingStats = terrainBuildingStats(baselineTerrain);
   const baselineNormalizationBuildingTiles = baselineBuildingStats.buildingTileCount - initialBuildingStats.buildingTileCount;
-  const finalTargetBuildingTileCount = Math.ceil(
-    baselineBuildingStats.landTileCount * BUILDING_TEXTURE_CONTRACT.targetLandRatio,
-  );
+  const buildingTargetLandRatio = config.buildingTargetLandRatio ?? BUILDING_TEXTURE_CONTRACT.targetLandRatio;
+  const finalTargetBuildingTileCount = Math.ceil(baselineBuildingStats.landTileCount * buildingTargetLandRatio);
   const preNormalizationTargetBuildingTileCount = Math.max(
     initialBuildingStats.buildingTileCount,
     finalTargetBuildingTileCount - baselineNormalizationBuildingTiles,
@@ -763,7 +794,7 @@ export function buildKoreanCityGeo(city) {
   const buildingTexture = augmentBuildingTexture(
     terrain, masks, baseMeta, city, preNormalizationTargetBuildingTileCount,
   );
-  normalizeCityTerrain(terrain, protectedEntries, mainStation, entrance, exitTiles, baseMeta, city);
+  normalizeCityTerrain(terrain, protectedEntries, mainAnchor, entrance, exitTiles, baseMeta, city);
   const bridges = city === 'busan' || city === 'seoul'
     ? normalizeKoreanBridgeTerrain(terrain, baseMeta)
     : null;
@@ -779,6 +810,7 @@ export function buildKoreanCityGeo(city) {
     ...(bridges ? { bridgeNormalization: bridges.report } : {}),
     buildingTexture: Object.freeze({
       ...BUILDING_TEXTURE_CONTRACT,
+      targetLandRatio: buildingTargetLandRatio,
       ...(config.buildingDatasetProbe ? { publicDatasetProbe: config.buildingDatasetProbe } : {}),
       ...(config.finalBuildingRatioRange ? { finalRatioRange: finalBuildingRatioRange } : {}),
       seed: `${BUILDING_TEXTURE_CONTRACT.seedNamespace}:${city}`,
@@ -800,6 +832,7 @@ export function buildKoreanCityGeo(city) {
   const railwayMask = decodeTerrainRle(snapshot.railwayRle, terrain.length);
   return {
     meta, terrain, pois, stations, entrance, exitTiles,
+    ...(config.tileSkins ? { tileSkins: Object.freeze({ ...config.tileSkins }) } : {}),
     railways: { mask: railwayMask, tileCount: railwayMask.reduce((sum, code) => sum + Number(Boolean(code)), 0) },
   };
 }
@@ -807,7 +840,10 @@ export function buildKoreanCityGeo(city) {
 function generatedModule(city, config, geo) {
   const terrainRuns = encodeTerrainRle(geo.terrain);
   const railwayRuns = encodeTerrainRle(geo.railways.mask);
-  return `// Generated by scripts/build-korean-city-geo.mjs. Do not edit by hand.\n// Geometry: © OpenStreetMap contributors, ODbL 1.0 (snapshot 2026-07-16).\n// Locale schema: ${geo.meta.schema.nameField}/contentLocale are exact keys; reading and additional locale slots may be appended without renaming.\n\nconst META = Object.freeze(${JSON.stringify(geo.meta, null, 2)});\nconst TERRAIN_RLE = ${JSON.stringify(terrainRuns)};\nconst RAILWAY_RLE = ${JSON.stringify(railwayRuns)};\n\nfunction decodeTerrain(runs, length) {\n  const terrain = new Uint8Array(length);\n  let offset = 0;\n  for (const [code, count] of runs) {\n    terrain.fill(code, offset, offset + count);\n    offset += count;\n  }\n  if (offset !== length) throw new Error(\`terrain RLE length mismatch: \${offset} !== \${length}\`);\n  return terrain;\n}\n\nconst LENGTH = META.grid.w * META.grid.h;\n\nexport const ${config.exportName} = Object.freeze({\n  meta: META,\n  terrain: decodeTerrain(TERRAIN_RLE, LENGTH),\n  pois: Object.freeze(${JSON.stringify(geo.pois, null, 2)}),\n  stations: Object.freeze(${JSON.stringify(geo.stations, null, 2)}),\n  entrance: Object.freeze(${JSON.stringify(geo.entrance)}),\n  exitTiles: Object.freeze(${JSON.stringify(geo.exitTiles)}),\n  railways: Object.freeze({\n    mask: decodeTerrain(RAILWAY_RLE, LENGTH),\n    tileCount: ${geo.railways.tileCount},\n  }),\n});\n`;
+  const tileSkins = geo.tileSkins
+    ? `  tileSkins: Object.freeze(${JSON.stringify(geo.tileSkins)}),\n`
+    : '';
+  return `// Generated by scripts/build-korean-city-geo.mjs. Do not edit by hand.\n// Geometry: © OpenStreetMap contributors, ODbL 1.0 (snapshot 2026-07-16).\n// Locale schema: ${geo.meta.schema.nameField}/contentLocale are exact keys; reading and additional locale slots may be appended without renaming.\n\nconst META = Object.freeze(${JSON.stringify(geo.meta, null, 2)});\nconst TERRAIN_RLE = ${JSON.stringify(terrainRuns)};\nconst RAILWAY_RLE = ${JSON.stringify(railwayRuns)};\n\nfunction decodeTerrain(runs, length) {\n  const terrain = new Uint8Array(length);\n  let offset = 0;\n  for (const [code, count] of runs) {\n    terrain.fill(code, offset, offset + count);\n    offset += count;\n  }\n  if (offset !== length) throw new Error(\`terrain RLE length mismatch: \${offset} !== \${length}\`);\n  return terrain;\n}\n\nconst LENGTH = META.grid.w * META.grid.h;\n\nexport const ${config.exportName} = Object.freeze({\n  meta: META,\n  terrain: decodeTerrain(TERRAIN_RLE, LENGTH),\n${tileSkins}  pois: Object.freeze(${JSON.stringify(geo.pois, null, 2)}),\n  stations: Object.freeze(${JSON.stringify(geo.stations, null, 2)}),\n  entrance: Object.freeze(${JSON.stringify(geo.entrance)}),\n  exitTiles: Object.freeze(${JSON.stringify(geo.exitTiles)}),\n  railways: Object.freeze({\n    mask: decodeTerrain(RAILWAY_RLE, LENGTH),\n    tileCount: ${geo.railways.tileCount},\n  }),\n});\n`;
 }
 
 export function writeKoreanCityGeo(city) {
@@ -825,6 +861,6 @@ export function writeKoreanCityGeo(city) {
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const cityIndex = process.argv.indexOf('--city');
-  if (cityIndex < 0 || !process.argv[cityIndex + 1]) throw new Error('Usage: node scripts/build-korean-city-geo.mjs --city <busan|seoul|grand-paris>');
+  if (cityIndex < 0 || !process.argv[cityIndex + 1]) throw new Error('Usage: node scripts/build-korean-city-geo.mjs --city <busan|seoul|grand-paris|mont-saint-michel>');
   console.log(JSON.stringify(writeKoreanCityGeo(process.argv[cityIndex + 1])));
 }

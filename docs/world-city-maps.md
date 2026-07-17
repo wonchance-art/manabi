@@ -64,9 +64,14 @@
 > 위치를 익히는 용도. 화끈하게 넓게. 도트를 낮춘 건 바로 이 지형·시스템을 극도로 올리기 위함."
 > **§5의 '실측 재현 금지'를 폐기하고, 실좌표 기반 지형으로 전환한다.**
 
-### 6.1 고정 축척 — 1타일 = 20m (전 도시 공통·불변)
-- 모든 도시가 같은 m/타일 → 후쿠오카의 한 블록과 시부야의 한 블록이 같은 타일 크기.
-  **일관성 = 타일 수가 아니라 축척이 같은 것.** 맵 타일 수는 도시 실측 폭÷20m로 자연히 달라진다.
+### 6.1 축척 티어 — 표준 20m + 정밀 4m
+- 기본 도시 티어는 **1타일=20m**다. 후쿠오카의 한 블록과 시부야의 한 블록이 같은 타일 크기이며,
+  맵 타일 수는 도시 실측 폭÷20m로 자연히 달라진다.
+- 제한된 보행권을 건축·골목 단위로 표현하는 정밀 티어는 **1타일=4m**다. 첫 적용 대상은
+  몽생미셸(섬+제방 접근로)이며, 오너 확정 bbox 전에는 실제 geo를 생성하지 않는다.
+- 허용 축척은 `city-standard-20m-v1`과 `city-precision-4m-v1` 두 가지뿐이다. 임의 중간 축척은
+  생성기와 CityScene 진입 시 거부한다. 타일의 화면 크기(32px), 충돌, 청크, 저장 좌표는 동일하고
+  `metersPerTile`만 지리 해상도를 표현한다.
 - 예: 나하 3km→150 · 후쿠오카(타워/돔까지) 7.5km→375 · 도쿄 코어 12km→600.
 
 ### 6.2 무분할 — 도시 하나 = 맵 하나
@@ -83,7 +88,7 @@
 Codex가 실좌표에서 산출하는 `src/components/world/cities/<city>.geo.js`:
 ```
 export const <CITY>_GEO = {
-  meta: { city, bbox:[minLon,minLat,maxLon,maxLat], grid:{w,h}, metersPerTile:20, projection:'webmercator' },
+  meta: { city, bbox:[minLon,minLat,maxLon,maxLat], grid:{w,h}, metersPerTile:20|4, projection:'webmercator' },
   terrain: <길이 w*h 인코딩>,   // 값 = 아래 표준 지형 코드
   pois:    [ { id, nameJa, yomi, lat, lon, tile:[x,y], kind, facade? } ],
   stations:[ { id, nameJa, yomi, lat, lon, tile:[x,y], line? } ],  // 정기 교통 노드
