@@ -7,7 +7,7 @@ describe('도시 정밀맵 레지스트리', () => {
   it('현재 플레이 가능한 도시를 전체 맵 뷰어와 같은 순서로 노출한다', () => {
     expect(CITY_MAPS.map((city) => city.id)).toEqual([
       'fukuoka', 'tokyo', 'osaka', 'kyoto', 'busan', 'seoul', 'grand-paris', 'mont-saint-michel', 'cote-dazur',
-      'brussels', 'taipei', 'hong-kong', 'london',
+      'brussels', 'taipei', 'hong-kong', 'london', 'shanghai',
     ]);
     expect(Object.keys(CITY_DATA)).toEqual(CITY_MAPS.map((city) => city.id));
   });
@@ -89,6 +89,19 @@ describe('도시 정밀맵 레지스트리', () => {
     expect(CITY_DATA[brussels.gate.to].returnNode).toBe(brussels.id);
     expect(worldNodeReturnSpawn(brussels)).toEqual({
       scene: 'overworld:emea', x: 242, y: 375,
+    });
+  });
+
+  it('런던 게이트와 EXIT가 EMEA 세인트판크라스 노드의 같은 타일로 왕복한다', () => {
+    const london = getNode('london');
+    expect(london).toMatchObject({
+      regionId: 'emea',
+      overworldTile: [172, 356],
+      gate: { type: 'city', to: 'london' },
+    });
+    expect(CITY_DATA[london.gate.to].returnNode).toBe(london.id);
+    expect(worldNodeReturnSpawn(london)).toEqual({
+      scene: 'overworld:emea', x: 172, y: 356,
     });
   });
 
