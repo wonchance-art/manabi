@@ -186,7 +186,7 @@ const CITY_CONFIG = Object.freeze({
       { id: 'parc-cinquantenaire', nameFr: 'Parc du Cinquantenaire', nameNl: 'Jubelpark', lat: 50.8400, lon: 4.3910, kind: 'park' },
       { id: 'eu-quarter', nameFr: 'Quartier européen', nameNl: 'Europese Wijk', lat: 50.8435, lon: 4.3830, kind: 'district' },
       { id: 'comics-museum', nameFr: 'Centre belge de la Bande dessinée', nameNl: 'Belgisch Stripcentrum', lat: 50.8508, lon: 4.3600, kind: 'museum' },
-      { id: 'atomium', nameFr: 'Atomium', nameNl: 'Atomium', lat: 50.8949, lon: 4.3415, kind: 'landmark-marker-only' },
+      { id: 'atomium', nameFr: 'Atomium', nameNl: 'Atomium', lat: 50.8949, lon: 4.3415, kind: 'landmark', renderPolicy: 'marker-only' },
     ]),
     stations: Object.freeze([
       { id: 'bruxelles-midi', nameFr: 'Bruxelles-Midi', nameNl: 'Brussel-Zuid', lat: 50.8358, lon: 4.3355, line: 'Eurostar · TGV · axe Nord-Midi', routeId: 'brussels-north-south-axis', routeIds: Object.freeze(['brussels-north-south-axis']) },

@@ -125,7 +125,7 @@ describe('Brussels 상세 geo 계약', () => {
     }
     expect(new Set(markers.map(({ tile }) => tile.join(','))).size).toBe(markers.length);
     expect(byId(BRUSSELS_GEO.pois, 'atomium')).toMatchObject({
-      nameFr: 'Atomium', nameNl: 'Atomium', kind: 'landmark-marker-only',
+      nameFr: 'Atomium', nameNl: 'Atomium', kind: 'landmark', renderPolicy: 'marker-only',
     });
     expect(byId(BRUSSELS_GEO.pois, 'atomium')).not.toHaveProperty('facade');
   });

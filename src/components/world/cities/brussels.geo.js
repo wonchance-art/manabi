@@ -306,7 +306,8 @@ export const BRUSSELS_GEO = Object.freeze({
     "nameNl": "Atomium",
     "lat": 50.8949,
     "lon": 4.3415,
-    "kind": "landmark-marker-only",
+    "kind": "landmark",
+    "renderPolicy": "marker-only",
     "contentLocale": "fr",
     "tile": [
       75,
