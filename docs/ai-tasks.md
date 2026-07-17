@@ -18,8 +18,8 @@
 ### doing
 ### todo
 - 베이징 geo — 최종 SPEC #150 댓글 5003321961 수신(bbox [116.35,39.88,116.43,39.95],
-  20m/zh, POI 12·역 4·병기 16/16·민감지역 하드 규칙); Codex-1 snapshot exact handoff 전
-  POI·역·본생성 금지.
+  20m/zh, POI 12·역 4·병기 16/16·민감지역 하드 규칙); 선제 감사 grid 342×390,
+  예상 6,268,860 bytes <24MiB PASS. Codex-1 snapshot exact handoff 전 POI·역·본생성 금지.
 ### done (최근)
 - 런던권 geo (#160 main merge e69a98bb0c78fea277425259de01db0e17282c50,
   main fa40fae official verifier 전 gate·타워브리지 260m/260m·targeted 18/18 PASS,
