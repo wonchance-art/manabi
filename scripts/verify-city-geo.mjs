@@ -196,6 +196,26 @@ const CITY_GATES = {
     ],
     multilingual: { anchors: ['zh-Hant', 'zh-Hans'], nameFields: ['nameZhHant', 'nameZhHans'] },
   },
+  beijing: {
+    file: 'src/components/world/cities/beijing.geo.js',
+    snapshot: null,
+    expectedLocale: 'zh',
+    expectedMpt: 20,
+    buildingPct: null, // 베이징 구도심(후퉁·궁궐) 프로필 관찰 후 확정
+    greenMinPct: null, // 북해·경산·천단 — report 관찰
+    poiMaxDevTiles: 2.5,
+    downtown: { label: '왕푸징', lon: 116.4110, lat: 39.9097 },
+    riverSections: [
+      // 북해~什剎海 수면(황실 원림 호수축) — Codex-2 실측 560m/560m에 마진.
+      // 39.924는 경화도(백탑 섬)를 지나 분절(220/180) — 섬 북측 개수면 39.928로 pin(실측 540/540).
+      { name: '북해 수면 단면', lat: 39.928, lonRange: [116.37, 116.40], sumMinM: 400, runMinM: 400 },
+    ],
+    streamCourses: [],
+    reportCourses: [],
+    bridgeMaxTiles: 0,
+    bridgeCrossings: [],
+    multilingual: { anchors: ['zh-Hant', 'zh-Hans'], nameFields: ['nameZhHant', 'nameZhHans'] },
+  },
   'mont-saint-michel': {
     file: 'src/components/world/cities/mont-saint-michel.geo.js',
     snapshot: null,
