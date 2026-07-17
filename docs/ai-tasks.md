@@ -16,9 +16,11 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-- 런던권 geo (codex2/london-geo — Claude 선제 실측: **타워브리지 단면 160m 1건만 FAIL**,
-  실폭 ~250m 대비 얇음 → 소스 마스크 대조 요청. verify 게이트는 main에 배치 완료)
-- 브뤼셀 geo (bbox [4.32,50.79,4.42,50.90], 20m, fr canonical+nameNl 100%, POI 12·역 4; 아토미움은 마커+명칭만)
+- 런던권 geo (PR #160, exact head e69a98bb0c78fea277425259de01db0e17282c50 — 구현·자체검증 완료.
+  타워브리지 원본 수면 240~300m 정상, 공식 verifier 교량 회피창 오탐 보정 대기)
+- 브뤼셀 geo (PR #169, exact head 0548f865b8bbc5919ab02b62c5a452410b0296bd — 구현·자체검증 완료,
+  bbox [4.32,50.79,4.42,50.90], fr canonical+nameNl 100%, POI 12·역 4; main 공식 gate 게시 대기)
+- 타이베이 상세 SPEC 확보 (#150 요청 완료 — 정체/간체 nameZh 정책·exact POI/역·공식 gate 수신 즉시 착수)
 ### todo
 - (없음)
 ### done (최근)
