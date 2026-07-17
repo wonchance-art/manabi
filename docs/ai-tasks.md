@@ -30,8 +30,10 @@
   Web Mercator exact 선제 감사: aspectCorrection 0.830401462336,
   grid 648×780, 505,440 cells, 22.655MiB <24MiB(1.345MiB 여유).
   다중 ferry는 기존 transit 배열·transitPoints로 표현 가능해 공유 runtime 변경 불요.
-  Codex-1 비콘텐츠 4×4 Overpass 48/48 snapshot exact handoff와
-  브리즈번 official gate·CODEX_DONE 전 본생성·재수집 금지.
+  Codex-1 snapshot #212 exact 90fcda4164b6129e35d58b34c62a3cfb5630c7e3 수신:
+  4×4/48·snapshot SHA 05ef072f5cd19d2767dcb86ef7b66dfdf03e5505623f341cf8a200f6d2160b32,
+  독립 영어권 파이프라인 19/19·ODbL·비콘텐츠 범위·임시 전체 렌더 PASS.
+  브리즈번 official gate·CODEX_DONE과 #212 merge/명시적 stacking 전 본생성 금지.
 ### done (최근)
 - 베이징 geo (#194 snapshot merge, ancestry 재작성으로 stacked #197 superseded close,
   exact-main replacement #199 head 439e60f1a72f0974aaa37cdeffe1243a7d602e13 →
