@@ -46,3 +46,18 @@ describe('몽생미셸 도어 6종 — 프랑스어 트랙 연결 계약', () =>
     expect(msmDoorById('msm-99')).toBeNull();
   });
 });
+
+describe('몽생미셸 도시 배선 — 도어가 보행 타일 위에 있다', () => {
+  it('도어 6종이 CITY_NODES에 chapter와 함께 배선되고 타일이 보행 가능', async () => {
+    const { MONT_SAINT_MICHEL } = await import('../cities/mont-saint-michel.js');
+    const { isCityWalkable } = await import('../cities/terrain.js');
+    const grid = MONT_SAINT_MICHEL.buildGrid();
+    const doorNodes = MONT_SAINT_MICHEL.nodes.filter((node) => node.id.startsWith('msm-0'));
+    expect(doorNodes).toHaveLength(6);
+    for (const node of doorNodes) {
+      expect(node.chapter, node.id).toBeTruthy();
+      const [x, y] = node.tile;
+      expect(isCityWalkable(grid[y * MONT_SAINT_MICHEL.cols + x]), `${node.id} @${x},${y}`).toBe(true);
+    }
+  });
+});

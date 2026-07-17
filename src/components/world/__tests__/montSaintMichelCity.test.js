@@ -6,7 +6,7 @@ import MONT_SAINT_MICHEL, {
 import { CITY_TILE } from '../cities/terrain.js';
 
 describe('Mont-Saint-Michel runtime city wiring', () => {
-  it('keeps the 4m mudflat city contract without Claude-owned descriptions', () => {
+  it('keeps the 4m mudflat city contract with Claude descriptions and doors wired', () => {
     expect(MONT_SAINT_MICHEL).toMatchObject({
       id: 'mont-saint-michel',
       metersPerTile: 4,
@@ -14,8 +14,13 @@ describe('Mont-Saint-Michel runtime city wiring', () => {
       cols: 442,
       rows: 1030,
     });
-    expect(CITY_NODES).toHaveLength(4);
-    expect(CITY_NODES.every((node) => !Object.hasOwn(node, 'desc'))).toBe(true);
+    // POI 4 + 프랑스어 도어 6 (Claude desc 배선 완료 — 구 플레이스홀더 계약 대체)
+    expect(CITY_NODES).toHaveLength(10);
+    const pois = CITY_NODES.filter((node) => !node.id.startsWith('msm-0'));
+    expect(pois).toHaveLength(4);
+    expect(pois.every((node) => typeof node.desc === 'string' && node.desc.length > 0)).toBe(true);
+    const doors = CITY_NODES.filter((node) => node.id.startsWith('msm-0'));
+    expect(doors.every((node) => typeof node.chapter === 'string')).toBe(true);
   });
 
   it('wires only the abbey POI to the four-act scene skeleton', () => {
