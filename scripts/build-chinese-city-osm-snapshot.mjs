@@ -22,6 +22,20 @@ const CITY_CONFIG = Object.freeze({
       mergeStrategy: 'type-id-largest-geometry-compact-v1',
     }),
   }),
+  shanghai: Object.freeze({
+    bbox: Object.freeze([121.45, 31.19, 121.54, 31.26]),
+    metersPerTile: 20,
+    forestLayer: 'mountain',
+    oceanSeeds: Object.freeze([]),
+    output: 'scripts/data/shanghai-osm-v21.json',
+    snapshotDate: '2026-07-17',
+    sourceDetails: Object.freeze({
+      providers: Object.freeze(['overpass-api.de', 'maps.mail.ru']),
+      partitionCount: 16,
+      queryCount: 48,
+      mergeStrategy: 'type-id-largest-geometry-compact-v1',
+    }),
+  }),
   taipei: Object.freeze({
     bbox: Object.freeze([121.49, 25.02, 121.58, 25.11]),
     metersPerTile: 20,
@@ -47,7 +61,7 @@ function parseArgs(argv) {
   const input = read('--input');
   const config = CITY_CONFIG[city];
   if (!config || !input) {
-    throw new Error('Usage: node scripts/build-chinese-city-osm-snapshot.mjs --city <hong-kong|taipei> --input <overpass.json> [--output <snapshot.json>]');
+    throw new Error('Usage: node scripts/build-chinese-city-osm-snapshot.mjs --city <hong-kong|shanghai|taipei> --input <overpass.json> [--output <snapshot.json>]');
   }
   return { city, input, output: read('--output') || config.output };
 }
