@@ -19,8 +19,9 @@
 - 런던권 geo (PR #160 main 반입 완료, exact head e69a98bb0c78fea277425259de01db0e17282c50.
   타워브리지 원본 수면 240~300m 정상, 공식 verifier 교량 회피창 오탐 보정 대기;
   EMEA St Pancras 후보 [172,356] PR #175 독립 검증 PASS, runtime node 후속 인계 대기)
-- 타이베이 상세 SPEC 확보 (Codex-1 snapshot PR #173 exact 8a32fd33d9fe944fb7caf7e64b403cde12006819
-  독립 검증 PASS — 정체/간체 nameZh 정책·exact POI/역·공식 gate와 merge/stacking 지시 수신 즉시 착수)
+- 타이베이 geo (stacked draft PR #179 exact d5c8650c2be9ed922b4b9c5d4c31ea09ec43ea0d,
+  #173 snapshot exact 8a32fd33d9fe944fb7caf7e64b403cde12006819 접합; 13 POI·5역·BRIDGE 0·
+  4방 BFS·24MiB·결정성·123 tests PASS, main 공식 Taipei verifier 게시 대기)
 ### todo
 - (없음)
 ### done (최근)
