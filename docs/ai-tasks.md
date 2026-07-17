@@ -20,7 +20,8 @@
   타워브리지 원본 수면 240~300m 정상, 공식 verifier 교량 회피창 오탐 보정 대기)
 - 브뤼셀 geo (PR #169, exact head 0548f865b8bbc5919ab02b62c5a452410b0296bd — 구현·자체검증 완료,
   bbox [4.32,50.79,4.42,50.90], fr canonical+nameNl 100%, POI 12·역 4; main 공식 gate 게시 대기)
-- 타이베이 상세 SPEC 확보 (#150 요청 완료 — 정체/간체 nameZh 정책·exact POI/역·공식 gate 수신 즉시 착수)
+- 타이베이 상세 SPEC 확보 (Codex-1 snapshot PR #173 exact 8a32fd33d9fe944fb7caf7e64b403cde12006819
+  독립 검증 PASS — 정체/간체 nameZh 정책·exact POI/역·공식 gate와 merge/stacking 지시 수신 즉시 착수)
 ### todo
 - (없음)
 ### done (최근)
