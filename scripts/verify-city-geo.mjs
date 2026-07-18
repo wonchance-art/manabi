@@ -280,6 +280,26 @@ const CITY_GATES = {
       { name: '킹스 애비뉴 교', lon: 149.1367, lat: -35.2985, windowTiles: 5 },
     ],
   },
+  melbourne: {
+    file: 'src/components/world/cities/melbourne.geo.js',
+    snapshot: 'scripts/data/melbourne-osm-v21.json',
+    expectedLocale: 'en',
+    expectedMpt: 20,
+    buildingPct: null, // 멜버른 프로필 관찰 후 확정
+    greenMinPct: null, // 왕립식물원·칼튼 — report 관찰
+    poiMaxDevTiles: 2.5,
+    downtown: { label: '플린더스 스트리트역', lon: 144.9671, lat: -37.8183 },
+    riverSections: [
+      // 야라강(프린세스~스완st 교 사이) — 경도 스캔 실측 144.975에서 120m/120m(도심 하폭 100~120m).
+      { name: '야라강 단면', lon: 144.975, latRange: [-37.812, -37.828], sumMinM: 100, runMinM: 80 },
+    ],
+    streamCourses: [],
+    reportCourses: [],
+    bridgeMaxTiles: 0,
+    bridgeCrossings: [
+      { name: '프린세스브리지', lon: 144.9681, lat: -37.8193, windowTiles: 5 },
+    ],
+  },
   'mont-saint-michel': {
     file: 'src/components/world/cities/mont-saint-michel.geo.js',
     snapshot: null,
