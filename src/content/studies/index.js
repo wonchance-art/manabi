@@ -4,6 +4,7 @@
 // 접두(jp-, kr-, …). 문서 스키마 계약은 __tests__/studiesRegistry.test.js 가 고정한다.
 
 import JP_OVERVIEW from './japan/overview.js';
+import JP_HISTORY_PREMODERN from './japan/historyPremodern.js';
 
 export const STUDY_DOMAINS = Object.freeze([
   Object.freeze({ id: 'overview', label: '개관' }),
@@ -20,7 +21,7 @@ export const STUDY_COUNTRIES = Object.freeze([
     nameKo: '일본학',
     nameLocal: '日本学',
     intro: '언어 너머의 일본 — 지리·역사·경제·사회를 공적 통계와 통설 기준으로 정리한 레퍼런스.',
-    docs: Object.freeze([JP_OVERVIEW]),
+    docs: Object.freeze([JP_OVERVIEW, JP_HISTORY_PREMODERN]),
   }),
 ]);
 
