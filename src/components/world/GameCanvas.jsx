@@ -71,6 +71,8 @@ import {
 import { buildAirportScene } from './airportScene';
 import { buildMsmAbbeyScene, MSM_ABBEY_SCENE_KEY } from './msmAbbeyScene';
 import { msmAbbeyActCopy } from './msmAbbeyContent';
+import { buildJagalchiMarketScene, JAGALCHI_MARKET_SCENE_KEY } from './jagalchiMarketScene';
+import { jagalchiActCopy } from './jagalchiMarketContent';
 import { buildTranssibCorridorScene } from './transsibCorridorScene';
 import { buildOverworldRegionScene } from './overworldRegionScene';
 import { AVATAR_REBAKE_STATIC_TARGETS } from './avatarRebake';
@@ -419,6 +421,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   const [activeScene, setActiveScene] = useState('plaza');
   const [abbeyAct, setAbbeyAct] = useState(null);
   const [abbeyAssist, setAbbeyAssist] = useState('reading');
+  const [jagalchiAct, setJagalchiAct] = useState(null); // 🐟 자갈치 액트 패널([ko/local/gloss] — assist 토글 없음)
   const nearNodeRef = useRef(null);
   const descOpenRef = useRef(false);
   const ferryPromptRef = useRef(null);
@@ -597,6 +600,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         if (activeSceneRef.current === 'transsib-corridor') { sceneRef.current?.corridorInteract?.(); return; }
         if (activeSceneRef.current.startsWith('overworld:')) { sceneRef.current?.regionInteract?.(); return; }
         if (activeSceneRef.current === MSM_ABBEY_SCENE_KEY) { sceneRef.current?.abbeyInteract?.(); return; }
+        if (activeSceneRef.current === JAGALCHI_MARKET_SCENE_KEY) { sceneRef.current?.jagalchiInteract?.(); return; }
         if (stationSelectRef.current) return; // 행선지 오버레이는 버튼으로 선택(B로 닫기) — A는 무시
         if (descOpenRef.current) { setDescOpen(false); return; } // 설명 박스 열려 있으면 A로도 닫기
         const node = nearNodeRef.current;
@@ -645,6 +649,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       cancel: () => {
         if (gameMenuOpenRef.current) { setGameMenuOpen(false); return; }
         if (activeSceneRef.current === MSM_ABBEY_SCENE_KEY) { sceneRef.current?.abbeyCancel?.(); return; }
+        if (activeSceneRef.current === JAGALCHI_MARKET_SCENE_KEY) { sceneRef.current?.jagalchiCancel?.(); return; }
         if (albumOpenRef.current) { setAlbumOpen(false); return; } // 🗾 앨범 최우선 닫기(숨은 배경 오버레이보다 먼저)
         if (npcDialogRef.current) { npcCancelRef.current?.(); return; } // NPC 대화 중 B → 뜻 토글
         if (storyPhaseRef.current === 'dialogue') { toggleKoRef.current?.(); return; }
@@ -2146,6 +2151,22 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         },
         onReturn: (scene) => { setAbbeyAct(null); setActiveScene(scene); },
       });
+      // 🐟 자갈치 경매 아침 — MSM 수도원과 동일 계약(액트 씬 2호). 카피 축은 [ko/local/gloss]
+      //   (사투리=현지어, reading 없음)라 assist 토글 없이 패널에 정적 병기한다.
+      const JagalchiMarketScene = buildJagalchiMarketScene(Phaser, {
+        bindScene: (scene) => { sceneRef.current = scene; },
+        onEnter: () => {
+          setActiveScene(JAGALCHI_MARKET_SCENE_KEY);
+          setJagalchiAct(null);
+          setNearNode(null); setDescOpen(false); setMinimapOpen(false);
+          setNearStation(null); setStationSelect(null); setTransitStatus(null);
+        },
+        onActChange: ({ actId, index, total }) => {
+          const copy = jagalchiActCopy(actId);
+          setJagalchiAct(copy ? { actId, index, total, ...copy } : null);
+        },
+        onReturn: (scene) => { setJagalchiAct(null); setActiveScene(scene); },
+      });
 
       const corridorCtx = {
         userId, avatarRef, worldClockRef,
@@ -2268,7 +2289,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         pixelArt: true,
         roundPixels: true,
         scale: { mode: Phaser.Scale.NONE, width: VIEW_W, height: VIEW_H },
-        scene: [WorldScene, AirportScene, MsmAbbeyScene, TranssibCorridorScene, ...regionScenes, ...cityScenes],
+        scene: [WorldScene, AirportScene, MsmAbbeyScene, JagalchiMarketScene, TranssibCorridorScene, ...regionScenes, ...cityScenes],
       });
       gameRef.current = game;
       if (game.canvas) game.canvas.style.imageRendering = 'pixelated';
@@ -3173,6 +3194,29 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
             </span>
           </div>
           <span style={{ fontSize: '0.65rem', opacity: 0.65 }}>A 다음 막 · B 수도원 나가기</span>
+        </div>
+      )}
+
+      {/* 🐟 자갈치 경매 아침 — [ko 해설/local 사투리/gloss 표준어] 패널(발음 축 없음, 토글 없이 정적 병기). */}
+      {activeScene === JAGALCHI_MARKET_SCENE_KEY && jagalchiAct && (
+        <div
+          role="region"
+          aria-label={`${jagalchiAct.title} 학습 패널`}
+          style={{
+            position: 'absolute', left: 10, right: 10, bottom: 10, zIndex: 42,
+            ...gbcPanel, padding: '11px 13px', display: 'grid', gap: 7,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 }}>
+            <strong style={{ color: GBC.ink }}>{jagalchiAct.title}</strong>
+            <span style={{ fontSize: '0.68rem', opacity: 0.7 }}>{jagalchiAct.index + 1}/{jagalchiAct.total}</span>
+          </div>
+          <p style={{ margin: 0, fontSize: '0.76rem', lineHeight: 1.45 }}>{jagalchiAct.ko}</p>
+          <p style={{ margin: 0, fontSize: '1rem', fontWeight: 800, lineHeight: 1.35, color: '#245d46' }}>
+            {jagalchiAct.local}
+          </p>
+          <span style={{ fontSize: '0.76rem', lineHeight: 1.35 }}>{jagalchiAct.gloss}</span>
+          <span style={{ fontSize: '0.65rem', opacity: 0.65 }}>A 다음 막 · B 시장 나가기</span>
         </div>
       )}
 

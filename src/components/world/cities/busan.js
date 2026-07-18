@@ -66,6 +66,10 @@ export const CITY_NODES = BUSAN_GEO.pois.map((poi) => {
     facing: 'down',
     noStamp: true,
     desc: copy.desc,
+    // 🐟 자갈치 = 경매 아침 액트 씬 진입 게이트(액트 씬 2호 — MSM 수도원 문법).
+    ...(poi.id === 'jagalchi' ? {
+      gate: Object.freeze({ type: 'story-scene', scene: 'jagalchi-market-scene' }),
+    } : {}),
   };
 });
 
