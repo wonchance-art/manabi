@@ -143,6 +143,7 @@ export const TRANSIT = [
 // 🛳️ 렌더크래프트 R1 — 기존 kind 재사용 배치(수면=선체·보행=노점/네온, 노드 이격 ≥2 계산치).
 // 시계탑·정크선 등 신규 실루엣 kind는 CityScene 베이킹 스펙(#150) 후속.
 export const PROPS = [
+  { kind: 'hk_clocktower', tile: [359, 202] }, // 침사추이 시계탑 실루엣(R3)
   { kind: 'ferry_dom', tile: [335, 220] }, // 빅토리아항 스타페리 선체(양안 부두 중간)
   { kind: 'stall', tile: [362, 125] },     // 템플스트리트 야시장 노점
   { kind: 'stall', tile: [367, 58] },      // 레이디스 마켓 노점

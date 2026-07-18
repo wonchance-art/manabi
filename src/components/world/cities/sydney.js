@@ -169,6 +169,7 @@ export const TRANSIT = [
 
 // 🛳️ 렌더크래프트 R1 — 기존 kind 재사용 배치. 오페라하우스·하버브리지 실루엣은 베이킹 스펙 후속.
 export const PROPS = [
+  { kind: 'operahouse', tile: [211, 370] },    // 오페라하우스 조개 지붕 실루엣(R3)
   { kind: 'ferry_intl', tile: [260, 300] }, // 맨리 페리 대형 선체(하버 항로)
   { kind: 'ferry_dom', tile: [211, 379] },  // 서큘러키 앞 페리
   { kind: 'stall', tile: [161, 503] },      // 차이나타운 패디스 노점

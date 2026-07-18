@@ -139,6 +139,8 @@ export const TRANSIT = [
 
 // 🏮 렌더크래프트 R1 — 기존 kind 재사용 배치. 101 실루엣·패루 등 신규 kind는 베이킹 스펙 후속.
 export const PROPS = [
+  { kind: 'tower101', tile: [377, 420] },   // 101 마디 실루엣(R3)
+  { kind: 'pailou', tile: [437, 324] },     // 라오허제 패루(R3)
   { kind: 'stall', tile: [175, 118] }, // 스린야시장 노점
   { kind: 'stall', tile: [443, 330] }, // 라오허제 노점
   { kind: 'neon', tile: [86, 372] },   // 시먼딩 네온
