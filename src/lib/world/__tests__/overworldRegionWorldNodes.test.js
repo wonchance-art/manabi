@@ -95,6 +95,7 @@ describe('APAC 월드 노드 런타임 인덱스', () => {
       ['brisbane', [2039, 2186], 'en'],
       ['sydney', [1999, 2345], 'en'],
       ['canberra', [1954, 2380], 'en'],
+      ['melbourne', [1862, 2442], 'en'],
     ];
 
     for (const [id, tile, contentLocale] of expected) {
