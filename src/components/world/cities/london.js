@@ -157,8 +157,11 @@ export const TRANSIT = [
   },
 ];
 
-// 프롭(타워브리지 실루엣·빅벤·튜브 라운델 등)은 렌더크래프트 후속. 채널터널 연출은 owner-gate.
-export const PROPS = [];
+// ⛲ 렌더크래프트 R1.5 — 기존 kind 재사용 배치. 빅벤·타워브리지 실루엣은 베이킹 스펙 후속.
+export const PROPS = [
+  { kind: 'stall', tile: [726, 524] },    // 버러마켓 노점(en-04 도어 곁)
+  { kind: 'fountain', tile: [597, 514] }, // 트래펄가 분수
+];
 
 export function buildLondonGrid() {
   const grid = Uint8Array.from(LONDON_GEO.terrain);

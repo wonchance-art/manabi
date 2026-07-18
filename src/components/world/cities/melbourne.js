@@ -103,8 +103,11 @@ export const TRANSIT = [
   },
 ];
 
-// 프롭(플린더스 돔·트램 차체·호이지어 벽 등)은 렌더크래프트 후속.
-export const PROPS = [];
+// 🏮 렌더크래프트 R1.5 — 기존 kind 재사용 배치(보행 판정+노드 이격 ≥2 계산치).
+export const PROPS = [
+  { kind: 'stall', tile: [251, 155] }, // 퀸빅토리아마켓 노점
+  { kind: 'stall', tile: [292, 105] }, // 라이곤 노천 테이블 노점
+];
 
 export function buildMelbourneGrid() {
   const grid = Uint8Array.from(MELBOURNE_GEO.terrain);

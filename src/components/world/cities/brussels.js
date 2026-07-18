@@ -95,8 +95,11 @@ export const TRANSIT = [
   },
 ];
 
-// 프롭(그랑플라스 길드하우스 실루엣 등)은 렌더크래프트 후속 — 아토미움은 marker-only 유지.
-export const PROPS = [];
+// 🧇 렌더크래프트 R1.5 — 기존 kind 재사용 배치(브랜드 무언급 — 일반 노점).
+export const PROPS = [
+  { kind: 'stall', tile: [116, 298] }, // 그랑플라스 곁 와플 노점
+  { kind: 'stall', tile: [128, 332] }, // 사블롱 노점
+];
 
 export function buildBrusselsGrid() {
   const grid = Uint8Array.from(BRUSSELS_GEO.terrain);
