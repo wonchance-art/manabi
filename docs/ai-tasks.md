@@ -16,32 +16,27 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-- 호주 3호 캔버라 geo — merged snapshot #215 exact
-  1cff18b163541edf8d8c69228e37f719d90c0391 소비 후 draft #219
-  head 134c3bf570141f81efdf84eec2d00886546606ab 구현 완료:
-  전용 신규 3파일, 20m/en·POI 10·Canberra station·
-  Alinga Street↔Dickson 라이트레일·BRIDGE 0·호수 단면 1,560m/1,560m,
-  targeted 14/14·latest main 56b5785 결합 전체 149 files/1,742 tests·
-  BFS 234,974/234,974·12,856,662 bytes <24MiB·결정성·전체 PNG PASS.
-  merged snapshot SHA 45963e9c·manifest SHA 66e3e21c·ODbL 1.0과
-  7개 RLE 길이 273,546·snapshot/geo targeted 14/14 재감사 PASS.
-  verifier pin 선제 감사에서 Lake Burley Griffin 경도
-  149.095~149.108 전 구간 합계 >=1,200m·연속 >=1,000m,
-  Commonwealth/Kings Avenue bridge 차도 최근접 0/1타일 PASS.
-  POI·역 13개 en/ko 병기 13/13·타일 충돌 0,
-  재투영 worst national-library 1.089486타일 PASS.
-  민감 POI 3개는 architectural-exterior/location-only 정책이며
-  desc·narrative·story·exhibit 서술 필드 0개 PASS.
-  #150 핸드오프 5008647039 게시, latest main 공식 verifier profile 대기.
+- (없음)
 ### todo
 - 호주 4호 멜버른 — Claude 상세 bbox·POI·역·en-AU·수계/bridge SPEC과
   Codex-1 비콘텐츠 snapshot exact handoff 전 POI·역·본생성 금지.
 ### done (최근)
+- 캔버라 geo (#215 snapshot merge, #219 head
+  596c7f77d1b78381f4ca52623ae327627010f079 OPEN / READY / CLEAN,
+  Dickson 좌표를 OSM snapshot 철도축 `149.13374,-35.25056`,
+  tile `[335,58]`로 보정하고 Alinga/Dickson rail-mask 7/0타일을 회귀 고정.
+  official verifier #221 main e3a5a3f·blob 8e7c388 전 gate,
+  벌리그리핀호 1,040m/900m·BRIDGE 0·두 교량 차도 회랑,
+  targeted 14/14·latest-main 전체 151 files/1,751 tests·
+  BFS 234,974/234,974·12,856,662 bytes <24MiB PASS.
+  geo module SHA 069457d5·final PNG SHA 2275cfeb,
+  #150 CODEX_DONE 5008884966; merge·runtime·desc는 후속)
 - 시드니 geo (#212 snapshot merge, #216 head
-  3fb2dd1b9db86a139e86463add1baaad7fbbbb03 OPEN / READY / CLEAN,
+  3fb2dd1b9db86a139e86463add1baaad7fbbbb03 → main merge
+  030f47e44f5c2905c7bb7cab53ef456b9e9230c1,
   official verifier #217 main merge 46e8b129a9619d116acd25dcd879e2bb223a6f0e
   전 gate·latest-main 149 files/1,742 tests·BFS·결정성·PNG PASS,
-  #150 CODEX_DONE 5008556556; merge·runtime·desc는 후속)
+  #150 CODEX_DONE 5008556556; runtime·desc는 후속)
 - 브리즈번 geo (#208 snapshot merge, #211 head
   b8ef57cd9b32d87f16843126e6b80715a4174783 → main merge
   19dd18bda66b5b8e27c39444897e8d0f97984dbb, official verifier
