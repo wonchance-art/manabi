@@ -13,6 +13,8 @@
 - 몽생미셸 조수(밀물·썰물) 시스템 설계 제안(RFC 핑퐁 — 구현 아님): BEACH↔WATER 전환
   연출·성벽 대사 훅·결정적 조수 시계. 제안서를 #150에 — 구현은 오너 승인 후.
 ### done (최근)
+- 자갈치 액트 씬 골격: `msmAbbeyScene.js` 구조를 미러한 4막 Phaser 씬
+  (`dawn-pier`→`auction-floor`→`hoe-alley`→`breakwater-lighthouse`)과 액트 순서·경계 계약 테스트
 - 마르세유 비콘텐츠 선행 수집: bbox `[5.32,43.245,5.42,43.325]`,
   4×4 Overpass 48/48 + 20m 스냅샷 결정성 계약(POI·역·콘텐츠 제외)
 - 렌더크래프트 R2: CityScene에 신규 랜드마크 실루엣 kind 15종 베이킹
