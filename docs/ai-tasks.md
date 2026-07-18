@@ -31,7 +31,8 @@
   2187d1dba3d224680089825c64ecf778759d11b3 byte-identical 3파일,
   #230 content/registry main merge
   7decee7c261345623496789114370665a7db69f6,
-  overworld node는 Codex-1 후속)
+  Codex-1 overworld node #231 head
+  84bd0e44c65a4e936470e898f378aeaa7baea4b5 OPEN/READY/MERGEABLE)
 - 캔버라 geo (#215 snapshot merge, #219 head
   596c7f77d1b78381f4ca52623ae327627010f079 → main merge
   207e7f6d2c08401faa147ff0d049ac007e7c86b8,
