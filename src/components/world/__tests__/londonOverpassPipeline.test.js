@@ -86,7 +86,9 @@ describe('London Overpass 분할 계약', () => {
     });
   });
 
-  it('지형 전용 검수 PNG를 결정적으로 렌더링한다', () => {
+  // 1213×1002 대형 렌더 — 병렬 전체 실행 시 5초 기본 timeout을 넘는 부하 의존 flaky 관측
+  // (#240 검수·clean main 재현) → kyotoGeo/parisDoors 선례대로 명시 확장.
+  it('지형 전용 검수 PNG를 결정적으로 렌더링한다', { timeout: 120000 }, () => {
     const png = renderCitySnapshotPng(SNAPSHOT);
     expect(png.subarray(0, 8)).toEqual(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
     expect(createHash('sha256').update(png).digest('hex'))
