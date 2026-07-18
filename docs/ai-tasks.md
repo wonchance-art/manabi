@@ -21,24 +21,27 @@
   Codex-1 snapshot #251 head
   `ae97cc3c0f71bd7c84d4195a4b902e179e773bf6` → main merge
   `c55ab6d0e79ba46acd2d425fdc907363aa16efc9`.
-  exact-main draft PR #260 branch `codex2/marseille-geo` remote head
-  `71e309e880b6579fd5547451b1636eb3685569d6`은 OPEN / DRAFT / CLEAN /
-  MERGEABLE이며 main 대비 마르세유 전용 generator·geo·test 신규 3파일만이다.
+  exact-main PR #260 branch `codex2/marseille-geo` 구현 head
+  `71e309e880b6579fd5547451b1636eb3685569d6` → main merge
+  `c7a3c7dcf09693d78e1e50d34e868f42f32cd994`.
+  마르세유 전용 generator·geo·test 신규 3파일은 구현 head와 byte-identical이다.
   bbox `[5.32,43.245,5.42,43.325]`, 20m/fr, grid `406×446`,
   POI 12·역 4·페리 2링크·BRIDGE 0, Vieux-Port 380m/300m,
   open sea 5,580m/5,580m, 두 land component `85,296 / 141`,
   ferry-aware BFS `85,437/85,437`, 메모리 `8,510,572 bytes` <24MiB.
-  targeted 16/16·latest-main 전체 single-worker 165 files/1,846 tests,
+  구현 head targeted 16/16·전체 single-worker 165 files/1,846 tests,
   node/ESLint/diff-check PASS. terrain SHA `282b339f`, railway SHA
   `d706d373`, final PNG SHA `d1871893`; 콘텐츠 정책·snapshot
   ODbL/partition/RLE/SHA·결정성 PASS.
+  latest main `bed5ab4619672a07298a73af1786cdf124fb3af9`에서도 targeted
+  16/16 PASS. official profile과 CODEX_DONE은 아직 없다.
   official Marseille verifier가 게시되면 latest exact main/head/blob에서
-  재검증 후 #260 ready 전환과 CODEX_DONE을 한 번만 게시한다.
+  재검증 후 CODEX_DONE을 한 번만 게시한다.
 - 도시 geo verifier 강화(OWNER_DIRECTIVE #150 댓글 5009917089):
   `snapshot: null` 8도시 정본 경로 연결 PR #240 head
   `a162191e9ca8403ef8b289c9788e3ac5fd8d4d73` → main merge
   `ffe7e640f4fd2cc658c2111bdbc2be099ce3c2af`.
-  latest main `6ef08c6626b8172afc12e64a3d3b08463895ad2d`의 verifier blob
+  latest main `bed5ab4619672a07298a73af1786cdf124fb3af9`의 verifier blob
   `483a95c6ce4140c92ec5bbed2aa4755198e8bb33` byte-identical,
   15도시 전 gate PASS. London PNG timeout은 #242에서 120초로 고정,
   단독 6/6 PASS. 19도시 결정성 165/165 PASS.
