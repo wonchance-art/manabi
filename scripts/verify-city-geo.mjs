@@ -259,6 +259,27 @@ const CITY_GATES = {
       { name: '안작브리지', lon: 151.1870, lat: -33.8700, windowTiles: 6 },
     ],
   },
+  canberra: {
+    file: 'src/components/world/cities/canberra.geo.js',
+    snapshot: 'scripts/data/canberra-osm-v21.json',
+    expectedLocale: 'en',
+    expectedMpt: 20,
+    buildingPct: null, // 캔버라 계획도시 저밀도 프로필 관찰 후 확정
+    greenMinPct: null, // 커먼웰스·에인슬리 — report 관찰
+    poiMaxDevTiles: 2.5,
+    downtown: { label: '시빅(앨링가 스트리트)', lon: 149.1310, lat: -35.2780 },
+    riverSections: [
+      // 벌리 그리핀 호수(웨스트 베이슨) — 경도 스캔 실측 149.115에서 1040m/연속 900m.
+      { name: '벌리그리핀호 단면', lon: 149.115, latRange: [-35.278, -35.305], sumMinM: 800, runMinM: 700 },
+    ],
+    streamCourses: [],
+    reportCourses: [],
+    bridgeMaxTiles: 0,
+    bridgeCrossings: [
+      { name: '커먼웰스 애비뉴 교', lon: 149.1206, lat: -35.2925, windowTiles: 5 },
+      { name: '킹스 애비뉴 교', lon: 149.1367, lat: -35.2985, windowTiles: 5 },
+    ],
+  },
   'mont-saint-michel': {
     file: 'src/components/world/cities/mont-saint-michel.geo.js',
     snapshot: null,
