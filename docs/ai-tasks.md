@@ -16,31 +16,28 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-- 가와구치코/후지 geo 준비(#150 수집 SPEC 5010917238·본생성 SPEC
-  5010930145): bbox `[138.725,35.395,138.85,35.55]`, 20m/ja,
-  exact Web Mercator correction `0.814394141983`, grid `567×863`,
-  `489,321` cells, 예상 `22,998,087 bytes`(21.933MiB) <24MiB,
-  headroom `2,167,737 bytes`. bbox·20m를 메모리 때문에 축소하지 않는다.
-  POI 11·역 3·호수 유람선 1링크의 전 좌표는 bbox 내이며
-  5합목은 `[34,853]`으로 남단에서 9타일, 河口湖駅 POI/역은
-  `[179,286]`·`[180,287]` 인접이다. 기존 순회식 marker separation은
-  역을 `[181,286]`(재투영 편차 1.580타일)로 밀 수 있으므로 가장 가까운
-  유효 후보 `[180,288]`(0.662타일)를 고르는 결정적 거리 우선 규칙을 쓴다.
-  Marseille의 임의 육지 연결은 MOUNTAIN을 도로로 관통할 수 있어 5합목에
-  그대로 쓰지 않는다. snapshot road mask 회랑을 우선 보존·검증하고,
-  연결 불가 시 SPEC대로 5합목 별도 산지 성분을 허용한다.
-  현대 snapshot mountain/water masks와
-  일본어 `nameJa` canonical+`yomi`, Marseille ferry-aware BFS를 결합하는
-  도시 전용 generator·geo·test 3파일 계약으로 설계한다.
-  snapshot PR #269 `codex/kawaguchiko-prefetch` exact
-  `0cbb1c68d07606351c11cc6c5ac647ea967c18bd`는 OPEN/READY/MERGEABLE이고
-  CODEX_DONE 5010987687의 exact head가 일치한다. snapshot SHA
-  `7c6e54a2432e754201acbcdd583419a7cc4c45df75aa88a44e3b7d576a99bf82`,
-  PNG SHA `fa620634c290eda066b443fc5061129e67a3605354f0cb8dcf4a84a33d9de32b`,
-  16 partition/48 responses/7 RLE·ODbL·결정성·targeted 9/9 PASS다.
-  merge 전에는 POI·역·본생성·재수집을 시작하지 않는다. #269 merge 후
-  exact snapshot과 MOUNTAIN/호수·rail/road mask를 재확인하고 새
-  `codex2/*`에서 착수한다.
+- 가와구치코/후지 geo(#150 수집 SPEC 5010917238·본생성 SPEC
+  5010930145): snapshot #269 head
+  `0cbb1c68d07606351c11cc6c5ac647ea967c18bd` → main merge
+  `98ec05ad03619a37b89c49bff69c4690da029439`, snapshot SHA
+  `7c6e54a2432e754201acbcdd583419a7cc4c45df75aa88a44e3b7d576a99bf82`.
+  draft PR #276 branch `codex2/kawaguchiko-geo` remote exact
+  `3495b60b4e883240ffee63d24fa83bc8c888f301`은 OPEN/DRAFT/CLEAN/MERGEABLE이고,
+  검증 base `4c241d7ba7b9076eb0eca4621121493719b8a302` 대비
+  Kawaguchiko 전용 신규 generator·geo·test 3파일만이다.
+  bbox `[138.725,35.395,138.85,35.55]`, 20m/ja, grid `567×863`,
+  POI 11·역 3·ferry stop 2/link 1·BRIDGE 0, 가와구치호
+  `2,840m/2,400m`, 메인 보행 성분 `98,201`·5합목 별도 산지 성분 `33`,
+  `22,998,087 bytes` <24MiB다. SPEC lat/lon은 보존하고 snapshot mask 정합
+  타일을 河口湖 `[180,288]`·富士山 `[319,370]`·下吉田 `[355,291]`로
+  명시 기록했다. 산지 전역을 열지 않고 3개 북사면 anchor에 bounded 회랑
+  18타일만 허용한다. targeted 2 files/18 tests, 전체 single-worker
+  170 files/1,883 tests, node/ESLint/diff-check·재생성 결정성 PASS.
+  terrain SHA `f39c90be`·railway SHA `f49fcf26`·final PNG SHA `91b526d4`.
+  latest main `358d4da3e74bb226ab13d0b2e236c099a6fd3b59`의 후지 액트 씬 추가 뒤에도
+  PR은 CLEAN이며 official Kawaguchiko verifier/profile은 아직 없다.
+  profile 게시 후 exact main/head/verifier blob에서 재검증하고
+  중복 CODEX_DONE 부재 확인 뒤 ready 전환·CODEX_DONE 1회 게시한다.
 ### todo
 - (없음)
 ### done (최근)
