@@ -16,34 +16,24 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-- 가와구치코/후지 geo(#150 수집 SPEC 5010917238·본생성 SPEC
-  5010930145): snapshot #269 head
-  `0cbb1c68d07606351c11cc6c5ac647ea967c18bd` → main merge
-  `98ec05ad03619a37b89c49bff69c4690da029439`, snapshot SHA
-  `7c6e54a2432e754201acbcdd583419a7cc4c45df75aa88a44e3b7d576a99bf82`.
-  PR #276 branch `codex2/kawaguchiko-geo` implementation exact
-  `3495b60b4e883240ffee63d24fa83bc8c888f301`은 main merge
-  `10b39b317c155aac093844c0a5460dfa0aa0910e`에 전용 3파일
-  byte-identical로 반입됐고,
-  검증 base `4c241d7ba7b9076eb0eca4621121493719b8a302` 대비
-  Kawaguchiko 전용 신규 generator·geo·test 3파일만이다.
-  bbox `[138.725,35.395,138.85,35.55]`, 20m/ja, grid `567×863`,
-  POI 11·역 3·ferry stop 2/link 1·BRIDGE 0, 가와구치호
-  `2,840m/2,400m`, 메인 보행 성분 `98,201`·5합목 별도 산지 성분 `33`,
-  `22,998,087 bytes` <24MiB다. SPEC lat/lon은 보존하고 snapshot mask 정합
-  타일을 河口湖 `[180,288]`·富士山 `[319,370]`·下吉田 `[355,291]`로
-  명시 기록했다. 산지 전역을 열지 않고 3개 북사면 anchor에 bounded 회랑
-  18타일만 허용한다. targeted 2 files/18 tests, 전체 single-worker
-  170 files/1,883 tests, node/ESLint/diff-check·재생성 결정성 PASS.
-  terrain SHA `f39c90be`·railway SHA `f49fcf26`·final PNG SHA `91b526d4`.
-  latest main `10b39b317c155aac093844c0a5460dfa0aa0910e`의 verifier blob
-  `144f64e1c87bb864b63056eeb2c3b50f85077cb1`에는 official Kawaguchiko
-  profile이 아직 없다.
-  profile 게시 후 exact main/head/verifier blob에서 재검증하고
-  중복 CODEX_DONE 부재 확인 뒤 CODEX_DONE을 1회 게시한다.
+- (없음)
 ### todo
 - (없음)
 ### done (최근)
+- 가와구치코/후지 geo (#269 snapshot head
+  `0cbb1c68d07606351c11cc6c5ac647ea967c18bd` → main merge
+  `98ec05ad03619a37b89c49bff69c4690da029439`, #276 implementation head
+  `3495b60b4e883240ffee63d24fa83bc8c888f301` → main merge
+  `10b39b317c155aac093844c0a5460dfa0aa0910e`, 전용 3파일 byte-identical):
+  official verifier 반입 merge
+  `eb74ba0ed16ff2838d5e23759f820d392afc398b`·latest validated main
+  `bc603c9a9d76385b42edf021a2708494bb78da3f`·blob
+  `40b82e9f913e99a6f7e9c8369eff6f94104f0bea`, 20m/ja·POI worst
+  subaru-5th 1.23타일·가와구치호 2,560m/2,480m·BRIDGE 0·snapshot
+  v2+·roadStyle 전 gate PASS. targeted 18/18·전체 172 files/1,890 tests,
+  메인 보행 성분 98,201·5합목 별도 산지 성분 33·22,998,087 bytes
+  <24MiB·결정성 PASS. terrain SHA `f39c90be`·railway SHA `f49fcf26`·
+  final PNG SHA `91b526d4`, #150 CODEX_DONE 5011389141.
 - 도시 geo 프로필 hard gate (#150 승인 5010610812, PR #266 head
   `e3aa018bdbbb844fc5d379b3d57b177157618bae`, verifier blob
   `144f64e1c87bb864b63056eeb2c3b50f85077cb1` → main merge
