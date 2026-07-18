@@ -41,6 +41,7 @@ export const CITY_NODES = [
     ...(poi.id === 'abbey' ? {
       gate: Object.freeze({ type: 'story-scene', scene: 'msm-abbey-scene' }),
     } : {}),
+    ...(poi.id === 'ramparts' ? { tideCopyHook: true } : {}),
   })),
   // 프랑스어 문화 도어 6종 — chapter가 프랑스어 트랙으로 라우팅(frenchChapterHref).
   ...MSM_DOORS.map((door) => ({
@@ -56,6 +57,7 @@ export const CITY_NODES = [
     track: 'french',
     chapter: door.chapter,
     desc: `${door.name} — ${door.lines[0].fr} (${door.lines[0].gloss})`,
+    ...(door.id === 'msm-04' ? { tideCopyHook: true } : {}),
   })),
 ];
 
@@ -81,6 +83,7 @@ export const MONT_SAINT_MICHEL = {
   transit: [],
   transitPoints: [],
   railways: MONT_SAINT_MICHEL_GEO.railways,
+  tide: MONT_SAINT_MICHEL_GEO.tide,
   CITY_TILE,
   buildGrid: buildMontSaintMichelGrid,
 };

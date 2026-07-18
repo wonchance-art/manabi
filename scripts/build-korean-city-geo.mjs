@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CITY_TILE, isCityBlocked } from '../src/components/world/cities/terrain.js';
@@ -162,6 +163,15 @@ const CITY_CONFIG = Object.freeze({
     contentLocale: 'fr',
     nameField: 'nameFr',
     tileSkins: Object.freeze({ beach: 'mudflat' }),
+    tide: Object.freeze({
+      method: 'source-informed-minimum-beach-corridor-v1',
+      safeAnchorId: 'abbey',
+      periodGameMinutes: 745,
+      epochLowMinute: 420,
+      bands: 8,
+      visualOnly: true,
+      collisionEnabled: false,
+    }),
     buildingTargetLandRatio: 0,
     finalBuildingRatioRange: Object.freeze([0.005, 0.012]),
     buildingDatasetProbe: Object.freeze({
@@ -235,6 +245,166 @@ export function decodeTerrainRle(runs, length) {
   }
   if (offset !== length) throw new Error(`terrain RLE length mismatch: ${offset} !== ${length}`);
   return terrain;
+}
+
+function sha256Bytes(bytes) {
+  return createHash('sha256')
+    .update(Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength))
+    .digest('hex');
+}
+
+function minimumBeachCorridor(terrain, startTile, targetTile, meta) {
+  const { w, h } = meta.grid;
+  const start = startTile[1] * w + startTile[0];
+  const target = targetTile[1] * w + targetTile[0];
+  const distance = new Int32Array(terrain.length).fill(0x3fffffff);
+  const previous = new Int32Array(terrain.length).fill(-1);
+  const queued = new Uint8Array(terrain.length);
+  const deque = new Int32Array(terrain.length + 1);
+  let head = 0;
+  let tail = 0;
+
+  const pushFront = (index) => {
+    head = (head - 1 + deque.length) % deque.length;
+    deque[head] = index;
+    queued[index] = 1;
+  };
+  const pushBack = (index) => {
+    deque[tail] = index;
+    tail = (tail + 1) % deque.length;
+    queued[index] = 1;
+  };
+  const popFront = () => {
+    const index = deque[head];
+    head = (head + 1) % deque.length;
+    queued[index] = 0;
+    return index;
+  };
+
+  distance[start] = 0;
+  pushBack(start);
+  while (head !== tail) {
+    const index = popFront();
+    const x = index % w;
+    const y = Math.floor(index / w);
+    for (const [dx, dy] of [[0, -1], [-1, 0], [1, 0], [0, 1]]) {
+      const nx = x + dx;
+      const ny = y + dy;
+      if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+      const next = ny * w + nx;
+      if (isCityBlocked(terrain[next])) continue;
+      const cost = terrain[next] === CITY_TILE.BEACH ? 1 : 0;
+      const candidate = distance[index] + cost;
+      if (candidate >= distance[next]) continue;
+      distance[next] = candidate;
+      previous[next] = index;
+      if (queued[next]) continue;
+      if (cost === 0) pushFront(next);
+      else pushBack(next);
+    }
+  }
+  if (distance[target] === 0x3fffffff) throw new Error('tide safe corridor anchor is unreachable');
+
+  const mask = new Uint8Array(terrain.length);
+  for (let index = target; index !== -1; index = previous[index]) {
+    if (terrain[index] === CITY_TILE.BEACH) mask[index] = 1;
+    if (index === start) break;
+  }
+  return mask;
+}
+
+function tidalRanks(terrain, meta, bands) {
+  const { w, h } = meta.grid;
+  const distance = new Int32Array(terrain.length).fill(-1);
+  const queue = new Int32Array(terrain.length);
+  let head = 0;
+  let tail = 0;
+
+  for (let index = 0; index < terrain.length; index += 1) {
+    if (terrain[index] !== CITY_TILE.BEACH) continue;
+    const x = index % w;
+    const y = Math.floor(index / w);
+    const touchesWater = [[0, -1], [-1, 0], [1, 0], [0, 1]].some(([dx, dy]) => {
+      const nx = x + dx;
+      const ny = y + dy;
+      if (nx < 0 || ny < 0 || nx >= w || ny >= h) return true;
+      const code = terrain[ny * w + nx];
+      return code === CITY_TILE.WATER || code === CITY_TILE.RIVER;
+    });
+    if (!touchesWater) continue;
+    distance[index] = 0;
+    queue[tail++] = index;
+  }
+
+  let maxDistance = 0;
+  while (head < tail) {
+    const index = queue[head++];
+    const x = index % w;
+    const y = Math.floor(index / w);
+    for (const [dx, dy] of [[0, -1], [-1, 0], [1, 0], [0, 1]]) {
+      const nx = x + dx;
+      const ny = y + dy;
+      if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+      const next = ny * w + nx;
+      if (terrain[next] !== CITY_TILE.BEACH || distance[next] !== -1) continue;
+      distance[next] = distance[index] + 1;
+      maxDistance = Math.max(maxDistance, distance[next]);
+      queue[tail++] = next;
+    }
+  }
+
+  const rank = new Uint8Array(terrain.length).fill(255);
+  for (let index = 0; index < terrain.length; index += 1) {
+    if (terrain[index] !== CITY_TILE.BEACH) continue;
+    rank[index] = distance[index] < 0
+      ? bands - 1
+      : Math.min(bands - 1, Math.floor((distance[index] * bands) / (maxDistance + 1)));
+  }
+  return { rank, maxDistance };
+}
+
+export function buildMontSaintMichelTide(terrain, meta, entrance, pois, config) {
+  const safeAnchor = pois.find((poi) => poi.id === config.safeAnchorId);
+  if (!safeAnchor) throw new Error(`Missing tide safe anchor: ${config.safeAnchorId}`);
+  const safeCorridorMask = minimumBeachCorridor(
+    terrain,
+    [entrance.x, entrance.y],
+    safeAnchor.tile,
+    meta,
+  );
+  const { rank: tidalRank, maxDistance } = tidalRanks(terrain, meta, config.bands);
+  const safeIndices = [];
+  let tidalTileCount = 0;
+  for (let index = 0; index < terrain.length; index += 1) {
+    if (safeCorridorMask[index]) safeIndices.push(index);
+    if (tidalRank[index] !== 255) tidalTileCount += 1;
+  }
+  const xs = safeIndices.map((index) => index % meta.grid.w);
+  const ys = safeIndices.map((index) => Math.floor(index / meta.grid.w));
+  return {
+    method: config.method,
+    safeAnchorId: config.safeAnchorId,
+    periodGameMinutes: config.periodGameMinutes,
+    epochLowMinute: config.epochLowMinute,
+    bands: config.bands,
+    phaseOrder: Object.freeze(['low', 'rising', 'high', 'falling']),
+    visualOnly: config.visualOnly,
+    collisionEnabled: config.collisionEnabled,
+    safeCorridorTileCount: safeIndices.length,
+    safeCorridorBounds: Object.freeze({
+      minX: Math.min(...xs),
+      maxX: Math.max(...xs),
+      minY: Math.min(...ys),
+      maxY: Math.max(...ys),
+    }),
+    safeCorridorHash: sha256Bytes(safeCorridorMask),
+    tidalTileCount,
+    tidalRankMaxDistance: maxDistance,
+    tidalRankHash: sha256Bytes(tidalRank),
+    staticTerrainHash: sha256Bytes(terrain),
+    safeCorridorMask,
+    tidalRank,
+  };
 }
 
 function ensureWalkableAnchor(grid, tile, meta) {
@@ -830,9 +1000,13 @@ export function buildKoreanCityGeo(city) {
     }),
   });
   const railwayMask = decodeTerrainRle(snapshot.railwayRle, terrain.length);
+  const tide = config.tide
+    ? buildMontSaintMichelTide(terrain, baseMeta, entrance, pois, config.tide)
+    : null;
   return {
     meta, terrain, pois, stations, entrance, exitTiles,
     ...(config.tileSkins ? { tileSkins: Object.freeze({ ...config.tileSkins }) } : {}),
+    ...(tide ? { tide } : {}),
     railways: { mask: railwayMask, tileCount: railwayMask.reduce((sum, code) => sum + Number(Boolean(code)), 0) },
   };
 }
@@ -840,10 +1014,21 @@ export function buildKoreanCityGeo(city) {
 function generatedModule(city, config, geo) {
   const terrainRuns = encodeTerrainRle(geo.terrain);
   const railwayRuns = encodeTerrainRle(geo.railways.mask);
+  const tideSafeCorridorRuns = geo.tide ? encodeTerrainRle(geo.tide.safeCorridorMask) : null;
+  const tideRankRuns = geo.tide ? encodeTerrainRle(geo.tide.tidalRank) : null;
   const tileSkins = geo.tileSkins
     ? `  tileSkins: Object.freeze(${JSON.stringify(geo.tileSkins)}),\n`
     : '';
-  return `// Generated by scripts/build-korean-city-geo.mjs. Do not edit by hand.\n// Geometry: © OpenStreetMap contributors, ODbL 1.0 (snapshot 2026-07-16).\n// Locale schema: ${geo.meta.schema.nameField}/contentLocale are exact keys; reading and additional locale slots may be appended without renaming.\n\nconst META = Object.freeze(${JSON.stringify(geo.meta, null, 2)});\nconst TERRAIN_RLE = ${JSON.stringify(terrainRuns)};\nconst RAILWAY_RLE = ${JSON.stringify(railwayRuns)};\n\nfunction decodeTerrain(runs, length) {\n  const terrain = new Uint8Array(length);\n  let offset = 0;\n  for (const [code, count] of runs) {\n    terrain.fill(code, offset, offset + count);\n    offset += count;\n  }\n  if (offset !== length) throw new Error(\`terrain RLE length mismatch: \${offset} !== \${length}\`);\n  return terrain;\n}\n\nconst LENGTH = META.grid.w * META.grid.h;\n\nexport const ${config.exportName} = Object.freeze({\n  meta: META,\n  terrain: decodeTerrain(TERRAIN_RLE, LENGTH),\n${tileSkins}  pois: Object.freeze(${JSON.stringify(geo.pois, null, 2)}),\n  stations: Object.freeze(${JSON.stringify(geo.stations, null, 2)}),\n  entrance: Object.freeze(${JSON.stringify(geo.entrance)}),\n  exitTiles: Object.freeze(${JSON.stringify(geo.exitTiles)}),\n  railways: Object.freeze({\n    mask: decodeTerrain(RAILWAY_RLE, LENGTH),\n    tileCount: ${geo.railways.tileCount},\n  }),\n});\n`;
+  const tideRuns = geo.tide
+    ? `\nconst TIDE_SAFE_CORRIDOR_RLE = ${JSON.stringify(tideSafeCorridorRuns)};\nconst TIDE_RANK_RLE = ${JSON.stringify(tideRankRuns)};`
+    : '';
+  const tide = geo.tide
+    ? `  tide: Object.freeze({\n${Object.entries(geo.tide)
+      .filter(([key]) => key !== 'safeCorridorMask' && key !== 'tidalRank')
+      .map(([key, value]) => `    ${key}: ${JSON.stringify(value)},`)
+      .join('\n')}\n    safeCorridorMask: decodeTerrain(TIDE_SAFE_CORRIDOR_RLE, LENGTH),\n    tidalRank: decodeTerrain(TIDE_RANK_RLE, LENGTH),\n  }),\n`
+    : '';
+  return `// Generated by scripts/build-korean-city-geo.mjs. Do not edit by hand.\n// Geometry: © OpenStreetMap contributors, ODbL 1.0 (snapshot 2026-07-16).\n// Locale schema: ${geo.meta.schema.nameField}/contentLocale are exact keys; reading and additional locale slots may be appended without renaming.\n\nconst META = Object.freeze(${JSON.stringify(geo.meta, null, 2)});\nconst TERRAIN_RLE = ${JSON.stringify(terrainRuns)};\nconst RAILWAY_RLE = ${JSON.stringify(railwayRuns)};${tideRuns}\n\nfunction decodeTerrain(runs, length) {\n  const terrain = new Uint8Array(length);\n  let offset = 0;\n  for (const [code, count] of runs) {\n    terrain.fill(code, offset, offset + count);\n    offset += count;\n  }\n  if (offset !== length) throw new Error(\`terrain RLE length mismatch: \${offset} !== \${length}\`);\n  return terrain;\n}\n\nconst LENGTH = META.grid.w * META.grid.h;\n\nexport const ${config.exportName} = Object.freeze({\n  meta: META,\n  terrain: decodeTerrain(TERRAIN_RLE, LENGTH),\n${tileSkins}${tide}  pois: Object.freeze(${JSON.stringify(geo.pois, null, 2)}),\n  stations: Object.freeze(${JSON.stringify(geo.stations, null, 2)}),\n  entrance: Object.freeze(${JSON.stringify(geo.entrance)}),\n  exitTiles: Object.freeze(${JSON.stringify(geo.exitTiles)}),\n  railways: Object.freeze({\n    mask: decodeTerrain(RAILWAY_RLE, LENGTH),\n    tileCount: ${geo.railways.tileCount},\n  }),\n});\n`;
 }
 
 export function writeKoreanCityGeo(city) {
