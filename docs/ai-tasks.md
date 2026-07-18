@@ -24,7 +24,13 @@
   `cf9ab247c4d36ec699e2d5cf6885675b3c8cfc74d95c98405a7943e93b35f36f`.
   20m/fr·grid 1342×780·POI 12·CFF 역 7·CGN ferry 5정류장/도선 10호,
   남안 분리 성분 report-only·억지 연결 금지 계약으로 전용
-  generator·geo·test 3파일 구현 중. #150 WORKING 5012458669.
+  generator·geo·test 3파일 구현. PR #304 remote exact
+  `ef302fa27ee25b094d34515415516a8fd62ce8a9`는 OPEN/DRAFT/CLEAN/
+  MERGEABLE, targeted 18/18·node/ESLint/diff-check PASS. official
+  verifier merge main `87a0b7542ae5e6ad58467fb6d75df924dabad9d5`·blob
+  `7d56b220b92a94d691305c81874ce238ab42ed19`에서 Epesses 교체 후
+  Saint-Saphorin 7.393타일 1건만 2.5타일 gate 초과. #150
+  VERIFIER_UPDATE 5012661507로 좌표 교체/예외 정본 지시 대기.
 ### todo
 ### done (최근)
 - 도시 geo 프로필 밴드 라운드 2 (#150 SPEC 5012092624, 승인
