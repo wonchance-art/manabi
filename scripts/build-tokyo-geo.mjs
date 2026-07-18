@@ -89,6 +89,19 @@ const POI_SOURCE = Object.freeze([
     id: 'kanda-myojin', nameJa: '神田明神', yomi: 'かんだみょうじん',
     lat: 35.7019993, lon: 139.7677748, kind: 'shrine',
   },
+  // v2.3 서브컬처 확장(오너 2026-07-18) — 거리·문화 일반 참조(작품·캐릭터·상호 무언급).
+  {
+    id: 'akihabara-electric-town', nameJa: '秋葉原電気街', yomi: 'あきはばらでんきがい',
+    lat: 35.7000117, lon: 139.7718811, kind: 'district',
+  },
+  {
+    id: 'takeshita-street', nameJa: '竹下通り', yomi: 'たけしたどおり',
+    lat: 35.6714836, lon: 139.7029844, kind: 'street',
+  },
+  {
+    id: 'otome-road', nameJa: '乙女ロード', yomi: 'おとめろーど',
+    lat: 35.7300272, lon: 139.7180022, kind: 'street',
+  },
 ]);
 
 const STATION_SOURCE = Object.freeze([

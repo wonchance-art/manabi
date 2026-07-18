@@ -121,6 +121,24 @@ export const CITY_NODES = [
     tile: poiTile('kanda-myojin'), facing: 'down', noStamp: true,
     desc: '정식 명칭이 간다신사(神田神社)인 지요다구의 신사 「神田明神」(かんだみょうじん). 사전(社伝)에 따르면 730년 창건으로 전해지고, 간다마쓰리(神田祭)로 알려져 있어요.',
   },
+  // ── v2.3 서브컬처 확장 3곳(오너 2026-07-18 — "서브컬처 요소 곳곳에") — geo POI_SOURCE에
+  //   실좌표로 추가 후 재생성(단일 진실원 계약 유지). IP 규율: 특정 작품·캐릭터·상호 무언급,
+  //   거리·문화 일반 참조만.
+  {
+    id: 'akihabara-electric-town', kind: 'spot', name: '秋葉原電気街', facade: 'sign',
+    tile: poiTile('akihabara-electric-town'), facing: 'down', noStamp: true,
+    desc: '전후 라디오 부품 노점에서 시작된 것으로 전해지는 「秋葉原電気街」(あきはばら でんきがい). 지금은 전자부품 골목과 애니메이션·게임·만화 상점이 뒤섞인 서브컬처의 중심가로 알려져 있어요.',
+  },
+  {
+    id: 'takeshita-street', kind: 'spot', name: '竹下通り', facade: 'sign',
+    tile: poiTile('takeshita-street'), facing: 'down', noStamp: true,
+    desc: '하라주쿠역 앞에서 시작하는 젊은 패션의 골목 「竹下通り」(たけしたどおり). 350m 남짓한 길에 개성 있는 옷 가게와 크레이프 노점이 이어지는 것으로 알려져 있어요.',
+  },
+  {
+    id: 'otome-road', kind: 'spot', name: '乙女ロード', facade: 'sign',
+    tile: poiTile('otome-road'), facing: 'down', noStamp: true,
+    desc: '이케부쿠로 선샤인 거리 곁의 「乙女ロード」(おとめろーど). 여성 팬층 대상 애니메이션·만화 전문점이 모여 이런 애칭으로 불리는 것으로 알려져 있어요.',
+  },
   // ── NPC 대화 노드(가공 무대 — geo POI 아님) — ot-11(전철)·ot-12(면세)·ot-07(편의점) 문화 도어.
   //   후쿠오카 패턴 그대로: kind:'npc' + npc 스크립트 키 + noStamp(스탬프 우주는 오너 결정 전 미확장).
   //   타일은 보행+보행인접+기존 마커 Chebyshev ≥3 이격을 스크립트로 검증해 고정.
@@ -182,6 +200,13 @@ export const PROPS = [
   { kind: 'bigscreen', tile: [184, 445] },  // 渋谷 스크램블 대형 전광판(무브랜드)
   { kind: 'platform', tile: [355, 616] },   // 品川 승강장
   { kind: 'platform', tile: [357, 616] },   // 品川 승강장(연속 홈)
+  // 서브컬처 3곳 곁 앰비언트(무브랜드·무문자) — 이격 ≥2 스크립트 검증.
+  { kind: 'neon', tile: [503, 219] },       // 秋葉原 전기가이 네온
+  { kind: 'bigscreen', tile: [505, 219] },  // 秋葉原 역전 대형 스크린
+  { kind: 'stall', tile: [192, 379] },      // 竹下通り 크레이프 노점
+  { kind: 'neon', tile: [194, 379] },       // 竹下通り 간판 네온
+  { kind: 'neon', tile: [260, 53] },        // 乙女ロード 상점 네온
+  { kind: 'stall', tile: [262, 53] },       // 乙女ロード 굿즈 노점
 ];
 
 export function buildTokyoGrid() {
