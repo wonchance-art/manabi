@@ -84,6 +84,7 @@ import { buildCityScene } from './CityScene';
 import { CITY_DATA } from './cities/index.js';
 import { CITY_MINI_SCALE, cityMinimapLayout, downsampleCityGrid } from './cityMinimap';
 import { directTransitDestinations } from '../../lib/world/transit';
+import { studiesRefForNode } from '../../lib/world/studiesRefs';
 import { corridorStopSpawn } from '../../lib/world/transsibCorridor';
 import {
   OVERWORLD_REGION_LIST,
@@ -415,6 +416,8 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   const albumOpenRef = useRef(false);   // 앨범 열림 동안 A 입력 잠금 + B로 닫기
   const [gameMenuOpen, setGameMenuOpen] = useState(false);
   const gameMenuOpenRef = useRef(false);
+  // 📱 지역학 딥링크 — 장소 「더 알아보기」로 여행 수첩 폰 탭을 해당 문서에서 연다.
+  const [wikiDeepLink, setWikiDeepLink] = useState(null); // { countryId, slug } | null
   // ── 도시 정밀맵(계층형 맵) ──
   // cityPrompt: 전국맵 도시 노드 A → "시내로 들어가기" 확인 { to, name } | null
   // activeScene: 활성 씬 식별자('plaza'|'airport'|'city:<id>'|'transsib-corridor') — 오버레이 분기.
@@ -2512,6 +2515,20 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
                 🗾 {nearNode.name} 기념 스탬프!
               </span>
             )}
+            {/* 📱 입국 브리핑 — 도시 게이트에서 나라 개관 문서로 잇는 지역학 딥링크. */}
+            {(() => {
+              const wikiRef = studiesRefForNode(nearNode.id);
+              if (!wikiRef) return null;
+              return (
+                <button
+                  type="button"
+                  onClick={() => { setWikiDeepLink({ countryId: wikiRef.countryId, slug: wikiRef.slug }); setGameMenuOpen(true); }}
+                  style={{ ...gbcButtonPrimary, display: 'block', marginTop: 5, fontSize: '0.62rem', padding: '2px 7px', background: GBC.cream, color: GBC.ink, textAlign: 'left' }}
+                >
+                  📱 {wikiRef.countryName} 알아보기 — {wikiRef.title}
+                </button>
+              );
+            })()}
           </span>
           <button
             type="button"
@@ -3108,11 +3125,25 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           ) : stamps.has(nearNode.id) ? (
             <div style={{ marginTop: 8, fontSize: '0.68rem', opacity: 0.68 }}>· 🗾 기념 스탬프 ·</div>
           ) : null}
-          <div style={{ textAlign: 'right', marginTop: 8 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginTop: 8 }}>
+            {/* 📱 지역학 딥링크 — 이 장소를 이해하는 위키 문서가 있으면 폰으로 바로 잇는다. */}
+            {(() => {
+              const wikiRef = studiesRefForNode(nearNode.id);
+              if (!wikiRef) return <span />;
+              return (
+                <button
+                  type="button"
+                  onClick={() => { setDescOpen(false); setWikiDeepLink({ countryId: wikiRef.countryId, slug: wikiRef.slug }); setGameMenuOpen(true); }}
+                  style={{ ...gbcButtonPrimary, fontSize: '0.66rem', padding: '3px 8px', background: GBC.cream, color: GBC.ink, textAlign: 'left' }}
+                >
+                  📱 더 알아보기 — {wikiRef.title}
+                </button>
+              );
+            })()}
             <button
               type="button"
               onClick={() => setDescOpen(false)}
-              style={{ ...gbcButtonPrimary, fontSize: '0.7rem', padding: '3px 10px' }}
+              style={{ ...gbcButtonPrimary, fontSize: '0.7rem', padding: '3px 10px', whiteSpace: 'nowrap' }}
             >
               닫기 Ⓑ
             </button>
@@ -3172,7 +3203,9 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           stamps={stamps}
           totalPlaces={WORLD_NODES.filter((node) => !node.noStamp).length}
           onApplyAvatar={(next) => onAvatarChange?.(next)}
-          onClose={() => setGameMenuOpen(false)}
+          onClose={() => { setGameMenuOpen(false); setWikiDeepLink(null); }}
+          initialTab={wikiDeepLink ? 'phone' : 'avatar'}
+          wikiDoc={wikiDeepLink}
           onOpenStampAlbum={() => { setGameMenuOpen(false); setAlbumOpen(true); }}
           onOpenReview={() => { setGameMenuOpen(false); setReviewOpen(true); }}
           onOpenDictionary={() => onOpenDictionary?.()}
