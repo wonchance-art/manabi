@@ -61,7 +61,7 @@ describe('오버월드 지역 레지스트리', () => {
     expect(overworldRegionById('unknown')).toBeNull();
     expect(overworldRegionByScene('overworld:unknown')).toBeNull();
     expect(overworldRegionById('asia-pacific')?.releaseEligible).toBe(true);
-    expect(overworldRegionById('emea')?.releaseEligible).toBe(false);
+    expect(overworldRegionById('emea')?.releaseEligible).toBe(true);
     expect(overworldRegionById('asia-pacific')?.boundaryNotice).toBeUndefined();
     expect(overworldRegionById('emea')?.boundaryNotice).toBe(
       '지도상의 경계·명칭·표시는 특정 지역의 법적 지위나 경계 주장에 대한 승인 또는 지지를 의미하지 않습니다.',
@@ -357,7 +357,7 @@ describe('오버월드 지역 레지스트리', () => {
       projectionManifestHash: region.nodeSource.projectionManifestHash,
       width: region.width,
       height: region.height,
-      releaseEligible: false,
+      releaseEligible: region.nodeSource.releaseEligible,
     });
     expect(manifest.nodes).toContainEqual(expect.objectContaining({ path: `nodes/${cx}/${cy}.json` }));
     const document = normalizeOverworldTransportNodeDocument(JSON.parse(readFileSync(path.join(

@@ -103,9 +103,12 @@ function nodeManifest(overrides = {}) {
 }
 
 describe('오버월드 교통 노드 계약', () => {
-  it('미리보기·청크·게이트 종류 drift와 중복을 거부한다', () => {
-    expect(() => normalizeOverworldTransportNodeManifest(nodeManifest({ releaseEligible: true })))
-      .toThrow(/releaseEligible=false/);
+  it('출시 표기·청크·게이트 종류 drift와 중복을 거부한다', () => {
+    expect(normalizeOverworldTransportNodeManifest(
+      nodeManifest({ releaseEligible: true }),
+    ).releaseEligible).toBe(true);
+    expect(() => normalizeOverworldTransportNodeManifest(nodeManifest({ releaseEligible: 'yes' })))
+      .toThrow(/must be boolean/);
     expect(() => normalizeOverworldTransportNodeManifest(nodeManifest({ nodeRules: { chunkTiles: 128 } })))
       .toThrow(/256/);
     expect(() => normalizeOverworldTransportNodeManifest(nodeManifest({
@@ -221,7 +224,7 @@ describe('오버월드 교통 노드 계약', () => {
     ]);
     expect(JSON.parse(readFileSync(path.join(EMEA_NODE_DIR, 'build-report.json'), 'utf8')))
       .toEqual({
-        releaseEligible: false,
+        releaseEligible: true,
         nodeCount: 9,
         chunkCount: 6,
         nodeTypes: ['air-gate', 'rail-hub', 'transsib-gate'],

@@ -132,7 +132,9 @@ function normalizeBoundaryRules(value) {
 export function normalizeOverworldBoundaryManifest(input) {
   assertExactKeys(input, TOP_LEVEL_KEYS, 'boundary manifest');
   if (input.schemaVersion !== 1) throw new Error('boundary schemaVersion must be 1');
-  if (input.releaseEligible !== false) throw new Error('boundary preview must remain releaseEligible=false');
+  if (typeof input.releaseEligible !== 'boolean') {
+    throw new TypeError('releaseEligible must be boolean');
+  }
   if (input.generatorGitSha !== null
     && (typeof input.generatorGitSha !== 'string' || !/^[0-9a-f]{40}$/.test(input.generatorGitSha))) {
     throw new TypeError('generatorGitSha must be null or a full lowercase git SHA');

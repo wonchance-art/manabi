@@ -90,7 +90,7 @@ export function buildPlayabilityArtifacts({
   artifacts.sort((left, right) => compareCodePoint(left.path, right.path));
 
   const report = Object.freeze({
-    releaseEligible: false,
+    releaseEligible: manifest.releaseEligible,
     ...playability.counts,
     componentRules: manifest.componentRules,
     resolvedAnchors: playability.resolvedAnchors,
@@ -101,7 +101,7 @@ export function buildPlayabilityArtifacts({
   const contentManifest = Object.freeze({
     formatVersion: 1,
     schemaVersion: manifest.schemaVersion,
-    releaseEligible: false,
+    releaseEligible: manifest.releaseEligible,
     regionId: manifest.regionId,
     regionHash,
     inputManifestHash,
@@ -165,6 +165,10 @@ async function loadBaseTerrain(manifest, rootDir) {
     throw new Error('checked-in base terrain content manifest drifted');
   }
   const content = JSON.parse(contentBytes.toString('utf8'));
+  if (baseManifest.releaseEligible !== manifest.releaseEligible
+    || content.releaseEligible !== manifest.releaseEligible) {
+    throw new Error('playability release eligibility must match its base terrain chain');
+  }
   if (content.width !== frame.width || content.height !== frame.height
     || content.chunkColumns !== frame.chunkColumns || content.chunkRows !== frame.chunkRows
     || !sameJson(content.terrainClasses, manifest.terrainClasses)) {

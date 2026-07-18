@@ -79,11 +79,13 @@ export const OVERWORLD_REGIONS = Object.freeze({
     manifest: {
       regionId: 'asia-pacific-playability-preview-v1',
       schemaVersion: 1,
+      releaseEligible: false,
       regionHash: '17e9935e9c81775d8b4e0f91b9f67259458444e78d17b6933243bf07e889fdf1',
       projectionManifestHash: 'ef9de068363aa70971dc7beda5128690d4d0c6f3b052b9a43bd1a2f1d10a4d1c',
     },
     nodeSource: {
       regionId: 'asia-pacific-transport-nodes-preview-v1',
+      releaseEligible: false,
       regionHash: 'ac65a1b4c1b4ea371c0e010adab69d9155f7fdfd038c1bd4aeed5e11fded8f5b',
       projectionManifestHash: 'ef9de068363aa70971dc7beda5128690d4d0c6f3b052b9a43bd1a2f1d10a4d1c',
       width: 2631,
@@ -93,6 +95,7 @@ export const OVERWORLD_REGIONS = Object.freeze({
     overlaySources: [
       {
         regionId: 'asia-pacific-terrain-preview-v1',
+        releaseEligible: false,
         regionHash: '55a7c3d2665600dc5bf5def2368b005f7b7b2fbbc5cf37f2a8cbdc9c52e32610',
         projectionManifestHash: 'ef9de068363aa70971dc7beda5128690d4d0c6f3b052b9a43bd1a2f1d10a4d1c',
         width: 2631,
@@ -103,6 +106,7 @@ export const OVERWORLD_REGIONS = Object.freeze({
       },
       {
         regionId: 'asia-pacific-transport-preview-v1',
+        releaseEligible: false,
         regionHash: '362f2f38416475d75232c1d73d22c9931d4e4d2a43769b529fc96de98718201b',
         projectionManifestHash: 'ef9de068363aa70971dc7beda5128690d4d0c6f3b052b9a43bd1a2f1d10a4d1c',
         width: 2631,
@@ -136,7 +140,7 @@ export const OVERWORLD_REGIONS = Object.freeze({
     sceneId: 'overworld:emea',
     label: '유럽·지중해·중동',
     boundaryNotice: '지도상의 경계·명칭·표시는 특정 지역의 법적 지위나 경계 주장에 대한 승인 또는 지지를 의미하지 않습니다.',
-    releaseEligible: false,
+    releaseEligible: true,
     width: 964,
     height: 1137,
     bbox: [-11, 20, 50, 66],
@@ -152,11 +156,13 @@ export const OVERWORLD_REGIONS = Object.freeze({
     manifest: {
       regionId: 'europe-mediterranean-middle-east-playability-preview-v1',
       schemaVersion: 1,
+      releaseEligible: true,
       regionHash: '1cbab17ae4f9c8631aa74f2c8d3c42c39c54d8b651e81f72267d67e1bcde5fb3',
       projectionManifestHash: '7e579e41f15467366187c478f0dcd48e02a3c17ea9e0d0265dfc537e8208aeb9',
     },
     nodeSource: {
       regionId: 'europe-mediterranean-middle-east-transport-nodes-preview-v1',
+      releaseEligible: true,
       regionHash: '68e92866ef5556d5a0251bc6038e82d2c95d9a9d2d0b858151547bbcfe117697',
       projectionManifestHash: '7e579e41f15467366187c478f0dcd48e02a3c17ea9e0d0265dfc537e8208aeb9',
       width: 964,
@@ -166,6 +172,7 @@ export const OVERWORLD_REGIONS = Object.freeze({
     overlaySources: [
       {
         regionId: 'europe-mediterranean-middle-east-terrain-preview-v1',
+        releaseEligible: true,
         regionHash: '4232e35ecbd9c53fb5fd7f184377a8ca7867588ce030673d62edb018484fee28',
         projectionManifestHash: '7e579e41f15467366187c478f0dcd48e02a3c17ea9e0d0265dfc537e8208aeb9',
         width: 964,
@@ -176,6 +183,7 @@ export const OVERWORLD_REGIONS = Object.freeze({
       },
       {
         regionId: 'europe-mediterranean-middle-east-transport-preview-v1',
+        releaseEligible: true,
         regionHash: 'af317944cf983ac8cf36f2d24d8d2fe714c832d6d9d54c93360fafe3acc2e961',
         projectionManifestHash: '7e579e41f15467366187c478f0dcd48e02a3c17ea9e0d0265dfc537e8208aeb9',
         width: 964,
@@ -186,6 +194,7 @@ export const OVERWORLD_REGIONS = Object.freeze({
       },
       {
         regionId: 'europe-mediterranean-middle-east-boundary-preview-v1',
+        releaseEligible: true,
         regionHash: '29053acb53bdb93305fff32414f3be96e605bab06dde53c69343dfec375ba8a6',
         projectionManifestHash: '7e579e41f15467366187c478f0dcd48e02a3c17ea9e0d0265dfc537e8208aeb9',
         width: 964,

@@ -76,8 +76,8 @@ export function roundHalfAwayFromZero(value) {
 export function normalizeOverworldRegionManifest(manifest) {
   assertExactKeys(manifest, MANIFEST_KEYS, 'manifest');
   assertInteger(manifest.schemaVersion, 'schemaVersion', { min: 1, max: 0xffff });
-  if (manifest.releaseEligible !== false) {
-    throw new Error('the surface-only region stage must remain releaseEligible=false');
+  if (typeof manifest.releaseEligible !== 'boolean') {
+    throw new TypeError('releaseEligible must be boolean');
   }
   if (manifest.generatorGitSha !== null) {
     if (typeof manifest.generatorGitSha !== 'string' || !/^[0-9a-f]{40}$/.test(manifest.generatorGitSha)) {

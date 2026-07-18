@@ -158,9 +158,10 @@ describe('지역 ① geo 입력·투영 계약', () => {
     }
   });
 
-  it('unknown field·투영 drift·출시 가능 표기를 fail closed로 거부한다', () => {
+  it('unknown field·투영 drift·비 boolean 출시 표기를 fail closed로 거부한다', () => {
     expect(() => normalizeOverworldRegionManifest({ ...manifest(), unknown: true })).toThrow(/keys must be exactly/);
-    expect(() => normalizeOverworldRegionManifest(manifest({ releaseEligible: true }))).toThrow(/releaseEligible=false/);
+    expect(normalizeOverworldRegionManifest(manifest({ releaseEligible: true })).releaseEligible).toBe(true);
+    expect(() => normalizeOverworldRegionManifest(manifest({ releaseEligible: 'yes' }))).toThrow(/must be boolean/);
     expect(() => normalizeOverworldRegionManifest(manifest({
       projection: { ...manifest().projection, method: 'sinusoidal' },
     }))).toThrow(/equirectangular \+ screen-axis/);
@@ -274,7 +275,7 @@ describe('지역 surface preview 생성', () => {
       'utf8',
     ));
     expect(content).toMatchObject({
-      releaseEligible: false,
+      releaseEligible: true,
       width: 964,
       height: 1137,
       chunkColumns: 4,

@@ -56,22 +56,22 @@ function postPosition(position) {
   }));
 }
 
-describe('/api/world/position preview role boundary', () => {
+describe('/api/world/position released EMEA role boundary', () => {
   beforeEach(() => {
     requireUserMock.mockReset();
   });
 
-  it('rejects an unreleased EMEA position for a non-admin user', async () => {
+  it('allows a released EMEA position for a non-admin user', async () => {
     const supabase = createSupabase({ role: 'member' });
     authorize(supabase);
 
     const response = await postPosition(EMEA_POSITION);
 
-    expect(response.status).toBe(400);
-    expect(supabase.upsert).not.toHaveBeenCalled();
+    expect(response.status).toBe(204);
+    expect(supabase.upsert).toHaveBeenCalledOnce();
   });
 
-  it('allows an unreleased EMEA position for an admin preview user', async () => {
+  it('preserves admin access to a released EMEA position', async () => {
     const supabase = createSupabase({ role: 'admin' });
     authorize(supabase);
 
@@ -85,17 +85,17 @@ describe('/api/world/position preview role boundary', () => {
     );
   });
 
-  it('redacts a saved unreleased EMEA position from a non-admin user', async () => {
+  it('returns a saved released EMEA position to a non-admin user', async () => {
     const supabase = createSupabase({ role: 'member', savedPosition: EMEA_POSITION });
     authorize(supabase);
 
     const response = await GET();
 
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ position: null });
+    await expect(response.json()).resolves.toEqual({ position: EMEA_POSITION });
   });
 
-  it('returns a saved unreleased EMEA position to an admin preview user', async () => {
+  it('returns a saved released EMEA position to an admin user', async () => {
     const supabase = createSupabase({ role: 'admin', savedPosition: EMEA_POSITION });
     authorize(supabase);
 

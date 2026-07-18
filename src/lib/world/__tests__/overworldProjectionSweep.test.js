@@ -32,6 +32,9 @@ describe('EMEA equirectangular standard-latitude sweep', () => {
 
   it('알 수 없는 필드·7개가 아닌 fixture·screen-axis 누락을 거부한다', () => {
     const manifest = loadManifest();
+    expect(normalizeProjectionSweepManifest({ ...manifest, releaseEligible: true }).releaseEligible).toBe(true);
+    expect(() => normalizeProjectionSweepManifest({ ...manifest, releaseEligible: 'yes' }))
+      .toThrow(/must be boolean/);
     expect(() => normalizeProjectionSweepManifest({ ...manifest, surprise: true })).toThrow(/keys must be exactly/);
     expect(() => normalizeProjectionSweepManifest({ ...manifest, fixtures: manifest.fixtures.slice(0, 6) }))
       .toThrow(/exactly seven/);
