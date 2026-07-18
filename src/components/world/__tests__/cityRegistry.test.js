@@ -8,7 +8,7 @@ describe('도시 정밀맵 레지스트리', () => {
     expect(CITY_MAPS.map((city) => city.id)).toEqual([
       'fukuoka', 'tokyo', 'osaka', 'kyoto', 'busan', 'seoul', 'grand-paris', 'mont-saint-michel', 'cote-dazur',
       'brussels', 'taipei', 'hong-kong', 'london', 'shanghai', 'beijing', 'brisbane', 'sydney', 'canberra', 'melbourne',
-      'marseille', 'kawaguchiko',
+      'marseille', 'kawaguchiko', 'geneva',
     ]);
     expect(Object.keys(CITY_DATA)).toEqual(CITY_MAPS.map((city) => city.id));
   });

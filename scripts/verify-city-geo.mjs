@@ -378,6 +378,27 @@ const CITY_GATES = {
     bridgeMaxTiles: 0,
     bridgeCrossings: [],
   },
+  // ── 유럽 2차 3호 제네바 (#289 — 단일 성분 79,146 실측, 무에트 도선은 도시 배선 소관) ──
+  geneva: {
+    file: 'src/components/world/cities/geneva.geo.js',
+    snapshot: 'scripts/data/geneva-osm-v21.json',
+    expectedLocale: 'fr',
+    expectedMpt: 20,
+    buildingPct: null, // 석조 소도심 — 관찰 후 밴드 라운드에서 판단
+    greenMinPct: null, // 호수 비중 큼 — report 관찰
+    poiMaxDevTiles: 2.5,
+    downtown: { label: '코르나뱅역', lon: 6.1425, lat: 46.2104 },
+    riverSections: [
+      // 레만호 개수면 — 위도 스캔 실측 46.225에서 2,480m/2,460m(항 방파제 밖 무분절 구간).
+      { name: '레만호 단면', lat: 46.225, lonRange: [6.145, 6.185], sumMinM: 2000, runMinM: 2000 },
+    ],
+    streamCourses: [],
+    reportCourses: [],
+    bridgeMaxTiles: 0, // 론강 다리 = 차도 흡수(몽블랑교 회랑은 단일 성분 실측으로 확인)
+    bridgeCrossings: [
+      { name: '몽블랑교', lon: 6.1478, lat: 46.2077, windowTiles: 5 },
+    ],
+  },
 };
 
 // ── 투영(도시 geo 생성 계약과 동일: webmercator + aspectCorrection) ─────────
