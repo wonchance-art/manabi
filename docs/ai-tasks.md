@@ -17,10 +17,16 @@
 ## Codex-2 (codex2/*)
 ### doing
 - 도시 geo verifier 강화(OWNER_DIRECTIVE #150 댓글 5009917089):
-  `snapshot: null` 8도시 정본 경로 연결, report-only 건물·녹지 프로필 band 제안,
-  19도시 결정성 스윕. draft PR #240 branch
-  `codex2/city-geo-verifier-strengthening`, remote exact
-  `a162191e9ca8403ef8b289c9788e3ac5fd8d4d73`, Claude band 검수 대기.
+  `snapshot: null` 8도시 정본 경로 연결 PR #240 head
+  `a162191e9ca8403ef8b289c9788e3ac5fd8d4d73` → main merge
+  `ffe7e640f4fd2cc658c2111bdbc2be099ce3c2af`.
+  latest main `f9c6a4f47e3a26939a4cbfc14c278e83a34155df`의 verifier blob
+  `483a95c6ce4140c92ec5bbed2aa4755198e8bb33` byte-identical,
+  15도시 전 gate PASS. London PNG timeout은 #242에서 120초로 고정,
+  단독 6/6 PASS. 19도시 결정성 165/165 PASS.
+  report-only 건물·녹지 band 제안 #150 댓글 5010031646과
+  기존 제안 포인터 5010101384 게시 완료, Claude 확정값 대기.
+  확정 후 새 exact-main `codex2/*` branch에서 hard gate 반영.
 ### todo
 - (없음)
 ### done (최근)
