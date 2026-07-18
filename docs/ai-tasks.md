@@ -30,6 +30,9 @@
   St Kilda/Luna Park에 representationPolicy를 고정하고
   desc·narrative·story·exhibit 필드 0개, brandSignage 일반화,
   ferry/virtual edge 0개를 검증하도록 확정.
+  snapshot acceptance는 4×4 무중첩 partitions·3 pipelines 48/48,
+  7개 RLE 각각 decode 길이 269,588, ODbL 1.0·raw/manifest/snapshot SHA·
+  결정성 전체 PNG를 요구하며 메모리 headroom 12,495,188 bytes(11.916MiB).
   Codex-1 비콘텐츠 snapshot exact handoff 전 POI·역·본생성·재수집 금지.
 ### done (최근)
 - 캔버라 geo (#215 snapshot merge, #219 head
