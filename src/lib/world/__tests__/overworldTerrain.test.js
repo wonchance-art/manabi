@@ -152,10 +152,13 @@ describe('오버월드 terrain manifest와 고도 분류', () => {
     expect(meanElevationMeters(Array(16).fill(-10.5))).toBe(-11);
   });
 
-  it('출시 가능 표기·샘플링·강 오버레이 규칙 drift를 거부한다', () => {
+  it('비 boolean 출시 표기·샘플링·강 오버레이 규칙 drift를 거부한다', () => {
     const bytes = new TextEncoder().encode('{}\n');
-    expect(() => normalizeOverworldTerrainManifest(terrainManifest(bytes, { releaseEligible: true })))
-      .toThrow(/releaseEligible=false/);
+    expect(normalizeOverworldTerrainManifest(
+      terrainManifest(bytes, { releaseEligible: true }),
+    ).releaseEligible).toBe(true);
+    expect(() => normalizeOverworldTerrainManifest(terrainManifest(bytes, { releaseEligible: 'yes' })))
+      .toThrow(/must be boolean/);
     expect(() => normalizeOverworldTerrainManifest(terrainManifest(bytes, {
       riverRules: { maxScaleRank: 5, quantization: 1000, haloTiles: 1, simplification: 'none' },
     }))).toThrow(/riverRules/);
@@ -292,7 +295,7 @@ describe('오버월드 terrain 생성', () => {
       'utf8',
     ));
     expect(content).toMatchObject({
-      releaseEligible: false,
+      releaseEligible: true,
       width: 964,
       height: 1137,
       chunkColumns: 4,

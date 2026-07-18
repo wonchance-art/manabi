@@ -256,7 +256,7 @@ export function buildTerrainArtifacts({
     role: 'river-overlay',
   }));
   const report = Object.freeze({
-    releaseEligible: false,
+    releaseEligible: manifest.releaseEligible,
     terrainTileCounts: terrain.counts,
     elevationMinMeters: terrain.elevationMinMeters,
     elevationMaxMeters: terrain.elevationMaxMeters,
@@ -271,7 +271,7 @@ export function buildTerrainArtifacts({
   const contentManifest = Object.freeze({
     formatVersion: 1,
     schemaVersion: manifest.schemaVersion,
-    releaseEligible: false,
+    releaseEligible: manifest.releaseEligible,
     regionId: manifest.regionId,
     regionHash,
     inputManifestHash,
@@ -332,6 +332,10 @@ async function loadBaseSurface(manifest, rootDir) {
     throw new Error('checked-in base surface content manifest drifted');
   }
   const content = JSON.parse(contentBytes.toString('utf8'));
+  if (baseManifest.releaseEligible !== manifest.releaseEligible
+    || content.releaseEligible !== manifest.releaseEligible) {
+    throw new Error('terrain release eligibility must match its base surface chain');
+  }
   if (content.width !== frame.width || content.height !== frame.height
     || content.chunkColumns !== frame.chunkColumns || content.chunkRows !== frame.chunkRows) {
     throw new Error('base surface dimensions do not match its projection manifest');

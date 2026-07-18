@@ -115,9 +115,12 @@ function transportManifest(overrides = {}) {
 }
 
 describe('오버월드 transport 계약', () => {
-  it('출시 표기·양자화·단순화 drift를 거부한다', () => {
-    expect(() => normalizeOverworldTransportManifest(transportManifest({ releaseEligible: true })))
-      .toThrow(/releaseEligible=false/);
+  it('비 boolean 출시 표기·양자화·단순화 drift를 거부한다', () => {
+    expect(normalizeOverworldTransportManifest(
+      transportManifest({ releaseEligible: true }),
+    ).releaseEligible).toBe(true);
+    expect(() => normalizeOverworldTransportManifest(transportManifest({ releaseEligible: 'yes' })))
+      .toThrow(/must be boolean/);
     expect(() => normalizeOverworldTransportManifest(transportManifest({
       railRules: {
         maxScaleRank: 5,
@@ -243,7 +246,7 @@ describe('오버월드 rail overlay 생성', () => {
       'utf8',
     ));
     expect(content).toMatchObject({
-      releaseEligible: false,
+      releaseEligible: true,
       width: 964,
       height: 1137,
       chunkColumns: 4,

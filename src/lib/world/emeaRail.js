@@ -9,7 +9,7 @@ const freezeLink = ([first, second]) => Object.freeze([first, second]);
 
 export const EMEA_RAIL_NETWORK = Object.freeze({
   schemaVersion: 1,
-  releaseEligible: false,
+  releaseEligible: true,
   sceneId: SCENE_ID,
   routeId: 'emea-rail-network-v1',
   timingStatus: 'owner-decision-required',

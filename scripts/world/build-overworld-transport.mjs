@@ -158,7 +158,7 @@ export function buildTransportArtifacts({ manifestBytes, manifest: manifestInput
     role: 'rail-overlay',
   }));
   const report = Object.freeze({
-    releaseEligible: false,
+    releaseEligible: manifest.releaseEligible,
     railFeatureCount: rail.featureCount,
     railSourcePointCount: rail.sourcePointCount,
     railSimplifiedPointCount: rail.simplifiedPointCount,
@@ -169,7 +169,7 @@ export function buildTransportArtifacts({ manifestBytes, manifest: manifestInput
   const contentManifest = Object.freeze({
     formatVersion: 1,
     schemaVersion: manifest.schemaVersion,
-    releaseEligible: false,
+    releaseEligible: manifest.releaseEligible,
     regionId: manifest.regionId,
     regionHash: sha256(manifest.regionId),
     inputManifestHash: sha256(manifestBytes),
@@ -231,6 +231,10 @@ export async function runTransportBuild({ manifestPath, inputDir, outputDir, che
     sha256: manifest.baseTerrain.contentManifestSha256,
   }, 'base terrain content manifest');
   const baseContent = JSON.parse(await readFile(baseContentPath, 'utf8'));
+  if (baseManifest.releaseEligible !== manifest.releaseEligible
+    || baseContent.releaseEligible !== manifest.releaseEligible) {
+    throw new Error('transport release eligibility must match its base terrain chain');
+  }
   const frame = createEquirectangularTileFrame(baseManifest);
   if (baseContent.width !== frame.width || baseContent.height !== frame.height
     || baseContent.chunkColumns !== frame.chunkColumns || baseContent.chunkRows !== frame.chunkRows) {

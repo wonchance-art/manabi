@@ -1,1 +1,1 @@
-{"releaseEligible":false,"policyId":"neutral-boundary-policy-v1","boundaryFeatureCounts":{"de-facto":170,"neutral-disputed":72},"boundarySegmentCounts":{"de-facto":16991,"neutral-disputed":2365},"boundaryOverlayFileCount":17,"sourcePropertiesEmitted":false,"countryFill":false}
+{"releaseEligible":true,"policyId":"neutral-boundary-policy-v1","boundaryFeatureCounts":{"de-facto":170,"neutral-disputed":72},"boundarySegmentCounts":{"de-facto":16991,"neutral-disputed":2365},"boundaryOverlayFileCount":17,"sourcePropertiesEmitted":false,"countryFill":false}

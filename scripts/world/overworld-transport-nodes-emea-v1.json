@@ -1,14 +1,14 @@
 {
   "schemaVersion": 2,
-  "releaseEligible": false,
+  "releaseEligible": true,
   "generatorGitSha": null,
   "regionId": "europe-mediterranean-middle-east-transport-nodes-preview-v1",
   "baseRegion": {
     "manifestPath": "scripts/world/overworld-region-emea-v1.json",
     "directory": "public/assets/overworld/europe-mediterranean-middle-east-playability-preview-v1",
     "contentManifest": "content-manifest.json",
-    "contentManifestSha256": "cb0b3f489c46c8dd0ac2fb9fbeae774ec56b94f9fff0ae665f7d58278364a110",
-    "contentManifestBytes": 6392
+    "contentManifestSha256": "5cc6ba0ec01b351ac861f7e8a632670034c3d1ff94c92175a6609d954d6dc683",
+    "contentManifestBytes": 6391
   },
   "nodeRules": {
     "chunkTiles": 256

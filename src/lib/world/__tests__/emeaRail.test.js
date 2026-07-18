@@ -15,9 +15,9 @@ import {
 } from '../emeaRail.js';
 
 describe('유럽 철도 시간 중립 노선·여정 계약', () => {
-  it('출시 비활성·오너 시간 미결정과 7개 지리 허브를 명시한다', () => {
+  it('공개 지리 네트워크·오너 시간 미결정과 7개 허브를 명시한다', () => {
     expect(EMEA_RAIL_NETWORK).toMatchObject({
-      releaseEligible: false,
+      releaseEligible: true,
       sceneId: 'overworld:emea',
       timingStatus: 'owner-decision-required',
     });
