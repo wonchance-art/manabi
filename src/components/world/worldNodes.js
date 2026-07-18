@@ -416,6 +416,7 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
   createRegionalWorldNode({
     id: 'marseille',
     name: MARSEILLE_NAME,
+    desc: '2,600년 전 그리스인의 항구에서 시작된 것으로 전해지는 마르세유. 구항의 생선 직판과 테라코타 지붕, 배로만 닿는 이프성의 도시예요.',
     kind: 'city',
     regionId: 'emea',
     contentLocale: 'fr',
