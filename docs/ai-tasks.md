@@ -7,14 +7,14 @@
 
 ## Codex-1 (codex/*)
 ### doing
-- 후지 등산 액트 씬 골격: 자갈치 씬 구조를 미러한 4막 Phaser 씬
-  (`fifth-station`→`mountain-hut-night`→`goraiko`→`ohachi-meguri`)과 액트 순서·경계 계약 테스트
 ### todo
 - 멜버른 비콘텐츠 선행 수집: bbox `[144.90,-37.88,145.01,-37.78]`,
   4×4 Overpass 48/48 + 20m 스냅샷 결정성 계약(POI·역·콘텐츠 제외)
 - 몽생미셸 조수(밀물·썰물) 시스템 설계 제안(RFC 핑퐁 — 구현 아님): BEACH↔WATER 전환
   연출·성벽 대사 훅·결정적 조수 시계. 제안서를 #150에 — 구현은 오너 승인 후.
 ### done (최근)
+- 후지 등산 액트 씬 골격: 자갈치 씬 구조를 미러한 4막 Phaser 씬
+  (`fifth-station`→`mountain-hut-night`→`goraiko`→`ohachi-meguri`)과 액트 순서·경계 계약 테스트
 - 가와구치코/후지 비콘텐츠 선행 수집: bbox `[138.725,35.395,138.85,35.55]`,
   4×4 Overpass 48/48 + 20m 스냅샷 결정성 계약(POI·역·콘텐츠 제외)
 - 마르세유 EMEA 오버월드 게이트: 생샤를역 투영·보행 도착 `[259,561]`과
