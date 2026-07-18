@@ -329,8 +329,8 @@ export const CANBERRA_GEO = Object.freeze({
     "id": "dickson",
     "nameEn": "Dickson Interchange",
     "nameKo": "딕슨 환승센터",
-    "lat": -35.2507,
-    "lon": 149.1393,
+    "lat": -35.25056,
+    "lon": 149.13374,
     "line": "Canberra light rail",
     "routeId": "canberra-light-rail",
     "routeIds": [
@@ -338,8 +338,8 @@ export const CANBERRA_GEO = Object.freeze({
     ],
     "contentLocale": "en",
     "tile": [
-      360,
-      59
+      335,
+      58
     ]
   }
 ]),

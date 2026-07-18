@@ -122,6 +122,21 @@ function hasRoadNear(lon, lat, radius = 6) {
   return false;
 }
 
+function nearestRailDistance(tile) {
+  const { w } = CANBERRA_GEO.meta.grid;
+  let best = Number.POSITIVE_INFINITY;
+  for (let index = 0; index < CANBERRA_GEO.railways.mask.length; index += 1) {
+    if (!CANBERRA_GEO.railways.mask[index]) continue;
+    const x = index % w;
+    const y = Math.floor(index / w);
+    best = Math.min(best, Math.max(
+      Math.abs(x - tile[0]),
+      Math.abs(y - tile[1]),
+    ));
+  }
+  return best;
+}
+
 function renderCanberraPng(geo) {
   return renderCityPng({
     cols: geo.meta.grid.w,
@@ -223,7 +238,9 @@ describe('Canberra 상세 geo 계약', () => {
       .map((id) => byId(CANBERRA_GEO.stations, id));
     for (const station of lightRail) {
       expect(station.routeIds).toEqual(['canberra-light-rail']);
+      expect(nearestRailDistance(station.tile), station.id).toBeLessThanOrEqual(8);
     }
+    expect(lightRail[1].tile).toEqual([335, 58]);
     expect(lightRail[1].tile[1]).toBeLessThan(lightRail[0].tile[1]);
     expect(fastTravelDestinations(CANBERRA_GEO.stations, 'alinga-street')
       .map(({ id }) => id)).toContain('dickson');
@@ -318,6 +335,6 @@ describe('Canberra 상세 geo 계약', () => {
     const secondPng = renderCanberraPng(second);
     expect(firstPng).toEqual(secondPng);
     expect(hash(firstPng))
-      .toBe('d6caa78579667d1161da9dea6b1334bd28955bb5b4041f6d37c31bf271b8c4c3');
+      .toBe('2275cfeb2dee1e2141db86204a7bc75f999cf7b26870efe9fe35645f2f966fb8');
   }, 120_000);
 });
