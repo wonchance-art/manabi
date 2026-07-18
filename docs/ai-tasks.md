@@ -16,7 +16,10 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-- (없음)
+- 도시 geo verifier 강화(OWNER_DIRECTIVE #150 댓글 5009917089):
+  `snapshot: null` 8도시 정본 경로 연결, report-only 건물·녹지 프로필 band 제안,
+  19도시 결정성 스윕. branch `codex2/city-geo-verifier-strengthening`,
+  exact `3fc6ddf1bd6d5cf08775a32a0b7dbf1048cabe1e`.
 ### todo
 - (없음)
 ### done (최근)
@@ -32,7 +35,8 @@
   #230 content/registry main merge
   7decee7c261345623496789114370665a7db69f6,
   Codex-1 overworld node #231 head
-  84bd0e44c65a4e936470e898f378aeaa7baea4b5 OPEN/READY/MERGEABLE)
+  84bd0e44c65a4e936470e898f378aeaa7baea4b5 → main merge
+  8efc7e8cb2b6d4b3f11b67e63a695cc398490657)
 - 캔버라 geo (#215 snapshot merge, #219 head
   596c7f77d1b78381f4ca52623ae327627010f079 → main merge
   207e7f6d2c08401faa147ff0d049ac007e7c86b8,
