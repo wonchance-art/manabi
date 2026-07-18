@@ -27,7 +27,9 @@
   targeted 14/14·latest-main 전체 155 files/1,775 tests·
   BFS 226,175/226,175·12,670,636 bytes <24MiB·결정성·정책 PASS,
   geo SHA a78e598a·final PNG SHA fdaaf77b,
-  #150 CODEX_DONE 5009517615; #227 READY/MERGEABLE, merge·runtime·desc는 후속)
+  #150 CODEX_DONE 5009517615; #227 main merge
+  2187d1dba3d224680089825c64ecf778759d11b3 byte-identical 3파일,
+  runtime·desc·overworld node는 후속)
 - 캔버라 geo (#215 snapshot merge, #219 head
   596c7f77d1b78381f4ca52623ae327627010f079 → main merge
   207e7f6d2c08401faa147ff0d049ac007e7c86b8,
