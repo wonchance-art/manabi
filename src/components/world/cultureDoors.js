@@ -39,10 +39,15 @@ export function frenchChapterHref(chapter) {
 // 본편은 h1~h6(HSK 급수) 슬러그.
 const CHINESE_CHAPTER_RE = /^(?:ot|h[1-6])-\d{2}-[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
+// 일본어 track 명시 도어는 n5 본편 챕터도 연다(가와구치코 ja 도어 — n5-04b류 문자 접미 포함).
+// 레거시(track 미지정) 폴백 cultureChapterHref 는 ot-XX 전용 그대로 — 기존 도시 무영향.
+// n5-tokyo-XX(독해 텍스트)는 자리수 불일치로 여기 걸리지 않는다(readingTextHref 전용 유지).
+const JAPANESE_TRACK_CHAPTER_RE = /^(?:ot-\d{2}|n5-\d{2}[a-z]?)-[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
 // 트랙 명시 라우팅 — 영어·프랑스어 슬러그가 같은 형태(a1-01-…)라 정규식만으론 구분 불가.
 // 도어 노드가 track 필드를 실으면 이 함수가 우선하고, 미지정 레거시는 기존 폴백 체인 유지.
 const TRACK_ROUTES = Object.freeze({
-  japanese: Object.freeze({ pattern: CULTURE_CHAPTER_RE, base: '/japanese/grammar/' }),
+  japanese: Object.freeze({ pattern: JAPANESE_TRACK_CHAPTER_RE, base: '/japanese/grammar/' }),
   french: Object.freeze({ pattern: LEVEL_CHAPTER_RE, base: '/french/grammar/' }),
   english: Object.freeze({ pattern: LEVEL_CHAPTER_RE, base: '/english/grammar/' }),
   chinese: Object.freeze({ pattern: CHINESE_CHAPTER_RE, base: '/chinese/grammar/' }),
