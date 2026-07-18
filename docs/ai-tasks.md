@@ -16,18 +16,18 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-- 제네바 geo 준비(#150 Codex-1 snapshot SPEC 5011426511):
-  corrected bbox `[6.105,46.175,6.185,46.240]`, 20m/fr,
-  exact Web Mercator correction `0.6920486897479066`, grid `309×362`,
-  `111,858` cells, 예상 `5,257,326 bytes`(5.014MiB),
-  24MiB headroom `19,908,498 bytes` PASS.
-  현재 `codex/geneva-prefetch` remote branch·open PR과 Codex-2 상세 좌표 SPEC은
-  없다. snapshot handoff가 나타나면 ODbL 1.0·16 partitions·48/48·7개 RLE
-  각각 decode `111,858`·manifest/raw/snapshot SHA·결정성·전체 PNG와
-  레만호/론강·road/rail mask를 감사한다. snapshot main merge와 상세
-  Codex-2 SPEC, recipient/kind/scope/exact 40자 head, active
-  PLAN/WORKING/FREEZE 부재가 모두 확인되기 전에는 POI·역·본생성·재수집을
-  시작하지 않는다.
+- 제네바 geo (#285 snapshot head
+  `2ebd8f2069ae8b2cade6ec65134d28552feed3a4` → main merge
+  `a7c7733b64ef6a6a8c090c8ea1b98fcb20e2f777`, #150 detailed SPEC
+  5011571025, draft PR #289 head
+  `dd45597ded3562d03c61c1efdee7148de1cbf838`):
+  main 대비 Geneva 전용 generator·geo·test 신규 3파일. 20m/fr·grid
+  `309×362`·POI 10·Cornavin 역 1·ferry stop 2/link 1·레만호/론강·
+  BRIDGE 0·몽블랑교 차도 회랑 PASS. targeted 16/16·latest-main 전체
+  single-worker 176 files/1,913 tests·node/ESLint/diff-check·결정성 PASS.
+  memory `5,257,326 bytes` <24MiB, terrain SHA `97f8230b`, railway SHA
+  `23152c01`, final PNG SHA `a1879fb8`. official Geneva verifier 게시 후
+  exact latest main/head/blob에서 재검증하고 ready/CODEX_DONE으로 마감한다.
 ### todo
 - (없음)
 ### done (최근)
