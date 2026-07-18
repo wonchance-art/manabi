@@ -125,6 +125,18 @@ describe('도시 정밀맵 레지스트리', () => {
     });
   });
 
+  it('가와구치코 게이트와 EXIT가 전국맵 가와구치코역 노드의 같은 타일로 왕복한다', () => {
+    const kawaguchiko = getNode('kawaguchiko');
+    expect(kawaguchiko).toMatchObject({
+      legacyTile: [298, 259],
+      gate: { type: 'city', to: 'kawaguchiko' },
+    });
+    expect(CITY_DATA[kawaguchiko.gate.to].returnNode).toBe(kawaguchiko.id);
+    expect(worldNodeReturnSpawn(kawaguchiko)).toEqual({
+      scene: 'plaza', x: 298, y: 259,
+    });
+  });
+
   it('기존 APAC 도시 EXIT는 plaza의 기존 도시 노드 타일로 그대로 복귀한다', () => {
     for (const city of CITY_MAPS.filter(({ returnNode }) => getNode(returnNode)?.legacyTile)) {
       const node = getNode(city.returnNode);

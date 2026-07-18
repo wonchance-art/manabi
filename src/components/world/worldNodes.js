@@ -186,6 +186,14 @@ const LEGACY_WORLD_NODES = [
     gate: { type: 'city', to: 'kyoto', label: '🏙️ 시내' },
     desc: '교토역·기온·후시미이나리·아라시야마를 철도와 버스로 잇는 옛 수도예요.',
   },
+  // 가와구치코 — 가와구치코역 실좌표를 전국맵에 투영한 보행 가능 타일.
+  // 기존 후지산 설산 랜드마크는 별도 노드로 유지하고, 이 노드가 도시 정밀맵 진입·EXIT 복귀를 맡는다.
+  {
+    id: 'kawaguchiko', name: '가와구치코', kind: 'city', tile: [298, 259],
+    lon: 138.7645, lat: 35.4986,
+    gate: { type: 'city', to: 'kawaguchiko', label: '🏙️ 시내' },
+    desc: '후지산 북쪽 호숫가 도시. 가와구치코역에서 호반과 후지 북사면으로 이어져요.',
+  },
   // 하네다 — 랜드마크(표지 마커만).
   { id: 'haneda', name: '하네다', kind: 'landmark', tile: [POI.HANEDA.x, POI.HANEDA.y], reading: 'n5-tokyo-01', desc: '도쿄의 바닷가 국제공항. 일본에서 가장 붐비는 하늘길이에요.' },
   // 백두산 — 설산 랜드마크(게이트 없음, 마커만). DMZ 북측이라 철조망 너머로 보이기만 하고
