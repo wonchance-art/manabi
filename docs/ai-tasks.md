@@ -26,6 +26,10 @@
   기존 snapshot lines 쿼리가 rail|subway|light_rail|tram을 포함하고
   Canberra routeId/routeIds·rail-mask 근접·fast-travel 순서 계약을 재사용 가능해
   신규 runtime mode 없이 전용 3파일 범위로 구현 가능함을 선제 확인.
+  정책 회귀 체크리스트는 Hosier Lane·Carlton Gardens/전시관·Shrine·MCG·
+  St Kilda/Luna Park에 representationPolicy를 고정하고
+  desc·narrative·story·exhibit 필드 0개, brandSignage 일반화,
+  ferry/virtual edge 0개를 검증하도록 확정.
   Codex-1 비콘텐츠 snapshot exact handoff 전 POI·역·본생성·재수집 금지.
 ### done (최근)
 - 캔버라 geo (#215 snapshot merge, #219 head
