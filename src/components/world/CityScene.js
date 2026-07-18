@@ -40,7 +40,11 @@ import { activeVehiclesAt, planTransitTrip, tripStateAt } from '../../lib/world/
 import { cityWeatherAt, nodeLifeAt } from '../../lib/world/worldLife';
 import { avatarPalette } from '../../lib/world/avatar';
 import { worldSceneReturnTarget } from '../../lib/world/worldSceneReturn';
-import { cityBeachTextureKey } from './cityTileSkins';
+import {
+  cityBeachTextureKey,
+  cityBuildingTextureKey,
+  cityWaterTextureKey,
+} from './cityTileSkins';
 
 // ── 좌표 스케일 (광장·공항과 동일 불변) ──
 const TILE = 32;
@@ -215,9 +219,9 @@ export function buildCityScene(Phaser, city, ctx) {
         g.fillStyle(C(0xeef3e6), 1); g.fillRect(7, 3, 2, 3); g.fillRect(6, 6, 4, 1); // ↑ 표식
       });
       // 수면 3프레임(나카강·항만) — 청록 + 흐르는 물결.
-      const water = (key, base, shift) => this.bakeTile(key, (g) => {
+      const water = (key, base, shift, highlight = 0xd6f0fb) => this.bakeTile(key, (g) => {
         g.fillStyle(C(base), 1); g.fillRect(0, 0, TEX, TEX);
-        g.fillStyle(C(0xd6f0fb), 0.85);
+        g.fillStyle(C(highlight), 0.85);
         const y1 = 3 + shift, y2 = 10 + shift;
         g.fillRect(2, y1, 5, 1); g.fillRect(9, y1 + 1, 4, 1);
         g.fillRect(6, y2, 5, 1); g.fillRect(1, y2 + 1, 3, 1);
@@ -225,6 +229,9 @@ export function buildCityScene(Phaser, city, ctx) {
       water('ct_water0', 0x3a86b0, 0);
       water('ct_water1', 0x3e93c4, 1);
       water('ct_water2', 0x347ba0, 2);
+      water('ct_water_emerald0', 0x2fae9e, 0, 0xe6faf4);
+      water('ct_water_emerald1', 0x35c0ae, 1, 0xe6faf4);
+      water('ct_water_emerald2', 0x2a9a8c, 2, 0xe6faf4);
       // 강·운하(RIVER) — 바다보다 탁한 청록 강 톤(WATER 와 시각 구분).
       water('ct_river0', 0x3f7a6a, 0);
       water('ct_river1', 0x468a76, 1);
@@ -259,19 +266,30 @@ export function buildCityScene(Phaser, city, ctx) {
       });
 
       // 건물은 창문 반복 대신 하나의 어두운 지붕 덩어리로 묶고 외곽선만 강조한다.
-      for (let mask = 0; mask < 16; mask++) {
-        this.bakeTile(`ct_bldg_${mask}`, (g) => {
-          g.fillStyle(C(0x716d68), 1); g.fillRect(0, 0, TEX, TEX);
-          g.fillStyle(C(0x827d76), 1); g.fillRect(2, 2, TEX - 4, TEX - 4);
-          g.fillStyle(C(0x5a5652), 1);
-          if (mask & 1) g.fillRect(0, 0, TEX, 2);
-          if (mask & 2) g.fillRect(TEX - 2, 0, 2, TEX);
-          if (mask & 4) g.fillRect(0, TEX - 2, TEX, 2);
-          if (mask & 8) g.fillRect(0, 0, 2, TEX);
-          if ((mask & 15) === 0 && tileHash(mask, 7) > 0.5) {
-            g.fillStyle(C(0x969088), 1); g.fillRect(6, 6, 4, 4);
-          }
-        });
+      const buildingPalettes = [
+        [null, 0x716d68, 0x827d76, 0x5a5652, 0x969088],
+        ['zinc', 0x66727e, 0x7a8794, 0x525c66, 0x7a8794],
+        ['terracotta', 0xa2573a, 0xb96a48, 0x7c422c, 0xb96a48],
+        ['kawara', 0x4e4c50, 0x5c5a60, 0x3a383c, 0x5c5a60],
+        ['hutong', 0x625e58, 0x726d64, 0x484440, 0x726d64],
+        ['brick', 0x7e5648, 0x8f6352, 0x54382e, 0x8f6352],
+      ];
+      for (const [skin, fill, inner, edge, accent] of buildingPalettes) {
+        for (let mask = 0; mask < 16; mask++) {
+          const key = skin ? `ct_bldg_${skin}_${mask}` : `ct_bldg_${mask}`;
+          this.bakeTile(key, (g) => {
+            g.fillStyle(C(fill), 1); g.fillRect(0, 0, TEX, TEX);
+            g.fillStyle(C(inner), 1); g.fillRect(2, 2, TEX - 4, TEX - 4);
+            g.fillStyle(C(edge), 1);
+            if (mask & 1) g.fillRect(0, 0, TEX, 2);
+            if (mask & 2) g.fillRect(TEX - 2, 0, 2, TEX);
+            if (mask & 4) g.fillRect(0, TEX - 2, TEX, 2);
+            if (mask & 8) g.fillRect(0, 0, 2, TEX);
+            if ((mask & 15) === 0 && tileHash(mask, 7) > 0.5) {
+              g.fillStyle(C(accent), 1); g.fillRect(6, 6, 4, 4);
+            }
+          });
+        }
       }
 
       this.bakeTile('ct_rail_area', (g) => {
@@ -764,9 +782,9 @@ export function buildCityScene(Phaser, city, ctx) {
         case TERRAIN.BRIDGE: return 'ct_bridge';
         case TERRAIN.DOCK: return 'ct_dock';
         case TERRAIN.EXIT: return 'ct_exit';
-        case TERRAIN.WATER: return 'ct_water0';
+        case TERRAIN.WATER: return cityWaterTextureKey(city, 0);
         case TERRAIN.RIVER: return 'ct_river0';
-        case TERRAIN.BUILDING: return `ct_bldg_${this.buildingEdgeMask(tx, ty)}`;
+        case TERRAIN.BUILDING: return cityBuildingTextureKey(city, this.buildingEdgeMask(tx, ty));
         case TERRAIN.ISLAND: return 'ct_island';
         case TERRAIN.MOUNTAIN: return 'ct_mountain';
         default: return 'ct_sidewalk';
@@ -1076,9 +1094,15 @@ export function buildCityScene(Phaser, city, ctx) {
           const c = this.tileCode(tx, ty);
           if (c !== TERRAIN.WATER && c !== TERRAIN.RIVER) continue;
           let img = this.waterPool[n];
-          if (!img) { img = this.add.image(0, 0, 'ct_water0').setOrigin(0, 0).setScale(TSCALE).setDepth(-5); this.waterPool.push(img); }
+          if (!img) {
+            img = this.add.image(0, 0, cityWaterTextureKey(city, 0))
+              .setOrigin(0, 0).setScale(TSCALE).setDepth(-5);
+            this.waterPool.push(img);
+          }
           img.setVisible(true).setPosition(tx * TILE, ty * TILE)
-            .setTexture(`${c === TERRAIN.RIVER ? 'ct_river' : 'ct_water'}${this.waterFrame}`);
+            .setTexture(c === TERRAIN.RIVER
+              ? `ct_river${this.waterFrame}`
+              : cityWaterTextureKey(city, this.waterFrame));
           n++;
         }
       }
