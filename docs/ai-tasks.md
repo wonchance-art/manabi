@@ -16,18 +16,26 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-- 도시 geo 프로필 밴드 라운드 2 (#150 SPEC 5012092624):
-  validated main `abbd49c88f27d1f8993e07df2fffff83a2fe888f`에서 latest main
-  `ebc2996cbaf643e1d15dc23357c1482c67d4daea`까지 verifier와 대상 3도시
-  geo·snapshot 불변(변경은 문서·도쿄 전용 파일만), verifier blob
-  `b378356a08e7ebd0da63aeb072ab36fa438ccaae`에서 Marseille
-  17.4/1.4·Kawaguchiko 5.6/73.1·Geneva 10.9/8.7 재실측과 기존 전
-  gate PASS. report-only 제안 댓글 5012110119 게시, Claude 승인·수정 대기.
-  승인 전 verifier hard gate 편집·브랜치 생성 금지.
+- 레만호 연안 geo (#150 SPEC 5012404504, branch
+  `codex2/leman-riviera-geo`, base
+  `d7965adc18dae6f4382751993d72523787130d45`): snapshot #299 head
+  `6aeb08709d752114bbf067f9d113813ab4fd69fb` → main merge
+  `bfe0dd40e30ab8bf3ee0a907542f0bb2460dcb57`, snapshot SHA
+  `cf9ab247c4d36ec699e2d5cf6885675b3c8cfc74d95c98405a7943e93b35f36f`.
+  20m/fr·grid 1342×780·POI 12·CFF 역 7·CGN ferry 5정류장/도선 10호,
+  남안 분리 성분 report-only·억지 연결 금지 계약으로 전용
+  generator·geo·test 3파일 구현 중. #150 WORKING 5012458669.
 ### todo
-- 레만호 연안 geo: Codex-1 비콘텐츠 snapshot 수집·main merge와 Claude의
-  상세 Codex-2 POI/역/수계·도선 SPEC 대기. exact handoff 전 본생성 금지.
 ### done (최근)
+- 도시 geo 프로필 밴드 라운드 2 (#150 SPEC 5012092624, 승인
+  5012225430, PR #301 head
+  `9d76a55d1370df21e7123a86bf9136db8e1aaa69` → main merge
+  `02fe512f1a3719426929e246431b4f1c708a57aa`, verifier blob
+  `8f094ef35162ed0e485f6a75789432bde3fae913`): 승인된 Marseille
+  [15,20]/green≥1.0, Kawaguchiko [4.5,7]/green report-only, Geneva
+  [9.5,12.5]/green≥7.5만 반영. 18 profiles 전 gate, 대상 50/50,
+  Relay 17/17, latest-main 전체 182 files/1,940 tests,
+  node/ESLint/diff-check PASS. #150 CODEX_DONE 5012435803.
 - 제네바 geo (#285 snapshot head
   `2ebd8f2069ae8b2cade6ec65134d28552feed3a4` → main merge
   `a7c7733b64ef6a6a8c090c8ea1b98fcb20e2f777`, #150 detailed SPEC
