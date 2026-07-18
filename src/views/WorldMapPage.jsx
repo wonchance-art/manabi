@@ -21,6 +21,39 @@ import { OVERWORLD_REGION_LIST, unprojectOverworldRegionTile } from '../lib/worl
 const DEFAULT_ZOOM_LEVELS = Object.freeze([2, 4, 6, 8]);
 const OVERWORLD_ZOOM_MULTIPLIERS = Object.freeze([0.94, 1.88, 3.76, 7.52]);
 
+// 오프스크린 비트맵 스케일 — 대형 맵(>100만 타일: 서울·부산 등)은 1px/타일로 낮춰
+// ImageData 메모리를 모바일 캔버스 한계 안으로 유지한다("큰 맵 안 켜짐" 원인 수정).
+function bitmapScaleFor(cols, rows) {
+  return cols * rows > 1_000_000 ? 1 : 2;
+}
+
+// 국가 중심 2단 카테고리 — 도시국가·특별지역은 지리·언어권 이웃 곁에 독립 버튼으로 나란히 둔다.
+// 미배정 신규 도시는 폴백 그룹으로 노출되어 유실되지 않는다(가와구치코 등 추가분은 매핑에 선등록).
+const CITY_GROUP_BY_ID = Object.freeze({
+  tokyo: 'jp', osaka: 'jp', kyoto: 'jp', fukuoka: 'jp', kawaguchiko: 'jp',
+  seoul: 'kr', busan: 'kr',
+  beijing: 'cn', shanghai: 'cn',
+  taipei: 'tw', 'hong-kong': 'hk',
+  'grand-paris': 'fr', marseille: 'fr', 'mont-saint-michel': 'fr', 'cote-dazur': 'fr', geneva: 'ch',
+  brussels: 'be', london: 'gb',
+  sydney: 'au', melbourne: 'au', brisbane: 'au', canberra: 'au',
+});
+
+const MAP_GROUP_DEFS = Object.freeze([
+  { id: 'global', label: '월드·대륙', icon: '🗾' },
+  { id: 'jp', label: '일본', icon: '🏯' },
+  { id: 'kr', label: '한국', icon: '🏙️' },
+  { id: 'cn', label: '중국', icon: '🏮' },
+  { id: 'tw', label: '타이베이', icon: '🥟' },   // 도시국가·특별지역 — 중화권 곁 병렬
+  { id: 'hk', label: '홍콩', icon: '⛴️' },
+  { id: 'fr', label: '프랑스', icon: '🥖' },
+  { id: 'ch', label: '스위스', icon: '⛰️' },
+  { id: 'be', label: '벨기에', icon: '🧇' },
+  { id: 'gb', label: '영국', icon: '☂️' },
+  { id: 'au', label: '호주', icon: '🏄' },
+  { id: 'etc', label: '기타', icon: '📌' },     // 매핑 누락 폴백 — 신규 도시 유실 방지
+]);
+
 // GBC 톤 — 잔디 그린(육지) · 모래(해안) · 바다 블루 + 신규 지형:
 // 강·호수(청록 계열, 통행 가능 물) · DMZ 철조망(적갈) · 교량(다리 갈색)
 // + 지형 질감: 산(짙은 녹) · 설산(회백) · 평야(밝은 황록).
@@ -58,7 +91,7 @@ const OVERWORLD_LEGEND = [
 const FONT = 'ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace';
 
 const MAP_OPTIONS = Object.freeze([
-  { id: 'world', name: '전국 월드', icon: '🗾', kind: 'world', cols: MAP_W, rows: MAP_H },
+  { id: 'world', name: '전국 월드', icon: '🗾', kind: 'world', cols: MAP_W, rows: MAP_H, group: 'global' },
   ...OVERWORLD_REGION_LIST.map((region) => ({
     id: `overworld-${region.id}`,
     name: region.label,
@@ -68,6 +101,7 @@ const MAP_OPTIONS = Object.freeze([
     rows: region.height,
     previewUrl: `/assets/overworld/map-previews/${region.id}.png`,
     region,
+    group: 'global',
   })),
   ...CITY_MAPS.map((city) => ({
     id: city.id,
@@ -77,13 +111,27 @@ const MAP_OPTIONS = Object.freeze([
     cols: city.cols,
     rows: city.rows,
     city,
+    group: CITY_GROUP_BY_ID[city.id] || 'etc',
   })),
 ]);
 
+// 실제 지도가 있는 그룹만 버튼으로 노출한다(빈 그룹 숨김 — '기타'는 폴백 발생 시에만 등장).
+const MAP_GROUPS = Object.freeze(
+  MAP_GROUP_DEFS
+    .map((def) => ({ ...def, maps: MAP_OPTIONS.filter((map) => map.group === def.id) }))
+    .filter((groupDef) => groupDef.maps.length > 0),
+);
+
+// 뷰포트에 전체가 안 들어가는 맵은 화면맞춤(fit) 단계를 최소 줌으로 추가한다
+// ("모든 맵 전체 한번에 보기" 수정 — 서울·부산 같은 대형 맵의 기본 진입이 전체 보기).
 function zoomLevelsFor(map, size) {
-  if (map.kind !== 'overworld') return DEFAULT_ZOOM_LEVELS;
+  if (map.kind === 'overworld') {
+    const fit = Math.min(size.w / map.cols, size.h / map.rows);
+    return OVERWORLD_ZOOM_MULTIPLIERS.map((multiplier) => fit * multiplier);
+  }
   const fit = Math.min(size.w / map.cols, size.h / map.rows);
-  return OVERWORLD_ZOOM_MULTIPLIERS.map((multiplier) => fit * multiplier);
+  if (fit >= DEFAULT_ZOOM_LEVELS[0]) return DEFAULT_ZOOM_LEVELS;
+  return [fit, ...DEFAULT_ZOOM_LEVELS];
 }
 
 function hexToRgb(hex) {
@@ -137,6 +185,18 @@ export default function WorldMapPage() {
     () => MAP_OPTIONS.find((map) => map.id === activeMapId) || MAP_OPTIONS[0],
     [activeMapId],
   );
+  // 국가 중심 2단 내비 — 기본은 국가(그룹) 버튼, 그룹을 고르면 소속 지도가 아래 줄에 나온다.
+  const [activeGroupId, setActiveGroupId] = useState('global');
+  const activeGroup = useMemo(
+    () => MAP_GROUPS.find((groupDef) => groupDef.id === activeGroupId) || MAP_GROUPS[0],
+    [activeGroupId],
+  );
+  const selectGroup = useCallback((groupDef) => {
+    setActiveGroupId(groupDef.id);
+    // 지도 1개짜리 그룹(타이베이·홍콩·벨기에·영국 등)은 바로 그 지도를 연다.
+    if (groupDef.maps.length === 1) setActiveMapId(groupDef.maps[0].id);
+    else if (!groupDef.maps.some((map) => map.id === activeMapId)) setActiveMapId(groupDef.maps[0].id);
+  }, [activeMapId]);
   const mapCols = activeMap.cols;
   const mapRows = activeMap.rows;
 
@@ -176,7 +236,8 @@ export default function WorldMapPage() {
     const grid = activeMap.kind === 'world'
       ? (showPlayable ? buildPlayableGrid(raw) : raw)
       : activeMap.city.buildGrid();
-    const w = mapCols * 2, h = mapRows * 2;
+    const pxScale = bitmapScaleFor(mapCols, mapRows);
+    const w = mapCols * pxScale, h = mapRows * pxScale;
     const off = document.createElement('canvas');
     off.width = w; off.height = h;
     const ctx = off.getContext('2d');
@@ -211,18 +272,18 @@ export default function WorldMapPage() {
             default: rgb = seaRgb; break;
           }
         }
-        for (let dy = 0; dy < 2; dy++) {
-          for (let dx = 0; dx < 2; dx++) {
-            const idx = ((ty * 2 + dy) * w + (tx * 2 + dx)) * 4;
+        for (let dy = 0; dy < pxScale; dy++) {
+          for (let dx = 0; dx < pxScale; dx++) {
+            const idx = ((ty * pxScale + dy) * w + (tx * pxScale + dx)) * 4;
             data[idx] = rgb[0]; data[idx + 1] = rgb[1]; data[idx + 2] = rgb[2]; data[idx + 3] = 255;
           }
         }
       }
     }
     ctx.putImageData(img, 0, 0);
-    if (activeMap.kind === 'city') drawCityTransit(ctx, activeMap.city);
+    if (activeMap.kind === 'city') drawCityTransit(ctx, activeMap.city, pxScale);
     bitmapRef.current = off;
-    bitmapScaleRef.current = { x: 2, y: 2 };
+    bitmapScaleRef.current = { x: pxScale, y: pxScale };
     setBitmapReady(true);
     return undefined;
   }, [activeMap, mapCols, mapRows, showPlayable]);
@@ -408,22 +469,42 @@ export default function WorldMapPage() {
         전국 월드, 대륙 오버월드와 도시 정밀맵을 하나씩 골라 노드 배치와 동선을 확인해요.
       </p>
 
-      <div className="world-map-viewer__maps" role="tablist" aria-label="확인할 지도 선택">
-        {MAP_OPTIONS.map((map) => (
+      {/* 1단: 국가·권역 버튼(도시국가는 언어·지리 이웃 곁에 나란히) */}
+      <div className="world-map-viewer__maps" role="tablist" aria-label="국가·권역 선택">
+        {MAP_GROUPS.map((groupDef) => (
           <button
-            key={map.id}
+            key={groupDef.id}
             type="button"
             role="tab"
-            aria-selected={activeMap.id === map.id}
-            className={`world-map-viewer__map-tab${activeMap.id === map.id ? ' world-map-viewer__map-tab--active' : ''}`}
-            onClick={() => setActiveMapId(map.id)}
+            aria-selected={activeGroup.id === groupDef.id}
+            className={`world-map-viewer__map-tab${activeGroup.id === groupDef.id ? ' world-map-viewer__map-tab--active' : ''}`}
+            onClick={() => selectGroup(groupDef)}
           >
-            <span aria-hidden="true">{map.icon}</span>
-            <span>{map.name}</span>
-            <small>{map.cols}×{map.rows}</small>
+            <span aria-hidden="true">{groupDef.icon}</span>
+            <span>{groupDef.label}</span>
+            <small>{groupDef.maps.length}</small>
           </button>
         ))}
       </div>
+      {/* 2단: 선택한 그룹의 지도들 */}
+      {activeGroup.maps.length > 1 && (
+        <div className="world-map-viewer__maps" role="tablist" aria-label={`${activeGroup.label} 지도 선택`}>
+          {activeGroup.maps.map((map) => (
+            <button
+              key={map.id}
+              type="button"
+              role="tab"
+              aria-selected={activeMap.id === map.id}
+              className={`world-map-viewer__map-tab${activeMap.id === map.id ? ' world-map-viewer__map-tab--active' : ''}`}
+              onClick={() => setActiveMapId(map.id)}
+            >
+              <span aria-hidden="true">{map.icon}</span>
+              <span>{map.name}</span>
+              <small>{map.cols}×{map.rows}</small>
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* 컨트롤 행 */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -431,7 +512,7 @@ export default function WorldMapPage() {
           － 축소
         </Button>
         <span style={{ fontFamily: FONT, fontSize: '0.75rem', color: 'var(--text-muted)', minWidth: 84, textAlign: 'center' }}>
-          타일당 {formatTileScale(pxPerTile)}px (×{scaleLabel(zoomIdx)})
+          타일당 {formatTileScale(pxPerTile)}px (×{scaleLabel(zoomLevels, zoomIdx)})
         </span>
         <Button size="sm" variant="secondary" onClick={() => zoomAt(size.w / 2, size.h / 2, 1)} disabled={zoomIdx === zoomLevels.length - 1}>
           ＋ 확대
@@ -527,8 +608,7 @@ export default function WorldMapPage() {
   );
 }
 
-function drawCityTransit(ctx, city) {
-  const scale = 2;
+function drawCityTransit(ctx, city, scale = 2) {
   if (city.railways?.mask) {
     ctx.fillStyle = '#3d3028';
     for (let index = 0; index < city.railways.mask.length; index += 1) {
@@ -554,8 +634,10 @@ function drawCityTransit(ctx, city) {
   }
 }
 
-function scaleLabel(zoomIdx) {
-  return [1, 2, 4, 8][zoomIdx] || 1;
+function scaleLabel(zoomLevels, zoomIdx) {
+  // fit 단계가 끼면 배율이 비정수가 되므로 최소 단계 대비 상대 배율로 표기한다.
+  const ratio = zoomLevels[zoomIdx] / zoomLevels[0];
+  return Number.isInteger(ratio) ? ratio : ratio.toFixed(1);
 }
 
 function formatTileScale(value) {
