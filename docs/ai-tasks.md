@@ -14,7 +14,9 @@
   연출·성벽 대사 훅·결정적 조수 시계. 제안서를 #150에 — 구현은 오너 승인 후.
 ### done (최근)
 - 렌더크래프트 R4 지역 색감 스킨: 건물 지붕 팔레트 5종과 에메랄드 수면 1종을
-  `tileSkins` 계약·CityScene 베이킹·소비처에 일반화(도시별 배선은 Claude 후속)
+  `tileSkins` 계약·CityScene 베이킹·소비처에 일반화하고, `gachapon`·`arcade`
+  서브컬처 프롭 2종을 무문자·무캐릭터·무브랜드 도트 실루엣으로 베이킹
+  (도시별 배선·배치는 Claude 후속)
 - 자갈치 액트 씬 골격: `msmAbbeyScene.js` 구조를 미러한 4막 Phaser 씬
   (`dawn-pier`→`auction-floor`→`hoe-alley`→`breakwater-lighthouse`)과 액트 순서·경계 계약 테스트
 - 마르세유 비콘텐츠 선행 수집: bbox `[5.32,43.245,5.42,43.325]`,
