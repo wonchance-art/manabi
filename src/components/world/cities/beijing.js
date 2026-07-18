@@ -98,8 +98,11 @@ export const TRANSIT = [
   },
 ];
 
-// 프롭(자금성 지붕 실루엣·백탑·고루 등)은 렌더크래프트 후속.
-export const PROPS = [];
+// 🏮 렌더크래프트 R1 — 기존 kind 재사용 배치. 자금성 지붕·백탑 등 신규 kind는 베이킹 스펙 후속.
+export const PROPS = [
+  { kind: 'stall', tile: [184, 300] }, // 전문대가 노점
+  { kind: 'stall', tile: [265, 229] }, // 왕푸징 간식 골목 노점
+];
 
 export function buildBeijingGrid() {
   const grid = Uint8Array.from(BEIJING_GEO.terrain);

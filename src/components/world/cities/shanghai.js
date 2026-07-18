@@ -124,8 +124,12 @@ export const TRANSIT = [
   },
 ];
 
-// 프롭(동방명주 실루엣·와이탄 파사드·도선 선체 등)은 렌더크래프트 후속.
-export const PROPS = [];
+// 🛳️ 렌더크래프트 R1 — 기존 kind 재사용 배치. 동방명주 실루엣 등 신규 kind는 베이킹 스펙 후속.
+export const PROPS = [
+  { kind: 'ferry_dom', tile: [223, 137] }, // 황푸강 도선 선체(와이탄~루자쭈이 중간)
+  { kind: 'neon', tile: [120, 130] },      // 난징둥루 네온
+  { kind: 'stall', tile: [202, 186] },     // 위위안 앞 간식 노점
+];
 
 export function buildShanghaiGrid() {
   const grid = Uint8Array.from(SHANGHAI_GEO.terrain);

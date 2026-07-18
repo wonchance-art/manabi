@@ -137,8 +137,12 @@ export const TRANSIT = [
   },
 ];
 
-// 프롭(101 실루엣·야시장 패루·용산사 향로 등)은 렌더크래프트 후속.
-export const PROPS = [];
+// 🏮 렌더크래프트 R1 — 기존 kind 재사용 배치. 101 실루엣·패루 등 신규 kind는 베이킹 스펙 후속.
+export const PROPS = [
+  { kind: 'stall', tile: [175, 118] }, // 스린야시장 노점
+  { kind: 'stall', tile: [443, 330] }, // 라오허제 노점
+  { kind: 'neon', tile: [86, 372] },   // 시먼딩 네온
+];
 
 export function buildTaipeiGrid() {
   const grid = Uint8Array.from(TAIPEI_GEO.terrain);
