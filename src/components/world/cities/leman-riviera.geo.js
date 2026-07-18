@@ -313,22 +313,22 @@ export const LEMAN_RIVIERA_GEO = Object.freeze({
     "alignmentDeltaTiles": 1.152
   },
   {
-    "id": "dezaley-lavaux",
-    "nameFr": "Dézaley (Lavaux)",
-    "lat": 46.483,
-    "lon": 6.75,
+    "id": "epesses-lavaux",
+    "nameFr": "Epesses (Lavaux)",
+    "lat": 46.4925,
+    "lon": 6.7375,
     "kind": "terraced-vineyard-landscape",
     "heritageContext": "world-heritage-landscape-geography-only",
     "contentLocale": "fr",
     "tile": [
-      587,
-      305
+      527,
+      264
     ],
     "sourceProjectedTile": [
-      575,
-      317
+      527,
+      264
     ],
-    "alignmentDeltaTiles": 17.315
+    "alignmentDeltaTiles": 0.617
   },
   {
     "id": "st-saphorin",

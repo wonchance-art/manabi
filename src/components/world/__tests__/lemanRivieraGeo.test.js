@@ -22,7 +22,7 @@ const POI_IDS = Object.freeze([
   'ouchy',
   'lutry-vieux-bourg',
   'cully',
-  'dezaley-lavaux',
+  'epesses-lavaux',
   'st-saphorin',
   'vevey-grande-place',
   'montreux-quai',
@@ -225,8 +225,8 @@ describe('레만호 연안 상세 geo 계약', () => {
       expect(entry, entry.id).not.toHaveProperty('nameEn');
       expect(entry, entry.id).not.toHaveProperty('nameKo');
     }
-    expect(byId(LEMAN_RIVIERA_GEO.pois, 'dezaley-lavaux').alignmentDeltaTiles)
-      .toBe(17.315);
+    expect(byId(LEMAN_RIVIERA_GEO.pois, 'epesses-lavaux').alignmentDeltaTiles)
+      .toBe(0.617);
     expect(byId(LEMAN_RIVIERA_GEO.pois, 'st-saphorin').alignmentDeltaTiles)
       .toBe(7.393);
     expect(byId(LEMAN_RIVIERA_GEO.pois, 'vevey-grande-place').tile)
@@ -418,6 +418,6 @@ describe('레만호 연안 상세 geo 계약', () => {
     const secondPng = renderLemanRivieraPng(second);
     expect(firstPng).toEqual(secondPng);
     expect(hash(firstPng))
-      .toBe('375570dffe2e79e30cf10745877fcb379fd244e0ea4a1c3490f8184d42f34c53');
+      .toBe('8ee0e4d6e2f42aa0e185ff3928bfd519f46cd257d1cbf25e134b05133821d173');
   }, 120_000);
 });
