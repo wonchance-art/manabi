@@ -78,7 +78,7 @@ const CITY_GATES = {
   // ── 유럽 1차 (Codex-2 착수 전 선제 정의 — 파일명이 다르면 --file 로 대입) ──
   'grand-paris': {
     file: 'src/components/world/cities/grand-paris.geo.js',
-    snapshot: null, // FR 파이프라인 스냅샷 경로는 Codex-2 산출 확인 후 고정
+    snapshot: 'scripts/data/grand-paris-osm-v21.json',
     expectedLocale: 'fr',
     expectedMpt: 20,
     buildingPct: null, // 오스만 시가지는 KR 9~11% 프로필과 다름 — report로 관찰 후 게이트 확정
@@ -100,7 +100,7 @@ const CITY_GATES = {
   },
   'cote-dazur': {
     file: 'src/components/world/cities/cote-dazur.geo.js',
-    snapshot: null,
+    snapshot: 'scripts/data/cote-dazur-osm-v21.json',
     expectedLocale: 'fr',
     expectedMpt: 20,
     buildingPct: null, // 리비에라 프로필 관찰 후 확정
@@ -117,7 +117,7 @@ const CITY_GATES = {
   },
   brussels: {
     file: 'src/components/world/cities/brussels.geo.js',
-    snapshot: null,
+    snapshot: 'scripts/data/brussels-osm-v21.json',
     expectedLocale: 'fr',
     expectedMpt: 20,
     buildingPct: null, // 브뤼셀 프로필 관찰 후 확정
@@ -157,7 +157,7 @@ const CITY_GATES = {
   },
   'hong-kong': {
     file: 'src/components/world/cities/hong-kong.geo.js',
-    snapshot: null,
+    snapshot: 'scripts/data/hong-kong-osm-v21.json',
     expectedLocale: 'zh',
     expectedMpt: 20,
     buildingPct: null, // 홍콩 고밀도 프로필 관찰 후 확정
@@ -176,7 +176,7 @@ const CITY_GATES = {
   },
   shanghai: {
     file: 'src/components/world/cities/shanghai.geo.js',
-    snapshot: null,
+    snapshot: 'scripts/data/shanghai-osm-v21.json',
     expectedLocale: 'zh',
     expectedMpt: 20,
     buildingPct: null, // 상하이 프로필 관찰 후 확정
@@ -198,7 +198,7 @@ const CITY_GATES = {
   },
   beijing: {
     file: 'src/components/world/cities/beijing.geo.js',
-    snapshot: null,
+    snapshot: 'scripts/data/beijing-osm-v21.json',
     expectedLocale: 'zh',
     expectedMpt: 20,
     buildingPct: null, // 베이징 구도심(후퉁·궁궐) 프로필 관찰 후 확정
@@ -302,7 +302,7 @@ const CITY_GATES = {
   },
   'mont-saint-michel': {
     file: 'src/components/world/cities/mont-saint-michel.geo.js',
-    snapshot: null,
+    snapshot: 'scripts/data/mont-saint-michel-osm-v21.json',
     expectedLocale: 'fr',
     expectedMpt: 4, // 정밀 티어 1호 — mpt 계약 자체가 게이트
     buildingPct: null,
@@ -316,7 +316,7 @@ const CITY_GATES = {
   // ── 1.5차 런던권 B안 (#150 스펙 — Codex-2 착수분 선제 정의) ──
   london: {
     file: 'src/components/world/cities/london.geo.js',
-    snapshot: null,
+    snapshot: 'scripts/data/london-osm-v21.json',
     expectedLocale: 'en',
     expectedMpt: 20,
     buildingPct: null, // 런던 프로필 관찰 후 확정
