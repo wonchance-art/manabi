@@ -18,8 +18,8 @@
 ### doing
 - 도시 geo 프로필 밴드 라운드 2 (#150 SPEC 5012092624):
   validated main `abbd49c88f27d1f8993e07df2fffff83a2fe888f`에서 latest main
-  `98c38a216f1c6d3fdb34d7e82183e245128c9f5f`까지 verifier·geo 불변
-  (변경은 `docs/ai-tasks.md`만), verifier blob
+  `ebc2996cbaf643e1d15dc23357c1482c67d4daea`까지 verifier와 대상 3도시
+  geo·snapshot 불변(변경은 문서·도쿄 전용 파일만), verifier blob
   `b378356a08e7ebd0da63aeb072ab36fa438ccaae`에서 Marseille
   17.4/1.4·Kawaguchiko 5.6/73.1·Geneva 10.9/8.7 재실측과 기존 전
   gate PASS. report-only 제안 댓글 5012110119 게시, Claude 승인·수정 대기.
