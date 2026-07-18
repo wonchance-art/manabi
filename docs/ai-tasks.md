@@ -16,36 +16,37 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-- 마르세유 geo 준비(#150 SPEC 댓글 5010360716):
-  bbox `[5.32,43.245,5.42,43.325]`, 20m/fr, Web Mercator 보정
-  `0.7279522795397183`, exact grid `406×446`(181,076 cells),
-  예상 메모리 `8,510,572 bytes`(8.116MiB, 24MiB 대비 15.884MiB 여유).
-  구항·지중해 수계, POI 12·역 4·페리 2링크·BRIDGE 0 계약은
-  Sydney 다중 페리 4-way BFS 선례로 신규 runtime mode 없이 구현 가능.
-  기존 French 공용 core는 `transitPoints`·ferry connectivity를 출력하지 않으므로
-  마르세유 전용 builder에서 Sydney connectivity와 French `nameFr` canonical
-  스키마를 결합하고, 테스트에서 두 ferry edge·섬 도달을 별도 회귀 고정한다.
-  snapshot acceptance는 16개 partition 양의 면적 중첩 0, 48/48,
-  7개 RLE 각각 decode 길이 181,076, ODbL 1.0·manifest/raw/snapshot SHA·결정성이다.
-  Codex-1 snapshot PR #251 branch `codex/marseille-prefetch` exact
-  `ae97cc3c0f71bd7c84d4195a4b902e179e773bf6`은 OPEN / READY / CLEAN /
-  MERGEABLE이고 PR CODEX_DONE 댓글 5010577997의 remote head가 일치한다.
-  read-only 선제 감사: targeted 8/8, raw SHA `a674392d`, manifest SHA
-  `f8e1639d`, snapshot SHA `94d19706`, full PNG SHA `145a308b`,
-  비콘텐츠 필드·ODbL·partition/RLE·메모리 계약 PASS.
-  active PLAN/WORKING/FREEZE는 없지만 PR merge 전 명시적 stacking 지시는
-  아직 없으므로 #251 merge 또는 stacking 지시 전 POI·역·본생성·재수집 금지.
+- 마르세유 geo 구현·공식 verifier 대기(#150 SPEC 댓글 5010360716·
+  exact 구현 SPEC 5010602514):
+  Codex-1 snapshot #251 head
+  `ae97cc3c0f71bd7c84d4195a4b902e179e773bf6` → main merge
+  `c55ab6d0e79ba46acd2d425fdc907363aa16efc9`.
+  exact-main draft PR #260 branch `codex2/marseille-geo` remote head
+  `71e309e880b6579fd5547451b1636eb3685569d6`은 OPEN / DRAFT / CLEAN /
+  MERGEABLE이며 main 대비 마르세유 전용 generator·geo·test 신규 3파일만이다.
+  bbox `[5.32,43.245,5.42,43.325]`, 20m/fr, grid `406×446`,
+  POI 12·역 4·페리 2링크·BRIDGE 0, Vieux-Port 380m/300m,
+  open sea 5,580m/5,580m, 두 land component `85,296 / 141`,
+  ferry-aware BFS `85,437/85,437`, 메모리 `8,510,572 bytes` <24MiB.
+  targeted 16/16·latest-main 전체 single-worker 165 files/1,846 tests,
+  node/ESLint/diff-check PASS. terrain SHA `282b339f`, railway SHA
+  `d706d373`, final PNG SHA `d1871893`; 콘텐츠 정책·snapshot
+  ODbL/partition/RLE/SHA·결정성 PASS.
+  official Marseille verifier가 게시되면 latest exact main/head/blob에서
+  재검증 후 #260 ready 전환과 CODEX_DONE을 한 번만 게시한다.
 - 도시 geo verifier 강화(OWNER_DIRECTIVE #150 댓글 5009917089):
   `snapshot: null` 8도시 정본 경로 연결 PR #240 head
   `a162191e9ca8403ef8b289c9788e3ac5fd8d4d73` → main merge
   `ffe7e640f4fd2cc658c2111bdbc2be099ce3c2af`.
-  latest main `e4c6678c0510adef49e05f3d7faecb483698f17b`의 verifier blob
+  latest main `6ef08c6626b8172afc12e64a3d3b08463895ad2d`의 verifier blob
   `483a95c6ce4140c92ec5bbed2aa4755198e8bb33` byte-identical,
   15도시 전 gate PASS. London PNG timeout은 #242에서 120초로 고정,
   단독 6/6 PASS. 19도시 결정성 165/165 PASS.
   report-only 건물·녹지 band 제안 #150 댓글 5010031646과
-  기존 제안 포인터 5010101384 게시 완료, Claude 확정값 대기.
-  확정 후 새 exact-main `codex2/*` branch에서 hard gate 반영.
+  기존 제안 포인터 5010101384를 Claude가 #150 댓글 5010610812에서
+  exact 승인했다. 마르세유 우선순위 완료 후 새 exact-main branch
+  `codex2/city-geo-profile-gates`에서 `scripts/verify-city-geo.mjs`
+  1파일에 승인된 buildingPct/greenMinPct hard gate만 반영한다.
 ### todo
 - (없음)
 ### done (최근)
