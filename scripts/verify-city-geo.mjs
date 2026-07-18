@@ -81,8 +81,8 @@ const CITY_GATES = {
     snapshot: 'scripts/data/grand-paris-osm-v21.json',
     expectedLocale: 'fr',
     expectedMpt: 20,
-    buildingPct: null, // 오스만 시가지는 KR 9~11% 프로필과 다름 — report로 관찰 후 게이트 확정
-    greenMinPct: 6, // 불로뉴+뱅센+베르사유 정원 등 ≈40km²/483km²
+    buildingPct: [13, 17],
+    greenMinPct: 8,
     poiMaxDevTiles: 2.5,
     downtown: { label: '샤틀레', lon: 2.3467, lat: 48.8586 },
     riverSections: [
@@ -103,8 +103,8 @@ const CITY_GATES = {
     snapshot: 'scripts/data/cote-dazur-osm-v21.json',
     expectedLocale: 'fr',
     expectedMpt: 20,
-    buildingPct: null, // 리비에라 프로필 관찰 후 확정
-    greenMinPct: null, // 해안 구릉 관목 프로필 미확정 — report 관찰
+    buildingPct: [6, 9],
+    greenMinPct: 20,
     poiMaxDevTiles: 2.5,
     downtown: { label: '니스 구시가', lon: 7.2755, lat: 43.6955 },
     riverSections: [
@@ -120,8 +120,8 @@ const CITY_GATES = {
     snapshot: 'scripts/data/brussels-osm-v21.json',
     expectedLocale: 'fr',
     expectedMpt: 20,
-    buildingPct: null, // 브뤼셀 프로필 관찰 후 확정
-    greenMinPct: null, // 생캉트네르·라켄 — report 관찰
+    buildingPct: [18, 22],
+    greenMinPct: 4.5,
     poiMaxDevTiles: 2.5,
     downtown: { label: '그랑플라스', lon: 4.3525, lat: 50.8467 },
     riverSections: [
@@ -140,8 +140,8 @@ const CITY_GATES = {
     snapshot: 'scripts/data/taipei-osm-v21.json',
     expectedLocale: 'zh',
     expectedMpt: 20,
-    buildingPct: null, // 타이베이 프로필 관찰 후 확정
-    greenMinPct: null, // 샹산·다안 — report 관찰
+    buildingPct: [9.5, 14],
+    greenMinPct: 10,
     poiMaxDevTiles: 2.5,
     downtown: { label: '시먼딩', lon: 121.5070, lat: 25.0421 },
     riverSections: [
@@ -160,8 +160,8 @@ const CITY_GATES = {
     snapshot: 'scripts/data/hong-kong-osm-v21.json',
     expectedLocale: 'zh',
     expectedMpt: 20,
-    buildingPct: null, // 홍콩 고밀도 프로필 관찰 후 확정
-    greenMinPct: null, // 픽 산지 — report 관찰
+    buildingPct: [9.5, 14],
+    greenMinPct: 18,
     poiMaxDevTiles: 2.5,
     downtown: { label: '침사추이', lon: 114.1722, lat: 22.2975 },
     riverSections: [
@@ -179,8 +179,8 @@ const CITY_GATES = {
     snapshot: 'scripts/data/shanghai-osm-v21.json',
     expectedLocale: 'zh',
     expectedMpt: 20,
-    buildingPct: null, // 상하이 프로필 관찰 후 확정
-    greenMinPct: null, // 인민공원·와이탄 수변 — report 관찰
+    buildingPct: [9.5, 14],
+    greenMinPct: 2,
     poiMaxDevTiles: 2.5,
     downtown: { label: '인민광장', lon: 121.4737, lat: 31.2323 },
     riverSections: [
@@ -201,8 +201,8 @@ const CITY_GATES = {
     snapshot: 'scripts/data/beijing-osm-v21.json',
     expectedLocale: 'zh',
     expectedMpt: 20,
-    buildingPct: null, // 베이징 구도심(후퉁·궁궐) 프로필 관찰 후 확정
-    greenMinPct: null, // 북해·경산·천단 — report 관찰
+    buildingPct: [9.5, 14],
+    greenMinPct: 2,
     poiMaxDevTiles: 2.5,
     downtown: { label: '왕푸징', lon: 116.4110, lat: 39.9097 },
     riverSections: [
@@ -221,8 +221,8 @@ const CITY_GATES = {
     snapshot: 'scripts/data/brisbane-osm-v21.json',
     expectedLocale: 'en',
     expectedMpt: 20,
-    buildingPct: null, // 브리즈번 프로필 관찰 후 확정
-    greenMinPct: null, // 보태닉·로마스트리트·뉴팜 — report 관찰
+    buildingPct: [9, 12],
+    greenMinPct: 5,
     poiMaxDevTiles: 2.5,
     downtown: { label: '퀸스트리트몰', lon: 153.0258, lat: -27.4695 },
     riverSections: [
@@ -243,8 +243,8 @@ const CITY_GATES = {
     snapshot: 'scripts/data/sydney-osm-v21.json',
     expectedLocale: 'en',
     expectedMpt: 20,
-    buildingPct: null, // 시드니 프로필 관찰 후 확정
-    greenMinPct: null, // 왕립식물원·센테니얼 — report 관찰
+    buildingPct: [9, 12],
+    greenMinPct: 5,
     poiMaxDevTiles: 2.5,
     downtown: { label: '서큘러키', lon: 151.2110, lat: -33.8610 },
     riverSections: [
@@ -264,8 +264,8 @@ const CITY_GATES = {
     snapshot: 'scripts/data/canberra-osm-v21.json',
     expectedLocale: 'en',
     expectedMpt: 20,
-    buildingPct: null, // 캔버라 계획도시 저밀도 프로필 관찰 후 확정
-    greenMinPct: null, // 커먼웰스·에인슬리 — report 관찰
+    buildingPct: [5.5, 8],
+    greenMinPct: 20,
     poiMaxDevTiles: 2.5,
     downtown: { label: '시빅(앨링가 스트리트)', lon: 149.1310, lat: -35.2780 },
     riverSections: [
@@ -285,8 +285,8 @@ const CITY_GATES = {
     snapshot: 'scripts/data/melbourne-osm-v21.json',
     expectedLocale: 'en',
     expectedMpt: 20,
-    buildingPct: null, // 멜버른 프로필 관찰 후 확정
-    greenMinPct: null, // 왕립식물원·칼튼 — report 관찰
+    buildingPct: [9, 12],
+    greenMinPct: 5,
     poiMaxDevTiles: 2.5,
     downtown: { label: '플린더스 스트리트역', lon: 144.9671, lat: -37.8183 },
     riverSections: [
@@ -305,7 +305,7 @@ const CITY_GATES = {
     snapshot: 'scripts/data/mont-saint-michel-osm-v21.json',
     expectedLocale: 'fr',
     expectedMpt: 4, // 정밀 티어 1호 — mpt 계약 자체가 게이트
-    buildingPct: null,
+    buildingPct: [0.5, 1.5],
     greenMinPct: null, // 갯벌 지형 — 녹지 프로필 부적용
     poiMaxDevTiles: 6, // 4m/타일 기준 24m
     downtown: null,
@@ -319,7 +319,7 @@ const CITY_GATES = {
     snapshot: 'scripts/data/london-osm-v21.json',
     expectedLocale: 'en',
     expectedMpt: 20,
-    buildingPct: null, // 런던 프로필 관찰 후 확정
+    buildingPct: [9.5, 12.5],
     greenMinPct: 8, // 하이드·리젠츠·큐·리치먼드·햄스테드 — 관찰 후 상향 검토
     poiMaxDevTiles: 2.5,
     downtown: { label: '트래펄가', lon: -0.1281, lat: 51.5080 },
