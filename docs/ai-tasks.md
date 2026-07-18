@@ -22,6 +22,11 @@
   예상 메모리 `8,510,572 bytes`(8.116MiB, 24MiB 대비 15.884MiB 여유).
   구항·지중해 수계, POI 12·역 4·페리 2링크·BRIDGE 0 계약은
   Sydney 다중 페리 4-way BFS 선례로 신규 runtime mode 없이 구현 가능.
+  기존 French 공용 core는 `transitPoints`·ferry connectivity를 출력하지 않으므로
+  마르세유 전용 builder에서 Sydney connectivity와 French `nameFr` canonical
+  스키마를 결합하고, 테스트에서 두 ferry edge·섬 도달을 별도 회귀 고정한다.
+  snapshot acceptance는 16개 partition 양의 면적 중첩 0, 48/48,
+  7개 RLE 각각 decode 길이 181,076, ODbL 1.0·manifest/raw/snapshot SHA·결정성이다.
   Codex-1 4×4 Overpass 48/48 비콘텐츠 snapshot exact handoff와
   active PLAN/WORKING/FREEZE 부재 확인 전 POI·역·본생성·재수집 금지.
   현재 관련 open PR·remote branch 없음.
