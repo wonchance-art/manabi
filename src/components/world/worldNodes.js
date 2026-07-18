@@ -239,6 +239,7 @@ const CANBERRA_NAME = '캔버라';
 const MELBOURNE_NAME = '멜버른';
 const BRUSSELS_NAME = '브뤼셀';
 const LONDON_NAME = '런던';
+const MARSEILLE_NAME = '마르세유';
 
 export const REGIONAL_WORLD_NODES = Object.freeze([
   createRegionalWorldNode({
@@ -411,6 +412,18 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
     arrivalOffset: [0, -2],
     noStamp: true,
     gate: { type: 'city', to: 'london', label: '🏙️ 시내' },
+  }),
+  createRegionalWorldNode({
+    id: 'marseille',
+    name: MARSEILLE_NAME,
+    kind: 'city',
+    regionId: 'emea',
+    contentLocale: 'fr',
+    // 생샤를역 투영칸([259,561]) 자체가 체크인된 보행칸이다.
+    lon: 5.3806,
+    lat: 43.3027,
+    noStamp: true,
+    gate: { type: 'city', to: 'marseille', label: '🏙️ 시내' },
   }),
 ]);
 

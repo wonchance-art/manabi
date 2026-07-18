@@ -112,6 +112,19 @@ describe('도시 정밀맵 레지스트리', () => {
     });
   });
 
+  it('마르세유 게이트와 EXIT가 EMEA 생샤를역 노드의 같은 타일로 왕복한다', () => {
+    const marseille = getNode('marseille');
+    expect(marseille).toMatchObject({
+      regionId: 'emea',
+      overworldTile: [259, 561],
+      gate: { type: 'city', to: 'marseille' },
+    });
+    expect(CITY_DATA[marseille.gate.to].returnNode).toBe(marseille.id);
+    expect(worldNodeReturnSpawn(marseille)).toEqual({
+      scene: 'overworld:emea', x: 259, y: 561,
+    });
+  });
+
   it('기존 APAC 도시 EXIT는 plaza의 기존 도시 노드 타일로 그대로 복귀한다', () => {
     for (const city of CITY_MAPS.filter(({ returnNode }) => getNode(returnNode)?.legacyTile)) {
       const node = getNode(city.returnNode);
