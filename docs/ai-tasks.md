@@ -16,9 +16,15 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-- (없음)
+- 도시 geo 프로필 밴드 라운드 2 (#150 SPEC 5012092624):
+  latest main `abbd49c88f27d1f8993e07df2fffff83a2fe888f`·verifier blob
+  `b378356a08e7ebd0da63aeb072ab36fa438ccaae`에서 Marseille
+  17.4/1.4·Kawaguchiko 5.6/73.1·Geneva 10.9/8.7 재실측과 기존 전
+  gate PASS. report-only 제안 댓글 5012110119 게시, Claude 승인·수정 대기.
+  승인 전 verifier hard gate 편집·브랜치 생성 금지.
 ### todo
-- (없음)
+- 레만호 연안 geo: Codex-1 비콘텐츠 snapshot 수집·main merge와 Claude의
+  상세 Codex-2 POI/역/수계·도선 SPEC 대기. exact handoff 전 본생성 금지.
 ### done (최근)
 - 제네바 geo (#285 snapshot head
   `2ebd8f2069ae8b2cade6ec65134d28552feed3a4` → main merge
