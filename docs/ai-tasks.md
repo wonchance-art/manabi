@@ -23,8 +23,13 @@
   headroom `2,167,737 bytes`. bbox·20m를 메모리 때문에 축소하지 않는다.
   POI 11·역 3·호수 유람선 1링크의 전 좌표는 bbox 내이며
   5합목은 `[34,853]`으로 남단에서 9타일, 河口湖駅 POI/역은
-  `[179,286]`·`[180,287]` 인접이라 재투영 허용범위 내 결정적
-  marker separation이 필요하다. 현대 snapshot mountain/water masks와
+  `[179,286]`·`[180,287]` 인접이다. 기존 순회식 marker separation은
+  역을 `[181,286]`(재투영 편차 1.580타일)로 밀 수 있으므로 가장 가까운
+  유효 후보 `[180,288]`(0.662타일)를 고르는 결정적 거리 우선 규칙을 쓴다.
+  Marseille의 임의 육지 연결은 MOUNTAIN을 도로로 관통할 수 있어 5합목에
+  그대로 쓰지 않는다. snapshot road mask 회랑을 우선 보존·검증하고,
+  연결 불가 시 SPEC대로 5합목 별도 산지 성분을 허용한다.
+  현대 snapshot mountain/water masks와
   일본어 `nameJa` canonical+`yomi`, Marseille ferry-aware BFS를 결합하는
   도시 전용 generator·geo·test 3파일 계약으로 설계한다.
   현재 `codex/kawaguchiko-prefetch` PR·remote branch·exact handoff가 없으므로
