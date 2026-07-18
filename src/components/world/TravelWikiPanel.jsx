@@ -64,9 +64,10 @@ function DocReader({ countryId, slug, onBack }) {
   );
 }
 
-export default function TravelWikiPanel() {
+export default function TravelWikiPanel({ initialDoc = null }) {
   const [query, setQuery] = useState('');
-  const [reading, setReading] = useState(null); // { countryId, slug }
+  // { countryId, slug } — 딥링크(장소 「더 알아보기」)로 열리면 해당 문서 리더에서 시작한다.
+  const [reading, setReading] = useState(initialDoc);
   const results = useMemo(() => searchWiki(query), [query]);
   const countries = wikiCountries();
 

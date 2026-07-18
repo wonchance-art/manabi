@@ -212,8 +212,10 @@ export default function WorldGameMenu({
   onOpenStampAlbum,
   onOpenReview,
   onOpenDictionary,
+  initialTab = 'avatar',
+  wikiDoc = null, // { countryId, slug } — 장소 딥링크로 열릴 때 폰 탭이 이 문서에서 시작한다.
 }) {
-  const [tab, setTab] = useState('avatar');
+  const [tab, setTab] = useState(initialTab);
   const stampCount = stamps?.size || 0;
   useEffect(() => {
     const closeOnEscape = (event) => { if (event.key === 'Escape') onClose(); };
@@ -245,7 +247,7 @@ export default function WorldGameMenu({
         {tab === 'bag' && <BagPanel onAction={(action) => switchAndRun(tab, action)} />}
         {tab === 'codex' && <CodexPanel stampCount={stampCount} totalPlaces={totalPlaces} onOpenStampAlbum={onOpenStampAlbum} onOpenDictionary={onOpenDictionary} />}
         {tab === 'quests' && <QuestPanel stampCount={stampCount} totalPlaces={totalPlaces} onOpenReview={onOpenReview} onOpenStampAlbum={onOpenStampAlbum} />}
-        {tab === 'phone' && <TravelWikiPanel />}
+        {tab === 'phone' && <TravelWikiPanel initialDoc={wikiDoc} />}
       </div>
     </div>
   );
