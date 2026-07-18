@@ -99,16 +99,20 @@ function playabilityManifest(baseBytes, overrides = {}) {
 }
 
 describe('overworld playability preview', () => {
-  it('알 수 없는 manifest 필드와 출시 가능 표시를 거부한다', () => {
+  it('알 수 없는 manifest 필드와 비 boolean 출시 표시를 거부한다', () => {
     const bytes = new TextEncoder().encode('{}\n');
     expect(() => normalizeOverworldPlayabilityManifest({
       ...playabilityManifest(bytes),
       surprise: true,
     })).toThrow(/keys must be exactly/);
-    expect(() => normalizeOverworldPlayabilityManifest({
+    expect(normalizeOverworldPlayabilityManifest({
       ...playabilityManifest(bytes),
       releaseEligible: true,
-    })).toThrow(/releaseEligible=false/);
+    }).releaseEligible).toBe(true);
+    expect(() => normalizeOverworldPlayabilityManifest({
+      ...playabilityManifest(bytes),
+      releaseEligible: 'yes',
+    })).toThrow(/must be boolean/);
   });
 
   it('육지를 4방향 성분으로 결정적으로 분리한다', () => {
@@ -259,7 +263,7 @@ describe('overworld playability preview', () => {
       'utf8',
     ));
     expect(content).toMatchObject({
-      releaseEligible: false,
+      releaseEligible: true,
       width: 964,
       height: 1137,
       chunkColumns: 4,

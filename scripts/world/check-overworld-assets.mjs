@@ -60,6 +60,8 @@ function dependencyEntries(manifest) {
 }
 
 function assertManifestFrame(manifest, region, expected, label) {
+  assert(typeof expected.releaseEligible === 'boolean',
+    `${label} registry releaseEligible must be boolean`);
   assert(manifest.regionId === expected.regionId, `${label}.regionId drifted`);
   assert(manifest.regionHash === expected.regionHash, `${label}.regionHash drifted`);
   assert(manifest.projectionManifestHash === expected.projectionManifestHash,
@@ -70,7 +72,8 @@ function assertManifestFrame(manifest, region, expected, label) {
     `${label}.projection drifted from the runtime registry`);
   assert(manifest.projectionManifestHash === sha256(`${JSON.stringify(manifest.projection)}\n`),
     `${label}.projectionManifestHash does not match its projection`);
-  assert(manifest.releaseEligible === false, `${label} generated assets must remain releaseEligible=false`);
+  assert(manifest.releaseEligible === expected.releaseEligible,
+    `${label}.releaseEligible drifted from the runtime asset registry`);
 }
 
 async function verifyPreviewPng(region) {
@@ -127,6 +130,7 @@ async function auditManifest(region, directory, expected, visited, counters) {
       regionId: dependencyManifest.regionId,
       regionHash: dependencyManifest.regionHash,
       projectionManifestHash: dependencyManifest.projectionManifestHash,
+      releaseEligible: expected.releaseEligible,
     }, visited, counters);
   }
 }
@@ -137,6 +141,9 @@ export async function checkOverworldAssets(regions = OVERWORLD_REGION_LIST) {
   for (const region of regions) {
     counters.regions += 1;
     const sources = [region.manifest, region.nodeSource, ...region.overlaySources];
+    const releaseStates = new Set(sources.map(({ releaseEligible }) => releaseEligible));
+    assert(releaseStates.size === 1 && releaseStates.has(region.manifest.releaseEligible),
+      `${region.id} runtime asset sources must share one release eligibility state`);
     for (const source of sources) {
       await auditManifest(region, `public/assets/overworld/${source.regionId}`, source, visited, counters);
     }

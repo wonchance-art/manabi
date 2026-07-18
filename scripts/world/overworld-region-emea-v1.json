@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "releaseEligible": false,
+  "releaseEligible": true,
   "generatorGitSha": null,
   "regionId": "europe-mediterranean-middle-east-surface-preview-v1",
   "bbox": [-11, 20, 50, 66],

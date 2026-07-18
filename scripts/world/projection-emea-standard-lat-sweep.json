@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "releaseEligible": false,
+  "releaseEligible": true,
   "regionId": "europe-mediterranean-middle-east-projection-sweep-v1",
   "bbox": [-11, 20, 50, 66],
   "anchor": { "lon0": 25, "lat0": 45 },

@@ -112,7 +112,9 @@ function normalizeSourceNode(value, index) {
 export function normalizeOverworldTransportNodeManifest(input) {
   assertExactKeys(input, MANIFEST_KEYS, 'transport node manifest');
   if (input.schemaVersion !== 2) throw new Error('transport node schemaVersion must be 2');
-  if (input.releaseEligible !== false) throw new Error('transport node preview must remain releaseEligible=false');
+  if (typeof input.releaseEligible !== 'boolean') {
+    throw new TypeError('releaseEligible must be boolean');
+  }
   if (input.generatorGitSha !== null
     && (typeof input.generatorGitSha !== 'string' || !/^[0-9a-f]{40}$/.test(input.generatorGitSha))) {
     throw new Error('generatorGitSha must be null or a full lowercase git SHA');

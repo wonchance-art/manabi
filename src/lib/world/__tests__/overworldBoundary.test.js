@@ -132,9 +132,12 @@ function feature(featureClass, coordinates, scalerank = 1) {
 }
 
 describe('오버월드 중립 경계 계약', () => {
-  it('출시·소유권 표현 drift와 미분류 원본 분류를 거부한다', () => {
-    expect(() => normalizeOverworldBoundaryManifest(boundaryManifest({ releaseEligible: true })))
-      .toThrow(/releaseEligible=false/);
+  it('비 boolean 출시·소유권 표현 drift와 미분류 원본 분류를 거부한다', () => {
+    expect(normalizeOverworldBoundaryManifest(
+      boundaryManifest({ releaseEligible: true }),
+    ).releaseEligible).toBe(true);
+    expect(() => normalizeOverworldBoundaryManifest(boundaryManifest({ releaseEligible: 'yes' })))
+      .toThrow(/must be boolean/);
     expect(() => normalizeOverworldBoundaryManifest(boundaryManifest({
       policy: { ...boundaryManifest().policy, countryFill: 'countries' },
     }))).toThrow(/forbid ownership/);
@@ -221,7 +224,7 @@ describe('오버월드 중립 경계 생성', () => {
   it('체크인된 EMEA 경계는 정책·해시·무지명·중립 분류를 고정한다', () => {
     const content = JSON.parse(readFileSync(path.join(CHECKED_IN_BOUNDARY_DIR, 'content-manifest.json'), 'utf8'));
     expect(content).toMatchObject({
-      releaseEligible: false,
+      releaseEligible: true,
       width: 964,
       height: 1137,
       chunkColumns: 4,

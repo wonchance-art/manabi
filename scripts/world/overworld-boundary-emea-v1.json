@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "releaseEligible": false,
+  "releaseEligible": true,
   "generatorGitSha": null,
   "regionId": "europe-mediterranean-middle-east-boundary-preview-v1",
   "baseTerrain": {
     "manifestPath": "scripts/world/overworld-region-emea-v1.json",
     "directory": "public/assets/overworld/europe-mediterranean-middle-east-terrain-preview-v1",
     "contentManifest": "content-manifest.json",
-    "contentManifestSha256": "cf70d61acfee495a124b2c2c24a0d449ae0cc9527a915c43dae018e31adc7c8b",
-    "contentManifestBytes": 8436
+    "contentManifestSha256": "c8a42ad21dcbcd8708b0231bd704a6a8915ef00bc7c66ce157d5a88091bfc4a4",
+    "contentManifestBytes": 8435
   },
   "boundarySources": [
     {

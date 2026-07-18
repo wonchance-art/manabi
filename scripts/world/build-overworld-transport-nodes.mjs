@@ -121,7 +121,7 @@ export function buildTransportNodeArtifacts({
   }
 
   const report = Object.freeze({
-    releaseEligible: false,
+    releaseEligible: manifest.releaseEligible,
     nodeCount: nodes.length,
     chunkCount: nodeEntries.length,
     nodeTypes: Object.freeze([...new Set(nodes.map(({ type }) => type))].sort(compareCodePoint)),
@@ -130,7 +130,7 @@ export function buildTransportNodeArtifacts({
   const contentManifest = Object.freeze({
     formatVersion: 1,
     schemaVersion: manifest.schemaVersion,
-    releaseEligible: false,
+    releaseEligible: manifest.releaseEligible,
     regionId: manifest.regionId,
     regionHash: sha256(manifest.regionId),
     inputManifestHash: sha256(manifestBytes),
@@ -170,6 +170,10 @@ async function loadBase(manifest, rootDir) {
     sha256: manifest.baseRegion.contentManifestSha256,
   }, 'base playability content manifest');
   const content = JSON.parse(contentBytes.toString('utf8'));
+  if (baseManifest.releaseEligible !== manifest.releaseEligible
+    || content.releaseEligible !== manifest.releaseEligible) {
+    throw new Error('transport node release eligibility must match its base playability chain');
+  }
   const chunks = new Map();
   for (const entry of content.chunks || []) {
     const bytes = await verifyFile(path.resolve(

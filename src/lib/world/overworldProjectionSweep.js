@@ -52,7 +52,9 @@ function normalizeBbox(bbox, label) {
 export function normalizeProjectionSweepManifest(manifest) {
   assertExactKeys(manifest, MANIFEST_KEYS, 'projection sweep manifest');
   assertInteger(manifest.schemaVersion, 'schemaVersion', { min: 1, max: 0xffff });
-  if (manifest.releaseEligible !== false) throw new Error('projection sweep must remain releaseEligible=false');
+  if (typeof manifest.releaseEligible !== 'boolean') {
+    throw new TypeError('releaseEligible must be boolean');
+  }
   if (typeof manifest.regionId !== 'string' || !/^[a-z0-9-]+$/.test(manifest.regionId)) {
     throw new TypeError('regionId must use lowercase ASCII letters, digits, and hyphens');
   }

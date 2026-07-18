@@ -183,7 +183,7 @@ export function buildBoundaryArtifacts({
     role: 'boundary-overlay',
   }));
   const report = Object.freeze({
-    releaseEligible: false,
+    releaseEligible: manifest.releaseEligible,
     policyId: manifest.policy.id,
     boundaryFeatureCounts: boundaries.featureCounts,
     boundarySegmentCounts: boundaries.segmentCounts,
@@ -195,7 +195,7 @@ export function buildBoundaryArtifacts({
   const contentManifest = Object.freeze({
     formatVersion: 1,
     schemaVersion: manifest.schemaVersion,
-    releaseEligible: false,
+    releaseEligible: manifest.releaseEligible,
     regionId: manifest.regionId,
     regionHash: sha256(manifest.regionId),
     inputManifestHash: sha256(manifestBytes),
@@ -262,6 +262,10 @@ export async function runBoundaryBuild({ manifestPath, inputDir, outputDir, chec
     sha256: manifest.baseTerrain.contentManifestSha256,
   }, 'base terrain content manifest');
   const baseContent = JSON.parse(await readFile(baseContentPath, 'utf8'));
+  if (baseManifest.releaseEligible !== manifest.releaseEligible
+    || baseContent.releaseEligible !== manifest.releaseEligible) {
+    throw new Error('boundary release eligibility must match its base terrain chain');
+  }
   const frame = createEquirectangularTileFrame(baseManifest);
   if (baseContent.width !== frame.width || baseContent.height !== frame.height
     || baseContent.chunkColumns !== frame.chunkColumns || baseContent.chunkRows !== frame.chunkRows) {

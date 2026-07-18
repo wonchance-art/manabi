@@ -207,7 +207,7 @@ export function buildRegionArtifacts({ manifestBytes, manifest, geojson }) {
   artifacts.sort((left, right) => compareCodePoint(left.path, right.path));
 
   const report = Object.freeze({
-    releaseEligible: false,
+    releaseEligible: manifest.releaseEligible,
     polygonCount,
     landSampleCount,
     landTileCount,
@@ -219,7 +219,7 @@ export function buildRegionArtifacts({ manifestBytes, manifest, geojson }) {
   const contentManifest = Object.freeze({
     formatVersion: 1,
     schemaVersion: manifest.schemaVersion,
-    releaseEligible: false,
+    releaseEligible: manifest.releaseEligible,
     regionId: manifest.regionId,
     regionHash,
     inputManifestHash,

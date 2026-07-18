@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "releaseEligible": false,
+  "releaseEligible": true,
   "generatorGitSha": null,
   "regionId": "europe-mediterranean-middle-east-terrain-preview-v1",
   "baseSurface": {
     "manifestPath": "scripts/world/overworld-region-emea-v1.json",
     "directory": "public/assets/overworld/europe-mediterranean-middle-east-surface-preview-v1",
     "contentManifest": "content-manifest.json",
-    "contentManifestSha256": "7c39149db9abf92f2cd85b9061f6a4b6bdab326eb4161fa39f0f2b195e4a865f",
-    "contentManifestBytes": 5206
+    "contentManifestSha256": "1ca5915df2c3af090056caa0b240613d79e3c9501acdcec39dbf2408d04e23cb",
+    "contentManifestBytes": 5205
   },
   "elevationSource": {
     "id": "noaa-etopo-2022-bed-60s",
