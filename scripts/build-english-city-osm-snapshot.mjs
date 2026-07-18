@@ -32,6 +32,22 @@ const CITY_CONFIG = Object.freeze({
       mergeStrategy: 'type-id-largest-geometry-compact-v1',
     }),
   }),
+  melbourne: Object.freeze({
+    bbox: Object.freeze([144.90, -37.88, 145.01, -37.78]),
+    metersPerTile: 20,
+    forestLayer: 'park',
+    oceanSeeds: Object.freeze([
+      Object.freeze({ lon: 144.905, lat: -37.87 }),
+    ]),
+    output: 'scripts/data/melbourne-osm-v21.json',
+    snapshotDate: '2026-07-18',
+    sourceDetails: Object.freeze({
+      providers: Object.freeze(['overpass-api.de', 'maps.mail.ru']),
+      partitionCount: 16,
+      queryCount: 48,
+      mergeStrategy: 'type-id-largest-geometry-compact-v1',
+    }),
+  }),
   sydney: Object.freeze({
     bbox: Object.freeze([151.17, -33.93, 151.31, -33.79]),
     metersPerTile: 20,
@@ -60,7 +76,7 @@ function parseArgs(argv) {
   const input = read('--input');
   const config = CITY_CONFIG[city];
   if (!config || !input) {
-    throw new Error('Usage: node scripts/build-english-city-osm-snapshot.mjs --city <brisbane|canberra|sydney> --input <overpass.json> [--output <snapshot.json>]');
+    throw new Error('Usage: node scripts/build-english-city-osm-snapshot.mjs --city <brisbane|canberra|melbourne|sydney> --input <overpass.json> [--output <snapshot.json>]');
   }
   return { city, input, output: read('--output') || config.output };
 }
