@@ -44,6 +44,10 @@
   latest-main targeted 14/14·전체 154 files/1,771 tests·결정성 PASS.
   geo SHA a78e598a·final PNG SHA fdaaf77b,
   #150 replacement IMPLEMENTATION_READY 5009267073 게시.
+  verifier readiness 독립 스캔에서 야라강 lon 144.958~144.961은
+  합계/연속 160m/160m, lon 144.979~144.982는 합계 320m·연속 160m,
+  Princes Bridge 차도 최근접 0타일, POI/역 재투영 worst 1.199429타일,
+  역 rail-mask 최근접 [0,1,0,0] PASS.
   official Melbourne verifier exact green 전에는 CODEX_DONE·ready 전환하지 않음.
 ### todo
 - (없음)
