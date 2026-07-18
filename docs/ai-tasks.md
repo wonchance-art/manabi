@@ -20,7 +20,7 @@
   `snapshot: null` 8도시 정본 경로 연결 PR #240 head
   `a162191e9ca8403ef8b289c9788e3ac5fd8d4d73` → main merge
   `ffe7e640f4fd2cc658c2111bdbc2be099ce3c2af`.
-  latest main `f9c6a4f47e3a26939a4cbfc14c278e83a34155df`의 verifier blob
+  latest main `c45c1952750637d2e01d3efc1b97e614c7f25821`의 verifier blob
   `483a95c6ce4140c92ec5bbed2aa4755198e8bb33` byte-identical,
   15도시 전 gate PASS. London PNG timeout은 #242에서 120초로 고정,
   단독 6/6 PASS. 19도시 결정성 165/165 PASS.
