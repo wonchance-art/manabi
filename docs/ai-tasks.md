@@ -16,7 +16,21 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-- (없음)
+- 가와구치코/후지 geo 준비(#150 수집 SPEC 5010917238·본생성 SPEC
+  5010930145): bbox `[138.725,35.395,138.85,35.55]`, 20m/ja,
+  exact Web Mercator correction `0.814394141983`, grid `567×863`,
+  `489,321` cells, 예상 `22,998,087 bytes`(21.933MiB) <24MiB,
+  headroom `2,167,737 bytes`. bbox·20m를 메모리 때문에 축소하지 않는다.
+  POI 11·역 3·호수 유람선 1링크의 전 좌표는 bbox 내이며
+  5합목은 `[34,853]`으로 남단에서 9타일, 河口湖駅 POI/역은
+  `[179,286]`·`[180,287]` 인접이라 재투영 허용범위 내 결정적
+  marker separation이 필요하다. 현대 snapshot mountain/water masks와
+  일본어 `nameJa` canonical+`yomi`, Marseille ferry-aware BFS를 결합하는
+  도시 전용 generator·geo·test 3파일 계약으로 설계한다.
+  현재 `codex/kawaguchiko-prefetch` PR·remote branch·exact handoff가 없으므로
+  POI·역·본생성·재수집은 시작하지 않았다. snapshot merge 후 ODbL 1.0,
+  16 partition/48 responses/7 RLE 각각 489,321 decode, manifest/raw/snapshot
+  SHA·결정성·MOUNTAIN/호수·rail mask를 감사하고 새 `codex2/*`에서 착수한다.
 ### todo
 - (없음)
 ### done (최근)
