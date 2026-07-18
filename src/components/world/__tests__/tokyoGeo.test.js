@@ -37,6 +37,9 @@ const FIXED_TILES = Object.freeze({
     'ryogoku-kokugikan': [602, 239],
     'nakameguro-meguro-river': [176, 533],
     'kanda-myojin': [487, 211],
+    'akihabara-electric-town': [506, 222],
+    'takeshita-street': [194, 381],
+    'otome-road': [262, 55],
   },
   stations: {
     shibuya: [188, 456],
@@ -143,6 +146,7 @@ describe('도쿄 실지형 데이터 계약', () => {
       'tokyo-station-marunouchi', 'ginza-4-chome', 'meiji-jingu',
       'tokyo-metropolitan-government', 'ryogoku-kokugikan',
       'nakameguro-meguro-river', 'kanda-myojin',
+      'akihabara-electric-town', 'takeshita-street', 'otome-road',
     ]);
     expect(TOKYO_GEO.stations.map((station) => station.id)).toEqual([
       'shibuya', 'ebisu', 'meguro', 'gotanda', 'osaki', 'shinagawa',
@@ -262,7 +266,8 @@ describe('도쿄 지형 충실도·도시 구조·철도', () => {
       walkable += 1;
       reached += seen[index];
     }
-    expect(walkable).toBe(655_988);
+    // v2.3 서브컬처 POI 3곳 앵커 보정(+1 타일 — 재생성 실측).
+    expect(walkable).toBe(655_989);
     expect(reached).toBe(walkable);
   });
 });

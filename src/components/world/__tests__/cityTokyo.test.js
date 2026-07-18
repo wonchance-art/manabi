@@ -202,7 +202,8 @@ describe('구역·연결성·재접속 안전', () => {
       walkable += 1;
       reached += seen[index];
     }
-    expect(walkable).toBe(655_988);
+    // v2.3 서브컬처 POI 3곳 앵커 보정(+1 타일 — 재생성 실측).
+    expect(walkable).toBe(655_989);
     expect(reached).toBe(walkable);
     for (const marker of [...CITY_NODES, ...STATIONS]) {
       expect(seen[marker.tile[1] * COLS + marker.tile[0]], marker.id).toBe(1);
