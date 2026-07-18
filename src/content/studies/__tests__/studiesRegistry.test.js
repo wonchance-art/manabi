@@ -22,7 +22,7 @@ describe('지역학 레지스트리 계약', () => {
   });
 
   it('문서 슬러그는 나라 안에서 유일하고 나라 접두를 가진다', () => {
-    const prefixes = { japan: 'jp-' };
+    const prefixes = { japan: 'jp-', korea: 'kr-' };
     for (const country of STUDY_COUNTRIES) {
       const slugs = country.docs.map((doc) => doc.slug);
       expect(new Set(slugs).size).toBe(slugs.length);

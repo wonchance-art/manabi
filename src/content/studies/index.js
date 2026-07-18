@@ -9,6 +9,7 @@ import JP_ECONOMY from './japan/economy.js';
 import JP_CULTURE from './japan/culture.js';
 import JP_SOCIETY from './japan/society.js';
 import JP_LIFE from './japan/life.js';
+import KR_OVERVIEW from './korea/overview.js';
 
 export const STUDY_DOMAINS = Object.freeze([
   Object.freeze({ id: 'overview', label: '개관' }),
@@ -26,6 +27,13 @@ export const STUDY_COUNTRIES = Object.freeze([
     nameLocal: '日本学',
     intro: '언어 너머의 일본 — 지리·역사·경제·사회를 공적 통계와 통설 기준으로 정리한 레퍼런스.',
     docs: Object.freeze([JP_OVERVIEW, JP_HISTORY_PREMODERN, JP_ECONOMY, JP_CULTURE, JP_SOCIETY, JP_LIFE]),
+  }),
+  Object.freeze({
+    id: 'korea',
+    nameKo: '한국학',
+    nameLocal: '韓國學',
+    intro: '아는 나라를 레퍼런스의 시선으로 — 한국의 지리·인구·경제·사회를 공적 통계 기준으로 재정리한다.',
+    docs: Object.freeze([KR_OVERVIEW]),
   }),
 ]);
 
