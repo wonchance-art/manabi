@@ -21,8 +21,10 @@
   `0cbb1c68d07606351c11cc6c5ac647ea967c18bd` → main merge
   `98ec05ad03619a37b89c49bff69c4690da029439`, snapshot SHA
   `7c6e54a2432e754201acbcdd583419a7cc4c45df75aa88a44e3b7d576a99bf82`.
-  draft PR #276 branch `codex2/kawaguchiko-geo` remote exact
-  `3495b60b4e883240ffee63d24fa83bc8c888f301`은 OPEN/DRAFT/CLEAN/MERGEABLE이고,
+  PR #276 branch `codex2/kawaguchiko-geo` implementation exact
+  `3495b60b4e883240ffee63d24fa83bc8c888f301`은 main merge
+  `10b39b317c155aac093844c0a5460dfa0aa0910e`에 전용 3파일
+  byte-identical로 반입됐고,
   검증 base `4c241d7ba7b9076eb0eca4621121493719b8a302` 대비
   Kawaguchiko 전용 신규 generator·geo·test 3파일만이다.
   bbox `[138.725,35.395,138.85,35.55]`, 20m/ja, grid `567×863`,
@@ -34,10 +36,11 @@
   18타일만 허용한다. targeted 2 files/18 tests, 전체 single-worker
   170 files/1,883 tests, node/ESLint/diff-check·재생성 결정성 PASS.
   terrain SHA `f39c90be`·railway SHA `f49fcf26`·final PNG SHA `91b526d4`.
-  latest main `358d4da3e74bb226ab13d0b2e236c099a6fd3b59`의 후지 액트 씬 추가 뒤에도
-  PR은 CLEAN이며 official Kawaguchiko verifier/profile은 아직 없다.
+  latest main `10b39b317c155aac093844c0a5460dfa0aa0910e`의 verifier blob
+  `144f64e1c87bb864b63056eeb2c3b50f85077cb1`에는 official Kawaguchiko
+  profile이 아직 없다.
   profile 게시 후 exact main/head/verifier blob에서 재검증하고
-  중복 CODEX_DONE 부재 확인 뒤 ready 전환·CODEX_DONE 1회 게시한다.
+  중복 CODEX_DONE 부재 확인 뒤 CODEX_DONE을 1회 게시한다.
 ### todo
 - (없음)
 ### done (최근)
