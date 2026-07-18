@@ -28,6 +28,8 @@
   verifier pin 선제 감사에서 Lake Burley Griffin 경도
   149.095~149.108 전 구간 합계 >=1,200m·연속 >=1,000m,
   Commonwealth/Kings Avenue bridge 차도 최근접 0/1타일 PASS.
+  POI·역 13개 en/ko 병기 13/13·타일 충돌 0,
+  재투영 worst national-library 1.089486타일 PASS.
   #150 핸드오프 5008647039 게시, latest main 공식 verifier profile 대기.
 ### todo
 - 호주 4호 멜버른 — Claude 상세 bbox·POI·역·en-AU·수계/bridge SPEC과
