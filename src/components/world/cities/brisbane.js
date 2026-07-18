@@ -120,8 +120,11 @@ export const TRANSIT = [
   },
 ];
 
-// 프롭(스토리브리지 실루엣·시티캣 선체·시계탑 등)은 렌더크래프트 후속.
-export const PROPS = [];
+// 🛳️ 렌더크래프트 R1 — 기존 kind 재사용 배치. 스토리브리지 실루엣 등 신규 kind는 베이킹 스펙 후속.
+export const PROPS = [
+  { kind: 'ferry_dom', tile: [221, 310] }, // 시티캣 선체(리버사이드~사우스뱅크 중간)
+  { kind: 'stall', tile: [219, 273] },     // 퀸스트리트몰 노점
+];
 
 export function buildBrisbaneGrid() {
   const grid = Uint8Array.from(BRISBANE_GEO.terrain);
