@@ -235,6 +235,7 @@ const SHANGHAI_NAME = '상하이';
 const BEIJING_NAME = '베이징';
 const BRISBANE_NAME = '브리즈번';
 const SYDNEY_NAME = '시드니';
+const CANBERRA_NAME = '캔버라';
 const BRUSSELS_NAME = '브뤼셀';
 const LONDON_NAME = '런던';
 
@@ -316,6 +317,19 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
     lat: -33.8832,
     noStamp: true,
     gate: { type: 'city', to: 'sydney', label: '🏙️ 시내' },
+  }),
+  createRegionalWorldNode({
+    id: 'canberra',
+    name: CANBERRA_NAME,
+    desc: CANBERRA_NAME,
+    kind: 'city',
+    regionId: 'asia-pacific',
+    contentLocale: 'en',
+    // 캔버라 도시 ENTRANCE인 캔버라역/킹스턴의 확정 좌표와 체크인된 보행칸([1954,2380]).
+    lon: 149.1493,
+    lat: -35.319,
+    noStamp: true,
+    gate: { type: 'city', to: 'canberra', label: '🏙️ 시내' },
   }),
   createRegionalWorldNode({
     id: 'paris',
