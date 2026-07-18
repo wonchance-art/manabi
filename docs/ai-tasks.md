@@ -32,10 +32,15 @@
   현대 snapshot mountain/water masks와
   일본어 `nameJa` canonical+`yomi`, Marseille ferry-aware BFS를 결합하는
   도시 전용 generator·geo·test 3파일 계약으로 설계한다.
-  현재 `codex/kawaguchiko-prefetch` PR·remote branch·exact handoff가 없으므로
-  POI·역·본생성·재수집은 시작하지 않았다. snapshot merge 후 ODbL 1.0,
-  16 partition/48 responses/7 RLE 각각 489,321 decode, manifest/raw/snapshot
-  SHA·결정성·MOUNTAIN/호수·rail mask를 감사하고 새 `codex2/*`에서 착수한다.
+  snapshot PR #269 `codex/kawaguchiko-prefetch` exact
+  `0cbb1c68d07606351c11cc6c5ac647ea967c18bd`는 OPEN/READY/MERGEABLE이고
+  CODEX_DONE 5010987687의 exact head가 일치한다. snapshot SHA
+  `7c6e54a2432e754201acbcdd583419a7cc4c45df75aa88a44e3b7d576a99bf82`,
+  PNG SHA `fa620634c290eda066b443fc5061129e67a3605354f0cb8dcf4a84a33d9de32b`,
+  16 partition/48 responses/7 RLE·ODbL·결정성·targeted 9/9 PASS다.
+  merge 전에는 POI·역·본생성·재수집을 시작하지 않는다. #269 merge 후
+  exact snapshot과 MOUNTAIN/호수·rail/road mask를 재확인하고 새
+  `codex2/*`에서 착수한다.
 ### todo
 - (없음)
 ### done (최근)
