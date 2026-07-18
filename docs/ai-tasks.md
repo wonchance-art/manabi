@@ -18,8 +18,12 @@
 ### doing
 - (없음)
 ### todo
-- 호주 4호 멜버른 — Claude 상세 bbox·POI·역·en-AU·수계/bridge SPEC과
-  Codex-1 비콘텐츠 snapshot exact handoff 전 POI·역·본생성 금지.
+- 호주 4호 멜버른 — 확정 SPEC #150 댓글 5008845867 수신:
+  bbox `[144.90,-37.88,145.01,-37.78]`, 20m/en,
+  POI 12·역 4·시티서클 트램·야라강·BRIDGE 0.
+  SPEC 선제 감사 aspectCorrection 0.789833986695,
+  grid 484×557(269,588 cells), 12,670,636 bytes(12.084MiB) <24MiB PASS.
+  Codex-1 비콘텐츠 snapshot exact handoff 전 POI·역·본생성·재수집 금지.
 ### done (최근)
 - 캔버라 geo (#215 snapshot merge, #219 head
   596c7f77d1b78381f4ca52623ae327627010f079 OPEN / READY / CLEAN,
