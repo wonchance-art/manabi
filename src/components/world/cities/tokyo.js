@@ -207,6 +207,10 @@ export const PROPS = [
   { kind: 'neon', tile: [194, 379] },       // 竹下通り 간판 네온
   { kind: 'neon', tile: [260, 53] },        // 乙女ロード 상점 네온
   { kind: 'stall', tile: [262, 53] },       // 乙女ロード 굿즈 노점
+  // R4 애드온 서브컬처 kind(#262) — 무문자·무캐릭터 실루엣, 이격 ≥2 스크립트 검증.
+  { kind: 'gachapon', tile: [507, 220] },   // 秋葉原 캡슐토이 머신
+  { kind: 'arcade', tile: [504, 221] },     // 秋葉原 게임센터 캐비닛
+  { kind: 'gachapon', tile: [264, 53] },    // 乙女ロード 캡슐토이 머신
 ];
 
 export function buildTokyoGrid() {
