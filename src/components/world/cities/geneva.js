@@ -7,6 +7,7 @@
 
 import { CITY_TILE, isCityBlocked, isCityWalkable, isCityWater } from './terrain.js';
 import { GENEVA_GEO } from './geneva.geo.js';
+import { GENEVA_DOORS } from '../genevaDoors.js';
 
 export { CITY_TILE, isCityBlocked, isCityWalkable, isCityWater };
 
@@ -52,21 +53,45 @@ export const ZONES = [
   { id: 'lake', label: '레만호·제토', bounds: [166, 100, 290, 223], labelTile: [228, 162] },
 ];
 
-export const CITY_NODES = GENEVA_GEO.pois.map((poi) => {
-  const copy = poiCopy(poi.id);
-  return {
-    id: poi.id,
+// fr 도어 3종(fr-13~15) tile — 앵커 POI 곁 보행+이격 ≥2 스크립트 검증 배치.
+const GENEVA_DOOR_TILES = Object.freeze({
+  'fr-13': [179, 199], // 시계 공방 — 꽃시계(영국 정원) 곁
+  'fr-14': [170, 217], // 퐁뒤 식당 — 구시가
+  'fr-15': [128, 326], // 초콜릿 가게 — 카루주 공방 골목
+});
+
+export const CITY_NODES = [
+  ...GENEVA_GEO.pois.map((poi) => {
+    const copy = poiCopy(poi.id);
+    return {
+      id: poi.id,
+      kind: 'spot',
+      name: copy.name,
+      nameFr: poi.nameFr,
+      contentLocale: poi.contentLocale,
+      facade: poi.id === 'gare-cornavin' ? 'station' : 'sign',
+      tile: [poi.tile[0], poi.tile[1]],
+      facing: 'down',
+      noStamp: true,
+      desc: copy.desc,
+    };
+  }),
+  // 프랑스어 문화 도어 3종(fr-13~15 — 파리·마르세유와 별개 신규 세트) — track 명시 라우팅.
+  ...GENEVA_DOORS.map((door) => ({
+    id: door.id,
     kind: 'spot',
-    name: copy.name,
-    nameFr: poi.nameFr,
-    contentLocale: poi.contentLocale,
-    facade: poi.id === 'gare-cornavin' ? 'station' : 'sign',
-    tile: [poi.tile[0], poi.tile[1]],
+    name: door.nameFr,
+    nameFr: door.nameFr,
+    contentLocale: 'fr',
+    facade: 'sign',
+    tile: [...GENEVA_DOOR_TILES[door.id]],
     facing: 'down',
     noStamp: true,
-    desc: copy.desc,
-  };
-});
+    track: door.track,
+    chapter: door.chapter,
+    desc: `${door.name} — ${door.lines[0].fr} (${door.lines[0].gloss})`,
+  })),
+];
 
 // ⚠️ nameJa 필드는 CityScene 레거시 계약 — 프랑스 도시는 nameFr를 그대로 싣는다(yomi 공란).
 export const STATIONS = GENEVA_GEO.stations.map((station) => ({
