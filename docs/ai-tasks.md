@@ -16,25 +16,23 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-- 호주 2호 시드니 geo — merged snapshot #212 exact
-  90fcda4164b6129e35d58b34c62a3cfb5630c7e3 소비 후 draft #216
-  head 3fb2dd1b9db86a139e86463add1baaad7fbbbb03 구현 완료:
-  전용 신규 3파일, 20m/en·POI 14·역 5·하버 페리 3노선·BRIDGE 0,
-  targeted 14/14·latest main 19dd18b 결합 전체 148 files/1,735 tests·
-  BFS 284,607/284,607·23,755,680 bytes <24MiB·결정성·전체 PNG PASS.
-  #150 핸드오프 5008243315 게시, latest main 공식 verifier profile 대기.
+- 호주 3호 캔버라 geo — merged snapshot #215 exact
+  1cff18b163541edf8d8c69228e37f719d90c0391 소비 후 draft #219
+  head 134c3bf570141f81efdf84eec2d00886546606ab 구현 완료:
+  전용 신규 3파일, 20m/en·POI 10·Canberra station·
+  Alinga Street↔Dickson 라이트레일·BRIDGE 0·호수 단면 1,560m/1,560m,
+  targeted 14/14·latest main 56b5785 결합 전체 149 files/1,742 tests·
+  BFS 234,974/234,974·12,856,662 bytes <24MiB·결정성·전체 PNG PASS.
+  #150 핸드오프 5008647039 게시, latest main 공식 verifier profile 대기.
 ### todo
-- 호주 3호 캔버라 geo — SPEC #150 댓글 5008080789:
-  bbox `[149.06,-35.33,149.18,-35.24]`, 20m/en, nameEn canonical,
-  POI 10·역/라이트레일·벌리그리핀호 단면·BRIDGE 0.
-  Codex-1 snapshot #215 exact 1cff18b163541edf8d8c69228e37f719d90c0391 수신:
-  grid 546×501, 4×4/48, snapshot SHA
-  45963e9c508bf6b468ddd33a065da4e21a6456674d3918d42d39223c722624ec,
-  독립 3 pipeline 20/20·RLE 273,546·12.261MiB·ODbL·결정성 PASS,
-  snapshot 전체 PNG SHA
-  b89f2efef410d35cdb91768b3dd13faa72af58423a8aeaa48b6b0090244c8a72.
-  시드니 official gate·CODEX_DONE과 #215 merge/명시적 stacking 전 본생성 금지.
+- 호주 4호 멜버른 — Claude 상세 bbox·POI·역·en-AU·수계/bridge SPEC과
+  Codex-1 비콘텐츠 snapshot exact handoff 전 POI·역·본생성 금지.
 ### done (최근)
+- 시드니 geo (#212 snapshot merge, #216 head
+  3fb2dd1b9db86a139e86463add1baaad7fbbbb03 OPEN / READY / CLEAN,
+  official verifier #217 main merge 46e8b129a9619d116acd25dcd879e2bb223a6f0e
+  전 gate·latest-main 149 files/1,742 tests·BFS·결정성·PNG PASS,
+  #150 CODEX_DONE 5008556556; merge·runtime·desc는 후속)
 - 브리즈번 geo (#208 snapshot merge, #211 head
   b8ef57cd9b32d87f16843126e6b80715a4174783 → main merge
   19dd18bda66b5b8e27c39444897e8d0f97984dbb, official verifier
