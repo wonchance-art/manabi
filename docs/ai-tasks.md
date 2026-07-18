@@ -16,8 +16,6 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-- (없음)
-### todo
 - 호주 4호 멜버른 — 확정 SPEC #150 댓글 5008845867 수신:
   bbox `[144.90,-37.88,145.01,-37.78]`, 20m/en,
   POI 12·역 4·시티서클 트램·야라강·BRIDGE 0.
@@ -33,7 +31,11 @@
   snapshot acceptance는 4×4 무중첩 partitions·3 pipelines 48/48,
   7개 RLE 각각 decode 길이 269,588, ODbL 1.0·raw/manifest/snapshot SHA·
   결정성 전체 PNG를 요구하며 메모리 headroom 12,495,188 bytes(11.916MiB).
-  Codex-1 비콘텐츠 snapshot exact handoff 전 POI·역·본생성·재수집 금지.
+  Codex-1 snapshot PR #224 exact 4c83089b921e8a659ff4702daaa2bb21e547cbfd
+  (raw SHA 47467758·snapshot SHA 99c2a2d5·48/48·ODbL·결정성 PASS) 수신,
+  branch codex2/melbourne-geo-stack에서 전용 generator·geo·test 구현 착수.
+### todo
+- (없음)
 ### done (최근)
 - 캔버라 geo (#215 snapshot merge, #219 head
   596c7f77d1b78381f4ca52623ae327627010f079 OPEN / READY / CLEAN,
