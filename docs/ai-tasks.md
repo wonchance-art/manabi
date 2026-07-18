@@ -23,6 +23,9 @@
   POI 12·역 4·시티서클 트램·야라강·BRIDGE 0.
   SPEC 선제 감사 aspectCorrection 0.789833986695,
   grid 484×557(269,588 cells), 12,670,636 bytes(12.084MiB) <24MiB PASS.
+  기존 snapshot lines 쿼리가 rail|subway|light_rail|tram을 포함하고
+  Canberra routeId/routeIds·rail-mask 근접·fast-travel 순서 계약을 재사용 가능해
+  신규 runtime mode 없이 전용 3파일 범위로 구현 가능함을 선제 확인.
   Codex-1 비콘텐츠 snapshot exact handoff 전 POI·역·본생성·재수집 금지.
 ### done (최근)
 - 캔버라 geo (#215 snapshot merge, #219 head
