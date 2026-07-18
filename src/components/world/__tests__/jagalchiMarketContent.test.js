@@ -21,7 +21,8 @@ describe('자갈치 액트 카피 — 씬 계약', () => {
 });
 
 describe('부산 자갈치 게이트 — 도시 배선', () => {
-  it('jagalchi 노드가 씬 게이트를 싣고 보행 타일 위에 있다', async () => {
+  // 부산 대형 geo 동적 임포트 — 병렬 부하 flaky 방지(kyotoGeo/런던 PNG 선례의 명시 타임아웃).
+  it('jagalchi 노드가 씬 게이트를 싣고 보행 타일 위에 있다', { timeout: 20000 }, async () => {
     const { BUSAN } = await import('../cities/busan.js');
     const { isCityWalkable } = await import('../cities/terrain.js');
     const node = BUSAN.nodes.find((entry) => entry.id === 'jagalchi');
