@@ -18,8 +18,9 @@
 ### doing
 - 도시 geo verifier 강화(OWNER_DIRECTIVE #150 댓글 5009917089):
   `snapshot: null` 8도시 정본 경로 연결, report-only 건물·녹지 프로필 band 제안,
-  19도시 결정성 스윕. branch `codex2/city-geo-verifier-strengthening`,
-  exact `3fc6ddf1bd6d5cf08775a32a0b7dbf1048cabe1e`.
+  19도시 결정성 스윕. draft PR #240 branch
+  `codex2/city-geo-verifier-strengthening`, remote exact
+  `a162191e9ca8403ef8b289c9788e3ac5fd8d4d73`, Claude band 검수 대기.
 ### todo
 - (없음)
 ### done (최근)
