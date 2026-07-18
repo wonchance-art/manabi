@@ -71,6 +71,7 @@ describe('도시 정밀맵 레지스트리', () => {
     ['brisbane', 'brisbane', [2039, 2186]],
     ['sydney', 'sydney', [1999, 2345]],
     ['canberra', 'canberra', [1954, 2380]],
+    ['melbourne', 'melbourne', [1862, 2442]],
   ])('%s 게이트와 EXIT가 APAC 오버월드의 같은 타일로 왕복한다', (nodeId, cityId, tile) => {
     const node = getNode(nodeId);
     expect(node).toMatchObject({
