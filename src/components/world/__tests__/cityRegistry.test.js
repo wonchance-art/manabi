@@ -125,6 +125,19 @@ describe('도시 정밀맵 레지스트리', () => {
     });
   });
 
+  it('제네바 게이트와 EXIT가 EMEA 코르나뱅역 노드의 같은 타일로 왕복한다', () => {
+    const geneva = getNode('geneva');
+    expect(geneva).toMatchObject({
+      regionId: 'emea',
+      overworldTile: [271, 489],
+      gate: { type: 'city', to: 'geneva' },
+    });
+    expect(CITY_DATA[geneva.gate.to].returnNode).toBe(geneva.id);
+    expect(worldNodeReturnSpawn(geneva)).toEqual({
+      scene: 'overworld:emea', x: 271, y: 489,
+    });
+  });
+
   it('가와구치코 게이트와 EXIT가 전국맵 가와구치코역 노드의 같은 타일로 왕복한다', () => {
     const kawaguchiko = getNode('kawaguchiko');
     expect(kawaguchiko).toMatchObject({

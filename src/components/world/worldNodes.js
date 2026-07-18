@@ -248,6 +248,7 @@ const MELBOURNE_NAME = '멜버른';
 const BRUSSELS_NAME = '브뤼셀';
 const LONDON_NAME = '런던';
 const MARSEILLE_NAME = '마르세유';
+const GENEVA_NAME = '제네바';
 
 export const REGIONAL_WORLD_NODES = Object.freeze([
   createRegionalWorldNode({
@@ -433,6 +434,18 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
     lat: 43.3027,
     noStamp: true,
     gate: { type: 'city', to: 'marseille', label: '🏙️ 시내' },
+  }),
+  createRegionalWorldNode({
+    id: 'geneva',
+    name: GENEVA_NAME,
+    kind: 'city',
+    regionId: 'emea',
+    contentLocale: 'fr',
+    // 코르나뱅역 투영칸([271,489]) 자체가 체크인된 보행칸이다.
+    lon: 6.1425,
+    lat: 46.2104,
+    noStamp: true,
+    gate: { type: 'city', to: 'geneva', label: '🏙️ 시내' },
   }),
 ]);
 
