@@ -12,6 +12,7 @@ import JP_LIFE from './japan/life.js';
 import KR_OVERVIEW from './korea/overview.js';
 import KR_HISTORY_PREMODERN from './korea/historyPremodern.js';
 import KR_ECONOMY from './korea/economy.js';
+import KR_CULTURE from './korea/culture.js';
 
 export const STUDY_DOMAINS = Object.freeze([
   Object.freeze({ id: 'overview', label: '개관' }),
@@ -35,7 +36,7 @@ export const STUDY_COUNTRIES = Object.freeze([
     nameKo: '한국학',
     nameLocal: '韓國學',
     intro: '아는 나라를 레퍼런스의 시선으로 — 한국의 지리·인구·경제·사회를 공적 통계 기준으로 재정리한다.',
-    docs: Object.freeze([KR_OVERVIEW, KR_HISTORY_PREMODERN, KR_ECONOMY]),
+    docs: Object.freeze([KR_OVERVIEW, KR_HISTORY_PREMODERN, KR_ECONOMY, KR_CULTURE]),
   }),
 ]);
 
