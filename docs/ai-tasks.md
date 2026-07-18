@@ -16,43 +16,29 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-- 마르세유 geo 구현·공식 verifier 대기(#150 SPEC 댓글 5010360716·
-  exact 구현 SPEC 5010602514):
-  Codex-1 snapshot #251 head
-  `ae97cc3c0f71bd7c84d4195a4b902e179e773bf6` → main merge
-  `c55ab6d0e79ba46acd2d425fdc907363aa16efc9`.
-  exact-main PR #260 branch `codex2/marseille-geo` 구현 head
-  `71e309e880b6579fd5547451b1636eb3685569d6` → main merge
-  `c7a3c7dcf09693d78e1e50d34e868f42f32cd994`.
-  마르세유 전용 generator·geo·test 신규 3파일은 구현 head와 byte-identical이다.
-  bbox `[5.32,43.245,5.42,43.325]`, 20m/fr, grid `406×446`,
-  POI 12·역 4·페리 2링크·BRIDGE 0, Vieux-Port 380m/300m,
-  open sea 5,580m/5,580m, 두 land component `85,296 / 141`,
-  ferry-aware BFS `85,437/85,437`, 메모리 `8,510,572 bytes` <24MiB.
-  구현 head targeted 16/16·전체 single-worker 165 files/1,846 tests,
-  node/ESLint/diff-check PASS. terrain SHA `282b339f`, railway SHA
-  `d706d373`, final PNG SHA `d1871893`; 콘텐츠 정책·snapshot
-  ODbL/partition/RLE/SHA·결정성 PASS.
-  latest main `bed5ab4619672a07298a73af1786cdf124fb3af9`에서도 targeted
-  16/16 PASS. official profile과 CODEX_DONE은 아직 없다.
-  official Marseille verifier가 게시되면 latest exact main/head/blob에서
-  재검증 후 CODEX_DONE을 한 번만 게시한다.
-- 도시 geo verifier 강화(OWNER_DIRECTIVE #150 댓글 5009917089):
-  `snapshot: null` 8도시 정본 경로 연결 PR #240 head
-  `a162191e9ca8403ef8b289c9788e3ac5fd8d4d73` → main merge
-  `ffe7e640f4fd2cc658c2111bdbc2be099ce3c2af`.
-  latest main `bed5ab4619672a07298a73af1786cdf124fb3af9`의 verifier blob
-  `483a95c6ce4140c92ec5bbed2aa4755198e8bb33` byte-identical,
-  15도시 전 gate PASS. London PNG timeout은 #242에서 120초로 고정,
-  단독 6/6 PASS. 19도시 결정성 165/165 PASS.
-  report-only 건물·녹지 band 제안 #150 댓글 5010031646과
-  기존 제안 포인터 5010101384를 Claude가 #150 댓글 5010610812에서
-  exact 승인했다. 마르세유 우선순위 완료 후 새 exact-main branch
-  `codex2/city-geo-profile-gates`에서 `scripts/verify-city-geo.mjs`
-  1파일에 승인된 buildingPct/greenMinPct hard gate만 반영한다.
+- (없음)
 ### todo
 - (없음)
 ### done (최근)
+- 도시 geo 프로필 hard gate (#150 승인 5010610812, PR #266 head
+  `e3aa018bdbbb844fc5d379b3d57b177157618bae`, verifier blob
+  `144f64e1c87bb864b63056eeb2c3b50f85077cb1`, OPEN/READY/CLEAN/MERGEABLE):
+  latest main `73e4a145663ded1a850055f291523d3d5332f5c4` 결합에서
+  16 official profiles 전 gate, 19도시 결정성 165/165,
+  전체 single-worker 168 files/1,863 tests, node/ESLint/diff-check PASS.
+  Marseille band는 제외/report-only 유지. #150 CODEX_DONE 5010880738;
+  merge 대기.
+- 마르세유 geo (#251 snapshot main merge
+  `c55ab6d0e79ba46acd2d425fdc907363aa16efc9`, #260 head
+  `71e309e880b6579fd5547451b1636eb3685569d6` → main merge
+  `c7a3c7dcf09693d78e1e50d34e868f42f32cd994` byte-identical 3파일):
+  official verifier first merge
+  `d27115dd7a67b9a86ba04065caf1e32f7b9cd1b7`·blob `4be26181`,
+  20m/fr·구항 320m/320m·이프성 해협 2,220m/2,220m·BRIDGE 0,
+  targeted 16/16·latest-main 전체 168 files/1,863 tests,
+  ferry-aware BFS 85,437/85,437·8,510,572 bytes <24MiB·결정성·정책 PASS.
+  terrain SHA `282b339f`·railway SHA `d706d373`·final PNG SHA `d1871893`,
+  #150 CODEX_DONE 5010811856.
 - 멜버른 geo (#224 snapshot merge, ancestry 재작성으로 stacked #225 superseded close,
   exact-main replacement #227 head 8ec951b54be8993a964992eaa4301f1fcdaea196,
   official verifier #229 main 94fce93d3dc149ed1000ce8765fbc2db257e4ec5·
