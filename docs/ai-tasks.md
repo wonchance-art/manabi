@@ -52,6 +52,10 @@
   7개 RLE decode 길이 각각 269,588·내장 SHA 7/7 일치,
   ODbL 1.0·snapshot SHA 99c2a2d5·geo SHA a78e598a·
   full PNG SHA fdaaf77b 정합 PASS.
+  정책 integrity 재감사에서 POI 12/12 representationPolicy 존재,
+  Hosier Lane·Carlton Gardens·Shrine·MCG·St Kilda 제한 정확 일치,
+  desc·narrative·story·exhibit 필드 0개,
+  ferryLinks·virtualEdges 0개 PASS.
   official Melbourne verifier exact green 전에는 CODEX_DONE·ready 전환하지 않음.
 ### todo
 - (없음)
