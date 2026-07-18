@@ -40,6 +40,20 @@ const FIXED_TILES = Object.freeze({
     'akihabara-electric-town': [506, 222],
     'takeshita-street': [194, 381],
     'otome-road': [262, 55],
+    'tsukiji-outer-market': [501, 415],
+    'toyosu-market': [578, 526],
+    'omoide-yokocho': [178, 262],
+    'shinjuku-gyoen': [226, 305],
+    'yanaka-ginza': [479, 69],
+    kagurazaka: [361, 210],
+    ameyoko: [517, 169],
+    kappabashi: [581, 144],
+    jimbocho: [438, 245],
+    'sugamo-jizodori': [355, 18],
+    daikanyama: [194, 509],
+    shimokitazawa: [30, 438],
+    'nakano-broadway': [26, 175],
+    omotesando: [217, 417],
   },
   stations: {
     shibuya: [188, 456],
@@ -147,6 +161,9 @@ describe('도쿄 실지형 데이터 계약', () => {
       'tokyo-metropolitan-government', 'ryogoku-kokugikan',
       'nakameguro-meguro-river', 'kanda-myojin',
       'akihabara-electric-town', 'takeshita-street', 'otome-road',
+      'tsukiji-outer-market', 'toyosu-market', 'omoide-yokocho', 'shinjuku-gyoen', 'yanaka-ginza',
+      'kagurazaka', 'ameyoko', 'kappabashi', 'jimbocho', 'sugamo-jizodori',
+      'daikanyama', 'shimokitazawa', 'nakano-broadway', 'omotesando',
     ]);
     expect(TOKYO_GEO.stations.map((station) => station.id)).toEqual([
       'shibuya', 'ebisu', 'meguro', 'gotanda', 'osaki', 'shinagawa',
@@ -266,8 +283,8 @@ describe('도쿄 지형 충실도·도시 구조·철도', () => {
       walkable += 1;
       reached += seen[index];
     }
-    // v2.3 서브컬처 POI 3곳 앵커 보정(+1 타일 — 재생성 실측).
-    expect(walkable).toBe(655_989);
+    // v2.4 동네 키워드 14곳 앵커 보정(+5 타일 — 재생성 실측).
+    expect(walkable).toBe(655_994);
     expect(reached).toBe(walkable);
   });
 });

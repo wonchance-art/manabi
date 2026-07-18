@@ -102,6 +102,65 @@ const POI_SOURCE = Object.freeze([
     id: 'otome-road', nameJa: '乙女ロード', yomi: 'おとめろーど',
     lat: 35.7300272, lon: 139.7180022, kind: 'street',
   },
+  // v2.4 동네 키워드 대확장(오너 2026-07-18 — "동네별 세세하게 유명한 키워드") — 시장·골목·
+  // 동네 상권 14곳. IP 규율: 상호·점포명 무언급(도구街·서점가 등 거리 통칭만), 환락가 제외.
+  {
+    id: 'tsukiji-outer-market', nameJa: '築地場外市場', yomi:'つきじじょうがいしじょう',
+    lat: 35.6654, lon: 139.7708, kind: 'market',
+  },
+  {
+    id: 'toyosu-market', nameJa: '豊洲市場', yomi: 'とよすしじょう',
+    lat: 35.6455, lon: 139.7880, kind: 'market',
+  },
+  {
+    id: 'omoide-yokocho', nameJa: '思い出横丁', yomi: 'おもいでよこちょう',
+    lat: 35.6929, lon: 139.6995, kind: 'street',
+  },
+  {
+    id: 'shinjuku-gyoen', nameJa: '新宿御苑', yomi: 'しんじゅくぎょえん',
+    lat: 35.6852, lon: 139.7100, kind: 'park',
+  },
+  {
+    id: 'yanaka-ginza', nameJa: '谷中銀座', yomi: 'やなかぎんざ',
+    lat: 35.7276, lon: 139.7659, kind: 'street',
+  },
+  {
+    id: 'kagurazaka', nameJa: '神楽坂', yomi: 'かぐらざか',
+    lat: 35.7022, lon: 139.7400, kind: 'street',
+  },
+  {
+    id: 'ameyoko', nameJa: 'アメヤ横丁', yomi: 'あめやよこちょう',
+    lat: 35.7095, lon: 139.7745, kind: 'market',
+  },
+  {
+    id: 'kappabashi', nameJa: 'かっぱ橋道具街', yomi: 'かっぱばしどうぐがい',
+    lat: 35.7140, lon: 139.7885, kind: 'street',
+  },
+  {
+    id: 'jimbocho', nameJa: '神保町古書店街', yomi: 'じんぼうちょうこしょてんがい',
+    lat: 35.6960, lon: 139.7570, kind: 'street',
+  },
+  {
+    id: 'sugamo-jizodori', nameJa: '巣鴨地蔵通り', yomi: 'すがもじぞうどおり',
+    // 상점가 중간(토게누키지조 곁) — 스가모역 마커와 ≥3타일 이격 확보.
+    lat: 35.7367, lon: 139.7385, kind: 'street',
+  },
+  {
+    id: 'daikanyama', nameJa: '代官山', yomi: 'だいかんやま',
+    lat: 35.6485, lon: 139.7030, kind: 'district',
+  },
+  {
+    id: 'shimokitazawa', nameJa: '下北沢', yomi: 'しもきたざわ',
+    lat: 35.6613, lon: 139.6667, kind: 'district',
+  },
+  {
+    id: 'nakano-broadway', nameJa: '中野ブロードウェイ', yomi: 'なかのぶろーどうぇい',
+    lat: 35.7085, lon: 139.6658, kind: 'district',
+  },
+  {
+    id: 'omotesando', nameJa: '表参道', yomi: 'おもてさんどう',
+    lat: 35.6650, lon: 139.7080, kind: 'street',
+  },
 ]);
 
 const STATION_SOURCE = Object.freeze([

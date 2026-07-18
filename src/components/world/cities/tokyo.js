@@ -139,6 +139,78 @@ export const CITY_NODES = [
     tile: poiTile('otome-road'), facing: 'down', noStamp: true,
     desc: '이케부쿠로 선샤인 거리 곁의 「乙女ロード」(おとめろーど). 여성 팬층 대상 애니메이션·만화 전문점이 모여 이런 애칭으로 불리는 것으로 알려져 있어요.',
   },
+  // ── v2.4 동네 키워드 대확장 14곳(오너 2026-07-18 — "동네별 세세하게") — geo POI_SOURCE 재생성.
+  //   IP 규율: 점포 상호 무언급(거리 통칭만), 환락가 미포함. 사실 검증: 연도·유래 전승 헤지.
+  {
+    id: 'tsukiji-outer-market', kind: 'spot', name: '築地場外市場', facade: 'sign',
+    tile: poiTile('tsukiji-outer-market'), facing: 'down', noStamp: true,
+    desc: '수산 도매 기능이 도요스로 옮겨간 뒤에도 남은 먹거리 골목 「築地場外市場」(つきじじょうがいしじょう). 아침 초밥·계란말이 꼬치를 든 줄이 이어지는 시장이에요.',
+  },
+  {
+    id: 'toyosu-market', kind: 'spot', name: '豊洲市場', facade: 'sign',
+    tile: poiTile('toyosu-market'), facing: 'down', noStamp: true,
+    desc: '2018년 츠키지의 도매 기능을 이어받은 것으로 알려진 「豊洲市場」(とよすしじょう). 참치 경매를 유리 너머 견학 데크에서 볼 수 있어요.',
+  },
+  {
+    id: 'omoide-yokocho', kind: 'spot', name: '思い出横丁', facade: 'sign',
+    tile: poiTile('omoide-yokocho'), facing: 'down', noStamp: true,
+    desc: '신주쿠역 서쪽의 꼬치구이 골목 「思い出横丁」(おもいでよこちょう). 전후 노점에서 시작된 것으로 전해지는 좁은 골목에 연기와 초롱이 이어져요.',
+  },
+  {
+    id: 'shinjuku-gyoen', kind: 'spot', name: '新宿御苑', facade: 'sign',
+    tile: poiTile('shinjuku-gyoen'), facing: 'down', noStamp: true,
+    desc: '황실 정원에서 국민 공원이 된 「新宿御苑」(しんじゅくぎょえん). 일본·영국·프랑스식 정원이 한 울타리 안에 있고, 벚꽃 명소로 손꼽혀요.',
+  },
+  {
+    id: 'yanaka-ginza', kind: 'spot', name: '谷中銀座', facade: 'sign',
+    tile: poiTile('yanaka-ginza'), facing: 'down', noStamp: true,
+    desc: '옛 정취의 야네센(谷根千) 골목을 대표하는 상점가 「谷中銀座」(やなかぎんざ). \'석양 계단\'으로 불리는 유야케단단 아래로 반찬 가게와 고양이 골목이 이어져요.',
+  },
+  {
+    id: 'kagurazaka', kind: 'spot', name: '神楽坂', facade: 'sign',
+    tile: poiTile('kagurazaka'), facing: 'down', noStamp: true,
+    desc: '돌바닥 골목에 요정(料亭) 문화가 남은 언덕길 「神楽坂」(かぐらざか). 프랑스 문화 기관이 자리 잡으며 \'도쿄의 작은 파리\'로도 불려요.',
+  },
+  {
+    id: 'ameyoko', kind: 'spot', name: 'アメヤ横丁', facade: 'sign',
+    tile: poiTile('ameyoko'), facing: 'down', noStamp: true,
+    desc: '우에노역 곁 고가 아래 시장 골목 「アメヤ横丁」(あめやよこちょう). 전후 암시장에서 시작된 것으로 전해지며, 건어물·과자·잡화 흥정 소리로 활기차요.',
+  },
+  {
+    id: 'kappabashi', kind: 'spot', name: 'かっぱ橋道具街', facade: 'sign',
+    tile: poiTile('kappabashi'), facing: 'down', noStamp: true,
+    desc: '주방 도구 전문점이 늘어선 「かっぱ橋道具街」(かっぱばしどうぐがい). 식품 샘플·칼·냄비 — 요리사들의 거리로 알려져 있어요.',
+  },
+  {
+    id: 'jimbocho', kind: 'spot', name: '神保町古書店街', facade: 'sign',
+    tile: poiTile('jimbocho'), facing: 'down', noStamp: true,
+    desc: '세계 최대급 고서점 거리로 알려진 「神保町古書店街」(じんぼうちょうこしょてんがい). 헌책 냄새와 카레 골목이 함께 있는 책의 동네예요.',
+  },
+  {
+    id: 'sugamo-jizodori', kind: 'spot', name: '巣鴨地蔵通り', facade: 'sign',
+    tile: poiTile('sugamo-jizodori'), facing: 'down', noStamp: true,
+    desc: '\'할머니들의 하라주쿠\'라는 애칭으로 불리는 상점가 「巣鴨地蔵通り」(すがもじぞうどおり). 토게누키지조 참배와 붉은 속옷 가게로 알려져 있어요.',
+  },
+  {
+    id: 'daikanyama', kind: 'spot', name: '代官山', facade: 'sign',
+    tile: poiTile('daikanyama'), facing: 'down', noStamp: true,
+    desc: '낮은 언덕에 편집숍과 카페가 모인 동네 「代官山」(だいかんやま). 느긋한 골목 산책으로 사랑받는 세련된 주택가예요.',
+  },
+  {
+    id: 'shimokitazawa', kind: 'spot', name: '下北沢', facade: 'sign',
+    tile: poiTile('shimokitazawa'), facing: 'down', noStamp: true,
+    desc: '고서·빈티지 옷·소극장·라이브하우스의 동네 「下北沢」(しもきたざわ). 젊은 문화의 거리로 알려진 골목 미로예요.',
+  },
+  {
+    id: 'nakano-broadway', kind: 'spot', name: '中野ブロードウェイ', facade: 'sign',
+    tile: poiTile('nakano-broadway'), facing: 'down', noStamp: true,
+    desc: '만화·피규어·수집품 상점이 층층이 쌓인 「中野ブロードウェイ」(なかのぶろーどうぇい). 아키하바라와 나란히 꼽히는 서브컬처의 성지예요.',
+  },
+  {
+    id: 'omotesando', kind: 'spot', name: '表参道', facade: 'sign',
+    tile: poiTile('omotesando'), facing: 'down', noStamp: true,
+    desc: '메이지 신궁의 참배길로 닦인 것에서 유래한 느티나무 가로수길 「表参道」(おもてさんどう). 지금은 건축가들의 플래그십 건물이 늘어선 거리로 알려져 있어요.',
+  },
   // ── NPC 대화 노드(가공 무대 — geo POI 아님) — ot-11(전철)·ot-12(면세)·ot-07(편의점) 문화 도어.
   //   후쿠오카 패턴 그대로: kind:'npc' + npc 스크립트 키 + noStamp(스탬프 우주는 오너 결정 전 미확장).
   //   타일은 보행+보행인접+기존 마커 Chebyshev ≥3 이격을 스크립트로 검증해 고정.
