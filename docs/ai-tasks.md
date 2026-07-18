@@ -23,6 +23,8 @@
   Alinga Street↔Dickson 라이트레일·BRIDGE 0·호수 단면 1,560m/1,560m,
   targeted 14/14·latest main 56b5785 결합 전체 149 files/1,742 tests·
   BFS 234,974/234,974·12,856,662 bytes <24MiB·결정성·전체 PNG PASS.
+  merged snapshot SHA 45963e9c·manifest SHA 66e3e21c·ODbL 1.0과
+  7개 RLE 길이 273,546·snapshot/geo targeted 14/14 재감사 PASS.
   #150 핸드오프 5008647039 게시, latest main 공식 verifier profile 대기.
 ### todo
 - 호주 4호 멜버른 — Claude 상세 bbox·POI·역·en-AU·수계/bridge SPEC과
