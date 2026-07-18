@@ -7,6 +7,8 @@
 
 ## Codex-1 (codex/*)
 ### doing
+- 자갈치 액트 씬 골격: `msmAbbeyScene.js` 구조를 미러한 4막 Phaser 씬
+  (`dawn-pier`→`auction-floor`→`hoe-alley`→`breakwater-lighthouse`)과 액트 순서·경계 계약 테스트
 ### todo
 - 멜버른 비콘텐츠 선행 수집: bbox `[144.90,-37.88,145.01,-37.78]`,
   4×4 Overpass 48/48 + 20m 스냅샷 결정성 계약(POI·역·콘텐츠 제외)
