@@ -85,6 +85,7 @@ import { CITY_DATA } from './cities/index.js';
 import { CITY_MINI_SCALE, cityMinimapLayout, downsampleCityGrid } from './cityMinimap';
 import { directTransitDestinations } from '../../lib/world/transit';
 import { studiesRefForNode } from '../../lib/world/studiesRefs';
+import { msmTideCopyFor } from './msmTideCopy';
 import { corridorStopSpawn } from '../../lib/world/transsibCorridor';
 import {
   OVERWORLD_REGION_LIST,
@@ -3080,6 +3081,16 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           padding: '4px 10px', lineHeight: 1.2, whiteSpace: 'nowrap',
         }}>
           🚪 Ⓐ {nearNode.name} 문화 챕터
+          {/* 🌊 조수 카피 — MSM 도어(msm-04)는 현재 조수 phase 한 줄을 병기한다. */}
+          {(() => {
+            const tide = msmTideCopyFor(nearNode.tideCopyKey);
+            if (!tide) return null;
+            return (
+              <span style={{ display: 'block', marginTop: 3, fontSize: '0.62rem', opacity: 0.85, whiteSpace: 'normal' }}>
+                🌊 {tide.fr} <span style={{ opacity: 0.75 }}>[{tide.reading}] — {tide.gloss}</span>
+              </span>
+            );
+          })()}
         </div>
       )}
 
@@ -3117,6 +3128,19 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         }}>
           <div style={{ fontSize: '0.85rem', fontWeight: 'bold', marginBottom: 6 }}>{nearNode.name}</div>
           <p style={{ fontSize: '0.78rem', lineHeight: 1.6, margin: 0 }}>{nearNode.desc}</p>
+          {/* 🌊 조수 카피 — MSM 성벽 등 tideCopyKey 노드는 phase별 안내와 A2 프랑스어 한 문장을 병기. */}
+          {(() => {
+            const tide = msmTideCopyFor(nearNode.tideCopyKey);
+            if (!tide) return null;
+            return (
+              <div style={{ marginTop: 8, paddingTop: 7, borderTop: `1px dashed ${GBC.border}` }}>
+                <p style={{ margin: 0, fontSize: '0.72rem', lineHeight: 1.55 }}>🌊 {tide.ko}</p>
+                <p style={{ margin: '4px 0 0', fontSize: '0.78rem', fontWeight: 800, color: '#244d72' }}>
+                  {tide.fr} <span style={{ fontWeight: 400, fontSize: '0.66rem', opacity: 0.8 }}>[{tide.reading}] — {tide.gloss}</span>
+                </p>
+              </div>
+            );
+          })()}
           {/* 🗾 스탬프 — 방금 획득이면 강조 한 줄, 이미 수집했으면 도장 자국(은은한 한 줄). */}
           {newStamp?.id === nearNode.id ? (
             <div style={{ marginTop: 8, fontSize: '0.76rem', fontWeight: 'bold', color: '#2f7a2a' }}>
