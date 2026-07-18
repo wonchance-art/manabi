@@ -16,7 +16,18 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-- (없음)
+- 제네바 geo 준비(#150 Codex-1 snapshot SPEC 5011426511):
+  corrected bbox `[6.105,46.175,6.185,46.240]`, 20m/fr,
+  exact Web Mercator correction `0.6920486897479066`, grid `309×362`,
+  `111,858` cells, 예상 `5,257,326 bytes`(5.014MiB),
+  24MiB headroom `19,908,498 bytes` PASS.
+  현재 `codex/geneva-prefetch` remote branch·open PR과 Codex-2 상세 좌표 SPEC은
+  없다. snapshot handoff가 나타나면 ODbL 1.0·16 partitions·48/48·7개 RLE
+  각각 decode `111,858`·manifest/raw/snapshot SHA·결정성·전체 PNG와
+  레만호/론강·road/rail mask를 감사한다. snapshot main merge와 상세
+  Codex-2 SPEC, recipient/kind/scope/exact 40자 head, active
+  PLAN/WORKING/FREEZE 부재가 모두 확인되기 전에는 POI·역·본생성·재수집을
+  시작하지 않는다.
 ### todo
 - (없음)
 ### done (최근)
