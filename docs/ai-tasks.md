@@ -16,6 +16,10 @@
 
 ## Codex-2 (codex2/*)
 ### doing
+- (없음)
+### todo
+- (없음)
+### done (최근)
 - 제네바 geo (#285 snapshot head
   `2ebd8f2069ae8b2cade6ec65134d28552feed3a4` → main merge
   `a7c7733b64ef6a6a8c090c8ea1b98fcb20e2f777`, #150 detailed SPEC
@@ -28,12 +32,11 @@
   BRIDGE 0·몽블랑교 차도 회랑 PASS. targeted 16/16·latest-main 전체
   single-worker 176 files/1,913 tests·node/ESLint/diff-check·결정성 PASS.
   memory `5,257,326 bytes` <24MiB, terrain SHA `97f8230b`, railway SHA
-  `23152c01`, final PNG SHA `a1879fb8`. official Geneva verifier 게시 후
-  exact latest main/implementation head/blob에서 재검증하고 CODEX_DONE으로
-  마감한다. Claude verifier 요청 #150 댓글 5011688301 게시 완료.
-### todo
-- (없음)
-### done (최근)
+  `23152c01`, final PNG SHA `a1879fb8`. official verifier 반입 merge
+  `856c326f40d0cdd85f68bd08debffeea1bf3a172`·latest validated main
+  `4c94fcc3611f1ac317925a75c01aa7ace7fa9880`·blob
+  `b378356a08e7ebd0da63aeb072ab36fa438ccaae`, 전 gate PASS.
+  #150 CODEX_DONE 5011808912.
 - 가와구치코/후지 geo (#269 snapshot head
   `0cbb1c68d07606351c11cc6c5ac647ea967c18bd` → main merge
   `98ec05ad03619a37b89c49bff69c4690da029439`, #276 implementation head
