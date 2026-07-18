@@ -358,6 +358,26 @@ const CITY_GATES = {
     bridgeMaxTiles: 0, // 구항·해안에 교량 없음(오너 교량 정리 규율 동일)
     bridgeCrossings: [],
   },
+  // ── 일본 5호 가와구치코/후지 (#276 — 5합목 33타일 분리 성분은 geo 테스트 2성분 계약이 담당,
+  //    도시 배선의 등산 버스 TRANSIT 가 유일한 다리) ──
+  kawaguchiko: {
+    file: 'src/components/world/cities/kawaguchiko.geo.js',
+    snapshot: 'scripts/data/kawaguchiko-osm-v21.json',
+    expectedLocale: 'ja',
+    expectedMpt: 20,
+    buildingPct: null, // 산악 호반 소도시 — 관찰 후 밴드 라운드에서 판단
+    greenMinPct: null, // MOUNTAIN 65%+ 특수 프로필 — report 관찰
+    poiMaxDevTiles: 2.5,
+    downtown: { label: '가와구치코역', lon: 138.7645, lat: 35.4986 },
+    riverSections: [
+      // 河口湖 개수면 — 위도 스캔 실측 35.518에서 2,540m/2,460m(우노시마 섬 북측 무분절 구간).
+      { name: '가와구치호 단면', lat: 35.518, lonRange: [138.73, 138.79], sumMinM: 2000, runMinM: 2000 },
+    ],
+    streamCourses: [],
+    reportCourses: [],
+    bridgeMaxTiles: 0,
+    bridgeCrossings: [],
+  },
 };
 
 // ── 투영(도시 geo 생성 계약과 동일: webmercator + aspectCorrection) ─────────

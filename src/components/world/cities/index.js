@@ -17,6 +17,7 @@ import BRISBANE from './brisbane.js';
 import SYDNEY from './sydney.js';
 import CANBERRA from './canberra.js';
 import MELBOURNE from './melbourne.js';
+import KAWAGUCHIKO from './kawaguchiko.js';
 import MARSEILLE from './marseille.js';
 
 // 실제 플레이 씬과 관리자 전체 맵 뷰어가 함께 쓰는 도시 레지스트리.
@@ -24,7 +25,7 @@ import MARSEILLE from './marseille.js';
 export const CITY_MAPS = Object.freeze([
   FUKUOKA, TOKYO, OSAKA, KYOTO, BUSAN, SEOUL, GRAND_PARIS, MONT_SAINT_MICHEL, COTE_DAZUR,
   BRUSSELS, TAIPEI, HONG_KONG, LONDON, SHANGHAI, BEIJING, BRISBANE, SYDNEY, CANBERRA, MELBOURNE,
-  MARSEILLE,
+  MARSEILLE, KAWAGUCHIKO,
 ]);
 
 export const CITY_DATA = Object.freeze(

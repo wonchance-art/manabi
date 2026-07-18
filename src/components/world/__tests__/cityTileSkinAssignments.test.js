@@ -13,6 +13,7 @@ const EXPECTED_SKINS = {
   sydney: { building: 'terracotta' },
   canberra: { building: 'terracotta' },
   kyoto: { building: 'kawara' },
+  kawaguchiko: { building: 'kawara' },
   beijing: { building: 'hutong' },
   london: { building: 'brick' },
   brussels: { building: 'brick' },
