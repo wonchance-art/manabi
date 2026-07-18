@@ -343,8 +343,8 @@ const CITY_GATES = {
     snapshot: 'scripts/data/marseille-osm-v21.json',
     expectedLocale: 'fr',
     expectedMpt: 20,
-    buildingPct: null, // 관찰 후 밴드 라운드 2에서 확정(Codex-2 report-only)
-    greenMinPct: null, // 지중해 석회암 도심 — 녹지 관찰 후 판단
+    buildingPct: [15, 20],
+    greenMinPct: 1,
     poiMaxDevTiles: 2.5,
     downtown: { label: '구항(벨주 부두)', lon: 5.3745, lat: 43.2946 },
     riverSections: [
@@ -365,8 +365,8 @@ const CITY_GATES = {
     snapshot: 'scripts/data/kawaguchiko-osm-v21.json',
     expectedLocale: 'ja',
     expectedMpt: 20,
-    buildingPct: null, // 산악 호반 소도시 — 관찰 후 밴드 라운드에서 판단
-    greenMinPct: null, // MOUNTAIN 65%+ 특수 프로필 — report 관찰
+    buildingPct: [4.5, 7],
+    greenMinPct: null, // MOUNTAIN이 land denominator를 지배하는 특수형 — report-only 유지
     poiMaxDevTiles: 2.5,
     downtown: { label: '가와구치코역', lon: 138.7645, lat: 35.4986 },
     riverSections: [
@@ -384,8 +384,8 @@ const CITY_GATES = {
     snapshot: 'scripts/data/geneva-osm-v21.json',
     expectedLocale: 'fr',
     expectedMpt: 20,
-    buildingPct: null, // 석조 소도심 — 관찰 후 밴드 라운드에서 판단
-    greenMinPct: null, // 호수 비중 큼 — report 관찰
+    buildingPct: [9.5, 12.5],
+    greenMinPct: 7.5,
     poiMaxDevTiles: 2.5,
     downtown: { label: '코르나뱅역', lon: 6.1425, lat: 46.2104 },
     riverSections: [
