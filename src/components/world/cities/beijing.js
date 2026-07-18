@@ -100,6 +100,8 @@ export const TRANSIT = [
 
 // 🏮 렌더크래프트 R1 — 기존 kind 재사용 배치. 자금성 지붕·백탑 등 신규 kind는 베이킹 스펙 후속.
 export const PROPS = [
+  { kind: 'gugong_roof', tile: [203, 189] },   // 자금성 금빛 지붕(R3)
+  { kind: 'white_dagoba', tile: [165, 143] },  // 북해 백탑(R3)
   { kind: 'stall', tile: [184, 300] }, // 전문대가 노점
   { kind: 'stall', tile: [265, 229] }, // 왕푸징 간식 골목 노점
 ];

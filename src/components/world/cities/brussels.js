@@ -97,6 +97,7 @@ export const TRANSIT = [
 
 // 🧇 렌더크래프트 R1.5 — 기존 kind 재사용 배치(브랜드 무언급 — 일반 노점).
 export const PROPS = [
+  { kind: 'gable', tile: [114, 298] },      // 그랑플라스 박공 지붕(R3)
   { kind: 'stall', tile: [116, 298] }, // 그랑플라스 곁 와플 노점
   { kind: 'stall', tile: [128, 332] }, // 사블롱 노점
 ];

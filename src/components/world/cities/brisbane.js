@@ -122,6 +122,7 @@ export const TRANSIT = [
 
 // 🛳️ 렌더크래프트 R1 — 기존 kind 재사용 배치. 스토리브리지 실루엣 등 신규 kind는 베이킹 스펙 후속.
 export const PROPS = [
+  { kind: 'storybridge', tile: [277, 244] },   // 스토리브리지 아치(R3)
   { kind: 'ferry_dom', tile: [221, 310] }, // 시티캣 선체(리버사이드~사우스뱅크 중간)
   { kind: 'stall', tile: [219, 273] },     // 퀸스트리트몰 노점
 ];

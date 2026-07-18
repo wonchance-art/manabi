@@ -162,6 +162,8 @@ export const TRANSIT = [
 
 // ⛲ 렌더크래프트 R1.5 — 기존 kind 재사용 배치. 에펠 실루엣 등 신규 kind는 베이킹 스펙 후속.
 export const PROPS = [
+  { kind: 'eiffel', tile: [714, 452] },     // 🗼 에펠탑 실루엣(POI 곁 — R3)
+  { kind: 'pyramide', tile: [867, 444] },   // 루브르 유리 피라미드(R3)
   { kind: 'fountain', tile: [812, 416] }, // 콩코르드 분수
   { kind: 'stall', tile: [957, 461] },    // 마레 마르셰 노점
 ];

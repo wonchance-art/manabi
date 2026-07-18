@@ -151,6 +151,7 @@ export const TRANSIT = [
 
 // 🛳️ 렌더크래프트 R1 — 기존 kind 재사용 배치. 동방명주 실루엣 등 신규 kind는 베이킹 스펙 후속.
 export const PROPS = [
+  { kind: 'pearl_tower', tile: [237, 111] },   // 동방명주 실루엣(R3)
   { kind: 'ferry_dom', tile: [223, 137] }, // 황푸강 도선 선체(와이탄~루자쭈이 중간)
   { kind: 'neon', tile: [120, 130] },      // 난징둥루 네온
   { kind: 'stall', tile: [202, 186] },     // 위위안 앞 간식 노점

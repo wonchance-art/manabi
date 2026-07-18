@@ -104,6 +104,7 @@ export const TRANSIT = [
 
 // ⛲ 렌더크래프트 R1.5 — 기존 kind 재사용 배치(보행 판정+노드 이격 ≥2 계산치).
 export const PROPS = [
+  { kind: 'parasol', tile: [815, 308] },    // 프롬나드 파라솔(R3)
   { kind: 'fountain', tile: [847, 294] }, // 마세나 광장 분수
   { kind: 'stall', tile: [868, 300] },    // 니스 구시가 마르셰 노점
 ];

@@ -159,6 +159,8 @@ export const TRANSIT = [
 
 // ⛲ 렌더크래프트 R1.5 — 기존 kind 재사용 배치. 빅벤·타워브리지 실루엣은 베이킹 스펙 후속.
 export const PROPS = [
+  { kind: 'bigben', tile: [610, 560] },     // 빅벤 시계탑 실루엣(R3)
+  { kind: 'towerbridge', tile: [780, 524] },// 타워브리지 2탑(R3)
   { kind: 'stall', tile: [726, 524] },    // 버러마켓 노점(en-04 도어 곁)
   { kind: 'fountain', tile: [597, 514] }, // 트래펄가 분수
 ];
