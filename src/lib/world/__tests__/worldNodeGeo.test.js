@@ -23,7 +23,7 @@ const ROOT = path.resolve(HERE, '../../../..');
 const APAC = overworldRegionById(LEGACY_WORLD_REGION_ID);
 const PLAYABILITY_DIR = path.join(ROOT, 'public/assets/overworld', APAC.manifest.regionId);
 const GEO_MANIFEST_PATH = path.join(ROOT, 'public/assets/overworld/world-node-geo-migration-v1.json');
-const LEGACY_ID_TILE_SHA256 = '7d2b2debf9398957c196474b927f0b998c96d02f2ce2b888f1f3112ee9efd1cf';
+const LEGACY_ID_TILE_SHA256 = '7f99015ead3c6be35cd3c424efaf209cae0596aab6fb0e173cfd21e1eb47dc81';
 
 function sha256(value) {
   return createHash('sha256').update(value).digest('hex');
@@ -102,6 +102,11 @@ describe('기존 WORLD_NODES 오버월드 좌표 이중 운용', () => {
       lat: 34.6687,
       geoSource: 'verified-input',
     });
+    expect(WORLD_NODES.find(({ id }) => id === 'kawaguchiko')).toMatchObject({
+      lon: 138.7645,
+      lat: 35.4986,
+      geoSource: 'verified-input',
+    });
     expect(WORLD_NODES.find(({ id }) => id === 'yanagawa')?.geoSource)
       .toBe('legacy-tile-derived');
   });
@@ -131,7 +136,7 @@ describe('기존 WORLD_NODES 오버월드 좌표 이중 운용', () => {
       releaseEligible: false,
       legacyIdTileSha256: LEGACY_ID_TILE_SHA256,
       nodeCount: WORLD_NODES.length,
-      geoSourceCounts: { 'legacy-tile-derived': 48, 'verified-input': 17 },
+      geoSourceCounts: { 'legacy-tile-derived': 48, 'verified-input': 18 },
     });
   });
 
