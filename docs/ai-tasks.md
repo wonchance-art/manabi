@@ -32,21 +32,25 @@
   7개 RLE 각각 decode 길이 269,588, ODbL 1.0·raw/manifest/snapshot SHA·
   결정성 전체 PNG를 요구하며 메모리 headroom 12,495,188 bytes(11.916MiB).
   Codex-1 snapshot PR #224 exact 4c83089b921e8a659ff4702daaa2bb21e547cbfd
-  (raw SHA 47467758·snapshot SHA 99c2a2d5·48/48·ODbL·결정성 PASS) 기반
-  stacked draft PR #225 branch codex2/melbourne-geo-stack exact
-  d9c499ae6744cbcc455c2a97d02e70683c85edc8 구현 완료.
+  (raw SHA 47467758·snapshot SHA 99c2a2d5·48/48·ODbL·결정성 PASS)는
+  main merge exact 3252cc5930c79a568bb8236b3a4b843f27d0715d에 반입됨.
+  merge ancestry 재작성으로 stacked #225는 superseded close하고,
+  latest main exact d8b8cfe90deadfb12c0bae17fcf3736570c49a64 기반 replacement
+  draft PR #227 branch codex2/melbourne-geo-main exact
+  8ec951b54be8993a964992eaa4301f1fcdaea196으로 정리 완료.
   Melbourne 전용 신규 3파일만이며 POI 12·역 4·City Loop/City Circle tram,
   야라강 160m/160m·BRIDGE 0·Princes Bridge 차도 회랑,
   BFS 226,175/226,175·12,670,636 bytes <24MiB,
-  targeted 14/14·전체 152 files/1,758 tests·결정성 PASS.
+  latest-main targeted 14/14·전체 154 files/1,771 tests·결정성 PASS.
   geo SHA a78e598a·final PNG SHA fdaaf77b,
-  #150 IMPLEMENTATION_READY 5009194119 게시.
+  #150 replacement IMPLEMENTATION_READY 5009267073 게시.
   official Melbourne verifier exact green 전에는 CODEX_DONE·ready 전환하지 않음.
 ### todo
 - (없음)
 ### done (최근)
 - 캔버라 geo (#215 snapshot merge, #219 head
-  596c7f77d1b78381f4ca52623ae327627010f079 OPEN / READY / CLEAN,
+  596c7f77d1b78381f4ca52623ae327627010f079 → main merge
+  207e7f6d2c08401faa147ff0d049ac007e7c86b8,
   Dickson 좌표를 OSM snapshot 철도축 `149.13374,-35.25056`,
   tile `[335,58]`로 보정하고 Alinga/Dickson rail-mask 7/0타일을 회귀 고정.
   official verifier #221 main e3a5a3f·blob 8e7c388 전 gate,
