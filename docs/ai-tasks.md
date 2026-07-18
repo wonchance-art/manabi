@@ -16,11 +16,20 @@
 
 ## Codex-2 (codex2/*)
 ### doing
+- 마르세유 geo 준비(#150 SPEC 댓글 5010360716):
+  bbox `[5.32,43.245,5.42,43.325]`, 20m/fr, Web Mercator 보정
+  `0.7279522795397183`, exact grid `406×446`(181,076 cells),
+  예상 메모리 `8,510,572 bytes`(8.116MiB, 24MiB 대비 15.884MiB 여유).
+  구항·지중해 수계, POI 12·역 4·페리 2링크·BRIDGE 0 계약은
+  Sydney 다중 페리 4-way BFS 선례로 신규 runtime mode 없이 구현 가능.
+  Codex-1 4×4 Overpass 48/48 비콘텐츠 snapshot exact handoff와
+  active PLAN/WORKING/FREEZE 부재 확인 전 POI·역·본생성·재수집 금지.
+  현재 관련 open PR·remote branch 없음.
 - 도시 geo verifier 강화(OWNER_DIRECTIVE #150 댓글 5009917089):
   `snapshot: null` 8도시 정본 경로 연결 PR #240 head
   `a162191e9ca8403ef8b289c9788e3ac5fd8d4d73` → main merge
   `ffe7e640f4fd2cc658c2111bdbc2be099ce3c2af`.
-  latest main `b799f63510b0588d09e33971b717afb9bf4d923d`의 verifier blob
+  latest main `af14bbe8fa4ae0deedde4975ffa7b26479f4693f`의 verifier blob
   `483a95c6ce4140c92ec5bbed2aa4755198e8bb33` byte-identical,
   15도시 전 gate PASS. London PNG timeout은 #242에서 120초로 고정,
   단독 6/6 PASS. 19도시 결정성 165/165 PASS.
