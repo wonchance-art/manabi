@@ -11,12 +11,14 @@ import {
 } from '../../lib/world/inventory';
 import { charFrameRows } from './sprites';
 import { GBC, gbcButtonPrimary, gbcPanel } from './QuestReview';
+import TravelWikiPanel from './TravelWikiPanel';
 
 const TABS = [
   { id: 'avatar', icon: '🙂', label: '캐릭터' },
   { id: 'bag', icon: '🎒', label: '가방' },
   { id: 'codex', icon: '📚', label: '도감' },
   { id: 'quests', icon: '🪧', label: '임무' },
+  { id: 'phone', icon: '📱', label: '폰' }, // 다이제틱 위키 기기 — 지역학을 게임 안에서 검색·열람
 ];
 
 const fieldLabel = { skin: '피부색', hair: '머리색', top: '상의', bottom: '하의', style: '헤어스타일', outfit: '의상', acc: '소품' };
@@ -231,7 +233,7 @@ export default function WorldGameMenu({
         <strong style={{ fontSize: '0.72rem' }}>📒 여행 수첩</strong>
         <button type="button" onClick={onClose} style={{ ...gbcButtonPrimary, padding: '2px 7px', fontSize: '0.58rem' }}>닫기 Ⓑ</button>
       </header>
-      <nav aria-label="여행 수첩 메뉴" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', borderBottom: `2px solid ${GBC.border}` }}>
+      <nav aria-label="여행 수첩 메뉴" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', borderBottom: `2px solid ${GBC.border}` }}>
         {TABS.map((item) => (
           <button key={item.id} type="button" onClick={() => setTab(item.id)} aria-current={tab === item.id ? 'page' : undefined} style={{ border: 0, borderRight: `1px solid ${GBC.border}`, background: tab === item.id ? GBC.green : GBC.cream, color: tab === item.id ? GBC.creamHi : GBC.ink, fontFamily: GBC.font, fontSize: '0.55rem', fontWeight: 700, cursor: 'pointer' }}>
             {item.icon} {item.label}
@@ -243,6 +245,7 @@ export default function WorldGameMenu({
         {tab === 'bag' && <BagPanel onAction={(action) => switchAndRun(tab, action)} />}
         {tab === 'codex' && <CodexPanel stampCount={stampCount} totalPlaces={totalPlaces} onOpenStampAlbum={onOpenStampAlbum} onOpenDictionary={onOpenDictionary} />}
         {tab === 'quests' && <QuestPanel stampCount={stampCount} totalPlaces={totalPlaces} onOpenReview={onOpenReview} onOpenStampAlbum={onOpenStampAlbum} />}
+        {tab === 'phone' && <TravelWikiPanel />}
       </div>
     </div>
   );

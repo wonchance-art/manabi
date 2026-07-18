@@ -250,7 +250,8 @@ describe('missingStoryIds', () => {
 // 새 섹션 키를 콘텐츠에 도입하면 이 테스트가 먼저 깨진다 — 그때 화이트리스트와
 // 검증 규칙을 함께 추가할 것(검증기-렌더러 차집합 방지).
 describe('isValidOverride — 실제 챕터 전수 라운드트립 (4개 언어)', () => {
-  it.each(['japanese', 'french', 'english', 'chinese'])('%s 전 챕터가 검증을 통과한다', async (lang) => {
+  // 대형 콘텐츠 전수 라운드트립 — 병렬 부하 flaky 방지(kyotoGeo/자갈치 선례의 명시 타임아웃).
+  it.each(['japanese', 'french', 'english', 'chinese'])('%s 전 챕터가 검증을 통과한다', { timeout: 20000 }, async (lang) => {
     const mod = await import(`../../content/${lang}`);
     const all = mod.default.ALL_CHAPTERS;
     expect(all.length).toBeGreaterThan(40);
