@@ -113,6 +113,7 @@ export const BRUSSELS = {
   returnNode: 'brussels', // 오버월드 노드는 Codex-1 게이트 라운드(미디 [242,375] 후보 검증 완료)
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: [], railways: BRUSSELS_GEO.railways,
+  tileSkins: Object.freeze({ building: 'brick' }), // R4 — 벽돌 타운하우스 톤
   CITY_TILE, buildGrid: buildBrusselsGrid,
 };
 

@@ -117,6 +117,7 @@ export const KYOTO = {
   id: 'kyoto', name: '교토', cols: COLS, rows: ROWS, entrance: ENTRANCE, returnNode: 'kyoto',
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: [], railways: KYOTO_GEO.railways,
+  tileSkins: Object.freeze({ building: 'kawara' }), // R4 — 먹색 기와(이부시가와라 톤)
   CITY_TILE, buildGrid: buildKyotoGrid,
 };
 

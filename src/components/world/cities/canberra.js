@@ -110,6 +110,7 @@ export const CANBERRA = {
   returnNode: 'canberra', // 오버월드 APAC 캔버라 노드는 Codex-1 게이트 라운드 후속
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: [], railways: CANBERRA_GEO.railways,
+  tileSkins: Object.freeze({ building: 'terracotta' }), // R4 — 계획도시 주거 지붕 톤
   CITY_TILE, buildGrid: buildCanberraGrid,
 };
 
