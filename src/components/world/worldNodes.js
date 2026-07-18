@@ -233,6 +233,8 @@ const HONG_KONG_NAME = '홍콩';
 const TAIPEI_NAME = '타이베이';
 const SHANGHAI_NAME = '상하이';
 const BEIJING_NAME = '베이징';
+const BRISBANE_NAME = '브리즈번';
+const SYDNEY_NAME = '시드니';
 const BRUSSELS_NAME = '브뤼셀';
 const LONDON_NAME = '런던';
 
@@ -288,6 +290,32 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
     lat: 39.899,
     noStamp: true,
     gate: { type: 'city', to: 'beijing', label: '🏙️ 시내' },
+  }),
+  createRegionalWorldNode({
+    id: 'brisbane',
+    name: BRISBANE_NAME,
+    desc: BRISBANE_NAME,
+    kind: 'city',
+    regionId: 'asia-pacific',
+    contentLocale: 'en',
+    // 브리즈번 도시 ENTRANCE인 센트럴역 입구의 확정 좌표와 체크인된 보행칸([2039,2186]).
+    lon: 153.0262,
+    lat: -27.466,
+    noStamp: true,
+    gate: { type: 'city', to: 'brisbane', label: '🏙️ 시내' },
+  }),
+  createRegionalWorldNode({
+    id: 'sydney',
+    name: SYDNEY_NAME,
+    desc: SYDNEY_NAME,
+    kind: 'city',
+    regionId: 'asia-pacific',
+    contentLocale: 'en',
+    // 시드니 도시 ENTRANCE인 센트럴역 입구의 확정 좌표와 체크인된 보행칸([1999,2345]).
+    lon: 151.2065,
+    lat: -33.8832,
+    noStamp: true,
+    gate: { type: 'city', to: 'sydney', label: '🏙️ 시내' },
   }),
   createRegionalWorldNode({
     id: 'paris',
