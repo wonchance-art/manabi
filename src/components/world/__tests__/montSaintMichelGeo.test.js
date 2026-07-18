@@ -159,8 +159,12 @@ describe('Mont-Saint-Michel precision geo contract', () => {
     expect(hash(first.terrain)).toBe(hash(second.terrain));
     expect(hash(first.terrain)).toBe('31191d0a7e34e175b1a40ab071d81886137affe2cb5dceeb53393ec5e295a75d');
     expect(hash(first.railways.mask)).toBe('39e13945e587b244868de8b50a3d03f4ca810ffb89d6b88cccb07fa1ebe06b37');
+    expect(hash(first.tide.safeCorridorMask)).toBe(hash(second.tide.safeCorridorMask));
+    expect(hash(first.tide.safeCorridorMask)).toBe(first.tide.safeCorridorHash);
+    expect(hash(first.tide.tidalRank)).toBe(hash(second.tide.tidalRank));
+    expect(hash(first.tide.tidalRank)).toBe(first.tide.tidalRankHash);
     expect(encodeTerrainRle(first.terrain)).toHaveLength(14_365);
     expect(encodeTerrainRle(first.railways.mask)).toHaveLength(1);
     expect(first.pois).toEqual(MONT_SAINT_MICHEL_GEO.pois);
-  });
+  }, 15_000);
 });

@@ -17,6 +17,7 @@ export function toInteractiveNode(node) {
     chapter: node.chapter,
     reading: node.reading,
     openNow: node.openNow,
+    ...(node.tideCopyKey ? { tideCopyKey: node.tideCopyKey } : {}),
   };
 }
 

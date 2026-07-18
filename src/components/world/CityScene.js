@@ -45,6 +45,11 @@ import {
   cityBuildingTextureKey,
   cityWaterTextureKey,
 } from './cityTileSkins';
+import {
+  isMontSaintMichelTidalVisualWater,
+  montSaintMichelTideAt,
+  tideCopyKeyForNode,
+} from './montSaintMichelTide';
 
 // ── 좌표 스케일 (광장·공항과 동일 불변) ──
 const TILE = 32;
@@ -761,6 +766,22 @@ export function buildCityScene(Phaser, city, ctx) {
     // 충돌은 공용 표준 규칙(isCityBlocked: WATER·RIVER·BUILDING·ISLAND) — 렌더·데이터와 단일 진실원.
     blocked(tx, ty) { return isCityBlocked(this.tileCode(tx, ty)); }
     isWaterTile(tx, ty) { return isCityWater(this.tileCode(tx, ty)); }
+    tideVisualWaterAt(tx, ty) {
+      if (!city.tide || tx < 0 || ty < 0 || tx >= COLS || ty >= ROWS) return false;
+      return isMontSaintMichelTidalVisualWater(
+        city.tide,
+        ty * COLS + tx,
+        this.tideState?.band,
+      );
+    }
+    updateTide(totalGameMinutes) {
+      if (!city.tide || !Number.isFinite(totalGameMinutes)) return;
+      const next = montSaintMichelTideAt(totalGameMinutes);
+      if (next.revision === this.tideRevision) return;
+      this.tideState = next;
+      this.tideRevision = next.revision;
+      this.refreshWaterOverlay?.();
+    }
 
     roadDirection(tx, ty) {
       const roadLike = (x, y) => {
@@ -833,6 +854,14 @@ export function buildCityScene(Phaser, city, ctx) {
       this.worldReturn = data?.worldReturn || ctx.worldReturn;
 
       this.grid = city.buildGrid();
+      this.tideState = city.tide
+        ? montSaintMichelTideAt(
+          ctx.worldClockRef?.current?.totalGameMinutes
+            ?? city.tide.epochLowMinute
+            ?? 420,
+        )
+        : null;
+      this.tideRevision = this.tideState?.revision ?? null;
 
       this.cameras.main.setBounds(0, 0, COLS * TILE, ROWS * TILE);
       this.cameras.main.setBackgroundColor(toneColor(0x2f3540, this.mode));
@@ -1102,7 +1131,8 @@ export function buildCityScene(Phaser, city, ctx) {
       }
     }
 
-    // 뷰포트 안 물(WATER·RIVER) 타일에만 애니 프레임을 얹는 경량 오버레이(풀 재사용 · 뷰포트 상한).
+    // 뷰포트 안 정적 물과 MSM 조수 시각 타일에만 애니 프레임을 얹는 경량 오버레이.
+    // 조수 단계는 BEACH 원본·충돌을 바꾸지 않으며 안전 spine은 항상 갯벌로 남긴다.
     refreshWaterOverlay() {
       const v = this.cameras.main.worldView;
       const x0 = Math.max(0, Math.floor(v.x / TILE)), x1 = Math.min(COLS - 1, Math.floor((v.right - 1e-4) / TILE));
@@ -1111,7 +1141,8 @@ export function buildCityScene(Phaser, city, ctx) {
       for (let ty = y0; ty <= y1; ty++) {
         for (let tx = x0; tx <= x1; tx++) {
           const c = this.tileCode(tx, ty);
-          if (c !== TERRAIN.WATER && c !== TERRAIN.RIVER) continue;
+          const tidal = this.tideVisualWaterAt(tx, ty);
+          if (!tidal && c !== TERRAIN.WATER && c !== TERRAIN.RIVER) continue;
           let img = this.waterPool[n];
           if (!img) {
             img = this.add.image(0, 0, cityWaterTextureKey(city, 0))
@@ -1342,8 +1373,9 @@ export function buildCityScene(Phaser, city, ctx) {
     update(time, delta) {
       // 지형 청크 가시성(카메라 청크 이동 시에만 bake/축출) + 물 오버레이(뷰포트 안 물 타일 추종).
       this.refreshChunks();
-      this.refreshWaterOverlay();
       const worldSnapshot = ctx.worldClockRef?.current;
+      if (worldSnapshot) this.updateTide(worldSnapshot.totalGameMinutes);
+      this.refreshWaterOverlay();
       if (worldSnapshot && time - this.lastVehicleUpdate > 500) {
         this.lastVehicleUpdate = time;
         this.updateTransitVehicles(worldSnapshot.totalGameMinutes);
@@ -1448,12 +1480,14 @@ export function buildCityScene(Phaser, city, ctx) {
         if (d < nearestD) { nearest = v.node; nearestD = d; }
       }
       const nearestLife = nearest && worldSnapshot ? nodeLifeAt(nearest, worldSnapshot) : { open: true };
-      const nid = nearest ? `${nearest.id}:${nearestLife.open}` : null;
+      const tideCopyKey = tideCopyKeyForNode(nearest, this.tideState);
+      const nid = nearest ? `${nearest.id}:${nearestLife.open}:${tideCopyKey ?? ''}` : null;
       if (nid !== this.wasNearNodeId) {
         this.wasNearNodeId = nid;
         ctx.setNear?.(toInteractiveNode(nearest ? {
           ...nearest,
           openNow: nearestLife.open,
+          tideCopyKey,
           desc: nearestLife.open ? nearest.desc : `${nearest.desc}\n지금은 영업이 끝났어요. 세계 시각에 맞춰 다시 열려요.`,
         } : null));
       }
