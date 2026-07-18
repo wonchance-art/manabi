@@ -6,6 +6,7 @@
 
 import { CITY_TILE, isCityBlocked, isCityWalkable, isCityWater } from './terrain.js';
 import { HONG_KONG_GEO } from './hong-kong.geo.js';
+import { HONG_KONG_DOORS } from '../hongKongDoors.js';
 
 export { CITY_TILE, isCityBlocked, isCityWalkable, isCityWater };
 
@@ -53,22 +54,46 @@ export const ZONES = [
   { id: 'the-peak', label: '빅토리아픽', bounds: [196, 306, 299, 378], labelTile: [248, 342] },
 ];
 
-export const CITY_NODES = HONG_KONG_GEO.pois.map((poi) => {
-  const copy = poiCopy(poi.id);
-  return {
-    id: poi.id,
+// 중국어 도어 배치 타일 — geo 보행 타일 나선 탐색 계산치(기존 노드·프롭과 체비쇼프 ≥2 이격).
+const HONG_KONG_DOOR_TILES = Object.freeze({
+  'zh-07': [357, 199], // 페리 매표소(스타페리)
+  'zh-08': [310, 274], // 차찬텡(센트럴)
+  'zh-09': [451, 269], // 트램 정류장(코즈웨이베이)
+});
+
+export const CITY_NODES = [
+  ...HONG_KONG_GEO.pois.map((poi) => {
+    const copy = poiCopy(poi.id);
+    return {
+      id: poi.id,
+      kind: 'spot',
+      name: copy.name,
+      nameZhHant: poi.nameZhHant,
+      nameZhHans: poi.nameZhHans,
+      contentLocale: poi.contentLocale,
+      facade: 'sign',
+      tile: [poi.tile[0], poi.tile[1]],
+      facing: 'down',
+      noStamp: true,
+      desc: copy.desc,
+    };
+  }),
+  // 중국어 문화 도어 3종(zh-07~09 — 타이베이와 별개 신규 세트, 광둥어는 문화 각주로만).
+  ...HONG_KONG_DOORS.map((door) => ({
+    id: door.id,
     kind: 'spot',
-    name: copy.name,
-    nameZhHant: poi.nameZhHant,
-    nameZhHans: poi.nameZhHans,
-    contentLocale: poi.contentLocale,
+    name: door.name,
+    nameZh: door.nameZh,
+    contentLocale: 'zh',
     facade: 'sign',
-    tile: [poi.tile[0], poi.tile[1]],
+    tile: [...HONG_KONG_DOOR_TILES[door.id]],
     facing: 'down',
     noStamp: true,
-    desc: copy.desc,
-  };
-});
+    track: door.track,
+    chapter: door.chapter,
+    desc: `${door.name} — ${door.lines[0].zh} ${door.lines[0].pinyin} (${door.lines[0].gloss})`,
+  })),
+];
 
 // ⚠️ nameJa = 레거시 표기 필드. 정체 canonical, 간체 병기 보존.
 export const STATIONS = HONG_KONG_GEO.stations.map((station) => ({

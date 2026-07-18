@@ -6,6 +6,7 @@
 
 import { CITY_TILE, isCityBlocked, isCityWalkable, isCityWater } from './terrain.js';
 import { SYDNEY_GEO } from './sydney.geo.js';
+import { SYDNEY_DOORS } from '../sydneyDoors.js';
 
 export { CITY_TILE, isCityBlocked, isCityWalkable, isCityWater };
 
@@ -58,21 +59,48 @@ export const ZONES = [
   { id: 'harbour-north', label: '하버 북안', bounds: [300, 195, 555, 362], labelTile: [428, 279] },
 ];
 
-export const CITY_NODES = SYDNEY_GEO.pois.map((poi) => {
-  const copy = poiCopy(poi.id);
-  return {
-    id: poi.id,
+// 영어 도어 배치 타일 — geo 보행 타일 나선 탐색 계산치(기존 노드·프롭과 체비쇼프 ≥2 이격).
+const SYDNEY_DOOR_TILES = Object.freeze({
+  'en-07': [187, 397], // 페리 매표소(서큘러키)
+  'en-08': [482, 562], // 서프 렌탈(본다이)
+  'en-09': [61, 598],  // 브런치 카페(뉴타운)
+  'en-10': [260, 527], // 주말 마켓(패딩턴)
+  'en-11': [179, 385], // 호스텔 라운지(록스)
+  'en-12': [516, 295], // 전망대(왓슨스베이 갭)
+});
+
+export const CITY_NODES = [
+  ...SYDNEY_GEO.pois.map((poi) => {
+    const copy = poiCopy(poi.id);
+    return {
+      id: poi.id,
+      kind: 'spot',
+      name: copy.name,
+      nameEn: poi.nameEn,
+      contentLocale: poi.contentLocale,
+      facade: 'sign',
+      tile: [poi.tile[0], poi.tile[1]],
+      facing: 'down',
+      noStamp: true,
+      desc: copy.desc,
+    };
+  }),
+  // 영어 문화 도어 6종(en-07~12 — 런던과 별개 신규 세트) — track 명시 라우팅.
+  ...SYDNEY_DOORS.map((door) => ({
+    id: door.id,
     kind: 'spot',
-    name: copy.name,
-    nameEn: poi.nameEn,
-    contentLocale: poi.contentLocale,
+    name: door.nameEn,
+    nameEn: door.nameEn,
+    contentLocale: 'en',
     facade: 'sign',
-    tile: [poi.tile[0], poi.tile[1]],
+    tile: [...SYDNEY_DOOR_TILES[door.id]],
     facing: 'down',
     noStamp: true,
-    desc: copy.desc,
-  };
-});
+    track: door.track,
+    chapter: door.chapter,
+    desc: `${door.name} — ${door.lines[0].en} (${door.lines[0].gloss})`,
+  })),
+];
 
 // ⚠️ nameJa 필드는 CityScene 레거시 계약 — 영어 도시는 nameEn을 그대로 싣는다(yomi 공란).
 export const STATIONS = SYDNEY_GEO.stations.map((station) => ({
