@@ -16,50 +16,18 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-- 호주 4호 멜버른 — 확정 SPEC #150 댓글 5008845867 수신:
-  bbox `[144.90,-37.88,145.01,-37.78]`, 20m/en,
-  POI 12·역 4·시티서클 트램·야라강·BRIDGE 0.
-  SPEC 선제 감사 aspectCorrection 0.789833986695,
-  grid 484×557(269,588 cells), 12,670,636 bytes(12.084MiB) <24MiB PASS.
-  기존 snapshot lines 쿼리가 rail|subway|light_rail|tram을 포함하고
-  Canberra routeId/routeIds·rail-mask 근접·fast-travel 순서 계약을 재사용 가능해
-  신규 runtime mode 없이 전용 3파일 범위로 구현 가능함을 선제 확인.
-  정책 회귀 체크리스트는 Hosier Lane·Carlton Gardens/전시관·Shrine·MCG·
-  St Kilda/Luna Park에 representationPolicy를 고정하고
-  desc·narrative·story·exhibit 필드 0개, brandSignage 일반화,
-  ferry/virtual edge 0개를 검증하도록 확정.
-  snapshot acceptance는 4×4 무중첩 partitions·3 pipelines 48/48,
-  7개 RLE 각각 decode 길이 269,588, ODbL 1.0·raw/manifest/snapshot SHA·
-  결정성 전체 PNG를 요구하며 메모리 headroom 12,495,188 bytes(11.916MiB).
-  Codex-1 snapshot PR #224 exact 4c83089b921e8a659ff4702daaa2bb21e547cbfd
-  (raw SHA 47467758·snapshot SHA 99c2a2d5·48/48·ODbL·결정성 PASS)는
-  main merge exact 3252cc5930c79a568bb8236b3a4b843f27d0715d에 반입됨.
-  merge ancestry 재작성으로 stacked #225는 superseded close하고,
-  latest main exact d8b8cfe90deadfb12c0bae17fcf3736570c49a64 기반 replacement
-  draft PR #227 branch codex2/melbourne-geo-main exact
-  8ec951b54be8993a964992eaa4301f1fcdaea196으로 정리 완료.
-  Melbourne 전용 신규 3파일만이며 POI 12·역 4·City Loop/City Circle tram,
-  야라강 160m/160m·BRIDGE 0·Princes Bridge 차도 회랑,
-  BFS 226,175/226,175·12,670,636 bytes <24MiB,
-  latest-main targeted 14/14·전체 154 files/1,771 tests·결정성 PASS.
-  geo SHA a78e598a·final PNG SHA fdaaf77b,
-  #150 replacement IMPLEMENTATION_READY 5009267073 게시.
-  verifier readiness 독립 스캔에서 야라강 lon 144.958~144.961은
-  합계/연속 160m/160m, lon 144.979~144.982는 합계 320m·연속 160m,
-  Princes Bridge 차도 최근접 0타일, POI/역 재투영 worst 1.199429타일,
-  역 rail-mask 최근접 [0,1,0,0] PASS.
-  snapshot integrity 재감사에서 16개 partition 양의 면적 중첩 0,
-  7개 RLE decode 길이 각각 269,588·내장 SHA 7/7 일치,
-  ODbL 1.0·snapshot SHA 99c2a2d5·geo SHA a78e598a·
-  full PNG SHA fdaaf77b 정합 PASS.
-  정책 integrity 재감사에서 POI 12/12 representationPolicy 존재,
-  Hosier Lane·Carlton Gardens·Shrine·MCG·St Kilda 제한 정확 일치,
-  desc·narrative·story·exhibit 필드 0개,
-  ferryLinks·virtualEdges 0개 PASS.
-  official Melbourne verifier exact green 전에는 CODEX_DONE·ready 전환하지 않음.
+- (없음)
 ### todo
 - (없음)
 ### done (최근)
+- 멜버른 geo (#224 snapshot merge, ancestry 재작성으로 stacked #225 superseded close,
+  exact-main replacement #227 head 8ec951b54be8993a964992eaa4301f1fcdaea196,
+  official verifier #229 main 94fce93d3dc149ed1000ce8765fbc2db257e4ec5·
+  blob 44eee21f 전 gate, Yarra River 120m/120m·BRIDGE 0·Princes Bridge 회랑,
+  targeted 14/14·latest-main 전체 155 files/1,775 tests·
+  BFS 226,175/226,175·12,670,636 bytes <24MiB·결정성·정책 PASS,
+  geo SHA a78e598a·final PNG SHA fdaaf77b,
+  #150 CODEX_DONE 5009517615; #227 READY/MERGEABLE, merge·runtime·desc는 후속)
 - 캔버라 geo (#215 snapshot merge, #219 head
   596c7f77d1b78381f4ca52623ae327627010f079 → main merge
   207e7f6d2c08401faa147ff0d049ac007e7c86b8,
