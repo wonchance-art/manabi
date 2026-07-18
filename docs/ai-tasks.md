@@ -7,6 +7,8 @@
 
 ## Codex-1 (codex/*)
 ### doing
+- EMEA 오버월드 일반 공개 릴리스: `releaseEligible` 다층 인터록을 릴리스 정합 계약으로
+  전환하고, 경계 고지·관리자 preview·overworld 전체 회귀를 유지
 ### todo
 - 멜버른 비콘텐츠 선행 수집: bbox `[144.90,-37.88,145.01,-37.78]`,
   4×4 Overpass 48/48 + 20m 스냅샷 결정성 계약(POI·역·콘텐츠 제외)
