@@ -438,6 +438,7 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
   createRegionalWorldNode({
     id: 'geneva',
     name: GENEVA_NAME,
+    desc: '레만호가 론강으로 흘러나가는 자리에 앉은 제네바. 제토 분수의 물기둥과 시계 공방, 국제기구의 도시예요.',
     kind: 'city',
     regionId: 'emea',
     contentLocale: 'fr',
