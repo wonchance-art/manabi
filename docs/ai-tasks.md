@@ -7,6 +7,8 @@
 
 ## Codex-1 (codex/*)
 ### doing
+- 후지 등산 액트 씬 골격: 자갈치 씬 구조를 미러한 4막 Phaser 씬
+  (`fifth-station`→`mountain-hut-night`→`goraiko`→`ohachi-meguri`)과 액트 순서·경계 계약 테스트
 ### todo
 - 멜버른 비콘텐츠 선행 수집: bbox `[144.90,-37.88,145.01,-37.78]`,
   4×4 Overpass 48/48 + 20m 스냅샷 결정성 계약(POI·역·콘텐츠 제외)
