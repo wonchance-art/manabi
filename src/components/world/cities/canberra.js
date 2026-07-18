@@ -94,8 +94,10 @@ export const TRANSIT = [
   },
 ];
 
-// 프롭(국회의사당 깃대·캡틴쿡 물기둥·라이트레일 등)은 렌더크래프트 후속.
-export const PROPS = [];
+// ⛲ 렌더크래프트 R1.5 — 캡틴쿡 분수는 호수 수면 배치(POI desc와 시각 일치).
+export const PROPS = [
+  { kind: 'fountain', tile: [321, 286] }, // 캡틴쿡 분수(벌리그리핀호 수면)
+];
 
 export function buildCanberraGrid() {
   const grid = Uint8Array.from(CANBERRA_GEO.terrain);

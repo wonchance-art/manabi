@@ -110,7 +110,12 @@ export const TRANSIT = [
   },
 ];
 
-export const PROPS = [];
+// 🏮 렌더크래프트 R1.5 — 기존 kind 재사용 배치(보행 판정+노드 이격 ≥2 계산치).
+export const PROPS = [
+  { kind: 'stall', tile: [862, 705] }, // 명동 노점
+  { kind: 'neon', tile: [591, 737] },  // 홍대 네온
+  { kind: 'stall', tile: [861, 646] }, // 인사동 노점
+];
 
 export function buildSeoulGrid() {
   const grid = Uint8Array.from(SEOUL_GEO.terrain);

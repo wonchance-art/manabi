@@ -101,8 +101,13 @@ export const TRANSIT = [
   },
 ];
 
-// 파사드·랜드마크 프롭은 Claude 소유 후속 배선에서 추가한다.
-export const PROPS = [];
+// 🛳️ 렌더크래프트 R1.5 — 기존 kind 재사용 배치(수면/보행 판정+노드 이격 ≥2 계산치).
+export const PROPS = [
+  { kind: 'ferry_intl', tile: [710, 704] }, // 부산항 앞바다 — 하카타행 카페리(후쿠오카 국제항로 대칭)
+  { kind: 'stall', tile: [642, 800] },      // 자갈치시장 노점
+  { kind: 'stall', tile: [631, 771] },      // 국제시장 노점
+  { kind: 'neon', tile: [1042, 481] },      // 광안리 네온
+];
 
 export function buildBusanGrid() {
   const grid = Uint8Array.from(BUSAN_GEO.terrain);

@@ -160,8 +160,11 @@ export const TRANSIT = [
   },
 ];
 
-// 파사드·랜드마크 프롭(에펠 실루엣·피라미드 등)은 렌더크래프트 후속.
-export const PROPS = [];
+// ⛲ 렌더크래프트 R1.5 — 기존 kind 재사용 배치. 에펠 실루엣 등 신규 kind는 베이킹 스펙 후속.
+export const PROPS = [
+  { kind: 'fountain', tile: [812, 416] }, // 콩코르드 분수
+  { kind: 'stall', tile: [957, 461] },    // 마레 마르셰 노점
+];
 
 export function buildGrandParisGrid() {
   const grid = Uint8Array.from(GRAND_PARIS_GEO.terrain);
