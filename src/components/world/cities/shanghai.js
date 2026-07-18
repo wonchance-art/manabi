@@ -7,6 +7,7 @@
 
 import { CITY_TILE, isCityBlocked, isCityWalkable, isCityWater } from './terrain.js';
 import { SHANGHAI_GEO } from './shanghai.geo.js';
+import { SHANGHAI_DOORS } from '../shanghaiDoors.js';
 
 export { CITY_TILE, isCityBlocked, isCityWalkable, isCityWater };
 
@@ -52,22 +53,46 @@ export const ZONES = [
   { id: 'lujiazui', label: '루자쭈이·푸둥', bounds: [209, 67, 343, 189], labelTile: [276, 128] },
 ];
 
-export const CITY_NODES = SHANGHAI_GEO.pois.map((poi) => {
-  const copy = poiCopy(poi.id);
-  return {
-    id: poi.id,
+// 중국어 도어 배치 타일 — geo 보행 타일 나선 탐색 계산치(기존 노드·프롭과 체비쇼프 ≥2 이격).
+const SHANGHAI_DOOR_TILES = Object.freeze({
+  'zh-10': [201, 184], // 샤오룽바오 가게(위위안)
+  'zh-11': [186, 133], // 강변 산책로(와이탄)
+  'zh-12': [80, 276],  // 기념품 가게(톈쯔팡)
+});
+
+export const CITY_NODES = [
+  ...SHANGHAI_GEO.pois.map((poi) => {
+    const copy = poiCopy(poi.id);
+    return {
+      id: poi.id,
+      kind: 'spot',
+      name: copy.name,
+      nameZhHant: poi.nameZhHant,
+      nameZhHans: poi.nameZhHans,
+      contentLocale: poi.contentLocale,
+      facade: 'sign',
+      tile: [poi.tile[0], poi.tile[1]],
+      facing: 'down',
+      noStamp: true,
+      desc: copy.desc,
+    };
+  }),
+  // 중국어 문화 도어 3종(zh-10~12 — 타이베이·홍콩과 별개 신규 세트).
+  ...SHANGHAI_DOORS.map((door) => ({
+    id: door.id,
     kind: 'spot',
-    name: copy.name,
-    nameZhHant: poi.nameZhHant,
-    nameZhHans: poi.nameZhHans,
-    contentLocale: poi.contentLocale,
+    name: door.name,
+    nameZh: door.nameZh,
+    contentLocale: 'zh',
     facade: 'sign',
-    tile: [poi.tile[0], poi.tile[1]],
+    tile: [...SHANGHAI_DOOR_TILES[door.id]],
     facing: 'down',
     noStamp: true,
-    desc: copy.desc,
-  };
-});
+    track: door.track,
+    chapter: door.chapter,
+    desc: `${door.name} — ${door.lines[0].zh} ${door.lines[0].pinyin} (${door.lines[0].gloss})`,
+  })),
+];
 
 // ⚠️ nameJa = 레거시 표기 필드. 정체 canonical, 간체 병기 보존.
 export const STATIONS = SHANGHAI_GEO.stations.map((station) => ({
