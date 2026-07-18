@@ -244,7 +244,7 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
   createRegionalWorldNode({
     id: 'hong-kong',
     name: HONG_KONG_NAME,
-    desc: HONG_KONG_NAME,
+    desc: '빅토리아항을 사이에 두고 주룽과 홍콩섬이 마주 보는 항구 도시. 스타페리 뱃길과 야시장, 이층 트램의 도시예요.',
     kind: 'city',
     regionId: 'asia-pacific',
     contentLocale: 'zh',
@@ -257,7 +257,7 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
   createRegionalWorldNode({
     id: 'taipei',
     name: TAIPEI_NAME,
-    desc: TAIPEI_NAME,
+    desc: '분지 속의 도시 타이베이. 야시장 골목과 101 마천루, 온천 산자락이 지하철 한 노선으로 이어져요.',
     kind: 'city',
     regionId: 'asia-pacific',
     contentLocale: 'zh',
@@ -270,7 +270,7 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
   createRegionalWorldNode({
     id: 'shanghai',
     name: SHANGHAI_NAME,
-    desc: SHANGHAI_NAME,
+    desc: '황푸강이 크게 굽이치는 하구 도시 상하이. 와이탄의 옛 은행가와 루자쭈이 마천루가 강을 사이에 두고 마주 서요.',
     kind: 'city',
     regionId: 'asia-pacific',
     contentLocale: 'zh',
@@ -283,7 +283,7 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
   createRegionalWorldNode({
     id: 'beijing',
     name: BEIJING_NAME,
-    desc: BEIJING_NAME,
+    desc: '후퉁 골목과 궁궐, 호수 원림이 겹겹이 쌓인 옛 도읍 베이징. 고루의 북소리부터 천단의 제단까지 축선을 따라 걷는 도시예요.',
     kind: 'city',
     regionId: 'asia-pacific',
     contentLocale: 'zh',
@@ -296,7 +296,7 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
   createRegionalWorldNode({
     id: 'brisbane',
     name: BRISBANE_NAME,
-    desc: BRISBANE_NAME,
+    desc: '브리즈번강이 S자로 감아 도는 아열대 강변 도시. 시티캣 페리가 시내 이동 수단인 도시예요.',
     kind: 'city',
     regionId: 'asia-pacific',
     contentLocale: 'en',
@@ -309,7 +309,7 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
   createRegionalWorldNode({
     id: 'sydney',
     name: SYDNEY_NAME,
-    desc: SYDNEY_NAME,
+    desc: '세계에서 손꼽히게 아름다운 항구로 알려진 시드니. 페리를 타고 오페라하우스 앞을 지나 맨리 해변까지 갈 수 있어요.',
     kind: 'city',
     regionId: 'asia-pacific',
     contentLocale: 'en',
@@ -322,7 +322,7 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
   createRegionalWorldNode({
     id: 'canberra',
     name: CANBERRA_NAME,
-    desc: CANBERRA_NAME,
+    desc: '호수를 중심으로 설계된 계획 수도 캔버라. 벌리그리핀호 둘레로 국립 기관 건축이 축선을 이루는 도시예요.',
     kind: 'city',
     regionId: 'asia-pacific',
     contentLocale: 'en',
@@ -335,7 +335,7 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
   createRegionalWorldNode({
     id: 'melbourne',
     name: MELBOURNE_NAME,
-    desc: MELBOURNE_NAME,
+    desc: '트램과 골목 카페의 도시 멜버른. 빅토리아풍 아케이드와 골목 미술이 도심 블록마다 숨어 있어요.',
     kind: 'city',
     regionId: 'asia-pacific',
     contentLocale: 'en',
@@ -348,7 +348,7 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
   createRegionalWorldNode({
     id: 'paris',
     name: PARIS_NAME,
-    desc: PARIS_NAME,
+    desc: '센강을 따라 미술관과 카페가 이어지는 파리. 에펠탑부터 몽마르트르 언덕까지 도보와 메트로로 잇는 도시예요.',
     kind: 'city',
     regionId: 'emea',
     contentLocale: 'fr',
@@ -362,6 +362,7 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
   createRegionalWorldNode({
     id: 'mont-saint-michel',
     name: MONT_SAINT_MICHEL_NAME,
+    desc: '갯벌 위에 솟은 수도원 섬 몽생미셸. 밀물이 들면 바다에 뜨는 바위산 마을이에요.',
     kind: 'city',
     regionId: 'emea',
     contentLocale: 'fr',
@@ -373,6 +374,7 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
   createRegionalWorldNode({
     id: 'nice',
     name: NICE_NAME,
+    desc: '쪽빛 바다의 해안 도시 니스. 프롬나드 데 장글레 산책로를 따라 코트다쥐르가 펼쳐져요.',
     kind: 'city',
     regionId: 'emea',
     contentLocale: 'fr',
@@ -386,7 +388,7 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
   createRegionalWorldNode({
     id: 'brussels',
     name: BRUSSELS_NAME,
-    desc: BRUSSELS_NAME,
+    desc: '그랑플라스의 길드 하우스가 빛나는 브뤼셀. 와플과 감자튀김, 만화 벽화의 도시예요.',
     kind: 'city',
     regionId: 'emea',
     contentLocale: 'fr',
@@ -399,7 +401,7 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
   createRegionalWorldNode({
     id: 'london',
     name: LONDON_NAME,
-    desc: LONDON_NAME,
+    desc: '템스강을 따라 2천 년 역사가 쌓인 런던. 빅벤과 타워브리지, 튜브와 펍의 도시예요.',
     kind: 'city',
     regionId: 'emea',
     contentLocale: 'en',
