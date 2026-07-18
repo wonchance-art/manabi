@@ -14,7 +14,6 @@ import {
   overworldRegionById,
   projectOverworldRegionCoordinate,
 } from '../overworldRegions.js';
-import { createRegionalWorldNode } from '../worldNodeGeo.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '../../../..');
@@ -24,15 +23,6 @@ const TRANSPORT_MANIFEST = JSON.parse(readFileSync(
   path.join(ROOT, 'scripts/world/overworld-transport-nodes-apac-v1.json'),
   'utf8',
 ));
-const CANDIDATE = Object.freeze({
-  id: 'brisbane-central-gate-candidate',
-  regionId: APAC.id,
-  lon: 153.0262,
-  lat: -27.466,
-  arrivalOffset: Object.freeze([0, 0]),
-  expectedProjection: Object.freeze([2039, 2186]),
-  expectedArrival: Object.freeze([2039, 2186]),
-});
 
 function cellAt(x, y) {
   const cx = Math.floor(x / OVERWORLD_STORAGE_CHUNK_TILES);
@@ -58,25 +48,32 @@ function interactionDistance(left, right) {
   return Math.max(Math.abs(left[0] - right[0]), Math.abs(left[1] - right[1]));
 }
 
-describe('브리즈번 APAC 도시 게이트 후보', () => {
+describe('시드니 APAC 도시 게이트', () => {
   it('센트럴역 입구를 결정적으로 투영하고 원점의 체크인된 보행 타일에 도착한다', () => {
-    const projected = projectOverworldRegionCoordinate(APAC, CANDIDATE.lon, CANDIDATE.lat);
-    const node = createRegionalWorldNode(CANDIDATE);
+    const node = getNode('sydney');
+    const projected = projectOverworldRegionCoordinate(APAC, node.lon, node.lat);
 
-    expect([projected.x, projected.y]).toEqual(CANDIDATE.expectedProjection);
-    expect(CANDIDATE.arrivalOffset).toEqual([0, 0]);
-    expect(node.overworldTile).toEqual(CANDIDATE.expectedArrival);
+    expect(node).toMatchObject({
+      regionId: APAC.id,
+      lon: 151.2065,
+      lat: -33.8832,
+      arrivalOffset: [0, 0],
+      gate: { type: 'city', to: 'sydney' },
+    });
+    expect([projected.x, projected.y]).toEqual([1999, 2345]);
+    expect(node.overworldTile).toEqual([1999, 2345]);
     expect(cellAt(...node.overworldTile)).toMatchObject({
       valid: true,
       collision: 0,
       viewOnly: 0,
     });
-    expect(getNode('brisbane')).toBeNull();
   });
 
   it('도착점은 기존 APAC 월드·수송 노드의 상호작용 반경을 침범하지 않는다', () => {
-    const node = createRegionalWorldNode(CANDIDATE);
-    const committedWorldNodes = ALL_WORLD_NODES.filter(({ regionId }) => regionId === APAC.id);
+    const node = getNode('sydney');
+    const committedWorldNodes = ALL_WORLD_NODES.filter(
+      ({ id, regionId }) => id !== node.id && regionId === APAC.id,
+    );
     const committedTransportNodes = TRANSPORT_MANIFEST.nodes.map((transportNode) => {
       const projected = projectOverworldRegionCoordinate(APAC, transportNode.lon, transportNode.lat);
       return {
@@ -89,12 +86,11 @@ describe('브리즈번 APAC 도시 게이트 후보', () => {
       { id: APAC.airArrival.id, tile: [APAC.airArrival.tile.x, APAC.airArrival.tile.y] },
     ];
 
-    const existingNodes = [
+    for (const existing of [
       ...committedWorldNodes.map(({ id, overworldTile: tile }) => ({ id, tile })),
       ...committedTransportNodes,
       ...fixedRegionNodes,
-    ];
-    for (const existing of existingNodes) {
+    ]) {
       expect(interactionDistance(node.overworldTile, existing.tile), existing.id)
         .toBeGreaterThan(1);
     }

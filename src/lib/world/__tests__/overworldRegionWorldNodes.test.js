@@ -85,20 +85,22 @@ describe('APAC 월드 노드 런타임 인덱스', () => {
     )).toBeNull();
   });
 
-  it('홍콩·타이베이·상하이·베이징 노드를 APAC 좌표로 색인하고 도시 게이트를 연다', () => {
+  it('APAC 지역 도시 노드를 좌표로 색인하고 도시 게이트를 연다', () => {
     const entries = overworldRegionWorldNodes(APAC, ALL_WORLD_NODES);
     const expected = [
-      ['hong-kong', [1187, 956]],
-      ['taipei', [1348, 888]],
-      ['shanghai', [1347, 736]],
-      ['beijing', [1236, 521]],
+      ['hong-kong', [1187, 956], 'zh'],
+      ['taipei', [1348, 888], 'zh'],
+      ['shanghai', [1347, 736], 'zh'],
+      ['beijing', [1236, 521], 'zh'],
+      ['brisbane', [2039, 2186], 'en'],
+      ['sydney', [1999, 2345], 'en'],
     ];
 
-    for (const [id, tile] of expected) {
+    for (const [id, tile, contentLocale] of expected) {
       const node = getNode(id);
       expect(node).toMatchObject({
         regionId: APAC.id,
-        contentLocale: 'zh',
+        contentLocale,
         overworldTile: tile,
         gate: { type: 'city', to: id },
       });
