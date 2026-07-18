@@ -22,12 +22,12 @@
 ### done (최근)
 - 도시 geo 프로필 hard gate (#150 승인 5010610812, PR #266 head
   `e3aa018bdbbb844fc5d379b3d57b177157618bae`, verifier blob
-  `144f64e1c87bb864b63056eeb2c3b50f85077cb1`, OPEN/READY/CLEAN/MERGEABLE):
+  `144f64e1c87bb864b63056eeb2c3b50f85077cb1` → main merge
+  `ddbb7239c474764d81df03973ea43c1bf0c3e178` byte-identical):
   latest main `73e4a145663ded1a850055f291523d3d5332f5c4` 결합에서
   16 official profiles 전 gate, 19도시 결정성 165/165,
   전체 single-worker 168 files/1,863 tests, node/ESLint/diff-check PASS.
-  Marseille band는 제외/report-only 유지. #150 CODEX_DONE 5010880738;
-  merge 대기.
+  Marseille band는 제외/report-only 유지. #150 CODEX_DONE 5010880738.
 - 마르세유 geo (#251 snapshot main merge
   `c55ab6d0e79ba46acd2d425fdc907363aa16efc9`, #260 head
   `71e309e880b6579fd5547451b1636eb3685569d6` → main merge
