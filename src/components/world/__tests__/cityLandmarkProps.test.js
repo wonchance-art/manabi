@@ -19,6 +19,8 @@ const LANDMARK_TEXTURES = {
   white_dagoba: [24, 24],
   storybridge: [32, 20],
   operahouse: [32, 20],
+  gachapon: [16, 32],
+  arcade: [16, 32],
 };
 
 function bakeCityTextures() {

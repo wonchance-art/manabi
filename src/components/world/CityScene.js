@@ -691,6 +691,25 @@ export function buildCityScene(Phaser, city, ctx) {
         g.fillStyle(C(0xbeb8aa), 1); g.fillRect(4, 15, 23, 2); g.fillRect(10, 8, 2, 8); g.fillRect(17, 7, 2, 9);
         g.fillStyle(C(0x4f5f66), 1); g.fillRect(2, 17, 28, 3);
       }, 32, 20);
+      // 캡슐토이 머신 — 둥근 창 2단과 손잡이·배출구만 남긴 무문자 실루엣.
+      this.bakeTile('ct_prop_gachapon', (g) => {
+        g.fillStyle(C(0xc95f55), 1);
+        g.fillRect(2, 2, 12, 28);
+        g.fillStyle(C(0x55515b), 1);
+        g.fillCircle(8, 7, 4); g.fillCircle(8, 18, 4); g.fillRect(3, 12, 10, 2);
+        g.fillRect(10, 23, 2, 2); g.fillRect(5, 26, 6, 3); g.fillRect(3, 30, 10, 2);
+        g.fillStyle(C(0x8ec5d6), 1);
+        g.fillCircle(8, 7, 2); g.fillCircle(8, 18, 2);
+      }, 16, 32);
+      // 게임센터 캐비닛 — 발광 스크린과 조작부·하부 매스의 무브랜드 실루엣.
+      this.bakeTile('ct_prop_arcade', (g) => {
+        g.fillStyle(C(0x3b3550), 1);
+        g.fillRect(2, 1, 12, 29); g.fillRect(3, 30, 4, 2); g.fillRect(9, 30, 4, 2);
+        g.fillStyle(C(0x49c9d0), 1);
+        g.fillRect(4, 4, 8, 9); g.fillRect(5, 5, 6, 7);
+        g.fillStyle(C(0xf0b54a), 1);
+        g.fillRect(4, 16, 8, 3); g.fillRect(5, 20, 6, 2); g.fillRect(10, 14, 2, 2);
+      }, 16, 32);
 
       // ── 캐릭터(플레이어 ct_pc · 원격 피어 ct_pr) + 펫 + NPC 마커 ──
       this.bakeCharSet('ct_pc', tonePalette(avatarPalette(ctx.avatarRef?.current), this.mode), ctx.avatarRef?.current);
