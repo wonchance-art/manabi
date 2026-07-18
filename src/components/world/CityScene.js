@@ -540,6 +540,140 @@ export function buildCityScene(Phaser, city, ctx) {
         g.fillStyle(C(0x2a1e14), 1); g.fillRect(5, 30, 5, 2); g.fillRect(14, 30, 5, 2); // 다리 발치
       }, 24, 32);
 
+      // ── 렌더크래프트 R2 랜드마크 실루엣(무문자·무브랜드·도트 2~3색) ──
+      // 에펠탑 — 격자 철골을 3단으로 좁혀 올린 실루엣.
+      this.bakeTile('ct_prop_eiffel', (g) => {
+        g.fillStyle(C(0x92877a), 1);
+        g.fillRect(11, 1, 2, 5); g.fillRect(10, 6, 4, 6); g.fillRect(8, 12, 8, 7);
+        g.fillRect(6, 19, 5, 10); g.fillRect(13, 19, 5, 10);
+        g.fillStyle(C(0x665f58), 1);
+        g.fillRect(8, 11, 8, 2); g.fillRect(7, 18, 10, 2); g.fillRect(5, 28, 14, 2);
+        g.fillRect(10, 14, 1, 14); g.fillRect(13, 14, 1, 14);
+        g.fillStyle(C(0x343238), 1); g.fillRect(4, 30, 7, 2); g.fillRect(13, 30, 7, 2);
+      }, 24, 32);
+      // 루브르 피라미드 — 투명 면과 저해상도 격자만 남긴 삼각 실루엣.
+      this.bakeTile('ct_prop_pyramide', (g) => {
+        g.fillStyle(C(0x8fb8c4), 1);
+        g.fillRect(11, 2, 2, 2); g.fillRect(9, 4, 6, 2); g.fillRect(7, 6, 10, 2);
+        g.fillRect(5, 8, 14, 2); g.fillRect(3, 10, 18, 3);
+        g.fillStyle(C(0xc9d9d6), 1);
+        g.fillRect(11, 3, 1, 9); g.fillRect(7, 7, 1, 5); g.fillRect(16, 7, 1, 5);
+        g.fillStyle(C(0x596c72), 1); g.fillRect(2, 13, 20, 2); g.fillRect(5, 9, 14, 1);
+      }, 24, 16);
+      // 몽생미셸 수도원 첨탑 — 석조 매스 위로 솟은 단일 첨탑.
+      this.bakeTile('ct_prop_abbey_spire', (g) => {
+        g.fillStyle(C(0xb8afa0), 1);
+        g.fillRect(11, 1, 2, 7); g.fillRect(10, 8, 4, 5); g.fillRect(8, 13, 8, 6);
+        g.fillRect(5, 19, 14, 6); g.fillRect(3, 25, 18, 5);
+        g.fillStyle(C(0x8f887a), 1);
+        g.fillRect(9, 12, 6, 2); g.fillRect(7, 18, 10, 2); g.fillRect(4, 24, 16, 2);
+        g.fillStyle(C(0x4d514b), 1); g.fillRect(2, 30, 20, 2); g.fillRect(11, 5, 1, 9);
+      }, 24, 32);
+      // 코트다쥐르 해변 파라솔 — 줄무늬 없는 단순 차양과 지주.
+      this.bakeTile('ct_prop_parasol', (g) => {
+        g.fillStyle(C(0xc96a5a), 1);
+        g.fillRect(9, 2, 6, 2); g.fillRect(5, 4, 14, 2); g.fillRect(3, 6, 18, 3);
+        g.fillStyle(C(0x9b4c42), 1); g.fillRect(3, 8, 18, 2); g.fillRect(5, 9, 4, 2); g.fillRect(15, 9, 4, 2);
+        g.fillStyle(C(0x7b6347), 1); g.fillRect(11, 10, 2, 8); g.fillRect(7, 18, 10, 2);
+      }, 24, 20);
+      // 그랑플라스 박공 — 계단형 지붕과 석조 파사드.
+      this.bakeTile('ct_prop_gable', (g) => {
+        g.fillStyle(C(0xc0a98b), 1);
+        g.fillRect(10, 2, 4, 3); g.fillRect(8, 5, 8, 3); g.fillRect(6, 8, 12, 4);
+        g.fillRect(4, 12, 16, 10);
+        g.fillStyle(C(0x8d5b46), 1);
+        g.fillRect(7, 13, 3, 4); g.fillRect(14, 13, 3, 4); g.fillRect(10, 18, 4, 4);
+        g.fillStyle(C(0x51453d), 1); g.fillRect(9, 1, 6, 2); g.fillRect(5, 10, 14, 2); g.fillRect(3, 22, 18, 2);
+      }, 24, 24);
+      // 빅벤 — 시계 면이 있는 세장한 석조 시계탑.
+      this.bakeTile('ct_prop_bigben', (g) => {
+        g.fillStyle(C(0xb39b70), 1);
+        g.fillRect(11, 1, 2, 4); g.fillRect(9, 5, 6, 4); g.fillRect(7, 9, 10, 21);
+        g.fillStyle(C(0xd8c897), 1); g.fillCircle(12, 13, 3); g.fillRect(9, 19, 6, 7);
+        g.fillStyle(C(0x756443), 1);
+        g.fillRect(6, 8, 12, 2); g.fillRect(6, 16, 12, 2); g.fillRect(6, 29, 12, 3);
+        g.fillRect(11, 10, 2, 6);
+      }, 24, 32);
+      // 타워브리지 — 쌍탑과 상·하부 보행 데크.
+      this.bakeTile('ct_prop_towerbridge', (g) => {
+        g.fillStyle(C(0xa5a093), 1);
+        g.fillRect(3, 6, 7, 15); g.fillRect(22, 6, 7, 15);
+        g.fillRect(1, 20, 30, 3); g.fillRect(9, 9, 14, 3);
+        g.fillStyle(C(0x625d58), 1);
+        g.fillRect(2, 5, 9, 2); g.fillRect(21, 5, 9, 2); g.fillRect(4, 21, 24, 2);
+        g.fillStyle(C(0x6b8fa0), 1);
+        g.fillRect(5, 2, 3, 4); g.fillRect(24, 2, 3, 4); g.fillRect(10, 13, 12, 2);
+      }, 32, 24);
+      // 타이베이 101 — 여덟 마디가 위로 좁아지는 청록색 실루엣.
+      this.bakeTile('ct_prop_tower101', (g) => {
+        g.fillStyle(C(0x5c8580), 1);
+        g.fillRect(11, 0, 2, 4);
+        for (let y = 4, width = 8; y < 28; y += 3, width = Math.min(14, width + 1)) {
+          g.fillRect(12 - Math.floor(width / 2), y, width, 2);
+        }
+        g.fillStyle(C(0x9eb8aa), 1); g.fillRect(11, 5, 2, 23); g.fillRect(6, 28, 12, 2);
+        g.fillStyle(C(0x355b59), 1); g.fillRect(5, 30, 14, 2); g.fillRect(8, 12, 8, 1); g.fillRect(7, 21, 10, 1);
+      }, 24, 32);
+      // 야시장 패루 — 문자를 넣지 않은 붉은 기둥과 겹지붕.
+      this.bakeTile('ct_prop_pailou', (g) => {
+        g.fillStyle(C(0xa84436), 1);
+        g.fillRect(4, 7, 3, 16); g.fillRect(17, 7, 3, 16); g.fillRect(7, 10, 10, 3);
+        g.fillStyle(C(0x544134), 1);
+        g.fillRect(2, 5, 20, 3); g.fillRect(5, 2, 14, 3); g.fillRect(3, 22, 5, 2); g.fillRect(16, 22, 5, 2);
+        g.fillStyle(C(0xc7a05b), 1); g.fillRect(9, 5, 6, 4); g.fillRect(6, 13, 2, 6); g.fillRect(16, 13, 2, 6);
+      }, 24, 24);
+      // 침사추이 시계탑 — 적갈색 벽돌과 밝은 시계 면.
+      this.bakeTile('ct_prop_hk_clocktower', (g) => {
+        g.fillStyle(C(0xa96e52), 1);
+        g.fillRect(11, 1, 2, 4); g.fillRect(8, 5, 8, 5); g.fillRect(6, 10, 12, 20);
+        g.fillStyle(C(0xd6c79a), 1); g.fillCircle(12, 14, 3); g.fillRect(9, 20, 6, 7);
+        g.fillStyle(C(0x6e493b), 1);
+        g.fillRect(7, 8, 10, 2); g.fillRect(5, 17, 14, 2); g.fillRect(5, 29, 14, 3);
+        g.fillRect(11, 11, 2, 6);
+      }, 24, 32);
+      // 동방명주 — 구슬 전망대와 세 기둥을 단순화한 실루엣.
+      this.bakeTile('ct_prop_pearl_tower', (g) => {
+        g.fillStyle(C(0xadb5b8), 1);
+        g.fillRect(11, 1, 2, 7); g.fillRect(10, 13, 4, 13);
+        g.fillRect(6, 23, 3, 7); g.fillRect(15, 23, 3, 7);
+        g.fillStyle(C(0xb34b5c), 1); g.fillCircle(12, 10, 4); g.fillCircle(12, 22, 5);
+        g.fillStyle(C(0x5b6268), 1); g.fillRect(5, 30, 14, 2); g.fillRect(8, 20, 8, 2);
+      }, 24, 32);
+      // 자금성 지붕 — 금빛 겹처마와 붉은 기둥, 문양·국기 없음.
+      this.bakeTile('ct_prop_gugong_roof', (g) => {
+        g.fillStyle(C(0xc99a38), 1);
+        g.fillRect(9, 2, 14, 2); g.fillRect(5, 4, 22, 3); g.fillRect(2, 7, 28, 3);
+        g.fillStyle(C(0xa33e2f), 1);
+        g.fillRect(5, 10, 3, 8); g.fillRect(11, 10, 3, 8); g.fillRect(18, 10, 3, 8); g.fillRect(24, 10, 3, 8);
+        g.fillStyle(C(0x5e3b2a), 1); g.fillRect(3, 9, 26, 2); g.fillRect(3, 18, 26, 2);
+      }, 32, 20);
+      // 북해 백탑 — 흰 종형 탑신과 단순한 기단.
+      this.bakeTile('ct_prop_white_dagoba', (g) => {
+        g.fillStyle(C(0xe5e1d6), 1);
+        g.fillRect(11, 1, 2, 6); g.fillRect(9, 7, 6, 3); g.fillCircle(12, 14, 6);
+        g.fillRect(7, 15, 10, 5);
+        g.fillStyle(C(0xb5b0a6), 1); g.fillRect(8, 17, 8, 3); g.fillRect(6, 20, 12, 2);
+        g.fillStyle(C(0x6d6c65), 1); g.fillRect(5, 22, 14, 2); g.fillRect(10, 5, 4, 2);
+      }, 24, 24);
+      // 스토리브리지 — 캔틸레버 아치와 수평 데크.
+      this.bakeTile('ct_prop_storybridge', (g) => {
+        g.fillStyle(C(0x65727a), 1);
+        g.fillRect(1, 14, 30, 3); g.fillRect(3, 6, 3, 11); g.fillRect(26, 6, 3, 11);
+        g.fillRect(6, 8, 4, 2); g.fillRect(22, 8, 4, 2); g.fillRect(10, 10, 12, 2);
+        g.fillStyle(C(0x91a0a6), 1);
+        g.fillRect(5, 5, 3, 2); g.fillRect(24, 5, 3, 2); g.fillRect(8, 7, 16, 1);
+        g.fillStyle(C(0x3f4b51), 1); g.fillRect(2, 17, 4, 3); g.fillRect(26, 17, 4, 3); g.fillRect(7, 15, 18, 1);
+      }, 32, 20);
+      // 시드니 오페라하우스 — 세 장의 겹친 조개 지붕만 남긴 단순 실루엣.
+      this.bakeTile('ct_prop_operahouse', (g) => {
+        g.fillStyle(C(0xe8e2d1), 1);
+        g.fillRect(5, 11, 7, 5); g.fillRect(7, 7, 5, 4); g.fillRect(9, 4, 3, 3);
+        g.fillRect(12, 10, 7, 6); g.fillRect(14, 6, 5, 4); g.fillRect(17, 3, 2, 3);
+        g.fillRect(19, 12, 7, 4); g.fillRect(21, 8, 5, 4);
+        g.fillStyle(C(0xbeb8aa), 1); g.fillRect(4, 15, 23, 2); g.fillRect(10, 8, 2, 8); g.fillRect(17, 7, 2, 9);
+        g.fillStyle(C(0x4f5f66), 1); g.fillRect(2, 17, 28, 3);
+      }, 32, 20);
+
       // ── 캐릭터(플레이어 ct_pc · 원격 피어 ct_pr) + 펫 + NPC 마커 ──
       this.bakeCharSet('ct_pc', tonePalette(avatarPalette(ctx.avatarRef?.current), this.mode), ctx.avatarRef?.current);
       this.bakeCharSet('ct_pr', tonePalette(CHAR_PAL_REMOTE, this.mode));
