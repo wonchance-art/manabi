@@ -7,12 +7,12 @@
 
 ## Codex-1 (codex/*)
 ### doing
-- 몽생미셸 조수 visual-only 1단계: 745 game-min·epoch 420·8단계 결정 시계,
-  source-informed `tideSafeCorridorMask` 해시 고정, 충돌·재배치 비활성 유지
 ### todo
 - 멜버른 비콘텐츠 선행 수집: bbox `[144.90,-37.88,145.01,-37.78]`,
   4×4 Overpass 48/48 + 20m 스냅샷 결정성 계약(POI·역·콘텐츠 제외)
 ### done (최근)
+- 몽생미셸 조수 visual-only 1단계: 745 game-min·epoch 420·8단계 결정 시계,
+  source-informed `tideSafeCorridorMask` 해시 고정, 충돌·재배치 비활성 유지
 - 레만호 연안(로잔~몽트뢰) 비콘텐츠 선행 수집: bbox `[6.60,46.40,6.95,46.54]`,
   4×4 Overpass 48/48 + 20m 스냅샷 결정성 계약(POI·역·콘텐츠 제외)
 - 제네바 EMEA 오버월드 게이트: 코르나뱅역 실좌표 투영으로 `geneva` 도시 노드를
