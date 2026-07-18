@@ -399,6 +399,28 @@ const CITY_GATES = {
       { name: '몽블랑교', lon: 6.1478, lat: 46.2077, windowTiles: 5 },
     ],
   },
+  // ── 유럽 2차 4호 레만호 연안 (#304 — 로잔 서안·동부 북안 2성분은 CGN 도선이 유일한 다리,
+  //    남안 사부아 스트립 분리 성분은 report-only. 성분 계약은 geo 테스트 소관) ──
+  'leman-riviera': {
+    file: 'src/components/world/cities/leman-riviera.geo.js',
+    snapshot: 'scripts/data/leman-riviera-osm-v21.json',
+    expectedLocale: 'fr',
+    expectedMpt: 20,
+    buildingPct: null, // 다핵 호반 벨트(도시+포도밭+산지) — 관찰 후 R3 밴드에서 판단
+    greenMinPct: null, // 라보 경사면·알프 자락 MOUNTAIN 질량 — report 관찰
+    poiMaxDevTiles: 2.5,
+    downtown: { label: '로잔역', lon: 6.6291, lat: 46.5167 },
+    riverSections: [
+      // 레만호 개수면(우시 앞바다) — 위도 스캔 실측 46.47에서 6,920m/6,920m(무분절 호심).
+      { name: '레만호 우시 단면', lat: 46.47, lonRange: [6.63, 6.72], sumMinM: 6000, runMinM: 6000 },
+      // 시옹성 연안(베토만) — 경도 스캔 실측 6.915에서 2,760m/2,760m(성 서측 개수면).
+      { name: '시옹성 연안 단면', lon: 6.915, latRange: [46.430, 46.405], sumMinM: 2200, runMinM: 2200 },
+    ],
+    streamCourses: [],
+    reportCourses: [],
+    bridgeMaxTiles: 0, // 호안 벨트에 수면 교량 없음(한국식 3분류 정리 동일)
+    bridgeCrossings: [],
+  },
 };
 
 // ── 투영(도시 geo 생성 계약과 동일: webmercator + aspectCorrection) ─────────
