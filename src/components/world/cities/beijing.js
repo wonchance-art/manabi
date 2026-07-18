@@ -117,6 +117,7 @@ export const BEIJING = {
   returnNode: 'beijing', // 오버월드 APAC 베이징 노드는 Codex-1 게이트 라운드 후속
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: [], railways: BEIJING_GEO.railways,
+  tileSkins: Object.freeze({ building: 'hutong' }), // R4 — 후퉁 회색 벽돌 기와
   CITY_TILE, buildGrid: buildBeijingGrid,
 };
 

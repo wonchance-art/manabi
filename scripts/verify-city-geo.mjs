@@ -337,6 +337,27 @@ const CITY_GATES = {
       { name: '웨스트민스터교', lon: -0.1220, lat: 51.5008, windowTiles: 5 },
     ],
   },
+  // ── 유럽 2차 1호 마르세유 (#260 — 이프성 외해 섬은 geo 테스트의 2성분 BFS 계약이 담당) ──
+  marseille: {
+    file: 'src/components/world/cities/marseille.geo.js',
+    snapshot: 'scripts/data/marseille-osm-v21.json',
+    expectedLocale: 'fr',
+    expectedMpt: 20,
+    buildingPct: null, // 관찰 후 밴드 라운드 2에서 확정(Codex-2 report-only)
+    greenMinPct: null, // 지중해 석회암 도심 — 녹지 관찰 후 판단
+    poiMaxDevTiles: 2.5,
+    downtown: { label: '구항(벨주 부두)', lon: 5.3745, lat: 43.2946 },
+    riverSections: [
+      // 구항 분지 개수면 — 경도 스캔 실측 5.368에서 320m/320m(실폭 ~300m 정합, 부두 동단 5.374=0 확인).
+      { name: '구항 단면', lon: 5.368, latRange: [43.300, 43.288], sumMinM: 250, runMinM: 250 },
+      // 이프성 해협(외해) — 위도 스캔 실측 43.288에서 2,180m/2,180m(섬 항로 개수면).
+      { name: '이프성 해협 단면', lat: 43.288, lonRange: [5.325, 5.355], sumMinM: 1800, runMinM: 1800 },
+    ],
+    streamCourses: [],
+    reportCourses: [],
+    bridgeMaxTiles: 0, // 구항·해안에 교량 없음(오너 교량 정리 규율 동일)
+    bridgeCrossings: [],
+  },
 };
 
 // ── 투영(도시 geo 생성 계약과 동일: webmercator + aspectCorrection) ─────────

@@ -186,6 +186,7 @@ export const SYDNEY = {
   returnNode: 'sydney', // 오버월드 APAC 시드니 노드는 Codex-1 게이트 라운드 후속
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: TRANSIT_POINTS, railways: SYDNEY_GEO.railways,
+  tileSkins: Object.freeze({ building: 'terracotta' }), // R4 — 시드니 교외 테라코타 지붕 톤
   CITY_TILE, buildGrid: buildSydneyGrid,
 };
 

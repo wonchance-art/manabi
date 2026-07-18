@@ -138,6 +138,7 @@ export const BRISBANE = {
   returnNode: 'brisbane', // 오버월드 APAC 브리즈번 노드는 Codex-1 게이트 라운드 후속
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: TRANSIT_POINTS, railways: BRISBANE_GEO.railways,
+  tileSkins: Object.freeze({ building: 'terracotta' }), // R4 — 퀸즐랜드 교외 기와 톤
   CITY_TILE, buildGrid: buildBrisbaneGrid,
 };
 

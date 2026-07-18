@@ -120,6 +120,7 @@ export const COTE_DAZUR = {
   returnNode: 'nice', // 오버월드 니스 노드(EMEA [289,551] 도착 [289,550]) — Codex-1 게이트 라운드와 정합
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: [], railways: COTE_DAZUR_GEO.railways,
+  tileSkins: Object.freeze({ building: 'terracotta', water: 'emerald' }), // R4 — 지중해 기와 + 휴양지 에메랄드
   CITY_TILE, buildGrid: buildCoteDAzurGrid,
 };
 

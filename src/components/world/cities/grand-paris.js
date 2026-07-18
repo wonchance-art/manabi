@@ -178,6 +178,7 @@ export const GRAND_PARIS = {
   id: 'grand-paris', name: '파리', cols: COLS, rows: ROWS, entrance: ENTRANCE, returnNode: 'paris',
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: [], railways: GRAND_PARIS_GEO.railways,
+  tileSkins: Object.freeze({ building: 'zinc' }), // R4 — 오스만 아연 지붕
   CITY_TILE, buildGrid: buildGrandParisGrid,
 };
 

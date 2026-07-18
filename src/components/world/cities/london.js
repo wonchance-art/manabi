@@ -176,6 +176,7 @@ export const LONDON = {
   returnNode: 'london', // 오버월드 EMEA 세인트판크라스 노드는 Codex-1 게이트 라운드 후속(#175 후보 [172,356])
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: [], railways: LONDON_GEO.railways,
+  tileSkins: Object.freeze({ building: 'brick' }), // R4 — 적벽돌·슬레이트
   CITY_TILE, buildGrid: buildLondonGrid,
 };
 
