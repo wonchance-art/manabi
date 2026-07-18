@@ -27,9 +27,14 @@
   스키마를 결합하고, 테스트에서 두 ferry edge·섬 도달을 별도 회귀 고정한다.
   snapshot acceptance는 16개 partition 양의 면적 중첩 0, 48/48,
   7개 RLE 각각 decode 길이 181,076, ODbL 1.0·manifest/raw/snapshot SHA·결정성이다.
+  Codex-1 remote branch `codex/marseille-prefetch` exact
+  `ae97cc3c0f71bd7c84d4195a4b902e179e773bf6`가 수집 완료를 기록했다.
+  read-only 선제 감사: targeted 8/8, raw SHA `a674392d`, manifest SHA
+  `f8e1639d`, snapshot SHA `94d19706`, full PNG SHA `145a308b`,
+  비콘텐츠 필드·ODbL·partition/RLE·메모리 계약 PASS.
+  아직 관련 PR·recipient/kind/scope exact handoff 댓글은 없음.
   Codex-1 4×4 Overpass 48/48 비콘텐츠 snapshot exact handoff와
   active PLAN/WORKING/FREEZE 부재 확인 전 POI·역·본생성·재수집 금지.
-  현재 관련 open PR·remote branch 없음.
 - 도시 geo verifier 강화(OWNER_DIRECTIVE #150 댓글 5009917089):
   `snapshot: null` 8도시 정본 경로 연결 PR #240 head
   `a162191e9ca8403ef8b289c9788e3ac5fd8d4d73` → main merge
