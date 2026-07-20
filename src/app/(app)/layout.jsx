@@ -1,5 +1,10 @@
 import Layout from '@/components/Layout';
+import LanguageGate from '@/components/LanguageGate';
 
 export default function AppLayout({ children }) {
-  return <Layout>{children}</Layout>;
+  return (
+    <LanguageGate>
+      <Layout>{children}</Layout>
+    </LanguageGate>
+  );
 }

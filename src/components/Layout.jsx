@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '../lib/AuthContext';
+import { LANGS } from './LanguageGate';
 import { useTheme } from '../lib/useTheme';
 import { useState, useEffect } from 'react';
 import OnboardingModal from './OnboardingModal';
@@ -12,7 +13,7 @@ import { supabase } from '../lib/supabase';
 import { useToast } from '../lib/ToastContext';
 
 export default function Layout({ children }) {
-  const { user, profile, isAdmin, signOut } = useAuth();
+  const { user, profile, isAdmin, signOut, activeLang, setLang } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
@@ -103,6 +104,7 @@ export default function Layout({ children }) {
     { href: '/lessons',   icon: '🎓', label: '강의' },
     { href: '/materials', icon: '📰', label: '자료' },
     { href: '/vocab',     icon: '⭐', label: '단어장' },
+    ...(user ? [{ href: '/circle', icon: '🤝', label: '함께' }] : []),
   ];
 
   const mobileNavLinks = [
@@ -110,6 +112,7 @@ export default function Layout({ children }) {
     { href: '/lessons',   icon: '🎓', label: '강의' },
     { href: '/materials', icon: '📰', label: '자료' },
     { href: '/vocab',     icon: '⭐', label: '단어장' },
+    ...(user ? [{ href: '/circle', icon: '🤝', label: '함께' }] : []),
     ...(user ? [{ href: '/profile', icon: '👤', label: '마이' }] : [{ href: '/auth', icon: '👤', label: '로그인' }]),
   ];
 
@@ -145,6 +148,20 @@ export default function Layout({ children }) {
             <span className="gnb__link-icon">🛡️</span>
             <span>관리</span>
           </Link>
+        )}
+
+        {user && activeLang && (
+          <select
+            className="gnb__lang"
+            value={activeLang}
+            onChange={(e) => setLang(e.target.value)}
+            title="학습 언어 전환"
+            aria-label="학습 언어 전환"
+          >
+            {LANGS.map((l) => (
+              <option key={l.code} value={l.code}>{l.emoji} {l.label}</option>
+            ))}
+          </select>
         )}
 
         <button

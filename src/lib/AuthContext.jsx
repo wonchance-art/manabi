@@ -175,12 +175,30 @@ export function AuthProvider({ children }) {
   }
 
   const isAdmin = profile?.role === 'admin';
+  const isTeacher = profile?.role === 'teacher' || isAdmin;
+
+  // 멀티-언어 모드: 활성 학습 언어 (null이면 시작 시 선택)
+  const activeLang = profile?.active_lang ?? null;
+
+  async function setLang(lang) {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({ active_lang: lang })
+      .eq('id', user.id)
+      .select()
+      .single();
+    if (!error && data) setProfile(data);
+  }
 
   const value = {
     user,
     profile,
     loading,
     isAdmin,
+    isTeacher,
+    activeLang,
+    setLang,
     signUp,
     signIn,
     signInWithGoogle,
