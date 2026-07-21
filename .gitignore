@@ -30,3 +30,6 @@ npm-debug.log*
 
 # Supabase CLI 로컬 캐시
 supabase/.temp/
+
+# Codex CLI 로컬 설정
+.codex/
