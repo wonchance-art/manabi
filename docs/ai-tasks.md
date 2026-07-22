@@ -145,9 +145,9 @@
 
 ## Codex-4 (codex4/*) — 성능·인프라 (타 기기)
 ### doing
-### todo
 - geo lazy-load RFC(발주 #150 코멘트 참조): 부팅 시 26도시 geo 전량 import 병목(#378) 해소 —
   도시 진입 시 동적 import 구조 제안. 결정성·테스트 영향 분석 포함. RFC → 승인 → 구현
+### todo
 ### done (최근)
 
 ## Claude (claude/*)
