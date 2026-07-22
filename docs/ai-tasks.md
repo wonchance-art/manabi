@@ -14,12 +14,12 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
-- E7 dev guest 교통 저장 스킵 일반화: 에어허브·횡단열차·지역 페리의 위치 저장을
-  공항 출구와 같은 무API 성공 경로로 통일하고 로그인 사용자 저장 계약은 유지
-  (`codex/guest-transit-save-skip`, base d3d69f07c0d1be0046fc3533cb61c684fa9b1903,
-  #150 5049638103·5051753765)
 ### todo
 ### done (최근)
+- E7 dev guest 교통 저장 스킵 일반화: 에어허브·횡단열차·지역 페리의 위치 저장을
+  공항 출구와 같은 무API 성공 경로로 통일하고 로그인 사용자 exact POST 계약은 유지
+  (`codex/guest-transit-save-skip`, 구현 6cdf675, base d3d69f07c0d1be0046fc3533cb61c684fa9b1903,
+  #150 5049638103·5051753765)
 - E8 횡단열차 회랑 CSM-1~3 수정: 지역 이탈 락 분리·탑승 선저장 재진입 가드·
   11.7초 정차 경계 이후에도 같은 중간역으로 명시적 하차 재시도와 상태 정합을 보장
   (`codex/corridor-statemachine-fix`, 구현 213e877, base 2492a19217cdebb7f7e9d69ea2bff780aef310ed,
