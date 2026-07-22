@@ -35,7 +35,7 @@ describe('채널터널 구간 런타임 연출', () => {
     expect(londonToParis.segmentPresentation).toEqual({
       serviceId: 'eurostar',
       kind: 'channel-tunnel',
-      label: '유로스타 · 영불해협 해저터널',
+      label: '영불해협 해저터널',
       fadeMs: 260,
     });
     expect(parisToLondon.segmentPresentation).toEqual(londonToParis.segmentPresentation);
