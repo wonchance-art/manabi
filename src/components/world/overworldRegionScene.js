@@ -151,6 +151,10 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
       this.moving = false;
       this.stepPending = false;
       this.ferrying = false;
+      this.enteringCity = false;
+      this.enteringCorridor = false;
+      this.railBoarding = false;
+      this.leavingByAir = false;
       this.railTrip = null;
       this.railDisembarking = false;
       this.ferryBoat = null;
@@ -324,7 +328,7 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
     }
 
     extInputDown(direction) {
-      if (!this.ready || this.inputLocked || !VALID_DIR.has(direction)) return;
+      if (!this.ready || this.controlsLocked() || !VALID_DIR.has(direction)) return;
       if (!this.heldDirs.includes(direction)) this.heldDirs.push(direction);
     }
 
@@ -371,6 +375,17 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
       return `${avatarPrefix}_${base}_${pose}`;
     }
 
+    transitionLocked() {
+      return this.enteringCity || this.ferrying || this.enteringCorridor
+        || this.railBoarding || this.leavingByAir || !!this.railTrip;
+    }
+
+    // React 오버레이가 쓰는 inputLocked와 씬 자체 전환 락을 분리한다. 확인창을 닫는 렌더가
+    // inputLocked=false를 다시 써도 저장·페이드 중 이동이나 다른 전환이 새지 않는다.
+    controlsLocked() {
+      return this.inputLocked || this.transitionLocked();
+    }
+
     refreshNearInteraction(force = false) {
       const near = this.ready
         ? this.transportGates
@@ -395,7 +410,7 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
     }
 
     regionInteract() {
-      if (this.inputLocked) return;
+      if (this.controlsLocked()) return;
       if (this.nearGate?.type === 'rail-hub') {
         const destinationIds = new Set(emeaRailDestinations(this.nearGate.id).map(({ id }) => id));
         const options = railHubs
@@ -435,7 +450,10 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
     }
 
     enterCity(cityId) {
-      if (this.inputLocked || !ctx.hasCity?.(cityId)) return;
+      // cityPrompt 자체가 inputLocked를 세운 상태에서 확인 콜백이 동기로 들어오므로,
+      // 오버레이 락이 아니라 전용 전환 락으로 재진입만 막는다.
+      if (this.transitionLocked() || !ctx.hasCity?.(cityId)) return false;
+      this.enteringCity = true;
       this.inputLocked = true;
       this.heldDirs.length = 0;
       const worldReturn = Object.freeze({
@@ -447,10 +465,11 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
       this.cameras.main.once('camerafadeoutcomplete', () => {
         this.scene.start(`city:${cityId}`, { worldReturn });
       });
+      return true;
     }
 
     enterAirport() {
-      if (this.inputLocked || this.nearWorldNode?.gate?.type !== 'story-scene'
+      if (this.controlsLocked() || this.nearWorldNode?.gate?.type !== 'story-scene'
         || this.nearWorldNode.gate.scene !== 'airport') return;
       this.inputLocked = true;
       this.heldDirs.length = 0;
@@ -464,7 +483,7 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
     }
 
     async ferryTo(destinationId) {
-      if (this.inputLocked || this.ferrying) return false;
+      if (this.transitionLocked()) return false;
       const route = resolveOverworldRegionFerry(
         this.worldNodeEntries,
         this.nearWorldNode,
@@ -533,7 +552,7 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
     }
 
     async enterCorridor() {
-      if (this.nearGate?.type !== 'transsib-gate' || this.inputLocked) return;
+      if (this.nearGate?.type !== 'transsib-gate' || this.transitionLocked()) return false;
       if (!canAccessCorridor({ allowPreview: ctx.canAccessPreviewRegionsRef?.current })) {
         ctx.setStatus?.({
           phase: 'error',
@@ -543,12 +562,14 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
       }
       const spawn = corridorStopSpawn(this.nearGate.corridorStopId);
       if (!spawn) return false;
+      this.enteringCorridor = true;
       this.inputLocked = true;
       this.heldDirs.length = 0;
       ctx.setNearGate?.(null);
       ctx.setStatus?.({ phase: 'saving-gate', message: '횡단열차 플랫폼을 저장하고 있어요.' });
       const persisted = await ctx.persistPosition?.(spawn);
       if (!persisted || this.destroyed) {
+        this.enteringCorridor = false;
         this.inputLocked = false;
         this.refreshNearInteraction(true);
         ctx.setStatus?.({ phase: 'error', message: '플랫폼 저장에 실패했어요. 연결을 확인해 주세요.' });
@@ -591,7 +612,8 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
     }
 
     async boardRailTo(terminalId) {
-      if (this.inputLocked || this.nearGate?.type !== 'rail-hub' || this.railTrip) return false;
+      if (this.nearGate?.type !== 'rail-hub' || this.transitionLocked()) return false;
+      this.railBoarding = true;
       this.inputLocked = true;
       this.heldDirs.length = 0;
       ctx.setNearGate?.(null);
@@ -614,6 +636,8 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
           message: error?.message || '종착 철도 허브를 저장하지 못했어요.',
         });
         return false;
+      } finally {
+        this.railBoarding = false;
       }
     }
 
@@ -666,22 +690,25 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
     }
 
     async leaveByAir() {
-      if (this.nearGate?.type !== 'air-gate' || this.inputLocked) return;
+      if (this.nearGate?.type !== 'air-gate' || this.transitionLocked()) return false;
       const spawn = ctx.airReturnSpawn?.();
-      if (!spawn) return;
+      if (!spawn) return false;
+      this.leavingByAir = true;
       this.inputLocked = true;
       this.heldDirs.length = 0;
       ctx.setNearGate?.(null);
       ctx.setStatus?.({ phase: 'saving-air', message: '귀환 공항을 저장하고 있어요.' });
       const persisted = await ctx.persistPosition?.(spawn);
       if (!persisted || this.destroyed) {
+        this.leavingByAir = false;
         this.inputLocked = false;
         this.refreshNearInteraction(true);
         ctx.setStatus?.({ phase: 'error', message: '귀환 위치 저장에 실패했어요. 연결을 확인해 주세요.' });
-        return;
+        return false;
       }
       ctx.setStatus?.(null);
       this.scene.start('world', { spawn });
+      return true;
     }
 
     refreshTerrainPages(force = false, cameraOrView = this.cameras.main) {
@@ -728,7 +755,7 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
     }
 
     async debugTeleportTo(tx, ty) {
-      if (!this.ready || this.inputLocked || !Number.isInteger(tx) || !Number.isInteger(ty)
+      if (!this.ready || this.controlsLocked() || !Number.isInteger(tx) || !Number.isInteger(ty)
         || !await this.isWalkable(tx, ty)) throw new Error('debug destination is not walkable');
       this.heldDirs.length = 0;
       this.moving = false;
@@ -744,7 +771,7 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
     }
 
     update(time) {
-      if (this.ready && !this.inputLocked && !this.moving && !this.stepPending && this.heldDirs.length) {
+      if (this.ready && !this.controlsLocked() && !this.moving && !this.stepPending && this.heldDirs.length) {
         this.startStep(this.heldDirs.at(-1));
       }
       if (this.player.visible) {
