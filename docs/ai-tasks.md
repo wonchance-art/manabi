@@ -7,6 +7,9 @@
 
 ## Codex-1 (codex/*)
 ### doing
+- 리옹 EMEA 오버월드 게이트: 파르디외역 `4.8595/45.7606` 실좌표 투영으로
+  `lyon` 노드를 등록하고 EXIT 왕복·기존 EMEA 노드/철도 허브 비침범 계약 구현
+  (`codex/lyon-overworld-gate`, base 40f03627ffa069fa90ad81f3ffa7f3518dcb0044)
 ### todo
 ### done (최근)
 - 스트라스부르 비콘텐츠 선행 수집: bbox `[7.70,48.55,7.81,48.63]`,
