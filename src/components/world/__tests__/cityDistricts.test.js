@@ -248,9 +248,9 @@ describe('CityScene guidebook 소비 경계', () => {
     expect(route.path.every(([x, y]) => cityDistrictOpenAt(first, x, y))).toBe(true);
   });
 
-  it('districts 미정의 23도시는 render key·movement collision을 그대로 유지한다', () => {
+  it('districts 미정의 19도시는 render key·movement collision을 그대로 유지한다', () => {
     // 지구 정의 도시 목록 — 새 도시를 지구화하면 여기와 길이 스냅샷을 함께 갱신한다(무단 지구화 가드).
-    const DISTRICT_CITY_IDS = ['lyon', 'bordeaux', 'strasbourg'];
+    const DISTRICT_CITY_IDS = ['lyon', 'bordeaux', 'strasbourg', 'seoul', 'busan', 'cote-dazur', 'leman-riviera'];
     class FakeScene { constructor() {} }
     const manifest = CITY_MAPS.filter(({ id }) => !DISTRICT_CITY_IDS.includes(id)).map((city) => {
       const Scene = buildCityScene({ Scene: FakeScene }, city, {});
@@ -274,18 +274,15 @@ describe('CityScene guidebook 소비 경계', () => {
       return `${city.id}:${hash.digest('hex')}`;
     });
 
-    expect(manifest).toHaveLength(23);
+    expect(manifest).toHaveLength(19);
     expect(manifest).toMatchInlineSnapshot(`
       [
         "fukuoka:cd94cd15350dbaa66284da236cd24a1d851dcecc1171b56611a09ec8cc99d03f",
         "tokyo:005351d1f6395c51c4f447e7e5ac91dc37eb7b922ab31b4985f8430218367d74",
         "osaka:1e157faba21b00707aa7fc3bf169b388fd5fbb972145ddf3c0abc1922fb663f1",
         "kyoto:d3120dc9193275a1a4ec204eccab3cfa0dbf9ab781e1d3bbe068a6bd806daa65",
-        "busan:7285883cf1e115488fec753d8ea2cb37a4aa74d89f05fd2d6b4345df5d1fb1a7",
-        "seoul:97e944c89266151c1ac60a6260de242637aeb27adfe81056bce58fa43a890681",
         "grand-paris:38aa447e903cd2b4325e1f9d1eb8aef62404a6ccbbdb6f9cb25bbcdde1b2918a",
         "mont-saint-michel:bc2b359851b61d8c453183419d0404bf5ed3e55ab914f0c8b0d85b3e35437633",
-        "cote-dazur:8a568a5a1ed6516dd16f60afbdf6a47fea00afd546615b2de42f020914bb4ff6",
         "brussels:5390f6d7ca2f6d8a77624050468b24351130a16ecf267a3d18bb74e5bcd533a0",
         "taipei:5ef6a95c3fcb0715a00effa97f22dca6ac3bc6120dc45fac435b28f664a0a01e",
         "hong-kong:ed9f37d618bdb24f6e993ad91aad92b8d941727f39577f6d6f5724e3aadc01a9",
@@ -299,7 +296,6 @@ describe('CityScene guidebook 소비 경계', () => {
         "marseille:a8acf4d94ef8a037450a7dae67d3d0f00d6841a53eaf13158f38eee2d0defa01",
         "kawaguchiko:add90460ba2f032d15dbaaddd7ae0b4eb72937aaf011f4e965bed03b92b5e1c3",
         "geneva:a879108da2c62b0831891fd2b1b4833f3da9360ee85a8a704dd4cd777e6d8093",
-        "leman-riviera:4f3b93e30d384b51480945101b2d9d36b5e83ebc4562be391a5ab4c277b78828",
       ]
     `);
   });

@@ -118,6 +118,20 @@ export function buildCoteDAzurGrid() {
 export const COTE_DAZUR = {
   id: 'cote-dazur', name: '코트다쥐르', cols: COLS, rows: ROWS, entrance: ENTRANCE,
   returnNode: 'nice', // 오버월드 니스 노드(EMEA [289,551] 도착 [289,550]) — Codex-1 게이트 라운드와 정합
+  // 📖 여행책 지구제 v1 (D2 6호 — T5 실측 그대로, 개방 9.88%).
+  districts: {
+    version: 'district-v1',
+    open: [
+      { id: 'ouest', label: '서부 리비에라', tiles: { rects: [[225, 870, 300, 970], [330, 460, 410, 530], [220, 245, 275, 320]] } },
+      { id: 'nice', label: '니스', tiles: { rects: [[600, 150, 910, 500]] } },
+      { id: 'est', label: '동부 연안', tiles: { rects: [[970, 105, 1235, 280]] } },
+      { id: 'monaco', label: '모나코 일대', tiles: { rects: [[1420, 40, 1510, 125]] } },
+    ],
+    locked: {
+      style: 'guidebook',
+      line: '이 동네는 아직 준비 중이에요 — 다음 여행에서 만나요.',
+    },
+  },
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: [], railways: COTE_DAZUR_GEO.railways,
   tileSkins: Object.freeze({ building: 'terracotta', water: 'emerald' }), // R4 — 지중해 기와 + 휴양지 에메랄드

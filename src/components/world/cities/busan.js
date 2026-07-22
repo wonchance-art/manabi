@@ -135,6 +135,20 @@ export function buildBusanGrid() {
 
 export const BUSAN = {
   id: 'busan', name: '부산', cols: COLS, rows: ROWS, entrance: ENTRANCE, returnNode: 'busan',
+  // 📖 여행책 지구제 v1 (D2 5호 — T5 실측 그대로, 개방 7.57%).
+  districts: {
+    version: 'district-v1',
+    open: [
+      { id: 'port-core', label: '원도심·항만', tiles: { rects: [[530, 650, 735, 830]] } },
+      { id: 'central-north', label: '도심 북부', tiles: { rects: [[735, 420, 810, 490], [840, 145, 930, 215], [860, 35, 930, 80]] } },
+      { id: 'east-coast', label: '동부 해안', tiles: { rects: [[1000, 370, 1260, 535]] } },
+      { id: 'south-coast', label: '남부 해안', tiles: { rects: [[220, 740, 285, 815], [315, 1040, 370, 1105], [860, 1010, 925, 1070], [680, 880, 735, 930]] } },
+    ],
+    locked: {
+      style: 'guidebook',
+      line: '이 동네는 아직 준비 중이에요 — 다음 여행에서 만나요.',
+    },
+  },
   zones: ZONES, zoneSkins: ZONE_SKINS, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: [], railways: BUSAN_GEO.railways,
   CITY_TILE, buildGrid: buildBusanGrid,
