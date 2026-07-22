@@ -12,6 +12,9 @@
 
 ## Codex-1 (codex/*)
 ### doing
+- E5 주동선 발견 이벤트: 확정 SPEC·리옹 정본 카피 8건 기반 스파클 렌더·도보 1회
+  발견·localStorage 왕복 구현 (`codex/route-discovery`,
+  base 724167a930237e5ec42da0d35f91db70e4d90744, #150 5047588502)
 ### todo
 - E5 주동선 발견 이벤트: 확정 SPEC·리옹 정본 카피 8건 기반 1회 발견/저장/렌더 구현
   (#150 5047588502, `docs/spec-route-discovery.md`)
