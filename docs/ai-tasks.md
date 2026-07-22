@@ -122,8 +122,8 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-### todo
 - T3 보르도·스트라스부르 mainRoute 후보 경로 데이터(v3 확산 준비)
+### todo
 ### done (최근)
 - verifier R5 report-only 제안: 그랑파리·마르세유·코트다쥐르의 buildingPct exact와
   riverSections ±2 단면·BRIDGE 0을 재실측하고 보수적 band·sum/run 하한 후보를 문서화
