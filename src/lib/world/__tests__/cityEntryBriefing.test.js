@@ -19,6 +19,8 @@ describe('도시 진입 브리핑 계약', () => {
     for (const [cityId, countryId, slug] of [
       ['tokyo', 'japan', 'jp-overview'],
       ['busan', 'korea', 'kr-overview'],
+      ['paris', 'france', 'fr-overview'],
+      ['mont-saint-michel', 'france', 'fr-overview'],
     ]) {
       const briefing = cityEntryBriefing(cityId);
       const found = wikiDoc(countryId, slug);
@@ -28,10 +30,13 @@ describe('도시 진입 브리핑 계약', () => {
     }
   });
 
-  it('지역학 개관 문서가 없는 나라 도시는 브리핑하지 않는다', () => {
-    expect(cityEntryBriefing('paris')).toBeNull();
+  it('개관 문서가 없는 나라·개관 아닌 문서로 연결된 도시는 브리핑하지 않는다', () => {
     expect(cityEntryBriefing('beijing')).toBeNull();
     expect(cityEntryBriefing('no-such-city')).toBeNull();
+    // 브뤼셀·제네바·레만은 프랑코포니(life) 딥링크만 — 「프랑스 입국」 브리핑 오인 방지 계약.
+    expect(cityEntryBriefing('brussels')).toBeNull();
+    expect(cityEntryBriefing('geneva')).toBeNull();
+    expect(cityEntryBriefing('leman-riviera')).toBeNull();
   });
 
   it('한 나라의 첫 도시에서만 세션을 넘어 한 번 선점한다', () => {
@@ -41,6 +46,9 @@ describe('도시 진입 브리핑 계약', () => {
     expect(claimCityEntryBriefing('osaka', storage)).toBeNull();
     expect(claimCityEntryBriefing('kyoto', storage)).toBeNull();
     expect(claimCityEntryBriefing('seoul', storage)?.countryId).toBe('korea');
+    expect(claimCityEntryBriefing('paris', storage)?.countryId).toBe('france');
+    expect(claimCityEntryBriefing('marseille', storage)).toBeNull();
+    expect(claimCityEntryBriefing('nice', storage)).toBeNull();
   });
 
   it('저장소를 사용할 수 없으면 반복 노출 없이 조용히 생략한다', () => {
