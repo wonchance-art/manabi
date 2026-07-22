@@ -7,11 +7,11 @@
 
 ## Codex-1 (codex/*)
 ### doing
-- 레벨 디자인 v3 리옹 파일럿 경로 위계 RFC: `mainRoute` waypoint 순서·구간별 결정적
-  산출·미정의 도시 렌더 불변·향후 타일/프롭 소비 경계를 report-only 계약으로 제안
-  (`codex/route-hierarchy-rfc`, base 5ffd30c7f5f82e499f47a65759d2000394dadf49)
 ### todo
 ### done (최근)
+- 레벨 디자인 v3 리옹 파일럿 경로 위계 RFC: typed `mainRoute` waypoint 9개·비EXIT
+  URDL BFS/RLE·미정의 도시 렌더 불변·포장/프롭 소비 경계를 report-only로 제안하고 승인 대기
+  (`codex/route-hierarchy-rfc`, base 5ffd30c7f5f82e499f47a65759d2000394dadf49)
 - 게임성 전체 점검 성능·체감 감사: 26도시 메모리 전수표에서 도쿄·코트다쥐르 24 MiB
   위반을 확인하고, cold geo·warm 진입 29표본으로 eager geo 파싱/RLE decode 병목과 개선안을
   `docs/audit-performance.md`에 report-only로 정리
