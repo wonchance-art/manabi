@@ -7,6 +7,15 @@ const freezeHub = (hub) => Object.freeze({
 
 const freezeLink = ([first, second]) => Object.freeze([first, second]);
 
+const segmentPairKey = (first, second) => [first, second].sort().join('::');
+
+const SURFACE_SEGMENT_PRESENTATION = Object.freeze({
+  serviceId: null,
+  kind: 'surface',
+  label: '지상 철도',
+  fadeMs: 0,
+});
+
 export const EMEA_RAIL_NETWORK = Object.freeze({
   schemaVersion: 1,
   releaseEligible: true,
@@ -24,11 +33,20 @@ export const EMEA_RAIL_NETWORK = Object.freeze({
   ]),
   links: Object.freeze([
     freezeLink(['madrid-rail-hub', 'paris-rail-hub']),
+    freezeLink(['london-rail-hub', 'paris-rail-hub']),
     freezeLink(['paris-rail-hub', 'berlin-rail-hub']),
     freezeLink(['berlin-rail-hub', 'vienna-rail-hub']),
     freezeLink(['vienna-rail-hub', 'rome-rail-hub']),
     freezeLink(['vienna-rail-hub', 'istanbul-rail-hub']),
   ]),
+  segmentPresentations: Object.freeze({
+    [segmentPairKey('london-rail-hub', 'paris-rail-hub')]: Object.freeze({
+      serviceId: 'eurostar',
+      kind: 'channel-tunnel',
+      label: '유로스타 · 영불해협 해저터널',
+      fadeMs: 260,
+    }),
+  }),
 });
 
 const hubById = (config, hubId) => config.hubs.find((hub) => hub.id === hubId) || null;
@@ -50,6 +68,14 @@ export function emeaRailHubSpawn(hubId, config = EMEA_RAIL_NETWORK) {
   const hub = hubById(config, hubId);
   if (!hub) return null;
   return Object.freeze({ scene: config.sceneId, x: hub.tile[0], y: hub.tile[1] });
+}
+
+export function emeaRailSegmentPresentation(firstId, secondId, config = EMEA_RAIL_NETWORK) {
+  if (!hubById(config, firstId)) throw new Error(`unknown EMEA rail segment origin: ${firstId}`);
+  if (!hubById(config, secondId)) throw new Error(`unknown EMEA rail segment terminal: ${secondId}`);
+  if (firstId === secondId) throw new Error('rail segment endpoints must differ');
+  return config.segmentPresentations?.[segmentPairKey(firstId, secondId)]
+    || SURFACE_SEGMENT_PRESENTATION;
 }
 
 export function planEmeaRailRoute(originId, terminalId, config = EMEA_RAIL_NETWORK) {

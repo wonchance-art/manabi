@@ -106,7 +106,7 @@ describe('오버월드 철도 실제 선형 경로', () => {
     })).toThrow('disconnected');
   });
 
-  it('체크인된 대륙 5개 직접 연결은 실제 선형으로 이어지고 런던은 차단한다', () => {
+  it('대륙 5개 직접 연결은 실제 선형을 따르고 채널터널 서비스 edge는 물리 그래프와 분리한다', () => {
     const documents = checkedInEmeaRailDocuments();
     const hubs = Object.fromEntries(EMEA_RAIL_NETWORK.hubs.map((entry) => [entry.id, entry]));
     const continentalLinks = EMEA_RAIL_NETWORK.links.filter(([first, second]) => (
@@ -118,6 +118,7 @@ describe('오버월드 철도 실제 선형 경로', () => {
       terminal: hubs[second],
     }));
     expect(paths).toHaveLength(5);
+    expect(EMEA_RAIL_NETWORK.links).toContainEqual(['london-rail-hub', 'paris-rail-hub']);
     expect(paths.every((entry) => entry.distanceTiles > 0 && entry.segmentIds.length > 0)).toBe(true);
     expect(Math.max(...paths.map((entry) => entry.originSnap.distanceTiles))).toBeLessThan(0.62);
     expect(Math.max(...paths.map((entry) => entry.terminalSnap.distanceTiles))).toBeLessThan(0.62);

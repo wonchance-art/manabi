@@ -9,6 +9,7 @@ import {
   emeaRailDestinations,
   emeaRailHubSpawn,
   emeaRailLogoutFallback,
+  emeaRailSegmentPresentation,
   persistEmeaRailTerminalBeforeBoard,
   planEmeaRailRoute,
   prepareEmeaRailTrip,
@@ -30,12 +31,13 @@ describe('유럽 철도 시간 중립 노선·여정 계약', () => {
       'rome-rail-hub',
       'vienna-rail-hub',
     ]);
-    expect(EMEA_RAIL_NETWORK.links).toHaveLength(5);
-    expect(EMEA_RAIL_NETWORK.links.flat()).not.toContain('london-rail-hub');
+    expect(EMEA_RAIL_NETWORK.links).toHaveLength(6);
+    expect(EMEA_RAIL_NETWORK.links).toContainEqual(['london-rail-hub', 'paris-rail-hub']);
     expect(EMEA_RAIL_NETWORK).not.toHaveProperty('headwayMinutes');
     expect(EMEA_RAIL_NETWORK).not.toHaveProperty('dwellMinutes');
     expect(EMEA_RAIL_NETWORK).not.toHaveProperty('segmentMinutes');
     expect(Object.isFrozen(EMEA_RAIL_NETWORK)).toBe(true);
+    expect(Object.isFrozen(EMEA_RAIL_NETWORK.segmentPresentations)).toBe(true);
   });
 
   it('체크인된 철도 허브의 실제 보행 착지 좌표를 그대로 사용한다', () => {
@@ -66,15 +68,52 @@ describe('유럽 철도 시간 중립 노선·여정 계약', () => {
       'paris-rail-hub',
       'madrid-rail-hub',
     ]);
-    expect(emeaRailDestinations('london-rail-hub')).toEqual([]);
+    expect(planEmeaRailRoute('london-rail-hub', 'paris-rail-hub')).toEqual([
+      'london-rail-hub',
+      'paris-rail-hub',
+    ]);
+    expect(planEmeaRailRoute('london-rail-hub', 'rome-rail-hub')).toEqual([
+      'london-rail-hub',
+      'paris-rail-hub',
+      'berlin-rail-hub',
+      'vienna-rail-hub',
+      'rome-rail-hub',
+    ]);
+    expect(emeaRailDestinations('london-rail-hub').map(({ id }) => id)).toEqual([
+      'berlin-rail-hub',
+      'istanbul-rail-hub',
+      'madrid-rail-hub',
+      'paris-rail-hub',
+      'rome-rail-hub',
+      'vienna-rail-hub',
+    ]);
     expect(emeaRailDestinations('paris-rail-hub').map(({ id }) => id)).toEqual([
       'berlin-rail-hub',
       'istanbul-rail-hub',
+      'london-rail-hub',
       'madrid-rail-hub',
       'rome-rail-hub',
       'vienna-rail-hub',
     ]);
-    expect(() => planEmeaRailRoute('london-rail-hub', 'paris-rail-hub')).toThrow('disconnected');
+  });
+
+  it('런던↔파리 가상 구간만 대칭적인 채널터널 연출을 사용한다', () => {
+    const expected = {
+      serviceId: 'eurostar',
+      kind: 'channel-tunnel',
+      label: '유로스타 · 영불해협 해저터널',
+      fadeMs: 260,
+    };
+    expect(emeaRailSegmentPresentation('london-rail-hub', 'paris-rail-hub')).toEqual(expected);
+    expect(emeaRailSegmentPresentation('paris-rail-hub', 'london-rail-hub')).toEqual(expected);
+    expect(emeaRailSegmentPresentation('paris-rail-hub', 'berlin-rail-hub')).toEqual({
+      serviceId: null,
+      kind: 'surface',
+      label: '지상 철도',
+      fadeMs: 0,
+    });
+    expect(Object.isFrozen(emeaRailSegmentPresentation('london-rail-hub', 'paris-rail-hub')))
+      .toBe(true);
   });
 
   it('종착 오버월드 좌표를 저장하기 전에는 탑승할 수 없다', () => {

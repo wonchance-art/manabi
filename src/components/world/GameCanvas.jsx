@@ -2833,7 +2833,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
               <div style={{ display: 'flex', flexDirection: 'column', gap: 7, maxHeight: 210, overflowY: 'auto' }}>
                 {regionGatePrompt.options.length === 0 && (
                   <div style={{ fontSize: '0.64rem', lineHeight: 1.5, textAlign: 'center', opacity: 0.78 }}>
-                    영불해협 철도 연결 방식이 확정될 때까지 이 허브의 대륙 노선은 운행하지 않아요.
+                    현재 선택할 수 있는 철도 목적지가 없어요.
                   </div>
                 )}
                 {regionGatePrompt.options.map((destination) => (
@@ -2900,7 +2900,9 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           {regionStatus.phase === 'saving-rail-stop' && <>💾 {regionStatus.stopHub?.label || '철도 허브'} 하차 위치 저장 중…</>}
           {regionStatus.phase === 'riding' && regionStatus.preview && (
             <>
-              🚆 {regionStatus.toHub?.label} 방면 이동 중
+              {regionStatus.segmentPresentation?.kind === 'channel-tunnel'
+                ? <>🚆 {regionStatus.segmentPresentation.label} 통과 중</>
+                : <>🚆 {regionStatus.toHub?.label} 방면 이동 중</>}
               <br /><span style={{ opacity: 0.72 }}>관리자 수동 진행 · 실제 운행 시간 미확정</span>
               <div style={{ marginTop: 6 }}>
                 <button type="button" onClick={() => sceneRef.current?.advanceRailPreview?.()} style={gbcButtonPrimary}>

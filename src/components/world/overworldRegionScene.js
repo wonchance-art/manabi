@@ -6,6 +6,7 @@ import {
   continueEmeaRailTrip,
   disembarkEmeaRailTrip,
   emeaRailDestinations,
+  emeaRailSegmentPresentation,
   persistEmeaRailTerminalBeforeBoard,
   planEmeaRailRoute,
   prepareEmeaRailTrip,
@@ -526,6 +527,9 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
     }
 
     railStatus(trip) {
+      const segmentPresentation = trip.phase === 'riding'
+        ? emeaRailSegmentPresentation(trip.fromId, trip.toId)
+        : null;
       return Object.freeze({
         ...trip,
         preview: true,
@@ -533,7 +537,24 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
         stopHub: railHubById(trip.stopId),
         fromHub: railHubById(trip.fromId),
         toHub: railHubById(trip.toId),
+        segmentPresentation,
       });
+    }
+
+    beginRailSegmentPresentation(trip) {
+      const presentation = emeaRailSegmentPresentation(trip.fromId, trip.toId);
+      if (presentation.kind === 'channel-tunnel') {
+        this.cameras.main.fadeOut(presentation.fadeMs, 0, 0, 0);
+      }
+      return presentation;
+    }
+
+    finishRailSegmentPresentation(trip) {
+      const presentation = emeaRailSegmentPresentation(trip.fromId, trip.toId);
+      if (presentation.kind === 'channel-tunnel') {
+        this.cameras.main.fadeIn(presentation.fadeMs, 0, 0, 0);
+      }
+      return presentation;
     }
 
     async boardRailTo(terminalId) {
@@ -546,6 +567,7 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
         const prepared = prepareEmeaRailTrip({ originId: this.nearGate.id, terminalId });
         const ready = await persistEmeaRailTerminalBeforeBoard(prepared, ctx.persistPosition);
         this.railTrip = boardEmeaRailTrip(ready);
+        this.beginRailSegmentPresentation(this.railTrip);
         this.player.setVisible(false);
         ctx.setStatus?.(this.railStatus(this.railTrip));
         return true;
@@ -564,6 +586,7 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
 
     advanceRailPreview() {
       if (this.railTrip?.phase !== 'riding') return false;
+      this.finishRailSegmentPresentation(this.railTrip);
       this.railTrip = arriveEmeaRailTrip(this.railTrip);
       ctx.setStatus?.(this.railStatus(this.railTrip));
       return true;
@@ -572,6 +595,7 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
     continueRailPreview() {
       if (this.railTrip?.phase !== 'stopped') return false;
       this.railTrip = continueEmeaRailTrip(this.railTrip);
+      this.beginRailSegmentPresentation(this.railTrip);
       ctx.setStatus?.(this.railStatus(this.railTrip));
       return true;
     }
