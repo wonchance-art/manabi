@@ -7,11 +7,10 @@
 
 ## Codex-1 (codex/*)
 ### doing
-- 채널터널 연출: 파리 가르뒤노르↔런던 세인트판크라스 유로스타를
-  `EMEA_RAIL_NETWORK` 허브 문법으로 연결하고, 해저 페이드/터널 연출은 설계 제안 후 구현
-  (`codex/channel-tunnel`, base cc445f5fcf937db4bb12cfd570e21c2036d5869a)
 ### todo
 ### done (최근)
+- 채널터널 연출: 런던↔파리를 `EMEA_RAIL_NETWORK` virtual service edge로 연결하고,
+  양방향 260ms black fade·해저터널 상태 표시·물리 rail overlay 분리 계약을 구현
 - R4B 애드온: `glacial` 수면 3프레임과 감천 BUILDING 전용 4색 파스텔
   `zoneSkins`를 결정 좌표 해시·포함 경계·전역/기본 폴백 계약으로 구현
 - 몽생미셸 조수 visual-only 1단계: 745 game-min·epoch 420·8단계 결정 시계,
