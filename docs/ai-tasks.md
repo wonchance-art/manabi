@@ -138,10 +138,10 @@
 
 ## Codex-3 (codex3/*) — 게임 시스템 확장 (타 기기)
 ### doing
-- 스탬프 우주 확장 구현(#150 코멘트 5045825484): `STAMP_ALBUM_NODES` 85개 정본·소비처 3곳·
-  지역 `noStamp` 해제·팩트 85/85·기존 66개 저장 호환 계약
 ### todo
 ### done (최근)
+- 스탬프 우주 확장 구현(#150 코멘트 5045825484): `STAMP_ALBUM_NODES` 85개 정본·소비처 3곳·
+  지역 `noStamp` 해제·팩트 85/85·기존 66개 저장 호환 계약
 - 스탬프 우주 확장 RFC(발주 #150 코멘트 참조): REGIONAL_WORLD_NODES 19도시 앨범 편입 계약
   설계 — StampAlbum 소비 집합·noStamp 재정의·지식 카드(factLine) 커버리지 연계. RFC → 승인 → 구현
 
