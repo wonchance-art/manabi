@@ -244,6 +244,27 @@ const CITY_MINI_COLORS = {
   13: [58, 92, 76],    // mountain(산지 — PARK와 구분되는 어두운 청록)
 };
 
+// 24 MiB 미니맵 계약을 넘긴 두 도시만 승인된 최소 factor를 적용한다. 나머지 도시는
+// cityMinimapLayout의 기존 적응형 정책을 그대로 사용해 렌더 해상도를 바꾸지 않는다.
+export const cityMinimapLayoutForCity = (cityId, cols, rows) => {
+  const layout = cityMinimapLayout(cols, rows);
+  const factorFloor = cityId === 'tokyo' ? 2 : cityId === 'cote-dazur' ? 3 : 1;
+  const factor = Math.max(layout.factor, factorFloor);
+  if (factor === layout.factor) return layout;
+  const sourceWidth = Math.ceil(cols / factor);
+  const sourceHeight = Math.ceil(rows / factor);
+  const width = sourceWidth * CITY_MINI_SCALE;
+  const height = sourceHeight * CITY_MINI_SCALE;
+  return {
+    factor,
+    sourceWidth,
+    sourceHeight,
+    width,
+    height,
+    backingBytes: width * height * 4,
+  };
+};
+
 function Minimap({ sceneRef, activeScene, onClose }) {
   const canvasRef = useRef(null);
   const city = typeof activeScene === 'string' && activeScene.startsWith('city:')
@@ -254,7 +275,7 @@ function Minimap({ sceneRef, activeScene, onClose }) {
     if (city) {
       const grid = city.buildGrid();
       const w = city.cols, h = city.rows;
-      const layout = cityMinimapLayout(w, h);
+      const layout = cityMinimapLayoutForCity(city.id, w, h);
       const sampled = downsampleCityGrid(grid, w, h, layout.factor);
       const off = document.createElement('canvas');
       off.width = sampled.width; off.height = sampled.height;
