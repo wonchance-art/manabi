@@ -83,6 +83,7 @@ import {
   requestAirportStoryExit,
   resetAirportStoryState,
 } from './airportStoryState';
+import { createGuestAwarePositionPersister } from './guestPositionPersistence';
 import { buildMsmAbbeyScene, MSM_ABBEY_SCENE_KEY } from './msmAbbeyScene';
 import { msmAbbeyActCopy } from './msmAbbeyContent';
 import { buildJagalchiMarketScene, JAGALCHI_MARKET_SCENE_KEY } from './jagalchiMarketScene';
@@ -871,6 +872,7 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
       scene.applyPeers?.(latestPeersSnapshot);
       if (scene.player) emitPeerDistances(scene, bus); // 전체 키 1회 emit(씬 전환 직후 보장)
     };
+    const persistSessionPosition = createGuestAwarePositionPersister({ devGuest, userId });
     const onQuestScored = (data) => sceneRef.current?.questScoredFx?.(data);
     const onQuestDone = (data) => sceneRef.current?.questDoneFx?.(data);
     // 채팅 메시지 → 해당 유저 캐릭터 위 3초 도트 말풍선(공항 씬엔 메서드 없어 옵셔널 체이닝으로 무해).
@@ -1911,7 +1913,7 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
         async flyToOverworldRegion(regionId) {
           if (this.airTravelPending) return false;
           const destination = overworldAirDestinationById(airDestinationsRef.current, regionId);
-          if (!destination || !userId) return false;
+          if (!destination || (!devGuest && !userId)) return false;
           this.airTravelPending = true;
           this.inputLocked = true;
           this.heldDirs.length = 0;
@@ -1919,12 +1921,8 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
           setAirHubPrompt(null);
           setAirHubStatus({ phase: 'saving', destination });
           try {
-            const response = await fetch('/api/world/position', {
-              method: 'POST', credentials: 'same-origin',
-              headers: { 'content-type': 'application/json' },
-              body: JSON.stringify(destination.spawn), keepalive: true,
-            });
-            if (!response.ok) throw new Error('air destination save failed');
+            const persisted = await persistSessionPosition(destination.spawn);
+            if (!persisted) throw new Error('air destination save failed');
             setAirHubStatus(null);
             this.scene.start(destination.sceneId, { spawn: destination.spawn });
             return true;
@@ -2335,17 +2333,7 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
         setNearStop: (stop) => setCorridorNear(stop),
         setStatus: (status) => setCorridorStatus(status),
         requestBoarding: (prompt) => setCorridorPrompt(prompt),
-        persistPosition: async (position) => {
-          if (!userId || !position) return false;
-          try {
-            const response = await fetch('/api/world/position', {
-              method: 'POST', credentials: 'same-origin',
-              headers: { 'content-type': 'application/json' },
-              body: JSON.stringify(position), keepalive: true,
-            });
-            return response.ok;
-          } catch { return false; }
-        },
+        persistPosition: persistSessionPosition,
         onReady: () => resetScenePeers(),
       };
       const TranssibCorridorScene = buildTranssibCorridorScene(Phaser, corridorCtx);
@@ -2388,17 +2376,7 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
           const airport = getNode('incheon-airport');
           return airport ? { scene: 'plaza', x: airport.tile[0], y: airport.tile[1] } : null;
         },
-        persistPosition: async (position) => {
-          if (!userId || !position) return false;
-          try {
-            const response = await fetch('/api/world/position', {
-              method: 'POST', credentials: 'same-origin',
-              headers: { 'content-type': 'application/json' },
-              body: JSON.stringify(position), keepalive: true,
-            });
-            return response.ok;
-          } catch { return false; }
-        },
+        persistPosition: persistSessionPosition,
         onReady: () => resetScenePeers(),
       }));
 
