@@ -23,6 +23,7 @@ const EXPECTED_SKINS = {
   brussels: { building: 'brick' },
   // R4B — 빙하수 청록(레만호 공유 표현), 건물은 기본 유지.
   geneva: { water: 'glacial' },
+  lyon: { building: 'terracotta' },
   'leman-riviera': { water: 'glacial' },
 };
 
