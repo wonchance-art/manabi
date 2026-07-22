@@ -43,6 +43,7 @@ import { DEFAULT_AVATAR, avatarPalette, normalizeWorldAvatar } from '../../lib/w
 // 🗾 여행 스탬프 — 노드 첫 방문 수집(fetch 래퍼, 실패 조용히). API: /api/world/stamps.
 import { loadStamps, collectStamp } from '../../lib/world/stamps';
 import { canCollectStamp, STAMP_ALBUM_NODES } from '../../lib/world/stampUniverse';
+import { claimStampMilestoneRewards } from '../../lib/world/stampMilestones';
 // 📖 스탬프 지식 카드(아이디어 보드 ④) — 수집 순간 지역학 마이크로 팩트 1줄.
 import { factLineForNode } from '../../lib/world/worldNodeFacts';
 // 🗺️ 광장 맵 데이터 — 한반도+일본 열도 실비율 도트 맵(448×384, build-map.mjs 산출).
@@ -567,6 +568,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   useEffect(() => { storyActiveRef.current = storyActive; }, [storyActive]);
   useEffect(() => { storyPhaseRef.current = storyPhase; }, [storyPhase]);
   useEffect(() => { stampsRef.current = stamps; }, [stamps]);
+  useEffect(() => { claimStampMilestoneRewards(stamps); }, [stamps]);
 
   // 수집 상태 로드(마운트/계정별 1회) — 실패면 조용히 빈 Set 유지.
   useEffect(() => {
