@@ -265,7 +265,6 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
     // 홍콩 도시 ENTRANCE인 침사추이역의 확정 좌표. 투영칸 자체가 체크인된 보행칸이다.
     lon: 114.1722,
     lat: 22.2975,
-    noStamp: true,
     gate: { type: 'city', to: 'hong-kong', label: '🏙️ 시내' },
   }),
   createRegionalWorldNode({
@@ -278,7 +277,6 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
     // 타이베이 도시 ENTRANCE인 타이베이 메인역의 확정 좌표.
     lon: 121.517,
     lat: 25.0478,
-    noStamp: true,
     gate: { type: 'city', to: 'taipei', label: '🏙️ 시내' },
   }),
   createRegionalWorldNode({
@@ -291,7 +289,6 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
     // 상하이 도시 ENTRANCE인 인민광장 입구의 확정 좌표와 체크인된 보행칸([1347,736]).
     lon: 121.4737,
     lat: 31.2323,
-    noStamp: true,
     gate: { type: 'city', to: 'shanghai', label: '🏙️ 시내' },
   }),
   createRegionalWorldNode({
@@ -304,7 +301,6 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
     // 베이징 도시 ENTRANCE인 전문역 입구의 확정 좌표와 체크인된 보행칸([1236,521]).
     lon: 116.3925,
     lat: 39.899,
-    noStamp: true,
     gate: { type: 'city', to: 'beijing', label: '🏙️ 시내' },
   }),
   createRegionalWorldNode({
@@ -317,7 +313,6 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
     // 브리즈번 도시 ENTRANCE인 센트럴역 입구의 확정 좌표와 체크인된 보행칸([2039,2186]).
     lon: 153.0262,
     lat: -27.466,
-    noStamp: true,
     gate: { type: 'city', to: 'brisbane', label: '🏙️ 시내' },
   }),
   createRegionalWorldNode({
@@ -330,7 +325,6 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
     // 시드니 도시 ENTRANCE인 센트럴역 입구의 확정 좌표와 체크인된 보행칸([1999,2345]).
     lon: 151.2065,
     lat: -33.8832,
-    noStamp: true,
     gate: { type: 'city', to: 'sydney', label: '🏙️ 시내' },
   }),
   createRegionalWorldNode({
@@ -343,7 +337,6 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
     // 캔버라 도시 ENTRANCE인 캔버라역/킹스턴의 확정 좌표와 체크인된 보행칸([1954,2380]).
     lon: 149.1493,
     lat: -35.319,
-    noStamp: true,
     gate: { type: 'city', to: 'canberra', label: '🏙️ 시내' },
   }),
   createRegionalWorldNode({
@@ -356,7 +349,6 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
     // 멜버른 도시 ENTRANCE인 플린더스 스트리트역의 확정 좌표와 체크인된 보행칸([1862,2442]).
     lon: 144.9671,
     lat: -37.8183,
-    noStamp: true,
     gate: { type: 'city', to: 'melbourne', label: '🏙️ 시내' },
   }),
   createRegionalWorldNode({
@@ -370,7 +362,6 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
     lat: 48.8566,
     // 파리 철도 허브([211,424])의 ±1 상호작용 우선권과 겹치지 않는 보행칸.
     arrivalOffset: [2, 0],
-    noStamp: true,
     gate: { type: 'city', to: 'grand-paris', label: '🏙️ 시내' },
   }),
   createRegionalWorldNode({
@@ -382,7 +373,6 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
     contentLocale: 'fr',
     lon: -1.511,
     lat: 48.636,
-    noStamp: true,
     gate: { type: 'city', to: 'mont-saint-michel', label: '🏙️ 시내' },
   }),
   createRegionalWorldNode({
@@ -396,7 +386,6 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
     lat: 43.7045,
     // Nice-Ville 투영칸([289,551])의 충돌을 피해 바로 북쪽 보행칸으로 도착한다.
     arrivalOffset: [0, -1],
-    noStamp: true,
     gate: { type: 'city', to: 'cote-dazur', label: '🏙️ 시내' },
   }),
   createRegionalWorldNode({
@@ -409,7 +398,6 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
     // 브뤼셀 도시 ENTRANCE인 Bruxelles-Midi의 확정 좌표와 체크인된 보행칸([242,375]).
     lon: 4.3355,
     lat: 50.8358,
-    noStamp: true,
     gate: { type: 'city', to: 'brussels', label: '🏙️ 시내' },
   }),
   createRegionalWorldNode({
@@ -423,7 +411,6 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
     lon: -0.1258,
     lat: 51.5316,
     arrivalOffset: [0, -2],
-    noStamp: true,
     gate: { type: 'city', to: 'london', label: '🏙️ 시내' },
   }),
   createRegionalWorldNode({
@@ -436,7 +423,6 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
     // 생샤를역 투영칸([259,561]) 자체가 체크인된 보행칸이다.
     lon: 5.3806,
     lat: 43.3027,
-    noStamp: true,
     gate: { type: 'city', to: 'marseille', label: '🏙️ 시내' },
   }),
   createRegionalWorldNode({
@@ -449,7 +435,6 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
     // 코르나뱅역 투영칸([271,489]) 자체가 체크인된 보행칸이다.
     lon: 6.1425,
     lat: 46.2104,
-    noStamp: true,
     gate: { type: 'city', to: 'geneva', label: '🏙️ 시내' },
   }),
   createRegionalWorldNode({
@@ -462,7 +447,6 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
     // 로잔역 실좌표 투영칸([279,481]) 자체가 체크인된 보행칸이다.
     lon: 6.6291,
     lat: 46.5167,
-    noStamp: true,
     gate: { type: 'city', to: 'leman-riviera', label: '🏙️ 시내' },
   }),
   createRegionalWorldNode({
@@ -476,7 +460,6 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
     // 파르디외역 실좌표 투영칸([251,500]) 자체가 체크인된 보행칸이다.
     lon: 4.8595,
     lat: 45.7606,
-    noStamp: true,
     gate: { type: 'city', to: 'lyon', label: '🏙️ 시내' },
   }),
   createRegionalWorldNode({
@@ -490,7 +473,6 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
     // 생장역 실좌표 투영칸([165,523]) 자체가 체크인된 보행칸이다.
     lon: -0.556,
     lat: 44.8256,
-    noStamp: true,
     gate: { type: 'city', to: 'bordeaux', label: '🏙️ 시내' },
   }),
   createRegionalWorldNode({
@@ -504,7 +486,6 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
     // 스트라스부르역 실좌표 투영칸([296,430]) 자체가 체크인된 보행칸이다.
     lon: 7.735,
     lat: 48.585,
-    noStamp: true,
     gate: { type: 'city', to: 'strasbourg', label: '🏙️ 시내' },
   }),
 ]);

@@ -42,6 +42,7 @@ import {
 import { DEFAULT_AVATAR, avatarPalette, normalizeWorldAvatar } from '../../lib/world/avatar';
 // 🗾 여행 스탬프 — 노드 첫 방문 수집(fetch 래퍼, 실패 조용히). API: /api/world/stamps.
 import { loadStamps, collectStamp } from '../../lib/world/stamps';
+import { canCollectStamp, STAMP_ALBUM_NODES } from '../../lib/world/stampUniverse';
 // 📖 스탬프 지식 카드(아이디어 보드 ④) — 수집 순간 지역학 마이크로 팩트 1줄.
 import { factLineForNode } from '../../lib/world/worldNodeFacts';
 // 🗺️ 광장 맵 데이터 — 한반도+일본 열도 실비율 도트 맵(448×384, build-map.mjs 산출).
@@ -576,7 +577,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   // 노드 첫 방문 스탬프 수집 — 렌더마다 최신본을 ref 에 심어 interact/버튼 콜백이 참조한다.
   //   이미 수집한 노드면 무시(중복 없음). 낙관 갱신(즉시 Set 추가·플래시) 후 서버 upsert(실패 조용히).
   collectStampRef.current = (node) => {
-    if (!node || stampsRef.current.has(node.id)) return;
+    if (!canCollectStamp(node) || stampsRef.current.has(node.id)) return;
     setStamps((prev) => { const next = new Set(prev); next.add(node.id); return next; });
     setNewStamp({ id: node.id, name: node.name, factLine: factLineForNode(node.id) });
     collectStamp(node.id);
@@ -636,8 +637,8 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         if (node?.chapter) { setChapterPrompt({ chapter: node.chapter, node }); return; }
         // NPC 노드는 대화 오버레이를 연다(스탬프는 대화 완주 시 — 여기서 수집하지 않는다).
         if (node?.npc) { setNpcDialog({ key: node.npc, node }); return; }
-        // 노드 첫 상호작용이면 스탬프 수집 — 단 noStamp(도시 파사드 등 실존 노드 아님)는 제외.
-        if (node && !node.noStamp) collectStampRef.current?.(node);
+        // 노드 첫 상호작용이면 스탬프 수집 — 중앙 정책이 앨범 멤버십+noStamp 를 함께 검증한다.
+        collectStampRef.current?.(node);
         if (node?.gate) {
           // 게이트 있는 노드는 게이트 동작 우선(설명은 게이트 프롬프트에 병기).
           if (node.gate.type === 'story-scene') {
@@ -2252,7 +2253,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         requestGate: (prompt) => setRegionGatePrompt(prompt),
         requestNode: (node) => {
           const interactive = toInteractiveNode(node);
-          if (!interactive?.noStamp) collectStampRef.current?.(interactive);
+          collectStampRef.current?.(interactive);
           if (interactive?.gate?.type === 'city') {
             setCityPrompt({ to: interactive.gate.to, name: interactive.name });
           } else if (interactive?.gate?.type === 'ferry') {
@@ -2663,7 +2664,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
                 onClick={() => {
                   const { chapter, reading, node } = chapterPrompt;
                   setChapterPrompt(null);
-                  if (!node.noStamp) collectStampRef.current?.(node);
+                  collectStampRef.current?.(node);
                   if (reading) onOpenReading?.(reading);
                   else onOpenChapter?.(chapter, node.track);
                 }}
@@ -3300,7 +3301,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         <WorldGameMenu
           avatar={avatar}
           stamps={stamps}
-          totalPlaces={WORLD_NODES.filter((node) => !node.noStamp).length}
+          totalPlaces={STAMP_ALBUM_NODES.length}
           onApplyAvatar={(next) => onAvatarChange?.(next)}
           onClose={() => { setGameMenuOpen(false); setWikiDeepLink(null); }}
           initialTab={wikiDeepLink ? 'phone' : 'avatar'}
@@ -3446,7 +3447,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
           npcName={npcDialog.node?.name}
           actionRef={npcActionRef}
           cancelRef={npcCancelRef}
-          onComplete={() => { if (!npcDialog.node?.noStamp) collectStampRef.current?.(npcDialog.node); }}
+          onComplete={() => collectStampRef.current?.(npcDialog.node)}
           onExit={() => setNpcDialog(null)}
         />
       )}
