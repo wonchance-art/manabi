@@ -157,6 +157,20 @@ export function buildLemanRivieraGrid() {
 export const LEMAN_RIVIERA = {
   id: 'leman-riviera', name: '레만호 연안', cols: COLS, rows: ROWS, entrance: ENTRANCE,
   returnNode: 'leman-riviera', // 오버월드 EMEA 게이트는 Codex-1 후속(로잔역 기준)
+  // 📖 여행책 지구제 v1 (D2 7호 — T5 실측 그대로, 개방 15.28%).
+  districts: {
+    version: 'district-v1',
+    open: [
+      { id: 'lausanne-ouchy', label: '로잔·우시', tiles: { rects: [[80, 75, 155, 215]] } },
+      { id: 'lavaux', label: '라보 포도밭', tiles: { rects: [[300, 140, 790, 395]] } },
+      { id: 'vevey', label: '브베', tiles: { rects: [[900, 410, 955, 460]] } },
+      { id: 'montreux-chillon', label: '몽트뢰·시옹', tiles: { rects: [[1160, 550, 1280, 720]] } },
+    ],
+    locked: {
+      style: 'guidebook',
+      line: '이 동네는 아직 준비 중이에요 — 다음 여행에서 만나요.',
+    },
+  },
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: TRANSIT_POINTS, railways: LEMAN_RIVIERA_GEO.railways,
   // 🎨 R4B — 빙하수 청록 수면(제네바와 공유하는 레만호 표현).

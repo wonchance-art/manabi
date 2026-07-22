@@ -126,6 +126,20 @@ export function buildSeoulGrid() {
 
 export const SEOUL = {
   id: 'seoul', name: '서울', cols: COLS, rows: ROWS, entrance: ENTRANCE, returnNode: 'seoul',
+  // 📖 여행책 지구제 v1 (D2 4호 — T5 실측 docs/proposal-district-rects.md 그대로, 개방 5.91%).
+  districts: {
+    version: 'district-v1',
+    open: [
+      { id: 'historic-core', label: '사대문 안', tiles: { rects: [[780, 570, 995, 790]] } },
+      { id: 'west', label: '서남권', tiles: { rects: [[550, 700, 700, 970]] } },
+      { id: 'southeast', label: '강남·잠실', tiles: { rects: [[1020, 970, 1230, 1095], [1340, 950, 1410, 1010]] } },
+      { id: 'river-north', label: '한강 북안', tiles: { rects: [[870, 791, 1120, 900]] } },
+    ],
+    locked: {
+      style: 'guidebook',
+      line: '이 동네는 아직 준비 중이에요 — 다음 여행에서 만나요.',
+    },
+  },
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: [], railways: SEOUL_GEO.railways,
   CITY_TILE, buildGrid: buildSeoulGrid,
