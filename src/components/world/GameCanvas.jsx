@@ -76,6 +76,7 @@ import {
   overworldRegionRedirectScene,
 } from '../../lib/world/session';
 // 🌏 독해 트랙 "도쿄 도착" 글 1 → 월드 스토리 씬(하네다 공항). 공항 씬·텍스트박스·문답 오버레이.
+import { cityDistrictOpenAt, resolveCityDistricts } from './cityDistricts';
 import { buildAirportScene } from './airportScene';
 import {
   airportStoryOverlayVisible,
@@ -269,6 +270,8 @@ function Minimap({ sceneRef, activeScene, onClose }) {
   const canvasRef = useRef(null);
   const city = typeof activeScene === 'string' && activeScene.startsWith('city:')
     ? CITY_DATA[activeScene.slice(5)] : null;
+  // 📖 지구제 오버레이 on/off(오너 요청 2026-07-23) — districts 정의 도시에서만 노출.
+  const [showDistricts, setShowDistricts] = useState(true);
 
   useEffect(() => {
     // ── 도시 미니맵 — 도시 정밀맵(구역 라벨 포함) ──
@@ -287,6 +290,27 @@ function Minimap({ sceneRef, activeScene, onClose }) {
         d[i * 4] = c[0]; d[i * 4 + 1] = c[1]; d[i * 4 + 2] = c[2]; d[i * 4 + 3] = 255;
       }
       octx.putImageData(img, 0, 0);
+      // 📖 잠긴 지구 오버레이(오프스크린 1회 베이크) — 씬 resolve 재사용, 없으면 직접 resolve.
+      let lockOff = null;
+      if (city.districts) {
+        const resolved = sceneRef.current?.districts
+          ?? (() => { try { return resolveCityDistricts(city, grid); } catch { return null; } })();
+        if (resolved) {
+          lockOff = document.createElement('canvas');
+          lockOff.width = sampled.width; lockOff.height = sampled.height;
+          const lctx = lockOff.getContext('2d');
+          for (let sy = 0; sy < sampled.height; sy++) {
+            for (let sx = 0; sx < sampled.width; sx++) {
+              const tx = Math.min(w - 1, sx * layout.factor);
+              const ty = Math.min(h - 1, sy * layout.factor);
+              if (!cityDistrictOpenAt(resolved, tx, ty)) {
+                lctx.fillStyle = ((sx + sy) % 6 < 3) ? 'rgba(216,206,182,0.62)' : 'rgba(185,173,148,0.62)';
+                lctx.fillRect(sx, sy, 1, 1);
+              }
+            }
+          }
+        }
+      }
       if (city.railways?.mask) {
         octx.fillStyle = '#3d3028';
         for (let index = 0; index < city.railways.mask.length; index += 1) {
@@ -320,6 +344,7 @@ function Minimap({ sceneRef, activeScene, onClose }) {
         const ctx = canvas.getContext('2d');
         ctx.imageSmoothingEnabled = false;
         ctx.drawImage(off, 0, 0, W, H);
+        if (showDistricts && lockOff) ctx.drawImage(lockOff, 0, 0, W, H);
         // 구역 라벨.
         ctx.font = '9px monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         for (const z of (city.zones || [])) {
@@ -402,7 +427,7 @@ function Minimap({ sceneRef, activeScene, onClose }) {
     drawFrame(blinkOn);
     const timer = setInterval(() => { blinkOn = !blinkOn; drawFrame(blinkOn); }, 260);
     return () => clearInterval(timer);
-  }, [sceneRef, city]);
+  }, [sceneRef, city, showDistricts]);
 
   return (
     <div style={{ position: 'absolute', inset: 0, zIndex: 5, display: 'grid', placeItems: 'center', background: 'rgba(11,13,8,0.6)' }}>
@@ -411,6 +436,16 @@ function Minimap({ sceneRef, activeScene, onClose }) {
           ref={canvasRef}
           style={{ width: 'min(78vw, 240px)', height: 'auto', imageRendering: 'pixelated', display: 'block', borderRadius: 2 }}
         />
+        {city?.districts && (
+          <button
+            type="button"
+            onClick={() => setShowDistricts((v) => !v)}
+            aria-pressed={showDistricts}
+            style={{ ...gbcButtonPrimary, fontSize: '0.62rem', padding: '3px 10px' }}
+          >
+            {showDistricts ? '🔓 개방 지구 표시 중' : '🗺 전체 지형 보기 중'}
+          </button>
+        )}
         <button
           type="button"
           onClick={onClose}
