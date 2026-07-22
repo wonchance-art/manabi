@@ -252,6 +252,7 @@ const GENEVA_NAME = '제네바';
 const LEMAN_RIVIERA_NAME = '레만호 연안';
 const LYON_NAME = '리옹';
 const BORDEAUX_NAME = '보르도';
+const STRASBOURG_NAME = '스트라스부르';
 
 export const REGIONAL_WORLD_NODES = Object.freeze([
   createRegionalWorldNode({
@@ -491,6 +492,19 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
     lat: 44.8256,
     noStamp: true,
     gate: { type: 'city', to: 'bordeaux', label: '🏙️ 시내' },
+  }),
+  createRegionalWorldNode({
+    id: 'strasbourg',
+    name: STRASBOURG_NAME,
+    desc: '일강 물길이 구시가를 감싸 흐르는 스트라스부르. 목조 골목과 대성당의 건축 외관이 운하를 따라 이어져요.',
+    kind: 'city',
+    regionId: 'emea',
+    contentLocale: 'fr',
+    // 스트라스부르역 실좌표 투영칸([296,430]) 자체가 체크인된 보행칸이다.
+    lon: 7.735,
+    lat: 48.585,
+    noStamp: true,
+    gate: { type: 'city', to: 'strasbourg', label: '🏙️ 시내' },
   }),
 ]);
 

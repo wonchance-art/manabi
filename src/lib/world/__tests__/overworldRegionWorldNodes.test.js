@@ -114,7 +114,7 @@ describe('APAC 월드 노드 런타임 인덱스', () => {
 });
 
 describe('EMEA 도시 게이트 런타임 인덱스', () => {
-  it('파리·몽생미셸·니스·브뤼셀·런던·마르세유·제네바·레만호·리옹·보르도 노드를 지역 좌표로 색인하고 도시 게이트를 연다', () => {
+  it('파리·몽생미셸·니스·브뤼셀·런던·마르세유·제네바·레만호·리옹·보르도·스트라스부르 노드를 지역 좌표로 색인하고 도시 게이트를 연다', () => {
     const paris = getNode('paris');
     const montSaintMichel = getNode('mont-saint-michel');
     const nice = getNode('nice');
@@ -125,6 +125,7 @@ describe('EMEA 도시 게이트 런타임 인덱스', () => {
     const leman = getNode('leman-riviera');
     const lyon = getNode('lyon');
     const bordeaux = getNode('bordeaux');
+    const strasbourg = getNode('strasbourg');
     const entries = overworldRegionWorldNodes(EMEA, ALL_WORLD_NODES);
 
     expect(paris).toMatchObject({
@@ -224,6 +225,16 @@ describe('EMEA 도시 게이트 런타임 인덱스', () => {
     expect(entries.map(({ node }) => node.id)).toContain(bordeaux.id);
     expect(nearestOverworldRegionWorldNode(entries, 165, 523, 0)).toBe(bordeaux);
     expect(overworldRegionWorldNodeMode(bordeaux)).toBe('city');
+    expect(strasbourg).toMatchObject({
+      regionId: EMEA.id,
+      contentLocale: 'fr',
+      arrivalOffset: [0, 0],
+      overworldTile: [296, 430],
+      gate: { type: 'city', to: 'strasbourg' },
+    });
+    expect(entries.map(({ node }) => node.id)).toContain(strasbourg.id);
+    expect(nearestOverworldRegionWorldNode(entries, 296, 430, 0)).toBe(strasbourg);
+    expect(overworldRegionWorldNodeMode(strasbourg)).toBe('city');
     const railHub = EMEA_RAIL_NETWORK.hubs.find(({ id }) => id === 'paris-rail-hub');
     expect(Math.max(
       Math.abs(paris.overworldTile[0] - railHub.tile[0]),

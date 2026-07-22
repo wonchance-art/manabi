@@ -177,6 +177,19 @@ describe('도시 정밀맵 레지스트리', () => {
     });
   });
 
+  it('스트라스부르 게이트와 EXIT가 EMEA 스트라스부르역 노드의 같은 타일로 왕복한다', () => {
+    const strasbourg = getNode('strasbourg');
+    expect(strasbourg).toMatchObject({
+      regionId: 'emea',
+      overworldTile: [296, 430],
+      gate: { type: 'city', to: 'strasbourg' },
+    });
+    expect(CITY_DATA[strasbourg.gate.to].returnNode).toBe(strasbourg.id);
+    expect(worldNodeReturnSpawn(strasbourg)).toEqual({
+      scene: 'overworld:emea', x: 296, y: 430,
+    });
+  });
+
   it('가와구치코 게이트와 EXIT가 전국맵 가와구치코역 노드의 같은 타일로 왕복한다', () => {
     const kawaguchiko = getNode('kawaguchiko');
     expect(kawaguchiko).toMatchObject({
