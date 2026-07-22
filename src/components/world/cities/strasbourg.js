@@ -99,6 +99,19 @@ export function buildStrasbourgGrid() {
 export const STRASBOURG = {
   id: 'strasbourg', name: '스트라스부르', cols: COLS, rows: ROWS, entrance: ENTRANCE,
   returnNode: 'strasbourg', // 오버월드 EMEA 게이트는 Codex-1 후속(스트라스부르역 기준)
+  // 📖 여행책 지구제 v1 (D2 — T5 실측 후보 그대로). 개방 3.75%, 필수 gate 3/3 PASS.
+  districts: {
+    version: 'district-v1',
+    open: [
+      { id: 'gare', label: '중앙역 일대', tiles: { rects: [[110, 232, 131, 265]] } },
+      { id: 'grande-ile', label: '그랑딜', tiles: { rects: [[132, 248, 205, 292]] } },
+      { id: 'quartier-europeen', label: '유럽 지구', tiles: { rects: [[238, 165, 290, 215]] } },
+    ],
+    locked: {
+      style: 'guidebook',
+      line: '이 동네는 아직 준비 중이에요 — 다음 여행에서 만나요.',
+    },
+  },
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: TRANSIT_POINTS, railways: STRASBOURG_GEO.railways,
   // 🎨 R4 — 알자스 목조·사암 톤(brick 재사용).

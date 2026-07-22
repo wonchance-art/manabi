@@ -100,6 +100,20 @@ export function buildBordeauxGrid() {
 export const BORDEAUX = {
   id: 'bordeaux', name: '보르도', cols: COLS, rows: ROWS, entrance: ENTRANCE,
   returnNode: 'bordeaux', // 오버월드 EMEA 게이트는 Codex-1 후속(생장역 기준)
+  // 📖 여행책 지구제 v1 (D2 — T5 실측 docs/proposal-district-rects.md 후보 그대로, 오너 승인 순서 2호).
+  // 빈 벌판(도어·NPC 0)을 잠그고 완성 코스만 개방 — 개방 4.97%, 필수 gate 3/3 포함 사전검증 PASS.
+  districts: {
+    version: 'district-v1',
+    open: [
+      { id: 'gare-saint-jean', label: '생장역 일대', tiles: { rects: [[305, 285, 365, 325]] } },
+      { id: 'centre-historique', label: '역사 지구', tiles: { rects: [[235, 188, 315, 255]] } },
+      { id: 'nord-rive', label: '샤르트롱·북강변', tiles: { rects: [[235, 140, 290, 187], [335, 85, 370, 115]] } },
+    ],
+    locked: {
+      style: 'guidebook',
+      line: '이 동네는 아직 준비 중이에요 — 다음 여행에서 만나요.',
+    },
+  },
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: TRANSIT_POINTS, railways: BORDEAUX_GEO.railways,
   // 🎨 R4 — 남서부 오렌지 지붕 톤.
