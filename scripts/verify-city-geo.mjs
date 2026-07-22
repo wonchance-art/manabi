@@ -406,7 +406,7 @@ const CITY_GATES = {
     snapshot: 'scripts/data/leman-riviera-osm-v21.json',
     expectedLocale: 'fr',
     expectedMpt: 20,
-    buildingPct: null, // 다핵 호반 벨트(도시+포도밭+산지) — 관찰 후 R3 밴드에서 판단
+    buildingPct: [2.0, 3.5], // 다핵 호반 벨트 정본 2.6% — R3 승인 hard gate
     greenMinPct: null, // 라보 경사면·알프 자락 MOUNTAIN 질량 — report 관찰
     poiMaxDevTiles: 2.5,
     downtown: { label: '로잔역', lon: 6.6291, lat: 46.5167 },

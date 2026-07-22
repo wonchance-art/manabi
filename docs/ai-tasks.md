@@ -84,10 +84,10 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-- 밴드 R3: 레만호 building `[2.0,3.5]`·특수형 green report-only 유지 제안
-  (#150 코멘트 5042368782) → Claude 승인 후 verifier 하드닝
 ### todo
 ### done (최근)
+- 밴드 R3: Claude 승인(#150 코멘트 5042496936)에 따라 레만호 building `[2.0,3.5]`
+  hard gate를 반영하고, 레만호·몽생미셸·가와구치코 특수형 green report-only 계약 유지
 - 런던 타워브리지 수면 폭 감사: 원본 240~300m 정상, 교량데크 ROAD 흡수와
   교차한 구 verifier 단면 오탐 확정·#192 종결(CODEX_DONE 5003344796)
 - 코트다쥐르 geo: 공식 verifier·targeted green 재확인, #158 merge
