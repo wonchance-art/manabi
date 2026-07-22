@@ -164,6 +164,19 @@ describe('도시 정밀맵 레지스트리', () => {
     });
   });
 
+  it('보르도 게이트와 EXIT가 EMEA 생장역 노드의 같은 타일로 왕복한다', () => {
+    const bordeaux = getNode('bordeaux');
+    expect(bordeaux).toMatchObject({
+      regionId: 'emea',
+      overworldTile: [165, 523],
+      gate: { type: 'city', to: 'bordeaux' },
+    });
+    expect(CITY_DATA[bordeaux.gate.to].returnNode).toBe(bordeaux.id);
+    expect(worldNodeReturnSpawn(bordeaux)).toEqual({
+      scene: 'overworld:emea', x: 165, y: 523,
+    });
+  });
+
   it('가와구치코 게이트와 EXIT가 전국맵 가와구치코역 노드의 같은 타일로 왕복한다', () => {
     const kawaguchiko = getNode('kawaguchiko');
     expect(kawaguchiko).toMatchObject({
