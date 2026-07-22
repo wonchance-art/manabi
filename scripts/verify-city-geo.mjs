@@ -421,6 +421,26 @@ const CITY_GATES = {
     bridgeMaxTiles: 0, // 호안 벨트에 수면 교량 없음(한국식 3분류 정리 동일)
     bridgeCrossings: [],
   },
+  lyon: {
+    file: 'src/components/world/cities/lyon.geo.js',
+    snapshot: 'scripts/data/lyon-osm-v21.json',
+    expectedLocale: 'fr',
+    expectedMpt: 20,
+    buildingPct: null, // 반도 도심·언덕(푸르비에르/크루아루스) 혼합 — 1라운드 report, R4 밴드에서 판단
+    greenMinPct: null, // 테트도르·언덕 사면 혼합 — report 관찰
+    poiMaxDevTiles: 2.5,
+    downtown: { label: '벨쿠르', lon: 4.8320, lat: 45.7578 },
+    riverSections: [
+      // 론강(모랑 다리 위도) — 위도 스캔 실측 45.767에서 160m/160m(단일 수로).
+      { name: '론강 도심 단면', lat: 45.767, lonRange: [4.835, 4.850], sumMinM: 140, runMinM: 140 },
+      // 손강(구시가 위도) — 위도 스캔 실측 45.762에서 60m/60m(교량 데크 ROAD 흡수 감안 하한).
+      { name: '손강 구시가 단면', lat: 45.762, lonRange: [4.815, 4.830], sumMinM: 50, runMinM: 50 },
+    ],
+    streamCourses: [],
+    reportCourses: [],
+    bridgeMaxTiles: 0, // 한국식 3분류 정리 동일(도심 교량은 ROAD 흡수)
+    bridgeCrossings: [],
+  },
 };
 
 // ── 투영(도시 geo 생성 계약과 동일: webmercator + aspectCorrection) ─────────
