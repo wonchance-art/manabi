@@ -9,6 +9,8 @@
   브랜치: `claude/*`. 다른 세션은 절대 merge하지 않는다.
 - **Codex-1** (`codex/*`) = 비콘텐츠 수집(Overpass 스냅샷)·엔진/씬 골격·오버월드 게이트.
 - **Codex-2** (`codex2/*`) = 도시 geo 본생성·verifier 하드닝 제안.
+- **Codex-3** (`codex3/*`) = 게임 시스템 확장(스탬프·보상 루프·앨범 계약) — 타 기기 세션.
+- **Codex-4** (`codex4/*`) = 성능·인프라(메모리·lazy-load·벤치) — 타 기기 세션.
 - 새 세션을 추가하면 새 네임스페이스(`codex3/*` 등)와 보드 열을 먼저 배정한다.
 - 자기 네임스페이스 밖 파일 수정 금지. force-push 금지(자기 claude/* 브랜치의
   squash-merge 후 `--force-with-lease` 재동기화만 확립 관례).
