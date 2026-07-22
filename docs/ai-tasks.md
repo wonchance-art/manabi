@@ -123,10 +123,11 @@
 ## Codex-2 (codex2/*)
 ### doing
 ### todo
-- T1 미니맵 factor 복귀 A/B 시각 자료(도쿄 1→2·코트다쥐르 2→3, report-only): #150 5046785647
 - T2 R5 verifier 프로파일 실측 제안(파리·마르세유·니스 — verifier 편집 금지)
 - T3 보르도·스트라스부르 mainRoute 후보 경로 데이터(v3 확산 준비)
 ### done (최근)
+- 미니맵 factor 복귀 A/B: 도쿄 1→2·코트다쥐르 2→3의 동일 252×252타일 크롭을
+  504px PNG 4장으로 비교하고, backing·지형 전환·2회 byte-identical SHA를 report-only로 고정
 - 도쿄 메모리 긴급 감사: 도쿄 40.11 MiB의 76.6%가 final canvas backing이며 불연속 factor가
   지배 원인임을 분해하고, 도쿄 factor 2·코트다쥐르 factor 3 복귀안과 mainRoute verifier 계약 제안
 - 콘텐츠 밀도 감사: 26도시 POI·학습 도어·TRANSIT·transitPoints·props·NPC·desc·
