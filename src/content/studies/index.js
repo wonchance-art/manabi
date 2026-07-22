@@ -19,6 +19,7 @@ import KR_SOCIETY from './korea/society.js';
 import KR_LIFE from './korea/life.js';
 import FR_OVERVIEW from './france/overview.js';
 import FR_HISTORY_PREMODERN from './france/historyPremodern.js';
+import FR_FRANCOPHONIE from './france/francophonie.js';
 
 export const STUDY_DOMAINS = Object.freeze([
   Object.freeze({ id: 'overview', label: '개관' }),
@@ -48,8 +49,8 @@ export const STUDY_COUNTRIES = Object.freeze([
     id: 'france',
     nameKo: '프랑스학',
     nameLocal: 'Études françaises',
-    intro: '파리에서 몽생미셸까지 — 프랑스어권 여행의 배경이 되는 지리·인구·경제를 공적 통계 기준으로 정리한 레퍼런스. 1기 골격은 개관부터 시작한다.',
-    docs: Object.freeze([FR_OVERVIEW, FR_HISTORY_PREMODERN]),
+    intro: '프랑스에서 불어권 세계까지 — 파리·몽생미셸·브뤼셀·로망디, 그리고 그 너머 프랑코포니의 지리·역사·언어사회를 공적 통계 기준으로 정리한 레퍼런스.',
+    docs: Object.freeze([FR_OVERVIEW, FR_HISTORY_PREMODERN, FR_FRANCOPHONIE]),
   }),
 ]);
 
