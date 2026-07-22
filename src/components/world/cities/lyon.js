@@ -389,6 +389,38 @@ export const LYON = {
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: TRANSIT_POINTS, railways: LYON_GEO.railways,
   mainRoute: MAIN_ROUTE,
+  // 📖 여행책 지구제 v1 (D2 정본 — RFC docs/rfc-guidebook-districts.md·오너 승인 2026-07-23).
+  // 개방 = 주동선 회랑(leg별 bbox+6타일 마진, #150 예비 산출 5049709411 검산). 나머지는
+  // guidebook 잠금 렌더 + soft wall. 지구 확장 시 rect 추가만(기존 rect 축소 금지 관례).
+  districts: {
+    version: 'district-v1',
+    open: [
+      {
+        id: 'presquile-confluence',
+        label: '프레스킬 남부',
+        tiles: { rects: [[127, 228, 169, 292], [136, 213, 169, 240]] },
+      },
+      {
+        id: 'vieux-lyon-fourviere',
+        label: '구시가·푸르비에르',
+        tiles: { rects: [[118, 202, 149, 225], [118, 174, 178, 215]] },
+      },
+      {
+        id: 'terreaux-croix-rousse',
+        label: '테로·크루아루스',
+        tiles: { rects: [[166, 173, 187, 194], [157, 136, 191, 186]] },
+      },
+      {
+        id: 'rhone-part-dieu',
+        label: '론 강변·파르디외',
+        tiles: { rects: [[157, 136, 239, 212], [227, 200, 276, 225]] },
+      },
+    ],
+    locked: {
+      style: 'guidebook',
+      line: '이 동네는 아직 준비 중이에요 — 다음 여행에서 만나요.',
+    },
+  },
   // 🎨 R4 — 구시가 오렌지 지붕 톤.
   tileSkins: Object.freeze({ building: 'terracotta' }),
   CITY_TILE, buildGrid: buildLyonGrid,
