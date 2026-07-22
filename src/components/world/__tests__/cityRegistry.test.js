@@ -138,6 +138,19 @@ describe('도시 정밀맵 레지스트리', () => {
     });
   });
 
+  it('레만호 게이트와 EXIT가 EMEA 로잔역 노드의 같은 타일로 왕복한다', () => {
+    const leman = getNode('leman-riviera');
+    expect(leman).toMatchObject({
+      regionId: 'emea',
+      overworldTile: [279, 481],
+      gate: { type: 'city', to: 'leman-riviera' },
+    });
+    expect(CITY_DATA[leman.gate.to].returnNode).toBe(leman.id);
+    expect(worldNodeReturnSpawn(leman)).toEqual({
+      scene: 'overworld:emea', x: 279, y: 481,
+    });
+  });
+
   it('가와구치코 게이트와 EXIT가 전국맵 가와구치코역 노드의 같은 타일로 왕복한다', () => {
     const kawaguchiko = getNode('kawaguchiko');
     expect(kawaguchiko).toMatchObject({
