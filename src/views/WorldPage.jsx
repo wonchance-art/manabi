@@ -876,8 +876,12 @@ export default function WorldPage() {
 
   // ── 게이트 ──
   // 학습 월드는 전체 로그인 유저에게 개방된다(오너 확정). 비로그인만 로그인 안내로 차단한다.
+  // dev 전용 게스트 열람(오너 지시 2026-07-22 — 라이브 검수·게스트 모드 사전 검증):
+  // NEXT_PUBLIC_WORLD_DEV_GUEST=1 이고 프로덕션 빌드가 아닐 때만 잠금을 우회한다.
+  // 저장·스탬프 API는 비로그인 시 기존 설계대로 조용히 실패한다(낙관 UI 무해).
+  const devGuest = process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_WORLD_DEV_GUEST === '1';
   if (loading) return <div className="page-container"><Spinner /></div>;
-  if (!user) {
+  if (!user && !devGuest) {
     return (
       <div className="page-container" style={{ textAlign: 'center', paddingTop: 80 }}>
         <div style={{ fontSize: '3rem', marginBottom: 16 }}>🔒</div>
