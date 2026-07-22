@@ -7,9 +7,9 @@
 
 ## Codex-1 (codex/*)
 ### doing
+- R4B 애드온(오너 큐 4순위 — 발주 #150 코멘트 5041341555): `glacial` 수면 스킨 3프레임 +
+  감천 파스텔 `zoneSkins` **설계 제안 선행** (`codex/rendercraft-r4b`, base 2dcc3f0)
 ### todo
-- 멜버른 비콘텐츠 선행 수집: bbox `[144.90,-37.88,145.01,-37.78]`,
-  4×4 Overpass 48/48 + 20m 스냅샷 결정성 계약(POI·역·콘텐츠 제외)
 ### done (최근)
 - 몽생미셸 조수 visual-only 1단계: 745 game-min·epoch 420·8단계 결정 시계,
   source-informed `tideSafeCorridorMask` 해시 고정, 충돌·재배치 비활성 유지
