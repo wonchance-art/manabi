@@ -13,9 +13,12 @@
 ## Codex-1 (codex/*)
 ### doing
 ### todo
-- E1·E2 공항 스토리 상태머신 정리(P1 — 씬 이탈 상태 잔존·출구 소프트락, 라이브 검수 실측): #150 5046785242
-- E3 스토리 2회차 스킵 RFC(제안만)
 ### done (최근)
+- E1·E2 공항 스토리 상태머신 정리: 씬 이탈 상태 전량 초기화·심사 저장 실패 retry와
+  dev guest 저장 skip/전환 보장 (`codex/airport-story-state-fix`, PR #400,
+  base 32e2b4d55cfd9c6f76071b7487e633e66d15aa7d, #150 5046785242)
+- E3 스토리 2회차 선택형 스킵 RFC: 기존 사용자 스코프 독해 완주 이력 기반으로
+  dialogue만 선택 생략하고 심사·저장·출구 게이트는 유지하는 fail-safe 전이 제안(#150 5047276121)
 - 레벨 디자인 v3 리옹 경로 위계 구현: 승인된 typed `mainRoute` 9열·URDL/RLE/pathSha pin,
   웜 그레이 포장 오버레이·이정표/가로등 결정 배치와 기존 25도시 렌더 불변 계약 구현
   (`codex/route-hierarchy-impl`, base b09b79ed4f1a30927f7783972f21a4c44e379efe)
