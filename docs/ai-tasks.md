@@ -112,10 +112,10 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-- 도쿄 메모리 긴급 감사: #378의 40.11 MiB 원인을 factor·미니맵 베이킹·geo 크기로
-  분해하고 코트다쥐르 24.55 MiB와 24 MiB 복귀안을 report-only 문서로 제안
 ### todo
 ### done (최근)
+- 도쿄 메모리 긴급 감사: 도쿄 40.11 MiB의 76.6%가 final canvas backing이며 불연속 factor가
+  지배 원인임을 분해하고, 도쿄 factor 2·코트다쥐르 factor 3 복귀안과 mainRoute verifier 계약 제안
 - 콘텐츠 밀도 감사: 26도시 POI·학습 도어·TRANSIT·transitPoints·props·NPC·desc·
   스탬프 계약을 결정적 전수 실측하고 면적 대비 불균형·회복 우선순위를 문서화(구현 없음)
 - 밴드 R4 하드닝: #150 승인 5044061378에 따라 리옹 `[13,17]`·보르도 `[12,16]`·
