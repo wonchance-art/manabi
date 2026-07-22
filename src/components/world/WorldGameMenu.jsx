@@ -12,6 +12,7 @@ import {
 } from '../../lib/world/inventory';
 import { charFrameRows } from './sprites';
 import { GBC, gbcButtonPrimary, gbcPanel } from './QuestReview';
+import { stampTitlePresentation } from './stampTitlePresentation';
 import TravelWikiPanel from './TravelWikiPanel';
 
 const TABS = [
@@ -167,7 +168,7 @@ function BagPanel({ onAction }) {
   );
 }
 
-function CodexPanel({ stampCount, totalPlaces, onOpenStampAlbum, onOpenDictionary }) {
+function CodexPanel({ stampCount, totalPlaces, titlePresentation, onOpenStampAlbum, onOpenDictionary }) {
   const percent = totalPlaces ? Math.min(100, Math.round((stampCount / totalPlaces) * 100)) : 0;
   return (
     <div style={{ display: 'grid', gap: 8 }}>
@@ -178,6 +179,24 @@ function CodexPanel({ stampCount, totalPlaces, onOpenStampAlbum, onOpenDictionar
           <div style={{ width: `${percent}%`, height: '100%', background: GBC.green }} />
         </div>
         <button type="button" onClick={onOpenStampAlbum} style={{ ...gbcButtonPrimary, width: '100%', marginTop: 7 }}>스탬프 앨범 열기</button>
+      </section>
+      <section aria-label="획득 칭호" style={{ border: `2px solid ${GBC.border}`, background: GBC.creamHi, padding: 8 }}>
+        <strong style={{ fontSize: '0.7rem' }}>🎖️ 여행 칭호</strong>
+        {titlePresentation.titles.length > 0 ? (
+          <div style={{ display: 'grid', gap: 5, marginTop: 6 }}>
+            {titlePresentation.titles.map((title) => (
+              <article key={title.key} style={{ borderLeft: `3px solid ${GBC.green}`, paddingLeft: 7 }}>
+                <strong style={{ display: 'block', fontSize: '0.62rem' }}>{title.name}</strong>
+                <span style={{ display: 'block', marginTop: 2, fontSize: '0.54rem', lineHeight: 1.45, color: GBC.inkSoft }}>{title.line}</span>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <p style={{ margin: '6px 0 0', fontSize: '0.56rem', color: GBC.inkSoft }}>아직 얻은 여행 칭호가 없어요.</p>
+        )}
+        <p style={{ margin: '7px 0 0', paddingTop: 6, borderTop: `1px dashed ${GBC.border}`, fontSize: '0.57rem', lineHeight: 1.4, color: GBC.brown }}>
+          {titlePresentation.progressLine}
+        </p>
       </section>
       <section style={{ border: `2px solid ${GBC.border}`, background: GBC.creamHi, padding: 8 }}>
         <strong style={{ fontSize: '0.7rem' }}>📖 단어 사전</strong>
@@ -223,7 +242,8 @@ export default function WorldGameMenu({
   wikiDoc = null, // { countryId, slug } — 장소 딥링크로 열릴 때 폰 탭이 이 문서에서 시작한다.
 }) {
   const [tab, setTab] = useState(initialTab);
-  const stampCount = stamps?.size || 0;
+  const titlePresentation = useMemo(() => stampTitlePresentation(stamps), [stamps]);
+  const stampCount = titlePresentation.stampCount;
   useEffect(() => {
     const closeOnEscape = (event) => { if (event.key === 'Escape') onClose(); };
     window.addEventListener('keydown', closeOnEscape);
@@ -252,7 +272,7 @@ export default function WorldGameMenu({
       <div style={{ overflowY: 'auto', padding: 8, background: GBC.cream }}>
         {tab === 'avatar' && <AvatarPanel avatar={avatar} onApply={onApplyAvatar} />}
         {tab === 'bag' && <BagPanel onAction={(action) => switchAndRun(tab, action)} />}
-        {tab === 'codex' && <CodexPanel stampCount={stampCount} totalPlaces={totalPlaces} onOpenStampAlbum={onOpenStampAlbum} onOpenDictionary={onOpenDictionary} />}
+        {tab === 'codex' && <CodexPanel stampCount={stampCount} totalPlaces={totalPlaces} titlePresentation={titlePresentation} onOpenStampAlbum={onOpenStampAlbum} onOpenDictionary={onOpenDictionary} />}
         {tab === 'quests' && <QuestPanel stampCount={stampCount} totalPlaces={totalPlaces} onOpenReview={onOpenReview} onOpenStampAlbum={onOpenStampAlbum} />}
         {tab === 'phone' && <TravelWikiPanel initialDoc={wikiDoc} />}
       </div>
