@@ -15,6 +15,7 @@
 import { useEffect, useState } from 'react';
 import { GBC, gbcPanel, gbcButtonPrimary } from './QuestReview';
 import { STAMP_ALBUM_NODES } from '../../lib/world/stampUniverse';
+<<<<<<< HEAD
 import { fmtDate } from './stampIcons';
 import {
   STAMP_ALBUM_TABS,
@@ -22,6 +23,9 @@ import {
   stampAlbumTabById,
   stampAlbumTabProgress,
 } from './stampAlbumTabs';
+=======
+import { stampIcon, fmtDate } from './stampIcons';
+>>>>>>> origin/main
 
 export default function StampAlbum({ stamps, onClose }) {
   const owned = stamps instanceof Set ? stamps : new Set();
@@ -52,7 +56,10 @@ export default function StampAlbum({ stamps, onClose }) {
 
   const total = STAMP_ALBUM_NODES.length;
   const got = STAMP_ALBUM_NODES.reduce((n, node) => n + (owned.has(node.id) ? 1 : 0), 0);
+<<<<<<< HEAD
   const activeTab = stampAlbumTabById(activeTabId);
+=======
+>>>>>>> origin/main
 
   return (
     <div style={{
@@ -106,8 +113,13 @@ export default function StampAlbum({ stamps, onClose }) {
           overflowY: 'auto', display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(84px, 1fr))', gap: 8, paddingRight: 2,
         }}>
+<<<<<<< HEAD
           {activeTab.nodes.map((node) => {
             const badge = stampAlbumBadge(node, owned);
+=======
+          {STAMP_ALBUM_NODES.map((node) => {
+            const has = owned.has(node.id);
+>>>>>>> origin/main
             return (
               <div
                 key={node.id}

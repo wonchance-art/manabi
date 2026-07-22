@@ -61,7 +61,7 @@ function keyToDir(key) {
 
 /**
  * 공항 씬 클래스를 빌드한다(Phaser는 동적 import라 팩토리로 주입).
- * ctx: { notifyPhase(phase), petRef, nickRef, bindScene(scene|null), onReady?() }
+ * ctx: { notifyPhase(phase), petRef, nickRef, bindScene(scene|null), requestReturn(spawn, transition), onShutdown?(), onReady?() }
  *   · notifyPhase: 씬 → React (walking→arrived 등 스토리 페이즈 전달)
  *   · bindScene  : 씬 → React (sceneRef.current 갱신, 입력 잠금·명령 위임 대상)
  *   · petRef/nickRef: 플레이어 펫/닉네임(광장과 동일 소스)
@@ -196,6 +196,7 @@ export function buildAirportScene(Phaser, ctx) {
       this.returnSpawn = (data && data.returnSpawn) ? data.returnSpawn : null;
       this.inputLocked = false;
       this.exitOpen = false;
+      this.returning = false;
       this.petJumpVal = 0;
 
       const map = this.buildMap();
@@ -299,6 +300,7 @@ export function buildAirportScene(Phaser, ctx) {
         this.heldDirs = [];
         for (const [, p] of this.peers) { p.sprite.destroy(); p.label?.destroy(); p.boat?.destroy(); }
         this.peers.clear();
+        ctx.onShutdown?.();
       });
 
       // 씬 진입 → 걷기 페이즈.
@@ -407,13 +409,31 @@ export function buildAirportScene(Phaser, ctx) {
 
     // 광장 복귀 — 진입 시 받은 returnSpawn(게이트 앞 타일)을 { spawn } 으로 실어 보낸다.
     // WorldScene 은 spawn 존재로 "복귀"를 판별해 도시 직행 리다이렉트를 건너뛰고(cityRedirectScene
-    // → null) 게이트 앞에서 스폰한다. returnSpawn 미전달(구 경로·예외 방어)이면 기존처럼 데이터
-    // 없이 시작한다 — 진입 경로는 WorldScene.enterAirport 하나뿐이라 실전에서는 항상 전달된다.
-    returnPlaza() {
-      if (this.returnSpawn) {
-        this.scene.start(worldSceneReturnTarget(this.returnSpawn), { spawn: this.returnSpawn });
+    // → null) 게이트 앞에서 스폰한다. requestReturn은 로그인 사용자에게 returnSpawn 저장을 요구하고,
+    // dev guest만 저장을 생략한다. 구 ctx 폴백은 기존처럼 데이터 없이 world를 시작한다.
+    async returnPlaza() {
+      if (this.returning) return false;
+      this.returning = true;
+      this.inputLocked = true;
+      if (this.heldDirs) this.heldDirs.length = 0;
+      this.tapTile = null;
+      const transition = () => {
+        if (this.returnSpawn) {
+          this.scene.start(worldSceneReturnTarget(this.returnSpawn), { spawn: this.returnSpawn });
+        } else this.scene.start('world');
+      };
+      try {
+        if (ctx.requestReturn) {
+          const returned = await ctx.requestReturn(this.returnSpawn, transition);
+          if (!returned) { this.inputLocked = false; return false; }
+        } else transition();
+        return true;
+      } catch {
+        this.inputLocked = false;
+        return false;
+      } finally {
+        this.returning = false;
       }
-      else this.scene.start('world');
     }
 
     // 버스 연출(광장과 동일 시그니처 — quest:scored/done 재사용).
