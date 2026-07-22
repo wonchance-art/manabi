@@ -51,6 +51,7 @@ import {
   montSaintMichelTideAt,
   tideCopyKeyForNode,
 } from './montSaintMichelTide';
+import { presentQuestDone, presentQuestScored } from './stampCollectionPresentation';
 
 // ── 좌표 스케일 (광장·공항과 동일 불변) ──
 const TILE = 32;
@@ -1238,11 +1239,8 @@ export function buildCityScene(Phaser, city, ctx) {
     }
 
     // 완료/정답 연출(버스 quest:scored/done 재사용 — 인게임 리뷰·NPC 대화 하트).
-    questScoredFx({ correct } = {}) { if (correct) this.spawnHeart(); }
-    questDoneFx() {
-      this.tweens.add({ targets: this, petJumpVal: 1, duration: 220, ease: 'Quad.easeOut', yoyo: true, repeat: 1 });
-      for (let i = 0; i < 3; i++) this.time.delayedCall(i * 120, () => this.spawnHeart());
-    }
+    questScoredFx(result = {}) { presentQuestScored(this, result); }
+    questDoneFx() { presentQuestDone(this); }
     spawnHeart() {
       if (!this.pet) return;
       const h = this.add.image(this.pet.x, this.pet.y - 12, 'ct_heart').setScale(TSCALE).setDepth(10001);

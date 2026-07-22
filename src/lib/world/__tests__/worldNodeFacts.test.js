@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { ALL_WORLD_NODES, WORLD_NODES } from '../../../components/world/worldNodes.js';
+import { STAMP_ALBUM_NODES } from '../stampUniverse.js';
 import { NODE_FACTS, factLineForNode } from '../worldNodeFacts.js';
 
 // 📖 스탬프 지식 카드(아이디어 보드 ④) 계약 — 스탬프 대상 전국맵 노드 전수 factLine,
 // 1줄 규격·해요체·desc 비중복(동일 문자열 금지). 유령 키(실재하지 않는 노드) 금지.
 
 describe('스탬프 지식 카드 factLine 계약', () => {
-  const stampNodes = WORLD_NODES.filter((node) => !node.noStamp);
+  const stampNodes = STAMP_ALBUM_NODES;
 
   it('스탬프 대상 노드 전수 커버 — 1줄 규격(12~90자)·해요체·desc 비중복', () => {
-    expect(stampNodes.length).toBeGreaterThanOrEqual(66);
+    expect(stampNodes).toHaveLength(85);
     for (const node of stampNodes) {
       const fact = factLineForNode(node.id);
       expect(fact, node.id).toBeTruthy();
@@ -20,9 +20,9 @@ describe('스탬프 지식 카드 factLine 계약', () => {
     }
   });
 
-  it('유령 항목 없음 — 맵의 모든 키가 실재 노드(전국맵+지역 오버월드)', () => {
-    const ids = new Set(ALL_WORLD_NODES.map((node) => node.id));
-    for (const key of Object.keys(NODE_FACTS)) expect(ids.has(key), key).toBe(true);
+  it('팩트 키와 앨범 ID가 85/85 exact 일치한다', () => {
+    expect(Object.keys(NODE_FACTS).sort())
+      .toEqual(stampNodes.map((node) => node.id).sort());
   });
 
   it('factLineForNode — 부재 시 null', () => {
