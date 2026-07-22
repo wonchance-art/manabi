@@ -14,6 +14,10 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
+- D1 여행책 지구 게이팅 엔진: `city.districts` fail-closed resolve·soft wall·guidebook 잠금 렌더·
+  TRANSIT/스폰/EXIT/도어/NPC/발견 정합 게이트와 미정의 25도시 불변 계약 구현
+  (`codex/guidebook-district-engine`, base bcc0796bd4de957cc5f98f9e1458a557edd463d9,
+  #150 5049638103·5049669206·5049709411)
 ### todo
 ### done (최근)
 - E5 주동선 발견 이벤트: 리옹 정본 8건을 waypointOffsets 기반 exact 타일로 해석하고,
