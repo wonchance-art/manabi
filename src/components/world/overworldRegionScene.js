@@ -33,6 +33,7 @@ import {
 } from './sprites';
 import bus from './bus';
 import { overworldRegionAvatarPrefix } from './avatarRebake';
+import { presentQuestDone, presentQuestScored } from './stampCollectionPresentation';
 
 const TILE = 32;
 const TEXTURE_TILE = 16;
@@ -77,6 +78,7 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
   const airGateTexture = `region_air_gate_${region.id}`;
   const worldNodeTexture = `region_world_node_${region.id}`;
   const ferryTexture = `region_ferry_${region.id}`;
+  const questHeartTexture = `region_quest_heart_${region.id}`;
   const railHubs = region.sceneId === EMEA_RAIL_NETWORK.sceneId
     ? EMEA_RAIL_NETWORK.hubs.map((hub) => Object.freeze({
       ...hub,
@@ -126,6 +128,16 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
         ferry.fillStyle(toneColor(0x8fc7dd, this.mode), 1).fillRect(4, 7, 2, 2).fillRect(7, 7, 2, 2);
         ferry.generateTexture(ferryTexture, 16, 16);
         ferry.destroy();
+      }
+      if (!this.textures.exists(questHeartTexture)) {
+        const heart = this.make.graphics({ add: false });
+        heart.fillStyle(toneColor(0xe0556a, this.mode), 1);
+        heart.fillRect(1, 1, 2, 2); heart.fillRect(5, 1, 2, 2);
+        heart.fillRect(0, 2, 8, 2); heart.fillRect(1, 4, 6, 1);
+        heart.fillRect(2, 5, 4, 1); heart.fillRect(3, 6, 2, 1);
+        heart.fillStyle(toneColor(0xf59caa, this.mode), 1).fillRect(1, 2, 1, 1);
+        heart.generateTexture(questHeartTexture, 8, 7);
+        heart.destroy();
       }
     }
 
@@ -399,6 +411,27 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
         ctx.requestGate?.({ region, gate: this.nearGate, options });
       } else if (this.nearGate) ctx.requestGate?.({ region, gate: this.nearGate });
       else if (this.nearWorldNode) ctx.requestNode?.(this.nearWorldNode);
+    }
+
+    // 지역 오버월드도 도시 씬과 같은 quest:scored/done 하트 타이밍을 사용한다.
+    // 지역 씬에는 펫이 없으므로 피드백 기준점은 플레이어다.
+    questScoredFx(result = {}) { presentQuestScored(this, result); }
+    questDoneFx() { presentQuestDone(this); }
+    spawnHeart() {
+      if (!this.player) return;
+      const heart = this.add.image(
+        this.player.x,
+        this.player.y - 12,
+        questHeartTexture,
+      ).setScale(WORLD_SCALE).setDepth(10001);
+      this.tweens.add({
+        targets: heart,
+        y: heart.y - 26,
+        alpha: 0,
+        duration: 1100,
+        ease: 'Sine.easeOut',
+        onComplete: () => heart.destroy(),
+      });
     }
 
     enterCity(cityId) {
