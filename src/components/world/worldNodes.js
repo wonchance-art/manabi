@@ -466,6 +466,7 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
   createRegionalWorldNode({
     id: 'lyon',
     name: LYON_NAME,
+    desc: '론강과 손강이 만나는 반도의 도시 리옹. 푸르비에르 언덕과 트라불 골목, 미식의 부엌 레알까지 — 프랑스 제2 도시권의 얼굴이에요.',
     desc: '론강과 손강이 만나는 계곡의 도시 리옹. 푸르비에르 언덕과 구시가, 두 강 사이 반도가 이어져요.',
     kind: 'city',
     regionId: 'emea',
