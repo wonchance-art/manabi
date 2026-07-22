@@ -2,7 +2,7 @@
 
 - 상태: **report-only** — 도시 wrapper·geo·`cityMainRoute.js`·CityScene·registry·verifier·DB 변경 없음
 - 발주: 이슈 #150 코멘트 `5046785647` T3
-- stacked 기준: T2 head `dca4e59129b3a92376ccbe9adeacd7e22cf14dad` / route source는
+- stacked 기준: clean T2 head `c44e2cd583a8c696e5017e64c890815f1c165e06` / route source는
   `origin/main` `5016d2ae390207dda1414993d49daca89bd0cd66`과 byte 동일
 - 계약: 리옹 파일럿 #383·#385의 `version=1`, `cardinal-bfs-v1`, `URDL`, `excludeExit=true`
 - 측정일: 2026-07-22
@@ -201,9 +201,9 @@ IP/representation 정책을 함께 반영했다.
 - 후보 audit 독립 2회: 15 segments와 combined JSON byte-identical
 - typed ref exact-1·bounds·walkable·non-EXIT·URDL cardinal path: 15/15 PASS
 - 전 마커 pairwise BFS: 보르도 45쌍·스트라스부르 28쌍, 73/73 reachable
-- targeted: 8 files / 52 tests PASS; max RSS 2,661,187,584 bytes;
-  peak footprint 49,175,512 bytes / swaps 0
-- full single-worker: 199 files / 2,059 tests PASS; max RSS 2,435,006,464 bytes;
-  peak footprint 48,798,584 bytes / swaps 0
+- targeted: 8 files / 56 tests PASS; max RSS 3,076,718,592 bytes;
+  peak footprint 24,972,288 bytes / swaps 0
+- full single-worker: 202 files / 2,081 tests PASS; max RSS 2,367,324,160 bytes;
+  peak footprint 24,710,120 bytes / swaps 0
 - `npm run lint`·`git diff --check`: PASS
 - 수정 파일은 이 제안서와 Codex-2 보드뿐이며 도시·route helper·공유 runtime은 byte 불변
