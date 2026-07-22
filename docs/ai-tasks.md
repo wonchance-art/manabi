@@ -145,6 +145,10 @@
 
 ## Codex-2 (codex2/*)
 ### doing
+- T7 개방 지구 콘텐츠 갭 실측(report-only): 7도시 개방 지구별 도어·NPC·발견 스팟·
+  POI·TRANSIT 도착 수와 km²당 밀도를 결정적으로 측정하고 채움 우선순위를 제안
+  (`codex2/district-content-gaps`, base d3d69f07c0d1be0046fc3533cb61c684fa9b1903,
+  #150 5051753765)
 ### todo
 ### done (최근)
 - T6 미니맵 factor 복귀 구현: 도쿄 1→2·코트다쥐르 2→3 city-aware 정책과
