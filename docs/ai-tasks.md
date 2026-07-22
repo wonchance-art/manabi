@@ -151,6 +151,11 @@
 ### doing
 ### todo
 ### done (최근)
+- T7 개방 지구 콘텐츠 갭 실측(report-only): 7도시 26개 개방 지구의 도어·NPC·발견·
+  POI·TRANSIT 실제 도착과 고유 앵커/km²를 결정적으로 측정하고 빈 역 지구 2곳·
+  저밀도 광역 지구 5곳 중심의 채움 순서를 제안
+  (`codex2/district-content-gaps`, base d3d69f07c0d1be0046fc3533cb61c684fa9b1903,
+  #150 5051753765)
 - T6 미니맵 factor 복귀 구현: 도쿄 1→2·코트다쥐르 2→3 city-aware 정책과
   24MiB 계약식·런타임 하한 회귀를 추가하고 240 CSS px 라벨 무충돌을 실화면 확인
   (`codex2/minimap-factor-restore`, base 2492a19217cdebb7f7e9d69ea2bff780aef310ed,
