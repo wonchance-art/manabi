@@ -7,6 +7,9 @@
 
 ## Codex-1 (codex/*)
 ### doing
+- 레만호 연안 EMEA 오버월드 게이트: 로잔역 실좌표(6.6291/46.5167) 투영으로
+  `leman-riviera` 노드를 등록하고 EXIT 왕복·기존 노드/철도 허브 비침범 계약 구현
+  (`codex/leman-overworld-gate`, base c84308d6232841170d672f4c5c1d19271f145325)
 ### todo
 ### done (최근)
 - 채널터널 연출: 런던↔파리를 `EMEA_RAIL_NETWORK` virtual service edge로 연결하고,
