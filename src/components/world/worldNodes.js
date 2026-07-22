@@ -250,6 +250,7 @@ const LONDON_NAME = '런던';
 const MARSEILLE_NAME = '마르세유';
 const GENEVA_NAME = '제네바';
 const LEMAN_RIVIERA_NAME = '레만호 연안';
+const LYON_NAME = '리옹';
 
 export const REGIONAL_WORLD_NODES = Object.freeze([
   createRegionalWorldNode({
@@ -461,6 +462,19 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
     lat: 46.5167,
     noStamp: true,
     gate: { type: 'city', to: 'leman-riviera', label: '🏙️ 시내' },
+  }),
+  createRegionalWorldNode({
+    id: 'lyon',
+    name: LYON_NAME,
+    desc: '론강과 손강이 만나는 계곡의 도시 리옹. 푸르비에르 언덕과 구시가, 두 강 사이 반도가 이어져요.',
+    kind: 'city',
+    regionId: 'emea',
+    contentLocale: 'fr',
+    // 파르디외역 실좌표 투영칸([251,500]) 자체가 체크인된 보행칸이다.
+    lon: 4.8595,
+    lat: 45.7606,
+    noStamp: true,
+    gate: { type: 'city', to: 'lyon', label: '🏙️ 시내' },
   }),
 ]);
 

@@ -151,6 +151,19 @@ describe('도시 정밀맵 레지스트리', () => {
     });
   });
 
+  it('리옹 게이트와 EXIT가 EMEA 파르디외역 노드의 같은 타일로 왕복한다', () => {
+    const lyon = getNode('lyon');
+    expect(lyon).toMatchObject({
+      regionId: 'emea',
+      overworldTile: [251, 500],
+      gate: { type: 'city', to: 'lyon' },
+    });
+    expect(CITY_DATA[lyon.gate.to].returnNode).toBe(lyon.id);
+    expect(worldNodeReturnSpawn(lyon)).toEqual({
+      scene: 'overworld:emea', x: 251, y: 500,
+    });
+  });
+
   it('가와구치코 게이트와 EXIT가 전국맵 가와구치코역 노드의 같은 타일로 왕복한다', () => {
     const kawaguchiko = getNode('kawaguchiko');
     expect(kawaguchiko).toMatchObject({
