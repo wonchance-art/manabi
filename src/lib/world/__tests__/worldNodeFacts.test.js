@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { WORLD_NODES } from '../../../components/world/worldNodes.js';
+import { ALL_WORLD_NODES, WORLD_NODES } from '../../../components/world/worldNodes.js';
 import { NODE_FACTS, factLineForNode } from '../worldNodeFacts.js';
 
 // 📖 스탬프 지식 카드(아이디어 보드 ④) 계약 — 스탬프 대상 전국맵 노드 전수 factLine,
@@ -20,8 +20,8 @@ describe('스탬프 지식 카드 factLine 계약', () => {
     }
   });
 
-  it('유령 항목 없음 — 맵의 모든 키가 실재 노드', () => {
-    const ids = new Set(WORLD_NODES.map((node) => node.id));
+  it('유령 항목 없음 — 맵의 모든 키가 실재 노드(전국맵+지역 오버월드)', () => {
+    const ids = new Set(ALL_WORLD_NODES.map((node) => node.id));
     for (const key of Object.keys(NODE_FACTS)) expect(ids.has(key), key).toBe(true);
   });
 
