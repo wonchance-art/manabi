@@ -1,10 +1,11 @@
 # manabi — Codex 세션 운영 규약
 
-이 저장소는 3세션 오케스트라(Claude·Codex-1·Codex-2)로 운영된다. 전체 규약은
+이 저장소는 다세션 오케스트라(Claude·Codex-1~4)로 운영된다. 전체 규약은
 루트 `CLAUDE.md`, 현재 작업 상태는 `docs/ai-tasks.md`(보드)와 이슈 #150을 따른다.
 
 ## Codex 세션 핵심 규칙
-- 브랜치 네임스페이스: Codex-1 = `codex/*`, Codex-2 = `codex2/*`. 새 세션은 배정받은
+- 브랜치 네임스페이스: Codex-1 = `codex/*`, Codex-2 = `codex2/*`, Codex-3 = `codex3/*`,
+  Codex-4 = `codex4/*`. 새 세션은 배정받은
   네임스페이스만 사용. **merge·force-push 절대 금지** — merge는 Claude 단일 창구.
 - 착수 전 게이트: 유효한 SPEC(#150) + (본생성의 경우) 스냅샷 exact handoff가 모두
   있어야 시작. 없으면 대기하고 임의로 도시·POI·bbox를 선택하지 않는다.
