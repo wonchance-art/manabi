@@ -204,7 +204,7 @@ const REPORT_REASONS = [
 // 평상시 = 한 칸(최근 메시지, 타자기 효과 + 대기 ▼). 탭하면 아래로 로그(최근 ~50)가 펼쳐진다.
 // 이중 테두리·크림 배경·잉크 텍스트(기존 GBC 다이얼로그 문법 재사용) + 도트 폰트(GBC.font=Galmuri9).
 // 모듈 스코프 컴포넌트 — 부모 리렌더로 리마운트되지 않아 입력 focus·타자기 상태가 유지된다.
-function WorldChatBox({ messages, selfId, status, expanded, onToggle, inputValue, onInputChange, onSubmit, inputRef }) {
+function WorldChatBox({ messages, selfId, status, guest = false, expanded, onToggle, inputValue, onInputChange, onSubmit, inputRef }) {
   const latest = messages.length ? messages[messages.length - 1] : null;
   const [shown, setShown] = useState(0);
   const logRef = useRef(null);
@@ -257,7 +257,7 @@ function WorldChatBox({ messages, selfId, status, expanded, onToggle, inputValue
           </span>
         ) : (
           <span style={{ color: GBC.inkSoft }}>
-            {status === 'connected' ? '여기서 만난 사람과 이야기해 보세요.' : '연결 중…'}
+            {guest ? '로그인하면 여기서 만난 사람과 이야기할 수 있어요.' : status === 'connected' ? '여기서 만난 사람과 이야기해 보세요.' : '연결 중…'}
           </span>
         )}
         {/* ② 대기 중 우하단 깜빡이는 ▼ (타자기 끝 + 접힌 상태) */}
@@ -297,7 +297,8 @@ function WorldChatBox({ messages, selfId, status, expanded, onToggle, inputValue
           maxLength={120}
           enterKeyHint="send"
           aria-label="채팅 메시지 입력"
-          placeholder={status === 'connected' ? '메시지 입력…' : '연결 중…'}
+          placeholder={guest ? '로그인 후 이용할 수 있어요' : status === 'connected' ? '메시지 입력…' : '연결 중…'}
+          disabled={guest}
           style={{
             flex: 1, minWidth: 0, fontFamily: GBC.font, fontSize: '0.72rem', color: GBC.ink,
             background: GBC.creamHi, border: `2px solid ${GBC.border}`, borderRadius: 4, padding: '9px 10px',
@@ -1062,6 +1063,7 @@ export default function WorldPage() {
           messages={chatMessages}
           selfId={userId}
           status={chatStatus}
+          guest={devGuest && !userId}
           expanded={chatExpanded}
           onToggle={() => setChatExpanded((v) => !v)}
           inputValue={chatInput}
