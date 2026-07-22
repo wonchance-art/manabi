@@ -25,6 +25,7 @@ const EXPECTED_SKINS = {
   geneva: { water: 'glacial' },
   lyon: { building: 'terracotta' },
   bordeaux: { building: 'terracotta' },
+  strasbourg: { building: 'brick' },
   'leman-riviera': { water: 'glacial' },
 };
 
