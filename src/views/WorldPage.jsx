@@ -1010,6 +1010,7 @@ export default function WorldPage() {
               <GameCanvas
                 key={userId || 'guest'}
                 userId={userId}
+                devGuest={devGuest}
                 nickname={nickname}
                 pet={pet}
                 avatar={avatar}
