@@ -7,6 +7,9 @@
 
 ## Codex-1 (codex/*)
 ### doing
+- 아이디어 보드 ⑤ 도시 진입 브리핑 카드: 일본·한국 나라별 첫 도시 진입 시
+  overview 요약 3줄·여행 폰 딥링크를 localStorage 영구 1회 계약으로 표시
+  (`codex/city-entry-briefing`, base 630746c5ef4737af6359c54d7d64865ef8ac015c)
 ### todo
 ### done (최근)
 - 레만호 연안 EMEA 오버월드 게이트: 로잔역 실좌표 투영 `[279,481]`로
