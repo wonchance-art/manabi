@@ -119,8 +119,8 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-### todo
 - T2 R5 verifier 프로파일 실측 제안(파리·마르세유·니스 — verifier 편집 금지)
+### todo
 - T3 보르도·스트라스부르 mainRoute 후보 경로 데이터(v3 확산 준비)
 ### done (최근)
 - 미니맵 factor 복귀 A/B: 도쿄 1→2·코트다쥐르 2→3의 동일 252×252타일 크롭을
