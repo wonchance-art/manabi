@@ -45,6 +45,7 @@ import {
   cityBuildingTextureKey,
   cityWaterTextureKey,
 } from './cityTileSkins';
+import { cityMainRouteTileAt, resolveCityMainRoute } from './cityMainRoute';
 import {
   isMontSaintMichelTidalVisualWater,
   montSaintMichelTideAt,
@@ -723,6 +724,31 @@ export function buildCityScene(Phaser, city, ctx) {
         g.fillRect(4, 16, 8, 3); g.fillRect(5, 20, 6, 2); g.fillRect(10, 14, 2, 2);
       }, 16, 32);
 
+      if (city.mainRoute) {
+        // 🧭 주동선 포장 — ROAD보다 반 단계 밝은 웜 그레이 돌포장 오버레이(무문자).
+        this.bakeTile('ct_main_route_paving', (g) => {
+          g.fillStyle(C(0x746d62), 0.7); g.fillRect(0, 0, TEX, TEX);
+          g.fillStyle(C(0x5c574f), 0.36); g.fillRect(0, 7, TEX, 1); g.fillRect(7, 0, 1, TEX);
+          g.fillStyle(C(0x8a8275), 0.34); g.fillRect(1, 1, 5, 5); g.fillRect(9, 9, 5, 5);
+        });
+        // 이정표 — 글자 없는 양방향 화살표 판과 지주만 남긴 일반 실루엣.
+        this.bakeTile('ct_prop_route_signpost', (g) => {
+          g.fillStyle(C(0x4c4439), 1); g.fillRect(7, 7, 2, 25); g.fillRect(5, 30, 6, 2);
+          g.fillStyle(C(0xb7aa92), 1);
+          g.fillRect(2, 5, 11, 5); g.fillRect(5, 13, 9, 5);
+          g.fillRect(1, 6, 2, 3); g.fillRect(13, 14, 2, 3);
+          g.fillStyle(C(0x817664), 1); g.fillRect(3, 9, 10, 1); g.fillRect(5, 17, 9, 1);
+        }, 16, 32);
+        // 가로등 — 문자·상표 없는 단일 램프와 곡선 지주 도트 실루엣.
+        this.bakeTile('ct_prop_route_streetlight', (g) => {
+          g.fillStyle(C(0x403d3a), 1);
+          g.fillRect(7, 5, 2, 27); g.fillRect(5, 30, 6, 2);
+          g.fillRect(8, 5, 4, 2); g.fillRect(11, 6, 2, 3);
+          g.fillStyle(C(0xe3bd69), 1); g.fillRect(10, 8, 5, 4);
+          g.fillStyle(C(0xffdda0), 0.72); g.fillRect(11, 9, 3, 2);
+        }, 16, 32);
+      }
+
       // ── 캐릭터(플레이어 ct_pc · 원격 피어 ct_pr) + 펫 + NPC 마커 ──
       this.bakeCharSet('ct_pc', tonePalette(avatarPalette(ctx.avatarRef?.current), this.mode), ctx.avatarRef?.current);
       this.bakeCharSet('ct_pr', tonePalette(CHAR_PAL_REMOTE, this.mode));
@@ -861,6 +887,7 @@ export function buildCityScene(Phaser, city, ctx) {
       this.worldReturn = data?.worldReturn || ctx.worldReturn;
 
       this.grid = city.buildGrid();
+      this.mainRoute = resolveCityMainRoute(city, this.grid);
       this.tideState = city.tide
         ? montSaintMichelTideAt(
           ctx.worldClockRef?.current?.totalGameMinutes
@@ -916,7 +943,10 @@ export function buildCityScene(Phaser, city, ctx) {
       //  create 전역 트리 루프를 제거해 트리 수가 맵 면적이 아니라 화면+pad 에 비례하게 함 — Codex P1.)
 
       // ── 프리팹 파사드(노렌·간판) — 프론티지 소품(비상호작용, city.props 는 명시 목록이라 개수 유한) ──
-      for (const p of (city.props || [])) {
+      const sceneProps = this.mainRoute
+        ? [...(city.props || []), ...this.mainRoute.props]
+        : (city.props || []);
+      for (const p of sceneProps) {
         const [px, py] = p.tile;
         this.add.image(px * TILE + TILE / 2, (py + 1) * TILE, `ct_prop_${p.kind}`)
           .setOrigin(0.5, 1).setScale(TSCALE).setDepth((py + 1) * TILE);
@@ -1063,6 +1093,10 @@ export function buildCityScene(Phaser, city, ctx) {
         for (let tx = ox; tx < x1; tx++) {
           stamp.setTexture(this.terrainTexKey(tx, ty));
           rt.batchDraw(stamp, (tx - ox) * TILE, (ty - oy) * TILE);
+          if (this.mainRoute && cityMainRouteTileAt(this.mainRoute, COLS, tx, ty)) {
+            stamp.setTexture('ct_main_route_paving');
+            rt.batchDraw(stamp, (tx - ox) * TILE, (ty - oy) * TILE);
+          }
         }
       }
       if (city.railways?.mask) {
