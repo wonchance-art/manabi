@@ -42,6 +42,8 @@ import {
 import { DEFAULT_AVATAR, avatarPalette, normalizeWorldAvatar } from '../../lib/world/avatar';
 // 🗾 여행 스탬프 — 노드 첫 방문 수집(fetch 래퍼, 실패 조용히). API: /api/world/stamps.
 import { loadStamps, collectStamp } from '../../lib/world/stamps';
+// 📖 스탬프 지식 카드(아이디어 보드 ④) — 수집 순간 지역학 마이크로 팩트 1줄.
+import { factLineForNode } from '../../lib/world/worldNodeFacts';
 // 🗺️ 광장 맵 데이터 — 한반도+일본 열도 실비율 도트 맵(448×384, build-map.mjs 산출).
 import { MAP_W, MAP_H, decodeMap, TERRAIN, isBlocked, POI } from './mapData';
 // 🧭 장소 노드(도시·공항·항구·랜드마크) + 미니맵 다운샘플(순수 함수).
@@ -571,14 +573,14 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   collectStampRef.current = (node) => {
     if (!node || stampsRef.current.has(node.id)) return;
     setStamps((prev) => { const next = new Set(prev); next.add(node.id); return next; });
-    setNewStamp({ id: node.id, name: node.name });
+    setNewStamp({ id: node.id, name: node.name, factLine: factLineForNode(node.id) });
     collectStamp(node.id);
   };
 
-  // "획득!" 플래시는 잠시 뒤 자동으로 걷힌다.
+  // "획득!" 플래시는 잠시 뒤 자동으로 걷힌다 — 지식 카드 1줄이 붙으면 읽을 시간만큼 연장.
   useEffect(() => {
     if (!newStamp) return undefined;
-    const t = setTimeout(() => setNewStamp(null), 3500);
+    const t = setTimeout(() => setNewStamp(null), newStamp.factLine ? 5200 : 3500);
     return () => clearTimeout(t);
   }, [newStamp]);
 
@@ -3057,6 +3059,19 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
         }}>
           {stationToast.icon || '🚃'} {stationToast.nameJa}
           {stationToast.yomi && <span style={{ fontSize: '0.62rem', opacity: 0.75 }}> {stationToast.yomi}</span>}
+        </div>
+      )}
+
+      {/* 📖 스탬프 지식 카드 토스트(아이디어 보드 ④) — 수집 순간 지역학 마이크로 팩트 1줄. */}
+      {newStamp?.factLine && (
+        <div style={{
+          position: 'absolute', left: '50%', top: 44, transform: 'translateX(-50%)',
+          fontFamily: GBC.font, fontSize: '0.7rem', color: GBC.ink,
+          background: GBC.cream, border: `2px solid ${GBC.border}`,
+          boxShadow: `inset 0 0 0 1px ${GBC.creamHi}`, borderRadius: 2,
+          padding: '6px 12px', lineHeight: 1.45, maxWidth: '86%', textAlign: 'center', zIndex: 7,
+        }}>
+          📖 {newStamp.factLine}
         </div>
       )}
 
