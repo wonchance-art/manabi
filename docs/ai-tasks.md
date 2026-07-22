@@ -145,10 +145,10 @@
 
 ## Codex-4 (codex4/*) — 성능·인프라 (타 기기)
 ### doing
-- geo lazy-load RFC(발주 #150 코멘트 참조): 부팅 시 26도시 geo 전량 import 병목(#378) 해소 —
-  도시 진입 시 동적 import 구조 제안. 결정성·테스트 영향 분석 포함. RFC → 승인 → 구현
 ### todo
 ### done (최근)
+- geo lazy-load RFC(발주 #150 코멘트 참조): 경량 manifest·도시별 literal dynamic import·
+  저장 도시 1개 선로드·전체맵 선택 로드·전수 검증/롤백 계약 제안 — 승인 전 구현 금지
 
 ## Claude (claude/*)
 ### doing
