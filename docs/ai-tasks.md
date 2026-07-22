@@ -12,12 +12,12 @@
 
 ## Codex-1 (codex/*)
 ### doing
-- E6 횡단열차 회랑 상태머신 점검: transsib-corridor의 탑승·하차·플랫폼 락,
-  좌표 저장 실패 UX, 이탈 후 스토리·오버레이 잔존 경로를 report-only로 전수 감사
-  (`codex/corridor-statemachine-audit`, base 8cce1bd1387e0b05ab29215a547d7730e2b9327c,
-  #150 5049590405)
 ### todo
 ### done (최근)
+- E6 횡단열차 회랑 상태머신 점검: 지역 이탈 공용 락 교착·탑승 선저장 재진입·
+  중간역 하차 실패 재시도 창을 재현하고, 게스트 spawn 미지원과 오버레이 비잔존을 report-only로 감사
+  (`codex/corridor-statemachine-audit`, base 8cce1bd1387e0b05ab29215a547d7730e2b9327c,
+  #150 5049590405)
 - E5 주동선 발견 이벤트: 리옹 정본 8건을 waypointOffsets 기반 exact 타일로 해석하고,
   미발견 2프레임 무문자 스파클·도보 진입 1회 4.2초 GBC 말풍선·localStorage 왕복을 구현
   (`codex/route-discovery`, base cf8c32d4964ab186d07e5658b40494abf15d2e2c,
