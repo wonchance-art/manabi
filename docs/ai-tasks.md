@@ -7,11 +7,11 @@
 
 ## Codex-1 (codex/*)
 ### doing
+### todo
+### done (최근)
 - 리옹 비콘텐츠 선행 수집: bbox `[4.79,45.71,4.90,45.80]`,
   4×4 Overpass 48/48 + 20m 스냅샷 결정성 계약(POI·역·콘텐츠 제외)
   (`codex/lyon-snapshot`, base 3944ddb8196fe76de2ab999fcc4ae3d3f5921bd2)
-### todo
-### done (최근)
 - 아이디어 보드 ⑤ 도시 진입 브리핑 카드: 일본·한국 나라별 첫 도시 진입 시
   overview 요약 3줄·여행 폰 딥링크를 localStorage 영구 1회 계약으로 표시
   (`codex/city-entry-briefing`, base 630746c5ef4737af6359c54d7d64865ef8ac015c)
