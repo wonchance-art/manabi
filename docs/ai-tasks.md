@@ -102,6 +102,8 @@
 
 ## Codex-2 (codex2/*)
 ### doing
+- 밴드 R4 하드닝: #150 승인 5044061378에 따라 리옹 `[13,17]`·보르도 `[12,16]`·
+  스트라스부르 `[10.5,14]` buildingPct hard gate 전환(green null 유지)
 ### todo
 ### done (최근)
 - 밴드 R4 report-only 제안: 정본 buildingPct 리옹 14.6% → `[13,17]`, 보르도
