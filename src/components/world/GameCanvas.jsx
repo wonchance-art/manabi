@@ -87,6 +87,7 @@ import { CITY_DATA } from './cities/index.js';
 import { CITY_MINI_SCALE, cityMinimapLayout, downsampleCityGrid } from './cityMinimap';
 import { directTransitDestinations } from '../../lib/world/transit';
 import { studiesRefForNode } from '../../lib/world/studiesRefs';
+import { claimCityEntryBriefing } from '../../lib/world/cityEntryBriefing';
 import { msmTideCopyFor } from './msmTideCopy';
 import { corridorStopSpawn } from '../../lib/world/transsibCorridor';
 import {
@@ -419,6 +420,9 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   const albumOpenRef = useRef(false);   // 앨범 열림 동안 A 입력 잠금 + B로 닫기
   const [gameMenuOpen, setGameMenuOpen] = useState(false);
   const gameMenuOpenRef = useRef(false);
+  const [entryBriefing, setEntryBriefing] = useState(null);
+  const entryBriefingRef = useRef(null);
+  const entryBriefingTimerRef = useRef(null);
   // 📱 지역학 딥링크 — 장소 「더 알아보기」로 여행 수첩 폰 탭을 해당 문서에서 연다.
   const [wikiDeepLink, setWikiDeepLink] = useState(null); // { countryId, slug } | null
   // ── 도시 정밀맵(계층형 맵) ──
@@ -535,6 +539,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   useEffect(() => { minimapOpenRef.current = minimapOpen; }, [minimapOpen]);
   useEffect(() => { albumOpenRef.current = albumOpen; }, [albumOpen]);
   useEffect(() => { gameMenuOpenRef.current = gameMenuOpen; }, [gameMenuOpen]);
+  useEffect(() => { entryBriefingRef.current = entryBriefing; }, [entryBriefing]);
   useEffect(() => { cityPromptRef.current = cityPrompt; }, [cityPrompt]);
   useEffect(() => { chapterPromptRef.current = chapterPrompt; }, [chapterPrompt]);
   useEffect(() => { nearStationRef.current = nearStation; }, [nearStation]);
@@ -598,6 +603,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       runOff: () => { if (sceneRef.current) sceneRef.current.runHeld = false; },
       interact: () => {
         if (gameMenuOpenRef.current) return;
+        if (entryBriefingRef.current) return;
         if (airHubStatus?.phase === 'saving') return;
         // 🗾 앨범 열림 중 A → 최우선 무시(닫기는 칩/B/ESC). 숨은 배경 오버레이가 A를 가로채지 않게 맨 앞에서 소비.
         if (albumOpenRef.current) return;
@@ -659,6 +665,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
       },
       cancel: () => {
         if (gameMenuOpenRef.current) { setGameMenuOpen(false); return; }
+        if (entryBriefingRef.current) { setEntryBriefing(null); return; }
         if (activeSceneRef.current === MSM_ABBEY_SCENE_KEY) { sceneRef.current?.abbeyCancel?.(); return; }
         if (activeSceneRef.current === JAGALCHI_MARKET_SCENE_KEY) { sceneRef.current?.jagalchiCancel?.(); return; }
         if (activeSceneRef.current === FUJI_CLIMB_SCENE_KEY) { sceneRef.current?.fujiCancel?.(); return; }
@@ -736,11 +743,13 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
     if (!scene) return;
     const lock = reviewOpen || !!ferryPrompt || !!npcDialog || !!cityPrompt || !!chapterPrompt
       || !!stationSelect || !!corridorPrompt || !!regionGatePrompt || !!airHubPrompt
-      || airHubStatus?.phase === 'saving' || albumOpen || gameMenuOpen;
+      || airHubStatus?.phase === 'saving' || albumOpen || gameMenuOpen || !!entryBriefing;
     const locked = lock || !!scene.railTrip;
     scene.inputLocked = locked;
     if (locked) { if (scene.heldDirs) scene.heldDirs.length = 0; scene.tapTile = null; scene.runHeld = false; }
-  }, [reviewOpen, ferryPrompt, npcDialog, cityPrompt, chapterPrompt, stationSelect, corridorPrompt, regionGatePrompt, airHubPrompt, airHubStatus?.phase, albumOpen, gameMenuOpen]);
+  }, [reviewOpen, ferryPrompt, npcDialog, cityPrompt, chapterPrompt, stationSelect, corridorPrompt, regionGatePrompt, airHubPrompt, airHubStatus?.phase, albumOpen, gameMenuOpen, entryBriefing]);
+
+  useEffect(() => () => clearTimeout(entryBriefingTimerRef.current), []);
 
   useEffect(() => {
     let destroyed = false;
@@ -2292,6 +2301,10 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
             setNearStation(null); setStationSelect(null); setStationToast(null); setTransitStatus(null);
             setCorridorNear(null); setCorridorPrompt(null); setCorridorStatus(null);
             setRegionNearGate(null); setRegionGatePrompt(null); setRegionStatus(null);
+            clearTimeout(entryBriefingTimerRef.current);
+            entryBriefingTimerRef.current = setTimeout(() => {
+              setEntryBriefing(claimCityEntryBriefing(cityData.id));
+            }, CITY_FADE_MS + 40);
           },
           setNear: (node) => setNearNode(node),
           setNearStation: (st) => setNearStation(st),           // 🚃 역 근접 → 행선지 프롬프트
@@ -2583,6 +2596,51 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* 나라별 첫 도시 진입 브리핑 — CityScene 페이드 완료 뒤 localStorage 기준 영구 1회. */}
+      {entryBriefing && (
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 8, display: 'grid', placeItems: 'center',
+          background: 'rgba(11,13,8,0.62)',
+        }}>
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="city-entry-briefing-title"
+            style={{ ...gbcPanel, width: 'min(88%, 340px)', padding: '16px 16px 14px' }}
+          >
+            <div style={{ fontSize: '1.5rem', lineHeight: 1, marginBottom: 8, textAlign: 'center' }}>🧭</div>
+            <h2 id="city-entry-briefing-title" style={{ fontSize: '0.92rem', lineHeight: 1.5, margin: '0 0 5px', textAlign: 'center' }}>
+              {entryBriefing.countryName}에 오셨어요
+            </h2>
+            <p style={{ fontSize: '0.66rem', lineHeight: 1.45, margin: '0 0 9px', opacity: 0.78, textAlign: 'center' }}>
+              {entryBriefing.title}
+            </p>
+            <p style={{
+              fontSize: '0.76rem', lineHeight: 1.55, margin: '0 0 14px',
+              display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 3, overflow: 'hidden',
+            }}>
+              {entryBriefing.summary}
+            </p>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setWikiDeepLink({ countryId: entryBriefing.countryId, slug: entryBriefing.slug });
+                  setEntryBriefing(null);
+                  setGameMenuOpen(true);
+                }}
+                style={{ ...gbcButtonPrimary, background: GBC.cream, color: GBC.ink }}
+              >
+                나라 알아보기
+              </button>
+              <button type="button" onClick={() => setEntryBriefing(null)} style={gbcButtonPrimary}>
+                닫고 입장
+              </button>
+            </div>
+          </section>
         </div>
       )}
 
