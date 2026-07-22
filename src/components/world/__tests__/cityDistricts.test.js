@@ -248,9 +248,11 @@ describe('CityScene guidebook 소비 경계', () => {
     expect(route.path.every(([x, y]) => cityDistrictOpenAt(first, x, y))).toBe(true);
   });
 
-  it('districts 미정의 25도시는 render key·movement collision을 그대로 유지한다', () => {
+  it('districts 미정의 23도시는 render key·movement collision을 그대로 유지한다', () => {
+    // 지구 정의 도시 목록 — 새 도시를 지구화하면 여기와 길이 스냅샷을 함께 갱신한다(무단 지구화 가드).
+    const DISTRICT_CITY_IDS = ['lyon', 'bordeaux', 'strasbourg'];
     class FakeScene { constructor() {} }
-    const manifest = CITY_MAPS.filter(({ id }) => id !== 'lyon').map((city) => {
+    const manifest = CITY_MAPS.filter(({ id }) => !DISTRICT_CITY_IDS.includes(id)).map((city) => {
       const Scene = buildCityScene({ Scene: FakeScene }, city, {});
       const scene = new Scene();
       scene.grid = city.buildGrid();
@@ -272,7 +274,7 @@ describe('CityScene guidebook 소비 경계', () => {
       return `${city.id}:${hash.digest('hex')}`;
     });
 
-    expect(manifest).toHaveLength(25);
+    expect(manifest).toHaveLength(23);
     expect(manifest).toMatchInlineSnapshot(`
       [
         "fukuoka:cd94cd15350dbaa66284da236cd24a1d851dcecc1171b56611a09ec8cc99d03f",
@@ -298,8 +300,6 @@ describe('CityScene guidebook 소비 경계', () => {
         "kawaguchiko:add90460ba2f032d15dbaaddd7ae0b4eb72937aaf011f4e965bed03b92b5e1c3",
         "geneva:a879108da2c62b0831891fd2b1b4833f3da9360ee85a8a704dd4cd777e6d8093",
         "leman-riviera:4f3b93e30d384b51480945101b2d9d36b5e83ebc4562be391a5ab4c277b78828",
-        "bordeaux:7a88ce7f4635f2f07c7bf6c557d7f29c5bb76f29fda47f457824ce068cd7a43e",
-        "strasbourg:f3890293f0018a104028e01db8ec475bfb246c3358207b91b3ff60dbd3f228bb",
       ]
     `);
   });
