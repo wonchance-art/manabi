@@ -147,6 +147,8 @@ export const GENEVA = {
   returnNode: 'geneva', // 오버월드 EMEA 게이트는 Codex-1 후속(코르나뱅 기준)
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: TRANSIT_POINTS, railways: GENEVA_GEO.railways,
+  // 🎨 R4B — 빙하수 청록 수면(레만호 공유 표현, #315 merge로 소비 개시).
+  tileSkins: Object.freeze({ water: 'glacial' }),
   CITY_TILE, buildGrid: buildGenevaGrid,
 };
 
