@@ -452,6 +452,7 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
   createRegionalWorldNode({
     id: 'leman-riviera',
     name: LEMAN_RIVIERA_NAME,
+    desc: '로잔에서 시옹성까지 레만호 북안을 따라 이어지는 리비에라. 라보의 계단식 포도밭과 벨에포크 유람선, 몽트뢰 호반 산책로의 고장이에요.',
     kind: 'city',
     regionId: 'emea',
     contentLocale: 'fr',
