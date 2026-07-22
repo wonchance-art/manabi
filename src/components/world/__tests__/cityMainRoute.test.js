@@ -83,6 +83,45 @@ describe('cityMainRoute 순수 계약', () => {
     expect(cityMainRouteTileAt(route, city.cols, 2, 1)).toBe(false);
   });
 
+  it('discovery의 인접 leg·비율·카피·id·leg당 1개 계약을 fail closed한다', () => {
+    const line = '골목을 따라 걷다 보면 작은 풍경이 보여요.';
+    const valid = {
+      id: 'main-route-fixture-d1',
+      leg: ['a', 'b'],
+      at: 0.5,
+      line,
+    };
+    const resolveWith = (discoveries, cityOverrides = {}) => resolveCityMainRoute(fixtureCity({
+      mainRoute: storedRoute({ discoveries }),
+      ...cityOverrides,
+    }));
+
+    expect(resolveWith([valid]).discoveries).toEqual([{
+      ...valid,
+      routeIndex: 2,
+      tile: [2, 0],
+    }]);
+    expect(() => resolveWith([{ ...valid, leg: ['b', 'a'] }]))
+      .toThrow(/ordered adjacent waypoint pair/);
+    for (const at of [0, 1, Number.NaN]) {
+      expect(() => resolveWith([{ ...valid, at }])).toThrow(/at must be greater than 0/);
+    }
+    expect(() => resolveWith([{ ...valid, line: '짧아요.' }]))
+      .toThrow(/12 to 90 characters/);
+    expect(() => resolveWith([{ ...valid, line: '이 문장은 정중하지만 지정된 말투가 아닙니다.' }]))
+      .toThrow(/must use 해요체/);
+    expect(() => resolveWith([{ ...valid, id: 'wrong-d1' }]))
+      .toThrow(/id must match/);
+    expect(() => resolveWith([valid, { ...valid, id: 'main-route-fixture-d2' }]))
+      .toThrow(/at most one discovery/);
+    expect(() => resolveWith([valid], {
+      nodes: [
+        { id: 'a', tile: [0, 0], desc: line },
+        { id: 'b', tile: [3, 0] },
+      ],
+    })).toThrow(/must not duplicate desc/);
+  });
+
   it('URDL FIFO BFS의 동률 경로를 위쪽 우선으로 고정한다', () => {
     const grid = new Uint8Array(3 * 3).fill(CITY_TILE.ROAD);
     grid[1 * 3 + 1] = CITY_TILE.BUILDING;

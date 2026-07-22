@@ -5,12 +5,16 @@ import { resolveCityMainRoute } from '../cityMainRoute.js';
 import { CITY_MAPS } from '../cities/index.js';
 import { CITY_TILE } from '../cities/terrain.js';
 
-vi.mock('../QuestReview', () => ({ GBC: { cream: '#fff' } }));
+vi.mock('../QuestReview', () => ({ GBC: { cream: '#fff', ink: '#000', font: 'monospace' } }));
 
 const ROUTE_TEXTURES = [
   'ct_main_route_paving',
   'ct_prop_route_signpost',
   'ct_prop_route_streetlight',
+];
+const DISCOVERY_TEXTURES = [
+  'ct_prop_route_discovery_0',
+  'ct_prop_route_discovery_1',
 ];
 
 function sha256(value) {
@@ -67,7 +71,7 @@ function rasterize(width, height, commands) {
   return pixels;
 }
 
-function fixtureCity(withRoute) {
+function fixtureCity(withRoute, withDiscoveries = false) {
   const city = {
     id: 'main-route-render-fixture',
     cols: 4,
@@ -96,6 +100,14 @@ function fixtureCity(withRoute) {
       },
       segmentHints: [],
       branches: [],
+      ...(withDiscoveries ? {
+        discoveries: [{
+          id: 'main-route-render-fixture-d1',
+          leg: ['a', 'b'],
+          at: 0.5,
+          line: '길 위에서 작은 반짝임을 발견해요.',
+        }],
+      } : {}),
       segments: [{
         id: 'node:a--node:b',
         from: { kind: 'node', id: 'a' },
@@ -239,6 +251,20 @@ describe('CityScene mainRoute 소비 경계', () => {
     expect(streetlight).toMatchObject({ width: 16, height: 32 });
     expect(new Set(signpost.commands.map(({ color }) => color)).size).toBe(3);
     expect(new Set(streetlight.commands.map(({ color }) => color)).size).toBe(3);
+  });
+
+  it('discovery가 있을 때만 무문자 2프레임 스파클을 굽는다', () => {
+    const undefinedCity = bakeHarness(fixtureCity(false)).textures;
+    const routeOnly = bakeHarness(fixtureCity(true)).textures;
+    const discoveredRoute = bakeHarness(fixtureCity(true, true)).textures;
+
+    for (const key of DISCOVERY_TEXTURES) {
+      expect(undefinedCity.has(key)).toBe(false);
+      expect(routeOnly.has(key)).toBe(false);
+      expect(discoveredRoute.get(key)).toMatchObject({ width: 16, height: 16 });
+    }
+    expect(discoveredRoute.get('ct_prop_route_discovery_0').commands)
+      .not.toEqual(discoveredRoute.get('ct_prop_route_discovery_1').commands);
   });
 
   it('원본 terrain→route overlay 순서와 2회 청크 RGBA SHA를 고정한다', () => {

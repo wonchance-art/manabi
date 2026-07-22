@@ -47,6 +47,11 @@ import {
 } from './cityTileSkins';
 import { cityMainRouteTileAt, resolveCityMainRoute } from './cityMainRoute';
 import {
+  claimRouteDiscoveryAt,
+  loadRouteDiscoveryIds,
+  ROUTE_DISCOVERY_DURATION_MS,
+} from './routeDiscoveries';
+import {
   isMontSaintMichelTidalVisualWater,
   montSaintMichelTideAt,
   tideCopyKeyForNode,
@@ -748,6 +753,18 @@ export function buildCityScene(Phaser, city, ctx) {
           g.fillStyle(C(0xe3bd69), 1); g.fillRect(10, 8, 5, 4);
           g.fillStyle(C(0xffdda0), 0.72); g.fillRect(11, 9, 3, 2);
         }, 16, 32);
+        if (Array.isArray(city.mainRoute.discoveries) && city.mainRoute.discoveries.length > 0) {
+          // 발견 도트 — 텍스트 없는 소등 프레임과 점등 프레임 2장만 굽는다.
+          this.bakeTile('ct_prop_route_discovery_0', (g) => {
+            g.fillStyle(C(0x665f54), 0.72); g.fillRect(7, 7, 2, 2);
+            g.fillStyle(C(0x9e9179), 0.42); g.fillRect(6, 8, 1, 1); g.fillRect(9, 8, 1, 1);
+          });
+          this.bakeTile('ct_prop_route_discovery_1', (g) => {
+            g.fillStyle(C(0xffefaa), 1); g.fillRect(7, 5, 2, 6); g.fillRect(5, 7, 6, 2);
+            g.fillStyle(C(0xe3bd69), 0.9); g.fillRect(6, 6, 4, 4);
+            g.fillStyle(C(0xfffaf0), 1); g.fillRect(7, 7, 2, 2);
+          });
+        }
       }
 
       // ── 캐릭터(플레이어 ct_pc · 원격 피어 ct_pr) + 펫 + NPC 마커 ──
@@ -791,6 +808,64 @@ export function buildCityScene(Phaser, city, ctx) {
         fontFamily: 'monospace', fontSize: '9px', color: GBC.ink,
         backgroundColor: GBC.cream, padding: { x: 4, y: 2 }, resolution: 1,
       };
+    }
+
+    setupRouteDiscoveries() {
+      const discoveries = this.mainRoute?.discoveries;
+      if (!discoveries?.length) return;
+      this.routeDiscoveryIds = loadRouteDiscoveryIds(city.id, this.routeDiscoveryStorage);
+      this.routeDiscoveryViews = new Map();
+      this.routeDiscoveryBlinkFrame = 0;
+      for (const discovery of discoveries) {
+        const [tx, ty] = discovery.tile;
+        const view = this.add.image(
+          tx * TILE + TILE / 2,
+          ty * TILE + TILE / 2,
+          'ct_prop_route_discovery_0',
+        ).setOrigin(0.5, 0.5).setScale(TSCALE).setDepth(ty * TILE + 1);
+        this.routeDiscoveryViews.set(discovery.id, view);
+      }
+      this.refreshRouteDiscoveryViews();
+      this.routeDiscoveryTimer = this.time.addEvent({
+        delay: 420,
+        loop: true,
+        callback: () => {
+          this.routeDiscoveryBlinkFrame = (this.routeDiscoveryBlinkFrame + 1) % 2;
+          this.refreshRouteDiscoveryViews();
+        },
+      });
+    }
+
+    refreshRouteDiscoveryViews() {
+      if (!this.routeDiscoveryViews) return;
+      for (const [id, view] of this.routeDiscoveryViews) {
+        const discovered = this.routeDiscoveryIds.has(id);
+        view.setTexture(discovered
+          ? 'ct_prop_route_discovery_0'
+          : `ct_prop_route_discovery_${this.routeDiscoveryBlinkFrame}`);
+        view.setAlpha(discovered ? 0.42 : 1);
+      }
+    }
+
+    showRouteDiscovery(discovery) {
+      this.routeDiscoveryToastTimer?.remove();
+      this.routeDiscoveryToast?.destroy();
+      const wrapWidth = Math.min(360, Math.max(220, (this.scale?.width ?? 480) - 32));
+      const toast = this.add.text((this.scale?.width ?? 480) / 2, 28, discovery.line, {
+        fontFamily: GBC.font,
+        fontSize: '10px',
+        color: GBC.ink,
+        backgroundColor: GBC.cream,
+        padding: { x: 8, y: 6 },
+        align: 'center',
+        wordWrap: { width: wrapWidth },
+        resolution: 1,
+      }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(PEER_LABEL_DEPTH + 2);
+      this.routeDiscoveryToast = toast;
+      this.routeDiscoveryToastTimer = this.time.delayedCall(ROUTE_DISCOVERY_DURATION_MS, () => {
+        toast.destroy();
+        if (this.routeDiscoveryToast === toast) this.routeDiscoveryToast = null;
+      });
     }
 
     tileCode(tx, ty) {
@@ -952,6 +1027,7 @@ export function buildCityScene(Phaser, city, ctx) {
         this.add.image(px * TILE + TILE / 2, (py + 1) * TILE, `ct_prop_${p.kind}`)
           .setOrigin(0.5, 1).setScale(TSCALE).setDepth((py + 1) * TILE);
       }
+      this.setupRouteDiscoveries();
 
       // ── 구역(동네) 라벨 — 은은한 도트 표지(오리엔테이션) ──
       this.zoneLabels = (city.zones || []).map((z) => {
@@ -1061,6 +1137,11 @@ export function buildCityScene(Phaser, city, ctx) {
         this.peers.clear();
         for (const [, b] of this.bubbles) { b.timer?.remove(); b.text?.destroy(); }
         this.bubbles.clear();
+        this.routeDiscoveryTimer?.remove();
+        this.routeDiscoveryToastTimer?.remove();
+        this.routeDiscoveryToast?.destroy();
+        for (const view of this.routeDiscoveryViews?.values() ?? []) view.destroy();
+        this.routeDiscoveryViews?.clear();
         // 청크 RT·물 오버레이·스탬프 회수(텍스처 메모리 해제).
         for (const [, ch] of this.chunks) ch.rt.destroy();
         this.chunks.clear();
@@ -1260,6 +1341,20 @@ export function buildCityScene(Phaser, city, ctx) {
       });
     }
     onStepDone() {
+      if (this.mainRoute?.discoveries?.length) {
+        const discovery = claimRouteDiscoveryAt({
+          cityId: city.id,
+          discoveries: this.mainRoute.discoveries,
+          discoveredIds: this.routeDiscoveryIds,
+          tx: this.pTileX,
+          ty: this.pTileY,
+          storage: this.routeDiscoveryStorage,
+        });
+        if (discovery) {
+          this.refreshRouteDiscoveryViews();
+          this.showRouteDiscovery(discovery);
+        }
+      }
       if (this.tileCode(this.pTileX, this.pTileY) === T.EXIT) this.returnToWorld();
     }
 
