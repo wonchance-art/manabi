@@ -32,6 +32,7 @@ const EMIT_MS = 100;
 const STATUS_MS = 250;
 const DIRV = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 const VALID_DIR = new Set(Object.keys(DIRV));
+const DISEMBARK_RETRY_MESSAGE = '하차 위치를 저장하지 못했어요. Ⓐ 다시 하차할 수 있어요.';
 
 function keyToDir(key) {
   switch (key) {
@@ -73,7 +74,10 @@ export function buildTranssibCorridorScene(Phaser, ctx) {
       this.heldDirs = [];
       this.trip = null;
       this.currentTripState = null;
+      this.boarding = false;
+      this.leavingRegion = false;
       this.disembarking = false;
+      this.pendingDisembark = null;
       this.lastEmit = -Infinity;
       this.lastStatusUpdate = -Infinity;
       this.lastStatusKey = '';
@@ -107,6 +111,10 @@ export function buildTranssibCorridorScene(Phaser, ctx) {
       this.input.keyboard.on('keyup', (event) => this.extInputUp(keyToDir(event.key)));
       this.events.once('shutdown', () => {
         this.heldDirs.length = 0;
+        this.boarding = false;
+        this.leavingRegion = false;
+        this.disembarking = false;
+        this.pendingDisembark = null;
         ctx.setNearStop?.(null);
         ctx.setStatus?.(null);
       });
@@ -141,7 +149,7 @@ export function buildTranssibCorridorScene(Phaser, ctx) {
     }
 
     extInputDown(direction) {
-      if (this.trip || this.inputLocked || !VALID_DIR.has(direction)) return;
+      if (this.trip || this.controlsLocked() || !VALID_DIR.has(direction)) return;
       if (!this.heldDirs.includes(direction)) this.heldDirs.push(direction);
     }
 
@@ -182,12 +190,17 @@ export function buildTranssibCorridorScene(Phaser, ctx) {
       ctx.setNearStop?.(near);
     }
 
+    controlsLocked() {
+      return this.inputLocked || this.boarding || this.leavingRegion || this.disembarking;
+    }
+
     corridorInteract() {
+      if (this.pendingDisembark) return this.disembarkCurrent();
+      if (this.boarding || this.leavingRegion || this.disembarking) return false;
       if (this.trip && this.currentTripState?.canDisembark) {
-        this.disembarkCurrent();
-        return;
+        return this.disembarkCurrent();
       }
-      if (this.trip || !this.nearStopId) return;
+      if (this.trip || !this.nearStopId) return false;
       const currentIndex = TRANS_SIBERIAN_CORRIDOR.stops.findIndex((stop) => stop.id === this.nearStopId);
       const options = terminalStops().filter((stop, index) => (index === 0 ? currentIndex > 0 : currentIndex < TRANS_SIBERIAN_CORRIDOR.stops.length - 1));
       ctx.requestBoarding?.({
@@ -195,37 +208,48 @@ export function buildTranssibCorridorScene(Phaser, ctx) {
         options,
         regionGate: overworldRegionForCorridorStop(this.nearStopId),
       });
+      return true;
     }
 
     async leaveToRegion() {
-      if (this.trip || !this.nearStopId || this.inputLocked) return;
+      if (this.trip || !this.nearStopId || this.boarding || this.leavingRegion || this.disembarking) return false;
       const region = overworldRegionForCorridorStop(this.nearStopId);
       const spawn = overworldRegionSpawnForCorridorStop(this.nearStopId);
-      if (!region || !spawn) return;
+      if (!region || !spawn) return false;
+      this.leavingRegion = true;
       this.inputLocked = true;
       this.heldDirs.length = 0;
       ctx.setNearStop?.(null);
       ctx.setStatus?.({ phase: 'saving-region', message: `${region.label} 진입 위치를 저장하고 있어요.` });
-      const persisted = await ctx.persistPosition(spawn);
+      let persisted = false;
+      try {
+        persisted = await ctx.persistPosition?.(spawn);
+      } catch {
+        persisted = false;
+      }
       if (!persisted) {
+        this.leavingRegion = false;
         this.inputLocked = false;
         this.refreshNearStop(true);
         ctx.setStatus?.({ phase: 'error', message: '지역 진입 위치를 저장하지 못했어요. 연결을 확인해 주세요.' });
-        return;
+        return false;
       }
       ctx.setStatus?.(null);
       this.scene.start(region.sceneId, { spawn });
+      return true;
     }
 
     async boardTo(terminalId) {
-      if (this.trip || !this.nearStopId) return;
+      if (this.trip || !this.nearStopId || this.boarding || this.leavingRegion || this.disembarking) return false;
+      const originId = this.nearStopId;
+      this.boarding = true;
       this.inputLocked = true;
       this.heldDirs.length = 0;
       ctx.setNearStop?.(null);
       ctx.setStatus?.({ phase: 'saving', message: '종착역을 먼저 저장하고 있어요.' });
       try {
         const prepared = prepareCorridorTrip({
-          originId: this.nearStopId,
+          originId,
           terminalId,
           nowMinute: ctx.worldClockRef.current.totalGameMinutes,
         });
@@ -234,6 +258,7 @@ export function buildTranssibCorridorScene(Phaser, ctx) {
         this.cameras.main.stopFollow();
         this.cameras.main.startFollow(this.train, true, 0.18, 0.18);
         this.syncTrip(true);
+        return true;
       } catch (error) {
         this.trip = null;
         this.inputLocked = false;
@@ -242,6 +267,9 @@ export function buildTranssibCorridorScene(Phaser, ctx) {
           phase: 'error',
           message: '종착역 저장에 실패했어요. 연결을 확인하고 다시 시도해 주세요.',
         });
+        return false;
+      } finally {
+        this.boarding = false;
       }
     }
 
@@ -259,6 +287,7 @@ export function buildTranssibCorridorScene(Phaser, ctx) {
         x = stopById(this.trip.originId).tile[0] * TILE + TILE / 2;
       }
       this.train.setPosition(Math.round(x), 5.8 * TILE);
+      if (this.pendingDisembark) return;
       const key = statusKey(state);
       if (force || key !== this.lastStatusKey) {
         this.lastStatusKey = key;
@@ -272,28 +301,37 @@ export function buildTranssibCorridorScene(Phaser, ctx) {
     }
 
     async disembarkCurrent() {
-      if (this.disembarking || !this.trip || !this.currentTripState?.canDisembark) return;
+      if (this.disembarking || !this.trip) return false;
+      let pending = this.pendingDisembark;
+      if (!pending) {
+        if (!this.currentTripState?.canDisembark) return false;
+        const trip = this.trip;
+        const state = this.currentTripState;
+        pending = { trip, state, result: disembarkCorridorTrip(trip, state) };
+        this.pendingDisembark = pending;
+      }
       this.disembarking = true;
-      const trip = this.trip;
-      const state = this.currentTripState;
-      const result = disembarkCorridorTrip(trip, state);
+      const { trip, state, result } = pending;
       ctx.setStatus?.({ phase: 'saving-stop', stopId: state.stopId, message: '하차 위치를 저장하고 있어요.' });
       try {
         const alreadyPersisted = state.stopId === trip.terminalId;
-        const saved = alreadyPersisted || await ctx.persistPosition(result.spawn);
-        if (!saved) throw new Error('하차 위치를 저장하지 못했어요. 열차 안에서 다시 시도해 주세요.');
+        const saved = alreadyPersisted || await ctx.persistPosition?.(result.spawn);
+        if (!saved) throw new Error(DISEMBARK_RETRY_MESSAGE);
         this.trip = null;
         this.currentTripState = null;
-        this.currentStopId = state.stopId;
-        this.placeAtStop(state.stopId);
+        this.pendingDisembark = null;
+        this.currentStopId = result.stopId;
+        this.placeAtStop(result.stopId);
         this.inputLocked = false;
         this.player.setVisible(true);
         this.cameras.main.stopFollow();
         this.cameras.main.startFollow(this.player, true, 0.18, 0.18);
         ctx.setStatus?.(null);
         this.refreshNearStop(true);
-      } catch (error) {
-        ctx.setStatus?.({ ...state, phase: 'error', message: error?.message || '하차할 수 없어요.' });
+        return true;
+      } catch {
+        ctx.setStatus?.({ ...state, phase: 'error', retry: 'disembark', message: DISEMBARK_RETRY_MESSAGE });
+        return false;
       } finally {
         this.disembarking = false;
       }
@@ -315,7 +353,7 @@ export function buildTranssibCorridorScene(Phaser, ctx) {
         this.lastStatusUpdate = time;
         this.syncTrip();
       }
-      if (!this.trip && !this.inputLocked && !this.moving && this.heldDirs.length) {
+      if (!this.trip && !this.controlsLocked() && !this.moving && this.heldDirs.length) {
         this.startStep(this.heldDirs.at(-1));
       }
       if (this.player.visible) {
