@@ -19,6 +19,7 @@ import KR_SOCIETY from './korea/society.js';
 import KR_LIFE from './korea/life.js';
 import FR_OVERVIEW from './france/overview.js';
 import FR_HISTORY_PREMODERN from './france/historyPremodern.js';
+import FR_HISTORY_MODERN from './france/historyModern.js';
 import FR_FRANCOPHONIE from './france/francophonie.js';
 
 export const STUDY_DOMAINS = Object.freeze([
@@ -50,7 +51,7 @@ export const STUDY_COUNTRIES = Object.freeze([
     nameKo: '프랑스학',
     nameLocal: 'Études françaises',
     intro: '프랑스에서 불어권 세계까지 — 파리·몽생미셸·브뤼셀·로망디, 그리고 그 너머 프랑코포니의 지리·역사·언어사회를 공적 통계 기준으로 정리한 레퍼런스.',
-    docs: Object.freeze([FR_OVERVIEW, FR_HISTORY_PREMODERN, FR_FRANCOPHONIE]),
+    docs: Object.freeze([FR_OVERVIEW, FR_HISTORY_PREMODERN, FR_HISTORY_MODERN, FR_FRANCOPHONIE]),
   }),
 ]);
 
