@@ -10,6 +10,10 @@ const BUILDING_PALETTES = {
   kawara: [0x4e4c50, 0x5c5a60, 0x3a383c],
   hutong: [0x625e58, 0x726d64, 0x484440],
   brick: [0x7e5648, 0x8f6352, 0x54382e],
+  'pastel-coral': [0xf2b8b0, 0xffc8be, 0xdba19a],
+  'pastel-apricot': [0xf5d7a8, 0xffe7b6, 0xdec092],
+  'pastel-mint': [0xaddbc8, 0xbeebd6, 0x96c4b2],
+  'pastel-sky': [0xa8cce4, 0xb9dcf2, 0x91b5ce],
 };
 
 function bakeCityTextures() {
@@ -57,7 +61,7 @@ function bakeCityTextures() {
   return textures;
 }
 
-function makeTextureConsumerScene(tileCode, tileSkins = {}) {
+function makeTextureConsumerScene(tileCode, tileSkins = {}, zoneSkins = []) {
   class FakeScene {}
   const Scene = buildCityScene(
     { Scene: FakeScene },
@@ -67,6 +71,7 @@ function makeTextureConsumerScene(tileCode, tileSkins = {}) {
       rows: 1,
       CITY_TILE,
       tileSkins,
+      zoneSkins,
       buildGrid: () => [tileCode],
     },
     { avatarRef: { current: null } },
@@ -140,6 +145,13 @@ describe('CityScene 렌더크래프트 R4 지역 색감 베이킹', () => {
       { building: 'brick' },
     );
     expect(buildingScene.terrainTexKey(0, 0)).toBe('ct_bldg_brick_15');
+
+    const gamcheonScene = makeTextureConsumerScene(
+      CITY_TILE.BUILDING,
+      {},
+      [{ bounds: [0, 0, 0, 0], building: ['pastel-coral'] }],
+    );
+    expect(gamcheonScene.terrainTexKey(0, 0)).toBe('ct_bldg_pastel-coral_15');
 
     const waterScene = makeTextureConsumerScene(
       CITY_TILE.WATER,

@@ -53,6 +53,19 @@ export const ZONES = [
   { id: 'pnu', label: '부산대', bounds: [819, 0, 956, 111], labelTile: [888, 56] },
 ];
 
+export const ZONE_SKINS = Object.freeze([
+  Object.freeze({
+    id: 'gamcheon-pastel',
+    bounds: Object.freeze([520, 750, 590, 830]),
+    building: Object.freeze([
+      'pastel-coral',
+      'pastel-apricot',
+      'pastel-mint',
+      'pastel-sky',
+    ]),
+  }),
+]);
+
 export const CITY_NODES = BUSAN_GEO.pois.map((poi) => {
   const copy = poiCopy(poi.id);
   return {
@@ -121,7 +134,7 @@ export function buildBusanGrid() {
 
 export const BUSAN = {
   id: 'busan', name: '부산', cols: COLS, rows: ROWS, entrance: ENTRANCE, returnNode: 'busan',
-  zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
+  zones: ZONES, zoneSkins: ZONE_SKINS, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: [], railways: BUSAN_GEO.railways,
   CITY_TILE, buildGrid: buildBusanGrid,
 };

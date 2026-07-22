@@ -281,6 +281,10 @@ export function buildCityScene(Phaser, city, ctx) {
         ['kawara', 0x4e4c50, 0x5c5a60, 0x3a383c, 0x5c5a60],
         ['hutong', 0x625e58, 0x726d64, 0x484440, 0x726d64],
         ['brick', 0x7e5648, 0x8f6352, 0x54382e, 0x8f6352],
+        ['pastel-coral', 0xf2b8b0, 0xffc8be, 0xdba19a, 0xffc8be],
+        ['pastel-apricot', 0xf5d7a8, 0xffe7b6, 0xdec092, 0xffe7b6],
+        ['pastel-mint', 0xaddbc8, 0xbeebd6, 0x96c4b2, 0xbeebd6],
+        ['pastel-sky', 0xa8cce4, 0xb9dcf2, 0x91b5ce, 0xb9dcf2],
       ];
       for (const [skin, fill, inner, edge, accent] of buildingPalettes) {
         for (let mask = 0; mask < 16; mask++) {
@@ -827,7 +831,7 @@ export function buildCityScene(Phaser, city, ctx) {
         case TERRAIN.EXIT: return 'ct_exit';
         case TERRAIN.WATER: return cityWaterTextureKey(city, 0);
         case TERRAIN.RIVER: return 'ct_river0';
-        case TERRAIN.BUILDING: return cityBuildingTextureKey(city, this.buildingEdgeMask(tx, ty));
+        case TERRAIN.BUILDING: return cityBuildingTextureKey(city, this.buildingEdgeMask(tx, ty), tx, ty);
         case TERRAIN.ISLAND: return 'ct_island';
         case TERRAIN.MOUNTAIN: return 'ct_mountain';
         default: return 'ct_sidewalk';
