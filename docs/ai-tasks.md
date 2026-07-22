@@ -81,12 +81,14 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-- 코트다쥐르 마감(CODEX_DONE 게시 대기 — geo는 Claude 선제 검수 전 게이트 PASS 완료)
-- 런던권 geo (codex2/london-geo — Claude 선제 실측: **타워브리지 단면 160m 1건만 FAIL**,
-  실폭 ~250m 대비 얇음 → 소스 마스크 대조 요청. verify 게이트는 main에 배치 완료)
+- 밴드 R3: 레만호 building `[2.0,3.5]`·특수형 green report-only 유지 제안
+  (#150 코멘트 5042368782) → Claude 승인 후 verifier 하드닝
 ### todo
-- 템스 타워브리지 구간 수면 폭 원인 확인(마스크 vs terrain — 온천천 선례)
 ### done (최근)
+- 런던 타워브리지 수면 폭 감사: 원본 240~300m 정상, 교량데크 ROAD 흡수와
+  교차한 구 verifier 단면 오탐 확정·#192 종결(CODEX_DONE 5003344796)
+- 코트다쥐르 geo: 공식 verifier·targeted green 재확인, #158 merge
+  (`6e3184d`, CODEX_DONE 4995615623)
 - 레만호 연안 geo SPEC_FIX_2: st-saphorin 코르니슈 전망 좌표 교정·결정성·
   공식 verifier·전체 회귀 green, CODEX_DONE 후 #304 merge (`92b4b33`)
 - 그랑파리 geo+교량 3분류 (#157 merge), frenchCityRuntimeAdapter(스코프 클린 확인)
