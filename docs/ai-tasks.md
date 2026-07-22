@@ -14,6 +14,10 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
+- W1 지구제 7도시 라이브 시각 감사(report-only): 도시별 개방↔잠금 soft-wall 말풍선과
+  잠금 지구 guidebook 종이 톤을 게스트 하니스로 캡처하고 관찰 노트 작성
+  (`codex/districts-live-audit`, base 31b0d68eaf03b7a8a44ee502c66c7cb6800db953,
+  #150 5051753765)
 ### todo
 ### done (최근)
 - E7 dev guest 교통 저장 스킵 일반화: 에어허브·횡단열차·지역 페리의 위치 저장을
