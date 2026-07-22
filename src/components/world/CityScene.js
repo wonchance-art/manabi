@@ -47,6 +47,11 @@ import {
 } from './cityTileSkins';
 import { cityMainRouteTileAt, resolveCityMainRoute } from './cityMainRoute';
 import {
+  CITY_DISTRICT_LOCK_DURATION_MS,
+  cityDistrictOpenAt,
+  resolveCityDistricts,
+} from './cityDistricts';
+import {
   claimRouteDiscoveryAt,
   loadRouteDiscoveryIds,
   ROUTE_DISCOVERY_DURATION_MS,
@@ -316,6 +321,40 @@ export function buildCityScene(Phaser, city, ctx) {
         // 반복하지 않고 투명한 철도 부지 색으로만 표시해 정확한 위치와 보행 판독을 함께 지킨다.
         g.fillStyle(C(0xcbb46c), 0.18); g.fillRect(0, 0, TEX, TEX);
       });
+
+      if (city.districts != null) {
+        // 📖 미개방 지구 — 저채도 종이 지도. 지형의 종류는 최소 실루엣으로만 남긴다.
+        this.bakeTile('ct_guidebook_land', (g) => {
+          g.fillStyle(C(0xd8ceb6), 1); g.fillRect(0, 0, TEX, TEX);
+          g.fillStyle(C(0xb9ad94), 0.38); g.fillRect(0, 7, TEX, 1); g.fillRect(7, 0, 1, TEX);
+        });
+        this.bakeTile('ct_guidebook_water', (g) => {
+          g.fillStyle(C(0x9eabb0), 1); g.fillRect(0, 0, TEX, TEX);
+          g.fillStyle(C(0xc8d0ce), 0.58); g.fillRect(2, 5, 8, 1); g.fillRect(7, 11, 7, 1);
+        });
+        this.bakeTile('ct_guidebook_road_h', (g) => {
+          g.fillStyle(C(0xd8ceb6), 1); g.fillRect(0, 0, TEX, TEX);
+          g.fillStyle(C(0x918d87), 0.68); g.fillRect(0, 6, TEX, 4);
+        });
+        this.bakeTile('ct_guidebook_road_v', (g) => {
+          g.fillStyle(C(0xd8ceb6), 1); g.fillRect(0, 0, TEX, TEX);
+          g.fillStyle(C(0x918d87), 0.68); g.fillRect(6, 0, 4, TEX);
+        });
+        this.bakeTile('ct_guidebook_road_x', (g) => {
+          g.fillStyle(C(0xd8ceb6), 1); g.fillRect(0, 0, TEX, TEX);
+          g.fillStyle(C(0x918d87), 0.68); g.fillRect(0, 6, TEX, 4); g.fillRect(6, 0, 4, TEX);
+        });
+        this.bakeTile('ct_guidebook_landmark', (g) => {
+          g.fillStyle(C(0xd8ceb6), 1); g.fillRect(0, 0, TEX, TEX);
+          g.fillStyle(C(0x9c9587), 0.72); g.fillRect(3, 3, 10, 10);
+          g.fillStyle(C(0x7e786e), 0.52); g.fillRect(5, 5, 6, 6);
+        });
+        this.bakeTile('ct_guidebook_landmark_marker', (g) => {
+          g.fillStyle(C(0x78736b), 0.76); g.fillRect(4, 9, 8, 20);
+          g.fillStyle(C(0x918a7e), 0.76); g.fillRect(2, 7, 12, 5);
+          g.fillStyle(C(0x5f5b55), 0.62); g.fillRect(3, 29, 10, 3);
+        }, 16, 32);
+      }
 
       this.bakeTile('ct_vehicle_train', (g) => {
         g.fillStyle(C(0xf0ead4), 1); g.fillRect(2, 4, 12, 8);
@@ -868,12 +907,36 @@ export function buildCityScene(Phaser, city, ctx) {
       });
     }
 
+    showDistrictLocked() {
+      if (!this.districts || this.districtLockNoticeShown) return false;
+      this.districtLockNoticeShown = true;
+      const wrapWidth = Math.min(360, Math.max(220, (this.scale?.width ?? 480) - 32));
+      const toast = this.add.text((this.scale?.width ?? 480) / 2, 28, this.districts.locked.line, {
+        fontFamily: GBC.font,
+        fontSize: '10px',
+        color: GBC.ink,
+        backgroundColor: GBC.cream,
+        padding: { x: 8, y: 6 },
+        align: 'center',
+        wordWrap: { width: wrapWidth },
+        resolution: 1,
+      }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(PEER_LABEL_DEPTH + 3);
+      this.districtLockToast = toast;
+      this.districtLockTimer = this.time.delayedCall(CITY_DISTRICT_LOCK_DURATION_MS, () => {
+        toast.destroy();
+        if (this.districtLockToast === toast) this.districtLockToast = null;
+      });
+      return true;
+    }
+
     tileCode(tx, ty) {
       if (tx < 0 || ty < 0 || tx >= COLS || ty >= ROWS) return TERRAIN.WATER; // 범위 밖 = 물(차단)
       return this.grid[ty * COLS + tx];
     }
+    districtOpenAt(tx, ty) { return cityDistrictOpenAt(this.districts, tx, ty); }
+    districtLockedAt(tx, ty) { return !this.districtOpenAt(tx, ty); }
     // 충돌은 공용 표준 규칙(isCityBlocked: WATER·RIVER·BUILDING·ISLAND) — 렌더·데이터와 단일 진실원.
-    blocked(tx, ty) { return isCityBlocked(this.tileCode(tx, ty)); }
+    blocked(tx, ty) { return this.districtLockedAt(tx, ty) || isCityBlocked(this.tileCode(tx, ty)); }
     isWaterTile(tx, ty) { return isCityWater(this.tileCode(tx, ty)); }
     tideVisualWaterAt(tx, ty) {
       if (!city.tide || tx < 0 || ty < 0 || tx >= COLS || ty >= ROWS) return false;
@@ -921,6 +984,16 @@ export function buildCityScene(Phaser, city, ctx) {
     //   물/강은 정적 프레임0을 청크에 굽고(항상 물처럼 보임), 애니는 별도 오버레이가 얹는다.
     terrainTexKey(tx, ty) {
       const c = this.tileCode(tx, ty);
+      if (this.districtLockedAt(tx, ty)) {
+        if (c === TERRAIN.WATER || c === TERRAIN.RIVER) return 'ct_guidebook_water';
+        if (c === TERRAIN.ROAD || c === TERRAIN.CROSSWALK || c === TERRAIN.BRIDGE) {
+          return `ct_guidebook_road_${this.roadDirection(tx, ty)}`;
+        }
+        if (c === TERRAIN.ISLAND || c === TERRAIN.MOUNTAIN) {
+          return 'ct_guidebook_landmark';
+        }
+        return 'ct_guidebook_land';
+      }
       switch (c) {
         case TERRAIN.ROAD: return `ct_road_${this.roadDirection(tx, ty)}`;
         case TERRAIN.SIDEWALK: return 'ct_sidewalk';
@@ -964,6 +1037,8 @@ export function buildCityScene(Phaser, city, ctx) {
 
       this.grid = city.buildGrid();
       this.mainRoute = resolveCityMainRoute(city, this.grid);
+      this.districts = resolveCityDistricts(city, this.grid, this.mainRoute);
+      this.districtLockNoticeShown = false;
       this.tideState = city.tide
         ? montSaintMichelTideAt(
           ctx.worldClockRef?.current?.totalGameMinutes
@@ -1003,7 +1078,7 @@ export function buildCityScene(Phaser, city, ctx) {
       this.refreshChunks(true);              // 초기 가시 청크 bake(+가시 청크 트리 생성)
       this.refreshWaterOverlay();            // 초기 물 오버레이
       // 원본 철도 마스크가 없는 도시(후쿠오카)는 실제 역 좌표를 잇는 노선 가이드로 보완한다.
-      if (!city.railways?.mask && city.transit?.length) {
+      if (!this.districts && !city.railways?.mask && city.transit?.length) {
         const stops = new Map([...(city.stations || []), ...(city.transitPoints || [])].map((stop) => [stop.id, stop]));
         this.transitGuide = this.add.graphics().setDepth(-7).setAlpha(0.78);
         for (const line of city.transit) {
@@ -1024,13 +1099,16 @@ export function buildCityScene(Phaser, city, ctx) {
         : (city.props || []);
       for (const p of sceneProps) {
         const [px, py] = p.tile;
+        if (!this.districtOpenAt(px, py)) continue;
         this.add.image(px * TILE + TILE / 2, (py + 1) * TILE, `ct_prop_${p.kind}`)
           .setOrigin(0.5, 1).setScale(TSCALE).setDepth((py + 1) * TILE);
       }
       this.setupRouteDiscoveries();
 
       // ── 구역(동네) 라벨 — 은은한 도트 표지(오리엔테이션) ──
-      this.zoneLabels = (city.zones || []).map((z) => {
+      this.zoneLabels = (city.zones || []).filter((z) => (
+        this.districtOpenAt(z.labelTile?.[0], z.labelTile?.[1])
+      )).map((z) => {
         const [lx, ly] = z.labelTile;
         const label = this.add.text(lx * TILE + TILE / 2, ly * TILE + TILE / 2, z.label, {
           fontFamily: 'monospace', fontSize: '10px', color: GBC.cream,
@@ -1043,14 +1121,16 @@ export function buildCityScene(Phaser, city, ctx) {
       this.nodeViews = (city.nodes || []).map((node) => {
         const [tx, ty] = node.tile;
         const wx = tx * TILE + TILE / 2, wy = ty * TILE + TILE / 2;
+        const locked = this.districtLockedAt(tx, ty);
         // NPC 노드는 캐릭터 마커(대화 대상), 그 외는 파사드 프리팹(node.facade → ct_prop_<facade>), 폴백 간판.
-        const markerKey = node.npc ? `t_npc_${node.npc}`
-          : node.facade ? `ct_prop_${node.facade}` : 'ct_prop_sign';
+        const markerKey = locked ? 'ct_guidebook_landmark_marker'
+          : node.npc ? `t_npc_${node.npc}`
+            : node.facade ? `ct_prop_${node.facade}` : 'ct_prop_sign';
         const marker = this.add.image(wx, (ty + 1) * TILE, markerKey).setOrigin(0.5, 1).setScale(TSCALE).setDepth(wy);
-        const label = node.name
+        const label = node.name && !locked
           ? this.add.text(wx, ty * TILE - 4, node.name, this.labelStyle()).setOrigin(0.5, 1).setDepth(10000).setAlpha(0)
           : null;
-        return { node, marker, label, wx, wy };
+        return { node, marker, label, wx, wy, locked };
       });
 
       // ── 🚃 정기 교통 역 마커 — 근접 A 로 행선지와 다음 운행편 선택. 역사 프리팹 재사용. ──
@@ -1072,7 +1152,7 @@ export function buildCityScene(Phaser, city, ctx) {
       //   못하고 같은 좌표를 다시 저장하는 재접속 소프트락이 생긴다 → 입구 폴백(Codex #90 P1).
       let sx = city.entrance.x, sy = city.entrance.y, sfacing = city.entrance.facing || 'down';
       const rs = resolveRespawnTile(this.grid, COLS, ROWS, city.entrance, data && data.spawn);
-      if (rs) { sx = rs[0]; sy = rs[1]; sfacing = 'down'; }
+      if (rs && this.districtOpenAt(rs[0], rs[1])) { sx = rs[0]; sy = rs[1]; sfacing = 'down'; }
       this.pTileX = sx; this.pTileY = sy; this.facing = sfacing; this.moving = false; this.turnGrace = 0;
       const px = sx * TILE + TILE / 2, py = sy * TILE + TILE / 2;
       this.playerHalo = this.add.image(px, py + 9, 'ct_player_halo').setScale(TSCALE).setAlpha(0.72).setDepth(py - 1);
@@ -1140,6 +1220,8 @@ export function buildCityScene(Phaser, city, ctx) {
         this.routeDiscoveryTimer?.remove();
         this.routeDiscoveryToastTimer?.remove();
         this.routeDiscoveryToast?.destroy();
+        this.districtLockTimer?.remove();
+        this.districtLockToast?.destroy();
         for (const view of this.routeDiscoveryViews?.values() ?? []) view.destroy();
         this.routeDiscoveryViews?.clear();
         // 청크 RT·물 오버레이·스탬프 회수(텍스처 메모리 해제).
@@ -1175,7 +1257,7 @@ export function buildCityScene(Phaser, city, ctx) {
         for (let tx = ox; tx < x1; tx++) {
           stamp.setTexture(this.terrainTexKey(tx, ty));
           rt.batchDraw(stamp, (tx - ox) * TILE, (ty - oy) * TILE);
-          if (this.mainRoute && cityMainRouteTileAt(this.mainRoute, COLS, tx, ty)) {
+          if (this.districtOpenAt(tx, ty) && this.mainRoute && cityMainRouteTileAt(this.mainRoute, COLS, tx, ty)) {
             stamp.setTexture('ct_main_route_paving');
             rt.batchDraw(stamp, (tx - ox) * TILE, (ty - oy) * TILE);
           }
@@ -1184,7 +1266,7 @@ export function buildCityScene(Phaser, city, ctx) {
       if (city.railways?.mask) {
         for (let ty = oy; ty < y1; ty++) {
           for (let tx = ox; tx < x1; tx++) {
-            if (!this.railwayAt(tx, ty)) continue;
+            if (!this.districtOpenAt(tx, ty) || !this.railwayAt(tx, ty)) continue;
             stamp.setTexture('ct_rail_area');
             rt.batchDraw(stamp, (tx - ox) * TILE, (ty - oy) * TILE);
           }
@@ -1201,6 +1283,7 @@ export function buildCityScene(Phaser, city, ctx) {
       const trees = [];
       for (let y = b.y0; y < b.y1; y++) {
         for (let x = b.x0; x < b.x1; x++) {
+          if (!this.districtOpenAt(x, y)) continue;
           const c = this.grid[y * COLS + x];
           const isPark = c === TERRAIN.PARK && tileHash(x, y) < 0.28;
           const isVerge = c === TERRAIN.SIDEWALK && this.tileCode(x, y - 1) === TERRAIN.ROAD && tileHash(x, y) < 0.16;
@@ -1263,6 +1346,7 @@ export function buildCityScene(Phaser, city, ctx) {
       let n = 0;
       for (let ty = y0; ty <= y1; ty++) {
         for (let tx = x0; tx <= x1; tx++) {
+          if (!this.districtOpenAt(tx, ty)) continue;
           const c = this.tileCode(tx, ty);
           const tidal = this.tideVisualWaterAt(tx, ty);
           if (!tidal && c !== TERRAIN.WATER && c !== TERRAIN.RIVER) continue;
@@ -1326,6 +1410,24 @@ export function buildCityScene(Phaser, city, ctx) {
       if (!this.pet) return;
       const h = this.add.image(this.pet.x, this.pet.y - 12, 'ct_heart').setScale(TSCALE).setDepth(10001);
       this.tweens.add({ targets: h, y: h.y - 26, alpha: 0, duration: 1100, ease: 'Sine.easeOut', onComplete: () => h.destroy() });
+    }
+
+    tryStartStep(dir) {
+      if (!VALID_DIR.has(dir)) return false;
+      const [dx, dy] = DIRV[dir];
+      const tx = this.pTileX + dx;
+      const ty = this.pTileY + dy;
+      if (this.districtLockedAt(tx, ty)) {
+        this.tapTile = null;
+        this.showDistrictLocked();
+        return false;
+      }
+      if (isCityBlocked(this.tileCode(tx, ty))) {
+        this.tapTile = null;
+        return false;
+      }
+      this.startStep(dir);
+      return true;
     }
 
     startStep(dir) {
@@ -1447,7 +1549,8 @@ export function buildCityScene(Phaser, city, ctx) {
         }
         const wx = vehicle.tile[0] * TILE + TILE / 2;
         const wy = vehicle.tile[1] * TILE + TILE / 2;
-        view.setPosition(wx, wy).setDepth(Math.max(8500, wy + 2)).setVisible(true);
+        view.setPosition(wx, wy).setDepth(Math.max(8500, wy + 2))
+          .setVisible(this.districtOpenAt(vehicle.tile[0], vehicle.tile[1]));
       }
       for (const [runId, view] of this.vehicleViews) {
         if (alive.has(runId)) continue;
@@ -1527,16 +1630,13 @@ export function buildCityScene(Phaser, city, ctx) {
         if (held) {
           if (this.facing !== held) { this.facing = held; this.turnGrace = time + TURN_MS; }
           else if (time >= this.turnGrace) {
-            const [dx, dy] = DIRV[held];
-            if (!this.blocked(this.pTileX + dx, this.pTileY + dy)) this.startStep(held);
+            this.tryStartStep(held);
           }
         } else {
           const tdir = this.tapStepDir();
           if (tdir) {
             this.facing = tdir;
-            const [dx, dy] = DIRV[tdir];
-            if (!this.blocked(this.pTileX + dx, this.pTileY + dy)) this.startStep(tdir);
-            else this.tapTile = null;
+            this.tryStartStep(tdir);
           }
         }
       }
@@ -1597,7 +1697,9 @@ export function buildCityScene(Phaser, city, ctx) {
       for (const view of this.nodeViews) {
         const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, view.wx, view.wy);
         view.label?.setAlpha(distance < labelRange ? 1 : 0);
-        if (worldSnapshot) {
+        if (view.locked) {
+          view.marker.setAlpha(0.58).setTint(0x8f897d);
+        } else if (worldSnapshot) {
           const life = nodeLifeAt(view.node, worldSnapshot);
           view.marker.setAlpha(life.open ? 1 : 0.42).setTint(life.open ? 0xffffff : 0x7a7a82);
         }
@@ -1610,6 +1712,7 @@ export function buildCityScene(Phaser, city, ctx) {
       // 노드 근접 → React(nearNode). 라벨은 6타일 안에서만, 프롬프트/설명은 A 로.
       let nearest = null, nearestD = NODE_TALK_RANGE;
       for (const v of this.nodeViews) {
+        if (v.locked) continue;
         const d = Phaser.Math.Distance.Between(this.player.x, this.player.y, v.wx, v.wy);
         if (d < nearestD) { nearest = v.node; nearestD = d; }
       }
