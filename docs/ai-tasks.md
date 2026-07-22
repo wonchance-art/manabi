@@ -8,8 +8,8 @@
 ## Codex-1 (codex/*)
 ### doing
 ### todo
-- 멜버른 비콘텐츠 선행 수집: bbox `[144.90,-37.88,145.01,-37.78]`,
-  4×4 Overpass 48/48 + 20m 스냅샷 결정성 계약(POI·역·콘텐츠 제외)
+- R4B 애드온(오너 큐 4순위 — 발주 #150 코멘트 5041341555): `glacial` 수면 스킨 3프레임 +
+  감천 파스텔 `zoneSkins` **설계 제안 선행** (`codex/rendercraft-r4b`, base 2dcc3f0)
 ### done (최근)
 - 몽생미셸 조수 visual-only 1단계: 745 game-min·epoch 420·8단계 결정 시계,
   source-informed `tideSafeCorridorMask` 해시 고정, 충돌·재배치 비활성 유지
@@ -81,6 +81,8 @@
 - 런던권 geo (codex2/london-geo — Claude 선제 실측: **타워브리지 단면 160m 1건만 FAIL**,
   실폭 ~250m 대비 얇음 → 소스 마스크 대조 요청. verify 게이트는 main에 배치 완료)
 ### todo
+- 레만호 st-saphorin 코르니슈 교정 재생성(SPEC_FIX_2 — #150 코멘트 5012798854) →
+  결정성 2회·targeted+전체 green CODEX_DONE 게시 (#304)
 - 템스 타워브리지 구간 수면 폭 원인 확인(마스크 vs terrain — 온천천 선례)
 ### done (최근)
 - 그랑파리 geo+교량 3분류 (#157 merge), frenchCityRuntimeAdapter(스코프 클린 확인)
