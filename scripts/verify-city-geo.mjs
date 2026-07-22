@@ -81,12 +81,15 @@ const CITY_GATES = {
     snapshot: 'scripts/data/grand-paris-osm-v21.json',
     expectedLocale: 'fr',
     expectedMpt: 20,
-    buildingPct: [13, 17],
+    // R5(2026-07-23, 제안 docs/proposal-verifier-r5.md 승인): exact 15.06% 중심 ±1.5pp.
+    buildingPct: [13.5, 16.5],
     greenMinPct: 8,
     poiMaxDevTiles: 2.5,
     downtown: { label: '샤틀레', lon: 2.3467, lat: 48.8586 },
     riverSections: [
-      { name: '센강(트로카데로 단면)', lon: 2.28, latRange: [48.875, 48.850], sumMinM: 120, runMinM: 100 },
+      // R5: 트로카데로 best 180/120 → sum 140 상향(40m 여유). 루브르는 퐁뒤카루젤 차도 교차
+      // false-fail 회피를 위해 현행 유지(±2 best-of-5 보정 전제).
+      { name: '센강(트로카데로 단면)', lon: 2.28, latRange: [48.875, 48.850], sumMinM: 140, runMinM: 100 },
       { name: '센강(루브르 단면)', lon: 2.33, latRange: [48.870, 48.850], sumMinM: 120, runMinM: 100 },
     ],
     streamCourses: [],
@@ -108,7 +111,9 @@ const CITY_GATES = {
     poiMaxDevTiles: 2.5,
     downtown: { label: '니스 구시가', lon: 7.2755, lat: 43.6955 },
     riverSections: [
-      { name: '바르강 하구 단면', lat: 43.665, lonRange: [7.19, 7.21], sumMinM: 100, runMinM: 60 },
+      // R5: best 120/120 — sum 100 유지, 연속 하한만 60→80m 상향. buildingPct [6,9]는 재실측
+      // exact 7.25%로 현행 유지 확정(다핵 해안 벨트 — 조이지 않음).
+      { name: '바르강 하구 단면', lat: 43.665, lonRange: [7.19, 7.21], sumMinM: 100, runMinM: 80 },
     ],
     streamCourses: [],
     reportCourses: [],
@@ -343,15 +348,15 @@ const CITY_GATES = {
     snapshot: 'scripts/data/marseille-osm-v21.json',
     expectedLocale: 'fr',
     expectedMpt: 20,
-    buildingPct: [15, 20],
+    // R5(2026-07-23): exact 17.42% 중심 ±2.0pp(항만 분모 변동 감안).
+    buildingPct: [15.5, 19.5],
     greenMinPct: 1,
     poiMaxDevTiles: 2.5,
     downtown: { label: '구항(벨주 부두)', lon: 5.3745, lat: 43.2946 },
     riverSections: [
-      // 구항 분지 개수면 — 경도 스캔 실측 5.368에서 320m/320m(실폭 ~300m 정합, 부두 동단 5.374=0 확인).
-      { name: '구항 단면', lon: 5.368, latRange: [43.300, 43.288], sumMinM: 250, runMinM: 250 },
-      // 이프성 해협(외해) — 위도 스캔 실측 43.288에서 2,180m/2,180m(섬 항로 개수면).
-      { name: '이프성 해협 단면', lat: 43.288, lonRange: [5.325, 5.355], sumMinM: 1800, runMinM: 1800 },
+      // R5: 구항 best 320/320 → 280/280(2타일 여유), 이프 해협 best 2,220 → 2,000(약 10% 여유).
+      { name: '구항 단면', lon: 5.368, latRange: [43.300, 43.288], sumMinM: 280, runMinM: 280 },
+      { name: '이프성 해협 단면', lat: 43.288, lonRange: [5.325, 5.355], sumMinM: 2000, runMinM: 2000 },
     ],
     streamCourses: [],
     reportCourses: [],
