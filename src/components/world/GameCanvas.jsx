@@ -44,6 +44,10 @@ import { DEFAULT_AVATAR, avatarPalette, normalizeWorldAvatar } from '../../lib/w
 import { loadStamps, collectStamp } from '../../lib/world/stamps';
 import { canCollectStamp, STAMP_ALBUM_NODES } from '../../lib/world/stampUniverse';
 import { claimStampMilestoneRewards } from '../../lib/world/stampMilestones';
+import {
+  STAMP_TITLE_TOAST_DURATION_MS,
+  stampTitleToastForUnlocked,
+} from './stampTitlePresentation';
 // 📖 스탬프 지식 카드(아이디어 보드 ④) — 수집 순간 지역학 마이크로 팩트 1줄.
 import { factLineForNode } from '../../lib/world/worldNodeFacts';
 // 🗺️ 광장 맵 데이터 — 한반도+일본 열도 실비율 도트 맵(448×384, build-map.mjs 산출).
@@ -502,6 +506,7 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
   // (문구도 "기념 스탬프"). 학습 달성/보상으로 쓰려면 서버 검증 claim(마스터플랜 A-4 원칙) 필요.
   const [stamps, setStamps] = useState(() => new Set());
   const [newStamp, setNewStamp] = useState(null);
+  const [stampTitleToast, setStampTitleToast] = useState(null);
   const stampsRef = useRef(stamps);          // interact 콜백(once-effect)이 최신 Set 을 읽도록 미러
   const collectStampRef = useRef(null);      // 최신 수집 함수 미러(렌더마다 갱신)
 
@@ -584,7 +589,16 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
   useEffect(() => { storyActiveRef.current = storyActive; }, [storyActive]);
   useEffect(() => { storyPhaseRef.current = storyPhase; }, [storyPhase]);
   useEffect(() => { stampsRef.current = stamps; }, [stamps]);
-  useEffect(() => { claimStampMilestoneRewards(stamps); }, [stamps]);
+  useEffect(() => {
+    const reward = claimStampMilestoneRewards(stamps);
+    const toast = stampTitleToastForUnlocked(reward.unlocked);
+    if (toast) setStampTitleToast(toast);
+  }, [stamps]);
+  useEffect(() => {
+    if (!stampTitleToast) return undefined;
+    const timer = setTimeout(() => setStampTitleToast(null), STAMP_TITLE_TOAST_DURATION_MS);
+    return () => clearTimeout(timer);
+  }, [stampTitleToast]);
 
   // 수집 상태 로드(마운트/계정별 1회) — 실패면 조용히 빈 Set 유지.
   useEffect(() => {
@@ -3178,6 +3192,22 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
           padding: '6px 12px', lineHeight: 1.45, maxWidth: '86%', textAlign: 'center', zIndex: 7,
         }}>
           📖 {newStamp.factLine}
+        </div>
+      )}
+
+      {stampTitleToast && (
+        <div
+          role="status"
+          aria-live="polite"
+          style={{
+            position: 'absolute', left: '50%', top: newStamp?.factLine ? 96 : 44,
+            transform: 'translateX(-50%)', zIndex: 8, pointerEvents: 'none',
+            ...gbcPanel, width: 'min(86%, 340px)', padding: '7px 11px', textAlign: 'center',
+            fontFamily: GBC.font, color: GBC.ink, lineHeight: 1.45,
+          }}
+        >
+          <strong style={{ display: 'block', fontSize: '0.7rem' }}>🎖️ 새 칭호 · {stampTitleToast.name}</strong>
+          <span style={{ display: 'block', marginTop: 2, fontSize: '0.6rem', color: GBC.inkSoft }}>{stampTitleToast.line}</span>
         </div>
       )}
 

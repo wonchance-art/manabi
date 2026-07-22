@@ -10,6 +10,8 @@
 > ② dev 검수 하니스: 게스트 열람(#388)·오프라인 단독 입장(#389)·?spawn= 직행(#391)·dev SW 차단(#392).
 > ③ 벌크 발주 완료 — 각 세션은 자기 SPEC 큐(#150 코멘트 5046785242/5647/5938/6117)를 대기 없이 순차 소화.
 
+> ④ **오너 전면 승인(2026-07-23)**: D-트랙(여행책 지구제 — docs/rfc-guidebook-districts.md) 그린라이트.
+> 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
 ### todo
@@ -18,6 +20,11 @@
   중간역 하차 실패 재시도 창을 재현하고, 게스트 spawn 미지원과 오버레이 비잔존을 report-only로 감사
   (`codex/corridor-statemachine-audit`, base 8cce1bd1387e0b05ab29215a547d7730e2b9327c,
   #150 5049590405)
+- D1 여행책 지구 게이팅 엔진: `district-v1` rect union fail-closed resolve·4.2초 1회 soft wall·
+  저채도 guidebook 잠금 렌더와 TRANSIT/스폰/EXIT/도어/NPC/발견 정합 게이트를 구현하고,
+  리옹 예비 rect 8개·주동선 509타일 및 미정의 25도시 render/movement 불변을 고정
+  (`codex/guidebook-district-engine`, 구현 f433720, base bcc0796bd4de957cc5f98f9e1458a557edd463d9,
+  #150 5049638103·5049669206·5049709411)
 - E5 주동선 발견 이벤트: 리옹 정본 8건을 waypointOffsets 기반 exact 타일로 해석하고,
   미발견 2프레임 무문자 스파클·도보 진입 1회 4.2초 GBC 말풍선·localStorage 왕복을 구현
   (`codex/route-discovery`, base cf8c32d4964ab186d07e5658b40494abf15d2e2c,
@@ -136,6 +143,10 @@
 ### doing
 ### todo
 ### done (최근)
+- verifier R6 report-only 제안: 제네바·레만 연안·브뤼셀·런던의 buildingPct exact,
+  수면 best-of-5 단면·BRIDGE 잔존을 재실측하고 보수적 후보 band·하한을 문서화
+  (`codex2/verifier-r6-proposal`, base bcc0796bd4de957cc5f98f9e1458a557edd463d9,
+  #150 5049590586)
 - mainRoute v3 확산 후보: 보르도·스트라스부르 typed waypoint 본선과 전 마커 URDL BFS
   도달성 행렬·leg/전체 path SHA를 report-only로 고정하고 Pont de Pierre outlier를 분리 제안
 - verifier R5 report-only 제안: 그랑파리·마르세유·코트다쥐르의 buildingPct exact와
@@ -173,6 +184,8 @@
 - S1 STAMP_ALBUM_NODES 85 원자 전환(선행 #387 충족 — 즉시 착수): #150 5046785938
 - S4 수집 연출 정합 → S2 앨범 지역 탭·수집률 → S3 마일스톤 보상 v1(localStorage·DB 금지)
 ### done (최근)
+- S5 칭호 표시 배선: 여행 수첩 획득 칭호·다음 목표 1줄과 달성 순간 4.2초 토스트
+  (#150 SPEC 5049537006, allowlist 5049669206, base `51bfcf062d76fb470a6ae21a3ae50f15b65aa38a`)
 - S3 마일스톤 보상 v1(#150 코멘트 5046785938): 10/30/60/85 수집에 펫 사료와
   카피 없는 `worldTitles` 키 4개를 localStorage로 중복 없이 지급
 - S2 앨범 UI 확장(#150 코멘트 5046785938): 전국맵·아시아태평양·유럽/지중해/중동
@@ -196,6 +209,7 @@
 
 ## Claude (claude/*)
 ### doing
+- D2 지구 마스크·잠금 카피 저작(D1 merge 대기 — 리옹 rect 8개 예비 산출 완료, #150 코멘트)
 - 보르도·스트라스부르 mainRoute waypoint 확정·저작(T3 데이터 docs/proposal-mainroute-bdx-sxb.md 검토)
 - 리옹 포장 주간 조명 대비 재확인(저녁 대비 약함 파인딩 후속)
 - 사이클 운영(웹훅+cron+Routine)
