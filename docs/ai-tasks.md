@@ -13,9 +13,11 @@
 ## Codex-1 (codex/*)
 ### doing
 ### todo
-- E5 주동선 발견 이벤트: 확정 SPEC·리옹 정본 카피 8건 기반 1회 발견/저장/렌더 구현
-  (#150 5047588502, `docs/spec-route-discovery.md`)
 ### done (최근)
+- E5 주동선 발견 이벤트: 리옹 정본 8건을 waypointOffsets 기반 exact 타일로 해석하고,
+  미발견 2프레임 무문자 스파클·도보 진입 1회 4.2초 GBC 말풍선·localStorage 왕복을 구현
+  (`codex/route-discovery`, base cf8c32d4964ab186d07e5658b40494abf15d2e2c,
+  #150 5047588502)
 - E4(P1) 지역 오버월드 도시 진입 락 분리: cityPrompt 입력 락과 enterCity 재진입 가드를
   분리하고 페리·회랑·지역 철도·항공의 동일 비대칭도 전용 전환 락으로 복구
   (`codex/region-city-entry-lock-fix`, base c0b87b356c5c4b1d4c15cd95edbeafa288e4ab9f,

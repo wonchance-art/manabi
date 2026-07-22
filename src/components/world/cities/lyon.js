@@ -125,6 +125,40 @@ export const MAIN_ROUTE = Object.freeze({
   }),
   segmentHints: Object.freeze([]),
   branches: Object.freeze([]),
+  discoveries: Object.freeze([
+    Object.freeze({
+      id: 'lyon-d1', leg: Object.freeze(['perrache', 'bellecour']), at: 0.55,
+      line: '보행자 거리의 차양 아래로 아침 냄새가 흘러요 — 리옹의 하루는 빵집 앞에서 시작돼요.',
+    }),
+    Object.freeze({
+      id: 'lyon-d2', leg: Object.freeze(['bellecour', 'vieux-lyon']), at: 0.50,
+      line: '손강 다리 위에서 물빛이 바뀌어요 — 잔잔한 손강과 힘찬 론강, 두 강의 성격이 달라요.',
+    }),
+    Object.freeze({
+      id: 'lyon-d3', leg: Object.freeze(['vieux-lyon', 'fourviere']), at: 0.40,
+      line: '구시가 골목엔 「트라불」이라 불리는 지붕 덮인 지름길이 숨어 있어요 — 비 오는 날의 통로였대요.',
+    }),
+    Object.freeze({
+      id: 'lyon-d4', leg: Object.freeze(['fourviere', 'terreaux']), at: 0.45,
+      line: '언덕에서 내려다보면 붉은 지붕의 바다 너머로 두 강이 만나는 자리가 보여요.',
+    }),
+    Object.freeze({
+      id: 'lyon-d5', leg: Object.freeze(['terreaux', 'opera']), at: 0.50,
+      line: '시청 뒤편을 돌면 오페라의 유리 반원 지붕이 나타나요 — 옛 벽 위에 얹은 현대의 곡선이에요.',
+    }),
+    Object.freeze({
+      id: 'lyon-d6', leg: Object.freeze(['opera', 'croix-rousse']), at: 0.60,
+      line: '크루아루스 오르막은 옛 견직 공방의 동네예요 — 천장 높은 집들이 그 시절의 흔적이에요.',
+    }),
+    Object.freeze({
+      id: 'lyon-d7', leg: Object.freeze(['croix-rousse', 'halles']), at: 0.50,
+      line: '론강변 산책로엔 플라타너스가 줄지어요 — 강을 따라 달리는 사람들의 코스예요.',
+    }),
+    Object.freeze({
+      id: 'lyon-d8', leg: Object.freeze(['halles', 'part-dieu']), at: 0.45,
+      line: '실내 시장의 치즈 좌판을 지나면 곧 파르디외의 유리탑이 눈에 들어와요.',
+    }),
+  ]),
   segments: Object.freeze([
     Object.freeze({
       id: 'station:perrache--node:bellecour',

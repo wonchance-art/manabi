@@ -298,6 +298,72 @@ function planRouteProps(city, grid, path, waypointOffsets, routeSet) {
   return Object.freeze(props);
 }
 
+function regexEscape(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function resolveRouteDiscoveries(city, route, waypoints, waypointOffsets, path) {
+  if (route.discoveries == null) return Object.freeze([]);
+  invariant(Array.isArray(route.discoveries), 'discoveries must be an array');
+
+  const waypointIds = waypoints.map(({ ref }) => ref.id);
+  const descLines = new Set([
+    ...(city.nodes ?? []),
+    ...(city.stations ?? []),
+  ].map(({ desc }) => desc).filter((desc) => typeof desc === 'string'));
+  const idPattern = new RegExp(`^${regexEscape(city.id)}-d[1-9]\\d*$`);
+  const usedIds = new Set();
+  const usedLegs = new Set();
+
+  return Object.freeze(route.discoveries.map((discovery) => {
+    invariant(discovery && typeof discovery === 'object', 'discovery must be an object');
+    invariant(typeof discovery.id === 'string' && idPattern.test(discovery.id), 'discovery id must match <cityId>-d<n>');
+    invariant(!usedIds.has(discovery.id), `${discovery.id} discovery id must be unique`);
+    usedIds.add(discovery.id);
+
+    invariant(Array.isArray(discovery.leg) && discovery.leg.length === 2
+      && discovery.leg.every((id) => typeof id === 'string' && id.length > 0),
+    `${discovery.id} leg must contain two waypoint ids`);
+    const matchingLegs = [];
+    for (let index = 0; index < waypointIds.length - 1; index += 1) {
+      if (waypointIds[index] === discovery.leg[0] && waypointIds[index + 1] === discovery.leg[1]) {
+        matchingLegs.push(index);
+      }
+    }
+    invariant(matchingLegs.length === 1, `${discovery.id} leg must match one ordered adjacent waypoint pair`);
+    const legIndex = matchingLegs[0];
+    const legKey = `${discovery.leg[0]}--${discovery.leg[1]}`;
+    invariant(!usedLegs.has(legKey), `${legKey} may contain at most one discovery`);
+    usedLegs.add(legKey);
+
+    invariant(Number.isFinite(discovery.at) && discovery.at > 0 && discovery.at < 1,
+      `${discovery.id} at must be greater than 0 and less than 1`);
+    invariant(typeof discovery.line === 'string'
+      && discovery.line === discovery.line.trim()
+      && discovery.line.length >= 12
+      && discovery.line.length <= 90,
+    `${discovery.id} line must be a trimmed string of 12 to 90 characters`);
+    invariant(/요[.!?…]?$/u.test(discovery.line), `${discovery.id} line must use 해요체`);
+    invariant(!descLines.has(discovery.line), `${discovery.id} line must not duplicate desc`);
+
+    const start = waypointOffsets[legIndex];
+    const end = waypointOffsets[legIndex + 1];
+    invariant(end - start >= 2, `${discovery.id} leg must have an interior tile`);
+    const routeIndex = Math.max(
+      start + 1,
+      Math.min(end - 1, start + Math.round(discovery.at * (end - start))),
+    );
+    return Object.freeze({
+      id: discovery.id,
+      leg: Object.freeze([...discovery.leg]),
+      at: discovery.at,
+      line: discovery.line,
+      routeIndex,
+      tile: path[routeIndex],
+    });
+  }));
+}
+
 export function resolveCityMainRoute(city, suppliedGrid) {
   if (city?.mainRoute == null) return null;
   const grid = routeGrid(city, suppliedGrid);
@@ -315,6 +381,7 @@ export function resolveCityMainRoute(city, suppliedGrid) {
   const path = routeTiles(pathIndices, city.cols);
   const tileSet = new Set(pathIndices);
   const props = planRouteProps(city, grid, path, waypointOffsets, tileSet);
+  const discoveries = resolveRouteDiscoveries(city, route, waypoints, waypointOffsets, path);
   return Object.freeze({
     id: route.id,
     version: route.version,
@@ -324,6 +391,7 @@ export function resolveCityMainRoute(city, suppliedGrid) {
     waypointOffsets: Object.freeze(waypointOffsets),
     tileSet,
     props,
+    discoveries,
   });
 }
 
