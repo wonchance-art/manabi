@@ -14,7 +14,7 @@
 
 import { useEffect, useState } from 'react';
 import { GBC, gbcPanel, gbcButtonPrimary } from './QuestReview';
-import { WORLD_NODES } from './worldNodes';
+import { STAMP_ALBUM_NODES } from '../../lib/world/stampUniverse';
 import { stampIcon, fmtDate } from './stampIcons';
 
 export default function StampAlbum({ stamps, onClose }) {
@@ -43,8 +43,8 @@ export default function StampAlbum({ stamps, onClose }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
-  const total = WORLD_NODES.length;
-  const got = WORLD_NODES.reduce((n, node) => n + (owned.has(node.id) ? 1 : 0), 0);
+  const total = STAMP_ALBUM_NODES.length;
+  const got = STAMP_ALBUM_NODES.reduce((n, node) => n + (owned.has(node.id) ? 1 : 0), 0);
 
   return (
     <div style={{
@@ -68,7 +68,7 @@ export default function StampAlbum({ stamps, onClose }) {
           overflowY: 'auto', display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(84px, 1fr))', gap: 8, paddingRight: 2,
         }}>
-          {WORLD_NODES.map((node) => {
+          {STAMP_ALBUM_NODES.map((node) => {
             const has = owned.has(node.id);
             return (
               <div

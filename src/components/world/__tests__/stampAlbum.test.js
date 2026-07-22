@@ -1,11 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { stampIcon, fmtDate } from '../stampIcons';
-import { WORLD_NODES } from '../worldNodes';
+import { STAMP_ALBUM_NODES } from '../../../lib/world/stampUniverse';
 
 // 🗾 여행 스탬프 앨범 — 순수 로직(아이콘 매핑·날짜 포맷) 회귀. 렌더는 GameCanvas 통합 경로에서 확인.
 describe('스탬프 앨범 — stampIcon(노드→배지 아이콘)', () => {
-  it('전 WORLD_NODES 가 비어 있지 않은 아이콘으로 매핑된다', () => {
-    for (const n of WORLD_NODES) {
+  it('전 STAMP_ALBUM_NODES 85개가 비어 있지 않은 아이콘으로 매핑된다', () => {
+    expect(STAMP_ALBUM_NODES).toHaveLength(85);
+    for (const n of STAMP_ALBUM_NODES) {
       const icon = stampIcon(n);
       expect(typeof icon).toBe('string');
       expect(icon.length).toBeGreaterThan(0);
@@ -13,8 +14,8 @@ describe('스탬프 앨범 — stampIcon(노드→배지 아이콘)', () => {
   });
 
   it('id 오버라이드가 kind 보다 우선(haneda→✈️, tottori→🏜️)', () => {
-    const haneda = WORLD_NODES.find((n) => n.id === 'haneda');
-    const tottori = WORLD_NODES.find((n) => n.id === 'tottori');
+    const haneda = STAMP_ALBUM_NODES.find((n) => n.id === 'haneda');
+    const tottori = STAMP_ALBUM_NODES.find((n) => n.id === 'tottori');
     expect(stampIcon(haneda)).toBe('✈️');
     expect(stampIcon(tottori)).toBe('🏜️');
   });
@@ -31,7 +32,7 @@ describe('스탬프 앨범 — stampIcon(노드→배지 아이콘)', () => {
   });
 
   it('실 노드 표본: fukuoka-ramen→🍜, dazaifu-shrine→⛩️, fuji→🗻, seoul→🏙️', () => {
-    const pick = (id) => stampIcon(WORLD_NODES.find((n) => n.id === id));
+    const pick = (id) => stampIcon(STAMP_ALBUM_NODES.find((n) => n.id === id));
     expect(pick('fukuoka-ramen')).toBe('🍜');
     expect(pick('dazaifu-shrine')).toBe('⛩️');
     expect(pick('fuji')).toBe('🗻');
@@ -39,6 +40,7 @@ describe('스탬프 앨범 — stampIcon(노드→배지 아이콘)', () => {
     expect(pick('seoul')).toBe('🏙️');
     expect(pick('incheon-airport')).toBe('✈️');
     expect(pick('busan-port')).toBe('⚓');
+    expect(pick('paris')).toBe('🏙️');
   });
 });
 

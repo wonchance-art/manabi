@@ -9,11 +9,7 @@ vi.mock('@supabase/ssr', () => ({
   createServerClient: createServerClientMock,
 }));
 
-import {
-  config,
-  isProtectedOverworldPreviewAssetPath,
-  middleware,
-} from './middleware';
+import { config, middleware } from './middleware';
 
 const EMEA_ASSET = '/assets/overworld/europe-mediterranean-middle-east-surface-preview-v1/manifest.json';
 
@@ -36,27 +32,25 @@ function request(pathname) {
   return new NextRequest(`https://example.test${pathname}`);
 }
 
-describe('EMEA 미출시 오버월드 자산 접근 경계', () => {
+describe('오버월드 자산 공개 계약 (#306 EMEA 일반 공개 이후)', () => {
   beforeEach(() => {
     createServerClientMock.mockReset();
   });
 
-  it('EMEA 원본 계열만 보호하고 출시된 APAC과 일반 미리보기는 공개 경로로 둔다', () => {
-    for (const layer of ['surface', 'playability', 'terrain', 'transport', 'transport-nodes', 'boundary']) {
-      expect(isProtectedOverworldPreviewAssetPath(
-        `/assets/overworld/europe-mediterranean-middle-east-${layer}-preview-v1/chunk.bin`,
-      )).toBe(true);
-    }
-    expect(isProtectedOverworldPreviewAssetPath(
-      '/assets/overworld/asia-pacific-surface-preview-v1/manifest.json',
-    )).toBe(false);
-    expect(isProtectedOverworldPreviewAssetPath(
-      '/assets/overworld/map-previews/asia-pacific.png',
-    )).toBe(false);
-    expect(config.matcher).toContain('/assets/overworld/:path*');
+  it('matcher는 관리자 경로만 남기고 오버월드 자산 경로를 더 이상 가로채지 않는다', () => {
+    expect(config.matcher).toContain('/admin/:path*');
+    expect(config.matcher).not.toContain('/assets/overworld/:path*');
   });
 
-  it('출시된 APAC 자산은 세션 조회 없이 그대로 통과시킨다', async () => {
+  it('EMEA 자산 요청도 세션 조회 없이 그대로 통과한다 (구 가드 회귀 방지)', async () => {
+    const response = await middleware(request(EMEA_ASSET));
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('x-middleware-next')).toBe('1');
+    expect(createServerClientMock).not.toHaveBeenCalled();
+  });
+
+  it('APAC 자산 요청도 동일하게 통과한다', async () => {
     const response = await middleware(request(
       '/assets/overworld/asia-pacific-surface-preview-v1/manifest.json',
     ));
@@ -65,34 +59,37 @@ describe('EMEA 미출시 오버월드 자산 접근 경계', () => {
     expect(response.headers.get('x-middleware-next')).toBe('1');
     expect(createServerClientMock).not.toHaveBeenCalled();
   });
+});
 
-  it('미로그인 직접 자산 요청은 로그인 위치를 노출하지 않고 404로 닫는다', async () => {
+describe('관리자 경로 보호 (기존 계약 유지)', () => {
+  beforeEach(() => {
+    createServerClientMock.mockReset();
+  });
+
+  it('미로그인 관리자 경로 접근은 /auth 로 보낸다', async () => {
     mockSession();
 
-    const response = await middleware(request(EMEA_ASSET));
+    const response = await middleware(request('/admin'));
 
-    expect(response.status).toBe(404);
-    expect(response.headers.get('location')).toBeNull();
-    expect(response.headers.get('cache-control')).toBe('private, no-store');
+    expect(response.status).toBe(307);
+    expect(response.headers.get('location')).toBe('https://example.test/auth');
   });
 
-  it('일반 사용자의 직접 자산 요청도 404로 닫는다', async () => {
+  it('일반 사용자는 홈으로 돌려보낸다', async () => {
     mockSession({ user: { id: 'member-1' }, role: 'member' });
 
-    const response = await middleware(request(EMEA_ASSET));
+    const response = await middleware(request('/admin'));
 
-    expect(response.status).toBe(404);
-    expect(response.headers.get('location')).toBeNull();
+    expect(response.status).toBe(307);
+    expect(response.headers.get('location')).toBe('https://example.test/');
   });
 
-  it('관리자 요청만 원본 자산으로 통과시키고 공유 캐시를 금지한다', async () => {
+  it('관리자만 통과한다', async () => {
     mockSession({ user: { id: 'admin-1' }, role: 'admin' });
 
-    const response = await middleware(request(EMEA_ASSET));
+    const response = await middleware(request('/admin'));
 
     expect(response.status).toBe(200);
     expect(response.headers.get('x-middleware-next')).toBe('1');
-    expect(response.headers.get('cache-control')).toBe('private, no-store');
-    expect(response.headers.get('vary')).toBe('Cookie');
   });
 });
