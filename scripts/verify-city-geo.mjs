@@ -329,10 +329,11 @@ const CITY_GATES = {
     poiMaxDevTiles: 2.5,
     downtown: { label: '트래펄가', lon: -0.1281, lat: 51.5080 },
     riverSections: [
-      { name: '템스(웨스트민스터 단면)', lon: -0.1220, latRange: [51.515, 51.495], sumMinM: 200, runMinM: 160 },
+      // R6: 실측 best 기반 상향(구 오탐 보수 하한 졸업 — 웨스트민스터 1100/580).
+      { name: '템스(웨스트민스터 단면)', lon: -0.1220, latRange: [51.515, 51.495], sumMinM: 1100, runMinM: 580 },
       // 타워브리지(-0.0754)는 남북 교량이라 고정 lon 스캔과 평행 겹침(퐁뒤카루젤 선례의 세로판) —
       // 런던브리지(-0.0878)와의 중간 개수면으로 이동. Codex-2 감사: 원본 수면 240~300m 정상.
-      { name: '템스(타워브리지 하류 단면)', lon: -0.0810, latRange: [51.515, 51.498], sumMinM: 200, runMinM: 160 },
+      { name: '템스(타워브리지 하류 단면)', lon: -0.0810, latRange: [51.515, 51.498], sumMinM: 220, runMinM: 220 }, // R6: 220/220
     ],
     streamCourses: [],
     reportCourses: [],
@@ -395,7 +396,9 @@ const CITY_GATES = {
     downtown: { label: '코르나뱅역', lon: 6.1425, lat: 46.2104 },
     riverSections: [
       // 레만호 개수면 — 위도 스캔 실측 46.225에서 2,480m/2,460m(항 방파제 밖 무분절 구간).
-      { name: '레만호 단면', lat: 46.225, lonRange: [6.145, 6.185], sumMinM: 2000, runMinM: 2000 },
+      // R6(2026-07-23, docs/proposal-verifier-r6.md 승인): 레만 2000→2200 + 론강 출수부 신규.
+      { name: '론강 출수부 단면', lon: 6.1460, latRange: [46.211, 46.202], sumMinM: 160, runMinM: 160 },
+      { name: '레만호 단면', lat: 46.225, lonRange: [6.145, 6.185], sumMinM: 2200, runMinM: 2200 },
     ],
     streamCourses: [],
     reportCourses: [],
@@ -417,9 +420,10 @@ const CITY_GATES = {
     downtown: { label: '로잔역', lon: 6.6291, lat: 46.5167 },
     riverSections: [
       // 레만호 개수면(우시 앞바다) — 위도 스캔 실측 46.47에서 6,920m/6,920m(무분절 호심).
-      { name: '레만호 우시 단면', lat: 46.47, lonRange: [6.63, 6.72], sumMinM: 6000, runMinM: 6000 },
+      // R6: 우시 6000→6200 상향.
+      { name: '레만호 우시 단면', lat: 46.47, lonRange: [6.63, 6.72], sumMinM: 6200, runMinM: 6200 },
       // 시옹성 연안(베토만) — 경도 스캔 실측 6.915에서 2,760m/2,760m(성 서측 개수면).
-      { name: '시옹성 연안 단면', lon: 6.915, latRange: [46.430, 46.405], sumMinM: 2200, runMinM: 2200 },
+      { name: '시옹성 연안 단면', lon: 6.915, latRange: [46.430, 46.405], sumMinM: 2400, runMinM: 2400 }, // R6: 2200→2400
     ],
     streamCourses: [],
     reportCourses: [],
