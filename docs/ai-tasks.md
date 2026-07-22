@@ -7,6 +7,9 @@
 
 ## Codex-1 (codex/*)
 ### doing
+- 보르도 비콘텐츠 선행 수집: bbox `[-0.64,44.79,-0.52,44.88]`,
+  4×4 Overpass 48/48 + 20m 스냅샷 결정성 계약(POI·역·콘텐츠 제외)
+  (`codex/bordeaux-snapshot`, base f5325c2af3df63a9639b603ea53dfb76fa6b1e66)
 ### todo
 ### done (최근)
 - 리옹 비콘텐츠 선행 수집: bbox `[4.79,45.71,4.90,45.80]`,
