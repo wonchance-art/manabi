@@ -21,6 +21,9 @@ const EXPECTED_SKINS = {
   beijing: { building: 'hutong' },
   london: { building: 'brick' },
   brussels: { building: 'brick' },
+  // R4B — 빙하수 청록(레만호 공유 표현), 건물은 기본 유지.
+  geneva: { water: 'glacial' },
+  'leman-riviera': { water: 'glacial' },
 };
 
 describe('R4 지역 색감 배정표', () => {
@@ -28,8 +31,13 @@ describe('R4 지역 색감 배정표', () => {
     for (const [cityId, skins] of Object.entries(EXPECTED_SKINS)) {
       const city = CITY_MAPS.find((c) => c.id === cityId);
       expect(city, cityId).toBeTruthy();
-      expect(city.tileSkins?.building, cityId).toBe(skins.building);
-      expect(cityBuildingTextureKey(city, 5)).toBe(`ct_bldg_${skins.building}_5`);
+      if (skins.building) {
+        expect(city.tileSkins?.building, cityId).toBe(skins.building);
+        expect(cityBuildingTextureKey(city, 5)).toBe(`ct_bldg_${skins.building}_5`);
+      } else {
+        expect(city.tileSkins?.building, cityId).toBeUndefined();
+        expect(cityBuildingTextureKey(city, 5)).toBe('ct_bldg_5');
+      }
       if (skins.water) {
         expect(city.tileSkins?.water, cityId).toBe(skins.water);
         expect(cityWaterTextureKey(city, 1)).toBe(`ct_water_${skins.water}1`);
