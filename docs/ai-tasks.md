@@ -7,11 +7,11 @@
 
 ## Codex-1 (codex/*)
 ### doing
-- 레벨 디자인 v3 리옹 경로 위계 구현: 승인된 typed `mainRoute`·URDL/RLE/hash·포장
-  오버레이·이정표/가로등 결정 배치와 미정의 도시 byte-identical 렌더 불변 계약 구현
-  (`codex/route-hierarchy-impl`, base b09b79ed4f1a30927f7783972f21a4c44e379efe)
 ### todo
 ### done (최근)
+- 레벨 디자인 v3 리옹 경로 위계 구현: 승인된 typed `mainRoute` 9열·URDL/RLE/pathSha pin,
+  웜 그레이 포장 오버레이·이정표/가로등 결정 배치와 기존 25도시 렌더 불변 계약 구현
+  (`codex/route-hierarchy-impl`, base b09b79ed4f1a30927f7783972f21a4c44e379efe)
 - 레벨 디자인 v3 리옹 파일럿 경로 위계 RFC: typed `mainRoute` waypoint 9개·비EXIT
   URDL BFS/RLE·미정의 도시 렌더 불변·포장/프롭 소비 경계를 report-only로 제안하고 승인 대기
   (`codex/route-hierarchy-rfc`, base 5ffd30c7f5f82e499f47a65759d2000394dadf49)
