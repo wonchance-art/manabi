@@ -461,6 +461,26 @@ const CITY_GATES = {
     bridgeMaxTiles: 0, // 피에르 다리 등은 ROAD 흡수(한국식 3분류 동일)
     bridgeCrossings: [],
   },
+  strasbourg: {
+    file: 'src/components/world/cities/strasbourg.geo.js',
+    snapshot: 'scripts/data/strasbourg-osm-v21.json',
+    expectedLocale: 'fr',
+    expectedMpt: 20,
+    buildingPct: null, // 그랑딜 밀집 도심 — 1라운드 report, R4 밴드에서 판단
+    greenMinPct: null,
+    poiMaxDevTiles: 2.5,
+    downtown: { label: '클레베르 광장', lon: 7.7455, lat: 48.5833 },
+    riverSections: [
+      // 일강 그랑딜 남수로(프티트 프랑스 위도) — 실측 합계 300m/최장 140m(수로 분기 합산).
+      { name: '일강 그랑딜 남수로', lat: 48.58, lonRange: [7.735, 7.755], sumMinM: 240, runMinM: 100 },
+      // 일강 북수로(대성당 북측) — 실측 합계 240m/최장 80m(운하 분기).
+      { name: '일강 북수로', lat: 48.586, lonRange: [7.745, 7.775], sumMinM: 180, runMinM: 60 },
+    ],
+    streamCourses: [],
+    reportCourses: [],
+    bridgeMaxTiles: 0, // 퐁쿠베르 등 교량은 ROAD 흡수(한국식 3분류 동일)
+    bridgeCrossings: [],
+  },
 };
 
 // ── 투영(도시 geo 생성 계약과 동일: webmercator + aspectCorrection) ─────────
