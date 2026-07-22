@@ -112,6 +112,8 @@
 
 ## Codex-2 (codex2/*)
 ### doing
+- 도쿄 메모리 긴급 감사: #378의 40.11 MiB 원인을 factor·미니맵 베이킹·geo 크기로
+  분해하고 코트다쥐르 24.55 MiB와 24 MiB 복귀안을 report-only 문서로 제안
 ### todo
 ### done (최근)
 - 콘텐츠 밀도 감사: 26도시 POI·학습 도어·TRANSIT·transitPoints·props·NPC·desc·
