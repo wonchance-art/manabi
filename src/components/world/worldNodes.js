@@ -249,6 +249,7 @@ const BRUSSELS_NAME = '브뤼셀';
 const LONDON_NAME = '런던';
 const MARSEILLE_NAME = '마르세유';
 const GENEVA_NAME = '제네바';
+const LEMAN_RIVIERA_NAME = '레만호 연안';
 
 export const REGIONAL_WORLD_NODES = Object.freeze([
   createRegionalWorldNode({
@@ -447,6 +448,18 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
     lat: 46.2104,
     noStamp: true,
     gate: { type: 'city', to: 'geneva', label: '🏙️ 시내' },
+  }),
+  createRegionalWorldNode({
+    id: 'leman-riviera',
+    name: LEMAN_RIVIERA_NAME,
+    kind: 'city',
+    regionId: 'emea',
+    contentLocale: 'fr',
+    // 로잔역 실좌표 투영칸([279,481]) 자체가 체크인된 보행칸이다.
+    lon: 6.6291,
+    lat: 46.5167,
+    noStamp: true,
+    gate: { type: 'city', to: 'leman-riviera', label: '🏙️ 시내' },
   }),
 ]);
 

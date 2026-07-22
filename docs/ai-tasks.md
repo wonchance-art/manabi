@@ -9,6 +9,8 @@
 ### doing
 ### todo
 ### done (최근)
+- 레만호 연안 EMEA 오버월드 게이트: 로잔역 실좌표 투영 `[279,481]`로
+  `leman-riviera` 노드를 등록하고 EXIT 왕복·기존 노드/철도 허브 비침범 계약 구현
 - 채널터널 연출: 런던↔파리를 `EMEA_RAIL_NETWORK` virtual service edge로 연결하고,
   양방향 260ms black fade·해저터널 상태 표시·물리 rail overlay 분리 계약을 구현
 - R4B 애드온: `glacial` 수면 3프레임과 감천 BUILDING 전용 4색 파스텔
