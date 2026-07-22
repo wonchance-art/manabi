@@ -496,6 +496,7 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
   createRegionalWorldNode({
     id: 'strasbourg',
     name: STRASBOURG_NAME,
+    desc: '일 강이 감싸 안은 그랑딜의 도시 스트라스부르. 붉은 사암 대성당과 프티트 프랑스의 목조 골목, 유럽 기관들이 모인 국경의 수도예요.',
     desc: '일강 물길이 구시가를 감싸 흐르는 스트라스부르. 목조 골목과 대성당의 건축 외관이 운하를 따라 이어져요.',
     kind: 'city',
     regionId: 'emea',

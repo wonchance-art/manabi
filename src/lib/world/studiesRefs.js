@@ -98,6 +98,7 @@ const NODE_REFS = Object.freeze({
   'paris': ['france', 'fr-overview'],
   'lyon': ['france', 'fr-overview'],
   'bordeaux': ['france', 'fr-overview'],
+  'strasbourg': ['france', 'fr-overview'],
   'marseille': ['france', 'fr-overview'],
   'nice': ['france', 'fr-overview'],
   'mont-saint-michel': ['france', 'fr-overview'],
