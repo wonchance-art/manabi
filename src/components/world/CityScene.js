@@ -237,6 +237,9 @@ export function buildCityScene(Phaser, city, ctx) {
       water('ct_water_emerald0', 0x2fae9e, 0, 0xe6faf4);
       water('ct_water_emerald1', 0x35c0ae, 1, 0xe6faf4);
       water('ct_water_emerald2', 0x2a9a8c, 2, 0xe6faf4);
+      water('ct_water_glacial0', 0x3d8fa8, 0, 0xe0f4f8);
+      water('ct_water_glacial1', 0x46a0ba, 1, 0xe0f4f8);
+      water('ct_water_glacial2', 0x367e96, 2, 0xe0f4f8);
       // 강·운하(RIVER) — 바다보다 탁한 청록 강 톤(WATER 와 시각 구분).
       water('ct_river0', 0x3f7a6a, 0);
       water('ct_river1', 0x468a76, 1);
@@ -278,6 +281,10 @@ export function buildCityScene(Phaser, city, ctx) {
         ['kawara', 0x4e4c50, 0x5c5a60, 0x3a383c, 0x5c5a60],
         ['hutong', 0x625e58, 0x726d64, 0x484440, 0x726d64],
         ['brick', 0x7e5648, 0x8f6352, 0x54382e, 0x8f6352],
+        ['pastel-coral', 0xf2b8b0, 0xffc8be, 0xdba19a, 0xffc8be],
+        ['pastel-apricot', 0xf5d7a8, 0xffe7b6, 0xdec092, 0xffe7b6],
+        ['pastel-mint', 0xaddbc8, 0xbeebd6, 0x96c4b2, 0xbeebd6],
+        ['pastel-sky', 0xa8cce4, 0xb9dcf2, 0x91b5ce, 0xb9dcf2],
       ];
       for (const [skin, fill, inner, edge, accent] of buildingPalettes) {
         for (let mask = 0; mask < 16; mask++) {
@@ -824,7 +831,7 @@ export function buildCityScene(Phaser, city, ctx) {
         case TERRAIN.EXIT: return 'ct_exit';
         case TERRAIN.WATER: return cityWaterTextureKey(city, 0);
         case TERRAIN.RIVER: return 'ct_river0';
-        case TERRAIN.BUILDING: return cityBuildingTextureKey(city, this.buildingEdgeMask(tx, ty));
+        case TERRAIN.BUILDING: return cityBuildingTextureKey(city, this.buildingEdgeMask(tx, ty), tx, ty);
         case TERRAIN.ISLAND: return 'ct_island';
         case TERRAIN.MOUNTAIN: return 'ct_mountain';
         default: return 'ct_sidewalk';
