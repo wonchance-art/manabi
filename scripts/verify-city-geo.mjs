@@ -426,7 +426,7 @@ const CITY_GATES = {
     snapshot: 'scripts/data/lyon-osm-v21.json',
     expectedLocale: 'fr',
     expectedMpt: 20,
-    buildingPct: null, // 반도 도심·언덕(푸르비에르/크루아루스) 혼합 — 1라운드 report, R4 밴드에서 판단
+    buildingPct: [13, 17], // 반도 도심·언덕 혼합 정본 14.6% — R4 승인 hard gate
     greenMinPct: null, // 테트도르·언덕 사면 혼합 — report 관찰
     poiMaxDevTiles: 2.5,
     downtown: { label: '벨쿠르', lon: 4.8320, lat: 45.7578 },
@@ -446,7 +446,7 @@ const CITY_GATES = {
     snapshot: 'scripts/data/bordeaux-osm-v21.json',
     expectedLocale: 'fr',
     expectedMpt: 20,
-    buildingPct: null, // 초승달 항만 도심 — 1라운드 report, R4 밴드에서 판단
+    buildingPct: [12, 16], // 초승달 항만 도심 정본 13.8% — R4 승인 hard gate
     greenMinPct: null,
     poiMaxDevTiles: 2.5,
     downtown: { label: '부르스 광장', lon: -0.5693, lat: 44.8414 },
@@ -466,7 +466,7 @@ const CITY_GATES = {
     snapshot: 'scripts/data/strasbourg-osm-v21.json',
     expectedLocale: 'fr',
     expectedMpt: 20,
-    buildingPct: null, // 그랑딜 밀집 도심 — 1라운드 report, R4 밴드에서 판단
+    buildingPct: [10.5, 14], // 그랑딜 밀집 도심 정본 12.2% — R4 승인 hard gate
     greenMinPct: null,
     poiMaxDevTiles: 2.5,
     downtown: { label: '클레베르 광장', lon: 7.7455, lat: 48.5833 },
