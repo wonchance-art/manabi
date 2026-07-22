@@ -4,10 +4,12 @@
 // 라보 2007 세계유산, 시옹성은 representationPolicy대로 건축·지리만, 몽트뢰는 행사 무언급,
 // 브베 시장은 상호·기업 무언급 — geo의 representationPolicy 필드 준수).
 // 🛶 도선 10호 — 벨에포크 유람선(선사명 일반화, 무에트·구항 문법). 🎨 R4B glacial 수면 첫 소비.
-// fr 도어 4호 세트는 별도 저작 라운드. 오버월드 EMEA 게이트는 Codex-1 후속(로잔역 기준).
+// 🚪 fr 도어 5호 세트(fr-16~18 — 와인 카브·거리 음악가·약국, a2 잔여 챕터 02·03·07).
+// 오버월드 EMEA 게이트는 Codex-1 후속(로잔역 기준).
 
 import { CITY_TILE, isCityBlocked, isCityWalkable, isCityWater } from './terrain.js';
 import { LEMAN_RIVIERA_GEO } from './leman-riviera.geo.js';
+import { LEMAN_DOORS } from '../lemanDoors.js';
 
 export { CITY_TILE, isCityBlocked, isCityWalkable, isCityWater };
 
@@ -55,6 +57,13 @@ export const ZONES = [
   { id: 'lake', label: '레만호', bounds: [300, 460, 1100, 760], labelTile: [650, 600] },
 ];
 
+// fr 도어 3종(fr-16~18) tile — 앵커 POI 곁 보행+이격 ≥3 스크립트 검증 배치.
+const LEMAN_DOOR_TILES = Object.freeze({
+  'fr-16': [524, 259],  // 와인 카브 — 에페스(라보) 포도밭 곁
+  'fr-17': [1187, 587], // 거리 음악가 — 몽트뢰 호반 산책로
+  'fr-18': [109, 97],   // 약국 — 로잔 플롱
+});
+
 export const CITY_NODES = [
   ...LEMAN_RIVIERA_GEO.pois.map((poi) => {
     const copy = poiCopy(poi.id);
@@ -71,6 +80,21 @@ export const CITY_NODES = [
       desc: copy.desc,
     };
   }),
+  // 프랑스어 문화 도어 3종(fr-16~18 — 프랑스어권 5번째 신규 세트) — track 명시 라우팅.
+  ...LEMAN_DOORS.map((door) => ({
+    id: door.id,
+    kind: 'spot',
+    name: door.nameFr,
+    nameFr: door.nameFr,
+    contentLocale: 'fr',
+    facade: 'sign',
+    tile: [...LEMAN_DOOR_TILES[door.id]],
+    facing: 'down',
+    noStamp: true,
+    track: door.track,
+    chapter: door.chapter,
+    desc: `${door.name} — ${door.lines[0].fr} (${door.lines[0].gloss})`,
+  })),
 ];
 
 // ⚠️ nameJa 필드는 CityScene 레거시 계약 — 프랑스 도시는 nameFr를 그대로 싣는다(yomi 공란).
