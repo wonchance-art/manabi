@@ -428,6 +428,10 @@ export default function WorldPage() {
   const toast = useToast();
 
   const userId = user?.id || null;
+  // dev 전용 게스트 열람(오너 지시 2026-07-22 — 라이브 검수·게스트 모드 사전 검증).
+  // 프로덕션 빌드에서는 항상 꺼진다. 멀티 전용 원칙(오너 요구 1)은 제품 경로에서 불변 —
+  // dev 게스트만 오프라인 단독 입장으로 단락한다(스폰 기본·저장/스탬프는 조용히 실패).
+  const devGuest = process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_WORLD_DEV_GUEST === '1';
   const nickname = profile?.display_name || '나';
 
   // ── 펫 상태 ──
@@ -587,7 +591,11 @@ export default function WorldPage() {
 
   // ── 멀티 + 근접 음성 배선 (로그인 시에만; 비로그인은 솔로) ──
   useEffect(() => {
-    if (!userId) return undefined;
+    if (!userId) {
+      // dev 게스트: 멀티·스폰 조회를 건너뛰고 오프라인 단독 입장(연결 상태 단락).
+      if (devGuest) { setWorldStatus('connected'); setWorldSpawn(null); }
+      return undefined;
+    }
     let cancelled = false;
 
     const { name, pet: petEmoji } = identityRef.current;
@@ -876,10 +884,6 @@ export default function WorldPage() {
 
   // ── 게이트 ──
   // 학습 월드는 전체 로그인 유저에게 개방된다(오너 확정). 비로그인만 로그인 안내로 차단한다.
-  // dev 전용 게스트 열람(오너 지시 2026-07-22 — 라이브 검수·게스트 모드 사전 검증):
-  // NEXT_PUBLIC_WORLD_DEV_GUEST=1 이고 프로덕션 빌드가 아닐 때만 잠금을 우회한다.
-  // 저장·스탬프 API는 비로그인 시 기존 설계대로 조용히 실패한다(낙관 UI 무해).
-  const devGuest = process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_WORLD_DEV_GUEST === '1';
   if (loading) return <div className="page-container"><Spinner /></div>;
   if (!user && !devGuest) {
     return (
