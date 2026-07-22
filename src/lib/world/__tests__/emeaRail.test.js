@@ -101,7 +101,7 @@ describe('유럽 철도 시간 중립 노선·여정 계약', () => {
     const expected = {
       serviceId: 'eurostar',
       kind: 'channel-tunnel',
-      label: '유로스타 · 영불해협 해저터널',
+      label: '영불해협 해저터널',
       fadeMs: 260,
     };
     expect(emeaRailSegmentPresentation('london-rail-hub', 'paris-rail-hub')).toEqual(expected);

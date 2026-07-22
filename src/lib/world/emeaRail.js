@@ -43,7 +43,7 @@ export const EMEA_RAIL_NETWORK = Object.freeze({
     [segmentPairKey('london-rail-hub', 'paris-rail-hub')]: Object.freeze({
       serviceId: 'eurostar',
       kind: 'channel-tunnel',
-      label: '유로스타 · 영불해협 해저터널',
+      label: '영불해협 해저터널',
       fadeMs: 260,
     }),
   }),
