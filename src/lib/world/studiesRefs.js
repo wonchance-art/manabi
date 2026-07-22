@@ -93,6 +93,15 @@ const NODE_REFS = Object.freeze({
   'kawaguchiko': ['japan', 'jp-overview'],
   'seoul': ['korea', 'kr-overview'],
   'busan': ['korea', 'kr-overview'],
+  // ── 불어권(오너 방향 2026-07-22) — 프랑스 도시 게이트는 개관(입국 브리핑 활성),
+  //    벨기에·스위스 로망디는 프랑코포니 문서 딥링크만(개관 아님 → 브리핑 비활성 = 나라 오인 방지).
+  'paris': ['france', 'fr-overview'],
+  'marseille': ['france', 'fr-overview'],
+  'nice': ['france', 'fr-overview'],
+  'mont-saint-michel': ['france', 'fr-overview'],
+  'brussels': ['france', 'fr-francophonie'],
+  'geneva': ['france', 'fr-francophonie'],
+  'leman-riviera': ['france', 'fr-francophonie'],
 });
 
 export const STUDIES_REF_NODE_IDS = Object.freeze(Object.keys(NODE_REFS));
