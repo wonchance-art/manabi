@@ -29,5 +29,7 @@ describe('CityScene 도시별 타일 스킨', () => {
       .toBe('ct_bldg_terracotta_12');
     expect(cityWaterTextureKey({ tileSkins: { water: 'emerald' } }, 2))
       .toBe('ct_water_emerald2');
+    expect(cityWaterTextureKey({ tileSkins: { water: 'glacial' } }, 1))
+      .toBe('ct_water_glacial1');
   });
 });

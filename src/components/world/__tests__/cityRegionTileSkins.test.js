@@ -122,6 +122,18 @@ describe('CityScene 렌더크래프트 R4 지역 색감 베이킹', () => {
     ]);
   });
 
+  it('glacial 수면을 확정 3프레임과 빙하수 하이라이트로 굽는다', () => {
+    expect([
+      textures.get('ct_water_glacial0').colors,
+      textures.get('ct_water_glacial1').colors,
+      textures.get('ct_water_glacial2').colors,
+    ]).toEqual([
+      [0x3d8fa8, 0xe0f4f8],
+      [0x46a0ba, 0xe0f4f8],
+      [0x367e96, 0xe0f4f8],
+    ]);
+  });
+
   it('청크 건물·정적 수면과 애니 수면 소비처가 도시 스킨 키를 함께 사용한다', () => {
     const buildingScene = makeTextureConsumerScene(
       CITY_TILE.BUILDING,
@@ -134,6 +146,12 @@ describe('CityScene 렌더크래프트 R4 지역 색감 베이킹', () => {
       { water: 'emerald' },
     );
     expect(waterScene.terrainTexKey(0, 0)).toBe('ct_water_emerald0');
+
+    const glacialWaterScene = makeTextureConsumerScene(
+      CITY_TILE.WATER,
+      { water: 'glacial' },
+    );
+    expect(glacialWaterScene.terrainTexKey(0, 0)).toBe('ct_water_glacial0');
 
     const image = {
       texture: null,
@@ -153,5 +171,13 @@ describe('CityScene 렌더크래프트 R4 지역 색감 베이킹', () => {
     waterScene.refreshWaterOverlay();
 
     expect(image.texture).toBe('ct_water_emerald2');
+
+    glacialWaterScene.cameras = waterScene.cameras;
+    glacialWaterScene.waterPool = [];
+    glacialWaterScene.waterFrame = 2;
+    glacialWaterScene.add = { image: () => image };
+    glacialWaterScene.refreshWaterOverlay();
+
+    expect(image.texture).toBe('ct_water_glacial2');
   });
 });

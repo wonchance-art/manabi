@@ -237,6 +237,9 @@ export function buildCityScene(Phaser, city, ctx) {
       water('ct_water_emerald0', 0x2fae9e, 0, 0xe6faf4);
       water('ct_water_emerald1', 0x35c0ae, 1, 0xe6faf4);
       water('ct_water_emerald2', 0x2a9a8c, 2, 0xe6faf4);
+      water('ct_water_glacial0', 0x3d8fa8, 0, 0xe0f4f8);
+      water('ct_water_glacial1', 0x46a0ba, 1, 0xe0f4f8);
+      water('ct_water_glacial2', 0x367e96, 2, 0xe0f4f8);
       // 강·운하(RIVER) — 바다보다 탁한 청록 강 톤(WATER 와 시각 구분).
       water('ct_river0', 0x3f7a6a, 0);
       water('ct_river1', 0x468a76, 1);
