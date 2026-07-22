@@ -15,11 +15,18 @@
 import { useEffect, useState } from 'react';
 import { GBC, gbcPanel, gbcButtonPrimary } from './QuestReview';
 import { STAMP_ALBUM_NODES } from '../../lib/world/stampUniverse';
-import { stampIcon, fmtDate } from './stampIcons';
+import { fmtDate } from './stampIcons';
+import {
+  STAMP_ALBUM_TABS,
+  stampAlbumBadge,
+  stampAlbumTabById,
+  stampAlbumTabProgress,
+} from './stampAlbumTabs';
 
 export default function StampAlbum({ stamps, onClose }) {
   const owned = stamps instanceof Set ? stamps : new Set();
   const [visitedAt, setVisitedAt] = useState({}); // { nodeId: isoString }
+  const [activeTabId, setActiveTabId] = useState(STAMP_ALBUM_TABS[0].id);
 
   // 방문 시각(at)만 추가 조회 — 수집 여부는 라이브 stamps prop 사용(낙관 갱신 즉시 반영).
   useEffect(() => {
@@ -45,6 +52,7 @@ export default function StampAlbum({ stamps, onClose }) {
 
   const total = STAMP_ALBUM_NODES.length;
   const got = STAMP_ALBUM_NODES.reduce((n, node) => n + (owned.has(node.id) ? 1 : 0), 0);
+  const activeTab = stampAlbumTabById(activeTabId);
 
   return (
     <div style={{
@@ -63,32 +71,62 @@ export default function StampAlbum({ stamps, onClose }) {
           <span style={{ fontFamily: GBC.font, fontSize: '0.82rem', color: GBC.brown }}>{got} / {total}</span>
         </div>
 
+        {/* 지역 탭 — 기존 GBC 크림 칩/하드 엣지만 재사용하며 각 탭 수집률을 함께 표시한다. */}
+        <div role="tablist" aria-label="스탬프 지역" style={{
+          display: 'flex', gap: 6, overflowX: 'auto', padding: '0 2px 8px', flexShrink: 0,
+        }}>
+          {STAMP_ALBUM_TABS.map((tab) => {
+            const selected = tab.id === activeTab.id;
+            const progress = stampAlbumTabProgress(tab, owned);
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={selected}
+                onClick={() => setActiveTabId(tab.id)}
+                style={{
+                  flex: '0 0 auto', whiteSpace: 'nowrap', padding: '5px 7px',
+                  border: `2px solid ${GBC.border}`, borderRadius: 2,
+                  boxShadow: '2px 2px 0 rgba(42,33,24,0.30)',
+                  background: selected ? GBC.green : GBC.creamHi,
+                  color: selected ? GBC.creamHi : GBC.ink,
+                  fontFamily: GBC.font, fontWeight: 700, fontSize: '0.56rem',
+                  lineHeight: 1.35, cursor: 'pointer',
+                }}
+              >
+                {tab.label} {progress.got}/{progress.total}
+              </button>
+            );
+          })}
+        </div>
+
         {/* 배지 그리드 — 채운 칸: 아이콘+이름(+방문일), 빈 칸: 흐린 ❔ 실루엣 */}
         <div style={{
           overflowY: 'auto', display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(84px, 1fr))', gap: 8, paddingRight: 2,
         }}>
-          {STAMP_ALBUM_NODES.map((node) => {
-            const has = owned.has(node.id);
+          {activeTab.nodes.map((node) => {
+            const badge = stampAlbumBadge(node, owned);
             return (
               <div
                 key={node.id}
-                title={has ? node.name : '아직 안 가 본 곳'}
+                title={badge.title}
                 style={{
                   display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
                   padding: '8px 4px 6px', borderRadius: 2, border: `2px solid ${GBC.border}`,
-                  background: has ? GBC.creamHi : 'rgba(42,33,24,0.06)',
-                  boxShadow: has ? `inset 0 0 0 1px ${GBC.creamHi}` : 'none',
-                  opacity: has ? 1 : 0.55,
+                  background: badge.has ? GBC.creamHi : 'rgba(42,33,24,0.06)',
+                  boxShadow: badge.has ? `inset 0 0 0 1px ${GBC.creamHi}` : 'none',
+                  opacity: badge.has ? 1 : 0.55,
                 }}
               >
-                <span style={{ fontSize: '1.5rem', lineHeight: 1, filter: has ? 'none' : 'grayscale(1)' }}>
-                  {has ? stampIcon(node) : '❔'}
+                <span style={{ fontSize: '1.5rem', lineHeight: 1, filter: badge.has ? 'none' : 'grayscale(1)' }}>
+                  {badge.icon}
                 </span>
                 <span style={{ fontFamily: GBC.font, fontSize: '0.6rem', color: GBC.ink, textAlign: 'center', lineHeight: 1.2 }}>
-                  {has ? node.name : '？'}
+                  {badge.name}
                 </span>
-                {has && visitedAt[node.id] && (
+                {badge.has && visitedAt[node.id] && (
                   <span style={{ fontFamily: GBC.font, fontSize: '0.5rem', color: GBC.inkSoft, lineHeight: 1 }}>
                     {fmtDate(visitedAt[node.id])}
                   </span>
