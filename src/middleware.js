@@ -1,78 +1,47 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 
-const EMEA_PREVIEW_ASSET_PREFIX = '/assets/overworld/europe-mediterranean-middle-east-';
-
-export function isProtectedOverworldPreviewAssetPath(pathname) {
-  return typeof pathname === 'string' && pathname.startsWith(EMEA_PREVIEW_ASSET_PREFIX);
-}
-
-function privateAssetResponse(status = 404) {
-  return new NextResponse(null, {
-    status,
-    headers: {
-      'Cache-Control': 'private, no-store',
-      Vary: 'Cookie',
-    },
-  });
-}
-
+// EMEA 오버월드 자산 가드는 #306 일반 공개(releaseEligible 릴리스 정합 전환)로 폐기했다.
+// 스테일 가드가 남아 비관리자 전원이 EMEA 지형 404를 받는 라이브 결함을 만들었음(2026-07-22
+// 게스트 라이브 검수 실측). 미출시 지역이 다시 생기면 git 이력의 프리픽스 가드 패턴으로 복원한다.
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
-  const adminRoute = pathname.startsWith('/admin');
-  const protectedPreviewAsset = isProtectedOverworldPreviewAssetPath(pathname);
+  if (!pathname.startsWith('/admin')) return NextResponse.next();
 
-  // 관리자 화면과 미출시 EMEA 원본 청크는 서버 세션·역할을 통과해야 한다.
-  // 자산 요청은 미인증 여부 자체를 노출하지 않도록 로그인 리다이렉트 대신 404로 응답한다.
-  if (adminRoute || protectedPreviewAsset) {
-    const response = NextResponse.next();
-    if (protectedPreviewAsset) {
-      response.headers.set('Cache-Control', 'private, no-store');
-      response.headers.set('Vary', 'Cookie');
-    }
-
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      {
-        cookies: {
-          getAll() { return request.cookies.getAll(); },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              response.cookies.set(name, value, options)
-            );
-          },
+  const response = NextResponse.next();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    {
+      cookies: {
+        getAll() { return request.cookies.getAll(); },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          );
         },
-      }
-    );
-
-    const { data: { user } } = await supabase.auth.getUser();
-
-    // 미로그인 → 로그인 페이지
-    if (!user) {
-      if (protectedPreviewAsset) return privateAssetResponse();
-      return NextResponse.redirect(new URL('/auth', request.url));
+      },
     }
+  );
 
-    // role 확인 (DB 호출)
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+  const { data: { user } } = await supabase.auth.getUser();
 
-    // 어드민 아님 → 홈으로
-    if (profile?.role !== 'admin') {
-      if (protectedPreviewAsset) return privateAssetResponse();
-      return NextResponse.redirect(new URL('/', request.url));
-    }
+  // 미로그인 → 로그인 페이지
+  if (!user) return NextResponse.redirect(new URL('/auth', request.url));
 
-    return response;
-  }
+  // role 확인 (DB 호출)
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
 
-  return NextResponse.next();
+  // 어드민 아님 → 홈으로
+  if (profile?.role !== 'admin') return NextResponse.redirect(new URL('/', request.url));
+
+  return response;
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/assets/overworld/:path*'],
+  matcher: ['/admin/:path*'],
 };
