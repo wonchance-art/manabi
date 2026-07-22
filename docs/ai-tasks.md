@@ -132,6 +132,11 @@
 
 ## Codex-2 (codex2/*)
 ### doing
+- 지구 후보 rect report-only 제안: 보르도·스트라스부르·서울·부산·코트다쥐르·레만 연안의
+  2~4개 지구 bbox·anchor 포함량과 TRANSIT·spawn·returnNode·door 정합을 사전검증하고,
+  리옹 mainRoute 전 타일 open rect 최소합을 참고 산출
+  (`codex2/district-rects-proposal`, stacked base e5b7c4e746a757ff0efbfd2549ed77b747a29517,
+  #150 5049669206)
 ### todo
 ### done (최근)
 - verifier R6 report-only 제안: 제네바·레만 연안·브뤼셀·런던의 buildingPct exact,
