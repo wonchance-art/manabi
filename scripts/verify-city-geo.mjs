@@ -441,6 +441,26 @@ const CITY_GATES = {
     bridgeMaxTiles: 0, // 한국식 3분류 정리 동일(도심 교량은 ROAD 흡수)
     bridgeCrossings: [],
   },
+  bordeaux: {
+    file: 'src/components/world/cities/bordeaux.geo.js',
+    snapshot: 'scripts/data/bordeaux-osm-v21.json',
+    expectedLocale: 'fr',
+    expectedMpt: 20,
+    buildingPct: null, // 초승달 항만 도심 — 1라운드 report, R4 밴드에서 판단
+    greenMinPct: null,
+    poiMaxDevTiles: 2.5,
+    downtown: { label: '부르스 광장', lon: -0.5693, lat: 44.8414 },
+    riverSections: [
+      // 가론강(부르스 위도) — 위도 스캔 실측 44.8414에서 460m/440m(단일 대하).
+      { name: '가론강 부르스 단면', lat: 44.8414, lonRange: [-0.575, -0.545], sumMinM: 400, runMinM: 400 },
+      // 가론강(시테뒤뱅 위도) — 실측 660m/660m(하류 확폭).
+      { name: '가론강 시테뒤뱅 단면', lat: 44.86, lonRange: [-0.57, -0.535], sumMinM: 600, runMinM: 600 },
+    ],
+    streamCourses: [],
+    reportCourses: [],
+    bridgeMaxTiles: 0, // 피에르 다리 등은 ROAD 흡수(한국식 3분류 동일)
+    bridgeCrossings: [],
+  },
 };
 
 // ── 투영(도시 geo 생성 계약과 동일: webmercator + aspectCorrection) ─────────
