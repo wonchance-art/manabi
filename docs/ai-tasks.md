@@ -7,6 +7,9 @@
 
 ## Codex-1 (codex/*)
 ### doing
+- 스트라스부르 EMEA 오버월드 게이트: 스트라스부르역 `7.7350/48.5850` 실좌표 투영으로
+  `strasbourg` 노드를 등록하고 EXIT 왕복·기존 EMEA 노드/철도 허브 비침범 계약 구현
+  (`codex/strasbourg-overworld-gate`, base 7771fcc9aefbed17560dbce9a860ea8ea3b656e3)
 ### todo
 ### done (최근)
 - 보르도 EMEA 오버월드 게이트: 생장역 실좌표 투영 `[165,523]`으로
