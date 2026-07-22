@@ -4,9 +4,10 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { AVATAR_OPTIONS, avatarPalette, normalizeWorldAvatar } from '../../lib/world/avatar';
 import {
   INVENTORY_CATEGORIES,
-  STARTER_ITEMS,
   filterInventoryItems,
+  inventoryItemsWithRewards,
   loadInventoryFavorites,
+  loadInventoryItemCounts,
   saveInventoryFavorites,
 } from '../../lib/world/inventory';
 import { charFrameRows } from './sprites';
@@ -112,11 +113,13 @@ function BagPanel({ onAction }) {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('all');
   const [favorites, setFavorites] = useState(() => loadInventoryFavorites());
+  const [itemCounts] = useState(() => loadInventoryItemCounts());
   const favoriteSet = useMemo(() => new Set(favorites), [favorites]);
+  const inventoryItems = useMemo(() => inventoryItemsWithRewards(itemCounts), [itemCounts]);
   const items = useMemo(
-    () => filterInventoryItems(STARTER_ITEMS, { query, category })
+    () => filterInventoryItems(inventoryItems, { query, category })
       .sort((a, b) => Number(favoriteSet.has(b.id)) - Number(favoriteSet.has(a.id))),
-    [query, category, favoriteSet],
+    [inventoryItems, query, category, favoriteSet],
   );
   const toggleFavorite = (id) => {
     setFavorites((current) => saveInventoryFavorites(
@@ -145,12 +148,16 @@ function BagPanel({ onAction }) {
           <article key={item.id} style={{ display: 'grid', gridTemplateColumns: '28px 1fr auto', gap: 6, alignItems: 'center', border: `2px solid ${GBC.border}`, background: GBC.creamHi, padding: 5 }}>
             <span style={{ fontSize: '1.15rem' }}>{item.icon}</span>
             <div style={{ minWidth: 0 }}>
-              <strong style={{ display: 'block', fontSize: '0.64rem' }}>{item.name}</strong>
+              <strong style={{ display: 'block', fontSize: '0.64rem' }}>
+                {item.name}{item.quantity ? ` ×${item.quantity}` : ''}
+              </strong>
               <span style={{ display: 'block', marginTop: 2, fontSize: '0.54rem', lineHeight: 1.4, color: GBC.inkSoft }}>{item.description}</span>
             </div>
             <div style={{ display: 'grid', gap: 3 }}>
               <button type="button" aria-label={`${item.name} 즐겨찾기`} aria-pressed={favoriteSet.has(item.id)} onClick={() => toggleFavorite(item.id)} style={{ border: 0, background: 'transparent', cursor: 'pointer', color: favoriteSet.has(item.id) ? '#d6a839' : GBC.inkSoft }}>★</button>
-              <button type="button" onClick={() => onAction(item.action)} style={{ ...gbcButtonPrimary, padding: '3px 5px', fontSize: '0.52rem' }}>{item.actionLabel}</button>
+              {item.action && (
+                <button type="button" onClick={() => onAction(item.action)} style={{ ...gbcButtonPrimary, padding: '3px 5px', fontSize: '0.52rem' }}>{item.actionLabel}</button>
+              )}
             </div>
           </article>
         ))}

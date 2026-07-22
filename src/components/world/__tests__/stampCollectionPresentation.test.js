@@ -1,7 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
+<<<<<<< HEAD
 
 // QuestReview는 supabase 클라이언트를 정적 import한다 — env 없는 테스트 계약(#400 선례) 유지용 mock.
 vi.mock('../QuestReview', () => ({ GBC: { ink: '#1c2118', cream: '#f4edcf' }, gbcPanel: {}, gbcButtonPrimary: {} }));
+=======
+>>>>>>> origin/codex3/stamp-milestone-rewards
 import { buildCityScene } from '../CityScene.js';
 import { buildOverworldRegionScene } from '../overworldRegionScene.js';
 import {
