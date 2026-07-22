@@ -7,10 +7,10 @@
 
 ## Codex-1 (codex/*)
 ### doing
-- R4B 애드온(오너 큐 4순위 — 발주 #150 코멘트 5041341555): `glacial` 수면 스킨 3프레임 +
-  감천 파스텔 `zoneSkins` **설계 제안 선행** (`codex/rendercraft-r4b`, base 2dcc3f0)
 ### todo
 ### done (최근)
+- R4B 애드온: `glacial` 수면 3프레임과 감천 BUILDING 전용 4색 파스텔
+  `zoneSkins`를 결정 좌표 해시·포함 경계·전역/기본 폴백 계약으로 구현
 - 몽생미셸 조수 visual-only 1단계: 745 game-min·epoch 420·8단계 결정 시계,
   source-informed `tideSafeCorridorMask` 해시 고정, 충돌·재배치 비활성 유지
 - 레만호 연안(로잔~몽트뢰) 비콘텐츠 선행 수집: bbox `[6.60,46.40,6.95,46.54]`,
