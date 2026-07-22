@@ -290,6 +290,41 @@ describe('오버월드 지역 레지스트리', () => {
     }
   });
 
+  it('리옹 파르디외역 게이트가 체크인된 보행 타일과 독립 상호작용 반경에 도착한다', () => {
+    const region = overworldRegionById('emea');
+    const lyon = getNode('lyon');
+    const projected = projectOverworldRegionCoordinate(region, lyon.lon, lyon.lat);
+    const tile = {
+      x: projected.x + lyon.arrivalOffset[0],
+      y: projected.y + lyon.arrivalOffset[1],
+    };
+
+    expect(lyon).toMatchObject({ lon: 4.8595, lat: 45.7606, arrivalOffset: [0, 0] });
+    expect(projected).toEqual({ x: 251, y: 500 });
+    expect(tile).toEqual({ x: 251, y: 500 });
+    expect(lyon.overworldTile).toEqual([tile.x, tile.y]);
+    expect(checkedInGateCell(region, { tile })).toMatchObject({
+      valid: true,
+      collision: 0,
+      viewOnly: 0,
+    });
+
+    const existingNodes = [
+      ...ALL_WORLD_NODES
+        .filter(({ id, regionId }) => id !== lyon.id && regionId === region.id)
+        .map(({ id, overworldTile: existingTile }) => ({ id, tile: existingTile })),
+      ...EMEA_RAIL_NETWORK.hubs.map(({ id, tile: existingTile }) => ({ id, tile: existingTile })),
+      { id: region.gate.id, tile: [region.gate.tile.x, region.gate.tile.y] },
+      { id: region.airGate.id, tile: [region.airGate.tile.x, region.airGate.tile.y] },
+    ];
+    for (const existing of existingNodes) {
+      expect(Math.max(
+        Math.abs(tile.x - existing.tile[0]),
+        Math.abs(tile.y - existing.tile[1]),
+      ), existing.id).toBeGreaterThan(1);
+    }
+  });
+
   it.each([
     ['hong-kong', 'asia-pacific', 114.1722, 22.2975, [1187, 956]],
     ['taipei', 'asia-pacific', 121.517, 25.0478, [1348, 888]],
