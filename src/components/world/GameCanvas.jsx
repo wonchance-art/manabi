@@ -81,6 +81,7 @@ import { fujiClimbActCopy } from './fujiClimbContent';
 import { buildTranssibCorridorScene } from './transsibCorridorScene';
 import { buildOverworldRegionScene } from './overworldRegionScene';
 import { AVATAR_REBAKE_STATIC_TARGETS } from './avatarRebake';
+import { stampCollectionDurationMs } from './stampCollectionPresentation';
 // 🏙️ 도시 정밀맵(계층형 맵) — CityScene 은 1개, cityId 로 파라미터화. 도시 추가 = cities/<id>.js 1개.
 //   도시 데이터는 이 청크(GameCanvas 는 next/dynamic ssr:false) 안에서만 로드된다 — /world First Load JS 무영향.
 import { buildCityScene } from './CityScene';
@@ -586,7 +587,7 @@ export default function GameCanvas({ userId = null, nickname = '나', pet = { ke
   // "획득!" 플래시는 잠시 뒤 자동으로 걷힌다 — 지식 카드 1줄이 붙으면 읽을 시간만큼 연장.
   useEffect(() => {
     if (!newStamp) return undefined;
-    const t = setTimeout(() => setNewStamp(null), newStamp.factLine ? 5200 : 3500);
+    const t = setTimeout(() => setNewStamp(null), stampCollectionDurationMs(newStamp));
     return () => clearTimeout(t);
   }, [newStamp]);
 
