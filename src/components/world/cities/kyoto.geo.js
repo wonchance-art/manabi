@@ -230,6 +230,18 @@ export const KYOTO_GEO = Object.freeze({
       584,
       183
     ]
+  },
+  {
+    "id": "nishiki-market",
+    "nameJa": "錦市場",
+    "yomi": "にしきいちば",
+    "lat": 35.00503,
+    "lon": 135.76471,
+    "kind": "market",
+    "tile": [
+      431,
+      306
+    ]
   }
 ]),
   stations: Object.freeze([
