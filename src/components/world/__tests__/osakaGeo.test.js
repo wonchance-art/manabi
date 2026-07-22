@@ -24,11 +24,11 @@ const EXPECTED_COUNTS = Object.freeze({
   [CITY_TILE.ROAD]: 194_627,
   [CITY_TILE.SIDEWALK]: 81_040,
   [CITY_TILE.CROSSWALK]: 9_776,
-  [CITY_TILE.PLAZA]: 151,
+  [CITY_TILE.PLAZA]: 152,
   [CITY_TILE.PARK]: 9_743,
   [CITY_TILE.BRIDGE]: 9_326,
   [CITY_TILE.WATER]: 29_122,
-  [CITY_TILE.BUILDING]: 57_315,
+  [CITY_TILE.BUILDING]: 57_314,
   [CITY_TILE.RIVER]: 37_088,
 });
 
@@ -41,6 +41,7 @@ const FIXED_TILES = Object.freeze({
     'osaka-aquarium': [111, 444],
     'nakanoshima-park': [469, 237],
     shitennoji: [505, 448],
+    'kuchu-teien': [387, 165],
   },
   stations: {
     'shin-osaka': [435, 8],
@@ -210,7 +211,7 @@ describe('오사카 지형 충실도·도시 구조·철도', () => {
       walkable += 1;
       reached += seen[index];
     }
-    expect(walkable).toBe(304_663);
+    expect(walkable).toBe(304_664);
     expect(reached).toBe(walkable);
   });
 });
@@ -262,7 +263,7 @@ describe('오사카 생성 결정성·오프라인 계약', () => {
     expect(terrainHash(first.terrain)).toBe(terrainHash(second.terrain));
     expect(terrainHash(first.terrain)).toBe(terrainHash(OSAKA_GEO.terrain));
     expect(terrainHash(first.railways.mask)).toBe(terrainHash(OSAKA_GEO.railways.mask));
-    expect(terrainHash(first.terrain)).toBe('5a0fc6eefabcee10257924161960758ebc574a5b777c3ea910ad1414fa29aa75');
+    expect(terrainHash(first.terrain)).toBe('670f29603c095977612c06718ff1b7a98b9bdbfebc3e7da69aa295a8c384690b');
     expect(terrainHash(first.railways.mask)).toBe('d557562b88cae070e1a9ffe0821c6ec81d03941250c8a61dd2939d1bd3200775');
     expect(first.pois).toEqual(OSAKA_GEO.pois);
     expect(first.stations).toEqual(OSAKA_GEO.stations);
@@ -273,7 +274,7 @@ describe('오사카 생성 결정성·오프라인 계약', () => {
     const railwayRuns = encodeTerrainRle(OSAKA_GEO.railways.mask);
     expect(decodeTerrainRle(terrainRuns, OSAKA_GEO.terrain.length)).toEqual(OSAKA_GEO.terrain);
     expect(decodeTerrainRle(railwayRuns, OSAKA_GEO.railways.mask.length)).toEqual(OSAKA_GEO.railways.mask);
-    expect(terrainRuns).toHaveLength(134_958);
+    expect(terrainRuns).toHaveLength(134_959);
     expect(railwayRuns).toHaveLength(14_523);
     expect(terrainRuns.length).toBeLessThan(OSAKA_GEO.terrain.length / 3);
   });

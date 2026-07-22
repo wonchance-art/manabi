@@ -320,6 +320,18 @@ export const BUSAN_GEO = Object.freeze({
       883,
       55
     ]
+  },
+  {
+    "id": "huinnyeoul",
+    "nameKo": "흰여울문화마을",
+    "lat": 35.0773,
+    "lon": 129.0464,
+    "kind": "village",
+    "contentLocale": "ko",
+    "tile": [
+      711,
+      905
+    ]
   }
 ]),
   stations: Object.freeze([

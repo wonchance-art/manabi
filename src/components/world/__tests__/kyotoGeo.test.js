@@ -43,6 +43,7 @@ const FIXED_TILES = Object.freeze({
     togetsukyo: [35, 262],
     kinkakuji: [274, 115],
     ginkakuji: [584, 183],
+    'nishiki-market': [431, 306],
   },
   stations: {
     kyoto: [404, 415],
@@ -57,6 +58,9 @@ const FIXED_TILES = Object.freeze({
     inari: [458, 518],
   },
 });
+
+// 인기 POI 보강 라운드 — 스냅샷 수집 이후 손좌표로 확장된 POI (소스 대조 제외 명시)
+const HAND_AUTHORED_POI_IDS = Object.freeze(new Set(['nishiki-market']));
 
 const SELECTED_SOURCE_IDS = Object.freeze({
   'nijo-castle': 57_111_281,
@@ -132,6 +136,8 @@ describe('교토 실지형 데이터 계약', () => {
       expect(entry.tile[1], entry.id).toBeGreaterThanOrEqual(3);
       expect(entry.tile[0], entry.id).toBeLessThan(KYOTO_GEO.meta.grid.w - 3);
       expect(entry.tile[1], entry.id).toBeLessThan(KYOTO_GEO.meta.grid.h - 3);
+      // v21 수집 스냅샷(9곳) 유래 POI만 소스 대조 — 이후 확장분은 손좌표 허용(도쿄 v2.3/v2.4 문법)
+      if (HAND_AUTHORED_POI_IDS.has(entry.id)) continue;
       const source = SNAPSHOT.namedFeatures.find((feature) => feature.id === SELECTED_SOURCE_IDS[entry.id]);
       expect(source?.name, entry.id).toBe(entry.nameJa);
       expect(Number(source?.lat.toFixed(7)), entry.id).toBe(entry.lat);
