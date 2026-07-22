@@ -97,6 +97,7 @@ const NODE_REFS = Object.freeze({
   //    벨기에·스위스 로망디는 프랑코포니 문서 딥링크만(개관 아님 → 브리핑 비활성 = 나라 오인 방지).
   'paris': ['france', 'fr-overview'],
   'lyon': ['france', 'fr-overview'],
+  'bordeaux': ['france', 'fr-overview'],
   'marseille': ['france', 'fr-overview'],
   'nice': ['france', 'fr-overview'],
   'mont-saint-michel': ['france', 'fr-overview'],
