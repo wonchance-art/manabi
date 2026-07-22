@@ -481,6 +481,7 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
   createRegionalWorldNode({
     id: 'bordeaux',
     name: BORDEAUX_NAME,
+    desc: '가론강 초승달 곡류에 안긴 「달의 항구」 보르도. 물의 거울과 와인 상인의 거리 샤르트롱, 세계 와인 지리의 수도예요.',
     desc: '가론강이 초승달처럼 휘어 흐르는 항구 도시 보르도. 강변 광장과 석조 구시가가 물길을 따라 이어져요.',
     kind: 'city',
     regionId: 'emea',
