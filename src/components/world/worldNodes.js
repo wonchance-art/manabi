@@ -251,6 +251,7 @@ const MARSEILLE_NAME = '마르세유';
 const GENEVA_NAME = '제네바';
 const LEMAN_RIVIERA_NAME = '레만호 연안';
 const LYON_NAME = '리옹';
+const BORDEAUX_NAME = '보르도';
 
 export const REGIONAL_WORLD_NODES = Object.freeze([
   createRegionalWorldNode({
@@ -476,6 +477,19 @@ export const REGIONAL_WORLD_NODES = Object.freeze([
     lat: 45.7606,
     noStamp: true,
     gate: { type: 'city', to: 'lyon', label: '🏙️ 시내' },
+  }),
+  createRegionalWorldNode({
+    id: 'bordeaux',
+    name: BORDEAUX_NAME,
+    desc: '가론강이 초승달처럼 휘어 흐르는 항구 도시 보르도. 강변 광장과 석조 구시가가 물길을 따라 이어져요.',
+    kind: 'city',
+    regionId: 'emea',
+    contentLocale: 'fr',
+    // 생장역 실좌표 투영칸([165,523]) 자체가 체크인된 보행칸이다.
+    lon: -0.556,
+    lat: 44.8256,
+    noStamp: true,
+    gate: { type: 'city', to: 'bordeaux', label: '🏙️ 시내' },
   }),
 ]);
 
