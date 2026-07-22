@@ -145,11 +145,12 @@ for (const [id, file] of [["grand-paris","./src/components/world/cities/grand-pa
 ## 검증 근거
 
 - Node `v22.23.1`
+- squash-merge 후 교체 브랜치 재검증 base: `origin/main` `c0b87b356c5c4b1d4c15cd95edbeafa288e4ab9f`
 - official verifier: 3 profiles × 2 runs, 전 gate PASS·stdout byte-identical
 - exact building/BRIDGE one-shot: 문서 재현 명령과 exact 일치
-- targeted: 6 files / 44 tests PASS; max RSS 2,692,808,704 bytes;
-  peak footprint 49,699,920 bytes / swaps 0
-- full single-worker: 199 files / 2,059 tests PASS; max RSS 3,171,336,192 bytes;
-  peak footprint 49,224,472 bytes / swaps 0
+- targeted: 6 files / 44 tests PASS; max RSS 2,410,594,304 bytes;
+  peak footprint 47,504,272 bytes / swaps 0
+- full single-worker: 202 files / 2,081 tests PASS; max RSS 2,424,520,704 bytes;
+  peak footprint 49,044,488 bytes / swaps 0
 - `npm run lint`·`git diff --check`: PASS
 - 수정 파일은 이 제안서와 Codex-2 보드뿐이며 verifier·geo·snapshot은 byte 불변
