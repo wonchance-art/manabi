@@ -1,15 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { stampIcon, fmtDate } from '../stampIcons';
 import { STAMP_ALBUM_NODES } from '../../../lib/world/stampUniverse';
-<<<<<<< HEAD
 import {
   STAMP_ALBUM_TABS,
   stampAlbumBadge,
   stampAlbumTabById,
   stampAlbumTabProgress,
 } from '../stampAlbumTabs.js';
-=======
->>>>>>> origin/main
 
 // 🗾 여행 스탬프 앨범 — 순수 로직(아이콘 매핑·날짜 포맷) 회귀. 렌더는 GameCanvas 통합 경로에서 확인.
 describe('스탬프 앨범 — stampIcon(노드→배지 아이콘)', () => {
