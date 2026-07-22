@@ -41,6 +41,11 @@ const POI_SOURCE = Object.freeze([
     id: 'shitennoji', nameJa: '四天王寺', yomi: 'してんのうじ',
     lat: 34.6545283, lon: 135.5155184, kind: 'temple',
   },
+  // 인기 POI 보강 라운드(오너 상시 지시) — geo 재생성 후 단일 진실원 계약 유지
+  {
+    id: 'kuchu-teien', nameJa: '空中庭園展望台', yomi: 'くうちゅうていえんてんぼうだい',
+    lat: 34.7052800, lon: 135.4897200, kind: 'landmark',
+  },
 ]);
 
 const STATION_SOURCE = Object.freeze([

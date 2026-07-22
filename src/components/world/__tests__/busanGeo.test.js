@@ -30,6 +30,7 @@ const FIXED_TILES = Object.freeze({
     'busan-tower': [648, 776], taejongdae: [894, 1039], 'busan-port-intl': [684, 671],
     dadaepo: [343, 1075], eulsukdo: [250, 779], 'dongnae-eupseong': [887, 167],
     'pnu-street': [883, 55],
+    huinnyeoul: [711, 905],
   },
   stations: {
     busan: [684, 695], seomyeon: [770, 457], nampo: [654, 786], 'haeundae-station': [1157, 425],

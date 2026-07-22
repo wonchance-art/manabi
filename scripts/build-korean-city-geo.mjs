@@ -52,6 +52,8 @@ const CITY_CONFIG = Object.freeze({
       { id: 'eulsukdo', nameKo: '을숙도', lat: 35.1000, lon: 128.9450, kind: 'nature' },
       { id: 'dongnae-eupseong', nameKo: '동래읍성', lat: 35.2100, lon: 129.0850, kind: 'historic' },
       { id: 'pnu-street', nameKo: '부산대앞 젊음의 거리', lat: 35.2300, lon: 129.0840, kind: 'district' },
+      // 인기 POI 보강 라운드(오너 상시 지시)
+      { id: 'huinnyeoul', nameKo: '흰여울문화마을', lat: 35.0773, lon: 129.0464, kind: 'village' },
     ]),
     stations: Object.freeze([
       { id: 'busan', nameKo: '부산역', lat: 35.1151, lon: 129.0403, line: 'KTX·부산도시철도 1호선' },
@@ -92,6 +94,8 @@ const CITY_CONFIG = Object.freeze({
       { id: 'amsa-dong', nameKo: '암사동 선사유적', lat: 37.5566, lon: 127.1300, kind: 'historic' },
       { id: 'seoul-forest', nameKo: '서울숲', lat: 37.5444, lon: 127.0374, kind: 'park' },
       { id: 'itaewon', nameKo: '이태원', lat: 37.5345, lon: 126.9946, kind: 'district' },
+      // 인기 POI 보강 라운드(오너 상시 지시)
+      { id: 'gwangjang-market', nameKo: '광장시장', lat: 37.5700, lon: 126.9989, kind: 'market' },
     ]),
     stations: Object.freeze([
       { id: 'seoul', nameKo: '서울역', lat: 37.5547, lon: 126.9707, line: 'KTX·수도권 전철' },

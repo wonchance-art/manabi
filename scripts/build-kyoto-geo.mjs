@@ -49,6 +49,11 @@ const POI_SOURCE = Object.freeze([
     id: 'ginkakuji', nameJa: '銀閣寺', yomi: 'ぎんかくじ',
     lat: 35.02705148913044, lon: 135.79815509782608, kind: 'temple',
   },
+  // 인기 POI 보강 라운드(오너 상시 지시) — geo 재생성 후 단일 진실원 계약 유지
+  {
+    id: 'nishiki-market', nameJa: '錦市場', yomi: 'にしきいちば',
+    lat: 35.0050300, lon: 135.7647100, kind: 'market',
+  },
 ]);
 
 const STATION_SOURCE = Object.freeze([
