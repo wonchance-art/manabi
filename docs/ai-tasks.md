@@ -12,6 +12,10 @@
 
 ## Codex-1 (codex/*)
 ### doing
+- E6 횡단열차 회랑 상태머신 점검: transsib-corridor의 탑승·하차·플랫폼 락,
+  좌표 저장 실패 UX, 이탈 후 스토리·오버레이 잔존 경로를 report-only로 전수 감사
+  (`codex/corridor-statemachine-audit`, base 8cce1bd1387e0b05ab29215a547d7730e2b9327c,
+  #150 5049590405)
 ### todo
 ### done (최근)
 - E5 주동선 발견 이벤트: 리옹 정본 8건을 waypointOffsets 기반 exact 타일로 해석하고,
