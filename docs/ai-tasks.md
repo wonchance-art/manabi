@@ -13,7 +13,13 @@
 ## Codex-1 (codex/*)
 ### doing
 ### todo
+- E5 주동선 발견 이벤트: 확정 SPEC·리옹 정본 카피 8건 기반 1회 발견/저장/렌더 구현
+  (#150 5047588502, `docs/spec-route-discovery.md`)
 ### done (최근)
+- E4(P1) 지역 오버월드 도시 진입 락 분리: cityPrompt 입력 락과 enterCity 재진입 가드를
+  분리하고 페리·회랑·지역 철도·항공의 동일 비대칭도 전용 전환 락으로 복구
+  (`codex/region-city-entry-lock-fix`, base c0b87b356c5c4b1d4c15cd95edbeafa288e4ab9f,
+  #150 5047568734)
 - E1·E2 공항 스토리 상태머신 정리: 씬 이탈 상태 전량 초기화·심사 저장 실패 retry와
   dev guest 저장 skip/전환 보장 (`codex/airport-story-state-fix`, PR #400,
   base 32e2b4d55cfd9c6f76071b7487e633e66d15aa7d, #150 5046785242)
