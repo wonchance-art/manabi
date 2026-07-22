@@ -97,8 +97,9 @@ const POIS = Object.freeze([
   {
     id: 'st-saphorin',
     nameFr: 'Saint-Saphorin',
-    lat: 46.4712,
-    lon: 6.7965,
+    nameKo: '생사포랭 전망(코르니슈)',
+    lat: 46.4724,
+    lon: 6.7971,
     kind: 'historic-village',
     shoreComponent: 'east',
   },

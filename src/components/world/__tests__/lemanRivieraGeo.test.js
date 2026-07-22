@@ -223,12 +223,16 @@ describe('레만호 연안 상세 geo 계약', () => {
       expect(entry.contentLocale, entry.id).toBe('fr');
       expect(entry.nameFr, entry.id).toBeTruthy();
       expect(entry, entry.id).not.toHaveProperty('nameEn');
-      expect(entry, entry.id).not.toHaveProperty('nameKo');
+      if (entry.id === 'st-saphorin') {
+        expect(entry.nameKo).toBe('생사포랭 전망(코르니슈)');
+      } else {
+        expect(entry, entry.id).not.toHaveProperty('nameKo');
+      }
     }
     expect(byId(LEMAN_RIVIERA_GEO.pois, 'epesses-lavaux').alignmentDeltaTiles)
       .toBe(0.617);
     expect(byId(LEMAN_RIVIERA_GEO.pois, 'st-saphorin').alignmentDeltaTiles)
-      .toBe(7.393);
+      .toBe(0.771);
     expect(byId(LEMAN_RIVIERA_GEO.pois, 'vevey-grande-place').tile)
       .not.toEqual(byId(LEMAN_RIVIERA_GEO.pois, 'vevey-marche').tile);
   });

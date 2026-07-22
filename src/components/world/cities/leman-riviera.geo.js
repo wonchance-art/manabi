@@ -333,8 +333,9 @@ export const LEMAN_RIVIERA_GEO = Object.freeze({
   {
     "id": "st-saphorin",
     "nameFr": "Saint-Saphorin",
-    "lat": 46.4712,
-    "lon": 6.7965,
+    "nameKo": "생사포랭 전망(코르니슈)",
+    "lat": 46.4724,
+    "lon": 6.7971,
     "kind": "historic-village",
     "contentLocale": "fr",
     "tile": [
@@ -342,10 +343,10 @@ export const LEMAN_RIVIERA_GEO = Object.freeze({
       376
     ],
     "sourceProjectedTile": [
-      753,
-      383
+      755,
+      376
     ],
-    "alignmentDeltaTiles": 7.393
+    "alignmentDeltaTiles": 0.771
   },
   {
     "id": "vevey-grande-place",
