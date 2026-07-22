@@ -140,6 +140,20 @@ const CITY_CONFIG = Object.freeze({
       mergeStrategy: 'type-id-largest-geometry-compact-v1',
     }),
   }),
+  strasbourg: Object.freeze({
+    bbox: Object.freeze([7.70, 48.55, 7.81, 48.63]),
+    metersPerTile: 20,
+    forestLayer: 'park',
+    oceanSeeds: Object.freeze([]),
+    output: 'scripts/data/strasbourg-osm-v21.json',
+    snapshotDate: '2026-07-22',
+    sourceDetails: Object.freeze({
+      providers: Object.freeze(['overpass-api.de']),
+      partitionCount: 16,
+      queryCount: 48,
+      mergeStrategy: 'type-id-largest-geometry-compact-v1',
+    }),
+  }),
 });
 
 function parseArgs(argv) {
@@ -151,7 +165,7 @@ function parseArgs(argv) {
   const input = read('--input');
   const config = CITY_CONFIG[city];
   if (!config || !input) {
-    throw new Error('Usage: node scripts/build-french-city-osm-snapshot.mjs --city <grand-paris|cote-dazur|london|brussels|marseille|geneva|leman-riviera|lyon|bordeaux> --input <overpass.json> [--output <snapshot.json>]');
+    throw new Error('Usage: node scripts/build-french-city-osm-snapshot.mjs --city <grand-paris|cote-dazur|london|brussels|marseille|geneva|leman-riviera|lyon|bordeaux|strasbourg> --input <overpass.json> [--output <snapshot.json>]');
   }
   return { city, input, output: read('--output') || config.output, config };
 }
