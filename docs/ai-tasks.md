@@ -119,8 +119,8 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-### todo
 - T1 미니맵 factor 복귀 A/B 시각 자료(도쿄 1→2·코트다쥐르 2→3, report-only): #150 5046785647
+### todo
 - T2 R5 verifier 프로파일 실측 제안(파리·마르세유·니스 — verifier 편집 금지)
 - T3 보르도·스트라스부르 mainRoute 후보 경로 데이터(v3 확산 준비)
 ### done (최근)
