@@ -96,10 +96,10 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-- 밴드 R4 제안: 리옹·보르도·스트라스부르 buildingPct 정본 실측과 보수 밴드를
-  R3 문법으로 report-only 제안(승인 전 verifier·공유 runtime·registry 무수정)
 ### todo
 ### done (최근)
+- 밴드 R4 report-only 제안: 정본 buildingPct 리옹 14.6% → `[13,17]`, 보르도
+  13.8% → `[12,16]`, 스트라스부르 12.2% → `[10.5,14]`(green null 유지·승인 전 verifier 무수정)
 - 스트라스부르 geo 본생성: POI 7·표시 전용 역 1·일강 그랑딜 섬 수계·결정성
   계약 구현, official verifier #365 독립 검수 후 #363 merge
 - 보르도 geo 본생성: POI 9·표시 전용 역 1·가론강 초승달 곡류·피에르 다리·결정성
