@@ -130,6 +130,20 @@
   공식 verifier·전체 회귀 green, CODEX_DONE 후 #304 merge (`92b4b33`)
 - 그랑파리 geo+교량 3분류 (#157 merge), frenchCityRuntimeAdapter(스코프 클린 확인)
 
+## Codex-3 (codex3/*) — 게임 시스템 확장 (타 기기)
+### doing
+### todo
+- 스탬프 우주 확장 RFC(발주 #150 코멘트 참조): REGIONAL_WORLD_NODES 19도시 앨범 편입 계약
+  설계 — StampAlbum 소비 집합·noStamp 재정의·지식 카드(factLine) 커버리지 연계. RFC → 승인 → 구현
+### done (최근)
+
+## Codex-4 (codex4/*) — 성능·인프라 (타 기기)
+### doing
+### todo
+- geo lazy-load RFC(발주 #150 코멘트 참조): 부팅 시 26도시 geo 전량 import 병목(#378) 해소 —
+  도시 진입 시 동적 import 구조 제안. 결정성·테스트 영향 분석 포함. RFC → 승인 → 구현
+### done (최근)
+
 ## Claude (claude/*)
 ### doing
 - 사이클 운영(웹훅+cron+Routine)
