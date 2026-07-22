@@ -21,6 +21,7 @@ import Spinner from '../components/Spinner';
 import Button from '../components/Button';
 import bus from '../components/world/bus';
 import { createWorldNet } from '../lib/world/net';
+import { overworldRegionAirSpawn } from '../lib/world/overworldRegions';
 import { createVoiceMesh } from '../lib/world/voice';
 import { createVoiceUnreachableNotifier } from '../lib/world/voiceNotify';
 import { createWorldChat } from '../lib/world/chat';
@@ -432,6 +433,20 @@ export default function WorldPage() {
   // 프로덕션 빌드에서는 항상 꺼진다. 멀티 전용 원칙(오너 요구 1)은 제품 경로에서 불변 —
   // dev 게스트만 오프라인 단독 입장으로 단락한다(스폰 기본·저장/스탬프는 조용히 실패).
   const devGuest = process.env.NODE_ENV !== 'production' && process.env.NEXT_PUBLIC_WORLD_DEV_GUEST === '1';
+  // dev 게스트 전용 스폰 오버라이드(검수 하니스): ?spawn=air:emea | city:lyon | overworld:emea@512,300
+  // 제품 경로(로그인 유저)는 절대 타지 않는다 — devGuest 분기에서만 호출.
+  const parseDevGuestSpawn = () => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const raw = new URLSearchParams(window.location.search).get('spawn');
+      if (!raw) return null;
+      const [scenePart, xy] = raw.split('@');
+      if (scenePart.startsWith('air:')) return overworldRegionAirSpawn(scenePart.slice(4));
+      if (!scenePart.includes(':')) return null;
+      const [x, y] = (xy || '').split(',').map(Number);
+      return Number.isFinite(x) && Number.isFinite(y) ? { scene: scenePart, x, y } : { scene: scenePart };
+    } catch { return null; }
+  };
   const nickname = profile?.display_name || '나';
 
   // ── 펫 상태 ──
@@ -593,7 +608,7 @@ export default function WorldPage() {
   useEffect(() => {
     if (!userId) {
       // dev 게스트: 멀티·스폰 조회를 건너뛰고 오프라인 단독 입장(연결 상태 단락).
-      if (devGuest) { setWorldStatus('connected'); setWorldSpawn(null); }
+      if (devGuest) { setWorldStatus('connected'); setWorldSpawn(parseDevGuestSpawn()); }
       return undefined;
     }
     let cancelled = false;
@@ -775,7 +790,7 @@ export default function WorldPage() {
   // GET /api/world/position → 본인 마지막 좌표. 실패/없음이면 null(기본 서울 스폰).
   // 조회가 끝나야(undefined→null|obj) GameCanvas 를 렌더한다(create() 가 스폰을 1회 고정하므로).
   useEffect(() => {
-    if (!userId) { setWorldSpawn(null); return undefined; }
+    if (!userId) { if (!devGuest) setWorldSpawn(null); return undefined; }
     let cancelled = false;
     setWorldSpawn(undefined);
     livePosRef.current = null;
