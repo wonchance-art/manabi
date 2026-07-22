@@ -5,9 +5,16 @@
 보드 갱신 커밋은 다른 변경과 섞지 않는다. 상세 스펙·핑퐁은 기존대로 #150(이 보드는 인덱스).
 오너 결정 대기 항목은 owner-gate 섹션에 — 어떤 세션도 임의 착수 금지.
 
+> **운영 공지 (2026-07-22)** ① 세션 3·4는 iCloud vault 트리 직접 사용 금지 — 로컬 clone으로 즉시
+> 이전(#150 P0). 오늘 vault 브랜치 전환 동기화로 Claude dev 서버·에셋 서빙 파손 실측.
+> ② dev 검수 하니스: 게스트 열람(#388)·오프라인 단독 입장(#389)·?spawn= 직행(#391)·dev SW 차단(#392).
+> ③ 벌크 발주 완료 — 각 세션은 자기 SPEC 큐(#150 코멘트 5046785242/5647/5938/6117)를 대기 없이 순차 소화.
+
 ## Codex-1 (codex/*)
 ### doing
 ### todo
+- E1·E2 공항 스토리 상태머신 정리(P1 — 씬 이탈 상태 잔존·출구 소프트락, 라이브 검수 실측): #150 5046785242
+- E3 스토리 2회차 스킵 RFC(제안만)
 ### done (최근)
 - 레벨 디자인 v3 리옹 경로 위계 구현: 승인된 typed `mainRoute` 9열·URDL/RLE/pathSha pin,
   웜 그레이 포장 오버레이·이정표/가로등 결정 배치와 기존 25도시 렌더 불변 계약 구현
@@ -113,6 +120,9 @@
 ## Codex-2 (codex2/*)
 ### doing
 ### todo
+- T1 미니맵 factor 복귀 A/B 시각 자료(도쿄 1→2·코트다쥐르 2→3, report-only): #150 5046785647
+- T2 R5 verifier 프로파일 실측 제안(파리·마르세유·니스 — verifier 편집 금지)
+- T3 보르도·스트라스부르 mainRoute 후보 경로 데이터(v3 확산 준비)
 ### done (최근)
 - 도쿄 메모리 긴급 감사: 도쿄 40.11 MiB의 76.6%가 final canvas backing이며 불연속 factor가
   지배 원인임을 분해하고, 도쿄 factor 2·코트다쥐르 factor 3 복귀안과 mainRoute verifier 계약 제안
@@ -141,6 +151,9 @@
 ## Codex-3 (codex3/*) — 게임 시스템 확장 (타 기기)
 ### doing
 ### todo
+- (P0 공통) 로컬 clone 이전 확인 코멘트
+- S1 STAMP_ALBUM_NODES 85 원자 전환(선행 #387 충족 — 즉시 착수): #150 5046785938
+- S4 수집 연출 정합 → S2 앨범 지역 탭·수집률 → S3 마일스톤 보상 v1(localStorage·DB 금지)
 ### done (최근)
 - 스탬프 우주 확장 RFC(발주 #150 코멘트 참조): REGIONAL_WORLD_NODES 19도시 앨범 편입 계약
   설계 — StampAlbum 소비 집합·noStamp 재정의·지식 카드(factLine) 커버리지 연계. RFC → 승인 → 구현
@@ -148,6 +161,9 @@
 ## Codex-4 (codex4/*) — 성능·인프라 (타 기기)
 ### doing
 ### todo
+- P0 (운영 필수·최우선) 로컬 clone 이전 + 확인 코멘트: #150 5046786117
+- P1 geo lazy-load RFC 확정 → 구현(계약·수용 기준 SPEC 참조)
+- P2 .owc 프리페치 벤치(report-only) → P3 도쿄 로더 레이어(파일 경계: Codex-2 T1과 분리)
 - geo lazy-load RFC(발주 #150 코멘트 참조): 부팅 시 26도시 geo 전량 import 병목(#378) 해소 —
   도시 진입 시 동적 import 구조 제안. 결정성·테스트 영향 분석 포함. RFC → 승인 → 구현
 ### done (최근)
