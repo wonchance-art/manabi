@@ -6,10 +6,10 @@
  *
  * 인증: requireUser()(쿠키 세션 — 전체 로그인 유저 개방). 쓰기는 사용자 세션 클라이언트로 수행해
  *   world_stamps 의 own-only RLS 가 최종 방어(본인 행만). service_role 키는 쓰지 않는다.
- * nodeId 는 WORLD_NODES 에 실존하는 노드만 허용(서버 검증) — 임의 문자열 저장을 막는다.
+ * nodeId 는 STAMP_ALBUM_NODES 에 속한 노드만 허용(서버 검증) — 임의 문자열 저장을 막는다.
  */
 import { requireUser } from '@/lib/supabaseServer';
-import { getNode } from '@/components/world/worldNodes';
+import { isStampAlbumNodeId } from '@/lib/world/stampUniverse';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -40,8 +40,8 @@ export async function POST(request) {
     return Response.json({ error: '잘못된 JSON입니다.' }, { status: 400 });
   }
   const nodeId = typeof body?.nodeId === 'string' ? body.nodeId : '';
-  // 실존 노드만 허용 — WORLD_NODES 밖의 임의 id 저장을 서버에서 차단한다.
-  if (!nodeId || !getNode(nodeId)) {
+  // 앨범 정본 노드만 허용 — 렌더 가능하지만 수집 금지인 노드와 임의 id를 함께 차단한다.
+  if (!isStampAlbumNodeId(nodeId)) {
     return Response.json({ error: 'nodeId가 올바르지 않습니다.' }, { status: 400 });
   }
 
