@@ -10,7 +10,7 @@
 
 ## 측정 기준과 재현성
 
-- 정본: `origin/main` `df6ce0e70df65e108fae92c91e6b67a6e81cb7ec`, Node `v22.23.1`.
+- 정본: `origin/main` `6795d5b8a4a29300207586b16eb09f2a106719a3`, Node `v22.23.1`.
 - 도시 집합·순서: `CITY_MAPS` 26개. POI는 각 `cities/<id>.geo.js`의 `GEO.pois` 길이로 센다.
 - 도어: runtime `city.nodes` 중 `chapter` 문자열이 있는 학습 진입점. 레거시 일본어 NPC형 도어도
   실제 같은 라우팅을 열기 때문에 포함한다. 따라서 도어와 NPC 열은 서로 배타적이지 않다.
