@@ -153,6 +153,10 @@
 
 ## Codex-2 (codex2/*)
 ### doing
+- T8 NPC·도어 후보 스팟 실측(report-only): 빈 역 NPC 병합 뒤 나머지 24개 지구별 NPC 2~3곳·
+  도어 1~2곳을 보행성·앵커 근접·기존 노드 ≥3타일·건물 인접 계약으로 결정 제안
+  (`codex2/npc-door-spots`, base e330283ecb435b7bf5bad51aab35f57258b20a1f,
+  #150 5053450849·5053772988)
 ### todo
 ### done (최근)
 - T7 개방 지구 콘텐츠 갭 실측(report-only): 7도시 26개 개방 지구의 도어·NPC·발견·
