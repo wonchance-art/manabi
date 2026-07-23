@@ -244,13 +244,14 @@
 
 ## Codex-3 (codex3/*) — 게임 시스템 확장 (타 기기)
 ### doing
-- S23 한국 도시 채움 시스템 제약 조사(report-only): 서울·부산 chapter 계약, door track 라우팅,
-  비일본어 NPC 필드 선례, en 자산과 무확장/확장 필요 조합을 코드 근거로 정본화
 ### todo
 - (P0 공통) 로컬 clone 이전 확인 코멘트
 - S1 STAMP_ALBUM_NODES 85 원자 전환(선행 #387 충족 — 즉시 착수): #150 5046785938
 - S4 수집 연출 정합 → S2 앨범 지역 탭·수집률 → S3 마일스톤 보상 v1(localStorage·DB 금지)
 ### done (최근)
+- S23 한국 도시 채움 시스템 제약 조사(report-only): 서울 23·부산 14노드의 track/chapter/NPC
+  0건, helper 4트랙과 Korean 부재, UI bridge의 track 소실, 불어 NPC 11종 필드 재사용,
+  인천공항 일본어 시작점·영어 36개 미사용 chapter를 규명 (`codex3/s23-korea-fill-constraints`)
 - S22 도시 진입 착지점 26도시 전수 검증(report-only): 도시 게이트 26 exact-1,
   55노선·180 stop 참조·157 고유 착지의 저작/실제 타일 open·보행을 재현하고
   정적 게이트 포섭과 동적 session/dev spawn 별도 fail-closed 경계를 규명
