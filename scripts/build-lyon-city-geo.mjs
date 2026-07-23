@@ -8,6 +8,10 @@ import {
   encodeTerrainRle,
 } from './build-french-city-geo-core.mjs';
 import { normalizeFrenchBridgeTerrain } from './build-french-city-geo.mjs';
+import {
+  applyTileFixes,
+  TILE_FIX_MANIFEST_VERSION,
+} from './lib/applyTileFixes.mjs';
 import { CITY_TILE, isCityBlocked } from '../src/components/world/cities/terrain.js';
 
 const EARTH_RADIUS = 6378137;
@@ -18,6 +22,13 @@ const SNAPSHOT_URL = new URL('./data/lyon-osm-v21.json', import.meta.url);
 const SNAPSHOT_SHA256 = 'f49e5b1ec1d28f65a47dea4e8b1018959c4546f77804f205cbf77827302cac53';
 const CARDINAL = Object.freeze([[1, 0], [-1, 0], [0, 1], [0, -1]]);
 const TRAIN_ROUTE_ID = 'lyon-mainline';
+const LYON_TILE_FIX_MANIFEST = Object.freeze({
+  version: TILE_FIX_MANIFEST_VERSION,
+  city: 'lyon',
+  grid: Object.freeze({ w: 428, h: 501 }),
+  scannerVersion: 'tile-integrity-v1',
+  fixes: Object.freeze([]),
+});
 
 const POIS = Object.freeze([
   Object.freeze({
@@ -484,7 +495,8 @@ export function buildLyonCityGeo() {
   for (const entry of protectedEntries) {
     ensureWalkableAnchor(bridges.terrain, entry.tile, baseMeta);
   }
-  const finalBuildingStats = terrainStats(bridges.terrain);
+  const finalTerrain = applyTileFixes(bridges.terrain, LYON_TILE_FIX_MANIFEST);
+  const finalBuildingStats = terrainStats(finalTerrain);
   const meta = Object.freeze({
     ...baseMeta,
     transitSystems: Object.freeze([
@@ -501,8 +513,8 @@ export function buildLyonCityGeo() {
       confluence: 'south-of-presquile',
       sourceWaterTileCount: countMask(waterMask),
       sourceRiverTileCount: countMask(riverMask),
-      finalWaterTileCount: countCode(bridges.terrain, CITY_TILE.WATER),
-      finalRiverTileCount: countCode(bridges.terrain, CITY_TILE.RIVER),
+      finalWaterTileCount: countCode(finalTerrain, CITY_TILE.WATER),
+      finalRiverTileCount: countCode(finalTerrain, CITY_TILE.RIVER),
       profileGate: 'two-rivers-and-confluence',
     }),
     buildingTexture: Object.freeze({
@@ -525,7 +537,7 @@ export function buildLyonCityGeo() {
   });
   return {
     meta,
-    terrain: bridges.terrain,
+    terrain: finalTerrain,
     pois,
     stations,
     entrance,

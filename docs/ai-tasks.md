@@ -187,6 +187,10 @@
 ### doing
 ### todo
 ### done (최근)
+- Q3 리옹 타일 정정 no-op hook: 공용 순수 `applyTileFixes()`·manifest v1을 마지막
+  mutating 후처리와 final meta/RLE 사이에 연결하고, hook 전후 A/B geo SHA
+  `0bb8a0a…36d2`·공식 verifier·전체 233/2,259 green과 산출 byte 불변을 검증
+  (`codex2/q3-lyon-fix-hook`, 구현 77b4e6f, base d0784d4490af7311666a03ead5d9b82f64c22e69)
 - T20 V3 도로 오토타일 전면 확산: T17 잔여 23도시 wrapper를 opt-in해 26도시
   전부 `autotile-v1`로 고정하고, 전 도시 PNG A/B byte-identical·BRIDGE 상위 3도시
   실제 16px 근접 crop 6장·전체 227/2,238 green을 검증
