@@ -1,661 +1,627 @@
 /**
- * 프랑스어 연습문항 미배선 초안.
+ * 프랑스어 연습문제 보강 초안.
  *
- * Claude 콘텐츠 검수 전까지 src/content/french/index.js 또는 런타임 소비자에서
- * import하지 않는다. 모든 문항은 원본 문법·어휘 팩의 표현만 사용한 DRAFT이며,
- * 정답 허용 범위와 문항 유형은 배선 전에 별도 확정해야 한다.
+ * DRAFT — Claude 콘텐츠 검수 전에는 확정본이 아니다.
+ * DRAFT — index.js나 어떤 런타임 소비자에도 연결하지 않는다.
+ *
+ * 문법 quiz는 buildChapterQuiz() → RefPatternCheck가 소비하는
+ * { meaning, apply, produce } 형식을 그대로 따른다.
+ *
+ * 어휘 items는 studySession.js의 채점 문항 형식
+ * (vocab-choice / vocab-cloze / vocab-typing)을 따른다. uid와 effect는
+ * 세션 조립 시 붙는 런타임 메타이므로 이 저작 초안에서는 제외했다.
  */
 
-export const FRENCH_EXERCISE_DRAFT_SCHEMA_VERSION = 1;
-export const FRENCH_EXERCISE_DRAFT_STATUS = "DRAFT_UNWIRED";
+const grammar = {
+  // DRAFT — A0 레벨팩 대표 3문항. A0 UI는 현재 패턴 체크를 렌더하지 않는다.
+  A0: {
+    source: "grammar/a0.js",
+    quiz: {
+      meaning: [
+        {
+          sentence: "Je ＿＿＿ une pomme.",
+          full: "Je mange une pomme.",
+          ko: "저는 사과를 먹어요.",
+          correct: "mange",
+          distractors: ["manges", "mangez", "mangent"],
+          pron: "[ʒə mɑ̃ʒ yn pɔm]",
+        },
+      ],
+      apply: [
+        {
+          type: "order",
+          tokens: ["Je", "mange", "une", "pomme."],
+          answer: "Je mange une pomme.",
+          ko: "저는 사과를 먹어요.",
+          pron: "[ʒə mɑ̃ʒ yn pɔm]",
+        },
+      ],
+      produce: [
+        {
+          ko: "저는 커피를 좋아해요.",
+          main: "J'aime le café.",
+          pron: "[ʒɛm lə kafe]",
+        },
+      ],
+    },
+  },
 
-const grammarDraftPacks = [
-  {
-    sourcePath: "src/content/french/grammar/a0.js",
-    kind: "grammar",
-    level: "A0",
-    status: FRENCH_EXERCISE_DRAFT_STATUS,
-    questions: [
-      {
-        id: "fr-g-a0-01",
-        type: "short-answer",
-        sourceRef: "a0-02-alphabet",
-        promptKo: "프랑스어 알파벳 g의 이름 발음을 IPA로 쓰세요.",
-        answer: "[ʒe]",
-      },
-      {
-        id: "fr-g-a0-02",
-        type: "short-answer",
-        sourceRef: "a0-03-vowels",
-        promptKo: "프랑스어 u와 ou 중 [y]로 발음하는 철자를 쓰세요.",
-        answer: "u",
-      },
-      {
-        id: "fr-g-a0-03",
-        type: "short-answer",
-        sourceRef: "a0-04-consonants",
-        promptKo: "단어 끝에서도 발음될 수 있는 CaReFuL 자음 네 개를 순서대로 쓰세요.",
-        answer: "c, r, f, l",
-      },
-    ],
+  // DRAFT — A1 레벨팩 대표 3문항.
+  A1: {
+    source: "grammar/a1.js",
+    quiz: {
+      meaning: [
+        {
+          sentence: "Je ne parle ＿＿＿ chinois.",
+          full: "Je ne parle pas chinois.",
+          ko: "저는 중국어를 못해요.",
+          correct: "pas",
+          distractors: ["plus", "jamais", "rien"],
+          pron: "[ʒə nə paʁl pa ʃinwa]",
+        },
+      ],
+      apply: [
+        {
+          type: "order",
+          tokens: ["J'ai", "un", "chat."],
+          answer: "J'ai un chat.",
+          ko: "저는 고양이 한 마리가 있어요.",
+          pron: "[ʒe œ̃ ʃa]",
+        },
+      ],
+      produce: [
+        {
+          ko: "저는 잘 지내요.",
+          main: "Je vais bien.",
+          pron: "[ʒə vɛ bjɛ̃]",
+        },
+      ],
+    },
   },
-  {
-    sourcePath: "src/content/french/grammar/a1.js",
-    kind: "grammar",
-    level: "A1",
-    status: FRENCH_EXERCISE_DRAFT_STATUS,
-    questions: [
-      {
-        id: "fr-g-a1-01",
-        type: "short-answer",
-        sourceRef: "a1-01-pronouns-etre",
-        promptKo: "être 현재형에서 ‘우리는’에 해당하는 형태를 완성하세요: nous ____.",
-        answer: "sommes",
-      },
-      {
-        id: "fr-g-a1-02",
-        type: "short-answer",
-        sourceRef: "a1-02-avoir",
-        promptKo: "‘배가 고프다’를 avoir를 사용해 쓰세요.",
-        answer: "avoir faim",
-      },
-      {
-        id: "fr-g-a1-03",
-        type: "short-answer",
-        sourceRef: "a1-03-er-verbs",
-        promptKo: "규칙 -er 동사의 nous 현재형 어미를 쓰세요.",
-        answer: "-ons",
-      },
-    ],
-  },
-  {
-    sourcePath: "src/content/french/grammar/a2.js",
-    kind: "grammar",
-    level: "A2",
-    status: FRENCH_EXERCISE_DRAFT_STATUS,
-    questions: [
-      {
-        id: "fr-g-a2-01",
-        type: "short-answer",
-        sourceRef: "a2-01-passe-compose-avoir",
-        promptKo: "avoir를 쓰는 복합과거의 기본 공식을 쓰세요.",
-        answer: "avoir 현재형 + 과거분사",
-      },
-      {
-        id: "fr-g-a2-02",
-        type: "short-answer",
-        sourceRef: "a2-02-passe-compose-etre",
-        promptKo: "être를 쓰는 복합과거에서 과거분사가 주어와 일치해야 하는 두 범주는 무엇인가요?",
-        answer: "성·수",
-      },
-      {
-        id: "fr-g-a2-03",
-        type: "short-answer",
-        sourceRef: "a2-03-imparfait",
-        promptKo: "반과거 어간은 현재형 어떤 인칭에서 -ons를 뺀 형태인가요?",
-        answer: "nous",
-      },
-    ],
-  },
-  {
-    sourcePath: "src/content/french/grammar/b1.js",
-    kind: "grammar",
-    level: "B1",
-    status: FRENCH_EXERCISE_DRAFT_STATUS,
-    questions: [
-      {
-        id: "fr-g-b1-01",
-        type: "short-answer",
-        sourceRef: "b1-01-conditionnel-present",
-        promptKo: "정중하게 ‘저는 ~을 원합니다’라고 말할 때 쓰는 조건법 표현을 쓰세요.",
-        answer: "Je voudrais...",
-      },
-      {
-        id: "fr-g-b1-02",
-        type: "short-answer",
-        sourceRef: "b1-02-subjonctif-intro",
-        promptKo: "바람·필요·감정·의심 뒤에서 사용하는 법(mood)의 프랑스어 이름을 쓰세요.",
-        answer: "subjonctif",
-      },
-      {
-        id: "fr-g-b1-03",
-        type: "short-answer",
-        sourceRef: "b1-03-plus-que-parfait",
-        promptKo: "대과거의 기본 공식을 쓰세요.",
-        answer: "avoir/être 반과거 + 과거분사",
-      },
-    ],
-  },
-  {
-    sourcePath: "src/content/french/grammar/b2.js",
-    kind: "grammar",
-    level: "B2",
-    status: FRENCH_EXERCISE_DRAFT_STATUS,
-    questions: [
-      {
-        id: "fr-g-b2-01",
-        type: "short-answer",
-        sourceRef: "b2-01-subjonctif-advanced",
-        promptKo: "bien que 뒤에 사용하는 법(mood)의 프랑스어 이름을 쓰세요.",
-        answer: "subjonctif",
-      },
-      {
-        id: "fr-g-b2-02",
-        type: "short-answer",
-        sourceRef: "b2-02-hypothese-si",
-        promptKo: "현재 사실과 반대되는 가정의 공식을 완성하세요: si + ____, conditionnel présent.",
-        answer: "imparfait",
-      },
-      {
-        id: "fr-g-b2-03",
-        type: "short-answer",
-        sourceRef: "b2-03-participe-present",
-        promptKo: "제롱디프를 만드는 기본 형태를 쓰세요.",
-        answer: "en + -ant",
-      },
-    ],
-  },
-  {
-    sourcePath: "src/content/french/grammar/c1.js",
-    kind: "grammar",
-    level: "C1",
-    status: FRENCH_EXERCISE_DRAFT_STATUS,
-    questions: [
-      {
-        id: "fr-g-c1-01",
-        type: "short-answer",
-        sourceRef: "c1-01-passe-simple",
-        promptKo: "단순과거 passé simple이 주로 쓰이는 레지스터를 쓰세요.",
-        answer: "문어",
-      },
-      {
-        id: "fr-g-c1-02",
-        type: "short-answer",
-        sourceRef: "c1-02-registres",
-        promptKo: "표준(courant) 의문문에서 도치 대신 쓰는 대표 구조를 쓰세요.",
-        answer: "est-ce que",
-      },
-      {
-        id: "fr-g-c1-03",
-        type: "short-answer",
-        sourceRef: "c1-03-argumentation",
-        promptKo: "프랑스식 논증의 정·반·합 세 단계를 프랑스어로 순서대로 쓰세요.",
-        answer: "thèse → antithèse → synthèse",
-      },
-    ],
-  },
-  {
-    sourcePath: "src/content/french/grammar/c2.js",
-    kind: "grammar",
-    level: "C2",
-    status: FRENCH_EXERCISE_DRAFT_STATUS,
-    questions: [
-      {
-        id: "fr-g-c2-01",
-        type: "short-answer",
-        sourceRef: "c2-01-subjonctif-litteraire",
-        promptKo: "être의 접속법 반과거 3인칭 단수 형태를 쓰세요.",
-        answer: "fût",
-      },
-      {
-        id: "fr-g-c2-02",
-        type: "short-answer",
-        sourceRef: "c2-02-style",
-        promptKo: "litote 예문 « Je ne te hais point. »가 실제로 강하게 전달하는 뜻을 한국어로 쓰세요.",
-        answer: "당신을 사랑해요.",
-      },
-      {
-        id: "fr-g-c2-03",
-        type: "short-answer",
-        sourceRef: "c2-03-francophonie",
-        promptKo: "벨기에·스위스권에서 70을 가리키는 표현을 쓰세요.",
-        answer: "septante",
-      },
-    ],
-  },
-];
 
-const vocabDraftPacks = [
-  {
-    sourcePath: "src/content/french/vocab/a0.js",
-    kind: "vocab",
-    level: "A0",
-    status: FRENCH_EXERCISE_DRAFT_STATUS,
-    questions: [
-      {
-        id: "fr-v-a0-01",
-        type: "short-answer",
-        sourceRef: "인사와 예의 표현: bonjour",
-        promptKo: "‘안녕하세요(아침~낮)’에 해당하는 프랑스어를 쓰세요.",
-        answer: "bonjour",
-      },
-      {
-        id: "fr-v-a0-02",
-        type: "short-answer",
-        sourceRef: "카페에서 살아남기: la carte",
-        promptKo: "카페에서 ‘메뉴판’을 뜻하는 프랑스어를 관사와 함께 쓰세요.",
-        answer: "la carte",
-      },
-      {
-        id: "fr-v-a0-03",
-        type: "short-answer",
-        sourceRef: "기초 형용사·부사: lentement",
-        promptKo: "‘천천히’를 뜻하는 프랑스어 부사를 쓰세요.",
-        answer: "lentement",
-      },
-    ],
+  // DRAFT — A2 레벨팩 대표 3문항.
+  A2: {
+    source: "grammar/a2.js",
+    quiz: {
+      meaning: [
+        {
+          sentence: "J'ai ＿＿＿ une pizza.",
+          full: "J'ai mangé une pizza.",
+          ko: "저는 피자를 먹었어요.",
+          correct: "mangé",
+          distractors: ["manger", "mange", "mangeais"],
+          pron: "[ʒe mɑ̃ʒe yn pidza]",
+        },
+      ],
+      apply: [
+        {
+          type: "order",
+          tokens: ["Il", "est", "plus", "grand", "que", "moi."],
+          answer: "Il est plus grand que moi.",
+          ko: "그는 저보다 키가 커요.",
+          pron: "[il ɛ ply gʁɑ̃ kə mwa]",
+        },
+      ],
+      produce: [
+        {
+          ko: "3년째 프랑스어를 배우고 있어요.",
+          main: "J'apprends le français depuis trois ans.",
+          pron: "[ʒapʁɑ̃ lə fʁɑ̃sɛ dəpɥi tʁwazɑ̃]",
+        },
+      ],
+    },
   },
-  {
-    sourcePath: "src/content/french/vocab/a1.js",
-    kind: "vocab",
-    level: "A1",
-    status: FRENCH_EXERCISE_DRAFT_STATUS,
-    questions: [
-      {
-        id: "fr-v-a1-01",
-        type: "short-answer",
-        sourceRef: "가족과 사람: la famille",
-        promptKo: "‘가족’을 뜻하는 프랑스어를 관사와 함께 쓰세요.",
-        answer: "la famille",
-      },
-      {
-        id: "fr-v-a1-02",
-        type: "short-answer",
-        sourceRef: "기초 형용사: mauvais",
-        promptKo: "‘나쁜’을 뜻하는 프랑스어 형용사 남성형을 쓰세요.",
-        answer: "mauvais",
-      },
-      {
-        id: "fr-v-a1-03",
-        type: "short-answer",
-        sourceRef: "달력의 달: juin",
-        promptKo: "‘6월’을 뜻하는 프랑스어를 쓰세요.",
-        answer: "juin",
-      },
-    ],
-  },
-  {
-    sourcePath: "src/content/french/vocab/a1_flelex.js",
-    kind: "vocab",
-    level: "A1",
-    status: FRENCH_EXERCISE_DRAFT_STATUS,
-    questions: [
-      {
-        id: "fr-v-a1-flelex-01",
-        type: "short-answer",
-        sourceRef: "사람과 일상: le nom",
-        promptKo: "‘이름, 성(姓)’을 뜻하는 프랑스어를 관사와 함께 쓰세요.",
-        answer: "le nom",
-      },
-      {
-        id: "fr-v-a1-flelex-02",
-        type: "short-answer",
-        sourceRef: "도시와 장소: la campagne",
-        promptKo: "‘시골’을 뜻하는 프랑스어를 관사와 함께 쓰세요.",
-        answer: "la campagne",
-      },
-      {
-        id: "fr-v-a1-flelex-03",
-        type: "short-answer",
-        sourceRef: "달력의 달: mai",
-        promptKo: "‘5월’을 뜻하는 프랑스어를 쓰세요.",
-        answer: "mai",
-      },
-    ],
-  },
-  {
-    sourcePath: "src/content/french/vocab/a2.js",
-    kind: "vocab",
-    level: "A2",
-    status: FRENCH_EXERCISE_DRAFT_STATUS,
-    questions: [
-      {
-        id: "fr-v-a2-01",
-        type: "short-answer",
-        sourceRef: "여행과 교통: le voyage",
-        promptKo: "‘여행’을 뜻하는 프랑스어를 관사와 함께 쓰세요.",
-        answer: "le voyage",
-      },
-      {
-        id: "fr-v-a2-02",
-        type: "short-answer",
-        sourceRef: "하루 일과 동사 (대명동사 포함): se reposer",
-        promptKo: "‘쉬다, 휴식하다’를 뜻하는 프랑스어 대명동사를 쓰세요.",
-        answer: "se reposer",
-      },
-      {
-        id: "fr-v-a2-03",
-        type: "short-answer",
-        sourceRef: "부사와 전치사: jusqu'à",
-        promptKo: "‘~까지’를 뜻하는 프랑스어 전치사 표현을 쓰세요.",
-        answer: "jusqu'à",
-      },
-    ],
-  },
-  {
-    sourcePath: "src/content/french/vocab/a2_flelex.js",
-    kind: "vocab",
-    level: "A2",
-    status: FRENCH_EXERCISE_DRAFT_STATUS,
-    questions: [
-      {
-        id: "fr-v-a2-flelex-01",
-        type: "short-answer",
-        sourceRef: "사회와 생활: le public",
-        promptKo: "‘대중, 관객’을 뜻하는 프랑스어를 관사와 함께 쓰세요.",
-        answer: "le public",
-      },
-      {
-        id: "fr-v-a2-flelex-02",
-        type: "short-answer",
-        sourceRef: "동사 확장: valoir",
-        promptKo: "‘~의 가치가 있다’를 뜻하는 프랑스어 동사를 쓰세요.",
-        answer: "valoir",
-      },
-      {
-        id: "fr-v-a2-flelex-03",
-        type: "short-answer",
-        sourceRef: "부사·기타: tantôt",
-        promptKo: "‘때로는 ~, 때로는 ~’ 구조에 반복해 쓰는 프랑스어 부사를 쓰세요.",
-        answer: "tantôt",
-      },
-    ],
-  },
-  {
-    sourcePath: "src/content/french/vocab/b1.js",
-    kind: "vocab",
-    level: "B1",
-    status: FRENCH_EXERCISE_DRAFT_STATUS,
-    questions: [
-      {
-        id: "fr-v-b1-01",
-        type: "short-answer",
-        sourceRef: "일과 직장: le métier",
-        promptKo: "‘직업(기술·전문성이 있는 일)’을 뜻하는 프랑스어를 관사와 함께 쓰세요.",
-        answer: "le métier",
-      },
-      {
-        id: "fr-v-b1-02",
-        type: "short-answer",
-        sourceRef: "자주 쓰는 동사구·표현: faire la queue",
-        promptKo: "‘줄을 서다’를 뜻하는 프랑스어 표현을 쓰세요.",
-        answer: "faire la queue",
-      },
-      {
-        id: "fr-v-b1-03",
-        type: "short-answer",
-        sourceRef: "형용사와 연결 표현: dès que",
-        promptKo: "‘~하자마자’를 뜻하는 프랑스어 연결 표현을 쓰세요.",
-        answer: "dès que",
-      },
-    ],
-  },
-  {
-    sourcePath: "src/content/french/vocab/b1_flelex.js",
-    kind: "vocab",
-    level: "B1",
-    status: FRENCH_EXERCISE_DRAFT_STATUS,
-    questions: [
-      {
-        id: "fr-v-b1-flelex-01",
-        type: "short-answer",
-        sourceRef: "사회와 제도: le crime",
-        promptKo: "‘범죄, 중범죄’를 뜻하는 프랑스어를 관사와 함께 쓰세요.",
-        answer: "le crime",
-      },
-      {
-        id: "fr-v-b1-flelex-02",
-        type: "short-answer",
-        sourceRef: "추상·개념 명사: l'écho (m.)",
-        promptKo: "‘메아리, 반향’을 뜻하는 프랑스어를 관사와 함께 쓰세요.",
-        answer: "l'écho (m.)",
-      },
-      {
-        id: "fr-v-b1-flelex-03",
-        type: "short-answer",
-        sourceRef: "그 밖의 어휘: le sida",
-        promptKo: "‘에이즈’를 뜻하는 프랑스어를 관사와 함께 쓰세요.",
-        answer: "le sida",
-      },
-    ],
-  },
-  {
-    sourcePath: "src/content/french/vocab/b1_flelex2.js",
-    kind: "vocab",
-    level: "B1",
-    status: FRENCH_EXERCISE_DRAFT_STATUS,
-    questions: [
-      {
-        id: "fr-v-b1-flelex2-01",
-        type: "short-answer",
-        sourceRef: "사회와 제도: l'alerte (f.)",
-        promptKo: "‘경보, 경고’를 뜻하는 프랑스어를 관사와 함께 쓰세요.",
-        answer: "l'alerte (f.)",
-      },
-      {
-        id: "fr-v-b1-flelex2-02",
-        type: "short-answer",
-        sourceRef: "형용사: clinique",
-        promptKo: "‘임상의, 진료의’를 뜻하는 프랑스어 형용사를 쓰세요.",
-        answer: "clinique",
-      },
-      {
-        id: "fr-v-b1-flelex2-03",
-        type: "short-answer",
-        sourceRef: "부사와 연결어: environ",
-        promptKo: "‘약, 대략’을 뜻하는 프랑스어 부사를 쓰세요.",
-        answer: "environ",
-      },
-    ],
-  },
-  {
-    sourcePath: "src/content/french/vocab/b2.js",
-    kind: "vocab",
-    level: "B2",
-    status: FRENCH_EXERCISE_DRAFT_STATUS,
-    questions: [
-      {
-        id: "fr-v-b2-01",
-        type: "short-answer",
-        sourceRef: "정치와 경제: le pouvoir",
-        promptKo: "‘권력, 힘’을 뜻하는 프랑스어를 관사와 함께 쓰세요.",
-        answer: "le pouvoir",
-      },
-      {
-        id: "fr-v-b2-02",
-        type: "short-answer",
-        sourceRef: "핵심 동사 II: organiser",
-        promptKo: "‘준비하다, 조직하다’를 뜻하는 프랑스어 동사를 쓰세요.",
-        answer: "organiser",
-      },
-      {
-        id: "fr-v-b2-03",
-        type: "short-answer",
-        sourceRef: "부사와 담화 연결어: bas / basse",
-        promptKo: "‘낮은’을 뜻하는 프랑스어 형용사의 남성형과 여성형을 함께 쓰세요.",
-        answer: "bas / basse",
-      },
-    ],
-  },
-  {
-    sourcePath: "src/content/french/vocab/b2_flelex.js",
-    kind: "vocab",
-    level: "B2",
-    status: FRENCH_EXERCISE_DRAFT_STATUS,
-    questions: [
-      {
-        id: "fr-v-b2-flelex-01",
-        type: "short-answer",
-        sourceRef: "정치·사회·시사: la minorité",
-        promptKo: "‘소수, 소수자’를 뜻하는 프랑스어를 관사와 함께 쓰세요.",
-        answer: "la minorité",
-      },
-      {
-        id: "fr-v-b2-flelex-02",
-        type: "short-answer",
-        sourceRef: "핵심 동사: élargir",
-        promptKo: "‘넓히다, 확대하다’를 뜻하는 프랑스어 동사를 쓰세요.",
-        answer: "élargir",
-      },
-      {
-        id: "fr-v-b2-flelex-03",
-        type: "short-answer",
-        sourceRef: "그 밖의 어휘: la cuillère",
-        promptKo: "‘숟가락’을 뜻하는 프랑스어를 관사와 함께 쓰세요.",
-        answer: "la cuillère",
-      },
-    ],
-  },
-  {
-    sourcePath: "src/content/french/vocab/b2_flelex2.js",
-    kind: "vocab",
-    level: "B2",
-    status: FRENCH_EXERCISE_DRAFT_STATUS,
-    questions: [
-      {
-        id: "fr-v-b2-flelex2-01",
-        type: "short-answer",
-        sourceRef: "정치·사회·시사: l'asile (m.)",
-        promptKo: "‘망명, 피난처’를 뜻하는 프랑스어를 관사와 함께 쓰세요.",
-        answer: "l'asile (m.)",
-      },
-      {
-        id: "fr-v-b2-flelex2-02",
-        type: "short-answer",
-        sourceRef: "추상·논증 명사: la cheville",
-        promptKo: "‘발목’을 뜻하는 프랑스어를 관사와 함께 쓰세요.",
-        answer: "la cheville",
-      },
-      {
-        id: "fr-v-b2-flelex2-03",
-        type: "short-answer",
-        sourceRef: "그 밖의 어휘: le câlin",
-        promptKo: "‘포옹, 껴안기’를 뜻하는 프랑스어를 관사와 함께 쓰세요.",
-        answer: "le câlin",
-      },
-    ],
-  },
-  {
-    sourcePath: "src/content/french/vocab/c1.js",
-    kind: "vocab",
-    level: "C1",
-    status: FRENCH_EXERCISE_DRAFT_STATUS,
-    questions: [
-      {
-        id: "fr-v-c1-01",
-        type: "short-answer",
-        sourceRef: "학술·지성 어휘: l'enjeu (m.)",
-        promptKo: "‘쟁점, 관건’을 뜻하는 프랑스어를 관사와 함께 쓰세요.",
-        answer: "l'enjeu (m.)",
-      },
-      {
-        id: "fr-v-c1-02",
-        type: "short-answer",
-        sourceRef: "문어와 논증의 동사: évoluer",
-        promptKo: "‘변화하다, 발전하다’를 뜻하는 프랑스어 동사를 쓰세요.",
-        answer: "évoluer",
-      },
-      {
-        id: "fr-v-c1-03",
-        type: "short-answer",
-        sourceRef: "정밀한 형용사와 부사: le cas échéant",
-        promptKo: "‘필요한 경우, 경우에 따라’를 뜻하는 프랑스어 표현을 쓰세요.",
-        answer: "le cas échéant",
-      },
-    ],
-  },
-  {
-    sourcePath: "src/content/french/vocab/c1_flelex.js",
-    kind: "vocab",
-    level: "C1",
-    status: FRENCH_EXERCISE_DRAFT_STATUS,
-    questions: [
-      {
-        id: "fr-v-c1-flelex-01",
-        type: "short-answer",
-        sourceRef: "학술·지성 어휘: la synthèse",
-        promptKo: "‘종합, 통합’을 뜻하는 프랑스어를 관사와 함께 쓰세요.",
-        answer: "la synthèse",
-      },
-      {
-        id: "fr-v-c1-flelex-02",
-        type: "short-answer",
-        sourceRef: "이야기와 구어의 명사: le stupéfiant",
-        promptKo: "‘마약, 마취제’를 뜻하는 프랑스어를 관사와 함께 쓰세요.",
-        answer: "le stupéfiant",
-      },
-      {
-        id: "fr-v-c1-flelex-03",
-        type: "short-answer",
-        sourceRef: "그 밖의 어휘: le fournisseur",
-        promptKo: "‘공급업체, 납품업자’를 뜻하는 프랑스어를 관사와 함께 쓰세요.",
-        answer: "le fournisseur",
-      },
-    ],
-  },
-  {
-    sourcePath: "src/content/french/vocab/c2.js",
-    kind: "vocab",
-    level: "C2",
-    status: FRENCH_EXERCISE_DRAFT_STATUS,
-    questions: [
-      {
-        id: "fr-v-c2-01",
-        type: "short-answer",
-        sourceRef: "문체와 수사의 어휘: l'éloquence (f.)",
-        promptKo: "‘웅변, 능변’을 뜻하는 프랑스어를 관사와 함께 쓰세요.",
-        answer: "l'éloquence (f.)",
-      },
-      {
-        id: "fr-v-c2-02",
-        type: "short-answer",
-        sourceRef: "라틴어 직수입 표현 — 영어와 공유하는 자산: le statu quo",
-        promptKo: "‘현상 유지’를 뜻하는 프랑스어 표현을 관사와 함께 쓰세요.",
-        answer: "le statu quo",
-      },
-      {
-        id: "fr-v-c2-03",
-        type: "short-answer",
-        sourceRef: "뉘앙스의 형용사와 부사: bof",
-        promptKo: "시큰둥하게 ‘글쎄, 별로’라고 답할 때 쓰는 프랑스어 감탄사를 쓰세요.",
-        answer: "bof",
-      },
-    ],
-  },
-  {
-    sourcePath: "src/content/french/vocab/c2_flelex.js",
-    kind: "vocab",
-    level: "C2",
-    status: FRENCH_EXERCISE_DRAFT_STATUS,
-    questions: [
-      {
-        id: "fr-v-c2-flelex-01",
-        type: "short-answer",
-        sourceRef: "시사와 수사의 명사: le prolongement",
-        promptKo: "‘연장, 연속, 연장선’을 뜻하는 프랑스어를 관사와 함께 쓰세요.",
-        answer: "le prolongement",
-      },
-      {
-        id: "fr-v-c2-flelex-02",
-        type: "short-answer",
-        sourceRef: "문어와 격식의 동사: croquer",
-        promptKo: "‘와삭 깨물다, 스케치로 그려 내다’를 뜻하는 프랑스어 동사를 쓰세요.",
-        answer: "croquer",
-      },
-      {
-        id: "fr-v-c2-flelex-03",
-        type: "short-answer",
-        sourceRef: "그 밖의 어휘: le séquençage",
-        promptKo: "‘염기서열 분석, 시퀀싱’을 뜻하는 프랑스어를 관사와 함께 쓰세요.",
-        answer: "le séquençage",
-      },
-    ],
-  },
-];
 
-export const frenchExerciseDraftPacks = [
-  ...grammarDraftPacks,
-  ...vocabDraftPacks,
-];
+  // DRAFT — B1 레벨팩 대표 3문항.
+  B1: {
+    source: "grammar/b1.js",
+    quiz: {
+      meaning: [
+        {
+          sentence: "Ce roman est ＿＿＿ en vingt langues.",
+          full: "Ce roman est traduit en vingt langues.",
+          ko: "이 소설은 20개 언어로 번역되어 있어요.",
+          correct: "traduit",
+          distractors: ["traduire", "traduira", "traduction"],
+          pron: null,
+        },
+      ],
+      apply: [
+        {
+          type: "order",
+          tokens: ["Elle", "dit", "qu'elle", "a", "faim."],
+          answer: "Elle dit qu'elle a faim.",
+          ko: "그녀는 배고프다고 말해요.",
+          pron: null,
+        },
+      ],
+      produce: [
+        {
+          ko: "길 잃지 않게 약도를 보내 줄게.",
+          main: "Je t'envoie le plan pour que tu ne te perdes pas.",
+          pron: "[ʒə tɑ̃vwa lə plɑ̃ puʁ kə ty nə tə pɛʁd pa]",
+        },
+      ],
+    },
+  },
 
-export default frenchExerciseDraftPacks;
+  // DRAFT — B2 레벨팩 대표 3문항.
+  B2: {
+    source: "grammar/b2.js",
+    quiz: {
+      meaning: [
+        {
+          sentence: "Il ne reste ＿＿＿ dans le frigo.",
+          full: "Il ne reste rien dans le frigo.",
+          ko: "냉장고에 아무것도 안 남았어요.",
+          correct: "rien",
+          distractors: ["jamais", "personne", "nulle part"],
+          pron: "[il nə ʁɛst ʁjɛ̃ dɑ̃ lə fʁiɡo]",
+        },
+      ],
+      apply: [
+        {
+          type: "order",
+          tokens: ["C'est", "moi", "qui", "ai", "fait", "ça."],
+          answer: "C'est moi qui ai fait ça.",
+          ko: "그거 한 사람 나야.",
+          pron: null,
+        },
+      ],
+      produce: [
+        {
+          ko: "내일 비가 오면 집에 있을 거예요.",
+          main: "S'il pleut demain, on restera à la maison.",
+          pron: null,
+        },
+      ],
+    },
+  },
+
+  // DRAFT — C1 레벨팩 대표 3문항.
+  C1: {
+    source: "grammar/c1.js",
+    quiz: {
+      meaning: [
+        {
+          sentence: "Depuis qu'elle est partie, j'ai ＿＿＿.",
+          full: "Depuis qu'elle est partie, j'ai le cafard.",
+          ko: "그녀가 떠난 뒤로 마음이 울적해요.",
+          correct: "le cafard",
+          distractors: ["la pêche", "la lune", "les pieds"],
+          pron: null,
+        },
+      ],
+      apply: [
+        {
+          type: "order",
+          tokens: ["Ne", "sachant", "que", "répondre,", "elle", "garda", "le", "silence."],
+          answer: "Ne sachant que répondre, elle garda le silence.",
+          ko: "뭐라 답해야 할지 몰라, 그녀는 침묵을 지켰다.",
+          pron: null,
+        },
+      ],
+      produce: [
+        {
+          ko: "그녀가 어디 사는지는 알지만, 그 동네는 잘 몰라요.",
+          main: "Je sais où elle habite, mais je ne connais pas son quartier.",
+          pron: null,
+        },
+      ],
+    },
+  },
+
+  // DRAFT — C2 레벨팩 대표 3문항.
+  C2: {
+    source: "grammar/c2.js",
+    quiz: {
+      meaning: [
+        {
+          sentence: "Ça fait ＿＿＿ euros.",
+          full: "Ça fait nonante-cinq euros.",
+          ko: "95유로입니다. (벨기에·스위스)",
+          correct: "nonante-cinq",
+          distractors: ["quatre-vingt-quinze", "septante-cinq", "huitante-cinq"],
+          pron: null,
+        },
+      ],
+      apply: [
+        {
+          type: "order",
+          tokens: ["Il", "fallait", "qu'il", "partît", "avant", "l'aube."],
+          answer: "Il fallait qu'il partît avant l'aube.",
+          ko: "그는 동트기 전에 떠나야 했다.",
+          pron: null,
+        },
+      ],
+      produce: [
+        {
+          ko: "오후 내내 센 강변을 하릴없이 거닐며 보냈어요.",
+          main: "J'ai passé l'après-midi à flâner le long de la Seine.",
+          pron: null,
+        },
+      ],
+    },
+  },
+};
+
+const vocab = {
+  // DRAFT — vocab/a0.js 대표 3문항.
+  "a0.js": {
+    source: "vocab/a0.js",
+    items: [
+      {
+        type: "vocab-choice",
+        word: { word_text: "bonjour", meaning: "안녕하세요 (아침~낮)", furigana: "[bɔ̃ʒuʁ]" },
+        options: ["안녕하세요 (아침~낮)", "안녕하세요 (저녁)", "안녕히 가세요", "잘 자요"],
+        sentence: null,
+      },
+      {
+        type: "vocab-cloze",
+        word: { word_text: "salut", meaning: "안녕 (친한 사이)", furigana: "[saly]" },
+        options: null,
+        sentence: { main: "Entre amis, on dit salut.", pron: "[ɑ̃tʁ ami ɔ̃ di saly]" },
+      },
+      {
+        type: "vocab-typing",
+        word: { word_text: "au revoir", meaning: "안녕히 가세요 / 안녕히 계세요", furigana: "[o ʁəvwaʁ]" },
+        options: null,
+        sentence: null,
+      },
+    ],
+  },
+
+  // DRAFT — vocab/a1.js 대표 3문항.
+  "a1.js": {
+    source: "vocab/a1.js",
+    items: [
+      {
+        type: "vocab-choice",
+        word: { word_text: "la famille", meaning: "가족", furigana: "[famij]" },
+        options: ["가족", "아버지", "어머니", "형제"],
+        sentence: null,
+      },
+      {
+        type: "vocab-cloze",
+        word: { word_text: "le père", meaning: "아버지", furigana: "[pɛʁ]" },
+        options: null,
+        sentence: { main: "Dans cette photo, le père est à gauche.", pron: "[dɑ̃ sɛt foto lə pɛʁ ɛ ta ɡoʃ]" },
+      },
+      {
+        type: "vocab-typing",
+        word: { word_text: "la mère", meaning: "어머니", furigana: "[mɛʁ]" },
+        options: null,
+        sentence: null,
+      },
+    ],
+  },
+
+  // DRAFT — vocab/a1_flelex.js 대표 3문항.
+  "a1_flelex.js": {
+    source: "vocab/a1_flelex.js",
+    items: [
+      {
+        type: "vocab-choice",
+        word: { word_text: "le nom", meaning: "이름, 성(姓)", furigana: "[nɔ̃]" },
+        options: ["이름, 성(姓)", "단어", "목소리", "예, 보기"],
+        sentence: null,
+      },
+      {
+        type: "vocab-cloze",
+        word: { word_text: "le mot", meaning: "단어, 말", furigana: "[mo]" },
+        options: null,
+        sentence: { main: "Je cherche le mot juste.", pron: "[ʒə ʃɛʁʃ lə mo ʒyst]" },
+      },
+      {
+        type: "vocab-typing",
+        word: { word_text: "la voix", meaning: "목소리, 표", furigana: "[vwa]" },
+        options: null,
+        sentence: null,
+      },
+    ],
+  },
+
+  // DRAFT — vocab/a2.js 대표 3문항.
+  "a2.js": {
+    source: "vocab/a2.js",
+    items: [
+      {
+        type: "vocab-choice",
+        word: { word_text: "le voyage", meaning: "여행", furigana: "[vwajaʒ]" },
+        options: ["여행", "기차", "비행기", "표"],
+        sentence: null,
+      },
+      {
+        type: "vocab-cloze",
+        word: { word_text: "le train", meaning: "기차", furigana: "[tʁɛ̃]" },
+        options: null,
+        sentence: { main: "Je prends le train pour Busan.", pron: "[ʒə pʁɑ̃ lə tʁɛ̃ puʁ Busan]" },
+      },
+      {
+        type: "vocab-typing",
+        word: { word_text: "le billet", meaning: "표, 티켓; 지폐", furigana: "[bijɛ]" },
+        options: null,
+        sentence: null,
+      },
+    ],
+  },
+
+  // DRAFT — vocab/a2_flelex.js 대표 3문항.
+  "a2_flelex.js": {
+    source: "vocab/a2_flelex.js",
+    items: [
+      {
+        type: "vocab-choice",
+        word: { word_text: "le public", meaning: "대중, 관객", furigana: "[pyblik]" },
+        options: ["대중, 관객", "정치, 정책", "관심, 흥미", "소비"],
+        sentence: null,
+      },
+      {
+        type: "vocab-cloze",
+        word: { word_text: "la politique", meaning: "정치; 정책", furigana: "[pɔlitik]" },
+        options: null,
+        sentence: { main: "Il s'intéresse à la politique.", pron: "[il sɛ̃teʁɛs a la pɔlitik]" },
+      },
+      {
+        type: "vocab-typing",
+        word: { word_text: "l'intérêt (m.)", meaning: "관심, 흥미; 이익, 이자", furigana: "[ɛ̃teʁɛ]" },
+        options: null,
+        sentence: null,
+      },
+    ],
+  },
+
+  // DRAFT — vocab/b1.js 대표 3문항.
+  "b1.js": {
+    source: "vocab/b1.js",
+    items: [
+      {
+        type: "vocab-choice",
+        word: { word_text: "le métier", meaning: "직업", furigana: "[metje]" },
+        options: ["직업", "채용", "실업", "회의"],
+        sentence: null,
+      },
+      {
+        type: "vocab-cloze",
+        word: { word_text: "la réunion", meaning: "회의", furigana: "[ʁeynjɔ̃]" },
+        options: null,
+        sentence: { main: "Elle prépare la réunion de demain.", pron: "[ɛl pʁepaʁ la ʁeynjɔ̃ də dəmɛ̃]" },
+      },
+      {
+        type: "vocab-typing",
+        word: { word_text: "le chômage", meaning: "실업", furigana: "[ʃomaʒ]" },
+        options: null,
+        sentence: null,
+      },
+    ],
+  },
+
+  // DRAFT — vocab/b1_flelex.js 대표 3문항.
+  "b1_flelex.js": {
+    source: "vocab/b1_flelex.js",
+    items: [
+      {
+        type: "vocab-choice",
+        word: { word_text: "le crime", meaning: "범죄, 중범죄", furigana: "[kʁim]" },
+        options: ["범죄, 중범죄", "지지, 도움", "참여", "금지"],
+        sentence: null,
+      },
+      {
+        type: "vocab-cloze",
+        word: { word_text: "le soutien", meaning: "지지, 후원, 도움", furigana: "[sutjɛ̃]" },
+        options: null,
+        sentence: { main: "Nous comptons sur le soutien de nos proches.", pron: "[nu kɔ̃tɔ̃ syʁ lə sutjɛ̃ də no pʁɔʃ]" },
+      },
+      {
+        type: "vocab-typing",
+        word: { word_text: "l'interdiction (f.)", meaning: "금지", furigana: "[ɛ̃tɛʁdiksjɔ̃]" },
+        options: null,
+        sentence: null,
+      },
+    ],
+  },
+
+  // DRAFT — vocab/b1_flelex2.js 대표 3문항.
+  "b1_flelex2.js": {
+    source: "vocab/b1_flelex2.js",
+    items: [
+      {
+        type: "vocab-choice",
+        word: { word_text: "l'alerte (f.)", meaning: "경보, 경고", furigana: "[alɛʁt]" },
+        options: ["경보, 경고", "돈 (속어)", "풀, 접착제", "바이러스"],
+        sentence: null,
+      },
+      {
+        type: "vocab-cloze",
+        word: { word_text: "le virus", meaning: "바이러스", furigana: "[viʁys]" },
+        options: null,
+        sentence: { main: "L'antivirus a bloqué le virus.", pron: "[lɑ̃tiviʁys a blɔke lə viʁys]" },
+      },
+      {
+        type: "vocab-typing",
+        word: { word_text: "le fric", meaning: "돈 (속어)", furigana: "[fʁik]" },
+        options: null,
+        sentence: null,
+      },
+    ],
+  },
+
+  // DRAFT — vocab/b2.js 대표 3문항.
+  "b2.js": {
+    source: "vocab/b2.js",
+    items: [
+      {
+        type: "vocab-choice",
+        word: { word_text: "le pouvoir", meaning: "권력, 힘", furigana: "[puvwaʁ]" },
+        options: ["권력, 힘", "법, 법률", "선거", "경제 성장"],
+        sentence: null,
+      },
+      {
+        type: "vocab-cloze",
+        word: { word_text: "la croissance", meaning: "(경제) 성장", furigana: "[kʁwasɑ̃s]" },
+        options: null,
+        sentence: { main: "Les chiffres confirment la croissance économique.", pron: "[le ʃifʁ kɔ̃fiʁm la kʁwasɑ̃s ekonomik]" },
+      },
+      {
+        type: "vocab-typing",
+        word: { word_text: "l'impôt (m.)", meaning: "세금", furigana: "[ɛ̃po]" },
+        options: null,
+        sentence: null,
+      },
+    ],
+  },
+
+  // DRAFT — vocab/b2_flelex.js 대표 3문항.
+  "b2_flelex.js": {
+    source: "vocab/b2_flelex.js",
+    items: [
+      {
+        type: "vocab-choice",
+        word: { word_text: "la minorité", meaning: "소수, 소수자", furigana: "[minɔʁite]" },
+        options: ["소수, 소수자", "차별", "안전, 보안", "공개 협의"],
+        sentence: null,
+      },
+      {
+        type: "vocab-cloze",
+        word: { word_text: "la discrimination", meaning: "차별", furigana: "[diskʁiminasjɔ̃]" },
+        options: null,
+        sentence: { main: "La loi interdit la discrimination à l'embauche.", pron: "[la lwa ɛ̃tɛʁdi la diskʁiminasjɔ̃ a lɑ̃boʃ]" },
+      },
+      {
+        type: "vocab-typing",
+        word: { word_text: "la sûreté", meaning: "안전, 보안", furigana: "[syʁte]" },
+        options: null,
+        sentence: null,
+      },
+    ],
+  },
+
+  // DRAFT — vocab/b2_flelex2.js 대표 3문항.
+  "b2_flelex2.js": {
+    source: "vocab/b2_flelex2.js",
+    items: [
+      {
+        type: "vocab-choice",
+        word: { word_text: "l'asile (m.)", meaning: "망명, 피난처", furigana: "[azil]" },
+        options: ["망명, 피난처", "구금, 소지", "특파원, 사절", "일본인, 일본어"],
+        sentence: null,
+      },
+      {
+        type: "vocab-cloze",
+        word: { word_text: "le japonais", meaning: "일본인, 일본어", furigana: "[ʒapɔnɛ]" },
+        options: null,
+        sentence: { main: "Elle apprend le japonais depuis deux ans.", pron: "[ɛl apʁɑ̃ lə ʒapɔnɛ dəpɥi døzɑ̃]" },
+      },
+      {
+        type: "vocab-typing",
+        word: { word_text: "la détention", meaning: "구금, 소지", furigana: "[detɑ̃sjɔ̃]" },
+        options: null,
+        sentence: null,
+      },
+    ],
+  },
+
+  // DRAFT — vocab/c1.js 대표 3문항.
+  "c1.js": {
+    source: "vocab/c1.js",
+    items: [
+      {
+        type: "vocab-choice",
+        word: { word_text: "l'enjeu (m.)", meaning: "쟁점, 관건", furigana: "[ɑ̃ʒø]" },
+        options: ["쟁점, 관건", "파급력", "진단", "문제의식"],
+        sentence: null,
+      },
+      {
+        type: "vocab-cloze",
+        word: { word_text: "la problématique", meaning: "문제의식, 논제", furigana: "[pʁɔblematik]" },
+        options: null,
+        sentence: { main: "Le rapport expose la problématique centrale.", pron: "[lə ʁapɔʁ ɛkspoz la pʁɔblematik sɑ̃tʁal]" },
+      },
+      {
+        type: "vocab-typing",
+        word: { word_text: "la portée", meaning: "범위, 파급력", furigana: "[pɔʁte]" },
+        options: null,
+        sentence: null,
+      },
+    ],
+  },
+
+  // DRAFT — vocab/c1_flelex.js 대표 3문항.
+  "c1_flelex.js": {
+    source: "vocab/c1_flelex.js",
+    items: [
+      {
+        type: "vocab-choice",
+        word: { word_text: "la molécule", meaning: "분자", furigana: "[mɔlekyl]" },
+        options: ["분자", "종합, 통합", "내벽", "항생제"],
+        sentence: null,
+      },
+      {
+        type: "vocab-cloze",
+        word: { word_text: "la synthèse", meaning: "종합, 통합", furigana: "[sɛ̃tɛz]" },
+        options: null,
+        sentence: { main: "Il présente la synthèse des résultats.", pron: "[il pʁezɑ̃t la sɛ̃tɛz de ʁezylta]" },
+      },
+      {
+        type: "vocab-typing",
+        word: { word_text: "l'antibiotique (m.)", meaning: "항생제", furigana: "[ɑ̃tibjɔtik]" },
+        options: null,
+        sentence: null,
+      },
+    ],
+  },
+
+  // DRAFT — vocab/c2.js 대표 3문항.
+  "c2.js": {
+    source: "vocab/c2.js",
+    items: [
+      {
+        type: "vocab-choice",
+        word: { word_text: "l'éloquence (f.)", meaning: "웅변, 능변", furigana: "[elɔkɑ̃s]" },
+        options: ["웅변, 능변", "입담", "과장된 어조", "완서법"],
+        sentence: null,
+      },
+      {
+        type: "vocab-cloze",
+        word: { word_text: "la litote", meaning: "완서법", furigana: "[litɔt]" },
+        options: null,
+        sentence: { main: "Cette phrase illustre la litote.", pron: "[sɛt fʁaz ilystʁ la litɔt]" },
+      },
+      {
+        type: "vocab-typing",
+        word: { word_text: "la verve", meaning: "생기, 입담", furigana: "[vɛʁv]" },
+        options: null,
+        sentence: null,
+      },
+    ],
+  },
+
+  // DRAFT — vocab/c2_flelex.js 대표 3문항.
+  "c2_flelex.js": {
+    source: "vocab/c2_flelex.js",
+    items: [
+      {
+        type: "vocab-choice",
+        word: { word_text: "le prolongement", meaning: "연장, 연속, 연장선", furigana: "[pʁɔlɔ̃ʒmɑ̃]" },
+        options: ["연장, 연속, 연장선", "청취자", "좌식 생활", "낙관주의"],
+        sentence: null,
+      },
+      {
+        type: "vocab-cloze",
+        word: { word_text: "la sédentarité", meaning: "정주성, 좌식 생활", furigana: "[sedɑ̃taʁite]" },
+        options: null,
+        sentence: { main: "Cette étude mesure la sédentarité au travail.", pron: "[sɛt etyd məzyʁ la sedɑ̃taʁite o tʁavaj]" },
+      },
+      {
+        type: "vocab-typing",
+        word: { word_text: "l'optimisme (m.)", meaning: "낙관주의, 낙천", furigana: "[ɔptimism]" },
+        options: null,
+        sentence: null,
+      },
+    ],
+  },
+};
+
+const exercisesDraft = { grammar, vocab };
+
+export default exercisesDraft;
