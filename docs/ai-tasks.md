@@ -185,6 +185,9 @@
 
 ## Codex-2 (codex2/*)
 ### doing
+- P2 리옹 시각 엔진 선행: `groundStyle: 'variant-v1'` opt-in 지구별 보행 지면 3종과
+  범용 props 4종을 CityScene에 등록하고, 미설정 25도시 렌더 불변·리옹 전후 crop을 검증
+  (`codex2/p2-lyon-visual-engine`, #531 근거)
 ### todo
 ### done (최근)
 - Q3 리옹 타일 정정 no-op hook: 공용 순수 `applyTileFixes()`·manifest v1을 마지막
