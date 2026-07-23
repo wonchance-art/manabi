@@ -97,7 +97,14 @@ import { stampCollectionDurationMs } from './stampCollectionPresentation';
 // 🏙️ 도시 정밀맵(계층형 맵) — CityScene 은 1개, cityId 로 파라미터화. 도시 추가 = cities/<id>.js 1개.
 //   도시 데이터는 이 청크(GameCanvas 는 next/dynamic ssr:false) 안에서만 로드된다 — /world First Load JS 무영향.
 import { buildCityScene } from './CityScene';
-import { CITY_DATA } from './cities/index.js';
+import {
+  CITY_BOOT_MODE,
+  CITY_MANIFEST,
+  hasCity,
+  initialCityIdForSpawn,
+  loadCitiesForBoot,
+  loadCity,
+} from './cities/index.js';
 import { CITY_MINI_SCALE, cityMinimapLayout, downsampleCityGrid } from './cityMinimap';
 import { directTransitDestinations } from '../../lib/world/transit';
 import { studiesRefForNode } from '../../lib/world/studiesRefs';
@@ -267,10 +274,10 @@ export const cityMinimapLayoutForCity = (cityId, cols, rows) => {
   };
 };
 
-function Minimap({ sceneRef, activeScene, onClose }) {
+function Minimap({ sceneRef, activeScene, cityData, onClose }) {
   const canvasRef = useRef(null);
   const city = typeof activeScene === 'string' && activeScene.startsWith('city:')
-    ? CITY_DATA[activeScene.slice(5)] : null;
+    ? cityData : null;
   // 📖 지구제 오버레이 on/off(오너 요청 2026-07-23) — districts 정의 도시에서만 노출.
   const [showDistricts, setShowDistricts] = useState(true);
 
@@ -498,6 +505,8 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
   // cityPrompt: 전국맵 도시 노드 A → "시내로 들어가기" 확인 { to, name } | null
   // activeScene: 활성 씬 식별자('plaza'|'airport'|'city:<id>'|'transsib-corridor') — 오버레이 분기.
   const [cityPrompt, setCityPrompt] = useState(null);
+  const [cityLoadStatus, setCityLoadStatus] = useState(null);
+  const [activeCityData, setActiveCityData] = useState(null);
   const [chapterPrompt, setChapterPrompt] = useState(null); // 학습 도어 확인 { chapter|reading, node } | null
   const [activeScene, setActiveScene] = useState('plaza');
   const [abbeyAct, setAbbeyAct] = useState(null);
@@ -510,6 +519,9 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
   const ferryPromptRef = useRef(null);
   const minimapOpenRef = useRef(false);
   const cityPromptRef = useRef(null);
+  const cityLoadStatusRef = useRef(null);
+  const activeCityDataRef = useRef(null);
+  const enterCityRef = useRef(null);
   const chapterPromptRef = useRef(null);
 
   // ── 🚃 정기 교통(도시맵 이동 수단, docs §8) ──
@@ -601,7 +613,7 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
     // ct_pc(도시 정밀맵)만 활성 도시 탐색이 필요해 특수 처리.
     const candidates = [
       ...AVATAR_REBAKE_STATIC_TARGETS.map(([prefix, sceneKey]) => [prefix, game.scene.getScene(sceneKey)]),
-      ['ct_pc', Object.values(CITY_DATA).map((city) => game.scene.getScene(`city:${city.id}`)).find((scene) => scene?.textures?.exists('ct_pc_down_n'))],
+      ['ct_pc', CITY_MANIFEST.map((city) => game.scene.getScene(`city:${city.id}`)).find((scene) => scene?.textures?.exists('ct_pc_down_n'))],
     ];
     for (const [prefix, scene] of candidates) {
       if (!scene?.textures?.exists(`${prefix}_down_n`)) continue;
@@ -622,6 +634,8 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
   useEffect(() => { gameMenuOpenRef.current = gameMenuOpen; }, [gameMenuOpen]);
   useEffect(() => { entryBriefingRef.current = entryBriefing; }, [entryBriefing]);
   useEffect(() => { cityPromptRef.current = cityPrompt; }, [cityPrompt]);
+  useEffect(() => { cityLoadStatusRef.current = cityLoadStatus; }, [cityLoadStatus]);
+  useEffect(() => { activeCityDataRef.current = activeCityData; }, [activeCityData]);
   useEffect(() => { chapterPromptRef.current = chapterPrompt; }, [chapterPrompt]);
   useEffect(() => { nearStationRef.current = nearStation; }, [nearStation]);
   useEffect(() => { stationSelectRef.current = stationSelect; }, [stationSelect]);
@@ -693,6 +707,11 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
       runOn: () => { if (sceneRef.current) sceneRef.current.runHeld = true; },
       runOff: () => { if (sceneRef.current) sceneRef.current.runHeld = false; },
       interact: () => {
+        if (cityLoadStatusRef.current?.phase === 'loading') return;
+        if (cityLoadStatusRef.current?.phase === 'error') {
+          enterCityRef.current?.(cityLoadStatusRef.current.cityId);
+          return;
+        }
         if (gameMenuOpenRef.current) return;
         if (entryBriefingRef.current) return;
         if (airportExitStatus?.phase === 'saving') return;
@@ -757,6 +776,11 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
         if (nearQuestRef.current) setReviewOpen(true);
       },
       cancel: () => {
+        if (cityLoadStatusRef.current?.phase === 'loading') return;
+        if (cityLoadStatusRef.current?.phase === 'error') {
+          enterCityRef.current?.(cityLoadStatusRef.current.cityId);
+          return;
+        }
         if (gameMenuOpenRef.current) { setGameMenuOpen(false); return; }
         if (entryBriefingRef.current) { setEntryBriefing(null); return; }
         if (airportExitStatus?.phase === 'saving') return;
@@ -839,11 +863,11 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
     const lock = reviewOpen || !!ferryPrompt || !!npcDialog || !!cityPrompt || !!chapterPrompt
       || !!stationSelect || !!corridorPrompt || !!regionGatePrompt || !!airHubPrompt
       || airHubStatus?.phase === 'saving' || airportExitStatus?.phase === 'saving'
-      || albumOpen || gameMenuOpen || !!entryBriefing;
+      || cityLoadStatus?.phase === 'loading' || albumOpen || gameMenuOpen || !!entryBriefing;
     const locked = lock || !!scene.railTrip;
     scene.inputLocked = locked;
     if (locked) { if (scene.heldDirs) scene.heldDirs.length = 0; scene.tapTile = null; scene.runHeld = false; }
-  }, [reviewOpen, ferryPrompt, npcDialog, cityPrompt, chapterPrompt, stationSelect, corridorPrompt, regionGatePrompt, airHubPrompt, airHubStatus?.phase, airportExitStatus?.phase, albumOpen, gameMenuOpen, entryBriefing]);
+  }, [reviewOpen, ferryPrompt, npcDialog, cityPrompt, chapterPrompt, stationSelect, corridorPrompt, regionGatePrompt, airHubPrompt, airHubStatus?.phase, airportExitStatus?.phase, cityLoadStatus?.phase, albumOpen, gameMenuOpen, entryBriefing]);
 
   useEffect(() => () => clearTimeout(entryBriefingTimerRef.current), []);
 
@@ -883,8 +907,26 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
     bus.on('chat:msg', onChatMsg);
 
     (async () => {
-      const Phaser = (await import('phaser')).default;
+      const requestedInitialCityId = initialCityIdForSpawn(initialSpawnRef.current);
+      const [phaserModule, bootCityResult] = await Promise.all([
+        import('phaser'),
+        loadCitiesForBoot(initialSpawnRef.current, { mode: CITY_BOOT_MODE })
+          .then((cities) => ({ cities, error: null }))
+          .catch((error) => ({ cities: [], error })),
+      ]);
+      const Phaser = phaserModule.default;
       if (destroyed || !hostRef.current) return;
+      const bootCityPayloads = bootCityResult.cities;
+      const bootCityIds = new Set(bootCityPayloads.map(({ id }) => id));
+      if (bootCityResult.error && requestedInitialCityId) {
+        const status = {
+          phase: 'error',
+          cityId: requestedInitialCityId,
+          message: '도시를 불러오지 못했어요. 연결을 확인해 주세요.',
+        };
+        cityLoadStatusRef.current = status;
+        setCityLoadStatus(status);
+      }
 
       class WorldScene extends Phaser.Scene {
         constructor() { super('world'); }
@@ -1455,7 +1497,11 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
           // autostart 초기 부팅에도 기본 데이터 `{}` 를 전달하므로 `!bootData` 로는 부팅을 못 가른다 —
           // 복귀 데이터(bootData.spawn) 유무로 가른다. 도시 데이터가 없으면 전국맵 폴백(계속 진행).
           {
-            const redirect = cityRedirectScene(bootData, initialSpawnRef.current, (id) => !!CITY_DATA[id]);
+            const redirect = cityRedirectScene(
+              bootData,
+              initialSpawnRef.current,
+              (id) => bootCityIds.has(id),
+            );
             if (redirect) {
               this.scene.start(redirect, { spawn: initialSpawnRef.current });
               return;
@@ -1711,12 +1757,13 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
 
         // 전국맵 → 도시 정밀맵 진입(페이드 아웃 + 씬 전환). React 프롬프트 "들어가기"가 호출.
         enterCity(id) {
-          if (!CITY_DATA[id] || this.enteringCity) return;
+          if (!hasCity(id) || this.enteringCity || !this.scene.manager.keys?.[`city:${id}`]) return false;
           this.enteringCity = true;
           this.inputLocked = true;
           this.heldDirs.length = 0; this.tapTile = null; this.runHeld = false;
           this.cameras.main.fadeOut(CITY_FADE_MS, 0, 0, 0);
           this.cameras.main.once('camerafadeoutcomplete', () => { this.scene.start(`city:${id}`); });
+          return true;
         }
 
         // 퀘스트 채점 연출 — 정답이면 펫 자리에 하트 즉시.
@@ -2350,7 +2397,7 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
           setAirHubPrompt(null); setAirHubStatus(null);
         },
         worldNodes: ALL_WORLD_NODES,
-        hasCity: (cityId) => !!CITY_DATA[cityId],
+        hasCity,
         setNearGate: (gate) => setRegionNearGate(gate),
         setNearNode: (node) => setNearNode(toInteractiveNode(node)),
         setStatus: (status) => setRegionStatus(status),
@@ -2380,9 +2427,8 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
         onReady: () => resetScenePeers(),
       }));
 
-      // 🏙️ 도시 정밀맵 씬(들) — CityScene 은 1개 팩토리를 cityId 로 파라미터화. 씬 키 'city:<id>'.
-      // ctx: 씬 ↔ React 브리지(sceneRef 바인딩 · 근접 노드 통지 · 진입 통지 · 전국맵 복귀 스폰).
-      const cityScenes = Object.values(CITY_DATA).map((cityData) => {
+      // 🏙️ 도시 정밀맵 씬 — 부팅 시에는 0개(직행 복귀만 1개), 이후 선택 payload만 등록한다.
+      const buildRegisteredCityScene = (cityData) => {
         const rn = getNode(cityData.returnNode);
         const returnSpawn = worldNodeReturnSpawn(rn) || {
           scene: 'plaza', x: POI.SEOUL.x, y: POI.SEOUL.y,
@@ -2391,6 +2437,8 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
           userId, petRef, nickRef, avatarRef,
           bindScene: (s) => { sceneRef.current = s; },
           onEnter: () => {
+            activeCityDataRef.current = cityData;
+            setActiveCityData(cityData);
             setActiveScene(`city:${cityData.id}`);
             setNearNode(null); setNearQuest(false); setCityPrompt(null); setChapterPrompt(null); setDescOpen(false); setMinimapOpen(false);
             setNearStation(null); setStationSelect(null); setStationToast(null); setTransitStatus(null);
@@ -2413,7 +2461,8 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
           worldReturn: returnSpawn,
         };
         return buildCityScene(Phaser, cityData, cityCtx);
-      });
+      };
+      const cityScenes = bootCityPayloads.map(buildRegisteredCityScene);
 
       // Scale.NONE — Phaser 내부 드로잉 버퍼를 320×288(2배 백킹)로 고정하고, 화면 확대는 CSS로 직접 제어한다.
       // (Phaser의 FIT/RESIZE는 비정수 배율을 허용해 도트가 뭉개진다. 정수 배율만 보장하려면
@@ -2428,6 +2477,88 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
         scene: [WorldScene, AirportScene, MsmAbbeyScene, JagalchiMarketScene, FujiClimbScene, TranssibCorridorScene, ...regionScenes, ...cityScenes],
       });
       gameRef.current = game;
+
+      const citySceneAdds = new Map();
+      const citySceneRegistered = (id) => Boolean(game.scene.keys?.[`city:${id}`]);
+      const ensureCityScene = (id) => {
+        if (!hasCity(id)) {
+          return Promise.reject(Object.assign(new Error(`Unknown city id: ${String(id)}`), {
+            code: 'UNKNOWN_CITY',
+          }));
+        }
+        if (citySceneRegistered(id)) return loadCity(id);
+        const existing = citySceneAdds.get(id);
+        if (existing) return existing;
+        const pending = loadCity(id).then((cityData) => {
+          if (destroyed || gameRef.current !== game) {
+            throw Object.assign(new Error('GameCanvas unmounted during city load'), {
+              code: 'CITY_LOAD_CANCELLED',
+            });
+          }
+          if (!citySceneRegistered(id)) {
+            game.scene.add(`city:${id}`, buildRegisteredCityScene(cityData), false);
+          }
+          return cityData;
+        }).finally(() => {
+          if (citySceneAdds.get(id) === pending) citySceneAdds.delete(id);
+        });
+        citySceneAdds.set(id, pending);
+        return pending;
+      };
+
+      enterCityRef.current = async (id) => {
+        const sourceScene = sceneRef.current;
+        if (
+          !sourceScene
+          || !hasCity(id)
+          || sourceScene.enteringCity
+          || cityLoadStatusRef.current?.phase === 'loading'
+        ) return false;
+
+        const loading = { phase: 'loading', cityId: id };
+        cityLoadStatusRef.current = loading;
+        setCityLoadStatus(loading);
+        sourceScene.inputLocked = true;
+        if (sourceScene.heldDirs) sourceScene.heldDirs.length = 0;
+        sourceScene.tapTile = null;
+        sourceScene.runHeld = false;
+
+        try {
+          const cityData = await ensureCityScene(id);
+          if (
+            destroyed
+            || gameRef.current !== game
+            || sceneRef.current !== sourceScene
+            || sourceScene.destroyed
+          ) {
+            if (!destroyed) {
+              cityLoadStatusRef.current = null;
+              setCityLoadStatus(null);
+            }
+            return false;
+          }
+          activeCityDataRef.current = cityData;
+          setActiveCityData(cityData);
+          cityLoadStatusRef.current = null;
+          setCityLoadStatus(null);
+          if (sourceScene.enterCity?.(id) !== true) {
+            throw new Error(`City scene transition rejected: ${id}`);
+          }
+          return true;
+        } catch (error) {
+          if (destroyed || error?.code === 'CITY_LOAD_CANCELLED') return false;
+          sourceScene.inputLocked = false;
+          const failure = {
+            phase: 'error',
+            cityId: id,
+            message: '도시를 불러오지 못했어요. 연결을 확인해 주세요.',
+          };
+          cityLoadStatusRef.current = failure;
+          setCityLoadStatus(failure);
+          return false;
+        }
+      };
+
       if (game.canvas) game.canvas.style.imageRendering = 'pixelated';
       if (localWorldDebugEnabled()) {
         debugBridge = Object.freeze({
@@ -2472,6 +2603,7 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
       if (debugBridge && window.__MANABI_WORLD_DEBUG__ === debugBridge) {
         delete window.__MANABI_WORLD_DEBUG__;
       }
+      enterCityRef.current = null;
       sceneRef.current = null;
       if (gameRef.current) { gameRef.current.destroy(true); gameRef.current = null; }
     };
@@ -2598,7 +2730,12 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
 
       {/* 미니맵 오버레이 — 전국(다운샘플 4색) 또는 도시(구역 라벨) + 플레이어/노드 점. B로도 닫힘. */}
       {minimapOpen && (
-        <Minimap sceneRef={sceneRef} activeScene={activeScene} onClose={() => setMinimapOpen(false)} />
+        <Minimap
+          sceneRef={sceneRef}
+          activeScene={activeScene}
+          cityData={activeCityData}
+          onClose={() => setMinimapOpen(false)}
+        />
       )}
 
       {/* 장소 게이트 근접 → 상호작용 프롬프트(story-scene: 공항 진입 · ferry: 페리 · city: 도시 진입). 설명 병기. */}
@@ -2678,7 +2815,11 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
             <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
               <button
                 type="button"
-                onClick={() => { const to = cityPrompt.to; setCityPrompt(null); sceneRef.current?.enterCity?.(to); }}
+                onClick={() => {
+                  const to = cityPrompt.to;
+                  setCityPrompt(null);
+                  enterCityRef.current?.(to);
+                }}
                 style={{ ...gbcButtonPrimary, whiteSpace: 'nowrap' }}
               >
                 들어가기
@@ -2692,6 +2833,32 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {cityLoadStatus && (
+        <div
+          role="status"
+          aria-live="polite"
+          style={{
+            position: 'absolute', left: '50%', top: 42, transform: 'translateX(-50%)', zIndex: 9,
+            ...gbcPanel, width: 'min(90%, 310px)', padding: '8px 10px', textAlign: 'center',
+            fontSize: '0.7rem', lineHeight: 1.5,
+          }}
+        >
+          {cityLoadStatus.phase === 'loading' && <>🏙️ 도시 지형 불러오는 중…</>}
+          {cityLoadStatus.phase === 'error' && (
+            <>
+              <div>⚠ {cityLoadStatus.message}</div>
+              <button
+                type="button"
+                onClick={() => enterCityRef.current?.(cityLoadStatus.cityId)}
+                style={{ ...gbcButtonPrimary, marginTop: 6, fontSize: '0.68rem', padding: '3px 9px' }}
+              >
+                다시 시도 Ⓐ/Ⓑ
+              </button>
+            </>
+          )}
         </div>
       )}
 
@@ -3132,7 +3299,7 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
 
       {/* 🚃 현재 역에서 직통으로 갈 수 있는 다음 운행편. 선택 후 실제 출발 시각까지 기다린다. */}
       {stationSelect && (() => {
-        const cityData = CITY_DATA[stationSelect.cityId];
+        const cityData = activeCityData?.id === stationSelect.cityId ? activeCityData : null;
         const dests = directTransitDestinations(cityData?.transit, cityData?.stations, stationSelect.fromId);
         return (
           <div style={{
