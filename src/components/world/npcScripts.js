@@ -912,6 +912,408 @@ export const NPC_SCRIPTS = {
     ],
     reward: '🏯 오사카 성곽 완주! どこから見学·何ができますか·陶芸·友禅 — 역사 유산을 제대로 감상하는 일본어를 배웠어요.',
   },
+
+  // ── 리옹 파르디외·레알 시장 1안 — 불어 첫걸음: 품목·수량·길 묻기 (채움 라운드 2) ──
+  'lyon-part-dieu-marche-1': {
+    label: '시장 상인',
+    emoji: '🥬',
+    intro: '리옹 실내 시장. 신선한 채소와 과일을 사며 품목·수량을 배워요.',
+    steps: [
+      { t: 'narr', text: '돔형 유리 지붕 아래로 햇빛이 쏟아진다. 리옹의 부엌이라 불리는 실내 시장 — 신선한 채소와 과일 냄새가 코끝에 가득하다.' },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Bonjour ! Vous désirez ?',
+        yomi: 'Bonjour ! Vous désirez ? (봉주르! 부 데지레?)',
+        ko: '안녕하세요! 뭘 원하세요?',
+        narr: '신선한 채소를 사고 싶다. 어떻게 말할까?',
+      },
+      {
+        t: 'ask', mode: 'choice',
+        prompt: '「신선한 상추를 찾고 있어요」라고 말하려면?',
+        choices: [
+          { ja: 'Je cherche de la laitue fraîche.', yomi: '(즈 셰르슈 드 라 레튀 프레슈)', correct: true },
+          { ja: 'C\'est fini.', yomi: '(세 피니)' },
+          { ja: 'Combien de personnes ?', yomi: '(콩비앙 드 페르손?)' },
+        ],
+        why: 'Je cherche(찾고 있어) + de la + 상품명 = 가장 자연스러운 쇼핑 표현이에요. C\'est fini는 "끝났어요", Combien de personnes는 "몇 명?"이라는 뜻이에요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Ah, la laitue ! Combien en voulez-vous ?',
+        yomi: 'Ah, la laitue ! Combien en voulez-vous ? (아, 라 레튀! 콩비앙 앙 부레-부?)',
+        ko: '아, 상추! 얼마만큼 원하세요?',
+        narr: '수량을 정해야겠다 — "두 개 주세요" 같은 말이 필요해.',
+      },
+      {
+        t: 'ask', mode: 'type',
+        prompt: '상추 2개를 달라고 해요. 「___ laitues, s\'il vous plaît.」',
+        before: '', after: ' laitues, s\'il vous plaît.',
+        answer: 'Deux', accept: ['Deux', 'deux'],
+        hint: '두아 — "2개"를 뜻해요.',
+        why: 'Deux(둘) = 2. 수량 + 복수 명사(laitues) + s\'il vous plaît = 정중한 주문이에요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Voilà ! C\'est tout ?',
+        yomi: 'Voilà ! C\'est tout ? (부알라! 세 투?)',
+        ko: '여기요! 그게 다예요?',
+        narr: '채소뿐이 아니라 과일도 사야겠다. 더 있을까 묻는 표현은?',
+      },
+      {
+        t: 'ask', mode: 'choice',
+        prompt: '다른 채소도 찾고 싶어요. 맞는 말은?',
+        choices: [
+          { ja: 'Vous avez des tomates ?', yomi: '(부 자베 데 토마트?)', correct: true },
+          { ja: 'Au revoir !', yomi: '(오 르부아르!)' },
+          { ja: 'Merci beaucoup.', yomi: '(메르시 보쿠)' },
+        ],
+        why: '「Vous avez + de + 상품」= "~있어요?"라고 물어보는 표현. Au revoir는 헤어질 때, Merci는 감사할 때예요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Oui, les plus belles là-bas. Très frais !',
+        yomi: 'Oui, les plus belles là-bas. Très frais ! (우이, 르 플루 벨 라-바. 트레 프레!)',
+        ko: '네, 저쪽에 가장 신선한 게 있어요.',
+        narr: '시장의 활기 속에서 신선함이 느껴진다.',
+      },
+    ],
+    reward: '🥬 시장 쇼핑 완주! Je cherche·Combien en voulez-vous·Vous avez — 리옹 시장에서 품목을 물어볼 수 있어요.',
+  },
+
+  // ── 리옹 파르디외·레알 시장 2안 — 불어 첫걸음: 제품 확인·계산 (채움 라운드 2) ──
+  'lyon-part-dieu-marche-2': {
+    label: '시장 상인',
+    emoji: '🧅',
+    intro: '리옹 실내 시장 내 도로변 노점. 가격을 묻고 계산하는 여행 표현.',
+    steps: [
+      { t: 'narr', text: '시장 통로의 한쪽 모퉁이, 마늘과 양파가 엮인 노점. 상인이 손에 계량대를 들고 있다.' },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Bonjour ! Ail, oignon, combien ?',
+        yomi: 'Bonjour ! Ail, oignon, combien ? (봉주르! 아유, 오뇽, 콩비앙?)',
+        ko: '안녕하세요! 마늘, 양파, 얼마예요?',
+        narr: '구매한 마늘과 양파의 가격을 알아봐야 한다.',
+      },
+      {
+        t: 'ask', mode: 'type',
+        prompt: '「얼마예요?」라고 가격을 물어봐요. 「C\'est ___?」',
+        before: 'C\'est ', after: '?',
+        answer: 'combien', accept: ['combien', 'Combien'],
+        hint: '콩비앙 — "얼마"라는 뜻.',
+        why: 'C\'est combien? = 이거 얼마예요? 시장에서 가장 많이 쓰는 질문이에요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Trois euros, quatre euros. Très bon prix !',
+        yomi: 'Trois euros, quatre euros. Très bon prix ! (트루아 외로, 카트르 외로. 트레 본 프리!)',
+        ko: '3유로, 4유로. 정말 좋은 가격이에요!',
+        narr: '마늘은 3유로, 양파는 4유로. 합계를 생각해 본다.',
+      },
+      {
+        t: 'ask', mode: 'choice',
+        prompt: '마늘과 양파를 다 사요. 「Combien en tout ?」(다 합쳐서 얼마?) 상인이 말할 것은?',
+        choices: [
+          { text: '7유로(3 + 4)', correct: true },
+          { text: '3.50유로' },
+          { text: '12유로' },
+        ],
+        why: '마늘 3유로 + 양파 4유로 = 7유로예요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Sept euros en tout. Vous payez comment ?',
+        yomi: 'Sept euros en tout. Vous payez comment ? (셉 외로 앙 투. 부 파예 코망?)',
+        ko: '총 7유로예요. 어떻게 계산하세요?',
+        narr: '카드인지 현금인지 알아보려는 질문이다.',
+      },
+      {
+        t: 'ask', mode: 'choice',
+        prompt: '현금으로 계산하려고 해요. 맞는 말은?',
+        choices: [
+          { ja: 'En espèces, s\'il vous plaît.', yomi: '(앙 에스페스, 실 부 플레)', correct: true },
+          { ja: 'Par carte bancaire.', yomi: '(파르 카르트 방케르)' },
+          { ja: 'Encore un.', yomi: '(앙코르 앙)' },
+        ],
+        why: '「En espèces」= 현금으로. 「Par carte」는 "카드로", 「Encore un」은 "하나 더"라는 뜻이에요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Voilà, et voilà ! Bon marché. Merci !',
+        yomi: 'Voilà, et voilà ! Bon marché. Merci ! (부알라, 에 부알라! 본 마르셰. 메르시!)',
+        ko: '여기요, 그리고 여기요! 싼 가격이에요. 감사합니다!',
+        narr: '거스름돈을 받고 시장을 떠난다 — 리옹의 부엌은 항상 따뜻하다.',
+      },
+    ],
+    reward: '🧅 시장 거래 완주! C\'est combien·Combien en tout·En espèces — 유럽 시장에서 바로 통해요.',
+  },
+
+  // ── 보르도 구시가 제과점 직원 — 불어 첫걸음: 빵 종류·포장 (채움 라운드 2) ──
+  'bordeaux-centre-historique-patisserie': {
+    label: '제과점 직원',
+    emoji: '🥖',
+    intro: '보르도 구시가 상점가. 프랑스 빵과 크림 케이크를 사며 포장을 배워요.',
+    steps: [
+      { t: 'narr', text: '구시가 돌담 골목, 향긋한 버터 냄새가 나는 제과점 앞. 진열장 유리 안으로 갓 구운 빵과 케이크가 줄지어 있다.' },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Bonjour ! Qu\'est-ce que ça sera ?',
+        yomi: 'Bonjour ! Qu\'est-ce que ça sera ? (봉주르! 케스크 사 세라?)',
+        ko: '안녕하세요! 뭘 드릴까요?',
+        narr: '바게트와 크림 케이크가 맛있어 보인다. 뭘 고르면 좋을까?',
+      },
+      {
+        t: 'ask', mode: 'choice',
+        prompt: '「크림 케이크 하나 주세요」라고 주문하려면?',
+        choices: [
+          { ja: 'Un mille-feuille, s\'il vous plaît.', yomi: '(앙 밀페유, 실 부 플레)', correct: true },
+          { ja: 'Non, merci.', yomi: '(농, 메르시)' },
+          { ja: 'Combien c\'est ?', yomi: '(콩비앙 세?)' },
+        ],
+        why: 'mille-feuille(밀페유)는 프랑스식 크림 케이크(천 개 층). s\'il vous plaît를 붙이면 정중한 주문이 돼요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Un mille-feuille. Et avec le pain ?',
+        yomi: 'Un mille-feuille. Et avec le pain ? (앙 밀페유. 에 아벡 르 팽?)',
+        ko: '크림 케이크 하나요. 그리고 빵도 함께?',
+        narr: '빵을 하나 더 사고 싶다. 바게트를 고른다.',
+      },
+      {
+        t: 'ask', mode: 'type',
+        prompt: '「바게트도 주세요」라고 말해요. 「___ baguette, s\'il vous plaît.」',
+        before: '', after: ' baguette, s\'il vous plaît.',
+        answer: 'Une', accept: ['Une', 'une'],
+        hint: '윤 — 여성형 "1개" (baguette는 여성명사)',
+        why: 'Une baguette(윤 바겟) = 바게트 하나. 바게트는 여성 명사이므로 une(여성형)을 써요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Voilà ! Vous voulez un sac ?',
+        yomi: 'Voilà ! Vous voulez un sac ? (부알라! 부 불레 앙 삭?)',
+        ko: '여기요! 봉투 필요하세요?',
+        narr: '케이크가 으스러질까 봐 봉투는 필요해 보인다.',
+      },
+      {
+        t: 'ask', mode: 'choice',
+        prompt: '봉투를 원해요. 맞는 말은?',
+        choices: [
+          { ja: 'Oui, un sac, s\'il vous plaît.', yomi: '(우이, 앙 삭, 실 부 플레)', correct: true },
+          { ja: 'Non, pas de sac.', yomi: '(농, 파 드 삭)' },
+          { ja: 'C\'est tout ?', yomi: '(세 투?)' },
+        ],
+        why: '「Oui, un sac」= 네, 봉투 주세요. 「Pas de」는 "없이"라는 부정이에요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Voilà ! Bonne journée !',
+        yomi: 'Voilà ! Bonne journée ! (부알라! 본 주르네!)',
+        ko: '여기요! 좋은 하루 보내세요!',
+        narr: '종이 봉투에 담긴 케이크와 바게트. 구시가 골목의 카페로 향한다.',
+      },
+    ],
+    reward: '🥖 제과점 쇼핑 완주! mille-feuille·Une baguette·Vous voulez un sac — 보르도 상점가에서 바로 써요.',
+  },
+
+  // ── 보르도 샤르트롱 골동품점 직원 — 불어 첫걸음: 물건·가격·상태 (채움 라운드 2) ──
+  'bordeaux-nord-rive-antiquaire': {
+    label: '골동품점 직원',
+    emoji: '🪑',
+    intro: '보르도 구 와인 상인 지구, 골동품 거리. 옛 물건의 상태와 가격을 배워요.',
+    steps: [
+      { t: 'narr', text: '강변 창고 거리, 옛 상업 지구에 들어선 골동품 상점. 목재로 된 의자, 오래 된 기구들이 현관부터 쌓여 있다.' },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Bonjour ! Cherchez-vous quelque chose ?',
+        yomi: 'Bonjour ! Cherchez-vous quelque chose ? (봉주르! 셰르셰 부 켈크 쇼즈?)',
+        ko: '안녕하세요! 뭔가 찾으세요?',
+        narr: '이 오래된 나무 의자는 언제쯤 만들어진 걸까?',
+      },
+      {
+        t: 'ask', mode: 'choice',
+        prompt: '「이 의자는 언제 만들어졌어요?」라고 물으려면?',
+        choices: [
+          { ja: 'Cette chaise, c\'est de quand ?', yomi: '(셋 셰즈, 세 드 캉?)', correct: true },
+          { ja: 'C\'est fragile ?', yomi: '(세 프라질?)' },
+          { ja: 'Vous fermez à quelle heure ?', yomi: '(부 페르메 아 켈뢰르?)' },
+        ],
+        why: '「c\'est de quand」= "언제 시대거예요?"라는 고미술 물건의 연대를 묻는 표현. 「Fragile」은 "깨지기 쉬워요?", 「fermer」은 "닫아요"라는 뜻이에요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: '19e siècle, elle est solide, très beau travail.',
+        yomi: '19e siècle, elle est solide, très beau travail. (디즈-뇨뤼크, 엘 에 솔리드, 트레 보 트라바유)',
+        ko: '19세기예요. 견고하고, 아름다운 공예죠.',
+        narr: '19세기(dix-neuvième siècle) 의자다. 조각과 색이 훌륭해 보인다.',
+      },
+      {
+        t: 'ask', mode: 'type',
+        prompt: '「얼마예요?」라고 물어봐요. 「Quel est le ___ ?」',
+        before: 'Quel est le ', after: ' ?',
+        answer: 'prix', accept: ['prix', 'Prix'],
+        hint: '프리 — "가격"이라는 뜻.',
+        why: 'Quel est le prix? = 가격이 얼마인가요? 골동품점에서 가장 중요한 질문이에요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: '450 euros. Mais pour vous, 400. C\'est une bonne affaire !',
+        yomi: '450 euros. Mais pour vous, 400. C\'est une bonne affaire ! (카트르 상 싱깡 외로. 메 뿌르 부, 카토르 상. 세 윤 본 아페르!)',
+        ko: '450유로예요. 하지만 당신께는 400유로. 좋은 거래죠!',
+        narr: '400유로의 가격. 19세기 의자치고는 합리적인 가격이다.',
+      },
+      {
+        t: 'ask', mode: 'choice',
+        prompt: '가격이 마음에 드세요? 맞는 말은?',
+        choices: [
+          { ja: 'C\'est d\'accord, je la prends.', yomi: '(세 다코르, 주 라 프랑)', correct: true },
+          { ja: 'C\'est cher.', yomi: '(세 셰르)' },
+          { ja: 'Vous acceptez les chèques ?', yomi: '(부 악셉테 레 셱?)' },
+        ],
+        why: '「C\'est d\'accord, je la prends」= 괜찮아요, 사겠어요. 「Cher」는 "비싸요". 「Accepter les chèques」는 "수표 받아요?"라는 뜻이에요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Merveilleux ! Et voilà, c\'est à vous !',
+        yomi: 'Merveilleux ! Et voilà, c\'est à vous ! (메르베유! 에 부알라, 세 타 부!)',
+        ko: '훌륭해요! 자, 이제 당신 거네요!',
+        narr: '19세기 목재 의자. 보르도 골동품 거리의 찾아낸 보물 중 하나.',
+      },
+    ],
+    reward: '🪑 골동품점 완주! c\'est de quand·Quel est le prix·C\'est d\'accord — 유럽의 고미술 거리에서 흥정해요.',
+  },
+
+  // ── 스트라스부르 그랑딜 서점 직원 — 불어 첫걸음: 도서 분야·위치 (채움 라운드 2) ──
+  'strasbourg-grande-ile-librairie': {
+    label: '서점 직원',
+    emoji: '📖',
+    intro: '스트라스부르 구시가 서점. 책 분야와 위치를 묻고 찾는 표현.',
+    steps: [
+      { t: 'narr', text: '대성당 근처 좁은 골목, 대나무 유리 문의 작은 서점. 책장이 높게 쌓여 있고, 노천 카페 풍경 그림책들이 진열대에 놓여 있다.' },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Bonjour ! Vous cherchez ?',
+        yomi: 'Bonjour ! Vous cherchez ? (봉주르! 부 셰르셰?)',
+        ko: '안녕하세요! 뭔가 찾고 계세요?',
+        narr: '스트라스부르에 대한 여행 가이드를 찾고 있다.',
+      },
+      {
+        t: 'ask', mode: 'choice',
+        prompt: '「스트라스부르 가이드북 있어요?」라고 물으려면?',
+        choices: [
+          { ja: 'Avez-vous un guide de Strasbourg ?', yomi: '(아베 부 앙 기드 드 스트라스부르?)', correct: true },
+          { ja: 'Vous fermez à quelle heure ?', yomi: '(부 페르메 아 켈뢰르?)' },
+          { ja: 'C\'est combien le guide ?', yomi: '(세 콩비앙 르 기드?)' },
+        ],
+        why: '「Avez-vous + un guide」= "가이드 있어요?"라고 소장 물건을 물어보는 표현. 「fermer」은 영업 시간, 두 번째 질문은 가격이에요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Mais oui ! Nous en avons plusieurs. Français ou anglais ?',
+        yomi: 'Mais oui ! Nous en avons plusieurs. Français ou anglais ? (메 우이! 누 앙 자봉 플뤼조르. 프랑세 우 앙글레?)',
+        ko: '물론이죠! 여러 권이 있어요. 불어 아니면 영어?',
+        narr: '불어로 된 가이드를 원한다. 어느 쪽이라고 말할까?',
+      },
+      {
+        t: 'ask', mode: 'type',
+        prompt: '불어로 된 가이드를 달라고 해요. 「___ , s\'il vous plaît.」',
+        before: '', after: ', s\'il vous plaît.',
+        answer: 'Le guide en français', accept: ['Le guide en français', 'guide en français', 'en français'],
+        hint: '르 기드 앙 프랑세 — "불어 가이드"',
+        why: 'Le guide en français = 불어로 된 가이드. en + 언어 = "~언어로"라는 뜻이에요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Voilà ! Le meilleur guide de la ville. La cathédrale, les musées, tout y est.',
+        yomi: 'Voilà ! Le meilleur guide de la ville. La cathédrale, les musées, tout y est. (부알라! 르 메유르 기드 드 라 빌. 라 카테드랄, 레 뮤제, 투 이 에!)',
+        ko: '여기요! 도시 최고의 가이드북이에요. 대성당, 박물관, 다 나와 있어요.',
+        narr: '스트라스부르의 모든 장소가 담겨 있는 가이드북이다.',
+      },
+      {
+        t: 'ask', mode: 'choice',
+        prompt: '가이드북과 함께 지도도 사고 싶어요. 맞는 말은?',
+        choices: [
+          { ja: 'Et une carte de la ville, s\'il vous plaît.', yomi: '(에 윤 카르트 드 라 빌, 실 부 플레)', correct: true },
+          { ja: 'Vous acceptez les cartes bancaires ?', yomi: '(부 악셉테 레 카르트 방케르?)' },
+          { ja: 'C\'est votre dernier exemplaire ?', yomi: '(세 보트르 데르니에 텍스플레르?)' },
+        ],
+        why: '「Et une carte de la ville」= 그리고 도시 지도도. 두 물건을 함께 사는 자연스러운 표현이에요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Bien sûr ! Voilà. Vous allez bien aimer la ville !',
+        yomi: 'Bien sûr ! Voilà. Vous allez bien aimer la ville ! (비앙 슈르! 부알라. 부 갈레 비앙 에메 라 빌!)',
+        ko: '물론이죠! 여기요. 도시를 정말 좋아하실 거예요!',
+        narr: '가이드북과 지도를 들고 서점을 떠난다. 알자스의 정취가 기다린다.',
+      },
+    ],
+    reward: '📖 서점 방문 완주! Avez-vous un guide·Le guide en français·Et une carte — 유럽 도시의 서점에서 자신 있게요.',
+  },
+
+  // ── 스트라스부르 유럽 지구 자전거 대여 직원 — 불어 첫걸음: 대여 시간·반납 (채움 라운드 2) ──
+  'strasbourg-quartier-europeen-velo': {
+    label: '자전거 대여 직원',
+    emoji: '🚴',
+    intro: '스트라스부르 유럽 지구. 자전거를 빌려 공원과 강변을 달려요.',
+    steps: [
+      { t: 'narr', text: '오렌지 강가의 자전거 대여소. 유럽회의 건물과 공원 사이, 신록의 가로수 아래서 자전거 직원이 헬멧을 들고 반긴다.' },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Bonjour ! Un vélo ?',
+        yomi: 'Bonjour ! Un vélo ? (봉주르! 앙 벨로?)',
+        ko: '안녕하세요! 자전거 한 대요?',
+        narr: '자전거를 빌려서 강변 자전거도로를 달려보고 싶다.',
+      },
+      {
+        t: 'ask', mode: 'choice',
+        prompt: '「자전거 하나 빌려 주세요」라고 말하려면?',
+        choices: [
+          { ja: 'Oui, un vélo, s\'il vous plaît.', yomi: '(우이, 앙 벨로, 실 부 플레)', correct: true },
+          { ja: 'Combien ça coûte ?', yomi: '(콩비앙 사 쿠트?)' },
+          { ja: 'Où sont les toilettes ?', yomi: '(우 송 레 투알레트?)' },
+        ],
+        why: 'Un vélo + s\'il vous plaît = 가장 기본적인 대여 표현이에요. 첫 번째 질문은 가격, 세 번째는 화장실 위치예요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Combien de temps vous voulez le garder ?',
+        yomi: 'Combien de temps vous voulez le garder ? (콩비앙 드 탕 부 불레 르 가르데?)',
+        ko: '얼마동안 빌리고 싶으세요?',
+        narr: '몇 시간을 빌릴지 정해야 한다. 1시간 내지는 2시간.',
+      },
+      {
+        t: 'ask', mode: 'type',
+        prompt: '「2시간 빌려 주세요」라고 해요. 「Deux ___ , s\'il vous plaît.」',
+        before: 'Deux ', after: ', s\'il vous plaît.',
+        answer: 'heures', accept: ['heures', 'Heures'],
+        hint: '외르 — "시간"이라는 뜻.',
+        why: 'Deux heures = 2시간. 시간 숫자를 말할 때 heures를 써요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'D\'accord. Jusqu\'à quelle heure vous revenez ?',
+        yomi: 'D\'accord. Jusqu\'à quelle heure vous revenez ? (다코르. 쥐스카 켈뢰르 부 르브느?)',
+        ko: '좋아요. 몇 시까지 반납하시겠어요?',
+        narr: '지금이 오후 2시면, 반납은 오후 4시가 될 것 같다.',
+      },
+      {
+        t: 'ask', mode: 'choice',
+        prompt: '지금 오후 2시예요. 오후 4시에 반납하겠다고 말해요. 맞는 말은?',
+        choices: [
+          { ja: 'À quatre heures de l\'après-midi.', yomi: '(아 카트르 외르 드 라프레미디)', correct: true },
+          { ja: 'À quatorze heures.', yomi: '(아 카토르즈 외르)' },
+          { ja: 'Demain matin.', yomi: '(드맹 마탱)' },
+        ],
+        why: '둘 다 "오후 4시"를 의미하지만, "à quatre heures de l\'après-midi"가 일상 표현이에요. 「à quatorze heures」는 24시간 표기법이고, 「demain matin」은 "내일 아침"이라는 뜻이에요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Parfait ! Voilà, casque et gilet. Le parc et le quai sont à gauche. Bon à vélo !',
+        yomi: 'Parfait ! Voilà, casque et gilet. Le parc et le quai sont à gauche. Bon à vélo ! (파르페! 부알라, 카스크 에 질레. 르 파르크 에 르 케 송 아 고슈. 본 아 벨로!)',
+        ko: '완벽해요! 여기, 헬멧과 조끼. 공원과 강둑은 왼쪽이에요. 즐겁게 타세요!',
+        narr: '헬멧을 쓰고 자전거에 올라탄다. 스트라스부르의 강변 자전거도로가 기다린다.',
+      },
+    ],
+    reward: '🚴 자전거 대여 완주! Un vélo·Combien de temps·À quatre heures — 프랑스에서 자전거 여행을 할 수 있어요.',
+  },
 };
 
 export function getNpcScript(key) {

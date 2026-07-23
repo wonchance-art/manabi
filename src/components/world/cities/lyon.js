@@ -75,6 +75,17 @@ export const CITY_NODES = [
     tile: [179, 182], facing: 'down', noStamp: true,
     desc: '크루아루스 골목 시장의 과일 상인. 숫자와 가격 묻기를 배우며 리옹의 장시장 활기를 느껴요.',
   },
+  // 🧑‍💼 채움 라운드 2 — 파르디외·레알 실내 시장 NPC(스팟 실측: proposal-npc-spots-r2.md).
+  {
+    id: 'lyon-rhone-part-dieu-marche-1', kind: 'npc', npc: 'lyon-part-dieu-marche-1', name: '시장 상인',
+    tile: [234, 209], facing: 'down', noStamp: true,
+    desc: '리옹 실내 시장 상인. 신선한 채소와 과일을 사며 품목·수량을 배워요.',
+  },
+  {
+    id: 'lyon-rhone-part-dieu-marche-2', kind: 'npc', npc: 'lyon-part-dieu-marche-2', name: '시장 상인',
+    tile: [265, 217], facing: 'down', noStamp: true,
+    desc: '리옹 시장 내 도로변 노점. 가격을 묻고 현금 계산하는 여행 표현을 배워요.',
+  },
   ...LYON_GEO.pois.map((poi) => {
     const copy = poiCopy(poi.id);
     return {
