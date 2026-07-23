@@ -66,7 +66,7 @@ export const CITY_NODES = [
   // 🧑‍💼 채움 라운드 2 — 그랑딜·유럽지구 NPC(스팟 실측: proposal-npc-spots-r2.md).
   {
     id: 'strasbourg-grande-ile-librairie', kind: 'npc', npc: 'strasbourg-grande-ile-librairie', name: '서점 직원',
-    tile: [149, 281], facing: 'down', noStamp: true,
+    tile: [165, 262], facing: 'down', noStamp: true,
     desc: '구시가 서점 직원. 책 분야와 위치를 묻고 찾는 표현을 배워요.',
   },
   {

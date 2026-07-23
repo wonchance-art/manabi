@@ -67,12 +67,12 @@ export const CITY_NODES = [
   // 🧑‍💼 채움 라운드 2 — 구시가·북강변 NPC(스팟 실측: proposal-npc-spots-r2.md).
   {
     id: 'bordeaux-centre-historique-patisserie', kind: 'npc', npc: 'bordeaux-centre-historique-patisserie', name: '제과점 직원',
-    tile: [270, 248], facing: 'down', noStamp: true,
+    tile: [268, 225], facing: 'down', noStamp: true,
     desc: '구시가 제과점 직원. 프랑스 빵과 케이크를 사며 포장을 배워요.',
   },
   {
     id: 'bordeaux-nord-rive-antiquaire', kind: 'npc', npc: 'bordeaux-nord-rive-antiquaire', name: '골동품점 직원',
-    tile: [249, 175], facing: 'down', noStamp: true,
+    tile: [269, 147], facing: 'down', noStamp: true,
     desc: '샤르트롱 골동품 거리의 직원. 옛 물건의 상태와 가격 흥정을 배워요.',
   },
   ...BORDEAUX_GEO.pois.map((poi) => {
