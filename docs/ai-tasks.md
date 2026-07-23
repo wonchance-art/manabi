@@ -14,11 +14,11 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
-- V3 도로 오토타일 전면 재작업: ROAD·CROSSWALK·BRIDGE·guidebook 도로를 같은
-  4방 비트마스크 16종으로 베이크하고 비도로 변 에지·직선 위상 정렬 파선·광폭 내부 노면을 구현
-  (`codex/road-autotile`, 오너 직접 발주 2026-07-23)
 ### todo
 ### done (최근)
+- V3 도로 오토타일 전면 재작업: ROAD·CROSSWALK·BRIDGE·guidebook 도로를 같은
+  4방 비트마스크 16종으로 베이크하고 비도로 변 에지·월드 8px 직선 파선·광폭 내부 노면을 구현
+  (`codex/road-autotile`, 구현 7709b33, base a252e27058b0a009595d58b7acd0523e9098ba87)
 - W3 dev 게스트 하니스 정본 문서화: 활성화·`?spawn=` 전체 문법·오프라인/저장 경계와
   광장·공항·회랑 직행 지원 여부, 라이브 검수 절차를 소스 라인 근거로 고정
   (`codex/dev-harness-docs`, 구현 e98b4e8, base a252e27058b0a009595d58b7acd0523e9098ba87)
