@@ -244,6 +244,9 @@
 
 ## Codex-3 (codex3/*) — 게임 시스템 확장 (타 기기)
 ### doing
+- S22 도시 진입 착지점 26도시 전수 검증(report-only): 오버월드·페리·철도·항공·도선의
+  도시 spawn·TRANSIT 도착이 open 지구 안인지 재현하고 `resolveCityDistricts` 포섭 범위를 규명
+  (`codex3/s22-entrypoints-audit`, #150 5058136487)
 ### todo
 - (P0 공통) 로컬 clone 이전 확인 코멘트
 - S1 STAMP_ALBUM_NODES 85 원자 전환(선행 #387 충족 — 즉시 착수): #150 5046785938
