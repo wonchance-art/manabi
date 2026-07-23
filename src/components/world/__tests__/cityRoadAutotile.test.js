@@ -273,6 +273,21 @@ describe('CityScene road autotile opt-in', () => {
       .toEqual(rectArgs(textures.get('ct_crosswalk_autotile_15'), 0xeae4d2));
   });
 
+  it('texture key 하나당 cardinal mask를 한 번만 계산한다', () => {
+    const { scene } = textureHarness();
+
+    for (const [mask, diagonals, expected] of [
+      [3, false, 'ct_road_autotile_3'],
+      [15, true, 'ct_road_autotile_inner'],
+    ]) {
+      setRoadMask(scene, mask, CITY_TILE.ROAD, diagonals);
+      const roadMask = vi.spyOn(scene, 'roadMask');
+      expect(scene.roadAutotileTexKey('ct_road_autotile', 1, 1)).toBe(expected);
+      expect(roadMask).toHaveBeenCalledTimes(1);
+      roadMask.mockRestore();
+    }
+  });
+
   it('5계열 16종+inner 렌더 명령이 2회 byte-identical이다', () => {
     const keys = AUTOTILE_PREFIXES.flatMap((prefix) => [
       ...Array.from({ length: 16 }, (_unused, mask) => `${prefix}_${mask}`),
