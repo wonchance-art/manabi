@@ -244,14 +244,15 @@
 
 ## Codex-3 (codex3/*) — 게임 시스템 확장 (타 기기)
 ### doing
-- S22 도시 진입 착지점 26도시 전수 검증(report-only): 오버월드·페리·철도·항공·도선의
-  도시 spawn·TRANSIT 도착이 open 지구 안인지 재현하고 `resolveCityDistricts` 포섭 범위를 규명
-  (`codex3/s22-entrypoints-audit`, #150 5058136487)
 ### todo
 - (P0 공통) 로컬 clone 이전 확인 코멘트
 - S1 STAMP_ALBUM_NODES 85 원자 전환(선행 #387 충족 — 즉시 착수): #150 5046785938
 - S4 수집 연출 정합 → S2 앨범 지역 탭·수집률 → S3 마일스톤 보상 v1(localStorage·DB 금지)
 ### done (최근)
+- S22 도시 진입 착지점 26도시 전수 검증(report-only): 도시 게이트 26 exact-1,
+  55노선·180 stop 참조·157 고유 착지의 저작/실제 타일 open·보행을 재현하고
+  정적 게이트 포섭과 동적 session/dev spawn 별도 fail-closed 경계를 규명
+  (`codex3/s22-entrypoints-audit`, 구현 56ae0a7, base 009337219c940b0838950e8de409a952bbc800a1)
 - S19 localStorage 스키마 정본화: 월드 실사용 고정 키 7종·동적 prefix 3종을 v1 정본에
   모으고, 버전 미존재를 v1로 무손실 취급하는 `storage-schema-version`과 no-op migration
   registry를 도입해 기존 깨진 JSON·유령 ID·차단 저장소 계약을 유지
