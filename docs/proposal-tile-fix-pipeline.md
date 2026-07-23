@@ -410,3 +410,63 @@ hard gate로 둔다.
 
 최종 판단은 **(a) GO / (b) NO-GO(legacy emergency only)**다. 현재는 모든 도시가
 재생성 가능하므로 provenance·결정성·확산성을 동시에 만족하는 유일한 기본 경로가 (a)다.
+
+## 6. Q3 구현: 리옹 no-op hook과 manifest v1
+
+Q3는 권장 순서 3~4단계의 골격만 구현한다. 공용 순수 함수
+[`applyTileFixes()`](../scripts/lib/applyTileFixes.mjs)를 만들고, 리옹 generator의 마지막
+`ensureWalkableAnchor()` 뒤이자 `finalBuildingStats`·hydrology count·RLE 산출 전인
+[`build-lyon-city-geo.mjs`](../scripts/build-lyon-city-geo.mjs)에 연결했다. 아직 승인된
+정정 좌표가 없으므로 리옹 manifest의 `fixes`는 비어 있으며, geo meta나 생성 파일에
+빈 manifest 정보를 추가하지 않는다. 따라서 기존 geo bytes와 hash pin은 바뀌지 않는다.
+
+### 6.1 manifest v1 스키마
+
+도시 manifest의 공통 envelope는 다음과 같다.
+
+| 필드 | 계약 |
+|---|---|
+| `version` | 현재 `1`; 다른 버전은 fail-closed |
+| `city` | manifest가 적용되는 canonical city ID |
+| `grid.w`, `grid.h` | flat row-major grid의 폭·높이; `w*h === grid.length` |
+| `scannerVersion` | finding을 만든 scanner 계약 버전 |
+| `fixes` | 정정 배열; 빈 배열은 명시적 no-op |
+
+각 `fixes[]` 항목은 `findingId`, `city`, `x`, `y`, `before`, `after`, `ruleId`,
+`scannerVersion`을 필수로 가진다. `city`와 `scannerVersion`은 envelope와 같아야 하고,
+좌표는 격자 안의 정수, tile code는 `0..255` 정수여야 한다. `before === after`,
+중복 좌표, 현재 grid 값과 `before`의 불일치는 모두 실패한다. Q2의 설명용
+`from`/`to` 표기는 Q3 구현 스키마에서 Q1 scanner 용어와 맞춘 `before`/`after`로
+확정한다.
+
+### 6.2 순수 함수와 hook 계약
+
+- `applyTileFixes(grid, manifest) => grid`는 입력 grid와 manifest를 수정하지 않는다.
+- 빈 `fixes`는 검증 후 입력 grid의 같은 객체를 그대로 반환한다.
+- non-empty fix는 `y`, `x`, `findingId` canonical 순서로 정렬하되 manifest 배열을
+  재배열하지 않는다.
+- 모든 항목의 스키마·좌표·중복·`before`를 먼저 검증한 다음 복사한 grid에 적용한다.
+  따라서 한 항목이라도 실패하면 부분 적용된 결과가 없다.
+- hook 뒤에는 지형을 바꾸는 패스를 두지 않는다. final 통계와 RLE는 hook 반환값만
+  소비한다.
+- Q3는 no-op이므로 기존 connectivity meta가 정확히 유지된다. 최초 non-empty
+  manifest를 넣는 후속 단계에서는 hook 뒤 4방 BFS·마커·수계·BRIDGE 검사를 읽기
+  전용으로 다시 수행하고, 파생 meta와 terrain/PNG hash pin을 정정 결과로 갱신해야 한다.
+
+리옹의 Q3 빈 manifest는 `version=1`, `city=lyon`, `grid=428×501`,
+`scannerVersion=tile-integrity-v1`, `fixes=[]`로 고정한다. helper 단위 테스트는
+빈 manifest의 reference identity, 입력 불변, canonical 적용, 전항목 선검증,
+중복 좌표와 스키마 drift의 fail-closed 동작을 고정한다.
+
+### 6.3 no-op 산출 증거
+
+공식 Node v22.23.1에서 hook 삽입 전후 각각 두 번 독립 재생성한
+`src/components/world/cities/lyon.geo.js`의 SHA-256은 다음과 같다.
+
+| 시점 | A | B |
+|---|---|---|
+| hook 삽입 전 | `0bb8a0a2983df4cfbaa2387fa8905610508ef5ecaa41d5d3992bf33ca41936d2` | `0bb8a0a2983df4cfbaa2387fa8905610508ef5ecaa41d5d3992bf33ca41936d2` |
+| hook 삽입 후 | `0bb8a0a2983df4cfbaa2387fa8905610508ef5ecaa41d5d3992bf33ca41936d2` | `0bb8a0a2983df4cfbaa2387fa8905610508ef5ecaa41d5d3992bf33ca41936d2` |
+
+네 파일은 byte-for-byte 동일하고 커밋된 `lyon.geo.js`와도 같으므로 생성 산출물과
+기존 snapshot/hash pin 변경은 없다.
