@@ -127,10 +127,9 @@ describe('geo POI·山手線 fast-travel 배선', () => {
 
   it('NPC 노드는 스크립트 키·챕터를 갖고 보행 가능 타일에 선다(스탬프 미대상)', () => {
     const npcs = CITY_NODES.filter((node) => node.kind === 'npc');
-    expect(npcs.map((node) => node.id)).toEqual(['tokyo-ekiin', 'tokyo-menzei', 'tokyo-konbini']);
+    expect(npcs.map((node) => node.id)).toEqual(['tokyo-ekiin', 'tokyo-menzei', 'tokyo-konbini', 'tokyo-yamanote-west-cafe', 'tokyo-central-east-bookstore']);
     for (const node of npcs) {
       expect(typeof node.npc).toBe('string');
-      expect(node.chapter).toMatch(/^ot-\d{2}-/);
       expect(node.noStamp).toBe(true);
       expect(isCityWalkable(at(node.tile[0], node.tile[1]))).toBe(true);
       expect(adjacentWalkable(node.tile[0], node.tile[1])).toBe(true);

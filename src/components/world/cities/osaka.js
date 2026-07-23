@@ -56,6 +56,17 @@ export const CITY_NODES = [
     tile: [469, 385], facing: 'down', noStamp: true,
     desc: '黒門市場 곁 24시간 편의점(コンビニ). 계산대 대답은 딱 두 개 — お願いします(네)·大丈夫です(됐어요).',
   },
+  // ── 채움 라운드 3-1: 도쿄·오사카 8지구 NPC 4종 (owner 2026-07-23) ──
+  {
+    id: 'osaka-north-hubs-transfer', kind: 'npc', npc: 'osaka-north-hubs-transfer', name: '乗り換え案内員',
+    tile: [435, 5], facing: 'down', noStamp: true,
+    desc: '오사카 북부 교통 허브의 환승 안내원 「乗り換え案内員」(のりかえあんないいん). 환승 노선, 출구 방향, 빠른 식사를 안내받아요.',
+  },
+  {
+    id: 'osaka-castle-east-guide', kind: 'npc', npc: 'osaka-castle-east-guide', name: '公園案内員',
+    tile: [553, 262], facing: 'down', noStamp: true,
+    desc: '오사카성 동쪽 공원 안내원 「公園案内員」(こうえんあんないいん). 관광 동선과 전통 공방 체험 순서를 배워요.',
+  },
 ];
 
 export const STATIONS = OSAKA_GEO.stations.map((station) => ({
