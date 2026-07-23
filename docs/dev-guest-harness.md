@@ -118,7 +118,7 @@ S11 이전 head
 |---|---|---:|---|
 | 광장 `plaza` | `?spawn=plaza@x,y` | 아니요 | 파서는 `air:` 외에는 `:` 없는 씬을 거부한다. 광장 좌표 소비 코드는 `scene === 'plaza'`를 받을 수 있지만 하니스 파서가 그 값을 만들지 않는다 ([`WorldPage.jsx` L439-L448](../src/views/WorldPage.jsx#L439-L448), [`GameCanvas.jsx` L1677-L1688](../src/components/world/GameCanvas.jsx#L1677-L1688)). `air:emea` 또는 `air:asia-pacific`에서 귀환 항공 게이트를 이용하면 인천공항 광장으로 간접 진입할 수 있다. |
 | 공항 스토리 `airport` | `?spawn=airport@x,y` | 아니요 | `airport`도 `:`가 없어 거부되고, 초기 부팅 리다이렉트에는 airport 분기가 없다 ([`GameCanvas.jsx` L1507-L1557](../src/components/world/GameCanvas.jsx#L1507-L1557)). `air:<region>`은 airport가 아니라 지역 항공 앵커다. 현재 공항 스토리 진입점은 광장 인천공항 노드다 ([`worldNodes.js` L117-L121](../src/components/world/worldNodes.js#L117-L121)). |
-| 횡단열차 회랑 `transsib-corridor` | `?spawn=transsib-corridor@x,y` | 아니요 | 정본 씬 키에 `:`가 없어 파서가 거부한다. 또한 회랑 초기 리다이렉트는 출시 허용 또는 관리자 preview를 요구하고, 비로그인 dev guest에는 관리자 권한이 없다 ([`session.js` L81-L85](../src/lib/world/session.js#L81-L85), [`WorldPage.jsx` L1011-L1020](../src/views/WorldPage.jsx#L1011-L1020)). 지역 회랑 게이트도 같은 release gate를 통과해야 한다. |
+| 횡단열차 회랑 `transsib-corridor` | `?spawn=transsib-corridor@x,y` | 아니요 | 정본 씬 키에 `:`가 없어 파서가 거부한다. 또한 회랑 초기 리다이렉트는 출시 허용 또는 관리자 preview를 요구하고, 비로그인 dev guest에는 관리자 권한이 없다 ([`session.js` L81-L85](../src/lib/world/session.js#L81-L85), [`session.js` L81-L92](../src/lib/world/session.js#L81-L92)). 지역 회랑 게이트도 같은 release gate를 통과해야 한다. |
 
 `plaza:any`, `airport:any`, `transsib-corridor:any`처럼 파서의 콜론 조건만 피하는 가짜 씬
 별칭은 지원되지 않는다. 런타임이 해당 키를 목표 씬으로 정규화하거나 리다이렉트하지 않으므로
