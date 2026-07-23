@@ -291,3 +291,184 @@ I 합계의 기능별 내역(좌표 미출력):
 | 92 | [12,479] | road-over-water |
 
 H·I는 요청 범위에 따라 건수만 위 통계표에 기록했다.
+
+## r2 고신뢰 G′·H′ 기준
+
+- 상태: **report-only** — 도시 geo·게임 데이터·엔진 수정 없음
+- 범위: `CITY_MANIFEST` 26도시, 각 도시 `buildGrid()` 결과
+- 좌표: 0-based `[x,y]`; G′ 좌표는 BRIDGE 4방 성분의 row-major 최소 anchor
+- 변경 경계: G·H 판정만 강화했으며 E·F·I 판정 로직은 r1과 동일
+
+### r2 판정 기준
+
+| 유형 | 정량 판정 |
+|---|---|
+| E | r1과 동일: 안정 단면 도로 폭 `1 ↔ 3+` 경계. |
+| F | r1과 동일: 안정 도로 폭과 CROSSWALK 최장 런 길이 불일치. |
+| G′ | BRIDGE maximal 4방 성분 전체의 cardinal WATER·RIVER 접촉이 0이고, 8방 DOCK 인접도 0일 때만 성분당 1건. 일반 ROAD는 대상에서 제외한다. |
+| H′ | PLAZA·GREEN(PARK) 합집합 4방 성분이 정확히 1타일이고 그 타일의 N·E·S·W가 전부 정확히 ROAD·CROSSWALK일 때만 1건. 경계·인도·건물·기타 지형 접촉은 제외한다. |
+| I | r1과 동일: 학습 도어·NPC·역 하부가 정확히 ROAD·WATER·RIVER인 엔티티. |
+
+3×3 덤프는 `/`로 행을 나눈다. 범례: `R` ROAD, `.` SIDEWALK, `X` CROSSWALK,
+`P` PLAZA, `G` PARK, `B` BRIDGE, `D` DOCK, `E` EXIT, `W` WATER, `~` RIVER,
+`#` BUILDING, `I` ISLAND, `S` BEACH, `M` MOUNTAIN, `?` 범위 밖.
+
+### r2 26도시 전수 통계
+
+| 도시 | E | F | G′ | H′ | I |
+|---|---:|---:|---:|---:|---:|
+| fukuoka (후쿠오카) | 2 | 3 | 0 | 0 | 12 |
+| tokyo (도쿄) | 9 | 70 | 245 | 155 | 12 |
+| osaka (오사카) | 11 | 17 | 71 | 72 | 5 |
+| kyoto (교토) | 17 | 18 | 107 | 74 | 2 |
+| busan (부산) | 16 | 30 | 0 | 59 | 6 |
+| seoul (서울) | 23 | 133 | 0 | 316 | 7 |
+| grand-paris (파리) | 26 | 323 | 0 | 306 | 8 |
+| mont-saint-michel (Mont-Saint-Michel) | 2 | 1 | 0 | 0 | 2 |
+| cote-dazur (코트다쥐르) | 12 | 104 | 0 | 29 | 6 |
+| brussels (브뤼셀) | 2 | 80 | 0 | 43 | 2 |
+| taipei (타이베이) | 12 | 56 | 0 | 51 | 7 |
+| hong-kong (홍콩) | 6 | 27 | 0 | 8 | 4 |
+| london (런던) | 23 | 251 | 0 | 281 | 10 |
+| shanghai (상하이) | 0 | 4 | 0 | 25 | 4 |
+| beijing (베이징) | 11 | 41 | 0 | 6 | 3 |
+| brisbane (브리즈번) | 4 | 76 | 0 | 37 | 4 |
+| sydney (시드니) | 8 | 87 | 0 | 65 | 6 |
+| canberra (캔버라) | 2 | 57 | 0 | 91 | 2 |
+| melbourne (멜버른) | 6 | 48 | 0 | 58 | 2 |
+| marseille (마르세유) | 1 | 23 | 0 | 11 | 7 |
+| kawaguchiko (가와구치코) | 2 | 2 | 0 | 0 | 5 |
+| geneva (제네바) | 2 | 13 | 0 | 75 | 3 |
+| leman-riviera (레만호 연안) | 9 | 45 | 0 | 8 | 9 |
+| lyon (리옹) | 5 | 71 | 0 | 60 | 7 |
+| bordeaux (보르도) | 2 | 58 | 0 | 54 | 4 |
+| strasbourg (스트라스부르) | 0 | 28 | 0 | 78 | 3 |
+| **합계** | **213** | **1666** | **423** | **1962** | **142** |
+
+I 합계의 기능별 내역(판정 불변, 좌표 미출력):
+
+| 기능 | 건수 |
+|---|---:|
+| door | 43 |
+| npc | 10 |
+| station | 89 |
+
+### r2 G′·H′ 대표 좌표와 3×3 덤프
+
+대표 표본은 manifest 도시 순서에서 도시별 n번째 건을 round-robin으로 뽑았다.
+
+#### G′. 교량-물 어긋남 — 대표 10건
+
+| # | 도시 | 좌표 | 판정 | 3×3 |
+|---:|---|---:|---|---|
+| 1 | tokyo | [30,14] | 성분 2타일, cardinal 물·8방 DOCK 접촉 0 | `G.G/GB./.B.` |
+| 2 | osaka | [100,4] | 성분 1타일, cardinal 물·8방 DOCK 접촉 0 | `G.X/GBR/.RX` |
+| 3 | kyoto | [316,5] | 성분 1타일, cardinal 물·8방 DOCK 접촉 0 | `.../GB./..R` |
+| 4 | tokyo | [792,22] | 성분 1타일, cardinal 물·8방 DOCK 접촉 0 | `RRR/RBR/RRR` |
+| 5 | osaka | [9,5] | 성분 1타일, cardinal 물·8방 DOCK 접촉 0 | `RRR/RB./RR.` |
+| 6 | kyoto | [595,35] | 성분 1타일, cardinal 물·8방 DOCK 접촉 0 | `R../RB./R..` |
+| 7 | tokyo | [784,29] | 성분 1타일, cardinal 물·8방 DOCK 접촉 0 | `RRR/RB./RR.` |
+| 8 | osaka | [516,8] | 성분 2타일, cardinal 물·8방 DOCK 접촉 0 | `RRR/RBB/RR.` |
+| 9 | kyoto | [433,51] | 성분 2타일, cardinal 물·8방 DOCK 접촉 0 | `.../.B./.B.` |
+| 10 | tokyo | [517,35] | 성분 1타일, cardinal 물·8방 DOCK 접촉 0 | `RRR/RBR/RRR` |
+
+#### H′. 광장·공원 차도 포위 파편 — 대표 10건
+
+| # | 도시 | 좌표 | 판정 | 3×3 |
+|---:|---|---:|---|---|
+| 1 | tokyo | [52,3] | GREEN, 4방 ROAD·CROSSWALK | `RRR/RGR/RRR` |
+| 2 | osaka | [145,13] | GREEN, 4방 ROAD·CROSSWALK | `RRR/RGR/RRR` |
+| 3 | kyoto | [417,10] | GREEN, 4방 ROAD·CROSSWALK | `RRR/RGR/RRR` |
+| 4 | busan | [525,34] | GREEN, 4방 ROAD·CROSSWALK | `RRR/RGR/GRR` |
+| 5 | seoul | [1165,1] | GREEN, 4방 ROAD·CROSSWALK | `RR./RGR/RR.` |
+| 6 | grand-paris | [586,19] | GREEN, 4방 ROAD·CROSSWALK | `RR./RGR/RRG` |
+| 7 | cote-dazur | [1485,52] | GREEN, 4방 ROAD·CROSSWALK | `RRX/RGR/RRR` |
+| 8 | brussels | [258,3] | GREEN, 4방 ROAD·CROSSWALK | `.R#/RGR/RRG` |
+| 9 | taipei | [293,52] | GREEN, 4방 ROAD·CROSSWALK | `RR#/RGR/#RR` |
+| 10 | hong-kong | [509,28] | GREEN, 4방 ROAD·CROSSWALK | `RRR/RGX/RRX` |
+
+### 리옹 상세 — r2 G′·H′ 전 건 좌표
+
+#### G′. 교량-물 어긋남 (0건)
+
+없음.
+
+#### H′. 광장·공원 차도 포위 파편 (60건)
+
+| # | 좌표 | 판정 |
+|---:|---:|---|
+| 1 | [93,19] | GREEN, 4방 ROAD·CROSSWALK |
+| 2 | [84,21] | GREEN, 4방 ROAD·CROSSWALK |
+| 3 | [222,22] | GREEN, 4방 ROAD·CROSSWALK |
+| 4 | [86,24] | GREEN, 4방 ROAD·CROSSWALK |
+| 5 | [219,27] | GREEN, 4방 ROAD·CROSSWALK |
+| 6 | [91,28] | GREEN, 4방 ROAD·CROSSWALK |
+| 7 | [92,29] | GREEN, 4방 ROAD·CROSSWALK |
+| 8 | [93,30] | GREEN, 4방 ROAD·CROSSWALK |
+| 9 | [92,31] | GREEN, 4방 ROAD·CROSSWALK |
+| 10 | [189,36] | GREEN, 4방 ROAD·CROSSWALK |
+| 11 | [10,60] | GREEN, 4방 ROAD·CROSSWALK |
+| 12 | [225,64] | GREEN, 4방 ROAD·CROSSWALK |
+| 13 | [314,85] | GREEN, 4방 ROAD·CROSSWALK |
+| 14 | [229,101] | GREEN, 4방 ROAD·CROSSWALK |
+| 15 | [19,110] | GREEN, 4방 ROAD·CROSSWALK |
+| 16 | [292,110] | GREEN, 4방 ROAD·CROSSWALK |
+| 17 | [280,111] | GREEN, 4방 ROAD·CROSSWALK |
+| 18 | [413,137] | GREEN, 4방 ROAD·CROSSWALK |
+| 19 | [412,138] | GREEN, 4방 ROAD·CROSSWALK |
+| 20 | [227,147] | GREEN, 4방 ROAD·CROSSWALK |
+| 21 | [203,178] | GREEN, 4방 ROAD·CROSSWALK |
+| 22 | [349,220] | GREEN, 4방 ROAD·CROSSWALK |
+| 23 | [99,234] | GREEN, 4방 ROAD·CROSSWALK |
+| 24 | [359,240] | GREEN, 4방 ROAD·CROSSWALK |
+| 25 | [231,263] | GREEN, 4방 ROAD·CROSSWALK |
+| 26 | [364,266] | GREEN, 4방 ROAD·CROSSWALK |
+| 27 | [314,283] | GREEN, 4방 ROAD·CROSSWALK |
+| 28 | [401,333] | GREEN, 4방 ROAD·CROSSWALK |
+| 29 | [253,336] | GREEN, 4방 ROAD·CROSSWALK |
+| 30 | [252,337] | GREEN, 4방 ROAD·CROSSWALK |
+| 31 | [363,348] | GREEN, 4방 ROAD·CROSSWALK |
+| 32 | [262,350] | GREEN, 4방 ROAD·CROSSWALK |
+| 33 | [261,353] | GREEN, 4방 ROAD·CROSSWALK |
+| 34 | [395,388] | GREEN, 4방 ROAD·CROSSWALK |
+| 35 | [381,389] | GREEN, 4방 ROAD·CROSSWALK |
+| 36 | [407,396] | GREEN, 4방 ROAD·CROSSWALK |
+| 37 | [413,398] | GREEN, 4방 ROAD·CROSSWALK |
+| 38 | [425,399] | GREEN, 4방 ROAD·CROSSWALK |
+| 39 | [414,400] | GREEN, 4방 ROAD·CROSSWALK |
+| 40 | [420,402] | GREEN, 4방 ROAD·CROSSWALK |
+| 41 | [135,410] | GREEN, 4방 ROAD·CROSSWALK |
+| 42 | [312,417] | GREEN, 4방 ROAD·CROSSWALK |
+| 43 | [419,418] | GREEN, 4방 ROAD·CROSSWALK |
+| 44 | [411,422] | GREEN, 4방 ROAD·CROSSWALK |
+| 45 | [310,428] | GREEN, 4방 ROAD·CROSSWALK |
+| 46 | [311,429] | GREEN, 4방 ROAD·CROSSWALK |
+| 47 | [312,430] | GREEN, 4방 ROAD·CROSSWALK |
+| 48 | [313,431] | GREEN, 4방 ROAD·CROSSWALK |
+| 49 | [369,434] | GREEN, 4방 ROAD·CROSSWALK |
+| 50 | [369,441] | GREEN, 4방 ROAD·CROSSWALK |
+| 51 | [328,446] | GREEN, 4방 ROAD·CROSSWALK |
+| 52 | [337,447] | GREEN, 4방 ROAD·CROSSWALK |
+| 53 | [338,457] | GREEN, 4방 ROAD·CROSSWALK |
+| 54 | [340,457] | GREEN, 4방 ROAD·CROSSWALK |
+| 55 | [405,466] | GREEN, 4방 ROAD·CROSSWALK |
+| 56 | [420,477] | GREEN, 4방 ROAD·CROSSWALK |
+| 57 | [422,479] | GREEN, 4방 ROAD·CROSSWALK |
+| 58 | [423,480] | GREEN, 4방 ROAD·CROSSWALK |
+| 59 | [417,482] | GREEN, 4방 ROAD·CROSSWALK |
+| 60 | [73,494] | GREEN, 4방 ROAD·CROSSWALK |
+
+E·F·I는 판정 불변이므로 r1 상세를 유지하고 위 통계만 재집계했다.
+
+### r2 결정성·재현
+
+- manifest 도시 순서 → 각 grid row-major `(y,x)` → cardinal 이웃 고정 순회.
+- 시간·로케일 정렬·파일 열거·난수·네트워크 입력 없음.
+- 동일 입력 2회 stdout byte 비교와 SHA-256 결과는 PR 검증 시 기록한다.
+
+```bash
+node scripts/scan-tile-integrity-extra.mjs > /tmp/tile-integrity-extra-r2-a.md
+node scripts/scan-tile-integrity-extra.mjs > /tmp/tile-integrity-extra-r2-b.md
+cmp /tmp/tile-integrity-extra-r2-a.md /tmp/tile-integrity-extra-r2-b.md
+shasum -a 256 /tmp/tile-integrity-extra-r2-a.md /tmp/tile-integrity-extra-r2-b.md
+```
