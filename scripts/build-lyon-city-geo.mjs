@@ -22,13 +22,31 @@ const SNAPSHOT_URL = new URL('./data/lyon-osm-v21.json', import.meta.url);
 const SNAPSHOT_SHA256 = 'f49e5b1ec1d28f65a47dea4e8b1018959c4546f77804f205cbf77827302cac53';
 const CARDINAL = Object.freeze([[1, 0], [-1, 0], [0, 1], [0, -1]]);
 const TRAIN_ROUTE_ID = 'lyon-mainline';
-const LYON_TILE_FIX_MANIFEST = Object.freeze({
-  version: TILE_FIX_MANIFEST_VERSION,
-  city: 'lyon',
-  grid: Object.freeze({ w: 428, h: 501 }),
-  scannerVersion: 'tile-integrity-v1',
-  fixes: Object.freeze([]),
-});
+// Tile fix manifests by city: data/fix-manifests/{city}-{version}.json
+const LYON_TILE_FIX_MANIFEST_PATH = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../data/fix-manifests/lyon-b1.json',
+);
+
+function loadTileFixManifest(manifestPath) {
+  try {
+    const manifestText = fs.readFileSync(manifestPath, 'utf8');
+    return JSON.parse(manifestText);
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      return {
+        version: TILE_FIX_MANIFEST_VERSION,
+        city: 'lyon',
+        grid: Object.freeze({ w: 428, h: 501 }),
+        scannerVersion: 'tile-integrity-v1',
+        fixes: Object.freeze([]),
+      };
+    }
+    throw error;
+  }
+}
+
+const LYON_TILE_FIX_MANIFEST = Object.freeze(loadTileFixManifest(LYON_TILE_FIX_MANIFEST_PATH));
 
 const POIS = Object.freeze([
   Object.freeze({

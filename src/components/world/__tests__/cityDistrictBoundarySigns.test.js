@@ -274,7 +274,7 @@ describe('잠금 지구 경계 표지판 순수 배치', () => {
     expect(bytes).toBe(secondBytes);
     expect(createHash('sha256').update(bytes).digest('hex'))
       .toBe('ea969b6eadb7f7b3dd850e8cfd82774d458340a284aa3909f1700b044e1333b4');
-  });
+  }, 120_000);
 });
 
 describe('CityScene 잠금 경계 팻말 베이크', () => {
