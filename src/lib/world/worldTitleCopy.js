@@ -17,6 +17,18 @@ export const WORLD_TITLE_COPY = Object.freeze({
     name: '세계를 걸은 사람',
     line: '여든다섯 곳 전부 — 이 여권엔 빈 칸이 없어요.',
   }),
+  'discovery-lyon': Object.freeze({
+    name: '리옹 완주자',
+    line: '론과 소옌이 만나는 언덕마다 — 이 도시의 숨결을 느껴봤어요.',
+  }),
+  'discovery-bordeaux': Object.freeze({
+    name: '보르도 산책자',
+    line: '가론강을 따라 고풍의 골목까지 — 와인처럼 깊고 부드러운 도시네요.',
+  }),
+  'discovery-strasbourg': Object.freeze({
+    name: '스트라스부르 여행가',
+    line: '수로와 목재 건물 사이로 — 알자스의 색채를 모두 수집했어요.',
+  }),
 });
 
 export function worldTitleCopyForKey(titleKey) {
