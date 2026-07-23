@@ -450,7 +450,7 @@ describe('CityScene guidebook 소비 경계', () => {
     });
   });
 
-  it('코트다쥐르 외 지구제 6도시는 기존 guidebook 렌더 명령과 W1 경계 키가 불변이다', () => {
+  it('코트다쥐르 외 지구제 6도시는 guidebook 명령을 유지하고 서울만 autotile 경계 키를 쓴다', () => {
     const boundarySamples = [
       ['lyon', [239, 139], [240, 139]],
       ['bordeaux', [315, 191], [316, 191]],
@@ -510,7 +510,7 @@ describe('CityScene guidebook 소비 경계', () => {
         },
         {
           "boundaryKeys": [
-            "ct_road_v",
+            "ct_road_autotile_13",
             "ct_guidebook_land",
           ],
           "guidebookSha": "6ef0480b36888577fc698f13f5f605c9420ba3a2d4cac490d919f60ca56f0e5e",

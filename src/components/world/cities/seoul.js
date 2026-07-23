@@ -126,6 +126,7 @@ export function buildSeoulGrid() {
 
 export const SEOUL = {
   id: 'seoul', name: '서울', cols: COLS, rows: ROWS, entrance: ENTRANCE, returnNode: 'seoul',
+  roadStyle: 'autotile-v1',
   // 📖 여행책 지구제 v1 (D2 4호 — T5 실측 docs/proposal-district-rects.md 그대로, 개방 5.91%).
   districts: {
     version: 'district-v1',
