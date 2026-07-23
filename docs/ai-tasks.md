@@ -185,6 +185,9 @@
 
 ## Codex-2 (codex2/*)
 ### doing
+- T20 V3 도로 오토타일 전면 확산: T17의 잔여 23도시 wrapper opt-in,
+  26도시 2회 PNG 결정성·BRIDGE 대표 3도시 근접 crop·전체 회귀 검증
+  (`codex2/autotile-expansion`)
 ### todo
 ### done (최근)
 - T19 잔여 도시 지구 확산: T10 r3 PASS 13도시에 `district-v1` 51지구·71 rect를
