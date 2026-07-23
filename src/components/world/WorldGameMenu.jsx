@@ -194,9 +194,6 @@ function CodexPanel({ stampCount, totalPlaces, titlePresentation, onOpenStampAlb
         ) : (
           <p style={{ margin: '6px 0 0', fontSize: '0.56rem', color: GBC.inkSoft }}>아직 얻은 여행 칭호가 없어요.</p>
         )}
-        <p style={{ margin: '7px 0 0', paddingTop: 6, borderTop: `1px dashed ${GBC.border}`, fontSize: '0.57rem', lineHeight: 1.4, color: GBC.brown }}>
-          {titlePresentation.progressLine}
-        </p>
       </section>
       <section style={{ border: `2px solid ${GBC.border}`, background: GBC.creamHi, padding: 8 }}>
         <strong style={{ fontSize: '0.7rem' }}>📖 단어 사전</strong>

@@ -31,6 +31,8 @@ import {
   STAMP_ALBUM_DISCOVERY_CITY_IDS,
   stampAlbumDiscoveryProgress,
 } from './stampAlbumDiscoveryProgress';
+import { stampAlbumNextGoal } from './stampAlbumNextGoal';
+import { stampTitlePresentation } from './stampTitlePresentation';
 
 const DETAIL_CITY_IDS = new Set([
   ...STAMP_ALBUM_DISTRICT_CITY_IDS,
@@ -69,6 +71,7 @@ export default function StampAlbum({ stamps, onClose }) {
   const total = STAMP_ALBUM_NODES.length;
   const got = STAMP_ALBUM_NODES.reduce((n, node) => n + (owned.has(node.id) ? 1 : 0), 0);
   const activeTab = stampAlbumTabById(activeTabId);
+  const titlePresentation = stampTitlePresentation(owned);
 
   // P1 lazy city registry 경로로 현재 탭의 수집 도시 상세만 준비한다.
   // 진행도 값은 아래 순수 로직이 localStorage에서 읽으며 별도 API 요청은 하지 않는다.
@@ -173,6 +176,14 @@ export default function StampAlbum({ stamps, onClose }) {
             const discovery = badge.has && cityDetailReady
               ? stampAlbumDiscoveryProgress(node, detailCities)
               : null;
+            const detailReady = !DETAIL_CITY_IDS.has(cityId) || cityDetailReady;
+            const nextGoal = badge.has && cityId && detailReady
+              ? stampAlbumNextGoal({
+                district,
+                discovery,
+                stampTitle: titlePresentation,
+              })
+              : null;
             return (
               <div
                 key={node.id}
@@ -196,20 +207,27 @@ export default function StampAlbum({ stamps, onClose }) {
                     {fmtDate(visitedAt[node.id])}
                   </span>
                 )}
+                {nextGoal && (
+                  <span
+                    aria-label={`${badge.name} 다음 목표`}
+                    style={{
+                      width: '100%', marginTop: 2, paddingTop: 4,
+                      borderTop: `1px solid ${GBC.creamShade}`,
+                      fontFamily: GBC.font, fontWeight: 700, fontSize: '0.5rem',
+                      color: GBC.brown, lineHeight: 1.2, textAlign: 'center',
+                    }}
+                  >
+                    {nextGoal.line}
+                  </span>
+                )}
                 {district && (
                   <div
                     aria-label={`${badge.name} 개방 지구`}
                     style={{
                       width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center',
-                      gap: 3, marginTop: 2, paddingTop: 4, borderTop: `1px solid ${GBC.creamShade}`,
+                      gap: 3,
                     }}
                   >
-                    <span style={{
-                      fontFamily: GBC.font, fontWeight: 700, fontSize: '0.5rem',
-                      color: GBC.brown, lineHeight: 1.2, textAlign: 'center',
-                    }}>
-                      {district.countLabel}
-                    </span>
                     <div style={{
                       display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 3,
                     }}>
@@ -230,19 +248,6 @@ export default function StampAlbum({ stamps, onClose }) {
                       ))}
                     </div>
                   </div>
-                )}
-                {discovery && (
-                  <span
-                    aria-label={`${badge.name} 발견 수집률`}
-                    style={{
-                      width: '100%', marginTop: 2, paddingTop: 4,
-                      borderTop: `1px solid ${GBC.creamShade}`,
-                      fontFamily: GBC.font, fontWeight: 700, fontSize: '0.5rem',
-                      color: GBC.brown, lineHeight: 1.2, textAlign: 'center',
-                    }}
-                  >
-                    {discovery.label}
-                  </span>
                 )}
               </div>
             );
