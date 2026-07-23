@@ -112,9 +112,9 @@ export const STATIONS = KAWAGUCHIKO_GEO.stations.map((station) => ({
   line: station.line,
 }));
 
-// 유람선 선착장(geo ferryLinks) + 등산 버스 정류장 2종(5합목 분리 성분 연결 — 실측 배치).
+// 유람선 선착장(geo transitPoints) + 등산 버스 정류장 2종(5합목 분리 성분 연결 — 실측 배치).
 export const TRANSIT_POINTS = [
-  ...(KAWAGUCHIKO_GEO.ferryLinks || []).map((point) => ({
+  ...KAWAGUCHIKO_GEO.transitPoints.map((point) => ({
     id: point.id,
     nameJa: point.nameJa,
     yomi: point.yomi || '',
