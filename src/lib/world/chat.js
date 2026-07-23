@@ -10,7 +10,7 @@
 // 연결 실패는 조용히 — onStatus('connecting') 로만 알린다(호출부가 "연결 중…" 표기).
 //
 // 순수 헬퍼(sanitizeChatText·rateGate·normalizeMessage)는 export 해 유닛 테스트한다.
-import { supabase } from '../supabase';
+import { getSupabase } from '../supabase';
 
 export const CHAT_MAX_LEN = 120;         // 메시지 최대 길이(초과분 컷)
 export const CHAT_RATE_LIMIT = 2;        // 윈도우당 최대 전송 건수
@@ -68,7 +68,7 @@ function makeMessageId(userId, at) {
 //   드랍한다 — 로그 미추가이자 bus 'chat:msg'(GameCanvas 말풍선)도 자연히 차단된다. 매 수신 시
 //   호출하므로 판정이 최신값(예: muteStore.isMuted)이면 뮤트 토글이 즉시 반영된다. 내 로컬 에코(send)는
 //   필터하지 않는다(자기 뮤트 개념 없음).
-export function createWorldChat({ client = supabase, userId = null, name = '나', channelName = CHANNEL, isMuted = null } = {}) {
+export function createWorldChat({ client = null, userId = null, name = '나', channelName = CHANNEL, isMuted = null } = {}) {
   let channel = null;
   let msgCb = null;
   let statusCb = null;
@@ -80,7 +80,8 @@ export function createWorldChat({ client = supabase, userId = null, name = '나'
   const emitMsg = (m) => { if (m && msgCb) msgCb(m); };
 
   // 채널 개설 — 실패는 조용히(status='connecting' 유지, 게임은 계속).
-  if (userId && client && typeof client.channel === 'function') {
+  function openChannel() {
+    if (closed || !userId || !client || typeof client.channel !== 'function') return;
     try {
       channel = client.channel(channelName, {
         config: { private: true, broadcast: { self: false } },
@@ -100,6 +101,18 @@ export function createWorldChat({ client = supabase, userId = null, name = '나'
     } catch {
       channel = null; // 개설 실패 — 로컬 에코만 동작(송신은 no-op)
     }
+  }
+
+  if (client) {
+    openChannel();
+  } else if (userId) {
+    getSupabase()
+      .then((loadedClient) => {
+        if (closed) return;
+        client = loadedClient;
+        openChannel();
+      })
+      .catch(() => {});
   }
 
   // 전송 — 정제·스로틀 통과분만. 로컬 에코 후 채널로 broadcast(self:false라 서버 에코 없음).

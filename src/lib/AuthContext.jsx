@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { getSupabase, supabase } from '../lib/supabase';
 import { useToast } from './ToastContext';
 import { pullProgress } from './refProgress';
 
@@ -99,38 +99,60 @@ export function AuthProvider({ children }) {
   }
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        hadSessionRef.current = true;
-        fetchProfile(session.user.id, session.user.user_metadata);
-      }
-      setLoading(false);
-    });
+    let cancelled = false;
+    let subscription;
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          hadSessionRef.current = true;
-          fetchProfile(session.user.id, session.user.user_metadata);
-        } else {
-          setProfile(null);
-          // 세션이 있다가 사라진 경우 — 명시적 로그아웃이 아니면 만료로 간주
-          if (event === 'SIGNED_OUT' && hadSessionRef.current && !explicitSignOutRef.current) {
-            toast('세션이 만료됐어요. 다시 로그인해주세요.', 'warning', 5000);
-            if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/auth')) {
-              const from = window.location.pathname + window.location.search;
-              window.location.href = `/auth?from=${encodeURIComponent(from)}`;
+    getSupabase()
+      .then((client) => {
+        if (cancelled) return;
+
+        // 기존 순서 유지: 세션 조회를 먼저 시작한 뒤 auth listener를 즉시 등록한다.
+        // listener는 동기 반환 API라 lazy facade 대신 실제 client가 필요하다.
+        const sessionRequest = client.auth.getSession();
+        const authState = client.auth.onAuthStateChange(
+          async (event, session) => {
+            if (cancelled) return;
+            setUser(session?.user ?? null);
+            if (session?.user) {
+              hadSessionRef.current = true;
+              fetchProfile(session.user.id, session.user.user_metadata);
+            } else {
+              setProfile(null);
+              // 세션이 있다가 사라진 경우 — 명시적 로그아웃이 아니면 만료로 간주
+              if (event === 'SIGNED_OUT' && hadSessionRef.current && !explicitSignOutRef.current) {
+                toast('세션이 만료됐어요. 다시 로그인해주세요.', 'warning', 5000);
+                if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/auth')) {
+                  const from = window.location.pathname + window.location.search;
+                  window.location.href = `/auth?from=${encodeURIComponent(from)}`;
+                }
+              }
+              hadSessionRef.current = false;
+              explicitSignOutRef.current = false;
             }
-          }
-          hadSessionRef.current = false;
-          explicitSignOutRef.current = false;
-        }
-      }
-    );
+          },
+        );
+        subscription = authState.data.subscription;
 
-    return () => subscription.unsubscribe();
+        return sessionRequest.then(({ data: { session } }) => {
+          if (cancelled) return;
+          setUser(session?.user ?? null);
+          if (session?.user) {
+            hadSessionRef.current = true;
+            fetchProfile(session.user.id, session.user.user_metadata);
+          }
+          setLoading(false);
+        });
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+      subscription?.unsubscribe();
+    };
   }, []);
 
   // 로그인 시 앱 어디서든 레퍼런스 진도 동기화 — [강의]/[홈] 외 페이지에서도 기기 간 병합되도록.

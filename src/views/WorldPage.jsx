@@ -734,7 +734,7 @@ export default function WorldPage() {
     if (!userId) return undefined;
     // isMuted 주입 — 수신 broadcast 에서 뮤트한 상대의 메시지를 드랍(로그·말풍선까지 차단).
     // muteStore.isMuted 는 매 수신 시 최신 localStorage 를 읽으므로 뮤트 토글이 즉시 반영된다.
-    const chat = createWorldChat({ client: supabase, userId, name: nickname, isMuted });
+    const chat = createWorldChat({ userId, name: nickname, isMuted });
     chatRef.current = chat;
     chat.onMessage((m) => {
       setChatMessages((prev) => {

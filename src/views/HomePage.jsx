@@ -11,7 +11,6 @@ import { parseTitle } from '../lib/seriesMeta';
 import { getIdealLevel } from '../lib/levels';
 import { isPassed } from '../components/RefPatternCheck';
 import { pullProgress } from '../lib/refProgress';
-import { buildForecast } from '../lib/forecast';
 import ForecastCard from '../components/ForecastCard';
 import ProfileStats from './ProfileStats';
 
@@ -46,6 +45,7 @@ async function fetchHomeData(userId, lang) {
     { data: seriesMaterials },
     { data: allCompleted },
     forecastRows,
+    { buildForecast },
   ] = await Promise.all([
     supabase.from('user_vocabulary').select('*', { count: 'exact', head: true })
       .eq('user_id', userId).lte('next_review_at', now),
@@ -74,6 +74,7 @@ async function fetchHomeData(userId, lang) {
       .eq('user_id', userId).eq('language', lang)
       .not('last_reviewed_at', 'is', null).gt('interval', 0)
       .then(({ data }) => data || [], () => []),
+    import('../lib/forecast'),
   ]);
 
   const rows = vocabRows || [];

@@ -7,7 +7,6 @@
  * (배포와 마이그레이션 적용 순서에 독립).
  */
 import { supabase } from './supabase';
-import { calculateFSRS } from './fsrs';
 
 /** 정답률 → FSRS rating (1 Again / 2 Hard / 3 Good / 4 Easy) */
 export function ratingFromScore(right, total) {
@@ -113,9 +112,10 @@ export async function countDueGrammar(userId) {
 /** 복습 결과 반영 — FSRS로 다음 스케줄 계산 후 저장. 성공 시 갱신 행 반환. */
 export async function gradeGrammarReview(row, rating) {
   if (!row?.user_id) return null;
-  const next = calculateFSRS(rating, row);
-  const updates = { ...next, last_reviewed_at: new Date().toISOString() };
   try {
+    const { calculateFSRS } = await import('./fsrs');
+    const next = calculateFSRS(rating, row);
+    const updates = { ...next, last_reviewed_at: new Date().toISOString() };
     const { error } = await supabase
       .from('grammar_review')
       .update(updates)
