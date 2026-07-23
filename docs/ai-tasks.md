@@ -14,6 +14,9 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
+- V2 코트다쥐르 경계 대비 확보(W2-R2-02): 밝은 개방 보도↔잠금 평지의 16×16 지각
+  명도차 하한을 guidebook 기존 문법 안에서 보강하고 다른 지구제 6도시 렌더 스냅샷을 고정
+  (`codex/cote-dazur-boundary-contrast`, base 407b32cda5e517c908a86c4d9ac0b88c430e7584)
 ### todo
 ### done (최근)
 - E11 기지 flaky 4종 안정화: osakaGeo·tokyoGeo RLE 왕복, cityFukuoka 전수 셀,
