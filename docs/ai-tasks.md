@@ -14,10 +14,11 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
-- V1 시각 대비 라운드: 밝은 보행 지형의 guidebook 잠금 점묘·빗금과
-  mainRoute 포장 야간 대비를 상향하고 미정의 도시 렌더 불변 계약을 유지
 ### todo
 ### done (최근)
+- V1 시각 대비 라운드: 밝은 보행 지형의 guidebook 잠금 점묘·빗금과
+  mainRoute 포장의 저녁·야간 틴트 대비를 상향하고 미정의 도시 렌더 불변 계약을 유지
+  (`codex/visual-contrast-round`, 구현 bc8408a, base e330283ecb435b7bf5bad51aab35f57258b20a1f)
 - W1 지구제 7도시 라이브 시각 감사(report-only): 개방↔잠금 경계의 guidebook 종이 톤과
   4.2초 soft-wall 안내를 도시별 2장씩 실측하고 14개 JPEG·관찰 노트를 정본화
   (`codex/districts-live-audit`, 구현 9c9e330, base 31b0d68eaf03b7a8a44ee502c66c7cb6800db953,
