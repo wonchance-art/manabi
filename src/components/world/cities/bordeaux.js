@@ -6,6 +6,7 @@
 
 import { CITY_TILE, isCityBlocked, isCityWalkable, isCityWater } from './terrain.js';
 import { BORDEAUX_GEO } from './bordeaux.geo.js';
+import { BORDEAUX_DOORS } from '../bordeauxDoors.js';
 
 export { CITY_TILE, isCityBlocked, isCityWalkable, isCityWater };
 
@@ -50,6 +51,12 @@ export const ZONES = [
   { id: 'garonne', label: '가론강', bounds: [280, 100, 360, 260], labelTile: [325, 180] },
 ];
 
+// fr 도어 2종(fr-15~16 — 제안 스팟 좌표) tile — 앵커 근처 보행+이격 ≥3 스크립트 검증 배치.
+const BORDEAUX_DOOR_TILES = Object.freeze({
+  'fr-15': [268, 226], // 제과점 — 역사지구 1안
+  'fr-16': [269, 148], // 골동품점 — 북강변 1안
+});
+
 export const CITY_NODES = [
   // 🧑‍💼 채움 라운드 1 — 빈 역 지구 NPC(스팟 실측: 보행·이격≥3·개방 rect 내).
   {
@@ -72,6 +79,21 @@ export const CITY_NODES = [
       desc: copy.desc,
     };
   }),
+  // 프랑스어 문화 도어 2종(fr-15~16 — 채움 라운드 2) — track 명시 라우팅.
+  ...BORDEAUX_DOORS.map((door) => ({
+    id: door.id,
+    kind: 'spot',
+    name: door.nameFr,
+    nameFr: door.nameFr,
+    contentLocale: 'fr',
+    facade: 'sign',
+    tile: [...BORDEAUX_DOOR_TILES[door.id]],
+    facing: 'down',
+    noStamp: true,
+    track: door.track,
+    chapter: door.chapter,
+    desc: `${door.name} — ${door.lines[0].fr} (${door.lines[0].gloss})`,
+  })),
 ];
 
 // ⚠️ nameJa 필드는 CityScene 레거시 계약 — 프랑스 도시는 nameFr를 그대로 싣는다(yomi 공란).

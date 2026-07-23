@@ -7,6 +7,7 @@
 
 import { CITY_TILE, isCityBlocked, isCityWalkable, isCityWater } from './terrain.js';
 import { LYON_GEO } from './lyon.geo.js';
+import { LYON_DOORS } from '../lyonDoors.js';
 
 export { CITY_TILE, isCityBlocked, isCityWalkable, isCityWater };
 
@@ -51,6 +52,12 @@ export const ZONES = [
   { id: 'tete-dor', label: '테트도르', bounds: [205, 90, 290, 150], labelTile: [248, 118] },
 ];
 
+// fr 도어 2종(fr-13~14 — 제안 스팟 좌표) tile — 앵커 POI 곁 보행+이격 ≥3 스크립트 검증 배치.
+const LYON_DOOR_TILES = Object.freeze({
+  'fr-13': [262, 217], // 식료품 시장 — 레알·파르디외 1안
+  'fr-14': [227, 202], // 노천 카페 — 파르디외 2안
+});
+
 export const CITY_NODES = [
   // 🧑‍💼 채움 라운드 1 — 경로변 NPC(스팟 실측: T8 proposal-npc-door-spots.md).
   {
@@ -83,6 +90,21 @@ export const CITY_NODES = [
       desc: copy.desc,
     };
   }),
+  // 프랑스어 문화 도어 2종(fr-13~14 — 채움 라운드 2) — track 명시 라우팅.
+  ...LYON_DOORS.map((door) => ({
+    id: door.id,
+    kind: 'spot',
+    name: door.nameFr,
+    nameFr: door.nameFr,
+    contentLocale: 'fr',
+    facade: 'sign',
+    tile: [...LYON_DOOR_TILES[door.id]],
+    facing: 'down',
+    noStamp: true,
+    track: door.track,
+    chapter: door.chapter,
+    desc: `${door.name} — ${door.lines[0].fr} (${door.lines[0].gloss})`,
+  })),
 ];
 
 // ⚠️ nameJa 필드는 CityScene 레거시 계약 — 프랑스 도시는 nameFr를 그대로 싣는다(yomi 공란).
