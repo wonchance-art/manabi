@@ -1,3 +1,9 @@
+import bus from './bus.js';
+import {
+  DISCOVERY_MILESTONE_EVENT,
+  claimDiscoveryMilestoneReward,
+} from '../../lib/world/discoveryMilestones.js';
+
 export const ROUTE_DISCOVERY_DURATION_MS = 4200;
 
 export function routeDiscoveryStorageKey(cityId) {
@@ -50,6 +56,17 @@ export function claimRouteDiscoveryAt({
   ));
   if (!discovery) return null;
   discoveredIds.add(discovery.id);
-  saveRouteDiscoveryIds(cityId, discoveredIds, storage);
+  const saved = saveRouteDiscoveryIds(cityId, discoveredIds, storage);
+  if (saved) {
+    const reward = claimDiscoveryMilestoneReward({
+      cityId,
+      discoveries,
+      discoveredIds,
+      storage,
+    });
+    if (reward?.unlocked.length) {
+      bus.emit(DISCOVERY_MILESTONE_EVENT, reward.unlocked);
+    }
+  }
   return discovery;
 }
