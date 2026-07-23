@@ -309,6 +309,9 @@
 
 ## Codex-4 (codex4/*) — 성능·인프라 (타 기기)
 ### doing
+- Q4 정정 manifest 생성기 + 리옹 B′ 파일럿 초안: Q1-r2 JSON의 완전 고립
+  횡단보도 성분을 8방 최빈 비CROSSWALK 보행류로 치환하는 manifest·전후 crop·재스캔 증거
+  (`codex4/q4-fix-manifest-pilot`)
 ### todo
 - P0 (운영 필수·최우선) 로컬 clone 이전 + 확인 코멘트: #150 5046786117
 - P1 geo lazy-load 구현(RFC #394 승인 — 실패 UX·?spawn= 정합·scene race 주의 3건 코멘트 참조)
