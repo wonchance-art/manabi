@@ -21,7 +21,9 @@ import {
 } from '../../../lib/world/stampMilestones.js';
 import { STAMP_ALBUM_NODES } from '../../../lib/world/stampUniverse.js';
 import bordeaux from '../cities/bordeaux.js';
+import kyoto from '../cities/kyoto.js';
 import lyon from '../cities/lyon.js';
+import osaka from '../cities/osaka.js';
 import tokyo from '../cities/tokyo.js';
 import {
   isNpcMeetingCandidate,
@@ -103,7 +105,13 @@ function collectGuestStamps(storage, ids) {
 function renderAlbum(tabId, stamps) {
   albumHooks.activeTabId = tabId;
   albumHooks.callIndex = 0;
-  albumHooks.detailCities = { bordeaux, lyon, tokyo };
+  albumHooks.detailCities = {
+    bordeaux,
+    kyoto,
+    lyon,
+    osaka,
+    tokyo,
+  };
   return renderToStaticMarkup(createElement(StampAlbum, {
     devGuest: true,
     stamps,
@@ -326,5 +334,87 @@ describe('S20 보르도 채움 라운드 2 여정', () => {
     expect(saveRouteDiscoveryIds('bordeaux', discovered, storage)).toBe(true);
     markup = renderAlbum('emea', stamps);
     expect(nextGoalLine(markup, '보르도')).toBe('발견 3/8');
+  });
+});
+
+describe('S25 일본 코스 트랙 도시 여정', () => {
+  it('오사카 스탬프 10개부터 NPC 2명과 발견 3건까지 다음 목표를 전환한다', () => {
+    const storage = memoryStorage();
+    vi.stubGlobal('localStorage', storage);
+    const stamps = collectGuestStamps(storage, stampPlan('osaka', 10));
+    expect(claimStampMilestoneRewards(stamps, storage).unlocked).toEqual(['stamp-10']);
+
+    let markup = renderAlbum('national', stamps);
+    expect(visibleText(markup)).toContain('10 / 85');
+    expect(nextGoalLine(markup, '오사카')).toBe('만난 사람 0/2');
+
+    const meetingNodes = osaka.nodes.filter(isNpcMeetingCandidate);
+    expect(meetingNodes.map(({ id }) => id)).toEqual([
+      'osaka-north-hubs-transfer',
+      'osaka-castle-east-guide',
+    ]);
+    expect(recordNpcMeeting({
+      cityId: 'osaka',
+      node: meetingNodes[0],
+      storage,
+    })).toBe(true);
+    markup = renderAlbum('national', stamps);
+    expect(nextGoalLine(markup, '오사카')).toBe('만난 사람 1/2');
+
+    expect(recordNpcMeeting({
+      cityId: 'osaka',
+      node: meetingNodes[1],
+      storage,
+    })).toBe(true);
+    expect(loadNpcMeetingIds('osaka', storage)).toEqual(new Set(
+      meetingNodes.map(({ id }) => id),
+    ));
+    markup = renderAlbum('national', stamps);
+    expect(nextGoalLine(markup, '오사카')).toBe('발견 0/8');
+
+    const discovered = new Set(
+      osaka.mainRoute.discoveries.slice(0, 3).map(({ id }) => id),
+    );
+    expect(saveRouteDiscoveryIds('osaka', discovered, storage)).toBe(true);
+    markup = renderAlbum('national', stamps);
+    expect(visibleText(markup)).toContain('발견 3/8');
+    expect(nextGoalLine(markup, '오사카')).toBe('발견 3/8');
+  });
+
+  it('교토 발견 8/8 칭호를 한 번만 지급하고 다음 목표를 전환한다', () => {
+    const storage = memoryStorage();
+    vi.stubGlobal('localStorage', storage);
+    const stamps = collectGuestStamps(storage, stampPlan('kyoto', 10));
+    expect(claimStampMilestoneRewards(stamps, storage).unlocked).toEqual(['stamp-10']);
+
+    let markup = renderAlbum('national', stamps);
+    expect(nextGoalLine(markup, '교토')).toBe('발견 0/8');
+
+    const discovered = new Set(kyoto.mainRoute.discoveries.map(({ id }) => id));
+    expect(saveRouteDiscoveryIds('kyoto', discovered, storage)).toBe(true);
+    expect(claimDiscoveryMilestoneReward({
+      cityId: 'kyoto',
+      discoveries: kyoto.mainRoute.discoveries,
+      discoveredIds: discovered,
+      storage,
+    })).toMatchObject({
+      discoveredCount: 8,
+      totalCount: 8,
+      complete: true,
+      unlocked: ['discovery-kyoto'],
+    });
+    expect(claimDiscoveryMilestoneReward({
+      cityId: 'kyoto',
+      discoveries: kyoto.mainRoute.discoveries,
+      discoveredIds: discovered,
+      storage,
+    })).toMatchObject({
+      complete: true,
+      unlocked: [],
+    });
+    expect(titleKeys(storage)).toEqual(['stamp-10', 'discovery-kyoto']);
+
+    markup = renderAlbum('national', stamps);
+    expect(nextGoalLine(markup, '교토')).toBe('다음 칭호까지 도장 20개');
   });
 });

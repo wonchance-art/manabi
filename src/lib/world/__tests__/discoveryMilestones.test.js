@@ -6,6 +6,17 @@ import {
   claimDiscoveryMilestoneReward,
   discoveryTitleToastForUnlocked,
 } from '../discoveryMilestones.js';
+import kyoto from '../../../components/world/cities/kyoto.js';
+import osaka from '../../../components/world/cities/osaka.js';
+import seoul from '../../../components/world/cities/seoul.js';
+import tokyo from '../../../components/world/cities/tokyo.js';
+
+const COURSE_CITIES = Object.freeze({
+  tokyo,
+  seoul,
+  osaka,
+  kyoto,
+});
 
 function memoryStorage(initial = {}) {
   const values = new Map(Object.entries(initial));
@@ -30,7 +41,7 @@ function claim(reward, discoveredIds, storage, discoveries = definitionsFor(rewa
 }
 
 describe('S9 도시별 발견 완집 보상', () => {
-  it('리옹 8·보르도 8·스트라스부르 7 정본과 key-only 칭호·사료 1개를 고정한다', () => {
+  it('기존 3도시와 코스 트랙 4도시 정본·key-only 칭호·사료 1개를 고정한다', () => {
     expect(DISCOVERY_MILESTONE_REWARDS.map((reward) => ({
       cityId: reward.cityId,
       count: reward.discoveryIds.length,
@@ -40,11 +51,24 @@ describe('S9 도시별 발견 완집 보상', () => {
       { cityId: 'lyon', count: 8, titleKey: 'discovery-lyon', petFood: 1 },
       { cityId: 'bordeaux', count: 8, titleKey: 'discovery-bordeaux', petFood: 1 },
       { cityId: 'strasbourg', count: 7, titleKey: 'discovery-strasbourg', petFood: 1 },
+      { cityId: 'tokyo', count: 8, titleKey: 'discovery-tokyo', petFood: 1 },
+      { cityId: 'seoul', count: 8, titleKey: 'discovery-seoul', petFood: 1 },
+      { cityId: 'osaka', count: 8, titleKey: 'discovery-osaka', petFood: 1 },
+      { cityId: 'kyoto', count: 8, titleKey: 'discovery-kyoto', petFood: 1 },
     ]);
     expect(Object.isFrozen(DISCOVERY_MILESTONE_REWARDS)).toBe(true);
     expect(DISCOVERY_MILESTONE_REWARDS.every((reward) => (
       Object.isFrozen(reward) && Object.isFrozen(reward.discoveryIds)
     ))).toBe(true);
+  });
+
+  it('코스 트랙 4도시는 실제 mainRoute 정본 ID와 exact 일치한다', () => {
+    for (const [cityId, city] of Object.entries(COURSE_CITIES)) {
+      const reward = DISCOVERY_MILESTONE_REWARDS.find((entry) => entry.cityId === cityId);
+      expect(reward?.discoveryIds, cityId).toEqual(
+        city.mainRoute.discoveries.map(({ id }) => id),
+      );
+    }
   });
 
   it('정본 마지막 발견 순간에만 칭호 키와 펫 사료를 1회 지급한다', () => {
@@ -74,7 +98,7 @@ describe('S9 도시별 발견 완집 보상', () => {
     expect(storage.values.get(INVENTORY_ITEM_COUNTS_KEY)).toBe('{"pet-food":1}');
   });
 
-  it('세 도시를 각각 완집해도 도시별 1회만 지급하고 기존 칭호를 보존한다', () => {
+  it('일곱 도시를 각각 완집해도 도시별 1회만 지급하고 기존 칭호를 보존한다', () => {
     const storage = memoryStorage({
       [WORLD_TITLES_STORAGE_KEY]: '["stamp-10","other-title"]',
     });
@@ -90,8 +114,12 @@ describe('S9 도시별 발견 완집 보상', () => {
       'discovery-lyon',
       'discovery-bordeaux',
       'discovery-strasbourg',
+      'discovery-tokyo',
+      'discovery-seoul',
+      'discovery-osaka',
+      'discovery-kyoto',
     ]);
-    expect(storage.values.get(INVENTORY_ITEM_COUNTS_KEY)).toBe('{"pet-food":3}');
+    expect(storage.values.get(INVENTORY_ITEM_COUNTS_KEY)).toBe('{"pet-food":7}');
   });
 
   it('유령 저장 ID와 정본을 가장한 동일 개수의 교체 ID로는 완집을 열지 않는다', () => {
@@ -146,8 +174,8 @@ describe('S9 도시별 발견 완집 보상', () => {
     expect(discoveryTitleToastForUnlocked([
       'discovery-lyon',
       'ghost-title',
-      'discovery-strasbourg',
-    ])).toEqual({ key: 'discovery-strasbourg' });
+      'discovery-kyoto',
+    ])).toEqual({ key: 'discovery-kyoto' });
     expect(discoveryTitleToastForUnlocked(['ghost-title'])).toBeNull();
     expect(discoveryTitleToastForUnlocked(null)).toBeNull();
   });
