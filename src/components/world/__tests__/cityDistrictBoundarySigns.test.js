@@ -155,19 +155,58 @@ describe('잠금 지구 경계 표지판 순수 배치', () => {
     const secondBytes = JSON.stringify(structuredClone(manifest));
 
     expect(districtCities.map(({ id }) => id))
-      .toEqual(['busan', 'seoul', 'cote-dazur', 'leman-riviera', 'lyon', 'bordeaux', 'strasbourg']);
-    expect(manifest.map(({ id, tiles }) => [id, tiles.length])).toEqual([
-      ['busan', 233],
-      ['seoul', 309],
-      ['cote-dazur', 232],
-      ['leman-riviera', 146],
-      ['lyon', 62],
-      ['bordeaux', 75],
-      ['strasbourg', 63],
-    ]);
+      .toEqual(['fukuoka', 'tokyo', 'osaka', 'kyoto', 'busan', 'seoul', 'cote-dazur', 'leman-riviera', 'lyon', 'bordeaux', 'strasbourg']);
+    expect(manifest.map(({ id, tiles }) => [id, tiles.length])).toMatchInlineSnapshot(`
+      [
+        [
+          "fukuoka",
+          113,
+        ],
+        [
+          "tokyo",
+          466,
+        ],
+        [
+          "osaka",
+          259,
+        ],
+        [
+          "kyoto",
+          305,
+        ],
+        [
+          "busan",
+          233,
+        ],
+        [
+          "seoul",
+          309,
+        ],
+        [
+          "cote-dazur",
+          232,
+        ],
+        [
+          "leman-riviera",
+          146,
+        ],
+        [
+          "lyon",
+          62,
+        ],
+        [
+          "bordeaux",
+          75,
+        ],
+        [
+          "strasbourg",
+          63,
+        ],
+      ]
+    `);
     expect(bytes).toBe(secondBytes);
     expect(createHash('sha256').update(bytes).digest('hex'))
-      .toBe('63898ef1351f7d1108b7da05274a14f4d6037ad96f93fbcd09b17f442636a2b7');
+      .toBe('54212463569779fba49f96e16e60b620fa299023fe73329384ab9986fb3069c4');
   });
 });
 

@@ -307,6 +307,37 @@ export const TOKYO = {
   transitPoints: TRANSIT_POINTS,
   railways: TOKYO_GEO.railways,
   props: PROPS,
+  // 📖 여행책 지구제 v1 (D2 정본 — RFC docs/rfc-guidebook-districts.md·오너 승인 2026-07-23).
+  // 개방 = 주동선 회랑 rect. 나머지는 guidebook 잠금 렌더 + soft wall.
+  districts: {
+    version: 'district-v1',
+    open: [
+      {
+        id: 'yamanote-west',
+        label: '야마노테·서부',
+        tiles: { rects: [[195, 35, 320, 120], [140, 130, 250, 499], [170, 500, 320, 690]] },
+      },
+      {
+        id: 'central-east',
+        label: '중심·동부',
+        tiles: { rects: [[340, 0, 540, 280], [500, 90, 700, 245], [430, 281, 530, 429]] },
+      },
+      {
+        id: 'south-bay',
+        label: '남부·항만',
+        tiles: { rects: [[330, 430, 590, 700]] },
+      },
+      {
+        id: 'haneda',
+        label: '하네다',
+        tiles: { rects: [[525, 1020, 585, 1075]] },
+      },
+    ],
+    locked: {
+      style: 'guidebook',
+      line: '이 동네는 아직 준비 중이에요 — 다음 여행에서 만나요.',
+    },
+  },
   CITY_TILE,
   buildGrid: buildTokyoGrid,
 };

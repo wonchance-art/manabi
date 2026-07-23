@@ -281,6 +281,37 @@ export const FUKUOKA = {
   transit: TRANSIT,
   transitPoints: TRANSIT_POINTS,
   props: PROPS,
+  // 📖 여행책 지구제 v1 (D2 정본 — RFC docs/rfc-guidebook-districts.md·오너 승인 2026-07-23).
+  // 개방 = 주동선 회랑 rect. 나머지는 guidebook 잠금 렌더 + soft wall.
+  districts: {
+    version: 'district-v1',
+    open: [
+      {
+        id: 'hakata-port',
+        label: '하카타항',
+        tiles: { rects: [[205, 10, 255, 85]] },
+      },
+      {
+        id: 'tenjin-ohori',
+        label: '텐진·오호리',
+        tiles: { rects: [[90, 120, 259, 185]] },
+      },
+      {
+        id: 'nakasu-hakata',
+        label: '나카스·하카타',
+        tiles: { rects: [[260, 90, 350, 165]] },
+      },
+      {
+        id: 'momochi',
+        label: '모모치',
+        tiles: { rects: [[5, 100, 75, 160]] },
+      },
+    ],
+    locked: {
+      style: 'guidebook',
+      line: '이 동네는 아직 준비 중이에요 — 다음 여행에서 만나요.',
+    },
+  },
   CITY_TILE,
   buildGrid: buildFukuokaGrid,
 };

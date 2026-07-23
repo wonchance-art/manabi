@@ -109,6 +109,37 @@ export const OSAKA = {
   id: 'osaka', name: '오사카', cols: COLS, rows: ROWS, entrance: ENTRANCE, returnNode: 'osaka',
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: [], railways: OSAKA_GEO.railways,
+  // 📖 여행책 지구제 v1 (D2 정본 — RFC docs/rfc-guidebook-districts.md·오너 승인 2026-07-23).
+  // 개방 = 주동선 회랑 rect. 나머지는 guidebook 잠금 렌더 + soft wall.
+  districts: {
+    version: 'district-v1',
+    open: [
+      {
+        id: 'north-hubs',
+        label: '북부·허브',
+        tiles: { rects: [[415, 0, 455, 25], [350, 140, 610, 245]] },
+      },
+      {
+        id: 'castle-east',
+        label: '성곽·동부',
+        tiles: { rects: [[535, 246, 615, 330]] },
+      },
+      {
+        id: 'namba-tennoji',
+        label: '난바·텐노지',
+        tiles: { rects: [[250, 280, 360, 410], [420, 331, 520, 505], [550, 350, 600, 410]] },
+      },
+      {
+        id: 'bay',
+        label: '항만',
+        tiles: { rects: [[85, 420, 135, 470]] },
+      },
+    ],
+    locked: {
+      style: 'guidebook',
+      line: '이 동네는 아직 준비 중이에요 — 다음 여행에서 만나요.',
+    },
+  },
   CITY_TILE, buildGrid: buildOsakaGrid,
 };
 
