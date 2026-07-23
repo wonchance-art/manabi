@@ -97,6 +97,42 @@ export const CITY_NODES = [
     tile: [265, 217], facing: 'down', noStamp: true,
     desc: '리옹 시장 내 도로변 노점. 가격을 묻고 현금 계산하는 여행 표현을 배워요.',
   },
+  // 🧑‍💼 채움 라운드 3 — P1 리옹 NPC 밀도 채움 7종.
+  {
+    id: 'lyon-presquile-postoffice', kind: 'npc', npc: 'lyon-presquile-postoffice', name: '우체국 직원',
+    tile: [155, 225], facing: 'down', noStamp: true,
+    desc: '프레스킬 우체국. 엽서를 보내며 주소 묻기·서비스 요청 표현을 배워요.',
+  },
+  {
+    id: 'lyon-fourviere-pharmacy', kind: 'npc', npc: 'lyon-fourviere-pharmacy', name: '약사',
+    tile: [135, 200], facing: 'down', noStamp: true,
+    desc: '푸르비에르 약국. 감기·두통 등 간단한 증상을 말하고 약을 추천받는 경험을 배워요.',
+  },
+  {
+    id: 'lyon-croix-rousse-fleur', kind: 'npc', npc: 'lyon-croix-rousse-fleur', name: '꽃집 점원',
+    tile: [165, 160], facing: 'down', noStamp: true,
+    desc: '크루아루스 꽃집. 빨강·노랑 같은 색상과 한 송이·다섯 송이 같은 수량을 배워요.',
+  },
+  {
+    id: 'lyon-croix-rousse-crepe', kind: 'npc', npc: 'lyon-croix-rousse-crepe', name: '크레프 노점',
+    tile: [185, 165], facing: 'down', noStamp: true,
+    desc: '크루아루스 골목 크레프 노점. 무르 아마드·누텔라 같은 토핑을 주문하고 계산하는 말을 배워요.',
+  },
+  {
+    id: 'lyon-rhone-fisherman', kind: 'npc', npc: 'lyon-rhone-fisherman', name: '강변 낚시꾼',
+    tile: [215, 190], facing: 'down', noStamp: true,
+    desc: '론강변 산책로의 낚시꾼. 날씨를 묻고 여가 취미에 대해 대화하며 자연스러운 표현을 배워요.',
+  },
+  {
+    id: 'lyon-part-dieu-bus-announcer', kind: 'npc', npc: 'lyon-part-dieu-bus-announcer', name: '버스 정류소 안내원',
+    tile: [245, 210], facing: 'down', noStamp: true,
+    desc: '파르디외 버스 정류소. 노선 번호와 목적지를 묻고 운행 정보를 받는 표현을 배워요.',
+  },
+  {
+    id: 'lyon-terreaux-park-keeper', kind: 'npc', npc: 'lyon-terreaux-park-keeper', name: '공원 관리인',
+    tile: [170, 145], facing: 'down', noStamp: true,
+    desc: '테로 광장 공원. 길을 묻고 공원 내 규칙·금지 사항을 배우며 공공장소 예절 표현을 배워요.',
+  },
   ...LYON_GEO.pois.map((poi) => {
     const copy = poiCopy(poi.id);
     // 리옹 주요 명소 스탬프 활성화: fourviere, vieux-lyon, bellecour, terreaux, croix-rousse, halles, tete-dor
