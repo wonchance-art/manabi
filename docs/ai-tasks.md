@@ -317,6 +317,8 @@
 
 ## Codex-4 (codex4/*) — 성능·인프라 (타 기기)
 ### doing
+- Q6 사전공사: A′·B′·C′·D′·F·H′ 전 유형 정정 규칙과 공통 보호 타일 skip,
+  리옹 통합 draft manifest·임시 적용 재스캔·기대값 자동 갱신기를 원샷 정돈
 ### todo
 - P0 (운영 필수·최우선) 로컬 clone 이전 + 확인 코멘트: #150 5046786117
 - P1 geo lazy-load 구현(RFC #394 승인 — 실패 UX·?spawn= 정합·scene race 주의 3건 코멘트 참조)
