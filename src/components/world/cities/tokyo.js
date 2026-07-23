@@ -310,6 +310,7 @@ export const TOKYO = {
   cols: COLS,
   rows: ROWS,
   entrance: ENTRANCE,
+  roadStyle: 'autotile-v1',
   returnNode: 'tokyo',
   zones: ZONES,
   nodes: CITY_NODES,

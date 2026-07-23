@@ -7,7 +7,7 @@ exports[`CityScene road autotile opt-in > 5계열 16종+inner 렌더 명령이 2
 }
 `;
 
-exports[`CityScene road autotile opt-in > 26도시 전 지형·mainRoute 키 스냅샷에서 리옹만 갱신되고 25도시는 exact 불변이다 1`] = `
+exports[`CityScene road autotile opt-in > 26도시 전 지형·mainRoute 키 스냅샷에서 3도시만 갱신되고 23도시는 exact 불변이다 1`] = `
 [
   {
     "id": "fukuoka",
@@ -16,8 +16,8 @@ exports[`CityScene road autotile opt-in > 26도시 전 지형·mainRoute 키 스
   },
   {
     "id": "tokyo",
-    "roadStyle": null,
-    "sha256": "ddbb9f41df6e3cf7de95fa4d6fe305c4da8dd1ff0f9991a5cfd8eae22e59733d",
+    "roadStyle": "autotile-v1",
+    "sha256": "ccf178a4275e2badaca09a1eaae8f4f51913e602609ba2089cc6240ac8798790",
   },
   {
     "id": "osaka",
@@ -36,8 +36,8 @@ exports[`CityScene road autotile opt-in > 26도시 전 지형·mainRoute 키 스
   },
   {
     "id": "seoul",
-    "roadStyle": null,
-    "sha256": "ac7e9aecc6141b3ebf0e8d9f5aa466709b700952a1eb692e42ef689b1d337ea0",
+    "roadStyle": "autotile-v1",
+    "sha256": "4e89ebfb9bba6601353b51eadb1f68792015a0b944154f14f9b82207f4ccea8d",
   },
   {
     "id": "grand-paris",

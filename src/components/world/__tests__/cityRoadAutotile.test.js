@@ -25,11 +25,9 @@ const AUTOTILE_PREFIXES = [
 
 const LEGACY_RENDER_KEY_SHA = Object.freeze({
   fukuoka: 'dc6dd00f9a14ea06517d1e6543039c7e63e2f9b0471f2f5bb3b086b744318a9a',
-  tokyo: 'ddbb9f41df6e3cf7de95fa4d6fe305c4da8dd1ff0f9991a5cfd8eae22e59733d',
   osaka: 'dc648e5e34bdd10f2bdce1c0a2c585a725d76533c52173e51d1552eb6ca6fe24',
   kyoto: 'b54e257ffb8fbda0e0d2ebd11ab9d02ca5118fb41a7d91766aba9fb27dc947b9',
   busan: '08abc45d06d624f7a4f65afbb2ed7458b8f13bf9d22c81eba7fb676cb193dead',
-  seoul: 'ac7e9aecc6141b3ebf0e8d9f5aa466709b700952a1eb692e42ef689b1d337ea0',
   'grand-paris': '67bad1273ac21b0337458b1e76ab73bdfa103a83e8ab1da820ef05e77deb5557',
   'mont-saint-michel': '8f01e2ecb7ad5d7386f38440d4f36e61f82f3c6508253832c4a93bcd098aa4a7',
   'cote-dazur': 'dfb1e1c1390e7a806be8bc2c334d0251121bb39da52a7e69ff4d150dcbccdce7',
@@ -173,11 +171,15 @@ describe('CityScene road autotile opt-in', () => {
     CITY_MAPS = await loadAllCities();
   }, 60000);
 
-  it('roadStyle 계약은 lyon 단일 opt-in이고 미설정 25도시는 legacy 키를 유지한다', () => {
+  it('roadStyle 계약은 tokyo·seoul·lyon opt-in이고 미설정 23도시는 legacy 키를 유지한다', () => {
     expect(CITY_MAPS).toHaveLength(26);
     expect(CITY_MAPS.filter(cityUsesRoadAutotile).map(({ id, roadStyle }) => [id, roadStyle]))
-      .toEqual([['lyon', ROAD_AUTOTILE_STYLE]]);
-    expect(CITY_MAPS.filter((city) => city.roadStyle == null)).toHaveLength(25);
+      .toEqual([
+        ['tokyo', ROAD_AUTOTILE_STYLE],
+        ['seoul', ROAD_AUTOTILE_STYLE],
+        ['lyon', ROAD_AUTOTILE_STYLE],
+      ]);
+    expect(CITY_MAPS.filter((city) => city.roadStyle == null)).toHaveLength(23);
 
     const flagged = textureHarness();
     const legacy = textureHarness(fixtureCity(null));
@@ -316,10 +318,10 @@ describe('CityScene road autotile opt-in', () => {
     expect({ textureCount: keys.length, sha256: digest(first) }).toMatchSnapshot();
   });
 
-  it('26도시 전 지형·mainRoute 키 스냅샷에서 리옹만 갱신되고 25도시는 exact 불변이다', () => {
+  it('26도시 전 지형·mainRoute 키 스냅샷에서 3도시만 갱신되고 23도시는 exact 불변이다', () => {
     const manifest = CITY_MAPS.map(cityRenderKeyManifest);
     const legacyManifest = Object.fromEntries(
-      manifest.filter(({ id }) => id !== 'lyon').map(({ id, sha256 }) => [id, sha256]),
+      manifest.filter(({ roadStyle }) => roadStyle == null).map(({ id, sha256 }) => [id, sha256]),
     );
 
     expect(legacyManifest).toEqual(LEGACY_RENDER_KEY_SHA);
