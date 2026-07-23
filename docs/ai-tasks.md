@@ -16,6 +16,11 @@
 ### doing
 ### todo
 ### done (최근)
+- E9 광장(도쿄) 에어허브 게스트 하니스 검증·락 점검(report-only): E4·E6형 락 교착·
+  중복 저장·잔존 상태 없음과 dev guest 저장 스킵을 확인하고, 광장 직행 spawn 부재·
+  EMEA/APAC 왕복 비대칭·실패 재시도 카피 공백을 보고
+  (`codex/airhub-guest-lock-audit`, 구현 ff0d34c,
+  base 49e6699764febdcd1132c4644389f65e91ed6705, #150 5053883288)
 - D5 잠금 지구 경계 표지판: 개방↔잠금 경계의 개방 쪽 도로·보행 타일에 8타일 이격
   무문자 빗장 팻말 1,120개를 결정 배치하고 district 7도시에서만 베이크·소비
   (`codex/district-boundary-signs`, 구현 0d01f1b, base e330283ecb435b7bf5bad51aab35f57258b20a1f,
