@@ -110,6 +110,174 @@ export const PROPS = [
   { kind: 'stall', tile: [465, 384] },
 ];
 
+// 오사카 mainRoute v3 정본 — 도시 루프 9waypoint, 1,220타일, 관광 일본 2호.
+// 세그먼트·sha는 docs/proposal-osaka-mainroute.md(T26 재검증) 정식본을 핀함.
+// 발견점(d1~d8)은 각 leg 구간 콘텍스트를 오사카 여행자 관점으로 직저작.
+export const MAIN_ROUTE = Object.freeze({
+  id: 'osaka-classic-loop-candidate-a',
+  version: 1,
+  waypoints: Object.freeze([
+    Object.freeze({ kind: 'station', id: 'osaka' }),
+    Object.freeze({ kind: 'node', id: 'kuchu-teien' }),
+    Object.freeze({ kind: 'node', id: 'nakanoshima-park' }),
+    Object.freeze({ kind: 'node', id: 'osaka-castle' }),
+    Object.freeze({ kind: 'node', id: 'shitennoji' }),
+    Object.freeze({ kind: 'station', id: 'tennoji' }),
+    Object.freeze({ kind: 'node', id: 'tsutenkaku' }),
+    Object.freeze({ kind: 'node', id: 'kuromon-market' }),
+    Object.freeze({ kind: 'node', id: 'ebisubashi' }),
+    Object.freeze({ kind: 'node', id: 'osaka-aquarium' }),
+  ]),
+  routing: Object.freeze({
+    algorithm: 'cardinal-bfs-v1',
+    neighborOrder: 'URDL',
+    excludeExit: true,
+  }),
+  segmentHints: Object.freeze([
+    Object.freeze({
+      from: Object.freeze({ kind: 'node', id: 'nakanoshima-park' }),
+      to: Object.freeze({ kind: 'node', id: 'osaka-castle' }),
+      viaTiles: [[538, 245]],
+    }),
+  ]),
+  branches: Object.freeze([]),
+  discoveries: Object.freeze([
+    Object.freeze({
+      id: 'osaka-d1', leg: Object.freeze(['osaka', 'kuchu-teien']), at: 0.50,
+      line: '우메다 역세권을 빠져나가며 만나는 고가 선로와 대형 보행축의 교차 — 미들타운의 거리에서 공중정원으로 올라가는 길이에요.',
+    }),
+    Object.freeze({
+      id: 'osaka-d2', leg: Object.freeze(['kuchu-teien', 'nakanoshima-park']), at: 0.55,
+      line: '초고층 빌딩 숲에서 도지마강 수변의 도심으로 내려가는 구간 — 업무 센터에서 공원 섬으로 건너가는 전환점이에요.',
+    }),
+    Object.freeze({
+      id: 'osaka-d3', leg: Object.freeze(['nakanoshima-park', 'osaka-castle']), at: 0.68,
+      line: '수변 도시 공간에서 성곽 공원권으로 건너가는 open 교량 — 두 지구가 맞닿는 전환점을 지나 녹지로 들어가요.',
+    }),
+    Object.freeze({
+      id: 'osaka-d4', leg: Object.freeze(['osaka-castle', 'shitennoji']), at: 0.12,
+      line: '오사카성 남쪽 공원 보행축 — 해자 주변 녹지에서 나가며 남부 생활권 장거리 이동을 앞둔 구간이에요.',
+    }),
+    Object.freeze({
+      id: 'osaka-d5', leg: Object.freeze(['shitennoji', 'tennoji']), at: 0.50,
+      line: '사찰권에서 텐노지역 광장으로 내려가는 길 — 고찰의 침묵에서 역세권의 활기로 전환돼요.',
+    }),
+    Object.freeze({
+      id: 'osaka-d6', leg: Object.freeze(['tennoji', 'tsutenkaku']), at: 0.55,
+      line: '텐노지역 교통 중심에서 신세카이 전망탑으로 서진하는 보행축 — 역세권에서 상점가 거리로 바뀌어요.',
+    }),
+    Object.freeze({
+      id: 'osaka-d7', leg: Object.freeze(['tsutenkaku', 'kuromon-market']), at: 0.50,
+      line: '신세카이 관광 중심가에서 북쪽 시장권으로 이어지는 생활 골목 — 기념품과 신선 식재료가 뒤섞인 길목이에요.',
+    }),
+    Object.freeze({
+      id: 'osaka-d8', leg: Object.freeze(['ebisubashi', 'osaka-aquarium']), at: 0.95,
+      line: '난바 번화가를 빠져나가 항만 open 구간을 지나 수족관 앞에 다다르는 구간 — 도시 가로에서 부두·수변 경관으로 바뀌어요.',
+    }),
+  ]),
+  segments: Object.freeze([
+    Object.freeze({
+      id: 'station:osaka--node:kuchu-teien',
+      from: Object.freeze({ kind: 'station', id: 'osaka' }),
+      to: Object.freeze({ kind: 'node', id: 'kuchu-teien' }),
+      stepsRle: Object.freeze([
+        { direction: 'U', count: 3 }, { direction: 'L', count: 1 }, { direction: 'U', count: 4 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 2 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 22 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 4 }, { direction: 'R', count: 2 },
+      ]),
+      stepCount: 48,
+      tileCount: 49,
+      pathSha256: 'a54413ff0119c96e045119eaf8b63beb06acdaa4dbc7ed4c7457e191b3688adf',
+    }),
+    Object.freeze({
+      id: 'node:kuchu-teien--node:nakanoshima-park',
+      from: Object.freeze({ kind: 'node', id: 'kuchu-teien' }),
+      to: Object.freeze({ kind: 'node', id: 'nakanoshima-park' }),
+      stepsRle: Object.freeze([
+        { direction: 'L', count: 2 }, { direction: 'D', count: 4 }, { direction: 'R', count: 1 }, { direction: 'D', count: 2 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 22 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 4 }, { direction: 'R', count: 4 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 2 }, { direction: 'R', count: 8 }, { direction: 'D', count: 1 }, { direction: 'R', count: 25 }, { direction: 'D', count: 4 }, { direction: 'R', count: 10 }, { direction: 'D', count: 4 }, { direction: 'R', count: 1 }, { direction: 'D', count: 12 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 14 }, { direction: 'R', count: 2 }, { direction: 'D', count: 5 }, { direction: 'R', count: 1 }, { direction: 'D', count: 14 },
+      ]),
+      stepCount: 158,
+      tileCount: 159,
+      pathSha256: '92bed1523e43f9fe5088c1c61880bc87a87d881c4ce7466a72139a31379f262c',
+    }),
+    Object.freeze({
+      id: 'node:nakanoshima-park--node:osaka-castle',
+      from: Object.freeze({ kind: 'node', id: 'nakanoshima-park' }),
+      to: Object.freeze({ kind: 'node', id: 'osaka-castle' }),
+      stepsRle: Object.freeze([
+        { direction: 'U', count: 2 }, { direction: 'R', count: 2 }, { direction: 'U', count: 1 }, { direction: 'R', count: 27 }, { direction: 'D', count: 1 }, { direction: 'R', count: 9 }, { direction: 'U', count: 1 }, { direction: 'R', count: 4 }, { direction: 'U', count: 1 }, { direction: 'R', count: 19 }, { direction: 'D', count: 4 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 7 }, { direction: 'D', count: 10 }, { direction: 'R', count: 2 }, { direction: 'D', count: 6 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 5 }, { direction: 'D', count: 12 }, { direction: 'R', count: 1 }, { direction: 'D', count: 2 }, { direction: 'R', count: 2 }, { direction: 'U', count: 1 }, { direction: 'R', count: 1 }, { direction: 'U', count: 3 }, { direction: 'R', count: 3 },
+      ]),
+      stepCount: 130,
+      tileCount: 131,
+      pathSha256: 'b9541de191124b440edb0c26575a45850eb3afb75da8933830cdc50771d96ecc',
+    }),
+    Object.freeze({
+      id: 'node:osaka-castle--node:shitennoji',
+      from: Object.freeze({ kind: 'node', id: 'osaka-castle' }),
+      to: Object.freeze({ kind: 'node', id: 'shitennoji' }),
+      stepsRle: Object.freeze([
+        { direction: 'L', count: 2 }, { direction: 'D', count: 10 }, { direction: 'L', count: 11 }, { direction: 'D', count: 3 }, { direction: 'L', count: 4 }, { direction: 'D', count: 7 }, { direction: 'L', count: 1 }, { direction: 'D', count: 5 }, { direction: 'L', count: 1 }, { direction: 'D', count: 24 }, { direction: 'L', count: 2 }, { direction: 'D', count: 3 }, { direction: 'L', count: 1 }, { direction: 'D', count: 13 }, { direction: 'L', count: 1 }, { direction: 'D', count: 9 }, { direction: 'L', count: 1 }, { direction: 'D', count: 11 }, { direction: 'L', count: 1 }, { direction: 'D', count: 8 }, { direction: 'L', count: 1 }, { direction: 'D', count: 9 }, { direction: 'L', count: 1 }, { direction: 'D', count: 4 }, { direction: 'L', count: 1 }, { direction: 'D', count: 6 }, { direction: 'L', count: 1 }, { direction: 'D', count: 7 }, { direction: 'L', count: 1 }, { direction: 'D', count: 5 }, { direction: 'L', count: 1 }, { direction: 'D', count: 15 }, { direction: 'L', count: 1 }, { direction: 'D', count: 5 }, { direction: 'L', count: 1 }, { direction: 'D', count: 5 }, { direction: 'L', count: 1 }, { direction: 'D', count: 7 }, { direction: 'L', count: 1 }, { direction: 'D', count: 8 }, { direction: 'L', count: 1 }, { direction: 'D', count: 13 }, { direction: 'L', count: 2 }, { direction: 'D', count: 5 }, { direction: 'L', count: 4 }, { direction: 'D', count: 1 }, { direction: 'L', count: 6 },
+      ]),
+      stepCount: 231,
+      tileCount: 232,
+      pathSha256: '365692435280e19b8d9e343d3524466aeb598518e57fb7766ca83d5c5890dcc7',
+    }),
+    Object.freeze({
+      id: 'node:shitennoji--station:tennoji',
+      from: Object.freeze({ kind: 'node', id: 'shitennoji' }),
+      to: Object.freeze({ kind: 'station', id: 'tennoji' }),
+      stepsRle: Object.freeze([
+        { direction: 'R', count: 1 }, { direction: 'D', count: 3 }, { direction: 'L', count: 1 }, { direction: 'D', count: 2 }, { direction: 'L', count: 1 }, { direction: 'D', count: 2 }, { direction: 'R', count: 1 }, { direction: 'D', count: 7 }, { direction: 'L', count: 1 }, { direction: 'D', count: 15 }, { direction: 'R', count: 2 }, { direction: 'D', count: 10 }, { direction: 'L', count: 2 },
+      ]),
+      stepCount: 48,
+      tileCount: 49,
+      pathSha256: 'fd3b13ce4585e08481fb2329255e9a793cdcf57c6155842f36b6481a1263b516',
+    }),
+    Object.freeze({
+      id: 'station:tennoji--node:tsutenkaku',
+      from: Object.freeze({ kind: 'station', id: 'tennoji' }),
+      to: Object.freeze({ kind: 'node', id: 'tsutenkaku' }),
+      stepsRle: Object.freeze([
+        { direction: 'U', count: 3 }, { direction: 'L', count: 6 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 19 }, { direction: 'L', count: 20 }, { direction: 'U', count: 1 }, { direction: 'L', count: 3 }, { direction: 'U', count: 4 }, { direction: 'L', count: 11 },
+      ]),
+      stepCount: 70,
+      tileCount: 71,
+      pathSha256: '2d5113ec82be427d27ba9ed321da429fd8612c513763524ae3da5f3ba8e3c09f',
+    }),
+    Object.freeze({
+      id: 'node:tsutenkaku--node:kuromon-market',
+      from: Object.freeze({ kind: 'node', id: 'tsutenkaku' }),
+      to: Object.freeze({ kind: 'node', id: 'kuromon-market' }),
+      stepsRle: Object.freeze([
+        { direction: 'R', count: 1 }, { direction: 'U', count: 15 }, { direction: 'R', count: 1 }, { direction: 'U', count: 40 }, { direction: 'R', count: 1 }, { direction: 'U', count: 7 }, { direction: 'L', count: 1 }, { direction: 'U', count: 7 }, { direction: 'R', count: 2 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 },
+      ]),
+      stepCount: 78,
+      tileCount: 79,
+      pathSha256: '6f736007e4763147321e126a0450e25e0b91ca0339ae11b9febcb712f4c8a454',
+    }),
+    Object.freeze({
+      id: 'node:kuromon-market--node:ebisubashi',
+      from: Object.freeze({ kind: 'node', id: 'kuromon-market' }),
+      to: Object.freeze({ kind: 'node', id: 'ebisubashi' }),
+      stepsRle: Object.freeze([
+        { direction: 'R', count: 1 }, { direction: 'U', count: 18 }, { direction: 'L', count: 3 }, { direction: 'U', count: 2 }, { direction: 'L', count: 24 },
+      ]),
+      stepCount: 48,
+      tileCount: 49,
+      pathSha256: '1da5a8df516578c447d6b4ae1b9fc7238e9e7ed4cb9da0e5d41307a2e6837b7c',
+    }),
+    Object.freeze({
+      id: 'node:ebisubashi--node:osaka-aquarium',
+      from: Object.freeze({ kind: 'node', id: 'ebisubashi' }),
+      to: Object.freeze({ kind: 'node', id: 'osaka-aquarium' }),
+      stepsRle: Object.freeze([
+        { direction: 'D', count: 1 }, { direction: 'L', count: 3 }, { direction: 'D', count: 22 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 6 }, { direction: 'D', count: 1 }, { direction: 'L', count: 14 }, { direction: 'D', count: 1 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 4 }, { direction: 'D', count: 3 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 70 }, { direction: 'D', count: 1 }, { direction: 'L', count: 28 }, { direction: 'D', count: 1 }, { direction: 'L', count: 12 }, { direction: 'D', count: 2 }, { direction: 'L', count: 7 }, { direction: 'D', count: 3 }, { direction: 'L', count: 5 }, { direction: 'D', count: 2 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 8 }, { direction: 'D', count: 1 }, { direction: 'L', count: 1 }, { direction: 'D', count: 2 }, { direction: 'L', count: 19 }, { direction: 'U', count: 1 }, { direction: 'L', count: 12 }, { direction: 'D', count: 1 }, { direction: 'L', count: 1 }, { direction: 'D', count: 4 }, { direction: 'L', count: 2 }, { direction: 'D', count: 2 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 1 }, { direction: 'D', count: 4 }, { direction: 'L', count: 1 }, { direction: 'D', count: 3 }, { direction: 'L', count: 10 }, { direction: 'D', count: 1 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 1 }, { direction: 'D', count: 2 }, { direction: 'L', count: 20 }, { direction: 'D', count: 1 }, { direction: 'L', count: 8 }, { direction: 'D', count: 1 }, { direction: 'L', count: 19 }, { direction: 'D', count: 1 }, { direction: 'L', count: 2 }, { direction: 'D', count: 1 }, { direction: 'L', count: 3 }, { direction: 'D', count: 1 }, { direction: 'L', count: 9 }, { direction: 'D', count: 2 }, { direction: 'L', count: 19 }, { direction: 'D', count: 1 }, { direction: 'L', count: 6 }, { direction: 'D', count: 1 }, { direction: 'L', count: 12 }, { direction: 'D', count: 1 }, { direction: 'L', count: 15 },
+      ]),
+      stepCount: 408,
+      tileCount: 409,
+      pathSha256: '849684235e84181203f2900d5f2af6dcc9deb638520f2bdb192a12d3b083d68d',
+    }),
+  ]),
+});
+
 export function buildOsakaGrid() {
   const grid = Uint8Array.from(OSAKA_GEO.terrain);
   for (const [x, y] of EXIT_TILES) grid[y * COLS + x] = CITY_TILE.EXIT;
