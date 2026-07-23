@@ -296,6 +296,174 @@ export const PROPS = [
   { kind: 'gachapon', tile: [264, 53] },    // 乙女ロード 캡슐토이 머신
 ];
 
+// 🗺️ 도쿄 주동선 경로 — 하네다→시부야→신주쿠·메이지→우에노·아사쿠사→전파탑→도쿄역→오다이바
+// v3 정본(T22 proposal 실측 2026-07-23) — 10 waypoint / 9 leg / 2,723 steps / 2,724 tiles.
+// 상태: 6/9 leg open-only PASS, 3 leg 연결부 locked 회랑 790타일. 단일 경로로 배선 중.
+export const MAIN_ROUTE = Object.freeze({
+  id: 'tokyo-classic-loop-candidate-a',
+  version: 1,
+  waypoints: Object.freeze([
+    Object.freeze({ kind: 'node', id: 'haneda-airport' }),
+    Object.freeze({ kind: 'station', id: 'shinagawa' }),
+    Object.freeze({ kind: 'node', id: 'shibuya-scramble' }),
+    Object.freeze({ kind: 'node', id: 'meiji-jingu' }),
+    Object.freeze({ kind: 'node', id: 'tokyo-metropolitan-government' }),
+    Object.freeze({ kind: 'node', id: 'ueno-park' }),
+    Object.freeze({ kind: 'node', id: 'sensoji' }),
+    Object.freeze({ kind: 'node', id: 'tokyo-skytree' }),
+    Object.freeze({ kind: 'node', id: 'tokyo-station-marunouchi' }),
+    Object.freeze({ kind: 'node', id: 'odaiba-seaside-park' }),
+  ]),
+  routing: Object.freeze({
+    algorithm: 'cardinal-bfs-v1',
+    neighborOrder: 'URDL',
+    excludeExit: true,
+  }),
+  segmentHints: Object.freeze([
+    Object.freeze({
+      from: Object.freeze({ kind: 'node', id: 'tokyo-skytree' }),
+      to: Object.freeze({ kind: 'node', id: 'tokyo-station-marunouchi' }),
+      viaTiles: [[520, 239], [520, 280], [500, 300]],
+    }),
+  ]),
+  branches: Object.freeze([]),
+  discoveries: Object.freeze([
+    Object.freeze({
+      id: 'tokyo-d1', leg: Object.freeze(['haneda-airport', 'shinagawa']), at: 0.05,
+      line: '공항 보행축이 시내로 진입하는 지점 — 활주로 끝자락의 넓은 신호등을 지나면 도시가 시작돼요.',
+    }),
+    Object.freeze({
+      id: 'tokyo-d2', leg: Object.freeze(['shinagawa', 'shibuya-scramble']), at: 0.20,
+      line: '철도 회랑을 지나며 남쪽 업무지구에서 서쪽 도심으로 방향을 바꾸는 구간 — 고가 위로 전철이 달려가요.',
+    }),
+    Object.freeze({
+      id: 'tokyo-d3', leg: Object.freeze(['shibuya-scramble', 'meiji-jingu']), at: 0.50,
+      line: '번화한 교차로에서 신궁의 숲으로 발을 옮기며 만나는 대조 — 음악 소리와 새소리가 교차해요.',
+    }),
+    Object.freeze({
+      id: 'tokyo-d4', leg: Object.freeze(['tokyo-metropolitan-government', 'ueno-park']), at: 0.70,
+      line: '도심 한가운데에서 동쪽 전통 동네로 넘어가며 만나는 고가와 점포가 즐비한 길목 — 도시의 결을 가로질러요.',
+    }),
+    Object.freeze({
+      id: 'tokyo-d5', leg: Object.freeze(['ueno-park', 'sensoji']), at: 0.50,
+      line: '우에노의 공원에서 아사쿠사로 이어지는 동부 생활권 — 생선 냄새와 된장 향이 나는 재래시장 가운데로 걸어가요.',
+    }),
+    Object.freeze({
+      id: 'tokyo-d6', leg: Object.freeze(['sensoji', 'tokyo-skytree']), at: 0.50,
+      line: '아사쿠사에서 스미다강을 건너 전파탑으로 향하는 전환점 — 저층 시가지 너머로 전파탑이 점점 커져요.',
+    }),
+    Object.freeze({
+      id: 'tokyo-d7', leg: Object.freeze(['tokyo-skytree', 'tokyo-station-marunouchi']), at: 0.58,
+      line: '동부 전파탑 권역에서 도심의 중심 통로로 돌아오는 종축 — 상대적 고요함과 번화로움의 경계예요.',
+    }),
+    Object.freeze({
+      id: 'tokyo-d8', leg: Object.freeze(['tokyo-station-marunouchi', 'odaiba-seaside-park']), at: 0.55,
+      line: '마루노우치 역사에서 항만 수변으로 내려가는 구간 — 도시 정원·매립지·교량 경관의 변모를 따라 도시 가장자리로 나가요.',
+    }),
+  ]),
+  segments: Object.freeze([
+    Object.freeze({
+      id: 'node:haneda-airport--station:shinagawa',
+      from: Object.freeze({ kind: 'node', id: 'haneda-airport' }),
+      to: Object.freeze({ kind: 'station', id: 'shinagawa' }),
+      stepsRle: Object.freeze([
+        { direction: 'U', count: 5 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 34 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 4 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 77 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 39 }, { direction: 'U', count: 3 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 5 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 2 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 3 }, { direction: 'L', count: 1 }, { direction: 'U', count: 40 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 10 }, { direction: 'L', count: 3 }, { direction: 'U', count: 3 }, { direction: 'L', count: 1 }, { direction: 'U', count: 3 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 3 }, { direction: 'L', count: 1 }, { direction: 'U', count: 3 }, { direction: 'L', count: 1 }, { direction: 'U', count: 14 }, { direction: 'L', count: 2 }, { direction: 'U', count: 1 }, { direction: 'L', count: 3 }, { direction: 'U', count: 4 }, { direction: 'L', count: 1 }, { direction: 'U', count: 3 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 7 }, { direction: 'L', count: 1 }, { direction: 'U', count: 3 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 3 }, { direction: 'L', count: 3 }, { direction: 'U', count: 3 }, { direction: 'L', count: 1 }, { direction: 'U', count: 4 }, { direction: 'L', count: 13 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 28 }, { direction: 'L', count: 1 }, { direction: 'U', count: 21 }, { direction: 'R', count: 1 }, { direction: 'U', count: 5 }, { direction: 'L', count: 1 }, { direction: 'U', count: 8 }, { direction: 'L', count: 1 }, { direction: 'U', count: 14 }, { direction: 'L', count: 1 }, { direction: 'U', count: 5 }, { direction: 'R', count: 1 }, { direction: 'U', count: 8 }, { direction: 'R', count: 1 }, { direction: 'U', count: 5 }, { direction: 'L', count: 1 }, { direction: 'U', count: 15 }, { direction: 'R', count: 1 }, { direction: 'U', count: 3 }, { direction: 'R', count: 1 }, { direction: 'U', count: 1 }, { direction: 'R', count: 1 }, { direction: 'U', count: 3 }, { direction: 'R', count: 1 }, { direction: 'U', count: 62 }, { direction: 'L', count: 1 }, { direction: 'U', count: 5 }, { direction: 'L', count: 1 }, { direction: 'U', count: 7 }, { direction: 'L', count: 1 }, { direction: 'U', count: 9 }, { direction: 'R', count: 1 }, { direction: 'U', count: 5 }, { direction: 'L', count: 1 }, { direction: 'U', count: 20 }, { direction: 'L', count: 3 },
+      ]),
+      stepCount: 665,
+      tileCount: 666,
+      pathSha256: '396a1f8a326034998053aa4cd88ab6f78bb233858defae88152a6972261f6601',
+    }),
+    Object.freeze({
+      id: 'station:shinagawa--node:shibuya-scramble',
+      from: Object.freeze({ kind: 'station', id: 'shinagawa' }),
+      to: Object.freeze({ kind: 'node', id: 'shibuya-scramble' }),
+      stepsRle: Object.freeze([
+        { direction: 'U', count: 5 }, { direction: 'L', count: 3 }, { direction: 'U', count: 30 }, { direction: 'L', count: 5 }, { direction: 'U', count: 4 }, { direction: 'L', count: 1 }, { direction: 'U', count: 7 }, { direction: 'L', count: 1 }, { direction: 'U', count: 3 }, { direction: 'L', count: 4 }, { direction: 'U', count: 3 }, { direction: 'L', count: 1 }, { direction: 'U', count: 3 }, { direction: 'L', count: 1 }, { direction: 'U', count: 4 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 15 }, { direction: 'L', count: 2 }, { direction: 'U', count: 11 }, { direction: 'L', count: 7 }, { direction: 'U', count: 8 }, { direction: 'L', count: 2 }, { direction: 'U', count: 4 }, { direction: 'L', count: 1 }, { direction: 'U', count: 6 }, { direction: 'L', count: 2 }, { direction: 'U', count: 8 }, { direction: 'L', count: 1 }, { direction: 'U', count: 5 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 7 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 17 }, { direction: 'L', count: 3 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 9 }, { direction: 'L', count: 3 }, { direction: 'U', count: 2 }, { direction: 'L', count: 12 }, { direction: 'U', count: 3 }, { direction: 'L', count: 20 }, { direction: 'U', count: 1 }, { direction: 'L', count: 16 }, { direction: 'U', count: 1 }, { direction: 'L', count: 6 }, { direction: 'U', count: 1 }, { direction: 'L', count: 62 }, { direction: 'U', count: 5 }, { direction: 'L', count: 12 },
+      ]),
+      stepCount: 345,
+      tileCount: 346,
+      pathSha256: '951751f6fe22ad1a3264262c34b69f108d21d793fe14e2f9c5ecc66a39642bff',
+    }),
+    Object.freeze({
+      id: 'node:shibuya-scramble--node:meiji-jingu',
+      from: Object.freeze({ kind: 'node', id: 'shibuya-scramble' }),
+      to: Object.freeze({ kind: 'node', id: 'meiji-jingu' }),
+      stepsRle: Object.freeze([
+        { direction: 'U', count: 1 }, { direction: 'R', count: 1 }, { direction: 'U', count: 17 }, { direction: 'R', count: 1 }, { direction: 'U', count: 3 }, { direction: 'R', count: 1 }, { direction: 'U', count: 2 }, { direction: 'R', count: 1 }, { direction: 'U', count: 13 }, { direction: 'R', count: 1 }, { direction: 'U', count: 1 }, { direction: 'R', count: 1 }, { direction: 'U', count: 53 }, { direction: 'L', count: 7 }, { direction: 'U', count: 1 },
+      ]),
+      stepCount: 104,
+      tileCount: 105,
+      pathSha256: '687202ec5a5021068ce0555fd25c26177649e989c2a3029a3a3a148c3d485013',
+    }),
+    Object.freeze({
+      id: 'node:meiji-jingu--node:tokyo-metropolitan-government',
+      from: Object.freeze({ kind: 'node', id: 'meiji-jingu' }),
+      to: Object.freeze({ kind: 'node', id: 'tokyo-metropolitan-government' }),
+      stepsRle: Object.freeze([
+        { direction: 'U', count: 26 }, { direction: 'L', count: 2 }, { direction: 'U', count: 18 }, { direction: 'L', count: 2 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 8 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 3 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 2 }, { direction: 'U', count: 5 }, { direction: 'L', count: 5 }, { direction: 'U', count: 5 }, { direction: 'L', count: 18 }, { direction: 'U', count: 1 }, { direction: 'L', count: 4 },
+      ]),
+      stepCount: 112,
+      tileCount: 113,
+      pathSha256: '7c409f6ee15b2bb9523a1fa600a6bb9922f998ccbd65b45e021a21419099afb7',
+    }),
+    Object.freeze({
+      id: 'node:tokyo-metropolitan-government--node:ueno-park',
+      from: Object.freeze({ kind: 'node', id: 'tokyo-metropolitan-government' }),
+      to: Object.freeze({ kind: 'node', id: 'ueno-park' }),
+      stepsRle: Object.freeze([
+        { direction: 'R', count: 1 }, { direction: 'U', count: 20 }, { direction: 'R', count: 1 }, { direction: 'U', count: 2 }, { direction: 'R', count: 1 }, { direction: 'U', count: 2 }, { direction: 'R', count: 1 }, { direction: 'U', count: 1 }, { direction: 'R', count: 1 }, { direction: 'U', count: 28 }, { direction: 'R', count: 2 }, { direction: 'U', count: 13 }, { direction: 'R', count: 1 }, { direction: 'U', count: 2 }, { direction: 'R', count: 8 }, { direction: 'U', count: 1 }, { direction: 'R', count: 25 }, { direction: 'U', count: 2 }, { direction: 'R', count: 10 }, { direction: 'U', count: 1 }, { direction: 'R', count: 18 }, { direction: 'U', count: 1 }, { direction: 'R', count: 3 }, { direction: 'U', count: 1 }, { direction: 'R', count: 1 }, { direction: 'U', count: 2 }, { direction: 'R', count: 39 }, { direction: 'U', count: 1 }, { direction: 'R', count: 3 }, { direction: 'U', count: 1 }, { direction: 'R', count: 4 }, { direction: 'U', count: 7 }, { direction: 'R', count: 6 }, { direction: 'U', count: 4 }, { direction: 'R', count: 3 }, { direction: 'U', count: 3 }, { direction: 'R', count: 43 }, { direction: 'U', count: 2 }, { direction: 'R', count: 5 }, { direction: 'U', count: 1 }, { direction: 'R', count: 1 }, { direction: 'U', count: 1 }, { direction: 'R', count: 7 }, { direction: 'U', count: 1 }, { direction: 'R', count: 13 }, { direction: 'U', count: 1 }, { direction: 'R', count: 4 }, { direction: 'U', count: 2 }, { direction: 'R', count: 2 }, { direction: 'U', count: 2 }, { direction: 'R', count: 21 }, { direction: 'U', count: 2 }, { direction: 'R', count: 23 }, { direction: 'U', count: 1 }, { direction: 'R', count: 7 }, { direction: 'U', count: 1 }, { direction: 'R', count: 3 }, { direction: 'U', count: 3 }, { direction: 'R', count: 7 }, { direction: 'U', count: 4 }, { direction: 'R', count: 1 }, { direction: 'U', count: 2 }, { direction: 'R', count: 11 }, { direction: 'U', count: 1 }, { direction: 'R', count: 6 }, { direction: 'U', count: 1 }, { direction: 'R', count: 10 }, { direction: 'U', count: 3 }, { direction: 'R', count: 21 }, { direction: 'U', count: 1 }, { direction: 'R', count: 2 }, { direction: 'U', count: 6 }, { direction: 'R', count: 4 }, { direction: 'U', count: 2 }, { direction: 'R', count: 21 }, { direction: 'U', count: 1 }, { direction: 'R', count: 6 }, { direction: 'U', count: 8 }, { direction: 'R', count: 8 }, { direction: 'U', count: 1 }, { direction: 'R', count: 10 },
+      ]),
+      stepCount: 503,
+      tileCount: 504,
+      pathSha256: '2ee570210f84267c62c6e221145b2b19a94da0fc63d0f314ef8cf79bcd2fda3b',
+    }),
+    Object.freeze({
+      id: 'node:ueno-park--node:sensoji',
+      from: Object.freeze({ kind: 'node', id: 'ueno-park' }),
+      to: Object.freeze({ kind: 'node', id: 'sensoji' }),
+      stepsRle: Object.freeze([
+        { direction: 'U', count: 4 }, { direction: 'R', count: 27 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'U', count: 1 }, { direction: 'R', count: 16 }, { direction: 'D', count: 1 }, { direction: 'R', count: 28 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'U', count: 1 }, { direction: 'R', count: 20 }, { direction: 'D', count: 1 }, { direction: 'R', count: 13 }, { direction: 'D', count: 1 },
+      ]),
+      stepCount: 119,
+      tileCount: 120,
+      pathSha256: '6bb4db05b676b180ad81126ef1a4146c150f2fb110d50a3366239db33a2a0c71',
+    }),
+    Object.freeze({
+      id: 'node:sensoji--node:tokyo-skytree',
+      from: Object.freeze({ kind: 'node', id: 'sensoji' }),
+      to: Object.freeze({ kind: 'node', id: 'tokyo-skytree' }),
+      stepsRle: Object.freeze([
+        { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 12 }, { direction: 'U', count: 1 }, { direction: 'R', count: 20 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 11 }, { direction: 'D', count: 2 }, { direction: 'R', count: 9 }, { direction: 'D', count: 11 }, { direction: 'R', count: 1 }, { direction: 'D', count: 10 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 5 }, { direction: 'U', count: 3 }, { direction: 'R', count: 2 },
+      ]),
+      stepCount: 96,
+      tileCount: 97,
+      pathSha256: 'ba7b3878132f54c78ced06304daaf1c9e696a81aa1ad4ac2cf02ce8bded89ccc',
+    }),
+    Object.freeze({
+      id: 'node:tokyo-skytree--node:tokyo-station-marunouchi',
+      from: Object.freeze({ kind: 'node', id: 'tokyo-skytree' }),
+      to: Object.freeze({ kind: 'node', id: 'tokyo-station-marunouchi' }),
+      stepsRle: Object.freeze([
+        { direction: 'L', count: 2 }, { direction: 'D', count: 11 }, { direction: 'L', count: 2 }, { direction: 'D', count: 3 }, { direction: 'L', count: 1 }, { direction: 'D', count: 2 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 1 }, { direction: 'D', count: 13 }, { direction: 'L', count: 1 }, { direction: 'D', count: 13 }, { direction: 'L', count: 2 }, { direction: 'D', count: 2 }, { direction: 'L', count: 4 }, { direction: 'D', count: 2 }, { direction: 'L', count: 3 }, { direction: 'D', count: 1 }, { direction: 'L', count: 8 }, { direction: 'D', count: 1 }, { direction: 'L', count: 3 }, { direction: 'D', count: 1 }, { direction: 'L', count: 43 }, { direction: 'D', count: 1 }, { direction: 'L', count: 10 }, { direction: 'D', count: 1 }, { direction: 'L', count: 1 }, { direction: 'D', count: 2 }, { direction: 'L', count: 1 }, { direction: 'D', count: 2 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 1 }, { direction: 'D', count: 2 }, { direction: 'L', count: 1 }, { direction: 'D', count: 2 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 1 }, { direction: 'D', count: 2 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 1 }, { direction: 'D', count: 2 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 3 }, { direction: 'D', count: 1 }, { direction: 'L', count: 60 }, { direction: 'D', count: 1 }, { direction: 'L', count: 4 }, { direction: 'R', count: 1 }, { direction: 'D', count: 41 }, { direction: 'L', count: 2 }, { direction: 'D', count: 10 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 3 }, { direction: 'D', count: 1 }, { direction: 'L', count: 11 }, { direction: 'D', count: 1 }, { direction: 'L', count: 2 }, { direction: 'D', count: 6 }, { direction: 'L', count: 1 }, { direction: 'D', count: 7 }, { direction: 'L', count: 1 }, { direction: 'D', count: 3 }, { direction: 'L', count: 1 }, { direction: 'D', count: 2 }, { direction: 'L', count: 9 }, { direction: 'D', count: 5 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 6 }, { direction: 'D', count: 1 }, { direction: 'L', count: 1 }, { direction: 'D', count: 4 }, { direction: 'L', count: 1 }, { direction: 'D', count: 2 }, { direction: 'R', count: 1 },
+      ]),
+      stepCount: 367,
+      tileCount: 368,
+      pathSha256: '640d9007af71db7e5dbe81fac5e8f5ff7b5f080b7a6b1730fa61976766a49966',
+    }),
+    Object.freeze({
+      id: 'node:tokyo-station-marunouchi--node:odaiba-seaside-park',
+      from: Object.freeze({ kind: 'node', id: 'tokyo-station-marunouchi' }),
+      to: Object.freeze({ kind: 'node', id: 'odaiba-seaside-park' }),
+      stepsRle: Object.freeze([
+        { direction: 'L', count: 1 }, { direction: 'D', count: 2 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 1 }, { direction: 'D', count: 2 }, { direction: 'R', count: 1 }, { direction: 'D', count: 21 }, { direction: 'L', count: 1 }, { direction: 'D', count: 2 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 1 }, { direction: 'D', count: 2 }, { direction: 'R', count: 1 }, { direction: 'D', count: 12 }, { direction: 'L', count: 1 }, { direction: 'D', count: 5 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 1 }, { direction: 'D', count: 13 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 1 }, { direction: 'D', count: 3 }, { direction: 'R', count: 1 }, { direction: 'D', count: 5 }, { direction: 'L', count: 1 }, { direction: 'D', count: 28 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 2 }, { direction: 'D', count: 18 }, { direction: 'L', count: 3 }, { direction: 'D', count: 1 }, { direction: 'L', count: 1 }, { direction: 'D', count: 2 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 8 }, { direction: 'D', count: 50 }, { direction: 'L', count: 1 }, { direction: 'D', count: 4 }, { direction: 'L', count: 1 }, { direction: 'D', count: 4 }, { direction: 'L', count: 1 }, { direction: 'D', count: 6 }, { direction: 'R', count: 1 }, { direction: 'D', count: 10 }, { direction: 'L', count: 1 }, { direction: 'D', count: 3 }, { direction: 'R', count: 5 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 42 }, { direction: 'R', count: 3 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 3 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 3 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 3 }, { direction: 'D', count: 1 }, { direction: 'R', count: 3 }, { direction: 'D', count: 1 }, { direction: 'R', count: 5 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 6 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 15 }, { direction: 'D', count: 3 }, { direction: 'R', count: 20 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 2 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 2 }, { direction: 'R', count: 4 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 15 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 },
+      ]),
+      stepCount: 412,
+      tileCount: 413,
+      pathSha256: 'ef2b938c7021adfcd17f41b170928aab18c6d55a29c905c7ef39942fc9fbbdc9',
+    }),
+  ]),
+});
+
 export function buildTokyoGrid() {
   const grid = Uint8Array.from(TOKYO_GEO.terrain);
   for (const [x, y] of EXIT_TILES) {
@@ -319,6 +487,7 @@ export const TOKYO = {
   transitPoints: TRANSIT_POINTS,
   railways: TOKYO_GEO.railways,
   props: PROPS,
+  mainRoute: MAIN_ROUTE,
   // 📖 여행책 지구제 v1 (D2 정본 — RFC docs/rfc-guidebook-districts.md·오너 승인 2026-07-23).
   // 개방 = 주동선 회랑 rect. 나머지는 guidebook 잠금 렌더 + soft wall.
   districts: {
@@ -337,12 +506,12 @@ export const TOKYO = {
       {
         id: 'south-bay',
         label: '남부·항만',
-        tiles: { rects: [[330, 430, 590, 700], [358, 701, 560, 1018]] },
+        tiles: { rects: [[330, 430, 590, 700], [355, 612, 365, 845], [359, 841, 379, 848], [375, 844, 405, 961], [401, 957, 423, 989], [419, 985, 546, 1000], [542, 996, 565, 1064]] },
       },
       {
         id: 'haneda',
         label: '하네다',
-        tiles: { rects: [[525, 1020, 585, 1075]] },
+        tiles: { rects: [[525, 1019, 585, 1075]] },
       },
     ],
     locked: {
