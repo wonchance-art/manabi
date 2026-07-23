@@ -16,19 +16,32 @@ import { useEffect, useRef, useState } from 'react';
 import { GBC, gbcPanel, gbcButtonPrimary } from './QuestReview';
 import { STAMP_ALBUM_NODES } from '../../lib/world/stampUniverse';
 import { fmtDate } from './stampIcons';
-import { CITY_DATA } from './cities';
+import { loadCity } from './cities';
 import {
   STAMP_ALBUM_TABS,
   stampAlbumBadge,
   stampAlbumTabById,
   stampAlbumTabProgress,
 } from './stampAlbumTabs';
-import { stampAlbumDistrictPresentation } from './stampAlbumDistrictPresentation';
+import {
+  STAMP_ALBUM_DISTRICT_CITY_IDS,
+  stampAlbumDistrictPresentation,
+} from './stampAlbumDistrictPresentation';
+import {
+  STAMP_ALBUM_DISCOVERY_CITY_IDS,
+  stampAlbumDiscoveryProgress,
+} from './stampAlbumDiscoveryProgress';
+
+const DETAIL_CITY_IDS = new Set([
+  ...STAMP_ALBUM_DISTRICT_CITY_IDS,
+  ...STAMP_ALBUM_DISCOVERY_CITY_IDS,
+]);
 
 export default function StampAlbum({ stamps, onClose }) {
   const owned = stamps instanceof Set ? stamps : new Set();
   const [visitedAt, setVisitedAt] = useState({}); // { nodeId: isoString }
   const [activeTabId, setActiveTabId] = useState(STAMP_ALBUM_TABS[0].id);
+  const [detailCities, setDetailCities] = useState({});
   const districtPresentationCache = useRef(new Map());
 
   // 방문 시각(at)만 추가 조회 — 수집 여부는 라이브 stamps prop 사용(낙관 갱신 즉시 반영).
@@ -56,6 +69,40 @@ export default function StampAlbum({ stamps, onClose }) {
   const total = STAMP_ALBUM_NODES.length;
   const got = STAMP_ALBUM_NODES.reduce((n, node) => n + (owned.has(node.id) ? 1 : 0), 0);
   const activeTab = stampAlbumTabById(activeTabId);
+
+  // P1 lazy city registry 경로로 현재 탭의 수집 도시 상세만 준비한다.
+  // 진행도 값은 아래 순수 로직이 localStorage에서 읽으며 별도 API 요청은 하지 않는다.
+  useEffect(() => {
+    const cityIds = [...new Set(activeTab.nodes
+      .filter((node) => owned.has(node.id))
+      .map((node) => (node?.gate?.type === 'city' ? node.gate.to : null))
+      .filter((cityId) => DETAIL_CITY_IDS.has(cityId) && !detailCities[cityId]))];
+    if (cityIds.length === 0) return undefined;
+
+    let cancelled = false;
+    Promise.all(cityIds.map(async (cityId) => {
+      try {
+        return [cityId, await loadCity(cityId)];
+      } catch {
+        return null;
+      }
+    })).then((entries) => {
+      if (cancelled) return;
+      const available = entries.filter(Boolean);
+      if (available.length === 0) return;
+      setDetailCities((current) => {
+        const next = { ...current };
+        let changed = false;
+        for (const [cityId, city] of available) {
+          if (next[cityId]) continue;
+          next[cityId] = city;
+          changed = true;
+        }
+        return changed ? next : current;
+      });
+    });
+    return () => { cancelled = true; };
+  }, [activeTab, detailCities, owned]);
 
   return (
     <div style={{
@@ -111,16 +158,21 @@ export default function StampAlbum({ stamps, onClose }) {
         }}>
           {activeTab.nodes.map((node) => {
             const badge = stampAlbumBadge(node, owned);
+            const cityId = node?.gate?.type === 'city' ? node.gate.to : null;
+            const cityDetailReady = !!detailCities[cityId];
             let district = null;
-            if (badge.has) {
+            if (badge.has && cityDetailReady && DETAIL_CITY_IDS.has(cityId)) {
               if (!districtPresentationCache.current.has(node.id)) {
                 districtPresentationCache.current.set(
                   node.id,
-                  stampAlbumDistrictPresentation(node, CITY_DATA),
+                  stampAlbumDistrictPresentation(node, detailCities),
                 );
               }
               district = districtPresentationCache.current.get(node.id);
             }
+            const discovery = badge.has && cityDetailReady
+              ? stampAlbumDiscoveryProgress(node, detailCities)
+              : null;
             return (
               <div
                 key={node.id}
@@ -178,6 +230,19 @@ export default function StampAlbum({ stamps, onClose }) {
                       ))}
                     </div>
                   </div>
+                )}
+                {discovery && (
+                  <span
+                    aria-label={`${badge.name} 발견 수집률`}
+                    style={{
+                      width: '100%', marginTop: 2, paddingTop: 4,
+                      borderTop: `1px solid ${GBC.creamShade}`,
+                      fontFamily: GBC.font, fontWeight: 700, fontSize: '0.5rem',
+                      color: GBC.brown, lineHeight: 1.2, textAlign: 'center',
+                    }}
+                  >
+                    {discovery.label}
+                  </span>
                 )}
               </div>
             );
