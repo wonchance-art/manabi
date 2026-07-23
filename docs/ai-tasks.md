@@ -155,6 +155,11 @@
 ### doing
 ### todo
 ### done (최근)
+- T8 NPC·도어 후보 스팟 실측(report-only): 빈 역 NPC 병합 뒤 나머지 24개 지구별
+  NPC 3곳·도어 2곳을 보행성·앵커 근접·기존 마커/후보 상호 ≥3타일·건물 4방향 인접 계약으로
+  결정 제안하고 2회 byte-identical SHA와 전체 212/2,141 green을 고정
+  (`codex2/npc-door-spots`, 구현 bfe6fad, base e330283ecb435b7bf5bad51aab35f57258b20a1f,
+  #150 5053450849·5053772988)
 - T7 개방 지구 콘텐츠 갭 실측(report-only): 7도시 26개 개방 지구의 도어·NPC·발견·
   POI·TRANSIT 실제 도착과 고유 앵커/km²를 결정적으로 측정하고 빈 역 지구 2곳·
   저밀도 광역 지구 5곳 중심의 채움 순서를 제안
