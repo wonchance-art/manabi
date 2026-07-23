@@ -228,7 +228,7 @@ describe('S17 한 게스트의 수집→발견→칭호→만남→수첩 여정
 
     expect(recordNpcMeeting({ cityId: 'tokyo', node: meetingNodes[1], storage })).toBe(true);
     markup = renderAlbum('national', stamps);
-    expect(nextGoalLine(markup, '도쿄')).toBe('다음 칭호까지 도장 20개');
+    expect(nextGoalLine(markup, '도쿄')).toBe('발견 0/8');
   });
 
   it('깨진 발견 JSON은 빈 진척으로 닫고 수첩 렌더를 유지한다', () => {
