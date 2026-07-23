@@ -121,7 +121,36 @@ export const MAIN_ROUTE = Object.freeze({
   }),
   segmentHints: Object.freeze([]),
   branches: Object.freeze([]),
-  discoveries: Object.freeze([]),
+  discoveries: Object.freeze([
+    Object.freeze({
+      id: 'strasbourg-d1', leg: Object.freeze(['gare-de-strasbourg', 'place-kleber']), at: 0.5,
+      line: '역 앞 큰길이 광장으로 곧게 이어져요 — 겨울이면 큰 트리가 서는 자리예요.',
+    }),
+    Object.freeze({
+      id: 'strasbourg-d2', leg: Object.freeze(['place-kleber', 'barrage-vauban']), at: 0.5,
+      line: '수로를 따라 서남쪽으로 — 17세기 요새 댐이 강을 가로질러요.',
+    }),
+    Object.freeze({
+      id: 'strasbourg-d3', leg: Object.freeze(['barrage-vauban', 'ponts-couverts']), at: 0.5,
+      line: '감시탑이 나란한 다리예요 — 중세엔 지붕 덮인 목조 다리였대요.',
+    }),
+    Object.freeze({
+      id: 'strasbourg-d4', leg: Object.freeze(['ponts-couverts', 'petite-france']), at: 0.5,
+      line: '물레방아 돌던 수로 마을이에요 — 목조 골조 집들이 물가에 기울어 서 있어요.',
+    }),
+    Object.freeze({
+      id: 'strasbourg-d5', leg: Object.freeze(['petite-france', 'cathedrale']), at: 0.45,
+      line: '수로 보행로가 그랑딜을 감싸고 돌아요 — 골목 끝마다 첨탑이 눈에 들어와요.',
+    }),
+    Object.freeze({
+      id: 'strasbourg-d6', leg: Object.freeze(['cathedrale', 'orangerie']), at: 0.5,
+      line: '붉은 사암 첨탑이 한동안 유럽에서 제일 높았어요 — 이제 공원 쪽으로 강을 건너요.',
+    }),
+    Object.freeze({
+      id: 'strasbourg-d7', leg: Object.freeze(['orangerie', 'parlement-europeen']), at: 0.55,
+      line: '공원 호수 너머로 유리 원통 건물이 보여요 — 유럽의 의회가 모이는 도시예요.',
+    }),
+  ]),
   segments: Object.freeze([
     Object.freeze({
       id: 'station:gare-de-strasbourg--node:place-kleber',

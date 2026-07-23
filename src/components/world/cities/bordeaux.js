@@ -122,7 +122,40 @@ export const MAIN_ROUTE = Object.freeze({
   }),
   segmentHints: Object.freeze([]),
   branches: Object.freeze([]),
-  discoveries: Object.freeze([]),
+  discoveries: Object.freeze([
+    Object.freeze({
+      id: 'bordeaux-d1', leg: Object.freeze(['bordeaux-saint-jean', 'grosse-cloche']), at: 0.55,
+      line: '역을 나서면 옛 성문 쪽으로 완만한 내리막이에요 — 큰 종이 울리면 포도 수확이 시작됐대요.',
+    }),
+    Object.freeze({
+      id: 'bordeaux-d2', leg: Object.freeze(['grosse-cloche', 'cathedrale-saint-andre']), at: 0.5,
+      line: '좁은 골목이 광장으로 열리면 첨탑 두 개가 먼저 보여요 — 대성당 앞은 도시의 오랜 중심이에요.',
+    }),
+    Object.freeze({
+      id: 'bordeaux-d3', leg: Object.freeze(['cathedrale-saint-andre', 'rue-sainte-catherine']), at: 0.45,
+      line: '유럽에서 손꼽히게 긴 보행자 거리예요 — 1km 넘는 길이 전부 걷는 사람의 것이에요.',
+    }),
+    Object.freeze({
+      id: 'bordeaux-d4', leg: Object.freeze(['rue-sainte-catherine', 'place-de-la-bourse']), at: 0.5,
+      line: '강 쪽으로 내려가면 물거울 광장이에요 — 얕은 물 위에 18세기 건물이 그대로 비쳐요.',
+    }),
+    Object.freeze({
+      id: 'bordeaux-d5', leg: Object.freeze(['place-de-la-bourse', 'place-des-quinconces']), at: 0.5,
+      line: '가론 강변 산책로가 큰 광장으로 이어져요 — 유럽에서 가장 넓은 광장 중 하나예요.',
+    }),
+    Object.freeze({
+      id: 'bordeaux-d6', leg: Object.freeze(['place-des-quinconces', 'jardin-public']), at: 0.5,
+      line: '도심의 소음이 잦아들고 나무 그늘이 시작돼요 — 18세기부터 시민의 정원이었어요.',
+    }),
+    Object.freeze({
+      id: 'bordeaux-d7', leg: Object.freeze(['jardin-public', 'chartrons']), at: 0.55,
+      line: '와인 창고가 늘어섰던 동네예요 — 지붕 낮은 집들이 그 시절 상인들의 흔적이에요.',
+    }),
+    Object.freeze({
+      id: 'bordeaux-d8', leg: Object.freeze(['chartrons', 'cite-du-vin']), at: 0.5,
+      line: '강변 끝에 반짝이는 곡선 건물이 나타나요 — 와인 디캔터를 닮았다고들 해요.',
+    }),
+  ]),
   segments: Object.freeze([
     Object.freeze({
       id: 'station:bordeaux-saint-jean--node:grosse-cloche',
