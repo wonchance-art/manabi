@@ -281,6 +281,8 @@
 
 ## Codex-4 (codex4/*) — 성능·인프라 (타 기기)
 ### doing
+- P7 초기 번들 Supabase+FSRS 분리: 공용 65,039 B gzip 청크의 초기 앱 경로를
+  기능 경계에서 지연하고 production build 전후·학습 흐름 회귀·전체 vitest로 검증
 ### todo
 - P0 (운영 필수·최우선) 로컬 clone 이전 + 확인 코멘트: #150 5046786117
 - P1 geo lazy-load 구현(RFC #394 승인 — 실패 UX·?spawn= 정합·scene race 주의 3건 코멘트 참조)
