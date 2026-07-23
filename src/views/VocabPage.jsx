@@ -351,7 +351,31 @@ export default function VocabPage() {
     } else {
       setReviewFinished(true);
       toast('오늘의 복습 완료', 'celebrate', 5000);
+      // 복습 완료 시 진도 갱신 — 현재 시리즈 필터의 모든 복습 완료 단어를 학습 진도로 기록
+      updateReadingProgress();
     }
+  };
+
+  const updateReadingProgress = () => {
+    if (!user?.id) return;
+    try {
+      // 현재 시리즈 필터의 복습 완료 단어들 중 review_events에 기록된 것들을 학습 진도로 반영
+      const reviewedWords = reviewSessionWords.filter(w => w != null);
+      if (reviewedWords.length === 0) return;
+
+      // 시리즈별 reading_progress 갱신 (교재 진도와 동일한 키 사용)
+      // 복습한 단어가 속한 시리즈를 mark as completed
+      const deck = deckOf(reviewedWords[0]); // 현재 필터의 덱/시리즈
+      if (!deck || !deck.key) return;
+
+      // localStorage에 기록 (StudySessionPage 라인 768-773과 동일 패턴)
+      const readKey = `studied_${user.id}`;
+      try {
+        const reads = new Set(JSON.parse(localStorage.getItem(readKey) || '[]'));
+        reads.add(deck.key); // 시리즈 키를 진도에 추가
+        localStorage.setItem(readKey, JSON.stringify([...reads]));
+      } catch {}
+    } catch {}
   };
 
   const startReview = async () => {
