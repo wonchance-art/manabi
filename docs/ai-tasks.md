@@ -14,10 +14,12 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
-- D5 잠금 지구 경계 표지판: 개방↔잠금 경계의 개방 쪽 보행 타일에 결정적·8타일 이격
-  무문자 준비 중 팻말을 자동 배치하고 CityScene에서 district 도시만 소비
 ### todo
 ### done (최근)
+- D5 잠금 지구 경계 표지판: 개방↔잠금 경계의 개방 쪽 도로·보행 타일에 8타일 이격
+  무문자 빗장 팻말 1,120개를 결정 배치하고 district 7도시에서만 베이크·소비
+  (`codex/district-boundary-signs`, 구현 0d01f1b, base e330283ecb435b7bf5bad51aab35f57258b20a1f,
+  #150 5049669206·5053883288)
 - W1 지구제 7도시 라이브 시각 감사(report-only): 개방↔잠금 경계의 guidebook 종이 톤과
   4.2초 soft-wall 안내를 도시별 2장씩 실측하고 14개 JPEG·관찰 노트를 정본화
   (`codex/districts-live-audit`, 구현 9c9e330, base 31b0d68eaf03b7a8a44ee502c66c7cb6800db953,
