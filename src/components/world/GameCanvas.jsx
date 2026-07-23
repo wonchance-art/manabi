@@ -40,8 +40,13 @@ import {
   applyPeersToScene, updateScenePeers, peerLabelStyle, emitPeerDistances, ensureAvatarCharSet,
 } from './sprites';
 import { DEFAULT_AVATAR, avatarPalette, normalizeWorldAvatar } from '../../lib/world/avatar';
-// 🗾 여행 스탬프 — 노드 첫 방문 수집(fetch 래퍼, 실패 조용히). API: /api/world/stamps.
-import { loadStamps, collectStamp } from '../../lib/world/stamps';
+// 🗾 여행 스탬프 — 제품 로그인은 서버, devGuest만 localStorage 폴백(실패 조용히).
+import {
+  collectGuestStamp,
+  collectStamp,
+  loadGuestStamps,
+  loadStamps,
+} from '../../lib/world/stamps';
 import { canCollectStamp, STAMP_ALBUM_NODES } from '../../lib/world/stampUniverse';
 import { claimStampMilestoneRewards } from '../../lib/world/stampMilestones';
 import {
@@ -676,20 +681,25 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
     return () => clearTimeout(timer);
   }, [stampTitleToast]);
 
-  // 수집 상태 로드(마운트/계정별 1회) — 실패면 조용히 빈 Set 유지.
+  // 수집 상태 로드(마운트/계정별 1회) — devGuest만 로컬 폴백, 제품 로그인은 기존 서버 GET 유지.
   useEffect(() => {
+    if (devGuest) {
+      setStamps(new Set(loadGuestStamps()));
+      return undefined;
+    }
     let cancelled = false;
     loadStamps().then((ids) => { if (!cancelled) setStamps(new Set(ids)); }).catch(() => {});
     return () => { cancelled = true; };
-  }, [userId]);
+  }, [devGuest, userId]);
 
   // 노드 첫 방문 스탬프 수집 — 렌더마다 최신본을 ref 에 심어 interact/버튼 콜백이 참조한다.
-  //   이미 수집한 노드면 무시(중복 없음). 낙관 갱신(즉시 Set 추가·플래시) 후 서버 upsert(실패 조용히).
+  //   이미 수집한 노드면 무시(중복 없음). 낙관 갱신 후 devGuest는 로컬 누적, 제품 로그인은 서버 upsert.
   collectStampRef.current = (node) => {
     if (!canCollectStamp(node) || stampsRef.current.has(node.id)) return;
     setStamps((prev) => { const next = new Set(prev); next.add(node.id); return next; });
     setNewStamp({ id: node.id, name: node.name, factLine: factLineForNode(node.id) });
-    collectStamp(node.id);
+    if (devGuest) collectGuestStamp(node.id);
+    else collectStamp(node.id);
   };
 
   // "획득!" 플래시는 잠시 뒤 자동으로 걷힌다 — 지식 카드 1줄이 붙으면 읽을 시간만큼 연장.
@@ -3589,7 +3599,11 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
 
       {/* 🗾 여행 스탬프 앨범 — 수집한 방문 기념 배지 케이스. A 입력 잠금(interact 가드) + B/ESC로 닫기. */}
       {albumOpen && (
-        <StampAlbum stamps={stamps} onClose={() => setAlbumOpen(false)} />
+        <StampAlbum
+          devGuest={devGuest}
+          stamps={stamps}
+          onClose={() => setAlbumOpen(false)}
+        />
       )}
 
       {gameMenuOpen && (
