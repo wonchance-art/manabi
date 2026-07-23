@@ -27,7 +27,8 @@ import { createVoiceUnreachableNotifier } from '../lib/world/voiceNotify';
 import { createWorldChat } from '../lib/world/chat';
 import { getMuted, isMuted, toggleMute, onChange as onMuteChange } from '../lib/world/muteStore';
 import { isPersistablePosition, normalizePositionScene } from '../lib/world/session';
-import { cultureChapterHref, frenchChapterHref, trackChapterHref, readingTextHref } from '../components/world/cultureDoors';
+import { readingTextHref } from '../components/world/cultureDoors';
+import { pushWorldCultureChapter } from './worldChapterRouting';
 // 도트 폰트(Galmuri9) @font-face — /world 라우트 전용 client 컴포넌트에서만 로드된다.
 import './galmuri9.css';
 import {
@@ -509,10 +510,9 @@ export default function WorldPage() {
   const interact = useCallback(() => controlsRef.current?.interact(), []);
   const cancel = useCallback(() => controlsRef.current?.cancel(), []);
   const openCultureChapter = useCallback((chapter, track) => {
-    // track 명시 도어 우선(영어·프랑스어 동형 슬러그 구분) → 레거시 폴백(일본어→프랑스어, 상호 배타).
-    const href = (track ? trackChapterHref(track, chapter) : null)
-      ?? cultureChapterHref(chapter) ?? frenchChapterHref(chapter);
-    if (href) router.push(href);
+    // explicit track은 권위값이라 실패 시 다른 언어로 추측하지 않는다.
+    // track 미지정 레거시만 resolver 내부의 일본어→프랑스어 폴백을 유지한다.
+    pushWorldCultureChapter(router, chapter, track);
   }, [router]);
   const openReadingText = useCallback((reading) => {
     const href = readingTextHref(reading);

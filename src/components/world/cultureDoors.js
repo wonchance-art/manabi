@@ -15,6 +15,7 @@ export function toInteractiveNode(node) {
     npc: node.npc,
     noStamp: node.noStamp,
     chapter: node.chapter,
+    track: node.track,
     reading: node.reading,
     openNow: node.openNow,
     ...(node.tideCopyKey ? { tideCopyKey: node.tideCopyKey } : {}),
@@ -55,9 +56,29 @@ const TRACK_ROUTES = Object.freeze({
 });
 
 export function trackChapterHref(track, chapter) {
-  const route = TRACK_ROUTES[track];
+  const route = Object.prototype.hasOwnProperty.call(TRACK_ROUTES, track)
+    ? TRACK_ROUTES[track]
+    : null;
   if (!route || typeof chapter !== 'string' || !route.pattern.test(chapter)) return null;
   return `${route.base}${encodeURIComponent(chapter)}`;
+}
+
+// WorldPage 도어 라우팅 정본.
+// track 미지정 노드만 레거시 일본어→프랑스어 폴백을 허용한다. explicit track은 언어 선택의
+// 권위값이므로 unknown/형식 불일치에서 다른 언어로 추측하지 않고 닫는다.
+export function resolveCultureChapterHref(track, chapter) {
+  const hasExplicitTrack = track !== undefined;
+  if (!hasExplicitTrack) {
+    return cultureChapterHref(chapter) ?? frenchChapterHref(chapter);
+  }
+
+  const href = trackChapterHref(track, chapter);
+  if (href) return href;
+
+  if (!Object.prototype.hasOwnProperty.call(TRACK_ROUTES, track)) {
+    console.warn('[WorldPage] Unknown explicit culture track; chapter routing disabled.', track);
+  }
+  return null;
 }
 
 export function readingTextHref(reading) {
