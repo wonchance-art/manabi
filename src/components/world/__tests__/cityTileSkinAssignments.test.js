@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { CITY_MAPS } from '../cities/index.js';
+import { beforeAll, describe, expect, it } from 'vitest';
+import { loadAllCities } from '../cities/index.js';
 import {
   cityBuildingSkinAt,
   cityBuildingTextureKey,
@@ -29,7 +29,13 @@ const EXPECTED_SKINS = {
   'leman-riviera': { water: 'glacial' },
 };
 
+let CITY_MAPS;
+
 describe('R4 지역 색감 배정표', () => {
+  beforeAll(async () => {
+    CITY_MAPS = await loadAllCities();
+  }, 60000);
+
   it('배정 도시의 tileSkins 와 텍스처 키 전환', () => {
     for (const [cityId, skins] of Object.entries(EXPECTED_SKINS)) {
       const city = CITY_MAPS.find((c) => c.id === cityId);

@@ -51,6 +51,7 @@ import {
   cityDistrictOpenAt,
   resolveCityDistricts,
 } from './cityDistricts';
+import { planCityDistrictBoundarySigns } from './cityDistrictBoundarySigns';
 import {
   claimRouteDiscoveryAt,
   loadRouteDiscoveryIds,
@@ -375,6 +376,16 @@ export function buildCityScene(Phaser, city, ctx) {
           g.fillStyle(C(0x78736b), 0.82); g.fillRect(4, 9, 8, 20);
           g.fillStyle(C(0x918a7e), 0.82); g.fillRect(2, 7, 12, 5);
           g.fillStyle(C(0x5f5b55), 0.7); g.fillRect(3, 29, 10, 3);
+        }, 16, 32);
+        // 준비 중 팻말 — GBC 크림 판과 두 지주를 가로지르는 무문자 빗장 모티프.
+        this.bakeTile('ct_prop_district_boundary_signpost', (g) => {
+          g.fillStyle(C(0x2a2118), 1);
+          g.fillRect(3, 8, 2, 24); g.fillRect(11, 8, 2, 24);
+          g.fillStyle(C(0xf6edcf), 1); g.fillRect(1, 5, 14, 10);
+          g.fillStyle(C(0x8a5a2b), 1); g.fillRect(0, 8, 16, 4);
+          g.fillStyle(C(0x2a2118), 1);
+          g.fillRect(1, 5, 14, 2); g.fillRect(1, 13, 14, 2); g.fillRect(7, 8, 2, 4);
+          g.fillRect(2, 9, 1, 2); g.fillRect(13, 9, 1, 2); g.fillRect(2, 30, 4, 2); g.fillRect(10, 30, 4, 2);
         }, 16, 32);
       }
 
@@ -1061,6 +1072,7 @@ export function buildCityScene(Phaser, city, ctx) {
       this.grid = city.buildGrid();
       this.mainRoute = resolveCityMainRoute(city, this.grid);
       this.districts = resolveCityDistricts(city, this.grid, this.mainRoute);
+      this.districtBoundarySigns = planCityDistrictBoundarySigns(this.districts, this.grid);
       this.districtLockNoticeShown = false;
       this.tideState = city.tide
         ? montSaintMichelTideAt(
@@ -1117,9 +1129,10 @@ export function buildCityScene(Phaser, city, ctx) {
       //  create 전역 트리 루프를 제거해 트리 수가 맵 면적이 아니라 화면+pad 에 비례하게 함 — Codex P1.)
 
       // ── 프리팹 파사드(노렌·간판) — 프론티지 소품(비상호작용, city.props 는 명시 목록이라 개수 유한) ──
-      const sceneProps = this.mainRoute
-        ? [...(city.props || []), ...this.mainRoute.props]
-        : (city.props || []);
+      const sceneProps = [
+        ...(this.mainRoute ? [...(city.props || []), ...this.mainRoute.props] : (city.props || [])),
+        ...this.districtBoundarySigns,
+      ];
       for (const p of sceneProps) {
         const [px, py] = p.tile;
         if (!this.districtOpenAt(px, py)) continue;

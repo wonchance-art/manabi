@@ -11,7 +11,7 @@ import Spinner from '../components/Spinner';
 import Button from '../components/Button';
 import { MAP_W, MAP_H, decodeMap, TERRAIN } from '../components/world/mapData';
 import { ALL_WORLD_NODES, WORLD_NODES } from '../components/world/worldNodes';
-import { CITY_MAPS } from '../components/world/cities/index.js';
+import { CITY_MANIFEST, loadCity } from '../components/world/cities/index.js';
 import { unproject, isCoastTile, buildPlayableGrid } from '../lib/world/mapGeo';
 import { cityMapMarkers, overworldRegionMarkers, worldMapMarkers } from '../lib/world/mapViewer';
 import { EMEA_RAIL_NETWORK } from '../lib/world/emeaRail';
@@ -29,16 +29,6 @@ function bitmapScaleFor(cols, rows) {
 
 // 국가 중심 2단 카테고리 — 도시국가·특별지역은 지리·언어권 이웃 곁에 독립 버튼으로 나란히 둔다.
 // 미배정 신규 도시는 폴백 그룹으로 노출되어 유실되지 않는다(가와구치코 등 추가분은 매핑에 선등록).
-const CITY_GROUP_BY_ID = Object.freeze({
-  tokyo: 'jp', osaka: 'jp', kyoto: 'jp', fukuoka: 'jp', kawaguchiko: 'jp',
-  seoul: 'kr', busan: 'kr',
-  beijing: 'cn', shanghai: 'cn',
-  taipei: 'tw', 'hong-kong': 'hk',
-  'grand-paris': 'fr', marseille: 'fr', 'mont-saint-michel': 'fr', 'cote-dazur': 'fr', geneva: 'ch',
-  brussels: 'be', london: 'gb',
-  sydney: 'au', melbourne: 'au', brisbane: 'au', canberra: 'au',
-});
-
 const MAP_GROUP_DEFS = Object.freeze([
   { id: 'global', label: '월드·대륙', icon: '🗾' },
   { id: 'jp', label: '일본', icon: '🏯' },
@@ -103,15 +93,14 @@ const MAP_OPTIONS = Object.freeze([
     region,
     group: 'global',
   })),
-  ...CITY_MAPS.map((city) => ({
+  ...CITY_MANIFEST.map((city) => ({
     id: city.id,
     name: city.name,
     icon: '🏙️',
     kind: 'city',
     cols: city.cols,
     rows: city.rows,
-    city,
-    group: CITY_GROUP_BY_ID[city.id] || 'etc',
+    group: city.viewerGroup,
   })),
 ]);
 
@@ -208,13 +197,16 @@ export default function WorldMapPage() {
   const [bitmapReady, setBitmapReady] = useState(false);
   const [bitmapError, setBitmapError] = useState('');
   const [showPlayable, setShowPlayable] = useState(true);
+  const [activeCity, setActiveCity] = useState(null);
+  const [cityLoadAttempt, setCityLoadAttempt] = useState(0);
 
   useEffect(() => {
+    let cancelled = false;
     setBitmapReady(false);
     setBitmapError('');
+    setActiveCity(null);
     bitmapRef.current = null;
     if (activeMap.kind === 'overworld') {
-      let cancelled = false;
       const image = new Image();
       image.decoding = 'async';
       image.onload = () => {
@@ -232,61 +224,80 @@ export default function WorldMapPage() {
       image.src = activeMap.previewUrl;
       return () => { cancelled = true; };
     }
-    const raw = activeMap.kind === 'world' ? decodeMap() : null;
-    const grid = activeMap.kind === 'world'
-      ? (showPlayable ? buildPlayableGrid(raw) : raw)
-      : activeMap.city.buildGrid();
-    const pxScale = bitmapScaleFor(mapCols, mapRows);
-    const w = mapCols * pxScale, h = mapRows * pxScale;
-    const off = document.createElement('canvas');
-    off.width = w; off.height = h;
-    const ctx = off.getContext('2d');
-    const img = ctx.createImageData(w, h);
-    const data = img.data;
-    const seaRgb = hexToRgb(COLORS.sea);
-    const landRgb = hexToRgb(COLORS.land);
-    const coastRgb = hexToRgb(COLORS.coast);
-    const riverRgb = hexToRgb(COLORS.river);
-    const lakeRgb = hexToRgb(COLORS.lake);
-    const fenceRgb = hexToRgb(COLORS.fence);
-    const bridgeRgb = hexToRgb(COLORS.bridge);
-    const mountainRgb = hexToRgb(COLORS.mountain);
-    const peakRgb = hexToRgb(COLORS.peak);
-    const plainRgb = hexToRgb(COLORS.plain);
-    for (let ty = 0; ty < mapRows; ty++) {
-      for (let tx = 0; tx < mapCols; tx++) {
-        const code = grid[ty * mapCols + tx];
-        let rgb;
-        if (activeMap.kind === 'city') {
-          rgb = CITY_RGB[code] || CITY_RGB[1];
-        } else {
-          switch (code) {
-            case TERRAIN.RIVER: rgb = riverRgb; break;
-            case TERRAIN.LAKE: rgb = lakeRgb; break;
-            case TERRAIN.FENCE: rgb = fenceRgb; break;
-            case TERRAIN.BRIDGE: rgb = bridgeRgb; break;
-            case TERRAIN.MOUNTAIN: rgb = mountainRgb; break;
-            case TERRAIN.PEAK: rgb = peakRgb; break;
-            case TERRAIN.PLAIN: rgb = plainRgb; break;
-            case TERRAIN.LAND: rgb = isCoastTile(grid, tx, ty) ? coastRgb : landRgb; break;
-            default: rgb = seaRgb; break;
+
+    const renderGrid = (city = null) => {
+      if (cancelled) return;
+      const raw = activeMap.kind === 'world' ? decodeMap() : null;
+      const grid = activeMap.kind === 'world'
+        ? (showPlayable ? buildPlayableGrid(raw) : raw)
+        : city.buildGrid();
+      const pxScale = bitmapScaleFor(mapCols, mapRows);
+      const w = mapCols * pxScale, h = mapRows * pxScale;
+      const off = document.createElement('canvas');
+      off.width = w; off.height = h;
+      const ctx = off.getContext('2d');
+      const img = ctx.createImageData(w, h);
+      const data = img.data;
+      const seaRgb = hexToRgb(COLORS.sea);
+      const landRgb = hexToRgb(COLORS.land);
+      const coastRgb = hexToRgb(COLORS.coast);
+      const riverRgb = hexToRgb(COLORS.river);
+      const lakeRgb = hexToRgb(COLORS.lake);
+      const fenceRgb = hexToRgb(COLORS.fence);
+      const bridgeRgb = hexToRgb(COLORS.bridge);
+      const mountainRgb = hexToRgb(COLORS.mountain);
+      const peakRgb = hexToRgb(COLORS.peak);
+      const plainRgb = hexToRgb(COLORS.plain);
+      for (let ty = 0; ty < mapRows; ty++) {
+        for (let tx = 0; tx < mapCols; tx++) {
+          const code = grid[ty * mapCols + tx];
+          let rgb;
+          if (city) {
+            rgb = CITY_RGB[code] || CITY_RGB[1];
+          } else {
+            switch (code) {
+              case TERRAIN.RIVER: rgb = riverRgb; break;
+              case TERRAIN.LAKE: rgb = lakeRgb; break;
+              case TERRAIN.FENCE: rgb = fenceRgb; break;
+              case TERRAIN.BRIDGE: rgb = bridgeRgb; break;
+              case TERRAIN.MOUNTAIN: rgb = mountainRgb; break;
+              case TERRAIN.PEAK: rgb = peakRgb; break;
+              case TERRAIN.PLAIN: rgb = plainRgb; break;
+              case TERRAIN.LAND: rgb = isCoastTile(grid, tx, ty) ? coastRgb : landRgb; break;
+              default: rgb = seaRgb; break;
+            }
           }
-        }
-        for (let dy = 0; dy < pxScale; dy++) {
-          for (let dx = 0; dx < pxScale; dx++) {
-            const idx = ((ty * pxScale + dy) * w + (tx * pxScale + dx)) * 4;
-            data[idx] = rgb[0]; data[idx + 1] = rgb[1]; data[idx + 2] = rgb[2]; data[idx + 3] = 255;
+          for (let dy = 0; dy < pxScale; dy++) {
+            for (let dx = 0; dx < pxScale; dx++) {
+              const idx = ((ty * pxScale + dy) * w + (tx * pxScale + dx)) * 4;
+              data[idx] = rgb[0]; data[idx + 1] = rgb[1]; data[idx + 2] = rgb[2]; data[idx + 3] = 255;
+            }
           }
         }
       }
+      ctx.putImageData(img, 0, 0);
+      if (city) drawCityTransit(ctx, city, pxScale);
+      if (cancelled) return;
+      bitmapRef.current = off;
+      bitmapScaleRef.current = { x: pxScale, y: pxScale };
+      if (city) setActiveCity(city);
+      setBitmapReady(true);
+    };
+
+    if (activeMap.kind === 'city') {
+      loadCity(activeMap.id)
+        .then((city) => {
+          if (!cancelled && city.id === activeMap.id) renderGrid(city);
+        })
+        .catch(() => {
+          if (!cancelled) setBitmapError('도시 지도를 불러오지 못했어요. 연결을 확인해 주세요.');
+        });
+      return () => { cancelled = true; };
     }
-    ctx.putImageData(img, 0, 0);
-    if (activeMap.kind === 'city') drawCityTransit(ctx, activeMap.city, pxScale);
-    bitmapRef.current = off;
-    bitmapScaleRef.current = { x: pxScale, y: pxScale };
-    setBitmapReady(true);
-    return undefined;
-  }, [activeMap, mapCols, mapRows, showPlayable]);
+
+    renderGrid();
+    return () => { cancelled = true; };
+  }, [activeMap, cityLoadAttempt, mapCols, mapRows, showPlayable]);
 
   const nodes = useMemo(() => {
     if (activeMap.kind === 'world') return worldMapMarkers(WORLD_NODES);
@@ -294,8 +305,8 @@ export default function WorldMapPage() {
       const transportNodes = activeMap.region.id === 'emea' ? EMEA_RAIL_NETWORK.hubs : [];
       return overworldRegionMarkers(activeMap.region, ALL_WORLD_NODES, transportNodes);
     }
-    return cityMapMarkers(activeMap.city);
-  }, [activeMap]);
+    return activeCity ? cityMapMarkers(activeCity) : [];
+  }, [activeCity, activeMap]);
 
   // ── 뷰포트 크기(반응형) ──
   const containerRef = useRef(null);
@@ -551,7 +562,16 @@ export default function WorldMapPage() {
         />
         {!bitmapReady && (
           <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center' }}>
-            {bitmapError || <Spinner />}
+            {bitmapError ? (
+              <div style={{ display: 'grid', gap: 10, justifyItems: 'center', textAlign: 'center' }}>
+                <span>{bitmapError}</span>
+                {activeMap.kind === 'city' && (
+                  <Button size="sm" variant="secondary" onClick={() => setCityLoadAttempt((value) => value + 1)}>
+                    다시 시도
+                  </Button>
+                )}
+              </div>
+            ) : <Spinner />}
           </div>
         )}
         {/* 주요 지점 마커 — 이름은 핀 hover/focus 때만 노출 */}

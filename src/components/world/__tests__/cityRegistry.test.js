@@ -1,9 +1,17 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { worldNodeReturnSpawn } from '../../../lib/world/worldNodeGeo.js';
-import { CITY_DATA, CITY_MAPS } from '../cities/index.js';
+import { loadAllCities } from '../cities/index.js';
 import { getNode } from '../worldNodes.js';
 
+let CITY_MAPS;
+let CITY_DATA;
+
 describe('도시 정밀맵 레지스트리', () => {
+  beforeAll(async () => {
+    CITY_MAPS = await loadAllCities();
+    CITY_DATA = Object.fromEntries(CITY_MAPS.map((city) => [city.id, city]));
+  }, 60000);
+
   it('현재 플레이 가능한 도시를 전체 맵 뷰어와 같은 순서로 노출한다', () => {
     expect(CITY_MAPS.map((city) => city.id)).toEqual([
       'fukuoka', 'tokyo', 'osaka', 'kyoto', 'busan', 'seoul', 'grand-paris', 'mont-saint-michel', 'cote-dazur',
