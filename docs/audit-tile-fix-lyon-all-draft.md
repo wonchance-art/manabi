@@ -127,8 +127,8 @@ targeted max RSS는 3,791,929,344 bytes였다.
 - `npm run lint`: PASS
 - generator/apply targeted: 2 files / 16 tests PASS
 - `update-tile-fix-expectations.mjs --check`: `updatedFiles=[]`
-- `set -o pipefail` 전체 직렬 Vitest: 234 files / 2,279 tests PASS /
-  337.34s / max RSS 2,627,436,544 bytes / exit 0
+- `set -o pipefail` 전체 직렬 Vitest: 235 files / 2,286 tests PASS /
+  243.33s / max RSS 3,951,198,208 bytes / exit 0
 - `git diff --check`: PASS
 
 정본 geo 승격·생성기 manifest 연결은 이 PR의 범위가 아니며 Claude merge 게이트에서
