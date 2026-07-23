@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
 import {
   OVERWORLD_CHUNK_FILE_BYTES,
@@ -199,6 +200,15 @@ describe('OverworldChunkLoader', () => {
     await loader.load(-2, 3);
     await loader.load(-1, 3);
     expect(cache.size).toBe(1);
-    expect(cache.keys()).toEqual([`${loader.generation}:-1,3`]);
+    expect(cache.keys()).toEqual(['-1,3']);
+  });
+
+  it('region scene은 loader LRU 외 별도 무제한 chunk cache를 만들지 않는다', () => {
+    const source = readFileSync(
+      new URL('../../../components/world/overworldRegionScene.js', import.meta.url),
+      'utf8',
+    );
+    expect(source).not.toContain('loadedChunks');
+    expect(source).toContain('return this.chunkLoader.load(cx, cy)');
   });
 });

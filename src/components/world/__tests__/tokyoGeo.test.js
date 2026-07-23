@@ -316,4 +316,13 @@ describe('도쿄 생성 결정성·오프라인 계약', () => {
     expect(generatorSource).not.toMatch(/\bfetch\s*\(/);
     expect(snapshotSource).not.toMatch(/\bfetch\s*\(/);
   });
+
+  it('런타임 geo는 중첩 숫자쌍 대신 versioned packed RLE loader를 쓴다', () => {
+    const generatedSource = fs.readFileSync(new URL('../cities/tokyo.geo.js', import.meta.url), 'utf8');
+    expect(generatedSource).toContain("import { decodeCityGeoRle } from './cityGeoLoader.js'");
+    expect(generatedSource).toContain('terrainPacked = null');
+    expect(generatedSource).toContain('railwayPacked = null');
+    expect(generatedSource).not.toMatch(/const TERRAIN_RLE = \[\[/);
+    expect(Buffer.byteLength(generatedSource)).toBeLessThan(1_700_000);
+  });
 });
