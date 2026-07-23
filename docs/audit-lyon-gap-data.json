@@ -1,0 +1,282 @@
+{
+  "timestamp": "2026-07-23T16:09:17.276Z",
+  "city": "Lyon",
+  "sections": {
+    "1_density": {
+      "byZone": {
+        "fourviere": {
+          "label": "푸르비에르·구시가",
+          "tilesTotalCount": 6120,
+          "width": 68,
+          "height": 90,
+          "nodesCount": 3,
+          "stationsCount": 0,
+          "propsCount": 0,
+          "discovertiesCount": 2,
+          "contentDensityPer100Tiles": "4.90"
+        },
+        "presquile": {
+          "label": "프레스킬(반도)",
+          "tilesTotalCount": 7050,
+          "width": 47,
+          "height": 150,
+          "nodesCount": 5,
+          "stationsCount": 0,
+          "propsCount": 1,
+          "discovertiesCount": 3,
+          "contentDensityPer100Tiles": "7.09"
+        },
+        "croix-rousse": {
+          "label": "크루아루스",
+          "tilesTotalCount": 3000,
+          "width": 75,
+          "height": 40,
+          "nodesCount": 1,
+          "stationsCount": 0,
+          "propsCount": 0,
+          "discovertiesCount": 1,
+          "contentDensityPer100Tiles": "3.33"
+        },
+        "part-dieu": {
+          "label": "파르디외·레알",
+          "tilesTotalCount": 7600,
+          "width": 95,
+          "height": 80,
+          "nodesCount": 5,
+          "stationsCount": 1,
+          "propsCount": 1,
+          "discovertiesCount": 3,
+          "contentDensityPer100Tiles": "6.58"
+        },
+        "confluence": {
+          "label": "콘플루앙스",
+          "tilesTotalCount": 11400,
+          "width": 95,
+          "height": 120,
+          "nodesCount": 1,
+          "stationsCount": 0,
+          "propsCount": 0,
+          "discovertiesCount": 1,
+          "contentDensityPer100Tiles": "0.88"
+        },
+        "tete-dor": {
+          "label": "테트도르",
+          "tilesTotalCount": 5100,
+          "width": 85,
+          "height": 60,
+          "nodesCount": 1,
+          "stationsCount": 0,
+          "propsCount": 1,
+          "discovertiesCount": 1,
+          "contentDensityPer100Tiles": "1.96"
+        }
+      },
+      "mainRouteSegments": [
+        {
+          "id": "station:perrache--node:bellecour",
+          "from": "perrache",
+          "to": "bellecour",
+          "stepCount": 88,
+          "tileCount": 89
+        },
+        {
+          "id": "node:bellecour--node:vieux-lyon",
+          "from": "bellecour",
+          "to": "vieux-lyon",
+          "stepCount": 37,
+          "tileCount": 38
+        },
+        {
+          "id": "node:vieux-lyon--node:fourviere",
+          "from": "vieux-lyon",
+          "to": "fourviere",
+          "stepCount": 31,
+          "tileCount": 32
+        },
+        {
+          "id": "node:fourviere--node:terreaux",
+          "from": "fourviere",
+          "to": "terreaux",
+          "stepCount": 77,
+          "tileCount": 78
+        },
+        {
+          "id": "node:terreaux--node:opera",
+          "from": "terreaux",
+          "to": "opera",
+          "stepCount": 26,
+          "tileCount": 27
+        },
+        {
+          "id": "node:opera--node:croix-rousse",
+          "from": "opera",
+          "to": "croix-rousse",
+          "stepCount": 65,
+          "tileCount": 66
+        },
+        {
+          "id": "node:croix-rousse--node:halles",
+          "from": "croix-rousse",
+          "to": "halles",
+          "stepCount": 134,
+          "tileCount": 135
+        },
+        {
+          "id": "node:halles--station:part-dieu",
+          "from": "halles",
+          "to": "part-dieu",
+          "stepCount": 50,
+          "tileCount": 51
+        }
+      ],
+      "mainRouteTotalSteps": 508,
+      "mainRouteDiscoveries": 8,
+      "discoveriesPerSegment": "1.00"
+    },
+    "2_visuals": {
+      "tileSkins": {
+        "building": "terracotta"
+      },
+      "propsByKind": {
+        "fountain": 1,
+        "stall": 1,
+        "parasol": 1
+      },
+      "totalPropsCount": 3,
+      "spotsByFacade": {
+        "sign": 11
+      },
+      "npcCount": 5,
+      "spotCount": 11,
+      "totalNodesCount": 16
+    },
+    "3_presentation": {
+      "discoveryCount": 8,
+      "discoveries": [
+        {
+          "id": "lyon-d1",
+          "leg": "perrache → bellecour",
+          "at": 0.55,
+          "line": "보행자 거리의 차양 아래로 아침 냄새가 흘러요 — 리옹의 하루는 빵집 앞에서 시작돼요."
+        },
+        {
+          "id": "lyon-d2",
+          "leg": "bellecour → vieux-lyon",
+          "at": 0.5,
+          "line": "손강 다리 위에서 물빛이 바뀌어요 — 잔잔한 손강과 힘찬 론강, 두 강의 성격이 달라요."
+        },
+        {
+          "id": "lyon-d3",
+          "leg": "vieux-lyon → fourviere",
+          "at": 0.4,
+          "line": "구시가 골목엔 「트라불」이라 불리는 지붕 덮인 지름길이 숨어 있어요 — 비 오는 날의 통로였대요."
+        },
+        {
+          "id": "lyon-d4",
+          "leg": "fourviere → terreaux",
+          "at": 0.45,
+          "line": "언덕에서 내려다보면 붉은 지붕의 바다 너머로 두 강이 만나는 자리가 보여요."
+        },
+        {
+          "id": "lyon-d5",
+          "leg": "terreaux → opera",
+          "at": 0.5,
+          "line": "시청 뒤편을 돌면 오페라의 유리 반원 지붕이 나타나요 — 옛 벽 위에 얹은 현대의 곡선이에요."
+        },
+        {
+          "id": "lyon-d6",
+          "leg": "opera → croix-rousse",
+          "at": 0.6,
+          "line": "크루아루스 오르막은 옛 견직 공방의 동네예요 — 천장 높은 집들이 그 시절의 흔적이에요."
+        },
+        {
+          "id": "lyon-d7",
+          "leg": "croix-rousse → halles",
+          "at": 0.5,
+          "line": "론강변 산책로엔 플라타너스가 줄지어요 — 강을 따라 달리는 사람들의 코스예요."
+        },
+        {
+          "id": "lyon-d8",
+          "leg": "halles → part-dieu",
+          "at": 0.45,
+          "line": "실내 시장의 치즈 좌판을 지나면 곧 파르디외의 유리탑이 눈에 들어와요."
+        }
+      ],
+      "districtsVersion": "district-v1",
+      "openDistrictCount": 4,
+      "openDistricts": [
+        {
+          "id": "presquile-confluence",
+          "label": "프레스킬 남부"
+        },
+        {
+          "id": "vieux-lyon-fourviere",
+          "label": "구시가·푸르비에르"
+        },
+        {
+          "id": "terreaux-croix-rousse",
+          "label": "테로·크루아루스"
+        },
+        {
+          "id": "rhone-part-dieu",
+          "label": "론 강변·파르디외"
+        }
+      ],
+      "transitSystemCount": 1,
+      "transitSystems": [
+        {
+          "id": "lyon-rail-link",
+          "mode": "train",
+          "stopIds": [
+            "part-dieu",
+            "perrache"
+          ],
+          "segmentMinutes": [
+            6
+          ],
+          "serviceWindows": 1
+        }
+      ]
+    },
+    "4_loops": {
+      "possibleActions": [
+        "move",
+        "talk",
+        "door",
+        "discover",
+        "stamp",
+        "transit",
+        "notebook"
+      ],
+      "rewardsByAction": {
+        "discover": "factLine 텍스트 표시",
+        "door": "도어 학습 콘텐츠 + 스탬프",
+        "talk": "대화 → 학습 UI 진입",
+        "transit": "역 도착 → 다음 구간"
+      },
+      "npcCount": 5,
+      "spotCount": 11,
+      "doorsCount": 2,
+      "tenMinPlayScenario": {
+        "estimatedTilesCovered": 1000,
+        "reachableSegmentsCount": 8,
+        "eventCount": 4,
+        "estimatedEventDensity": "0.30% per tile"
+      },
+      "doorsDetail": [
+        {
+          "id": "fr-19",
+          "name": "Marché de produits frais",
+          "track": "french",
+          "chapter": "a2-02-articles"
+        },
+        {
+          "id": "fr-20",
+          "name": "Café en terrasse",
+          "track": "french",
+          "chapter": "a2-03-descriptive-adjectives"
+        }
+      ]
+    }
+  }
+}
