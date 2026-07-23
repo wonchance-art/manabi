@@ -38,7 +38,7 @@ const DISTRICT_AUDIT_CASES = Object.freeze([
     nodeId: 'lyon',
     cityId: 'lyon',
     labels: ['프레스킬 남부', '구시가·푸르비에르', '테로·크루아루스', '론 강변·파르디외'],
-    nextGoal: { kind: 'npc-meeting', line: '만난 사람 0/5' },
+    nextGoal: { kind: 'discovery', line: '발견 0/8' },
   },
   {
     nodeId: 'bordeaux',

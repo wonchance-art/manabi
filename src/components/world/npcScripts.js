@@ -1314,6 +1314,374 @@ export const NPC_SCRIPTS = {
     ],
     reward: '🚴 자전거 대여 완주! Un vélo·Combien de temps·À quatre heures — 프랑스에서 자전거 여행을 할 수 있어요.',
   },
+
+  // ── 리옹 프레스킬 우체국 직원 — 불어 첫걸음: 엽서 부치기·주소 (채움 라운드 3, P1) ──
+  'lyon-presquile-postoffice': {
+    label: '우체국 직원',
+    emoji: '📬',
+    intro: '리옹 프레스킬 우체국. 엽서를 보내며 주소 묻기와 서비스를 배워요.',
+    steps: [
+      { t: 'narr', text: '황금빛 시계탑을 그린 엽서. 한국의 친구에게 보내고 싶다 — 우체국 창구 직원이 인사로 맞이한다.' },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Bonjour ! Qu\'est-ce que je peux faire pour vous ?',
+        yomi: 'Bonjour ! Qu\'est-ce que je peux faire pour vous ? (봉주르! 케스크 주 푸 페르 푸르 부?)',
+        ko: '안녕하세요! 뭐 도와드릴까요?',
+        narr: '엽서를 보내고 싶다고 말해 봐야지.',
+      },
+      {
+        t: 'ask', mode: 'choice',
+        prompt: '「엽서를 보내고 싶어요」라고 말하려면?',
+        choices: [
+          { ja: 'Je voudrais envoyer une carte postale.', yomi: '(주 부드레 양베 운 카르트 포스탈)', correct: true },
+          { ja: 'Je voudrais acheter une carte postale.', yomi: '(주 부드레 아쉐테 운 카르트 포스탈)' },
+          { ja: 'J\'ai une carte postale.', yomi: '(제 운 카르트 포스탈)' },
+        ],
+        why: '「envoyer」는 "보내다"예요. 「acheter」는 "사다", 「avoir」는 "갖다"라는 뜻이에요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Vers où ? Quel est votre adresse de retour ?',
+        yomi: 'Vers où ? Quel est votre adresse de retour ? (베르 우? 켈 에 보트르 아드레스 드 르투르?)',
+        ko: '어디로요? 회신 주소는 뭔가요?',
+        narr: '한국 주소를 말해야 하는데… 불어로 "한국"은?',
+      },
+      {
+        t: 'ask', mode: 'type',
+        prompt: '「한국으로 보내주세요」라고 해요. 「Vers la ___ , s\'il vous plaît.」',
+        before: 'Vers la ', after: ', s\'il vous plaît.',
+        answer: 'Corée', accept: ['Corée', 'corée', 'CORÉE'],
+        hint: '코레 — "한국"을 불어로.',
+        why: 'Corée = 한국. Vers la Corée = 한국으로(향해). 국가명 앞엔 보통 la나 les를 붙여요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Très bien. C\'est 1,50 euros. Timbre inclus.',
+        yomi: 'Très bien. C\'est 1,50 euros. Timbre inclus. (트레 비앙. 세 앙 유로 50. 탕브르 앙클뤼)',
+        ko: '좋아요. 1유로 50센트예요. 우표 포함.',
+        narr: '한국까지 가는 엽서 배송료. 우표(Timbre·탕브르)가 이미 붙어 있다.',
+      },
+      {
+        t: 'say', who: 'me',
+        ja: 'Merci beaucoup !',
+        yomi: 'Merci beaucoup ! (메르시 보쿠!)',
+        ko: '정말 고마워요!',
+      },
+    ],
+    reward: '📬 우체국 완주! 「Vers la Corée」— 리옹에서 집으로 엽서를 보낼 수 있어요.',
+  },
+
+  // ── 리옹 푸르비에르 약사 — 불어 첫걸음: 증상 말하기·약 추천받기 (채움 라운드 3, P1) ──
+  'lyon-fourviere-pharmacy': {
+    label: '약사',
+    emoji: '💊',
+    intro: '푸르비에르 약국. 감기·두통 같은 증상을 말하고 약을 추천받아요.',
+    steps: [
+      { t: 'narr', text: '언덕을 너무 많이 올라다니니 머리가 지끈거린다. 약국 초록 십자 간판을 찾으러 들어선다 — 약사의 따뜻한 눈빛이 맞이한다.' },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Bonjour ! Ça va ?',
+        yomi: 'Bonjour ! Ça va ? (봉주르! 사 바?)',
+        ko: '안녕하세요! 어떠세요?',
+        narr: '불어로 인사할 때 「Ça va?」는 "잘 지내?"라는 친한 표현이고, 약국에선 "어디가 아파요?"라는 뜻으로도 쓰여요.',
+      },
+      {
+        t: 'ask', mode: 'choice',
+        prompt: '두통 때문에 왔다고 말해요. 맞는 표현은?',
+        choices: [
+          { ja: 'J\'ai mal à la tête.', yomi: '(제 말 아 라 테트)', correct: true },
+          { ja: 'Je suis mal à la tête.', yomi: '(주 쉬 말 아 라 테트)' },
+          { ja: 'J\'ai une tête.', yomi: '(제 운 테트)' },
+        ],
+        why: '「avoir mal à」는 "~이 아프다"라는 기본 표현이에요. 「être」는 "이다", 「une tête」는 단순히 "머리를 갖다"예요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Depuis quand ?',
+        yomi: 'Depuis quand ? (드퓌 칸?)',
+        ko: '언제부터요?',
+        narr: '증상이 얼마나 됐는지 물어본다. 오늘 아침부터라고 말해 봐야지.',
+      },
+      {
+        t: 'ask', mode: 'type',
+        prompt: '「오늘 아침부터요」라고 해요. 「Depuis ce ___ .」',
+        before: 'Depuis ce ', after: '.',
+        answer: 'matin', accept: ['matin', 'Matin', 'MATIN'],
+        hint: '마탱 — "아침".',
+        why: 'Depuis ce matin = 오늘 아침부터. Depuis = ~부터, ce matin = 이 아침(오늘 아침).',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Je vous recommande un analgésique. C\'est très efficace.',
+        yomi: 'Je vous recommande un analgésique. C\'est très efficace. (주 부 레코망드 앙 아날제식. 세 트레 에피카스)',
+        ko: '진통제를 권해 드려요. 아주 효과 있어요.',
+        narr: '약사가 작은 상자를 건넨다. 리옹 약국은 한국처럼 약을 개별 포장해 주지 않는다.',
+      },
+      {
+        t: 'say', who: 'me',
+        ja: 'Merci, docteur !',
+        yomi: 'Merci, docteur ! (메르시, 도크테르!)',
+        ko: '고마워요, 의사선생님!(약사를 대칭할 때 관습적으로 사용)',
+      },
+    ],
+    reward: '💊 약국 완주! 「J\'ai mal à la tête」와 증상 표현, 이제 약국에서 도움을 청할 수 있어요.',
+  },
+
+  // ── 리옹 크루아루스 꽃집 점원 — 불어 첫걸음: 색상·수량 (채움 라운드 3, P1) ──
+  'lyon-croix-rousse-fleur': {
+    label: '꽃집 점원',
+    emoji: '🌹',
+    intro: '크루아루스 꽃집. 빨강·노랑·장미 여러 송이를 표현하며 색상과 수량을 배워요.',
+    steps: [
+      { t: 'narr', text: '오래된 집들 사이 꽃냄새가 난다. 꽃집 창에는 붉은 장미와 노란 해바라기가 한가득이다. 누군가 선물할 꽃을 고르러 안으로 들어간다.' },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Bonjour ! Vous cherchez des fleurs ?',
+        yomi: 'Bonjour ! Vous cherchez des fleurs ? (봉주르! 부 셰르셰 데 플뢰르?)',
+        ko: '안녕하세요! 꽃을 찾으세요?',
+        narr: '빨간 장미를 원한다고 말해 보자.',
+      },
+      {
+        t: 'ask', mode: 'choice',
+        prompt: '「빨간 장미를 주세요」라고 주문하려면?',
+        choices: [
+          { ja: 'Des roses rouges, s\'il vous plaît.', yomi: '(데 로즈 루주, 실 부 플레)', correct: true },
+          { ja: 'Des fleurs rouges, s\'il vous plaît.', yomi: '(데 플뢰르 루주, 실 부 플레)' },
+          { ja: 'Un rose, s\'il vous plaît.', yomi: '(앙 로즈, 실 부 플레)' },
+        ],
+        why: '「rose」는 "장미"이고 뜻이 "붉다"인 「rouge」와 함께 쓰면 "빨간 장미"가 돼요. 「fleur」는 일반적인 "꽃"이에요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Combien de roses ? Trois, cinq, dix ?',
+        yomi: 'Combien de roses ? Trois, cinq, dix ? (콩비앙 드 로즈? 트루아, 상크, 디스?)',
+        ko: '장미 몇 송이요? 3송이, 5송이, 10송이?',
+        narr: '5송이의 장미를 선물하면 어떨까.',
+      },
+      {
+        t: 'ask', mode: 'type',
+        prompt: '「5송이 주세요」라고 해요. 「___ , s\'il vous plaît.」',
+        before: '', after: ', s\'il vous plaît.',
+        answer: 'Cinq roses', accept: ['Cinq roses', 'cinq roses', 'CINQ ROSES'],
+        hint: '상크 로즈 — 5송이 장미.',
+        why: 'Cinq = 5. Cinq roses = 5송이 장미. 개수 + 명사 순서예요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Voilà ! Très beau. Bon cadeau !',
+        yomi: 'Voilà ! Très beau. Bon cadeau ! (부알라! 트레 보. 봉 카도!)',
+        ko: '여기요! 아주 예뻐요. 좋은 선물이 되길!',
+        narr: '포장된 5송이 붉은 장미. Très beau(아주 아름다워)라는 점원의 축복과 함께.',
+      },
+    ],
+    reward: '🌹 꽃집 완주! 색상(rouge, bleu, jaune)과 수량 표현, 이제 꽃을 사면서 자신있게 주문할 수 있어요.',
+  },
+
+  // ── 리옹 크루아루스 크레프 노점 — 불어 첫걸음: 토핑 주문·계산 (채움 라운드 3, P1) ──
+  'lyon-croix-rousse-crepe': {
+    label: '크레프 노점',
+    emoji: '🥞',
+    intro: '크루아루스 골목 크레프 노점. 무르 아마드·누텔라 같은 토핑을 주문하고 계산하는 말을 배워요.',
+    steps: [
+      { t: 'narr', text: '좁은 골목 코너의 크레프 노점. 뜨거운 팬에서 하얀 밀가루 반죽을 펴고 있다. 벌써 줄이 서 있다.' },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Bonjour ! Une crêpe ?',
+        yomi: 'Bonjour ! Une crêpe ? (봉주르! 운 크렙?)',
+        ko: '안녕하세요! 크레프 한 개요?',
+        narr: '달콤한 크레프를 원한다고 말해 봐야지.',
+      },
+      {
+        t: 'ask', mode: 'choice',
+        prompt: '「달콤한 크레프 하나 주세요」라고 주문하려면?',
+        choices: [
+          { ja: 'Une crêpe sucrée, s\'il vous plaît.', yomi: '(운 크렙 쉬크레, 실 부 플레)', correct: true },
+          { ja: 'Une crêpe salée, s\'il vous plaît.', yomi: '(운 크렙 살레, 실 부 플레)' },
+          { ja: 'Deux crêpes, s\'il vous plaît.', yomi: '(드 크렙, 실 부 플레)' },
+        ],
+        why: '「sucré」는 "단", 「salé」는 "짠". 개수가 아니라 종류를 말하는 거예요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Avec quoi ? Nutella, miel, sucre-citron ?',
+        yomi: 'Avec quoi ? Nutella, miel, sucre-citron ? (아벡 쾨? 누텔라, 미엘, 슈크르-시트롱?)',
+        ko: '뭐 올릴까요? 누텔라, 꿀, 설탕-레몬?',
+        narr: '가장 인기 있는 토핑은 누텔라(Nutella)! 프랑스 초콜릿-헤이즐넛 크림이 담긴 유명한 항아리.',
+      },
+      {
+        t: 'ask', mode: 'type',
+        prompt: '「누텔라로 주세요」라고 해요. 「Nutella, s\'il vous plaît」. 발음 따라 해요.',
+        before: '', after: '',
+        answer: 'Nutella', accept: ['Nutella', 'nutella', 'NUTELLA'],
+        hint: '누텔라 — 초콜릿 크림의 대명사.',
+        why: 'Nutella는 프랑스 크레프의 가장 인기 있는 토핑이에요. 가정용으로도 널리 쓰여요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'C\'est combien pour vous ?',
+        yomi: 'C\'est combien pour vous ? (세 콩비앙 푸르 부?)',
+        ko: '얼마에 하실래요?',
+        narr: '크레프가 만들어진다. 종이에 싸여 나온다.',
+      },
+      {
+        t: 'say', who: 'me',
+        ja: 'Deux euros, s\'il vous plaît.',
+        yomi: 'Deux euros, s\'il vous plaît (드 외로, 실 부 플레)',
+        ko: '2유로로 주세요.',
+      },
+    ],
+    reward: '🥞 크레프 완주! Nutella·sucre-citron·miel — 리옹 거리 어디서나 크레프 한 장을 사 먹을 수 있어요.',
+  },
+
+  // ── 리옹 론강변 낚시꾼 — 불어 대화: 날씨·취미 (채움 라운드 3, P1) ──
+  'lyon-rhone-fisherman': {
+    label: '강변 낚시꾼',
+    emoji: '🎣',
+    intro: '론강변 산책로. 낚시꾼과 날씨를 묻고 여가 취미에 대해 자연스럽게 대화해요.',
+    steps: [
+      { t: 'narr', text: '론강 둑에 풀을 깔고 낚싯대를 드리운 사람이 평화로운 표정으로 물을 보고 있다. 좋은 날씨의 오후, 낚시 한 번 하는 사람이다.' },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Bonjour ! Vous aimez la pêche ?',
+        yomi: 'Bonjour ! Vous aimez la pêche ? (봉주르! 부 제메 라 페슈?)',
+        ko: '안녕하세요! 낚시 좋아하세요?',
+        narr: '낚시(pêche)에 대해 물어본다. 날씨도 좋다고 말해 봐야지.',
+      },
+      {
+        t: 'ask', mode: 'choice',
+        prompt: '날씨가 좋다고 대답하려면?',
+        choices: [
+          { ja: 'Oui, le temps est beau.', yomi: '(우이, 르 탕 에 보)', correct: true },
+          { ja: 'Oui, c\'est froid.', yomi: '(우이, 세 프루아)' },
+          { ja: 'Oui, c\'est pluie.', yomi: '(우이, 세 플뤼)' },
+        ],
+        why: '「le temps est beau」 = 좋은 날씨. 「c\'est froid」는 "추워요", 「c\'est pluie」는 문법 오류예요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Exactement ! Un jour comme aujourd\'hui, c\'est perfect pour la rivière.',
+        yomi: 'Exactement ! Un jour comme aujourd\'hui, c\'est perfect pour la rivière. (엑작타망! 앙 주르 콤 조우르드뷔, 세 펄페! 푸르 라 리비에르)',
+        ko: '정확해요! 오늘 같은 날씨면 강변 산책이 최고지요.',
+        narr: '낚시꾼은 느긋한 목소리로 계속 말한다.',
+      },
+      {
+        t: 'ask', mode: 'type',
+        prompt: '이곳이 얼마나 좋은지 말해요. 「C\'est un endroit ___ .」',
+        before: 'C\'est un endroit ', after: '.',
+        answer: 'magnifique', accept: ['magnifique', 'Magnifique', 'beau', 'Beau'],
+        hint: '마니피크 또는 보 — "멋진" 또는 "아름다운".',
+        why: 'Magnifique = 멋진. Beau = 아름다운. 둘 다 사용 가능해요. 「C\'est un endroit magnifique」= 여기는 멋진 곳이에요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Vous venez pêcher avec moi demain ?',
+        yomi: 'Vous venez pêcher avec moi demain ? (부 브느 페셰 아벡 무아 드맹?)',
+        ko: '내일 저랑 낚시하러 오시겠어요?',
+        narr: '낚시꾼의 초대. 여정은 계속되지만, 강변의 평온함은 가슴에 남는다.',
+      },
+    ],
+    reward: '🎣 강변 산책 완주! 날씨와 취미 표현, 이제 낚시꾼처럼 한가로운 오후를 즐길 수 있어요.',
+  },
+
+  // ── 리옹 파르디외 버스 정류소 안내원 — 불어 대화: 노선·번호 (채움 라운드 3, P1) ──
+  'lyon-part-dieu-bus-announcer': {
+    label: '버스 정류소 안내원',
+    emoji: '🚌',
+    intro: '파르디외 버스 정류소. 노선 번호와 목적지를 묻고 운행 정보를 배워요.',
+    steps: [
+      { t: 'narr', text: '현대 빌딩들 사이 버스 정류소. 전자 시간표가 깜빡거리고, 직원이 여행객들의 질문에 대답하고 있다.' },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Bonjour ! Quelle ligne vous cherchez ?',
+        yomi: 'Bonjour ! Quelle ligne vous cherchez ? (봉주르! 켈 리뉴 부 셰르셰?)',
+        ko: '안녕하세요! 몇 번 버스를 찾으세요?',
+        narr: '구시가로 가는 버스 번호를 물어봐야 한다.',
+      },
+      {
+        t: 'ask', mode: 'choice',
+        prompt: '「구시가로 가는 버스는 어느 것이에요?」라고 물으려면?',
+        choices: [
+          { ja: 'Quel bus pour le Vieux Lyon ?', yomi: '(켈 뷔스 푸르 르 비에 리용?)', correct: true },
+          { ja: 'Où est le Vieux Lyon ?', yomi: '(우 에 르 비에 리용?)' },
+          { ja: 'C\'est combien le Vieux Lyon ?', yomi: '(세 콩비앙 르 비에 리용?)' },
+        ],
+        why: '「Quel bus」는 "어느 버스"라고 노선을 묻는 표현이에요. 「Où」는 위치, 「Combien」은 가격을 물어요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Ligne 27, 31, ou 42. Tous vont au Vieux Lyon.',
+        yomi: 'Ligne 27, 31, ou 42. Tous vont au Vieux Lyon. (리뉴 빙세트, 트랑트-에, 우 카란트-드. 투 봉 오 비에 리용)',
+        ko: '27, 31, 아니면 42번이에요. 모두 구시가로 가요.',
+        narr: '프랑스 버스 번호는 보통 두 자리 또는 세 자리. 27번(vingt-sept)은 이미 배웠던 시장 이야기에서.',
+      },
+      {
+        t: 'ask', mode: 'type',
+        prompt: '「27번으로 주세요」라고 표현해요. 「Ligne ___ , s\'il vous plaît.」',
+        before: 'Ligne ', after: ', s\'il vous plaît.',
+        answer: '27', accept: ['27', 'vingt-sept', 'Vingt-sept'],
+        hint: '27 또는 빈세트 — 20과 7을 합친 숫자.',
+        why: 'Ligne 27 = 27번 버스 노선. 불어 숫자는 합산 표기(20+7)라 큰 번호일수록 길어요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Parfait ! Le prochain dans 5 minutes. Voilà, le carnet de 10 tickets.',
+        yomi: 'Parfait ! Le prochain dans 5 minutes. Voilà, le carnet de 10 tickets. (파르페! 르 프로샹 당 싱 미뉫. 부알라, 르 카르네 드 디 티케)',
+        ko: '좋아요! 다음 버스는 5분 뒤예요. 여기, 10장 회수권입니다.',
+        narr: '리옹 대중교통의 여행권(carnet). 1장씩이 아니라 10장을 함께 사는 게 일반적이고 저렴해요.',
+      },
+    ],
+    reward: '🚌 버스 정류소 완주! 노선 번호와 기본 정보, 이제 리옹의 버스를 타고 도시 곳곳을 돌아다닐 수 있어요.',
+  },
+
+  // ── 리옹 테로 공원 관리인 — 불어 대화: 길 묻기·금지 표현 (채움 라운드 3, P1) ──
+  'lyon-terreaux-park-keeper': {
+    label: '공원 관리인',
+    emoji: '🌳',
+    intro: '테로 광장 공원. 길을 묻고 공원 내 규칙을 배우며 공공장소 예절 표현을 배워요.',
+    steps: [
+      { t: 'narr', text: '테로 광장의 분수 곁 공원. 하늘이 넓다. 잔디밭 옆 벤치에 앉은 관리인에게 가까운 카페로 가는 길을 묻는다.' },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Bonjour ! Bienvenue au parc ! Vous cherchez quelque chose ?',
+        yomi: 'Bonjour ! Bienvenue au parc ! Vous cherchez quelque chose ? (봉주르! 비앙브뉴 오 파르크! 부 셰르셰 켈크 쇼즈?)',
+        ko: '안녕하세요! 공원에 오신 걸 환영해요! 뭔가 찾으세요?',
+        narr: '카페로 가는 길을 물어보자.',
+      },
+      {
+        t: 'ask', mode: 'choice',
+        prompt: '「카페로 가는 길을 알려주세요」라고 말하려면?',
+        choices: [
+          { ja: 'Pouvez-vous me montrer la route pour le café ?', yomi: '(푸베 부 므 몬트레 라 루트 푸르 르 카페?)', correct: true },
+          { ja: 'Où est le café ?', yomi: '(우 에 르 카페?)' },
+          { ja: 'C\'est le café pour vous ?', yomi: '(세 르 카페 푸르 부?)' },
+        ],
+        why: '「Pouvez-vous me montrer」는 "보여주실 수 있어요?"라고 정중히 요청하는 표현이에요. 「Où est」는 단순 위치, 세 번째는 문법 오류예요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Bien sûr ! Tout droit, puis à droite. Mais attention — ne pas marcher sur la pelouse.',
+        yomi: 'Bien sûr ! Tout droit, puis à droite. Mais attention — ne pas marcher sur la pelouse. (비앙 쉬르! 투 드루아, 퓌 아 드루아트. 메 아턴숑 — 너 파 마르셰 쉬르 라 프루즈)',
+        ko: '물론이죠! 곧장 가다가 오른쪽으로. 하지만 주의하세요 — 잔디밭을 밟으면 안 돼요.',
+        narr: '공원의 규칙. Ne pas marcher sur(~을 밟으면 안 된다) — 금지 표현.',
+      },
+      {
+        t: 'ask', mode: 'type',
+        prompt: '공원 규칙을 이해했다고 말해요. 「Je comprends. Je vais ___ le café.」',
+        before: 'Je vais ', after: ' le café.',
+        answer: 'chercher', accept: ['chercher', 'Chercher'],
+        hint: '셰르셰 — "찾다".',
+        why: 'Chercher = 찾다. Je vais chercher = 찾을 거예요. 「aller」+ 동사 원형은 근미래 표현이에요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Merci de respecter notre parc ! Bon séjour à Lyon !',
+        yomi: 'Merci de respecter notre parc ! Bon séjour à Lyon ! (메르시 드 레스펙테 노트르 파르크! 봉 세주르 아 리용!)',
+        ko: '공원을 존중해 주셔서 고마워요! 리옹 잘 보내세요!',
+        narr: '공원의 평온함과 함께 카페로 향한다.',
+      },
+    ],
+    reward: '🌳 공원 산책 완주! 길 묻기와 공공장소 예절, 이제 유럽 어디 공원에서도 규칙을 지키고 즐길 수 있어요.',
+  },
 };
 
 export function getNpcScript(key) {
