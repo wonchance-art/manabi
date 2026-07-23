@@ -240,13 +240,14 @@
 
 ## Codex-3 (codex3/*) — 게임 시스템 확장 (타 기기)
 ### doing
-- S18 지구제 24도시 팻말·표면 정합 감사(report-only): T19 확산 직후 경계 인접·soft wall
-  잠금 라인·미니맵 잠금 베이크·수첩 라벨을 전수 재현하고 불일치만 문서화
 ### todo
 - (P0 공통) 로컬 clone 이전 확인 코멘트
 - S1 STAMP_ALBUM_NODES 85 원자 전환(선행 #387 충족 — 즉시 착수): #150 5046785938
 - S4 수집 연출 정합 → S2 앨범 지역 탭·수집률 → S3 마일스톤 보상 v1(localStorage·DB 금지)
 ### done (최근)
+- S18 지구제 24도시 팻말·표면 정합 감사(report-only): 팻말 4,211개의 실제 open 경계 인접과
+  신규 13도시 soft wall·미니맵 잠금 베이크·수첩 라벨 13/13을 재현해 불일치 0건을 확정
+  (`codex3/s18-district-signs-audit`, 구현 17edd36, base 73499f7f3cff595e9ed420df1c54110a3410a928)
 - S16 NPC 만남 분모 동적 포섭: 정적 3도시 목록을 제거하고 로드된 도시의 전용 `kind:'npc'`
   후보를 스캔해 도쿄·오사카 채움 NPC 4종의 `만난 사람 0/2` 노출과 향후 자동 포섭을 회귀 고정
   (`codex3/s16-npc-met-dynamic`)
