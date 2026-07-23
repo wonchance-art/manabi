@@ -1,13 +1,19 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { STUDIES_REF_NODE_IDS, studiesRefForNode } from '../studiesRefs.js';
 import { wikiDoc } from '../travelWiki.js';
-import { CITY_DATA } from '../../../components/world/cities/index.js';
+import { loadAllCities } from '../../../components/world/cities/index.js';
 import { ALL_WORLD_NODES, WORLD_NODES } from '../../../components/world/worldNodes.js';
 
 // 도시 23종 로드가 무거워 병렬 부하에서 흔들릴 수 있다 — kyotoGeo 선례로 명시 타임아웃.
 const HEAVY = { timeout: 20000 };
+let CITY_DATA;
 
 describe('지역학 딥링크(studiesRefs) 계약', () => {
+  beforeAll(async () => {
+    const cities = await loadAllCities();
+    CITY_DATA = Object.fromEntries(cities.map((city) => [city.id, city]));
+  }, 60000);
+
   it('모든 딥링크가 실재하는 studies 문서로 해석된다', () => {
     expect(STUDIES_REF_NODE_IDS.length).toBeGreaterThanOrEqual(70);
     for (const nodeId of STUDIES_REF_NODE_IDS) {
