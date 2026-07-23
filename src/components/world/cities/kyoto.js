@@ -118,6 +118,37 @@ export const KYOTO = {
   id: 'kyoto', name: '교토', cols: COLS, rows: ROWS, entrance: ENTRANCE, returnNode: 'kyoto',
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: [], railways: KYOTO_GEO.railways,
+  // 📖 여행책 지구제 v1 (D2 정본 — RFC docs/rfc-guidebook-districts.md·오너 승인 2026-07-23).
+  // 개방 = 주동선 회랑 rect. 나머지는 guidebook 잠금 렌더 + soft wall.
+  districts: {
+    version: 'district-v1',
+    open: [
+      {
+        id: 'arashiyama-sanin',
+        label: '아라시야마·산인',
+        tiles: { rects: [[20, 210, 160, 285], [200, 205, 285, 250]] },
+      },
+      {
+        id: 'imperial-nijo',
+        label: '황궁·니조',
+        tiles: { rects: [[250, 90, 300, 135], [315, 170, 450, 285]] },
+      },
+      {
+        id: 'higashiyama-core',
+        label: '히가시야마·중심',
+        tiles: { rects: [[500, 160, 610, 270], [410, 286, 540, 339], [480, 340, 540, 380]] },
+      },
+      {
+        id: 'station-fushimi',
+        label: '역·후시미',
+        tiles: { rects: [[315, 340, 470, 450], [440, 490, 510, 535]] },
+      },
+    ],
+    locked: {
+      style: 'guidebook',
+      line: '이 동네는 아직 준비 중이에요 — 다음 여행에서 만나요.',
+    },
+  },
   tileSkins: Object.freeze({ building: 'kawara' }), // R4 — 먹색 기와(이부시가와라 톤)
   CITY_TILE, buildGrid: buildKyotoGrid,
 };
