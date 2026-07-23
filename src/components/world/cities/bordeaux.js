@@ -51,6 +51,12 @@ export const ZONES = [
 ];
 
 export const CITY_NODES = [
+  // 🧑‍💼 채움 라운드 1 — 빈 역 지구 NPC(스팟 실측: 보행·이격≥3·개방 rect 내).
+  {
+    id: 'bordeaux-gare-accueil', kind: 'npc', npc: 'gare-accueil', name: '안내 부스',
+    tile: [328, 302], facing: 'down', noStamp: true,
+    desc: '생장역의 안내 부스. 프랑스 여행의 첫 마디 — Bonjour로 시작해 보세요.',
+  },
   ...BORDEAUX_GEO.pois.map((poi) => {
     const copy = poiCopy(poi.id);
     return {
