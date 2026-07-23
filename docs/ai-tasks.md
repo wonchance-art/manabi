@@ -247,12 +247,12 @@
 
 ## Codex-4 (codex4/*) — 성능·인프라 (타 기기)
 ### doing
-- P3 도쿄 로더 레이어: cityGeo 일회성 packed-RLE decode·오버월드 중복 청크 cache 제거
-  (`codex4/tokyo-loader-tuning`, base `fbf448c15d38247b9a7aef862a87d7ca3ce80edf`)
 ### todo
 - P0 (운영 필수·최우선) 로컬 clone 이전 + 확인 코멘트: #150 5046786117
 - P1 geo lazy-load 구현(RFC #394 승인 — 실패 UX·?spawn= 정합·scene race 주의 3건 코멘트 참조)
 ### done (최근)
+- P3 도쿄 로더 레이어: cityGeo packed-RLE로 lazy load heap 77.89% 절감·오버월드
+  무제한 중복 Map 제거로 32-entry LRU 상한 복구(`codex4/tokyo-loader-tuning`)
 - P2 .owc 프리페치 벤치: APAC·EMEA 각 3경로에서 현행 vs 반경+1의 지연·동시 요청·RSS를
   report-only 비교하고 blanket 반경+1 보류·방향성/concurrency 2 후속 게이트를 제안
   (`codex4/owc-prefetch-bench`, base `49e6699764febdcd1132c4644389f65e91ed6705`)
