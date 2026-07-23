@@ -185,11 +185,12 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-- T20 V3 도로 오토타일 전면 확산: T17의 잔여 23도시 wrapper opt-in,
-  26도시 2회 PNG 결정성·BRIDGE 대표 3도시 근접 crop·전체 회귀 검증
-  (`codex2/autotile-expansion`)
 ### todo
 ### done (최근)
+- T20 V3 도로 오토타일 전면 확산: T17 잔여 23도시 wrapper를 opt-in해 26도시
+  전부 `autotile-v1`로 고정하고, 전 도시 PNG A/B byte-identical·BRIDGE 상위 3도시
+  실제 16px 근접 crop 6장·전체 227/2,238 green을 검증
+  (`codex2/autotile-expansion`, 구현 1180885, base 73499f7f3cff595e9ed420df1c54110a3410a928)
 - T19 잔여 도시 지구 확산: T10 r3 PASS 13도시에 `district-v1` 51지구·71 rect를
   정본화하고 TRANSIT·스폰·EXIT·도어·NPC·발견·mainRoute 전수 정합과 미정의 2도시를 고정
   (`codex2/districts-expansion`, 구현 3ee99da, base cf8342e51c80184559e23bd6ac048b1f7b7b40dd)
