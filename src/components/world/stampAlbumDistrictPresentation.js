@@ -3,30 +3,15 @@ import {
   resolveCityDistricts,
 } from './cityDistricts.js';
 
-// D3 정본 범위 — 앨범 노드 id가 아니라 gate.to가 가리키는 도시맵 id다.
-// 니스 앨범 노드는 cote-dazur 도시맵으로 들어가므로 별도 alias 표 없이 같은 계약으로 해석된다.
-export const STAMP_ALBUM_DISTRICT_CITY_IDS = Object.freeze([
-  'lyon',
-  'bordeaux',
-  'strasbourg',
-  'seoul',
-  'busan',
-  'cote-dazur',
-  'leman-riviera',
-]);
-
-const DISTRICT_CITY_ID_SET = new Set(STAMP_ALBUM_DISTRICT_CITY_IDS);
-
 function invariant(condition, message) {
   if (!condition) throw new Error(`stamp album districts: ${message}`);
 }
 
 export function stampAlbumDistrictPresentation(node, cityData) {
   const cityId = node?.gate?.type === 'city' ? node.gate.to : null;
-  if (!DISTRICT_CITY_ID_SET.has(cityId)) return null;
-
-  const city = cityData?.[cityId];
-  invariant(city && typeof city.buildGrid === 'function', `${cityId} city data must be available`);
+  const city = cityId ? cityData?.[cityId] : null;
+  if (!city || city.districts == null) return null;
+  invariant(typeof city.buildGrid === 'function', `${cityId} city data must be available`);
 
   // mainRoute 원본은 waypoint 계약이며 CityScene에서 path로 별도 resolve된다.
   // 앨범은 지구 목록만 필요하므로 GameCanvas의 안전 폴백과 같이 city+grid 계약만 소비한다.

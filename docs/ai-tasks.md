@@ -242,6 +242,9 @@
 - S1 STAMP_ALBUM_NODES 85 원자 전환(선행 #387 충족 — 즉시 착수): #150 5046785938
 - S4 수집 연출 정합 → S2 앨범 지역 탭·수집률 → S3 마일스톤 보상 v1(localStorage·DB 금지)
 ### done (최근)
+- S14 수첩 지구 표기 동적 판정: 정적 7도시 집합을 제거하고 로드된 도시의 `districts`
+  정의로 상세를 열어 일본 4도시를 포함한 11도시 라벨·A2 칭호 폴백을 회귀 고정
+  (`codex3/album-districts-dynamic`, 구현 89e47cf, base f571a8814ffd9c43159c3cf330c01b4106d83f94)
 - S13 역 NPC 스탬프 연결: 리옹·보르도·스트라스부르 noStamp NPC 5종의 대화 완주를
   `npc-met:<cityId>`에 기록하고 여행 수첩 `만난 사람 n/m`·S7 다음 목표 후보로 연결
   (`codex3/gare-npc-stamp-fix`, 구현 c351a98, base 163ba9345419100385012ec20704e2db4943e530)

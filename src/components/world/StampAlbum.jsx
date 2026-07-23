@@ -24,26 +24,17 @@ import {
   stampAlbumTabById,
   stampAlbumTabProgress,
 } from './stampAlbumTabs';
-import {
-  STAMP_ALBUM_DISTRICT_CITY_IDS,
-  stampAlbumDistrictPresentation,
-} from './stampAlbumDistrictPresentation';
-import {
-  STAMP_ALBUM_DISCOVERY_CITY_IDS,
-  stampAlbumDiscoveryProgress,
-} from './stampAlbumDiscoveryProgress';
-import {
-  STAMP_ALBUM_NPC_MEETING_CITY_IDS,
-  stampAlbumNpcMeetingProgress,
-} from './stampAlbumNpcMeetingProgress';
+import { stampAlbumDistrictPresentation } from './stampAlbumDistrictPresentation';
+import { stampAlbumDiscoveryProgress } from './stampAlbumDiscoveryProgress';
+import { stampAlbumNpcMeetingProgress } from './stampAlbumNpcMeetingProgress';
 import { stampAlbumNextGoal } from './stampAlbumNextGoal';
 import { stampTitlePresentation } from './stampTitlePresentation';
 
-const DETAIL_CITY_IDS = new Set([
-  ...STAMP_ALBUM_DISTRICT_CITY_IDS,
-  ...STAMP_ALBUM_DISCOVERY_CITY_IDS,
-  ...STAMP_ALBUM_NPC_MEETING_CITY_IDS,
-]);
+function cityIdForNode(node) {
+  return node?.gate?.type === 'city' && typeof node.gate.to === 'string'
+    ? node.gate.to
+    : null;
+}
 
 export default function StampAlbum({ devGuest = false, stamps, onClose }) {
   const owned = stamps instanceof Set ? stamps : new Set();
@@ -80,13 +71,14 @@ export default function StampAlbum({ devGuest = false, stamps, onClose }) {
   const activeTab = stampAlbumTabById(activeTabId);
   const titlePresentation = stampTitlePresentation(owned);
 
-  // P1 lazy city registry 경로로 현재 탭의 수집 도시 상세만 준비한다.
+  // P1 lazy city registry 경로로 현재 탭의 수집 도시만 준비한다. 지구 표기 여부는
+  // 하드코딩 목록이 아니라 로드된 payload의 districts 정의로 판정한다.
   // 진행도 값은 아래 순수 로직이 localStorage에서 읽으며 별도 API 요청은 하지 않는다.
   useEffect(() => {
     const cityIds = [...new Set(activeTab.nodes
       .filter((node) => owned.has(node.id))
-      .map((node) => (node?.gate?.type === 'city' ? node.gate.to : null))
-      .filter((cityId) => DETAIL_CITY_IDS.has(cityId) && !detailCities[cityId]))];
+      .map(cityIdForNode)
+      .filter((cityId) => cityId && !detailCities[cityId]))];
     if (cityIds.length === 0) return undefined;
 
     let cancelled = false;
@@ -185,10 +177,10 @@ export default function StampAlbum({ devGuest = false, stamps, onClose }) {
         }}>
           {activeTab.nodes.map((node) => {
             const badge = stampAlbumBadge(node, owned);
-            const cityId = node?.gate?.type === 'city' ? node.gate.to : null;
+            const cityId = cityIdForNode(node);
             const cityDetailReady = !!detailCities[cityId];
             let district = null;
-            if (badge.has && cityDetailReady && DETAIL_CITY_IDS.has(cityId)) {
+            if (badge.has && cityDetailReady) {
               if (!districtPresentationCache.current.has(node.id)) {
                 districtPresentationCache.current.set(
                   node.id,
@@ -203,7 +195,7 @@ export default function StampAlbum({ devGuest = false, stamps, onClose }) {
             const npcMeeting = badge.has && cityDetailReady
               ? stampAlbumNpcMeetingProgress(node, detailCities)
               : null;
-            const detailReady = !DETAIL_CITY_IDS.has(cityId) || cityDetailReady;
+            const detailReady = !cityId || cityDetailReady;
             const nextGoal = badge.has && cityId && detailReady
               ? stampAlbumNextGoal({
                 district,
