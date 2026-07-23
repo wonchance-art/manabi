@@ -44,7 +44,7 @@ const EXPECTED_SIGN_COUNTS = Object.freeze([
   ['taipei', 184], ['hong-kong', 85], ['london', 343], ['shanghai', 93],
   ['beijing', 102], ['brisbane', 65], ['sydney', 161], ['canberra', 157],
   ['melbourne', 119],
-  ['marseille', 78], ['kawaguchiko', 108], ['geneva', 66], ['leman-riviera', 146], ['lyon', 62],
+  ['marseille', 78], ['kawaguchiko', 108], ['geneva', 66], ['leman-riviera', 146], ['lyon', 61],
   ['bordeaux', 75], ['strasbourg', 63],
 ]);
 
@@ -200,6 +200,6 @@ describe('S18 지구제 24도시 팻말·표면 정합 read-only 감사', () => 
     ))).toEqual([]);
     expect(firstBytes).toBe(secondBytes);
     expect(createHash('sha256').update(firstBytes).digest('hex'))
-      .toBe('3f63d4a16cd6e7bd09395ee95fb16d3075829a5430afcfd73674100defba2a77');
+      .toBe('e2a090364454707e17e93c867926c19dce18bb19f8818378998743db0ac011e2');
   }, 30_000);
 });

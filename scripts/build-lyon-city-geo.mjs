@@ -25,7 +25,7 @@ const TRAIN_ROUTE_ID = 'lyon-mainline';
 // Tile fix manifests by city: data/fix-manifests/{city}-{version}.json
 const LYON_TILE_FIX_MANIFEST_PATH = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
-  '../data/fix-manifests/lyon-b1.json',
+  '../data/fix-manifests/lyon-all.json',
 );
 
 function loadTileFixManifest(manifestPath) {

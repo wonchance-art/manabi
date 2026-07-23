@@ -259,7 +259,7 @@ describe('잠금 지구 경계 표지판 순수 배치', () => {
         ],
         [
           "lyon",
-          62,
+          61,
         ],
         [
           "bordeaux",
@@ -273,7 +273,7 @@ describe('잠금 지구 경계 표지판 순수 배치', () => {
     `);
     expect(bytes).toBe(secondBytes);
     expect(createHash('sha256').update(bytes).digest('hex'))
-      .toBe('ea969b6eadb7f7b3dd850e8cfd82774d458340a284aa3909f1700b044e1333b4');
+      .toBe('28d03f11986933d9d8eec2e098fc3f129011a9f3f8529a64b3f0a4a1247e30cb');
   }, 120_000);
 });
 

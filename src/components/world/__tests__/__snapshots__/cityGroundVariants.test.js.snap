@@ -118,8 +118,8 @@ exports[`CityScene P2 지구별 보행 지면 variant-v1 > 미설정 25도시 re
     "id": "leman-riviera",
   },
   {
-    "after": "ac76d885043dd0185d2849d4ff819d24e12116a4f051521db7513c9d263026bf",
-    "before": "880469fb9a4471fa07f649a28646665f174106b699146e524339f473047113f5",
+    "after": "71b6ac3510eae04786d5c7730d167b4cba47fae02044a39960efa402bf698d0f",
+    "before": "57e6e23006cb375e3a1e73d51bfd302478b12f3e8d3d5f12616f5610176da543",
     "id": "lyon",
   },
   {
