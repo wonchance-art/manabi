@@ -1171,3 +1171,774 @@ cmp /tmp/tile-integrity-a.md /tmp/tile-integrity-b.md
 shasum -a 256 /tmp/tile-integrity-a.md /tmp/tile-integrity-b.md
 ```
 
+## r2 고신뢰 기준
+
+- 상태: **report-only** — 도시 geo·게임 데이터·엔진 수정 없음
+- 입력: `src/components/world/cities/<id>.geo.js terrain (runtime EXIT overlays excluded)`
+- 범위: 26도시, 15,323,503 cells
+- canonical data SHA-256: `613fd3bec3dce2eab1f398e3476db18c2e9515064c17d373a73280d0cdee0117`
+- 좌표: `[x,y]`; 여러 타일 성분은 `anchor{전 타일}`로 표기; anchor는 성분의 row-major 최소 좌표
+- 주의: A′–D′는 명백한 이상만 남긴 고신뢰 수선 후보이며 서로 배타적이지 않다. 건수는 타일 수가 아니라 판정 성분 수다.
+
+### r2 판정 기준
+
+| 유형 | 정량 판정 |
+|---|---|
+| A′ 차도 ring 고립 건물 | `BUILDING` 4방 성분이 정확히 1–2타일이고 경계에 닿지 않으며, 성분 바깥 1칸 8방 ring 전부가 `ROAD·CROSSWALK·BRIDGE`일 때만 1건. `SIDEWALK·PLAZA·DOCK` ring은 제외한다. |
+| B′ 완전 고립 횡단보도 | `CROSSWALK` 4방 성분 전체의 cardinal `ROAD·BRIDGE` 직접 접촉이 정확히 0일 때만 1건. 축 불명·끝점 미달만으로는 잡지 않는다. |
+| C′ 명백 평행 횡단보도 | 횡단보도 bbox 장축과 주변 cardinal `ROAD·BRIDGE` 접촉 우세축이 둘 다 확정되고 서로 평행일 때만 1건. 어느 축이든 동률/불명이면 제외한다. |
+| D′ 1타일 고아 도로 | `ROAD·CROSSWALK·BRIDGE` maximal 4방 성분의 크기가 정확히 1타일일 때만 1건. 2타일 성분은 제외하고, 주변 8칸 중 `SIDEWALK`가 4칸 이상이면 골목 스텁으로 보아 제외한다. |
+
+도로축은 모든 CROSSWALK 성분 셀의 N+S `ROAD·BRIDGE` 직접 접촉 수와 E+W 접촉 수를 합산해 큰 쪽으로 정한다. 동률은 `불명`이다.
+
+### r2 26도시 × 유형 건수
+
+| 도시 | grid | A′ | B′ | C′ | D′ |
+|---|---:|---:|---:|---:|---:|
+| 베이징 (`beijing`) | 342×390 | 23 | 0 | 2 | 47 |
+| 보르도 (`bordeaux`) | 474×501 | 178 | 46 | 51 | 651 |
+| 브리즈번 (`brisbane`) | 544×557 | 68 | 16 | 31 | 480 |
+| 브뤼셀 (`brussels`) | 352×613 | 78 | 107 | 105 | 1,026 |
+| 부산 (`busan`) | 1320×1114 | 120 | 5 | 8 | 485 |
+| 캔버라 (`canberra`) | 546×501 | 50 | 29 | 23 | 401 |
+| 코트다쥐르 (`cote-dazur`) | 1571×1169 | 197 | 19 | 37 | 819 |
+| 후쿠오카 (`fukuoka`) | 388×254 | 453 | 0 | 1 | 3 |
+| 제네바 (`geneva`) | 309×362 | 82 | 25 | 15 | 301 |
+| 파리 (`grand-paris`) | 1355×891 | 519 | 466 | 361 | 4,593 |
+| 홍콩 (`hong-kong`) | 618×390 | 146 | 4 | 10 | 260 |
+| 가와구치코 (`kawaguchiko`) | 567×863 | 18 | 0 | 0 | 257 |
+| 교토 (`kyoto`) | 639×668 | 1,539 | 0 | 15 | 182 |
+| 레만호 연안 (`leman-riviera`) | 1342×780 | 99 | 11 | 9 | 665 |
+| 런던 (`london`) | 1213×1002 | 897 | 111 | 108 | 3,045 |
+| 리옹 (`lyon`) | 428×501 | 134 | 28 | 68 | 388 |
+| 마르세유 (`marseille`) | 406×446 | 116 | 17 | 15 | 320 |
+| 멜버른 (`melbourne`) | 484×557 | 368 | 28 | 27 | 582 |
+| Mont-Saint-Michel (`mont-saint-michel`) | 442×1030 | 0 | 0 | 0 | 42 |
+| 오사카 (`osaka`) | 641×668 | 2,844 | 0 | 34 | 87 |
+| 서울 (`seoul`) | 1721×1448 | 1,241 | 36 | 27 | 3,117 |
+| 상하이 (`shanghai`) | 429×390 | 69 | 0 | 1 | 168 |
+| 스트라스부르 (`strasbourg`) | 405×446 | 88 | 35 | 32 | 426 |
+| 시드니 (`sydney`) | 648×780 | 188 | 14 | 43 | 670 |
+| 타이베이 (`taipei`) | 454×501 | 389 | 11 | 34 | 301 |
+| 도쿄 (`tokyo`) | 824×1086 | 5,790 | 4 | 47 | 729 |
+| **합계** | **15,323,503 cells** | **15,694** | **1,012** | **1,104** | **20,045** |
+
+### r2 유형별 대표 좌표 샘플
+
+3×3 덤프는 `위 행 / 가운데 행 / 아래 행`이다. 코드: `RD` ROAD, `SW` SIDEWALK, `CW` CROSSWALK, `PL` PLAZA, `PK` PARK, `BR` BRIDGE, `DK` DOCK, `WT` WATER, `BL` BUILDING, `IS` ISLAND, `RV` RIVER, `BC` BEACH, `MT` MOUNTAIN, `##` grid 밖.
+
+#### A′. 차도 ring 고립 건물 — 최대 10건
+
+| 도시 | 좌표 | 성분 크기 | 주변 3×3 타일 코드 |
+|---|---:|---:|---|
+| 베이징 (`beijing`) | `[12,25]` | 2 | `RD RD RD / RD BL BL / RD RD RD` |
+| 보르도 (`bordeaux`) | `[301,1]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| 브리즈번 (`brisbane`) | `[59,2]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| 브뤼셀 (`brussels`) | `[118,3]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| 부산 (`busan`) | `[549,25]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| 캔버라 (`canberra`) | `[58,3]` | 2 | `RD RD RD / RD BL RD / RD BL RD` |
+| 코트다쥐르 (`cote-dazur`) | `[336,8]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| 후쿠오카 (`fukuoka`) | `[334,30]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| 제네바 (`geneva`) | `[133,20]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| 파리 (`grand-paris`) | `[776,5]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+
+#### B′. 완전 고립 횡단보도 — 최대 10건
+
+| 도시 | 좌표 | 성분 크기 | 주변 3×3 타일 코드 |
+|---|---:|---:|---|
+| 보르도 (`bordeaux`) | `[167,12]` | 2 | `PK PK RD / PK CW SW / SW CW SW` |
+| 브리즈번 (`brisbane`) | `[516,121]` | 1 | `RD SW RD / SW CW SW / SW SW RD` |
+| 브뤼셀 (`brussels`) | `[180,40]` | 1 | `RD SW BL / BL CW SW / SW BL RD` |
+| 부산 (`busan`) | `[674,123]` | 1 | `MT BL RD / MT CW SW / RD SW PK` |
+| 캔버라 (`canberra`) | `[170,3]` | 1 | `RD SW RD / SW CW SW / RD SW RD` |
+| 코트다쥐르 (`cote-dazur`) | `[1018,45]` | 1 | `SW SW RD / SW CW RV / RD RV RV` |
+| 제네바 (`geneva`) | `[118,16]` | 1 | `RD SW BL / SW CW SW / SW SW RD` |
+| 파리 (`grand-paris`) | `[186,9]` | 1 | `SW BL CW / SW CW SW / RD SW SW` |
+| 홍콩 (`hong-kong`) | `[313,1]` | 1 | `CW SW RD / SW CW SW / RD BL RD` |
+| 레만호 연안 (`leman-riviera`) | `[189,23]` | 1 | `RD SW RD / BL CW SW / RD SW RD` |
+
+#### C′. 명백 평행 횡단보도 — 최대 10건
+
+| 도시 | 좌표 | 성분 크기 | 주변 3×3 타일 코드 |
+|---|---:|---:|---|
+| 베이징 (`beijing`) | `[224,218]` | 4 | `BL BL RD / SW CW SW / CW CW CW` |
+| 보르도 (`bordeaux`) | `[369,4]` | 2 | `SW SW SW / RD CW CW / BL BL BL` |
+| 브리즈번 (`brisbane`) | `[29,26]` | 4 | `RD SW SW / RD CW CW / RD RD RD` |
+| 브뤼셀 (`brussels`) | `[39,1]` | 2 | `SW RD SW / BL CW SW / BL CW RD` |
+| 부산 (`busan`) | `[862,258]` | 8 | `RD RD RD / RD CW CW / RD CW RD` |
+| 캔버라 (`canberra`) | `[39,12]` | 2 | `RD RD RD / BL CW RD / BL CW SW` |
+| 코트다쥐르 (`cote-dazur`) | `[1061,25]` | 3 | `SW RD RD / BL CW SW / SW CW BL` |
+| 후쿠오카 (`fukuoka`) | `[0,156]` | 2 | `## RD SW / ## CW BL / ## CW RD` |
+| 제네바 (`geneva`) | `[68,91]` | 2 | `SW RD BL / BL CW PK / SW CW RD` |
+| 파리 (`grand-paris`) | `[452,4]` | 6 | `RD RD SW / BL CW BL / SW CW SW` |
+
+#### D′. 1타일 고아 도로 — 최대 10건
+
+| 도시 | 좌표 | 성분 크기 | 주변 3×3 타일 코드 |
+|---|---:|---:|---|
+| 베이징 (`beijing`) | `[4,5]` | 1 | `RV SW SW / RV RD SW / RD RV RD` |
+| 보르도 (`bordeaux`) | `[126,1]` | 1 | `BL SW RD / BL RD SW / RD BL SW` |
+| 브리즈번 (`brisbane`) | `[20,1]` | 1 | `RD BL RD / SW RD BL / RD BL SW` |
+| 브뤼셀 (`brussels`) | `[48,1]` | 1 | `SW SW RD / SW RD BL / RD BL BL` |
+| 부산 (`busan`) | `[327,1]` | 1 | `RD SW SW / MT RD SW / MT MT RD` |
+| 캔버라 (`canberra`) | `[477,2]` | 1 | `RD PK RD / PK RD SW / RD SW SW` |
+| 코트다쥐르 (`cote-dazur`) | `[345,7]` | 1 | `RV BL SW / RV RD SW / RD RV RD` |
+| 후쿠오카 (`fukuoka`) | `[239,43]` | 1 | `SW SW BL / BL RD PL / SW BL BL` |
+| 제네바 (`geneva`) | `[1,1]` | 1 | `PK PK RD / PK RD PK / RD PK SW` |
+| 파리 (`grand-paris`) | `[1026,1]` | 1 | `RD BL SW / BL RD SW / RD SW RD` |
+
+### 리옹 상세 — r2 전 건 좌표 + 3×3 덤프
+
+리옹 428×501에서 A′ 134, B′ 28, C′ 68, D′ 388건이다.
+
+#### A′. 차도 ring 고립 건물 (134건)
+
+| 좌표 | 성분 크기 | 주변 3×3 타일 코드 |
+|---:|---:|---|
+| `[73,3]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[274,38]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[284,56]` | 1 | `RD RD RD / RD BL RD / RD CW CW` |
+| `[282,57]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[14,73]` | 1 | `RD RD RD / RD BL RD / RD RD CW` |
+| `[304,87]{[304,87],[305,87]}` | 2 | `RD RD RD / RD BL BL / RD RD RD` |
+| `[145,97]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[155,97]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[154,101]{[154,101],[154,102]}` | 2 | `RD RD RD / RD BL RD / RD BL RD` |
+| `[337,103]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[368,107]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[72,109]` | 1 | `RD RD CW / RD BL CW / RD RD RD` |
+| `[156,111]{[156,111],[156,112]}` | 2 | `RD RD RD / RD BL RD / RD BL RD` |
+| `[196,114]` | 1 | `RD RD RD / CW BL RD / RD RD RD` |
+| `[195,116]{[195,116],[196,116]}` | 2 | `RD RD RD / RD BL BL / RD RD RD` |
+| `[294,120]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[30,125]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[101,127]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[41,132]` | 1 | `RD RD RD / RD BL RD / RD RD CW` |
+| `[213,133]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[32,134]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[141,139]` | 1 | `RD RD CW / RD BL RD / RD CW CW` |
+| `[143,139]{[143,139],[143,140]}` | 2 | `CW RD CW / RD BL RD / CW BL RD` |
+| `[206,140]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[124,143]` | 1 | `RD CW CW / RD BL RD / RD RD RD` |
+| `[24,146]` | 1 | `RD RD RD / RD BL CW / RD RD RD` |
+| `[63,147]` | 1 | `RD RD RD / RD BL RD / CW RD RD` |
+| `[203,147]{[203,147],[203,148]}` | 2 | `RD RD RD / RD BL RD / RD BL RD` |
+| `[365,147]` | 1 | `CW RD RD / CW BL RD / CW RD RD` |
+| `[65,149]` | 1 | `RD RD RD / RD BL RD / RD RD CW` |
+| `[270,149]` | 1 | `RD RD CW / RD BL RD / RD CW RD` |
+| `[203,150]{[203,150],[204,150]}` | 2 | `RD RD RD / RD BL BL / CW RD RD` |
+| `[239,151]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[122,152]` | 1 | `RD CW RD / RD BL CW / RD RD RD` |
+| `[201,152]` | 1 | `RD RD CW / RD BL RD / RD RD CW` |
+| `[241,152]` | 1 | `RD RD RD / RD BL RD / CW RD RD` |
+| `[109,154]` | 1 | `RD RD RD / RD BL RD / CW CW RD` |
+| `[270,154]` | 1 | `RD RD RD / RD BL RD / RD CW RD` |
+| `[277,154]{[277,154],[277,155]}` | 2 | `RD RD RD / RD BL RD / RD BL RD` |
+| `[216,155]` | 1 | `RD RD RD / RD BL RD / CW RD RD` |
+| `[201,156]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[245,157]` | 1 | `RD RD RD / RD BL RD / CW RD RD` |
+| `[247,157]` | 1 | `RD RD RD / RD BL RD / RD CW CW` |
+| `[249,157]{[249,157],[250,157]}` | 2 | `RD RD RD / RD BL BL / CW RD RD` |
+| `[217,161]{[217,161],[218,161]}` | 2 | `RD RD RD / RD BL BL / CW RD RD` |
+| `[235,161]{[235,161],[236,161]}` | 2 | `RD RD RD / RD BL BL / CW RD RD` |
+| `[3,165]{[3,165],[3,166]}` | 2 | `RD RD RD / RD BL RD / RD BL RD` |
+| `[66,166]` | 1 | `RD CW RD / RD BL RD / RD RD RD` |
+| `[228,168]` | 1 | `RD CW RD / RD BL RD / RD RD RD` |
+| `[258,170]{[258,170],[258,171]}` | 2 | `RD RD RD / RD BL RD / CW BL CW` |
+| `[150,171]{[150,171],[151,171]}` | 2 | `RD RD RD / RD BL BL / RD RD RD` |
+| `[159,171]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[267,173]{[267,173],[267,174]}` | 2 | `RD CW RD / RD BL RD / RD BL RD` |
+| `[146,174]{[146,174],[146,175]}` | 2 | `RD RD RD / RD BL RD / RD BL RD` |
+| `[151,179]{[151,179],[152,179]}` | 2 | `RD RD CW / RD BL BL / RD CW RD` |
+| `[159,179]` | 1 | `RD RD CW / CW BL RD / CW RD RD` |
+| `[392,180]` | 1 | `RD RD RD / RD BL RD / CW RD RD` |
+| `[182,181]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[164,182]{[164,182],[165,182]}` | 2 | `RD RD RD / RD BL BL / RD RD CW` |
+| `[286,183]{[286,183],[286,184]}` | 2 | `CW RD RD / RD BL RD / RD BL RD` |
+| `[213,186]{[213,186],[214,186]}` | 2 | `RD RD RD / RD BL BL / RD RD CW` |
+| `[416,186]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[147,190]` | 1 | `CW RD CW / CW BL RD / RD RD RD` |
+| `[162,190]{[162,190],[162,191]}` | 2 | `RD CW RD / RD BL RD / RD BL RD` |
+| `[281,190]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[163,194]` | 1 | `RD RD CW / RD BL RD / CW RD RD` |
+| `[215,197]{[215,197],[216,197]}` | 2 | `RD RD RD / RD BL BL / RD RD RD` |
+| `[169,198]` | 1 | `RD RD RD / RD BL RD / CW RD RD` |
+| `[16,199]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[219,199]{[219,199],[220,199]}` | 2 | `RD RD RD / RD BL BL / CW RD CW` |
+| `[281,200]{[281,200],[282,200]}` | 2 | `RD RD RD / RD BL BL / CW RD CW` |
+| `[219,201]{[219,201],[220,201]}` | 2 | `CW RD CW / RD BL BL / CW RD RD` |
+| `[166,203]{[166,203],[167,203]}` | 2 | `RD RD RD / RD BL BL / RD RD CW` |
+| `[31,204]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[284,204]{[284,204],[284,205]}` | 2 | `RD RD RD / RD BL RD / RD BL RD` |
+| `[173,205]{[173,205],[174,205]}` | 2 | `RD RD RD / RD BL BL / CW RD RD` |
+| `[286,205]` | 1 | `RD RD RD / RD BL RD / RD CW CW` |
+| `[172,212]` | 1 | `CW RD CW / RD BL RD / CW RD RD` |
+| `[174,212]{[174,212],[175,212]}` | 2 | `CW RD RD / RD BL BL / RD RD RD` |
+| `[184,218]` | 1 | `RD RD RD / RD BL RD / RD RD CW` |
+| `[29,222]{[29,222],[30,222]}` | 2 | `RD RD RD / RD BL BL / RD RD RD` |
+| `[158,225]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[29,228]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[153,231]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[206,232]{[206,232],[206,233]}` | 2 | `RD RD CW / RD BL RD / RD BL CW` |
+| `[229,233]` | 1 | `RD RD RD / RD BL CW / CW RD CW` |
+| `[207,235]{[207,235],[207,236]}` | 2 | `RD CW RD / RD BL RD / RD BL RD` |
+| `[308,241]` | 1 | `RD RD RD / CW BL RD / RD RD RD` |
+| `[222,244]{[222,244],[222,245]}` | 2 | `RD RD RD / RD BL RD / RD BL RD` |
+| `[44,246]{[44,246],[44,247]}` | 2 | `RD RD RD / RD BL RD / RD BL RD` |
+| `[204,246]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[377,251]{[377,251],[377,252]}` | 2 | `RD RD RD / RD BL RD / RD BL RD` |
+| `[316,252]` | 1 | `RD RD RD / RD BL RD / RD RD CW` |
+| `[301,254]` | 1 | `CW RD RD / CW BL RD / CW RD RD` |
+| `[49,266]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[122,266]` | 1 | `RD RD RD / RD BL CW / RD RD CW` |
+| `[417,281]{[417,281],[417,282]}` | 2 | `RD RD RD / RD BL RD / RD BL RD` |
+| `[200,283]` | 1 | `RD RD RD / RD BL CW / CW CW RD` |
+| `[192,284]{[192,284],[193,284]}` | 2 | `RD RD RD / RD BL BL / RD RD CW` |
+| `[287,284]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[40,285]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[282,285]` | 1 | `RD RD RD / RD BL RD / RD CW RD` |
+| `[246,287]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[287,287]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[184,295]` | 1 | `RD RD CW / RD BL RD / RD CW RD` |
+| `[304,305]{[304,305],[304,306]}` | 2 | `RD RD CW / RD BL RD / RD BL RD` |
+| `[178,309]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[198,317]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[242,322]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[368,328]` | 1 | `RD RD CW / RD BL RD / RD RD RD` |
+| `[277,342]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[360,345]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[358,364]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[134,372]{[134,372],[135,372]}` | 2 | `RD RD RD / RD BL BL / RD RD RD` |
+| `[70,389]` | 1 | `RD CW RD / RD BL RD / RD RD RD` |
+| `[366,393]` | 1 | `RD RD CW / RD BL RD / RD RD RD` |
+| `[213,395]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[141,398]{[141,398],[142,398]}` | 2 | `RD RD RD / RD BL BL / RD RD RD` |
+| `[64,400]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[280,401]` | 1 | `RD RD RD / RD BL RD / CW CW RD` |
+| `[273,411]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[250,416]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[220,426]{[220,426],[221,426]}` | 2 | `RD RD RD / RD BL BL / RD RD RD` |
+| `[374,432]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[346,445]` | 1 | `CW RD RD / RD BL RD / RD RD RD` |
+| `[57,456]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[371,457]` | 1 | `RD RD RD / RD BL RD / RD CW CW` |
+| `[323,459]` | 1 | `RD CW CW / RD BL RD / RD CW RD` |
+| `[17,466]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[17,468]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[235,468]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[330,487]` | 1 | `RD RD RD / RD BL RD / RD RD RD` |
+| `[49,492]` | 1 | `RD RD CW / RD BL RD / RD RD RD` |
+| `[276,498]{[276,498],[276,499]}` | 2 | `CW RD RD / RD BL RD / RD BL RD` |
+
+#### B′. 완전 고립 횡단보도 (28건)
+
+| 좌표 | 성분 크기 | 주변 3×3 타일 코드 |
+|---:|---:|---|
+| `[13,37]` | 1 | `SW BL RD / SW CW BL / SW SW RD` |
+| `[135,54]` | 1 | `RD SW SW / SW CW SW / SW SW RD` |
+| `[71,66]` | 1 | `RV RV RD / BL CW RV / RD SW RV` |
+| `[84,74]` | 1 | `SW SW SW / RV CW SW / SW RV CW` |
+| `[85,75]` | 1 | `CW SW SW / RV CW PK / BL RV RD` |
+| `[189,107]` | 1 | `RD SW BL / SW CW BL / SW SW CW` |
+| `[185,144]` | 1 | `SW SW RD / SW CW SW / SW BL RD` |
+| `[108,166]` | 1 | `BL SW RD / BL CW BL / RD BL RD` |
+| `[203,262]` | 1 | `RD SW RD / BL CW BL / RD BL RD` |
+| `[205,269]{[205,269],[206,269]}` | 2 | `CW SW SW / SW CW CW / RD BL BL` |
+| `[206,271]` | 1 | `BL BL RD / BL CW SW / RD SW RD` |
+| `[201,277]` | 1 | `BL BL RD / BL CW BL / RD SW RD` |
+| `[209,279]` | 1 | `RD BL BL / SW CW SW / SW SW CW` |
+| `[135,313]` | 1 | `CW SW RD / BL CW SW / RD SW RD` |
+| `[117,318]` | 1 | `RD SW RD / BL CW SW / BL BL CW` |
+| `[107,321]` | 1 | `SW SW RD / WT CW SW / WT WT RD` |
+| `[114,325]` | 1 | `RD SW BL / SW CW SW / SW SW CW` |
+| `[297,361]` | 1 | `RD BL BL / BL CW SW / BL BL RD` |
+| `[251,364]` | 1 | `SW SW CW / SW CW BL / RD BL RD` |
+| `[305,372]` | 1 | `RD BL BL / BL CW BL / SW SW CW` |
+| `[410,376]` | 1 | `RD SW BL / SW CW SW / SW SW RD` |
+| `[310,378]` | 1 | `BL SW RD / SW CW SW / RD SW RD` |
+| `[252,385]` | 1 | `RD BL SW / BL CW SW / SW BL RD` |
+| `[213,412]{[213,412],[214,412]}` | 2 | `BL BL SW / SW CW CW / RD SW SW` |
+| `[308,443]` | 1 | `RD SW SW / BL CW SW / SW BL RD` |
+| `[377,446]` | 1 | `SW SW CW / SW CW SW / RD SW SW` |
+| `[72,466]` | 1 | `SW BL RD / SW CW BL / RD BL BL` |
+| `[64,473]` | 1 | `SW BL RD / SW CW BL / RD SW RD` |
+
+#### C′. 명백 평행 횡단보도 (68건)
+
+| 좌표 | 성분 크기 | 주변 3×3 타일 코드 |
+|---:|---:|---|
+| `[116,22]{[116,22],[116,23]}` | 2 | `SW RD SW / SW CW SW / SW CW RD` |
+| `[229,32]{[229,32],[230,32]}` | 2 | `RD SW SW / RD CW CW / RD SW RD` |
+| `[273,48]{[273,48],[274,48],[275,48],[273,49],[273,50],[274,50],[275,50],[275,51]}` | 8 | `SW RD RD / RD CW CW / RD CW RD` |
+| `[73,66]{[73,66],[74,66]}` | 2 | `RD BL SW / RV CW CW / RV RV RV` |
+| `[166,92]{[166,92],[167,92],[167,93],[166,94],[167,94]}` | 5 | `RD RD RD / RD CW CW / RD RD CW` |
+| `[13,106]{[13,106],[14,106]}` | 2 | `RD SW SW / RD CW CW / RD PK SW` |
+| `[273,119]{[273,119],[273,120]}` | 2 | `BL RD RD / BL CW SW / BL CW RD` |
+| `[423,119]{[423,119],[423,120]}` | 2 | `BL RD SW / BL CW SW / SW CW RD` |
+| `[155,123]{[155,123],[154,124],[155,124],[155,125]}` | 4 | `BL RD BL / RD CW BL / CW CW RD` |
+| `[183,124]{[183,124],[183,125]}` | 2 | `RD RD SW / SW CW SW / RD CW SW` |
+| `[368,132]{[368,132],[369,132]}` | 2 | `RD BL BL / RD CW CW / RD SW SW` |
+| `[178,134]{[178,134],[179,134]}` | 2 | `BL BL BL / RD CW CW / BL BL RD` |
+| `[289,137]{[289,137],[290,137]}` | 2 | `SW SW RD / RD CW CW / RD BL SW` |
+| `[141,140]{[141,140],[142,140],[142,141],[143,141],[142,142],[143,142],[144,142]}` | 7 | `RD BL RD / RD CW CW / SW SW CW` |
+| `[331,140]{[331,140],[332,140]}` | 2 | `RD SW SW / RD CW CW / BL SW RD` |
+| `[39,147]{[39,147],[40,147]}` | 2 | `BL SW SW / SW CW CW / RD SW RV` |
+| `[46,157]{[46,157],[46,158]}` | 2 | `CW RD BL / BL CW SW / BL CW RD` |
+| `[296,170]{[296,170],[297,170]}` | 2 | `SW BL BL / RD CW CW / BL SW RD` |
+| `[128,176]{[128,176],[129,176]}` | 2 | `BL SW BL / RD CW CW / WT WT WT` |
+| `[43,177]{[43,177],[43,178]}` | 2 | `RD RD BL / SW CW BL / SW CW RD` |
+| `[158,179]{[158,179],[158,180]}` | 2 | `RD RD RD / BL CW BL / BL CW RD` |
+| `[294,180]{[294,180],[294,181]}` | 2 | `RD RD BL / SW CW BL / BL CW RD` |
+| `[345,184]{[345,184],[345,185]}` | 2 | `RD RD BL / BL CW SW / BL CW SW` |
+| `[316,187]{[316,187],[316,188]}` | 2 | `BL RD BL / BL CW BL / RD CW BL` |
+| `[334,191]{[334,191],[334,192],[333,193],[334,193]}` | 4 | `SW RD RD / SW CW SW / SW CW SW` |
+| `[151,195]{[151,195],[152,195],[151,196],[152,196],[151,197],[152,197]}` | 6 | `BL RD RD / SW CW CW / BL CW CW` |
+| `[177,195]{[177,195],[178,195]}` | 2 | `BL BL SW / RD CW CW / BL BL SW` |
+| `[405,207]{[405,207],[405,208]}` | 2 | `BL RD SW / SW CW SW / SW CW RD` |
+| `[297,214]{[297,214],[297,215]}` | 2 | `SW RD BL / SW CW BL / SW CW SW` |
+| `[292,215]{[292,215],[293,215]}` | 2 | `BL BL BL / RD CW CW / BL BL RD` |
+| `[34,218]{[34,218],[34,219]}` | 2 | `SW RD RD / SW CW SW / SW CW RD` |
+| `[225,228]{[225,228],[225,229]}` | 2 | `SW RD BL / SW CW SW / BL CW RD` |
+| `[308,229]{[308,229],[309,229]}` | 2 | `SW SW RD / RD CW CW / SW SW BL` |
+| `[81,235]{[81,235],[82,235],[83,235],[81,236],[83,236]}` | 5 | `SW SW BL / RD CW CW / SW CW RD` |
+| `[314,243]{[314,243],[315,243]}` | 2 | `SW BL RD / RD CW CW / RD BL BL` |
+| `[414,244]{[414,244],[414,245],[415,245],[414,246],[415,246]}` | 5 | `BL RD RD / BL CW RD / SW CW CW` |
+| `[287,252]{[287,252],[287,253],[284,254],[285,254],[286,254],[287,254],[283,255],[284,255],[287,255]}` | 9 | `SW SW BL / BL CW RD / SW CW RD` |
+| `[296,252]{[296,252],[298,252],[296,253],[297,253],[298,253]}` | 5 | `CW RD BL / RD CW RD / RD CW CW` |
+| `[277,255]{[277,255],[278,255],[277,256],[277,257],[278,257]}` | 5 | `BL RD RD / BL CW CW / RD CW RD` |
+| `[286,261]{[286,261],[286,262]}` | 2 | `SW RD BL / SW CW SW / SW CW RD` |
+| `[328,266]{[328,266],[329,266]}` | 2 | `BL SW SW / RD CW CW / BL RD BL` |
+| `[407,268]{[407,268],[407,269]}` | 2 | `SW RD SW / SW CW BL / SW CW RD` |
+| `[390,269]{[390,269],[390,270]}` | 2 | `BL RD SW / SW CW SW / SW CW RD` |
+| `[305,271]{[305,271],[305,272]}` | 2 | `SW RD BL / SW CW SW / RD CW BL` |
+| `[274,277]{[274,277],[274,278]}` | 2 | `SW RD SW / SW CW BL / SW CW RD` |
+| `[176,287]{[176,287],[177,287]}` | 2 | `SW BL BL / RD CW CW / BL BL RD` |
+| `[189,294]{[189,294],[190,294],[190,295],[191,295]}` | 4 | `RD BL BL / RD CW CW / SW BL CW` |
+| `[382,294]{[382,294],[382,295]}` | 2 | `SW RD BL / SW CW SW / SW CW RD` |
+| `[144,295]{[144,295],[145,295]}` | 2 | `RD SW SW / RD CW CW / BL BL RD` |
+| `[396,304]{[396,304],[397,304]}` | 2 | `SW BL RD / RD CW CW / SW SW BL` |
+| `[201,323]{[201,323],[202,323]}` | 2 | `RD SW SW / RD CW CW / SW SW RD` |
+| `[171,325]{[171,325],[171,326]}` | 2 | `BL RD SW / SW CW SW / SW CW RD` |
+| `[250,330]{[250,330],[250,331]}` | 2 | `SW SW RD / BL CW BL / BL CW BL` |
+| `[168,343]{[168,343],[169,343]}` | 2 | `SW SW SW / RD CW CW / SW SW SW` |
+| `[177,346]{[177,346],[178,346]}` | 2 | `SW SW SW / RD CW CW / SW BL RD` |
+| `[162,351]{[162,351],[162,352]}` | 2 | `SW RD SW / BL CW SW / SW CW RD` |
+| `[357,360]{[357,360],[358,360],[358,361],[357,362],[358,362]}` | 5 | `RD RD RD / SW CW CW / BL RD CW` |
+| `[245,361]{[245,361],[246,361],[245,362],[245,363]}` | 4 | `RD RD RD / SW CW CW / SW CW RD` |
+| `[180,366]{[180,366],[181,366]}` | 2 | `BL SW SW / RD CW CW / SW BL RD` |
+| `[375,371]{[375,371],[375,372]}` | 2 | `SW RD BL / RD CW BL / SW CW SW` |
+| `[285,372]{[285,372],[285,373]}` | 2 | `BL RD SW / SW CW SW / SW CW RD` |
+| `[128,389]{[128,389],[128,390]}` | 2 | `BL RD BL / PK CW SW / SW CW RD` |
+| `[267,397]{[267,397],[267,398]}` | 2 | `SW RD SW / SW CW SW / SW CW RD` |
+| `[262,400]{[262,400],[260,401],[261,401],[262,401]}` | 4 | `CW RD PK / RD CW RD / CW CW RD` |
+| `[17,450]{[17,450],[18,450]}` | 2 | `SW SW SW / RD CW CW / RD RD SW` |
+| `[269,454]{[269,454],[269,455]}` | 2 | `PK RD BL / PK CW SW / SW CW RD` |
+| `[379,456]{[379,456],[379,457],[380,457],[379,458],[380,458]}` | 5 | `RD RD RD / BL CW RD / BL CW CW` |
+| `[260,489]{[260,489],[261,489],[262,489]}` | 3 | `RD SW SW / RD CW CW / SW SW RD` |
+
+#### D′. 1타일 고아 도로 (388건)
+
+| 좌표 | 성분 크기 | 주변 3×3 타일 코드 |
+|---:|---:|---|
+| `[108,0]` | 1 | `## ## ## / SW RD RV / SW BL RV` |
+| `[152,0]` | 1 | `## ## ## / SW RD SW / RD PK PK` |
+| `[268,2]` | 1 | `SW SW RD / SW RD PK / RD PK PK` |
+| `[267,3]` | 1 | `SW SW RD / SW RD PK / RD PK PK` |
+| `[135,4]` | 1 | `SW BL RD / SW RD SW / RD BL PK` |
+| `[266,4]` | 1 | `SW SW RD / SW RD PK / RD PK PK` |
+| `[0,7]` | 1 | `## SW RD / ## RD SW / ## SW RD` |
+| `[209,7]` | 1 | `PK PK RD / BL RD MT / RD MT MT` |
+| `[0,9]` | 1 | `## SW RD / ## RD BL / ## SW SW` |
+| `[79,9]` | 1 | `SW SW BL / SW RD BL / RD BL BL` |
+| `[242,10]` | 1 | `RD SW SW / BL RD BL / RD BL SW` |
+| `[330,13]` | 1 | `RD BL SW / BL RD BL / SW SW RD` |
+| `[232,15]` | 1 | `RD SW RD / SW RD SW / BL BL RD` |
+| `[79,16]` | 1 | `RD PK PK / SW RD PK / RD SW RD` |
+| `[85,16]` | 1 | `SW SW RD / PK RD PK / PK PK PK` |
+| `[80,17]` | 1 | `RD PK PK / SW RD PK / RD SW RD` |
+| `[81,18]` | 1 | `RD PK PK / SW RD PK / RD SW RD` |
+| `[86,18]` | 1 | `PK PK RD / PK RD PK / RD PK PK` |
+| `[82,19]` | 1 | `RD PK PK / SW RD PK / SW PK RD` |
+| `[85,19]` | 1 | `PK PK RD / PK RD PK / RD PK PK` |
+| `[201,19]` | 1 | `RD BL BL / BL RD SW / BL BL RD` |
+| `[139,20]` | 1 | `SW BL RD / SW RD BL / RD BL SW` |
+| `[208,20]` | 1 | `BL SW BL / SW RD SW / RD BL RD` |
+| `[304,21]` | 1 | `BL BL RD / BL RD SW / RD BL SW` |
+| `[221,22]` | 1 | `BL SW RD / SW RD PK / RD PK RD` |
+| `[303,22]` | 1 | `BL BL RD / SW RD BL / RD SW SW` |
+| `[338,22]` | 1 | `MT SW RD / SW RD PK / RD PK SW` |
+| `[90,23]` | 1 | `PK PK RD / PK RD PK / RD PK PK` |
+| `[337,23]` | 1 | `MT SW RD / SW RD PK / RD PK PK` |
+| `[133,24]` | 1 | `RD SW PK / BL RD PK / BL BL RD` |
+| `[336,24]` | 1 | `MT SW RD / SW RD PK / RD PK PK` |
+| `[86,25]` | 1 | `RD PK RD / PK RD PK / PK PK PK` |
+| `[335,25]` | 1 | `MT SW RD / SW RD PK / RD PK PK` |
+| `[334,26]` | 1 | `MT SW RD / SW RD PK / RD PK PK` |
+| `[333,27]` | 1 | `MT SW RD / SW RD PK / RD PK PK` |
+| `[204,28]` | 1 | `RD SW SW / PK RD SW / BL BL RD` |
+| `[86,29]` | 1 | `RD SW PK / BL RD PK / PK PK RD` |
+| `[167,30]` | 1 | `MT MT MT / SW RD BL / RD SW RD` |
+| `[174,31]` | 1 | `SW SW RD / MT RD SW / MT MT RD` |
+| `[329,31]` | 1 | `MT PK RD / PK RD PK / RD PK PK` |
+| `[332,31]` | 1 | `RD PK PK / PK RD PK / SW SW MT` |
+| `[175,32]` | 1 | `RD SW SW / MT RD SW / MT MT RD` |
+| `[328,32]` | 1 | `SW PK RD / PK RD PK / RD PK PK` |
+| `[173,35]` | 1 | `RD MT MT / SW RD PK / RD PK SW` |
+| `[325,35]` | 1 | `SW PK RD / PK RD PK / RD MT SW` |
+| `[324,36]` | 1 | `SW PK RD / PK RD MT / RD MT RD` |
+| `[261,38]` | 1 | `RD PK PK / BL RD SW / SW BL RD` |
+| `[49,39]` | 1 | `MT MT BL / SW RD MT / RD SW MT` |
+| `[265,39]` | 1 | `SW PK RD / BL RD BL / RD BL SW` |
+| `[285,39]` | 1 | `RD PK PK / BL RD PK / SW SW RD` |
+| `[207,41]` | 1 | `RD SW RD / BL RD BL / RD SW SW` |
+| `[50,45]` | 1 | `RD SW MT / RV RD SW / BL RV SW` |
+| `[90,45]` | 1 | `MT MT RD / MT RD MT / CW SW RD` |
+| `[109,46]` | 1 | `SW SW RD / BL RD BL / RD BL PK` |
+| `[142,46]` | 1 | `RD BL SW / BL RD BL / SW SW CW` |
+| `[168,46]` | 1 | `BL SW RD / BL RD SW / BL BL SW` |
+| `[355,48]` | 1 | `PK SW PK / PK RD PK / SW SW RD` |
+| `[65,49]` | 1 | `RD SW RD / SW RD MT / RD MT MT` |
+| `[103,49]` | 1 | `RD SW BL / PK RD SW / SW PK CW` |
+| `[109,49]` | 1 | `RD BL BL / BL RD SW / BL BL CW` |
+| `[7,51]` | 1 | `BL SW RD / SW RD BL / RD BL RD` |
+| `[8,52]` | 1 | `RD BL SW / BL RD BL / RD SW RD` |
+| `[294,52]` | 1 | `SW SW RD / SW RD BL / RD BL BL` |
+| `[197,53]` | 1 | `BL SW BL / BL RD SW / RD BL RD` |
+| `[96,54]` | 1 | `RD BL RD / SW RD SW / RD BL BL` |
+| `[126,54]` | 1 | `RD SW BL / SW RD BL / RD SW RD` |
+| `[126,56]` | 1 | `RD SW RD / SW RD BL / SW BL RD` |
+| `[193,56]` | 1 | `PK PK RD / PK RD PK / RD SW BL` |
+| `[140,57]` | 1 | `SW SW RD / BL RD PK / CW BL BL` |
+| `[211,58]` | 1 | `SW PK RD / PK RD SW / RD PK PK` |
+| `[140,59]` | 1 | `CW BL BL / SW RD BL / PK BL CW` |
+| `[167,59]` | 1 | `BL BL RD / SW RD SW / SW BL RD` |
+| `[210,59]` | 1 | `SW PK RD / PK RD PK / PK PK BL` |
+| `[204,60]` | 1 | `RD PK PK / SW RD PK / SW BL RD` |
+| `[427,60]` | 1 | `RV RV ## / SW RD ## / RD SW ##` |
+| `[143,62]` | 1 | `RD BL SW / SW RD SW / MT MT RD` |
+| `[382,62]` | 1 | `WT WT RV / SW RD WT / RD SW SW` |
+| `[140,63]` | 1 | `PK SW RD / PK RD SW / PK PK SW` |
+| `[144,63]` | 1 | `RD SW SW / MT RD SW / MT MT RD` |
+| `[145,64]` | 1 | `RD SW MT / MT RD MT / MT SW RD` |
+| `[6,65]` | 1 | `BL SW RD / SW RD BL / RD BL BL` |
+| `[72,65]` | 1 | `RD SW SW / RV RD BL / CW RV CW` |
+| `[71,66]` | 1 | `RV RV RD / BL CW RV / RD SW RV` |
+| `[123,66]` | 1 | `RD SW RD / SW RD SW / RD BL RD` |
+| `[129,66]` | 1 | `SW SW RD / SW RD PK / RD PK PK` |
+| `[132,66]` | 1 | `RD SW SW / BL RD PK / BL PK PK` |
+| `[195,66]` | 1 | `RD SW RD / SW RD SW / PK PK RD` |
+| `[176,68]` | 1 | `RD BL BL / BL RD SW / SW SW RD` |
+| `[215,68]` | 1 | `RD MT MT / BL RD MT / SW SW SW` |
+| `[397,71]` | 1 | `RD SW BL / WT RD SW / WT WT RD` |
+| `[55,72]` | 1 | `RD MT MT / BL RD SW / SW SW MT` |
+| `[307,73]` | 1 | `PK SW SW / SW RD PK / WT WT RD` |
+| `[405,73]` | 1 | `RD SW RD / SW RD BL / RD BL BL` |
+| `[201,74]` | 1 | `RD SW RD / SW RD BL / RD SW RD` |
+| `[404,74]` | 1 | `SW SW RD / SW RD BL / RD BL BL` |
+| `[85,75]` | 1 | `CW SW SW / RV CW PK / BL RV RD` |
+| `[403,75]` | 1 | `SW SW RD / SW RD BL / RD BL BL` |
+| `[86,76]` | 1 | `CW PK SW / RV RD PK / RD RV RD` |
+| `[390,76]` | 1 | `RD SW MT / SW RD MT / MT MT MT` |
+| `[85,77]` | 1 | `BL RV RD / SW RD RV / RD BL BL` |
+| `[87,77]` | 1 | `RD PK SW / RV RD SW / BL RV RV` |
+| `[50,79]` | 1 | `RD MT MT / MT RD MT / SW SW RD` |
+| `[205,79]` | 1 | `RD SW SW / MT RD MT / MT MT MT` |
+| `[220,79]` | 1 | `RD BL SW / BL RD SW / RD BL RD` |
+| `[219,80]` | 1 | `BL BL RD / SW RD BL / SW BL BL` |
+| `[173,85]` | 1 | `RD BL RD / BL RD SW / BL SW SW` |
+| `[308,89]` | 1 | `BL BL RD / BL RD SW / SW SW CW` |
+| `[239,93]` | 1 | `PK SW RD / SW RD PK / RD SW BL` |
+| `[202,100]` | 1 | `BL SW RD / SW RD MT / RD BL SW` |
+| `[186,101]` | 1 | `BL SW RD / BL RD BL / CW BL BL` |
+| `[224,101]` | 1 | `RD PK BL / SW RD PK / PK PK RD` |
+| `[347,104]` | 1 | `RD SW SW / BL RD BL / BL BL RD` |
+| `[185,105]` | 1 | `RD BL BL / SW RD BL / SW BL RD` |
+| `[223,105]` | 1 | `RD PK RD / SW RD SW / PK SW RD` |
+| `[186,106]` | 1 | `RD BL RD / BL RD SW / BL SW RD` |
+| `[0,110]` | 1 | `## SW RD / ## RD BL / ## BL SW` |
+| `[232,110]` | 1 | `WT SW SW / SW RD WT / WT WT WT` |
+| `[281,111]` | 1 | `RD BL BL / PK RD SW / RD PK RD` |
+| `[228,112]` | 1 | `SW SW RD / SW RD WT / WT WT WT` |
+| `[263,115]` | 1 | `BL PK PK / PK RD RV / RD RV RV` |
+| `[262,116]` | 1 | `SW PK RD / PK RD RV / RV RV SW` |
+| `[40,119]` | 1 | `BL SW RD / SW RD BL / RD BL BL` |
+| `[253,119]` | 1 | `PK SW SW / SW RD RV / RV RV RV` |
+| `[54,121]` | 1 | `BL BL RD / SW RD BL / RD SW BL` |
+| `[58,124]` | 1 | `BL SW RD / SW RD BL / RD BL BL` |
+| `[83,125]` | 1 | `RD SW MT / SW RD MT / BL SW MT` |
+| `[55,130]` | 1 | `RV RV RV / SW RD BL / SW BL RD` |
+| `[52,132]` | 1 | `BL SW RD / BL RD BL / RD SW BL` |
+| `[167,137]` | 1 | `RD SW BL / BL RD SW / RD SW RD` |
+| `[413,138]` | 1 | `RD PK RD / PK RD SW / RD SW SW` |
+| `[177,145]` | 1 | `BL SW RD / BL RD BL / RD SW RD` |
+| `[45,146]` | 1 | `SW RV RD / RV RD BL / RV SW SW` |
+| `[180,146]` | 1 | `RD SW RD / BL RD SW / RD BL BL` |
+| `[177,148]` | 1 | `RD SW RD / BL RD SW / RD SW RD` |
+| `[37,153]` | 1 | `SW SW BL / BL RD SW / BL BL RD` |
+| `[38,154]` | 1 | `RD SW RV / BL RD RV / BL RV BL` |
+| `[118,159]` | 1 | `BL SW RD / BL RD PK / BL SW RD` |
+| `[16,161]` | 1 | `RD SW SW / SW RD MT / MT MT WT` |
+| `[46,163]` | 1 | `BL BL CW / SW RD SW / RD SW BL` |
+| `[0,166]` | 1 | `## SW RD / ## RD SW / ## SW RD` |
+| `[108,166]` | 1 | `BL SW RD / BL CW BL / RD BL RD` |
+| `[108,169]` | 1 | `SW BL CW / BL RD BL / RD SW SW` |
+| `[102,171]` | 1 | `RD BL RD / SW RD SW / RD SW RD` |
+| `[427,171]` | 1 | `SW SW ## / SW RD ## / RD BL ##` |
+| `[100,174]` | 1 | `SW BL RD / SW RD SW / CW BL RD` |
+| `[67,175]` | 1 | `RD SW RD / SW RD BL / RD BL MT` |
+| `[394,176]` | 1 | `RD BL BL / BL RD SW / BL BL BL` |
+| `[390,178]` | 1 | `BL BL RD / BL RD SW / SW SW RD` |
+| `[72,185]` | 1 | `SW SW RD / SW RD MT / RD MT MT` |
+| `[134,190]` | 1 | `BL SW RD / SW RD SW / BL BL RD` |
+| `[110,196]` | 1 | `RD SW BL / BL RD BL / RD SW RD` |
+| `[127,199]` | 1 | `MT SW MT / SW RD MT / RD SW MT` |
+| `[119,202]` | 1 | `SW SW SW / MT RD MT / RD MT MT` |
+| `[118,203]` | 1 | `BL MT RD / SW RD MT / RD MT MT` |
+| `[110,206]` | 1 | `RD PK PK / SW RD PK / RD SW PK` |
+| `[424,209]` | 1 | `BL BL RD / SW RD SW / RD BL SW` |
+| `[376,210]` | 1 | `SW SW RD / SW RD BL / BL BL BL` |
+| `[423,210]` | 1 | `BL SW RD / SW RD BL / RD BL SW` |
+| `[164,215]` | 1 | `BL SW BL / SW RD BL / RD BL BL` |
+| `[0,222]` | 1 | `## PK SW / ## RD SW / ## SW RD` |
+| `[128,222]` | 1 | `RD SW RD / SW RD BL / RD BL BL` |
+| `[1,223]` | 1 | `RD SW PK / SW RD SW / BL BL RD` |
+| `[355,225]` | 1 | `PK BL RD / SW RD SW / RD SW RD` |
+| `[0,226]` | 1 | `## SW SW / ## RD SW / ## BL RD` |
+| `[118,232]` | 1 | `RD BL RD / SW RD BL / BL BL RD` |
+| `[99,233]` | 1 | `RD SW RD / SW RD SW / RD PK RD` |
+| `[14,237]` | 1 | `BL BL SW / BL RD SW / RD SW RD` |
+| `[113,237]` | 1 | `BL SW RD / BL RD MT / RD SW SW` |
+| `[405,238]` | 1 | `BL BL BL / SW RD BL / RD BL BL` |
+| `[208,241]` | 1 | `RD BL BL / BL RD SW / BL BL RD` |
+| `[213,241]` | 1 | `RD SW SW / BL RD SW / BL BL RD` |
+| `[146,242]` | 1 | `RD BL BL / BL RD SW / BL SW CW` |
+| `[97,248]` | 1 | `RD BL RD / BL RD SW / RD SW SW` |
+| `[271,248]` | 1 | `RD BL SW / SW RD SW / BL BL RD` |
+| `[117,251]` | 1 | `RD SW RD / BL RD MT / SW BL RD` |
+| `[120,251]` | 1 | `RD SW SW / MT RD SW / MT MT MT` |
+| `[118,252]` | 1 | `RD MT MT / BL RD MT / SW SW RD` |
+| `[119,253]` | 1 | `RD MT MT / SW RD MT / SW BL RD` |
+| `[144,253]` | 1 | `BL BL BL / BL RD SW / SW BL RD` |
+| `[120,254]` | 1 | `RD MT MT / BL RD MT / SW SW RD` |
+| `[211,254]` | 1 | `SW BL RD / SW RD BL / RD BL RD` |
+| `[66,255]` | 1 | `RD SW RD / SW RD BL / RD SW RD` |
+| `[121,255]` | 1 | `RD MT SW / SW RD SW / MT MT MT` |
+| `[289,257]` | 1 | `RD BL BL / SW RD SW / BL SW RD` |
+| `[96,258]` | 1 | `RD PK PK / MT RD SW / SW BL RD` |
+| `[217,258]` | 1 | `BL SW RD / SW RD BL / RD SW BL` |
+| `[66,259]` | 1 | `RD PK PK / BL RD PK / SW PK PK` |
+| `[195,259]` | 1 | `BL BL RD / BL RD SW / CW SW BL` |
+| `[319,260]` | 1 | `RD BL BL / BL RD SW / BL BL RD` |
+| `[67,261]` | 1 | `PK PK PK / SW RD PK / BL BL RD` |
+| `[202,261]` | 1 | `RD BL BL / BL RD SW / SW BL CW` |
+| `[68,262]` | 1 | `RD PK SW / BL RD SW / SW BL RD` |
+| `[203,262]` | 1 | `RD SW RD / BL CW BL / RD BL RD` |
+| `[204,263]` | 1 | `CW BL SW / BL RD BL / SW SW CW` |
+| `[399,264]` | 1 | `RD SW BL / SW RD SW / BL BL CW` |
+| `[39,265]` | 1 | `RD SW RD / SW RD SW / RD BL RD` |
+| `[40,266]` | 1 | `RD SW BL / BL RD SW / RD SW RD` |
+| `[207,270]` | 1 | `CW SW RD / BL RD SW / CW SW BL` |
+| `[228,270]` | 1 | `BL BL CW / BL RD BL / RD SW SW` |
+| `[206,271]` | 1 | `BL BL RD / BL CW SW / RD SW RD` |
+| `[210,271]` | 1 | `BL BL RD / BL RD SW / RD BL RD` |
+| `[200,274]` | 1 | `BL SW RD / SW RD BL / RD BL BL` |
+| `[234,274]` | 1 | `BL SW RD / BL RD SW / RD SW BL` |
+| `[201,277]` | 1 | `BL BL RD / BL CW BL / RD SW RD` |
+| `[200,278]` | 1 | `RD BL CW / BL RD SW / RD BL BL` |
+| `[202,278]` | 1 | `CW BL RD / SW RD SW / BL SW RD` |
+| `[357,278]` | 1 | `RD BL SW / BL RD SW / SW BL RD` |
+| `[37,284]` | 1 | `BL SW PK / SW RD SW / RD PK PK` |
+| `[421,284]` | 1 | `RD SW SW / BL RD BL / PK PK BL` |
+| `[212,287]` | 1 | `RD SW BL / SW RD SW / BL BL RD` |
+| `[181,288]` | 1 | `BL SW RD / BL RD BL / CW SW BL` |
+| `[114,289]` | 1 | `SW SW RD / SW RD BL / RD BL BL` |
+| `[215,289]` | 1 | `RD BL BL / SW RD SW / BL SW RD` |
+| `[11,290]` | 1 | `RD BL SW / SW RD BL / SW BL RD` |
+| `[113,290]` | 1 | `SW SW RD / SW RD BL / CW BL BL` |
+| `[131,290]` | 1 | `SW SW RD / PK RD BL / RD BL SW` |
+| `[22,291]` | 1 | `SW BL RD / BL RD BL / RD SW RD` |
+| `[8,295]` | 1 | `RD SW BL / SW RD SW / BL BL RD` |
+| `[11,295]` | 1 | `BL SW RD / SW RD BL / RD SW BL` |
+| `[231,295]` | 1 | `RD BL SW / SW RD SW / BL BL CW` |
+| `[6,296]` | 1 | `RD BL SW / SW RD BL / BL BL RD` |
+| `[7,297]` | 1 | `RD BL BL / BL RD SW / SW SW CW` |
+| `[261,297]` | 1 | `BL SW SW / BL RD BL / BL BL RD` |
+| `[113,298]` | 1 | `RD SW RD / BL RD SW / RD SW RD` |
+| `[228,301]` | 1 | `RD SW RD / BL RD BL / RD BL RD` |
+| `[139,306]` | 1 | `BL SW RD / BL RD BL / CW SW BL` |
+| `[122,310]` | 1 | `SW SW RD / BL RD SW / RD BL RD` |
+| `[273,311]` | 1 | `BL BL RD / SW RD BL / RD BL SW` |
+| `[211,312]` | 1 | `RD SW RD / SW RD SW / BL BL RD` |
+| `[272,312]` | 1 | `BL SW RD / SW RD BL / RD BL SW` |
+| `[132,313]` | 1 | `SW BL RD / BL RD SW / RD SW BL` |
+| `[135,313]` | 1 | `CW SW RD / BL CW SW / RD SW RD` |
+| `[134,314]` | 1 | `SW BL CW / BL RD SW / RD BL RD` |
+| `[135,315]` | 1 | `RD SW RD / BL RD PK / PK SW PK` |
+| `[0,317]` | 1 | `## SW RD / ## RD SW / ## BL SW` |
+| `[117,318]` | 1 | `RD SW RD / BL CW SW / BL BL CW` |
+| `[104,319]` | 1 | `RD BL BL / SW RD SW / WT WT RD` |
+| `[173,319]` | 1 | `RD SW RD / BL RD BL / BL BL BL` |
+| `[202,319]` | 1 | `RD PK PK / BL RD SW / BL SW RD` |
+| `[105,320]` | 1 | `RD SW BL / WT RD SW / WT WT WT` |
+| `[166,320]` | 1 | `BL SW RD / BL RD BL / RD SW BL` |
+| `[107,321]` | 1 | `SW SW RD / WT CW SW / WT WT RD` |
+| `[55,325]` | 1 | `RD MT MT / SW RD MT / SW SW RD` |
+| `[56,326]` | 1 | `RD MT MT / SW RD MT / SW SW RD` |
+| `[99,327]` | 1 | `BL BL BL / SW RD BL / CW SW RD` |
+| `[342,328]` | 1 | `BL BL BL / BL RD BL / BL SW RD` |
+| `[201,332]` | 1 | `BL SW SW / BL RD SW / RD BL BL` |
+| `[7,335]` | 1 | `SW SW RD / BL RD BL / RD BL SW` |
+| `[383,336]` | 1 | `RD SW RD / BL RD BL / RD SW BL` |
+| `[178,337]` | 1 | `RD SW SW / BL RD SW / BL BL RD` |
+| `[385,337]` | 1 | `BL SW RD / BL RD BL / RD SW BL` |
+| `[149,343]` | 1 | `BL SW RD / SW RD BL / RD BL SW` |
+| `[389,343]` | 1 | `BL SW RD / SW RD BL / PK PK BL` |
+| `[353,346]` | 1 | `SW BL RD / SW RD SW / RD BL RD` |
+| `[355,346]` | 1 | `RD BL BL / SW RD BL / RD SW RD` |
+| `[389,348]` | 1 | `BL BL BL / BL RD BL / PK PK BL` |
+| `[7,350]` | 1 | `RD SW RD / BL RD BL / SW BL BL` |
+| `[144,350]` | 1 | `BL SW RD / SW RD BL / RD BL BL` |
+| `[156,350]` | 1 | `RD SW BL / PK RD BL / BL SW BL` |
+| `[284,351]` | 1 | `BL SW RD / SW RD PK / SW BL RD` |
+| `[136,352]` | 1 | `RD SW SW / BL RD SW / BL BL RD` |
+| `[269,353]` | 1 | `RD SW BL / BL RD BL / BL BL BL` |
+| `[266,357]` | 1 | `RD BL RD / SW RD BL / BL SW RD` |
+| `[203,358]` | 1 | `BL SW RD / BL RD SW / SW BL RD` |
+| `[263,358]` | 1 | `RD BL BL / BL RD SW / BL BL RD` |
+| `[294,359]` | 1 | `RD BL BL / BL RD SW / SW BL RD` |
+| `[297,361]` | 1 | `RD BL BL / BL CW SW / BL BL RD` |
+| `[299,361]` | 1 | `BL SW RD / SW RD SW / RD BL BL` |
+| `[298,362]` | 1 | `CW SW RD / BL RD BL / BL BL RD` |
+| `[299,363]` | 1 | `RD BL BL / BL RD SW / SW SW RD` |
+| `[135,364]` | 1 | `RD SW BL / SW RD SW / RD BL RD` |
+| `[251,364]` | 1 | `SW SW CW / SW CW BL / RD BL RD` |
+| `[258,365]` | 1 | `BL SW RD / SW RD BL / RD SW RD` |
+| `[307,365]` | 1 | `BL SW RD / SW RD BL / RD BL SW` |
+| `[218,366]` | 1 | `RD SW SW / BL RD SW / BL BL RD` |
+| `[255,366]` | 1 | `RD SW RD / SW RD BL / BL BL RD` |
+| `[48,367]` | 1 | `RD BL BL / SW RD SW / BL SW RD` |
+| `[284,370]` | 1 | `RD SW SW / BL RD BL / SW BL RD` |
+| `[251,371]` | 1 | `RD SW SW / BL RD BL / BL BL SW` |
+| `[304,371]` | 1 | `RD BL BL / SW RD BL / SW BL CW` |
+| `[305,372]` | 1 | `RD BL BL / BL CW BL / SW SW CW` |
+| `[324,374]` | 1 | `RD SW BL / SW RD SW / RD BL RD` |
+| `[364,374]` | 1 | `BL SW RD / SW RD BL / CW SW PK` |
+| `[283,375]` | 1 | `RD SW RD / SW RD BL / BL SW RD` |
+| `[349,376]` | 1 | `SW BL RD / BL RD SW / RD BL BL` |
+| `[400,381]` | 1 | `SW SW RD / BL RD MT / RD MT MT` |
+| `[277,382]` | 1 | `RD SW RD / BL RD SW / SW BL RD` |
+| `[258,383]` | 1 | `SW BL RD / SW RD BL / RD SW BL` |
+| `[252,385]` | 1 | `RD BL SW / BL CW SW / SW BL RD` |
+| `[322,388]` | 1 | `BL BL RD / SW RD BL / RD BL BL` |
+| `[25,389]` | 1 | `BL SW RD / SW RD BL / RD BL SW` |
+| `[319,392]` | 1 | `SW SW RD / BL RD BL / BL BL BL` |
+| `[325,393]` | 1 | `BL BL RD / BL RD SW / RD SW RD` |
+| `[324,394]` | 1 | `BL BL RD / BL RD SW / RD SW RD` |
+| `[37,395]` | 1 | `SW SW RD / SW RD MT / MT MT MT` |
+| `[323,395]` | 1 | `BL BL RD / BL RD SW / RD SW RD` |
+| `[310,396]` | 1 | `RD SW PK / BL RD BL / RD SW PK` |
+| `[380,396]` | 1 | `RD SW SW / BL RD BL / SW BL RD` |
+| `[341,397]` | 1 | `SW SW RD / BL RD SW / RD BL BL` |
+| `[351,400]` | 1 | `RD BL SW / BL RD SW / SW BL RD` |
+| `[379,400]` | 1 | `RD BL SW / SW RD SW / BL BL RD` |
+| `[352,401]` | 1 | `RD SW BL / BL RD SW / BL SW RD` |
+| `[30,402]` | 1 | `SW SW RD / SW RD MT / RD MT MT` |
+| `[54,404]` | 1 | `RD SW RD / SW RD MT / SW MT MT` |
+| `[327,404]` | 1 | `RD SW SW / BL RD SW / BL BL RD` |
+| `[278,407]` | 1 | `RD SW RD / SW RD SW / RD PK RD` |
+| `[23,411]` | 1 | `SW SW RD / MT RD SW / RD MT MT` |
+| `[355,411]` | 1 | `BL SW RD / BL RD SW / RD BL SW` |
+| `[398,411]` | 1 | `BL SW RD / SW RD PK / RD PK PK` |
+| `[258,412]` | 1 | `BL PK PK / PK RD SW / RD SW SW` |
+| `[277,412]` | 1 | `BL PK RD / SW RD BL / RD SW SW` |
+| `[397,412]` | 1 | `SW SW RD / SW RD PK / RD PK PK` |
+| `[336,414]` | 1 | `BL BL RD / SW RD SW / RD SW BL` |
+| `[343,416]` | 1 | `BL SW RD / SW RD BL / RD BL RD` |
+| `[347,417]` | 1 | `RD SW BL / BL RD SW / RD PK RD` |
+| `[333,418]` | 1 | `SW BL RD / SW RD BL / RD BL BL` |
+| `[302,419]` | 1 | `RD SW RD / PK RD PK / PK BL RD` |
+| `[416,419]` | 1 | `RD SW PK / SW RD PK / SW PK RD` |
+| `[147,425]` | 1 | `RD SW BL / SW RD SW / BL BL RD` |
+| `[148,426]` | 1 | `RD SW BL / BL RD SW / BL BL CW` |
+| `[159,426]` | 1 | `RD SW BL / PK RD BL / SW BL BL` |
+| `[246,426]` | 1 | `PK PK RD / PK RD SW / PK PK RD` |
+| `[131,427]` | 1 | `SW PK RD / PK RD PK / PK SW PK` |
+| `[343,428]` | 1 | `BL PK SW / SW RD SW / PK BL RD` |
+| `[296,429]` | 1 | `RD SW BL / BL RD SW / RD SW RD` |
+| `[184,430]` | 1 | `BL SW WT / BL RD WT / BL SW WT` |
+| `[254,433]` | 1 | `BL SW RD / SW RD BL / RD BL SW` |
+| `[291,433]` | 1 | `BL SW RD / SW RD SW / RD BL BL` |
+| `[310,436]` | 1 | `RD SW SW / BL RD BL / RD BL BL` |
+| `[417,436]` | 1 | `RD PK SW / PK RD PK / PK PK RD` |
+| `[67,437]` | 1 | `RD BL BL / PK RD SW / PK SW BL` |
+| `[286,438]` | 1 | `BL PK BL / PK RD BL / RD BL BL` |
+| `[285,439]` | 1 | `BL PK RD / SW RD BL / RD SW BL` |
+| `[43,440]` | 1 | `RD SW RD / SW RD BL / RV RV RV` |
+| `[162,440]` | 1 | `RD SW RD / SW RD SW / RD BL BL` |
+| `[32,442]` | 1 | `BL BL SW / SW RD RV / RD RV RV` |
+| `[314,442]` | 1 | `SW BL RD / SW RD BL / BL PK BL` |
+| `[283,444]` | 1 | `SW PK RD / SW RD PK / RD BL SW` |
+| `[309,444]` | 1 | `CW SW BL / BL RD SW / BL BL RD` |
+| `[67,453]` | 1 | `RD RV RV / SW RD RV / RD SW RD` |
+| `[356,460]` | 1 | `BL SW RD / SW RD BL / RD SW BL` |
+| `[73,465]` | 1 | `SW BL RD / BL RD SW / CW BL PK` |
+| `[326,465]` | 1 | `RD SW BL / BL RD SW / BL SW RD` |
+| `[368,465]` | 1 | `RD PK PK / PK RD PK / PK SW RD` |
+| `[405,465]` | 1 | `PK PK BL / SW RD BL / RD PK RD` |
+| `[72,466]` | 1 | `SW BL RD / SW CW BL / RD BL BL` |
+| `[291,466]` | 1 | `RD SW BL / BL RD BL / BL BL RD` |
+| `[406,466]` | 1 | `RD BL RD / PK RD PK / RD SW PK` |
+| `[147,468]` | 1 | `SW SW RD / SW RD BL / RD BL BL` |
+| `[283,468]` | 1 | `BL SW RD / SW RD BL / RD BL BL` |
+| `[347,468]` | 1 | `RD BL RD / BL RD SW / RD SW SW` |
+| `[69,469]` | 1 | `SW BL RD / SW RD SW / RD BL BL` |
+| `[291,469]` | 1 | `BL SW RD / SW RD BL / RD BL BL` |
+| `[290,470]` | 1 | `BL SW RD / SW RD BL / RD BL BL` |
+| `[280,471]` | 1 | `BL SW CW / SW RD BL / RD BL BL` |
+| `[283,472]` | 1 | `RD SW BL / BL RD SW / BL BL RD` |
+| `[64,473]` | 1 | `SW BL RD / SW CW BL / RD SW RD` |
+| `[277,473]` | 1 | `BL BL RD / BL RD SW / RD BL BL` |
+| `[284,473]` | 1 | `RD SW BL / BL RD BL / BL BL BL` |
+| `[65,474]` | 1 | `CW BL SW / SW RD SW / BL BL CW` |
+| `[291,474]` | 1 | `RD SW BL / BL RD SW / BL BL RD` |
+| `[286,475]` | 1 | `BL BL BL / BL RD BL / BL SW RD` |
+| `[292,475]` | 1 | `RD SW BL / BL RD SW / BL BL RD` |
+| `[287,476]` | 1 | `RD BL BL / SW RD BL / SW BL RD` |
+| `[288,477]` | 1 | `RD BL SW / BL RD BL / SW SW RD` |
+| `[49,478]` | 1 | `RD BL BL / BL RD SW / BL SW RD` |
+| `[70,479]` | 1 | `BL SW RD / SW RD BL / RD SW RD` |
+| `[78,483]` | 1 | `SW SW RD / BL RD BL / BL BL SW` |
+| `[73,491]` | 1 | `RD BL BL / SW RD BL / SW SW CW` |
+| `[410,491]` | 1 | `RD SW BL / PK RD SW / PK PK RD` |
+| `[43,492]` | 1 | `RD BL SW / SW RD BL / SW BL RD` |
+| `[407,492]` | 1 | `SW SW RD / SW RD PK / RD PK PK` |
+| `[411,492]` | 1 | `RD SW BL / PK RD SW / PK SW RD` |
+| `[412,493]` | 1 | `RD SW BL / SW RD SW / BL BL RD` |
+| `[302,494]` | 1 | `SW SW RD / SW RD BL / RD BL BL` |
+| `[304,494]` | 1 | `RD SW SW / BL RD SW / BL BL RD` |
+| `[333,494]` | 1 | `BL BL RD / SW RD SW / RD SW RD` |
+| `[415,495]` | 1 | `RD SW BL / SW RD SW / BL BL RD` |
+| `[404,496]` | 1 | `SW SW RD / SW RD BL / RD BL BL` |
+| `[416,496]` | 1 | `RD SW BL / BL RD SW / BL BL RD` |
+| `[403,497]` | 1 | `RD SW RD / SW RD BL / RD PK BL` |
+| `[417,497]` | 1 | `RD SW BL / BL RD SW / BL BL RD` |
+| `[308,498]` | 1 | `RD SW SW / BL RD SW / BL BL RD` |
+| `[309,499]` | 1 | `RD SW SW / BL RD SW / BL BL RD` |
+| `[30,500]` | 1 | `RD BL BL / SW RD BL / ## ## ##` |
+| `[310,500]` | 1 | `RD SW SW / BL RD SW / ## ## ##` |
+| `[417,500]` | 1 | `BL SW RD / SW RD BL / ## ## ##` |
+| `[420,500]` | 1 | `RD SW SW / BL RD SW / ## ## ##` |
+
+### r2 결정성·재현
+
+- 도시 id 영문 사전순 → 각 grid row-major `(y,x)` → 이웃 `N,E,S,W` 고정 순회.
+- 시간·로케일 정렬·파일 열거·난수·네트워크 입력 없음. runtime `EXIT` 덮어쓰기를 제외한 committed geo terrain만 읽음.
+- 동일 입력 2회 stdout byte 비교와 SHA-256 결과는 PR 검증 시 기록한다.
+
+```bash
+node scripts/scan-tile-integrity.mjs --format markdown > /tmp/tile-integrity-r2-a.md
+node scripts/scan-tile-integrity.mjs --format markdown > /tmp/tile-integrity-r2-b.md
+cmp /tmp/tile-integrity-r2-a.md /tmp/tile-integrity-r2-b.md
+shasum -a 256 /tmp/tile-integrity-r2-a.md /tmp/tile-integrity-r2-b.md
+```
+
