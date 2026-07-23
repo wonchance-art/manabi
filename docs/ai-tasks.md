@@ -14,6 +14,8 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
+- E11 기지 flaky 4종 안정화: osakaGeo·tokyoGeo RLE 왕복, cityFukuoka 전수 셀,
+  contentOverrides 전 언어 라운드트립의 병렬 부하 timeout을 명시 상향하고 전체 vitest 3회 연속 검증
 ### todo
 ### done (최근)
 - E10 에어허브 감사 공백 수정: APAC 인천 도착 앵커를 왕복 가능한 항공 게이트로 승격하고
