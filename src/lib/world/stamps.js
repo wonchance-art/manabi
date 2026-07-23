@@ -4,6 +4,18 @@
 // collectStamp(nodeId) 로 서버에 upsert 한다. API: /api/world/stamps (GET 목록 · POST {nodeId}).
 // 순수부(parseStamps)만 분리해 vitest 로 응답 파싱을 검증한다(네트워크 미접촉).
 
+import { isStampAlbumNodeId } from './stampUniverse.js';
+
+export const GUEST_STAMPS_STORAGE_KEY = 'guest-stamps';
+
+function defaultStorage() {
+  try {
+    return globalThis.localStorage;
+  } catch {
+    return null;
+  }
+}
+
 // API GET 응답(JSON)에서 nodeId 문자열 배열만 안전하게 추출한다(순수 · 부작용 0).
 //   허용 형태: { stamps: [{ nodeId, at }, ...] } 또는 { stamps: ['seoul', ...] }.
 //   깨진/누락 항목은 조용히 건너뛴다.
@@ -26,6 +38,32 @@ export async function loadStamps() {
     return parseStamps(j);
   } catch {
     return [];
+  }
+}
+
+// devGuest 전용 로컬 정본. 깨진 JSON·앨범 밖 유령 id·중복은 빈 값/정본 교집합으로 정규화한다.
+// 제품 로그인 경로는 이 함수를 호출하지 않고 기존 서버 GET 계약을 그대로 사용한다.
+export function loadGuestStamps(storage = defaultStorage()) {
+  if (!storage) return [];
+  try {
+    const parsed = JSON.parse(storage.getItem(GUEST_STAMPS_STORAGE_KEY) || '[]');
+    if (!Array.isArray(parsed)) return [];
+    return [...new Set(parsed.filter(isStampAlbumNodeId))];
+  } catch {
+    return [];
+  }
+}
+
+// devGuest 첫 수집을 localStorage에 누적한다. 저장소 차단 시에도 예외를 밖으로 내보내지 않는다.
+export function collectGuestStamp(nodeId, storage = defaultStorage()) {
+  if (!storage || !isStampAlbumNodeId(nodeId)) return false;
+  const ids = loadGuestStamps(storage);
+  if (ids.includes(nodeId)) return true;
+  try {
+    storage.setItem(GUEST_STAMPS_STORAGE_KEY, JSON.stringify([...ids, nodeId]));
+    return true;
+  } catch {
+    return false;
   }
 }
 

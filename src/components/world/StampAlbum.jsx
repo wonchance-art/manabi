@@ -6,6 +6,7 @@
 //   그래서 문구는 "다녀온 곳의 기념" 톤을 유지한다(마스터플랜 A 지도 비전 "다녀온 사람은 추억하고").
 //
 // props:
+//   devGuest: true면 서버 방문 시각 조회를 생략한다(수집 여부는 guest-stamps에서 온 stamps prop).
 //   stamps  : Set<nodeId>  — 라이브 수집 집합(GameCanvas 낙관 갱신 반영). 여부 판정은 이걸로.
 //   onClose : () => void   — 닫기(B/ESC/버튼). GameCanvas 가 오버레이 열림 동안 A 입력을 잠근다.
 //
@@ -39,7 +40,7 @@ const DETAIL_CITY_IDS = new Set([
   ...STAMP_ALBUM_DISCOVERY_CITY_IDS,
 ]);
 
-export default function StampAlbum({ stamps, onClose }) {
+export default function StampAlbum({ devGuest = false, stamps, onClose }) {
   const owned = stamps instanceof Set ? stamps : new Set();
   const [visitedAt, setVisitedAt] = useState({}); // { nodeId: isoString }
   const [activeTabId, setActiveTabId] = useState(STAMP_ALBUM_TABS[0].id);
@@ -48,6 +49,7 @@ export default function StampAlbum({ stamps, onClose }) {
 
   // 방문 시각(at)만 추가 조회 — 수집 여부는 라이브 stamps prop 사용(낙관 갱신 즉시 반영).
   useEffect(() => {
+    if (devGuest) return undefined;
     let cancelled = false;
     fetch('/api/world/stamps', { credentials: 'same-origin' })
       .then((r) => (r.ok ? r.json() : null))
@@ -59,7 +61,7 @@ export default function StampAlbum({ stamps, onClose }) {
       })
       .catch(() => {});
     return () => { cancelled = true; };
-  }, []);
+  }, [devGuest]);
 
   // ESC 로도 닫기(셸 B 는 GameCanvas cancel 이 처리). 게임 입력은 열림 동안 GameCanvas 가 잠금.
   useEffect(() => {
