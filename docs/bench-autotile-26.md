@@ -1,8 +1,10 @@
 # V3 오토타일 26도시 렌더 회귀 벤치
 
-- 상태: **report-only** — 제품 코드·테스트·자산·DB 무수정
+- P8 상태: **report-only** — 제품 코드·테스트·자산·DB 무수정
+- P9 상태: **mask 단일 계산 구현** — `CityScene` 제품 코드+회귀 테스트, 렌더 불변
 - 측정 입력: `origin/main` `d93981b8d32f2ccc5bb363ac22984d6635ee127e`
 - 최종 검증 기준: `origin/main` `f014ffc2eb680507b1b46995080f21226067cd8f`
+- P9 구현 기준: `origin/main` `cd92eb40407971f46349b3d84d73c82dad55799d`
 - 선행: #493 merge(`fac33cd492dd3e12e2518b2ef403dad7c3c52a39`), 26/26
   `roadStyle: 'autotile-v1'`
 - 환경: macOS arm64, 공식 nvm Node `v22.23.1`, Vitest `v4.1.4`
@@ -199,5 +201,118 @@ london inactive       3fd6636e97e587197c21a50a9addbab4e76054877632c1c5f888d7621f
 기존 untracked `.codex4-p4-local/`은 별도 clone이라 Vitest가 중복 수집하지 않도록
 `--exclude='.codex4-p4-local/**'`만 적용했으며 디렉터리 내용은 수정하지 않았다.
 
-이번 작업에서는 오토타일·미니맵·잠금 렌더 구현, 도시 wrapper/geo, registry, shared verifier,
-자산과 DB를 수정하지 않는다.
+P8에서는 오토타일·미니맵·잠금 렌더 구현, 도시 wrapper/geo, registry, shared verifier,
+자산과 DB를 수정하지 않았다.
+
+## P9 — mask 단일 계산 구현
+
+P8 개선 후보 1순위를 그대로 적용했다. `roadAutotileTexKey()`가 cardinal mask를 먼저 한 번
+계산하고, `roadInteriorAt()`에 그 값을 넘겨 inner 대각 검사와 일반 key 선택이 같은 mask를
+소비한다. 직접 호출되는 `roadInteriorAt(tx, ty)`의 기존 계약은 기본 인자로 유지했다. 도시 전체
+mask map이나 상주 cache는 추가하지 않아 payload·scene 수명·메모리 계약은 바꾸지 않는다.
+
+회귀 테스트는 mask 3과 mask 15+대각4에서 texture key 하나당 `roadMask()`가 정확히 한 번만
+호출되는 것을 고정한다. 기존 16종+inner texture command·26도시 render-key snapshot은
+업데이트하지 않았다.
+
+### P8 동일 paired A/B 재측정
+
+P8과 같은 production `CityScene.bakeChunk()` JS 경로, 도시별 독립 프로세스 3회, 프로세스마다
+3 warm-up 뒤 31 paired pass, 전체/완전 잠금 128청크 floor 균등 표본을 사용했다. 조건도
+동일하다. 활성은 현 `autotile-v1`, 비활성은 같은 payload에서 `roadStyle`만 메모리상 제거한
+legacy 방향 경로다. 따라서 서로 다른 실행 시점의 절대 ms가 아니라 각 라운드 안의 paired
+활성/비활성 차이와 P8 대비 그 차이의 축소를 판정한다.
+
+| 경로 | 도시 | P8 비활성 | P8 활성 | P8 변화 | P9 비활성 | P9 활성 | P9 변화 | P8 대비 |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| 일반 | 도쿄 | 69.222ms | 73.111ms | +5.62% | 40.086ms | 40.311ms | **+0.56%** | -5.06%p |
+| 일반 | 그랑파리 | 38.938ms | 40.201ms | +3.24% | 38.341ms | 38.270ms | **-0.19%** | -3.43%p |
+| 일반 | 런던 | 48.177ms | 48.865ms | +1.43% | 48.857ms | 48.670ms | **-0.38%** | -1.81%p |
+| 완전 잠금 | 도쿄 | 70.012ms | 77.272ms | +10.37% | 45.620ms | 47.175ms | **+3.41%** | -6.96%p |
+| 완전 잠금 | 그랑파리 | 43.020ms | 43.714ms | +1.61% | 41.892ms | 41.975ms | **+0.20%** | -1.41%p |
+| 완전 잠금 | 런던 | 49.155ms | 49.826ms | +1.37% | 49.928ms | 49.878ms | **-0.10%** | -1.47%p |
+
+P9 3회 raw p50(ms):
+
+| 경로 | 도시 | 비활성 1/2/3 | 활성 1/2/3 |
+|---|---|---|---|
+| 일반 | 도쿄 | 40.159 / 40.086 / 40.072 | 40.295 / 40.383 / 40.311 |
+| 일반 | 그랑파리 | 38.154 / 38.341 / 38.404 | 38.181 / 38.270 / 38.443 |
+| 일반 | 런던 | 47.592 / 49.189 / 48.857 | 47.742 / 48.670 / 48.986 |
+| 완전 잠금 | 도쿄 | 46.420 / 45.323 / 45.620 | 46.622 / 48.329 / 47.175 |
+| 완전 잠금 | 그랑파리 | 41.892 / 41.798 / 42.412 | 41.896 / 41.975 / 42.407 |
+| 완전 잠금 | 런던 | 50.175 / 49.928 / 49.592 | 50.003 / 49.878 / 49.621 |
+
+일반·완전 잠금 모두 세 도시 5% 게이트 안이다. 특히 P8에서 실패했던 도쿄는 일반
+`+5.62→+0.56%`, 완전 잠금 `+10.37→+3.41%`로 돌아왔다.
+
+### 도쿄 probe 감소
+
+같은 P8 도쿄 표본과 instrumentation을 사용했다. 비활성 수는 구현과 무관하게 고정됐고,
+활성 `roadMask`는 `roadAutotileTexKey` 호출 수와 같아져 중복 cardinal 계산이 0이 됐다.
+
+| 경로 | 비활성 `tileCode` | 활성 `tileCode` P8→P9 | 증가 P8→P9 | 증가폭 축소 | 초과 probe 제거 |
+|---|---:|---:|---:|---:|---:|
+| 일반 | 101,060 | 173,805→124,145 | +71.98%→**+22.84%** | -49.14%p | 68.27% |
+| 완전 잠금 | 93,364 | 161,101→112,349 | +72.55%→**+20.33%** | -52.22%p | 71.97% |
+
+| 경로 | `roadAutotileTexKey` | `roadMask` P8→P9 | 중복 `roadMask` P8→P9 |
+|---|---:|---:|---:|
+| 일반 | 16,361 | 28,776→16,361 | 12,415→0 |
+| 완전 잠금 | 15,329 | 27,517→15,329 | 12,188→0 |
+
+남은 `+20~23%` probe는 mask 15에서 inner 판정을 위해 보는 대각 4칸이며, 이번 중복 cardinal
+계산 제거 범위와 다르다. 이 신호만으로 도시 전체 cache를 추가하지 않는다.
+
+### 26도시 PNG 렌더 불변
+
+공식 nvm Node `v22.23.1`로 `scripts/world/render-city-map.mjs`를 구현 전/후 각각 전 도시
+독립 출력했다. 다음 SHA-256은 모든 행에서 **before = after**다.
+
+| 도시 | PNG SHA-256 (before = after) |
+|---|---|
+| beijing | `91d5e6263cde8cb4ec86abfaadc3fbfcd79b59d0c569aa35f3359ec46814a112` |
+| bordeaux | `a3bc02d0618a2acedb487a28f0ae7c703b2aac39e5c4b9d96c159deac8a6f29c` |
+| brisbane | `8d1683afa4ca51f496d8c47eab19cd09d65f332de83d0592a5f204884a5f9780` |
+| brussels | `d54944cdd06755cd425213bde530be78ebb01e7d6dc5d7eafb0cbfd440e8f1c6` |
+| busan | `ad48e9f4368f7b65369b01c565d8f5d5acdb74e7d29fd6d08ab0d66700c6fe9d` |
+| canberra | `a62ad6766759b5746af1b88549e92393dbb84a8d3a3584e37ec0f1c13dc15f67` |
+| cote-dazur | `c56d714de623f69ac7ac7bcffe7470ee26022bcfd4c7ad4a9888e8513b057b85` |
+| fukuoka | `80062add7fb81ef98cdb8a358d98fee13a2de9039d83308ccd90e18af7a346fb` |
+| geneva | `771a7fdf65540ca76d13c71677345b48cd6d7876c3b55c57b5316e5652c4e6c2` |
+| grand-paris | `d98147b000ba5d4199918c6830cb896b6640f3b2fc47f91571d8faaf70bd38b9` |
+| hong-kong | `1040b67629029ffc9979293e406715fb104d89660b5f04c19023de1c2dec895c` |
+| kawaguchiko | `17c6f8a68e2cc0f9d2d6e8070cc58d37a9e51eaef604c81a9c02665b5d22b464` |
+| kyoto | `75f4604b71f097e3322bbc79f6969d9dfca298303ebdb359f522e99e594bb227` |
+| leman-riviera | `7c0bc1a4e9eeafcf9b8023c2b392dc19164719f2930e698be2fde680a9b5ffaa` |
+| london | `5e9ec03bf2378acd949b43253845592c23f938dd092eee105d60a1487431ef59` |
+| lyon | `c9bd9c2a6fdca82825da65a8cd6de95e5df040171b9a2b914a090b92fec530ff` |
+| marseille | `2a9ae2ea3a848c94f380ad29b72b0d15f942d5111c8857e306a70b72821b7bf7` |
+| melbourne | `fdaaf77bd194fc5e8b3a3afef41270a062b784e330bcf529c82c2d403ce0fa49` |
+| mont-saint-michel | `15ede312d99aef09131c4d3ed3987a9f86bafd6d91bf22dfe2d525041636747e` |
+| osaka | `298f5b2f9678317906ec35c373ad4cb49c470a86ec5e36767e1c323394caf4bf` |
+| seoul | `b674be7921c2f0aebda8cd230e1bda7b8147881a91b6cee7dfbdcf0cc8156a02` |
+| shanghai | `1be783500a9caeeac9bab69a0447bd39ed9d15cd5d7c4c047f941a2e3ecafe23` |
+| strasbourg | `7b6f1cf241f999bc5cc77b74e7ef8c58d2ade8515d4e854d10a190502a8f0709` |
+| sydney | `95c2cf729c65ebcfc1d5e4773a745670f19a36dbf004273e6ef112b06ad3a6ca` |
+| taipei | `3a84eb73a6166f3dee5b5d6bb7ab6383ae336c7478b44234007f5ecda2880563` |
+| tokyo | `4860469d5aa05ccec1181f53cb9f41e9e297b57875579d58d9dd864ce9a20337` |
+
+정렬된 26행 SHA manifest도 before/after byte-identical이며 SHA-256은
+`17bb931bde2b22e5d895a11d103141f789bf4ab4e3cf4ef4e4297cc6fe3c4739`다.
+
+### P9 검증
+
+| 검증 | 결과 |
+|---|---|
+| autotile·chunk·district·mainRoute·tile-skin·lazy-smoke targeted | 8 files / 92 tests PASS / 49.92s |
+| 26도시 PNG before/after | 26/26 byte-identical |
+| `cityRoadAutotile` snapshot SHA-256 | `ecbed3b4351c0033b304fb0b8cb864e68bea080d3882d16745038d9c6787a493` (무변경) |
+| 전체 single-worker Vitest (`--testTimeout=30000`) | **230 files / 2,248 tests PASS / 317.01s / exit 0** |
+| 전체 테스트 최대 RSS | 2,578,960KiB (`zsh time %M`) |
+| `npm run lint -- --ignore-pattern '.codex4-p4-local/**'` | PASS |
+| `git diff --check` | PASS |
+
+임시 벤치 하니스·raw JSON·PNG는 체크인하지 않는다. P9 변경 범위는 `CityScene`의 mask 단일
+계산, 해당 호출 횟수 회귀 테스트, 이 보고서와 Codex-4 보드뿐이다. 도시 wrapper/geo, registry,
+shared verifier, snapshot, 자산과 DB는 수정하지 않는다.

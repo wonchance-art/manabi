@@ -1155,8 +1155,8 @@ export function buildCityScene(Phaser, city, ctx) {
         | (this.roadLikeAt(tx - 1, ty) ? ROAD_W : 0);
     }
 
-    roadInteriorAt(tx, ty) {
-      if (this.roadMask(tx, ty) !== 15) return false;
+    roadInteriorAt(tx, ty, mask = this.roadMask(tx, ty)) {
+      if (mask !== 15) return false;
       return this.roadLikeAt(tx - 1, ty - 1)
         && this.roadLikeAt(tx + 1, ty - 1)
         && this.roadLikeAt(tx + 1, ty + 1)
@@ -1164,7 +1164,8 @@ export function buildCityScene(Phaser, city, ctx) {
     }
 
     roadAutotileTexKey(prefix, tx, ty) {
-      return `${prefix}_${this.roadInteriorAt(tx, ty) ? 'inner' : this.roadMask(tx, ty)}`;
+      const mask = this.roadMask(tx, ty);
+      return `${prefix}_${this.roadInteriorAt(tx, ty, mask) ? 'inner' : mask}`;
     }
 
     mainRoutePavingTexKey(tx, ty) {
