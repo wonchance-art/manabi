@@ -9,7 +9,7 @@ import {
 import { resolveCityMainRoute } from '../cityMainRoute.js';
 import { CITY_MAPS } from '../cities/index.js';
 import { LYON } from '../cities/lyon.js';
-import { CITY_TILE, isCityBlocked } from '../cities/terrain.js';
+import { CITY_TILE, isCityBlocked, resolveArrivalTile } from '../cities/terrain.js';
 
 vi.mock('../QuestReview', () => ({
   GBC: { cream: '#f6edcf', ink: '#2a2118', font: 'monospace' },
@@ -26,6 +26,28 @@ const GUIDEBOOK_KEYS = [
   'ct_guidebook_landmark_marker',
 ];
 const COTE_DAZUR_GUIDEBOOK_LAND_KEY = 'ct_guidebook_land_cote_dazur';
+const DISTRICT_CITY_IDS = Object.freeze([
+  'lyon', 'bordeaux', 'strasbourg', 'seoul', 'busan', 'cote-dazur', 'leman-riviera',
+  'tokyo', 'osaka', 'fukuoka', 'kyoto',
+  'grand-paris', 'brussels', 'london', 'mont-saint-michel', 'geneva',
+  'taipei', 'hong-kong', 'shanghai', 'beijing',
+  'brisbane', 'sydney', 'canberra', 'melbourne',
+]);
+const EXPANSION_DISTRICT_LABELS = Object.freeze({
+  'grand-paris': ['파리 북중부', '센강 중심부', '서부 위성권', '외곽 위성권'],
+  brussels: ['미디·남역', '구시가·왕궁', '북역·보타니크', 'EU 지구·라켄'],
+  london: ['킹스크로스·캠든', '중심·서부', '시티·동부', '외곽 위성권'],
+  'mont-saint-michel': ['수도원 섬', '상부 제방길', '본토·제방길'],
+  geneva: ['국제지구·우안', '구시가·호반', '플랭팔레', '카루주'],
+  taipei: ['스린·고궁', '서부 도심', '동부 도심', '신이·라오허'],
+  'hong-kong': ['구룡 북부', '침사추이', '센트럴·애드미럴티', '빅토리아픽·코즈웨이베이'],
+  shanghai: ['인민광장·난징루·와이탄', '루자쭈이', '위위안·신톈디', '톈쯔팡'],
+  beijing: ['북부 호수권', '자금성·중심부', '왕푸징', '전문·천단'],
+  brisbane: ['CBD·북부', '사우스뱅크', '캥거루포인트·식물원', '뉴팜'],
+  sydney: ['시티·하버', '도심 남동부', '본다이·왓슨스베이', '하버 북안'],
+  canberra: ['시빅·북부', '기념관·에인슬리', '호수·국회지구', '킹스턴·캔버라역'],
+  melbourne: ['시티(CBD)', '도심 북부', '사우스뱅크·동부', '세인트킬다'],
+});
 
 function districtConfig(rect = [0, 0, 3, 2]) {
   return {
@@ -550,9 +572,52 @@ describe('CityScene guidebook 소비 경계', () => {
     expect(route.path.every(([x, y]) => cityDistrictOpenAt(first, x, y))).toBe(true);
   });
 
-  it('districts 미정의 15도시는 render key·movement collision을 그대로 유지한다', () => {
+  it.each(Object.entries(EXPANSION_DISTRICT_LABELS))(
+    '%s T19 rect는 TRANSIT·스폰·EXIT·도어·NPC·발견·mainRoute 전부 열린다',
+    (id, labels) => {
+      const city = CITY_MAPS.find((candidate) => candidate.id === id);
+      const grid = city.buildGrid();
+      const route = resolveCityMainRoute(city, grid);
+      const first = resolveCityDistricts(city, grid, route);
+      const second = resolveCityDistricts(city, grid, route);
+
+      expect(first.open.map((district) => district.label)).toEqual(labels);
+      expect(first).toEqual(second);
+      expect(cityDistrictOpenAt(first, city.entrance.x, city.entrance.y)).toBe(true);
+
+      const exits = [];
+      for (let index = 0; index < grid.length; index += 1) {
+        if (grid[index] !== CITY_TILE.EXIT) continue;
+        const tile = [index % city.cols, Math.floor(index / city.cols)];
+        exits.push(tile);
+        expect(cityDistrictOpenAt(first, ...tile)).toBe(true);
+      }
+      expect(exits.length).toBeGreaterThan(0);
+
+      const stops = [...(city.stations ?? []), ...(city.transitPoints ?? [])];
+      const transitIds = new Set((city.transit ?? []).flatMap((line) => line.stopIds ?? []));
+      for (const stopId of transitIds) {
+        const matches = stops.filter((stop) => stop.id === stopId);
+        expect(matches).toHaveLength(1);
+        expect(cityDistrictOpenAt(first, ...matches[0].tile)).toBe(true);
+        const arrival = resolveArrivalTile(grid, city.cols, city.rows, matches[0].tile);
+        expect(arrival).not.toBeNull();
+        expect(cityDistrictOpenAt(first, ...arrival)).toBe(true);
+      }
+
+      const requiredNodes = (city.nodes ?? []).filter(
+        (node) => node.npc || node.gate || node.chapter || node.reading,
+      );
+      expect(requiredNodes.every(({ tile }) => cityDistrictOpenAt(first, ...tile))).toBe(true);
+      expect((route?.path ?? []).every((tile) => cityDistrictOpenAt(first, ...tile))).toBe(true);
+      expect((route?.discoveries ?? []).every(
+        ({ tile }) => cityDistrictOpenAt(first, ...tile),
+      )).toBe(true);
+    },
+  );
+
+  it('districts 미정의 2도시는 render key·movement collision을 그대로 유지한다', () => {
     // 지구 정의 도시 목록 — 새 도시를 지구화하면 여기와 길이 스냅샷을 함께 갱신한다(무단 지구화 가드).
-    const DISTRICT_CITY_IDS = ['lyon', 'bordeaux', 'strasbourg', 'seoul', 'busan', 'cote-dazur', 'leman-riviera', 'tokyo', 'osaka', 'fukuoka', 'kyoto'];
     class FakeScene { constructor() {} }
     const manifest = CITY_MAPS.filter(({ id }) => !DISTRICT_CITY_IDS.includes(id)).map((city) => {
       const Scene = buildCityScene({ Scene: FakeScene }, city, {});
@@ -576,24 +641,11 @@ describe('CityScene guidebook 소비 경계', () => {
       return `${city.id}:${hash.digest('hex')}`;
     });
 
-    expect(manifest).toHaveLength(15);
+    expect(manifest).toHaveLength(2);
     expect(manifest).toMatchInlineSnapshot(`
       [
-        "grand-paris:38aa447e903cd2b4325e1f9d1eb8aef62404a6ccbbdb6f9cb25bbcdde1b2918a",
-        "mont-saint-michel:bc2b359851b61d8c453183419d0404bf5ed3e55ab914f0c8b0d85b3e35437633",
-        "brussels:5390f6d7ca2f6d8a77624050468b24351130a16ecf267a3d18bb74e5bcd533a0",
-        "taipei:5ef6a95c3fcb0715a00effa97f22dca6ac3bc6120dc45fac435b28f664a0a01e",
-        "hong-kong:ed9f37d618bdb24f6e993ad91aad92b8d941727f39577f6d6f5724e3aadc01a9",
-        "london:3f8ee7d1a1285c7fe7b6696898a6827d9e84c0ab7d2073bd4c5d55b36cf4e22e",
-        "shanghai:ecd2cac281742914f5716775e9c1fae5e676eb18da594c440ed0ecb823c78522",
-        "beijing:164b01ed8a0191dd93631504236f3f3467cba05209cd762dbc6f66ad9431af46",
-        "brisbane:1fd6e0f3ff0c312b4275db04b37df72f97eaf4624385228a39ab631a65076d5e",
-        "sydney:4ead615cf673e11735f58a8e47e0499bc1ff231eaeb99b4cbdaa996cc1316b8f",
-        "canberra:8efe84492bbcfb3e0e3459761e08a29d26bd57e96eabfc54b0afe181afa3c7e9",
-        "melbourne:5764ba162c50e2edb9d439173c1a7033e6b2ab921cf185c9af5ed2affa2414d6",
         "marseille:a8acf4d94ef8a037450a7dae67d3d0f00d6841a53eaf13158f38eee2d0defa01",
         "kawaguchiko:add90460ba2f032d15dbaaddd7ae0b4eb72937aaf011f4e965bed03b92b5e1c3",
-        "geneva:a879108da2c62b0831891fd2b1b4833f3da9360ee85a8a704dd4cd777e6d8093",
       ]
     `);
   });

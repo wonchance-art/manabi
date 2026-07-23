@@ -178,6 +178,28 @@ export const GRAND_PARIS = {
   id: 'grand-paris', name: '파리', cols: COLS, rows: ROWS, entrance: ENTRANCE, returnNode: 'paris',
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: [], railways: GRAND_PARIS_GEO.railways,
+  // 📖 여행책 지구제 v1 — T10 r3 실측 rect.
+  districts: {
+    version: 'district-v1',
+    open: [
+      { id: 'north-central', label: '파리 북중부', tiles: { rects: [[650, 240, 990, 400]] } },
+      { id: 'seine-core', label: '센강 중심부', tiles: { rects: [[650, 401, 1080, 620]] } },
+      {
+        id: 'west-satellites',
+        label: '서부 위성권',
+        tiles: { rects: [[450, 235, 545, 300], [520, 410, 590, 470]] },
+      },
+      {
+        id: 'outer-satellites',
+        label: '외곽 위성권',
+        tiles: { rects: [[50, 730, 125, 810], [920, 0, 980, 60], [1190, 520, 1270, 580]] },
+      },
+    ],
+    locked: {
+      style: 'guidebook',
+      line: '이 동네는 아직 준비 중이에요 — 다음 여행에서 만나요.',
+    },
+  },
   tileSkins: Object.freeze({ building: 'zinc' }), // R4 — 오스만 아연 지붕
   CITY_TILE, buildGrid: buildGrandParisGrid,
 };

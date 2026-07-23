@@ -84,6 +84,23 @@ export const MONT_SAINT_MICHEL = {
   transitPoints: [],
   railways: MONT_SAINT_MICHEL_GEO.railways,
   tide: MONT_SAINT_MICHEL_GEO.tide,
+  // 📖 여행책 지구제 v1 — T10 r3의 4m 조수·제방형 실측 rect.
+  districts: {
+    version: 'district-v1',
+    open: [
+      { id: 'island', label: '수도원 섬', tiles: { rects: [[270, 145, 325, 200]] } },
+      { id: 'upper-causeway', label: '상부 제방길', tiles: { rects: [[280, 201, 292, 550]] } },
+      {
+        id: 'mainland-causeway',
+        label: '본토·제방길',
+        tiles: { rects: [[280, 551, 386, 650], [374, 651, 386, 845]] },
+      },
+    ],
+    locked: {
+      style: 'guidebook',
+      line: '이 동네는 아직 준비 중이에요 — 다음 여행에서 만나요.',
+    },
+  },
   CITY_TILE,
   buildGrid: buildMontSaintMichelGrid,
 };

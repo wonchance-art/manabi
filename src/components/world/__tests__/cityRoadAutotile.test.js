@@ -23,27 +23,27 @@ const AUTOTILE_PREFIXES = [
   'ct_main_route_paving_autotile',
 ];
 
-const LEGACY_RENDER_KEY_SHA = Object.freeze({
+const NON_AUTOTILE_RENDER_KEY_SHA = Object.freeze({
   fukuoka: 'dc6dd00f9a14ea06517d1e6543039c7e63e2f9b0471f2f5bb3b086b744318a9a',
   osaka: 'dc648e5e34bdd10f2bdce1c0a2c585a725d76533c52173e51d1552eb6ca6fe24',
   kyoto: 'b54e257ffb8fbda0e0d2ebd11ab9d02ca5118fb41a7d91766aba9fb27dc947b9',
   busan: '08abc45d06d624f7a4f65afbb2ed7458b8f13bf9d22c81eba7fb676cb193dead',
-  'grand-paris': '67bad1273ac21b0337458b1e76ab73bdfa103a83e8ab1da820ef05e77deb5557',
-  'mont-saint-michel': '8f01e2ecb7ad5d7386f38440d4f36e61f82f3c6508253832c4a93bcd098aa4a7',
+  'grand-paris': 'c6e1795ab6f96fdd0881b7caf102386e2bb835161a74303f2558f75902e68391',
+  'mont-saint-michel': '27c4ed5f56074ebf13b3a6cadc1b73784e28363e9a15e9071a8fcec83300786f',
   'cote-dazur': 'dfb1e1c1390e7a806be8bc2c334d0251121bb39da52a7e69ff4d150dcbccdce7',
-  brussels: '49b77760838417134ea865b3b1498b8d7e77187aa47b3ec255c25e0fa8dcf500',
-  taipei: '7bee3b6c2c37a36ed0725eb9881bc2c9917c4c9b698d7d104ac813a1e9c32941',
-  'hong-kong': '39323421eaa95a37ff51c249d97909c8fdc8a5aff7e5b1674db33761dd793832',
-  london: '77a0e7f2fd8b40ce4e00fd1af4ad069640ec179fb28e1c16d14357fc07ca3385',
-  shanghai: 'd3dd56fc1bc79c3f5bdde95400916795460d2be716dd19e5da1574ba8d0ef086',
-  beijing: '82eced22ded9b36e74c8a22ff302b658b2a91b72cdd3bdbcdbc4ea5d4ce35e73',
-  brisbane: 'c85f32e4a2c3a7def043f366f9547b5721b6b99776f493e3ebce6adc78d3f9cc',
-  sydney: '3e9cf36b071ec600eb66f5b0c3c0bdf27aa053793b4770ef17b48f69ba9d78e7',
-  canberra: '2d1443256f666df7695d3fd0d8edff0295f609f5112edde1b7d3498793293aa0',
-  melbourne: 'd7f0daa7b7f7129065fb07d09faf44f9942ba9eeb240e047ab8dcaf187ea555d',
+  brussels: '2a2d84b55008c886532963fb5ccf2c2222eb6c7048782a60e210fdb8dbcac0a9',
+  taipei: '89cc3de3802f5cc1e1bedb7fde5e2f258c3b07b5e55918872a0abab2727b524e',
+  'hong-kong': '2e3382876157127c7df353323f0d49a0c8b9bb15cc5162eb909a29997915b0d3',
+  london: '45ca68acd519885df07efcbea0b6297251f42f056b915f7dbf19aa8cc60549f5',
+  shanghai: '1e7259db8c34655ab165612c0745b22813b1e707b3d484dbfb0108fdb098f192',
+  beijing: '5213158f3aa4243c4e997ee6aeacf6e62cf1ae1f16ab215772b6d03055162f74',
+  brisbane: 'c2077cf5099c73ab3af47d7ce96217ad21c0874db6606f7ce6767dc53b17a048',
+  sydney: '41443deb0acb97fc1859d01abce873574be72ffbc4f18057f5a0e177f5614916',
+  canberra: '0f4a5e41abff70134a218ba2fcb90f2195309e558b60d2f022d081d9368fcfb7',
+  melbourne: '5e6773a044d728f2bd3661c898bea4c796f3eea0ab3ecbed52c95565aaff6202',
   marseille: '82a44066c3d9a85bca08bba111e1910fac3d860578fe17183ea3b8c8b402f8e4',
   kawaguchiko: '32d22ac780014abfb91a4e9f1059c97bfef300fbdd9ed7941155324013c40bb4',
-  geneva: '4ab951e8352360e0e72b3dfbdc1e4426eeb6b701b077498f865d06b631a35545',
+  geneva: '2b0c7d0c34dee411655ffe9a43e3f9951ba855158253acd4926c3e09238ad31c',
   'leman-riviera': '704f630b695cf08583ee2e4d5f130878fd24c6b61653ba921265ea4088e05d58',
   bordeaux: '9bbd35e8f138c0621472044dfc10db3e9ed0b1ac619befafe92cccbdb403807e',
   strasbourg: 'eaeefb5c2d4a52ea273473c437bfc2a9982427996ef87043fa98369be55daebc',
@@ -318,13 +318,13 @@ describe('CityScene road autotile opt-in', () => {
     expect({ textureCount: keys.length, sha256: digest(first) }).toMatchSnapshot();
   });
 
-  it('26도시 전 지형·mainRoute 키 스냅샷에서 3도시만 갱신되고 23도시는 exact 불변이다', () => {
+  it('26도시 키에서 autotile 3도시와 T19 guidebook 13도시 변화를 고정한다', () => {
     const manifest = CITY_MAPS.map(cityRenderKeyManifest);
     const legacyManifest = Object.fromEntries(
       manifest.filter(({ roadStyle }) => roadStyle == null).map(({ id, sha256 }) => [id, sha256]),
     );
 
-    expect(legacyManifest).toEqual(LEGACY_RENDER_KEY_SHA);
+    expect(legacyManifest).toEqual(NON_AUTOTILE_RENDER_KEY_SHA);
     expect(manifest).toMatchSnapshot();
   }, 60000);
 });

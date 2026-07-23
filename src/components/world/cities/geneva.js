@@ -147,6 +147,24 @@ export const GENEVA = {
   returnNode: 'geneva', // 오버월드 EMEA 게이트는 Codex-1 후속(코르나뱅 기준)
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: TRANSIT_POINTS, railways: GENEVA_GEO.railways,
+  // 📖 여행책 지구제 v1 — T10 r3 실측 rect.
+  districts: {
+    version: 'district-v1',
+    open: [
+      {
+        id: 'nations-rive-droite',
+        label: '국제지구·우안',
+        tiles: { rects: [[110, 50, 205, 180]] },
+      },
+      { id: 'old-town-lake', label: '구시가·호반', tiles: { rects: [[150, 181, 220, 235]] } },
+      { id: 'plainpalais', label: '플랭팔레', tiles: { rects: [[120, 236, 170, 260]] } },
+      { id: 'carouge', label: '카루주', tiles: { rects: [[110, 310, 150, 345]] } },
+    ],
+    locked: {
+      style: 'guidebook',
+      line: '이 동네는 아직 준비 중이에요 — 다음 여행에서 만나요.',
+    },
+  },
   // 🎨 R4B — 빙하수 청록 수면(레만호 공유 표현, #315 merge로 소비 개시).
   tileSkins: Object.freeze({ water: 'glacial' }),
   CITY_TILE, buildGrid: buildGenevaGrid,

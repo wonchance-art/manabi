@@ -138,6 +138,24 @@ export const BRISBANE = {
   returnNode: 'brisbane', // 오버월드 APAC 브리즈번 노드는 Codex-1 게이트 라운드 후속
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: TRANSIT_POINTS, railways: BRISBANE_GEO.railways,
+  // 📖 여행책 지구제 v1 — T10 r3 실측 rect.
+  districts: {
+    version: 'district-v1',
+    open: [
+      { id: 'cbd-north', label: 'CBD·북부', tiles: { rects: [[170, 195, 285, 285]] } },
+      { id: 'south-bank', label: '사우스뱅크', tiles: { rects: [[170, 286, 229, 350]] } },
+      {
+        id: 'kangaroo-botanic',
+        label: '캥거루포인트·식물원',
+        tiles: { rects: [[230, 286, 290, 355]] },
+      },
+      { id: 'new-farm', label: '뉴팜', tiles: { rects: [[330, 250, 370, 295]] } },
+    ],
+    locked: {
+      style: 'guidebook',
+      line: '이 동네는 아직 준비 중이에요 — 다음 여행에서 만나요.',
+    },
+  },
   tileSkins: Object.freeze({ building: 'terracotta' }), // R4 — 퀸즐랜드 교외 기와 톤
   CITY_TILE, buildGrid: buildBrisbaneGrid,
 };

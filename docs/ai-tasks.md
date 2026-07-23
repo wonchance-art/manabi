@@ -187,6 +187,9 @@
 ### doing
 ### todo
 ### done (최근)
+- T19 잔여 도시 지구 확산: T10 r3 PASS 13도시에 `district-v1` 51지구·71 rect를
+  정본화하고 TRANSIT·스폰·EXIT·도어·NPC·발견·mainRoute 전수 정합과 미정의 2도시를 고정
+  (`codex2/districts-expansion`, 구현 3ee99da, base cf8342e51c80184559e23bd6ac048b1f7b7b40dd)
 - T8 NPC·도어 후보 스팟 실측(report-only): 빈 역 NPC 병합 뒤 나머지 24개 지구별
   NPC 3곳·도어 2곳을 보행성·앵커 근접·기존 마커/후보 상호 ≥3타일·건물 4방향 인접 계약으로
   결정 제안하고 2회 byte-identical SHA와 전체 212/2,141 green을 고정
