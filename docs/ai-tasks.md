@@ -16,6 +16,11 @@
 ### doing
 ### todo
 ### done (최근)
+- V2 코트다쥐르 경계 대비 확보(W2-R2-02): 밝은 개방 보도↔잠금 평지의 지각 명도차를
+  `3.15→24.43`으로 높여 16×16 전 픽셀 하한 20을 통과시키고 다른 지구제 6도시의
+  guidebook 렌더 명령·W1 경계 키 스냅샷을 유지
+  (`codex/cote-dazur-boundary-contrast`, 구현 fbb9b97,
+  base 407b32cda5e517c908a86c4d9ac0b88c430e7584, final base d192161e13255aa3e10c38bd6615e9be6ca82c34)
 - E11 기지 flaky 4종 안정화: osakaGeo·tokyoGeo RLE 왕복, cityFukuoka 전수 셀,
   contentOverrides 전 언어 라운드트립의 병렬 부하 timeout을 30초로 명시하고 전체 vitest 3회 연속 green
   (`codex/flaky-test-stabilize`, 구현 04f8e9e, base a8ff50d992b399137bf978acc7545f8e5235f2eb)

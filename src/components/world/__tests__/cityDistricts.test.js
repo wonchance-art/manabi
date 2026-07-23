@@ -25,6 +25,7 @@ const GUIDEBOOK_KEYS = [
   'ct_guidebook_landmark',
   'ct_guidebook_landmark_marker',
 ];
+const COTE_DAZUR_GUIDEBOOK_LAND_KEY = 'ct_guidebook_land_cote_dazur';
 
 function districtConfig(rect = [0, 0, 3, 2]) {
   return {
@@ -99,6 +100,51 @@ function textureHarness(city) {
   const scene = new Scene();
   scene.preload();
   return { scene, textures };
+}
+
+function rasterizeTexture({ width, height, commands }) {
+  const rgba = new Uint8ClampedArray(width * height * 4);
+  for (const { shape, args: [left, top, rectWidth, rectHeight], color, alpha } of commands) {
+    if (shape !== 'rect') throw new Error(`unsupported texture command: ${shape}`);
+    const source = [(color >> 16) & 0xff, (color >> 8) & 0xff, color & 0xff];
+    for (let y = top; y < top + rectHeight; y += 1) {
+      for (let x = left; x < left + rectWidth; x += 1) {
+        const offset = (y * width + x) * 4;
+        const destinationAlpha = rgba[offset + 3] / 255;
+        const outputAlpha = alpha + destinationAlpha * (1 - alpha);
+        for (let channel = 0; channel < 3; channel += 1) {
+          rgba[offset + channel] = Math.round((
+            source[channel] * alpha
+            + rgba[offset + channel] * destinationAlpha * (1 - alpha)
+          ) / outputAlpha);
+        }
+        rgba[offset + 3] = Math.round(outputAlpha * 255);
+      }
+    }
+  }
+  return rgba;
+}
+
+function textureLightnessDifference(first, second) {
+  const firstRgba = rasterizeTexture(first);
+  const secondRgba = rasterizeTexture(second);
+  const differences = [];
+  for (let offset = 0; offset < firstRgba.length; offset += 4) {
+    const firstLightness = firstRgba[offset] * 0.2126
+      + firstRgba[offset + 1] * 0.7152
+      + firstRgba[offset + 2] * 0.0722;
+    const secondLightness = secondRgba[offset] * 0.2126
+      + secondRgba[offset + 1] * 0.7152
+      + secondRgba[offset + 2] * 0.0722;
+    differences.push(Math.abs(firstLightness - secondLightness));
+  }
+  return {
+    meanAbs: Number((differences.reduce((sum, value) => sum + value, 0) / differences.length).toFixed(2)),
+    minAbs: Number(Math.min(...differences).toFixed(2)),
+    maxAbs: Number(Math.max(...differences).toFixed(2)),
+    atLeast20: differences.filter((value) => value >= 20).length,
+    pixels: differences.length,
+  };
 }
 
 const LYON_OPEN_RECTS = Object.freeze([
@@ -378,6 +424,116 @@ describe('CityScene guidebook 소비 경계', () => {
       .filter(({ color }) => color === 0x8f826c)).toHaveLength(8);
     expect(guidebookHarness.textures.get('ct_guidebook_water').commands
       .filter(({ color }) => color === 0x74848a)).toHaveLength(8);
+  });
+
+  it('코트다쥐르 밝은 보도↔잠금 평지는 W2 지각 명도차 하한 20을 전 픽셀에서 넘는다', () => {
+    const city = CITY_MAPS.find(({ id }) => id === 'cote-dazur');
+    const harness = textureHarness(city);
+    harness.scene.grid = city.buildGrid();
+    harness.scene.districts = resolveCityDistricts(
+      city,
+      harness.scene.grid,
+      resolveCityMainRoute(city, harness.scene.grid),
+    );
+
+    expect(harness.scene.terrainTexKey(600, 191)).toBe('ct_sidewalk');
+    expect(harness.scene.terrainTexKey(599, 191)).toBe(COTE_DAZUR_GUIDEBOOK_LAND_KEY);
+    expect(textureLightnessDifference(
+      harness.textures.get('ct_sidewalk'),
+      harness.textures.get(COTE_DAZUR_GUIDEBOOK_LAND_KEY),
+    )).toEqual({
+      meanAbs: 24.43,
+      minAbs: 20.95,
+      maxAbs: 59.09,
+      atLeast20: 256,
+      pixels: 256,
+    });
+  });
+
+  it('코트다쥐르 외 지구제 6도시는 기존 guidebook 렌더 명령과 W1 경계 키가 불변이다', () => {
+    const boundarySamples = [
+      ['lyon', [239, 139], [240, 139]],
+      ['bordeaux', [315, 191], [316, 191]],
+      ['strasbourg', [110, 257], [109, 257]],
+      ['seoul', [995, 573], [996, 573]],
+      ['busan', [810, 423], [811, 423]],
+      ['leman-riviera', [80, 140], [79, 140]],
+    ];
+    const manifest = boundarySamples.map(([id, openTile, lockedTile]) => {
+      const city = CITY_MAPS.find((candidate) => candidate.id === id);
+      const harness = textureHarness(city);
+      harness.scene.grid = city.buildGrid();
+      harness.scene.districts = resolveCityDistricts(
+        city,
+        harness.scene.grid,
+        resolveCityMainRoute(city, harness.scene.grid),
+      );
+      expect(harness.textures.has(COTE_DAZUR_GUIDEBOOK_LAND_KEY)).toBe(false);
+      const guidebookSha = createHash('sha256').update(JSON.stringify(
+        GUIDEBOOK_KEYS.map((key) => [key, harness.textures.get(key)]),
+      )).digest('hex');
+      return {
+        id,
+        boundaryKeys: [
+          harness.scene.terrainTexKey(...openTile),
+          harness.scene.terrainTexKey(...lockedTile),
+        ],
+        guidebookSha,
+      };
+    });
+
+    expect(manifest).toMatchInlineSnapshot(`
+      [
+        {
+          "boundaryKeys": [
+            "ct_sidewalk",
+            "ct_guidebook_land",
+          ],
+          "guidebookSha": "6ef0480b36888577fc698f13f5f605c9420ba3a2d4cac490d919f60ca56f0e5e",
+          "id": "lyon",
+        },
+        {
+          "boundaryKeys": [
+            "ct_sidewalk",
+            "ct_guidebook_land",
+          ],
+          "guidebookSha": "6ef0480b36888577fc698f13f5f605c9420ba3a2d4cac490d919f60ca56f0e5e",
+          "id": "bordeaux",
+        },
+        {
+          "boundaryKeys": [
+            "ct_sidewalk",
+            "ct_guidebook_road_v",
+          ],
+          "guidebookSha": "6ef0480b36888577fc698f13f5f605c9420ba3a2d4cac490d919f60ca56f0e5e",
+          "id": "strasbourg",
+        },
+        {
+          "boundaryKeys": [
+            "ct_road_v",
+            "ct_guidebook_land",
+          ],
+          "guidebookSha": "6ef0480b36888577fc698f13f5f605c9420ba3a2d4cac490d919f60ca56f0e5e",
+          "id": "seoul",
+        },
+        {
+          "boundaryKeys": [
+            "ct_road_h",
+            "ct_guidebook_road_h",
+          ],
+          "guidebookSha": "6ef0480b36888577fc698f13f5f605c9420ba3a2d4cac490d919f60ca56f0e5e",
+          "id": "busan",
+        },
+        {
+          "boundaryKeys": [
+            "ct_sidewalk",
+            "ct_guidebook_land",
+          ],
+          "guidebookSha": "6ef0480b36888577fc698f13f5f605c9420ba3a2d4cac490d919f60ca56f0e5e",
+          "id": "leman-riviera",
+        },
+      ]
+    `);
   });
 
   it('리옹 예비 rect 8개가 전체 주동선·발견·출입·TRANSIT 정합 게이트를 통과한다', () => {

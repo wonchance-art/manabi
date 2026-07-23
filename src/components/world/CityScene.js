@@ -90,6 +90,8 @@ export function cityLightingAlpha(phase) {
   return 0;
 }
 
+const COTE_DAZUR_GUIDEBOOK_LAND_KEY = 'ct_guidebook_land_cote_dazur';
+
 const DIRV = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 const VALID_DIR = new Set(['up', 'down', 'left', 'right']);
 
@@ -343,6 +345,18 @@ export function buildCityScene(Phaser, city, ctx) {
           }
         };
         this.bakeTile('ct_guidebook_land', guidebookPaper);
+        if (city.id === 'cote-dazur') {
+          // W2-R2-02 — 리비에라의 밝은 보도와 맞닿는 잠금 평지만 한 단계 짙게 둔다.
+          // 공용 종이 격자·점묘의 위치와 알파는 유지해 다른 6도시의 렌더 문법을 바꾸지 않는다.
+          this.bakeTile(COTE_DAZUR_GUIDEBOOK_LAND_KEY, (g) => {
+            g.fillStyle(C(0xc1b195), 1); g.fillRect(0, 0, TEX, TEX);
+            g.fillStyle(C(0x95866e), 0.5); g.fillRect(0, 7, TEX, 1); g.fillRect(7, 0, 1, TEX);
+            g.fillStyle(C(0x756751), 0.42);
+            for (const [x, y] of [[2, 4], [3, 3], [4, 2], [10, 13], [11, 12], [12, 11], [3, 12], [13, 4]]) {
+              g.fillRect(x, y, 1, 1);
+            }
+          });
+        }
         this.bakeTile('ct_guidebook_water', (g) => {
           g.fillStyle(C(0x98a6ab), 1); g.fillRect(0, 0, TEX, TEX);
           g.fillStyle(C(0xcad3d0), 0.66); g.fillRect(2, 5, 8, 1); g.fillRect(7, 11, 7, 1);
@@ -1026,7 +1040,9 @@ export function buildCityScene(Phaser, city, ctx) {
         if (c === TERRAIN.ISLAND || c === TERRAIN.MOUNTAIN) {
           return 'ct_guidebook_landmark';
         }
-        return 'ct_guidebook_land';
+        return city.id === 'cote-dazur'
+          ? COTE_DAZUR_GUIDEBOOK_LAND_KEY
+          : 'ct_guidebook_land';
       }
       switch (c) {
         case TERRAIN.ROAD: return `ct_road_${this.roadDirection(tx, ty)}`;
