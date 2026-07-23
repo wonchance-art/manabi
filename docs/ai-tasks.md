@@ -14,11 +14,13 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
-- V3 도로 오토타일 리옹 단일 파일럿: `roadStyle: 'autotile-v1'` opt-in 계약으로
-  ROAD·CROSSWALK·BRIDGE·mainRoute·guidebook 도로를 4방 비트마스크 16종에 정합하고,
-  미설정 25도시의 현행 렌더를 byte 불변으로 유지 (`codex/road-autotile-pilot`)
 ### todo
 ### done (최근)
+- V3 도로 오토타일 리옹 단일 파일럿: `roadStyle: 'autotile-v1'` opt-in으로
+  roadLike 4방 비트마스크 16종·광폭 내부 노면·8px 위상 파선을 ROAD·CROSSWALK·BRIDGE·
+  mainRoute·guidebook에 정합하고 미설정 25도시 렌더 키를 불변 유지
+  (`codex/road-autotile-pilot`, 구현 8f31227, base a252e27058b0a009595d58b7acd0523e9098ba87,
+  final base d8aea7714b814eae1487fc9e2f854bde867926e0)
 - W3 dev 게스트 하니스 정본 문서화: 활성화·`?spawn=` 전체 문법·오프라인/저장 경계와
   광장·공항·회랑 직행 지원 여부, 라이브 검수 절차를 소스 라인 근거로 고정
   (`codex/dev-harness-docs`, 구현 e98b4e8, base a252e27058b0a009595d58b7acd0523e9098ba87)
