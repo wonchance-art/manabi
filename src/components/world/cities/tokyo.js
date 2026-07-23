@@ -38,7 +38,7 @@ export const CITY_NODES = [
   {
     id: 'shibuya-scramble', kind: 'spot', name: '渋谷スクランブル交差点', facade: 'sign',
     tile: poiTile('shibuya-scramble'), facing: 'down', noStamp: true,
-    desc: '여러 방향의 보행 신호가 함께 열리는 「渋谷スクランブル交差点」(しぶや すくらんぶる こうさてん).',
+    desc: '여러 방향의 보행 신호가 함께 열리는 「渋谷スクランブル交差点」(しぶや すくらんぶる こうさてん)이에요.',
   },
   {
     id: 'tokyo-tower', kind: 'spot', name: '東京タワー', facade: 'tokyotower',
@@ -48,27 +48,27 @@ export const CITY_NODES = [
   {
     id: 'rainbow-bridge', kind: 'spot', name: 'レインボーブリッジ', facade: 'sign',
     tile: poiTile('rainbow-bridge'), facing: 'down', noStamp: true,
-    desc: '시바우라와 오다이바를 잇는 현수교 「レインボーブリッジ」(れいんぼーぶりっじ).',
+    desc: '시바우라와 오다이바를 잇는 현수교 「レインボーブリッジ」(れいんぼーぶりっじ)이에요.',
   },
   {
     id: 'odaiba-seaside-park', kind: 'spot', name: 'お台場海浜公園', facade: 'sign',
     tile: poiTile('odaiba-seaside-park'), facing: 'down', noStamp: true,
-    desc: '도쿄만 인공섬의 해변 공원 「お台場海浜公園」(おだいば かいひんこうえん).',
+    desc: '도쿄만 인공섬의 해변 공원 「お台場海浜公園」(おだいば かいひんこうえん)이에요.',
   },
   {
     id: 'hamarikyu-gardens', kind: 'spot', name: '浜離宮恩賜庭園', facade: 'sign',
     tile: poiTile('hamarikyu-gardens'), facing: 'down', noStamp: true,
-    desc: '바닷물을 끌어들인 연못이 있는 정원 「浜離宮恩賜庭園」(はまりきゅう おんしていえん).',
+    desc: '바닷물을 끌어들인 연못이 있는 정원 「浜離宮恩賜庭園」(はまりきゅう おんしていえん)이에요.',
   },
   {
     id: 'zojoji', kind: 'spot', name: '増上寺', facade: 'sign',
     tile: poiTile('zojoji'), facing: 'down', noStamp: true,
-    desc: '도쿄타워 가까이에 있는 불교 사찰 「増上寺」(ぞうじょうじ).',
+    desc: '도쿄타워 가까이에 있는 불교 사찰 「増上寺」(ぞうじょうじ)이에요.',
   },
   {
-    id: 'ebisu-garden-place', kind: 'spot', name: '恵比寿ガーデンプレイス', facade: 'sign',
+    id: 'ebisu-garden-place', kind: 'spot', name: '에비스의 복합 광장', facade: 'sign',
     tile: poiTile('ebisu-garden-place'), facing: 'down', noStamp: true,
-    desc: '에비스역 남쪽의 복합 공간 「恵比寿ガーデンプレイス」(えびす がーでんぷれいす).',
+    desc: '에비스역 남쪽의 복합 광장 「에비스의 복합 광장」(えびす の ふくごう こうじょう).',
   },
   // ── v2.2 확장 POI 10 (검증 리서치 2026-07-15 — 전승은 헤지, 상표는 지리 참조만) ──
   {
@@ -202,9 +202,9 @@ export const CITY_NODES = [
     desc: '고서·빈티지 옷·소극장·라이브하우스의 동네 「下北沢」(しもきたざわ). 젊은 문화의 거리로 알려진 골목 미로예요.',
   },
   {
-    id: 'nakano-broadway', kind: 'spot', name: '中野ブロードウェイ', facade: 'sign',
+    id: 'nakano-broadway', kind: 'spot', name: '나카노 서브컬처 상점가', facade: 'sign',
     tile: poiTile('nakano-broadway'), facing: 'down', noStamp: true,
-    desc: '만화·피규어·수집품 상점이 층층이 쌓인 「中野ブロードウェイ」(なかのぶろーどうぇい). 아키하바라와 나란히 꼽히는 서브컬처의 성지예요.',
+    desc: '만화·피규어·수집품 상점이 층층이 쌓인 「나카노 서브컬처 상점가」(なかの さぶかるちゃー しょうてんが). 아키하바라와 나란히 꼽히는 서브컬처 거리예요.',
   },
   {
     id: 'omotesando', kind: 'spot', name: '表参道', facade: 'sign',
@@ -227,7 +227,7 @@ export const CITY_NODES = [
   {
     id: 'tokyo-konbini', kind: 'npc', npc: 'konbini', chapter: 'ot-07-konbini', name: 'コンビニ',
     tile: [181, 274], facing: 'down', noStamp: true,
-    desc: '신주쿠의 24시간 편의점(コンビニ). 계산대 대답은 딱 두 개 — お願いします(네)·大丈夫です(됐어요).',
+    desc: '신주쿠의 24시간 편의점(コンビニ). 계산대 대답은 딱 두 개 — お願いします(네)·大丈夫です(됐어요)라고 하면 돼요.',
   },
   // ── 채움 라운드 3-1: 도쿄·오사카 8지구 NPC 4종 (oowner 2026-07-23) ──
   {

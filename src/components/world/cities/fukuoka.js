@@ -65,14 +65,14 @@ export const ZONES = [
 export const CITY_NODES = [
   // ① 博多港/베이사이드 — 국내선 부두(ベイサイド)·국제선 터미널(博多港国際ターミナル)·포트타워.
   {
-    id: 'bayside-place', kind: 'spot', name: 'ベイサイドプレイス博多', facade: 'sign',
+    id: 'bayside-place', kind: 'spot', name: '하카타 항 부두 광장', facade: 'sign',
     tile: poiTile('bayside-place'), facing: 'down', noStamp: true,
-    desc: '국내선 부두 「ベイサイドプレイス博多」(べいさいどぷれいす はかた). 하카타 부두에서 배로 시카노시마(志賀島) 쪽으로 나가요. (노코노시마 能古島는 메이노하마 姪浜 나루에서 따로 가요.)',
+    desc: '하카타 항 부두의 광장 「하카타 항 부두 광장」(はかた こう ふとう こうじょう). 하카타 부두에서 배로 시카노시마(志賀島) 쪽으로 나가요. (노코노시마 能古島는 메이노하마 姪浜 나루에서 따로 가요.)',
   },
   {
     id: 'hakata-port-international-terminal', kind: 'spot', name: '博多港国際ターミナル', facade: 'sign',
     tile: poiTile('hakata-port-international-terminal'), facing: 'down', noStamp: true,
-    desc: '부산행 국제 여객선이 드나드는 「博多港国際ターミナル」(はかたこう こくさいターミナル). 앞바다에 큰 카페리가 떠 있어요 — 여기서 배를 타면 부산으로.',
+    desc: '부산행 국제 여객선이 드나드는 「博多港国際ターミナル」(はかたこう こくさいターミナル). 앞바다에 큰 카페리가 떠 있어요 — 여기서 배를 타면 부산으로 가요.',
   },
   {
     id: 'hakata-port-tower', kind: 'spot', name: '博多ポートタワー', facade: 'sign',
@@ -92,11 +92,11 @@ export const CITY_NODES = [
     tile: [248, 140], facing: 'down', noStamp: true,
     desc: '24시간 불이 켜진 편의점(コンビニ) 「ローソン」(로손). 계산대에서 뭘 묻든 대답은 딱 두 개 — お願いします(네)·大丈夫です(됐어요). 명물 からあげクン도 있어요.',
   },
-  // ③ 中洲 — 야타이 거리 + 돈키호테 中洲店(免税 도어 무대) + 一蘭 본사.
+  // ③ 中洲 — 야타이 거리 + 대형 잡화점(免税 도어 무대) + 一蘭 본사.
   {
-    id: 'nakasu', kind: 'shop', name: 'ドン・キホーテ中洲店', facade: 'donki', chapter: 'ot-12-menzei',
+    id: 'nakasu', kind: 'shop', name: '대형 잡화점', facade: 'donki', chapter: 'ot-12-menzei',
     tile: poiTile('nakasu'), facing: 'down', noStamp: true,
-    desc: '두 강 사이 세로 섬 中洲(なかす)의 밤거리 — 야타이(屋台) 노점과 24시간 대형 할인점 「ドン・キホーテ中洲店」(どんきほーて なかすてん). 免税(めんぜい·면세) 카운터에서 여권을 보이면 세금을 돌려받아요. 근처엔 一蘭 본사도. (ot-12 면세 문화 챕터로 이어져요.)',
+    desc: '두 강 사이 세로 섬 中洲(なかす)의 밤거리 — 야타이(屋台) 노점과 24시간 대형 잡화점의 불이 밝은 밤거리. 免税(めんぜい·면세) 카운터에서 여권을 보이면 세금을 돌려받아요. 근처엔 一蘭 본사도. (ot-12 면세 문화 챕터로 이어져요.)',
   },
   // 居酒屋(이자카야 NPC) — 나카스 밤거리. ot-08 이자카야 도어의 무대: お通し의 정체 + 첫 주문 とりあえず生で.
   //   nodeId 는 WORLD_NODES 에 없어 스탬프 미대상(noStamp) — 대화 학습 경험만.
@@ -120,18 +120,18 @@ export const CITY_NODES = [
   {
     id: 'fukuoka-ramen', kind: 'npc', npc: 'ramen', chapter: 'ot-10-ramen', name: '博多ラーメン',
     tile: [205, 158], facing: 'down',
-    desc: '뽀얀 김이 오르는 돈코츠 라멘집(博多ラーメン·はかたラーメン). 입구 券売機(켄바이키)에서 식권부터 — 「替え玉お願いします」를 써 볼 곳.',
+    desc: '뽀얀 김이 오르는 돈코츠 라멘집(博多ラーメン·はかたラーメン). 입구 券売機(켄바이키)에서 식권부터 — 「替え玉お願いします」를 써 볼 곳이에요.',
   },
   {
-    id: 'fukuoka-ippudo', kind: 'shop', name: '一風堂 大名本店', facade: 'noren',
+    id: 'fukuoka-ippudo', kind: 'shop', name: '하카타 라멘 골목', facade: 'noren',
     tile: [200, 160], facing: 'down', noStamp: true,
-    desc: '다이묘에서 시작한 돈코츠 라멘집 「一風堂 大名本店」(いっぷうどう だいみょうほんてん). 붉은 노렌 아래 白丸·赤丸.',
+    desc: '다이묘에서 시작한 돈코츠 라멘 골목 「하카타 라멘 골목」(はかた ラーメン こうじ). 붉은 노렌 아래 白丸·赤丸이에요.',
   },
   // ⑦ 大濠公園/福岡城跡 — 연못 공원·성터.
   {
-    id: 'ohori-park', kind: 'spot', name: '大濠公園', facade: 'sign',
+    id: 'ohori-park', kind: 'spot', name: '호숫가 공원', facade: 'sign',
     tile: poiTile('ohori-park'), facing: 'down', noStamp: true,
-    desc: '후쿠오카성 외호(外堀)를 정비한 큰 연못 공원 「大濠公園」(おおほりこうえん). 연못을 두른 산책로와 스타벅스 뷰.',
+    desc: '후쿠오카성 외호(外堀)를 정비한 큰 연못 공원 「호숫가 공원」(こ ぱーく). 연못을 두른 산책로와 호숫가 카페의 뷰예요.',
   },
   {
     id: 'fukuoka-castle', kind: 'spot', name: '福岡城跡', facade: 'castle',

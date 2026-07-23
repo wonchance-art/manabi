@@ -25,7 +25,7 @@ const MELBOURNE_DESC_KO = Object.freeze({
   'fitzroy-brunswick-st': '빈티지와 라이브 바의 거리 「Brunswick Street, Fitzroy(피츠로이 브런즈윅 스트리트)」. 개성 있는 상점이 이어지는 동네예요.',
   'royal-botanic-gardens': '야라강 남안의 「Royal Botanic Gardens(왕립식물원)」. 1846년 기원으로 전해지는 큰 정원 — 호수 둘레 산책로가 유명해요.',
   'shrine-of-remembrance': '왕립식물원 곁 언덕의 「Shrine of Remembrance(전쟁기념관)」. 그리스 신전풍 석조 건축이 도심 축선과 마주 보고 서 있어요 — 이 게임에선 건물 외관과 위치만 담아요.',
-  mcg: '\'The G\'라는 애칭의 「Melbourne Cricket Ground(MCG)」. 10만 명 규모급으로 알려진 대형 경기장 — 이 게임에선 외관만 담아요.',
+  mcg: '크리켓 경기장 「크리켓 경기장」. 10만 명 규모급으로 알려진 대형 경기장 — 이 게임에선 외관만 담아요.',
   'st-kilda': '트램으로 닿는 바닷가 동네 「St Kilda Beach(세인트킬다)」. 긴 부두와 해변 산책로, 케이크 가게 골목으로 알려져 있어요.',
 });
 

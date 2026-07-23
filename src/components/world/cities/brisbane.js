@@ -23,7 +23,7 @@ const BRISBANE_DESC_KO = Object.freeze({
   'brisbane-city-hall': '킹조지 광장의 「Brisbane City Hall(브리즈번 시청)」. 1930년 무렵 완공된 것으로 전해지는 시계탑 건물 — 종소리가 광장에 울려요.',
   'city-botanic-gardens': '도심 강굽이 안쪽의 「City Botanic Gardens(시티 보태닉 가든)」. 19세기 식민지 시대 정원에서 출발한 것으로 전해지는 오래된 식물원이에요.',
   'roma-street-parkland': '역 곁의 큰 정원 「Roma Street Parkland(로마스트리트 파크랜드)」. 도심 속 아열대 정원으로 알려져 있어요.',
-  qagoma: '강변의 미술관 단지 「QAGOMA(퀸즐랜드 미술관·GOMA)」. 이 게임에선 건물 외관과 위치만 담아요.',
+  qagoma: '강변의 현대미술관 「강변 현대미술관」. 이 게임에선 건물 외관과 위치만 담아요.',
   'howard-smith-wharves': '스토리브리지 아래 강변 부두를 고친 「Howard Smith Wharves(하워드스미스 워브스)」. 옛 부두 창고가 강변 라운지로 바뀐 곳이에요.',
   'new-farm-park': '강굽이의 「New Farm Park(뉴팜 파크)」. 장미 정원과 큰 무화과 나무 그늘로 알려진 시민 공원이에요.',
 });

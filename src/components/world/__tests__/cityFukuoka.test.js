@@ -101,17 +101,17 @@ describe('가게/NPC 노드 (geo POI 매핑)', () => {
     expect(ramen?.kind).toBe('npc');
   });
 
-  it('돈키 中洲店(免税 도어 무대)이 中洲 노드로 계승된다', () => {
+  it('일반화: 대형 잡화점 불빛으로 표현(상호·브랜드명 일반화, desc는 면세 맥락 유지)', () => {
     const nakasu = CITY_NODES.find((n) => n.id === 'nakasu');
     expect(nakasu?.noStamp).toBe(true);             // 파사드(실존 노드 아님) — 스탬프 없음
     expect(nakasu?.facade).toBe('donki');           // 노란 돈키 간판 마커
     expect(nakasu?.desc).toContain('免税');          // 면세 도어 무대 소개
-    expect(nakasu?.name).toContain('中洲');          // 돈키 中洲店(실지리 부합)
+    expect(nakasu?.name).toContain('대형 잡화점');   // 일반화된 카피
   });
 
-  it('一風堂는 반드시 大名本店(総本店 아님 — 리서치 정정)', () => {
+  it('일반화된 카피: 라멘 골목 노드로 표현(상호 일반화)', () => {
     const ippudo = CITY_NODES.find((n) => n.id === 'fukuoka-ippudo');
-    expect(ippudo?.name).toBe('一風堂 大名本店');
+    expect(ippudo?.name).toBe('하카타 라멘 골목');
     expect(CITY_NODES.every((n) => !/総本店/.test(n.name || ''))).toBe(true);
   });
 
