@@ -257,6 +257,11 @@
 - S1 STAMP_ALBUM_NODES 85 원자 전환(선행 #387 충족 — 즉시 착수): #150 5046785938
 - S4 수집 연출 정합 → S2 앨범 지역 탭·수집률 → S3 마일스톤 보상 v1(localStorage·DB 금지)
 ### done (최근)
+- E3 프랑스어 연습문제 보강 초안: 문법 7개 레벨팩·어휘 15개 소스팩에서 명시적
+  연습 필드 0개와 자동 생성 문법 556문항·어휘 exact cloze 959/4,076을 전수 감사하고,
+  기존 런타임 형식의 소비 미연결 DRAFT 66문항을 제안
+  (`codex3/e3-fr-exercises-draft`, 구현 1bcd6ae, base 865c5b139b6f825c2227af822a70e574109ff749,
+  #150 5064521086)
 - S24 도어 track 전달 결함 수선: explicit track을 CityScene bridge부터 WorldPage까지 보존하고,
   unknown/prototype track을 경고 후 fail-closed하며 가상 en·기존 fr-01~26 URL 회귀를 고정
   (`codex3/s24-track-bridge-fix`, 구현 268f72f,
