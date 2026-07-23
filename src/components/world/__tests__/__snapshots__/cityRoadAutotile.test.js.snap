@@ -107,12 +107,12 @@ exports[`CityScene road autotile opt-in > 26도시 전 지형·mainRoute 키 스
   {
     "id": "marseille",
     "roadStyle": "autotile-v1",
-    "sha256": "47dc6587fe0f45f5b3eaeb2cfa6ca9c077330e90951a25675b66cceaaf179f9a",
+    "sha256": "5a802b4228e1702658cf9da4fcc961887baa5d56192f9f3496d9f7141b7c9980",
   },
   {
     "id": "kawaguchiko",
     "roadStyle": "autotile-v1",
-    "sha256": "20cddd96d8e2046a8721b56dc55fc1eaca999abfe4bf43e5f29b0e79f9382011",
+    "sha256": "c551f18f3c34e05e6ff9e6e09d0e972e5c9e36634b88e3a5b0603b4fec5885b0",
   },
   {
     "id": "geneva",

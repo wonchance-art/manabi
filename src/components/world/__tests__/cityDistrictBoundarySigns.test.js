@@ -159,7 +159,8 @@ describe('잠금 지구 경계 표지판 순수 배치', () => {
         'fukuoka', 'tokyo', 'osaka', 'kyoto', 'busan', 'seoul',
         'grand-paris', 'mont-saint-michel', 'cote-dazur', 'brussels',
         'taipei', 'hong-kong', 'london', 'shanghai', 'beijing',
-        'brisbane', 'sydney', 'canberra', 'melbourne', 'geneva',
+        'brisbane', 'sydney', 'canberra', 'melbourne',
+        'marseille', 'kawaguchiko', 'geneva',
         'leman-riviera', 'lyon', 'bordeaux', 'strasbourg',
       ]);
     expect(manifest.map(({ id, tiles }) => [id, tiles.length])).toMatchInlineSnapshot(`
@@ -241,6 +242,14 @@ describe('잠금 지구 경계 표지판 순수 배치', () => {
           119,
         ],
         [
+          "marseille",
+          78,
+        ],
+        [
+          "kawaguchiko",
+          108,
+        ],
+        [
           "geneva",
           66,
         ],
@@ -264,7 +273,7 @@ describe('잠금 지구 경계 표지판 순수 배치', () => {
     `);
     expect(bytes).toBe(secondBytes);
     expect(createHash('sha256').update(bytes).digest('hex'))
-      .toBe('dd863792b71fc0d79dd09afa3f429dbf831ceb6cc93193feb0246c7bea58b8aa');
+      .toBe('aab67ead8b8f57f94ced0f406c65412227b43c36ec89051bf5be81f72a08d63f');
   });
 });
 

@@ -154,6 +154,18 @@ const DISTRICT_AUDIT_CASES = Object.freeze([
     labels: ['시티(CBD)', '도심 북부', '사우스뱅크·동부', '세인트킬다'],
     nextGoal: { kind: 'stamp-title', line: '다음 칭호까지 도장 9개' },
   },
+  {
+    nodeId: 'marseille',
+    cityId: 'marseille',
+    labels: ['구항·파니에', '생샤를·롱샹', '노트르담·코르니슈', '이프 방면·프라도'],
+    nextGoal: { kind: 'stamp-title', line: '다음 칭호까지 도장 9개' },
+  },
+  {
+    nodeId: 'kawaguchiko',
+    cityId: 'kawaguchiko',
+    labels: ['가와구치호 북안', '역전·후지요시다', '오시노·후지 등산 기점'],
+    nextGoal: { kind: 'stamp-title', line: '다음 칭호까지 도장 9개' },
+  },
 ]);
 
 describe('여행 수첩 — 지구제 도시 상세', () => {
