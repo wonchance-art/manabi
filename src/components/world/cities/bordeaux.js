@@ -51,10 +51,10 @@ export const ZONES = [
   { id: 'garonne', label: '가론강', bounds: [280, 100, 360, 260], labelTile: [325, 180] },
 ];
 
-// fr 도어 2종(fr-15~16 — 제안 스팟 좌표) tile — 앵커 근처 보행+이격 ≥3 스크립트 검증 배치.
+// fr 도어 2종(fr-21~22 — 제안 스팟 좌표) tile — 앵커 근처 보행+이격 ≥3 스크립트 검증 배치.
 const BORDEAUX_DOOR_TILES = Object.freeze({
-  'fr-15': [268, 226], // 제과점 — 역사지구 1안
-  'fr-16': [269, 148], // 골동품점 — 북강변 1안
+  'fr-21': [268, 226], // 제과점 — 역사지구 1안
+  'fr-22': [269, 148], // 골동품점 — 북강변 1안
 });
 
 export const CITY_NODES = [
@@ -79,7 +79,7 @@ export const CITY_NODES = [
       desc: copy.desc,
     };
   }),
-  // 프랑스어 문화 도어 2종(fr-15~16 — 채움 라운드 2) — track 명시 라우팅.
+  // 프랑스어 문화 도어 2종(fr-21~22 — 채움 라운드 2) — track 명시 라우팅.
   ...BORDEAUX_DOORS.map((door) => ({
     id: door.id,
     kind: 'spot',

@@ -1,4 +1,4 @@
-// 🚪 리옹 프랑스어 문화 도어 2종 (fr-13~14) — Claude 소유 콘텐츠. 마르세유·파리 도어와 별개
+// 🚪 리옹 프랑스어 문화 도어 2종 (fr-19~20) — Claude 소유 콘텐츠. 마르세유·파리 도어와 별개
 // 신규 세트(장면·챕터 비중복). 공식: 실전 한 장면 + 만능 표현 + 문화 사실 1개(헤지).
 // track: 'french' — trackChapterHref 라우팅. 씬 배선은 lyon.js 라운드에서
 // — tile 좌표는 geo 확정 후 주입(마르세유 선례).
@@ -7,7 +7,7 @@
 
 export const LYON_DOORS = Object.freeze([
   Object.freeze({
-    id: 'fr-13', name: '레알 식료품 시장', nameFr: 'Marché de produits frais', track: 'french',
+    id: 'fr-19', name: '레알 식료품 시장', nameFr: 'Marché de produits frais', track: 'french',
     chapter: 'a2-02-articles',
     culture: '리옹은 미식 도시로 알려져 있어요 — 레알 지구의 시장에서는 신선한 채소·치즈·육류가 가득해요.',
     lines: Object.freeze([
@@ -16,7 +16,7 @@ export const LYON_DOORS = Object.freeze([
     ]),
   }),
   Object.freeze({
-    id: 'fr-14', name: '프레스킬 노천 카페', nameFr: 'Café en terrasse', track: 'french',
+    id: 'fr-20', name: '프레스킬 노천 카페', nameFr: 'Café en terrasse', track: 'french',
     chapter: 'a2-03-descriptive-adjectives',
     culture: '리옹의 카페는 반도 광장과 강변에 많이 있어요 — 커피를 마시며 도시의 풍경을 즐기는 것이 전통이에요.',
     lines: Object.freeze([

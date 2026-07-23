@@ -1,4 +1,4 @@
-// 🚪 스트라스부르 프랑스어 문화 도어 2종 (fr-17~18) — Claude 소유 콘텐츠. 리옹·보르도·마르세유
+// 🚪 스트라스부르 프랑스어 문화 도어 2종 (fr-23~24) — Claude 소유 콘텐츠. 리옹·보르도·마르세유
 // ·파리 도어와 별개 신규 세트(장면·챕터 비중복). 공식: 실전 한 장면 + 만능 표현 + 문화 사실 1개(헤지).
 // track: 'french' — trackChapterHref 라우팅. 씬 배선은 strasbourg.js 라운드에서
 // — tile 좌표는 geo 확정 후 주입(마르세유 선례).
@@ -7,7 +7,7 @@
 
 export const STRASBOURG_DOORS = Object.freeze([
   Object.freeze({
-    id: 'fr-17', name: '구시가 서점', nameFr: 'Librairie de la Grande-Île', track: 'french',
+    id: 'fr-23', name: '구시가 서점', nameFr: 'Librairie de la Grande-Île', track: 'french',
     chapter: 'a2-10-relative-clauses',
     culture: '스트라스부르의 구시가(그랑딜)는 보행자 중심 지구예요 — 운하를 바라보는 책 가게에서 책을 찾으며 도시의 거리를 배워요.',
     lines: Object.freeze([
@@ -16,7 +16,7 @@ export const STRASBOURG_DOORS = Object.freeze([
     ]),
   }),
   Object.freeze({
-    id: 'fr-18', name: '유럽 지구 자전거 대여점', nameFr: 'Location de vélos', track: 'french',
+    id: 'fr-24', name: '유럽 지구 자전거 대여점', nameFr: 'Location de vélos', track: 'french',
     chapter: 'a2-12-instructions',
     culture: '스트라스부르는 자전거 도시로 알려져 있어요 — 이을 공원과 운하변을 따라 자전거 도로가 이어져 있어요.',
     lines: Object.freeze([

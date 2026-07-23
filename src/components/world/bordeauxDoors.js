@@ -1,4 +1,4 @@
-// 🚪 보르도 프랑스어 문화 도어 2종 (fr-15~16) — Claude 소유 콘텐츠. 리옹·마르세유·파리
+// 🚪 보르도 프랑스어 문화 도어 2종 (fr-21~22) — Claude 소유 콘텐츠. 리옹·마르세유·파리
 // 도어와 별개 신규 세트(장면·챕터 비중복). 공식: 실전 한 장면 + 만능 표현 + 문화 사실 1개(헤지).
 // track: 'french' — trackChapterHref 라우팅. 씬 배선은 bordeaux.js 라운드에서
 // — tile 좌표는 geo 확정 후 주입(마르세유 선례).
@@ -7,7 +7,7 @@
 
 export const BORDEAUX_DOORS = Object.freeze([
   Object.freeze({
-    id: 'fr-15', name: '구시가 제과점', nameFr: 'Boulangerie du vieux Bordeaux', track: 'french',
+    id: 'fr-21', name: '구시가 제과점', nameFr: 'Boulangerie du vieux Bordeaux', track: 'french',
     chapter: 'a2-05-past-participles',
     culture: '보르도의 구시가는 18세기 신고전주의 건축으로 유명해요 — 이른 아침 제과점 앞에는 신선한 빵 냄새가 나가요.',
     lines: Object.freeze([
@@ -16,7 +16,7 @@ export const BORDEAUX_DOORS = Object.freeze([
     ]),
   }),
   Object.freeze({
-    id: 'fr-16', name: '북강변 골동품점', nameFr: 'Brocanteur du Quai des Chartrons', track: 'french',
+    id: 'fr-22', name: '북강변 골동품점', nameFr: 'Brocanteur du Quai des Chartrons', track: 'french',
     chapter: 'a2-07-conditional',
     culture: '보르도의 샤르트롱은 18세기 와인 상인 거리예요 — 옛 창고와 상인 집들이 남아 있고, 지금은 골동품점과 전시공간이 들어섰어요.',
     lines: Object.freeze([

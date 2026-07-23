@@ -50,10 +50,10 @@ export const ZONES = [
   { id: 'ill', label: '일 강', bounds: [150, 300, 260, 340], labelTile: [200, 318] },
 ];
 
-// fr 도어 2종(fr-17~18 — 제안 스팟 좌표) tile — 앵커 근처 보행+이격 ≥3 스크립트 검증 배치.
+// fr 도어 2종(fr-23~24 — 제안 스팟 좌표) tile — 앵커 근처 보행+이격 ≥3 스크립트 검증 배치.
 const STRASBOURG_DOOR_TILES = Object.freeze({
-  'fr-17': [165, 263], // 서점 — 그랑딜 1안
-  'fr-18': [275, 185], // 자전거 대여 — 유럽지구 1안
+  'fr-23': [165, 263], // 서점 — 그랑딜 1안
+  'fr-24': [275, 185], // 자전거 대여 — 유럽지구 1안
 });
 
 export const CITY_NODES = [
@@ -78,7 +78,7 @@ export const CITY_NODES = [
       desc: copy.desc,
     };
   }),
-  // 프랑스어 문화 도어 2종(fr-17~18 — 채움 라운드 2) — track 명시 라우팅.
+  // 프랑스어 문화 도어 2종(fr-23~24 — 채움 라운드 2) — track 명시 라우팅.
   ...STRASBOURG_DOORS.map((door) => ({
     id: door.id,
     kind: 'spot',
