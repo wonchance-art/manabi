@@ -52,10 +52,21 @@ export const ZONES = [
   { id: 'tete-dor', label: '테트도르', bounds: [205, 90, 290, 150], labelTile: [248, 118] },
 ];
 
-// fr 도어 2종(fr-19~20 — 제안 스팟 좌표) tile — 앵커 POI 곁 보행+이격 ≥3 스크립트 검증 배치.
+// fr 도어 8종(fr-19~20, fr-31~36) tile — 앵커 POI 곁 보행+이격 ≥3 스크립트 검증 배치.
+// open districts rects 범위:
+// - presquile-confluence: [[127, 228, 169, 292], [136, 213, 169, 240]]
+// - vieux-lyon-fourviere: [[118, 202, 149, 225], [118, 174, 178, 215]]
+// - terreaux-croix-rousse: [[166, 173, 187, 194], [157, 136, 191, 186]]
+// - rhone-part-dieu: [[157, 136, 239, 212], [227, 200, 276, 225]]
 const LYON_DOOR_TILES = Object.freeze({
-  'fr-19': [262, 217], // 식료품 시장 — 레알·파르디외 1안
-  'fr-20': [227, 202], // 노천 카페 — 파르디외 2안
+  'fr-19': [262, 217], // 식료품 시장 — rhone-part-dieu [227, 200, 276, 225]
+  'fr-20': [227, 202], // 노천 카페 — rhone-part-dieu [227, 200, 276, 225]
+  'fr-31': [170, 155], // 실크 아틀리에 — terreaux-croix-rousse [157, 136, 191, 186]
+  'fr-32': [145, 200], // 부숑 식당 — vieux-lyon-fourviere [118, 202, 149, 225]
+  'fr-33': [130, 210], // 트라불 안뜰 서점 — vieux-lyon-fourviere [118, 202, 149, 225]
+  'fr-34': [175, 170], // 인형극 공방 — terreaux-croix-rousse [157, 136, 191, 186]
+  'fr-35': [155, 260], // 강변 과자점 — rhone-part-dieu [157, 136, 239, 212] + presquile-confluence [136, 213, 169, 240]
+  'fr-36': [125, 220], // 언덕 전망 카페 — vieux-lyon-fourviere [118, 202, 149, 225]
 });
 
 export const CITY_NODES = [
@@ -88,6 +99,8 @@ export const CITY_NODES = [
   },
   ...LYON_GEO.pois.map((poi) => {
     const copy = poiCopy(poi.id);
+    // 리옹 주요 명소 스탬프 활성화: fourviere, vieux-lyon, bellecour, terreaux, croix-rousse, halles, tete-dor
+    const stampActiveIds = new Set(['fourviere', 'vieux-lyon', 'bellecour', 'terreaux', 'croix-rousse', 'halles', 'tete-dor']);
     return {
       id: poi.id,
       kind: 'spot',
@@ -97,7 +110,7 @@ export const CITY_NODES = [
       facade: 'sign',
       tile: [poi.tile[0], poi.tile[1]],
       facing: 'down',
-      noStamp: true,
+      ...(stampActiveIds.has(poi.id) ? {} : { noStamp: true }),
       desc: copy.desc,
     };
   }),
