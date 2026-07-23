@@ -265,10 +265,61 @@ open·walkable·non-EXIT 조건과 URDL 이웃으로 전수 BFS 했다.
 ## 인계
 
 - **권고 1:** 단일 보행 mainRoute를 유지하려면 `castle-east↔namba-tennoji`와
-  `namba-tennoji↔bay`의 승인된 open 회랑이 먼저 필요하다. 본 문서는 rect 좌표를
-  임의 제안하거나 도시 파일을 바꾸지 않는다.
+  `namba-tennoji↔bay`의 승인된 open 회랑이 먼저 필요하다. 아래 부록은 승인 전
+  소형 회랑 rect를 제안할 뿐 도시 파일은 바꾸지 않는다.
 - **권고 2:** 현재 open 지구를 유지하려면 기존 환경선·항만 교통을 명시하는
   multi-stage route 계약이 필요하다. 이는 현 `node|station` 연속 BFS 스키마의 범위를
   넘으므로 Claude 결정 사항이다.
 - 어느 선택이든 이 문서의 waypoint 순서와 discovery 맥락은 후보 자료로 재사용할 수 있지만,
   두 실패 leg의 RLE·SHA는 최종값으로 간주하면 안 된다.
+
+## 지구 회랑 부록 (T26)
+
+- 재검증 기준: `origin/main`
+  `5440a3869386d312c82e53f2d55280d71f0ad2cb`(#509 merge)
+- 입력 blob: 본 문서(부록 추가 전)
+  `5dd957b074fdc0f33f3e0891051fd1ee5714c07f`, `osaka.js`
+  `4134ee45ad642091bb1023ccc9dac27cdf308926`,
+  `cityDistricts.js` `2c3a8257fec829469fed70ac6ea1103bcf0d701a`
+- 문서의 각 `stepsRle` 전문을 생략 없이 `{ direction, count }` 배열로 파싱했다.
+  각 leg의 시작·끝은 현재 `OSAKA.nodes` 또는 `OSAKA.stations`에서 typed key를
+  exact-1로 찾아 얻었고, 모든 count를 타일 단위로 전개했다. leg 접합점은 다음 leg의
+  첫 타일을 한 번 제거했다.
+- 전개한 1,220타일을 현재 `districts.open[*].tiles.rects`의 포함 경계
+  (`x0 <= x <= x1`, `y0 <= y <= y1`)와 직접 대조한 결과는
+  **open 846 / locked 374**다. 따라서 위 기존 검증표의 위반 수는 재현되며,
+  현 rect 그대로의 통합은 여전히 fail-closed 대상이다.
+
+### 잠긴 지대 bbox
+
+`joined offset`과 `leg offset`은 모두 0부터 센다. bbox는 위반 타일 자체의
+`[x0,y0,x1,y1]` 포함 경계다.
+
+| 지대 | leg / offset | joined offset | 첫 타일 → 마지막 타일 | locked | bbox | 양쪽 인접 지구 |
+|---|---|---:|---|---:|---|---|
+| O1 | 4 / 44..176 | 380..512 | `[534,290]` → `[521,409]` | 133 | `[521,290,534,409]` | `castle-east` ↔ `namba-tennoji` |
+| O2 | 9 / 47..111 | 858..922 | `[419,393]` → `[361,399]` | 65 | `[361,393,419,399]` | `namba-tennoji` 내부 |
+| O3 | 9 / 207..382 | 1018..1193 | `[277,411]` → `[136,443]` | 176 | `[136,411,277,443]` | `namba-tennoji` ↔ `bay` |
+
+### 권장 회랑 rect
+
+아래 rect는 승인 전 제안이다. 각 잠긴 지대의 연속 경로를 최대 48타일 조각으로 나누고
+조각 bbox의 x·y 양쪽에 정확히 2타일을 더했다. 패딩 후 한 변 64타일·면적 768타일²를
+상한으로 삼아 대형 bbox 하나로 잠금을 푸는 안은 배제했다. 오사카 제안 9개 rect의
+실측 최대치는 한 변 48타일·면적 702타일²다. 소속은 해당 잠긴 지대 바로 양쪽의 기존
+지구로만 제한하고, 조각 경로에서 각 기존 rect까지의 맨해튼 거리 합이 작은 쪽을
+제안했다. 각 목록의 rect 순서는 경로 진행 순서다.
+
+- O1 → `castle-east`: `[528,288,536,335]`
+- O1 → `namba-tennoji`: `[523,332,532,378]`, `[519,375,527,411]`
+- O2 → `namba-tennoji`: `[376,391,421,401]`, `[359,397,379,401]`
+- O3 → `namba-tennoji`: `[239,409,279,422]`, `[205,419,243,436]`
+- O3 → `bay`: `[162,432,208,441]`, `[134,437,165,445]`
+
+이 rect 목록의 합집합은 잠긴 경로 타일 **374/374**를 포함한다. 실제 `osaka.js`
+반영 시에는 rect 추가 후 `resolveCityDistricts(city, grid, resolvedMainRoute)`를
+실행해 경로 전수 open을 다시 확인해야 하며, 이 부록은 지구 승인이나 runtime 변경을
+대신하지 않는다.
+
+T26 감사 JSON은 독립 Node 프로세스 A/B에서 byte-identical했고, 결합 SHA-256은
+`a31a558b2438cb50f6b3293d61d44d374b03e1deecf0d58a51936584db3d6ce9`다.
