@@ -324,7 +324,7 @@ export const TOKYO = {
       },
       {
         id: 'south-bay',
-        label: '남부·만',
+        label: '남부·항만',
         tiles: { rects: [[330, 430, 590, 700]] },
       },
       {

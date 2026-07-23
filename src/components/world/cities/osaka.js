@@ -131,7 +131,7 @@ export const OSAKA = {
       },
       {
         id: 'bay',
-        label: '만',
+        label: '항만',
         tiles: { rects: [[85, 420, 135, 470]] },
       },
     ],
