@@ -5,6 +5,7 @@
 
 import { CITY_TILE, isCityBlocked, isCityWalkable, isCityWater } from './terrain.js';
 import { COTE_DAZUR_GEO } from './cote-dazur.geo.js';
+import { COTE_DAZUR_DOORS } from '../coteDazurDoors.js';
 
 export { CITY_TILE, isCityBlocked, isCityWalkable, isCityWater };
 
@@ -48,6 +49,14 @@ function poiCopy(id, locale = 'ko') {
   return COTE_DAZUR_COPY[locale]?.[id] || COTE_DAZUR_COPY.ko[id];
 }
 
+// fr 도어 4종(fr-25~28) tile — 앵커 POI 곁 보행+이격 ≥3 스크립트 검증 배치.
+const COTE_DAZUR_DOOR_TILES = Object.freeze({
+  'fr-25': [277, 940],   // 공방 — 앙티브 피카소 미술관 곁(서부 리비에라)
+  'fr-26': [864, 303],   // 제과점 — 니스 구시가 곁(니스)
+  'fr-27': [991, 256],   // 식료품점 — 빌프랑슈쉬르메르 곁(동부 연안)
+  'fr-28': [1482, 55],   // 호텔 안내 데스크 — 몬테카를로 카지노 곁(모나코)
+});
+
 // 구역 라벨 — webmercator 재투영 계산치.
 export const ZONES = [
   { id: 'antibes', label: '앙티브', bounds: [121, 835, 362, 1058], labelTile: [242, 947] },
@@ -61,21 +70,38 @@ export const ZONES = [
   { id: 'monaco', label: '모나코', bounds: [1369, 0, 1531, 167], labelTile: [1450, 84] },
 ];
 
-export const CITY_NODES = COTE_DAZUR_GEO.pois.map((poi) => {
-  const copy = poiCopy(poi.id);
-  return {
-    id: poi.id,
+export const CITY_NODES = [
+  ...COTE_DAZUR_GEO.pois.map((poi) => {
+    const copy = poiCopy(poi.id);
+    return {
+      id: poi.id,
+      kind: 'spot',
+      name: copy.name,
+      nameFr: poi.nameFr,
+      contentLocale: poi.contentLocale,
+      facade: poi.id === 'nice-airport' ? 'depart' : 'sign',
+      tile: [poi.tile[0], poi.tile[1]],
+      facing: 'down',
+      noStamp: true,
+      desc: copy.desc,
+    };
+  }),
+  // 프랑스어 문화 도어 4종(fr-25~28 — 프랑스어권 6번째 신규 세트) — track 명시 라우팅.
+  ...COTE_DAZUR_DOORS.map((door) => ({
+    id: door.id,
     kind: 'spot',
-    name: copy.name,
-    nameFr: poi.nameFr,
-    contentLocale: poi.contentLocale,
-    facade: poi.id === 'nice-airport' ? 'depart' : 'sign',
-    tile: [poi.tile[0], poi.tile[1]],
+    name: door.nameFr,
+    nameFr: door.nameFr,
+    contentLocale: 'fr',
+    facade: 'sign',
+    tile: [...COTE_DAZUR_DOOR_TILES[door.id]],
     facing: 'down',
     noStamp: true,
-    desc: copy.desc,
-  };
-});
+    track: door.track,
+    chapter: door.chapter,
+    desc: `${door.name} — ${door.lines[0].fr} (${door.lines[0].gloss})`,
+  })),
+];
 
 // ⚠️ nameJa 필드는 CityScene 레거시 계약 — 프랑스 도시는 nameFr를 그대로 싣는다(yomi 공란).
 export const STATIONS = COTE_DAZUR_GEO.stations.map((station) => ({
