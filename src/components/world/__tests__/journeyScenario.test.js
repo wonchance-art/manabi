@@ -20,6 +20,7 @@ import {
   claimStampMilestoneRewards,
 } from '../../../lib/world/stampMilestones.js';
 import { STAMP_ALBUM_NODES } from '../../../lib/world/stampUniverse.js';
+import bordeaux from '../cities/bordeaux.js';
 import lyon from '../cities/lyon.js';
 import tokyo from '../cities/tokyo.js';
 import {
@@ -102,7 +103,7 @@ function collectGuestStamps(storage, ids) {
 function renderAlbum(tabId, stamps) {
   albumHooks.activeTabId = tabId;
   albumHooks.callIndex = 0;
-  albumHooks.detailCities = { lyon, tokyo };
+  albumHooks.detailCities = { bordeaux, lyon, tokyo };
   return renderToStaticMarkup(createElement(StampAlbum, {
     devGuest: true,
     stamps,
@@ -264,5 +265,66 @@ describe('S17 한 게스트의 수집→발견→칭호→만남→수첩 여정
     const markup = renderAlbum('emea', new Set(loadGuestStamps(storage)));
     expect(visibleText(markup)).toContain('1 / 85');
     expect(nextGoalLine(markup, '리옹')).toBe('발견 7/8');
+  });
+});
+
+describe('S20 보르도 채움 라운드 2 여정', () => {
+  it('스탬프·도어 앞 NPC·발견을 이어 수첩 지구와 다음 목표를 갱신한다', () => {
+    const storage = memoryStorage({
+      [npcMeetingStorageKey('bordeaux')]: JSON.stringify(['bordeaux-gare-accueil']),
+    });
+    vi.stubGlobal('localStorage', storage);
+    const stamps = collectGuestStamps(storage, stampPlan('bordeaux', 4));
+
+    let markup = renderAlbum('emea', stamps);
+    const text = visibleText(markup);
+    expect(text).toContain('4 / 85');
+    expect(text).toContain('유럽·지중해·중동 1/11');
+    expect(text).toContain('보르도');
+    expect(text).toContain('생장역 일대');
+    expect(text).toContain('역사 지구');
+    expect(text).toContain('샤르트롱·북강변');
+    expect(text).toContain('클래식 워크 회랑');
+    expect(nextGoalLine(markup, '보르도')).toBe('만난 사람 1/3');
+
+    const meetingNodes = bordeaux.nodes.filter(isNpcMeetingCandidate);
+    expect(meetingNodes.map(({ id }) => id)).toEqual([
+      'bordeaux-gare-accueil',
+      'bordeaux-centre-historique-patisserie',
+      'bordeaux-nord-rive-antiquaire',
+    ]);
+    expect([
+      [meetingNodes[1].tile, bordeaux.nodes.find(({ id }) => id === 'fr-21').tile],
+      [meetingNodes[2].tile, bordeaux.nodes.find(({ id }) => id === 'fr-22').tile],
+    ]).toEqual([
+      [[268, 225], [268, 226]],
+      [[269, 147], [269, 148]],
+    ]);
+
+    expect(recordNpcMeeting({
+      cityId: 'bordeaux',
+      node: meetingNodes[1],
+      storage,
+    })).toBe(true);
+    markup = renderAlbum('emea', stamps);
+    expect(nextGoalLine(markup, '보르도')).toBe('만난 사람 2/3');
+
+    expect(recordNpcMeeting({
+      cityId: 'bordeaux',
+      node: meetingNodes[2],
+      storage,
+    })).toBe(true);
+    expect(loadNpcMeetingIds('bordeaux', storage)).toEqual(new Set(
+      meetingNodes.map(({ id }) => id),
+    ));
+    markup = renderAlbum('emea', stamps);
+    expect(nextGoalLine(markup, '보르도')).toBe('다음 칭호까지 도장 6개');
+
+    const discovered = new Set(
+      bordeaux.mainRoute.discoveries.slice(0, 3).map(({ id }) => id),
+    );
+    expect(saveRouteDiscoveryIds('bordeaux', discovered, storage)).toBe(true);
+    markup = renderAlbum('emea', stamps);
+    expect(nextGoalLine(markup, '보르도')).toBe('발견 3/8');
   });
 });
