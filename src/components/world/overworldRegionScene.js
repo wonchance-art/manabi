@@ -11,7 +11,7 @@ import {
   planEmeaRailRoute,
   prepareEmeaRailTrip,
 } from '../../lib/world/emeaRail';
-import { OverworldChunkLoader, overworldChunkKey } from '../../lib/world/overworldChunkLoader';
+import { OverworldChunkLoader } from '../../lib/world/overworldChunkLoader';
 import { OVERWORLD_STORAGE_CHUNK_TILES } from '../../lib/world/overworldChunk';
 import { overworldRenderPageKeyAtWorldPixel } from '../../lib/world/overworldRenderPages';
 import { canAccessCorridor, corridorStopSpawn } from '../../lib/world/transsibCorridor';
@@ -167,7 +167,6 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
       this.activeGate = null;
       this.transportGates = [];
       this.worldNodeEntries = overworldRegionWorldNodes(region, ctx.worldNodes);
-      this.loadedChunks = new Map();
       this.otherScenePeerIds = new Set();
 
       this.chunkLoader = new OverworldChunkLoader({
@@ -227,7 +226,6 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
         this.transportNodes = null;
         this.chunkLoader?.destroy();
         this.chunkLoader = null;
-        this.loadedChunks.clear();
       });
 
       ctx.setStatus?.({ phase: 'loading', message: `${region.label} 지형을 불러오고 있어요.` });
@@ -311,12 +309,9 @@ export function buildOverworldRegionScene(Phaser, region, ctx) {
         || tx < 0 || ty < 0 || tx >= region.width || ty >= region.height) return null;
       const cx = Math.floor(tx / OVERWORLD_STORAGE_CHUNK_TILES);
       const cy = Math.floor(ty / OVERWORLD_STORAGE_CHUNK_TILES);
-      const key = overworldChunkKey(cx, cy);
-      const cached = this.loadedChunks.get(key);
-      if (cached) return cached;
-      const chunk = await this.chunkLoader.load(cx, cy);
-      if (!this.destroyed) this.loadedChunks.set(key, chunk);
-      return chunk;
+      // OverworldChunkLoader가 동일 좌표 Promise 합치기와 32-entry packed LRU를 모두 소유한다.
+      // 씬에 별도 무제한 Map을 두면 같은 chunk 참조를 중복 보관하고 LRU eviction을 무력화한다.
+      return this.chunkLoader.load(cx, cy);
     }
 
     async isWalkable(tx, ty) {

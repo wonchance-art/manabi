@@ -152,7 +152,9 @@ export class OverworldChunkLoader {
   load(cx, cy) {
     if (this.destroyed) return Promise.reject(new Error('overworld chunk loader is destroyed'));
     const coordinateKey = overworldChunkKey(cx, cy);
-    const requestKey = `${this.generation}:${coordinateKey}`;
+    // reset()이 cache와 inflight를 함께 비우므로 generation 문자열을 각 entry에 중복 보관할
+    // 필요가 없다. generation 숫자는 늦은 응답의 stale 판정에만 사용한다.
+    const requestKey = coordinateKey;
     const cached = this.cache.get(requestKey);
     if (cached) return Promise.resolve(cached);
     const pending = this.inflight.get(requestKey);
