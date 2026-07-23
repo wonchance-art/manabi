@@ -298,6 +298,8 @@
 
 ## Codex-4 (codex4/*) — 성능·인프라 (타 기기)
 ### doing
+- P9 오토타일 mask 중복 계산 제거: `roadAutotileTexKey()`의 cardinal mask를 1회만 계산해
+  inner·일반 key 선택에 함께 쓰고, 26도시 PNG byte 불변·3도시 P8 A/B 재측정·전체 green 고정
 ### todo
 - P0 (운영 필수·최우선) 로컬 clone 이전 + 확인 코멘트: #150 5046786117
 - P1 geo lazy-load 구현(RFC #394 승인 — 실패 UX·?spawn= 정합·scene race 주의 3건 코멘트 참조)
