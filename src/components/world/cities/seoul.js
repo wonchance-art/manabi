@@ -124,17 +124,186 @@ export function buildSeoulGrid() {
   return grid;
 }
 
+// 🗺️ 서울 주동선 경로 — 서울역→홍대→여의도→강남역→코엑스→롯데월드타워→서울숲→동대문→경복궁→숭례문
+// v3 정본(T26 proposal 실측 2026-07-23) — 10 waypoint / 9 leg / 2,609 steps / 2,610 tiles.
+// 상태: 5/9 leg open-only PASS, 4 leg 연결부 locked 회랑 1,000타일. 회랑 rect 23개 추가로 open 전수.
+const MAIN_ROUTE = Object.freeze({
+  id: 'seoul-classic-loop-candidate-a',
+  version: 1,
+  waypoints: Object.freeze([
+    Object.freeze({ kind: 'station', id: 'seoul' }),
+    Object.freeze({ kind: 'node', id: 'hongdae' }),
+    Object.freeze({ kind: 'node', id: 'yeouido-63' }),
+    Object.freeze({ kind: 'station', id: 'gangnam' }),
+    Object.freeze({ kind: 'node', id: 'coex' }),
+    Object.freeze({ kind: 'node', id: 'lotte-world-tower' }),
+    Object.freeze({ kind: 'node', id: 'seoul-forest' }),
+    Object.freeze({ kind: 'node', id: 'ddp' }),
+    Object.freeze({ kind: 'node', id: 'gyeongbokgung' }),
+    Object.freeze({ kind: 'node', id: 'sungnyemun' }),
+  ]),
+  routing: Object.freeze({
+    algorithm: 'cardinal-bfs-v1',
+    neighborOrder: 'URDL',
+    excludeExit: true,
+  }),
+  segmentHints: Object.freeze([
+    Object.freeze({
+      from: Object.freeze({ kind: 'node', id: 'seoul-forest' }),
+      to: Object.freeze({ kind: 'node', id: 'ddp' }),
+      viaTiles: [[995, 791]],
+    }),
+  ]),
+  branches: Object.freeze([]),
+  discoveries: Object.freeze([
+    Object.freeze({
+      id: 'seoul-d1', leg: Object.freeze(['seoul', 'hongdae']), at: 0.50,
+      line: '서울역 서쪽에서 마포·홍대 생활권으로 접어든 직후 — 도심 관문에서 서부 청년 문화권으로 바뀌는 구간이에요.',
+    }),
+    Object.freeze({
+      id: 'seoul-d2', leg: Object.freeze(['hongdae', 'yeouido-63']), at: 0.55,
+      line: '홍대 남쪽에서 한강·여의도권으로 내려가는 생활축 — 대학가와 업무·수변 지구의 전환이에요.',
+    }),
+    Object.freeze({
+      id: 'seoul-d3', leg: Object.freeze(['yeouido-63', 'gangnam']), at: 0.08,
+      line: '여의도 남동 끝자락 — 서남권 open 회랑을 벗어나 강남 방향 장거리 이동을 앞둔 구간이에요.',
+    }),
+    Object.freeze({
+      id: 'seoul-d4', leg: Object.freeze(['gangnam', 'coex']), at: 0.55,
+      line: '강남역에서 삼성동으로 이어지는 동서 업무축 — 대로와 지하철 환승권이 겹치는 구간이에요.',
+    }),
+    Object.freeze({
+      id: 'seoul-d5', leg: Object.freeze(['coex', 'lotte-world-tower']), at: 0.88,
+      line: '잠실권 open rect 진입 뒤 — 동부 대로에서 석촌호수 주변 고층 경관으로 바뀌는 구간이에요.',
+    }),
+    Object.freeze({
+      id: 'seoul-d6', leg: Object.freeze(['lotte-world-tower', 'seoul-forest']), at: 0.95,
+      line: '잠실에서 북서로 돌아 서울숲에 닿기 직전 — 강남권에서 성수·한강 북안으로 전환돼요.',
+    }),
+    Object.freeze({
+      id: 'seoul-d7', leg: Object.freeze(['seoul-forest', 'ddp']), at: 0.55,
+      line: '서울숲에서 사대문 안으로 복귀하는 경계 — 성수 생활권에서 동대문 도심축으로 접어드는 구간이에요.',
+    }),
+    Object.freeze({
+      id: 'seoul-d8', leg: Object.freeze(['ddp', 'gyeongbokgung']), at: 0.55,
+      line: '동대문에서 경복궁으로 잇는 종로·청계천권 — 상업 도심과 궁궐축이 만나는 구간이에요.',
+    }),
+  ]),
+  segments: Object.freeze([
+    Object.freeze({
+      id: 'station:seoul--node:hongdae',
+      from: Object.freeze({ kind: 'station', id: 'seoul' }),
+      to: Object.freeze({ kind: 'node', id: 'hongdae' }),
+      stepsRle: Object.freeze([
+        { direction: 'U', count: 8 }, { direction: 'L', count: 34 }, { direction: 'U', count: 2 }, { direction: 'L', count: 9 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 3 }, { direction: 'U', count: 1 }, { direction: 'L', count: 16 }, { direction: 'D', count: 1 }, { direction: 'L', count: 52 }, { direction: 'U', count: 1 }, { direction: 'L', count: 20 }, { direction: 'D', count: 1 }, { direction: 'L', count: 4 }, { direction: 'D', count: 1 }, { direction: 'L', count: 25 }, { direction: 'D', count: 1 }, { direction: 'L', count: 36 }, { direction: 'U', count: 1 }, { direction: 'L', count: 3 }, { direction: 'U', count: 3 }, { direction: 'L', count: 5 },
+      ]),
+      stepCount: 230,
+      tileCount: 231,
+      pathSha256: 'bff35912705a2b58e513807c1d47c17639a0c2b795b68f65978ca4ca11cd3aaa',
+    }),
+    Object.freeze({
+      id: 'node:hongdae--node:yeouido-63',
+      from: Object.freeze({ kind: 'node', id: 'hongdae' }),
+      to: Object.freeze({ kind: 'node', id: 'yeouido-63' }),
+      stepsRle: Object.freeze([
+        { direction: 'R', count: 5 }, { direction: 'D', count: 3 }, { direction: 'R', count: 3 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 24 }, { direction: 'R', count: 1 }, { direction: 'D', count: 19 }, { direction: 'R', count: 3 }, { direction: 'D', count: 5 }, { direction: 'R', count: 4 }, { direction: 'D', count: 5 }, { direction: 'R', count: 1 }, { direction: 'D', count: 3 }, { direction: 'R', count: 1 }, { direction: 'D', count: 9 }, { direction: 'R', count: 1 }, { direction: 'D', count: 3 }, { direction: 'R', count: 2 }, { direction: 'D', count: 15 }, { direction: 'L', count: 1 }, { direction: 'D', count: 2 }, { direction: 'L', count: 1 }, { direction: 'D', count: 2 }, { direction: 'L', count: 1 }, { direction: 'D', count: 6 }, { direction: 'L', count: 2 }, { direction: 'D', count: 1 }, { direction: 'L', count: 2 }, { direction: 'D', count: 2 }, { direction: 'L', count: 1 }, { direction: 'D', count: 3 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 1 }, { direction: 'D', count: 2 }, { direction: 'L', count: 1 }, { direction: 'D', count: 2 }, { direction: 'L', count: 1 }, { direction: 'D', count: 2 }, { direction: 'L', count: 1 }, { direction: 'D', count: 2 }, { direction: 'L', count: 1 }, { direction: 'D', count: 2 }, { direction: 'L', count: 1 }, { direction: 'D', count: 2 }, { direction: 'L', count: 1 }, { direction: 'D', count: 2 }, { direction: 'L', count: 1 }, { direction: 'D', count: 2 }, { direction: 'L', count: 1 }, { direction: 'D', count: 2 }, { direction: 'L', count: 1 }, { direction: 'D', count: 2 }, { direction: 'L', count: 1 }, { direction: 'D', count: 2 }, { direction: 'L', count: 1 }, { direction: 'D', count: 2 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 1 }, { direction: 'D', count: 3 }, { direction: 'R', count: 3 }, { direction: 'D', count: 1 }, { direction: 'R', count: 3 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 3 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 5 }, { direction: 'D', count: 3 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 2 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 2 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 2 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 3 }, { direction: 'D', count: 24 }, { direction: 'R', count: 1 },
+      ]),
+      stepCount: 328,
+      tileCount: 329,
+      pathSha256: '7ff38237d097f2823248a834d30aef104e4e4a7f1d1dec03c9e4d6ebde54db25',
+    }),
+    Object.freeze({
+      id: 'node:yeouido-63--station:gangnam',
+      from: Object.freeze({ kind: 'node', id: 'yeouido-63' }),
+      to: Object.freeze({ kind: 'station', id: 'gangnam' }),
+      stepsRle: Object.freeze([
+        { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'R', count: 8 }, { direction: 'D', count: 15 }, { direction: 'R', count: 27 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 3 }, { direction: 'D', count: 1 }, { direction: 'R', count: 3 }, { direction: 'D', count: 1 }, { direction: 'R', count: 4 }, { direction: 'D', count: 1 }, { direction: 'R', count: 3 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 3 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 4 }, { direction: 'D', count: 2 }, { direction: 'R', count: 3 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 3 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 3 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 3 }, { direction: 'D', count: 1 }, { direction: 'R', count: 12 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 2 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 63 }, { direction: 'D', count: 2 }, { direction: 'R', count: 2 }, { direction: 'D', count: 2 }, { direction: 'R', count: 7 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 2 }, { direction: 'R', count: 3 }, { direction: 'D', count: 2 }, { direction: 'R', count: 2 }, { direction: 'U', count: 1 }, { direction: 'R', count: 14 }, { direction: 'D', count: 1 }, { direction: 'R', count: 24 }, { direction: 'D', count: 1 }, { direction: 'R', count: 4 }, { direction: 'U', count: 3 }, { direction: 'R', count: 4 }, { direction: 'U', count: 2 }, { direction: 'R', count: 8 }, { direction: 'U', count: 1 }, { direction: 'R', count: 49 }, { direction: 'D', count: 2 }, { direction: 'R', count: 7 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 2 }, { direction: 'R', count: 12 }, { direction: 'D', count: 2 }, { direction: 'R', count: 7 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 7 }, { direction: 'R', count: 1 }, { direction: 'D', count: 3 }, { direction: 'R', count: 1 }, { direction: 'D', count: 2 }, { direction: 'R', count: 1 }, { direction: 'D', count: 3 }, { direction: 'R', count: 1 }, { direction: 'D', count: 3 }, { direction: 'R', count: 1 }, { direction: 'D', count: 2 }, { direction: 'R', count: 1 }, { direction: 'D', count: 3 }, { direction: 'R', count: 1 }, { direction: 'D', count: 6 },
+      ]),
+      stepCount: 527,
+      tileCount: 528,
+      pathSha256: 'd6d6dc93ed2e8fd69badaa41af5cbb0ffcac9783687feca4dde70a4b2dcc9694',
+    }),
+    Object.freeze({
+      id: 'station:gangnam--node:coex',
+      from: Object.freeze({ kind: 'station', id: 'gangnam' }),
+      to: Object.freeze({ kind: 'node', id: 'coex' }),
+      stepsRle: Object.freeze([
+        { direction: 'U', count: 5 }, { direction: 'R', count: 2 }, { direction: 'U', count: 2 }, { direction: 'R', count: 1 }, { direction: 'U', count: 2 }, { direction: 'R', count: 1 }, { direction: 'U', count: 2 }, { direction: 'R', count: 2 }, { direction: 'U', count: 5 }, { direction: 'R', count: 1 }, { direction: 'U', count: 5 }, { direction: 'R', count: 1 }, { direction: 'U', count: 13 }, { direction: 'R', count: 1 }, { direction: 'U', count: 23 }, { direction: 'R', count: 24 }, { direction: 'U', count: 1 }, { direction: 'R', count: 3 }, { direction: 'U', count: 1 }, { direction: 'R', count: 2 }, { direction: 'U', count: 1 }, { direction: 'R', count: 8 }, { direction: 'U', count: 2 }, { direction: 'R', count: 5 }, { direction: 'U', count: 1 }, { direction: 'R', count: 3 }, { direction: 'U', count: 1 }, { direction: 'R', count: 5 }, { direction: 'U', count: 1 }, { direction: 'R', count: 3 }, { direction: 'U', count: 1 }, { direction: 'R', count: 1 }, { direction: 'U', count: 1 }, { direction: 'R', count: 14 }, { direction: 'U', count: 1 }, { direction: 'R', count: 34 }, { direction: 'U', count: 1 }, { direction: 'R', count: 7 }, { direction: 'U', count: 2 }, { direction: 'R', count: 5 }, { direction: 'U', count: 1 }, { direction: 'R', count: 3 }, { direction: 'U', count: 1 }, { direction: 'R', count: 3 }, { direction: 'U', count: 1 }, { direction: 'R', count: 2 }, { direction: 'U', count: 2 }, { direction: 'R', count: 6 },
+      ]),
+      stepCount: 213,
+      tileCount: 214,
+      pathSha256: '0e214c6fe9bb94cc47fd2c065a29a6ce7df3efd6b658e429dc58cb61704bacc3',
+    }),
+    Object.freeze({
+      id: 'node:coex--node:lotte-world-tower',
+      from: Object.freeze({ kind: 'node', id: 'coex' }),
+      to: Object.freeze({ kind: 'node', id: 'lotte-world-tower' }),
+      stepsRle: Object.freeze([
+        { direction: 'L', count: 3 }, { direction: 'D', count: 5 }, { direction: 'R', count: 2 }, { direction: 'D', count: 4 }, { direction: 'R', count: 2 }, { direction: 'U', count: 1 }, { direction: 'R', count: 4 }, { direction: 'U', count: 1 }, { direction: 'R', count: 2 }, { direction: 'U', count: 1 }, { direction: 'R', count: 2 }, { direction: 'U', count: 1 }, { direction: 'R', count: 2 }, { direction: 'U', count: 1 }, { direction: 'R', count: 10 }, { direction: 'U', count: 1 }, { direction: 'R', count: 5 }, { direction: 'D', count: 2 }, { direction: 'R', count: 16 }, { direction: 'D', count: 2 }, { direction: 'R', count: 2 }, { direction: 'U', count: 1 }, { direction: 'R', count: 3 }, { direction: 'U', count: 2 }, { direction: 'R', count: 2 }, { direction: 'U', count: 1 }, { direction: 'R', count: 2 }, { direction: 'U', count: 1 }, { direction: 'R', count: 11 }, { direction: 'U', count: 1 }, { direction: 'R', count: 1 }, { direction: 'U', count: 1 }, { direction: 'R', count: 1 }, { direction: 'U', count: 1 }, { direction: 'R', count: 19 }, { direction: 'U', count: 1 }, { direction: 'R', count: 1 }, { direction: 'U', count: 1 }, { direction: 'R', count: 19 }, { direction: 'U', count: 1 }, { direction: 'R', count: 11 }, { direction: 'U', count: 1 }, { direction: 'R', count: 3 }, { direction: 'U', count: 1 }, { direction: 'R', count: 25 }, { direction: 'U', count: 1 }, { direction: 'R', count: 10 }, { direction: 'U', count: 1 }, { direction: 'R', count: 9 }, { direction: 'U', count: 1 }, { direction: 'R', count: 16 }, { direction: 'U', count: 1 }, { direction: 'R', count: 2 }, { direction: 'U', count: 1 }, { direction: 'R', count: 16 }, { direction: 'D', count: 3 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 }, { direction: 'L', count: 1 }, { direction: 'D', count: 1 },
+      ]),
+      stepCount: 245,
+      tileCount: 246,
+      pathSha256: 'b0d2d8102fb7c945cdca22e391fc640a6b9601c43097a78494c6c0b93310e0af',
+    }),
+    Object.freeze({
+      id: 'node:lotte-world-tower--node:seoul-forest',
+      from: Object.freeze({ kind: 'node', id: 'lotte-world-tower' }),
+      to: Object.freeze({ kind: 'node', id: 'seoul-forest' }),
+      stepsRle: Object.freeze([
+        { direction: 'U', count: 2 }, { direction: 'R', count: 1 }, { direction: 'U', count: 1 }, { direction: 'R', count: 1 }, { direction: 'U', count: 6 }, { direction: 'L', count: 2 }, { direction: 'U', count: 3 }, { direction: 'L', count: 3 }, { direction: 'U', count: 14 }, { direction: 'L', count: 2 }, { direction: 'U', count: 12 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 6 }, { direction: 'L', count: 28 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 27 }, { direction: 'L', count: 1 }, { direction: 'U', count: 17 }, { direction: 'L', count: 1 }, { direction: 'U', count: 6 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 26 }, { direction: 'U', count: 1 }, { direction: 'L', count: 3 }, { direction: 'U', count: 1 }, { direction: 'L', count: 2 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 3 }, { direction: 'L', count: 9 }, { direction: 'U', count: 5 }, { direction: 'L', count: 3 }, { direction: 'U', count: 1 }, { direction: 'L', count: 6 }, { direction: 'U', count: 1 }, { direction: 'L', count: 19 }, { direction: 'U', count: 2 }, { direction: 'L', count: 16 }, { direction: 'U', count: 1 }, { direction: 'L', count: 3 }, { direction: 'U', count: 1 }, { direction: 'L', count: 2 }, { direction: 'U', count: 1 }, { direction: 'L', count: 2 }, { direction: 'U', count: 1 }, { direction: 'L', count: 22 }, { direction: 'U', count: 1 }, { direction: 'L', count: 6 }, { direction: 'U', count: 1 }, { direction: 'L', count: 2 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 4 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 5 }, { direction: 'U', count: 2 }, { direction: 'L', count: 3 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 34 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 4 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 }, { direction: 'L', count: 3 }, { direction: 'U', count: 1 }, { direction: 'L', count: 11 }, { direction: 'U', count: 2 }, { direction: 'L', count: 5 }, { direction: 'U', count: 1 }, { direction: 'L', count: 21 }, { direction: 'U', count: 1 }, { direction: 'L', count: 2 }, { direction: 'U', count: 1 }, { direction: 'L', count: 2 }, { direction: 'U', count: 1 }, { direction: 'L', count: 4 },
+      ]),
+      stepCount: 467,
+      tileCount: 468,
+      pathSha256: '7d412f9d3d44ff94a831c5a75f4f1d0ed99ae2f723ec2258283ec5a0a5ecae60',
+    }),
+    Object.freeze({
+      id: 'node:seoul-forest--node:ddp',
+      from: Object.freeze({ kind: 'node', id: 'seoul-forest' }),
+      to: Object.freeze({ kind: 'node', id: 'ddp' }),
+      stepsRle: Object.freeze([
+        { direction: 'U', count: 6 }, { direction: 'L', count: 23 }, { direction: 'U', count: 1 }, { direction: 'L', count: 2 }, { direction: 'U', count: 1 }, { direction: 'L', count: 2 }, { direction: 'U', count: 6 }, { direction: 'L', count: 2 }, { direction: 'U', count: 1 }, { direction: 'L', count: 5 }, { direction: 'U', count: 1 }, { direction: 'L', count: 10 }, { direction: 'U', count: 4 }, { direction: 'L', count: 52 }, { direction: 'U', count: 15 }, { direction: 'L', count: 1 }, { direction: 'U', count: 13 }, { direction: 'L', count: 21 }, { direction: 'U', count: 1 }, { direction: 'L', count: 9 }, { direction: 'U', count: 34 }, { direction: 'R', count: 1 }, { direction: 'U', count: 2 }, { direction: 'R', count: 1 }, { direction: 'U', count: 35 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 1 }, { direction: 'U', count: 4 }, { direction: 'R', count: 4 },
+      ]),
+      stepCount: 261,
+      tileCount: 262,
+      pathSha256: 'bf773fc37ff4819bac7e509677227b2f4ea40ca628fab62a90e066f1b55655e3',
+    }),
+    Object.freeze({
+      id: 'node:ddp--node:gyeongbokgung',
+      from: Object.freeze({ kind: 'node', id: 'ddp' }),
+      to: Object.freeze({ kind: 'node', id: 'gyeongbokgung' }),
+      stepsRle: Object.freeze([
+        { direction: 'L', count: 7 }, { direction: 'U', count: 1 }, { direction: 'L', count: 7 }, { direction: 'D', count: 1 }, { direction: 'L', count: 4 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 2 }, { direction: 'L', count: 9 }, { direction: 'U', count: 3 }, { direction: 'L', count: 8 }, { direction: 'U', count: 1 }, { direction: 'L', count: 13 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 9 }, { direction: 'L', count: 87 }, { direction: 'U', count: 48 }, { direction: 'L', count: 3 }, { direction: 'U', count: 3 }, { direction: 'L', count: 2 }, { direction: 'U', count: 1 }, { direction: 'L', count: 1 }, { direction: 'U', count: 1 },
+      ]),
+      stepCount: 215,
+      tileCount: 216,
+      pathSha256: 'fd505512164b54c5425a3fced71b561755b0f43ad06538712a2f62cbbef61086',
+    }),
+    Object.freeze({
+      id: 'node:gyeongbokgung--node:sungnyemun',
+      from: Object.freeze({ kind: 'node', id: 'gyeongbokgung' }),
+      to: Object.freeze({ kind: 'node', id: 'sungnyemun' }),
+      stepsRle: Object.freeze([
+        { direction: 'D', count: 1 }, { direction: 'R', count: 1 }, { direction: 'D', count: 1 }, { direction: 'R', count: 2 }, { direction: 'D', count: 8 }, { direction: 'R', count: 1 }, { direction: 'D', count: 20 }, { direction: 'L', count: 1 }, { direction: 'D', count: 8 }, { direction: 'L', count: 1 }, { direction: 'D', count: 46 }, { direction: 'L', count: 1 }, { direction: 'D', count: 4 }, { direction: 'L', count: 1 }, { direction: 'D', count: 11 }, { direction: 'L', count: 1 }, { direction: 'D', count: 8 }, { direction: 'L', count: 3 }, { direction: 'D', count: 1 }, { direction: 'L', count: 3 },
+      ]),
+      stepCount: 123,
+      tileCount: 124,
+      pathSha256: '6d379b9d2f4e0babe47ab3f29eae9979ae0a29eb7ee85daa005b8e0047c866a2',
+    }),
+  ]),
+});
+
 export const SEOUL = {
   id: 'seoul', name: '서울', cols: COLS, rows: ROWS, entrance: ENTRANCE, returnNode: 'seoul',
   roadStyle: 'autotile-v1',
   // 📖 여행책 지구제 v1 (D2 4호 — T5 실측 docs/proposal-district-rects.md 그대로, 개방 5.91%).
+  // T26 mainRoute 회랑 23개 rect 추가 반영 — 경로 전수 open 보행.
   districts: {
     version: 'district-v1',
     open: [
-      { id: 'historic-core', label: '사대문 안', tiles: { rects: [[780, 570, 995, 790]] } },
-      { id: 'west', label: '서남권', tiles: { rects: [[550, 700, 700, 970]] } },
-      { id: 'southeast', label: '강남·잠실', tiles: { rects: [[1020, 970, 1230, 1095], [1340, 950, 1410, 1010]] } },
-      { id: 'river-north', label: '한강 북안', tiles: { rects: [[870, 791, 1120, 900]] } },
+      { id: 'historic-core', label: '사대문 안', tiles: { rects: [[780, 570, 995, 790], [735, 738, 781, 747]] } },
+      { id: 'west', label: '서남권', tiles: { rects: [[550, 700, 700, 970], [699, 738, 738, 743], [699, 961, 736, 979], [733, 975, 766, 996], [762, 993, 796, 1013], [792, 1010, 830, 1027]] } },
+      { id: 'southeast', label: '강남·잠실', tiles: { rects: [[1020, 970, 1230, 1095], [1340, 950, 1410, 1010], [826, 1024, 875, 1030], [872, 1026, 913, 1039], [910, 1033, 956, 1040], [952, 1030, 1001, 1036], [998, 1030, 1021, 1037], [1229, 988, 1271, 1001], [1268, 985, 1316, 992], [1313, 983, 1341, 989], [1338, 933, 1375, 951], [1320, 904, 1341, 937], [1317, 859, 1323, 908], [1282, 846, 1321, 862]] } },
+      { id: 'river-north', label: '한강 북안', tiles: { rects: [[870, 791, 1120, 900], [1245, 835, 1286, 849], [1201, 831, 1248, 839], [1163, 821, 1204, 835], [1123, 813, 1166, 825], [1119, 813, 1126, 817]] } },
     ],
     locked: {
       style: 'guidebook',
@@ -143,6 +312,7 @@ export const SEOUL = {
   },
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: [], railways: SEOUL_GEO.railways,
+  mainRoute: MAIN_ROUTE,
   CITY_TILE, buildGrid: buildSeoulGrid,
 };
 

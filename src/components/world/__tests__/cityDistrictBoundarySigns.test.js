@@ -187,7 +187,7 @@ describe('잠금 지구 경계 표지판 순수 배치', () => {
         ],
         [
           "seoul",
-          309,
+          429,
         ],
         [
           "grand-paris",
@@ -273,7 +273,7 @@ describe('잠금 지구 경계 표지판 순수 배치', () => {
     `);
     expect(bytes).toBe(secondBytes);
     expect(createHash('sha256').update(bytes).digest('hex'))
-      .toBe('93cbb27f68a39634120535aab1d3eedcbbc928161942a19aea163ed3e2f86476');
+      .toBe('3bc8ae7a2b8ee2eb17fc043257880d6e0522ff4752d8a73f7cb4f195d6de47ea');
   });
 });
 

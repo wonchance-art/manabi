@@ -3,6 +3,7 @@ import { loadRouteDiscoveryIds } from './routeDiscoveries.js';
 // P1 lazy city registry에서 상세 payload를 요청할 S6 정본 범위.
 // 발견 개수와 ID는 로드한 각 도시의 mainRoute.discoveries만 신뢰한다.
 export const STAMP_ALBUM_DISCOVERY_CITY_IDS = Object.freeze([
+  'seoul',
   'tokyo',
   'lyon',
   'bordeaux',

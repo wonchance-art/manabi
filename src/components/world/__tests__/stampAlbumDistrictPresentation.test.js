@@ -14,7 +14,7 @@ const DISTRICT_AUDIT_CASES = Object.freeze([
     nodeId: 'seoul',
     cityId: 'seoul',
     labels: ['사대문 안', '서남권', '강남·잠실', '한강 북안'],
-    nextGoal: { kind: 'stamp-title', line: '다음 칭호까지 도장 9개' },
+    nextGoal: { kind: 'discovery', line: '발견 0/8' },
   },
   {
     nodeId: 'busan',
