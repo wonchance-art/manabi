@@ -16,10 +16,6 @@
 ### doing
 ### todo
 ### done (최근)
-- E10 에어허브 감사 공백 수정: APAC 인천 도착 앵커를 왕복 가능한 항공 게이트로 승격하고
-  저장 실패를 E2 문법의 연결 안내·동일 목적지 `다시 시도 Ⓐ/Ⓑ` 상태머신으로 통일,
-  EMEA/APAC 왕복·재시도 감사 절차를 회귀 테스트로 고정
-  (`codex/airhub-audit-fixes`, 구현 63796f1, base fbfd3c70284f26ec21c34b0772dfe70af0d127f5)
 - E9 광장(도쿄) 에어허브 게스트 하니스 검증·락 점검(report-only): E4·E6형 락 교착·
   중복 저장·잔존 상태 없음과 dev guest 저장 스킵을 확인하고, 광장 직행 spawn 부재·
   EMEA/APAC 왕복 비대칭·실패 재시도 카피 공백을 보고
@@ -226,12 +222,6 @@
 - S1 STAMP_ALBUM_NODES 85 원자 전환(선행 #387 충족 — 즉시 착수): #150 5046785938
 - S4 수집 연출 정합 → S2 앨범 지역 탭·수집률 → S3 마일스톤 보상 v1(localStorage·DB 금지)
 ### done (최근)
-- S8 수첩 표면 모바일 정리: 앨범 지역 탭은 터치 가로 스크롤로 고정하고 배지·지구 칩·
-  발견/다음 목표·칭호 표기의 min-content 축소와 줄바꿈을 1180px 미만·375px 계약으로 회귀 고정
-  (`codex3/album-mobile-polish`, 구현 adb8a03, base fbf448c15d38247b9a7aef862a87d7ca3ce80edf)
-- S7 진척 표면 정리: 여행 수첩 도시 상세의 지구·발견·칭호 후보를 남은 개수·고정 동률
-  우선순위로 1줄 통합하고 기존 개별 표기와 XOR 처리
-  (`codex3/next-goal-line`, 구현 614426f, base fbf448c15d38247b9a7aef862a87d7ca3ce80edf)
 - S6 여행 수첩 발견 수집률: 주동선 발견이 있는 리옹·보르도·스트라스부르 카드에
   `route-discoveries:<cityId>`의 정본 교집합을 `발견 n/m`으로 표시하고 깨진 JSON·미지 ID를 무시
   (`codex3/album-discovery-progress`, 구현 cc0277d, base 64a9292369e95f426a6a09fc70effa4a003e136b)
@@ -247,15 +237,17 @@
   지역 `noStamp` 해제·팩트 85/85·기존 66개 저장 호환 계약
 - 스탬프 우주 확장 RFC(발주 #150 코멘트 참조): REGIONAL_WORLD_NODES 19도시 앨범 편입 계약
   설계 — StampAlbum 소비 집합·noStamp 재정의·지식 카드(factLine) 커버리지 연계. RFC → 승인 → 구현
+- S8 수첩 표면 모바일 정리: 앨범 지역 탭은 터치 가로 스크롤로 고정하고 배지·지구 칩·
+  발견/다음 목표·칭호 표기의 min-content 축소와 줄바꿈을 1180px 미만·375px 계약으로 회귀 고정
+  (`codex3/album-mobile-polish`, 구현 adb8a03, base fbf448c15d38247b9a7aef862a87d7ca3ce80edf)
 
 ## Codex-4 (codex4/*) — 성능·인프라 (타 기기)
 ### doing
 ### todo
 - P0 (운영 필수·최우선) 로컬 clone 이전 + 확인 코멘트: #150 5046786117
 - P1 geo lazy-load 구현(RFC #394 승인 — 실패 UX·?spawn= 정합·scene race 주의 3건 코멘트 참조)
+- P3 도쿄 로더 레이어(파일 경계: Codex-2 T1과 분리)
 ### done (최근)
-- P3 도쿄 로더 레이어: cityGeo packed-RLE로 lazy load heap 77.89% 절감·오버월드
-  무제한 중복 Map 제거로 32-entry LRU 상한 복구(`codex4/tokyo-loader-tuning`)
 - P2 .owc 프리페치 벤치: APAC·EMEA 각 3경로에서 현행 vs 반경+1의 지연·동시 요청·RSS를
   report-only 비교하고 blanket 반경+1 보류·방향성/concurrency 2 후속 게이트를 제안
   (`codex4/owc-prefetch-bench`, base `49e6699764febdcd1132c4644389f65e91ed6705`)
