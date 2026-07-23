@@ -1,0 +1,143 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`CityScene road autotile opt-in > 5계열 16종+inner 렌더 명령이 2회 byte-identical이다 1`] = `
+{
+  "sha256": "9299a5ed393d92a7673eaa2fb653f9d331dd5312e1d603fd38b58f905bd9c83c",
+  "textureCount": 85,
+}
+`;
+
+exports[`CityScene road autotile opt-in > 26도시 전 지형·mainRoute 키 스냅샷에서 리옹만 갱신되고 25도시는 exact 불변이다 1`] = `
+[
+  {
+    "id": "fukuoka",
+    "roadStyle": null,
+    "sha256": "dc6dd00f9a14ea06517d1e6543039c7e63e2f9b0471f2f5bb3b086b744318a9a",
+  },
+  {
+    "id": "tokyo",
+    "roadStyle": null,
+    "sha256": "ddbb9f41df6e3cf7de95fa4d6fe305c4da8dd1ff0f9991a5cfd8eae22e59733d",
+  },
+  {
+    "id": "osaka",
+    "roadStyle": null,
+    "sha256": "dc648e5e34bdd10f2bdce1c0a2c585a725d76533c52173e51d1552eb6ca6fe24",
+  },
+  {
+    "id": "kyoto",
+    "roadStyle": null,
+    "sha256": "b54e257ffb8fbda0e0d2ebd11ab9d02ca5118fb41a7d91766aba9fb27dc947b9",
+  },
+  {
+    "id": "busan",
+    "roadStyle": null,
+    "sha256": "08abc45d06d624f7a4f65afbb2ed7458b8f13bf9d22c81eba7fb676cb193dead",
+  },
+  {
+    "id": "seoul",
+    "roadStyle": null,
+    "sha256": "ac7e9aecc6141b3ebf0e8d9f5aa466709b700952a1eb692e42ef689b1d337ea0",
+  },
+  {
+    "id": "grand-paris",
+    "roadStyle": null,
+    "sha256": "67bad1273ac21b0337458b1e76ab73bdfa103a83e8ab1da820ef05e77deb5557",
+  },
+  {
+    "id": "mont-saint-michel",
+    "roadStyle": null,
+    "sha256": "8f01e2ecb7ad5d7386f38440d4f36e61f82f3c6508253832c4a93bcd098aa4a7",
+  },
+  {
+    "id": "cote-dazur",
+    "roadStyle": null,
+    "sha256": "dfb1e1c1390e7a806be8bc2c334d0251121bb39da52a7e69ff4d150dcbccdce7",
+  },
+  {
+    "id": "brussels",
+    "roadStyle": null,
+    "sha256": "49b77760838417134ea865b3b1498b8d7e77187aa47b3ec255c25e0fa8dcf500",
+  },
+  {
+    "id": "taipei",
+    "roadStyle": null,
+    "sha256": "7bee3b6c2c37a36ed0725eb9881bc2c9917c4c9b698d7d104ac813a1e9c32941",
+  },
+  {
+    "id": "hong-kong",
+    "roadStyle": null,
+    "sha256": "39323421eaa95a37ff51c249d97909c8fdc8a5aff7e5b1674db33761dd793832",
+  },
+  {
+    "id": "london",
+    "roadStyle": null,
+    "sha256": "77a0e7f2fd8b40ce4e00fd1af4ad069640ec179fb28e1c16d14357fc07ca3385",
+  },
+  {
+    "id": "shanghai",
+    "roadStyle": null,
+    "sha256": "d3dd56fc1bc79c3f5bdde95400916795460d2be716dd19e5da1574ba8d0ef086",
+  },
+  {
+    "id": "beijing",
+    "roadStyle": null,
+    "sha256": "82eced22ded9b36e74c8a22ff302b658b2a91b72cdd3bdbcdbc4ea5d4ce35e73",
+  },
+  {
+    "id": "brisbane",
+    "roadStyle": null,
+    "sha256": "c85f32e4a2c3a7def043f366f9547b5721b6b99776f493e3ebce6adc78d3f9cc",
+  },
+  {
+    "id": "sydney",
+    "roadStyle": null,
+    "sha256": "3e9cf36b071ec600eb66f5b0c3c0bdf27aa053793b4770ef17b48f69ba9d78e7",
+  },
+  {
+    "id": "canberra",
+    "roadStyle": null,
+    "sha256": "2d1443256f666df7695d3fd0d8edff0295f609f5112edde1b7d3498793293aa0",
+  },
+  {
+    "id": "melbourne",
+    "roadStyle": null,
+    "sha256": "d7f0daa7b7f7129065fb07d09faf44f9942ba9eeb240e047ab8dcaf187ea555d",
+  },
+  {
+    "id": "marseille",
+    "roadStyle": null,
+    "sha256": "82a44066c3d9a85bca08bba111e1910fac3d860578fe17183ea3b8c8b402f8e4",
+  },
+  {
+    "id": "kawaguchiko",
+    "roadStyle": null,
+    "sha256": "32d22ac780014abfb91a4e9f1059c97bfef300fbdd9ed7941155324013c40bb4",
+  },
+  {
+    "id": "geneva",
+    "roadStyle": null,
+    "sha256": "4ab951e8352360e0e72b3dfbdc1e4426eeb6b701b077498f865d06b631a35545",
+  },
+  {
+    "id": "leman-riviera",
+    "roadStyle": null,
+    "sha256": "704f630b695cf08583ee2e4d5f130878fd24c6b61653ba921265ea4088e05d58",
+  },
+  {
+    "id": "lyon",
+    "roadStyle": "autotile-v1",
+    "sha256": "4c761d11423567665ce8b525c67c9f0dea06c82c2e6b137be74bdc3b927638f0",
+  },
+  {
+    "id": "bordeaux",
+    "roadStyle": null,
+    "sha256": "9bbd35e8f138c0621472044dfc10db3e9ed0b1ac619befafe92cccbdb403807e",
+  },
+  {
+    "id": "strasbourg",
+    "roadStyle": null,
+    "sha256": "eaeefb5c2d4a52ea273473c437bfc2a9982427996ef87043fa98369be55daebc",
+  },
+]
+`;

@@ -91,6 +91,23 @@ export function cityLightingAlpha(phase) {
 }
 
 const COTE_DAZUR_GUIDEBOOK_LAND_KEY = 'ct_guidebook_land_cote_dazur';
+export const ROAD_AUTOTILE_STYLE = 'autotile-v1';
+const ROAD_N = 1;
+const ROAD_E = 2;
+const ROAD_S = 4;
+const ROAD_W = 8;
+const ROAD_STRAIGHT_NS = ROAD_N | ROAD_S;
+const ROAD_STRAIGHT_EW = ROAD_E | ROAD_W;
+
+export const ROAD_AUTOTILE_VARIANTS = Object.freeze([
+  'isolated',
+  'end-n', 'end-e', 'corner-ne', 'end-s', 'straight-ns', 'corner-es', 't-nes',
+  'end-w', 'corner-nw', 'straight-ew', 't-new', 'corner-sw', 't-nsw', 't-esw', 'cross',
+]);
+
+export function cityUsesRoadAutotile(city) {
+  return city?.roadStyle === ROAD_AUTOTILE_STYLE;
+}
 
 const DIRV = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 const VALID_DIR = new Set(['up', 'down', 'left', 'right']);
@@ -135,6 +152,7 @@ export function buildCityScene(Phaser, city, ctx) {
   const COLS = city.cols;
   const ROWS = city.rows;
   const SCENE_KEY = `city:${city.id}`;
+  const USES_ROAD_AUTOTILE = cityUsesRoadAutotile(city);
   const METERS_PER_TILE = cityMetersPerTile(city);
   const SCALE_TIER = cityScaleTier(METERS_PER_TILE).id;
 
@@ -192,6 +210,57 @@ export function buildCityScene(Phaser, city, ctx) {
         g.fillStyle(C(0x777a82), 1); g.fillRect(0, 0, TEX, 1); g.fillRect(0, TEX - 1, TEX, 1);
       });
       this.bakeTile('ct_road_x', (g) => { roadBase(g); });
+
+      // autotile-v1 — N/E/S/W 비트마스크(1/2/4/8) 16종. 연결된 변은 에지를
+      // 생략하고 직선(5/10)에만 최종 월드 8px 주기(소스 4px)의 중앙선을 둔다.
+      const roadEdges = (g, mask, color, alpha = 1) => {
+        g.fillStyle(C(color), alpha);
+        if (!(mask & ROAD_N)) g.fillRect(0, 0, TEX, 1);
+        if (!(mask & ROAD_E)) g.fillRect(TEX - 1, 0, 1, TEX);
+        if (!(mask & ROAD_S)) g.fillRect(0, TEX - 1, TEX, 1);
+        if (!(mask & ROAD_W)) g.fillRect(0, 0, 1, TEX);
+      };
+      const roadDashes = (g, mask, color, alpha = 1) => {
+        g.fillStyle(C(color), alpha);
+        if (mask === ROAD_STRAIGHT_NS) {
+          for (let y = 0; y < TEX; y += 4) g.fillRect(7, y, 2, 2);
+        } else if (mask === ROAD_STRAIGHT_EW) {
+          for (let x = 0; x < TEX; x += 4) g.fillRect(x, 7, 2, 2);
+        }
+      };
+      const bakeRoadVariants = ({
+        prefix,
+        surface,
+        edgeColor,
+        edgeAlpha = 1,
+        dashColor = null,
+        dashAlpha = 1,
+      }) => {
+        for (let mask = 0; mask < 16; mask += 1) {
+          this.bakeTile(`${prefix}_${mask}`, (g) => {
+            surface(g, mask, false);
+            if (dashColor != null) roadDashes(g, mask, dashColor, dashAlpha);
+            roadEdges(g, mask, edgeColor, edgeAlpha);
+          });
+        }
+        // 4방+4대각이 모두 roadLike인 광폭 중심은 에지·파선·잡티 없는 내부 노면.
+        this.bakeTile(`${prefix}_inner`, (g) => surface(g, 15, true));
+      };
+      if (USES_ROAD_AUTOTILE) {
+        bakeRoadVariants({
+          prefix: 'ct_road_autotile',
+          surface: (g, _mask, interior) => {
+            g.fillStyle(C(0x4a4d55), 1); g.fillRect(0, 0, TEX, TEX);
+            if (!interior) {
+              g.fillStyle(C(0x3d4048), 1);
+              for (const [x, y] of [[2, 3], [11, 5], [5, 12], [13, 10]]) g.fillRect(x, y, 1, 1);
+            }
+          },
+          edgeColor: 0x777a82,
+          dashColor: 0xd9d2b0,
+          dashAlpha: 0.9,
+        });
+      }
       // 보도 — 밝은 웜 그레이 + 이음새 격자.
       this.bakeTile('ct_sidewalk', (g) => {
         g.fillStyle(C(0xcfc7b4), 1); g.fillRect(0, 0, TEX, TEX);
@@ -207,6 +276,24 @@ export function buildCityScene(Phaser, city, ctx) {
         g.fillStyle(C(0x4a4d55), 1); g.fillRect(0, 0, TEX, TEX);
         g.fillStyle(C(0xeae4d2), 0.92); for (const y of [1, 5, 9, 13]) g.fillRect(0, y, TEX, 2);
       });
+      if (USES_ROAD_AUTOTILE) {
+        // 횡단보도도 동일 mask를 소비하고, 우세 연결축에 기존 지브라 문법을 맞춘다.
+        bakeRoadVariants({
+          prefix: 'ct_crosswalk_autotile',
+          surface: (g, mask) => {
+            g.fillStyle(C(0x4a4d55), 1); g.fillRect(0, 0, TEX, TEX);
+            const horizontal = Number(Boolean(mask & ROAD_E)) + Number(Boolean(mask & ROAD_W));
+            const vertical = Number(Boolean(mask & ROAD_N)) + Number(Boolean(mask & ROAD_S));
+            g.fillStyle(C(0xeae4d2), 0.92);
+            if (horizontal > vertical) {
+              for (const y of [1, 5, 9, 13]) g.fillRect(0, y, TEX, 2);
+            } else {
+              for (const x of [1, 5, 9, 13]) g.fillRect(x, 0, 2, TEX);
+            }
+          },
+          edgeColor: 0x777a82,
+        });
+      }
       // 광장 — 웜 탠 포석.
       this.bakeTile('ct_plaza', (g) => {
         g.fillStyle(C(0xe0cf9e), 1); g.fillRect(0, 0, TEX, TEX);
@@ -233,6 +320,19 @@ export function buildCityScene(Phaser, city, ctx) {
         g.fillStyle(C(0x8a6538), 1); for (let y = 2; y < TEX; y += 4) g.fillRect(0, y, TEX, 1);
         g.fillStyle(C(0x6f4a28), 1); g.fillRect(0, 0, 1, TEX); g.fillRect(TEX - 1, 0, 1, TEX);
       });
+      if (USES_ROAD_AUTOTILE) {
+        bakeRoadVariants({
+          prefix: 'ct_bridge_autotile',
+          surface: (g) => {
+            g.fillStyle(C(0xb89058), 1); g.fillRect(0, 0, TEX, TEX);
+            g.fillStyle(C(0x8a6538), 1);
+            for (let y = 2; y < TEX; y += 4) g.fillRect(0, y, TEX, 1);
+          },
+          edgeColor: 0x6f4a28,
+          dashColor: 0xe0c394,
+          dashAlpha: 0.75,
+        });
+      }
       // 부두 데크 — 짙은 목판.
       this.bakeTile('ct_dock', (g) => {
         g.fillStyle(C(0x9a6a3a), 1); g.fillRect(0, 0, TEX, TEX);
@@ -381,6 +481,20 @@ export function buildCityScene(Phaser, city, ctx) {
           g.fillStyle(C(0x6f6b65), 0.34);
           for (const [x, y] of [[1, 7], [13, 7], [7, 1], [7, 13]]) g.fillRect(x, y, 2, 1);
         });
+        if (USES_ROAD_AUTOTILE) {
+          bakeRoadVariants({
+            prefix: 'ct_guidebook_road_autotile',
+            surface: (g, _mask, interior) => {
+              guidebookPaper(g);
+              g.fillStyle(C(0x89847c), interior ? 0.58 : 0.48);
+              g.fillRect(0, 0, TEX, TEX);
+            },
+            edgeColor: 0x6f6b65,
+            edgeAlpha: 0.62,
+            dashColor: 0xc2baa9,
+            dashAlpha: 0.46,
+          });
+        }
         this.bakeTile('ct_guidebook_landmark', (g) => {
           guidebookPaper(g);
           g.fillStyle(C(0x958d7e), 0.76); g.fillRect(3, 3, 10, 10);
@@ -824,6 +938,20 @@ export function buildCityScene(Phaser, city, ctx) {
           g.fillStyle(C(0x5f594f), 0.42); g.fillRect(0, 7, TEX, 1); g.fillRect(7, 0, 1, TEX);
           g.fillStyle(C(0xa09682), 0.42); g.fillRect(1, 1, 5, 5); g.fillRect(9, 9, 5, 5);
         });
+        if (USES_ROAD_AUTOTILE) {
+          bakeRoadVariants({
+            prefix: 'ct_main_route_paving_autotile',
+            surface: (g) => {
+              g.fillStyle(C(0x817766), 0.76); g.fillRect(0, 0, TEX, TEX);
+              g.fillStyle(C(0x5f594f), 0.42); g.fillRect(0, 7, TEX, 1); g.fillRect(7, 0, 1, TEX);
+              g.fillStyle(C(0xa09682), 0.42); g.fillRect(1, 1, 5, 5); g.fillRect(9, 9, 5, 5);
+            },
+            edgeColor: 0x4d4942,
+            edgeAlpha: 0.7,
+            dashColor: 0xd9d2b0,
+            dashAlpha: 0.66,
+          });
+        }
         // 이정표 — 글자 없는 양방향 화살표 판과 지주만 남긴 일반 실루엣.
         this.bakeTile('ct_prop_route_signpost', (g) => {
           g.fillStyle(C(0x4c4439), 1); g.fillRect(7, 7, 2, 25); g.fillRect(5, 30, 6, 2);
@@ -1015,6 +1143,35 @@ export function buildCityScene(Phaser, city, ctx) {
       return 'x';
     }
 
+    roadLikeAt(tx, ty) {
+      const code = this.tileCode(tx, ty);
+      return code === TERRAIN.ROAD || code === TERRAIN.CROSSWALK || code === TERRAIN.BRIDGE;
+    }
+
+    roadMask(tx, ty) {
+      return (this.roadLikeAt(tx, ty - 1) ? ROAD_N : 0)
+        | (this.roadLikeAt(tx + 1, ty) ? ROAD_E : 0)
+        | (this.roadLikeAt(tx, ty + 1) ? ROAD_S : 0)
+        | (this.roadLikeAt(tx - 1, ty) ? ROAD_W : 0);
+    }
+
+    roadInteriorAt(tx, ty) {
+      if (this.roadMask(tx, ty) !== 15) return false;
+      return this.roadLikeAt(tx - 1, ty - 1)
+        && this.roadLikeAt(tx + 1, ty - 1)
+        && this.roadLikeAt(tx + 1, ty + 1)
+        && this.roadLikeAt(tx - 1, ty + 1);
+    }
+
+    roadAutotileTexKey(prefix, tx, ty) {
+      return `${prefix}_${this.roadInteriorAt(tx, ty) ? 'inner' : this.roadMask(tx, ty)}`;
+    }
+
+    mainRoutePavingTexKey(tx, ty) {
+      if (!USES_ROAD_AUTOTILE || !this.roadLikeAt(tx, ty)) return 'ct_main_route_paving';
+      return this.roadAutotileTexKey('ct_main_route_paving_autotile', tx, ty);
+    }
+
     buildingEdgeMask(tx, ty) {
       const open = (x, y) => this.tileCode(x, y) !== TERRAIN.BUILDING;
       return Number(open(tx, ty - 1))
@@ -1035,7 +1192,9 @@ export function buildCityScene(Phaser, city, ctx) {
       if (this.districtLockedAt(tx, ty)) {
         if (c === TERRAIN.WATER || c === TERRAIN.RIVER) return 'ct_guidebook_water';
         if (c === TERRAIN.ROAD || c === TERRAIN.CROSSWALK || c === TERRAIN.BRIDGE) {
-          return `ct_guidebook_road_${this.roadDirection(tx, ty)}`;
+          return USES_ROAD_AUTOTILE
+            ? this.roadAutotileTexKey('ct_guidebook_road_autotile', tx, ty)
+            : `ct_guidebook_road_${this.roadDirection(tx, ty)}`;
         }
         if (c === TERRAIN.ISLAND || c === TERRAIN.MOUNTAIN) {
           return 'ct_guidebook_landmark';
@@ -1045,13 +1204,19 @@ export function buildCityScene(Phaser, city, ctx) {
           : 'ct_guidebook_land';
       }
       switch (c) {
-        case TERRAIN.ROAD: return `ct_road_${this.roadDirection(tx, ty)}`;
+        case TERRAIN.ROAD: return USES_ROAD_AUTOTILE
+          ? this.roadAutotileTexKey('ct_road_autotile', tx, ty)
+          : `ct_road_${this.roadDirection(tx, ty)}`;
         case TERRAIN.SIDEWALK: return 'ct_sidewalk';
-        case TERRAIN.CROSSWALK: return `ct_crosswalk_${this.roadDirection(tx, ty) === 'h' ? 'h' : 'v'}`;
+        case TERRAIN.CROSSWALK: return USES_ROAD_AUTOTILE
+          ? this.roadAutotileTexKey('ct_crosswalk_autotile', tx, ty)
+          : `ct_crosswalk_${this.roadDirection(tx, ty) === 'h' ? 'h' : 'v'}`;
         case TERRAIN.PLAZA: return 'ct_plaza';
         case TERRAIN.PARK: return 'ct_park';
         case TERRAIN.BEACH: return cityBeachTextureKey(city);
-        case TERRAIN.BRIDGE: return 'ct_bridge';
+        case TERRAIN.BRIDGE: return USES_ROAD_AUTOTILE
+          ? this.roadAutotileTexKey('ct_bridge_autotile', tx, ty)
+          : 'ct_bridge';
         case TERRAIN.DOCK: return 'ct_dock';
         case TERRAIN.EXIT: return 'ct_exit';
         case TERRAIN.WATER: return cityWaterTextureKey(city, 0);
@@ -1310,7 +1475,7 @@ export function buildCityScene(Phaser, city, ctx) {
           stamp.setTexture(this.terrainTexKey(tx, ty));
           rt.batchDraw(stamp, (tx - ox) * TILE, (ty - oy) * TILE);
           if (this.districtOpenAt(tx, ty) && this.mainRoute && cityMainRouteTileAt(this.mainRoute, COLS, tx, ty)) {
-            stamp.setTexture('ct_main_route_paving');
+            stamp.setTexture(this.mainRoutePavingTexKey(tx, ty));
             rt.batchDraw(stamp, (tx - ox) * TILE, (ty - oy) * TILE);
           }
         }
