@@ -9,7 +9,7 @@
 //
 // 흐름: script.steps 를 한 스텝씩 진행. say/narr = 텍스트박스(A=다음·B=뜻 토글). ask = 정답 게이팅
 //   (오답이면 근거 표시 후 재시도). omikuji = 뽑기 연출(균등 랜덤) + 凶이면 "묶고 가기" 리추얼.
-//   마지막 스텝을 넘기면 onComplete()(스탬프 1회) 후 완료 카드. 재대화 가능(스탬프는 서버 Set 가드).
+//   마지막 스텝을 넘기면 onComplete() 후 완료 카드. 재대화 가능(보상 기록은 호출부에서 멱등 처리).
 //
 // 소프트락 방지(P1-1): GameCanvas 가 대화 중 이동을 잠그므로, 답을 모르는 사용자가 갇히지 않게
 //   「나가기」 버튼을 모든 스텝(ask·omikuji 포함)에 항상 렌더한다. B(cancel)는 say 대사에선 뜻 토글,
@@ -28,7 +28,15 @@ import { getNpcScript, judgeType, drawOmikuji } from './npcScripts';
 
 const WHO_LABEL = { me: '나' };
 
-export default function NpcDialog({ npcKey, npcName, actionRef, cancelRef, onComplete, onExit }) {
+export default function NpcDialog({
+  npcKey,
+  npcName,
+  actionRef,
+  cancelRef,
+  completionNote,
+  onComplete,
+  onExit,
+}) {
   const script = useMemo(() => getNpcScript(npcKey), [npcKey]);
   const steps = script?.steps || [];
 
@@ -142,8 +150,10 @@ export default function NpcDialog({ npcKey, npcName, actionRef, cancelRef, onCom
         <div style={{ ...gbcPanel, margin: 8, padding: '14px 16px', textAlign: 'center', pointerEvents: 'auto' }}>
           <div style={{ fontSize: '1.5rem', marginBottom: 6 }}>{script.emoji} 🗾</div>
           <p style={{ fontSize: '0.86rem', fontWeight: 700, margin: '0 0 6px' }}>{script.reward}</p>
-          {/* 방문 기념 뉘앙스(P2) — 달성·증명이 아니라 여행 기념 도장. */}
-          <p style={{ fontSize: '0.68rem', color: GBC.inkSoft, margin: '0 0 4px' }}>🗾 방문 기념 스탬프를 받았어요.</p>
+          {/* noStamp 도시 NPC는 스탬프 대신 수첩 만남 기록을 안내한다. */}
+          <p style={{ fontSize: '0.68rem', color: GBC.inkSoft, margin: '0 0 4px' }}>
+            {completionNote || '🗾 방문 기념 스탬프를 받았어요.'}
+          </p>
           <button type="button" onClick={onExit} style={{ ...gbcButtonPrimary, marginTop: 4 }}>돌아가기 →</button>
         </div>
       </div>
