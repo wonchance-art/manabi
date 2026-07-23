@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { buildCityScene } from '../CityScene.js';
+import bus from '../bus.js';
 import {
   claimRouteDiscoveryAt,
   loadRouteDiscoveryIds,
@@ -8,6 +9,12 @@ import {
   saveRouteDiscoveryIds,
 } from '../routeDiscoveries.js';
 import { CITY_TILE } from '../cities/terrain.js';
+import { INVENTORY_ITEM_COUNTS_KEY } from '../../../lib/world/inventory.js';
+import { WORLD_TITLES_STORAGE_KEY } from '../../../lib/world/stampMilestones.js';
+import {
+  DISCOVERY_MILESTONE_EVENT,
+  DISCOVERY_MILESTONE_REWARDS,
+} from '../../../lib/world/discoveryMilestones.js';
 
 vi.mock('../QuestReview', () => ({
   GBC: { cream: '#f6edcf', ink: '#2a2118', font: 'monospace' },
@@ -90,6 +97,39 @@ describe('route discovery 1회 저장·도보 트리거', () => {
       ...args,
       discoveredIds: loadRouteDiscoveryIds('walk-fixture', storage),
     })).toBeNull();
+  });
+
+  it('정본 마지막 발견 저장 직후 도시 완집 보상과 칭호 이벤트를 각각 1회만 연다', () => {
+    const storage = memoryStorage();
+    const reward = DISCOVERY_MILESTONE_REWARDS[0];
+    const discoveries = reward.discoveryIds.map((id, index) => ({
+      id,
+      tile: [index + 1, 0],
+      line: `${id} 발견`,
+    }));
+    const discoveredIds = new Set(reward.discoveryIds.slice(0, -1));
+    const onMilestone = vi.fn();
+    bus.on(DISCOVERY_MILESTONE_EVENT, onMilestone);
+
+    try {
+      const args = {
+        cityId: reward.cityId,
+        discoveries,
+        discoveredIds,
+        tx: discoveries.length,
+        ty: 0,
+        storage,
+      };
+      expect(claimRouteDiscoveryAt(args)).toBe(discoveries.at(-1));
+      expect(claimRouteDiscoveryAt(args)).toBeNull();
+    } finally {
+      bus.off(DISCOVERY_MILESTONE_EVENT, onMilestone);
+    }
+
+    expect(onMilestone).toHaveBeenCalledTimes(1);
+    expect(onMilestone).toHaveBeenCalledWith(['discovery-lyon']);
+    expect(storage.values.get(WORLD_TITLES_STORAGE_KEY)).toBe('["discovery-lyon"]');
+    expect(storage.values.get(INVENTORY_ITEM_COUNTS_KEY)).toBe('{"pet-food":1}');
   });
 
   it('전철 배치(placeAt)는 제외하고 도보 완료(onStepDone)만 1회 발동한다', () => {

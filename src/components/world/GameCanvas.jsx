@@ -45,6 +45,10 @@ import { loadStamps, collectStamp } from '../../lib/world/stamps';
 import { canCollectStamp, STAMP_ALBUM_NODES } from '../../lib/world/stampUniverse';
 import { claimStampMilestoneRewards } from '../../lib/world/stampMilestones';
 import {
+  DISCOVERY_MILESTONE_EVENT,
+  discoveryTitleToastForUnlocked,
+} from '../../lib/world/discoveryMilestones';
+import {
   STAMP_TITLE_TOAST_DURATION_MS,
   stampTitleToastForUnlocked,
 } from './stampTitlePresentation';
@@ -908,11 +912,16 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
     const persistSessionPosition = createGuestAwarePositionPersister({ devGuest, userId });
     const onQuestScored = (data) => sceneRef.current?.questScoredFx?.(data);
     const onQuestDone = (data) => sceneRef.current?.questDoneFx?.(data);
+    const onDiscoveryMilestone = (unlockedTitleKeys) => {
+      const toast = discoveryTitleToastForUnlocked(unlockedTitleKeys);
+      if (toast) setStampTitleToast(toast);
+    };
     // 채팅 메시지 → 해당 유저 캐릭터 위 3초 도트 말풍선(공항 씬엔 메서드 없어 옵셔널 체이닝으로 무해).
     const onChatMsg = (m) => { if (m) sceneRef.current?.showChatBubble?.(m.userId, m.text); };
     bus.on('peers:update', onPeers);
     bus.on('quest:scored', onQuestScored);
     bus.on('quest:done', onQuestDone);
+    bus.on(DISCOVERY_MILESTONE_EVENT, onDiscoveryMilestone);
     bus.on('chat:msg', onChatMsg);
 
     (async () => {
@@ -2601,6 +2610,7 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
       bus.off('peers:update', onPeers);
       bus.off('quest:scored', onQuestScored);
       bus.off('quest:done', onQuestDone);
+      bus.off(DISCOVERY_MILESTONE_EVENT, onDiscoveryMilestone);
       bus.off('chat:msg', onChatMsg);
       if (ro) { ro.disconnect(); ro = null; }
       if (debugBridge && window.__MANABI_WORLD_DEBUG__ === debugBridge) {
@@ -3410,8 +3420,12 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
             fontFamily: GBC.font, color: GBC.ink, lineHeight: 1.45,
           }}
         >
-          <strong style={{ display: 'block', fontSize: '0.7rem' }}>🎖️ 새 칭호 · {stampTitleToast.name}</strong>
-          <span style={{ display: 'block', marginTop: 2, fontSize: '0.6rem', color: GBC.inkSoft }}>{stampTitleToast.line}</span>
+          <strong style={{ display: 'block', fontSize: '0.7rem' }}>
+            🎖️ 새 칭호{stampTitleToast.name ? ` · ${stampTitleToast.name}` : ''}
+          </strong>
+          {stampTitleToast.line && (
+            <span style={{ display: 'block', marginTop: 2, fontSize: '0.6rem', color: GBC.inkSoft }}>{stampTitleToast.line}</span>
+          )}
         </div>
       )}
 
