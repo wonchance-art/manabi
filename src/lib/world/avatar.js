@@ -1,4 +1,6 @@
-export const AVATAR_STORAGE_KEY = 'manabi-world-avatar-v1';
+import { AVATAR_STORAGE_KEY } from './storageSchema.js';
+
+export { AVATAR_STORAGE_KEY };
 
 export const AVATAR_OPTIONS = {
   skin: [

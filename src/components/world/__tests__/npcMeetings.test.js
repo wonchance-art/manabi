@@ -35,14 +35,13 @@ describe('S13 도시 NPC 만남 localStorage 기록', () => {
       .every(isNpcMeetingCity)).toBe(true);
     expect(isNpcMeetingCity('')).toBe(false);
     expect(isNpcMeetingCity('Tokyo')).toBe(false);
-    expect(npcMeetingStorageKey('lyon')).toBe('npc-met:lyon');
 
     expect(saveNpcMeetingIds(
       'lyon',
       new Set(['lyon-vieux-lyon-fourviere-traboule', 'lyon-presquile-confluence-cafe']),
       storage,
     )).toBe(true);
-    expect(storage.values.get('npc-met:lyon')).toBe(
+    expect(storage.values.get(npcMeetingStorageKey('lyon'))).toBe(
       '["lyon-presquile-confluence-cafe","lyon-vieux-lyon-fourviere-traboule"]',
     );
     expect(loadNpcMeetingIds('lyon', storage)).toEqual(new Set([
@@ -84,7 +83,7 @@ describe('S13 도시 NPC 만남 localStorage 기록', () => {
   it('깨진 JSON·비배열은 비운 뒤 다음 완주로 복구하고 유효 문자열만 저장한다', () => {
     for (const broken of ['{broken', '{"npc":true}', 'null']) {
       const storage = memoryStorage();
-      storage.values.set('npc-met:strasbourg', broken);
+      storage.values.set(npcMeetingStorageKey('strasbourg'), broken);
 
       expect(loadNpcMeetingIds('strasbourg', storage)).toEqual(new Set());
       expect(recordNpcMeeting({
@@ -92,7 +91,7 @@ describe('S13 도시 NPC 만남 localStorage 기록', () => {
         node: npc('strasbourg-gare-bretzel', { npc: 'gare-bretzel' }),
         storage,
       })).toBe(true);
-      expect(storage.values.get('npc-met:strasbourg')).toBe(
+      expect(storage.values.get(npcMeetingStorageKey('strasbourg'))).toBe(
         '["strasbourg-gare-bretzel"]',
       );
     }
@@ -103,7 +102,7 @@ describe('S13 도시 NPC 만남 localStorage 기록', () => {
       new Set(['lyon-presquile-confluence-cafe', '', 7, null]),
       storage,
     )).toBe(true);
-    expect(storage.values.get('npc-met:lyon')).toBe(
+    expect(storage.values.get(npcMeetingStorageKey('lyon'))).toBe(
       '["lyon-presquile-confluence-cafe"]',
     );
   });

@@ -10,7 +10,9 @@
 //
 // SSR 안전: window 없으면 조회는 빈 목록, 쓰기는 조용한 no-op(펫 스토어 관례와 동형).
 
-const STORAGE_KEY = 'world_muted';
+import { MUTED_USER_IDS_STORAGE_KEY } from './storageSchema.js';
+
+export { MUTED_USER_IDS_STORAGE_KEY };
 
 // ── 순수 헬퍼 (테스트 대상) ──────────────────────────────────────
 
@@ -37,7 +39,7 @@ export function withToggled(list, id) {
 function readRaw() {
   if (typeof window === 'undefined') return [];
   try {
-    const parsed = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || '[]');
+    const parsed = JSON.parse(window.localStorage.getItem(MUTED_USER_IDS_STORAGE_KEY) || '[]');
     return normalizeMutedList(parsed);
   } catch {
     return [];
@@ -47,7 +49,10 @@ function readRaw() {
 function writeRaw(list) {
   if (typeof window === 'undefined') return;
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizeMutedList(list)));
+    window.localStorage.setItem(
+      MUTED_USER_IDS_STORAGE_KEY,
+      JSON.stringify(normalizeMutedList(list)),
+    );
   } catch {
     // 저장 실패(사생활 모드 등)는 조용히 — 이번 세션 안에서는 subscriber 통지로 반영은 유지된다.
   }

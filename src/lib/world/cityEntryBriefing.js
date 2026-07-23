@@ -1,11 +1,11 @@
 import { studiesRefForNode } from './studiesRefs';
+import {
+  BRIEFING_SEEN_PREFIX,
+  briefingSeenKey,
+} from './storageSchema.js';
 import { wikiDoc } from './travelWiki';
 
-export const BRIEFING_SEEN_PREFIX = 'briefing-seen:';
-
-export function briefingSeenKey(countryId) {
-  return `${BRIEFING_SEEN_PREFIX}${countryId}`;
-}
+export { BRIEFING_SEEN_PREFIX, briefingSeenKey };
 
 // 도시 게이트 중 지역학 개관 문서가 실재하는 나라(현재 일본·한국)만 브리핑한다.
 export function cityEntryBriefing(cityId) {

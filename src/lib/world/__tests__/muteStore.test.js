@@ -6,6 +6,7 @@ import {
   normalizeMutedList, withToggled,
   getMuted, isMuted, toggleMute, onChange,
 } from '../muteStore.js';
+import { WORLD_STORAGE_KEYS } from '../storageSchema.js';
 
 // 각 테스트가 window 를 심을 수 있으니, 끝나면 반드시 지워 다음 스위트로 새지 않게 한다.
 afterEach(() => { delete globalThis.window; });
@@ -61,27 +62,27 @@ describe('SSR (window 없음)', () => {
 
 describe('localStorage 영속', () => {
   it('저장된 world_muted 를 읽어 getMuted·isMuted 로 노출', () => {
-    stubWindow({ world_muted: JSON.stringify(['u1', 'u2']) });
+    stubWindow({ [WORLD_STORAGE_KEYS.mutedUserIds]: JSON.stringify(['u1', 'u2']) });
     expect(getMuted()).toEqual(['u1', 'u2']);
     expect(isMuted('u1')).toBe(true);
     expect(isMuted('u9')).toBe(false);
   });
   it('손상된 값은 빈 목록으로 폴백', () => {
-    stubWindow({ world_muted: '{not json' });
+    stubWindow({ [WORLD_STORAGE_KEYS.mutedUserIds]: '{not json' });
     expect(getMuted()).toEqual([]);
   });
   it('toggleMute 는 상태를 영속하고 토글 후 상태를 반환', () => {
     const store = stubWindow();
     expect(toggleMute('u1')).toBe(true);
-    expect(JSON.parse(store.world_muted)).toEqual(['u1']);
+    expect(JSON.parse(store[WORLD_STORAGE_KEYS.mutedUserIds])).toEqual(['u1']);
     expect(toggleMute('u1')).toBe(false);
-    expect(JSON.parse(store.world_muted)).toEqual([]);
+    expect(JSON.parse(store[WORLD_STORAGE_KEYS.mutedUserIds])).toEqual([]);
   });
 });
 
 describe('onChange 구독', () => {
   it('등록 즉시 현재 목록 1회 통지 + 이후 토글마다 통지, unsubscribe 후 멈춤', () => {
-    stubWindow({ world_muted: JSON.stringify(['u1']) });
+    stubWindow({ [WORLD_STORAGE_KEYS.mutedUserIds]: JSON.stringify(['u1']) });
     const seen = [];
     const off = onChange((list) => seen.push(list));
     expect(seen).toHaveLength(1);

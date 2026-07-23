@@ -3,9 +3,10 @@ import {
   grantInventoryItem,
   loadInventoryItemCounts,
 } from './inventory.js';
+import { WORLD_TITLES_STORAGE_KEY } from './storageSchema.js';
 import { STAMP_ALBUM_NODES } from './stampUniverse.js';
 
-export const WORLD_TITLES_STORAGE_KEY = 'worldTitles';
+export { WORLD_TITLES_STORAGE_KEY };
 
 export const STAMP_MILESTONE_REWARDS = Object.freeze([
   Object.freeze({ count: 10, titleKey: 'stamp-10', petFood: 1 }),
