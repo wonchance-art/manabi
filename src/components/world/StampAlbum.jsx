@@ -107,23 +107,39 @@ export default function StampAlbum({ stamps, onClose }) {
   return (
     <div style={{
       position: 'absolute', inset: 0, zIndex: 60, display: 'grid', placeItems: 'center',
-      background: 'rgba(11,13,8,0.62)', padding: 12,
+      minWidth: 0, background: 'rgba(11,13,8,0.62)', padding: 12,
     }}>
-      <div style={{
+      <div data-stamp-album-layout="panel" style={{
         ...gbcPanel,
         boxShadow: `inset 0 0 0 2px ${GBC.creamHi}, inset 0 0 0 4px ${GBC.border}, ${GBC.shadow}`,
-        width: 'min(94%, 460px)', maxHeight: '88%', display: 'flex', flexDirection: 'column',
+        width: '100%', maxWidth: 460, minWidth: 0, maxHeight: '88%',
+        display: 'flex', flexDirection: 'column',
         padding: '14px 14px 12px',
       }}>
         {/* 헤더 — 제목 + 수집 카운터 */}
-        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 10 }}>
-          <span style={{ fontFamily: GBC.font, fontWeight: 700, fontSize: '0.92rem', color: GBC.ink }}>🗾 여행 스탬프</span>
-          <span style={{ fontFamily: GBC.font, fontSize: '0.82rem', color: GBC.brown }}>{got} / {total}</span>
+        <div data-stamp-album-layout="header" style={{
+          minWidth: 0, display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
+          flexWrap: 'wrap', gap: '3px 8px', marginBottom: 10,
+        }}>
+          <span style={{
+            minWidth: 0, fontFamily: GBC.font, fontWeight: 700, fontSize: '0.92rem',
+            color: GBC.ink, overflowWrap: 'anywhere',
+          }}>
+            🗾 여행 스탬프
+          </span>
+          <span style={{
+            flex: '0 0 auto', whiteSpace: 'nowrap',
+            fontFamily: GBC.font, fontSize: '0.82rem', color: GBC.brown,
+          }}>
+            {got} / {total}
+          </span>
         </div>
 
         {/* 지역 탭 — 기존 GBC 크림 칩/하드 엣지만 재사용하며 각 탭 수집률을 함께 표시한다. */}
-        <div role="tablist" aria-label="스탬프 지역" style={{
-          display: 'flex', gap: 6, overflowX: 'auto', padding: '0 2px 8px', flexShrink: 0,
+        <div role="tablist" aria-label="스탬프 지역" data-stamp-album-layout="tabs" style={{
+          minWidth: 0, maxWidth: '100%', display: 'flex', gap: 6, overflowX: 'auto',
+          WebkitOverflowScrolling: 'touch', scrollbarWidth: 'thin', overscrollBehaviorX: 'contain',
+          padding: '0 2px 8px', flexShrink: 0,
         }}>
           {STAMP_ALBUM_TABS.map((tab) => {
             const selected = tab.id === activeTab.id;
@@ -152,9 +168,10 @@ export default function StampAlbum({ stamps, onClose }) {
         </div>
 
         {/* 배지 그리드 — 채운 칸: 아이콘+이름(+방문일), 빈 칸: 흐린 ❔ 실루엣 */}
-        <div style={{
-          overflowY: 'auto', display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(84px, 1fr))', gap: 8, paddingRight: 2,
+        <div data-stamp-album-layout="grid" style={{
+          minWidth: 0, overflowY: 'auto', display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(min(84px, 100%), 1fr))',
+          gap: 8, paddingRight: 2,
         }}>
           {activeTab.nodes.map((node) => {
             const badge = stampAlbumBadge(node, owned);
@@ -177,8 +194,10 @@ export default function StampAlbum({ stamps, onClose }) {
               <div
                 key={node.id}
                 title={badge.title}
+                data-stamp-album-layout="card"
                 style={{
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+                  minWidth: 0, maxWidth: '100%', display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', gap: 3, overflowWrap: 'anywhere',
                   padding: '8px 4px 6px', borderRadius: 2, border: `2px solid ${GBC.border}`,
                   background: badge.has ? GBC.creamHi : 'rgba(42,33,24,0.06)',
                   boxShadow: badge.has ? `inset 0 0 0 1px ${GBC.creamHi}` : 'none',
@@ -188,7 +207,11 @@ export default function StampAlbum({ stamps, onClose }) {
                 <span style={{ fontSize: '1.5rem', lineHeight: 1, filter: badge.has ? 'none' : 'grayscale(1)' }}>
                   {badge.icon}
                 </span>
-                <span style={{ fontFamily: GBC.font, fontSize: '0.6rem', color: GBC.ink, textAlign: 'center', lineHeight: 1.2 }}>
+                <span style={{
+                  width: '100%', minWidth: 0, maxWidth: '100%',
+                  fontFamily: GBC.font, fontSize: '0.6rem', color: GBC.ink,
+                  textAlign: 'center', lineHeight: 1.2, overflowWrap: 'anywhere',
+                }}>
                   {badge.name}
                 </span>
                 {badge.has && visitedAt[node.id] && (
@@ -250,11 +273,21 @@ export default function StampAlbum({ stamps, onClose }) {
         </div>
 
         {/* 푸터 — 방문 기념 문구(달성 아님) + 닫기 */}
-        <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-          <span style={{ fontFamily: GBC.font, fontSize: '0.56rem', color: GBC.inkSoft, lineHeight: 1.4 }}>
+        <div data-stamp-album-layout="footer" style={{
+          minWidth: 0, marginTop: 10, display: 'flex', alignItems: 'center',
+          justifyContent: 'space-between', flexWrap: 'wrap', gap: 10,
+        }}>
+          <span style={{
+            flex: '1 1 150px', minWidth: 0, fontFamily: GBC.font, fontSize: '0.56rem',
+            color: GBC.inkSoft, lineHeight: 1.4, overflowWrap: 'anywhere',
+          }}>
             다녀온 곳의 방문 기념이에요.
           </span>
-          <button type="button" onClick={onClose} style={{ ...gbcButtonPrimary, whiteSpace: 'nowrap' }}>닫기</button>
+          <button type="button" onClick={onClose} style={{
+            ...gbcButtonPrimary, flex: '0 0 auto', whiteSpace: 'nowrap',
+          }}>
+            닫기
+          </button>
         </div>
       </div>
     </div>
