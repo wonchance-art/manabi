@@ -16,12 +16,25 @@ vi.mock('../QuestReview', () => ({
 }));
 
 const LOCK_LINE = '이 동네는 아직 준비 중이에요 — 다음 여행에서 만나요';
+const GUIDEBOOK_ROAD_KEYS = [
+  ...Array.from({ length: 16 }, (_unused, mask) => `ct_guidebook_road_${mask}`),
+  'ct_guidebook_road_inner',
+];
 const GUIDEBOOK_KEYS = [
   'ct_guidebook_land',
   'ct_guidebook_water',
-  'ct_guidebook_road_h',
-  'ct_guidebook_road_v',
-  'ct_guidebook_road_x',
+  ...GUIDEBOOK_ROAD_KEYS,
+  'ct_guidebook_landmark',
+  'ct_guidebook_landmark_marker',
+];
+const GUIDEBOOK_VISUAL_KEYS = [
+  'ct_guidebook_land',
+  'ct_guidebook_water',
+  'ct_guidebook_road_0',
+  'ct_guidebook_road_5',
+  'ct_guidebook_road_10',
+  'ct_guidebook_road_15',
+  'ct_guidebook_road_inner',
   'ct_guidebook_landmark',
   'ct_guidebook_landmark_marker',
 ];
@@ -274,12 +287,12 @@ describe('CityScene guidebook 소비 경계', () => {
       expect(undefinedHarness.textures.has(key)).toBe(false);
       expect(guidebookHarness.textures.has(key)).toBe(true);
     }
-    expect(guidebookHarness.scene.terrainTexKey(0, 0)).toBe('ct_road_x');
+    expect(guidebookHarness.scene.terrainTexKey(0, 0)).toBe('ct_road_0');
     expect(guidebookHarness.scene.terrainTexKey(1, 0)).toBe('ct_guidebook_water');
     expect(guidebookHarness.textures.get('ct_guidebook_land')).toMatchObject({ width: 16, height: 16 });
     expect(guidebookHarness.textures.get('ct_guidebook_landmark_marker')).toMatchObject({ width: 16, height: 32 });
 
-    const visualContract = Object.fromEntries(GUIDEBOOK_KEYS.map((key) => {
+    const visualContract = Object.fromEntries(GUIDEBOOK_VISUAL_KEYS.map((key) => {
       const uniqueStyles = new Map(guidebookHarness.textures.get(key).commands.map(({ color, alpha }) => [
         `${color.toString(16)}@${alpha}`,
         { color: `#${color.toString(16).padStart(6, '0')}`, alpha },
@@ -338,7 +351,7 @@ describe('CityScene guidebook 소비 경계', () => {
             "color": "#5f5b55",
           },
         ],
-        "ct_guidebook_road_h": [
+        "ct_guidebook_road_0": [
           {
             "alpha": 1,
             "color": "#d4c7ae",
@@ -352,15 +365,15 @@ describe('CityScene guidebook 소비 경계', () => {
             "color": "#8f826c",
           },
           {
-            "alpha": 0.74,
+            "alpha": 0.48,
             "color": "#89847c",
           },
           {
-            "alpha": 0.34,
+            "alpha": 0.62,
             "color": "#6f6b65",
           },
         ],
-        "ct_guidebook_road_v": [
+        "ct_guidebook_road_10": [
           {
             "alpha": 1,
             "color": "#d4c7ae",
@@ -374,15 +387,19 @@ describe('CityScene guidebook 소비 경계', () => {
             "color": "#8f826c",
           },
           {
-            "alpha": 0.74,
+            "alpha": 0.48,
             "color": "#89847c",
           },
           {
-            "alpha": 0.34,
+            "alpha": 0.46,
+            "color": "#c2baa9",
+          },
+          {
+            "alpha": 0.62,
             "color": "#6f6b65",
           },
         ],
-        "ct_guidebook_road_x": [
+        "ct_guidebook_road_15": [
           {
             "alpha": 1,
             "color": "#d4c7ae",
@@ -396,12 +413,52 @@ describe('CityScene guidebook 소비 경계', () => {
             "color": "#8f826c",
           },
           {
-            "alpha": 0.74,
+            "alpha": 0.48,
+            "color": "#89847c",
+          },
+        ],
+        "ct_guidebook_road_5": [
+          {
+            "alpha": 1,
+            "color": "#d4c7ae",
+          },
+          {
+            "alpha": 0.5,
+            "color": "#b1a48a",
+          },
+          {
+            "alpha": 0.42,
+            "color": "#8f826c",
+          },
+          {
+            "alpha": 0.48,
             "color": "#89847c",
           },
           {
-            "alpha": 0.34,
+            "alpha": 0.46,
+            "color": "#c2baa9",
+          },
+          {
+            "alpha": 0.62,
             "color": "#6f6b65",
+          },
+        ],
+        "ct_guidebook_road_inner": [
+          {
+            "alpha": 1,
+            "color": "#d4c7ae",
+          },
+          {
+            "alpha": 0.5,
+            "color": "#b1a48a",
+          },
+          {
+            "alpha": 0.42,
+            "color": "#8f826c",
+          },
+          {
+            "alpha": 0.58,
+            "color": "#89847c",
           },
         ],
         "ct_guidebook_water": [
@@ -450,7 +507,7 @@ describe('CityScene guidebook 소비 경계', () => {
     });
   });
 
-  it('코트다쥐르 외 지구제 6도시는 기존 guidebook 렌더 명령과 W1 경계 키가 불변이다', () => {
+  it('코트다쥐르 외 지구제 6도시는 V3 guidebook 명령을 공유하고 W1 경계 키를 고정한다', () => {
     const boundarySamples = [
       ['lyon', [239, 139], [240, 139]],
       ['bordeaux', [315, 191], [316, 191]],
@@ -489,7 +546,7 @@ describe('CityScene guidebook 소비 경계', () => {
             "ct_sidewalk",
             "ct_guidebook_land",
           ],
-          "guidebookSha": "6ef0480b36888577fc698f13f5f605c9420ba3a2d4cac490d919f60ca56f0e5e",
+          "guidebookSha": "a5d79ccb5c3dd408f36f0049e35d529a40a588b2103efd9f274eb4b4923c5876",
           "id": "lyon",
         },
         {
@@ -497,31 +554,31 @@ describe('CityScene guidebook 소비 경계', () => {
             "ct_sidewalk",
             "ct_guidebook_land",
           ],
-          "guidebookSha": "6ef0480b36888577fc698f13f5f605c9420ba3a2d4cac490d919f60ca56f0e5e",
+          "guidebookSha": "a5d79ccb5c3dd408f36f0049e35d529a40a588b2103efd9f274eb4b4923c5876",
           "id": "bordeaux",
         },
         {
           "boundaryKeys": [
             "ct_sidewalk",
-            "ct_guidebook_road_v",
+            "ct_guidebook_road_5",
           ],
-          "guidebookSha": "6ef0480b36888577fc698f13f5f605c9420ba3a2d4cac490d919f60ca56f0e5e",
+          "guidebookSha": "a5d79ccb5c3dd408f36f0049e35d529a40a588b2103efd9f274eb4b4923c5876",
           "id": "strasbourg",
         },
         {
           "boundaryKeys": [
-            "ct_road_v",
+            "ct_road_13",
             "ct_guidebook_land",
           ],
-          "guidebookSha": "6ef0480b36888577fc698f13f5f605c9420ba3a2d4cac490d919f60ca56f0e5e",
+          "guidebookSha": "a5d79ccb5c3dd408f36f0049e35d529a40a588b2103efd9f274eb4b4923c5876",
           "id": "seoul",
         },
         {
           "boundaryKeys": [
-            "ct_road_h",
-            "ct_guidebook_road_h",
+            "ct_road_2",
+            "ct_guidebook_road_8",
           ],
-          "guidebookSha": "6ef0480b36888577fc698f13f5f605c9420ba3a2d4cac490d919f60ca56f0e5e",
+          "guidebookSha": "a5d79ccb5c3dd408f36f0049e35d529a40a588b2103efd9f274eb4b4923c5876",
           "id": "busan",
         },
         {
@@ -529,7 +586,7 @@ describe('CityScene guidebook 소비 경계', () => {
             "ct_sidewalk",
             "ct_guidebook_land",
           ],
-          "guidebookSha": "6ef0480b36888577fc698f13f5f605c9420ba3a2d4cac490d919f60ca56f0e5e",
+          "guidebookSha": "a5d79ccb5c3dd408f36f0049e35d529a40a588b2103efd9f274eb4b4923c5876",
           "id": "leman-riviera",
         },
       ]
@@ -550,7 +607,7 @@ describe('CityScene guidebook 소비 경계', () => {
     expect(route.path.every(([x, y]) => cityDistrictOpenAt(first, x, y))).toBe(true);
   });
 
-  it('districts 미정의 15도시는 render key·movement collision을 그대로 유지한다', () => {
+  it('districts 미정의 15도시는 V3 render key가 결정적이고 movement collision은 그대로다', () => {
     // 지구 정의 도시 목록 — 새 도시를 지구화하면 여기와 길이 스냅샷을 함께 갱신한다(무단 지구화 가드).
     const DISTRICT_CITY_IDS = ['lyon', 'bordeaux', 'strasbourg', 'seoul', 'busan', 'cote-dazur', 'leman-riviera', 'tokyo', 'osaka', 'fukuoka', 'kyoto'];
     class FakeScene { constructor() {} }
@@ -579,21 +636,21 @@ describe('CityScene guidebook 소비 경계', () => {
     expect(manifest).toHaveLength(15);
     expect(manifest).toMatchInlineSnapshot(`
       [
-        "grand-paris:38aa447e903cd2b4325e1f9d1eb8aef62404a6ccbbdb6f9cb25bbcdde1b2918a",
-        "mont-saint-michel:bc2b359851b61d8c453183419d0404bf5ed3e55ab914f0c8b0d85b3e35437633",
-        "brussels:5390f6d7ca2f6d8a77624050468b24351130a16ecf267a3d18bb74e5bcd533a0",
-        "taipei:5ef6a95c3fcb0715a00effa97f22dca6ac3bc6120dc45fac435b28f664a0a01e",
-        "hong-kong:ed9f37d618bdb24f6e993ad91aad92b8d941727f39577f6d6f5724e3aadc01a9",
-        "london:3f8ee7d1a1285c7fe7b6696898a6827d9e84c0ab7d2073bd4c5d55b36cf4e22e",
-        "shanghai:ecd2cac281742914f5716775e9c1fae5e676eb18da594c440ed0ecb823c78522",
-        "beijing:164b01ed8a0191dd93631504236f3f3467cba05209cd762dbc6f66ad9431af46",
-        "brisbane:1fd6e0f3ff0c312b4275db04b37df72f97eaf4624385228a39ab631a65076d5e",
-        "sydney:4ead615cf673e11735f58a8e47e0499bc1ff231eaeb99b4cbdaa996cc1316b8f",
-        "canberra:8efe84492bbcfb3e0e3459761e08a29d26bd57e96eabfc54b0afe181afa3c7e9",
-        "melbourne:5764ba162c50e2edb9d439173c1a7033e6b2ab921cf185c9af5ed2affa2414d6",
-        "marseille:a8acf4d94ef8a037450a7dae67d3d0f00d6841a53eaf13158f38eee2d0defa01",
-        "kawaguchiko:add90460ba2f032d15dbaaddd7ae0b4eb72937aaf011f4e965bed03b92b5e1c3",
-        "geneva:a879108da2c62b0831891fd2b1b4833f3da9360ee85a8a704dd4cd777e6d8093",
+        "grand-paris:7c3541a8fe06d73e8bb4fb485ff49c0a6c9c44a13bf2d9107024a298465af6a3",
+        "mont-saint-michel:e0f94760dca4fdf72a41844a77eb13de792f8e4a2bb1c4c7aa5be455760d7a40",
+        "brussels:cf31a8ac47067f0f175bcd83bdb72e6f6b700fb422a8dd010d1735b5f8399a29",
+        "taipei:bb5aa487d8aa3363b1b96a392f2ac4ac531e1c6bf2df4c9e3e33fc4090ef68ae",
+        "hong-kong:9fb507adda86ed0409efb96ec3e67c629bc89a973008f598920a7889c6daf895",
+        "london:11a2930a822820bfc51f472d23ef7591871b932632774ecf25329534337ba9a8",
+        "shanghai:1d402d86717acb43e8062ec83624b26aeb0ccfeaae9229dcc94b2e16cdd0d49d",
+        "beijing:87644592ffd3303c4ad1c0905f8921ba51367b6d89b88ba6055ccc8578959a7e",
+        "brisbane:0f81017de47b6b4ca4b858e32774f370010a4840e5f1c9941c15268da589091a",
+        "sydney:1937086ef4ba184574e2ed6ab8513e5e7ca2610c98f728176bc7f9e06f048ae7",
+        "canberra:cc34dbcc44575458860c807987aa7dbc5ce1059d040bb89dd3a50815a5b1d7bd",
+        "melbourne:809891b3d0a03c376a45933a2d5e90d8507824130d01b91fec236b48974a2038",
+        "marseille:957855f325fc50aec12efe352c47493990a2b320286aa9c875a5b98f07a27f52",
+        "kawaguchiko:3d5d41fb39df3873ba21bc26c4616d020bef91b507576c3ba078e6230700ee03",
+        "geneva:727a5e933858cc4363555b4a07f4cdebc538da9cb6bfe4a6dad097f5e7c1bbbb",
       ]
     `);
   });

@@ -328,14 +328,14 @@ describe('CityScene mainRoute 소비 경계', () => {
     expect(baseFirst.draws).toHaveLength(4);
     expect(routeFirst.draws).toHaveLength(8);
     expect(routeFirst.draws.map(({ key }) => key)).toEqual([
-      'ct_road_h', 'ct_main_route_paving',
-      'ct_road_h', 'ct_main_route_paving',
-      'ct_road_h', 'ct_main_route_paving',
-      'ct_road_h', 'ct_main_route_paving',
+      'ct_road_2', 'ct_main_route_paving',
+      'ct_road_10', 'ct_main_route_paving',
+      'ct_road_10', 'ct_main_route_paving',
+      'ct_road_8', 'ct_main_route_paving',
     ]);
     expect([baseFirst.rgbaSha256, routeFirst.rgbaSha256]).toEqual([
-      'c5e96ff8e4cc44639058cec120a0d1e1cba936f66e42186363f708e3381681a3',
-      'c0e62a01c69ccd17992c09ec72efa4e4b2b2ff6060fe0b166d32c6f7d48366d7',
+      '1f0a7f9a6292b4b1b384edb3d5e2d5ce60b5cab50d7803934127fcb29547935a',
+      '4e0c09b438370079836572cf075b5f88502ca3b03c689964e144fa06d5135a34',
     ]);
     expect(baseFirst.rgbaSha256).not.toBe(routeFirst.rgbaSha256);
   });
