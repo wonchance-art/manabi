@@ -81,7 +81,7 @@ describe('오버월드 지역 레지스트리', () => {
       .toEqual({ scene: region.sceneId, x, y });
   });
 
-  it('EMEA는 파리·몽생미셸 게이트, APAC은 인천 도착 타일을 사용한다', () => {
+  it('EMEA 파리와 APAC 인천에 왕복 가능한 항공 게이트를 둔다', () => {
     const region = overworldRegionById('emea');
     expect(region.airGate).toMatchObject({
       id: 'paris-cdg-air', type: 'air-gate', airportCode: 'CDG', contentLocale: 'fr',
@@ -112,14 +112,24 @@ describe('오버월드 지역 레지스트리', () => {
     expect(projectOverworldRegionCoordinate(region, montSaintMichel.lon, montSaintMichel.lat))
       .toEqual({ x: 150, y: 429 });
     const apac = overworldRegionById('asia-pacific');
-    expect(apac.airArrival).toMatchObject({
-      id: 'incheon-air-arrival', airportCode: 'ICN', contentLocale: 'ko', arrivalOffset: [4, 0],
+    expect(apac.airGate).toMatchObject({
+      id: 'incheon-air-arrival',
+      type: 'air-gate',
+      airportCode: 'ICN',
+      contentLocale: 'ko',
+      arrivalOffset: [4, 0],
     });
-    expect(checkedInGateCell(apac, apac.airArrival)).toMatchObject({
+    expect(apac.airArrival.tile).toEqual(apac.airGate.tile);
+    expect(checkedInGateCell(apac, apac.airGate)).toMatchObject({
       valid: true, collision: 0, viewOnly: 0,
     });
+    const projectedIncheon = projectOverworldRegionCoordinate(apac, apac.airGate.lon, apac.airGate.lat);
+    expect({
+      x: projectedIncheon.x + apac.airGate.arrivalOffset[0],
+      y: projectedIncheon.y + apac.airGate.arrivalOffset[1],
+    }).toEqual(apac.airGate.tile);
     expect(overworldRegionAirSpawn(apac)).toEqual({
-      scene: apac.sceneId, x: 1460, y: 582,
+      scene: apac.sceneId, x: apac.airGate.tile.x, y: apac.airGate.tile.y,
     });
   });
 
@@ -516,8 +526,7 @@ describe('오버월드 지역 레지스트리', () => {
     });
   });
 
-  it('EMEA 항공 게이트가 체크인된 교통 노드 인덱스와 일치한다', () => {
-    const region = overworldRegionById('emea');
+  it.each(OVERWORLD_REGION_LIST)('$label 항공 게이트가 체크인된 교통 노드 인덱스와 일치한다', (region) => {
     const { x, y } = region.airGate.tile;
     const cx = Math.floor(x / OVERWORLD_STORAGE_CHUNK_TILES);
     const cy = Math.floor(y / OVERWORLD_STORAGE_CHUNK_TILES);

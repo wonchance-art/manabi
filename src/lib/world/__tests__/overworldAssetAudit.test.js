@@ -7,8 +7,8 @@ describe('오버월드 정적 자산 출고 검사', () => {
     await expect(checkOverworldAssets()).resolves.toMatchObject({
       regions: 2,
       manifests: 11,
-      artifacts: 560,
-      bytes: 35_048_629,
+      artifacts: 561,
+      bytes: 35_048_838,
     });
   });
 

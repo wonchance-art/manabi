@@ -1,7 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
+  AIR_HUB_SAVE_ERROR_MESSAGE,
   overworldAirDestinationById,
   overworldAirDestinations,
+  requestOverworldAirTravel,
 } from '../overworldAirHub';
 import {
   OVERWORLD_REGION_LIST,
@@ -88,5 +90,34 @@ describe('overworld air hub destinations', () => {
     expect(overworldAirDestinationById(destinations, 'released')?.sceneId).toBe('overworld:released');
     expect(overworldAirDestinationById(destinations, 'missing')).toBeNull();
     expect(overworldAirDestinationById(null, 'released')).toBeNull();
+  });
+
+  it('저장 실패는 E2 연결 안내와 같은 목적지 다시 시도를 제공한다', async () => {
+    const destination = overworldAirDestinations({ regions: [releasedRegion] })[0];
+    const persistPosition = vi.fn()
+      .mockResolvedValueOnce(false)
+      .mockResolvedValueOnce(true);
+    const setStatus = vi.fn();
+    const transition = vi.fn();
+    const request = () => requestOverworldAirTravel({
+      destination,
+      persistPosition,
+      setStatus,
+      transition,
+    });
+
+    await expect(request()).resolves.toBe(false);
+    expect(transition).not.toHaveBeenCalled();
+    expect(setStatus).toHaveBeenLastCalledWith({
+      phase: 'error',
+      destination,
+      message: AIR_HUB_SAVE_ERROR_MESSAGE,
+    });
+
+    await expect(request()).resolves.toBe(true);
+    expect(persistPosition).toHaveBeenNthCalledWith(1, destination.spawn);
+    expect(persistPosition).toHaveBeenNthCalledWith(2, destination.spawn);
+    expect(transition).toHaveBeenCalledOnce();
+    expect(transition).toHaveBeenCalledWith(destination);
   });
 });

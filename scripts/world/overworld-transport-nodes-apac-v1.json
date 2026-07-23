@@ -15,6 +15,16 @@
   },
   "nodes": [
     {
+      "id": "incheon-air-arrival",
+      "type": "air-gate",
+      "label": "인천공항",
+      "contentLocale": "ko",
+      "airportCode": "ICN",
+      "arrivalOffset": [4, 0],
+      "lon": 126.4407,
+      "lat": 37.4602
+    },
+    {
       "id": "vladivostok-transsib",
       "type": "transsib-gate",
       "label": "블라디보스토크 횡단열차역",

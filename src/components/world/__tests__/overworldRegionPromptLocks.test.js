@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { OVERWORLD_REGION_LIST } from '../../../lib/world/overworldRegions.js';
 import { buildOverworldRegionScene } from '../overworldRegionScene.js';
 
 const FakePhaser = {
@@ -9,8 +10,8 @@ const FakePhaser = {
 
 const EMEA = { id: 'emea', sceneId: 'overworld:emea', width: 720, height: 720 };
 
-function makeScene(ctx = {}) {
-  const RegionScene = buildOverworldRegionScene(FakePhaser, EMEA, ctx);
+function makeScene(ctx = {}, region = EMEA) {
+  const RegionScene = buildOverworldRegionScene(FakePhaser, region, ctx);
   const scene = new RegionScene();
   scene.inputLocked = true; // React 확인 프롬프트가 씬 입력을 잠근 실제 재현 상태.
   scene.enteringCity = false;
@@ -121,5 +122,23 @@ describe('지역 오버월드 확인 프롬프트 락 분리', () => {
     await expect(air.leaveByAir()).resolves.toBe(true);
     expect(airPersist).toHaveBeenCalledWith(airSpawn);
     expect(air.scene.start).toHaveBeenCalledWith('world', { spawn: airSpawn });
+  });
+
+  it.each(OVERWORLD_REGION_LIST)('$label air:* 스폰은 같은 항공 게이트에서 광장으로 귀환한다', async (region) => {
+    const airSpawn = { scene: 'plaza', x: 57, y: 211 };
+    const persistPosition = vi.fn().mockResolvedValue(true);
+    const scene = makeScene({
+      airReturnSpawn: () => airSpawn,
+      persistPosition,
+      setNearGate: vi.fn(),
+      setStatus: vi.fn(),
+    }, region);
+    scene.nearGate = region.airGate;
+    scene.pTileX = region.airGate.tile.x;
+    scene.pTileY = region.airGate.tile.y;
+
+    await expect(scene.leaveByAir()).resolves.toBe(true);
+    expect(persistPosition).toHaveBeenCalledWith(airSpawn);
+    expect(scene.scene.start).toHaveBeenCalledWith('world', { spawn: airSpawn });
   });
 });
