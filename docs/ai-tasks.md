@@ -221,13 +221,14 @@
 
 ## Codex-3 (codex3/*) — 게임 시스템 확장 (타 기기)
 ### doing
-- S9 발견 완집 보상: 리옹 8/8·보르도 8/8·스트라스부르 7/7 정본 발견 완주 시
-  localStorage 1회 칭호 키·펫 사료 지급과 4.2초 GBC 칭호 토스트 연결
 ### todo
 - (P0 공통) 로컬 clone 이전 확인 코멘트
 - S1 STAMP_ALBUM_NODES 85 원자 전환(선행 #387 충족 — 즉시 착수): #150 5046785938
 - S4 수집 연출 정합 → S2 앨범 지역 탭·수집률 → S3 마일스톤 보상 v1(localStorage·DB 금지)
 ### done (최근)
+- S9 발견 완집 보상: 리옹 8/8·보르도 8/8·스트라스부르 7/7 정본 ID 교집합 완주 시
+  localStorage 칭호 키·펫 사료를 도시별 1회 지급하고 기존 4.2초 GBC 칭호 토스트로 연결
+  (`codex3/discovery-milestone`, 구현 b3e7dda, base a8ff50d992b399137bf978acc7545f8e5235f2eb)
 - S7 진척 표면 정리: 여행 수첩 도시 상세의 지구·발견·칭호 후보를 남은 개수·고정 동률
   우선순위로 1줄 통합하고 기존 개별 표기와 XOR 처리
   (`codex3/next-goal-line`, 구현 614426f, base fbf448c15d38247b9a7aef862a87d7ca3ce80edf)
