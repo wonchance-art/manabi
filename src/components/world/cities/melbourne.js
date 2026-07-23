@@ -120,6 +120,24 @@ export const MELBOURNE = {
   returnNode: 'melbourne', // 오버월드 APAC 멜버른 노드는 Codex-1 게이트 라운드 후속
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: [], railways: MELBOURNE_GEO.railways,
+  // 📖 여행책 지구제 v1 — T10 r3 실측 rect.
+  districts: {
+    version: 'district-v1',
+    open: [
+      { id: 'cbd', label: '시티(CBD)', tiles: { rects: [[220, 145, 330, 230]] } },
+      { id: 'inner-north', label: '도심 북부', tiles: { rects: [[260, 80, 370, 144]] } },
+      {
+        id: 'southbank-east',
+        label: '사우스뱅크·동부',
+        tiles: { rects: [[300, 231, 390, 310], [331, 190, 385, 230]] },
+      },
+      { id: 'st-kilda', label: '세인트킬다', tiles: { rects: [[300, 460, 355, 510]] } },
+    ],
+    locked: {
+      style: 'guidebook',
+      line: '이 동네는 아직 준비 중이에요 — 다음 여행에서 만나요.',
+    },
+  },
   CITY_TILE, buildGrid: buildMelbourneGrid,
 };
 

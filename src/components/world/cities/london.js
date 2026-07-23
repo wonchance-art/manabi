@@ -176,6 +176,33 @@ export const LONDON = {
   returnNode: 'london', // 오버월드 EMEA 세인트판크라스 노드는 Codex-1 게이트 라운드 후속(#175 후보 [172,356])
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: [], railways: LONDON_GEO.railways,
+  // 📖 여행책 지구제 v1 — T10 r3 실측 rect.
+  districts: {
+    version: 'district-v1',
+    open: [
+      {
+        id: 'kings-cross-camden',
+        label: '킹스크로스·캠든',
+        tiles: { rects: [[520, 300, 640, 429]] },
+      },
+      { id: 'central-west', label: '중심·서부', tiles: { rects: [[300, 430, 649, 610]] } },
+      { id: 'city-east', label: '시티·동부', tiles: { rects: [[650, 430, 810, 580]] } },
+      {
+        id: 'outer-satellites',
+        label: '외곽 위성권',
+        tiles: {
+          rects: [
+            [950, 620, 1050, 710], [0, 640, 60, 710], [250, 880, 330, 950],
+            [430, 180, 500, 250], [40, 210, 100, 280], [940, 280, 1020, 350],
+          ],
+        },
+      },
+    ],
+    locked: {
+      style: 'guidebook',
+      line: '이 동네는 아직 준비 중이에요 — 다음 여행에서 만나요.',
+    },
+  },
   tileSkins: Object.freeze({ building: 'brick' }), // R4 — 적벽돌·슬레이트
   CITY_TILE, buildGrid: buildLondonGrid,
 };

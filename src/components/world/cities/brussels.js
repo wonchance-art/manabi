@@ -113,6 +113,24 @@ export const BRUSSELS = {
   returnNode: 'brussels', // 오버월드 노드는 Codex-1 게이트 라운드(미디 [242,375] 후보 검증 완료)
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: [], railways: BRUSSELS_GEO.railways,
+  // 📖 여행책 지구제 v1 — T10 r3 실측 rect.
+  districts: {
+    version: 'district-v1',
+    open: [
+      { id: 'midi', label: '미디·남역', tiles: { rects: [[35, 335, 75, 375]] } },
+      { id: 'historic-royal', label: '구시가·왕궁', tiles: { rects: [[90, 270, 175, 350]] } },
+      { id: 'north', label: '북역·보타니크', tiles: { rects: [[125, 205, 155, 269]] } },
+      {
+        id: 'eu-laeken',
+        label: 'EU 지구·라켄',
+        tiles: { rects: [[205, 295, 270, 350], [55, 10, 95, 45]] },
+      },
+    ],
+    locked: {
+      style: 'guidebook',
+      line: '이 동네는 아직 준비 중이에요 — 다음 여행에서 만나요.',
+    },
+  },
   tileSkins: Object.freeze({ building: 'brick' }), // R4 — 벽돌 타운하우스 톤
   CITY_TILE, buildGrid: buildBrusselsGrid,
 };

@@ -161,6 +161,28 @@ export const HONG_KONG = {
   returnNode: 'hong-kong', // 오버월드 APAC 홍콩 노드는 Codex-1 게이트 라운드 후속
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: TRANSIT_POINTS, railways: HONG_KONG_GEO.railways,
+  // 📖 여행책 지구제 v1 — T10 r3의 두 육지 성분·페리형 실측 rect.
+  districts: {
+    version: 'district-v1',
+    open: [
+      { id: 'kowloon-north', label: '구룡 북부', tiles: { rects: [[330, 40, 390, 150]] } },
+      { id: 'tsim-sha-tsui', label: '침사추이', tiles: { rects: [[335, 151, 405, 220]] } },
+      {
+        id: 'central-admiralty',
+        label: '센트럴·애드미럴티',
+        tiles: { rects: [[240, 230, 350, 305]] },
+      },
+      {
+        id: 'peak-causeway',
+        label: '빅토리아픽·코즈웨이베이',
+        tiles: { rects: [[230, 306, 280, 350], [430, 245, 470, 285]] },
+      },
+    ],
+    locked: {
+      style: 'guidebook',
+      line: '이 동네는 아직 준비 중이에요 — 다음 여행에서 만나요.',
+    },
+  },
   CITY_TILE, buildGrid: buildHongKongGrid,
 };
 

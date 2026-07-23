@@ -76,10 +76,88 @@ const DISTRICT_AUDIT_CASES = Object.freeze([
     labels: ['아라시야마·산인', '황궁·니조', '히가시야마·중심', '역·후시미'],
     nextGoal: { kind: 'stamp-title', line: '다음 칭호까지 도장 9개' },
   },
+  {
+    nodeId: 'paris',
+    cityId: 'grand-paris',
+    labels: ['파리 북중부', '센강 중심부', '서부 위성권', '외곽 위성권'],
+    nextGoal: { kind: 'stamp-title', line: '다음 칭호까지 도장 9개' },
+  },
+  {
+    nodeId: 'brussels',
+    cityId: 'brussels',
+    labels: ['미디·남역', '구시가·왕궁', '북역·보타니크', 'EU 지구·라켄'],
+    nextGoal: { kind: 'stamp-title', line: '다음 칭호까지 도장 9개' },
+  },
+  {
+    nodeId: 'london',
+    cityId: 'london',
+    labels: ['킹스크로스·캠든', '중심·서부', '시티·동부', '외곽 위성권'],
+    nextGoal: { kind: 'stamp-title', line: '다음 칭호까지 도장 9개' },
+  },
+  {
+    nodeId: 'mont-saint-michel',
+    cityId: 'mont-saint-michel',
+    labels: ['수도원 섬', '상부 제방길', '본토·제방길'],
+    nextGoal: { kind: 'stamp-title', line: '다음 칭호까지 도장 9개' },
+  },
+  {
+    nodeId: 'geneva',
+    cityId: 'geneva',
+    labels: ['국제지구·우안', '구시가·호반', '플랭팔레', '카루주'],
+    nextGoal: { kind: 'stamp-title', line: '다음 칭호까지 도장 9개' },
+  },
+  {
+    nodeId: 'taipei',
+    cityId: 'taipei',
+    labels: ['스린·고궁', '서부 도심', '동부 도심', '신이·라오허'],
+    nextGoal: { kind: 'stamp-title', line: '다음 칭호까지 도장 9개' },
+  },
+  {
+    nodeId: 'hong-kong',
+    cityId: 'hong-kong',
+    labels: ['구룡 북부', '침사추이', '센트럴·애드미럴티', '빅토리아픽·코즈웨이베이'],
+    nextGoal: { kind: 'stamp-title', line: '다음 칭호까지 도장 9개' },
+  },
+  {
+    nodeId: 'shanghai',
+    cityId: 'shanghai',
+    labels: ['인민광장·난징루·와이탄', '루자쭈이', '위위안·신톈디', '톈쯔팡'],
+    nextGoal: { kind: 'stamp-title', line: '다음 칭호까지 도장 9개' },
+  },
+  {
+    nodeId: 'beijing',
+    cityId: 'beijing',
+    labels: ['북부 호수권', '자금성·중심부', '왕푸징', '전문·천단'],
+    nextGoal: { kind: 'stamp-title', line: '다음 칭호까지 도장 9개' },
+  },
+  {
+    nodeId: 'brisbane',
+    cityId: 'brisbane',
+    labels: ['CBD·북부', '사우스뱅크', '캥거루포인트·식물원', '뉴팜'],
+    nextGoal: { kind: 'stamp-title', line: '다음 칭호까지 도장 9개' },
+  },
+  {
+    nodeId: 'sydney',
+    cityId: 'sydney',
+    labels: ['시티·하버', '도심 남동부', '본다이·왓슨스베이', '하버 북안'],
+    nextGoal: { kind: 'stamp-title', line: '다음 칭호까지 도장 9개' },
+  },
+  {
+    nodeId: 'canberra',
+    cityId: 'canberra',
+    labels: ['시빅·북부', '기념관·에인슬리', '호수·국회지구', '킹스턴·캔버라역'],
+    nextGoal: { kind: 'stamp-title', line: '다음 칭호까지 도장 9개' },
+  },
+  {
+    nodeId: 'melbourne',
+    cityId: 'melbourne',
+    labels: ['시티(CBD)', '도심 북부', '사우스뱅크·동부', '세인트킬다'],
+    nextGoal: { kind: 'stamp-title', line: '다음 칭호까지 도장 9개' },
+  },
 ]);
 
 describe('여행 수첩 — 지구제 도시 상세', () => {
-  it('S12 감사 11도시의 지구 라벨과 다음 목표를 정본 payload에서 동적으로 표시한다', () => {
+  it('T19 지구제 24도시의 라벨과 다음 목표를 정본 payload에서 동적으로 표시한다', () => {
     const presentations = STAMP_ALBUM_NODES
       .map((node) => stampAlbumDistrictPresentation(node, CITY_DATA))
       .filter(Boolean);
@@ -112,7 +190,7 @@ describe('여행 수첩 — 지구제 도시 상세', () => {
       nextGoal,
     }) => ({
       cityId,
-      countLabel: '개방 4 동네',
+      countLabel: `개방 ${labels.length} 동네`,
       labels,
       nextGoal,
     })));

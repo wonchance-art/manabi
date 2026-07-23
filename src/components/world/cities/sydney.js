@@ -186,6 +186,32 @@ export const SYDNEY = {
   returnNode: 'sydney', // 오버월드 APAC 시드니 노드는 Codex-1 게이트 라운드 후속
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: TRANSIT_POINTS, railways: SYDNEY_GEO.railways,
+  // 📖 여행책 지구제 v1 — T10 r3 실측 rect.
+  districts: {
+    version: 'district-v1',
+    open: [
+      { id: 'cbd-harbour', label: '시티·하버', tiles: { rects: [[120, 330, 225, 530]] } },
+      {
+        id: 'inner-south-east',
+        label: '도심 남동부',
+        tiles: { rects: [[40, 560, 90, 620], [240, 500, 280, 550], [330, 540, 380, 580]] },
+      },
+      {
+        id: 'bondi-watsons',
+        label: '본다이·왓슨스베이',
+        tiles: { rects: [[450, 270, 540, 330], [450, 540, 510, 590]] },
+      },
+      {
+        id: 'harbour-north',
+        label: '하버 북안',
+        tiles: { rects: [[310, 285, 350, 330], [515, 25, 565, 75], [240, 285, 280, 315]] },
+      },
+    ],
+    locked: {
+      style: 'guidebook',
+      line: '이 동네는 아직 준비 중이에요 — 다음 여행에서 만나요.',
+    },
+  },
   tileSkins: Object.freeze({ building: 'terracotta' }), // R4 — 시드니 교외 테라코타 지붕 톤
   CITY_TILE, buildGrid: buildSydneyGrid,
 };

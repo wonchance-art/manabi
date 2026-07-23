@@ -120,7 +120,7 @@ describe('잠금 지구 경계 표지판 순수 배치', () => {
       .toBe(true);
   });
 
-  it('정본 district 7도시의 경계·보행·간격과 2회 byte-identical manifest를 고정한다', () => {
+  it('정본 district 24도시의 경계·보행·간격과 2회 byte-identical manifest를 고정한다', () => {
     const districtCities = CITY_MAPS.filter((city) => city.districts != null);
     const manifest = districtCities.map((city) => {
       const grid = city.buildGrid();
@@ -155,7 +155,13 @@ describe('잠금 지구 경계 표지판 순수 배치', () => {
     const secondBytes = JSON.stringify(structuredClone(manifest));
 
     expect(districtCities.map(({ id }) => id))
-      .toEqual(['fukuoka', 'tokyo', 'osaka', 'kyoto', 'busan', 'seoul', 'cote-dazur', 'leman-riviera', 'lyon', 'bordeaux', 'strasbourg']);
+      .toEqual([
+        'fukuoka', 'tokyo', 'osaka', 'kyoto', 'busan', 'seoul',
+        'grand-paris', 'mont-saint-michel', 'cote-dazur', 'brussels',
+        'taipei', 'hong-kong', 'london', 'shanghai', 'beijing',
+        'brisbane', 'sydney', 'canberra', 'melbourne', 'geneva',
+        'leman-riviera', 'lyon', 'bordeaux', 'strasbourg',
+      ]);
     expect(manifest.map(({ id, tiles }) => [id, tiles.length])).toMatchInlineSnapshot(`
       [
         [
@@ -183,8 +189,60 @@ describe('잠금 지구 경계 표지판 순수 배치', () => {
           309,
         ],
         [
+          "grand-paris",
+          316,
+        ],
+        [
+          "mont-saint-michel",
+          161,
+        ],
+        [
           "cote-dazur",
           232,
+        ],
+        [
+          "brussels",
+          96,
+        ],
+        [
+          "taipei",
+          184,
+        ],
+        [
+          "hong-kong",
+          85,
+        ],
+        [
+          "london",
+          343,
+        ],
+        [
+          "shanghai",
+          93,
+        ],
+        [
+          "beijing",
+          102,
+        ],
+        [
+          "brisbane",
+          65,
+        ],
+        [
+          "sydney",
+          161,
+        ],
+        [
+          "canberra",
+          157,
+        ],
+        [
+          "melbourne",
+          119,
+        ],
+        [
+          "geneva",
+          66,
         ],
         [
           "leman-riviera",
@@ -206,7 +264,7 @@ describe('잠금 지구 경계 표지판 순수 배치', () => {
     `);
     expect(bytes).toBe(secondBytes);
     expect(createHash('sha256').update(bytes).digest('hex'))
-      .toBe('54212463569779fba49f96e16e60b620fa299023fe73329384ab9986fb3069c4');
+      .toBe('dd863792b71fc0d79dd09afa3f429dbf831ceb6cc93193feb0246c7bea58b8aa');
   });
 });
 

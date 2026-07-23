@@ -110,6 +110,32 @@ export const CANBERRA = {
   returnNode: 'canberra', // 오버월드 APAC 캔버라 노드는 Codex-1 게이트 라운드 후속
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: [], railways: CANBERRA_GEO.railways,
+  // 📖 여행책 지구제 v1 — T10 r3 실측 rect.
+  districts: {
+    version: 'district-v1',
+    open: [
+      { id: 'civic-north', label: '시빅·북부', tiles: { rects: [[300, 40, 370, 240]] } },
+      {
+        id: 'memorial-ainslie',
+        label: '기념관·에인슬리',
+        tiles: { rects: [[390, 140, 470, 250]] },
+      },
+      {
+        id: 'lake-parliament',
+        label: '호수·국회지구',
+        tiles: { rects: [[210, 260, 350, 400]] },
+      },
+      {
+        id: 'kingston-station',
+        label: '킹스턴·캔버라역',
+        tiles: { rects: [[380, 410, 430, 460]] },
+      },
+    ],
+    locked: {
+      style: 'guidebook',
+      line: '이 동네는 아직 준비 중이에요 — 다음 여행에서 만나요.',
+    },
+  },
   tileSkins: Object.freeze({ building: 'terracotta' }), // R4 — 계획도시 주거 지붕 톤
   CITY_TILE, buildGrid: buildCanberraGrid,
 };

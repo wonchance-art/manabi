@@ -157,6 +157,24 @@ export const TAIPEI = {
   returnNode: 'taipei', // 오버월드 APAC 타이베이 노드는 Codex-1 게이트 라운드 후속
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: [], railways: TAIPEI_GEO.railways,
+  // 📖 여행책 지구제 v1 — T10 r3 실측 rect.
+  districts: {
+    version: 'district-v1',
+    open: [
+      {
+        id: 'shilin-palace',
+        label: '스린·고궁',
+        tiles: { rects: [[140, 60, 210, 140], [275, 20, 315, 65]] },
+      },
+      { id: 'west-core', label: '서부 도심', tiles: { rects: [[35, 280, 180, 430]] } },
+      { id: 'east-core', label: '동부 도심', tiles: { rects: [[181, 340, 320, 470]] } },
+      { id: 'xinyi-raohe', label: '신이·라오허', tiles: { rects: [[340, 300, 453, 480]] } },
+    ],
+    locked: {
+      style: 'guidebook',
+      line: '이 동네는 아직 준비 중이에요 — 다음 여행에서 만나요.',
+    },
+  },
   CITY_TILE, buildGrid: buildTaipeiGrid,
 };
 

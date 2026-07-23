@@ -168,6 +168,28 @@ export const SHANGHAI = {
   returnNode: 'shanghai', // 오버월드 APAC 상하이 노드는 Codex-1 게이트 라운드 후속
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: TRANSIT_POINTS, railways: SHANGHAI_GEO.railways,
+  // 📖 여행책 지구제 v1 — T10 r3 실측 rect.
+  districts: {
+    version: 'district-v1',
+    open: [
+      {
+        id: 'people-nanjing-bund',
+        label: '인민광장·난징루·와이탄',
+        tiles: { rects: [[80, 110, 210, 165], [175, 75, 205, 109]] },
+      },
+      { id: 'lujiazui', label: '루자쭈이', tiles: { rects: [[220, 95, 280, 165]] } },
+      {
+        id: 'yuyuan-xintiandi',
+        label: '위위안·신톈디',
+        tiles: { rects: [[100, 166, 220, 240]] },
+      },
+      { id: 'tianzifang', label: '톈쯔팡', tiles: { rects: [[55, 250, 100, 300]] } },
+    ],
+    locked: {
+      style: 'guidebook',
+      line: '이 동네는 아직 준비 중이에요 — 다음 여행에서 만나요.',
+    },
+  },
   CITY_TILE, buildGrid: buildShanghaiGrid,
 };
 
