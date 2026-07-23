@@ -313,6 +313,10 @@
 - P0 (운영 필수·최우선) 로컬 clone 이전 + 확인 코멘트: #150 5046786117
 - P1 geo lazy-load 구현(RFC #394 승인 — 실패 UX·?spawn= 정합·scene race 주의 3건 코멘트 참조)
 ### done (최근)
+- Q4 정정 manifest 생성기 + 리옹 B′ 파일럿 초안: r2 JSON canonical 검증·8방 최빈
+  비CROSSWALK 보행류 치환(동률 SIDEWALK)으로 28성분/30타일 manifest를 만들고,
+  임시 재생성 B′ 28→0·대표 crop 5쌍·geo/scan/PNG A/B 결정성을 고정
+  (`codex4/q4-fix-manifest-pilot`, 구현 11ae028, base cf882168ef883d1050133bc1e4d1cc219d0eeadd)
 - P9 오토타일 mask 중복 계산 제거: texture key당 cardinal mask를 1회로 줄여 도쿄
   `tileCode` 증가를 일반 +71.98→+22.84%·잠금 +72.55→+20.33%로 축소하고,
   26도시 PNG·snapshot byte 불변과 전체 230/2,248 green 고정
