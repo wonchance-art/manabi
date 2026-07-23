@@ -1,7 +1,9 @@
 # T15 일본 6도시 지구 정본화 직전 최종 사전검증
 
 - 상태: **report-only / Claude 정본 저작 직전 gate**
-- 기준점: `origin/main` exact `407b32cda5e517c908a86c4d9ac0b88c430e7584`
+- 측정 기준점: `origin/main` exact `407b32cda5e517c908a86c4d9ac0b88c430e7584`
+- 게시 직전 main: `d192161e13255aa3e10c38bd6615e9be6ca82c34`
+  (전진 4커밋·9파일 중 측정 입력 15파일과 중첩 0)
 - 후보 입력: `docs/proposal-district-rects-r2.md`의 도쿄·오사카·후쿠오카·교토·
   삿포로·나고야
 - 재검증 기준: P1 lazy city registry와 P3 도쿄 packed geo loader가 반영된 현 `main`
@@ -185,6 +187,10 @@ open: [
 
 후보 문서, P1 manifest, P3 loader, 네 도시 wrapper/geo, terrain, district/mainRoute resolver,
 world node의 15개 입력을 파일별 SHA-256 정렬 목록으로 고정했다.
+
+측정 뒤 `main`은 `407b32c..d192161`로 4커밋 전진했다. 변경된 9파일은 문서 3개,
+테스트 4개, stamp album 제품 코드 2개이며 아래 측정 입력 15파일과 겹치지 않는다.
+따라서 runtime 수치 재산출 대상은 없고, branch에는 merge·rebase 없이 exact 측정 기준을 보존했다.
 
 - input manifest SHA-256:
   `56828d280e1cf7e4ad577fe6169ef1225ae1fb9efb42212e06c182d81330fd62`
