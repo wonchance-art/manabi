@@ -275,6 +275,9 @@ export const TRANSIT = [
   },
 ];
 
+// 🧭 도쿄 주동선은 후속 라운드 (#XXX)에서 추가 예정. 현재는 mainRoute 비정의 상태.
+// NPC 만남(채움 라운드 3-1)과 지구 정본(D2)만 우선 확립.
+
 // 하네다·시부야·시나가와의 전용 렌더크래프트는 후속 작업으로 남긴다.
 // 현재는 CITY_NODES와 STATIONS의 공용 마커만 사용해 실제 장소를 중복 렌더하지 않는다.
 export const PROPS = [

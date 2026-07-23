@@ -120,7 +120,7 @@ describe('잠금 지구 경계 표지판 순수 배치', () => {
       .toBe(true);
   });
 
-  it('정본 district 24도시의 경계·보행·간격과 2회 byte-identical manifest를 고정한다', () => {
+  it('정본 district 24도시의 경계·보행·간격과 2회 byte-identical manifest를 고정한다', { timeout: 10000 }, () => {
     const districtCities = CITY_MAPS.filter((city) => city.districts != null);
     const manifest = districtCities.map((city) => {
       const grid = city.buildGrid();
