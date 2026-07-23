@@ -243,10 +243,10 @@ describe('CityScene mainRoute 소비 경계', () => {
     CITY_MAPS = await loadAllCities();
   }, 60000);
 
-  it('레지스트리 26도시 중 도쿄·서울·리옹·보르도·스트라스부르 5도시가 mainRoute를 정의하고 나머지 21도시를 비활성 유지한다', () => {
+  it('레지스트리 26도시 중 도쿄·오사카·교토·서울·리옹·보르도·스트라스부르 7도시가 mainRoute를 정의하고 나머지 19도시를 비활성 유지한다', () => {
     expect(CITY_MAPS).toHaveLength(26);
-    expect(CITY_MAPS.filter((city) => city.mainRoute).map(({ id }) => id)).toEqual(['tokyo', 'seoul', 'lyon', 'bordeaux', 'strasbourg']);
-    expect(CITY_MAPS.filter((city) => city.mainRoute == null)).toHaveLength(21);
+    expect(CITY_MAPS.filter((city) => city.mainRoute).map(({ id }) => id)).toEqual(['tokyo', 'osaka', 'kyoto', 'seoul', 'lyon', 'bordeaux', 'strasbourg']);
+    expect(CITY_MAPS.filter((city) => city.mainRoute == null)).toHaveLength(19);
   });
 
   it('미정의 도시에는 route texture를 0개 굽고 기존 texture RGBA를 그대로 둔다', () => {

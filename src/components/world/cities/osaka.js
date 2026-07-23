@@ -287,6 +287,7 @@ export function buildOsakaGrid() {
 export const OSAKA = {
   id: 'osaka', name: '오사카', cols: COLS, rows: ROWS, entrance: ENTRANCE, returnNode: 'osaka',
   roadStyle: 'autotile-v1',
+  mainRoute: MAIN_ROUTE,
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: [], railways: OSAKA_GEO.railways,
   // 📖 여행책 지구제 v1 (D2 정본 — RFC docs/rfc-guidebook-districts.md·오너 승인 2026-07-23).
@@ -302,12 +303,12 @@ export const OSAKA = {
       {
         id: 'castle-east',
         label: '성곽·동부',
-        tiles: { rects: [[535, 246, 615, 330]] },
+        tiles: { rects: [[535, 246, 615, 330], [519, 288, 536, 411]] },
       },
       {
         id: 'namba-tennoji',
         label: '난바·텐노지',
-        tiles: { rects: [[250, 280, 360, 410], [420, 331, 520, 505], [550, 350, 600, 410]] },
+        tiles: { rects: [[250, 280, 360, 410], [420, 331, 520, 505], [550, 350, 600, 410], [359, 391, 421, 401], [134, 409, 279, 445]] },
       },
       {
         id: 'bay',

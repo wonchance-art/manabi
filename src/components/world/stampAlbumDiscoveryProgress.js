@@ -5,6 +5,8 @@ import { loadRouteDiscoveryIds } from './routeDiscoveries.js';
 export const STAMP_ALBUM_DISCOVERY_CITY_IDS = Object.freeze([
   'seoul',
   'tokyo',
+  'osaka',
+  'kyoto',
   'lyon',
   'bordeaux',
   'strasbourg',
