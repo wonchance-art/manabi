@@ -8,7 +8,6 @@ import { useTTS } from '../lib/useTTS';
 import { JaText } from './refShared';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
-import { calculateFSRS } from '../lib/fsrs';
 import { gradeGrammarReview, ratingFromScore, enqueueGrammarReview } from '../lib/grammarSrs';
 import { syncCheckRemote, syncReadRemote } from '../lib/refProgress';
 import { createReviewEventBatcher, logReviewEvents } from '../lib/reviewEvents';
@@ -537,13 +536,17 @@ export default function StudySessionPage({
 
     if (eff.kind === 'vocab') {
       const w = it.word;
-      const nextStats = calculateFSRS(ok ? 3 : 1, {
-        interval: w.interval ?? 0, ease_factor: w.ease_factor ?? 0,
-        repetitions: w.repetitions ?? 0, next_review_at: w.next_review_at,
-      });
-      supabase.from('user_vocabulary')
-        .update({ ...nextStats, last_reviewed_at: new Date().toISOString() })
-        .eq('id', w.id).then(() => {}, () => {});
+      import('../lib/fsrs')
+        .then(({ calculateFSRS }) => {
+          const nextStats = calculateFSRS(ok ? 3 : 1, {
+            interval: w.interval ?? 0, ease_factor: w.ease_factor ?? 0,
+            repetitions: w.repetitions ?? 0, next_review_at: w.next_review_at,
+          });
+          return supabase.from('user_vocabulary')
+            .update({ ...nextStats, last_reviewed_at: new Date().toISOString() })
+            .eq('id', w.id);
+        })
+        .then(() => {}, () => {});
       batcher?.add({ lang, source: 'vocab', item_key: w.word_text, correct: ok, detail: { word_id: w.id, meaning: w.meaning, mode: 'study', qtype, rt_ms } });
     } else if (eff.kind === 'grammar-due') {
       const slug = eff.srs.slug;

@@ -6,7 +6,6 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { kstWeekStartIso, KNOWN_WORD_MIN_INTERVAL, GROWTH_LABELS } from '../lib/growthStats';
-import { buildForecast } from '../lib/forecast';
 import ForecastCard from '../components/ForecastCard';
 
 /**
@@ -22,7 +21,16 @@ async function fetchLearnData(userId, lang) {
   // 실패 시 null (문구 생략용) — 홈/서재의 방어적 count 패턴과 동일
   const countOf = (q) => q.then(({ count }) => count ?? null, () => null);
 
-  const [dueVocab, dueGrammar, knownWords, passedChapters, weekSessions, latestUsed, forecastRows] = await Promise.all([
+  const [
+    dueVocab,
+    dueGrammar,
+    knownWords,
+    passedChapters,
+    weekSessions,
+    latestUsed,
+    forecastRows,
+    { buildForecast },
+  ] = await Promise.all([
     // due 어휘 — 현재 학습 언어, next_review_at <= now
     countOf(supabase.from('user_vocabulary')
       .select('id', { count: 'exact', head: true })
@@ -56,6 +64,7 @@ async function fetchLearnData(userId, lang) {
       .eq('user_id', userId).eq('language', lang)
       .not('last_reviewed_at', 'is', null).gt('interval', 0)
       .then(({ data }) => data || [], () => []),
+    import('../lib/forecast'),
   ]);
 
   const forecast = buildForecast(forecastRows, new Date());

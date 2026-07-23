@@ -14,7 +14,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { calculateFSRS } from '../../lib/fsrs';
 import { logReviewEvents } from '../../lib/reviewEvents';
 import { detectLang, displayWord } from '../../lib/constants';
 import bus from './bus';
@@ -107,7 +106,7 @@ export default function QuestReview({ userId, onClose }) {
   const current = items[idx];
 
   // ── 채점 확정 — FSRS 갱신 + 이벤트 기록 + 버스 연출, 그리고 다음 문항/완료 ──
-  const grade = (correct) => {
+  const grade = async (correct) => {
     if (!current || gradingRef.current) return;
     gradingRef.current = true;
 
@@ -115,6 +114,13 @@ export default function QuestReview({ userId, onClose }) {
     const lang = current.language || detectLang(current.word_text);
 
     // 1) FSRS — 기존 호출부와 동일(fsrs.js). due 항목이므로 정당한 예정 인출.
+    let calculateFSRS;
+    try {
+      ({ calculateFSRS } = await import('../../lib/fsrs'));
+    } catch {
+      gradingRef.current = false;
+      return;
+    }
     const nextStats = calculateFSRS(rating, {
       interval: current.interval ?? 0,
       ease_factor: current.ease_factor ?? 0,

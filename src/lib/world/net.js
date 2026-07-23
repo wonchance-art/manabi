@@ -11,9 +11,9 @@
 // (shouldYieldDuplicate)은 임대 미적용(강등) 모드에서만 집행한다.
 // 중복/임대오류 판정 시엔 영구 종료 상태(terminated)가 서서 자동 재연결·송수신이 봉인된다(P1-1).
 //
-// 브라우저에서만 실제 채널을 연다. supabase.js 는 모듈 로드시 env 를
-// 요구하므로 테스트는 env 를 스텁한 뒤 동적 import 로 순수부만 가져간다.
-import { supabase } from '../supabase';
+// 브라우저에서만 실제 채널을 연다. 기본 client는 join 시점에 지연 로드하며,
+// 테스트는 client를 주입해 네트워크와 SDK 로드를 모두 격리한다.
+import { getSupabase } from '../supabase';
 import { normalizeWorldAvatar } from './avatar';
 
 // ── 순수 헬퍼 (테스트 대상) ──────────────────────────────────────
@@ -208,7 +208,7 @@ export function createThrottle(fn, interval) {
 // 무한 재시도 대신 이 횟수를 넘기면 조용히 'failed' → 솔로로 떨어진다.
 const MAX_RECONNECT_ATTEMPTS = 6;
 
-export function createWorldNet({ userId, name, pet, channelName = 'world-plaza', client = supabase, fetchImpl }) {
+export function createWorldNet({ userId, name, pet, channelName = 'world-plaza', client, fetchImpl }) {
   const peers = new Map();        // peerId -> {x,y,dir,scene?,name,pet,at}
   let channel = null;
   let peersCb = null;
@@ -555,6 +555,13 @@ export function createWorldNet({ userId, name, pet, channelName = 'world-plaza',
     //    supabase/migrations/20260710000100_world_sessions.sql 적용 시 자동으로 서버 권위가 된다.
     leaseMode = claimed === 'acquired' ? 'db' : 'presence';
     if (leaseMode === 'db') startHeartbeat(generation, claimStartedAt);
+    try {
+      client ||= await getSupabase();
+    } catch {
+      markLeaseError(generation);
+      return;
+    }
+    if (closed || generation !== leaseGeneration) { lease.release(); return; }
     await new Promise((resolve) => { joinResolve = resolve; openChannel(); });
   }
 

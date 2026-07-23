@@ -6,7 +6,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
-import { calculateFSRS } from '../lib/fsrs';
 import { recordActivity } from '../lib/streak';
 import { logReviewEvents } from '../lib/reviewEvents';
 import { useTTS } from '../lib/useTTS';
@@ -42,6 +41,7 @@ export default function VocabPage() {
   const [reviewIdx, setReviewIdx] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   const [reviewFinished, setReviewFinished] = useState(false);
+  const scoringRef = useRef(false);
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('due');
   const [langFilter, setLangFilter] = useState(() => {
@@ -255,8 +255,17 @@ export default function VocabPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reviewIdx, currentWord?.id]);
 
-  const handleScore = (rating) => {
-    if (!currentWord) return;
+  const handleScore = async (rating) => {
+    if (!currentWord || scoringRef.current) return;
+    scoringRef.current = true;
+    let calculateFSRS;
+    try {
+      ({ calculateFSRS } = await import('../lib/fsrs'));
+    } catch {
+      scoringRef.current = false;
+      toast('복습 계산을 불러오지 못했어요. 다시 시도해주세요.', 'error');
+      return;
+    }
     const wasNew = isNewWord(currentWord);
     const prevInterval = currentWord.interval ?? 0;
     const nextStats = calculateFSRS(rating, {
@@ -287,6 +296,7 @@ export default function VocabPage() {
     }]);
     if (wasNew) registerNewIntro(currentWord.id);            // 새 단어 첫 학습 → 오늘 한도 차감
     goNextReview(rating === 1 ? currentWord.id : null);      // '다시'는 이번 세션 끝에 재노출
+    scoringRef.current = false;
   };
 
   const handleSkip = () => {
