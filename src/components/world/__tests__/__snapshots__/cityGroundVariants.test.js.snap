@@ -1,0 +1,136 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`CityScene P2 지구별 보행 지면 variant-v1 > 미설정 25도시 render key SHA는 불변이고 리옹만 의도적으로 바뀐다 1`] = `
+[
+  {
+    "after": "7cf3dec0657ef6242d5d88073c726ac6a51c99f8b3ce597f3785734384ebb769",
+    "before": "7cf3dec0657ef6242d5d88073c726ac6a51c99f8b3ce597f3785734384ebb769",
+    "id": "fukuoka",
+  },
+  {
+    "after": "2f1bc9865fca2a46898112e1b3d9be29f682571d2c0287611b9fe2769ababfb0",
+    "before": "2f1bc9865fca2a46898112e1b3d9be29f682571d2c0287611b9fe2769ababfb0",
+    "id": "tokyo",
+  },
+  {
+    "after": "c742d58fc9928145a42cfb2190fa9355a61971e0f357ef4896b4a611a60112c7",
+    "before": "c742d58fc9928145a42cfb2190fa9355a61971e0f357ef4896b4a611a60112c7",
+    "id": "osaka",
+  },
+  {
+    "after": "ef76ee46e291121d4114c2afd12aae84fe82136572e03843ddbe6a6eef2245ef",
+    "before": "ef76ee46e291121d4114c2afd12aae84fe82136572e03843ddbe6a6eef2245ef",
+    "id": "kyoto",
+  },
+  {
+    "after": "39e4a80f53c234f362001a8ebd9b951963bc73d13032ebde755911b0e047f519",
+    "before": "39e4a80f53c234f362001a8ebd9b951963bc73d13032ebde755911b0e047f519",
+    "id": "busan",
+  },
+  {
+    "after": "62c1d33cb7e9148f1147ce0e4e4e9c9422fd82e650997c4d27a756f14a48782e",
+    "before": "62c1d33cb7e9148f1147ce0e4e4e9c9422fd82e650997c4d27a756f14a48782e",
+    "id": "seoul",
+  },
+  {
+    "after": "622aeab3d5b10e7762af9970eb21e0ae481fcdc61e0785898b662c2cd09ba89e",
+    "before": "622aeab3d5b10e7762af9970eb21e0ae481fcdc61e0785898b662c2cd09ba89e",
+    "id": "grand-paris",
+  },
+  {
+    "after": "86a55f1b6754bf31136eb832a8bc1986b094594b631fbece9e59e4b210b1a580",
+    "before": "86a55f1b6754bf31136eb832a8bc1986b094594b631fbece9e59e4b210b1a580",
+    "id": "mont-saint-michel",
+  },
+  {
+    "after": "75a6bfd09b879ac4d2f55f869dd831f9ddfc6434534d9700d69add010eccede2",
+    "before": "75a6bfd09b879ac4d2f55f869dd831f9ddfc6434534d9700d69add010eccede2",
+    "id": "cote-dazur",
+  },
+  {
+    "after": "9093b554c961f26519e4dda08358ebacbe3172bd943ac3827760031826cde177",
+    "before": "9093b554c961f26519e4dda08358ebacbe3172bd943ac3827760031826cde177",
+    "id": "brussels",
+  },
+  {
+    "after": "d1992083ded83adca0284e8db8924da9ee022a746db02001c6fc53d2fa267357",
+    "before": "d1992083ded83adca0284e8db8924da9ee022a746db02001c6fc53d2fa267357",
+    "id": "taipei",
+  },
+  {
+    "after": "49c67693f156a7fd76da5e34c27310d544fb52c478f40db2585ff302b46830ad",
+    "before": "49c67693f156a7fd76da5e34c27310d544fb52c478f40db2585ff302b46830ad",
+    "id": "hong-kong",
+  },
+  {
+    "after": "72f62045e2f7d9978d73e1f5434bddc258472a3bcc3e1600fa72c4b7e78f6c81",
+    "before": "72f62045e2f7d9978d73e1f5434bddc258472a3bcc3e1600fa72c4b7e78f6c81",
+    "id": "london",
+  },
+  {
+    "after": "4af1a4132b9d8717e770750394328d13b68a46a328e580ab27f4e3e7e847c239",
+    "before": "4af1a4132b9d8717e770750394328d13b68a46a328e580ab27f4e3e7e847c239",
+    "id": "shanghai",
+  },
+  {
+    "after": "5a10319a24da2eb3ceb4f712f096ce09da739a0e4829ab42c69841ababe3b098",
+    "before": "5a10319a24da2eb3ceb4f712f096ce09da739a0e4829ab42c69841ababe3b098",
+    "id": "beijing",
+  },
+  {
+    "after": "4456081ec7bf637fb8636a62782807bb00138409f44f46e040d4e03bd4f09bf3",
+    "before": "4456081ec7bf637fb8636a62782807bb00138409f44f46e040d4e03bd4f09bf3",
+    "id": "brisbane",
+  },
+  {
+    "after": "2c1d208c4f02f410b81200351ef1378468181c70ba75649b203f67496c0e4ee7",
+    "before": "2c1d208c4f02f410b81200351ef1378468181c70ba75649b203f67496c0e4ee7",
+    "id": "sydney",
+  },
+  {
+    "after": "340c3e6f925bddb2f5b145682468c08bb433ddc4aaeca144fe46f775946bcc4d",
+    "before": "340c3e6f925bddb2f5b145682468c08bb433ddc4aaeca144fe46f775946bcc4d",
+    "id": "canberra",
+  },
+  {
+    "after": "ae6d0d681eab340834d70b322b6aad532cfd73b7aa7bd5425fc18e51708bc2d3",
+    "before": "ae6d0d681eab340834d70b322b6aad532cfd73b7aa7bd5425fc18e51708bc2d3",
+    "id": "melbourne",
+  },
+  {
+    "after": "30eb998f667b90588e92190df2f58615b3703631ca8ed97808a385525bdd0cdb",
+    "before": "30eb998f667b90588e92190df2f58615b3703631ca8ed97808a385525bdd0cdb",
+    "id": "marseille",
+  },
+  {
+    "after": "1f18a2e5b2eaa51555d800b7cb2f0e21aa9ccca46b63cf721f892ff2bf1b89dc",
+    "before": "1f18a2e5b2eaa51555d800b7cb2f0e21aa9ccca46b63cf721f892ff2bf1b89dc",
+    "id": "kawaguchiko",
+  },
+  {
+    "after": "3dca50af25b9430e259c2f9a1d7b69ccf6cb066c0dd4f99841bdeb1a4b873923",
+    "before": "3dca50af25b9430e259c2f9a1d7b69ccf6cb066c0dd4f99841bdeb1a4b873923",
+    "id": "geneva",
+  },
+  {
+    "after": "069da2db18ea59e95f5656eeca2720d9ce3b8e2f73cfdda0d01b700236ccb002",
+    "before": "069da2db18ea59e95f5656eeca2720d9ce3b8e2f73cfdda0d01b700236ccb002",
+    "id": "leman-riviera",
+  },
+  {
+    "after": "ac76d885043dd0185d2849d4ff819d24e12116a4f051521db7513c9d263026bf",
+    "before": "880469fb9a4471fa07f649a28646665f174106b699146e524339f473047113f5",
+    "id": "lyon",
+  },
+  {
+    "after": "d02b6e1a65a85dff93c8c9bb62c81702ecde41dea588f3618f0331efa3178ce2",
+    "before": "d02b6e1a65a85dff93c8c9bb62c81702ecde41dea588f3618f0331efa3178ce2",
+    "id": "bordeaux",
+  },
+  {
+    "after": "d742e87da234acd85a818bb840c5ca808b43b29ac9363f741bbf2d8c25d834b4",
+    "before": "d742e87da234acd85a818bb840c5ca808b43b29ac9363f741bbf2d8c25d834b4",
+    "id": "strasbourg",
+  },
+]
+`;

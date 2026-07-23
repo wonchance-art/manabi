@@ -92,6 +92,9 @@ export function cityLightingAlpha(phase) {
 
 const COTE_DAZUR_GUIDEBOOK_LAND_KEY = 'ct_guidebook_land_cote_dazur';
 export const ROAD_AUTOTILE_STYLE = 'autotile-v1';
+export const GROUND_VARIANT_STYLE = 'variant-v1';
+export const GROUND_VARIANTS = Object.freeze(['pave', 'gravel', 'flagstone']);
+export const AMBIENT_PROP_KINDS = Object.freeze(['streetlight', 'awning', 'fountain', 'bench']);
 const ROAD_N = 1;
 const ROAD_E = 2;
 const ROAD_S = 4;
@@ -107,6 +110,48 @@ export const ROAD_AUTOTILE_VARIANTS = Object.freeze([
 
 export function cityUsesRoadAutotile(city) {
   return city?.roadStyle === ROAD_AUTOTILE_STYLE;
+}
+
+export function cityUsesGroundVariants(city) {
+  return city?.groundStyle === GROUND_VARIANT_STYLE;
+}
+
+function stableStringHash(value) {
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return hash >>> 0;
+}
+
+export function cityGroundVariantForDistrict(city, districtId) {
+  if (!cityUsesGroundVariants(city)
+      || typeof city?.id !== 'string'
+      || typeof districtId !== 'string'
+      || districtId.length === 0) return null;
+  const index = stableStringHash(`${city.id}:${districtId}`) % GROUND_VARIANTS.length;
+  return GROUND_VARIANTS[index];
+}
+
+export function cityGroundVariantAt(city, resolvedDistricts, tx, ty) {
+  if (!cityUsesGroundVariants(city)
+      || resolvedDistricts == null
+      || !Number.isInteger(tx)
+      || !Number.isInteger(ty)) return null;
+  // 겹치는 회랑은 district-v1의 선언 순서를 소유 우선순위로 쓴다. 재질 자체는
+  // city.id를 seed로 삼은 district.id 해시라 타일 순회·벽시계·런타임 RNG와 무관하다.
+  const district = resolvedDistricts.open.find(({ rects }) => rects.some(
+    ([x0, y0, x1, y1]) => tx >= x0 && tx <= x1 && ty >= y0 && ty <= y1,
+  ));
+  return district ? cityGroundVariantForDistrict(city, district.id) : null;
+}
+
+export function cityPropTextureKey(kind, phase = 'day') {
+  if (kind === 'streetlight' && (phase === 'night' || phase === 'late-night')) {
+    return 'ct_prop_streetlight_lit';
+  }
+  return `ct_prop_${kind}`;
 }
 
 const DIRV = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
@@ -153,6 +198,7 @@ export function buildCityScene(Phaser, city, ctx) {
   const ROWS = city.rows;
   const SCENE_KEY = `city:${city.id}`;
   const USES_ROAD_AUTOTILE = cityUsesRoadAutotile(city);
+  const USES_GROUND_VARIANTS = cityUsesGroundVariants(city);
   const METERS_PER_TILE = cityMetersPerTile(city);
   const SCALE_TIER = cityScaleTier(METERS_PER_TILE).id;
 
@@ -299,6 +345,37 @@ export function buildCityScene(Phaser, city, ctx) {
         g.fillStyle(C(0xe0cf9e), 1); g.fillRect(0, 0, TEX, TEX);
         g.fillStyle(C(0xd0bd85), 0.6); g.fillRect(0, 0, TEX, 1); g.fillRect(0, 8, TEX, 1); g.fillRect(0, 0, 1, TEX); g.fillRect(8, 0, 1, TEX);
       });
+      if (USES_GROUND_VARIANTS) {
+        // P2 variant-v1 — 열린 지구의 PLAZA에만 얹는 보행 지면 3종.
+        // ROAD·SIDEWALK·CROSSWALK·BRIDGE와 mainRoute 오토타일 키는 그대로 둔다.
+        this.bakeTile('ct_ground_pave', (g) => {
+          g.fillStyle(C(0xc9bdab), 1); g.fillRect(0, 0, TEX, TEX);
+          g.fillStyle(C(0xa99c89), 0.72);
+          for (const y of [0, 5, 10, 15]) g.fillRect(0, y, TEX, 1);
+          for (let y = 0; y < TEX; y += 5) {
+            const phase = (Math.floor(y / 5) % 2) * 4;
+            for (let x = phase; x < TEX; x += 8) g.fillRect(x, y, 1, Math.min(5, TEX - y));
+          }
+          g.fillStyle(C(0xddd2c2), 0.58); g.fillRect(1, 1, 5, 1); g.fillRect(9, 6, 5, 1);
+        });
+        this.bakeTile('ct_ground_gravel', (g) => {
+          g.fillStyle(C(0xcaba94), 1); g.fillRect(0, 0, TEX, TEX);
+          g.fillStyle(C(0xaa9770), 0.78);
+          for (const [x, y] of [[2, 3], [7, 2], [12, 4], [4, 8], [10, 9], [14, 12], [6, 14]]) {
+            g.fillRect(x, y, 2, 1);
+          }
+          g.fillStyle(C(0xe2d5af), 0.72);
+          for (const [x, y] of [[4, 5], [9, 4], [1, 11], [8, 12], [12, 7]]) g.fillRect(x, y, 1, 1);
+        });
+        this.bakeTile('ct_ground_flagstone', (g) => {
+          g.fillStyle(C(0xd2c5aa), 1); g.fillRect(0, 0, TEX, TEX);
+          g.fillStyle(C(0xb2a488), 0.7);
+          g.fillRect(0, 0, TEX, 1); g.fillRect(0, 8, TEX, 1);
+          g.fillRect(5, 0, 1, 8); g.fillRect(12, 0, 1, 8);
+          g.fillRect(2, 8, 1, 8); g.fillRect(9, 8, 1, 8);
+          g.fillStyle(C(0xe4dac3), 0.54); g.fillRect(1, 1, 3, 1); g.fillRect(6, 9, 2, 1);
+        });
+      }
       // 공원 — 잔디 + 미세 얼룩.
       this.bakeTile('ct_park', (g) => {
         const rng = makeRng(0x77);
@@ -581,13 +658,40 @@ export function buildCityScene(Phaser, city, ctx) {
         g.fillStyle(C(0x8a221b), 1); g.fillRect(2, 3, 12, 1);
         g.fillStyle(C(0x2a1e14), 1); g.fillRect(6, 8, 4, 1);       // 편액
       });
-      // 운하 분수(キャナルシティ) 16×16 — 수반 + 물줄기.
+      // P2 범용 가로등 — 주간 유리와 야간 점등 프레임을 같은 실루엣으로 굽는다.
+      const streetlight = (key, lamp, glowAlpha) => this.bakeTile(key, (g) => {
+        g.fillStyle(C(0x403d3a), 1);
+        g.fillRect(7, 5, 2, 27); g.fillRect(5, 30, 6, 2);
+        g.fillRect(8, 5, 4, 2); g.fillRect(11, 6, 2, 3);
+        g.fillStyle(C(lamp), 1); g.fillRect(10, 8, 5, 4);
+        if (glowAlpha > 0) {
+          g.fillStyle(C(0xffefbd), glowAlpha); g.fillRect(9, 7, 7, 6);
+          g.fillStyle(C(0xfff7dc), 1); g.fillRect(11, 9, 3, 2);
+        }
+      }, 16, 32);
+      streetlight('ct_prop_streetlight', 0xb8aa82, 0);
+      streetlight('ct_prop_streetlight_lit', 0xe3bd69, 0.42);
+      // P2 상점 차양 — 웜 레드·크림 2색만 쓰는 무문자 스트라이프.
+      this.bakeTile('ct_prop_awning', (g) => {
+        g.fillStyle(C(0xb85d4b), 1); g.fillRect(1, 4, 22, 7);
+        g.fillStyle(C(0xe6d5b4), 1);
+        for (const x of [4, 10, 16]) g.fillRect(x, 4, 3, 7);
+        for (const x of [1, 7, 13, 19]) g.fillRect(x, 11, 3, 2);
+      }, 24, 16);
+      // P2 정적 분수 — 1타일 단일 텍스처(애니 프레임 없음).
       this.bakeTile('ct_prop_fountain', (g) => {
         g.fillStyle(C(0x9aa7b0), 1); g.fillRect(3, 10, 10, 5);     // 수반
         g.fillStyle(C(0x7d8890), 1); g.fillRect(3, 14, 10, 1);
         g.fillStyle(C(0x3e93c4), 1); g.fillRect(5, 11, 6, 3);      // 고인 물
         g.fillStyle(C(0xd6f0fb), 1); g.fillRect(7, 2, 2, 8);       // 물줄기
         g.fillRect(5, 5, 1, 5); g.fillRect(10, 5, 1, 5);
+      });
+      // P2 벤치 — 목재 좌판과 짙은 주철 다리.
+      this.bakeTile('ct_prop_bench', (g) => {
+        g.fillStyle(C(0x8c603d), 1); g.fillRect(2, 6, 12, 3); g.fillRect(2, 10, 12, 2);
+        g.fillStyle(C(0xb27b4f), 1); g.fillRect(3, 6, 10, 1); g.fillRect(3, 10, 10, 1);
+        g.fillStyle(C(0x403d3a), 1);
+        g.fillRect(3, 9, 2, 6); g.fillRect(11, 9, 2, 6); g.fillRect(2, 14, 4, 2); g.fillRect(10, 14, 4, 2);
       });
       // 백화점(天神 岩田屋·PARCO) 24×24 — 간판 띠 얹은 상업동.
       this.bakeTile('ct_prop_depart', (g) => {
@@ -1111,6 +1215,10 @@ export function buildCityScene(Phaser, city, ctx) {
     }
     districtOpenAt(tx, ty) { return cityDistrictOpenAt(this.districts, tx, ty); }
     districtLockedAt(tx, ty) { return !this.districtOpenAt(tx, ty); }
+    groundVariantTexKey(tx, ty) {
+      const variant = cityGroundVariantAt(city, this.districts, tx, ty);
+      return variant ? `ct_ground_${variant}` : null;
+    }
     // 충돌은 공용 표준 규칙(isCityBlocked: WATER·RIVER·BUILDING·ISLAND) — 렌더·데이터와 단일 진실원.
     blocked(tx, ty) { return this.districtLockedAt(tx, ty) || isCityBlocked(this.tileCode(tx, ty)); }
     isWaterTile(tx, ty) { return isCityWater(this.tileCode(tx, ty)); }
@@ -1169,6 +1277,9 @@ export function buildCityScene(Phaser, city, ctx) {
     }
 
     mainRoutePavingTexKey(tx, ty) {
+      // variant-v1 PLAZA는 지구 재질 자체가 길찾기 표면이다. 반투명 주동선 포장을
+      // 다시 얹으면 3종 무늬가 사라지므로 이 1코드만 overlay를 생략한다.
+      if (USES_GROUND_VARIANTS && this.tileCode(tx, ty) === TERRAIN.PLAZA) return null;
       if (!USES_ROAD_AUTOTILE || !this.roadLikeAt(tx, ty)) return 'ct_main_route_paving';
       return this.roadAutotileTexKey('ct_main_route_paving_autotile', tx, ty);
     }
@@ -1212,7 +1323,7 @@ export function buildCityScene(Phaser, city, ctx) {
         case TERRAIN.CROSSWALK: return USES_ROAD_AUTOTILE
           ? this.roadAutotileTexKey('ct_crosswalk_autotile', tx, ty)
           : `ct_crosswalk_${this.roadDirection(tx, ty) === 'h' ? 'h' : 'v'}`;
-        case TERRAIN.PLAZA: return 'ct_plaza';
+        case TERRAIN.PLAZA: return this.groundVariantTexKey(tx, ty) ?? 'ct_plaza';
         case TERRAIN.PARK: return 'ct_park';
         case TERRAIN.BEACH: return cityBeachTextureKey(city);
         case TERRAIN.BRIDGE: return USES_ROAD_AUTOTILE
@@ -1315,12 +1426,20 @@ export function buildCityScene(Phaser, city, ctx) {
         ...(this.mainRoute ? [...(city.props || []), ...this.mainRoute.props] : (city.props || [])),
         ...this.districtBoundarySigns,
       ];
+      this.ambientStreetlightViews = [];
       for (const p of sceneProps) {
         const [px, py] = p.tile;
         if (!this.districtOpenAt(px, py)) continue;
-        this.add.image(px * TILE + TILE / 2, (py + 1) * TILE, `ct_prop_${p.kind}`)
+        const image = this.add.image(
+          px * TILE + TILE / 2,
+          (py + 1) * TILE,
+          cityPropTextureKey(p.kind, ctx.worldClockRef?.current?.phase),
+        )
           .setOrigin(0.5, 1).setScale(TSCALE).setDepth((py + 1) * TILE);
+        if (p.kind === 'streetlight') this.ambientStreetlightViews.push(image);
       }
+      this.ambientStreetlightTexture = null;
+      this.refreshAmbientPropLighting(ctx.worldClockRef?.current?.phase);
       this.setupRouteDiscoveries();
 
       // ── 구역(동네) 라벨 — 은은한 도트 표지(오리엔테이션) ──
@@ -1476,8 +1595,11 @@ export function buildCityScene(Phaser, city, ctx) {
           stamp.setTexture(this.terrainTexKey(tx, ty));
           rt.batchDraw(stamp, (tx - ox) * TILE, (ty - oy) * TILE);
           if (this.districtOpenAt(tx, ty) && this.mainRoute && cityMainRouteTileAt(this.mainRoute, COLS, tx, ty)) {
-            stamp.setTexture(this.mainRoutePavingTexKey(tx, ty));
-            rt.batchDraw(stamp, (tx - ox) * TILE, (ty - oy) * TILE);
+            const pavingTexture = this.mainRoutePavingTexKey(tx, ty);
+            if (pavingTexture) {
+              stamp.setTexture(pavingTexture);
+              rt.batchDraw(stamp, (tx - ox) * TILE, (ty - oy) * TILE);
+            }
           }
         }
       }
@@ -1825,6 +1947,13 @@ export function buildCityScene(Phaser, city, ctx) {
 
     emitDistances() { emitPeerDistances(this, bus); }
 
+    refreshAmbientPropLighting(phase) {
+      const texture = cityPropTextureKey('streetlight', phase);
+      if (texture === this.ambientStreetlightTexture) return;
+      this.ambientStreetlightTexture = texture;
+      for (const view of this.ambientStreetlightViews ?? []) view.setTexture(texture);
+    }
+
     update(time, delta) {
       // 지형 청크 가시성(카메라 청크 이동 시에만 bake/축출) + 물 오버레이(뷰포트 안 물 타일 추종).
       this.refreshChunks();
@@ -1837,6 +1966,7 @@ export function buildCityScene(Phaser, city, ctx) {
         const weather = cityWeatherAt(city.id, worldSnapshot);
         this.weatherOverlay.setAlpha(weather.id === 'rain' ? 0.16 : weather.id === 'fog' ? 0.22 : weather.id === 'cloudy' ? 0.08 : 0);
         this.lightingOverlay.setAlpha(cityLightingAlpha(worldSnapshot.phase));
+        this.refreshAmbientPropLighting(worldSnapshot.phase);
       }
       if (worldSnapshot) this.updateReservedTrip(worldSnapshot.totalGameMinutes);
 

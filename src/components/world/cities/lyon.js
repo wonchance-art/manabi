@@ -435,6 +435,7 @@ export function buildLyonGrid() {
 export const LYON = {
   id: 'lyon', name: '리옹', cols: COLS, rows: ROWS, entrance: ENTRANCE,
   roadStyle: 'autotile-v1',
+  groundStyle: 'variant-v1',
   returnNode: 'lyon', // 오버월드 EMEA 게이트는 Codex-1 후속(파르디외 기준)
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: TRANSIT_POINTS, railways: LYON_GEO.railways,
