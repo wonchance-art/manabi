@@ -7,6 +7,7 @@
 
 import { CITY_TILE, isCityBlocked, isCityWalkable, isCityWater } from './terrain.js';
 import { STRASBOURG_GEO } from './strasbourg.geo.js';
+import { STRASBOURG_DOORS } from '../strasbourgDoors.js';
 
 export { CITY_TILE, isCityBlocked, isCityWalkable, isCityWater };
 
@@ -49,6 +50,12 @@ export const ZONES = [
   { id: 'ill', label: '일 강', bounds: [150, 300, 260, 340], labelTile: [200, 318] },
 ];
 
+// fr 도어 2종(fr-23~24 — 제안 스팟 좌표) tile — 앵커 근처 보행+이격 ≥3 스크립트 검증 배치.
+const STRASBOURG_DOOR_TILES = Object.freeze({
+  'fr-23': [165, 263], // 서점 — 그랑딜 1안
+  'fr-24': [275, 185], // 자전거 대여 — 유럽지구 1안
+});
+
 export const CITY_NODES = [
   // 🧑‍💼 채움 라운드 1 — 빈 역 지구 NPC(스팟 실측: 보행·이격≥3·개방 rect 내).
   {
@@ -71,6 +78,21 @@ export const CITY_NODES = [
       desc: copy.desc,
     };
   }),
+  // 프랑스어 문화 도어 2종(fr-23~24 — 채움 라운드 2) — track 명시 라우팅.
+  ...STRASBOURG_DOORS.map((door) => ({
+    id: door.id,
+    kind: 'spot',
+    name: door.nameFr,
+    nameFr: door.nameFr,
+    contentLocale: 'fr',
+    facade: 'sign',
+    tile: [...STRASBOURG_DOOR_TILES[door.id]],
+    facing: 'down',
+    noStamp: true,
+    track: door.track,
+    chapter: door.chapter,
+    desc: `${door.name} — ${door.lines[0].fr} (${door.lines[0].gloss})`,
+  })),
 ];
 
 // ⚠️ nameJa 필드는 CityScene 레거시 계약 — 프랑스 도시는 nameFr를 그대로 싣는다(yomi 공란).
