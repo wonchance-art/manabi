@@ -1,0 +1,311 @@
+{
+  "version": 1,
+  "city": "lyon",
+  "grid": {
+    "w": 428,
+    "h": 501
+  },
+  "scannerVersion": "tile-integrity-r2",
+  "fixes": [
+    {
+      "findingId": "tile-integrity-r2:lyon:B:37:13",
+      "city": "lyon",
+      "x": 13,
+      "y": 37,
+      "before": 2,
+      "after": 1,
+      "ruleId": "b-prime-majority-noncrosswalk-walkable-v1",
+      "scannerVersion": "tile-integrity-r2"
+    },
+    {
+      "findingId": "tile-integrity-r2:lyon:B:54:135",
+      "city": "lyon",
+      "x": 135,
+      "y": 54,
+      "before": 2,
+      "after": 1,
+      "ruleId": "b-prime-majority-noncrosswalk-walkable-v1",
+      "scannerVersion": "tile-integrity-r2"
+    },
+    {
+      "findingId": "tile-integrity-r2:lyon:B:66:71",
+      "city": "lyon",
+      "x": 71,
+      "y": 66,
+      "before": 2,
+      "after": 0,
+      "ruleId": "b-prime-majority-noncrosswalk-walkable-v1",
+      "scannerVersion": "tile-integrity-r2"
+    },
+    {
+      "findingId": "tile-integrity-r2:lyon:B:74:84",
+      "city": "lyon",
+      "x": 84,
+      "y": 74,
+      "before": 2,
+      "after": 1,
+      "ruleId": "b-prime-majority-noncrosswalk-walkable-v1",
+      "scannerVersion": "tile-integrity-r2"
+    },
+    {
+      "findingId": "tile-integrity-r2:lyon:B:75:85",
+      "city": "lyon",
+      "x": 85,
+      "y": 75,
+      "before": 2,
+      "after": 1,
+      "ruleId": "b-prime-majority-noncrosswalk-walkable-v1",
+      "scannerVersion": "tile-integrity-r2"
+    },
+    {
+      "findingId": "tile-integrity-r2:lyon:B:107:189",
+      "city": "lyon",
+      "x": 189,
+      "y": 107,
+      "before": 2,
+      "after": 1,
+      "ruleId": "b-prime-majority-noncrosswalk-walkable-v1",
+      "scannerVersion": "tile-integrity-r2"
+    },
+    {
+      "findingId": "tile-integrity-r2:lyon:B:144:185",
+      "city": "lyon",
+      "x": 185,
+      "y": 144,
+      "before": 2,
+      "after": 1,
+      "ruleId": "b-prime-majority-noncrosswalk-walkable-v1",
+      "scannerVersion": "tile-integrity-r2"
+    },
+    {
+      "findingId": "tile-integrity-r2:lyon:B:166:108",
+      "city": "lyon",
+      "x": 108,
+      "y": 166,
+      "before": 2,
+      "after": 0,
+      "ruleId": "b-prime-majority-noncrosswalk-walkable-v1",
+      "scannerVersion": "tile-integrity-r2"
+    },
+    {
+      "findingId": "tile-integrity-r2:lyon:B:262:203",
+      "city": "lyon",
+      "x": 203,
+      "y": 262,
+      "before": 2,
+      "after": 0,
+      "ruleId": "b-prime-majority-noncrosswalk-walkable-v1",
+      "scannerVersion": "tile-integrity-r2"
+    },
+    {
+      "findingId": "tile-integrity-r2:lyon:B:269:205",
+      "city": "lyon",
+      "x": 205,
+      "y": 269,
+      "before": 2,
+      "after": 1,
+      "ruleId": "b-prime-majority-noncrosswalk-walkable-v1",
+      "scannerVersion": "tile-integrity-r2"
+    },
+    {
+      "findingId": "tile-integrity-r2:lyon:B:269:205",
+      "city": "lyon",
+      "x": 206,
+      "y": 269,
+      "before": 2,
+      "after": 1,
+      "ruleId": "b-prime-majority-noncrosswalk-walkable-v1",
+      "scannerVersion": "tile-integrity-r2"
+    },
+    {
+      "findingId": "tile-integrity-r2:lyon:B:271:206",
+      "city": "lyon",
+      "x": 206,
+      "y": 271,
+      "before": 2,
+      "after": 0,
+      "ruleId": "b-prime-majority-noncrosswalk-walkable-v1",
+      "scannerVersion": "tile-integrity-r2"
+    },
+    {
+      "findingId": "tile-integrity-r2:lyon:B:277:201",
+      "city": "lyon",
+      "x": 201,
+      "y": 277,
+      "before": 2,
+      "after": 0,
+      "ruleId": "b-prime-majority-noncrosswalk-walkable-v1",
+      "scannerVersion": "tile-integrity-r2"
+    },
+    {
+      "findingId": "tile-integrity-r2:lyon:B:279:209",
+      "city": "lyon",
+      "x": 209,
+      "y": 279,
+      "before": 2,
+      "after": 1,
+      "ruleId": "b-prime-majority-noncrosswalk-walkable-v1",
+      "scannerVersion": "tile-integrity-r2"
+    },
+    {
+      "findingId": "tile-integrity-r2:lyon:B:313:135",
+      "city": "lyon",
+      "x": 135,
+      "y": 313,
+      "before": 2,
+      "after": 1,
+      "ruleId": "b-prime-majority-noncrosswalk-walkable-v1",
+      "scannerVersion": "tile-integrity-r2"
+    },
+    {
+      "findingId": "tile-integrity-r2:lyon:B:318:117",
+      "city": "lyon",
+      "x": 117,
+      "y": 318,
+      "before": 2,
+      "after": 1,
+      "ruleId": "b-prime-majority-noncrosswalk-walkable-v1",
+      "scannerVersion": "tile-integrity-r2"
+    },
+    {
+      "findingId": "tile-integrity-r2:lyon:B:321:107",
+      "city": "lyon",
+      "x": 107,
+      "y": 321,
+      "before": 2,
+      "after": 1,
+      "ruleId": "b-prime-majority-noncrosswalk-walkable-v1",
+      "scannerVersion": "tile-integrity-r2"
+    },
+    {
+      "findingId": "tile-integrity-r2:lyon:B:325:114",
+      "city": "lyon",
+      "x": 114,
+      "y": 325,
+      "before": 2,
+      "after": 1,
+      "ruleId": "b-prime-majority-noncrosswalk-walkable-v1",
+      "scannerVersion": "tile-integrity-r2"
+    },
+    {
+      "findingId": "tile-integrity-r2:lyon:B:361:297",
+      "city": "lyon",
+      "x": 297,
+      "y": 361,
+      "before": 2,
+      "after": 0,
+      "ruleId": "b-prime-majority-noncrosswalk-walkable-v1",
+      "scannerVersion": "tile-integrity-r2"
+    },
+    {
+      "findingId": "tile-integrity-r2:lyon:B:364:251",
+      "city": "lyon",
+      "x": 251,
+      "y": 364,
+      "before": 2,
+      "after": 1,
+      "ruleId": "b-prime-majority-noncrosswalk-walkable-v1",
+      "scannerVersion": "tile-integrity-r2"
+    },
+    {
+      "findingId": "tile-integrity-r2:lyon:B:372:305",
+      "city": "lyon",
+      "x": 305,
+      "y": 372,
+      "before": 2,
+      "after": 1,
+      "ruleId": "b-prime-majority-noncrosswalk-walkable-v1",
+      "scannerVersion": "tile-integrity-r2"
+    },
+    {
+      "findingId": "tile-integrity-r2:lyon:B:376:410",
+      "city": "lyon",
+      "x": 410,
+      "y": 376,
+      "before": 2,
+      "after": 1,
+      "ruleId": "b-prime-majority-noncrosswalk-walkable-v1",
+      "scannerVersion": "tile-integrity-r2"
+    },
+    {
+      "findingId": "tile-integrity-r2:lyon:B:378:310",
+      "city": "lyon",
+      "x": 310,
+      "y": 378,
+      "before": 2,
+      "after": 1,
+      "ruleId": "b-prime-majority-noncrosswalk-walkable-v1",
+      "scannerVersion": "tile-integrity-r2"
+    },
+    {
+      "findingId": "tile-integrity-r2:lyon:B:385:252",
+      "city": "lyon",
+      "x": 252,
+      "y": 385,
+      "before": 2,
+      "after": 1,
+      "ruleId": "b-prime-majority-noncrosswalk-walkable-v1",
+      "scannerVersion": "tile-integrity-r2"
+    },
+    {
+      "findingId": "tile-integrity-r2:lyon:B:412:213",
+      "city": "lyon",
+      "x": 213,
+      "y": 412,
+      "before": 2,
+      "after": 1,
+      "ruleId": "b-prime-majority-noncrosswalk-walkable-v1",
+      "scannerVersion": "tile-integrity-r2"
+    },
+    {
+      "findingId": "tile-integrity-r2:lyon:B:412:213",
+      "city": "lyon",
+      "x": 214,
+      "y": 412,
+      "before": 2,
+      "after": 1,
+      "ruleId": "b-prime-majority-noncrosswalk-walkable-v1",
+      "scannerVersion": "tile-integrity-r2"
+    },
+    {
+      "findingId": "tile-integrity-r2:lyon:B:443:308",
+      "city": "lyon",
+      "x": 308,
+      "y": 443,
+      "before": 2,
+      "after": 1,
+      "ruleId": "b-prime-majority-noncrosswalk-walkable-v1",
+      "scannerVersion": "tile-integrity-r2"
+    },
+    {
+      "findingId": "tile-integrity-r2:lyon:B:446:377",
+      "city": "lyon",
+      "x": 377,
+      "y": 446,
+      "before": 2,
+      "after": 1,
+      "ruleId": "b-prime-majority-noncrosswalk-walkable-v1",
+      "scannerVersion": "tile-integrity-r2"
+    },
+    {
+      "findingId": "tile-integrity-r2:lyon:B:466:72",
+      "city": "lyon",
+      "x": 72,
+      "y": 466,
+      "before": 2,
+      "after": 1,
+      "ruleId": "b-prime-majority-noncrosswalk-walkable-v1",
+      "scannerVersion": "tile-integrity-r2"
+    },
+    {
+      "findingId": "tile-integrity-r2:lyon:B:473:64",
+      "city": "lyon",
+      "x": 64,
+      "y": 473,
+      "before": 2,
+      "after": 1,
+      "ruleId": "b-prime-majority-noncrosswalk-walkable-v1",
+      "scannerVersion": "tile-integrity-r2"
+    }
+  ]
+}
