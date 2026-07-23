@@ -2,6 +2,8 @@ import { OVERWORLD_REGION_LIST, overworldRegionAirSpawn } from './overworldRegio
 
 const compareCodePoint = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
 
+export const AIR_HUB_SAVE_ERROR_MESSAGE = '도착 위치를 저장하지 못했어요. 연결을 확인해 주세요.';
+
 function assertRegion(region, index) {
   if (!region || typeof region !== 'object') throw new TypeError(`regions[${index}] must be an object`);
   for (const key of ['id', 'label', 'sceneId']) {
@@ -47,4 +49,27 @@ export function overworldAirDestinations({
 export function overworldAirDestinationById(destinations, id) {
   if (!Array.isArray(destinations) || typeof id !== 'string') return null;
   return destinations.find((destination) => destination.id === id) || null;
+}
+
+export async function requestOverworldAirTravel({
+  destination,
+  persistPosition,
+  setStatus,
+  transition,
+}) {
+  setStatus({ phase: 'saving', destination });
+  try {
+    const persisted = await persistPosition(destination.spawn);
+    if (!persisted) throw new Error('air destination save failed');
+    setStatus(null);
+    transition(destination);
+    return true;
+  } catch {
+    setStatus({
+      phase: 'error',
+      destination,
+      message: AIR_HUB_SAVE_ERROR_MESSAGE,
+    });
+    return false;
+  }
 }

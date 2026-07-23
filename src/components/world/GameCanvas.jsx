@@ -121,6 +121,7 @@ import { worldNodeReturnSpawn } from '../../lib/world/worldNodeGeo';
 import {
   overworldAirDestinationById,
   overworldAirDestinations,
+  requestOverworldAirTravel,
 } from '../../lib/world/overworldAirHub';
 import { formatWorldTime, WORLD_TIME_SCALE } from '../../lib/world/worldClock';
 import { cityWeatherAt, worldEventAt } from '../../lib/world/worldLife';
@@ -717,6 +718,10 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
         if (airportExitStatus?.phase === 'saving') return;
         if (airportExitStatus?.phase === 'error') { sceneRef.current?.returnPlaza?.(); return; }
         if (airHubStatus?.phase === 'saving') return;
+        if (airHubStatus?.phase === 'error') {
+          sceneRef.current?.flyToOverworldRegion?.(airHubStatus.destination.id);
+          return;
+        }
         // 🗾 앨범 열림 중 A → 최우선 무시(닫기는 칩/B/ESC). 숨은 배경 오버레이가 A를 가로채지 않게 맨 앞에서 소비.
         if (albumOpenRef.current) return;
         if (npcDialogRef.current) { npcActionRef.current?.(); return; } // NPC 대화 중 A → 다음 대사
@@ -785,6 +790,11 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
         if (entryBriefingRef.current) { setEntryBriefing(null); return; }
         if (airportExitStatus?.phase === 'saving') return;
         if (airportExitStatus?.phase === 'error') { sceneRef.current?.returnPlaza?.(); return; }
+        if (airHubStatus?.phase === 'saving') return;
+        if (airHubStatus?.phase === 'error') {
+          sceneRef.current?.flyToOverworldRegion?.(airHubStatus.destination.id);
+          return;
+        }
         if (activeSceneRef.current === MSM_ABBEY_SCENE_KEY) { sceneRef.current?.abbeyCancel?.(); return; }
         if (activeSceneRef.current === JAGALCHI_MARKET_SCENE_KEY) { sceneRef.current?.jagalchiCancel?.(); return; }
         if (activeSceneRef.current === FUJI_CLIMB_SCENE_KEY) { sceneRef.current?.fujiCancel?.(); return; }
@@ -801,7 +811,6 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
         if (airHubPromptRef.current) { setAirHubPrompt(null); return; }
         if (corridorStatus?.phase === 'error') { setCorridorStatus(null); return; }
         if (regionStatus?.phase === 'error' && !regionStatus?.preview) { setRegionStatus(null); return; }
-        if (airHubStatus?.phase === 'error') { setAirHubStatus(null); return; }
         if (minimapOpenRef.current) { setMinimapOpen(false); return; }
         if (reviewOpenRef.current) setReviewOpen(false);
       },
@@ -1966,21 +1975,15 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
           this.heldDirs.length = 0;
           this.tapTile = null;
           setAirHubPrompt(null);
-          setAirHubStatus({ phase: 'saving', destination });
           try {
-            const persisted = await persistSessionPosition(destination.spawn);
-            if (!persisted) throw new Error('air destination save failed');
-            setAirHubStatus(null);
-            this.scene.start(destination.sceneId, { spawn: destination.spawn });
-            return true;
-          } catch {
-            setAirHubStatus({
-              phase: 'error',
+            const traveled = await requestOverworldAirTravel({
               destination,
-              message: '도착 위치를 저장하지 못했어요. 다시 시도해 주세요.',
+              persistPosition: persistSessionPosition,
+              setStatus: setAirHubStatus,
+              transition: (next) => this.scene.start(next.sceneId, { spawn: next.spawn }),
             });
-            this.inputLocked = false;
-            return false;
+            if (!traveled) this.inputLocked = false;
+            return traveled;
           } finally {
             this.airTravelPending = false;
           }
@@ -3009,10 +3012,10 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
               <div style={{ marginTop: 6 }}>
                 <button
                   type="button"
-                  onClick={() => setAirHubStatus(null)}
+                  onClick={() => sceneRef.current?.flyToOverworldRegion?.(airHubStatus.destination.id)}
                   style={{ ...gbcButtonPrimary, fontSize: '0.66rem', padding: '2px 8px' }}
                 >
-                  닫기 Ⓑ
+                  다시 시도 Ⓐ/Ⓑ
                 </button>
               </div>
             </>

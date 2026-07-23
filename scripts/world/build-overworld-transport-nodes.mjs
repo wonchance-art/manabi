@@ -42,7 +42,7 @@ async function listOutputPaths(directory, prefix = '') {
 function projectedNodes(manifest, frame) {
   return manifest.nodes.map((node) => {
     const projected = frame.project(node.lon, node.lat);
-    const offset = node.type === 'rail-hub' ? node.arrivalOffset : [0, 0];
+    const offset = node.arrivalOffset || [0, 0];
     const tile = [
       roundHalfAwayFromZero(projected.x) + offset[0],
       roundHalfAwayFromZero(projected.y) + offset[1],

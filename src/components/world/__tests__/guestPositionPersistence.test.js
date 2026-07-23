@@ -62,9 +62,22 @@ describe('dev guest 교통 위치 저장 스킵', () => {
     expect(GAME_CANVAS_SOURCE).toContain(
       'const persistSessionPosition = createGuestAwarePositionPersister({ devGuest, userId });',
     );
-    expect(airHub).toContain('await persistSessionPosition(destination.spawn)');
+    expect(airHub).toContain('await requestOverworldAirTravel({');
+    expect(airHub).toContain('persistPosition: persistSessionPosition');
     expect(airHub).toContain('(!devGuest && !userId)');
     expect(corridor).toContain('persistPosition: persistSessionPosition');
     expect(regions).toContain('persistPosition: persistSessionPosition');
+  });
+
+  it('에어허브 저장 실패 토스트가 E2 문법의 같은 목적지 다시 시도를 노출한다', () => {
+    const statusOverlay = GAME_CANVAS_SOURCE.match(
+      /\{airHubStatus && activeScene === 'plaza'[\s\S]*?\{corridorNear/,
+    )?.[0];
+
+    expect(statusOverlay).toContain(
+      'onClick={() => sceneRef.current?.flyToOverworldRegion?.(airHubStatus.destination.id)}',
+    );
+    expect(statusOverlay).toContain('다시 시도 Ⓐ/Ⓑ');
+    expect(statusOverlay).not.toContain('닫기 Ⓑ');
   });
 });

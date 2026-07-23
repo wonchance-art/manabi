@@ -58,6 +58,17 @@ function freezeRegion(region) {
   });
 }
 
+const APAC_INCHEON_AIR_ANCHOR = Object.freeze({
+  id: 'incheon-air-arrival',
+  type: 'air-gate',
+  label: '인천공항',
+  contentLocale: 'ko',
+  airportCode: 'ICN',
+  lon: 126.4407,
+  lat: 37.4602,
+  arrivalOffset: Object.freeze([4, 0]),
+});
+
 export const OVERWORLD_REGIONS = Object.freeze({
   'asia-pacific': freezeRegion({
     id: 'asia-pacific',
@@ -125,15 +136,9 @@ export const OVERWORLD_REGIONS = Object.freeze({
       lon: 131.8855,
       lat: 43.1155,
     },
-    airArrival: {
-      id: 'incheon-air-arrival',
-      label: '인천공항',
-      contentLocale: 'ko',
-      airportCode: 'ICN',
-      lon: 126.4407,
-      lat: 37.4602,
-      arrivalOffset: [4, 0],
-    },
+    // 기존 항공 도착 앵커를 보존하면서 같은 체크인 타일을 귀환 air-gate로도 노출한다.
+    airGate: APAC_INCHEON_AIR_ANCHOR,
+    airArrival: APAC_INCHEON_AIR_ANCHOR,
   }),
   emea: freezeRegion({
     id: 'emea',

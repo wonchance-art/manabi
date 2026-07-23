@@ -60,6 +60,19 @@ function nodeKeys(type, commonKeys, label) {
   return [...commonKeys, ...variantKeys];
 }
 
+function sourceNodeKeys(value, label) {
+  const keys = nodeKeys(value.type, COMMON_SOURCE_NODE_KEYS, label);
+  return value.type === 'air-gate' && Object.hasOwn(value, 'arrivalOffset')
+    ? [...keys, 'arrivalOffset']
+    : keys;
+}
+
+function assertArrivalOffset(value, label) {
+  if (!Array.isArray(value) || value.length !== 2 || !value.every(Number.isSafeInteger)) {
+    throw new TypeError(`${label} must be a safe-integer [x, y] pair`);
+  }
+}
+
 function normalizeNodeCommon(value, label) {
   assertSafeId(value.id, `${label}.id`);
   if (typeof value.label !== 'string' || value.label.length === 0) {
@@ -75,10 +88,10 @@ function normalizeNodeCommon(value, label) {
     if (typeof value.airportCode !== 'string' || !/^[A-Z]{3}$/.test(value.airportCode)) {
       throw new TypeError(`${label}.airportCode must be a three-letter uppercase code`);
     }
-  } else if (!Array.isArray(value.arrivalOffset) || value.arrivalOffset.length !== 2
-    || !value.arrivalOffset.every(Number.isSafeInteger)) {
-    throw new TypeError(`${label}.arrivalOffset must be a safe-integer [x, y] pair`);
-  }
+    if (value.arrivalOffset !== undefined) {
+      assertArrivalOffset(value.arrivalOffset, `${label}.arrivalOffset`);
+    }
+  } else assertArrivalOffset(value.arrivalOffset, `${label}.arrivalOffset`);
 }
 
 function normalizeBaseRegion(value) {
@@ -98,7 +111,7 @@ function normalizeBaseRegion(value) {
 function normalizeSourceNode(value, index) {
   const label = `nodes[${index}]`;
   assertPlainObject(value, label);
-  assertExactKeys(value, nodeKeys(value.type, COMMON_SOURCE_NODE_KEYS, label), label);
+  assertExactKeys(value, sourceNodeKeys(value, label), label);
   normalizeNodeCommon(value, label);
   if (!Number.isFinite(value.lon) || value.lon < -180 || value.lon > 180) {
     throw new RangeError(`${label}.lon must be between -180 and 180`);
@@ -106,7 +119,10 @@ function normalizeSourceNode(value, index) {
   if (!Number.isFinite(value.lat) || value.lat < -90 || value.lat > 90) {
     throw new RangeError(`${label}.lat must be between -90 and 90`);
   }
-  return Object.freeze({ ...value });
+  return Object.freeze({
+    ...value,
+    ...(value.arrivalOffset ? { arrivalOffset: Object.freeze([...value.arrivalOffset]) } : {}),
+  });
 }
 
 export function normalizeOverworldTransportNodeManifest(input) {

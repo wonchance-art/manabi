@@ -154,12 +154,20 @@ describe('오버월드 교통 노드 계약', () => {
     };
     expect(normalizeOverworldTransportNodeManifest(nodeManifest({ nodes: [airGate] })).nodes[0])
       .toMatchObject({ type: 'air-gate', airportCode: 'CDG', contentLocale: 'fr' });
+    const offsetGate = normalizeOverworldTransportNodeManifest(nodeManifest({
+      nodes: [{ ...airGate, arrivalOffset: [4, 0] }],
+    })).nodes[0];
+    expect(offsetGate.arrivalOffset).toEqual([4, 0]);
+    expect(Object.isFrozen(offsetGate.arrivalOffset)).toBe(true);
     expect(() => normalizeOverworldTransportNodeManifest(nodeManifest({
       nodes: [{ ...airGate, airportCode: 'cdg' }],
     }))).toThrow(/airportCode/);
     expect(() => normalizeOverworldTransportNodeManifest(nodeManifest({
       nodes: [{ ...airGate, contentLocale: 'French' }],
     }))).toThrow(/contentLocale/);
+    expect(() => normalizeOverworldTransportNodeManifest(nodeManifest({
+      nodes: [{ ...airGate, arrivalOffset: [0.5, 0] }],
+    }))).toThrow(/arrivalOffset/);
   });
 
   it('유럽 철도 허브는 별도 노선 키 없이 지리·언어 앵커만 허용한다', () => {
@@ -204,6 +212,50 @@ describe('오버월드 교통 노드 계약', () => {
     const second = buildTransportNodeArtifacts(args);
     expect(first.map(({ path }) => path)).toEqual(second.map(({ path }) => path));
     expect(first.map(({ bytes }) => sha256(bytes))).toEqual(second.map(({ bytes }) => sha256(bytes)));
+  });
+
+  it('항공 게이트 arrivalOffset을 체크인된 보행 타일에 결정적으로 적용한다', () => {
+    const manifest = nodeManifest({
+      nodes: [{
+        id: 'fixture-air',
+        type: 'air-gate',
+        label: '시험 공항',
+        contentLocale: 'ko',
+        airportCode: 'ICN',
+        arrivalOffset: [4, 0],
+        lon: 1,
+        lat: 1,
+      }],
+    });
+    const manifestBytes = canonicalJson(manifest);
+    const base = baseManifest();
+    const frame = createEquirectangularTileFrame(base);
+    const artifacts = buildTransportNodeArtifacts({
+      manifestBytes,
+      manifest,
+      baseRegionManifest: base,
+      baseContent: {
+        width: frame.width,
+        height: frame.height,
+        chunkColumns: frame.chunkColumns,
+        chunkRows: frame.chunkRows,
+        projectionManifestHash: sha256(canonicalJson(base.projection)),
+      },
+      checkedInChunks: new Map([['0/0', { isWalkableAt: () => true }]]),
+    });
+    const document = JSON.parse(Buffer.from(
+      artifacts.find(({ path: artifactPath }) => artifactPath.startsWith('nodes/')).bytes,
+    ).toString('utf8'));
+    const projected = frame.project(1, 1);
+
+    expect(document.nodes[0]).toEqual({
+      id: 'fixture-air',
+      type: 'air-gate',
+      label: '시험 공항',
+      contentLocale: 'ko',
+      airportCode: 'ICN',
+      tile: [Math.round(projected.x) + 4, Math.round(projected.y)],
+    });
   });
 
   it('체크인된 유럽 7개 철도 허브가 보행 셀과 철도 오버레이를 함께 따른다', () => {
