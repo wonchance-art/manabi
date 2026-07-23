@@ -56,13 +56,13 @@ const DISTRICT_AUDIT_CASES = Object.freeze([
     nodeId: 'tokyo',
     cityId: 'tokyo',
     labels: ['야마노테·서부', '중심·동부', '남부·항만', '하네다'],
-    nextGoal: { kind: 'stamp-title', line: '다음 칭호까지 도장 9개' },
+    nextGoal: { kind: 'npc-meeting', line: '만난 사람 0/2' },
   },
   {
     nodeId: 'osaka',
     cityId: 'osaka',
     labels: ['북부·허브', '성곽·동부', '난바·텐노지', '항만'],
-    nextGoal: { kind: 'stamp-title', line: '다음 칭호까지 도장 9개' },
+    nextGoal: { kind: 'npc-meeting', line: '만난 사람 0/2' },
   },
   {
     nodeId: 'fukuoka',

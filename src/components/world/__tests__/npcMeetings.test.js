@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  isNpcMeetingCandidate,
   isNpcMeetingCity,
   loadNpcMeetingIds,
-  NPC_MEETING_CITY_IDS,
   npcMeetingStorageKey,
   recordNpcMeeting,
   saveNpcMeetingIds,
@@ -28,12 +28,13 @@ function npc(id, overrides = {}) {
 }
 
 describe('S13 도시 NPC 만남 localStorage 기록', () => {
-  it('정본 3도시를 npc-met:<cityId> 키에 정렬된 ID 배열로 왕복한다', () => {
+  it('유효한 도시 ID를 npc-met:<cityId> 키에 정렬된 ID 배열로 왕복한다', () => {
     const storage = memoryStorage();
 
-    expect(NPC_MEETING_CITY_IDS).toEqual(['lyon', 'bordeaux', 'strasbourg']);
-    expect(Object.isFrozen(NPC_MEETING_CITY_IDS)).toBe(true);
-    expect(NPC_MEETING_CITY_IDS.every(isNpcMeetingCity)).toBe(true);
+    expect(['lyon', 'bordeaux', 'strasbourg', 'tokyo', 'osaka']
+      .every(isNpcMeetingCity)).toBe(true);
+    expect(isNpcMeetingCity('')).toBe(false);
+    expect(isNpcMeetingCity('Tokyo')).toBe(false);
     expect(npcMeetingStorageKey('lyon')).toBe('npc-met:lyon');
 
     expect(saveNpcMeetingIds(
@@ -48,6 +49,20 @@ describe('S13 도시 NPC 만남 localStorage 기록', () => {
       'lyon-presquile-confluence-cafe',
       'lyon-vieux-lyon-fourviere-traboule',
     ]));
+  });
+
+  it('직접 대화 NPC와 전용 채움 NPC만 동적으로 후보로 삼는다', () => {
+    expect(isNpcMeetingCandidate(npc('lyon-presquile-confluence-cafe', {
+      npc: 'lyon-presquile-cafe',
+    }))).toBe(true);
+    expect(isNpcMeetingCandidate(npc('tokyo-yamanote-west-cafe', {
+      npc: 'tokyo-yamanote-west-cafe',
+      chapter: 'ot-08-izakaya',
+    }))).toBe(true);
+    expect(isNpcMeetingCandidate(npc('tokyo-konbini', {
+      npc: 'konbini',
+      chapter: 'ot-07-konbini',
+    }))).toBe(false);
   });
 
   it('대화 완주를 1회만 추가하고 재완주는 저장 쓰기를 반복하지 않는다', () => {
@@ -93,11 +108,27 @@ describe('S13 도시 NPC 만남 localStorage 기록', () => {
     );
   });
 
-  it('범위 밖 도시·잘못된 ID·차단된 저장소는 throw 없이 fail-closed한다', () => {
+  it('신규 도시 전용 NPC를 기록하고 레거시 문화도어·잘못된 ID·차단 저장소는 fail-closed한다', () => {
     const storage = memoryStorage();
+    const tokyoId = 'tokyo-yamanote-west-cafe';
+    expect(recordNpcMeeting({
+      cityId: 'tokyo',
+      node: npc(tokyoId, {
+        npc: tokyoId,
+        chapter: 'ot-08-izakaya',
+      }),
+      storage,
+    })).toBe(true);
+    expect(loadNpcMeetingIds('tokyo', storage)).toEqual(new Set([tokyoId]));
+
+    storage.getItem.mockClear();
+    storage.setItem.mockClear();
     expect(recordNpcMeeting({
       cityId: 'fukuoka',
-      node: npc('fukuoka-konbini', { npc: 'konbini' }),
+      node: npc('fukuoka-konbini', {
+        npc: 'konbini',
+        chapter: 'ot-07-konbini',
+      }),
       storage,
     })).toBe(false);
     expect(recordNpcMeeting({ cityId: 'lyon', node: npc(''), storage })).toBe(false);
@@ -111,8 +142,6 @@ describe('S13 도시 NPC 만남 localStorage 기록', () => {
       node: npc('no-script', { npc: '' }),
       storage,
     })).toBe(false);
-    expect(loadNpcMeetingIds('fukuoka', storage)).toEqual(new Set());
-    expect(storage.getItem).not.toHaveBeenCalled();
     expect(storage.setItem).not.toHaveBeenCalled();
 
     const blocked = {

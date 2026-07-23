@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import { STAMP_ALBUM_NODES } from '../../../lib/world/stampUniverse.js';
 import { CITY_DATA } from '../cities/index.js';
-import { npcMeetingStorageKey } from '../npcMeetings.js';
 import {
-  STAMP_ALBUM_NPC_MEETING_CITY_IDS,
-  stampAlbumNpcMeetingProgress,
-} from '../stampAlbumNpcMeetingProgress.js';
+  isNpcMeetingCandidate,
+  npcMeetingStorageKey,
+} from '../npcMeetings.js';
+import { stampAlbumNpcMeetingProgress } from '../stampAlbumNpcMeetingProgress.js';
 
 function storageWith(value) {
   return {
@@ -18,21 +18,35 @@ function albumNode(id) {
 }
 
 describe('S13 여행 수첩 — 만난 사람 수집률', () => {
-  it('대화 가능한 NPC가 있는 정본 3도시만 만난 사람 n/m을 만든다', () => {
+  it('로드된 도시 nodes를 동적 스캔해 프랑스 3도시와 일본 신규 NPC 4종을 포섭한다', () => {
     const storage = storageWith(null);
+    expect(CITY_DATA.tokyo.nodes
+      .filter(isNpcMeetingCandidate)
+      .map(({ id }) => id)).toEqual([
+      'tokyo-yamanote-west-cafe',
+      'tokyo-central-east-bookstore',
+    ]);
+    expect(CITY_DATA.osaka.nodes
+      .filter(isNpcMeetingCandidate)
+      .map(({ id }) => id)).toEqual([
+      'osaka-north-hubs-transfer',
+      'osaka-castle-east-guide',
+    ]);
+
     const presentations = STAMP_ALBUM_NODES
       .map((node) => stampAlbumNpcMeetingProgress(node, CITY_DATA, storage))
       .filter(Boolean);
 
     expect(presentations).toEqual([
+      { cityId: 'tokyo', got: 0, total: 2, label: '만난 사람 0/2' },
+      { cityId: 'osaka', got: 0, total: 2, label: '만난 사람 0/2' },
       { cityId: 'lyon', got: 0, total: 3, label: '만난 사람 0/3' },
       { cityId: 'bordeaux', got: 0, total: 1, label: '만난 사람 0/1' },
       { cityId: 'strasbourg', got: 0, total: 1, label: '만난 사람 0/1' },
     ]);
-    expect(STAMP_ALBUM_NPC_MEETING_CITY_IDS)
-      .toEqual(['lyon', 'bordeaux', 'strasbourg']);
-    expect(Object.isFrozen(STAMP_ALBUM_NPC_MEETING_CITY_IDS)).toBe(true);
     expect(storage.getItem.mock.calls.map(([key]) => key)).toEqual([
+      npcMeetingStorageKey('tokyo'),
+      npcMeetingStorageKey('osaka'),
       npcMeetingStorageKey('lyon'),
       npcMeetingStorageKey('bordeaux'),
       npcMeetingStorageKey('strasbourg'),
@@ -57,12 +71,26 @@ describe('S13 여행 수첩 — 만난 사람 수집률', () => {
     });
   });
 
-  it('스탬프 가능한 NPC와 대화 스크립트 없는 노드는 noStamp 만남 분모에 섞지 않는다', () => {
+  it('noStamp·유효 ID/스크립트와 직접 대화/전용 채움 규칙을 만족한 NPC만 분모에 넣는다', () => {
     const node = { gate: { type: 'city', to: 'lyon' } };
     const cityData = {
       lyon: {
         nodes: [
           { id: 'met', kind: 'npc', npc: 'script', noStamp: true },
+          {
+            id: 'filled',
+            kind: 'npc',
+            npc: 'filled',
+            chapter: 'ot-01-filled',
+            noStamp: true,
+          },
+          {
+            id: 'legacy-door',
+            kind: 'npc',
+            npc: 'shared',
+            chapter: 'ot-02-shared',
+            noStamp: true,
+          },
           { id: 'stamped', kind: 'npc', npc: 'script', noStamp: false },
           { id: 'no-script', kind: 'npc', noStamp: true },
           { id: 'spot', kind: 'spot', noStamp: true },
@@ -73,12 +101,35 @@ describe('S13 여행 수첩 — 만난 사람 수집률', () => {
     expect(stampAlbumNpcMeetingProgress(
       node,
       cityData,
-      storageWith('["met","stamped","no-script","spot"]'),
+      storageWith('["met","filled","legacy-door","stamped","no-script","spot"]'),
     )).toEqual({
       cityId: 'lyon',
-      got: 1,
+      got: 2,
+      total: 2,
+      label: '만난 사람 2/2',
+    });
+  });
+
+  it('하드코딩되지 않은 미래 도시도 로드된 전용 NPC로 자동 포섭한다', () => {
+    const cityId = 'future-city';
+    const node = { gate: { type: 'city', to: cityId } };
+    const cityData = {
+      [cityId]: {
+        nodes: [{
+          id: 'future-city-guide',
+          kind: 'npc',
+          npc: 'future-city-guide',
+          chapter: 'ot-01-guide',
+          noStamp: true,
+        }],
+      },
+    };
+
+    expect(stampAlbumNpcMeetingProgress(node, cityData, storageWith(null))).toEqual({
+      cityId,
+      got: 0,
       total: 1,
-      label: '만난 사람 1/1',
+      label: '만난 사람 0/1',
     });
   });
 
@@ -97,7 +148,7 @@ describe('S13 여행 수첩 — 만난 사람 수집률', () => {
     }
   });
 
-  it('비도시·대상 밖 도시는 저장소를 읽지 않고 기존 카드를 유지한다', () => {
+  it('비도시·후보 없는 도시는 저장소를 읽지 않고 기존 카드를 유지한다', () => {
     const storage = storageWith('["unknown"]');
 
     expect(stampAlbumNpcMeetingProgress(albumNode('seoul'), CITY_DATA, storage)).toBeNull();
