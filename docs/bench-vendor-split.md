@@ -2,6 +2,7 @@
 
 - 측정일: 2026-07-23 KST
 - before 기준: `origin/main` `85fca6b24b3c5ff4624eda6ccc9fadcf0eff48f2`
+- 최종 통합 기준: `origin/main` `1aec1e200d0146c3adb8cfb2904fad032a252e43`
 - 환경: macOS arm64, 공식 nvm Node `v22.23.1`, Next.js `15.5.21`
 - 범위: P6에서 최대 잔여로 식별한 Supabase SDK와 FSRS를 초기 app route에서
   기능 사용 시점으로 지연
@@ -13,7 +14,7 @@ P6 병합 보고서의 실제 파일명은 발주에 적힌
 
 ## 판정
 
-**구현 유지.** 대표 초기 route의 JS 합계가 **65,111~65,485 B gzip** 감소해
+**구현 유지.** 대표 초기 route의 JS 합계가 **65,120~65,492 B gzip** 감소해
 5 kB 중단 기준을 크게 통과했다.
 
 - before의 `2059-55d1f40bdeb7c835.js`는
@@ -66,20 +67,20 @@ build 프로세스에만 주입했다.
 
 | 초기 경로 | before gzip | after gzip | 절감 |
 |---|---:|---:|---:|
-| `/` | 180,334 B | 115,117 B | **65,217 B (36.2%)** |
-| `(app)` layout | 180,656 B | 115,440 B | **65,216 B (36.1%)** |
-| `/home` | 202,291 B | 136,834 B | **65,457 B (32.4%)** |
-| `/learn` | 188,548 B | 123,063 B | **65,485 B (34.7%)** |
-| `/lessons` | 185,802 B | 120,587 B | **65,215 B (35.1%)** |
-| `/vocab` | 210,103 B | 144,992 B | **65,111 B (31.0%)** |
-| `/study` | 198,774 B | 133,582 B | **65,192 B (32.8%)** |
-| `/world` | 198,418 B | 133,268 B | **65,150 B (32.8%)** |
+| `/` | 180,334 B | 115,109 B | **65,225 B (36.2%)** |
+| `(app)` layout | 180,656 B | 115,433 B | **65,223 B (36.1%)** |
+| `/home` | 202,291 B | 136,826 B | **65,465 B (32.4%)** |
+| `/learn` | 188,548 B | 123,056 B | **65,492 B (34.7%)** |
+| `/lessons` | 185,802 B | 120,579 B | **65,223 B (35.1%)** |
+| `/vocab` | 210,103 B | 144,983 B | **65,120 B (31.0%)** |
+| `/study` | 198,774 B | 133,581 B | **65,193 B (32.8%)** |
+| `/world` | 198,418 B | 133,265 B | **65,153 B (32.8%)** |
 
 production build는 전후 모두 compile, lint/type check, page data와 static page
-**406/406**을 완료했다. canonical 측정 JSON은 before 5,318 B
-(`3cea80dd0a44fec6aa006d900e34d794ca69f1f80c487efb61f9d4a67d4216ca`),
-after 4,843 B
-(`939edb6e2aae3bfa589b969c0dd1ae122c3e299c007bb69906c89ebe9cb707f4`)다.
+**406/406**을 완료했다. 위 8개 route의 canonical 측정 JSON은 before/after 모두
+543 B이며 SHA-256은 각각
+`980ed2a42dd4a13156fbb702d066f972d1c1a0e2f6d79131766d42fff11ed034`,
+`0f7a9ab483b2af0966e3c5d313fd242830b47abf9f65a968f078b285d1259d1b`다.
 
 ## 회귀 검증
 
@@ -88,7 +89,7 @@ after 4,843 B
 | lazy/auth/FSRS/world targeted | 7 files / 168 tests PASS |
 | 학습 데이터·세션 targeted | 7 files / 198 tests PASS |
 | targeted V8 heap 실측 | 최대 18 MB |
-| pipefail 전체 single-worker vitest | **225 files / 2,217 tests PASS / 254.30s** |
+| pipefail 전체 single-worker vitest | **225 files / 2,217 tests PASS / 211.94s** |
 | production `next build` | before/after PASS, static pages 406/406 |
 | `npm run lint` | PASS |
 | `git diff --check` | PASS |
