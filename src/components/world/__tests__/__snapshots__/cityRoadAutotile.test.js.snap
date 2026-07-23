@@ -37,7 +37,7 @@ exports[`CityScene road autotile opt-in > 26도시 전 지형·mainRoute 키 스
   {
     "id": "seoul",
     "roadStyle": "autotile-v1",
-    "sha256": "4e89ebfb9bba6601353b51eadb1f68792015a0b944154f14f9b82207f4ccea8d",
+    "sha256": "a58e4ec0a734db13f5f016fdab5b3e2451f62d26a828f01bfea06d6496555ba6",
   },
   {
     "id": "grand-paris",

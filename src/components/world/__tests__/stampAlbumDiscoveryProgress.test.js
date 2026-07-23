@@ -18,21 +18,23 @@ function albumNode(id) {
 }
 
 describe('여행 수첩 — 주동선 발견 수집률', () => {
-  it('mainRoute 발견 정본이 있는 4도시만 발견 n/m을 만든다', () => {
+  it('mainRoute 발견 정본이 있는 5도시만 발견 n/m을 만든다', () => {
     const storage = storageWith(null);
     const presentations = STAMP_ALBUM_NODES
       .map((node) => stampAlbumDiscoveryProgress(node, CITY_DATA, storage))
       .filter(Boolean);
 
     expect(presentations).toEqual([
+      { cityId: 'seoul', got: 0, total: 8, label: '발견 0/8' },
       { cityId: 'tokyo', got: 0, total: 8, label: '발견 0/8' },
       { cityId: 'lyon', got: 0, total: 8, label: '발견 0/8' },
       { cityId: 'bordeaux', got: 0, total: 8, label: '발견 0/8' },
       { cityId: 'strasbourg', got: 0, total: 7, label: '발견 0/7' },
     ]);
-    expect(STAMP_ALBUM_DISCOVERY_CITY_IDS).toEqual(['tokyo', 'lyon', 'bordeaux', 'strasbourg']);
+    expect(STAMP_ALBUM_DISCOVERY_CITY_IDS).toEqual(['seoul', 'tokyo', 'lyon', 'bordeaux', 'strasbourg']);
     expect(Object.isFrozen(STAMP_ALBUM_DISCOVERY_CITY_IDS)).toBe(true);
     expect(storage.getItem.mock.calls.map(([key]) => key)).toEqual([
+      routeDiscoveryStorageKey('seoul'),
       routeDiscoveryStorageKey('tokyo'),
       routeDiscoveryStorageKey('lyon'),
       routeDiscoveryStorageKey('bordeaux'),
@@ -76,7 +78,7 @@ describe('여행 수첩 — 주동선 발견 수집률', () => {
   it('비도시·발견 미정의 도시는 저장소를 읽지 않고 기존 카드를 유지한다', () => {
     const storage = storageWith('["unknown"]');
 
-    expect(stampAlbumDiscoveryProgress(albumNode('seoul'), CITY_DATA, storage)).toBeNull();
+    expect(stampAlbumDiscoveryProgress(albumNode('osaka'), CITY_DATA, storage)).toBeNull();
     expect(stampAlbumDiscoveryProgress(
       STAMP_ALBUM_NODES.find((node) => node.kind === 'landmark'),
       CITY_DATA,
