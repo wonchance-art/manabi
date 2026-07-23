@@ -313,6 +313,10 @@
   `tileCode` 증가를 일반 +71.98→+22.84%·잠금 +72.55→+20.33%로 축소하고,
   26도시 PNG·snapshot byte 불변과 전체 230/2,248 green 고정
   (`codex4/p9-autotile-mask-cache`, 구현 8cee8b9, base cd92eb40407971f46349b3d84d73c82dad55799d)
+- P10 렌더 성능 결정 지표 가드: 도쿄 일반·완전 잠금 128청크의 `tileCode` probe와
+  미니맵 downsample·잠금 overlay 호출/할당을 main 실측 약 1.5배의 결정적 상한으로 고정하고,
+  기존 26도시 render-key SHA snapshot을 재사용해 중복 결정성 스모크를 생략
+  (`codex4/p10-perf-guard`, 구현 4f768bf, base 9d19d75fce0d476f350bf092d8410541bc499495)
 - P7 초기 번들 Supabase+FSRS 분리: 공용 65,039 B gzip 청크를 기능 경계로 지연해
   대표 초기 route 65.1~65.5 kB gzip 절감·초기 manifest 교집합 0·학습 흐름 회귀 green
   (`codex4/p7-vendor-split`)

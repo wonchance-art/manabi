@@ -182,6 +182,49 @@ london inactive       3fd6636e97e587197c21a50a9addbab4e76054877632c1c5f888d7621f
 
 임시 하니스와 raw JSONL은 보고서 작성 뒤 제거하며 체크인하지 않는다.
 
+## P10 — 결정적 성능 상한 가드
+
+wall-clock·heap·RSS 대신 같은 입력에서 항상 같은 **호출·probe·할당 수**를 세는
+`cityRenderPerfGuard.test.js`를 신설했다. 측정 기준은 P9 미병합 `origin/main`
+`9d19d75fce0d476f350bf092d8410541bc499495`이며, 도쿄의 P8 동일 표본(전체 청크 또는 완전
+잠금 청크를 행 우선으로 열거한 뒤 처음·끝 포함 128개 floor 균등 표본)을 실제
+`CityScene.bakeChunk()`에 넣는다. RenderTexture의 GPU draw만 no-op이고 지형 key 선택,
+district, railway, mainRoute 분기는 제품 메서드 그대로다.
+
+상한은 main 실측의 약 1.5배를 올림했다. 이 기준은 P9 merge 전에도 green이고, P9의 mask 단일
+계산이 들어오면 `tileCode` probe가 일반 `124,145`, 완전 잠금 `112,349`로 감소하므로 상한을
+각각 2.10배·2.15배 남긴다. 따라서 P10이 P9 merge를 막지 않고, 이후 큰 중복 탐색만 회귀로 잡는다.
+
+| 경로·지표 | main 실측 | 상한 |
+|---|---:|---:|
+| 일반 scene `bakeChunk` 호출 | 128 | 192 |
+| 일반 scene `tileCode` probe | 173,805 | 260,708 |
+| 일반 scene `batchDraw` 호출 | 33,264 | 49,896 |
+| 완전 잠금 `bakeChunk` 호출 | 128 | 192 |
+| 완전 잠금 `tileCode` probe | 161,101 | 241,652 |
+| 완전 잠금 `batchDraw` 호출 | 32,048 | 48,072 |
+
+미니맵은 별도 복제 구현을 만들지 않는다. 테스트가 `GameCanvas.jsx`의 비공개 도시 미니맵 분기
+본문을 읽어 VM에서 그대로 실행하고, 실제 `downsampleCityGrid()`·`resolveCityDistricts()`·
+`cityDistrictOpenAt()`을 계측한다. 도쿄 승인 factor 2에서 main 실측과 상한은 다음과 같다.
+
+| 미니맵·잠금 지표 | main 실측 | 상한 |
+|---|---:|---:|
+| `buildGrid` / layout / downsample / lock resolve | 각 1 | 각 2 |
+| downsample 원본 grid read | 894,864 | 1,342,296 |
+| terrain+lock offscreen canvas 할당 | 2 | 3 |
+| ImageData 할당 / `putImageData` | 각 1 | 각 2 |
+| 잠금 open probe | 223,716 | 335,574 |
+| 잠금 1px `fillRect` | 160,440 | 240,660 |
+| 첫 frame `drawImage` | 2 | 3 |
+| blink interval 할당 | 1 | 2 |
+
+26도시 렌더 결정성 스모크는 새로 중복하지 않았다. 기존 `cityRoadAutotile.test.js`가 전 도시의
+모든 지형·mainRoute render key를 순회해 도시별 SHA를 committed snapshot에 고정하므로, 두 번
+같다는 A/B 검사보다 강하게 이전 실행과의 동일 SHA까지 검사한다. 같은 파일의 5계열
+`16종+inner` texture command도 독립 2회 SHA 동일을 검사한다. P9의 26도시 PNG before/after는
+제품 변경 검증 근거로 유지하되 매 전체 Vitest에서 PNG 52장을 다시 만들지는 않는다.
+
 ## 검증
 
 | 검증 | 결과 |
