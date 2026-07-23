@@ -151,7 +151,7 @@ describe('리옹 상세 geo 계약', () => {
       buildingTexture: {
         method: 'osm-existing-buildings-report-only',
         initialLandBuildingRatio: 0.133981,
-        finalLandBuildingRatio: 0.14605,
+        finalLandBuildingRatio: 0.145714,
       },
       connectivity: {
         method: 'cardinal-land-no-water-carving-v1',
@@ -205,8 +205,8 @@ describe('리옹 상세 geo 계약', () => {
       confluence: 'south-of-presquile',
       sourceWaterTileCount: 12_696,
       sourceRiverTileCount: 5_135,
-      finalWaterTileCount: 8_206,
-      finalRiverTileCount: 4_825,
+      finalWaterTileCount: 8_210,
+      finalRiverTileCount: 4_831,
       profileGate: 'two-rivers-and-confluence',
     });
     expect(LYON_GEO.meta.bridgeNormalization).toMatchObject({
@@ -243,7 +243,7 @@ describe('리옹 상세 geo 계약', () => {
       walkable += 1;
       reached += seen[index];
     }
-    expect({ walkable, reached }).toEqual({ walkable: 165_074, reached: 165_074 });
+    expect({ walkable, reached }).toEqual({ walkable: 165_119, reached: 165_119 });
     for (const entry of [...LYON_GEO.pois, ...LYON_GEO.stations]) {
       expect(seen[entry.tile[1] * LYON_GEO.meta.grid.w + entry.tile[0]], entry.id).toBe(1);
     }
@@ -277,15 +277,15 @@ describe('리옹 상세 geo 계약', () => {
     const counts = {};
     for (const code of LYON_GEO.terrain) counts[code] = (counts[code] ?? 0) + 1;
     expect(counts).toEqual({
-      [CITY_TILE.ROAD]: 82_568,
-      [CITY_TILE.SIDEWALK]: 68_610,
-      [CITY_TILE.CROSSWALK]: 8_281,
+      [CITY_TILE.ROAD]: 82_288,
+      [CITY_TILE.SIDEWALK]: 68_796,
+      [CITY_TILE.CROSSWALK]: 8_444,
       [CITY_TILE.PLAZA]: 4,
-      [CITY_TILE.PARK]: 5_611,
-      [CITY_TILE.WATER]: 8_206,
-      [CITY_TILE.BUILDING]: 29_414,
-      [CITY_TILE.RIVER]: 4_825,
-      [CITY_TILE.MOUNTAIN]: 6_909,
+      [CITY_TILE.PARK]: 5_587,
+      [CITY_TILE.WATER]: 8_210,
+      [CITY_TILE.BUILDING]: 29_345,
+      [CITY_TILE.RIVER]: 4_831,
+      [CITY_TILE.MOUNTAIN]: 6_923,
     });
     expect(LYON_GEO.meta.buildingTexture.method)
       .toBe('osm-existing-buildings-report-only');
@@ -313,10 +313,10 @@ describe('리옹 상세 geo 계약', () => {
     const second = buildLyonCityGeo();
     expect(hash(first.terrain)).toBe(hash(second.terrain));
     expect(hash(first.terrain))
-      .toBe('635a7b9e59b13ccf1470dc91f19e843c64df4716fe400b0ba435288eb617ad85');
+      .toBe('7113be36aa816b246f353db21584d7fe5dc1b38a025d041e9a2326ec26d5a959');
     expect(hash(first.railways.mask))
       .toBe('f47e8cf38b72af26b0b93c6943545fb2a278de5f27fc2b7facdd38b5d846d778');
-    expect(encodeTerrainRle(first.terrain)).toHaveLength(93_035);
+    expect(encodeTerrainRle(first.terrain)).toHaveLength(92_211);
     expect(encodeTerrainRle(first.railways.mask)).toHaveLength(8_089);
     expect(first.pois).toEqual(LYON_GEO.pois);
     expect(first.stations).toEqual(LYON_GEO.stations);
@@ -324,6 +324,6 @@ describe('리옹 상세 geo 계약', () => {
     const secondPng = renderLyonPng(second);
     expect(firstPng).toEqual(secondPng);
     expect(hash(firstPng))
-      .toBe('828cc7a65c67d56592a746f525b99dd798eeea76eb53b8da72a4113870097e81');
+      .toBe('a229c200baa5d9c881fdc83220bcddea5d88b08ea21123bdbeb3c6e7a95d11e2');
   }, 120_000);
 });

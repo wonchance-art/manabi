@@ -127,7 +127,7 @@ exports[`CityScene road autotile opt-in > 26도시 전 지형·mainRoute 키 스
   {
     "id": "lyon",
     "roadStyle": "autotile-v1",
-    "sha256": "58ab762a61fbfaf8ad6ca70966fd62c54f027d78f962127e97253bfe8afb89e1",
+    "sha256": "f7fcc53dec3cd7300b519aa7dc602ffc243254556a70590b4c806234a4bf9af8",
   },
   {
     "id": "bordeaux",
