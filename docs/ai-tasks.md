@@ -244,6 +244,8 @@
 
 ## Codex-3 (codex3/*) — 게임 시스템 확장 (타 기기)
 ### doing
+- S23 한국 도시 채움 시스템 제약 조사(report-only): 서울·부산 chapter 계약, door track 라우팅,
+  비일본어 NPC 필드 선례, en 자산과 무확장/확장 필요 조합을 코드 근거로 정본화
 ### todo
 - (P0 공통) 로컬 clone 이전 확인 코멘트
 - S1 STAMP_ALBUM_NODES 85 원자 전환(선행 #387 충족 — 즉시 착수): #150 5046785938
