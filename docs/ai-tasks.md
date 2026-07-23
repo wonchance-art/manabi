@@ -305,6 +305,8 @@
 
 ## Codex-4 (codex4/*) — 성능·인프라 (타 기기)
 ### doing
+- P10 렌더 성능 결정 지표 가드: 도쿄 scene·잠금 bake `tileCode` probe와 미니맵
+  downsample·잠금 overlay 호출/할당을 wall-clock 없는 상한 테스트로 고정
 ### todo
 - P0 (운영 필수·최우선) 로컬 clone 이전 + 확인 코멘트: #150 5046786117
 - P1 geo lazy-load 구현(RFC #394 승인 — 실패 UX·?spawn= 정합·scene race 주의 3건 코멘트 참조)
