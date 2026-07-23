@@ -81,6 +81,14 @@ const PEER_LABEL_DEPTH = 15000;
 const NODE_TALK_RANGE = 88;  // 노드 A(말 걸기) 근접 반경(px)
 const FADE_MS = 260;
 
+export const CITY_LIGHTING_TINT = 0x18254a;
+
+export function cityLightingAlpha(phase) {
+  if (phase === 'night' || phase === 'late-night') return 0.24;
+  if (phase === 'dawn' || phase === 'evening') return 0.1;
+  return 0;
+}
+
 const DIRV = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 const VALID_DIR = new Set(['up', 'down', 'left', 'right']);
 
@@ -323,36 +331,50 @@ export function buildCityScene(Phaser, city, ctx) {
       });
 
       if (city.districts != null) {
-        // 📖 미개방 지구 — 저채도 종이 지도. 지형의 종류는 최소 실루엣으로만 남긴다.
-        this.bakeTile('ct_guidebook_land', (g) => {
-          g.fillStyle(C(0xd8ceb6), 1); g.fillRect(0, 0, TEX, TEX);
-          g.fillStyle(C(0xb9ad94), 0.38); g.fillRect(0, 7, TEX, 1); g.fillRect(7, 0, 1, TEX);
-        });
+        // 📖 미개방 지구 — 밝은 보행 지형에서도 읽히는 저채도 종이 지도.
+        // 얇은 사선 빗금·점묘만 보강하고 지형 종류는 최소 실루엣으로 남긴다.
+        const guidebookPaper = (g) => {
+          g.fillStyle(C(0xd4c7ae), 1); g.fillRect(0, 0, TEX, TEX);
+          g.fillStyle(C(0xb1a48a), 0.5); g.fillRect(0, 7, TEX, 1); g.fillRect(7, 0, 1, TEX);
+          g.fillStyle(C(0x8f826c), 0.42);
+          for (const [x, y] of [[2, 4], [3, 3], [4, 2], [10, 13], [11, 12], [12, 11], [3, 12], [13, 4]]) {
+            g.fillRect(x, y, 1, 1);
+          }
+        };
+        this.bakeTile('ct_guidebook_land', guidebookPaper);
         this.bakeTile('ct_guidebook_water', (g) => {
-          g.fillStyle(C(0x9eabb0), 1); g.fillRect(0, 0, TEX, TEX);
-          g.fillStyle(C(0xc8d0ce), 0.58); g.fillRect(2, 5, 8, 1); g.fillRect(7, 11, 7, 1);
+          g.fillStyle(C(0x98a6ab), 1); g.fillRect(0, 0, TEX, TEX);
+          g.fillStyle(C(0xcad3d0), 0.66); g.fillRect(2, 5, 8, 1); g.fillRect(7, 11, 7, 1);
+          g.fillStyle(C(0x74848a), 0.4);
+          for (const [x, y] of [[1, 3], [2, 2], [3, 1], [10, 14], [11, 13], [12, 12], [4, 9], [14, 6]]) {
+            g.fillRect(x, y, 1, 1);
+          }
         });
         this.bakeTile('ct_guidebook_road_h', (g) => {
-          g.fillStyle(C(0xd8ceb6), 1); g.fillRect(0, 0, TEX, TEX);
-          g.fillStyle(C(0x918d87), 0.68); g.fillRect(0, 6, TEX, 4);
+          guidebookPaper(g);
+          g.fillStyle(C(0x89847c), 0.74); g.fillRect(0, 6, TEX, 4);
+          g.fillStyle(C(0x6f6b65), 0.34); for (const x of [1, 5, 9, 13]) g.fillRect(x, 7, 2, 1);
         });
         this.bakeTile('ct_guidebook_road_v', (g) => {
-          g.fillStyle(C(0xd8ceb6), 1); g.fillRect(0, 0, TEX, TEX);
-          g.fillStyle(C(0x918d87), 0.68); g.fillRect(6, 0, 4, TEX);
+          guidebookPaper(g);
+          g.fillStyle(C(0x89847c), 0.74); g.fillRect(6, 0, 4, TEX);
+          g.fillStyle(C(0x6f6b65), 0.34); for (const y of [1, 5, 9, 13]) g.fillRect(7, y, 1, 2);
         });
         this.bakeTile('ct_guidebook_road_x', (g) => {
-          g.fillStyle(C(0xd8ceb6), 1); g.fillRect(0, 0, TEX, TEX);
-          g.fillStyle(C(0x918d87), 0.68); g.fillRect(0, 6, TEX, 4); g.fillRect(6, 0, 4, TEX);
+          guidebookPaper(g);
+          g.fillStyle(C(0x89847c), 0.74); g.fillRect(0, 6, TEX, 4); g.fillRect(6, 0, 4, TEX);
+          g.fillStyle(C(0x6f6b65), 0.34);
+          for (const [x, y] of [[1, 7], [13, 7], [7, 1], [7, 13]]) g.fillRect(x, y, 2, 1);
         });
         this.bakeTile('ct_guidebook_landmark', (g) => {
-          g.fillStyle(C(0xd8ceb6), 1); g.fillRect(0, 0, TEX, TEX);
-          g.fillStyle(C(0x9c9587), 0.72); g.fillRect(3, 3, 10, 10);
-          g.fillStyle(C(0x7e786e), 0.52); g.fillRect(5, 5, 6, 6);
+          guidebookPaper(g);
+          g.fillStyle(C(0x958d7e), 0.76); g.fillRect(3, 3, 10, 10);
+          g.fillStyle(C(0x70695f), 0.58); g.fillRect(5, 5, 6, 6);
         });
         this.bakeTile('ct_guidebook_landmark_marker', (g) => {
-          g.fillStyle(C(0x78736b), 0.76); g.fillRect(4, 9, 8, 20);
-          g.fillStyle(C(0x918a7e), 0.76); g.fillRect(2, 7, 12, 5);
-          g.fillStyle(C(0x5f5b55), 0.62); g.fillRect(3, 29, 10, 3);
+          g.fillStyle(C(0x78736b), 0.82); g.fillRect(4, 9, 8, 20);
+          g.fillStyle(C(0x918a7e), 0.82); g.fillRect(2, 7, 12, 5);
+          g.fillStyle(C(0x5f5b55), 0.7); g.fillRect(3, 29, 10, 3);
         }, 16, 32);
       }
 
@@ -770,11 +792,12 @@ export function buildCityScene(Phaser, city, ctx) {
       }, 16, 32);
 
       if (city.mainRoute) {
-        // 🧭 주동선 포장 — ROAD보다 반 단계 밝은 웜 그레이 돌포장 오버레이(무문자).
+        // 🧭 주동선 포장 — 0x18254a 저녁/야간 조명(α 0.10/0.24) 아래에서도
+        // ROAD보다 반 단계 밝게 남도록 웜 성분과 불투명도를 보정한 돌포장 오버레이(무문자).
         this.bakeTile('ct_main_route_paving', (g) => {
-          g.fillStyle(C(0x746d62), 0.7); g.fillRect(0, 0, TEX, TEX);
-          g.fillStyle(C(0x5c574f), 0.36); g.fillRect(0, 7, TEX, 1); g.fillRect(7, 0, 1, TEX);
-          g.fillStyle(C(0x8a8275), 0.34); g.fillRect(1, 1, 5, 5); g.fillRect(9, 9, 5, 5);
+          g.fillStyle(C(0x817766), 0.76); g.fillRect(0, 0, TEX, TEX);
+          g.fillStyle(C(0x5f594f), 0.42); g.fillRect(0, 7, TEX, 1); g.fillRect(7, 0, 1, TEX);
+          g.fillStyle(C(0xa09682), 0.42); g.fillRect(1, 1, 5, 5); g.fillRect(9, 9, 5, 5);
         });
         // 이정표 — 글자 없는 양방향 화살표 판과 지주만 남긴 일반 실루엣.
         this.bakeTile('ct_prop_route_signpost', (g) => {
@@ -1169,7 +1192,7 @@ export function buildCityScene(Phaser, city, ctx) {
       this.vehicleViews = new Map();
       this.weatherOverlay = this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x44576b, 1)
         .setOrigin(0, 0).setScrollFactor(0).setDepth(14000).setAlpha(0);
-      this.lightingOverlay = this.add.rectangle(0, 0, this.scale.width, this.scale.height, 0x18254a, 1)
+      this.lightingOverlay = this.add.rectangle(0, 0, this.scale.width, this.scale.height, CITY_LIGHTING_TINT, 1)
         .setOrigin(0, 0).setScrollFactor(0).setDepth(13999).setAlpha(0);
 
       // ── 입력(광장과 동일 경로) ──
@@ -1618,8 +1641,7 @@ export function buildCityScene(Phaser, city, ctx) {
         this.updateTransitVehicles(worldSnapshot.totalGameMinutes);
         const weather = cityWeatherAt(city.id, worldSnapshot);
         this.weatherOverlay.setAlpha(weather.id === 'rain' ? 0.16 : weather.id === 'fog' ? 0.22 : weather.id === 'cloudy' ? 0.08 : 0);
-        this.lightingOverlay.setAlpha(['night', 'late-night'].includes(worldSnapshot.phase) ? 0.24
-          : worldSnapshot.phase === 'dawn' || worldSnapshot.phase === 'evening' ? 0.1 : 0);
+        this.lightingOverlay.setAlpha(cityLightingAlpha(worldSnapshot.phase));
       }
       if (worldSnapshot) this.updateReservedTrip(worldSnapshot.totalGameMinutes);
 
