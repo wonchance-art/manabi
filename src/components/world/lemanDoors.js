@@ -31,6 +31,24 @@ export const LEMAN_DOORS = Object.freeze([
       Object.freeze({ fr: 'Ça ira mieux demain.', reading: '사 이라 미외 드맹.', gloss: '내일이면 나아질 거예요. (단순미래 — aller 불규칙)' }),
     ]),
   }),
+  Object.freeze({
+    id: 'fr-29', name: '호안 카페', nameFr: 'Café de la rive', track: 'french',
+    chapter: 'a2-02-passe-compose-etre',
+    culture: '로잔은 언덕 위 도심과 우시 호반을 잇는 산책권이 매력이에요 — 호수를 바라보는 테라스 카페에서 마신 음료가 여행의 작은 추억이 되는 곳이에요.',
+    lines: Object.freeze([
+      Object.freeze({ fr: 'Je suis venu ici hier soir.', reading: '즈 스위 브뉘 이씨 이에르 수아르.', gloss: '저는 어제 저녁에 여기 왔어요. (être 복합과거 — venir)' }),
+      Object.freeze({ fr: 'Elle est restée pour regarder le coucher du soleil.', reading: '엘 에 레스테 푸르 르가르데 르 쿠셰 뒤 솔레이.', gloss: '그녀는 일몰을 보려고 남았어요. (être 복합과거 — rester)' }),
+    ]),
+  }),
+  Object.freeze({
+    id: 'fr-30', name: '시장 제과점', nameFr: 'Boulangerie du marché', track: 'french',
+    chapter: 'a2-03-imparfait',
+    culture: '브베 광장은 일주일의 절반을 시장이 차지하는데, 향기로운 빵을 파는 진짜 마을 베이커리는 지역 주민들의 일상 장소이면서 동시에 관광객들의 작은 발견 장소예요.',
+    lines: Object.freeze([
+      Object.freeze({ fr: 'Quand j\'étais enfant, nous venions acheter le pain ici.', reading: '캉 제테 앙팡, 누 브니옹 아슈테 르 팽 이씨.', gloss: '제가 어렸을 때 우린 여기서 빵을 사곤 했어요. (반과거 — 과거의 습관)' }),
+      Object.freeze({ fr: 'Le marché avait toujours l\'odeur du pain frais.', reading: '르 마르셰 아베 투주르 로되르 뒤 팽 프레.', gloss: '시장은 항상 구운 빵 냄새가 났어요. (반과거 — 과거의 배경)' }),
+    ]),
+  }),
 ]);
 
 export function lemanDoorById(id) {
