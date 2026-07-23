@@ -248,6 +248,9 @@
 
 ## Codex-3 (codex3/*) — 게임 시스템 확장 (타 기기)
 ### doing
+- S24 도어 track 전달 결함 수선: `toInteractiveNode()` explicit track 보존,
+  unknown explicit track fail-closed, CityScene→WorldPage URL 통합·기존 fr 26종 회귀 고정
+  (`codex3/s24-track-bridge-fix`, #150 5059591803)
 ### todo
 - (P0 공통) 로컬 clone 이전 확인 코멘트
 - S1 STAMP_ALBUM_NODES 85 원자 전환(선행 #387 충족 — 즉시 착수): #150 5046785938
