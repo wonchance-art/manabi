@@ -127,6 +127,21 @@ describe('content draft exclusion rule', () => {
     expect(isDraftModule('../english/vocab/a1.js', '// DRAFT: not published\nexport default {};')).toBe(true);
     expect(isDraftModule('../english/vocab/a1.js', 'const word = "draft";\nexport default word;')).toBe(false);
   });
+
+  it('keeps every draft-marked source out of the active module inventory', () => {
+    const activePaths = new Set([
+      ...grammarModules.map(entry => entry.modulePath),
+      ...vocabModules.map(entry => entry.modulePath),
+    ]);
+    for (const [modulePath, source] of [
+      ...Object.entries(grammarSources),
+      ...Object.entries(vocabSources),
+    ]) {
+      if (isDraftModule(modulePath, source)) {
+        expect(activePaths.has(modulePath), `${modulePath} active draft`).toBe(false);
+      }
+    }
+  });
 });
 
 describe.each(Object.entries(TRACKS))('%s grammar contract', (track, schema) => {
