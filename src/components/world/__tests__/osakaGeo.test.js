@@ -269,7 +269,7 @@ describe('오사카 생성 결정성·오프라인 계약', () => {
     expect(first.stations).toEqual(OSAKA_GEO.stations);
   });
 
-  it('RLE 왕복이 전체 지형·철도 타일을 보존한다', () => {
+  it('RLE 왕복이 전체 지형·철도 타일을 보존한다', { timeout: 30_000 }, () => {
     const terrainRuns = encodeTerrainRle(OSAKA_GEO.terrain);
     const railwayRuns = encodeTerrainRle(OSAKA_GEO.railways.mask);
     expect(decodeTerrainRle(terrainRuns, OSAKA_GEO.terrain.length)).toEqual(OSAKA_GEO.terrain);

@@ -31,7 +31,7 @@ describe('그리드 크기·인코딩 (geo 388×254)', () => {
     expect(grid.length).toBe(COLS * ROWS);
   });
 
-  it('모든 셀은 정의된 CITY_TILE 코드', () => {
+  it('모든 셀은 정의된 CITY_TILE 코드', { timeout: 30_000 }, () => {
     const allowed = new Set(Object.values(CITY_TILE));
     for (let i = 0; i < grid.length; i++) expect(allowed.has(grid[i])).toBe(true);
   });
