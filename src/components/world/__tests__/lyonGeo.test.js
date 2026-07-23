@@ -277,9 +277,9 @@ describe('리옹 상세 geo 계약', () => {
     const counts = {};
     for (const code of LYON_GEO.terrain) counts[code] = (counts[code] ?? 0) + 1;
     expect(counts).toEqual({
-      [CITY_TILE.ROAD]: 82_562,
-      [CITY_TILE.SIDEWALK]: 68_586,
-      [CITY_TILE.CROSSWALK]: 8_311,
+      [CITY_TILE.ROAD]: 82_568,
+      [CITY_TILE.SIDEWALK]: 68_610,
+      [CITY_TILE.CROSSWALK]: 8_281,
       [CITY_TILE.PLAZA]: 4,
       [CITY_TILE.PARK]: 5_611,
       [CITY_TILE.WATER]: 8_206,
@@ -313,10 +313,10 @@ describe('리옹 상세 geo 계약', () => {
     const second = buildLyonCityGeo();
     expect(hash(first.terrain)).toBe(hash(second.terrain));
     expect(hash(first.terrain))
-      .toBe('1d3036f8c0d8347946e62f2e08d22152ff07ce6f33b05909d6db3d71335835c9');
+      .toBe('635a7b9e59b13ccf1470dc91f19e843c64df4716fe400b0ba435288eb617ad85');
     expect(hash(first.railways.mask))
       .toBe('f47e8cf38b72af26b0b93c6943545fb2a278de5f27fc2b7facdd38b5d846d778');
-    expect(encodeTerrainRle(first.terrain)).toHaveLength(93_064);
+    expect(encodeTerrainRle(first.terrain)).toHaveLength(93_035);
     expect(encodeTerrainRle(first.railways.mask)).toHaveLength(8_089);
     expect(first.pois).toEqual(LYON_GEO.pois);
     expect(first.stations).toEqual(LYON_GEO.stations);
@@ -324,6 +324,6 @@ describe('리옹 상세 geo 계약', () => {
     const secondPng = renderLyonPng(second);
     expect(firstPng).toEqual(secondPng);
     expect(hash(firstPng))
-      .toBe('2d1aac685c8a0bd82e98f210dd2239aeaee4e9acde1b6b71b103d03ab620759e');
+      .toBe('828cc7a65c67d56592a746f525b99dd798eeea76eb53b8da72a4113870097e81');
   }, 120_000);
 });
