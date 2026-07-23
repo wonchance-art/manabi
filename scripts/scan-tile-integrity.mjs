@@ -1,36 +1,29 @@
 #!/usr/bin/env node
 /**
- * 26-city geo terrain integrity scanner (report-only).
+ * Q1-r2 26-city geo terrain high-confidence integrity scanner (report-only).
  *
  * Finding contracts (all components use cardinal/4-neighbor connectivity; findings may overlap):
  *
- * A — ISOLATED_BUILDING
+ * A' — ISOLATED_BUILDING
  *   A building-like component means CITY_TILE.BUILDING only. Flag one component when it has
  *   exactly 1–2 tiles, does not touch the grid edge, and every in-grid tile in the component's
- *   one-cell Moore/8-neighbor outer ring is street context: ROAD, SIDEWALK, CROSSWALK, PLAZA,
- *   BRIDGE, or DOCK. PARK/BEACH/water/mountain/other BUILDING tiles are not street context.
+ *   one-cell Moore/8-neighbor outer ring is carriageway context only: ROAD, CROSSWALK, or BRIDGE.
+ *   SIDEWALK, PLAZA, and DOCK explicitly do not qualify.
  *
- * B — STRAY_CROSSWALK
- *   A crosswalk component means CITY_TILE.CROSSWALK only. Its progress axis is horizontal when
- *   bbox width > height, vertical when height > width, and unknown on a tie. The local road axis
- *   comes from direct cardinal ROAD/BRIDGE contacts around every component tile: vertical when
- *   N+S contacts exceed E+W, horizontal when E+W exceed N+S, and unknown on a tie. For endpoint
- *   checks, use the component progress axis, or (only when that axis is unknown and the road axis
- *   is known) the axis perpendicular to the road. Flag when no ROAD/BRIDGE cardinal contact exists,
- *   when no endpoint axis can be inferred, or when either extreme outward endpoint cell along that
- *   axis is not ROAD or SIDEWALK. Thus both ends must meet road/sidewalk context.
+ * B' — STRAY_CROSSWALK
+ *   A crosswalk component means CITY_TILE.CROSSWALK only. Flag only when the entire component has
+ *   zero direct cardinal ROAD/BRIDGE contacts. Unknown axes and incomplete endpoints do not qualify.
  *
- * C — MISALIGNED_CROSSWALK
- *   Reuse the B axes. A component is aligned only when both axes are known and the crosswalk
- *   progress axis is perpendicular to the local road axis. Flag parallel axes and every unknown
- *   crosswalk or road axis. Single-cell/square/branch-shaped components are therefore explicitly
- *   reported as orientation-unknown rather than silently assigned a direction.
+ * C' — MISALIGNED_CROSSWALK
+ *   The crosswalk long axis is horizontal when bbox width > height, vertical when height > width,
+ *   and unknown on a tie. The local road axis comes from direct cardinal ROAD/BRIDGE contacts:
+ *   vertical when N+S contacts exceed E+W, horizontal when E+W exceed N+S, and unknown on a tie.
+ *   Flag only when both axes are known and parallel. Every unknown/tied axis is excluded.
  *
- * D — BROKEN_LINEAR
- *   A linear component contains ROAD or CROSSWALK tiles only. Flag a component when its total size
- *   is 1–2 tiles. Because the component is maximal under cardinal connectivity, such a component
- *   has no ROAD/CROSSWALK continuation on either end; diagonal contact, SIDEWALK, BRIDGE, and EXIT
- *   do not count as continuation.
+ * D' — BROKEN_LINEAR
+ *   A road-like component contains ROAD, CROSSWALK, or BRIDGE tiles. Flag only maximal cardinal
+ *   components of exactly one tile. Exclude a tile when at least four cells in its Moore/8-neighbor
+ *   ring are SIDEWALK, treating it as an intentional alley stub. Two-tile components never qualify.
  *
  * Determinism:
  *   City ids are sorted lexicographically; every grid scan is row-major (y, then x); cardinal
@@ -41,7 +34,8 @@
  *   node scripts/scan-tile-integrity.mjs
  *   node scripts/scan-tile-integrity.mjs --format markdown
  *   node scripts/scan-tile-integrity.mjs --city lyon --format json
- *   node scripts/scan-tile-integrity.mjs --format markdown --output docs/audit-tile-integrity.md
+ *   node scripts/scan-tile-integrity.mjs --format markdown --output /tmp/tile-integrity-r2.md
+ *   node scripts/scan-tile-integrity.mjs --update-report docs/audit-tile-integrity.md
  */
 
 import { createHash } from 'node:crypto';
@@ -52,10 +46,10 @@ import { CITY_MANIFEST } from '../src/components/world/cities/manifest.js';
 import { CITY_TILE } from '../src/components/world/cities/terrain.js';
 
 const FINDING_TYPES = Object.freeze([
-  Object.freeze({ id: 'A', key: 'isolatedBuilding', label: '고립 건물' }),
-  Object.freeze({ id: 'B', key: 'strayCrosswalk', label: '뜬금없는 횡단보도' }),
-  Object.freeze({ id: 'C', key: 'misalignedCrosswalk', label: '방향 어긋난 횡단보도' }),
-  Object.freeze({ id: 'D', key: 'brokenLinear', label: '끊긴 선형' }),
+  Object.freeze({ id: 'A', key: 'isolatedBuilding', label: '차도 ring 고립 건물' }),
+  Object.freeze({ id: 'B', key: 'strayCrosswalk', label: '완전 고립 횡단보도' }),
+  Object.freeze({ id: 'C', key: 'misalignedCrosswalk', label: '명백 평행 횡단보도' }),
+  Object.freeze({ id: 'D', key: 'brokenLinear', label: '1타일 고아 도로' }),
 ]);
 
 const CARDINAL = Object.freeze([
@@ -65,17 +59,12 @@ const CARDINAL = Object.freeze([
   Object.freeze([-1, 0]),
 ]);
 
-const STREET_CONTEXT = new Set([
+const ROAD_LIKE = new Set([
   CITY_TILE.ROAD,
-  CITY_TILE.SIDEWALK,
   CITY_TILE.CROSSWALK,
-  CITY_TILE.PLAZA,
   CITY_TILE.BRIDGE,
-  CITY_TILE.DOCK,
 ]);
-const ENDPOINT_CONTEXT = new Set([CITY_TILE.ROAD, CITY_TILE.SIDEWALK]);
 const ROAD_CONTEXT = new Set([CITY_TILE.ROAD, CITY_TILE.BRIDGE]);
-const LINEAR = new Set([CITY_TILE.ROAD, CITY_TILE.CROSSWALK]);
 
 const TILE_NAMES = Object.freeze(
   Object.fromEntries(Object.entries(CITY_TILE).map(([name, code]) => [code, name])),
@@ -171,33 +160,6 @@ function roadAxisForCrosswalk(grid, cols, rows, tiles) {
   };
 }
 
-function endpointContext(grid, cols, rows, tiles, axis, bounds) {
-  if (axis === 'unknown') {
-    return { first: false, second: false, firstCells: [], secondCells: [] };
-  }
-  const [minX, minY, maxX, maxY] = bounds;
-  const firstCells = [];
-  const secondCells = [];
-  for (const [x, y] of tiles) {
-    if (axis === 'horizontal') {
-      if (x === minX) firstCells.push([x - 1, y]);
-      if (x === maxX) secondCells.push([x + 1, y]);
-    } else {
-      if (y === minY) firstCells.push([x, y - 1]);
-      if (y === maxY) secondCells.push([x, y + 1]);
-    }
-  }
-  const touches = (cells) => cells.some(([x, y]) => (
-    ENDPOINT_CONTEXT.has(tileAt(grid, cols, rows, x, y))
-  ));
-  return {
-    first: touches(firstCells),
-    second: touches(secondCells),
-    firstCells: firstCells.sort(compareCoordinates),
-    secondCells: secondCells.sort(compareCoordinates),
-  };
-}
-
 function collectComponents(grid, cols, rows, predicate) {
   const seen = new Uint8Array(grid.length);
   const queue = new Int32Array(grid.length);
@@ -245,7 +207,7 @@ function isolatedBuildingFindings(city, grid) {
     if (tiles.length < 1 || tiles.length > 2) continue;
     const componentIndexes = new Set(tiles.map(([x, y]) => y * cols + x));
     let touchesEdge = false;
-    let ringIsStreet = true;
+    let ringIsCarriageway = true;
     const ring = new Set();
     for (const [x, y] of tiles) {
       if (x === 0 || y === 0 || x === cols - 1 || y === rows - 1) touchesEdge = true;
@@ -255,17 +217,17 @@ function isolatedBuildingFindings(city, grid) {
           const nx = x + dx;
           const ny = y + dy;
           if (!inBounds(nx, ny, cols, rows)) {
-            ringIsStreet = false;
+            ringIsCarriageway = false;
             continue;
           }
           const next = ny * cols + nx;
           if (componentIndexes.has(next)) continue;
           ring.add(next);
-          if (!STREET_CONTEXT.has(grid[next])) ringIsStreet = false;
+          if (!ROAD_LIKE.has(grid[next])) ringIsCarriageway = false;
         }
       }
     }
-    if (!touchesEdge && ring.size > 0 && ringIsStreet) {
+    if (!touchesEdge && ring.size > 0 && ringIsCarriageway) {
       findings.push({
         cityId: city.id,
         type: 'A',
@@ -292,18 +254,6 @@ function crosswalkFindings(city, grid) {
   for (const tiles of components) {
     const crosswalk = componentAxis(tiles);
     const road = roadAxisForCrosswalk(grid, cols, rows, tiles);
-    const endpointAxis = crosswalk.axis !== 'unknown'
-      ? crosswalk.axis
-      : road.axis === 'horizontal' ? 'vertical'
-        : road.axis === 'vertical' ? 'horizontal' : 'unknown';
-    const endpoints = endpointContext(
-      grid,
-      cols,
-      rows,
-      tiles,
-      endpointAxis,
-      crosswalk.bounds,
-    );
     const base = {
       cityId: city.id,
       anchor: componentAnchor(tiles),
@@ -313,21 +263,14 @@ function crosswalkFindings(city, grid) {
       roadAxis: road.axis,
       roadContacts: road.contacts,
       roadContactCount: road.roadContactCount,
-      endpointAxis,
-      endpointContacts: { first: endpoints.first, second: endpoints.second },
     };
-    if (
-      road.roadContactCount === 0
-      || endpointAxis === 'unknown'
-      || !endpoints.first
-      || !endpoints.second
-    ) {
+    if (road.roadContactCount === 0) {
       stray.push({ ...base, type: 'B' });
     }
     if (
-      crosswalk.axis === 'unknown'
-      || road.axis === 'unknown'
-      || crosswalk.axis === road.axis
+      crosswalk.axis !== 'unknown'
+      && road.axis !== 'unknown'
+      && crosswalk.axis === road.axis
     ) {
       misaligned.push({ ...base, type: 'C' });
     }
@@ -341,10 +284,21 @@ function brokenLinearFindings(city, grid) {
     grid,
     city.cols,
     city.rows,
-    (code) => LINEAR.has(code),
+    (code) => ROAD_LIKE.has(code),
   );
   for (const tiles of components) {
-    if (tiles.length < 1 || tiles.length > 2) continue;
+    if (tiles.length !== 1) continue;
+    const [[x, y]] = tiles;
+    let sidewalkNeighborCount = 0;
+    for (let dy = -1; dy <= 1; dy += 1) {
+      for (let dx = -1; dx <= 1; dx += 1) {
+        if (dx === 0 && dy === 0) continue;
+        if (tileAt(grid, city.cols, city.rows, x + dx, y + dy) === CITY_TILE.SIDEWALK) {
+          sidewalkNeighborCount += 1;
+        }
+      }
+    }
+    if (sidewalkNeighborCount >= 4) continue;
     findings.push({
       cityId: city.id,
       type: 'D',
@@ -352,6 +306,7 @@ function brokenLinearFindings(city, grid) {
       tiles: [...tiles].sort(compareCoordinates),
       componentSize: tiles.length,
       tileCodes: tiles.map(([x, y]) => grid[y * city.cols + x]),
+      sidewalkNeighborCount,
     });
   }
   return findings;
@@ -480,8 +435,18 @@ export async function scanTileIntegrity({ onlyCity = null } = {}) {
   const totals = Object.fromEntries(
     FINDING_TYPES.map(({ id }) => [id, allFindings[id].length]),
   );
+  const lyon = cityById.get('lyon');
+  const lyonDetails = lyon
+    ? Object.fromEntries(FINDING_TYPES.map(({ id }) => [
+      id,
+      lyon.findings[id].map((finding) => ({
+        ...finding,
+        miniDump: miniDump(grids.get('lyon'), lyon.cols, lyon.rows, finding.anchor),
+      })),
+    ]))
+    : null;
   const canonical = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     traversal: 'city-id-en-lexicographic_then_row-major-y-x_then-NESW',
     source: 'src/components/world/cities/<id>.geo.js terrain (runtime EXIT overlays excluded)',
     cityCount: cities.length,
@@ -489,6 +454,7 @@ export async function scanTileIntegrity({ onlyCity = null } = {}) {
     totals,
     cities,
     samples,
+    lyonDetails,
   };
   const dataSha256 = createHash('sha256')
     .update(JSON.stringify(canonical))
@@ -506,16 +472,6 @@ function formatFindingCoordinate(finding) {
   return `${anchor}{${finding.tiles.map(formatCoordinate).join(',')}}`;
 }
 
-function coordinateLines(findings, perLine = 12) {
-  if (findings.length === 0) return ['- 없음'];
-  const coordinates = findings.map(formatFindingCoordinate);
-  const lines = [];
-  for (let index = 0; index < coordinates.length; index += perLine) {
-    lines.push(`- ${coordinates.slice(index, index + perLine).join(' · ')}`);
-  }
-  return lines;
-}
-
 function formatInteger(value) {
   return String(value).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
@@ -523,29 +479,29 @@ function formatInteger(value) {
 export function renderMarkdown(result) {
   const totalCells = result.cities.reduce((sum, city) => sum + city.cells, 0);
   const lines = [
-    '# Q1 타일 정합 진단 — 26도시 전수 감사',
+    '## r2 고신뢰 기준',
     '',
     '- 상태: **report-only** — 도시 geo·게임 데이터·엔진 수정 없음',
     `- 입력: \`${result.source}\``,
     `- 범위: ${result.cityCount}도시, ${formatInteger(totalCells)} cells`,
     `- canonical data SHA-256: \`${result.dataSha256}\``,
     '- 좌표: `[x,y]`; 여러 타일 성분은 `anchor{전 타일}`로 표기; anchor는 성분의 row-major 최소 좌표',
-    '- 주의: A–D는 수선 후보이며 서로 배타적이지 않다. 건수는 타일 수가 아니라 판정 성분 수다.',
+    '- 주의: A′–D′는 명백한 이상만 남긴 고신뢰 수선 후보이며 서로 배타적이지 않다. 건수는 타일 수가 아니라 판정 성분 수다.',
     '',
-    '## 판정 기준',
+    '### r2 판정 기준',
     '',
     '| 유형 | 정량 판정 |',
     '|---|---|',
-    '| A 고립 건물 | `BUILDING` 4방 성분이 정확히 1–2타일이고 경계에 닿지 않으며, 성분 바깥 1칸 8방 ring 전부가 `ROAD·SIDEWALK·CROSSWALK·PLAZA·BRIDGE·DOCK`일 때 1건. |',
-    '| B 뜬금없는 횡단보도 | `CROSSWALK` 4방 성분에서 cardinal `ROAD·BRIDGE` 접촉이 0이거나, 끝점 검사축을 정할 수 없거나, 그 축의 양 extreme 바깥 셀 중 어느 한쪽이라도 `ROAD·SIDEWALK`에 닿지 않으면 1건. 진행축은 bbox 장축; 정사각/단일 셀은 도로축의 수직축을 B 끝점 검사에만 사용한다. |',
-    '| C 방향 어긋난 횡단보도 | 횡단보도 bbox 장축과 주변 cardinal `ROAD·BRIDGE` 접촉 우세축이 둘 다 알려지고 서로 수직일 때만 정상. 두 축이 평행하거나 어느 축이든 동률/불명이면 1건. |',
-    '| D 끊긴 선형 | `ROAD·CROSSWALK`만으로 만든 maximal 4방 성분의 총 크기가 1–2타일이면 1건. 대각선·`SIDEWALK·BRIDGE·EXIT`는 연속으로 보지 않는다. |',
+    '| A′ 차도 ring 고립 건물 | `BUILDING` 4방 성분이 정확히 1–2타일이고 경계에 닿지 않으며, 성분 바깥 1칸 8방 ring 전부가 `ROAD·CROSSWALK·BRIDGE`일 때만 1건. `SIDEWALK·PLAZA·DOCK` ring은 제외한다. |',
+    '| B′ 완전 고립 횡단보도 | `CROSSWALK` 4방 성분 전체의 cardinal `ROAD·BRIDGE` 직접 접촉이 정확히 0일 때만 1건. 축 불명·끝점 미달만으로는 잡지 않는다. |',
+    '| C′ 명백 평행 횡단보도 | 횡단보도 bbox 장축과 주변 cardinal `ROAD·BRIDGE` 접촉 우세축이 둘 다 확정되고 서로 평행일 때만 1건. 어느 축이든 동률/불명이면 제외한다. |',
+    '| D′ 1타일 고아 도로 | `ROAD·CROSSWALK·BRIDGE` maximal 4방 성분의 크기가 정확히 1타일일 때만 1건. 2타일 성분은 제외하고, 주변 8칸 중 `SIDEWALK`가 4칸 이상이면 골목 스텁으로 보아 제외한다. |',
     '',
     '도로축은 모든 CROSSWALK 성분 셀의 N+S `ROAD·BRIDGE` 직접 접촉 수와 E+W 접촉 수를 합산해 큰 쪽으로 정한다. 동률은 `불명`이다.',
     '',
-    '## 26도시 × 유형 건수',
+    '### r2 26도시 × 유형 건수',
     '',
-    '| 도시 | grid | A | B | C | D |',
+    '| 도시 | grid | A′ | B′ | C′ | D′ |',
     '|---|---:|---:|---:|---:|---:|',
   ];
   for (const city of result.cities) {
@@ -556,7 +512,7 @@ export function renderMarkdown(result) {
   lines.push(
     `| **합계** | **${formatInteger(totalCells)} cells** | **${formatInteger(result.totals.A)}** | **${formatInteger(result.totals.B)}** | **${formatInteger(result.totals.C)}** | **${formatInteger(result.totals.D)}** |`,
     '',
-    '## 유형별 대표 좌표 샘플',
+    '### r2 유형별 대표 좌표 샘플',
     '',
     '3×3 덤프는 `위 행 / 가운데 행 / 아래 행`이다. 코드: `RD` ROAD, `SW` SIDEWALK, `CW` CROSSWALK, `PL` PLAZA, `PK` PARK, `BR` BRIDGE, `DK` DOCK, `WT` WATER, `BL` BUILDING, `IS` ISLAND, `RV` RIVER, `BC` BEACH, `MT` MOUNTAIN, `##` grid 밖.',
   );
@@ -564,7 +520,7 @@ export function renderMarkdown(result) {
   for (const type of FINDING_TYPES) {
     lines.push(
       '',
-      `### ${type.id}. ${type.label} — 최대 10건`,
+      `#### ${type.id}′. ${type.label} — 최대 10건`,
       '',
       '| 도시 | 좌표 | 성분 크기 | 주변 3×3 타일 코드 |',
       '|---|---:|---:|---|',
@@ -585,45 +541,70 @@ export function renderMarkdown(result) {
   const lyon = cityById.get('lyon');
   lines.push(
     '',
-    '## 리옹 상세 — 파일럿 후보 전 건',
+    '### 리옹 상세 — r2 전 건 좌표 + 3×3 덤프',
     '',
   );
   if (!lyon) {
     lines.push('- 이번 실행 범위에 리옹이 포함되지 않음.');
   } else {
     lines.push(
-      `리옹 ${lyon.cols}×${lyon.rows}에서 A ${formatInteger(lyon.counts.A)}, B ${formatInteger(lyon.counts.B)}, C ${formatInteger(lyon.counts.C)}, D ${formatInteger(lyon.counts.D)}건이다.`,
+      `리옹 ${lyon.cols}×${lyon.rows}에서 A′ ${formatInteger(lyon.counts.A)}, B′ ${formatInteger(lyon.counts.B)}, C′ ${formatInteger(lyon.counts.C)}, D′ ${formatInteger(lyon.counts.D)}건이다.`,
       '',
     );
     for (const type of FINDING_TYPES) {
+      const details = result.lyonDetails?.[type.id] ?? [];
       lines.push(
-        `### ${type.id}. ${type.label} (${formatInteger(lyon.counts[type.id])}건)`,
+        `#### ${type.id}′. ${type.label} (${formatInteger(lyon.counts[type.id])}건)`,
         '',
-        ...coordinateLines(lyon.findings[type.id]),
-        '',
+        '| 좌표 | 성분 크기 | 주변 3×3 타일 코드 |',
+        '|---:|---:|---|',
       );
+      if (details.length === 0) {
+        lines.push('| — | — | 해당 없음 |', '');
+      } else {
+        for (const finding of details) {
+          lines.push(
+            `| \`${formatFindingCoordinate(finding)}\` | ${finding.componentSize} | \`${finding.miniDump}\` |`,
+          );
+        }
+        lines.push('');
+      }
     }
   }
   lines.push(
-    '## 결정성·재현',
+    '### r2 결정성·재현',
     '',
     '- 도시 id 영문 사전순 → 각 grid row-major `(y,x)` → 이웃 `N,E,S,W` 고정 순회.',
     '- 시간·로케일 정렬·파일 열거·난수·네트워크 입력 없음. runtime `EXIT` 덮어쓰기를 제외한 committed geo terrain만 읽음.',
     '- 동일 입력 2회 stdout byte 비교와 SHA-256 결과는 PR 검증 시 기록한다.',
     '',
     '```bash',
-    'node scripts/scan-tile-integrity.mjs --format markdown > /tmp/tile-integrity-a.md',
-    'node scripts/scan-tile-integrity.mjs --format markdown > /tmp/tile-integrity-b.md',
-    'cmp /tmp/tile-integrity-a.md /tmp/tile-integrity-b.md',
-    'shasum -a 256 /tmp/tile-integrity-a.md /tmp/tile-integrity-b.md',
+    'node scripts/scan-tile-integrity.mjs --format markdown > /tmp/tile-integrity-r2-a.md',
+    'node scripts/scan-tile-integrity.mjs --format markdown > /tmp/tile-integrity-r2-b.md',
+    'cmp /tmp/tile-integrity-r2-a.md /tmp/tile-integrity-r2-b.md',
+    'shasum -a 256 /tmp/tile-integrity-r2-a.md /tmp/tile-integrity-r2-b.md',
     '```',
     '',
   );
   return `${lines.join('\n')}\n`;
 }
 
+function updateReport(existing, r2Section) {
+  const heading = '## r2 고신뢰 기준';
+  const marker = `\n${heading}\n`;
+  const existingR2 = existing.indexOf(marker);
+  const r1 = (existingR2 === -1 ? existing : existing.slice(0, existingR2)).trimEnd();
+  return `${r1}\n\n${r2Section}`;
+}
+
 function parseArgs(argv) {
-  const options = { format: 'json', output: null, onlyCity: null, help: false };
+  const options = {
+    format: 'json',
+    output: null,
+    updateReport: null,
+    onlyCity: null,
+    help: false,
+  };
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
     if (argument === '--help' || argument === '-h') {
@@ -638,6 +619,11 @@ function parseArgs(argv) {
       options.output = argv[index];
     } else if (argument.startsWith('--output=')) {
       options.output = argument.slice('--output='.length);
+    } else if (argument === '--update-report') {
+      index += 1;
+      options.updateReport = argv[index];
+    } else if (argument.startsWith('--update-report=')) {
+      options.updateReport = argument.slice('--update-report='.length);
     } else if (argument === '--city') {
       index += 1;
       options.onlyCity = argv[index];
@@ -652,6 +638,18 @@ function parseArgs(argv) {
   }
   if (options.output !== null && (!options.output || options.output.startsWith('-'))) {
     throw new Error('Missing --output path');
+  }
+  if (
+    options.updateReport !== null
+    && (!options.updateReport || options.updateReport.startsWith('-'))
+  ) {
+    throw new Error('Missing --update-report path');
+  }
+  if (options.output !== null && options.updateReport !== null) {
+    throw new Error('--output and --update-report are mutually exclusive');
+  }
+  if (options.updateReport !== null && options.onlyCity !== null) {
+    throw new Error('--update-report requires the full city scan');
   }
   if (options.onlyCity !== null && !options.onlyCity) {
     throw new Error('Missing --city id');
@@ -668,6 +666,7 @@ async function main(argv) {
       'Options:',
       '  --format json|markdown  Output format (default: json)',
       '  --output PATH           Write output to PATH instead of stdout',
+      '  --update-report PATH    Preserve r1 and replace/append the generated r2 section',
       '  --city ID               Scan one manifest city (default: all 26)',
       '  -h, --help              Show this help',
       '',
@@ -675,10 +674,14 @@ async function main(argv) {
     return;
   }
   const result = await scanTileIntegrity({ onlyCity: options.onlyCity });
-  const output = options.format === 'markdown'
+  const output = options.format === 'markdown' || options.updateReport
     ? renderMarkdown(result)
     : `${JSON.stringify(result, null, 2)}\n`;
-  if (options.output) {
+  if (options.updateReport) {
+    const reportPath = path.resolve(options.updateReport);
+    const existing = fs.readFileSync(reportPath, 'utf8');
+    fs.writeFileSync(reportPath, updateReport(existing, output), 'utf8');
+  } else if (options.output) {
     fs.writeFileSync(path.resolve(options.output), output, 'utf8');
   } else {
     process.stdout.write(output);
