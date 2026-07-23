@@ -228,12 +228,14 @@
 
 ## Codex-4 (codex4/*) — 성능·인프라 (타 기기)
 ### doing
-- P2 .owc 프리페치 벤치(report-only): 현행 vs 반경+1 청크 로드 지연·동시 요청·RSS 비교
 ### todo
 - P0 (운영 필수·최우선) 로컬 clone 이전 + 확인 코멘트: #150 5046786117
 - P1 geo lazy-load 구현(RFC #394 승인 — 실패 UX·?spawn= 정합·scene race 주의 3건 코멘트 참조)
 - P3 도쿄 로더 레이어(파일 경계: Codex-2 T1과 분리)
 ### done (최근)
+- P2 .owc 프리페치 벤치: APAC·EMEA 각 3경로에서 현행 vs 반경+1의 지연·동시 요청·RSS를
+  report-only 비교하고 blanket 반경+1 보류·방향성/concurrency 2 후속 게이트를 제안
+  (`codex4/owc-prefetch-bench`, base `49e6699764febdcd1132c4644389f65e91ed6705`)
 - geo lazy-load RFC(발주 #150 코멘트 참조): 경량 manifest·도시별 literal dynamic import·
   저장 도시 1개 선로드·전체맵 선택 로드·전수 검증/롤백 계약 제안 — 승인 전 구현 금지
 
