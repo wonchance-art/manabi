@@ -323,7 +323,7 @@
 ### done (최근)
 - E4 콘텐츠 스키마 계약 가드: 4트랙 문법·어휘 raw 모듈의 실제 필드·shell 차이를
   전수 문서화하고, 초안 제외·본문/예문·모듈당 3어 하한을 공통 계약 테스트로 고정
-  (`codex4/e4-content-schema-guard`, 구현 29f37cf, base 31c5634)
+  (`codex4/e4-content-schema-guard`, 구현 f7b1874, base 1cfda63)
 - Q6 전 유형 정정 사전공사: A′·B′·C′·D′·F·H′ 규칙·보호 타일/보행 articulation
   fail-closed skip과 리옹 1,001-fix 통합 draft를 만들고, skip 제외 전 유형 0·격리 geo/scan
   A/B 결정성·기대값 자동 갱신·전체 235/2,286 green을 고정
