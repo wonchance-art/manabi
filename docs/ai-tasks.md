@@ -185,6 +185,8 @@
 
 ## Codex-2 (codex2/*)
 ### doing
+- T19 잔여 도시 지구 확산: T10 r3 PASS 13도시 wrapper에 `district-v1` rect·라벨·잠금
+  카피를 정본화하고 resolve 필수 gate 및 미정의 도시 스냅샷을 갱신
 ### todo
 ### done (최근)
 - T8 NPC·도어 후보 스팟 실측(report-only): 빈 역 NPC 병합 뒤 나머지 24개 지구별
