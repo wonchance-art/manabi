@@ -19,7 +19,7 @@ export const WORLD_TITLE_COPY = Object.freeze({
   }),
   'discovery-lyon': Object.freeze({
     name: '리옹 완주자',
-    line: '론과 소옌이 만나는 언덕마다 — 이 도시의 숨결을 느껴봤어요.',
+    line: '론강과 손강이 만나는 도시를 끝까지 — 언덕의 숨결까지 느꼈어요.',
   }),
   'discovery-bordeaux': Object.freeze({
     name: '보르도 산책자',
