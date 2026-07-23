@@ -185,6 +185,9 @@
 
 ## Codex-2 (codex2/*)
 ### doing
+- Q3 리옹 타일 정정 no-op hook: 공용 순수 `applyTileFixes()`·manifest v1 스키마를
+  마지막 mutating 후처리와 final meta/RLE 사이에 연결하고 산출 byte 불변을 검증
+  (`codex2/q3-lyon-fix-hook`)
 ### todo
 ### done (최근)
 - T20 V3 도로 오토타일 전면 확산: T17 잔여 23도시 wrapper를 opt-in해 26도시
