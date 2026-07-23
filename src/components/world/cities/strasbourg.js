@@ -54,7 +54,7 @@ export const CITY_NODES = [
   {
     id: 'strasbourg-gare-bretzel', kind: 'npc', npc: 'gare-bretzel', name: '브레첼 노점',
     tile: [128, 247], facing: 'down', noStamp: true,
-    desc: '역 앞 브레첼 노점. 알자스의 아침 냄새 — 앙 브레첼, 실 부 플레!',
+    desc: '역 앞 브레첼 노점. 알자스의 아침 냄새 — 앙 브레첼, 실 부 플레요.',
   },
   ...STRASBOURG_GEO.pois.map((poi) => {
     const copy = poiCopy(poi.id);

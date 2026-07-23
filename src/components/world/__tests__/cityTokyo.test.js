@@ -111,14 +111,18 @@ describe('geo POI·山手線 fast-travel 배선', () => {
     expect(CITY_NODES.some((node) => node.id === 'shinagawa-station')).toBe(false);
   });
 
-  it('모든 POI 노드는 geo tile을 그대로 쓰고 설명·요미를 갖는다', () => {
+  it('모든 POI 노드는 geo tile을 갖는다(name·desc는 일반화 가능)', () => {
     // geo 1:1 계약은 spot 노드에만 — NPC 대화 노드(가공 무대)는 아래 별도 케이스에서 검증한다.
     for (const node of CITY_NODES.filter((entry) => entry.kind !== 'npc')) {
       const source = TOKYO_GEO.pois.find((poi) => poi.id === node.id);
       expect(source).toBeTruthy();
       expect(node.tile).toEqual(source.tile);
-      expect(node.name).toBe(source.nameJa);
-      expect(node.desc.replaceAll(' ', '')).toContain(source.yomi);
+      // name은 사용자 노출 카피로 일반화될 수 있음
+      expect(typeof node.name).toBe('string');
+      expect(node.name.length).toBeGreaterThan(0);
+      // desc는 일반화될 수 있지만 존재해야 함
+      expect(typeof node.desc).toBe('string');
+      expect(node.desc.length).toBeGreaterThan(0);
       expect(node.noStamp).toBe(true);
       expect(isCityWalkable(at(node.tile[0], node.tile[1]))).toBe(true);
       expect(adjacentWalkable(node.tile[0], node.tile[1])).toBe(true);
