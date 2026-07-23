@@ -212,6 +212,8 @@
 
 ## Codex-3 (codex3/*) — 게임 시스템 확장 (타 기기)
 ### doing
+- S6 여행 수첩 발견 수집률: mainRoute 발견이 있는 3도시의 localStorage 진행도를
+  `발견 n/m` 한 줄로 표시하고 깨진 JSON·미지 ID를 fail-closed 처리
 ### todo
 - (P0 공통) 로컬 clone 이전 확인 코멘트
 - S1 STAMP_ALBUM_NODES 85 원자 전환(선행 #387 충족 — 즉시 착수): #150 5046785938
