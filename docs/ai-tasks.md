@@ -242,6 +242,9 @@
 - S1 STAMP_ALBUM_NODES 85 원자 전환(선행 #387 충족 — 즉시 착수): #150 5046785938
 - S4 수집 연출 정합 → S2 앨범 지역 탭·수집률 → S3 마일스톤 보상 v1(localStorage·DB 금지)
 ### done (최근)
+- S13 역 NPC 스탬프 연결: 리옹·보르도·스트라스부르 noStamp NPC 5종의 대화 완주를
+  `npc-met:<cityId>`에 기록하고 여행 수첩 `만난 사람 n/m`·S7 다음 목표 후보로 연결
+  (`codex3/gare-npc-stamp-fix`, 구현 c351a98, base 163ba9345419100385012ec20704e2db4943e530)
 - S11 dev 게스트 스탬프 로컬 폴백(W2-R2-03): devGuest 수집 상태를 `guest-stamps`
   localStorage 정본 교집합으로 저장·로드하고 앨범·도감·마일스톤 소비와 깨진 JSON·유령 ID
   견고성을 유지 (`codex3/guest-stamp-local`, 구현 d56ce41, base d192161e13255aa3e10c38bd6615e9be6ca82c34)

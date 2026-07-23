@@ -109,11 +109,16 @@ import { buildCityScene } from './CityScene';
 import {
   CITY_BOOT_MODE,
   CITY_MANIFEST,
+  cityIdFromScene,
   hasCity,
   initialCityIdForSpawn,
   loadCitiesForBoot,
   loadCity,
 } from './cities/index.js';
+import {
+  isNpcMeetingCity,
+  recordNpcMeeting,
+} from './npcMeetings.js';
 import { CITY_MINI_SCALE, cityMinimapLayout, downsampleCityGrid } from './cityMinimap';
 import { directTransitDestinations } from '../../lib/world/transit';
 import { studiesRefForNode } from '../../lib/world/studiesRefs';
@@ -3773,17 +3778,25 @@ export default function GameCanvas({ userId = null, devGuest = false, nickname =
       )}
 
       {/* NPC 도트 대화(chapter 없는 NPC) — 캔버스 위 HTML, 열리면 게임 입력 잠금(useEffect).
-          완주(onComplete) 시 노드 스탬프 1회 수집(collectStampRef Set 가드 — 재대화해도 중복 없음).
-          단 noStamp 노드(WORLD_NODES 밖 도시 NPC — 편의점·이자카야)는 수집하지 않는다: 서버는
-          실존 노드(getNode)만 upsert 하므로 미등록 id 는 400 이 되고, 낙관 갱신이 유령 스탬프를
-          남긴다. noStamp 를 여기서도 존중해 도시 학습 NPC 는 대화 경험만 준다. */}
+          완주(onComplete) 시 스탬프 가능 노드는 기존 1회 수집, S13 대상 noStamp 도시 NPC는
+          npc-met:<cityId> 만남 기록을 남긴다. 둘 다 각 저장 계층에서 멱등 처리한다. */}
       {npcDialog && (
         <NpcDialog
           npcKey={npcDialog.key}
           npcName={npcDialog.node?.name}
           actionRef={npcActionRef}
           cancelRef={npcCancelRef}
-          onComplete={() => collectStampRef.current?.(npcDialog.node)}
+          completionNote={npcDialog.node?.noStamp === true
+            && isNpcMeetingCity(cityIdFromScene(activeScene))
+            ? '👋 만남을 여행 수첩에 기록했어요.'
+            : undefined}
+          onComplete={() => {
+            recordNpcMeeting({
+              cityId: cityIdFromScene(activeSceneRef.current),
+              node: npcDialog.node,
+            });
+            collectStampRef.current?.(npcDialog.node);
+          }}
           onExit={() => setNpcDialog(null)}
         />
       )}

@@ -32,12 +32,17 @@ import {
   STAMP_ALBUM_DISCOVERY_CITY_IDS,
   stampAlbumDiscoveryProgress,
 } from './stampAlbumDiscoveryProgress';
+import {
+  STAMP_ALBUM_NPC_MEETING_CITY_IDS,
+  stampAlbumNpcMeetingProgress,
+} from './stampAlbumNpcMeetingProgress';
 import { stampAlbumNextGoal } from './stampAlbumNextGoal';
 import { stampTitlePresentation } from './stampTitlePresentation';
 
 const DETAIL_CITY_IDS = new Set([
   ...STAMP_ALBUM_DISTRICT_CITY_IDS,
   ...STAMP_ALBUM_DISCOVERY_CITY_IDS,
+  ...STAMP_ALBUM_NPC_MEETING_CITY_IDS,
 ]);
 
 export default function StampAlbum({ devGuest = false, stamps, onClose }) {
@@ -195,11 +200,15 @@ export default function StampAlbum({ devGuest = false, stamps, onClose }) {
             const discovery = badge.has && cityDetailReady
               ? stampAlbumDiscoveryProgress(node, detailCities)
               : null;
+            const npcMeeting = badge.has && cityDetailReady
+              ? stampAlbumNpcMeetingProgress(node, detailCities)
+              : null;
             const detailReady = !DETAIL_CITY_IDS.has(cityId) || cityDetailReady;
             const nextGoal = badge.has && cityId && detailReady
               ? stampAlbumNextGoal({
                 district,
                 discovery,
+                npcMeeting,
                 stampTitle: titlePresentation,
               })
               : null;
