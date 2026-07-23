@@ -1,9 +1,8 @@
 export const STAMP_ALBUM_COMPLETE_LINE = '여권이 가득 찼어요';
 
 const GOAL_PRIORITY = Object.freeze({
-  district: 0,
-  discovery: 1,
-  'stamp-title': 2,
+  discovery: 0,
+  'stamp-title': 1,
 });
 
 function positiveInteger(value) {
@@ -24,10 +23,10 @@ function freezeGoal(kind, presentation, remaining, line) {
   });
 }
 
-// S7 "가장 가까운 목표"는 각 기존 presentation이 제공하는 정본 개수를 비교한다.
-// 동률은 도시 상세 문맥을 우선해 지구 → 발견 → 전역 칭호 순으로 고정한다.
+// S10 "가장 가까운 목표"는 완료 분모가 있어 실제로 감소하는 잔여량만 비교한다.
+// 지구 openCount는 현재 제공 범위인 정적 정보값이므로 목표 후보가 아니다.
+// 동률은 도시 상세 문맥을 우선해 발견 → 전역 칭호 순으로 고정한다.
 export function stampAlbumNextGoal({
-  district = null,
   discovery = null,
   stampTitle = null,
 } = {}) {
@@ -40,18 +39,11 @@ export function stampAlbumNextGoal({
   const stampTitleComplete = stampTitle?.nextMilestone === null
     && Number.isInteger(stampTitle?.stampCount);
 
-  // 지구는 개방 영역의 현재 탐험 폭이고 별도 완료 분모가 없다.
-  // 여권과 현재 도시의 발견을 모두 마쳤을 때는 정보성 지구 수보다 완주 카피가 우선한다.
   if (stampTitleComplete && (discoveryRemaining == null || discoveryRemaining === 0)) {
     return freezeGoal('complete', null, 0, STAMP_ALBUM_COMPLETE_LINE);
   }
 
   const candidates = [];
-  const districtLine = lineFrom(district, 'countLabel');
-  if (positiveInteger(district?.openCount) && districtLine) {
-    candidates.push(freezeGoal('district', district, district.openCount, districtLine));
-  }
-
   const discoveryLine = lineFrom(discovery, 'label');
   if (positiveInteger(discoveryRemaining) && discoveryLine) {
     candidates.push(freezeGoal('discovery', discovery, discoveryRemaining, discoveryLine));

@@ -229,6 +229,9 @@
 - S1 STAMP_ALBUM_NODES 85 원자 전환(선행 #387 충족 — 즉시 착수): #150 5046785938
 - S4 수집 연출 정합 → S2 앨범 지역 탭·수집률 → S3 마일스톤 보상 v1(localStorage·DB 금지)
 ### done (최근)
+- S10 W2-R2-01: S7 다음 목표 선택에서 완료 분모 없는 정적 지구 개방 수를 제외하고
+  발견·칭호의 실제 잔여량만 비교하도록 감사 7도시 재현을 회귀 고정
+  (`codex3/s7-remaining-goal-fix`, 구현 111fbc7, final base 407b32cda5e517c908a86c4d9ac0b88c430e7584)
 - S9 발견 완집 보상: 리옹 8/8·보르도 8/8·스트라스부르 7/7 정본 ID 교집합 완주 시
   localStorage 칭호 키·펫 사료를 도시별 1회 지급하고 기존 4.2초 GBC 칭호 토스트로 연결
   (`codex3/discovery-milestone`, 구현 b3e7dda, base a8ff50d992b399137bf978acc7545f8e5235f2eb)
