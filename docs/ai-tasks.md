@@ -217,13 +217,14 @@
 
 ## Codex-3 (codex3/*) — 게임 시스템 확장 (타 기기)
 ### doing
-- S7 진척 표면 정리: 여행 수첩 도시 상세의 지구·발견·칭호 후보를 가장 가까운 다음 목표
-  1줄로 통합하고 기존 개별 표기와 XOR 처리
 ### todo
 - (P0 공통) 로컬 clone 이전 확인 코멘트
 - S1 STAMP_ALBUM_NODES 85 원자 전환(선행 #387 충족 — 즉시 착수): #150 5046785938
 - S4 수집 연출 정합 → S2 앨범 지역 탭·수집률 → S3 마일스톤 보상 v1(localStorage·DB 금지)
 ### done (최근)
+- S7 진척 표면 정리: 여행 수첩 도시 상세의 지구·발견·칭호 후보를 남은 개수·고정 동률
+  우선순위로 1줄 통합하고 기존 개별 표기와 XOR 처리
+  (`codex3/next-goal-line`, 구현 614426f, base fbf448c15d38247b9a7aef862a87d7ca3ce80edf)
 - S6 여행 수첩 발견 수집률: 주동선 발견이 있는 리옹·보르도·스트라스부르 카드에
   `route-discoveries:<cityId>`의 정본 교집합을 `발견 n/m`으로 표시하고 깨진 JSON·미지 ID를 무시
   (`codex3/album-discovery-progress`, 구현 cc0277d, base 64a9292369e95f426a6a09fc70effa4a003e136b)
