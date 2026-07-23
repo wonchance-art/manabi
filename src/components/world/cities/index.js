@@ -1,38 +1,59 @@
-import FUKUOKA from './fukuoka.js';
-import TOKYO from './tokyo.js';
-import OSAKA from './osaka.js';
-import KYOTO from './kyoto.js';
-import BUSAN from './busan.js';
-import SEOUL from './seoul.js';
-import GRAND_PARIS from './grand-paris.js';
-import MONT_SAINT_MICHEL from './mont-saint-michel.js';
-import COTE_DAZUR from './cote-dazur.js';
-import BRUSSELS from './brussels.js';
-import TAIPEI from './taipei.js';
-import HONG_KONG from './hong-kong.js';
-import LONDON from './london.js';
-import SHANGHAI from './shanghai.js';
-import BEIJING from './beijing.js';
-import BRISBANE from './brisbane.js';
-import SYDNEY from './sydney.js';
-import CANBERRA from './canberra.js';
-import MELBOURNE from './melbourne.js';
-import KAWAGUCHIKO from './kawaguchiko.js';
-import GENEVA from './geneva.js';
-import LEMAN_RIVIERA from './leman-riviera.js';
-import LYON from './lyon.js';
-import BORDEAUX from './bordeaux.js';
-import STRASBOURG from './strasbourg.js';
-import MARSEILLE from './marseille.js';
+export {
+  CITY_BOOT_MODE,
+  CITY_MANIFEST,
+  cityMetadata,
+  cityIdFromScene,
+  createCityLoaderRegistry,
+  hasCity,
+  initialCityIdForSpawn,
+  loadAllCities,
+  loadCitiesForBoot,
+  loadCity,
+} from './manifest.js';
 
-// 실제 플레이 씬과 관리자 전체 맵 뷰어가 함께 쓰는 도시 레지스트리.
-// 도시를 추가할 때 이 목록만 갱신하면 두 화면에 같은 순서로 노출된다.
-export const CITY_MAPS = Object.freeze([
-  FUKUOKA, TOKYO, OSAKA, KYOTO, BUSAN, SEOUL, GRAND_PARIS, MONT_SAINT_MICHEL, COTE_DAZUR,
-  BRUSSELS, TAIPEI, HONG_KONG, LONDON, SHANGHAI, BEIJING, BRISBANE, SYDNEY, CANBERRA, MELBOURNE,
-  MARSEILLE, KAWAGUCHIKO, GENEVA, LEMAN_RIVIERA, LYON, BORDEAUX, STRASBOURG,
-]);
+// main 진전 중 exact allowlist 밖에서 추가된 두 회귀 테스트가 아직 동기 barrel을 소비한다.
+// 제품 번들에서는 빈 호환값이며, Node 22 Vitest에서만 동기 ESM require로 기존 테스트를 보존한다.
+// 런타임 소비처와 승인된 전수 테스트는 모두 manifest/loadAllCities 계약을 사용한다.
+let legacyTestCities = Object.freeze([]);
+if (
+  typeof process !== 'undefined'
+  && process.env.NODE_ENV === 'test'
+  && typeof process.getBuiltinModule === 'function'
+) {
+  const requireForTest = process.getBuiltinModule('module').createRequire(import.meta.url);
+  legacyTestCities = Object.freeze([
+    requireForTest('./fukuoka.js').default,
+    requireForTest('./tokyo.js').default,
+    requireForTest('./osaka.js').default,
+    requireForTest('./kyoto.js').default,
+    requireForTest('./busan.js').default,
+    requireForTest('./seoul.js').default,
+    requireForTest('./grand-paris.js').default,
+    requireForTest('./mont-saint-michel.js').default,
+    requireForTest('./cote-dazur.js').default,
+    requireForTest('./brussels.js').default,
+    requireForTest('./taipei.js').default,
+    requireForTest('./hong-kong.js').default,
+    requireForTest('./london.js').default,
+    requireForTest('./shanghai.js').default,
+    requireForTest('./beijing.js').default,
+    requireForTest('./brisbane.js').default,
+    requireForTest('./sydney.js').default,
+    requireForTest('./canberra.js').default,
+    requireForTest('./melbourne.js').default,
+    requireForTest('./marseille.js').default,
+    requireForTest('./kawaguchiko.js').default,
+    requireForTest('./geneva.js').default,
+    requireForTest('./leman-riviera.js').default,
+    requireForTest('./lyon.js').default,
+    requireForTest('./bordeaux.js').default,
+    requireForTest('./strasbourg.js').default,
+  ]);
+}
 
+/** @deprecated 제품 코드에서는 CITY_MANIFEST/loadCity를 사용한다. */
+export const CITY_MAPS = legacyTestCities;
+/** @deprecated 제품 코드에서는 CITY_MANIFEST/loadCity를 사용한다. */
 export const CITY_DATA = Object.freeze(
-  Object.fromEntries(CITY_MAPS.map((city) => [city.id, city])),
+  Object.fromEntries(legacyTestCities.map((city) => [city.id, city])),
 );

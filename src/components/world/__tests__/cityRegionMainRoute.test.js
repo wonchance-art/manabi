@@ -1,12 +1,12 @@
 import { createHash } from 'node:crypto';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import {
   buildCityScene,
   CITY_LIGHTING_TINT,
   cityLightingAlpha,
 } from '../CityScene.js';
 import { resolveCityMainRoute } from '../cityMainRoute.js';
-import { CITY_MAPS } from '../cities/index.js';
+import { loadAllCities } from '../cities/index.js';
 import { CITY_TILE } from '../cities/terrain.js';
 
 vi.mock('../QuestReview', () => ({ GBC: { cream: '#fff', ink: '#000', font: 'monospace' } }));
@@ -20,6 +20,7 @@ const DISCOVERY_TEXTURES = [
   'ct_prop_route_discovery_0',
   'ct_prop_route_discovery_1',
 ];
+let CITY_MAPS;
 
 function sha256(value) {
   return createHash('sha256').update(value).digest('hex');
@@ -238,6 +239,10 @@ function bakeChunkRgba(city) {
 }
 
 describe('CityScene mainRoute 소비 경계', () => {
+  beforeAll(async () => {
+    CITY_MAPS = await loadAllCities();
+  }, 60000);
+
   it('레지스트리 26도시 중 리옹·보르도·스트라스부르만 mainRoute를 정의해 나머지 23도시를 비활성 유지한다', () => {
     expect(CITY_MAPS).toHaveLength(26);
     expect(CITY_MAPS.filter((city) => city.mainRoute).map(({ id }) => id)).toEqual(['lyon', 'bordeaux', 'strasbourg']);

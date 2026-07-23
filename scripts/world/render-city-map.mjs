@@ -1,4 +1,4 @@
-// 🗺️ 도시 정밀맵 PNG 렌더러 — CITY_MAPS 레지스트리 전 도시를 지형 팔레트로 이미지화.
+// 🗺️ 도시 정밀맵 PNG 렌더러 — 경량 manifest에서 선택한 도시만, 무인자일 때만 전 도시를 로드한다.
 //   용도: geo/프롭 변경 후 오너 육안 확인·리뷰 자료. 의존성 0(node 내장 zlib 로 PNG 인코딩).
 //   사용: node scripts/world/render-city-map.mjs [outDir] [cityId…]  (기본 outDir=./tmp-city-maps, 전 도시)
 //   표기: 지형색 + 철도(적갈) + 🔴 POI 노드 + 🟡 역 + 💗 ENTRANCE. 2px/타일.
@@ -7,7 +7,11 @@ import zlib from 'node:zlib';
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { CITY_MAPS } from '../../src/components/world/cities/index.js';
+import {
+  hasCity,
+  loadAllCities,
+  loadCity,
+} from '../../src/components/world/cities/index.js';
 import { CITY_TILE } from '../../src/components/world/cities/terrain.js';
 
 const PALETTE = {
@@ -95,9 +99,13 @@ export function renderCityPng(city) {
 // CLI 엔트리 — import 시에는 실행되지 않음(순수 모듈 계약: renderCityPng 만 노출).
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
   const [outDir = './tmp-city-maps', ...only] = process.argv.slice(2);
+  const unknown = only.filter((id) => !hasCity(id));
+  if (unknown.length) throw new Error(`Unknown city id: ${unknown.join(', ')}`);
+  const cities = only.length
+    ? await Promise.all(only.map((id) => loadCity(id)))
+    : await loadAllCities();
   fs.mkdirSync(outDir, { recursive: true });
-  for (const city of CITY_MAPS) {
-    if (only.length && !only.includes(city.id)) continue;
+  for (const city of cities) {
     const png = renderCityPng(city);
     const file = path.join(outDir, `${city.id}.png`);
     fs.writeFileSync(file, png);

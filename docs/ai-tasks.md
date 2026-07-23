@@ -21,6 +21,10 @@
   EMEA/APAC 왕복 비대칭·실패 재시도 카피 공백을 보고
   (`codex/airhub-guest-lock-audit`, 구현 ff0d34c,
   base 49e6699764febdcd1132c4644389f65e91ed6705, #150 5053883288)
+- D5 잠금 지구 경계 표지판: 개방↔잠금 경계의 개방 쪽 도로·보행 타일에 8타일 이격
+  무문자 빗장 팻말 1,120개를 결정 배치하고 district 7도시에서만 베이크·소비
+  (`codex/district-boundary-signs`, 구현 0d01f1b, base e330283ecb435b7bf5bad51aab35f57258b20a1f,
+  #150 5049669206·5053883288)
 - V1 시각 대비 라운드: 밝은 보행 지형의 guidebook 잠금 점묘·빗금과
   mainRoute 포장의 저녁·야간 틴트 대비를 상향하고 미정의 도시 렌더 불변 계약을 유지
   (`codex/visual-contrast-round`, 구현 bc8408a, base e330283ecb435b7bf5bad51aab35f57258b20a1f)
@@ -235,9 +239,10 @@
 ### doing
 ### todo
 - P0 (운영 필수·최우선) 로컬 clone 이전 + 확인 코멘트: #150 5046786117
-- P1 geo lazy-load 구현(RFC #394 승인 — 실패 UX·?spawn= 정합·scene race 주의 3건 코멘트 참조)
 - P2 .owc 프리페치 벤치(report-only) → P3 도쿄 로더 레이어(파일 경계: Codex-2 T1과 분리)
 ### done (최근)
+- P1 geo lazy-load 구현: 일반 부팅 0도시·저장/`?spawn=` 1도시 선로드·진입 race/재시도·
+  전체맵/PNG CLI 선택 로드와 전수 테스트 이관 완료(`codex4/geo-lazyload-impl`)
 - geo lazy-load RFC(발주 #150 코멘트 참조): 경량 manifest·도시별 literal dynamic import·
   저장 도시 1개 선로드·전체맵 선택 로드·전수 검증/롤백 계약 제안 — 승인 전 구현 금지
 
