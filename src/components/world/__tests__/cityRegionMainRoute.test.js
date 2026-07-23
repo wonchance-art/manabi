@@ -1,6 +1,10 @@
 import { createHash } from 'node:crypto';
 import { describe, expect, it, vi } from 'vitest';
-import { buildCityScene } from '../CityScene.js';
+import {
+  buildCityScene,
+  CITY_LIGHTING_TINT,
+  cityLightingAlpha,
+} from '../CityScene.js';
 import { resolveCityMainRoute } from '../cityMainRoute.js';
 import { CITY_MAPS } from '../cities/index.js';
 import { CITY_TILE } from '../cities/terrain.js';
@@ -69,6 +73,17 @@ function rasterize(width, height, commands) {
     }
   }
   return pixels;
+}
+
+function tintRgb(rgbValue, tint, alpha) {
+  const tintChannels = rgb(tint);
+  return rgbValue.map((channel, index) => Math.round(
+    tintChannels[index] * alpha + channel * (1 - alpha),
+  ));
+}
+
+function perceivedLightness(rgbValue) {
+  return rgbValue[0] * 0.2126 + rgbValue[1] * 0.7152 + rgbValue[2] * 0.0722;
 }
 
 function fixtureCity(withRoute, withDiscoveries = false) {
@@ -214,7 +229,12 @@ function bakeChunkRgba(city) {
   };
   scene.add = { renderTexture: () => renderTexture };
   scene.bakeChunk(0, 0);
-  return { draws, rgbaSha256: sha256(pixels) };
+  const sampleOffset = (3 * width + 8) * 4;
+  return {
+    draws,
+    rgbaSha256: sha256(pixels),
+    sampleRgb: Array.from(pixels.slice(sampleOffset, sampleOffset + 3)),
+  };
 }
 
 describe('CityScene mainRoute 소비 경계', () => {
@@ -243,14 +263,39 @@ describe('CityScene mainRoute 소비 경계', () => {
 
     expect(paving).toMatchObject({ width: 16, height: 16 });
     expect([...new Set(paving.commands.map(({ color }) => color))]).toEqual([
-      0x746d62,
-      0x5c574f,
-      0x8a8275,
+      0x817766,
+      0x5f594f,
+      0xa09682,
+    ]);
+    expect([...new Set(paving.commands.map(({ alpha }) => alpha))]).toEqual([
+      0.76,
+      0.42,
     ]);
     expect(signpost).toMatchObject({ width: 16, height: 32 });
     expect(streetlight).toMatchObject({ width: 16, height: 32 });
     expect(new Set(signpost.commands.map(({ color }) => color)).size).toBe(3);
     expect(new Set(streetlight.commands.map(({ color }) => color)).size).toBe(3);
+  });
+
+  it('도시 시간대 조명 틴트 아래에서도 포장이 ROAD보다 밝게 남는다', () => {
+    const base = bakeChunkRgba(fixtureCity(false)).sampleRgb;
+    const paving = bakeChunkRgba(fixtureCity(true)).sampleRgb;
+
+    expect(CITY_LIGHTING_TINT).toBe(0x18254a);
+    expect([
+      cityLightingAlpha('morning'),
+      cityLightingAlpha('dawn'),
+      cityLightingAlpha('evening'),
+      cityLightingAlpha('night'),
+      cityLightingAlpha('late-night'),
+    ]).toEqual([0, 0.1, 0.1, 0.24, 0.24]);
+
+    for (const phase of ['evening', 'night', 'late-night']) {
+      const alpha = cityLightingAlpha(phase);
+      const baseLit = tintRgb(base, CITY_LIGHTING_TINT, alpha);
+      const pavingLit = tintRgb(paving, CITY_LIGHTING_TINT, alpha);
+      expect(perceivedLightness(pavingLit) - perceivedLightness(baseLit)).toBeGreaterThanOrEqual(20);
+    }
   });
 
   it('discovery가 있을 때만 무문자 2프레임 스파클을 굽는다', () => {
@@ -285,7 +330,7 @@ describe('CityScene mainRoute 소비 경계', () => {
     ]);
     expect([baseFirst.rgbaSha256, routeFirst.rgbaSha256]).toEqual([
       'c5e96ff8e4cc44639058cec120a0d1e1cba936f66e42186363f708e3381681a3',
-      '683d930f237ea2aa115c6fd7d7855d7cc21b82ee9a91247c1a6d8a68291d645f',
+      'c0e62a01c69ccd17992c09ec72efa4e4b2b2ff6060fe0b166d32c6f7d48366d7',
     ]);
     expect(baseFirst.rgbaSha256).not.toBe(routeFirst.rgbaSha256);
   });

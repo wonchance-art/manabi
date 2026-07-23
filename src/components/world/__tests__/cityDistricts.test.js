@@ -232,6 +232,152 @@ describe('CityScene guidebook 소비 경계', () => {
     expect(guidebookHarness.scene.terrainTexKey(1, 0)).toBe('ct_guidebook_water');
     expect(guidebookHarness.textures.get('ct_guidebook_land')).toMatchObject({ width: 16, height: 16 });
     expect(guidebookHarness.textures.get('ct_guidebook_landmark_marker')).toMatchObject({ width: 16, height: 32 });
+
+    const visualContract = Object.fromEntries(GUIDEBOOK_KEYS.map((key) => {
+      const uniqueStyles = new Map(guidebookHarness.textures.get(key).commands.map(({ color, alpha }) => [
+        `${color.toString(16)}@${alpha}`,
+        { color: `#${color.toString(16).padStart(6, '0')}`, alpha },
+      ]));
+      return [key, [...uniqueStyles.values()]];
+    }));
+    expect(visualContract).toMatchInlineSnapshot(`
+      {
+        "ct_guidebook_land": [
+          {
+            "alpha": 1,
+            "color": "#d4c7ae",
+          },
+          {
+            "alpha": 0.5,
+            "color": "#b1a48a",
+          },
+          {
+            "alpha": 0.42,
+            "color": "#8f826c",
+          },
+        ],
+        "ct_guidebook_landmark": [
+          {
+            "alpha": 1,
+            "color": "#d4c7ae",
+          },
+          {
+            "alpha": 0.5,
+            "color": "#b1a48a",
+          },
+          {
+            "alpha": 0.42,
+            "color": "#8f826c",
+          },
+          {
+            "alpha": 0.76,
+            "color": "#958d7e",
+          },
+          {
+            "alpha": 0.58,
+            "color": "#70695f",
+          },
+        ],
+        "ct_guidebook_landmark_marker": [
+          {
+            "alpha": 0.82,
+            "color": "#78736b",
+          },
+          {
+            "alpha": 0.82,
+            "color": "#918a7e",
+          },
+          {
+            "alpha": 0.7,
+            "color": "#5f5b55",
+          },
+        ],
+        "ct_guidebook_road_h": [
+          {
+            "alpha": 1,
+            "color": "#d4c7ae",
+          },
+          {
+            "alpha": 0.5,
+            "color": "#b1a48a",
+          },
+          {
+            "alpha": 0.42,
+            "color": "#8f826c",
+          },
+          {
+            "alpha": 0.74,
+            "color": "#89847c",
+          },
+          {
+            "alpha": 0.34,
+            "color": "#6f6b65",
+          },
+        ],
+        "ct_guidebook_road_v": [
+          {
+            "alpha": 1,
+            "color": "#d4c7ae",
+          },
+          {
+            "alpha": 0.5,
+            "color": "#b1a48a",
+          },
+          {
+            "alpha": 0.42,
+            "color": "#8f826c",
+          },
+          {
+            "alpha": 0.74,
+            "color": "#89847c",
+          },
+          {
+            "alpha": 0.34,
+            "color": "#6f6b65",
+          },
+        ],
+        "ct_guidebook_road_x": [
+          {
+            "alpha": 1,
+            "color": "#d4c7ae",
+          },
+          {
+            "alpha": 0.5,
+            "color": "#b1a48a",
+          },
+          {
+            "alpha": 0.42,
+            "color": "#8f826c",
+          },
+          {
+            "alpha": 0.74,
+            "color": "#89847c",
+          },
+          {
+            "alpha": 0.34,
+            "color": "#6f6b65",
+          },
+        ],
+        "ct_guidebook_water": [
+          {
+            "alpha": 1,
+            "color": "#98a6ab",
+          },
+          {
+            "alpha": 0.66,
+            "color": "#cad3d0",
+          },
+          {
+            "alpha": 0.4,
+            "color": "#74848a",
+          },
+        ],
+      }
+    `);
+    expect(guidebookHarness.textures.get('ct_guidebook_land').commands
+      .filter(({ color }) => color === 0x8f826c)).toHaveLength(8);
+    expect(guidebookHarness.textures.get('ct_guidebook_water').commands
+      .filter(({ color }) => color === 0x74848a)).toHaveLength(8);
   });
 
   it('리옹 예비 rect 8개가 전체 주동선·발견·출입·TRANSIT 정합 게이트를 통과한다', () => {

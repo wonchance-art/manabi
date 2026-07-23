@@ -52,6 +52,22 @@ export const ZONES = [
 ];
 
 export const CITY_NODES = [
+  // 🧑‍💼 채움 라운드 1 — 경로변 NPC(스팟 실측: T8 proposal-npc-door-spots.md).
+  {
+    id: 'lyon-presquile-confluence-cafe', kind: 'npc', npc: 'lyon-presquile-cafe', name: '카페 종업원',
+    tile: [143, 222], facing: 'down', noStamp: true,
+    desc: '프레스킬 카페 테라스 종업원. 유럽식 카페에서 커피를 주문하며 불어 첫 대화를 배워요.',
+  },
+  {
+    id: 'lyon-vieux-lyon-fourviere-traboule', kind: 'npc', npc: 'lyon-vieux-traboule', name: '구시가 주민',
+    tile: [172, 183], facing: 'down', noStamp: true,
+    desc: '구시가 안내인. 트라불의 미스터리를 풀며 리옹의 역사 속으로 들어가요.',
+  },
+  {
+    id: 'lyon-terreaux-croix-rousse-marche', kind: 'npc', npc: 'lyon-croix-rousse-marche', name: '시장 상인',
+    tile: [179, 182], facing: 'down', noStamp: true,
+    desc: '크루아루스 골목 시장의 과일 상인. 숫자와 가격 묻기를 배우며 리옹의 장시장 활기를 느껴요.',
+  },
   ...LYON_GEO.pois.map((poi) => {
     const copy = poiCopy(poi.id);
     return {

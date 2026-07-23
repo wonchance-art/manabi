@@ -273,6 +273,168 @@ export const NPC_SCRIPTS = {
     ],
   },
 
+  // ── 리옹 프레스킬 카페 테라스 종업원 — 불어 첫걸음: 카페 주문·계산 (채움 라운드 1) ──
+  'lyon-presquile-cafe': {
+    label: '카페 종업원',
+    emoji: '☕',
+    intro: '리옹 반도 카페 테라스. 유럽식 카페에서 첫 주문 — Un café, s\'il vous plaît!',
+    steps: [
+      { t: 'narr', text: '햇빛 아래 펼쳐진 카페 테라스. 초록빛 의자에 앉으니 종업원이 아스라한 미소로 다가온다 — 프랑스식 여유로움이다.' },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Bonjour ! Qu\'est-ce que vous désirez ?',
+        yomi: 'Bonjour ! Qu\'est-ce que vous désirez ? (봉주르! 케스크 부 데지레?)',
+        ko: '안녕하세요! 뭘 원하세요?',
+        narr: '카페 커피를 정중히 부탁하려면?',
+      },
+      {
+        t: 'ask', mode: 'choice',
+        prompt: '「커피 하나 주세요」라고 주문하는 말은?',
+        choices: [
+          { ja: 'Un café, s\'il vous plaît.', yomi: '(앙 카페, 실 부 플레)', correct: true },
+          { ja: 'L\'addition, s\'il vous plaît.', yomi: '(라디숑, 실 부 플레)' },
+          { ja: 'Au revoir !', yomi: '(오 르부아르!)' },
+        ],
+        why: '개수 + 상품 + s\'il vous plaît = 정중한 주문. L\'addition은 계산 청구, Au revoir는 인사예요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Un café. Crème ou sucre ?',
+        yomi: 'Un café. Crème ou sucre ? (앙 카페. 크렘 우 슈크르?)',
+        ko: '커피 한 잔. 크림이나 설탕요?',
+        narr: '프랑스식 커피는 흑커피가 기본이지만, 물어봐 주는 게 배려다.',
+      },
+      {
+        t: 'ask', mode: 'type',
+        prompt: '설탕을 넣어 달라고 말해요. 「___ sucre, s\'il vous plaît.」',
+        before: '', after: ' sucre, s\'il vous plaît.',
+        answer: 'Avec', accept: ['Avec', 'avec', 'AVEC'],
+        hint: '~와 함께라는 뜻 — 아벡.',
+        why: 'Avec = ~와 함께. 「Avec sucre」= 설탕과 함께(설탕 넣어서). Avec eau(물)도 같은 패턴이에요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Voilà ! Bon appétit !',
+        yomi: 'Voilà ! Bon appétit ! (부알라! 본 아페티!)',
+        ko: '여기요! 즐겁게 드세요!',
+        narr: '따뜻한 커피가 담긴 잔이 탁자에 내려진다. 프랑스에서는 음식뿐 아니라 음료도 「Bon appétit!」라고 인사해요.',
+      },
+      {
+        t: 'say', who: 'me',
+        ja: 'Merci beaucoup !',
+        yomi: 'Merci beaucoup ! (메르시 보쿠!)',
+        ko: '정말 감사합니다!',
+      },
+    ],
+    reward: '☕ 카페 테라스 완주! 「Un café」, 이제 리옹의 어떤 카페든 이 한마디예요.',
+  },
+
+  // ── 리옹 구시가 안내인 — 불어 첫걸음: 길 묻기·감사 (채움 라운드 1) ──
+  'lyon-vieux-traboule': {
+    label: '구시가 주민',
+    emoji: '🏘️',
+    intro: '구시가 골목 안내. 르네상스 통로 트라불의 미스터리 — 길을 물어보며 배워요.',
+    steps: [
+      { t: 'narr', text: '오래된 돌담과 창틀이 드문드문 남은 좁은 골목. 지붕 덮인 통로(트라불)를 찾고 있자, 주머니에 손을 넣은 주민이 손짓한다.' },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Bonjour ! Cherchez-vous quelque chose ?',
+        yomi: 'Bonjour ! Cherchez-vous quelque chose ? (봉주르! 셰르셰 부 켈크 쇼즈?)',
+        ko: '안녕하세요! 뭔가 찾으세요?',
+        narr: '트라불을 찾고 있다고 말해야지. 「Où est traboule ?」라고 길을 물으려면?',
+      },
+      {
+        t: 'ask', mode: 'choice',
+        prompt: '「트라불이 어디 있어요?」라고 물으려면?',
+        choices: [
+          { ja: 'Où est la traboule ?', yomi: '(우 에 라 트라불?)', correct: true },
+          { ja: 'Que est la traboule ?', yomi: '(크 에 라 트라불?)' },
+          { ja: 'Comme la traboule ?', yomi: '(콤 라 트라불?)' },
+        ],
+        why: '「Où est」는 "~이 어디 있어요?"라고 위치를 묻는 표현이에요. Que(무엇)는 종류 질문, Comme(처럼)는 비교예요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Ah, la traboule ! Celle-ci, regardez. C\'est un passage couvert, autrefois utilisé par les canuts.',
+        yomi: 'Ah, la traboule ! Celle-ci, regardez. C\'est un passage couvert, autrefois utilisé par les canuts. (아, 라 트라불! 셀시, 르가르데. 세 앙 파사주 쿠베르, 오트르푸아 유틸리제 파르 레 카뉘)',
+        ko: '아, 트라불! 이거 봐요. 옛날에 비단 직공(카뉘)들이 쓰던 지붕 덮인 통로였어요.',
+        narr: '비를 피해 천을 나르던 견직물 상인들의 비밀 통로 — 리옹의 역사가 담긴 골목이다.',
+      },
+      {
+        t: 'ask', mode: 'type',
+        prompt: '친절한 설명에 감사해요. 「___ , merci beaucoup !」',
+        before: '', after: ' , merci beaucoup !',
+        answer: 'Merci', accept: ['Merci', 'merci', 'MERCI'],
+        hint: '고마워요 — 메르시.',
+        why: 'Merci beaucoup = 정말 고마워요. Merci만 해도 충분하지만, beaucoup를 붙이면 더 따뜻해요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'De rien ! Bonne visite à Lyon !',
+        yomi: 'De rien ! Bonne visite à Lyon ! (드 리앙! 본 비지트 아 리용!)',
+        ko: '천만에요! 리옹 구경 잘하세요!',
+        narr: '구시가 돌담을 따라 걸으며, 트라불 골목의 어둠 속에서 리옹의 옛 모습을 상상한다.',
+      },
+    ],
+    reward: '🏘️ 트라불 탐방 완주! 「Où est」로 시작하는 모든 길 찾기가 통해요.',
+  },
+
+  // ── 리옹 크루아루스 시장 과일 상인 — 불어 첫걸음: 가격 묻기·숫자 (채움 라운드 1) ──
+  'lyon-croix-rousse-marche': {
+    label: '시장 과일 상인',
+    emoji: '🍎',
+    intro: '크루아루스 골목 시장. 신선한 과일 냄새와 함께 숫자를 배워요.',
+    steps: [
+      { t: 'narr', text: '골목 양쪽으로 과일과 채소를 늘어놓은 노점들. 상인의 목소리가 늘어진 톤으로 호객을 하고, 붉은 딸기가 쌓인 상자 앞에서 발이 멈춘다.' },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Bonjour ! Des fraises fraîches ? Deux euros seulement !',
+        yomi: 'Bonjour ! Des fraises fraîches ? Deux euros seulement ! (봉주르! 데 프레즈 프레슈? 드 외로 슬므앙!)',
+        ko: '안녕하세요! 싱싱한 딸기? 겨우 2유로만!',
+        narr: '정말 싱싱해 보인다. 가격을 확인해야겠다 — 불어로 숫자를 물어보려면?',
+      },
+      {
+        t: 'ask', mode: 'choice',
+        prompt: '「얼마예요?」라고 가격을 물으려면?',
+        choices: [
+          { ja: 'C\'est combien ?', yomi: '(세 콩비앙?)', correct: true },
+          { ja: 'Combien d\'euros ?', yomi: '(콩비앙 도이로?)' },
+          { ja: 'C\'est cher ?', yomi: '(세 셰르?)' },
+        ],
+        why: '「C\'est combien?」 = "이거 얼마예요?"가 가장 자연스러워요. Combien d\'euros도 맞지만 더 정식 표현, C\'est cher?는 "비싼가요?"라고 가격을 묻는 거예요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Trois euros le kilo. Trois, quatre, cinq... prix spécial !',
+        yomi: 'Trois euros le kilo. Trois, quatre, cinq... prix spécial ! (트루아 외로 르 킬로. 트루아, 카트르, 상크... 프리 스페시알!)',
+        ko: '1킬로에 3유로예요. 3, 4, 5... 특가!',
+        narr: '숫자를 세며 손가락을 펼친다. Trois(3)·quatre(4)·cinq(5)…',
+      },
+      {
+        t: 'ask', mode: 'type',
+        prompt: '과일 2킬로를 가져가며 가격을 재확인해요. 「Deux kilos, c\'est ___ euros ?」',
+        before: 'Deux kilos, c\'est ', after: ' euros ?',
+        answer: 'six', accept: ['six', 'Six', 'SIX'],
+        hint: '3 + 3 = ? 여섯을 불어로 말해요.',
+        why: '3유로 × 2킬로 = 6유로. Six(식스) — 6은 리옹 시장에서 제일 많이 쓰이는 숫자예요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Oui, six euros ! Voilà, bon marché !',
+        yomi: 'Oui, six euros ! Voilà, bon marché ! (우이, 식 외로! 부알라, 본 마르셰!)',
+        ko: '네, 6유로! 여기요, 싼 가격이에요!',
+        narr: '종이봉지에 담긴 빨간 딸기. Bon marché(좋은 시장가격)는 문자 그대로 "좋은 시장"이라는 뜻이에요.',
+      },
+      {
+        t: 'say', who: 'me',
+        ja: 'Merci ! Au revoir !',
+        yomi: 'Merci ! Au revoir ! (메르시! 오 르부아르!)',
+        ko: '감사합니다! 안녕히 가세요!',
+      },
+    ],
+    reward: '🍎 시장 쇼핑 완주! 「C\'est combien?」와 숫자 1~10, 이제 유럽 어디 시장이든 충분해요.',
+  },
+
   // ── 편의점 점원 (ot-07-konbini) — 계산대. 만능 대답 두 마디로 첫 결제 ──
   konbini: {
     label: '편의점 점원',
