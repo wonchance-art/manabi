@@ -14,6 +14,10 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
+- E9 광장(도쿄) 에어허브 게스트 하니스 검증·락 점검(report-only): dev guest 진입·
+  위치 저장 스킵과 프롬프트/전환 락 비대칭·실패 UX·잔존 상태를 E4·E6 방법론으로 전수 감사
+  (`codex/airhub-guest-lock-audit`, base 49e6699764febdcd1132c4644389f65e91ed6705,
+  #150 5053883288)
 ### todo
 ### done (최근)
 - V1 시각 대비 라운드: 밝은 보행 지형의 guidebook 잠금 점묘·빗금과
