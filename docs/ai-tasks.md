@@ -323,8 +323,8 @@
 ### done (최근)
 - Q6 전 유형 정정 사전공사: A′·B′·C′·D′·F·H′ 규칙·보호 타일/보행 articulation
   fail-closed skip과 리옹 1,001-fix 통합 draft를 만들고, skip 제외 전 유형 0·격리 geo/scan
-  A/B 결정성·기대값 자동 갱신·전체 234/2,267 green을 고정
-  (`codex4/q6-all-rules`, 구현 e583695, base f5b5760abad50d17a84ec0f78c8cdd861b843a5d)
+  A/B 결정성·기대값 자동 갱신·전체 234/2,279 green을 고정
+  (`codex4/q6-all-rules`, 구현 037a869, base 131ca3ec3295aab1cb9b0e69f4b4d239715fd865)
 - Q4 정정 manifest 생성기 + 리옹 B′ 파일럿 초안: r2 JSON canonical 검증·8방 최빈
   비CROSSWALK 보행류 치환(동률 SIDEWALK)으로 28성분/30타일 manifest를 만들고,
   임시 재생성 B′ 28→0·대표 crop 5쌍·geo/scan/PNG A/B 결정성을 고정
