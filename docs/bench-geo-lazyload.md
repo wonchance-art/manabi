@@ -19,13 +19,13 @@ gzip은 동일 파일을 level 9로 다시 압축한 값이다.
 
 | 진입점 | origin/main raw | lazy raw | 감소 | origin/main gzip | lazy gzip | 감소 |
 |---|---:|---:|---:|---:|---:|---:|
-| `/world` GameCanvas loadable entry | 28,523,978 B | 586,459 B | 97.94% | 3,868,783 B | 185,701 B | 95.20% |
-| `/admin/worldmap` 초기 페이지 자산 | 28,645,600 B | 704,436 B | 97.54% | 3,892,459 B | 208,475 B | 94.64% |
+| `/world` GameCanvas loadable entry | 28,523,978 B | 593,990 B | 97.92% | 3,868,783 B | 189,048 B | 95.11% |
+| `/admin/worldmap` 초기 페이지 자산 | 28,645,600 B | 704,444 B | 97.54% | 3,892,459 B | 208,483 B | 94.64% |
 
 기준 GameCanvas entry에는 26개 payload를 함께 가진 28,004,127 B 단일 청크가 있었다.
-구현 뒤 GameCanvas entry의 가장 큰 자체 청크는 495,365 B이며, 각 도시 payload는 literal
+구현 뒤 GameCanvas entry의 가장 큰 자체 청크는 502,896 B이며, 각 도시 payload는 literal
 dynamic import의 개별 비동기 청크로 이동했다. 전체 `.next/static/chunks` raw 합계는
-32,001,558 B → 32,059,178 B로 거의 같으므로 bytes를 삭제한 결과가 아니라 초기 요청 경계만
+32,001,558 B → 32,067,507 B로 거의 같으므로 bytes를 삭제한 결과가 아니라 초기 요청 경계만
 분리한 결과다.
 
 ### 새 Node realm module 평가
@@ -86,7 +86,7 @@ npx vitest run \
 NODE_OPTIONS=--max-old-space-size=8192 npx next build
 ```
 
-targeted 결과는 8 files / 90 tests PASS다. 별도로 allowlist 확정 뒤 main에 추가된
+targeted 결과는 8 files / 91 tests PASS다. 별도로 allowlist 확정 뒤 main에 추가된
 `cityDistricts.test.js`와 `stampUniverse.test.js`의 동기 registry 회귀도 2 files / 26 tests
-PASS로 확인했다. 최종 전체 검증은 214 files / 2,151 tests PASS,
+PASS로 확인했다. 최종 전체 검증은 214 files / 2,152 tests PASS,
 `npm run lint` PASS, production `next build` PASS다.
