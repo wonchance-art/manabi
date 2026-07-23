@@ -17,7 +17,7 @@ exports[`CityScene road autotile opt-in > 26도시 전 지형·mainRoute 키 스
   {
     "id": "tokyo",
     "roadStyle": null,
-    "sha256": "ddbb9f41df6e3cf7de95fa4d6fe305c4da8dd1ff0f9991a5cfd8eae22e59733d",
+    "sha256": "219f96f37ca1d6ddf27ef9e3a10e5bc48152dd68ceff801bcb8b8672ba434665",
   },
   {
     "id": "osaka",

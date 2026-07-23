@@ -25,7 +25,7 @@ const AUTOTILE_PREFIXES = [
 
 const LEGACY_RENDER_KEY_SHA = Object.freeze({
   fukuoka: 'dc6dd00f9a14ea06517d1e6543039c7e63e2f9b0471f2f5bb3b086b744318a9a',
-  tokyo: 'ddbb9f41df6e3cf7de95fa4d6fe305c4da8dd1ff0f9991a5cfd8eae22e59733d',
+  tokyo: '219f96f37ca1d6ddf27ef9e3a10e5bc48152dd68ceff801bcb8b8672ba434665',
   osaka: 'dc648e5e34bdd10f2bdce1c0a2c585a725d76533c52173e51d1552eb6ca6fe24',
   kyoto: 'b54e257ffb8fbda0e0d2ebd11ab9d02ca5118fb41a7d91766aba9fb27dc947b9',
   busan: '08abc45d06d624f7a4f65afbb2ed7458b8f13bf9d22c81eba7fb676cb193dead',

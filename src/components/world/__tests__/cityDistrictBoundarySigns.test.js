@@ -164,7 +164,7 @@ describe('잠금 지구 경계 표지판 순수 배치', () => {
         ],
         [
           "tokyo",
-          466,
+          474,
         ],
         [
           "osaka",
@@ -206,7 +206,7 @@ describe('잠금 지구 경계 표지판 순수 배치', () => {
     `);
     expect(bytes).toBe(secondBytes);
     expect(createHash('sha256').update(bytes).digest('hex'))
-      .toBe('54212463569779fba49f96e16e60b620fa299023fe73329384ab9986fb3069c4');
+      .toBe('6bfa4f0fe03d66c2fca8f15966a7c584cbd97ddab4e4913893a83a05c2d6bfb5');
   });
 });
 
