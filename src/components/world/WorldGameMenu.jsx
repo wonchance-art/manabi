@@ -254,19 +254,44 @@ export default function WorldGameMenu({
   };
 
   return (
-    <div role="dialog" aria-modal="true" aria-label="여행 수첩" style={{ position: 'absolute', inset: 5, zIndex: 45, ...gbcPanel, padding: 0, overflow: 'hidden', display: 'grid', gridTemplateRows: '31px 30px 1fr' }}>
-      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '4px 7px', background: GBC.creamShade, borderBottom: `2px solid ${GBC.border}` }}>
-        <strong style={{ fontSize: '0.72rem' }}>📒 여행 수첩</strong>
-        <button type="button" onClick={onClose} style={{ ...gbcButtonPrimary, padding: '2px 7px', fontSize: '0.58rem' }}>닫기 Ⓑ</button>
+    <div role="dialog" aria-modal="true" aria-label="여행 수첩" data-world-menu-layout="dialog" style={{
+      position: 'absolute', inset: 5, zIndex: 45, minWidth: 0,
+      ...gbcPanel, padding: 0, overflow: 'hidden', display: 'grid',
+      gridTemplateRows: '31px 30px minmax(0, 1fr)',
+    }}>
+      <header data-world-menu-layout="header" style={{
+        minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        gap: 8, padding: '4px 7px', background: GBC.creamShade,
+        borderBottom: `2px solid ${GBC.border}`,
+      }}>
+        <strong style={{ minWidth: 0, fontSize: '0.72rem', overflowWrap: 'anywhere' }}>📒 여행 수첩</strong>
+        <button type="button" onClick={onClose} style={{
+          ...gbcButtonPrimary, flex: '0 0 auto', whiteSpace: 'nowrap',
+          padding: '2px 7px', fontSize: '0.58rem',
+        }}>
+          닫기 Ⓑ
+        </button>
       </header>
-      <nav aria-label="여행 수첩 메뉴" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', borderBottom: `2px solid ${GBC.border}` }}>
+      <nav aria-label="여행 수첩 메뉴" data-world-menu-layout="tabs" style={{
+        minWidth: 0, display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
+        borderBottom: `2px solid ${GBC.border}`,
+      }}>
         {TABS.map((item) => (
-          <button key={item.id} type="button" onClick={() => setTab(item.id)} aria-current={tab === item.id ? 'page' : undefined} style={{ border: 0, borderRight: `1px solid ${GBC.border}`, background: tab === item.id ? GBC.green : GBC.cream, color: tab === item.id ? GBC.creamHi : GBC.ink, fontFamily: GBC.font, fontSize: '0.55rem', fontWeight: 700, cursor: 'pointer' }}>
+          <button key={item.id} type="button" onClick={() => setTab(item.id)} aria-current={tab === item.id ? 'page' : undefined} style={{
+            minWidth: 0, border: 0, borderRight: `1px solid ${GBC.border}`,
+            background: tab === item.id ? GBC.green : GBC.cream,
+            color: tab === item.id ? GBC.creamHi : GBC.ink,
+            fontFamily: GBC.font, fontSize: '0.55rem', fontWeight: 700,
+            lineHeight: 1.2, overflowWrap: 'anywhere', cursor: 'pointer',
+          }}>
             {item.icon} {item.label}
           </button>
         ))}
       </nav>
-      <div style={{ overflowY: 'auto', padding: 8, background: GBC.cream }}>
+      <div data-world-menu-layout="content" style={{
+        minWidth: 0, overflowY: 'auto', padding: 8, background: GBC.cream,
+        overflowWrap: 'anywhere',
+      }}>
         {tab === 'avatar' && <AvatarPanel avatar={avatar} onApply={onApplyAvatar} />}
         {tab === 'bag' && <BagPanel onAction={(action) => switchAndRun(tab, action)} />}
         {tab === 'codex' && <CodexPanel stampCount={stampCount} totalPlaces={totalPlaces} titlePresentation={titlePresentation} onOpenStampAlbum={onOpenStampAlbum} onOpenDictionary={onOpenDictionary} />}
