@@ -8,6 +8,7 @@ import { LEMAN_DOORS } from '../lemanDoors.js';
 import { LYON_DOORS } from '../lyonDoors.js';
 import { BORDEAUX_DOORS } from '../bordeauxDoors.js';
 import { STRASBOURG_DOORS } from '../strasbourgDoors.js';
+import { COTE_DAZUR_DOORS } from '../coteDazurDoors.js';
 
 describe('Door ID Uniqueness', () => {
   it('should have no duplicate door IDs across all door modules', () => {
@@ -20,6 +21,7 @@ describe('Door ID Uniqueness', () => {
       { name: 'LYON_DOORS', doors: LYON_DOORS },
       { name: 'BORDEAUX_DOORS', doors: BORDEAUX_DOORS },
       { name: 'STRASBOURG_DOORS', doors: STRASBOURG_DOORS },
+      { name: 'COTE_DAZUR_DOORS', doors: COTE_DAZUR_DOORS },
     ];
 
     // Collect all door IDs with their source module
@@ -66,6 +68,10 @@ describe('Door ID Uniqueness', () => {
       'fr-21', 'fr-22',
       // Strasbourg (fr-23~24)
       'fr-23', 'fr-24',
+      // Côte d'Azur (fr-25~28)
+      'fr-25', 'fr-26', 'fr-27', 'fr-28',
+      // Leman Riviera (fr-29~30)
+      'fr-29', 'fr-30',
     ]);
 
     const allDoors = [
@@ -76,6 +82,7 @@ describe('Door ID Uniqueness', () => {
       ...LYON_DOORS,
       ...BORDEAUX_DOORS,
       ...STRASBOURG_DOORS,
+      ...COTE_DAZUR_DOORS,
     ];
 
     const foundIds = new Set(allDoors.map(d => d.id));
