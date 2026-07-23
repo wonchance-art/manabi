@@ -22,12 +22,12 @@ exports[`CityScene road autotile opt-in > 26도시 전 지형·mainRoute 키 스
   {
     "id": "osaka",
     "roadStyle": "autotile-v1",
-    "sha256": "bf66146b1092e992180525a5074e99cac7efb2c044efe757a27eaae346987401",
+    "sha256": "05664e380e36d736e22b44c993de7f9cb2c35b27844237a5e73da44cdeef0664",
   },
   {
     "id": "kyoto",
     "roadStyle": "autotile-v1",
-    "sha256": "b228de791767536edd54d58f2800937517e215c750720cce38ba7ed9ea64ae74",
+    "sha256": "e4d557ea8c498152f47f0e7b89961e94244f19c86b0c1bf8661486f93225e5dc",
   },
   {
     "id": "busan",

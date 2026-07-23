@@ -108,6 +108,54 @@ export const PROPS = [
   { kind: 'bamboo', tile: [38, 265] },
 ];
 
+// 교토 mainRoute v3 정본 — 코스 루프 10waypoint, 1,611타일, 일본 3호.
+// 세그먼트·sha는 docs/proposal-kyoto-mainroute.md(T26 재검증) 정식본을 핀함.
+// 발견점(d1~d8)은 각 leg 구간 콘텍스트를 교토 여행자 관점으로 직저작.
+export const MAIN_ROUTE = Object.freeze({
+  id: 'kyoto-classic-loop-candidate-a',
+  version: 1,
+  waypoints: Object.freeze([
+    Object.freeze({ kind: 'station', id: 'kyoto' }),
+    Object.freeze({ kind: 'node', id: 'fushimi-inari-taisha' }),
+    Object.freeze({ kind: 'node', id: 'kiyomizudera' }),
+    Object.freeze({ kind: 'node', id: 'yasaka-shrine' }),
+    Object.freeze({ kind: 'node', id: 'heian-shrine' }),
+    Object.freeze({ kind: 'node', id: 'ginkakuji' }),
+    Object.freeze({ kind: 'node', id: 'kyoto-imperial-palace' }),
+    Object.freeze({ kind: 'node', id: 'nijo-castle' }),
+    Object.freeze({ kind: 'node', id: 'kinkakuji' }),
+    Object.freeze({ kind: 'node', id: 'togetsukyo' }),
+  ]),
+  routing: Object.freeze({
+    algorithm: 'cardinal-bfs-v1',
+    neighborOrder: 'URDL',
+    excludeExit: true,
+  }),
+  segmentHints: Object.freeze([]),
+  branches: Object.freeze([]),
+  segments: Object.freeze([
+    Object.freeze({id: 'station:kyoto--node:fushimi-inari-taisha', from: Object.freeze({ kind: 'station', id: 'kyoto' }), to: Object.freeze({ kind: 'node', id: 'fushimi-inari-taisha' }), stepsRle: Object.freeze([{direction:'R',count:34},{direction:'D',count:1},{direction:'R',count:1},{direction:'D',count:6},{direction:'R',count:1},{direction:'D',count:2},{direction:'R',count:1},{direction:'D',count:4},{direction:'R',count:1},{direction:'D',count:8},{direction:'R',count:1},{direction:'D',count:7},{direction:'R',count:18},{direction:'D',count:1},{direction:'R',count:10},{direction:'D',count:1},{direction:'R',count:1},{direction:'D',count:12},{direction:'R',count:1},{direction:'D',count:4},{direction:'R',count:1},{direction:'D',count:1},{direction:'R',count:1},{direction:'D',count:2},{direction:'R',count:1},{direction:'D',count:2},{direction:'R',count:2},{direction:'D',count:1},{direction:'R',count:4},{direction:'D',count:28},{direction:'R',count:1},{direction:'D',count:9},{direction:'R',count:1},{direction:'D',count:8},{direction:'R',count:3},{direction:'D',count:5}]), stepCount: 185, tileCount: 186, pathSha256: '87221ddbd22351731950ee146c9154fbaa311a44eab9bec7c46f4370e5df5646'}),
+    Object.freeze({id: 'node:fushimi-inari-taisha--node:kiyomizudera', from: Object.freeze({ kind: 'node', id: 'fushimi-inari-taisha' }), to: Object.freeze({ kind: 'node', id: 'kiyomizudera' }), stepsRle: Object.freeze([{direction:'U',count:5},{direction:'R',count:2},{direction:'U',count:24},{direction:'R',count:1},{direction:'U',count:2},{direction:'R',count:1},{direction:'U',count:3},{direction:'R',count:1},{direction:'U',count:11},{direction:'R',count:3},{direction:'U',count:23},{direction:'R',count:7},{direction:'U',count:33},{direction:'R',count:2},{direction:'U',count:6},{direction:'R',count:1},{direction:'U',count:5},{direction:'R',count:2},{direction:'U',count:9},{direction:'R',count:3},{direction:'U',count:9},{direction:'R',count:1},{direction:'U',count:1},{direction:'R',count:1},{direction:'U',count:1},{direction:'R',count:6},{direction:'U',count:23},{direction:'R',count:1}]), stepCount: 187, tileCount: 188, pathSha256: '113d0626445336c2bb0a6cba8a326270049eea48620c9fba1aeadb766a954fce'}),
+    Object.freeze({id: 'node:kiyomizudera--node:yasaka-shrine', from: Object.freeze({ kind: 'node', id: 'kiyomizudera' }), to: Object.freeze({ kind: 'node', id: 'yasaka-shrine' }), stepsRle: Object.freeze([{direction:'L',count:1},{direction:'U',count:5},{direction:'L',count:1},{direction:'U',count:12},{direction:'L',count:1},{direction:'U',count:25},{direction:'L',count:1},{direction:'U',count:1},{direction:'L',count:1},{direction:'U',count:5},{direction:'L',count:21}]), stepCount: 74, tileCount: 75, pathSha256: '82411ce87491e4bc42506c52ed3eb1c8fd636bd7188f17393cf1181e55c88c76'}),
+    Object.freeze({id: 'node:yasaka-shrine--node:heian-shrine', from: Object.freeze({ kind: 'node', id: 'yasaka-shrine' }), to: Object.freeze({ kind: 'node', id: 'heian-shrine' }), stepsRle: Object.freeze([{direction:'R',count:1},{direction:'U',count:2},{direction:'R',count:9},{direction:'U',count:2},{direction:'R',count:2},{direction:'U',count:8},{direction:'R',count:1},{direction:'U',count:4},{direction:'R',count:5},{direction:'U',count:1},{direction:'R',count:2},{direction:'U',count:9},{direction:'R',count:1},{direction:'U',count:44},{direction:'R',count:1}]), stepCount: 92, tileCount: 93, pathSha256: 'cfd0b76bc993344a0b5c7de8276a0810e53e1c8a409542b461841ed78d9535b2'}),
+    Object.freeze({id: 'node:heian-shrine--node:ginkakuji', from: Object.freeze({ kind: 'node', id: 'heian-shrine' }), to: Object.freeze({ kind: 'node', id: 'ginkakuji' }), stepsRle: Object.freeze([{direction:'L',count:1},{direction:'U',count:2},{direction:'R',count:1},{direction:'U',count:11},{direction:'R',count:1},{direction:'U',count:14},{direction:'R',count:2},{direction:'U',count:5},{direction:'R',count:2},{direction:'U',count:11},{direction:'R',count:1},{direction:'U',count:6},{direction:'R',count:3},{direction:'U',count:7},{direction:'R',count:15},{direction:'U',count:1},{direction:'R',count:4},{direction:'U',count:1},{direction:'R',count:6},{direction:'U',count:2},{direction:'R',count:16},{direction:'U',count:1},{direction:'R',count:19}]), stepCount: 132, tileCount: 133, pathSha256: '7a50705ca9313c09eb878045a8ca50a2e524be363992b0da20d25d05f7f7c269'}),
+    Object.freeze({id: 'node:ginkakuji--node:kyoto-imperial-palace', from: Object.freeze({ kind: 'node', id: 'ginkakuji' }), to: Object.freeze({ kind: 'node', id: 'kyoto-imperial-palace' }), stepsRle: Object.freeze([{direction:'U',count:2},{direction:'L',count:1},{direction:'U',count:1},{direction:'L',count:18},{direction:'U',count:1},{direction:'L',count:5},{direction:'U',count:1},{direction:'L',count:3},{direction:'U',count:1},{direction:'L',count:6},{direction:'U',count:1},{direction:'L',count:2},{direction:'U',count:1},{direction:'L',count:6},{direction:'U',count:1},{direction:'L',count:39},{direction:'U',count:1},{direction:'L',count:43},{direction:'D',count:3},{direction:'L',count:10},{direction:'D',count:1},{direction:'L',count:1},{direction:'D',count:3},{direction:'L',count:6},{direction:'D',count:2},{direction:'L',count:2},{direction:'D',count:6},{direction:'L',count:20},{direction:'D',count:1},{direction:'L',count:2},{direction:'D',count:3},{direction:'L',count:1}]), stepCount: 194, tileCount: 195, pathSha256: '947dea934eda712b724a7b47286361d271c4099705f008cc69fe0babc73e2b01'}),
+    Object.freeze({id: 'node:kyoto-imperial-palace--node:nijo-castle', from: Object.freeze({ kind: 'node', id: 'kyoto-imperial-palace' }), to: Object.freeze({ kind: 'node', id: 'nijo-castle' }), stepsRle: Object.freeze([{direction:'D',count:41},{direction:'L',count:1},{direction:'D',count:18},{direction:'L',count:44},{direction:'D',count:1},{direction:'L',count:6},{direction:'D',count:1},{direction:'L',count:1},{direction:'D',count:1},{direction:'L',count:6},{direction:'D',count:7},{direction:'L',count:5}]), stepCount: 132, tileCount: 133, pathSha256: '271c90147f91974605d20c1e811ed720866e4ccdb306566f044f413e986879c9'}),
+    Object.freeze({id: 'node:nijo-castle--node:kinkakuji', from: Object.freeze({ kind: 'node', id: 'nijo-castle' }), to: Object.freeze({ kind: 'node', id: 'kinkakuji' }), stepsRle: Object.freeze([{direction:'U',count:11},{direction:'L',count:1},{direction:'U',count:35},{direction:'L',count:1},{direction:'U',count:21},{direction:'L',count:1},{direction:'U',count:2},{direction:'L',count:1},{direction:'U',count:3},{direction:'L',count:2},{direction:'U',count:9},{direction:'L',count:1},{direction:'U',count:2},{direction:'L',count:4},{direction:'U',count:1},{direction:'L',count:1},{direction:'U',count:26},{direction:'L',count:1},{direction:'U',count:3},{direction:'L',count:1},{direction:'U',count:1},{direction:'L',count:1},{direction:'U',count:27},{direction:'L',count:8},{direction:'U',count:1},{direction:'L',count:11},{direction:'U',count:1},{direction:'L',count:2},{direction:'U',count:1},{direction:'L',count:9},{direction:'U',count:1},{direction:'L',count:10},{direction:'U',count:1},{direction:'L',count:27}]), stepCount: 228, tileCount: 229, pathSha256: '9197e9cce7fd9cd8d67c865a50ece49a939a21bc34639175afb47b4f503756b1'}),
+    Object.freeze({id: 'node:kinkakuji--node:togetsukyo', from: Object.freeze({ kind: 'node', id: 'kinkakuji' }), to: Object.freeze({ kind: 'node', id: 'togetsukyo' }), stepsRle: Object.freeze([{direction:'D',count:8},{direction:'L',count:3},{direction:'D',count:28},{direction:'L',count:3},{direction:'D',count:20},{direction:'L',count:4},{direction:'D',count:3},{direction:'L',count:1},{direction:'D',count:9},{direction:'L',count:1},{direction:'D',count:15},{direction:'L',count:1},{direction:'D',count:2},{direction:'L',count:1},{direction:'D',count:33},{direction:'L',count:7},{direction:'D',count:1},{direction:'L',count:13},{direction:'D',count:1},{direction:'L',count:20},{direction:'D',count:1},{direction:'L',count:40},{direction:'D',count:1},{direction:'L',count:4},{direction:'D',count:1},{direction:'L',count:6},{direction:'D',count:7},{direction:'L',count:3},{direction:'D',count:1},{direction:'L',count:4},{direction:'D',count:3},{direction:'L',count:4},{direction:'D',count:2},{direction:'L',count:17},{direction:'D',count:1},{direction:'L',count:1},{direction:'D',count:1},{direction:'L',count:7},{direction:'D',count:1},{direction:'L',count:46},{direction:'D',count:1},{direction:'L',count:21},{direction:'D',count:1},{direction:'L',count:4},{direction:'D',count:2},{direction:'L',count:26},{direction:'D',count:1},{direction:'L',count:1},{direction:'D',count:3},{direction:'L',count:1}]), stepCount: 386, tileCount: 387, pathSha256: '2f9aae336caad11defc3ab637263fac565f8b11a943280752c9f0d4c287e7d56'}),
+  ]),
+  discoveries: Object.freeze([
+    Object.freeze({id: 'kyoto-d1', leg: Object.freeze(['kyoto', 'fushimi-inari-taisha']), at: 0.35, line: '교토역 남동쪽 가로망에서 후시미 방향으로 접어드는 구간 — 역의 동편에서 남부 생활권으로 향하는 전환점이에요.'}),
+    Object.freeze({id: 'kyoto-d2', leg: Object.freeze(['fushimi-inari-taisha', 'kiyomizudera']), at: 0.90, line: '남쪽에서 히가시야마 경계에 다시 들어와 기요미즈데라 권역으로 올라가는 길목 — 산 언덕을 따라 올라가는 참배로예요.'}),
+    Object.freeze({id: 'kyoto-d3', leg: Object.freeze(['kiyomizudera', 'yasaka-shrine']), at: 0.25, line: '히가시야마 산 위에서 기온 거리 중심으로 내려오며 기요미즈데라에서 야사카 방향으로 향하는 구간 — 절 참배에서 신사 참배로 가는 길이에요.'}),
+    Object.freeze({id: 'kyoto-d4', leg: Object.freeze(['yasaka-shrine', 'heian-shrine']), at: 0.55, line: '야사카 신사 주변의 기온 거리에서 헤이안신궁 방면으로 펼쳐지는 넓은 북행축 — 전통 상점가에서 황궁 영역의 조용한 산책로로 변하는 구간이에요.'}),
+    Object.freeze({id: 'kyoto-d5', leg: Object.freeze(['heian-shrine', 'ginkakuji']), at: 0.55, line: '헤이안신궁 북쪽에서 동산 기슭을 따라 긴카쿠지 권역으로 이어지는 보행축 — 신궁 뒤 숲의 정적에서 사찰로 향하는 마음의 길이에요.'}),
+    Object.freeze({id: 'kyoto-d6', leg: Object.freeze(['ginkakuji', 'kyoto-imperial-palace']), at: 0.80, line: '북동부 산 기슭의 사찰권을 벗어나 황궁의 격자형 중심가로 내려오는 구간 — 산 속 침묵에서 도시 광장의 활기로 변하는 지점이에요.'}),
+    Object.freeze({id: 'kyoto-d7', leg: Object.freeze(['kyoto-imperial-palace', 'nijo-castle']), at: 0.55, line: '황궁 남서쪽에서 니조성으로 내려가는 중심 격자 — 황실 영역에서 무사 영역으로 전환되는 북부 녹지대를 지나요.'}),
+    Object.freeze({id: 'kyoto-d8', leg: Object.freeze(['nijo-castle', 'kinkakuji']), at: 0.95, line: '니조성에서 북서부로 올라가 킨카쿠지 접근 가로에 닿는 구간 — 도시에서 산 마을로 올라가는 입구, 금각사 앞 숲이 가까워지는 지점이에요.'}),
+  ]),
+});
+
 export function buildKyotoGrid() {
   const grid = Uint8Array.from(KYOTO_GEO.terrain);
   for (const [x, y] of EXIT_TILES) grid[y * COLS + x] = CITY_TILE.EXIT;
@@ -117,6 +165,7 @@ export function buildKyotoGrid() {
 export const KYOTO = {
   id: 'kyoto', name: '교토', cols: COLS, rows: ROWS, entrance: ENTRANCE, returnNode: 'kyoto',
   roadStyle: 'autotile-v1',
+  mainRoute: MAIN_ROUTE,
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: [], railways: KYOTO_GEO.railways,
   // 📖 여행책 지구제 v1 (D2 정본 — RFC docs/rfc-guidebook-districts.md·오너 승인 2026-07-23).
@@ -127,22 +176,22 @@ export const KYOTO = {
       {
         id: 'arashiyama-sanin',
         label: '아라시야마·산인',
-        tiles: { rects: [[20, 210, 160, 285], [200, 205, 285, 250]] },
+        tiles: { rects: [[20, 210, 160, 285], [200, 205, 285, 250], [258, 134, 273, 206], [159, 234, 201, 251]] },
       },
       {
         id: 'imperial-nijo',
         label: '황궁·니조',
-        tiles: { rects: [[250, 90, 300, 135], [315, 170, 450, 285]] },
+        tiles: { rects: [[250, 90, 300, 135], [315, 170, 450, 285], [449, 171, 501, 179], [299, 113, 346, 171]] },
       },
       {
         id: 'higashiyama-core',
         label: '히가시야마·중심',
-        tiles: { rects: [[500, 160, 610, 270], [410, 286, 540, 339], [480, 340, 540, 380]] },
+        tiles: { rects: [[500, 160, 610, 270], [410, 286, 540, 339], [480, 340, 540, 380], [487, 379, 520, 491], [512, 269, 516, 287]] },
       },
       {
         id: 'station-fushimi',
         label: '역·후시미',
-        tiles: { rects: [[315, 340, 470, 450], [440, 490, 510, 535]] },
+        tiles: { rects: [[315, 340, 470, 450], [440, 490, 510, 535], [469, 442, 484, 491]] },
       },
     ],
     locked: {

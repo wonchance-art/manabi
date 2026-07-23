@@ -74,7 +74,7 @@ const DISTRICT_AUDIT_CASES = Object.freeze([
     nodeId: 'kyoto',
     cityId: 'kyoto',
     labels: ['아라시야마·산인', '황궁·니조', '히가시야마·중심', '역·후시미'],
-    nextGoal: { kind: 'stamp-title', line: '다음 칭호까지 도장 9개' },
+    nextGoal: { kind: 'discovery', line: '발견 0/8' },
   },
   {
     nodeId: 'paris',
