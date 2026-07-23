@@ -11,14 +11,17 @@
  *   2칸 이상 이어지는 유일한 도로 진행축을 고른다(동률/불명은 제외). 그 수직축의 최장
  *   CROSSWALK 런과 같은 위치 road-like 폭을 비교하되, 도로 폭 단면이 진행축 전후 1칸
  *   (합계 3단면)에서 같은 시작·끝일 때만 런 길이 !== 도로 폭을 1건으로 센다.
- * - (G) 교량-물 어긋남: BRIDGE의 8방에 water가 0이면 dry-bridge. 일반 ROAD의 8방
- *   대향쌍(N/S, E/W, NE/SW, NW/SE) 중 하나가 모두 water면 road-over-water로 센다.
- * - (H) 광장·공원 파편: PLAZA|PARK 합집합의 4방 연결 성분 크기가 정확히 1인 건수만 센다.
+ * - (G′) 교량-물 어긋남: BRIDGE 4방 연결 성분 전체가 water와 cardinal 접촉이 없고
+ *   DOCK과도 8방 인접하지 않을 때만 성분 단위 1건으로 센다.
+ * - (H′) 광장·공원 파편: PLAZA|PARK 합집합의 4방 연결 성분 크기가 정확히 1이고,
+ *   그 타일의 4방 전부가 ROAD|CROSSWALK일 때만 1건으로 센다.
  * - (I) 기능 타일 지형 부적합: 학습 도어(kind=spot+track+chapter), NPC(kind=npc),
  *   역(stations)의 각 저작 좌표 아래 코드가 정확히 ROAD|WATER|RIVER인 엔티티 건수만 센다.
  *
  * 출력은 입력 데이터 외 시각·locale·파일 열거 순서에 의존하지 않는 결정적 Markdown이다.
  */
+
+import fs from 'node:fs';
 
 import { CITY_MANIFEST, loadCity } from '../src/components/world/cities/manifest.js';
 import { CITY_TILE } from '../src/components/world/cities/terrain.js';
@@ -34,6 +37,7 @@ const ROAD_LIKE = new Set([
 ]);
 const WATER = new Set([CITY_TILE.WATER, CITY_TILE.RIVER]);
 const PLAZA_GREEN = new Set([CITY_TILE.PLAZA, CITY_TILE.PARK]);
+const CARRIAGEWAY = new Set([CITY_TILE.ROAD, CITY_TILE.CROSSWALK]);
 const INVALID_FUNCTIONAL_TERRAIN = new Set([
   CITY_TILE.ROAD,
   CITY_TILE.WATER,
@@ -411,60 +415,69 @@ function scanCrosswalkLengths(grid, cols, rows, spans) {
   return anomalies.sort(compareAnomalies);
 }
 
-function isWaterAt(grid, cols, rows, x, y) {
-  return x >= 0
-    && y >= 0
-    && x < cols
-    && y < rows
-    && WATER.has(grid[y * cols + x]);
-}
-
 function scanBridgeWaterAlignment(grid, cols, rows) {
+  const seen = new Uint8Array(grid.length);
   const anomalies = [];
-  const opposingPairs = [
-    [[0, -1], [0, 1]],
-    [[-1, 0], [1, 0]],
-    [[-1, -1], [1, 1]],
-    [[1, -1], [-1, 1]],
-  ];
 
-  for (let y = 0; y < rows; y += 1) {
-    for (let x = 0; x < cols; x += 1) {
-      const code = grid[y * cols + x];
-      let subtype = null;
-      if (code === CITY_TILE.BRIDGE) {
-        let waterNeighbors = 0;
-        for (let dy = -1; dy <= 1; dy += 1) {
-          for (let dx = -1; dx <= 1; dx += 1) {
-            if ((dx !== 0 || dy !== 0) && isWaterAt(grid, cols, rows, x + dx, y + dy)) {
-              waterNeighbors += 1;
-            }
+  for (let start = 0; start < grid.length; start += 1) {
+    if (grid[start] !== CITY_TILE.BRIDGE || seen[start]) continue;
+    const queue = [start];
+    seen[start] = 1;
+    let touchesWater = false;
+    let touchesDock = false;
+
+    for (let cursor = 0; cursor < queue.length; cursor += 1) {
+      const index = queue[cursor];
+      const x = index % cols;
+      const y = (index - x) / cols;
+      for (let dy = -1; dy <= 1; dy += 1) {
+        for (let dx = -1; dx <= 1; dx += 1) {
+          if (dx === 0 && dy === 0) continue;
+          const neighborX = x + dx;
+          const neighborY = y + dy;
+          if (
+            neighborX >= 0
+            && neighborY >= 0
+            && neighborX < cols
+            && neighborY < rows
+            && grid[neighborY * cols + neighborX] === CITY_TILE.DOCK
+          ) {
+            touchesDock = true;
           }
         }
-        if (waterNeighbors === 0) subtype = 'dry-bridge';
-      } else if (code === CITY_TILE.ROAD) {
-        const crossesWater = opposingPairs.some(([first, second]) => (
-          isWaterAt(grid, cols, rows, x + first[0], y + first[1])
-          && isWaterAt(grid, cols, rows, x + second[0], y + second[1])
-        ));
-        if (crossesWater) subtype = 'road-over-water';
       }
-      if (!subtype) continue;
-      anomalies.push({
-        x,
-        y,
-        subtype,
-        dump: dump3x3(grid, cols, rows, x, y),
-      });
+      const neighbors = [];
+      if (x > 0) neighbors.push(index - 1);
+      if (x + 1 < cols) neighbors.push(index + 1);
+      if (y > 0) neighbors.push(index - cols);
+      if (y + 1 < rows) neighbors.push(index + cols);
+      for (const neighbor of neighbors) {
+        const code = grid[neighbor];
+        if (WATER.has(code)) touchesWater = true;
+        if (code !== CITY_TILE.BRIDGE || seen[neighbor]) continue;
+        seen[neighbor] = 1;
+        queue.push(neighbor);
+      }
     }
+
+    if (touchesWater || touchesDock) continue;
+    const x = start % cols;
+    const y = (start - x) / cols;
+    anomalies.push({
+      x,
+      y,
+      subtype: 'dry-bridge-component',
+      componentSize: queue.length,
+      dump: dump3x3(grid, cols, rows, x, y),
+    });
   }
 
   return anomalies.sort(compareAnomalies);
 }
 
-function countPlazaGreenSingletons(grid, cols, rows) {
+function scanRoadSurroundedPlazaGreenSingletons(grid, cols, rows) {
   const seen = new Uint8Array(grid.length);
-  let singletons = 0;
+  const anomalies = [];
 
   for (let start = 0; start < grid.length; start += 1) {
     if (!PLAZA_GREEN.has(grid[start]) || seen[start]) continue;
@@ -485,9 +498,20 @@ function countPlazaGreenSingletons(grid, cols, rows) {
         queue.push(neighbor);
       }
     }
-    if (queue.length === 1) singletons += 1;
+    if (queue.length !== 1) continue;
+    const x = start % cols;
+    const y = (start - x) / cols;
+    if (x === 0 || y === 0 || x + 1 === cols || y + 1 === rows) continue;
+    const neighbors = [start - cols, start + 1, start + cols, start - 1];
+    if (!neighbors.every((neighbor) => CARRIAGEWAY.has(grid[neighbor]))) continue;
+    anomalies.push({
+      x,
+      y,
+      subtype: grid[start] === CITY_TILE.PLAZA ? 'PLAZA' : 'GREEN',
+      dump: dump3x3(grid, cols, rows, x, y),
+    });
   }
-  return singletons;
+  return anomalies.sort(compareAnomalies);
 }
 
 function countInvalidFunctionalTiles(city, grid) {
@@ -544,7 +568,7 @@ async function scanCities() {
     const E = scanWidthJumps(grid, city.cols, city.rows, spans);
     const F = scanCrosswalkLengths(grid, city.cols, city.rows, spans);
     const G = scanBridgeWaterAlignment(grid, city.cols, city.rows);
-    const H = countPlazaGreenSingletons(grid, city.cols, city.rows);
+    const H = scanRoadSurroundedPlazaGreenSingletons(grid, city.cols, city.rows);
     const I = countInvalidFunctionalTiles(city, grid);
     results.push({
       id: city.id,
@@ -589,12 +613,18 @@ function anomalyDetail(type, anomaly) {
   if (type === 'F') {
     return `런 ${anomaly.axis}, CROSSWALK ${anomaly.runLength} / 도로 ${anomaly.roadWidth}`;
   }
+  if (type === 'G') {
+    return `성분 ${anomaly.componentSize}타일, cardinal 물·8방 DOCK 접촉 0`;
+  }
+  if (type === 'H') {
+    return `${anomaly.subtype}, 4방 ROAD·CROSSWALK`;
+  }
   return anomaly.subtype;
 }
 
 function renderRepresentativeSection(lines, results, type, title) {
   const representatives = selectRepresentatives(results, type);
-  lines.push(`### ${type}. ${title} — 대표 ${representatives.length}건`);
+  lines.push(`#### ${type}′. ${title} — 대표 ${representatives.length}건`);
   lines.push('');
   lines.push('| # | 도시 | 좌표 | 판정 | 3×3 |');
   lines.push('|---:|---|---:|---|---|');
@@ -608,7 +638,7 @@ function renderRepresentativeSection(lines, results, type, title) {
 }
 
 function renderLyonDetail(lines, lyon, type, title) {
-  lines.push(`### ${type}. ${title} (${lyon[type].length}건)`);
+  lines.push(`#### ${type}′. ${title} (${lyon[type].length}건)`);
   lines.push('');
   if (lyon[type].length === 0) {
     lines.push('없음.');
@@ -633,36 +663,37 @@ function renderMarkdown(results) {
     ), 0),
   ]));
   const lines = [
-    '# Q1-v2 타일 정합 확장 스캔 E~I',
+    '## r2 고신뢰 G′·H′ 기준',
     '',
-    '`scripts/scan-tile-integrity-extra.mjs`의 결정적 출력이다. 좌표는 0-based `[x,y]`이며,',
-    '26도시는 `CITY_MANIFEST`, 타일은 row-major 순서로 순회했다. 이 감사는 report-only이고',
-    '게임 데이터·엔진을 변경하지 않는다.',
+    '- 상태: **report-only** — 도시 geo·게임 데이터·엔진 수정 없음',
+    '- 범위: `CITY_MANIFEST` 26도시, 각 도시 `buildGrid()` 결과',
+    '- 좌표: 0-based `[x,y]`; G′ 좌표는 BRIDGE 4방 성분의 row-major 최소 anchor',
+    '- 변경 경계: G·H 판정만 강화했으며 E·F·I 판정 로직은 r1과 동일',
     '',
-    '## 판정 기준',
+    '### r2 판정 기준',
     '',
-    `- E: road-like(ROAD·CROSSWALK·BRIDGE·EXIT) 단면이 양쪽에서 각각 ${STABLE_SECTION_LENGTH}칸 이상 `
-      + '같게 유지되면서 폭이 `1 ↔ 3+`로 바뀌는 경계.',
-    `- F: CROSSWALK 성분 밖 도로가 양방향 ${MIN_TRAVEL_CONTINUATION}칸 이상 이어지는 유일 진행축에서, `
-      + '전후 1칸을 포함한 3단면 도로 폭이 안정적이지만 CROSSWALK 최장 런 길이가 폭과 다른 곳.',
-    '- G: BRIDGE 8방에 WATER·RIVER가 없거나, 일반 ROAD의 8방 대향쌍에 WATER·RIVER가 모두 있는 곳.',
-    '- H: PLAZA·PARK 합집합의 4방 연결 성분이 정확히 1타일인 건수.',
-    '- I: 학습 도어(`spot+track+chapter`)·NPC·역 하부가 정확히 ROAD·WATER·RIVER인 엔티티 건수.',
+    '| 유형 | 정량 판정 |',
+    '|---|---|',
+    '| E | r1과 동일: 안정 단면 도로 폭 `1 ↔ 3+` 경계. |',
+    '| F | r1과 동일: 안정 도로 폭과 CROSSWALK 최장 런 길이 불일치. |',
+    '| G′ | BRIDGE maximal 4방 성분 전체의 cardinal WATER·RIVER 접촉이 0이고, 8방 DOCK 인접도 0일 때만 성분당 1건. 일반 ROAD는 대상에서 제외한다. |',
+    '| H′ | PLAZA·GREEN(PARK) 합집합 4방 성분이 정확히 1타일이고 그 타일의 N·E·S·W가 전부 정확히 ROAD·CROSSWALK일 때만 1건. 경계·인도·건물·기타 지형 접촉은 제외한다. |',
+    '| I | r1과 동일: 학습 도어·NPC·역 하부가 정확히 ROAD·WATER·RIVER인 엔티티. |',
     '',
     '3×3 덤프는 `/`로 행을 나눈다. 범례: `R` ROAD, `.` SIDEWALK, `X` CROSSWALK,',
     '`P` PLAZA, `G` PARK, `B` BRIDGE, `D` DOCK, `E` EXIT, `W` WATER, `~` RIVER,',
     '`#` BUILDING, `I` ISLAND, `S` BEACH, `M` MOUNTAIN, `?` 범위 밖.',
     '',
-    '## 26도시 전수 통계',
+    '### r2 26도시 전수 통계',
     '',
-    '| 도시 | E | F | G | H | I |',
+    '| 도시 | E | F | G′ | H′ | I |',
     '|---|---:|---:|---:|---:|---:|',
   ];
 
   for (const city of results) {
     lines.push(
       `| ${city.id} (${city.name}) | ${city.E.length} | ${city.F.length} | `
-      + `${city.G.length} | ${city.H} | ${city.I.total} |`,
+      + `${city.G.length} | ${city.H.length} | ${city.I.total} |`,
     );
   }
   lines.push(
@@ -670,7 +701,7 @@ function renderMarkdown(results) {
     + `**${totals.H}** | **${totals.I}** |`,
   );
   lines.push('');
-  lines.push('I 합계의 기능별 내역(좌표 미출력):');
+  lines.push('I 합계의 기능별 내역(판정 불변, 좌표 미출력):');
   lines.push('');
   lines.push('| 기능 | 건수 |');
   lines.push('|---|---:|');
@@ -679,25 +710,72 @@ function renderMarkdown(results) {
     lines.push(`| ${category} | ${count} |`);
   }
   lines.push('');
-  lines.push('## E·F·G 대표 좌표와 3×3 덤프');
+  lines.push('### r2 G′·H′ 대표 좌표와 3×3 덤프');
   lines.push('');
   lines.push('대표 표본은 manifest 도시 순서에서 도시별 n번째 건을 round-robin으로 뽑았다.');
   lines.push('');
-  renderRepresentativeSection(lines, results, 'E', '도로 폭 널뛰기');
-  renderRepresentativeSection(lines, results, 'F', '횡단보도 길이 불일치');
   renderRepresentativeSection(lines, results, 'G', '교량-물 어긋남');
+  renderRepresentativeSection(lines, results, 'H', '광장·공원 차도 포위 파편');
 
   const lyon = results.find((city) => city.id === 'lyon');
   invariant(lyon, 'lyon must exist in CITY_MANIFEST');
-  lines.push('## 리옹 상세 — E·F·G 전 건');
+  lines.push('### 리옹 상세 — r2 G′·H′ 전 건 좌표');
   lines.push('');
-  renderLyonDetail(lines, lyon, 'E', '도로 폭 널뛰기');
-  renderLyonDetail(lines, lyon, 'F', '횡단보도 길이 불일치');
   renderLyonDetail(lines, lyon, 'G', '교량-물 어긋남');
-  lines.push('H·I는 요청 범위에 따라 건수만 위 통계표에 기록했다.');
+  renderLyonDetail(lines, lyon, 'H', '광장·공원 차도 포위 파편');
+  lines.push('E·F·I는 판정 불변이므로 r1 상세를 유지하고 위 통계만 재집계했다.');
+  lines.push('');
+  lines.push('### r2 결정성·재현');
+  lines.push('');
+  lines.push('- manifest 도시 순서 → 각 grid row-major `(y,x)` → cardinal 이웃 고정 순회.');
+  lines.push('- 시간·로케일 정렬·파일 열거·난수·네트워크 입력 없음.');
+  lines.push('- 동일 입력 2회 stdout byte 비교와 SHA-256 결과는 PR 검증 시 기록한다.');
+  lines.push('');
+  lines.push('```bash');
+  lines.push('node scripts/scan-tile-integrity-extra.mjs > /tmp/tile-integrity-extra-r2-a.md');
+  lines.push('node scripts/scan-tile-integrity-extra.mjs > /tmp/tile-integrity-extra-r2-b.md');
+  lines.push('cmp /tmp/tile-integrity-extra-r2-a.md /tmp/tile-integrity-extra-r2-b.md');
+  lines.push('shasum -a 256 /tmp/tile-integrity-extra-r2-a.md /tmp/tile-integrity-extra-r2-b.md');
+  lines.push('```');
 
   return `${lines.join('\n')}\n`;
 }
 
+function updateReport(existing, r2Section) {
+  const heading = '## r2 고신뢰 G′·H′ 기준';
+  const marker = `\n${heading}\n`;
+  const existingR2 = existing.indexOf(marker);
+  const r1 = (existingR2 === -1 ? existing : existing.slice(0, existingR2)).trimEnd();
+  return `${r1}\n\n${r2Section}`;
+}
+
+function parseArgs(argv) {
+  let updateReportPath = null;
+  for (let index = 0; index < argv.length; index += 1) {
+    const argument = argv[index];
+    if (argument === '--update-report') {
+      index += 1;
+      updateReportPath = argv[index];
+    } else if (argument.startsWith('--update-report=')) {
+      updateReportPath = argument.slice('--update-report='.length);
+    } else {
+      throw new Error(`Unknown argument: ${argument}`);
+    }
+  }
+  invariant(
+    updateReportPath === null
+      || (typeof updateReportPath === 'string' && updateReportPath.length > 0),
+    'Missing --update-report path',
+  );
+  return { updateReportPath };
+}
+
+const { updateReportPath } = parseArgs(process.argv.slice(2));
 const results = await scanCities();
-process.stdout.write(renderMarkdown(results));
+const output = renderMarkdown(results);
+if (updateReportPath) {
+  const existing = fs.readFileSync(updateReportPath, 'utf8');
+  fs.writeFileSync(updateReportPath, updateReport(existing, output), 'utf8');
+} else {
+  process.stdout.write(output);
+}
