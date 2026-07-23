@@ -189,6 +189,90 @@ export const NPC_SCRIPTS = {
     reward: '⛩️ 신사 참배 완주! 오미쿠지는 언제든 다시 뽑을 수 있어요.',
   },
 
+  // ── 보르도 생장역 안내인 — 불어 첫걸음: 인사 + 방향 묻기 (채움 라운드 1, 빈 역 지구) ──
+  'gare-accueil': {
+    label: '역 안내인',
+    emoji: '🚉',
+    intro: '생장역 앞 안내 부스. 프랑스에선 인사가 모든 대화의 열쇠야!',
+    steps: [
+      { t: 'narr', text: '아치형 유리 지붕 아래로 아침 햇살이 쏟아진다. 안내 부스의 직원과 눈이 마주쳤다 — 프랑스에선 용건보다 인사가 먼저다.' },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Bonjour ! Je peux vous aider ?',
+        yomi: 'Bonjour ! Je peux vous aider ? (봉주르! 주 푸 부 제데?)',
+        ko: '안녕하세요! 도와드릴까요?',
+        narr: '먼저 인사를 돌려주고 용건을 말하자. 시내로 가고 싶다면?',
+      },
+      {
+        t: 'ask', mode: 'choice',
+        prompt: '인사 후 「시내 중심가로 가고 싶어요」라고 말하려면?',
+        choices: [
+          { ja: 'Bonjour, le centre-ville, s\'il vous plaît.', yomi: '(봉주르, 르 상트르빌, 실 부 플레)', correct: true },
+          { ja: 'Au revoir !', yomi: '(오 르부아르!)' },
+          { ja: 'Merci, c\'est tout.', yomi: '(메르시, 세 투)' },
+        ],
+        why: 's\'il vous plaît(부탁해요)를 붙이면 정중한 요청이 돼요. Au revoir는 헤어질 때, c\'est tout는 "그게 다예요(끝)"라는 뜻이에요.',
+      },
+      {
+        t: 'ask', mode: 'type',
+        prompt: '길을 알려줬다. 고마움을 담아 「___ beaucoup !」 빈칸을 채워 말해요.',
+        before: '', after: ' beaucoup !',
+        answer: 'Merci', accept: ['Merci', 'merci', 'MERCI'],
+        hint: '고마워요 — 프랑스에서 하루에 제일 많이 쓰는 말이에요.',
+        why: 'Merci beaucoup(메르시 보쿠) = 정말 고마워요. beaucoup(많이)를 붙이면 마음이 더 커져요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Très bien ! Tout droit, puis à gauche.',
+        yomi: 'Très bien ! Tout droit, puis à gauche. (트레 비앙! 투 드루아, 퓌 아 고슈)',
+        ko: '좋아요! 곧장 가다가 왼쪽이에요.',
+        narr: 'tout droit(직진)·à gauche(왼쪽) — 길 안내 단어는 여행 내내 만난다. 종탑 방향으로 걸어가자.',
+      },
+    ],
+  },
+
+  // ── 스트라스부르역 브레첼 노점 — 불어 첫걸음: 하나 주문하기 (채움 라운드 1, 빈 역 지구) ──
+  'gare-bretzel': {
+    label: '브레첼 노점',
+    emoji: '🥨',
+    intro: '역 앞 브레첼 노점. 알자스의 아침은 갓 구운 브레첼 냄새로 시작해!',
+    steps: [
+      { t: 'narr', text: '역 광장 모퉁이, 소금 알갱이가 반짝이는 브레첼이 줄줄이 걸려 있다. 고소한 냄새에 발이 멈춘다.' },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Bonjour ! Un bretzel tout chaud ?',
+        yomi: 'Bonjour ! Un bretzel tout chaud ? (봉주르! 앙 브레첼 투 쇼?)',
+        ko: '안녕하세요! 따끈한 브레첼 하나 어때요?',
+        narr: '하나 사 먹고 싶다. 숫자 un(하나)과 부탁 표현을 붙이면?',
+      },
+      {
+        t: 'ask', mode: 'choice',
+        prompt: '「하나 주세요」라고 주문하려면?',
+        choices: [
+          { ja: 'Un bretzel, s\'il vous plaît !', yomi: '(앙 브레첼, 실 부 플레!)', correct: true },
+          { ja: 'Non, merci.', yomi: '(농, 메르시)' },
+          { ja: 'Combien ?', yomi: '(콩비앙?)' },
+        ],
+        why: '개수 + s\'il vous plaît가 가장 간단한 주문 공식이에요. Non merci는 사양, Combien?은 "얼마예요?"라고 값만 묻는 말이에요.',
+      },
+      {
+        t: 'ask', mode: 'type',
+        prompt: '값을 건네며 인사를 곁들이자. 「___ , merci !」 — 아침 인사를 채워요.',
+        before: '', after: ' , merci !',
+        answer: 'Bonjour', accept: ['Bonjour', 'bonjour', 'BONJOUR'],
+        hint: '해가 떠 있는 동안의 인사 — 봉주르.',
+        why: 'Bonjour(봉주르)는 아침~낮 인사예요. 저녁이면 Bonsoir(봉수아르)로 바뀌어요.',
+      },
+      {
+        t: 'say', who: 'npc',
+        ja: 'Voilà ! Bonne journée !',
+        yomi: 'Voilà ! Bonne journée ! (부알라! 본 주르네!)',
+        ko: '여기요! 좋은 하루 보내세요!',
+        narr: '따끈한 브레첼을 받아 들었다 — Voilà(여기요)와 Bonne journée(좋은 하루)까지, 역 앞에서 배운 세 마디.',
+      },
+    ],
+  },
+
   // ── 편의점 점원 (ot-07-konbini) — 계산대. 만능 대답 두 마디로 첫 결제 ──
   konbini: {
     label: '편의점 점원',
