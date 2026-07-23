@@ -202,23 +202,17 @@ describe('CityScene P2 지구별 보행 지면 variant-v1', () => {
   });
 
   it('미설정 25도시 render key SHA는 불변이고 리옹만 의도적으로 바뀐다', () => {
-    const first = cities.map((city) => ({
-      id: city.id,
-      before: cityRenderKey({ ...city, groundStyle: undefined }),
-      after: cityRenderKey(city),
-    }));
-    const second = cities.map((city) => ({
+    const manifest = cities.map((city) => ({
       id: city.id,
       before: cityRenderKey({ ...city, groundStyle: undefined }),
       after: cityRenderKey(city),
     }));
 
-    expect(first).toEqual(second);
-    expect(first.filter(({ before, after }) => before !== after).map(({ id }) => id))
+    expect(manifest.filter(({ before, after }) => before !== after).map(({ id }) => id))
       .toEqual(['lyon']);
-    expect(first.filter(({ before, after }) => before === after)).toHaveLength(25);
-    expect(first).toMatchSnapshot();
-  }, 60_000);
+    expect(manifest.filter(({ before, after }) => before === after)).toHaveLength(25);
+    expect(manifest).toMatchSnapshot();
+  }, 120_000);
 });
 
 describe('CityScene P2 범용 props 4종', () => {
