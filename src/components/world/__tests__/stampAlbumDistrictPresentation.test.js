@@ -38,19 +38,19 @@ const DISTRICT_AUDIT_CASES = Object.freeze([
     nodeId: 'lyon',
     cityId: 'lyon',
     labels: ['프레스킬 남부', '구시가·푸르비에르', '테로·크루아루스', '론 강변·파르디외'],
-    nextGoal: { kind: 'npc-meeting', line: '만난 사람 0/3' },
+    nextGoal: { kind: 'npc-meeting', line: '만난 사람 0/5' },
   },
   {
     nodeId: 'bordeaux',
     cityId: 'bordeaux',
     labels: ['생장역 일대', '역사 지구', '샤르트롱·북강변', '클래식 워크 회랑'],
-    nextGoal: { kind: 'npc-meeting', line: '만난 사람 0/1' },
+    nextGoal: { kind: 'npc-meeting', line: '만난 사람 0/3' },
   },
   {
     nodeId: 'strasbourg',
     cityId: 'strasbourg',
     labels: ['중앙역 일대', '그랑딜', '유럽 지구', '리버사이드 워크 회랑'],
-    nextGoal: { kind: 'npc-meeting', line: '만난 사람 0/1' },
+    nextGoal: { kind: 'npc-meeting', line: '만난 사람 0/3' },
   },
   {
     nodeId: 'tokyo',

@@ -156,7 +156,7 @@ describe('S17 한 게스트의 수집→발견→칭호→만남→수첩 여정
     });
     markup = renderAlbum('emea', stamps);
     expect(visibleText(markup)).toContain('10 / 85');
-    expect(nextGoalLine(markup, '리옹')).toBe('만난 사람 0/3');
+    expect(nextGoalLine(markup, '리옹')).toBe('만난 사람 0/5');
 
     const discoveryIds = lyon.mainRoute.discoveries.map(({ id }) => id);
     const discovered = new Set(discoveryIds.slice(0, 7));
@@ -179,24 +179,26 @@ describe('S17 한 게스트의 수집→발견→칭호→만남→수첩 여정
     });
     expect(titleKeys(storage)).toEqual(['stamp-10', 'discovery-lyon']);
     markup = renderAlbum('emea', stamps);
-    expect(nextGoalLine(markup, '리옹')).toBe('만난 사람 0/3');
+    expect(nextGoalLine(markup, '리옹')).toBe('만난 사람 0/5');
 
     const meetingNodes = lyon.nodes.filter(isNpcMeetingCandidate);
     expect(meetingNodes.map(({ id }) => id)).toEqual([
       'lyon-presquile-confluence-cafe',
       'lyon-vieux-lyon-fourviere-traboule',
       'lyon-terreaux-croix-rousse-marche',
+      'lyon-rhone-part-dieu-marche-1',
+      'lyon-rhone-part-dieu-marche-2',
     ]);
     expect(recordNpcMeeting({ cityId: 'lyon', node: meetingNodes[0], storage })).toBe(true);
     markup = renderAlbum('emea', stamps);
-    expect(nextGoalLine(markup, '리옹')).toBe('만난 사람 1/3');
+    expect(nextGoalLine(markup, '리옹')).toBe('만난 사람 1/5');
 
     expect(recordNpcMeeting({ cityId: 'lyon', node: meetingNodes[1], storage })).toBe(true);
     expect(loadNpcMeetingIds('lyon', storage)).toEqual(new Set(
       meetingNodes.slice(0, 2).map(({ id }) => id),
     ));
     markup = renderAlbum('emea', stamps);
-    expect(nextGoalLine(markup, '리옹')).toBe('만난 사람 2/3');
+    expect(nextGoalLine(markup, '리옹')).toBe('만난 사람 2/5');
   });
 
   it('도쿄의 일본 지구와 동적 NPC 2명 만남을 같은 수첩 시나리오로 잇는다', () => {

@@ -40,9 +40,9 @@ describe('S13 여행 수첩 — 만난 사람 수집률', () => {
     expect(presentations).toEqual([
       { cityId: 'tokyo', got: 0, total: 2, label: '만난 사람 0/2' },
       { cityId: 'osaka', got: 0, total: 2, label: '만난 사람 0/2' },
-      { cityId: 'lyon', got: 0, total: 3, label: '만난 사람 0/3' },
-      { cityId: 'bordeaux', got: 0, total: 1, label: '만난 사람 0/1' },
-      { cityId: 'strasbourg', got: 0, total: 1, label: '만난 사람 0/1' },
+      { cityId: 'lyon', got: 0, total: 5, label: '만난 사람 0/5' },
+      { cityId: 'bordeaux', got: 0, total: 3, label: '만난 사람 0/3' },
+      { cityId: 'strasbourg', got: 0, total: 3, label: '만난 사람 0/3' },
     ]);
     expect(storage.getItem.mock.calls.map(([key]) => key)).toEqual([
       npcMeetingStorageKey('tokyo'),
@@ -66,8 +66,8 @@ describe('S13 여행 수첩 — 만난 사람 수집률', () => {
     expect(stampAlbumNpcMeetingProgress(albumNode('lyon'), CITY_DATA, storage)).toEqual({
       cityId: 'lyon',
       got: 2,
-      total: 3,
-      label: '만난 사람 2/3',
+      total: 5,
+      label: '만난 사람 2/5',
     });
   });
 
@@ -142,8 +142,8 @@ describe('S13 여행 수첩 — 만난 사람 수집률', () => {
       )).toEqual({
         cityId: 'bordeaux',
         got: 0,
-        total: 1,
-        label: '만난 사람 0/1',
+        total: 3,
+        label: '만난 사람 0/3',
       });
     }
   });

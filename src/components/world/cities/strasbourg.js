@@ -63,6 +63,17 @@ export const CITY_NODES = [
     tile: [128, 247], facing: 'down', noStamp: true,
     desc: '역 앞 브레첼 노점. 알자스의 아침 냄새 — 앙 브레첼, 실 부 플레요.',
   },
+  // 🧑‍💼 채움 라운드 2 — 그랑딜·유럽지구 NPC(스팟 실측: proposal-npc-spots-r2.md).
+  {
+    id: 'strasbourg-grande-ile-librairie', kind: 'npc', npc: 'strasbourg-grande-ile-librairie', name: '서점 직원',
+    tile: [149, 281], facing: 'down', noStamp: true,
+    desc: '구시가 서점 직원. 책 분야와 위치를 묻고 찾는 표현을 배워요.',
+  },
+  {
+    id: 'strasbourg-quartier-europeen-velo', kind: 'npc', npc: 'strasbourg-quartier-europeen-velo', name: '자전거 대여 직원',
+    tile: [277, 182], facing: 'down', noStamp: true,
+    desc: '유럽 지구 자전거 대여 직원. 대여 시간·반납을 정하는 여행 표현을 배워요.',
+  },
   ...STRASBOURG_GEO.pois.map((poi) => {
     const copy = poiCopy(poi.id);
     return {

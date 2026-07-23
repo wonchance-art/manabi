@@ -64,6 +64,17 @@ export const CITY_NODES = [
     tile: [328, 302], facing: 'down', noStamp: true,
     desc: '생장역의 안내 부스. 프랑스 여행의 첫 마디 — Bonjour로 시작해 보세요.',
   },
+  // 🧑‍💼 채움 라운드 2 — 구시가·북강변 NPC(스팟 실측: proposal-npc-spots-r2.md).
+  {
+    id: 'bordeaux-centre-historique-patisserie', kind: 'npc', npc: 'bordeaux-centre-historique-patisserie', name: '제과점 직원',
+    tile: [270, 248], facing: 'down', noStamp: true,
+    desc: '구시가 제과점 직원. 프랑스 빵과 케이크를 사며 포장을 배워요.',
+  },
+  {
+    id: 'bordeaux-nord-rive-antiquaire', kind: 'npc', npc: 'bordeaux-nord-rive-antiquaire', name: '골동품점 직원',
+    tile: [249, 175], facing: 'down', noStamp: true,
+    desc: '샤르트롱 골동품 거리의 직원. 옛 물건의 상태와 가격 흥정을 배워요.',
+  },
   ...BORDEAUX_GEO.pois.map((poi) => {
     const copy = poiCopy(poi.id);
     return {
