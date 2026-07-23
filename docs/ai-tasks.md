@@ -16,6 +16,10 @@
 ### doing
 ### todo
 ### done (최근)
+- D5 잠금 지구 경계 표지판: 개방↔잠금 경계의 개방 쪽 도로·보행 타일에 8타일 이격
+  무문자 빗장 팻말 1,120개를 결정 배치하고 district 7도시에서만 베이크·소비
+  (`codex/district-boundary-signs`, 구현 0d01f1b, base e330283ecb435b7bf5bad51aab35f57258b20a1f,
+  #150 5049669206·5053883288)
 - V1 시각 대비 라운드: 밝은 보행 지형의 guidebook 잠금 점묘·빗금과
   mainRoute 포장의 저녁·야간 틴트 대비를 상향하고 미정의 도시 렌더 불변 계약을 유지
   (`codex/visual-contrast-round`, 구현 bc8408a, base e330283ecb435b7bf5bad51aab35f57258b20a1f)
