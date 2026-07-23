@@ -158,6 +158,7 @@ export function buildHongKongGrid() {
 
 export const HONG_KONG = {
   id: 'hong-kong', name: '홍콩', cols: COLS, rows: ROWS, entrance: ENTRANCE,
+  roadStyle: 'autotile-v1',
   returnNode: 'hong-kong', // 오버월드 APAC 홍콩 노드는 Codex-1 게이트 라운드 후속
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: TRANSIT_POINTS, railways: HONG_KONG_GEO.railways,

@@ -154,6 +154,7 @@ export function buildTaipeiGrid() {
 
 export const TAIPEI = {
   id: 'taipei', name: '타이베이', cols: COLS, rows: ROWS, entrance: ENTRANCE,
+  roadStyle: 'autotile-v1',
   returnNode: 'taipei', // 오버월드 APAC 타이베이 노드는 Codex-1 게이트 라운드 후속
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: [], railways: TAIPEI_GEO.railways,

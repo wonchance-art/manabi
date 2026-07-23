@@ -69,6 +69,7 @@ export function buildMontSaintMichelGrid() {
 
 export const MONT_SAINT_MICHEL = {
   id: 'mont-saint-michel',
+  roadStyle: 'autotile-v1',
   name: 'Mont-Saint-Michel',
   cols: COLS,
   rows: ROWS,

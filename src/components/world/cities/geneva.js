@@ -144,6 +144,7 @@ export function buildGenevaGrid() {
 
 export const GENEVA = {
   id: 'geneva', name: '제네바', cols: COLS, rows: ROWS, entrance: ENTRANCE,
+  roadStyle: 'autotile-v1',
   returnNode: 'geneva', // 오버월드 EMEA 게이트는 Codex-1 후속(코르나뱅 기준)
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: TRANSIT_POINTS, railways: GENEVA_GEO.railways,

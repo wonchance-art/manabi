@@ -438,6 +438,7 @@ export const MAIN_ROUTE = Object.freeze({
 
 export const STRASBOURG = {
   id: 'strasbourg', name: '스트라스부르', cols: COLS, rows: ROWS, entrance: ENTRANCE,
+  roadStyle: 'autotile-v1',
   returnNode: 'strasbourg', // 오버월드 EMEA 게이트는 Codex-1 후속(스트라스부르역 기준)
   mainRoute: MAIN_ROUTE,
   // 📖 여행책 지구제 v1 (D2 — T5 실측 후보 그대로). 개방 3.75%, 필수 gate 3/3 PASS.

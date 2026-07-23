@@ -472,7 +472,7 @@ describe('CityScene guidebook 소비 경계', () => {
     });
   });
 
-  it('코트다쥐르 외 지구제 6도시는 guidebook 명령을 유지하고 서울만 autotile 경계 키를 쓴다', () => {
+  it('코트다쥐르 외 지구제 6도시는 guidebook 명령과 autotile 경계 키를 유지한다', () => {
     const boundarySamples = [
       ['lyon', [239, 139], [240, 139]],
       ['bordeaux', [315, 191], [316, 191]],
@@ -525,7 +525,7 @@ describe('CityScene guidebook 소비 경계', () => {
         {
           "boundaryKeys": [
             "ct_sidewalk",
-            "ct_guidebook_road_v",
+            "ct_guidebook_road_autotile_5",
           ],
           "guidebookSha": "6ef0480b36888577fc698f13f5f605c9420ba3a2d4cac490d919f60ca56f0e5e",
           "id": "strasbourg",
@@ -540,8 +540,8 @@ describe('CityScene guidebook 소비 경계', () => {
         },
         {
           "boundaryKeys": [
-            "ct_road_h",
-            "ct_guidebook_road_h",
+            "ct_road_autotile_2",
+            "ct_guidebook_road_autotile_8",
           ],
           "guidebookSha": "6ef0480b36888577fc698f13f5f605c9420ba3a2d4cac490d919f60ca56f0e5e",
           "id": "busan",
@@ -644,8 +644,8 @@ describe('CityScene guidebook 소비 경계', () => {
     expect(manifest).toHaveLength(2);
     expect(manifest).toMatchInlineSnapshot(`
       [
-        "marseille:a8acf4d94ef8a037450a7dae67d3d0f00d6841a53eaf13158f38eee2d0defa01",
-        "kawaguchiko:add90460ba2f032d15dbaaddd7ae0b4eb72937aaf011f4e965bed03b92b5e1c3",
+        "marseille:70148c1a300e199910acff7d87f2f4f7cd29945c632eb6f3d3c872ced5e70a95",
+        "kawaguchiko:bac57281b1cbc0c32550278f5cf497fe44a092c2a8413d1229fcf3ecd4c0a8b3",
       ]
     `);
   });

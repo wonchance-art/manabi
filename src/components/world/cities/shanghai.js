@@ -165,6 +165,7 @@ export function buildShanghaiGrid() {
 
 export const SHANGHAI = {
   id: 'shanghai', name: '상하이', cols: COLS, rows: ROWS, entrance: ENTRANCE,
+  roadStyle: 'autotile-v1',
   returnNode: 'shanghai', // 오버월드 APAC 상하이 노드는 Codex-1 게이트 라운드 후속
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: TRANSIT_POINTS, railways: SHANGHAI_GEO.railways,

@@ -177,6 +177,7 @@ export function buildMarseilleGrid() {
 
 export const MARSEILLE = {
   id: 'marseille', name: '마르세유', cols: COLS, rows: ROWS, entrance: ENTRANCE,
+  roadStyle: 'autotile-v1',
   returnNode: 'marseille', // 오버월드 EMEA 마르세유 노드는 Codex-1 게이트 라운드 후속(생샤를 기준)
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: TRANSIT_POINTS, railways: MARSEILLE_GEO.railways,

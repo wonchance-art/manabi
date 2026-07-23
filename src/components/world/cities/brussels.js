@@ -110,6 +110,7 @@ export function buildBrusselsGrid() {
 
 export const BRUSSELS = {
   id: 'brussels', name: '브뤼셀', cols: COLS, rows: ROWS, entrance: ENTRANCE,
+  roadStyle: 'autotile-v1',
   returnNode: 'brussels', // 오버월드 노드는 Codex-1 게이트 라운드(미디 [242,375] 후보 검증 완료)
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: [], railways: BRUSSELS_GEO.railways,
