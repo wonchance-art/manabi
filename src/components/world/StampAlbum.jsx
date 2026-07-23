@@ -12,21 +12,24 @@
 // 방문 시각(at)만 마운트 시 GET /api/world/stamps 로 추가 조회해 각 배지에 날짜를 병기(여행 일지 감성).
 //   수집 여부 자체는 라이브 stamps prop 을 신뢰 — 방금 찍은 스탬프도 즉시 채워 보인다.
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { GBC, gbcPanel, gbcButtonPrimary } from './QuestReview';
 import { STAMP_ALBUM_NODES } from '../../lib/world/stampUniverse';
 import { fmtDate } from './stampIcons';
+import { CITY_DATA } from './cities';
 import {
   STAMP_ALBUM_TABS,
   stampAlbumBadge,
   stampAlbumTabById,
   stampAlbumTabProgress,
 } from './stampAlbumTabs';
+import { stampAlbumDistrictPresentation } from './stampAlbumDistrictPresentation';
 
 export default function StampAlbum({ stamps, onClose }) {
   const owned = stamps instanceof Set ? stamps : new Set();
   const [visitedAt, setVisitedAt] = useState({}); // { nodeId: isoString }
   const [activeTabId, setActiveTabId] = useState(STAMP_ALBUM_TABS[0].id);
+  const districtPresentationCache = useRef(new Map());
 
   // 방문 시각(at)만 추가 조회 — 수집 여부는 라이브 stamps prop 사용(낙관 갱신 즉시 반영).
   useEffect(() => {
@@ -108,6 +111,16 @@ export default function StampAlbum({ stamps, onClose }) {
         }}>
           {activeTab.nodes.map((node) => {
             const badge = stampAlbumBadge(node, owned);
+            let district = null;
+            if (badge.has) {
+              if (!districtPresentationCache.current.has(node.id)) {
+                districtPresentationCache.current.set(
+                  node.id,
+                  stampAlbumDistrictPresentation(node, CITY_DATA),
+                );
+              }
+              district = districtPresentationCache.current.get(node.id);
+            }
             return (
               <div
                 key={node.id}
@@ -130,6 +143,41 @@ export default function StampAlbum({ stamps, onClose }) {
                   <span style={{ fontFamily: GBC.font, fontSize: '0.5rem', color: GBC.inkSoft, lineHeight: 1 }}>
                     {fmtDate(visitedAt[node.id])}
                   </span>
+                )}
+                {district && (
+                  <div
+                    aria-label={`${badge.name} 개방 지구`}
+                    style={{
+                      width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center',
+                      gap: 3, marginTop: 2, paddingTop: 4, borderTop: `1px solid ${GBC.creamShade}`,
+                    }}
+                  >
+                    <span style={{
+                      fontFamily: GBC.font, fontWeight: 700, fontSize: '0.5rem',
+                      color: GBC.brown, lineHeight: 1.2, textAlign: 'center',
+                    }}>
+                      {district.countLabel}
+                    </span>
+                    <div style={{
+                      display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 3,
+                    }}>
+                      {district.labels.map((label) => (
+                        <span
+                          key={label}
+                          style={{
+                            maxWidth: '100%', padding: '2px 3px',
+                            border: `1px solid ${GBC.border}`, borderRadius: 2,
+                            boxShadow: '1px 1px 0 rgba(42,33,24,0.24)',
+                            background: GBC.creamHi, color: GBC.ink,
+                            fontFamily: GBC.font, fontWeight: 700, fontSize: '0.43rem',
+                            lineHeight: 1.25, textAlign: 'center', overflowWrap: 'anywhere',
+                          }}
+                        >
+                          {label}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
             );
