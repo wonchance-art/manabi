@@ -130,6 +130,7 @@ describe('geo POI·山手線 fast-travel 배선', () => {
     expect(npcs.map((node) => node.id)).toEqual(['tokyo-ekiin', 'tokyo-menzei', 'tokyo-konbini', 'tokyo-yamanote-west-cafe', 'tokyo-central-east-bookstore']);
     for (const node of npcs) {
       expect(typeof node.npc).toBe('string');
+      expect(node.chapter).toMatch(/^ot-\d{2}-/);
       expect(node.noStamp).toBe(true);
       expect(isCityWalkable(at(node.tile[0], node.tile[1]))).toBe(true);
       expect(adjacentWalkable(node.tile[0], node.tile[1])).toBe(true);

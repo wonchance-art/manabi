@@ -58,12 +58,12 @@ export const CITY_NODES = [
   },
   // ── 채움 라운드 3-1: 도쿄·오사카 8지구 NPC 4종 (owner 2026-07-23) ──
   {
-    id: 'osaka-north-hubs-transfer', kind: 'npc', npc: 'osaka-north-hubs-transfer', name: '乗り換え案内員',
+    id: 'osaka-north-hubs-transfer', kind: 'npc', npc: 'osaka-north-hubs-transfer', chapter: 'ot-11-densha', name: '乗り換え案内員',
     tile: [435, 5], facing: 'down', noStamp: true,
     desc: '오사카 북부 교통 허브의 환승 안내원 「乗り換え案内員」(のりかえあんないいん). 환승 노선, 출구 방향, 빠른 식사를 안내받아요.',
   },
   {
-    id: 'osaka-castle-east-guide', kind: 'npc', npc: 'osaka-castle-east-guide', name: '公園案内員',
+    id: 'osaka-castle-east-guide', kind: 'npc', npc: 'osaka-castle-east-guide', chapter: 'ot-09-jinja', name: '公園案内員',
     tile: [553, 262], facing: 'down', noStamp: true,
     desc: '오사카성 동쪽 공원 안내원 「公園案内員」(こうえんあんないいん). 관광 동선과 전통 공방 체험 순서를 배워요.',
   },

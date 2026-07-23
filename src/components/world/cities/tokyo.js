@@ -231,12 +231,12 @@ export const CITY_NODES = [
   },
   // ── 채움 라운드 3-1: 도쿄·오사카 8지구 NPC 4종 (oowner 2026-07-23) ──
   {
-    id: 'tokyo-yamanote-west-cafe', kind: 'npc', npc: 'tokyo-yamanote-west-cafe', name: 'カフェ店員',
+    id: 'tokyo-yamanote-west-cafe', kind: 'npc', npc: 'tokyo-yamanote-west-cafe', chapter: 'ot-08-izakaya', name: 'カフェ店員',
     tile: [239, 545], facing: 'down', noStamp: true,
     desc: '역세권 카페 직원. 만남의 약속, 커피 주문, 간단한 구매 표현 — 통근 중심 서부의 아침을 배워요.',
   },
   {
-    id: 'tokyo-central-east-bookstore', kind: 'npc', npc: 'tokyo-central-east-bookstore', name: '書店店員',
+    id: 'tokyo-central-east-bookstore', kind: 'npc', npc: 'tokyo-central-east-bookstore', chapter: 'ot-07-konbini', name: '書店店員',
     tile: [497, 66], facing: 'down', noStamp: true,
     desc: '시내 중심 서점 직원. 물건 위치, 종류, 가격을 묻는 여행 실용 표현을 배워요.',
   },

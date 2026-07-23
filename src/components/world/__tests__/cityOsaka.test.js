@@ -46,6 +46,7 @@ describe('오사카 플레이 도시 계약', () => {
     expect(npcs.map((node) => node.id)).toEqual(['osaka-izakaya', 'osaka-konbini', 'osaka-north-hubs-transfer', 'osaka-castle-east-guide']);
     for (const node of npcs) {
       expect(typeof node.npc).toBe('string');
+      expect(node.chapter).toMatch(/^ot-\d{2}-/);
       expect(node.noStamp).toBe(true);
     }
   });
