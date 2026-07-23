@@ -6,6 +6,8 @@
  * 소유 파일: 이 모듈과 __tests__/worldPet.test.js. 다른 학습 로직은 건드리지 않는다.
  */
 
+import { PET_STORAGE_KEY } from './storageSchema.js';
+
 /** 선택 가능한 펫 종 — 순서가 선택 UI 노출 순서. */
 export const PET_SPECIES = [
   { key: 'dog', emoji: '🐕', name: '멍이' },
@@ -15,7 +17,7 @@ export const PET_SPECIES = [
   { key: 'turtle', emoji: '🐢', name: '거북' },
 ];
 
-const PET_STORAGE_KEY = 'world_pet';
+export { PET_STORAGE_KEY };
 const DEFAULT_PET_KEY = 'dog';
 
 /**

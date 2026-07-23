@@ -1,5 +1,6 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { PET_SPECIES, getPetChoice, setPetChoice, derivePetState } from '../world/pet';
+import { WORLD_STORAGE_KEYS } from '../world/storageSchema.js';
 
 // 이 스위트는 기본(vitest 기본값 = node) 환경에서 돈다 — jsdom 없이 typeof window === 'undefined'가
 // 참이므로 SSR 가드 자체를 실제로 검증할 수 있다. window가 있는 브라우저 경로는 최소한의 목으로 재현한다.
@@ -81,7 +82,7 @@ describe('getPetChoice / setPetChoice — SSR 가드', () => {
   });
 
   it('window가 있으면(브라우저) localStorage에서 저장된 선택을 읽는다', () => {
-    const store = { world_pet: 'fox' };
+    const store = { [WORLD_STORAGE_KEYS.petChoice]: 'fox' };
     globalThis.window = {
       localStorage: {
         getItem: (k) => (k in store ? store[k] : null),
@@ -92,7 +93,7 @@ describe('getPetChoice / setPetChoice — SSR 가드', () => {
   });
 
   it('저장된 값이 PET_SPECIES에 없으면(손상) 기본값 dog로 폴백', () => {
-    const store = { world_pet: 'dragon' };
+    const store = { [WORLD_STORAGE_KEYS.petChoice]: 'dragon' };
     globalThis.window = {
       localStorage: {
         getItem: (k) => (k in store ? store[k] : null),
@@ -111,9 +112,9 @@ describe('getPetChoice / setPetChoice — SSR 가드', () => {
       },
     };
     setPetChoice('rabbit');
-    expect(store.world_pet).toBe('rabbit');
+    expect(store[WORLD_STORAGE_KEYS.petChoice]).toBe('rabbit');
     setPetChoice('not-a-real-pet');
-    expect(store.world_pet).toBe('rabbit'); // 변화 없음
+    expect(store[WORLD_STORAGE_KEYS.petChoice]).toBe('rabbit'); // 변화 없음
   });
 });
 

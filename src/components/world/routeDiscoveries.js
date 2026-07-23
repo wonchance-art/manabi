@@ -3,12 +3,11 @@ import {
   DISCOVERY_MILESTONE_EVENT,
   claimDiscoveryMilestoneReward,
 } from '../../lib/world/discoveryMilestones.js';
+import { routeDiscoveryStorageKey } from '../../lib/world/storageSchema.js';
 
 export const ROUTE_DISCOVERY_DURATION_MS = 4200;
 
-export function routeDiscoveryStorageKey(cityId) {
-  return `route-discoveries:${cityId}`;
-}
+export { routeDiscoveryStorageKey };
 
 function defaultStorage() {
   try {

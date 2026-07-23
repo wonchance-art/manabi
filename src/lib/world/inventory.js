@@ -1,5 +1,9 @@
-export const INVENTORY_FAVORITES_KEY = 'manabi-world-inventory-favorites-v1';
-export const INVENTORY_ITEM_COUNTS_KEY = 'manabi-world-inventory-items-v1';
+import {
+  INVENTORY_FAVORITES_KEY,
+  INVENTORY_ITEM_COUNTS_KEY,
+} from './storageSchema.js';
+
+export { INVENTORY_FAVORITES_KEY, INVENTORY_ITEM_COUNTS_KEY };
 export const PET_FOOD_ITEM_ID = 'pet-food';
 
 export const INVENTORY_CATEGORIES = [

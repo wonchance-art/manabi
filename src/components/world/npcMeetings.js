@@ -2,6 +2,10 @@
 // 저장 형태는 주동선 발견과 같은 도시별 JSON 문자열 배열이며, 서버·DB에는 연결하지 않는다.
 // 도시 목록은 고정하지 않는다. 로드된 도시 payload의 NPC 후보가 분모의 단일 진실원이다.
 
+import { npcMeetingStorageKey } from '../../lib/world/storageSchema.js';
+
+export { npcMeetingStorageKey };
+
 export function isNpcMeetingCity(cityId) {
   return typeof cityId === 'string' && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(cityId);
 }
@@ -23,10 +27,6 @@ export function isNpcMeetingCandidate(node) {
       || node.npc === node.id
     )
   );
-}
-
-export function npcMeetingStorageKey(cityId) {
-  return `npc-met:${cityId}`;
 }
 
 function defaultStorage() {

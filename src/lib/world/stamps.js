@@ -5,8 +5,9 @@
 // 순수부(parseStamps)만 분리해 vitest 로 응답 파싱을 검증한다(네트워크 미접촉).
 
 import { isStampAlbumNodeId } from './stampUniverse.js';
+import { GUEST_STAMPS_STORAGE_KEY } from './storageSchema.js';
 
-export const GUEST_STAMPS_STORAGE_KEY = 'guest-stamps';
+export { GUEST_STAMPS_STORAGE_KEY };
 
 function defaultStorage() {
   try {

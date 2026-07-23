@@ -38,6 +38,7 @@ import {
   fetchPetInputs,
 } from '../lib/world/pet';
 import { DEFAULT_AVATAR, loadWorldAvatar, saveWorldAvatar } from '../lib/world/avatar';
+import { ensureStorageSchema } from '../lib/world/storageSchema';
 
 const TILE = 32;             // GameCanvas와 동일 — peers:dist(px)→타일 변환에 사용
 const PEER_STALE_MS = 10000; // 이 시간 넘게 소식 없는 peer는 유령으로 보고 정리
@@ -553,6 +554,7 @@ export default function WorldPage() {
 
   // 저장된 펫 선택 로드(마운트 1회).
   useEffect(() => {
+    ensureStorageSchema();
     setPetKey(getPetChoice());
     const savedAvatar = loadWorldAvatar();
     avatarRef.current = savedAvatar;
