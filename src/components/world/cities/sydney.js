@@ -183,6 +183,7 @@ export function buildSydneyGrid() {
 
 export const SYDNEY = {
   id: 'sydney', name: '시드니', cols: COLS, rows: ROWS, entrance: ENTRANCE,
+  roadStyle: 'autotile-v1',
   returnNode: 'sydney', // 오버월드 APAC 시드니 노드는 Codex-1 게이트 라운드 후속
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: TRANSIT_POINTS, railways: SYDNEY_GEO.railways,

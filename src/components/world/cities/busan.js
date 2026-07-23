@@ -135,6 +135,7 @@ export function buildBusanGrid() {
 
 export const BUSAN = {
   id: 'busan', name: '부산', cols: COLS, rows: ROWS, entrance: ENTRANCE, returnNode: 'busan',
+  roadStyle: 'autotile-v1',
   // 📖 여행책 지구제 v1 (D2 5호 — T5 실측 그대로, 개방 7.57%).
   districts: {
     version: 'district-v1',

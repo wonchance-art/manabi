@@ -467,6 +467,7 @@ export const MAIN_ROUTE = Object.freeze({
 
 export const BORDEAUX = {
   id: 'bordeaux', name: '보르도', cols: COLS, rows: ROWS, entrance: ENTRANCE,
+  roadStyle: 'autotile-v1',
   returnNode: 'bordeaux', // 오버월드 EMEA 게이트는 Codex-1 후속(생장역 기준)
   mainRoute: MAIN_ROUTE,
   // 📖 여행책 지구제 v1 (D2 — T5 실측 docs/proposal-district-rects.md 후보 그대로, 오너 승인 순서 2호).

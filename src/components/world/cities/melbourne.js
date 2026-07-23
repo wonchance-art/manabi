@@ -117,6 +117,7 @@ export function buildMelbourneGrid() {
 
 export const MELBOURNE = {
   id: 'melbourne', name: '멜버른', cols: COLS, rows: ROWS, entrance: ENTRANCE,
+  roadStyle: 'autotile-v1',
   returnNode: 'melbourne', // 오버월드 APAC 멜버른 노드는 Codex-1 게이트 라운드 후속
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: [], railways: MELBOURNE_GEO.railways,

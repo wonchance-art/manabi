@@ -118,6 +118,7 @@ export function buildOsakaGrid() {
 
 export const OSAKA = {
   id: 'osaka', name: '오사카', cols: COLS, rows: ROWS, entrance: ENTRANCE, returnNode: 'osaka',
+  roadStyle: 'autotile-v1',
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: [], railways: OSAKA_GEO.railways,
   // 📖 여행책 지구제 v1 (D2 정본 — RFC docs/rfc-guidebook-districts.md·오너 승인 2026-07-23).

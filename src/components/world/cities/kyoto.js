@@ -116,6 +116,7 @@ export function buildKyotoGrid() {
 
 export const KYOTO = {
   id: 'kyoto', name: '교토', cols: COLS, rows: ROWS, entrance: ENTRANCE, returnNode: 'kyoto',
+  roadStyle: 'autotile-v1',
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: [], railways: KYOTO_GEO.railways,
   // 📖 여행책 지구제 v1 (D2 정본 — RFC docs/rfc-guidebook-districts.md·오너 승인 2026-07-23).

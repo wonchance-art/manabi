@@ -270,6 +270,7 @@ export function buildFukuokaGrid() {
 
 export const FUKUOKA = {
   id: 'fukuoka',
+  roadStyle: 'autotile-v1',
   name: '후쿠오카',
   cols: COLS,
   rows: ROWS,

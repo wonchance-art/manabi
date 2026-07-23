@@ -114,6 +114,7 @@ export function buildBeijingGrid() {
 
 export const BEIJING = {
   id: 'beijing', name: '베이징', cols: COLS, rows: ROWS, entrance: ENTRANCE,
+  roadStyle: 'autotile-v1',
   returnNode: 'beijing', // 오버월드 APAC 베이징 노드는 Codex-1 게이트 라운드 후속
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: [], railways: BEIJING_GEO.railways,

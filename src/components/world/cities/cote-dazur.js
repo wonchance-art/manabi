@@ -117,6 +117,7 @@ export function buildCoteDAzurGrid() {
 
 export const COTE_DAZUR = {
   id: 'cote-dazur', name: '코트다쥐르', cols: COLS, rows: ROWS, entrance: ENTRANCE,
+  roadStyle: 'autotile-v1',
   returnNode: 'nice', // 오버월드 니스 노드(EMEA [289,551] 도착 [289,550]) — Codex-1 게이트 라운드와 정합
   // 📖 여행책 지구제 v1 (D2 6호 — T5 실측 그대로, 개방 9.88%).
   districts: {

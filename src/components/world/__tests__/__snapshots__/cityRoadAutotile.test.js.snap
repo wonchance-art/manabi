@@ -7,12 +7,12 @@ exports[`CityScene road autotile opt-in > 5계열 16종+inner 렌더 명령이 2
 }
 `;
 
-exports[`CityScene road autotile opt-in > 26도시 키에서 autotile 3도시와 T19 guidebook 13도시 변화를 고정한다 1`] = `
+exports[`CityScene road autotile opt-in > 26도시 전 지형·mainRoute 키 스냅샷이 autotile-v1 전면 확산을 고정한다 1`] = `
 [
   {
     "id": "fukuoka",
-    "roadStyle": null,
-    "sha256": "dc6dd00f9a14ea06517d1e6543039c7e63e2f9b0471f2f5bb3b086b744318a9a",
+    "roadStyle": "autotile-v1",
+    "sha256": "c129698451f061130c1d927e47091ce0a4704f6d87669d8105d5ff9b75490a68",
   },
   {
     "id": "tokyo",
@@ -21,18 +21,18 @@ exports[`CityScene road autotile opt-in > 26도시 키에서 autotile 3도시와
   },
   {
     "id": "osaka",
-    "roadStyle": null,
-    "sha256": "dc648e5e34bdd10f2bdce1c0a2c585a725d76533c52173e51d1552eb6ca6fe24",
+    "roadStyle": "autotile-v1",
+    "sha256": "bf66146b1092e992180525a5074e99cac7efb2c044efe757a27eaae346987401",
   },
   {
     "id": "kyoto",
-    "roadStyle": null,
-    "sha256": "b54e257ffb8fbda0e0d2ebd11ab9d02ca5118fb41a7d91766aba9fb27dc947b9",
+    "roadStyle": "autotile-v1",
+    "sha256": "b228de791767536edd54d58f2800937517e215c750720cce38ba7ed9ea64ae74",
   },
   {
     "id": "busan",
-    "roadStyle": null,
-    "sha256": "08abc45d06d624f7a4f65afbb2ed7458b8f13bf9d22c81eba7fb676cb193dead",
+    "roadStyle": "autotile-v1",
+    "sha256": "1569d5e6af4699587a899a7846fce27d2eb0b4e8515d942976ba6d795a7e7e89",
   },
   {
     "id": "seoul",
@@ -41,88 +41,88 @@ exports[`CityScene road autotile opt-in > 26도시 키에서 autotile 3도시와
   },
   {
     "id": "grand-paris",
-    "roadStyle": null,
-    "sha256": "c6e1795ab6f96fdd0881b7caf102386e2bb835161a74303f2558f75902e68391",
+    "roadStyle": "autotile-v1",
+    "sha256": "dc89b7e1b040d4d5eeb73df16db4ec0e851d4c0c2703881e879fc4829deb7df0",
   },
   {
     "id": "mont-saint-michel",
-    "roadStyle": null,
-    "sha256": "27c4ed5f56074ebf13b3a6cadc1b73784e28363e9a15e9071a8fcec83300786f",
+    "roadStyle": "autotile-v1",
+    "sha256": "765e1dafeb03ec9c9e19c825a420f1d074dc5a21cb42ae803a02a8fd8d53240f",
   },
   {
     "id": "cote-dazur",
-    "roadStyle": null,
-    "sha256": "dfb1e1c1390e7a806be8bc2c334d0251121bb39da52a7e69ff4d150dcbccdce7",
+    "roadStyle": "autotile-v1",
+    "sha256": "533f630bdbc1ee6f1f7e4e29b90cc017144e34307de1bec9fa246cc9208be183",
   },
   {
     "id": "brussels",
-    "roadStyle": null,
-    "sha256": "2a2d84b55008c886532963fb5ccf2c2222eb6c7048782a60e210fdb8dbcac0a9",
+    "roadStyle": "autotile-v1",
+    "sha256": "fb3216f10b5ade1ce73329e80cd6da7dbcda7258f159041d6a9ebd7a024005d8",
   },
   {
     "id": "taipei",
-    "roadStyle": null,
-    "sha256": "89cc3de3802f5cc1e1bedb7fde5e2f258c3b07b5e55918872a0abab2727b524e",
+    "roadStyle": "autotile-v1",
+    "sha256": "95ccc4fad04956c35de9517829479f9cfe9211647fd2b54555e312db673b4b94",
   },
   {
     "id": "hong-kong",
-    "roadStyle": null,
-    "sha256": "2e3382876157127c7df353323f0d49a0c8b9bb15cc5162eb909a29997915b0d3",
+    "roadStyle": "autotile-v1",
+    "sha256": "489378aff803e344fdc9e8c82bb7867a6555e41bb4b19a3a39df58a1c3345eda",
   },
   {
     "id": "london",
-    "roadStyle": null,
-    "sha256": "45ca68acd519885df07efcbea0b6297251f42f056b915f7dbf19aa8cc60549f5",
+    "roadStyle": "autotile-v1",
+    "sha256": "86b07c39936248a444debd76e7138a78c41c65cee4377d028c6590d80d09aa07",
   },
   {
     "id": "shanghai",
-    "roadStyle": null,
-    "sha256": "1e7259db8c34655ab165612c0745b22813b1e707b3d484dbfb0108fdb098f192",
+    "roadStyle": "autotile-v1",
+    "sha256": "0404cd5896c9311eb02437bcb86583481a6862f4ffdf57ff1c58595e326e2231",
   },
   {
     "id": "beijing",
-    "roadStyle": null,
-    "sha256": "5213158f3aa4243c4e997ee6aeacf6e62cf1ae1f16ab215772b6d03055162f74",
+    "roadStyle": "autotile-v1",
+    "sha256": "276c90625adc6302b370a71c804fa9bfc732559e1d040d430e303fdf6cd7de27",
   },
   {
     "id": "brisbane",
-    "roadStyle": null,
-    "sha256": "c2077cf5099c73ab3af47d7ce96217ad21c0874db6606f7ce6767dc53b17a048",
+    "roadStyle": "autotile-v1",
+    "sha256": "b1b3284021550827ef44f76a93a6ef5b07c8c58db6229b2df146176348ae45c0",
   },
   {
     "id": "sydney",
-    "roadStyle": null,
-    "sha256": "41443deb0acb97fc1859d01abce873574be72ffbc4f18057f5a0e177f5614916",
+    "roadStyle": "autotile-v1",
+    "sha256": "ed44d4ef06b42574f7393fcf1dabad17d33958b93de1ac2d0a09df64698666a9",
   },
   {
     "id": "canberra",
-    "roadStyle": null,
-    "sha256": "0f4a5e41abff70134a218ba2fcb90f2195309e558b60d2f022d081d9368fcfb7",
+    "roadStyle": "autotile-v1",
+    "sha256": "120cc2f7ca7d456705a4eccb97caea9fe6bc5567b3fe104792b34d6873594c03",
   },
   {
     "id": "melbourne",
-    "roadStyle": null,
-    "sha256": "5e6773a044d728f2bd3661c898bea4c796f3eea0ab3ecbed52c95565aaff6202",
+    "roadStyle": "autotile-v1",
+    "sha256": "c8e9cd3c90b0d91107a8125d1655c5fa83442eaf561136fd0441f7cf3dcd82f3",
   },
   {
     "id": "marseille",
-    "roadStyle": null,
-    "sha256": "82a44066c3d9a85bca08bba111e1910fac3d860578fe17183ea3b8c8b402f8e4",
+    "roadStyle": "autotile-v1",
+    "sha256": "47dc6587fe0f45f5b3eaeb2cfa6ca9c077330e90951a25675b66cceaaf179f9a",
   },
   {
     "id": "kawaguchiko",
-    "roadStyle": null,
-    "sha256": "32d22ac780014abfb91a4e9f1059c97bfef300fbdd9ed7941155324013c40bb4",
+    "roadStyle": "autotile-v1",
+    "sha256": "20cddd96d8e2046a8721b56dc55fc1eaca999abfe4bf43e5f29b0e79f9382011",
   },
   {
     "id": "geneva",
-    "roadStyle": null,
-    "sha256": "2b0c7d0c34dee411655ffe9a43e3f9951ba855158253acd4926c3e09238ad31c",
+    "roadStyle": "autotile-v1",
+    "sha256": "ff786f0b647aa7515eafcf6e16c50a53ae992a61f8000a202d6805cf5a2f61e3",
   },
   {
     "id": "leman-riviera",
-    "roadStyle": null,
-    "sha256": "704f630b695cf08583ee2e4d5f130878fd24c6b61653ba921265ea4088e05d58",
+    "roadStyle": "autotile-v1",
+    "sha256": "a354ba16833e839670e3532266989ae658bca68b3f249b13c9ea5409d2574241",
   },
   {
     "id": "lyon",
@@ -131,13 +131,13 @@ exports[`CityScene road autotile opt-in > 26도시 키에서 autotile 3도시와
   },
   {
     "id": "bordeaux",
-    "roadStyle": null,
-    "sha256": "9bbd35e8f138c0621472044dfc10db3e9ed0b1ac619befafe92cccbdb403807e",
+    "roadStyle": "autotile-v1",
+    "sha256": "a88abd5e8edaa1b4c6fbe12e1e30ea715baa1bb6a85e65d2ebcc0a632bb255ae",
   },
   {
     "id": "strasbourg",
-    "roadStyle": null,
-    "sha256": "eaeefb5c2d4a52ea273473c437bfc2a9982427996ef87043fa98369be55daebc",
+    "roadStyle": "autotile-v1",
+    "sha256": "525b116e190fd6c18a7db16d4750b1e2fd5b4a777f9788df4a7689013c8b02ee",
   },
 ]
 `;

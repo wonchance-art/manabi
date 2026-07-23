@@ -172,6 +172,7 @@ export function buildKawaguchikoGrid() {
 
 export const KAWAGUCHIKO = {
   id: 'kawaguchiko', name: '가와구치코', cols: COLS, rows: ROWS, entrance: ENTRANCE,
+  roadStyle: 'autotile-v1',
   returnNode: 'kawaguchiko', // 오버월드 APAC 게이트는 Codex-1 후속(기존 fuji 마커 연계 검토)
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: TRANSIT_POINTS, railways: KAWAGUCHIKO_GEO.railways,

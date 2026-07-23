@@ -156,6 +156,7 @@ export function buildLemanRivieraGrid() {
 
 export const LEMAN_RIVIERA = {
   id: 'leman-riviera', name: '레만호 연안', cols: COLS, rows: ROWS, entrance: ENTRANCE,
+  roadStyle: 'autotile-v1',
   returnNode: 'leman-riviera', // 오버월드 EMEA 게이트는 Codex-1 후속(로잔역 기준)
   // 📖 여행책 지구제 v1 (D2 7호 — T5 실측 그대로, 개방 15.28%).
   districts: {

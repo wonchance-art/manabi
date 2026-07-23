@@ -107,6 +107,7 @@ export function buildCanberraGrid() {
 
 export const CANBERRA = {
   id: 'canberra', name: '캔버라', cols: COLS, rows: ROWS, entrance: ENTRANCE,
+  roadStyle: 'autotile-v1',
   returnNode: 'canberra', // 오버월드 APAC 캔버라 노드는 Codex-1 게이트 라운드 후속
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: [], railways: CANBERRA_GEO.railways,

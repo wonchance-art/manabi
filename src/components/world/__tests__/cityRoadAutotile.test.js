@@ -23,32 +23,6 @@ const AUTOTILE_PREFIXES = [
   'ct_main_route_paving_autotile',
 ];
 
-const NON_AUTOTILE_RENDER_KEY_SHA = Object.freeze({
-  fukuoka: 'dc6dd00f9a14ea06517d1e6543039c7e63e2f9b0471f2f5bb3b086b744318a9a',
-  osaka: 'dc648e5e34bdd10f2bdce1c0a2c585a725d76533c52173e51d1552eb6ca6fe24',
-  kyoto: 'b54e257ffb8fbda0e0d2ebd11ab9d02ca5118fb41a7d91766aba9fb27dc947b9',
-  busan: '08abc45d06d624f7a4f65afbb2ed7458b8f13bf9d22c81eba7fb676cb193dead',
-  'grand-paris': 'c6e1795ab6f96fdd0881b7caf102386e2bb835161a74303f2558f75902e68391',
-  'mont-saint-michel': '27c4ed5f56074ebf13b3a6cadc1b73784e28363e9a15e9071a8fcec83300786f',
-  'cote-dazur': 'dfb1e1c1390e7a806be8bc2c334d0251121bb39da52a7e69ff4d150dcbccdce7',
-  brussels: '2a2d84b55008c886532963fb5ccf2c2222eb6c7048782a60e210fdb8dbcac0a9',
-  taipei: '89cc3de3802f5cc1e1bedb7fde5e2f258c3b07b5e55918872a0abab2727b524e',
-  'hong-kong': '2e3382876157127c7df353323f0d49a0c8b9bb15cc5162eb909a29997915b0d3',
-  london: '45ca68acd519885df07efcbea0b6297251f42f056b915f7dbf19aa8cc60549f5',
-  shanghai: '1e7259db8c34655ab165612c0745b22813b1e707b3d484dbfb0108fdb098f192',
-  beijing: '5213158f3aa4243c4e997ee6aeacf6e62cf1ae1f16ab215772b6d03055162f74',
-  brisbane: 'c2077cf5099c73ab3af47d7ce96217ad21c0874db6606f7ce6767dc53b17a048',
-  sydney: '41443deb0acb97fc1859d01abce873574be72ffbc4f18057f5a0e177f5614916',
-  canberra: '0f4a5e41abff70134a218ba2fcb90f2195309e558b60d2f022d081d9368fcfb7',
-  melbourne: '5e6773a044d728f2bd3661c898bea4c796f3eea0ab3ecbed52c95565aaff6202',
-  marseille: '82a44066c3d9a85bca08bba111e1910fac3d860578fe17183ea3b8c8b402f8e4',
-  kawaguchiko: '32d22ac780014abfb91a4e9f1059c97bfef300fbdd9ed7941155324013c40bb4',
-  geneva: '2b0c7d0c34dee411655ffe9a43e3f9951ba855158253acd4926c3e09238ad31c',
-  'leman-riviera': '704f630b695cf08583ee2e4d5f130878fd24c6b61653ba921265ea4088e05d58',
-  bordeaux: '9bbd35e8f138c0621472044dfc10db3e9ed0b1ac619befafe92cccbdb403807e',
-  strasbourg: 'eaeefb5c2d4a52ea273473c437bfc2a9982427996ef87043fa98369be55daebc',
-});
-
 let CITY_MAPS;
 
 function fixtureCity(roadStyle = ROAD_AUTOTILE_STYLE) {
@@ -171,15 +145,11 @@ describe('CityScene road autotile opt-in', () => {
     CITY_MAPS = await loadAllCities();
   }, 60000);
 
-  it('roadStyle 계약은 tokyo·seoul·lyon opt-in이고 미설정 23도시는 legacy 키를 유지한다', () => {
+  it('roadStyle 계약은 26도시 전부 autotile-v1을 사용한다', () => {
     expect(CITY_MAPS).toHaveLength(26);
     expect(CITY_MAPS.filter(cityUsesRoadAutotile).map(({ id, roadStyle }) => [id, roadStyle]))
-      .toEqual([
-        ['tokyo', ROAD_AUTOTILE_STYLE],
-        ['seoul', ROAD_AUTOTILE_STYLE],
-        ['lyon', ROAD_AUTOTILE_STYLE],
-      ]);
-    expect(CITY_MAPS.filter((city) => city.roadStyle == null)).toHaveLength(23);
+      .toEqual(CITY_MAPS.map(({ id }) => [id, ROAD_AUTOTILE_STYLE]));
+    expect(CITY_MAPS.filter((city) => city.roadStyle == null)).toHaveLength(0);
 
     const flagged = textureHarness();
     const legacy = textureHarness(fixtureCity(null));
@@ -318,13 +288,10 @@ describe('CityScene road autotile opt-in', () => {
     expect({ textureCount: keys.length, sha256: digest(first) }).toMatchSnapshot();
   });
 
-  it('26도시 키에서 autotile 3도시와 T19 guidebook 13도시 변화를 고정한다', () => {
+  it('26도시 전 지형·mainRoute 키 스냅샷이 autotile-v1 전면 확산을 고정한다', () => {
     const manifest = CITY_MAPS.map(cityRenderKeyManifest);
-    const legacyManifest = Object.fromEntries(
-      manifest.filter(({ roadStyle }) => roadStyle == null).map(({ id, sha256 }) => [id, sha256]),
-    );
 
-    expect(legacyManifest).toEqual(NON_AUTOTILE_RENDER_KEY_SHA);
+    expect(manifest.every(({ roadStyle }) => roadStyle === ROAD_AUTOTILE_STYLE)).toBe(true);
     expect(manifest).toMatchSnapshot();
   }, 60000);
 });

@@ -176,6 +176,7 @@ export function buildGrandParisGrid() {
 
 export const GRAND_PARIS = {
   id: 'grand-paris', name: '파리', cols: COLS, rows: ROWS, entrance: ENTRANCE, returnNode: 'paris',
+  roadStyle: 'autotile-v1',
   zones: ZONES, nodes: CITY_NODES, stations: STATIONS, props: PROPS,
   transit: TRANSIT, transitPoints: [], railways: GRAND_PARIS_GEO.railways,
   // 📖 여행책 지구제 v1 — T10 r3 실측 rect.
