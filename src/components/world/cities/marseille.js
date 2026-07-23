@@ -109,8 +109,8 @@ export const STATIONS = MARSEILLE_GEO.stations.map((station) => ({
   line: station.line,
 }));
 
-// 페리 부두 4종 — 구항↔이프성(첫 외해 섬 항로)·구항 횡단 페리보트(geo ferryLinks 계약 소비).
-export const TRANSIT_POINTS = (MARSEILLE_GEO.ferryLinks || []).map((point) => ({
+// 페리 부두 4종 — 구항↔이프성(첫 외해 섬 항로)·구항 횡단 페리보트(geo transitPoints 계약 소비).
+export const TRANSIT_POINTS = (MARSEILLE_GEO.transitPoints || []).map((point) => ({
   id: point.id,
   nameJa: point.nameFr,
   nameFr: point.nameFr,
@@ -183,6 +183,35 @@ export const MARSEILLE = {
   transit: TRANSIT, transitPoints: TRANSIT_POINTS, railways: MARSEILLE_GEO.railways,
   // 🎨 R4 지역 색감 — 테라코타 지붕 + 에메랄드 수면(첫 소비 도시).
   tileSkins: Object.freeze({ building: 'terracotta', water: 'emerald' }),
+  districts: Object.freeze({
+    version: 'district-v1',
+    open: [
+      {
+        id: 'vieux-port-panier',
+        label: '구항·파니에',
+        tiles: { rects: [[140, 100, 223, 190]] },
+      },
+      {
+        id: 'saint-charles-longchamp',
+        label: '생샤를·롱샹',
+        tiles: { rects: [[224, 90, 320, 225]] },
+      },
+      {
+        id: 'garde-corniche',
+        label: '노트르담·코르니슈',
+        tiles: { rects: [[95, 191, 222, 260]] },
+      },
+      {
+        id: 'if-prado',
+        label: '이프 방면·프라도',
+        tiles: { rects: [[10, 240, 35, 265], [285, 285, 325, 325]] },
+      },
+    ],
+    locked: {
+      style: 'guidebook',
+      line: '이 동네는 아직 준비 중이에요 — 다음 여행에서 만나요.',
+    },
+  }),
   CITY_TILE, buildGrid: buildMarseilleGrid,
 };
 

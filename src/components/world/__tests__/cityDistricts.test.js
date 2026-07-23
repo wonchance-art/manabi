@@ -32,6 +32,7 @@ const DISTRICT_CITY_IDS = Object.freeze([
   'grand-paris', 'brussels', 'london', 'mont-saint-michel', 'geneva',
   'taipei', 'hong-kong', 'shanghai', 'beijing',
   'brisbane', 'sydney', 'canberra', 'melbourne',
+  'marseille', 'kawaguchiko',
 ]);
 const EXPANSION_DISTRICT_LABELS = Object.freeze({
   'grand-paris': ['파리 북중부', '센강 중심부', '서부 위성권', '외곽 위성권'],
@@ -616,8 +617,8 @@ describe('CityScene guidebook 소비 경계', () => {
     },
   );
 
-  it('districts 미정의 2도시는 render key·movement collision을 그대로 유지한다', () => {
-    // 지구 정의 도시 목록 — 새 도시를 지구화하면 여기와 길이 스냅샷을 함께 갱신한다(무단 지구화 가드).
+  it('districts 미정의 0도시 — 26도시 완전 지구화 고정', () => {
+    // 지구 정의 도시 목록 — 모든 도시가 districts를 정의했으므로 미정의 도시는 0개.
     class FakeScene { constructor() {} }
     const manifest = CITY_MAPS.filter(({ id }) => !DISTRICT_CITY_IDS.includes(id)).map((city) => {
       const Scene = buildCityScene({ Scene: FakeScene }, city, {});
@@ -641,12 +642,6 @@ describe('CityScene guidebook 소비 경계', () => {
       return `${city.id}:${hash.digest('hex')}`;
     });
 
-    expect(manifest).toHaveLength(2);
-    expect(manifest).toMatchInlineSnapshot(`
-      [
-        "marseille:70148c1a300e199910acff7d87f2f4f7cd29945c632eb6f3d3c872ced5e70a95",
-        "kawaguchiko:bac57281b1cbc0c32550278f5cf497fe44a092c2a8413d1229fcf3ecd4c0a8b3",
-      ]
-    `);
+    expect(manifest).toHaveLength(0);
   });
 });

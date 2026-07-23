@@ -178,6 +178,30 @@ export const KAWAGUCHIKO = {
   transit: TRANSIT, transitPoints: TRANSIT_POINTS, railways: KAWAGUCHIKO_GEO.railways,
   // 🎨 R4 — 먹색 기와(료칸·산촌 무드).
   tileSkins: Object.freeze({ building: 'kawara' }),
+  districts: Object.freeze({
+    version: 'district-v1',
+    open: [
+      {
+        id: 'lakefront',
+        label: '가와구치호 북안',
+        tiles: { rects: [[30, 130, 160, 250]] },
+      },
+      {
+        id: 'station-yoshida',
+        label: '역전·후지요시다',
+        tiles: { rects: [[150, 251, 230, 310], [290, 240, 400, 420]] },
+      },
+      {
+        id: 'mountain-gates',
+        label: '오시노·후지 등산 기점',
+        tiles: { rects: [[520, 480, 566, 520], [25, 845, 45, 862]] },
+      },
+    ],
+    locked: {
+      style: 'guidebook',
+      line: '이 동네는 아직 준비 중이에요 — 다음 여행에서 만나요.',
+    },
+  }),
   CITY_TILE, buildGrid: buildKawaguchikoGrid,
 };
 

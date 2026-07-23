@@ -33,7 +33,8 @@ const DISTRICT_CITY_IDS = Object.freeze([
   'fukuoka', 'tokyo', 'osaka', 'kyoto', 'busan', 'seoul',
   'grand-paris', 'mont-saint-michel', 'cote-dazur', 'brussels',
   'taipei', 'hong-kong', 'london', 'shanghai', 'beijing',
-  'brisbane', 'sydney', 'canberra', 'melbourne', 'geneva',
+  'brisbane', 'sydney', 'canberra', 'melbourne',
+  'marseille', 'kawaguchiko', 'geneva',
   'leman-riviera', 'lyon', 'bordeaux', 'strasbourg',
 ]);
 const EXPECTED_SIGN_COUNTS = Object.freeze([
@@ -42,7 +43,8 @@ const EXPECTED_SIGN_COUNTS = Object.freeze([
   ['mont-saint-michel', 161], ['cote-dazur', 232], ['brussels', 96],
   ['taipei', 184], ['hong-kong', 85], ['london', 343], ['shanghai', 93],
   ['beijing', 102], ['brisbane', 65], ['sydney', 161], ['canberra', 157],
-  ['melbourne', 119], ['geneva', 66], ['leman-riviera', 146], ['lyon', 62],
+  ['melbourne', 119],
+  ['marseille', 78], ['kawaguchiko', 108], ['geneva', 66], ['leman-riviera', 146], ['lyon', 62],
   ['bordeaux', 75], ['strasbourg', 63],
 ]);
 
@@ -198,6 +200,6 @@ describe('S18 지구제 24도시 팻말·표면 정합 read-only 감사', () => 
     ))).toEqual([]);
     expect(firstBytes).toBe(secondBytes);
     expect(createHash('sha256').update(firstBytes).digest('hex'))
-      .toBe('e376a497c184760afa1d964de7d746bcdf7ece1921fb2078d8fa3126ab064d8b');
+      .toBe('b08587e07c3979f02b31fb92ef8d73b326c774eda87e92f7849fe44942bdd0fa');
   }, 30_000);
 });
