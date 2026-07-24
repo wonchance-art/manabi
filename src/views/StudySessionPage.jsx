@@ -86,6 +86,7 @@ export default function StudySessionPage({
   const [picked, setPicked] = useState(null);
   const [typing, setTyping] = useState('');
   const [orderPicks, setOrderPicks] = useState([]);
+  const [matchState, setMatchState] = useState({ selectedId: null, matches: {} });
   const [firstResults, setFirstResults] = useState({}); // 원본 uid → { ok, item }
   const [requeued, setRequeued] = useState(() => new Set());
   const [finished, setFinished] = useState(false);
@@ -373,6 +374,7 @@ export default function StudySessionPage({
   const prepared = useMemo(() => {
     if (!item) return null;
     if (item.options) return { options: shuffle(item.options) };
+    if (item.tokens) return { bank: shuffle(item.tokens.map((t, ti) => ({ t, ti }))) };
     if (item.quiz?.tokens) return { bank: shuffle(item.quiz.tokens.map((t, ti) => ({ t, ti }))) };
     if (item.quiz?.distractors) return { options: shuffle([item.quiz.correct, ...item.quiz.distractors.slice(0, 3)]) };
     return {};
@@ -434,7 +436,10 @@ export default function StudySessionPage({
     const seen = new Set();
     const out = [];
     const push = wt => { if (wt && !seen.has(wt)) { seen.add(wt); out.push(wt); } };
-    for (const it of queue) if (it?.word?.word_text) push(it.word.word_text);
+    for (const it of queue) {
+      if (it?.word?.word_text) push(it.word.word_text);
+      for (const word of it?.words || []) push(word?.word_text);
+    }
     for (const w of paragraphMaterials?.dueWords || []) push(w?.word);
     for (const w of paragraphMaterials?.newWords || []) push(w?.word);
     return out;
@@ -529,13 +534,19 @@ export default function StudySessionPage({
    * F2 progressStore 이벤트·어휘 FSRS 갱신 · 문법 챕터 마지막 문항에서 재스케줄.
    * 중도 이탈해도 여기까지의 기록은 남는다.
    */
-  function recordSettle(ok, it) {
+  function recordSettle(ok, it, result = null) {
     if (!it?.effect) return;
     const rt_ms = Date.now() - itemShownAtRef.current;
     const eff = it.effect;
 
     // 답안 완료 기록은 F2 단일 경계로 보낸다. 게스트도 같은 호출을 거쳐 로컬 폴백한다.
-    recordStudyReviewCompleted(user?.id, { correct: ok, item: it, lang, rtMs: rt_ms });
+    recordStudyReviewCompleted(user?.id, {
+      correct: ok,
+      item: it,
+      lang,
+      rtMs: rt_ms,
+      result,
+    });
 
     if (eff.kind === 'grammar-due' && user?.id) {
       const slug = eff.srs.slug;
@@ -550,7 +561,7 @@ export default function StudySessionPage({
   }
 
   /** 채점 확정 — 첫 시도만 집계·기록, 오답은 재출제 예약 */
-  function settle(ok, pickedValue = null) {
+  function settle(ok, pickedValue = null, result = null) {
     if (!item || phase === 'feedback') return;
     if (isTapLocked()) return;
     setPicked(pickedValue);
@@ -567,7 +578,7 @@ export default function StudySessionPage({
     // 재출제(-r)는 기록·SRS 제외. 첫 시도만 1회 기록.
     if (!isRetryItem && !recordedRef.current.has(orig)) {
       recordedRef.current.add(orig);
-      recordSettle(ok, item);
+      recordSettle(ok, item, result);
     }
   }
 
@@ -576,6 +587,7 @@ export default function StudySessionPage({
     setPicked(null);
     setTyping('');
     setOrderPicks([]);
+    setMatchState({ selectedId: null, matches: {} });
     setProduceState(null);
     setPhase('answer');
     if (idx + 1 >= queue.length) {
@@ -922,6 +934,7 @@ export default function StudySessionPage({
               {wrong.map((r, i) => (
                 <li key={i} style={{ fontSize: '0.85rem', lineHeight: 1.6 }} lang={langCode}>
                   {r.item.word ? `${r.item.word.word_text} — ${r.item.word.meaning}`
+                    : r.item.words ? `어휘 매칭 — ${r.item.words.map(word => word.word_text).join(' · ')}`
                     : r.item.type === 'produce-writing' ? `작문 — ${r.item.targetPattern?.pattern || ''}`
                     : r.item.quiz ? (r.item.quiz.full || r.item.quiz.answer)
                     : r.item.sentence?.main}
@@ -1223,8 +1236,8 @@ export default function StudySessionPage({
         </div>
       )}
 
-      {/* ── 문법: 공통 연습 엔진(choice/order) ── */}
-      {(item.type === 'grammar-cloze' || item.type === 'grammar-order') && (
+      {/* ── 공통 연습 엔진: 문법 choice/order + 어휘 match + 예문 order ── */}
+      {(['grammar-cloze', 'grammar-order', 'vocab-match', 'example-order'].includes(item.type)) && (
         <ExerciseEnginePrototype
           studyItem={item}
           phase={phase}
@@ -1232,7 +1245,9 @@ export default function StudySessionPage({
           prepared={prepared}
           orderPicks={orderPicks}
           onOrderPicksChange={setOrderPicks}
-          onAnswer={result => settle(result.correct, result.response)}
+          matchState={matchState}
+          onMatchStateChange={setMatchState}
+          onAnswer={result => settle(result.correct, result.response, result)}
           isTapLocked={isTapLocked}
           lang={lang}
           langCode={langCode}

@@ -12,6 +12,8 @@ import grammarB2 from './grammar/b2';
 import grammarC1 from './grammar/c1';
 import grammarC2 from './grammar/c2';
 import grammarExpansion from './grammar/expansion';
+import grammarSceneEmergency from './grammar/scene_emergency';
+import grammarSceneTravel from './grammar/scene_travel';
 
 import vocabA1 from './vocab/a1';
 import vocabA2 from './vocab/a2';
@@ -73,7 +75,7 @@ export const EN_LEVEL_META = [
 const registry = createRegistry(
   EN_LEVEL_META,
   {
-    OT: grammarOT,
+    OT: [...grammarOT, ...grammarSceneEmergency, ...grammarSceneTravel.filter(ch => ch.level === 'OT')],
     A1: [...grammarA1, ...publishedGrammarExpansion.filter(ch => ch.level === 'A1')],
     A2: [...grammarA2, ...publishedGrammarExpansion.filter(ch => ch.level === 'A2')],
     B1: [...grammarB1, ...publishedGrammarExpansion.filter(ch => ch.level === 'B1')],
