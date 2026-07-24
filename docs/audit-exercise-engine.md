@@ -164,3 +164,16 @@ fail-closed 방식이다.
 
 이 연결은 이번 선행 프로토에서 의도적으로 실행하지 않았다. E3는 여전히
 `DRAFT_UNWIRED`이고 기존 페이지·레지스트리·DB는 수정하지 않았다.
+
+## 6. #555 후속 — `StudySessionPage` 연결
+
+`StudySessionPage`의 문법 챕터 문항(`grammar-cloze`·`grammar-order`)은
+`ExerciseEnginePrototype`의 제어형 `studyItem` 경로로 연결했다. 기존 페이지가 유지하던
+문항별 진행·즉시 피드백·오답 1회 재출제·첫 시도 집계 계약은 바꾸지 않고, 공통 컴포넌트가
+문항 정규화와 exact 채점을 담당한다.
+
+첫 시도 완료 시 `src/lib/studyExerciseBridge.js`가 문항 효과를 F2
+`progressStore.recordReviewCompleted` 계약으로 바꾼다. 문법 due의 챕터 단위
+`gradeGrammarReview`, 신규 챕터의 세션 종료 통과 판정, 어휘 FSRS rating
+(정답 3·오답 1)은 기존대로 유지한다. 로그인하지 않은 호출도 같은 경계를 거쳐
+`progressStore`의 게스트 폴백으로 종료하며 원격 저장을 시도하지 않는다.

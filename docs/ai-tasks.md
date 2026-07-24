@@ -324,6 +324,10 @@
 - P0 (운영 필수·최우선) 로컬 clone 이전 + 확인 코멘트: #150 5046786117
 - P1 geo lazy-load 구현(RFC #394 승인 — 실패 UX·?spawn= 정합·scene race 주의 3건 코멘트 참조)
 ### done (최근)
+- F4-3 후속 연습 엔진 배선: `ExerciseEnginePrototype`를 `StudySessionPage` 문법
+  choice/order 흐름에 연결하고 첫 시도 기록을 F2 `recordReviewCompleted`로 통일하면서
+  기존 exact 채점·오답 재출제·챕터 진도와 게스트 무원격 폴백 회귀를 고정
+  (`codex4/exercise-wire`, 구현 7b9c036, base 8d94dab)
 - F4-3 선행 연습 엔진 조사·프로토: 5개 소비·채점·SRS 경로와 F2 연결을 전수 감사해
   E3 66문항의 현행 직결 불가를 판정하고, 기존 페이지 무수정·미배선
   `short-answer→fill`/choice 공통 컴포넌트와 fail-closed 계약 테스트를 추가
