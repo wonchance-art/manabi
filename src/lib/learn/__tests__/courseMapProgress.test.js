@@ -82,4 +82,30 @@ describe('getLessonProgress', () => {
       source: 'local-fallback',
     });
   });
+
+  it('어휘 세트의 전 단어를 체크하면 같은 레슨 진도로 합친다', async () => {
+    localStorage.setItem('as_vcheck_Chinese_LIFE', JSON.stringify(['国际转机', '转机柜台']));
+
+    const result = await getLessonProgress(undefined, {
+      lang: 'Chinese',
+      slugs: ['vocab:chinese:life:1', 'vocab:chinese:life:2'],
+      vocabLessons: [
+        {
+          slug: 'vocab:chinese:life:1',
+          storageKey: 'as_vcheck_Chinese_LIFE',
+          words: ['国际转机', '转机柜台'],
+        },
+        {
+          slug: 'vocab:chinese:life:2',
+          storageKey: 'as_vcheck_Chinese_LIFE',
+          words: ['预订确认单'],
+        },
+      ],
+    });
+
+    expect(result).toEqual({
+      completedSlugs: ['vocab:chinese:life:1'],
+      source: 'guest',
+    });
+  });
 });

@@ -11,6 +11,7 @@ import grammarB1 from './grammar/b1';
 import grammarB2 from './grammar/b2';
 import grammarC1 from './grammar/c1';
 import grammarC2 from './grammar/c2';
+import grammarExpansion from './grammar/expansion';
 
 import vocabA1 from './vocab/a1';
 import vocabA2 from './vocab/a2';
@@ -25,6 +26,10 @@ import bunkeiB1 from './bunkei/b1';
 import bunkeiB2 from './bunkei/b2';
 import bunkeiC1 from './bunkei/c1';
 import bunkeiC2 from './bunkei/c2';
+
+// F4 정본은 파일 provenance를 위한 status를 유지하지만, 공개 챕터 스키마에는
+// status 필드가 없으므로 레지스트리 경계에서만 제거한다.
+const publishedGrammarExpansion = grammarExpansion.map(({ status, ...chapter }) => chapter);
 
 /** 레벨 메타 — 틸 그라데이션 (기초 밝음 → 마스터 깊음) */
 export const EN_LEVEL_META = [
@@ -67,7 +72,15 @@ export const EN_LEVEL_META = [
 
 const registry = createRegistry(
   EN_LEVEL_META,
-  { OT: grammarOT, A1: grammarA1, A2: grammarA2, B1: grammarB1, B2: grammarB2, C1: grammarC1, C2: grammarC2 },
+  {
+    OT: grammarOT,
+    A1: [...grammarA1, ...publishedGrammarExpansion.filter(ch => ch.level === 'A1')],
+    A2: [...grammarA2, ...publishedGrammarExpansion.filter(ch => ch.level === 'A2')],
+    B1: [...grammarB1, ...publishedGrammarExpansion.filter(ch => ch.level === 'B1')],
+    B2: [...grammarB2, ...publishedGrammarExpansion.filter(ch => ch.level === 'B2')],
+    C1: [...grammarC1, ...publishedGrammarExpansion.filter(ch => ch.level === 'C1')],
+    C2: [...grammarC2, ...publishedGrammarExpansion.filter(ch => ch.level === 'C2')],
+  },
   { A1: vocabA1, A2: vocabA2, B1: vocabB1, B2: vocabB2, C1: vocabC1, C2: vocabC2 },
 );
 

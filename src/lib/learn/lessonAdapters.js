@@ -390,10 +390,10 @@ export class ChineseAdapter {
       language: "Chinese",
       level,
       title: `중국어 ${level} ${this._levelTitle(level)}`,
-      description: `HSK ${level} 레벨 문법`,
+      description: level === "LIFE" ? "여행·일상·업무 생활 어휘" : `HSK ${level} 레벨 문법`,
       targetLearners: this._targetLearner(level),
       estimatedDurationWeeks: 4,
-      prerequisites: level !== "H1" ? [`chinese-${this._prevLevel(level)}`] : [],
+      prerequisites: /^H[2-6]$/.test(level) ? [`chinese-${this._prevLevel(level)}`] : [],
     };
 
     const validation = validateCourse(course);
@@ -433,12 +433,15 @@ export class ChineseAdapter {
   }
 
   _levelTitle(level) {
+    if (level === "OT") return "오리엔테이션";
+    if (level === "LIFE") return "생활 어휘";
     const lvNum = parseInt(level.charAt(1));
     const titles = { 1: "입문", 2: "초급", 3: "초급상", 4: "중급", 5: "중급상", 6: "고급" };
     return titles[lvNum] || "";
   }
 
   _targetLearner(level) {
+    if (level === "OT" || level === "LIFE") return "beginner";
     const lvNum = parseInt(level.charAt(1));
     return lvNum <= 2 ? "beginner" : lvNum <= 4 ? "intermediate" : "advanced";
   }
