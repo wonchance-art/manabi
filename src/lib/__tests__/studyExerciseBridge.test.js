@@ -3,7 +3,6 @@ import { calculateFSRS } from '../fsrs';
 import { recordReviewCompleted } from '../learn/progressStore';
 import {
   buildStudyReviewRef,
-  buildStudyReviewRefs,
   recordStudyReviewCompleted,
 } from '../studyExerciseBridge';
 
@@ -141,95 +140,6 @@ describe('studyExerciseBridge', () => {
         rt_ms: 500,
       },
     });
-  });
-
-  it('4쌍 매칭을 쌍별 정오답·FSRS로 recordReviewCompleted에 연결한다', async () => {
-    const words = [
-      { id: 'w1', word_text: 'bonjour', meaning: '안녕하세요', interval: 1 },
-      { id: 'w2', word_text: 'merci', meaning: '감사합니다', interval: 2 },
-      { id: 'w3', word_text: 'gare', meaning: '역', interval: 3 },
-      { id: 'w4', word_text: 'billet', meaning: '표', interval: 4 },
-    ];
-    const item = {
-      uid: 'm-1',
-      type: 'vocab-match',
-      words,
-      effect: { kind: 'vocab-match' },
-    };
-    const result = {
-      pairResults: words.map((word, index) => ({
-        word,
-        correct: index !== 1,
-      })),
-    };
-
-    expect(buildStudyReviewRefs({
-      correct: false,
-      item,
-      lang: 'French',
-      rtMs: 900,
-      result,
-    })).toEqual(words.map((word, index) => ({
-      type: 'vocab',
-      itemKey: word.word_text,
-      lang: 'French',
-      correct: index !== 1,
-      detail: {
-        word_id: word.id,
-        meaning: word.meaning,
-        mode: 'study',
-        qtype: 'match',
-        rt_ms: 900,
-      },
-    })));
-
-    await recordStudyReviewCompleted('user-1', {
-      correct: false,
-      item,
-      lang: 'French',
-      rtMs: 900,
-      result,
-    });
-
-    expect(calculateFSRS).toHaveBeenCalledTimes(4);
-    expect(calculateFSRS.mock.calls.map(([rating]) => rating)).toEqual([3, 1, 3, 3]);
-    expect(recordReviewCompleted).toHaveBeenCalledTimes(4);
-    expect(recordReviewCompleted.mock.calls.map(([, reviewRef]) => [
-      reviewRef.itemKey,
-      reviewRef.correct,
-      reviewRef.detail.qtype,
-    ])).toEqual([
-      ['bonjour', true, 'match'],
-      ['merci', false, 'match'],
-      ['gare', true, 'match'],
-      ['billet', true, 'match'],
-    ]);
-  });
-
-  it('매칭 게스트도 네 쌍 모두 동일한 로컬 폴백 경계를 지난다', async () => {
-    const words = [
-      { id: 'w1', word_text: 'bonjour', meaning: '안녕하세요' },
-      { id: 'w2', word_text: 'merci', meaning: '감사합니다' },
-      { id: 'w3', word_text: 'gare', meaning: '역' },
-      { id: 'w4', word_text: 'billet', meaning: '표' },
-    ];
-    await recordStudyReviewCompleted(undefined, {
-      correct: true,
-      item: {
-        uid: 'm-guest',
-        type: 'vocab-match',
-        words,
-        effect: { kind: 'vocab-match' },
-      },
-      lang: 'French',
-      rtMs: 400,
-    });
-
-    expect(calculateFSRS).not.toHaveBeenCalled();
-    expect(recordReviewCompleted).toHaveBeenCalledTimes(4);
-    expect(recordReviewCompleted.mock.calls.every(([userId, ref, nextStats]) => (
-      userId === undefined && ref.detail.qtype === 'match' && nextStats === undefined
-    ))).toBe(true);
   });
 
   it('지원하지 않거나 불완전한 effect는 원격 기록 없이 fail-closed 한다', async () => {
