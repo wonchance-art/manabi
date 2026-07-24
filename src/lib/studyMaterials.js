@@ -280,7 +280,7 @@ export async function assembleStudyMaterials(supabase, userId, lang, { horizonHo
       .select('id, word_text, meaning, furigana, source_sentence, language, interval, ease_factor, repetitions, next_review_at')
       .eq('user_id', userId).eq('language', lang)
       .lte('next_review_at', dueIso)
-      .order('next_review_at', { ascending: true }).limit(4),
+      .order('next_review_at', { ascending: true }).limit(3),
     supabase.from('user_vocabulary')
       .select('meaning')
       .eq('user_id', userId).eq('language', lang).limit(60),

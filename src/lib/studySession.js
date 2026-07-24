@@ -6,10 +6,8 @@
  * 문항 타입:
  *  vocab-choice   단어→뜻 4지선다        vocab-cloze   예문 빈칸에 단어 입력(단서회상)
  *  vocab-typing   뜻→단어 입력           vocab-listening TTS→단어 입력
- *  vocab-match    단어↔뜻 4쌍 매칭
  *  grammar-cloze  예문 빈칸(refQuiz.meaning) grammar-order 어순 배열(refQuiz.apply)
- *  example-order  기존 예문 토큰 어순 배열 read-meaning 예문→뜻 4지선다
- *  teach          새 패턴 티칭 카드(문항 아님·집계 제외)
+ *  read-meaning   예문→뜻 4지선다        teach 새 패턴 티칭 카드(문항 아님·집계 제외)
  */
 
 import { vocabTypeForRung } from './skillRung';
@@ -80,63 +78,10 @@ function clozeExampleUsable(main, word) {
 }
 
 /**
- * 기존 예문 문자열을 어순 배열 토큰으로 바꾼다.
- * 띄어쓰기가 있는 언어는 공백 단위를 그대로 쓰고, 무공백 CJK는 Intl.Segmenter의
- * 단어 경계를 사용한다. 런타임에 Segmenter가 없으면 코드포인트 단위로 폴백한다.
- * 콘텐츠에 tokens 필드를 추가하지 않는 것이 이 함수의 경계다.
- */
-export function tokenizeExampleSentence(sentence) {
-  const text = typeof sentence === 'string' ? sentence.trim() : '';
-  if (!text) return [];
-
-  if (/[\s　]/u.test(text)) {
-    return text.split(/[\s　]+/u).filter(Boolean);
-  }
-
-  if (typeof Intl?.Segmenter === 'function') {
-    const tokens = [...new Intl.Segmenter(undefined, { granularity: 'word' }).segment(text)]
-      .filter(part => part.isWordLike)
-      .map(part => part.segment)
-      .filter(Boolean);
-    if (tokens.length >= 2) return tokens;
-  }
-
-  return [...text].filter(char => !/[\s。、．，,.!?！？]/u.test(char));
-}
-
-/** due 어휘 4개를 신규 필드 없이 한 매칭 문항으로 묶는다. */
-function buildVocabMatchItem(vocab) {
-  const words = [];
-  const seenWords = new Set();
-  const seenMeanings = new Set();
-
-  for (const row of vocab || []) {
-    const wordText = typeof row?.word_text === 'string' ? row.word_text.trim() : '';
-    const meaning = stripSourceLangInMeaning(row?.meaning);
-    if (!wordText || !meaning || seenWords.has(wordText) || seenMeanings.has(meaning)) continue;
-    seenWords.add(wordText);
-    seenMeanings.add(meaning);
-    words.push({ ...row, word_text: wordText, meaning });
-    if (words.length === 4) break;
-  }
-
-  if (words.length !== 4) return null;
-  return {
-    uid: uid('m'),
-    type: 'vocab-match',
-    words,
-    effect: { kind: 'vocab-match' },
-  };
-}
-
-/**
  * 어휘 due → 문항 (rung + 다이얼로 타입 배정, 인덱스 로테이션 폐기).
  * @param {Object<string,{main:string,pron?:string|null}>} exampleByWord - word_text → 예문(서버 조립). cloze 재료.
  */
 function buildVocabItems(vocab, meaningPool, vocabRungs = {}, dial = 'normal', exampleByWord = {}) {
-  const matchItem = buildVocabMatchItem(vocab);
-  if (matchItem) return [matchItem];
-
   const cleanPool = (meaningPool || []).map(stripSourceLangInMeaning);
   return (vocab || []).slice(0, 3).map(w => {
     const meaning = stripSourceLangInMeaning(w.meaning); // 보기·정답·채점 기준을 정화된 값으로 통일
@@ -205,34 +150,14 @@ function buildNewChapterItems(newChapter, max = 3) {
   return { teach, items };
 }
 
-/** 독해 — 기존 예문에서 어순 배열/뜻 고르기를 번갈아 자동 생성 */
+/** 독해 — 예문→뜻 고르기 */
 function buildReadingItems(reading, koPool, max) {
   const out = [];
-  let formatIndex = 0;
   for (const r of reading || []) {
     if (out.length >= max) break;
     if (!r?.main || !r?.ko) continue;
-
-    const tokens = tokenizeExampleSentence(r.main);
-    if (formatIndex % 2 === 0 && tokens.length >= 2 && tokens.length <= 12) {
-      out.push({
-        uid: uid('o'),
-        type: 'example-order',
-        sentence: { main: r.main, pron: r.pron || null },
-        prompt: r.ko,
-        tokens,
-        joinWith: /[\s　]/u.test(r.main) ? ' ' : '',
-        effect: { kind: 'reading', key: r.main },
-      });
-      formatIndex++;
-      continue;
-    }
-
     const distractors = pickDistractors(koPool || [], r.ko, 3);
-    if (distractors.length < 2) {
-      formatIndex++;
-      continue;
-    }
+    if (distractors.length < 2) continue;
     out.push({
       uid: uid('r'),
       type: 'read-meaning',
@@ -241,7 +166,6 @@ function buildReadingItems(reading, koPool, max) {
       correct: r.ko,
       effect: { kind: 'reading', key: r.main },
     });
-    formatIndex++;
   }
   return out;
 }
@@ -302,10 +226,8 @@ export function qtypeForItem(type) {
     case 'vocab-cloze': return 'cloze';
     case 'vocab-typing': return 'typing';
     case 'vocab-listening': return 'listening';
-    case 'vocab-match': return 'match';
     case 'grammar-cloze': return 'cloze';
     case 'grammar-order': return 'order';
-    case 'example-order': return 'order';
     case 'read-meaning': return 'read';
     default: return null;
   }

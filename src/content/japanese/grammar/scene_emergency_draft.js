@@ -1,8 +1,20 @@
+/**
+ * DRAFT — 레벨 1 「길·긴급」 장면 문형 레슨 2개
+ *
+ * 목적: docs/product-definition.md의 길 묻기/알아듣기·교통수단·아픔·분실 공백을
+ *       레슨당 문형 5개, 미니 대화 2개, story/questions 연습으로 초안화한다.
+ * 검수: Claude 콘텐츠 오너가 카피·난이도·문형 범위·최종 배치를 확정한다.
+ * 상태: DRAFT_UNWIRED — japanese index·레지스트리·페이지·도어 소비 경로에 연결하지 않는다.
+ */
+
+export const JAPANESE_SCENE_EMERGENCY_DRAFT_STATUS = "DRAFT_UNWIRED";
+
 const chapters = [
   {
-    slug: "n5-29-scene-directions-transit",
+    slug: "n5-draft-29-scene-directions-transit",
     level: "N5",
     order: 29,
+    status: JAPANESE_SCENE_EMERGENCY_DRAFT_STATUS,
     title: "길을 묻고, 안내를 따라, 탈것까지 이어 가기",
     topic: "길 묻기·길 안내 이해·교통수단",
     titleFr: "〜へはどういけばいいですか・〜までどのくらいかかりますか",
@@ -243,7 +255,7 @@ const chapters = [
           ],
           questions: [
             {
-              id: "n5-29-scene-directions-transit-sq1",
+              id: "n5-draft-29-scene-directions-transit-sq1",
               type: "order",
               pattern: "Nへは どう いけば いいですか",
               q: "이번에는 역으로 가는 길을 물어요. 타일을 순서대로 놓아 '역에는 어떻게 가면 돼요?'라고 말해 보세요.",
@@ -254,7 +266,7 @@ const chapters = [
                 "목적지 えき 뒤에 へは를 놓고, 질문 덩어리 どう いけば いいですか를 이어요.",
             },
             {
-              id: "n5-29-scene-directions-transit-sq2",
+              id: "n5-draft-29-scene-directions-transit-sq2",
               type: "fill",
               pattern: "Nを みぎ／ひだりに まがってください",
               q: "안내하는 사람이 '두 번째 모퉁이에서 오른쪽으로 돌아 주세요'라고 말해요. 빈칸에 동작을 채워 보세요.",
@@ -265,7 +277,7 @@ const chapters = [
                 "기준점은 かどを, 방향은 みぎに로 표시하고, 요청 동작 まがってください로 끝내요.",
             },
             {
-              id: "n5-29-scene-directions-transit-sq3",
+              id: "n5-draft-29-scene-directions-transit-sq3",
               type: "produce",
               prompt:
                 "가고 싶은 곳 하나를 정해 가는 법이나 소요 시간을 묻고, 가능하면 탈것과 내릴 곳까지 한두 문장으로 말해 보세요.",
@@ -284,9 +296,10 @@ const chapters = [
   },
 
   {
-    slug: "n5-30-scene-pain-loss",
+    slug: "n5-draft-30-scene-pain-loss",
     level: "N5",
     order: 30,
+    status: JAPANESE_SCENE_EMERGENCY_DRAFT_STATUS,
     title: "아픈 곳과 잃어버린 물건을 바로 알리기",
     topic: "아픔·증상·분실·긴급 도움 요청",
     titleFr: "〜がいたいです・〜をなくしました・〜てもらえますか",
@@ -299,7 +312,7 @@ const chapters = [
         pattern: "からだの ぶぶんが いたいです",
         patternKo: "몸의 ~가 아파요",
         body:
-          "아픈 부위를 먼저 말하고 **가 いたいです**를 붙여요. 한국어의 '배가 아파요', '머리가 아파요'와 조사와 어순까지 나란히 놓여요.\n\n" +
+          "아픈 부위를 먼저 말하고 **が いたいです**를 붙여요. 한국어의 '배가 아파요', '머리가 아파요'와 조사와 어순까지 나란히 놓여요.\n\n" +
           "자주 쓰는 부위는 **あたま**(머리), **おなか**(배), **のど**(목), **は**(이)예요. 통증이 심하면 앞에 **とても**를 붙여 말할 수 있어요.",
         examples: [
           {
@@ -321,7 +334,7 @@ const chapters = [
         pattern: "ときから しょうじょうが あります",
         patternKo: "~부터 증상이 있어요",
         body:
-          "진료나 도움 요청에서는 증상 이름과 함께 **언제부터** 그랬는지가 중요해요. 시작점에는 **から**, 증상에는 **가 あります**를 붙여요.\n\n" +
+          "진료나 도움 요청에서는 증상 이름과 함께 **언제부터** 그랬는지가 중요해요. 시작점에는 **から**, 증상에는 **が あります**를 붙여요.\n\n" +
           "**きのうから ねつが あります**는 '어제부터 열이 있어요', **あさから せきが あります**는 '아침부터 기침이 있어요'라는 뜻이에요.",
         examples: [
           {
@@ -365,7 +378,7 @@ const chapters = [
         pattern: "Nが みつかりません",
         patternKo: "N을 찾을 수 없어요",
         body:
-          "**みつかりません**은 '발견되지 않아요, 찾을 수 없어요'라는 뜻이에요. 찾는 대상이 문장의 주어가 되므로 **가**를 써요.\n\n" +
+          "**みつかりません**은 '발견되지 않아요, 찾을 수 없어요'라는 뜻이에요. 찾는 대상이 문장의 주어가 되므로 **が**를 써요.\n\n" +
           "분실 신고에서는 **Nを なくしました**로 사건을 알린 뒤 **Nが みつかりません**으로 지금도 못 찾는 상태를 덧붙이면 상황이 또렷해져요.",
         examples: [
           {
@@ -380,7 +393,7 @@ const chapters = [
           },
         ],
         pitfall:
-          "한국어 번역에는 '지갑을'이 들어가지만 일본어에서는 발견될 대상에 **가**를 붙여 **さいふが みつかりません**이라고 해요.",
+          "한국어 번역에는 '지갑을'이 들어가지만 일본어에서는 발견될 대상에 **が**를 붙여 **さいふが みつかりません**이라고 해요.",
       },
       {
         heading: "문형 5 — 필요한 행동을 정중하게 부탁해요",
@@ -539,7 +552,7 @@ const chapters = [
           ],
           questions: [
             {
-              id: "n5-30-scene-pain-loss-sq1",
+              id: "n5-draft-30-scene-pain-loss-sq1",
               type: "order",
               pattern: "ときから からだの ぶぶんが いたいです",
               q: "어제부터 배가 아프다고 말해요. 타일을 자연스러운 순서로 놓아 보세요.",
@@ -547,10 +560,10 @@ const chapters = [
               answer: ["きのう", "から", "おなか", "が", "いたいです"],
               ko: "어제부터 배가 아파요.",
               why:
-                "시작점 きのうから를 먼저 말하고, 아픈 부위 おなか에 가를 붙여 いたいです로 끝내요.",
+                "시작점 きのうから를 먼저 말하고, 아픈 부위 おなか에 が를 붙여 いたいです로 끝내요.",
             },
             {
-              id: "n5-30-scene-pain-loss-sq2",
+              id: "n5-draft-30-scene-pain-loss-sq2",
               type: "fill",
               pattern: "Nを なくしました",
               q: "지갑을 잃어버린 사실을 알리려 해요. 빈칸에 알맞은 말을 채워 보세요.",
@@ -558,10 +571,10 @@ const chapters = [
               answer: "なくしました",
               accept: [],
               why:
-                "잃어버린 물건 さいふ에 를 붙이고, 사건을 보고하는 なくしました로 끝내요.",
+                "잃어버린 물건 さいふ에 を를 붙이고, 사건을 보고하는 なくしました로 끝내요.",
             },
             {
-              id: "n5-30-scene-pain-loss-sq3",
+              id: "n5-draft-30-scene-pain-loss-sq3",
               type: "produce",
               prompt:
                 "아픈 곳이나 잃어버린 물건을 하나 정해 상황을 알리고, 상대에게 필요한 도움을 한 문장 더 부탁해 보세요.",
