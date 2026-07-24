@@ -320,6 +320,9 @@
 
 ## Codex-4 (codex4/*) — 성능·인프라 (타 기기)
 ### doing
+- F4-3 후속 연습 엔진 배선: `ExerciseEnginePrototype`를 `StudySessionPage` 문법 문항
+  흐름에 연결하고 F2 `recordReviewCompleted` 경유·채점/진도/게스트 회귀를 고정
+  (`codex4/exercise-wire`, #555 후속)
 ### todo
 - P0 (운영 필수·최우선) 로컬 clone 이전 + 확인 코멘트: #150 5046786117
 - P1 geo lazy-load 구현(RFC #394 승인 — 실패 UX·?spawn= 정합·scene race 주의 3건 코멘트 참조)
