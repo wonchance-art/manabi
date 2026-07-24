@@ -94,7 +94,7 @@ const chapters = [
           "ne ... pas는 **조동사 avoir만** 감싸요. 과거분사는 샌드위치 바깥에 남아요 — 'Je n'ai mangé pas'가 아니에요.\n\n" +
           "의문문은 평소처럼: 억양만 올리거나, Est-ce que를 붙이거나, 조동사를 도치해요(As-tu mangé ?).",
         examples: [
-          { fr: "Je n'ai pas fini.", ipa: "[ʒə ne pa fini]", ko: "저는 아직 못 끝냈어요." },
+          { fr: "Je n'ai pas fini.", ipa: "[ʒə nɛ pa fini]", ko: "저는 아직 못 끝냈어요." },
           { fr: "Il n'a pas pris de café.", ipa: "[il na pa pʁi də kafe]", ko: "그는 커피를 안 마셨어요.", note: "부정문이라 du → de" },
           { fr: "Est-ce que tu as mangé ?", ipa: "[ɛskə ty a mɑ̃ʒe]", ko: "너 밥 먹었어?" },
         ],

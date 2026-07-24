@@ -310,7 +310,7 @@ const chapters = [
           {
             fr: "Un aller-retour pour vendredi, s'il vous plaît.",
             ipa: "[œ̃n ale ʁətuʁ puʁ vɑ̃dʁədi sil vu plɛ] 앵날레 흐투흐 푸흐 방드흐디, 실 부 플레",
-            ko: "금요일에 돌아오는 왕복 한 장 주세요.",
+            ko: "금요일 왕복 한 장 주세요.",
           },
         ],
         pitfall:
@@ -1285,8 +1285,8 @@ const chapters = [
           "알레르기는 **Je suis allergique à...**로 말해요. 여성 단수는 à la, 남성 단수는 au, 복수는 aux와 연결해요.",
         examples: [
           {
-            fr: "Je suis allergique aux noix.",
-            ipa: "[ʒə sɥiz alɛʁʒik o nwa] 즈 쉬이잘레흐지크 오 누아",
+            fr: "Je suis allergique aux fruits à coque.",
+            ipa: "[ʒə sɥiz alɛʁʒik o fʁɥi a kɔk] 즈 쉬이잘레흐지크 오 프휘 아 코크",
             ko: "저는 견과류에 알레르기가 있어요.",
           },
           {
@@ -1296,7 +1296,7 @@ const chapters = [
           },
         ],
         tip:
-          "알레르기가 심하면 주문 전에 직원에게 분명히 알리고, 재료와 조리 가능 여부를 직접 확인해요.",
+          "알레르기가 심하면 주문 전에 직원에게 분명히 알리고, 재료와 조리 가능 여부를 직접 확인해요. 참고: noix는 기본적으로 '호두'예요. 견과류 전체를 말할 땐 fruits à coque를 써요.",
       },
       {
         heading: "성분 확인하기 — contenir로 재료를 물어요",
@@ -1308,8 +1308,8 @@ const chapters = [
           "**contenir**는 포함하다라는 뜻이에요. 메뉴 설명만으로 확실하지 않은 재료를 한 가지씩 구체적으로 물어요.",
         examples: [
           {
-            fr: "Est-ce que ce plat contient des noix ?",
-            ipa: "[ɛs kə sə pla kɔ̃tjɛ̃ de nwa] 에스 크 스 플라 꽁티앵 데 누아",
+            fr: "Est-ce que ce plat contient des fruits à coque ?",
+            ipa: "[ɛs kə sə pla kɔ̃tjɛ̃ de fʁɥi a kɔk] 에스 크 스 플라 꽁티앵 데 프휘 아 코크",
             ko: "이 요리에 견과류가 들어 있나요?",
           },
           {
@@ -1397,14 +1397,14 @@ const chapters = [
         examples: [
           {
             fr:
-              "여행자 : Je suis allergique aux noix.\n" +
+              "여행자 : Je suis allergique aux fruits à coque.\n" +
               "식당 직원 : Merci de nous prévenir.\n" +
-              "여행자 : Est-ce que ce plat contient des noix ?\n" +
+              "여행자 : Est-ce que ce plat contient des fruits à coque ?\n" +
               "식당 직원 : Oui. Je vais vous proposer un autre plat.",
             ipa:
-              "[ʒə sɥiz alɛʁʒik o nwa]\n" +
+              "[ʒə sɥiz alɛʁʒik o fʁɥi a kɔk]\n" +
               "[mɛʁsi də nu pʁəvəniʁ]\n" +
-              "[ɛs kə sə pla kɔ̃tjɛ̃ de nwa]\n" +
+              "[ɛs kə sə pla kɔ̃tjɛ̃ de fʁɥi a kɔk]\n" +
               "[wi ʒə vɛ vu pʁɔpoze œ̃n otʁ pla]",
             ko:
               "여행자: 저는 견과류에 알레르기가 있어요.\n" +
@@ -1441,17 +1441,17 @@ const chapters = [
             },
             {
               speaker: "여행자",
-              fr: "Je suis allergique aux noix.",
+              fr: "Je suis allergique aux fruits à coque.",
               ko: "저는 견과류에 알레르기가 있어요.",
             },
             {
               speaker: "여행자",
-              fr: "Est-ce que ce plat contient des noix ?",
+              fr: "Est-ce que ce plat contient des fruits à coque ?",
               ko: "이 요리에 견과류가 들어 있나요?",
             },
             {
               speaker: "식당 직원",
-              fr: "Oui. Je peux vous proposer un plat sans noix.",
+              fr: "Oui. Je peux vous proposer un plat sans fruits à coque.",
               ko: "네. 견과류가 없는 요리를 안내해 드릴 수 있어요.",
             },
             {
@@ -1480,18 +1480,18 @@ const chapters = [
               type: "order",
               pattern: "Je suis allergique aux + 재료.",
               q: "'저는 견과류에 알레르기가 있어요'가 되도록 타일을 놓아 보세요.",
-              tiles: ["Je suis", "allergique", "aux", "noix", "."],
-              answer: ["Je suis", "allergique", "aux", "noix", "."],
+              tiles: ["Je suis", "allergique", "aux", "fruits à coque", "."],
+              answer: ["Je suis", "allergique", "aux", "fruits à coque", "."],
               ko: "저는 견과류에 알레르기가 있어요.",
               why:
-                "복수 재료 noix 앞에서는 à + les가 합쳐진 aux를 써요.",
+                "복수 명사구 fruits à coque 앞에서는 à + les가 합쳐진 aux를 써요.",
             },
             {
               id: "fr-a1-restaurant-allergy-payment-sq2",
               type: "fill",
               pattern: "Est-ce que ce plat contient + 재료 ?",
               q: "이 요리에 견과류가 들어 있는지 물어요. 빈칸을 채워 보세요.",
-              fr: "Est-ce que ce plat ［　］ des noix ?",
+              fr: "Est-ce que ce plat ［　］ des fruits à coque ?",
               answer: "contient",
               accept: [],
               why:

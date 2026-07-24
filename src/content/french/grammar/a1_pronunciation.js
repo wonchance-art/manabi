@@ -236,10 +236,10 @@ const chapters = [
           "엘리종은 **음운학적 필연**이 아니라 **문법적 규칙**이에요. 두 모음이 연달아 나오는 것을 피하기 위해, " +
           "앞 단어의 **마지막 모음이 사라지고**, 철저하게 아포스트로피로 표기합니다.\n\n" +
           "**엘리종이 일어나는 단어들**:\n" +
-          "• **정관사**: le → l' (l'ami, l'école)\n" +
-          "• **부정관사**: une는 un으로만 쓰므로 엘리종 없음, 하지만 de는 d'(d'un)\n" +
-          "• **인칭대명사**: je → j' (j'aime), me → m', te → t', se → s', ne → n' (negation)\n" +
-          "• **상대 대명사 que**: que → qu' (qu'il fasse)\n" +
+          "• **정관사**: le·la → l' (le+ami→l'ami, la+école→l'école)\n" +
+          "• **부정관사**: un·une는 엘리종하지 않아요(un ami는 리에종 [œ̃n‿ami]). 다만 de는 d'(d'un)\n" +
+          "• **인칭대명사**: je → j' (j'aime), me → m', te → t', se → s', ne → n' (부정)\n" +
+          "• **관계대명사·접속사 que**: que → qu' (qu'il fasse)\n" +
           "• **전치사 de, à**: de → d' (d'un livre), à는 au/à la로 축약돼서 엘리종 없음(혼동 주의)\n" +
           "• **형용사 ce**: ce → cet (cet ami, cet enfant) — 발음상 모음 연결을 피함",
         examples: [

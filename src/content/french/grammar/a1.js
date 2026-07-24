@@ -284,9 +284,9 @@ const chapters = [
           "J'ai **un** chat → Je n'ai pas **de** chat. '하나도 없음'의 세계에서는 '하나(un)'라는 말이 무의미해지니 중립적인 de로 갈아탄다고 이해하면 돼요.\n\n" +
           "단, **être 뒤에서는 그대로**(Ce n'est pas un chat)이고, 정관사 le/la/les도 유지돼요(Je n'aime pas le café).",
         examples: [
-          { fr: "Je n'ai pas de chat.", ipa: "[ʒə ne pa də ʃa]", ko: "저는 고양이가 없어요.", note: "un → de" },
+          { fr: "Je n'ai pas de chat.", ipa: "[ʒə nɛ pa də ʃa]", ko: "저는 고양이가 없어요.", note: "un → de" },
           { fr: "Il n'y a pas de problème.", ipa: "[ilnja pa də pʁɔblɛm]", ko: "문제없어요.", note: "il y a의 부정 — 통째로 암기" },
-          { fr: "Je n'ai pas d'amis ici.", ipa: "[ʒə ne pa dami isi]", ko: "저는 여기 친구가 없어요.", note: "des → d'" },
+          { fr: "Je n'ai pas d'amis ici.", ipa: "[ʒə nɛ pa dami isi]", ko: "저는 여기 친구가 없어요.", note: "des → d'" },
           { fr: "Ce n'est pas une question.", ipa: "[sə nɛ pa yn kɛstjɔ̃]", ko: "그건 질문이 아니에요.", note: "être 뒤라 une 유지" },
         ],
         pitfall: "'Je n'ai pas un chat'은 한국 학습자가 가장 오래 끌고 가는 실수예요. **부정의 pas 뒤에서 un/une/des는 de** — 영어에도 한국어에도 없는 규칙이라 의식적으로 연습해야 해요.",
@@ -891,7 +891,7 @@ const chapters = [
           ],
         },
         examples: [
-          { fr: "Ça coûte quatre-vingts euros.", ipa: "[sa kut katʁəvɛ̃ øʁo]", ko: "그건 80유로예요." },
+          { fr: "Ça coûte quatre-vingts euros.", ipa: "[sa kut katʁəvɛ̃z øʁo]", ko: "그건 80유로예요." },
           { fr: "J'ai soixante-quinze ans.", ipa: "[ʒe swasɑ̃tkɛ̃z ɑ̃]", ko: "저는 75살이에요." },
         ],
         tip: "벨기에와 스위스에서는 septante(70), nonante(90)라는 '정상적인' 단어를 써요. 스위스 일부는 huitante(80)까지. 프랑스인만 고집스럽게 암산을 즐기는 셈이니, 너무 미워하지는 마세요.",
