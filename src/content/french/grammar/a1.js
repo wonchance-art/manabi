@@ -6,7 +6,7 @@ const chapters = [
   {
     slug: "a1-01-pronouns-etre",
     level: "A1",
-    order: 1,
+    order: 5,
     title: "\"저는 한국인이에요\" — 첫 문장 만들기",
     topic: "주어 인칭대명사·être",
     titleFr: "Les pronoms sujets et le verbe être",
@@ -95,7 +95,7 @@ const chapters = [
   {
     slug: "a1-02-avoir",
     level: "A1",
-    order: 2,
+    order: 6,
     title: "\"배고파요\"도 '가지다'로 말한다",
     topic: "avoir·il y a",
     titleFr: "Le verbe avoir",
@@ -170,7 +170,7 @@ const chapters = [
   {
     slug: "a1-03-er-verbs",
     level: "A1",
-    order: 3,
+    order: 10,
     title: "하나만 외우면 90%가 풀린다",
     topic: "1군 -er 동사 활용",
     titleFr: "Les verbes en -er",
@@ -243,7 +243,7 @@ const chapters = [
   {
     slug: "a1-04-negation",
     level: "A1",
-    order: 4,
+    order: 11,
     title: "\"커피는 안 마셔요\" — 아니라고 말하기",
     topic: "부정문 ne…pas",
     titleFr: "La négation : ne ... pas",
@@ -311,7 +311,7 @@ const chapters = [
   {
     slug: "a1-05-questions",
     level: "A1",
-    order: 5,
+    order: 12,
     title: "끝만 올려도 질문이 된다",
     topic: "의문문 3형식·의문사",
     titleFr: "Les questions",
@@ -391,7 +391,7 @@ const chapters = [
   {
     slug: "a1-11-gender",
     level: "A1",
-    order: 6,
+    order: 7,
     title: "모든 단어에 성별이 있다고?",
     topic: "명사의 성(genre)",
     titleFr: "Le genre des noms",
@@ -455,7 +455,7 @@ const chapters = [
   {
     slug: "a1-12-articles",
     level: "A1",
-    order: 7,
+    order: 8,
     title: "'커피 한 잔'의 '한'이 필수인 언어",
     topic: "관사 입문 le/la·un/une",
     titleFr: "Les articles",
@@ -523,7 +523,7 @@ const chapters = [
   {
     slug: "a1-06-adjectives",
     level: "A1",
-    order: 8,
+    order: 13,
     title: "'레드 와인'이 아니라 '와인 레드'",
     topic: "형용사 성수 일치·위치(BAGS)",
     titleFr: "Les adjectifs",
@@ -599,7 +599,7 @@ const chapters = [
   {
     slug: "a1-07-possessives",
     level: "A1",
-    order: 9,
+    order: 14,
     title: "sa mère는 누구의 엄마일까?",
     topic: "소유 형용사 mon/ma/son",
     titleFr: "Les adjectifs possessifs",
@@ -666,7 +666,7 @@ const chapters = [
   {
     slug: "a1-08-aller-venir",
     level: "A1",
-    order: 10,
+    order: 15,
     title: "\"방금 먹었어, 곧 갈 거야\"",
     topic: "aller/venir·근접 미래와 과거",
     titleFr: "Aller, venir et leurs constructions",
@@ -772,7 +772,7 @@ const chapters = [
   {
     slug: "a1-09-partitive",
     level: "A1",
-    order: 11,
+    order: 16,
     title: "\"빵 좀 주세요\"의 '좀'을 문법으로",
     topic: "부분관사 du/de la",
     titleFr: "Les articles partitifs",
@@ -840,7 +840,7 @@ const chapters = [
   {
     slug: "a1-10-numbers-time",
     level: "A1",
-    order: 12,
+    order: 17,
     title: "70을 '60+10'이라 부르는 사람들",
     topic: "숫자·시간·날짜",
     titleFr: "Les nombres, l'heure et la date",
@@ -932,7 +932,7 @@ const chapters = [
   {
     slug: "a1-13-survival",
     level: "A1",
-    order: 13,
+    order: 1,
     title: "\"봉주르\" 없이는 시작도 없다",
     topic: "인사·생존 표현과 tu/vous",
     titleFr: "Salutations et expressions de survie",

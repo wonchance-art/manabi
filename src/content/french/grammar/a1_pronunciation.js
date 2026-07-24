@@ -7,7 +7,7 @@ const chapters = [
   {
     slug: "a1-29-liaison",
     level: "A1",
-    order: 29,
+    order: 2,
     title: "자음 이어붙이기 — 듣기 편하게",
     topic: "리에종(liaison)",
     titleFr: "La liaison — quand les consonnes réveillent",
@@ -218,7 +218,7 @@ const chapters = [
   {
     slug: "a1-30-elision",
     level: "A1",
-    order: 30,
+    order: 3,
     title: "모음이 사라진다 — 엘리종",
     topic: "엘리종(élision)",
     titleFr: "L'élision — quand les voyelles disparaissent",
@@ -378,7 +378,7 @@ const chapters = [
   {
     slug: "a1-31-rhythm-stress",
     level: "A1",
-    order: 31,
+    order: 4,
     title: "강세와 리듬 — 프랑스어만의 패턴",
     topic: "리듬·강세(rythme et accentuation)",
     titleFr: "Le rythme et l'accent tonique du français",
