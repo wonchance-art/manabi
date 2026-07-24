@@ -76,7 +76,7 @@ const chapters = [
           { fr: "Hier, j'ai travaillé.", ipa: "[jɛʁ ʒe tʁavaje]", ko: "어제 저는 일했어요." },
           { fr: "La semaine dernière, nous avons visité Lyon.", ipa: "[la səmɛn dɛʁnjɛʁ nuzavɔ̃ vizite ljɔ̃]", ko: "지난주에 우리는 리옹을 구경했어요." },
         ],
-        vsEn: "형태만 보면 영어 현재완료(have + p.p.)와 똑같죠: J'ai mangé = I have eaten. 하지만 **의미는 I ate(단순과거)**예요. 영어에서는 'Yesterday I have eaten'이 비문이지만, 프랑스어 'Hier, j'ai mangé'는 완벽한 문장이에요. '형태는 영어 현재완료, 용법은 영어 과거형' — 이 비대칭을 받아들이는 게 A2의 첫 관문입니다.",
+        vsEn: "형태만 보면 영어 현재완료(have + p.p.)와 똑같죠: J'ai mangé = I have eaten. 하지만 **의미는 I ate(단순과거)**예요. 영어에서는 'Yesterday I have eaten'이 비문이지만, 프랑스어 'Hier, j'ai mangé'는 완벽한 문장이에요. '형태는 영어 현재완료, 용법은 영어 과거형' — 이 비대칭을 받아들이는 게 A2의 첫 관문예요.",
         enParallel: {
           rows: [
             { en: "I **have eaten** a pizza.", fr: "J'**ai mangé** une pizza.", ko: "저는 피자를 먹었어요." },
@@ -150,7 +150,7 @@ const chapters = [
           { fr: "Mes parents sont venus.", ipa: "[me paʁɑ̃ sɔ̃ vəny]", ko: "부모님이 오셨어요.", note: "복수 → venus" },
           { fr: "Elles sont arrivées hier.", ipa: "[ɛl sɔ̃taʁive jɛʁ]", ko: "그녀들은 어제 도착했어요." },
         ],
-        pitfall: "allé/allée/allés/allées — 철자는 네 가지지만 **발음은 전부 [ale]로 똑같아요**. 즉 이 일치는 거의 순수하게 글쓰기 규칙이에요. 말할 때는 티가 안 나니 방심하다가, 받아쓰기와 작문에서 무더기로 감점되는 단골 포인트입니다.",
+        pitfall: "allé/allée/allés/allées — 철자는 네 가지지만 **발음은 전부 [ale]로 똑같아요**. 즉 이 일치는 거의 순수하게 글쓰기 규칙이에요. 말할 때는 티가 안 나니 방심하다가, 받아쓰기와 작문에서 무더기로 감점되는 단골 포인트예요.",
       },
       {
         heading: "대명동사도 전원 être — 그리고 정리",
@@ -245,7 +245,7 @@ const chapters = [
           ],
           note: "반과거 한 형태가 영어 was/were + -ing(과거진행)과 used to(습관) 둘 다를 덮어요.",
         },
-        pitfall: "한국어 '-었었-'(살았었다)을 imparfait의 등가물로 외우면 위험해요. '-었었-'은 '지금은 아니다'라는 단절을 강조하는 표현이지 진행·배경의 표지가 아니거든요. 한국어 번역으로 고르지 말고, **'사건 한 컷인가, 깔린 배경인가'**라는 질문으로 고르세요. 시간이 얼마나 길었는지도 기준이 아니에요 — 10년이라도 '한 덩어리 사건'이면 passé composé입니다(J'ai habité dix ans à Séoul).",
+        pitfall: "한국어 '-었었-'(살았었다)을 imparfait의 등가물로 외우면 위험해요. '-었었-'은 '지금은 아니다'라는 단절을 강조하는 표현이지 진행·배경의 표지가 아니거든요. 한국어 번역으로 고르지 말고, **'사건 한 컷인가, 깔린 배경인가'**라는 질문으로 고르세요. 시간이 얼마나 길었는지도 기준이 아니에요 — 10년이라도 '한 덩어리 사건'이면 passé composé예요(J'ai habité dix ans à Séoul).",
       },
     ],
   },
@@ -272,7 +272,7 @@ const chapters = [
           { fr: "Je me lave.", ipa: "[ʒə mə lav]", ko: "저는 씻어요.", note: "대명동사 — 행동이 나에게로" },
           { fr: "Je m'appelle Minji.", ipa: "[ʒə mapɛl mindʒi]", ko: "제 이름은 민지예요.", note: "직역: 나는 나를 민지라고 불러요" },
         ],
-        vsEn: "영어는 이 범주가 없어서 wash (myself), get up, be called처럼 제각각으로 처리해요. myself 같은 재귀대명사가 살짝 비슷하지만, 프랑스어 se는 선택이 아니라 **동사에 박혀 있는 부품**이에요. se lever에서 se를 빼면 '일어나다'가 아니라 '(남을) 일으키다'가 됩니다.",
+        vsEn: "영어는 이 범주가 없어서 wash (myself), get up, be called처럼 제각각으로 처리해요. myself 같은 재귀대명사가 살짝 비슷하지만, 프랑스어 se는 선택이 아니라 **동사에 박혀 있는 부품**이에요. se lever에서 se를 빼면 '일어나다'가 아니라 '(남을) 일으키다'가 돼요.",
       },
       {
         heading: "활용 — 재귀대명사도 인칭 따라 변신",
@@ -298,7 +298,7 @@ const chapters = [
           { fr: "Tu te couches tard ?", ipa: "[ty tə kuʃ taʁ]", ko: "너 늦게 자?" },
           { fr: "Nous nous levons tôt.", ipa: "[nu nu ləvɔ̃ to]", ko: "우리는 일찍 일어나요.", note: "nous nous — 어색해 보여도 정상이에요" },
         ],
-        pitfall: "부정문에서 ne...pas는 **재귀대명사+동사를 통째로** 감싸요: Je **ne** me lève **pas** tôt. 재귀대명사는 동사에서 떼어낼 수 없는 한 몸이라고 생각하세요. 'Je me ne lève pas'는 불가능합니다.",
+        pitfall: "부정문에서 ne...pas는 **재귀대명사+동사를 통째로** 감싸요: Je **ne** me lève **pas** tôt. 재귀대명사는 동사에서 떼어낼 수 없는 한 몸이라고 생각하세요. 'Je me ne lève pas'는 불가능해요.",
       },
       {
         heading: "아침 루틴 한 세트 + 상호 의미",
@@ -355,7 +355,7 @@ const chapters = [
           { fr: "Tu parles à tes parents ? — Oui, je leur parle.", ipa: "[ʒə lœʁ paʁl]", ko: "부모님과 얘기해? — 응, (그분들께) 얘기해." },
           { fr: "Je lui donne un cadeau.", ipa: "[ʒə lɥi dɔn œ̃ kado]", ko: "그/그녀에게 선물을 줘요." },
         ],
-        pitfall: "**lui는 남녀 공용**이에요 — '그에게'도 '그녀에게'도 lui. 소유 형용사 son/sa에서 봤듯, 프랑스어는 3인칭에서 영어식 he/she 구별에 무심해요. '그녀에게니까 la...'라고 하면 직접목적 대명사와 뒤섞이는 오답이 됩니다. 동사가 à를 데리고 다니면(parler à, téléphoner à) lui/leur — 동사와 전치사를 세트로 외우는 게 답이에요.",
+        pitfall: "**lui는 남녀 공용**이에요 — '그에게'도 '그녀에게'도 lui. 소유 형용사 son/sa에서 봤듯, 프랑스어는 3인칭에서 영어식 he/she 구별에 무심해요. '그녀에게니까 la...'라고 하면 직접목적 대명사와 뒤섞이는 오답이 돼요. 동사가 à를 데리고 다니면(parler à, téléphoner à) lui/leur — 동사와 전치사를 세트로 외우는 게 답이에요.",
       },
       {
         heading: "어순 종합 — 부정문, 두 동사 문장, passé composé",
@@ -739,7 +739,7 @@ const chapters = [
           ],
           note: "qui=주어 자리 who/which/that, que=목적어 자리 whom/which/that. 선행사 뒤에 관계절이 붙는 어순이 영어와 동일.",
         },
-        tip: "팝송 한 소절로 굳히기 — 에디트 피아프가 아니라 셀린 디옹도 좋지만, 가장 유명한 건 «Je veux un homme qui me regarde»류의 가사 패턴이에요. 'qui + 동사' 덩어리를 노래 가사에서 찾는 습관을 들이면 어느새 몸이 구별하게 됩니다.",
+        tip: "팝송 한 소절로 굳히기 — 에디트 피아프가 아니라 셀린 디옹도 좋지만, 가장 유명한 건 «Je veux un homme qui me regarde»류의 가사 패턴이에요. 'qui + 동사' 덩어리를 노래 가사에서 찾는 습관을 들이면 어느새 몸이 구별하게 돼요.",
       },
     ],
   },
@@ -800,7 +800,7 @@ const chapters = [
           { fr: "Elle est arrivée en France il y a un mois.", ipa: "[ɛl ɛtaʁive ɑ̃ fʁɑ̃s ilja œ̃ mwa]", ko: "그녀는 한 달 전에 프랑스에 왔어요." },
           { fr: "Pendant le dîner, on a parlé de tout.", ipa: "[pɑ̃dɑ̃ lə dine ɔ̃na paʁle də tu]", ko: "저녁 먹는 동안 이런저런 얘기를 했어요.", note: "pendant + 명사도 OK" },
         ],
-        pitfall: "한국어 '3년 동안 배웠어요'는 지금도 배우는지 애매하지만, 프랑스어는 칼같이 갈려요 — **지금도 하면 depuis + 현재형, 끝났으면 pendant + 복합과거**. 'depuis인데 복합과거'인 문장이 보이면 십중팔구 오류입니다.",
+        pitfall: "한국어 '3년 동안 배웠어요'는 지금도 배우는지 애매하지만, 프랑스어는 칼같이 갈려요 — **지금도 하면 depuis + 현재형, 끝났으면 pendant + 복합과거**. 'depuis인데 복합과거'인 문장이 보이면 십중팔구 오류예요.",
       },
       {
         heading: "dans vs en — '~ 후에'와 '~ 만에'",
@@ -876,7 +876,7 @@ const chapters = [
         patternKo: "단위·개수를 세는 부품들 — 단위 뒤도 맨 de",
         body:
           "장보기의 핵심 틀 — **un kilo de** tomates, **une bouteille de** vin, un morceau **de** fromage. 단위 뒤도 역시 맨 de예요.\n\n" +
-          "개수가 흐릿할 땐 **quelques**(몇몇) < **plusieurs**(여럿)예요. **chaque**(각, ~마다)는 항상 **단수**와 짝입니다: chaque jour(매일).",
+          "개수가 흐릿할 땐 **quelques**(몇몇) < **plusieurs**(여럿)예요. **chaque**(각, ~마다)는 항상 **단수**와 짝예요: chaque jour(매일).",
         examples: [
           { fr: "Je voudrais un kilo de pommes et un morceau de fromage.", ipa: "[ʒə vudʁɛ œ̃ kilo də pɔm e œ̃ mɔʁso də fʁɔmaʒ]", ko: "사과 1킬로랑 치즈 한 조각 주세요." },
           { fr: "Il reste quelques places pour le concert.", ipa: "[il ʁɛst kɛlk plas puʁ lə kɔ̃sɛʁ]", ko: "콘서트 자리가 몇 개 남아 있어요." },
@@ -907,7 +907,7 @@ const chapters = [
           { fr: "Tous mes amis aiment ce café.", ipa: "[tu mezami ɛm sə kafe]", ko: "내 친구들 모두 이 카페를 좋아해요." },
           { fr: "Le bus passe toutes les quinze minutes.", ipa: "[lə bys pas tut le kɛ̃z minyt]", ko: "버스는 15분마다 와요." },
         ],
-        pitfall: "한정사 tous는 **[tu]**(s 묵음)지만, '모두'라는 대명사로 쓰면 **[tus]**로 s를 발음해요: Ils sont **tous** là [tus].(다들 와 있어.) 철자는 같은데 소리가 갈리는 드문 경우라, 듣기에서 결정적 단서가 됩니다.",
+        pitfall: "한정사 tous는 **[tu]**(s 묵음)지만, '모두'라는 대명사로 쓰면 **[tus]**로 s를 발음해요: Ils sont **tous** là [tus].(다들 와 있어.) 철자는 같은데 소리가 갈리는 드문 경우라, 듣기에서 결정적 단서가 돼요.",
       },
       {
         heading: "굳은 표현 — tout le monde, tout ce que",
@@ -921,7 +921,7 @@ const chapters = [
           { fr: "C'est tout ce que je sais.", ipa: "[sɛ tu sə kə ʒə sɛ]", ko: "그게 내가 아는 전부야." },
           { fr: "Merci pour tout !", ipa: "[mɛʁsi puʁ tu]", ko: "여러모로 고마웠어요!", note: "대명사로 쓰인 tout" },
         ],
-        vsEn: "영어 everybody도 단수 취급이죠(Everybody **is** here). tout le monde **est** là — 똑같은 감각이에요. 단, 직역하면 'all the world'라서 '온 세상'으로 오해하기 쉬운데, 그냥 '모두'라는 뜻입니다.",
+        vsEn: "영어 everybody도 단수 취급이죠(Everybody **is** here). tout le monde **est** là — 똑같은 감각이에요. 단, 직역하면 'all the world'라서 '온 세상'으로 오해하기 쉬운데, 그냥 '모두'라는 뜻예요.",
       },
       {
         heading: "quelque chose·quelqu'un — '무언가, 누군가' + 형용사",

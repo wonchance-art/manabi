@@ -45,14 +45,14 @@ const chapters = [
         patternKo: "조건법 = '주세요' → '주시겠어요?'의 공손화 장치",
         body:
           "**Je voudrais un café**의 voudrais가 바로 조건법이에요. Je veux를 조건법으로 바꾸면 '괜찮으시다면...' 하고 한 발 물러선 뉘앙스가 돼요.\n\n" +
-          "한국어 '주세요' → '주시겠어요?'와 같은 공손화 장치예요. pouvoir와 vouloir의 조건법은 서비스 상황의 만능 열쇠입니다.",
+          "한국어 '주세요' → '주시겠어요?'와 같은 공손화 장치예요. pouvoir와 vouloir의 조건법은 서비스 상황의 만능 열쇠예요.",
         examples: [
           { fr: "Je voudrais réserver une table.", ko: "테이블을 예약하고 싶은데요." },
           { fr: "Pourriez-vous répéter, s'il vous plaît ?", ko: "다시 한번 말씀해 주시겠어요?" },
           { fr: "Tu pourrais m'aider ?", ko: "나 좀 도와줄 수 있어?", note: "반말에서도 조건법을 쓰면 부드러워져요." },
           { fr: "J'aimerais visiter la Corse un jour.", ko: "언젠가 코르시카에 가보고 싶어요." },
         ],
-        vsEn: "영어 would/could와 거의 1:1이에요. I would like = je voudrais, Could you...? = Pourriez-vous...? 영어에서 공손하게 말하던 감각을 그대로 가져오면 됩니다.",
+        vsEn: "영어 would/could와 거의 1:1이에요. I would like = je voudrais, Could you...? = Pourriez-vous...? 영어에서 공손하게 말하던 감각을 그대로 가져오면 돼요.",
         enParallel: {
           rows: [
             { en: "I **would** like to reserve a table.", fr: "Je **voudrais** réserver une table.", ko: "테이블을 예약하고 싶은데요." },
@@ -68,7 +68,7 @@ const chapters = [
         patternKo: "'만약 ~라면 ...할 텐데' — 현재 사실과 다른 가정",
         body:
           "Si j'avais le temps, je voyagerais. — 시간이 있다면 여행할 텐데. (실제로는 없죠.)\n\n" +
-          "**si절에는 반과거, 결과절에는 조건법** — 이 분업이 핵심이에요. 두 절의 순서는 바꿔도 됩니다.",
+          "**si절에는 반과거, 결과절에는 조건법** — 이 분업이 핵심이에요. 두 절의 순서는 바꿔도 돼요.",
         examples: [
           { fr: "Si j'avais plus d'argent, j'achèterais cet appartement.", ko: "돈이 더 있다면 이 아파트를 살 텐데." },
           { fr: "Si tu venais avec nous, ce serait parfait.", ko: "네가 우리랑 같이 가면 완벽할 텐데." },
@@ -88,7 +88,7 @@ const chapters = [
           { fr: "Il y aurait trois blessés dans l'accident.", ko: "사고로 부상자가 세 명 발생한 것으로 보입니다.", note: "미확인 보도의 조건법" },
           { fr: "On pourrait aller au cinéma ce soir.", ko: "오늘 저녁에 영화 보러 가는 거 어때?", note: "조심스러운 제안" },
         ],
-        tip: "조건법의 공통 분모는 '현실과의 거리 두기'예요. 부탁이면 공손해지고, 가정이면 비현실이 되고, 정보면 미확인이 돼요. would 하나로 묶어 기억하면 용법 셋이 한 줄에 정리됩니다.",
+        tip: "조건법의 공통 분모는 '현실과의 거리 두기'예요. 부탁이면 공손해지고, 가정이면 비현실이 되고, 정보면 미확인이 돼요. would 하나로 묶어 기억하면 용법 셋이 한 줄에 정리돼요.",
       },
     ],
   },
@@ -114,7 +114,7 @@ const chapters = [
           { fr: "Je sais qu'il vient.", ko: "그가 온다는 걸 알아요.", note: "안다 = 사실 보고 → 직설법 vient" },
           { fr: "Je veux qu'il vienne.", ko: "그가 오기를 원해요.", note: "원한다 = 머릿속 바람 → 접속법 vienne" },
         ],
-        vsEn: "영어에는 이 범주가 거의 사라져서(I suggest that he **be** on time 같은 화석만 남음) 영어 지식이 도움이 안 되는 드문 지점이에요. 차라리 한국어로 생각하세요 — '~하기를', '~해야', '~라니 (기쁘다/이상하다)'처럼 절 전체가 바람·평가의 목적어가 되는 느낌이 들면 접속법 신호입니다.",
+        vsEn: "영어에는 이 범주가 거의 사라져서(I suggest that he **be** on time 같은 화석만 남음) 영어 지식이 도움이 안 되는 드문 지점이에요. 차라리 한국어로 생각하세요 — '~하기를', '~해야', '~라니 (기쁘다/이상하다)'처럼 절 전체가 바람·평가의 목적어가 되는 느낌이 들면 접속법 신호예요.",
       },
       {
         heading: "형태 — ils 어간 + e, es, e, ions, iez, ent",
@@ -298,7 +298,7 @@ const chapters = [
           { fr: "C'est un travail dont elle est très fière.", ko: "그녀가 아주 자랑스러워하는 작업이에요." },
           { fr: "J'ai un voisin dont la fille étudie en Corée.", ko: "딸이 한국에서 공부하는 이웃이 있어요.", note: "소유의 dont = 영어 whose" },
         ],
-        vsEn: "소유의 dont은 영어 whose, 나머지 용법은 of which/about which에 해당해요. 다만 영어보다 훨씬 일상적으로 써요. '이 동사가 de를 데리고 다니던가?'를 자문하는 게 dont 사용의 출발점입니다.",
+        vsEn: "소유의 dont은 영어 whose, 나머지 용법은 of which/about which에 해당해요. 다만 영어보다 훨씬 일상적으로 써요. '이 동사가 de를 데리고 다니던가?'를 자문하는 게 dont 사용의 출발점예요.",
         pitfall: "dont 뒤의 어순은 평서문 그대로예요(dont + 주어 + 동사). 그리고 dont 안에 이미 de가 들어 있으니 le livre dont je parle de(X)처럼 de를 또 쓰면 안 돼요. 한국어에는 관계대명사 자체가 없어서('내가 말한 책'처럼 어미로 해결) 이 중복 실수가 특히 잦아요.",
       },
       {
@@ -307,13 +307,13 @@ const chapters = [
         patternKo: "장소뿐 아니라 시간 선행사도 받는 où",
         body:
           "**où**는 선행사가 **장소**일 때 쓰는 관계대명사예요: la ville **où** je suis né(내가 태어난 도시).\n\n" +
-          "자주 놓치는 건 **시간 선행사**예요. le jour **où** je t'ai rencontré(너를 만난 날) — quand이 아니라 où입니다.",
+          "자주 놓치는 건 **시간 선행사**예요. le jour **où** je t'ai rencontré(너를 만난 날) — quand이 아니라 où예요.",
         examples: [
           { fr: "Voici le quartier où j'habite.", ko: "여기가 제가 사는 동네예요." },
           { fr: "Je me souviens du jour où on s'est rencontrés.", ko: "우리가 만난 날을 기억해요.", note: "시간 선행사에도 où" },
           { fr: "C'était une époque où tout semblait possible.", ko: "모든 게 가능해 보이던 시절이었어요." },
         ],
-        pitfall: "영어 the day **when**의 영향으로 le jour quand(X)이라고 쓰기 쉬워요. 관계절을 이끄는 자리에서 quand은 못 써요 — 장소든 시간이든 선행사가 있으면 où입니다.",
+        pitfall: "영어 the day **when**의 영향으로 le jour quand(X)이라고 쓰기 쉬워요. 관계절을 이끄는 자리에서 quand은 못 써요 — 장소든 시간이든 선행사가 있으면 où예요.",
         enParallel: {
           rows: [
             { en: "the book I told you **about**", fr: "le livre **dont** je t'ai parlé", ko: "내가 너한테 말했던 그 책" },
@@ -428,7 +428,7 @@ const chapters = [
           { fr: "Je l'ai croisée en allant au marché.", ko: "시장에 가다가 그녀와 마주쳤어요." },
         ],
         vsEn: "영어 -ing 분사구문과 닮았지만 프랑스어가 더 엄격해요. 영어에서도 dangling participle(주어 불일치 분사구문)은 문법 오류지만 일상에서 흔히 보이는 반면, 프랑스어 제롱디프의 주어 일치는 시험과 작문에서 칼같이 적용돼요.",
-        pitfall: "한국어 '~하면서'는 주어가 달라도 됩니다('음악이 흐르면서 분위기가 좋아졌다'). 그 감각으로 제롱디프를 쓰면 비문이 돼요. 제롱디프를 쓰기 전에 '두 동작의 주인이 같은가?'를 꼭 확인하세요.",
+        pitfall: "한국어 '~하면서'는 주어가 달라도 돼요('음악이 흐르면서 분위기가 좋아졌다'). 그 감각으로 제롱디프를 쓰면 비문이 돼요. 제롱디프를 쓰기 전에 '두 동작의 주인이 같은가?'를 꼭 확인하세요.",
       },
     ],
   },
@@ -449,7 +449,7 @@ const chapters = [
         patternKo: "수동태 만들기 — être + 과거분사 (주어에 성수 일치)",
         body:
           "능동문의 목적어가 주어로 올라오는 구조예요: Le chat mange la souris → La souris **est mangée** par le chat.\n\n" +
-          "주의 둘. ① 과거분사는 **주어의 성·수에 일치**(mangée). ② 시제는 être가 짊어져요 — être를 복합과거로 바꾸면 수동태 과거가 됩니다.",
+          "주의 둘. ① 과거분사는 **주어의 성·수에 일치**(mangée). ② 시제는 être가 짊어져요 — être를 복합과거로 바꾸면 수동태 과거가 돼요.",
         examples: [
           { fr: "Ce roman est traduit en vingt langues.", ko: "이 소설은 20개 언어로 번역되어 있어요." },
           { fr: "La tour Eiffel a été construite en 1889.", ko: "에펠탑은 1889년에 건설되었어요.", note: "a été + construite — 복합과거 수동, 여성 일치" },
@@ -499,7 +499,7 @@ const chapters = [
           { fr: "Ce mot ne se dit plus.", ko: "그 단어는 이제 안 써요.", note: "대명동사 수동" },
           { fr: "Le champagne se sert très frais.", ko: "샴페인은 아주 차게 내요." },
         ],
-        tip: "글(신문·보고서)에서는 수동태가 격식 있게 쓰이지만, 말에서는 on이 기본값이에요. '쓸 줄은 알되, 말할 땐 on부터 떠올리기' — 이게 B1의 현실적인 목표입니다.",
+        tip: "글(신문·보고서)에서는 수동태가 격식 있게 쓰이지만, 말에서는 on이 기본값이에요. '쓸 줄은 알되, 말할 땐 on부터 떠올리기' — 이게 B1의 현실적인 목표예요.",
       },
       {
         heading: "한국어 피동과의 대응 — '-되다/-받다/-당하다'",
@@ -512,7 +512,7 @@ const chapters = [
           { fr: "Je suis invité au mariage de Léa.", ko: "레아 결혼식에 초대받았어요." },
           { fr: "Il a été licencié le mois dernier.", ko: "그는 지난달에 해고당했어요." },
         ],
-        pitfall: "한국어 '-되다'에 이끌려 모든 문장을 수동으로 만들면 어색한 프랑스어가 돼요. 특히 '이해되다, 생각되다' 같은 표현은 수동이 아니라 Je comprends, Je pense처럼 능동으로 말해야 합니다.",
+        pitfall: "한국어 '-되다'에 이끌려 모든 문장을 수동으로 만들면 어색한 프랑스어가 돼요. 특히 '이해되다, 생각되다' 같은 표현은 수동이 아니라 Je comprends, Je pense처럼 능동으로 말해야 해요.",
       },
     ],
   },
@@ -561,7 +561,7 @@ const chapters = [
           { fr: "Elle a dit qu'elle avait déjà vu ce film.", ko: "그녀는 그 영화를 이미 봤다고 했어요." },
           { fr: "Tu m'avais promis que tu viendrais !", ko: "너 온다고 약속했잖아!" },
         ],
-        vsEn: "영어 backshift와 완전히 평행이에요. He said he **was** tired = Il a dit qu'il **était** fatigué, he **would** come = qu'il **viendrait**. 영어에서 시제 일치를 익혔다면 표를 외울 필요 없이 그 감각을 그대로 옮기면 됩니다.",
+        vsEn: "영어 backshift와 완전히 평행이에요. He said he **was** tired = Il a dit qu'il **était** fatigué, he **would** come = qu'il **viendrait**. 영어에서 시제 일치를 익혔다면 표를 외울 필요 없이 그 감각을 그대로 옮기면 돼요.",
         enParallel: {
           rows: [
             { en: "\"I am busy.\" → He said he **was** busy.", fr: "« Je suis occupé. » → Il a dit qu'il **était** occupé.", ko: "그는 자기가 바쁘다고 말했어요." },
@@ -583,7 +583,7 @@ const chapters = [
           { fr: "Il m'a demandé ce que je faisais dans la vie.", ko: "그는 내 직업이 뭔지 물었어요." },
           { fr: "Je lui ai demandé pourquoi elle avait changé d'avis.", ko: "왜 마음을 바꿨는지 그녀에게 물었어요." },
         ],
-        pitfall: "est-ce que는 따옴표 밖으로 살아남지 못해요. Il demande est-ce que...(X), qu'est-ce que를 그대로 둔 Il demande qu'est-ce que je fais(X)도 비문이에요. 간접의문문에는 의문문 어순도, est-ce que도 없습니다 — si/ce que + 평서문 어순!",
+        pitfall: "est-ce que는 따옴표 밖으로 살아남지 못해요. Il demande est-ce que...(X), qu'est-ce que를 그대로 둔 Il demande qu'est-ce que je fais(X)도 비문이에요. 간접의문문에는 의문문 어순도, est-ce que도 없해요 — si/ce que + 평서문 어순!",
       },
       {
         heading: "명령문과 시간 표현의 변신",
@@ -633,7 +633,7 @@ const chapters = [
           { fr: "Quel gâteau tu prends ? — Celui-ci ou celui-là ?", ko: "어떤 케이크 먹을래? — 이거, 아니면 저거?" },
           { fr: "Je préfère celle que tu portais hier.", ko: "네가 어제 입었던 게 더 좋아." },
         ],
-        vsEn: "영어 the one(s)에 해당해요. the one I bought = celui/celle que j'ai acheté(e), those who = ceux qui. 영어와 달리 성·수 구별이 있다는 점만 추가하면 됩니다.",
+        vsEn: "영어 the one(s)에 해당해요. the one I bought = celui/celle que j'ai acheté(e), those who = ceux qui. 영어와 달리 성·수 구별이 있다는 점만 추가하면 돼요.",
       },
       {
         heading: "소유대명사 — le mien, la tienne, les leurs",
@@ -675,7 +675,7 @@ const chapters = [
           { fr: "Il est arrivé en retard, ce qui m'a énervé.", ko: "그가 늦게 왔는데, 그게 나를 짜증나게 했어요.", note: "앞 문장 전체를 받는 ce qui" },
         ],
         vsEn: "영어 what(= the thing which)에 해당해요. what I want = ce que je veux. 영어는 what 하나지만 프랑스어는 절 안에서의 역할에 따라 ce qui(주어)/ce que(목적어)/ce dont(de 결합)으로 갈라진다는 점이 차이예요.",
-        tip: "구별 요령은 관계대명사 때와 같아요. 뒤따르는 절에 주어가 없으면 ce qui(ce qui se passe — se passe의 주어가 없죠), 주어가 이미 있으면 ce que(ce que tu fais — tu가 주어). 5초 점검으로 충분합니다.",
+        tip: "구별 요령은 관계대명사 때와 같아요. 뒤따르는 절에 주어가 없으면 ce qui(ce qui se passe — se passe의 주어가 없죠), 주어가 이미 있으면 ce que(ce que tu fais — tu가 주어). 5초 점검으로 충분해요.",
       },
     ],
   },
@@ -695,13 +695,13 @@ const chapters = [
         patternKo: "~하도록 — 주어 다르면 pour que + 접속법, 같으면 pour + 원형",
         body:
           "'~하도록'의 **pour que**는 **접속법**을 불러요 — 목적은 아직 실현되지 않은 머릿속 그림이니까요(접속법 입문 챕터의 직관 그대로).\n\n" +
-          "두 동작의 **주어가 같으면** que절 대신 **pour + 동사원형**으로 압축해요. 격식 버전이 **afin que / afin de**입니다.",
+          "두 동작의 **주어가 같으면** que절 대신 **pour + 동사원형**으로 압축해요. 격식 버전이 **afin que / afin de**예요.",
         examples: [
           { fr: "Je t'envoie le plan pour que tu ne te perdes pas.", ipa: "[ʒə tɑ̃vwa lə plɑ̃ puʁ kə ty nə tə pɛʁd pa]", ko: "길 잃지 않게 약도를 보내 줄게." },
           { fr: "Je fais du sport pour rester en forme.", ipa: "[ʒə fɛ dy spɔʁ puʁ ʁɛste ɑ̃ fɔʁm]", ko: "건강을 유지하려고 운동해요.", note: "주어가 같으니 pour + 원형" },
           { fr: "Afin d'éviter la foule, partons tôt.", ipa: "[afɛ̃ devite la ful paʁtɔ̃ to]", ko: "인파를 피하도록 일찍 출발합시다.", note: "afin de = pour의 격식형" },
         ],
-        pitfall: "주어가 같은데 pour que를 쓰면 비문이에요 — Je travaille pour que je réussisse(✗) → pour réussir(O). '내가 ~하려고 내가 ~한다'에서 que절이 닫히는 건 vouloir que의 규칙과 똑같습니다.",
+        pitfall: "주어가 같은데 pour que를 쓰면 비문이에요 — Je travaille pour que je réussisse(✗) → pour réussir(O). '내가 ~하려고 내가 ~한다'에서 que절이 닫히는 건 vouloir que의 규칙과 똑같해요.",
       },
       {
         heading: "이유 4총사 — parce que·car·puisque·comme",
@@ -751,7 +751,7 @@ const chapters = [
           { fr: "Pendant que tu ranges, je prépare le dîner.", ipa: "[pɑ̃dɑ̃ kə ty ʁɑ̃ʒ ʒə pʁepaʁ lə dine]", ko: "네가 정리하는 동안 내가 저녁을 준비할게." },
           { fr: "Depuis qu'il habite à Lyon, on se voit moins.", ipa: "[dəpɥi kil abit a ljɔ̃ ɔ̃ sə vwa mwɛ̃]", ko: "그가 리옹에 살게 된 뒤로 우리는 덜 만나요." },
         ],
-        vsEn: "영어는 미래 얘기라도 when/as soon as 뒤에 현재형을 쓰죠(I'll call you when I **arrive**). 프랑스어는 시제를 숨기지 않고 **quand j'arriverai**처럼 미래형을 그대로 써요. 영어 습관 때문에 현재형을 쓰는 게 이 구문 최다 오류입니다.",
+        vsEn: "영어는 미래 얘기라도 when/as soon as 뒤에 현재형을 쓰죠(I'll call you when I **arrive**). 프랑스어는 시제를 숨기지 않고 **quand j'arriverai**처럼 미래형을 그대로 써요. 영어 습관 때문에 현재형을 쓰는 게 이 구문 최다 오류예요.",
         enParallel: {
           rows: [
             { en: "I'll call you **as soon as** I **arrive**.", fr: "Je t'appellerai **dès que** j'**arriverai**.", ko: "도착하자마자 전화할게." },

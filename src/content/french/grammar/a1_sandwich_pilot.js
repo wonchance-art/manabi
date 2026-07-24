@@ -43,7 +43,7 @@ const chapters = [
           original:
             "— Bonjour, qu'est-ce que vous prenez?\n— Je voudrais un café, s'il vous plaît.\n— Un café crème ou un expresso?\n— Un expresso, merci.\n— Voilà, c'est trois euros.",
           translation:
-            "— 안녕하세요, 뭘 드릴까요?\n— 저는 커피를 원해요, 부탁합니다.\n— 크림 커피인가요, 에스프레소인가요?\n— 에스프레소로 주세요, 감사합니다.\n— 여기 있어요, 3유로예요.",
+            "— 안녕하세요, 뭘 드릴까요?\n— 저는 커피를 원해요, 부탁해요.\n— 크림 커피인가요, 에스프레소인가요?\n— 에스프레소로 주세요, 감사해요.\n— 여기 있어요, 3유로예요.",
         },
       },
 
@@ -75,7 +75,7 @@ const chapters = [
           },
           {
             word: "s'il vous plaît",
-            meanings: ["부탁합니다 (존댓말)", "please (formal)"],
+            meanings: ["부탁해요 (존댓말)", "please (formal)"],
             exampleSentence: "Un café, s'il vous plaît.",
             note: "가장 기본 공손 표현",
           },
@@ -142,7 +142,7 @@ const chapters = [
           captions: {
             original:
               "— Qu'est-ce que je vous sers?\n— Je voudrais un croissant et un chocolat chaud, s'il vous plaît.\n— Oui, tout de suite!",
-            translation: "— 뭘 드릴까요?\n— 저는 크루아상과 핫초콜릿을 원해요, 부탁합니다.\n— 네, 바로요!",
+            translation: "— 뭘 드릴까요?\n— 저는 크루아상과 핫초콜릿을 원해요, 부탁해요.\n— 네, 바로요!",
           },
           transitionNote:
             "같은 'Je voudrais' 표현인데 이번엔 2개 물건을 주문해요. 그리고 음료 대신 더 일상적인 아침 식사 상황이에요.",

@@ -57,7 +57,7 @@ const chapters = [
             { en: "She **is** a teacher.", fr: "Elle **est** professeur.", ko: "그녀는 선생님이에요." },
             { en: "We **are** in Paris.", fr: "Nous **sommes** à Paris.", ko: "우리는 파리에 있어요." },
           ],
-          note: "**주어 + be + 보어** 어순이 영어와 완전히 같아요. am/is/are 자리에 suis/est/sommes를 끼우면 끝 — 영어로 만든 문장을 그대로 단어만 바꾸면 됩니다.",
+          note: "**주어 + be + 보어** 어순이 영어와 완전히 같아요. am/is/are 자리에 suis/est/sommes를 끼우면 끝 — 영어로 만든 문장을 그대로 단어만 바꾸면 돼요.",
         },
       },
       {
@@ -126,7 +126,7 @@ const chapters = [
           { fr: "Tu as des frères ?", ipa: "[ty a de fʁɛʁ]", ko: "너 형제 있어?" },
           { fr: "Elles ont une question.", ipa: "[ɛlzɔ̃ yn kɛstjɔ̃]", ko: "그녀들은 질문이 하나 있어요." },
         ],
-        pitfall: "ils ont(가지고 있다)[il-**z**ɔ̃]과 ils sont(~이다)[il-**s**ɔ̃]은 [z]와 [s] 하나로 갈려요. A0 리에종 챕터에서 예고했던 바로 그 함정 — 말할 때도 s를 [z]로 부활시키는 걸 잊으면 정반대 동사가 됩니다.",
+        pitfall: "ils ont(가지고 있다)[il-**z**ɔ̃]과 ils sont(~이다)[il-**s**ɔ̃]은 [z]와 [s] 하나로 갈려요. A0 리에종 챕터에서 예고했던 바로 그 함정 — 말할 때도 s를 [z]로 부활시키는 걸 잊으면 정반대 동사가 되어요.",
       },
       {
         heading: "avoir 숙어 — 배고픔도 나이도 '가지는' 언어",
@@ -210,7 +210,7 @@ const chapters = [
             ["ils / elles", "parlent", "[il paʁl]"],
           ],
         },
-        pitfall: "ils parlent을 한글 표기 감각으로 '일 빠를렁'이라고 읽는 실수가 정말 많아요. **-ent 어미는 완전한 묵음** — il parle와 ils parlent은 소리가 100% 같아요. 단수인지 복수인지는 리에종이나 문맥으로만 구별됩니다.",
+        pitfall: "ils parlent을 한글 표기 감각으로 '일 빠를렁'이라고 읽는 실수가 정말 많아요. **-ent 어미는 완전한 묵음** — il parle와 ils parlent은 소리가 100% 같아요. 단수인지 복수인지는 리에종이나 문맥으로만 구별돼요.",
         vsEn: "영어 동사는 3인칭 단수에서만 -s가 붙죠(he speaks). 프랑스어는 여섯 인칭 모두 어미가 다르지만, 발음상으로는 영어 못지않게 단순해요. '철자는 화려하고 소리는 소박하다'가 1군 동사의 본질이에요.",
         enParallel: {
           rows: [
@@ -432,7 +432,7 @@ const chapters = [
             ["-isme", "남성", "le tourisme(뚜히즘), l'optimisme(옵띠미즘)"],
           ],
         },
-        etym: "-tion(여성)과 -té(여성)는 라틴어 여성 명사 어미 -tiō, -tās의 후손이에요. 영어 -tion, -ty가 같은 뿌리죠. 즉 nation/nationalité처럼 영어에서 -tion/-ty로 끝나는 단어는 프랑스어에서 거의 다 여성이라고 봐도 됩니다.",
+        etym: "-tion(여성)과 -té(여성)는 라틴어 여성 명사 어미 -tiō, -tās의 후손이에요. 영어 -tion, -ty가 같은 뿌리죠. 즉 nation/nationalité처럼 영어에서 -tion/-ty로 끝나는 단어는 프랑스어에서 거의 다 여성이라고 봐도 돼요.",
         pitfall: "물론 예외는 있어요. la page(빠주 — 페이지), le squelette(스껠렛 — 해골)처럼요. 그래서 규칙은 '추측용', 암기는 '관사째로' — 다음 섹션에서 이어집니다.",
       },
       {
@@ -447,7 +447,7 @@ const chapters = [
           { fr: "la table → une table", ipa: "[la tabl] 라 따블", ko: "탁자 — 여성 세트로 암기" },
           { fr: "l'eau (f.) → une eau", ipa: "[lo] 로", ko: "물 — 축약될 땐 부정관사로 성 확인" },
         ],
-        tip: "단어장에 남성=파랑, 여성=빨강 색 코드를 정해두는 것도 좋지만, 브랜드명도 훌륭한 암기 카드예요. 라네즈(la neige 라 네주, 눈)는 여성이라 la가 맞고, 마몽드(Ma Monde)는 monde(몽드)가 남성이라 문법대로라면 mon monde — 이 '틀린 성'이 오히려 기억에 남죠. 성은 '이해'가 아니라 '습관'의 영역입니다.",
+        tip: "단어장에 남성=파랑, 여성=빨강 색 코드를 정해두는 것도 좋지만, 브랜드명도 훌륭한 암기 카드예요. 라네즈(la neige 라 네주, 눈)는 여성이라 la가 맞고, 마몽드(Ma Monde)는 monde(몽드)가 남성이라 문법대로라면 mon monde — 이 '틀린 성'이 오히려 기억에 남죠. 성은 '이해'가 아니라 '습관'의 영역예요.",
       },
     ],
   },
@@ -501,7 +501,7 @@ const chapters = [
           { fr: "les amis", ipa: "[lezami] 레자미", ko: "친구들", note: "les+모음 = 소리 잇기(리에종)" },
           { fr: "l'université", ipa: "[lynivɛʁsite] 뤼니베흐시떼", ko: "대학 (여성)", note: "축약되면 성이 숨어요" },
         ],
-        etym: "le/la는 라틴어 지시사 ille/illa(저것)가 닳아서 된 말로, 스페인어 el/la, 이탈리아어 il/la도 같은 후손이에요. 그리고 이미 한국 마트에 진열돼 있죠 — 라네즈(la neige 라 네주, 여성 단수)의 la, 뚜레쥬르(Tous les jours 뚜 레 주흐, 복수)의 les가 전부 이 정관사예요. 브랜드명을 보며 '왜 la지? 왜 les지?'를 따져보면 그게 곧 관사 공부입니다.",
+        etym: "le/la는 라틴어 지시사 ille/illa(저것)가 닳아서 된 말로, 스페인어 el/la, 이탈리아어 il/la도 같은 후손이에요. 그리고 이미 한국 마트에 진열돼 있죠 — 라네즈(la neige 라 네주, 여성 단수)의 la, 뚜레쥬르(Tous les jours 뚜 레 주흐, 복수)의 les가 전부 이 정관사예요. 브랜드명을 보며 '왜 la지? 왜 les지?'를 따져보면 그게 곧 관사 공부예요.",
       },
       {
         heading: "부정관사 un, une, des — '하나' 그리고 영어에 없는 des",
@@ -515,7 +515,7 @@ const chapters = [
           { fr: "une question", ipa: "[yn kɛstjɔ̃] 윈 께스띠옹", ko: "질문 하나", note: "-tion은 여성 → une" },
           { fr: "J'ai des amis.", ipa: "[ʒe dezami] 줴 데자미", ko: "저는 친구들이 있어요.", note: "영어라면 관사 없이(I have friends) 말하는 자리" },
         ],
-        pitfall: "한국어 직역 습관으로 'J'aime café'처럼 관사를 빼는 실수가 A1~B1 내내 이어져요. 지금부터 '프랑스어 명사는 옷(관사)을 입어야 외출한다'고 생각하는 습관을 들이면 몇 년 치 교정이 절약됩니다.",
+        pitfall: "한국어 직역 습관으로 'J'aime café'처럼 관사를 빼는 실수가 A1~B1 내내 이어져요. 지금부터 '프랑스어 명사는 옷(관사)을 입어야 외출한다'고 생각하는 습관을 들이면 몇 년 치 교정이 절약돼요.",
       },
     ],
   },
@@ -643,7 +643,7 @@ const chapters = [
           { fr: "Marie aime son père.", ipa: "[maʁi ɛm sɔ̃ pɛʁ]", ko: "마리는 자기 아버지를 사랑해요.", note: "소유자는 여자지만 père가 남성 → son" },
           { fr: "Il cherche ses clés.", ipa: "[il ʃɛʁʃ se kle]", ko: "그는 자기 열쇠들을 찾고 있어요.", note: "복수면 무조건 ses" },
         ],
-        vsEn: "영어 his/her는 **소유자**의 성을 따라가죠(his mother = 남자의 엄마). 프랑스어 son/sa는 정반대로 **소유물**의 성을 따라가요. 영어 감각으로 'her mother니까 sa...'라고 추론하면 우연히 맞을 뿐, 논리가 틀린 거예요. '그의/그녀의' 구별 자체가 프랑스어에는 없습니다.",
+        vsEn: "영어 his/her는 **소유자**의 성을 따라가죠(his mother = 남자의 엄마). 프랑스어 son/sa는 정반대로 **소유물**의 성을 따라가요. 영어 감각으로 'her mother니까 sa...'라고 추론하면 우연히 맞을 뿐, 논리가 틀린 거예요. '그의/그녀의' 구별 자체가 프랑스어에는 없해요.",
         pitfall: "한국어 '그의/그녀의'도 영어 his/her도 모두 소유자 기준이라, 한국인+영어 학습자에게 이중으로 함정인 지점이에요. 'son/sa/ses는 뒤 명사 보고 결정, 소유자는 쳐다보지도 않기' — 이 한 줄을 주문처럼 외우세요.",
       },
       {
@@ -735,14 +735,14 @@ const chapters = [
           { fr: "Il va pleuvoir.", ipa: "[il va pløvwaʁ]", ko: "비가 올 거예요." },
           { fr: "Nous allons visiter Paris.", ipa: "[nuzalɔ̃ vizite paʁi]", ko: "우리는 파리를 구경할 거예요." },
         ],
-        vsEn: "영어 be going to와 구조가 완벽하게 평행해요: I'm going to eat = Je vais manger. '가다' 동사가 미래 표현으로 변신하는 발상까지 똑같으니, 영어 감각을 그대로 가져다 쓰면 됩니다.",
+        vsEn: "영어 be going to와 구조가 완벽하게 평행해요: I'm going to eat = Je vais manger. '가다' 동사가 미래 표현으로 변신하는 발상까지 똑같으니, 영어 감각을 그대로 가져다 쓰면 돼요.",
         enParallel: {
           rows: [
             { en: "I'm **going to** eat.", fr: "Je **vais** manger.", ko: "나 (이제) 먹을 거야." },
             { en: "We're **going to** visit Paris.", fr: "Nous **allons** visiter Paris.", ko: "우리는 파리를 구경할 거예요." },
             { en: "It's **going to** rain.", fr: "**Il va** pleuvoir.", ko: "비가 올 거예요." },
           ],
-          note: "'가다(aller/go)'가 미래 표현으로 변신하는 발상까지 영어 be going to와 똑같아요. 영어 문장을 그대로 옮기면 됩니다.",
+          note: "'가다(aller/go)'가 미래 표현으로 변신하는 발상까지 영어 be going to와 똑같아요. 영어 문장을 그대로 옮기면 돼요.",
         },
       },
       {
