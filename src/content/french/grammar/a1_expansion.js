@@ -237,12 +237,12 @@ const chapters = [
           rows: [
             {
               en: "I **can come** tomorrow.",
-              fr: "Je **peux venir** demain.",
+              fr: "Je **peux venir** demain.", ipa: "[ʒə pø vəniʁ dəmɛ̃]",
               ko: "저는 내일 올 수 있어요.",
             },
             {
               en: "We **want to learn** French.",
-              fr: "Nous **voulons apprendre** le français.",
+              fr: "Nous **voulons apprendre** le français.", ipa: "[nu vulɔ̃ apʁɑ̃dʁ lə fʁɑ̃sɛ]",
               ko: "우리는 프랑스어를 배우고 싶어요.",
             },
           ],
@@ -787,17 +787,17 @@ const chapters = [
           rows: [
             {
               en: "The bag is **in** the car.",
-              fr: "Le sac est **dans** la voiture.",
+              fr: "Le sac est **dans** la voiture.", ipa: "[lə sak ɛ dɑ̃ la vwatyʁ]",
               ko: "가방은 자동차 안에 있어요.",
             },
             {
               en: "The book is **on** the table.",
-              fr: "Le livre est **sur** la table.",
+              fr: "Le livre est **sur** la table.", ipa: "[lə livʁ ɛ syʁ la tabl]",
               ko: "책은 탁자 위에 있어요.",
             },
             {
               en: "The cat is **under** the chair.",
-              fr: "Le chat est **sous** la chaise.",
+              fr: "Le chat est **sous** la chaise.", ipa: "[lə ʃa ɛ su la ʃɛz]",
               ko: "고양이는 의자 아래에 있어요.",
             },
           ],

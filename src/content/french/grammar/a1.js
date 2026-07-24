@@ -53,9 +53,9 @@ const chapters = [
         vsEn: "être는 영어 be와 역할이 거의 같아요. I am = je suis, you are = tu es / vous êtes, he is = il est. 영어에서 am/are/is를 외웠듯 suis/es/est/sommes/êtes/sont를 한 세트로 외우면 돼요.",
         enParallel: {
           rows: [
-            { en: "I **am** Korean.", fr: "Je **suis** coréen.", ko: "저는 한국인이에요." },
-            { en: "She **is** a teacher.", fr: "Elle **est** professeur.", ko: "그녀는 선생님이에요." },
-            { en: "We **are** in Paris.", fr: "Nous **sommes** à Paris.", ko: "우리는 파리에 있어요." },
+            { en: "I **am** Korean.", fr: "Je **suis** coréen.", ipa: "[ʒə sɥi kɔʁeɛ̃]", ko: "저는 한국인이에요." },
+            { en: "She **is** a teacher.", fr: "Elle **est** professeur.", ipa: "[ɛl ɛ pʁɔfɛsœʁ]", ko: "그녀는 선생님이에요." },
+            { en: "We **are** in Paris.", fr: "Nous **sommes** à Paris.", ipa: "[nu sɔm a paʁi]", ko: "우리는 파리에 있어요." },
           ],
           note: "**주어 + be + 보어** 어순이 영어와 완전히 같아요. am/is/are 자리에 suis/est/sommes를 끼우면 끝 — 영어로 만든 문장을 그대로 단어만 바꾸면 돼요.",
         },
@@ -157,8 +157,8 @@ const chapters = [
         ],
         enParallel: {
           rows: [
-            { en: "There **is** a café here.", fr: "**Il y a** un café ici.", ko: "여기 카페가 하나 있어요." },
-            { en: "There **are** books on the table.", fr: "**Il y a** des livres sur la table.", ko: "탁자 위에 책들이 있어요." },
+            { en: "There **is** a café here.", fr: "**Il y a** un café ici.", ipa: "[ilja œ̃ kafe isi]", ko: "여기 카페가 하나 있어요." },
+            { en: "There **are** books on the table.", fr: "**Il y a** des livres sur la table.", ipa: "[ilja de livʁ syʁ la tabl]", ko: "탁자 위에 책들이 있어요." },
           ],
           note: "il y a 하나로 there is·there are 둘 다 — 영어처럼 단복수 구분이 없어요.",
         },
@@ -214,9 +214,9 @@ const chapters = [
         vsEn: "영어 동사는 3인칭 단수에서만 -s가 붙죠(he speaks). 프랑스어는 여섯 인칭 모두 어미가 다르지만, 발음상으로는 영어 못지않게 단순해요. '철자는 화려하고 소리는 소박하다'가 1군 동사의 본질이에요.",
         enParallel: {
           rows: [
-            { en: "I **speak** French.", fr: "Je **parle** français.", ko: "저는 프랑스어를 해요." },
-            { en: "We **study** French.", fr: "Nous **étudions** le français.", ko: "우리는 프랑스어를 공부해요." },
-            { en: "She **works** in Paris.", fr: "Elle **travaille** à Paris.", ko: "그녀는 파리에서 일해요." },
+            { en: "I **speak** French.", fr: "Je **parle** français.", ipa: "[ʒə paʁl fʁɑ̃sɛ]", ko: "저는 프랑스어를 해요." },
+            { en: "We **study** French.", fr: "Nous **étudions** le français.", ipa: "[nuzetydjɔ̃ lə fʁɑ̃sɛ]", ko: "우리는 프랑스어를 공부해요." },
+            { en: "She **works** in Paris.", fr: "Elle **travaille** à Paris.", ipa: "[ɛl tʁavaj a paʁi]", ko: "그녀는 파리에서 일해요." },
           ],
           note: "주어+동사+목적어 어순이 영어와 같아요. 영어 3인칭 -s처럼, 프랑스어는 인칭마다 어미만 바뀔 뿐 골격은 동일.",
         },
@@ -476,9 +476,9 @@ const chapters = [
         vsEn: "영어 the≈le/la/les, a≈un/une로 대응되지만 두 가지가 달라요. ① 프랑스어 관사는 명사의 성·수에 따라 모양이 변하고, ② 영어가 관사를 생략하는 자리(I like coffee, in school)에도 프랑스어는 관사를 써요. '영어보다 한 단계 더 깐깐하다'고 기억하세요.",
         enParallel: {
           rows: [
-            { en: "**the** book", fr: "**le** livre", ko: "그 책 (정관사)" },
-            { en: "**a** book", fr: "**un** livre", ko: "책 한 권 (부정관사)" },
-            { en: "**an** apple", fr: "**une** pomme", ko: "사과 하나 (부정관사)" },
+            { en: "**the** book", fr: "**le** livre", ipa: "[lə livʁ]", ko: "그 책 (정관사)" },
+            { en: "**a** book", fr: "**un** livre", ipa: "[œ̃ livʁ]", ko: "책 한 권 (부정관사)" },
+            { en: "**an** apple", fr: "**une** pomme", ipa: "[yn pɔm]", ko: "사과 하나 (부정관사)" },
           ],
           note: "le/la/les = the(정관사 '그'), un/une/des = a/an(부정관사 '하나'). 정/부정관사를 구별하는 발상 자체가 영어와 같아요. (차이: 프랑스어 관사는 명사의 성·수에 맞춰 모양이 바뀜.)",
         },
@@ -738,9 +738,9 @@ const chapters = [
         vsEn: "영어 be going to와 구조가 완벽하게 평행해요: I'm going to eat = Je vais manger. '가다' 동사가 미래 표현으로 변신하는 발상까지 똑같으니, 영어 감각을 그대로 가져다 쓰면 돼요.",
         enParallel: {
           rows: [
-            { en: "I'm **going to** eat.", fr: "Je **vais** manger.", ko: "나 (이제) 먹을 거야." },
-            { en: "We're **going to** visit Paris.", fr: "Nous **allons** visiter Paris.", ko: "우리는 파리를 구경할 거예요." },
-            { en: "It's **going to** rain.", fr: "**Il va** pleuvoir.", ko: "비가 올 거예요." },
+            { en: "I'm **going to** eat.", fr: "Je **vais** manger.", ipa: "[ʒə vɛ mɑ̃ʒe]", ko: "나 (이제) 먹을 거야." },
+            { en: "We're **going to** visit Paris.", fr: "Nous **allons** visiter Paris.", ipa: "[nuzalɔ̃ vizite paʁi]", ko: "우리는 파리를 구경할 거예요." },
+            { en: "It's **going to** rain.", fr: "**Il va** pleuvoir.", ipa: "[il va pløvwaʁ]", ko: "비가 올 거예요." },
           ],
           note: "'가다(aller/go)'가 미래 표현으로 변신하는 발상까지 영어 be going to와 똑같아요. 영어 문장을 그대로 옮기면 돼요.",
         },
@@ -759,8 +759,8 @@ const chapters = [
         ],
         enParallel: {
           rows: [
-            { en: "I **have just** eaten.", fr: "Je **viens de** manger.", ko: "나 방금 먹었어." },
-            { en: "The train **has just** left.", fr: "Le train **vient de** partir.", ko: "기차가 방금 떠났어요." },
+            { en: "I **have just** eaten.", fr: "Je **viens de** manger.", ipa: "[ʒə vjɛ̃ də mɑ̃ʒe]", ko: "나 방금 먹었어." },
+            { en: "The train **has just** left.", fr: "Le train **vient de** partir.", ipa: "[lə tʁɛ̃ vjɛ̃ də paʁtiʁ]", ko: "기차가 방금 떠났어요." },
           ],
           note: "venir de + 원형 = 영어 have just + 과거분사.",
         },

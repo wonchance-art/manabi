@@ -79,9 +79,9 @@ const chapters = [
         vsEn: "형태만 보면 영어 현재완료(have + p.p.)와 똑같죠: J'ai mangé = I have eaten. 하지만 **의미는 I ate(단순과거)**예요. 영어에서는 'Yesterday I have eaten'이 비문이지만, 프랑스어 'Hier, j'ai mangé'는 완벽한 문장이에요. '형태는 영어 현재완료, 용법은 영어 과거형' — 이 비대칭을 받아들이는 게 A2의 첫 관문이에요.",
         enParallel: {
           rows: [
-            { en: "I **have eaten** a pizza.", fr: "J'**ai mangé** une pizza.", ko: "저는 피자를 먹었어요." },
-            { en: "We **have watched** a film.", fr: "Nous **avons regardé** un film.", ko: "우리는 영화를 한 편 봤어요." },
-            { en: "**Have** you **eaten**?", fr: "Tu **as mangé** ?", ko: "너 밥 먹었어?" },
+            { en: "I **have eaten** a pizza.", fr: "J'**ai mangé** une pizza.", ipa: "[ʒe mɑ̃ʒe yn pidza]", ko: "저는 피자를 먹었어요." },
+            { en: "We **have watched** a film.", fr: "Nous **avons regardé** un film.", ipa: "[nuzavɔ̃ ʁəɡaʁde œ̃ film]", ko: "우리는 영화를 한 편 봤어요." },
+            { en: "**Have** you **eaten**?", fr: "Tu **as mangé** ?", ipa: "[ty a mɑ̃ʒe]", ko: "너 밥 먹었어?" },
           ],
           note: "avoir + 과거분사 = 영어 have + p.p. 구조가 완전히 같아요. (단, 프랑스어는 회화 과거에도 이 형태를 써서 영어 단순과거 자리도 덮어요.)",
         },
@@ -167,8 +167,8 @@ const chapters = [
         vsEn: "영어는 모든 완료형이 have 하나죠(I have gone). 사실 옛 영어에는 he is come, she is gone처럼 be를 쓰는 흔적이 있었어요 — 크리스마스 캐럴의 «Joy to the world, the Lord is come»이 그 화석이에요. 프랑스어는 그 구분이 아직 현역인 언어인 셈이에요.",
         enParallel: {
           rows: [
-            { en: "She **is** gone. / She **has** gone.", fr: "Elle **est** allée.", ko: "그녀는 갔어요." },
-            { en: "We **arrived** yesterday.", fr: "Nous **sommes** arrivés hier.", ko: "우리는 어제 도착했어요." },
+            { en: "She **is** gone. / She **has** gone.", fr: "Elle **est** allée.", ipa: "[ɛl ɛtale]", ko: "그녀는 갔어요." },
+            { en: "We **arrived** yesterday.", fr: "Nous **sommes** arrivés hier.", ipa: "[nu sɔmzaʁive jɛʁ]", ko: "우리는 어제 도착했어요." },
           ],
           note: "일부 이동 동사는 avoir 대신 être를 써요. 영어도 옛날엔 'She is come'처럼 be를 썼던 흔적(과거분사가 주어 성수에 일치).",
         },
@@ -240,9 +240,9 @@ const chapters = [
         vsEn: "영어의 used to(~하곤 했다)와 was -ing(~하고 있었다)이 합쳐진 시제가 imparfait라고 보면 출발점으로 좋아요. I used to smoke = Je fumais, I was sleeping = Je dormais. 단, 영어 단순과거(I lived there for 10 years)도 지속·상태면 imparfait가 되는 등 완전히 겹치지는 않아요.",
         enParallel: {
           rows: [
-            { en: "I **was watching** TV.", fr: "Je **regardais** la télé.", ko: "저는 TV를 보고 있었어요." },
-            { en: "We **used to** live in Daegu.", fr: "Nous **habitions** à Daegu.", ko: "우리는 대구에 살았어요." },
-            { en: "It **was** raining.", fr: "Il **pleuvait**.", ko: "비가 내리고 있었어요." },
+            { en: "I **was watching** TV.", fr: "Je **regardais** la télé.", ipa: "[ʒə ʁəɡaʁdɛ la tele]", ko: "저는 TV를 보고 있었어요." },
+            { en: "We **used to** live in Daegu.", fr: "Nous **habitions** à Daegu.", ipa: "[nuzabitjɔ̃ a daeɡu]", ko: "우리는 대구에 살았어요." },
+            { en: "It **was** raining.", fr: "Il **pleuvait**.", ipa: "[il pløvɛ]", ko: "비가 내리고 있었어요." },
           ],
           note: "반과거 한 형태가 영어 was/were + -ing(과거진행)과 used to(습관) 둘 다를 덮어요.",
         },
@@ -400,9 +400,9 @@ const chapters = [
         vsEn: "영어는 짧은 형용사엔 -er(taller), 긴 형용사엔 more(more expensive)로 갈라지죠. 프랑스어는 길든 짧든 **무조건 plus** 하나예요. 갈림길이 없으니 영어보다 단순해요 — taller than = plus grand que, more interesting than = plus intéressant que.",
         enParallel: {
           rows: [
-            { en: "He is taller **than** me.", fr: "Il est plus grand **que** moi.", ko: "그는 저보다 키가 커요." },
-            { en: "It's **more** expensive **than** that.", fr: "C'est **plus** cher **que** ça.", ko: "그건 저것보다 더 비싸요." },
-            { en: "It's **the most** beautiful museum.", fr: "C'est **le plus** beau musée.", ko: "가장 아름다운 미술관이에요." },
+            { en: "He is taller **than** me.", fr: "Il est plus grand **que** moi.", ipa: "[il ɛ ply ɡʁɑ̃ kə mwa]", ko: "그는 저보다 키가 커요." },
+            { en: "It's **more** expensive **than** that.", fr: "C'est **plus** cher **que** ça.", ipa: "[sɛ ply ʃɛʁ kə sa]", ko: "그건 저것보다 더 비싸요." },
+            { en: "It's **the most** beautiful museum.", fr: "C'est **le plus** beau musée.", ipa: "[sɛ lə ply bo myze]", ko: "가장 아름다운 미술관이에요." },
           ],
           note: "plus … que = more … than(또는 -er than). the most = le plus. 비교의 뼈대가 영어와 평행.",
         },
@@ -524,9 +524,9 @@ const chapters = [
         vsEn: "영어의 be going to(확정·근접) vs will(예측·약속·다짐) 분담과 상당히 비슷해요. I'm going to leave ≈ Je vais partir, I'll call you ≈ Je t'appellerai. 완벽히 겹치진 않지만 첫 감각으로는 충분히 믿을 만한 지도예요.",
         enParallel: {
           rows: [
-            { en: "I **will** call you.", fr: "Je t'**appellerai**.", ko: "전화할게요." },
-            { en: "We **will** go to France.", fr: "Nous **irons** en France.", ko: "우리는 프랑스에 갈 거예요." },
-            { en: "It **will** be fine tomorrow.", fr: "Il **fera** beau demain.", ko: "내일은 날씨가 좋겠어요." },
+            { en: "I **will** call you.", fr: "Je t'**appellerai**.", ipa: "[ʒə tapɛlʁe]", ko: "전화할게요." },
+            { en: "We **will** go to France.", fr: "Nous **irons** en France.", ipa: "[nuziʁɔ̃ ɑ̃ fʁɑ̃s]", ko: "우리는 프랑스에 갈 거예요." },
+            { en: "It **will** be fine tomorrow.", fr: "Il **fera** beau demain.", ipa: "[il fəʁa bo dəmɛ̃]", ko: "내일은 날씨가 좋겠어요." },
           ],
           note: "영어는 will이라는 단어를, 프랑스어는 동사 끝에 미래 어미(-ai/-as/-a…)를 붙여 미래를 만들어요. '의지/예측의 미래'라는 의미는 같아요.",
         },
@@ -569,9 +569,9 @@ const chapters = [
         vsEn: "영어 명령문도 주어 you를 지우죠(Speak!). 발상이 똑같아서 개념은 공짜예요. 차이는 프랑스어가 반말(Parle)/권유(Parlons)/존대(Parlez) **세 단계**를 형태로 구별한다는 것 — 한국어 '말해/말하자/말하세요'와 정확히 평행해요.",
         enParallel: {
           rows: [
-            { en: "**Listen** carefully!", fr: "**Écoute** bien !", ko: "잘 들어!" },
-            { en: "**Wait** for me, please.", fr: "**Attendez**-moi, s'il vous plaît.", ko: "저 좀 기다려주세요." },
-            { en: "**Let's go** to the café!", fr: "**Allons** au café !", ko: "카페에 가자!" },
+            { en: "**Listen** carefully!", fr: "**Écoute** bien !", ipa: "[ekut bjɛ̃]", ko: "잘 들어!" },
+            { en: "**Wait** for me, please.", fr: "**Attendez**-moi, s'il vous plaît.", ipa: "[atɑ̃de mwa sil vu plɛ]", ko: "저 좀 기다려주세요." },
+            { en: "**Let's go** to the café!", fr: "**Allons** au café !", ipa: "[alɔ̃ o kafe]", ko: "카페에 가자!" },
           ],
           note: "주어 없이 동사로 시작하는 명령문 구조가 영어와 같아요. Let's … = nous 명령형(Allons…).",
         },
@@ -735,8 +735,8 @@ const chapters = [
         vsEn: "영어는 who(사람)/which(사물)로 **선행사의 종류**에 따라 갈리죠. 프랑스어 qui/que는 **관계절 안의 문법 역할**로 갈려요. 그래서 사물에도 qui(le train qui arrive), 사람에도 que(la femme que tu connais)가 옵니다. 'qui = who, que = which'라는 등식을 머리에서 지우는 게 이 챕터의 졸업 요건이에요.",
         enParallel: {
           rows: [
-            { en: "the man **who** lives here", fr: "l'homme **qui** habite ici", ko: "여기 사는 남자" },
-            { en: "the book **that** I read", fr: "le livre **que** je lis", ko: "내가 읽는 책" },
+            { en: "the man **who** lives here", fr: "l'homme **qui** habite ici", ipa: "[lɔm ki abit isi]", ko: "여기 사는 남자" },
+            { en: "the book **that** I read", fr: "le livre **que** je lis", ipa: "[lə livʁ kə ʒə li]", ko: "내가 읽는 책" },
           ],
           note: "qui=주어 자리 who/which/that, que=목적어 자리 whom/which/that. 선행사 뒤에 관계절이 붙는 어순이 영어와 동일.",
         },
@@ -769,8 +769,8 @@ const chapters = [
         vsEn: "영어라면 I **have been learning** French for three years — 현재완료진행이죠. 프랑스어는 '지금도 하는 중'이라는 현재성에 주목해 그냥 현재형을 써요. 영어 감각으로 J'ai appris ... depuis(✗)라고 복합과거를 쓰면 '계속'의 의미가 깨집니다.",
         enParallel: {
           rows: [
-            { en: "**since** 2022", fr: "**depuis** 2022", ko: "2022년부터" },
-            { en: "**for** three years", fr: "**depuis** trois ans", ko: "3년째" },
+            { en: "**since** 2022", fr: "**depuis** 2022", ipa: "[dəpɥi dø mil vɛ̃tdø]", ko: "2022년부터" },
+            { en: "**for** three years", fr: "**depuis** trois ans", ipa: "[dəpɥi tʁwazɑ̃]", ko: "3년째" },
           ],
           note: "영어는 시점이면 since, 기간이면 for로 갈라지지만, 프랑스어는 depuis 하나로 둘 다 — 현재시제와 함께 '지금까지 계속'을 나타내는 발상은 영어 현재완료진행과 통해요.",
         },
