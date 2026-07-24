@@ -157,7 +157,7 @@ const themes = {
         { zh: "必要", pinyin: "bìyào", ko: "필요하다, 필수적이다; 필요성", pos: "형용사", hanja: "필요(必要) — '要'는 요긴할 요.", ex: { zh: "没有必要担心。", pinyin: "méiyǒu bìyào dānxīn", ko: "걱정할 필요 없어요." } },
         { zh: "不安", pinyin: "bùān", ko: "불안하다, 마음이 편치 않다", pos: "형용사", hanja: "불안(不安) — '不'은 아닐 불, '安'은 편안할 안.", ex: { zh: "他心里感到不安。", pinyin: "tā xīnlǐ gǎndào bù'ān", ko: "그는 마음속으로 불안해했어요." } },
         { zh: "不耐烦", pinyin: "bùnàifán", ko: "귀찮다, 참을성이 없다, 짜증스럽다", pos: "형용사", hanja: "불내번(不耐煩) — '耐'는 견딜 내, '煩'은 번거로울 번.", ex: { zh: "他等得有点不耐烦了。", pinyin: "tā děng de yǒudiǎn bú nàifán le", ko: "그는 기다리다가 좀 짜증이 났어요." } },
-        { zh: "不足", pinyin: "bùzú", ko: "부족하다, 모자라다; 미흡함", pos: "형용사", hanja: "부족(不足) — '足'은 발/족할 족.", ex: { zh: "时间不足，我们快点。", pinyin: "shíjiān bùzú, wǒmen kuài diǎn", ko: "시간이 부족하니 서두릅시다." } },
+        { zh: "不足", pinyin: "bùzú", ko: "부족하다, 모자라다; 미흡함", pos: "형용사", hanja: "부족(不足) — '足'은 발/족할 족.", ex: { zh: "时间不足，我们快点。", pinyin: "shíjiān bùzú, wǒmen kuài diǎn", ko: "시간이 부족하니 서둘러요." } },
         { zh: "岛", pinyin: "dǎo", ko: "섬", pos: "명사", hanja: "도(島) — '섬 도'. (입력 trad 㠀는 이체자)", ex: { zh: "这座岛非常美丽。", pinyin: "zhè zuò dǎo fēicháng měilì", ko: "이 섬은 정말 아름다워요." } },
         { zh: "惭愧", pinyin: "cánkuì", ko: "부끄럽다, 창피하다", pos: "형용사", hanja: "참괴(慚愧) — '慚'은 부끄러울 참, '愧'는 부끄러울 괴.", ex: { zh: "做错了事，我很惭愧。", pinyin: "zuòcuò le shì, wǒ hěn cánkuì", ko: "일을 잘못해서 부끄러워요." } },
         { zh: "彻底", pinyin: "chèdǐ", ko: "철저하다, 완전하다; 철저히", pos: "형용사", hanja: "철저(徹底) — '徹'은 통할 철, '底'는 밑 저.", ex: { zh: "请把房间彻底打扫一下。", pinyin: "qǐng bǎ fángjiān chèdǐ dǎsǎo yíxià", ko: "방을 철저히 청소해 주세요." } },
