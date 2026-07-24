@@ -10,7 +10,7 @@ export const ENGLISH_GRAMMAR_EXPANSION_STATUS = "DRAFT_UNWIRED";
 const chapters = [
   // DRAFT: 기존 A1 대명사·소유격 챕터와 분리해 거리·수 지시와 명사 반복 회피만 다룬다.
   {
-    slug: "a1-draft-09-demonstratives-one",
+    slug: "a1-09-demonstratives-one",
     level: "A1",
     order: 9,
     status: ENGLISH_GRAMMAR_EXPANSION_STATUS,
@@ -79,7 +79,7 @@ const chapters = [
 
   // DRAFT: 기존 A2 조동사 챕터의 능력·의무와 겹치지 않게 부탁·권유의 대인 거리만 다룬다.
   {
-    slug: "a2-draft-10-requests-suggestions",
+    slug: "a2-10-requests-suggestions",
     level: "A2",
     order: 10,
     status: ENGLISH_GRAMMAR_EXPANSION_STATUS,
@@ -140,7 +140,7 @@ const chapters = [
 
   // DRAFT: 기존 B1 현재완료·과거시제 비교와 분리해 '과거보다 앞선 과거'만 다룬다.
   {
-    slug: "b1-draft-10-past-perfect",
+    slug: "b1-10-past-perfect",
     level: "B1",
     order: 10,
     status: ENGLISH_GRAMMAR_EXPANSION_STATUS,
@@ -201,7 +201,7 @@ const chapters = [
 
   // DRAFT: 기존 전치사 결합 챕터와 분리해 마감·지속·대비·예정의 운용 차이만 다룬다.
   {
-    slug: "b1-draft-11-deadlines-contingency",
+    slug: "b1-11-deadlines-contingency",
     level: "B1",
     order: 11,
     status: ENGLISH_GRAMMAR_EXPANSION_STATUS,
@@ -262,7 +262,7 @@ const chapters = [
 
   // DRAFT: 기존 비교급·논리 연결어와 분리해 정도가 결과로 이어지는 네 구문만 묶는다.
   {
-    slug: "b2-draft-10-degree-result",
+    slug: "b2-10-degree-result",
     level: "B2",
     order: 10,
     status: ENGLISH_GRAMMAR_EXPANSION_STATUS,
@@ -323,7 +323,7 @@ const chapters = [
 
   // DRAFT: 기존 C1 헤징·정보구조와 분리해 초점부사의 위치가 만드는 범위 차이만 다룬다.
   {
-    slug: "c1-draft-09-focus-scope",
+    slug: "c1-09-focus-scope",
     level: "C1",
     order: 9,
     status: ENGLISH_GRAMMAR_EXPANSION_STATUS,
@@ -384,7 +384,7 @@ const chapters = [
 
   // DRAFT: 기존 C2 수사·번역 챕터와 분리해 반복 제거를 위한 문법적 생략만 다룬다.
   {
-    slug: "c2-draft-06-ellipsis-substitution",
+    slug: "c2-06-ellipsis-substitution",
     level: "C2",
     order: 6,
     status: ENGLISH_GRAMMAR_EXPANSION_STATUS,

@@ -34,7 +34,7 @@ export const COTE_DAZUR_DOORS = Object.freeze([
   }),
   Object.freeze({
     id: 'fr-28', name: '호텔 안내 데스크', nameFr: 'Accueil d\'hôtel', track: 'french',
-    chapter: 'a0-06-gender',
+    chapter: 'a1-11-gender',
     culture: '모나코 항구는 세계적 요트축제의 중심지예요 — 고급 호텔들은 손님들의 도시 탐방과 식사 예약을 도와주는 안내가 일상적인 서비스 문화에요.',
     lines: Object.freeze([
       Object.freeze({ fr: 'Le monsieur arrive ce matin.', reading: '르 므스유 아리브 쎄 마탱.', gloss: '그 신사분이 오늘 아침에 도착해요. (le — 남성)' }),

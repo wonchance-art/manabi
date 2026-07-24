@@ -70,8 +70,8 @@ describe('buildCourseMap', () => {
       (lesson) => lesson.specialFields.vocabThemeNames || [],
     ));
 
-    expect(slugs).toContain('a1-draft-09-demonstratives-one');
-    expect(slugs).toContain('c2-draft-06-ellipsis-substitution');
+    expect(slugs).toContain('a1-09-demonstratives-one');
+    expect(slugs).toContain('c2-06-ellipsis-substitution');
     expect(themes).toEqual(expect.arrayContaining(f4Themes));
     expect(new Set(f4Themes).size).toBe(20);
   });

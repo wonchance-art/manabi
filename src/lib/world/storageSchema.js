@@ -20,7 +20,18 @@ export const LEARNING_ACTIVITY_STORAGE_PREFIX = 'manabi-learning-activity-v1:';
 
 // 학습 진도 slug rename은 반드시 구 slug -> 신 slug 별칭을 먼저 등록한다.
 // R1은 인프라만 도입하며 실제 rename 데이터는 후속 Claude 커밋이 소유한다.
-export const slugAliases = Object.freeze({});
+export const slugAliases = Object.freeze({
+  'a0-06-gender': 'a1-11-gender',
+  'a0-07-articles': 'a1-12-articles',
+  'a0-08-survival': 'a1-13-survival',
+  'a1-draft-09-demonstratives-one': 'a1-09-demonstratives-one',
+  'a2-draft-10-requests-suggestions': 'a2-10-requests-suggestions',
+  'b1-draft-10-past-perfect': 'b1-10-past-perfect',
+  'b1-draft-11-deadlines-contingency': 'b1-11-deadlines-contingency',
+  'b2-draft-10-degree-result': 'b2-10-degree-result',
+  'c1-draft-09-focus-scope': 'c1-09-focus-scope',
+  'c2-draft-06-ellipsis-substitution': 'c2-06-ellipsis-substitution',
+});
 
 /**
  * 등록된 별칭을 최종 정본 slug로 정규화한다.

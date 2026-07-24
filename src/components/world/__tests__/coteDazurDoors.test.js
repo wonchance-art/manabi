@@ -30,7 +30,7 @@ describe('코트다쥐르 도어 4종 — 프랑스어 트랙 연결 계약', ()
 
   it('프랑스어권 기존 5세트와 챕터 비중복 — a1 03·04·07 + a0-06 신규', () => {
     const used = new Set([...PARIS_DOORS, ...MSM_DOORS, ...MARSEILLE_DOORS, ...LEMAN_DOORS, ...GENEVA_DOORS].map((door) => door.chapter));
-    expect(COTE_DAZUR_DOORS.map(d => d.chapter)).toEqual(['a1-03-er-verbs', 'a1-04-negation', 'a1-07-possessives', 'a0-06-gender']);
+    expect(COTE_DAZUR_DOORS.map(d => d.chapter)).toEqual(['a1-03-er-verbs', 'a1-04-negation', 'a1-07-possessives', 'a1-11-gender']);
     for (const door of COTE_DAZUR_DOORS) expect(used.has(door.chapter), door.id).toBe(false);
   });
 

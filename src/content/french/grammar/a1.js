@@ -389,7 +389,7 @@ const chapters = [
   },
 
   {
-    slug: "a0-06-gender",
+    slug: "a1-11-gender",
     level: "A1",
     order: 6,
     title: "모든 단어에 성별이 있다고?",
@@ -453,7 +453,7 @@ const chapters = [
   },
 
   {
-    slug: "a0-07-articles",
+    slug: "a1-12-articles",
     level: "A1",
     order: 7,
     title: "'커피 한 잔'의 '한'이 필수인 언어",
@@ -930,7 +930,7 @@ const chapters = [
   },
 
   {
-    slug: "a0-08-survival",
+    slug: "a1-13-survival",
     level: "A1",
     order: 13,
     title: "\"봉주르\" 없이는 시작도 없다",
