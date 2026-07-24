@@ -136,6 +136,39 @@ function isFlatObjectArray(v) {
   return Array.isArray(v) && v.every(isFlatObject);
 }
 
+const DIALOGUE_LANG_FIELDS = ['fr', 'ja', 'en', 'zh'];
+const FLAT_EXAMPLE_TEXT_FIELDS = [...DIALOGUE_LANG_FIELDS, 'ipa', 'yomi', 'pinyin', 'ko'];
+const DIALOGUE_LINE_KEYS = new Set(['speaker', ...DIALOGUE_LANG_FIELDS, 'ipa', 'ko']);
+
+function isNonEmptyString(v) {
+  return typeof v === 'string' && v.trim().length > 0;
+}
+
+/** dialogue 한 줄 — story 대사처럼 평탄하며 원어 키는 정확히 하나만 허용 */
+function isValidDialogueLine(v) {
+  if (!isPlainObject(v)) return false;
+  if (Object.keys(v).some((k) => !DIALOGUE_LINE_KEYS.has(k))) return false;
+  if (!isNonEmptyString(v.speaker) || !isNonEmptyString(v.ko)) return false;
+  const langFields = DIALOGUE_LANG_FIELDS.filter((k) => k in v);
+  if (langFields.length !== 1 || !isNonEmptyString(v[langFields[0]])) return false;
+  if ('ipa' in v && !isNonEmptyString(v.ipa)) return false;
+  return true;
+}
+
+/** 기존 평탄 예문 또는 dialogue 예문. 두 형태의 원어·발음·번역 필드는 배타적이다. */
+function isValidExample(v) {
+  if (!isPlainObject(v)) return false;
+  if (!('dialogue' in v)) return isFlatObject(v);
+  if (FLAT_EXAMPLE_TEXT_FIELDS.some((k) => k in v)) return false;
+  if (!Array.isArray(v.dialogue) || v.dialogue.length === 0) return false;
+  if (!v.dialogue.every(isValidDialogueLine)) return false;
+  return Object.entries(v).every(([k, x]) => k === 'dialogue' || isScalar(x));
+}
+
+function isValidExampleArray(v) {
+  return Array.isArray(v) && v.every(isValidExample);
+}
+
 /** rows가 "평평한 객체 배열"인 블록 — enParallel({rows:[{en,fr,ko}], note})·hanjaBridge({rows:[{zh,trad,ja,read,ko}]}) */
 function isFlatRowsBlock(v) {
   if (!isPlainObject(v)) return false;
@@ -150,7 +183,7 @@ function isFlatRowsBlock(v) {
 /**
  * 섹션 하나의 렌더 가능 구조 검증 — 렌더러가 소비하는 모든 leaf까지 내려간다.
  * 화이트리스트에 없는 키는 거부(미지의 구조가 렌더러에 닿는 경로 차단).
- *  - examples: ExampleList가 ex.ja/yomi/ko/note를 React child·refPron으로 소비 → 스칼라 leaf의 평평한 객체 배열
+ *  - examples: 평탄 예문 또는 dialogue([{speaker, fr|ja|en|zh, ipa?, ko}]) — 두 형태는 배타
  *  - table: caption·headers 원소·rows 셀 전부 <caption>/<th>/<td>의 직접 child → 스칼라
  *  - story: body 원소(ja/narr/speaker…)는 평평한 객체, questions는 스칼라 배열(accept·model)까지 허용
  *  - media: youtubeId·songTitle 등 스칼라 + line(가사 한 줄)만 평평한 객체
@@ -171,7 +204,7 @@ function isValidSection(s) {
   for (const k of SECTION_BOOLEAN_FIELDS) {
     if (k in s && s[k] != null && typeof s[k] !== 'boolean') return false;
   }
-  if ('examples' in s && s.examples != null && !isFlatObjectArray(s.examples)) return false;
+  if ('examples' in s && s.examples != null && !isValidExampleArray(s.examples)) return false;
   if ('table' in s && s.table != null) {
     const t = s.table;
     if (!isPlainObject(t)) return false;

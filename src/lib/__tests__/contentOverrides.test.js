@@ -138,6 +138,38 @@ describe('isValidOverride', () => {
     })).toBe(true);
   });
 
+  it('dialogue 예문은 화자·원어 1개·선택 IPA·번역 구조로 통과한다', () => {
+    expect(isValidOverride({
+      sections: [{
+        examples: [{
+          dialogue: [
+            { speaker: '여행자', fr: 'Bonjour.', ipa: '[bɔ̃ʒuʁ]', ko: '안녕하세요.' },
+            { speaker: '직원', ja: 'こんにちは。', ko: '안녕하세요.' },
+            { speaker: 'Traveler', en: 'Hello.', ipa: '[həˈloʊ]', ko: '안녕하세요.' },
+            { speaker: '旅客', zh: '你好。', ipa: '[ni˨˩˦ xɑʊ˨˩˦]', ko: '안녕하세요.' },
+          ],
+          note: '상황에 맞는 인사를 골라요.',
+        }],
+      }],
+    })).toBe(true);
+  });
+
+  it.each([
+    ['빈 dialogue', { dialogue: [] }],
+    ['배열이 아닌 dialogue', { dialogue: {} }],
+    ['화자 누락', { dialogue: [{ fr: 'Bonjour.', ko: '안녕하세요.' }] }],
+    ['번역 누락', { dialogue: [{ speaker: '여행자', fr: 'Bonjour.' }] }],
+    ['원어 누락', { dialogue: [{ speaker: '여행자', ko: '안녕하세요.' }] }],
+    ['원어 복수', { dialogue: [{ speaker: '여행자', fr: 'Bonjour.', en: 'Hello.', ko: '안녕하세요.' }] }],
+    ['빈 필수 문자열', { dialogue: [{ speaker: ' ', fr: 'Bonjour.', ko: '안녕하세요.' }] }],
+    ['빈 선택 IPA', { dialogue: [{ speaker: '여행자', fr: 'Bonjour.', ipa: '', ko: '안녕하세요.' }] }],
+    ['허용 밖 line 키', { dialogue: [{ speaker: '여행자', fr: 'Bonjour.', ko: '안녕하세요.', note: 'x' }] }],
+    ['flat 필드 혼합', { dialogue: [{ speaker: '여행자', fr: 'Bonjour.', ko: '안녕하세요.' }], fr: 'Bonjour.' }],
+    ['flat 번역 혼합', { dialogue: [{ speaker: '여행자', fr: 'Bonjour.', ko: '안녕하세요.' }], ko: '안녕하세요.' }],
+  ])('잘못된 dialogue 예문을 거부한다: %s', (_label, example) => {
+    expect(isValidOverride({ sections: [{ examples: [example] }] })).toBe(false);
+  });
+
   it('malformed 하위 컬렉션은 mergeChapter에서도 fail-closed', () => {
     expect(mergeChapter(base, { sections: [{ examples: [null] }] })).toBe(base);
     expect(mergeChapter(base, { sections: [{ table: { rows: [null] } }] })).toBe(base);

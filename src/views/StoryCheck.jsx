@@ -7,7 +7,7 @@
 // 채점 규약은 독해 뷰어·월드 오버레이와 같은 단일 원천(ReadingTextView 헬퍼)을 재사용한다.
 
 import { useMemo, useState } from 'react';
-import { JaText } from './refShared';
+import { JaText, refMain, refPron } from './refShared';
 import RefSpeak from '../components/RefSpeak';
 import { normalizeQuestion, shuffleOrderTiles, gradeOrder, checkFill, splitFill } from './ReadingTextView';
 
@@ -17,11 +17,87 @@ function buildSpeakerColors(body) {
   const map = {};
   let n = 0;
   for (const b of body || []) {
-    if (b.ja == null || !b.speaker || map[b.speaker]) continue;
+    if (!refMain(b) || !b.speaker || map[b.speaker]) continue;
     map[b.speaker] = SPEAKER_COLORS[n % SPEAKER_COLORS.length];
     n += 1;
   }
   return map;
+}
+
+/** story와 구조화 example dialogue가 공유하는 화자·원어·발음·번역 라인 렌더러 */
+export function StoryLines({
+  body,
+  lang,
+  langCode,
+  furigana = true,
+  translationAlwaysVisible = false,
+  compact = false,
+}) {
+  const [revealed, setRevealed] = useState({});
+  const speakerColors = useMemo(() => buildSpeakerColors(body), [body]);
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: compact ? 0 : 22 }}>
+      {(body || []).map((b, i) => {
+        const main = refMain(b);
+        if (!main) {
+          // 내레이션 — 대사와 확실히 구분: 이탤릭·여백, 괘선·카드 없이 은은하게.
+          return (
+            <p key={i} style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: '0.92rem', lineHeight: 1.85, color: 'var(--text-muted)', margin: '10px 2px', letterSpacing: '0.01em' }}>
+              {b.narr}
+            </p>
+          );
+        }
+
+        // 같은 화자가 직전 대사와 이어지면 라벨 생략(대본 관행).
+        const prev = (body || []).slice(0, i).reverse().find(x => refMain(x));
+        const showSpeaker = !!b.speaker && b.speaker !== (prev && prev.speaker);
+        const color = (b.speaker && speakerColors[b.speaker]) || 'var(--text-secondary)';
+        const open = translationAlwaysVisible || !!revealed[i];
+        const pron = refPron(b);
+
+        return (
+          <div key={i} style={{ margin: '3px 0' }}>
+            {showSpeaker && (
+              <div style={{ fontSize: '0.72rem', fontWeight: 700, color, letterSpacing: '0.02em', marginBottom: 1 }}>
+                {b.speaker}
+              </div>
+            )}
+            <div style={{ borderLeft: `2px solid ${color}`, paddingLeft: 10 }}>
+              <div
+                role={translationAlwaysVisible ? undefined : 'button'}
+                tabIndex={translationAlwaysVisible ? undefined : 0}
+                aria-expanded={translationAlwaysVisible ? undefined : open}
+                onClick={translationAlwaysVisible ? undefined : () => setRevealed(p => ({ ...p, [i]: !p[i] }))}
+                onKeyDown={translationAlwaysVisible ? undefined : e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), setRevealed(p => ({ ...p, [i]: !p[i] })))}
+                style={{ cursor: translationAlwaysVisible ? undefined : 'pointer', fontSize: '1.06rem', lineHeight: furigana ? 1.95 : 1.7 }}
+              >
+                {langCode === 'ja' && furigana && !translationAlwaysVisible
+                  ? <JaText ja={main} yomi={pron} fallbackPron={false} />
+                  : (
+                    <>
+                      <span lang={langCode}>{main}</span>
+                      {pron && (
+                        <span
+                          className="fr-example__ipa"
+                          style={translationAlwaysVisible ? { display: 'block', marginLeft: 0, marginTop: 1 } : undefined}
+                        >
+                          {pron}
+                        </span>
+                      )}
+                    </>
+                  )}
+                <RefSpeak text={main} lang={lang} size="xs" />
+              </div>
+              {open
+                ? <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: 2 }}>{b.ko}</div>
+                : <button type="button" onClick={() => setRevealed(p => ({ ...p, [i]: !p[i] }))} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '0.66rem', color: 'var(--text-muted)', marginTop: 1 }}>뜻 보기 ▾</button>}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 /**
@@ -32,13 +108,10 @@ function buildSpeakerColors(body) {
  */
 export default function StoryCheck({ story, slug, lang, langCode, meta }) {
   const [furigana, setFurigana] = useState(true);
-  const [revealed, setRevealed] = useState({}); // 대사 index → ko 펼침
   const questions = useMemo(
     () => (story.questions || []).map((q, i) => normalizeQuestion(q, `${slug}-sq${i}`)),
     [story, slug]
   );
-  const body = story.body || [];
-  const speakerColors = useMemo(() => buildSpeakerColors(body), [body]);
 
   return (
     <div className="fr-story">
@@ -58,46 +131,7 @@ export default function StoryCheck({ story, slug, lang, langCode, meta }) {
       </div>
 
       {/* ── 이야기 본문(장면) ── */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 22 }}>
-        {body.map((b, i) => {
-          if (b.ja == null) {
-            // 내레이션 — 대사와 확실히 구분: 이탤릭·여백, 괘선·카드 없이 은은하게.
-            return (
-              <p key={i} style={{ fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontSize: '0.92rem', lineHeight: 1.85, color: 'var(--text-muted)', margin: '10px 2px', letterSpacing: '0.01em' }}>
-                {b.narr}
-              </p>
-            );
-          }
-          // 같은 화자가 직전 대사와 이어지면 라벨 생략(대본 관행).
-          const prev = body.slice(0, i).reverse().find(x => x.ja != null);
-          const showSpeaker = !!b.speaker && b.speaker !== (prev && prev.speaker);
-          const color = (b.speaker && speakerColors[b.speaker]) || 'var(--text-secondary)';
-          const open = !!revealed[i];
-          return (
-            <div key={i} style={{ margin: '3px 0' }}>
-              {showSpeaker && (
-                <div style={{ fontSize: '0.72rem', fontWeight: 700, color, letterSpacing: '0.02em', marginBottom: 1 }} lang={langCode}>
-                  {b.speaker}
-                </div>
-              )}
-              <div style={{ borderLeft: `2px solid ${color}`, paddingLeft: 10 }}>
-                <div
-                  role="button" tabIndex={0} aria-expanded={open}
-                  onClick={() => setRevealed(p => ({ ...p, [i]: !p[i] }))}
-                  onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), setRevealed(p => ({ ...p, [i]: !p[i] })))}
-                  style={{ cursor: 'pointer', fontSize: '1.06rem', lineHeight: furigana ? 1.95 : 1.7 }}
-                >
-                  {furigana ? <JaText ja={b.ja} yomi={b.yomi} fallbackPron={false} /> : <span lang={langCode}>{b.ja}</span>}
-                  <RefSpeak text={b.ja} lang={lang} size="xs" />
-                </div>
-                {open
-                  ? <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: 2 }}>{b.ko}</div>
-                  : <button type="button" onClick={() => setRevealed(p => ({ ...p, [i]: !p[i] }))} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '0.66rem', color: 'var(--text-muted)', marginTop: 1 }}>뜻 보기 ▾</button>}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <StoryLines body={story.body} lang={lang} langCode={langCode} furigana={furigana} />
 
       {/* ── 확인 문항(조립·타이핑·산출) — 장면 다음에 조용히 이어짐 ── */}
       <ol className="fr-quiz" style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 18 }}>
