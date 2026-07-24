@@ -866,7 +866,7 @@ const chapters = [
           { fr: "Il y a beaucoup de monde sur la place.", ipa: "[ilja boku də mɔ̃d syʁ la plas]", ko: "광장에 사람이 많아요." },
           { fr: "Je bois un peu de lait le matin.", ipa: "[ʒə bwa œ̃ pø də lɛ lə matɛ̃]", ko: "아침에 우유를 조금 마셔요." },
           { fr: "Tu poses trop de questions !", ipa: "[ty poz tʁo də kɛstjɔ̃]", ko: "너 질문이 너무 많아!" },
-          { fr: "Il n'y a pas assez de temps.", ipa: "[il nja pazase də tɑ̃]", ko: "시간이 충분하지 않아요." },
+          { fr: "Il n'y a pas assez de temps.", ipa: "[il nja pa ase də tɑ̃]", ko: "시간이 충분하지 않아요." },
         ],
         pitfall: "beaucoup **des**(✗)가 최다 빈출 오류예요. '커피를 많이'에서 '그 커피(du café)'의 관사를 끌고 오고 싶어지지만, 수량 표현 뒤는 무조건 맨 de — beaucoup de café, trop d'eau처럼요.",
       },

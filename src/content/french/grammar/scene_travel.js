@@ -99,7 +99,7 @@ const chapters = [
           },
           {
             fr: "Mon bagage n'est pas arrivé.",
-            ipa: "[mɔ̃ baɡaʒ nɛ paz aʁive] 몽 바가주 네 파자히베",
+            ipa: "[mɔ̃ baɡaʒ nɛ pa aʁive] 몽 바가주 네 파 아히베",
             ko: "제 수하물이 나오지 않았어요.",
           },
         ],
@@ -158,7 +158,7 @@ const chapters = [
               "여행자 : Oui, le voici.\n" +
               "수하물 직원 : Merci. Je vais vérifier.",
             ipa:
-              "[ɛkskyze mwa mɔ̃ baɡaʒ nɛ paz aʁive]\n" +
+              "[ɛkskyze mwa mɔ̃ baɡaʒ nɛ pa aʁive]\n" +
               "[vuzave vɔtʁ ʁəsy də baɡaʒ]\n" +
               "[wi lə vwasi]\n" +
               "[mɛʁsi ʒə vɛ veʁifje]",
