@@ -63,8 +63,11 @@ describe('월드 localStorage 스키마 v1', () => {
       'legacy-a0-06': 'a0-06',
     });
 
-    expect(slugAliases).toEqual({});
     expect(Object.isFrozen(slugAliases)).toBe(true);
+    // R2 rename 데이터 등록분(RFC slug-migration) — 구 slug가 신 정본으로 정규화된다
+    expect(normalizeSlug('a0-06-gender')).toBe('a1-11-gender');
+    expect(normalizeSlug('a1-draft-09-demonstratives-one')).toBe('a1-09-demonstratives-one');
+    expect(normalizeSlug('c2-draft-06-ellipsis-substitution')).toBe('c2-06-ellipsis-substitution');
     expect(normalizeSlug('a0-06', aliases)).toBe('a1-06');
     expect(normalizeSlug('legacy-a0-06', aliases)).toBe('a1-06');
     expect(normalizeSlug('unregistered', aliases)).toBe('unregistered');

@@ -70,7 +70,7 @@ const patterns = {
           ex: { fr: "Comment allez-vous ? — Très bien, merci.", ipa: "[kɔmɑ̃t‿ale vu — tʁɛ bjɛ̃ mɛʁsi]", ko: "잘 지내세요? — 아주 잘 지내요, 감사합니다." },
           ex2: { fr: "Ça va ? — Ça va, et toi ?", ipa: "[sa va — sa va e twa]", ko: "잘 지내? — 응, 너는?" },
           note: "« Ça va ? »는 질문도 대답도 같은 형태 — 격식 자리에서는 « Comment allez-vous ? »",
-          ch: "a0-08-survival",
+          ch: "a1-13-survival",
         },
         {
           pattern: "Enchanté・Enchantée",
@@ -79,7 +79,7 @@ const patterns = {
           ex: { fr: "Enchanté, je m'appelle Hugo.", ipa: "[ɑ̃ʃɑ̃te ʒə mapɛl yɡo]", ko: "반갑습니다, 저는 위고예요. (남성)" },
           ex2: { fr: "Enchantée, moi c'est Mina.", ipa: "[ɑ̃ʃɑ̃te mwa sɛ mina]", ko: "반가워요, 저는 미나예요. (여성)" },
           note: "발음은 같지만 글에서는 여성이면 -e를 붙인다. « Moi c'est + 이름 »은 구어식 자기소개",
-          ch: "a0-08-survival",
+          ch: "a1-13-survival",
         },
       ],
     },
@@ -401,7 +401,7 @@ const patterns = {
           ex: { fr: "Le livre est sur la table.", ipa: "[lə livʁ ɛ syʁ la tabl]", ko: "책은 테이블 위에 있어요." },
           ex2: { fr: "Les enfants jouent dans le parc.", ipa: "[lez‿ɑ̃fɑ̃ ʒu dɑ̃ lə paʁk]", ko: "아이들이 공원에서 놀아요." },
           note: "모음·무음 h 앞에서는 l' (l'eau, l'hôtel) — les + 모음은 리에종 [lez‿]",
-          ch: "a0-07-articles",
+          ch: "a1-12-articles",
         },
         {
           pattern: "un/une/des",
@@ -410,7 +410,7 @@ const patterns = {
           ex: { fr: "J'ai une question.", ipa: "[ʒe yn kɛstjɔ̃]", ko: "질문이 하나 있어요." },
           ex2: { fr: "Il y a des magasins dans cette rue.", ipa: "[ilja de maɡazɛ̃ dɑ̃ sɛt ʁy]", ko: "이 거리에는 가게들이 있어요." },
           note: "복수 부정관사 des는 영어에 없는 범주 — 영어라면 무관사일 자리에도 꼭 붙인다",
-          ch: "a0-07-articles",
+          ch: "a1-12-articles",
         },
         {
           pattern: "du/de la/de l'",
@@ -657,7 +657,7 @@ const patterns = {
           ex: { fr: "Un café, s'il vous plaît.", ipa: "[œ̃ kafe sil vu plɛ]", ko: "커피 한 잔 주세요." },
           ex2: { fr: "Passe-moi le sel, s'il te plaît.", ipa: "[pas mwa lə sɛl sil tə plɛ]", ko: "소금 좀 건네줘, 부탁해." },
           note: "vous에게는 s'il vous plaît, tu에게는 s'il te plaît — 상대에 맞춰 갈아 끼운다",
-          ch: "a0-08-survival",
+          ch: "a1-13-survival",
         },
         {
           pattern: "Donnez-moi …・Donne-moi …",
@@ -673,7 +673,7 @@ const patterns = {
           ko: "실례합니다 / 죄송합니다",
           ex: { fr: "Excusez-moi, où est le métro ?", ipa: "[ɛkskyze mwa u ɛ lə metʁo]", ko: "실례합니다, 지하철역이 어디예요?" },
           ex2: { fr: "Pardon, je suis en retard.", ipa: "[paʁdɔ̃ ʒə sɥiz‿ɑ̃ ʁətaʁ]", ko: "죄송해요, 늦었어요." },
-          ch: "a0-08-survival",
+          ch: "a1-13-survival",
         },
         {
           pattern: "Vous pouvez … ?・Tu peux … ?",
@@ -868,7 +868,7 @@ const patterns = {
           ex: { fr: "Merci pour le cadeau !", ipa: "[mɛʁsi puʁ lə kado]", ko: "선물 고마워요!" },
           ex2: { fr: "Merci de votre aide. — De rien !", ipa: "[mɛʁsi də vɔtʁ ɛd — də ʁjɛ̃]", ko: "도와주셔서 감사해요. — 천만에요!" },
           note: "대답은 De rien(천만에) / Je vous en prie(격식)",
-          ch: "a0-08-survival",
+          ch: "a1-13-survival",
         },
         {
           pattern: "J'adore !・C'est super !",

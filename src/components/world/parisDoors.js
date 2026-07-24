@@ -7,7 +7,7 @@
 export const PARIS_DOORS = Object.freeze([
   Object.freeze({
     id: 'fr-01', name: '카페 테라스', nameFr: 'Café parisien',
-    chapter: 'a0-08-survival',
+    chapter: 'a1-13-survival',
     culture: '가게에 들어서면 Bonjour 인사가 필수 예절로 여겨져요. 테라스와 카운터의 가격이 다른 집도 있다고 알려져 있어요.',
     lines: Object.freeze([
       Object.freeze({ fr: 'Bonjour ! Un café, s\'il vous plaît.', reading: '봉주르! 앙 카페, 실 부 플레.', gloss: '안녕하세요! 커피 한 잔 주세요.' }),
@@ -34,7 +34,7 @@ export const PARIS_DOORS = Object.freeze([
   }),
   Object.freeze({
     id: 'fr-04', name: '마르셰(시장)', nameFr: 'Marché',
-    chapter: 'a0-07-articles',
+    chapter: 'a1-12-articles',
     culture: '시장 상인이 맛보기를 권하면 "Oui, volontiers(네, 기꺼이요)"로 받는 게 자연스러워요.',
     lines: Object.freeze([
       Object.freeze({ fr: 'Je voudrais du fromage, s\'il vous plaît.', reading: '즈 부드레 뒤 프로마주, 실 부 플레.', gloss: '치즈 좀 주세요. (부분관사 du)' }),
