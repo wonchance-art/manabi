@@ -64,6 +64,10 @@ const REQUIRED_CHAPTER_STRINGS = [
   'duration',
 ];
 
+const DIALOGUE_LANGUAGE_FIELDS = ['fr', 'ja', 'en', 'zh'];
+const FLAT_EXAMPLE_TEXT_FIELDS = [...DIALOGUE_LANGUAGE_FIELDS, 'ipa', 'yomi', 'pinyin', 'ko'];
+const DIALOGUE_LINE_FIELDS = new Set(['speaker', ...DIALOGUE_LANGUAGE_FIELDS, 'ipa', 'ko']);
+
 const nonEmptyString = value => typeof value === 'string' && value.trim().length > 0;
 const moduleTrack = modulePath => modulePath.match(/\.\.\/([^/]+)\//)?.[1] || null;
 const hasDraftFilename = modulePath => /_draft/i.test(modulePath.split('/').pop() || '');
@@ -82,6 +86,32 @@ function expectPresentStringFields(value, fields = [], label) {
   for (const field of fields) {
     expect(Object.hasOwn(value, field), `${label}.${field} presence`).toBe(true);
     expect(typeof value[field], `${label}.${field} type`).toBe('string');
+  }
+}
+
+function expectGrammarExample(example, flatFields, label) {
+  if (!Object.hasOwn(example || {}, 'dialogue')) {
+    expectNonEmptyFields(example, flatFields, label);
+    return;
+  }
+
+  expect(FLAT_EXAMPLE_TEXT_FIELDS.some(field => Object.hasOwn(example, field)),
+    `${label} flat/dialogue exclusivity`).toBe(false);
+  expect(Array.isArray(example.dialogue) && example.dialogue.length > 0,
+    `${label}.dialogue`).toBe(true);
+
+  for (const [lineIndex, line] of example.dialogue.entries()) {
+    const lineLabel = `${label}.dialogue[${lineIndex}]`;
+    expect(line && !Array.isArray(line) && typeof line === 'object', lineLabel).toBe(true);
+    expect(Object.keys(line).every(field => DIALOGUE_LINE_FIELDS.has(field)),
+      `${lineLabel} fields`).toBe(true);
+    expectNonEmptyFields(line, ['speaker', 'ko'], lineLabel);
+    const languageFields = DIALOGUE_LANGUAGE_FIELDS.filter(field => Object.hasOwn(line, field));
+    expect(languageFields.length, `${lineLabel} language field count`).toBe(1);
+    expect(nonEmptyString(line[languageFields[0]]), `${lineLabel}.${languageFields[0]}`).toBe(true);
+    if (Object.hasOwn(line, 'ipa')) {
+      expect(nonEmptyString(line.ipa), `${lineLabel}.ipa`).toBe(true);
+    }
   }
 }
 
@@ -165,7 +195,7 @@ describe.each(Object.entries(TRACKS))('%s grammar contract', (track, schema) => 
           expect(Array.isArray(examples) && examples.length > 0,
             `${entry.modulePath}:${slug}[${sectionIndex}]`).toBe(true);
           for (const [index, example] of examples.entries()) {
-            expectNonEmptyFields(
+            expectGrammarExample(
               example,
               schema.grammarExampleFields,
               `${entry.modulePath}:${slug}[${sectionIndex}].examples[${index}]`,
@@ -216,7 +246,7 @@ describe.each(Object.entries(TRACKS))('%s grammar contract', (track, schema) => 
           `${label} structured kana material`).toBe(true);
       }
       for (const [index, example] of examples.entries()) {
-        expectNonEmptyFields(example, schema.grammarExampleFields, `${label}.examples[${index}]`);
+        expectGrammarExample(example, schema.grammarExampleFields, `${label}.examples[${index}]`);
       }
     }
   });

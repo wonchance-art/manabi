@@ -10,7 +10,7 @@ import KanaTest from '../components/KanaTest';
 import LessonCompletionCta from '../components/LessonCompletionCta';
 // 스토리 모듈(이야기로 확인) — 인터랙티브 채점은 클라이언트 경계로 분리(서버 페이지가 레지스트리를
 // 클라이언트 번들로 끌어오지 않도록). story 는 순수 직렬화 데이터라 props 로 그대로 넘긴다.
-import StoryCheck from './StoryCheck';
+import StoryCheck, { StoryLines } from './StoryCheck';
 import ChapterAdminStrip from '../components/admin/ChapterAdminStrip';
 import InlineEdit from '../components/admin/InlineEdit';
 import { getChapterOverride, getOverridesForLang, mergeChapter } from '../lib/contentOverrides';
@@ -21,6 +21,28 @@ function ExampleList({ examples, langCode, lang, slug, secIndex }) {
   return (
     <ul className="fr-examples">
       {examples.map((ex, i) => {
+        if (ex.dialogue) {
+          return (
+            <InlineEdit
+              key={i}
+              tag="li"
+              className="fr-example"
+              lang={lang}
+              slug={slug}
+              kind="json"
+              path={`sections.${secIndex}.examples.${i}`}
+            >
+              <StoryLines
+                body={ex.dialogue}
+                lang={lang}
+                langCode={langCode}
+                translationAlwaysVisible
+                compact
+              />
+              {ex.note && <div className="fr-example__note">└ {refInline(ex.note)}</div>}
+            </InlineEdit>
+          );
+        }
         const pron = refPron(ex);
         return (
           <InlineEdit
