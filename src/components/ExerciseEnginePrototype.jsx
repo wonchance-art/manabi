@@ -142,7 +142,7 @@ export default function ExerciseEnginePrototype({
 }) {
   const normalizedQuestions = useMemo(() => {
     const seen = new Set();
-    return questions
+    return (Array.isArray(questions) ? questions : [])
       .map(normalizeExerciseQuestion)
       .filter((question) => {
         if (!question || seen.has(question.id)) return false;

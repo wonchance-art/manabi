@@ -5,6 +5,7 @@ import ExerciseEnginePrototype, {
   normalizeExerciseAnswer,
   normalizeExerciseQuestion,
 } from '../ExerciseEnginePrototype';
+import frenchExerciseDraftPacks from '../../content/french/exercises_draft';
 
 describe('ExerciseEnginePrototype', () => {
   it('E3 short-answer를 fill 공통형으로 정규화한다', () => {
@@ -22,6 +23,16 @@ describe('ExerciseEnginePrototype', () => {
       answer: 'sommes',
       sourceRef: 'a1-01-pronouns-etre',
     });
+  });
+
+  it('E3 22팩·66문항 전체를 유실 없이 fill로 받는다', () => {
+    const raw = frenchExerciseDraftPacks.flatMap((pack) => pack.questions);
+    const normalized = raw.map(normalizeExerciseQuestion);
+
+    expect(frenchExerciseDraftPacks).toHaveLength(22);
+    expect(raw).toHaveLength(66);
+    expect(normalized.every((question) => question?.type === 'fill')).toBe(true);
+    expect(new Set(normalized.map((question) => question.id)).size).toBe(66);
   });
 
   it('choice/select의 index 정답과 distractor 형태를 모두 정규화한다', () => {
@@ -93,5 +104,9 @@ describe('ExerciseEnginePrototype', () => {
     expect(html).toContain('fr-quiz__item');
     expect(html).toContain('form-input');
     expect(html).toContain('fr-quiz__opt');
+  });
+
+  it('비배열 questions 입력은 렌더하지 않는다', () => {
+    expect(renderToStaticMarkup(<ExerciseEnginePrototype questions={null} />)).toBe('');
   });
 });
