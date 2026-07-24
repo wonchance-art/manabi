@@ -908,6 +908,132 @@ const themes = {
         },
       ],
     },
+    {
+      name: "식당 이용",
+      icon: "🍽️",
+      words: [
+        {
+          en: "reservation", ipa: "[ˌrezərˈveɪʃn]", ko: "예약", pos: "n.",
+          ex: { en: "We have a reservation for seven o'clock.", ko: "일곱 시로 예약했어요." },
+        },
+        {
+          en: "table for two", ipa: "[ˌteɪbl fər ˈtuː]", ko: "2인용 자리", pos: "n.",
+          ex: { en: "A table for two, please.", ko: "두 명 자리 부탁합니다." },
+        },
+        {
+          en: "appetizer", ipa: "[ˈæpətaɪzər]", ko: "전채 요리", pos: "n.",
+          ex: { en: "Let's share one appetizer.", ko: "전채 요리 하나를 같이 먹어요." },
+        },
+        {
+          en: "main course", ipa: "[ˈmeɪn kɔːrs]", ko: "주요리", pos: "n.",
+          ex: { en: "Fish is the main course today.", ko: "오늘 주요리는 생선이에요." },
+        },
+        {
+          en: "side dish", ipa: "[ˈsaɪd dɪʃ]", ko: "곁들임 요리, 반찬", pos: "n.",
+          ex: { en: "Does this meal come with a side dish?", ko: "이 식사에는 곁들임 요리가 나오나요?" },
+        },
+        {
+          en: "tap water", ipa: "[ˈtæp wɔːtər]", ko: "수돗물", pos: "n.",
+          ex: { en: "Is the tap water safe to drink here?", ko: "여기 수돗물은 마셔도 안전한가요?" },
+        },
+        {
+          en: "bill", ipa: "[bɪl]", ko: "계산서", pos: "n.",
+          ex: { en: "Could we have the bill, please?", ko: "계산서 부탁합니다." },
+        },
+        {
+          en: "service charge", ipa: "[ˈsɜːrvɪs tʃɑːrdʒ]", ko: "봉사료, 서비스 요금", pos: "n.",
+          ex: { en: "The service charge is included in the bill.", ko: "봉사료는 계산서에 포함되어 있어요." },
+        },
+        {
+          en: "tip", ipa: "[tɪp]", ko: "팁, 봉사료", pos: "n.",
+          ex: { en: "We left a small tip on the table.", ko: "우리는 탁자에 팁을 조금 두었어요." },
+        },
+      ],
+    },
+    {
+      name: "장보기",
+      icon: "🛒",
+      words: [
+        {
+          en: "grocery store", ipa: "[ˈɡroʊsəri stɔːr]", ko: "식료품점", pos: "n.",
+          ex: { en: "The grocery store closes at nine.", ko: "식료품점은 아홉 시에 문을 닫아요." },
+        },
+        {
+          en: "shopping list", ipa: "[ˈʃɑːpɪŋ lɪst]", ko: "장보기 목록", pos: "n.",
+          ex: { en: "Bread is at the top of my shopping list.", ko: "장보기 목록 맨 위에 빵이 있어요." },
+        },
+        {
+          en: "basket", ipa: "[ˈbæskɪt]", ko: "장바구니, 바구니", pos: "n.",
+          ex: { en: "I only need a basket for these items.", ko: "이 물건들에는 장바구니 하나면 충분해요." },
+        },
+        {
+          en: "cart", ipa: "[kɑːrt]", ko: "쇼핑 카트", pos: "n.",
+          ex: { en: "The cart is full of vegetables.", ko: "카트에 채소가 가득해요." },
+        },
+        {
+          en: "aisle", ipa: "[aɪl]", ko: "통로, 매대 사이 길", pos: "n.",
+          ex: { en: "The cereal is in aisle five.", ko: "시리얼은 5번 통로에 있어요." },
+        },
+        {
+          en: "checkout", ipa: "[ˈtʃekaʊt]", ko: "계산대", pos: "n.",
+          ex: { en: "There is a short line at the checkout.", ko: "계산대 줄이 짧아요." },
+        },
+        {
+          en: "label", ipa: "[ˈleɪbl]", ko: "라벨, 표시 사항", pos: "n.",
+          ex: { en: "Read the label before you buy it.", ko: "사기 전에 라벨을 읽어 보세요." },
+        },
+        {
+          en: "ingredient", ipa: "[ɪnˈɡriːdiənt]", ko: "재료, 성분", pos: "n.",
+          ex: { en: "This sauce has only four ingredients.", ko: "이 소스에는 재료가 네 가지만 들어가요." },
+        },
+        {
+          en: "expiration date", ipa: "[ˌekspəˈreɪʃn deɪt]", ko: "유통기한, 소비기한", pos: "n.",
+          ex: { en: "Check the expiration date on the milk.", ko: "우유의 소비기한을 확인하세요." },
+        },
+      ],
+    },
+    {
+      name: "주방 기초",
+      icon: "🍳",
+      words: [
+        {
+          en: "chopping board", ipa: "[ˈtʃɑːpɪŋ bɔːrd]", ko: "도마", pos: "n.",
+          ex: { en: "Put the vegetables on the chopping board.", ko: "채소를 도마 위에 놓으세요." },
+        },
+        {
+          en: "frying pan", ipa: "[ˈfraɪɪŋ pæn]", ko: "프라이팬", pos: "n.",
+          ex: { en: "Heat the oil in a frying pan.", ko: "프라이팬에 기름을 데우세요." },
+        },
+        {
+          en: "saucepan", ipa: "[ˈsɔːspæn]", ko: "손잡이가 달린 냄비", pos: "n.",
+          ex: { en: "Warm the soup in a small saucepan.", ko: "작은 냄비에 수프를 데우세요." },
+        },
+        {
+          en: "kettle", ipa: "[ˈketl]", ko: "주전자", pos: "n.",
+          ex: { en: "The kettle is boiling.", ko: "주전자의 물이 끓고 있어요." },
+        },
+        {
+          en: "microwave", ipa: "[ˈmaɪkrəweɪv]", ko: "전자레인지", pos: "n.",
+          ex: { en: "Heat the rice in the microwave.", ko: "밥을 전자레인지에 데우세요." },
+        },
+        {
+          en: "sink", ipa: "[sɪŋk]", ko: "싱크대, 개수대", pos: "n.",
+          ex: { en: "The dirty cups are in the sink.", ko: "더러운 컵은 싱크대에 있어요." },
+        },
+        {
+          en: "dishwasher", ipa: "[ˈdɪʃwɑːʃər]", ko: "식기세척기", pos: "n.",
+          ex: { en: "Please load the dishwasher after dinner.", ko: "저녁 식사 뒤에 식기세척기에 그릇을 넣어 주세요." },
+        },
+        {
+          en: "leftovers", ipa: "[ˈleftoʊvərz]", ko: "남은 음식", pos: "n.",
+          ex: { en: "We ate the leftovers for lunch.", ko: "우리는 점심으로 남은 음식을 먹었어요." },
+        },
+        {
+          en: "recipe", ipa: "[ˈresəpi]", ko: "조리법, 레시피", pos: "n.",
+          ex: { en: "This recipe is easy to follow.", ko: "이 조리법은 따라 하기 쉬워요." },
+        },
+      ],
+    },
   ],
 }
 

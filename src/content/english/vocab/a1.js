@@ -1045,6 +1045,132 @@ const themes = {
         },
       ],
     },
+    {
+      name: "집안일",
+      icon: "🧹",
+      words: [
+        {
+          en: "laundry", ipa: "[ˈlɔːndri]", ko: "세탁물; 빨래", pos: "n.",
+          ex: { en: "I do the laundry on Saturday morning.", ko: "저는 토요일 아침에 빨래해요." },
+        },
+        {
+          en: "washing machine", ipa: "[ˈwɑːʃɪŋ məˌʃiːn]", ko: "세탁기", pos: "n.",
+          ex: { en: "The washing machine is running.", ko: "세탁기가 돌아가고 있어요." },
+        },
+        {
+          en: "vacuum cleaner", ipa: "[ˈvækjuːm ˌkliːnər]", ko: "진공청소기", pos: "n.",
+          ex: { en: "The vacuum cleaner is in the closet.", ko: "진공청소기는 벽장 안에 있어요." },
+        },
+        {
+          en: "mop", ipa: "[mɑːp]", ko: "대걸레; 대걸레질하다", pos: "n., v.",
+          ex: { en: "Use this mop on the kitchen floor.", ko: "주방 바닥에는 이 대걸레를 쓰세요." },
+        },
+        {
+          en: "broom", ipa: "[bruːm]", ko: "빗자루", pos: "n.",
+          ex: { en: "Sweep the steps with a broom.", ko: "빗자루로 계단을 쓸어 주세요." },
+        },
+        {
+          en: "dust", ipa: "[dʌst]", ko: "먼지; 먼지를 털다", pos: "n., v.",
+          ex: { en: "There is dust under the shelf.", ko: "선반 아래에 먼지가 있어요." },
+        },
+        {
+          en: "tidy up", ipa: "[ˈtaɪdi ʌp]", ko: "정리하다", pos: "phr.v.",
+          ex: { en: "Let's tidy up the living room first.", ko: "먼저 거실을 정리해요." },
+        },
+        {
+          en: "take out the trash", ipa: "[teɪk aʊt ðə træʃ]", ko: "쓰레기를 내다 버리다", pos: "expr.",
+          ex: { en: "Please take out the trash tonight.", ko: "오늘 밤에 쓰레기를 내다 버려 주세요." },
+        },
+        {
+          en: "fold", ipa: "[foʊld]", ko: "접다", pos: "v.",
+          ex: { en: "Could you fold these towels?", ko: "이 수건들을 개어 주시겠어요?" },
+        },
+      ],
+    },
+    {
+      name: "아침과 저녁 루틴",
+      icon: "⏰",
+      words: [
+        {
+          en: "shower", ipa: "[ˈʃaʊər]", ko: "샤워; 샤워하다", pos: "n., v.",
+          ex: { en: "I take a quick shower before work.", ko: "저는 출근 전에 간단히 샤워해요." },
+        },
+        {
+          en: "toothbrush", ipa: "[ˈtuːθbrʌʃ]", ko: "칫솔", pos: "n.",
+          ex: { en: "I packed a new toothbrush for the trip.", ko: "여행을 위해 새 칫솔을 챙겼어요." },
+        },
+        {
+          en: "toothpaste", ipa: "[ˈtuːθpeɪst]", ko: "치약", pos: "n.",
+          ex: { en: "We need another tube of toothpaste.", ko: "치약 한 통이 더 필요해요." },
+        },
+        {
+          en: "comb", ipa: "[koʊm]", ko: "빗; 빗질하다", pos: "n., v.",
+          ex: { en: "I keep a comb in my bag.", ko: "저는 가방에 빗을 넣어 다녀요." },
+        },
+        {
+          en: "get dressed", ipa: "[ɡet drest]", ko: "옷을 입다", pos: "expr.",
+          ex: { en: "The children get dressed after breakfast.", ko: "아이들은 아침을 먹고 옷을 입어요." },
+        },
+        {
+          en: "pack a lunch", ipa: "[pæk ə lʌntʃ]", ko: "도시락을 싸다", pos: "expr.",
+          ex: { en: "I pack a lunch on busy days.", ko: "바쁜 날에는 도시락을 싸요." },
+        },
+        {
+          en: "commute", ipa: "[kəˈmjuːt]", ko: "통근하다; 통근", pos: "v., n.",
+          ex: { en: "She commutes by train every morning.", ko: "그녀는 매일 아침 기차로 통근해요." },
+        },
+        {
+          en: "bedtime", ipa: "[ˈbedtaɪm]", ko: "잠자리에 들 시간", pos: "n.",
+          ex: { en: "I turn off my phone before bedtime.", ko: "저는 잠자리에 들기 전에 휴대폰을 꺼요." },
+        },
+        {
+          en: "oversleep", ipa: "[ˌoʊvərˈsliːp]", ko: "늦잠 자다", pos: "v.",
+          ex: { en: "Set two alarms so you do not oversleep.", ko: "늦잠 자지 않도록 알람을 두 개 맞추세요." },
+        },
+      ],
+    },
+    {
+      name: "진료와 약",
+      icon: "🩺",
+      words: [
+        {
+          en: "appointment", ipa: "[əˈpɔɪntmənt]", ko: "예약, 약속", pos: "n.",
+          ex: { en: "I have a doctor's appointment at two.", ko: "두 시에 진료 예약이 있어요." },
+        },
+        {
+          en: "clinic", ipa: "[ˈklɪnɪk]", ko: "의원, 진료소", pos: "n.",
+          ex: { en: "The clinic is open on Saturday mornings.", ko: "그 의원은 토요일 오전에 문을 열어요." },
+        },
+        {
+          en: "symptom", ipa: "[ˈsɪmptəm]", ko: "증상", pos: "n.",
+          ex: { en: "When did this symptom begin?", ko: "이 증상은 언제 시작됐나요?" },
+        },
+        {
+          en: "sore throat", ipa: "[ˌsɔːr ˈθroʊt]", ko: "인후통, 목 아픔", pos: "n.",
+          ex: { en: "I have a sore throat and a mild fever.", ko: "목이 아프고 미열이 있어요." },
+        },
+        {
+          en: "cough", ipa: "[kɔːf]", ko: "기침; 기침하다", pos: "n., v.",
+          ex: { en: "This cough keeps me awake at night.", ko: "이 기침 때문에 밤에 잠을 못 자요." },
+        },
+        {
+          en: "allergy", ipa: "[ˈælərdʒi]", ko: "알레르기", pos: "n.",
+          ex: { en: "I have an allergy to peanuts.", ko: "저는 땅콩 알레르기가 있어요." },
+        },
+        {
+          en: "prescription", ipa: "[prɪˈskrɪpʃn]", ko: "처방전", pos: "n.",
+          ex: { en: "Take this prescription to the pharmacy.", ko: "이 처방전을 약국에 가져가세요." },
+        },
+        {
+          en: "painkiller", ipa: "[ˈpeɪnkɪlər]", ko: "진통제", pos: "n.",
+          ex: { en: "The nurse gave me a mild painkiller.", ko: "간호사가 순한 진통제를 주었어요." },
+        },
+        {
+          en: "recover", ipa: "[rɪˈkʌvər]", ko: "회복하다", pos: "v.",
+          ex: { en: "You need time to recover from the flu.", ko: "독감에서 회복하려면 시간이 필요해요." },
+        },
+      ],
+    },
   ],
 }
 
