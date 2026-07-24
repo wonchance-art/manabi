@@ -1,6 +1,6 @@
 const chapters = [
   {
-    slug: "ot-draft-06-directions-transport",
+    slug: "ot-06-scene-directions-transport",
     level: "OT",
     order: 6,
     title: "길을 묻고, 안내를 따라 이동해요",
@@ -12,8 +12,7 @@ const chapters = [
     sections: [
       {
         heading: "1. 처음 말을 걸고 목적지까지 가는 법을 물어요",
-        pattern: "Excuse me, how do I get to + 장소?",
-        patternIpa: "[ɪkˈskjuːz miː | haʊ də aɪ ɡet tə] + 장소",
+        pattern: "Excuse me, how do I get to + 장소? ([ɪkˈskjuːz miː | haʊ də aɪ ɡet tə] + 장소)",
         patternKo: "실례합니다, ~에 어떻게 가나요?",
         body:
           "낯선 사람에게 바로 질문하기보다 **Excuse me**로 먼저 말을 걸어요. 그다음 **How do I get to + 장소?**를 붙이면 도보·버스·기차 중 어떤 방법이든 포함해 길을 물을 수 있어요.\n\n" +
@@ -31,8 +30,7 @@ const chapters = [
       },
       {
         heading: "2. 가는 방향이 맞는지 확인해요",
-        pattern: "Is this the right way to + 장소?",
-        patternIpa: "[ɪz ðɪs ðə raɪt weɪ tə] + 장소",
+        pattern: "Is this the right way to + 장소? ([ɪz ðɪs ðə raɪt weɪ tə] + 장소)",
         patternKo: "이쪽이 ~로 가는 길이 맞나요?",
         body:
           "안내를 들었지만 갈림길에서 확신이 없을 때 **Is this the right way to...?**로 확인해요. 손으로 현재 방향을 가리키며 말하면 this가 '지금 제가 가는 이쪽'을 뜻해요.\n\n" +
@@ -50,8 +48,7 @@ const chapters = [
       },
       {
         heading: "3. 직진하고 모퉁이에서 도는 안내를 알아들어요",
-        pattern: "Go straight and turn left/right at + 지점.",
-        patternIpa: "[ɡoʊ streɪt ən tɜːrn left/raɪt æt] + 지점",
+        pattern: "Go straight and turn left/right at + 지점. ([ɡoʊ streɪt ən tɜːrn left/raɪt æt] + 지점)",
         patternKo: "곧장 가서 ~에서 왼쪽/오른쪽으로 도세요.",
         body:
           "길 안내의 뼈대는 **Go straight**와 **turn left/right**예요. 어디에서 도는지는 at the corner, at the light처럼 **at + 지점**으로 붙여요.\n\n" +
@@ -69,8 +66,7 @@ const chapters = [
       },
       {
         heading: "4. 목적지로 가는 버스나 기차를 골라요",
-        pattern: "Which bus/train should I take to + 장소?",
-        patternIpa: "[wɪtʃ bʌs/treɪn ʃʊd aɪ teɪk tə] + 장소",
+        pattern: "Which bus/train should I take to + 장소? ([wɪtʃ bʌs/treɪn ʃʊd aɪ teɪk tə] + 장소)",
         patternKo: "~에 가려면 어느 버스/기차를 타야 하나요?",
         body:
           "**Which bus/train should I take...?**는 여러 노선 중 하나를 골라 달라는 질문이에요. 영어에서는 교통수단을 이용한다는 뜻으로 take a bus, take a train을 써요.\n\n" +
@@ -88,8 +84,7 @@ const chapters = [
       },
       {
         heading: "5. 환승할 역을 물어요",
-        pattern: "Where do I change trains for + 장소?",
-        patternIpa: "[wer də aɪ tʃeɪndʒ treɪnz fər] + 장소",
+        pattern: "Where do I change trains for + 장소? ([wer də aɪ tʃeɪndʒ treɪnz fər] + 장소)",
         patternKo: "~에 가려면 어디에서 갈아타나요?",
         body:
           "기차나 지하철을 갈아탈 때 **change trains**를 써요. **for + 장소**는 그 목적지 방향으로 가기 위한 환승이라는 뜻이에요.\n\n" +
@@ -168,7 +163,7 @@ const chapters = [
           ],
           questions: [
             {
-              id: "ot-draft-06-directions-transport-sq1",
+              id: "ot-06-scene-directions-transport-sq1",
               type: "order",
               pattern: "Excuse me, how do I get to + 장소?",
               q:
@@ -196,7 +191,7 @@ const chapters = [
                 "Excuse me로 말을 건 뒤, how + do + I + get to + 장소 순서로 질문해요.",
             },
             {
-              id: "ot-draft-06-directions-transport-sq2",
+              id: "ot-06-scene-directions-transport-sq2",
               type: "fill",
               pattern: "turn left/right at + 지점",
               q:
@@ -208,7 +203,7 @@ const chapters = [
                 "방향을 바꾸는 말은 turn right예요. 어디에서 도는지는 at the corner로 붙여요.",
             },
             {
-              id: "ot-draft-06-directions-transport-sq3",
+              id: "ot-06-scene-directions-transport-sq3",
               type: "produce",
               prompt:
                 "지금 있는 곳에서 목적지로 가야 해요. 길을 묻거나 탈 교통수단을 고르는 질문을 영어 한 문장으로 만들어 봐요.",
@@ -226,7 +221,7 @@ const chapters = [
   },
 
   {
-    slug: "ot-draft-07-illness-lost-property",
+    slug: "ot-07-scene-illness-lost-property",
     level: "OT",
     order: 7,
     title: "아프거나 물건을 잃었을 때 바로 말해요",
@@ -238,8 +233,7 @@ const chapters = [
     sections: [
       {
         heading: "1. 몸 상태가 좋지 않다고 먼저 알려요",
-        pattern: "I don't feel well.",
-        patternIpa: "[aɪ doʊnt fiːl wel]",
+        pattern: "I don't feel well. ([aɪ doʊnt fiːl wel])",
         patternKo: "몸이 좋지 않아요.",
         body:
           "**I don't feel well**은 증상을 정확히 모르더라도 몸 상태가 좋지 않다고 알리는 안전한 첫 문장이에요. 안내소·숙소·교통수단 안에서 도움을 청할 때 먼저 말할 수 있어요.\n\n" +
@@ -257,8 +251,7 @@ const chapters = [
       },
       {
         heading: "2. 아픈 신체 부위를 짚어 말해요",
-        pattern: "My + 신체 부위 + hurts.",
-        patternIpa: "[maɪ] + 신체 부위 + [hɜːrts]",
+        pattern: "My + 신체 부위 + hurts. ([maɪ] + 신체 부위 + [hɜːrts])",
         patternKo: "~가 아파요.",
         body:
           "아픈 곳 하나를 말할 때 **My ankle hurts**, **My head hurts**처럼 신체 부위 뒤에 hurts를 붙여요. 통증의 종류를 몰라도 위치부터 정확히 전달할 수 있어요.\n\n" +
@@ -276,8 +269,7 @@ const chapters = [
       },
       {
         heading: "3. 즉시 구급차를 불러 달라고 요청해요",
-        pattern: "Please call an ambulance.",
-        patternIpa: "[pliːz kɔːl ən ˈæmbjələns]",
+        pattern: "Please call an ambulance. ([pliːz kɔːl ən ˈæmbjələns])",
         patternKo: "구급차를 불러 주세요.",
         body:
           "즉시 의료 도움이 필요한 상황에서는 **Please call an ambulance**라고 짧고 분명하게 말해요. call은 여기서 전화 통화가 아니라 **불러 달라**는 뜻이에요.\n\n" +
@@ -295,8 +287,7 @@ const chapters = [
       },
       {
         heading: "4. 소지품을 찾을 수 없다고 말해요",
-        pattern: "I can't find my + 소지품.",
-        patternIpa: "[aɪ kænt faɪnd maɪ] + 소지품",
+        pattern: "I can't find my + 소지품. ([aɪ kænt faɪnd maɪ] + 소지품)",
         patternKo: "제 ~을/를 찾을 수 없어요.",
         body:
           "**I can't find my...**는 단순히 눈앞에서 못 찾는 상황부터 분실 신고까지 넓게 쓸 수 있어요. passport, phone, wallet, bag처럼 잃어버린 물건을 뒤에 붙여요.\n\n" +
@@ -314,8 +305,7 @@ const chapters = [
       },
       {
         heading: "5. 마지막으로 가지고 있던 곳을 알려요",
-        pattern: "I last had it + 장소/시점.",
-        patternIpa: "[aɪ læst hæd ɪt] + 장소/시점",
+        pattern: "I last had it + 장소/시점. ([aɪ læst hæd ɪt] + 장소/시점)",
         patternKo: "마지막으로 ~에서/때 그것을 가지고 있었어요.",
         body:
           "분실 신고를 하면 마지막으로 물건을 본 곳이나 가지고 있던 때를 물어봐요. **I last had it + 장소/시점**으로 마지막 확인 지점을 알려요.\n\n" +
@@ -400,7 +390,7 @@ const chapters = [
           ],
           questions: [
             {
-              id: "ot-draft-07-illness-lost-property-sq1",
+              id: "ot-07-scene-illness-lost-property-sq1",
               type: "order",
               pattern: "Please call an ambulance.",
               q:
@@ -412,7 +402,7 @@ const chapters = [
                 "Please + call + an ambulance 순서로 핵심 요청을 짧고 분명하게 전달해요.",
             },
             {
-              id: "ot-draft-07-illness-lost-property-sq2",
+              id: "ot-07-scene-illness-lost-property-sq2",
               type: "fill",
               pattern: "I can't find my + 소지품.",
               q:
@@ -424,7 +414,7 @@ const chapters = [
                 "can't 뒤에는 동사원형 find가 와요. I can't find my wallet으로 현재 찾지 못하는 상태를 알려요.",
             },
             {
-              id: "ot-draft-07-illness-lost-property-sq3",
+              id: "ot-07-scene-illness-lost-property-sq3",
               type: "produce",
               prompt:
                 "진료소나 분실물 창구 중 한 장면을 골라, 지금 가장 먼저 알려야 할 사실을 영어 한 문장으로 말해 봐요.",

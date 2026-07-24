@@ -1,6 +1,6 @@
 const chapters = [
   {
-    slug: "a1-21-directions-transit-scene-draft",
+    slug: "a1-21-scene-directions-transit",
     level: "A1",
     order: 21,
     title: "\"어디로 가야 해요?\" — 길과 교통을 한 번에 물어요",
@@ -275,7 +275,7 @@ const chapters = [
   },
 
   {
-    slug: "a1-22-health-lost-property-scene-draft",
+    slug: "a1-22-scene-health-lost-property",
     level: "A1",
     order: 22,
     title: "\"아프고 잃어버렸어요\" — 필요한 도움을 또렷하게 말해요",

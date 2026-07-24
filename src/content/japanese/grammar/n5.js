@@ -3,8 +3,6 @@
  * です·ます와 조사, 동사 활용 등 기초 문법을 한국어 감각에 연결해 깔아주는 레벨.
  * (문자·발음·한자 읽기와 3대 자산 선언은 OT 레벨에서 다룸)
  */
-import sceneEmergency from './scene_emergency';
-
 const chapters = [
   {
     slug: "n5-04-desu-da",
@@ -2829,4 +2827,4 @@ const chapters = [
   },
 ];
 
-export default [...chapters, ...sceneEmergency];
+export default chapters;

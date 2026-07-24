@@ -1,6 +1,6 @@
 const chapters = [
   {
-    slug: "n5-draft-29-scene-directions-transit",
+    slug: "n5-29-scene-directions-transit",
     level: "N5",
     order: 29,
     title: "길을 묻고, 안내를 따라, 탈것까지 이어 가기",
@@ -243,7 +243,7 @@ const chapters = [
           ],
           questions: [
             {
-              id: "n5-draft-29-scene-directions-transit-sq1",
+              id: "n5-29-scene-directions-transit-sq1",
               type: "order",
               pattern: "Nへは どう いけば いいですか",
               q: "이번에는 역으로 가는 길을 물어요. 타일을 순서대로 놓아 '역에는 어떻게 가면 돼요?'라고 말해 보세요.",
@@ -254,7 +254,7 @@ const chapters = [
                 "목적지 えき 뒤에 へは를 놓고, 질문 덩어리 どう いけば いいですか를 이어요.",
             },
             {
-              id: "n5-draft-29-scene-directions-transit-sq2",
+              id: "n5-29-scene-directions-transit-sq2",
               type: "fill",
               pattern: "Nを みぎ／ひだりに まがってください",
               q: "안내하는 사람이 '두 번째 모퉁이에서 오른쪽으로 돌아 주세요'라고 말해요. 빈칸에 동작을 채워 보세요.",
@@ -265,7 +265,7 @@ const chapters = [
                 "기준점은 かどを, 방향은 みぎに로 표시하고, 요청 동작 まがってください로 끝내요.",
             },
             {
-              id: "n5-draft-29-scene-directions-transit-sq3",
+              id: "n5-29-scene-directions-transit-sq3",
               type: "produce",
               prompt:
                 "가고 싶은 곳 하나를 정해 가는 법이나 소요 시간을 묻고, 가능하면 탈것과 내릴 곳까지 한두 문장으로 말해 보세요.",
@@ -284,7 +284,7 @@ const chapters = [
   },
 
   {
-    slug: "n5-draft-30-scene-pain-loss",
+    slug: "n5-30-scene-pain-loss",
     level: "N5",
     order: 30,
     title: "아픈 곳과 잃어버린 물건을 바로 알리기",
@@ -539,7 +539,7 @@ const chapters = [
           ],
           questions: [
             {
-              id: "n5-draft-30-scene-pain-loss-sq1",
+              id: "n5-30-scene-pain-loss-sq1",
               type: "order",
               pattern: "ときから からだの ぶぶんが いたいです",
               q: "어제부터 배가 아프다고 말해요. 타일을 자연스러운 순서로 놓아 보세요.",
@@ -550,7 +550,7 @@ const chapters = [
                 "시작점 きのうから를 먼저 말하고, 아픈 부위 おなか에 가를 붙여 いたいです로 끝내요.",
             },
             {
-              id: "n5-draft-30-scene-pain-loss-sq2",
+              id: "n5-30-scene-pain-loss-sq2",
               type: "fill",
               pattern: "Nを なくしました",
               q: "지갑을 잃어버린 사실을 알리려 해요. 빈칸에 알맞은 말을 채워 보세요.",
@@ -561,7 +561,7 @@ const chapters = [
                 "잃어버린 물건 さいふ에 를 붙이고, 사건을 보고하는 なくしました로 끝내요.",
             },
             {
-              id: "n5-draft-30-scene-pain-loss-sq3",
+              id: "n5-30-scene-pain-loss-sq3",
               type: "produce",
               prompt:
                 "아픈 곳이나 잃어버린 물건을 하나 정해 상황을 알리고, 상대에게 필요한 도움을 한 문장 더 부탁해 보세요.",
