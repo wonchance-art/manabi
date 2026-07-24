@@ -13,6 +13,7 @@ import {
   recordNewWord,
   validateProgressRecord,
 } from '../progressStore';
+import { supabase } from '../../supabase';
 
 // Supabase mock
 vi.mock('../../supabase', () => ({
@@ -122,7 +123,8 @@ describe('progressStore', () => {
         correct: false,
       });
 
-      // 게스트는 진도 저장 불가 (원본 설계)
+      // 게스트는 원격 저장을 시도하지 않고 로컬 폴백에서 종료한다.
+      expect(supabase.from).not.toHaveBeenCalled();
     });
 
     it('필수 필드 검증', async () => {

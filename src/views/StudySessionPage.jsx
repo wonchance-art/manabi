@@ -3,18 +3,20 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import Button from '../components/Button';
+import ExerciseEnginePrototype from '../components/ExerciseEnginePrototype';
 import RefSpeak from '../components/RefSpeak';
 import { useTTS } from '../lib/useTTS';
 import { JaText } from './refShared';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
-import { gradeGrammarReview, ratingFromScore, enqueueGrammarReview } from '../lib/grammarSrs';
-import { syncCheckRemote, syncReadRemote } from '../lib/refProgress';
+import { gradeGrammarReview, ratingFromScore } from '../lib/grammarSrs';
 import { createReviewEventBatcher, logReviewEvents } from '../lib/reviewEvents';
 import { hasVapidKey, isPushSupported, isIosNeedsInstall, getSubscriptionState, subscribePush } from '../lib/push';
 import { sentenceIncludesWord } from '../lib/skillRung';
+import { recordActivity } from '../lib/streak';
 import { recordLessonCompleted, recordNewWord } from '../lib/learn/progressStore';
-import { gradeTyping, isChapterPassed, qtypeForItem, grammarDueChapterCounts } from '../lib/studySession';
+import { recordStudyReviewCompleted } from '../lib/studyExerciseBridge';
+import { gradeTyping, isChapterPassed, grammarDueChapterCounts } from '../lib/studySession';
 import { splitSentenceAroundWord } from '../lib/constants';
 import { mapParagraphToItems } from '../lib/studyParagraph';
 
@@ -524,33 +526,19 @@ export default function StudySessionPage({
 
   /**
    * 문항 확정 시점 사이드이펙트 (첫 시도만) —
-   * 이벤트 즉시 적재(마이크로배치) · 어휘 FSRS 갱신 · 문법 챕터 마지막 문항에서 재스케줄.
+   * F2 progressStore 이벤트·어휘 FSRS 갱신 · 문법 챕터 마지막 문항에서 재스케줄.
    * 중도 이탈해도 여기까지의 기록은 남는다.
    */
   function recordSettle(ok, it) {
-    if (!user?.id || !it?.effect) return;
-    const batcher = getBatcher();
+    if (!it?.effect) return;
     const rt_ms = Date.now() - itemShownAtRef.current;
-    const qtype = qtypeForItem(it.type);
     const eff = it.effect;
 
-    if (eff.kind === 'vocab') {
-      const w = it.word;
-      import('../lib/fsrs')
-        .then(({ calculateFSRS }) => {
-          const nextStats = calculateFSRS(ok ? 3 : 1, {
-            interval: w.interval ?? 0, ease_factor: w.ease_factor ?? 0,
-            repetitions: w.repetitions ?? 0, next_review_at: w.next_review_at,
-          });
-          return supabase.from('user_vocabulary')
-            .update({ ...nextStats, last_reviewed_at: new Date().toISOString() })
-            .eq('id', w.id);
-        })
-        .then(() => {}, () => {});
-      batcher?.add({ lang, source: 'vocab', item_key: w.word_text, correct: ok, detail: { word_id: w.id, meaning: w.meaning, mode: 'study', qtype, rt_ms } });
-    } else if (eff.kind === 'grammar-due') {
+    // 답안 완료 기록은 F2 단일 경계로 보낸다. 게스트도 같은 호출을 거쳐 로컬 폴백한다.
+    recordStudyReviewCompleted(user?.id, { correct: ok, item: it, lang, rtMs: rt_ms });
+
+    if (eff.kind === 'grammar-due' && user?.id) {
       const slug = eff.srs.slug;
-      batcher?.add({ lang, source: 'grammar', item_key: slug, correct: ok, detail: { ko: it.quiz?.ko, mode: 'study', qtype, rt_ms } });
       // 챕터별 정답 누적 → 마지막 문항에서 챕터 정답률로 재스케줄
       const agg = grammarAggRef.current.get(slug) || { srs: eff.srs, right: 0, total: 0 };
       agg.total++; if (ok) agg.right++;
@@ -558,15 +546,6 @@ export default function StudySessionPage({
       if (agg.total >= (grammarCounts[slug] || 0)) {
         gradeGrammarReview({ ...agg.srs, user_id: user.id }, ratingFromScore(agg.right, agg.total));
       }
-    } else if (eff.kind === 'new-chapter') {
-      // 통과 판정은 세션 말미(fireEffects)에서 — 여기선 이벤트만 즉시 적재
-      batcher?.add({ lang, source: 'grammar', item_key: eff.meta.slug, correct: ok, detail: { ko: it.quiz?.ko, mode: 'study', qtype, rt_ms } });
-    } else if (eff.kind === 'reading') {
-      batcher?.add({ lang, source: 'reading', item_key: String(eff.key).slice(0, 80), correct: ok, detail: { mode: 'study', qtype, rt_ms } });
-    } else if (eff.kind === 'warmup') {
-      // 비예정 조기 복습 — FSRS(user_vocabulary) 갱신 없이 이벤트만 적재.
-      // source:'vocab'이라 rung 계산에도 흡수된다(qtype 'choice'로 반영 — 의도된 설계).
-      batcher?.add({ lang, source: 'vocab', item_key: eff.key, correct: ok, detail: { qtype: 'choice', warmup: true, rt_ms, mode: 'study' } });
     }
   }
 
@@ -1011,8 +990,6 @@ export default function StudySessionPage({
   }
 
   // ── 진행 화면 ──
-  const q = item?.quiz;
-
   return (
     <div className="page-container" style={{ maxWidth: 640 }}>
       {/* 헤더 — 나가기 · 진행바 · 언어 */}
@@ -1246,75 +1223,21 @@ export default function StudySessionPage({
         </div>
       )}
 
-      {/* ── 문법: 빈칸 ── */}
-      {item.type === 'grammar-cloze' && (
-        <div className="fr-quiz__q">
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 6 }}>
-            {item.effect.kind === 'grammar-due' ? '복습' : '새 패턴'} · {item.chapter.title}
-          </div>
-          <div className="fr-quiz__prompt" lang={langCode}>{q.sentence}</div>
-          <div className="fr-quiz__sub">“{q.ko}”</div>
-          <div className="fr-quiz__opts fr-quiz__opts--grid">
-            {prepared.options.map(opt => (
-              <button key={opt} type="button" disabled={phase === 'feedback'}
-                className={`fr-quiz__opt ${phase === 'feedback' ? (opt === q.correct ? 'is-correct' : opt === picked ? 'is-wrong' : 'is-locked') : ''}`}
-                onClick={() => settle(opt === q.correct, opt)} lang={langCode}>
-                {opt}
-              </button>
-            ))}
-          </div>
-          {phase === 'feedback' && (
-            <div className="fr-quiz__answer">
-              <span lang={langCode}>{renderMain(q.full, q.pron)}</span>
-              <RefSpeak text={q.full} lang={lang} size="xs" />
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── 문법: 어순 배열 ── */}
-      {item.type === 'grammar-order' && (
-        <div className="fr-quiz__q">
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 6 }}>
-            {item.effect.kind === 'grammar-due' ? '복습' : '새 패턴'} · {item.chapter.title}
-          </div>
-          <div className="fr-quiz__prompt">“{q.ko}”</div>
-          <div className={`fr-quiz__line ${phase === 'feedback' ? (firstResults[baseUid(item.uid)]?.ok || orderPicks.map(bi => prepared.bank[bi].t).join(' ') === q.tokens.join(' ') ? 'is-correct' : 'is-wrong') : ''}`}>
-            {orderPicks.map((bi, pos) => (
-              <button key={pos} type="button" className="fr-quiz__token is-picked" disabled={phase === 'feedback'}
-                onClick={() => setOrderPicks(prev => prev.filter((_, i2) => i2 !== pos))} lang={langCode}>
-                {prepared.bank[bi].t}
-              </button>
-            ))}
-            {orderPicks.length === 0 && <span className="fr-quiz__line-hint">단어를 순서대로 탭하세요</span>}
-          </div>
-          {phase === 'answer' && (
-            <div className="fr-quiz__tokens">
-              {prepared.bank.map((tok, bi) => (
-                orderPicks.includes(bi) ? null : (
-                  <button key={bi} type="button" className="fr-quiz__token" lang={langCode}
-                    onClick={() => {
-                      if (isTapLocked()) return;
-                      const nextPicks = [...orderPicks, bi];
-                      setOrderPicks(nextPicks);
-                      if (nextPicks.length === q.tokens.length) {
-                        const built = nextPicks.map(b => prepared.bank[b].t).join(' ');
-                        settle(built === q.tokens.join(' '), built);
-                      }
-                    }}>
-                    {tok.t}
-                  </button>
-                )
-              ))}
-            </div>
-          )}
-          {phase === 'feedback' && (
-            <div className="fr-quiz__answer">
-              <span lang={langCode}>{renderMain(q.answer, q.pron)}</span>
-              <RefSpeak text={q.answer} lang={lang} size="xs" />
-            </div>
-          )}
-        </div>
+      {/* ── 문법: 공통 연습 엔진(choice/order) ── */}
+      {(item.type === 'grammar-cloze' || item.type === 'grammar-order') && (
+        <ExerciseEnginePrototype
+          studyItem={item}
+          phase={phase}
+          picked={picked}
+          prepared={prepared}
+          orderPicks={orderPicks}
+          onOrderPicksChange={setOrderPicks}
+          onAnswer={result => settle(result.correct, result.response)}
+          isTapLocked={isTapLocked}
+          lang={lang}
+          langCode={langCode}
+          renderMain={renderMain}
+        />
       )}
 
       {/* ── 독해: 뜻 고르기 / 내용 이해 ── */}

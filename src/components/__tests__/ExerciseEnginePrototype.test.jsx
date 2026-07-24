@@ -1,9 +1,11 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import ExerciseEnginePrototype, {
+  createExerciseResult,
   gradeExerciseResponse,
   normalizeExerciseAnswer,
   normalizeExerciseQuestion,
+  normalizeStudySessionGrammarQuestion,
 } from '../ExerciseEnginePrototype';
 
 describe('ExerciseEnginePrototype', () => {
@@ -98,5 +100,79 @@ describe('ExerciseEnginePrototype', () => {
 
   it('비배열 questions 입력은 렌더하지 않는다', () => {
     expect(renderToStaticMarkup(<ExerciseEnginePrototype questions={null} />)).toBe('');
+  });
+
+  it('StudySession 문법 빈칸을 exact choice 공통형으로 소비한다', () => {
+    const item = {
+      uid: 'g-1',
+      type: 'grammar-cloze',
+      quiz: {
+        sentence: 'Je ＿＿＿ ici.',
+        full: 'Je suis ici.',
+        ko: '저는 여기 있어요.',
+        correct: 'suis',
+        distractors: ['es', 'sommes'],
+        pron: null,
+      },
+      chapter: { title: 'être 현재형' },
+      effect: { kind: 'grammar-due', srs: { slug: 'a1-etre' } },
+    };
+    const question = normalizeStudySessionGrammarQuestion(item);
+
+    expect(question).toMatchObject({
+      id: 'g-1',
+      type: 'choice',
+      qtype: 'cloze',
+      answer: 'suis',
+      sourceRef: 'a1-etre',
+      grading: 'exact',
+    });
+    expect(createExerciseResult(question, 'suis').correct).toBe(true);
+    expect(createExerciseResult(question, 'SUIS').correct).toBe(false);
+
+    const html = renderToStaticMarkup(
+      <ExerciseEnginePrototype
+        studyItem={item}
+        phase="feedback"
+        picked="es"
+        prepared={{ options: ['es', 'suis', 'sommes'] }}
+        lang="French"
+        langCode="fr"
+      />,
+    );
+    expect(html).toContain('복습 · être 현재형');
+    expect(html).toContain('Je ＿＿＿ ici.');
+    expect(html).toContain('저는 여기 있어요.');
+    expect(html).toContain('fr-quiz__opt is-wrong');
+    expect(html).toContain('fr-quiz__opt is-correct');
+    expect(html).toContain('Je suis ici.');
+  });
+
+  it('StudySession 문법 어순의 기존 공백·대소문자 exact 채점을 유지한다', () => {
+    const item = {
+      uid: 'n-1',
+      type: 'grammar-order',
+      quiz: {
+        type: 'order',
+        tokens: ['Je', 'suis', 'ici.'],
+        answer: 'Je suis ici.',
+        ko: '저는 여기 있어요.',
+        pron: null,
+      },
+      chapter: { title: 'être 현재형' },
+      effect: { kind: 'new-chapter', meta: { slug: 'a1-etre' } },
+    };
+    const question = normalizeStudySessionGrammarQuestion(item);
+
+    expect(question).toMatchObject({
+      type: 'order',
+      qtype: 'order',
+      answer: 'Je suis ici.',
+      displayAnswer: 'Je suis ici.',
+      grading: 'exact',
+    });
+    expect(gradeExerciseResponse(question, 'Je suis ici.')).toBe(true);
+    expect(gradeExerciseResponse(question, 'je suis ici.')).toBe(false);
+    expect(gradeExerciseResponse(question, 'Je  suis ici.')).toBe(false);
   });
 });

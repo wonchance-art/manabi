@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import RefSpeak from './RefSpeak';
 
 const FILL_TYPES = new Set(['fill', 'short-answer']);
 const CHOICE_TYPES = new Set(['choice', 'select']);
@@ -116,13 +117,195 @@ export function normalizeExerciseQuestion(raw, index = 0) {
   };
 }
 
-/** 정규화된 fill/choice 문항 채점. */
+/** 정규화된 fill/choice/order 문항 채점. */
 export function gradeExerciseResponse(question, response) {
-  if (!question || !['fill', 'choice'].includes(question.type)) return false;
+  if (!question || !['fill', 'choice', 'order'].includes(question.type)) return false;
+  if (question.grading === 'exact' || question.type === 'order') {
+    return String(response ?? '') === String(question.answer ?? '');
+  }
   const normalized = normalizeExerciseAnswer(response);
   if (!normalized) return false;
   return [question.answer, ...(question.accept || [])]
     .some((candidate) => normalizeExerciseAnswer(candidate) === normalized);
+}
+
+/**
+ * StudySession의 문법 chapter question을 공통 연습형으로 변환한다.
+ * 기존 채점 계약을 지키기 위해 choice/order 모두 exact 비교를 명시한다.
+ */
+export function normalizeStudySessionGrammarQuestion(item) {
+  if (!item?.quiz || !['grammar-cloze', 'grammar-order'].includes(item.type)) return null;
+
+  const id = nonEmptyString(item.uid);
+  const sourceRef = nonEmptyString(item.effect?.srs?.slug)
+    || nonEmptyString(item.effect?.meta?.slug)
+    || null;
+  if (!id) return null;
+
+  if (item.type === 'grammar-cloze') {
+    const normalized = normalizeExerciseQuestion({
+      id,
+      type: 'choice',
+      prompt: item.quiz.sentence,
+      answer: item.quiz.correct,
+      options: [item.quiz.correct, ...(item.quiz.distractors || [])],
+      sourceRef,
+    });
+    return normalized
+      ? {
+          ...normalized,
+          qtype: 'cloze',
+          grading: 'exact',
+          subtitle: nonEmptyString(item.quiz.ko),
+          feedback: nonEmptyString(item.quiz.full),
+          pron: nonEmptyString(item.quiz.pron),
+        }
+      : null;
+  }
+
+  const tokens = Array.isArray(item.quiz.tokens)
+    ? item.quiz.tokens.map(nonEmptyString).filter(Boolean)
+    : [];
+  const displayAnswer = nonEmptyString(item.quiz.answer);
+  const prompt = nonEmptyString(item.quiz.ko);
+  if (!prompt || !displayAnswer || tokens.length < 2) return null;
+
+  return {
+    id,
+    type: 'order',
+    qtype: 'order',
+    prompt,
+    answer: tokens.join(' '),
+    displayAnswer,
+    tokens,
+    pron: nonEmptyString(item.quiz.pron),
+    sourceRef,
+    grading: 'exact',
+  };
+}
+
+export function createExerciseResult(question, response) {
+  return {
+    id: question.id,
+    type: question.type,
+    qtype: question.qtype,
+    sourceRef: question.sourceRef,
+    response,
+    answer: question.type === 'order' ? question.displayAnswer : question.answer,
+    correct: gradeExerciseResponse(question, response),
+  };
+}
+
+function StudySessionGrammarExercise({
+  studyItem,
+  phase = 'answer',
+  picked = null,
+  prepared = {},
+  orderPicks = [],
+  onOrderPicksChange,
+  onAnswer,
+  isTapLocked,
+  lang,
+  langCode,
+  renderMain = text => text,
+}) {
+  const question = normalizeStudySessionGrammarQuestion(studyItem);
+  if (!question) return null;
+
+  const feedback = phase === 'feedback';
+  const context = studyItem.effect?.kind === 'grammar-due' ? '복습' : '새 패턴';
+
+  if (question.type === 'choice') {
+    const options = prepared.options || question.options;
+    return (
+      <div className="fr-quiz__q">
+        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 6 }}>
+          {context} · {studyItem.chapter.title}
+        </div>
+        <div className="fr-quiz__prompt" lang={langCode}>{question.prompt}</div>
+        <div className="fr-quiz__sub">“{question.subtitle}”</div>
+        <div className="fr-quiz__opts fr-quiz__opts--grid">
+          {options.map(option => (
+            <button
+              key={option}
+              type="button"
+              disabled={feedback}
+              className={`fr-quiz__opt ${feedback ? (option === question.answer ? 'is-correct' : option === picked ? 'is-wrong' : 'is-locked') : ''}`}
+              onClick={() => onAnswer?.(createExerciseResult(question, option))}
+              lang={langCode}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+        {feedback && (
+          <div className="fr-quiz__answer">
+            <span lang={langCode}>{renderMain(question.feedback, question.pron)}</span>
+            <RefSpeak text={question.feedback} lang={lang} size="xs" />
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  const bank = prepared.bank || question.tokens.map((token, index) => ({ t: token, ti: index }));
+  const built = orderPicks.map(bankIndex => bank[bankIndex].t).join(' ');
+  const correct = gradeExerciseResponse(question, built);
+
+  return (
+    <div className="fr-quiz__q">
+      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 6 }}>
+        {context} · {studyItem.chapter.title}
+      </div>
+      <div className="fr-quiz__prompt">“{question.prompt}”</div>
+      <div className={`fr-quiz__line ${feedback ? (correct ? 'is-correct' : 'is-wrong') : ''}`}>
+        {orderPicks.map((bankIndex, position) => (
+          <button
+            key={position}
+            type="button"
+            className="fr-quiz__token is-picked"
+            disabled={feedback}
+            onClick={() => onOrderPicksChange?.(current => current.filter((_, index) => index !== position))}
+            lang={langCode}
+          >
+            {bank[bankIndex].t}
+          </button>
+        ))}
+        {orderPicks.length === 0 && <span className="fr-quiz__line-hint">단어를 순서대로 탭하세요</span>}
+      </div>
+      {phase === 'answer' && (
+        <div className="fr-quiz__tokens">
+          {bank.map((token, bankIndex) => (
+            orderPicks.includes(bankIndex) ? null : (
+              <button
+                key={bankIndex}
+                type="button"
+                className="fr-quiz__token"
+                lang={langCode}
+                onClick={() => {
+                  if (isTapLocked?.()) return;
+                  const nextPicks = [...orderPicks, bankIndex];
+                  onOrderPicksChange?.(nextPicks);
+                  if (nextPicks.length === question.tokens.length) {
+                    const response = nextPicks.map(index => bank[index].t).join(' ');
+                    onAnswer?.(createExerciseResult(question, response));
+                  }
+                }}
+              >
+                {token.t}
+              </button>
+            )
+          ))}
+        </div>
+      )}
+      {feedback && (
+        <div className="fr-quiz__answer">
+          <span lang={langCode}>{renderMain(question.displayAnswer, question.pron)}</span>
+          <RefSpeak text={question.displayAnswer} lang={lang} size="xs" />
+        </div>
+      )}
+    </div>
+  );
 }
 
 /**
@@ -133,7 +316,7 @@ export function gradeExerciseResponse(question, response) {
  *   progressStore.recordReviewCompleted를 호출하는 경계를 둔다.
  * - E3의 short-answer/promptKo/answer는 fill로 읽으며 choice/select도 지원한다.
  */
-export default function ExerciseEnginePrototype({
+function StandaloneExerciseEngine({
   questions = [],
   title = '연습',
   langCode = 'fr',
@@ -292,4 +475,15 @@ export default function ExerciseEnginePrototype({
       )}
     </section>
   );
+}
+
+/**
+ * 공통 연습 컴포넌트.
+ *
+ * studyItem이 있으면 StudySession의 한 문항짜리 제어형 흐름을 사용하고,
+ * 없으면 기존 독립 프로토타입 questions 흐름을 유지한다.
+ */
+export default function ExerciseEnginePrototype(props) {
+  if (props.studyItem) return <StudySessionGrammarExercise {...props} />;
+  return <StandaloneExerciseEngine {...props} />;
 }
