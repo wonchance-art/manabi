@@ -884,7 +884,36 @@ const chapters = [
       "숙소에서 수건과 와이파이 정보를 요청하고, 시설 고장이나 소음을 설명해 해결 방법과 객실 변경을 물어요.",
     duration: "약 15분",
     sections: [
+      // 샌드위치 v2 시험 적용 — Est-ce que je peux avoir… Tatoeba 실재 계열(동일 절차). 대화는 자체 저작.
       {
+        type: "authenticIntro",
+        heading: "숙소 요청·문제 신고 실전 대화 통째로 듣기",
+        presentationFraming: "못 알아들어도 정상이에요! 비품을 부탁하는 대화와 시설 고장을 알리는 대화를 먼저 통째로 들어 보세요 — Est-ce que je peux…와 ne fonctionne pas가 귀에 걸리면 충분해요.",
+        dialogue: [
+              { speaker: "여행자", fr: "Est-ce que je peux avoir deux serviettes, s'il vous plaît ?", ipa: "[ɛs kə ʒə pø avwaʁ dø sɛʁvjɛt sil vu plɛ]", ko: "수건 두 장을 받을 수 있을까요?" },
+              { speaker: "숙소 직원", fr: "Bien sûr. Nous les montons dans dix minutes.", ipa: "[bjɛ̃ syʁ nu le mɔ̃tɔ̃ dɑ̃ dis minyt]", ko: "물론이에요. 10분 안에 가져다드릴게요." },
+              { speaker: "여행자", fr: "Merci. Quel est le mot de passe du Wi-Fi ?", ipa: "[mɛʁsi kɛl ɛ lə mo də pas dy wifi]", ko: "감사합니다. 와이파이 비밀번호가 무엇인가요?" },
+              { speaker: "숙소 직원", fr: "Il est écrit sur la carte de la chambre.", ipa: "[il ɛt ekʁi syʁ la kaʁt də la ʃɑ̃bʁ]", ko: "객실 카드에 적혀 있어요." },
+              { speaker: "여행자", fr: "La climatisation ne fonctionne pas.", ipa: "[la klimatizasjɔ̃ nə fɔ̃ksjɔn pa]", ko: "냉방이 작동하지 않아요." },
+              { speaker: "숙소 직원", fr: "Nous allons envoyer quelqu'un.", ipa: "[nuz alɔ̃z ɑ̃vwaje kɛlkœ̃]", ko: "직원을 보내 드릴게요." },
+              { speaker: "여행자", fr: "Pouvez-vous vérifier, s'il vous plaît ?", ipa: "[puve vu veʁifje sil vu plɛ]", ko: "확인해 주실 수 있나요?" },
+              { speaker: "숙소 직원", fr: "Oui. Si nécessaire, nous changerons votre chambre.", ipa: "[wi si nesesɛʁ nu ʃɑ̃ʒəʁɔ̃ vɔtʁ ʃɑ̃bʁ]", ko: "네. 필요하면 객실을 바꿔 드릴게요." },
+        ],
+      },
+      {
+        type: "vocabPreview",
+        heading: "오늘 배울 단어",
+        vocabs: [
+          { word: "une serviette", meanings: ["수건"], exampleSentence: "Est-ce que je peux avoir deux serviettes ?" },
+          { word: "le mot de passe", meanings: ["비밀번호"], exampleSentence: "Quel est le mot de passe du Wi-Fi ?" },
+          { word: "fonctionner", meanings: ["작동하다"], exampleSentence: "La climatisation ne fonctionne pas.", note: "고장 신고의 핵심 — ne … pas와 세트" },
+          { word: "la climatisation", meanings: ["에어컨", "냉방"], exampleSentence: "La climatisation ne fonctionne pas." },
+          { word: "vérifier", meanings: ["확인하다", "점검하다"], exampleSentence: "Pouvez-vous vérifier, s'il vous plaît ?" },
+          { word: "changer", meanings: ["바꾸다", "교체하다"], exampleSentence: "Est-il possible de changer de chambre ?" },
+        ],
+      },
+      {
+        type: "patternExplanation",
         heading: "비품 더 요청하기 — est-ce que je peux avoir를 써요",
         pattern:
           "Est-ce que je peux avoir + 비품, s'il vous plaît ?",
@@ -908,6 +937,7 @@ const chapters = [
           "필요한 수량을 먼저 확인해 deux serviettes처럼 명사 앞에 숫자를 붙여요.",
       },
       {
+        type: "patternExplanation",
         heading: "와이파이 정보 묻기 — mot de passe를 확인해요",
         pattern:
           "Quel est le mot de passe du Wi-Fi ? · Le Wi-Fi est-il gratuit ?",
@@ -931,6 +961,7 @@ const chapters = [
           "비밀번호 철자를 놓치면 Vous pouvez l'écrire, s'il vous plaît ?라고 적어 달라고 부탁해요.",
       },
       {
+        type: "patternExplanation",
         heading: "시설 고장 알리기 — ne fonctionne pas로 말해요",
         pattern:
           "Le/La + 시설 + ne fonctionne pas.",
@@ -954,6 +985,7 @@ const chapters = [
           "전기나 설비를 직접 분해하지 말고 직원에게 객실 번호와 증상을 알려요.",
       },
       {
+        type: "patternExplanation",
         heading: "소음 설명하기 — il y a와 depuis를 써요",
         pattern:
           "Il y a beaucoup de bruit + 장소/시간. · Cela dure depuis + 기간.",
@@ -977,6 +1009,7 @@ const chapters = [
           "소리가 나는 방향과 지속 시간을 차분히 말하면 직원이 상황을 확인하기 쉬워요.",
       },
       {
+        type: "patternExplanation",
         heading: "해결 방법 요청하기 — vérifier와 changer로 물어요",
         pattern:
           "Pouvez-vous vérifier, s'il vous plaît ? · Est-il possible de changer de chambre ?",
@@ -1000,26 +1033,30 @@ const chapters = [
           "객실 변경에는 추가 비용이나 대기 시간이 있을 수 있으니 가능한 선택지를 먼저 들어 봐요.",
       },
       {
-        heading: "대화 예시 — 비품을 부탁하고 시설 문제를 신고해요",
-        body:
-          "필요한 물품과 수량을 말하는 대화, 고장 증상을 알리고 확인이나 객실 변경을 요청하는 대화를 읽어 봐요.",
-        examples: [
-          {
-            dialogue: [
+        type: "authenticReplay",
+        heading: "같은 대화, 이제 다시 들어 보기",
+        presentationFraming: "문형을 배웠으니 처음 대화를 다시 들어 보고, 이어지는 장면까지 확장해 보세요.",
+        original: {
+          dialogue: [
               { speaker: "여행자", fr: "Est-ce que je peux avoir deux serviettes, s'il vous plaît ?", ipa: "[ɛs kə ʒə pø avwaʁ dø sɛʁvjɛt sil vu plɛ]", ko: "수건 두 장을 받을 수 있을까요?" },
               { speaker: "숙소 직원", fr: "Bien sûr. Nous les montons dans dix minutes.", ipa: "[bjɛ̃ syʁ nu le mɔ̃tɔ̃ dɑ̃ dis minyt]", ko: "물론이에요. 10분 안에 가져다드릴게요." },
               { speaker: "여행자", fr: "Merci. Quel est le mot de passe du Wi-Fi ?", ipa: "[mɛʁsi kɛl ɛ lə mo də pas dy wifi]", ko: "감사합니다. 와이파이 비밀번호가 무엇인가요?" },
               { speaker: "숙소 직원", fr: "Il est écrit sur la carte de la chambre.", ipa: "[il ɛt ekʁi syʁ la kaʁt də la ʃɑ̃bʁ]", ko: "객실 카드에 적혀 있어요." },
-            ],
-          },
-          {
-            dialogue: [
+          ],
+        },
+        variant: {
+          dialogue: [
               { speaker: "여행자", fr: "La climatisation ne fonctionne pas.", ipa: "[la klimatizasjɔ̃ nə fɔ̃ksjɔn pa]", ko: "냉방이 작동하지 않아요." },
               { speaker: "숙소 직원", fr: "Nous allons envoyer quelqu'un.", ipa: "[nuz alɔ̃z ɑ̃vwaje kɛlkœ̃]", ko: "직원을 보내 드릴게요." },
               { speaker: "여행자", fr: "Pouvez-vous vérifier, s'il vous plaît ?", ipa: "[puve vu veʁifje sil vu plɛ]", ko: "확인해 주실 수 있나요?" },
               { speaker: "숙소 직원", fr: "Oui. Si nécessaire, nous changerons votre chambre.", ipa: "[wi si nesesɛʁ nu ʃɑ̃ʒəʁɔ̃ vɔtʁ ʃɑ̃bʁ]", ko: "네. 필요하면 객실을 바꿔 드릴게요." },
-            ],
-          },
+          ],
+          transitionNote: "부탁(비품·정보)에서 신고(고장)로 장면이 바뀌어요 — 같은 정중함을 유지하면서 문제를 또렷하게 말하는 게 포인트예요.",
+        },
+        selfCheckOptions: [
+          { label: "다 들렸어요 (정확히 이해)", value: "full", fsrsSignal: 1 },
+          { label: "부분만 들렸어요 (주요 단어만)", value: "partial", fsrsSignal: 0.5 },
+          { label: "아직이에요 (계속 연습 필요)", value: "notready", fsrsSignal: -1 },
         ],
       },
       {
@@ -1108,6 +1145,15 @@ const chapters = [
             },
           ],
         },
+      },
+      {
+        type: "practiceAndRegistration",
+        heading: "연습: 직접 말해 보기",
+        writingPrompts: [
+          "드라이어가 없는 상황을 상상하고, 요청과 감사 인사까지 2문장을 만들어 보세요.",
+          "옆방 소음이 심한 상황으로 바꿔 il y a와 depuis로 신고하는 2문장을 만들어 보세요.",
+        ],
+        autoRegisterVocabs: true,
       },
     ],
   },
@@ -1413,7 +1459,36 @@ const chapters = [
       "식당에서 알레르기와 피해야 할 재료를 알리고 음식 성분을 확인한 뒤, 계산서와 결제 방법을 물어요.",
     duration: "약 15분",
     sections: [
+      // 샌드위치 v2 시험 적용 — L\'addition, s\'il vous plaît. Tatoeba 실재 계열(동일 절차). 대화는 자체 저작.
       {
+        type: "authenticIntro",
+        heading: "알레르기·계산 실전 대화 통째로 듣기",
+        presentationFraming: "못 알아들어도 정상이에요! 알레르기를 알리는 대화와 계산을 나누는 대화를 먼저 통째로 들어 보세요 — allergique와 l\'addition 두 단어가 이 장면의 열쇠예요.",
+        dialogue: [
+              { speaker: "여행자", fr: "Je suis allergique aux fruits à coque.", ipa: "[ʒə sɥiz alɛʁʒik o fʁɥi a kɔk]", ko: "저는 견과류에 알레르기가 있어요." },
+              { speaker: "식당 직원", fr: "Merci de nous prévenir.", ipa: "[mɛʁsi də nu pʁəvəniʁ]", ko: "알려 주셔서 감사합니다." },
+              { speaker: "여행자", fr: "Est-ce que ce plat contient des fruits à coque ?", ipa: "[ɛs kə sə pla kɔ̃tjɛ̃ de fʁɥi a kɔk]", ko: "이 요리에 견과류가 들어 있나요?" },
+              { speaker: "식당 직원", fr: "Oui. Je vais vous proposer un autre plat.", ipa: "[wi ʒə vɛ vu pʁɔpoze œ̃n otʁ pla]", ko: "네. 다른 요리를 안내해 드릴게요." },
+              { speaker: "여행자", fr: "L'addition, s'il vous plaît.", ipa: "[ladisjɔ̃ sil vu plɛ]", ko: "계산서 부탁해요." },
+              { speaker: "식당 직원", fr: "Bien sûr. La voici.", ipa: "[bjɛ̃ syʁ la vwasi]", ko: "물론이에요. 여기 있어요." },
+              { speaker: "여행자", fr: "Est-ce qu'on peut payer séparément ?", ipa: "[ɛs kɔ̃ pø peje sepaʁemɑ̃]", ko: "따로 계산할 수 있나요?" },
+              { speaker: "식당 직원", fr: "Oui. Qui paie en premier ?", ipa: "[wi ki pɛj ɑ̃ pʁəmje]", ko: "네. 누가 먼저 결제하나요?" },
+        ],
+      },
+      {
+        type: "vocabPreview",
+        heading: "오늘 배울 단어",
+        vocabs: [
+          { word: "allergique à", meanings: ["~에 알레르기가 있는"], exampleSentence: "Je suis allergique aux fruits à coque." },
+          { word: "les fruits à coque", meanings: ["견과류(갑각·조개류 아님 주의)"], exampleSentence: "Ce plat contient des fruits à coque ?", note: "noix는 기본적으로 호두" },
+          { word: "contenir", meanings: ["(재료가) 들어 있다"], exampleSentence: "Est-ce que ce plat contient des fruits à coque ?" },
+          { word: "sans", meanings: ["~ 없이"], exampleSentence: "Sans fromage, s'il vous plaît." },
+          { word: "l'addition", meanings: ["계산서"], exampleSentence: "L'addition, s'il vous plaît." },
+          { word: "payer", meanings: ["결제하다", "내다"], exampleSentence: "Est-ce qu'on peut payer séparément ?" },
+        ],
+      },
+      {
+        type: "patternExplanation",
         heading: "알레르기 알리기 — allergique à를 써요",
         pattern:
           "Je suis allergique à la/au/aux + 재료.",
@@ -1437,6 +1512,7 @@ const chapters = [
           "알레르기가 심하면 주문 전에 직원에게 분명히 알리고, 재료와 조리 가능 여부를 직접 확인해요. 참고: noix는 기본적으로 '호두'예요. 견과류 전체를 말할 땐 fruits à coque를 써요.",
       },
       {
+        type: "patternExplanation",
         heading: "성분 확인하기 — contenir로 재료를 물어요",
         pattern:
           "Est-ce que ce plat contient + 재료 ?",
@@ -1460,6 +1536,7 @@ const chapters = [
           "sans라고 적혀 있어도 교차 접촉 가능성까지 보장하는 것은 아니에요. 필요한 안전 조건은 직원에게 따로 확인해요.",
       },
       {
+        type: "patternExplanation",
         heading: "재료 제외 요청하기 — sans로 빼 달라고 해요",
         pattern:
           "Sans + 재료, s'il vous plaît. · Est-il possible de préparer ce plat sans + 재료 ?",
@@ -1483,6 +1560,7 @@ const chapters = [
           "선호에 따른 제외인지 알레르기 때문인지 직원이 알 수 있도록 필요한 경우 Je suis allergique...를 먼저 말해요.",
       },
       {
+        type: "patternExplanation",
         heading: "계산서 요청하기 — l'addition을 써요",
         pattern:
           "L'addition, s'il vous plaît. · Est-ce que le service est compris ?",
@@ -1506,6 +1584,7 @@ const chapters = [
           "계산서를 받은 뒤 주문한 항목과 금액을 확인하고 결제 방법을 말해요.",
       },
       {
+        type: "patternExplanation",
         heading: "결제 방법 묻기 — par carte와 séparément를 써요",
         pattern:
           "Je peux payer par carte ? · Est-ce qu'on peut payer séparément ?",
@@ -1529,26 +1608,30 @@ const chapters = [
           "따로 계산하려면 결제 전에 가능한지 먼저 묻고, 각자 주문한 항목을 준비해요.",
       },
       {
-        heading: "대화 예시 — 성분을 확인하고 원하는 방식으로 계산해요",
-        body:
-          "알레르기와 제외 재료를 주문 전에 알리는 대화, 계산서를 확인한 뒤 결제 방법을 묻는 대화를 읽어 봐요.",
-        examples: [
-          {
-            dialogue: [
+        type: "authenticReplay",
+        heading: "같은 대화, 이제 다시 들어 보기",
+        presentationFraming: "문형을 배웠으니 처음 대화를 다시 들어 보고, 이어지는 장면까지 확장해 보세요.",
+        original: {
+          dialogue: [
               { speaker: "여행자", fr: "Je suis allergique aux fruits à coque.", ipa: "[ʒə sɥiz alɛʁʒik o fʁɥi a kɔk]", ko: "저는 견과류에 알레르기가 있어요." },
               { speaker: "식당 직원", fr: "Merci de nous prévenir.", ipa: "[mɛʁsi də nu pʁəvəniʁ]", ko: "알려 주셔서 감사합니다." },
               { speaker: "여행자", fr: "Est-ce que ce plat contient des fruits à coque ?", ipa: "[ɛs kə sə pla kɔ̃tjɛ̃ de fʁɥi a kɔk]", ko: "이 요리에 견과류가 들어 있나요?" },
               { speaker: "식당 직원", fr: "Oui. Je vais vous proposer un autre plat.", ipa: "[wi ʒə vɛ vu pʁɔpoze œ̃n otʁ pla]", ko: "네. 다른 요리를 안내해 드릴게요." },
-            ],
-          },
-          {
-            dialogue: [
+          ],
+        },
+        variant: {
+          dialogue: [
               { speaker: "여행자", fr: "L'addition, s'il vous plaît.", ipa: "[ladisjɔ̃ sil vu plɛ]", ko: "계산서 부탁해요." },
               { speaker: "식당 직원", fr: "Bien sûr. La voici.", ipa: "[bjɛ̃ syʁ la vwasi]", ko: "물론이에요. 여기 있어요." },
               { speaker: "여행자", fr: "Est-ce qu'on peut payer séparément ?", ipa: "[ɛs kɔ̃ pø peje sepaʁemɑ̃]", ko: "따로 계산할 수 있나요?" },
               { speaker: "식당 직원", fr: "Oui. Qui paie en premier ?", ipa: "[wi ki pɛj ɑ̃ pʁəmje]", ko: "네. 누가 먼저 결제하나요?" },
-            ],
-          },
+          ],
+          transitionNote: "안전 확인(주문 전)에서 계산(식사 후)으로 장면이 이어져요 — 안전은 반드시 주문 전에, 결제 방식은 결제 전에 묻는 순서까지가 내용이에요.",
+        },
+        selfCheckOptions: [
+          { label: "다 들렸어요 (정확히 이해)", value: "full", fsrsSignal: 1 },
+          { label: "부분만 들렸어요 (주요 단어만)", value: "partial", fsrsSignal: 0.5 },
+          { label: "아직이에요 (계속 연습 필요)", value: "notready", fsrsSignal: -1 },
         ],
       },
       {
@@ -1637,6 +1720,15 @@ const chapters = [
             },
           ],
         },
+      },
+      {
+        type: "practiceAndRegistration",
+        heading: "연습: 직접 말해 보기",
+        writingPrompts: [
+          "우유 알레르기 상황으로 바꿔 알리기·성분 확인 2문장을 만들어 보세요.",
+          "카드로 각자 계산하는 상황의 요청 2문장을 만들어 보세요.",
+        ],
+        autoRegisterVocabs: true,
       },
     ],
   },
