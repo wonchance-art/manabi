@@ -369,6 +369,35 @@
   font-size: 0.7rem;
 }
 
+.lessonBody .lessonBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 3px 0 2px;
+}
+
+.lessonBody .lessonBadge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+.lessonBody .lessonBadgeRecommended {
+  background: color-mix(in srgb, var(--warning) 13%, transparent);
+  color: var(--warning);
+}
+
+.lessonBody .lessonBadgeFormulaic {
+  background: var(--primary-glow);
+  color: var(--primary-light);
+}
+
 .lessonMeta {
   min-width: 2.1rem;
   text-align: right;

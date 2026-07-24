@@ -93,6 +93,8 @@ function chapterToLesson(chapter, language, level, unitNum, lessonOrder, vocabTh
       },
     ],
     estimatedMinutes,
+    prerequisites: chapter.prerequisites || [],
+    formulaic: chapter.formulaic === true,
     specialFields: {
       originalChapterSlug: chapter.slug,
       originalLevel: chapter.level,

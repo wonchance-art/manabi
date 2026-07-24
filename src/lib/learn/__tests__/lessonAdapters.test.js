@@ -174,6 +174,23 @@ describe("FrenchAdapter", () => {
     expect(lessonsA0.length).toBe(2); // 2개 챕터
     expect(lessonsA1.length).toBe(3); // 3개 챕터
   });
+
+  it("챕터의 prerequisites·formulaic 메타를 레슨에 전달한다", () => {
+    const grammarLevels = {
+      a1: [
+        {
+          ...createDummyChapter("a1-02", "A1", 2),
+          prerequisites: ["a1-01"],
+          formulaic: true,
+        },
+      ],
+    };
+    const metadataAdapter = new FrenchAdapter(grammarLevels);
+    const { lessons } = metadataAdapter.getUnitsAndLessons("A1");
+
+    expect(lessons[0].prerequisites).toEqual(["a1-01"]);
+    expect(lessons[0].formulaic).toBe(true);
+  });
 });
 
 describe("EnglishAdapter", () => {

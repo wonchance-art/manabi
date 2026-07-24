@@ -46,6 +46,7 @@
  * @property {number} estimatedMinutes
  * @property {number} [difficultyRating] - 1~5
  * @property {string[]} [prerequisites]
+ * @property {boolean} [formulaic] - 장면 고정구 안내 여부
  * @property {string} [nextLesson]
  * @property {Object} [specialFields] - 트랙별 확장 필드
  */
