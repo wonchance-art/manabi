@@ -110,16 +110,16 @@ const chapters = [
       {
         heading: "1형 — 충분히 일어날 수 있는 일",
         pattern: "If + 현재시제, will + 동사원형",
-        patternKo: "if절 안에는 will 금지 — 미래여도 현재시제",
+        patternKo: "if절은 보통 현재시제 — 조건의 will은 안 써요",
         body:
-          "조건이 충족되면 실제로 벌어질 일 — 약속, 경고, 계획, 협상의 주력 가정문이에요. 포인트는 하나: **if절 안에는 will을 쓰지 않아요**. 미래의 일이라도 if절은 현재시제 — If it rains(○), If it will rain(×).\n\n" +
+          "조건이 충족되면 실제로 벌어질 일 — 약속, 경고, 계획, 협상의 주력 가정문이에요. 포인트: **조건을 말하는 if절에는 will을 쓰지 않는 게 기본**이에요. 미래의 일이라도 if절은 현재시제 — If it rains(○), If it will rain(×).\n\n" +
           "주절에는 will 대신 can, may, 명령문도 올 수 있어요: If you finish early, you can go home.",
         examples: [
           { en: "If it rains tomorrow, we will cancel the picnic.", ko: "내일 비가 오면 소풍을 취소할 거예요.", note: "if절은 현재시제 — will rain ×" },
           { en: "If you heat ice, it melts.", ko: "얼음을 가열하면 녹아요.", note: "항상 참인 사실은 양쪽 다 현재 (0형)" },
           { en: "If you need help, just call me.", ko: "도움이 필요하면 그냥 전화해요.", note: "주절에 명령문도 OK" },
         ],
-        pitfall: "**If it will rain tomorrow...** — 한국 학습자가 가장 자주 빠지는 함정이에요. '내일'이라는 말에 끌려 will을 넣고 싶어지지만, **if절(조건절)과 when절(시간절) 안은 미래 대신 현재시제**가 철칙입니다. When I will arrive ×, When I arrive ○.",
+        pitfall: "**If it will rain tomorrow...** — 한국 학습자가 가장 자주 빠지는 함정이에요. '내일'이라는 말에 끌려 will을 넣고 싶어지지만, **if절(조건절)과 when절(시간절) 안은 미래 대신 현재시제**가 기본 규칙입니다. When I will arrive ×, When I arrive ○. (참고: If you will just wait a moment처럼 '의지·정중한 부탁'의 will은 별개 용법으로 표준이에요 — B1에서는 '조건이면 현재시제'만 몸에 붙이면 충분해요.)",
       },
       {
         heading: "2형 — 현실과 반대인 상상, 그리고 If I were",

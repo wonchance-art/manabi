@@ -15,11 +15,11 @@ const chapters = [
     sections: [
       {
         heading: "be동사의 자리 — 주어 바로 뒤",
-        pattern: "주어 + am/is/are + 보어 (SVO)",
+        pattern: "주어 + am/is/are + 보어 (SVC — 보어는 목적어가 아니에요)",
         patternKo: "주어를 말한 순간, 다음 칸은 무조건 동사",
         distractors: ["am", "is", "are", "be"],
         body:
-          "영어가 SVO — **동사가 주어 바로 뒤**에 온다는 큰 그림은 OT의 어순 챕터에서 잡았어요. 여기서는 그 '주어 바로 뒤 동사' 자리에 **be동사**를 꽂는 연습을 해요.\n\n" +
+          "영어가 SVO — **동사가 주어 바로 뒤**에 온다는 큰 그림은 OT의 어순 챕터에서 잡았어요. 여기서는 그 '주어 바로 뒤 동사' 자리에 **be동사**를 꽂는 연습을 해요. 참고로 be 문장의 세 번째 칸은 목적어가 아니라 주어를 설명하는 **보어**라서, 문형으로는 SVC라고 불러요 — '동사가 두 번째'라는 큰 그림은 똑같아요.\n\n" +
           "'나는 학생이다'의 머릿속 순서: ① 주어 I → ② **동사부터!** am → ③ 나머지 a student. 한국어 '이다'는 맨 끝에 오지만, 영어는 am을 **주어 바로 뒤**에 놓는 게 이 챕터의 첫 훈련이에요.",
         examples: [
           { en: "I am a student.", ko: "저는 학생이에요.", note: "나는(I) + 이다(am) + 학생(a student) — 동사가 두 번째" },
@@ -437,15 +437,16 @@ const chapters = [
       },
       {
         heading: "한국어 '-고 있다'와의 대응 — 그리고 어긋남",
-        pattern: "know · love/loves · want · need → 진행형 금지 (상태동사)",
+        pattern: "know · love/loves · want · need → 보통 단순형 (상태동사)",
         patternKo: "'알고 있어요' = I know (I'm knowing X)",
         distractors: ["knowing", "loving", "wanting"],
         body:
-          "현재진행형은 한국어 **'-고 있다'**와 잘 맞아요('공부하고 있어요' = I'm studying). 단, 한국어는 상태에도 '-고 있다'를 붙이지만 영어의 know, love, like, want, need 같은 **상태동사**는 진행형으로 쓰지 않아요 — '알고 있어요' → I know.(O) / I'm knowing.(X)\n\n" +
+          "현재진행형은 한국어 **'-고 있다'**와 잘 맞아요('공부하고 있어요' = I'm studying). 단, 한국어는 상태에도 '-고 있다'를 붙이지만 영어의 know, love, like, want, need 같은 **상태동사**는 **보통 진행형으로 쓰지 않아요** — '알고 있어요' → I know.(기본) / I'm knowing.(×)\n\n" +
+          "다만 절대 금지는 아니에요 — 일시적·변화 중인 뉘앙스에서는 일부가 진행형이 돼요: She's loving the CD(요즘 한창 즐기는 중), I'm not liking this book(읽을수록 별로야). '기본은 단순형, 진행형은 특별한 뉘앙스'로 잡으세요.\n\n" +
           "또 한국어 '-고 있다'는 결과 상태도 표현해요('빨간 옷을 입고 있다' = 입은 상태). wearing은 다행히 이 뜻도 커버해요(She's wearing red.).",
         examples: [
           { en: "I know the answer.", ko: "답을 알고 있어요.", note: "I'm knowing(X) — know는 상태동사" },
-          { en: "She loves K-pop.", ko: "그녀는 케이팝을 사랑해요.", note: "loving(X)" },
+          { en: "She loves K-pop.", ko: "그녀는 케이팝을 사랑해요.", note: "loves가 기본 — She's loving ~은 '한창 즐기는 중' 뉘앙스일 때만" },
           { en: "He's wearing a red jacket.", ko: "그는 빨간 재킷을 입고 있어요.", note: "입은 상태 — 영어도 진행형 OK" },
           { en: "I want some water.", ko: "물 마시고 싶어요.", note: "wanting(X)" },
         ],

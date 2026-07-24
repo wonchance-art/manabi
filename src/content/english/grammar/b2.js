@@ -200,7 +200,7 @@ const chapters = [
           { en: "The smartphone changed how we live.", ko: "스마트폰(이라는 발명품)은 우리의 삶을 바꿨어요.", note: "발명품·종은 the + 단수도 가능" },
           { en: "Life is short.", ko: "인생은 짧아요.", note: "추상명사 총칭 = 무관사" },
         ],
-        pitfall: "**I like dog.** — 무관사 '단수'는 총칭이 아니라 **물질(고기)**로 읽힐 수 있어요. I like dog는 '개고기를 좋아한다'로 들립니다. chicken(닭고기)/a chicken(닭 한 마리)의 차이와 같은 원리예요. 셀 수 있는 명사의 총칭은 반드시 **복수**로 — I like dogs.",
+        pitfall: "**I like dog.** — 무관사 '단수'는 총칭이 아니라 **물질(고기)**로 읽힐 수 있어요. I like dog는 '개고기를 좋아한다'로 들립니다. chicken(닭고기)/a chicken(닭 한 마리)의 차이와 같은 원리예요. 회화에서 셀 수 있는 명사의 총칭 **기본값은 무관사 복수** — I like dogs. (본문 ②③의 the/a + 단수 총칭은 문체가 다른 별도 옵션이에요.)",
       },
       {
         heading: "고유명사와 the — 붙는 이름, 안 붙는 이름",

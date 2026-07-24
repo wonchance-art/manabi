@@ -103,10 +103,10 @@ const chapters = [
         pattern: "I would suggest/argue ~ · You might want to ~ (사실상 지시)",
         patternKo: "would = 헤징의 만능 윤활유",
         body:
-          "**would**는 헤징의 만능 윤활유예요 — I would suggest, I would argue는 '단정이 아니라 조심스럽게 내놓는다'는 신호죠. **might/may/could**는 가능성의 3형제로, 격식 글에서는 may가 가장 중립, might는 한 칸 낮은 가능성, could는 '이론상 가능'이에요.\n\n" +
+          "**would**는 헤징의 만능 윤활유예요 — I would suggest, I would argue는 '단정이 아니라 조심스럽게 내놓는다'는 신호죠. **might/may/could**는 가능성의 3형제로, 격식 글에서는 may를 가장 중립으로, might는 그보다 낮게, could는 '이론상 가능'으로 느끼는 화자가 많지만 — **문맥·억양·화자에 따라 서열이 흔들리는 영역**이라 절대 순위표는 아니에요.\n\n" +
           "특히 **might want to / may wish to**는 비즈니스의 핵심 완곡 명령이에요. You might want to check the attachment의 실제 의미는 **'확인하세요'** — 문자 그대로 '안 해도 되는구나'로 읽으면 큰일 납니다.",
         table: {
-          caption: "단정 강도 스펙트럼 — 같은 내용, 다른 온도",
+          caption: "단정 강도 스펙트럼 — 같은 내용, 다른 온도 (숫자는 감 잡기용 예시일 뿐, 표준 의미값이 아니에요)",
           headers: ["강도", "표현", "체감 확신도"],
           rows: [
             ["단정", "The merger will reduce costs.", "100% — 책임을 전부 짊어짐"],

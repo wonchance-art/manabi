@@ -445,7 +445,7 @@ const chapters = [
           caption: "A2 필수 동사 3단 변화",
           headers: ["원형", "과거형", "과거분사"],
           rows: [
-            ["go", "went", "gone (been)"],
+            ["go", "went", "gone"],
             ["see", "saw", "seen"],
             ["eat", "ate", "eaten"],
             ["do", "did", "done"],
@@ -481,17 +481,17 @@ const chapters = [
       {
         heading: "과거형과의 1차 구별 — 시점이 박히면 과거형",
         pattern: "yesterday · last ~ · when = 과거형 ↔ just · already · yet · ever = 현재완료",
-        patternKo: "시점 부사와 현재완료는 같은 문장에 못 산다",
+        patternKo: "'끝난 과거 시점'과 현재완료는 같은 문장에 못 산다",
         body:
-          "**yesterday, last year, in 2020, when ~처럼 '언제'가 박힌 문장에는 현재완료를 쓸 수 없어요.** 시점이 찍히면 그 일은 과거에 고정되어 '지금까지 닿아 있다'와 모순되거든요 — 그래서 When did you arrive?(O) / When have you arrived?(X).\n\n" +
-          "반대로 just(방금), already(이미), yet(아직), ever/never(지금까지)는 전부 '지금' 기준의 말이라 현재완료의 단짝이에요.",
+          "**yesterday, last year, in 2020, when ~처럼 '끝난 과거 시점'이 박힌 문장에는 현재완료를 쓸 수 없어요.** 시점이 찍히면 그 일은 과거에 고정되어 '지금까지 닿아 있다'와 모순되거든요 — 그래서 When did you arrive?(O) / When have you arrived?(X).\n\n" +
+          "반대로 just(방금), already(이미), yet(아직), ever/never(지금까지)는 전부 '지금' 기준의 말이라 현재완료의 단짝이에요. today, this week, this year처럼 **아직 끝나지 않은 기간**도 현재완료와 잘 어울려요: I've drunk three coffees today.",
         examples: [
           { en: "I saw that movie last week.", ko: "그 영화 지난주에 봤어요.", note: "시점 명시 → 과거형" },
           { en: "I've already seen that movie.", ko: "그 영화 이미 봤어요.", note: "본 상태가 지금까지 → 현재완료" },
           { en: "When did you arrive? — I've just arrived.", ko: "언제 도착했어요? — 방금 도착했어요.", note: "질문은 시점(과거형), 답은 '방금'(현재완료)" },
           { en: "Have you finished yet? — Not yet.", ko: "다 했어요? — 아직요." },
         ],
-        pitfall: "'I have seen him yesterday.'(X)는 한국 학습자 영작의 고전 오류예요. yesterday가 보이는 순간 무조건 과거형 — **'시점 부사와 현재완료는 같은 문장에 못 산다'**를 1차 규칙으로 새기세요. 계속·완료 용법 등 더 깊은 세계는 B1에서 이어져요.",
+        pitfall: "'I have seen him yesterday.'(X)는 한국 학습자 영작의 고전 오류예요. yesterday가 보이는 순간 무조건 과거형 — **'끝난 과거 시점과 현재완료는 같은 문장에 못 산다'**를 1차 규칙으로 새기세요(끝나지 않은 today·this week는 예외). 계속·완료 용법 등 더 깊은 세계는 B1에서 이어져요.",
       },
     ],
   },
@@ -633,15 +633,15 @@ const chapters = [
       },
       {
         heading: "이동이 허용되는 부사들",
-        pattern: "sometimes/usually/often = 문두·문미 이동 가능 · always/never = 지정석만",
-        patternKo: "중간 빈도만 이동 허용, always/never는 못 움직여요",
+        pattern: "sometimes/usually/often = 문두·문미 이동 가능 · always/never = 평서문에선 지정석",
+        patternKo: "중간 빈도만 자유 이동 — always/never는 평서문에선 지정석",
         body:
           "**sometimes, usually, often**은 강조를 위해 문장 맨 앞이나 맨 뒤로 이동할 수 있어요 — Sometimes I cook. / I visit my parents often.\n\n" +
-          "반대로 **always와 never는 이동 금지**예요 — 'Always I'm busy.'(X). (Never를 문두에 두는 도치 구문이 있긴 하지만 C1의 영역이에요.)",
+          "반대로 **always와 never는 평서문에서 못 움직여요** — 'Always I'm busy.'(×). 단 **명령문 문두는 표준**이에요: Always keep a copy(항상 사본을 남겨 두세요). I will love you always처럼 문미에 얹는 표현도 있고, Never have I seen…의 문두 도치는 C1의 영역이에요.",
         examples: [
           { en: "Sometimes I just want to stay home.", ko: "가끔은 그냥 집에 있고 싶어요.", note: "sometimes는 문두 OK" },
           { en: "Usually, I take the subway to work.", ko: "보통은 지하철로 출근해요." },
-          { en: "I'm always on your side.", ko: "난 항상 네 편이야.", note: "always는 지정석에서만" },
+          { en: "I'm always on your side.", ko: "난 항상 네 편이야.", note: "always는 평서문 지정석 — 명령문 문두(Always ~)는 OK" },
         ],
         tip: "헷갈리면 **무조건 지정석(be 뒤·일반동사 앞)**에 두세요. 이동은 '되는 부사도 있다' 수준으로만 알아두면 — 지정석은 모든 빈도부사에게 항상 합법이니까요.",
       },

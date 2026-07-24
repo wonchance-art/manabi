@@ -149,7 +149,7 @@ const chapters = [
         patternKo: "r 발음(rhotic) = 미국 · t의 'ㄹ'화(워러) = 미국",
         body:
           "문법 차이 — **현재완료의 영토**(영국 I've just eaten. / 미국 I just ate.), **got의 분화**(미국만 gotten), **전치사 취향**(at/on the weekend, in (the) hospital, to/through Friday). 둘 다 표준이에요.\n\n" +
-          "발음의 양대 갈림길 — **r의 운명**: 미국은 car의 r을 발음(rhotic), 잉글랜드 남부 표준은 발음하지 않아요. **t의 운명**: 미국은 water의 t가 부드러운 'ㄹ'(flap)이 돼 '워러', 영국은 t를 또렷이 지켜요. 한국에서 '워러/베러'로 익힌 발음은 미국식이라는 뜻이에요.",
+          "발음의 양대 갈림길 — **r의 운명**: 미국은 car의 r을 발음(rhotic), 잉글랜드 남부 표준은 발음하지 않아요. **t의 운명**: 미국은 water의 t가 부드러운 'ㄹ'(flap)이 돼 '워러'. 영국 표준 발음은 t를 또렷이 내는 편이지만, 실제 구어에선 목에서 끊는 **glottal stop**(bu'er의 느낌) 같은 변이도 아주 흔해요 — '영국=항상 또렷한 t'는 아니에요. 한국에서 '워러/베러'로 익힌 발음은 미국식이라는 뜻이에요.",
         examples: [
           { en: "Have you eaten yet? (BrE 선호) / Did you eat yet? (AmE 구어)", ko: "밥 먹었어?", note: "미국 구어의 단순과거 — 시험 영작에서는 현재완료가 안전해요." },
           { en: "Your English has gotten much better. (AmE) / has got much better. (BrE)", ko: "네 영어 정말 많이 늘었다.", note: "gotten은 미국에 남은 옛 형태 — 사실 셰익스피어 시대 영어의 화석이에요." },
