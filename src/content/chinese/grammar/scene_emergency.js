@@ -1,14 +1,6 @@
-/**
- * DRAFT_UNWIRED — C1 중국어 레벨 1 「길·긴급」 장면 레슨 초안.
- *
- * Claude 검수 전에는 문형·카피·난이도·order를 확정하지 않으며,
- * src/content/chinese/index.js 등 어떤 소비 경로에도 연결하지 않는다.
- * 기존 H1~H6 챕터의 section.pattern과 겹치지 않는 장면 문형만 담는다.
- */
 const chapters = [
   {
-    // DRAFT_UNWIRED — 제품 정의의 길 묻기/알아듣기·교통수단 장면.
-    slug: "h1-scene-directions-transit-draft",
+    slug: "h1-15-scene-directions-transit",
     level: "H1",
     order: 15,
     title: "\"어떻게 가요?\" — 길을 묻고 이동하기",
@@ -19,8 +11,7 @@ const chapters = [
     sections: [
       {
         heading: "목적지까지 가는 길을 물어요",
-        pattern: "到 + 장소 + 怎么走？",
-        pinyin: "dào…zěnme zǒu",
+        pattern: "到 + 장소 + 怎么走？ (dào…zěnme zǒu)",
         patternKo: "~에 어떻게 가요?",
         body:
           "목적지 앞에 **到 dào**를 놓고 끝에 **怎么走 zěnme zǒu**를 붙이면 길을 물을 수 있어요. 앞에 请问을 더하면 모르는 사람에게도 공손하게 말을 걸 수 있어요.\n\n" +
@@ -33,8 +24,7 @@ const chapters = [
       },
       {
         heading: "어느 쪽으로 갈지 알아들어요",
-        pattern: "往 + 방향 + 走/拐",
-        pinyin: "wǎng…zǒu/guǎi",
+        pattern: "往 + 방향 + 走/拐 (wǎng…zǒu/guǎi)",
         patternKo: "~쪽으로 가다 / 돌다",
         body:
           "**往 wǎng**은 이동하는 방향 앞에 놓는 '~쪽으로'예요. 走 zǒu(가다)와 쓰면 그쪽으로 가고, 拐 guǎi(돌다)와 쓰면 그쪽으로 돌아요.\n\n" +
@@ -47,8 +37,7 @@ const chapters = [
       },
       {
         heading: "안내 순서를 놓치지 않아요",
-        pattern: "先 + 동작1，再 + 동작2",
-        pinyin: "xiān…, zài…",
+        pattern: "先 + 동작1，再 + 동작2 (xiān…, zài…)",
         patternKo: "먼저 ~하고, 그다음 ~하다",
         body:
           "**先 xiān**은 '먼저', **再 zài**는 '그다음'이에요. 길 안내에서 두 동작의 순서를 또렷하게 묶어 줘요.\n\n" +
@@ -61,8 +50,7 @@ const chapters = [
       },
       {
         heading: "기준점의 어느 쪽인지 찾아요",
-        pattern: "在 + 기준점 + 的 + 방위사",
-        pinyin: "zài…de zuǒbiān/yòubiān/qiánmiàn/hòumiàn",
+        pattern: "在 + 기준점 + 的 + 방위사 (zài…de zuǒbiān/yòubiān/qiánmiàn/hòumiàn)",
         patternKo: "~의 왼쪽/오른쪽/앞/뒤에 있다",
         body:
           "장소의 상대 위치는 **在 + 기준점 + 的 + 방위사**로 말해요. 기준이 되는 건물 뒤에 的를 두고 左边(왼쪽)·右边(오른쪽)·前面(앞)·后面(뒤)을 붙여요.\n\n" +
@@ -75,8 +63,7 @@ const chapters = [
       },
       {
         heading: "버스 번호와 내릴 곳을 한 번에 들어요",
-        pattern: "坐 + 숫자 + 路 + 车，到 + 장소 + 下车",
-        pinyin: "zuò…lù chē, dào…xià chē",
+        pattern: "坐 + 숫자 + 路 + 车，到 + 장소 + 下车 (zuò…lù chē, dào…xià chē)",
         patternKo: "~번 버스를 타고 ~에서 내리다",
         body:
           "버스 번호는 **숫자 + 路 lù**로 말해요. 坐十二路车는 '12번 버스를 타다', 到博物馆站下车는 '박물관 정류장에서 내리다'예요.\n\n" +
@@ -101,7 +88,7 @@ const chapters = [
           ],
           questions: [
             {
-              id: "h1-scene-directions-transit-draft-sq1",
+              id: "h1-15-scene-directions-transit-sq1",
               type: "order",
               pattern: "往 + 방향 + 走/拐",
               q: "교차로에서 왼쪽으로 돌아야 해요. 안내자가 되어 '교차로에서 왼쪽으로 도세요'라는 문장을 순서대로 놓아 보세요.",
@@ -111,7 +98,7 @@ const chapters = [
               why: "동작이 일어나는 장소 在路口를 먼저 놓고, 방향 往左와 동작 拐를 이어요.",
             },
             {
-              id: "h1-scene-directions-transit-draft-sq2",
+              id: "h1-15-scene-directions-transit-sq2",
               type: "fill",
               pattern: "先…, 再…",
               q: "먼저 교차로까지 간 뒤 오른쪽으로 돌라는 안내예요. '그다음'을 나타내는 글자를 채워 보세요.",
@@ -121,7 +108,7 @@ const chapters = [
               why: "앞 동작은 先, 이어지는 다음 동작은 再로 표시해요. 장소를 나타내는 在와 구별해요.",
             },
             {
-              id: "h1-scene-directions-transit-draft-sq3",
+              id: "h1-15-scene-directions-transit-sq3",
               type: "produce",
               prompt: "행인이 '지하철역이 은행 오른쪽에 있어요'라고 알려 줬어요. 여행자가 되어 위치를 한 번 확인해 보세요.",
               model: ["地铁站在银行的右边吗？", "请问，地铁站在银行的右边吗？"],
@@ -133,8 +120,7 @@ const chapters = [
     ],
   },
   {
-    // DRAFT_UNWIRED — 제품 정의의 아픔·분실 장면.
-    slug: "h1-scene-health-loss-draft",
+    slug: "h1-16-scene-health-loss",
     level: "H1",
     order: 16,
     title: "\"아파요, 잃어버렸어요\" — 긴급 상황 말하기",
@@ -145,8 +131,7 @@ const chapters = [
     sections: [
       {
         heading: "어디가 아픈지 바로 말해요",
-        pattern: "신체 부위 + 疼",
-        pinyin: "…téng",
+        pattern: "신체 부위 + 疼 (…téng)",
         patternKo: "~가 아프다",
         body:
           "아픈 신체 부위 뒤에 **疼 téng**을 놓으면 '~가 아파요'가 돼요. 我的肚子疼은 '제 배가 아파요'라는 가장 직접적인 설명이에요.\n\n" +
@@ -159,8 +144,7 @@ const chapters = [
       },
       {
         heading: "알레르기 원인을 알려요",
-        pattern: "我对 + 음식/약 + 过敏",
-        pinyin: "wǒ duì…guòmǐn",
+        pattern: "我对 + 음식/약 + 过敏 (wǒ duì…guòmǐn)",
         patternKo: "저는 ~에 알레르기가 있어요",
         body:
           "**对 duì** 뒤에 원인을 놓고 **过敏 guòmǐn**으로 끝내면 알레르기를 알릴 수 있어요. 음식 이름이나 약을 가운데 끼우면 돼요.\n\n" +
@@ -173,8 +157,7 @@ const chapters = [
       },
       {
         heading: "누군가를 불러 달라고 요청해요",
-        pattern: "请帮我叫 + 사람/차량",
-        pinyin: "qǐng bāng wǒ jiào…",
+        pattern: "请帮我叫 + 사람/차량 (qǐng bāng wǒ jiào…)",
         patternKo: "~을 불러 주세요",
         body:
           "이미 배운 공손한 请에 **帮我 bāng wǒ**(저를 도와)와 **叫 jiào**(부르다)를 이으면 필요한 사람이나 차량을 불러 달라고 할 수 있어요.\n\n" +
@@ -187,8 +170,7 @@ const chapters = [
       },
       {
         heading: "잃어버린 물건을 앞에 세워요",
-        pattern: "我的 + 물건 + 丢了",
-        pinyin: "wǒ de…diū le",
+        pattern: "我的 + 물건 + 丢了 (wǒ de…diū le)",
         patternKo: "제 ~을 잃어버렸어요",
         body:
           "잃어버린 물건을 **我的…**로 먼저 말하고 **丢了 diū le**로 끝내요. 무엇이 없어졌는지 먼저 들려서 신고할 때 바로 핵심이 전달돼요.\n\n" +
@@ -201,8 +183,7 @@ const chapters = [
       },
       {
         heading: "필요한 도움을 짧게 말해요",
-        pattern: "我需要 + 사람/도움",
-        pinyin: "wǒ xūyào…",
+        pattern: "我需要 + 사람/도움 (wǒ xūyào…)",
         patternKo: "저는 ~이 필요해요",
         body:
           "**需要 xūyào**는 '필요하다'예요. 긴급할 때는 我需要 뒤에 医生(의사)이나 帮助(도움)를 붙여 필요한 지원을 짧고 분명하게 말해요.\n\n" +
@@ -227,7 +208,7 @@ const chapters = [
           ],
           questions: [
             {
-              id: "h1-scene-health-loss-draft-sq1",
+              id: "h1-16-scene-health-loss-sq1",
               type: "order",
               pattern: "请帮我叫 + 사람/차량",
               q: "동행인이 갑자기 쓰러졌어요. 직원에게 구급차를 불러 달라고 요청하도록 타일을 순서대로 놓아 보세요.",
@@ -237,7 +218,7 @@ const chapters = [
               why: "공손한 요청 请 뒤에 帮我(저를 도와), 叫(부르다), 대상 救护车를 차례로 놓아요.",
             },
             {
-              id: "h1-scene-health-loss-draft-sq2",
+              id: "h1-16-scene-health-loss-sq2",
               type: "fill",
               pattern: "我的 + 물건 + 丢了",
               q: "지갑이 보이지 않아요. 직원에게 잃어버렸다고 알리도록 빈칸을 채워 보세요.",
@@ -247,7 +228,7 @@ const chapters = [
               why: "잃어버린 물건 我的钱包을 먼저 말하고, 뒤에 丢了를 붙여 분실 사실을 알려요.",
             },
             {
-              id: "h1-scene-health-loss-draft-sq3",
+              id: "h1-16-scene-health-loss-sq3",
               type: "produce",
               prompt: "몸이 아픈 상황이나 물건을 잃어버린 상황 하나를 골라, 현재 문제와 필요한 도움을 중국어 두 문장으로 말해 보세요.",
               model: ["我的头很疼。我需要医生。", "我的护照丢了。我需要警察的帮助。"],

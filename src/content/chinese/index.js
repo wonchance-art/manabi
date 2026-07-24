@@ -12,6 +12,8 @@ import grammarH3 from './grammar/h3';
 import grammarH4 from './grammar/h4';
 import grammarH5 from './grammar/h5';
 import grammarH6 from './grammar/h6';
+import grammarSceneEmergency from './grammar/scene_emergency';
+import grammarSceneTravel from './grammar/scene_travel';
 
 // 섹션별 추가 예문(slug → 섹션index → [예문]) — 본편 챕터에 병합. 본문/원본 예문 불변.
 import exOT from './grammar/ot_examples';
@@ -180,7 +182,7 @@ const registry = createRegistry(
   ZH_LEVEL_META,
   {
     OT: withExtraExamples(grammarOT, exOT),
-    H1: withExtraExamples(grammarH1, exH1),
+    H1: [...withExtraExamples(grammarH1, exH1), ...grammarSceneEmergency, ...grammarSceneTravel.filter(ch => ch.level === 'H1')],
     H2: withExtraExamples(grammarH2, exH2),
     H3: withExtraExamples(grammarH3, exH3),
     H4: withExtraExamples(grammarH4, exH4),

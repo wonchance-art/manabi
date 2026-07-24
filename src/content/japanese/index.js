@@ -10,6 +10,7 @@ import grammarN4 from './grammar/n4';
 import grammarN3 from './grammar/n3';
 import grammarN2 from './grammar/n2';
 import grammarN1 from './grammar/n1';
+import grammarSceneEmergency from './grammar/scene_emergency';
 
 import vocabN5 from './vocab/n5';
 import vocabN4 from './vocab/n4';
@@ -134,7 +135,7 @@ export const JA_LEVEL_META = [
 
 const registry = createRegistry(
   JA_LEVEL_META,
-  { OT: grammarOT, N5: grammarN5, N4: grammarN4, N3: grammarN3, N2: grammarN2, N1: grammarN1 },
+  { OT: grammarOT, N5: [...grammarN5, ...grammarSceneEmergency], N4: grammarN4, N3: grammarN3, N2: grammarN2, N1: grammarN1 },
   {
     // W1 보강: vocabN5jlptA… 조립 후 mergeJaVocab(vocabN5, vocabN5jlptA, …) 형태로 여기 추가
     N5: mergeJaVocab(vocabN5, vocabN5jlptA, vocabN5jlptB, vocabN5jlptC, vocabN5travelCore, vocabSlangCore, vocabCultureCore),
