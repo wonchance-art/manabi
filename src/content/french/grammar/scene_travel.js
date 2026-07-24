@@ -309,7 +309,36 @@ const chapters = [
       "공항에서 목적지행 표를 사고 출발 시각과 승강장을 확인한 뒤, 환승편을 놓치지 않게 물어요.",
     duration: "약 15분",
     sections: [
+      // 샌드위치 v2 시험 적용 — Je voudrais un billet… Tatoeba 실재 계열(배치 1 검증 절차 준용). 대화는 자체 저작.
       {
+        type: "authenticIntro",
+        heading: "발권 창구·환승 실전 대화 통째로 듣기",
+        presentationFraming: "못 알아들어도 정상이에요! 표를 사는 대화와 환승 탑승구를 찾는 대화를 먼저 통째로 들어 보세요 — Je voudrais…와 À quelle heure…만 귀에 걸리면 충분해요.",
+        dialogue: [
+              { speaker: "여행자", fr: "Je voudrais un billet pour le centre, s'il vous plaît.", ipa: "[ʒə vudʁɛ œ̃ bijɛ puʁ lə sɑ̃tʁ sil vu plɛ]", ko: "도심행 표 한 장 주세요." },
+              { speaker: "발권 직원", fr: "Un aller simple ou un aller-retour ?", ipa: "[œ̃n ale sɛ̃pl u œ̃n ale ʁətuʁ]", ko: "편도인가요, 왕복인가요?" },
+              { speaker: "여행자", fr: "Un aller simple. À quelle heure part le prochain train ?", ipa: "[œ̃n ale sɛ̃pl a kɛl œʁ paʁ lə pʁɔʃɛ̃ tʁɛ̃]", ko: "편도요. 다음 열차는 몇 시에 출발해요?" },
+              { speaker: "발권 직원", fr: "À dix-huit heures, quai quatre.", ipa: "[a dizɥit œʁ kɛ katʁ]", ko: "18시에 4번 승강장에서 출발해요." },
+              { speaker: "여행자", fr: "Excusez-moi, où est la correspondance pour Bordeaux ?", ipa: "[ɛkskyze mwa u ɛ la kɔʁɛspɔ̃dɑ̃s puʁ bɔʁdo]", ko: "실례합니다, 보르도행 환승은 어디예요?" },
+              { speaker: "환승 직원", fr: "Suivez les panneaux « Correspondances ».", ipa: "[sɥive le pano kɔʁɛspɔ̃dɑ̃s]", ko: "'환승' 표지를 따라가세요." },
+              { speaker: "여행자", fr: "De quelle porte part mon vol ?", ipa: "[də kɛl pɔʁt paʁ mɔ̃ vɔl]", ko: "제 항공편은 몇 번 탑승구에서 출발해요?" },
+              { speaker: "환승 직원", fr: "Porte douze. Vous avez encore quarante minutes.", ipa: "[pɔʁt duz vuzave ɑ̃kɔʁ kaʁɑ̃t minyt]", ko: "12번이에요. 아직 40분 남았어요." },
+        ],
+      },
+      {
+        type: "vocabPreview",
+        heading: "오늘 배울 단어",
+        vocabs: [
+          { word: "un billet", meanings: ["표", "티켓"], exampleSentence: "Je voudrais un billet pour le centre." },
+          { word: "un aller simple", meanings: ["편도(표)"], exampleSentence: "Un aller simple, s'il vous plaît.", note: "왕복은 un aller-retour" },
+          { word: "partir", meanings: ["출발하다"], exampleSentence: "À quelle heure part le prochain train ?" },
+          { word: "le quai", meanings: ["승강장"], exampleSentence: "À dix-huit heures, quai quatre." },
+          { word: "la correspondance", meanings: ["환승", "환승편"], exampleSentence: "Où est la correspondance pour Bordeaux ?" },
+          { word: "la porte", meanings: ["탑승구", "문"], exampleSentence: "De quelle porte part mon vol ?" },
+        ],
+      },
+      {
+        type: "patternExplanation",
         heading: "표 요청하기 — je voudrais로 목적지를 붙여요",
         pattern:
           "Je voudrais un billet pour + 목적지, s'il vous plaît.",
@@ -333,6 +362,7 @@ const chapters = [
           "목적지 이름이 어려우면 화면이나 지도를 가리키며 pour ici라고 말해도 돼요.",
       },
       {
+        type: "patternExplanation",
         heading: "편도와 왕복 고르기 — aller simple과 aller-retour를 써요",
         pattern:
           "Un aller simple. · Un aller-retour pour + 날짜.",
@@ -356,6 +386,7 @@ const chapters = [
           "aller-retour에서 돌아오는 날짜가 맞는지 결제 전에 표 화면을 다시 확인해요.",
       },
       {
+        type: "patternExplanation",
         heading: "출발 시각 묻기 — à quelle heure로 시간을 확인해요",
         pattern:
           "À quelle heure part + 교통수단 ?",
@@ -379,6 +410,7 @@ const chapters = [
           "시간을 들은 뒤 Vous avez dit dix-huit heures ?처럼 숫자만 다시 확인하면 착오를 줄일 수 있어요.",
       },
       {
+        type: "patternExplanation",
         heading: "타는 곳 찾기 — de quel quai와 d'où를 써요",
         pattern:
           "De quel quai part + 교통수단 ? · D'où part + 교통수단 ?",
@@ -402,6 +434,7 @@ const chapters = [
           "quai 번호는 출발 직전에 바뀔 수 있으니 표와 전광판을 함께 확인해요.",
       },
       {
+        type: "patternExplanation",
         heading: "환승편 찾기 — correspondance와 porte로 물어요",
         pattern:
           "Où est la correspondance pour + 목적지 ? · De quelle porte part mon vol ?",
@@ -425,26 +458,30 @@ const chapters = [
           "환승 시간이 짧으면 Ma correspondance est dans trente minutes라고 남은 시간을 먼저 알려요.",
       },
       {
-        heading: "대화 예시 — 표를 사고 환승 탑승구를 찾아요",
-        body:
-          "표 종류와 목적지를 먼저 정하는 창구 대화, 연결편의 방향과 탑승구를 확인하는 환승 대화를 읽어 봐요.",
-        examples: [
-          {
-            dialogue: [
+        type: "authenticReplay",
+        heading: "같은 대화, 이제 다시 들어 보기",
+        presentationFraming: "문형을 배웠으니 처음 대화를 다시 들어 보고, 이어지는 장면까지 확장해 보세요.",
+        original: {
+          dialogue: [
               { speaker: "여행자", fr: "Je voudrais un billet pour le centre, s'il vous plaît.", ipa: "[ʒə vudʁɛ œ̃ bijɛ puʁ lə sɑ̃tʁ sil vu plɛ]", ko: "도심행 표 한 장 주세요." },
               { speaker: "발권 직원", fr: "Un aller simple ou un aller-retour ?", ipa: "[œ̃n ale sɛ̃pl u œ̃n ale ʁətuʁ]", ko: "편도인가요, 왕복인가요?" },
               { speaker: "여행자", fr: "Un aller simple. À quelle heure part le prochain train ?", ipa: "[œ̃n ale sɛ̃pl a kɛl œʁ paʁ lə pʁɔʃɛ̃ tʁɛ̃]", ko: "편도요. 다음 열차는 몇 시에 출발해요?" },
               { speaker: "발권 직원", fr: "À dix-huit heures, quai quatre.", ipa: "[a dizɥit œʁ kɛ katʁ]", ko: "18시에 4번 승강장에서 출발해요." },
-            ],
-          },
-          {
-            dialogue: [
+          ],
+        },
+        variant: {
+          dialogue: [
               { speaker: "여행자", fr: "Excusez-moi, où est la correspondance pour Bordeaux ?", ipa: "[ɛkskyze mwa u ɛ la kɔʁɛspɔ̃dɑ̃s puʁ bɔʁdo]", ko: "실례합니다, 보르도행 환승은 어디예요?" },
               { speaker: "환승 직원", fr: "Suivez les panneaux « Correspondances ».", ipa: "[sɥive le pano kɔʁɛspɔ̃dɑ̃s]", ko: "'환승' 표지를 따라가세요." },
               { speaker: "여행자", fr: "De quelle porte part mon vol ?", ipa: "[də kɛl pɔʁt paʁ mɔ̃ vɔl]", ko: "제 항공편은 몇 번 탑승구에서 출발해요?" },
               { speaker: "환승 직원", fr: "Porte douze. Vous avez encore quarante minutes.", ipa: "[pɔʁt duz vuzave ɑ̃kɔʁ kaʁɑ̃t minyt]", ko: "12번이에요. 아직 40분 남았어요." },
-            ],
-          },
+          ],
+          transitionNote: "표 구매에서 환승 이동으로 장면이 넘어가요 — 이번엔 시간이 아니라 장소(porte)를 찾는 질문이 축이에요.",
+        },
+        selfCheckOptions: [
+          { label: "다 들렸어요 (정확히 이해)", value: "full", fsrsSignal: 1 },
+          { label: "부분만 들렸어요 (주요 단어만)", value: "partial", fsrsSignal: 0.5 },
+          { label: "아직이에요 (계속 연습 필요)", value: "notready", fsrsSignal: -1 },
         ],
       },
       {
@@ -535,6 +572,15 @@ const chapters = [
           ],
         },
       },
+      {
+        type: "practiceAndRegistration",
+        heading: "연습: 직접 말해 보기",
+        writingPrompts: [
+          "니스행 왕복표를 사면서 출발 시각과 승강장까지 확인하는 3문장을 만들어 보세요.",
+          "탑승구를 못 찾은 상황으로 바꿔 직원에게 묻는 2문장을 만들어 보세요.",
+        ],
+        autoRegisterVocabs: true,
+      },
     ],
   },
 
@@ -551,7 +597,36 @@ const chapters = [
       "숙소에서 예약을 확인하고 예약자 정보와 숙박 기간을 말한 뒤, 조식 장소와 체크아웃 시각을 물어요.",
     duration: "약 15분",
     sections: [
+      // 샌드위치 v2 시험 적용 — J\'ai une réservation… Tatoeba 실재 계열(동일 절차). 대화는 자체 저작.
       {
+        type: "authenticIntro",
+        heading: "호텔 체크인 실전 대화 통째로 듣기",
+        presentationFraming: "못 알아들어도 정상이에요! 예약을 찾는 대화와 아침 식사·체크아웃을 확인하는 대화를 먼저 통째로 들어 보세요 — réservation 한 단어가 들리면 이미 절반이에요.",
+        dialogue: [
+              { speaker: "여행자", fr: "Bonjour, j'ai une réservation pour trois nuits.", ipa: "[bɔ̃ʒuʁ ʒe yn ʁezeʁvasjɔ̃ puʁ tʁwa nɥi]", ko: "안녕하세요, 3박으로 예약했어요." },
+              { speaker: "숙소 직원", fr: "À quel nom ?", ipa: "[a kɛl nɔ̃]", ko: "어느 이름으로 예약했나요?" },
+              { speaker: "여행자", fr: "La réservation est au nom indiqué ici.", ipa: "[la ʁezeʁvasjɔ̃ ɛt o nɔ̃ ɛ̃dike isi]", ko: "여기에 적힌 이름으로 되어 있어요." },
+              { speaker: "숙소 직원", fr: "Merci. Puis-je voir votre passeport ?", ipa: "[mɛʁsi pɥiʒ vwaʁ vɔtʁ paspɔʁ]", ko: "감사합니다. 여권을 볼 수 있을까요?" },
+              { speaker: "여행자", fr: "Où est servi le petit-déjeuner ?", ipa: "[u ɛ sɛʁvi lə pəti deʒøne]", ko: "조식은 어디에서 제공돼요?" },
+              { speaker: "숙소 직원", fr: "Au rez-de-chaussée, à partir de sept heures.", ipa: "[o ʁe də ʃose a paʁtiʁ də sɛt œʁ]", ko: "1층에서 7시부터 제공돼요." },
+              { speaker: "여행자", fr: "À quelle heure faut-il libérer la chambre ?", ipa: "[a kɛl œʁ fotil libeʁe la ʃɑ̃bʁ]", ko: "몇 시에 방을 비워야 해요?" },
+              { speaker: "숙소 직원", fr: "Avant onze heures.", ipa: "[avɑ̃ ɔ̃z œʁ]", ko: "11시 전이에요." },
+        ],
+      },
+      {
+        type: "vocabPreview",
+        heading: "오늘 배울 단어",
+        vocabs: [
+          { word: "une réservation", meanings: ["예약"], exampleSentence: "J'ai une réservation pour trois nuits." },
+          { word: "la nuit", meanings: ["밤", "(숙박) 박"], exampleSentence: "Trois nuits, s'il vous plaît." },
+          { word: "au nom de", meanings: ["~의 이름으로"], exampleSentence: "À quel nom ?" },
+          { word: "le passeport", meanings: ["여권"], exampleSentence: "Puis-je voir votre passeport ?" },
+          { word: "le petit-déjeuner", meanings: ["아침 식사"], exampleSentence: "Où est servi le petit-déjeuner ?" },
+          { word: "libérer la chambre", meanings: ["체크아웃하다", "방을 비우다"], exampleSentence: "À quelle heure faut-il libérer la chambre ?" },
+        ],
+      },
+      {
+        type: "patternExplanation",
         heading: "예약 알리기 — j'ai une réservation으로 시작해요",
         pattern:
           "J'ai une réservation pour + 기간/날짜.",
@@ -575,6 +650,7 @@ const chapters = [
           "예약 번호와 확인서를 미리 열어 두면 같은 이름의 예약을 찾을 때 도움이 돼요.",
       },
       {
+        type: "patternExplanation",
         heading: "예약자 정보 말하기 — au nom de를 써요",
         pattern:
           "La réservation est au nom de + 예약자 표기.",
@@ -598,6 +674,7 @@ const chapters = [
           "이름 철자가 전달되지 않으면 C'est écrit ici라고 말하며 예약 확인서를 보여 줘요.",
       },
       {
+        type: "patternExplanation",
         heading: "숙박 기간 바로잡기 — du... au...로 범위를 말해요",
         pattern:
           "Je reste du + 시작일 + au + 종료일.",
@@ -621,6 +698,7 @@ const chapters = [
           "숙박의 마지막 날짜는 보통 체크아웃하는 날이에요. 박 수와 날짜가 모두 맞는지 예약 확인서와 대조해요.",
       },
       {
+        type: "patternExplanation",
         heading: "신분증 건네기 — voici로 필요한 것을 보여 줘요",
         pattern:
           "Voici mon passeport. · Est-ce que cette pièce d'identité convient ?",
@@ -644,6 +722,7 @@ const chapters = [
           "서류를 건넬 때는 직원이 요청한 항목만 보여 주고, 돌려받았는지 바로 확인해요.",
       },
       {
+        type: "patternExplanation",
         heading: "운영 시간 묻기 — où와 à quelle heure로 나눠요",
         pattern:
           "Où est servi le petit-déjeuner ? · À quelle heure faut-il libérer la chambre ?",
@@ -667,26 +746,30 @@ const chapters = [
           "장소와 시각을 한꺼번에 놓치지 않도록 조식과 체크아웃을 각각 한 문장으로 물어요.",
       },
       {
-        heading: "대화 예시 — 예약을 찾고 이용 시간을 확인해요",
-        body:
-          "예약 사실과 예약자 표기를 차례로 말하는 대화, 조식 장소와 체크아웃 시각을 따로 묻는 대화를 읽어 봐요.",
-        examples: [
-          {
-            dialogue: [
+        type: "authenticReplay",
+        heading: "같은 대화, 이제 다시 들어 보기",
+        presentationFraming: "문형을 배웠으니 처음 대화를 다시 들어 보고, 이어지는 장면까지 확장해 보세요.",
+        original: {
+          dialogue: [
               { speaker: "여행자", fr: "Bonjour, j'ai une réservation pour trois nuits.", ipa: "[bɔ̃ʒuʁ ʒe yn ʁezeʁvasjɔ̃ puʁ tʁwa nɥi]", ko: "안녕하세요, 3박으로 예약했어요." },
               { speaker: "숙소 직원", fr: "À quel nom ?", ipa: "[a kɛl nɔ̃]", ko: "어느 이름으로 예약했나요?" },
               { speaker: "여행자", fr: "La réservation est au nom indiqué ici.", ipa: "[la ʁezeʁvasjɔ̃ ɛt o nɔ̃ ɛ̃dike isi]", ko: "여기에 적힌 이름으로 되어 있어요." },
               { speaker: "숙소 직원", fr: "Merci. Puis-je voir votre passeport ?", ipa: "[mɛʁsi pɥiʒ vwaʁ vɔtʁ paspɔʁ]", ko: "감사합니다. 여권을 볼 수 있을까요?" },
-            ],
-          },
-          {
-            dialogue: [
+          ],
+        },
+        variant: {
+          dialogue: [
               { speaker: "여행자", fr: "Où est servi le petit-déjeuner ?", ipa: "[u ɛ sɛʁvi lə pəti deʒøne]", ko: "조식은 어디에서 제공돼요?" },
               { speaker: "숙소 직원", fr: "Au rez-de-chaussée, à partir de sept heures.", ipa: "[o ʁe də ʃose a paʁtiʁ də sɛt œʁ]", ko: "1층에서 7시부터 제공돼요." },
               { speaker: "여행자", fr: "À quelle heure faut-il libérer la chambre ?", ipa: "[a kɛl œʁ fotil libeʁe la ʃɑ̃bʁ]", ko: "몇 시에 방을 비워야 해요?" },
               { speaker: "숙소 직원", fr: "Avant onze heures.", ipa: "[avɑ̃ ɔ̃z œʁ]", ko: "11시 전이에요." },
-            ],
-          },
+          ],
+          transitionNote: "예약 확인에서 시설 이용 안내로 장면이 이어져요 — 이번엔 내가 묻는 쪽이라 Où…와 À quelle heure…가 축이에요.",
+        },
+        selfCheckOptions: [
+          { label: "다 들렸어요 (정확히 이해)", value: "full", fsrsSignal: 1 },
+          { label: "부분만 들렸어요 (주요 단어만)", value: "partial", fsrsSignal: 0.5 },
+          { label: "아직이에요 (계속 연습 필요)", value: "notready", fsrsSignal: -1 },
         ],
       },
       {
@@ -775,6 +858,15 @@ const chapters = [
             },
           ],
         },
+      },
+      {
+        type: "practiceAndRegistration",
+        heading: "연습: 직접 말해 보기",
+        writingPrompts: [
+          "2박 예약으로 바꿔 체크인하는 3문장을 만들어 보세요.",
+          "조식 시간과 체크아웃 시간을 묻는 2문장을 만들어 보세요.",
+        ],
+        autoRegisterVocabs: true,
       },
     ],
   },
