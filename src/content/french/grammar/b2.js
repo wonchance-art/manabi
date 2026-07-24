@@ -55,10 +55,11 @@ const chapters = [
       {
         heading: "직설법과 갈리는 미묘한 경계 — penser que의 두 얼굴",
         pattern: "Je pense que + 직설법 · Je ne pense pas que + 접속법",
-        patternKo: "penser류 — 긍정이면 직설법, 부정·의문이면 접속법",
+        patternKo: "penser류 — 긍정은 직설법, 부정·의문은 접속법이 기본(확신하면 직설법도)",
         body:
           "penser/croire/trouver que는 **긍정문이냐 부정·의문문이냐에 따라 법이 갈려요**. 부정하는 순간 que절은 사실이 아니라 의심의 대상이 되니까요.\n\n" +
-          "도치 의문문(Penses-tu qu'il **ait** raison ?)도 같은 원리로 접속법이 격식이에요. il est certain que(직설법) ↔ il n'est pas certain que(접속법)도 같은 패턴이에요.",
+          "도치 의문문(Penses-tu qu'il **ait** raison ?)도 같은 원리로 접속법이 격식이에요. il est certain que(직설법) ↔ il n'est pas certain que(접속법)도 같은 패턴이에요.\n\n" +
+          "다만 절대 규칙이라기보다 **확신의 눈금**이에요 — 부정·의문이라도 화자가 내용 자체는 사실로 여기면 직설법이 오기도 해요(Je ne crois pas qu'il est là — 그가 있다는 '사실'을 안 믿을 때). 격식 문어일수록 접속법이 안전한 기본값이에요.",
         examples: [
           { fr: "Je crois que c'est une bonne idée.", ko: "좋은 생각인 것 같아요.", note: "긍정 → 직설법" },
           { fr: "Je ne crois pas que ce soit une bonne idée.", ko: "좋은 생각이라고는 생각하지 않아요.", note: "부정 → 접속법" },
@@ -797,7 +798,7 @@ const chapters = [
           "정보의 확실성에 따라 법이 갈려요. **확인된 사실로 드러남**(il s'avère que)과 **소문**(il paraît que — '카더라')은 직설법, **가능성**(il se peut que, il est possible que)과 **막연한 인상**(il semble que)은 접속법이에요.\n\n" +
           "**il arrive que**(때때로 ~하는 일이 있다)와 **il suffit que/de**(~하기만 하면 된다)도 접속법 계열이에요.",
         table: {
-          caption: "무인칭 구문과 법(法)",
+          caption: "무인칭 구문과 법(法) — 대표 경향 (확신도에 따라 흔들릴 수 있어요)",
           headers: ["구문", "법", "뜻"],
           rows: [
             ["il s'avère que", "직설법", "~임이 드러나다"],
@@ -814,7 +815,7 @@ const chapters = [
           { fr: "Il paraît qu'ils vont se marier.", ipa: "[il paʁɛ kil vɔ̃ sə maʁje]", ko: "걔네 결혼한다더라." },
           { fr: "Il se peut que la réunion soit reportée.", ipa: "[il sə pø kə la ʁeynjɔ̃ swa ʁəpɔʁte]", ko: "회의가 미뤄질 수도 있어요." },
         ],
-        pitfall: "il semble que는 접속법, **il me semble que는 직설법** — me 하나로 법이 갈려요. 내(me) 판단으로 끌어오는 순간 화자에게는 사실로 서기 때문이에요. '주관 표지가 붙을수록 오히려 직설법'이라는 역설로 외워두세요.",
+        pitfall: "il semble que는 접속법, **il me semble que는 직설법** — me 하나로 법이 갈려요. 내(me) 판단으로 끌어오는 순간 화자에게는 사실로 서기 때문이에요. '주관 표지가 붙을수록 오히려 직설법'이라는 역설로 외워두세요. 그리고 il semble que도 인상이 꽤 확실하게 느껴지면 직설법이 따르기도 해요 — 법 선택은 흑백 스위치가 아니라 확신도의 눈금이에요.",
       },
       {
         heading: "권고와 과제 — il convient de·il est question de·il reste à",
