@@ -81,6 +81,9 @@ export async function getOverridesForLang(lang) {
 // 차집합이 생기지 않게(Codex 4차 검수 종결 조건).
 // 문자열(또는 null) 필드 — 렌더가 React child·.split 등 문자열 연산에 소비
 const CHAPTER_STRING_FIELDS = ['title', 'topic', 'titleFr', 'summary', 'duration', 'kana'];
+// 스칼라 배열·boolean 필드 — 커리큘럼 경로 표시에 소비
+const CHAPTER_SCALAR_ARRAY_FIELDS = ['kanjiExempt', 'prerequisites'];
+const CHAPTER_BOOLEAN_FIELDS = ['formulaic'];
 // heading·패턴 박스 + 콜아웃 전체(refShared CALLOUT_ORDER: pitfall·vsKo·vsEn·hanja·etym·tip)
 const SECTION_STRING_FIELDS = ['heading', 'pattern', 'patternKo', 'body', 'tip', 'pitfall', 'vsKo', 'vsEn', 'hanja', 'etym',
   // RFC v2 "실전 샌드위치" 섹션 필드
@@ -94,9 +97,11 @@ const SECTION_STRUCT_FIELDS = ['examples', 'table', 'story', 'media', 'enParalle
 // RFC v2 boolean 필드
 const SECTION_BOOLEAN_FIELDS = ['autoRegisterVocabs'];
 const CHAPTER_KEYS = new Set([
-  'slug', 'level', 'order', 'sections', 'kanjiExempt',
+  'slug', 'level', 'order', 'sections',
   'status', // 선택적 상태 필드 (DRAFT 등)
   ...CHAPTER_STRING_FIELDS,
+  ...CHAPTER_SCALAR_ARRAY_FIELDS,
+  ...CHAPTER_BOOLEAN_FIELDS,
 ]);
 const SECTION_KEYS = new Set([
   'type', // RFC v2 섹션 타입
@@ -300,7 +305,12 @@ export function isValidOverride(data) {
   for (const k of CHAPTER_STRING_FIELDS) {
     if (k in data && data[k] != null && typeof data[k] !== 'string') return false;
   }
-  if ('kanjiExempt' in data && data.kanjiExempt != null && !isScalarArray(data.kanjiExempt)) return false;
+  for (const k of CHAPTER_SCALAR_ARRAY_FIELDS) {
+    if (k in data && data[k] != null && !isScalarArray(data[k])) return false;
+  }
+  for (const k of CHAPTER_BOOLEAN_FIELDS) {
+    if (k in data && data[k] != null && typeof data[k] !== 'boolean') return false;
+  }
   if ('sections' in data) {
     const sections = data.sections;
     if (!Array.isArray(sections) || sections.length === 0) return false;

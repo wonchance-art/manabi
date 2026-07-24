@@ -230,6 +230,16 @@ describe('isValidOverride', () => {
     expect(isValidOverride({ kanjiExempt: ['新幹線'] })).toBe(true);
     expect(isValidOverride({ kanjiExempt: [{}] })).toBe(false);
   });
+
+  it('커리큘럼 메타는 prerequisites 스칼라 배열·formulaic 불리언만 허용한다', () => {
+    expect(isValidOverride({
+      prerequisites: ['a1-01-be-verb', 'a1-02-present-simple'],
+      formulaic: true,
+    })).toBe(true);
+    expect(isValidOverride({ prerequisites: { slug: 'a1-01-be-verb' } })).toBe(false);
+    expect(isValidOverride({ prerequisites: [{}] })).toBe(false);
+    expect(isValidOverride({ formulaic: 'true' })).toBe(false);
+  });
 });
 
 // ── Codex 검수(#79): story 문항 id 불변 — 저장 API의 최종 방어 ──
@@ -284,11 +294,34 @@ describe('missingStoryIds', () => {
 describe('isValidOverride — 실제 챕터 전수 라운드트립 (4개 언어)', () => {
   // 대형 콘텐츠 전수 라운드트립 — 병렬 부하 flaky 방지(kyotoGeo/자갈치 선례의 명시 타임아웃).
   it.each(['japanese', 'french', 'english', 'chinese'])('%s 전 챕터가 검증을 통과한다', { timeout: 30_000 }, async (lang) => {
-    const mod = await import(`../../content/${lang}`);
+    const mod = await import(`../../content/${lang}/index.js`);
     const all = mod.default.ALL_CHAPTERS;
     expect(all.length).toBeGreaterThan(40);
     for (const ch of all) {
       expect(isValidOverride(ch), `챕터 ${ch.slug}가 검증에 걸림`).toBe(true);
     }
   });
+});
+
+describe('커리큘럼 prerequisites 참조 계약', () => {
+  it.each(['japanese', 'french', 'english', 'chinese'])(
+    '%s prerequisites가 같은 트랙의 등록 챕터 slug만 참조한다',
+    { timeout: 30_000 },
+    async (lang) => {
+      const mod = await import(`../../content/${lang}/index.js`);
+      const chapters = mod.default.ALL_CHAPTERS;
+      const registeredSlugs = new Set(chapters.map((chapter) => chapter.slug));
+
+      for (const chapter of chapters) {
+        if (chapter.prerequisites == null) continue;
+        expect(Array.isArray(chapter.prerequisites), `${chapter.slug} prerequisites가 배열이 아님`).toBe(true);
+        for (const prerequisite of chapter.prerequisites) {
+          expect(
+            registeredSlugs.has(prerequisite),
+            `${chapter.slug} prerequisites의 ${String(prerequisite)}가 ${lang} 트랙에 없음`,
+          ).toBe(true);
+        }
+      }
+    },
+  );
 });

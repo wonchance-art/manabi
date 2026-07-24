@@ -168,6 +168,42 @@ function SectionTable({ table }) {
   );
 }
 
+export function FormulaicChapterIntro({ formulaic }) {
+  if (!formulaic) return null;
+
+  return (
+    <div
+      role="note"
+      data-formulaic-intro="true"
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        flexWrap: 'wrap',
+        marginBottom: 18,
+        padding: '10px 12px',
+        border: '1px solid var(--border)',
+        borderRadius: 'var(--radius-md)',
+        background: 'var(--primary-glow)',
+        color: 'var(--text-secondary)',
+        fontSize: '0.84rem',
+        lineHeight: 1.5,
+      }}
+    >
+      <strong
+        style={{
+          flexShrink: 0,
+          color: 'var(--primary-light)',
+          fontSize: '0.72rem',
+        }}
+      >
+        장면 고정구
+      </strong>
+      <span>여기 나온 문형은 통째로 익히는 고정구예요. 문법 분석은 후속 챕터에서 다룹니다.</span>
+    </div>
+  );
+}
+
 /**
  * 언어 레퍼런스 — 문법 챕터 상세 페이지 (프랑스어·일본어·영어 공용)
  */
@@ -294,6 +330,8 @@ export default async function ReferenceChapterPage({ lang, slug }) {
           </InlineEdit>
         )}
       </header>
+
+      <FormulaicChapterIntro formulaic={chapter.formulaic === true} />
 
       {/* ── 핵심 패턴 한눈에 ── */}
       {patternIndex.length > 0 && (

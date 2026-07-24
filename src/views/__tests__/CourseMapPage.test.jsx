@@ -130,6 +130,48 @@ describe('CourseMap', () => {
     expect(markup).toContain('href="/english/grammar/a1-02-present-simple"');
   });
 
+  it('미완료 prerequisites·formulaic 배지를 표시하되 레슨을 잠그지 않는다', () => {
+    const metadataLessons = lessons.map((lesson, index) => index === 1 ? {
+      ...lesson,
+      prerequisites: ['a1-01-be-verb'],
+      formulaic: true,
+    } : lesson);
+    const markup = renderToStaticMarkup(
+      <CourseMap
+        {...baseProps}
+        lessons={metadataLessons}
+        completedSlugs={[]}
+      />,
+    );
+
+    expect(markup).toContain('먼저 보면 좋아요');
+    expect(markup).toContain('장면 고정구');
+    expect(markup).toContain('data-unmet-prerequisites="true"');
+    expect(markup).toContain('data-formulaic="true"');
+    expect(markup).toContain('href="/english/grammar/a1-02-present-simple"');
+    expect(markup).not.toContain('aria-disabled="true"');
+  });
+
+  it('prerequisites 완료 뒤 권장 배지만 숨기고 formulaic 배지는 유지한다', () => {
+    const metadataLessons = lessons.map((lesson, index) => index === 1 ? {
+      ...lesson,
+      prerequisites: ['a1-01-be-verb'],
+      formulaic: true,
+    } : lesson);
+    const markup = renderToStaticMarkup(
+      <CourseMap
+        {...baseProps}
+        lessons={metadataLessons}
+        completedSlugs={['a1-01-be-verb']}
+      />,
+    );
+
+    expect(markup).not.toContain('먼저 보면 좋아요');
+    expect(markup).toContain('장면 고정구');
+    expect(markup).not.toContain('data-unmet-prerequisites="true"');
+    expect(markup).toContain('data-formulaic="true"');
+  });
+
   it('로그인 스트릭 배지와 오늘 레슨 완료 체크 카드를 표시한다', () => {
     const markup = renderToStaticMarkup(
       <CourseMap

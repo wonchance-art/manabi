@@ -24,6 +24,12 @@ function lessonProgressKey(lesson) {
   return chapterSlug(lesson) || lesson?.specialFields?.progressSlug || '';
 }
 
+function lessonPrerequisites(lesson) {
+  return Array.isArray(lesson?.prerequisites)
+    ? lesson.prerequisites.filter((slug) => typeof slug === 'string' && slug.length > 0)
+    : [];
+}
+
 export function lessonHref(lesson, course) {
   if (lesson?.specialFields?.contentHref) return lesson.specialFields.contentHref;
 
@@ -206,6 +212,9 @@ export function CourseMap({
                     const isNext = nextLesson?.id === lesson.id;
                     const vocabThemes = lesson.specialFields?.vocabThemeNames || [];
                     const isVocabulary = lesson.specialFields?.contentType === 'vocabulary';
+                    const hasUnmetPrerequisites = lessonPrerequisites(lesson)
+                      .some((slug) => !completed.has(slug));
+                    const isFormulaic = lesson.formulaic === true;
 
                     return (
                       <li key={lesson.id}>
@@ -215,12 +224,28 @@ export function CourseMap({
                           aria-current={isNext ? 'step' : undefined}
                           data-lesson-status={isComplete ? 'complete' : isNext ? 'next' : 'pending'}
                           data-lesson-type={isVocabulary ? 'vocabulary' : 'grammar'}
+                          data-unmet-prerequisites={hasUnmetPrerequisites ? 'true' : undefined}
+                          data-formulaic={isFormulaic ? 'true' : undefined}
                         >
                           <span className={styles.lessonStatus} aria-hidden="true">
                             {isComplete ? '✓' : lesson.order}
                           </span>
                           <span className={styles.lessonBody}>
                             <strong>{lesson.title}</strong>
+                            {(hasUnmetPrerequisites || isFormulaic) && (
+                              <span className={styles.lessonBadges}>
+                                {hasUnmetPrerequisites && (
+                                  <span className={`${styles.lessonBadge} ${styles.lessonBadgeRecommended}`}>
+                                    먼저 보면 좋아요
+                                  </span>
+                                )}
+                                {isFormulaic && (
+                                  <span className={`${styles.lessonBadge} ${styles.lessonBadgeFormulaic}`}>
+                                    장면 고정구
+                                  </span>
+                                )}
+                              </span>
+                            )}
                             <span>
                               {lesson.estimatedMinutes}분
                               {vocabThemes.length > 0
@@ -248,7 +273,10 @@ export function CourseMap({
 export default function CourseMapPage(props) {
   const { user, profile, loading: authLoading } = useAuth();
   const lessonSlugs = useMemo(
-    () => props.lessons.map(lessonProgressKey).filter(Boolean),
+    () => [...new Set(props.lessons.flatMap((lesson) => [
+      lessonProgressKey(lesson),
+      ...lessonPrerequisites(lesson),
+    ]).filter(Boolean))],
     [props.lessons],
   );
   const vocabLessons = useMemo(

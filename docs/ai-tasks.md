@@ -16,6 +16,10 @@
 ### doing
 ### todo
 ### done (최근)
+- 커리큘럼 메타 R1 + 코스 지도 R3: 챕터 `prerequisites`·`formulaic` 스키마/동일 트랙
+  참조 계약과 권장 선행·장면 고정구 배지, 상세 도입 안내를 시스템 코드에 연결하고
+  콘텐츠 데이터 무변경·전체 250파일/2,483테스트 green을 고정
+  (`codex/curriculum-meta`, 구현 56390ef, base ad21a64)
 - 대화 예시 구조화 R1: examples에 flat 형식과 배타적인
   `dialogue: [{speaker, fr|ja|en|zh, ipa?, ko}]` 검증을 추가하고 story 공용 대사 라인 렌더러를
   연결해 콘텐츠 이행 0건·전체 249파일/2,473테스트 green을 고정
