@@ -201,7 +201,13 @@ describe.each(Object.entries(TRACKS))('%s grammar contract', (track, schema) => 
           examples.push(...section.examples);
         }
       }
-      expect(chapter.sections.some(section => nonEmptyString(section.body)), `${label} body`).toBe(true);
+      // RFC v2 "실전 샌드위치" 섹션(type: authenticIntro|vocabPreview|authenticReplay|practiceAndRegistration)은
+      // 자체 콘텐츠(audio, vocabs, 등)를 가지므로 body 필드 불필수
+      const hasV2Sections = chapter.sections.some(s =>
+        ['authenticIntro', 'vocabPreview', 'authenticReplay', 'practiceAndRegistration'].includes(s.type)
+      );
+      const hasBodySection = chapter.sections.some(section => nonEmptyString(section.body));
+      expect(hasBodySection || hasV2Sections, `${label} body or v2 content`).toBe(true);
 
       if (examples.length === 0) {
         expect(track, `${label} example-free track`).toBe('japanese');
