@@ -7,26 +7,7 @@ import { createRegistry } from '../refRegistry';
 
 import grammarOT from './grammar/ot';
 import grammarH1 from './grammar/h1';
-import grammarH1SceneEmergencyRaw from './grammar/scene_emergency_draft';
 import grammarH2 from './grammar/h2';
-
-// Draft 상태 필드 제거 + 섹션 정제 — 레지스트리 스키마 정합
-function cleanSceneChapter(ch) {
-  const { status, DRAFT_UNWIRED, ...cleaned } = ch;
-  if (cleaned.sections && Array.isArray(cleaned.sections)) {
-    cleaned.sections = cleaned.sections.map(s => {
-      // 비표준 필드 제거 (pinyin, zhPattern, patternKo, hanja, vsKo 등)
-      const { pinyin, zhPattern, patternKo, hanja, vsKo, story, ...section } = s;
-      if (story) {
-        const { body, questions } = story;
-        return { ...section, story: { body: body || [], questions: questions || [] } };
-      }
-      return section;
-    });
-  }
-  return cleaned;
-}
-const grammarH1SceneEmergency = grammarH1SceneEmergencyRaw.map(cleanSceneChapter);
 import grammarH3 from './grammar/h3';
 import grammarH4 from './grammar/h4';
 import grammarH5 from './grammar/h5';
@@ -199,7 +180,7 @@ const registry = createRegistry(
   ZH_LEVEL_META,
   {
     OT: withExtraExamples(grammarOT, exOT),
-    H1: withExtraExamples([...grammarH1, ...grammarH1SceneEmergency], exH1),
+    H1: withExtraExamples(grammarH1, exH1),
     H2: withExtraExamples(grammarH2, exH2),
     H3: withExtraExamples(grammarH3, exH3),
     H4: withExtraExamples(grammarH4, exH4),
