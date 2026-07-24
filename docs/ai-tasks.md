@@ -14,6 +14,9 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
+- F5 코스 지도 4트랙 전면화: `/learn/course` 일본어·프랑스어·영어·중국어
+  트랙 선택·F4 정본 챕터/세트 레슨 포섭·진도/다음 CTA·기존 학습 페이지 딥링크
+  (`codex/f5-course-map-all`, base 8d94dab)
 ### todo
 ### done (최근)
 - F5 선행 프로토 영어 코스 지도: `/learn/course` 신규 라우트에서 F1 Course→Unit→Lesson을
