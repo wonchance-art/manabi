@@ -987,7 +987,37 @@ const chapters = [
       "식당에서 인원에 맞는 자리를 요청하고 메뉴와 추천을 확인한 뒤, 음식과 음료를 차례로 주문해요.",
     duration: "약 15분",
     sections: [
+      // 샌드위치 v2 시험 적용(오너 확정: fr A1~A2) — Tatoeba 실재 확인: "Une table pour deux, s'il vous plaît." (#13360564). 나머지 문장은 자체 저작.
       {
+        type: "authenticIntro",
+        heading: "식당 실전 대화 통째로 들어 보기",
+        presentationFraming: "못 알아들어도 정상이에요! 자리 잡기부터 주문까지의 실제 흐름을 먼저 통째로 만나 보세요 — '주문하는 쪽'과 '안내하는 쪽'의 말투 차이만 느끼면 충분해요.",
+        dialogue: [
+          { speaker: "여행자", fr: "Bonsoir. Une table pour deux, s'il vous plaît.", ipa: "[bɔ̃swaʁ yn tabl puʁ dø sil vu plɛ]", ko: "안녕하세요. 두 명 자리 부탁해요." },
+            { speaker: "식당 직원", fr: "Bien sûr. Voici votre table.", ipa: "[bjɛ̃ syʁ vwasi vɔtʁ tabl]", ko: "물론이에요. 여기 앉으세요." },
+            { speaker: "여행자", fr: "Est-ce que je peux voir la carte ?", ipa: "[ɛs kə ʒə pø vwaʁ la kaʁt]", ko: "전체 메뉴를 볼 수 있을까요?" },
+            { speaker: "식당 직원", fr: "Oui, la voici.", ipa: "[wi la vwasi]", ko: "네, 여기 있어요." },
+          { speaker: "여행자", fr: "Qu'est-ce que vous recommandez ?", ipa: "[kɛs kə vu ʁəkɔmɑ̃de]", ko: "무엇을 추천하세요?" },
+            { speaker: "식당 직원", fr: "La soupe de légumes est très demandée aujourd'hui.", ipa: "[la sup də legym ɛ tʁɛ dəmɑ̃de oʒuʁdɥi]", ko: "오늘은 채소 수프를 많이 찾으세요." },
+            { speaker: "여행자", fr: "Je vais prendre la soupe. Comme boisson, un jus de pomme.", ipa: "[ʒə vɛ pʁɑ̃dʁ la sup kɔm bwasɔ̃ œ̃ ʒy də pɔm]", ko: "수프로 주문할게요. 음료로는 사과 주스를 주세요." },
+            { speaker: "식당 직원", fr: "Très bien.", ipa: "[tʁɛ bjɛ̃]", ko: "좋습니다." },
+        ],
+      },
+      {
+        type: "vocabPreview",
+        heading: "오늘 배울 단어 7개",
+        vocabs: [
+          { word: "une table", meanings: ["테이블", "(식당의) 자리"], exampleSentence: "Une table pour deux, s'il vous plaît." },
+          { word: "la carte", meanings: ["전체 메뉴판"], exampleSentence: "Est-ce que je peux voir la carte ?", note: "코스 구성을 뜻하는 menu와 구별" },
+          { word: "le menu du jour", meanings: ["오늘의 메뉴"], exampleSentence: "Quel est le menu du jour ?" },
+          { word: "recommander", meanings: ["추천하다"], exampleSentence: "Qu'est-ce que vous recommandez ?" },
+          { word: "la spécialité", meanings: ["대표 메뉴", "특기"], exampleSentence: "Quelle est la spécialité de la maison ?" },
+          { word: "prendre", meanings: ["(주문해서) 먹다", "시키다"], exampleSentence: "Je vais prendre la soupe.", note: "주문의 만능 동사" },
+          { word: "une carafe d'eau", meanings: ["(무료) 물 한 주전자"], exampleSentence: "Une carafe d'eau, s'il vous plaît." },
+        ],
+      },
+      {
+        type: "patternExplanation",
         heading: "자리 요청하기 — une table pour로 인원을 말해요",
         pattern:
           "Une table pour + 인원, s'il vous plaît. · Nous sommes + 인원.",
@@ -1011,6 +1041,7 @@ const chapters = [
           "아이용 의자나 휠체어 공간처럼 필요한 조건이 있다면 자리를 안내받기 전에 함께 말해요.",
       },
       {
+        type: "patternExplanation",
         heading: "메뉴 요청하기 — carte와 menu를 구별해요",
         pattern:
           "Est-ce que je peux voir la carte ? · Quel est le menu du jour ?",
@@ -1034,6 +1065,7 @@ const chapters = [
           "프랑스어의 menu는 정해진 코스 구성을 뜻할 수 있어요. 전체 메뉴판을 원하면 la carte라고 말해요.",
       },
       {
+        type: "patternExplanation",
         heading: "추천 받기 — recommander와 spécialité를 써요",
         pattern:
           "Qu'est-ce que vous recommandez ? · Quelle est la spécialité de la maison ?",
@@ -1057,6 +1089,7 @@ const chapters = [
           "추천을 들은 뒤 C'est épicé ?처럼 매운지, C'est copieux ?처럼 양이 많은지 한 가지 조건을 더 확인해도 돼요.",
       },
       {
+        type: "patternExplanation",
         heading: "음식 주문하기 — je vais prendre로 선택을 정해요",
         pattern:
           "Je vais prendre + 음식. · Pour moi, ce sera + 음식.",
@@ -1080,6 +1113,7 @@ const chapters = [
           "메뉴판을 가리키면서 ce plat이라고 말해도 돼요. 주문을 마치기 전에 직원이 반복한 메뉴가 맞는지 들어 봐요.",
       },
       {
+        type: "patternExplanation",
         heading: "음료와 물 고르기 — comme boisson으로 이어요",
         pattern:
           "Comme boisson, je voudrais + 음료. · Une carafe d'eau, s'il vous plaît.",
@@ -1103,26 +1137,30 @@ const chapters = [
           "탄산수나 병물이 필요한 경우에는 원하는 종류와 가격을 메뉴에서 확인한 뒤 주문해요.",
       },
       {
-        heading: "대화 예시 — 메뉴를 보고 추천 음식까지 주문해요",
-        body:
-          "인원수를 알리고 메뉴판을 받는 대화, 추천을 들은 뒤 음식과 음료를 선택하는 대화를 읽어 봐요.",
-        examples: [
-          {
-            dialogue: [
-              { speaker: "여행자", fr: "Bonsoir. Une table pour deux, s'il vous plaît.", ipa: "[bɔ̃swaʁ yn tabl puʁ dø sil vu plɛ]", ko: "안녕하세요. 두 명 자리 부탁해요." },
-              { speaker: "식당 직원", fr: "Bien sûr. Voici votre table.", ipa: "[bjɛ̃ syʁ vwasi vɔtʁ tabl]", ko: "물론이에요. 여기 앉으세요." },
-              { speaker: "여행자", fr: "Est-ce que je peux voir la carte ?", ipa: "[ɛs kə ʒə pø vwaʁ la kaʁt]", ko: "전체 메뉴를 볼 수 있을까요?" },
-              { speaker: "식당 직원", fr: "Oui, la voici.", ipa: "[wi la vwasi]", ko: "네, 여기 있어요." },
-            ],
-          },
-          {
-            dialogue: [
-              { speaker: "여행자", fr: "Qu'est-ce que vous recommandez ?", ipa: "[kɛs kə vu ʁəkɔmɑ̃de]", ko: "무엇을 추천하세요?" },
-              { speaker: "식당 직원", fr: "La soupe de légumes est très demandée aujourd'hui.", ipa: "[la sup də legym ɛ tʁɛ dəmɑ̃de oʒuʁdɥi]", ko: "오늘은 채소 수프를 많이 찾으세요." },
-              { speaker: "여행자", fr: "Je vais prendre la soupe. Comme boisson, un jus de pomme.", ipa: "[ʒə vɛ pʁɑ̃dʁ la sup kɔm bwasɔ̃ œ̃ ʒy də pɔm]", ko: "수프로 주문할게요. 음료로는 사과 주스를 주세요." },
-              { speaker: "식당 직원", fr: "Très bien.", ipa: "[tʁɛ bjɛ̃]", ko: "좋습니다." },
-            ],
-          },
+        type: "authenticReplay",
+        heading: "같은 대화, 이제 다시 들어 보기",
+        presentationFraming: "문형을 배웠으니 처음 대화를 다시 들어 보고, 이어서 추천~주문 장면까지 확장해 보세요.",
+        original: {
+          dialogue: [
+          { speaker: "여행자", fr: "Bonsoir. Une table pour deux, s'il vous plaît.", ipa: "[bɔ̃swaʁ yn tabl puʁ dø sil vu plɛ]", ko: "안녕하세요. 두 명 자리 부탁해요." },
+            { speaker: "식당 직원", fr: "Bien sûr. Voici votre table.", ipa: "[bjɛ̃ syʁ vwasi vɔtʁ tabl]", ko: "물론이에요. 여기 앉으세요." },
+            { speaker: "여행자", fr: "Est-ce que je peux voir la carte ?", ipa: "[ɛs kə ʒə pø vwaʁ la kaʁt]", ko: "전체 메뉴를 볼 수 있을까요?" },
+            { speaker: "식당 직원", fr: "Oui, la voici.", ipa: "[wi la vwasi]", ko: "네, 여기 있어요." },
+          ],
+        },
+        variant: {
+          dialogue: [
+          { speaker: "여행자", fr: "Qu'est-ce que vous recommandez ?", ipa: "[kɛs kə vu ʁəkɔmɑ̃de]", ko: "무엇을 추천하세요?" },
+            { speaker: "식당 직원", fr: "La soupe de légumes est très demandée aujourd'hui.", ipa: "[la sup də legym ɛ tʁɛ dəmɑ̃de oʒuʁdɥi]", ko: "오늘은 채소 수프를 많이 찾으세요." },
+            { speaker: "여행자", fr: "Je vais prendre la soupe. Comme boisson, un jus de pomme.", ipa: "[ʒə vɛ pʁɑ̃dʁ la sup kɔm bwasɔ̃ œ̃ ʒy də pɔm]", ko: "수프로 주문할게요. 음료로는 사과 주스를 주세요." },
+            { speaker: "식당 직원", fr: "Très bien.", ipa: "[tʁɛ bjɛ̃]", ko: "좋습니다." },
+          ],
+          transitionNote: "자리·메뉴 요청에서 한 걸음 나아가, 추천을 받고 음식·음료까지 정하는 흐름이에요 — Je vais prendre와 Comme boisson이 그대로 나와요.",
+        },
+        selfCheckOptions: [
+          { label: "다 들렸어요 (정확히 이해)", value: "full", fsrsSignal: 1 },
+          { label: "부분만 들렸어요 (주요 단어만)", value: "partial", fsrsSignal: 0.5 },
+          { label: "아직이에요 (계속 연습 필요)", value: "notready", fsrsSignal: -1 },
         ],
       },
       {
@@ -1211,6 +1249,15 @@ const chapters = [
             },
           ],
         },
+      },
+      {
+        type: "practiceAndRegistration",
+        heading: "연습: 직접 주문해 보기",
+        writingPrompts: [
+          "세 명이서 갔다고 상상하고, 자리 요청부터 음료까지 이어지는 문장 3개를 만들어 보세요.",
+          "위 이야기의 질문(타일·빈칸)을 푼 뒤, Je vais prendre 대신 Pour moi, ce sera로 같은 주문을 바꿔 말해 보세요.",
+        ],
+        autoRegisterVocabs: true,
       },
     ],
   },
