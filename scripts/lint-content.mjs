@@ -425,11 +425,25 @@ function validateGrammar(entry) {
       sectionIndex,
       sectionOffset,
     }) => {
+      const exampleLabel = `${chapterLabel}.sections[${sectionIndex}].examples[${exampleIndex}]`;
+      if (Array.isArray(example?.dialogue)) {
+        // RFC dialogue-field: 구조화 대화는 라인 단위로 speaker·원어·ko를 검사한다
+        example.dialogue.forEach((line, lineIndex) => {
+          requireNonEmptyFields(
+            entry,
+            line,
+            ['speaker', schema.grammarExampleFields[0], 'ko'],
+            `${exampleLabel}.dialogue[${lineIndex}]`,
+            sectionOffset,
+          );
+        });
+        return;
+      }
       requireNonEmptyFields(
         entry,
         example,
         schema.grammarExampleFields,
-        `${chapterLabel}.sections[${sectionIndex}].examples[${exampleIndex}]`,
+        exampleLabel,
         sectionOffset,
       );
     });

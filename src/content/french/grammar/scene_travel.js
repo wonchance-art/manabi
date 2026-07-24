@@ -135,38 +135,20 @@ const chapters = [
           "질문 하나에 정보 하나씩 답하는 입국 대화와, 수하물표를 준비해 문제를 알리는 대화를 읽어 봐요.",
         examples: [
           {
-            fr:
-              "입국 직원 : Quel est le motif de votre voyage ?\n" +
-              "여행자 : Je viens pour le tourisme.\n" +
-              "입국 직원 : Vous restez combien de temps ?\n" +
-              "여행자 : Je reste cinq jours. Je loge dans un hôtel près de la gare.",
-            ipa:
-              "[kɛl ɛ lə mɔtif də vɔtʁ vwajaʒ]\n" +
-              "[ʒə vjɛ̃ puʁ lə tuʁism]\n" +
-              "[vu ʁɛste kɔ̃bjɛ̃ də tɑ̃]\n" +
-              "[ʒə ʁɛst sɛ̃k ʒuʁ ʒə lɔʒ dɑ̃z œ̃n otɛl pʁɛ də la ɡaʁ]",
-            ko:
-              "입국 직원: 여행 목적이 무엇인가요?\n" +
-              "여행자: 관광하러 왔어요.\n" +
-              "입국 직원: 얼마나 머무르나요?\n" +
-              "여행자: 5일 동안 머물러요. 역 근처 호텔에 묵어요.",
+            dialogue: [
+              { speaker: "입국 직원", fr: "Quel est le motif de votre voyage ?", ipa: "[kɛl ɛ lə mɔtif də vɔtʁ vwajaʒ]", ko: "여행 목적이 무엇인가요?" },
+              { speaker: "여행자", fr: "Je viens pour le tourisme.", ipa: "[ʒə vjɛ̃ puʁ lə tuʁism]", ko: "관광하러 왔어요." },
+              { speaker: "입국 직원", fr: "Vous restez combien de temps ?", ipa: "[vu ʁɛste kɔ̃bjɛ̃ də tɑ̃]", ko: "얼마나 머무르나요?" },
+              { speaker: "여행자", fr: "Je reste cinq jours. Je loge dans un hôtel près de la gare.", ipa: "[ʒə ʁɛst sɛ̃k ʒuʁ ʒə lɔʒ dɑ̃z œ̃n otɛl pʁɛ də la ɡaʁ]", ko: "5일 동안 머물러요. 역 근처 호텔에 묵어요." },
+            ],
           },
           {
-            fr:
-              "여행자 : Excusez-moi, mon bagage n'est pas arrivé.\n" +
-              "수하물 직원 : Vous avez votre reçu de bagage ?\n" +
-              "여행자 : Oui, le voici.\n" +
-              "수하물 직원 : Merci. Je vais vérifier.",
-            ipa:
-              "[ɛkskyze mwa mɔ̃ baɡaʒ nɛ pa aʁive]\n" +
-              "[vuzave vɔtʁ ʁəsy də baɡaʒ]\n" +
-              "[wi lə vwasi]\n" +
-              "[mɛʁsi ʒə vɛ veʁifje]",
-            ko:
-              "여행자: 실례합니다, 제 수하물이 나오지 않았어요.\n" +
-              "수하물 직원: 수하물표가 있나요?\n" +
-              "여행자: 네, 여기 있어요.\n" +
-              "수하물 직원: 감사합니다. 확인해 볼게요.",
+            dialogue: [
+              { speaker: "여행자", fr: "Excusez-moi, mon bagage n'est pas arrivé.", ipa: "[ɛkskyze mwa mɔ̃ baɡaʒ nɛ pa aʁive]", ko: "실례합니다, 제 수하물이 나오지 않았어요." },
+              { speaker: "수하물 직원", fr: "Vous avez votre reçu de bagage ?", ipa: "[vuzave vɔtʁ ʁəsy də baɡaʒ]", ko: "수하물표가 있나요?" },
+              { speaker: "여행자", fr: "Oui, le voici.", ipa: "[wi lə vwasi]", ko: "네, 여기 있어요." },
+              { speaker: "수하물 직원", fr: "Merci. Je vais vérifier.", ipa: "[mɛʁsi ʒə vɛ veʁifje]", ko: "감사합니다. 확인해 볼게요." },
+            ],
           },
         ],
       },
@@ -398,38 +380,20 @@ const chapters = [
           "표 종류와 목적지를 먼저 정하는 창구 대화, 연결편의 방향과 탑승구를 확인하는 환승 대화를 읽어 봐요.",
         examples: [
           {
-            fr:
-              "여행자 : Je voudrais un billet pour le centre, s'il vous plaît.\n" +
-              "발권 직원 : Un aller simple ou un aller-retour ?\n" +
-              "여행자 : Un aller simple. À quelle heure part le prochain train ?\n" +
-              "발권 직원 : À dix-huit heures, quai quatre.",
-            ipa:
-              "[ʒə vudʁɛ œ̃ bijɛ puʁ lə sɑ̃tʁ sil vu plɛ]\n" +
-              "[œ̃n ale sɛ̃pl u œ̃n ale ʁətuʁ]\n" +
-              "[œ̃n ale sɛ̃pl a kɛl œʁ paʁ lə pʁɔʃɛ̃ tʁɛ̃]\n" +
-              "[a dizɥit œʁ kɛ katʁ]",
-            ko:
-              "여행자: 도심행 표 한 장 주세요.\n" +
-              "발권 직원: 편도인가요, 왕복인가요?\n" +
-              "여행자: 편도요. 다음 열차는 몇 시에 출발해요?\n" +
-              "발권 직원: 18시에 4번 승강장에서 출발해요.",
+            dialogue: [
+              { speaker: "여행자", fr: "Je voudrais un billet pour le centre, s'il vous plaît.", ipa: "[ʒə vudʁɛ œ̃ bijɛ puʁ lə sɑ̃tʁ sil vu plɛ]", ko: "도심행 표 한 장 주세요." },
+              { speaker: "발권 직원", fr: "Un aller simple ou un aller-retour ?", ipa: "[œ̃n ale sɛ̃pl u œ̃n ale ʁətuʁ]", ko: "편도인가요, 왕복인가요?" },
+              { speaker: "여행자", fr: "Un aller simple. À quelle heure part le prochain train ?", ipa: "[œ̃n ale sɛ̃pl a kɛl œʁ paʁ lə pʁɔʃɛ̃ tʁɛ̃]", ko: "편도요. 다음 열차는 몇 시에 출발해요?" },
+              { speaker: "발권 직원", fr: "À dix-huit heures, quai quatre.", ipa: "[a dizɥit œʁ kɛ katʁ]", ko: "18시에 4번 승강장에서 출발해요." },
+            ],
           },
           {
-            fr:
-              "여행자 : Excusez-moi, où est la correspondance pour Bordeaux ?\n" +
-              "환승 직원 : Suivez les panneaux « Correspondances ».\n" +
-              "여행자 : De quelle porte part mon vol ?\n" +
-              "환승 직원 : Porte douze. Vous avez encore quarante minutes.",
-            ipa:
-              "[ɛkskyze mwa u ɛ la kɔʁɛspɔ̃dɑ̃s puʁ bɔʁdo]\n" +
-              "[sɥive le pano kɔʁɛspɔ̃dɑ̃s]\n" +
-              "[də kɛl pɔʁt paʁ mɔ̃ vɔl]\n" +
-              "[pɔʁt duz vuzave ɑ̃kɔʁ kaʁɑ̃t minyt]",
-            ko:
-              "여행자: 실례합니다, 보르도행 환승은 어디예요?\n" +
-              "환승 직원: '환승' 표지를 따라가세요.\n" +
-              "여행자: 제 항공편은 몇 번 탑승구에서 출발해요?\n" +
-              "환승 직원: 12번이에요. 아직 40분 남았어요.",
+            dialogue: [
+              { speaker: "여행자", fr: "Excusez-moi, où est la correspondance pour Bordeaux ?", ipa: "[ɛkskyze mwa u ɛ la kɔʁɛspɔ̃dɑ̃s puʁ bɔʁdo]", ko: "실례합니다, 보르도행 환승은 어디예요?" },
+              { speaker: "환승 직원", fr: "Suivez les panneaux « Correspondances ».", ipa: "[sɥive le pano kɔʁɛspɔ̃dɑ̃s]", ko: "'환승' 표지를 따라가세요." },
+              { speaker: "여행자", fr: "De quelle porte part mon vol ?", ipa: "[də kɛl pɔʁt paʁ mɔ̃ vɔl]", ko: "제 항공편은 몇 번 탑승구에서 출발해요?" },
+              { speaker: "환승 직원", fr: "Porte douze. Vous avez encore quarante minutes.", ipa: "[pɔʁt duz vuzave ɑ̃kɔʁ kaʁɑ̃t minyt]", ko: "12번이에요. 아직 40분 남았어요." },
+            ],
           },
         ],
       },
@@ -656,38 +620,20 @@ const chapters = [
           "예약 사실과 예약자 표기를 차례로 말하는 대화, 조식 장소와 체크아웃 시각을 따로 묻는 대화를 읽어 봐요.",
         examples: [
           {
-            fr:
-              "여행자 : Bonjour, j'ai une réservation pour trois nuits.\n" +
-              "숙소 직원 : À quel nom ?\n" +
-              "여행자 : La réservation est au nom indiqué ici.\n" +
-              "숙소 직원 : Merci. Puis-je voir votre passeport ?",
-            ipa:
-              "[bɔ̃ʒuʁ ʒe yn ʁezeʁvasjɔ̃ puʁ tʁwa nɥi]\n" +
-              "[a kɛl nɔ̃]\n" +
-              "[la ʁezeʁvasjɔ̃ ɛt o nɔ̃ ɛ̃dike isi]\n" +
-              "[mɛʁsi pɥiʒ vwaʁ vɔtʁ paspɔʁ]",
-            ko:
-              "여행자: 안녕하세요, 3박으로 예약했어요.\n" +
-              "숙소 직원: 어느 이름으로 예약했나요?\n" +
-              "여행자: 여기에 적힌 이름으로 되어 있어요.\n" +
-              "숙소 직원: 감사합니다. 여권을 볼 수 있을까요?",
+            dialogue: [
+              { speaker: "여행자", fr: "Bonjour, j'ai une réservation pour trois nuits.", ipa: "[bɔ̃ʒuʁ ʒe yn ʁezeʁvasjɔ̃ puʁ tʁwa nɥi]", ko: "안녕하세요, 3박으로 예약했어요." },
+              { speaker: "숙소 직원", fr: "À quel nom ?", ipa: "[a kɛl nɔ̃]", ko: "어느 이름으로 예약했나요?" },
+              { speaker: "여행자", fr: "La réservation est au nom indiqué ici.", ipa: "[la ʁezeʁvasjɔ̃ ɛt o nɔ̃ ɛ̃dike isi]", ko: "여기에 적힌 이름으로 되어 있어요." },
+              { speaker: "숙소 직원", fr: "Merci. Puis-je voir votre passeport ?", ipa: "[mɛʁsi pɥiʒ vwaʁ vɔtʁ paspɔʁ]", ko: "감사합니다. 여권을 볼 수 있을까요?" },
+            ],
           },
           {
-            fr:
-              "여행자 : Où est servi le petit-déjeuner ?\n" +
-              "숙소 직원 : Au rez-de-chaussée, à partir de sept heures.\n" +
-              "여행자 : À quelle heure faut-il libérer la chambre ?\n" +
-              "숙소 직원 : Avant onze heures.",
-            ipa:
-              "[u ɛ sɛʁvi lə pəti deʒøne]\n" +
-              "[o ʁe də ʃose a paʁtiʁ də sɛt œʁ]\n" +
-              "[a kɛl œʁ fotil libeʁe la ʃɑ̃bʁ]\n" +
-              "[avɑ̃ ɔ̃z œʁ]",
-            ko:
-              "여행자: 조식은 어디에서 제공돼요?\n" +
-              "숙소 직원: 1층에서 7시부터 제공돼요.\n" +
-              "여행자: 몇 시에 방을 비워야 해요?\n" +
-              "숙소 직원: 11시 전이에요.",
+            dialogue: [
+              { speaker: "여행자", fr: "Où est servi le petit-déjeuner ?", ipa: "[u ɛ sɛʁvi lə pəti deʒøne]", ko: "조식은 어디에서 제공돼요?" },
+              { speaker: "숙소 직원", fr: "Au rez-de-chaussée, à partir de sept heures.", ipa: "[o ʁe də ʃose a paʁtiʁ də sɛt œʁ]", ko: "1층에서 7시부터 제공돼요." },
+              { speaker: "여행자", fr: "À quelle heure faut-il libérer la chambre ?", ipa: "[a kɛl œʁ fotil libeʁe la ʃɑ̃bʁ]", ko: "몇 시에 방을 비워야 해요?" },
+              { speaker: "숙소 직원", fr: "Avant onze heures.", ipa: "[avɑ̃ ɔ̃z œʁ]", ko: "11시 전이에요." },
+            ],
           },
         ],
       },
@@ -913,38 +859,20 @@ const chapters = [
           "필요한 물품과 수량을 말하는 대화, 고장 증상을 알리고 확인이나 객실 변경을 요청하는 대화를 읽어 봐요.",
         examples: [
           {
-            fr:
-              "여행자 : Est-ce que je peux avoir deux serviettes, s'il vous plaît ?\n" +
-              "숙소 직원 : Bien sûr. Nous les montons dans dix minutes.\n" +
-              "여행자 : Merci. Quel est le mot de passe du Wi-Fi ?\n" +
-              "숙소 직원 : Il est écrit sur la carte de la chambre.",
-            ipa:
-              "[ɛs kə ʒə pø avwaʁ dø sɛʁvjɛt sil vu plɛ]\n" +
-              "[bjɛ̃ syʁ nu le mɔ̃tɔ̃ dɑ̃ dis minyt]\n" +
-              "[mɛʁsi kɛl ɛ lə mo də pas dy wifi]\n" +
-              "[il ɛt ekʁi syʁ la kaʁt də la ʃɑ̃bʁ]",
-            ko:
-              "여행자: 수건 두 장을 받을 수 있을까요?\n" +
-              "숙소 직원: 물론이에요. 10분 안에 가져다드릴게요.\n" +
-              "여행자: 감사합니다. 와이파이 비밀번호가 무엇인가요?\n" +
-              "숙소 직원: 객실 카드에 적혀 있어요.",
+            dialogue: [
+              { speaker: "여행자", fr: "Est-ce que je peux avoir deux serviettes, s'il vous plaît ?", ipa: "[ɛs kə ʒə pø avwaʁ dø sɛʁvjɛt sil vu plɛ]", ko: "수건 두 장을 받을 수 있을까요?" },
+              { speaker: "숙소 직원", fr: "Bien sûr. Nous les montons dans dix minutes.", ipa: "[bjɛ̃ syʁ nu le mɔ̃tɔ̃ dɑ̃ dis minyt]", ko: "물론이에요. 10분 안에 가져다드릴게요." },
+              { speaker: "여행자", fr: "Merci. Quel est le mot de passe du Wi-Fi ?", ipa: "[mɛʁsi kɛl ɛ lə mo də pas dy wifi]", ko: "감사합니다. 와이파이 비밀번호가 무엇인가요?" },
+              { speaker: "숙소 직원", fr: "Il est écrit sur la carte de la chambre.", ipa: "[il ɛt ekʁi syʁ la kaʁt də la ʃɑ̃bʁ]", ko: "객실 카드에 적혀 있어요." },
+            ],
           },
           {
-            fr:
-              "여행자 : La climatisation ne fonctionne pas.\n" +
-              "숙소 직원 : Nous allons envoyer quelqu'un.\n" +
-              "여행자 : Pouvez-vous vérifier, s'il vous plaît ?\n" +
-              "숙소 직원 : Oui. Si nécessaire, nous changerons votre chambre.",
-            ipa:
-              "[la klimatizasjɔ̃ nə fɔ̃ksjɔn pa]\n" +
-              "[nuz alɔ̃z ɑ̃vwaje kɛlkœ̃]\n" +
-              "[puve vu veʁifje sil vu plɛ]\n" +
-              "[wi si nesesɛʁ nu ʃɑ̃ʒəʁɔ̃ vɔtʁ ʃɑ̃bʁ]",
-            ko:
-              "여행자: 냉방이 작동하지 않아요.\n" +
-              "숙소 직원: 직원을 보내 드릴게요.\n" +
-              "여행자: 확인해 주실 수 있나요?\n" +
-              "숙소 직원: 네. 필요하면 객실을 바꿔 드릴게요.",
+            dialogue: [
+              { speaker: "여행자", fr: "La climatisation ne fonctionne pas.", ipa: "[la klimatizasjɔ̃ nə fɔ̃ksjɔn pa]", ko: "냉방이 작동하지 않아요." },
+              { speaker: "숙소 직원", fr: "Nous allons envoyer quelqu'un.", ipa: "[nuz alɔ̃z ɑ̃vwaje kɛlkœ̃]", ko: "직원을 보내 드릴게요." },
+              { speaker: "여행자", fr: "Pouvez-vous vérifier, s'il vous plaît ?", ipa: "[puve vu veʁifje sil vu plɛ]", ko: "확인해 주실 수 있나요?" },
+              { speaker: "숙소 직원", fr: "Oui. Si nécessaire, nous changerons votre chambre.", ipa: "[wi si nesesɛʁ nu ʃɑ̃ʒəʁɔ̃ vɔtʁ ʃɑ̃bʁ]", ko: "네. 필요하면 객실을 바꿔 드릴게요." },
+            ],
           },
         ],
       },
@@ -1170,38 +1098,20 @@ const chapters = [
           "인원수를 알리고 메뉴판을 받는 대화, 추천을 들은 뒤 음식과 음료를 선택하는 대화를 읽어 봐요.",
         examples: [
           {
-            fr:
-              "여행자 : Bonsoir. Une table pour deux, s'il vous plaît.\n" +
-              "식당 직원 : Bien sûr. Voici votre table.\n" +
-              "여행자 : Est-ce que je peux voir la carte ?\n" +
-              "식당 직원 : Oui, la voici.",
-            ipa:
-              "[bɔ̃swaʁ yn tabl puʁ dø sil vu plɛ]\n" +
-              "[bjɛ̃ syʁ vwasi vɔtʁ tabl]\n" +
-              "[ɛs kə ʒə pø vwaʁ la kaʁt]\n" +
-              "[wi la vwasi]",
-            ko:
-              "여행자: 안녕하세요. 두 명 자리 부탁해요.\n" +
-              "식당 직원: 물론이에요. 여기 앉으세요.\n" +
-              "여행자: 전체 메뉴를 볼 수 있을까요?\n" +
-              "식당 직원: 네, 여기 있어요.",
+            dialogue: [
+              { speaker: "여행자", fr: "Bonsoir. Une table pour deux, s'il vous plaît.", ipa: "[bɔ̃swaʁ yn tabl puʁ dø sil vu plɛ]", ko: "안녕하세요. 두 명 자리 부탁해요." },
+              { speaker: "식당 직원", fr: "Bien sûr. Voici votre table.", ipa: "[bjɛ̃ syʁ vwasi vɔtʁ tabl]", ko: "물론이에요. 여기 앉으세요." },
+              { speaker: "여행자", fr: "Est-ce que je peux voir la carte ?", ipa: "[ɛs kə ʒə pø vwaʁ la kaʁt]", ko: "전체 메뉴를 볼 수 있을까요?" },
+              { speaker: "식당 직원", fr: "Oui, la voici.", ipa: "[wi la vwasi]", ko: "네, 여기 있어요." },
+            ],
           },
           {
-            fr:
-              "여행자 : Qu'est-ce que vous recommandez ?\n" +
-              "식당 직원 : La soupe de légumes est très demandée aujourd'hui.\n" +
-              "여행자 : Je vais prendre la soupe. Comme boisson, un jus de pomme.\n" +
-              "식당 직원 : Très bien.",
-            ipa:
-              "[kɛs kə vu ʁəkɔmɑ̃de]\n" +
-              "[la sup də legym ɛ tʁɛ dəmɑ̃de oʒuʁdɥi]\n" +
-              "[ʒə vɛ pʁɑ̃dʁ la sup kɔm bwasɔ̃ œ̃ ʒy də pɔm]\n" +
-              "[tʁɛ bjɛ̃]",
-            ko:
-              "여행자: 무엇을 추천하세요?\n" +
-              "식당 직원: 오늘은 채소 수프를 많이 찾으세요.\n" +
-              "여행자: 수프로 주문할게요. 음료로는 사과 주스를 주세요.\n" +
-              "식당 직원: 좋습니다.",
+            dialogue: [
+              { speaker: "여행자", fr: "Qu'est-ce que vous recommandez ?", ipa: "[kɛs kə vu ʁəkɔmɑ̃de]", ko: "무엇을 추천하세요?" },
+              { speaker: "식당 직원", fr: "La soupe de légumes est très demandée aujourd'hui.", ipa: "[la sup də legym ɛ tʁɛ dəmɑ̃de oʒuʁdɥi]", ko: "오늘은 채소 수프를 많이 찾으세요." },
+              { speaker: "여행자", fr: "Je vais prendre la soupe. Comme boisson, un jus de pomme.", ipa: "[ʒə vɛ pʁɑ̃dʁ la sup kɔm bwasɔ̃ œ̃ ʒy də pɔm]", ko: "수프로 주문할게요. 음료로는 사과 주스를 주세요." },
+              { speaker: "식당 직원", fr: "Très bien.", ipa: "[tʁɛ bjɛ̃]", ko: "좋습니다." },
+            ],
           },
         ],
       },
@@ -1427,38 +1337,20 @@ const chapters = [
           "알레르기와 제외 재료를 주문 전에 알리는 대화, 계산서를 확인한 뒤 결제 방법을 묻는 대화를 읽어 봐요.",
         examples: [
           {
-            fr:
-              "여행자 : Je suis allergique aux fruits à coque.\n" +
-              "식당 직원 : Merci de nous prévenir.\n" +
-              "여행자 : Est-ce que ce plat contient des fruits à coque ?\n" +
-              "식당 직원 : Oui. Je vais vous proposer un autre plat.",
-            ipa:
-              "[ʒə sɥiz alɛʁʒik o fʁɥi a kɔk]\n" +
-              "[mɛʁsi də nu pʁəvəniʁ]\n" +
-              "[ɛs kə sə pla kɔ̃tjɛ̃ de fʁɥi a kɔk]\n" +
-              "[wi ʒə vɛ vu pʁɔpoze œ̃n otʁ pla]",
-            ko:
-              "여행자: 저는 견과류에 알레르기가 있어요.\n" +
-              "식당 직원: 알려 주셔서 감사합니다.\n" +
-              "여행자: 이 요리에 견과류가 들어 있나요?\n" +
-              "식당 직원: 네. 다른 요리를 안내해 드릴게요.",
+            dialogue: [
+              { speaker: "여행자", fr: "Je suis allergique aux fruits à coque.", ipa: "[ʒə sɥiz alɛʁʒik o fʁɥi a kɔk]", ko: "저는 견과류에 알레르기가 있어요." },
+              { speaker: "식당 직원", fr: "Merci de nous prévenir.", ipa: "[mɛʁsi də nu pʁəvəniʁ]", ko: "알려 주셔서 감사합니다." },
+              { speaker: "여행자", fr: "Est-ce que ce plat contient des fruits à coque ?", ipa: "[ɛs kə sə pla kɔ̃tjɛ̃ de fʁɥi a kɔk]", ko: "이 요리에 견과류가 들어 있나요?" },
+              { speaker: "식당 직원", fr: "Oui. Je vais vous proposer un autre plat.", ipa: "[wi ʒə vɛ vu pʁɔpoze œ̃n otʁ pla]", ko: "네. 다른 요리를 안내해 드릴게요." },
+            ],
           },
           {
-            fr:
-              "여행자 : L'addition, s'il vous plaît.\n" +
-              "식당 직원 : Bien sûr. La voici.\n" +
-              "여행자 : Est-ce qu'on peut payer séparément ?\n" +
-              "식당 직원 : Oui. Qui paie en premier ?",
-            ipa:
-              "[ladisjɔ̃ sil vu plɛ]\n" +
-              "[bjɛ̃ syʁ la vwasi]\n" +
-              "[ɛs kɔ̃ pø peje sepaʁemɑ̃]\n" +
-              "[wi ki pɛj ɑ̃ pʁəmje]",
-            ko:
-              "여행자: 계산서 부탁해요.\n" +
-              "식당 직원: 물론이에요. 여기 있어요.\n" +
-              "여행자: 따로 계산할 수 있나요?\n" +
-              "식당 직원: 네. 누가 먼저 결제하나요?",
+            dialogue: [
+              { speaker: "여행자", fr: "L'addition, s'il vous plaît.", ipa: "[ladisjɔ̃ sil vu plɛ]", ko: "계산서 부탁해요." },
+              { speaker: "식당 직원", fr: "Bien sûr. La voici.", ipa: "[bjɛ̃ syʁ la vwasi]", ko: "물론이에요. 여기 있어요." },
+              { speaker: "여행자", fr: "Est-ce qu'on peut payer séparément ?", ipa: "[ɛs kɔ̃ pø peje sepaʁemɑ̃]", ko: "따로 계산할 수 있나요?" },
+              { speaker: "식당 직원", fr: "Oui. Qui paie en premier ?", ipa: "[wi ki pɛj ɑ̃ pʁəmje]", ko: "네. 누가 먼저 결제하나요?" },
+            ],
           },
         ],
       },

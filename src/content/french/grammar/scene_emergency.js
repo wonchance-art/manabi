@@ -136,38 +136,20 @@ const chapters = [
           "앞의 다섯 문형을 실제 응답과 함께 읽어 봐요. 화자 이름 대신 역할만 표시해 어느 여행지에서도 재사용할 수 있게 했어요.",
         examples: [
           {
-            fr:
-              "여행자 : Excusez-moi, où se trouve le jardin public ?\n" +
-              "행인 : Allez tout droit, puis tournez à gauche.\n" +
-              "여행자 : Vous avez dit « à gauche » ?\n" +
-              "행인 : Oui, après la place.",
-            ipa:
-              "[ɛkskyze mwa u sə tʁuv lə ʒaʁdɛ̃ pyblik]\n" +
-              "[ale tu dʁwa pɥi tuʁne a ɡoʃ]\n" +
-              "[vuzave di a ɡoʃ]\n" +
-              "[wi apʁɛ la plas]",
-            ko:
-              "여행자: 실례합니다, 공원은 어디에 있나요?\n" +
-              "행인: 곧장 가신 다음 왼쪽으로 도세요.\n" +
-              "여행자: '왼쪽'이라고 하셨나요?\n" +
-              "행인: 네, 광장을 지난 뒤예요.",
+            dialogue: [
+              { speaker: "여행자", fr: "Excusez-moi, où se trouve le jardin public ?", ipa: "[ɛkskyze mwa u sə tʁuv lə ʒaʁdɛ̃ pyblik]", ko: "실례합니다, 공원은 어디에 있나요?" },
+              { speaker: "행인", fr: "Allez tout droit, puis tournez à gauche.", ipa: "[ale tu dʁwa pɥi tuʁne a ɡoʃ]", ko: "곧장 가신 다음 왼쪽으로 도세요." },
+              { speaker: "여행자", fr: "Vous avez dit « à gauche » ?", ipa: "[vuzave di a ɡoʃ]", ko: "'왼쪽'이라고 하셨나요?" },
+              { speaker: "행인", fr: "Oui, après la place.", ipa: "[wi apʁɛ la plas]", ko: "네, 광장을 지난 뒤예요." },
+            ],
           },
           {
-            fr:
-              "여행자 : Je prends quelle ligne pour aller au marché ?\n" +
-              "안내 직원 : Prenez la ligne un.\n" +
-              "여행자 : Je descends à quel arrêt ?\n" +
-              "안내 직원 : Au troisième arrêt. C'est direct.",
-            ipa:
-              "[ʒə pʁɑ̃ kɛl liɲ puʁ ale o maʁʃe]\n" +
-              "[pʁəne la liɲ œ̃]\n" +
-              "[ʒə desɑ̃ a kɛl aʁɛ]\n" +
-              "[o tʁwazjɛm aʁɛ sɛ diʁɛkt]",
-            ko:
-              "여행자: 시장에 가려면 어느 노선을 타야 하나요?\n" +
-              "안내 직원: 1호선을 타세요.\n" +
-              "여행자: 어느 정류장에서 내려요?\n" +
-              "안내 직원: 세 번째 정류장이에요. 직행이에요.",
+            dialogue: [
+              { speaker: "여행자", fr: "Je prends quelle ligne pour aller au marché ?", ipa: "[ʒə pʁɑ̃ kɛl liɲ puʁ ale o maʁʃe]", ko: "시장에 가려면 어느 노선을 타야 하나요?" },
+              { speaker: "안내 직원", fr: "Prenez la ligne un.", ipa: "[pʁəne la liɲ œ̃]", ko: "1호선을 타세요." },
+              { speaker: "여행자", fr: "Je descends à quel arrêt ?", ipa: "[ʒə desɑ̃ a kɛl aʁɛ]", ko: "어느 정류장에서 내려요?" },
+              { speaker: "안내 직원", fr: "Au troisième arrêt. C'est direct.", ipa: "[o tʁwazjɛm aʁɛ sɛ diʁɛkt]", ko: "세 번째 정류장이에요. 직행이에요." },
+            ],
           },
         ],
       },
@@ -411,38 +393,20 @@ const chapters = [
           "긴급도를 과장하지 않고, 확인된 증상과 물건 정보부터 차례로 말하는 두 대화를 읽어 봐요.",
         examples: [
           {
-            fr:
-              "여행자 : J'ai mal à la tête et j'ai de la fièvre.\n" +
-              "보건 안내 직원 : Vous vous sentez faible ?\n" +
-              "여행자 : Oui. J'ai besoin d'un médecin.\n" +
-              "보건 안내 직원 : D'accord. Asseyez-vous ici.",
-            ipa:
-              "[ʒe mal a la tɛt e ʒe də la fjɛvʁ]\n" +
-              "[vu vu sɑ̃te fɛbl]\n" +
-              "[wi ʒe bəzwɛ̃ dœ̃ medsɛ̃]\n" +
-              "[dakɔʁ aseje vu isi]",
-            ko:
-              "여행자: 머리가 아프고 열이 나요.\n" +
-              "보건 안내 직원: 몸에 힘이 없나요?\n" +
-              "여행자: 네. 의사가 필요해요.\n" +
-              "보건 안내 직원: 알겠습니다. 여기에 앉으세요.",
+            dialogue: [
+              { speaker: "여행자", fr: "J'ai mal à la tête et j'ai de la fièvre.", ipa: "[ʒe mal a la tɛt e ʒe də la fjɛvʁ]", ko: "머리가 아프고 열이 나요." },
+              { speaker: "보건 안내 직원", fr: "Vous vous sentez faible ?", ipa: "[vu vu sɑ̃te fɛbl]", ko: "몸에 힘이 없나요?" },
+              { speaker: "여행자", fr: "Oui. J'ai besoin d'un médecin.", ipa: "[wi ʒe bəzwɛ̃ dœ̃ medsɛ̃]", ko: "네. 의사가 필요해요." },
+              { speaker: "보건 안내 직원", fr: "D'accord. Asseyez-vous ici.", ipa: "[dakɔʁ aseje vu isi]", ko: "알겠습니다. 여기에 앉으세요." },
+            ],
           },
           {
-            fr:
-              "여행자 : Je souhaite signaler la perte de mon portefeuille.\n" +
-              "분실물 직원 : Quelle est sa description ?\n" +
-              "여행자 : Il est petit et noir.\n" +
-              "분실물 직원 : Où l'avez-vous vu pour la dernière fois ?",
-            ipa:
-              "[ʒə swɛt siɲale la pɛʁt də mɔ̃ pɔʁtəfœj]\n" +
-              "[kɛl ɛ sa dɛskʁipsjɔ̃]\n" +
-              "[il ɛ pəti e nwaʁ]\n" +
-              "[u lave vu puʁ la dɛʁnjɛʁ fwa]",
-            ko:
-              "여행자: 지갑 분실을 신고하려고 해요.\n" +
-              "분실물 직원: 특징이 어떻게 되나요?\n" +
-              "여행자: 작고 검은색이에요.\n" +
-              "분실물 직원: 마지막으로 어디에서 보셨나요?",
+            dialogue: [
+              { speaker: "여행자", fr: "Je souhaite signaler la perte de mon portefeuille.", ipa: "[ʒə swɛt siɲale la pɛʁt də mɔ̃ pɔʁtəfœj]", ko: "지갑 분실을 신고하려고 해요." },
+              { speaker: "분실물 직원", fr: "Quelle est sa description ?", ipa: "[kɛl ɛ sa dɛskʁipsjɔ̃]", ko: "특징이 어떻게 되나요?" },
+              { speaker: "여행자", fr: "Il est petit et noir.", ipa: "[il ɛ pəti e nwaʁ]", ko: "작고 검은색이에요." },
+              { speaker: "분실물 직원", fr: "Où l'avez-vous vu pour la dernière fois ?", ipa: "[u lave vu puʁ la dɛʁnjɛʁ fwa]", ko: "마지막으로 어디에서 보셨나요?" },
+            ],
           },
         ],
       },
