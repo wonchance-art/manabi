@@ -5,9 +5,9 @@
  */
 const chapters = [
   {
-    slug: "h1-21-tones-intro",
+    slug: "h1-23-tones-intro",
     level: "H1",
-    order: 15,
+    order: 23,
     title: "음의 높낮이가 뜻을 바꾼다 — 성조(四声) 기초",
     topic: "성조 발음 규칙",
     titleFr: "四声与音调",
@@ -160,9 +160,9 @@ const chapters = [
   },
 
   {
-    slug: "h1-22-pinyin-rules",
+    slug: "h1-24-pinyin-rules",
     level: "H1",
-    order: 16,
+    order: 24,
     title: "병음 글자 읽기 규칙 — \"어? 이게 왜 이 소리지?\"",
     topic: "병음 발음 규칙",
     titleFr: "拼音发音规则",

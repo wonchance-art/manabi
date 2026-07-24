@@ -6,9 +6,9 @@
  */
 const chapters = [
   {
-    slug: "a1-21-liaison-intro",
+    slug: "a1-29-liaison-intro",
     level: "A1",
-    order: 14,
+    order: 29,
     title: "묵음이 갑자기 나타난다? — 리에종(liaison)",
     topic: "단어 경계의 음운 변화",
     titleFr: "La liaison et l'enchaînement",
@@ -148,9 +148,9 @@ const chapters = [
   },
 
   {
-    slug: "a1-22-elision",
+    slug: "a1-30-elision",
     level: "A1",
-    order: 15,
+    order: 30,
     title: "모음이 사라진다? — 엘리종(élision)과 생략",
     topic: "모음 탈락의 규칙",
     titleFr: "L'élision et l'apostrophe",
@@ -281,9 +281,9 @@ const chapters = [
   },
 
   {
-    slug: "a1-23-rhythm-stress",
+    slug: "a1-31-rhythm-stress",
     level: "A1",
-    order: 16,
+    order: 31,
     title: "강세는 맨 뒤에 — 프랑스어 리듬의 비결",
     topic: "음절·강세·언어 음성학",
     titleFr: "Le rythme et l'accent tonique",
