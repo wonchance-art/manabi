@@ -12,6 +12,14 @@
 
 > ④ **오너 전면 승인(2026-07-23)**: D-트랙(여행책 지구제 — docs/rfc-guidebook-districts.md) 그린라이트.
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
+## Claude (claude/*)
+### doing
+### todo
+### done (최근)
+- **레벨1 커버리지 재감사**: C1·C2 반영 후 챕터 수 재확인 (변동 없음: 일28·불13·영5·중14)·
+  커버리지 평가 갱신·C1 Revert 사유 진단·다음 라운드 후보 명시
+  (`claude/coverage-reaudit`, 구현 6c949e0, base 50fe3b7)
+
 ## Codex-1 (codex/*)
 ### doing
 ### todo
