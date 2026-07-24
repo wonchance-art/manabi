@@ -10,7 +10,7 @@ const chapters = [
     title: "he be가 오타가 아닌 이유",
     topic: "접속법·격식 구문",
     titleFr: "The Subjunctive and Formal Constructions",
-    summary: "I suggest he be..., If I were..., lest — 죽은 줄 알았던 접속법이 격식문 곳곳에 화석처럼 살아 있어요. 이 화석을 다룰 줄 알면 문장의 격이 달라집니다.",
+    summary: "I suggest he be..., If I were..., lest — 죽은 줄 알았던 접속법이 격식문 곳곳에 화석처럼 살아 있어요. 이 화석을 다룰 줄 알면 문장의 격이 달라져요.",
     duration: "약 10분",
     sections: [
       {
