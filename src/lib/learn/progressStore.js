@@ -15,7 +15,10 @@
  */
 
 import { supabase } from '../supabase';
+import { normalizeSlug, slugAliases } from '../world/storageSchema.js';
 import { recordLessonActivity } from './learningActivity';
+
+export { normalizeSlug } from '../world/storageSchema.js';
 
 const LESSON_READ_KEYS = {
   Japanese: 'ja_read_chapters',
@@ -45,7 +48,7 @@ const LESSON_READ_KEYS = {
 export async function getLessonProgress(userId, { lang, slugs = [], vocabLessons = [] } = {}) {
   if (!lang) return { completedSlugs: [], source: userId ? 'local-fallback' : 'guest' };
 
-  const allowed = new Set(slugs.filter(Boolean));
+  const allowed = new Set(slugs.map((slug) => normalizeSlug(slug)).filter(Boolean));
   const localCompleted = readLocalLessonProgress(lang, allowed, vocabLessons);
 
   if (!userId || allowed.size === 0) {
@@ -56,18 +59,20 @@ export async function getLessonProgress(userId, { lang, slugs = [], vocabLessons
   }
 
   try {
+    const lookupSlugs = slugLookupCandidates(allowed);
     const { data, error } = await supabase
       .from('user_ref_progress')
       .select('slug, read, passed')
       .eq('user_id', userId)
       .eq('lang', lang)
-      .in('slug', [...allowed]);
+      .in('slug', lookupSlugs);
 
     if (error) throw error;
 
     for (const row of data || []) {
-      if (allowed.has(row.slug) && (row.passed || row.read)) {
-        localCompleted.add(row.slug);
+      const normalizedSlug = normalizeSlug(row.slug);
+      if (allowed.has(normalizedSlug) && (row.passed || row.read)) {
+        localCompleted.add(normalizedSlug);
       }
     }
 
@@ -91,7 +96,8 @@ export async function getLessonProgress(userId, { lang, slugs = [], vocabLessons
 export async function recordLessonCompleted(userId, lessonRef, options = {}) {
   if (!lessonRef || !lessonRef.lang || !lessonRef.slug) return;
 
-  const { lang, slug, source } = lessonRef;
+  const { lang, source } = lessonRef;
+  const slug = normalizeSlug(lessonRef.slug);
   const { checkResult } = options;
 
   // 코스의 명시적 레슨 완료만 오늘 목표로 센다. 실패한 챕터 체크나
@@ -102,7 +108,7 @@ export async function recordLessonCompleted(userId, lessonRef, options = {}) {
 
   // 게스트 경로: localStorage만
   if (!userId) {
-    recordProgressLocal(slug, source);
+    recordProgressLocal(slug, source, lang);
     return;
   }
 
@@ -207,32 +213,137 @@ export async function recordNewWord(userId, word) {
 // 내부 구현 (기존 계약 유지)
 // ────────────────────────────────────────────────────────────────────
 
+function defaultLocalStorage() {
+  if (typeof window === 'undefined') return null;
+  try {
+    return globalThis.localStorage;
+  } catch {
+    return null;
+  }
+}
+
+function mergeSlugProgressResult(current, incoming) {
+  if (!current || typeof current !== 'object' || Array.isArray(current)) return current;
+  if (!incoming || typeof incoming !== 'object' || Array.isArray(incoming)) return current;
+
+  const merged = { ...current, ...incoming };
+  if ('passed' in current || 'passed' in incoming) {
+    merged.passed = Boolean(current.passed || incoming.passed);
+  }
+  return merged;
+}
+
+function migrateStoredSlugArray(storage, key, aliases) {
+  try {
+    const raw = storage.getItem(key);
+    if (raw === null) return false;
+    const values = JSON.parse(raw);
+    if (!Array.isArray(values)) return false;
+
+    let changed = false;
+    const normalized = values.map((slug) => {
+      const next = normalizeSlug(slug, aliases);
+      if (next !== slug) changed = true;
+      return next;
+    });
+    if (!changed) return false;
+
+    storage.setItem(key, JSON.stringify(normalized));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function migrateStoredSlugMap(storage, key, aliases) {
+  try {
+    const raw = storage.getItem(key);
+    if (raw === null) return false;
+    const values = JSON.parse(raw);
+    if (!values || typeof values !== 'object' || Array.isArray(values)) return false;
+
+    let changed = false;
+    const normalized = {};
+    for (const [slug, result] of Object.entries(values)) {
+      const next = normalizeSlug(slug, aliases);
+      if (next !== slug) changed = true;
+      normalized[next] = Object.prototype.hasOwnProperty.call(normalized, next)
+        ? mergeSlugProgressResult(normalized[next], result)
+        : result;
+    }
+    if (!changed) return false;
+
+    storage.setItem(key, JSON.stringify(normalized));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * 기존 진도 키의 slug 값/프로퍼티를 제자리에서 신 slug로 옮긴다.
+ *
+ * 별도 완료 표식 키를 만들지 않고 실제 변경이 있을 때만 같은 키를 재기록한다.
+ * 따라서 첫 성공 뒤 재호출은 쓰기 없는 no-op이며, 차단·손상 저장소는 그대로 둔다.
+ */
+export function migrateSlugProgressKeys(
+  storage = defaultLocalStorage(),
+  lang,
+  aliases = slugAliases,
+) {
+  if (!storage || !aliases || typeof aliases !== 'object' || Object.keys(aliases).length === 0) {
+    return false;
+  }
+
+  let changed = migrateStoredSlugArray(storage, 'studied_lesson', aliases);
+  const readKey = LESSON_READ_KEYS[lang];
+  if (readKey) {
+    changed = migrateStoredSlugArray(storage, readKey, aliases) || changed;
+    changed = migrateStoredSlugMap(storage, `${readKey}_check`, aliases) || changed;
+  }
+  return changed;
+}
+
+function slugLookupCandidates(allowed, aliases = slugAliases) {
+  const candidates = new Set(allowed);
+  for (const legacySlug of Object.keys(aliases)) {
+    if (allowed.has(normalizeSlug(legacySlug, aliases))) candidates.add(legacySlug);
+  }
+  return [...candidates];
+}
+
 /**
  * 게스트 진도: localStorage Set에 기록
  * (기존 VocabPage.updateReadingProgress 등과 동일)
  */
-function recordProgressLocal(slug, source) {
+function recordProgressLocal(slug, source, lang) {
   try {
-    if (typeof window === 'undefined' || !slug) return;
+    const storage = defaultLocalStorage();
+    if (!storage || !slug) return;
 
     // 시리즈별 진도: studied_${source}
     const studiedKey = `studied_${source}`;
-    const studied = new Set(JSON.parse(localStorage.getItem(studiedKey) || '[]'));
+    migrateSlugProgressKeys(storage, lang);
+    migrateStoredSlugArray(storage, studiedKey, slugAliases);
+    const studied = new Set(JSON.parse(storage.getItem(studiedKey) || '[]'));
     studied.add(slug);
-    localStorage.setItem(studiedKey, JSON.stringify([...studied]));
+    storage.setItem(studiedKey, JSON.stringify([...studied]));
   } catch {}
 }
 
 function readLocalLessonProgress(lang, allowed, vocabLessons = []) {
   const completed = new Set();
-  if (typeof window === 'undefined') return completed;
+  const storage = defaultLocalStorage();
+  if (!storage) return completed;
+  migrateSlugProgressKeys(storage, lang);
 
   const addStoredArray = (key) => {
     try {
-      const values = JSON.parse(localStorage.getItem(key) || '[]');
+      const values = JSON.parse(storage.getItem(key) || '[]');
       if (!Array.isArray(values)) return;
       for (const slug of values) {
-        if (allowed.has(slug)) completed.add(slug);
+        const normalizedSlug = normalizeSlug(slug);
+        if (allowed.has(normalizedSlug)) completed.add(normalizedSlug);
       }
     } catch {}
   };
@@ -246,22 +357,24 @@ function readLocalLessonProgress(lang, allowed, vocabLessons = []) {
     addStoredArray(readKey);
 
     try {
-      const checks = JSON.parse(localStorage.getItem(`${readKey}_check`) || '{}');
+      const checks = JSON.parse(storage.getItem(`${readKey}_check`) || '{}');
       if (checks && typeof checks === 'object' && !Array.isArray(checks)) {
         for (const [slug, result] of Object.entries(checks)) {
-          if (allowed.has(slug) && result?.passed) completed.add(slug);
+          const normalizedSlug = normalizeSlug(slug);
+          if (allowed.has(normalizedSlug) && result?.passed) completed.add(normalizedSlug);
         }
       }
     } catch {}
   }
 
   for (const lesson of vocabLessons) {
-    if (!allowed.has(lesson?.slug) || !lesson.storageKey || !Array.isArray(lesson.words)) continue;
+    const normalizedSlug = normalizeSlug(lesson?.slug);
+    if (!allowed.has(normalizedSlug) || !lesson.storageKey || !Array.isArray(lesson.words)) continue;
     if (lesson.words.length === 0) continue;
 
     try {
-      const checked = new Set(JSON.parse(localStorage.getItem(lesson.storageKey) || '[]'));
-      if (lesson.words.every((word) => checked.has(word))) completed.add(lesson.slug);
+      const checked = new Set(JSON.parse(storage.getItem(lesson.storageKey) || '[]'));
+      if (lesson.words.every((word) => checked.has(word))) completed.add(normalizedSlug);
     } catch {}
   }
 

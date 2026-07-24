@@ -9,9 +9,11 @@ import {
   briefingSeenKey,
   ensureStorageSchema,
   learningActivityStorageKey,
+  normalizeSlug,
   npcMeetingStorageKey,
   readStorageSchemaVersion,
   routeDiscoveryStorageKey,
+  slugAliases,
 } from '../storageSchema.js';
 
 function memoryStorage(initial = {}) {
@@ -53,6 +55,20 @@ describe('월드 localStorage 스키마 v1', () => {
     expect(Object.isFrozen(WORLD_STORAGE_KEYS)).toBe(true);
     expect(Object.isFrozen(WORLD_STORAGE_KEY_PREFIXES)).toBe(true);
     expect(Object.isFrozen(LEARNING_STORAGE_KEY_PREFIXES)).toBe(true);
+  });
+
+  it('slug 별칭은 구→신 정본을 연쇄 정규화하고 미등록 slug는 통과시킨다', () => {
+    const aliases = Object.freeze({
+      'a0-06': 'a1-06',
+      'legacy-a0-06': 'a0-06',
+    });
+
+    expect(slugAliases).toEqual({});
+    expect(Object.isFrozen(slugAliases)).toBe(true);
+    expect(normalizeSlug('a0-06', aliases)).toBe('a1-06');
+    expect(normalizeSlug('legacy-a0-06', aliases)).toBe('a1-06');
+    expect(normalizeSlug('unregistered', aliases)).toBe('unregistered');
+    expect(normalizeSlug('cycle-a', { 'cycle-a': 'cycle-b', 'cycle-b': 'cycle-a' })).toBe('cycle-a');
   });
 
   it('버전 키가 없는 기존 payload를 v1로 간주하고 무손실로 표식만 추가한다', () => {

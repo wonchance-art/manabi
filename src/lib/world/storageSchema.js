@@ -18,6 +18,33 @@ export const ROUTE_DISCOVERY_STORAGE_PREFIX = 'route-discoveries:';
 export const BRIEFING_SEEN_PREFIX = 'briefing-seen:';
 export const LEARNING_ACTIVITY_STORAGE_PREFIX = 'manabi-learning-activity-v1:';
 
+// 학습 진도 slug rename은 반드시 구 slug -> 신 slug 별칭을 먼저 등록한다.
+// R1은 인프라만 도입하며 실제 rename 데이터는 후속 Claude 커밋이 소유한다.
+export const slugAliases = Object.freeze({});
+
+/**
+ * 등록된 별칭을 최종 정본 slug로 정규화한다.
+ *
+ * aliases 인자는 빈 정본 맵을 유지한 채 순수 유틸을 검증할 수 있는 테스트 경계다.
+ * 연쇄 rename은 끝까지 따라가며, 잘못된 순환 별칭은 원래 slug로 fail closed한다.
+ */
+export function normalizeSlug(slug, aliases = slugAliases) {
+  if (typeof slug !== 'string' || !aliases || typeof aliases !== 'object') return slug;
+
+  const original = slug;
+  const seen = new Set([slug]);
+  let current = slug;
+
+  while (Object.prototype.hasOwnProperty.call(aliases, current)) {
+    const next = aliases[current];
+    if (typeof next !== 'string' || !next || seen.has(next)) return original;
+    current = next;
+    seen.add(current);
+  }
+
+  return current;
+}
+
 export const WORLD_STORAGE_KEYS = Object.freeze({
   schemaVersion: STORAGE_SCHEMA_VERSION_KEY,
   guestStamps: GUEST_STAMPS_STORAGE_KEY,

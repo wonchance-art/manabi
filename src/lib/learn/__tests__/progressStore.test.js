@@ -11,6 +11,7 @@ import {
   recordLessonCompleted,
   recordReviewCompleted,
   recordNewWord,
+  migrateSlugProgressKeys,
   validateProgressRecord,
 } from '../progressStore';
 import { supabase } from '../../supabase';
@@ -238,6 +239,33 @@ describe('progressStore', () => {
   });
 
   describe('견고성 테스트', () => {
+    it('기존 진도 키 별칭을 한 번만 신 slug로 옮기고 재호출은 no-op이다', () => {
+      const values = new Map([
+        ['studied_lesson', JSON.stringify(['a0-06', 'unregistered'])],
+        ['en_read_chapters', JSON.stringify(['a0-06'])],
+        ['en_read_chapters_check', JSON.stringify({
+          'a0-06': { passed: true, right: 8 },
+          'a1-06': { passed: false, total: 10 },
+        })],
+      ]);
+      const storage = {
+        getItem: vi.fn((key) => values.get(key) ?? null),
+        setItem: vi.fn((key, value) => values.set(key, String(value))),
+      };
+      const aliases = { 'a0-06': 'a1-06' };
+
+      expect(migrateSlugProgressKeys(storage, 'English', aliases)).toBe(true);
+      expect(JSON.parse(values.get('studied_lesson'))).toEqual(['a1-06', 'unregistered']);
+      expect(JSON.parse(values.get('en_read_chapters'))).toEqual(['a1-06']);
+      expect(JSON.parse(values.get('en_read_chapters_check'))).toEqual({
+        'a1-06': { passed: true, right: 8, total: 10 },
+      });
+      expect(storage.setItem).toHaveBeenCalledTimes(3);
+
+      expect(migrateSlugProgressKeys(storage, 'English', aliases)).toBe(false);
+      expect(storage.setItem).toHaveBeenCalledTimes(3);
+    });
+
     it('localStorage 접근 불가 시 우아한 실패', async () => {
       // 원본 localStorage 저장
       const originalLS = global.localStorage;
