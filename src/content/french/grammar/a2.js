@@ -76,7 +76,7 @@ const chapters = [
           { fr: "Hier, j'ai travaillé.", ipa: "[jɛʁ ʒe tʁavaje]", ko: "어제 저는 일했어요." },
           { fr: "La semaine dernière, nous avons visité Lyon.", ipa: "[la səmɛn dɛʁnjɛʁ nuzavɔ̃ vizite ljɔ̃]", ko: "지난주에 우리는 리옹을 구경했어요." },
         ],
-        vsEn: "형태만 보면 영어 현재완료(have + p.p.)와 똑같죠: J'ai mangé = I have eaten. 하지만 **의미는 I ate(단순과거)**예요. 영어에서는 'Yesterday I have eaten'이 비문이지만, 프랑스어 'Hier, j'ai mangé'는 완벽한 문장이에요. '형태는 영어 현재완료, 용법은 영어 과거형' — 이 비대칭을 받아들이는 게 A2의 첫 관문예요.",
+        vsEn: "형태만 보면 영어 현재완료(have + p.p.)와 똑같죠: J'ai mangé = I have eaten. 하지만 **의미는 I ate(단순과거)**예요. 영어에서는 'Yesterday I have eaten'이 비문이지만, 프랑스어 'Hier, j'ai mangé'는 완벽한 문장이에요. '형태는 영어 현재완료, 용법은 영어 과거형' — 이 비대칭을 받아들이는 게 A2의 첫 관문이에요.",
         enParallel: {
           rows: [
             { en: "I **have eaten** a pizza.", fr: "J'**ai mangé** une pizza.", ko: "저는 피자를 먹었어요." },
@@ -876,7 +876,7 @@ const chapters = [
         patternKo: "단위·개수를 세는 부품들 — 단위 뒤도 맨 de",
         body:
           "장보기의 핵심 틀 — **un kilo de** tomates, **une bouteille de** vin, un morceau **de** fromage. 단위 뒤도 역시 맨 de예요.\n\n" +
-          "개수가 흐릿할 땐 **quelques**(몇몇) < **plusieurs**(여럿)예요. **chaque**(각, ~마다)는 항상 **단수**와 짝예요: chaque jour(매일).",
+          "개수가 흐릿할 땐 **quelques**(몇몇) < **plusieurs**(여럿)예요. **chaque**(각, ~마다)는 항상 **단수**와 짝이에요: chaque jour(매일).",
         examples: [
           { fr: "Je voudrais un kilo de pommes et un morceau de fromage.", ipa: "[ʒə vudʁɛ œ̃ kilo də pɔm e œ̃ mɔʁso də fʁɔmaʒ]", ko: "사과 1킬로랑 치즈 한 조각 주세요." },
           { fr: "Il reste quelques places pour le concert.", ipa: "[il ʁɛst kɛlk plas puʁ lə kɔ̃sɛʁ]", ko: "콘서트 자리가 몇 개 남아 있어요." },
@@ -921,7 +921,7 @@ const chapters = [
           { fr: "C'est tout ce que je sais.", ipa: "[sɛ tu sə kə ʒə sɛ]", ko: "그게 내가 아는 전부야." },
           { fr: "Merci pour tout !", ipa: "[mɛʁsi puʁ tu]", ko: "여러모로 고마웠어요!", note: "대명사로 쓰인 tout" },
         ],
-        vsEn: "영어 everybody도 단수 취급이죠(Everybody **is** here). tout le monde **est** là — 똑같은 감각이에요. 단, 직역하면 'all the world'라서 '온 세상'으로 오해하기 쉬운데, 그냥 '모두'라는 뜻예요.",
+        vsEn: "영어 everybody도 단수 취급이죠(Everybody **is** here). tout le monde **est** là — 똑같은 감각이에요. 단, 직역하면 'all the world'라서 '온 세상'으로 오해하기 쉬운데, 그냥 '모두'라는 뜻이에요.",
       },
       {
         heading: "quelque chose·quelqu'un — '무언가, 누군가' + 형용사",

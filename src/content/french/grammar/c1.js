@@ -45,7 +45,7 @@ const chapters = [
             ["croire", "crut", "crurent", "믿었다"],
           ],
         },
-        pitfall: "-ir/-re 계열의 il finit, il répondit는 **직설법 현재와 모양이 똑같아요**. il finit son travail은 '끝낸다'일 수도 '끝냈다'일 수도 있죠. 주변 동사들의 시제와 서술의 흐름으로 판단해야 해요 — 소설 지문이라면 거의 passé simple예요.",
+        pitfall: "-ir/-re 계열의 il finit, il répondit는 **직설법 현재와 모양이 똑같아요**. il finit son travail은 '끝낸다'일 수도 '끝냈다'일 수도 있죠. 주변 동사들의 시제와 서술의 흐름으로 판단해야 해요 — 소설 지문이라면 거의 passé simple이에요.",
       },
       {
         heading: "꼭 알아봐야 하는 불규칙 동사들",
@@ -477,7 +477,7 @@ const chapters = [
         patternKo: "신체 이미지 관용구 (비싸다·귀찮게 하다)",
         body:
           "**coûter les yeux de la tête**(눈이 빠질 만큼 비싸다 — '눈이 튀어나올 가격'과 통하죠), **avoir le cœur sur la main**(심장을 손에 → 잘 베푼다), **casser les pieds**(발을 부수다 → 귀찮게 하다).\n\n" +
-          "사용 전략: **이해는 최대로, 사용은 보수적으로.** 대부분 familier라 격식 작문에는 못 쓰고, 프랑스인이 쓰는 걸 들은 맥락 그대로 따라 쓰며 늘려가는 게 정석예요.",
+          "사용 전략: **이해는 최대로, 사용은 보수적으로.** 대부분 familier라 격식 작문에는 못 쓰고, 프랑스인이 쓰는 걸 들은 맥락 그대로 따라 쓰며 늘려가는 게 정석이에요.",
         examples: [
           { fr: "Ce sac coûte les yeux de la tête.", ko: "이 가방, 눈 튀어나오게 비싸요.", note: "쇼핑 회화의 단골" },
           { fr: "Elle a le cœur sur la main : elle aide tout le monde.", ko: "그녀는 정말 베푸는 사람이에요. 모두를 도와줘요.", note: "사람 칭찬의 고정 표현" },

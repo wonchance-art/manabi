@@ -298,7 +298,7 @@ const chapters = [
           { fr: "C'est un travail dont elle est très fière.", ko: "그녀가 아주 자랑스러워하는 작업이에요." },
           { fr: "J'ai un voisin dont la fille étudie en Corée.", ko: "딸이 한국에서 공부하는 이웃이 있어요.", note: "소유의 dont = 영어 whose" },
         ],
-        vsEn: "소유의 dont은 영어 whose, 나머지 용법은 of which/about which에 해당해요. 다만 영어보다 훨씬 일상적으로 써요. '이 동사가 de를 데리고 다니던가?'를 자문하는 게 dont 사용의 출발점예요.",
+        vsEn: "소유의 dont은 영어 whose, 나머지 용법은 of which/about which에 해당해요. 다만 영어보다 훨씬 일상적으로 써요. '이 동사가 de를 데리고 다니던가?'를 자문하는 게 dont 사용의 출발점이에요.",
         pitfall: "dont 뒤의 어순은 평서문 그대로예요(dont + 주어 + 동사). 그리고 dont 안에 이미 de가 들어 있으니 le livre dont je parle de(X)처럼 de를 또 쓰면 안 돼요. 한국어에는 관계대명사 자체가 없어서('내가 말한 책'처럼 어미로 해결) 이 중복 실수가 특히 잦아요.",
       },
       {
@@ -583,7 +583,7 @@ const chapters = [
           { fr: "Il m'a demandé ce que je faisais dans la vie.", ko: "그는 내 직업이 뭔지 물었어요." },
           { fr: "Je lui ai demandé pourquoi elle avait changé d'avis.", ko: "왜 마음을 바꿨는지 그녀에게 물었어요." },
         ],
-        pitfall: "est-ce que는 따옴표 밖으로 살아남지 못해요. Il demande est-ce que...(X), qu'est-ce que를 그대로 둔 Il demande qu'est-ce que je fais(X)도 비문이에요. 간접의문문에는 의문문 어순도, est-ce que도 없해요 — si/ce que + 평서문 어순!",
+        pitfall: "est-ce que는 따옴표 밖으로 살아남지 못해요. Il demande est-ce que...(X), qu'est-ce que를 그대로 둔 Il demande qu'est-ce que je fais(X)도 비문이에요. 간접의문문에는 의문문 어순도, est-ce que도 없어요 — si/ce que + 평서문 어순!",
       },
       {
         heading: "명령문과 시간 표현의 변신",
@@ -701,7 +701,7 @@ const chapters = [
           { fr: "Je fais du sport pour rester en forme.", ipa: "[ʒə fɛ dy spɔʁ puʁ ʁɛste ɑ̃ fɔʁm]", ko: "건강을 유지하려고 운동해요.", note: "주어가 같으니 pour + 원형" },
           { fr: "Afin d'éviter la foule, partons tôt.", ipa: "[afɛ̃ devite la ful paʁtɔ̃ to]", ko: "인파를 피하도록 일찍 출발합시다.", note: "afin de = pour의 격식형" },
         ],
-        pitfall: "주어가 같은데 pour que를 쓰면 비문이에요 — Je travaille pour que je réussisse(✗) → pour réussir(O). '내가 ~하려고 내가 ~한다'에서 que절이 닫히는 건 vouloir que의 규칙과 똑같해요.",
+        pitfall: "주어가 같은데 pour que를 쓰면 비문이에요 — Je travaille pour que je réussisse(✗) → pour réussir(O). '내가 ~하려고 내가 ~한다'에서 que절이 닫히는 건 vouloir que의 규칙과 똑같아요.",
       },
       {
         heading: "이유 4총사 — parce que·car·puisque·comme",

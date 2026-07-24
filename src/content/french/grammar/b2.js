@@ -49,7 +49,7 @@ const chapters = [
           { fr: "Rentrons avant qu'il ne pleuve.", ko: "비가 오기 전에 들어가요.", note: "avant que 뒤의 ne는 부정이 아니라 격식 장치(허사 ne)" },
           { fr: "Restez ici jusqu'à ce que je revienne.", ko: "제가 돌아올 때까지 여기 계세요." },
         ],
-        pitfall: "**après que(~한 후에)는 원칙상 직설법**이에요 — 이미 일어난 사실이니까요: après qu'il est parti. 짝꿍 avant que(접속법)에 이끌려 프랑스인들조차 접속법을 쓰곤 하지만, 시험·격식 작문에서는 직설법이 정답예요. avant ↔ après가 법(法)까지 가르는 거예요.",
+        pitfall: "**après que(~한 후에)는 원칙상 직설법**이에요 — 이미 일어난 사실이니까요: après qu'il est parti. 짝꿍 avant que(접속법)에 이끌려 프랑스인들조차 접속법을 쓰곤 하지만, 시험·격식 작문에서는 직설법이 정답이에요. avant ↔ après가 법(法)까지 가르는 거예요.",
         tip: "avant que, à moins que 뒤에 붙는 **ne**는 부정의 ne가 아니라 '허사 ne(ne explétif)'라는 격식 장식이에요. 없어도 뜻은 같지만, 격식 글에서는 붙이는 게 세련돼요. pas가 없으면 부정이 아니라고 기억하세요.",
       },
       {
@@ -58,7 +58,7 @@ const chapters = [
         patternKo: "penser류 — 긍정이면 직설법, 부정·의문이면 접속법",
         body:
           "penser/croire/trouver que는 **긍정문이냐 부정·의문문이냐에 따라 법이 갈려요**. 부정하는 순간 que절은 사실이 아니라 의심의 대상이 되니까요.\n\n" +
-          "도치 의문문(Penses-tu qu'il **ait** raison ?)도 같은 원리로 접속법이 격식이에요. il est certain que(직설법) ↔ il n'est pas certain que(접속법)도 같은 패턴예요.",
+          "도치 의문문(Penses-tu qu'il **ait** raison ?)도 같은 원리로 접속법이 격식이에요. il est certain que(직설법) ↔ il n'est pas certain que(접속법)도 같은 패턴이에요.",
         examples: [
           { fr: "Je crois que c'est une bonne idée.", ko: "좋은 생각인 것 같아요.", note: "긍정 → 직설법" },
           { fr: "Je ne crois pas que ce soit une bonne idée.", ko: "좋은 생각이라고는 생각하지 않아요.", note: "부정 → 접속법" },
@@ -113,7 +113,7 @@ const chapters = [
           { fr: "S'il faisait beau, on irait à la plage.", ko: "날씨가 좋다면 해변에 갈 텐데. (② — 실제론 안 좋음)" },
           { fr: "S'il avait fait beau, on serait allés à la plage.", ko: "날씨가 좋았더라면 해변에 갔을 텐데. (③ — 이미 지나간 일)" },
         ],
-        vsEn: "유형별 시제 조합까지 영어와 똑같아요: if + 과거 ↔ si + 반과거, would ↔ 조건법, would have ↔ 조건법 과거. 영어 가정법이 흔들리는 분은 거꾸로 프랑스어로 영어를 복습하게 되는, 일석이조의 지점예요.",
+        vsEn: "유형별 시제 조합까지 영어와 똑같아요: if + 과거 ↔ si + 반과거, would ↔ 조건법, would have ↔ 조건법 과거. 영어 가정법이 흔들리는 분은 거꾸로 프랑스어로 영어를 복습하게 되는, 일석이조의 지점이에요.",
         enParallel: {
           rows: [
             { en: "If it **rains**, we **will stay** home.", fr: "S'il **pleut**, on **restera** à la maison.", ko: "비가 오면 집에 있을 거예요. (1형)" },
@@ -190,7 +190,7 @@ const chapters = [
           { fr: "Elle est partie en courant.", ko: "그녀는 뛰어서 떠났어요.", note: "② 제롱디프" },
           { fr: "C'est une histoire amusante.", ko: "재미있는 이야기예요.", note: "③ 동사적 형용사 — 여성 일치 amusante" },
         ],
-        vsEn: "영어 -ing 하나가 분사(running water), 동명사(I like running), 분사구문(Running fast, he...)을 다 하는 것과 달리, 프랑스어는 역할마다 형태와 규칙이 갈라져 있어요. 대신 영어 동명사 자리(I like running)는 프랑스어에서 -ant이 아니라 **부정사**(J'aime courir)가 맡는다는 게 최대 함정예요.",
+        vsEn: "영어 -ing 하나가 분사(running water), 동명사(I like running), 분사구문(Running fast, he...)을 다 하는 것과 달리, 프랑스어는 역할마다 형태와 규칙이 갈라져 있어요. 대신 영어 동명사 자리(I like running)는 프랑스어에서 -ant이 아니라 **부정사**(J'aime courir)가 맡는다는 게 최대 함정이에요.",
       },
       {
         heading: "현재분사 — 관계절을 압축하는 문어체 도구",
@@ -203,7 +203,7 @@ const chapters = [
           { fr: "Les passagers voyageant avec des enfants embarquent en premier.", ko: "아이를 동반한 승객은 먼저 탑승합니다.", note: "안내 방송·공지문의 단골 구조" },
           { fr: "N'ayant pas reçu de réponse, je vous écris de nouveau.", ko: "답장을 받지 못하여 다시 메일을 드립니다.", note: "격식 이메일 표현" },
         ],
-        tip: "현재분사는 '읽고 쓸 줄 알면 되는' 문법이에요. 신문·공문·이메일에서 알아보고, 격식 작문에서 한두 번 써먹는 정도가 B2의 적정선예요. 말할 때는 qui 관계절이나 comme절로 푸세요.",
+        tip: "현재분사는 '읽고 쓸 줄 알면 되는' 문법이에요. 신문·공문·이메일에서 알아보고, 격식 작문에서 한두 번 써먹는 정도가 B2의 적정선이에요. 말할 때는 qui 관계절이나 comme절로 푸세요.",
         enParallel: {
           rows: [
             { en: "**Not knowing** anyone, I left.", fr: "**Ne connaissant** personne, je suis parti.", ko: "아무도 몰라서 자리를 떴어요." },
@@ -525,7 +525,7 @@ const chapters = [
           { fr: "la réduction des émissions de CO2", ko: "이산화탄소 배출량 감축" },
           { fr: "le développement durable", ko: "지속 가능한 발전", note: "시사 단골 표현" },
         ],
-        etym: "-tion 명사는 라틴어 -tiō의 후손이라 영어와 거의 그대로 겹쳐요: construction, augmentation, réduction, création... 영어에서 아는 -tion 단어는 십중팔구 프랑스어에 같은 꼴로 존재하고, 게다가 **전부 여성 명사**예요. B1 영어 어휘가 한꺼번에 프랑스어 자산으로 환전되는 순간예요.",
+        etym: "-tion 명사는 라틴어 -tiō의 후손이라 영어와 거의 그대로 겹쳐요: construction, augmentation, réduction, création... 영어에서 아는 -tion 단어는 십중팔구 프랑스어에 같은 꼴로 존재하고, 게다가 **전부 여성 명사**예요. B1 영어 어휘가 한꺼번에 프랑스어 자산으로 환전되는 순간이에요.",
         pitfall: "명사화의 복병은 뜻이 아니라 **성(性)**이에요. le développement인지 la développement인지에서 무너지죠. 접미사 규칙(-tion 여성, -ment 남성)을 성 추측 치트키로 적극 활용하고, 무접미 명사(le choix, la hausse)만 따로 챙기세요.",
       },
       {
@@ -787,7 +787,7 @@ const chapters = [
           { fr: "Il s'agit maintenant de convaincre le jury.", ipa: "[il saʒi mɛ̃tnɑ̃ də kɔ̃vɛ̃kʁ lə ʒyʁi]", ko: "이제 중요한 건 심사위원을 설득하는 거예요." },
           { fr: "Il ne s'agit pas d'argent, mais de respect.", ipa: "[il nə saʒi pa daʁʒɑ̃ mɛ də ʁɛspɛ]", ko: "돈 문제가 아니라 존중의 문제예요." },
         ],
-        pitfall: "'이 책은 전쟁에 관한 것이다'를 직역해 Ce livre s'agit de la guerre(✗)라고 쓰는 게 최다 오류예요. 책을 주어로 말하고 싶으면 Ce livre **parle de** / **porte sur** la guerre — s'agit는 반드시 il과만 짝예요.",
+        pitfall: "'이 책은 전쟁에 관한 것이다'를 직역해 Ce livre s'agit de la guerre(✗)라고 쓰는 게 최다 오류예요. 책을 주어로 말하고 싶으면 Ce livre **parle de** / **porte sur** la guerre — s'agit는 반드시 il과만 짝이에요.",
       },
       {
         heading: "드러남·소문·가능성 — il s'avère que·il paraît que·il se peut que",
@@ -828,7 +828,7 @@ const chapters = [
           { fr: "Il est question de déplacer le siège à Lyon.", ipa: "[il ɛ kɛstjɔ̃ də deplase lə sjɛʒ a ljɔ̃]", ko: "본사를 리옹으로 옮기는 방안이 논의되고 있어요." },
           { fr: "Il ne reste plus qu'à attendre la réponse.", ipa: "[il nə ʁɛst ply ka atɑ̃dʁ la ʁepɔ̃s]", ko: "이제 답을 기다리는 일만 남았네요." },
         ],
-        tip: "Il n'est pas question que tu paies !(네가 내다니 말도 안 돼!) — 격식 구문이지만 회화에서도 강한 거부의 단골이에요. 줄여서 «Pas question !»(절대 안 돼!) 단독으로도 쓰예요.",
+        tip: "Il n'est pas question que tu paies !(네가 내다니 말도 안 돼!) — 격식 구문이지만 회화에서도 강한 거부의 단골이에요. 줄여서 «Pas question !»(절대 안 돼!) 단독으로도 써요.",
       },
       {
         heading: "논증의 화석들 — force est de constater·toujours est-il que",
@@ -856,7 +856,7 @@ const chapters = [
           { fr: "Il va de soi que l'entrée est gratuite pour les membres.", ipa: "[il va də swa kə lɑ̃tʁe ɛ ɡʁatɥit puʁ le mɑ̃bʁ]", ko: "회원에게 입장이 무료인 건 말할 것도 없고요." },
           { fr: "Selon ce rapport, la situation s'améliore.", ipa: "[səlɔ̃ sə ʁapɔʁ la sitɥasjɔ̃ sameljɔʁ]", ko: "이 보고서에 따르면 상황은 나아지고 있습니다.", note: "출처 표시 — d'après도 같은 자리" },
         ],
-        tip: "결론 문단을 «Force est de constater que ...»로 열고 «Toujours est-il que ...»로 받으면 DELF 채점자가 바로 알아보는 격식 신호가 돼요. 단, 한 편에 한 번씩만 — 화석은 박물관처럼 아껴 쓰는 게 멋예요.",
+        tip: "결론 문단을 «Force est de constater que ...»로 열고 «Toujours est-il que ...»로 받으면 DELF 채점자가 바로 알아보는 격식 신호가 돼요. 단, 한 편에 한 번씩만 — 화석은 박물관처럼 아껴 쓰는 게 멋이에요.",
       },
     ],
   },
