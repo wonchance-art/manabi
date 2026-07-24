@@ -1,14 +1,13 @@
 /**
- * DRAFT — E6 프랑스어 A1 문법 확장 초안 (Claude 콘텐츠 검수 전)
- *
- * 기존 grammar/a1.js와 상위 레벨 문법의 필드·해요체·예문 계약을 따르되,
- * 현재 소비 레지스트리에는 연결하지 않는다. 제목·설명·예문 카피는 Claude
- * 검수 뒤 확정하며, 검수 전에는 이 파일을 제품 경로에 import하지 않는다.
+ * A1 확장 문법 챕터 (order 14~20) — 기존 a1.js의 01-13 후속
+ * 규칙 -ir/-re 동사·필수 불규칙(faire/pouvoir/vouloir/devoir)·
+ * 명사의 성·수·기본 관사 축약과 전치사·지시/의문 한정사·
+ * 장소 표현·빈도·수량·기초 연결어를 다룬다.
  */
 const chapters = [
-  // DRAFT: 기존 a1-03의 -er 현재형과 분리해, 규칙 -ir/-re 두 계열만 다룬다.
+  // 기존 a1-03의 -er 현재형과 분리해, 규칙 -ir/-re 두 계열만 다룬다.
   {
-    slug: "a1-draft-14-ir-re-present",
+    slug: "a1-14-ir-re-present",
     level: "A1",
     order: 14,
     title: "\"고르고 기다려요\"도 현재형 한 세트",
@@ -141,9 +140,9 @@ const chapters = [
     ],
   },
 
-  // DRAFT: 기존 être/avoir/aller/venir과 겹치지 않는 A1 필수 불규칙 현재형만 추가한다.
+  // 기존 être/avoir/aller/venir과 겹치지 않는 A1 필수 불규칙 현재형만 추가한다.
   {
-    slug: "a1-draft-15-modal-faire-present",
+    slug: "a1-15-modal-faire-present",
     level: "A1",
     order: 15,
     title: "\"할 수 있고, 하고 싶고, 해야 해요\"",
@@ -295,9 +294,9 @@ const chapters = [
     ],
   },
 
-  // DRAFT: 기존 성 개념·형용사 기본 일치와 분리해, 사람 명사의 여성형과 명사 복수 형태만 다룬다.
+  // 기존 성 개념·형용사 기본 일치와 분리해, 사람 명사의 여성형과 명사 복수 형태만 다룬다.
   {
-    slug: "a1-draft-16-noun-gender-plural",
+    slug: "a1-16-noun-gender-plural",
     level: "A1",
     order: 16,
     title: "\"학생 한 명\"이 둘이 되면 말도 바뀌어요",
@@ -453,9 +452,9 @@ const chapters = [
     ],
   },
 
-  // DRAFT: 기존 관사 입문·부분관사·aller의 au/aux를 재설명하지 않고, de 축약의 두 정체와 나라명 체계를 연결한다.
+  // 기존 관사 입문·부분관사·aller의 au/aux를 재설명하지 않고, de 축약의 두 정체와 나라명 체계를 연결한다.
   {
-    slug: "a1-draft-17-article-contractions-countries",
+    slug: "a1-17-article-contractions-countries",
     level: "A1",
     order: 17,
     title: "du는 빵 앞과 박물관 뒤에서 달라요",
@@ -614,9 +613,9 @@ const chapters = [
     ],
   },
 
-  // DRAFT: 기존 정·부정·소유 관사/형용사와 분리해 지시·의문 한정사만 다룬다.
+  // 기존 정·부정·소유 관사/형용사와 분리해 지시·의문 한정사만 다룬다.
   {
-    slug: "a1-draft-18-demonstrative-interrogative",
+    slug: "a1-18-demonstrative-interrogative",
     level: "A1",
     order: 18,
     title: "\"이 가방\"과 \"어느 가방\"을 골라 말해요",
@@ -744,9 +743,9 @@ const chapters = [
     ],
   },
 
-  // DRAFT: 기존 도시·나라 방향 전치사와 분리해, 사물의 위치와 사람의 공간을 나타내는 전치사만 다룬다.
+  // 기존 도시·나라 방향 전치사와 분리해, 사물의 위치와 사람의 공간을 나타내는 전치사만 다룬다.
   {
-    slug: "a1-draft-19-place-prepositions",
+    slug: "a1-19-place-prepositions",
     level: "A1",
     order: 19,
     title: "\"탁자 아래, 역 맞은편\"을 한 번에 찾아요",
@@ -901,9 +900,9 @@ const chapters = [
     ],
   },
 
-  // DRAFT: 기존 부정·의문·시간 챕터와 분리해, 현재형 문장의 빈도·정도·수량·기초 연결 기능만 다룬다.
+  // 기존 부정·의문·시간 챕터와 분리해, 현재형 문장의 빈도·정도·수량·기초 연결 기능만 다룬다.
   {
-    slug: "a1-draft-20-frequency-quantity-connectors",
+    slug: "a1-20-frequency-quantity-connectors",
     level: "A1",
     order: 20,
     title: "\"자주, 많이, 하지만\"으로 문장을 늘려요",
