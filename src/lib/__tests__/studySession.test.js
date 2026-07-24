@@ -1,10 +1,24 @@
 import { describe, it, expect } from 'vitest';
-import { composeSession, normalizeAnswer, gradeTyping, isChapterPassed, qtypeForItem, grammarDueChapterCounts, buildWarmupItems, stripSourceLangInMeaning } from '../studySession';
+import {
+  composeSession,
+  normalizeAnswer,
+  gradeTyping,
+  isChapterPassed,
+  qtypeForItem,
+  grammarDueChapterCounts,
+  buildWarmupItems,
+  stripSourceLangInMeaning,
+  tokenizeExampleSentence,
+} from '../studySession';
 
 const VOCAB = [
   { id: 1, word_text: '約束', meaning: '약속', furigana: 'やくそく', language: 'Japanese' },
   { id: 2, word_text: '家族', meaning: '가족', furigana: 'かぞく', language: 'Japanese' },
   { id: 3, word_text: '無料', meaning: '무료', furigana: 'むりょう', language: 'Japanese' },
+];
+const MATCH_VOCAB = [
+  ...VOCAB,
+  { id: 4, word_text: '学校', meaning: '학교', furigana: 'がっこう', language: 'Japanese' },
 ];
 const MEANING_POOL = ['약속', '가족', '무료', '학교', '회사', '시간', '친구'];
 
@@ -71,6 +85,30 @@ describe('composeSession', () => {
     const r = s.items.find(i => i.type === 'read-meaning');
     expect(new Set(r.options).size).toBe(r.options.length);
     expect(r.options).toContain(r.correct);
+  });
+
+  it('due 어휘 4개를 4쌍 매칭 한 문항으로 자동 생성한다', () => {
+    const s = composeSession({ ...FULL, vocab: MATCH_VOCAB });
+    const match = s.items.find(item => item.type === 'vocab-match');
+
+    expect(match.words).toHaveLength(4);
+    expect(match.words.map(word => word.word_text)).toEqual(['約束', '家族', '無料', '学校']);
+    expect(match.effect).toEqual({ kind: 'vocab-match' });
+    expect(s.items.some(item => item.type === 'vocab-choice')).toBe(false);
+  });
+
+  it('기존 읽기 예문을 어순 배열→뜻 고르기 순으로 로테이션한다', () => {
+    const s = composeSession(FULL);
+    const readingItems = s.items.filter(item => item.effect?.kind === 'reading');
+
+    expect(readingItems[0]).toMatchObject({
+      type: 'example-order',
+      prompt: '음악을 들으면서 공부해요.',
+      joinWith: '',
+    });
+    expect(readingItems[0].tokens.length).toBeGreaterThanOrEqual(2);
+    expect(readingItems[0].tokens.join('')).toBe('音楽を聞きながら勉強します');
+    expect(readingItems[1].type).toBe('read-meaning');
   });
 
   it('예산 하드캡 10 — 집계 문항이 10을 넘지 않는다', () => {
@@ -187,14 +225,33 @@ describe('qtypeForItem — 세션 문항 타입 → qtype', () => {
     expect(qtypeForItem('vocab-cloze')).toBe('cloze');
     expect(qtypeForItem('vocab-typing')).toBe('typing');
     expect(qtypeForItem('vocab-listening')).toBe('listening');
+    expect(qtypeForItem('vocab-match')).toBe('match');
     expect(qtypeForItem('grammar-cloze')).toBe('cloze');
     expect(qtypeForItem('grammar-order')).toBe('order');
+    expect(qtypeForItem('example-order')).toBe('order');
     expect(qtypeForItem('read-meaning')).toBe('read');
   });
   it('채점 문항이 아니면 null', () => {
     expect(qtypeForItem('teach')).toBeNull();
     expect(qtypeForItem('paragraph')).toBeNull();
     expect(qtypeForItem(undefined)).toBeNull();
+  });
+});
+
+describe('tokenizeExampleSentence — 기존 예문 어순 토큰화', () => {
+  it('띄어쓰기 언어는 원문 공백 단위와 문장부호를 보존한다', () => {
+    expect(tokenizeExampleSentence('Je vais au marché.')).toEqual(['Je', 'vais', 'au', 'marché.']);
+  });
+
+  it('무공백 CJK도 신규 tokens 필드 없이 2개 이상으로 나눈다', () => {
+    const tokens = tokenizeExampleSentence('我喜欢学习汉语。');
+    expect(tokens.length).toBeGreaterThanOrEqual(2);
+    expect(tokens.join('')).toBe('我喜欢学习汉语');
+  });
+
+  it('빈 입력은 fail-closed 한다', () => {
+    expect(tokenizeExampleSentence('')).toEqual([]);
+    expect(tokenizeExampleSentence(null)).toEqual([]);
   });
 });
 

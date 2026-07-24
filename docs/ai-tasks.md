@@ -334,6 +334,10 @@
 - P0 (운영 필수·최우선) 로컬 clone 이전 + 확인 코멘트: #150 5046786117
 - P1 geo lazy-load 구현(RFC #394 승인 — 실패 UX·?spawn= 정합·scene race 주의 3건 코멘트 참조)
 ### done (최근)
+- M2 교재 경쟁력 연습 형식 +2종: 기존 어휘 4개를 쌍별 채점하는 단어↔뜻 매칭과
+  기존 예문 자동 토큰 어순 배열을 공통 엔진에 추가하고, StudySession 형식 로테이션·
+  F2 `recordReviewCompleted` 쌍별 SRS·게스트 폴백을 회귀 고정
+  (`codex4/m2-exercise-types`, 구현 931890a, base 933ac1e)
 - F4-3 후속 연습 엔진 배선: `ExerciseEnginePrototype`를 `StudySessionPage` 문법
   choice/order 흐름에 연결하고 첫 시도 기록을 F2 `recordReviewCompleted`로 통일하면서
   기존 exact 채점·오답 재출제·챕터 진도와 게스트 무원격 폴백 회귀를 고정

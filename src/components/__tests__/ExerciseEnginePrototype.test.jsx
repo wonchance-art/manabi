@@ -1,10 +1,13 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import ExerciseEnginePrototype, {
+  createMatchingExerciseFromVocabSet,
+  createOrderExerciseFromExample,
   createExerciseResult,
   gradeExerciseResponse,
   normalizeExerciseAnswer,
   normalizeExerciseQuestion,
+  normalizeStudySessionExerciseQuestion,
   normalizeStudySessionGrammarQuestion,
 } from '../ExerciseEnginePrototype';
 
@@ -174,5 +177,121 @@ describe('ExerciseEnginePrototype', () => {
     expect(gradeExerciseResponse(question, 'Je suis ici.')).toBe(true);
     expect(gradeExerciseResponse(question, 'je suis ici.')).toBe(false);
     expect(gradeExerciseResponse(question, 'Je  suis ici.')).toBe(false);
+  });
+
+  it('기존 어휘 세트에서 신규 필드 없이 4쌍 매칭을 만들고 양쪽을 셔플한다', () => {
+    const vocabSet = {
+      themes: [{
+        words: [
+          { id: 'w1', fr: 'bonjour', ko: '안녕하세요' },
+          { id: 'w2', fr: 'merci', ko: '감사합니다' },
+          { id: 'w3', fr: 'gare', ko: '역' },
+          { id: 'w4', fr: 'billet', ko: '표' },
+          { id: 'w5', fr: 'hôtel', ko: '호텔' },
+        ],
+      }],
+    };
+    const raw = createMatchingExerciseFromVocabSet(vocabSet);
+    const question = normalizeExerciseQuestion(raw);
+    const repeated = normalizeExerciseQuestion(raw);
+
+    expect(question).toMatchObject({ type: 'match', qtype: 'match', grading: 'exact' });
+    expect(question.pairs).toHaveLength(4);
+    expect(question.leftOptions.map(pair => pair.left)).toEqual(repeated.leftOptions.map(pair => pair.left));
+    expect(question.rightOptions).toEqual(repeated.rightOptions);
+    expect(new Set(question.leftOptions.map(pair => pair.left))).toEqual(
+      new Set(['bonjour', 'merci', 'gare', 'billet']),
+    );
+    expect(new Set(question.rightOptions)).toEqual(
+      new Set(['안녕하세요', '감사합니다', '역', '표']),
+    );
+    expect(
+      question.leftOptions.map(pair => pair.left).join('|') === 'bonjour|merci|gare|billet'
+      && question.rightOptions.join('|') === '안녕하세요|감사합니다|역|표',
+    ).toBe(false);
+  });
+
+  it('매칭을 쌍별로 채점해 브리지에 전달할 결과를 만든다', () => {
+    const question = normalizeExerciseQuestion({
+      id: 'match-1',
+      type: 'match',
+      pairs: [
+        { id: 'w1', word_text: 'bonjour', meaning: '안녕하세요' },
+        { id: 'w2', word_text: 'merci', meaning: '감사합니다' },
+        { id: 'w3', word_text: 'gare', meaning: '역' },
+        { id: 'w4', word_text: 'billet', meaning: '표' },
+      ],
+    });
+    const response = Object.fromEntries(question.pairs.map(pair => [pair.id, pair.right]));
+    response[question.pairs[2].id] = '표';
+
+    const result = createExerciseResult(question, response);
+    expect(result.correct).toBe(false);
+    expect(result.pairResults.map(pair => pair.correct)).toEqual([true, true, false, true]);
+
+    response[question.pairs[2].id] = '역';
+    expect(gradeExerciseResponse(question, response)).toBe(true);
+  });
+
+  it('기존 예문을 자동 토큰화해 exact 어순 배열 문항으로 만든다', () => {
+    const raw = createOrderExerciseFromExample({
+      fr: 'Je vais au marché.',
+      ko: '저는 시장에 가요.',
+    });
+    const question = normalizeExerciseQuestion(raw);
+
+    expect(question).toMatchObject({
+      type: 'order',
+      qtype: 'order',
+      displayAnswer: 'Je vais au marché.',
+      answer: 'Je vais au marché.',
+      tokens: ['Je', 'vais', 'au', 'marché.'],
+    });
+    expect(gradeExerciseResponse(question, 'Je vais au marché.')).toBe(true);
+    expect(gradeExerciseResponse(question, 'je vais au marché.')).toBe(false);
+  });
+
+  it('StudySession의 매칭·예문 어순 item을 같은 공통 엔진 계약으로 소비한다', () => {
+    const matchItem = {
+      uid: 'm-1',
+      type: 'vocab-match',
+      words: [
+        { id: 'w1', word_text: 'bonjour', meaning: '안녕하세요' },
+        { id: 'w2', word_text: 'merci', meaning: '감사합니다' },
+        { id: 'w3', word_text: 'gare', meaning: '역' },
+        { id: 'w4', word_text: 'billet', meaning: '표' },
+      ],
+      effect: { kind: 'vocab-match' },
+    };
+    const orderItem = {
+      uid: 'o-1',
+      type: 'example-order',
+      sentence: { main: 'Je vais au marché.', pron: null },
+      prompt: '저는 시장에 가요.',
+      tokens: ['Je', 'vais', 'au', 'marché.'],
+      joinWith: ' ',
+      effect: { kind: 'reading', key: 'Je vais au marché.' },
+    };
+
+    expect(normalizeStudySessionExerciseQuestion(matchItem)).toMatchObject({
+      type: 'match',
+      qtype: 'match',
+    });
+    expect(normalizeStudySessionExerciseQuestion(orderItem)).toMatchObject({
+      type: 'order',
+      qtype: 'order',
+      answer: 'Je vais au marché.',
+    });
+
+    const html = renderToStaticMarkup(
+      <ExerciseEnginePrototype
+        vocabSet={{ themes: [{ words: matchItem.words.map(word => ({ fr: word.word_text, ko: word.meaning })) }] }}
+        examples={[{ fr: 'Je vais au marché.', ko: '저는 시장에 가요.' }]}
+      />,
+    );
+    expect(html).toContain('단어와 뜻 연결하기');
+    expect(html).toContain('예문 어순 배열하기');
+    expect(html).toContain('bonjour');
+    expect(html).toContain('marché.');
   });
 });
