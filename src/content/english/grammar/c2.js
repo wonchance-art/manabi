@@ -82,7 +82,7 @@ const chapters = [
           { en: "Ask not what your country can do for you — ask what you can do for your country.", ko: "조국이 여러분을 위해 무엇을 할 수 있는지 묻지 말고, 여러분이 조국을 위해 무엇을 할 수 있는지 물으십시오.", note: "케네디 취임 연설(1961) — 대구(antithesis)의 표준 예문." },
           { en: "We shall fight on the beaches, we shall fight on the landing grounds, we shall fight in the fields and in the streets, we shall fight in the hills; we shall never surrender.", ko: "우리는 해변에서 싸울 것이고, 상륙지에서 싸울 것이고, 들판과 거리에서 싸울 것이고, 언덕에서 싸울 것입니다. 우리는 결코 항복하지 않을 것입니다.", note: "처칠(1940) — we shall의 수구 반복이 결의를 쌓아 올려요." },
           { en: "It was the best of times, it was the worst of times.", ko: "최고의 시절이자 최악의 시절이었다.", note: "디킨스 「두 도시 이야기」 첫 문장 — 반복과 대구가 한 몸이 된 영문학 최고의 오프닝." },
-          { en: "Designed in California. Assembled in China.", ko: "캘리포니아에서 설계. 중국에서 조립.", note: "애플 제품 문구 — 평행 구조는 광고 카피에서도 일합니다." },
+          { en: "Designed in California. Assembled in China.", ko: "캘리포니아에서 설계. 중국에서 조립.", note: "애플 제품 문구 — 평행 구조는 광고 카피에서도 일해요." },
         ],
         tip: "명연설 낭독은 C2 학습법으로 과소평가되어 있어요. 게티즈버그 연설(272단어)과 킹의 「I Have a Dream」 후반부를 소리 내어 외워보세요. 삼항, 두운, 반복이 혀와 귀에 새겨지면, 여러분의 영어 문장 감각 자체의 기준선이 올라갑니다.",
       },
