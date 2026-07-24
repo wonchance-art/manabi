@@ -220,7 +220,7 @@ const chapters = [
         type: "authenticIntro",
         heading: "약국 상황 대화 들어 보기",
         presentationFraming:
-          "못 알아들어도 정상이에요! 약사(여성)와 고객(남성)의 대화를 듣고, 누가 조언하고 누가 듣고 있는지 느껴 보세요.",
+          "못 알아들어도 정상이에요! 약사(여성)와 고객(남성)의 대화를 듣고, 누가 조언하고 누가 듣고 있는지 느껴 보세요. (대화 속 약 이름·복용량은 표현 학습용 연출이에요 — 실제 복용은 반드시 약사·의사의 개별 안내를 따르세요.)",
         audio: {
           status: "placeholder",
           sourceId: "pilot-fr-pharmacy-01",
@@ -278,7 +278,7 @@ const chapters = [
         patternKo: "~해야 한다, ~해야 함",
         body:
           "**Il faut** (일 포) 는 프랑스어에서 가장 중요한 '의무/조언' 표현이에요.\n\n" +
-          "**구조**: Il faut + 동사 원형(부정사)\n" +
+          "**구조**: Il faut + 동사 원형(부정사) — ※ 아래 의료 예문의 약 이름·복용량은 상황 연출이에요. 실제 복용은 약사·의사의 개별 안내가 기준이에요.\n" +
           "- Il faut prendre (약을 먹어야 한다)\n" +
           "- Il faut manger léger (가볍게 먹어야 한다)\n" +
           "- Il faut boire de l'eau (물을 마셔야 한다)\n\n" +

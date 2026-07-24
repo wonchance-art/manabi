@@ -545,7 +545,7 @@ const themes = {
         { zh: "拿走", pinyin: "ná zǒu", ko: "가져가다, 치우다", pos: "동사", ex: { zh: "请把这些东西拿走。", pinyin: "Qǐng bǎ zhèxiē dōngxi ná zǒu.", ko: "이 물건들을 가져가 주세요." } },
         { zh: "奶粉", pinyin: "nǎi fěn", ko: "분유", pos: "명사", ex: { zh: "宝宝每天喝奶粉。", pinyin: "Bǎobao měitiān hē nǎifěn.", ko: "아기는 매일 분유를 마신다." } },
         { zh: "奶牛", pinyin: "nǎi niú", ko: "젖소", pos: "명사", ex: { zh: "农场里养了很多奶牛。", pinyin: "Nóngchǎng lǐ yǎng le hěn duō nǎiniú.", ko: "농장에는 많은 젖소를 기르고 있다." } },
-        { zh: "内地", pinyin: "Nèi dì", ko: "내지, 본토(중국 대륙)", pos: "", ex: { zh: "他从香港来到内地工作。", pinyin: "Tā cóng Xiānggǎng lái dào nèidì gōngzuò.", ko: "그는 홍콩에서 내지로 와서 일한다." } },
+        { zh: "内地", pinyin: "Nèi dì", ko: "내지, 내륙 지방", pos: "", ex: { zh: "他从沿海来到内地工作。", pinyin: "Tā cóng yánhǎi lái dào nèidì gōngzuò.", ko: "그는 연해 지역에서 내륙으로 와서 일한다." } },
         { zh: "内外", pinyin: "nèi wài", ko: "안팎, 내외", pos: "명사", ex: { zh: "学校内外都很安静。", pinyin: "Xuéxiào nèiwài dōu hěn ānjìng.", ko: "학교 안팎이 모두 조용하다." } },
         { zh: "内衣", pinyin: "nèi yī", ko: "속옷", pos: "명사", ex: { zh: "她买了几件内衣。", pinyin: "Tā mǎi le jǐ jiàn nèiyī.", ko: "그녀는 속옷 몇 벌을 샀다." } },
         { zh: "能否", pinyin: "néng fǒu", ko: "~할 수 있는지 없는지", pos: "동사", ex: { zh: "我不知道他能否按时到达。", pinyin: "Wǒ bù zhīdào tā néngfǒu ànshí dàodá.", ko: "나는 그가 제시간에 도착할 수 있을지 모르겠다." } },

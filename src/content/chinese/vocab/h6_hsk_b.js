@@ -187,7 +187,7 @@ const themes = {
         { zh: "文物", pinyin: "wén wù", ko: "문물, 문화재", pos: "명사", ex: { zh: "博物馆收藏了很多文物。", pinyin: "Bó wù guǎn shōu cáng le hěn duō wén wù.", ko: "박물관은 많은 문화재를 소장하고 있다." } },
         { zh: "昂贵", pinyin: "áng guì", ko: "비싸다, 값비싸다", pos: "형용사", ex: { zh: "这件首饰非常昂贵。", pinyin: "Zhè jiàn shǒu shì fēi cháng áng guì.", ko: "이 장신구는 매우 비싸다." } },
         { zh: "卡通", pinyin: "kǎ tōng", ko: "카툰, 만화", pos: "명사", ex: { zh: "孩子们喜欢看卡通片。", pinyin: "Hái zi men xǐ huan kàn kǎ tōng piàn.", ko: "아이들은 만화 영화를 즐겨 본다." } },
-        { zh: "奔驰", pinyin: "Bēn chí", ko: "벤츠(자동차 브랜드)", pos: "명사", ex: { zh: "他开着一辆奔驰去上班。", pinyin: "Tā kāi zhe yí liàng Bēn chí qù shàng bān.", ko: "그는 벤츠를 몰고 출근한다." } },
+        { zh: "奔驰", pinyin: "bēn chí", ko: "질주하다, 내달리다", pos: "동사", ex: { zh: "骏马在草原上奔驰。", pinyin: "Jùnmǎ zài cǎoyuán shàng bēnchí.", ko: "준마가 초원 위를 질주한다." } },
         { zh: "生效", pinyin: "shēng xiào", ko: "효력을 발생하다, 발효되다", pos: "동사", ex: { zh: "这项法律明天生效。", pinyin: "Zhè xiàng fǎ lǜ míng tiān shēng xiào.", ko: "이 법률은 내일 발효된다." } },
         { zh: "兑现", pinyin: "duì xiàn", ko: "현금으로 바꾸다, 이행하다", pos: "동사", ex: { zh: "他终于兑现了自己的承诺。", pinyin: "Tā zhōng yú duì xiàn le zì jǐ de chéng nuò.", ko: "그는 마침내 자신의 약속을 이행했다." } },
         { zh: "拳头", pinyin: "quán tou", ko: "주먹", pos: "명사", ex: { zh: "他生气地握紧拳头。", pinyin: "Tā shēng qì de wò jǐn quán tou.", ko: "그는 화가 나서 주먹을 꽉 쥐었다." } },

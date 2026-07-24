@@ -108,8 +108,8 @@ const chapters = [
           "**선택 리에종**은 의무는 아니지만 일어날 수 있는 경우예요. 주로 음절 구조를 명확히 하거나 음운적으로 리듬감 있게 말할 때 쓰여요.\n\n" +
           "• 주의: **선행하는 짧은 형용사 + 명사**(petit ami [pətit‿ami], grand arbre [gʁɑ̃t‿aʁbʁ], bon ami [bɔn‿ami])는 사실상 **의무**로 이어 읽어요 — 선택이 아니에요\n" +
           "• **부사 + 과거분사/긴 형용사** 등 그 밖의 조합이 상황에 따라 갈리는 선택 영역이에요\n" +
-          "• **부사 + 형용사/명사**: très intelligent, plus anciens → 문맥에 따라 [tʁɛzɛ̃tɛlijɑ̃] 또는 [tʁɛ‖ɛ̃tɛlijɑ̃]\n" +
-          "• **서술 양식에서 연결어**: et alors (et 제외, 보통 금지) vs. parfois, quelquefois — 여기서는 음절화 우선",
+          "• **부사 très + 형용사**: très intelligent [tʁɛz‿ɛ̃tɛlijɑ̃] — 선택 중에서도 사실상 표준으로 이어 읽어요\n" +
+          "• 반대로 **et 뒤는 리에종 금지**예요: et alors [e alɔʁ] — et의 t는 절대 잇지 않아요",
         examples: [
           {
             fr: "petit ami",
@@ -163,23 +163,22 @@ const chapters = [
           },
           {
             fr: "un chat adorable",
-            ipa: "[œ̃ ʃa adorabl]",
+            ipa: "[œ̃ ʃa adɔʁabl]",
             ko: "귀여운 고양이",
-            note: "단수 명사 + 뒤따르는 형용사: 음절 분리. bon chat는 선택적 [bɔ̃ ʃa] 또는 [bɔ̃‿ʃa]",
+            note: "단수 명사 + 뒤따르는 형용사 사이는 잇지 않아요(리에종 금지 환경)",
           },
         ],
       },
       {
         heading: "리에종의 음가 — 자음이 바뀐다",
-        pattern: "s/x → [z], d → [t], f → [v] (역사적 교대, 현대 음운론)",
+        pattern: "s/x → [z] · d → [t] · f → [v](neuf 한정) — 리에종의 음가 변화",
         patternKo: "끝 자음이 모음 앞에 오면 일부 음가가 변한다",
         body:
-          "리에종에서 중요한 건 **음가 변화**예요. 철자 s/x는 [z]로, d는 [t]로 들려요. 이것도 규칙이 아니라 " +
-          "**음운 체계의 결과**예요.\n\n" +
-          "• **s/x → [z]**: les, des, trois, six → les amis [lezami], six ans [sizɑ̃]\n" +
-          "• **d → [t]** (역사적, 현대는 [d] 주류): grand est [gʁɑ̃ dɛ] (현대) 또는 드물게 [gʁɑ̃tɛ]\n" +
-          "• **f → [v]** (드문 경우, 부사·전치사): neuf ans [nœvɑ̃] (현대 [nœfɑ̃] 주류 — 리에종 약함)\n" +
-          "• **t, n, p, b, g**: 음가 변화 없음 — [t], [n], [p], [b], [g]로 그대로.",
+          "리에종에서 중요한 건 **음가 변화**예요. 이어 읽는 순간 끝 자음의 소리가 바뀌는 경우가 있어요.\n\n" +
+          "• **s/x → [z]**: les amis [lez‿ami], six ans [siz‿ɑ̃]\n" +
+          "• **d → [t]**: grand arbre [gʁɑ̃t‿aʁbʁ], quand il [kɑ̃t‿il] — d는 리에종에서 [t]로 소리 나요\n" +
+          "• **f → [v]**: neuf ans [nœv‿ɑ̃], neuf heures [nœv‿œʁ] — neuf 뒤의 이 두 단어에서 굳어진 표준 발음이에요\n" +
+          "• **t, n**: 그대로 [t]·[n] — petit ami [pətit‿ami], bon ami [bɔn‿ami]",
         examples: [
           {
             fr: "les amis",
@@ -201,9 +200,9 @@ const chapters = [
           },
           {
             fr: "neuf ans",
-            ipa: "[nœfɑ̃] (현대 주류)",
-            ko: "9년",
-            note: "f는 리에종이 약해서 [nœf] 유지 경향 (vs. [nœvɑ̃])",
+            ipa: "[nœv‿ɑ̃]",
+            ko: "9년, 아홉 살",
+            note: "neuf ans·neuf heures에서는 f가 [v]로 — 굳어진 표준 발음이에요",
           },
           {
             fr: "bon ami",
@@ -286,7 +285,7 @@ const chapters = [
         pattern: "h muet 앞: 엘리종 일어남, h aspiré 앞: 엘리종 금지",
         patternKo: "프랑스어 h는 음성이 아니지만 두 종류가 있고 엘리종 규칙을 결정한다",
         body:
-          "프랑스어 **h는 원래 소리가 없어요**. 하지만 역사적으로 **h muet**(무음 h)과 **h aspiré**(숨쉬는 h, 사실은 음성이지만 리에종과 엘리종을 '방해'하는 h)로 나뉩니다.\n\n" +
+          "프랑스어 **h는 원래 소리가 없어요**. 그리고 **h muet**(무음 h)과 **h aspiré**(이름은 '숨쉬는 h'지만 **이것도 현대 프랑스어에서는 소리가 없어요** — 대신 리에종·엘리종을 '막는' 기능을 해요)로 나뉘어요.\n\n" +
           "• **h muet** (대부분의 h): 엘리종 일어남 — l'homme, l'histoire, l'habitude\n" +
           "• **h aspiré** (300여 단어 한정): 엘리종 금지, 리에종도 금지 — le héros (X l'héros), les héros (X lézéros)\n\n" +
           "사전에 h aspiré는 보통 * 또는 + 기호로 표시돼요. 처음 보는 단어면 사전을 확인하세요.",
@@ -407,10 +406,10 @@ const chapters = [
             note: "2음절 단어: 끝 [ʒuʁ]에 약한 강세",
           },
           {
-            fr: "A-do-ra-ble",
-            ipa: "[adorabl]",
+            fr: "A-do-rable",
+            ipa: "[adɔʁabl]",
             ko: "사랑스러운",
-            note: "4음절 단어: 끝 [bl]에 약한 강세, 다른 음절들은 균등",
+            note: "3음절: a·do·rable — 끝 [bl]은 마지막 음절에 붙고 독립 음절이 아니에요",
           },
           {
             fr: "Je vais à Paris.",
@@ -468,10 +467,10 @@ const chapters = [
           "이것이 프랑스어가 '리듬감 있고 빠르고 음악적'으로 들리는 이유에요. 음절을 쪼개면 일정한 박자감이 생깁니다.",
         examples: [
           {
-            fr: "A-do-ra-ble (4음절)",
-            ipa: "[a.do.ʁa.bl]",
+            fr: "A-do-rable (3음절)",
+            ipa: "[a.dɔ.ʁabl]",
             ko: "사랑스러운",
-            note: "4개 음절이 거의 같은 길이로 균등하게 이어짐",
+            note: "3개 음절이 거의 같은 길이로 균등하게 이어짐",
           },
           {
             fr: "In-tel-li-gent (4음절)",
@@ -550,9 +549,9 @@ const chapters = [
           },
           {
             fr: "Photographe",
-            ipa: "[fo-to-gra-af] (4음절 균등)",
+            ipa: "[fɔ.tɔ.gʁaf] (3음절 균등)",
             ko: "사진작가",
-            note: "각 음절을 손뼉으로 [1] [2] [3] [4] 쳐가며 읽기",
+            note: "각 음절을 손뼉으로 [1] [2] [3] 쳐가며 읽기",
           },
         ],
       },
