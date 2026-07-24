@@ -82,19 +82,28 @@ export async function getOverridesForLang(lang) {
 // 문자열(또는 null) 필드 — 렌더가 React child·.split 등 문자열 연산에 소비
 const CHAPTER_STRING_FIELDS = ['title', 'topic', 'titleFr', 'summary', 'duration', 'kana'];
 // heading·패턴 박스 + 콜아웃 전체(refShared CALLOUT_ORDER: pitfall·vsKo·vsEn·hanja·etym·tip)
-const SECTION_STRING_FIELDS = ['heading', 'pattern', 'patternKo', 'body', 'tip', 'pitfall', 'vsKo', 'vsEn', 'hanja', 'etym'];
+const SECTION_STRING_FIELDS = ['heading', 'pattern', 'patternKo', 'body', 'tip', 'pitfall', 'vsKo', 'vsEn', 'hanja', 'etym',
+  // RFC v2 "실전 샌드위치" 섹션 필드
+  'presentationFraming', 'transitionNote'];
 // 스칼라 배열 필드 — distractors(refQuiz 보기 풀)·gojuon(GojuonChart sets)·kanjiExempt(P9 게이트)
 const SECTION_SCALAR_ARRAY_FIELDS = ['distractors', 'gojuon'];
 // 구조 필드 — 아래 isValidSection에서 개별 스키마 검증
-const SECTION_STRUCT_FIELDS = ['examples', 'table', 'story', 'media', 'enParallel', 'hanjaBridge'];
+const SECTION_STRUCT_FIELDS = ['examples', 'table', 'story', 'media', 'enParallel', 'hanjaBridge',
+  // RFC v2 "실전 샌드위치" 구조 필드
+  'audio', 'captions', 'vocabs', 'original', 'variant', 'selfCheckOptions', 'writingPrompts', 'quizItems'];
+// RFC v2 boolean 필드
+const SECTION_BOOLEAN_FIELDS = ['autoRegisterVocabs'];
 const CHAPTER_KEYS = new Set([
   'slug', 'level', 'order', 'sections', 'kanjiExempt',
+  'status', // 선택적 상태 필드 (DRAFT 등)
   ...CHAPTER_STRING_FIELDS,
 ]);
 const SECTION_KEYS = new Set([
+  'type', // RFC v2 섹션 타입
   ...SECTION_STRING_FIELDS,
   ...SECTION_SCALAR_ARRAY_FIELDS,
   ...SECTION_STRUCT_FIELDS,
+  ...SECTION_BOOLEAN_FIELDS,
 ]);
 
 function isPlainObject(v) {
@@ -159,6 +168,9 @@ function isValidSection(s) {
   for (const k of SECTION_SCALAR_ARRAY_FIELDS) {
     if (k in s && s[k] != null && !isScalarArray(s[k])) return false;
   }
+  for (const k of SECTION_BOOLEAN_FIELDS) {
+    if (k in s && s[k] != null && typeof s[k] !== 'boolean') return false;
+  }
   if ('examples' in s && s.examples != null && !isFlatObjectArray(s.examples)) return false;
   if ('table' in s && s.table != null) {
     const t = s.table;
@@ -188,6 +200,56 @@ function isValidSection(s) {
   }
   if ('enParallel' in s && s.enParallel != null && !isFlatRowsBlock(s.enParallel)) return false;
   if ('hanjaBridge' in s && s.hanjaBridge != null && !isFlatRowsBlock(s.hanjaBridge)) return false;
+
+  // RFC v2 "실전 샌드위치" 섹션 검증
+  if (s.type && ['authenticIntro', 'vocabPreview', 'authenticReplay', 'practiceAndRegistration'].includes(s.type)) {
+    // v2 섹션 구조는 각 타입별로 고유 필드 필수 — 기본 평탄성만 검증
+    // 상세 검증은 validateSectionV2(lessonModel.js)에 위임
+    if (s.type === 'authenticIntro') {
+      // audio: {url, sourceId, duration, license, attribution} — 평탄한 객체
+      if ('audio' in s && s.audio != null && !isFlatObject(s.audio)) return false;
+      // captions: {original, translation, romanized?} — 평탄한 객체
+      if ('captions' in s && s.captions != null && !isFlatObject(s.captions)) return false;
+    }
+    if (s.type === 'vocabPreview') {
+      // vocabs: [{word, meanings[], exampleSentence, note?}, ...] — 각 원소는 평탄한 객체(meanings는 스칼라 배열)
+      if ('vocabs' in s && s.vocabs != null) {
+        if (!Array.isArray(s.vocabs)) return false;
+        for (const vocab of s.vocabs) {
+          if (!isPlainObject(vocab)) return false;
+          for (const [k, v] of Object.entries(vocab)) {
+            if (k === 'meanings') {
+              if (v != null && !isScalarArray(v)) return false;
+            } else if (!isScalar(v)) return false;
+          }
+        }
+      }
+    }
+    if (s.type === 'authenticReplay') {
+      // original/variant: {audio: {...}, captions: {...}} — 평탄한 객체 두 계층
+      const validateAudioBlock = (block) => {
+        if (!isPlainObject(block)) return false;
+        if ('audio' in block && block.audio != null && !isFlatObject(block.audio)) return false;
+        if ('captions' in block && block.captions != null && !isFlatObject(block.captions)) return false;
+        return true;
+      };
+      if ('original' in s && s.original != null && !validateAudioBlock(s.original)) return false;
+      if ('variant' in s && s.variant != null && !validateAudioBlock(s.variant)) return false;
+      // selfCheckOptions: [{label, value, fsrsSignal}, ...] — 각 원소는 평탄한 객체
+      if ('selfCheckOptions' in s && s.selfCheckOptions != null) {
+        if (!Array.isArray(s.selfCheckOptions)) return false;
+        if (!s.selfCheckOptions.every(isFlatObject)) return false;
+      }
+    }
+    if (s.type === 'practiceAndRegistration') {
+      // writingPrompts: [string, ...] — 스칼라 배열
+      if ('writingPrompts' in s && s.writingPrompts != null && !isScalarArray(s.writingPrompts)) return false;
+      // quizItems: [object, ...] — 각 원소는 구조화된 객체 (pairs 배열 등 복잡 구조)
+      // 상세 검증은 lessonModel에 위임하고, 여기서는 배열 존재만 확인
+      if ('quizItems' in s && s.quizItems != null && !Array.isArray(s.quizItems)) return false;
+    }
+  }
+
   return true;
 }
 

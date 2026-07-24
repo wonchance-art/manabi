@@ -291,7 +291,160 @@ export default async function ReferenceChapterPage({ lang, slug }) {
       )}
 
       {/* ── 본문 섹션 ── */}
-      {chapter.sections.map((sec, i) => (
+      {chapter.sections.map((sec, i) => {
+        // RFC v2 섹션 타입 (실전 샌드위치)
+        if (sec.type === 'authenticIntro') {
+          return (
+            <section key={i} id={`sec-${i + 1}`} className="card fr-section">
+              <InlineEdit lang={lang} slug={slug} path={`sections.${i}.heading`}>
+                <h2 className="fr-section__heading">
+                  <span className="fr-section__num" style={{ background: meta?.bg, color: meta?.color }}>{i + 1}</span>
+                  {sec.heading}
+                </h2>
+              </InlineEdit>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: 12 }}>
+                {sec.presentationFraming}
+              </p>
+              {/* 오디오 플레이어 (실제 구현: audio 태그 또는 외부 플레이어) */}
+              <div className="fr-audio-player" style={{ marginBottom: 16, padding: 12, background: 'var(--bg-muted)', borderRadius: 8 }}>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>
+                  🔊 원음 대화 ({sec.audio?.duration || 'N/A'})
+                </p>
+                <div style={{ marginTop: 8 }}>
+                  <p style={{ fontSize: '0.88rem', fontStyle: 'italic', marginBottom: 8, whiteSpace: 'pre-wrap' }}>
+                    {sec.captions?.original}
+                  </p>
+                  <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', whiteSpace: 'pre-wrap' }}>
+                    {sec.captions?.translation}
+                  </p>
+                </div>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 8 }}>
+                  출처: {sec.audio?.attribution}
+                </p>
+              </div>
+            </section>
+          );
+        }
+
+        if (sec.type === 'vocabPreview') {
+          return (
+            <section key={i} id={`sec-${i + 1}`} className="card fr-section">
+              <InlineEdit lang={lang} slug={slug} path={`sections.${i}.heading`}>
+                <h2 className="fr-section__heading">
+                  <span className="fr-section__num" style={{ background: meta?.bg, color: meta?.color }}>{i + 1}</span>
+                  {sec.heading}
+                </h2>
+              </InlineEdit>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
+                {sec.vocabs?.map((vocab, j) => (
+                  <div key={j} style={{ padding: 10, background: 'var(--bg-muted)', borderRadius: 6, fontSize: '0.9rem' }}>
+                    <div style={{ fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>{vocab.word}</div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: 6 }}>
+                      {vocab.meanings.join(', ')}
+                    </div>
+                    {vocab.exampleSentence && (
+                      <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: 4 }}>
+                        "{vocab.exampleSentence}"
+                      </div>
+                    )}
+                    {vocab.note && (
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                        ∟ {vocab.note}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          );
+        }
+
+        if (sec.type === 'authenticReplay') {
+          return (
+            <section key={i} id={`sec-${i + 1}`} className="card fr-section">
+              <InlineEdit lang={lang} slug={slug} path={`sections.${i}.heading`}>
+                <h2 className="fr-section__heading">
+                  <span className="fr-section__num" style={{ background: meta?.bg, color: meta?.color }}>{i + 1}</span>
+                  {sec.heading}
+                </h2>
+              </InlineEdit>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: 16 }}>
+                {sec.presentationFraming}
+              </p>
+              {/* 원본 자료 */}
+              <div style={{ marginBottom: 20, paddingBottom: 20, borderBottom: '1px solid var(--border-muted)' }}>
+                <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: 10 }}>원본 대화</h3>
+                <div style={{ padding: 12, background: 'var(--bg-muted)', borderRadius: 8 }}>
+                  <p style={{ fontSize: '0.88rem', fontStyle: 'italic', marginBottom: 8, whiteSpace: 'pre-wrap' }}>
+                    {sec.original?.captions?.original}
+                  </p>
+                  <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', whiteSpace: 'pre-wrap' }}>
+                    {sec.original?.captions?.translation}
+                  </p>
+                </div>
+              </div>
+              {/* 변형 자료 */}
+              <div style={{ marginBottom: 20 }}>
+                <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: 6 }}>다른 상황에서</h3>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 10 }}>
+                  {sec.variant?.transitionNote}
+                </p>
+                <div style={{ padding: 12, background: 'var(--bg-muted)', borderRadius: 8 }}>
+                  <p style={{ fontSize: '0.88rem', fontStyle: 'italic', marginBottom: 8, whiteSpace: 'pre-wrap' }}>
+                    {sec.variant?.captions?.original}
+                  </p>
+                  <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', whiteSpace: 'pre-wrap' }}>
+                    {sec.variant?.captions?.translation}
+                  </p>
+                </div>
+              </div>
+              {/* 자가 체크 버튼 */}
+              <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+                {sec.selfCheckOptions?.map((opt, j) => (
+                  <button key={j} style={{
+                    flex: 1, padding: '8px 12px', fontSize: '0.85rem', borderRadius: 4,
+                    border: '1px solid var(--border)', background: 'var(--bg-secondary)',
+                    cursor: 'pointer', fontWeight: 600
+                  }}>
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </section>
+          );
+        }
+
+        if (sec.type === 'practiceAndRegistration') {
+          return (
+            <section key={i} id={`sec-${i + 1}`} className="card fr-section">
+              <InlineEdit lang={lang} slug={slug} path={`sections.${i}.heading`}>
+                <h2 className="fr-section__heading">
+                  <span className="fr-section__num" style={{ background: meta?.bg, color: meta?.color }}>{i + 1}</span>
+                  {sec.heading}
+                </h2>
+              </InlineEdit>
+              <div style={{ marginBottom: 16 }}>
+                <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: 10 }}>쓰기 연습</h3>
+                <ul style={{ paddingLeft: 20, margin: 0 }}>
+                  {sec.writingPrompts?.map((prompt, j) => (
+                    <li key={j} style={{ fontSize: '0.9rem', lineHeight: 1.5, marginBottom: 8 }}>
+                      {prompt}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: 10 }}>선택형 문제</h3>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                  {sec.quizItems?.length || 0}개 문항
+                </p>
+              </div>
+            </section>
+          );
+        }
+
+        // 기존 v1 섹션 렌더
+        return (
         <section key={i} id={`sec-${i + 1}`} className="card fr-section">
           <InlineEdit lang={lang} slug={slug} path={`sections.${i}.heading`}>
             <h2 className="fr-section__heading">
@@ -360,7 +513,8 @@ export default async function ReferenceChapterPage({ lang, slug }) {
           {/* 카나 오십음표 — 설명을 먼저 읽은 뒤 표(버튼) */}
           {sec.gojuon && chapter.kana && <GojuonChart kind={chapter.kana} sets={sec.gojuon} />}
         </section>
-      ))}
+        );
+      })}
 
       {/* ── 챕터 마무리 ── */}
       {chapter.kana ? (

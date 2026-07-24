@@ -312,6 +312,127 @@ export function generateReviewId(type, contentId) {
   return `${typePrefix}-${contentId}`;
 }
 
+/**
+ * RFC v2 섹션 검증 함수
+ * v2 필드들(authenticIntro, vocabPreview, authenticReplay, practiceAndRegistration)의 유효성 확인
+ * @param {Object} section - 섹션 객체
+ * @returns {{valid: boolean, errors: string[]}}
+ */
+export function validateSectionV2(section) {
+  const errors = [];
+
+  if (!section || typeof section !== "object") {
+    errors.push("Section은 필수 객체");
+    return { valid: false, errors };
+  }
+
+  const sectionType = section.type;
+
+  // authenticIntro 검증
+  if (sectionType === "authenticIntro") {
+    if (!section.audio || typeof section.audio !== "object") {
+      errors.push("authenticIntro.audio는 필수 객체");
+    } else {
+      if (!section.audio.url || typeof section.audio.url !== "string") {
+        errors.push("authenticIntro.audio.url은 필수 문자열");
+      }
+      if (!section.audio.sourceId || typeof section.audio.sourceId !== "string") {
+        errors.push("authenticIntro.audio.sourceId는 필수 (예: tatoeba-fr-0234821)");
+      }
+      if (!section.audio.license || typeof section.audio.license !== "string") {
+        errors.push("authenticIntro.audio.license는 필수 (예: CC-BY 2.0)");
+      }
+      if (!section.audio.attribution || typeof section.audio.attribution !== "string") {
+        errors.push("authenticIntro.audio.attribution은 필수 (저자 표기)");
+      }
+    }
+
+    if (!section.captions || typeof section.captions !== "object") {
+      errors.push("authenticIntro.captions는 필수 객체");
+    } else {
+      if (!section.captions.original || typeof section.captions.original !== "string") {
+        errors.push("authenticIntro.captions.original은 필수 원문");
+      }
+      if (!section.captions.translation || typeof section.captions.translation !== "string") {
+        errors.push("authenticIntro.captions.translation은 필수 번역");
+      }
+    }
+
+    if (!section.presentationFraming || typeof section.presentationFraming !== "string") {
+      errors.push("authenticIntro.presentationFraming은 필수 (학습자 프레임)");
+    }
+  }
+
+  // vocabPreview 검증
+  if (sectionType === "vocabPreview") {
+    if (!Array.isArray(section.vocabs) || section.vocabs.length === 0) {
+      errors.push("vocabPreview.vocabs는 1개 이상의 배열");
+    } else {
+      for (let i = 0; i < section.vocabs.length; i++) {
+        const vocab = section.vocabs[i];
+        if (!vocab.word || typeof vocab.word !== "string") {
+          errors.push(`vocabPreview.vocabs[${i}].word는 필수`);
+        }
+        if (!Array.isArray(vocab.meanings) || vocab.meanings.length === 0) {
+          errors.push(`vocabPreview.vocabs[${i}].meanings는 1개 이상의 배열`);
+        }
+      }
+    }
+  }
+
+  // authenticReplay 검증
+  if (sectionType === "authenticReplay") {
+    if (!section.original || typeof section.original !== "object") {
+      errors.push("authenticReplay.original은 필수 객체");
+    } else {
+      if (!section.original.audio || typeof section.original.audio !== "object") {
+        errors.push("authenticReplay.original.audio는 필수");
+      }
+      if (!section.original.captions || typeof section.original.captions !== "object") {
+        errors.push("authenticReplay.original.captions는 필수");
+      }
+    }
+
+    if (!section.variant || typeof section.variant !== "object") {
+      errors.push("authenticReplay.variant은 필수 객체");
+    } else {
+      if (!section.variant.audio || typeof section.variant.audio !== "object") {
+        errors.push("authenticReplay.variant.audio는 필수");
+      }
+      if (!section.variant.captions || typeof section.variant.captions !== "object") {
+        errors.push("authenticReplay.variant.captions는 필수");
+      }
+      if (!section.variant.transitionNote || typeof section.variant.transitionNote !== "string") {
+        errors.push("authenticReplay.variant.transitionNote는 필수 (전환 설명)");
+      }
+    }
+
+    if (!Array.isArray(section.selfCheckOptions) || section.selfCheckOptions.length === 0) {
+      errors.push("authenticReplay.selfCheckOptions는 1개 이상의 배열");
+    }
+  }
+
+  // practiceAndRegistration 검증
+  if (sectionType === "practiceAndRegistration") {
+    if (!Array.isArray(section.writingPrompts) || section.writingPrompts.length === 0) {
+      errors.push("practiceAndRegistration.writingPrompts는 1개 이상의 배열");
+    }
+
+    if (!Array.isArray(section.quizItems) || section.quizItems.length === 0) {
+      errors.push("practiceAndRegistration.quizItems는 1개 이상의 배열");
+    }
+
+    if (typeof section.autoRegisterVocabs !== "boolean") {
+      errors.push("practiceAndRegistration.autoRegisterVocabs는 boolean");
+    }
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+  };
+}
+
 export const DURATION_MIN_MINUTES = 15;
 export const DURATION_MAX_MINUTES = 20;
 export const DURATION_SPLIT_THRESHOLD = 25; // 25분 이상이면 분할 검토
@@ -321,6 +442,7 @@ export default {
   validateUnit,
   validateLesson,
   validateReview,
+  validateSectionV2,
   normalizeLanguage,
   generateCourseId,
   generateUnitId,
