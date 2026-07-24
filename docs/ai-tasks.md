@@ -14,11 +14,11 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
-- 교재 경쟁력 M1 동기 표면화: `/learn/course`에 기존 스트릭 계약 기반 배지와
-  오늘 레슨 1개 완료 카드를 추가하고 게스트 로컬 폴백·progressStore 갱신을 연결
-  (`codex/m1-streak-surface`, base 5e2244f9901ecb694adf9c8801acd8f782b71f9e)
 ### todo
 ### done (최근)
+- 교재 경쟁력 M1 동기 표면화: `/learn/course`에 기존 profile 스트릭 기반 배지와
+  오늘 레슨 1개 완료 카드를 추가하고, 사용자 스코프 게스트 폴백·progressStore 갱신을 연결
+  (`codex/m1-streak-surface`, 구현 854b8a9, base 5e2244f)
 - F5 레슨 완료 CTA: 4트랙 공통 문법 상세에서 F1 레슨 ref로 완료를 기록하고
   게스트 로컬 폴백·재방문 완료 상태·코스 지도 다음 레슨/1·9 진도를 연결
   (`codex/f5-lesson-complete`, 구현 b274eb8, base 3aca5c4)
