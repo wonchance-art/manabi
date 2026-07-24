@@ -13,7 +13,7 @@ import { syncCheckRemote, syncReadRemote } from '../lib/refProgress';
 import { createReviewEventBatcher, logReviewEvents } from '../lib/reviewEvents';
 import { hasVapidKey, isPushSupported, isIosNeedsInstall, getSubscriptionState, subscribePush } from '../lib/push';
 import { sentenceIncludesWord } from '../lib/skillRung';
-import { recordActivity } from '../lib/streak';
+import { recordLessonCompleted, recordNewWord } from '../lib/learn/progressStore';
 import { gradeTyping, isChapterPassed, qtypeForItem, grammarDueChapterCounts } from '../lib/studySession';
 import { splitSentenceAroundWord } from '../lib/constants';
 import { mapParagraphToItems } from '../lib/studyParagraph';
@@ -757,13 +757,15 @@ export default function StudySessionPage({
     effectsFired.current = true;
     const results = Object.values(firstResults);
 
-    // 신규 챕터 → 통과 판정 (통과 시 교재 진도·복습 큐에 연결)
+    // 신규 챕터 → 통과 판정 (progressStore로 일괄 처리)
     const newItems = results.filter(r => r.item.effect?.kind === 'new-chapter');
     if (newItems.length > 0) {
       const meta = newItems[0].item.effect.meta;
       const right = newItems.filter(r => r.ok).length;
       const passedNow = isChapterPassed(right, newItems.length);
       const checkResult = { right, total: newItems.length, passed: passedNow, at: Date.now() };
+
+      // localStorage 진도 기록 (게스트 호환)
       try {
         const map = JSON.parse(localStorage.getItem(`${readKey}_check`) || '{}');
         map[meta.slug] = checkResult;
@@ -772,36 +774,32 @@ export default function StudySessionPage({
         reads.add(meta.slug);
         localStorage.setItem(readKey, JSON.stringify([...reads]));
       } catch {}
-      syncReadRemote(user.id, lang, meta.slug);
-      syncCheckRemote(user.id, lang, meta.slug, checkResult);
-      if (passedNow) enqueueGrammarReview(user.id, lang, meta.slug);
+
+      // progressStore: 진도 + SRS + 보상 일괄 처리
+      recordLessonCompleted(user.id, {
+        lang,
+        slug: meta.slug,
+        source: 'lesson',
+      }, { checkResult });
     }
 
-    // 오늘 배운 새 단어 → 단어장 등록 (FSRS 복습 루프 진입)
+    // 오늘 배운 새 단어 → progressStore로 통합 (FSRS 복습 루프 진입)
     if (genStatus === 'ready' && paragraphMaterials?.newWords?.length) {
       for (const w of paragraphMaterials.newWords) {
-        const row = {
-          user_id: user.id,
-          word_text: w.word,
-          base_form: w.word,
-          furigana: w.pron || '',
-          meaning: w.meaning,
-          pos: '',
+        recordNewWord(user.id, {
+          word: w.word,
+          pron: w.pron || '',
+          meaning: w.meaning || '',
           language: lang,
           source_ref: '오늘 학습',
-        };
-        supabase.from('user_vocabulary').insert(row).then(({ error: err }) => {
-          if (err && /column|schema/i.test(err.message || '')) {
-            const { source_ref, base_form, ...base } = row;
-            supabase.from('user_vocabulary').insert(base).then(() => {}, () => {});
-          }
-        }, () => {});
+        });
       }
     }
 
     // 잔여 이벤트 flush (마지막 마이크로배치)
     batcherRef.current?.flush();
-    recordActivity(user.id, () => fetchProfile?.(user.id));
+    // recordActivity는 progressStore 내부에서 처리됨
+    fetchProfile?.(user.id);
   }
 
   const renderMain = (text, pron) =>

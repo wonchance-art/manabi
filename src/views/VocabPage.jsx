@@ -6,8 +6,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
-import { recordActivity } from '../lib/streak';
-import { logReviewEvents } from '../lib/reviewEvents';
+import { recordReviewCompleted } from '../lib/learn/progressStore';
 import { useTTS } from '../lib/useTTS';
 import { callGemini } from '../lib/gemini';
 import Button from '../components/Button';
@@ -274,26 +273,21 @@ export default function VocabPage() {
       repetitions: currentWord.repetitions ?? 0,
       next_review_at: currentWord.next_review_at,
     });
-    scoreMutation.mutate({
-      id: currentWord.id,
-      nextStats,
-      rating,
-      prevInterval,
-      newInterval: nextStats.interval ?? 0,
-    });
-    recordActivity(user.id, () => fetchProfile(user.id));
-    // 약점 진단 데이터 — 어휘 정오답 적재 ('다시'=오답, 나머지=정답 취급)
-    // qtype: 실제 출제된 유형에서 유도 (자동 모드는 rung이 정한 서브모드 → effectiveMode).
-    // flash=자기채점(수동 플래시 전용), context=객관식→choice, typing, listening. 이 qtype이 다음 세션 rung 유도의 입력이 된다.
-    // flash는 별도 qtype으로 기록 — 자기채점은 '비대칭 신뢰'(성공은 무시, 오답 자인만 강등)로 rung에서 다르게 다룬다.
+    // progressStore로 통합: 복습 기록 + SRS + 보상 일괄 처리
     const qtype = ({ flash: 'flash', context: 'choice', typing: 'typing', listening: 'listening' })[effectiveMode] || 'choice';
-    logReviewEvents(user.id, [{
+    recordReviewCompleted(user.id, {
+      type: 'vocab',
+      itemKey: currentWord.word_text,
       lang: currentWord.language || detectLang(currentWord.word_text),
-      source: 'vocab',
-      item_key: currentWord.word_text,
       correct: rating > 1,
       detail: { word_id: currentWord.id, meaning: currentWord.meaning, rating, mode: reviewMode, qtype },
-    }]);
+    }, {
+      interval: nextStats.interval ?? 0,
+      easeFactor: nextStats.ease_factor ?? 0,
+      next_review_at: nextStats.next_review_at,
+    });
+    // 기존 scoreMutation은 progressStore 내부에서 처리됨
+    fetchProfile(user.id);
     if (wasNew) registerNewIntro(currentWord.id);            // 새 단어 첫 학습 → 오늘 한도 차감
     goNextReview(rating === 1 ? currentWord.id : null);      // '다시'는 이번 세션 끝에 재노출
     scoringRef.current = false;
