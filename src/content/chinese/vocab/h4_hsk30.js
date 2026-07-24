@@ -350,7 +350,7 @@ const themes = {
         { zh: "王", pinyin: "wáng", ko: "왕, 임금; 성씨(왕)", pos: "명사", ex: { zh: "国王住在城堡里。", pinyin: "Guówáng zhù zài chéngbǎo lǐ.", ko: "왕은 성에 살고 있어요." } },
         { zh: "网络", pinyin: "Wǎngluò", ko: "인터넷, 네트워크", pos: "명사", ex: { zh: "现在的生活离不开网络。", pinyin: "Xiànzài de shēnghuó lí bu kāi wǎngluò.", ko: "요즘 생활은 인터넷과 떼려야 뗄 수 없어요." } },
         { zh: "网址", pinyin: "wǎngzhǐ", ko: "웹사이트 주소, URL", pos: "명사", ex: { zh: "请把网址发给我。", pinyin: "Qǐng bǎ wǎngzhǐ fā gěi wǒ.", ko: "웹사이트 주소를 저에게 보내주세요." } },
-        { zh: "聊天软件", pinyin: "liáotiān ruǎnjiàn", ko: "메신저 앱, 채팅 프로그램", pos: "명사", ex: { zh: "我们可以用聊天软件联系。", pinyin: "Wǒmen kěyǐ yòng liáotiān ruǎnjiàn liánxì.", ko: "우리는 메신저 앱으로 연락할 수 있어요." } },
+        { zh: "微信", pinyin: "Wēixìn", ko: "위챗(중국 국민 메신저)", pos: "명사", ex: { zh: "我们可以用微信联系。", pinyin: "Wǒmen kěyǐ yòng Wēixìn liánxì.", ko: "우리는 위챗으로 연락할 수 있어요." } },
         { zh: "维修", pinyin: "wéixiū", ko: "수리하다, 보수하다", pos: "동사", ex: { zh: "师傅正在维修空调。", pinyin: "Shīfu zhèngzài wéixiū kōngtiáo.", ko: "기사님이 에어컨을 수리하고 있어요." } },
         { zh: "位于", pinyin: "wèiyú", ko: "~에 위치하다", pos: "동사", ex: { zh: "学校位于市中心。", pinyin: "Xuéxiào wèiyú shì zhōngxīn.", ko: "학교는 시내 중심에 위치해 있어요." } },
         { zh: "味儿", pinyin: "wèir", ko: "맛, 냄새", pos: "명사", ex: { zh: "这道菜味儿真好。", pinyin: "Zhè dào cài wèir zhēn hǎo.", ko: "이 요리는 맛이 정말 좋아요." } },
