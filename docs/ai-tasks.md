@@ -16,6 +16,10 @@
 ### doing
 ### todo
 ### done (최근)
+- 대화 예시 구조화 R1: examples에 flat 형식과 배타적인
+  `dialogue: [{speaker, fr|ja|en|zh, ipa?, ko}]` 검증을 추가하고 story 공용 대사 라인 렌더러를
+  연결해 콘텐츠 이행 0건·전체 249파일/2,473테스트 green을 고정
+  (`codex/dialogue-field`, 구현 ce35663, base 387b83e)
 - 교재 경쟁력 M1 동기 표면화: `/learn/course`에 기존 profile 스트릭 기반 배지와
   오늘 레슨 1개 완료 카드를 추가하고, 사용자 스코프 게스트 폴백·progressStore 갱신을 연결
   (`codex/m1-streak-surface`, 구현 854b8a9, base 5e2244f)
