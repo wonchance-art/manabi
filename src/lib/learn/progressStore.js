@@ -16,9 +16,64 @@
 
 import { supabase } from '../supabase';
 
+const LESSON_READ_KEYS = {
+  Japanese: 'ja_read_chapters',
+  English: 'en_read_chapters',
+  French: 'fr_read_chapters',
+  Chinese: 'zh_read_chapters',
+};
+
 // ────────────────────────────────────────────────────────────────────
 // 공개 인터페이스 (소비 페이지에서 이 함수들만 호출)
 // ────────────────────────────────────────────────────────────────────
+
+/**
+ * 레슨 완료 진도 조회.
+ *
+ * 로그인 사용자는 user_ref_progress를 읽고, 게스트 또는 원격 조회 실패 시
+ * 기존 localStorage 키를 사용한다. 원격과 로컬은 합집합으로 병합해 아직
+ * 동기화되지 않은 이 기기 진도를 잃지 않는다.
+ *
+ * @param {string | undefined} userId
+ * @param {Object} options
+ * @param {"Japanese" | "French" | "English" | "Chinese"} options.lang
+ * @param {string[]} [options.slugs]
+ * @returns {Promise<{completedSlugs: string[], source: "remote" | "guest" | "local-fallback"}>}
+ */
+export async function getLessonProgress(userId, { lang, slugs = [] } = {}) {
+  if (!lang) return { completedSlugs: [], source: userId ? 'local-fallback' : 'guest' };
+
+  const allowed = new Set(slugs.filter(Boolean));
+  const localCompleted = readLocalLessonProgress(lang, allowed);
+
+  if (!userId || allowed.size === 0) {
+    return {
+      completedSlugs: [...localCompleted].sort(),
+      source: userId ? 'local-fallback' : 'guest',
+    };
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('user_ref_progress')
+      .select('slug, read, passed')
+      .eq('user_id', userId)
+      .eq('lang', lang)
+      .in('slug', [...allowed]);
+
+    if (error) throw error;
+
+    for (const row of data || []) {
+      if (allowed.has(row.slug) && (row.passed || row.read)) {
+        localCompleted.add(row.slug);
+      }
+    }
+
+    return { completedSlugs: [...localCompleted].sort(), source: 'remote' };
+  } catch {
+    return { completedSlugs: [...localCompleted].sort(), source: 'local-fallback' };
+  }
+}
 
 /**
  * 레슨(챕터·연재) 완료 → 진도+SRS+보상 일괄 처리
@@ -158,6 +213,41 @@ function recordProgressLocal(slug, source) {
     studied.add(slug);
     localStorage.setItem(studiedKey, JSON.stringify([...studied]));
   } catch {}
+}
+
+function readLocalLessonProgress(lang, allowed) {
+  const completed = new Set();
+  if (typeof window === 'undefined') return completed;
+
+  const addStoredArray = (key) => {
+    try {
+      const values = JSON.parse(localStorage.getItem(key) || '[]');
+      if (!Array.isArray(values)) return;
+      for (const slug of values) {
+        if (allowed.has(slug)) completed.add(slug);
+      }
+    } catch {}
+  };
+
+  // F2 게스트 이벤트 키.
+  addStoredArray('studied_lesson');
+
+  // 기존 레퍼런스 진도 키. progressStore가 유지하는 무손실 폴백 계약이다.
+  const readKey = LESSON_READ_KEYS[lang];
+  if (readKey) {
+    addStoredArray(readKey);
+
+    try {
+      const checks = JSON.parse(localStorage.getItem(`${readKey}_check`) || '{}');
+      if (checks && typeof checks === 'object' && !Array.isArray(checks)) {
+        for (const [slug, result] of Object.entries(checks)) {
+          if (allowed.has(slug) && result?.passed) completed.add(slug);
+        }
+      }
+    } catch {}
+  }
+
+  return completed;
 }
 
 /**
