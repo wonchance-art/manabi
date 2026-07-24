@@ -73,6 +73,15 @@ export const COURSE_TRACKS = Object.freeze(
   })),
 );
 
+const TRACK_BY_LANGUAGE = Object.freeze(
+  Object.fromEntries(
+    Object.entries(TRACK_DEFINITIONS).map(([track, definition]) => [
+      definition.language,
+      track,
+    ]),
+  ),
+);
+
 function normalizeTrack(value) {
   const track = String(value || '').toLowerCase();
   return TRACK_DEFINITIONS[track] ? track : 'english';
@@ -212,6 +221,50 @@ export function buildCourseMap(trackValue, levelValue) {
       definition.levelMeta.map((meta) => [meta.key, meta.short || meta.key]),
     ),
     selectedLevel,
+  };
+}
+
+function lessonProgressSlug(lesson) {
+  return lesson?.specialFields?.originalChapterSlug
+    || lesson?.specialFields?.progressSlug
+    || '';
+}
+
+function lessonContentHref(lesson, track) {
+  if (lesson?.specialFields?.contentHref) return lesson.specialFields.contentHref;
+
+  const slug = lesson?.specialFields?.originalChapterSlug;
+  return slug ? `/${track}/grammar/${encodeURIComponent(slug)}` : '/lessons';
+}
+
+/**
+ * 문법 상세 페이지를 F5 코스 지도의 정확한 F1 레슨과 연결한다.
+ * 반환 객체는 서버→클라이언트 props로 넘길 수 있는 직렬화 가능한 값만 포함한다.
+ */
+export function getCourseLessonContext(language, level, slug) {
+  const track = TRACK_BY_LANGUAGE[language];
+  if (!track || !slug) return null;
+
+  const map = buildCourseMap(track, level);
+  const lessonIndex = map.lessons.findIndex(
+    (lesson) => lessonProgressSlug(lesson) === slug,
+  );
+  if (lessonIndex < 0) return null;
+
+  const lesson = map.lessons[lessonIndex];
+  const nextLesson = map.lessons[lessonIndex + 1];
+
+  return {
+    lessonRef: {
+      id: lesson.id,
+      lang: map.course.language,
+      slug: lessonProgressSlug(lesson),
+      source: 'lesson',
+    },
+    nextLesson: nextLesson ? {
+      id: nextLesson.id,
+      href: lessonContentHref(nextLesson, track),
+    } : null,
   };
 }
 

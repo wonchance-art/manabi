@@ -15,7 +15,8 @@ vi.mock('../../supabase', () => ({
   },
 }));
 
-import { getLessonProgress } from '../progressStore';
+import { buildCourseMap, getCourseLessonContext } from '../courseMapData';
+import { getLessonProgress, recordLessonCompleted } from '../progressStore';
 
 describe('getLessonProgress', () => {
   beforeEach(() => {
@@ -107,5 +108,29 @@ describe('getLessonProgress', () => {
       completedSlugs: ['vocab:chinese:life:1'],
       source: 'guest',
     });
+  });
+
+  it('게스트가 영어 A1 첫 레슨을 마치면 코스 지도 진도가 1/9가 된다', async () => {
+    const map = buildCourseMap('english', 'A1');
+    const firstSlug = map.lessons[0].specialFields.originalChapterSlug;
+    const context = getCourseLessonContext('English', 'A1', firstSlug);
+    const slugs = map.lessons.map(
+      (lesson) => lesson.specialFields.originalChapterSlug,
+    );
+
+    expect(map.lessons).toHaveLength(9);
+
+    await recordLessonCompleted(undefined, context.lessonRef);
+    await recordLessonCompleted(undefined, context.lessonRef);
+
+    const progress = await getLessonProgress(undefined, {
+      lang: 'English',
+      slugs,
+    });
+
+    expect(progress.completedSlugs).toEqual([firstSlug]);
+    expect(JSON.parse(localStorage.getItem('studied_lesson'))).toEqual([firstSlug]);
+    expect(progress.completedSlugs).toHaveLength(1);
+    expect(map.lessons).toHaveLength(9);
   });
 });

@@ -16,6 +16,9 @@
 ### doing
 ### todo
 ### done (최근)
+- F5 레슨 완료 CTA: 4트랙 공통 문법 상세에서 F1 레슨 ref로 완료를 기록하고
+  게스트 로컬 폴백·재방문 완료 상태·코스 지도 다음 레슨/1·9 진도를 연결
+  (`codex/f5-lesson-complete`, 구현 b274eb8, base 3aca5c4)
 - F5 코스 지도 4트랙 전면화: `/learn/course` 일본어·프랑스어·영어·중국어
   트랙 선택과 트랙별 F1 Course→Unit→Lesson·F2 진도/다음 CTA를 연결하고, F4 정본
   챕터/세트를 포섭해 기존 문법·어휘 페이지로 딥링크

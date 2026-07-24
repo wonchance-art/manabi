@@ -7,12 +7,14 @@ import RefSpeak from '../components/RefSpeak';
 import RefPatternCheck from '../components/RefPatternCheck';
 import GojuonChart from '../components/GojuonChart';
 import KanaTest from '../components/KanaTest';
+import LessonCompletionCta from '../components/LessonCompletionCta';
 // 스토리 모듈(이야기로 확인) — 인터랙티브 채점은 클라이언트 경계로 분리(서버 페이지가 레지스트리를
 // 클라이언트 번들로 끌어오지 않도록). story 는 순수 직렬화 데이터라 props 로 그대로 넘긴다.
 import StoryCheck from './StoryCheck';
 import ChapterAdminStrip from '../components/admin/ChapterAdminStrip';
 import InlineEdit from '../components/admin/InlineEdit';
 import { getChapterOverride, getOverridesForLang, mergeChapter } from '../lib/contentOverrides';
+import { getCourseLessonContext } from '../lib/learn/courseMapData';
 
 function ExampleList({ examples, langCode, lang, slug, secIndex }) {
   if (!examples?.length) return null;
@@ -173,6 +175,7 @@ export default async function ReferenceChapterPage({ lang, slug }) {
   const prev = basePrev ? mergeChapter(basePrev, overrideMap.get(basePrev.slug)) : null;
   const next = baseNext ? mergeChapter(baseNext, overrideMap.get(baseNext.slug)) : null;
   const meta = ref.getLevelMeta(chapter.level);
+  const courseLesson = getCourseLessonContext(lang, chapter.level, chapter.slug);
   // 인트로 레벨(OT/A0) — "간단히 알고 가면 좋을 것". 카나 외에는 관문(패턴 체크) 없이 읽으면 끝.
   const isIntro = ref.isIntroLevel?.(chapter.level);
   // 첫 정규 레벨 라벨 — 인트로 안내 카드에서 "본격 학습은 …부터" 문구에 사용
@@ -391,6 +394,13 @@ export default async function ReferenceChapterPage({ lang, slug }) {
 
       {/* 읽음 기록 — 여기(챕터 끝)까지 스크롤해야 읽음 처리 */}
       <RefReadMark storageKey={ref.readKey} slug={chapter.slug} />
+
+      {courseLesson && (
+        <LessonCompletionCta
+          lessonRef={courseLesson.lessonRef}
+          nextLesson={courseLesson.nextLesson}
+        />
+      )}
 
       {/* ── 문형 사전으로 — 이 챕터와 연결된 문형 확장 학습 ── */}
       {(() => {
