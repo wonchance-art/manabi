@@ -10,7 +10,7 @@ const chapters = [
     title: "\"와줘서 기뻐\" — 시간차가 생길 때",
     topic: "접속법 과거·접속사 bien que",
     titleFr: "Le subjonctif : approfondissement",
-    summary: "subjonctif passé, bien que·pour que·avant que 같은 접속사, 그리고 penser que 부정형의 미묘한 갈림길까지.",
+    summary: "subjonctif passé, bien que·pour que·avant que 같은 접속사, 그리고 penser que 부정형의 미묘한 갈림길까지에요.",
     duration: "약 11분",
     sections: [
       {

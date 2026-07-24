@@ -10,7 +10,7 @@ const chapters = [
     title: "명연설은 왜 꼭 셋으로 말할까",
     topic: "수사 기법·삼항/두운",
     titleFr: "Style and Rhetoric",
-    summary: "삼항 구조, 두운, understatement — 위대한 영어 연설과 에세이를 움직이는 설계 원리를 분해해요. 알고 들으면 모든 명연설이 다르게 들립니다.",
+    summary: "삼항 구조, 두운, understatement — 위대한 영어 연설과 에세이를 움직이는 설계 원리를 분해해요. 알고 들으면 모든 명연설이 다르게 들려요.",
     duration: "약 11분",
     sections: [
       {
