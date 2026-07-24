@@ -1,4 +1,7 @@
-// DRAFT_UNWIRED: C2 장면 레슨 초안. Claude 검수 전에는 소비 경로에 연결하지 않아요.
+/**
+ * C2 여행 장면 — 공항·숙소·식당 실전 회화 (OT 레벨 6장)
+ * 입국·표 구매·체크인·요청·식사 주문·결제까지 실제 장면 조합.
+ */
 const chapters = [
   {
     slug: "ot-08-scene-airport-immigration",
