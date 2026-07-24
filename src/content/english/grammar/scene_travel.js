@@ -1003,13 +1003,13 @@ const chapters = [
         pattern: "I'm allergic to + 재료.",
         patternKo: "저는 ~에 알레르기가 있어요.",
         body:
-          "음식 알레르기가 있다면 주문 전에 **I'm allergic to + 재료**로 분명히 알려요. nuts, shellfish, dairy처럼 피해야 할 재료를 넣어요.\n\n" +
+          "음식 알레르기가 있다면 주문 전에 **I'm allergic to + 재료**로 분명히 알려요. nuts, shellfish, dairy처럼 피해야 할 재료를 넣어요. 참고: **shellfish는 새우·게 같은 갑각류와 조개·굴 같은 연체동물을 모두 포함**해요 — 특정 식품만 문제라면 shrimp, crab처럼 개별 이름으로 말하는 게 안전해요.\n\n" +
           "단순한 취향이나 선호와 알레르기는 다르므로 실제 상태에 맞게 말해요. 심한 알레르기라면 교차 접촉 가능성도 직원에게 따로 확인해요.",
         examples: [
           {
             en: "I'm allergic to shellfish.",
             ipa: "[aɪm əˈlɜːrdʒɪk tə ˈʃelfɪʃ]",
-            ko: "저는 조개류에 알레르기가 있어요.",
+            ko: "저는 갑각류·조개류에 알레르기가 있어요.",
             note: "allergic to 뒤에 원인이 되는 재료를 넣어요.",
           },
         ],
@@ -1099,7 +1099,7 @@ const chapters = [
             {
               speaker: "Traveler",
               en: "I'm allergic to shellfish.",
-              ko: "저는 조개류에 알레르기가 있어요.",
+              ko: "저는 갑각류·조개류에 알레르기가 있어요.",
             },
             {
               speaker: "Server",
@@ -1109,7 +1109,7 @@ const chapters = [
             {
               speaker: "Traveler",
               en: "Does this dish contain shellfish?",
-              ko: "이 음식에 조개류가 들어가나요?",
+              ko: "이 음식에 갑각류나 조개류가 들어가나요?",
             },
             {
               speaker: "Server",
