@@ -24,7 +24,7 @@ const chapters = [
           { fr: "Il fallait qu'il partît avant l'aube.", ko: "그는 동트기 전에 떠나야 했다.", note: "현대어라면 qu'il parte. 고전 텍스트의 시제 일치" },
           { fr: "Je craignais qu'elle ne fût déjà partie.", ko: "나는 그녀가 이미 떠났을까 두려웠다.", note: "fût = être의 접속법 반과거. 허사 ne와 결합한 전형적 문어" },
         ],
-        tip: "현대 작가가 일부러 쓰는 경우는 거의 항상 유머예요. 격식을 과장해 웃기려는 '의고체 개그' — 한국어로 치면 일상 대화에 '~하옵니다'를 섞는 느낌이에요. 그 뉘앙스까지 읽어내면 진짜 C2입니다.",
+        tip: "현대 작가가 일부러 쓰는 경우는 거의 항상 유머예요. 격식을 과장해 웃기려는 '의고체 개그' — 한국어로 치면 일상 대화에 '~하옵니다'를 섞는 느낌이에요. 그 뉘앙스까지 읽어내면 진짜 C2예요.",
       },
       {
         heading: "형태 — 단순과거에서 만들어져요",
@@ -147,7 +147,7 @@ const chapters = [
           { fr: "Il nous faut du courage, de la patience et de la lucidité.", ko: "우리에게 필요한 것은 용기와 인내, 그리고 냉철함이다.", note: "연설문의 표준 3박자" },
           { fr: "C'est malin ! Maintenant tout est à refaire.", ko: "참 잘했다! 이제 전부 다시 해야 하잖아.", note: "antiphrase — 글자 그대로 받으면 안 되는 '칭찬'" },
         ],
-        etym: "anaphore는 그리스어 anaphorá(다시 들어 올리기)에서 왔어요 — 영어 anaphora와 동일해요. litote(단순함), euphémisme(좋게 말하기)도 그리스 수사학 용어가 영어·프랑스어에 나란히 정착한 것이라, 영어 교양 어휘가 그대로 자산이 됩니다.",
+        etym: "anaphore는 그리스어 anaphorá(다시 들어 올리기)에서 왔어요 — 영어 anaphora와 동일해요. litote(단순함), euphémisme(좋게 말하기)도 그리스 수사학 용어가 영어·프랑스어에 나란히 정착한 것이라, 영어 교양 어휘가 그대로 자산이 돼요.",
       },
     ],
   },
@@ -264,7 +264,7 @@ const chapters = [
           { fr: "Tirer les marrons du feu, voilà ce qu'il a fait pour son chef.", ko: "불 속의 밤을 대신 꺼내준 것 — 그가 상사를 위해 한 일이 바로 그거다.", note: "《원숭이와 고양이》에서 온 표현. 남 좋은 일에 위험을 무릅쓰다" },
           { fr: "Dans ce dossier, la raison du plus fort l'a encore emporté.", ko: "이 사안에서도 결국 강자의 논리가 이겼다.", note: "라퐁텐 첫 줄의 변주 — 시사 칼럼 문체" },
         ],
-        etym: "fable(우화)은 라틴어 fābula(이야기)에서 — 영어 fable, fabulous와 같은 뿌리예요. 라퐁텐 자신도 이솝(Ésope) 우화를 다시 쓴 것이라, 한국에서 이솝우화로 읽은 이야기들과 줄거리가 상당히 겹쳐요. 내용은 이미 아는 셈이니 프랑스어 명구만 연결하면 됩니다.",
+        etym: "fable(우화)은 라틴어 fābula(이야기)에서 — 영어 fable, fabulous와 같은 뿌리예요. 라퐁텐 자신도 이솝(Ésope) 우화를 다시 쓴 것이라, 한국에서 이솝우화로 읽은 이야기들과 줄거리가 상당히 겹쳐요. 내용은 이미 아는 셈이니 프랑스어 명구만 연결하면 돼요.",
       },
       {
         heading: "성경과 역사에서 온 이미지",
@@ -326,7 +326,7 @@ const chapters = [
         pattern: "한국어 경어법 (어미·호칭·어휘 3중) ↔ tu/vous 스위치 하나",
         patternKo: "존댓말 번역 — 형태가 아니라 관계를 옮기기",
         body:
-          "한→프에서는 존대 정보가 뭉개지고, 프→한에서는 정보를 **만들어내야** 해요. 이 vous는 하십시오체인가 해요체인가 — 근거는 원문에 없고 **인물의 나이, 관계, 장면의 온도**에서 추론해야 하죠. vous에서 tu로 넘어가는 순간은 '말 놓기' 장면으로 옮기는 게 정석이에요.\n\n" +
+          "한→프에서는 존대 정보가 뭉개지고, 프→한에서는 정보를 **만들어내야** 해요. 이 vous는 하세요체인가 해요체인가 — 근거는 원문에 없고 **인물의 나이, 관계, 장면의 온도**에서 추론해야 하죠. vous에서 tu로 넘어가는 순간은 '말 놓기' 장면으로 옮기는 게 정석이에요.\n\n" +
           "한→프에서는 **조건법(Pourriez-vous...), 어휘 격, Monsieur/Madame 호칭**으로 공손의 온도를 재구성해요. C1의 레지스터 감각이 번역 기술로 환생하는 거예요.",
         examples: [
           { fr: "Et si on se tutoyait ?", ko: "우리 말 놓을까요?", note: "관계의 전환점 — 한국어 '말 놓다'가 정확한 기능 등가" },

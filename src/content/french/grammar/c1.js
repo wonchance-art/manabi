@@ -24,7 +24,7 @@ const chapters = [
           { fr: "Elle ouvrit la porte, entra et s'assit près de la fenêtre.", ko: "그녀는 문을 열고, 들어와, 창가에 앉았다.", note: "ouvrit·entra·s'assit — 사건이 차례로 '탁탁탁' 진행되는 서술의 시제" },
           { fr: "Victor Hugo naquit en 1802 et mourut en 1885.", ko: "빅토르 위고는 1802년에 태어나 1885년에 죽었다.", note: "위인전·역사 서술의 전형적 문체" },
         ],
-        tip: "신문 기사도 대부분 passé composé를 써요. passé simple을 만나는 곳은 사실상 '책 속'이라고 보면 됩니다. 다만 어린이 동화책에도 표준으로 쓰이니, 프랑스 아이들은 글을 깨치면서 자연스럽게 이 시제를 읽기로 흡수해요.",
+        tip: "신문 기사도 대부분 passé composé를 써요. passé simple을 만나는 곳은 사실상 '책 속'이라고 보면 돼요. 다만 어린이 동화책에도 표준으로 쓰이니, 프랑스 아이들은 글을 깨치면서 자연스럽게 이 시제를 읽기로 흡수해요.",
       },
       {
         heading: "규칙 동사의 형태 — 3인칭 중심으로",
@@ -45,7 +45,7 @@ const chapters = [
             ["croire", "crut", "crurent", "믿었다"],
           ],
         },
-        pitfall: "-ir/-re 계열의 il finit, il répondit는 **직설법 현재와 모양이 똑같아요**. il finit son travail은 '끝낸다'일 수도 '끝냈다'일 수도 있죠. 주변 동사들의 시제와 서술의 흐름으로 판단해야 해요 — 소설 지문이라면 거의 passé simple입니다.",
+        pitfall: "-ir/-re 계열의 il finit, il répondit는 **직설법 현재와 모양이 똑같아요**. il finit son travail은 '끝낸다'일 수도 '끝냈다'일 수도 있죠. 주변 동사들의 시제와 서술의 흐름으로 판단해야 해요 — 소설 지문이라면 거의 passé simple이에요.",
       },
       {
         heading: "꼭 알아봐야 하는 불규칙 동사들",
@@ -112,8 +112,8 @@ const chapters = [
         pattern: "soutenu (격식·문어) · courant (표준) · familier (친근·구어)",
         patternKo: "프랑스어의 세 가지 격 (격식·표준·친근)",
         body:
-          "한국어는 **어미**(-습니다/-어요/-어)가 격을 결정하지만, 프랑스어는 **단어 선택, 문장 구조, 발음 습관**이 통째로 바뀌어요. 같은 '차'가 automobile → voiture → bagnole로 단어부터 달라지죠.\n\n" +
-          "그래서 tu/vous만 잘 고른다고 격이 맞는 게 아니에요. vous를 쓰며 bagnole, bouffer를 섞으면 '고객님, 밥 처드셨어요?' 같은 부조화가 생겨요. C1부터는 **단어마다 격 태그를 함께 외우는 습관**이 필요합니다.",
+          "한국어는 **어미**(-해요/-어요/-어)가 격을 결정하지만, 프랑스어는 **단어 선택, 문장 구조, 발음 습관**이 통째로 바뀌어요. 같은 '차'가 automobile → voiture → bagnole로 단어부터 달라지죠.\n\n" +
+          "그래서 tu/vous만 잘 고른다고 격이 맞는 게 아니에요. vous를 쓰며 bagnole, bouffer를 섞으면 '고객님, 밥 처드셨어요?' 같은 부조화가 생겨요. C1부터는 **단어마다 격 태그를 함께 외우는 습관**이 필요해요.",
         examples: [
           { fr: "Je ne sais pas. / Je sais pas. / J'sais pas.", ko: "모르겠습니다. / 몰라요. / 몰라.", note: "같은 문장이 격에 따라 점점 줄어들어요. 마지막은 발음상 '셰파'처럼 들려요." },
           { fr: "Nous allons partir. / On va partir.", ko: "출발하겠습니다. / 우리 갈게.", note: "주어 nous ↔ on 교체도 대표적인 격 신호" },
@@ -226,7 +226,7 @@ const chapters = [
         pattern: "Certes ..., mais ... (양보 → 반박)",
         patternKo: "물론 ~이지만 ... (양보 후 반박하기)",
         body:
-          "프랑스식 논증의 꽃은 **양보(concession) 후 반박(réfutation)**이에요. 신호탄 **certes**(물론)가 보이면 100% 뒤에 mais나 cependant이 따라온다고 봐도 됩니다.\n\n" +
+          "프랑스식 논증의 꽃은 **양보(concession) 후 반박(réfutation)**이에요. 신호탄 **certes**(물론)가 보이면 100% 뒤에 mais나 cependant이 따라온다고 봐도 돼요.\n\n" +
           "반박 강도 조절: **cependant/toutefois**(중립), **néanmoins**(그럼에도), **en revanche**(대조), **or**(논리 전환의 결정적 한 수 — 삼단논법에서 새 전제를 들이미는 접속사예요).",
         examples: [
           { fr: "Certes, le numérique facilite l'accès au savoir. Mais cet accès reste profondément inégal.", ko: "물론 디지털은 지식 접근을 쉽게 해준다. 그러나 그 접근은 여전히 극도로 불평등하다.", note: "certes... mais — 양보-반박의 골격" },
@@ -441,7 +441,7 @@ const chapters = [
           { fr: "T'as la pêche aujourd'hui !", ko: "너 오늘 컨디션 좋아 보인다!", note: "familier한 말투와 잘 어울리는 표현" },
           { fr: "Excuse-moi, j'étais dans la lune.", ko: "미안, 잠깐 딴생각하고 있었어.", note: "수업·회의 중 멍 때림의 표준 변명" },
         ],
-        vsEn: "영어에도 같은 그림의 표현이 있을 때가 있어요 — être dans la lune은 영어 to be over the moon(너무 기쁘다)과 그림은 비슷한데 뜻이 전혀 달라요. '아는 영어 관용구와 닮았다'는 이유로 뜻을 추측하는 건 위험합니다.",
+        vsEn: "영어에도 같은 그림의 표현이 있을 때가 있어요 — être dans la lune은 영어 to be over the moon(너무 기쁘다)과 그림은 비슷한데 뜻이 전혀 달라요. '아는 영어 관용구와 닮았다'는 이유로 뜻을 추측하는 건 위험해요.",
       },
       {
         heading: "동물의 이미지 — 토끼, 고양이, 닭",
@@ -477,7 +477,7 @@ const chapters = [
         patternKo: "신체 이미지 관용구 (비싸다·귀찮게 하다)",
         body:
           "**coûter les yeux de la tête**(눈이 빠질 만큼 비싸다 — '눈이 튀어나올 가격'과 통하죠), **avoir le cœur sur la main**(심장을 손에 → 잘 베푼다), **casser les pieds**(발을 부수다 → 귀찮게 하다).\n\n" +
-          "사용 전략: **이해는 최대로, 사용은 보수적으로.** 대부분 familier라 격식 작문에는 못 쓰고, 프랑스인이 쓰는 걸 들은 맥락 그대로 따라 쓰며 늘려가는 게 정석입니다.",
+          "사용 전략: **이해는 최대로, 사용은 보수적으로.** 대부분 familier라 격식 작문에는 못 쓰고, 프랑스인이 쓰는 걸 들은 맥락 그대로 따라 쓰며 늘려가는 게 정석이에요.",
         examples: [
           { fr: "Ce sac coûte les yeux de la tête.", ko: "이 가방, 눈 튀어나오게 비싸요.", note: "쇼핑 회화의 단골" },
           { fr: "Elle a le cœur sur la main : elle aide tout le monde.", ko: "그녀는 정말 베푸는 사람이에요. 모두를 도와줘요.", note: "사람 칭찬의 고정 표현" },
