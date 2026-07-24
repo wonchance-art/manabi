@@ -48,7 +48,7 @@ const chapters = [
           { en: "She wanted some water.", ipa: "[ˈwɑːntɪd]", ko: "그녀는 물을 원했어요.", note: "여기만 음절이 늘어요" },
           { en: "We stayed at home.", ipa: "[steɪd]", ko: "우리는 집에 있었어요." },
         ],
-        pitfall: "한국 학습자는 -ed를 전부 '~드/~이드'로 읽는 경향이 있어요 — liked를 '라이크드'(3음절)처럼요. 실제로는 [laɪkt] 1음절이에요. **[ɪd]로 음절이 늘어나는 건 t/d 뒤뿐** — 나머지는 끝에 살짝 t/d를 붙이는 느낌으로 짧게 처리하세요. 발음이 길어지면 그게 바로 외국인 억양입니다.",
+        pitfall: "한국 학습자는 -ed를 전부 '~드/~이드'로 읽는 경향이 있어요 — liked를 '라이크드'(3음절)처럼요. 실제로는 [laɪkt] 1음절이에요. **[ɪd]로 음절이 늘어나는 건 t/d 뒤뿐** — 나머지는 끝에 살짝 t/d를 붙이는 느낌으로 짧게 처리하세요. 발음이 길어지면 그게 바로 외국인 억양이에요.",
       },
       {
         heading: "불규칙동사 — 자주 쓰는 동사일수록 제멋대로",
@@ -367,7 +367,7 @@ const chapters = [
           { en: "Can you help me with this?", ko: "이것 좀 도와줄래요?" },
           { en: "You can use my charger.", ko: "제 충전기 써도 돼요." },
         ],
-        tip: "듣기 요령: 동사보다 **앞 단어가 세게 들리면 can't**, 동사가 세게 들리면 can이에요. I CAN'T drive vs I can DRIVE — 강세의 위치가 부정의 신호입니다.",
+        tip: "듣기 요령: 동사보다 **앞 단어가 세게 들리면 can't**, 동사가 세게 들리면 can이에요. I CAN'T drive vs I can DRIVE — 강세의 위치가 부정의 신호예요.",
       },
       {
         heading: "must vs have to — 긍정은 쌍둥이, 부정은 남남",
@@ -405,7 +405,7 @@ const chapters = [
           { en: "You shouldn't drink too much coffee.", ko: "커피를 너무 많이 마시지 않는 게 좋아요." },
           { en: "Should I bring anything?", ko: "뭐 가져갈까요?", note: "초대받았을 때 유용한 질문" },
         ],
-        vsKo: "한국어 '~해야 돼요'는 일상에서 가볍게도 쓰이지만(이 식당 꼭 가봐야 돼!), 영어 must는 무게가 있어요. 가벼운 추천 의도로 You must ~를 남발하면 명령조로 들릴 수 있어요 — 추천·조언은 should, 강한 추천은 really should 정도가 안전합니다.",
+        vsKo: "한국어 '~해야 돼요'는 일상에서 가볍게도 쓰이지만(이 식당 꼭 가봐야 돼!), 영어 must는 무게가 있어요. 가벼운 추천 의도로 You must ~를 남발하면 명령조로 들릴 수 있어요 — 추천·조언은 should, 강한 추천은 really should 정도가 안전해요.",
       },
     ],
   },

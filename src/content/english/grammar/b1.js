@@ -52,7 +52,7 @@ const chapters = [
           { en: "Have you ever tried Korean barbecue?", ko: "한국식 바비큐 먹어본 적 있어요?", note: "ever = 살면서 한 번이라도" },
           { en: "I haven't finished the report yet.", ko: "보고서를 아직 못 끝냈어요.", note: "yet은 문장 끝에" },
         ],
-        pitfall: "**I have seen him yesterday.** — 한국 학습자 단골 오류 1위예요. yesterday처럼 '끝난 시점'을 찍는 말이 나오는 순간 현재완료는 탈락, 무조건 과거시제(I saw him yesterday)입니다. 반대로 since/for(지금까지)가 보이면 과거시제(I lived here since 2021 ×)가 탈락이에요.",
+        pitfall: "**I have seen him yesterday.** — 한국 학습자 단골 오류 1위예요. yesterday처럼 '끝난 시점'을 찍는 말이 나오는 순간 현재완료는 탈락, 무조건 과거시제(I saw him yesterday)예요. 반대로 since/for(지금까지)가 보이면 과거시제(I lived here since 2021 ×)가 탈락이에요.",
       },
       {
         heading: "경험 말하기 — have been to의 마법",
@@ -74,7 +74,7 @@ const chapters = [
         patternKo: "미국 구어는 just/yet에도 과거시제 허용 (반대 방향은 어디서도 오류)",
         body:
           "교과서는 just/already/yet에 현재완료를 쓰지만, **미국 구어에서는 과거시제가 아주 흔해요** — I just ate. / Did you eat yet? 전부 자연스러워요. (영국 영어는 현재완료를 더 지키는 편이에요.)\n\n" +
-          "단, **반대 방향은 안 돼요**. yesterday 같은 확정 과거 시점에 현재완료를 쓰는 건 어디서도 오류예요. 시험·격식 작문에서는 교과서 규칙대로 쓰는 게 안전합니다.",
+          "단, **반대 방향은 안 돼요**. yesterday 같은 확정 과거 시점에 현재완료를 쓰는 건 어디서도 오류예요. 시험·격식 작문에서는 교과서 규칙대로 쓰는 게 안전해요.",
         examples: [
           { en: "I just got home. (미국 구어) = I have just got home. (영국)", ko: "방금 집에 왔어요.", note: "둘 다 OK" },
           { en: "Did you eat lunch yet? (미국 구어) = Have you eaten lunch yet?", ko: "점심 벌써 먹었어요?" },
@@ -119,7 +119,7 @@ const chapters = [
           { en: "If you heat ice, it melts.", ko: "얼음을 가열하면 녹아요.", note: "항상 참인 사실은 양쪽 다 현재 (0형)" },
           { en: "If you need help, just call me.", ko: "도움이 필요하면 그냥 전화해요.", note: "주절에 명령문도 OK" },
         ],
-        pitfall: "**If it will rain tomorrow...** — 한국 학습자가 가장 자주 빠지는 함정이에요. '내일'이라는 말에 끌려 will을 넣고 싶어지지만, **if절(조건절)과 when절(시간절) 안은 미래 대신 현재시제**가 기본 규칙입니다. When I will arrive ×, When I arrive ○. (참고: If you will just wait a moment처럼 '의지·정중한 부탁'의 will은 별개 용법으로 표준이에요 — B1에서는 '조건이면 현재시제'만 몸에 붙이면 충분해요.)",
+        pitfall: "**If it will rain tomorrow...** — 한국 학습자가 가장 자주 빠지는 함정이에요. '내일'이라는 말에 끌려 will을 넣고 싶어지지만, **if절(조건절)과 when절(시간절) 안은 미래 대신 현재시제**가 기본 규칙이에요. When I will arrive ×, When I arrive ○. (참고: If you will just wait a moment처럼 '의지·정중한 부탁'의 will은 별개 용법으로 표준이에요 — B1에서는 '조건이면 현재시제'만 몸에 붙이면 충분해요.)",
       },
       {
         heading: "2형 — 현실과 반대인 상상, 그리고 If I were",
@@ -228,7 +228,7 @@ const chapters = [
         patternKo: "격식 문서엔 be, 입말엔 get",
         body:
           "일상 회화에서는 be 대신 **get + p.p.**를 정말 많이 써요 — 특히 **예기치 못한 일, 사고, 변화**에는 get이 더 자연스러워요. get fired, get hurt, get stolen, get caught, get paid, get married...\n\n" +
-          "be 수동태가 '상태'에 가깝다면 get 수동태는 '**사건이 탁 벌어지는 순간**'의 느낌이에요. 격식 문서에는 be, 입말에는 get — 이 감각으로 구분하면 됩니다.",
+          "be 수동태가 '상태'에 가깝다면 get 수동태는 '**사건이 탁 벌어지는 순간**'의 느낌이에요. 격식 문서에는 be, 입말에는 get — 이 감각으로 구분하면 돼요.",
         examples: [
           { en: "He got fired last month.", ko: "그는 지난달에 해고당했어요.", note: "회화에서는 was fired보다 흔해요" },
           { en: "Be careful not to get hurt.", ko: "다치지 않게 조심하세요." },
@@ -267,7 +267,7 @@ const chapters = [
         pattern: "사람 → who · 사물 → which · 만능 → that (콤마 뒤 that 금지)",
         patternKo: "소유는 whose — a friend whose sister is a singer",
         body:
-          "**who**는 사람, **which**는 사물·동물, **that**은 대부분 대체 가능(회화 최다 출전), **whose**는 소유 관계예요. 고민될 때 that을 쓰면 거의 안전하지만, **콤마 뒤(계속적 용법)에는 that을 못 써요** — 콤마가 보이면 who/which입니다.\n\n" +
+          "**who**는 사람, **which**는 사물·동물, **that**은 대부분 대체 가능(회화 최다 출전), **whose**는 소유 관계예요. 고민될 때 that을 쓰면 거의 안전하지만, **콤마 뒤(계속적 용법)에는 that을 못 써요** — 콤마가 보이면 who/which이에요.\n\n" +
           "콤마 있는 관계절은 '꼭 필요한 정보'가 아니라 **'덧붙이는 참고 정보'**예요: My brother, who lives in Busan, is visiting.",
         examples: [
           { en: "She is the designer who made this logo.", ko: "그녀가 이 로고를 만든 디자이너예요." },
@@ -275,7 +275,7 @@ const chapters = [
           { en: "This is Mina, who I told you about.", ko: "이쪽은 미나예요, 내가 말했던 그 친구.", note: "콤마 뒤라 that 불가" },
           { en: "I have a friend whose father is a pilot.", ko: "아버지가 파일럿인 친구가 있어요." },
         ],
-        pitfall: "**중복 대명사 함정** — The book that I read it was great. (×) 관계대명사 that이 이미 '그 책'을 대신하고 있으니 it을 또 넣으면 안 돼요. 한국어 머리로는 '내가 그것을 읽은'이라고 생각돼서 it이 들어가기 쉬운데, 관계사절 안에서 그 자리는 **비워두는 것**이 규칙입니다. The book that I read was great. (○)",
+        pitfall: "**중복 대명사 함정** — The book that I read it was great. (×) 관계대명사 that이 이미 '그 책'을 대신하고 있으니 it을 또 넣으면 안 돼요. 한국어 머리로는 '내가 그것을 읽은'이라고 생각돼서 it이 들어가기 쉬운데, 관계사절 안에서 그 자리는 **비워두는 것**이 규칙이에요. The book that I read was great. (○)",
       },
       {
         heading: "생략 — 원어민이 짧게 말하는 비밀",
@@ -297,7 +297,7 @@ const chapters = [
         patternKo: "where = in which의 압축",
         body:
           "선행사가 장소면 **where**, 시간이면 **when** — 용법은 같아요, 명사 뒤에 설명 붙이기. This is the cafe **where** we first met. / the day **when** we first met.\n\n" +
-          "where는 'in which(그 안에서)'를 압축한 말이에요. B1에서는 where/when만 자연스럽게 쓸 수 있으면 충분합니다.",
+          "where는 'in which(그 안에서)'를 압축한 말이에요. B1에서는 where/when만 자연스럽게 쓸 수 있으면 충분해요.",
         examples: [
           { en: "That's the hospital where I was born.", ko: "저기가 내가 태어난 병원이에요." },
           { en: "Do you remember the day when we first met?", ko: "우리가 처음 만난 날 기억해요?" },
@@ -340,7 +340,7 @@ const chapters = [
           { en: "\"I am busy.\" → He said (that) he was busy.", ko: "\"나 바빠.\" → 그가 바쁘다고 했어요." },
           { en: "\"I will be late.\" → She said she would be late.", ko: "\"늦을 거야.\" → 그녀가 늦을 거라고 했어요." },
         ],
-        tip: "지금도 변함없는 사실이라면 후퇴를 안 해도 돼요. She said she **loves** coffee. (지금도 좋아하니까) — 후퇴는 의무가 아니라 '보고 시점과의 거리 표시'예요. 다만 시험에서는 후퇴시키는 게 안전한 기본값입니다.",
+        tip: "지금도 변함없는 사실이라면 후퇴를 안 해도 돼요. She said she **loves** coffee. (지금도 좋아하니까) — 후퇴는 의무가 아니라 '보고 시점과의 거리 표시'예요. 다만 시험에서는 후퇴시키는 게 안전한 기본값이에요.",
       },
       {
         heading: "say vs tell — 한 끗 차이로 감점되는 단골",
@@ -354,7 +354,7 @@ const chapters = [
           { en: "She said that she was moving to Busan.", ko: "그녀가 부산으로 이사 간다고 했어요." },
           { en: "Don't worry, I won't tell anyone.", ko: "걱정 마요, 아무한테도 말 안 할게요." },
         ],
-        pitfall: "**He said me...** — 한국어 '나에게 말했다'를 직역하면서 나오는 최다 빈출 오류예요. say는 사람을 바로 못 받아요. 사람을 말하고 싶으면 **told me**로 동사를 갈아타거나 **said to me**로 to를 끼우세요. 면접·스피킹 시험에서 유난히 눈에 띄는 실수입니다.",
+        pitfall: "**He said me...** — 한국어 '나에게 말했다'를 직역하면서 나오는 최다 빈출 오류예요. say는 사람을 바로 못 받아요. 사람을 말하고 싶으면 **told me**로 동사를 갈아타거나 **said to me**로 to를 끼우세요. 면접·스피킹 시험에서 유난히 눈에 띄는 실수예요.",
       },
       {
         heading: "질문과 부탁 옮기기",
@@ -377,7 +377,7 @@ const chapters = [
         patternKo: "차이는 시제 — 영어만 한 칸 후퇴",
         body:
           "한국어 화자는 간접화법을 매일 써요 — '바쁘**대**', '오**래**', '가**냬**'. 대응은 **-대** = said (that)..., **-래** = told me to..., **-냬** = asked if/wh-...예요.\n\n" +
-          "차이는 시제예요. 한국어는 인용 내용의 시제를 원래대로 두지만, 영어는 보고 동사에 맞춰 **시제를 끌어내려요**. '-대'를 번역할 때는 ① said를 놓고 ② 내용 시제를 한 칸 후퇴 — 이 2단계만 기계적으로 적용하면 됩니다.",
+          "차이는 시제예요. 한국어는 인용 내용의 시제를 원래대로 두지만, 영어는 보고 동사에 맞춰 **시제를 끌어내려요**. '-대'를 번역할 때는 ① said를 놓고 ② 내용 시제를 한 칸 후퇴 — 이 2단계만 기계적으로 적용하면 돼요.",
         examples: [
           { en: "He says he is busy.", ko: "그가 바쁘대요. (지금 전하는 말 — says면 후퇴 없음)" },
           { en: "He said he was busy.", ko: "그가 바쁘다고 했어요. (과거 보고 — 한 칸 후퇴)" },
@@ -433,7 +433,7 @@ const chapters = [
           { en: "You mustn't park here.", ko: "여기 주차하면 안 돼요.", note: "mustn't = 금지" },
           { en: "This must be the place.", ko: "여기가 그 장소임에 틀림없어요." },
         ],
-        pitfall: "한국어 '~임에 틀림없지 않다'라는 발상으로 **mustn't be**를 만들면 '추측의 부정'이 아니라 '금지'가 돼버려요. 추측의 세계에서 must의 부정 파트너는 **can't**입니다. 시험 단골이자 회화에서도 자주 어긋나는 지점이에요.",
+        pitfall: "한국어 '~임에 틀림없지 않다'라는 발상으로 **mustn't be**를 만들면 '추측의 부정'이 아니라 '금지'가 돼버려요. 추측의 세계에서 must의 부정 파트너는 **can't**이에요. 시험 단골이자 회화에서도 자주 어긋나는 지점이에요.",
       },
       {
         heading: "might / may / could — '~일지도'의 삼형제",
@@ -508,14 +508,14 @@ const chapters = [
         patternKo: "불변화사의 그림으로 절반은 추측 가능",
         body:
           "구동사 = **동사 + 불변화사(particle)**. 불변화사는 동사에 **방향과 결**을 더해요 — **up**은 위로·완전히(eat up, use up), **off**는 분리·이탈(take off, turn off), **out**은 밖으로·드러나게(find out, run out), **on**은 계속·접촉(go on, hold on).\n\n" +
-          "모든 구동사가 논리적으로 풀리지는 않지만, 핵심 불변화사 대여섯 개의 그림을 잡아두면 처음 보는 구동사도 절반은 추측이 됩니다.",
+          "모든 구동사가 논리적으로 풀리지는 않지만, 핵심 불변화사 대여섯 개의 그림을 잡아두면 처음 보는 구동사도 절반은 추측이 돼요.",
         examples: [
           { en: "We've run out of milk.", ko: "우유가 다 떨어졌어요.", note: "run out = 달리다 끝까지 → 바닥나다" },
           { en: "I can't figure out this error message.", ko: "이 에러 메시지를 도무지 모르겠어요." },
           { en: "Hold on a second.", ko: "잠깐만 기다려요." },
           { en: "The plane took off on time.", ko: "비행기는 정시에 이륙했어요." },
         ],
-        tip: "구동사는 단어가 아니라 **장면**으로 외우세요. take off는 '비행기가 활주로에서 떨어져 나가는 장면', run out은 '모래시계 모래가 다 흘러나간 장면'. 불변화사의 그림과 함께 저장하면 10개 외울 노력으로 30개가 추측됩니다.",
+        tip: "구동사는 단어가 아니라 **장면**으로 외우세요. take off는 '비행기가 활주로에서 떨어져 나가는 장면', run out은 '모래시계 모래가 다 흘러나간 장면'. 불변화사의 그림과 함께 저장하면 10개 외울 노력으로 30개가 추측돼요.",
       },
       {
         heading: "분리 가능 vs 불가 — it은 반드시 사이에",
@@ -538,7 +538,7 @@ const chapters = [
         patternKo: "목적어가 든 문장째로 암기",
         body:
           "출현 빈도 최상위부터: **get up · wake up · go out · come back · pick up**(데리러 가다·줍다) **· drop off · look for · look forward to**(기대하다) **· set up · work out**(운동하다·잘 풀리다).\n\n" +
-          "외울 때는 반드시 **목적어가 든 문장째로** 외우세요 — 'pick up = 줍다'가 아니라 'I'll pick you up at seven.'으로요. 구동사는 문장 속에서만 진짜 모습이 보입니다.",
+          "외울 때는 반드시 **목적어가 든 문장째로** 외우세요 — 'pick up = 줍다'가 아니라 'I'll pick you up at seven.'으로요. 구동사는 문장 속에서만 진짜 모습이 보여요.",
         examples: [
           { en: "I'll pick you up at the airport.", ko: "공항으로 데리러 갈게요." },
           { en: "I'm looking forward to seeing you.", ko: "만나길 기대하고 있어요.", note: "to 뒤에 동명사 — 이메일 마무리 단골" },
@@ -557,7 +557,7 @@ const chapters = [
     title: "단어는 아는데 전치사에서 막힌다",
     topic: "동사·형용사+전치사",
     titleFr: "Preposition Combinations: depend on / interested in",
-    summary: "listen, depend, interested — 단어는 다 아는데 to? on? in?에서 멈칫하는 순간을 위한 챕터예요. 전치사는 논리가 아니라 단짝이라, 덩어리 단위 공략법을 정리합니다.",
+    summary: "listen, depend, interested — 단어는 다 아는데 to? on? in?에서 멈칫하는 순간을 위한 챕터예요. 전치사는 논리가 아니라 단짝이라, 덩어리 단위 공략법을 정리해요.",
     duration: "약 10분",
     sections: [
       {
@@ -649,13 +649,13 @@ const chapters = [
         patternKo: "간접의문 = 의문사 + 평서문 어순 · do/does/did 소멸",
         body:
           "질문을 Do you know..., Could you tell me... 속에 넣는 순간 **의문문 어순이 평서문으로 돌아가요** — Where **is the station**? → Do you know where **the station is**? 조동사 do/does/did는 아예 사라져요: What time **does it start**? → I don't know what time **it starts**.\n\n" +
-          "yes/no 질문은 **if/whether**로 받아요: Is it open? → Do you know **if** it's open? 직설 질문보다 부드러워서 **공손한 질문의 기본형**이기도 해요 — 길 묻기, 전화 문의, 회사 메일이 전부 이 형태가 표준입니다.",
+          "yes/no 질문은 **if/whether**로 받아요: Is it open? → Do you know **if** it's open? 직설 질문보다 부드러워서 **공손한 질문의 기본형**이기도 해요 — 길 묻기, 전화 문의, 회사 메일이 전부 이 형태가 표준이에요.",
         examples: [
           { en: "Do you know where the nearest ATM is?", ko: "가장 가까운 ATM이 어디 있는지 아세요?", note: "where is the ATM ×" },
           { en: "Could you tell me what time the museum opens?", ko: "박물관이 몇 시에 여는지 알려 주시겠어요?", note: "does가 사라지고 opens로" },
           { en: "I wonder if she got my message.", ko: "그녀가 내 메시지를 받았는지 모르겠네요." },
         ],
-        pitfall: "**Do you know where is the station?** — 간접의문 오류의 90%가 이 어순이에요. 의문문을 통째로 옮겨 심는 거죠. 묻는 힘은 문장 맨 앞의 Do you know가 이미 다 쓰고 있으니, 뒤따르는 절은 **평서문으로 쉬어도 됩니다**. 간접화법의 asked where I lived(간접화법 챕터)와 정확히 같은 규칙이에요.",
+        pitfall: "**Do you know where is the station?** — 간접의문 오류의 90%가 이 어순이에요. 의문문을 통째로 옮겨 심는 거죠. 묻는 힘은 문장 맨 앞의 Do you know가 이미 다 쓰고 있으니, 뒤따르는 절은 **평서문으로 쉬어도 돼요**. 간접화법의 asked where I lived(간접화법 챕터)와 정확히 같은 규칙이에요.",
       },
       {
         heading: "부가의문 — 문장 끝에 붙이는 \"그렇죠?\"",
@@ -708,7 +708,7 @@ const chapters = [
           { en: "What happened at the meeting?", ko: "회의에서 무슨 일이 있었어요?" },
           { en: "Who did you meet at the conference?", ko: "학회에서 누구를 만났어요?", note: "목적어 질문 — did 필요" },
         ],
-        pitfall: "**Who did break the vase?** — 주어를 묻는 질문에 did를 넣는 과잉교정이에요(따져 묻는 강조가 아닌 한 ×). 반대 방향 **Who you invited?**도 같은 빈도로 나와요. 한국어는 '누**가** 깼어?/누구**를** 초대했어?'처럼 조사가 구분해 주지만, 영어는 **do의 유무**가 그 일을 합니다.",
+        pitfall: "**Who did break the vase?** — 주어를 묻는 질문에 did를 넣는 과잉교정이에요(따져 묻는 강조가 아닌 한 ×). 반대 방향 **Who you invited?**도 같은 빈도로 나와요. 한국어는 '누**가** 깼어?/누구**를** 초대했어?'처럼 조사가 구분해 주지만, 영어는 **do의 유무**가 그 일을 해요.",
       },
     ],
   },

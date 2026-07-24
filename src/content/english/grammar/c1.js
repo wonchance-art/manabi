@@ -25,7 +25,7 @@ const chapters = [
           { en: "So be it.", ko: "그렇다면 그렇게 하지. (될 대로 되라지)", note: "it is가 아니라 be it — 어순까지 옛 모습 그대로예요." },
           { en: "Long live the difference!", ko: "차이 만세! (차이여 영원하라)", note: "lives가 아닌 live." },
         ],
-        etym: "subjunctive는 라틴어 subiungere(아래에 잇다)에서 왔어요 — sub(아래)+jungere(잇다, 영어 join·junction과 같은 뿌리). '주절 아래에 이어 붙는 절의 법'이라는 뜻이죠. 프랑스어 subjonctif와 같은 단어입니다.",
+        etym: "subjunctive는 라틴어 subiungere(아래에 잇다)에서 왔어요 — sub(아래)+jungere(잇다, 영어 join·junction과 같은 뿌리). '주절 아래에 이어 붙는 절의 법'이라는 뜻이죠. 프랑스어 subjonctif와 같은 단어예요.",
       },
       {
         heading: "요구·제안의 접속법 — I suggest (that) he be on time",
@@ -40,7 +40,7 @@ const chapters = [
           { en: "It is essential that every applicant submit the form by Friday.", ko: "모든 지원자는 금요일까지 양식을 제출하는 것이 필수입니다.", note: "submits가 아니라 submit." },
           { en: "She insisted that the meeting be postponed.", ko: "그녀는 회의를 연기할 것을 강하게 요청했다.", note: "insist가 '사실 주장'의 뜻일 땐 직설법: She insisted that he was innocent." },
         ],
-        pitfall: "한국 학습자는 수일치 훈련이 몸에 밴 나머지, 시험에서 that he be를 보고 '오타 아닌가?' 하고 he is로 고치는 실수를 해요. 반대 방향도 위험해요 — suggest가 '시사하다'라는 뜻일 땐 평범한 직설법입니다: The data suggest that the policy has failed. '요구의 뜻인가, 사실 서술인가'를 먼저 판별하세요.",
+        pitfall: "한국 학습자는 수일치 훈련이 몸에 밴 나머지, 시험에서 that he be를 보고 '오타 아닌가?' 하고 he is로 고치는 실수를 해요. 반대 방향도 위험해요 — suggest가 '시사하다'라는 뜻일 땐 평범한 직설법이에요: The data suggest that the policy has failed. '요구의 뜻인가, 사실 서술인가'를 먼저 판별하세요.",
       },
       {
         heading: "were 접속법 — If I were you, as it were",
@@ -55,7 +55,7 @@ const chapters = [
           { en: "He is, as it were, a walking dictionary.", ko: "그는 말하자면 걸어 다니는 사전이에요.", note: "직역하면 '그런 셈 치자면' — 비유를 쓸 때의 완충 장치." },
           { en: "I can work overtime, if need be.", ko: "필요하다면 야근도 할 수 있어요.", note: "if it is needed의 화석화된 압축형." },
         ],
-        vsKo: "한국어 '-라면/-다면'은 현실 가정(내일 비가 오면)과 비현실 가정(내가 새라면)을 같은 어미로 처리하고 맥락이 구분해줘요. 영어는 이 구분을 동사 형태(is/were)에 새기는 언어예요. 한국어 감각으로는 잉여처럼 느껴지는 were가, 영어 화자에게는 '지금부터 비현실 모드'라는 신호등 역할을 합니다.",
+        vsKo: "한국어 '-라면/-다면'은 현실 가정(내일 비가 오면)과 비현실 가정(내가 새라면)을 같은 어미로 처리하고 맥락이 구분해줘요. 영어는 이 구분을 동사 형태(is/were)에 새기는 언어예요. 한국어 감각으로는 잉여처럼 느껴지는 were가, 영어 화자에게는 '지금부터 비현실 모드'라는 신호등 역할을 해요.",
       },
       {
         heading: "lest와 격식 기원문 — 법률·문학의 흔적들",
@@ -130,7 +130,7 @@ const chapters = [
         patternKo: "동사·부사 차원의 정교한 헤징",
         body:
           "조동사 다음 단계는 어휘예요 — **동사**: appear to/seem to(~로 보인다), suggest/indicate(시사하다), tend to(~하는 경향이 있다), **부사**: arguably, presumably, reportedly, to some extent, **명사 우회**: There is a tendency to... / One possible explanation is...\n\n" +
-          "주목할 단어는 **arguably**예요 — '논거를 대서 주장할 수 있을 만큼', 즉 **꽤 강한 주장을 안전하게 던지는 장치**예요. Arguably the best defender in the league는 '최고라고 말해도 무리가 아니다'에 가깝습니다.",
+          "주목할 단어는 **arguably**예요 — '논거를 대서 주장할 수 있을 만큼', 즉 **꽤 강한 주장을 안전하게 던지는 장치**예요. Arguably the best defender in the league는 '최고라고 말해도 무리가 아니다'에 가까워요.",
         examples: [
           { en: "The results appear to support the hypothesis.", ko: "결과는 가설을 뒷받침하는 것으로 보인다.", note: "support라고 단정하지 않는 논문의 표준 동사." },
           { en: "Participants tended to overestimate their own performance.", ko: "참가자들은 자신의 수행을 과대평가하는 경향을 보였다.", note: "예외가 있었어도 안전한 서술." },
@@ -151,7 +151,7 @@ const chapters = [
           { en: "I'm afraid we're not in a position to lower the price at this stage.", ko: "죄송하지만 현 단계에서는 가격을 낮춰드릴 수 있는 상황이 아닙니다.", note: "No price cut을 세 겹으로 포장한 표준 거절문." },
           { en: "That's a fair point, though I wonder if we're underestimating the risk.", ko: "타당한 지적이에요. 다만 우리가 리스크를 과소평가하고 있는 건 아닐까 싶습니다.", note: "동의 → 전환 → 헤징된 반론. 회의 발언의 황금 공식." },
         ],
-        tip: "헤징은 '많이'가 아니라 '정확히'예요. 모든 문장에 maybe와 I think를 뿌리면 오히려 무능해 보여요. 원칙은 하나 — **사실은 단정하고, 해석은 헤징하라**. The revenue fell 12%(사실, 단정)... which may reflect seasonal factors(해석, 헤징). 이 리듬이 신뢰감 있는 영어의 핵심입니다.",
+        tip: "헤징은 '많이'가 아니라 '정확히'예요. 모든 문장에 maybe와 I think를 뿌리면 오히려 무능해 보여요. 원칙은 하나 — **사실은 단정하고, 해석은 헤징하라**. The revenue fell 12%(사실, 단정)... which may reflect seasonal factors(해석, 헤징). 이 리듬이 신뢰감 있는 영어의 핵심이에요.",
       },
     ],
   },
@@ -206,7 +206,7 @@ const chapters = [
           { en: "Could I ask a question? / I would like to inquire about the status of my application.", ko: "질문 하나 해도 될까요? / 제 지원서의 진행 상황을 문의드리고자 합니다.", note: "구어 대화 vs 공식 이메일." },
           { en: "The event will commence at 7 p.m. and conclude at 10 p.m.", ko: "행사는 오후 7시에 시작하여 10시에 종료됩니다.", note: "초대장의 언어 — start/end로 바꾸면 격식이 무너져요." },
         ],
-        vsKo: "한국어의 고유어/한자어 이중 구조와 정확히 평행해요 — '돕다/조력하다', '사다/구매하다', '끝내다/종료하다'. 한국어에서 한자어가 격식을 만들 듯, 영어에서는 라틴계가 격식을 만들어요. 여러분은 이 감각을 모어로 이미 갖고 있으니, '이 자리에 한자어를 쓸까 고유어를 쓸까'라는 익숙한 질문을 영어에 그대로 적용하면 됩니다.",
+        vsKo: "한국어의 고유어/한자어 이중 구조와 정확히 평행해요 — '돕다/조력하다', '사다/구매하다', '끝내다/종료하다'. 한국어에서 한자어가 격식을 만들 듯, 영어에서는 라틴계가 격식을 만들어요. 여러분은 이 감각을 모어로 이미 갖고 있으니, '이 자리에 한자어를 쓸까 고유어를 쓸까'라는 익숙한 질문을 영어에 그대로 적용하면 돼요.",
       },
       {
         heading: "구동사 vs 라틴 동사 — put off와 postpone",
@@ -245,7 +245,7 @@ const chapters = [
     title: "\"바로 그게 문제야\"라고 찍어 말하기",
     topic: "분열문·정보구조",
     titleFr: "Cleft Sentences and Information Structure",
-    summary: "한국어가 '은/는'과 어순으로 하는 일을, 영어는 it-cleft, what-cleft, 도치로 해요. 문장을 쪼개고 비틀어 스포트라이트를 옮기는 기술입니다.",
+    summary: "한국어가 '은/는'과 어순으로 하는 일을, 영어는 it-cleft, what-cleft, 도치로 해요. 문장을 쪼개고 비틀어 스포트라이트를 옮기는 기술이에요.",
     duration: "약 11분",
     sections: [
       {
@@ -259,7 +259,7 @@ const chapters = [
           { en: "A: Who broke the printer? — B: Tom broke it. (TOM에 강세)", ko: "A: 누가 프린터를 망가뜨렸어? — B: 톰이 그랬어.", note: "말에서는 강세로 충분하지만—" },
           { en: "It was Tom who broke the printer.", ko: "프린터를 망가뜨린 건 (다름 아닌) 톰이었다.", note: "글에서는 구조로 강세를 만들어요. 이것이 분열문." },
         ],
-        vsKo: "한국어는 이 작업을 조사로 해요. '톰이 프린터를 망가뜨렸다'(중립) vs '프린터는 톰이 망가뜨렸다'(주제-초점 재배치). '은/는'이 구정보·주제를 표시하고 '이/가'가 신정보·초점을 표시하니, 어순까지 자유롭죠. 영어에는 이 조사가 없어서 **구조 수술**로 같은 효과를 내는 거예요. '은/는을 어순 조작으로 번역한다'고 생각하면 분열문의 존재 이유가 단번에 이해됩니다.",
+        vsKo: "한국어는 이 작업을 조사로 해요. '톰이 프린터를 망가뜨렸다'(중립) vs '프린터는 톰이 망가뜨렸다'(주제-초점 재배치). '은/는'이 구정보·주제를 표시하고 '이/가'가 신정보·초점을 표시하니, 어순까지 자유롭죠. 영어에는 이 조사가 없어서 **구조 수술**로 같은 효과를 내는 거예요. '은/는을 어순 조작으로 번역한다'고 생각하면 분열문의 존재 이유가 단번에 이해돼요.",
       },
       {
         heading: "it-cleft — It was Tom who broke it",
@@ -267,7 +267,7 @@ const chapters = [
         patternKo: "'다른 누구도 아닌 바로 X' — 대조와 배타",
         body:
           "문장을 둘로 쪼개(cleave) 초점만 스포트라이트에 올리는 구문 — 핵심 뉘앙스는 **대조와 배타**('다른 누구도 아닌 바로 X')예요. Tom broke the printer yesterday에서 주어(It was Tom who...), 목적어(It was the printer that...), 부사어(It was yesterday that...) 무엇이든 초점으로 끌어올릴 수 있어요.\n\n" +
-          "이 '바로 그것' 함의 때문에 **반박과 정정**에 특히 강하고, 학술문에서는 It is this gap that the present study addresses처럼 연구의 초점 선언에 애용됩니다.",
+          "이 '바로 그것' 함의 때문에 **반박과 정정**에 특히 강하고, 학술문에서는 It is this gap that the present study addresses처럼 연구의 초점 선언에 애용돼요.",
         examples: [
           { en: "It was the timing, not the idea, that doomed the project.", ko: "프로젝트를 망친 건 아이디어가 아니라 타이밍이었다.", note: "대조를 문장 구조에 새겼어요." },
           { en: "It was only after the merger that the problems began to surface.", ko: "문제가 드러나기 시작한 것은 합병 이후에야였다.", note: "시간 부사구 초점 — 격식문 단골." },
@@ -281,7 +281,7 @@ const chapters = [
         patternKo: "뜸 들여 기대를 만든 뒤 답을 공개",
         body:
           "wh-절을 주어로 세우는 의사분열문이에요. it-cleft가 '바로 그것'이라며 찌른다면, what-cleft는 **뜸을 들여 기대를 만든 뒤 답을 공개**해요 — 그래서 회화에서 훨씬 자주 들려요: What I'm trying to say is...(요지는), What bothers me is..., What happened was...\n\n" +
-          "변형 **All + 절**은 '오직 그것뿐'이라는 최소화 초점이에요: All we need is one more week. 역방향 배치(Time is what we need)도 가능합니다.",
+          "변형 **All + 절**은 '오직 그것뿐'이라는 최소화 초점이에요: All we need is one more week. 역방향 배치(Time is what we need)도 가능해요.",
         examples: [
           { en: "What this company lacks is not talent but direction.", ko: "이 회사에 부족한 것은 인재가 아니라 방향이다.", note: "뜸 들이기 → 공개. 프레젠테이션의 한 방." },
           { en: "What I'm trying to say is that we're running out of time.", ko: "제가 드리려는 말씀은, 우리에게 시간이 없다는 겁니다.", note: "회화에서 요점 정리의 표준 서두." },
@@ -303,7 +303,7 @@ const chapters = [
           { en: "Under no circumstances should this document leave the building.", ko: "어떤 경우에도 이 문서가 건물 밖으로 나가서는 안 된다.", note: "보안 규정·계약서의 최고 강도 금지문." },
           { en: "At the end of the corridor stood a single locked door.", ko: "복도 끝에는 잠긴 문 하나가 서 있었다.", note: "장소구 도치 — 소설의 카메라워크." },
         ],
-        pitfall: "부정어 도치에서 도치를 빼먹는 게 단골 실수예요 — Never I have seen(X) → Never have I seen(○). 반대로 평범한 이메일에 도치를 쓰는 과잉도 문제예요. Not only did I attach the file...은 첨부파일 안내치고 너무 비장하죠. 도치는 연설·사설·강한 경고용 '예복'이라, 평상복 자리에 입고 나가면 어색합니다.",
+        pitfall: "부정어 도치에서 도치를 빼먹는 게 단골 실수예요 — Never I have seen(X) → Never have I seen(○). 반대로 평범한 이메일에 도치를 쓰는 과잉도 문제예요. Not only did I attach the file...은 첨부파일 안내치고 너무 비장하죠. 도치는 연설·사설·강한 경고용 '예복'이라, 평상복 자리에 입고 나가면 어색해요.",
       },
     ],
   },
@@ -315,7 +315,7 @@ const chapters = [
     title: "왜 영어는 시간을 돈처럼 쓸까",
     topic: "관용구·개념적 은유",
     titleFr: "Idioms and Conceptual Metaphor",
-    summary: "영어 관용구는 무작위 암기 대상이 아니라 개념적 은유라는 지도 위에 놓여 있어요. 한국어와 겹치는 지점, 어긋나는 지점을 짚으면 통째로 보입니다.",
+    summary: "영어 관용구는 무작위 암기 대상이 아니라 개념적 은유라는 지도 위에 놓여 있어요. 한국어와 겹치는 지점, 어긋나는 지점을 짚으면 통째로 보여요.",
     duration: "약 10분",
     sections: [
       {
@@ -324,7 +324,7 @@ const chapters = [
         patternKo: "관용구는 낱개 암기가 아니라 은유 지도",
         body:
           "spend time, waste time, save time, invest time — 시간 동사가 전부 **돈 동사**인 건 우연이 아니에요. 레이코프와 존슨이 말한 **개념적 은유(conceptual metaphor)** — 한 영역(시간)을 다른 영역(돈)의 논리로 통째로 이해하는 사고의 틀이에요. **TIME IS MONEY** 은유 하나가 수십 개의 표현을 낳죠.\n\n" +
-          "관용구를 낱개로 외우면 수천 개의 무작위 암기지만, **은유 체계로 묶으면 수십 개의 지도**가 돼요. 새 표현을 만나도 계열을 짚으면 뜻이 추론됩니다.",
+          "관용구를 낱개로 외우면 수천 개의 무작위 암기지만, **은유 체계로 묶으면 수십 개의 지도**가 돼요. 새 표현을 만나도 계열을 짚으면 뜻이 추론돼요.",
         examples: [
           { en: "Thanks for your time — I know it's valuable.", ko: "시간 내주셔서 감사해요 — 귀한 시간인 거 알아요.", note: "시간이 '가치 있는 자산'으로 개념화돼 있어요." },
           { en: "We're running out of time. Let's not waste it on details.", ko: "시간이 떨어져 가요. 세부 사항에 낭비하지 맙시다.", note: "run out(고갈되다), waste(낭비하다) — 전부 자원의 어휘." },
@@ -385,7 +385,7 @@ const chapters = [
           { en: "The bottom line is, we can't afford another delay.", ko: "결론은, 더 이상의 지연은 감당할 수 없다는 겁니다.", note: "bottom line = 회계 장부 맨 아랫줄(순이익) — 비즈니스 은유 출신." },
           { en: "In the long run, investing in training pays off.", ko: "길게 보면 교육에 대한 투자는 보상으로 돌아온다.", note: "pay off까지 — TIME IS MONEY 가족이 격식문에서도 일하는 모습." },
         ],
-        pitfall: "관용구 남용은 부족보다 위험해요. 원어민도 한 문단에 관용구를 두세 개씩 쓰지 않습니다. 특히 막 외운 표현을 시험해보고 싶은 욕심에 어색한 자리에 끼워 넣으면, '교과서를 외워 온 사람'이라는 인상만 남아요. 처음 쓰는 관용구는 반드시 원어민이 그 상황에서 쓰는 걸 두 번 이상 목격한 후에 따라 하세요.",
+        pitfall: "관용구 남용은 부족보다 위험해요. 원어민도 한 문단에 관용구를 두세 개씩 쓰지 않아요. 특히 막 외운 표현을 시험해보고 싶은 욕심에 어색한 자리에 끼워 넣으면, '교과서를 외워 온 사람'이라는 인상만 남아요. 처음 쓰는 관용구는 반드시 원어민이 그 상황에서 쓰는 걸 두 번 이상 목격한 후에 따라 하세요.",
       },
     ],
   },
@@ -411,7 +411,7 @@ const chapters = [
           { en: "We looked at how people behave when prices go up. → This study examines consumer behavior under rising prices.", ko: "우리는 가격이 오를 때 사람들이 어떻게 행동하는지 살펴봤다. → 본 연구는 물가 상승 하의 소비자 행동을 고찰한다.", note: "절 3개 → 절 1개. 같은 내용, 학술적 밀도." },
           { en: "I think this is wrong. → This interpretation is open to question.", ko: "내 생각엔 이건 틀렸다. → 이 해석은 의문의 여지가 있다.", note: "'나'를 지우고 비판의 강도도 낮춘 이중 변환." },
         ],
-        vsKo: "한국어 논문 문체('-된다', '-로 사료된다', '고찰하였다')에 익숙하다면 큰 자산이에요 — 탈인격·신중함의 감각이 그대로 통하거든요. 다만 차이가 하나 있어요. 한국 논문의 '본 연구자는'식 겸양과 달리, 영어 학술문은 최근 **I/we를 점점 허용하는 추세**예요(특히 사회과학·인문학). We argue that...은 이제 표준이에요. '무조건 나를 숨겨야 한다'는 옛 규칙으로 과잉 교정하지 마세요 — 분야의 최신 논문 서너 편을 보고 그 분야의 관행을 따르는 게 정답입니다.",
+        vsKo: "한국어 논문 문체('-된다', '-로 사료된다', '고찰하였다')에 익숙하다면 큰 자산이에요 — 탈인격·신중함의 감각이 그대로 통하거든요. 다만 차이가 하나 있어요. 한국 논문의 '본 연구자는'식 겸양과 달리, 영어 학술문은 최근 **I/we를 점점 허용하는 추세**예요(특히 사회과학·인문학). We argue that...은 이제 표준이에요. '무조건 나를 숨겨야 한다'는 옛 규칙으로 과잉 교정하지 마세요 — 분야의 최신 논문 서너 편을 보고 그 분야의 관행을 따르는 게 정답이에요.",
       },
       {
         heading: "명사화 — 동사를 명사로 접는 기술",
@@ -465,7 +465,7 @@ const chapters = [
           { en: "While it is true that the sample was small, the effect size was consistent across all subgroups.", ko: "표본이 작았던 것은 사실이지만, 효과 크기는 모든 하위 집단에서 일관되게 나타났다.", note: "예상 비판을 선점하는 양보 구문." },
           { en: "Further research is needed to confirm these preliminary results.", ko: "이 예비적 결과를 확증하기 위해서는 후속 연구가 필요하다.", note: "결론부의 만국 공통 마무리 공식." },
         ],
-        tip: "학술 문형은 분야별 '말뭉치'에서 훔치는 게 정석이에요. 자기 분야 논문 10편에서 서론·결론의 문형만 발췌해 개인 문형집을 만들어 보세요. Manchester Academic Phrasebank처럼 공개된 학술 문형 은행도 좋은 출발점이에요. 학술 영어는 창작이 아니라 **관습의 정확한 재사용**이라는 점 — 이게 이 챕터의 결론입니다.",
+        tip: "학술 문형은 분야별 '말뭉치'에서 훔치는 게 정석이에요. 자기 분야 논문 10편에서 서론·결론의 문형만 발췌해 개인 문형집을 만들어 보세요. Manchester Academic Phrasebank처럼 공개된 학술 문형 은행도 좋은 출발점이에요. 학술 영어는 창작이 아니라 **관습의 정확한 재사용**이라는 점 — 이게 이 챕터의 결론이에요.",
       },
     ],
   },
@@ -520,7 +520,7 @@ const chapters = [
           { en: "He suggested a better approach to the team.", ko: "그는 팀에 더 나은 접근법을 제안했다.", note: "suggest me ×" },
           { en: "She was awarded first prize for her thesis.", ko: "그녀는 논문으로 1등상을 받았다.", note: "수혜자 주어 수동" },
         ],
-        pitfall: "**explain me the rule / suggest me a place** — C1 레벨에서도 잔존하는 최장수 오류예요. '나에게 설명하다'의 어순 직역이죠. give류(주로 짧은 게르만계)와 달리 explain·suggest·introduce류(라틴계)는 사람 목적어를 바로 못 받습니다. Can you recommend a restaurant **to us**? — 사물 먼저, 사람은 to 뒤.",
+        pitfall: "**explain me the rule / suggest me a place** — C1 레벨에서도 잔존하는 최장수 오류예요. '나에게 설명하다'의 어순 직역이죠. give류(주로 짧은 게르만계)와 달리 explain·suggest·introduce류(라틴계)는 사람 목적어를 바로 못 받아요. Can you recommend a restaurant **to us**? — 사물 먼저, 사람은 to 뒤.",
       },
       {
         heading: "to부정사 vs 원형 — 보어 형태의 면허 체계",
@@ -583,7 +583,7 @@ const chapters = [
           { en: "My grandfather would tell us stories by the fire.", ko: "할아버지는 화롯가에서 이야기를 들려주시곤 했어요.", note: "회고 모드의 would" },
           { en: "I'm used to driving on the left now.", ko: "이젠 좌측 운전에 익숙해요.", note: "to + -ing" },
         ],
-        pitfall: "**I'm used to wake up early.**(×) — used to(과거 습관)와 be used to(익숙함)의 혼선이 만드는 단골 오류예요. be가 보이면 to는 전치사 → **waking**. 거꾸로 과거 습관에 be를 끼우는 I was used to play(×)도 같은 혼선 — **be가 없으면 원형, be가 있으면 -ing**입니다.",
+        pitfall: "**I'm used to wake up early.**(×) — used to(과거 습관)와 be used to(익숙함)의 혼선이 만드는 단골 오류예요. be가 보이면 to는 전치사 → **waking**. 거꾸로 과거 습관에 be를 끼우는 I was used to play(×)도 같은 혼선 — **be가 없으면 원형, be가 있으면 -ing**이에요.",
       },
       {
         heading: "be to와 be about to — 격식의 예정, 임박의 순간",
@@ -605,13 +605,13 @@ const chapters = [
         patternKo: "기준점을 과거로 옮긴 미래",
         body:
           "이야기의 기준점이 과거이면, 그 시점의 '미래'도 과거형 장비로 말해요 — **would**는 과거에서 내다본 미래(He didn't know it then, but he **would** become president. — 후에 대통령이 된다), **was going to**는 그때의 계획·조짐인데 **'결국 안 됐다'는 함의**가 자주 실려요 — I **was going to** call you, but my phone died.\n\n" +
-          "간접화법의 will→would 후퇴(B1 간접화법 챕터)도 사실 이 원리의 한 갈래예요. 소설·전기·회고록에서 이 장비를 읽어내면 시간의 겹이 보입니다.",
+          "간접화법의 will→would 후퇴(B1 간접화법 챕터)도 사실 이 원리의 한 갈래예요. 소설·전기·회고록에서 이 장비를 읽어내면 시간의 겹이 보여요.",
         examples: [
           { en: "She was going to study abroad, but the pandemic changed everything.", ko: "그녀는 유학을 가려고 했지만, 팬데믹이 모든 걸 바꿔놨어요.", note: "무산의 함의" },
           { en: "It was a decision that would change his life.", ko: "그것은 그의 인생을 바꾸게 될 결정이었다.", note: "전기·내레이션의 would" },
           { en: "The meeting was to take place in May.", ko: "회의는 5월에 열리기로 되어 있었다." },
         ],
-        vsKo: "한국어도 '-하려고 했다', '-할 예정이었다', '-하게 될 것이었다'로 같은 일을 해요. 주목할 것은 was going to에 실리는 **무산의 기류** — I was going to say something은 '말하려고 했는데 (안 했다/못 했다)'까지 들려요. 한국어 '-려고 했다'와 거의 같은 함의라, 이 문형만큼은 모어의 직감이 그대로 통합니다.",
+        vsKo: "한국어도 '-하려고 했다', '-할 예정이었다', '-하게 될 것이었다'로 같은 일을 해요. 주목할 것은 was going to에 실리는 **무산의 기류** — I was going to say something은 '말하려고 했는데 (안 했다/못 했다)'까지 들려요. 한국어 '-려고 했다'와 거의 같은 함의라, 이 문형만큼은 모어의 직감이 그대로 통해요.",
       },
       {
         heading: "미래완료와 미래완료진행 — 미래의 한 점에서 뒤돌아보기",
@@ -625,7 +625,7 @@ const chapters = [
           { en: "Next month, we'll have been living here for five years.", ko: "다음 달이면 여기 산 지 5년이 돼요." },
           { en: "Will you be joining us for dinner?", ko: "저녁 함께하실 건가요?", note: "미래진행 = 공손한 확인" },
         ],
-        pitfall: "**By the time he will arrive...**(×) — by the time은 시간절이라 will 금지, 현재시제(by the time he **arrives**)예요. 그리고 미래완료를 아무 미래에나 쓰는 과잉도 주의 — **by류 기준점이 없으면 그냥 미래시제**가 정답입니다. 단순 예고는 I will finish it tomorrow면 충분해요.",
+        pitfall: "**By the time he will arrive...**(×) — by the time은 시간절이라 will 금지, 현재시제(by the time he **arrives**)예요. 그리고 미래완료를 아무 미래에나 쓰는 과잉도 주의 — **by류 기준점이 없으면 그냥 미래시제**가 정답이에요. 단순 예고는 I will finish it tomorrow면 충분해요.",
       },
     ],
   },
