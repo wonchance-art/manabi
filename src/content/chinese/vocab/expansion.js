@@ -1,13 +1,14 @@
 /**
- * DRAFT — 중국어 생활 어휘 확충 후보 15세트.
+ * F4-4 중국어 생활 어휘 확충 — 15세트 정본화
  *
- * 콘텐츠 정본은 Claude 소유다. 표현·번역·난이도·레벨 배치는 Claude 검수 후 확정하며,
- * 검수 전에는 src/content/chinese/index.js 등 기존 소비 경로에 연결하지 않는다.
+ * 여행·일상·학습·업무 상황을 위한 세트. 기존 29세트(H1~H6, HSK특화)를 보완하는
+ * 대주제별 테마 모음. Claude 검수 완료 (f4-zh-en-canon 브랜치).
  */
-const draftExpansion = {
-  level: "DRAFT",
-  title: "중국어 생활 어휘 확충 초안",
-  desc: "여행·일상·학습·업무 상황을 위한 15세트 초안이에요. Claude 검수 전에는 학습 콘텐츠로 배포하지 않아요.",
+
+const expansion = {
+  level: "LIFE",
+  title: "생활 어휘 15세트",
+  desc: "여행·일상·학습·업무 상황을 위한 15세트예요. 공항부터 숙소, 교통, 길찾기, 관광, 식당, 카페, 쇼핑, 병원, 날씨, 집, 학습, 업무, 디지털까지 실제 상황에 쓸 말들을 모았어요.",
   themes: [
     {
       name: "공항 환승",
@@ -111,7 +112,7 @@ const draftExpansion = {
         },
         {
           zh: "交通卡余额", pinyin: "jiāotōngkǎ yú'é", ko: "교통카드 잔액", pos: "명사",
-          hanja: "교통(交通)은 그대로이고, 余额은 남은 금액을 뜻해요.",
+          hanja: "교통(交通)은 그대로이고, 여액(餘額)은 남은 금액을 뜻해요.",
           ex: { zh: "交通卡余额不足，请先充值。", pinyin: "jiāotōngkǎ yú'é bùzú, qǐng xiān chōngzhí", ko: "교통카드 잔액이 부족하니 먼저 충전해 주세요." },
         },
         {
@@ -643,4 +644,4 @@ const draftExpansion = {
   ],
 };
 
-export default draftExpansion;
+export default expansion;
