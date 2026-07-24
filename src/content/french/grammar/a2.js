@@ -19,7 +19,7 @@ const chapters = [
         patternKo: "회화의 '~했어요'를 담당하는 복합과거",
         body:
           "회화에서 '~했어요'를 담당하는 시제가 **passé composé**(복합과거)예요. J'ai mangé.(나 먹었어.)\n\n" +
-          "**avoir만 인칭에 따라 변하고**, 과거분사는 (avoir 조동사일 때는) 변하지 않아요.",
+          "**avoir만 인칭에 따라 변하고**, 과거분사는 (avoir 조동사일 때는) 원칙적으로 변하지 않아요. 예외 하나만 예고: 직접목적어가 동사 **앞으로** 나오면 과거분사가 그에 일치해요 — la pomme que j'ai mang**ée**(내가 먹은 사과). 정밀 규칙은 뒤에서 다뤄요.",
         table: {
           caption: "manger의 passé composé",
           headers: ["인칭", "형태", "발음"],
@@ -119,7 +119,8 @@ const chapters = [
         patternKo: "이동·상태변화 동사는 조동사로 être와 결합",
         body:
           "대부분의 동사는 avoir를 쓰지만, **이동·상태변화를 나타내는 한 줌의 동사들은 être**를 써요.\n\n" +
-          "aller/venir, arriver/partir, entrer/sortir, monter/descendre, naître/mourir, rester, tomber, retourner, passer — 대부분 **반의어 짝**이라 쌍으로 외우면 효율적이에요.",
+          "aller/venir, arriver/partir, entrer/sortir, monter/descendre, naître/mourir, rester, tomber, retourner, passer — 대부분 **반의어 짝**이라 쌍으로 외우면 효율적이에요.\n\n" +
+          "주의: 이 중 **sortir·monter·descendre·retourner·passer는 목적어를 가지면 avoir**로 갈아타요 — J'ai sorti la poubelle(쓰레기를 내놨어요), J'ai monté les valises(짐을 올렸어요). '이동 그 자체'면 être, '무언가를 ~하다'면 avoir예요.",
         examples: [
           { fr: "Je suis allé au cinéma.", ipa: "[ʒə sɥizale o sinema]", ko: "저는 영화관에 갔어요. (남성 화자)" },
           { fr: "Elle est partie à huit heures.", ipa: "[ɛl ɛ paʁti a ɥitœʁ]", ko: "그녀는 8시에 떠났어요." },
@@ -157,7 +158,7 @@ const chapters = [
         pattern: "이동·상태변화 + 모든 대명동사 → être · 나머지 전부 → avoir",
         patternKo: "대명동사도 전원 être — 헷갈리면 avoir가 기본값",
         body:
-          "잠시 뒤 배울 **대명동사(se lever 등)도 전부 être**를 조동사로 써요: Je me suis levé(나는 일어났어요).\n\n" +
+          "잠시 뒤 배울 **대명동사(se lever 등)도 전부 être**를 조동사로 써요: Je me suis levé(나는 일어났어요). 과거분사 일치는 대개 주어를 따르지만 예외가 있어요 — se가 간접목적이면 무일치(Elles se sont parlé — 서로 이야기했다), 뒤에 직접목적어가 오면 무일치(Elle s'est lavé les mains — 손을 씻었다).\n\n" +
           "조동사 선택은 이 공식 하나로 끝이에요. 헷갈리면 **avoir가 기본값**이에요.",
         examples: [
           { fr: "Je me suis levé tôt.", ipa: "[ʒə mə sɥi ləve to]", ko: "저는 일찍 일어났어요. (예고편)" },
