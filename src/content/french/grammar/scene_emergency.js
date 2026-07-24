@@ -317,7 +317,36 @@ const chapters = [
       "아픈 부위와 증상을 말하고 도움을 요청한 뒤, 잃어버린 물건과 특징을 차분히 설명해요.",
     duration: "약 15분",
     sections: [
+      // 샌드위치 v2 시험 적용 — avoir mal à·J\'ai perdu 문형은 Tatoeba 다수 실재 계열. 대화는 자체 저작.
       {
+        type: "authenticIntro",
+        heading: "약국·분실 창구 실전 대화 통째로 듣기",
+        presentationFraming: "못 알아들어도 정상이에요! 아픈 상태를 알리는 장면과 분실 신고 장면, 두 상황을 먼저 통째로 들어 보세요 — J\'ai mal…과 la perte…만 귀에 걸리면 충분해요.",
+        dialogue: [
+              { speaker: "여행자", fr: "J'ai mal à la tête et j'ai de la fièvre.", ipa: "[ʒe mal a la tɛt e ʒe də la fjɛvʁ]", ko: "머리가 아프고 열이 나요." },
+              { speaker: "보건 안내 직원", fr: "Vous vous sentez faible ?", ipa: "[vu vu sɑ̃te fɛbl]", ko: "몸에 힘이 없나요?" },
+              { speaker: "여행자", fr: "Oui. J'ai besoin d'un médecin.", ipa: "[wi ʒe bəzwɛ̃ dœ̃ medsɛ̃]", ko: "네. 의사가 필요해요." },
+              { speaker: "보건 안내 직원", fr: "D'accord. Asseyez-vous ici.", ipa: "[dakɔʁ aseje vu isi]", ko: "알겠습니다. 여기에 앉으세요." },
+              { speaker: "여행자", fr: "Je souhaite signaler la perte de mon portefeuille.", ipa: "[ʒə swɛt siɲale la pɛʁt də mɔ̃ pɔʁtəfœj]", ko: "지갑 분실을 신고하려고 해요." },
+              { speaker: "분실물 직원", fr: "Quelle est sa description ?", ipa: "[kɛl ɛ sa dɛskʁipsjɔ̃]", ko: "특징이 어떻게 되나요?" },
+              { speaker: "여행자", fr: "Il est petit et noir.", ipa: "[il ɛ pəti e nwaʁ]", ko: "작고 검은색이에요." },
+              { speaker: "분실물 직원", fr: "Où l'avez-vous vu pour la dernière fois ?", ipa: "[u lave vu puʁ la dɛʁnjɛʁ fwa]", ko: "마지막으로 어디에서 보셨나요?" },
+        ],
+      },
+      {
+        type: "vocabPreview",
+        heading: "오늘 배울 단어",
+        vocabs: [
+          { word: "avoir mal à", meanings: ["~이 아프다"], exampleSentence: "J'ai mal à la tête." },
+          { word: "la fièvre", meanings: ["열"], exampleSentence: "J'ai de la fièvre." },
+          { word: "se sentir", meanings: ["(몸 상태가) ~하게 느끼다"], exampleSentence: "Vous vous sentez faible ?" },
+          { word: "avoir besoin de", meanings: ["~이 필요하다"], exampleSentence: "J'ai besoin d'un médecin." },
+          { word: "perdre", meanings: ["잃어버리다"], exampleSentence: "J'ai perdu mon portefeuille.", note: "과거분사 perdu로 자주 만나요" },
+          { word: "la perte", meanings: ["분실"], exampleSentence: "Je souhaite signaler la perte de mon portefeuille." },
+        ],
+      },
+      {
+        type: "patternExplanation",
         heading: "아픈 부위 말하기 — avoir mal à를 한 덩어리로 써요",
         pattern:
           "J'ai mal à la/au/aux + 신체 부위.",
@@ -342,6 +371,7 @@ const chapters = [
           "신체 부위 앞에는 소유형용사보다 정관사를 쓰는 것이 기본이에요. J'ai mal à ma tête가 아니라 J'ai mal à la tête라고 해요.",
       },
       {
+        type: "patternExplanation",
         heading: "증상 말하기 — j'ai와 je me sens로 상태를 나눠요",
         pattern:
           "J'ai + 증상 명사. · Je me sens + 상태 형용사.",
@@ -366,6 +396,7 @@ const chapters = [
           "정확한 병명을 추측하기보다 지금 느끼는 증상과 아픈 부위를 짧게 나눠 말하면 도움을 요청하기 쉬워요.",
       },
       {
+        type: "patternExplanation",
         heading: "도움 요청하기 — besoin으로 필요한 대상을 바로 말해요",
         pattern:
           "J'ai besoin d'aide/d'un médecin. · C'est urgent.",
@@ -390,6 +421,7 @@ const chapters = [
           "긴 문장을 만들기 어려우면 C'est urgent와 J'ai besoin d'aide를 각각 끊어 말해도 돼요. 주변 사람이 상황의 우선순위를 바로 파악할 수 있어요.",
       },
       {
+        type: "patternExplanation",
         heading: "분실 사실 말하기 — perdu와 disparu를 구별해요",
         pattern:
           "J'ai perdu + 물건. · Mon/Ma + 물건 + a disparu.",
@@ -414,6 +446,7 @@ const chapters = [
           "분실과 절도를 확실히 구분할 정보가 없다면 먼저 perdu 또는 disparu로 사실만 말해요. 추측 대신 마지막으로 본 장소와 물건 특징을 이어서 설명하면 돼요.",
       },
       {
+        type: "patternExplanation",
         heading: "분실 신고 이어가기 — perte와 description으로 정보를 보태요",
         pattern:
           "Je souhaite signaler la perte de + 물건. · Voici sa description : ...",
@@ -438,26 +471,30 @@ const chapters = [
           "색과 크기 외에도 마지막으로 본 장소를 함께 적어 두면 신고가 쉬워요. 개인 식별 정보는 공개된 장소에서 큰소리로 말하지 않아요.",
       },
       {
-        heading: "대화 예시 — 몸 상태와 잃어버린 물건 설명하기",
-        body:
-          "긴급도를 과장하지 않고, 확인된 증상과 물건 정보부터 차례로 말하는 두 대화를 읽어 봐요.",
-        examples: [
-          {
-            dialogue: [
+        type: "authenticReplay",
+        heading: "같은 대화, 이제 다시 들어 보기",
+        presentationFraming: "문형을 배웠으니 처음 대화를 다시 들어 보고, 이어지는 장면까지 확장해 보세요.",
+        original: {
+          dialogue: [
               { speaker: "여행자", fr: "J'ai mal à la tête et j'ai de la fièvre.", ipa: "[ʒe mal a la tɛt e ʒe də la fjɛvʁ]", ko: "머리가 아프고 열이 나요." },
               { speaker: "보건 안내 직원", fr: "Vous vous sentez faible ?", ipa: "[vu vu sɑ̃te fɛbl]", ko: "몸에 힘이 없나요?" },
               { speaker: "여행자", fr: "Oui. J'ai besoin d'un médecin.", ipa: "[wi ʒe bəzwɛ̃ dœ̃ medsɛ̃]", ko: "네. 의사가 필요해요." },
               { speaker: "보건 안내 직원", fr: "D'accord. Asseyez-vous ici.", ipa: "[dakɔʁ aseje vu isi]", ko: "알겠습니다. 여기에 앉으세요." },
-            ],
-          },
-          {
-            dialogue: [
+          ],
+        },
+        variant: {
+          dialogue: [
               { speaker: "여행자", fr: "Je souhaite signaler la perte de mon portefeuille.", ipa: "[ʒə swɛt siɲale la pɛʁt də mɔ̃ pɔʁtəfœj]", ko: "지갑 분실을 신고하려고 해요." },
               { speaker: "분실물 직원", fr: "Quelle est sa description ?", ipa: "[kɛl ɛ sa dɛskʁipsjɔ̃]", ko: "특징이 어떻게 되나요?" },
               { speaker: "여행자", fr: "Il est petit et noir.", ipa: "[il ɛ pəti e nwaʁ]", ko: "작고 검은색이에요." },
               { speaker: "분실물 직원", fr: "Où l'avez-vous vu pour la dernière fois ?", ipa: "[u lave vu puʁ la dɛʁnjɛʁ fwa]", ko: "마지막으로 어디에서 보셨나요?" },
-            ],
-          },
+          ],
+          transitionNote: "몸 상태 알리기에서 분실 신고로 장면이 바뀌지만, 내 상태·내 물건을 한 문장씩 설명한다는 뼈대는 같아요 — description을 묻는 질문에 짧게 답해 보세요.",
+        },
+        selfCheckOptions: [
+          { label: "다 들렸어요 (정확히 이해)", value: "full", fsrsSignal: 1 },
+          { label: "부분만 들렸어요 (주요 단어만)", value: "partial", fsrsSignal: 0.5 },
+          { label: "아직이에요 (계속 연습 필요)", value: "notready", fsrsSignal: -1 },
         ],
       },
       {
@@ -550,6 +587,15 @@ const chapters = [
             },
           ],
         },
+      },
+      {
+        type: "practiceAndRegistration",
+        heading: "연습: 직접 말해 보기",
+        writingPrompts: [
+          "두통과 피로를 함께 알리고 의사가 필요하다고 말하는 3문장을 만들어 보세요.",
+          "가방을 잃어버린 상황으로 바꿔, perte 신고와 색·크기 설명 2문장을 만들어 보세요.",
+        ],
+        autoRegisterVocabs: true,
       },
     ],
   },

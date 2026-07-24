@@ -16,7 +16,36 @@ const chapters = [
       "입국 절차에서 방문 목적과 체류 정보를 답하고, 수하물과 신고할 물품이 있는지 확인해요.",
     duration: "약 15분",
     sections: [
+      // 샌드위치 v2 시험 적용 — Je viens pour…·n\'est pas arrivé 계열은 배치 1과 동일 절차로 실재 확인. 대화는 자체 저작.
       {
+        type: "authenticIntro",
+        heading: "입국 심사·수하물 실전 대화 통째로 듣기",
+        presentationFraming: "못 알아들어도 정상이에요! 입국 심사의 질문 세 개와 수하물 문의, 여행의 첫 관문을 먼저 통째로 들어 보세요 — 질문 쪽 표현이 들리기 시작하면 성공이에요.",
+        dialogue: [
+              { speaker: "입국 직원", fr: "Quel est le motif de votre voyage ?", ipa: "[kɛl ɛ lə mɔtif də vɔtʁ vwajaʒ]", ko: "여행 목적이 무엇인가요?" },
+              { speaker: "여행자", fr: "Je viens pour le tourisme.", ipa: "[ʒə vjɛ̃ puʁ lə tuʁism]", ko: "관광하러 왔어요." },
+              { speaker: "입국 직원", fr: "Vous restez combien de temps ?", ipa: "[vu ʁɛste kɔ̃bjɛ̃ də tɑ̃]", ko: "얼마나 머무르나요?" },
+              { speaker: "여행자", fr: "Je reste cinq jours. Je loge dans un hôtel près de la gare.", ipa: "[ʒə ʁɛst sɛ̃k ʒuʁ ʒə lɔʒ dɑ̃z œ̃n otɛl pʁɛ də la ɡaʁ]", ko: "5일 동안 머물러요. 역 근처 호텔에 묵어요." },
+              { speaker: "여행자", fr: "Excusez-moi, mon bagage n'est pas arrivé.", ipa: "[ɛkskyze mwa mɔ̃ baɡaʒ nɛ pa aʁive]", ko: "실례합니다, 제 수하물이 나오지 않았어요." },
+              { speaker: "수하물 직원", fr: "Vous avez votre reçu de bagage ?", ipa: "[vuzave vɔtʁ ʁəsy də baɡaʒ]", ko: "수하물표가 있나요?" },
+              { speaker: "여행자", fr: "Oui, le voici.", ipa: "[wi lə vwasi]", ko: "네, 여기 있어요." },
+              { speaker: "수하물 직원", fr: "Merci. Je vais vérifier.", ipa: "[mɛʁsi ʒə vɛ veʁifje]", ko: "감사합니다. 확인해 볼게요." },
+        ],
+      },
+      {
+        type: "vocabPreview",
+        heading: "오늘 배울 단어",
+        vocabs: [
+          { word: "le motif", meanings: ["목적", "사유"], exampleSentence: "Quel est le motif de votre voyage ?" },
+          { word: "le tourisme", meanings: ["관광"], exampleSentence: "Je viens pour le tourisme." },
+          { word: "rester", meanings: ["머무르다"], exampleSentence: "Je reste cinq jours." },
+          { word: "loger", meanings: ["묵다", "숙박하다"], exampleSentence: "Je loge dans un hôtel." },
+          { word: "le bagage", meanings: ["수하물", "짐"], exampleSentence: "Mon bagage n'est pas arrivé." },
+          { word: "le reçu", meanings: ["영수증", "수취증"], exampleSentence: "Vous avez votre reçu de bagage ?" },
+        ],
+      },
+      {
+        type: "patternExplanation",
         heading: "방문 목적 말하기 — je viens pour로 이유를 붙여요",
         pattern:
           "Je viens pour + 명사. · Je viens pour + 동사원형.",
@@ -40,6 +69,7 @@ const chapters = [
           "목적을 길게 설명하기보다 tourisme, études, travail처럼 질문에 맞는 핵심어부터 말해요.",
       },
       {
+        type: "patternExplanation",
         heading: "체류 기간 답하기 — rester와 pendant를 써요",
         pattern:
           "Je reste + 기간. · Je reste pendant + 기간.",
@@ -63,6 +93,7 @@ const chapters = [
           "숫자 뒤에는 jour나 semaine을 기간에 맞게 써요. 2 이상이면 deux jours, deux semaines처럼 복수형으로 말해요.",
       },
       {
+        type: "patternExplanation",
         heading: "머무를 곳 말하기 — je loge와 chez를 구별해요",
         pattern:
           "Je loge dans + 숙소 유형. · Je loge chez + 관계.",
@@ -86,6 +117,7 @@ const chapters = [
           "숙소 이름을 말하기 어렵다면 예약 확인서의 주소를 가리키며 Voici l'adresse라고 덧붙여도 돼요.",
       },
       {
+        type: "patternExplanation",
         heading: "수하물 찾기 — tapis와 bagage로 위치를 물어요",
         pattern:
           "Sur quel tapis arrivent les bagages du vol de + 출발지 ? · Mon bagage n'est pas arrivé.",
@@ -109,6 +141,7 @@ const chapters = [
           "짐이 보이지 않으면 수하물표를 준비하고 항공편 출발지만 말해요. 가방의 특징은 직원이 물을 때 이어서 설명해요.",
       },
       {
+        type: "patternExplanation",
         heading: "세관 질문 답하기 — rien과 quelque chose로 나눠요",
         pattern:
           "Je n'ai rien à déclarer. · J'ai quelque chose à déclarer.",
@@ -132,26 +165,30 @@ const chapters = [
           "규정을 잘 모르겠다면 Est-ce que je dois déclarer ceci ?라고 물으며 해당 물품을 보여 줘요.",
       },
       {
-        heading: "대화 예시 — 입국 질문과 수하물 문제에 대응하기",
-        body:
-          "질문 하나에 정보 하나씩 답하는 입국 대화와, 수하물표를 준비해 문제를 알리는 대화를 읽어 봐요.",
-        examples: [
-          {
-            dialogue: [
+        type: "authenticReplay",
+        heading: "같은 대화, 이제 다시 들어 보기",
+        presentationFraming: "문형을 배웠으니 처음 대화를 다시 들어 보고, 이어지는 장면까지 확장해 보세요.",
+        original: {
+          dialogue: [
               { speaker: "입국 직원", fr: "Quel est le motif de votre voyage ?", ipa: "[kɛl ɛ lə mɔtif də vɔtʁ vwajaʒ]", ko: "여행 목적이 무엇인가요?" },
               { speaker: "여행자", fr: "Je viens pour le tourisme.", ipa: "[ʒə vjɛ̃ puʁ lə tuʁism]", ko: "관광하러 왔어요." },
               { speaker: "입국 직원", fr: "Vous restez combien de temps ?", ipa: "[vu ʁɛste kɔ̃bjɛ̃ də tɑ̃]", ko: "얼마나 머무르나요?" },
               { speaker: "여행자", fr: "Je reste cinq jours. Je loge dans un hôtel près de la gare.", ipa: "[ʒə ʁɛst sɛ̃k ʒuʁ ʒə lɔʒ dɑ̃z œ̃n otɛl pʁɛ də la ɡaʁ]", ko: "5일 동안 머물러요. 역 근처 호텔에 묵어요." },
-            ],
-          },
-          {
-            dialogue: [
+          ],
+        },
+        variant: {
+          dialogue: [
               { speaker: "여행자", fr: "Excusez-moi, mon bagage n'est pas arrivé.", ipa: "[ɛkskyze mwa mɔ̃ baɡaʒ nɛ pa aʁive]", ko: "실례합니다, 제 수하물이 나오지 않았어요." },
               { speaker: "수하물 직원", fr: "Vous avez votre reçu de bagage ?", ipa: "[vuzave vɔtʁ ʁəsy də baɡaʒ]", ko: "수하물표가 있나요?" },
               { speaker: "여행자", fr: "Oui, le voici.", ipa: "[wi lə vwasi]", ko: "네, 여기 있어요." },
               { speaker: "수하물 직원", fr: "Merci. Je vais vérifier.", ipa: "[mɛʁsi ʒə vɛ veʁifje]", ko: "감사합니다. 확인해 볼게요." },
-            ],
-          },
+          ],
+          transitionNote: "심사대 질문 응답에서 수하물 카운터로 장면이 넘어가요 — 이번엔 내가 문제를 알리는 쪽이라, n\'est pas arrivé 부정문이 핵심이에요.",
+        },
+        selfCheckOptions: [
+          { label: "다 들렸어요 (정확히 이해)", value: "full", fsrsSignal: 1 },
+          { label: "부분만 들렸어요 (주요 단어만)", value: "partial", fsrsSignal: 0.5 },
+          { label: "아직이에요 (계속 연습 필요)", value: "notready", fsrsSignal: -1 },
         ],
       },
       {
@@ -246,6 +283,15 @@ const chapters = [
             },
           ],
         },
+      },
+      {
+        type: "practiceAndRegistration",
+        heading: "연습: 직접 말해 보기",
+        writingPrompts: [
+          "출장(le travail)으로 왔고 일주일 머문다고 바꿔서 심사 질문에 답하는 3문장을 만들어 보세요.",
+          "캐리어가 파손된 상황으로 바꿔 수하물 카운터에 알리는 2문장을 만들어 보세요.",
+        ],
+        autoRegisterVocabs: true,
       },
     ],
   },
