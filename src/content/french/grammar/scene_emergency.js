@@ -1,12 +1,6 @@
-/**
- * DRAFT — C1 길·긴급 장면 레슨 초안.
- *
- * Claude의 문법·발음·카피 검수 전에는 콘텐츠를 확정하거나 소비 경로에 연결하지 않는다.
- * 기존 A1 문법의 활용표를 반복하지 않고, 여행 현장에서 통째로 꺼내 쓰는 장면 문형만 다룬다.
- */
 const chapters = [
   {
-    slug: "a1-21-directions-transit-scene-draft",
+    slug: "a1-21-scene-directions-transit",
     level: "A1",
     order: 21,
     title: "\"어디로 가야 해요?\" — 길과 교통을 한 번에 물어요",
@@ -281,7 +275,7 @@ const chapters = [
   },
 
   {
-    slug: "a1-22-health-lost-property-scene-draft",
+    slug: "a1-22-scene-health-lost-property",
     level: "A1",
     order: 22,
     title: "\"아프고 잃어버렸어요\" — 필요한 도움을 또렷하게 말해요",

@@ -5,6 +5,7 @@
 import { createRegistry } from '../refRegistry';
 
 import grammarOT from './grammar/ot';
+import grammarSceneEmergency from './grammar/scene_emergency';
 import grammarA1 from './grammar/a1';
 import grammarA2 from './grammar/a2';
 import grammarB1 from './grammar/b1';
@@ -73,7 +74,7 @@ export const EN_LEVEL_META = [
 const registry = createRegistry(
   EN_LEVEL_META,
   {
-    OT: grammarOT,
+    OT: [...grammarOT, ...grammarSceneEmergency],
     A1: [...grammarA1, ...publishedGrammarExpansion.filter(ch => ch.level === 'A1')],
     A2: [...grammarA2, ...publishedGrammarExpansion.filter(ch => ch.level === 'A2')],
     B1: [...grammarB1, ...publishedGrammarExpansion.filter(ch => ch.level === 'B1')],
