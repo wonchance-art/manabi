@@ -64,8 +64,8 @@ const chapters = [
           "• **한정사·수사 + 명사/형용사**: le, la(→ l' 융합), les, un, une, des, mon, ton, son, notre, votre, leur, " +
           "ce, cet(→ c' 융합), celui, quelques, deux, trois... (대부분 수사 끝 s, x, z, t, d, f, v)\n" +
           "• **대명사 + 동사**: nous, vous, ils, elles가 동사 모음 앞에 (리에종: s/z→[z], x→[z])\n" +
-          "• **전치사 + 명사**: en, à(→ au 축약은 별개), chez → **리에종 보다는 음절화가 주**, 하지만 en, dans 같은 것은 역시 모음 앞에 발음 변화\n" +
-          "• **복합 전치사/부사**: très, plus (t/s→[z]는 아니고 음절 유연성) — 사실 dans, chez의 끝 s는 [z]로 발음 안 하고 [z] 자체가 없어요.\n\n" +
+          "• **단음절 전치사 + 명사**: en, dans, chez, sous — 모음 앞에서 의무 리에종이에요: dans un [dɑ̃z‿œ̃], chez elle [ʃez‿ɛl], en été [ɑ̃n‿ete]\n" +
+          "• **부사 très + 형용사**: très intéressant [tʁɛz‿ɛ̃teʁesɑ̃] — s→[z]로 잇는 것이 표준이에요\n\n" +
           "정확히: les, des, les amis / nous avons [nuzavɔ̃] / trois ans [tʁwazɑ̃] 는 명백한 의무 리에종.",
         examples: [
           {
@@ -106,28 +106,28 @@ const chapters = [
         patternKo: "선택: 격식체/서술체/빠른 말 vs. 명확하게 발음하는 구어",
         body:
           "**선택 리에종**은 의무는 아니지만 일어날 수 있는 경우예요. 주로 음절 구조를 명확히 하거나 음운적으로 리듬감 있게 말할 때 쓰여요.\n\n" +
-          "• **형용사 + 명사**: petit ami, grand école, bon ami → 격식체(문어)나 신중한 발음에서는 리에종 [pətitami], " +
-          "하지만 빠른 구어에서는 [pəti‖ami](음절 경계 명확)\n" +
+          "• 주의: **선행하는 짧은 형용사 + 명사**(petit ami [pətit‿ami], grand arbre [gʁɑ̃t‿aʁbʁ], bon ami [bɔn‿ami])는 사실상 **의무**로 이어 읽어요 — 선택이 아니에요\n" +
+          "• **부사 + 과거분사/긴 형용사** 등 그 밖의 조합이 상황에 따라 갈리는 선택 영역이에요\n" +
           "• **부사 + 형용사/명사**: très intelligent, plus anciens → 문맥에 따라 [tʁɛzɛ̃tɛlijɑ̃] 또는 [tʁɛ‖ɛ̃tɛlijɑ̃]\n" +
           "• **서술 양식에서 연결어**: et alors (et 제외, 보통 금지) vs. parfois, quelquefois — 여기서는 음절화 우선",
         examples: [
           {
             fr: "petit ami",
-            ipa: "[pətit‿ami] (명확) 또는 [pətitami] (격식체)",
+            ipa: "[pətit‿ami]",
             ko: "남자친구",
-            note: "선택: 형용사 끝 t를 [t]로 이어붙일 수도, 끊을 수도 있음",
+            note: "짧은 형용사 + 명사: 끝 t를 [t]로 이어 읽는 것이 표준(사실상 의무)",
           },
           {
-            fr: "grand école",
-            ipa: "[gʁɑ̃d‿ekɔl] (끊음) 또는 [gʁɑ̃dekɔl] (선택 리에종, 드물다)",
-            ko: "명문대",
-            note: "형용사 + 명사: 선택이지만 드문 편",
+            fr: "grand arbre",
+            ipa: "[gʁɑ̃t‿aʁbʁ]",
+            ko: "큰 나무",
+            note: "grand의 d는 리에종에서 [t]로 — 남성 명사 앞 대표 예",
           },
           {
             fr: "très intelligent",
-            ipa: "[tʁɛ ɛ̃tɛlijɑ̃] (명확) 또는 [tʁɛzɛ̃tɛlijɑ̃] (격식체)",
+            ipa: "[tʁɛz‿ɛ̃tɛlijɑ̃]",
             ko: "매우 똑똑한",
-            note: "부사 + 형용사: 문맥과 발화자 스타일에 따라",
+            note: "très + 형용사: s→[z]로 잇는 것이 표준",
           },
         ],
       },
