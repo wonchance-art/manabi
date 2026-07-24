@@ -7,7 +7,7 @@ const chapters = [
     slug: "a1-01-be-verb",
     level: "A1",
     order: 1,
-    title: "말 순서부터 뒤집고 시작합니다",
+    title: "말 순서부터 뒤집고 시작해요",
     topic: "be동사와 SVO 어순",
     titleFr: "The verb be & SVO word order",
     summary: "한국어 어순(SOV)과 영어 어순(SVO)의 정면 충돌을 먼저 정리하고, 모든 문장의 출발점인 am/is/are를 배워요.",
@@ -450,7 +450,7 @@ const chapters = [
           { en: "He's wearing a red jacket.", ko: "그는 빨간 재킷을 입고 있어요.", note: "입은 상태 — 영어도 진행형 OK" },
           { en: "I want some water.", ko: "물 마시고 싶어요.", note: "wanting(X)" },
         ],
-        vsKo: "한국어 '-고 있다'는 동작 진행과 상태 지속을 모두 덮는 넓은 표현이지만, 영어 진행형은 '**눈앞에서 변화가 일어나는 중**'일 때만 써요. know·love·want처럼 시작도 끝도 안 보이는 상태에는 진행형이 안 붙는 이유예요. '-고 있다 = 진행형'으로 1:1 번역하면 안 되는 대표 지점이에요.",
+        vsKo: "한국어 '-고 있다'는 동작 진행과 상태 지속을 모두 덮는 넓은 표현이지만, 영어 진행형은 기본적으로 '**눈앞에서 변화가 일어나는 중**'일 때 써요. know·love·want처럼 시작도 끝도 안 보이는 상태에 진행형이 잘 안 붙는 이유예요(본문에서 본 일시적 뉘앙스의 예외는 있고요). '-고 있다 = 진행형'으로 1:1 번역하면 안 되는 대표 지점이에요.",
       },
       {
         heading: "-ing 철자 규칙",

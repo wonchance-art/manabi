@@ -183,7 +183,7 @@ const chapters = [
     slug: "a2-02-future",
     level: "A2",
     order: 3,
-    title: "\"내가 받을게!\"는 will입니다",
+    title: "\"내가 받을게!\"는 will이에요",
     topic: "미래 will·be going to",
     titleFr: "Future: will vs be going to",
     summary: "영어의 두 미래 표현은 한국어 '-ㄹ게'와 '-ㄹ 거야'의 차이와 놀랍도록 닮았어요. 즉석 결정 vs 미리 정한 계획.",
