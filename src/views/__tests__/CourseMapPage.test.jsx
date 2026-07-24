@@ -18,6 +18,7 @@ vi.mock('../../lib/learn/progressStore', () => ({
 }));
 
 import { CourseMap } from '../CourseMapPage.jsx';
+import { buildCourseMap } from '../../lib/learn/courseMapData';
 
 const course = {
   id: 'english-a1',
@@ -118,6 +119,22 @@ describe('CourseMap', () => {
     expect(markup).toContain('data-lesson-status="complete"');
     expect(markup).toContain('data-course-next="a1-02-present-simple"');
     expect(markup).toContain('href="/english/grammar/a1-02-present-simple"');
+  });
+
+  it('영어 A1 첫 완료를 코스 지도에서 1 / 9로 렌더한다', () => {
+    const map = buildCourseMap('english', 'A1');
+    const firstSlug = map.lessons[0].specialFields.originalChapterSlug;
+    const markup = renderToStaticMarkup(
+      <CourseMap
+        {...map}
+        completedSlugs={[firstSlug]}
+        progressSource="guest"
+      />,
+    );
+
+    expect(map.lessons).toHaveLength(9);
+    expect(markup).toContain('1 / 9');
+    expect(markup).toContain(`data-course-next="${map.lessons[1].specialFields.originalChapterSlug}"`);
   });
 
   it('레슨이 없으면 빈 상태를 렌더한다', () => {

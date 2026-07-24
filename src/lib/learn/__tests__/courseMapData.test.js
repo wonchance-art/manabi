@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { buildCourseMap, COURSE_TRACKS } from '../courseMapData';
+import {
+  buildCourseMap,
+  COURSE_TRACKS,
+  getCourseLessonContext,
+} from '../courseMapData';
 
 describe('buildCourseMap', () => {
   it.each([
@@ -89,5 +93,29 @@ describe('buildCourseMap', () => {
 
     expect(map.selectedTrack).toBe('english');
     expect(map.selectedLevel).toBe('A1');
+  });
+
+  it.each([
+    ['japanese', 'N5', 'Japanese'],
+    ['french', 'A1', 'French'],
+    ['english', 'A1', 'English'],
+    ['chinese', 'H1', 'Chinese'],
+  ])('%s 문법 상세를 F1 레슨 id와 다음 코스 레슨에 연결한다', (track, level, language) => {
+    const map = buildCourseMap(track, level);
+    const lesson = map.lessons[0];
+    const nextLesson = map.lessons[1];
+    const slug = lesson.specialFields.originalChapterSlug;
+    const context = getCourseLessonContext(language, level, slug);
+
+    expect(context.lessonRef).toEqual({
+      id: lesson.id,
+      lang: language,
+      slug,
+      source: 'lesson',
+    });
+    expect(context.nextLesson).toEqual({
+      id: nextLesson.id,
+      href: `/${track}/grammar/${nextLesson.specialFields.originalChapterSlug}`,
+    });
   });
 });
