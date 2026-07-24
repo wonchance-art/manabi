@@ -10,7 +10,7 @@ const themes = {
       icon: "🔴",
       words: [
         { zh: "实行", pinyin: "shí xíng", ko: "실행하다, 시행하다", pos: "동사", hanja: "실행(實行) — 한자 그대로.", ex: { zh: "新政策已经开始实行。", pinyin: "xīn zhèngcè yǐjīng kāishǐ shíxíng", ko: "새 정책이 이미 시행되기 시작했어요." } },
-        { zh: "使劲儿", pinyin: "shǐ jìn r", ko: "힘을 쓰다, 힘껏 하다", pos: "동사", hanja: "사경(使勁) — '使'는 부릴 사, '勁'은 힘 경. 儿화 형태예요.", ex: { zh: "大家一起使劲儿推。", pinyin: "dàjiā yìqǐ shǐjìnr tuī", ko: "다 같이 힘껏 밀어요." } },
+        { zh: "使劲儿", pinyin: "shǐ jìnr", ko: "힘을 쓰다, 힘껏 하다", pos: "동사", hanja: "사경(使勁) — '使'는 부릴 사, '勁'은 힘 경. 儿화 형태예요.", ex: { zh: "大家一起使劲儿推。", pinyin: "dàjiā yìqǐ shǐjìnr tuī", ko: "다 같이 힘껏 밀어요." } },
         { zh: "是否", pinyin: "shì fǒu", ko: "~인지 아닌지, ~여부", pos: "동사", hanja: "시부(是否) — '是'는 옳을 시, '否'는 아닐 부. '~인지 아닌지'.", ex: { zh: "请告诉我你是否能来。", pinyin: "qǐng gàosu wǒ nǐ shìfǒu néng lái", ko: "올 수 있는지 알려 주세요." } },
         { zh: "受伤", pinyin: "shòu shāng", ko: "다치다, 부상을 입다", pos: "동사", hanja: "수상(受傷) — '受'는 받을 수, '傷'은 다칠 상.", ex: { zh: "他在比赛中受伤了。", pinyin: "tā zài bǐsài zhōng shòushāng le", ko: "그는 경기 중에 다쳤어요." } },
         { zh: "输入", pinyin: "shū rù", ko: "입력하다, 들여오다", pos: "동사", hanja: "수입(輸入) — '輸'는 보낼 수, '入'은 들 입. '입력·수입'.", ex: { zh: "请输入你的密码。", pinyin: "qǐng shūrù nǐ de mìmǎ", ko: "비밀번호를 입력하세요." } },

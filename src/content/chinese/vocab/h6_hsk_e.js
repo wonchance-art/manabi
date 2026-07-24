@@ -84,7 +84,7 @@ const themes = {
         { zh: "踪迹", pinyin: "zōng jì", ko: "종적, 자취", pos: "명사", ex: { zh: "警察在追查他的踪迹。", pinyin: "Jǐng chá zài zhuī chá tā de zōng jì.", ko: "경찰이 그의 종적을 뒤쫓고 있다." } },
         { zh: "沉思", pinyin: "chén sī", ko: "심사숙고하다, 깊이 생각하다", pos: "동사", ex: { zh: "他独自坐在窗前沉思。", pinyin: "Tā dú zì zuò zài chuāng qián chén sī.", ko: "그는 홀로 창가에 앉아 깊이 생각에 잠겼다." } },
         { zh: "精密", pinyin: "jīng mì", ko: "정밀하다, 정교하다", pos: "형용사", ex: { zh: "这是一台精密仪器。", pinyin: "Zhè shì yī tái jīng mì yí qì.", ko: "이것은 정밀한 기계이다." } },
-        { zh: "掠夺", pinyin: "lu:è duó", ko: "약탈하다", pos: "동사", ex: { zh: "侵略者掠夺了大量财物。", pinyin: "Qīn lüè zhě lüè duó le dà liàng cái wù.", ko: "침략자들이 대량의 재물을 약탈했다." } },
+        { zh: "掠夺", pinyin: "lüè duó", ko: "약탈하다", pos: "동사", ex: { zh: "侵略者掠夺了大量财物。", pinyin: "Qīn lüè zhě lüè duó le dà liàng cái wù.", ko: "침략자들이 대량의 재물을 약탈했다." } },
         { zh: "剥削", pinyin: "bō xuē", ko: "착취하다", pos: "동사", ex: { zh: "资本家残酷剥削工人。", pinyin: "Zī běn jiā cán kù bō xuē gōng rén.", ko: "자본가가 노동자를 잔혹하게 착취한다." } },
         { zh: "话筒", pinyin: "huà tǒng", ko: "마이크, 수화기", pos: "명사", ex: { zh: "他拿起话筒开始讲话。", pinyin: "Tā ná qǐ huà tǒng kāi shǐ jiǎng huà.", ko: "그는 마이크를 들고 말하기 시작했다." } },
         { zh: "晋升", pinyin: "jìn shēng", ko: "승진하다", pos: "동사", ex: { zh: "她今年晋升为经理。", pinyin: "Tā jīn nián jìn shēng wéi jīng lǐ.", ko: "그녀는 올해 매니저로 승진했다." } },

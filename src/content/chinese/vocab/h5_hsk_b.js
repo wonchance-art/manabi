@@ -207,7 +207,7 @@ const themes = {
         { zh: "赶紧", pinyin: "gǎn jǐn", ko: "서둘러, 얼른, 급히", pos: "부사", hanja: "간긴(趕緊) — '趕'은 쫓을 간, '緊'은 긴할 긴.", ex: { zh: "快下雨了，赶紧回家吧。", pinyin: "kuài xià yǔ le, gǎnjǐn huí jiā ba", ko: "곧 비가 오니 얼른 집에 가요." } },
         { zh: "赶快", pinyin: "gǎn kuài", ko: "빨리, 어서, 서둘러", pos: "부사", hanja: "간쾌(趕快) — '趕'은 쫓을 간, '快'는 빠를 쾌.", ex: { zh: "你赶快去吧。", pinyin: "nǐ gǎnkuài qù ba", ko: "당신 어서 가세요." } },
         { zh: "感想", pinyin: "gǎn xiǎng", ko: "감상, 소감, 느낀 점", pos: "명사", hanja: "감상(感想) — '感'은 느낄 감, '想'은 생각 상.", ex: { zh: "说说你的感想吧。", pinyin: "shuōshuo nǐ de gǎnxiǎng ba", ko: "당신의 소감을 말해 보세요." } },
-        { zh: "干活儿", pinyin: "gàn huó r", ko: "일을 하다, 노동하다", pos: "동사", hanja: "간활아(幹活兒) — '幹'은 줄기·할 간, '活'은 살·일 활.", ex: { zh: "他在工地干活儿。", pinyin: "tā zài gōngdì gànhuór", ko: "그는 공사장에서 일해요." } },
+        { zh: "干活儿", pinyin: "gàn huór", ko: "일을 하다, 노동하다", pos: "동사", hanja: "간활아(幹活兒) — '幹'은 줄기·할 간, '活'은 살·일 활.", ex: { zh: "他在工地干活儿。", pinyin: "tā zài gōngdì gànhuór", ko: "그는 공사장에서 일해요." } },
         { zh: "搞", pinyin: "gǎo", ko: "하다, 만들다, 처리하다", pos: "동사", ex: { zh: "这件事被他搞砸了。", pinyin: "zhè jiàn shì bèi tā gǎozá le", ko: "이 일은 그가 망쳐 버렸어요." } },
         { zh: "滚", pinyin: "gǔn", ko: "구르다; (물이) 끓다; 꺼지다", pos: "동사", hanja: "곤(滾) — '흐를·구를 곤'.", ex: { zh: "球滚到了地上。", pinyin: "qiú gǔn dào le dì shang", ko: "공이 바닥으로 굴러갔어요." } },
         { zh: "幅", pinyin: "fú", ko: "폭(그림·천을 세는 양사)", pos: "양사", hanja: "폭(幅) — '폭 폭'. 그림·천 등을 세요.", ex: { zh: "墙上挂着一幅画。", pinyin: "qiáng shang guà zhe yì fú huà", ko: "벽에 그림 한 폭이 걸려 있어요." } },
