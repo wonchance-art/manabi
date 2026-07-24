@@ -181,21 +181,25 @@ const chapters = [
             {
               speaker: "입국 직원",
               fr: "Quel est le motif de votre voyage ?",
+              ipa: "[kɛl ɛ lə mɔtif də vɔtʁ vwajaʒ]",
               ko: "여행 목적이 무엇인가요?",
             },
             {
               speaker: "여행자",
               fr: "Je viens pour visiter la région.",
+              ipa: "[ʒə vjɛ̃ puʁ vizite la ʁeʒjɔ̃]",
               ko: "이 지역을 둘러보러 왔어요.",
             },
             {
               speaker: "입국 직원",
               fr: "Vous restez combien de temps ?",
+              ipa: "[vu ʁɛste kɔ̃bjɛ̃ də tɑ̃]",
               ko: "얼마나 머무르나요?",
             },
             {
               speaker: "여행자",
               fr: "Je reste cinq jours. Je loge dans un hôtel près de la gare.",
+              ipa: "[ʒə ʁɛst sɛ̃k ʒuʁ ʒə lɔʒ dɑ̃zœ̃notɛl pʁɛ də la ɡaʁ]",
               ko: "5일 동안 머물러요. 역 근처 호텔에 묵어요.",
             },
             {
@@ -205,16 +209,19 @@ const chapters = [
             {
               speaker: "여행자",
               fr: "Mon bagage n'est pas arrivé.",
+              ipa: "[mɔ̃ baɡaʒ nɛ pa aʁive]",
               ko: "제 수하물이 나오지 않았어요.",
             },
             {
               speaker: "수하물 직원",
               fr: "Vous avez votre reçu de bagage ?",
+              ipa: "[vuzave vɔtʁ ʁəsy də baɡaʒ]",
               ko: "수하물표가 있나요?",
             },
             {
               speaker: "여행자",
               fr: "Oui, le voici.",
+              ipa: "[wi lə vwasi]",
               ko: "네, 여기 있어요.",
             },
           ],
@@ -437,21 +444,25 @@ const chapters = [
             {
               speaker: "여행자",
               fr: "Je voudrais un billet pour le centre, s'il vous plaît.",
+              ipa: "[ʒə vudʁɛ œ̃ bijɛ puʁ lə sɑ̃tʁ sil vu plɛ]",
               ko: "도심행 표 한 장 주세요.",
             },
             {
               speaker: "발권 직원",
               fr: "Un aller simple ou un aller-retour ?",
+              ipa: "[œ̃nale sɛ̃pl u œ̃nale ʁətuʁ]",
               ko: "편도인가요, 왕복인가요?",
             },
             {
               speaker: "여행자",
               fr: "Un aller simple. À quelle heure part le prochain train ?",
+              ipa: "[œ̃nale sɛ̃pl a kɛl œʁ paʁ lə pʁɔʃɛ̃ tʁɛ̃]",
               ko: "편도요. 다음 열차는 몇 시에 출발해요?",
             },
             {
               speaker: "발권 직원",
               fr: "À dix-huit heures, quai quatre.",
+              ipa: "[a dizɥitœʁ kɛ katʁ]",
               ko: "18시에 4번 승강장에서 출발해요.",
             },
             {
@@ -461,11 +472,13 @@ const chapters = [
             {
               speaker: "여행자",
               fr: "Où est la correspondance pour Bordeaux ?",
+              ipa: "[u ɛ la kɔʁɛspɔ̃dɑ̃s puʁ bɔʁdo]",
               ko: "보르도행 환승은 어디예요?",
             },
             {
               speaker: "환승 직원",
               fr: "Porte douze. Suivez les panneaux.",
+              ipa: "[pɔʁt duz sɥive le pano]",
               ko: "12번 탑승구예요. 표지를 따라가세요.",
             },
           ],
@@ -689,21 +702,25 @@ const chapters = [
             {
               speaker: "여행자",
               fr: "J'ai une réservation pour trois nuits.",
+              ipa: "[ʒe yn ʁezɛʁvasjɔ̃ puʁ tʁwa nɥi]",
               ko: "3박으로 예약했어요.",
             },
             {
               speaker: "숙소 직원",
               fr: "À quel nom ?",
+              ipa: "[a kɛl nɔ̃]",
               ko: "어느 이름으로 예약했나요?",
             },
             {
               speaker: "여행자",
               fr: "La réservation est au nom indiqué ici. Voici mon passeport.",
+              ipa: "[la ʁezɛʁvasjɔ̃ ɛto nɔ̃ ɛ̃dike isi vwasi mɔ̃ paspɔʁ]",
               ko: "여기에 적힌 이름으로 되어 있어요. 여권 여기 있어요.",
             },
             {
               speaker: "숙소 직원",
               fr: "Votre chambre est prête.",
+              ipa: "[vɔtʁ ʃɑ̃bʁ ɛ pʁɛt]",
               ko: "객실이 준비됐어요.",
             },
             {
@@ -713,11 +730,13 @@ const chapters = [
             {
               speaker: "여행자",
               fr: "Où est servi le petit-déjeuner ?",
+              ipa: "[u ɛ sɛʁvi lə pəti deʒœne]",
               ko: "조식은 어디에서 제공돼요?",
             },
             {
               speaker: "여행자",
               fr: "À quelle heure faut-il libérer la chambre ?",
+              ipa: "[a kɛl œʁ fotil libeʁe la ʃɑ̃bʁ]",
               ko: "몇 시에 방을 비워야 해요?",
             },
           ],
@@ -940,21 +959,25 @@ const chapters = [
             {
               speaker: "여행자",
               fr: "Est-ce que je peux avoir deux serviettes, s'il vous plaît ?",
+              ipa: "[ɛs kə ʒə pø avwaʁ dø sɛʁvjɛt sil vu plɛ]",
               ko: "수건 두 장을 받을 수 있을까요?",
             },
             {
               speaker: "숙소 직원",
               fr: "Oui, bien sûr.",
+              ipa: "[wi bjɛ̃ syʁ]",
               ko: "네, 물론이에요.",
             },
             {
               speaker: "여행자",
               fr: "La climatisation ne fonctionne pas.",
+              ipa: "[la klimatizasjɔ̃ nə fɔ̃ksjɔn pa]",
               ko: "냉방이 작동하지 않아요.",
             },
             {
               speaker: "여행자",
               fr: "Pouvez-vous vérifier, s'il vous plaît ?",
+              ipa: "[puve vu veʁifje sil vu plɛ]",
               ko: "확인해 주실 수 있나요?",
             },
             {
@@ -964,11 +987,13 @@ const chapters = [
             {
               speaker: "여행자",
               fr: "Il y a beaucoup de bruit dans le couloir. Cela dure depuis une heure.",
+              ipa: "[ilja boku də bʁɥi dɑ̃ lə kulwaʁ səla dyʁ dəpɥi yn œʁ]",
               ko: "복도에 소음이 심해요. 한 시간 동안 계속되고 있어요.",
             },
             {
               speaker: "여행자",
               fr: "Est-il possible de changer de chambre ?",
+              ipa: "[ɛtil pɔsibl də ʃɑ̃ʒe də ʃɑ̃bʁ]",
               ko: "객실을 바꿀 수 있나요?",
             },
           ],
@@ -1191,21 +1216,25 @@ const chapters = [
             {
               speaker: "여행자",
               fr: "Une table pour deux, s'il vous plaît.",
+              ipa: "[yn tabl puʁ dø sil vu plɛ]",
               ko: "두 명 자리 부탁해요.",
             },
             {
               speaker: "식당 직원",
               fr: "Bien sûr. Voici votre table.",
+              ipa: "[bjɛ̃ syʁ vwasi vɔtʁ tabl]",
               ko: "물론이에요. 여기 앉으세요.",
             },
             {
               speaker: "여행자",
               fr: "Quel est le menu du jour ?",
+              ipa: "[kɛl ɛ lə məny dy ʒuʁ]",
               ko: "오늘의 메뉴가 무엇인가요?",
             },
             {
               speaker: "식당 직원",
               fr: "Une soupe de légumes et un plat de poisson.",
+              ipa: "[yn sup də leɡym e œ̃ pla də pwasɔ̃]",
               ko: "채소 수프와 생선 요리예요.",
             },
             {
@@ -1215,11 +1244,13 @@ const chapters = [
             {
               speaker: "여행자",
               fr: "Qu'est-ce que vous recommandez ?",
+              ipa: "[kɛs kə vu ʁəkɔmɑ̃de]",
               ko: "무엇을 추천하세요?",
             },
             {
               speaker: "여행자",
               fr: "Je vais prendre la soupe. Comme boisson, un jus de pomme.",
+              ipa: "[ʒə vɛ pʁɑ̃dʁ la sup kɔm bwasɔ̃ œ̃ ʒy də pɔm]",
               ko: "수프로 주문할게요. 음료로는 사과 주스를 주세요.",
             },
           ],
@@ -1442,21 +1473,25 @@ const chapters = [
             {
               speaker: "여행자",
               fr: "Je suis allergique aux fruits à coque.",
+              ipa: "[ʒə sɥiz alɛʁʒik o fʁɥi a kɔk]",
               ko: "저는 견과류에 알레르기가 있어요.",
             },
             {
               speaker: "여행자",
               fr: "Est-ce que ce plat contient des fruits à coque ?",
+              ipa: "[ɛs kə sə pla kɔ̃tjɛ̃ de fʁɥi a kɔk]",
               ko: "이 요리에 견과류가 들어 있나요?",
             },
             {
               speaker: "식당 직원",
               fr: "Oui. Je peux vous proposer un plat sans fruits à coque.",
+              ipa: "[wi ʒə pø vu pʁɔpoze œ̃ pla sɑ̃ fʁɥi a kɔk]",
               ko: "네. 견과류가 없는 요리를 안내해 드릴 수 있어요.",
             },
             {
               speaker: "여행자",
               fr: "Merci. Sans fromage aussi, s'il vous plaît.",
+              ipa: "[mɛʁsi sɑ̃ fʁɔmaʒ osi sil vu plɛ]",
               ko: "감사합니다. 치즈도 빼 주세요.",
             },
             {
@@ -1466,11 +1501,13 @@ const chapters = [
             {
               speaker: "여행자",
               fr: "L'addition, s'il vous plaît.",
+              ipa: "[ladisjɔ̃ sil vu plɛ]",
               ko: "계산서 부탁해요.",
             },
             {
               speaker: "여행자",
               fr: "Est-ce qu'on peut payer séparément ?",
+              ipa: "[ɛs kɔ̃ pø peje sepaʁemɑ̃]",
               ko: "따로 계산할 수 있나요?",
             },
           ],
