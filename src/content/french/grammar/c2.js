@@ -95,7 +95,7 @@ const chapters = [
           "**litote**(완서법)는 부정·절제로 실제보다 약하게 말해 오히려 강한 뜻을 전하는, 프랑스 수사학의 간판이에요. 《르 시드》의 **«Va, je ne te hais point.»** — '미워하지 않는다'는 절제 아래 '여전히 사랑한다'가 타오르죠.\n\n" +
           "일상의 **C'est pas mal**(→ 꽤 좋다), **Ce n'est pas faux**(→ 맞는 말이다)도 같은 원리예요. 프랑스인의 칭찬이 인색해 보이는 건 litote가 문화적 기본값이기 때문이에요.",
         examples: [
-          { fr: "Va, je ne te hais point.", ko: "가세요, 당신을 미워하지 않아요. (= 사랑해요)", note: "Corneille, Le Cid. point는 pas의 옛 강조형" },
+          { fr: "Va, je ne te hais point.", ko: "가, 너를 미워하지 않아. (= 사랑해)", note: "Corneille, Le Cid. point는 pas의 옛 강조형" },
           { fr: "C'est pas mal du tout, ton travail.", ko: "네 작업, 전혀 나쁘지 않은데. (= 아주 좋다)", note: "프랑스식 고급 칭찬 — 액면가로 받지 마세요." },
           { fr: "Il n'est pas sot.", ko: "그는 어리석지 않다. (= 꽤 영리하다)", note: "문어적 litote" },
         ],
