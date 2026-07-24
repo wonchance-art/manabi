@@ -16,6 +16,9 @@
 ### doing
 ### todo
 ### done (최근)
+- F5 선행 프로토 영어 코스 지도: `/learn/course` 신규 라우트에서 F1 Course→Unit→Lesson을
+  렌더하고 F2 진도·다음 레슨 CTA·게스트 로컬 폴백과 렌더/진도/빈 상태 회귀를 고정
+  (`codex/f5-course-map-proto`, 구현 0da5298, base 23511cf257032aec2d6cb9f690ca4bb097996e58)
 - V3 도로 오토타일 리옹 단일 파일럿: `roadStyle: 'autotile-v1'` opt-in으로
   roadLike 4방 비트마스크 16종·광폭 내부 노면·8px 위상 파선을 ROAD·CROSSWALK·BRIDGE·
   mainRoute·guidebook에 정합하고 미설정 25도시 렌더 키를 불변 유지

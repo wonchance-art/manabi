@@ -1,0 +1,85 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+const query = {
+  select: vi.fn(),
+  eq: vi.fn(),
+  in: vi.fn(),
+};
+
+query.select.mockReturnValue(query);
+query.eq.mockReturnValue(query);
+
+vi.mock('../../supabase', () => ({
+  supabase: {
+    from: vi.fn(() => query),
+  },
+}));
+
+import { getLessonProgress } from '../progressStore';
+
+describe('getLessonProgress', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    query.select.mockReturnValue(query);
+    query.eq.mockReturnValue(query);
+    query.in.mockResolvedValue({ data: [], error: null });
+    global.window = {};
+    global.localStorage = {
+      data: {},
+      getItem(key) { return this.data[key] || null; },
+      setItem(key, value) { this.data[key] = value; },
+      clear() { this.data = {}; },
+    };
+  });
+
+  it('게스트는 F2 localStorage 진도를 사용한다', async () => {
+    localStorage.setItem('studied_lesson', JSON.stringify(['a1-01', 'other-track']));
+    localStorage.setItem('en_read_chapters_check', JSON.stringify({
+      'a1-02': { passed: true },
+      'a1-03': { passed: false },
+    }));
+
+    const result = await getLessonProgress(undefined, {
+      lang: 'English',
+      slugs: ['a1-01', 'a1-02', 'a1-03'],
+    });
+
+    expect(result).toEqual({
+      completedSlugs: ['a1-01', 'a1-02'],
+      source: 'guest',
+    });
+  });
+
+  it('로그인 진도는 원격과 이 기기 값을 합친다', async () => {
+    localStorage.setItem('studied_lesson', JSON.stringify(['a1-01']));
+    query.in.mockResolvedValue({
+      data: [{ slug: 'a1-02', read: false, passed: true }],
+      error: null,
+    });
+
+    const result = await getLessonProgress('user-1', {
+      lang: 'English',
+      slugs: ['a1-01', 'a1-02'],
+    });
+
+    expect(result).toEqual({
+      completedSlugs: ['a1-01', 'a1-02'],
+      source: 'remote',
+    });
+  });
+
+  it('원격 조회 실패 시 이 기기 진도로 폴백한다', async () => {
+    localStorage.setItem('en_read_chapters', JSON.stringify(['a1-01']));
+    query.in.mockRejectedValue(new Error('offline'));
+
+    const result = await getLessonProgress('user-1', {
+      lang: 'English',
+      slugs: ['a1-01'],
+    });
+
+    expect(result).toEqual({
+      completedSlugs: ['a1-01'],
+      source: 'local-fallback',
+    });
+  });
+});
