@@ -122,7 +122,7 @@ const chapters = [
           { en: "My brother plays soccer.", ko: "우리 형은 축구를 해요.", note: "my brother = he → -s" },
           { en: "It rains a lot in summer.", ko: "여름엔 비가 많이 와요." },
         ],
-        pitfall: "이 -s는 틀려도 의사소통엔 지장이 없어서 아무도 지적해주지 않아요. 그래서 10년씩 가는 거예요. '굳은 실수(fossilized error)'가 되기 전, A1인 지금이 가장 싸게 고칠 수 있는 시점입니다.",
+        pitfall: "이 -s는 틀려도 의사소통엔 지장이 없어서 아무도 지적해주지 않아요. 그래서 10년씩 가는 거예요. '굳은 실수(fossilized error)'가 되기 전, A1인 지금이 가장 싸게 고칠 수 있는 시점이에요.",
         vsKo: "한국어는 주어 대신 **어미**가 변하는 언어예요(가요/갑니다/가셔). 영어는 어미 변화가 거의 없는 대신, 살아남은 몇 안 되는 변화가 바로 이 -s예요. 영어 입장에서 -s는 '수일치의 마지막 보루'라 원어민 귀에는 빠지면 꽤 크게 들립니다.",
       },
       {
@@ -281,7 +281,7 @@ const chapters = [
           { en: "The children are sleeping.", ko: "아이들이 자고 있어요.", note: "children은 이미 복수 — childrens(X)" },
           { en: "Many people think so.", ipa: "[ˈpiːpl]", ko: "많은 사람들이 그렇게 생각해요.", note: "people 자체가 복수 취급" },
         ],
-        pitfall: "women의 발음은 [ˈwɪmɪn] '위민'이에요 — 철자에 이끌려 '워먼/워멘'으로 읽기 쉬운데, 단수 woman [ˈwʊmən]과 구별되는 건 오히려 **첫 모음**이에요. 듣기에서 단복수를 가르는 포인트입니다.",
+        pitfall: "women의 발음은 [ˈwɪmɪn] '위민'이에요 — 철자에 이끌려 '워먼/워멘'으로 읽기 쉬운데, 단수 woman [ˈwʊmən]과 구별되는 건 오히려 **첫 모음**이에요. 듣기에서 단복수를 가르는 포인트예요.",
       },
       {
         heading: "셀 수 없는 명사 — 한국인의 4대 함정 단어",
@@ -450,7 +450,7 @@ const chapters = [
           { en: "He's wearing a red jacket.", ko: "그는 빨간 재킷을 입고 있어요.", note: "입은 상태 — 영어도 진행형 OK" },
           { en: "I want some water.", ko: "물 마시고 싶어요.", note: "wanting(X)" },
         ],
-        vsKo: "한국어 '-고 있다'는 동작 진행과 상태 지속을 모두 덮는 넓은 표현이지만, 영어 진행형은 '**눈앞에서 변화가 일어나는 중**'일 때만 써요. know·love·want처럼 시작도 끝도 안 보이는 상태에는 진행형이 안 붙는 이유예요. '-고 있다 = 진행형'으로 1:1 번역하면 안 되는 대표 지점입니다.",
+        vsKo: "한국어 '-고 있다'는 동작 진행과 상태 지속을 모두 덮는 넓은 표현이지만, 영어 진행형은 '**눈앞에서 변화가 일어나는 중**'일 때만 써요. know·love·want처럼 시작도 끝도 안 보이는 상태에는 진행형이 안 붙는 이유예요. '-고 있다 = 진행형'으로 1:1 번역하면 안 되는 대표 지점이에요.",
       },
       {
         heading: "-ing 철자 규칙",
@@ -492,7 +492,7 @@ const chapters = [
         patternKo: "do = 뜻 없는 문법 도우미(조동사)",
         body:
           "'Do you like coffee?'의 do 자체에는 뜻이 없어요 — **문법 작업을 대신 해주는 도우미(조동사)**예요. 영어 의문문은 동사를 주어 앞으로 보내야 하는데, 일반동사 대신 **대리인 do가 앞으로 가고** 진짜 동사는 원형으로 제자리에 남아요.\n\n" +
-          "부정도 마찬가지 — not을 붙일 받침대로 do가 들어와서 do not(don't)이 됩니다.",
+          "부정도 마찬가지 — not을 붙일 받침대로 do가 들어와서 do not(don't)이 돼요.",
         examples: [
           { en: "Do you like coffee?", ko: "커피 좋아해요?", note: "do가 앞으로, like는 제자리에" },
           { en: "I don't eat meat.", ko: "저는 고기를 안 먹어요." },
@@ -513,7 +513,7 @@ const chapters = [
           { en: "He doesn't have a car.", ko: "그는 차가 없어요.", note: "has가 아니라 have로 복귀" },
           { en: "It doesn't work.", ko: "이거 작동이 안 돼요.", note: "고장났을 때 만능 표현" },
         ],
-        pitfall: "'She doesn't likes coffee.'(X) — 이중 -s는 한국 학습자 답안지의 최다 빈출 오류 중 하나예요. doesn't가 보이는 순간 뒤 동사는 무조건 민낯(원형)이라고 기억하세요. 의문문의 'Does she likes~?'(X)도 같은 원리로 차단됩니다.",
+        pitfall: "'She doesn't likes coffee.'(X) — 이중 -s는 한국 학습자 답안지의 최다 빈출 오류 중 하나예요. doesn't가 보이는 순간 뒤 동사는 무조건 민낯(원형)이라고 기억하세요. 의문문의 'Does she likes~?'(X)도 같은 원리로 차단돼요.",
       },
       {
         heading: "의문문 — Do/Does를 문 앞에 세우기",
@@ -528,7 +528,7 @@ const chapters = [
           { en: "Where do you live?", ko: "어디 살아요?" },
           { en: "What does this word mean?", ko: "이 단어 무슨 뜻이에요?", note: "수업 필수 표현 — What means this?(X)" },
         ],
-        pitfall: "'What means this word?'(X)는 의문사를 주어로 착각해서 나오는 고전 오류예요. what은 목적어고 주어는 this word — 그러니 does가 필요해요: What **does** this word **mean**? 통째로 외워둘 가치가 있는 문장입니다.",
+        pitfall: "'What means this word?'(X)는 의문사를 주어로 착각해서 나오는 고전 오류예요. what은 목적어고 주어는 this word — 그러니 does가 필요해요: What **does** this word **mean**? 통째로 외워둘 가치가 있는 문장이에요.",
       },
       {
         heading: "be 동사 문장에는 do를 쓰지 않아요",
@@ -562,7 +562,7 @@ const chapters = [
     title: "점이냐, 면이냐, 공간이냐",
     topic: "전치사 in/on/at",
     titleFr: "Prepositions: in / on / at",
-    summary: "한국어 조사 '에' 하나로 끝나던 시간·장소 표현이 영어에선 in/on/at 셋으로 갈라져요. 점·면·공간 프레임으로 정리합니다.",
+    summary: "한국어 조사 '에' 하나로 끝나던 시간·장소 표현이 영어에선 in/on/at 셋으로 갈라져요. 점·면·공간 프레임으로 정리해요.",
     duration: "약 10분",
     sections: [
       {
