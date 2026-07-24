@@ -327,7 +327,7 @@
 - F4-3 선행 연습 엔진 조사·프로토: 5개 소비·채점·SRS 경로와 F2 연결을 전수 감사해
   E3 66문항의 현행 직결 불가를 판정하고, 기존 페이지 무수정·미배선
   `short-answer→fill`/choice 공통 컴포넌트와 fail-closed 계약 테스트를 추가
-  (`codex4/exercise-engine`, 구현 185c673, base 23511cf)
+  (`codex4/exercise-engine`, 구현 4c59d5b, base 0cd0cae)
 - E4 콘텐츠 스키마 계약 가드: 4트랙 문법·어휘 raw 모듈의 실제 필드·shell 차이를
   전수 문서화하고, 초안 제외·본문/예문·모듈당 3어 하한을 공통 계약 테스트로 고정
   (`codex4/e4-content-schema-guard`, 구현 f7b1874, base 1cfda63)
