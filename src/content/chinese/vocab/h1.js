@@ -10,7 +10,7 @@ const themes = {
     {
       name: "인사와 사람",
       words: [
-        { zh: "你好", pinyin: "nǐ hǎo", ko: "안녕하세요", pos: "표현", ex: { zh: "你好！", pinyin: "nǐ hǎo", ko: "안녕하세요!" } },
+        { zh: "你好", pinyin: "nǐhǎo", ko: "안녕하세요", pos: "표현", ex: { zh: "你好！", pinyin: "nǐ hǎo", ko: "안녕하세요!" } },
         { zh: "谢谢", pinyin: "xièxie", ko: "고맙습니다", pos: "표현", ex: { zh: "谢谢你。", pinyin: "xièxie nǐ", ko: "고마워요." } },
         { zh: "不客气", pinyin: "bú kèqi", ko: "천만에요", pos: "표현", hanja: "객기(客氣)에서 — '손님처럼 사양하지 마세요'라는 뜻이에요.", ex: { zh: "不客气。", pinyin: "bú kèqi", ko: "천만에요." } },
         { zh: "再见", pinyin: "zàijiàn", ko: "안녕히 가세요", pos: "표현", hanja: "재견(再見) — '다시 보다', 즉 또 만나요.", ex: { zh: "老师，再见！", pinyin: "lǎoshī, zàijiàn", ko: "선생님, 안녕히 계세요!" } },
