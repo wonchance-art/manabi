@@ -2,7 +2,9 @@ const chapters = [
   {
     slug: "a1-21-scene-directions-transit",
     level: "A1",
-    order: 21,
+    order: 24,
+    formulaic: true,
+    prerequisites: ["a1-05-questions", "a1-19-place-prepositions"],
     title: "\"어디로 가야 해요?\" — 길과 교통을 한 번에 물어요",
     topic: "길 묻기·안내 확인·대중교통",
     titleFr: "Demander son chemin et prendre les transports",
@@ -259,7 +261,9 @@ const chapters = [
   {
     slug: "a1-22-scene-health-lost-property",
     level: "A1",
-    order: 22,
+    order: 25,
+    formulaic: true,
+    prerequisites: ["a1-04-negation", "a1-05-questions"],
     title: "\"아프고 잃어버렸어요\" — 필요한 도움을 또렷하게 말해요",
     topic: "통증·증상·도움 요청·분실 신고",
     titleFr: "Signaler un problème de santé ou un objet perdu",

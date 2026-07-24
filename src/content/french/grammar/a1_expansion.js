@@ -9,7 +9,7 @@ const chapters = [
   {
     slug: "a1-14-ir-re-present",
     level: "A1",
-    order: 14,
+    order: 18,
     title: "\"고르고 기다려요\"도 현재형 한 세트",
     topic: "규칙 -ir·-re 동사 현재형",
     titleFr: "Le présent des verbes réguliers en -ir et en -re",
@@ -144,7 +144,7 @@ const chapters = [
   {
     slug: "a1-15-modal-faire-present",
     level: "A1",
-    order: 15,
+    order: 19,
     title: "\"할 수 있고, 하고 싶고, 해야 해요\"",
     topic: "faire·pouvoir·vouloir·devoir 현재형",
     titleFr: "Faire, pouvoir, vouloir et devoir au présent",
@@ -298,7 +298,7 @@ const chapters = [
   {
     slug: "a1-16-noun-gender-plural",
     level: "A1",
-    order: 16,
+    order: 9,
     title: "\"학생 한 명\"이 둘이 되면 말도 바뀌어요",
     topic: "사람 명사의 여성형·명사 복수형",
     titleFr: "Le féminin et le pluriel des noms",
@@ -456,7 +456,7 @@ const chapters = [
   {
     slug: "a1-17-article-contractions-countries",
     level: "A1",
-    order: 17,
+    order: 20,
     title: "du는 빵 앞과 박물관 뒤에서 달라요",
     topic: "de의 관사 축약·나라명 전치사",
     titleFr: "Les contractions avec de et les noms de pays",
@@ -617,7 +617,7 @@ const chapters = [
   {
     slug: "a1-18-demonstrative-interrogative",
     level: "A1",
-    order: 18,
+    order: 21,
     title: "\"이 가방\"과 \"어느 가방\"을 골라 말해요",
     topic: "지시 한정사 ce·의문 한정사 quel",
     titleFr: "Les déterminants démonstratifs et interrogatifs",
@@ -747,7 +747,7 @@ const chapters = [
   {
     slug: "a1-19-place-prepositions",
     level: "A1",
-    order: 19,
+    order: 22,
     title: "\"탁자 아래, 역 맞은편\"을 한 번에 찾아요",
     topic: "장소 전치사·chez",
     titleFr: "Les prépositions de lieu et chez",
@@ -904,7 +904,7 @@ const chapters = [
   {
     slug: "a1-20-frequency-quantity-connectors",
     level: "A1",
-    order: 20,
+    order: 23,
     title: "\"자주, 많이, 하지만\"으로 문장을 늘려요",
     topic: "빈도·정도·수량 부사와 기초 연결어",
     titleFr: "La fréquence, la quantité et les connecteurs simples",
