@@ -16,6 +16,7 @@ export const MUTED_USER_IDS_STORAGE_KEY = 'world_muted';
 export const NPC_MEETING_STORAGE_PREFIX = 'npc-met:';
 export const ROUTE_DISCOVERY_STORAGE_PREFIX = 'route-discoveries:';
 export const BRIEFING_SEEN_PREFIX = 'briefing-seen:';
+export const LEARNING_ACTIVITY_STORAGE_PREFIX = 'manabi-learning-activity-v1:';
 
 export const WORLD_STORAGE_KEYS = Object.freeze({
   schemaVersion: STORAGE_SCHEMA_VERSION_KEY,
@@ -34,6 +35,12 @@ export const WORLD_STORAGE_KEY_PREFIXES = Object.freeze({
   briefingSeen: BRIEFING_SEEN_PREFIX,
 });
 
+// 학습 진도 원본 키(studied_lesson 등)는 각 기존 저장소가 계속 소유한다.
+// 이 정본에는 사용자 스코프의 일일 활동 메타데이터 prefix만 선언한다.
+export const LEARNING_STORAGE_KEY_PREFIXES = Object.freeze({
+  activity: LEARNING_ACTIVITY_STORAGE_PREFIX,
+});
+
 export function npcMeetingStorageKey(cityId) {
   return `${WORLD_STORAGE_KEY_PREFIXES.npcMeetings}${cityId}`;
 }
@@ -44,6 +51,11 @@ export function routeDiscoveryStorageKey(cityId) {
 
 export function briefingSeenKey(countryId) {
   return `${WORLD_STORAGE_KEY_PREFIXES.briefingSeen}${countryId}`;
+}
+
+export function learningActivityStorageKey(userId) {
+  const scope = typeof userId === 'string' && userId.trim() ? userId : 'guest';
+  return `${LEARNING_STORAGE_KEY_PREFIXES.activity}${scope}`;
 }
 
 // target version -> (storage) => void. v1은 기존 형식의 선언이므로 실행할 마이그레이션이 없다.
