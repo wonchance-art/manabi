@@ -3,6 +3,8 @@
  * 영어는 한국어와 어순이 반대(SVO)라는 큰 그림을 먼저 세우고,
  * 한글 표기가 만든 발음 간섭을 가장 가볍고 재미있게 풀어주는 레벨.
  */
+import sceneEmergency from './scene_emergency';
+
 const chapters = [
   {
     slug: "ot-01-word-order",
@@ -471,4 +473,4 @@ const chapters = [
   },
 ];
 
-export default chapters;
+export default [...chapters, ...sceneEmergency];

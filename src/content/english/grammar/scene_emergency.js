@@ -1,22 +1,8 @@
-/**
- * DRAFT — C1 영어 길·긴급 장면 레슨 2개 초안
- *
- * docs/product-definition.md의 레벨 1 '길·긴급' 공백을 채우는 검수 대기본이다.
- * 기존 OT 챕터 order 1~5 다음의 독립 초안이며, 영어 index·레지스트리·소비 경로에는
- * 연결하지 않는다. 최종 카피·난이도·order·배선은 Claude 검수 뒤 확정한다.
- *
- * story/questions는 기존 문법 챕터의 이야기 연습 계약을 영어에 맞춰 옮겼다.
- * 대사는 en/ipa/ko, fill 문항은 en 필드를 사용한다.
- */
-
-export const ENGLISH_SCENE_EMERGENCY_DRAFT_STATUS = "DRAFT_UNWIRED";
-
 const chapters = [
   {
     slug: "ot-draft-06-directions-transport",
     level: "OT",
     order: 6,
-    status: ENGLISH_SCENE_EMERGENCY_DRAFT_STATUS,
     title: "길을 묻고, 안내를 따라 이동해요",
     topic: "길 묻기·방향 안내·교통수단·환승",
     titleFr: "Directions & public transport",
@@ -243,7 +229,6 @@ const chapters = [
     slug: "ot-draft-07-illness-lost-property",
     level: "OT",
     order: 7,
-    status: ENGLISH_SCENE_EMERGENCY_DRAFT_STATUS,
     title: "아프거나 물건을 잃었을 때 바로 말해요",
     topic: "몸 상태·통증·긴급 요청·분실 신고",
     titleFr: "Illness, emergencies & lost property",
@@ -436,7 +421,7 @@ const chapters = [
               answer: "find",
               accept: ["find", "Find"],
               why:
-                "can't 뒤에는 동사원형 find가 와요. I can't find my wallet로 현재 찾지 못하는 상태를 알려요.",
+                "can't 뒤에는 동사원형 find가 와요. I can't find my wallet으로 현재 찾지 못하는 상태를 알려요.",
             },
             {
               id: "ot-draft-07-illness-lost-property-sq3",

@@ -1,13 +1,5 @@
-/**
- * DRAFT_UNWIRED — C1 중국어 레벨 1 「길·긴급」 장면 레슨 초안.
- *
- * Claude 검수 전에는 문형·카피·난이도·order를 확정하지 않으며,
- * src/content/chinese/index.js 등 어떤 소비 경로에도 연결하지 않는다.
- * 기존 H1~H6 챕터의 section.pattern과 겹치지 않는 장면 문형만 담는다.
- */
 const chapters = [
   {
-    // DRAFT_UNWIRED — 제품 정의의 길 묻기/알아듣기·교통수단 장면.
     slug: "h1-scene-directions-transit-draft",
     level: "H1",
     order: 15,
@@ -133,7 +125,6 @@ const chapters = [
     ],
   },
   {
-    // DRAFT_UNWIRED — 제품 정의의 아픔·분실 장면.
     slug: "h1-scene-health-loss-draft",
     level: "H1",
     order: 16,

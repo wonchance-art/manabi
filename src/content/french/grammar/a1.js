@@ -2,6 +2,8 @@
  * A1 기초 — 프랑스어 문장의 뼈대 세우기
  * 주어+동사부터 숫자·시간까지, 첫 문장을 만들고 굴리는 데 필요한 핵심 문법.
  */
+import sceneEmergency from './scene_emergency';
+
 const chapters = [
   {
     slug: "a1-01-pronouns-etre",
@@ -992,4 +994,4 @@ const chapters = [
   },
 ];
 
-export default chapters;
+export default [...chapters, ...sceneEmergency];

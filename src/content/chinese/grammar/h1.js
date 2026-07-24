@@ -2,6 +2,8 @@
  * H1 (HSK 1급) — 첫 문장을 만드는 핵심 문법
  * 是자문·有자문·지시사·양사·의문·부정·소유·연동문·어순·숫자.
  */
+import sceneEmergency from './scene_emergency';
+
 const chapters = [
   {
     slug: "ot-05-pronouns",
@@ -870,4 +872,4 @@ const chapters = [
   },
 ];
 
-export default chapters;
+export default [...chapters, ...sceneEmergency];
