@@ -7,9 +7,6 @@ import { createRegistry } from '../refRegistry';
 
 import grammarOT from './grammar/ot';
 import grammarH1 from './grammar/h1';
-import grammarH1Pronunciation from './grammar/h1_pronunciation';
-import grammarSceneEmergency from './grammar/scene_emergency';
-import grammarSceneTravel from './grammar/scene_travel';
 import grammarH2 from './grammar/h2';
 import grammarH3 from './grammar/h3';
 import grammarH4 from './grammar/h4';
@@ -183,7 +180,7 @@ const registry = createRegistry(
   ZH_LEVEL_META,
   {
     OT: withExtraExamples(grammarOT, exOT),
-    H1: [...withExtraExamples(grammarH1, exH1), ...grammarH1Pronunciation, ...grammarSceneEmergency, ...grammarSceneTravel.filter(ch => ch.level === 'H1')],
+    H1: withExtraExamples(grammarH1, exH1),
     H2: withExtraExamples(grammarH2, exH2),
     H3: withExtraExamples(grammarH3, exH3),
     H4: withExtraExamples(grammarH4, exH4),
