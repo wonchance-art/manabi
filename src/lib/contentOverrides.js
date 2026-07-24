@@ -93,7 +93,9 @@ const SECTION_SCALAR_ARRAY_FIELDS = ['distractors', 'gojuon'];
 // 구조 필드 — 아래 isValidSection에서 개별 스키마 검증
 const SECTION_STRUCT_FIELDS = ['examples', 'table', 'story', 'media', 'enParallel', 'hanjaBridge',
   // RFC v2 "실전 샌드위치" 구조 필드
-  'audio', 'captions', 'vocabs', 'original', 'variant', 'selfCheckOptions', 'writingPrompts', 'quizItems'];
+  'audio', 'captions', 'vocabs', 'original', 'variant', 'selfCheckOptions', 'writingPrompts', 'quizItems',
+  // 장면 전환 레슨 — 섹션 레벨 구조화 대화(RFC dialogue-field 재사용)
+  'dialogue'];
 // RFC v2 boolean 필드
 const SECTION_BOOLEAN_FIELDS = ['autoRegisterVocabs'];
 const CHAPTER_KEYS = new Set([
@@ -248,6 +250,11 @@ function isValidSection(s) {
       if ('audio' in s && s.audio != null && !isFlatObject(s.audio)) return false;
       // captions: {original, translation, romanized?} — 평탄한 객체
       if ('captions' in s && s.captions != null && !isFlatObject(s.captions)) return false;
+      // dialogue: 구조화 대사 배열(장면 전환 레슨 — RFC dialogue-field 재사용)
+      if ('dialogue' in s && s.dialogue != null) {
+        if (!Array.isArray(s.dialogue) || s.dialogue.length === 0) return false;
+        if (!s.dialogue.every(isValidDialogueLine)) return false;
+      }
     }
     if (s.type === 'vocabPreview') {
       // vocabs: [{word, meanings[], exampleSentence, note?}, ...] — 각 원소는 평탄한 객체(meanings는 스칼라 배열)
@@ -269,6 +276,10 @@ function isValidSection(s) {
         if (!isPlainObject(block)) return false;
         if ('audio' in block && block.audio != null && !isFlatObject(block.audio)) return false;
         if ('captions' in block && block.captions != null && !isFlatObject(block.captions)) return false;
+        if ('dialogue' in block && block.dialogue != null) {
+          if (!Array.isArray(block.dialogue) || block.dialogue.length === 0) return false;
+          if (!block.dialogue.every(isValidDialogueLine)) return false;
+        }
         return true;
       };
       if ('original' in s && s.original != null && !validateAudioBlock(s.original)) return false;
