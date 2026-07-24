@@ -12,7 +12,36 @@ const chapters = [
       "목적지 위치를 묻고, 들은 안내를 확인한 뒤 노선·환승·하차 지점까지 이어서 물어요.",
     duration: "약 15분",
     sections: [
+      // 샌드위치 v2 시험 적용 — 문형 où se trouve는 Tatoeba 다수 실재(예: #13734709 "Où se trouve Samir ?"). 대화 자체는 자체 저작.
       {
+        type: "authenticIntro",
+        heading: "길 위 실전 대화 통째로 들어 보기",
+        presentationFraming: "못 알아들어도 정상이에요! 길을 묻고 → 되묻고 → 노선까지 확인하는 실제 흐름을 먼저 통째로 만나 보세요. 묻는 쪽이 쓰는 표현 두세 개만 귀에 걸리면 성공이에요.",
+        dialogue: [
+              { speaker: "여행자", fr: "Excusez-moi, où se trouve le jardin public ?", ipa: "[ɛkskyze mwa u sə tʁuv lə ʒaʁdɛ̃ pyblik]", ko: "실례합니다, 공원은 어디에 있나요?" },
+              { speaker: "행인", fr: "Allez tout droit, puis tournez à gauche.", ipa: "[ale tu dʁwa pɥi tuʁne a ɡoʃ]", ko: "곧장 가신 다음 왼쪽으로 도세요." },
+              { speaker: "여행자", fr: "Vous avez dit « à gauche » ?", ipa: "[vuzave di a ɡoʃ]", ko: "'왼쪽'이라고 하셨나요?" },
+              { speaker: "행인", fr: "Oui, après la place.", ipa: "[wi apʁɛ la plas]", ko: "네, 광장을 지난 뒤예요." },
+              { speaker: "여행자", fr: "Je prends quelle ligne pour aller au marché ?", ipa: "[ʒə pʁɑ̃ kɛl liɲ puʁ ale o maʁʃe]", ko: "시장에 가려면 어느 노선을 타야 하나요?" },
+              { speaker: "안내 직원", fr: "Prenez la ligne un.", ipa: "[pʁəne la liɲ œ̃]", ko: "1호선을 타세요." },
+              { speaker: "여행자", fr: "Je descends à quel arrêt ?", ipa: "[ʒə desɑ̃ a kɛl aʁɛ]", ko: "어느 정류장에서 내려요?" },
+              { speaker: "안내 직원", fr: "Au troisième arrêt. C'est direct.", ipa: "[o tʁwazjɛm aʁɛ sɛ diʁɛkt]", ko: "세 번째 정류장이에요. 직행이에요." },
+        ],
+      },
+      {
+        type: "vocabPreview",
+        heading: "오늘 배울 단어 6개",
+        vocabs: [
+          { word: "se trouver", meanings: ["(~에) 있다", "위치하다"], exampleSentence: "Où se trouve le jardin public ?" },
+          { word: "tout droit", meanings: ["곧장", "직진으로"], exampleSentence: "Allez tout droit." },
+          { word: "tourner", meanings: ["돌다", "회전하다"], exampleSentence: "Tournez à gauche.", note: "à gauche/à droite와 세트" },
+          { word: "la ligne", meanings: ["(교통) 노선"], exampleSentence: "Je prends quelle ligne ?" },
+          { word: "descendre", meanings: ["내리다", "하차하다"], exampleSentence: "Je descends à quel arrêt ?" },
+          { word: "l'arrêt", meanings: ["정류장", "역"], exampleSentence: "Au troisième arrêt." },
+        ],
+      },
+      {
+        type: "patternExplanation",
         heading: "목적지 찾기 — où se trouve로 위치를 물어요",
         pattern:
           "Excusez-moi, où se trouve + 장소 ? · Je cherche + 장소.",
@@ -37,6 +66,7 @@ const chapters = [
           "장소가 여성명사인지 남성명사인지 헷갈리면 지도나 표지의 이름을 그대로 읽고, où se trouve 앞뒤 틀만 유지해도 질문이 통해요.",
       },
       {
+        type: "patternExplanation",
         heading: "들은 말 확인하기 — 뜻과 핵심 구절을 되물어요",
         pattern:
           "Ça veut dire quoi ? · Vous avez dit « ... » ?",
@@ -61,6 +91,7 @@ const chapters = [
           "못 들은 전체 문장을 추측하지 않아도 돼요. 들린 단어만 인용하듯 올려 말하고 Vous avez dit... ?를 붙이면 상대가 그 부분을 다시 확인해 줘요.",
       },
       {
+        type: "patternExplanation",
         heading: "안내 알아듣기 — 직진·회전·횡단 세 동작",
         pattern:
           "Allez tout droit. · Tournez à gauche/droite. · Traversez + 장소.",
@@ -85,6 +116,7 @@ const chapters = [
           "à gauche는 왼쪽, à droite는 오른쪽이에요. 안내를 들으며 손으로 방향을 함께 가리키면 비슷하게 들리는 순간에도 실수를 줄일 수 있어요.",
       },
       {
+        type: "patternExplanation",
         heading: "노선 고르기 — quelle ligne으로 탈 노선을 물어요",
         pattern:
           "Je prends quelle ligne pour aller à + 장소 ?",
@@ -109,6 +141,7 @@ const chapters = [
           "노선 번호를 놓치면 La ligne combien ?(몇 호선이요?)만 짧게 되물어도 돼요. 숫자와 direction 뒤 목적지만 잡아도 다음 행동을 정할 수 있어요.",
       },
       {
+        type: "patternExplanation",
         heading: "환승과 하차 — 내릴 곳과 갈아탈 곳을 따로 물어요",
         pattern:
           "Je descends à quel arrêt ? · Je change à quelle station ?",
@@ -133,26 +166,30 @@ const chapters = [
           "환승이 필요 없다는 답은 C'est direct.(직행이에요), 필요하다는 답은 Vous changez à...(…에서 갈아타세요)로 자주 들려요.",
       },
       {
-        heading: "대화 예시 — 길 위에서 두 번 묻기",
-        body:
-          "앞의 다섯 문형을 실제 응답과 함께 읽어 봐요. 화자 이름 대신 역할만 표시해 어느 여행지에서도 재사용할 수 있게 했어요.",
-        examples: [
-          {
-            dialogue: [
+        type: "authenticReplay",
+        heading: "같은 대화, 이제 다시 들어 보기",
+        presentationFraming: "문형을 배웠으니 처음 대화를 다시 들어 보고, 이어서 대중교통 장면까지 확장해 보세요.",
+        original: {
+          dialogue: [
               { speaker: "여행자", fr: "Excusez-moi, où se trouve le jardin public ?", ipa: "[ɛkskyze mwa u sə tʁuv lə ʒaʁdɛ̃ pyblik]", ko: "실례합니다, 공원은 어디에 있나요?" },
               { speaker: "행인", fr: "Allez tout droit, puis tournez à gauche.", ipa: "[ale tu dʁwa pɥi tuʁne a ɡoʃ]", ko: "곧장 가신 다음 왼쪽으로 도세요." },
               { speaker: "여행자", fr: "Vous avez dit « à gauche » ?", ipa: "[vuzave di a ɡoʃ]", ko: "'왼쪽'이라고 하셨나요?" },
               { speaker: "행인", fr: "Oui, après la place.", ipa: "[wi apʁɛ la plas]", ko: "네, 광장을 지난 뒤예요." },
-            ],
-          },
-          {
-            dialogue: [
+          ],
+        },
+        variant: {
+          dialogue: [
               { speaker: "여행자", fr: "Je prends quelle ligne pour aller au marché ?", ipa: "[ʒə pʁɑ̃ kɛl liɲ puʁ ale o maʁʃe]", ko: "시장에 가려면 어느 노선을 타야 하나요?" },
               { speaker: "안내 직원", fr: "Prenez la ligne un.", ipa: "[pʁəne la liɲ œ̃]", ko: "1호선을 타세요." },
               { speaker: "여행자", fr: "Je descends à quel arrêt ?", ipa: "[ʒə desɑ̃ a kɛl aʁɛ]", ko: "어느 정류장에서 내려요?" },
               { speaker: "안내 직원", fr: "Au troisième arrêt. C'est direct.", ipa: "[o tʁwazjɛm aʁɛ sɛ diʁɛkt]", ko: "세 번째 정류장이에요. 직행이에요." },
-            ],
-          },
+          ],
+          transitionNote: "걸어서 길 묻기에서 한 걸음 나아가, 노선·하차 정류장까지 확인하는 흐름이에요 — quelle ligne과 Je descends à…가 그대로 나와요.",
+        },
+        selfCheckOptions: [
+          { label: "다 들렸어요 (정확히 이해)", value: "full", fsrsSignal: 1 },
+          { label: "부분만 들렸어요 (주요 단어만)", value: "partial", fsrsSignal: 0.5 },
+          { label: "아직이에요 (계속 연습 필요)", value: "notready", fsrsSignal: -1 },
         ],
       },
       {
@@ -254,6 +291,15 @@ const chapters = [
             },
           ],
         },
+      },
+      {
+        type: "practiceAndRegistration",
+        heading: "연습: 직접 길 물어보기",
+        writingPrompts: [
+          "숙소에서 미술관까지 가는 상황을 상상하고, 위치 질문 → 되묻기 → 하차 확인 3문장을 만들어 보세요.",
+          "이야기의 질문(타일·빈칸)을 푼 뒤, où se trouve 대신 où est로 같은 질문을 바꿔 말해 보세요.",
+        ],
+        autoRegisterVocabs: true,
       },
     ],
   },
