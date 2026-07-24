@@ -80,7 +80,7 @@ const themes = {
         { zh: "大会", pinyin: "dà huì", ko: "대회, 총회", pos: "명사", ex: { zh: "明天召开股东大会。", pinyin: "Míng tiān zhào kāi gǔ dōng dà huì.", ko: "내일 주주 총회가 열린다." } },
         { zh: "大姐", pinyin: "dà jiě", ko: "큰누나, 맏언니", pos: "명사", ex: { zh: "大姐对我很好。", pinyin: "Dà jiě duì wǒ hěn hǎo.", ko: "큰언니는 나에게 잘해준다." } },
         { zh: "大楼", pinyin: "dà lóu", ko: "빌딩, 건물", pos: "명사", ex: { zh: "这座大楼有三十层。", pinyin: "Zhè zuò dà lóu yǒu sān shí céng.", ko: "이 빌딩은 30층이다." } },
-        { zh: "大陆", pinyin: "Dà lù", ko: "대륙, 중국 대륙", pos: "명사", ex: { zh: "他来自中国大陆。", pinyin: "Tā lái zì Zhōng guó Dà lù.", ko: "그는 중국 대륙 출신이다." } },
+        { zh: "大陆", pinyin: "dà lù", ko: "대륙", pos: "명사", ex: { zh: "欧洲大陆的气候很多样。", pinyin: "Ōuzhōu dàlù de qìhòu hěn duōyàng.", ko: "유럽 대륙의 기후는 다양하다." } },
         { zh: "大妈", pinyin: "dà mā", ko: "아주머니, 큰어머니", pos: "명사", ex: { zh: "楼下的大妈很热情。", pinyin: "Lóu xià de dà mā hěn rè qíng.", ko: "아래층 아주머니는 매우 친절하다." } },
         { zh: "大爷", pinyin: "dà yé", ko: "거만한 사람, 어르신", pos: "명사", ex: { zh: "他像个大爷一样指挥别人。", pinyin: "Tā xiàng gè dà yé yí yàng zhǐ huī bié rén.", ko: "그는 마치 거만한 사람처럼 다른 사람을 부린다." } },
         { zh: "袋", pinyin: "dài", ko: "자루, 봉지, 포대", pos: "양사", ex: { zh: "我买了一袋米。", pinyin: "Wǒ mǎi le yí dài mǐ.", ko: "나는 쌀 한 포대를 샀다." } },
