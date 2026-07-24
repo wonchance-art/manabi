@@ -5,7 +5,27 @@
 import { createRegistry } from '../refRegistry';
 
 import grammarOT from './grammar/ot';
+import grammarOTSceneEmergencyRaw from './grammar/scene_emergency_draft';
 import grammarA1 from './grammar/a1';
+
+// Draft 상태 필드 제거 + 섹션 정제 — 레지스트리 스키마 정합
+function cleanSceneChapter(ch) {
+  const { status, ENGLISH_SCENE_EMERGENCY_DRAFT_STATUS, ...cleaned } = ch;
+  if (cleaned.sections && Array.isArray(cleaned.sections)) {
+    cleaned.sections = cleaned.sections.map(s => {
+      // 비표준 필드 제거 (patternIpa, patternKo, yomi, pinyin, ipa 등)
+      const { patternIpa, patternKo, yomi, pinyin, ipa, note, ko, fr, zh, ja, story, ...section } = s;
+      // pattern만 남기고 패턴 변수는 제거
+      if (story) {
+        const { body, questions } = story;
+        return { ...section, story: { body: body || [], questions: questions || [] } };
+      }
+      return section;
+    });
+  }
+  return cleaned;
+}
+const grammarOTSceneEmergency = grammarOTSceneEmergencyRaw.map(cleanSceneChapter);
 import grammarA2 from './grammar/a2';
 import grammarB1 from './grammar/b1';
 import grammarB2 from './grammar/b2';
@@ -73,7 +93,7 @@ export const EN_LEVEL_META = [
 const registry = createRegistry(
   EN_LEVEL_META,
   {
-    OT: grammarOT,
+    OT: [...grammarOT, ...grammarOTSceneEmergency],
     A1: [...grammarA1, ...publishedGrammarExpansion.filter(ch => ch.level === 'A1')],
     A2: [...grammarA2, ...publishedGrammarExpansion.filter(ch => ch.level === 'A2')],
     B1: [...grammarB1, ...publishedGrammarExpansion.filter(ch => ch.level === 'B1')],

@@ -8,7 +8,26 @@ import { createRegistry } from '../refRegistry';
 import grammarA0 from './grammar/a0';
 import grammarA1 from './grammar/a1';
 import grammarA1Expansion from './grammar/a1_expansion';
+import grammarA1SceneEmergencyRaw from './grammar/scene_emergency_draft';
 import grammarA2 from './grammar/a2';
+
+// Draft 상태 필드 제거 + 섹션 정제 — 레지스트리 스키마 정합
+function cleanSceneChapter(ch) {
+  const { status, ...cleaned } = ch;
+  if (cleaned.sections && Array.isArray(cleaned.sections)) {
+    cleaned.sections = cleaned.sections.map(s => {
+      // 비표준 필드 제거 (ipa, patternKo, story 재구성 등)
+      const { ipa, patternKo, story, ...section } = s;
+      if (story) {
+        const { body, questions } = story;
+        return { ...section, story: { body: body || [], questions: questions || [] } };
+      }
+      return section;
+    });
+  }
+  return cleaned;
+}
+const grammarA1SceneEmergency = grammarA1SceneEmergencyRaw.map(cleanSceneChapter);
 import grammarB1 from './grammar/b1';
 import grammarB2 from './grammar/b2';
 import grammarC1 from './grammar/c1';
@@ -111,7 +130,7 @@ export const FR_LEVEL_META = [
 
 const registry = createRegistry(
   FR_LEVEL_META,
-  { A0: grammarA0, A1: [...grammarA1, ...grammarA1Expansion], A2: grammarA2, B1: grammarB1, B2: grammarB2, C1: grammarC1, C2: grammarC2 },
+  { A0: grammarA0, A1: [...grammarA1, ...grammarA1Expansion, ...grammarA1SceneEmergency], A2: grammarA2, B1: grammarB1, B2: grammarB2, C1: grammarC1, C2: grammarC2 },
   {
     A0: vocabA0,
     A1: mergeFrVocab(vocabA1, flelexA1),
