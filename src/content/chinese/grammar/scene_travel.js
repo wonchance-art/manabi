@@ -1,4 +1,7 @@
-// DRAFT_UNWIRED: Claude 검수 전 초안. index·레벨 레지스트리에서 소비하지 않아요.
+/**
+ * H1 여행 장면 — 공항·숙소·식당 실전 회화 (H1 레벨 6장: 17-22번)
+ * 入境·买票·入住·服务·点餐·支付까지 실제 장면 조합.
+ */
 const chapters = [
   {
     slug: "h1-17-scene-airport-entry",

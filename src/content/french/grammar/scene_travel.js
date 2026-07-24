@@ -1,4 +1,7 @@
-// DRAFT_UNWIRED: Claude 콘텐츠 검수 전까지 index·레벨 파일에서 소비하지 않아요.
+/**
+ * A1 여행 장면 — 공항·숙소·식당 실전 회화 (A1 레벨 6장: 23-28번)
+ * 입국·표 구매·체크인·요청·식사 주문·결제까지 실제 장면 조합.
+ */
 const chapters = [
   {
     slug: "a1-23-scene-airport-entry-baggage",
