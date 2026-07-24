@@ -14,6 +14,9 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
+- 커리큘럼 메타 R1 + 코스 지도 R3: 챕터 `prerequisites`·`formulaic` 스키마/동일 트랙
+  참조 계약과 권장 선행·장면 고정구 배지, 상세 도입 안내를 시스템 코드에 연결
+  (`codex/curriculum-meta`, 콘텐츠 데이터 변경 없음)
 ### todo
 ### done (최근)
 - 대화 예시 구조화 R1: examples에 flat 형식과 배타적인
