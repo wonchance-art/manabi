@@ -38,7 +38,7 @@ const themes = {
         { zh: "天气", pinyin: "tiānqì", ko: "날씨", pos: "명사", hanja: "천기(天氣) — '天'은 하늘 천, '氣'는 기운 기.", ex: { zh: "今天天气怎么样？", pinyin: "jīntiān tiānqì zěnmeyàng", ko: "오늘 날씨 어때요?" } },
         { zh: "晴", pinyin: "qíng", ko: "맑다", pos: "형용사", hanja: "청(晴) — '갤 청'.", ex: { zh: "今天天晴。", pinyin: "jīntiān tiān qíng", ko: "오늘은 날이 맑아요." } },
         { zh: "阴", pinyin: "yīn", ko: "흐리다", pos: "형용사", hanja: "음(陰) — '그늘 음'.", ex: { zh: "今天天阴。", pinyin: "jīntiān tiān yīn", ko: "오늘은 날이 흐려요." } },
-        { zh: "下雨", pinyin: "xià yǔ", ko: "비가 오다", pos: "동사", hanja: "하우(下雨) — '雨'는 비 우. 비가 '내리다'.", ex: { zh: "外面下雨了。", pinyin: "wàimiàn xià yǔ le", ko: "밖에 비가 와요." } },
+        { zh: "下雨", pinyin: "xiàyǔ", ko: "비가 오다", pos: "동사", hanja: "하우(下雨) — '雨'는 비 우. 비가 '내리다'.", ex: { zh: "外面下雨了。", pinyin: "wàimiàn xià yǔ le", ko: "밖에 비가 와요." } },
         { zh: "雪", pinyin: "xuě", ko: "눈", pos: "명사", hanja: "설(雪).", ex: { zh: "冬天下雪。", pinyin: "dōngtiān xià xuě", ko: "겨울에 눈이 와요." } },
         { zh: "分钟", pinyin: "fēnzhōng", ko: "분 (시간 길이)", pos: "명사", hanja: "분종(分鐘) — '分'은 나눌 분.", ex: { zh: "请等我五分钟。", pinyin: "qǐng děng wǒ wǔ fēnzhōng", ko: "5분만 기다려 주세요." } },
         { zh: "生日", pinyin: "shēngrì", ko: "생일", pos: "명사", hanja: "생일(生日) — 한자 그대로.", ex: { zh: "祝你生日快乐！", pinyin: "zhù nǐ shēngrì kuàilè", ko: "생일 축하해요!" } },
