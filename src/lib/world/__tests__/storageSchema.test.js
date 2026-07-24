@@ -3,10 +3,12 @@ import {
   STORAGE_SCHEMA_MIGRATIONS,
   STORAGE_SCHEMA_VERSION,
   STORAGE_SCHEMA_VERSION_KEY,
+  LEARNING_STORAGE_KEY_PREFIXES,
   WORLD_STORAGE_KEYS,
   WORLD_STORAGE_KEY_PREFIXES,
   briefingSeenKey,
   ensureStorageSchema,
+  learningActivityStorageKey,
   npcMeetingStorageKey,
   readStorageSchemaVersion,
   routeDiscoveryStorageKey,
@@ -40,11 +42,17 @@ describe('월드 localStorage 스키마 v1', () => {
       routeDiscoveries: 'route-discoveries:',
       briefingSeen: 'briefing-seen:',
     });
+    expect(LEARNING_STORAGE_KEY_PREFIXES).toEqual({
+      activity: 'manabi-learning-activity-v1:',
+    });
     expect(npcMeetingStorageKey('lyon')).toBe('npc-met:lyon');
     expect(routeDiscoveryStorageKey('lyon')).toBe('route-discoveries:lyon');
     expect(briefingSeenKey('france')).toBe('briefing-seen:france');
+    expect(learningActivityStorageKey()).toBe('manabi-learning-activity-v1:guest');
+    expect(learningActivityStorageKey('user-1')).toBe('manabi-learning-activity-v1:user-1');
     expect(Object.isFrozen(WORLD_STORAGE_KEYS)).toBe(true);
     expect(Object.isFrozen(WORLD_STORAGE_KEY_PREFIXES)).toBe(true);
+    expect(Object.isFrozen(LEARNING_STORAGE_KEY_PREFIXES)).toBe(true);
   });
 
   it('버전 키가 없는 기존 payload를 v1로 간주하고 무손실로 표식만 추가한다', () => {

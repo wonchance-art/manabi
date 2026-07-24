@@ -7,7 +7,16 @@ vi.mock('next/link', () => ({
 }));
 
 vi.mock('../../lib/AuthContext', () => ({
-  useAuth: () => ({ user: null, loading: false }),
+  useAuth: () => ({ user: null, profile: null, loading: false }),
+}));
+
+vi.mock('../../lib/learn/learningActivity', () => ({
+  LEARNING_ACTIVITY_EVENT: 'manabi:learning-activity',
+  getLearningMotivation: vi.fn(() => ({
+    streakCount: 0,
+    dailyGoalComplete: false,
+    source: 'guest',
+  })),
 }));
 
 vi.mock('../../lib/learn/progressStore', () => ({
@@ -119,6 +128,41 @@ describe('CourseMap', () => {
     expect(markup).toContain('data-lesson-status="complete"');
     expect(markup).toContain('data-course-next="a1-02-present-simple"');
     expect(markup).toContain('href="/english/grammar/a1-02-present-simple"');
+  });
+
+  it('로그인 스트릭 배지와 오늘 레슨 완료 체크 카드를 표시한다', () => {
+    const markup = renderToStaticMarkup(
+      <CourseMap
+        {...baseProps}
+        streakCount={7}
+        dailyGoalComplete
+        motivationSource="remote"
+      />,
+    );
+
+    expect(markup).toContain('data-course-streak="7"');
+    expect(markup).toContain('7일');
+    expect(markup).toContain('계정 기준');
+    expect(markup).toContain('data-daily-goal="complete"');
+    expect(markup).toContain('오늘 레슨 1개 완료');
+    expect(markup).toContain('오늘 목표를 채웠어요');
+  });
+
+  it('게스트는 이 기기 기준 0일·오늘 목표 미완료 폴백을 표시한다', () => {
+    const markup = renderToStaticMarkup(
+      <CourseMap
+        {...baseProps}
+        streakCount={0}
+        dailyGoalComplete={false}
+        motivationSource="guest"
+      />,
+    );
+
+    expect(markup).toContain('data-course-streak="0"');
+    expect(markup).toContain('0일');
+    expect(markup).toContain('이 기기 기준');
+    expect(markup).toContain('data-daily-goal="pending"');
+    expect(markup).toContain('레슨을 마치면 체크돼요');
   });
 
   it('영어 A1 첫 완료를 코스 지도에서 1 / 9로 렌더한다', () => {

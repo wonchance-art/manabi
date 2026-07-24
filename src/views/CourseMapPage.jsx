@@ -3,6 +3,10 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../lib/AuthContext';
+import {
+  LEARNING_ACTIVITY_EVENT,
+  getLearningMotivation,
+} from '../lib/learn/learningActivity';
 import { getLessonProgress } from '../lib/learn/progressStore';
 import styles from './CourseMapPage.module.css';
 
@@ -63,6 +67,9 @@ export function CourseMap({
   completedSlugs = [],
   progressSource = 'guest',
   progressLoading = false,
+  streakCount = 0,
+  dailyGoalComplete = false,
+  motivationSource = 'guest',
 }) {
   const completed = new Set(completedSlugs);
   const nextLesson = lessons.find((lesson) => !completed.has(lessonProgressKey(lesson)));
@@ -114,6 +121,34 @@ export function CourseMap({
           <strong>{completedCount} / {lessons.length}</strong>
         </div>
       </header>
+
+      <section className={`card ${styles.motivation}`} aria-label="오늘의 학습 동기">
+        <div
+          className={styles.streak}
+          data-course-streak={streakCount}
+          aria-label={`${streakCount}일 스트릭`}
+        >
+          <span className={styles.streakFire} aria-hidden="true">🔥</span>
+          <span className={styles.streakBody}>
+            <strong>{streakCount}일</strong>
+            <span>스트릭 · {motivationSource === 'guest' ? '이 기기 기준' : '계정 기준'}</span>
+          </span>
+        </div>
+        <div
+          className={`${styles.dailyGoal} ${dailyGoalComplete ? styles.dailyGoalComplete : ''}`}
+          data-daily-goal={dailyGoalComplete ? 'complete' : 'pending'}
+          aria-label={`오늘 레슨 1개 완료: ${dailyGoalComplete ? '완료' : '미완료'}`}
+        >
+          <span className={styles.goalCheck} aria-hidden="true">
+            {dailyGoalComplete ? '✓' : '○'}
+          </span>
+          <span className={styles.goalBody}>
+            <strong>오늘 레슨 1개 완료</strong>
+            <span>{dailyGoalComplete ? '오늘 목표를 채웠어요' : '레슨을 마치면 체크돼요'}</span>
+          </span>
+          <span className={styles.goalStatus}>{dailyGoalComplete ? '완료' : '0 / 1'}</span>
+        </div>
+      </section>
 
       <nav className={styles.levels} aria-label={`${trackLabel} 레벨`}>
         {levels.map((level) => (
@@ -211,7 +246,7 @@ export function CourseMap({
 }
 
 export default function CourseMapPage(props) {
-  const { user, loading: authLoading } = useAuth();
+  const { user, profile, loading: authLoading } = useAuth();
   const lessonSlugs = useMemo(
     () => props.lessons.map(lessonProgressKey).filter(Boolean),
     [props.lessons],
@@ -235,6 +270,11 @@ export default function CourseMapPage(props) {
     source: user?.id ? 'remote' : 'guest',
     loading: true,
   });
+  const [motivation, setMotivation] = useState({
+    streakCount: 0,
+    dailyGoalComplete: false,
+    source: 'guest',
+  });
 
   useEffect(() => {
     if (authLoading) return undefined;
@@ -255,12 +295,35 @@ export default function CourseMapPage(props) {
     };
   }, [authLoading, lessonSlugs, props.course?.language, user?.id, vocabLessons]);
 
+  useEffect(() => {
+    if (authLoading) return undefined;
+
+    const syncMotivation = () => {
+      setMotivation(getLearningMotivation(user?.id, {
+        remoteStreak: profile?.streak_count,
+        remoteLastStreakDate: profile?.last_streak_date,
+      }));
+    };
+
+    syncMotivation();
+    window.addEventListener(LEARNING_ACTIVITY_EVENT, syncMotivation);
+    return () => window.removeEventListener(LEARNING_ACTIVITY_EVENT, syncMotivation);
+  }, [
+    authLoading,
+    profile?.last_streak_date,
+    profile?.streak_count,
+    user?.id,
+  ]);
+
   return (
     <CourseMap
       {...props}
       completedSlugs={progress.completedSlugs}
       progressSource={progress.source}
       progressLoading={progress.loading || authLoading}
+      streakCount={motivation.streakCount}
+      dailyGoalComplete={motivation.dailyGoalComplete}
+      motivationSource={motivation.source}
     />
   );
 }

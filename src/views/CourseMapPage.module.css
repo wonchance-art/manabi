@@ -53,6 +53,107 @@
   font-variant-numeric: tabular-nums;
 }
 
+.motivation {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.8fr) minmax(0, 1.5fr);
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+  border-left: 4px solid var(--warning);
+}
+
+.streak,
+.dailyGoal {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding: 15px 18px;
+}
+
+.streak {
+  gap: 10px;
+  border-right: 1px solid var(--border);
+  background: color-mix(in srgb, var(--warning) 7%, var(--bg-card));
+}
+
+.streakFire {
+  flex-shrink: 0;
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.streakBody,
+.goalBody {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.streakBody strong {
+  color: var(--text-primary);
+  font-family: var(--font-serif);
+  font-size: 1.08rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.streakBody span,
+.goalBody span {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  line-height: 1.35;
+}
+
+.dailyGoal {
+  gap: 11px;
+  background: var(--bg-card);
+}
+
+.goalCheck {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid var(--border-hover);
+  border-radius: 50%;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.goalBody {
+  flex: 1;
+  gap: 2px;
+}
+
+.goalBody strong {
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 0.84rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.goalStatus {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.dailyGoalComplete .goalCheck {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  background: var(--accent-glow);
+  color: var(--accent);
+}
+
+.dailyGoalComplete .goalStatus {
+  color: var(--accent);
+}
+
 .tracks {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -321,6 +422,15 @@
 
   .progress {
     padding-top: 2px;
+  }
+
+  .motivation {
+    grid-template-columns: 1fr;
+  }
+
+  .streak {
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
   }
 
   .unit {

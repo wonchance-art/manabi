@@ -15,6 +15,7 @@
  */
 
 import { supabase } from '../supabase';
+import { recordLessonActivity } from './learningActivity';
 
 const LESSON_READ_KEYS = {
   Japanese: 'ja_read_chapters',
@@ -92,6 +93,12 @@ export async function recordLessonCompleted(userId, lessonRef, options = {}) {
 
   const { lang, slug, source } = lessonRef;
   const { checkResult } = options;
+
+  // 코스의 명시적 레슨 완료만 오늘 목표로 센다. 실패한 챕터 체크나
+  // material/reading 이벤트는 기존 스트릭·진도 계약은 유지하되 일일 목표에서 제외한다.
+  if (source === 'lesson' && checkResult?.passed !== false) {
+    recordLessonActivity(userId);
+  }
 
   // 게스트 경로: localStorage만
   if (!userId) {

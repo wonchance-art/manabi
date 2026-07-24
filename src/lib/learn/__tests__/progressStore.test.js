@@ -14,6 +14,8 @@ import {
   validateProgressRecord,
 } from '../progressStore';
 import { supabase } from '../../supabase';
+import { recordActivity } from '../../streak';
+import { learningActivityStorageKey } from '../../world/storageSchema.js';
 
 // Supabase mock
 vi.mock('../../supabase', () => ({
@@ -72,7 +74,11 @@ describe('progressStore', () => {
       });
 
       // user_ref_progress upsert 호출 확인
-      expect(recordLessonCompleted).toBeDefined();
+      expect(supabase.from).toHaveBeenCalledWith('user_ref_progress');
+      expect(recordActivity).toHaveBeenCalledWith('user-123', expect.any(Function));
+      expect(JSON.parse(localStorage.getItem(learningActivityStorageKey('user-123')))).toMatchObject({
+        lessonStreak: 1,
+      });
     });
 
     it('게스트: localStorage만 기록', async () => {
@@ -88,6 +94,21 @@ describe('progressStore', () => {
         const set = JSON.parse(studied);
         expect(set).toContain('n5-ch01');
       }
+      expect(JSON.parse(localStorage.getItem(learningActivityStorageKey()))).toMatchObject({
+        lessonStreak: 1,
+      });
+    });
+
+    it('통과하지 못한 챕터 체크는 오늘 레슨 완료로 세지 않는다', async () => {
+      await recordLessonCompleted(undefined, {
+        lang: 'Japanese',
+        slug: 'n5-ch01',
+        source: 'lesson',
+      }, {
+        checkResult: { right: 3, total: 10, passed: false, at: Date.now() },
+      });
+
+      expect(localStorage.getItem(learningActivityStorageKey())).toBeNull();
     });
 
     it('없는 참조는 무시', async () => {
@@ -263,14 +284,14 @@ describe('progressStore', () => {
       // (중복 행 생성 불가)
     });
 
-    it('기존 테이블 계약 유지 (신규 키 최소화)', async () => {
+    it('기존 테이블 계약과 사용자 스코프 일일 활동 키만 유지', async () => {
       // progressStore는 기존 테이블만 사용
       // - user_ref_progress
       // - grammar_review
       // - user_vocabulary
       // - review_events
       // - streak
-      // (신규 테이블/키 없음)
+      // 신규 DB 테이블은 없고, UI용 일일 활동 메타데이터만 storageSchema 정본 키에 기록한다.
     });
   });
 });
