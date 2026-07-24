@@ -72,6 +72,7 @@ import vocabH3hsk30 from './vocab/h3_hsk30';
 import vocabH4hsk30 from './vocab/h4_hsk30';
 import vocabH5hsk30 from './vocab/h5_hsk30';
 import vocabH6hsk30 from './vocab/h6_hsk30';
+import vocabExpansion from './vocab/expansion';
 // 원본 어휘 + HSK 보강 어휘를 '보강' 구분 없이 한 사전으로 — 품사별 자연 분류로 통합.
 const POS_GROUPS = [
   { name: '명사', icon: '📦', pos: ['명사'] },
@@ -168,6 +169,11 @@ export const ZH_LEVEL_META = [
     desc: '고급 성어·수사법·문체 변이 — 언어 너머의 문화까지.',
     color: '#A02840', bg: 'rgba(160,40,64,0.12)', line: 'rgba(160,40,64,0.35)',
   },
+  {
+    key: 'LIFE', short: '생활', label: '생활 어휘', focus: '여행·일상·업무',
+    desc: '공항·숙소·교통부터 학습·업무·디지털까지 실제 상황에 바로 쓰는 생활 어휘.',
+    color: '#E67700', bg: 'rgba(230,119,0,0.12)', line: 'rgba(230,119,0,0.35)',
+  },
 ];
 
 const registry = createRegistry(
@@ -188,6 +194,7 @@ const registry = createRegistry(
     H4: mergeVocab(vocabH4, vocabH4hskA, vocabH4hskB, vocabH4hskC, vocabH4hsk30),
     H5: mergeVocab(vocabH5, vocabH5hskA, vocabH5hskB, vocabH5hskC, vocabH5hskD, vocabH5hskE, vocabH5hskF, vocabH5hsk30),
     H6: mergeVocab(vocabH6, vocabH6hskA, vocabH6hskB, vocabH6hskC, vocabH6hskD, vocabH6hskE, vocabH6hsk30),
+    LIFE: vocabExpansion,
   },
 );
 

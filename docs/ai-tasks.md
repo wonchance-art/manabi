@@ -16,6 +16,10 @@
 ### doing
 ### todo
 ### done (최근)
+- F5 코스 지도 4트랙 전면화: `/learn/course` 일본어·프랑스어·영어·중국어
+  트랙 선택과 트랙별 F1 Course→Unit→Lesson·F2 진도/다음 CTA를 연결하고, F4 정본
+  챕터/세트를 포섭해 기존 문법·어휘 페이지로 딥링크
+  (`codex/f5-course-map-all`, 구현 4a4b0a1, base 8d94dab)
 - F5 선행 프로토 영어 코스 지도: `/learn/course` 신규 라우트에서 F1 Course→Unit→Lesson을
   렌더하고 F2 진도·다음 레슨 CTA·게스트 로컬 폴백과 렌더/진도/빈 상태 회귀를 고정
   (`codex/f5-course-map-proto`, 구현 0da5298, base 23511cf257032aec2d6cb9f690ca4bb097996e58)

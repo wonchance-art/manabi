@@ -302,8 +302,12 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
       )}
 
       {/* ── 주제별 세로 리스트 ── */}
-      {visibleThemes.map(theme => (
-        <section key={theme.name} style={{ marginBottom: 26 }}>
+      {visibleThemes.map((theme, themeIndex) => (
+        <section
+          key={theme.name}
+          id={`theme-${themeIndex + 1}`}
+          style={{ marginBottom: 26, scrollMarginTop: 96 }}
+        >
           <h2 className="fr-vlist-theme">
             {theme.name}
             <span className="fr-vlist-theme__count">{theme.totalWords}</span>

@@ -16,31 +16,75 @@ function chapterSlug(lesson) {
   return lesson?.specialFields?.originalChapterSlug || '';
 }
 
-function lessonHref(lesson) {
+function lessonProgressKey(lesson) {
+  return chapterSlug(lesson) || lesson?.specialFields?.progressSlug || '';
+}
+
+export function lessonHref(lesson, course) {
+  if (lesson?.specialFields?.contentHref) return lesson.specialFields.contentHref;
+
   const slug = chapterSlug(lesson);
-  return slug ? `/english/grammar/${encodeURIComponent(slug)}` : '/lessons';
+  const track = course?.language?.toLowerCase();
+  return slug && track ? `/${track}/grammar/${encodeURIComponent(slug)}` : '/lessons';
+}
+
+function TrackNav({ tracks, selectedTrack, selectedLevel }) {
+  return (
+    <nav className={styles.tracks} aria-label="학습 트랙">
+      {tracks.map((track) => {
+        const active = track.id === selectedTrack;
+        const level = active ? selectedLevel : track.defaultLevel;
+
+        return (
+          <Link
+            key={track.id}
+            href={`/learn/course?track=${encodeURIComponent(track.id)}&level=${encodeURIComponent(level)}`}
+            className={`${styles.track} ${active ? styles.trackActive : ''}`}
+            aria-current={active ? 'page' : undefined}
+          >
+            {track.label}
+          </Link>
+        );
+      })}
+    </nav>
+  );
 }
 
 export function CourseMap({
   course,
   units = [],
   lessons = [],
+  tracks = [],
+  selectedTrack = 'english',
+  trackLabel = '영어',
   levels = [],
+  levelLabels = {},
   selectedLevel,
   completedSlugs = [],
   progressSource = 'guest',
   progressLoading = false,
 }) {
   const completed = new Set(completedSlugs);
-  const nextLesson = lessons.find((lesson) => !completed.has(chapterSlug(lesson)));
-  const completedCount = lessons.filter((lesson) => completed.has(chapterSlug(lesson))).length;
+  const nextLesson = lessons.find((lesson) => !completed.has(lessonProgressKey(lesson)));
+  const completedCount = lessons.filter((lesson) => completed.has(lessonProgressKey(lesson))).length;
 
   if (!course || lessons.length === 0) {
     return (
-      <div className={`page-container ${styles.page}`} data-course-map="empty">
+      <div
+        className={`page-container ${styles.page}`}
+        data-course-map="empty"
+        data-course-track={selectedTrack}
+      >
+        <TrackNav
+          tracks={tracks}
+          selectedTrack={selectedTrack}
+          selectedLevel={selectedLevel}
+        />
         <header className={styles.header}>
-          <p className={styles.eyebrow}>영어 트랙</p>
-          <h1 className={styles.title}>{course?.title || '영어 코스'}</h1>
+          <div>
+            <p className={styles.eyebrow}>{trackLabel} 트랙</p>
+            <h1 className={styles.title}>{course?.title || `${trackLabel} 코스`}</h1>
+          </div>
         </header>
         <div className={`card ${styles.empty}`} role="status">
           레슨이 없습니다.
@@ -50,10 +94,19 @@ export function CourseMap({
   }
 
   return (
-    <div className={`page-container ${styles.page}`} data-course-map="ready">
+    <div
+      className={`page-container ${styles.page}`}
+      data-course-map="ready"
+      data-course-track={selectedTrack}
+    >
+      <TrackNav
+        tracks={tracks}
+        selectedTrack={selectedTrack}
+        selectedLevel={selectedLevel}
+      />
       <header className={styles.header}>
         <div>
-          <p className={styles.eyebrow}>영어 트랙</p>
+          <p className={styles.eyebrow}>{trackLabel} 트랙</p>
           <h1 className={styles.title}>{course.title}</h1>
         </div>
         <div className={styles.progress} aria-label={`완료 ${completedCount}개, 전체 ${lessons.length}개`}>
@@ -62,24 +115,24 @@ export function CourseMap({
         </div>
       </header>
 
-      <nav className={styles.levels} aria-label="영어 레벨">
+      <nav className={styles.levels} aria-label={`${trackLabel} 레벨`}>
         {levels.map((level) => (
           <Link
             key={level}
-            href={`/learn/course?level=${encodeURIComponent(level)}`}
+            href={`/learn/course?track=${encodeURIComponent(selectedTrack)}&level=${encodeURIComponent(level)}`}
             className={`${styles.level} ${level === selectedLevel ? styles.levelActive : ''}`}
             aria-current={level === selectedLevel ? 'page' : undefined}
           >
-            {level}
+            {levelLabels[level] || level}
           </Link>
         ))}
       </nav>
 
       {nextLesson ? (
         <Link
-          href={lessonHref(nextLesson)}
+          href={lessonHref(nextLesson, course)}
           className={`lessons-continue learn-cta ${styles.next}`}
-          data-course-next={chapterSlug(nextLesson)}
+          data-course-next={lessonProgressKey(nextLesson)}
         >
           <span className="lessons-continue__body">
             <span className="lessons-continue__kicker">다음 레슨</span>
@@ -113,27 +166,35 @@ export function CourseMap({
 
                 <ol className={styles.lessons}>
                   {unitLessons.map((lesson) => {
-                    const slug = chapterSlug(lesson);
-                    const isComplete = completed.has(slug);
+                    const progressKey = lessonProgressKey(lesson);
+                    const isComplete = completed.has(progressKey);
                     const isNext = nextLesson?.id === lesson.id;
+                    const vocabThemes = lesson.specialFields?.vocabThemeNames || [];
+                    const isVocabulary = lesson.specialFields?.contentType === 'vocabulary';
 
                     return (
                       <li key={lesson.id}>
                         <Link
-                          href={lessonHref(lesson)}
+                          href={lessonHref(lesson, course)}
                           className={`${styles.lesson} ${isComplete ? styles.lessonComplete : ''} ${isNext ? styles.lessonNext : ''}`}
                           aria-current={isNext ? 'step' : undefined}
                           data-lesson-status={isComplete ? 'complete' : isNext ? 'next' : 'pending'}
+                          data-lesson-type={isVocabulary ? 'vocabulary' : 'grammar'}
                         >
                           <span className={styles.lessonStatus} aria-hidden="true">
                             {isComplete ? '✓' : lesson.order}
                           </span>
                           <span className={styles.lessonBody}>
                             <strong>{lesson.title}</strong>
-                            <span>{lesson.estimatedMinutes}분</span>
+                            <span>
+                              {lesson.estimatedMinutes}분
+                              {vocabThemes.length > 0
+                                ? ` · 어휘 ${vocabThemes.join(' · ')}`
+                                : ''}
+                            </span>
                           </span>
                           <span className={styles.lessonMeta}>
-                            {isComplete ? '완료' : isNext ? '다음' : ''}
+                            {isComplete ? '완료' : isNext ? '다음' : isVocabulary ? '어휘' : ''}
                           </span>
                         </Link>
                       </li>
@@ -152,7 +213,21 @@ export function CourseMap({
 export default function CourseMapPage(props) {
   const { user, loading: authLoading } = useAuth();
   const lessonSlugs = useMemo(
-    () => props.lessons.map(chapterSlug).filter(Boolean),
+    () => props.lessons.map(lessonProgressKey).filter(Boolean),
+    [props.lessons],
+  );
+  const vocabLessons = useMemo(
+    () => props.lessons.flatMap((lesson) => {
+      const storageKey = lesson.specialFields?.vocabProgressStorageKey;
+      const words = lesson.specialFields?.vocabProgressWords;
+      if (!storageKey || !Array.isArray(words) || words.length === 0) return [];
+
+      return [{
+        slug: lessonProgressKey(lesson),
+        storageKey,
+        words,
+      }];
+    }),
     [props.lessons],
   );
   const [progress, setProgress] = useState({
@@ -168,8 +243,9 @@ export default function CourseMapPage(props) {
     setProgress((current) => ({ ...current, loading: true }));
 
     getLessonProgress(user?.id, {
-      lang: 'English',
+      lang: props.course?.language,
       slugs: lessonSlugs,
+      vocabLessons,
     }).then((result) => {
       if (active) setProgress({ ...result, loading: false });
     });
@@ -177,7 +253,7 @@ export default function CourseMapPage(props) {
     return () => {
       active = false;
     };
-  }, [authLoading, lessonSlugs, user?.id]);
+  }, [authLoading, lessonSlugs, props.course?.language, user?.id, vocabLessons]);
 
   return (
     <CourseMap

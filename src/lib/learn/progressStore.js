@@ -38,13 +38,14 @@ const LESSON_READ_KEYS = {
  * @param {Object} options
  * @param {"Japanese" | "French" | "English" | "Chinese"} options.lang
  * @param {string[]} [options.slugs]
+ * @param {Array<{slug: string, storageKey: string, words: string[]}>} [options.vocabLessons]
  * @returns {Promise<{completedSlugs: string[], source: "remote" | "guest" | "local-fallback"}>}
  */
-export async function getLessonProgress(userId, { lang, slugs = [] } = {}) {
+export async function getLessonProgress(userId, { lang, slugs = [], vocabLessons = [] } = {}) {
   if (!lang) return { completedSlugs: [], source: userId ? 'local-fallback' : 'guest' };
 
   const allowed = new Set(slugs.filter(Boolean));
-  const localCompleted = readLocalLessonProgress(lang, allowed);
+  const localCompleted = readLocalLessonProgress(lang, allowed, vocabLessons);
 
   if (!userId || allowed.size === 0) {
     return {
@@ -215,7 +216,7 @@ function recordProgressLocal(slug, source) {
   } catch {}
 }
 
-function readLocalLessonProgress(lang, allowed) {
+function readLocalLessonProgress(lang, allowed, vocabLessons = []) {
   const completed = new Set();
   if (typeof window === 'undefined') return completed;
 
@@ -244,6 +245,16 @@ function readLocalLessonProgress(lang, allowed) {
           if (allowed.has(slug) && result?.passed) completed.add(slug);
         }
       }
+    } catch {}
+  }
+
+  for (const lesson of vocabLessons) {
+    if (!allowed.has(lesson?.slug) || !lesson.storageKey || !Array.isArray(lesson.words)) continue;
+    if (lesson.words.length === 0) continue;
+
+    try {
+      const checked = new Set(JSON.parse(localStorage.getItem(lesson.storageKey) || '[]'));
+      if (lesson.words.every((word) => checked.has(word))) completed.add(lesson.slug);
     } catch {}
   }
 

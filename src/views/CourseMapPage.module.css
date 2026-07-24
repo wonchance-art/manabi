@@ -53,6 +53,37 @@
   font-variant-numeric: tabular-nums;
 }
 
+.tracks {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  padding: 5px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.track {
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-align: center;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.track:hover {
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+}
+
+.trackActive {
+  color: #fff;
+  background: var(--primary);
+}
+
 .levels {
   display: flex;
   gap: 4px;
@@ -277,6 +308,10 @@
 @media (max-width: 600px) {
   .page {
     padding-inline: 16px;
+  }
+
+  .tracks {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .header {
