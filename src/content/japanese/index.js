@@ -6,26 +6,7 @@ import { createRegistry } from '../refRegistry';
 
 import grammarOT from './grammar/ot';
 import grammarN5 from './grammar/n5';
-import grammarN5SceneEmergencyRaw from './grammar/scene_emergency_draft';
 import grammarN4 from './grammar/n4';
-
-// Draft 상태 필드 제거 + 섹션 정제 — 레지스트리 스키마 정합
-function cleanSceneChapter(ch) {
-  const { status, JAPANESE_SCENE_EMERGENCY_DRAFT_STATUS, ...cleaned } = ch;
-  if (cleaned.sections && Array.isArray(cleaned.sections)) {
-    cleaned.sections = cleaned.sections.map(s => {
-      // 비표준 필드 제거 (yomi, patternKo, vsKo 등)
-      const { yomi, patternKo, vsKo, story, ...section } = s;
-      if (story) {
-        const { body, questions } = story;
-        return { ...section, story: { body: body || [], questions: questions || [] } };
-      }
-      return section;
-    });
-  }
-  return cleaned;
-}
-const grammarN5SceneEmergency = grammarN5SceneEmergencyRaw.map(cleanSceneChapter);
 import grammarN3 from './grammar/n3';
 import grammarN2 from './grammar/n2';
 import grammarN1 from './grammar/n1';
@@ -153,7 +134,7 @@ export const JA_LEVEL_META = [
 
 const registry = createRegistry(
   JA_LEVEL_META,
-  { OT: grammarOT, N5: [...grammarN5, ...grammarN5SceneEmergency], N4: grammarN4, N3: grammarN3, N2: grammarN2, N1: grammarN1 },
+  { OT: grammarOT, N5: grammarN5, N4: grammarN4, N3: grammarN3, N2: grammarN2, N1: grammarN1 },
   {
     // W1 보강: vocabN5jlptA… 조립 후 mergeJaVocab(vocabN5, vocabN5jlptA, …) 형태로 여기 추가
     N5: mergeJaVocab(vocabN5, vocabN5jlptA, vocabN5jlptB, vocabN5jlptC, vocabN5travelCore, vocabSlangCore, vocabCultureCore),
