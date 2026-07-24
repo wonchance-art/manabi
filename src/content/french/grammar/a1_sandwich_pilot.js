@@ -3,11 +3,11 @@
  *
  * 구조: 5단 (authenticIntro + vocabPreview + patternExplanation + authenticReplay + practiceAndRegistration)
  * 상태: PILOT (draft PR 단계, 검증 후 본격 확장)
- * 라이선스 주: Tatoeba CC-BY 2.0 (원문) + 오디오 메타 placeholder (파일럿 범위)
+ * 라이선스 주: 파일럿 창작 대화(표시용 placeholder) — 실음원·Tatoeba 원문 연결은 다음 단계
  *
  * 파일럿 사양:
  * - 오디오: 텍스트 대화로 구성 (실제 mp3 수집은 다음 단계)
- * - source/license: Tatoeba CC-BY 형식 + 저자 표기
+ * - source/license: 실자료 연결 전이므로 placeholder 명시(가짜 출처 표기 금지)
  * - 어휘: cardModel.registerNoteFromLesson 연계
  * - 렌더: ReferenceChapterPage v2 수정 필요
  */
@@ -16,7 +16,7 @@ export const FRENCH_A1_SANDWICH_PILOT_STATUS = "PILOT_DRAFT";
 
 const chapters = [
   {
-    slug: "a1-pilot-32-cafe-voirdais",
+    slug: "a1-pilot-32-cafe-voudrais",
     level: "A1",
     order: 32,
     status: FRENCH_A1_SANDWICH_PILOT_STATUS,
@@ -34,11 +34,10 @@ const chapters = [
         presentationFraming:
           "못 알아들어도 정상이에요! 전체 대화를 몇 번 들으면서 '주문하는 사람'과 '카페 직원'의 목소리 차이를 느껴 보세요.",
         audio: {
-          url: "https://manabi-public.s3.amazonaws.com/audio/lessons/french/tatoeba-fr-cafe-01.mp3",
-          sourceId: "tatoeba-fr-cafe-01",
+          status: "placeholder",
+          sourceId: "pilot-fr-cafe-01",
           duration: "0:28",
-          license: "CC-BY 2.0",
-          attribution: "Tatoeba (CC BY 2.0) — Native French speakers (Bouffart, Sann)",
+          attribution: "파일럿 창작 대화 — 실음원·원문 출처 연결 예정",
         },
         captions: {
           original:
@@ -90,7 +89,7 @@ const chapters = [
         pattern: "Je voudrais + 명사",
         patternKo: "저는 ~를 원해요 (공손)",
         body:
-          "**Je voudrais** (쥬 부드래)는 vouloir(원하다) 동사의 조건법 1인칭 단수 형태예요. \n\n" +
+          "**Je voudrais** (쥬 부드레)는 vouloir(원하다) 동사의 조건법 1인칭 단수 형태예요. \n\n" +
           "**'Je veux'는 '나 원해!'로 다소 거칠**지만, **'Je voudrais'는 '저는... 원해요'로 공손하고 정중**해요. 카페, 식당, 가게에서 주문할 때 쓰는 기본 표현이에요.\n\n" +
           "**패턴**: Je voudrais + 명사(un/une + 물건)\n" +
           "예: Je voudrais un café (커피를 원해요) / Je voudrais une eau (물을 원해요)",
@@ -101,7 +100,7 @@ const chapters = [
             tip: "가장 기본적인 카페 주문",
           },
           {
-            fr: "Je voudrais une croissant.",
+            fr: "Je voudrais un croissant.",
             ko: "저는 크루아상을 원해요.",
             tip: "음식도 같은 패턴",
           },
@@ -122,29 +121,27 @@ const chapters = [
         presentationFraming: "이제 같은 '주문' 상황을 2번 더 들어 보고, 마지막에 자신의 이해도를 체크해 보세요.",
         original: {
           audio: {
-            url: "https://manabi-public.s3.amazonaws.com/audio/lessons/french/tatoeba-fr-cafe-01.mp3",
-            sourceId: "tatoeba-fr-cafe-01",
-            license: "CC-BY 2.0",
-            attribution: "Tatoeba (CC BY 2.0) — Native French speakers",
+            status: "placeholder",
+            sourceId: "pilot-fr-cafe-01",
+            attribution: "파일럿 창작 대화 — 실음원·원문 출처 연결 예정",
             duration: "0:28",
           },
           captions: {
             original:
               "— Bonjour, qu'est-ce que vous prenez?\n— Je voudrais un café, s'il vous plaît.\n— Un café crème ou un expresso?\n— Un expresso, merci.",
-            translation: "— 안녕, 뭘 드릴까요?\n— 저는 커피를 원해요.\n— 크림 커피 또는 에스프레소?\n— 에스프레소로 주세요.",
+            translation: "— 안녕하세요, 뭘 드릴까요?\n— 저는 커피를 원해요.\n— 크림 커피 또는 에스프레소?\n— 에스프레소로 주세요.",
           },
         },
         variant: {
           audio: {
-            url: "https://manabi-public.s3.amazonaws.com/audio/lessons/french/tatoeba-fr-cafe-02.mp3",
-            sourceId: "tatoeba-fr-cafe-02",
-            license: "CC-BY 2.0",
-            attribution: "Tatoeba (CC BY 2.0) — Native French speakers",
+            status: "placeholder",
+            sourceId: "pilot-fr-cafe-02",
+            attribution: "파일럿 창작 대화 — 실음원·원문 출처 연결 예정",
             duration: "0:25",
           },
           captions: {
             original:
-              "— Qu'est-ce que je vous sers?\n— Je voudrais une croissant et un chocolat chaud, s'il vous plaît.\n— Oui, tout de suite!",
+              "— Qu'est-ce que je vous sers?\n— Je voudrais un croissant et un chocolat chaud, s'il vous plaît.\n— Oui, tout de suite!",
             translation: "— 뭘 드릴까요?\n— 저는 크루아상과 핫초콜릿을 원해요, 부탁합니다.\n— 네, 바로요!",
           },
           transitionNote:
@@ -160,9 +157,9 @@ const chapters = [
       // ⑤ 연습 + SRS 등록 (practiceAndRegistration)
       {
         type: "practiceAndRegistration",
-        heading: "연습: 너도 주문해 봐!",
+        heading: "연습: 직접 주문해 보기",
         writingPrompts: [
-          "너는 카페에서 뭘 먹고 싶어? 'Je voudrais...'로 시작해서 문장 2개를 만들어 보세요.",
+          "카페에서 뭘 주문하고 싶나요? 'Je voudrais...'로 시작하는 문장 2개를 만들어 보세요.",
           "'Je voudrais'를 쓰지 않고 같은 의미의 다른 표현(예: Je prends...)을 찾아 보세요.",
         ],
         quizItems: [
@@ -192,7 +189,7 @@ const chapters = [
           },
           {
             type: "fillBlank",
-            question: "빈칸을 채우세요: ___ une eau, s'il vous plaît.",
+            question: "빈칸에 가장 공손한 주문 표현을 고르세요: ___ une eau, s'il vous plaît.",
             options: ["Je veux", "Je voudrais", "Je prends"],
             correctIndex: 1,
             explanation: "공손한 주문은 'Je voudrais'를 써요.",
@@ -225,11 +222,10 @@ const chapters = [
         presentationFraming:
           "못 알아들어도 정상이에요! 약사(여성)와 고객(남성)의 대화를 듣고, 누가 조언하고 누가 듣고 있는지 느껴 보세요.",
         audio: {
-          url: "https://manabi-public.s3.amazonaws.com/audio/lessons/french/tatoeba-fr-pharmacy-01.mp3",
-          sourceId: "tatoeba-fr-pharmacy-01",
+          status: "placeholder",
+          sourceId: "pilot-fr-pharmacy-01",
           duration: "0:32",
-          license: "CC-BY 2.0",
-          attribution: "Tatoeba (CC BY 2.0) — Native French speakers (Marena, Nicolas)",
+          attribution: "파일럿 창작 대화 — 실음원·원문 출처 연결 예정",
         },
         captions: {
           original:
@@ -248,7 +244,7 @@ const chapters = [
             word: "il faut",
             meanings: ["~해야 한다", "필요하다", "~해야 함"],
             exampleSentence: "Il faut prendre de l'aspirine.",
-            note: "impersonal verb — '~하는 것이 필요하다'",
+            note: "비인칭 표현 — '~하는 것이 필요하다'",
           },
           {
             word: "aspirine",
@@ -286,7 +282,7 @@ const chapters = [
           "- Il faut prendre (약을 먹어야 한다)\n" +
           "- Il faut manger léger (가볍게 먹어야 한다)\n" +
           "- Il faut boire de l'eau (물을 마셔야 한다)\n\n" +
-          "**'It must be done' (누군가 하는 것이 필수)** 라는 의미로, 특정 인물이 주어가 아니에요. " +
+          "'(일반적으로) ~해야 한다'는 뜻으로, 특정 사람이 주어가 아니에요. " +
           "의료/학교/법칙 상황에서 아주 자주 들려요.",
         examples: [
           {
@@ -306,7 +302,7 @@ const chapters = [
           },
         ],
         pitfall:
-          "❌ 틀림: 'Je faut prendre' (il, 인칭 대명사 필수)\n✅ 맞음: 'Il faut prendre' (impersonal verb)",
+          "❌ 틀림: 'Je faut prendre' (faut의 주어는 항상 비인칭 il)\n✅ 맞음: 'Il faut prendre' (je/tu 등으로 바꿀 수 없어요)",
       },
 
       // ④ 재노출
@@ -316,10 +312,9 @@ const chapters = [
         presentationFraming: "이번엔 약사가 아니라 엄마의 '일상 조언' 상황에서 같은 'Il faut'를 들어 봐요.",
         original: {
           audio: {
-            url: "https://manabi-public.s3.amazonaws.com/audio/lessons/french/tatoeba-fr-pharmacy-01.mp3",
-            sourceId: "tatoeba-fr-pharmacy-01",
-            license: "CC-BY 2.0",
-            attribution: "Tatoeba (CC BY 2.0) — Native French speakers",
+            status: "placeholder",
+            sourceId: "pilot-fr-pharmacy-01",
+            attribution: "파일럿 창작 대화 — 실음원·원문 출처 연결 예정",
             duration: "0:32",
           },
           captions: {
@@ -330,10 +325,9 @@ const chapters = [
         },
         variant: {
           audio: {
-            url: "https://manabi-public.s3.amazonaws.com/audio/lessons/french/tatoeba-fr-pharmacy-02.mp3",
-            sourceId: "tatoeba-fr-pharmacy-02",
-            license: "CC-BY 2.0",
-            attribution: "Tatoeba (CC BY 2.0) — Native French speakers",
+            status: "placeholder",
+            sourceId: "pilot-fr-pharmacy-02",
+            attribution: "파일럿 창작 대화 — 실음원·원문 출처 연결 예정",
             duration: "0:28",
           },
           captions: {
@@ -354,9 +348,9 @@ const chapters = [
       // ⑤ 연습
       {
         type: "practiceAndRegistration",
-        heading: "연습: 너도 조언해 봐!",
+        heading: "연습: 직접 조언해 보기",
         writingPrompts: [
-          "'Il faut'를 써서 친구한테 건강 조언 2개를 만들어 보세요. (예: 더 자야 해, 운동해야 해 등)",
+          "'Il faut'를 써서 친구에게 건강 조언 2개를 만들어 보세요. (예: 더 자야 해, 운동해야 해 등)",
           "'Il faut' 대신 다른 표현(예: Vous devez...)으로 같은 의미를 만들어 보세요.",
         ],
         quizItems: [
@@ -386,10 +380,10 @@ const chapters = [
           },
           {
             type: "fillBlank",
-            question: "빈칸을 채우세요: ___ boire de l'eau après le sport.",
+            question: "누구에게나 하는 일반 조언이 되도록 고르세요: ___ boire de l'eau après le sport.",
             options: ["Je bois", "Il faut", "Tu dois"],
             correctIndex: 1,
-            explanation: "일반적인 조언/의무는 'Il faut'를 써요.",
+            explanation: "특정 상대(tu/vous) 없이 누구에게나 하는 조언은 비인칭 'Il faut'를 써요.",
           },
         ],
         autoRegisterVocabs: true,
