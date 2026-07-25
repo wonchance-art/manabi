@@ -5,15 +5,12 @@
  * 기존 레벨별 챕터와 분리되어 있으며, 레슨 매핑 시 F1 어댑터를 통해 통합.
  */
 
-export const ENGLISH_GRAMMAR_EXPANSION_STATUS = "DRAFT_UNWIRED";
-
 const chapters = [
   // DRAFT: 기존 A1 대명사·소유격 챕터와 분리해 거리·수 지시와 명사 반복 회피만 다룬다.
   {
     slug: "a1-09-demonstratives-one",
     level: "A1",
     order: 9,
-    status: ENGLISH_GRAMMAR_EXPANSION_STATUS,
     title: "이 컵, 저 컵, 그리고 큰 걸로 주세요",
     topic: "지시사 this/that/these/those·대용 one/ones",
     titleFr: "Demonstratives & one / ones",
@@ -82,7 +79,6 @@ const chapters = [
     slug: "a2-10-requests-suggestions",
     level: "A2",
     order: 10,
-    status: ENGLISH_GRAMMAR_EXPANSION_STATUS,
     title: "명령하지 않고 부탁하고 제안하는 거리",
     topic: "would like·Would you like·Let's·How about",
     titleFr: "Polite requests, offers & suggestions",
@@ -143,7 +139,6 @@ const chapters = [
     slug: "b1-10-past-perfect",
     level: "B1",
     order: 10,
-    status: ENGLISH_GRAMMAR_EXPANSION_STATUS,
     title: "과거보다 더 먼저 일어난 일을 세우는 법",
     topic: "과거완료 had+p.p.·by the time",
     titleFr: "Past perfect & earlier past",
@@ -204,7 +199,6 @@ const chapters = [
     slug: "b1-11-deadlines-contingency",
     level: "B1",
     order: 11,
-    status: ENGLISH_GRAMMAR_EXPANSION_STATUS,
     title: "마감과 지속, 혹시 모를 상황을 구분해요",
     topic: "by/until·in case·be supposed to",
     titleFr: "Deadlines, duration & contingency",
@@ -265,7 +259,6 @@ const chapters = [
     slug: "b2-10-degree-result",
     level: "B2",
     order: 10,
-    status: ENGLISH_GRAMMAR_EXPANSION_STATUS,
     title: "너무, 충분히, 그래서의 문장 설계",
     topic: "so/such·too/enough 결과 구문",
     titleFr: "Degree & result clauses",
@@ -326,7 +319,6 @@ const chapters = [
     slug: "c1-09-focus-scope",
     level: "C1",
     order: 9,
-    status: ENGLISH_GRAMMAR_EXPANSION_STATUS,
     title: "only와 even의 자리가 바꾸는 뜻",
     topic: "초점부사 only/even·범위",
     titleFr: "Focus adverbs & scope",
@@ -387,7 +379,6 @@ const chapters = [
     slug: "c2-06-ellipsis-substitution",
     level: "C2",
     order: 6,
-    status: ENGLISH_GRAMMAR_EXPANSION_STATUS,
     title: "반복을 지우되 뜻은 남기는 법",
     topic: "조동사·to부정사·절 생략과 대용",
     titleFr: "Ellipsis & substitution",
