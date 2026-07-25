@@ -15,6 +15,7 @@ import grammarB1 from './grammar/b1';
 import grammarB2 from './grammar/b2';
 import grammarC1 from './grammar/c1';
 import grammarC2 from './grammar/c2';
+import grammarA2Scenes from './grammar/a2_scenes';
 import grammarSceneEmergency from './grammar/scene_emergency';
 import grammarSceneTravel from './grammar/scene_travel';
 
@@ -115,7 +116,7 @@ export const FR_LEVEL_META = [
 
 const registry = createRegistry(
   FR_LEVEL_META,
-  { A0: grammarA0, A1: [...grammarA1, ...grammarA1Expansion, ...grammarA1Pronunciation, ...grammarSceneEmergency, ...grammarSceneTravel.filter(ch => ch.level === 'A1'), ...grammarA1SandwichPilot], A2: grammarA2, B1: grammarB1, B2: grammarB2, C1: grammarC1, C2: grammarC2 },
+  { A0: grammarA0, A1: [...grammarA1, ...grammarA1Expansion, ...grammarA1Pronunciation, ...grammarSceneEmergency, ...grammarSceneTravel.filter(ch => ch.level === 'A1'), ...grammarA1SandwichPilot], A2: [...grammarA2, ...grammarA2Scenes], B1: grammarB1, B2: grammarB2, C1: grammarC1, C2: grammarC2 },
   {
     A0: vocabA0,
     A1: mergeFrVocab(vocabA1, flelexA1),
