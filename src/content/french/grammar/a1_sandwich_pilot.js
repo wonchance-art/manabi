@@ -25,13 +25,13 @@ const chapters = [
     topic: "주문·공손 표현·음료 이름",
     titleFr: "Commander une boisson au café",
     summary:
-      "카페에서 원하는 음료를 주문해요. '저는 ~를 원해요(Je voudrais ~)'를 배우고, 실제 카페 대화를 듣고, 여러 상황에서 같은 표현을 써 봐요.",
+      "카페에서 원하는 음료를 주문해요. '저는 ~를 원해요(Je voudrais ~)'를 배우고, 실제 카페 대화를 만나고, 여러 상황에서 같은 표현을 써 봐요.",
     duration: "약 10분",
     sections: [
       // ① 실전 선노출 (authenticIntro)
       {
         type: "authenticIntro",
-        heading: "카페 주문 실전 대화 들어 보기",
+        heading: "카페 주문 실전 대화 만나 보기",
         presentationFraming:
           "못 알아들어도 정상이에요! 전체 대화를 몇 번 들으면서 '주문하는 사람'과 '카페 직원'의 목소리 차이를 느껴 보세요.",
         audio: {
@@ -119,7 +119,7 @@ const chapters = [
       {
         type: "authenticReplay",
         heading: "같은 표현, 다른 상황에서",
-        presentationFraming: "이제 같은 '주문' 상황을 2번 더 들어 보고, 마지막에 자신의 이해도를 체크해 보세요.",
+        presentationFraming: "이제 같은 '주문' 상황을 2번 더 만나 보고, 마지막에 자신의 이해도를 체크해 보세요.",
         original: {
           audio: {
             status: "placeholder",
@@ -220,9 +220,9 @@ const chapters = [
       // ① 실전 선노출
       {
         type: "authenticIntro",
-        heading: "약국 상황 대화 들어 보기",
+        heading: "약국 상황 대화 만나 보기",
         presentationFraming:
-          "못 알아들어도 정상이에요! 약사(여성)와 고객(남성)의 대화를 듣고, 누가 조언하고 누가 듣고 있는지 느껴 보세요. (대화 속 약 이름·복용량은 표현 학습용 연출이에요 — 실제 복용은 반드시 약사·의사의 개별 안내를 따르세요.)",
+          "못 알아들어도 정상이에요! 약사(여성)와 고객(남성)의 대화를 보고, 어느 쪽이 조언하는 쪽인지 느껴 보세요. (대화 속 약 이름·복용량은 표현 학습용 연출이에요 — 실제 복용은 반드시 약사·의사의 개별 안내를 따르세요.)",
         audio: {
           status: "placeholder",
           sourceId: "pilot-fr-pharmacy-01",

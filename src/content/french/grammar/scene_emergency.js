@@ -10,22 +10,18 @@ const chapters = [
     titleFr: "Demander son chemin et prendre les transports",
     summary:
       "목적지 위치를 묻고, 들은 안내를 확인한 뒤 노선·환승·하차 지점까지 이어서 물어요.",
-    duration: "약 15분",
+    duration: "약 20분",
     sections: [
       // 샌드위치 v2 시험 적용 — 문형 où se trouve는 Tatoeba 다수 실재(예: #13734709 "Où se trouve Samir ?"). 대화 자체는 자체 저작.
       {
         type: "authenticIntro",
-        heading: "길 위 실전 대화 통째로 들어 보기",
-        presentationFraming: "못 알아들어도 정상이에요! 길을 묻고 → 되묻고 → 노선까지 확인하는 실제 흐름을 먼저 통째로 만나 보세요. 묻는 쪽이 쓰는 표현 두세 개만 귀에 걸리면 성공이에요.",
+        heading: "길 위 실전 대화 먼저 만나기",
+        presentationFraming: "다 이해 안 돼도 정상이에요! 낯선 거리에서 길을 묻고, 못 알아들으면 다시 묻는 실제 흐름을 먼저 통째로 만나 보세요 — 묻는 쪽이 쓰는 표현 두세 개만 눈에 익으면 성공이에요.",
         dialogue: [
               { speaker: "여행자", fr: "Excusez-moi, où se trouve le jardin public ?", ipa: "[ɛkskyze mwa u sə tʁuv lə ʒaʁdɛ̃ pyblik]", ko: "실례합니다, 공원은 어디에 있나요?" },
               { speaker: "행인", fr: "Allez tout droit, puis tournez à gauche.", ipa: "[ale tu dʁwa pɥi tuʁne a ɡoʃ]", ko: "곧장 가신 다음 왼쪽으로 도세요." },
               { speaker: "여행자", fr: "Vous avez dit « à gauche » ?", ipa: "[vuzave di a ɡoʃ]", ko: "'왼쪽'이라고 하셨나요?" },
               { speaker: "행인", fr: "Oui, après la place.", ipa: "[wi apʁɛ la plas]", ko: "네, 광장을 지난 뒤예요." },
-              { speaker: "여행자", fr: "Je prends quelle ligne pour aller au marché ?", ipa: "[ʒə pʁɑ̃ kɛl liɲ puʁ ale o maʁʃe]", ko: "시장에 가려면 어느 노선을 타야 하나요?" },
-              { speaker: "안내 직원", fr: "Prenez la ligne un.", ipa: "[pʁəne la liɲ œ̃]", ko: "1호선을 타세요." },
-              { speaker: "여행자", fr: "Je descends à quel arrêt ?", ipa: "[ʒə desɑ̃ a kɛl aʁɛ]", ko: "어느 정류장에서 내려요?" },
-              { speaker: "안내 직원", fr: "Au troisième arrêt. C'est direct.", ipa: "[o tʁwazjɛm aʁɛ sɛ diʁɛkt]", ko: "세 번째 정류장이에요. 직행이에요." },
         ],
       },
       {
@@ -167,8 +163,8 @@ const chapters = [
       },
       {
         type: "authenticReplay",
-        heading: "같은 대화, 이제 다시 들어 보기",
-        presentationFraming: "문형을 배웠으니 처음 대화를 다시 들어 보고, 이어서 대중교통 장면까지 확장해 보세요.",
+        heading: "같은 대화, 이제 다시 읽어 보기",
+        presentationFraming: "문형을 배웠으니 처음 대화를 다시 읽어 보고, 이어서 대중교통 장면까지 확장해 보세요.",
         original: {
           dialogue: [
               { speaker: "여행자", fr: "Excusez-moi, où se trouve le jardin public ?", ipa: "[ɛkskyze mwa u sə tʁuv lə ʒaʁdɛ̃ pyblik]", ko: "실례합니다, 공원은 어디에 있나요?" },
@@ -315,22 +311,18 @@ const chapters = [
     titleFr: "Signaler un problème de santé ou un objet perdu",
     summary:
       "아픈 부위와 증상을 말하고 도움을 요청한 뒤, 잃어버린 물건과 특징을 차분히 설명해요.",
-    duration: "약 15분",
+    duration: "약 20분",
     sections: [
       // 샌드위치 v2 시험 적용 — avoir mal à·J\'ai perdu 문형은 Tatoeba 다수 실재 계열. 대화는 자체 저작.
       {
         type: "authenticIntro",
-        heading: "약국·분실 창구 실전 대화 통째로 듣기",
-        presentationFraming: "못 알아들어도 정상이에요! 아픈 상태를 알리는 장면과 분실 신고 장면, 두 상황을 먼저 통째로 들어 보세요 — J\'ai mal…과 la perte…만 귀에 걸리면 충분해요.",
+        heading: "약국 실전 대화 먼저 만나기",
+        presentationFraming: "다 이해 안 돼도 정상이에요! 아픈 곳을 알리고 약을 받는 장면을 먼저 통째로 만나 보세요 — J'ai mal… 하나만 눈에 걸리면 충분해요.",
         dialogue: [
               { speaker: "여행자", fr: "J'ai mal à la tête et j'ai de la fièvre.", ipa: "[ʒe mal a la tɛt e ʒe də la fjɛvʁ]", ko: "머리가 아프고 열이 나요." },
               { speaker: "보건 안내 직원", fr: "Vous vous sentez faible ?", ipa: "[vu vu sɑ̃te fɛbl]", ko: "몸에 힘이 없나요?" },
               { speaker: "여행자", fr: "Oui. J'ai besoin d'un médecin.", ipa: "[wi ʒe bəzwɛ̃ dœ̃ medsɛ̃]", ko: "네. 의사가 필요해요." },
               { speaker: "보건 안내 직원", fr: "D'accord. Asseyez-vous ici.", ipa: "[dakɔʁ aseje vu isi]", ko: "알겠습니다. 여기에 앉으세요." },
-              { speaker: "여행자", fr: "Je souhaite signaler la perte de mon portefeuille.", ipa: "[ʒə swɛt siɲale la pɛʁt də mɔ̃ pɔʁtəfœj]", ko: "지갑 분실을 신고하려고 해요." },
-              { speaker: "분실물 직원", fr: "Quelle est sa description ?", ipa: "[kɛl ɛ sa dɛskʁipsjɔ̃]", ko: "특징이 어떻게 되나요?" },
-              { speaker: "여행자", fr: "Il est petit et noir.", ipa: "[il ɛ pəti e nwaʁ]", ko: "작고 검은색이에요." },
-              { speaker: "분실물 직원", fr: "Où l'avez-vous vu pour la dernière fois ?", ipa: "[u lave vu puʁ la dɛʁnjɛʁ fwa]", ko: "마지막으로 어디에서 보셨나요?" },
         ],
       },
       {
@@ -472,8 +464,8 @@ const chapters = [
       },
       {
         type: "authenticReplay",
-        heading: "같은 대화, 이제 다시 들어 보기",
-        presentationFraming: "문형을 배웠으니 처음 대화를 다시 들어 보고, 이어지는 장면까지 확장해 보세요.",
+        heading: "같은 대화, 이제 다시 읽어 보기",
+        presentationFraming: "문형을 배웠으니 처음 대화를 다시 읽어 보고, 이어지는 장면까지 확장해 보세요.",
         original: {
           dialogue: [
               { speaker: "여행자", fr: "J'ai mal à la tête et j'ai de la fièvre.", ipa: "[ʒe mal a la tɛt e ʒe də la fjɛvʁ]", ko: "머리가 아프고 열이 나요." },

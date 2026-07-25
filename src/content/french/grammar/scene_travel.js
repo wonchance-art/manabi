@@ -14,22 +14,18 @@ const chapters = [
     topic: "입국 목적·체류 기간·주소·수하물·세관 신고",
     summary:
       "입국 절차에서 방문 목적과 체류 정보를 답하고, 수하물과 신고할 물품이 있는지 확인해요.",
-    duration: "약 15분",
+    duration: "약 20분",
     sections: [
       // 샌드위치 v2 시험 적용 — Je viens pour…·n\'est pas arrivé 계열은 배치 1과 동일 절차로 실재 확인. 대화는 자체 저작.
       {
         type: "authenticIntro",
-        heading: "입국 심사·수하물 실전 대화 통째로 듣기",
-        presentationFraming: "못 알아들어도 정상이에요! 입국 심사의 질문 세 개와 수하물 문의, 여행의 첫 관문을 먼저 통째로 들어 보세요 — 질문 쪽 표현이 들리기 시작하면 성공이에요.",
+        heading: "입국 심사 실전 대화 먼저 만나기",
+        presentationFraming: "다 이해 안 돼도 정상이에요! 입국 심사의 질문 세 개, 여행의 첫 관문을 먼저 통째로 만나 보세요 — 질문 쪽 표현이 눈에 들어오기 시작하면 성공이에요.",
         dialogue: [
               { speaker: "입국 직원", fr: "Quel est le motif de votre voyage ?", ipa: "[kɛl ɛ lə mɔtif də vɔtʁ vwajaʒ]", ko: "여행 목적이 무엇인가요?" },
               { speaker: "여행자", fr: "Je viens pour le tourisme.", ipa: "[ʒə vjɛ̃ puʁ lə tuʁism]", ko: "관광하러 왔어요." },
               { speaker: "입국 직원", fr: "Vous restez combien de temps ?", ipa: "[vu ʁɛste kɔ̃bjɛ̃ də tɑ̃]", ko: "얼마나 머무르나요?" },
               { speaker: "여행자", fr: "Je reste cinq jours. Je loge dans un hôtel près de la gare.", ipa: "[ʒə ʁɛst sɛ̃k ʒuʁ ʒə lɔʒ dɑ̃z œ̃n otɛl pʁɛ də la ɡaʁ]", ko: "5일 동안 머물러요. 역 근처 호텔에 묵어요." },
-              { speaker: "여행자", fr: "Excusez-moi, mon bagage n'est pas arrivé.", ipa: "[ɛkskyze mwa mɔ̃ baɡaʒ nɛ pa aʁive]", ko: "실례합니다, 제 수하물이 나오지 않았어요." },
-              { speaker: "수하물 직원", fr: "Vous avez votre reçu de bagage ?", ipa: "[vuzave vɔtʁ ʁəsy də baɡaʒ]", ko: "수하물표가 있나요?" },
-              { speaker: "여행자", fr: "Oui, le voici.", ipa: "[wi lə vwasi]", ko: "네, 여기 있어요." },
-              { speaker: "수하물 직원", fr: "Merci. Je vais vérifier.", ipa: "[mɛʁsi ʒə vɛ veʁifje]", ko: "감사합니다. 확인해 볼게요." },
         ],
       },
       {
@@ -166,8 +162,8 @@ const chapters = [
       },
       {
         type: "authenticReplay",
-        heading: "같은 대화, 이제 다시 들어 보기",
-        presentationFraming: "문형을 배웠으니 처음 대화를 다시 들어 보고, 이어지는 장면까지 확장해 보세요.",
+        heading: "같은 대화, 이제 다시 읽어 보기",
+        presentationFraming: "문형을 배웠으니 처음 대화를 다시 읽어 보고, 이어지는 장면까지 확장해 보세요.",
         original: {
           dialogue: [
               { speaker: "입국 직원", fr: "Quel est le motif de votre voyage ?", ipa: "[kɛl ɛ lə mɔtif də vɔtʁ vwajaʒ]", ko: "여행 목적이 무엇인가요?" },
@@ -307,22 +303,18 @@ const chapters = [
     topic: "표 구입·편도와 왕복·출발 시각·승강장·환승",
     summary:
       "공항에서 목적지행 표를 사고 출발 시각과 승강장을 확인한 뒤, 환승편을 놓치지 않게 물어요.",
-    duration: "약 15분",
+    duration: "약 20분",
     sections: [
       // 샌드위치 v2 시험 적용 — Je voudrais un billet… Tatoeba 실재 계열(배치 1 검증 절차 준용). 대화는 자체 저작.
       {
         type: "authenticIntro",
-        heading: "발권 창구·환승 실전 대화 통째로 듣기",
-        presentationFraming: "못 알아들어도 정상이에요! 표를 사는 대화와 환승 탑승구를 찾는 대화를 먼저 통째로 들어 보세요 — Je voudrais…와 À quelle heure…만 귀에 걸리면 충분해요.",
+        heading: "발권 창구 실전 대화 먼저 만나기",
+        presentationFraming: "다 이해 안 돼도 정상이에요! 표를 사는 대화를 먼저 통째로 만나 보세요 — Je voudrais…와 À quelle heure…만 눈에 걸리면 충분해요.",
         dialogue: [
               { speaker: "여행자", fr: "Je voudrais un billet pour le centre, s'il vous plaît.", ipa: "[ʒə vudʁɛ œ̃ bijɛ puʁ lə sɑ̃tʁ sil vu plɛ]", ko: "도심행 표 한 장 주세요." },
               { speaker: "발권 직원", fr: "Un aller simple ou un aller-retour ?", ipa: "[œ̃n ale sɛ̃pl u œ̃n ale ʁətuʁ]", ko: "편도인가요, 왕복인가요?" },
               { speaker: "여행자", fr: "Un aller simple. À quelle heure part le prochain train ?", ipa: "[œ̃n ale sɛ̃pl a kɛl œʁ paʁ lə pʁɔʃɛ̃ tʁɛ̃]", ko: "편도요. 다음 열차는 몇 시에 출발해요?" },
               { speaker: "발권 직원", fr: "À dix-huit heures, quai quatre.", ipa: "[a dizɥit œʁ kɛ katʁ]", ko: "18시에 4번 승강장에서 출발해요." },
-              { speaker: "여행자", fr: "Excusez-moi, où est la correspondance pour Bordeaux ?", ipa: "[ɛkskyze mwa u ɛ la kɔʁɛspɔ̃dɑ̃s puʁ bɔʁdo]", ko: "실례합니다, 보르도행 환승은 어디예요?" },
-              { speaker: "환승 직원", fr: "Suivez les panneaux « Correspondances ».", ipa: "[sɥive le pano kɔʁɛspɔ̃dɑ̃s]", ko: "'환승' 표지를 따라가세요." },
-              { speaker: "여행자", fr: "De quelle porte part mon vol ?", ipa: "[də kɛl pɔʁt paʁ mɔ̃ vɔl]", ko: "제 항공편은 몇 번 탑승구에서 출발해요?" },
-              { speaker: "환승 직원", fr: "Porte douze. Vous avez encore quarante minutes.", ipa: "[pɔʁt duz vuzave ɑ̃kɔʁ kaʁɑ̃t minyt]", ko: "12번이에요. 아직 40분 남았어요." },
         ],
       },
       {
@@ -459,8 +451,8 @@ const chapters = [
       },
       {
         type: "authenticReplay",
-        heading: "같은 대화, 이제 다시 들어 보기",
-        presentationFraming: "문형을 배웠으니 처음 대화를 다시 들어 보고, 이어지는 장면까지 확장해 보세요.",
+        heading: "같은 대화, 이제 다시 읽어 보기",
+        presentationFraming: "문형을 배웠으니 처음 대화를 다시 읽어 보고, 이어지는 장면까지 확장해 보세요.",
         original: {
           dialogue: [
               { speaker: "여행자", fr: "Je voudrais un billet pour le centre, s'il vous plaît.", ipa: "[ʒə vudʁɛ œ̃ bijɛ puʁ lə sɑ̃tʁ sil vu plɛ]", ko: "도심행 표 한 장 주세요." },
@@ -595,22 +587,18 @@ const chapters = [
     topic: "예약 확인·예약자 정보·숙박 기간·신분증·조식과 체크아웃",
     summary:
       "숙소에서 예약을 확인하고 예약자 정보와 숙박 기간을 말한 뒤, 조식 장소와 체크아웃 시각을 물어요.",
-    duration: "약 15분",
+    duration: "약 20분",
     sections: [
       // 샌드위치 v2 시험 적용 — J\'ai une réservation… Tatoeba 실재 계열(동일 절차). 대화는 자체 저작.
       {
         type: "authenticIntro",
-        heading: "호텔 체크인 실전 대화 통째로 듣기",
-        presentationFraming: "못 알아들어도 정상이에요! 예약을 찾는 대화와 아침 식사·체크아웃을 확인하는 대화를 먼저 통째로 들어 보세요 — réservation 한 단어가 들리면 이미 절반이에요.",
+        heading: "호텔 체크인 실전 대화 먼저 만나기",
+        presentationFraming: "다 이해 안 돼도 정상이에요! 예약을 찾아 확인하는 장면을 먼저 통째로 만나 보세요 — réservation 한 단어가 보이면 이미 절반이에요.",
         dialogue: [
               { speaker: "여행자", fr: "Bonjour, j'ai une réservation pour trois nuits.", ipa: "[bɔ̃ʒuʁ ʒe yn ʁezeʁvasjɔ̃ puʁ tʁwa nɥi]", ko: "안녕하세요, 3박으로 예약했어요." },
               { speaker: "숙소 직원", fr: "À quel nom ?", ipa: "[a kɛl nɔ̃]", ko: "어느 이름으로 예약했나요?" },
               { speaker: "여행자", fr: "La réservation est au nom indiqué ici.", ipa: "[la ʁezeʁvasjɔ̃ ɛt o nɔ̃ ɛ̃dike isi]", ko: "여기에 적힌 이름으로 되어 있어요." },
               { speaker: "숙소 직원", fr: "Merci. Puis-je voir votre passeport ?", ipa: "[mɛʁsi pɥiʒ vwaʁ vɔtʁ paspɔʁ]", ko: "감사합니다. 여권을 볼 수 있을까요?" },
-              { speaker: "여행자", fr: "Où est servi le petit-déjeuner ?", ipa: "[u ɛ sɛʁvi lə pəti deʒøne]", ko: "조식은 어디에서 제공돼요?" },
-              { speaker: "숙소 직원", fr: "Au rez-de-chaussée, à partir de sept heures.", ipa: "[o ʁe də ʃose a paʁtiʁ də sɛt œʁ]", ko: "1층에서 7시부터 제공돼요." },
-              { speaker: "여행자", fr: "À quelle heure faut-il libérer la chambre ?", ipa: "[a kɛl œʁ fotil libeʁe la ʃɑ̃bʁ]", ko: "몇 시에 방을 비워야 해요?" },
-              { speaker: "숙소 직원", fr: "Avant onze heures.", ipa: "[avɑ̃ ɔ̃z œʁ]", ko: "11시 전이에요." },
         ],
       },
       {
@@ -747,8 +735,8 @@ const chapters = [
       },
       {
         type: "authenticReplay",
-        heading: "같은 대화, 이제 다시 들어 보기",
-        presentationFraming: "문형을 배웠으니 처음 대화를 다시 들어 보고, 이어지는 장면까지 확장해 보세요.",
+        heading: "같은 대화, 이제 다시 읽어 보기",
+        presentationFraming: "문형을 배웠으니 처음 대화를 다시 읽어 보고, 이어지는 장면까지 확장해 보세요.",
         original: {
           dialogue: [
               { speaker: "여행자", fr: "Bonjour, j'ai une réservation pour trois nuits.", ipa: "[bɔ̃ʒuʁ ʒe yn ʁezeʁvasjɔ̃ puʁ tʁwa nɥi]", ko: "안녕하세요, 3박으로 예약했어요." },
@@ -882,22 +870,18 @@ const chapters = [
     topic: "비품 요청·와이파이·시설 고장·소음·객실 변경",
     summary:
       "숙소에서 수건과 와이파이 정보를 요청하고, 시설 고장이나 소음을 설명해 해결 방법과 객실 변경을 물어요.",
-    duration: "약 15분",
+    duration: "약 20분",
     sections: [
       // 샌드위치 v2 시험 적용 — Est-ce que je peux avoir… Tatoeba 실재 계열(동일 절차). 대화는 자체 저작.
       {
         type: "authenticIntro",
-        heading: "숙소 요청·문제 신고 실전 대화 통째로 듣기",
-        presentationFraming: "못 알아들어도 정상이에요! 비품을 부탁하는 대화와 시설 고장을 알리는 대화를 먼저 통째로 들어 보세요 — Est-ce que je peux…와 ne fonctionne pas가 귀에 걸리면 충분해요.",
+        heading: "숙소 요청 실전 대화 먼저 만나기",
+        presentationFraming: "다 이해 안 돼도 정상이에요! 필요한 비품을 정중하게 부탁하는 장면을 먼저 통째로 만나 보세요 — Est-ce que je peux…만 눈에 걸리면 충분해요.",
         dialogue: [
               { speaker: "여행자", fr: "Est-ce que je peux avoir deux serviettes, s'il vous plaît ?", ipa: "[ɛs kə ʒə pø avwaʁ dø sɛʁvjɛt sil vu plɛ]", ko: "수건 두 장을 받을 수 있을까요?" },
               { speaker: "숙소 직원", fr: "Bien sûr. Nous les montons dans dix minutes.", ipa: "[bjɛ̃ syʁ nu le mɔ̃tɔ̃ dɑ̃ dis minyt]", ko: "물론이에요. 10분 안에 가져다드릴게요." },
               { speaker: "여행자", fr: "Merci. Quel est le mot de passe du Wi-Fi ?", ipa: "[mɛʁsi kɛl ɛ lə mo də pas dy wifi]", ko: "감사합니다. 와이파이 비밀번호가 무엇인가요?" },
               { speaker: "숙소 직원", fr: "Il est écrit sur la carte de la chambre.", ipa: "[il ɛt ekʁi syʁ la kaʁt də la ʃɑ̃bʁ]", ko: "객실 카드에 적혀 있어요." },
-              { speaker: "여행자", fr: "La climatisation ne fonctionne pas.", ipa: "[la klimatizasjɔ̃ nə fɔ̃ksjɔn pa]", ko: "냉방이 작동하지 않아요." },
-              { speaker: "숙소 직원", fr: "Nous allons envoyer quelqu'un.", ipa: "[nuz alɔ̃z ɑ̃vwaje kɛlkœ̃]", ko: "직원을 보내 드릴게요." },
-              { speaker: "여행자", fr: "Pouvez-vous vérifier, s'il vous plaît ?", ipa: "[puve vu veʁifje sil vu plɛ]", ko: "확인해 주실 수 있나요?" },
-              { speaker: "숙소 직원", fr: "Oui. Si nécessaire, nous changerons votre chambre.", ipa: "[wi si nesesɛʁ nu ʃɑ̃ʒəʁɔ̃ vɔtʁ ʃɑ̃bʁ]", ko: "네. 필요하면 객실을 바꿔 드릴게요." },
         ],
       },
       {
@@ -1034,8 +1018,8 @@ const chapters = [
       },
       {
         type: "authenticReplay",
-        heading: "같은 대화, 이제 다시 들어 보기",
-        presentationFraming: "문형을 배웠으니 처음 대화를 다시 들어 보고, 이어지는 장면까지 확장해 보세요.",
+        heading: "같은 대화, 이제 다시 읽어 보기",
+        presentationFraming: "문형을 배웠으니 처음 대화를 다시 읽어 보고, 이어지는 장면까지 확장해 보세요.",
         original: {
           dialogue: [
               { speaker: "여행자", fr: "Est-ce que je peux avoir deux serviettes, s'il vous plaît ?", ipa: "[ɛs kə ʒə pø avwaʁ dø sɛʁvjɛt sil vu plɛ]", ko: "수건 두 장을 받을 수 있을까요?" },
@@ -1169,22 +1153,18 @@ const chapters = [
     topic: "자리 요청·메뉴·오늘의 메뉴·추천·음식과 음료 주문",
     summary:
       "식당에서 인원에 맞는 자리를 요청하고 메뉴와 추천을 확인한 뒤, 음식과 음료를 차례로 주문해요.",
-    duration: "약 15분",
+    duration: "약 20분",
     sections: [
       // 샌드위치 v2 시험 적용(오너 확정: fr A1~A2) — Tatoeba 실재 확인: "Une table pour deux, s'il vous plaît." (#13360564). 나머지 문장은 자체 저작.
       {
         type: "authenticIntro",
-        heading: "식당 실전 대화 통째로 들어 보기",
-        presentationFraming: "못 알아들어도 정상이에요! 자리 잡기부터 주문까지의 실제 흐름을 먼저 통째로 만나 보세요 — '주문하는 쪽'과 '안내하는 쪽'의 말투 차이만 느끼면 충분해요.",
+        heading: "식당 실전 대화 먼저 만나기",
+        presentationFraming: "다 이해 안 돼도 정상이에요! 자리 잡기부터 메뉴 요청까지의 실제 흐름을 먼저 통째로 만나 보세요 — '주문하는 쪽'과 '안내하는 쪽'의 말투 차이만 느끼면 충분해요.",
         dialogue: [
           { speaker: "여행자", fr: "Bonsoir. Une table pour deux, s'il vous plaît.", ipa: "[bɔ̃swaʁ yn tabl puʁ dø sil vu plɛ]", ko: "안녕하세요. 두 명 자리 부탁해요." },
             { speaker: "식당 직원", fr: "Bien sûr. Voici votre table.", ipa: "[bjɛ̃ syʁ vwasi vɔtʁ tabl]", ko: "물론이에요. 여기 앉으세요." },
             { speaker: "여행자", fr: "Est-ce que je peux voir la carte ?", ipa: "[ɛs kə ʒə pø vwaʁ la kaʁt]", ko: "전체 메뉴를 볼 수 있을까요?" },
             { speaker: "식당 직원", fr: "Oui, la voici.", ipa: "[wi la vwasi]", ko: "네, 여기 있어요." },
-          { speaker: "여행자", fr: "Qu'est-ce que vous recommandez ?", ipa: "[kɛs kə vu ʁəkɔmɑ̃de]", ko: "무엇을 추천하세요?" },
-            { speaker: "식당 직원", fr: "La soupe de légumes est très demandée aujourd'hui.", ipa: "[la sup də legym ɛ tʁɛ dəmɑ̃de oʒuʁdɥi]", ko: "오늘은 채소 수프를 많이 찾으세요." },
-            { speaker: "여행자", fr: "Je vais prendre la soupe. Comme boisson, un jus de pomme.", ipa: "[ʒə vɛ pʁɑ̃dʁ la sup kɔm bwasɔ̃ œ̃ ʒy də pɔm]", ko: "수프로 주문할게요. 음료로는 사과 주스를 주세요." },
-            { speaker: "식당 직원", fr: "Très bien.", ipa: "[tʁɛ bjɛ̃]", ko: "좋습니다." },
         ],
       },
       {
@@ -1322,8 +1302,8 @@ const chapters = [
       },
       {
         type: "authenticReplay",
-        heading: "같은 대화, 이제 다시 들어 보기",
-        presentationFraming: "문형을 배웠으니 처음 대화를 다시 들어 보고, 이어서 추천~주문 장면까지 확장해 보세요.",
+        heading: "같은 대화, 이제 다시 읽어 보기",
+        presentationFraming: "문형을 배웠으니 처음 대화를 다시 읽어 보고, 이어서 추천~주문 장면까지 확장해 보세요.",
         original: {
           dialogue: [
           { speaker: "여행자", fr: "Bonsoir. Une table pour deux, s'il vous plaît.", ipa: "[bɔ̃swaʁ yn tabl puʁ dø sil vu plɛ]", ko: "안녕하세요. 두 명 자리 부탁해요." },
@@ -1457,22 +1437,18 @@ const chapters = [
     topic: "알레르기·성분 확인·제외 요청·계산서·결제 방법",
     summary:
       "식당에서 알레르기와 피해야 할 재료를 알리고 음식 성분을 확인한 뒤, 계산서와 결제 방법을 물어요.",
-    duration: "약 15분",
+    duration: "약 20분",
     sections: [
       // 샌드위치 v2 시험 적용 — L\'addition, s\'il vous plaît. Tatoeba 실재 계열(동일 절차). 대화는 자체 저작.
       {
         type: "authenticIntro",
-        heading: "알레르기·계산 실전 대화 통째로 듣기",
-        presentationFraming: "못 알아들어도 정상이에요! 알레르기를 알리는 대화와 계산을 나누는 대화를 먼저 통째로 들어 보세요 — allergique와 l\'addition 두 단어가 이 장면의 열쇠예요.",
+        heading: "알레르기 실전 대화 먼저 만나기",
+        presentationFraming: "다 이해 안 돼도 정상이에요! 알레르기를 알리고 재료를 확인하는 장면을 먼저 통째로 만나 보세요 — allergique 한 단어가 이 장면의 열쇠예요.",
         dialogue: [
               { speaker: "여행자", fr: "Je suis allergique aux fruits à coque.", ipa: "[ʒə sɥiz alɛʁʒik o fʁɥi a kɔk]", ko: "저는 견과류에 알레르기가 있어요." },
               { speaker: "식당 직원", fr: "Merci de nous prévenir.", ipa: "[mɛʁsi də nu pʁəvəniʁ]", ko: "알려 주셔서 감사합니다." },
               { speaker: "여행자", fr: "Est-ce que ce plat contient des fruits à coque ?", ipa: "[ɛs kə sə pla kɔ̃tjɛ̃ de fʁɥi a kɔk]", ko: "이 요리에 견과류가 들어 있나요?" },
               { speaker: "식당 직원", fr: "Oui. Je vais vous proposer un autre plat.", ipa: "[wi ʒə vɛ vu pʁɔpoze œ̃n otʁ pla]", ko: "네. 다른 요리를 안내해 드릴게요." },
-              { speaker: "여행자", fr: "L'addition, s'il vous plaît.", ipa: "[ladisjɔ̃ sil vu plɛ]", ko: "계산서 부탁해요." },
-              { speaker: "식당 직원", fr: "Bien sûr. La voici.", ipa: "[bjɛ̃ syʁ la vwasi]", ko: "물론이에요. 여기 있어요." },
-              { speaker: "여행자", fr: "Est-ce qu'on peut payer séparément ?", ipa: "[ɛs kɔ̃ pø peje sepaʁemɑ̃]", ko: "따로 계산할 수 있나요?" },
-              { speaker: "식당 직원", fr: "Oui. Qui paie en premier ?", ipa: "[wi ki pɛj ɑ̃ pʁəmje]", ko: "네. 누가 먼저 결제하나요?" },
         ],
       },
       {
@@ -1609,8 +1585,8 @@ const chapters = [
       },
       {
         type: "authenticReplay",
-        heading: "같은 대화, 이제 다시 들어 보기",
-        presentationFraming: "문형을 배웠으니 처음 대화를 다시 들어 보고, 이어지는 장면까지 확장해 보세요.",
+        heading: "같은 대화, 이제 다시 읽어 보기",
+        presentationFraming: "문형을 배웠으니 처음 대화를 다시 읽어 보고, 이어지는 장면까지 확장해 보세요.",
         original: {
           dialogue: [
               { speaker: "여행자", fr: "Je suis allergique aux fruits à coque.", ipa: "[ʒə sɥiz alɛʁʒik o fʁɥi a kɔk]", ko: "저는 견과류에 알레르기가 있어요." },
