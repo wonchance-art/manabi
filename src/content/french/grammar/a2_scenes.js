@@ -15,13 +15,13 @@ const chapters = [
     topic: "지연 신고·상황 설명(복합과거)·환불·다음 열차",
     summary:
       "열차 지연으로 환승을 놓친 상황을 복합과거로 설명하고, 다음 열차와 환불 규정을 확인해요.",
-    duration: "약 12분",
+    duration: "약 15분",
     sections: [
       {
         type: "authenticIntro",
-        heading: "창구 실전 대화 통째로 듣기",
+        heading: "창구 실전 대화 먼저 만나기",
         presentationFraming:
-          "못 알아들어도 정상이에요! 이미 벌어진 일을 설명하는 대화라 동사가 전부 과거형이에요 — j'ai raté(놓쳤어요)와 est arrivé(도착했어요) 두 소리만 귀에 걸리면 충분해요.",
+          "다 이해 안 돼도 정상이에요! 이미 벌어진 일을 설명하는 대화라 동사가 전부 과거형이에요 — j'ai raté(놓쳤어요)와 est arrivé(도착했어요) 두 표현만 눈에 걸리면 충분해요.",
         dialogue: [
           { speaker: "여행자", fr: "Bonjour. J'ai raté ma correspondance à Lyon.", ipa: "[bɔ̃ʒuʁ ʒe ʁate ma kɔʁɛspɔ̃dɑ̃s a ljɔ̃]", ko: "안녕하세요. 리옹에서 환승편을 놓쳤어요." },
           { speaker: "역무원", fr: "Qu'est-ce qui s'est passé ?", ipa: "[kɛs ki sɛ pase]", ko: "무슨 일이 있었나요?" },
@@ -72,8 +72,8 @@ const chapters = [
       },
       {
         type: "authenticReplay",
-        heading: "같은 대화, 이제 다시 들어 보기",
-        presentationFraming: "복합과거를 배웠으니 처음 대화를 다시 들어 보고, 환불 요청 장면까지 확장해 보세요.",
+        heading: "같은 대화, 이제 다시 읽어 보기",
+        presentationFraming: "복합과거를 배웠으니 처음 대화를 다시 읽어 보고, 환불 요청 장면까지 확장해 보세요.",
         original: {
           dialogue: [
             { speaker: "여행자", fr: "Bonjour. J'ai raté ma correspondance à Lyon.", ipa: "[bɔ̃ʒuʁ ʒe ʁate ma kɔʁɛspɔ̃dɑ̃s a ljɔ̃]", ko: "안녕하세요. 리옹에서 환승편을 놓쳤어요." },
@@ -119,13 +119,13 @@ const chapters = [
     topic: "여행 회상·배경 묘사(반과거)·사건(복합과거)·감상 나누기",
     summary:
       "지난 여행을 이야기하며 배경·날씨·분위기는 반과거로, 그날의 사건은 복합과거로 갈라 말해요.",
-    duration: "약 12분",
+    duration: "약 15분",
     sections: [
       {
         type: "authenticIntro",
-        heading: "카페 수다 실전 대화 통째로 듣기",
+        heading: "카페 수다 실전 대화 먼저 만나기",
         presentationFraming:
-          "못 알아들어도 정상이에요! 친구끼리 여행 사진을 보며 나누는 수다라 말투가 부드러워요 — c'était(~였어)가 반복해서 들리면 그게 오늘의 주인공이에요.",
+          "다 이해 안 돼도 정상이에요! 친구끼리 여행 사진을 보며 나누는 수다라 말투가 부드러워요 — c'était(~였어)가 반복해서 보이면 그게 오늘의 주인공이에요.",
         dialogue: [
           { speaker: "친구", fr: "Alors, c'était comment, Nice ?", ipa: "[alɔʁ setɛ kɔmɑ̃ nis]", ko: "그래서, 니스는 어땠어?" },
           { speaker: "여행자", fr: "C'était magnifique. Il faisait beau tous les jours.", ipa: "[setɛ maɲifik il fəzɛ bo tu le ʒuʁ]", ko: "정말 아름다웠어. 매일 날씨가 좋았어." },
@@ -177,8 +177,8 @@ const chapters = [
       },
       {
         type: "authenticReplay",
-        heading: "같은 대화, 이제 다시 들어 보기",
-        presentationFraming: "반과거·복합과거의 갈림을 배웠으니 처음 수다를 다시 들어 보고, 아쉬움을 나누는 장면까지 확장해 보세요.",
+        heading: "같은 대화, 이제 다시 읽어 보기",
+        presentationFraming: "반과거·복합과거의 갈림을 배웠으니 처음 수다를 다시 읽어 보고, 아쉬움을 나누는 장면까지 확장해 보세요.",
         original: {
           dialogue: [
             { speaker: "친구", fr: "Alors, c'était comment, Nice ?", ipa: "[alɔʁ setɛ kɔmɑ̃ nis]", ko: "그래서, 니스는 어땠어?" },
