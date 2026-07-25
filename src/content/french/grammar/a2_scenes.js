@@ -542,6 +542,115 @@ const chapters = [
       },
     ],
   },
+  {
+    slug: "a2-18-conditionnel-politesse",
+    level: "A2",
+    order: 18,
+    prerequisites: ["a1-15-modal-faire-present", "a2-03-imparfait", "a2-07-futur-simple"],
+    title: "\"Je voudrais\"의 정체 — 부탁의 온도를 조절해요",
+    titleFr: "Le conditionnel de politesse : je voudrais, vous pourriez",
+    topic: "조건법 정중 표현·요청 3단 온도·A1 고정구 회수",
+    summary:
+      "A1부터 통암기로 쓰던 Je voudrais의 문법을 열어 보고, veux→voudrais→pourriez 3단으로 부탁의 온도를 조절해요. 형태는 futur 어간+imparfait 어미 — 이미 아는 재료의 조합이에요.",
+    duration: "약 15분",
+    sections: [
+      {
+        type: "authenticIntro",
+        heading: "치즈 가게 실전 대화 먼저 만나기",
+        presentationFraming:
+          "다 이해 안 돼도 정상이에요! 치즈 가게에서 추천을 부탁하고 시식까지 가는 대화예요 — A1부터 쓰던 Je voudrais 말고도 -rais/-riez로 끝나는 동사가 자꾸 나오면, 그게 오늘의 주인공이에요.",
+        dialogue: [
+          { speaker: "여행자", fr: "Bonjour ! Je voudrais un fromage pour ce soir, mais il y a trop de choix.", ipa: "[bɔ̃ʒuʁ ʒə vudʁɛ œ̃ fʁɔmaʒ puʁ sə swaʁ mɛ il ja tʁo də ʃwa]", ko: "안녕하세요! 오늘 저녁에 먹을 치즈를 사고 싶은데, 종류가 너무 많네요." },
+          { speaker: "점원", fr: "Vous cherchez quelque chose de doux ou de fort ?", ipa: "[vu ʃɛʁʃe kɛlkə ʃoz də du u də fɔʁ]", ko: "부드러운 걸 찾으세요, 진한 걸 찾으세요?" },
+          { speaker: "여행자", fr: "Vous pourriez me conseiller quelque chose de doux ?", ipa: "[vu puʁje mə kɔ̃seje kɛlkə ʃoz də du]", ko: "부드러운 걸로 추천해 주실 수 있을까요?" },
+          { speaker: "점원", fr: "Le comté jeune, sans hésiter. Vous aimeriez goûter ?", ipa: "[lə kɔ̃te ʒœn sɑ̃z ezite vuz ɛməʁje ɡute]", ko: "숙성 짧은 콩테요, 망설일 것 없어요. 맛보시겠어요?" },
+          { speaker: "여행자", fr: "Avec plaisir ! Et je prendrais aussi un peu de beurre.", ipa: "[avɛk pleziʁ e ʒə pʁɑ̃dʁɛ osi œ̃ pø də bœʁ]", ko: "좋아요! 그리고 버터도 조금 살게요." },
+        ],
+      },
+      {
+        type: "vocabPreview",
+        heading: "오늘 배울 단어 6개",
+        vocabs: [
+          { word: "conseiller", meanings: ["추천하다", "조언하다"], exampleSentence: "Vous pourriez me conseiller quelque chose ?" },
+          { word: "goûter", meanings: ["맛보다"], exampleSentence: "Vous aimeriez goûter ?", note: "명사 le goûter는 간식" },
+          { word: "doux / fort", meanings: ["부드러운 / 진한"], exampleSentence: "Quelque chose de doux ou de fort ?", note: "치즈·커피·맛 묘사의 기본 축" },
+          { word: "le choix", meanings: ["선택", "선택지"], exampleSentence: "Il y a trop de choix." },
+          { word: "déménager", meanings: ["이사하다"], exampleSentence: "Je déménage samedi." },
+          { word: "avec plaisir", meanings: ["기꺼이요", "좋아요"], exampleSentence: "Avec plaisir !", note: "제안을 기분 좋게 받는 고정 표현" },
+        ],
+      },
+      {
+        type: "patternExplanation",
+        heading: "형태의 비밀 — futur 어간 + imparfait 어미",
+        pattern: "voudr- + -ais → je voudrais · pourr- + -iez → vous pourriez",
+        patternKo: "~하고 싶은데요 · ~해 주실 수 있을까요",
+        body:
+          "조건법은 새 활용을 외우는 게 아니라 **아는 재료 둘의 조합**이에요: **futur simple의 어간**(a2-07 — voudr-, pourr-, aimer-, prendr-)에 **반과거의 어미**(a2-03 — -ais, -ais, -ait, -ions, -iez, -aient)를 붙여요.\n\n" +
+          "왜 정중해질까요? 현재형 Je veux는 '원한다'고 직진하는 말이에요. 조건법은 '혹시 가능하다면'의 가정을 한 겹 두르고 한 걸음 물러서요 — 그 거리감이 곧 공손함이에요.",
+        examples: [
+          { fr: "Je voudrais un café.", ipa: "[ʒə vudʁɛ œ̃ kafe]", ko: "커피 한 잔 주문하고 싶은데요.", note: "vouloir → voudr- + -ais" },
+          { fr: "Vous pourriez répéter, s'il vous plaît ?", ipa: "[vu puʁje ʁepete sil vu plɛ]", ko: "다시 한번 말씀해 주실 수 있을까요?", note: "pouvoir → pourr- + -iez" },
+          { fr: "J'aimerais visiter la Normandie.", ipa: "[ʒɛməʁɛ vizite la nɔʁmɑ̃di]", ko: "노르망디에 가 보고 싶어요.", note: "aimer → aimer- + -ais — 희망 말하기" },
+        ],
+        pitfall:
+          "je voudrai(미래 — 나는 원하게 될 것이다)와 je voudrais(조건법 — ~하고 싶은데요)는 글자 하나 차이예요. 부탁·희망은 항상 -ais(조건법)로 써요.",
+        tip:
+          "프로마주리에서는 언제 먹을지 말하면 fromager가 그 날짜에 딱 맞게 숙성된 치즈를 골라 줘요 — pour ce soir(오늘 저녁용이에요) 한마디가 최고의 주문이에요.",
+      },
+      {
+        type: "patternExplanation",
+        heading: "부탁의 3단 온도 — 그리고 A1 고정구 회수",
+        pattern: "Je veux → Je voudrais → Pourriez-vous… ?",
+        patternKo: "원해요(직진) → ~하고 싶은데요(정중) → ~해 주시겠어요?(부탁)",
+        body:
+          "같은 내용도 온도를 고를 수 있어요: **Je veux**(직진 — 가까운 사이·급한 상황), **Je voudrais**(가게·창구의 기본값), **Pourriez-vous… ?**(상대의 수고를 부탁할 때). A1 파일럿(카페 주문)과 발권 장면에서 '통암기'로 쓰던 **Je voudrais의 정체가 바로 이 조건법**이에요 — 오늘로 분석 완료!\n\n" +
+          "친구 사이(tu)에서도 그대로 써요: **Tu pourrais m'aider ?**(도와줄 수 있어?)는 명령보다 부드러운 부탁이에요. 참고로 si와 함께 쓰는 가정(si j'avais…, je voyagerais)은 B1에서 만나요 — 여기서는 부탁·희망·완곡 제안까지만.",
+        examples: [
+          { fr: "Pourriez-vous m'aider ?", ipa: "[puʁje vu mede]", ko: "도와주실 수 있을까요?", note: "격식 부탁 — 도치형" },
+          { fr: "Tu pourrais fermer la fenêtre ?", ipa: "[ty puʁɛ fɛʁme la fənɛtʁ]", ko: "창문 좀 닫아 줄 수 있어?", note: "반말에서도 조건법 = 부드러움" },
+          { fr: "On pourrait partir plus tôt.", ipa: "[ɔ̃ puʁɛ paʁtiʁ ply to]", ko: "우리 좀 일찍 출발해도 좋을 것 같아.", note: "완곡 제안" },
+        ],
+      },
+      {
+        type: "authenticReplay",
+        heading: "같은 대화, 이제 다시 읽어 보기",
+        presentationFraming: "조건법의 정체를 알았으니 치즈 가게 대화를 다시 읽어 보고, 친구에게 부탁하는 반말 장면까지 확장해 보세요.",
+        original: {
+          dialogue: [
+            { speaker: "여행자", fr: "Bonjour ! Je voudrais un fromage pour ce soir, mais il y a trop de choix.", ipa: "[bɔ̃ʒuʁ ʒə vudʁɛ œ̃ fʁɔmaʒ puʁ sə swaʁ mɛ il ja tʁo də ʃwa]", ko: "안녕하세요! 오늘 저녁에 먹을 치즈를 사고 싶은데, 종류가 너무 많네요." },
+            { speaker: "점원", fr: "Vous cherchez quelque chose de doux ou de fort ?", ipa: "[vu ʃɛʁʃe kɛlkə ʃoz də du u də fɔʁ]", ko: "부드러운 걸 찾으세요, 진한 걸 찾으세요?" },
+            { speaker: "여행자", fr: "Vous pourriez me conseiller quelque chose de doux ?", ipa: "[vu puʁje mə kɔ̃seje kɛlkə ʃoz də du]", ko: "부드러운 걸로 추천해 주실 수 있을까요?" },
+            { speaker: "점원", fr: "Le comté jeune, sans hésiter. Vous aimeriez goûter ?", ipa: "[lə kɔ̃te ʒœn sɑ̃z ezite vuz ɛməʁje ɡute]", ko: "숙성 짧은 콩테요, 망설일 것 없어요. 맛보시겠어요?" },
+            { speaker: "여행자", fr: "Avec plaisir ! Et je prendrais aussi un peu de beurre.", ipa: "[avɛk pleziʁ e ʒə pʁɑ̃dʁɛ osi œ̃ pø də bœʁ]", ko: "좋아요! 그리고 버터도 조금 살게요." },
+          ],
+        },
+        variant: {
+          dialogue: [
+            { speaker: "민수", fr: "Claire, tu pourrais m'aider samedi ?", ipa: "[klɛʁ ty puʁɛ mede samdi]", ko: "클레르, 토요일에 나 좀 도와줄 수 있어?" },
+            { speaker: "클레르", fr: "Ça dépend. Qu'est-ce qu'il y a ?", ipa: "[sa depɑ̃ kɛs kil ja]", ko: "봐서. 무슨 일인데?" },
+            { speaker: "민수", fr: "Je déménage. J'aimerais finir avant le soir.", ipa: "[ʒə demenaʒ ʒɛməʁɛ finiʁ avɑ̃ lə swaʁ]", ko: "이사하거든. 저녁 전에는 끝내고 싶어서." },
+            { speaker: "클레르", fr: "D'accord, mais tu pourrais commander des pizzas ?", ipa: "[dakɔʁ mɛ ty puʁɛ kɔmɑ̃de de pidza]", ko: "알겠어, 대신 피자 시켜 줄 수 있지?" },
+            { speaker: "민수", fr: "Marché conclu ! On commencerait vers dix heures, ça te va ?", ipa: "[maʁʃe kɔ̃kly ɔ̃ kɔmɑ̃səʁɛ vɛʁ diz œʁ sa tə va]", ko: "그럼 결정! 10시쯤 시작하면 어때, 괜찮아?" },
+          ],
+          transitionNote: "가게의 vous에서 친구의 tu로 무대가 바뀌어요 — 그래도 부탁의 온도를 만드는 건 같은 조건법이에요(tu pourrais·j'aimerais·on commencerait). a2-16의 Marché conclu !가 그대로 다시 나와요.",
+        },
+        selfCheckOptions: [
+          { label: "다 이해했어요 (막힘 없이)", value: "full", fsrsSignal: 1 },
+          { label: "부분만 이해했어요 (주요 표현만)", value: "partial", fsrsSignal: 0.5 },
+          { label: "아직이에요 (계속 연습 필요)", value: "notready", fsrsSignal: -1 },
+        ],
+      },
+      {
+        type: "practiceAndRegistration",
+        heading: "연습: 부탁의 온도 조절",
+        writingPrompts: [
+          "가게에서 하고 싶은 부탁 하나를 Je voudrais…와 Vous pourriez… ? 두 온도로 만들어 보세요.",
+          "친구에게 주말 부탁 하나를 Tu pourrais… ?로 만들고, 하고 싶은 일 하나를 J'aimerais…로 붙여 보세요.",
+        ],
+        autoRegisterVocabs: true,
+      },
+    ],
+  },
 ];
 
 export default chapters;
