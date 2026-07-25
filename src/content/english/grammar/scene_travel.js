@@ -336,9 +336,9 @@ const chapters = [
             },
             {
               speaker: "Ticket staff",
-              en: "It is twelve units.",
-              ipa: "[ɪt ɪz ˈtwelv ˈjuːnɪts]",
-              ko: "12단위예요.",
+              en: "It is twelve euros.",
+              ipa: "[ɪt ɪz ˈtwelv ˈjʊroʊz]",
+              ko: "12유로예요.",
             },
             {
               narr:
