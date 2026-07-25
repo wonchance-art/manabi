@@ -323,6 +323,114 @@ const chapters = [
       },
     ],
   },
+  {
+    slug: "a2-16-si-conditions",
+    level: "A2",
+    order: 16,
+    prerequisites: ["a1-15-modal-faire-present", "a1-30-elision", "a2-07-futur-simple"],
+    title: "\"비 오면 미술관 가자\" — si 하나로 계획을 세워요",
+    titleFr: "Si on part tôt… : proposer et planifier",
+    topic: "주말 계획·제안(si + 현재)·플랜 B·조건 표현",
+    summary:
+      "친구와 주말 계획을 짜며 si + 현재로 제안하고, 비 오는 경우의 플랜 B까지 조건으로 말해요.",
+    duration: "약 15분",
+    sections: [
+      {
+        type: "authenticIntro",
+        heading: "주말 계획 실전 대화 먼저 만나기",
+        presentationFraming:
+          "다 이해 안 돼도 정상이에요! 친구끼리 일요일 계획을 흥정하는 수다예요 — 문장마다 앞에 붙는 si(만약 ~하면) 하나만 눈에 걸리면 성공이에요.",
+        dialogue: [
+          { speaker: "클레르", fr: "Qu'est-ce qu'on fait dimanche ?", ipa: "[kɛs kɔ̃ fɛ dimɑ̃ʃ]", ko: "일요일에 뭐 할까?" },
+          { speaker: "민수", fr: "Si tu veux, on peut faire un pique-nique au bord de la Seine.", ipa: "[si ty vø ɔ̃ pø fɛʁ œ̃ piknik o bɔʁ də la sɛn]", ko: "네가 원하면 센 강변에서 피크닉 할 수 있어." },
+          { speaker: "클레르", fr: "Bonne idée ! Si on part tôt, on trouve une bonne place.", ipa: "[bɔn ide si ɔ̃ paʁ to ɔ̃ tʁuv yn bɔn plas]", ko: "좋은 생각이야! 일찍 나서면 좋은 자리를 잡아." },
+          { speaker: "민수", fr: "Parfait. Si tu apportes le pain, moi, j'apporte le fromage.", ipa: "[paʁfɛ si ty apɔʁt lə pɛ̃ mwa ʒapɔʁt lə fʁɔmaʒ]", ko: "완벽해. 네가 빵을 가져오면 나는 치즈를 가져올게." },
+          { speaker: "클레르", fr: "Marché conclu !", ipa: "[maʁʃe kɔ̃kly]", ko: "그럼 결정!" },
+        ],
+      },
+      {
+        type: "vocabPreview",
+        heading: "오늘 배울 단어 6개",
+        vocabs: [
+          { word: "si", meanings: ["만약 ~하면"], exampleSentence: "Si tu veux, on peut faire un pique-nique.", note: "il 앞에서는 s'il로 줄어요(엘리종)" },
+          { word: "apporter", meanings: ["가져오다"], exampleSentence: "Si tu apportes le pain, moi, j'apporte le fromage." },
+          { word: "le pique-nique", meanings: ["피크닉"], exampleSentence: "On peut faire un pique-nique au bord de la Seine." },
+          { word: "tôt", meanings: ["일찍"], exampleSentence: "Si on part tôt, on trouve une bonne place.", note: "반대말은 tard(늦게)" },
+          { word: "faire la queue", meanings: ["줄을 서다"], exampleSentence: "On ne fait pas la queue." },
+          { word: "en ligne", meanings: ["온라인으로"], exampleSentence: "On prend les billets en ligne." },
+        ],
+      },
+      {
+        type: "patternExplanation",
+        heading: "조건은 현재형으로 — si + 현재, 뒤는 제안",
+        pattern: "Si + 현재, on peut… / 현재",
+        patternKo: "~하면, ~할 수 있어 / ~해",
+        body:
+          "계획과 제안의 열쇠는 **si + 현재형**이에요. 조건을 현재로 말하고, 뒤 문장에서 제안(**on peut…**)이나 결과(현재)를 붙이면 끝이에요.\n\n" +
+          "한국어 '~하면'에 이끌려 si 뒤에 미래를 쓰고 싶어지지만, **si절은 현재형**이 규칙이에요. il 앞에서는 **s'il**로 줄어드는 것(a1-30 엘리종)도 함께 기억해요.",
+        examples: [
+          { fr: "Si tu veux, on peut faire un pique-nique.", ipa: "[si ty vø ɔ̃ pø fɛʁ œ̃ piknik]", ko: "네가 원하면 피크닉 할 수 있어.", note: "제안의 기본형" },
+          { fr: "Si on part tôt, on trouve une bonne place.", ipa: "[si ɔ̃ paʁ to ɔ̃ tʁuv yn bɔn plas]", ko: "일찍 나서면 좋은 자리를 잡아.", note: "조건 → 결과(현재)" },
+          { fr: "S'il pleut, on va au musée.", ipa: "[sil plø ɔ̃ va o myze]", ko: "비 오면 미술관에 가.", note: "si + il = s'il" },
+        ],
+        pitfall:
+          "Si je serai libre(×) — si절에는 미래형을 쓰지 않아요. Si je suis libre(○, 현재형)처럼 조건은 항상 현재로 말해요.",
+        tip:
+          "프랑스 일요일은 상점 대부분이 문을 닫아요 — 대신 아침 시장과 공원 피크닉이 일요일의 풍경이에요. 여행 일정을 짤 때 일요일은 시장·공원 날로 잡는 게 요령이에요.",
+      },
+      {
+        type: "patternExplanation",
+        heading: "계획은 미래로, 걱정은 Et si…? 로",
+        pattern: "Si + 현재, 주절 futur simple · Et si… ?",
+        patternKo: "~하면 ~할 거야 · 근데 ~하면?",
+        body:
+          "확정에 가까운 계획은 주절을 **futur simple**(a2-07)로 올려 말해요: Si tu viens à Paris, on **ira** au bord de la Seine.\n\n" +
+          "상대의 계획에 변수를 던질 때는 **Et si… ?**(근데 ~하면?) 한 마디면 돼요 — 플랜 B를 부르는 신호예요.",
+        examples: [
+          { fr: "Si tu viens à Paris, on ira au bord de la Seine.", ipa: "[si ty vjɛ̃ a paʁi ɔ̃n iʁa o bɔʁ də la sɛn]", ko: "네가 파리에 오면 우리 센 강변에 갈 거야.", note: "주절만 미래" },
+          { fr: "Et s'il pleut dimanche ?", ipa: "[e sil plø dimɑ̃ʃ]", ko: "근데 일요일에 비 오면?", note: "변수 던지기" },
+          { fr: "Et si le train est complet ?", ipa: "[e si lə tʁɛ̃ ɛ kɔ̃plɛ]", ko: "근데 기차가 만석이면?" },
+        ],
+      },
+      {
+        type: "authenticReplay",
+        heading: "같은 대화, 이제 다시 읽어 보기",
+        presentationFraming: "si + 현재를 배웠으니 계획 수다를 다시 읽어 보고, 비 오는 날의 플랜 B 장면까지 확장해 보세요.",
+        original: {
+          dialogue: [
+            { speaker: "클레르", fr: "Qu'est-ce qu'on fait dimanche ?", ipa: "[kɛs kɔ̃ fɛ dimɑ̃ʃ]", ko: "일요일에 뭐 할까?" },
+            { speaker: "민수", fr: "Si tu veux, on peut faire un pique-nique au bord de la Seine.", ipa: "[si ty vø ɔ̃ pø fɛʁ œ̃ piknik o bɔʁ də la sɛn]", ko: "네가 원하면 센 강변에서 피크닉 할 수 있어." },
+            { speaker: "클레르", fr: "Bonne idée ! Si on part tôt, on trouve une bonne place.", ipa: "[bɔn ide si ɔ̃ paʁ to ɔ̃ tʁuv yn bɔn plas]", ko: "좋은 생각이야! 일찍 나서면 좋은 자리를 잡아." },
+            { speaker: "민수", fr: "Parfait. Si tu apportes le pain, moi, j'apporte le fromage.", ipa: "[paʁfɛ si ty apɔʁt lə pɛ̃ mwa ʒapɔʁt lə fʁɔmaʒ]", ko: "완벽해. 네가 빵을 가져오면 나는 치즈를 가져올게." },
+            { speaker: "클레르", fr: "Marché conclu !", ipa: "[maʁʃe kɔ̃kly]", ko: "그럼 결정!" },
+          ],
+        },
+        variant: {
+          dialogue: [
+            { speaker: "클레르", fr: "Et s'il pleut dimanche ?", ipa: "[e sil plø dimɑ̃ʃ]", ko: "근데 일요일에 비 오면?" },
+            { speaker: "민수", fr: "S'il pleut, on va au musée d'Orsay.", ipa: "[sil plø ɔ̃ va o myze dɔʁsɛ]", ko: "비 오면 오르세 미술관에 가자." },
+            { speaker: "클레르", fr: "Bonne idée. Si on prend les billets en ligne, on ne fait pas la queue.", ipa: "[bɔn ide si ɔ̃ pʁɑ̃ le bijɛ ɑ̃ liɲ ɔ̃ nə fɛ pa la kø]", ko: "좋은 생각이야. 온라인으로 표를 사면 줄을 안 서." },
+            { speaker: "민수", fr: "Et si le musée est fermé, on prend juste un chocolat chaud quelque part.", ipa: "[e si lə myze ɛ fɛʁme ɔ̃ pʁɑ̃ ʒyst œ̃ ʃɔkɔla ʃo kɛlkə paʁ]", ko: "미술관이 닫았으면 그냥 어디서 핫초콜릿이나 마시자." },
+          ],
+          transitionNote: "화창한 플랜 A(피크닉 흥정)에서 비 오는 플랜 B로 장면이 바뀌어요 — si가 '제안 카드를 꺼내는 말'이라는 건 그대로고, si + il이 s'il로 줄어드는 엘리종이 새로 등장해요.",
+        },
+        selfCheckOptions: [
+          { label: "다 이해했어요 (막힘 없이)", value: "full", fsrsSignal: 1 },
+          { label: "부분만 이해했어요 (주요 표현만)", value: "partial", fsrsSignal: 0.5 },
+          { label: "아직이에요 (계속 연습 필요)", value: "notready", fsrsSignal: -1 },
+        ],
+      },
+      {
+        type: "practiceAndRegistration",
+        heading: "연습: 내 주말 계획 흥정하기",
+        writingPrompts: [
+          "친구에게 주말 제안 하나를 Si tu veux, on peut…로 시작해 만들어 보세요.",
+          "그 계획의 변수 하나를 Et si… ?로 던지고, 플랜 B를 S'il/Si + 현재로 답해 보세요.",
+        ],
+        autoRegisterVocabs: true,
+      },
+    ],
+  },
 ];
 
 export default chapters;
