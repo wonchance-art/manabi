@@ -115,21 +115,25 @@ const chapters = [
             {
               speaker: "Officer",
               en: "May I see your passport and arrival card?",
+              ipa: "[meɪ aɪ ˈsiː jər ˈpæspɔːrt ənd əˈraɪvl ˈkɑːrd]",
               ko: "여권과 입국 카드를 볼 수 있을까요?",
             },
             {
               speaker: "Traveler",
               en: "Here is my passport and arrival card.",
+              ipa: "[ˈhɪr ɪz maɪ ˈpæspɔːrt ənd əˈraɪvl ˈkɑːrd]",
               ko: "여기 제 여권과 입국 카드가 있어요.",
             },
             {
               speaker: "Officer",
               en: "What is the purpose of your visit?",
+              ipa: "[ˈwʌt ɪz ðə ˈpɜːrpəs əv jər ˈvɪzɪt]",
               ko: "방문 목적이 무엇인가요?",
             },
             {
               speaker: "Traveler",
               en: "I'm here for tourism. I'll be staying for five days.",
+              ipa: "[aɪm ˈhɪr fər ˈtʊrɪzəm aɪl bi ˈsteɪɪŋ fər ˈfaɪv ˈdeɪz]",
               ko: "관광 목적으로 왔어요. 5일 동안 머물 예정이에요.",
             },
             {
@@ -139,21 +143,25 @@ const chapters = [
             {
               speaker: "Officer",
               en: "Where are you staying?",
+              ipa: "[ˈwer ər ju ˈsteɪɪŋ]",
               ko: "어디에 머무르나요?",
             },
             {
               speaker: "Traveler",
               en: "I'm staying at a guesthouse near the station.",
+              ipa: "[aɪm ˈsteɪɪŋ ət ə ˈɡesthaʊs ˈnɪr ðə ˈsteɪʃn]",
               ko: "역 근처 게스트하우스에 머물러요.",
             },
             {
               speaker: "Customs staff",
               en: "Do you have anything to declare?",
+              ipa: "[də ju ˈhæv ˈeniθɪŋ tə dɪˈkler]",
               ko: "신고할 물품이 있나요?",
             },
             {
               speaker: "Traveler",
               en: "I have nothing to declare.",
+              ipa: "[aɪ ˈhæv ˈnʌθɪŋ tə dɪˈkler]",
               ko: "신고할 물품이 없어요.",
             },
           ],
@@ -311,21 +319,25 @@ const chapters = [
             {
               speaker: "Traveler",
               en: "I'd like a one-way ticket to the city center.",
+              ipa: "[aɪd ˈlaɪk ə ˈwʌnweɪ ˈtɪkɪt tə ðə ˈsɪti ˈsentər]",
               ko: "도심까지 가는 편도표 한 장을 주세요.",
             },
             {
               speaker: "Ticket staff",
               en: "The next bus leaves in twenty minutes.",
+              ipa: "[ðə ˈnekst ˈbʌs ˈliːvz ɪn ˈtwenti ˈmɪnɪts]",
               ko: "다음 버스는 20분 뒤에 출발해요.",
             },
             {
               speaker: "Traveler",
               en: "How much is the fare to the city center?",
+              ipa: "[ˈhaʊ ˈmʌtʃ ɪz ðə ˈfer tə ðə ˈsɪti ˈsentər]",
               ko: "도심까지 운임이 얼마인가요?",
             },
             {
               speaker: "Ticket staff",
               en: "It is twelve units.",
+              ipa: "[ɪt ɪz ˈtwelv ˈjuːnɪts]",
               ko: "12단위예요.",
             },
             {
@@ -335,21 +347,25 @@ const chapters = [
             {
               speaker: "Traveler",
               en: "Which platform does it leave from?",
+              ipa: "[ˈwɪtʃ ˈplætfɔːrm dʌz ɪt ˈliːv frʌm]",
               ko: "어느 승강장에서 출발하나요?",
             },
             {
               speaker: "Station staff",
               en: "It leaves from platform six.",
+              ipa: "[ɪt ˈliːvz frəm ˈplætfɔːrm ˈsɪks]",
               ko: "6번 승강장에서 출발해요.",
             },
             {
               speaker: "Traveler",
               en: "Do I need to change on the way?",
+              ipa: "[də aɪ ˈniːd tə ˈtʃeɪndʒ ɑːn ðə ˈweɪ]",
               ko: "가는 도중에 갈아타야 하나요?",
             },
             {
               speaker: "Station staff",
               en: "No, this bus goes directly to the city center.",
+              ipa: "[ˈnoʊ ðɪs ˈbʌs ˈɡoʊz dəˈrektli tə ðə ˈsɪti ˈsentər]",
               ko: "아니요, 이 버스는 도심까지 바로 가요.",
             },
           ],
@@ -508,21 +524,25 @@ const chapters = [
             {
               speaker: "Traveler",
               en: "Hello, I'd like to check in.",
+              ipa: "[həˈloʊ aɪd ˈlaɪk tə ˈtʃek ˈɪn]",
               ko: "안녕하세요, 체크인하고 싶어요.",
             },
             {
               speaker: "Front desk staff",
               en: "Do you have a reservation?",
+              ipa: "[də ju ˈhæv ə ˌrezərˈveɪʃn]",
               ko: "예약하셨나요?",
             },
             {
               speaker: "Traveler",
               en: "Yes, I have a reservation for three nights.",
+              ipa: "[ˈjes aɪ ˈhæv ə ˌrezərˈveɪʃn fər ˈθriː ˈnaɪts]",
               ko: "네, 3박 동안 예약했어요.",
             },
             {
               speaker: "Traveler",
               en: "Could you confirm my room type?",
+              ipa: "[kʊd ju kənˈfɜːrm maɪ ˈruːm ˈtaɪp]",
               ko: "제 객실 유형을 확인해 주시겠어요?",
             },
             {
@@ -532,21 +552,25 @@ const chapters = [
             {
               speaker: "Traveler",
               en: "What time is check-out tomorrow?",
+              ipa: "[ˈwʌt ˈtaɪm ɪz ˈtʃekaʊt təˈmɑːroʊ]",
               ko: "내일 체크아웃은 몇 시인가요?",
             },
             {
               speaker: "Front desk staff",
               en: "Check-out is at eleven.",
+              ipa: "[ˈtʃekaʊt ɪz ət ɪˈlevn]",
               ko: "체크아웃은 11시예요.",
             },
             {
               speaker: "Traveler",
               en: "Could you keep my luggage until four o'clock?",
+              ipa: "[kʊd ju ˈkiːp maɪ ˈlʌɡɪdʒ ənˈtɪl ˈfɔːr əˈklɑːk]",
               ko: "4시까지 제 짐을 보관해 주시겠어요?",
             },
             {
               speaker: "Front desk staff",
               en: "Yes, please bring it to the desk after check-out.",
+              ipa: "[ˈjes ˈpliːz ˈbrɪŋ ɪt tə ðə ˈdesk ˈæftər ˈtʃekaʊt]",
               ko: "네, 체크아웃 뒤에 데스크로 가져와 주세요.",
             },
           ],
@@ -705,21 +729,25 @@ const chapters = [
             {
               speaker: "Traveler",
               en: "Could I have an extra towel, please?",
+              ipa: "[kʊd aɪ ˈhæv ən ˈekstrə ˈtaʊəl ˈpliːz]",
               ko: "추가 수건 한 장을 받을 수 있을까요?",
             },
             {
               speaker: "Front desk staff",
               en: "Yes, we can bring one to your room.",
+              ipa: "[ˈjes wi kən ˈbrɪŋ ˈwʌn tə jər ˈruːm]",
               ko: "네, 객실로 한 장 가져다드릴 수 있어요.",
             },
             {
               speaker: "Traveler",
               en: "Could you tell me the Wi-Fi password?",
+              ipa: "[kʊd ju ˈtel mi ðə ˈwaɪfaɪ ˈpæswɜːrd]",
               ko: "와이파이 비밀번호를 알려 주시겠어요?",
             },
             {
               speaker: "Front desk staff",
               en: "It is written on the information card.",
+              ipa: "[ɪt ɪz ˈrɪtn ɑːn ði ˌɪnfərˈmeɪʃn ˈkɑːrd]",
               ko: "안내 카드에 적혀 있어요.",
             },
             {
@@ -729,21 +757,25 @@ const chapters = [
             {
               speaker: "Traveler",
               en: "The air conditioner isn't working.",
+              ipa: "[ði ˈer kənˌdɪʃənər ˈɪznt ˈwɜːrkɪŋ]",
               ko: "에어컨이 작동하지 않아요.",
             },
             {
               speaker: "Front desk staff",
               en: "We can send someone to check it.",
+              ipa: "[wi kən ˈsend ˈsʌmwʌn tə ˈtʃek ɪt]",
               ko: "직원을 보내 확인할 수 있어요.",
             },
             {
               speaker: "Traveler",
               en: "There is too much noise in my room. Could I move to another room?",
+              ipa: "[ðer ɪz ˈtuː ˈmʌtʃ ˈnɔɪz ɪn maɪ ˈruːm kʊd aɪ ˈmuːv tu əˈnʌðər ˈruːm]",
               ko: "제 방에 소음이 너무 많아요. 다른 방으로 옮길 수 있을까요?",
             },
             {
               speaker: "Front desk staff",
               en: "I will check which rooms are available.",
+              ipa: "[aɪ wɪl ˈtʃek ˈwɪtʃ ˈruːmz ər əˈveɪləbl]",
               ko: "이용 가능한 객실을 확인할게요.",
             },
           ],
@@ -902,21 +934,25 @@ const chapters = [
             {
               speaker: "Traveler",
               en: "Do you have a table for two?",
+              ipa: "[də ju ˈhæv ə ˈteɪbl fər ˈtuː]",
               ko: "두 명이 앉을 자리가 있나요?",
             },
             {
               speaker: "Restaurant staff",
               en: "Yes, please follow me.",
+              ipa: "[ˈjes ˈpliːz ˈfɑːloʊ mi]",
               ko: "네, 이쪽으로 따라오세요.",
             },
             {
               speaker: "Traveler",
               en: "Could I see the drink menu, please?",
+              ipa: "[kʊd aɪ ˈsiː ðə ˈdrɪŋk ˈmenjuː ˈpliːz]",
               ko: "음료 메뉴를 볼 수 있을까요?",
             },
             {
               speaker: "Restaurant staff",
               en: "Of course. I will bring it with the food menu.",
+              ipa: "[əv ˈkɔːrs aɪ wɪl ˈbrɪŋ ɪt wɪð ðə ˈfuːd ˈmenjuː]",
               ko: "물론이에요. 음식 메뉴와 함께 가져올게요.",
             },
             {
@@ -926,21 +962,25 @@ const chapters = [
             {
               speaker: "Traveler",
               en: "What would you recommend for a light meal?",
+              ipa: "[ˈwʌt wʊd ju ˌrekəˈmend fər ə ˈlaɪt ˈmiːl]",
               ko: "가벼운 식사로 무엇을 추천하시겠어요?",
             },
             {
               speaker: "Server",
               en: "The vegetable soup is light and warm.",
+              ipa: "[ðə ˈvedʒtəbl ˈsuːp ɪz ˈlaɪt ənd ˈwɔːrm]",
               ko: "채소 수프가 가볍고 따뜻해요.",
             },
             {
               speaker: "Traveler",
               en: "I'd like to order the vegetable soup. Could we have some water, please?",
+              ipa: "[aɪd ˈlaɪk tu ˈɔːrdər ðə ˈvedʒtəbl ˈsuːp kʊd wi ˈhæv səm ˈwɔːtər ˈpliːz]",
               ko: "채소 수프를 주문하고 싶어요. 물도 조금 받을 수 있을까요?",
             },
             {
               speaker: "Server",
               en: "Certainly. I will bring them soon.",
+              ipa: "[ˈsɜːrtnli aɪ wɪl ˈbrɪŋ ðəm ˈsuːn]",
               ko: "물론이에요. 곧 가져올게요.",
             },
           ],
@@ -1099,21 +1139,25 @@ const chapters = [
             {
               speaker: "Traveler",
               en: "I'm allergic to shellfish.",
+              ipa: "[aɪm əˈlɜːrdʒɪk tə ˈʃelfɪʃ]",
               ko: "저는 갑각류·조개류에 알레르기가 있어요.",
             },
             {
               speaker: "Server",
               en: "Thank you for telling me. Which dish are you considering?",
+              ipa: "[ˈθæŋk ju fər ˈtelɪŋ mi ˈwɪtʃ ˈdɪʃ ər ju kənˈsɪdərɪŋ]",
               ko: "알려 주셔서 감사해요. 어떤 음식을 생각하고 계신가요?",
             },
             {
               speaker: "Traveler",
               en: "Does this dish contain shellfish?",
+              ipa: "[dʌz ðɪs ˈdɪʃ kənˈteɪn ˈʃelfɪʃ]",
               ko: "이 음식에 갑각류나 조개류가 들어가나요?",
             },
             {
               speaker: "Server",
               en: "I will ask the kitchen and come back.",
+              ipa: "[aɪ wɪl ˈæsk ðə ˈkɪtʃɪn ənd ˈkʌm ˈbæk]",
               ko: "주방에 확인하고 돌아올게요.",
             },
             {
@@ -1123,21 +1167,25 @@ const chapters = [
             {
               speaker: "Traveler",
               en: "Could we have the bill, please?",
+              ipa: "[kʊd wi ˈhæv ðə ˈbɪl ˈpliːz]",
               ko: "계산서를 받을 수 있을까요?",
             },
             {
               speaker: "Server",
               en: "Certainly. I will bring it to the table.",
+              ipa: "[ˈsɜːrtnli aɪ wɪl ˈbrɪŋ ɪt tə ðə ˈteɪbl]",
               ko: "물론이에요. 테이블로 가져올게요.",
             },
             {
               speaker: "Traveler",
               en: "Can I pay by card?",
+              ipa: "[kən aɪ ˈpeɪ baɪ ˈkɑːrd]",
               ko: "카드로 결제할 수 있나요?",
             },
             {
               speaker: "Server",
               en: "Yes, you can pay at the counter.",
+              ipa: "[ˈjes ju kən ˈpeɪ ət ðə ˈkaʊntər]",
               ko: "네, 계산대에서 결제할 수 있어요.",
             },
           ],
