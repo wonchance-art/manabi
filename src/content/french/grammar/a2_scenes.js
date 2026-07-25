@@ -431,6 +431,117 @@ const chapters = [
       },
     ],
   },
+  {
+    slug: "a2-17-narrative-connectors",
+    level: "A2",
+    order: 17,
+    prerequisites: ["a2-01-passe-compose-avoir", "a2-02-passe-compose-etre", "a2-03-imparfait"],
+    title: "\"먼저 버스를 탔고, 마지막엔 밀물을 봤어\" — 하루를 이야기로 엮어요",
+    titleFr: "D'abord, ensuite, enfin : raconter sa journée",
+    topic: "하루 여행기·서사 연결사(d'abord/ensuite/enfin)·복합과거×반과거 종합",
+    summary:
+      "몽생미셸 당일치기 이야기를 d'abord·ensuite·enfin으로 엮고, 사건은 복합과거·배경은 반과거로 나눠 담아요.",
+    duration: "약 15분",
+    sections: [
+      {
+        type: "authenticIntro",
+        heading: "하루 여행기 실전 대화 먼저 만나기",
+        presentationFraming:
+          "다 이해 안 돼도 정상이에요! 친구에게 하루를 통째로 들려주는 수다예요 — 이야기의 마디마다 붙는 d'abord(먼저)·ensuite(그다음)·enfin(마지막으로) 세 낱말만 눈에 걸리면 성공이에요.",
+        dialogue: [
+          { speaker: "클레르", fr: "Alors, ta journée au Mont-Saint-Michel ?", ipa: "[alɔʁ ta ʒuʁne o mɔ̃ sɛ̃ miʃɛl]", ko: "그래서, 몽생미셸에서 하루 어땠어?" },
+          { speaker: "민수", fr: "Incroyable ! D'abord, on a pris le bus très tôt.", ipa: "[ɛ̃kʁwajabl dabɔʁ ɔ̃n a pʁi lə bys tʁɛ to]", ko: "굉장했어! 먼저 아침 일찍 버스를 탔어." },
+          { speaker: "클레르", fr: "Et ensuite ?", ipa: "[e ɑ̃sɥit]", ko: "그리고 그다음엔?" },
+          { speaker: "민수", fr: "Ensuite, on a visité l'abbaye, et enfin, on a regardé la marée. La mer montait très vite !", ipa: "[ɑ̃sɥit ɔ̃n a vizite labei e ɑ̃fɛ̃ ɔ̃n a ʁəɡaʁde la maʁe la mɛʁ mɔ̃tɛ tʁɛ vit]", ko: "그다음에 수도원을 구경했고, 마지막엔 밀물을 봤어. 바닷물이 정말 빠르게 차올랐어!" },
+          { speaker: "클레르", fr: "Quelle journée ! Tu as pris des photos ?", ipa: "[kɛl ʒuʁne ty a pʁi de fɔto]", ko: "완전 알찬 하루네! 사진 찍었어?" },
+        ],
+      },
+      {
+        type: "vocabPreview",
+        heading: "오늘 배울 단어 6개",
+        vocabs: [
+          { word: "d'abord", meanings: ["먼저", "우선"], exampleSentence: "D'abord, on a pris le bus." },
+          { word: "ensuite", meanings: ["그다음에"], exampleSentence: "Ensuite, on a visité l'abbaye." },
+          { word: "enfin", meanings: ["마지막으로", "마침내"], exampleSentence: "Enfin, on a regardé la marée." },
+          { word: "la marée", meanings: ["조수", "밀물·썰물"], exampleSentence: "La mer montait très vite.", note: "marée haute 밀물 / marée basse 썰물" },
+          { word: "l'abbaye", meanings: ["수도원"], exampleSentence: "On a visité l'abbaye.", note: "발음 [abei] — b 하나만 읽어요" },
+          { word: "la journée", meanings: ["하루", "낮 동안"], exampleSentence: "Quelle journée !", note: "jour(날)와 달리 '꽉 찬 하루'의 느낌" },
+        ],
+      },
+      {
+        type: "patternExplanation",
+        heading: "서사의 골격 — 먼저·그다음·마지막으로",
+        pattern: "D'abord…, ensuite…, enfin… + 복합과거",
+        patternKo: "먼저 ~했고, 그다음 ~했고, 마지막으로 ~했어요",
+        body:
+          "지난 일을 이야기로 엮는 골격은 **연결사 세 단**이에요: **d'abord**(먼저) → **ensuite**(그다음) → **enfin**(마지막으로). 각 마디에 사건을 복합과거(a2-01·02)로 하나씩 얹으면, 낱문장이 아니라 '이야기'가 돼요.\n\n" +
+          "구어에서는 상대가 **Et ensuite ?**(그다음엔?) **Et après ?**(그리고?)로 장단을 맞춰 줘요 — 서사는 혼자 말하기가 아니라 주고받기예요.",
+        examples: [
+          { fr: "D'abord, on a pris le bus.", ipa: "[dabɔʁ ɔ̃n a pʁi lə bys]", ko: "먼저 버스를 탔어요.", note: "사건 1 — 복합과거" },
+          { fr: "Ensuite, on a visité l'abbaye.", ipa: "[ɑ̃sɥit ɔ̃n a vizite labei]", ko: "그다음에 수도원을 구경했어요.", note: "사건 2" },
+          { fr: "Enfin, on est rentrés le soir.", ipa: "[ɑ̃fɛ̃ ɔ̃n ɛ ʁɑ̃tʁe lə swaʁ]", ko: "마지막으로 저녁에 돌아왔어요.", note: "rentrer는 être 조동사(a2-02)" },
+        ],
+        pitfall:
+          "et après, et après…만 반복하면 이야기가 늘어져요 — d'abord → ensuite → enfin 세 단으로 정리하면 같은 내용도 또렷한 서사가 돼요.",
+        tip:
+          "몽생미셸의 조수는 유럽에서 가장 커서, 밀물이 '말이 달리는 속도로 온다'는 말이 있을 정도예요. 물때표(horaires des marées)를 확인하고 가면 바다가 섬을 감싸는 장면을 만날 수 있어요.",
+      },
+      {
+        type: "patternExplanation",
+        heading: "사건은 복합과거, 배경은 반과거 — 서사의 두 층",
+        pattern: "복합과거(사건) × 반과거(배경·상태)",
+        patternKo: "~했어요(사건) × ~하고 있었어요/~였어요(배경)",
+        body:
+          "연결사가 이야기의 뼈대라면, 시제는 이야기의 두 층이에요. **무슨 일이 있었는지는 복합과거**, **그때 어땠는지는 반과거**(a2-03)가 맡아요.\n\n" +
+          "Il y avait beaucoup de monde(사람이 많았다), la mer montait(물이 차오르고 있었다) — 배경 문장이 끼어들수록 이야기가 살아나요.",
+        examples: [
+          { fr: "Il y avait beaucoup de monde.", ipa: "[il javɛ boku də mɔ̃d]", ko: "사람이 많았어요.", note: "배경 — 반과거" },
+          { fr: "Ensuite, il pleuvait, et je n'avais pas de parapluie.", ipa: "[ɑ̃sɥit il pløvɛ e ʒə navɛ pa də paʁaplɥi]", ko: "그다음엔 비가 오는데 우산이 없었어요.", note: "상태의 나열도 반과거" },
+          { fr: "Quand on est arrivés, la mer montait déjà.", ipa: "[kɑ̃t ɔ̃n ɛt aʁive la mɛʁ mɔ̃tɛ deʒa]", ko: "도착했을 때 바닷물이 이미 차오르고 있었어요.", note: "사건×배경을 한 문장에" },
+        ],
+        tip:
+          "프랑스 국공립 미술관·기념물은 월요일이나 화요일에 쉬는 곳이 많아요 — '월요일 휴관'은 여행자의 단골 참사예요. 일정을 짤 때 휴관일부터 확인해요.",
+      },
+      {
+        type: "authenticReplay",
+        heading: "같은 대화, 이제 다시 읽어 보기",
+        presentationFraming: "서사의 골격을 배웠으니 여행기를 다시 읽어 보고, 반대로 '엉망이 된 하루'를 같은 골격으로 듣는 장면까지 확장해 보세요.",
+        original: {
+          dialogue: [
+            { speaker: "클레르", fr: "Alors, ta journée au Mont-Saint-Michel ?", ipa: "[alɔʁ ta ʒuʁne o mɔ̃ sɛ̃ miʃɛl]", ko: "그래서, 몽생미셸에서 하루 어땠어?" },
+            { speaker: "민수", fr: "Incroyable ! D'abord, on a pris le bus très tôt.", ipa: "[ɛ̃kʁwajabl dabɔʁ ɔ̃n a pʁi lə bys tʁɛ to]", ko: "굉장했어! 먼저 아침 일찍 버스를 탔어." },
+            { speaker: "클레르", fr: "Et ensuite ?", ipa: "[e ɑ̃sɥit]", ko: "그리고 그다음엔?" },
+            { speaker: "민수", fr: "Ensuite, on a visité l'abbaye, et enfin, on a regardé la marée. La mer montait très vite !", ipa: "[ɑ̃sɥit ɔ̃n a vizite labei e ɑ̃fɛ̃ ɔ̃n a ʁəɡaʁde la maʁe la mɛʁ mɔ̃tɛ tʁɛ vit]", ko: "그다음에 수도원을 구경했고, 마지막엔 밀물을 봤어. 바닷물이 정말 빠르게 차올랐어!" },
+            { speaker: "클레르", fr: "Quelle journée ! Tu as pris des photos ?", ipa: "[kɛl ʒuʁne ty a pʁi de fɔto]", ko: "완전 알찬 하루네! 사진 찍었어?" },
+          ],
+        },
+        variant: {
+          dialogue: [
+            { speaker: "민수", fr: "Et toi, ta journée à Paris ?", ipa: "[e twa ta ʒuʁne a paʁi]", ko: "너는? 파리에서 하루 어땠어?" },
+            { speaker: "클레르", fr: "Quelle catastrophe ! D'abord, j'ai raté le métro.", ipa: "[kɛl katastʁɔf dabɔʁ ʒe ʁate lə metʁo]", ko: "완전 재난이었어! 먼저 지하철을 놓쳤어." },
+            { speaker: "민수", fr: "Oh non. Et après ?", ipa: "[o nɔ̃ e apʁɛ]", ko: "저런. 그리고?" },
+            { speaker: "클레르", fr: "Ensuite, il pleuvait, et je n'avais pas de parapluie. Enfin, le musée était fermé le lundi !", ipa: "[ɑ̃sɥit il pløvɛ e ʒə navɛ pa də paʁaplɥi ɑ̃fɛ̃ lə myze etɛ fɛʁme lə lœ̃di]", ko: "그다음엔 비가 오는데 우산이 없었어. 결정타로, 미술관이 월요일 휴관이었어!" },
+            { speaker: "민수", fr: "Ma pauvre ! Si tu veux, on y retourne ensemble mardi.", ipa: "[ma povʁ si ty vø ɔ̃n i ʁətuʁn ɑ̃sɑ̃bl maʁdi]", ko: "저런! 원하면 화요일에 같이 다시 가자." },
+          ],
+          transitionNote: "빛나는 하루에서 엉망이 된 하루로 이야기가 뒤집혀요 — 그래도 d'abord·ensuite·enfin 골격은 그대로고, 비·우산 없음·휴관 같은 배경은 전부 반과거가 받쳐요. 마지막 위로에는 si(a2-16)와 y(a2-09)가 그대로 나와요.",
+        },
+        selfCheckOptions: [
+          { label: "다 이해했어요 (막힘 없이)", value: "full", fsrsSignal: 1 },
+          { label: "부분만 이해했어요 (주요 표현만)", value: "partial", fsrsSignal: 0.5 },
+          { label: "아직이에요 (계속 연습 필요)", value: "notready", fsrsSignal: -1 },
+        ],
+      },
+      {
+        type: "practiceAndRegistration",
+        heading: "연습: 내 하루를 서사로",
+        writingPrompts: [
+          "최근의 '좋았던 하루'를 d'abord·ensuite·enfin 세 문장으로 엮어 보세요 — 사건은 복합과거로.",
+          "반대로 '엉망이었던 하루'를 같은 골격으로 만들되, 배경·상태 한 문장은 반과거로 넣어 보세요.",
+        ],
+        autoRegisterVocabs: true,
+      },
+    ],
+  },
 ];
 
 export default chapters;
