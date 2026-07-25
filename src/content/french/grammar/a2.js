@@ -669,10 +669,10 @@ const chapters = [
     level: "A2",
     order: 10,
     title: "\"파리에 사는 친구\"를 한 문장에",
-    topic: "관계대명사 qui/que",
-    titleFr: "Les pronoms relatifs qui et que",
-    summary: "두 문장을 한 문장으로 묶는 qui와 que. 사람/사물이 아니라 주어/목적어 역할로 갈린다는 게 핵심이에요.",
-    duration: "약 9분",
+    topic: "관계대명사 qui/que/où",
+    titleFr: "Les pronoms relatifs qui, que et où",
+    summary: "두 문장을 한 문장으로 묶는 qui·que·où. 사람/사물이 아니라 빠진 자리의 역할로 갈린다는 게 핵심이에요 — 장소·시간은 où가 받아요.",
+    duration: "약 11분",
     sections: [
       {
         heading: "관계대명사란 — 명사 뒤에 설명 달기",
@@ -714,18 +714,35 @@ const chapters = [
         pitfall: "영어 'the book I read'처럼 관계대명사를 생략하는 건 프랑스어에서 **불가능**해요. le livre je lis ✗ — que는 어떤 경우에도 지울 수 없어요. 영어 습관 중에서도 특히 끈질기게 남는 오류이니 의식적으로 점검하세요.",
       },
       {
+        heading: "où — 장소와 시간을 받아요",
+        pattern: "명사(장소·시간) + où + 주어 + 동사",
+        patternKo: "~하는 곳 / ~했던 때",
+        body:
+          "선행사가 **장소나 시간**이면 **où**가 받아요: la ville **où** j'habite(내가 사는 도시), le jour **où** on s'est rencontrés(우리가 만난 날). 영어 where와 when 두 개의 일을 où 하나가 해요.\n\n" +
+          "의문사 où(어디)와 같은 글자지만 여기서는 관계사예요 — 그리고 ou(또는)와는 **악상 하나 차이**니 표기에 주의해요.",
+        examples: [
+          { fr: "C'est la ville où j'habite.", ipa: "[sɛ la vil u ʒabit]", ko: "여기가 제가 사는 도시예요.", note: "장소 + où" },
+          { fr: "Je me souviens du jour où on s'est rencontrés.", ipa: "[ʒə mə suvjɛ̃ dy ʒuʁ u ɔ̃ sɛ ʁɑ̃kɔ̃tʁe]", ko: "우리가 만난 날을 기억해요.", note: "시간 + où — 영어 when 자리" },
+          { fr: "Le café où on va est fermé le lundi.", ipa: "[lə kafe u ɔ̃ va ɛ fɛʁme lə lœ̃di]", ko: "우리가 가는 카페는 월요일에 쉬어요." },
+        ],
+        pitfall:
+          "la ville que j'habite(✗) — '장소 부사' 자리(~에서)가 빠졌으면 où예요. que는 직접목적어가 빠졌을 때만: la ville que je visite(○, visiter는 전치사 없이 목적어를 받아요).",
+        vsEn: "영어는 where(장소)/when(시간)으로 갈리지만, 프랑스어 où는 둘 다 받아요 — le jour où = the day when. '시간에도 où'가 한국어 화자에게 가장 낯선 지점이에요.",
+      },
+      {
         heading: "구별법 총정리 — 사람/사물이 아니라 역할",
-        pattern: "뒤에 동사 → qui · 뒤에 주어+동사 → que",
+        pattern: "뒤에 동사 → qui · 뒤에 주어+동사 → que · 선행사가 장소/시간 → où",
         patternKo: "사람/사물이 아니라 빠진 자리의 역할로 구별",
         body:
           "최대 함정: qui/que는 영어 who/which처럼 **선행사가 사람이냐 사물이냐로 갈리지 않아요**. 기준은 **관계절 안에서 빠진 자리가 주어냐 목적어냐**예요.\n\n" +
           "실전 판별법은 관계대명사 **바로 뒤**를 보는 것 — 이 한 줄이면 90%가 해결돼요.",
         table: {
-          caption: "qui vs que 판별표",
+          caption: "qui / que / où 판별표",
           headers: ["", "역할", "바로 뒤에 오는 것", "예시"],
           rows: [
             ["qui", "주어", "동사", "l'ami qui parle (말하는 친구)"],
             ["que", "목적어", "주어 + 동사", "l'ami que je connais (내가 아는 친구)"],
+            ["où", "장소·시간 부사", "주어 + 동사", "la ville où j'habite (내가 사는 도시)"],
           ],
         },
         examples: [
