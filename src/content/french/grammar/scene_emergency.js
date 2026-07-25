@@ -183,8 +183,8 @@ const chapters = [
           transitionNote: "걸어서 길 묻기에서 한 걸음 나아가, 노선·하차 정류장까지 확인하는 흐름이에요 — quelle ligne과 Je descends à…가 그대로 나와요.",
         },
         selfCheckOptions: [
-          { label: "다 들렸어요 (정확히 이해)", value: "full", fsrsSignal: 1 },
-          { label: "부분만 들렸어요 (주요 단어만)", value: "partial", fsrsSignal: 0.5 },
+          { label: "다 이해했어요 (막힘 없이)", value: "full", fsrsSignal: 1 },
+          { label: "부분만 이해했어요 (주요 표현만)", value: "partial", fsrsSignal: 0.5 },
           { label: "아직이에요 (계속 연습 필요)", value: "notready", fsrsSignal: -1 },
         ],
       },
@@ -484,8 +484,8 @@ const chapters = [
           transitionNote: "몸 상태 알리기에서 분실 신고로 장면이 바뀌지만, 내 상태·내 물건을 한 문장씩 설명한다는 뼈대는 같아요 — description을 묻는 질문에 짧게 답해 보세요.",
         },
         selfCheckOptions: [
-          { label: "다 들렸어요 (정확히 이해)", value: "full", fsrsSignal: 1 },
-          { label: "부분만 들렸어요 (주요 단어만)", value: "partial", fsrsSignal: 0.5 },
+          { label: "다 이해했어요 (막힘 없이)", value: "full", fsrsSignal: 1 },
+          { label: "부분만 이해했어요 (주요 표현만)", value: "partial", fsrsSignal: 0.5 },
           { label: "아직이에요 (계속 연습 필요)", value: "notready", fsrsSignal: -1 },
         ],
       },

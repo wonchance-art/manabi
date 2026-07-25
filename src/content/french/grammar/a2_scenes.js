@@ -1,6 +1,6 @@
 /**
  * A2 실전 장면 — 샌드위치 v2 신규 저작 (오너 확정: fr A1~A2 시험 적용, 배치 5)
- * 복합과거·반과거를 실전 대화에서 먼저 만나고 문법으로 되짚는 2레슨.
+ * 실전 대화를 먼저 만나고 문법으로 되짚는 A2 샌드위치 레슨 묶음(13·14 + 기준표 갭 큐 신규 15~).
  * 실자료: 핵심 문형은 Tatoeba 다수 실재 계열(배치 1 검증 절차 준용), 대화는 자체 저작 — 실음원 연결은 확산 단계.
  */
 const chapters = [
@@ -92,8 +92,8 @@ const chapters = [
           transitionNote: "다음 열차 타기에서 환불 요청으로 결이 바뀌지만, '복합과거로 상황 설명 → 해결 요청' 뼈대는 같아요 — est déjà parti와 vous avez gardé가 그대로 나와요.",
         },
         selfCheckOptions: [
-          { label: "다 들렸어요 (정확히 이해)", value: "full", fsrsSignal: 1 },
-          { label: "부분만 들렸어요 (주요 단어만)", value: "partial", fsrsSignal: 0.5 },
+          { label: "다 이해했어요 (막힘 없이)", value: "full", fsrsSignal: 1 },
+          { label: "부분만 이해했어요 (주요 표현만)", value: "partial", fsrsSignal: 0.5 },
           { label: "아직이에요 (계속 연습 필요)", value: "notready", fsrsSignal: -1 },
         ],
       },
@@ -197,8 +197,8 @@ const chapters = [
           transitionNote: "감상 나누기에서 아쉬움·최고의 순간으로 이야기가 깊어져요 — quand j'étais…(있을 때)와 les gens étaient…(사람들이 ~였어)의 반과거가 그대로 나와요.",
         },
         selfCheckOptions: [
-          { label: "다 들렸어요 (정확히 이해)", value: "full", fsrsSignal: 1 },
-          { label: "부분만 들렸어요 (주요 단어만)", value: "partial", fsrsSignal: 0.5 },
+          { label: "다 이해했어요 (막힘 없이)", value: "full", fsrsSignal: 1 },
+          { label: "부분만 이해했어요 (주요 표현만)", value: "partial", fsrsSignal: 0.5 },
           { label: "아직이에요 (계속 연습 필요)", value: "notready", fsrsSignal: -1 },
         ],
       },
@@ -208,6 +208,116 @@ const chapters = [
         writingPrompts: [
           "최근 다녀온 곳을 떠올리고, 배경 2문장(c'était·il faisait)과 사건 1문장(un jour, j'ai…)을 만들어 보세요.",
           "같은 이야기를 짝에게 묻는 입장으로 바꿔, c'était comment ?부터 시작하는 질문 2개를 만들어 보세요.",
+        ],
+        autoRegisterVocabs: true,
+      },
+    ],
+  },
+  {
+    slug: "a2-15-negation-variants",
+    level: "A2",
+    order: 15,
+    prerequisites: ["a1-04-negation", "a1-09-partitive", "a2-01-passe-compose-avoir"],
+    title: "\"크루아상은 이제 없어요\" — 네 가지 부정을 한 세트로",
+    titleFr: "Négations : ne… plus, jamais, rien, personne",
+    topic: "매진·품절 알아듣기·부정 변형(plus/jamais/rien/personne)·습관 말하기",
+    summary:
+      "늦은 오후 빵집에서 매진을 알아듣고, ne…pas를 넘어 plus·jamais·rien·personne 네 부정으로 상황과 습관을 말해요.",
+    duration: "약 15분",
+    sections: [
+      {
+        type: "authenticIntro",
+        heading: "빵집 실전 대화 먼저 만나기",
+        presentationFraming:
+          "다 이해 안 돼도 정상이에요! 늦은 오후 빵집, 원하는 게 다 팔린 상황이에요 — ne…pas가 아닌 부정이 두 번 나와요. plus(더는)와 rien(아무것도)만 눈에 걸리면 성공이에요.",
+        dialogue: [
+          { speaker: "여행자", fr: "Bonjour, vous avez encore des croissants ?", ipa: "[bɔ̃ʒuʁ vuz ave ɑ̃kɔʁ de kʁwasɑ̃]", ko: "안녕하세요, 크루아상 아직 있나요?" },
+          { speaker: "점원", fr: "Ah, désolée, il n'y a plus de croissants.", ipa: "[a dezɔle il nja ply də kʁwasɑ̃]", ko: "아, 죄송해요, 크루아상은 이제 없어요." },
+          { speaker: "여행자", fr: "Vous n'avez rien d'autre ?", ipa: "[vu nave ʁjɛ̃ dotʁ]", ko: "다른 건 아무것도 없나요?" },
+          { speaker: "점원", fr: "Il reste deux baguettes. On a tout vendu ce matin !", ipa: "[il ʁɛst dø baɡɛt ɔ̃n a tu vɑ̃dy sə matɛ̃]", ko: "바게트 두 개 남았어요. 오늘 아침에 다 팔렸거든요!" },
+          { speaker: "여행자", fr: "Alors une baguette, s'il vous plaît.", ipa: "[alɔʁ yn baɡɛt sil vu plɛ]", ko: "그럼 바게트 하나 주세요." },
+        ],
+      },
+      {
+        type: "vocabPreview",
+        heading: "오늘 배울 단어 6개",
+        vocabs: [
+          { word: "ne… plus", meanings: ["더는 ~않다", "이제 없다"], exampleSentence: "Il n'y a plus de croissants.", note: "부정의 plus는 s를 읽지 않아요 [ply]" },
+          { word: "ne… jamais", meanings: ["전혀 ~않다", "한 번도 ~않다"], exampleSentence: "Je ne bois jamais de café le soir." },
+          { word: "ne… rien", meanings: ["아무것도 ~않다"], exampleSentence: "Vous n'avez rien d'autre ?" },
+          { word: "ne… personne", meanings: ["아무도 ~않다"], exampleSentence: "Il n'y a personne sur la terrasse." },
+          { word: "Il reste…", meanings: ["~이 남아 있다"], exampleSentence: "Il reste deux baguettes.", note: "비인칭 il — 남은 것이 주어처럼 뒤에 와요" },
+          { word: "vendre", meanings: ["팔다"], exampleSentence: "On a tout vendu ce matin.", note: "복합과거 과거분사는 vendu" },
+        ],
+      },
+      {
+        type: "patternExplanation",
+        heading: "pas 자리를 갈아 끼워요 — 네 부정 한 세트",
+        pattern: "ne + 동사 + plus / jamais / rien / personne",
+        patternKo: "더는 / 전혀 / 아무것도 / 아무도 ~않다",
+        body:
+          "부정의 뼈대는 a1-04의 **ne…pas** 그대로예요. pas가 앉던 자리에 다른 낱말을 갈아 끼우면 뜻이 정교해져요: **plus**(더는), **jamais**(전혀·한 번도), **rien**(아무것도), **personne**(아무도).\n\n" +
+          "짝이 되는 규칙도 그대로 따라와요 — pas de처럼 **plus de·jamais de** 뒤에서도 관사가 de로 줄어요(a1-09): Il n'y a plus **de** croissants.",
+        examples: [
+          { fr: "Il n'y a plus de pain.", ipa: "[il nja ply də pɛ̃]", ko: "빵이 이제 없어요.", note: "매진의 공식 문형" },
+          { fr: "Je ne prends jamais de sucre.", ipa: "[ʒə nə pʁɑ̃ ʒamɛ də sykʁ]", ko: "설탕은 전혀 안 넣어요.", note: "습관의 부정" },
+          { fr: "Je ne vois rien.", ipa: "[ʒə nə vwa ʁjɛ̃]", ko: "아무것도 안 보여요." },
+          { fr: "Personne ne répond.", ipa: "[pɛʁsɔn nə ʁepɔ̃]", ko: "아무도 응답하지 않아요.", note: "personne이 주어면 문장 맨 앞 + ne" },
+        ],
+        pitfall:
+          "Je ne mange pas plus(×)처럼 pas와 겹쳐 쓰지 않아요 — plus·jamais·rien·personne는 pas의 자리를 대신하는 낱말이에요. 하나만 골라요.",
+        tip:
+          "프랑스 빵집은 보통 하루 두 번 굽어서, 저녁이면 정말로 il n'y a plus예요. 갓 나온 빵을 원하면 아침이나 오후 4시쯤이 노려 볼 시간이에요.",
+      },
+      {
+        type: "patternExplanation",
+        heading: "과거·주어 자리에서도 그대로 — rien과 personne의 위치",
+        pattern: "Je n'ai rien acheté · Je n'ai vu personne",
+        patternKo: "아무것도 안 샀어요 · 아무도 못 봤어요",
+        body:
+          "복합과거(a2-01)와 만나면 자리만 조심해요: **rien은 조동사와 과거분사 사이**(Je n'ai **rien** acheté), **personne은 과거분사 뒤**(Je n'ai vu **personne**)예요.\n\n" +
+          "jamais는 rien과 같은 자리예요: Nous n'avons **jamais** visité Lyon — '한 번도 ~해 본 적 없다'는 경험 부정이 이 한 줄로 끝나요.",
+        examples: [
+          { fr: "Je n'ai rien acheté.", ipa: "[ʒə ne ʁjɛ̃ aʃte]", ko: "아무것도 안 샀어요.", note: "rien은 acheté 앞" },
+          { fr: "Je n'ai vu personne.", ipa: "[ʒə ne vy pɛʁsɔn]", ko: "아무도 못 봤어요.", note: "personne은 vu 뒤" },
+          { fr: "Nous n'avons jamais visité Lyon.", ipa: "[nu navɔ̃ ʒamɛ vizite ljɔ̃]", ko: "리옹은 한 번도 가 본 적이 없어요.", note: "경험 부정" },
+        ],
+      },
+      {
+        type: "authenticReplay",
+        heading: "같은 대화, 이제 다시 읽어 보기",
+        presentationFraming: "네 부정을 배웠으니 빵집 대화를 다시 읽어 보고, 저녁 카페의 새 장면까지 확장해 보세요.",
+        original: {
+          dialogue: [
+            { speaker: "여행자", fr: "Bonjour, vous avez encore des croissants ?", ipa: "[bɔ̃ʒuʁ vuz ave ɑ̃kɔʁ de kʁwasɑ̃]", ko: "안녕하세요, 크루아상 아직 있나요?" },
+            { speaker: "점원", fr: "Ah, désolée, il n'y a plus de croissants.", ipa: "[a dezɔle il nja ply də kʁwasɑ̃]", ko: "아, 죄송해요, 크루아상은 이제 없어요." },
+            { speaker: "여행자", fr: "Vous n'avez rien d'autre ?", ipa: "[vu nave ʁjɛ̃ dotʁ]", ko: "다른 건 아무것도 없나요?" },
+            { speaker: "점원", fr: "Il reste deux baguettes. On a tout vendu ce matin !", ipa: "[il ʁɛst dø baɡɛt ɔ̃n a tu vɑ̃dy sə matɛ̃]", ko: "바게트 두 개 남았어요. 오늘 아침에 다 팔렸거든요!" },
+            { speaker: "여행자", fr: "Alors une baguette, s'il vous plaît.", ipa: "[alɔʁ yn baɡɛt sil vu plɛ]", ko: "그럼 바게트 하나 주세요." },
+          ],
+        },
+        variant: {
+          dialogue: [
+            { speaker: "클레르", fr: "Tu veux un café ?", ipa: "[ty vø œ̃ kafe]", ko: "커피 마실래?" },
+            { speaker: "민수", fr: "Non merci, je ne bois jamais de café le soir.", ipa: "[nɔ̃ mɛʁsi ʒə nə bwa ʒamɛ də kafe lə swaʁ]", ko: "고맙지만 사양할게, 난 저녁엔 커피를 전혀 안 마셔." },
+            { speaker: "클레르", fr: "Moi non plus. Un thé, alors ?", ipa: "[mwa nɔ̃ ply œ̃ te alɔʁ]", ko: "나도 안 마셔. 그럼 차 마실까?" },
+            { speaker: "민수", fr: "Regarde, il n'y a personne sur la terrasse ce soir.", ipa: "[ʁəɡaʁd il nja pɛʁsɔn syʁ la teʁas sə swaʁ]", ko: "봐, 오늘 저녁엔 테라스에 아무도 없어." },
+            { speaker: "클레르", fr: "Tant mieux, on est tranquilles !", ipa: "[tɑ̃ mjø ɔ̃n ɛ tʁɑ̃kil]", ko: "잘됐네, 우리끼리 조용하고!" },
+          ],
+          transitionNote: "빵집 매진(plus·rien)에서 저녁 카페의 습관·주변 이야기(jamais·personne)로 장면이 바뀌어요 — 상대가 vous에서 tu로 바뀌어도, ne와 짝을 이루는 네 낱말이 한 세트라는 건 그대로예요.",
+        },
+        selfCheckOptions: [
+          { label: "다 이해했어요 (막힘 없이)", value: "full", fsrsSignal: 1 },
+          { label: "부분만 이해했어요 (주요 표현만)", value: "partial", fsrsSignal: 0.5 },
+          { label: "아직이에요 (계속 연습 필요)", value: "notready", fsrsSignal: -1 },
+        ],
+      },
+      {
+        type: "practiceAndRegistration",
+        heading: "연습: 내 부정문 만들기",
+        writingPrompts: [
+          "요즘 그만둔 습관 하나를 ne… plus로, 한 번도 안 해 본 일 하나를 ne… jamais로 말해 보세요.",
+          "가게에서 원하는 물건이 다 팔린 상황을 상상하고, rien으로 묻는 손님 문장과 plus로 답하는 점원 문장을 지어 보세요.",
         ],
         autoRegisterVocabs: true,
       },
