@@ -325,3 +325,26 @@ describe('커리큘럼 prerequisites 참조 계약', () => {
     },
   );
 });
+
+
+describe('src 실자료 출처 계약 (RFC authentic-sources §3)', () => {
+  const line = (src) => ({ speaker: '점원', fr: 'Bonjour.', ko: '안녕하세요.', ...(src ? { src } : {}) });
+  const withExamples = (examples) => ({ sections: [{ heading: 'h', examples }] });
+
+  it('유효한 src(㉮ A·㉯ B+basedOn)를 dialogue 라인과 평탄 예문 모두에 허용한다', () => {
+    const A = { provider: 'tatoeba', id: 111, license: 'CC BY 2.0 FR', by: 'alice', grade: 'A' };
+    const B = { provider: 'tatoeba', id: 222, license: 'CC BY 2.0 FR', grade: 'B', basedOn: 111 };
+    expect(isValidOverride(withExamples([{ dialogue: [line(A)] }]))).toBe(true);
+    expect(isValidOverride(withExamples([{ fr: 'Bonjour.', ko: '안녕하세요.', src: B }]))).toBe(true);
+  });
+
+  it('무효 src는 거부한다 — grade 누락·B의 basedOn 누락·미지 키', () => {
+    const noGrade = { provider: 'tatoeba', id: 1, license: 'CC' };
+    const bNoBase = { provider: 'tatoeba', id: 1, license: 'CC', grade: 'B' };
+    const unknown = { provider: 'tatoeba', id: 1, license: 'CC', grade: 'A', url: 'x' };
+    for (const bad of [noGrade, bNoBase, unknown]) {
+      expect(isValidOverride(withExamples([{ dialogue: [line(bad)] }]))).toBe(false);
+      expect(isValidOverride(withExamples([{ fr: 'a', ko: 'b', src: bad }]))).toBe(false);
+    }
+  });
+});

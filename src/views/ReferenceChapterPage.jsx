@@ -17,6 +17,7 @@ import ChapterAdminStrip from '../components/admin/ChapterAdminStrip';
 import InlineEdit from '../components/admin/InlineEdit';
 import { getChapterOverride, getOverridesForLang, mergeChapter } from '../lib/contentOverrides';
 import { getCourseLessonContext } from '../lib/learn/courseMapData';
+import { collectSrcAttributions } from '../lib/learn/sourceRefs';
 
 function ExampleList({ examples, langCode, lang, slug, secIndex }) {
   if (!examples?.length) return null;
@@ -232,6 +233,7 @@ export default async function ReferenceChapterPage({ lang, slug }) {
   const { chapter: baseChapter, prev: basePrev, next: baseNext } = data;
   const chapter = mergeChapter(baseChapter, override);
   const sandwichVocabs = chapter.sections?.find(s => s?.type === 'vocabPreview')?.vocabs ?? [];
+  const sourceRefs = collectSrcAttributions(chapter);
   // 이전/다음은 제목만 오버라이드 병합(slug·level은 병합 유틸이 base로 강제).
   const prev = basePrev ? mergeChapter(basePrev, overrideMap.get(basePrev.slug)) : null;
   const next = baseNext ? mergeChapter(baseNext, overrideMap.get(baseNext.slug)) : null;
@@ -646,6 +648,19 @@ export default async function ReferenceChapterPage({ lang, slug }) {
           </Link>
         );
       })()}
+
+      {sourceRefs.length > 0 && (
+        <section className="card fr-section" style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+          <h2 style={{ fontSize: '0.9rem', fontWeight: 700, marginBottom: 8 }}>자료 출처</h2>
+          <ul style={{ paddingLeft: 18, margin: 0 }}>
+            {sourceRefs.map((ref2, i) => (
+              <li key={i}>
+                {ref2.provider}{ref2.by ? ` · ${ref2.by}` : ''} · {ref2.license} · {ref2.count}문장
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {/* ── 이전/다음 ── */}
       <nav className="fr-pager" aria-label="챕터 이동">

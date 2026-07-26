@@ -462,8 +462,11 @@
   ② SRS 배선(selfCheck fsrsSignal→G1-A 카드 등록·상태 전이, sandwichCards.js + 멱등
   테스트 5종) ③ ⑤단 단어장 담기 CTA. 스모크·유닛 green → **실자료 RFC v1**
   (rfc-authentic-sources.md — Tatoeba 1순위·라이선스 필터(NC 제외)·src 스키마·결정성
-  스냅샷 파이프라인·실행 큐 4단, 오디오 다운로드는 owner-gate). 다음 = 수집 스크립트
-  (codex 발주 게시) → src 스키마+P11(e)·(c)(d) → 예문 파일럿 대조. 타 트랙 확산
+  스냅샷 파이프라인·실행 큐 4단, 오디오 다운로드는 owner-gate). 이어서 **src 스키마 구현**(계약
+  검증 isValidSrc — grade A/B·basedOn 강제, dialogue 라인·평탄 예문 양쪽 허용, 출처
+  자동 집계 블록 렌더, 테스트 60종 green) + 상습 flaky districtSignsAudit24 timeout
+  90s 수리(게이트 3회 적중 선례). 다음 = codex 픽업 게이트(수집 스크립트·P11 (c)(d))
+  → 예문 파일럿 대조(㉮ 소급 표기). 타 트랙 확산
   여부는 오너 결정(원칙 v2와 함께)
 - **🏁 V3 도로 오토타일 26/26 완주**: 리옹 파일럿(#472)→도쿄·서울 라이브 육안(#484)→전면
   확산(#493, BRIDGE crop 게이트). 오너 지적 "도로 chaos" 해소 라인 종결. P8 렌더 벤치 실행 중

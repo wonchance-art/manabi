@@ -168,7 +168,7 @@ function buildAuditManifest() {
         && JSON.stringify(album.labels) === JSON.stringify(labels),
       albumLabelCount: album?.labels.length ?? 0,
     };
-  });
+  }, 90000);
 }
 
 describe('S18 지구제 24도시 팻말·표면 정합 read-only 감사', () => {
