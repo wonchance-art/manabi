@@ -50,7 +50,7 @@ const chapters = [
           "지나간 사건 보고는 **복합과거**가 담당해요. 내가 한 일은 **j'ai raté**(avoir 조동사), 열차의 이동·도착은 **est arrivé**(être 조동사 — 이동 동사)로 갈려요.\n\n" +
           "창구에서는 '사건 나열'이 곧 설명이에요: J'ai raté… → Le train est arrivé en retard… → 순서대로 말하면 끝이에요.",
         examples: [
-          { fr: "J'ai raté ma correspondance.", ipa: "[ʒe ʁate ma kɔʁɛspɔ̃dɑ̃s]", ko: "환승편을 놓쳤어요.", note: "avoir + raté" },
+          { fr: "J'ai raté ma correspondance.", ipa: "[ʒe ʁate ma kɔʁɛspɔ̃dɑ̃s]", ko: "환승편을 놓쳤어요.", note: "avoir + raté", src: { provider: "tatoeba", id: "11071133", license: "CC BY 2.0 FR", by: "Aiji", grade: "A" } },
           { fr: "Le train est arrivé en retard.", ipa: "[lə tʁɛ̃ ɛt aʁive ɑ̃ ʁətaʁ]", ko: "열차가 늦게 도착했어요.", note: "이동 동사라 être" },
           { fr: "Je suis parti à l'heure.", ipa: "[ʒə sɥi paʁti a lœʁ]", ko: "저는 제시간에 출발했어요.", note: "잘못이 없음을 밝힐 때" },
         ],
@@ -589,7 +589,7 @@ const chapters = [
           "조건법은 새 활용을 외우는 게 아니라 **아는 재료 둘의 조합**이에요: **futur simple의 어간**(a2-07 — voudr-, pourr-, aimer-, prendr-)에 **반과거의 어미**(a2-03 — -ais, -ais, -ait, -ions, -iez, -aient)를 붙여요.\n\n" +
           "왜 정중해질까요? 현재형 Je veux는 '원한다'고 직진하는 말이에요. 조건법은 '혹시 가능하다면'의 가정을 한 겹 두르고 한 걸음 물러서요 — 그 거리감이 곧 공손함이에요.",
         examples: [
-          { fr: "Je voudrais un café.", ipa: "[ʒə vudʁɛ œ̃ kafe]", ko: "커피 한 잔 주문하고 싶은데요.", note: "vouloir → voudr- + -ais" },
+          { fr: "Je voudrais un café.", ipa: "[ʒə vudʁɛ œ̃ kafe]", ko: "커피 한 잔 주문하고 싶은데요.", note: "vouloir → voudr- + -ais", src: { provider: "tatoeba", id: "9258294", license: "CC BY 2.0 FR", by: "felix63", grade: "A" } },
           { fr: "Vous pourriez répéter, s'il vous plaît ?", ipa: "[vu puʁje ʁepete sil vu plɛ]", ko: "다시 한번 말씀해 주실 수 있을까요?", note: "pouvoir → pourr- + -iez" },
           { fr: "J'aimerais visiter la Normandie.", ipa: "[ʒɛməʁɛ vizite la nɔʁmɑ̃di]", ko: "노르망디에 가 보고 싶어요.", note: "aimer → aimer- + -ais — 희망 말하기" },
         ],
