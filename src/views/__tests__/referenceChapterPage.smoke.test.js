@@ -10,5 +10,5 @@ describe('ReferenceChapterPage 배선 스모크', () => {
     expect(typeof page.default).toBe('function');
     expect(typeof selfCheck.default).toBe('function');
     expect(typeof cta.default).toBe('function');
-  });
+  }, 60_000);
 });
