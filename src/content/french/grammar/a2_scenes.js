@@ -150,6 +150,7 @@ const chapters = [
         heading: "배경은 반과거 — c'était과 il faisait",
         pattern: "C'était + 형용사 · Il faisait + 날씨",
         patternKo: "~였어요(분위기) · 날씨가 ~였어요",
+        tip: "🎴 문화 한 스푼: 프랑스의 8월은 grandes vacances(긴 바캉스)의 달이에요 — 휴가에서 돌아오면 C'était comment ?(어땠어?)로 시작하는 회상 수다가 국민 스몰토크예요.",
         body:
           "회상의 **배경·분위기·날씨**는 반과거가 담당해요. **C'était magnifique**(멋졌어), **Il faisait beau**(날씨가 좋았어) — 언제 시작하고 끝났는지 선을 긋지 않는, 화면을 채우는 과거예요.\n\n" +
           "A2-03에서 배운 반과거의 핵심 용법이 회화에서 가장 자주 나오는 자리예요 — 여행 이야기의 절반은 c'était으로 시작해요.",

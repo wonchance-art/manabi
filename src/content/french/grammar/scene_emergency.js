@@ -134,7 +134,7 @@ const chapters = [
           },
         ],
         tip:
-          "노선 번호를 놓치면 La ligne combien ?(몇 호선이요?)만 짧게 되물어도 돼요. 숫자와 direction 뒤 목적지만 잡아도 다음 행동을 정할 수 있어요.",
+          "노선 번호를 놓치면 La ligne combien ?(몇 호선이요?)만 짧게 되물어도 돼요. 숫자와 direction 뒤 목적지만 잡아도 다음 행동을 정할 수 있어요. 🎴 문화 한 스푼: 파리 지하철은 방향을 노선의 종점 이름으로 불러요 — direction Château de Vincennes처럼 종점만 알면 반대 방향을 탈 일이 없어요.",
       },
       {
         type: "patternExplanation",
@@ -385,7 +385,7 @@ const chapters = [
           },
         ],
         tip:
-          "정확한 병명을 추측하기보다 지금 느끼는 증상과 아픈 부위를 짧게 나눠 말하면 도움을 요청하기 쉬워요.",
+          "정확한 병명을 추측하기보다 지금 느끼는 증상과 아픈 부위를 짧게 나눠 말하면 도움을 요청하기 쉬워요. 🎴 문화 한 스푼: 프랑스 약국은 거리의 초록 십자 네온으로 찾아요. 밤·일요일엔 pharmacie de garde(당번 약국)가 돌아가며 문을 열고, 닫힌 약국 문에 당번 약국 주소가 붙어 있어요.",
       },
       {
         type: "patternExplanation",
