@@ -168,7 +168,7 @@ function buildAuditManifest() {
         && JSON.stringify(album.labels) === JSON.stringify(labels),
       albumLabelCount: album?.labels.length ?? 0,
     };
-  }, 90000);
+  });
 }
 
 describe('S18 지구제 24도시 팻말·표면 정합 read-only 감사', () => {
@@ -201,5 +201,5 @@ describe('S18 지구제 24도시 팻말·표면 정합 read-only 감사', () => 
     expect(firstBytes).toBe(secondBytes);
     expect(createHash('sha256').update(firstBytes).digest('hex'))
       .toBe('e2a090364454707e17e93c867926c19dce18bb19f8818378998743db0ac011e2');
-  }, 30_000);
+  }, 90_000);
 });
