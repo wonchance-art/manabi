@@ -145,7 +145,20 @@ function isFlatObjectArray(v) {
 
 const DIALOGUE_LANG_FIELDS = ['fr', 'ja', 'en', 'zh'];
 const FLAT_EXAMPLE_TEXT_FIELDS = [...DIALOGUE_LANG_FIELDS, 'ipa', 'yomi', 'pinyin', 'ko'];
-const DIALOGUE_LINE_KEYS = new Set(['speaker', ...DIALOGUE_LANG_FIELDS, 'ipa', 'ko']);
+const DIALOGUE_LINE_KEYS = new Set(['speaker', ...DIALOGUE_LANG_FIELDS, 'ipa', 'ko', 'src']);
+
+// 실자료 출처 표기(RFC authentic-sources §3) — src가 있으면 하위 계약을 강제한다.
+const SRC_KEYS = new Set(['provider', 'id', 'license', 'by', 'grade', 'basedOn']);
+function isValidSrc(v) {
+  if (!isPlainObject(v)) return false;
+  if (Object.keys(v).some((k) => !SRC_KEYS.has(k))) return false;
+  const idOk = (x) => isNonEmptyString(x) || (typeof x === 'number' && Number.isFinite(x));
+  if (!isNonEmptyString(v.provider) || !isNonEmptyString(v.license) || !idOk(v.id)) return false;
+  if (v.grade !== 'A' && v.grade !== 'B') return false;
+  if (v.grade === 'B' && !idOk(v.basedOn)) return false;
+  if ('by' in v && !isNonEmptyString(v.by)) return false;
+  return true;
+}
 
 function isNonEmptyString(v) {
   return typeof v === 'string' && v.trim().length > 0;
@@ -159,17 +172,20 @@ function isValidDialogueLine(v) {
   const langFields = DIALOGUE_LANG_FIELDS.filter((k) => k in v);
   if (langFields.length !== 1 || !isNonEmptyString(v[langFields[0]])) return false;
   if ('ipa' in v && !isNonEmptyString(v.ipa)) return false;
+  if ('src' in v && !isValidSrc(v.src)) return false;
   return true;
 }
 
 /** 기존 평탄 예문 또는 dialogue 예문. 두 형태의 원어·발음·번역 필드는 배타적이다. */
 function isValidExample(v) {
   if (!isPlainObject(v)) return false;
-  if (!('dialogue' in v)) return isFlatObject(v);
+  if (!('dialogue' in v)) {
+    return isPlainObject(v) && Object.entries(v).every(([k, x]) => (k === 'src' ? isValidSrc(x) : isScalar(x)));
+  }
   if (FLAT_EXAMPLE_TEXT_FIELDS.some((k) => k in v)) return false;
   if (!Array.isArray(v.dialogue) || v.dialogue.length === 0) return false;
   if (!v.dialogue.every(isValidDialogueLine)) return false;
-  return Object.entries(v).every(([k, x]) => k === 'dialogue' || isScalar(x));
+  return Object.entries(v).every(([k, x]) => k === 'dialogue' || (k === 'src' ? isValidSrc(x) : isScalar(x)));
 }
 
 function isValidExampleArray(v) {
