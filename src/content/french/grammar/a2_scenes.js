@@ -505,7 +505,7 @@ const chapters = [
       {
         type: "authenticReplay",
         heading: "같은 대화, 이제 다시 읽어 보기",
-        presentationFraming: "서사의 골격을 배웠으니 여행기를 다시 읽어 보고, 반대로 '엉망이 된 하루'를 같은 골격으로 듣는 장면까지 확장해 보세요.",
+        presentationFraming: "서사의 골격을 배웠으니 여행기를 다시 읽어 보고, 반대로 '엉망이 된 하루' 장면까지 같은 골격으로 확장해 보세요.",
         original: {
           dialogue: [
             { speaker: "클레르", fr: "Alors, ta journée au Mont-Saint-Michel ?", ipa: "[alɔʁ ta ʒuʁne o mɔ̃ sɛ̃ miʃɛl]", ko: "그래서, 몽생미셸에서 하루 어땠어?" },
