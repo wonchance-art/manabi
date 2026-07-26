@@ -862,6 +862,34 @@ const themes = {
         { fr: "juin", ipa: "[ʒɥɛ̃]", ko: "6월", pos: "n.m.", ex: { fr: "On est le 9 juin.", ko: "6월 9일이에요." } },
       ],
     },
+    {
+      name: "장면 필수 — 길·가게에서",
+      icon: "🧭",
+      words: [
+        { fr: "la gauche", ipa: "[ɡoʃ]", ko: "왼쪽", pos: "n.f.", en: "left", ex: { fr: "Tournez à gauche au feu.", ko: "신호등에서 왼쪽으로 도세요." } },
+        { fr: "le panneau", ipa: "[pano]", ko: "표지판", pos: "n.m.", en: "sign", ex: { fr: "Suivez les panneaux bleus.", ko: "파란 표지판을 따라가세요." } },
+        { fr: "la navette", ipa: "[navɛt]", ko: "셔틀버스", pos: "n.f.", en: "shuttle", ex: { fr: "La navette part toutes les dix minutes.", ko: "셔틀은 10분마다 출발해요." } },
+        { fr: "le plat", ipa: "[pla]", ko: "요리, 접시", pos: "n.m.", en: "dish", ex: { fr: "Quel est le plat du jour ?", ko: "오늘의 요리는 뭐예요?" } },
+        { fr: "sûr", ipa: "[syʁ]", ko: "확실한", pos: "adj.", en: "sure", ex: { fr: "Vous êtes sûr ?", ko: "확실해요?" } },
+        { fr: "faible", ipa: "[fɛbl]", ko: "약한", pos: "adj.", en: "weak", ex: { fr: "Je me sens faible.", ko: "몸이 약해진 느낌이에요." } },
+        { fr: "le voisin", ipa: "[vwazɛ̃]", ko: "이웃", pos: "n.m.", en: "neighbor", ex: { fr: "Mes voisins sont gentils.", ko: "이웃들이 친절해요." } },
+        { fr: "intelligent", ipa: "[ɛ̃teliʒɑ̃]", ko: "똑똑한", pos: "adj.", en: "smart", ex: { fr: "Elle est très intelligente.", ko: "그녀는 아주 똑똑해요." } },
+      ],
+    },
+    {
+      name: "장면 필수 — 말하고 움직이기",
+      icon: "🗣️",
+      words: [
+        { fr: "dire", ipa: "[diʁ]", ko: "말하다", pos: "v.", en: "to say", ex: { fr: "Qu'est-ce que vous avez dit ?", ko: "뭐라고 하셨어요?" } },
+        { fr: "suivre", ipa: "[sɥivʁ]", ko: "따라가다", pos: "v.", en: "to follow", ex: { fr: "Suivez-moi, s'il vous plaît.", ko: "저를 따라오세요." } },
+        { fr: "indiquer", ipa: "[ɛ̃dike]", ko: "가리키다, 알려 주다", pos: "v.", en: "to indicate", ex: { fr: "Vous pouvez m'indiquer la gare ?", ko: "역이 어디인지 알려 주실 수 있나요?" } },
+        { fr: "durer", ipa: "[dyʁe]", ko: "(시간이) 걸리다, 계속되다", pos: "v.", en: "to last", ex: { fr: "Le trajet dure vingt minutes.", ko: "이동은 20분 걸려요." } },
+        { fr: "puis", ipa: "[pɥi]", ko: "그다음에", pos: "adv.", en: "then", ex: { fr: "Tournez à droite, puis allez tout droit.", ko: "오른쪽으로 돌고, 그다음 곧장 가세요." } },
+        { fr: "séparément", ipa: "[sepaʁemɑ̃]", ko: "따로따로", pos: "adv.", en: "separately", ex: { fr: "On peut payer séparément ?", ko: "따로 계산해도 되나요?" } },
+        { fr: "sous", ipa: "[su]", ko: "~아래에", pos: "prép.", en: "under", ex: { fr: "Le chat est sous la table.", ko: "고양이가 탁자 아래에 있어요." } },
+        { fr: "prévenir", ipa: "[pʁevniʁ]", ko: "미리 알리다", pos: "v.", en: "to notify", ex: { fr: "Je vais prévenir la réception.", ko: "프런트에 알릴게요." } },
+      ],
+    },
   ],
 }
 
