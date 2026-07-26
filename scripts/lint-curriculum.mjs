@@ -1,6 +1,11 @@
 #!/usr/bin/env node
-// P11 저작 자동 게이트 (챕터 제작 원칙 v1 §5): (a) 레벨 내 order 유일·연속 (b) prerequisites 실존·비순환.
-// 적용 수위: fr A1~A2 = 오류(exit 1), 그 외 트랙·레벨 = report-only 경고.
+// P11 저작 자동 게이트 (챕터 제작 원칙 v1 §5):
+//  (a) 레벨 내 order 유일·연속  (b) prerequisites 실존·비순환
+//  (c) 선행 순서 — prerequisites 챕터가 레벨·order상 실제로 앞에 있는지(fr A1~A2 fail).
+//      ※ '사용 문형의 의미적 커버'까지는 자동화하지 않는다(감사 몫) — 여기서는 순서 위반만 기계 검출.
+//  (d) 레벨 어휘 대조 — 챕터 fr 문장 토큰을 레벨 누적 vocab 팩과 대조(report-only 통계.
+//      굴절형·표제어 차이로 오탐이 있어 게이트로 쓰지 않는다. 기능어 스톱리스트 + 조야한 어간 매칭)
+// 적용 수위: fr A1~A2 = (a)(b)(c) 오류(exit 1) / (d)와 그 외 트랙·레벨 = report-only 경고.
 // lint-content.mjs와 같은 텍스트 파싱 방식(콘텐츠 모듈은 확장자 없는 import라 plain node로 로드 불가).
 
 import fs from 'node:fs/promises';
@@ -113,6 +118,26 @@ export async function runCurriculumLint() {
       }
       edges.set(ch.slug, resolved);
     }
+    // (c) 선행 순서 — prerequisite가 레벨·order상 앞서는지 (fr 강제)
+    const LEVEL_RANK = { A0: 0, A1: 1, A2: 2, B1: 3, B2: 4, C1: 5, C2: 6, N5: 1, N4: 2, N3: 3, N2: 4, N1: 5, H1: 1, H2: 2, H3: 3, H4: 4, H5: 5, H6: 6 };
+    const orderOf = new Map(all.map((c) => [c.slug, c.order]));
+    for (const ch of all) {
+      for (const target of edges.get(ch.slug) ?? []) {
+        const chRank = LEVEL_RANK[ch.level];
+        const tRank = LEVEL_RANK[levelOf.get(target)];
+        if (chRank === undefined || tRank === undefined) continue;
+        if (tRank > chRank) {
+          report(ch.level, `${ch.slug} → 선행(${target})이 상위 레벨`);
+        } else if (tRank === chRank) {
+          const co = orderOf.get(ch.slug);
+          const to = orderOf.get(target);
+          if (co !== undefined && to !== undefined && to >= co) {
+            report(ch.level, `${ch.slug}(order ${co}) → 선행(${target}, order ${to})이 뒤에 배치됨`);
+          }
+        }
+      }
+    }
+
     const state = new Map();
     const stack = [];
     const dfs = (slug) => {
@@ -130,6 +155,75 @@ export async function runCurriculumLint() {
       state.set(slug, 2);
     };
     for (const slug of edges.keys()) if ((state.get(slug) ?? 0) === 0) dfs(slug);
+  }
+
+  // (d) fr 레벨 어휘 대조 (report-only)
+  try {
+    const vocabDir = path.join(REPO_ROOT, 'src/content/french/vocab');
+    const headwords = async (files) => {
+      const set = new Set();
+      for (const f of files) {
+        const src = await fs.readFile(path.join(vocabDir, f), 'utf8');
+        for (const m of src.matchAll(/"?fr"?: "([^"]+)"/g)) {
+          for (const w of m[1].toLowerCase().split(/[^a-zà-ÿœç'-]+/)) {
+            const ww = w.replace(/^(l|d|j|n|s|c|qu|m|t)'/, '');
+            if (ww.length > 2) set.add(ww);
+          }
+        }
+      }
+      return set;
+    };
+    const STOP = new Set(('le la les un une des de du au aux et ou où à en sur dans pour par avec sans est sont suis es êtes sommes était étais ai as avons avez ont ne pas plus que qui quoi mais donc car se me te nous vous ils elles il elle je tu on ce cette ces cet mon ma mes ton ta tes son sa ses notre votre leur leurs y si très bien oui non plaît tout toute tous toutes quel quelle quels quelles comme aussi alors voici voilà').split(' '));
+    const grammarDir = path.join(REPO_ROOT, 'src/content/french/grammar');
+    const levelFiles = {
+      A1: { vocab: ['a0.js', 'a1.js', 'a1_flelex.js'], grammar: ['a1.js', 'a1_expansion.js', 'a1_pronunciation.js', 'a1_sandwich_pilot.js', 'scene_travel.js', 'scene_emergency.js'] },
+      A2: { vocab: ['a0.js', 'a1.js', 'a1_flelex.js', 'a2.js', 'a2_flelex.js'], grammar: ['a2.js', 'a2_scenes.js'] },
+    };
+    const grammarIntroFiles = { A1: ['a1_sandwich_pilot.js', 'scene_travel.js', 'scene_emergency.js'], A2: ['a1_sandwich_pilot.js', 'scene_travel.js', 'scene_emergency.js', 'a2_scenes.js'] };
+    for (const [level, cfg] of Object.entries(levelFiles)) {
+      const inventory = await headwords(cfg.vocab);
+      // 챕터 vocabPreview로 도입된 단어도 레벨 자산으로 인정(누적)
+      for (const f of grammarIntroFiles[level] ?? []) {
+        const src = await fs.readFile(path.join(grammarDir, f), 'utf8');
+        for (const m of src.matchAll(/word: "([^"]+)"/g)) {
+          for (const w of m[1].toLowerCase().split(/[^a-zà-ÿœç'-]+/)) {
+            const ww = w.replace(/^(l|d|j|n|s|c|qu|m|t)'/, '');
+            if (ww.length > 2) inventory.add(ww);
+          }
+        }
+      }
+      const counts = new Map();
+      for (const f of cfg.grammar) {
+        const src = await fs.readFile(path.join(grammarDir, f), 'utf8');
+        for (const m of src.matchAll(/fr: "((?:[^"\\]|\\.)*)"/g)) {
+          for (const raw of m[1].toLowerCase().split(/[^a-zà-ÿœç'-]+/)) {
+            const w = raw.replace(/^(l|d|j|n|s|c|qu|m|t)'/, '').replace(/-.*$/, '');
+            if (w.length <= 2 || STOP.has(w)) continue;
+            counts.set(w, (counts.get(w) ?? 0) + 1);
+          }
+        }
+      }
+      const stemHit = (w) => {
+        if (inventory.has(w)) return true;
+        const stem = w.slice(0, Math.max(4, w.length - 3));
+        for (const h of inventory) {
+          if (h.startsWith(stem) || w.startsWith(h.slice(0, Math.max(4, h.length - 3)))) return true;
+        }
+        return false;
+      };
+      let hit = 0;
+      let miss = 0;
+      const misses = [];
+      for (const [w, n] of counts) {
+        if (stemHit(w)) hit += n;
+        else { miss += n; misses.push([w, n]); }
+      }
+      const pct = hit + miss > 0 ? Math.round((hit / (hit + miss)) * 100) : 100;
+      misses.sort((x, y2) => y2[1] - x[1]);
+      warnings.push(`french/${level}: 어휘 커버 ${pct}% (토큰 ${hit + miss}) — 미등재 상위: ${misses.slice(0, 8).map(([w, n]) => `${w}(${n})`).join(' ')}`);
+    }
+  } catch (e) {
+    warnings.push(`french 어휘 대조 실패: ${e}`);
   }
 
   return { errors, warnings };
