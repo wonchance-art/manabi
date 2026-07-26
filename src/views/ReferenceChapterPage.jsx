@@ -8,6 +8,8 @@ import RefPatternCheck from '../components/RefPatternCheck';
 import GojuonChart from '../components/GojuonChart';
 import KanaTest from '../components/KanaTest';
 import LessonCompletionCta from '../components/LessonCompletionCta';
+import SandwichSelfCheck from '../components/SandwichSelfCheck';
+import VocabRegisterCta from '../components/VocabRegisterCta';
 // 스토리 모듈(이야기로 확인) — 인터랙티브 채점은 클라이언트 경계로 분리(서버 페이지가 레지스트리를
 // 클라이언트 번들로 끌어오지 않도록). story 는 순수 직렬화 데이터라 props 로 그대로 넘긴다.
 import StoryCheck, { StoryLines } from './StoryCheck';
@@ -229,6 +231,7 @@ export default async function ReferenceChapterPage({ lang, slug }) {
 
   const { chapter: baseChapter, prev: basePrev, next: baseNext } = data;
   const chapter = mergeChapter(baseChapter, override);
+  const sandwichVocabs = chapter.sections?.find(s => s?.type === 'vocabPreview')?.vocabs ?? [];
   // 이전/다음은 제목만 오버라이드 병합(slug·level은 병합 유틸이 base로 강제).
   const prev = basePrev ? mergeChapter(basePrev, overrideMap.get(basePrev.slug)) : null;
   const next = baseNext ? mergeChapter(baseNext, overrideMap.get(baseNext.slug)) : null;
@@ -365,6 +368,10 @@ export default async function ReferenceChapterPage({ lang, slug }) {
               <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: 12 }}>
                 {sec.presentationFraming}
               </p>
+              {sec.dialogue?.length ? (
+                <StoryLines body={sec.dialogue} lang={lang} langCode={ref.langCode} translationAlwaysVisible compact />
+              ) : (
+                <>
               {/* 오디오 플레이어 (실제 구현: audio 태그 또는 외부 플레이어) */}
               <div className="fr-audio-player" style={{ marginBottom: 16, padding: 12, background: 'var(--bg-muted)', borderRadius: 8 }}>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0 }}>
@@ -382,6 +389,8 @@ export default async function ReferenceChapterPage({ lang, slug }) {
                   출처: {sec.audio?.attribution}
                 </p>
               </div>
+                </>
+              )}
             </section>
           );
         }
@@ -434,7 +443,10 @@ export default async function ReferenceChapterPage({ lang, slug }) {
               {/* 원본 자료 */}
               <div style={{ marginBottom: 20, paddingBottom: 20, borderBottom: '1px solid var(--border-muted)' }}>
                 <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: 10 }}>원본 대화</h3>
-                <div style={{ padding: 12, background: 'var(--bg-muted)', borderRadius: 8 }}>
+                {sec.original?.dialogue?.length ? (
+                  <StoryLines body={sec.original.dialogue} lang={lang} langCode={ref.langCode} translationAlwaysVisible compact />
+                ) : (
+                  <div style={{ padding: 12, background: 'var(--bg-muted)', borderRadius: 8 }}>
                   <p style={{ fontSize: '0.88rem', fontStyle: 'italic', marginBottom: 8, whiteSpace: 'pre-wrap' }}>
                     {sec.original?.captions?.original}
                   </p>
@@ -442,6 +454,7 @@ export default async function ReferenceChapterPage({ lang, slug }) {
                     {sec.original?.captions?.translation}
                   </p>
                 </div>
+                )}
               </div>
               {/* 변형 자료 */}
               <div style={{ marginBottom: 20 }}>
@@ -449,7 +462,10 @@ export default async function ReferenceChapterPage({ lang, slug }) {
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 10 }}>
                   {sec.variant?.transitionNote}
                 </p>
-                <div style={{ padding: 12, background: 'var(--bg-muted)', borderRadius: 8 }}>
+                {sec.variant?.dialogue?.length ? (
+                  <StoryLines body={sec.variant.dialogue} lang={lang} langCode={ref.langCode} translationAlwaysVisible compact />
+                ) : (
+                  <div style={{ padding: 12, background: 'var(--bg-muted)', borderRadius: 8 }}>
                   <p style={{ fontSize: '0.88rem', fontStyle: 'italic', marginBottom: 8, whiteSpace: 'pre-wrap' }}>
                     {sec.variant?.captions?.original}
                   </p>
@@ -457,19 +473,10 @@ export default async function ReferenceChapterPage({ lang, slug }) {
                     {sec.variant?.captions?.translation}
                   </p>
                 </div>
+                )}
               </div>
-              {/* 자가 체크 버튼 */}
-              <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-                {sec.selfCheckOptions?.map((opt, j) => (
-                  <button key={j} style={{
-                    flex: 1, padding: '8px 12px', fontSize: '0.85rem', borderRadius: 4,
-                    border: '1px solid var(--border)', background: 'var(--bg-secondary)',
-                    cursor: 'pointer', fontWeight: 600
-                  }}>
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
+              {/* 자가 체크 — 복습 신호·카드 등록 배선 */}
+              <SandwichSelfCheck lang={lang} slug={slug} options={sec.selfCheckOptions ?? []} vocabs={sandwichVocabs} />
             </section>
           );
         }
@@ -493,6 +500,9 @@ export default async function ReferenceChapterPage({ lang, slug }) {
                   ))}
                 </ul>
               </div>
+              {sec.autoRegisterVocabs && sandwichVocabs.length > 0 && (
+                <VocabRegisterCta lang={lang} slug={slug} vocabs={sandwichVocabs} />
+              )}
               <div>
                 <h3 style={{ fontSize: '0.95rem', fontWeight: 700, marginBottom: 10 }}>선택형 문제</h3>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
