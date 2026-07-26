@@ -113,6 +113,15 @@ const themes = {
           pos: "n.f.",
           en: "person",
         },
+        {
+          fr: "le médecin",
+          ipa: "[medsɛ̃]",
+          ko: "의사",
+          pos: "n.m.",
+          en: "medicine",
+          etym: "영어 medicine, medical과 같은 라틴어 medicus 뿌리 — 단 프랑스어 médecin은 '의사(사람)'예요.",
+          ex: { fr: "Je vais chez le médecin cet après-midi.", ko: "오늘 오후에 의사한테 가요." },
+        },
       ],
     },
     {
@@ -227,6 +236,15 @@ const themes = {
           ko: "~할 수 있다",
           pos: "v.",
           ex: { fr: "Tu peux venir demain ?", ko: "너 내일 올 수 있어?" },
+        },
+        {
+          fr: "arriver",
+          ipa: "[aʁive]",
+          ko: "도착하다",
+          pos: "v.",
+          en: "arrive",
+          etym: "라틴어 ad rīpam(강기슭에 닿다)에서 — 영어 arrive와 같은 뿌리예요.",
+          ex: { fr: "Le train arrive à neuf heures.", ko: "기차는 9시에 도착해요." },
         },
       ],
     },
@@ -568,6 +586,7 @@ const themes = {
           ko: "일요일",
           pos: "n.m.",
         },
+        { fr: "la fois", ipa: "[fwa]", ko: "번, 회", pos: "n.f.", ex: { fr: "J'ai visité Paris une fois.", ko: "파리에 한 번 가봤어요." } },
       ],
     },
     {
@@ -782,6 +801,7 @@ const themes = {
           pos: "n.m.",
           ex: { fr: "La France est un beau pays.", ko: "프랑스는 아름다운 나라예요." },
         },
+        { fr: "la place", ipa: "[plas]", ko: "광장; 자리", pos: "n.f.", ex: { fr: "Il y a beaucoup de monde sur la place.", ko: "광장에 사람이 많아요." } },
       ],
     },
     {

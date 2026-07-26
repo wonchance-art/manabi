@@ -108,15 +108,6 @@ const themes = {
           pos: "v.",
           ex: { fr: "Le train part à huit heures.", ko: "기차는 8시에 출발해요." },
         },
-        {
-          fr: "arriver",
-          ipa: "[aʁive]",
-          ko: "도착하다",
-          pos: "v.",
-          en: "arrive",
-          etym: "라틴어 ad rīpam(강기슭에 닿다)에서 — 영어 arrive와 같은 뿌리예요.",
-          ex: { fr: "Le train arrive à neuf heures.", ko: "기차는 9시에 도착해요." },
-        },
       ],
     },
     {
@@ -302,15 +293,6 @@ const themes = {
           ko: "아픈, 병든",
           pos: "adj.",
           ex: { fr: "Je suis malade depuis hier.", ko: "어제부터 아파요." },
-        },
-        {
-          fr: "le médecin",
-          ipa: "[medsɛ̃]",
-          ko: "의사",
-          pos: "n.m.",
-          en: "medicine",
-          etym: "영어 medicine, medical과 같은 라틴어 medicus 뿌리 — 단 프랑스어 médecin은 '의사(사람)'예요.",
-          ex: { fr: "Je vais chez le médecin cet après-midi.", ko: "오늘 오후에 의사한테 가요." },
         },
         {
           fr: "le médicament",
@@ -803,7 +785,6 @@ const themes = {
         { fr: "la pizza", ipa: "[pidza]", ko: "피자", pos: "n.f.", ex: { fr: "J'ai mangé une pizza.", ko: "저는 피자를 먹었어요." } },
         { fr: "le cadeau", ipa: "[kado]", ko: "선물", pos: "n.m.", ex: { fr: "C'est un cadeau pour toi.", ko: "너를 위한 선물이야." } },
         { fr: "le piano", ipa: "[pjano]", ko: "피아노", pos: "n.m.", ex: { fr: "J'ai étudié le piano pendant cinq ans.", ko: "피아노를 5년 동안 배웠어요." } },
-        { fr: "la fois", ipa: "[fwa]", ko: "번, 회", pos: "n.f.", ex: { fr: "J'ai visité Paris une fois.", ko: "파리에 한 번 가봤어요." } },
         { fr: "le kilo", ipa: "[kilo]", ko: "킬로(그램)", pos: "n.m.", ex: { fr: "un kilo de pommes", ko: "사과 1킬로" } },
         { fr: "le morceau", ipa: "[mɔʁso]", ko: "조각", pos: "n.m.", ex: { fr: "un morceau de fromage", ko: "치즈 한 조각" } },
         { fr: "le concert", ipa: "[kɔ̃sɛʁ]", ko: "콘서트", pos: "n.m.", ex: { fr: "Il reste quelques places pour le concert.", ko: "콘서트 자리가 몇 개 남아 있어요." } },
@@ -824,7 +805,6 @@ const themes = {
         { fr: "le feu", ipa: "[fø]", ko: "불", pos: "n.m.", ex: { fr: "Attention au feu !", ko: "불 조심해요!" } },
         { fr: "l'hiver", ipa: "[ivɛʁ]", ko: "겨울", pos: "n.m.", ex: { fr: "L'hiver est glacial à Séoul.", ko: "서울의 겨울은 혹독하게 추워요." } },
         { fr: "l'automne", ipa: "[otɔn]", ko: "가을", pos: "n.m.", ex: { fr: "Ce que je préfère en automne, c'est la lumière.", ko: "가을에 제일 좋아하는 건 빛이에요." } },
-        { fr: "la place", ipa: "[plas]", ko: "광장; 자리", pos: "n.f.", ex: { fr: "Il y a beaucoup de monde sur la place.", ko: "광장에 사람이 많아요." } },
       ],
     },
     {
