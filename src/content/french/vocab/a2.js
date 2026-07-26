@@ -865,6 +865,20 @@ const themes = {
         { fr: "jusqu'à", ipa: "[ʒyska]", ko: "~까지", pos: "prép.", ex: { fr: "Le musée est ouvert jusqu'à dix-neuf heures.", ko: "미술관은 저녁 7시까지 열어요." } },
       ],
     },
+    {
+      name: "장면 보강 — 수다와 가게에서",
+      icon: "✨",
+      words: [
+        { fr: "incroyable", ipa: "[ɛ̃kʁwajabl]", ko: "굉장한, 믿기 힘든", pos: "adj.", en: "incredible", ex: { fr: "C'était incroyable !", ko: "정말 굉장했어!" } },
+        { fr: "hésiter", ipa: "[ezite]", ko: "망설이다", pos: "v.", en: "to hesitate", ex: { fr: "N'hésitez pas à demander.", ko: "망설이지 말고 물어보세요." } },
+        { fr: "le beurre", ipa: "[bœʁ]", ko: "버터", pos: "n.m.", en: "butter", ex: { fr: "Un peu de beurre, s'il vous plaît.", ko: "버터 조금 주세요." } },
+        { fr: "déjà", ipa: "[deʒa]", ko: "이미, 벌써", pos: "adv.", en: "already", ex: { fr: "Le train est déjà parti.", ko: "기차가 벌써 떠났어요." } },
+        { fr: "la catastrophe", ipa: "[katastʁɔf]", ko: "재난, 엉망", pos: "n.f.", en: "disaster", ex: { fr: "Quelle catastrophe !", ko: "완전 엉망이야!" } },
+        { fr: "sympa", ipa: "[sɛ̃pa]", ko: "상냥한, 좋은(구어)", pos: "adj.", en: "nice", ex: { fr: "Tes amis sont très sympas.", ko: "네 친구들 정말 좋더라." } },
+        { fr: "rencontrer", ipa: "[ʁɑ̃kɔ̃tʁe]", ko: "만나다", pos: "v.", en: "to meet", ex: { fr: "J'ai rencontré Claire à Paris.", ko: "파리에서 클레르를 만났어요." } },
+        { fr: "le fromager", ipa: "[fʁɔmaʒe]", ko: "치즈 장수", pos: "n.m.", en: "cheesemonger", ex: { fr: "Le fromager m'a conseillé un comté.", ko: "치즈 장수가 콩테를 추천해 줬어요." } },
+      ],
+    },
   ],
 }
 
