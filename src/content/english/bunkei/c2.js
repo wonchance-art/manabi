@@ -59,15 +59,6 @@ const patterns = {
           ch: "b2-01-conditionals-3-mixed",
         },
         {
-          pattern: "if only",
-          conn: "If only + 과거형 (현재 소망) / 과거완료 (과거 한탄) / would (타인 행동)",
-          ko: "~라면 얼마나 좋을까·~했더라면 — wish의 강화형",
-          ex: { en: "If only the data were more complete, we could settle the question.", ko: "데이터가 더 완전하기만 하다면 그 문제를 매듭지을 수 있을 텐데." },
-          ex2: { en: "If only the warnings had not been ignored.", ko: "그 경고들이 무시되지만 않았더라면." },
-          note: "wish보다 감정의 진폭이 크다 — 주절 없이 단독으로도 완결된 한탄이 된다. be동사는 격식에서 **were**(❌ If only it was).",
-          ch: "c1-01-subjunctive-formality",
-        },
-        {
           pattern: "it was not until ... that",
           conn: "It was not until + 시점/절 + that + 평서 어순",
           ko: "~가 되어서야 비로소 …했다 — 분열문 변형",
@@ -99,14 +90,6 @@ const patterns = {
           ex2: { en: "The system failed once; we must prevent it from doing so again.", ko: "그 시스템은 한 번 멈췄다. 다시 그러지 않도록 막아야 한다." },
           note: "학술·격식 전용 — 구어·중립은 **do it / do that**. do this/that은 행동을 '가리키고', do so는 같은 술어를 '되풀이'한다.",
           ch: "c1-03-discourse-register",
-        },
-        {
-          pattern: "one・ones",
-          conn: "one = 단수 가산명사 대용 / ones = 복수 — 형용사 뒤 필수",
-          ko: "앞서 나온 명사의 대용",
-          ex: { en: "The earlier studies were small; the recent ones involve thousands of participants.", ko: "초기 연구들은 규모가 작았지만 최근 것들은 수천 명이 참여한다." },
-          ex2: { en: "We don't need another framework; we need a workable one.", ko: "또 하나의 틀이 필요한 게 아니라 작동하는 틀이 필요하다." },
-          note: "❌ I like red apples and **green** → ✓ green **ones** — 형용사 뒤를 비워 둘 수 없다. 불가산명사는 one 불가(그냥 반복하거나 some으로).",
         },
         {
           pattern: "I think so・I'm afraid not",

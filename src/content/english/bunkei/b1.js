@@ -124,15 +124,6 @@ const patterns = {
           ch: "c1-08-time-perspective",
         },
         {
-          pattern: "would always・would often",
-          conn: "would + 동사원형 (과거의 반복 동작)",
-          ko: "~하곤 했다 (동작만 — 상태 불가)",
-          ex: { en: "Every summer we would visit my grandmother in Busan.", ko: "여름마다 부산의 할머니 댁에 가곤 했어요." },
-          ex2: { en: "He would often stay up all night reading.", ko: "그는 책을 읽느라 밤을 새우곤 했어요." },
-          note: "상태동사에는 would 불가: ❌ I would live in Daegu → ✓ I **used to live** in Daegu.",
-          ch: "c1-08-time-perspective",
-        },
-        {
           pattern: "be used to・get used to + -ing",
           conn: "be/get used to + 명사/-ing",
           ko: "①~에 익숙하다 (상태) ②~에 익숙해지다 (변화 과정)",
@@ -282,7 +273,7 @@ const patterns = {
           ko: "~일지도 모른다",
           ex: { en: "She may be in a meeting right now.", ko: "그녀는 지금 회의 중일지도 몰라요." },
           ex2: { en: "It might not work, but it's worth trying.", ko: "안 될지도 모르지만 해 볼 가치는 있어요." },
-          note: "might가 may보다 살짝 약한 정도 — 큰 차이는 없다. 허락의 May I...?(격식)와 구별.",
+          note: "might가 may보다 살짝 약한 정도 — 큰 차이는 없다. 허락의 May I...?(격식)와 구별. ❌ might **to** rain → ✓ might rain.",
           ch: "b1-06-modals-speculation",
         },
         {
@@ -835,7 +826,7 @@ const patterns = {
           ko: "~의 …가 (인) (사람·사물)",
           ex: { en: "The author whose book became a bestseller gave a lecture.", ko: "책이 베스트셀러가 된 그 작가가 강연을 했어요." },
           ex2: { en: "She's the student whose parents we met yesterday.", ko: "그 애가 어제 우리가 부모님을 만난 그 학생이에요." },
-          note: "❌ the book which author I know → ✓ the book **whose** author I know.",
+          note: "❌ the book which author I know → ✓ the book **whose** author I know. 사물에도 whose를 써요 — the windows of which보다 자연스러워요.",
           ch: "b1-04-relative-clauses",
         },
         {
@@ -1031,7 +1022,7 @@ const patterns = {
           ko: "①~까지는 (끝내야 함) ②~까지 (계속)",
           ex: { en: "You must hand in the report by Friday.", ko: "보고서는 금요일까지 제출해야 해요." },
           ex2: { en: "I'll wait until you come back.", ko: "네가 돌아올 때까지 기다릴게." },
-          note: "완료는 by, 지속은 until: ❌ finish it until Friday → ✓ finish it **by** Friday.",
+          note: "완료는 by, 지속은 until: ❌ finish it until Friday → ✓ finish it **by** Friday. by는 전치사라 절을 못 받아요 — ❌ Wait by I return → ✓ until I return.",
         },
         {
           pattern: "as・like",

@@ -364,6 +364,7 @@ const patterns = {
           ko: "(앞에 말한) 것 / 것들",
           ex: { en: "I have two pens: a red one and a blue one.", ko: "펜이 두 개 있어요. 빨간 것 하나, 파란 것 하나요." },
           ex2: { en: "I don't like these shoes. I like the black ones.", ko: "이 신발은 별로예요. 검은 것들이 좋아요." },
+          note: "형용사 뒤를 비워 둘 수 없어요 — ❌ green → ✓ green **ones**.",
         },
         {
           pattern: "have・has",
