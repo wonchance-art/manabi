@@ -102,7 +102,7 @@ const patterns = {
           ko: "~이 무엇이든, 어떻든",
           ex: { fr: "Quelle que soit votre décision, je la respecterai.", ipa: "[kɛl kə swa vɔtʁ desizjɔ̃ ʒə la ʁɛspɛktəʁe]", ko: "어떤 결정을 내리시든 존중하겠습니다." },
           ex2: { fr: "Quels que soient les obstacles, nous irons jusqu'au bout.", ipa: "[kɛl kə swa lezɔpstakl nuziʁɔ̃ ʒysko bu]", ko: "어떤 장애물이 있어도 우리는 끝까지 갈 거예요." },
-          note: "quel은 뒤 명사와 성수 일치, 표기는 두 단어(quel que) — 한 단어 quoique와 혼동 금지",
+          note: "quel은 뒤 명사와 성수 일치, 표기는 두 단어(quel que) — 한 단어 quoique와 혼동 금지 quoi que와의 혼동도 단골 함정이에요.",
           ch: "b2-01-subjonctif-advanced",
         },
         {
@@ -344,7 +344,7 @@ const patterns = {
           ko: "그런데 (실은)",
           ex: { fr: "Il affirme qu'il était chez lui ; or, plusieurs témoins l'ont vu en ville.", ipa: "[il afiʁm kil etɛ ʃe lɥi ɔʁ plyzjœʁ temwɛ̃ lɔ̃ vy ɑ̃ vil]", ko: "그는 집에 있었다고 주장하지만, 실은 여러 목격자가 시내에서 그를 봤어요." },
           ex2: { fr: "Tout le monde croyait l'affaire close ; or, un nouveau document vient d'apparaître.", ipa: "[tu lə mɔ̃d kʁwajɛ lafɛʁ kloz ɔʁ œ̃ nuvo dɔkymɑ̃ vjɛ̃ dapaʁɛtʁ]", ko: "모두 사건이 끝났다고 믿었는데, 새 문서가 막 나타났어요." },
-          note: "논증의 결정적 전제를 끄는 문어 접속사 — 영어 or(또는)가 아니다",
+          note: "논증의 결정적 전제를 끄는 문어 접속사 — 영어 or(또는)가 아니다 삼단논법의 소전제 표지로 논설·판결문 빈도가 압도적이에요.",
           ch: "b2-04-connecteurs",
         },
         {
@@ -417,7 +417,7 @@ const patterns = {
           ko: "~이 없어서, ~하지 못해서",
           ex: { fr: "Le festival a été annulé faute de moyens.", ipa: "[lə fɛstival a ete anyle fot də mwajɛ̃]", ko: "예산이 없어서 축제가 취소됐어요." },
           ex2: { fr: "Faute d'avoir réservé, nous n'avons pas eu de table.", ipa: "[fot davwaʁ ʁezɛʁve nu navɔ̃ pa y də tabl]", ko: "예약을 안 한 탓에 자리를 못 잡았어요." },
-          note: "= par manque de. faute de mieux(차선책으로)도 관용",
+          note: "= par manque de. faute de mieux(차선책으로)도 관용 « faute de quoi »(그러지 않으면)도 관용이에요.",
           ch: "b2-08-cause-consequence",
         },
         {
@@ -452,7 +452,7 @@ const patterns = {
           ko: "~이라서가 아니라",
           ex: { fr: "Ce n'est pas que je m'ennuie, mais il se fait tard.", ipa: "[sə nɛ pa kə ʒə mɑ̃nɥi mɛ il sə fɛ taʁ]", ko: "지루해서가 아니라 시간이 늦어서 그래요." },
           ex2: { fr: "Ce n'est pas qu'il soit paresseux, c'est qu'il est débordé.", ipa: "[sə nɛ pa kil swa paʁesø sɛ kil ɛ debɔʁde]", ko: "그가 게을러서가 아니라 일이 너무 많아서예요." },
-          note: "que절은 접속법. 격식 문어형은 « non que + 접속법 »",
+          note: "que절은 접속법. 격식 문어형은 « non que + 접속법 » 구어 축약형은 « c'est pas que…, mais »예요.",
           ch: "b2-08-cause-consequence",
         },
       ],
@@ -645,7 +645,7 @@ const patterns = {
           ko: "허사 ne (부정 의미 없음)",
           ex: { fr: "C'est plus compliqué que je ne le pensais.", ipa: "[sɛ ply kɔ̃plike kə ʒə nə lə pɑ̃sɛ]", ko: "생각했던 것보다 복잡하네요." },
           ex2: { fr: "Partons avant que la nuit ne tombe.", ipa: "[paʁtɔ̃ avɑ̃ kə la nɥi nə tɔ̃b]", ko: "어두워지기 전에 출발합시다." },
-          note: "pas가 없으면 부정이 아니다 — 격식·문어의 표지로, 구어에서는 대개 생략",
+          note: "pas가 없으면 부정이 아니다 — 격식·문어의 표지로, 구어에서는 대개 생략 뜻은 긍정 — '악화될까'이지 '악화되지 않을까'가 아니에요.",
           ch: "b2-09-negation-advanced",
         },
         {
@@ -663,7 +663,7 @@ const patterns = {
           ko: "~하지 않는다 (고풍·문어)",
           ex: { fr: "Je ne le crains point.", ipa: "[ʒə nə lə kʁɛ̃ pwɛ̃]", ko: "나는 그것이 조금도 두렵지 않다." },
           ex2: { fr: "Point n'est besoin d'en dire plus.", ipa: "[pwɛ̃ nɛ bəzwɛ̃ dɑ̃ diʁ ply]", ko: "더 말할 필요도 없다." },
-          note: "고풍·문학 문체 — 일상에서는 ne … pas. 익살·강조로 일부러 쓰기도 한다",
+          note: "고풍·문학 문체 — 일상에서는 ne … pas. 익살·강조로 일부러 쓰기도 한다 « point n'est besoin de »는 굳은 정형구예요.",
           ch: "b2-09-negation-advanced",
         },
         {
@@ -672,7 +672,7 @@ const patterns = {
           ko: "단지 ~만이라도",
           ex: { fr: "Appelle-la, ne serait-ce que cinq minutes.", ipa: "[apɛl la nə səʁɛs kə sɛ̃k minyt]", ko: "5분만이라도 그녀에게 전화해 봐." },
           ex2: { fr: "Ne serait-ce que par politesse, il aurait dû répondre.", ipa: "[nə səʁɛs kə paʁ pɔlitɛs il oʁɛ dy ʁepɔ̃dʁ]", ko: "예의상으로라도 그는 답을 했어야죠." },
-          note: "격식 — 구어에서는 « même juste cinq minutes »",
+          note: "격식 — 구어에서는 « même juste cinq minutes » 더 문어적으로는 « ne fût-ce que »(C2)까지 올라가요.",
           ch: "b2-09-negation-advanced",
         },
         {
@@ -716,14 +716,6 @@ const patterns = {
           ex2: { fr: "Le délai étant dépassé, aucune réclamation ne sera acceptée.", ipa: "[lə delɛ etɑ̃ depase okyn ʁeklamasjɔ̃ nə səʁa aksɛpte]", ko: "기한이 지났으므로 어떤 이의 제기도 받아들여지지 않습니다." },
           note: "주어가 다른 절대분사구문(le délai étant…)은 문어 전용",
           ch: "b2-03-participe-present",
-        },
-        {
-          pattern: "une fois + participe passé",
-          conn: "une fois + (명사) + 과거분사",
-          ko: "일단 ~되면, ~이 끝나자마자",
-          ex: { fr: "Une fois le contrat signé, vous recevrez les clés.", ipa: "[yn fwa lə kɔ̃tʁa siɲe vu ʁəsəvʁe le kle]", ko: "계약서에 서명만 되면 열쇠를 받으실 거예요." },
-          ex2: { fr: "Une fois les enfants couchés, la maison redevient calme.", ipa: "[yn fwa lezɑ̃fɑ̃ kuʃe la mɛzɔ̃ ʁədəvjɛ̃ kalm]", ko: "아이들이 잠들고 나면 집이 다시 조용해져요." },
-          ch: "c1-04-participiales",
         },
         {
           pattern: "sachant que",
@@ -914,6 +906,7 @@ const patterns = {
           ex: { fr: "À défaut de champagne, on trinquera au cidre.", ipa: "[a defo də ʃɑ̃paɲ ɔ̃ tʁɛ̃kəʁa o sidʁ]", ko: "샴페인이 없으면 시드르로 건배하죠 뭐." },
           ex2: { fr: "À défaut de pouvoir tout lire, lisez au moins l'introduction.", ipa: "[a defo də puvwaʁ tu liʁ lize o mwɛ̃ lɛ̃tʁɔdyksjɔ̃]", ko: "다 읽을 수 없다면 적어도 서론은 읽으세요." },
           ch: "b2-08-cause-consequence",
+          note: "faute de는 '결여 → 결과', à défaut de는 '결여 → 대안'의 뉘앙스예요.",
         },
         {
           pattern: "avant + N・après + N",
@@ -970,7 +963,7 @@ const patterns = {
           ko: "정말 ~하다면야 (회의적 가정)",
           ex: { fr: "Le plan fonctionnera, si tant est que chacun respecte les délais.", ipa: "[lə plɑ̃ fɔ̃ksjɔnəʁa si tɑ̃tɛ kə ʃakœ̃ ʁɛspɛkt le delɛ]", ko: "모두가 기한을 지킨다면야 계획은 굴러갈 거예요." },
           ex2: { fr: "Il viendra, si tant est qu'il ait vraiment envie de nous voir.", ipa: "[il vjɛ̃dʁa si tɑ̃tɛ kil ɛ vʁɛmɑ̃ ɑ̃vi də nu vwaʁ]", ko: "정말 우리를 보고 싶은 마음이 있다면야 오겠죠." },
-          note: "회의적 뉘앙스의 문어 — 구어에서는 « si vraiment … »",
+          note: "회의적 뉘앙스의 문어 — 구어에서는 « si vraiment … » « si jamais / à supposer que »로도 풀 수 있어요.",
           ch: "b2-02-hypothese-si",
         },
         {
@@ -1121,6 +1114,7 @@ const patterns = {
           ex: { fr: "On ignore qui a pris la décision ; toujours est-il que personne n'a été consulté.", ipa: "[ɔ̃niɲɔʁ ki a pʁi la desizjɔ̃ tuʒuʁzɛtil kə pɛʁsɔn na ete kɔ̃sylte]", ko: "누가 결정했는지는 몰라도, 분명한 건 아무도 의견을 묻지 않았다는 거예요." },
           ex2: { fr: "Peut-être exagère-t-il ; toujours est-il que le danger existe.", ipa: "[pøtɛtʁ ɛɡzaʒɛʁtil tuʒuʁzɛtil kə lə dɑ̃ʒe ɛɡzist]", ko: "그가 과장하는 것일 수도 있지만, 어쨌든 위험은 존재해요." },
           ch: "b2-10-impersonal-formal",
+          note: "추측·논란을 접고 확실한 사실로 복귀하는 표지 — 구어 대응은 « en tout cas ».",
         },
         {
           pattern: "reste que・il n'empêche que",

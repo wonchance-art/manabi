@@ -512,7 +512,7 @@ const patterns = {
           ko: "~받다, ~당하다",
           ex: { fr: "Je me suis fait couper les cheveux hier.", ipa: "[ʒə mə sɥi fɛ kupe le ʃəvø jɛʁ]", ko: "어제 머리 잘랐어요." },
           ex2: { fr: "Il s'est fait voler son portefeuille dans le métro.", ipa: "[il sɛ fɛ vɔle sɔ̃ pɔʁtəfœj dɑ̃ lə metʁo]", ko: "그는 지하철에서 지갑을 소매치기당했어요." },
-          note: "'~당하다/받다'의 구어 단골 — 딱딱한 수동태보다 훨씬 빈번",
+          note: "'~당하다/받다'의 구어 단골 — 딱딱한 수동태보다 훨씬 빈번 fait는 항상 불변 — se voir보다 구어적이고 자초의 뉘앙스가 섞일 수 있어요.",
           ch: "b1-06-passive",
         },
         {
@@ -615,6 +615,7 @@ const patterns = {
           ex: { fr: "Elle dit qu'elle arrivera vers huit heures.", ipa: "[ɛl di kɛl aʁivəʁa vɛʁ ɥitœʁ]", ko: "그녀는 8시쯤 도착할 거라고 해요." },
           ex2: { fr: "Il m'a dit qu'il ne pouvait pas venir ce soir.", ipa: "[il ma di kil nə puvɛ pa vəniʁ sə swaʁ]", ko: "그는 오늘 저녁에 못 온다고 했어요." },
           ch: "b1-07-discours-indirect",
+          note: "주절이 과거면 que 뒤도 과거 쪽으로 끌려가요(시제 일치).",
         },
         {
           pattern: "Il a dit qu'il était …",
@@ -631,7 +632,7 @@ const patterns = {
           ko: "~인지 묻다",
           ex: { fr: "Il m'a demandé si j'étais libre samedi.", ipa: "[il ma dəmɑ̃de si ʒetɛ libʁ samdi]", ko: "그가 토요일에 시간 있는지 물었어요." },
           ex2: { fr: "Je lui ai demandé si elle n'avait besoin de rien.", ipa: "[ʒə lɥi e dəmɑ̃de si ɛl navɛ bəzwɛ̃ də ʁjɛ̃]", ko: "그녀에게 필요한 건 없는지 물어봤어요." },
-          note: "간접 의문의 si는 '~인지' — 가정의 si와 혼동하지 않기",
+          note: "간접 의문의 si는 '~인지' — 가정의 si와 혼동하지 않기 est-ce que는 간접 의문에 못 들어가요 — si로 바꿔요.",
           ch: "b1-07-discours-indirect",
         },
         {
@@ -682,15 +683,6 @@ const patterns = {
       name: "강조와 감탄",
       icon: "✨",
       items: [
-        {
-          pattern: "c'est … qui・c'est … que",
-          conn: "c'est + 강조어 + qui(주어) / que(목적어·부사구)",
-          ko: "~한 것은 바로 …이다 (강조 구문)",
-          ex: { fr: "C'est ma sœur qui m'a appris à conduire.", ipa: "[sɛ ma sœʁ ki ma apʁi a kɔ̃dɥiʁ]", ko: "운전을 가르쳐 준 건 바로 우리 언니예요." },
-          ex2: { fr: "Ce n'est pas l'argent qui me motive.", ipa: "[sə nɛ pa laʁʒɑ̃ ki mə mɔtiv]", ko: "저를 움직이는 건 돈이 아니에요." },
-          note: "프랑스어는 억양 강조가 약해 구문으로 강조한다 — 한국어 '~한 건 바로 …'",
-          ch: "b2-06-mise-en-relief",
-        },
         {
           pattern: "ce qui …, c'est …",
           conn: "Ce qui/Ce que + 절, + c'est + 강조어",
@@ -981,15 +973,6 @@ const patterns = {
           ex2: { fr: "D'après moi, ce n'est pas une bonne idée de partir si tard.", ipa: "[dapʁɛ mwa sə nɛ pa yn bɔn ide də paʁtiʁ si taʁ]", ko: "내가 보기엔 그렇게 늦게 출발하는 건 좋은 생각이 아니야." },
         },
         {
-          pattern: "je trouve que",
-          conn: "je trouve que + 직설법 (부정이면 접속법 경향)",
-          ko: "~라고 생각하다 (인상·평가)",
-          ex: { fr: "Je trouve que tu as bien fait de refuser.", ipa: "[ʒə tʁuv kə ty a bjɛ̃ fɛ də ʁəfyze]", ko: "네가 거절하길 잘했다고 생각해." },
-          ex2: { fr: "Je ne trouve pas que ce soit si grave.", ipa: "[ʒə nə tʁuv pa kə sə swa si ɡʁav]", ko: "그게 그렇게 심각하다고는 생각 안 해." },
-          note: "직접 보고 느낀 평가 — 부정문이면 que절에 접속법이 자연스럽다",
-          ch: "b2-01-subjonctif-advanced",
-        },
-        {
           pattern: "je pense que・je crois que",
           conn: "penser/croire que + 직설법 (긍정)",
           ko: "~라고 생각하다, 믿다",
@@ -1051,15 +1034,6 @@ const patterns = {
       name: "부정과 제한",
       icon: "🚫",
       items: [
-        {
-          pattern: "ne … que",
-          conn: "ne + 동사 + que + 제한 대상",
-          ko: "~밖에 없다, 오직 ~만",
-          ex: { fr: "Je n'ai que dix euros sur moi.", ipa: "[ʒə nɛ kə dizøʁo syʁ mwa]", ko: "지금 가진 게 10유로밖에 없어요." },
-          ex2: { fr: "Elle ne pense qu'à son travail.", ipa: "[ɛl nə pɑ̃s ka sɔ̃ tʁavaj]", ko: "그녀는 일 생각밖에 안 해요." },
-          note: "부정이 아니라 제한(~만) — pas와 함께 쓰지 않는다",
-          ch: "b2-09-negation-advanced",
-        },
         {
           pattern: "ne … aucun",
           conn: "ne + 동사 + aucun(e) + 명사 (단수)",
