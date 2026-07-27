@@ -138,7 +138,7 @@ const patterns = {
           ko: "~라면/~했더라면 얼마나 좋을까",
           ex: { en: "If only I had listened to your advice.", ko: "네 조언을 들었더라면 얼마나 좋았을까." },
           ex2: { en: "If only he wouldn't interrupt all the time.", ko: "그가 말 좀 그만 끊었으면 정말 좋겠어." },
-          note: "❌ If only I can pass the exam → ✓ If only I **could** pass (wish와 같은 시제 체계).",
+          note: "❌ If only I can pass the exam → ✓ If only I **could** pass (wish와 같은 시제 체계). 주절 없이 단독으로도 한탄이 완결돼요 — 격식 be는 were.",
           ch: "b2-01-conditionals-3-mixed",
         },
         {
@@ -348,15 +348,6 @@ const patterns = {
           ex2: { en: "He has been able to work from home since 2020.", ko: "그는 2020년부터 재택근무를 할 수 있었어요." },
           note: "❌ He can been working → ✓ has **been able to** work (can은 완료·미래형이 없다).",
           ch: "a2-04-modals-basic",
-        },
-        {
-          pattern: "had better",
-          conn: "had better (not) + 동사원형",
-          ko: "~하는 게 좋을 거야 (경고 섞인 강한 조언)",
-          ex: { en: "You'd better leave now, or you'll miss the train.", ko: "지금 나서는 게 좋을 거야. 안 그러면 기차 놓쳐." },
-          ex2: { en: "You'd better not be late again.", ko: "다시는 늦지 않는 게 좋을걸." },
-          note: "❌ You had better to go → ✓ had better **go**. should보다 강하고 직설적 — 윗사람에게는 피한다.",
-          ch: "c1-03-discourse-register",
         },
         {
           pattern: "may as well・might as well",
@@ -594,15 +585,6 @@ const patterns = {
           note: "point·case·situation·stage 뒤의 where — in which의 자연스러운 대체.",
           ch: "b1-04-relative-clauses",
         },
-        {
-          pattern: "whose (for things)",
-          conn: "사물 선행사 + whose (= of which)",
-          ko: "~의 …가 (인) (사물에도)",
-          ex: { en: "It's a company whose products are sold worldwide.", ko: "제품이 전 세계에서 팔리는 회사예요." },
-          ex2: { en: "We stayed in a hotel whose windows overlooked the sea.", ko: "창문에서 바다가 내려다보이는 호텔에 묵었어요." },
-          note: "사물에도 whose 가능 — the windows of which보다 자연스럽다.",
-          ch: "b1-04-relative-clauses",
-        },
       ],
     },
     {
@@ -664,7 +646,7 @@ const patterns = {
           ko: "~할수록 더 …하다",
           ex: { en: "The more you practice, the easier it gets.", ko: "연습할수록 더 쉬워져요." },
           ex2: { en: "The longer you wait, the harder it becomes.", ko: "오래 기다릴수록 더 어려워져요." },
-          note: "❌ More you study, better your results → ✓ **The** more ..., **the** better ... (the 생략 금지).",
+          note: "❌ More you study, better your results → ✓ **The** more ..., **the** better ... (the 생략 금지). be 동사는 생략 가능 — The sooner, the better.",
           ch: "a2-03-comparatives",
         },
         {
@@ -768,7 +750,7 @@ const patterns = {
           ko: "그럼에도 불구하고 (격식)",
           ex: { en: "The evidence was weak; nevertheless, the theory gained support.", ko: "증거는 약했지만, 그럼에도 그 이론은 지지를 얻었어요." },
           ex2: { en: "It's a small market. Nonetheless, the potential is real.", ko: "작은 시장이에요. 그럼에도 잠재력은 분명합니다." },
-          note: "구어 대응은 still・even so.",
+          note: "구어 대응은 still・even so. 부사라 쉼표 하나로 두 문장을 잇지 못해요.",
           ch: "b2-06-linking-devices",
         },
         {
@@ -855,7 +837,7 @@ const patterns = {
           ko: "~중 아무도/아무것도 …않다",
           ex: { en: "None of the participants was told the real purpose.", ko: "참가자 중 누구도 진짜 목적을 듣지 못했어요." },
           ex2: { en: "None of this makes sense.", ko: "이건 하나도 말이 안 돼요." },
-          note: "단·복수 모두 통용 — 격식체는 단수 선호 (None of them **was**...).",
+          note: "단·복수 모두 통용 — 격식체는 단수 선호 (None of them **was**...). 복수 명사 뒤 복수 동사가 현대 표준이에요.",
           ch: "b2-03-articles-advanced",
         },
         {
