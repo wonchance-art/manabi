@@ -167,6 +167,7 @@ const patterns = {
           ko: "~한 까닭은 …하기 때문이다",
           ex: { zh: "他之所以失败，是因为太骄傲了。", pinyin: "tā zhī suǒyǐ shībài, shì yīnwèi tài jiāo'ào le", ko: "그가 실패한 까닭은 너무 자만했기 때문이에요." },
           ex2: { zh: "我之所以告诉你，是希望你能理解。", pinyin: "wǒ zhī suǒyǐ gàosu nǐ, shì xīwàng nǐ néng lǐjiě", ko: "제가 말씀드리는 까닭은 이해해 주셨으면 해서예요." },
+          note: "결과를 먼저 말하고 원인을 뒤에 강조하는 인과 역전 구문이에요.",
         },
         {
           pattern: "正是・就是",
@@ -234,7 +235,7 @@ const patterns = {
           ko: "어찌 ~하겠는가 (반어 강조)",
           ex: { zh: "我何尝不想去呢？", pinyin: "wǒ hécháng bù xiǎng qù ne", ko: "제가 어찌 가고 싶지 않겠어요?" },
           ex2: { zh: "这岂不是自相矛盾？", pinyin: "zhè qǐ bú shì zì xiāng máodùn", ko: "이건 자가당착이 아니고 무엇이겠어요?" },
-          note: "何尝·岂는 반어로 강한 긍정·부정을 표현 — 서면적",
+          note: "何尝·岂는 반어로 강한 긍정·부정을 표현 — 서면적 一朝一夕 같은 성어와 잘 어울려요.",
         },
       ],
     },
@@ -364,15 +365,6 @@ const patterns = {
           note: "要么…要么…는 둘 중 하나를 고르는 구어 선택 구문",
         },
         {
-          pattern: "不是…，而是…",
-          pinyin: "bùshì…érshì",
-          ch: "h3-08-complex-sentence",
-          conn: "不是 + A，而是 + B (정정·강조)",
-          ko: "~이 아니라 …이다",
-          ex: { zh: "问题不是能力，而是态度。", pinyin: "wèntí bú shì nénglì, ér shì tàidu", ko: "문제는 능력이 아니라 태도예요." },
-          ex2: { zh: "他需要的不是同情，而是理解。", pinyin: "tā xūyào de bú shì tóngqíng, ér shì lǐjiě", ko: "그에게 필요한 건 동정이 아니라 이해예요." },
-        },
-        {
           pattern: "一方面…，另一方面…",
           pinyin: "yìfāngmiàn…lìng yìfāngmiàn",
           ch: "h3-08-complex-sentence",
@@ -414,15 +406,6 @@ const patterns = {
           ex: { zh: "这种字很好记。", pinyin: "zhè zhǒng zì hěn hǎo jì", ko: "이런 글자는 외우기 쉬워요." },
           ex2: { zh: "这个问题很难回答。", pinyin: "zhège wèntí hěn nán huídá", ko: "이 질문은 대답하기 어려워요." },
           note: "好+동사(쉽다)·难+동사(어렵다) — 好吃·好看처럼 굳어진 표현도 많다",
-        },
-        {
-          pattern: "동사 + 来 + 동사 + 去",
-          pinyin: "lái…qù",
-          ch: "h3-04-direction-complement",
-          conn: "동사 + 来 + 동사 + 去 (반복·번복)",
-          ko: "이리저리·여러 번 ~하다",
-          ex: { zh: "他们讨论来讨论去也没有结果。", pinyin: "tāmen tǎolùn lái tǎolùn qù yě méiyǒu jiéguǒ", ko: "그들은 이리저리 토론했지만 결론이 안 났어요." },
-          ex2: { zh: "这件事说来话长。", pinyin: "zhè jiàn shì shuō lái huà cháng", ko: "이 일은 말하자면 길어요." },
         },
         {
           pattern: "형용사 + 得不得了",

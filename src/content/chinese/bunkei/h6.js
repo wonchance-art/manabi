@@ -202,16 +202,6 @@ const patterns = {
           ex2: { zh: "成功的秘诀不外乎勤奋和坚持。", pinyin: "chénggōng de mìjué bùwàihū qínfèn hé jiānchí", ko: "성공의 비결은 결국 근면과 끈기를 벗어나지 않아요." },
           note: "不外乎는 '결국 ~의 범위를 넘지 않는다'는 서면 한정",
         },
-        {
-          pattern: "何尝・岂",
-          pinyin: "hécháng・qǐ",
-          ch: "h4-07-rhetorical",
-          conn: "何尝/岂 + 不 + 술어 (반어)",
-          ko: "어찌 ~하지 않겠는가 (반어 강조)",
-          ex: { zh: "我何尝不知道其中的危险？", pinyin: "wǒ hécháng bù zhīdào qízhōng de wēixiǎn", ko: "제가 그 위험을 어찌 모르겠어요?" },
-          ex2: { zh: "这岂是一朝一夕能做到的？", pinyin: "zhè qǐ shì yì zhāo yì xī néng zuòdào de", ko: "이게 어찌 하루아침에 이룰 수 있는 일이겠어요?" },
-          note: "何尝·岂는 반어로 강한 단정 — 一朝一夕(하루아침) 같은 성어와 잘 어울린다",
-        },
       ],
     },
     {
