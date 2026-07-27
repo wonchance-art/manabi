@@ -47,6 +47,7 @@ const patterns = {
           ko: "~을 ~로 …하다",
           ex: { zh: "请把这句话翻译成中文。", pinyin: "qǐng bǎ zhè jù huà fānyì chéng Zhōngwén", ko: "이 문장을 중국어로 번역해 주세요." },
           ex2: { zh: "他把钱换成了人民币。", pinyin: "tā bǎ qián huàn chéng le rénmínbì", ko: "그는 돈을 인민폐로 바꿨어요." },
+          note: "把…翻译成/改成처럼 '~로 바꾸다'에는 把구문이 거의 필수예요.",
         },
         {
           pattern: "把 + 목적어 + 동사 + 一下/동사중첩",
@@ -430,6 +431,7 @@ const patterns = {
           ko: "점점 ~해지다",
           ex: { zh: "天气越来越冷了。", pinyin: "tiānqì yuèláiyuè lěng le", ko: "날씨가 점점 추워져요." },
           ex2: { zh: "他的汉语越来越好。", pinyin: "tā de Hànyǔ yuèláiyuè hǎo", ko: "그의 중국어가 점점 좋아져요." },
+          note: "끝에 了를 붙여 변화를 나타내요 — 越…越 계열 심화는 h4-06 챕터로.",
         },
         {
           pattern: "有点儿 vs 一点儿",
@@ -568,6 +570,7 @@ const patterns = {
           ko: "하마터면 ~할 뻔하다",
           ex: { zh: "我差点儿迟到了。", pinyin: "wǒ chàdiǎnr chídào le", ko: "하마터면 지각할 뻔했어요." },
           ex2: { zh: "他差点儿忘了。", pinyin: "tā chàdiǎnr wàng le", ko: "그는 하마터면 잊을 뻔했어요." },
+          note: "差点儿没가 있어도 같은 뜻이에요 (差点儿没赶上 = 가까스로 탔다).",
         },
         {
           pattern: "原来 …",
@@ -629,15 +632,6 @@ const patterns = {
           ex2: { zh: "下了课我们一起走。", pinyin: "xià le kè wǒmen yìqǐ zǒu", ko: "수업 끝나면 우리 같이 가요." },
         },
         {
-          pattern: "连 … 都/也 …",
-          pinyin: "lián…dōu・yě",
-          ch: "h4-04-lian-dou",
-          conn: "连 + 강조 대상 + 都/也 + 술어 — ~조차",
-          ko: "~조차 …하다",
-          ex: { zh: "他连一句话也没说。", pinyin: "tā lián yí jù huà yě méi shuō", ko: "그는 한 마디조차 안 했어요." },
-          ex2: { zh: "我连他的名字都不知道。", pinyin: "wǒ lián tā de míngzi dōu bù zhīdào", ko: "저는 그의 이름조차 몰라요." },
-        },
-        {
           pattern: "把 + … + 동사 + 결과",
           pinyin: "bǎ",
           ch: "h3-01-ba",
@@ -654,6 +648,7 @@ const patterns = {
           ko: "~하면서 …하다",
           ex: { zh: "她听着音乐做饭。", pinyin: "tā tīng zhe yīnyuè zuò fàn", ko: "그녀는 음악을 들으면서 요리해요." },
           ex2: { zh: "他拿着手机走路。", pinyin: "tā ná zhe shǒujī zǒulù", ko: "그는 휴대폰을 든 채로 걸어요." },
+          note: "앞 동작이 뒤 동작의 방식·자세가 돼요 (V1着 + V2).",
         },
         {
           pattern: "동사 + 来 + 동사 + 去",
@@ -693,6 +688,7 @@ const patterns = {
           ko: "~인 것 같다",
           ex: { zh: "他好像生病了。", pinyin: "tā hǎoxiàng shēngbìng le", ko: "그는 아픈 것 같아요." },
           ex2: { zh: "好像要下雨。", pinyin: "hǎoxiàng yào xiàyǔ", ko: "비가 올 것 같아요." },
+          note: "끝에 似的를 붙이면 비유가 강해져요.",
         },
         {
           pattern: "可能・也许 + 술어",
@@ -711,14 +707,6 @@ const patterns = {
           ko: "당연히 / 반드시 ~",
           ex: { zh: "我当然知道。", pinyin: "wǒ dāngrán zhīdào", ko: "당연히 알죠." },
           ex2: { zh: "我一定会去。", pinyin: "wǒ yídìng huì qù", ko: "저는 꼭 갈게요." },
-        },
-        {
-          pattern: "其实 …",
-          pinyin: "qíshí",
-          conn: "其实 + 절 — 사실은",
-          ko: "사실은 ~",
-          ex: { zh: "其实我不太喜欢。", pinyin: "qíshí wǒ bú tài xǐhuan", ko: "사실 저는 별로 안 좋아해요." },
-          ex2: { zh: "其实这件事很简单。", pinyin: "qíshí zhè jiàn shì hěn jiǎndān", ko: "사실 이 일은 간단해요." },
         },
         {
           pattern: "… 是吗？・… 对吗？",
@@ -745,6 +733,7 @@ const patterns = {
           ko: "아마 ~일 것 같다 (걱정)",
           ex: { zh: "恐怕来不及了。", pinyin: "kǒngpà láibují le", ko: "아마 시간이 안 될 것 같아요." },
           ex2: { zh: "他恐怕不会同意。", pinyin: "tā kǒngpà bú huì tóngyì", ko: "그는 아마 동의하지 않을 거예요." },
+          note: "안 좋은 일에 대한 추측 전용 — 중립 추측 也许·可能과 달라요.",
         },
         {
           pattern: "看来・听说 …",
@@ -824,15 +813,6 @@ const patterns = {
           ko: "~에 ~이 생기다/오다",
           ex: { zh: "前面来了一辆车。", pinyin: "qiánmiàn lái le yí liàng chē", ko: "앞쪽에서 차 한 대가 왔어요." },
           ex2: { zh: "我们公司来了一个新同事。", pinyin: "wǒmen gōngsī lái le yí ge xīn tóngshì", ko: "우리 회사에 새 동료가 왔어요." },
-        },
-        {
-          pattern: "随着 …",
-          pinyin: "suí zhe",
-          ch: "h5-01-shumianyu",
-          conn: "随着 + 변화 + 주절 — ~에 따라",
-          ko: "~함에 따라 ~",
-          ex: { zh: "随着时间的变化，城市越来越大。", pinyin: "suí zhe shíjiān de biànhuà, chéngshì yuèláiyuè dà", ko: "시간이 지남에 따라 도시가 점점 커져요." },
-          ex2: { zh: "随着年龄增长，他变得更成熟。", pinyin: "suí zhe niánlíng zēngzhǎng, tā biàn de gèng chéngshú", ko: "나이가 들면서 그는 더 성숙해졌어요." },
         },
       ],
     },
@@ -959,15 +939,6 @@ const patterns = {
           ex: { zh: "这件事我知道。", pinyin: "zhè jiàn shì wǒ zhīdào", ko: "이 일은 제가 알아요." },
           ex2: { zh: "汉语，我学了三年。", pinyin: "Hànyǔ, wǒ xué le sān nián", ko: "중국어는 3년 배웠어요." },
           note: "강조하고 싶은 화제를 문장 맨 앞에 내세우는 어순이에요.",
-        },
-        {
-          pattern: "对 … 来说",
-          pinyin: "duì…láishuō",
-          ch: "h4-08-prepositional-frames",
-          conn: "对 + 사람 + 来说 — ~에게는",
-          ko: "~에게 있어서는",
-          ex: { zh: "对我来说，健康最重要。", pinyin: "duì wǒ lái shuō, jiànkāng zuì zhòngyào", ko: "저에게는 건강이 가장 중요해요." },
-          ex2: { zh: "这对他来说很难。", pinyin: "zhè duì tā lái shuō hěn nán", ko: "이건 그에게는 어려워요." },
         },
         {
           pattern: "把 … 当作 …",

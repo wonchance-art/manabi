@@ -28,7 +28,7 @@ const patterns = {
           ko: "~한 적이 있다 (경험)",
           ex: { zh: "我去过北京。", pinyin: "wǒ qù guo Běijīng", ko: "저는 베이징에 가 본 적 있어요." },
           ex2: { zh: "我没吃过羊肉。", pinyin: "wǒ méi chī guo yángròu", ko: "저는 양고기를 먹어 본 적 없어요." },
-          note: "了는 완료, 过는 '겪어본 경험'. 부정은 没 + V + 过 (过를 남겨요).",
+          note: "了는 완료, 过는 '겪어본 경험'. 부정은 没 + V + 过 (过를 남겨요). '한 번도'는 从来没…过예요.",
         },
         {
           pattern: "동사 + 了 + 수량 + 목적어",
@@ -48,16 +48,6 @@ const patterns = {
           ex: { zh: "门开着。", pinyin: "mén kāi zhe", ko: "문이 열려 있어요." },
           ex2: { zh: "他穿着一件红衣服。", pinyin: "tā chuān zhe yí jiàn hóng yīfu", ko: "그는 빨간 옷을 입고 있어요." },
           note: "着는 동작이 끝난 뒤의 '상태 지속'. 진행의 在와 구별해요.",
-        },
-        {
-          pattern: "동사 + 着 + 동사",
-          pinyin: "zhe",
-          ch: "h3-10-existential",
-          conn: "동사1 + 着 + 동사2 — 부수 동작",
-          ko: "~한 채로 …하다",
-          ex: { zh: "他笑着说。", pinyin: "tā xiào zhe shuō", ko: "그는 웃으면서 말했어요." },
-          ex2: { zh: "我站着吃饭。", pinyin: "wǒ zhàn zhe chī fàn", ko: "저는 선 채로 밥을 먹어요." },
-          note: "앞 동작이 뒤 동작의 '방식·자세'가 돼요 (V1着 + V2).",
         },
         {
           pattern: "快…了",
@@ -244,7 +234,7 @@ const patterns = {
           ex2: { zh: "他比我大得多。", pinyin: "tā bǐ wǒ dà de duō", ko: "그는 저보다 훨씬 나이가 많아요." },
         },
         {
-          pattern: "A 没有 B + 형용사",
+          pattern: "A 没有 B (那么) + 형용사",
           pinyin: "méiyǒu",
           ch: "h2-05-comparison-bi",
           conn: "A + 没有 + B + 형용사 — 비교의 부정",
@@ -358,6 +348,7 @@ const patterns = {
           ko: "~을 위해 …하다",
           ex: { zh: "为了考试，我每天学习。", pinyin: "wèile kǎoshì, wǒ měi tiān xuéxí", ko: "시험을 위해 저는 매일 공부해요." },
           ex2: { zh: "为了身体，他每天跑步。", pinyin: "wèile shēntǐ, tā měi tiān pǎobù", ko: "건강을 위해 그는 매일 달리기를 해요." },
+          note: "为了(목적)는 보통 문장 맨 앞 — 원인의 因为와 구별해요.",
         },
         {
           pattern: "关于…",
@@ -491,6 +482,7 @@ const patterns = {
           ko: "~하자마자 ~하다",
           ex: { zh: "我一回家就睡觉。", pinyin: "wǒ yì huí jiā jiù shuìjiào", ko: "저는 집에 오자마자 자요." },
           ex2: { zh: "他一看就懂了。", pinyin: "tā yí kàn jiù dǒng le", ko: "그는 보자마자 이해했어요." },
+          note: "'~하기만 하면 늘'(습관)의 뜻도 있어요.",
         },
         {
           pattern: "还是・或者",
@@ -654,16 +646,6 @@ const patterns = {
           ex2: { zh: "他已经走了。", pinyin: "tā yǐjīng zǒu le", ko: "그는 이미 갔어요." },
         },
         {
-          pattern: "真 + 형용사",
-          pinyin: "zhēn",
-          ch: "h2-11-degree-mood-adverbs",
-          conn: "真 + 형용사 — 진심 어린 감탄",
-          ko: "정말 ~하다",
-          ex: { zh: "今天真冷！", pinyin: "jīntiān zhēn lěng", ko: "오늘 정말 춥다!" },
-          ex2: { zh: "这个菜真好吃。", pinyin: "zhège cài zhēn hǎochī", ko: "이 요리 정말 맛있어요." },
-          note: "真은 감탄·주관적, 很은 무난한 술어 표시로 어감이 달라요.",
-        },
-        {
           pattern: "当然…",
           pinyin: "dāngrán",
           ch: "h2-11-degree-mood-adverbs",
@@ -689,6 +671,7 @@ const patterns = {
           ko: "~하기도 하고 ~하기도 하다",
           ex: { zh: "这个又便宜又好。", pinyin: "zhège yòu piányi yòu hǎo", ko: "이건 싸기도 하고 좋기도 해요." },
           ex2: { zh: "他又累又饿。", pinyin: "tā yòu lèi yòu è", ko: "그는 피곤하기도 하고 배고프기도 해요." },
+          note: "既…又…는 더 서면적이에요.",
         },
         {
           pattern: "有点儿 + 형용사",
