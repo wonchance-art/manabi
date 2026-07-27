@@ -157,6 +157,34 @@ export async function runCurriculumLint() {
     for (const slug of edges.keys()) if ((state.get(slug) ?? 0) === 0) dfs(slug);
   }
 
+  // (e′) bunkei 레벨 간 중복 키 감시 (report-only — 정리 라운드 재발 탐지)
+  // 기준선(2026-07-30 정리 완료 시점 실측): ja 31(정당 재도입 keeper — 경어·ながら 등)·zh 1·en 2·fr 0.
+  // 수치가 기준선을 넘어 늘면 신규 중복 유입 신호다. 팩-챕터 레벨 일치 검사는 도입하지 않는다
+  // — ch 교차 링크는 설계상 일반적(전 트랙 35~40%)임이 실측됨.
+  try {
+    const norm = (s) => s.replace(/[\s〜~…·]|[（(][^）)]*[)）]/g, '');
+    for (const track of TRACK_NAMES) {
+      const bdir = path.join(REPO_ROOT, `src/content/${track}/bunkei`);
+      let files;
+      try {
+        files = (await fs.readdir(bdir)).filter((f) => f.endsWith('.js'));
+      } catch { continue; }
+      const seen = new Map();
+      for (const f of files.sort()) {
+        const src = await fs.readFile(path.join(bdir, f), 'utf8');
+        for (const m of src.matchAll(/pattern: "([^"]+)"/g)) {
+          const k = norm(m[1]);
+          if (!seen.has(k)) seen.set(k, new Set());
+          seen.get(k).add(f);
+        }
+      }
+      const dup = [...seen.values()].filter((s) => s.size > 1).length;
+      warnings.push(`${track}/bunkei: 레벨 간 중복 키 ${dup}건 (기준선 초과 시 신규 유입 의심)`);
+    }
+  } catch (e) {
+    warnings.push(`bunkei 중복 감시 실패: ${e}`);
+  }
+
   // (d) fr 레벨 어휘 대조 (report-only)
   try {
     const vocabDir = path.join(REPO_ROOT, 'src/content/french/vocab');
