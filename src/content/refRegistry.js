@@ -4,10 +4,15 @@
  * 콘텐츠 형식은 각 언어 디렉토리의 SCHEMA.md 참고.
  */
 export function createRegistry(levelMeta, grammarMap, vocabMap) {
-  /** 레벨 순서·챕터 order 순으로 평탄화된 전체 챕터 목록 */
-  const ALL_CHAPTERS = levelMeta.flatMap(meta =>
-    (grammarMap[meta.key] || []).slice().sort((a, b) => a.order - b.order)
-  );
+  /** 레벨별 order 정렬 뷰 — order 없는 챕터는 뒤에 원래 순서대로(안정 정렬).
+   * 기존 비교자(a.order - b.order)는 order 미도입 챕터에서 NaN이 되어
+   * 결과가 엔진 구현에 좌우됐다. 목록(getGrammarChapters)도 같은 뷰를 쓴다. */
+  const ord = ch => (Number.isFinite(ch?.order) ? ch.order : Number.MAX_SAFE_INTEGER);
+  const SORTED = new Map(levelMeta.map(meta => [
+    meta.key,
+    (grammarMap[meta.key] || []).slice().sort((a, b) => ord(a) - ord(b)),
+  ]));
+  const ALL_CHAPTERS = levelMeta.flatMap(meta => SORTED.get(meta.key));
   const BY_SLUG = new Map(ALL_CHAPTERS.map((ch, idx) => [ch.slug, idx]));
 
   const norm = key => String(key || '').toUpperCase();
@@ -26,7 +31,7 @@ export function createRegistry(levelMeta, grammarMap, vocabMap) {
     },
 
     getGrammarChapters(levelKey) {
-      return grammarMap[norm(levelKey)] || [];
+      return SORTED.get(norm(levelKey)) || [];
     },
 
     /** slug로 챕터 + 이전/다음 챕터(레벨 경계 넘어 연속) 조회 */
