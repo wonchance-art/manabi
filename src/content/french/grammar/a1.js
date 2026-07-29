@@ -176,6 +176,15 @@ const chapters = [
     titleFr: "Les verbes en -er",
     summary: "parler, aimer, habiter... 프랑스어 동사의 약 90%가 따르는 -er 패턴 하나로 동사 활용의 문이 열려요.",
     duration: "약 9분",
+    drills: [
+      { id: "a103-d1", type: "fill", prompt: "Nous ___ français et coréen.", answer: "parlons" },
+      { id: "a103-d2", type: "fill", prompt: "Elle ___ à Lyon.", answer: "habite" },
+      { id: "a103-d3", type: "choice", prompt: "옳은 활용은?", choices: ["Ils regardent la télé.", "Ils regarde la télé.", "Ils regarder la télé."], answer: "Ils regardent la télé." },
+      { id: "a103-d4", type: "choice", prompt: "'나는 음악을 좋아해요'는?", choices: ["J'aime la musique.", "Je aime la musique.", "J'aimes la musique."], answer: "J'aime la musique." },
+      { id: "a103-d5", type: "order", sentence: "Tu travailles à la maison aujourd'hui ?", prompt: "-er 동사 의문문을 배열해 보세요." },
+      { id: "a103-d6", type: "dictation", sentence: "Nous aimons le cinéma." },
+      { id: "a103-d7", type: "dictation", sentence: "Il travaille à Paris." },
+    ],
     sections: [
       {
         heading: "동사 원형과 1군 동사",
@@ -249,6 +258,15 @@ const chapters = [
     titleFr: "La négation : ne ... pas",
     summary: "부정은 단어 하나가 아니라 ne와 pas 두 조각으로 동사를 감싸요. 구어의 ne 탈락과 pas de 규칙까지.",
     duration: "약 8분",
+    drills: [
+      { id: "a104-d1", type: "fill", prompt: "Nous ne parlons ___ japonais.", answer: "pas" },
+      { id: "a104-d2", type: "fill", prompt: "Elle ___ mange pas de viande.", answer: "ne" },
+      { id: "a104-d3", type: "choice", prompt: "옳은 부정문은?", choices: ["Il ne regarde pas la télé.", "Il regarde ne pas la télé.", "Il ne pas regarde la télé."], answer: "Il ne regarde pas la télé." },
+      { id: "a104-d4", type: "choice", prompt: "옳은 엘리종은?", choices: ["Nous n'aimons pas le froid.", "Nous ne aimons pas le froid.", "Nous n'aimons pas de le froid."], answer: "Nous n'aimons pas le froid." },
+      { id: "a104-d5", type: "order", sentence: "Vous ne travaillez pas le dimanche.", prompt: "부정문을 배열해 보세요." },
+      { id: "a104-d6", type: "dictation", sentence: "Je n'aime pas ça." },
+      { id: "a104-d7", type: "dictation", sentence: "Il ne parle pas beaucoup." },
+    ],
     sections: [
       {
         heading: "기본 공식 — ne + 동사 + pas",
@@ -317,6 +335,15 @@ const chapters = [
     titleFr: "Les questions",
     summary: "억양만 올리기, est-ce que, 도치 — 격식 단계별 의문문 3종 세트와 의문사 6총사를 정리해요.",
     duration: "약 9분",
+    drills: [
+      { id: "a105-d1", type: "fill", prompt: "___-ce que tu habites ici ?", answer: "Est" },
+      { id: "a105-d2", type: "fill", prompt: "Vous parlez français, n'est-ce ___ ?", answer: "pas" },
+      { id: "a105-d3", type: "choice", prompt: "옳은 의문문은?", choices: ["Où est-ce que tu travailles ?", "Où que tu travailles est-ce ?", "Est-ce où que tu travailles ?"], answer: "Où est-ce que tu travailles ?" },
+      { id: "a105-d4", type: "choice", prompt: "'너는 어디 살아?'(억양 의문)는?", choices: ["Tu travailles où ?", "Où travailles ?", "Tu où travailles ?"], answer: "Tu travailles où ?" },
+      { id: "a105-d5", type: "order", sentence: "Est-ce que vous aimez la France ?", prompt: "est-ce que 의문문을 배열해 보세요." },
+      { id: "a105-d6", type: "dictation", sentence: "Tu parles anglais ?" },
+      { id: "a105-d7", type: "dictation", sentence: "Vous habitez où maintenant ?" },
+    ],
     sections: [
       {
         heading: "방법 1 — 억양만 올리기 (구어의 기본값)",
@@ -529,6 +556,15 @@ const chapters = [
     titleFr: "Les adjectifs",
     summary: "명사의 성과 수에 일치하는 형용사. 명사 뒤에 놓는 기본 어순과 앞에 오는 BAGS 예외, grand/grande 발음 변화까지.",
     duration: "약 9분",
+    drills: [
+      { id: "a106-d1", type: "fill", prompt: "C'est une ___ maison.", answer: "grande", hint: "grand의 여성형" },
+      { id: "a106-d2", type: "fill", prompt: "Il a une voiture ___ .", answer: "rouge", hint: "색 형용사는 뒤" },
+      { id: "a106-d3", type: "choice", prompt: "옳은 어순은?", choices: ["un petit café", "un café petit", "petit un café"], answer: "un petit café" },
+      { id: "a106-d4", type: "choice", prompt: "일치가 맞는 것은?", choices: ["des fleurs blanches", "des fleurs blancs", "des fleur blanches"], answer: "des fleurs blanches" },
+      { id: "a106-d5", type: "order", sentence: "Elle a une jolie robe bleue.", prompt: "형용사 위치를 살려 배열해 보세요." },
+      { id: "a106-d6", type: "dictation", sentence: "C'est un grand hôtel." },
+      { id: "a106-d7", type: "dictation", sentence: "La petite fille chante." },
+    ],
     sections: [
       {
         heading: "성·수 일치 — 형용사는 명사를 따라가요",
@@ -605,6 +641,15 @@ const chapters = [
     titleFr: "Les adjectifs possessifs",
     summary: "mon/ma/mes 시스템의 핵심 반전: 소유자가 아니라 소유물의 성에 일치해요. 영어 his/her 감각을 버려야 하는 챕터.",
     duration: "약 9분",
+    drills: [
+      { id: "a107-d1", type: "fill", prompt: "___ mère habite à Séoul.", answer: "Ma", hint: "'나의' 여성형" },
+      { id: "a107-d2", type: "fill", prompt: "Où est ___ livre ?", answer: "mon", hint: "'나의' 남성형" },
+      { id: "a107-d3", type: "choice", prompt: "옳은 것은?", choices: ["son amie", "sa amie", "ses amie"], answer: "son amie" },
+      { id: "a107-d4", type: "choice", prompt: "'그들의 부모님'은?", choices: ["leurs parents", "leur parents", "ses parents"], answer: "leurs parents" },
+      { id: "a107-d5", type: "order", sentence: "Notre professeur parle très bien.", prompt: "소유 형용사 문장을 배열해 보세요." },
+      { id: "a107-d6", type: "dictation", sentence: "Mon père travaille beaucoup." },
+      { id: "a107-d7", type: "dictation", sentence: "Ta sœur est très gentille." },
+    ],
     sections: [
       {
         heading: "기본 시스템 — 인칭 × 소유물의 성·수",
@@ -672,6 +717,15 @@ const chapters = [
     titleFr: "Aller, venir et leurs constructions",
     summary: "필수 불규칙 동사 aller/venir. 여기에 futur proche(곧 ~할 거예요)와 passé récent(방금 ~했어요)이 따라와요.",
     duration: "약 10분",
+    drills: [
+      { id: "a108-d1", type: "fill", prompt: "Je ___ au marché ce matin.", answer: "vais" },
+      { id: "a108-d2", type: "fill", prompt: "Nous ___ de la gare.", answer: "venons", hint: "venir de — 방금 옴" },
+      { id: "a108-d3", type: "choice", prompt: "근접 미래는?", choices: ["Nous allons partir.", "Nous venons partir.", "Nous partons aller."], answer: "Nous allons partir." },
+      { id: "a108-d4", type: "choice", prompt: "'방금 도착했어요'(근접 과거)는?", choices: ["Je viens d'arriver.", "Je vais d'arriver.", "J'arrive de venir."], answer: "Je viens d'arriver." },
+      { id: "a108-d5", type: "order", sentence: "Tu vas au cinéma ce soir ?", prompt: "aller 문장을 배열해 보세요." },
+      { id: "a108-d6", type: "dictation", sentence: "On va à la plage." },
+      { id: "a108-d7", type: "dictation", sentence: "Elle vient de partir." },
+    ],
     sections: [
       {
         heading: "aller(가다) — 최강 불규칙 동사",
@@ -778,6 +832,15 @@ const chapters = [
     titleFr: "Les articles partitifs",
     summary: "영어에도 한국어에도 없는 du/de la. 셀 수 없는 것의 '일부'를 말하는 관사로, 음식 이야기의 필수품이에요.",
     duration: "약 9분",
+    drills: [
+      { id: "a109-d1", type: "fill", prompt: "Je mange ___ pain le matin.", answer: "du" },
+      { id: "a109-d2", type: "fill", prompt: "Tu veux ___ eau ?", answer: "de l'", hint: "모음 앞" },
+      { id: "a109-d3", type: "choice", prompt: "옳은 것은?", choices: ["Elle achète de la confiture.", "Elle achète du confiture.", "Elle achète des confiture."], answer: "Elle achète de la confiture." },
+      { id: "a109-d4", type: "choice", prompt: "부정문에서는?", choices: ["Je ne mange pas de fromage.", "Je ne mange pas du fromage.", "Je ne mange pas le de fromage."], answer: "Je ne mange pas de fromage." },
+      { id: "a109-d5", type: "order", sentence: "Nous achetons du lait et des œufs.", prompt: "부분관사 문장을 배열해 보세요." },
+      { id: "a109-d6", type: "dictation", sentence: "Il mange de la salade." },
+      { id: "a109-d7", type: "dictation", sentence: "On achète du poisson." },
+    ],
     sections: [
       {
         heading: "왜 필요한가 — '빵 하나'도 '빵 전체'도 아닐 때",
@@ -846,6 +909,15 @@ const chapters = [
     titleFr: "Les nombres, l'heure et la date",
     summary: "70 = 60+10, 80 = 4×20?! 악명 높은 프랑스 숫자 체계를 웃으며 넘기고, 시간 묻기와 날짜 말하기까지 정리해요.",
     duration: "약 10분",
+    drills: [
+      { id: "a110-d1", type: "fill", prompt: "Il est trois heures et ___ .", answer: "quart", hint: "15분" },
+      { id: "a110-d2", type: "fill", prompt: "Il est midi et ___ .", answer: "demie" },
+      { id: "a110-d3", type: "choice", prompt: "'70'은?", choices: ["soixante-dix", "septante", "soixante-dixte"], answer: "soixante-dix" },
+      { id: "a110-d4", type: "choice", prompt: "'저녁 9시 반'은?", choices: ["neuf heures et demie du soir", "neuf et demie heures", "heures neuf et demie"], answer: "neuf heures et demie du soir" },
+      { id: "a110-d5", type: "order", sentence: "Le train part à sept heures.", prompt: "시각 문장을 배열해 보세요." },
+      { id: "a110-d6", type: "dictation", sentence: "Il est huit heures dix." },
+      { id: "a110-d7", type: "dictation", sentence: "J'ai rendez-vous à midi." },
+    ],
     sections: [
       {
         heading: "0~69 — 여기까지는 평화로워요",
