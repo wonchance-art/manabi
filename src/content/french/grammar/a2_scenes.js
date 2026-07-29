@@ -16,6 +16,15 @@ const chapters = [
     summary:
       "열차 지연으로 환승을 놓친 상황을 복합과거로 설명하고, 다음 열차와 환불 규정을 확인해요.",
     duration: "약 15분",
+    drills: [
+      { id: "a2s13-d1", type: "fill", prompt: "J'ai ___ mon train ce matin.", answer: "raté" },
+      { id: "a2s13-d2", type: "fill", prompt: "Le bus est ___ en retard.", answer: "arrivé", hint: "être 조동사의 과거분사" },
+      { id: "a2s13-d3", type: "choice", prompt: "창구에서 상황을 설명할 때 맞는 문장은?", choices: ["J'ai arrivé en retard.", "Je suis arrivé en retard.", "Je suis raté mon train."], answer: "Je suis arrivé en retard." },
+      { id: "a2s13-d4", type: "choice", prompt: "다음 버스를 물을 때 맞는 문장은?", choices: ["Quand part le prochain bus ?", "Quand parti le prochain bus ?", "Quand partez le prochain bus ?"], answer: "Quand part le prochain bus ?" },
+      { id: "a2s13-d5", type: "order", sentence: "J'ai attendu le train pendant une heure.", prompt: "기다린 상황을 복합과거로 배열해 보세요." },
+      { id: "a2s13-d6", type: "dictation", sentence: "Le train est parti à midi." },
+      { id: "a2s13-d7", type: "dictation", sentence: "J'ai perdu mon billet ce matin." },
+    ],
     sections: [
       {
         type: "authenticIntro",
@@ -120,6 +129,15 @@ const chapters = [
     summary:
       "지난 여행을 이야기하며 배경·날씨·분위기는 반과거로, 그날의 사건은 복합과거로 갈라 말해요.",
     duration: "약 15분",
+    drills: [
+      { id: "a2s14-d1", type: "fill", prompt: "Quand j'étais petit, je ___ au parc tous les jours.", answer: "jouais", hint: "jouer의 반과거" },
+      { id: "a2s14-d2", type: "fill", prompt: "Il ___ très beau hier à Lyon.", answer: "faisait" },
+      { id: "a2s14-d3", type: "choice", prompt: "배경 묘사에 맞는 문장은?", choices: ["La mer était calme.", "La mer a été calme.", "La mer est calme hier."], answer: "La mer était calme." },
+      { id: "a2s14-d4", type: "choice", prompt: "'여행 어땠어?'에 자연스러운 회상 반응은?", choices: ["Oui, c'était inoubliable !", "Oui, c'est demain !", "Oui, il pleut."], answer: "Oui, c'était inoubliable !" },
+      { id: "a2s14-d5", type: "order", sentence: "Nous regardions la mer tous les soirs.", prompt: "습관적 배경을 반과거로 배열해 보세요." },
+      { id: "a2s14-d6", type: "dictation", sentence: "Il y avait beaucoup de vent." },
+      { id: "a2s14-d7", type: "dictation", sentence: "J'étais très content du voyage." },
+    ],
     sections: [
       {
         type: "authenticIntro",
@@ -225,6 +243,15 @@ const chapters = [
     summary:
       "늦은 오후 빵집에서 매진을 알아듣고, ne…pas를 넘어 plus·jamais·rien·personne 네 부정으로 상황과 습관을 말해요.",
     duration: "약 15분",
+    drills: [
+      { id: "a215-d1", type: "fill", prompt: "Il n'y a ___ de lait au frigo.", answer: "plus", hint: "'더는 없다'" },
+      { id: "a215-d2", type: "fill", prompt: "Je ne mange ___ de viande le matin.", answer: "jamais" },
+      { id: "a215-d3", type: "choice", prompt: "'아무도 안 왔어요'는?", choices: ["Personne n'est venu.", "Personne est venu.", "Ne personne est venu."], answer: "Personne n'est venu." },
+      { id: "a215-d4", type: "choice", prompt: "'그는 아무것도 안 샀어요'는?", choices: ["Il n'a rien acheté.", "Il n'a acheté rien.", "Il a rien n'acheté."], answer: "Il n'a rien acheté." },
+      { id: "a215-d5", type: "order", sentence: "Nous ne prenons jamais de dessert le soir.", prompt: "습관의 부정을 배열해 보세요." },
+      { id: "a215-d6", type: "dictation", sentence: "Il n'y a personne dans la rue." },
+      { id: "a215-d7", type: "dictation", sentence: "Je ne bois plus de café." },
+    ],
     sections: [
       {
         type: "authenticIntro",
@@ -335,6 +362,15 @@ const chapters = [
     summary:
       "친구와 주말 계획을 짜며 si + 현재로 제안하고, 비 오는 경우의 플랜 B까지 조건으로 말해요.",
     duration: "약 15분",
+    drills: [
+      { id: "a216-d1", type: "fill", prompt: "___ tu veux, on part maintenant.", answer: "Si" },
+      { id: "a216-d2", type: "fill", prompt: "S'___ fait beau, on mange dehors.", answer: "il", hint: "si + il 엘리종" },
+      { id: "a216-d3", type: "choice", prompt: "옳은 문장은?", choices: ["Si j'ai le temps, je viendrai.", "Si j'aurai le temps, je viendrai.", "Si j'avais le temps, je viendrai."], answer: "Si j'ai le temps, je viendrai." },
+      { id: "a216-d4", type: "choice", prompt: "친구 계획에 변수를 던질 때?", choices: ["Et si le magasin est fermé ?", "Et si le magasin fermé ?", "Si et le magasin est fermé ?"], answer: "Et si le magasin est fermé ?" },
+      { id: "a216-d5", type: "order", sentence: "Si on prend le métro, on arrive plus vite.", prompt: "조건과 결과를 배열해 보세요." },
+      { id: "a216-d6", type: "dictation", sentence: "Si tu es fatigué, reste ici." },
+      { id: "a216-d7", type: "dictation", sentence: "S'il pleut, on reste à la maison." },
+    ],
     sections: [
       {
         type: "authenticIntro",
@@ -443,6 +479,15 @@ const chapters = [
     summary:
       "몽생미셸 당일치기 이야기를 d'abord·ensuite·enfin으로 엮고, 사건은 복합과거·배경은 반과거로 나눠 담아요.",
     duration: "약 15분",
+    drills: [
+      { id: "a217-d1", type: "fill", prompt: "___, on a acheté les billets.", answer: "D'abord", hint: "서사의 첫 마디" },
+      { id: "a217-d2", type: "fill", prompt: "___, nous avons visité le château.", answer: "Ensuite" },
+      { id: "a217-d3", type: "choice", prompt: "이야기의 마지막 마디에 어울리는 연결사는?", choices: ["Enfin", "D'abord", "Parce que"], answer: "Enfin" },
+      { id: "a217-d4", type: "choice", prompt: "옳은 서사 문장은?", choices: ["D'abord je me suis levé, ensuite j'ai déjeuné.", "D'abord je me suis levé, d'abord j'ai déjeuné.", "Ensuite je me suis levé, d'abord j'ai déjeuné."], answer: "D'abord je me suis levé, ensuite j'ai déjeuné." },
+      { id: "a217-d5", type: "order", sentence: "Ensuite, nous avons pris un taxi ensemble.", prompt: "서사의 다음 마디를 배열해 보세요." },
+      { id: "a217-d6", type: "dictation", sentence: "D'abord, j'ai visité le musée." },
+      { id: "a217-d7", type: "dictation", sentence: "Enfin, nous sommes rentrés très tard." },
+    ],
     sections: [
       {
         type: "authenticIntro",
@@ -554,6 +599,15 @@ const chapters = [
     summary:
       "A1부터 통암기로 쓰던 Je voudrais의 문법을 열어 보고, veux→voudrais→pourriez 3단으로 부탁의 온도를 조절해요. 형태는 futur 어간+imparfait 어미 — 이미 아는 재료의 조합이에요.",
     duration: "약 15분",
+    drills: [
+      { id: "a218-d1", type: "fill", prompt: "Je ___ réserver une table pour ce soir.", answer: "voudrais" },
+      { id: "a218-d2", type: "fill", prompt: "Vous ___ m'aider avec ma valise ?", answer: "pourriez" },
+      { id: "a218-d3", type: "choice", prompt: "가장 정중한 부탁은?", choices: ["Pourriez-vous ouvrir la porte ?", "Ouvrez la porte !", "Tu ouvres la porte ?"], answer: "Pourriez-vous ouvrir la porte ?" },
+      { id: "a218-d4", type: "choice", prompt: "친구에게 부드럽게 부탁할 때?", choices: ["Tu pourrais venir plus tôt ?", "Tu pourrais venu plus tôt ?", "Tu pourriez venir plus tôt ?"], answer: "Tu pourrais venir plus tôt ?" },
+      { id: "a218-d5", type: "order", sentence: "J'aimerais visiter le marché demain matin.", prompt: "희망을 조건법으로 배열해 보세요." },
+      { id: "a218-d6", type: "dictation", sentence: "Je voudrais deux billets, s'il vous plaît." },
+      { id: "a218-d7", type: "dictation", sentence: "On pourrait manger ensemble ce soir." },
+    ],
     sections: [
       {
         type: "authenticIntro",
