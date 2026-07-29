@@ -12,6 +12,15 @@ const chapters = [
     titleFr: "Le passé composé avec avoir",
     summary: "프랑스어 회화 과거시제의 기본형. 형태는 영어 현재완료를 닮았지만 의미는 그냥 과거라는 게 핵심이에요.",
     duration: "약 10분",
+    drills: [
+      { id: "a201-d1", type: "fill", prompt: "Hier, j'ai ___ un bon film.", answer: "regardé", hint: "regarder의 과거분사" },
+      { id: "a201-d2", type: "fill", prompt: "Nous avons ___ nos devoirs.", answer: "fini", hint: "finir의 과거분사" },
+      { id: "a201-d3", type: "choice", prompt: "옳은 문장은?", choices: ["J'ai mangé une pomme.", "Je mangé une pomme.", "J'ai mange une pomme."], answer: "J'ai mangé une pomme." },
+      { id: "a201-d4", type: "choice", prompt: "'그녀는 열쇠를 찾았어요'는?", choices: ["Elle a trouvé ses clés.", "Elle est trouvé ses clés.", "Elle a trouver ses clés."], answer: "Elle a trouvé ses clés." },
+      { id: "a201-d5", type: "order", sentence: "Tu as acheté du pain ce matin.", prompt: "복합과거 문장을 배열해 보세요." },
+      { id: "a201-d6", type: "dictation", sentence: "J'ai bien dormi cette nuit." },
+      { id: "a201-d7", type: "dictation", sentence: "On a joué au foot hier." },
+    ],
     sections: [
       {
         heading: "공식 — avoir 현재형 + 과거분사",
@@ -112,6 +121,15 @@ const chapters = [
     titleFr: "Le passé composé avec être",
     summary: "이동·상태변화 동사 한 줌과 모든 대명동사는 조동사로 être를 써요. 이때 과거분사가 주어에 성수 일치하는 것까지.",
     duration: "약 9분",
+    drills: [
+      { id: "a202-d1", type: "fill", prompt: "Elle est ___ ce matin très tôt.", answer: "partie", hint: "성 일치 주의" },
+      { id: "a202-d2", type: "fill", prompt: "Ils sont ___ au cinéma.", answer: "allés" },
+      { id: "a202-d3", type: "choice", prompt: "옳은 문장은?", choices: ["Nous sommes arrivés à Paris.", "Nous avons arrivés à Paris.", "Nous sommes arriver à Paris."], answer: "Nous sommes arrivés à Paris." },
+      { id: "a202-d4", type: "choice", prompt: "성수 일치가 맞는 것은?", choices: ["Marie est venue hier soir.", "Marie est venu hier soir.", "Marie a venue hier soir."], answer: "Marie est venue hier soir." },
+      { id: "a202-d5", type: "order", sentence: "Elles sont restées deux jours à Nice.", prompt: "être 복합과거를 배열해 보세요." },
+      { id: "a202-d6", type: "dictation", sentence: "Il est tombé dans la rue." },
+      { id: "a202-d7", type: "dictation", sentence: "Je suis née en Corée.", accepts: ["Je suis né en Corée."] },
+    ],
     sections: [
       {
         heading: "어떤 동사가 être를 고를까 — 이동과 상태변화",
@@ -185,6 +203,15 @@ const chapters = [
     titleFr: "L'imparfait",
     summary: "'~하곤 했다, ~하고 있었다'의 반과거. 사건의 passé composé와 배경의 imparfait를 가르는 감각을 길러요.",
     duration: "약 10분",
+    drills: [
+      { id: "a203-d1", type: "fill", prompt: "Avant, nous ___ à Busan.", answer: "habitions" },
+      { id: "a203-d2", type: "fill", prompt: "Quand il était petit, il ___ beaucoup.", answer: "lisait", hint: "lire의 반과거" },
+      { id: "a203-d3", type: "choice", prompt: "배경 묘사로 옳은 것은?", choices: ["Il faisait froid ce jour-là.", "Il faisais froid ce jour-là.", "Il faisait froid demain."], answer: "Il faisait froid ce jour-là." },
+      { id: "a203-d4", type: "choice", prompt: "'~하던 중이었다'는?", choices: ["Je regardais la télé.", "J'ai regardé la télé.", "Je regarde la télé."], answer: "Je regardais la télé." },
+      { id: "a203-d5", type: "order", sentence: "Ma grand-mère chantait tous les matins.", prompt: "과거의 습관을 배열해 보세요." },
+      { id: "a203-d6", type: "dictation", sentence: "Nous étions très fatigués hier." },
+      { id: "a203-d7", type: "dictation", sentence: "Il y avait du monde partout." },
+    ],
     sections: [
       {
         heading: "형태 — nous에서 어간을 꺼내요",
@@ -260,6 +287,15 @@ const chapters = [
     titleFr: "Les verbes pronominaux",
     summary: "se lever, s'appeler처럼 se를 달고 다니는 동사들. 한국어에 없는 범주지만 '세수하다'의 감각으로 정복해요.",
     duration: "약 9분",
+    drills: [
+      { id: "a204-d1", type: "fill", prompt: "Je ___ lève tard le dimanche.", answer: "me" },
+      { id: "a204-d2", type: "fill", prompt: "Elle se ___ les dents après le repas.", answer: "brosse" },
+      { id: "a204-d3", type: "choice", prompt: "옳은 문장은?", choices: ["Nous nous couchons tôt.", "Nous se couchons tôt.", "Nous couchons nous tôt."], answer: "Nous nous couchons tôt." },
+      { id: "a204-d4", type: "choice", prompt: "'그들은 일찍 일어나요'는?", choices: ["Ils se lèvent tôt.", "Ils lèvent se tôt.", "Ils se lève tôt."], answer: "Ils se lèvent tôt." },
+      { id: "a204-d5", type: "order", sentence: "Tu te reposes un peu ce soir.", prompt: "대명동사 문장을 배열해 보세요." },
+      { id: "a204-d6", type: "dictation", sentence: "Je me promène dans le parc." },
+      { id: "a204-d7", type: "dictation", sentence: "On s'amuse bien ici." },
+    ],
     sections: [
       {
         heading: "개념 — laver와 se laver의 차이",
@@ -328,6 +364,15 @@ const chapters = [
     titleFr: "Les pronoms COD et COI",
     summary: "le/la/les와 lui/leur. 영어와 정반대로 동사 앞에 놓이는 어순이 핵심이에요.",
     duration: "약 10분",
+    drills: [
+      { id: "a205-d1", type: "fill", prompt: "Tu vois Marie ? — Oui, je ___ vois.", answer: "la" },
+      { id: "a205-d2", type: "fill", prompt: "Il parle à ses parents ? — Oui, il ___ parle.", answer: "leur" },
+      { id: "a205-d3", type: "choice", prompt: "옳은 문장은?", choices: ["Je t'écoute bien.", "Je écoute te bien.", "J'écoute te bien."], answer: "Je t'écoute bien." },
+      { id: "a205-d4", type: "choice", prompt: "'나는 그것(le livre)을 아주 좋아해요'는?", choices: ["Je l'aime beaucoup.", "Je aime le beaucoup.", "Je lui aime beaucoup."], answer: "Je l'aime beaucoup." },
+      { id: "a205-d5", type: "order", sentence: "Nous vous invitons chez nous samedi.", prompt: "목적 대명사 문장을 배열해 보세요." },
+      { id: "a205-d6", type: "dictation", sentence: "Je te comprends très bien." },
+      { id: "a205-d7", type: "dictation", sentence: "Elle nous attend devant la gare." },
+    ],
     sections: [
       {
         heading: "직접목적 대명사 le, la, les — 어순 충격에 대비하세요",
@@ -384,6 +429,15 @@ const chapters = [
     titleFr: "Le comparatif et le superlatif",
     summary: "'더/덜/만큼'의 3종 비교와 le plus 최상급. 영어 better가 둘로 갈라지는 meilleur/mieux까지 정리해요.",
     duration: "약 8분",
+    drills: [
+      { id: "a206-d1", type: "fill", prompt: "Le train est ___ rapide que le bus.", answer: "plus" },
+      { id: "a206-d2", type: "fill", prompt: "C'est le ___ beau jour de ma vie.", answer: "plus", hint: "최상급" },
+      { id: "a206-d3", type: "choice", prompt: "'~보다 덜'을 만드는 짝은?", choices: ["moins … que", "plus … que", "aussi … que"], answer: "moins … que" },
+      { id: "a206-d4", type: "choice", prompt: "옳은 문장은?", choices: ["Elle chante mieux que moi.", "Elle chante plus bien que moi.", "Elle chante bonne que moi."], answer: "Elle chante mieux que moi." },
+      { id: "a206-d5", type: "order", sentence: "Ce café est aussi bon que l'autre.", prompt: "동등 비교를 배열해 보세요." },
+      { id: "a206-d6", type: "dictation", sentence: "Ma sœur est plus grande que moi." },
+      { id: "a206-d7", type: "dictation", sentence: "C'est le meilleur restaurant du quartier." },
+    ],
     sections: [
       {
         heading: "비교급 3종 세트 — plus / moins / aussi ... que",
@@ -455,6 +509,15 @@ const chapters = [
     titleFr: "Le futur simple",
     summary: "원형 어간에 avoir형 어미를 붙이는 단순 미래. futur proche와의 뉘앙스 분담과 4대 불규칙 어간까지.",
     duration: "약 9분",
+    drills: [
+      { id: "a207-d1", type: "fill", prompt: "Demain, je ___ mes grands-parents.", answer: "verrai", hint: "voir의 미래" },
+      { id: "a207-d2", type: "fill", prompt: "Nous ___ au Canada cet été.", answer: "irons", hint: "aller의 미래" },
+      { id: "a207-d3", type: "choice", prompt: "옳은 문장은?", choices: ["Tu finiras tes devoirs ce soir.", "Tu finira tes devoirs ce soir.", "Tu finiras tes devoirs hier."], answer: "Tu finiras tes devoirs ce soir." },
+      { id: "a207-d4", type: "choice", prompt: "'내일 비가 올 거예요'는?", choices: ["Il pleuvra demain.", "Il pleuvrera demain.", "Il va pleuvra demain."], answer: "Il pleuvra demain." },
+      { id: "a207-d5", type: "order", sentence: "Vous prendrez le train de huit heures.", prompt: "미래 계획을 배열해 보세요." },
+      { id: "a207-d6", type: "dictation", sentence: "On partira très tôt demain matin." },
+      { id: "a207-d7", type: "dictation", sentence: "Elle aura vingt ans en mai." },
+    ],
     sections: [
       {
         heading: "형태 — 원형 + ai, as, a, ons, ez, ont",
@@ -543,6 +606,15 @@ const chapters = [
     titleFr: "L'impératif",
     summary: "명령·권유의 형태는 셋뿐. tu형의 -s 탈락, 대명사의 자리 이동, 그리고 부드럽게 만드는 마법의 말까지.",
     duration: "약 8분",
+    drills: [
+      { id: "a208-d1", type: "fill", prompt: "___ la porte, s'il te plaît.", answer: "Ferme", hint: "fermer의 tu 명령" },
+      { id: "a208-d2", type: "fill", prompt: "___ vos devoirs avant le dîner.", answer: "Finissez" },
+      { id: "a208-d3", type: "choice", prompt: "옳은 tu 명령은?", choices: ["Mange tes légumes !", "Manges tes légumes !", "Tu mange tes légumes !"], answer: "Mange tes légumes !" },
+      { id: "a208-d4", type: "choice", prompt: "부드러운 권유는?", choices: ["Allons au parc ensemble !", "Aller au parc ensemble !", "Vont au parc ensemble !"], answer: "Allons au parc ensemble !" },
+      { id: "a208-d5", type: "order", sentence: "Prenez la première rue à droite.", prompt: "길 안내 명령문을 배열해 보세요." },
+      { id: "a208-d6", type: "dictation", sentence: "Écoute bien le professeur." },
+      { id: "a208-d7", type: "dictation", sentence: "Ne fermez pas la fenêtre." },
+    ],
     sections: [
       {
         heading: "형태 — 현재형에서 주어만 빼기 (그리고 -s 탈락)",
@@ -617,6 +689,15 @@ const chapters = [
     titleFr: "Les pronoms y et en",
     summary: "장소를 받는 y, de+명사를 받는 en. 등가물이 없어 어렵지만, J'y vais와 Il y en a로 매일 쓰는 필수품이에요.",
     duration: "약 9분",
+    drills: [
+      { id: "a209-d1", type: "fill", prompt: "Tu vas à Paris ? — Oui, j'___ vais demain.", answer: "y" },
+      { id: "a209-d2", type: "fill", prompt: "Vous voulez du café ? — Oui, j'___ veux bien.", answer: "en" },
+      { id: "a209-d3", type: "choice", prompt: "옳은 문장은?", choices: ["J'en prends deux.", "Je prends en deux.", "J'y prends deux."], answer: "J'en prends deux." },
+      { id: "a209-d4", type: "choice", prompt: "'거기서 일해요'는?", choices: ["J'y travaille.", "Je travaille y.", "J'en travaille."], answer: "J'y travaille." },
+      { id: "a209-d5", type: "order", sentence: "Nous y allons tous les étés.", prompt: "y 문장을 배열해 보세요." },
+      { id: "a209-d6", type: "dictation", sentence: "Il en parle souvent." },
+      { id: "a209-d7", type: "dictation", sentence: "On y va ensemble ?" },
+    ],
     sections: [
       {
         heading: "y — '거기에'를 받는 한 글자",
@@ -673,6 +754,15 @@ const chapters = [
     titleFr: "Les pronoms relatifs qui, que et où",
     summary: "두 문장을 한 문장으로 묶는 qui·que·où. 사람/사물이 아니라 빠진 자리의 역할로 갈린다는 게 핵심이에요 — 장소·시간은 où가 받아요.",
     duration: "약 11분",
+    drills: [
+      { id: "a210-d1", type: "fill", prompt: "C'est le livre ___ je préfère lire.", answer: "que" },
+      { id: "a210-d2", type: "fill", prompt: "Voici l'ami ___ habite à Lyon.", answer: "qui" },
+      { id: "a210-d3", type: "fill", prompt: "C'est l'année ___ je suis arrivé en France.", answer: "où" },
+      { id: "a210-d4", type: "choice", prompt: "옳은 문장은?", choices: ["La ville où je travaille est belle.", "La ville que je travaille est belle.", "La ville qui je travaille est belle."], answer: "La ville où je travaille est belle." },
+      { id: "a210-d5", type: "order", sentence: "Le café que tu aimes est fermé.", prompt: "관계절 문장을 배열해 보세요." },
+      { id: "a210-d6", type: "dictation", sentence: "J'ai un ami qui parle coréen." },
+      { id: "a210-d7", type: "dictation", sentence: "C'est le jour où tout a changé." },
+    ],
     sections: [
       {
         heading: "관계대명사란 — 명사 뒤에 설명 달기",
@@ -770,6 +860,15 @@ const chapters = [
     titleFr: "Les expressions de temps",
     summary: "depuis, pendant, il y a, dans, en — 한국어 '~동안, ~전에, ~후에'가 프랑스어에서 일곱 갈래로 갈라지는 지도를 한 장에 그려요.",
     duration: "약 9분",
+    drills: [
+      { id: "a211-d1", type: "fill", prompt: "J'habite ici ___ trois ans.", answer: "depuis" },
+      { id: "a211-d2", type: "fill", prompt: "Elle a étudié ___ deux heures hier soir.", answer: "pendant" },
+      { id: "a211-d3", type: "choice", prompt: "'~전에'(과거 시점)를 만드는 표현은?", choices: ["il y a", "depuis", "dans"], answer: "il y a" },
+      { id: "a211-d4", type: "choice", prompt: "옳은 문장은?", choices: ["Je pars dans dix minutes.", "Je pars il y a dix minutes.", "Je pars depuis dix minutes."], answer: "Je pars dans dix minutes." },
+      { id: "a211-d5", type: "order", sentence: "Nous attendons le bus depuis vingt minutes.", prompt: "지속 표현을 배열해 보세요." },
+      { id: "a211-d6", type: "dictation", sentence: "J'apprends le français depuis un an." },
+      { id: "a211-d7", type: "dictation", sentence: "Le film commence dans cinq minutes." },
+    ],
     sections: [
       {
         heading: "depuis — 시작점부터 지금까지, 현재형으로",
@@ -872,6 +971,15 @@ const chapters = [
     titleFr: "La quantité et tout",
     summary: "beaucoup de, trop de, un peu de의 수량 부사부터 형태가 넷인 tout까지 — '얼마나'를 말하는 부품을 한 상자에 모아요.",
     duration: "약 8분",
+    drills: [
+      { id: "a212-d1", type: "fill", prompt: "J'ai ___ de travail cette semaine.", answer: "beaucoup" },
+      { id: "a212-d2", type: "fill", prompt: "___ les étudiants sont là.", answer: "Tous", hint: "성수 일치" },
+      { id: "a212-d3", type: "choice", prompt: "옳은 문장은?", choices: ["Elle lit toute la journée.", "Elle lit tout la journée.", "Elle lit tous la journée."], answer: "Elle lit toute la journée." },
+      { id: "a212-d4", type: "choice", prompt: "'약간의 물'은?", choices: ["un peu d'eau", "un peu de l'eau", "peu un d'eau"], answer: "un peu d'eau" },
+      { id: "a212-d5", type: "order", sentence: "Il mange trop de sucre le soir.", prompt: "양 표현을 배열해 보세요." },
+      { id: "a212-d6", type: "dictation", sentence: "Tout le monde est content." },
+      { id: "a212-d7", type: "dictation", sentence: "J'ai assez dormi cette nuit." },
+    ],
     sections: [
       {
         heading: "수량 부사 + de — 관사가 사라지는 자리",
