@@ -27,6 +27,15 @@ const chapters = [
     summary:
       "카페에서 원하는 음료를 주문해요. '저는 ~를 원해요(Je voudrais ~)'를 배우고, 실제 카페 대화를 만나고, 여러 상황에서 같은 표현을 써 봐요.",
     duration: "약 10분",
+    drills: [
+      { id: "p32-d1", type: "fill", prompt: "Je ___ un thé, s'il vous plaît.", answer: "voudrais", hint: "vouloir의 정중형" },
+      { id: "p32-d2", type: "choice", prompt: "카페에서 가장 정중한 주문은?", choices: ["Je veux un jus d'orange.", "Je voudrais un jus d'orange.", "Un jus d'orange !"], answer: "Je voudrais un jus d'orange." },
+      { id: "p32-d3", type: "fill", prompt: "Je voudrais une part ___ tarte.", answer: "de", hint: "부분·소속의 전치사" },
+      { id: "p32-d4", type: "order", sentence: "Je voudrais une table près de la fenêtre.", prompt: "창가 자리를 부탁하는 문장을 배열해 보세요." },
+      { id: "p32-d5", type: "dictation", sentence: "Je voudrais un chocolat chaud." },
+      { id: "p32-d6", type: "choice", prompt: "점원이 « Et avec ça ? »(더 필요한 건요?)라고 물으면?", choices: ["C'est tout, merci.", "Je suis coréen.", "Il fait beau."], answer: "C'est tout, merci." },
+      { id: "p32-d7", type: "dictation", sentence: "Je voudrais de l'eau, s'il vous plaît." },
+    ],
     sections: [
       // ① 실전 선노출 (authenticIntro)
       {
@@ -217,6 +226,15 @@ const chapters = [
     summary:
       "약국에서 약사의 조언을 듣고 '~해야 한다(Il faut ~)'를 배워요. 의료 상황에서 가장 자주 나오는 표현이에요.",
     duration: "약 12분",
+    drills: [
+      { id: "p33-d1", type: "fill", prompt: "Il ___ boire beaucoup d'eau.", answer: "faut" },
+      { id: "p33-d2", type: "choice", prompt: "피곤한 친구에게 할 조언은?", choices: ["Il faut bien dormir.", "Il est dormir.", "Faut-il la fenêtre ?"], answer: "Il faut bien dormir." },
+      { id: "p33-d3", type: "fill", prompt: "Il faut ___ ce médicament après le repas.", answer: "prendre", hint: "약을 '먹다'에 쓰는 동사" },
+      { id: "p33-d4", type: "order", sentence: "Il faut manger des légumes tous les jours.", prompt: "건강 조언 문장을 배열해 보세요." },
+      { id: "p33-d5", type: "dictation", sentence: "Il faut rester au lit." },
+      { id: "p33-d6", type: "choice", prompt: "« Il ne faut pas… »의 뜻은?", choices: ["~하면 안 돼요", "~할 필요 없어요", "~하고 싶어요"], answer: "~하면 안 돼요" },
+      { id: "p33-d7", type: "dictation", sentence: "Il ne faut pas fumer ici." },
+    ],
     sections: [
       // ① 실전 선노출
       {

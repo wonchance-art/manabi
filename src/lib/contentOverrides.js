@@ -99,7 +99,7 @@ const SECTION_STRUCT_FIELDS = ['examples', 'table', 'story', 'media', 'enParalle
 // RFC v2 boolean 필드
 const SECTION_BOOLEAN_FIELDS = ['autoRegisterVocabs'];
 const CHAPTER_KEYS = new Set([
-  'slug', 'level', 'order', 'sections',
+  'slug', 'level', 'order', 'sections', 'drills',
   'status', // 선택적 상태 필드 (DRAFT 등)
   ...CHAPTER_STRING_FIELDS,
   ...CHAPTER_SCALAR_ARRAY_FIELDS,
@@ -146,6 +146,34 @@ function isFlatObjectArray(v) {
 const DIALOGUE_LANG_FIELDS = ['fr', 'ja', 'en', 'zh'];
 const FLAT_EXAMPLE_TEXT_FIELDS = [...DIALOGUE_LANG_FIELDS, 'ipa', 'yomi', 'pinyin', 'ko'];
 const DIALOGUE_LINE_KEYS = new Set(['speaker', ...DIALOGUE_LANG_FIELDS, 'ipa', 'ko', 'src']);
+
+// 학습 드릴(RFC learning-path §1) — 챕터 선택 필드, fail-closed.
+const DRILL_KEYS = new Set(['id', 'type', 'prompt', 'answer', 'accepts', 'choices', 'sentence', 'hint']);
+function isValidDrill(v) {
+  if (!isPlainObject(v)) return false;
+  if (Object.keys(v).some((k) => !DRILL_KEYS.has(k))) return false;
+  if (!isNonEmptyString(v.id) || !isNonEmptyString(v.type)) return false;
+  if ('accepts' in v && !(Array.isArray(v.accepts) && v.accepts.every(isNonEmptyString))) return false;
+  if ('hint' in v && !isNonEmptyString(v.hint)) return false;
+  switch (v.type) {
+    case 'fill':
+      return isNonEmptyString(v.prompt) && v.prompt.includes('___') && isNonEmptyString(v.answer);
+    case 'choice':
+      return isNonEmptyString(v.prompt) && Array.isArray(v.choices) && v.choices.length >= 2
+        && v.choices.every(isNonEmptyString) && isNonEmptyString(v.answer) && v.choices.includes(v.answer);
+    case 'order':
+      return isNonEmptyString(v.sentence);
+    case 'dictation':
+      return isNonEmptyString(v.sentence);
+    default:
+      return false;
+  }
+}
+function isValidDrillArray(v) {
+  if (!Array.isArray(v) || v.length === 0 || !v.every(isValidDrill)) return false;
+  const ids = v.map((d) => d.id);
+  return new Set(ids).size === ids.length;
+}
 
 // 실자료 출처 표기(RFC authentic-sources §3) — src가 있으면 하위 계약을 강제한다.
 const SRC_KEYS = new Set(['provider', 'id', 'license', 'by', 'grade', 'basedOn']);
@@ -338,6 +366,7 @@ export function isValidOverride(data) {
   for (const k of CHAPTER_BOOLEAN_FIELDS) {
     if (k in data && data[k] != null && typeof data[k] !== 'boolean') return false;
   }
+  if ('drills' in data && data.drills != null && !isValidDrillArray(data.drills)) return false;
   if ('sections' in data) {
     const sections = data.sections;
     if (!Array.isArray(sections) || sections.length === 0) return false;

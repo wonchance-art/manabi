@@ -157,6 +157,50 @@ export async function runCurriculumLint() {
     for (const slug of edges.keys()) if ((state.get(slug) ?? 0) === 0) dfs(slug);
   }
 
+  // (f) 드릴 비중복 게이트 (RFC learning-path §2 — fr fail)
+  //  드릴 문장(sentence·choice 정답·fill 완성문)은 ① 같은 챕터의 fr 문자열 ② 같은 챕터 다른 드릴
+  //  ③ 다른 챕터의 드릴과 문장 단위로 겹치지 않아야 한다.
+  try {
+    const gdir = path.join(REPO_ROOT, 'src/content/french/grammar');
+    const gfiles = (await fs.readdir(gdir)).filter((f) => f.endsWith('.js'));
+    const normSent = (s) => s.replace(/\s+/g, ' ').trim().toLowerCase();
+    const globalSeen = new Map(); // normSent → "slug:drillId"
+    for (const f of gfiles.sort()) {
+      const src = await fs.readFile(path.join(gdir, f), 'utf8');
+      const marks = [...src.matchAll(/^\s+slug: "([^"]+)",\s*$/gm)].map((m) => ({ slug: m[1], at: m.index }));
+      for (let i = 0; i < marks.length; i += 1) {
+        const seg = src.slice(marks[i].at, i + 1 < marks.length ? marks[i + 1].at : src.length);
+        const dm = seg.match(/drills: \[([\s\S]*?)\n    \]/);
+        if (!dm) continue;
+        const dseg = dm[1];
+        const frSet = new Set([...seg.matchAll(/fr: "((?:[^"\\]|\\.)*)"/g)].map((m) => normSent(m[1])));
+        const items = [];
+        for (const m of dseg.matchAll(/\{([\s\S]*?)\}/g)) {
+          const body = m[1];
+          const g = (k) => body.match(new RegExp(k + ': "((?:[^"\\\\]|\\\\.)*)"'))?.[1];
+          const id = g('id') ?? '?';
+          const type = g('type') ?? '?';
+          let sent = null;
+          if (type === 'order' || type === 'dictation') sent = g('sentence');
+          else if (type === 'fill' && g('prompt') && g('answer')) sent = g('prompt').replace('___', g('answer'));
+          else if (type === 'choice') sent = g('answer');
+          if (sent) items.push({ id, sent: normSent(sent) });
+        }
+        const local = new Set();
+        for (const { id, sent } of items) {
+          const label = `${marks[i].slug}:${id}`;
+          if (frSet.has(sent)) errors.push(`french 드릴 중복(챕터 예문과 동일): ${label} — "${sent}"`);
+          if (local.has(sent)) errors.push(`french 드릴 중복(챕터 내): ${label} — "${sent}"`);
+          local.add(sent);
+          if (globalSeen.has(sent)) errors.push(`french 드릴 중복(챕터 간): ${label} ↔ ${globalSeen.get(sent)}`);
+          else globalSeen.set(sent, label);
+        }
+      }
+    }
+  } catch (e) {
+    warnings.push(`드릴 비중복 게이트 실패: ${e}`);
+  }
+
   // (e′) bunkei 레벨 간 중복 키 감시 (report-only — 정리 라운드 재발 탐지)
   // 기준선(2026-07-30 정리 완료 시점 실측): ja 31(정당 재도입 keeper — 경어·ながら 등)·zh 1·en 2·fr 0.
   // 수치가 기준선을 넘어 늘면 신규 중복 유입 신호다. 팩-챕터 레벨 일치 검사는 도입하지 않는다
