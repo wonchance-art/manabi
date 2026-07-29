@@ -16,6 +16,15 @@ const chapters = [
     summary:
       "-er 밖에서도 규칙은 보여요. finir형 -ir 동사와 attendre형 -re 동사의 현재형을 두 묶음으로 익혀요.",
     duration: "약 9분",
+    drills: [
+      { id: "a114-d1", type: "fill", prompt: "Nous ___ le bus ici.", answer: "attendons" },
+      { id: "a114-d2", type: "fill", prompt: "Ils ___ leurs devoirs à midi.", answer: "finissent" },
+      { id: "a114-d3", type: "choice", prompt: "옳은 활용은?", choices: ["Elle choisit une robe.", "Elle choisis une robe.", "Elle choisir une robe."], answer: "Elle choisit une robe." },
+      { id: "a114-d4", type: "choice", prompt: "'그는 표를 팔아요'는?", choices: ["Il vend des billets.", "Il vends des billets.", "Il vendre des billets."], answer: "Il vend des billets." },
+      { id: "a114-d5", type: "order", sentence: "Vous attendez le train du matin ?", prompt: "-re 동사 의문문을 배열해 보세요." },
+      { id: "a114-d6", type: "dictation", sentence: "Je finis mon café." },
+      { id: "a114-d7", type: "dictation", sentence: "On attend nos amis." },
+    ],
     sections: [
       {
         heading: "finir형 -ir 동사 — 복수에서 -iss-가 보여요",
@@ -151,6 +160,15 @@ const chapters = [
     summary:
       "일상에서 빠질 수 없는 faire와, 가능·바람·의무 뒤에 동사 원형을 잇는 pouvoir, vouloir, devoir를 현재형으로 써요.",
     duration: "약 10분",
+    drills: [
+      { id: "a115-d1", type: "fill", prompt: "Je ___ parler un peu français.", answer: "peux" },
+      { id: "a115-d2", type: "fill", prompt: "Nous ___ partir avant midi.", answer: "devons" },
+      { id: "a115-d3", type: "choice", prompt: "옳은 문장은?", choices: ["Tu veux manger avec nous ?", "Tu veux manges avec nous ?", "Tu voulez manger avec nous ?"], answer: "Tu veux manger avec nous ?" },
+      { id: "a115-d4", type: "choice", prompt: "'날씨가 좋아요'는?", choices: ["Il fait beau.", "Il est beau temps.", "Il a beau."], answer: "Il fait beau." },
+      { id: "a115-d5", type: "order", sentence: "Elle doit travailler ce week-end aussi.", prompt: "의무 표현을 배열해 보세요." },
+      { id: "a115-d6", type: "dictation", sentence: "On peut entrer maintenant ?" },
+      { id: "a115-d7", type: "dictation", sentence: "Je fais du sport le samedi." },
+    ],
     sections: [
       {
         heading: "faire — 하다, 만들다, 날씨까지",
@@ -305,6 +323,15 @@ const chapters = [
     summary:
       "사람을 가리키는 명사의 여성형과, -s·-x·-aux로 갈리는 명사 복수형을 실제 문장 안에서 맞춰요.",
     duration: "약 9분",
+    drills: [
+      { id: "a116-d1", type: "fill", prompt: "un cheval → des ___", answer: "chevaux", hint: "-al → -aux" },
+      { id: "a116-d2", type: "fill", prompt: "un oiseau → des ___", answer: "oiseaux" },
+      { id: "a116-d3", type: "choice", prompt: "복수형이 맞는 것은?", choices: ["des journaux", "des journals", "des journauxs"], answer: "des journaux" },
+      { id: "a116-d4", type: "choice", prompt: "옳은 문장은?", choices: ["Les enfants sont là.", "Les enfant sont là.", "Le enfants sont là."], answer: "Les enfants sont là." },
+      { id: "a116-d5", type: "order", sentence: "Les filles et les garçons sont ici.", prompt: "복수 문장을 배열해 보세요." },
+      { id: "a116-d6", type: "dictation", sentence: "Les amis sont là." },
+      { id: "a116-d7", type: "dictation", sentence: "J'ai des questions." },
+    ],
     sections: [
       {
         heading: "사람 명사의 기본 여성형 — 끝에 -e",
@@ -463,6 +490,15 @@ const chapters = [
     summary:
       "de+le/les의 축약형 du/des를 부분관사와 구별하고, 나라의 성·수에 맞춰 목적지와 출발지를 말해요.",
     duration: "약 10분",
+    drills: [
+      { id: "a117-d1", type: "fill", prompt: "Je viens ___ Canada.", answer: "du", hint: "de + le" },
+      { id: "a117-d2", type: "fill", prompt: "Nous allons ___ cinéma ce soir.", answer: "au" },
+      { id: "a117-d3", type: "choice", prompt: "'일본에'는?", choices: ["au Japon", "à la Japon", "en Japon"], answer: "au Japon" },
+      { id: "a117-d4", type: "choice", prompt: "'프랑스에 살아요'는?", choices: ["J'habite en France.", "J'habite au France.", "J'habite à France."], answer: "J'habite en France." },
+      { id: "a117-d5", type: "order", sentence: "Elle va du bureau à la banque.", prompt: "축약관사 문장을 배열해 보세요." },
+      { id: "a117-d6", type: "dictation", sentence: "On va au restaurant." },
+      { id: "a117-d7", type: "dictation", sentence: "Ils viennent des États-Unis." },
+    ],
     sections: [
       {
         heading: "de와 정관사가 만나면 du, des",
@@ -624,6 +660,15 @@ const chapters = [
     summary:
       "ce/cet/cette/ces로 대상을 가리키고, quel/quelle/quels/quelles로 어느 것인지 물어요.",
     duration: "약 8분",
+    drills: [
+      { id: "a118-d1", type: "fill", prompt: "___ sac est très joli.", answer: "Ce" },
+      { id: "a118-d2", type: "fill", prompt: "___ heure est-il ?", answer: "Quelle" },
+      { id: "a118-d3", type: "choice", prompt: "모음 앞 '이 남자'는?", choices: ["cet homme", "ce homme", "cette homme"], answer: "cet homme" },
+      { id: "a118-d4", type: "choice", prompt: "'어느 버스?'는?", choices: ["Quel bus ?", "Quelle bus ?", "Quels bus ?"], answer: "Quel bus ?" },
+      { id: "a118-d5", type: "order", sentence: "Cette robe bleue est très jolie.", prompt: "지시 형용사 문장을 배열해 보세요." },
+      { id: "a118-d6", type: "dictation", sentence: "Ce café est bon." },
+      { id: "a118-d7", type: "dictation", sentence: "Quelle belle maison !" },
+    ],
     sections: [
       {
         heading: "ce, cet, cette, ces — 명사의 성·수에 맞춰요",
@@ -754,6 +799,15 @@ const chapters = [
     summary:
       "dans, sur, sous부터 devant, derrière, à côté de까지 사물과 장소의 위치를 설명하고 chez로 사람의 공간을 말해요.",
     duration: "약 9분",
+    drills: [
+      { id: "a119-d1", type: "fill", prompt: "Le chat est ___ la table.", answer: "sous", hint: "아래" },
+      { id: "a119-d2", type: "fill", prompt: "La banque est ___ face de la gare.", answer: "en" },
+      { id: "a119-d3", type: "choice", prompt: "'~위에'는?", choices: ["sur", "sous", "dans"], answer: "sur" },
+      { id: "a119-d4", type: "choice", prompt: "옳은 문장은?", choices: ["Il y a un parc près d'ici.", "Il y a un parc près ici.", "Il a y un parc près d'ici."], answer: "Il y a un parc près d'ici." },
+      { id: "a119-d5", type: "order", sentence: "Les clés sont dans mon sac.", prompt: "위치 문장을 배열해 보세요." },
+      { id: "a119-d6", type: "dictation", sentence: "Le chien est devant la porte." },
+      { id: "a119-d7", type: "dictation", sentence: "J'habite entre la gare et l'école." },
+    ],
     sections: [
       {
         heading: "dans, sur, sous — 안, 위, 아래",
@@ -911,6 +965,15 @@ const chapters = [
     summary:
       "toujours·souvent으로 빈도를, très·beaucoup로 정도와 양을 말하고 et·mais·parce que로 짧은 문장을 연결해요.",
     duration: "약 10분",
+    drills: [
+      { id: "a120-d1", type: "fill", prompt: "Je mange ___ de pain.", answer: "beaucoup" },
+      { id: "a120-d2", type: "fill", prompt: "Il pleut, ___ je reste ici.", answer: "donc" },
+      { id: "a120-d3", type: "choice", prompt: "'가끔'은?", choices: ["parfois", "toujours", "souvent"], answer: "parfois" },
+      { id: "a120-d4", type: "choice", prompt: "옳은 연결은?", choices: ["Il est fatigué, mais il travaille.", "Il est fatigué, et mais il travaille.", "Mais il est fatigué, il travaille et."], answer: "Il est fatigué, mais il travaille." },
+      { id: "a120-d5", type: "order", sentence: "Nous allons souvent au marché ensemble.", prompt: "빈도 부사 문장을 배열해 보세요." },
+      { id: "a120-d6", type: "dictation", sentence: "Elle chante très souvent." },
+      { id: "a120-d7", type: "dictation", sentence: "Je travaille beaucoup, mais j'aime ça." },
+    ],
     sections: [
       {
         heading: "얼마나 자주 — 동사 뒤에 빈도 부사",

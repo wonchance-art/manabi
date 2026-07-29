@@ -12,6 +12,15 @@ const chapters = [
     titleFr: "Les pronoms sujets et le verbe être",
     summary: "je/tu/il... 9개의 주어 대명사와 가장 중요한 동사 être. C'est와 구어의 만능 주어 on까지 함께 배워요.",
     duration: "약 9분",
+    drills: [
+      { id: "a101-d1", type: "fill", prompt: "Je ___ coréen.", answer: "suis" },
+      { id: "a101-d2", type: "fill", prompt: "Ils ___ médecins.", answer: "sont" },
+      { id: "a101-d3", type: "choice", prompt: "옳은 문장은?", choices: ["Elle est étudiante.", "Elle es étudiante.", "Elle être étudiante."], answer: "Elle est étudiante." },
+      { id: "a101-d4", type: "choice", prompt: "'우리는 친구예요'는?", choices: ["Nous sommes amis.", "Nous êtes amis.", "Nous sont amis."], answer: "Nous sommes amis." },
+      { id: "a101-d5", type: "order", sentence: "Je suis étudiant à Paris.", prompt: "être 문장을 배열해 보세요." },
+      { id: "a101-d6", type: "dictation", sentence: "Elle est de Busan." },
+      { id: "a101-d7", type: "dictation", sentence: "Nous sommes en France." },
+    ],
     sections: [
       {
         heading: "주어 인칭대명사 — 프랑스어 문장의 필수품",
@@ -101,6 +110,15 @@ const chapters = [
     titleFr: "Le verbe avoir",
     summary: "두 번째 필수 동사 avoir. 활용표와 함께, 배고픔·나이까지 avoir로 말하는 프랑스어 특유의 발상을 배워요.",
     duration: "약 8분",
+    drills: [
+      { id: "a102-d1", type: "fill", prompt: "Nous ___ deux chats.", answer: "avons" },
+      { id: "a102-d2", type: "fill", prompt: "Tu ___ faim ?", answer: "as" },
+      { id: "a102-d3", type: "choice", prompt: "옳은 문장은?", choices: ["Nous avons un chat.", "Nous avons être un chat.", "Nous sommes un chat."], answer: "Nous avons un chat." },
+      { id: "a102-d4", type: "choice", prompt: "'그녀는 목말라요'는?", choices: ["Elle a soif.", "Elle est soif.", "Elle a soife."], answer: "Elle a soif." },
+      { id: "a102-d5", type: "order", sentence: "Vous avez une question pour moi ?", prompt: "avoir 의문문을 배열해 보세요." },
+      { id: "a102-d6", type: "dictation", sentence: "J'ai un petit chien." },
+      { id: "a102-d7", type: "dictation", sentence: "Il a chaud aujourd'hui." },
+    ],
     sections: [
       {
         heading: "avoir 활용 — 리에종 주의보",
@@ -424,6 +442,15 @@ const chapters = [
     titleFr: "Le genre des noms",
     summary: "한국인이 가장 낯설어하는 개념. 왜 책상이 '남성'인지, 그리고 단어 끝부분으로 성을 추측하는 요령을 배워요.",
     duration: "약 9분",
+    drills: [
+      { id: "a111-d1", type: "choice", prompt: "여성 명사는?", choices: ["la maison", "le livre", "le pain"], answer: "la maison" },
+      { id: "a111-d2", type: "choice", prompt: "남성 명사는?", choices: ["le café", "la table", "la voiture"], answer: "le café" },
+      { id: "a111-d3", type: "fill", prompt: "Voici ___ mère de Paul.", answer: "la" },
+      { id: "a111-d4", type: "fill", prompt: "Voici ___ père de Marie.", answer: "le" },
+      { id: "a111-d5", type: "choice", prompt: "성이 다른 하나는?", choices: ["la fleur", "le pain", "le vin"], answer: "la fleur" },
+      { id: "a111-d6", type: "dictation", sentence: "La gare est ici." },
+      { id: "a111-d7", type: "dictation", sentence: "Le train est là." },
+    ],
     sections: [
       {
         heading: "문법적 성이란 — '남자답다/여자답다'가 아니에요",
@@ -488,6 +515,15 @@ const chapters = [
     titleFr: "Les articles",
     summary: "한국어에는 아예 없는 품사, 관사. 왜 프랑스어 명사는 거의 항상 관사를 데리고 다니는지 감을 잡아요.",
     duration: "약 8분",
+    drills: [
+      { id: "a112-d1", type: "fill", prompt: "J'ai ___ sœur.", answer: "une" },
+      { id: "a112-d2", type: "fill", prompt: "C'est ___ hôtel.", answer: "un" },
+      { id: "a112-d3", type: "choice", prompt: "옳은 짝은?", choices: ["une pomme", "un pomme", "des pomme"], answer: "une pomme" },
+      { id: "a112-d4", type: "choice", prompt: "'그 책들'은?", choices: ["les livres", "le livres", "la livres"], answer: "les livres" },
+      { id: "a112-d5", type: "order", sentence: "Elle a une amie à Paris.", prompt: "관사 문장을 배열해 보세요." },
+      { id: "a112-d6", type: "dictation", sentence: "Voici les enfants." },
+      { id: "a112-d7", type: "dictation", sentence: "C'est le café de Paul." },
+    ],
     sections: [
       {
         heading: "관사 없는 명사는 벌거벗은 명사",
@@ -1010,6 +1046,15 @@ const chapters = [
     titleFr: "Salutations et expressions de survie",
     summary: "첫 회화에 필요한 인사·예의 표현 세트. 한국어 존댓말 감각이 그대로 통하는 tu/vous 구분도 함께!",
     duration: "약 8분",
+    drills: [
+      { id: "a113-d1", type: "choice", prompt: "아침에 만난 이웃에게 하는 인사는?", choices: ["Bonjour !", "Bonsoir !", "Au revoir !"], answer: "Bonjour !" },
+      { id: "a113-d2", type: "choice", prompt: "고마움을 표현할 때는?", choices: ["Merci beaucoup.", "Pardon.", "Salut."], answer: "Merci beaucoup." },
+      { id: "a113-d3", type: "fill", prompt: "격식 있게 실례를 구할 때: ___-moi.", answer: "Excusez" },
+      { id: "a113-d4", type: "choice", prompt: "헤어질 때 인사는?", choices: ["Au revoir !", "Bonjour !", "Merci !"], answer: "Au revoir !" },
+      { id: "a113-d5", type: "order", sentence: "Bonjour, je m'appelle Minsu.", prompt: "첫 만남 인사를 배열해 보세요." },
+      { id: "a113-d6", type: "dictation", sentence: "Merci, au revoir !" },
+      { id: "a113-d7", type: "dictation", sentence: "Bonjour, ça va ?" },
+    ],
     sections: [
       {
         heading: "기본 인사 세트",
