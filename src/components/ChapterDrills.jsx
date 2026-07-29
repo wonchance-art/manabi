@@ -102,16 +102,16 @@ function ChoiceDrill({ drill, onResult, done }) {
  * 변형 드릴(RFC learning-path v1) — 새 문장으로 연습 후 관문 퀴즈(RefPatternCheck)로 가는 전 단계.
  * 채점은 로컬 표시 전용(SRS 연결은 관문 퀴즈가 담당 — v2에서 통합).
  */
-export default function ChapterDrills({ lang, drills }) {
+export default function ChapterDrills({ lang, drills, title, intro }) {
   const [results, setResults] = useState({});
   const answered = Object.keys(results).length;
   const right = Object.values(results).filter(Boolean).length;
   const record = (id) => (ok) => setResults((r) => (id in r ? r : { ...r, [id]: ok }));
   return (
     <section className="card fr-section">
-      <h2 className="fr-section__heading">변형 드릴 — 새 문장으로 손 풀기</h2>
+      <h2 className="fr-section__heading">{title ?? '변형 드릴 — 새 문장으로 손 풀기'}</h2>
       <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 14 }}>
-        이 챕터의 뼈를 처음 보는 문장에 적용해 보세요. 다 풀면 아래 패턴 체크로 마무리해요.
+        {intro ?? '이 챕터의 뼈를 처음 보는 문장에 적용해 보세요. 다 풀면 아래 패턴 체크로 마무리해요.'}
       </p>
       <ol style={{ display: 'flex', flexDirection: 'column', gap: 18, paddingLeft: 20, margin: 0 }}>
         {drills.map((d) => {
@@ -119,6 +119,9 @@ export default function ChapterDrills({ lang, drills }) {
           const ok = results[d.id];
           return (
             <li key={d.id}>
+              {d.sourceLabel && (
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 4 }}>복습 · {d.sourceLabel}</p>
+              )}
               {d.type === 'choice' && <ChoiceDrill drill={d} done={done} onResult={record(d.id)} />}
               {d.type === 'fill' && <InputDrill drill={d} lang={lang} done={done} onResult={record(d.id)} />}
               {d.type === 'dictation' && <InputDrill drill={d} lang={lang} done={done} onResult={record(d.id)} dictation />}

@@ -19,6 +19,7 @@ import InlineEdit from '../components/admin/InlineEdit';
 import { getChapterOverride, getOverridesForLang, mergeChapter } from '../lib/contentOverrides';
 import { getCourseLessonContext } from '../lib/learn/courseMapData';
 import { collectSrcAttributions } from '../lib/learn/sourceRefs';
+import { buildCumulativeReview } from '../lib/learn/cumulativeReview';
 
 function ExampleList({ examples, langCode, lang, slug, secIndex }) {
   if (!examples?.length) return null;
@@ -235,6 +236,7 @@ export default async function ReferenceChapterPage({ lang, slug }) {
   const chapter = mergeChapter(baseChapter, override);
   const sandwichVocabs = chapter.sections?.find(s => s?.type === 'vocabPreview')?.vocabs ?? [];
   const sourceRefs = collectSrcAttributions(chapter);
+  const reviewDrills = buildCumulativeReview(ref.getGrammarChapters(chapter.level), chapter.slug);
   // 이전/다음은 제목만 오버라이드 병합(slug·level은 병합 유틸이 base로 강제).
   const prev = basePrev ? mergeChapter(basePrev, overrideMap.get(basePrev.slug)) : null;
   const next = baseNext ? mergeChapter(baseNext, overrideMap.get(baseNext.slug)) : null;
@@ -610,6 +612,9 @@ export default async function ReferenceChapterPage({ lang, slug }) {
         <>
           {Array.isArray(chapter.drills) && chapter.drills.length > 0 && (
             <ChapterDrills lang={lang} drills={chapter.drills} />
+          )}
+          {reviewDrills.length > 0 && (
+            <ChapterDrills lang={lang} drills={reviewDrills} title="누적 복습 — 앞 챕터 다시 꺼내기" intro="여기까지 오느라 배운 것들, 아직 살아 있는지 가볍게 확인해요." />
           )}
           <RefPatternCheck
           quiz={quiz}
