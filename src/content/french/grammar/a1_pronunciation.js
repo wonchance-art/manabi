@@ -15,6 +15,15 @@ const chapters = [
       "le, les, des, nous, vous 등 끝 자음이 보통 안 들리는 단어들이, 다음 모음 앞에서 갑자기 울어난다? 그게 리에종이에요. " +
       "어떤 경우에 반드시 일어나고, 언제는 금지되는지 규칙을 배워요.",
     duration: "약 10분",
+    drills: [
+      { id: "a129-d1", type: "choice", prompt: "리에종을 반드시 하는 짝은?", choices: ["복수 관사 + 모음 명사", "et 뒤 + 모음", "명사 + 자음 형용사"], answer: "복수 관사 + 모음 명사" },
+      { id: "a129-d2", type: "choice", prompt: "리에종 금지 자리는?", choices: ["et 뒤", "관사+명사", "대명사+동사"], answer: "et 뒤" },
+      { id: "a129-d3", type: "fill", prompt: "les ___ → [레자미]로 이어 읽어요.", answer: "amis" },
+      { id: "a129-d4", type: "order", sentence: "Ils sont en France avec nous.", prompt: "리에종이 살아나게 배열해 보세요." },
+      { id: "a129-d5", type: "dictation", sentence: "Vous avez un ami ?" },
+      { id: "a129-d6", type: "dictation", sentence: "Les enfants sont ici." },
+      { id: "a129-d7", type: "dictation", sentence: "C'est un homme très gentil." },
+    ],
     sections: [
       {
         heading: "리에종의 세 등급 — 의무, 선택, 금지",
@@ -226,6 +235,15 @@ const chapters = [
       "le가 l'이 되고, je가 j'이 된다. 뒤 단어가 모음으로 시작할 때, " +
       "앞 단어의 모음 끝이 사라지는 엘리종을 배워요. 철저한 규칙이에요.",
     duration: "약 8분",
+    drills: [
+      { id: "a130-d1", type: "choice", prompt: "엘리종이 맞는 것은?", choices: ["l'école", "le école", "la école"], answer: "l'école" },
+      { id: "a130-d2", type: "choice", prompt: "옳은 표기는?", choices: ["j'habite", "je habite", "je h'abite"], answer: "j'habite" },
+      { id: "a130-d3", type: "fill", prompt: "je + ai → ___", answer: "j'ai" },
+      { id: "a130-d4", type: "order", sentence: "L'homme est là avec l'enfant.", prompt: "엘리종을 살려 배열해 보세요." },
+      { id: "a130-d5", type: "dictation", sentence: "J'ai l'adresse de l'hôtel." },
+      { id: "a130-d6", type: "dictation", sentence: "C'est l'ami de Marie." },
+      { id: "a130-d7", type: "dictation", sentence: "Il n'est pas là." },
+    ],
     sections: [
       {
         heading: "엘리종의 원칙 — e/a + 모음 시작 단어 → 아포스트로피",
@@ -386,6 +404,15 @@ const chapters = [
       "영어처럼 단어마다 강한 음절이 있지 않아요. 프랑스어 강세는 **리듬 그룹의 끝 음절**에 옵니다. " +
       "같은 길이 음절, 균등한 속도 — 이것이 프랑스어의 리듬감이에요.",
     duration: "약 9분",
+    drills: [
+      { id: "a131-d1", type: "choice", prompt: "프랑스어 강세는 어디에 실리나요?", choices: ["리듬 그룹의 마지막", "단어 첫음절", "아무 데나"], answer: "리듬 그룹의 마지막" },
+      { id: "a131-d2", type: "choice", prompt: "리듬 그룹은 어떻게 끊나요?", choices: ["의미 단위로 끊는다", "단어마다 끊는다", "음절마다 끊는다"], answer: "의미 단위로 끊는다" },
+      { id: "a131-d3", type: "fill", prompt: "Ça va ? 에서 끝을 올리는 곳: ___", answer: "va" },
+      { id: "a131-d4", type: "order", sentence: "Bonjour madame, ça va bien aujourd'hui ?", prompt: "리듬을 느끼며 배열해 보세요." },
+      { id: "a131-d5", type: "dictation", sentence: "Ça va très bien, merci." },
+      { id: "a131-d6", type: "dictation", sentence: "Au revoir, à demain !" },
+      { id: "a131-d7", type: "dictation", sentence: "Salut, ça va bien ?" },
+    ],
     sections: [
       {
         heading: "영어의 강세 vs. 프랑스어의 리듬",
