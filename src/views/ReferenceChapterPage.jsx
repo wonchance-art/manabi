@@ -13,6 +13,7 @@ import VocabRegisterCta from '../components/VocabRegisterCta';
 // 스토리 모듈(이야기로 확인) — 인터랙티브 채점은 클라이언트 경계로 분리(서버 페이지가 레지스트리를
 // 클라이언트 번들로 끌어오지 않도록). story 는 순수 직렬화 데이터라 props 로 그대로 넘긴다.
 import StoryCheck, { StoryLines } from './StoryCheck';
+import ChapterDrills from '../components/ChapterDrills';
 import ChapterAdminStrip from '../components/admin/ChapterAdminStrip';
 import InlineEdit from '../components/admin/InlineEdit';
 import { getChapterOverride, getOverridesForLang, mergeChapter } from '../lib/contentOverrides';
@@ -605,8 +606,12 @@ export default async function ReferenceChapterPage({ lang, slug }) {
           )}
         </section>
       ) : (
-        /* ── 패턴 체크 (3단계 퀴즈 + 통과 관문) ── */
-        <RefPatternCheck
+        /* ── 변형 드릴(있으면) → 패턴 체크 (3단계 퀴즈 + 통과 관문) ── */
+        <>
+          {Array.isArray(chapter.drills) && chapter.drills.length > 0 && (
+            <ChapterDrills lang={lang} drills={chapter.drills} />
+          )}
+          <RefPatternCheck
           quiz={quiz}
           lang={lang}
           langCode={ref.langCode}
@@ -615,7 +620,8 @@ export default async function ReferenceChapterPage({ lang, slug }) {
           intro={isIntro}
           next={next ? { href: `${ref.base}/grammar/${next.slug}`, title: next.title } : null}
           reviewLinks={reviewLinks}
-        />
+          />
+        </>
       )}
 
       {/* 읽음 기록 — 여기(챕터 끝)까지 스크롤해야 읽음 처리 */}
