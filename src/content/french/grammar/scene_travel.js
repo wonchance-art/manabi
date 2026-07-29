@@ -15,6 +15,15 @@ const chapters = [
     summary:
       "입국 절차에서 방문 목적과 체류 정보를 답하고, 수하물과 신고할 물품이 있는지 확인해요.",
     duration: "약 20분",
+    drills: [
+      { id: "a123-d1", type: "fill", prompt: "Nous venons ___ les vacances.", answer: "pour" },
+      { id: "a123-d2", type: "fill", prompt: "Je ___ cinq jours ici.", answer: "reste" },
+      { id: "a123-d3", type: "choice", prompt: "심사관 질문에 자연스러운 답은?", choices: ["Je loge à l'hôtel.", "Je loge le hôtel.", "L'hôtel loge à moi."], answer: "Je loge à l'hôtel." },
+      { id: "a123-d4", type: "choice", prompt: "'출장으로 왔어요'는?", choices: ["Je viens pour le travail.", "Je viens à le travail.", "Je travaille pour venir."], answer: "Je viens pour le travail." },
+      { id: "a123-d5", type: "order", sentence: "Je reste une semaine avec des amis.", prompt: "체류 계획을 배열해 보세요." },
+      { id: "a123-d6", type: "dictation", sentence: "Mon passeport est ici." },
+      { id: "a123-d7", type: "dictation", sentence: "Je viens de Corée du Sud." },
+    ],
     sections: [
       // 샌드위치 v2 시험 적용 — Je viens pour…·n\'est pas arrivé 계열은 배치 1과 동일 절차로 실재 확인. 대화는 자체 저작.
       {
@@ -304,6 +313,15 @@ const chapters = [
     summary:
       "공항에서 목적지행 표를 사고 출발 시각과 승강장을 확인한 뒤, 환승편을 놓치지 않게 물어요.",
     duration: "약 20분",
+    drills: [
+      { id: "a124-d1", type: "fill", prompt: "Un ___ pour Nice, s'il vous plaît.", answer: "billet" },
+      { id: "a124-d2", type: "fill", prompt: "Le train part de ___ voie ?", answer: "quelle" },
+      { id: "a124-d3", type: "choice", prompt: "'편도'는?", choices: ["un aller simple", "un aller-retour", "un billet retour"], answer: "un aller simple" },
+      { id: "a124-d4", type: "choice", prompt: "'몇 시에 떠나요?'는?", choices: ["Le train part à quelle heure ?", "Le train part quelle à heure ?", "Quelle part le train heure ?"], answer: "Le train part à quelle heure ?" },
+      { id: "a124-d5", type: "order", sentence: "Je voudrais un billet pour Lyon.", prompt: "발권 요청을 배열해 보세요." },
+      { id: "a124-d6", type: "dictation", sentence: "Le train est à l'heure." },
+      { id: "a124-d7", type: "dictation", sentence: "C'est la voie numéro deux." },
+    ],
     sections: [
       // 샌드위치 v2 시험 적용 — Je voudrais un billet… Tatoeba 실재 계열(배치 1 검증 절차 준용). 대화는 자체 저작.
       {
@@ -588,6 +606,15 @@ const chapters = [
     summary:
       "숙소에서 예약을 확인하고 예약자 정보와 숙박 기간을 말한 뒤, 조식 장소와 체크아웃 시각을 물어요.",
     duration: "약 20분",
+    drills: [
+      { id: "a125-d1", type: "fill", prompt: "J'ai une ___ pour deux nuits.", answer: "réservation" },
+      { id: "a125-d2", type: "fill", prompt: "La chambre est à quel ___ ?", answer: "étage" },
+      { id: "a125-d3", type: "choice", prompt: "체크인 때 하는 말은?", choices: ["J'ai réservé une chambre.", "Je réserve un chambre.", "La chambre me réserve."], answer: "J'ai réservé une chambre." },
+      { id: "a125-d4", type: "choice", prompt: "'와이파이 비밀번호'는?", choices: ["le mot de passe du wifi", "le passe du mot wifi", "le wifi de passe"], answer: "le mot de passe du wifi" },
+      { id: "a125-d5", type: "order", sentence: "La chambre est au troisième étage.", prompt: "층수 안내를 배열해 보세요." },
+      { id: "a125-d6", type: "dictation", sentence: "Voici votre clé, madame." },
+      { id: "a125-d7", type: "dictation", sentence: "Le petit déjeuner est à sept heures." },
+    ],
     sections: [
       // 샌드위치 v2 시험 적용 — J\'ai une réservation… Tatoeba 실재 계열(동일 절차). 대화는 자체 저작.
       {
@@ -871,6 +898,15 @@ const chapters = [
     summary:
       "숙소에서 수건과 와이파이 정보를 요청하고, 시설 고장이나 소음을 설명해 해결 방법과 객실 변경을 물어요.",
     duration: "약 20분",
+    drills: [
+      { id: "a126-d1", type: "fill", prompt: "Est-ce que je ___ avoir une serviette ?", answer: "peux" },
+      { id: "a126-d2", type: "fill", prompt: "La douche ne ___ pas.", answer: "fonctionne" },
+      { id: "a126-d3", type: "choice", prompt: "정중한 부탁은?", choices: ["Est-ce que je peux avoir de l'eau ?", "Je peux de l'eau !", "Donnez l'eau."], answer: "Est-ce que je peux avoir de l'eau ?" },
+      { id: "a126-d4", type: "choice", prompt: "'너무 시끄러워요'는?", choices: ["Il y a trop de bruit.", "Il est trop de bruit.", "Trop il y a de bruit."], answer: "Il y a trop de bruit." },
+      { id: "a126-d5", type: "order", sentence: "La climatisation ne fonctionne pas bien.", prompt: "문제 신고를 배열해 보세요." },
+      { id: "a126-d6", type: "dictation", sentence: "J'ai un problème avec la douche." },
+      { id: "a126-d7", type: "dictation", sentence: "La chambre est très froide." },
+    ],
     sections: [
       // 샌드위치 v2 시험 적용 — Est-ce que je peux avoir… Tatoeba 실재 계열(동일 절차). 대화는 자체 저작.
       {
@@ -1154,6 +1190,15 @@ const chapters = [
     summary:
       "식당에서 인원에 맞는 자리를 요청하고 메뉴와 추천을 확인한 뒤, 음식과 음료를 차례로 주문해요.",
     duration: "약 20분",
+    drills: [
+      { id: "a127-d1", type: "fill", prompt: "Une ___ pour deux personnes, s'il vous plaît.", answer: "table" },
+      { id: "a127-d2", type: "fill", prompt: "Le plat du ___ , s'il vous plaît.", answer: "jour" },
+      { id: "a127-d3", type: "choice", prompt: "주문할 때는?", choices: ["Je vais prendre le menu du jour.", "Je prends à le menu du jour.", "Le menu me prend."], answer: "Je vais prendre le menu du jour." },
+      { id: "a127-d4", type: "choice", prompt: "'물 한 병 주세요'는?", choices: ["Une bouteille d'eau, s'il vous plaît.", "Une eau de bouteille, s'il vous plaît.", "Bouteille une d'eau plaît."], answer: "Une bouteille d'eau, s'il vous plaît." },
+      { id: "a127-d5", type: "order", sentence: "Je vais prendre le plat du jour.", prompt: "주문 문장을 배열해 보세요." },
+      { id: "a127-d6", type: "dictation", sentence: "La carte, s'il vous plaît." },
+      { id: "a127-d7", type: "dictation", sentence: "C'est très bon, merci." },
+    ],
     sections: [
       // 샌드위치 v2 시험 적용(오너 확정: fr A1~A2) — Tatoeba 실재 확인: "Une table pour deux, s'il vous plaît." (#13360564). 나머지 문장은 자체 저작.
       {
@@ -1438,6 +1483,15 @@ const chapters = [
     summary:
       "식당에서 알레르기와 피해야 할 재료를 알리고 음식 성분을 확인한 뒤, 계산서와 결제 방법을 물어요.",
     duration: "약 20분",
+    drills: [
+      { id: "a128-d1", type: "fill", prompt: "Mon ami est ___ aux œufs.", answer: "allergique" },
+      { id: "a128-d2", type: "fill", prompt: "L'___ , s'il vous plaît.", answer: "addition" },
+      { id: "a128-d3", type: "choice", prompt: "'현금으로 낼게요'는?", choices: ["Je paie en espèces.", "Je paie dans espèces.", "Espèces je paie en."], answer: "Je paie en espèces." },
+      { id: "a128-d4", type: "choice", prompt: "'같이 계산해요'는?", choices: ["On paie ensemble.", "On ensemble paie.", "Paie on ensemble."], answer: "On paie ensemble." },
+      { id: "a128-d5", type: "order", sentence: "Est-ce qu'il y a du lait dedans ?", prompt: "성분 확인을 배열해 보세요." },
+      { id: "a128-d6", type: "dictation", sentence: "Je paie par carte." },
+      { id: "a128-d7", type: "dictation", sentence: "Le repas est très bon, merci." },
+    ],
     sections: [
       // 샌드위치 v2 시험 적용 — L\'addition, s\'il vous plaît. Tatoeba 실재 계열(동일 절차). 대화는 자체 저작.
       {

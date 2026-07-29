@@ -11,6 +11,15 @@ const chapters = [
     summary:
       "목적지 위치를 묻고, 들은 안내를 확인한 뒤 노선·환승·하차 지점까지 이어서 물어요.",
     duration: "약 20분",
+    drills: [
+      { id: "a121-d1", type: "fill", prompt: "Où ___ la station de métro ?", answer: "est" },
+      { id: "a121-d2", type: "fill", prompt: "Vous pouvez ___, s'il vous plaît ?", answer: "répéter", hint: "다시 말해 달라" },
+      { id: "a121-d3", type: "choice", prompt: "'오른쪽으로 도세요'는?", choices: ["Tournez à droite.", "Tournez à gauche.", "Allez tout droit."], answer: "Tournez à droite." },
+      { id: "a121-d4", type: "choice", prompt: "'여기서 멀어요?'는?", choices: ["C'est loin d'ici ?", "C'est loin à ici ?", "Loin c'est d'ici ?"], answer: "C'est loin d'ici ?" },
+      { id: "a121-d5", type: "order", sentence: "Vous prenez la deuxième rue à gauche.", prompt: "길 안내를 배열해 보세요." },
+      { id: "a121-d6", type: "dictation", sentence: "La gare est tout droit." },
+      { id: "a121-d7", type: "dictation", sentence: "Le bus arrive bientôt, non ?" },
+    ],
     sections: [
       // 샌드위치 v2 시험 적용 — 문형 où se trouve는 Tatoeba 다수 실재(예: #13734709 "Où se trouve Samir ?"). 대화 자체는 자체 저작.
       {
@@ -312,6 +321,15 @@ const chapters = [
     summary:
       "아픈 부위와 증상을 말하고 도움을 요청한 뒤, 잃어버린 물건과 특징을 차분히 설명해요.",
     duration: "약 20분",
+    drills: [
+      { id: "a122-d1", type: "fill", prompt: "J'ai mal ___ pieds.", answer: "aux" },
+      { id: "a122-d2", type: "fill", prompt: "J'ai ___ mon passeport.", answer: "perdu", hint: "잃어버렸어요(고정구)" },
+      { id: "a122-d3", type: "choice", prompt: "'도와주세요!'는?", choices: ["Aidez-moi !", "Aider-moi !", "Moi aidez !"], answer: "Aidez-moi !" },
+      { id: "a122-d4", type: "choice", prompt: "약국에서 하는 말은?", choices: ["J'ai mal au ventre.", "Je suis un ventre.", "Mon ventre est moi."], answer: "J'ai mal au ventre." },
+      { id: "a122-d5", type: "order", sentence: "J'ai besoin d'un médecin maintenant.", prompt: "도움 요청을 배열해 보세요." },
+      { id: "a122-d6", type: "dictation", sentence: "J'ai très mal ici." },
+      { id: "a122-d7", type: "dictation", sentence: "Ma valise est perdue." },
+    ],
     sections: [
       // 샌드위치 v2 시험 적용 — avoir mal à·J\'ai perdu 문형은 Tatoeba 다수 실재 계열. 대화는 자체 저작.
       {
