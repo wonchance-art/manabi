@@ -207,8 +207,8 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-### todo
 - 📚 대사 IPA 커버리지 린트 report-only 신설(발주 #150 5126671326): 객체 단위 파싱 필수 — `codex2/lint-dialogue-ipa`
+### todo
 ### done (최근)
 - P2 리옹 시각 엔진 선행: `groundStyle: 'variant-v1'` opt-in 지구별 PLAZA 지면 3종과
   범용 props 4종(야간 점등 가로등 포함)을 등록하고, 미설정 25도시 base=A=B 렌더 불변·
