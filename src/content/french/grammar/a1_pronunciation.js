@@ -10,9 +10,9 @@ const chapters = [
     order: 2,
     title: "자음 이어붙이기 — 듣기 편하게",
     topic: "리에종(liaison)",
-    titleFr: "La liaison — quand les consonnes réveillent",
+    titleFr: "La liaison — quand les consonnes se réveillent",
     summary:
-      "le, les, des, nous, vous 등 끝 자음이 보통 안 들리는 단어들이, 다음 모음 앞에서 갑자기 울어난다? 그게 리에종이에요. " +
+      "les, des, nous, vous 등 끝 자음이 보통 안 들리는 단어들이, 다음 모음 앞에서 갑자기 살아난다? 그게 리에종이에요. " +
       "어떤 경우에 반드시 일어나고, 언제는 금지되는지 규칙을 배워요.",
     duration: "약 10분",
     drills: [
@@ -31,7 +31,7 @@ const chapters = [
         patternKo: "통사 환경(syntaxe)에 따라 리에종 규칙이 바뀐다",
         body:
           "프랑스어는 음운적으로 자음군을 싫어해요. 끝 자음이 모음 앞에 올 때 이을 수 있으면 자연스럽게 이어붙이는데, " +
-          "이 '리에종'은 단순히 개인의 선택이 아니라 **통사 문맥에 따라** 의무·선택·금지로 나뉨니다.\n\n" +
+          "이 '리에종'은 단순히 개인의 선택이 아니라 **통사 문맥에 따라** 의무·선택·금지로 나뉩니다.\n\n" +
           "이제부터 배울 규칙을 익히고 실제 프랑스인의 말 속에서 인식하면, 듣기 실력이 비약적으로 늘어요.",
         examples: [
           {
@@ -48,15 +48,15 @@ const chapters = [
           },
           {
             fr: "petit ami",
-            ipa: "[pətit‿ami] 또는 [pətitami]",
+            ipa: "[pətit‿ami]",
             ko: "남자친구",
-            note: "형용사 + 명사: 선택 리에종 (음절 경계 명확화 또는 음운적 연결)",
+            note: "명사 앞 짧은 형용사 + 명사: 리에종을 해요 (안 하면 [pəti ami]로 어색해요)",
           },
           {
-            fr: "et enfant",
-            ipa: "[ɛ ɑ̃fɑ̃]",
-            ko: "그리고 아이",
-            note: "et 다음: 금지 리에종 (음절 경계 보존)",
+            fr: "et un enfant",
+            ipa: "[e œ̃nɑ̃fɑ̃]",
+            ko: "그리고 아이 한 명",
+            note: "et 다음: 금지 리에종 — et의 t는 잇지 않아요 (un+enfant 안쪽 리에종은 그대로)",
           },
         ],
         tip:
@@ -146,17 +146,17 @@ const chapters = [
         patternKo: "금지: 특정 문법 경계에서는 음절을 명확히 분리",
         body:
           "프랑스어는 특정 **음절 경계**를 명확히 유지해야 하는 경우가 있어요. 이런 곳에 리에종을 하면 언어 사용자가 어색함을 느낍니다.\n\n" +
-          "• **et 뒤**: et alors, et enfant → [ɛ ɑ̃fɑ̃] (절대 [ɛtɑ̃fɑ̃] 금지). 이유: et는 의미상 독립적인 절을 잇는 연결사\n" +
-          "• **고유명사 뒤**: Paris est → [paʁi ɛ] (금지). Albert Einstein → [albɛʁ ‖ ɛ̃ʃtajn] (각각 발음)\n" +
-          "• **단수 명사 + h aspiré 형용사**: le héros [lə ero] (금지 리에종, l' 융합도 안 함). l + h aspiré는 음절을 분리\n" +
-          "• **단수 명사 + 뒤따르는 형용사**: chat adorable [ʃa ado‌ʁabl] (금지, 형용사가 뒤에 오면 음절 분리). " +
-          "단, 전통적으로 bon, petit, grand 같은 빈 형용사가 명사 앞에 오면 선택적 리에종",
+          "• **et 뒤**: et alors [e alɔʁ], et un enfant [e œ̃nɑ̃fɑ̃] (절대 [etœ̃nɑ̃fɑ̃] 금지). 이유: et는 의미상 독립적인 절을 잇는 연결사\n" +
+          "• **고유명사 뒤**: Paris est → [paʁi ɛ] (금지). Thomas arrive → [tɔma aʁiv] (이름 끝 자음도 잇지 않아요)\n" +
+          "• **관사 + h aspiré 명사**: le héros [lə eʁo] (금지 리에종, l' 융합도 안 함). h aspiré 앞에서는 음절을 분리\n" +
+          "• **단수 명사 + 뒤따르는 형용사**: chat adorable [ʃa adɔʁabl] (금지, 형용사가 뒤에 오면 음절 분리). " +
+          "단, bon·petit·grand처럼 짧은 형용사가 명사 앞에 오면 리에종을 해요 — un petit ami [œ̃ pətitami] (전통 규범은 의무로 분류)",
         examples: [
           {
-            fr: "et enfant",
-            ipa: "[ɛ ɑ̃fɑ̃]",
-            ko: "그리고 아이",
-            note: "et 뒤: 절대 금지. [ɛtɑ̃fɑ̃] 금지.",
+            fr: "et un enfant",
+            ipa: "[e œ̃nɑ̃fɑ̃]",
+            ko: "그리고 아이 한 명",
+            note: "et 뒤: 절대 금지 — [etœ̃nɑ̃fɑ̃]처럼 잇지 않아요.",
           },
           {
             fr: "Paris est beau",
@@ -166,7 +166,7 @@ const chapters = [
           },
           {
             fr: "le héros",
-            ipa: "[lə ero]",
+            ipa: "[lə eʁo]",
             ko: "영웅",
             note: "h aspiré 앞: 금지 리에종. l' 융합도 안 함.",
           },
@@ -322,7 +322,7 @@ const chapters = [
           },
           {
             fr: "le héros",
-            ipa: "[lə ero]",
+            ipa: "[lə eʁo]",
             ko: "영웅",
             note: "h aspiré: 엘리종 금지 (X l'héros)",
           },
@@ -423,7 +423,7 @@ const chapters = [
           "**프랑스어 강세**: 불규칙이 없어요. 대신 **음절이 균등하게 이어지다가**, **의미상 묶음(그룹)의 끝 음절**에만 약한 강세를 줍니다.\n\n" +
           "예: Je vais à la gare demain.\n" +
           "  = [ʒə] + [ve] + [a] + [la] + **[gaʁ]** + [də] + [mɛ̃]\n\n" +
-          "마지막 의미 그룹이 'demain'의 첫음절 [dəmɛ̃]인데, 여기서 [mɛ̃]에 약한 강세.\n" +
+          "마지막 의미 그룹이 'demain' [dəmɛ̃]인데, 그 끝음절 [mɛ̃]에 약한 강세.\n" +
           "하지만 영어 같은 강한 스트레스는 아니고, 음높이와 길이 미세 변화로 표현돼요.",
         examples: [
           {
@@ -485,12 +485,12 @@ const chapters = [
       },
       {
         heading: "음절 등길이 원칙 — 균등하고 빠르게",
-        pattern: "모든 음절이 같은 길이(음향상 약 0.1초), 영어처럼 장단 차이 없음",
+        pattern: "모든 음절이 거의 같은 길이, 영어처럼 장단 차이 없음",
         patternKo: "프랑스어 음절은 거의 같은 길이를 유지하면서 빠르게 이어진다",
         body:
           "프랑스어의 가장 눈에 띄는 특징 중 하나는 **음절 등길이**예요. 영어처럼 강한 음절과 약한 음절의 길이 차이가 거의 없어요.\n\n" +
           "**영어**: stressed syllables are LONG / unstressed are SHORT → Photo [ˈfoʊ̯.toʊ̯] (첫째 음절 길음)\n" +
-          "**프랑스어**: [fo.to.gʁa.fi] — 모든 음절이 약 같은 길이, 균등한 속도\n\n" +
+          "**프랑스어**: [fɔ.tɔ.gʁa.fi] — 모든 음절이 거의 같은 길이, 균등한 속도\n\n" +
           "이것이 프랑스어가 '리듬감 있고 빠르고 음악적'으로 들리는 이유에요. 음절을 쪼개면 일정한 박자감이 생깁니다.",
         examples: [
           {
