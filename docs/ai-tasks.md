@@ -15,8 +15,11 @@
 ## Codex-1 (codex/*)
 ### doing
 ### todo
-- 📚 Tatoeba fr A2 스냅샷 v2 수집(발주 #150 5126671088): 10문형×12~20문장·CC BY/CC0만·결정성 2회 — `codex/tatoeba-fr-v2`
 ### done (최근)
+- Tatoeba fr A2 스냅샷 v2: unstable API `paging.next` 페이지네이션으로 10문형×20문장
+  200건을 CC BY 2.0 FR·CC0 allowlist와 문장별 sourceUrl로 고정하고, 동일 쿼리 2회
+  byte-identical SHA·스키마/라이선스 전수 계약·정본 전체 259파일/2,511테스트 green을 검증
+  (`codex/tatoeba-fr-v2`, 구현 8b20d9e, base 1c3a03f)
 - 커리큘럼 메타 R1 + 코스 지도 R3: 챕터 `prerequisites`·`formulaic` 스키마/동일 트랙
   참조 계약과 권장 선행·장면 고정구 배지, 상세 도입 안내를 시스템 코드에 연결하고
   콘텐츠 데이터 무변경·전체 250파일/2,483테스트 green을 고정
