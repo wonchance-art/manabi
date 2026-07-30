@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { getRefLang } from '../content/refLangs';
 import { buildChapterQuiz } from '../lib/refQuiz';
 import { refInline, refMain, refPron, Callout, CALLOUT_ORDER, RefParallel, RefHanjaBridge, LevelDot, JaText } from './refShared';
 import RefReadMark from '../components/RefReadMark';
@@ -17,7 +16,6 @@ import ChapterDrills from '../components/ChapterDrills';
 import ChapterAdminStrip from '../components/admin/ChapterAdminStrip';
 import InlineEdit from '../components/admin/InlineEdit';
 import { getChapterOverride, getOverridesForLang, mergeChapter } from '../lib/contentOverrides';
-import { getCourseLessonContext } from '../lib/learn/courseMapData';
 import { collectSrcAttributions } from '../lib/learn/sourceRefs';
 import { buildCumulativeReview } from '../lib/learn/cumulativeReview';
 
@@ -212,9 +210,7 @@ export function FormulaicChapterIntro({ formulaic }) {
 /**
  * 언어 레퍼런스 — 문법 챕터 상세 페이지 (프랑스어·일본어·영어 공용)
  */
-export default async function ReferenceChapterPage({ lang, slug }) {
-  const ref = getRefLang(lang);
-  const data = ref?.getChapter(slug);
+export default async function ReferenceChapterPage({ lang, slug, registry: ref, data, courseLesson }) {
   const backHref = `/lessons?lang=${lang}&view=ref`;
 
   // 콘텐츠 오버라이드 — 원본 위에 오너 수정본을 병합(실패 시 조용히 원본 렌더).
@@ -241,7 +237,6 @@ export default async function ReferenceChapterPage({ lang, slug }) {
   const prev = basePrev ? mergeChapter(basePrev, overrideMap.get(basePrev.slug)) : null;
   const next = baseNext ? mergeChapter(baseNext, overrideMap.get(baseNext.slug)) : null;
   const meta = ref.getLevelMeta(chapter.level);
-  const courseLesson = getCourseLessonContext(lang, chapter.level, chapter.slug);
   // 인트로 레벨(OT/A0) — "간단히 알고 가면 좋을 것". 카나 외에는 관문(패턴 체크) 없이 읽으면 끝.
   const isIntro = ref.isIntroLevel?.(chapter.level);
   // 첫 정규 레벨 라벨 — 인트로 안내 카드에서 "본격 학습은 …부터" 문구에 사용
