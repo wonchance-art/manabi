@@ -276,7 +276,7 @@
 ## Codex-3 (codex3/*) — 게임 시스템 확장 (타 기기)
 ### doing
 ### todo
-- 📚 /learn 진도·스트릭 위젯(발주 #150 5126671497, draft — merge는 오너 승인 후) — `codex3/learn-progress-widget` ← 피벗 후 우선, 아래 월드 항목 동결
+- 📚 /learn 진도·스트릭 위젯(발주 5126671497) → **구현 #706 도착·Claude 게이트 green(lint 2종+vitest 2508) — 오너 승인 대기(draft 유지)** ← 피벗 후 우선, 아래 월드 항목 동결
 - (P0 공통) 로컬 clone 이전 확인 코멘트
 - S1 STAMP_ALBUM_NODES 85 원자 전환(선행 #387 충족 — 즉시 착수): #150 5046785938
 - S4 수집 연출 정합 → S2 앨범 지역 탭·수집률 → S3 마일스톤 보상 v1(localStorage·DB 금지)
@@ -342,7 +342,7 @@
 ## Codex-4 (codex4/*) — 성능·인프라 (타 기기)
 ### doing
 ### todo
-- 📚 /learn 콘텐츠 lazy-load 벤치→분할(발주 #150 5126671583): refRegistry 시그니처 보존 판정 선행 — `codex4/learn-lazy-load` ← 피벗 후 우선, 아래 월드 항목 동결
+- 📚 /learn 콘텐츠 lazy-load(발주 5126671583) → **벤치·RFC #707 merge, route-only 구현 승인·allowlist 15paths 회신(5127681745)** — 구현 PR 대기 ← 피벗 후 우선, 아래 월드 항목 동결
 - P0 (운영 필수·최우선) 로컬 clone 이전 + 확인 코멘트: #150 5046786117
 - P1 geo lazy-load 구현(RFC #394 승인 — 실패 UX·?spawn= 정합·scene race 주의 3건 코멘트 참조)
 ### done (최근)
