@@ -2380,7 +2380,7 @@ export const REF_GRAMMAR_MANIFEST = {
               "order": 2,
               "title": "자음 이어붙이기 — 듣기 편하게",
               "topic": "리에종(liaison)",
-              "summary": "les, des, nous, vous 등 끝 자음이 보통 안 들리는 단어들이, 다음 모음 앞에서 갑자기 살아난다? 그게 리에종이에요. 어떤 경우에 반드시 일어나고, 언제는 금지되는지 규칙을 배워요.",
+              "summary": "A0 '소리 잇기'에서 맛본 리에종 — 이제 규칙으로 승급할 차례예요. 어떤 경우에 반드시 일어나고(의무), 해도 되고(선택), 절대 안 되는지(금지)를 체계로 배워요.",
               "duration": "약 10분",
               "courseLesson": {
                 "lessonRef": {

@@ -645,7 +645,7 @@ const chapters = [
           "프랑스어 형용사는 **원칙적으로 명사 뒤**에 와요.\n\n" +
           "un vin **rouge**(직역: 와인 빨간), une voiture **française**. 색깔·국적·모양 등 대부분의 형용사가 뒤에 붙어요.",
         examples: [
-          { fr: "un vin rouge", ipa: "[œ̃ vɛ̃ ʁuʒ]", ko: "레드 와인", note: "명사 + 형용사 어순" },
+          { fr: "un vin rouge", ipa: "[œ̃ vɛ̃ ʁuʒ]", ko: "레드 와인", note: "명사 + 형용사 어순 — A0 어순 워밍업에서 본 그 예문이에요" },
           { fr: "une voiture française", ipa: "[yn vwatyʁ fʁɑ̃sɛz]", ko: "프랑스 자동차" },
           { fr: "un film intéressant", ipa: "[œ̃ film ɛ̃teʁɛsɑ̃]", ko: "재미있는 영화" },
         ],
