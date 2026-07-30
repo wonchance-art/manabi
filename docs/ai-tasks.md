@@ -342,7 +342,7 @@
 ## Codex-4 (codex4/*) — 성능·인프라 (타 기기)
 ### doing
 ### todo
-- 📚 /learn 콘텐츠 lazy-load(발주 5126671583) → **벤치·RFC #707 merge, route-only 구현 승인·allowlist 15paths 회신(5127681745)** — 구현 PR 대기 ← 피벗 후 우선, 아래 월드 항목 동결
+- 🏁 /learn 콘텐츠 lazy-load 완결(발주 5126671583): RFC #707 → 구현 #709 merge — grammar 그래프 gzip 2,787,044→61,894B(-97.78%)·/learn 초기 회귀 0·comparator 계약 테스트·배선 diff 0 ← 아래 월드 항목 동결
 - P0 (운영 필수·최우선) 로컬 clone 이전 + 확인 코멘트: #150 5046786117
 - P1 geo lazy-load 구현(RFC #394 승인 — 실패 UX·?spawn= 정합·scene race 주의 3건 코멘트 참조)
 ### done (최근)
