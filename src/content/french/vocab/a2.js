@@ -745,6 +745,8 @@ const themes = {
       name: "동사 확장",
       icon: "🚀",
       words: [
+        { fr: "rater", ipa: "[ʁate]", ko: "놓치다, 망치다", pos: "v.", ex: { fr: "J'ai raté le bus ce matin.", ko: "오늘 아침에 버스를 놓쳤어요." } },
+        { fr: "se lever", ipa: "[sə ləve]", ko: "일어나다", pos: "v.pr.", ex: { fr: "Nous nous levons à sept heures.", ko: "우리는 7시에 일어나요." } },
         { fr: "lire", ipa: "[liʁ]", ko: "읽다", pos: "v.", ex: { fr: "Tu lis ce livre ?", ko: "이 책 읽어?" } },
         { fr: "voir", ipa: "[vwaʁ]", ko: "보다, 만나다", pos: "v.", ex: { fr: "On se voit demain !", ko: "내일 보자!" } },
         { fr: "connaître", ipa: "[kɔnɛtʁ]", ko: "알다, 아는 사이다", pos: "v.", ex: { fr: "On se connaît depuis longtemps.", ko: "우리는 오래전부터 아는 사이예요." } },

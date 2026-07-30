@@ -2268,7 +2268,7 @@ export const REF_GRAMMAR_MANIFEST = {
         },
         {
           "key": "A1",
-          "vocabCount": 397,
+          "vocabCount": 425,
           "bunkeiAvailable": true,
           "bunkeiChapterSlugs": [
             "a1-01-pronouns-etre",
@@ -3047,7 +3047,7 @@ export const REF_GRAMMAR_MANIFEST = {
         },
         {
           "key": "A2",
-          "vocabCount": 638,
+          "vocabCount": 640,
           "bunkeiAvailable": true,
           "bunkeiChapterSlugs": [
             "a2-01-passe-compose-avoir",

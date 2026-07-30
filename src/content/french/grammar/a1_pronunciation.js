@@ -476,9 +476,9 @@ const chapters = [
             note: "3개 그룹: 주어·동사 / 전치사구 / 시간표현",
           },
           {
-            fr: "Quand je suis arrivé, tout le monde dormait.",
-            ipa: "[kɑ̃ ʒə sɥi aʁive] / [tu lə mɔ̃d dɔʁmɛ]",
-            ko: "내가 도착했을 때, 모두 자고 있었어요.",
+            fr: "Quand je suis fatigué, je reste à la maison.",
+            ipa: "[kɑ̃ ʒə sɥi fatiɡe] / [ʒə ʁɛst a la mɛzɔ̃]",
+            ko: "피곤할 때, 나는 집에 있어요.",
             note: "2개 그룹: 때 절 / 주절",
           },
         ],
