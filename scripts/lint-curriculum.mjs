@@ -275,8 +275,21 @@ export async function runCurriculumLint() {
           }
         }
       }
+      // 불규칙 어간 활용형(futur simple·과거분사 등)은 어간이 달라 stem 매칭이 못 잇는다.
+      // 해당 문형 챕터(A2 futur·passé composé)가 직접 가르치는 형태이므로, 원형이 등재된
+      // 경우에 한해 문법 챕터 자산으로 간주해 커버로 센다.
+      const GRAMMAR_FORM_LEMMA = {
+        sera: 'être', serai: 'être', fera: 'faire', ferai: 'faire',
+        ira: 'aller', irai: 'aller', irons: 'aller', iront: 'aller',
+        allé: 'aller', allée: 'aller', allés: 'aller', allées: 'aller',
+        ayez: 'avoir', vus: 'voir', vue: 'voir',
+        veut: 'vouloir', venons: 'venir', devez: 'devoir', doit: 'devoir',
+        levons: 'lever',
+      };
       const stemHit = (w) => {
         if (inventory.has(w)) return true;
+        const lemma = GRAMMAR_FORM_LEMMA[w];
+        if (lemma && inventory.has(lemma)) return true;
         const stem = w.slice(0, Math.max(4, w.length - 3));
         for (const h of inventory) {
           if (h.startsWith(stem) || w.startsWith(h.slice(0, Math.max(4, h.length - 3)))) return true;
