@@ -273,6 +273,10 @@
 
 ## Codex-3 (codex3/*) — 게임 시스템 확장 (타 기기)
 ### doing
+- `/learn` 진도·스트릭 위젯: 기존 게스트 localStorage 진도·활동 정본을 재사용해
+  레벨별 방문/완료 수와 연속 학습일·첫 방문 빈 상태를 표면화
+  (`codex3/learn-progress-widget`, base `3e5ce2909d8716da6861f67a028d3c51711191bd`,
+  #150 코멘트 5126671497, draft·오너 승인 게이트)
 ### todo
 - (P0 공통) 로컬 clone 이전 확인 코멘트
 - S1 STAMP_ALBUM_NODES 85 원자 전환(선행 #387 충족 — 즉시 착수): #150 5046785938
