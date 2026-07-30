@@ -66,7 +66,7 @@ const chapters = [
         examples: [
           { en: "I prefer the smaller one.", ko: "저는 더 작은 걸로 할게요." },
           { en: "Which shoes are yours? The black ones.", ko: "어느 신발이 당신 것인가요? 검은색 신발들이에요." },
-          { en: "This pen does not work. Can I use that one?", ko: "이 펜은 안 써져요. 저 펜을 써도 될까요?" },
+          { en: "This pen doesn't work. Can I use that one?", ko: "이 펜은 안 써져요. 저 펜을 써도 될까요?" },
         ],
         tip:
           "this one, that one, these ones, those ones처럼 지시사와 함께 쓸 수도 있어요. 다만 문맥이 아주 분명하면 'I like these.'처럼 ones를 생략하는 편이 더 자연스러울 때도 있어요.",
