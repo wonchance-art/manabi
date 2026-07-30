@@ -207,9 +207,11 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-- 📚 대사 IPA 커버리지 린트 report-only 신설(발주 #150 5126671326): 객체 단위 파싱 필수 — `codex2/lint-dialogue-ipa`
 ### todo
 ### done (최근)
+- 📚 대사 IPA 커버리지 린트(report-only): 4트랙 grammar의 화자 객체 469개를
+  객체 단위로 스캔해 IPA 누락 176개를 파일별 라인으로 보고하고 단일행·다행 픽스처를 고정
+  (`codex2/lint-dialogue-ipa`, 구현 e9694d4, base 1c3a03f5d9b9175ef300e4c4d8d8199504e9677b)
 - P2 리옹 시각 엔진 선행: `groundStyle: 'variant-v1'` opt-in 지구별 PLAZA 지면 3종과
   범용 props 4종(야간 점등 가로등 포함)을 등록하고, 미설정 25도시 base=A=B 렌더 불변·
   리옹 전후 crop 4장·전체 235/2,282 green을 검증
