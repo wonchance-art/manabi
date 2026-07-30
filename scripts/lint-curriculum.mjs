@@ -311,6 +311,38 @@ export async function runCurriculumLint() {
     warnings.push(`french 어휘 대조 실패: ${e}`);
   }
 
+  // (g) 레벨 간 동일 예문 감시 (fr) — 프리뷰→본편 재노출은 참조 표기가 정석(P13).
+  // 무표기 재사용 신규 유입을 잡기 위한 report-only 기준선 감시. 기준선 = 2026-07-30 수리 후 실측.
+  {
+    const XLEVEL = {
+      A0: ['a0.js'],
+      A1: ['a1.js', 'a1_expansion.js', 'a1_pronunciation.js', 'a1_sandwich_pilot.js', 'scene_travel.js', 'scene_emergency.js'],
+      A2: ['a2.js', 'a2_scenes.js'],
+    };
+    const XBASE = { 'A0↔A1': 8, 'A0↔A2': 0, 'A1↔A2': 0 };
+    const grammarDir = path.join(REPO_ROOT, 'src/content/french/grammar');
+    const norm = (x) => x.trim().replace(/[?!.…]+$/u, '').toLowerCase();
+    const sets = {};
+    for (const [lv, files] of Object.entries(XLEVEL)) {
+      const set = new Set();
+      for (const f of files) {
+        const src = await fs.readFile(path.join(grammarDir, f), 'utf8');
+        for (const m of src.matchAll(/fr: "((?:[^"\\]|\\.)*)"/g)) {
+          const k = norm(m[1]);
+          if (k.length > 3) set.add(k);
+        }
+      }
+      sets[lv] = set;
+    }
+    for (const pair of [['A0', 'A1'], ['A0', 'A2'], ['A1', 'A2']]) {
+      const key = `${pair[0]}↔${pair[1]}`;
+      const inter = [...sets[pair[0]]].filter((k) => sets[pair[1]].has(k));
+      if (inter.length > (XBASE[key] ?? 0)) {
+        warnings.push(`french/${key}: 레벨 간 동일 예문 ${inter.length}건 (기준선 ${XBASE[key]}) — 신규 유입 의심: ${inter.slice(0, 5).join(' | ')}`);
+      }
+    }
+  }
+
   return { errors, warnings };
 }
 

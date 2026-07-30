@@ -12,8 +12,8 @@ const chapters = [
     topic: "리에종(liaison)",
     titleFr: "La liaison — quand les consonnes se réveillent",
     summary:
-      "les, des, nous, vous 등 끝 자음이 보통 안 들리는 단어들이, 다음 모음 앞에서 갑자기 살아난다? 그게 리에종이에요. " +
-      "어떤 경우에 반드시 일어나고, 언제는 금지되는지 규칙을 배워요.",
+      "A0 '소리 잇기'에서 맛본 리에종 — 이제 규칙으로 승급할 차례예요. " +
+      "어떤 경우에 반드시 일어나고(의무), 해도 되고(선택), 절대 안 되는지(금지)를 체계로 배워요.",
     duration: "약 10분",
     drills: [
       { id: "a129-d1", type: "choice", prompt: "리에종을 반드시 하는 짝은?", choices: ["복수 관사 + 모음 명사", "et 뒤 + 모음", "명사 + 자음 형용사"], answer: "복수 관사 + 모음 명사" },
@@ -30,6 +30,7 @@ const chapters = [
         pattern: "모음 앞 끝 자음: 의무 / 선택 / 금지 환경으로 나뉨",
         patternKo: "통사 환경(syntaxe)에 따라 리에종 규칙이 바뀐다",
         body:
+          "A0 «'옷이→오시', 프랑스어에도 있다»에서 리에종의 원리와 필수 자리 네 가지를 맛봤죠. 이 챕터의 증분은 그 목록을 **의무·선택·금지 세 등급 체계**로 넓히고, 음가 변화와 금지 환경까지 정밀하게 만드는 거예요.\n\n" +
           "프랑스어는 음운적으로 자음군을 싫어해요. 끝 자음이 모음 앞에 올 때 이을 수 있으면 자연스럽게 이어붙이는데, " +
           "이 '리에종'은 단순히 개인의 선택이 아니라 **통사 문맥에 따라** 의무·선택·금지로 나뉩니다.\n\n" +
           "이제부터 배울 규칙을 익히고 실제 프랑스인의 말 속에서 인식하면, 듣기 실력이 비약적으로 늘어요.",
@@ -38,7 +39,7 @@ const chapters = [
             fr: "les amis",
             ipa: "[lezami]",
             ko: "친구들",
-            note: "한정사 + 명사: 의무 리에종 (s→[z])",
+            note: "한정사 + 명사: 의무 리에종 (s→[z]) — A0에서 본 대표 예문이에요",
           },
           {
             fr: "les élèves",
@@ -78,9 +79,9 @@ const chapters = [
           "정확히: les, des, les amis / nous avons [nuzavɔ̃] / trois ans [tʁwazɑ̃] 는 명백한 의무 리에종.",
         examples: [
           {
-            fr: "les amis",
-            ipa: "[lezami]",
-            ko: "친구들",
+            fr: "les enfants",
+            ipa: "[lezɑ̃fɑ̃]",
+            ko: "아이들",
             note: "한정사 les 끝 s → [z]",
           },
           {
@@ -190,10 +191,10 @@ const chapters = [
           "• **t, n**: 그대로 [t]·[n] — petit ami [pətit‿ami], bon ami [bɔn‿ami]",
         examples: [
           {
-            fr: "les amis",
-            ipa: "[lezami]",
-            ko: "친구들",
-            note: "s → [z]",
+            fr: "des hôtels",
+            ipa: "[dezotɛl]",
+            ko: "호텔들",
+            note: "s → [z] — h muet는 모음 취급이라 그대로 이어요",
           },
           {
             fr: "six ans",
