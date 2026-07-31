@@ -2231,8 +2231,8 @@ export const REF_GRAMMAR_MANIFEST = {
               "order": 4,
               "title": "'옷이→오시', 프랑스어에도 있다",
               "topic": "리에종·앙셴느망",
-              "summary": "잠자던 묵음 자음이 깨어나 다음 단어와 이어지는 현상. 한국어 연음과 같은 원리라 우리에게 유리해요!",
-              "duration": "약 7분",
+              "summary": "잠자던 묵음 자음이 깨어나 다음 단어와 이어지는 현상. 한국어 연음과 같은 원리라 우리에게 유리해요! 규칙 전체는 A1에서 — 여기선 감각만.",
+              "duration": "약 5분",
               "courseLesson": {
                 "lessonRef": {
                   "id": "french-a0-u02-l02",

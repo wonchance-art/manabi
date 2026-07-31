@@ -319,7 +319,7 @@ export async function runCurriculumLint() {
       A1: ['a1.js', 'a1_expansion.js', 'a1_pronunciation.js', 'a1_sandwich_pilot.js', 'scene_travel.js', 'scene_emergency.js'],
       A2: ['a2.js', 'a2_scenes.js'],
     };
-    const XBASE = { 'A0↔A1': 8, 'A0↔A2': 0, 'A1↔A2': 0 };
+    const XBASE = { 'A0↔A1': 6, 'A0↔A2': 0, 'A1↔A2': 0 };
     const grammarDir = path.join(REPO_ROOT, 'src/content/french/grammar');
     const norm = (x) => x.trim().replace(/[?!.…]+$/u, '').toLowerCase();
     const sets = {};
