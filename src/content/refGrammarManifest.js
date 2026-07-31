@@ -2221,27 +2221,6 @@ export const REF_GRAMMAR_MANIFEST = {
                 },
                 "nextLesson": {
                   "id": "french-a0-u02-l02",
-                  "href": "/french/grammar/a0-05-liaison"
-                }
-              }
-            },
-            {
-              "slug": "a0-05-liaison",
-              "level": "A0",
-              "order": 4,
-              "title": "'옷이→오시', 프랑스어에도 있다",
-              "topic": "리에종·앙셴느망",
-              "summary": "잠자던 묵음 자음이 깨어나 다음 단어와 이어지는 현상. 한국어 연음과 같은 원리라 우리에게 유리해요! 규칙 전체는 A1에서 — 여기선 감각만.",
-              "duration": "약 5분",
-              "courseLesson": {
-                "lessonRef": {
-                  "id": "french-a0-u02-l02",
-                  "lang": "French",
-                  "slug": "a0-05-liaison",
-                  "source": "lesson"
-                },
-                "nextLesson": {
-                  "id": "french-a0-u03-l01",
                   "href": "/french/grammar/a0-06-word-order"
                 }
               }
@@ -2249,14 +2228,14 @@ export const REF_GRAMMAR_MANIFEST = {
             {
               "slug": "a0-06-word-order",
               "level": "A0",
-              "order": 5,
+              "order": 4,
               "title": "형용사가 뒤에 서는 언어",
               "topic": "어순과 수식어의 방식",
               "summary": "프랑스어 문장의 뼈대는 영어처럼 '주어+동사+목적어'. 다만 형용사는 명사 뒤에 선다는 것, 그리고 조사가 없다는 것만 미리 감을 잡아요.",
               "duration": "약 6분",
               "courseLesson": {
                 "lessonRef": {
-                  "id": "french-a0-u03-l01",
+                  "id": "french-a0-u02-l02",
                   "lang": "French",
                   "slug": "a0-06-word-order",
                   "source": "lesson"
@@ -2379,9 +2358,9 @@ export const REF_GRAMMAR_MANIFEST = {
               "level": "A1",
               "order": 2,
               "title": "자음 이어붙이기 — 듣기 편하게",
-              "topic": "리에종(liaison)",
-              "summary": "A0 '소리 잇기'에서 맛본 리에종 — 이제 규칙으로 승급할 차례예요. 어떤 경우에 반드시 일어나고(의무), 해도 되고(선택), 절대 안 되는지(금지)를 체계로 배워요.",
-              "duration": "약 10분",
+              "topic": "리에종(liaison)·앙셴느망",
+              "summary": "잠자던 묵음 끝 자음이 모음 앞에서 살아나 다음 단어와 이어진다 — 한국어 '옷이→오시'와 같은 소리 잇기, 리에종이에요. 어떤 경우에 반드시 일어나고(의무), 해도 되고(선택), 절대 안 되는지(금지)를 체계로 배워요.",
+              "duration": "약 12분",
               "courseLesson": {
                 "lessonRef": {
                   "id": "french-a1-u01-l02",
