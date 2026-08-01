@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { isPassed } from '../components/RefPatternCheck';
 import { useAuth } from '../lib/AuthContext';
 import { pullProgress } from '../lib/refProgress';
-import LanguageWorldMap from '../components/LanguageWorldMap';
+import LanguageWorldMap, { TRACK_COLORS } from '../components/LanguageWorldMap';
 
 const LANG_FILTERS = [
   { key: 'English',  label: '영어' },
@@ -17,6 +17,13 @@ const LANG_FILTERS = [
 const VALID_LANGS = new Set(LANG_FILTERS.map(f => f.key));
 
 /** refManifest: 서버에서 만든 레퍼런스 경량 목차 — lessons/page.jsx 참고 */
+// 피치 문장 속 『작품명』을 굵게 — 교재 소개 카드 전용의 얇은 파서
+function PitchLine({ text }) {
+  return text.split(/(『[^』]+』)/g).map((part, i) =>
+    part.startsWith('『') ? <strong key={i}>{part}</strong> : part
+  );
+}
+
 export default function LessonsPage({ refManifest = {} }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -208,18 +215,41 @@ export default function LessonsPage({ refManifest = {} }) {
         <div className="lessons-list">
           {/* 레퍼런스 소개 — 한국인 학습자 설계 + 콜아웃 범례 */}
           <div className="card" style={{ padding: '14px 16px', marginBottom: 6 }}>
-            <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: 1.65, marginBottom: 8 }}>
+            {refLang.pitch && (
+              <p style={{ fontSize: '1.05rem', fontWeight: 700, lineHeight: 1.55, margin: '2px 0 8px', color: 'var(--text-primary)' }}>
+                {refLang.pitch.hook}
+              </p>
+            )}
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: 10 }}>
               {refLang.blurb.split(/\*\*(.+?)\*\*/g).map((part, i) =>
                 i % 2 === 1 ? <strong key={i}>{part}</strong> : part
               )}
             </p>
             <LanguageWorldMap langKey={langFilter} />
-            {Array.isArray(refLang.perks) && refLang.perks.length > 0 && (
-              <ul style={{ margin: '0 0 8px', paddingLeft: 18, fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {refLang.perks.map((perk) => (
-                  <li key={perk}>{perk}</li>
-                ))}
-              </ul>
+            {refLang.pitch && (
+              <div style={{ margin: '10px 0 4px' }}>
+                <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 7 }}>
+                  {refLang.pitch.scenes.map((scene) => (
+                    <li key={scene} style={{ display: 'flex', gap: 9, alignItems: 'baseline', fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                      <span aria-hidden style={{ width: 6, height: 6, borderRadius: '50%', background: TRACK_COLORS[langFilter], flex: 'none', transform: 'translateY(-2px)' }} />
+                      <span><PitchLine text={scene} /></span>
+                    </li>
+                  ))}
+                </ul>
+                <p style={{ margin: '12px 0 0', padding: '9px 12px', borderLeft: `3px solid ${TRACK_COLORS[langFilter]}`, background: 'var(--bg-secondary)', borderRadius: '0 8px 8px 0', fontSize: '0.84rem', lineHeight: 1.6, color: 'var(--text-secondary)' }}>
+                  <PitchLine text={refLang.pitch.edge} />
+                </p>
+                <div style={{ marginTop: 10, padding: '11px 13px', borderRadius: 10, background: `color-mix(in srgb, ${TRACK_COLORS[langFilter]} 9%, var(--bg-secondary))`, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10, justifyContent: 'space-between' }}>
+                  <strong style={{ fontSize: '0.9rem', lineHeight: 1.55, color: 'var(--text-primary)', flex: '1 1 240px' }}>{refLang.pitch.closer}</strong>
+                  {refLang.levels[0]?.chapters?.[0]?.slug && (
+                    <button type="button" className="btn btn--sm"
+                      onClick={() => router.push(`${refLang.base ?? ''}/grammar/${refLang.levels[0].chapters[0].slug}`)}
+                      style={{ background: TRACK_COLORS[langFilter], color: '#fff', border: 'none' }}>
+                      지금 시작 →
+                    </button>
+                  )}
+                </div>
+              </div>
             )}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, fontSize: '0.74rem', color: 'var(--text-muted)' }}>
               {refLang.legend.map((item, i) => (

@@ -110,6 +110,8 @@ function computeViewBox(t) {
 
 const TRACK_VB = Object.fromEntries(Object.entries(TRACKS).map(([k, t]) => [k, computeViewBox(t)]));
 
+export const TRACK_COLORS = Object.fromEntries(Object.entries(TRACKS).map(([k, t]) => [k, t.color]));
+
 export default function LanguageWorldMap({ langKey }) {
   const t = TRACKS[langKey];
   if (!t) return null;
@@ -164,7 +166,6 @@ export default function LanguageWorldMap({ langKey }) {
           </div>
         ))}
       </div>
-      <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '6px 0 0' }}>{t.caption}</p>
     </div>
   );
 }

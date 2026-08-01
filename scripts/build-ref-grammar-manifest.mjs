@@ -32,7 +32,7 @@ try {
       langCode: ref.langCode,
       blurb: ref.blurb,
       legend: ref.legend,
-      perks: ref.perks ?? [],
+      pitch: ref.pitch ?? null,
       introLevel: ref.INTRO_LEVEL,
       levelMeta: ref.LEVEL_META,
       levels: ref.LEVEL_META.map((meta) => {
