@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { isPassed } from '../components/RefPatternCheck';
 import { useAuth } from '../lib/AuthContext';
 import { pullProgress } from '../lib/refProgress';
+import LanguageWorldMap from '../components/LanguageWorldMap';
 
 const LANG_FILTERS = [
   { key: 'English',  label: '영어' },
@@ -212,6 +213,7 @@ export default function LessonsPage({ refManifest = {} }) {
                 i % 2 === 1 ? <strong key={i}>{part}</strong> : part
               )}
             </p>
+            <LanguageWorldMap langKey={refLang.key} />
             {Array.isArray(refLang.perks) && refLang.perks.length > 0 && (
               <ul style={{ margin: '0 0 8px', paddingLeft: 18, fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6, display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {refLang.perks.map((perk) => (
