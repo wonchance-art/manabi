@@ -12,6 +12,14 @@ const chapters = [
     titleFr: "L'alphabet et les accents",
     summary: "26개 알파벳의 프랑스식 이름과, 글자 위에 붙는 작은 기호(악상)의 정체를 알아봐요.",
     duration: "약 7분",
+    drills: [
+      { id: "a002-d1", type: "choice", prompt: "école(학교) — 어떻게 읽을까요?", choices: ["에꼴", "이콜", "에콜레"], answer: "에꼴", hint: "é=[에]", speak: "école" },
+      { id: "a002-d2", type: "choice", prompt: "père(아버지) — 어떻게 읽을까요?", choices: ["뻬흐", "페레", "삐에르"], answer: "뻬흐", hint: "è=[애] 열린 소리·끝 e 묵음", speak: "père" },
+      { id: "a002-d3", type: "choice", prompt: "ça(그것) — 어떻게 읽을까요?", choices: ["싸", "까", "차"], answer: "싸", hint: "ç는 언제나 [s]", speak: "ça" },
+      { id: "a002-d4", type: "choice", prompt: "fête(축제) — 어떻게 읽을까요?", choices: ["페뜨", "페테", "피뜨"], answer: "페뜨", hint: "ê=[애]·끝 e 묵음", speak: "fête" },
+      { id: "a002-d5", type: "dictation", sentence: "été", hint: "여름 — 악상까지 정확히" },
+      { id: "a002-d6", type: "dictation", sentence: "cinéma", hint: "영화관" },
+    ],
     sections: [
       {
         heading: "알파벳 26자 — 이름이 달라요",
@@ -76,6 +84,15 @@ const chapters = [
     titleFr: "Les voyelles",
     summary: "u와 ou의 구별, 콧소리 모음(비모음) 등 한국인이 가장 고전하는 모음을 집중 공략해요.",
     duration: "약 10분",
+    drills: [
+      { id: "a003-d1", type: "choice", prompt: "lune(달) — 어떻게 읽을까요?", choices: ["륀", "룬", "루네"], answer: "륀", hint: "u=[위] — 입술은 [우], 혀는 [이]", speak: "lune" },
+      { id: "a003-d2", type: "choice", prompt: "douze(12) — 어떻게 읽을까요?", choices: ["두즈", "뒤즈", "도우제"], answer: "두즈", hint: "ou=[우]", speak: "douze" },
+      { id: "a003-d3", type: "choice", prompt: "vin(와인) — 어떻게 읽을까요?", choices: ["뱅", "빈", "비앙"], answer: "뱅", hint: "in=[앵] — 코로", speak: "vin" },
+      { id: "a003-d4", type: "choice", prompt: "maison(집) — 어떻게 읽을까요?", choices: ["메종", "마이송", "매종그"], answer: "메종", hint: "ai=[애]·on=[옹]", speak: "maison" },
+      { id: "a003-d5", type: "choice", prompt: "oiseau(새) — 어떻게 읽을까요?", choices: ["우아조", "오이소", "와이제아우"], answer: "우아조", hint: "oi=[와]·eau=[오]", speak: "oiseau" },
+      { id: "a003-d6", type: "dictation", sentence: "bonbon", hint: "사탕 — 코로 울리는 소리 두 번" },
+      { id: "a003-d7", type: "dictation", sentence: "minute", hint: "분(시간)" },
+    ],
     sections: [
       {
         heading: "u [y] vs ou [u] — 프랑스어 발음의 첫 관문",
@@ -138,6 +155,15 @@ const chapters = [
     titleFr: "Les consonnes et les lettres muettes",
     summary: "단어 끝 자음은 대부분 소리 내지 않아요(묵음)! 프랑스어 특유의 r 소리와 함께, '안 읽는 글자'의 규칙을 배워요.",
     duration: "약 9분",
+    drills: [
+      { id: "a004-d1", type: "choice", prompt: "beaucoup(많이) — 어떻게 읽을까요?", choices: ["보꾸", "베아우쿠프", "보꿉"], answer: "보꾸", hint: "eau=[오]·끝 p 묵음", speak: "beaucoup" },
+      { id: "a004-d2", type: "choice", prompt: "grand(큰) — 어떻게 읽을까요?", choices: ["그랑", "그란드", "그랑드"], answer: "그랑", hint: "끝 d 묵음", speak: "grand" },
+      { id: "a004-d3", type: "choice", prompt: "campagne(시골) — 어떻게 읽을까요?", choices: ["깡빠뉴", "캄파그네", "깡빤"], answer: "깡빠뉴", hint: "gn=[뉴]", speak: "campagne" },
+      { id: "a004-d4", type: "choice", prompt: "quatre(4) — 어떻게 읽을까요?", choices: ["꺄트흐", "꽈트레", "뀌아트르"], answer: "꺄트흐", hint: "qu=[k]·끝 e 묵음", speak: "quatre" },
+      { id: "a004-d5", type: "choice", prompt: "petit(작은) — 어떻게 읽을까요?", choices: ["쁘띠", "페티트", "쁘띳"], answer: "쁘띠", hint: "끝 t 묵음", speak: "petit" },
+      { id: "a004-d6", type: "dictation", sentence: "salut", hint: "안녕(친근) — 안 들리는 끝 글자 하나" },
+      { id: "a004-d7", type: "dictation", sentence: "hiver", hint: "겨울 — 안 들리는 첫 글자 하나" },
+    ],
     sections: [
       {
         heading: "대원칙 — 단어 끝 자음은 읽지 않는다",
@@ -205,9 +231,73 @@ const chapters = [
   },
 
   {
-    slug: "a0-06-word-order",
+    slug: "a0-07-decoding",
     level: "A0",
     order: 4,
+    title: "처음 보는 단어, 소리 내 읽기",
+    topic: "철자→소리 해독 종합 훈련",
+    titleFr: "Lire un mot inconnu",
+    summary:
+      "지금까지 배운 철자→소리 규칙을 한 장으로 모으고, 한 번도 본 적 없는 단어로 실전 훈련해요. " +
+      "여기를 통과하면 사전 없이도 새 단어를 소리 낼 수 있어요.",
+    duration: "약 8분",
+    drills: [
+      { id: "a007-d1", type: "choice", prompt: "boulangerie(빵집) — 어떻게 읽을까요?", choices: ["불랑주리", "보울란게리에", "불란제리"], answer: "불랑주리", hint: "ou=[우]·an=[엉]·g+e=[주]", speak: "boulangerie" },
+      { id: "a007-d2", type: "choice", prompt: "vacances(방학) — 어떻게 읽을까요?", choices: ["바깡스", "바칸세스", "바쌍스"], answer: "바깡스", hint: "c+a=[까]·an=[엉]·끝 es 묵음", speak: "vacances" },
+      { id: "a007-d3", type: "choice", prompt: "jardin(정원) — 어떻게 읽을까요?", choices: ["자흐댕", "자르딘", "잘댕"], answer: "자흐댕", hint: "j=[주]·in=[앵]", speak: "jardin" },
+      { id: "a007-d4", type: "choice", prompt: "hôpital(병원) — 어떻게 읽을까요?", choices: ["오삐딸", "호피탈", "오삐따"], answer: "오삐딸", hint: "h 묵음·끝 l은 읽어요(CaReFuL)", speak: "hôpital" },
+      { id: "a007-d5", type: "choice", prompt: "cheveux(머리카락) — 어떻게 읽을까요?", choices: ["슈뵈", "체베욱스", "슈베"], answer: "슈뵈", hint: "ch=[슈]·eu=[외]·끝 x 묵음", speak: "cheveux" },
+      { id: "a007-d6", type: "choice", prompt: "poisson(생선) — 어떻게 읽을까요?", choices: ["뿌아쏭", "뽀이손", "뿌아종"], answer: "뿌아쏭", hint: "oi=[와]·ss=[ㅆ] (s 하나면 모음 사이 [z])", speak: "poisson" },
+      { id: "a007-d7", type: "choice", prompt: "gentil(친절한) — 어떻게 읽을까요?", choices: ["장띠", "겐틸", "장띨"], answer: "장띠", hint: "g+e=[주]·이 단어 끝 l은 묵음(예외의 예외!)", speak: "gentil" },
+      { id: "a007-d8", type: "choice", prompt: "magasin(가게) — 어떻게 읽을까요?", choices: ["마가쟁", "마가생", "마갸신"], answer: "마가쟁", hint: "모음 사이 s=[z]·in=[앵]", speak: "magasin" },
+      { id: "a007-d9", type: "choice", prompt: "escargot(달팽이) — 어떻게 읽을까요?", choices: ["에스꺄흐고", "에스카르곳", "에스깔고"], answer: "에스꺄흐고", hint: "끝 t 묵음", speak: "escargot" },
+      { id: "a007-d10", type: "choice", prompt: "aujourd'hui(오늘) — 어떻게 읽을까요?", choices: ["오주흐뒤", "아우주르드후이", "오주르디"], answer: "오주흐뒤", hint: "au=[오]·ou=[우]·h 묵음 — 보스 단어!", speak: "aujourd'hui" },
+      { id: "a007-d11", type: "dictation", sentence: "matin", hint: "아침" },
+      { id: "a007-d12", type: "dictation", sentence: "fromage", hint: "치즈" },
+      { id: "a007-d13", type: "dictation", sentence: "dimanche", hint: "일요일" },
+      { id: "a007-d14", type: "dictation", sentence: "chocolat", hint: "초콜릿 — 안 들리는 끝 글자 하나" },
+    ],
+    sections: [
+      {
+        heading: "치트시트 — 철자→소리, 한 장으로",
+        pattern: "악상·모음 조합·비모음·자음 조합·묵음 = 다섯 묶음이 전부",
+        patternKo: "이 표만 몸에 붙으면 처음 보는 단어도 읽을 수 있어요",
+        body:
+          "앞 세 챕터의 규칙을 한자리에 모아요.\n\n" +
+          "• **악상**: é=[에] · è/ê=[애] · ç=[스]\n" +
+          "• **모음 조합**: ou=[우] · u=[위] · oi=[와] · au/eau=[오] · ai/ei=[애] · eu=[외]\n" +
+          "• **비모음**: an/en=[엉] · on=[옹] · in/ain=[앵]\n" +
+          "• **자음 조합**: ch=[슈] · gn=[뉴] · ill=[유] · qu=[끄]\n" +
+          "• **묵음**: 단어 끝 자음(CaReFuL 제외)·h·끝 e\n\n" +
+          "하나만 새로 추가할게요 — **c와 g는 e·i 앞에서 부드러워져요**: c+e/i=[스](cinéma), g+e/i=[주](girafe). " +
+          "a·o·u 앞에서는 원래 소리 [끄]/[그]예요(café, gare).\n\n" +
+          "단어 사이를 잇는 리에종·엘리종은 A1 발음 챕터에서 이어받아요.",
+        examples: [
+          { fr: "restaurant", ipa: "[ʁɛstoʁɑ̃] 헤스또랑", ko: "식당", note: "au=[오]·an=[엉]·끝 t 묵음 — 규칙 3개가 한 단어에" },
+        ],
+      },
+      {
+        heading: "해독 루틴 — 처음 보는 단어 3단계",
+        pattern: "① 끝 자음 묵음 의심 → ② 모음 조합 묶기 → ③ 비모음 표시 → 조립",
+        patternKo: "아는 규칙 순서대로 지우면 남는 게 발음",
+        body:
+          "낯선 단어를 만나면 이 순서로 쪼개요.\n\n" +
+          "**① 끝 자음 지우기** — CaReFuL(c·r·f·l)이 아니면 끝 자음과 끝 e는 침묵.\n" +
+          "**② 모음 조합 묶기** — ou·oi·eau·ai·eu를 한 소리로 묶어요.\n" +
+          "**③ 비모음 표시** — an·on·in을 찾아 코를 준비해요.\n\n" +
+          "예: boulangerie → bou·lan·ge·rie → [우]·[엉]·[주]·[리] → **불랑주리**. " +
+          "아래 드릴에서 답을 고른 뒤 스피커로 실제 발음을 꼭 확인하세요 — 예측→확인 루프가 훈련의 핵심이에요.",
+        examples: [
+          { fr: "pharmacie", ipa: "[faʁmasi] 파흐마씨", ko: "약국", note: "ph=[f]·c+i=[스] — 루틴으로 조립해 보세요" },
+        ],
+      },
+    ],
+  },
+
+  {
+    slug: "a0-06-word-order",
+    level: "A0",
+    order: 5,
     title: "형용사가 뒤에 서는 언어",
     topic: "어순과 수식어의 방식",
     titleFr: "L'ordre des mots",

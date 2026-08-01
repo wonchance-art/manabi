@@ -82,10 +82,10 @@ function InputDrill({ drill, lang, onResult, done, dictation }) {
   );
 }
 
-function ChoiceDrill({ drill, onResult, done }) {
+function ChoiceDrill({ drill, onResult, done, lang }) {
   return (
     <div>
-      <p style={{ fontSize: '0.95rem', marginBottom: 8 }}>{drill.prompt}</p>
+      <p style={{ fontSize: '0.95rem', marginBottom: 8 }}>{drill.prompt}{drill.hint && <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}> · 힌트: {drill.hint}</span>}</p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {drill.choices.map((c, i) => (
           <button key={i} type="button" disabled={done} onClick={() => onResult(c === drill.answer)}
@@ -94,6 +94,11 @@ function ChoiceDrill({ drill, onResult, done }) {
           </button>
         ))}
       </div>
+      {done && drill.speak && (
+        <p style={{ fontSize: '0.85rem', marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+          실제 발음 확인: <RefSpeak text={drill.speak} lang={lang} />
+        </p>
+      )}
     </div>
   );
 }
@@ -122,7 +127,7 @@ export default function ChapterDrills({ lang, drills, title, intro }) {
               {d.sourceLabel && (
                 <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 4 }}>복습 · {d.sourceLabel}</p>
               )}
-              {d.type === 'choice' && <ChoiceDrill drill={d} done={done} onResult={record(d.id)} />}
+              {d.type === 'choice' && <ChoiceDrill drill={d} done={done} onResult={record(d.id)} lang={lang} />}
               {d.type === 'fill' && <InputDrill drill={d} lang={lang} done={done} onResult={record(d.id)} />}
               {d.type === 'dictation' && <InputDrill drill={d} lang={lang} done={done} onResult={record(d.id)} dictation />}
               {d.type === 'order' && <OrderDrill drill={d} done={done} onResult={record(d.id)} />}
