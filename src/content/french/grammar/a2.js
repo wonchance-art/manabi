@@ -21,6 +21,19 @@ const chapters = [
       { id: "a201-d6", type: "dictation", sentence: "J'ai bien dormi cette nuit." },
       { id: "a201-d7", type: "dictation", sentence: "On a joué au foot hier." },
     ],
+    writing: {
+      prompt: "어제 한 일을 복합과거(avoir + 과거분사)로 두 문장 써 보세요.",
+      hints: ["Hier, j'ai + 과거분사", "-er 동사의 과거분사는 -é"],
+      samples: [
+        { fr: "Hier, j'ai travaillé et j'ai mangé au restaurant.", ko: "어제 일하고 식당에서 밥을 먹었어요." },
+        { fr: "J'ai regardé un film coréen.", ko: "한국 영화를 한 편 봤어요." },
+      ],
+      checklist: [
+        "avoir를 주어에 맞게 활용했나요? (j'ai)",
+        "-er 동사의 과거분사를 -é로 만들었나요?",
+        "Hier 같은 과거 시간 표현을 넣었나요?",
+      ],
+    },
     sections: [
       {
         heading: "공식 — avoir 현재형 + 과거분사",
@@ -130,6 +143,19 @@ const chapters = [
       { id: "a202-d6", type: "dictation", sentence: "Il est tombé dans la rue." },
       { id: "a202-d7", type: "dictation", sentence: "Je suis née en Corée.", accepts: ["Je suis né en Corée."] },
     ],
+    writing: {
+      prompt: "지난 주말 어디에 갔는지, être를 조동사로 쓰는 동사(aller·rentrer 등)로 두 문장 써 보세요.",
+      hints: ["Je suis allé(e) à/au …", "과거분사는 주어에 성수 일치"],
+      samples: [
+        { fr: "Samedi, je suis allée au parc avec mon ami.", ko: "토요일에 친구와 공원에 갔어요.", note: "여성이면 allée, 남성이면 allé" },
+        { fr: "Je suis rentré tard le soir.", ko: "저녁 늦게 집에 돌아왔어요." },
+      ],
+      checklist: [
+        "조동사로 être를 썼나요? (j'ai allé는 ✗)",
+        "과거분사를 주어의 성·수에 맞췄나요?",
+        "장소 앞 전치사(au/à la)가 맞나요?",
+      ],
+    },
     sections: [
       {
         heading: "어떤 동사가 être를 고를까 — 이동과 상태변화",
@@ -296,6 +322,19 @@ const chapters = [
       { id: "a204-d6", type: "dictation", sentence: "Je me promène dans le parc." },
       { id: "a204-d7", type: "dictation", sentence: "On s'amuse bien ici." },
     ],
+    writing: {
+      prompt: "나의 아침 루틴을 대명동사 두 개로 써 보세요.",
+      hints: ["Je me lève à …", "Je me douche / Je m'habille"],
+      samples: [
+        { fr: "Je me lève à sept heures et je me douche.", ko: "7시에 일어나서 샤워해요." },
+        { fr: "Je m'habille et je me brosse les dents.", ko: "옷을 입고 이를 닦아요.", note: "신체 부위 앞은 소유형용사 대신 정관사(les dents)" },
+      ],
+      checklist: [
+        "재귀대명사(me/te/se)를 주어에 맞췄나요?",
+        "모음 앞에서 me를 m'로 줄였나요?",
+        "동사 활용이 주어와 일치하나요?",
+      ],
+    },
     sections: [
       {
         heading: "개념 — laver와 se laver의 차이",
@@ -518,6 +557,19 @@ const chapters = [
       { id: "a207-d6", type: "dictation", sentence: "On partira très tôt demain matin." },
       { id: "a207-d7", type: "dictation", sentence: "Elle aura vingt ans en mai." },
     ],
+    writing: {
+      prompt: "내년 계획이나 다짐을 futur simple로 두 문장 써 보세요.",
+      hints: ["L'année prochaine, je …-rai", "불규칙 어간: être→ser-, aller→ir-, faire→fer-"],
+      samples: [
+        { fr: "L'année prochaine, j'irai en France.", ko: "내년에 프랑스에 갈 거예요.", note: "aller의 미래 어간은 ir-" },
+        { fr: "Je parlerai mieux français.", ko: "프랑스어를 더 잘하게 될 거예요." },
+      ],
+      checklist: [
+        "미래 어미(-rai/-ras/-ra…)를 붙였나요?",
+        "불규칙 어간(ser-/ir-/fer-)을 제대로 썼나요?",
+        "미래 시간 표현을 함께 썼나요?",
+      ],
+    },
     sections: [
       {
         heading: "형태 — 원형 + ai, as, a, ons, ez, ont",

@@ -99,7 +99,7 @@ const SECTION_STRUCT_FIELDS = ['examples', 'table', 'story', 'media', 'enParalle
 // RFC v2 boolean 필드
 const SECTION_BOOLEAN_FIELDS = ['autoRegisterVocabs'];
 const CHAPTER_KEYS = new Set([
-  'slug', 'level', 'order', 'sections', 'drills',
+  'slug', 'level', 'order', 'sections', 'drills', 'writing',
   'status', // 선택적 상태 필드 (DRAFT 등)
   ...CHAPTER_STRING_FIELDS,
   ...CHAPTER_SCALAR_ARRAY_FIELDS,
@@ -149,6 +149,25 @@ const DIALOGUE_LINE_KEYS = new Set(['speaker', ...DIALOGUE_LANG_FIELDS, 'ipa', '
 
 // 학습 드릴(RFC learning-path §1) — 챕터 선택 필드, fail-closed.
 const DRILL_KEYS = new Set(['id', 'type', 'prompt', 'answer', 'accepts', 'choices', 'sentence', 'hint', 'speak']);
+const WRITING_KEYS = new Set(['prompt', 'hints', 'samples', 'checklist']);
+const WRITING_SAMPLE_KEYS = new Set(['fr', 'ko', 'note']);
+function isValidWriting(v) {
+  if (!isPlainObject(v)) return false;
+  if (Object.keys(v).some((k) => !WRITING_KEYS.has(k))) return false;
+  if (!isNonEmptyString(v.prompt)) return false;
+  if ('hints' in v && !(Array.isArray(v.hints) && v.hints.length >= 1 && v.hints.every(isNonEmptyString))) return false;
+  if (!Array.isArray(v.samples) || v.samples.length < 1 || v.samples.length > 3) return false;
+  for (const smp of v.samples) {
+    if (!isPlainObject(smp)) return false;
+    if (Object.keys(smp).some((k) => !WRITING_SAMPLE_KEYS.has(k))) return false;
+    if (!isNonEmptyString(smp.fr) || !isNonEmptyString(smp.ko)) return false;
+    if ('note' in smp && !isNonEmptyString(smp.note)) return false;
+  }
+  if (!Array.isArray(v.checklist) || v.checklist.length < 1 || v.checklist.length > 5) return false;
+  if (!v.checklist.every(isNonEmptyString)) return false;
+  return true;
+}
+
 function isValidDrill(v) {
   if (!isPlainObject(v)) return false;
   if (Object.keys(v).some((k) => !DRILL_KEYS.has(k))) return false;
@@ -368,6 +387,7 @@ export function isValidOverride(data) {
     if (k in data && data[k] != null && typeof data[k] !== 'boolean') return false;
   }
   if ('drills' in data && data.drills != null && !isValidDrillArray(data.drills)) return false;
+  if ('writing' in data && data.writing != null && !isValidWriting(data.writing)) return false;
   if ('sections' in data) {
     const sections = data.sections;
     if (!Array.isArray(sections) || sections.length === 0) return false;

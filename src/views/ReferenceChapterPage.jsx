@@ -13,6 +13,7 @@ import VocabRegisterCta from '../components/VocabRegisterCta';
 // 클라이언트 번들로 끌어오지 않도록). story 는 순수 직렬화 데이터라 props 로 그대로 넘긴다.
 import StoryCheck, { StoryLines } from './StoryCheck';
 import ChapterDrills from '../components/ChapterDrills';
+import WritingPractice from '../components/WritingPractice';
 import ChapterAdminStrip from '../components/admin/ChapterAdminStrip';
 import InlineEdit from '../components/admin/InlineEdit';
 import { getChapterOverride, getOverridesForLang, mergeChapter } from '../lib/contentOverrides';
@@ -615,6 +616,9 @@ export default async function ReferenceChapterPage({ lang, slug, registry: ref, 
           )}
           {reviewDrills.length > 0 && (
             <ChapterDrills lang={lang} drills={reviewDrills} title="누적 복습 — 앞 챕터 다시 꺼내기" intro="여기까지 오느라 배운 것들, 아직 살아 있는지 가볍게 확인해요." />
+          )}
+          {chapter.writing && (
+            <WritingPractice lang={lang} slug={chapter.slug} writing={chapter.writing} />
           )}
           <RefPatternCheck
           quiz={quiz}
