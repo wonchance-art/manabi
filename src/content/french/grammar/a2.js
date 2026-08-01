@@ -223,7 +223,7 @@ const chapters = [
   {
     slug: "a2-03-imparfait",
     level: "A2",
-    order: 3,
+    order: 4,
     title: "\"자고 있었는데 전화가 왔어\"",
     topic: "반과거 imparfait",
     titleFr: "L'imparfait",
@@ -307,7 +307,7 @@ const chapters = [
   {
     slug: "a2-04-pronominal-verbs",
     level: "A2",
-    order: 4,
+    order: 6,
     title: "Je m'appelle의 m'의 정체",
     topic: "대명동사 se lever·s'appeler",
     titleFr: "Les verbes pronominaux",
@@ -397,7 +397,7 @@ const chapters = [
   {
     slug: "a2-05-object-pronouns",
     level: "A2",
-    order: 5,
+    order: 7,
     title: "Je t'aime의 어순이 말해주는 것",
     topic: "목적 대명사 le/la/les·lui/leur",
     titleFr: "Les pronoms COD et COI",
@@ -462,7 +462,7 @@ const chapters = [
   {
     slug: "a2-06-comparative",
     level: "A2",
-    order: 6,
+    order: 9,
     title: "\"지하철이 택시보다 싸요\" 말하기",
     topic: "비교급·최상급 plus/moins",
     titleFr: "Le comparatif et le superlatif",
@@ -542,7 +542,7 @@ const chapters = [
   {
     slug: "a2-07-futur-simple",
     level: "A2",
-    order: 7,
+    order: 10,
     title: "\"언젠가 떠날 거야\"를 한 단어로",
     topic: "단순미래 futur simple",
     titleFr: "Le futur simple",
@@ -652,7 +652,7 @@ const chapters = [
   {
     slug: "a2-08-imperatif",
     level: "A2",
-    order: 8,
+    order: 12,
     title: "\"일어나, 8시야!\" — 명령과 권유",
     topic: "명령법 impératif",
     titleFr: "L'impératif",
@@ -735,7 +735,7 @@ const chapters = [
   {
     slug: "a2-09-y-en",
     level: "A2",
-    order: 9,
+    order: 13,
     title: "On y va!의 y는 무슨 뜻일까?",
     topic: "대명사 y·en",
     titleFr: "Les pronoms y et en",
@@ -800,7 +800,7 @@ const chapters = [
   {
     slug: "a2-10-relative-qui-que",
     level: "A2",
-    order: 10,
+    order: 15,
     title: "\"파리에 사는 친구\"를 한 문장에",
     topic: "관계대명사 qui/que/où",
     titleFr: "Les pronoms relatifs qui, que et où",
@@ -906,7 +906,7 @@ const chapters = [
   {
     slug: "a2-11-time-expressions",
     level: "A2",
-    order: 11,
+    order: 16,
     title: "\"3년째 배우고 있어요\"를 한 단어로",
     topic: "시간 표현 depuis·pendant·il y a",
     titleFr: "Les expressions de temps",
@@ -1017,7 +1017,7 @@ const chapters = [
   {
     slug: "a2-12-quantity-tout",
     level: "A2",
-    order: 12,
+    order: 17,
     title: "\"사람이 너무 많아요\" — 양 재는 법",
     topic: "수량 표현·tout 4형태",
     titleFr: "La quantité et tout",

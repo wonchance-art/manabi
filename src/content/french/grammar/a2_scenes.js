@@ -7,7 +7,7 @@ const chapters = [
   {
     slug: "a2-scene-13-train-delay",
     level: "A2",
-    order: 13,
+    order: 3,
     formulaic: true,
     prerequisites: ["a2-01-passe-compose-avoir", "a2-02-passe-compose-etre"],
     title: "\"열차를 놓쳤어요\" — 지연·환불을 복합과거로 말해요",
@@ -120,7 +120,7 @@ const chapters = [
   {
     slug: "a2-scene-14-travel-memories",
     level: "A2",
-    order: 14,
+    order: 5,
     formulaic: true,
     prerequisites: ["a2-03-imparfait", "a2-01-passe-compose-avoir"],
     title: "\"그때 니스는 정말 아름다웠어요\" — 반과거로 여행을 회상해요",
@@ -235,7 +235,7 @@ const chapters = [
   {
     slug: "a2-15-negation-variants",
     level: "A2",
-    order: 15,
+    order: 8,
     prerequisites: ["a1-04-negation", "a1-09-partitive", "a2-01-passe-compose-avoir"],
     title: "\"크루아상은 이제 없어요\" — 네 가지 부정을 한 세트로",
     titleFr: "Négations : ne… plus, jamais, rien, personne",
@@ -354,7 +354,7 @@ const chapters = [
   {
     slug: "a2-16-si-conditions",
     level: "A2",
-    order: 16,
+    order: 11,
     prerequisites: ["a1-15-modal-faire-present", "a1-30-elision", "a2-07-futur-simple"],
     title: "\"비 오면 미술관 가자\" — si 하나로 계획을 세워요",
     titleFr: "Si on part tôt… : proposer et planifier",
@@ -471,7 +471,7 @@ const chapters = [
   {
     slug: "a2-17-narrative-connectors",
     level: "A2",
-    order: 17,
+    order: 14,
     prerequisites: ["a2-01-passe-compose-avoir", "a2-02-passe-compose-etre", "a2-03-imparfait"],
     title: "\"먼저 버스를 탔고, 마지막엔 밀물을 봤어\" — 하루를 이야기로 엮어요",
     titleFr: "D'abord, ensuite, enfin : raconter sa journée",
