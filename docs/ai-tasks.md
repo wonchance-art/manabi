@@ -280,6 +280,8 @@
 
 ## Codex-3 (codex3/*) — 게임 시스템 확장 (타 기기)
 ### doing
+- 📚 드릴→SRS 연결(v2 통합, 발주 5151840982): ChapterDrills 채점 결과를 기존
+  reviewEvents/FSRS 복습 큐에 멱등 연결 (`codex3/drill-srs-bridge`)
 ### todo
 - 📚 /learn 진도·스트릭 위젯(발주 5126671497) → **구현 #706 도착·Claude 게이트 green(lint 2종+vitest 2508) — 오너 승인 대기(draft 유지)** ← 피벗 후 우선, 아래 월드 항목 동결
 - (P0 공통) 로컬 clone 이전 확인 코멘트
