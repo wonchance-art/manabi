@@ -25,6 +25,18 @@ const chapters = [
       { id: "a114-d6", type: "dictation", sentence: "Je finis mon café." },
       { id: "a114-d7", type: "dictation", sentence: "On attend nos amis." },
     ],
+    writing: {
+      prompt: "finir와 prendre로 하루의 두 장면을 써 보세요.",
+      hints: ["Je finis … à … heures", "Je prends le bus/le métro"],
+      samples: [
+        { fr: "Je finis mon travail à six heures. Je prends le bus.", ko: "저는 6시에 일을 끝내요. 버스를 타요." },
+      ],
+      checklist: [
+        "finir가 je에서 -is로 끝났나요?",
+        "prendre 활용(je prends)이 맞나요?",
+        "-er 동사와 다른 꼴임을 확인했나요?",
+      ],
+    },
     sections: [
       {
         heading: "finir형 -ir 동사 — 복수에서 -iss-가 보여요",
@@ -169,6 +181,19 @@ const chapters = [
       { id: "a115-d6", type: "dictation", sentence: "On peut entrer maintenant ?" },
       { id: "a115-d7", type: "dictation", sentence: "Je fais du sport le samedi." },
     ],
+    writing: {
+      prompt: "할 수 있는 것, 해야 하는 것, 즐겨 하는 것(faire)을 한 문장씩 써 보세요.",
+      hints: ["Je peux + 동사원형", "Je dois + 동사원형", "Je fais du/de la …"],
+      samples: [
+        { fr: "Je peux parler un peu français. Je dois travailler demain.", ko: "저는 프랑스어를 조금 할 수 있어요. 내일은 일해야 해요." },
+        { fr: "Je fais du vélo le dimanche.", ko: "일요일마다 자전거를 타요." },
+      ],
+      checklist: [
+        "pouvoir·devoir 뒤가 동사원형인가요?",
+        "faire du/de la 꼴을 썼나요?",
+        "활용(peux·dois·fais)이 주어와 맞나요?",
+      ],
+    },
     sections: [
       {
         heading: "faire — 하다, 만들다, 날씨까지",
@@ -332,6 +357,18 @@ const chapters = [
       { id: "a116-d6", type: "dictation", sentence: "Les amis sont là." },
       { id: "a116-d7", type: "dictation", sentence: "J'ai des questions." },
     ],
+    writing: {
+      prompt: "복수형 문장 두 개를 써 보세요 — 관사까지 복수로!",
+      hints: ["Les + 명사s + sont …", "Voici les …"],
+      samples: [
+        { fr: "Les livres sont ici. Voici les pommes !", ko: "책들은 여기 있어요. 여기 사과들이요!" },
+      ],
+      checklist: [
+        "명사 끝에 -s(발음 안 됨!)를 붙였나요?",
+        "관사도 les/des로 복수가 됐나요?",
+        "동사가 sont(복수)으로 맞나요?",
+      ],
+    },
     sections: [
       {
         heading: "사람 명사의 기본 여성형 — 끝에 -e",
@@ -499,6 +536,18 @@ const chapters = [
       { id: "a117-d6", type: "dictation", sentence: "On va au restaurant." },
       { id: "a117-d7", type: "dictation", sentence: "Ils viennent des États-Unis." },
     ],
+    writing: {
+      prompt: "가고 싶은 나라와 온 곳을 써 보세요 — au/en/aux 구분!",
+      hints: ["Je vais au/en/aux …", "Je viens de/du …"],
+      samples: [
+        { fr: "Je vais au Canada en été. Je viens de Corée.", ko: "여름에 캐나다에 가요. 저는 한국에서 왔어요." },
+      ],
+      checklist: [
+        "남성 나라 au, 여성 나라 en을 맞게 골랐나요?",
+        "복수 나라에는 aux인가요?",
+        "venir de의 활용(je viens)이 맞나요?",
+      ],
+    },
     sections: [
       {
         heading: "de와 정관사가 만나면 du, des",
@@ -669,6 +718,18 @@ const chapters = [
       { id: "a118-d6", type: "dictation", sentence: "Ce café est bon." },
       { id: "a118-d7", type: "dictation", sentence: "Quelle belle maison !" },
     ],
+    writing: {
+      prompt: "가게에서 물건을 가리키며 묻는 두 마디를 써 보세요 — ce/cette와 quel.",
+      hints: ["Ce/Cette + 명사 + est …", "Quel est le prix ?"],
+      samples: [
+        { fr: "Cette robe est jolie ! Quel est le prix ?", ko: "이 원피스 예쁘네요! 가격이 어떻게 되나요?" },
+      ],
+      checklist: [
+        "ce/cette가 명사의 성과 맞나요?",
+        "quel도 성수에 맞췄나요?",
+        "감탄과 질문의 부호를 살렸나요?",
+      ],
+    },
     sections: [
       {
         heading: "ce, cet, cette, ces — 명사의 성·수에 맞춰요",
@@ -808,6 +869,18 @@ const chapters = [
       { id: "a119-d6", type: "dictation", sentence: "Le chien est devant la porte." },
       { id: "a119-d7", type: "dictation", sentence: "J'habite entre la gare et l'école." },
     ],
+    writing: {
+      prompt: "내 방이나 동네를 두 문장으로 — 위치 전치사 두 개 이상.",
+      hints: ["… est sur/sous/dans …", "… est devant/derrière …"],
+      samples: [
+        { fr: "Le chat est sous la table. La banque est devant la gare.", ko: "고양이는 탁자 밑에 있어요. 은행은 역 앞에 있어요." },
+      ],
+      checklist: [
+        "위치 전치사를 두 개 이상 썼나요?",
+        "전치사 뒤 명사에 관사가 있나요?",
+        "est의 주어가 단수인가요?",
+      ],
+    },
     sections: [
       {
         heading: "dans, sur, sous — 안, 위, 아래",
@@ -974,6 +1047,19 @@ const chapters = [
       { id: "a120-d6", type: "dictation", sentence: "Elle chante très souvent." },
       { id: "a120-d7", type: "dictation", sentence: "Je travaille beaucoup, mais j'aime ça." },
     ],
+    writing: {
+      prompt: "일주일 습관을 두 문장으로 — 빈도 부사와 mais로 대비를 만들어 보세요.",
+      hints: ["souvent / toujours / ne … jamais", "…, mais …"],
+      samples: [
+        { fr: "Je bois souvent du café, mais je ne bois jamais de thé le soir.", ko: "커피는 자주 마시지만, 저녁엔 차를 절대 안 마셔요." },
+        { fr: "Je fais toujours du sport le dimanche.", ko: "일요일엔 늘 운동을 해요." },
+      ],
+      checklist: [
+        "빈도 부사가 동사 뒤에 왔나요?",
+        "mais로 두 습관을 대비했나요?",
+        "부정문에서 du가 de로 바뀌었나요?",
+      ],
+    },
     sections: [
       {
         heading: "얼마나 자주 — 동사 뒤에 빈도 부사",
