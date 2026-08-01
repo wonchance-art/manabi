@@ -78,45 +78,84 @@ const TRACKS = {
   },
 };
 
+const WORLD_BOUNDS = { x0: 0, y0: 10, x1: 720, y1: 306 };
+
+// 하이라이트 국가·점의 합집합 bbox → 여백·최소 크기·세계 경계 클램프까지 적용한 viewBox
+function computeViewBox(t) {
+  const ids = new Set([...t.dark, ...t.dim]);
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const c of WORLD_PATHS) {
+    if (!ids.has(c.id)) continue;
+    x0 = Math.min(x0, c.bb[0]); y0 = Math.min(y0, c.bb[1]);
+    x1 = Math.max(x1, c.bb[2]); y1 = Math.max(y1, c.bb[3]);
+  }
+  for (const d of t.dots) {
+    x0 = Math.min(x0, d.x - 6); y0 = Math.min(y0, d.y - 6);
+    x1 = Math.max(x1, d.x + 6); y1 = Math.max(y1, d.y + 6);
+  }
+  const pad = Math.max(12, (Math.max(x1 - x0, y1 - y0)) * 0.08);
+  x0 -= pad; y0 -= pad; x1 += pad; y1 += pad;
+  // 최소 크기 보장(과확대 방지·주변 맥락 포함)
+  const MIN_W = 230, MIN_H = 132;
+  if (x1 - x0 < MIN_W) { const cx = (x0 + x1) / 2; x0 = cx - MIN_W / 2; x1 = cx + MIN_W / 2; }
+  if (y1 - y0 < MIN_H) { const cy = (y0 + y1) / 2; y0 = cy - MIN_H / 2; y1 = cy + MIN_H / 2; }
+  // 세계 경계로 이동 클램프
+  if (x0 < WORLD_BOUNDS.x0) { x1 += WORLD_BOUNDS.x0 - x0; x0 = WORLD_BOUNDS.x0; }
+  if (y0 < WORLD_BOUNDS.y0) { y1 += WORLD_BOUNDS.y0 - y0; y0 = WORLD_BOUNDS.y0; }
+  if (x1 > WORLD_BOUNDS.x1) { x0 -= x1 - WORLD_BOUNDS.x1; x1 = WORLD_BOUNDS.x1; }
+  if (y1 > WORLD_BOUNDS.y1) { y0 -= y1 - WORLD_BOUNDS.y1; y1 = WORLD_BOUNDS.y1; }
+  x0 = Math.max(x0, WORLD_BOUNDS.x0); y0 = Math.max(y0, WORLD_BOUNDS.y0);
+  return { x: Math.round(x0), y: Math.round(y0), w: Math.round(x1 - x0), h: Math.round(y1 - y0) };
+}
+
+const TRACK_VB = Object.fromEntries(Object.entries(TRACKS).map(([k, t]) => [k, computeViewBox(t)]));
+
 export default function LanguageWorldMap({ langKey }) {
   const t = TRACKS[langKey];
   if (!t) return null;
+  const vb = TRACK_VB[langKey];
+  const k = vb.w / 720; // 줌 배율 역수 — 글자·선·점을 화면 크기 일정하게 보정
+  const fs = Math.max(3.4, 11.5 * k);
   const dark = new Set(t.dark);
   const dim = new Set(t.dim);
+  const inVB = (x, y) => x > vb.x + 4 && x < vb.x + vb.w - 4 && y > vb.y + 6 && y < vb.y + vb.h - 2;
   return (
     <div style={{ margin: '10px 0 12px' }}>
-      <svg viewBox="0 10 720 296" role="img" aria-label="언어 사용 지역 지도"
-        style={{ width: '100%', height: 'auto', display: 'block', borderRadius: 10, background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
+      <svg viewBox={`${vb.x} ${vb.y} ${vb.w} ${vb.h}`} role="img" aria-label="언어 사용 지역 지도"
+        style={{ width: '100%', height: 'auto', maxHeight: 340, display: 'block', borderRadius: 10, background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
         {WORLD_PATHS.map((c) => {
           const hl = dark.has(c.id) ? 'dark' : dim.has(c.id) ? 'dim' : null;
           return (
             <path key={c.id || c.name} d={c.d}
               fill={hl ? t.color : 'var(--border)'}
               fillOpacity={hl === 'dark' ? 0.82 : hl === 'dim' ? 0.4 : 0.45}
-              fillRule="evenodd" stroke="var(--bg-secondary)" strokeWidth="0.4">
+              fillRule="evenodd" stroke="var(--bg-secondary)" strokeWidth={0.4 * k}>
               {hl && <title>{c.name}</title>}
             </path>
           );
         })}
         {t.dots.map((d) => (
           <g key={d.label}>
-            <circle cx={d.x} cy={d.y} r={4} fill={t.color} opacity={d.dim ? 0.5 : 0.9} />
-            <text x={d.x + 7} y={d.y + 4} style={{ fontSize: 10.5, fill: 'var(--text-secondary)', paintOrder: 'stroke', stroke: 'var(--bg-secondary)', strokeWidth: 3 }}>{d.label}</text>
+            <circle cx={d.x} cy={d.y} r={Math.max(1.6, 4 * k)} fill={t.color} opacity={d.dim ? 0.5 : 0.9} />
+            <text x={d.x + Math.max(3, 7 * k)} y={d.y + fs * 0.35}
+              style={{ fontSize: fs * 0.92, fill: 'var(--text-secondary)', paintOrder: 'stroke', stroke: 'var(--bg-secondary)', strokeWidth: fs * 0.28 }}>{d.label}</text>
           </g>
         ))}
-        {t.labels.map((l) => (
+        {t.labels.filter((l) => inVB(l.x, l.y)).map((l) => (
           <text key={l.t} x={l.x} y={l.y} textAnchor="middle"
-            style={{ fontSize: 11.5, fontWeight: 700, fill: 'var(--text-secondary)', paintOrder: 'stroke', stroke: 'var(--bg-secondary)', strokeWidth: 3 }}>
+            style={{ fontSize: fs, fontWeight: 700, fill: 'var(--text-secondary)', paintOrder: 'stroke', stroke: 'var(--bg-secondary)', strokeWidth: fs * 0.28 }}>
             {l.t}
           </text>
         ))}
-        <g style={{ fontSize: 10.5 }}>
-          <rect x={16} y={288} width={11} height={11} rx={3} fill={t.color} fillOpacity="0.82" />
-          <text x={32} y={297} style={{ fill: 'var(--text-muted)' }}>주 사용·공용어권</text>
-          <rect x={128} y={288} width={11} height={11} rx={3} fill={t.color} fillOpacity="0.4" />
-          <text x={144} y={297} style={{ fill: 'var(--text-muted)' }}>널리 통용</text>
-        </g>
       </svg>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 6, fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+          <span style={{ width: 10, height: 10, borderRadius: 3, background: t.color, opacity: 0.82 }} />주 사용·공용어권
+        </span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+          <span style={{ width: 10, height: 10, borderRadius: 3, background: t.color, opacity: 0.4 }} />널리 통용
+        </span>
+      </div>
       <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
         {t.stats.map((st) => (
           <div key={st.label} style={{ flex: '1 1 100px', minWidth: 100, padding: '8px 10px', borderRadius: 8, background: 'var(--bg-secondary)', border: '1px solid var(--border)', textAlign: 'center' }}>
