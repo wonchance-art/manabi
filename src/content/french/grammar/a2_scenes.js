@@ -25,6 +25,18 @@ const chapters = [
       { id: "a2s13-d6", type: "dictation", sentence: "Le train est parti à midi." },
       { id: "a2s13-d7", type: "dictation", sentence: "J'ai perdu mon billet ce matin." },
     ],
+    writing: {
+      prompt: "기차 지연으로 늦는다는 사과 메시지를 써 보세요 — 이유(과거형)와 새 도착 시간. (50~70단어)",
+      hints: ["Je vais arriver en retard", "Mon train a … de retard", "à cause de …"],
+      samples: [
+        { fr: "Désolée, je vais arriver en retard ! Mon train a trente minutes de retard à cause d'un problème technique. Je suis partie à l'heure, mais tout est bloqué. J'arrive vers midi et demie. Encore désolée !", ko: "미안, 늦을 것 같아! 기술 문제 때문에 기차가 30분 지연됐어. 제시간에 출발했는데 전부 막혔네. 12시 반쯤 도착해. 다시 한번 미안!", note: "남성이면 Désolé·parti" },
+      ],
+      checklist: [
+        "지연 이유를 과거형으로 설명했나요?",
+        "à cause de로 원인을 붙였나요?",
+        "새 도착 시간이 들어갔나요?",
+      ],
+    },
     sections: [
       {
         type: "authenticIntro",
@@ -138,6 +150,18 @@ const chapters = [
       { id: "a2s14-d6", type: "dictation", sentence: "Il y avait beaucoup de vent." },
       { id: "a2s14-d7", type: "dictation", sentence: "J'étais très content du voyage." },
     ],
+    writing: {
+      prompt: "지난 여행 이야기를 일기로 써 보세요 — 배경은 반과거, 사건은 복합과거로. (60~80단어)",
+      hints: ["Il faisait …(배경)", "j'ai/je suis + 과거분사(사건)", "L'année dernière, …"],
+      samples: [
+        { fr: "L'année dernière, je suis allée à Nice avec ma famille. Il faisait très beau et la mer était magnifique. Le matin, nous marchions sur la plage et l'après-midi, nous visitions la vieille ville. Un soir, j'ai mangé une glace délicieuse. Je pense souvent à ce voyage.", ko: "작년에 가족과 니스에 갔어요. 날씨가 아주 좋았고 바다가 아름다웠어요. 아침엔 해변을 걷고 오후엔 구시가지를 구경했죠. 어느 저녁엔 정말 맛있는 아이스크림을 먹었어요. 그 여행을 자주 생각해요.", note: "남성이면 allé" },
+      ],
+      checklist: [
+        "배경·습관은 반과거, 한 번의 사건은 복합과거로 나눴나요?",
+        "60~80단어 분량인가요?",
+        "시간 표현(l'année dernière·le matin…)으로 흐름을 잡았나요?",
+      ],
+    },
     sections: [
       {
         type: "authenticIntro",
@@ -252,6 +276,18 @@ const chapters = [
       { id: "a215-d6", type: "dictation", sentence: "Il n'y a personne dans la rue." },
       { id: "a215-d7", type: "dictation", sentence: "Je ne bois plus de café." },
     ],
+    writing: {
+      prompt: "예전과 달라진 나 — 요즘 더는 안 하는 것들을 써 보세요. ne … plus/jamais를 섞어서. (50~70단어)",
+      hints: ["Avant, je …(반과거)", "je ne … plus", "je ne … jamais"],
+      samples: [
+        { fr: "Avant, je buvais du café tous les jours, mais je ne bois plus de café le soir. Je ne mange plus de sucre non plus. Je ne regarde jamais la télé après onze heures. Et je ne suis plus fatiguée le matin !", ko: "예전엔 매일 커피를 마셨는데, 이제 저녁엔 더는 안 마셔요. 설탕도 더는 안 먹어요. 11시 이후엔 텔레비전을 절대 안 봐요. 그리고 아침에 더는 피곤하지 않아요!", note: "남성이면 fatigué" },
+      ],
+      checklist: [
+        "ne … plus와 ne … jamais를 둘 다 썼나요?",
+        "부정문에서 관사를 de로 바꿨나요?",
+        "예전(반과거)과 지금(현재)을 대비했나요?",
+      ],
+    },
     sections: [
       {
         type: "authenticIntro",
@@ -371,6 +407,18 @@ const chapters = [
       { id: "a216-d6", type: "dictation", sentence: "Si tu es fatigué, reste ici." },
       { id: "a216-d7", type: "dictation", sentence: "S'il pleut, on reste à la maison." },
     ],
+    writing: {
+      prompt: "친구를 초대하는 이메일을 써 보세요 — si 조건문 두 개 이상. (50~70단어)",
+      hints: ["Si tu es libre …, on …", "S'il fait beau, nous …(미래)"],
+      samples: [
+        { fr: "Salut Emma ! Si tu es libre samedi, on va faire un pique-nique au bord du lac. S'il fait beau, nous ferons des grillades. Tu peux venir avec ta sœur, bien sûr. Tu peux me répondre vite ?", ko: "안녕 엠마! 토요일에 시간 되면 호숫가로 소풍 가자. 날씨 좋으면 바비큐도 할 거야. 당연히 동생이랑 같이 와도 돼. 빨리 답해 줄래?" },
+      ],
+      checklist: [
+        "si 뒤에는 현재형을 썼나요? (si + 미래 ✗)",
+        "결과 절에 근접미래나 futur simple을 썼나요?",
+        "초대의 핵심 정보(언제·무엇)가 있나요?",
+      ],
+    },
     sections: [
       {
         type: "authenticIntro",
@@ -488,6 +536,18 @@ const chapters = [
       { id: "a217-d6", type: "dictation", sentence: "D'abord, j'ai visité le musée." },
       { id: "a217-d7", type: "dictation", sentence: "Enfin, nous sommes rentrés très tard." },
     ],
+    writing: {
+      prompt: "지난 주말 하루를 순서대로 써 보세요 — d'abord·ensuite·enfin으로 흐름을 잡아서. (60~80단어)",
+      hints: ["D'abord, …", "Ensuite, …", "Enfin, …"],
+      samples: [
+        { fr: "Samedi dernier, j'ai eu une journée très pleine. D'abord, je suis allée au marché. Ensuite, j'ai préparé un grand déjeuner pour mes parents. Après le repas, nous avons marché dans le parc. Enfin, le soir, j'ai regardé un film et je me suis couchée tôt.", ko: "지난 토요일은 꽉 찬 하루였어요. 먼저 시장에 갔어요. 그다음 부모님을 위해 점심을 차렸죠. 식사 후엔 공원을 걸었어요. 마지막으로 저녁엔 영화를 보고 일찍 잤어요.", note: "남성이면 allé·couché" },
+      ],
+      checklist: [
+        "연결어 세 개 이상으로 순서를 표시했나요?",
+        "과거 시제(복합과거) 활용이 맞나요?",
+        "대명동사의 복합과거(je me suis …)를 시도했나요?",
+      ],
+    },
     sections: [
       {
         type: "authenticIntro",
@@ -608,6 +668,18 @@ const chapters = [
       { id: "a218-d6", type: "dictation", sentence: "Je voudrais deux billets, s'il vous plaît." },
       { id: "a218-d7", type: "dictation", sentence: "On pourrait manger ensemble ce soir." },
     ],
+    writing: {
+      prompt: "예약 변경을 요청하는 정중한 이메일을 써 보세요 — 조건법 두 개 이상. (50~70단어)",
+      hints: ["Je voudrais …", "Est-ce que ce serait possible … ?", "Pourriez-vous … ?"],
+      samples: [
+        { fr: "Bonjour Madame, je voudrais changer ma réservation du 10 mai. Est-ce que ce serait possible le 12 mai ? Pourriez-vous me confirmer par e-mail ? Je vous remercie d'avance. Cordialement, Kim Minji", ko: "안녕하세요, 5월 10일 예약을 변경하고 싶습니다. 12일로 가능할까요? 이메일로 확인해 주시겠어요? 미리 감사드립니다. 김민지 드림", note: "Cordialement는 격식 이메일 맺음말" },
+      ],
+      checklist: [
+        "조건법(voudrais·serait·pourriez)을 두 번 이상 썼나요?",
+        "격식 형식(호칭·맺음말)을 갖췄나요?",
+        "요청 내용(무엇을 언제로)이 명확한가요?",
+      ],
+    },
     sections: [
       {
         type: "authenticIntro",

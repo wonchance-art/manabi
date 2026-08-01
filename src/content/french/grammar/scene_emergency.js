@@ -20,6 +20,18 @@ const chapters = [
       { id: "a121-d6", type: "dictation", sentence: "La gare est tout droit." },
       { id: "a121-d7", type: "dictation", sentence: "Le bus arrive bientôt, non ?" },
     ],
+    writing: {
+      prompt: "친구에게 약속 장소 가는 길을 알려 주는 문자를 3~4문장으로 써 보세요. (30~50단어)",
+      hints: ["Tu prends le bus/le métro …", "Tu tournes à droite/gauche", "C'est en face de …"],
+      samples: [
+        { fr: "Salut Léa ! Le café est près de la gare. Tu prends le bus 12 et tu descends à la mairie. Ensuite, tu tournes à droite et c'est en face de la banque. À samedi !", ko: "안녕 레아! 카페는 역 근처야. 12번 버스 타고 시청에서 내려. 그다음 오른쪽으로 돌면 은행 맞은편이야. 토요일에 봐!" },
+      ],
+      checklist: [
+        "길 동사(prendre·descendre·tourner)를 현재형으로 활용했나요?",
+        "위치 표현(près de·en face de)을 하나 이상 썼나요?",
+        "문자다운 인사로 열고 닫았나요?",
+      ],
+    },
     sections: [
       // 샌드위치 v2 시험 적용 — 문형 où se trouve는 Tatoeba 다수 실재(예: #13734709 "Où se trouve Samir ?"). 대화 자체는 자체 저작.
       {
@@ -330,6 +342,18 @@ const chapters = [
       { id: "a122-d6", type: "dictation", sentence: "J'ai très mal ici." },
       { id: "a122-d7", type: "dictation", sentence: "Ma valise est perdue." },
     ],
+    writing: {
+      prompt: "분실물 신고 메모를 써 보세요 — 무엇을, 언제·어디서 잃어버렸는지, 연락처까지. (30~50단어)",
+      hints: ["J'ai perdu … (고정구)", "Il y a … dans le sac", "Téléphone : …"],
+      samples: [
+        { fr: "Objet perdu : un sac noir. J'ai perdu mon sac ce matin dans le métro, ligne 4. Il y a mon passeport et mes clés dans le sac. Téléphone : 06 12 34 56 78. Merci beaucoup !", ko: "분실물: 검은 가방. 오늘 아침 지하철 4호선에서 가방을 잃어버렸어요. 안에 여권과 열쇠가 있어요. 전화: 06 12 34 56 78. 감사합니다!" },
+      ],
+      checklist: [
+        "J'ai perdu 고정구로 시작했나요?",
+        "il y a로 내용물을 말했나요?",
+        "장소·시간·연락처가 다 들어갔나요?",
+      ],
+    },
     sections: [
       // 샌드위치 v2 시험 적용 — avoir mal à·J\'ai perdu 문형은 Tatoeba 다수 실재 계열. 대화는 자체 저작.
       {

@@ -34,6 +34,7 @@ export default function WritingPractice({ lang, slug, writing }) {
     } catch {}
   };
   const doneCount = checks.filter(Boolean).length;
+  const wordCount = draft.trim() ? draft.trim().split(/\s+/).length : 0;
 
   return (
     <section className="card fr-section">
@@ -52,7 +53,8 @@ export default function WritingPractice({ lang, slug, writing }) {
         placeholder="여기에 직접 써 보세요 — 이 기기에만 저장돼요."
         style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: '0.95rem', lineHeight: 1.6, resize: 'vertical' }}
       />
-      <div style={{ marginTop: 8 }}>
+      <p style={{ margin: '4px 0 0', fontSize: '0.74rem', color: 'var(--text-muted)', textAlign: 'right' }}>단어 수: {wordCount}</p>
+      <div style={{ marginTop: 4 }}>
         {!showSamples ? (
           <button type="button" className="btn btn--sm" onClick={() => setShowSamples(true)}>
             다 썼어요 — 모범답 보기
