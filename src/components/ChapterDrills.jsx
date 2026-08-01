@@ -5,6 +5,21 @@ import RefSpeak from './RefSpeak';
 import { normalizeExerciseAnswer } from './ExerciseEnginePrototype';
 
 /** 딕테 채점 — 구두점·아포스트로피 변형에는 관대, 철자·악상에는 엄격 */
+// 힌트는 클릭해야 열린다 — 먼저 스스로 생각해 보게 하는 장치
+function HintToggle({ hint }) {
+  const [open, setOpen] = useState(false);
+  if (!hint) return null;
+  if (!open) {
+    return (
+      <button type="button" onClick={() => setOpen(true)}
+        style={{ marginLeft: 8, fontSize: '0.75rem', color: 'var(--text-muted)', background: 'none', border: '1px solid var(--border)', borderRadius: 6, padding: '1px 8px', cursor: 'pointer' }}>
+        힌트 보기
+      </button>
+    );
+  }
+  return <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}> · 힌트: {hint}</span>;
+}
+
 function dictNormalize(s) {
   return normalizeExerciseAnswer(String(s ?? '').replace(/[’]/g, "'"))
     .replace(/[.,!?…«»"”“:;—–-]/g, '')
@@ -67,7 +82,7 @@ function InputDrill({ drill, lang, onResult, done, dictation }) {
           <RefSpeak text={drill.sentence} lang={lang} />
         </p>
       ) : (
-        <p style={{ fontSize: '0.95rem', marginBottom: 6 }}>{drill.prompt}{drill.hint && <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}> · 힌트: {drill.hint}</span>}</p>
+        <p style={{ fontSize: '0.95rem', marginBottom: 6 }}>{drill.prompt}<HintToggle hint={drill.hint} /></p>
       )}
       <div style={{ display: 'flex', gap: 8 }}>
         <input value={value} disabled={done} onChange={(e) => setValue(e.target.value)}
@@ -85,7 +100,7 @@ function InputDrill({ drill, lang, onResult, done, dictation }) {
 function ChoiceDrill({ drill, onResult, done, lang }) {
   return (
     <div>
-      <p style={{ fontSize: '0.95rem', marginBottom: 8 }}>{drill.prompt}{drill.hint && <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}> · 힌트: {drill.hint}</span>}</p>
+      <p style={{ fontSize: '0.95rem', marginBottom: 8 }}>{drill.prompt}<HintToggle hint={drill.hint} /></p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {drill.choices.map((c, i) => (
           <button key={i} type="button" disabled={done} onClick={() => onResult(c === drill.answer)}
