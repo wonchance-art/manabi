@@ -58,22 +58,29 @@ function ringToPath(pts) {
 function geomToPath(geom) {
   const polys = geom.type === 'Polygon' ? [geom.arcs] : geom.arcs;
   let d = '';
+  const bb = [Infinity, Infinity, -Infinity, -Infinity];
   for (const rings of polys) {
     for (const ring of rings) {
       const pts = ringPoints(ring);
       if (pts.length < 3) continue;
       d += ringToPath(pts);
+      for (const [x, y] of pts) {
+        if (x < bb[0]) bb[0] = x;
+        if (y < bb[1]) bb[1] = y;
+        if (x > bb[2]) bb[2] = x;
+        if (y > bb[3]) bb[3] = y;
+      }
     }
   }
-  return d;
+  return { d, bb: bb.map((v) => Math.round(v * 10) / 10) };
 }
 
 const out = [];
 for (const g of topo.objects.countries.geometries) {
   if (g.id === '010') continue; // 남극 제외
-  const d = geomToPath(g);
+  const { d, bb } = geomToPath(g);
   if (!d) continue;
-  out.push({ id: g.id ?? '', name: g.properties?.name ?? '', d });
+  out.push({ id: g.id ?? '', name: g.properties?.name ?? '', d, bb });
 }
 out.sort((a, b) => (a.id || 'zzz').localeCompare(b.id || 'zzz'));
 
