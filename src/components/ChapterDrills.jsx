@@ -1,8 +1,10 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import RefSpeak from './RefSpeak';
 import { normalizeExerciseAnswer } from './ExerciseEnginePrototype';
+import { useAuth } from '../lib/AuthContext';
+import { recordChapterDrillResult } from '../lib/drillSrs';
 
 /** 딕테 채점 — 구두점·아포스트로피 변형에는 관대, 철자·악상에는 엄격 */
 function dictNormalize(s) {
@@ -105,13 +107,20 @@ function ChoiceDrill({ drill, onResult, done, lang }) {
 
 /**
  * 변형 드릴(RFC learning-path v1) — 새 문장으로 연습 후 관문 퀴즈(RefPatternCheck)로 가는 전 단계.
- * 채점은 로컬 표시 전용(SRS 연결은 관문 퀴즈가 담당 — v2에서 통합).
+ * 채점 결과는 drill id 단위로 기존 문법 SRS와 review_events에 연결한다.
  */
 export default function ChapterDrills({ lang, drills, title, intro }) {
+  const { user } = useAuth();
   const [results, setResults] = useState({});
+  const settled = useRef(new Set());
   const answered = Object.keys(results).length;
   const right = Object.values(results).filter(Boolean).length;
-  const record = (id) => (ok) => setResults((r) => (id in r ? r : { ...r, [id]: ok }));
+  const record = (drill) => (ok) => {
+    if (settled.current.has(drill.id)) return;
+    settled.current.add(drill.id);
+    setResults((r) => ({ ...r, [drill.id]: ok }));
+    void recordChapterDrillResult(user?.id, { lang, drill, correct: ok });
+  };
   return (
     <section className="card fr-section">
       <h2 className="fr-section__heading">{title ?? '변형 드릴 — 새 문장으로 손 풀기'}</h2>
@@ -127,10 +136,10 @@ export default function ChapterDrills({ lang, drills, title, intro }) {
               {d.sourceLabel && (
                 <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 4 }}>복습 · {d.sourceLabel}</p>
               )}
-              {d.type === 'choice' && <ChoiceDrill drill={d} done={done} onResult={record(d.id)} lang={lang} />}
-              {d.type === 'fill' && <InputDrill drill={d} lang={lang} done={done} onResult={record(d.id)} />}
-              {d.type === 'dictation' && <InputDrill drill={d} lang={lang} done={done} onResult={record(d.id)} dictation />}
-              {d.type === 'order' && <OrderDrill drill={d} done={done} onResult={record(d.id)} />}
+              {d.type === 'choice' && <ChoiceDrill drill={d} done={done} onResult={record(d)} lang={lang} />}
+              {d.type === 'fill' && <InputDrill drill={d} lang={lang} done={done} onResult={record(d)} />}
+              {d.type === 'dictation' && <InputDrill drill={d} lang={lang} done={done} onResult={record(d)} dictation />}
+              {d.type === 'order' && <OrderDrill drill={d} done={done} onResult={record(d)} />}
               {done && (
                 <p style={{ fontSize: '0.82rem', marginTop: 6, color: ok ? 'var(--accent, #2d6a4f)' : 'var(--text-muted)' }}>
                   {ok ? '정답이에요!' : `아쉬워요 — 정답: ${d.type === 'fill' ? d.answer : d.sentence ?? d.answer}`}

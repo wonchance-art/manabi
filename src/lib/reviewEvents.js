@@ -3,7 +3,7 @@
  * 모든 학습 기능(vocab/grammar/dictation/writing)의 정오답을 한 곳에 모은다 —
  * 약점 진단·맞춤 드릴의 데이터 축. 실패해도 학습 흐름을 막지 않는다(fire-and-forget).
  */
-import { supabase } from './supabase';
+import { supabase } from './supabase.js';
 
 /**
  * @param {string} userId
