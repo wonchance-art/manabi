@@ -14,6 +14,9 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
+- Tatoeba fr 실음원 메타 수집: A1~A2 v1+v2 20문형에서 오디오 자체 라이선스가
+  CC BY/CC0인 문장만 결정적으로 수집하고 오디오 ID·라이선스·낭독자 귀속을 스냅샷화
+  (`codex/tatoeba-fr-audio`, base 162d6bb7ec6908759308f1ce720e145550167d27)
 ### todo
 ### done (최근)
 - Tatoeba fr A2 스냅샷 v2: unstable API `paging.next` 페이지네이션으로 10문형×20문장
