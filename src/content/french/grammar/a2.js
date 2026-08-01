@@ -562,7 +562,7 @@ const chapters = [
       hints: ["L'année prochaine, je …-rai", "불규칙 어간: être→ser-, aller→ir-, faire→fer-"],
       samples: [
         { fr: "L'année prochaine, j'irai en France.", ko: "내년에 프랑스에 갈 거예요.", note: "aller의 미래 어간은 ir-" },
-        { fr: "Je parlerai mieux français.", ko: "프랑스어를 더 잘하게 될 거예요." },
+        { fr: "Je ferai un voyage à Paris.", ko: "파리로 여행을 갈 거예요.", note: "faire의 미래 어간은 fer-" },
       ],
       checklist: [
         "미래 어미(-rai/-ras/-ra…)를 붙였나요?",

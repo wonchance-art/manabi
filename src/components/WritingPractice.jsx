@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import RefSpeak from './RefSpeak';
 
 /**
  * 써 보기(산출 연습 v2) — 챕터 문형으로 짧은 작문 → 모범답 대조 → 자기 점검.
@@ -17,7 +18,14 @@ export default function WritingPractice({ lang, slug, writing }) {
     }
   });
   const [showSamples, setShowSamples] = useState(false);
-  const [checks, setChecks] = useState(() => writing.checklist.map(() => false));
+  const checksKey = `${storageKey}_checks`;
+  const [checks, setChecks] = useState(() => {
+    try {
+      const saved = JSON.parse(globalThis.localStorage?.getItem(checksKey) ?? 'null');
+      if (Array.isArray(saved) && saved.length === writing.checklist.length) return saved;
+    } catch {}
+    return writing.checklist.map(() => false);
+  });
 
   const save = (value) => {
     setDraft(value);
@@ -53,7 +61,9 @@ export default function WritingPractice({ lang, slug, writing }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {writing.samples.map((smp) => (
               <div key={smp.fr} style={{ padding: '8px 11px', borderRadius: 8, background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
-                <p style={{ margin: 0, fontSize: '0.92rem', fontWeight: 600 }} lang="fr">{smp.fr}</p>
+                <p style={{ margin: 0, fontSize: '0.92rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }} lang="fr">
+                  {smp.fr} <RefSpeak text={smp.fr} lang={lang} />
+                </p>
                 <p style={{ margin: '2px 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                   {smp.ko}
                   {smp.note && <span> · {smp.note}</span>}
@@ -64,7 +74,11 @@ export default function WritingPractice({ lang, slug, writing }) {
               <p style={{ margin: '4px 0 4px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>내 문장과 비교하며 점검해 보세요:</p>
               {writing.checklist.map((item, i) => (
                 <label key={item} style={{ display: 'flex', gap: 8, alignItems: 'baseline', fontSize: '0.84rem', color: 'var(--text-secondary)', lineHeight: 1.7, cursor: 'pointer' }}>
-                  <input type="checkbox" checked={checks[i]} onChange={() => setChecks((c) => c.map((v, j) => (j === i ? !v : v)))} />
+                  <input type="checkbox" checked={checks[i]} onChange={() => setChecks((c) => {
+                    const next = c.map((v, j) => (j === i ? !v : v));
+                    try { globalThis.localStorage?.setItem(checksKey, JSON.stringify(next)); } catch {}
+                    return next;
+                  })} />
                   <span>{item}</span>
                 </label>
               ))}
