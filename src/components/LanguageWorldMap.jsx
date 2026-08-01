@@ -93,7 +93,7 @@ export default function LanguageWorldMap({ langKey }) {
             <path key={c.id || c.name} d={c.d}
               fill={hl ? t.color : 'var(--border)'}
               fillOpacity={hl === 'dark' ? 0.82 : hl === 'dim' ? 0.4 : 0.45}
-              stroke="var(--bg-secondary)" strokeWidth="0.4">
+              fillRule="evenodd" stroke="var(--bg-secondary)" strokeWidth="0.4">
               {hl && <title>{c.name}</title>}
             </path>
           );
