@@ -2221,6 +2221,27 @@ export const REF_GRAMMAR_MANIFEST = {
                 },
                 "nextLesson": {
                   "id": "french-a0-u02-l02",
+                  "href": "/french/grammar/a0-07-decoding"
+                }
+              }
+            },
+            {
+              "slug": "a0-07-decoding",
+              "level": "A0",
+              "order": 4,
+              "title": "처음 보는 단어, 소리 내 읽기",
+              "topic": "철자→소리 해독 종합 훈련",
+              "summary": "지금까지 배운 철자→소리 규칙을 한 장으로 모으고, 한 번도 본 적 없는 단어로 실전 훈련해요. 여기를 통과하면 사전 없이도 새 단어를 소리 낼 수 있어요.",
+              "duration": "약 8분",
+              "courseLesson": {
+                "lessonRef": {
+                  "id": "french-a0-u02-l02",
+                  "lang": "French",
+                  "slug": "a0-07-decoding",
+                  "source": "lesson"
+                },
+                "nextLesson": {
+                  "id": "french-a0-u03-l01",
                   "href": "/french/grammar/a0-06-word-order"
                 }
               }
@@ -2228,14 +2249,14 @@ export const REF_GRAMMAR_MANIFEST = {
             {
               "slug": "a0-06-word-order",
               "level": "A0",
-              "order": 4,
+              "order": 5,
               "title": "형용사가 뒤에 서는 언어",
               "topic": "어순과 수식어의 방식",
               "summary": "프랑스어 문장의 뼈대는 영어처럼 '주어+동사+목적어'. 다만 형용사는 명사 뒤에 선다는 것, 그리고 조사가 없다는 것만 미리 감을 잡아요.",
               "duration": "약 6분",
               "courseLesson": {
                 "lessonRef": {
-                  "id": "french-a0-u02-l02",
+                  "id": "french-a0-u03-l01",
                   "lang": "French",
                   "slug": "a0-06-word-order",
                   "source": "lesson"

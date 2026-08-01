@@ -591,7 +591,11 @@ export default async function ReferenceChapterPage({ lang, slug, registry: ref, 
         /* 카나 챕터: 카나→로마자 테스트 (오십음표 학습 표는 위 섹션 안에) — 인트로여도 유지 */
         <KanaTest kind={chapter.kana} slug={chapter.slug} storageKey={`${ref.readKey}_check`} lang={lang} />
       ) : isIntro ? (
-        /* 인트로 레벨(OT/A0) 비(非)카나 챕터: 관문 없이 가볍게 읽고 넘어가는 안내 카드 */
+        /* 인트로 레벨(OT/A0) 비(非)카나 챕터: 관문 없이 안내 카드 — 단, 해독 드릴이 있으면 연습은 제공 */
+        <>
+          {Array.isArray(chapter.drills) && chapter.drills.length > 0 && (
+            <ChapterDrills lang={lang} drills={chapter.drills} title="소리 내 읽기 — 처음 보는 단어 연습" intro="배운 규칙으로 발음을 예측해 보세요. 답을 고르면 스피커로 실제 발음을 확인할 수 있어요." />
+          )}
         <section className="card fr-section" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <p style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0 }}>
             이 챕터는 가볍게 읽고 넘어가면 돼요 — 본격 학습은 <strong>{firstRegularLabel}</strong>부터예요.
@@ -602,6 +606,7 @@ export default async function ReferenceChapterPage({ lang, slug, registry: ref, 
             </Link>
           )}
         </section>
+        </>
       ) : (
         /* ── 변형 드릴(있으면) → 패턴 체크 (3단계 퀴즈 + 통과 관문) ── */
         <>
