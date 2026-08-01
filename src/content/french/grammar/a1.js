@@ -229,6 +229,18 @@ const chapters = [
       { id: "a103-d6", type: "dictation", sentence: "Nous aimons le cinéma." },
       { id: "a103-d7", type: "dictation", sentence: "Il travaille à Paris." },
     ],
+    writing: {
+      prompt: "-er 동사 두 개로 좋아하는 것과 매일 하는 것을 써 보세요.",
+      hints: ["J'aime …", "Je parle / J'écoute / Je travaille"],
+      samples: [
+        { fr: "J'aime la musique. J'écoute la radio le soir.", ko: "저는 음악을 좋아해요. 저녁에 라디오를 들어요." },
+      ],
+      checklist: [
+        "je에서 동사 끝이 -e인가요?",
+        "두 문장의 동사가 서로 다른가요?",
+        "명사 앞에 정관사를 붙였나요?",
+      ],
+    },
     sections: [
       {
         heading: "동사 원형과 1군 동사",
@@ -503,6 +515,18 @@ const chapters = [
       { id: "a111-d6", type: "dictation", sentence: "La gare est ici." },
       { id: "a111-d7", type: "dictation", sentence: "Le train est là." },
     ],
+    writing: {
+      prompt: "주변 사물 네 개를 un/une로 나눠 문장 두 개에 담아 보세요.",
+      hints: ["Voici un … et une …", "Il y a …"],
+      samples: [
+        { fr: "Voici un livre et une table. Il y a un café et une pomme.", ko: "여기 책 한 권과 탁자가 있어요. 커피와 사과가 있어요." },
+      ],
+      checklist: [
+        "un/une를 명사의 성에 맞게 골랐나요?",
+        "헷갈린 명사는 사전에서 성을 확인했나요?",
+        "남성·여성이 두 개씩 들어갔나요?",
+      ],
+    },
     sections: [
       {
         heading: "문법적 성이란 — '남자답다/여자답다'가 아니에요",
@@ -576,6 +600,18 @@ const chapters = [
       { id: "a112-d6", type: "dictation", sentence: "Voici les enfants." },
       { id: "a112-d7", type: "dictation", sentence: "C'est le café de Paul." },
     ],
+    writing: {
+      prompt: "일반적인 사실 하나(정관사)와 가진 것 하나(부정관사)를 써 보세요.",
+      hints: ["Le/La + 명사 + est …", "J'ai un/une …"],
+      samples: [
+        { fr: "Le café est bon. J'ai une question.", ko: "커피는 맛있어요. 질문이 하나 있어요." },
+      ],
+      checklist: [
+        "'~라는 것 전체'에는 정관사를 썼나요?",
+        "'하나'를 셀 때는 부정관사를 썼나요?",
+        "관사 없이 쓴 명사가 없나요?",
+      ],
+    },
     sections: [
       {
         heading: "관사 없는 명사는 벌거벗은 명사",
@@ -653,6 +689,18 @@ const chapters = [
       { id: "a106-d6", type: "dictation", sentence: "C'est un grand hôtel." },
       { id: "a106-d7", type: "dictation", sentence: "La petite fille chante." },
     ],
+    writing: {
+      prompt: "가진 물건 하나와 어떤 장소 하나를 형용사로 묘사해 보세요 — 형용사는 명사 뒤!",
+      hints: ["J'ai un/une + 명사 + 형용사", "Le/La + 명사 + est + 형용사"],
+      samples: [
+        { fr: "J'ai un sac noir. La maison est grande.", ko: "저는 검은 가방이 있어요. 그 집은 커요." },
+      ],
+      checklist: [
+        "색·모양 형용사를 명사 뒤에 놓았나요?",
+        "형용사가 명사의 성과 일치하나요? (noir/noire)",
+        "être + 형용사 문장도 하나 있나요?",
+      ],
+    },
     sections: [
       {
         heading: "성·수 일치 — 형용사는 명사를 따라가요",
@@ -738,6 +786,18 @@ const chapters = [
       { id: "a107-d6", type: "dictation", sentence: "Mon père travaille beaucoup." },
       { id: "a107-d7", type: "dictation", sentence: "Ta sœur est très gentille." },
     ],
+    writing: {
+      prompt: "가족이나 친구 두 사람을 mon/ma/mes로 소개해 보세요.",
+      hints: ["Ma mère est …", "Mon frère est …"],
+      samples: [
+        { fr: "Ma mère est gentille. Mon frère est étudiant.", ko: "우리 엄마는 다정해요. 제 남동생은 학생이에요." },
+      ],
+      checklist: [
+        "소유형용사가 뒤 명사의 성을 따랐나요? (내 성별 아님!)",
+        "être 활용이 주어와 맞나요?",
+        "형용사·직업의 성 일치를 확인했나요?",
+      ],
+    },
     sections: [
       {
         heading: "기본 시스템 — 인칭 × 소유물의 성·수",
@@ -1032,6 +1092,18 @@ const chapters = [
       { id: "a110-d6", type: "dictation", sentence: "Il est huit heures dix." },
       { id: "a110-d7", type: "dictation", sentence: "J'ai rendez-vous à midi." },
     ],
+    writing: {
+      prompt: "하루 일과 두 장면을 시간과 함께 써 보세요.",
+      hints: ["Je travaille à … heures", "Le film est à …"],
+      samples: [
+        { fr: "Je travaille à neuf heures. Le film est à vingt heures.", ko: "저는 9시에 일해요. 영화는 20시(저녁 8시)에 시작해요." },
+      ],
+      checklist: [
+        "à + 숫자 + heures 꼴인가요?",
+        "숫자를 프랑스어로 쓸 수 있나요? (neuf·vingt)",
+        "두 문장의 시간이 다른가요?",
+      ],
+    },
     sections: [
       {
         heading: "0~69 — 여기까지는 평화로워요",
@@ -1133,6 +1205,18 @@ const chapters = [
       { id: "a113-d6", type: "dictation", sentence: "Merci, au revoir !" },
       { id: "a113-d7", type: "dictation", sentence: "Bonjour, ça va ?" },
     ],
+    writing: {
+      prompt: "첫 만남 인사를 세 마디로 써 보세요 — 인사, 이름, 만나서 반가움.",
+      hints: ["Bonjour !", "Je m'appelle …", "Enchanté(e) !"],
+      samples: [
+        { fr: "Bonjour ! Je m'appelle Minji. Enchantée !", ko: "안녕하세요! 저는 민지예요. 만나서 반가워요!", note: "남성이면 Enchanté" },
+      ],
+      checklist: [
+        "인사 → 이름 → 반가움 순서인가요?",
+        "Je m'appelle 뒤에 이름을 그대로 썼나요?",
+        "느낌표로 밝은 톤을 살렸나요?",
+      ],
+    },
     sections: [
       {
         heading: "기본 인사 세트",

@@ -238,6 +238,18 @@ const chapters = [
       { id: "a203-d6", type: "dictation", sentence: "Nous étions très fatigués hier." },
       { id: "a203-d7", type: "dictation", sentence: "Il y avait du monde partout." },
     ],
+    writing: {
+      prompt: "어릴 때 습관 두 가지를 반과거로 써 보세요.",
+      hints: ["Quand j'étais petit(e), …", "Je jouais / J'habitais …"],
+      samples: [
+        { fr: "Quand j'étais petite, j'habitais à Busan. Je jouais souvent au parc.", ko: "어릴 때 저는 부산에 살았어요. 공원에서 자주 놀았죠.", note: "남성이면 petit" },
+      ],
+      checklist: [
+        "반과거 어미(-ais·-ait)를 붙였나요?",
+        "'반복된 과거'라는 느낌이 나나요?",
+        "복합과거(한 번의 사건)와 구별했나요?",
+      ],
+    },
     sections: [
       {
         heading: "형태 — nous에서 어간을 꺼내요",
@@ -412,6 +424,18 @@ const chapters = [
       { id: "a205-d6", type: "dictation", sentence: "Je te comprends très bien." },
       { id: "a205-d7", type: "dictation", sentence: "Elle nous attend devant la gare." },
     ],
+    writing: {
+      prompt: "사람 두 명을 목적대명사(le/la/lui)로 받아 두 문장을 써 보세요.",
+      hints: ["… ? Je le/la vois …", "… ? Je lui téléphone …"],
+      samples: [
+        { fr: "Mon frère ? Je le vois samedi. Ma mère ? Je lui téléphone tous les jours.", ko: "남동생이요? 토요일에 만나요. 엄마요? 매일 전화해요." },
+      ],
+      checklist: [
+        "직접목적(보다)은 le/la, 간접(전화하다 à)은 lui인가요?",
+        "대명사가 동사 앞에 왔나요?",
+        "두 대명사의 종류가 다른가요?",
+      ],
+    },
     sections: [
       {
         heading: "직접목적 대명사 le, la, les — 어순 충격에 대비하세요",
@@ -477,6 +501,18 @@ const chapters = [
       { id: "a206-d6", type: "dictation", sentence: "Ma sœur est plus grande que moi." },
       { id: "a206-d7", type: "dictation", sentence: "C'est le meilleur restaurant du quartier." },
     ],
+    writing: {
+      prompt: "두 가지를 비교하는 문장 두 개 — plus와 aussi를 하나씩.",
+      hints: ["… est plus … que …", "… est aussi … que …"],
+      samples: [
+        { fr: "Le métro est plus rapide que le bus. Ma sœur est aussi grande que moi.", ko: "지하철이 버스보다 빨라요. 언니는 저만큼 키가 커요." },
+      ],
+      checklist: [
+        "plus/aussi + 형용사 + que 순서인가요?",
+        "형용사가 주어와 성수 일치하나요?",
+        "비교 대상이 명확한가요?",
+      ],
+    },
     sections: [
       {
         heading: "비교급 3종 세트 — plus / moins / aussi ... que",
@@ -667,6 +703,18 @@ const chapters = [
       { id: "a208-d6", type: "dictation", sentence: "Écoute bien le professeur." },
       { id: "a208-d7", type: "dictation", sentence: "Ne fermez pas la fenêtre." },
     ],
+    writing: {
+      prompt: "친구에게 하는 지시·금지·권유를 하나씩 명령형으로 써 보세요.",
+      hints: ["Prends … !", "Ne … pas !", "Allons … !"],
+      samples: [
+        { fr: "Prends ton parapluie ! Ne sois pas en retard. Allons au cinéma ensemble !", ko: "우산 챙겨! 늦지 마. 같이 영화관 가자!" },
+      ],
+      checklist: [
+        "주어 없이 동사로 시작했나요?",
+        "-er 동사 tu 명령에서 s를 뺐나요?",
+        "금지는 ne … pas로 감쌌나요?",
+      ],
+    },
     sections: [
       {
         heading: "형태 — 현재형에서 주어만 빼기 (그리고 -s 탈락)",
@@ -750,6 +798,18 @@ const chapters = [
       { id: "a209-d6", type: "dictation", sentence: "Il en parle souvent." },
       { id: "a209-d7", type: "dictation", sentence: "On y va ensemble ?" },
     ],
+    writing: {
+      prompt: "질문에 y와 en으로 답하는 짝을 하나씩 써 보세요.",
+      hints: ["… ? Oui, j'y vais …", "… ? Oui, j'en mange …"],
+      samples: [
+        { fr: "Tu vas à Paris ? Oui, j'y vais en mai. Tu manges des fruits ? Oui, j'en mange tous les matins.", ko: "파리 가? 응, 5월에 가. 과일 먹어? 응, 매일 아침 먹어." },
+      ],
+      checklist: [
+        "장소(à …)는 y로 받았나요?",
+        "수량(des …)은 en으로 받았나요?",
+        "y·en이 동사 앞에 있나요?",
+      ],
+    },
     sections: [
       {
         heading: "y — '거기에'를 받는 한 글자",
@@ -815,6 +875,18 @@ const chapters = [
       { id: "a210-d6", type: "dictation", sentence: "J'ai un ami qui parle coréen." },
       { id: "a210-d7", type: "dictation", sentence: "C'est le jour où tout a changé." },
     ],
+    writing: {
+      prompt: "qui 문장 하나, que 문장 하나로 사람·사물을 소개해 보세요.",
+      hints: ["J'ai un ami qui …", "C'est le film que je …"],
+      samples: [
+        { fr: "J'ai un ami qui habite à Lyon. C'est le film que je préfère.", ko: "리옹에 사는 친구가 있어요. 제가 제일 좋아하는 영화예요." },
+      ],
+      checklist: [
+        "뒤 절의 주어가 빠졌으면 qui인가요?",
+        "뒤 절에 주어가 있으면 que인가요?",
+        "선행사가 무엇인지 분명한가요?",
+      ],
+    },
     sections: [
       {
         heading: "관계대명사란 — 명사 뒤에 설명 달기",
@@ -921,6 +993,18 @@ const chapters = [
       { id: "a211-d6", type: "dictation", sentence: "J'apprends le français depuis un an." },
       { id: "a211-d7", type: "dictation", sentence: "Le film commence dans cinq minutes." },
     ],
+    writing: {
+      prompt: "depuis와 il y a로 나의 타임라인 두 문장을 써 보세요.",
+      hints: ["… depuis + 기간(지금도 계속)", "… il y a + 기간(과거 한 시점)"],
+      samples: [
+        { fr: "Je suis arrivée en France il y a deux semaines. J'apprends le français depuis trois mois.", ko: "2주 전에 프랑스에 왔어요. 프랑스어는 3개월째 배우고 있어요.", note: "남성이면 arrivé" },
+      ],
+      checklist: [
+        "il y a에는 과거 시제를 썼나요?",
+        "depuis에는 현재 시제를 썼나요?",
+        "두 기간이 서로 모순되지 않나요?",
+      ],
+    },
     sections: [
       {
         heading: "depuis — 시작점부터 지금까지, 현재형으로",
@@ -1032,6 +1116,18 @@ const chapters = [
       { id: "a212-d6", type: "dictation", sentence: "Tout le monde est content." },
       { id: "a212-d7", type: "dictation", sentence: "J'ai assez dormi cette nuit." },
     ],
+    writing: {
+      prompt: "tout/tous가 들어간 문장 두 개 — 습관 하나, 사건 하나.",
+      hints: ["tous les jours / tous les matins", "tout le/toute la + 명사"],
+      samples: [
+        { fr: "Je travaille tous les jours. Hier, j'ai mangé tout le gâteau !", ko: "저는 매일 일해요. 어제는 케이크를 통째로 다 먹었어요!" },
+      ],
+      checklist: [
+        "tous + les + 복수 명사 꼴이 맞나요?",
+        "tout/toute가 뒤 명사의 성과 일치하나요?",
+        "습관(현재)과 사건(복합과거)을 나눴나요?",
+      ],
+    },
     sections: [
       {
         heading: "수량 부사 + de — 관사가 사라지는 자리",
