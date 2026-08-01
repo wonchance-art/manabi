@@ -12,6 +12,7 @@ export function buildRefManifest() {
       readKey: ref.readKey,
       blurb: ref.blurb,
       legend: ref.legend,
+      pitch: ref.pitch ?? null,
       levels: ref.LEVEL_META.map(m => ({
         key: m.key,
         short: m.short || null,
