@@ -37,6 +37,24 @@ function ringPoints(arcIdxs) {
   return pts.map(proj);
 }
 
+// 날짜변경선(x 급점프 > 360px) 횡단 링은 조각으로 분할 — 지도 가로지르는 띠 방지
+function ringToPath(pts) {
+  const parts = [];
+  let cur = [pts[0]];
+  for (let i = 1; i < pts.length; i += 1) {
+    if (Math.abs(pts[i][0] - pts[i - 1][0]) > 360) {
+      parts.push(cur);
+      cur = [];
+    }
+    cur.push(pts[i]);
+  }
+  parts.push(cur);
+  return parts
+    .filter((part) => part.length >= 3)
+    .map((part) => `M${part.map((pt) => pt.join(',')).join('L')}Z`)
+    .join('');
+}
+
 function geomToPath(geom) {
   const polys = geom.type === 'Polygon' ? [geom.arcs] : geom.arcs;
   let d = '';
@@ -44,7 +62,7 @@ function geomToPath(geom) {
     for (const ring of rings) {
       const pts = ringPoints(ring);
       if (pts.length < 3) continue;
-      d += `M${pts.map((p) => p.join(',')).join('L')}Z`;
+      d += ringToPath(pts);
     }
   }
   return d;
@@ -71,4 +89,12 @@ fs.writeFileSync(path.join(ROOT, 'src/components/worldMapPaths.js'), body);
 const HIGHLIGHT_CHECK = ['840','124','826','372','036','554','356','566','404','710','288','608','250','056','756','442','332','686','384','466','854','562','768','204','324','120','266','178','180','140','148','262','450','646','108','226','504','012','788','392','156','158','702','458'];
 const have = new Set(out.map((o) => o.id));
 const missing = HIGHLIGHT_CHECK.filter((id) => !have.has(id));
-console.log(JSON.stringify({ countries: out.length, bytes: body.length, missingHighlights: missing }));
+// 검증: 어떤 subpath에도 x 급점프(>360px)가 남아 있지 않아야 한다
+let jumps = 0;
+for (const o of out) {
+  for (const sub of o.d.split('M').slice(1)) {
+    const xs = sub.replace(/Z$/, '').split('L').map((pt) => parseFloat(pt));
+    for (let i = 1; i < xs.length; i += 1) if (Math.abs(xs[i] - xs[i - 1]) > 360) jumps += 1;
+  }
+}
+console.log(JSON.stringify({ countries: out.length, bytes: body.length, missingHighlights: missing, antimeridianJumps: jumps }));
