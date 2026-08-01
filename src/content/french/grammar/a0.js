@@ -92,6 +92,11 @@ const chapters = [
       { id: "a003-d5", type: "choice", prompt: "oiseau(새) — 어떻게 읽을까요?", choices: ["우아조", "오이소", "와이제아우"], answer: "우아조", hint: "oi=[와]·eau=[오]", speak: "oiseau" },
       { id: "a003-d6", type: "dictation", sentence: "bonbon", hint: "사탕 — 코로 울리는 소리 두 번" },
       { id: "a003-d7", type: "dictation", sentence: "minute", hint: "분(시간)" },
+      { id: "a003-d8", type: "choice", prompt: "pain(빵) — 어떻게 읽을까요?", choices: ["팽", "파인", "빠앵"], answer: "팽", hint: "ain=in과 같은 [앵]", speak: "pain" },
+      { id: "a003-d9", type: "choice", prompt: "bien(잘) — 어떻게 읽을까요?", choices: ["비앵", "비엔", "벤"], answer: "비앵", hint: "ien=[이앵]", speak: "bien" },
+      { id: "a003-d10", type: "choice", prompt: "loin(멀리) — 어떻게 읽을까요?", choices: ["루앵", "로인", "루안"], answer: "루앵", hint: "oin=[우앵]", speak: "loin" },
+      { id: "a003-d11", type: "choice", prompt: "cuisine(부엌) — 어떻게 읽을까요?", choices: ["뀌진", "뀌쟁", "꾸이진"], answer: "뀌진", hint: "함정! in 뒤에 모음이 오면 비모음이 풀려요", speak: "cuisine" },
+      { id: "a003-d12", type: "choice", prompt: "nuit(밤) — 어떻게 읽을까요?", choices: ["뉘", "누이트", "뉘이트"], answer: "뉘", hint: "ui=[위]·끝 t 묵음", speak: "nuit" },
     ],
     sections: [
       {
@@ -126,8 +131,22 @@ const chapters = [
         tip: "단, 뒤에 모음이 오면 콧소리가 풀려요. bon은 [bɔ̃](봉)이지만 bonne은 [bɔn](본)으로 n을 또렷이 발음해요.",
       },
       {
+        heading: "비모음 심화 — 같은 소리, 다른 옷",
+        pattern: "im/ain/aim/ein/ym = in [앵] · un/um = [욍] · oin = [우앵] · ien = [이앵] · 뒤에 모음·겹자음이 오면 해제",
+        patternKo: "변형 철자와 '비모음 풀림'까지 알면 웬만한 단어는 다 읽어요",
+        body:
+          "[앵] 소리는 옷이 여러 벌이에요 — **in, im, ain, aim, ein, ym** 전부 같은 [앵]: pain(빵), faim(배고픔), plein(가득한). m 앞에서는 n 대신 m을 써요(im·aim·om·am — jambon 장봉). 그리고 **un/um=[욍]** — 입술을 둥글게 한 [앵]: un(하나), lundi(월요일), parfum(향수).\n\n" +
+          "조합 둘 더 — **oin=[우앵]**: loin(멀리), moins(덜). **ien=[이앵]**: bien(잘), rien(아무것도).\n\n" +
+          "**해제 규칙(함정 주의)**: 비모음 글자 **뒤에 모음이나 같은 자음이 이어지면 코 울림이 풀려요** — cuisine [뀌진](in+e), bonne [본](n이 둘), année [아네]. 'in이 보이면 무조건 [앵]'이 아니라는 것!",
+        examples: [
+          { fr: "plein", ipa: "[plɛ̃] 플랭", ko: "가득한", note: "ein=[앵]" },
+          { fr: "rien", ipa: "[ʁjɛ̃] 리앵", ko: "아무것도", note: "ien=[이앵]" },
+          { fr: "bonne", ipa: "[bɔn] 본", ko: "좋은(여성형)", note: "겹자음 nn — 비모음 해제. bon [봉]과 비교해 보세요" },
+        ],
+      },
+      {
         heading: "나머지 모음 빠르게 정리",
-        pattern: "oi = [wa] (와) · au/eau = [o] (오) · ai/ei = [ɛ] (애) · eu = [ø] (외)",
+        pattern: "oi = [wa] (와) · au/eau = [o] (오) · ai/ei = [ɛ] (애) · eu = [ø] (외) · ui = [ɥi] (위)",
         patternKo: "조합마다 발음이 하나로 고정된 나머지 모음들",
         body:
           "**oi [wa]** — '와'. trois(트후아 — 3), moi(무아 — 나).\n" +
@@ -136,6 +155,7 @@ const chapters = [
           "**au/eau [o]** — '오'. eau(오 — 물)는 글자 세 개가 그냥 [o] 하나예요.\n" +
           "**ai/ei [ɛ]** — '애'. maison(메종 — 집).",
         examples: [
+          { fr: "huit", ipa: "[ɥit] 위트", ko: "8", note: "ui=[위] — u와 i가 합쳐진 소리, h 묵음" },
           { fr: "trois", ipa: "[tʁwa] 트후아", ko: "셋, 3" },
           { fr: "deux", ipa: "[dø] 되", ko: "둘, 2" },
           { fr: "l'eau", ipa: "[lo] 로", ko: "물", note: "e-a-u 세 글자 = '오' 한 소리" },
@@ -256,6 +276,16 @@ const chapters = [
       { id: "a007-d12", type: "dictation", sentence: "fromage", hint: "치즈" },
       { id: "a007-d13", type: "dictation", sentence: "dimanche", hint: "일요일" },
       { id: "a007-d14", type: "dictation", sentence: "chocolat", hint: "초콜릿 — 안 들리는 끝 글자 하나" },
+      { id: "a007-d15", type: "choice", prompt: "voyage(여행) — 어떻게 읽을까요?", choices: ["부아야주", "보야지", "뷔야주"], answer: "부아야주", hint: "oy=[와이]·g+e=[주]", speak: "voyage" },
+      { id: "a007-d16", type: "choice", prompt: "station(역) — 어떻게 읽을까요?", choices: ["스따씨옹", "스따띠옹", "스테이션"], answer: "스따씨옹", hint: "tion=[씨옹]", speak: "station" },
+      { id: "a007-d17", type: "choice", prompt: "ville(도시) — 어떻게 읽을까요?", choices: ["빌", "비유", "빌레"], answer: "빌", hint: "함정! ville·mille의 ill은 [일] — famille[파미유]와 달라요", speak: "ville" },
+      { id: "a007-d18", type: "choice", prompt: "moins(덜) — 어떻게 읽을까요?", choices: ["무앵", "모인스", "무앙"], answer: "무앵", hint: "oin=[우앵]·끝 s 묵음", speak: "moins" },
+      { id: "a007-d19", type: "choice", prompt: "sympa(멋진) — 어떻게 읽을까요?", choices: ["쌩빠", "심파", "시임빠"], answer: "쌩빠", hint: "y도 i처럼 — ym=[앵]", speak: "sympa" },
+      { id: "a007-d20", type: "dictation", sentence: "jambon", hint: "햄 — 비모음 두 번, 앞엣것은 m으로 써요" },
+      { id: "a007-d21", type: "choice", prompt: "parfum(향수) — 어떻게 읽을까요?", choices: ["빠흐퓡", "파르품", "빠흐퓸"], answer: "빠흐퓡", hint: "um=[욍] — 입술 둥근 [앵]", speak: "parfum" },
+      { id: "a007-d22", type: "choice", prompt: "parler(말하다) — 어떻게 읽을까요?", choices: ["빠흘레", "파를러", "빠흘레르"], answer: "빠흘레", hint: "-er 어미=[에] — r는 안 읽어요", speak: "parler" },
+      { id: "a007-d23", type: "choice", prompt: "dix(10) — 어떻게 읽을까요?", choices: ["디스", "딕스", "디"], answer: "디스", hint: "six·dix의 x=[스]", speak: "dix" },
+      { id: "a007-d24", type: "dictation", sentence: "thé", hint: "차(茶) — 안 들리는 h가 숨어 있어요, 악상도" },
     ],
     sections: [
       {
@@ -265,10 +295,11 @@ const chapters = [
         body:
           "앞 세 챕터의 규칙을 한자리에 모아요.\n\n" +
           "• **악상**: é=[에] · è/ê=[애] · ç=[스]\n" +
-          "• **모음 조합**: ou=[우] · u=[위] · oi=[와] · au/eau=[오] · ai/ei=[애] · eu=[외]\n" +
-          "• **비모음**: an/en=[엉] · on=[옹] · in/ain=[앵]\n" +
-          "• **자음 조합**: ch=[슈] · gn=[뉴] · ill=[유] · qu=[끄]\n" +
-          "• **묵음**: 단어 끝 자음(CaReFuL 제외)·h·끝 e\n\n" +
+          "• **모음 조합**: ou=[우] · u=[위] · oi=[와] · oy=[와이] · au/eau=[오] · ai/ei=[애] · eu=[외] · ui=[위]\n" +
+          "• **비모음**: an/en/am/em=[엉] · on/om=[옹] · in/im/ain/aim/ein/ym=[앵] · un/um=[욍] · oin=[우앵] · ien=[이앵] — 단, 뒤에 모음·겹자음이 오면 해제(cuisine 뀌진·bonne 본)\n" +
+          "• **자음 조합**: ch=[슈] · gn=[뉴] · ill=[유](예외 ville·mille=[일]) · qu=[끄] · tion=[씨옹] · ph=[프] · th=[뜨]\n" +
+          "• **묵음**: 단어 끝 자음(CaReFuL 제외)·h·끝 e\n" +
+          "• **어미·기타**: -er/-ez 어미=[에](parler 빠흘레 — 단 짧은 명사 hiver는 [이베흐]) · 모음 사이 s=[z], ss=[ㅆ] · x는 six·dix에서 [스], 어말은 대개 묵음(deux), taxi는 [끄스] · ail=[아이]·eil=[에이](travail·soleil)\n\n" +
           "하나만 새로 추가할게요 — **c와 g는 e·i 앞에서 부드러워져요**: c+e/i=[스](cinéma), g+e/i=[주](girafe). " +
           "a·o·u 앞에서는 원래 소리 [끄]/[그]예요(café, gare).\n\n" +
           "단어 사이를 잇는 리에종·엘리종은 A1 발음 챕터에서 이어받아요.",
