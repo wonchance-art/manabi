@@ -212,6 +212,13 @@ export default function LessonsPage({ refManifest = {} }) {
                 i % 2 === 1 ? <strong key={i}>{part}</strong> : part
               )}
             </p>
+            {Array.isArray(refLang.perks) && refLang.perks.length > 0 && (
+              <ul style={{ margin: '0 0 8px', paddingLeft: 18, fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {refLang.perks.map((perk) => (
+                  <li key={perk}>{perk}</li>
+                ))}
+              </ul>
+            )}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, fontSize: '0.74rem', color: 'var(--text-muted)' }}>
               {refLang.legend.map((item, i) => (
                 <span key={item}>{i > 0 && <span style={{ marginRight: 6 }}>·</span>}{item}</span>
