@@ -280,14 +280,16 @@
 
 ## Codex-3 (codex3/*) — 게임 시스템 확장 (타 기기)
 ### doing
-- 📚 드릴→SRS 연결(v2 통합, 발주 5151840982): ChapterDrills 채점 결과를 기존
-  reviewEvents/FSRS 복습 큐에 멱등 연결 (`codex3/drill-srs-bridge`)
 ### todo
 - 📚 /learn 진도·스트릭 위젯(발주 5126671497) → **구현 #706 도착·Claude 게이트 green(lint 2종+vitest 2508) — 오너 승인 대기(draft 유지)** ← 피벗 후 우선, 아래 월드 항목 동결
 - (P0 공통) 로컬 clone 이전 확인 코멘트
 - S1 STAMP_ALBUM_NODES 85 원자 전환(선행 #387 충족 — 즉시 착수): #150 5046785938
 - S4 수집 연출 정합 → S2 앨범 지역 탭·수집률 → S3 마일스톤 보상 v1(localStorage·DB 금지)
 ### done (최근)
+- 📚 드릴→SRS 연결(v2 통합): ChapterDrills 정오답을 drill id 단위 append-only
+  review_events + 기존 grammar_review FSRS 행으로 연결(정답 Good·오답 Again), 멱등 upsert와
+  게스트 localStorage·기존 문법 복습 화면 역해석을 회귀 고정
+  (`codex3/drill-srs-bridge`, draft #750, 구현 4fad9c3, base 01c303692f0c99562d2eac15db1c8b6501d31618)
 - S24 도어 track 전달 결함 수선: explicit track을 CityScene bridge부터 WorldPage까지 보존하고,
   unknown/prototype track을 경고 후 fail-closed하며 가상 en·기존 fr-01~26 URL 회귀를 고정
   (`codex3/s24-track-bridge-fix`, 구현 268f72f,
