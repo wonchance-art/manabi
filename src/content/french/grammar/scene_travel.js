@@ -24,6 +24,18 @@ const chapters = [
       { id: "a123-d6", type: "dictation", sentence: "Mon passeport est ici." },
       { id: "a123-d7", type: "dictation", sentence: "Je viens de Corée du Sud." },
     ],
+    writing: {
+      prompt: "입국 심사에서 말할 내 정보를 문장 4개로 써 보세요 — 이름, 국적, 체류 기간, 방문 목적. (30~40단어)",
+      hints: ["Je m'appelle …", "Je reste … jours", "Je viens pour …"],
+      samples: [
+        { fr: "Je m'appelle Kim Minji. Je suis coréenne. Je reste dix jours en France. Je viens pour visiter Paris.", ko: "제 이름은 김민지입니다. 한국인이에요. 프랑스에 열흘 머물러요. 파리를 구경하러 왔어요." },
+      ],
+      checklist: [
+        "네 가지 정보가 각각 온전한 문장인가요?",
+        "국적의 성 일치(coréen/coréenne)를 확인했나요?",
+        "체류 기간에 숫자+jours를 썼나요?",
+      ],
+    },
     sections: [
       // 샌드위치 v2 시험 적용 — Je viens pour…·n\'est pas arrivé 계열은 배치 1과 동일 절차로 실재 확인. 대화는 자체 저작.
       {
@@ -322,6 +334,18 @@ const chapters = [
       { id: "a124-d6", type: "dictation", sentence: "Le train est à l'heure." },
       { id: "a124-d7", type: "dictation", sentence: "C'est la voie numéro deux." },
     ],
+    writing: {
+      prompt: "기차표를 문의하는 짧은 이메일을 써 보세요 — 목적지, 날짜·시간대, 좌석 취향. (40~50단어)",
+      hints: ["Je voudrais un billet pour … (고정구)", "Est-ce qu'il y a un train vers … heures ?"],
+      samples: [
+        { fr: "Bonjour, je voudrais un billet pour Lyon, samedi matin. Est-ce qu'il y a un train vers neuf heures ? Je préfère une place côté fenêtre. Merci d'avance. Kim Minji", ko: "안녕하세요, 토요일 아침 리옹행 표를 원해요. 9시쯤 기차가 있나요? 창가 자리를 선호해요. 미리 감사합니다. 김민지" },
+      ],
+      checklist: [
+        "Je voudrais 고정구로 정중하게 열었나요?",
+        "질문 하나를 est-ce que로 만들었나요?",
+        "날짜·시간이 들어갔나요?",
+      ],
+    },
     sections: [
       // 샌드위치 v2 시험 적용 — Je voudrais un billet… Tatoeba 실재 계열(배치 1 검증 절차 준용). 대화는 자체 저작.
       {
@@ -615,6 +639,18 @@ const chapters = [
       { id: "a125-d6", type: "dictation", sentence: "Voici votre clé, madame." },
       { id: "a125-d7", type: "dictation", sentence: "Le petit déjeuner est à sept heures." },
     ],
+    writing: {
+      prompt: "호텔에 예약 확인 메시지를 써 보세요 — 이름, 날짜, 인원, 질문 하나. (40~50단어)",
+      hints: ["J'ai une réservation au nom de …", "du 3 au 5 mai", "Est-ce que … ?"],
+      samples: [
+        { fr: "Bonjour, j'ai une réservation au nom de Kim, pour deux nuits, du 3 au 5 mai. Nous sommes deux. Est-ce que le petit-déjeuner est inclus ? Merci beaucoup.", ko: "안녕하세요, 김으로 예약했어요. 5월 3일부터 5일까지 2박이고, 두 명입니다. 조식이 포함인가요? 감사합니다." },
+      ],
+      checklist: [
+        "au nom de로 예약자명을 밝혔나요?",
+        "날짜 표현(du … au …)을 썼나요?",
+        "궁금한 것 하나를 질문으로 만들었나요?",
+      ],
+    },
     sections: [
       // 샌드위치 v2 시험 적용 — J\'ai une réservation… Tatoeba 실재 계열(동일 절차). 대화는 자체 저작.
       {
@@ -907,6 +943,18 @@ const chapters = [
       { id: "a126-d6", type: "dictation", sentence: "J'ai un problème avec la douche." },
       { id: "a126-d7", type: "dictation", sentence: "La chambre est très froide." },
     ],
+    writing: {
+      prompt: "프런트에 남길 쪽지를 써 보세요 — 방 번호, 문제 두 가지, 부탁 한 마디. (30~50단어)",
+      hints: ["Il y a un problème …", "… ne marche pas", "Vous pouvez … ? (고정구)"],
+      samples: [
+        { fr: "Bonjour, il y a un problème dans la chambre 12. La douche ne marche pas et il n'y a pas de serviettes. Vous pouvez regarder, s'il vous plaît ? Merci !", ko: "안녕하세요, 12호실에 문제가 있어요. 샤워기가 작동하지 않고 수건이 없어요. 봐 주실 수 있나요? 감사합니다!" },
+      ],
+      checklist: [
+        "문제 두 가지를 각각 문장으로 썼나요?",
+        "부정문(ne … pas)을 제대로 감쌌나요?",
+        "부탁을 정중하게(s'il vous plaît) 마무리했나요?",
+      ],
+    },
     sections: [
       // 샌드위치 v2 시험 적용 — Est-ce que je peux avoir… Tatoeba 실재 계열(동일 절차). 대화는 자체 저작.
       {
@@ -1199,6 +1247,18 @@ const chapters = [
       { id: "a127-d6", type: "dictation", sentence: "La carte, s'il vous plaît." },
       { id: "a127-d7", type: "dictation", sentence: "C'est très bon, merci." },
     ],
+    writing: {
+      prompt: "친구에게 저녁을 같이 먹자는 문자를 써 보세요 — 장소, 시간, 뭘 먹을지. (30~50단어)",
+      hints: ["On mange ensemble … ?", "Il y a un bon restaurant …", "On prend des …"],
+      samples: [
+        { fr: "Salut Paul ! On mange ensemble samedi soir ? Il y a un bon restaurant près de chez moi. On prend des crêpes et du cidre. Rendez-vous à sept heures ? À samedi !", ko: "안녕 폴! 토요일 저녁에 같이 먹을래? 우리 집 근처에 괜찮은 식당이 있어. 크레프랑 시드르 먹자. 7시에 만날까? 토요일에 봐!" },
+      ],
+      checklist: [
+        "음식 앞에 부분관사(du/de la/des)를 맞게 썼나요?",
+        "시간 약속이 들어갔나요?",
+        "억양 질문(문장+?)을 활용했나요?",
+      ],
+    },
     sections: [
       // 샌드위치 v2 시험 적용(오너 확정: fr A1~A2) — Tatoeba 실재 확인: "Une table pour deux, s'il vous plaît." (#13360564). 나머지 문장은 자체 저작.
       {
@@ -1492,6 +1552,18 @@ const chapters = [
       { id: "a128-d6", type: "dictation", sentence: "Je paie par carte." },
       { id: "a128-d7", type: "dictation", sentence: "Le repas est très bon, merci." },
     ],
+    writing: {
+      prompt: "식당에 알레르기를 미리 알리는 메시지를 써 보세요 — 예약 정보와 알레르기, 확인 질문. (40~50단어)",
+      hints: ["Je suis allergique aux …", "Est-ce que … est sans … ?"],
+      samples: [
+        { fr: "Bonjour, j'ai une réservation ce soir au nom de Kim. Je suis allergique aux fruits à coque. Est-ce que le plat du jour est sans noix ? Merci beaucoup pour votre aide.", ko: "안녕하세요, 오늘 저녁 김으로 예약했어요. 견과류 알레르기가 있어요. 오늘의 요리에 호두가 안 들어가나요? 도와주셔서 감사합니다." },
+      ],
+      checklist: [
+        "allergique aux + 대상 표현을 정확히 썼나요?",
+        "sans(~없이)으로 확인 질문을 만들었나요?",
+        "부정문·질문의 형태가 맞나요?",
+      ],
+    },
     sections: [
       // 샌드위치 v2 시험 적용 — L\'addition, s\'il vous plaît. Tatoeba 실재 계열(동일 절차). 대화는 자체 저작.
       {

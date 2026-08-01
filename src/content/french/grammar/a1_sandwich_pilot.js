@@ -36,6 +36,18 @@ const chapters = [
       { id: "p32-d6", type: "choice", prompt: "점원이 « Et avec ça ? »(더 필요한 건요?)라고 물으면?", choices: ["C'est tout, merci.", "Je suis coréen.", "Il fait beau."], answer: "C'est tout, merci." },
       { id: "p32-d7", type: "dictation", sentence: "Je voudrais de l'eau, s'il vous plaît." },
     ],
+    writing: {
+      prompt: "파리 카페에서 친구에게 보내는 엽서를 써 보세요 — 지금 뭘 하는지, 뭘 주문했는지. (40~50단어)",
+      hints: ["Je suis à …", "Je voudrais toujours … (고정구)", "Grosses bises(엽서 맺음말)"],
+      samples: [
+        { fr: "Chère Mina, je suis à Paris ! Le matin, je vais dans un petit café. Je voudrais toujours la même chose : un croissant et un café crème. C'est simple et très bon. Grosses bises, Minji", ko: "미나에게, 나 파리야! 아침마다 작은 카페에 가. 늘 같은 걸 시켜 — 크루아상이랑 카페 크렘. 단순한데 정말 맛있어. 사랑을 담아, 민지", note: "Chère(여성에게)/Cher(남성에게)는 엽서 여는 말" },
+      ],
+      checklist: [
+        "엽서 형식(여는 말·맺음말)을 갖췄나요?",
+        "현재형으로 지금을 묘사했나요?",
+        "주문 표현을 한 번 이상 썼나요?",
+      ],
+    },
     sections: [
       // ① 실전 선노출 (authenticIntro)
       {
@@ -235,6 +247,18 @@ const chapters = [
       { id: "p33-d6", type: "choice", prompt: "« Il ne faut pas… »의 뜻은?", choices: ["~하면 안 돼요", "~할 필요 없어요", "~하고 싶어요"], answer: "~하면 안 돼요" },
       { id: "p33-d7", type: "dictation", sentence: "Il ne faut pas fumer ici." },
     ],
+    writing: {
+      prompt: "아픈 친구에게 조언 메시지를 써 보세요 — il faut를 두 번 이상. (30~50단어)",
+      hints: ["Il faut + 동사원형 (고정구)", "La pharmacie est ouverte jusqu'à …"],
+      samples: [
+        { fr: "Salut Théo, ça va ? Tu es malade ? Il faut boire beaucoup d'eau et il faut dormir. La pharmacie est ouverte jusqu'à huit heures. Bon courage et à bientôt !", ko: "테오야, 괜찮아? 아프다며? 물 많이 마시고 푹 자야 해. 약국은 8시까지 열어. 힘내, 곧 보자!" },
+      ],
+      checklist: [
+        "il faut 뒤에 동사원형을 썼나요?",
+        "조언이 두 개 이상인가요?",
+        "친구다운 안부로 열고 닫았나요?",
+      ],
+    },
     sections: [
       // ① 실전 선노출
       {
