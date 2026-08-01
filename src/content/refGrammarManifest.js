@@ -2627,258 +2627,6 @@ export const REF_GRAMMAR_MANIFEST = {
                 },
                 "nextLesson": {
                   "id": "french-a1-u07-l01",
-                  "href": "/french/grammar/a1-06-adjectives"
-                }
-              }
-            },
-            {
-              "slug": "a1-06-adjectives",
-              "level": "A1",
-              "order": 13,
-              "title": "'레드 와인'이 아니라 '와인 레드'",
-              "topic": "형용사 성수 일치·위치(BAGS)",
-              "summary": "명사의 성과 수에 일치하는 형용사. 명사 뒤에 놓는 기본 어순과 앞에 오는 BAGS 예외, grand/grande 발음 변화까지.",
-              "duration": "약 9분",
-              "courseLesson": {
-                "lessonRef": {
-                  "id": "french-a1-u07-l01",
-                  "lang": "French",
-                  "slug": "a1-06-adjectives",
-                  "source": "lesson"
-                },
-                "nextLesson": {
-                  "id": "french-a1-u07-l02",
-                  "href": "/french/grammar/a1-07-possessives"
-                }
-              }
-            },
-            {
-              "slug": "a1-07-possessives",
-              "level": "A1",
-              "order": 14,
-              "title": "sa mère는 누구의 엄마일까?",
-              "topic": "소유 형용사 mon/ma/son",
-              "summary": "mon/ma/mes 시스템의 핵심 반전: 소유자가 아니라 소유물의 성에 일치해요. 영어 his/her 감각을 버려야 하는 챕터.",
-              "duration": "약 9분",
-              "courseLesson": {
-                "lessonRef": {
-                  "id": "french-a1-u07-l02",
-                  "lang": "French",
-                  "slug": "a1-07-possessives",
-                  "source": "lesson"
-                },
-                "nextLesson": {
-                  "id": "french-a1-u08-l01",
-                  "href": "/french/grammar/a1-08-aller-venir"
-                }
-              }
-            },
-            {
-              "slug": "a1-08-aller-venir",
-              "level": "A1",
-              "order": 15,
-              "title": "\"방금 먹었어, 곧 갈 거야\"",
-              "topic": "aller/venir·근접 미래와 과거",
-              "summary": "필수 불규칙 동사 aller/venir. 여기에 futur proche(곧 ~할 거예요)와 passé récent(방금 ~했어요)이 따라와요.",
-              "duration": "약 10분",
-              "courseLesson": {
-                "lessonRef": {
-                  "id": "french-a1-u08-l01",
-                  "lang": "French",
-                  "slug": "a1-08-aller-venir",
-                  "source": "lesson"
-                },
-                "nextLesson": {
-                  "id": "french-a1-u08-l02",
-                  "href": "/french/grammar/a1-09-partitive"
-                }
-              }
-            },
-            {
-              "slug": "a1-09-partitive",
-              "level": "A1",
-              "order": 16,
-              "title": "\"빵 좀 주세요\"의 '좀'을 문법으로",
-              "topic": "부분관사 du/de la",
-              "summary": "영어에도 한국어에도 없는 du/de la. 셀 수 없는 것의 '일부'를 말하는 관사로, 음식 이야기의 필수품이에요.",
-              "duration": "약 9분",
-              "courseLesson": {
-                "lessonRef": {
-                  "id": "french-a1-u08-l02",
-                  "lang": "French",
-                  "slug": "a1-09-partitive",
-                  "source": "lesson"
-                },
-                "nextLesson": {
-                  "id": "french-a1-u09-l01",
-                  "href": "/french/grammar/a1-10-numbers-time"
-                }
-              }
-            },
-            {
-              "slug": "a1-10-numbers-time",
-              "level": "A1",
-              "order": 17,
-              "title": "70을 '60+10'이라 부르는 사람들",
-              "topic": "숫자·시간·날짜",
-              "summary": "70 = 60+10, 80 = 4×20?! 악명 높은 프랑스 숫자 체계를 웃으며 넘기고, 시간 묻기와 날짜 말하기까지 정리해요.",
-              "duration": "약 10분",
-              "courseLesson": {
-                "lessonRef": {
-                  "id": "french-a1-u09-l01",
-                  "lang": "French",
-                  "slug": "a1-10-numbers-time",
-                  "source": "lesson"
-                },
-                "nextLesson": {
-                  "id": "french-a1-u09-l02",
-                  "href": "/french/grammar/a1-14-ir-re-present"
-                }
-              }
-            },
-            {
-              "slug": "a1-14-ir-re-present",
-              "level": "A1",
-              "order": 18,
-              "title": "\"고르고 기다려요\"도 현재형 한 세트",
-              "topic": "규칙 -ir·-re 동사 현재형",
-              "summary": "-er 밖에서도 규칙은 보여요. finir형 -ir 동사와 attendre형 -re 동사의 현재형을 두 묶음으로 익혀요.",
-              "duration": "약 9분",
-              "courseLesson": {
-                "lessonRef": {
-                  "id": "french-a1-u09-l02",
-                  "lang": "French",
-                  "slug": "a1-14-ir-re-present",
-                  "source": "lesson"
-                },
-                "nextLesson": {
-                  "id": "french-a1-u10-l01",
-                  "href": "/french/grammar/a1-15-modal-faire-present"
-                }
-              }
-            },
-            {
-              "slug": "a1-15-modal-faire-present",
-              "level": "A1",
-              "order": 19,
-              "title": "\"할 수 있고, 하고 싶고, 해야 해요\"",
-              "topic": "faire·pouvoir·vouloir·devoir 현재형",
-              "summary": "일상에서 빠질 수 없는 faire와, 가능·바람·의무 뒤에 동사 원형을 잇는 pouvoir, vouloir, devoir를 현재형으로 써요.",
-              "duration": "약 10분",
-              "courseLesson": {
-                "lessonRef": {
-                  "id": "french-a1-u10-l01",
-                  "lang": "French",
-                  "slug": "a1-15-modal-faire-present",
-                  "source": "lesson"
-                },
-                "nextLesson": {
-                  "id": "french-a1-u10-l02",
-                  "href": "/french/grammar/a1-17-article-contractions-countries"
-                }
-              }
-            },
-            {
-              "slug": "a1-17-article-contractions-countries",
-              "level": "A1",
-              "order": 20,
-              "title": "du는 빵 앞과 박물관 뒤에서 달라요",
-              "topic": "de의 관사 축약·나라명 전치사",
-              "summary": "de+le/les의 축약형 du/des를 부분관사와 구별하고, 나라의 성·수에 맞춰 목적지와 출발지를 말해요.",
-              "duration": "약 10분",
-              "courseLesson": {
-                "lessonRef": {
-                  "id": "french-a1-u10-l02",
-                  "lang": "French",
-                  "slug": "a1-17-article-contractions-countries",
-                  "source": "lesson"
-                },
-                "nextLesson": {
-                  "id": "french-a1-u11-l01",
-                  "href": "/french/grammar/a1-18-demonstrative-interrogative"
-                }
-              }
-            },
-            {
-              "slug": "a1-18-demonstrative-interrogative",
-              "level": "A1",
-              "order": 21,
-              "title": "\"이 가방\"과 \"어느 가방\"을 골라 말해요",
-              "topic": "지시 한정사 ce·의문 한정사 quel",
-              "summary": "ce/cet/cette/ces로 대상을 가리키고, quel/quelle/quels/quelles로 어느 것인지 물어요.",
-              "duration": "약 8분",
-              "courseLesson": {
-                "lessonRef": {
-                  "id": "french-a1-u11-l01",
-                  "lang": "French",
-                  "slug": "a1-18-demonstrative-interrogative",
-                  "source": "lesson"
-                },
-                "nextLesson": {
-                  "id": "french-a1-u11-l02",
-                  "href": "/french/grammar/a1-19-place-prepositions"
-                }
-              }
-            },
-            {
-              "slug": "a1-19-place-prepositions",
-              "level": "A1",
-              "order": 22,
-              "title": "\"탁자 아래, 역 맞은편\"을 한 번에 찾아요",
-              "topic": "장소 전치사·chez",
-              "summary": "dans, sur, sous부터 devant, derrière, à côté de까지 사물과 장소의 위치를 설명하고 chez로 사람의 공간을 말해요.",
-              "duration": "약 9분",
-              "courseLesson": {
-                "lessonRef": {
-                  "id": "french-a1-u11-l02",
-                  "lang": "French",
-                  "slug": "a1-19-place-prepositions",
-                  "source": "lesson"
-                },
-                "nextLesson": {
-                  "id": "french-a1-u12-l01",
-                  "href": "/french/grammar/a1-20-frequency-quantity-connectors"
-                }
-              }
-            },
-            {
-              "slug": "a1-20-frequency-quantity-connectors",
-              "level": "A1",
-              "order": 23,
-              "title": "\"자주, 많이, 하지만\"으로 문장을 늘려요",
-              "topic": "빈도·정도·수량 부사와 기초 연결어",
-              "summary": "toujours·souvent으로 빈도를, très·beaucoup로 정도와 양을 말하고 et·mais·parce que로 짧은 문장을 연결해요.",
-              "duration": "약 10분",
-              "courseLesson": {
-                "lessonRef": {
-                  "id": "french-a1-u12-l01",
-                  "lang": "French",
-                  "slug": "a1-20-frequency-quantity-connectors",
-                  "source": "lesson"
-                },
-                "nextLesson": {
-                  "id": "french-a1-u12-l02",
-                  "href": "/french/grammar/a1-21-scene-directions-transit"
-                }
-              }
-            },
-            {
-              "slug": "a1-21-scene-directions-transit",
-              "level": "A1",
-              "order": 24,
-              "title": "\"어디로 가야 해요?\" — 길과 교통을 한 번에 물어요",
-              "topic": "길 묻기·안내 확인·대중교통",
-              "summary": "목적지 위치를 묻고, 들은 안내를 확인한 뒤 노선·환승·하차 지점까지 이어서 물어요.",
-              "duration": "약 20분",
-              "courseLesson": {
-                "lessonRef": {
-                  "id": "french-a1-u12-l02",
-                  "lang": "French",
-                  "slug": "a1-21-scene-directions-transit",
-                  "source": "lesson"
-                },
-                "nextLesson": {
-                  "id": "french-a1-u13-l01",
                   "href": "/french/grammar/a1-22-scene-health-lost-property"
                 }
               }
@@ -2886,20 +2634,125 @@ export const REF_GRAMMAR_MANIFEST = {
             {
               "slug": "a1-22-scene-health-lost-property",
               "level": "A1",
-              "order": 25,
+              "order": 13,
               "title": "\"아프고 잃어버렸어요\" — 필요한 도움을 또렷하게 말해요",
               "topic": "통증·증상·도움 요청·분실 신고",
               "summary": "아픈 부위와 증상을 말하고 도움을 요청한 뒤, 잃어버린 물건과 특징을 차분히 설명해요.",
               "duration": "약 20분",
               "courseLesson": {
                 "lessonRef": {
-                  "id": "french-a1-u13-l01",
+                  "id": "french-a1-u07-l01",
                   "lang": "French",
                   "slug": "a1-22-scene-health-lost-property",
                   "source": "lesson"
                 },
                 "nextLesson": {
-                  "id": "french-a1-u13-l02",
+                  "id": "french-a1-u07-l02",
+                  "href": "/french/grammar/a1-06-adjectives"
+                }
+              }
+            },
+            {
+              "slug": "a1-06-adjectives",
+              "level": "A1",
+              "order": 14,
+              "title": "'레드 와인'이 아니라 '와인 레드'",
+              "topic": "형용사 성수 일치·위치(BAGS)",
+              "summary": "명사의 성과 수에 일치하는 형용사. 명사 뒤에 놓는 기본 어순과 앞에 오는 BAGS 예외, grand/grande 발음 변화까지.",
+              "duration": "약 9분",
+              "courseLesson": {
+                "lessonRef": {
+                  "id": "french-a1-u07-l02",
+                  "lang": "French",
+                  "slug": "a1-06-adjectives",
+                  "source": "lesson"
+                },
+                "nextLesson": {
+                  "id": "french-a1-u08-l01",
+                  "href": "/french/grammar/a1-07-possessives"
+                }
+              }
+            },
+            {
+              "slug": "a1-07-possessives",
+              "level": "A1",
+              "order": 15,
+              "title": "sa mère는 누구의 엄마일까?",
+              "topic": "소유 형용사 mon/ma/son",
+              "summary": "mon/ma/mes 시스템의 핵심 반전: 소유자가 아니라 소유물의 성에 일치해요. 영어 his/her 감각을 버려야 하는 챕터.",
+              "duration": "약 9분",
+              "courseLesson": {
+                "lessonRef": {
+                  "id": "french-a1-u08-l01",
+                  "lang": "French",
+                  "slug": "a1-07-possessives",
+                  "source": "lesson"
+                },
+                "nextLesson": {
+                  "id": "french-a1-u08-l02",
+                  "href": "/french/grammar/a1-08-aller-venir"
+                }
+              }
+            },
+            {
+              "slug": "a1-08-aller-venir",
+              "level": "A1",
+              "order": 16,
+              "title": "\"방금 먹었어, 곧 갈 거야\"",
+              "topic": "aller/venir·근접 미래와 과거",
+              "summary": "필수 불규칙 동사 aller/venir. 여기에 futur proche(곧 ~할 거예요)와 passé récent(방금 ~했어요)이 따라와요.",
+              "duration": "약 10분",
+              "courseLesson": {
+                "lessonRef": {
+                  "id": "french-a1-u08-l02",
+                  "lang": "French",
+                  "slug": "a1-08-aller-venir",
+                  "source": "lesson"
+                },
+                "nextLesson": {
+                  "id": "french-a1-u09-l01",
+                  "href": "/french/grammar/a1-09-partitive"
+                }
+              }
+            },
+            {
+              "slug": "a1-09-partitive",
+              "level": "A1",
+              "order": 17,
+              "title": "\"빵 좀 주세요\"의 '좀'을 문법으로",
+              "topic": "부분관사 du/de la",
+              "summary": "영어에도 한국어에도 없는 du/de la. 셀 수 없는 것의 '일부'를 말하는 관사로, 음식 이야기의 필수품이에요.",
+              "duration": "약 9분",
+              "courseLesson": {
+                "lessonRef": {
+                  "id": "french-a1-u09-l01",
+                  "lang": "French",
+                  "slug": "a1-09-partitive",
+                  "source": "lesson"
+                },
+                "nextLesson": {
+                  "id": "french-a1-u09-l02",
+                  "href": "/french/grammar/a1-10-numbers-time"
+                }
+              }
+            },
+            {
+              "slug": "a1-10-numbers-time",
+              "level": "A1",
+              "order": 18,
+              "title": "70을 '60+10'이라 부르는 사람들",
+              "topic": "숫자·시간·날짜",
+              "summary": "70 = 60+10, 80 = 4×20?! 악명 높은 프랑스 숫자 체계를 웃으며 넘기고, 시간 묻기와 날짜 말하기까지 정리해요.",
+              "duration": "약 10분",
+              "courseLesson": {
+                "lessonRef": {
+                  "id": "french-a1-u09-l02",
+                  "lang": "French",
+                  "slug": "a1-10-numbers-time",
+                  "source": "lesson"
+                },
+                "nextLesson": {
+                  "id": "french-a1-u10-l01",
                   "href": "/french/grammar/a1-23-scene-airport-entry-baggage"
                 }
               }
@@ -2907,20 +2760,20 @@ export const REF_GRAMMAR_MANIFEST = {
             {
               "slug": "a1-23-scene-airport-entry-baggage",
               "level": "A1",
-              "order": 26,
+              "order": 19,
               "title": "\"입국하러 왔어요\" — 질문에 짧고 분명하게 답해요",
               "topic": "입국 목적·체류 기간·주소·수하물·세관 신고",
               "summary": "입국 절차에서 방문 목적과 체류 정보를 답하고, 수하물과 신고할 물품이 있는지 확인해요.",
               "duration": "약 20분",
               "courseLesson": {
                 "lessonRef": {
-                  "id": "french-a1-u13-l02",
+                  "id": "french-a1-u10-l01",
                   "lang": "French",
                   "slug": "a1-23-scene-airport-entry-baggage",
                   "source": "lesson"
                 },
                 "nextLesson": {
-                  "id": "french-a1-u14-l01",
+                  "id": "french-a1-u10-l02",
                   "href": "/french/grammar/a1-24-scene-airport-ticket-connection"
                 }
               }
@@ -2928,20 +2781,41 @@ export const REF_GRAMMAR_MANIFEST = {
             {
               "slug": "a1-24-scene-airport-ticket-connection",
               "level": "A1",
-              "order": 27,
+              "order": 20,
               "title": "\"표 한 장 주세요\" — 공항에서 목적지까지 이어 가요",
               "topic": "표 구입·편도와 왕복·출발 시각·승강장·환승",
               "summary": "공항에서 목적지행 표를 사고 출발 시각과 승강장을 확인한 뒤, 환승편을 놓치지 않게 물어요.",
               "duration": "약 20분",
               "courseLesson": {
                 "lessonRef": {
-                  "id": "french-a1-u14-l01",
+                  "id": "french-a1-u10-l02",
                   "lang": "French",
                   "slug": "a1-24-scene-airport-ticket-connection",
                   "source": "lesson"
                 },
                 "nextLesson": {
-                  "id": "french-a1-u14-l02",
+                  "id": "french-a1-u11-l01",
+                  "href": "/french/grammar/a1-14-ir-re-present"
+                }
+              }
+            },
+            {
+              "slug": "a1-14-ir-re-present",
+              "level": "A1",
+              "order": 21,
+              "title": "\"고르고 기다려요\"도 현재형 한 세트",
+              "topic": "규칙 -ir·-re 동사 현재형",
+              "summary": "-er 밖에서도 규칙은 보여요. finir형 -ir 동사와 attendre형 -re 동사의 현재형을 두 묶음으로 익혀요.",
+              "duration": "약 9분",
+              "courseLesson": {
+                "lessonRef": {
+                  "id": "french-a1-u11-l01",
+                  "lang": "French",
+                  "slug": "a1-14-ir-re-present",
+                  "source": "lesson"
+                },
+                "nextLesson": {
+                  "id": "french-a1-u11-l02",
                   "href": "/french/grammar/a1-25-scene-lodging-check-in"
                 }
               }
@@ -2949,20 +2823,41 @@ export const REF_GRAMMAR_MANIFEST = {
             {
               "slug": "a1-25-scene-lodging-check-in",
               "level": "A1",
-              "order": 28,
+              "order": 22,
               "title": "\"예약했어요\" — 체크인 정보를 차례로 확인해요",
               "topic": "예약 확인·예약자 정보·숙박 기간·신분증·조식과 체크아웃",
               "summary": "숙소에서 예약을 확인하고 예약자 정보와 숙박 기간을 말한 뒤, 조식 장소와 체크아웃 시각을 물어요.",
               "duration": "약 20분",
               "courseLesson": {
                 "lessonRef": {
-                  "id": "french-a1-u14-l02",
+                  "id": "french-a1-u11-l02",
                   "lang": "French",
                   "slug": "a1-25-scene-lodging-check-in",
                   "source": "lesson"
                 },
                 "nextLesson": {
-                  "id": "french-a1-u15-l01",
+                  "id": "french-a1-u12-l01",
+                  "href": "/french/grammar/a1-15-modal-faire-present"
+                }
+              }
+            },
+            {
+              "slug": "a1-15-modal-faire-present",
+              "level": "A1",
+              "order": 23,
+              "title": "\"할 수 있고, 하고 싶고, 해야 해요\"",
+              "topic": "faire·pouvoir·vouloir·devoir 현재형",
+              "summary": "일상에서 빠질 수 없는 faire와, 가능·바람·의무 뒤에 동사 원형을 잇는 pouvoir, vouloir, devoir를 현재형으로 써요.",
+              "duration": "약 10분",
+              "courseLesson": {
+                "lessonRef": {
+                  "id": "french-a1-u12-l01",
+                  "lang": "French",
+                  "slug": "a1-15-modal-faire-present",
+                  "source": "lesson"
+                },
+                "nextLesson": {
+                  "id": "french-a1-u12-l02",
                   "href": "/french/grammar/a1-26-scene-lodging-requests-problems"
                 }
               }
@@ -2970,20 +2865,20 @@ export const REF_GRAMMAR_MANIFEST = {
             {
               "slug": "a1-26-scene-lodging-requests-problems",
               "level": "A1",
-              "order": 29,
+              "order": 24,
               "title": "\"방에 문제가 있어요\" — 필요한 조치를 구체적으로 요청해요",
               "topic": "비품 요청·와이파이·시설 고장·소음·객실 변경",
               "summary": "숙소에서 수건과 와이파이 정보를 요청하고, 시설 고장이나 소음을 설명해 해결 방법과 객실 변경을 물어요.",
               "duration": "약 20분",
               "courseLesson": {
                 "lessonRef": {
-                  "id": "french-a1-u15-l01",
+                  "id": "french-a1-u12-l02",
                   "lang": "French",
                   "slug": "a1-26-scene-lodging-requests-problems",
                   "source": "lesson"
                 },
                 "nextLesson": {
-                  "id": "french-a1-u15-l02",
+                  "id": "french-a1-u13-l01",
                   "href": "/french/grammar/a1-27-scene-restaurant-ordering"
                 }
               }
@@ -2991,20 +2886,20 @@ export const REF_GRAMMAR_MANIFEST = {
             {
               "slug": "a1-27-scene-restaurant-ordering",
               "level": "A1",
-              "order": 30,
+              "order": 25,
               "title": "\"이걸로 주문할게요\" — 자리를 잡고 추천을 받아요",
               "topic": "자리 요청·메뉴·오늘의 메뉴·추천·음식과 음료 주문",
               "summary": "식당에서 인원에 맞는 자리를 요청하고 메뉴와 추천을 확인한 뒤, 음식과 음료를 차례로 주문해요.",
               "duration": "약 20분",
               "courseLesson": {
                 "lessonRef": {
-                  "id": "french-a1-u15-l02",
+                  "id": "french-a1-u13-l01",
                   "lang": "French",
                   "slug": "a1-27-scene-restaurant-ordering",
                   "source": "lesson"
                 },
                 "nextLesson": {
-                  "id": "french-a1-u16-l01",
+                  "id": "french-a1-u13-l02",
                   "href": "/french/grammar/a1-28-scene-restaurant-allergy-payment"
                 }
               }
@@ -3012,20 +2907,20 @@ export const REF_GRAMMAR_MANIFEST = {
             {
               "slug": "a1-28-scene-restaurant-allergy-payment",
               "level": "A1",
-              "order": 31,
+              "order": 26,
               "title": "\"이 재료는 빼 주세요\" — 알레르기와 계산을 분명히 말해요",
               "topic": "알레르기·성분 확인·제외 요청·계산서·결제 방법",
               "summary": "식당에서 알레르기와 피해야 할 재료를 알리고 음식 성분을 확인한 뒤, 계산서와 결제 방법을 물어요.",
               "duration": "약 20분",
               "courseLesson": {
                 "lessonRef": {
-                  "id": "french-a1-u16-l01",
+                  "id": "french-a1-u13-l02",
                   "lang": "French",
                   "slug": "a1-28-scene-restaurant-allergy-payment",
                   "source": "lesson"
                 },
                 "nextLesson": {
-                  "id": "french-a1-u16-l02",
+                  "id": "french-a1-u14-l01",
                   "href": "/french/grammar/a1-pilot-32-cafe-voudrais"
                 }
               }
@@ -3033,20 +2928,20 @@ export const REF_GRAMMAR_MANIFEST = {
             {
               "slug": "a1-pilot-32-cafe-voudrais",
               "level": "A1",
-              "order": 32,
+              "order": 27,
               "title": "카페에서 음료 주문하기",
               "topic": "주문·공손 표현·음료 이름",
               "summary": "카페에서 원하는 음료를 주문해요. '저는 ~를 원해요(Je voudrais ~)'를 배우고, 실제 카페 대화를 만나고, 여러 상황에서 같은 표현을 써 봐요.",
               "duration": "약 10분",
               "courseLesson": {
                 "lessonRef": {
-                  "id": "french-a1-u16-l02",
+                  "id": "french-a1-u14-l01",
                   "lang": "French",
                   "slug": "a1-pilot-32-cafe-voudrais",
                   "source": "lesson"
                 },
                 "nextLesson": {
-                  "id": "french-a1-u17-l01",
+                  "id": "french-a1-u14-l02",
                   "href": "/french/grammar/a1-pilot-33-pharmacy-il-faut"
                 }
               }
@@ -3054,16 +2949,121 @@ export const REF_GRAMMAR_MANIFEST = {
             {
               "slug": "a1-pilot-33-pharmacy-il-faut",
               "level": "A1",
-              "order": 33,
+              "order": 28,
               "title": "약국에서 약 받기",
               "topic": "의무·조언·건강 용어",
               "summary": "약국에서 약사의 조언을 듣고 '~해야 한다(Il faut ~)'를 배워요. 의료 상황에서 가장 자주 나오는 표현이에요.",
               "duration": "약 12분",
               "courseLesson": {
                 "lessonRef": {
-                  "id": "french-a1-u17-l01",
+                  "id": "french-a1-u14-l02",
                   "lang": "French",
                   "slug": "a1-pilot-33-pharmacy-il-faut",
+                  "source": "lesson"
+                },
+                "nextLesson": {
+                  "id": "french-a1-u15-l01",
+                  "href": "/french/grammar/a1-17-article-contractions-countries"
+                }
+              }
+            },
+            {
+              "slug": "a1-17-article-contractions-countries",
+              "level": "A1",
+              "order": 29,
+              "title": "du는 빵 앞과 박물관 뒤에서 달라요",
+              "topic": "de의 관사 축약·나라명 전치사",
+              "summary": "de+le/les의 축약형 du/des를 부분관사와 구별하고, 나라의 성·수에 맞춰 목적지와 출발지를 말해요.",
+              "duration": "약 10분",
+              "courseLesson": {
+                "lessonRef": {
+                  "id": "french-a1-u15-l01",
+                  "lang": "French",
+                  "slug": "a1-17-article-contractions-countries",
+                  "source": "lesson"
+                },
+                "nextLesson": {
+                  "id": "french-a1-u15-l02",
+                  "href": "/french/grammar/a1-18-demonstrative-interrogative"
+                }
+              }
+            },
+            {
+              "slug": "a1-18-demonstrative-interrogative",
+              "level": "A1",
+              "order": 30,
+              "title": "\"이 가방\"과 \"어느 가방\"을 골라 말해요",
+              "topic": "지시 한정사 ce·의문 한정사 quel",
+              "summary": "ce/cet/cette/ces로 대상을 가리키고, quel/quelle/quels/quelles로 어느 것인지 물어요.",
+              "duration": "약 8분",
+              "courseLesson": {
+                "lessonRef": {
+                  "id": "french-a1-u15-l02",
+                  "lang": "French",
+                  "slug": "a1-18-demonstrative-interrogative",
+                  "source": "lesson"
+                },
+                "nextLesson": {
+                  "id": "french-a1-u16-l01",
+                  "href": "/french/grammar/a1-19-place-prepositions"
+                }
+              }
+            },
+            {
+              "slug": "a1-19-place-prepositions",
+              "level": "A1",
+              "order": 31,
+              "title": "\"탁자 아래, 역 맞은편\"을 한 번에 찾아요",
+              "topic": "장소 전치사·chez",
+              "summary": "dans, sur, sous부터 devant, derrière, à côté de까지 사물과 장소의 위치를 설명하고 chez로 사람의 공간을 말해요.",
+              "duration": "약 9분",
+              "courseLesson": {
+                "lessonRef": {
+                  "id": "french-a1-u16-l01",
+                  "lang": "French",
+                  "slug": "a1-19-place-prepositions",
+                  "source": "lesson"
+                },
+                "nextLesson": {
+                  "id": "french-a1-u16-l02",
+                  "href": "/french/grammar/a1-21-scene-directions-transit"
+                }
+              }
+            },
+            {
+              "slug": "a1-21-scene-directions-transit",
+              "level": "A1",
+              "order": 32,
+              "title": "\"어디로 가야 해요?\" — 길과 교통을 한 번에 물어요",
+              "topic": "길 묻기·안내 확인·대중교통",
+              "summary": "목적지 위치를 묻고, 들은 안내를 확인한 뒤 노선·환승·하차 지점까지 이어서 물어요.",
+              "duration": "약 20분",
+              "courseLesson": {
+                "lessonRef": {
+                  "id": "french-a1-u16-l02",
+                  "lang": "French",
+                  "slug": "a1-21-scene-directions-transit",
+                  "source": "lesson"
+                },
+                "nextLesson": {
+                  "id": "french-a1-u17-l01",
+                  "href": "/french/grammar/a1-20-frequency-quantity-connectors"
+                }
+              }
+            },
+            {
+              "slug": "a1-20-frequency-quantity-connectors",
+              "level": "A1",
+              "order": 33,
+              "title": "\"자주, 많이, 하지만\"으로 문장을 늘려요",
+              "topic": "빈도·정도·수량 부사와 기초 연결어",
+              "summary": "toujours·souvent으로 빈도를, très·beaucoup로 정도와 양을 말하고 et·mais·parce que로 짧은 문장을 연결해요.",
+              "duration": "약 10분",
+              "courseLesson": {
+                "lessonRef": {
+                  "id": "french-a1-u17-l01",
+                  "lang": "French",
+                  "slug": "a1-20-frequency-quantity-connectors",
                   "source": "lesson"
                 },
                 "nextLesson": null
@@ -3195,216 +3195,6 @@ export const REF_GRAMMAR_MANIFEST = {
                 },
                 "nextLesson": {
                   "id": "french-a2-u02-l01",
-                  "href": "/french/grammar/a2-03-imparfait"
-                }
-              }
-            },
-            {
-              "slug": "a2-03-imparfait",
-              "level": "A2",
-              "order": 3,
-              "title": "\"자고 있었는데 전화가 왔어\"",
-              "topic": "반과거 imparfait",
-              "summary": "'~하곤 했다, ~하고 있었다'의 반과거. 사건의 passé composé와 배경의 imparfait를 가르는 감각을 길러요.",
-              "duration": "약 10분",
-              "courseLesson": {
-                "lessonRef": {
-                  "id": "french-a2-u02-l01",
-                  "lang": "French",
-                  "slug": "a2-03-imparfait",
-                  "source": "lesson"
-                },
-                "nextLesson": {
-                  "id": "french-a2-u02-l02",
-                  "href": "/french/grammar/a2-04-pronominal-verbs"
-                }
-              }
-            },
-            {
-              "slug": "a2-04-pronominal-verbs",
-              "level": "A2",
-              "order": 4,
-              "title": "Je m'appelle의 m'의 정체",
-              "topic": "대명동사 se lever·s'appeler",
-              "summary": "se lever, s'appeler처럼 se를 달고 다니는 동사들. 한국어에 없는 범주지만 '세수하다'의 감각으로 정복해요.",
-              "duration": "약 9분",
-              "courseLesson": {
-                "lessonRef": {
-                  "id": "french-a2-u02-l02",
-                  "lang": "French",
-                  "slug": "a2-04-pronominal-verbs",
-                  "source": "lesson"
-                },
-                "nextLesson": {
-                  "id": "french-a2-u03-l01",
-                  "href": "/french/grammar/a2-05-object-pronouns"
-                }
-              }
-            },
-            {
-              "slug": "a2-05-object-pronouns",
-              "level": "A2",
-              "order": 5,
-              "title": "Je t'aime의 어순이 말해주는 것",
-              "topic": "목적 대명사 le/la/les·lui/leur",
-              "summary": "le/la/les와 lui/leur. 영어와 정반대로 동사 앞에 놓이는 어순이 핵심이에요.",
-              "duration": "약 10분",
-              "courseLesson": {
-                "lessonRef": {
-                  "id": "french-a2-u03-l01",
-                  "lang": "French",
-                  "slug": "a2-05-object-pronouns",
-                  "source": "lesson"
-                },
-                "nextLesson": {
-                  "id": "french-a2-u03-l02",
-                  "href": "/french/grammar/a2-06-comparative"
-                }
-              }
-            },
-            {
-              "slug": "a2-06-comparative",
-              "level": "A2",
-              "order": 6,
-              "title": "\"지하철이 택시보다 싸요\" 말하기",
-              "topic": "비교급·최상급 plus/moins",
-              "summary": "'더/덜/만큼'의 3종 비교와 le plus 최상급. 영어 better가 둘로 갈라지는 meilleur/mieux까지 정리해요.",
-              "duration": "약 8분",
-              "courseLesson": {
-                "lessonRef": {
-                  "id": "french-a2-u03-l02",
-                  "lang": "French",
-                  "slug": "a2-06-comparative",
-                  "source": "lesson"
-                },
-                "nextLesson": {
-                  "id": "french-a2-u04-l01",
-                  "href": "/french/grammar/a2-07-futur-simple"
-                }
-              }
-            },
-            {
-              "slug": "a2-07-futur-simple",
-              "level": "A2",
-              "order": 7,
-              "title": "\"언젠가 떠날 거야\"를 한 단어로",
-              "topic": "단순미래 futur simple",
-              "summary": "원형 어간에 avoir형 어미를 붙이는 단순 미래. futur proche와의 뉘앙스 분담과 4대 불규칙 어간까지.",
-              "duration": "약 9분",
-              "courseLesson": {
-                "lessonRef": {
-                  "id": "french-a2-u04-l01",
-                  "lang": "French",
-                  "slug": "a2-07-futur-simple",
-                  "source": "lesson"
-                },
-                "nextLesson": {
-                  "id": "french-a2-u04-l02",
-                  "href": "/french/grammar/a2-08-imperatif"
-                }
-              }
-            },
-            {
-              "slug": "a2-08-imperatif",
-              "level": "A2",
-              "order": 8,
-              "title": "\"일어나, 8시야!\" — 명령과 권유",
-              "topic": "명령법 impératif",
-              "summary": "명령·권유의 형태는 셋뿐. tu형의 -s 탈락, 대명사의 자리 이동, 그리고 부드럽게 만드는 마법의 말까지.",
-              "duration": "약 8분",
-              "courseLesson": {
-                "lessonRef": {
-                  "id": "french-a2-u04-l02",
-                  "lang": "French",
-                  "slug": "a2-08-imperatif",
-                  "source": "lesson"
-                },
-                "nextLesson": {
-                  "id": "french-a2-u05-l01",
-                  "href": "/french/grammar/a2-09-y-en"
-                }
-              }
-            },
-            {
-              "slug": "a2-09-y-en",
-              "level": "A2",
-              "order": 9,
-              "title": "On y va!의 y는 무슨 뜻일까?",
-              "topic": "대명사 y·en",
-              "summary": "장소를 받는 y, de+명사를 받는 en. 등가물이 없어 어렵지만, J'y vais와 Il y en a로 매일 쓰는 필수품이에요.",
-              "duration": "약 9분",
-              "courseLesson": {
-                "lessonRef": {
-                  "id": "french-a2-u05-l01",
-                  "lang": "French",
-                  "slug": "a2-09-y-en",
-                  "source": "lesson"
-                },
-                "nextLesson": {
-                  "id": "french-a2-u05-l02",
-                  "href": "/french/grammar/a2-10-relative-qui-que"
-                }
-              }
-            },
-            {
-              "slug": "a2-10-relative-qui-que",
-              "level": "A2",
-              "order": 10,
-              "title": "\"파리에 사는 친구\"를 한 문장에",
-              "topic": "관계대명사 qui/que/où",
-              "summary": "두 문장을 한 문장으로 묶는 qui·que·où. 사람/사물이 아니라 빠진 자리의 역할로 갈린다는 게 핵심이에요 — 장소·시간은 où가 받아요.",
-              "duration": "약 11분",
-              "courseLesson": {
-                "lessonRef": {
-                  "id": "french-a2-u05-l02",
-                  "lang": "French",
-                  "slug": "a2-10-relative-qui-que",
-                  "source": "lesson"
-                },
-                "nextLesson": {
-                  "id": "french-a2-u06-l01",
-                  "href": "/french/grammar/a2-11-time-expressions"
-                }
-              }
-            },
-            {
-              "slug": "a2-11-time-expressions",
-              "level": "A2",
-              "order": 11,
-              "title": "\"3년째 배우고 있어요\"를 한 단어로",
-              "topic": "시간 표현 depuis·pendant·il y a",
-              "summary": "depuis, pendant, il y a, dans, en — 한국어 '~동안, ~전에, ~후에'가 프랑스어에서 일곱 갈래로 갈라지는 지도를 한 장에 그려요.",
-              "duration": "약 9분",
-              "courseLesson": {
-                "lessonRef": {
-                  "id": "french-a2-u06-l01",
-                  "lang": "French",
-                  "slug": "a2-11-time-expressions",
-                  "source": "lesson"
-                },
-                "nextLesson": {
-                  "id": "french-a2-u06-l02",
-                  "href": "/french/grammar/a2-12-quantity-tout"
-                }
-              }
-            },
-            {
-              "slug": "a2-12-quantity-tout",
-              "level": "A2",
-              "order": 12,
-              "title": "\"사람이 너무 많아요\" — 양 재는 법",
-              "topic": "수량 표현·tout 4형태",
-              "summary": "beaucoup de, trop de, un peu de의 수량 부사부터 형태가 넷인 tout까지 — '얼마나'를 말하는 부품을 한 상자에 모아요.",
-              "duration": "약 8분",
-              "courseLesson": {
-                "lessonRef": {
-                  "id": "french-a2-u06-l02",
-                  "lang": "French",
-                  "slug": "a2-12-quantity-tout",
-                  "source": "lesson"
-                },
-                "nextLesson": {
-                  "id": "french-a2-u07-l01",
                   "href": "/french/grammar/a2-scene-13-train-delay"
                 }
               }
@@ -3412,20 +3202,41 @@ export const REF_GRAMMAR_MANIFEST = {
             {
               "slug": "a2-scene-13-train-delay",
               "level": "A2",
-              "order": 13,
+              "order": 3,
               "title": "\"열차를 놓쳤어요\" — 지연·환불을 복합과거로 말해요",
               "topic": "지연 신고·상황 설명(복합과거)·환불·다음 열차",
               "summary": "열차 지연으로 환승을 놓친 상황을 복합과거로 설명하고, 다음 열차와 환불 규정을 확인해요.",
               "duration": "약 15분",
               "courseLesson": {
                 "lessonRef": {
-                  "id": "french-a2-u07-l01",
+                  "id": "french-a2-u02-l01",
                   "lang": "French",
                   "slug": "a2-scene-13-train-delay",
                   "source": "lesson"
                 },
                 "nextLesson": {
-                  "id": "french-a2-u07-l02",
+                  "id": "french-a2-u02-l02",
+                  "href": "/french/grammar/a2-03-imparfait"
+                }
+              }
+            },
+            {
+              "slug": "a2-03-imparfait",
+              "level": "A2",
+              "order": 4,
+              "title": "\"자고 있었는데 전화가 왔어\"",
+              "topic": "반과거 imparfait",
+              "summary": "'~하곤 했다, ~하고 있었다'의 반과거. 사건의 passé composé와 배경의 imparfait를 가르는 감각을 길러요.",
+              "duration": "약 10분",
+              "courseLesson": {
+                "lessonRef": {
+                  "id": "french-a2-u02-l02",
+                  "lang": "French",
+                  "slug": "a2-03-imparfait",
+                  "source": "lesson"
+                },
+                "nextLesson": {
+                  "id": "french-a2-u03-l01",
                   "href": "/french/grammar/a2-scene-14-travel-memories"
                 }
               }
@@ -3433,20 +3244,62 @@ export const REF_GRAMMAR_MANIFEST = {
             {
               "slug": "a2-scene-14-travel-memories",
               "level": "A2",
-              "order": 14,
+              "order": 5,
               "title": "\"그때 니스는 정말 아름다웠어요\" — 반과거로 여행을 회상해요",
               "topic": "여행 회상·배경 묘사(반과거)·사건(복합과거)·감상 나누기",
               "summary": "지난 여행을 이야기하며 배경·날씨·분위기는 반과거로, 그날의 사건은 복합과거로 갈라 말해요.",
               "duration": "약 15분",
               "courseLesson": {
                 "lessonRef": {
-                  "id": "french-a2-u07-l02",
+                  "id": "french-a2-u03-l01",
                   "lang": "French",
                   "slug": "a2-scene-14-travel-memories",
                   "source": "lesson"
                 },
                 "nextLesson": {
-                  "id": "french-a2-u08-l01",
+                  "id": "french-a2-u03-l02",
+                  "href": "/french/grammar/a2-04-pronominal-verbs"
+                }
+              }
+            },
+            {
+              "slug": "a2-04-pronominal-verbs",
+              "level": "A2",
+              "order": 6,
+              "title": "Je m'appelle의 m'의 정체",
+              "topic": "대명동사 se lever·s'appeler",
+              "summary": "se lever, s'appeler처럼 se를 달고 다니는 동사들. 한국어에 없는 범주지만 '세수하다'의 감각으로 정복해요.",
+              "duration": "약 9분",
+              "courseLesson": {
+                "lessonRef": {
+                  "id": "french-a2-u03-l02",
+                  "lang": "French",
+                  "slug": "a2-04-pronominal-verbs",
+                  "source": "lesson"
+                },
+                "nextLesson": {
+                  "id": "french-a2-u04-l01",
+                  "href": "/french/grammar/a2-05-object-pronouns"
+                }
+              }
+            },
+            {
+              "slug": "a2-05-object-pronouns",
+              "level": "A2",
+              "order": 7,
+              "title": "Je t'aime의 어순이 말해주는 것",
+              "topic": "목적 대명사 le/la/les·lui/leur",
+              "summary": "le/la/les와 lui/leur. 영어와 정반대로 동사 앞에 놓이는 어순이 핵심이에요.",
+              "duration": "약 10분",
+              "courseLesson": {
+                "lessonRef": {
+                  "id": "french-a2-u04-l01",
+                  "lang": "French",
+                  "slug": "a2-05-object-pronouns",
+                  "source": "lesson"
+                },
+                "nextLesson": {
+                  "id": "french-a2-u04-l02",
                   "href": "/french/grammar/a2-15-negation-variants"
                 }
               }
@@ -3454,20 +3307,62 @@ export const REF_GRAMMAR_MANIFEST = {
             {
               "slug": "a2-15-negation-variants",
               "level": "A2",
-              "order": 15,
+              "order": 8,
               "title": "\"크루아상은 이제 없어요\" — 네 가지 부정을 한 세트로",
               "topic": "매진·품절 알아듣기·부정 변형(plus/jamais/rien/personne)·습관 말하기",
               "summary": "늦은 오후 빵집에서 매진을 알아듣고, ne…pas를 넘어 plus·jamais·rien·personne 네 부정으로 상황과 습관을 말해요.",
               "duration": "약 15분",
               "courseLesson": {
                 "lessonRef": {
-                  "id": "french-a2-u08-l01",
+                  "id": "french-a2-u04-l02",
                   "lang": "French",
                   "slug": "a2-15-negation-variants",
                   "source": "lesson"
                 },
                 "nextLesson": {
-                  "id": "french-a2-u08-l02",
+                  "id": "french-a2-u05-l01",
+                  "href": "/french/grammar/a2-06-comparative"
+                }
+              }
+            },
+            {
+              "slug": "a2-06-comparative",
+              "level": "A2",
+              "order": 9,
+              "title": "\"지하철이 택시보다 싸요\" 말하기",
+              "topic": "비교급·최상급 plus/moins",
+              "summary": "'더/덜/만큼'의 3종 비교와 le plus 최상급. 영어 better가 둘로 갈라지는 meilleur/mieux까지 정리해요.",
+              "duration": "약 8분",
+              "courseLesson": {
+                "lessonRef": {
+                  "id": "french-a2-u05-l01",
+                  "lang": "French",
+                  "slug": "a2-06-comparative",
+                  "source": "lesson"
+                },
+                "nextLesson": {
+                  "id": "french-a2-u05-l02",
+                  "href": "/french/grammar/a2-07-futur-simple"
+                }
+              }
+            },
+            {
+              "slug": "a2-07-futur-simple",
+              "level": "A2",
+              "order": 10,
+              "title": "\"언젠가 떠날 거야\"를 한 단어로",
+              "topic": "단순미래 futur simple",
+              "summary": "원형 어간에 avoir형 어미를 붙이는 단순 미래. futur proche와의 뉘앙스 분담과 4대 불규칙 어간까지.",
+              "duration": "약 9분",
+              "courseLesson": {
+                "lessonRef": {
+                  "id": "french-a2-u05-l02",
+                  "lang": "French",
+                  "slug": "a2-07-futur-simple",
+                  "source": "lesson"
+                },
+                "nextLesson": {
+                  "id": "french-a2-u06-l01",
                   "href": "/french/grammar/a2-16-si-conditions"
                 }
               }
@@ -3475,20 +3370,62 @@ export const REF_GRAMMAR_MANIFEST = {
             {
               "slug": "a2-16-si-conditions",
               "level": "A2",
-              "order": 16,
+              "order": 11,
               "title": "\"비 오면 미술관 가자\" — si 하나로 계획을 세워요",
               "topic": "주말 계획·제안(si + 현재)·플랜 B·조건 표현",
               "summary": "친구와 주말 계획을 짜며 si + 현재로 제안하고, 비 오는 경우의 플랜 B까지 조건으로 말해요.",
               "duration": "약 15분",
               "courseLesson": {
                 "lessonRef": {
-                  "id": "french-a2-u08-l02",
+                  "id": "french-a2-u06-l01",
                   "lang": "French",
                   "slug": "a2-16-si-conditions",
                   "source": "lesson"
                 },
                 "nextLesson": {
-                  "id": "french-a2-u09-l01",
+                  "id": "french-a2-u06-l02",
+                  "href": "/french/grammar/a2-08-imperatif"
+                }
+              }
+            },
+            {
+              "slug": "a2-08-imperatif",
+              "level": "A2",
+              "order": 12,
+              "title": "\"일어나, 8시야!\" — 명령과 권유",
+              "topic": "명령법 impératif",
+              "summary": "명령·권유의 형태는 셋뿐. tu형의 -s 탈락, 대명사의 자리 이동, 그리고 부드럽게 만드는 마법의 말까지.",
+              "duration": "약 8분",
+              "courseLesson": {
+                "lessonRef": {
+                  "id": "french-a2-u06-l02",
+                  "lang": "French",
+                  "slug": "a2-08-imperatif",
+                  "source": "lesson"
+                },
+                "nextLesson": {
+                  "id": "french-a2-u07-l01",
+                  "href": "/french/grammar/a2-09-y-en"
+                }
+              }
+            },
+            {
+              "slug": "a2-09-y-en",
+              "level": "A2",
+              "order": 13,
+              "title": "On y va!의 y는 무슨 뜻일까?",
+              "topic": "대명사 y·en",
+              "summary": "장소를 받는 y, de+명사를 받는 en. 등가물이 없어 어렵지만, J'y vais와 Il y en a로 매일 쓰는 필수품이에요.",
+              "duration": "약 9분",
+              "courseLesson": {
+                "lessonRef": {
+                  "id": "french-a2-u07-l01",
+                  "lang": "French",
+                  "slug": "a2-09-y-en",
+                  "source": "lesson"
+                },
+                "nextLesson": {
+                  "id": "french-a2-u07-l02",
                   "href": "/french/grammar/a2-17-narrative-connectors"
                 }
               }
@@ -3496,16 +3433,79 @@ export const REF_GRAMMAR_MANIFEST = {
             {
               "slug": "a2-17-narrative-connectors",
               "level": "A2",
-              "order": 17,
+              "order": 14,
               "title": "\"먼저 버스를 탔고, 마지막엔 밀물을 봤어\" — 하루를 이야기로 엮어요",
               "topic": "하루 여행기·서사 연결사(d'abord/ensuite/enfin)·복합과거×반과거 종합",
               "summary": "몽생미셸 당일치기 이야기를 d'abord·ensuite·enfin으로 엮고, 사건은 복합과거·배경은 반과거로 나눠 담아요.",
               "duration": "약 15분",
               "courseLesson": {
                 "lessonRef": {
-                  "id": "french-a2-u09-l01",
+                  "id": "french-a2-u07-l02",
                   "lang": "French",
                   "slug": "a2-17-narrative-connectors",
+                  "source": "lesson"
+                },
+                "nextLesson": {
+                  "id": "french-a2-u08-l01",
+                  "href": "/french/grammar/a2-10-relative-qui-que"
+                }
+              }
+            },
+            {
+              "slug": "a2-10-relative-qui-que",
+              "level": "A2",
+              "order": 15,
+              "title": "\"파리에 사는 친구\"를 한 문장에",
+              "topic": "관계대명사 qui/que/où",
+              "summary": "두 문장을 한 문장으로 묶는 qui·que·où. 사람/사물이 아니라 빠진 자리의 역할로 갈린다는 게 핵심이에요 — 장소·시간은 où가 받아요.",
+              "duration": "약 11분",
+              "courseLesson": {
+                "lessonRef": {
+                  "id": "french-a2-u08-l01",
+                  "lang": "French",
+                  "slug": "a2-10-relative-qui-que",
+                  "source": "lesson"
+                },
+                "nextLesson": {
+                  "id": "french-a2-u08-l02",
+                  "href": "/french/grammar/a2-11-time-expressions"
+                }
+              }
+            },
+            {
+              "slug": "a2-11-time-expressions",
+              "level": "A2",
+              "order": 16,
+              "title": "\"3년째 배우고 있어요\"를 한 단어로",
+              "topic": "시간 표현 depuis·pendant·il y a",
+              "summary": "depuis, pendant, il y a, dans, en — 한국어 '~동안, ~전에, ~후에'가 프랑스어에서 일곱 갈래로 갈라지는 지도를 한 장에 그려요.",
+              "duration": "약 9분",
+              "courseLesson": {
+                "lessonRef": {
+                  "id": "french-a2-u08-l02",
+                  "lang": "French",
+                  "slug": "a2-11-time-expressions",
+                  "source": "lesson"
+                },
+                "nextLesson": {
+                  "id": "french-a2-u09-l01",
+                  "href": "/french/grammar/a2-12-quantity-tout"
+                }
+              }
+            },
+            {
+              "slug": "a2-12-quantity-tout",
+              "level": "A2",
+              "order": 17,
+              "title": "\"사람이 너무 많아요\" — 양 재는 법",
+              "topic": "수량 표현·tout 4형태",
+              "summary": "beaucoup de, trop de, un peu de의 수량 부사부터 형태가 넷인 tout까지 — '얼마나'를 말하는 부품을 한 상자에 모아요.",
+              "duration": "약 8분",
+              "courseLesson": {
+                "lessonRef": {
+                  "id": "french-a2-u09-l01",
+                  "lang": "French",
+                  "slug": "a2-12-quantity-tout",
                   "source": "lesson"
                 },
                 "nextLesson": {

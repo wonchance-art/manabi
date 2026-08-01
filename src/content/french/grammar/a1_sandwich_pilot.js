@@ -18,7 +18,7 @@ const chapters = [
   {
     slug: "a1-pilot-32-cafe-voudrais",
     level: "A1",
-    order: 32,
+    order: 27,
     prerequisites: ["a1-27-scene-restaurant-ordering"],
     status: FRENCH_A1_SANDWICH_PILOT_STATUS,
     title: "카페에서 음료 주문하기",
@@ -217,7 +217,7 @@ const chapters = [
   {
     slug: "a1-pilot-33-pharmacy-il-faut",
     level: "A1",
-    order: 33,
+    order: 28,
     prerequisites: ["a1-22-scene-health-lost-property"],
     status: FRENCH_A1_SANDWICH_PILOT_STATUS,
     title: "약국에서 약 받기",

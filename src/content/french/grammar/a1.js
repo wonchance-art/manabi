@@ -638,7 +638,7 @@ const chapters = [
   {
     slug: "a1-06-adjectives",
     level: "A1",
-    order: 13,
+    order: 14,
     title: "'레드 와인'이 아니라 '와인 레드'",
     topic: "형용사 성수 일치·위치(BAGS)",
     titleFr: "Les adjectifs",
@@ -723,7 +723,7 @@ const chapters = [
   {
     slug: "a1-07-possessives",
     level: "A1",
-    order: 14,
+    order: 15,
     title: "sa mère는 누구의 엄마일까?",
     topic: "소유 형용사 mon/ma/son",
     titleFr: "Les adjectifs possessifs",
@@ -799,7 +799,7 @@ const chapters = [
   {
     slug: "a1-08-aller-venir",
     level: "A1",
-    order: 15,
+    order: 16,
     title: "\"방금 먹었어, 곧 갈 거야\"",
     topic: "aller/venir·근접 미래와 과거",
     titleFr: "Aller, venir et leurs constructions",
@@ -927,7 +927,7 @@ const chapters = [
   {
     slug: "a1-09-partitive",
     level: "A1",
-    order: 16,
+    order: 17,
     title: "\"빵 좀 주세요\"의 '좀'을 문법으로",
     topic: "부분관사 du/de la",
     titleFr: "Les articles partitifs",
@@ -1017,7 +1017,7 @@ const chapters = [
   {
     slug: "a1-10-numbers-time",
     level: "A1",
-    order: 17,
+    order: 18,
     title: "70을 '60+10'이라 부르는 사람들",
     topic: "숫자·시간·날짜",
     titleFr: "Les nombres, l'heure et la date",

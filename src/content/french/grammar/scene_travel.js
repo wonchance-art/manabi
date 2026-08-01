@@ -6,7 +6,7 @@ const chapters = [
   {
     slug: "a1-23-scene-airport-entry-baggage",
     level: "A1",
-    order: 26,
+    order: 19,
     formulaic: true,
     prerequisites: ["a1-04-negation", "a1-10-numbers-time"],
     title: "\"입국하러 왔어요\" — 질문에 짧고 분명하게 답해요",
@@ -304,7 +304,7 @@ const chapters = [
   {
     slug: "a1-24-scene-airport-ticket-connection",
     level: "A1",
-    order: 27,
+    order: 20,
     formulaic: true,
     prerequisites: ["a1-05-questions", "a1-10-numbers-time"],
     title: "\"표 한 장 주세요\" — 공항에서 목적지까지 이어 가요",
@@ -318,7 +318,7 @@ const chapters = [
       { id: "a124-d2", type: "fill", prompt: "Le train part de ___ voie ?", answer: "quelle" },
       { id: "a124-d3", type: "choice", prompt: "'편도'는?", choices: ["un aller simple", "un aller-retour", "un billet retour"], answer: "un aller simple" },
       { id: "a124-d4", type: "choice", prompt: "'몇 시에 떠나요?'는?", choices: ["Le train part à quelle heure ?", "Le train part quelle à heure ?", "Quelle part le train heure ?"], answer: "Le train part à quelle heure ?" },
-      { id: "a124-d5", type: "order", sentence: "Je voudrais un billet pour Lyon.", prompt: "발권 요청을 배열해 보세요." },
+      { id: "a124-d5", type: "order", sentence: "Je voudrais un billet pour Lyon.", prompt: "발권 요청을 배열해 보세요.", hint: "Je voudrais는 '~주세요' 고정구 — 통째로 써요" },
       { id: "a124-d6", type: "dictation", sentence: "Le train est à l'heure." },
       { id: "a124-d7", type: "dictation", sentence: "C'est la voie numéro deux." },
     ],
@@ -597,7 +597,7 @@ const chapters = [
   {
     slug: "a1-25-scene-lodging-check-in",
     level: "A1",
-    order: 28,
+    order: 22,
     formulaic: true,
     prerequisites: ["a1-02-avoir", "a1-10-numbers-time"],
     title: "\"예약했어요\" — 체크인 정보를 차례로 확인해요",
@@ -609,7 +609,7 @@ const chapters = [
     drills: [
       { id: "a125-d1", type: "fill", prompt: "J'ai une ___ pour deux nuits.", answer: "réservation" },
       { id: "a125-d2", type: "fill", prompt: "La chambre est à quel ___ ?", answer: "étage" },
-      { id: "a125-d3", type: "choice", prompt: "체크인 때 하는 말은?", choices: ["J'ai réservé une chambre.", "Je réserve un chambre.", "La chambre me réserve."], answer: "J'ai réservé une chambre." },
+      { id: "a125-d3", type: "choice", prompt: "체크인 때 하는 말은?", choices: ["J'ai réservé une chambre.", "Je réserve un chambre.", "La chambre me réserve."], answer: "J'ai réservé une chambre." , hint: "J'ai réservé(예약했어요)는 고정구로 통째로 외워요" },
       { id: "a125-d4", type: "choice", prompt: "'와이파이 비밀번호'는?", choices: ["le mot de passe du wifi", "le passe du mot wifi", "le wifi de passe"], answer: "le mot de passe du wifi" },
       { id: "a125-d5", type: "order", sentence: "La chambre est au troisième étage.", prompt: "층수 안내를 배열해 보세요." },
       { id: "a125-d6", type: "dictation", sentence: "Voici votre clé, madame." },
@@ -889,7 +889,7 @@ const chapters = [
   {
     slug: "a1-26-scene-lodging-requests-problems",
     level: "A1",
-    order: 29,
+    order: 24,
     formulaic: true,
     prerequisites: ["a1-04-negation", "a1-05-questions"],
     title: "\"방에 문제가 있어요\" — 필요한 조치를 구체적으로 요청해요",
@@ -1181,7 +1181,7 @@ const chapters = [
   {
     slug: "a1-27-scene-restaurant-ordering",
     level: "A1",
-    order: 30,
+    order: 25,
     formulaic: true,
     prerequisites: ["a1-09-partitive", "a1-10-numbers-time"],
     title: "\"이걸로 주문할게요\" — 자리를 잡고 추천을 받아요",
@@ -1474,7 +1474,7 @@ const chapters = [
   {
     slug: "a1-28-scene-restaurant-allergy-payment",
     level: "A1",
-    order: 31,
+    order: 26,
     formulaic: true,
     prerequisites: ["a1-04-negation", "a1-09-partitive"],
     title: "\"이 재료는 빼 주세요\" — 알레르기와 계산을 분명히 말해요",
