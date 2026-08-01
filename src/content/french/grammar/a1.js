@@ -21,6 +21,19 @@ const chapters = [
       { id: "a101-d6", type: "dictation", sentence: "Elle est de Busan." },
       { id: "a101-d7", type: "dictation", sentence: "Nous sommes en France." },
     ],
+    writing: {
+      prompt: "배운 문형으로 자기소개를 두 문장 써 보세요. 이름 하나, 국적이나 직업 하나면 충분해요.",
+      hints: ["Je m'appelle …", "Je suis …"],
+      samples: [
+        { fr: "Je m'appelle Minji. Je suis coréenne.", ko: "제 이름은 민지예요. 저는 한국인이에요.", note: "여성이면 coréenne, 남성이면 coréen" },
+        { fr: "Je m'appelle Junho. Je suis coréen et je suis étudiant.", ko: "제 이름은 준호예요. 저는 한국인이고 학생이에요." },
+      ],
+      checklist: [
+        "주어와 être 활용이 맞게 짝지어졌나요? (je suis)",
+        "국적·직업의 성이 나와 일치하나요?",
+        "이름 뒤에서 문장을 한 번 끊었나요?",
+      ],
+    },
     sections: [
       {
         heading: "주어 인칭대명사 — 프랑스어 문장의 필수품",
@@ -119,6 +132,19 @@ const chapters = [
       { id: "a102-d6", type: "dictation", sentence: "J'ai un petit chien." },
       { id: "a102-d7", type: "dictation", sentence: "Il a chaud aujourd'hui." },
     ],
+    writing: {
+      prompt: "avoir로 지금 나의 상태를 두 가지 써 보세요. 배고픔, 목마름, 나이, 가진 것 무엇이든 좋아요.",
+      hints: ["J'ai faim / J'ai soif", "J'ai … ans"],
+      samples: [
+        { fr: "J'ai faim et j'ai soif.", ko: "배고프고 목말라요.", note: "faim·soif 앞에는 관사를 안 붙여요" },
+        { fr: "J'ai vingt-cinq ans et j'ai un chat.", ko: "저는 스물다섯 살이고 고양이가 한 마리 있어요." },
+      ],
+      checklist: [
+        "je ai가 아니라 j'ai로 줄였나요?",
+        "faim·soif 앞에 관사를 붙이지 않았나요? (숙어)",
+        "나이 뒤에 ans를 붙였나요?",
+      ],
+    },
     sections: [
       {
         heading: "avoir 활용 — 리에종 주의보",
@@ -285,6 +311,19 @@ const chapters = [
       { id: "a104-d6", type: "dictation", sentence: "Je n'aime pas ça." },
       { id: "a104-d7", type: "dictation", sentence: "Il ne parle pas beaucoup." },
     ],
+    writing: {
+      prompt: "내가 안 하는 것 두 가지를 ne ~ pas로 써 보세요.",
+      hints: ["Je ne … pas …", "부정문에서 un/une/du는 de로"],
+      samples: [
+        { fr: "Je ne bois pas de café le soir.", ko: "저는 저녁에는 커피를 안 마셔요.", note: "부정문에서 du café → de café" },
+        { fr: "Je ne regarde pas la télé le matin.", ko: "저는 아침에 텔레비전을 안 봐요.", note: "정관사 la는 부정문에서도 그대로" },
+      ],
+      checklist: [
+        "ne와 pas가 동사를 감쌌나요?",
+        "부정문에서 부정관사·부분관사를 de로 바꿨나요?",
+        "모음 앞에서 ne를 n'로 줄였나요? (해당할 때)",
+      ],
+    },
     sections: [
       {
         heading: "기본 공식 — ne + 동사 + pas",
@@ -362,6 +401,19 @@ const chapters = [
       { id: "a105-d6", type: "dictation", sentence: "Tu parles anglais ?" },
       { id: "a105-d7", type: "dictation", sentence: "Vous habitez où maintenant ?" },
     ],
+    writing: {
+      prompt: "친구에게 물어볼 질문을 두 개 써 보세요. 하나는 est-ce que로, 하나는 평서문에 물음표만 얹어서.",
+      hints: ["Est-ce que tu … ?", "Tu … ?"],
+      samples: [
+        { fr: "Est-ce que tu aimes le café ?", ko: "너 커피 좋아해?" },
+        { fr: "Tu habites où ?", ko: "너 어디 살아?" },
+      ],
+      checklist: [
+        "est-ce que 뒤 어순이 평서문 그대로인가요?",
+        "물음표 앞을 한 칸 띄었나요? (프랑스어 표기 관례)",
+        "두 질문의 방식이 서로 다른가요?",
+      ],
+    },
     sections: [
       {
         heading: "방법 1 — 억양만 올리기 (구어의 기본값)",
@@ -762,6 +814,19 @@ const chapters = [
       { id: "a108-d6", type: "dictation", sentence: "On va à la plage." },
       { id: "a108-d7", type: "dictation", sentence: "Elle vient de partir." },
     ],
+    writing: {
+      prompt: "이번 주말 계획을 aller + 동사원형(근접미래)으로 두 문장 써 보세요.",
+      hints: ["Je vais + 동사원형", "Ce week-end, …"],
+      samples: [
+        { fr: "Ce week-end, je vais visiter Busan avec ma sœur.", ko: "이번 주말에 언니와 부산을 구경할 거예요." },
+        { fr: "Dimanche, je vais rester à la maison.", ko: "일요일엔 집에 있을 거예요." },
+      ],
+      checklist: [
+        "aller를 주어에 맞게 활용했나요? (je vais)",
+        "aller 뒤의 동사는 원형 그대로인가요?",
+        "시간 표현을 문장 앞이나 뒤에 붙였나요?",
+      ],
+    },
     sections: [
       {
         heading: "aller(가다) — 최강 불규칙 동사",
@@ -877,6 +942,19 @@ const chapters = [
       { id: "a109-d6", type: "dictation", sentence: "Il mange de la salade." },
       { id: "a109-d7", type: "dictation", sentence: "On achète du poisson." },
     ],
+    writing: {
+      prompt: "아침에 먹고 마시는 것을 부분관사(du/de la/des)로 써 보세요.",
+      hints: ["Je mange du/de la …", "Je bois du/de la …"],
+      samples: [
+        { fr: "Le matin, je mange du pain et je bois du café.", ko: "아침에는 빵을 좀 먹고 커피를 마셔요." },
+        { fr: "Je mange de la salade et des fruits.", ko: "샐러드와 과일을 먹어요." },
+      ],
+      checklist: [
+        "셀 수 없는 음식에 du/de la를 썼나요?",
+        "명사의 성에 맞는 부분관사인가요?",
+        "복수에는 des를 썼나요?",
+      ],
+    },
     sections: [
       {
         heading: "왜 필요한가 — '빵 하나'도 '빵 전체'도 아닐 때",
