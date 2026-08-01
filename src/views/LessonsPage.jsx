@@ -213,7 +213,7 @@ export default function LessonsPage({ refManifest = {} }) {
                 i % 2 === 1 ? <strong key={i}>{part}</strong> : part
               )}
             </p>
-            <LanguageWorldMap langKey={refLang.key} />
+            <LanguageWorldMap langKey={langFilter} />
             {Array.isArray(refLang.perks) && refLang.perks.length > 0 && (
               <ul style={{ margin: '0 0 8px', paddingLeft: 18, fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6, display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {refLang.perks.map((perk) => (
