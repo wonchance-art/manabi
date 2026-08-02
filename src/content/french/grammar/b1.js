@@ -21,6 +21,18 @@ const chapters = [
       { id: "b101-d6", type: "dictation", sentence: "J'aimerais visiter Lyon un jour." },
       { id: "b101-d7", type: "dictation", sentence: "On pourrait dîner ensemble demain ?" },
     ],
+    writing: {
+      prompt: "복권에 당첨된다면? 하고 싶은 일 세 가지를 조건법으로 써 보세요. (80~120단어)",
+      hints: ["Si je gagnais …, je …-rais", "J'aimerais / Je pourrais / Nous irions"],
+      samples: [
+        { fr: "Si je gagnais au loto, ma vie changerait complètement. D'abord, j'achèterais une petite maison près de la mer, et ma famille pourrait passer les vacances avec moi. Ensuite, je voyagerais pendant six mois : j'aimerais découvrir le Canada et la Suisse. Enfin, je donnerais une partie de l'argent à une association, parce que le bonheur, ça se partage.", ko: "복권에 당첨된다면 인생이 완전히 달라질 거예요. 먼저 바닷가 근처 작은 집을 사서 가족과 휴가를 보내고, 6개월간 여행하며 캐나다와 스위스를 둘러보고 싶어요. 마지막으로 일부는 단체에 기부할 거예요. 행복은 나누는 거니까요." },
+      ],
+      checklist: [
+        "조건법 어미(-rais·-rait·-rions)를 일관되게 썼나요?",
+        "si + 반과거 틀로 시작했나요?",
+        "d'abord·ensuite·enfin으로 흐름을 잡았나요?",
+      ],
+    },
     sections: [
       {
         heading: "형태 — 미래 어간 + 반과거 어미",
@@ -120,6 +132,18 @@ const chapters = [
       { id: "b102-d6", type: "dictation", sentence: "Je veux que tu sois heureux." },
       { id: "b102-d7", type: "dictation", sentence: "Il est possible qu'il pleuve demain." },
     ],
+    writing: {
+      prompt: "새 도시로 이사 가는 친구에게 조언 편지를 써 보세요 — il faut que·je veux que 등 접속법 3회 이상. (80~120단어)",
+      hints: ["Il faut que tu …", "Je veux que tu …", "avant que tu …"],
+      samples: [
+        { fr: "Chère Léa, tu pars enfin ! Il faut que tu trouves un appartement près de ton travail, c'est le plus important. Je veux aussi que tu fasses attention à ton budget les premiers mois. Avant que tu partes, on dîne ensemble ? Je suis triste que tu sois si loin, mais tellement contente pour toi. Écris-moi souvent !", ko: "레아에게, 드디어 떠나는구나! 직장 근처에 집을 구해야 해, 그게 제일 중요해. 처음 몇 달은 예산도 조심했으면 해. 떠나기 전에 같이 저녁 먹을까? 멀어져서 슬프지만 네가 잘돼서 정말 기뻐. 자주 소식 전해!" },
+      ],
+      checklist: [
+        "접속법 동사(trouves·fasses·partes·sois)가 세 번 이상인가요?",
+        "편지 형식(호칭·맺음)을 갖췄나요?",
+        "감정 표현 뒤에도 접속법을 썼나요?",
+      ],
+    },
     sections: [
       {
         heading: "접속법이란 — 카메라 vs 머릿속 필터",
@@ -233,6 +257,18 @@ const chapters = [
       { id: "b103-d6", type: "dictation", sentence: "Elle avait oublié ses clés au bureau." },
       { id: "b103-d7", type: "dictation", sentence: "Tu avais déjà vu ce film ?" },
     ],
+    writing: {
+      prompt: "'이미 ~한 뒤였다'가 들어가는 실수담이나 추억 하나를 써 보세요 — 대과거 2회 이상. (80~120단어)",
+      hints: ["Quand je suis arrivé(e), … avait déjà …", "parce que j'avais oublié …"],
+      samples: [
+        { fr: "Dimanche dernier, je suis allée au cinéma avec mon frère. Quand nous sommes arrivés, le film avait déjà commencé, parce que j'avais mal noté l'heure. Le mois d'avant, j'avais aussi raté un concert pour la même raison ! Mon frère m'a offert un agenda. Depuis, je vérifie tout deux fois.", ko: "지난 일요일 남동생과 영화관에 갔어요. 도착했을 때 영화는 이미 시작한 뒤였죠. 제가 시간을 잘못 적어놨거든요. 한 달 전엔 같은 이유로 콘서트도 놓쳤었어요! 동생이 다이어리를 선물해 줬고, 그 뒤로는 모든 걸 두 번 확인해요.", note: "남성이면 allée→allé, arrivés는 남매라 남성 복수" },
+      ],
+      checklist: [
+        "대과거(avait/avais + 과거분사)가 두 번 이상인가요?",
+        "복합과거와 대과거의 앞뒤 관계가 분명한가요?",
+        "이야기의 오치(교훈·결말)가 있나요?",
+      ],
+    },
     sections: [
       {
         heading: "개념 — 과거의 과거",
@@ -322,6 +358,18 @@ const chapters = [
       { id: "b104-d6", type: "dictation", sentence: "J'ai un ami dont le père est médecin." },
       { id: "b104-d7", type: "dictation", sentence: "Voici le café où nous nous sommes rencontrés." },
     ],
+    writing: {
+      prompt: "당신 인생의 장소 하나를 소개해 보세요 — dont·où를 각각 한 번 이상. (80~120단어)",
+      hints: ["C'est un endroit où …", "… dont je me souviens souvent"],
+      samples: [
+        { fr: "Il y a un café, dans ma ville natale, dont je parle souvent à mes amis. C'est l'endroit où j'ai passé tous mes examens du lycée, un carnet à la main. La patronne, dont le sourire n'a pas changé, me reconnaît encore. Chaque fois où j'y retourne, je commande la même chose : un chocolat chaud. C'est le lieu dont j'ai le plus besoin quand tout va mal.", ko: "고향에 제가 친구들에게 자주 이야기하는 카페가 있어요. 고등학교 시험 준비를 전부 그곳에서 했죠, 수첩을 손에 들고요. 미소가 그대로인 사장님은 아직도 절 알아봐요. 돌아갈 때마다 같은 걸 시켜요 — 핫초콜릿. 모든 게 힘들 때 제일 필요한 장소예요." },
+      ],
+      checklist: [
+        "dont이 '~에 대해/~의' 관계를 정확히 받나요?",
+        "où가 장소·시간을 받나요?",
+        "한 장소를 중심으로 글이 모이나요?",
+      ],
+    },
     sections: [
       {
         heading: "복습 30초 — qui와 que의 분업",
@@ -418,6 +466,18 @@ const chapters = [
       { id: "b105-d6", type: "dictation", sentence: "Je réfléchis en marchant dans le parc." },
       { id: "b105-d7", type: "dictation", sentence: "En arrivant, appelle-moi tout de suite." },
     ],
+    writing: {
+      prompt: "나의 언어 공부법을 소개해 보세요 — 제롱디프(en -ant) 3회 이상. (80~120단어)",
+      hints: ["J'apprends en …ant", "En faisant …, on …"],
+      samples: [
+        { fr: "J'apprends le français en écoutant des chansons le matin. En marchant vers le bureau, je répète les paroles à voix basse. Le soir, je révise en écrivant trois phrases dans mon carnet. En faisant un peu chaque jour, on progresse sans s'en rendre compte. Mon conseil : trouvez votre moment, et remplissez-le de français.", ko: "아침엔 샹송을 들으며 프랑스어를 배워요. 사무실로 걸어가면서 가사를 작게 따라 하고, 저녁엔 수첩에 세 문장을 쓰면서 복습해요. 매일 조금씩 하다 보면 저도 모르게 늘어요. 제 조언은 — 자기만의 시간을 찾아서 프랑스어로 채우세요." },
+      ],
+      checklist: [
+        "en + -ant가 세 번 이상인가요?",
+        "제롱디프의 주어가 주절 주어와 같나요?",
+        "조언 한 줄로 마무리했나요?",
+      ],
+    },
     sections: [
       {
         heading: "형태 — nous 어간 + -ant",
@@ -510,6 +570,18 @@ const chapters = [
       { id: "b106-d6", type: "dictation", sentence: "Cette chanson est connue dans le monde entier." },
       { id: "b106-d7", type: "dictation", sentence: "Le musée a été fermé pour travaux." },
     ],
+    writing: {
+      prompt: "우리 동네(도시)를 소개하는 안내문 한 단락 — 수동태 3회 이상. (80~120단어)",
+      hints: ["… a été construit(e) en …", "… est connu(e) pour …", "… sont organisés"],
+      samples: [
+        { fr: "Mon quartier est connu pour son grand marché du samedi. La place centrale a été construite il y a cent ans, et elle est entourée de petits cafés. En été, des concerts gratuits sont organisés près de la rivière. L'année dernière, la vieille bibliothèque a été transformée en centre culturel. Venez la visiter : vous serez accueillis comme des amis.", ko: "우리 동네는 토요 시장으로 유명해요. 중앙 광장은 100년 전에 지어졌고 작은 카페들에 둘러싸여 있어요. 여름엔 강가에서 무료 공연이 열려요. 작년엔 오래된 도서관이 문화센터로 바뀌었어요. 와서 구경해 보세요 — 친구처럼 환영받을 거예요." },
+      ],
+      checklist: [
+        "être + 과거분사 수동태가 세 번 이상인가요?",
+        "과거분사가 주어와 성수 일치하나요?",
+        "시제(현재·복합과거·미래)를 섞어 봤나요?",
+      ],
+    },
     sections: [
       {
         heading: "형태 — être + 과거분사 (+ par)",
@@ -603,6 +675,18 @@ const chapters = [
       { id: "b107-d6", type: "dictation", sentence: "Il a demandé où était la gare." },
       { id: "b107-d7", type: "dictation", sentence: "Elle a répondu qu'elle ne savait pas." },
     ],
+    writing: {
+      prompt: "친구에게 들은 소식을 제3자에게 전달하는 글 — 간접화법 3회 이상, 시제 후퇴 포함. (80~120단어)",
+      hints: ["Elle m'a dit que …", "Il a demandé si …", "… qu'elle viendrait"],
+      samples: [
+        { fr: "Hier, j'ai eu des nouvelles de Camille. Elle m'a dit qu'elle avait trouvé un nouveau travail à Lyon et qu'elle était très heureuse. Elle m'a demandé si tu allais bien et quand tu comptais lui rendre visite. Elle a ajouté qu'elle viendrait nous voir en septembre. Je lui ai répondu que nous l'attendrions avec impatience !", ko: "어제 카미유 소식을 들었어. 리옹에서 새 일자리를 구했고 아주 행복하대. 네가 잘 지내는지, 언제 보러 올 건지 묻더라. 9월에 우리를 보러 오겠다고 했어. 우린 손꼽아 기다리겠다고 답했지!" },
+      ],
+      checklist: [
+        "dire que·demander si의 틀이 맞나요?",
+        "시제 후퇴(avait trouvé·viendrait)가 됐나요?",
+        "전달자(나)의 답까지 간접화법인가요?",
+      ],
+    },
     sections: [
       {
         heading: "기본 구조 — dire que로 문장 옮기기",
@@ -697,6 +781,18 @@ const chapters = [
       { id: "b108-d6", type: "dictation", sentence: "Cette place est la vôtre, madame." },
       { id: "b108-d7", type: "dictation", sentence: "Je prends celui de gauche." },
     ],
+    writing: {
+      prompt: "두 물건을 비교하고 고르는 쇼핑 글 — celui/celle 계열 3회 이상. (80~120단어)",
+      hints: ["celui-ci / celui-là", "celle que je préfère", "le mien / la mienne"],
+      samples: [
+        { fr: "Je cherche un nouveau sac. Celui-ci est élégant, mais celui-là est plus pratique. Celui que je préfère, évidemment, coûte le double ! La vendeuse me montre aussi celles en cuir, plus chères que la mienne. Finalement, je choisis celui de la vitrine : c'est celui dont je rêvais depuis des semaines.", ko: "새 가방을 찾고 있어요. 이건 우아한데 저건 더 실용적이에요. 당연히 제가 좋아하는 건 값이 두 배죠! 점원이 가죽 제품들도 보여주는데 제 것보다 비싸요. 결국 진열장의 그것을 골랐어요 — 몇 주 전부터 꿈꾸던 바로 그거요." },
+      ],
+      checklist: [
+        "celui/celle/ceux가 성수에 맞나요?",
+        "celui-ci/-là 대비를 썼나요?",
+        "celui de/qui/dont 확장형도 있나요?",
+      ],
+    },
     sections: [
       {
         heading: "celui 계열 — '그것/그 사람'으로 명사 반복 피하기",
@@ -783,6 +879,18 @@ const chapters = [
       { id: "b109-d6", type: "dictation", sentence: "Je ferme la fenêtre pour que tu aies moins froid." },
       { id: "b109-d7", type: "dictation", sentence: "Franchement, ce film est génial." },
     ],
+    writing: {
+      prompt: "일과 삶의 균형에 대한 의견 글 — pour que·puisque·dès que + 부사 -ment 2개. (100~140단어)",
+      hints: ["Puisque …, il faut …", "pour que nous puissions …", "franchement / heureusement"],
+      samples: [
+        { fr: "Franchement, nous travaillons trop. Puisque la santé passe avant tout, il faut protéger notre temps libre. Je propose une règle simple : dès que la journée de travail se termine, on éteint les notifications, pour que le cerveau puisse vraiment se reposer. Heureusement, de plus en plus d'entreprises comprennent cette idée. Le repos n'est pas un luxe : c'est une condition du bon travail.", ko: "솔직히 우리는 일을 너무 많이 해요. 건강이 무엇보다 우선이니 자유 시간을 지켜야 해요. 간단한 규칙을 제안해요 — 근무가 끝나는 즉시 알림을 끄는 것, 뇌가 진짜로 쉴 수 있도록요. 다행히 점점 많은 회사가 이 생각을 이해해요. 휴식은 사치가 아니라 좋은 일의 조건이에요." },
+      ],
+      checklist: [
+        "pour que + 접속법을 썼나요?",
+        "puisque·dès que의 뉘앙스가 맞나요?",
+        "-ment 부사가 두 개 이상인가요?",
+      ],
+    },
     sections: [
       {
         heading: "목적 — pour que + 접속법, pour + 부정사",

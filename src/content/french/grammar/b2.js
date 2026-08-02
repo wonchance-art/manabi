@@ -21,6 +21,18 @@ const chapters = [
       { id: "b201-d6", type: "dictation", sentence: "Je resterai à condition que tu sois là." },
       { id: "b201-d7", type: "dictation", sentence: "C'est dommage que vous ayez manqué le concert." },
     ],
+    writing: {
+      prompt: "아쉬웠던 일에 대한 글 — bien que·regretter que + 접속법 과거 포함. (100~150단어)",
+      hints: ["Bien que je (aie) …", "Je regrette que nous n'ayons pas …"],
+      samples: [
+        { fr: "Bien que ce voyage ait été magnifique, il me laisse un regret. Je regrette que nous n'ayons pas pris le temps de sortir des grandes villes. Nous avions un programme si chargé qu'il ne restait aucune place pour l'imprévu. Pourvu que la prochaine fois soit différente ! J'ai compris une chose : le plus beau souvenir, c'est souvent celui qu'on n'avait pas prévu.", ko: "그 여행은 훌륭했지만 아쉬움 하나가 남아요. 대도시 밖으로 나가 볼 시간을 갖지 못한 게 후회돼요. 일정이 너무 빡빡해서 즉흥의 자리가 없었죠. 다음번엔 다르기를! 한 가지를 배웠어요 — 가장 아름다운 추억은 계획에 없던 것일 때가 많다는 걸요." },
+      ],
+      checklist: [
+        "bien que + 접속법(과거)이 맞나요?",
+        "regretter que 뒤 접속법 과거(n'ayons pas pris)인가요?",
+        "글의 결론(배운 점)이 있나요?",
+      ],
+    },
     sections: [
       {
         heading: "접속법 과거 — 평가 시점보다 앞선 일",
@@ -110,6 +122,18 @@ const chapters = [
       { id: "b202-d6", type: "dictation", sentence: "Qu'est-ce que tu aurais fait à ma place ?" },
       { id: "b202-d7", type: "dictation", sentence: "Si on partait maintenant, on arriverait avant la nuit." },
     ],
+    writing: {
+      prompt: "'만약 그때 다른 선택을 했다면' — si + 대과거 + 조건법 과거로 과거 가정 글. (100~150단어)",
+      hints: ["Si j'avais …, j'aurais …", "je ne serais pas …"],
+      samples: [
+        { fr: "Si je n'avais pas raté ce train, il y a cinq ans, ma vie serait très différente. Je ne serais jamais entrée dans ce petit café pour attendre, et je n'aurais pas rencontré mon meilleur ami. Si nous ne nous étions pas parlé ce jour-là, je n'aurais probablement pas découvert la photographie, qui est devenue mon métier. Finalement, si tout s'était passé comme prévu, j'aurais gagné une heure — et perdu une vie entière.", ko: "5년 전 그 기차를 놓치지 않았다면 제 인생은 아주 달랐을 거예요. 기다리려고 그 작은 카페에 들어가지 않았을 거고, 제일 친한 친구를 만나지 못했겠죠. 그날 대화하지 않았다면 지금 직업이 된 사진도 몰랐을 거예요. 결국 모든 게 계획대로였다면 한 시간을 벌고 — 인생 전부를 잃었을 거예요.", note: "남성이면 entrée→entré" },
+      ],
+      checklist: [
+        "si + 대과거, 주절 조건법 과거 틀이 일관되나요?",
+        "être 조동사의 성수 일치(entrée 등)를 챙겼나요?",
+        "마지막 문장에 반전이 있나요?",
+      ],
+    },
     sections: [
       {
         heading: "시스템 전체 보기 — 세 가지 거리감",
@@ -205,6 +229,18 @@ const chapters = [
       { id: "b203-d6", type: "dictation", sentence: "J'ai vu un enfant courant vers le bus." },
       { id: "b203-d7", type: "dictation", sentence: "C'est une soirée vraiment charmante." },
     ],
+    writing: {
+      prompt: "짧은 뉴스 한 단락을 써 보세요 — 현재분사 2회·동사적 형용사 1회. (100~140단어)",
+      hints: ["Les habitants souhaitant …", "une décision surprenante"],
+      samples: [
+        { fr: "La mairie a annoncé hier une décision surprenante : la grande rue du centre deviendra piétonne dès le printemps. Les commerçants craignant une baisse de clientèle ont demandé une réunion. Les habitants souhaitant donner leur avis pourront le faire en ligne jusqu'à vendredi. Selon la maire, cette mesure, visant à réduire le bruit, rendra le quartier plus agréable. Une période d'essai de six mois est prévue.", ko: "시청이 어제 놀라운 결정을 발표했어요 — 중심가 대로가 봄부터 보행자 전용이 됩니다. 매출 감소를 걱정하는 상인들은 회의를 요청했고, 의견을 내고 싶은 주민들은 금요일까지 온라인으로 참여할 수 있어요. 시장에 따르면 소음 감축을 겨냥한 이 조치는 동네를 더 쾌적하게 만들 거라고요. 6개월 시험 기간이 예정돼 있습니다." },
+      ],
+      checklist: [
+        "현재분사(craignant·souhaitant·visant)가 명사를 수식하나요?",
+        "동사적 형용사(surprenante)가 성수 일치하나요?",
+        "뉴스 톤(객관 서술)을 유지했나요?",
+      ],
+    },
     sections: [
       {
         heading: "-ant 삼형제 — 한눈에 구별하기",
@@ -288,6 +324,18 @@ const chapters = [
       { id: "b204-d6", type: "dictation", sentence: "Néanmoins, nous devons continuer." },
       { id: "b204-d7", type: "dictation", sentence: "Elle était malade ; par conséquent, elle est restée chez elle." },
     ],
+    writing: {
+      prompt: "'재택근무 찬반' 논증 한 단락 — cependant·en revanche·par conséquent 각 1회. (120~160단어)",
+      hints: ["Certes …, cependant …", "en revanche", "par conséquent"],
+      samples: [
+        { fr: "Certes, le télétravail offre une liberté précieuse : plus de trajets, un emploi du temps souple. Cependant, cette liberté a un prix. Beaucoup de salariés, coupés de leurs collègues, se sentent isolés ; la frontière entre vie privée et travail, en revanche, devient floue. Par conséquent, la meilleure solution me semble être un modèle mixte : deux ou trois jours à la maison, le reste au bureau. Ainsi, on garde la souplesse sans perdre le lien humain.", ko: "물론 재택근무는 귀한 자유를 줘요 — 통근이 없고 시간이 유연하죠. 그렇지만 이 자유엔 대가가 있어요. 동료와 단절된 많은 직장인이 고립감을 느끼고, 반면 사생활과 일의 경계는 흐려져요. 따라서 제겐 혼합 모델이 최선으로 보여요 — 이틀 사흘은 집, 나머지는 사무실. 그러면 유연함을 지키면서 사람 사이 연결도 잃지 않아요." },
+      ],
+      checklist: [
+        "양보→반박→결론의 흐름이 보이나요?",
+        "연결사 세 개를 정확한 자리에 썼나요?",
+        "결론이 자기 입장으로 닫히나요?",
+      ],
+    },
     sections: [
       {
         heading: "왜 연결사인가 — B2 작문의 채점 기준",
@@ -371,6 +419,18 @@ const chapters = [
       { id: "b205-d6", type: "dictation", sentence: "Il a décidé de changer de travail." },
       { id: "b205-d7", type: "dictation", sentence: "Je me souviens de notre premier voyage." },
     ],
+    writing: {
+      prompt: "무언가를 해내기까지의 결심 이야기 — décider de·réussir à·penser à 등 4개 이상. (100~140단어)",
+      hints: ["j'ai décidé de …", "j'ai réussi à …", "je pensais à …"],
+      samples: [
+        { fr: "L'année dernière, j'ai décidé de courir un semi-marathon. Au début, je n'arrivais pas à tenir dix minutes, et je pensais à abandonner chaque semaine. Mais je me suis inscrite à un club, et j'ai appris à respirer correctement. Trois mois plus tard, j'ai réussi à finir la course. Je rêve maintenant de participer à un marathon entier — et je commence à y croire.", ko: "작년에 하프마라톤 완주를 결심했어요. 처음엔 10분도 못 버텨서 매주 포기를 생각했죠. 하지만 동호회에 가입했고, 제대로 숨 쉬는 법을 배웠어요. 석 달 뒤 완주에 성공했습니다. 이젠 풀마라톤을 꿈꿔요 — 그리고 믿기 시작했어요.", note: "남성이면 inscrite→inscrit" },
+      ],
+      checklist: [
+        "동사마다 맞는 전치사(à/de)를 골랐나요?",
+        "네 개 이상 다른 동사+전치사인가요?",
+        "포기→극복의 서사가 있나요?",
+      ],
+    },
     sections: [
       {
         heading: "왜 어려운가 — 전치사는 동사의 지문",
@@ -469,6 +529,18 @@ const chapters = [
       { id: "b206-d6", type: "dictation", sentence: "Ce sont les détails qui comptent." },
       { id: "b206-d7", type: "dictation", sentence: "Ce que j'aime, c'est voyager sans plan." },
     ],
+    writing: {
+      prompt: "'내게 정말 중요한 것'을 강조 구문으로 쓰는 글 — c'est…qui/que·ce qui…c'est 3회 이상. (100~140단어)",
+      hints: ["Ce qui compte, c'est …", "C'est … qui …", "Ce que je cherche, c'est …"],
+      samples: [
+        { fr: "Ce qui compte le plus pour moi, ce n'est pas le salaire : c'est le temps. C'est ma grand-mère qui m'a appris cette leçon, un dimanche, dans sa cuisine. Ce que je cherche aujourd'hui, c'est un rythme de vie qui laisse de la place aux gens que j'aime. C'est pour cela que j'ai changé de travail l'année dernière. L'argent revient toujours ; les dimanches, eux, ne reviennent pas.", ko: "제게 가장 중요한 건 월급이 아니라 시간이에요. 이 교훈을 가르쳐 준 건 어느 일요일 부엌에서의 할머니였죠. 지금 제가 찾는 건 사랑하는 사람들에게 자리를 내주는 삶의 리듬이에요. 작년에 이직한 것도 그래서예요. 돈은 늘 돌아오지만, 일요일들은 돌아오지 않으니까요." },
+      ],
+      checklist: [
+        "강조 구문이 세 번 이상인가요?",
+        "c'est … qui/que의 선택이 맞나요?",
+        "강조가 글의 주제를 실제로 부각하나요?",
+      ],
+    },
     sections: [
       {
         heading: "프랑스어의 정보구조 — 강세 대신 구문",
@@ -553,6 +625,18 @@ const chapters = [
       { id: "b207-d6", type: "dictation", sentence: "La construction du pont a duré trois ans." },
       { id: "b207-d7", type: "dictation", sentence: "L'ouverture du magasin est prévue en mai." },
     ],
+    writing: {
+      prompt: "우리 동네의 변화를 알리는 공지문 — 명사화 표현 4개 이상. (100~140단어)",
+      hints: ["l'ouverture / la fermeture", "la construction / l'augmentation"],
+      samples: [
+        { fr: "Chers habitants, plusieurs changements sont prévus ce trimestre. L'ouverture de la nouvelle médiathèque aura lieu le 3 mars. La construction du parking souterrain entraînera la fermeture temporaire de la rue des Lilas. Face à l'augmentation de la circulation, la mairie annonce également la création de deux pistes cyclables. Enfin, la rénovation de la piscine se terminera avant l'été. Merci de votre patience.", ko: "주민 여러분, 이번 분기에 여러 변화가 예정돼 있습니다. 새 미디어도서관 개관은 3월 3일. 지하 주차장 공사로 릴라 거리가 임시 폐쇄됩니다. 교통량 증가에 대응해 시청은 자전거 도로 두 개 신설도 발표합니다. 끝으로 수영장 보수는 여름 전에 마무리됩니다. 양해 감사합니다." },
+      ],
+      checklist: [
+        "동사 대신 명사화(개관·공사·증가·신설)로 문장을 열었나요?",
+        "명사의 관사·성이 맞나요?",
+        "공지문의 격식 톤인가요?",
+      ],
+    },
     sections: [
       {
         heading: "명사화란 — 격식 문체의 압축 기술",
@@ -640,6 +724,18 @@ const chapters = [
       { id: "b208-d6", type: "dictation", sentence: "La route est fermée en raison des travaux." },
       { id: "b208-d7", type: "dictation", sentence: "Grâce à toi, tout s'est bien passé." },
     ],
+    writing: {
+      prompt: "요즘 관찰한 사회 현상 하나의 원인 분석 — grâce à·à cause de·si bien que 포함. (120~160단어)",
+      hints: ["à cause de / grâce à", "si bien que …", "en raison de"],
+      samples: [
+        { fr: "De plus en plus de jeunes quittent les grandes villes. À cause du prix des logements, s'installer en centre-ville est devenu presque impossible pour eux. Grâce au télétravail, en revanche, vivre loin du bureau n'est plus un obstacle. Les petites villes ont donc vu arriver de nouveaux habitants, si bien que certaines écoles rouvrent leurs portes. En raison de ce mouvement, les régions retrouvent une énergie qu'elles avaient perdue.", ko: "점점 많은 청년이 대도시를 떠나요. 집값 때문에 도심 정착은 그들에게 거의 불가능해졌죠. 반면 재택근무 덕분에 사무실에서 멀리 사는 게 더는 장애가 아니에요. 그래서 소도시들에 새 주민이 유입됐고, 그 결과 문 닫았던 학교들이 다시 열리기도 해요. 이 흐름으로 지방이 잃었던 활력을 되찾고 있어요." },
+      ],
+      checklist: [
+        "긍정 원인(grâce à)과 부정 원인(à cause de)을 구분했나요?",
+        "si bien que로 결과를 이었나요?",
+        "현상→원인→결과 구조인가요?",
+      ],
+    },
     sections: [
       {
         heading: "전제된 원인 — étant donné que·vu que·en raison de",
@@ -731,6 +827,18 @@ const chapters = [
       { id: "b209-d6", type: "dictation", sentence: "Je crains qu'il ne soit trop tard." },
       { id: "b209-d7", type: "dictation", sentence: "Nous n'avons qu'une heure devant nous." },
     ],
+    writing: {
+      prompt: "미니멀리즘 실험기 — ne…que·ne…ni…ni·ne…plus 각 1회 이상. (100~140단어)",
+      hints: ["Je n'achète que …", "ni …, ni …", "je ne … plus"],
+      samples: [
+        { fr: "Depuis trois mois, je fais une expérience : je n'achète que l'essentiel. Fini les achats du samedi ; je ne veux plus remplir mes placards d'objets inutiles. Mon salon ne contient ni télévision ni bibelots, seulement des livres et une plante. Au début, ce vide m'inquiétait. Aujourd'hui, je ne ressens qu'une chose : de la légèreté. Posséder moins, ce n'est pas perdre — c'est choisir.", ko: "석 달째 실험 중이에요 — 꼭 필요한 것만 사기. 토요일 쇼핑은 끝. 더는 쓸모없는 물건으로 수납장을 채우고 싶지 않아요. 거실엔 텔레비전도 장식품도 없고 책과 화분 하나뿐이에요. 처음엔 이 비어 있음이 불안했는데, 지금 느끼는 건 하나 — 가벼움이에요. 덜 갖는 건 잃는 게 아니라 고르는 거예요." },
+      ],
+      checklist: [
+        "ne…que(오직)의 뜻이 맞게 쓰였나요?",
+        "ni…ni에서 관사를 생략했나요?",
+        "ne…plus(더는 안)가 자연스러운가요?",
+      ],
+    },
     sections: [
       {
         heading: "pas의 자리를 빼앗는 말들 — plus·jamais·rien·personne·aucun",
@@ -843,6 +951,18 @@ const chapters = [
       { id: "b210-d6", type: "dictation", sentence: "Il s'agit d'une décision importante." },
       { id: "b210-d7", type: "dictation", sentence: "Il vaut mieux prévenir que guérir." },
     ],
+    writing: {
+      prompt: "층간 소음에 대한 공식 항의 편지 — il s'agit de·il convient de·il est indispensable que 포함. (120~160단어)",
+      hints: ["Il s'agit de …", "Il convient de …", "Il est indispensable que …"],
+      samples: [
+        { fr: "Madame, Monsieur, je me permets de vous écrire au sujet du bruit nocturne dans notre immeuble. Il s'agit de travaux effectués après vingt-deux heures, et cela depuis deux semaines. Il convient de rappeler que le règlement interdit tout bruit après cette heure. Il est indispensable que des mesures soient prises rapidement, car plusieurs habitants ne dorment plus correctement. Il serait souhaitable d'afficher un rappel dans le hall. Je vous remercie de votre attention. Cordialement.", ko: "담당자님께, 저희 건물의 야간 소음 건으로 글을 드립니다. 밤 10시 이후의 공사 문제로, 2주째 이어지고 있습니다. 규정상 그 시간 이후 소음이 금지됨을 상기시켜 드립니다. 여러 주민이 잠을 제대로 못 자고 있는 만큼 신속한 조치가 반드시 필요합니다. 로비에 안내문을 게시해 주시면 좋겠습니다. 관심에 감사드립니다. 드림." },
+      ],
+      checklist: [
+        "무인칭 표현 세 가지가 다 들어갔나요?",
+        "il est indispensable que + 접속법(soient)인가요?",
+        "격식 편지의 여닫는 관례를 지켰나요?",
+      ],
+    },
     sections: [
       {
         heading: "무인칭 il — 주어 칸을 채우는 빈 의자",
@@ -972,6 +1092,18 @@ const chapters = [
       { id: "b211-d6", type: "dictation", sentence: "Elle m'a dit qu'elle rappellerait plus tard." },
       { id: "b211-d7", type: "dictation", sentence: "Dans une heure, j'aurai fini ce livre." },
     ],
+    writing: {
+      prompt: "10년 뒤의 어느 저녁을 상상하는 글 — futur antérieur 2회 + '과거에서 본 미래' 1회. (100~150단어)",
+      hints: ["Quand j'aurai …", "je me dirai que …", "je savais que je viendrais"],
+      samples: [
+        { fr: "Dans dix ans, un soir d'automne, je fermerai mon petit atelier. Quand j'aurai rangé les pinceaux, je monterai sur le toit regarder la ville. J'aurai sûrement oublié les difficultés du début ; on n'en garde que l'essentiel. Je me dirai que ce rêve, je savais depuis longtemps que je le réaliserais. Et quand la nuit sera tombée, je descendrai simplement dîner, heureuse de cette vie choisie.", ko: "10년 뒤 어느 가을 저녁, 저는 제 작은 작업실 문을 닫을 거예요. 붓 정리를 마치고 나면 옥상에 올라 도시를 바라보겠죠. 초반의 어려움은 아마 잊었을 거예요 — 본질만 남는 법이니까. 이 꿈을 이루리란 걸 오래전부터 알고 있었다고 스스로에게 말하겠죠. 밤이 내리고 나면 그저 저녁을 먹으러 내려갈 거예요. 선택한 삶에 행복해하면서.", note: "남성이면 heureuse→heureux" },
+      ],
+      checklist: [
+        "quand + futur antérieur, 주절 futur의 짝이 맞나요?",
+        "'과거에서 본 미래'(je savais que … -rais)가 있나요?",
+        "장면이 구체적인가요?",
+      ],
+    },
     sections: [
       {
         heading: "futur antérieur — avoir/être의 미래형 + 과거분사",

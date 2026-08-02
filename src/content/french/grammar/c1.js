@@ -20,6 +20,18 @@ const chapters = [
       { id: "c101-d5", type: "dictation", sentence: "Il ouvrit la porte et sortit." },
       { id: "c101-d6", type: "choice", prompt: "faire의 단순과거 3인칭은?", choices: ["il fit", "il fait", "il fera"], answer: "il fit" },
     ],
+    writing: {
+      prompt: "소설의 첫 단락을 흉내 내 보세요 — 단순과거 3회 + 반과거(배경) 1회. (60~100단어)",
+      hints: ["Il/Elle + 단순과거", "배경은 반과거"],
+      samples: [
+        { fr: "La pluie tombait depuis le matin. Elle poussa la porte du café, chercha une table libre et s'assit près de la fenêtre. Un homme leva les yeux de son journal. Leurs regards se croisèrent une seconde — une seconde seulement — puis chacun retourna à son silence.", ko: "아침부터 비가 내리고 있었다. 그녀는 카페 문을 밀고 빈자리를 찾아 창가에 앉았다. 한 남자가 신문에서 눈을 들었다. 두 시선이 한 순간 — 딱 한 순간 — 마주쳤고, 각자 자신의 침묵으로 돌아갔다." },
+      ],
+      checklist: [
+        "사건은 단순과거, 배경은 반과거로 나눴나요?",
+        "3인칭 서술을 유지했나요?",
+        "마지막 문장에 여운이 있나요?",
+      ],
+    },
     sections: [
       {
         heading: "어디에 쓰는 시제인가 — 현실적인 가이드부터",
@@ -122,6 +134,18 @@ const chapters = [
       { id: "c102-d5", type: "dictation", sentence: "Je vous saurais gré de me répondre rapidement." },
       { id: "c102-d6", type: "choice", prompt: "반말 전환을 제안하는 말은?", choices: ["On peut se tutoyer ?", "Vouvoyez-moi immédiatement.", "Parlez plus fort."], answer: "On peut se tutoyer ?" },
     ],
+    writing: {
+      prompt: "같은 부탁(창문 좀 닫아 달라)을 세 레지스터로 써 보세요 — soutenu·standard·familier.",
+      hints: ["Auriez-vous l'obligeance de …", "Tu peux …", "familier는 축약·생략"],
+      samples: [
+        { fr: "Soutenu : Auriez-vous l'obligeance de fermer la fenêtre ? Standard : Est-ce que tu peux fermer la fenêtre, s'il te plaît ? Familier : Tu fermes la fenêtre ? On gèle !", ko: "격식: 창문을 닫아 주시는 아량을 베풀어 주시겠습니까? / 표준: 창문 좀 닫아 줄래? / 구어: 창문 좀! 얼어 죽겠어!" },
+      ],
+      checklist: [
+        "세 층위의 어휘·문형 차이가 분명한가요?",
+        "soutenu에 조건법·격식 관용구를 썼나요?",
+        "familier에 구어 축약·감탄이 있나요?",
+      ],
+    },
     sections: [
       {
         heading: "세 개의 층 — 그리고 한국어 존댓말과의 결정적 차이",
@@ -217,6 +241,18 @@ const chapters = [
       { id: "c103-d5", type: "dictation", sentence: "Dans un premier temps, examinons les causes." },
       { id: "c103-d6", type: "choice", prompt: "결론을 여는 표현은?", choices: ["En définitive,", "Au tout début,", "Par exemple,"], answer: "En définitive," },
     ],
+    writing: {
+      prompt: "'AI 시대에 외국어 학습은 필요한가' — 디세르타시옹 서론만 써 보세요(문제 제기+계획 제시). (100~140단어)",
+      hints: ["De nos jours, …", "On peut se demander si …", "Dans un premier temps …, puis …"],
+      samples: [
+        { fr: "De nos jours, les outils de traduction automatique produisent des textes d'une qualité remarquable. Dès lors, on peut se demander si apprendre une langue étrangère garde encore un sens. Cette question mérite d'être nuancée. Dans un premier temps, nous verrons ce que la machine fait mieux que nous ; puis nous montrerons ce qu'elle ne remplacera pas — la rencontre, la nuance, le plaisir de penser dans une autre langue.", ko: "오늘날 자동 번역 도구는 놀라운 품질의 텍스트를 만들어 낸다. 그렇다면 외국어 학습이 여전히 의미가 있는지 물을 수 있다. 이 질문은 섬세히 다뤄질 필요가 있다. 먼저 기계가 우리보다 잘하는 것을 보고, 이어서 기계가 대체하지 못할 것 — 만남, 뉘앙스, 다른 언어로 생각하는 즐거움 — 을 보이겠다." },
+      ],
+      checklist: [
+        "도입→문제 제기→계획 제시 구조인가요?",
+        "재수용·연결이 매끄러운가요?",
+        "양쪽을 예고하는 균형이 있나요?",
+      ],
+    },
     sections: [
       {
         heading: "thèse — antithèse — synthèse: 프랑스식 사고의 틀",
@@ -305,6 +341,18 @@ const chapters = [
       { id: "c104-d5", type: "choice", prompt: "분사구문의 주어 불일치(오류) 문장은?", choices: ["Arrivé à Paris, la tour m'a impressionné.", "Arrivé à Paris, j'ai visité la tour.", "La pluie ayant cessé, nous sommes sortis."], answer: "Arrivé à Paris, la tour m'a impressionné.", hint: "도착한 건 '나'인데 주절 주어가 la tour" },
       { id: "c104-d6", type: "dictation", sentence: "Ayant tout vérifié, elle signa le contrat." },
     ],
+    writing: {
+      prompt: "분사구문으로 문장을 압축해 보세요 — 절대분사구문 1회 포함, 3문장. (60~100단어)",
+      hints: ["La réunion terminée, …", "Ayant + 과거분사, …", "…ant"],
+      samples: [
+        { fr: "La réunion terminée, chacun regagna son bureau en silence. Ayant noté l'essentiel, je préparai la synthèse pour le lendemain. Le directeur, souriant à peine, semblait déjà ailleurs.", ko: "회의가 끝나자 모두 말없이 자리로 돌아갔다. 요점을 적어 둔 나는 다음 날을 위한 요약을 준비했다. 겨우 미소 짓는 국장은 이미 딴 데 가 있는 듯했다." },
+      ],
+      checklist: [
+        "절대분사구문(명사+분사)이 있나요?",
+        "Ayant + 과거분사의 주어가 주절과 같나요?",
+        "현수 분사(주어 불일치)가 없나요?",
+      ],
+    },
     sections: [
       {
         heading: "왜 압축하는가 — 문어 프랑스어의 미학",
@@ -387,6 +435,18 @@ const chapters = [
       { id: "c105-d5", type: "dictation", sentence: "Il écoute, mais il n'entend rien." },
       { id: "c105-d6", type: "choice", prompt: "entendre와 écouter의 관계는?", choices: ["entendre=들리다 · écouter=귀 기울여 듣다", "entendre=듣다 · écouter=들리다", "완전히 같은 뜻"], answer: "entendre=들리다 · écouter=귀 기울여 듣다" },
     ],
+    writing: {
+      prompt: "뉘앙스 짝 4개로 자기 이야기를 써 보세요 — savoir/connaître·entendre/écouter 각 짝 포함. (80~120단어)",
+      hints: ["Je sais … / Je connais …", "J'entends … mais je n'écoute pas …"],
+      samples: [
+        { fr: "Je connais Lyon comme ma poche, mais je ne sais toujours pas expliquer son charme. Le soir, j'entends la ville par ma fenêtre ; certains soirs seulement, je l'écoute vraiment. Je sais nager, conduire, cuisiner — des compétences. Mais connaître quelqu'un, vraiment, demande des années. Peut-être que la langue, c'est pareil : on la sait d'abord, on la connaît ensuite.", ko: "리옹은 손바닥 보듯 알지만, 그 매력을 설명할 줄은 아직 몰라요. 저녁이면 창 너머로 도시가 들리고, 어떤 저녁에만 진짜로 귀 기울여 듣죠. 수영, 운전, 요리 — 할 줄 아는 것들. 하지만 누군가를 안다는 건 몇 년이 걸려요. 언어도 그런가 봐요 — 먼저 할 줄 알게 되고, 그다음 알게 되는 것." },
+      ],
+      checklist: [
+        "savoir(능력)/connaître(친숙)의 구분이 정확한가요?",
+        "entendre/écouter 대비가 살아 있나요?",
+        "짝들이 글의 주제로 모이나요?",
+      ],
+    },
     sections: [
       {
         heading: "savoir vs connaître — 정보인가, 친숙함인가",
@@ -489,6 +549,18 @@ const chapters = [
       { id: "c106-d5", type: "dictation", sentence: "Ce n'est pas la mer à boire." },
       { id: "c106-d6", type: "choice", prompt: "avoir le cafard의 뜻은?", choices: ["우울하다", "몹시 바쁘다", "화가 나다"], answer: "우울하다" },
     ],
+    writing: {
+      prompt: "관용구 3개 이상을 자연스럽게 녹인 근황 글. (80~120단어)",
+      hints: ["avoir le cafard", "poser un lapin", "ce n'est pas la mer à boire"],
+      samples: [
+        { fr: "La semaine dernière, j'avais un peu le cafard : un ami m'avait posé un lapin, et il pleuvait des cordes. Puis je me suis dit que finir mon dossier, ce n'était pas la mer à boire. Je m'y suis mise sérieusement, et tout est rentré dans l'ordre. Moralité : quand ça ne tourne pas rond, il faut juste remettre la machine en route.", ko: "지난주엔 좀 우울했어요 — 친구가 바람을 맞혔고 비는 억수같이 왔죠. 그러다 서류 마무리쯤이야 별일 아니라고 마음먹었어요. 진지하게 달려들었더니 모든 게 제자리로 돌아왔어요. 교훈: 뭔가 안 굴러갈 땐 그냥 기계를 다시 돌리면 돼요." },
+      ],
+      checklist: [
+        "관용구가 문맥에 자연스럽게 녹았나요?",
+        "세 개 이상인가요?",
+        "직역이 아니라 뜻으로 썼나요?",
+      ],
+    },
     sections: [
       {
         heading: "관용구를 대하는 자세 — 그리고 기분의 표현들",
