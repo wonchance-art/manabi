@@ -12,6 +12,15 @@ const chapters = [
     titleFr: "Le conditionnel présent",
     summary: "je voudrais의 정체. 영어 would에 해당하는 조건법으로 공손한 부탁과 '만약에' 가정을 말해요.",
     duration: "약 10분",
+    drills: [
+      { id: "b101-d1", type: "fill", prompt: "Nous ___ réserver une table pour ce soir. (vouloir — 정중)", answer: "voudrions" },
+      { id: "b101-d2", type: "fill", prompt: "Tu ___ consulter un médecin. (devoir — 조언)", answer: "devrais" },
+      { id: "b101-d3", type: "choice", prompt: "정중한 요청으로 가장 자연스러운 것은?", choices: ["Je voudrais parler à M. Martin.", "Je veux parler à M. Martin tout de suite.", "Parlez-moi maintenant !"], answer: "Je voudrais parler à M. Martin." },
+      { id: "b101-d4", type: "choice", prompt: "Si j'avais le temps, je ___ plus.", choices: ["voyagerais", "voyagerai", "voyage"], answer: "voyagerais", hint: "si + 반과거의 짝은 조건법" },
+      { id: "b101-d5", type: "order", sentence: "Vous pourriez fermer la fenêtre ?", prompt: "정중한 부탁으로 배열해 보세요." },
+      { id: "b101-d6", type: "dictation", sentence: "J'aimerais visiter Lyon un jour." },
+      { id: "b101-d7", type: "dictation", sentence: "On pourrait dîner ensemble demain ?" },
+    ],
     sections: [
       {
         heading: "형태 — 미래 어간 + 반과거 어미",
@@ -102,6 +111,15 @@ const chapters = [
     titleFr: "Le subjonctif présent",
     summary: "프랑스어의 최대 고비, 접속법. '사실 서술 vs 머릿속 평가'라는 하나의 직관으로 정복을 시작해요.",
     duration: "약 12분",
+    drills: [
+      { id: "b102-d1", type: "fill", prompt: "Il faut que tu ___ tes devoirs. (faire)", answer: "fasses" },
+      { id: "b102-d2", type: "fill", prompt: "Je suis contente que vous ___ là. (être)", answer: "soyez" },
+      { id: "b102-d3", type: "choice", prompt: "접속법이 쓰인 문장은?", choices: ["Je ne crois pas qu'il vienne.", "Je crois qu'il vient.", "Il est certain qu'il vient."], answer: "Je ne crois pas qu'il vienne.", hint: "의심·부정 쪽이 접속법" },
+      { id: "b102-d4", type: "choice", prompt: "Il faut que je ___ maintenant.", choices: ["parte", "pars", "partirai"], answer: "parte" },
+      { id: "b102-d5", type: "order", sentence: "Il faut que nous partions avant midi.", prompt: "필요 표현을 배열해 보세요." },
+      { id: "b102-d6", type: "dictation", sentence: "Je veux que tu sois heureux." },
+      { id: "b102-d7", type: "dictation", sentence: "Il est possible qu'il pleuve demain." },
+    ],
     sections: [
       {
         heading: "접속법이란 — 카메라 vs 머릿속 필터",
@@ -206,6 +224,15 @@ const chapters = [
     titleFr: "Le plus-que-parfait",
     summary: "과거 이야기 속에서 '그보다 먼저 일어난 일'을 표시하는 시제. 영어 past perfect와 정확히 평행해요.",
     duration: "약 9분",
+    drills: [
+      { id: "b103-d1", type: "fill", prompt: "Le film avait déjà ___ quand je suis arrivé. (commencer)", answer: "commencé" },
+      { id: "b103-d2", type: "fill", prompt: "Il était en retard parce qu'il ___ raté le bus.", answer: "avait" },
+      { id: "b103-d3", type: "choice", prompt: "'그가 왔을 때 나는 이미 먹은 뒤였다'는?", choices: ["J'avais déjà mangé quand il est arrivé.", "J'ai déjà mangé quand il arrive.", "Je mangeais quand il était arrivé."], answer: "J'avais déjà mangé quand il est arrivé." },
+      { id: "b103-d4", type: "choice", prompt: "Ils ___ partis avant la pluie.", choices: ["étaient", "avaient", "sont"], answer: "étaient", hint: "partir는 être 조동사" },
+      { id: "b103-d5", type: "order", sentence: "Nous avions réservé une table à l'avance.", prompt: "대과거 문장을 배열해 보세요." },
+      { id: "b103-d6", type: "dictation", sentence: "Elle avait oublié ses clés au bureau." },
+      { id: "b103-d7", type: "dictation", sentence: "Tu avais déjà vu ce film ?" },
+    ],
     sections: [
       {
         heading: "개념 — 과거의 과거",
@@ -286,6 +313,15 @@ const chapters = [
     titleFr: "Les pronoms relatifs dont, où, lequel",
     summary: "qui/que 다음 단계. de를 삼키는 dont, 장소와 시간의 où, 전치사 뒤의 lequel 계열을 정리해요.",
     duration: "약 10분",
+    drills: [
+      { id: "b104-d1", type: "fill", prompt: "C'est le livre ___ je t'ai parlé. (parler de)", answer: "dont" },
+      { id: "b104-d2", type: "fill", prompt: "Voici la ville ___ je suis née.", answer: "où" },
+      { id: "b104-d3", type: "choice", prompt: "La table sur ___ j'écris est vieille.", choices: ["laquelle", "lequel", "dont"], answer: "laquelle" },
+      { id: "b104-d4", type: "choice", prompt: "'그가 자랑스러워하는 아들'은? (être fier de)", choices: ["le fils dont il est fier", "le fils qu'il est fier", "le fils où il est fier"], answer: "le fils dont il est fier" },
+      { id: "b104-d5", type: "order", sentence: "Le film dont tu parles est très connu.", prompt: "dont 문장을 배열해 보세요." },
+      { id: "b104-d6", type: "dictation", sentence: "J'ai un ami dont le père est médecin." },
+      { id: "b104-d7", type: "dictation", sentence: "Voici le café où nous nous sommes rencontrés." },
+    ],
     sections: [
       {
         heading: "복습 30초 — qui와 que의 분업",
@@ -373,6 +409,15 @@ const chapters = [
     titleFr: "Le gérondif",
     summary: "'~하면서, ~함으로써, ~하면'을 en + -ant 하나로. 영어 -ing과 닮았지만 주어 일치라는 깐깐한 규칙이 있어요.",
     duration: "약 9분",
+    drills: [
+      { id: "b105-d1", type: "fill", prompt: "Il écoute de la musique en ___. (travailler)", answer: "travaillant" },
+      { id: "b105-d2", type: "fill", prompt: "On progresse vite en ___ tous les jours. (pratiquer)", answer: "pratiquant" },
+      { id: "b105-d3", type: "choice", prompt: "'전화하면서 운전하지 마'는?", choices: ["Ne conduis pas en téléphonant.", "Ne conduis pas en téléphoner.", "Ne conduis pas à téléphonant."], answer: "Ne conduis pas en téléphonant." },
+      { id: "b105-d4", type: "choice", prompt: "Elle a appris le français en regardant des films. — en regardant의 의미는?", choices: ["보면서(동시·수단)", "본 후에", "보기 위해서"], answer: "보면서(동시·수단)" },
+      { id: "b105-d5", type: "order", sentence: "Il s'est cassé la jambe en skiant.", prompt: "제롱디프 문장을 배열해 보세요." },
+      { id: "b105-d6", type: "dictation", sentence: "Je réfléchis en marchant dans le parc." },
+      { id: "b105-d7", type: "dictation", sentence: "En arrivant, appelle-moi tout de suite." },
+    ],
     sections: [
       {
         heading: "형태 — nous 어간 + -ant",
@@ -456,6 +501,15 @@ const chapters = [
     titleFr: "La voix passive",
     summary: "être + 과거분사 + par로 만드는 수동태. 그런데 정작 프랑스어는 on을 써서 수동을 피하길 좋아해요.",
     duration: "약 9분",
+    drills: [
+      { id: "b106-d1", type: "fill", prompt: "Ce roman a été ___ par une jeune autrice. (écrire)", answer: "écrit" },
+      { id: "b106-d2", type: "fill", prompt: "Les résultats seront ___ demain. (publier — 복수 일치)", answer: "publiés" },
+      { id: "b106-d3", type: "choice", prompt: "수동태 문장은?", choices: ["La tour a été construite en 1889.", "On a construit la tour en 1889.", "La tour a construit en 1889."], answer: "La tour a été construite en 1889." },
+      { id: "b106-d4", type: "choice", prompt: "'이 치즈는 프랑스에서 만들어져요'는?", choices: ["Ce fromage est fait en France.", "Ce fromage fait en France.", "Ce fromage est faire en France."], answer: "Ce fromage est fait en France." },
+      { id: "b106-d5", type: "order", sentence: "Le dîner sera préparé par mon père.", prompt: "수동태 문장을 배열해 보세요." },
+      { id: "b106-d6", type: "dictation", sentence: "Cette chanson est connue dans le monde entier." },
+      { id: "b106-d7", type: "dictation", sentence: "Le musée a été fermé pour travaux." },
+    ],
     sections: [
       {
         heading: "형태 — être + 과거분사 (+ par)",
@@ -540,6 +594,15 @@ const chapters = [
     titleFr: "Le discours indirect",
     summary: "« Il m'a dit que... » 남의 말을 전할 때 일어나는 시제 후퇴와 의문문 변환 규칙. 영어 backshift와 평행해요.",
     duration: "약 10분",
+    drills: [
+      { id: "b107-d1", type: "fill", prompt: "Il a dit qu'il ___ fatigué. (être — 시제 후퇴)", answer: "était" },
+      { id: "b107-d2", type: "fill", prompt: "Elle m'a demandé ___ j'aimais le café. (예/아니오 질문)", answer: "si" },
+      { id: "b107-d3", type: "choice", prompt: "\"Je viendrai demain.\" 를 과거 주절로 옮기면?", choices: ["Il a dit qu'il viendrait le lendemain.", "Il a dit qu'il viendra demain.", "Il a dit que je viendrai demain."], answer: "Il a dit qu'il viendrait le lendemain." },
+      { id: "b107-d4", type: "choice", prompt: "\"Attends-moi !\" 의 간접화법은?", choices: ["Elle m'a demandé de l'attendre.", "Elle m'a demandé que je l'attends.", "Elle m'a dit attends-moi."], answer: "Elle m'a demandé de l'attendre.", hint: "명령 → demander de + 동사원형" },
+      { id: "b107-d5", type: "order", sentence: "Elle m'a dit qu'elle avait perdu son sac.", prompt: "간접화법 문장을 배열해 보세요." },
+      { id: "b107-d6", type: "dictation", sentence: "Il a demandé où était la gare." },
+      { id: "b107-d7", type: "dictation", sentence: "Elle a répondu qu'elle ne savait pas." },
+    ],
     sections: [
       {
         heading: "기본 구조 — dire que로 문장 옮기기",
@@ -625,6 +688,15 @@ const chapters = [
     titleFr: "Celui, le mien, ce qui / ce que",
     summary: "명사 반복을 끊어내는 대명사 세트. '~의 것' celui, '내 것' le mien, 그리고 만능 연결사 ce qui/ce que까지.",
     duration: "약 10분",
+    drills: [
+      { id: "b108-d1", type: "fill", prompt: "Ce n'est pas mon parapluie, c'est ___ de Marie.", answer: "celui" },
+      { id: "b108-d2", type: "fill", prompt: "Ta voiture est rouge, ___ est bleue. (나의 것)", answer: "la mienne" },
+      { id: "b108-d3", type: "choice", prompt: "'리옹에 사는 사람들'은?", choices: ["ceux qui habitent à Lyon", "celui qui habitent à Lyon", "celles qui habite à Lyon"], answer: "ceux qui habitent à Lyon" },
+      { id: "b108-d4", type: "choice", prompt: "Ces gâteaux ? Je préfère ___ au chocolat.", choices: ["ceux", "celui", "celles"], answer: "ceux" },
+      { id: "b108-d5", type: "order", sentence: "Mon vélo est vieux, le tien est neuf.", prompt: "소유대명사 문장을 배열해 보세요." },
+      { id: "b108-d6", type: "dictation", sentence: "Cette place est la vôtre, madame." },
+      { id: "b108-d7", type: "dictation", sentence: "Je prends celui de gauche." },
+    ],
     sections: [
       {
         heading: "celui 계열 — '그것/그 사람'으로 명사 반복 피하기",
@@ -702,6 +774,15 @@ const chapters = [
     titleFr: "But, cause et temps : les conjonctions",
     summary: "목적의 pour que, 이유의 puisque·comme, 시간의 dès que와 après avoir — 두 문장을 잇는 B1 접속 도구를 한 상자에 정리해요.",
     duration: "약 10분",
+    drills: [
+      { id: "b109-d1", type: "fill", prompt: "Je t'explique lentement ___ tu comprennes bien. (목적)", answer: "pour que" },
+      { id: "b109-d2", type: "fill", prompt: "___ tu es là, on peut commencer. (서로 아는 이유)", answer: "Puisque" },
+      { id: "b109-d3", type: "choice", prompt: "'도착하자마자 전화할게'는?", choices: ["Dès que j'arriverai, je t'appellerai.", "Dès que j'arriverais, je t'appellerai.", "Dès que j'arrivais, je t'appellerai."], answer: "Dès que j'arriverai, je t'appellerai.", hint: "dès que + 미래" },
+      { id: "b109-d4", type: "choice", prompt: "부사형이 맞는 것은? (évident)", choices: ["évidemment", "évidentement", "évidamment"], answer: "évidemment" },
+      { id: "b109-d5", type: "fill", prompt: "Elle parle ___ pour ne pas réveiller le bébé. (doux → 부사)", answer: "doucement" },
+      { id: "b109-d6", type: "dictation", sentence: "Je ferme la fenêtre pour que tu aies moins froid." },
+      { id: "b109-d7", type: "dictation", sentence: "Franchement, ce film est génial." },
+    ],
     sections: [
       {
         heading: "목적 — pour que + 접속법, pour + 부정사",
