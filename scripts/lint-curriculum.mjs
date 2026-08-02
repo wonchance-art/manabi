@@ -245,11 +245,15 @@ export async function runCurriculumLint() {
       }
       return set;
     };
-    const STOP = new Set(('le la les un une des de du au aux et ou où à en sur dans pour par avec sans est sont suis es êtes sommes était étais ai as avons avez ont ne pas plus que qui quoi mais donc car se me te nous vous ils elles il elle je tu on ce cette ces cet mon ma mes ton ta tes son sa ses notre votre leur leurs y si très bien oui non plaît tout toute tous toutes quel quelle quels quelles comme aussi alors voici voilà').split(' '));
+    const STOP = new Set(('le la les un une des de du au aux et ou où à en sur dans pour par avec sans est sont suis es êtes sommes était étais ai as avons avez ont ne pas plus que qui quoi mais donc car se me te nous vous ils elles il elle je tu on ce cette ces cet mon ma mes ton ta tes son sa ses notre votre leur leurs y si très bien oui non plaît tout toute tous toutes celui celle ceux celles kim minji junho emma léo thomas camille léa théo paul marie mina quel quelle quels quelles comme aussi alors voici voilà').split(' '));
     const grammarDir = path.join(REPO_ROOT, 'src/content/french/grammar');
     const levelFiles = {
       A1: { vocab: ['a0.js', 'a1.js', 'a1_flelex.js'], grammar: ['a1.js', 'a1_expansion.js', 'a1_pronunciation.js', 'a1_sandwich_pilot.js', 'scene_travel.js', 'scene_emergency.js'] },
       A2: { vocab: ['a0.js', 'a1.js', 'a1_flelex.js', 'a2.js', 'a2_flelex.js'], grammar: ['a2.js', 'a2_scenes.js'] },
+      B1: { vocab: ['a0.js', 'a1.js', 'a1_flelex.js', 'a2.js', 'a2_flelex.js', 'b1.js', 'b1_flelex.js', 'b1_flelex2.js'], grammar: ['b1.js'] },
+      B2: { vocab: ['a0.js', 'a1.js', 'a1_flelex.js', 'a2.js', 'a2_flelex.js', 'b1.js', 'b1_flelex.js', 'b1_flelex2.js', 'b2.js', 'b2_flelex.js', 'b2_flelex2.js'], grammar: ['b2.js'] },
+      C1: { vocab: ['a0.js', 'a1.js', 'a1_flelex.js', 'a2.js', 'a2_flelex.js', 'b1.js', 'b1_flelex.js', 'b1_flelex2.js', 'b2.js', 'b2_flelex.js', 'b2_flelex2.js', 'c1.js', 'c1_flelex.js'], grammar: ['c1.js'] },
+      C2: { vocab: ['a0.js', 'a1.js', 'a1_flelex.js', 'a2.js', 'a2_flelex.js', 'b1.js', 'b1_flelex.js', 'b1_flelex2.js', 'b2.js', 'b2_flelex.js', 'b2_flelex2.js', 'c1.js', 'c1_flelex.js', 'c2.js', 'c2_flelex.js'], grammar: ['c2.js'] },
     };
     const grammarIntroFiles = { A1: ['a1_sandwich_pilot.js', 'scene_travel.js', 'scene_emergency.js'], A2: ['a1_sandwich_pilot.js', 'scene_travel.js', 'scene_emergency.js', 'a2_scenes.js'] };
     for (const [level, cfg] of Object.entries(levelFiles)) {
@@ -285,6 +289,12 @@ export async function runCurriculumLint() {
         ayez: 'avoir', vus: 'voir', vue: 'voir',
         veut: 'vouloir', venons: 'venir', devez: 'devoir', doit: 'devoir',
         levons: 'lever',
+        // 접속법·조건법·단순과거 등 — 해당 문법 챕터가 직접 가르치는 활용형
+        fasse: 'faire', fasses: 'faire', sois: 'être', soient: 'être', soyez: 'être',
+        ait: 'avoir', aies: 'avoir', ayons: 'avoir', eût: 'avoir', fût: 'être', fusse: 'être',
+        étions: 'être', irais: 'aller', iront: 'aller', dira: 'dire', mit: 'mettre',
+        leva: 'lever', naquit: 'naître', buvais: 'boire', jouais: 'jouer', veulent: 'vouloir',
+        auriez: 'avoir', pleuve: 'pleuvoir', vienne: 'venir', vînt: 'venir', partît: 'partir',
       };
       const stemHit = (w) => {
         if (inventory.has(w)) return true;

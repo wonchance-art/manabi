@@ -23,6 +23,9 @@ const chapters = [
       { id: "a123-d5", type: "order", sentence: "Je reste une semaine avec des amis.", prompt: "체류 계획을 배열해 보세요." },
       { id: "a123-d6", type: "dictation", sentence: "Mon passeport est ici." },
       { id: "a123-d7", type: "dictation", sentence: "Je viens de Corée du Sud." },
+      { id: "a123-l1", type: "choice", listen: "Quel est le motif de votre voyage ?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["여행 목적이 무엇인가요?", "이 지역을 둘러보러 왔어요.", "5일 동안 머물러요. 역 근처 호텔에 묵어요."], answer: "여행 목적이 무엇인가요?" },
+      { id: "a123-l2", type: "choice", listen: "Vous restez combien de temps ?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["얼마나 머무르나요?", "5일 동안 머물러요. 역 근처 호텔에 묵어요.", "수하물표가 있나요?"], answer: "얼마나 머무르나요?" },
+      { id: "a123-l3", type: "choice", listen: "Mon bagage n'est pas arrivé.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["제 수하물이 나오지 않았어요.", "수하물표가 있나요?", "관광하러 왔어요."], answer: "제 수하물이 나오지 않았어요." },
     ],
     writing: {
       prompt: "입국 심사에서 말할 내 정보를 문장 4개로 써 보세요 — 이름, 국적, 체류 기간, 방문 목적. (30~40단어)",
@@ -333,6 +336,9 @@ const chapters = [
       { id: "a124-d5", type: "order", sentence: "Je voudrais un billet pour Lyon.", prompt: "발권 요청을 배열해 보세요.", hint: "Je voudrais는 '~주세요' 고정구 — 통째로 써요" },
       { id: "a124-d6", type: "dictation", sentence: "Le train est à l'heure." },
       { id: "a124-d7", type: "dictation", sentence: "C'est la voie numéro deux." },
+      { id: "a124-l1", type: "choice", listen: "Je voudrais un billet pour le centre, s'il vous plaît.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["도심행 표 한 장 주세요.", "편도인가요, 왕복인가요?", "18시에 4번 승강장에서 출발해요."], answer: "도심행 표 한 장 주세요." },
+      { id: "a124-l2", type: "choice", listen: "Un aller simple. À quelle heure part le prochain train ?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["편도요. 다음 열차는 몇 시에 출발해요?", "18시에 4번 승강장에서 출발해요.", "12번 탑승구예요. 표지를 따라가세요."], answer: "편도요. 다음 열차는 몇 시에 출발해요?" },
+      { id: "a124-l3", type: "choice", listen: "Où est la correspondance pour Bordeaux ?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["보르도행 환승은 어디예요?", "12번 탑승구예요. 표지를 따라가세요.", "'환승' 표지를 따라가세요."], answer: "보르도행 환승은 어디예요?" },
     ],
     writing: {
       prompt: "기차표를 문의하는 짧은 이메일을 써 보세요 — 목적지, 날짜·시간대, 좌석 취향. (40~50단어)",
@@ -638,6 +644,9 @@ const chapters = [
       { id: "a125-d5", type: "order", sentence: "La chambre est au troisième étage.", prompt: "층수 안내를 배열해 보세요." },
       { id: "a125-d6", type: "dictation", sentence: "Voici votre clé, madame." },
       { id: "a125-d7", type: "dictation", sentence: "Le petit déjeuner est à sept heures." },
+      { id: "a125-l1", type: "choice", listen: "J'ai une réservation pour trois nuits.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["3박으로 예약했어요.", "어느 이름으로 예약했나요?", "객실이 준비됐어요."], answer: "3박으로 예약했어요." },
+      { id: "a125-l2", type: "choice", listen: "La réservation est au nom indiqué ici. Voici mon passeport.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["여기에 적힌 이름으로 되어 있어요. 여권 여기 있어요.", "객실이 준비됐어요.", "몇 시에 방을 비워야 해요?"], answer: "여기에 적힌 이름으로 되어 있어요. 여권 여기 있어요." },
+      { id: "a125-l3", type: "choice", listen: "Où est servi le petit-déjeuner ?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["조식은 어디에서 제공돼요?", "몇 시에 방을 비워야 해요?", "여기에 적힌 이름으로 되어 있어요."], answer: "조식은 어디에서 제공돼요?" },
     ],
     writing: {
       prompt: "호텔에 예약 확인 메시지를 써 보세요 — 이름, 날짜, 인원, 질문 하나. (40~50단어)",
@@ -942,6 +951,9 @@ const chapters = [
       { id: "a126-d5", type: "order", sentence: "La climatisation ne fonctionne pas bien.", prompt: "문제 신고를 배열해 보세요." },
       { id: "a126-d6", type: "dictation", sentence: "J'ai un problème avec la douche." },
       { id: "a126-d7", type: "dictation", sentence: "La chambre est très froide." },
+      { id: "a126-l1", type: "choice", listen: "Est-ce que je peux avoir deux serviettes, s'il vous plaît ?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["수건 두 장을 받을 수 있을까요?", "네, 물론이에요.", "확인해 주실 수 있나요?"], answer: "수건 두 장을 받을 수 있을까요?" },
+      { id: "a126-l2", type: "choice", listen: "La climatisation ne fonctionne pas.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["냉방이 작동하지 않아요.", "확인해 주실 수 있나요?", "객실을 바꿀 수 있나요?"], answer: "냉방이 작동하지 않아요." },
+      { id: "a126-l3", type: "choice", listen: "Il y a beaucoup de bruit dans le couloir. Cela dure depuis une heure.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["복도에 소음이 심해요. 한 시간 동안 계속되고 있어요.", "객실을 바꿀 수 있나요?", "감사합니다. 와이파이 비밀번호가 무엇인가요?"], answer: "복도에 소음이 심해요. 한 시간 동안 계속되고 있어요." },
     ],
     writing: {
       prompt: "프런트에 남길 쪽지를 써 보세요 — 방 번호, 문제 두 가지, 부탁 한 마디. (30~50단어)",
@@ -1246,6 +1258,9 @@ const chapters = [
       { id: "a127-d5", type: "order", sentence: "Je vais prendre le plat du jour.", prompt: "주문 문장을 배열해 보세요." },
       { id: "a127-d6", type: "dictation", sentence: "La carte, s'il vous plaît." },
       { id: "a127-d7", type: "dictation", sentence: "C'est très bon, merci." },
+      { id: "a127-l1", type: "choice", listen: "Une table pour deux, s'il vous plaît.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["두 명 자리 부탁해요.", "물론이에요. 여기 앉으세요.", "채소 수프와 생선 요리예요."], answer: "두 명 자리 부탁해요." },
+      { id: "a127-l2", type: "choice", listen: "Quel est le menu du jour ?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["오늘의 메뉴가 무엇인가요?", "채소 수프와 생선 요리예요.", "수프로 주문할게요. 음료로는 사과 주스를 주세요."], answer: "오늘의 메뉴가 무엇인가요?" },
+      { id: "a127-l3", type: "choice", listen: "Qu'est-ce que vous recommandez ?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["무엇을 추천하세요?", "수프로 주문할게요. 음료로는 사과 주스를 주세요.", "전체 메뉴를 볼 수 있을까요?"], answer: "무엇을 추천하세요?" },
     ],
     writing: {
       prompt: "친구에게 저녁을 같이 먹자는 문자를 써 보세요 — 장소, 시간, 뭘 먹을지. (30~50단어)",
@@ -1551,6 +1566,9 @@ const chapters = [
       { id: "a128-d5", type: "order", sentence: "Est-ce qu'il y a du lait dedans ?", prompt: "성분 확인을 배열해 보세요." },
       { id: "a128-d6", type: "dictation", sentence: "Je paie par carte." },
       { id: "a128-d7", type: "dictation", sentence: "Le repas est très bon, merci." },
+      { id: "a128-l1", type: "choice", listen: "Je suis allergique aux fruits à coque.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["저는 견과류에 알레르기가 있어요.", "이 요리에 견과류가 들어 있나요?", "감사합니다. 치즈도 빼 주세요."], answer: "저는 견과류에 알레르기가 있어요." },
+      { id: "a128-l2", type: "choice", listen: "Oui. Je peux vous proposer un plat sans fruits à coque.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["네. 견과류가 없는 요리를 안내해 드릴 수 있어요.", "감사합니다. 치즈도 빼 주세요.", "따로 계산할 수 있나요?"], answer: "네. 견과류가 없는 요리를 안내해 드릴 수 있어요." },
+      { id: "a128-l3", type: "choice", listen: "L'addition, s'il vous plaît.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["계산서 부탁해요.", "따로 계산할 수 있나요?", "네. 다른 요리를 안내해 드릴게요."], answer: "계산서 부탁해요." },
     ],
     writing: {
       prompt: "식당에 알레르기를 미리 알리는 메시지를 써 보세요 — 예약 정보와 알레르기, 확인 질문. (40~50단어)",

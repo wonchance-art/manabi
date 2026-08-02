@@ -885,6 +885,8 @@ const themes = {
         { fr: "derrière", ipa: "[dɛʁjɛʁ]", ko: "~뒤에", pos: "prép.", ex: { fr: "Le jardin est derrière la maison.", ko: "정원은 집 뒤에 있어요." } },
         { fr: "rien", ipa: "[ʁjɛ̃]", ko: "아무것도 (~않다)", pos: "pron.", ex: { fr: "Ce n'est rien.", ko: "아무것도 아니에요." } },
         { fr: "cela", ipa: "[səla]", ko: "그것 (격식)", pos: "pron.", ex: { fr: "Cela coûte dix euros.", ko: "그것은 10유로예요." } },
+        { fr: "enfin", ipa: "[ɑ̃fɛ̃]", ko: "마침내, 드디어", pos: "adv.", ex: { fr: "Enfin, le week-end !", ko: "드디어 주말이에요!" } },
+        { fr: "le prix", ipa: "[pʁi]", ko: "가격, 값", pos: "n.m.", ex: { fr: "Le prix est correct.", ko: "가격이 괜찮네요." } },
       ],
     },
     {

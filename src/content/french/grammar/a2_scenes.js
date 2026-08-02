@@ -24,6 +24,9 @@ const chapters = [
       { id: "a2s13-d5", type: "order", sentence: "J'ai attendu le train pendant une heure.", prompt: "기다린 상황을 복합과거로 배열해 보세요." },
       { id: "a2s13-d6", type: "dictation", sentence: "Le train est parti à midi." },
       { id: "a2s13-d7", type: "dictation", sentence: "J'ai perdu mon billet ce matin." },
+      { id: "a2s13-l1", type: "choice", listen: "Bonjour. J'ai raté ma correspondance à Lyon.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["안녕하세요. 리옹에서 환승편을 놓쳤어요.", "무슨 일이 있었나요?", "알겠습니다. 추가 요금 없이 다음 열차를 타실 수 있어요."], answer: "안녕하세요. 리옹에서 환승편을 놓쳤어요." },
+      { id: "a2s13-l2", type: "choice", listen: "Mon premier train est arrivé avec trente minutes de retard.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["첫 열차가 30분 늦게 도착했어요.", "알겠습니다. 추가 요금 없이 다음 열차를 타실 수 있어요.", "네. 표는 보관하고 계시죠?"], answer: "첫 열차가 30분 늦게 도착했어요." },
+      { id: "a2s13-l3", type: "choice", listen: "Le dernier train est déjà parti. Est-ce que je peux demander un remboursement ?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["마지막 열차가 이미 떠났어요. 환불을 요청할 수 있나요?", "네. 표는 보관하고 계시죠?", "알겠습니다, 바로 신청해 드릴게요."], answer: "마지막 열차가 이미 떠났어요. 환불을 요청할 수 있나요?" },
     ],
     writing: {
       prompt: "기차 지연으로 늦는다는 사과 메시지를 써 보세요 — 이유(과거형)와 새 도착 시간. (50~70단어)",
@@ -149,6 +152,9 @@ const chapters = [
       { id: "a2s14-d5", type: "order", sentence: "Nous regardions la mer tous les soirs.", prompt: "습관적 배경을 반과거로 배열해 보세요." },
       { id: "a2s14-d6", type: "dictation", sentence: "Il y avait beaucoup de vent." },
       { id: "a2s14-d7", type: "dictation", sentence: "J'étais très content du voyage." },
+      { id: "a2s14-l1", type: "choice", listen: "Alors, c'était comment, Nice ?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["그래서, 니스는 어땠어?", "정말 아름다웠어. 매일 날씨가 좋았어.", "하루는 해안을 보러 배를 탔어."], answer: "그래서, 니스는 어땠어?" },
+      { id: "a2s14-l2", type: "choice", listen: "Qu'est-ce que tu as fait là-bas ?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["거기서 뭐 했어?", "하루는 해안을 보러 배를 탔어.", "응! 거기 있을 때 일주일 더 머물고 싶었어."], answer: "거기서 뭐 했어?" },
+      { id: "a2s14-l3", type: "choice", listen: "Tu veux y retourner ?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["다시 가고 싶어?", "응! 거기 있을 때 일주일 더 머물고 싶었어.", "아침 시장. 사람들이 정말 따뜻했어."], answer: "다시 가고 싶어?" },
     ],
     writing: {
       prompt: "지난 여행 이야기를 일기로 써 보세요 — 배경은 반과거, 사건은 복합과거로. (60~80단어)",
@@ -275,6 +281,9 @@ const chapters = [
       { id: "a215-d5", type: "order", sentence: "Nous ne prenons jamais de dessert le soir.", prompt: "습관의 부정을 배열해 보세요." },
       { id: "a215-d6", type: "dictation", sentence: "Il n'y a personne dans la rue." },
       { id: "a215-d7", type: "dictation", sentence: "Je ne bois plus de café." },
+      { id: "a215-l1", type: "choice", listen: "Bonjour, vous avez encore des croissants ?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["안녕하세요, 크루아상 아직 있나요?", "아, 죄송해요, 크루아상은 이제 없어요.", "바게트 두 개 남았어요. 오늘 아침에 다 팔렸거든요!"], answer: "안녕하세요, 크루아상 아직 있나요?" },
+      { id: "a215-l2", type: "choice", listen: "Vous n'avez rien d'autre ?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["다른 건 아무것도 없나요?", "바게트 두 개 남았어요. 오늘 아침에 다 팔렸거든요!", "커피 마실래?"], answer: "다른 건 아무것도 없나요?" },
+      { id: "a215-l3", type: "choice", listen: "Alors une baguette, s'il vous plaît.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["그럼 바게트 하나 주세요.", "커피 마실래?", "나도 안 마셔. 그럼 차 마실까?"], answer: "그럼 바게트 하나 주세요." },
     ],
     writing: {
       prompt: "예전과 달라진 나 — 요즘 더는 안 하는 것들을 써 보세요. ne … plus/jamais를 섞어서. (50~70단어)",
@@ -406,6 +415,9 @@ const chapters = [
       { id: "a216-d5", type: "order", sentence: "Si on prend le métro, on arrive plus vite.", prompt: "조건과 결과를 배열해 보세요." },
       { id: "a216-d6", type: "dictation", sentence: "Si tu es fatigué, reste ici." },
       { id: "a216-d7", type: "dictation", sentence: "S'il pleut, on reste à la maison." },
+      { id: "a216-l1", type: "choice", listen: "Qu'est-ce qu'on fait dimanche ?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["일요일에 뭐 할까?", "네가 원하면 센 강변에서 피크닉 할 수 있어.", "완벽해. 네가 빵을 가져오면 나는 치즈를 가져올게."], answer: "일요일에 뭐 할까?" },
+      { id: "a216-l2", type: "choice", listen: "Bonne idée ! Si on part tôt, on trouve une bonne place.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["좋은 생각이야! 일찍 나서면 좋은 자리를 잡아.", "완벽해. 네가 빵을 가져오면 나는 치즈를 가져올게.", "근데 일요일에 비 오면?"], answer: "좋은 생각이야! 일찍 나서면 좋은 자리를 잡아." },
+      { id: "a216-l3", type: "choice", listen: "Marché conclu !", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["그럼 결정!", "근데 일요일에 비 오면?", "좋은 생각이야. 온라인으로 표를 사면 줄을 안 서."], answer: "그럼 결정!" },
     ],
     writing: {
       prompt: "친구를 초대하는 이메일을 써 보세요 — si 조건문 두 개 이상. (50~70단어)",
