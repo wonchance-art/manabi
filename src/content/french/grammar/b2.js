@@ -114,7 +114,7 @@ const chapters = [
     summary: "영어 if 1·2·3형식과 거의 1:1로 포개지는 가정문 시스템. 영어 지식이 가장 큰 자산이 되는 챕터예요.",
     duration: "약 11분",
     drills: [
-      { id: "b202-d1", type: "fill", prompt: "Si j'avais su, je ne ___ pas venu. (être — 조건법 과거)", answer: "serais" },
+      { id: "b202-d1", type: "fill", prompt: "Si j'avais su, je ne ___ pas venu. (être — 조건법 과거)", answer: "serais", hint: "화자가 여성이면 과거분사는 venue" },
       { id: "b202-d2", type: "fill", prompt: "Si tu ___ plus tôt, tu aurais vu Léa. (arriver — 대과거)", answer: "étais arrivé", accepts: ["étais arrivée"] },
       { id: "b202-d3", type: "choice", prompt: "'(지금은 아니지만 만약) 당첨된다면 세계일주를 할 텐데'는?", choices: ["Si je gagnais au loto, je ferais le tour du monde.", "Si je gagne au loto, je ferai le tour du monde.", "Si j'avais gagné au loto, j'aurais fait le tour du monde."], answer: "Si je gagnais au loto, je ferais le tour du monde.", hint: "현재와 반대 가정 = si + 반과거" },
       { id: "b202-d4", type: "choice", prompt: "Si nous avions eu le temps, nous ___ le musée.", choices: ["aurions visité", "visiterions", "avons visité"], answer: "aurions visité" },
