@@ -180,6 +180,20 @@ const chapters = [
         pitfall: "**espérer(희망하다)는 예외로 직설법**을 써요: J'espère qu'il viendra. 또, 주절과 종속절의 주어가 같으면 que절 대신 부정사를 써야 해요 — '내가 떠나기를 내가 원한다'는 Je veux que je parte(X)가 아니라 Je veux partir(O)예요. 한국어 '~하고 싶다'를 직역하다 que를 남발하지 않도록 주의하세요.",
         tip: "처음부터 규칙을 완벽히 따지기보다, Il faut que j'y aille(나 가봐야 해), Je veux que tu saches(네가 알았으면 해) 같은 고빈도 문장을 덩어리째 외우는 게 빨라요. 직관은 덩어리에서 자라납니다.",
       },
+      {
+        heading: "직설법이냐 접속법이냐 — 확신의 온도로 갈라요",
+        pattern: "je pense que + 직설법 · je ne pense pas que + 접속법",
+        patternKo: "같은 동사도 긍정(확신)과 부정(의심)에서 법이 바뀐다",
+        body:
+          "핵심 감각 하나만 잡으면 돼요 — **확신이 서면 직설법, 흔들리면 접속법**.\n\n" +
+          "**Je pense qu'il a raison.**(직설법 — 내 판단을 사실처럼 진술) vs **Je ne pense pas qu'il ait raison.**(접속법 — 의심 쪽으로 기움). il est certain que(확실 → 직설) vs il est possible que(가능성일 뿐 → 접속)도 같은 원리예요.\n\n" +
+          "함정 하나 — **espérer(바라다)는 긍정문에서 직설법**이에요: J'espère que tu vas bien. 바람이지만 프랑스어는 이걸 '기대되는 사실'로 취급해요.",
+        examples: [
+          { fr: "Je pense qu'il a raison.", ko: "그가 옳다고 생각해요.", note: "긍정 의견 = 직설법" },
+          { fr: "Je ne pense pas qu'il ait raison.", ko: "그가 옳다고 생각하지 않아요.", note: "부정 의견 = 접속법 (ait)" },
+          { fr: "J'espère que tu vas bien.", ko: "잘 지내길 바라요.", note: "espérer 긍정 = 직설법 — 접속법 아님!" },
+        ],
+      },
     ],
   },
 
@@ -775,6 +789,19 @@ const chapters = [
           { fr: "En attendant de trouver mieux, je garde ce travail.", ipa: "[ɑ̃natɑ̃dɑ̃ də tʁuve mjø ʒə ɡaʁd sə tʁavaj]", ko: "더 나은 자리를 찾을 때까지 이 일을 계속할 거예요." },
         ],
         pitfall: "'~한 후에'를 avant de의 대칭으로 après + 원형(après finir ✗)이라고 만들기 쉬워요. après 뒤에는 반드시 **부정사 과거(avoir/être + 과거분사)** — '끝낸 상태 이후'라는 완료의 논리가 형태에 박혀 있는 거예요.",
+      },
+      {
+        heading: "부사 만들기 — 형용사 여성형 + -ment",
+        pattern: "lente → lentement · heureuse → heureusement · vrai → vraiment",
+        patternKo: "형용사에서 부사를 만드는 공식과 예외",
+        body:
+          "연결사와 함께 문장을 다듬는 마지막 재료가 부사예요. 공식은 하나 — **형용사 여성형 + -ment**: lente→**lentement**(천천히), heureuse→**heureusement**(다행히).\n\n" +
+          "예외 셋만 기억해요. ① 남성형이 모음으로 끝나면 그대로 + -ment: vrai→**vraiment**, poli→**poliment**. ② -ant/-ent 형용사는 **-amment/-emment**: constant→**constamment**, évident→**évidemment**(발음은 둘 다 [아멍]). ③ 아예 다른 단어인 부사들 — bon→**bien**, mauvais→**mal**, rapide→vite도 흔히 써요.",
+        examples: [
+          { fr: "Parlez plus lentement, s'il vous plaît.", ko: "조금 더 천천히 말씀해 주세요." },
+          { fr: "Évidemment, il est encore en retard.", ko: "당연하게도, 그는 또 늦었어요.", note: "-ent → -emment, 발음 [emɑ̃→amɑ̃]" },
+          { fr: "Heureusement, tout s'est bien passé.", ko: "다행히 모든 게 잘 끝났어요." },
+        ],
       },
     ],
   },

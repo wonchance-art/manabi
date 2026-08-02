@@ -861,6 +861,52 @@ const chapters = [
       },
     ],
   },
+  {
+    slug: "b2-11-futur-anterieur-concordance",
+    level: "B2",
+    order: 11,
+    title: "미래에도 '이미 끝난 일'이 있다",
+    topic: "futur antérieur·시제 일치 종합",
+    titleFr: "Le futur antérieur et la concordance des temps",
+    prerequisites: ["a2-07-futur-simple", "b1-03-plus-que-parfait", "b1-07-discours-indirect"],
+    summary:
+      "\"네가 도착할 때쯤이면 나는 이미 끝냈을 거야\" — 미래 속의 완료, futur antérieur를 배우고, " +
+      "지금까지 흩어져 있던 시제 짝 맞추기(concordance)를 한 장의 지도로 정리해요.",
+    duration: "약 12분",
+    sections: [
+      {
+        heading: "futur antérieur — avoir/être의 미래형 + 과거분사",
+        pattern: "j'aurai fini · je serai parti(e) — 미래의 한 시점에 이미 완료",
+        patternKo: "미래 완료: '~했을 것이다'",
+        body:
+          "만들기는 복합과거와 같은 재료예요 — 조동사만 futur simple로 바꾸면 돼요: **j'aurai fini**(끝냈을 거예요), **je serai partie**(떠났을 거예요, être 동사는 성수 일치 그대로).\n\n" +
+          "쓰는 자리는 둘이에요. 첫째, **미래의 완료** — quand·dès que 절과 짝을 이뤄 \"~하고 나면\"을 만들어요: Quand tu arriveras, j'aurai déjà fini.(네가 도착할 때쯤 난 이미 끝냈을 거야)\n\n" +
+          "둘째, **과거에 대한 추측** — Il n'est pas là ? Il aura oublié notre rendez-vous.(안 왔어? 약속을 잊었나 보네) — 회화에서 은근히 자주 나오는 용법이에요.",
+        examples: [
+          { fr: "Quand tu arriveras, j'aurai déjà fini le rapport.", ko: "네가 도착할 때쯤이면 나는 보고서를 이미 끝냈을 거야." },
+          { fr: "Dès que je serai arrivée, je t'appellerai.", ko: "도착하자마자 전화할게.", note: "남성이면 arrivé — être 조동사는 성수 일치" },
+          { fr: "Elle ne répond pas. Elle aura laissé son téléphone au bureau.", ko: "전화를 안 받네. 사무실에 휴대폰을 두고 왔나 봐.", note: "과거 추측 용법" },
+        ],
+        tip: "quand + futur antérieur, 주절 futur simple — 한국어 '~하고 나면 …할 것이다'와 정확히 포개져요.",
+      },
+      {
+        heading: "시제 일치 지도 — 주절이 정하고 종속절이 따른다",
+        pattern: "주절 현재 → 종속 자유 · 주절 과거 → imparfait(동시)/PQP(선행)/conditionnel(후행)",
+        patternKo: "concordance des temps — 흩어진 규칙을 한 표로",
+        body:
+          "간접화법(b1-07)에서 맛본 시제 후퇴가 사실은 더 큰 원리의 일부예요 — **주절의 시제가 종속절의 좌표를 정한다**는 것.\n\n" +
+          "주절이 **현재**면 종속절은 자유예요: Je pense qu'il vient / qu'il est venu / qu'il viendra.\n\n" +
+          "주절이 **과거**면 좌표가 이동해요 — 같은 시점은 **imparfait**(Je pensais qu'il venait), 그보다 앞선 일은 **plus-que-parfait**(qu'il était venu), 뒤에 올 일은 **conditionnel**(qu'il viendrait — '과거에서 본 미래').\n\n" +
+          "이 표 하나면 간접화법·회상·소설 문장이 전부 같은 원리로 읽혀요.",
+        examples: [
+          { fr: "Je savais qu'elle viendrait.", ko: "그녀가 올 거라는 걸 알고 있었어요.", note: "과거에서 본 미래 = conditionnel" },
+          { fr: "Il a dit qu'il avait déjà mangé.", ko: "그는 이미 먹었다고 말했어요.", note: "말한 시점보다 앞선 일 = PQP" },
+          { fr: "Elle croyait que tu habitais à Lyon.", ko: "그녀는 네가 리옹에 사는 줄 알았어요.", note: "같은 시점 = imparfait" },
+        ],
+        vsKo: "한국어는 '올 거라는 걸 알았다'처럼 종속절 시제가 거의 안 움직여요. 프랑스어는 주절이 과거로 가면 종속절 전체가 함께 이동하는 언어 — 이 감각 차이가 B2 독해·작문의 관문이에요.",
+      },
+    ],
+  },
 ];
 
 export default chapters;
