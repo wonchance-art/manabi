@@ -12,6 +12,14 @@ const chapters = [
     titleFr: "Le passé simple",
     summary: "소설과 역사책에만 사는 시제. 말할 줄은 몰라도 되지만, 읽을 줄은 알아야 프랑스 문학의 문이 열려요.",
     duration: "약 10분",
+    drills: [
+      { id: "c101-d1", type: "choice", prompt: "단순과거(passé simple) 형태는?", choices: ["il alla", "il est allé", "il allait"], answer: "il alla" },
+      { id: "c101-d2", type: "choice", prompt: "소설 서술체 문장은?", choices: ["Elle répondit calmement.", "Elle a répondu calmement.", "Elle répondait calmement."], answer: "Elle répondit calmement." },
+      { id: "c101-d3", type: "fill", prompt: "naître의 단순과거: Il ___ en 1802.", answer: "naquit" },
+      { id: "c101-d4", type: "choice", prompt: "단순과거를 만나는 곳은?", choices: ["소설·역사 서술", "일상 문자 메시지", "카페 주문"], answer: "소설·역사 서술" },
+      { id: "c101-d5", type: "dictation", sentence: "Il ouvrit la porte et sortit." },
+      { id: "c101-d6", type: "choice", prompt: "faire의 단순과거 3인칭은?", choices: ["il fit", "il fait", "il fera"], answer: "il fit" },
+    ],
     sections: [
       {
         heading: "어디에 쓰는 시제인가 — 현실적인 가이드부터",
@@ -106,6 +114,14 @@ const chapters = [
     titleFr: "Les registres de langue",
     summary: "같은 뜻을 세 가지 격으로 말하는 프랑스어. 상황에 맞는 격 선택은 C1의 진짜 실력이에요.",
     duration: "약 10분",
+    drills: [
+      { id: "c102-d1", type: "choice", prompt: "격식(soutenu) 표현은?", choices: ["Veuillez patienter un instant.", "Attends deux secondes !", "T'inquiète, ça vient."], answer: "Veuillez patienter un instant." },
+      { id: "c102-d2", type: "choice", prompt: "'돈'의 familier(구어·속어)형은?", choices: ["le fric", "l'argent", "les fonds"], answer: "le fric" },
+      { id: "c102-d3", type: "fill", prompt: "격식: Nous vous ___ de bien vouloir répondre. (prier)", answer: "prions" },
+      { id: "c102-d4", type: "choice", prompt: "'자동차'의 familier형은?", choices: ["la bagnole", "le véhicule", "l'automobile"], answer: "la bagnole" },
+      { id: "c102-d5", type: "dictation", sentence: "Je vous saurais gré de me répondre rapidement." },
+      { id: "c102-d6", type: "choice", prompt: "반말 전환을 제안하는 말은?", choices: ["On peut se tutoyer ?", "Vouvoyez-moi immédiatement.", "Parlez plus fort."], answer: "On peut se tutoyer ?" },
+    ],
     sections: [
       {
         heading: "세 개의 층 — 그리고 한국어 존댓말과의 결정적 차이",
@@ -193,6 +209,14 @@ const chapters = [
     titleFr: "L'argumentation et la dissertation",
     summary: "thèse-antithèse-synthèse. 프랑스 학교가 가르치는 사고의 틀과, DALF C1 작문에 바로 쓰는 표현들을 익혀요.",
     duration: "약 11분",
+    drills: [
+      { id: "c103-d1", type: "fill", prompt: "논지 전환(격식): ___, il faut nuancer ce propos.", answer: "Toutefois", accepts: ["Cependant", "Néanmoins"] },
+      { id: "c103-d2", type: "choice", prompt: "thèse–antithèse–synthèse에서 antithèse의 역할은?", choices: ["반대 논거를 제시한다", "주장을 요약한다", "사례를 나열한다"], answer: "반대 논거를 제시한다" },
+      { id: "c103-d3", type: "choice", prompt: "재수용(reprise)이 잘된 이어쓰기는?", choices: ["Le prix a doublé. Cette hausse inquiète les clients.", "Le prix a doublé. Il inquiète il.", "Le prix a doublé. Ça, ça, ça inquiète."], answer: "Le prix a doublé. Cette hausse inquiète les clients." },
+      { id: "c103-d4", type: "fill", prompt: "Certes le projet est cher, ___ il est nécessaire.", answer: "mais" },
+      { id: "c103-d5", type: "dictation", sentence: "Dans un premier temps, examinons les causes." },
+      { id: "c103-d6", type: "choice", prompt: "결론을 여는 표현은?", choices: ["En définitive,", "Au tout début,", "Par exemple,"], answer: "En définitive," },
+    ],
     sections: [
       {
         heading: "thèse — antithèse — synthèse: 프랑스식 사고의 틀",
@@ -273,6 +297,14 @@ const chapters = [
     titleFr: "Les propositions participiales",
     summary: "Une fois le travail terminé... 접속사도 관계대명사도 없이 문장을 접어 넣는, 신문·논문 프랑스어의 핵심 기술이에요.",
     duration: "약 10분",
+    drills: [
+      { id: "c104-d1", type: "choice", prompt: "절대분사구문이 쓰인 문장은?", choices: ["Le travail terminé, nous sommes partis.", "Le travail est terminé nous partons.", "Terminé le travail et nous."], answer: "Le travail terminé, nous sommes partis." },
+      { id: "c104-d2", type: "fill", prompt: "Les examens ___, tout le monde a soufflé. (finir — 과거분사 복수)", answer: "finis" },
+      { id: "c104-d3", type: "choice", prompt: "'역으로 서둘러 가다가(문어)'는?", choices: ["Se hâtant vers la gare, il perdit son billet.", "En se hâter vers la gare, il perdit...", "Se hâter vers la gare, il perdit..."], answer: "Se hâtant vers la gare, il perdit son billet." },
+      { id: "c104-d4", type: "dictation", sentence: "La nuit tombée, la ville change de visage." },
+      { id: "c104-d5", type: "choice", prompt: "분사구문의 주어 불일치(오류) 문장은?", choices: ["Arrivé à Paris, la tour m'a impressionné.", "Arrivé à Paris, j'ai visité la tour.", "La pluie ayant cessé, nous sommes sortis."], answer: "Arrivé à Paris, la tour m'a impressionné.", hint: "도착한 건 '나'인데 주절 주어가 la tour" },
+      { id: "c104-d6", type: "dictation", sentence: "Ayant tout vérifié, elle signa le contrat." },
+    ],
     sections: [
       {
         heading: "왜 압축하는가 — 문어 프랑스어의 미학",
@@ -347,6 +379,14 @@ const chapters = [
     titleFr: "Les nuances lexicales",
     summary: "savoir/connaître, amener/apporter, retourner/revenir/rentrer, an/année. 한국어 번역이 같아서 평생 헷갈리는 짝들을 한 번에 정리해요.",
     duration: "약 11분",
+    drills: [
+      { id: "c105-d1", type: "choice", prompt: "'수영할 줄 알아요'는?", choices: ["Je sais nager.", "Je connais nager.", "Je peux la natation."], answer: "Je sais nager." },
+      { id: "c105-d2", type: "choice", prompt: "'이 식당을 알아요'는?", choices: ["Je connais ce restaurant.", "Je sais ce restaurant.", "Je peux ce restaurant."], answer: "Je connais ce restaurant." },
+      { id: "c105-d3", type: "fill", prompt: "Tu peux ___ ce livre chez toi. (가지고 가다)", answer: "emporter" },
+      { id: "c105-d4", type: "choice", prompt: "'(하루를 마치고 내) 집에 들어가다'는?", choices: ["rentrer", "retourner", "revenir"], answer: "rentrer" },
+      { id: "c105-d5", type: "dictation", sentence: "Il écoute, mais il n'entend rien." },
+      { id: "c105-d6", type: "choice", prompt: "entendre와 écouter의 관계는?", choices: ["entendre=들리다 · écouter=귀 기울여 듣다", "entendre=듣다 · écouter=들리다", "완전히 같은 뜻"], answer: "entendre=들리다 · écouter=귀 기울여 듣다" },
+    ],
     sections: [
       {
         heading: "savoir vs connaître — 정보인가, 친숙함인가",
@@ -441,6 +481,14 @@ const chapters = [
     titleFr: "Les expressions idiomatiques",
     summary: "바퀴벌레가 우울이 되고, 토끼를 놓으면 바람맞히는 것이 되는 세계. 표현 뒤의 문화적 이미지를 함께 읽어요.",
     duration: "약 10분",
+    drills: [
+      { id: "c106-d1", type: "choice", prompt: "'비가 억수같이 온다'는?", choices: ["Il pleut des cordes.", "Il pleut des chats.", "Il pleut des rivières."], answer: "Il pleut des cordes." },
+      { id: "c106-d2", type: "choice", prompt: "'식은 죽 먹기'는?", choices: ["C'est du gâteau.", "C'est du pain rassis.", "C'est de la petite soupe."], answer: "C'est du gâteau." },
+      { id: "c106-d3", type: "fill", prompt: "poser un ___ à quelqu'un (바람맞히다)", answer: "lapin" },
+      { id: "c106-d4", type: "choice", prompt: "'빙빙 돌려 말하지 않다'는?", choices: ["ne pas tourner autour du pot", "ne pas courir après le pot", "ne pas casser le pot"], answer: "ne pas tourner autour du pot" },
+      { id: "c106-d5", type: "dictation", sentence: "Ce n'est pas la mer à boire." },
+      { id: "c106-d6", type: "choice", prompt: "avoir le cafard의 뜻은?", choices: ["우울하다", "몹시 바쁘다", "화가 나다"], answer: "우울하다" },
+    ],
     sections: [
       {
         heading: "관용구를 대하는 자세 — 그리고 기분의 표현들",

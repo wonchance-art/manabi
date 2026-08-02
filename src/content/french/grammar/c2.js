@@ -12,6 +12,14 @@ const chapters = [
     titleFr: "Le subjonctif imparfait et plus-que-parfait",
     summary: "qu'il fût, qu'il eût aimé... 현대 회화에서는 죽었지만 고전 문학에는 살아 있는 시제. 읽어내는 데 필요한 만큼만 정확히 배워요.",
     duration: "약 10분",
+    drills: [
+      { id: "c201-d1", type: "choice", prompt: "접속법 반과거 형태는?", choices: ["qu'il fût", "qu'il soit", "qu'il était"], answer: "qu'il fût" },
+      { id: "c201-d2", type: "choice", prompt: "문어(littéraire) 문장은?", choices: ["Il craignait qu'elle ne vînt trop tard.", "Il craignait qu'elle ne vienne trop tard.", "Il craignait qu'elle ne viendra trop tard."], answer: "Il craignait qu'elle ne vînt trop tard." },
+      { id: "c201-d3", type: "fill", prompt: "avoir의 접속법 반과거 3인칭: qu'il ___", answer: "eût" },
+      { id: "c201-d4", type: "choice", prompt: "오늘날 접속법 반과거는?", choices: ["문학·격식 문어에서만 산다", "일상 회화 필수다", "완전히 사라졌다"], answer: "문학·격식 문어에서만 산다" },
+      { id: "c201-d5", type: "dictation", sentence: "Elle souhaitait que nous fussions présents." },
+      { id: "c201-d6", type: "choice", prompt: "être의 접속법 반과거 1인칭은?", choices: ["que je fusse", "que je sois", "que je serais"], answer: "que je fusse" },
+    ],
     sections: [
       {
         heading: "무엇이고, 왜 사라졌나",
@@ -86,6 +94,14 @@ const chapters = [
     titleFr: "Figures de style et élégance",
     summary: "«Va, je ne te hais point.» 덜 말함으로써 더 말하는 기술. 프랑스어가 아름답다고 느껴지는 장치들을 해부해요.",
     duration: "약 11분",
+    drills: [
+      { id: "c202-d1", type: "choice", prompt: "litote(완서법)의 예는?", choices: ["Ce n'est pas mauvais. (= 꽤 좋다)", "C'est absolument divin !", "C'est affreux."], answer: "Ce n'est pas mauvais. (= 꽤 좋다)" },
+      { id: "c202-d2", type: "choice", prompt: "euphémisme(완곡어법)의 예는?", choices: ["Il nous a quittés. (= 세상을 떠났다)", "Il est parti en vacances.", "Il dort profondément."], answer: "Il nous a quittés. (= 세상을 떠났다)" },
+      { id: "c202-d3", type: "choice", prompt: "완서법의 효과는?", choices: ["약하게 말해 오히려 강하게 전한다", "과장해서 웃음을 만든다", "운율을 맞춘다"], answer: "약하게 말해 오히려 강하게 전한다" },
+      { id: "c202-d4", type: "choice", prompt: "hyperbole(과장법)의 예는?", choices: ["Je meurs de faim !", "J'ai un petit creux.", "Je n'ai pas très faim."], answer: "Je meurs de faim !" },
+      { id: "c202-d5", type: "dictation", sentence: "C'est un euphémisme de dire qu'il est prudent." },
+      { id: "c202-d6", type: "choice", prompt: "métonymie(환유)의 예는?", choices: ["boire un verre", "boire de l'eau fraîche", "boire lentement"], answer: "boire un verre", hint: "잔(그릇)으로 내용물을 대신" },
+    ],
     sections: [
       {
         heading: "litote — 덜 말해서 더 말하기",
@@ -161,6 +177,14 @@ const chapters = [
     titleFr: "Les variétés du français dans la francophonie",
     summary: "septante, courriel, char, essencerie... 파리의 프랑스어는 표준이 아니라 '하나의 변이형'일 뿐. 세계의 프랑스어를 만나요.",
     duration: "약 11분",
+    drills: [
+      { id: "c203-d1", type: "choice", prompt: "벨기에·스위스에서 70은?", choices: ["septante", "soixante-dix", "septandix"], answer: "septante" },
+      { id: "c203-d2", type: "choice", prompt: "퀘벡 프랑스어의 특징은?", choices: ["아침 식사를 déjeuner라 부른다", "영어 단어를 전혀 쓰지 않는다", "성조가 있다"], answer: "아침 식사를 déjeuner라 부른다" },
+      { id: "c203-d3", type: "fill", prompt: "스위스에서 90: ___", answer: "nonante" },
+      { id: "c203-d4", type: "choice", prompt: "'주말'의 퀘벡식 표현은?", choices: ["la fin de semaine", "le week-end seulement", "le samedimanche"], answer: "la fin de semaine" },
+      { id: "c203-d5", type: "dictation", sentence: "Le français varie d'un pays à l'autre." },
+      { id: "c203-d6", type: "choice", prompt: "인구 기준 최대의 프랑스어 사용 도시는?", choices: ["킨샤사", "파리", "제네바"], answer: "킨샤사" },
+    ],
     sections: [
       {
         heading: "프랑코포니 — 프랑스어는 프랑스만의 것이 아니다",
@@ -237,6 +261,14 @@ const chapters = [
     titleFr: "Proverbes, références et implicite culturel",
     summary: "라퐁텐의 우화 한 줄, 성경의 이미지 하나가 뉴스 제목에 숨어 있어요. 프랑스인이라면 다 아는 '문화적 행간'을 채워요.",
     duration: "약 11분",
+    drills: [
+      { id: "c204-d1", type: "choice", prompt: "Qui vivra verra의 뜻은?", choices: ["살다 보면 알게 된다", "빨리 사는 자가 빨리 본다", "보는 자가 이긴다"], answer: "살다 보면 알게 된다" },
+      { id: "c204-d2", type: "choice", prompt: "Petit à petit, l'oiseau fait son nid의 함의는?", choices: ["꾸준함이 큰 일을 이룬다", "새는 부지런한 동물이다", "작은 집이 아름답다"], answer: "꾸준함이 큰 일을 이룬다" },
+      { id: "c204-d3", type: "fill", prompt: "L'habit ne fait pas le ___. (겉모습이 전부가 아니다)", answer: "moine" },
+      { id: "c204-d4", type: "choice", prompt: "C'est la goutte d'eau qui fait déborder le vase — 어떤 상황?", choices: ["참고 참다 마지막 한 방울에 폭발", "꽃병이 아름다워 감탄", "가뭄으로 물이 부족"], answer: "참고 참다 마지막 한 방울에 폭발" },
+      { id: "c204-d5", type: "dictation", sentence: "Après la pluie, le beau temps." },
+      { id: "c204-d6", type: "choice", prompt: "Mieux vaut tard que jamais의 한국어 짝은?", choices: ["늦더라도 안 하는 것보다 낫다", "시간은 금이다", "일찍 일어나는 새가 벌레를 잡는다"], answer: "늦더라도 안 하는 것보다 낫다" },
+    ],
     sections: [
       {
         heading: "속담 — 대화에 양념처럼 박히는 지혜",
@@ -306,6 +338,14 @@ const chapters = [
     titleFr: "L'art de traduire entre le coréen et le français",
     summary: "등가어가 없는 단어, 옮길 수 없는 존댓말, 한국어에 없는 관사와 시제. 두 언어를 잇는 전략으로 레퍼런스 전체를 마무리해요.",
     duration: "약 12분",
+    drills: [
+      { id: "c205-d1", type: "choice", prompt: "'눈치가 빠르다'의 좋은 번역 전략은?", choices: ["Il comprend vite les situations. (뜻 풀어쓰기)", "Ses yeux sont rapides. (직역)", "Il a des yeux vites. (직역+오류)"], answer: "Il comprend vite les situations. (뜻 풀어쓰기)" },
+      { id: "c205-d2", type: "choice", prompt: "'정(情)' 같은 무등가어의 처리 원칙은?", choices: ["근사어 선택 + 필요하면 설명 병기", "항상 음차만 한다", "번역에서 생략한다"], answer: "근사어 선택 + 필요하면 설명 병기" },
+      { id: "c205-d3", type: "choice", prompt: "인사말 '밥 먹었어?'의 번역은?", choices: ["Ça va ? (기능 등가)", "Tu as mangé du riz ? (직역)", "Le riz est-il mangé ?"], answer: "Ça va ? (기능 등가)", hint: "말의 기능을 옮겨요" },
+      { id: "c205-d4", type: "fill", prompt: "한국어 '우리 엄마' → 프랑스어 ___ mère (직역 함정 주의)", answer: "ma" },
+      { id: "c205-d5", type: "dictation", sentence: "Traduire, c'est choisir." },
+      { id: "c205-d6", type: "choice", prompt: "존댓말의 뉘앙스는 어떻게 살리나?", choices: ["vous + 격식 어휘로 재현", "무조건 tu로 통일", "번역하지 않는다"], answer: "vous + 격식 어휘로 재현" },
+    ],
     sections: [
       {
         heading: "등가가 없을 때 — 번역은 단어가 아니라 효과를 옮기는 일",
