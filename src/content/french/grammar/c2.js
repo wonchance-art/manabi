@@ -20,6 +20,18 @@ const chapters = [
       { id: "c201-d5", type: "dictation", sentence: "Elle souhaitait que nous fussions présents." },
       { id: "c201-d6", type: "choice", prompt: "être의 접속법 반과거 1인칭은?", choices: ["que je fusse", "que je sois", "que je serais"], answer: "que je fusse" },
     ],
+    writing: {
+      prompt: "문어 접속법이 든 문장 두 개를 지어 보세요 — fût·eût 계열 각 1회.",
+      hints: ["Bien qu'il fût …", "avant qu'elle n'eût …"],
+      samples: [
+        { fr: "Bien qu'il fût déjà tard, elle continuait d'écrire à la lumière d'une bougie. Il partit avant qu'elle n'eût terminé sa dernière phrase.", ko: "이미 늦은 시각이었음에도 그녀는 촛불 빛에 계속 글을 썼다. 그는 그녀가 마지막 문장을 끝내기도 전에 떠났다." },
+      ],
+      checklist: [
+        "fût/eût의 자리(접속법 반과거·대과거)가 맞나요?",
+        "문어 서술 톤인가요?",
+        "허사 ne(n'eût)를 살렸나요?",
+      ],
+    },
     sections: [
       {
         heading: "무엇이고, 왜 사라졌나",
@@ -102,6 +114,18 @@ const chapters = [
       { id: "c202-d5", type: "dictation", sentence: "C'est un euphémisme de dire qu'il est prudent." },
       { id: "c202-d6", type: "choice", prompt: "métonymie(환유)의 예는?", choices: ["boire un verre", "boire de l'eau fraîche", "boire lentement"], answer: "boire un verre", hint: "잔(그릇)으로 내용물을 대신" },
     ],
+    writing: {
+      prompt: "영화평 두 문장 — 완서법 1회 + 과장법 1회.",
+      hints: ["Ce n'est pas … (litote)", "hyperbole"],
+      samples: [
+        { fr: "Ce film n'est pas sans défauts, mais quelle fin ! Je suis mort d'émotion pendant les dix dernières minutes.", ko: "이 영화, 결점이 없진 않다 — 그러나 그 결말이란! 마지막 10분 동안 감정이 북받쳐 죽는 줄 알았다." },
+      ],
+      checklist: [
+        "완서법이 칭찬을 은근히 강화하나요?",
+        "과장법이 유머로 기능하나요?",
+        "두 문장의 균형이 좋나요?",
+      ],
+    },
     sections: [
       {
         heading: "litote — 덜 말해서 더 말하기",
@@ -185,6 +209,18 @@ const chapters = [
       { id: "c203-d5", type: "dictation", sentence: "Le français varie d'un pays à l'autre." },
       { id: "c203-d6", type: "choice", prompt: "인구 기준 최대의 프랑스어 사용 도시는?", choices: ["킨샤사", "파리", "제네바"], answer: "킨샤사" },
     ],
+    writing: {
+      prompt: "벨기에 친구에게 — 숫자·표현 차이를 존중하는 메시지. (60~100단어)",
+      hints: ["septante / nonante", "chez vous / chez nous"],
+      samples: [
+        { fr: "Salut Thomas ! J'ai enfin retenu que chez vous, on dit septante et nonante — c'est tellement plus logique ! La prochaine fois, apprends-moi d'autres expressions belges. Chez nous, on dira toujours soixante-dix, mais promis, à Bruxelles, je compterai comme vous. Chaque façon de parler français a sa musique, et c'est ça qui me plaît.", ko: "안녕 토마! 드디어 외웠어 — 너희는 septante, nonante라고 하지. 훨씬 논리적이야! 다음엔 다른 벨기에 표현도 가르쳐 줘. 우리는 계속 soixante-dix라 하겠지만, 약속할게, 브뤼셀에선 너희처럼 셀게. 프랑스어의 말하기 방식마다 제 음악이 있고, 그게 좋아." },
+      ],
+      checklist: [
+        "변이를 '오류'가 아니라 차이로 대했나요?",
+        "septante/nonante를 맞게 썼나요?",
+        "친근한 메시지 톤인가요?",
+      ],
+    },
     sections: [
       {
         heading: "프랑코포니 — 프랑스어는 프랑스만의 것이 아니다",
@@ -269,6 +305,18 @@ const chapters = [
       { id: "c204-d5", type: "dictation", sentence: "Après la pluie, le beau temps." },
       { id: "c204-d6", type: "choice", prompt: "Mieux vaut tard que jamais의 한국어 짝은?", choices: ["늦더라도 안 하는 것보다 낫다", "시간은 금이다", "일찍 일어나는 새가 벌레를 잡는다"], answer: "늦더라도 안 하는 것보다 낫다" },
     ],
+    writing: {
+      prompt: "고민 상담에 속담 두 개로 답하는 조언 글. (80~120단어)",
+      hints: ["Petit à petit, l'oiseau fait son nid", "Après la pluie, le beau temps"],
+      samples: [
+        { fr: "Tu me dis que ton français ne progresse pas assez vite. Rappelle-toi : petit à petit, l'oiseau fait son nid. Six mois de travail régulier valent mieux qu'un mois d'enthousiasme. Et pour cette période difficile au travail — après la pluie, le beau temps. Tiens bon encore quelques semaines, et écris-moi la suite.", ko: "프랑스어가 빨리 안 는다고 했지. 기억해 — 새는 조금씩 조금씩 둥지를 짓는 법이야. 여섯 달의 꾸준함이 한 달의 열정보다 나아. 그리고 회사의 그 힘든 시기 — 비 온 뒤에 맑은 날이 와. 몇 주만 더 버텨 보고, 그다음 이야기를 들려줘." },
+      ],
+      checklist: [
+        "속담이 조언의 근거로 기능하나요?",
+        "속담 뜻을 풀어 연결했나요?",
+        "따뜻한 톤인가요?",
+      ],
+    },
     sections: [
       {
         heading: "속담 — 대화에 양념처럼 박히는 지혜",
@@ -346,6 +394,18 @@ const chapters = [
       { id: "c205-d5", type: "dictation", sentence: "Traduire, c'est choisir." },
       { id: "c205-d6", type: "choice", prompt: "존댓말의 뉘앙스는 어떻게 살리나?", choices: ["vous + 격식 어휘로 재현", "무조건 tu로 통일", "번역하지 않는다"], answer: "vous + 격식 어휘로 재현" },
     ],
+    writing: {
+      prompt: "'눈치'가 들어간 한국어 한 문장을 골라 번역하고, 번역 노트 한 줄을 붙여 보세요.",
+      hints: ["기능 등가 우선", "Note : …"],
+      samples: [
+        { fr: "« 그 사람은 눈치가 빨라요. » → Il comprend les situations à demi-mot. Note : « 눈치 » n'a pas d'équivalent exact ; j'ai choisi l'expression « à demi-mot », qui rend l'idée de comprendre sans explication complète.", ko: "« 그 사람은 눈치가 빨라요 » → 반쯤만 말해도 상황을 이해한다. 노트: '눈치'는 정확한 등가어가 없어, '말을 다 하지 않아도 이해한다'는 뜻의 à demi-mot를 골랐다." },
+      ],
+      checklist: [
+        "직역 대신 기능 등가를 택했나요?",
+        "번역 노트가 선택 이유를 설명하나요?",
+        "프랑스어 문장이 자연스러운가요?",
+      ],
+    },
     sections: [
       {
         heading: "등가가 없을 때 — 번역은 단어가 아니라 효과를 옮기는 일",
