@@ -19,6 +19,9 @@ const chapters = [
       { id: "a121-d5", type: "order", sentence: "Vous prenez la deuxième rue à gauche.", prompt: "길 안내를 배열해 보세요." },
       { id: "a121-d6", type: "dictation", sentence: "La gare est tout droit." },
       { id: "a121-d7", type: "dictation", sentence: "Le bus arrive bientôt, non ?" },
+      { id: "a121-l1", type: "choice", listen: "Excusez-moi, où se trouve la gare routière ?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["실례합니다, 버스 터미널은 어디에 있나요?", "곧장 가서 광장을 건넌 다음 왼쪽으로 도세요.", "네. 그런 다음 3호선을 타세요."], answer: "실례합니다, 버스 터미널은 어디에 있나요?" },
+      { id: "a121-l2", type: "choice", listen: "Vous avez dit « à gauche » ?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["'왼쪽'이라고 하셨나요?", "네. 그런 다음 3호선을 타세요.", "두 번째 정류장이에요. 터미널이 맞은편에 있어요."], answer: "'왼쪽'이라고 하셨나요?" },
+      { id: "a121-l3", type: "choice", listen: "Je descends à quel arrêt ?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["어느 정류장에서 내려요?", "두 번째 정류장이에요. 터미널이 맞은편에 있어요.", "곧장 가신 다음 왼쪽으로 도세요."], answer: "어느 정류장에서 내려요?" },
     ],
     writing: {
       prompt: "친구에게 약속 장소 가는 길을 알려 주는 문자를 3~4문장으로 써 보세요. (30~50단어)",
@@ -341,6 +344,9 @@ const chapters = [
       { id: "a122-d5", type: "order", sentence: "J'ai besoin d'un médecin maintenant.", prompt: "도움 요청을 배열해 보세요." },
       { id: "a122-d6", type: "dictation", sentence: "J'ai très mal ici." },
       { id: "a122-d7", type: "dictation", sentence: "Ma valise est perdue." },
+      { id: "a122-l1", type: "choice", listen: "J'ai mal à la tête. J'ai de la fièvre.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["머리가 아파요. 열이 나요.", "몸에 힘이 없나요?", "지갑을 잃어버렸어요."], answer: "머리가 아파요. 열이 나요." },
+      { id: "a122-l2", type: "choice", listen: "Oui. J'ai besoin d'un médecin.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["네. 의사가 필요해요.", "지갑을 잃어버렸어요.", "작고 검은색이에요."], answer: "네. 의사가 필요해요." },
+      { id: "a122-l3", type: "choice", listen: "Quelle est sa description ?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["특징이 어떻게 되나요?", "작고 검은색이에요.", "알겠습니다. 여기에 앉으세요."], answer: "특징이 어떻게 되나요?" },
     ],
     writing: {
       prompt: "분실물 신고 메모를 써 보세요 — 무엇을, 언제·어디서 잃어버렸는지, 연락처까지. (30~50단어)",

@@ -100,7 +100,10 @@ function InputDrill({ drill, lang, onResult, done, dictation }) {
 function ChoiceDrill({ drill, onResult, done, lang }) {
   return (
     <div>
-      <p style={{ fontSize: '0.95rem', marginBottom: 8 }}>{drill.prompt}<HintToggle hint={drill.hint} /></p>
+      <p style={{ fontSize: '0.95rem', marginBottom: 8 }}>
+        {drill.listen && <RefSpeak text={drill.listen} lang={lang} />}
+        {drill.listen ? ' ' : ''}{drill.prompt}<HintToggle hint={drill.hint} />
+      </p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {drill.choices.map((c, i) => (
           <button key={i} type="button" disabled={done} onClick={() => onResult(c === drill.answer)}
@@ -109,6 +112,9 @@ function ChoiceDrill({ drill, onResult, done, lang }) {
           </button>
         ))}
       </div>
+      {done && drill.listen && (
+        <p style={{ fontSize: '0.82rem', marginTop: 8, color: 'var(--text-secondary)' }} lang="fr">들은 문장: {drill.listen}</p>
+      )}
       {done && drill.speak && (
         <p style={{ fontSize: '0.85rem', marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
           실제 발음 확인: <RefSpeak text={drill.speak} lang={lang} />
@@ -122,14 +128,48 @@ function ChoiceDrill({ drill, onResult, done, lang }) {
  * 변형 드릴(RFC learning-path v1) — 새 문장으로 연습 후 관문 퀴즈(RefPatternCheck)로 가는 전 단계.
  * 채점은 로컬 표시 전용(SRS 연결은 관문 퀴즈가 담당 — v2에서 통합).
  */
+// 드릴 채점 로컬 집계 — 기기에만 저장(약점 파악용). [시도, 오답] 누적.
+function bumpDrillStat(lang, id, ok) {
+  try {
+    const key = `${lang}_drill_stats`;
+    const all = JSON.parse(globalThis.localStorage?.getItem(key) ?? '{}') || {};
+    const cur = Array.isArray(all[id]) ? all[id] : [0, 0];
+    all[id] = [cur[0] + 1, cur[1] + (ok ? 0 : 1)];
+    globalThis.localStorage?.setItem(key, JSON.stringify(all));
+  } catch {}
+}
+
+function readChapterStat(lang, drills) {
+  try {
+    const all = JSON.parse(globalThis.localStorage?.getItem(`${lang}_drill_stats`) ?? '{}') || {};
+    let t = 0;
+    let w = 0;
+    for (const d of drills) {
+      const cur = all[d.id];
+      if (Array.isArray(cur)) { t += cur[0]; w += cur[1]; }
+    }
+    return t > 0 ? { tries: t, right: t - w } : null;
+  } catch { return null; }
+}
+
 export default function ChapterDrills({ lang, drills, title, intro }) {
   const [results, setResults] = useState({});
+  const [pastStat] = useState(() => readChapterStat(lang, drills));
   const answered = Object.keys(results).length;
   const right = Object.values(results).filter(Boolean).length;
-  const record = (id) => (ok) => setResults((r) => (id in r ? r : { ...r, [id]: ok }));
+  const record = (id) => (ok) => setResults((r) => {
+    if (id in r) return r;
+    bumpDrillStat(lang, id, ok);
+    return { ...r, [id]: ok };
+  });
   return (
     <section className="card fr-section">
       <h2 className="fr-section__heading">{title ?? '변형 드릴 — 새 문장으로 손 풀기'}</h2>
+      {pastStat && (
+        <p style={{ fontSize: '0.74rem', color: 'var(--text-muted)', margin: '0 0 8px' }}>
+          지금까지 이 챕터 드릴 {pastStat.tries}회 풀이 · 정답 {pastStat.right}회 ({Math.round((pastStat.right / pastStat.tries) * 100)}%)
+        </p>
+      )}
       <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 14 }}>
         {intro ?? '이 챕터의 뼈를 처음 보는 문장에 적용해 보세요. 다 풀면 아래 패턴 체크로 마무리해요.'}
       </p>

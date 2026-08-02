@@ -2294,7 +2294,7 @@ export const REF_GRAMMAR_MANIFEST = {
         },
         {
           "key": "A1",
-          "vocabCount": 425,
+          "vocabCount": 427,
           "bunkeiAvailable": true,
           "bunkeiChapterSlugs": [
             "a1-01-pronouns-etre",
@@ -3536,7 +3536,7 @@ export const REF_GRAMMAR_MANIFEST = {
         },
         {
           "key": "B1",
-          "vocabCount": 869,
+          "vocabCount": 871,
           "bunkeiAvailable": true,
           "bunkeiChapterSlugs": [
             "b1-01-conditionnel-present",

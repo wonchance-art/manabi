@@ -148,7 +148,7 @@ const FLAT_EXAMPLE_TEXT_FIELDS = [...DIALOGUE_LANG_FIELDS, 'ipa', 'yomi', 'pinyi
 const DIALOGUE_LINE_KEYS = new Set(['speaker', ...DIALOGUE_LANG_FIELDS, 'ipa', 'ko', 'src']);
 
 // 학습 드릴(RFC learning-path §1) — 챕터 선택 필드, fail-closed.
-const DRILL_KEYS = new Set(['id', 'type', 'prompt', 'answer', 'accepts', 'choices', 'sentence', 'hint', 'speak']);
+const DRILL_KEYS = new Set(['id', 'type', 'prompt', 'answer', 'accepts', 'choices', 'sentence', 'hint', 'speak', 'listen']);
 const WRITING_KEYS = new Set(['prompt', 'hints', 'samples', 'checklist']);
 const WRITING_SAMPLE_KEYS = new Set(['fr', 'ko', 'note']);
 function isValidWriting(v) {
@@ -175,6 +175,7 @@ function isValidDrill(v) {
   if ('accepts' in v && !(Array.isArray(v.accepts) && v.accepts.every(isNonEmptyString))) return false;
   if ('hint' in v && !isNonEmptyString(v.hint)) return false;
   if ('speak' in v && !isNonEmptyString(v.speak)) return false;
+  if ('listen' in v && !isNonEmptyString(v.listen)) return false;
   switch (v.type) {
     case 'fill':
       return isNonEmptyString(v.prompt) && v.prompt.includes('___') && isNonEmptyString(v.answer);

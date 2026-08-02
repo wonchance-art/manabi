@@ -11,6 +11,8 @@ const themes = {
       name: "일과 직장",
       icon: "💼",
       words: [
+        { fr: "le carnet", ipa: "[kaʁnɛ]", ko: "수첩", pos: "n.m.", ex: { fr: "Je note tout dans mon carnet.", ko: "저는 수첩에 다 적어요." } },
+        { fr: "libre", ipa: "[libʁ]", ko: "자유로운, (시간이) 빈", pos: "adj.", ex: { fr: "Tu es libre ce soir ?", ko: "오늘 저녁에 시간 있어?" } },
         {
           fr: "le métier",
           ipa: "[metje]",
