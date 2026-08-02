@@ -12,6 +12,15 @@ const chapters = [
     titleFr: "Le subjonctif : approfondissement",
     summary: "subjonctif passé, bien que·pour que·avant que 같은 접속사, 그리고 penser que 부정형의 미묘한 갈림길까지에요.",
     duration: "약 11분",
+    drills: [
+      { id: "b201-d1", type: "fill", prompt: "Bien qu'il ___ malade, il est venu. (être)", answer: "soit" },
+      { id: "b201-d2", type: "fill", prompt: "Je suis désolée que tu n'___ pas pu venir hier. (avoir — 접속법 과거)", answer: "aies" },
+      { id: "b201-d3", type: "choice", prompt: "접속법 과거가 맞게 쓰인 문장은?", choices: ["Je suis content que tu aies réussi.", "Je suis content que tu as réussi.", "Je suis content que tu réussisses hier."], answer: "Je suis content que tu aies réussi." },
+      { id: "b201-d4", type: "choice", prompt: "Pourvu qu'il ne ___ pas demain !", choices: ["pleuve", "pleut", "pleuvra"], answer: "pleuve", hint: "pourvu que + 접속법" },
+      { id: "b201-d5", type: "order", sentence: "Bien que ce soit difficile, j'essaie encore.", prompt: "양보 문장을 배열해 보세요." },
+      { id: "b201-d6", type: "dictation", sentence: "Je resterai à condition que tu sois là." },
+      { id: "b201-d7", type: "dictation", sentence: "C'est dommage que vous ayez manqué le concert." },
+    ],
     sections: [
       {
         heading: "접속법 과거 — 평가 시점보다 앞선 일",
@@ -92,6 +101,15 @@ const chapters = [
     titleFr: "Les hypothèses avec si",
     summary: "영어 if 1·2·3형식과 거의 1:1로 포개지는 가정문 시스템. 영어 지식이 가장 큰 자산이 되는 챕터예요.",
     duration: "약 11분",
+    drills: [
+      { id: "b202-d1", type: "fill", prompt: "Si j'avais su, je ne ___ pas venu. (être — 조건법 과거)", answer: "serais" },
+      { id: "b202-d2", type: "fill", prompt: "Si tu ___ plus tôt, tu aurais vu Léa. (arriver — 대과거)", answer: "étais arrivé", accepts: ["étais arrivée"] },
+      { id: "b202-d3", type: "choice", prompt: "'(지금은 아니지만 만약) 당첨된다면 세계일주를 할 텐데'는?", choices: ["Si je gagnais au loto, je ferais le tour du monde.", "Si je gagne au loto, je ferai le tour du monde.", "Si j'avais gagné au loto, j'aurais fait le tour du monde."], answer: "Si je gagnais au loto, je ferais le tour du monde.", hint: "현재와 반대 가정 = si + 반과거" },
+      { id: "b202-d4", type: "choice", prompt: "Si nous avions eu le temps, nous ___ le musée.", choices: ["aurions visité", "visiterions", "avons visité"], answer: "aurions visité" },
+      { id: "b202-d5", type: "order", sentence: "Si j'étais toi, je prendrais le train.", prompt: "가정문을 배열해 보세요." },
+      { id: "b202-d6", type: "dictation", sentence: "Qu'est-ce que tu aurais fait à ma place ?" },
+      { id: "b202-d7", type: "dictation", sentence: "Si on partait maintenant, on arriverait avant la nuit." },
+    ],
     sections: [
       {
         heading: "시스템 전체 보기 — 세 가지 거리감",
@@ -178,6 +196,15 @@ const chapters = [
     titleFr: "Participe présent, gérondif, adjectif verbal",
     summary: "-ant으로 끝나는 세 형제의 역할 분담. fatigant과 fatiguant, 철자 하나가 품사를 가르는 세계예요.",
     duration: "약 10분",
+    drills: [
+      { id: "b203-d1", type: "fill", prompt: "Les personnes ___ un billet peuvent entrer. (avoir — 현재분사)", answer: "ayant" },
+      { id: "b203-d2", type: "fill", prompt: "C'est un travail très ___. (fatiguer — 형용사형)", answer: "fatigant", hint: "형용사가 되면 u가 빠져요" },
+      { id: "b203-d3", type: "choice", prompt: "동사적 형용사 표기가 맞는 것은?", choices: ["une histoire intrigante", "une histoire intriguante", "une histoire intriguent"], answer: "une histoire intrigante" },
+      { id: "b203-d4", type: "choice", prompt: "'프랑스어를 하는 학생들'은?", choices: ["les étudiants parlant français", "les étudiants parlants français", "les étudiants en parlant français"], answer: "les étudiants parlant français", hint: "현재분사는 무변화" },
+      { id: "b203-d5", type: "order", sentence: "Ne sachant pas quoi dire, il est resté silencieux.", prompt: "분사구문을 배열해 보세요." },
+      { id: "b203-d6", type: "dictation", sentence: "J'ai vu un enfant courant vers le bus." },
+      { id: "b203-d7", type: "dictation", sentence: "C'est une soirée vraiment charmante." },
+    ],
     sections: [
       {
         heading: "-ant 삼형제 — 한눈에 구별하기",
@@ -252,6 +279,15 @@ const chapters = [
     titleFr: "Les connecteurs logiques",
     summary: "cependant, en revanche, par conséquent... mais와 donc만으로는 부족해지는 순간, DELF B2 작문의 핵심 무기예요.",
     duration: "약 11분",
+    drills: [
+      { id: "b204-d1", type: "fill", prompt: "Il pleut ; ___, le match est maintenu. (그럼에도)", answer: "cependant", accepts: ["néanmoins", "toutefois"] },
+      { id: "b204-d2", type: "fill", prompt: "J'aime le thé ; mon frère, ___, préfère le café. (대조)", answer: "en revanche" },
+      { id: "b204-d3", type: "choice", prompt: "인과의 순접 연결사는?", choices: ["par conséquent", "cependant", "en revanche"], answer: "par conséquent" },
+      { id: "b204-d4", type: "choice", prompt: "Certes …, mais … 구조의 역할은?", choices: ["일단 인정하고 반박한다", "원인을 제시한다", "시간 순서를 나열한다"], answer: "일단 인정하고 반박한다" },
+      { id: "b204-d5", type: "order", sentence: "Le projet est cher ; toutefois, il en vaut la peine.", prompt: "양보 연결을 배열해 보세요." },
+      { id: "b204-d6", type: "dictation", sentence: "Néanmoins, nous devons continuer." },
+      { id: "b204-d7", type: "dictation", sentence: "Elle était malade ; par conséquent, elle est restée chez elle." },
+    ],
     sections: [
       {
         heading: "왜 연결사인가 — B2 작문의 채점 기준",
@@ -326,6 +362,15 @@ const chapters = [
     titleFr: "Les verbes et leurs prépositions",
     summary: "동사 뒤에 à를 쓸지 de를 쓸지, 아니면 아무것도 안 쓸지. 영어 감각이 배신하는 지점을 콕 집어 정리해요.",
     duration: "약 11분",
+    drills: [
+      { id: "b205-d1", type: "fill", prompt: "Elle a réussi ___ trouver un appartement.", answer: "à" },
+      { id: "b205-d2", type: "fill", prompt: "J'essaie ___ comprendre sa décision.", answer: "de" },
+      { id: "b205-d3", type: "choice", prompt: "Je pense ___ mes vacances tous les jours.", choices: ["à", "de", "sur"], answer: "à" },
+      { id: "b205-d4", type: "choice", prompt: "Ça dépend ___ la météo.", choices: ["de", "à", "avec"], answer: "de" },
+      { id: "b205-d5", type: "fill", prompt: "Elle s'intéresse ___ l'histoire de l'art.", answer: "à" },
+      { id: "b205-d6", type: "dictation", sentence: "Il a décidé de changer de travail." },
+      { id: "b205-d7", type: "dictation", sentence: "Je me souviens de notre premier voyage." },
+    ],
     sections: [
       {
         heading: "왜 어려운가 — 전치사는 동사의 지문",
@@ -415,6 +460,15 @@ const chapters = [
     titleFr: "La mise en relief",
     summary: "프랑스어는 목소리가 아니라 구문으로 강조해요. 문장의 스포트라이트를 옮기는 두 가지 장치를 배워요.",
     duration: "약 9분",
+    drills: [
+      { id: "b206-d1", type: "fill", prompt: "___ Marie qui a préparé ce gâteau. (강조 틀)", answer: "C'est" },
+      { id: "b206-d2", type: "fill", prompt: "Ce ___ me plaît ici, c'est le calme. (주어 역할)", answer: "qui" },
+      { id: "b206-d3", type: "choice", prompt: "'내가 원하는 건 시간이야'는?", choices: ["Ce que je veux, c'est du temps.", "Ce qui je veux, c'est du temps.", "Que je veux, c'est du temps."], answer: "Ce que je veux, c'est du temps." },
+      { id: "b206-d4", type: "choice", prompt: "C'est à Lyon ___ nous nous sommes connus.", choices: ["que", "qui", "où"], answer: "que", hint: "c'est … que 강조 틀 — 관계사 où가 아니에요" },
+      { id: "b206-d5", type: "order", sentence: "C'est le prix qui pose un problème.", prompt: "강조 구문을 배열해 보세요." },
+      { id: "b206-d6", type: "dictation", sentence: "Ce sont les détails qui comptent." },
+      { id: "b206-d7", type: "dictation", sentence: "Ce que j'aime, c'est voyager sans plan." },
+    ],
     sections: [
       {
         heading: "프랑스어의 정보구조 — 강세 대신 구문",
@@ -490,6 +544,15 @@ const chapters = [
     titleFr: "La nominalisation",
     summary: "augmenter → l'augmentation. 격식 문체의 핵심 기술이자 신문 헤드라인 해독의 열쇠. 영어 -tion 어휘가 그대로 자산이 돼요.",
     duration: "약 10분",
+    drills: [
+      { id: "b207-d1", type: "fill", prompt: "construire → la ___ (명사화)", answer: "construction" },
+      { id: "b207-d2", type: "fill", prompt: "partir → le ___ (명사화)", answer: "départ" },
+      { id: "b207-d3", type: "choice", prompt: "changer의 명사형은?", choices: ["le changement", "la changation", "le changage"], answer: "le changement" },
+      { id: "b207-d4", type: "choice", prompt: "'가격 인상'은?", choices: ["l'augmentation des prix", "l'augmenter des prix", "l'augmentement des prix"], answer: "l'augmentation des prix" },
+      { id: "b207-d5", type: "fill", prompt: "livrer → la ___ (배달)", answer: "livraison" },
+      { id: "b207-d6", type: "dictation", sentence: "La construction du pont a duré trois ans." },
+      { id: "b207-d7", type: "dictation", sentence: "L'ouverture du magasin est prévue en mai." },
+    ],
     sections: [
       {
         heading: "명사화란 — 격식 문체의 압축 기술",
@@ -568,6 +631,15 @@ const chapters = [
     titleFr: "La cause et la conséquence",
     summary: "parce que와 donc 너머 — étant donné que·faute de의 원인, si bien que·au point de의 결과·정도까지, 논증의 인과 어휘를 넓혀요.",
     duration: "약 11분",
+    drills: [
+      { id: "b208-d1", type: "fill", prompt: "___ à ton aide, j'ai fini à temps. (긍정적 원인)", answer: "Grâce" },
+      { id: "b208-d2", type: "fill", prompt: "Le vol est annulé ___ cause du brouillard.", answer: "à" },
+      { id: "b208-d3", type: "choice", prompt: "Il était si fatigué ___ s'est endormi tout de suite.", choices: ["qu'il", "que il", "dont il"], answer: "qu'il" },
+      { id: "b208-d4", type: "choice", prompt: "'폭우 때문에'(부정적 뉘앙스)는?", choices: ["à cause de la pluie", "grâce à la pluie", "pour la pluie"], answer: "à cause de la pluie" },
+      { id: "b208-d5", type: "order", sentence: "Il a couru si vite qu'il a gagné la course.", prompt: "정도·결과 구문을 배열해 보세요." },
+      { id: "b208-d6", type: "dictation", sentence: "La route est fermée en raison des travaux." },
+      { id: "b208-d7", type: "dictation", sentence: "Grâce à toi, tout s'est bien passé." },
+    ],
     sections: [
       {
         heading: "전제된 원인 — étant donné que·vu que·en raison de",
@@ -650,6 +722,15 @@ const chapters = [
     titleFr: "La négation avancée",
     summary: "pas의 자리를 차지하는 부정어 가족, '~만'의 ne…que, A도 B도의 ni…ni, 그리고 부정이 아닌 ne(허사)까지 — 부정 체계를 완성해요.",
     duration: "약 11분",
+    drills: [
+      { id: "b209-d1", type: "fill", prompt: "Il ne mange ni viande ___ poisson.", answer: "ni" },
+      { id: "b209-d2", type: "fill", prompt: "Elle ne boit ___ de l'eau. (오직 ~만)", answer: "que" },
+      { id: "b209-d3", type: "choice", prompt: "허사 ne(부정 아님)가 쓰인 문장은?", choices: ["Pars avant qu'il ne pleuve.", "Il ne pleut pas aujourd'hui.", "Ne pars pas sans moi !"], answer: "Pars avant qu'il ne pleuve.", hint: "avant que 뒤의 ne는 장식" },
+      { id: "b209-d4", type: "choice", prompt: "'채소만 먹어요'는?", choices: ["Je ne mange que des légumes.", "Je ne mange pas que légumes.", "Je mange ne que des légumes."], answer: "Je ne mange que des légumes." },
+      { id: "b209-d5", type: "order", sentence: "Il n'aime ni le froid ni la pluie.", prompt: "ni … ni 문장을 배열해 보세요." },
+      { id: "b209-d6", type: "dictation", sentence: "Je crains qu'il ne soit trop tard." },
+      { id: "b209-d7", type: "dictation", sentence: "Nous n'avons qu'une heure devant nous." },
+    ],
     sections: [
       {
         heading: "pas의 자리를 빼앗는 말들 — plus·jamais·rien·personne·aucun",
@@ -753,6 +834,15 @@ const chapters = [
     titleFr: "Tournures impersonnelles et style soutenu",
     summary: "il s'agit de, il s'avère que의 무인칭 구문과 force est de constater 같은 논증 관용구 — 신문·논술 문체의 마지막 퍼즐이에요.",
     duration: "약 11분",
+    drills: [
+      { id: "b210-d1", type: "fill", prompt: "Il s'___ d'un problème très sérieux.", answer: "agit" },
+      { id: "b210-d2", type: "fill", prompt: "Il ___ de réserver à l'avance. (~하는 것이 바람직하다)", answer: "convient" },
+      { id: "b210-d3", type: "choice", prompt: "격식 있는 무인칭 표현은?", choices: ["Il est indispensable de vérifier les données.", "C'est super de vérifier les données.", "Vérifier, c'est sympa."], answer: "Il est indispensable de vérifier les données." },
+      { id: "b210-d4", type: "choice", prompt: "'상황이 나아지는 듯하다'의 바른 문장은?", choices: ["Il semble que la situation s'améliore.", "Il semble de la situation s'améliorer.", "Il semble à la situation s'améliore."], answer: "Il semble que la situation s'améliore." },
+      { id: "b210-d5", type: "order", sentence: "Il est essentiel que chacun fasse sa part.", prompt: "무인칭+접속법을 배열해 보세요." },
+      { id: "b210-d6", type: "dictation", sentence: "Il s'agit d'une décision importante." },
+      { id: "b210-d7", type: "dictation", sentence: "Il vaut mieux prévenir que guérir." },
+    ],
     sections: [
       {
         heading: "무인칭 il — 주어 칸을 채우는 빈 의자",
@@ -873,6 +963,15 @@ const chapters = [
       "\"네가 도착할 때쯤이면 나는 이미 끝냈을 거야\" — 미래 속의 완료, futur antérieur를 배우고, " +
       "지금까지 흩어져 있던 시제 짝 맞추기(concordance)를 한 장의 지도로 정리해요.",
     duration: "약 12분",
+    drills: [
+      { id: "b211-d1", type: "fill", prompt: "Quand tu rentreras, j'___ déjà préparé le dîner.", answer: "aurai" },
+      { id: "b211-d2", type: "fill", prompt: "Dès qu'elle ___ terminé, elle vous appellera. (avoir)", answer: "aura" },
+      { id: "b211-d3", type: "choice", prompt: "과거에 대한 추측 용법은?", choices: ["Il aura raté son train.", "Il aura son train.", "Il ratera son train."], answer: "Il aura raté son train.", hint: "안 온 이유를 짐작할 때" },
+      { id: "b211-d4", type: "choice", prompt: "Je pensais qu'elle ___ le lendemain.", choices: ["viendrait", "viendra", "vienne"], answer: "viendrait", hint: "과거에서 본 미래" },
+      { id: "b211-d5", type: "order", sentence: "Quand vous arriverez, nous aurons tout rangé.", prompt: "미래완료 문장을 배열해 보세요." },
+      { id: "b211-d6", type: "dictation", sentence: "Elle m'a dit qu'elle rappellerait plus tard." },
+      { id: "b211-d7", type: "dictation", sentence: "Dans une heure, j'aurai fini ce livre." },
+    ],
     sections: [
       {
         heading: "futur antérieur — avoir/être의 미래형 + 과거분사",
