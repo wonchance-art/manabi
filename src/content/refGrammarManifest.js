@@ -4151,6 +4151,27 @@ export const REF_GRAMMAR_MANIFEST = {
                   "slug": "b2-10-impersonal-formal",
                   "source": "lesson"
                 },
+                "nextLesson": {
+                  "id": "french-b2-u06-l01",
+                  "href": "/french/grammar/b2-11-futur-anterieur-concordance"
+                }
+              }
+            },
+            {
+              "slug": "b2-11-futur-anterieur-concordance",
+              "level": "B2",
+              "order": 11,
+              "title": "미래에도 '이미 끝난 일'이 있다",
+              "topic": "futur antérieur·시제 일치 종합",
+              "summary": "\"네가 도착할 때쯤이면 나는 이미 끝냈을 거야\" — 미래 속의 완료, futur antérieur를 배우고, 지금까지 흩어져 있던 시제 짝 맞추기(concordance)를 한 장의 지도로 정리해요.",
+              "duration": "약 12분",
+              "courseLesson": {
+                "lessonRef": {
+                  "id": "french-b2-u06-l01",
+                  "lang": "French",
+                  "slug": "b2-11-futur-anterieur-concordance",
+                  "source": "lesson"
+                },
                 "nextLesson": null
               }
             }

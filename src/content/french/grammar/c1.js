@@ -248,6 +248,19 @@ const chapters = [
         ],
         vsEn: "영미식 에세이는 서론에서 결론(thesis statement)을 못 박고 시작하지만, 프랑스식 dissertation은 결론을 끝까지 아껴두고 변증법적 과정을 보여주는 데 무게를 둬요. 영어 에세이 훈련이 된 분일수록 '결론을 먼저 말해버리는' 습관을 의식적으로 눌러야 해요.",
       },
+      {
+        heading: "글의 실 — 재수용(reprise)으로 문장을 잇는 기술",
+        pattern: "ce dernier · celui-ci · cette décision(재수용 명사) — 반복 없이 되받기",
+        patternKo: "같은 말을 반복하지 않고 앞 내용을 되받는 결속 장치",
+        body:
+          "논증문의 밀도는 연결사만으로 안 나와요 — 앞 문장을 **어떻게 되받느냐**가 글의 결을 만들어요.\n\n" +
+          "도구 셋. ① **ce dernier/cette dernière**(후자·방금 언급된 것): 두 대상 중 가까운 쪽을 가리켜요. ② **celui-ci/celle-ci**: 직전 명사를 이어받아요. ③ 가장 세련된 건 **재수용 명사** — 앞 문장 전체를 명사 하나로 압축해 되받는 것: \"Le gouvernement a baissé les impôts. **Cette décision** a surpris tout le monde.\"\n\n" +
+          "대명사 il/elle만 반복하면 지시가 흐려져요 — 시험관이 보는 건 이 재수용의 정확도예요.",
+        examples: [
+          { fr: "Le gouvernement a baissé les impôts. Cette décision a surpris les économistes.", ko: "정부가 세금을 내렸다. 이 결정은 경제학자들을 놀라게 했다.", note: "문장 전체 → 명사 하나로 재수용" },
+          { fr: "Paul a présenté Marie à Léo. Ce dernier la connaissait déjà.", ko: "폴이 마리를 레오에게 소개했다. 후자(레오)는 그녀를 이미 알고 있었다.", note: "ce dernier = 마지막에 언급된 사람" },
+        ],
+      },
     ],
   },
 
