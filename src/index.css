@@ -9011,6 +9011,48 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 /* ④ 성장 벤토 — 숫자 4개 각기 다른 악센트(타일 매핑과 일관), 라벨은 중립 유지 */
 .learn-stat .mypage-stat-cell__value { color: var(--tile-accent, var(--text-primary)); }
 
+/* /learn 진도·스트릭 — ProfileStats의 lvprog 문법과 같은 토큰을 재사용 */
+.learn-progress { margin: 0; }
+.learn-progress__language {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+.learn-progress__counts {
+  width: 10.8em;
+  flex-shrink: 0;
+  text-align: right;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.learn-progress__footer,
+.learn-progress__guest-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+.learn-progress__empty {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+.learn-progress__empty p { margin: 0 0 8px; }
+
+@media (max-width: 560px) {
+  .learn-progress .lvprog__row { align-items: flex-start; flex-wrap: wrap; }
+  .learn-progress .lvprog__bar { margin-top: 4px; }
+  .learn-progress__counts { width: 100%; padding-left: calc(2.8ch + 10px); text-align: left; }
+  .learn-progress__guest-action { align-items: flex-start; flex-direction: column; }
+}
+
 /* ========= 관리자 인라인 편집 (InlineEdit) =========
    문장 오른쪽 끝(본문 컬럼 밖 여백)에 은은한 연필. 관리자 계정에서만 렌더된다. */
 .admin-edit__pencil {

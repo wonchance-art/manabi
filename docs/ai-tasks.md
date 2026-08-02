@@ -286,6 +286,10 @@
 - S1 STAMP_ALBUM_NODES 85 원자 전환(선행 #387 충족 — 즉시 착수): #150 5046785938
 - S4 수집 연출 정합 → S2 앨범 지역 탭·수집률 → S3 마일스톤 보상 v1(localStorage·DB 금지)
 ### done (최근)
+- `/learn` 진도·스트릭 위젯: 기존 게스트 localStorage 진도·활동 정본을 재사용해
+  레벨별 방문/완료 수와 연속 학습일·첫 방문 빈 상태를 표면화하고 전체
+  258파일/2,508테스트 green을 고정 (`codex3/learn-progress-widget`, 구현 4686d8e,
+  base 3e5ce2909d8716da6861f67a028d3c51711191bd, draft·오너 승인 게이트)
 - S24 도어 track 전달 결함 수선: explicit track을 CityScene bridge부터 WorldPage까지 보존하고,
   unknown/prototype track을 경고 후 fail-closed하며 가상 en·기존 fr-01~26 URL 회귀를 고정
   (`codex3/s24-track-bridge-fix`, 구현 268f72f,

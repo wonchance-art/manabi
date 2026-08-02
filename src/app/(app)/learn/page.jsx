@@ -1,4 +1,5 @@
 import LearnPage from '@/views/LearnPage';
+import { buildLearnProgressCatalog } from '@/lib/learn/homeProgressCatalog';
 
 export const metadata = {
   title: '학습 | Anatomy Studio',
@@ -7,5 +8,5 @@ export const metadata = {
 };
 
 export default function Page() {
-  return <LearnPage />;
+  return <LearnPage progressCatalog={buildLearnProgressCatalog()} />;
 }

@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { kstWeekStartIso, KNOWN_WORD_MIN_INTERVAL, GROWTH_LABELS } from '../lib/growthStats';
 import ForecastCard from '../components/ForecastCard';
+import LearnProgressWidget from '../components/LearnProgressWidget';
 
 /**
  * 학습 허브 — 오늘 할 학습으로 가는 단일 진입점.
@@ -80,7 +81,7 @@ async function fetchLearnData(userId, lang) {
   return { dueVocab, dueGrammar, knownWords, passedChapters, weekSessions, episode, forecast };
 }
 
-export default function LearnPage() {
+export default function LearnPage({ progressCatalog = {} }) {
   const { user, profile } = useAuth();
 
   const lang = useMemo(() => {
@@ -99,9 +100,16 @@ export default function LearnPage() {
   });
 
   if (!user) return (
-    <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
-      <h2 style={{ marginBottom: '16px' }}>로그인이 필요합니다</h2>
-      <Link href="/auth" className="btn btn--primary btn--md">로그인하러 가기</Link>
+    <div className="page-container home-page home-layout" style={{ maxWidth: 720 }}>
+      <div className="home-greeting">
+        <h1 className="home-greeting__name">이 기기의 학습 진도</h1>
+        <p className="home-greeting__sub">로그인하지 않아도 방문·완료 기록과 스트릭을 이어볼 수 있어요.</p>
+      </div>
+      <LearnProgressWidget catalog={progressCatalog} />
+      <div className="learn-progress__guest-action">
+        <span>기기 간 동기화와 맞춤 복습은 로그인 후 사용할 수 있어요.</span>
+        <Link href="/auth" className="btn btn--primary btn--md">로그인하러 가기</Link>
+      </div>
     </div>
   );
 
@@ -132,9 +140,6 @@ export default function LearnPage() {
   const passedChapters = data?.passedChapters;
   const weekSessions = data?.weekSessions;
   const episode      = data?.episode ?? null;
-  const streak       = profile?.streak_count ?? 0;
-  const streakFreeze = profile?.streak_freeze_count;
-
   const practice = [
     { href: '/study/library',  title: '서재',          desc: '지난 문단 다시 읽기 · 내 자료로 학습', accent: 'var(--primary)', icon: '📖' },
     { href: '/review/grammar', title: '문법 복습',      desc: '돌아온 문법 다시 풀기', badge: dueGrammar, accent: 'var(--accent)', icon: '🧩' },
@@ -171,6 +176,14 @@ export default function LearnPage() {
       {/* 망각 예보 — 오늘 안에 흐려지는 단어가 있을 때만 조용히 등장(0개면 침묵) */}
       <ForecastCard forecast={data?.forecast} />
 
+      <LearnProgressWidget
+        catalog={progressCatalog}
+        language={lang}
+        userId={user.id}
+        remoteStreak={profile?.streak_count}
+        remoteLastStreakDate={profile?.last_streak_date}
+      />
+
       {/* ② 연습실 그리드 — 홈 벤토의 2x2 급 타일, 타일별 고유 악센트(좌보더·아이콘원·hover 틴트) */}
       <div className="bento">
         {practice.map(t => (
@@ -195,12 +208,6 @@ export default function LearnPage() {
             <span className="mypage-stat-cell__label">{GROWTH_LABELS.weekSessions}</span>
           </div>
         )}
-        <div className="bento-item bento--1x1 card bento-stat learn-stat" style={{ '--tile-accent': 'var(--warning)' }}>
-          <span className="mypage-stat-cell__value">
-            {streak ? `${streak}일${streakFreeze > 0 ? ` · 🛡${streakFreeze}` : ''}` : '–'}
-          </span>
-          <span className="mypage-stat-cell__label">스트릭</span>
-        </div>
         {knownWords != null && (
           <div className="bento-item bento--1x1 card bento-stat learn-stat" style={{ '--tile-accent': 'var(--danger)' }}>
             <span className="mypage-stat-cell__value">{knownWords}</span>
