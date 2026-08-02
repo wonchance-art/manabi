@@ -1,6 +1,9 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useAuth } from '../lib/AuthContext';
+import { logReviewEvents } from '../lib/reviewEvents';
+import { supabase } from '../lib/supabase';
 import RefSpeak from './RefSpeak';
 import { normalizeExerciseAnswer } from './ExerciseEnginePrototype';
 
@@ -153,13 +156,36 @@ function readChapterStat(lang, drills) {
 }
 
 export default function ChapterDrills({ lang, drills, title, intro }) {
+  const { user } = useAuth();
   const [results, setResults] = useState({});
-  const [pastStat] = useState(() => readChapterStat(lang, drills));
+  const [pastStat, setPastStat] = useState(() => readChapterStat(lang, drills));
   const answered = Object.keys(results).length;
   const right = Object.values(results).filter(Boolean).length;
+
+  // 로그인 유저는 서버 누적(review_events)이 정본 — 기기가 바뀌어도 기록이 이어진다.
+  useEffect(() => {
+    if (!user?.id || !Array.isArray(drills) || drills.length === 0) return undefined;
+    let alive = true;
+    supabase
+      .from('review_events')
+      .select('item_key, correct')
+      .eq('user_id', user.id)
+      .eq('source', 'drill')
+      .in('item_key', drills.map((d) => d.id))
+      .limit(2000)
+      .then(({ data }) => {
+        if (!alive || !Array.isArray(data) || data.length === 0) return;
+        setPastStat({ tries: data.length, right: data.filter((r) => r.correct).length });
+      }, () => {});
+    return () => { alive = false; };
+  }, [user?.id, drills]);
+
   const record = (id) => (ok) => setResults((r) => {
     if (id in r) return r;
     bumpDrillStat(lang, id, ok);
+    if (user?.id) {
+      logReviewEvents(user.id, [{ lang, source: 'drill', item_key: id, correct: ok }]);
+    }
     return { ...r, [id]: ok };
   });
   return (
