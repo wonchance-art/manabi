@@ -1100,6 +1100,17 @@ const themes = {
         },
       ],
     },
+    {
+      name: "서면어 한 걸음 더",
+      words: [
+        { zh: "请勿", pinyin: "qǐngwù", ko: "~하지 마시오(격식)", pos: "표현", hanja: "물(勿) — '~하지 말라'의 문어.", ex: { zh: "请勿拍照。", pinyin: "qǐng wù pāizhào", ko: "촬영하지 마시오." } },
+        { zh: "遭到", pinyin: "zāodào", ko: "(나쁜 일을) 당하다", pos: "동사", hanja: "조(遭) — '조난'의 조.", ex: { zh: "计划遭到拒绝。", pinyin: "jìhuà zāodào jùjué", ko: "계획이 거절당했어요." } },
+        { zh: "若", pinyin: "ruò", ko: "만약(문어)", pos: "접속사", hanja: "약(若) — '만약'의 약.", ex: { zh: "若有问题，请联系我们。", pinyin: "ruò yǒu wèntí, qǐng liánxì wǒmen", ko: "문제가 있으면 연락 주세요." } },
+        { zh: "添", pinyin: "tiān", ko: "더하다", pos: "동사", hanja: "첨(添) — '첨가'의 첨.", ex: { zh: "画蛇添足。", pinyin: "huà shé tiān zú", ko: "뱀을 그리고 발을 더하다(사족)." } },
+        { zh: "赴", pinyin: "fù", ko: "(격식) ~로 가다", pos: "동사", hanja: "부(赴) — '부임'의 부.", ex: { zh: "下周赴京工作。", pinyin: "xià zhōu fù Jīng gōngzuò", ko: "다음 주에 베이징으로 일하러 가요." } },
+        { zh: "岂", pinyin: "qǐ", ko: "어찌(반문·문어)", pos: "부사", hanja: "기(豈) — 반어의 문어 부사.", ex: { zh: "岂有此理！", pinyin: "qǐ yǒu cǐ lǐ", ko: "어찌 이럴 수가!" } },
+      ],
+    },
   ],
 };
 
