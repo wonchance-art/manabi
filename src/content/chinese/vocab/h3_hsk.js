@@ -150,7 +150,7 @@ const themes = {
         { zh: "干净", pinyin: "gānjìng", ko: "깨끗하다", pos: "형용사", hanja: "건정(乾淨) — '乾'은 마를 건, '淨'은 깨끗할 정.", ex: { zh: "房间很干净。", pinyin: "fángjiān hěn gānjìng", ko: "방이 깨끗해요." } },
         { zh: "坏", pinyin: "huài", ko: "나쁘다, 고장 나다, 상하다", pos: "형용사", hanja: "괴(壞) — '무너질 괴'.", ex: { zh: "电脑坏了。", pinyin: "diànnǎo huài le", ko: "컴퓨터가 고장 났어요." } },
         { zh: "旧", pinyin: "jiù", ko: "낡다, 오래되다, 헌", pos: "형용사", hanja: "구(舊) — '예 구'. 新(새것)의 반대.", ex: { zh: "这件衣服太旧了。", pinyin: "zhè jiàn yīfu tài jiù le", ko: "이 옷은 너무 낡았어요." } },
-        { zh: "可爱", pinyin: "kěài", ko: "귀엽다, 사랑스럽다", pos: "형용사", hanja: "가애(可愛) — '可'는 옳을 가, '愛'는 사랑 애.", ex: { zh: "这只小猫很可爱。", pinyin: "zhè zhī xiǎo māo hěn kě'ài", ko: "이 새끼 고양이는 귀여워요." } },
+        { zh: "可爱", pinyin: "kě'ài", ko: "귀엽다, 사랑스럽다", pos: "형용사", hanja: "가애(可愛) — '可'는 옳을 가, '愛'는 사랑 애.", ex: { zh: "这只小猫很可爱。", pinyin: "zhè zhī xiǎo māo hěn kě'ài", ko: "이 새끼 고양이는 귀여워요." } },
         { zh: "胖", pinyin: "pàng", ko: "뚱뚱하다, 살찌다", pos: "형용사", ex: { zh: "他最近有点胖了。", pinyin: "tā zuìjìn yǒudiǎn pàng le", ko: "그는 요즘 좀 살이 쪘어요." } },
         { zh: "瘦", pinyin: "shòu", ko: "마르다, 날씬하다, (옷이) 끼다", pos: "형용사", ex: { zh: "她很瘦。", pinyin: "tā hěn shòu", ko: "그녀는 말랐어요." } },
         { zh: "难过", pinyin: "nánguò", ko: "슬프다, 괴롭다", pos: "형용사", hanja: "난과(難過) — '難'은 어려울 난, '過'는 지날 과. '지내기 힘들다'.", ex: { zh: "听到这个消息，我很难过。", pinyin: "tīngdào zhège xiāoxi, wǒ hěn nánguò", ko: "이 소식을 듣고 저는 슬펐어요." } },

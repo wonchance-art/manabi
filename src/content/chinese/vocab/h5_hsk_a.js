@@ -155,7 +155,7 @@ const themes = {
         { zh: "悲观", pinyin: "bēiguān", ko: "비관적이다", pos: "형용사", hanja: "비관(悲觀) — '悲'는 슬플 비, '觀'은 볼 관.", ex: { zh: "他对未来很悲观。", pinyin: "tā duì wèilái hěn bēiguān", ko: "그는 미래에 대해 비관적이에요." } },
         { zh: "必然", pinyin: "bìrán", ko: "필연적이다, 반드시 그러하다", pos: "형용사", hanja: "필연(必然) — '必'은 반드시 필, '然'은 그럴 연.", ex: { zh: "这是必然的结果。", pinyin: "zhè shì bìrán de jiéguǒ", ko: "이것은 필연적인 결과예요." } },
         { zh: "必要", pinyin: "bìyào", ko: "필요하다, 필수적이다; 필요성", pos: "형용사", hanja: "필요(必要) — '要'는 요긴할 요.", ex: { zh: "没有必要担心。", pinyin: "méiyǒu bìyào dānxīn", ko: "걱정할 필요 없어요." } },
-        { zh: "不安", pinyin: "bùān", ko: "불안하다, 마음이 편치 않다", pos: "형용사", hanja: "불안(不安) — '不'은 아닐 불, '安'은 편안할 안.", ex: { zh: "他心里感到不安。", pinyin: "tā xīnlǐ gǎndào bù'ān", ko: "그는 마음속으로 불안해했어요." } },
+        { zh: "不安", pinyin: "bù'ān", ko: "불안하다, 마음이 편치 않다", pos: "형용사", hanja: "불안(不安) — '不'은 아닐 불, '安'은 편안할 안.", ex: { zh: "他心里感到不安。", pinyin: "tā xīnlǐ gǎndào bù'ān", ko: "그는 마음속으로 불안해했어요." } },
         { zh: "不耐烦", pinyin: "bùnàifán", ko: "귀찮다, 참을성이 없다, 짜증스럽다", pos: "형용사", hanja: "불내번(不耐煩) — '耐'는 견딜 내, '煩'은 번거로울 번.", ex: { zh: "他等得有点不耐烦了。", pinyin: "tā děng de yǒudiǎn bú nàifán le", ko: "그는 기다리다가 좀 짜증이 났어요." } },
         { zh: "不足", pinyin: "bùzú", ko: "부족하다, 모자라다; 미흡함", pos: "형용사", hanja: "부족(不足) — '足'은 발/족할 족.", ex: { zh: "时间不足，我们快点。", pinyin: "shíjiān bùzú, wǒmen kuài diǎn", ko: "시간이 부족하니 서둘러요." } },
         { zh: "岛", pinyin: "dǎo", ko: "섬", pos: "명사", hanja: "도(島) — '섬 도'. (입력 trad 㠀는 이체자)", ex: { zh: "这座岛非常美丽。", pinyin: "zhè zuò dǎo fēicháng měilì", ko: "이 섬은 정말 아름다워요." } },

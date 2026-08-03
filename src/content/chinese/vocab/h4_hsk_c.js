@@ -135,7 +135,7 @@ const themes = {
         { zh: "窄", pinyin: "zhǎi", ko: "좁다", pos: "형용사", hanja: "착(窄) — '좁을 착'.", ex: { zh: "这条路很窄。", pinyin: "zhè tiáo lù hěn zhǎi", ko: "이 길은 좁아요." } },
         { zh: "整齐", pinyin: "zhěngqí", ko: "가지런하다, 깔끔하다, 단정하다", pos: "형용사", hanja: "정제(整齊) — '整'은 가지런할 정, '齊'는 가지런할 제.", ex: { zh: "书放得很整齐。", pinyin: "shū fàng de hěn zhěngqí", ko: "책이 가지런히 놓여 있어요." } },
         { zh: "正常", pinyin: "zhèngcháng", ko: "정상이다, 정상적이다", pos: "형용사", hanja: "정상(正常) — '正'은 바를 정, '常'은 항상 상.", ex: { zh: "他的身体很正常。", pinyin: "tā de shēntǐ hěn zhèngcháng", ko: "그의 몸은 정상이에요." } },
-        { zh: "正确", pinyin: "zhèngquè", ko: "정확하다, 올바르다, 맞다", pos: "형용사", hanja: "정확(正確) — '正'은 바를 정, '確'은 굳을 확.", ex: { zh: "你的答案是正确的。", pinyin: "nǐ de dáàn shì zhèngquè de", ko: "당신의 답이 맞아요." } },
+        { zh: "正确", pinyin: "zhèngquè", ko: "정확하다, 올바르다, 맞다", pos: "형용사", hanja: "정확(正確) — '正'은 바를 정, '確'은 굳을 확.", ex: { zh: "你的答案是正确的。", pinyin: "nǐ de dá'àn shì zhèngquè de", ko: "당신의 답이 맞아요." } },
         { zh: "正式", pinyin: "zhèngshì", ko: "정식이다, 공식적이다", pos: "형용사", hanja: "정식(正式) — '正'은 바를 정, '式'은 법 식.", ex: { zh: "这是一个正式的会议。", pinyin: "zhè shì yí ge zhèngshì de huìyì", ko: "이건 공식 회의예요." } },
         { zh: "准确", pinyin: "zhǔnquè", ko: "정확하다, 정밀하다", pos: "형용사", hanja: "준확(準確) — '準'은 법도 준, '確'은 굳을 확. '정확하다'.", ex: { zh: "他的发音很准确。", pinyin: "tā de fāyīn hěn zhǔnquè", ko: "그의 발음은 정확해요." } },
         { zh: "辛苦", pinyin: "xīnkǔ", ko: "고생스럽다, 수고롭다; 고생하다", pos: "형용사", hanja: "신고(辛苦) — '辛'은 매울 신, '苦'는 쓸 고. '고생하다'.", ex: { zh: "您辛苦了！", pinyin: "nín xīnkǔ le", ko: "수고하셨어요!" } },

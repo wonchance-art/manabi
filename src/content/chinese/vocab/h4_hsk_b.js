@@ -172,7 +172,7 @@ const themes = {
         { zh: "连", pinyin: "lián", ko: "~조차, ~까지도; 잇다, 연결하다", pos: "개사", hanja: "련(連) — '잇닿을 련'. '连…都/也…' 형태로 '~조차도'.", ex: { zh: "他连饭都没吃。", pinyin: "tā lián fàn dōu méi chī", ko: "그는 밥조차 안 먹었어요." } },
         { zh: "内", pinyin: "nèi", ko: "안, 내부, 이내", pos: "명사", hanja: "내(內) — '안 내'. 外(밖)의 반대.", ex: { zh: "请在一周内回复。", pinyin: "qǐng zài yì zhōu nèi huífù", ko: "일주일 내로 답해 주세요." } },
         { zh: "难道", pinyin: "nándào", ko: "설마 ~란 말인가, 그래 ~란 말이야?", pos: "부사", hanja: "난도(難道) — 반문을 강조하는 부사예요. '설마'.", ex: { zh: "难道你不知道吗？", pinyin: "nándào nǐ bù zhīdào ma", ko: "설마 모르는 거예요?" } },
-        { zh: "偶尔", pinyin: "ǒuěr", ko: "이따금, 가끔, 어쩌다", pos: "부사", hanja: "우이(偶爾) — '偶'는 짝 우(우연), '爾'는 너 이.", ex: { zh: "我偶尔会去看电影。", pinyin: "wǒ ǒu'ěr huì qù kàn diànyǐng", ko: "저는 가끔 영화를 보러 가요." } },
+        { zh: "偶尔", pinyin: "ǒu'ěr", ko: "이따금, 가끔, 어쩌다", pos: "부사", hanja: "우이(偶爾) — '偶'는 짝 우(우연), '爾'는 너 이.", ex: { zh: "我偶尔会去看电影。", pinyin: "wǒ ǒu'ěr huì qù kàn diànyǐng", ko: "저는 가끔 영화를 보러 가요." } },
         { zh: "篇", pinyin: "piān", ko: "편 (글·문장을 세는 양사)", pos: "양사", hanja: "편(篇) — '책 편'. 문장·글을 세요.", ex: { zh: "我写了一篇文章。", pinyin: "wǒ xiě le yì piān wénzhāng", ko: "저는 글 한 편을 썼어요." } },
         { zh: "平时", pinyin: "píngshí", ko: "평소, 평상시", pos: "명사", hanja: "평시(平時) — '平'은 평평할 평, '時'는 때 시.", ex: { zh: "我平时很少喝酒。", pinyin: "wǒ píngshí hěn shǎo hē jiǔ", ko: "저는 평소 술을 거의 안 마셔요." } },
         { zh: "其次", pinyin: "qícì", ko: "그다음, 둘째로", pos: "접속사", hanja: "기차(其次) — '其'는 그 기, '次'는 버금 차. '그다음'.", ex: { zh: "首先要努力，其次要坚持。", pinyin: "shǒuxiān yào nǔlì, qícì yào jiānchí", ko: "우선 노력해야 하고, 그다음은 꾸준해야 해요." } },

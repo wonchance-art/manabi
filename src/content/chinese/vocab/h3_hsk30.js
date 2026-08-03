@@ -13,7 +13,7 @@ const themes = {
         { zh: "班级", pinyin: "bānjí", ko: "학급, 반", pos: "명사", ex: { zh: "每个班级都有自己的教室。", pinyin: "Měi gè bānjí dōu yǒu zìjǐ de jiàoshì.", ko: "각 학급마다 자기 교실이 있어요." } },
         { zh: "板", pinyin: "bǎn", ko: "판, 널빤지", pos: "명사", ex: { zh: "工人正在钉木板。", pinyin: "Gōngrén zhèngzài dīng mùbǎn.", ko: "인부가 나무판을 못질하고 있어요." } },
         { zh: "保", pinyin: "bǎo", ko: "보호하다, 지키다", pos: "동사", ex: { zh: "我们要保护环境。", pinyin: "Wǒmen yào bǎohù huánjìng.", ko: "우리는 환경을 보호해야 해요." } },
-        { zh: "保安", pinyin: "bǎoān", ko: "경비원, 보안", pos: "형용사", ex: { zh: "保安在门口检查证件。", pinyin: "Bǎoān zài ménkǒu jiǎnchá zhèngjiàn.", ko: "경비원이 입구에서 신분증을 확인해요." } },
+        { zh: "保安", pinyin: "bǎo'ān", ko: "경비원, 보안", pos: "형용사", ex: { zh: "保安在门口检查证件。", pinyin: "Bǎo'ān zài ménkǒu jiǎnchá zhèngjiàn.", ko: "경비원이 입구에서 신분증을 확인해요." } },
         { zh: "报", pinyin: "bào", ko: "신문, 알리다, 보고", pos: "명사", ex: { zh: "他每天看报。", pinyin: "Tā měitiān kàn bào.", ko: "그는 매일 신문을 봐요." } },
         { zh: "报到", pinyin: "bàodào", ko: "등록하다, 체크인하다", pos: "동사", ex: { zh: "新生今天来学校报到。", pinyin: "Xīnshēng jīntiān lái xuéxiào bàodào.", ko: "신입생이 오늘 학교에 등록하러 왔어요." } },
         { zh: "北部", pinyin: "běibù", ko: "북부", pos: "명사", ex: { zh: "他住在城市的北部。", pinyin: "Tā zhù zài chéngshì de běibù.", ko: "그는 도시의 북부에 살아요." } },
