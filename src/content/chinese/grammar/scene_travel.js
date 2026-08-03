@@ -12,6 +12,14 @@ const chapters = [
     topic: "공항·입국 来・待・住在・这是・没有带",
     summary: "방문 목적·체류 기간·숙소를 답하고, 여권과 신고 물품을 확인하는 입국 장면을 연습해요.",
     duration: "약 15분",
+    drills: [
+      { id: "h117-d1", type: "fill", prompt: "请给我看您的护___。(여권)", answer: "照" },
+      { id: "h117-d2", type: "fill", prompt: "我住一个星___。(일주일)", answer: "期" },
+      { id: "h117-d3", type: "choice", prompt: "'무슨 목적으로 오셨나요?'에 자연스러운 답은?", choices: ["我是来旅游的。", "我去旅游了。", "我旅游是来的。"], answer: "我是来旅游的。" },
+      { id: "h117-d4", type: "choice", prompt: "'처음 왔어요'는?", choices: ["我是第一次来。", "我来是一次第。", "第一次是我来了。"], answer: "我是第一次来。" },
+      { id: "h117-d5", type: "order", sentence: "我打算住五天。", prompt: "'닷새 묵을 계획이에요'를 배열해 보세요." },
+      { id: "h117-d6", type: "choice", listen: "祝你旅途愉快！", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["즐거운 여행 되세요!", "여행이 취소됐어요", "탑승을 서두르세요"], answer: "즐거운 여행 되세요!" },
+    ],
     sections: [
       {
         heading: "방문 목적을 짧게 답해요",
@@ -132,6 +140,14 @@ const chapters = [
     topic: "공항·이동 一张票・单程往返・几点开・换乘・几站",
     summary: "목적지 표를 사고 출발 시각을 확인하며, 환승 장소와 남은 정거장 수를 묻는 이동 장면을 연습해요.",
     duration: "약 15분",
+    drills: [
+      { id: "h118-d1", type: "fill", prompt: "我要一___去市区的票。(표를 세는 양사)", answer: "张" },
+      { id: "h118-d2", type: "fill", prompt: "在哪儿___车？(갈아타다)", answer: "换" },
+      { id: "h118-d3", type: "choice", prompt: "'왕복표'는?", choices: ["往返票", "单程票", "站台票"], answer: "往返票" },
+      { id: "h118-d4", type: "choice", prompt: "'다음 버스는 몇 시에 출발하나요?'는?", choices: ["下一班车几点出发？", "下一班车出发几点？", "几点下一班车是？"], answer: "下一班车几点出发？" },
+      { id: "h118-d5", type: "order", sentence: "这趟车到市中心吗？", prompt: "'이 차는 시내까지 가나요?'를 배열해 보세요." },
+      { id: "h118-d6", type: "choice", listen: "车票二十块一张。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["표는 한 장에 20위안이에요", "표가 20장 남았어요", "20번 창구로 가세요"], answer: "표는 한 장에 20위안이에요" },
+    ],
     sections: [
       {
         heading: "목적지까지 가는 표를 사요",
@@ -252,6 +268,14 @@ const chapters = [
     topic: "숙소 预订・几晚・办理・几点・寄存",
     summary: "예약과 숙박 일수를 확인하고, 체크인·체크아웃 시각과 짐 보관을 묻는 숙소 장면을 연습해요.",
     duration: "약 15분",
+    drills: [
+      { id: "h119-d1", type: "fill", prompt: "我预订___一个房间。(예약해 두었다)", answer: "了" },
+      { id: "h119-d2", type: "fill", prompt: "几点退___？(체크아웃)", answer: "房" },
+      { id: "h119-d3", type: "choice", prompt: "'짐을 여기에 둘 수 있나요?'는?", choices: ["行李可以放在这儿吗？", "行李放可以在这儿吗？", "在这儿行李吗可以放？"], answer: "行李可以放在这儿吗？" },
+      { id: "h119-d4", type: "choice", prompt: "체크인할 때 보통 보여 주는 것은?", choices: ["护照", "菜单", "地图"], answer: "护照" },
+      { id: "h119-d5", type: "order", sentence: "我想再住一天。", prompt: "'하루 더 묵고 싶어요'를 배열해 보세요." },
+      { id: "h119-d6", type: "choice", listen: "这是您的房卡。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["객실 카드입니다", "영수증입니다", "아침 식사 쿠폰입니다"], answer: "객실 카드입니다" },
+    ],
     sections: [
       {
         heading: "예약이 있다고 먼저 알려요",
@@ -372,6 +396,14 @@ const chapters = [
     topic: "숙소 再给・告诉・不能用・没有・换",
     summary: "수건과 와이파이 정보를 요청하고, 객실에 없거나 작동하지 않는 것을 알린 뒤 교체를 부탁하는 장면을 연습해요.",
     duration: "약 15분",
+    drills: [
+      { id: "h120-d1", type: "fill", prompt: "空调坏___。(고장 났다)", answer: "了" },
+      { id: "h120-d2", type: "fill", prompt: "请再给我一条毛___。(수건)", answer: "巾" },
+      { id: "h120-d3", type: "choice", prompt: "'방을 바꿔 주실 수 있나요?'는?", choices: ["能给我换个房间吗？", "能我换给房间吗？", "房间能换给我个吗？"], answer: "能给我换个房间吗？" },
+      { id: "h120-d4", type: "choice", prompt: "'너무 시끄러워요'는?", choices: ["太吵了。", "太少了。", "太早了。"], answer: "太吵了。", hint: "chǎo·shǎo·zǎo 발음 구분" },
+      { id: "h120-d5", type: "order", sentence: "洗手间的灯不亮了。", prompt: "'화장실 전등이 안 켜져요'를 배열해 보세요." },
+      { id: "h120-d6", type: "choice", listen: "马上给您修。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["바로 고쳐 드릴게요", "내일 고쳐 드릴게요", "고칠 수 없어요"], answer: "바로 고쳐 드릴게요" },
+    ],
     sections: [
       {
         heading: "필요한 물건을 더 요청해요",
@@ -492,6 +524,14 @@ const chapters = [
     topic: "식당 想要・给我・推荐・辣吗・就要",
     summary: "먹고 싶은 메뉴와 수량을 말하고, 추천과 맛을 확인한 뒤 선택을 확정하는 식당 장면을 연습해요.",
     duration: "약 15분",
+    drills: [
+      { id: "h121-d1", type: "fill", prompt: "你们这儿有什么招牌___？(대표 요리)", answer: "菜" },
+      { id: "h121-d2", type: "fill", prompt: "我要这个，不要太___。(맵게)", answer: "辣" },
+      { id: "h121-d3", type: "choice", prompt: "'추천해 주실 만한 게 있나요?'는?", choices: ["有什么推荐的吗？", "推荐什么有的吗？", "什么有推荐吗？"], answer: "有什么推荐的吗？" },
+      { id: "h121-d4", type: "choice", prompt: "'조금 이따 주문할게요'는?", choices: ["我们等一下再点。", "我们再点等一下。", "点我们等一下再。"], answer: "我们等一下再点。" },
+      { id: "h121-d5", type: "order", sentence: "来一个不辣的菜吧。", prompt: "'안 매운 요리 하나 주세요'를 배열해 보세요." },
+      { id: "h121-d6", type: "choice", listen: "请慢用。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["맛있게 드세요", "천천히 오세요", "조금만 드세요"], answer: "맛있게 드세요" },
+    ],
     sections: [
       {
         heading: "먹고 싶은 메뉴를 말해요",
@@ -612,6 +652,14 @@ const chapters = [
     topic: "식당 账单・付款・分开结账・有…吗・不要放",
     summary: "알레르기 재료와 제외 요청을 분명히 말하고, 계산서·결제 수단·나눠 계산하기를 확인하는 식당 장면을 연습해요.",
     duration: "약 15분",
+    drills: [
+      { id: "h122-d1", type: "fill", prompt: "服务员，买___！(계산할게요)", answer: "单" },
+      { id: "h122-d2", type: "fill", prompt: "我对牛奶过___。(알레르기가 있다)", answer: "敏" },
+      { id: "h122-d3", type: "choice", prompt: "'같이 계산해 주세요'는?", choices: ["一起算吧。", "算一起吧。", "吧一起算。"], answer: "一起算吧。" },
+      { id: "h122-d4", type: "choice", prompt: "'영수증 주세요'는?", choices: ["请给我发票。", "请发票给我要。", "发票我请给。"], answer: "请给我发票。" },
+      { id: "h122-d5", type: "order", sentence: "可以不放牛奶吗？", prompt: "'우유를 안 넣어 주실 수 있나요?'를 배열해 보세요." },
+      { id: "h122-d6", type: "choice", listen: "一共八十八块。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["모두 88위안입니다", "모두 18위안입니다", "8시에 문 닫아요"], answer: "모두 88위안입니다" },
+    ],
     sections: [
       {
         heading: "계산서를 요청해요",

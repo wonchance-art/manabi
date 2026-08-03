@@ -8,6 +8,14 @@ const chapters = [
     titleFr: "问路・交通",
     summary: "목적지까지 가는 길을 묻고, 방향·순서·상대 위치·버스 노선을 알아듣는 여행 장면을 연습해요.",
     duration: "약 15분",
+    drills: [
+      { id: "h115-d1", type: "fill", prompt: "邮局在银行___边。(왼쪽)", answer: "左" },
+      { id: "h115-d2", type: "fill", prompt: "我要在下一站下___。(내린다)", answer: "车" },
+      { id: "h115-d3", type: "choice", prompt: "'먼저 A하고, 그다음 B한다'는?", choices: ["先A，再B", "再A，先B", "还A，先B"], answer: "先A，再B" },
+      { id: "h115-d4", type: "choice", prompt: "'걸어서 갈 수 있어요?'는?", choices: ["走路能到吗？", "走路是到吗？", "走路到能吗？"], answer: "走路能到吗？" },
+      { id: "h115-d5", type: "order", sentence: "去机场应该坐几路车？", prompt: "'공항에 가려면 몇 번 버스를 타야 하나요?'를 배열해 보세요." },
+      { id: "h115-d6", type: "choice", listen: "一直走，到红绿灯右转。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["직진하다가 신호등에서 우회전하세요", "신호등에서 좌회전하세요", "여기서 바로 돌아가세요"], answer: "직진하다가 신호등에서 우회전하세요" },
+    ],
     sections: [
       {
         heading: "목적지까지 가는 길을 물어요",
@@ -128,6 +136,14 @@ const chapters = [
     titleFr: "身体不适・失物求助",
     summary: "아픈 곳과 알레르기를 알리고, 의료 도움을 요청하고, 잃어버린 물건을 신고하는 핵심 문장을 익혀요.",
     duration: "약 15분",
+    drills: [
+      { id: "h116-d1", type: "fill", prompt: "我头___。(아프다)", answer: "疼", accepts: ["痛"] },
+      { id: "h116-d2", type: "fill", prompt: "我的护照丢___。(잃어버렸다)", answer: "了" },
+      { id: "h116-d3", type: "choice", prompt: "'좀 도와주세요!'는?", choices: ["请帮帮我！", "请帮是我！", "请我帮帮！"], answer: "请帮帮我！" },
+      { id: "h116-d4", type: "choice", prompt: "약국에서 '하루에 몇 번 먹나요?'는?", choices: ["一天吃几次？", "一天吃几个？", "几天吃一次？"], answer: "一天吃几次？" },
+      { id: "h116-d5", type: "order", sentence: "我的钱包不见了。", prompt: "'지갑이 없어졌어요'를 배열해 보세요." },
+      { id: "h116-d6", type: "choice", listen: "你哪儿不舒服？", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["어디가 불편하세요?", "어디에 사세요?", "어디로 가세요?"], answer: "어디가 불편하세요?" },
+    ],
     sections: [
       {
         heading: "어디가 아픈지 바로 말해요",
