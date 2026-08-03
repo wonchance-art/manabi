@@ -21,6 +21,14 @@ const chapters = [
       { id: "h601-d5", type: "order", sentence: "你这样做是画蛇添足。", prompt: "'네가 이러는 건 사족을 다는 격이다'를 배열해 보세요." },
       { id: "h601-d6", type: "choice", listen: "熟能生巧。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["익숙해지면 요령이 생긴다", "익히지 않으면 잊는다", "기교보다 힘이 중요하다"], answer: "익숙해지면 요령이 생긴다" },
     ],
+    writing: {
+      prompt: "낙심한 친구에게 성어로 위로 한마디를 건네 보세요.",
+      hints: ["塞翁失马"],
+      samples: [
+        { zh: "别担心，塞翁失马，焉知非福。", pinyin: "Bié dānxīn, sàiwēng shī mǎ, yān zhī fēi fú.", ko: "걱정 마세요. 새옹지마라고, 그게 복이 될지 누가 알아요." },
+      ],
+      checklist: ["상황에 맞는 성어를 골랐다"],
+    },
     sections: [
       {
         heading: "고사성어 — 이야기가 굳은 네 글자",
@@ -91,6 +99,14 @@ const chapters = [
       { id: "h602-d5", type: "order", sentence: "老板把他炒鱿鱼了。", prompt: "'사장이 그를 해고해 버렸다'를 배열해 보세요." },
       { id: "h602-d6", type: "choice", listen: "别拍马屁了。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["아첨 좀 그만해", "박수 쳐 줘", "말 좀 세워 줘"], answer: "아첨 좀 그만해" },
     ],
+    writing: {
+      prompt: "요즘 근황을 관용구(开夜车·夜猫子 등)로 써 보세요.",
+      hints: ["天天开夜车"],
+      samples: [
+        { zh: "为了这个项目，我最近天天开夜车。", pinyin: "Wèile zhège xiàngmù, wǒ zuìjìn tiāntiān kāi yèchē.", ko: "이 프로젝트 때문에 요즘 매일 밤샘이에요." },
+      ],
+      checklist: ["관용구를 문자 그대로가 아닌 관용 의미로 썼다"],
+    },
     sections: [
       {
         heading: "惯用语 — 세 글자 관용구",
@@ -152,6 +168,14 @@ const chapters = [
       { id: "h603-d5", type: "order", sentence: "笑一笑，十年少。", prompt: "'한 번 웃으면 십 년 젊어진다'를 배열해 보세요." },
       { id: "h603-d6", type: "choice", listen: "活到老，学到老。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["늙을 때까지 배운다", "늙으면 쉬어야 한다", "배움에는 때가 있다"], answer: "늙을 때까지 배운다" },
     ],
+    writing: {
+      prompt: "좌우명 한 문장을 문어투(乃·之)로 써 보세요.",
+      hints: ["…乃…之…"],
+      samples: [
+        { zh: "失败乃成功之母，我不怕失败。", pinyin: "Shībài nǎi chénggōng zhī mǔ, wǒ bú pà shībài.", ko: "실패는 성공의 어머니이니, 저는 실패가 두렵지 않아요." },
+      ],
+      checklist: ["문어 조사(乃·之)의 자리를 지켰다"],
+    },
     sections: [
       {
         heading: "而 — 순접·역접·수식을 잇는 만능 연결",
@@ -225,6 +249,14 @@ const chapters = [
       { id: "h604-d5", type: "order", sentence: "时间就是金钱。", prompt: "'시간이 곧 돈이다'를 배열해 보세요." },
       { id: "h604-d6", type: "choice", listen: "急死我了！", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["급해 죽겠어!(과장)", "천천히 해도 돼", "너무 슬퍼"], answer: "급해 죽겠어!(과장)" },
     ],
+    writing: {
+      prompt: "무더운 날을 과장과 비유를 섞어 묘사해 보세요.",
+      hints: ["…死了 / 像…一样"],
+      samples: [
+        { zh: "今天热死了，教室像蒸笼一样。", pinyin: "Jīntiān rè sǐ le, jiàoshì xiàng zhēnglóng yíyàng.", ko: "오늘 더워 죽겠어요. 교실이 찜통 같아요." },
+      ],
+      checklist: ["과장(死了)과 비유(像…一样)를 함께 썼다"],
+    },
     sections: [
       {
         heading: "比喻 — 직유와 은유",
@@ -295,6 +327,15 @@ const chapters = [
       { id: "h605-d5", type: "order", sentence: "麻烦您帮我一下。", prompt: "'번거로우시겠지만 좀 도와주세요'를 배열해 보세요." },
       { id: "h605-d6", type: "choice", listen: "劳驾，让一下。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["실례합니다, 좀 지나갈게요", "수고하셨습니다", "운전 조심하세요"], answer: "실례합니다, 좀 지나갈게요" },
     ],
+    writing: {
+      prompt: "가게 주인의 격식 인사 한 문장과 친구 사이의 반말투 한 문장을 나란히 써 보세요.",
+      hints: ["您·欢迎 / 咱们…吧"],
+      samples: [
+        { zh: "您慢走，欢迎下次再来。", pinyin: "Nín màn zǒu, huānyíng xiàcì zài lái.", ko: "살펴 가세요. 다음에 또 오세요.", note: "격식" },
+        { zh: "咱们一起去吃饭吧！", pinyin: "Zánmen yìqǐ qù chīfàn ba!", ko: "우리 같이 밥 먹으러 가자!", note: "구어" },
+      ],
+      checklist: ["같은 뜻이라도 상대에 따라 어역을 바꿨다"],
+    },
     sections: [
       {
         heading: "두 개의 어휘 창고",
@@ -375,6 +416,14 @@ const chapters = [
       { id: "h606-d5", type: "order", sentence: "与其抱怨，不如改变。", prompt: "'불평하느니 바꾸는 게 낫다'를 배열해 보세요." },
       { id: "h606-d6", type: "choice", listen: "早点儿出发，以免堵车。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["차가 막히지 않게 일찍 출발해요", "늦게 출발해도 괜찮아요", "차가 막혀서 늦었어요"], answer: "차가 막히지 않게 일찍 출발해요" },
     ],
+    writing: {
+      prompt: "망설이는 친구에게 与其…不如로 조언해 보세요.",
+      hints: ["与其A，不如B"],
+      samples: [
+        { zh: "与其在家躺着，不如出去走走。", pinyin: "Yǔqí zài jiā tǎng zhe, bùrú chūqù zǒuzou.", ko: "집에 누워 있느니, 나가서 좀 걷는 게 나아요." },
+      ],
+      checklist: ["버릴 선택(与其)과 권할 선택(不如)을 배치했다"],
+    },
     sections: [
       {
         heading: "鉴于 — ~에 비추어, ~을 고려하여",
@@ -445,6 +494,14 @@ const chapters = [
       { id: "h607-d5", type: "order", sentence: "天忽然下起雨来了。", prompt: "'하늘에서 갑자기 비가 내리기 시작했다'를 배열해 보세요." },
       { id: "h607-d6", type: "choice", listen: "我刚到家。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["방금 집에 도착했어요", "아직 집이에요", "곧 집에 갈 거예요"], answer: "방금 집에 도착했어요" },
     ],
+    writing: {
+      prompt: "갑작스러운 날씨 변화를 刚才와 忽然을 살려 써 보세요.",
+      hints: ["刚才…，忽然…"],
+      samples: [
+        { zh: "刚才天还很好，忽然下起了大雨。", pinyin: "Gāngcái tiān hái hěn hǎo, hūrán xià qǐ le dà yǔ.", ko: "방금 전까지 날이 좋았는데, 갑자기 소나기가 쏟아졌어요." },
+      ],
+      checklist: ["刚才(명사성)와 刚(부사)을 구분했다"],
+    },
     sections: [
       {
         heading: "突然 vs 忽然 — 형용사냐 부사냐",

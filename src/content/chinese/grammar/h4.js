@@ -21,6 +21,14 @@ const chapters = [
       { id: "h401-d5", type: "order", sentence: "我把钱包忘在家里了。", prompt: "'지갑을 집에 두고 왔다'를 배열해 보세요." },
       { id: "h401-d6", type: "choice", listen: "看得见吗？", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["보여요?", "봤어요?", "볼 거예요?"], answer: "보여요?" },
     ],
+    writing: {
+      prompt: "물건을 잃어버렸다가 찾은 이야기를 보어(不到·到)를 살려 두 문장으로 써 보세요.",
+      hints: ["找不到 → 找到了"],
+      samples: [
+        { zh: "手机找不到了，最后在包里找到了。", pinyin: "Shǒujī zhǎo bu dào le, zuìhòu zài bāo li zhǎo dào le.", ko: "휴대폰이 안 보였는데, 결국 가방 안에서 찾았어요." },
+      ],
+      checklist: ["가능보어와 결과보어를 함께 썼다"],
+    },
     sections: [
       {
         heading: "보어의 큰 그림 — 전부 '동사 뒤'에 산다",
@@ -82,6 +90,14 @@ const chapters = [
       { id: "h402-d5", type: "order", sentence: "要是累了就休息吧。", prompt: "'피곤하면 쉬어'를 배열해 보세요." },
       { id: "h402-d6", type: "choice", listen: "如果可以，我想去中国。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["가능하다면 중국에 가고 싶어요", "중국에 가 본 적 있어요", "중국에 절대 안 가요"], answer: "가능하다면 중국에 가고 싶어요" },
     ],
+    writing: {
+      prompt: "주말 계획을 如果(要是)…就 가정문으로 써 보세요.",
+      hints: ["如果…，就…"],
+      samples: [
+        { zh: "如果周末天气好，我们就去爬山。", pinyin: "Rúguǒ zhōumò tiānqì hǎo, wǒmen jiù qù páshān.", ko: "주말에 날씨가 좋으면 등산하러 가요." },
+      ],
+      checklist: ["뒷절에 就를 놓았다"],
+    },
     sections: [
       {
         heading: "即使…也 — 설령 ~라도",
@@ -140,6 +156,14 @@ const chapters = [
       { id: "h403-d5", type: "order", sentence: "他是去年来韩国的。", prompt: "'그는 작년에 한국에 온 것이다'를 배열해 보세요." },
       { id: "h403-d6", type: "choice", listen: "你是怎么知道的？", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["어떻게 알게 된 거야?", "언제 알게 된 거야?", "누가 알려 준 거야?"], answer: "어떻게 알게 된 거야?" },
     ],
+    writing: {
+      prompt: "중국어를 언제·어떻게 배우기 시작했는지 是…的로 강조해 보세요.",
+      hints: ["是+강조할 정보+동사+的"],
+      samples: [
+        { zh: "我是前年开始学汉语的，是在网上学的。", pinyin: "Wǒ shì qiánnián kāishǐ xué Hànyǔ de, shì zài wǎngshàng xué de.", ko: "재작년에 중국어를 배우기 시작했고, 인터넷으로 배운 거예요." },
+      ],
+      checklist: ["이미 일어난 일의 시간·방식을 강조했다", "문장 끝을 的로 맺었다"],
+    },
     sections: [
       {
         heading: "기본 — 이미 일어난 일의 '어떻게'를 강조",
@@ -197,6 +221,14 @@ const chapters = [
       { id: "h404-d5", type: "order", sentence: "他连我的名字都忘了。", prompt: "'그는 내 이름조차 잊었다'를 배열해 보세요." },
       { id: "h404-d6", type: "choice", listen: "我连早饭都没吃。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["아침조차 못 먹었어요", "아침만 먹었어요", "아침을 많이 먹었어요"], answer: "아침조차 못 먹었어요" },
     ],
+    writing: {
+      prompt: "정신없이 바빴던 날을 连…都로 과장해 보세요.",
+      hints: ["连+명사+都+부정"],
+      samples: [
+        { zh: "我忙得连水都没时间喝。", pinyin: "Wǒ máng de lián shuǐ dōu méi shíjiān hē.", ko: "물 마실 시간조차 없을 만큼 바빴어요." },
+      ],
+      checklist: ["극단적인 예를 连 뒤에 세웠다"],
+    },
     sections: [
       {
         heading: "형태 — 连 + 극단적 예 + 都/也",
@@ -254,6 +286,14 @@ const chapters = [
       { id: "h405-d5", type: "order", sentence: "除了游泳，我还喜欢跑步。", prompt: "'수영 말고도 달리기도 좋아한다'를 배열해 보세요." },
       { id: "h405-d6", type: "choice", listen: "除了你，我谁都不认识。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["너 말고는 아무도 몰라", "너까지 모두 알아", "너만 몰라"], answer: "너 말고는 아무도 몰라" },
     ],
+    writing: {
+      prompt: "취미를 除了…以外，还으로 소개해 보세요.",
+      hints: ["除了A以外，还B"],
+      samples: [
+        { zh: "除了看书以外，我还喜欢做菜。", pinyin: "Chúle kàn shū yǐwài, wǒ hái xǐhuan zuò cài.", ko: "책 읽기 말고도 요리하는 것도 좋아해요." },
+      ],
+      checklist: ["포함·추가의 어감에 还를 썼다(都 아님)"],
+    },
     sections: [
       {
         heading: "두 얼굴 — 都(제외) vs 还/也(추가)",
@@ -311,6 +351,14 @@ const chapters = [
       { id: "h406-d5", type: "order", sentence: "风越刮越大了。", prompt: "'바람이 불수록 거세졌다'를 배열해 보세요." },
       { id: "h406-d6", type: "choice", listen: "我越吃越饿。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["먹을수록 배고파요", "먹어서 배불러요", "안 먹어서 배고파요"], answer: "먹을수록 배고파요" },
     ],
+    writing: {
+      prompt: "할수록 빠져드는 것을 越A越B로 써 보세요.",
+      hints: ["越+동사+越+형용사"],
+      samples: [
+        { zh: "这本书越看越有意思。", pinyin: "Zhè běn shū yuè kàn yuè yǒu yìsi.", ko: "이 책은 볼수록 재미있어요." },
+      ],
+      checklist: ["A(행동)와 B(변화)를 짝지었다"],
+    },
     sections: [
       {
         heading: "越来越 — 점점 ~해지다",
@@ -367,6 +415,14 @@ const chapters = [
       { id: "h407-d5", type: "order", sentence: "难道你忘了吗？", prompt: "'설마 잊은 거야?'를 배열해 보세요." },
       { id: "h407-d6", type: "choice", listen: "这不是很简单吗？", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["이거 아주 간단하잖아?", "이건 간단하지 않아요", "이게 뭐예요?"], answer: "이거 아주 간단하잖아?" },
     ],
+    writing: {
+      prompt: "약속을 어긴 친구에게 반어(不是…吗)로 한마디 해 보세요.",
+      hints: ["你不是…吗？"],
+      samples: [
+        { zh: "你不是说过要早点儿来吗？", pinyin: "Nǐ bú shì shuō guo yào zǎodiǎnr lái ma?", ko: "일찍 온다고 말했잖아요?" },
+      ],
+      checklist: ["부정+吗로 확인·추궁의 어감을 냈다"],
+    },
     sections: [
       {
         heading: "不是…吗? — ~지 않나요?(=맞잖아요)",
@@ -418,6 +474,14 @@ const chapters = [
       { id: "h408-d5", type: "order", sentence: "为了家人，他努力工作。", prompt: "'가족을 위해 그는 열심히 일한다'를 배열해 보세요." },
       { id: "h408-d6", type: "choice", listen: "关于中国文化，我很感兴趣。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["중국 문화에 관해 관심이 많아요", "중국 문화를 잘 몰라요", "중국 문화가 어려워요"], answer: "중국 문화에 관해 관심이 많아요" },
     ],
+    writing: {
+      prompt: "나에게 가장 중요한 것을 对…来说로 써 보세요.",
+      hints: ["对我来说，…"],
+      samples: [
+        { zh: "对我来说，家人最重要。", pinyin: "Duì wǒ lái shuō, jiārén zuì zhòngyào.", ko: "저에게는 가족이 가장 중요해요." },
+      ],
+      checklist: ["화제의 틀(对…来说)을 문장 앞에 세웠다"],
+    },
     sections: [
       {
         heading: "对…来说 — ~에게 있어서·~의 입장에서는",
@@ -477,6 +541,14 @@ const chapters = [
       { id: "h409-d5", type: "order", sentence: "这个菜不但好吃，而且便宜。", prompt: "'이 요리는 맛있을 뿐 아니라 싸다'를 배열해 보세요." },
       { id: "h409-d6", type: "choice", listen: "他不但会开车，而且开得很好。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["운전할 줄 알 뿐 아니라 잘해요", "운전은 하지만 서툴러요", "운전을 못 해요"], answer: "운전할 줄 알 뿐 아니라 잘해요" },
     ],
+    writing: {
+      prompt: "친구나 가족을 不但…而且로 자랑해 보세요.",
+      hints: ["不但A，而且B"],
+      samples: [
+        { zh: "他不但学习好，而且很热心。", pinyin: "Tā búdàn xuéxí hǎo, érqiě hěn rèxīn.", ko: "그는 공부를 잘할 뿐 아니라 아주 친절해요." },
+      ],
+      checklist: ["두 절의 주어가 같으면 不但을 주어 뒤에 두었다"],
+    },
     sections: [
       {
         heading: "不但…而且 — ~뿐만 아니라 게다가",
@@ -534,6 +606,14 @@ const chapters = [
       { id: "h410-d5", type: "order", sentence: "我们终于到山顶了。", prompt: "'우리는 마침내 산 정상에 도착했다'를 배열해 보세요." },
       { id: "h410-d6", type: "choice", listen: "其实我不太喜欢咖啡。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["사실 커피를 별로 안 좋아해요", "사실 커피를 아주 좋아해요", "커피를 자주 마셔요"], answer: "사실 커피를 별로 안 좋아해요" },
     ],
+    writing: {
+      prompt: "잘못 알고 있다가 깨달은 일을 以为…原来로 써 보세요.",
+      hints: ["我以为…，原来…"],
+      samples: [
+        { zh: "我以为他是中国人，原来他是韩国人。", pinyin: "Wǒ yǐwéi tā shì Zhōngguórén, yuánlái tā shì Hánguórén.", ko: "중국인인 줄 알았는데, 알고 보니 한국인이더라고요." },
+      ],
+      checklist: ["오해(以为)와 깨달음(原来)을 짝지었다"],
+    },
     sections: [
       {
         heading: "其实 — '사실은', 겉과 속을 뒤집어요",

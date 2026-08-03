@@ -21,6 +21,14 @@ const chapters = [
       { id: "h501-d5", type: "order", sentence: "会议将于明天举行。", prompt: "'회의는 내일 열릴 예정이다(서면)'를 배열해 보세요." },
       { id: "h501-d6", type: "choice", listen: "请勿吸烟。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["흡연하지 마시오(격식)", "담배를 피우세요", "환기해 주세요"], answer: "흡연하지 마시오(격식)" },
     ],
+    writing: {
+      prompt: "도서관·가게의 공지문 한 줄을 서면어(将于·请勿)로 써 보세요.",
+      hints: ["将于+시점 / 请勿+동사"],
+      samples: [
+        { zh: "图书馆将于下周一开放，馆内请勿饮食。", pinyin: "Túshūguǎn jiāng yú xià zhōuyī kāifàng, guǎn nèi qǐng wù yǐnshí.", ko: "도서관은 다음 주 월요일에 문을 엽니다. 관내 음식물 섭취는 삼가 주세요." },
+      ],
+      checklist: ["구어(要·别)를 서면어로 바꿨다"],
+    },
     sections: [
       {
         heading: "두 개의 층 — 구어와 서면어",
@@ -102,6 +110,14 @@ const chapters = [
       { id: "h502-d5", type: "order", sentence: "既然决定了，就去做吧。", prompt: "'기왕 결정했으니 가서 해라'를 배열해 보세요." },
       { id: "h502-d6", type: "choice", listen: "天气不好，然而他还是来了。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["날씨가 안 좋았지만 그래도 왔어요", "날씨가 좋아서 왔어요", "날씨 때문에 못 왔어요"], answer: "날씨가 안 좋았지만 그래도 왔어요" },
     ],
+    writing: {
+      prompt: "이미 내린 결정을 既然…就로 다잡아 보세요.",
+      hints: ["既然…，就…"],
+      samples: [
+        { zh: "既然选择了这条路，就坚持下去吧。", pinyin: "Jìrán xuǎnzé le zhè tiáo lù, jiù jiānchí xiàqu ba.", ko: "이 길을 택한 이상, 끝까지 가 봐요." },
+      ],
+      checklist: ["기정사실(既然)과 결론(就)을 연결했다"],
+    },
     sections: [
       {
         heading: "从而 — 앞 일이 원인이 되어 결과로",
@@ -171,6 +187,14 @@ const chapters = [
       { id: "h503-d5", type: "order", sentence: "我的汉语还是马马虎虎。", prompt: "'내 중국어는 아직 그저 그렇다'를 배열해 보세요." },
       { id: "h503-d6", type: "choice", listen: "万事开头难。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["모든 일은 시작이 어렵다", "만사가 순조롭다", "끝이 좋으면 다 좋다"], answer: "모든 일은 시작이 어렵다" },
     ],
+    writing: {
+      prompt: "공부 다짐 한 문장에 성어를 하나 넣어 보세요.",
+      hints: ["半途而废·一举两得 등"],
+      samples: [
+        { zh: "半途而废太可惜了，我要坚持到底。", pinyin: "Bàntú'érfèi tài kěxī le, wǒ yào jiānchí dàodǐ.", ko: "중도에 그만두면 너무 아까우니, 끝까지 해낼 거예요." },
+      ],
+      checklist: ["성어를 문장 성분으로 자연스럽게 녹였다"],
+    },
     sections: [
       {
         heading: "성어란 무엇인가 — 형태가 굳은 네 글자",
@@ -239,6 +263,14 @@ const chapters = [
       { id: "h504-d5", type: "order", sentence: "老师让我们多读书。", prompt: "'선생님은 우리에게 책을 많이 읽게 하신다'를 배열해 보세요." },
       { id: "h504-d6", type: "choice", listen: "别让我等太久。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["너무 오래 기다리게 하지 마", "오래 기다려 줘", "기다리지 않을게"], answer: "너무 오래 기다리게 하지 마" },
     ],
+    writing: {
+      prompt: "나를 감동시키거나 웃게 한 것을 让/使로 써 보세요.",
+      hints: ["A让/使B+감정"],
+      samples: [
+        { zh: "这部电影让我很感动。", pinyin: "Zhè bù diànyǐng ràng wǒ hěn gǎndòng.", ko: "이 영화는 저를 뭉클하게 했어요." },
+      ],
+      checklist: ["감정을 일으킨 주체를 주어로 세웠다"],
+    },
     sections: [
       {
         heading: "让 → 使·令 — 사역의 세 단계 격식",
@@ -317,6 +349,14 @@ const chapters = [
       { id: "h505-d5", type: "order", sentence: "这个问题由他来解决。", prompt: "'이 문제는 그가 해결하기로 한다'를 배열해 보세요." },
       { id: "h505-d6", type: "choice", listen: "他的作品受到了好评。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["그의 작품이 호평을 받았어요", "그의 작품이 혹평을 받았어요", "그가 작품을 평가했어요"], answer: "그의 작품이 호평을 받았어요" },
     ],
+    writing: {
+      prompt: "제안이 거절당했지만 포기하지 않은 이야기를 遭到/受到로 써 보세요.",
+      hints: ["遭到+부정적인 일"],
+      samples: [
+        { zh: "他的提议遭到了反对，但是他没有放弃。", pinyin: "Tā de tíyì zāodào le fǎnduì, dànshì tā méiyǒu fàngqì.", ko: "그의 제안은 반대에 부딪혔지만, 그는 포기하지 않았어요." },
+      ],
+      checklist: ["부정적인 일에 遭到, 좋은 일에 受到를 골랐다"],
+    },
     sections: [
       {
         heading: "被 + 행위자 — 피동의 기본 복습",
@@ -386,6 +426,14 @@ const chapters = [
       { id: "h506-d5", type: "order", sentence: "他们之中有一个中国人。", prompt: "'그들 중에 중국인이 한 명 있다'를 배열해 보세요." },
       { id: "h506-d6", type: "choice", listen: "其实这也是原因之一。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["사실 이것도 이유 중 하나예요", "이것이 유일한 이유예요", "이유는 전혀 없어요"], answer: "사실 이것도 이유 중 하나예요" },
     ],
+    writing: {
+      prompt: "비율(…分之…)이 들어간 소개 문장을 써 보세요.",
+      hints: ["三分之一 / 百分之…"],
+      samples: [
+        { zh: "我们公司的员工，三分之一是外国人。", pinyin: "Wǒmen gōngsī de yuángōng, sān fēn zhī yī shì wàiguórén.", ko: "우리 회사 직원의 3분의 1은 외국인이에요." },
+      ],
+      checklist: ["분모+分之+분자 순서를 지켰다"],
+    },
     sections: [
       {
         heading: "之 — 的과 它의 글말 압축",
@@ -456,6 +504,14 @@ const chapters = [
       { id: "h507-d5", type: "order", sentence: "我一句话也没说。", prompt: "'나는 한마디도 하지 않았다'를 배열해 보세요." },
       { id: "h507-d6", type: "choice", listen: "谁都知道这件事。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["누구나 다 이 일을 알아요", "아무도 이 일을 몰라요", "누가 아는지 물어봐요"], answer: "누구나 다 이 일을 알아요" },
     ],
+    writing: {
+      prompt: "아무것도 하기 싫은 날을 什么都·一…也不로 써 보세요.",
+      hints: ["什么都不… / 一+양사+也不…"],
+      samples: [
+        { zh: "周末我什么都不想做，一步也不想出门。", pinyin: "Zhōumò wǒ shénme dōu bù xiǎng zuò, yí bù yě bù xiǎng chūmén.", ko: "주말엔 아무것도 하기 싫고, 한 발짝도 나가기 싫어요." },
+      ],
+      checklist: ["의문사+都/也+부정의 틀을 지켰다"],
+    },
     sections: [
       {
         heading: "难道·岂 — 되물어서 강하게 긍정·부정",
@@ -518,6 +574,14 @@ const chapters = [
       { id: "h508-d5", type: "fill", prompt: "他跑___比我快。(보어 연결)", answer: "得" },
       { id: "h508-d6", type: "choice", listen: "他汉语说得越来越好了。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["그의 중국어가 점점 늘고 있어요", "그의 중국어가 점점 나빠져요", "그는 중국어를 안 배워요"], answer: "그의 중국어가 점점 늘고 있어요" },
     ],
+    writing: {
+      prompt: "세 가지 de(的·地·得)를 전부 넣은 한 문장에 도전해 보세요.",
+      hints: ["수식-的 / 부사어-地 / 보어-得"],
+      samples: [
+        { zh: "他认真地写了一篇很长的文章，写得非常好。", pinyin: "Tā rènzhēn de xiě le yì piān hěn cháng de wénzhāng, xiě de fēicháng hǎo.", ko: "그는 진지하게 아주 긴 글을 썼는데, 매우 잘 썼어요." },
+      ],
+      checklist: ["的·地·得를 각각 제자리에 놓았다"],
+    },
     sections: [
       {
         heading: "세 글자, 한 발음 — 역할로 가르기",
