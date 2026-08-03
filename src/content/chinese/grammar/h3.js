@@ -13,6 +13,14 @@ const chapters = [
     titleFr: "把字句",
     summary: "목적어를 동사 앞으로 끌어내 '그것을 어떻게 처리했는지'를 말하는 구문. 한국인이 가장 헷갈리는 어순이에요.",
     duration: "약 11분",
+    drills: [
+      { id: "h301-d1", type: "fill", prompt: "请___门关上。(문을 닫아 주세요 — 처치)", answer: "把" },
+      { id: "h301-d2", type: "choice", prompt: "把구문의 어순은?", choices: ["주어+把+목적어+동사+기타성분", "주어+동사+把+목적어", "把+주어+목적어+동사"], answer: "주어+把+목적어+동사+기타성분" },
+      { id: "h301-d3", type: "choice", prompt: "'컵을 탁자 위에 놓아라'는?", choices: ["把杯子放在桌子上。", "放把杯子在桌子上。", "把杯子在桌子上放。"], answer: "把杯子放在桌子上。" },
+      { id: "h301-d4", type: "fill", prompt: "我___作业做完了。(숙제를 다 해 버렸다)", answer: "把" },
+      { id: "h301-d5", type: "order", sentence: "请把窗户打开。", prompt: "'창문을 열어 주세요'를 배열해 보세요." },
+      { id: "h301-d6", type: "choice", listen: "把手机给我。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["휴대폰을 나에게 줘", "휴대폰을 사 줘", "휴대폰을 꺼"], answer: "휴대폰을 나에게 줘" },
+    ],
     sections: [
       {
         heading: "把의 정체 — 목적어를 처리하는 구문",
@@ -77,6 +85,14 @@ const chapters = [
     titleFr: "被字句",
     summary: "把자문을 뒤집은 피동문. 영어 수동태와 닮았지만, 중국어 被에는 '당했다'는 피해 뉘앙스가 숨어 있어요.",
     duration: "약 10분",
+    drills: [
+      { id: "h302-d1", type: "fill", prompt: "我的蛋糕___弟弟吃了。(동생에게 먹혀 버렸다)", answer: "被", accepts: ["让", "叫"] },
+      { id: "h302-d2", type: "choice", prompt: "被구문의 기본 뉘앙스는?", choices: ["원치 않은 일을 당했다는 피동", "기쁜 일의 강조", "미래의 계획"], answer: "원치 않은 일을 당했다는 피동" },
+      { id: "h302-d3", type: "choice", prompt: "'지갑을 도둑맞았다'는?", choices: ["钱包被偷了。", "钱包偷被了。", "被钱包偷了。"], answer: "钱包被偷了。" },
+      { id: "h302-d4", type: "order", sentence: "我的伞被人拿走了。", prompt: "'내 우산을 누가 가져가 버렸다'를 배열해 보세요." },
+      { id: "h302-d5", type: "fill", prompt: "被의 병음: ___", answer: "bèi", accepts: ["bei"] },
+      { id: "h302-d6", type: "choice", listen: "他被老师批评了。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["그는 선생님께 혼났어요", "그는 선생님을 칭찬했어요", "그는 선생님이 됐어요"], answer: "그는 선생님께 혼났어요" },
+    ],
     sections: [
       {
         heading: "형태 — 把자문을 뒤집기",
@@ -127,6 +143,14 @@ const chapters = [
     titleFr: "结果补语",
     summary: "동사 뒤에 完·到·见·好·错를 붙여 동작의 '결과'를 한 덩어리로 말해요. 중국어 동사의 핵심 표현력이에요.",
     duration: "약 11분",
+    drills: [
+      { id: "h303-d1", type: "fill", prompt: "我听___了。(듣고 이해했다)", answer: "懂" },
+      { id: "h303-d2", type: "choice", prompt: "'다 먹었다(남김없이)'는?", choices: ["吃完了", "吃了完", "完吃了"], answer: "吃完了" },
+      { id: "h303-d3", type: "choice", prompt: "결과보어 중 '잘못·틀리게'를 나타내는 것은?", choices: ["错", "完", "到"], answer: "错" },
+      { id: "h303-d4", type: "fill", prompt: "找___了！(찾아냈다 — 목적 달성)", answer: "到" },
+      { id: "h303-d5", type: "order", sentence: "作业我做完了。", prompt: "'숙제는 다 했다'를 배열해 보세요." },
+      { id: "h303-d6", type: "choice", listen: "卖完了。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["다 팔렸어요", "안 팔아요", "싸게 팔아요"], answer: "다 팔렸어요" },
+    ],
     sections: [
       {
         heading: "결과보어란 — 동작 + 그 결과를 한 묶음으로",
@@ -180,6 +204,14 @@ const chapters = [
     titleFr: "趋向补语",
     summary: "来·去로 화자 기준의 방향을, 上·下·进·出 등으로 공간 이동을 동사에 붙여요. 두 개를 합치면 복합방향보어가 돼요.",
     duration: "약 12분",
+    drills: [
+      { id: "h304-d1", type: "fill", prompt: "他走___来了。(밖에서 안으로 들어왔다)", answer: "进" },
+      { id: "h304-d2", type: "choice", prompt: "'가지고 와'(화자 쪽으로)는?", choices: ["拿来", "拿去", "拿走"], answer: "拿来" },
+      { id: "h304-d3", type: "choice", prompt: "上来와 上去의 구분 기준은?", choices: ["来=화자 쪽으로, 去=화자에게서 멀어지는 쪽으로", "来=위로, 去=아래로", "차이가 없다"], answer: "来=화자 쪽으로, 去=화자에게서 멀어지는 쪽으로" },
+      { id: "h304-d4", type: "fill", prompt: "请进___。(들어오세요 — 화자 쪽)", answer: "来" },
+      { id: "h304-d5", type: "order", sentence: "他从楼上走下来了。", prompt: "'그가 위층에서 걸어 내려왔다'를 배열해 보세요." },
+      { id: "h304-d6", type: "choice", listen: "他跑出去了。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["그가 뛰어나갔어요", "그가 뛰어들어왔어요", "그가 넘어졌어요"], answer: "그가 뛰어나갔어요" },
+    ],
     sections: [
       {
         heading: "단순방향보어 — 来(이쪽)와 去(저쪽)",
@@ -247,6 +279,14 @@ const chapters = [
     titleFr: "程度补语",
     summary: "得로 동사·형용사 뒤에 '얼마나'를 붙여요. 한국인 최대 함정인 得의 위치와 목적어 처리를 정복해요.",
     duration: "약 11분",
+    drills: [
+      { id: "h305-d1", type: "fill", prompt: "他说汉语说___很好。(정도보어 연결 조사)", answer: "得" },
+      { id: "h305-d2", type: "choice", prompt: "'그는 유난히 빨리 달린다'(정도보어)는?", choices: ["他跑得特别快。", "他特别快跑得。", "他跑特别快得。"], answer: "他跑得特别快。" },
+      { id: "h305-d3", type: "choice", prompt: "정도보어의 부정 '잘 못한다'는?", choices: ["说得不好", "不说得好", "说不得好"], answer: "说得不好", hint: "不는 得 뒤에" },
+      { id: "h305-d4", type: "fill", prompt: "정도보어 得의 병음: ___ (경성)", answer: "de" },
+      { id: "h305-d5", type: "order", sentence: "他写字写得很漂亮。", prompt: "'그는 글씨를 아주 예쁘게 쓴다'를 배열해 보세요." },
+      { id: "h305-d6", type: "choice", listen: "你说得太快了。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["당신은 말이 너무 빨라요", "당신은 말을 참 잘해요", "당신은 너무 늦게 왔어요"], answer: "당신은 말이 너무 빨라요" },
+    ],
     sections: [
       {
         heading: "기본 틀 — 동사/형용사 + 得 + 정도",
@@ -305,6 +345,14 @@ const chapters = [
     titleFr: "可能补语",
     summary: "결과·방향보어 사이에 得/不를 끼워 '~할 수 있다/없다'를 만들어요. 能과는 또 다른 '능력·여건' 표현이에요.",
     duration: "약 10분",
+    drills: [
+      { id: "h306-d1", type: "fill", prompt: "太多了，我吃___完。(다 못 먹는다)", answer: "不" },
+      { id: "h306-d2", type: "choice", prompt: "'알아들을 수 있다'(가능보어)는?", choices: ["听得懂", "听懂得", "得听懂"], answer: "听得懂" },
+      { id: "h306-d3", type: "choice", prompt: "吃得完과 吃不完의 구분은?", choices: ["得=가능, 不=불가능", "得=과거, 不=미래", "차이가 없다"], answer: "得=가능, 不=불가능" },
+      { id: "h306-d4", type: "fill", prompt: "明天你回___来吗？(돌아올 수 있어?)", answer: "得" },
+      { id: "h306-d5", type: "order", sentence: "这个字我看不清楚。", prompt: "'이 글자는 잘 안 보인다'를 배열해 보세요." },
+      { id: "h306-d6", type: "choice", listen: "对不起，我做不到。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["미안하지만 그건 못 해요", "미안해서 안 했어요", "괜찮아요, 할 수 있어요"], answer: "미안하지만 그건 못 해요" },
+    ],
     sections: [
       {
         heading: "형태 — 동사 + 得/不 + 결과·방향보어",
@@ -357,6 +405,14 @@ const chapters = [
     titleFr: "时量补语",
     summary: "'얼마나 오래' 했는지를 동사 뒤에 붙여요. 목적어가 있을 때 시간을 어디에 놓느냐가 한국인 함정이에요.",
     duration: "약 10분",
+    drills: [
+      { id: "h307-d1", type: "fill", prompt: "我学汉语学___一年了。(~해 온 지 — 지속)", answer: "了" },
+      { id: "h307-d2", type: "choice", prompt: "'중국에 온 지 3년 됐다'는?", choices: ["我来中国三年了。", "我三年来中国了。", "我来了三年中国前。"], answer: "我来中国三年了。" },
+      { id: "h307-d3", type: "choice", prompt: "学了一年과 学了一年了의 구분은?", choices: ["뒤의 것은 지금도 계속하고 있다는 어감", "앞의 것이 계속의 어감", "차이가 없다"], answer: "뒤의 것은 지금도 계속하고 있다는 어감" },
+      { id: "h307-d4", type: "fill", prompt: "'반년': ___年", answer: "半" },
+      { id: "h307-d5", type: "order", sentence: "我们认识十年了。", prompt: "'우리는 안 지 10년 됐다'를 배열해 보세요." },
+      { id: "h307-d6", type: "choice", listen: "我住了两年了。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["산 지 2년 됐어요(지금도)", "2년 전에 살았어요", "2년 뒤에 살 거예요"], answer: "산 지 2년 됐어요(지금도)" },
+    ],
     sections: [
       {
         heading: "기본 — 동사 + 시간의 양",
@@ -400,6 +456,14 @@ const chapters = [
     titleFr: "复句",
     summary: "因为…所以, 虽然…但是, 如果…就, 一边…一边 — 짝을 이루는 접속 표현으로 문장을 길게 엮어요.",
     duration: "약 11분",
+    drills: [
+      { id: "h308-d1", type: "fill", prompt: "虽然很累，___是很开心。(그렇지만)", answer: "但", accepts: ["可"] },
+      { id: "h308-d2", type: "choice", prompt: "'~하기만 하면 곧 ~하다'는 짝은?", choices: ["只要…就…", "虽然…但是…", "因为…所以…"], answer: "只要…就…" },
+      { id: "h308-d3", type: "choice", prompt: "如果…的话의 뜻은?", choices: ["만약 ~라면", "비록 ~지만", "~하기 때문에"], answer: "만약 ~라면" },
+      { id: "h308-d4", type: "fill", prompt: "一边看电视，一___吃饭。(동시 동작)", answer: "边" },
+      { id: "h308-d5", type: "order", sentence: "只要努力，就会成功。", prompt: "'노력하기만 하면 성공한다'를 배열해 보세요." },
+      { id: "h308-d6", type: "choice", listen: "虽然贵，但是很好。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["비싸긴 하지만 좋아요", "싸고 좋아요", "비싸서 안 좋아요"], answer: "비싸긴 하지만 좋아요" },
+    ],
     sections: [
       {
         heading: "인과 — 因为…所以 (왜냐하면…그래서)",
@@ -458,6 +522,14 @@ const chapters = [
     titleFr: "比较句",
     summary: "A 比 B의 기본을 넘어, 차이의 정도(高一点儿/高得多)와 점점 변화(越来越)까지 비교를 입체적으로 다뤄요.",
     duration: "약 10분",
+    drills: [
+      { id: "h309-d1", type: "fill", prompt: "他跟我___样高。(똑같이 크다)", answer: "一" },
+      { id: "h309-d2", type: "choice", prompt: "'A는 B만 못하다'는?", choices: ["A不如B", "A比不B", "A如不B"], answer: "A不如B" },
+      { id: "h309-d3", type: "choice", prompt: "越来越+형용사의 뜻은?", choices: ["점점 더 ~해진다", "가장 ~하다", "조금 ~하다"], answer: "점점 더 ~해진다" },
+      { id: "h309-d4", type: "fill", prompt: "他越说___快。(말할수록 빨라진다)", answer: "越" },
+      { id: "h309-d5", type: "order", sentence: "今天没有昨天那么冷。", prompt: "'오늘은 어제만큼 그렇게 춥지 않다'를 배열해 보세요." },
+      { id: "h309-d6", type: "choice", listen: "汉语越学越有意思。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["중국어는 배울수록 재미있어요", "중국어는 점점 어려워요", "중국어를 그만 배울래요"], answer: "중국어는 배울수록 재미있어요" },
+    ],
     sections: [
       {
         heading: "차이의 정도 붙이기 — 比 + 형용사 + 정도",
@@ -511,6 +583,14 @@ const chapters = [
     titleFr: "存现句",
     summary: "장소를 주어 자리에 놓고 '무엇이 있다·나타났다·사라졌다'를 말하는 구문. 한국어 어순과 반대라 헷갈려요.",
     duration: "약 9분",
+    drills: [
+      { id: "h310-d1", type: "fill", prompt: "墙上挂___一张地图。(걸려 있다 — 존현)", answer: "着" },
+      { id: "h310-d2", type: "choice", prompt: "존현문의 어순은?", choices: ["장소+동사+사물", "사물+동사+장소", "동사+장소+사물"], answer: "장소+동사+사물" },
+      { id: "h310-d3", type: "choice", prompt: "'앞쪽에서 사람이 하나 걸어왔다'는?", choices: ["前边走来了一个人。", "一个人前边走来了。", "前边一个人了走来。"], answer: "前边走来了一个人。" },
+      { id: "h310-d4", type: "fill", prompt: "특정한 것의 위치는 ___로, 불특정한 것의 존재는 有로 말해요.", answer: "在" },
+      { id: "h310-d5", type: "order", sentence: "房间里坐着两个人。", prompt: "'방 안에 두 사람이 앉아 있다'를 배열해 보세요." },
+      { id: "h310-d6", type: "choice", listen: "外边来了很多人。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["밖에 많은 사람이 왔어요", "밖에 아무도 없어요", "밖에 나가지 마세요"], answer: "밖에 많은 사람이 왔어요" },
+    ],
     sections: [
       {
         heading: "기본 틀 — 장소 + 동사 + 사람·사물",
@@ -554,6 +634,14 @@ const chapters = [
     titleFr: "程度・范围副词",
     summary: "정도의 눈금을 나누는 比较(비교적)·非常/特别(아주)·几乎(거의)와, 범위를 좁히는 只/只有(오직). 형용사·동사 앞 한 글자로 강도를 정밀하게 조절해요.",
     duration: "약 9분",
+    drills: [
+      { id: "h311-d1", type: "fill", prompt: "今天___别冷。(유난히)", answer: "特" },
+      { id: "h311-d2", type: "choice", prompt: "挺…的의 뜻은?", choices: ["꽤 ~하다", "전혀 ~하지 않다", "가장 ~하다"], answer: "꽤 ~하다" },
+      { id: "h311-d3", type: "choice", prompt: "几乎의 뜻은?", choices: ["거의", "절대", "방금"], answer: "거의" },
+      { id: "h311-d4", type: "fill", prompt: "我___点儿忘了。(하마터면)", answer: "差" },
+      { id: "h311-d5", type: "order", sentence: "这里的菜都挺好吃的。", prompt: "'여기 요리는 다 꽤 맛있다'를 배열해 보세요." },
+      { id: "h311-d6", type: "choice", listen: "我几乎每天都运动。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["거의 매일 운동해요", "가끔 운동해요", "운동을 전혀 안 해요"], answer: "거의 매일 운동해요" },
+    ],
     sections: [
       {
         heading: "比较 — '비교적·좀', 부드러운 정도",
@@ -630,6 +718,14 @@ const chapters = [
     titleFr: "概数・近似量",
     summary: "딱 떨어지지 않는 수를 말하는 법. 差不多(거의)·左右(쯤)·多(남짓)·至少/最多(적어도/최대)·一共(모두). 어림수 어순이 한국어와 달라 함정이 많아요.",
     duration: "약 10분",
+    drills: [
+      { id: "h312-d1", type: "fill", prompt: "我们班有二十___个学生。(~여 명)", answer: "多" },
+      { id: "h312-d2", type: "choice", prompt: "'사나흘'(어림)은?", choices: ["三四天", "三和四天", "三还是四天"], answer: "三四天" },
+      { id: "h312-d3", type: "choice", prompt: "左右의 위치는?", choices: ["수량 표현 뒤 (十点左右)", "수량 표현 앞", "문장 맨 앞"], answer: "수량 표현 뒤 (十点左右)" },
+      { id: "h312-d4", type: "fill", prompt: "十点___右到。(10시쯤)", answer: "左" },
+      { id: "h312-d5", type: "order", sentence: "我们学了差不多一年。", prompt: "'우리는 거의 1년을 배웠다'를 배열해 보세요." },
+      { id: "h312-d6", type: "choice", listen: "差不多了。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["거의 다 됐어요", "많이 부족해요", "너무 많아요"], answer: "거의 다 됐어요" },
+    ],
     sections: [
       {
         heading: "差不多 — '거의·비슷하게'",
@@ -699,6 +795,14 @@ const chapters = [
     titleFr: "频率副词",
     summary: "끊김 없는 지속의 一直(줄곧), 잦은 반복의 经常/常常(자주). 모두 동사 앞에 와서 '얼마나 자주·계속'인지를 표시하는 빈도 부사예요.",
     duration: "약 8분",
+    drills: [
+      { id: "h313-d1", type: "fill", prompt: "欢迎___来！(다음에 또 오세요 — 미래의 반복)", answer: "再" },
+      { id: "h313-d2", type: "choice", prompt: "再와 又의 구분은?", choices: ["再=아직 안 일어난 반복(미래), 又=이미 일어난 반복(과거)", "반대다", "차이가 없다"], answer: "再=아직 안 일어난 반복(미래), 又=이미 일어난 반복(과거)" },
+      { id: "h313-d3", type: "choice", prompt: "'그가 어제 또 늦게 왔다'는?", choices: ["他昨天又来晚了。", "他昨天再来晚了。", "他昨天更来晚了。"], answer: "他昨天又来晚了。" },
+      { id: "h313-d4", type: "fill", prompt: "他今天___来了！(어제도 오더니 오늘 또 왔다)", answer: "又" },
+      { id: "h313-d5", type: "order", sentence: "请你明天再来一次。", prompt: "'내일 한 번 더 와 주세요'를 배열해 보세요." },
+      { id: "h313-d6", type: "choice", listen: "他又感冒了。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["그가 또 감기에 걸렸어요", "그는 감기가 나았어요", "그는 감기에 걸린 적 없어요"], answer: "그가 또 감기에 걸렸어요" },
+    ],
     sections: [
       {
         heading: "一直 — '줄곧·계속', 끊김 없이",
