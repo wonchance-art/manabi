@@ -13,6 +13,14 @@ const chapters = [
     titleFr: "补语综述",
     summary: "결과·방향·정도·가능·시량 — 흩어져 있던 보어를 '동사 뒤 자리'라는 한 원리로 묶어 한눈에 정리해요.",
     duration: "약 11분",
+    drills: [
+      { id: "h401-d1", type: "choice", prompt: "'열쇠를 못 찾겠다'(가능보어)는?", choices: ["找不到钥匙", "不找到钥匙", "找到不钥匙"], answer: "找不到钥匙" },
+      { id: "h401-d2", type: "fill", prompt: "他把椅子搬___来了。(옮겨 들어왔다 — 방향)", answer: "进" },
+      { id: "h401-d3", type: "choice", prompt: "看과 看见의 구분은?", choices: ["看=동작, 见=결과(눈에 들어옴)", "看=결과, 见=동작", "차이가 없다"], answer: "看=동작, 见=결과(눈에 들어옴)" },
+      { id: "h401-d4", type: "fill", prompt: "声音太小，我听___见。(안 들린다)", answer: "不" },
+      { id: "h401-d5", type: "order", sentence: "我把钱包忘在家里了。", prompt: "'지갑을 집에 두고 왔다'를 배열해 보세요." },
+      { id: "h401-d6", type: "choice", listen: "看得见吗？", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["보여요?", "봤어요?", "볼 거예요?"], answer: "보여요?" },
+    ],
     sections: [
       {
         heading: "보어의 큰 그림 — 전부 '동사 뒤'에 산다",
@@ -66,6 +74,14 @@ const chapters = [
     titleFr: "假设复句",
     summary: "如果를 넘어 即使(설령), 要是(만약), 一…就(~하면 곧)까지. 가정의 강도와 뉘앙스를 골라 쓰는 단계예요.",
     duration: "약 10분",
+    drills: [
+      { id: "h402-d1", type: "fill", prompt: "___是明天下雨，我们就不去了。(만약)", answer: "要" },
+      { id: "h402-d2", type: "choice", prompt: "가정문의 짝은?", choices: ["要是…就…", "虽然…就…", "因为…就…"], answer: "要是…就…" },
+      { id: "h402-d3", type: "choice", prompt: "'네가 안 가면 나도 안 가'는?", choices: ["要是你不去，我就不去。", "你不去要是，我就不去。", "要是你不去，我再不去。"], answer: "要是你不去，我就不去。" },
+      { id: "h402-d4", type: "fill", prompt: "如果没有时间___话，明天再说。(~라면)", answer: "的" },
+      { id: "h402-d5", type: "order", sentence: "要是累了就休息吧。", prompt: "'피곤하면 쉬어'를 배열해 보세요." },
+      { id: "h402-d6", type: "choice", listen: "如果可以，我想去中国。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["가능하다면 중국에 가고 싶어요", "중국에 가 본 적 있어요", "중국에 절대 안 가요"], answer: "가능하다면 중국에 가고 싶어요" },
+    ],
     sections: [
       {
         heading: "即使…也 — 설령 ~라도",
@@ -116,6 +132,14 @@ const chapters = [
     titleFr: "是…的",
     summary: "이미 일어난 일의 '시간·장소·방법'을 강조하는 是…的 구문. 了와 헷갈리기 쉬운 핵심 표현이에요.",
     duration: "약 11분",
+    drills: [
+      { id: "h403-d1", type: "fill", prompt: "你___什么时候来的？(과거 일의 시간 강조)", answer: "是" },
+      { id: "h403-d2", type: "choice", prompt: "是…的 구문이 강조하는 것은?", choices: ["이미 일어난 일의 시간·장소·방식", "미래의 계획", "동작의 진행"], answer: "이미 일어난 일의 시간·장소·방식" },
+      { id: "h403-d3", type: "choice", prompt: "'나는 비행기로 온 거야'는?", choices: ["我是坐飞机来的。", "我坐飞机是来的。", "我是坐飞机来了。"], answer: "我是坐飞机来的。" },
+      { id: "h403-d4", type: "fill", prompt: "这是在北京买___。(산 것이다)", answer: "的" },
+      { id: "h403-d5", type: "order", sentence: "他是去年来韩国的。", prompt: "'그는 작년에 한국에 온 것이다'를 배열해 보세요." },
+      { id: "h403-d6", type: "choice", listen: "你是怎么知道的？", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["어떻게 알게 된 거야?", "언제 알게 된 거야?", "누가 알려 준 거야?"], answer: "어떻게 알게 된 거야?" },
+    ],
     sections: [
       {
         heading: "기본 — 이미 일어난 일의 '어떻게'를 강조",
@@ -165,6 +189,14 @@ const chapters = [
     titleFr: "连…都/也",
     summary: "连(조차/마저)으로 극단적인 예를 들어 강조해요. '~조차 그렇다면 나머지는 말할 것도 없다'는 논리예요.",
     duration: "약 9분",
+    drills: [
+      { id: "h404-d1", type: "fill", prompt: "___他都不知道。(그조차도 모른다)", answer: "连" },
+      { id: "h404-d2", type: "choice", prompt: "连…都/也의 뜻은?", choices: ["~조차도", "~덕분에", "~대신에"], answer: "~조차도" },
+      { id: "h404-d3", type: "choice", prompt: "'물 한 잔조차 안 마셨다'는?", choices: ["连一杯水都没喝。", "连没喝一杯水都。", "一杯水连都没喝。"], answer: "连一杯水都没喝。" },
+      { id: "h404-d4", type: "fill", prompt: "连星期天他___工作。(일요일조차도 일한다)", answer: "都", accepts: ["也"] },
+      { id: "h404-d5", type: "order", sentence: "他连我的名字都忘了。", prompt: "'그는 내 이름조차 잊었다'를 배열해 보세요." },
+      { id: "h404-d6", type: "choice", listen: "我连早饭都没吃。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["아침조차 못 먹었어요", "아침만 먹었어요", "아침을 많이 먹었어요"], answer: "아침조차 못 먹었어요" },
+    ],
     sections: [
       {
         heading: "형태 — 连 + 극단적 예 + 都/也",
@@ -214,6 +246,14 @@ const chapters = [
     titleFr: "除了…以外",
     summary: "除了…以外 하나가 都(빼고)와 还/也(말고 더)로 정반대 뜻이 돼요. 짝 단어를 보고 의미를 가려요.",
     duration: "약 9분",
+    drills: [
+      { id: "h405-d1", type: "fill", prompt: "___了他，别人都来了。(~를 제외하고)", answer: "除" },
+      { id: "h405-d2", type: "choice", prompt: "除了A以外，都B와 除了A以外，还B의 구분은?", choices: ["都=A 제외, 还=A에 더해 추가", "반대다", "차이가 없다"], answer: "都=A 제외, 还=A에 더해 추가" },
+      { id: "h405-d3", type: "choice", prompt: "'중국어 말고도 영어도 할 줄 안다'는?", choices: ["除了汉语以外，他还会英语。", "除了汉语以外，他都会英语。", "他会英语除了汉语。"], answer: "除了汉语以外，他还会英语。" },
+      { id: "h405-d4", type: "fill", prompt: "除了西瓜以___，我都喜欢。(~외에)", answer: "外" },
+      { id: "h405-d5", type: "order", sentence: "除了游泳，我还喜欢跑步。", prompt: "'수영 말고도 달리기도 좋아한다'를 배열해 보세요." },
+      { id: "h405-d6", type: "choice", listen: "除了你，我谁都不认识。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["너 말고는 아무도 몰라", "너까지 모두 알아", "너만 몰라"], answer: "너 말고는 아무도 몰라" },
+    ],
     sections: [
       {
         heading: "두 얼굴 — 都(제외) vs 还/也(추가)",
@@ -263,6 +303,14 @@ const chapters = [
     titleFr: "越…越",
     summary: "越来越(점점)와 越 A 越 B(A할수록 B하다)로 변화와 비례를 표현해요. 두 越 구문의 차이를 정리해요.",
     duration: "약 8분",
+    drills: [
+      { id: "h406-d1", type: "fill", prompt: "雨越下___大。(내릴수록 거세진다)", answer: "越" },
+      { id: "h406-d2", type: "choice", prompt: "越来越와 越A越B의 구분은?", choices: ["越来越=시간이 갈수록, 越A越B=A할수록 B하다", "반대다", "차이가 없다"], answer: "越来越=시간이 갈수록, 越A越B=A할수록 B하다" },
+      { id: "h406-d3", type: "choice", prompt: "'생각할수록 화가 난다'는?", choices: ["越想越生气。", "越来越想生气。", "想越气越生。"], answer: "越想越生气。" },
+      { id: "h406-d4", type: "fill", prompt: "东西___来越贵了。(물가가 점점 오른다)", answer: "越" },
+      { id: "h406-d5", type: "order", sentence: "风越刮越大了。", prompt: "'바람이 불수록 거세졌다'를 배열해 보세요." },
+      { id: "h406-d6", type: "choice", listen: "我越吃越饿。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["먹을수록 배고파요", "먹어서 배불러요", "안 먹어서 배고파요"], answer: "먹을수록 배고파요" },
+    ],
     sections: [
       {
         heading: "越来越 — 점점 ~해지다",
@@ -311,6 +359,14 @@ const chapters = [
     titleFr: "反问句",
     summary: "不是…吗? · 难道 · 哪儿로 묻는 척하며 강하게 단정해요. 반어는 '질문 형태의 강한 주장'이에요.",
     duration: "약 9분",
+    drills: [
+      { id: "h407-d1", type: "fill", prompt: "___道你不知道吗？(설마 ~란 말인가)", answer: "难" },
+      { id: "h407-d2", type: "choice", prompt: "不是…吗?의 기능은?", choices: ["반어로 확인·강조(~잖아?)", "순수한 부정", "금지 명령"], answer: "반어로 확인·강조(~잖아?)" },
+      { id: "h407-d3", type: "choice", prompt: "'너 어제 봤잖아?'(반어)는?", choices: ["你不是昨天看了吗？", "你不是昨天看了。", "你昨天不看了吗？"], answer: "你不是昨天看了吗？" },
+      { id: "h407-d4", type: "fill", prompt: "这不是你的书___？(반어 의문)", answer: "吗" },
+      { id: "h407-d5", type: "order", sentence: "难道你忘了吗？", prompt: "'설마 잊은 거야?'를 배열해 보세요." },
+      { id: "h407-d6", type: "choice", listen: "这不是很简单吗？", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["이거 아주 간단하잖아?", "이건 간단하지 않아요", "이게 뭐예요?"], answer: "이거 아주 간단하잖아?" },
+    ],
     sections: [
       {
         heading: "不是…吗? — ~지 않나요?(=맞잖아요)",
@@ -354,6 +410,14 @@ const chapters = [
     titleFr: "介词框架",
     summary: "对…来说, 关于, 由于 같은 개사 표현으로 관점·화제·원인을 격식 있게 도입해요. 글과 발표의 무기예요.",
     duration: "약 10분",
+    drills: [
+      { id: "h408-d1", type: "fill", prompt: "___了健康，他每天跑步。(~를 위하여)", answer: "为" },
+      { id: "h408-d2", type: "choice", prompt: "关于의 쓰임은?", choices: ["~에 관하여(화제 제시)", "~를 위하여(목적)", "~에 의하여(피동)"], answer: "~에 관하여(화제 제시)" },
+      { id: "h408-d3", type: "choice", prompt: "'이 문제에 대해 나는 의견이 없다'는?", choices: ["对于这个问题，我没有意见。", "为了这个问题，我没有意见。", "被这个问题，我没有意见。"], answer: "对于这个问题，我没有意见。" },
+      { id: "h408-d4", type: "fill", prompt: "___学生来说，时间很重要。(~에게 있어)", answer: "对" },
+      { id: "h408-d5", type: "order", sentence: "为了家人，他努力工作。", prompt: "'가족을 위해 그는 열심히 일한다'를 배열해 보세요." },
+      { id: "h408-d6", type: "choice", listen: "关于中国文化，我很感兴趣。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["중국 문화에 관해 관심이 많아요", "중국 문화를 잘 몰라요", "중국 문화가 어려워요"], answer: "중국 문화에 관해 관심이 많아요" },
+    ],
     sections: [
       {
         heading: "对…来说 — ~에게 있어서·~의 입장에서는",
@@ -405,6 +469,14 @@ const chapters = [
     titleFr: "递进复句",
     summary: "不但…而且로 '~일 뿐 아니라 게다가'를 표현해요. 점층(递进)으로 내용을 한 단계 더 쌓는 접속 틀이에요.",
     duration: "약 9분",
+    drills: [
+      { id: "h409-d1", type: "fill", prompt: "她___但会做菜，而且做得很快。(요리를 할 뿐 아니라)", answer: "不" },
+      { id: "h409-d2", type: "choice", prompt: "不但…而且의 뜻은?", choices: ["~일 뿐 아니라 게다가", "~이지만 그러나", "~아니면"], answer: "~일 뿐 아니라 게다가" },
+      { id: "h409-d3", type: "choice", prompt: "'그녀는 예쁠 뿐 아니라 똑똑하다'는?", choices: ["她不但漂亮，而且聪明。", "她不但漂亮，但是聪明。", "她而且漂亮，不但聪明。"], answer: "她不但漂亮，而且聪明。" },
+      { id: "h409-d4", type: "fill", prompt: "不但他会，___且他妹妹也会。", answer: "而" },
+      { id: "h409-d5", type: "order", sentence: "这个菜不但好吃，而且便宜。", prompt: "'이 요리는 맛있을 뿐 아니라 싸다'를 배열해 보세요." },
+      { id: "h409-d6", type: "choice", listen: "他不但会开车，而且开得很好。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["운전할 줄 알 뿐 아니라 잘해요", "운전은 하지만 서툴러요", "운전을 못 해요"], answer: "운전할 줄 알 뿐 아니라 잘해요" },
+    ],
     sections: [
       {
         heading: "不但…而且 — ~뿐만 아니라 게다가",
@@ -454,6 +526,14 @@ const chapters = [
     titleFr: "话语副词",
     summary: "겉과 속을 뒤집는 其实(사실은), 가벼운 전환의 不过(그런데), 예상을 거스르는 倒(오히려). 대화의 결을 바꾸고 어기를 부드럽게 하는 담화 부사예요.",
     duration: "약 9분",
+    drills: [
+      { id: "h410-d1", type: "fill", prompt: "___实我早就知道了。(사실은)", answer: "其" },
+      { id: "h410-d2", type: "choice", prompt: "原来의 뜻(깨달음)은?", choices: ["알고 보니", "앞으로", "우연히"], answer: "알고 보니" },
+      { id: "h410-d3", type: "choice", prompt: "终于의 뉘앙스는?", choices: ["오래 기다린 끝에 마침내", "갑자기", "어쩔 수 없이"], answer: "오래 기다린 끝에 마침내" },
+      { id: "h410-d4", type: "fill", prompt: "___来是你啊！(알고 보니 너였구나)", answer: "原" },
+      { id: "h410-d5", type: "order", sentence: "我们终于到山顶了。", prompt: "'우리는 마침내 산 정상에 도착했다'를 배열해 보세요." },
+      { id: "h410-d6", type: "choice", listen: "其实我不太喜欢咖啡。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["사실 커피를 별로 안 좋아해요", "사실 커피를 아주 좋아해요", "커피를 자주 마셔요"], answer: "사실 커피를 별로 안 좋아해요" },
+    ],
     sections: [
       {
         heading: "其实 — '사실은', 겉과 속을 뒤집어요",
