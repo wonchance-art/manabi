@@ -12,6 +12,14 @@ const chapters = [
     titleFr: "了 (完成)",
     summary: "동작이 완료됐음을 표시하는 了. 과거 시제가 아니라 '동작의 실현'을 나타내요. 부정은 없, 了 탈락이 핵심이에요.",
     duration: "약 10분",
+    drills: [
+      { id: "h201-d1", type: "fill", prompt: "我买___一本书。(샀다 — 완료)", answer: "了" },
+      { id: "h201-d2", type: "fill", prompt: "他喝___两杯咖啡。(마셨다)", answer: "了" },
+      { id: "h201-d3", type: "choice", prompt: "완료 了의 자리?", choices: ["동사 바로 뒤", "문장 맨 앞", "주어 바로 뒤"], answer: "동사 바로 뒤" },
+      { id: "h201-d4", type: "choice", prompt: "'아직 안 먹었다'는?", choices: ["我还没吃饭。", "我还不吃饭。", "我没吃饭了。"], answer: "我还没吃饭。", hint: "没 부정문에서는 了를 지워요" },
+      { id: "h201-d5", type: "order", sentence: "我买了三本书。", prompt: "'책 세 권을 샀다'를 배열해 보세요." },
+      { id: "h201-d6", type: "choice", listen: "我吃了。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["먹었어요", "먹을 거예요", "안 먹어요"], answer: "먹었어요" },
+    ],
     sections: [
       {
         heading: "동사 + 了 — 동작의 완료",
@@ -68,6 +76,14 @@ const chapters = [
     titleFr: "过 (经历)",
     summary: "过는 '~해 본 적 있다'는 경험을 표시해요. 완료 了와 다른 점, 그리고 부정 没...过까지 깔끔하게 구별해요.",
     duration: "약 8분",
+    drills: [
+      { id: "h202-d1", type: "fill", prompt: "我去___中国。(가 본 적이 있다)", answer: "过" },
+      { id: "h202-d2", type: "choice", prompt: "'만두를 먹어 본 적이 없다'는?", choices: ["我没吃过饺子。", "我不吃过饺子。", "我没有吃饺子过。"], answer: "我没吃过饺子。" },
+      { id: "h202-d3", type: "choice", prompt: "过와 了의 구분은?", choices: ["过=경험(해 본 적), 了=완료(했다)", "过=미래, 了=과거", "차이가 없다"], answer: "过=경험(해 본 적), 了=완료(했다)" },
+      { id: "h202-d4", type: "order", sentence: "你吃过火锅吗？", prompt: "'훠궈 먹어 본 적 있어?'를 배열해 보세요." },
+      { id: "h202-d5", type: "fill", prompt: "过의 병음: ___ (경성)", answer: "guo" },
+      { id: "h202-d6", type: "choice", listen: "我看过这个电影。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["이 영화 본 적 있어요", "이 영화 보는 중이에요", "이 영화 볼 거예요"], answer: "이 영화 본 적 있어요" },
+    ],
     sections: [
       {
         heading: "동사 + 过 — ~해 본 적 있다",
@@ -129,6 +145,14 @@ const chapters = [
     titleFr: "在・正在",
     summary: "동사 앞 在(또는 正在)로 '~하는 중'을 표현해요. H1의 在(~에서)와 헷갈리는 지점을 깔끔히 정리해요.",
     duration: "약 8분",
+    drills: [
+      { id: "h203-d1", type: "fill", prompt: "他___打电话。(전화하는 중)", answer: "在", accepts: ["正在"] },
+      { id: "h203-d2", type: "fill", prompt: "门开___。(열려 있는 상태)", answer: "着" },
+      { id: "h203-d3", type: "choice", prompt: "在와 着의 구분은?", choices: ["在=동작 진행 중, 着=상태 지속", "在=상태, 着=진행", "차이가 없다"], answer: "在=동작 진행 중, 着=상태 지속" },
+      { id: "h203-d4", type: "order", sentence: "他站着说话。", prompt: "'그는 서서 말한다'를 배열해 보세요." },
+      { id: "h203-d5", type: "choice", prompt: "'앉아서 얘기하자'는?", choices: ["我们坐着聊吧。", "我们在坐聊吧。", "我们聊坐着吧。"], answer: "我们坐着聊吧。" },
+      { id: "h203-d6", type: "choice", listen: "你在做什么？", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["뭐 하고 있어?", "어디 가?", "뭐 먹었어?"], answer: "뭐 하고 있어?" },
+    ],
     sections: [
       {
         heading: "在 + 동사 — ~하고 있다",
@@ -184,6 +208,14 @@ const chapters = [
     titleFr: "了 (变化)",
     summary: "문장 끝의 了는 완료가 아니라 '상황이 바뀜'을 나타내요. 长大了·下雨了처럼 새 상태의 등장을 표시해요.",
     duration: "약 8분",
+    drills: [
+      { id: "h204-d1", type: "fill", prompt: "下雨___。(비가 오기 시작했다 — 변화)", answer: "了" },
+      { id: "h204-d2", type: "choice", prompt: "변화 了의 자리?", choices: ["문장 끝", "동사 바로 뒤", "주어 바로 뒤"], answer: "문장 끝" },
+      { id: "h204-d3", type: "choice", prompt: "'날씨가 추워졌다'는?", choices: ["天气冷了。", "天气冷。", "天气了冷。"], answer: "天气冷了。" },
+      { id: "h204-d4", type: "choice", prompt: "快…了 꼴의 뜻은?", choices: ["곧 ~하려 한다", "이미 다 했다", "절대 안 한다"], answer: "곧 ~하려 한다" },
+      { id: "h204-d5", type: "order", sentence: "他不喝酒了。", prompt: "'그는 이제 술을 안 마신다(변화)'를 배열해 보세요." },
+      { id: "h204-d6", type: "choice", listen: "春天到了。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["봄이 왔어요", "봄이 갔어요", "겨울이에요"], answer: "봄이 왔어요" },
+    ],
     sections: [
       {
         heading: "문장 끝 了 — 상황의 변화",
@@ -226,6 +258,14 @@ const chapters = [
     titleFr: "比",
     summary: "A 比 B + 형용사로 'A가 B보다 ~하다'. 형용사 앞에 更/还는 OK, 很은 금지라는 비교문만의 규칙이 핵심.",
     duration: "약 9분",
+    drills: [
+      { id: "h205-d1", type: "fill", prompt: "今天___昨天热。(오늘이 어제보다 덥다)", answer: "比" },
+      { id: "h205-d2", type: "choice", prompt: "'그가 나보다 크다'의 옳은 문장은?", choices: ["他比我高。", "他比我很高。", "我比他高。"], answer: "他比我高。", hint: "比문에는 很을 못 넣어요" },
+      { id: "h205-d3", type: "choice", prompt: "比 문형의 금지 규칙은?", choices: ["형용사 앞에 很·非常을 못 쓴다", "형용사를 아예 못 쓴다", "주어 자리를 못 바꾼다"], answer: "형용사 앞에 很·非常을 못 쓴다" },
+      { id: "h205-d4", type: "fill", prompt: "차이가 '조금'일 때: A比B + 형용사 + ___", answer: "一点儿", accepts: ["一点"] },
+      { id: "h205-d5", type: "order", sentence: "他比我大三岁。", prompt: "'그는 나보다 세 살 많다'를 배열해 보세요." },
+      { id: "h205-d6", type: "choice", listen: "今天比昨天冷。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["오늘이 어제보다 추워요", "어제가 오늘보다 추워요", "오늘은 어제만큼 더워요"], answer: "오늘이 어제보다 추워요" },
+    ],
     sections: [
       {
         heading: "A 比 B + 형용사 — A가 B보다 ~하다",
@@ -279,6 +319,14 @@ const chapters = [
     titleFr: "能愿动词",
     summary: "동사 앞에 붙는 조동사들. 会(배워서 할 줄), 能(상황상 가능), 可以(허락), 想·要(하고 싶다)를 구별해요.",
     duration: "약 11분",
+    drills: [
+      { id: "h206-d1", type: "fill", prompt: "我___说汉语。(배워서 할 줄 안다)", answer: "会" },
+      { id: "h206-d2", type: "fill", prompt: "这里不___抽烟。(여기서는 안 된다 — 허가)", answer: "能", accepts: ["可以"] },
+      { id: "h206-d3", type: "choice", prompt: "会와 能의 구분은?", choices: ["会=배워서 할 줄 안다, 能=능력·상황이 된다", "会=허가, 能=학습", "차이가 없다"], answer: "会=배워서 할 줄 안다, 能=능력·상황이 된다" },
+      { id: "h206-d4", type: "choice", prompt: "'수영할 줄 알아?'는?", choices: ["你会游泳吗？", "你能游泳吗？", "你要游泳吗？"], answer: "你会游泳吗？" },
+      { id: "h206-d5", type: "order", sentence: "明天我要上班。", prompt: "'내일 출근해야 한다'를 배열해 보세요." },
+      { id: "h206-d6", type: "choice", listen: "我不会开车。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["운전할 줄 몰라요", "운전하기 싫어요", "운전하면 안 돼요"], answer: "운전할 줄 몰라요" },
+    ],
     sections: [
       {
         heading: "会 — 배워서 할 줄 안다",
@@ -334,6 +382,14 @@ const chapters = [
     titleFr: "介词 给・对・从",
     summary: "개사(전치사)는 동사 앞에서 대상·방향을 표시해요. 给(~에게), 对(~에 대해), 从(~부터). 어순이 한국어와 반대라 주의.",
     duration: "약 9분",
+    drills: [
+      { id: "h207-d1", type: "fill", prompt: "我___你打电话。(너에게 전화한다)", answer: "给" },
+      { id: "h207-d2", type: "fill", prompt: "他___我很好。(나에게 잘해 준다 — 태도)", answer: "对" },
+      { id: "h207-d3", type: "choice", prompt: "'서울에서 왔다'는?", choices: ["我从首尔来。", "我给首尔来。", "我对首尔来。"], answer: "我从首尔来。" },
+      { id: "h207-d4", type: "choice", prompt: "개사구(给你·对我·从首尔)의 위치는?", choices: ["동사 앞", "동사 뒤", "문장 맨 끝"], answer: "동사 앞" },
+      { id: "h207-d5", type: "order", sentence: "我给妈妈买了礼物。", prompt: "'엄마에게 선물을 사 드렸다'를 배열해 보세요." },
+      { id: "h207-d6", type: "choice", listen: "他对我笑了。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["그가 나를 보고 웃었어요", "그가 나에게 화냈어요", "그가 나를 불렀어요"], answer: "그가 나를 보고 웃었어요" },
+    ],
     sections: [
       {
         heading: "给 — ~에게 (대상)",
@@ -395,6 +451,14 @@ const chapters = [
     titleFr: "时量补语",
     summary: "동작을 얼마 동안 했는지(시량)는 동사 뒤에 와요. 목적어가 있을 때 동사를 반복하는 규칙이 한국인 핵심 함정.",
     duration: "약 9분",
+    drills: [
+      { id: "h208-d1", type: "fill", prompt: "我等了十___钟。(10분 기다렸다)", answer: "分" },
+      { id: "h208-d2", type: "choice", prompt: "'중국어를 1년 배웠다'는?", choices: ["我学了一年汉语。", "我学汉语了一年。", "我一年学了汉语。"], answer: "我学了一年汉语。" },
+      { id: "h208-d3", type: "choice", prompt: "시량보어(기간)의 자리?", choices: ["동사 뒤", "동사 앞", "주어 앞"], answer: "동사 뒤" },
+      { id: "h208-d4", type: "fill", prompt: "'이틀': ___天", answer: "两" },
+      { id: "h208-d5", type: "order", sentence: "我们休息了十分钟。", prompt: "'우리는 10분 쉬었다'를 배열해 보세요." },
+      { id: "h208-d6", type: "choice", listen: "我睡了八个小时。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["8시간 잤어요", "8시에 잤어요", "8일 잤어요"], answer: "8시간 잤어요" },
+    ],
     sections: [
       {
         heading: "동사 + 시간의 양 — 얼마 동안 했다",
@@ -435,6 +499,14 @@ const chapters = [
     titleFr: "还是",
     summary: "A 还是 B로 'A예요, B예요?'를 물어요. 평서문의 '또는'은 或者. 둘을 헷갈리지 않게 구별하는 게 포인트.",
     duration: "약 7분",
+    drills: [
+      { id: "h209-d1", type: "fill", prompt: "你喝咖啡___茶？(아니면)", answer: "还是" },
+      { id: "h209-d2", type: "choice", prompt: "还是와 或者의 구분은?", choices: ["还是=의문문의 선택, 或者=평서문의 나열", "반대다", "차이가 없다"], answer: "还是=의문문의 선택, 或者=평서문의 나열" },
+      { id: "h209-d3", type: "choice", prompt: "'지하철 탈래, 버스 탈래?'는?", choices: ["坐地铁还是坐公交车？", "坐地铁或者坐公交车？", "坐地铁和坐公交车？"], answer: "坐地铁还是坐公交车？" },
+      { id: "h209-d4", type: "order", sentence: "我们今天去还是明天去？", prompt: "'오늘 갈까 내일 갈까?'를 배열해 보세요." },
+      { id: "h209-d5", type: "fill", prompt: "还是의 병음: ___", answer: "háishi", accepts: ["haishi", "hái shì"] },
+      { id: "h209-d6", type: "choice", listen: "喝茶还是喝咖啡？", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["차 마실래요, 커피 마실래요?", "차와 커피 둘 다 주세요", "차도 커피도 싫어요"], answer: "차 마실래요, 커피 마실래요?" },
+    ],
     sections: [
       {
         heading: "A 还是 B? — 둘 중 어느 쪽?",
@@ -475,6 +547,14 @@ const chapters = [
     titleFr: "动量补语",
     summary: "동작을 몇 번 했는지(횟수)는 동사 뒤에 동량사 次로 표시해요. 목적어가 대명사냐 명사냐에 따라 위치가 갈려요.",
     duration: "약 8분",
+    drills: [
+      { id: "h210-d1", type: "fill", prompt: "这个电影我看了两___。(처음부터 끝까지 두 번)", answer: "遍" },
+      { id: "h210-d2", type: "choice", prompt: "次와 遍의 구분은?", choices: ["次=횟수, 遍=처음부터 끝까지 한 번", "次=길이, 遍=무게", "차이가 없다"], answer: "次=횟수, 遍=처음부터 끝까지 한 번" },
+      { id: "h210-d3", type: "choice", prompt: "'북경에 두 번 가 봤다'는?", choices: ["我去过两次北京。", "我去过北京两次遍。", "我两次去过北京。"], answer: "我去过两次北京。" },
+      { id: "h210-d4", type: "fill", prompt: "'몇 번?'을 물을 때: 几___？", answer: "次" },
+      { id: "h210-d5", type: "order", sentence: "这本书我读了三遍。", prompt: "'이 책을 세 번 읽었다'를 배열해 보세요." },
+      { id: "h210-d6", type: "choice", listen: "我来过一次。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["한 번 와 본 적 있어요", "한 번만 올게요", "처음 왔어요"], answer: "한 번 와 본 적 있어요" },
+    ],
     sections: [
       {
         heading: "동사 + 횟수 — 몇 번 했다",
@@ -515,6 +595,14 @@ const chapters = [
     titleFr: "语气・程度副词",
     summary: "감탄의 真, 당연의 当然, 불만의 有点儿(좀…), 병렬의 又…又. 특히 有点儿이 부정적 어기를 담는다는 점이 一点儿과 갈리는 한국인 함정이에요.",
     duration: "약 9분",
+    drills: [
+      { id: "h211-d1", type: "fill", prompt: "今天___热。(정말)", answer: "真" },
+      { id: "h211-d2", type: "fill", prompt: "我___累。(조금 — 불만 섞인)", answer: "有点儿", accepts: ["有点"] },
+      { id: "h211-d3", type: "choice", prompt: "有点儿과 一点儿의 구분은?", choices: ["有点儿+형용사(불만), 형용사+一点儿(비교·요청)", "반대다", "차이가 없다"], answer: "有点儿+형용사(불만), 형용사+一点儿(비교·요청)" },
+      { id: "h211-d4", type: "choice", prompt: "'예쁘기도 하고 싸기도 하다'는?", choices: ["又漂亮又便宜", "再漂亮再便宜", "也漂亮也便宜"], answer: "又漂亮又便宜" },
+      { id: "h211-d5", type: "order", sentence: "这个菜有点儿辣。", prompt: "'이 요리는 조금 맵다'를 배열해 보세요." },
+      { id: "h211-d6", type: "choice", listen: "真好吃！", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["정말 맛있다!", "너무 맵다!", "정말 비싸다!"], answer: "정말 맛있다!" },
+    ],
     sections: [
       {
         heading: "真・当然 — 감탄과 당연한 맞장구",
@@ -577,6 +665,14 @@ const chapters = [
     titleFr: "时间表达",
     summary: "때를 가리키는 …的时候, 마침내의 终于…了, 지속·미완의 还/还没. 한국어 '~할 때', '드디어', '아직'을 중국어로 옮기는 일상 시간 표현이에요.",
     duration: "약 9분",
+    drills: [
+      { id: "h212-d1", type: "fill", prompt: "上课___时候，请关手机。(~할 때)", answer: "的" },
+      { id: "h212-d2", type: "choice", prompt: "'드디어 끝났다!'는?", choices: ["终于结束了！", "就结束了！", "才结束了！"], answer: "终于结束了！" },
+      { id: "h212-d3", type: "choice", prompt: "8시에 '벌써' 왔다는 어감은?", choices: ["八点就来了", "八点才来了", "八点再来了"], answer: "八点就来了", hint: "이르면 就, 늦으면 才" },
+      { id: "h212-d4", type: "fill", prompt: "他还___来。(아직 안 왔다)", answer: "没" },
+      { id: "h212-d5", type: "order", sentence: "下课的时候给我打电话。", prompt: "'수업 끝날 때 전화해'를 배열해 보세요." },
+      { id: "h212-d6", type: "choice", listen: "时间不早了。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["시간이 늦었네요", "아직 이르네요", "시간이 없어요"], answer: "시간이 늦었네요" },
+    ],
     sections: [
       {
         heading: "…的时候 — '~할 때'",
