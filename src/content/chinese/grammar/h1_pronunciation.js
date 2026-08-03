@@ -21,6 +21,9 @@ const chapters = [
       { id: "h123-d4", type: "choice", prompt: "妈妈(māma)의 둘째 음절은?", choices: ["경성", "1성", "3성"], answer: "경성" },
       { id: "h123-d5", type: "choice", prompt: "一가 4성 앞에 오면(예: 一个)?", choices: ["2성으로 변한다 (yí)", "1성 그대로", "3성이 된다"], answer: "2성으로 변한다 (yí)" },
       { id: "h123-d6", type: "choice", prompt: "不가 4성 앞에 오면(예: 不是)?", choices: ["2성으로 변한다 (bú)", "4성 그대로", "경성이 된다"], answer: "2성으로 변한다 (bú)" },
+      { id: "h123-d7", type: "choice", listen: "卖", prompt: "듣고 성조를 고르세요. (mài 팔다)", choices: ["4성 — 뚝 떨어뜨려서", "3성 — 내렸다가 올려서", "2성 — 끝을 올려서"], answer: "4성 — 뚝 떨어뜨려서", hint: "买(mǎi 3성 '사다')와 성조만 달라요" },
+      { id: "h123-d8", type: "choice", listen: "糖", prompt: "듣고 성조를 고르세요. (táng 설탕)", choices: ["2성 — 낮은 데서 쭉 올려서", "1성 — 높고 평평하게", "4성 — 뚝 떨어뜨려서"], answer: "2성 — 낮은 데서 쭉 올려서", hint: "汤(tāng 1성 '국')과 성조만 달라요" },
+      { id: "h123-d9", type: "choice", listen: "睡觉", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["잠을 자다 (shuìjiào)", "물만두 (shuǐjiǎo)", "돌아가다"], answer: "잠을 자다 (shuìjiào)", hint: "水饺(shuǐjiǎo)와 성조 차이" },
     ],
     sections: [
       {
@@ -184,6 +187,9 @@ const chapters = [
       { id: "h124-d4", type: "choice", prompt: "yi·wu·yu의 정체는?", choices: ["성모 없는 i·u·ü의 표기 규칙", "특별한 자음", "감탄사 전용 표기"], answer: "성모 없는 i·u·ü의 표기 규칙" },
       { id: "h124-d5", type: "choice", listen: "水", prompt: "듣고 병음을 고르세요. (물 수)", choices: ["shuǐ", "suǐ", "xuǐ"], answer: "shuǐ" },
       { id: "h124-d6", type: "fill", prompt: "'儿'화음 표기: 花 + 儿 → huā___", answer: "r" },
+      { id: "h124-d7", type: "choice", listen: "去", prompt: "듣고 병음을 고르세요. (가다)", choices: ["qù", "chù", "kù"], answer: "qù" },
+      { id: "h124-d8", type: "choice", listen: "热", prompt: "듣고 병음을 고르세요. (덥다)", choices: ["rè", "lè", "zhè"], answer: "rè" },
+      { id: "h124-d9", type: "choice", listen: "十", prompt: "듣고 병음을 고르세요. (열 십)", choices: ["shí", "sí", "xí"], answer: "shí", hint: "권설음 sh — 四(sì)와 혼동 주의" },
     ],
     sections: [
       {
