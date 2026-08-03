@@ -21,6 +21,14 @@ const chapters = [
       { id: "h301-d5", type: "order", sentence: "请把窗户打开。", prompt: "'창문을 열어 주세요'를 배열해 보세요." },
       { id: "h301-d6", type: "choice", listen: "把手机给我。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["휴대폰을 나에게 줘", "휴대폰을 사 줘", "휴대폰을 꺼"], answer: "휴대폰을 나에게 줘" },
     ],
+    writing: {
+      prompt: "방 정리를 부탁하는 지시 두 개를 把구문으로 써 보세요.",
+      hints: ["把+목적어+동사+결과"],
+      samples: [
+        { zh: "请把书放在桌子上，把门关好。", pinyin: "Qǐng bǎ shū fàng zài zhuōzi shang, bǎ mén guān hǎo.", ko: "책을 책상 위에 놓고, 문을 잘 닫아 주세요." },
+      ],
+      checklist: ["동사 뒤에 결과(在…/好)를 붙였다", "목적어를 把 뒤로 보냈다"],
+    },
     sections: [
       {
         heading: "把의 정체 — 목적어를 처리하는 구문",
@@ -93,6 +101,14 @@ const chapters = [
       { id: "h302-d5", type: "fill", prompt: "被의 병음: ___", answer: "bèi", accepts: ["bei"] },
       { id: "h302-d6", type: "choice", listen: "他被老师批评了。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["그는 선생님께 혼났어요", "그는 선생님을 칭찬했어요", "그는 선생님이 됐어요"], answer: "그는 선생님께 혼났어요" },
     ],
+    writing: {
+      prompt: "당해서 속상했던 일 하나를 被구문으로 써 보세요.",
+      hints: ["A被B+동사+결과"],
+      samples: [
+        { zh: "我的自行车被人骑走了。", pinyin: "Wǒ de zìxíngchē bèi rén qí zǒu le.", ko: "제 자전거를 누가 타고 가 버렸어요." },
+      ],
+      checklist: ["당한 쪽을 주어로 세웠다", "동사 뒤에 결과 성분을 붙였다"],
+    },
     sections: [
       {
         heading: "형태 — 把자문을 뒤집기",
@@ -151,6 +167,14 @@ const chapters = [
       { id: "h303-d5", type: "order", sentence: "作业我做完了。", prompt: "'숙제는 다 했다'를 배열해 보세요." },
       { id: "h303-d6", type: "choice", listen: "卖完了。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["다 팔렸어요", "안 팔아요", "싸게 팔아요"], answer: "다 팔렸어요" },
     ],
+    writing: {
+      prompt: "끝낸 일과 이룬 일을 결과보어(完·住·到)로 두 가지 써 보세요.",
+      hints: ["동사+完/住/到"],
+      samples: [
+        { zh: "作业我写完了，单词也记住了。", pinyin: "Zuòyè wǒ xiě wán le, dāncí yě jì zhù le.", ko: "숙제를 다 썼고, 단어도 외워 두었어요." },
+      ],
+      checklist: ["동작의 결과를 보어로 못 박았다"],
+    },
     sections: [
       {
         heading: "결과보어란 — 동작 + 그 결과를 한 묶음으로",
@@ -212,6 +236,14 @@ const chapters = [
       { id: "h304-d5", type: "order", sentence: "他从楼上走下来了。", prompt: "'그가 위층에서 걸어 내려왔다'를 배열해 보세요." },
       { id: "h304-d6", type: "choice", listen: "他跑出去了。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["그가 뛰어나갔어요", "그가 뛰어들어왔어요", "그가 넘어졌어요"], answer: "그가 뛰어나갔어요" },
     ],
+    writing: {
+      prompt: "누가 어디로 들어오고 나가는지, 방향보어로 묘사해 보세요.",
+      hints: ["동사+进来/出去/下来"],
+      samples: [
+        { zh: "妈妈从外边走进来了。", pinyin: "Māma cóng wàibian zǒu jìnlai le.", ko: "엄마가 밖에서 걸어 들어오셨어요." },
+      ],
+      checklist: ["화자 기준 来/去를 골랐다"],
+    },
     sections: [
       {
         heading: "단순방향보어 — 来(이쪽)와 去(저쪽)",
@@ -287,6 +319,14 @@ const chapters = [
       { id: "h305-d5", type: "order", sentence: "他写字写得很漂亮。", prompt: "'그는 글씨를 아주 예쁘게 쓴다'를 배열해 보세요." },
       { id: "h305-d6", type: "choice", listen: "你说得太快了。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["당신은 말이 너무 빨라요", "당신은 말을 참 잘해요", "당신은 너무 늦게 왔어요"], answer: "당신은 말이 너무 빨라요" },
     ],
+    writing: {
+      prompt: "잘하는 것과 서툰 것을 각각 정도보어(得)로 써 보세요.",
+      hints: ["동사+得+평가"],
+      samples: [
+        { zh: "我做菜做得不错，唱歌唱得不好。", pinyin: "Wǒ zuò cài zuò de búcuò, chàng gē chàng de bù hǎo.", ko: "요리는 곧잘 하는데, 노래는 잘 못해요." },
+      ],
+      checklist: ["목적어가 있으면 동사를 반복했다", "부정을 得 뒤에 두었다"],
+    },
     sections: [
       {
         heading: "기본 틀 — 동사/형용사 + 得 + 정도",
@@ -353,6 +393,14 @@ const chapters = [
       { id: "h306-d5", type: "order", sentence: "这个字我看不清楚。", prompt: "'이 글자는 잘 안 보인다'를 배열해 보세요." },
       { id: "h306-d6", type: "choice", listen: "对不起，我做不到。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["미안하지만 그건 못 해요", "미안해서 안 했어요", "괜찮아요, 할 수 있어요"], answer: "미안하지만 그건 못 해요" },
     ],
+    writing: {
+      prompt: "할 수 있는 것(得)과 무리인 것(不)을 가능보어로 써 보세요.",
+      hints: ["동사+得/不+보어"],
+      samples: [
+        { zh: "这么多菜，我吃不完。", pinyin: "Zhème duō cài, wǒ chī bu wán.", ko: "이렇게 많은 음식은 다 못 먹어요." },
+      ],
+      checklist: ["得/不를 동사와 보어 사이에 끼웠다"],
+    },
     sections: [
       {
         heading: "형태 — 동사 + 得/不 + 결과·방향보어",
@@ -413,6 +461,14 @@ const chapters = [
       { id: "h307-d5", type: "order", sentence: "我们认识十年了。", prompt: "'우리는 안 지 10년 됐다'를 배열해 보세요." },
       { id: "h307-d6", type: "choice", listen: "我住了两年了。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["산 지 2년 됐어요(지금도)", "2년 전에 살았어요", "2년 뒤에 살 거예요"], answer: "산 지 2년 됐어요(지금도)" },
     ],
+    writing: {
+      prompt: "지금까지 계속해 온 일을 '~한 지 …됐다(…了…了)'로 써 보세요.",
+      hints: ["동사+了+기간+了"],
+      samples: [
+        { zh: "我学汉语学了半年了。", pinyin: "Wǒ xué Hànyǔ xué le bàn nián le.", ko: "중국어를 배운 지 반년 됐어요(지금도 배우는 중)." },
+      ],
+      checklist: ["문장 끝 了로 '지금도 계속'을 살렸다"],
+    },
     sections: [
       {
         heading: "기본 — 동사 + 시간의 양",
@@ -464,6 +520,14 @@ const chapters = [
       { id: "h308-d5", type: "order", sentence: "只要努力，就会成功。", prompt: "'노력하기만 하면 성공한다'를 배열해 보세요." },
       { id: "h308-d6", type: "choice", listen: "虽然贵，但是很好。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["비싸긴 하지만 좋아요", "싸고 좋아요", "비싸서 안 좋아요"], answer: "비싸긴 하지만 좋아요" },
     ],
+    writing: {
+      prompt: "바쁘지만 해내는 일을 虽然…但是로, 조건이 있는 일을 只要…就로 써 보세요.",
+      hints: ["짝을 맞춰 쓰기"],
+      samples: [
+        { zh: "虽然工作很忙，但是我每天都学习。", pinyin: "Suīrán gōngzuò hěn máng, dànshì wǒ měitiān dōu xuéxí.", ko: "일이 바쁘지만, 매일 공부해요." },
+      ],
+      checklist: ["접속사 짝(虽然-但是 등)을 맞췄다"],
+    },
     sections: [
       {
         heading: "인과 — 因为…所以 (왜냐하면…그래서)",
@@ -530,6 +594,14 @@ const chapters = [
       { id: "h309-d5", type: "order", sentence: "今天没有昨天那么冷。", prompt: "'오늘은 어제만큼 그렇게 춥지 않다'를 배열해 보세요." },
       { id: "h309-d6", type: "choice", listen: "汉语越学越有意思。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["중국어는 배울수록 재미있어요", "중국어는 점점 어려워요", "중국어를 그만 배울래요"], answer: "중국어는 배울수록 재미있어요" },
     ],
+    writing: {
+      prompt: "계절·실력 등 점점 변하는 것을 越来越로 써 보세요.",
+      hints: ["越来越+형용사"],
+      samples: [
+        { zh: "秋天越来越凉快了。", pinyin: "Qiūtiān yuè lái yuè liángkuai le.", ko: "가을이 점점 선선해지고 있어요." },
+      ],
+      checklist: ["변화의 방향이 드러난다", "문장 끝 了로 변화를 받쳤다"],
+    },
     sections: [
       {
         heading: "차이의 정도 붙이기 — 比 + 형용사 + 정도",
@@ -591,6 +663,14 @@ const chapters = [
       { id: "h310-d5", type: "order", sentence: "房间里坐着两个人。", prompt: "'방 안에 두 사람이 앉아 있다'를 배열해 보세요." },
       { id: "h310-d6", type: "choice", listen: "外边来了很多人。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["밖에 많은 사람이 왔어요", "밖에 아무도 없어요", "밖에 나가지 마세요"], answer: "밖에 많은 사람이 왔어요" },
     ],
+    writing: {
+      prompt: "책상 위·벽·방 안 풍경을 존현문(장소+동사+사물)으로 써 보세요.",
+      hints: ["장소가 문장 맨 앞"],
+      samples: [
+        { zh: "桌子上放着一台电脑。", pinyin: "Zhuōzi shang fàng zhe yì tái diànnǎo.", ko: "책상 위에 컴퓨터 한 대가 놓여 있어요." },
+      ],
+      checklist: ["장소+동사着+불특정 사물 순서를 지켰다"],
+    },
     sections: [
       {
         heading: "기본 틀 — 장소 + 동사 + 사람·사물",
@@ -642,6 +722,15 @@ const chapters = [
       { id: "h311-d5", type: "order", sentence: "这里的菜都挺好吃的。", prompt: "'여기 요리는 다 꽤 맛있다'를 배열해 보세요." },
       { id: "h311-d6", type: "choice", listen: "我几乎每天都运动。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["거의 매일 운동해요", "가끔 운동해요", "운동을 전혀 안 해요"], answer: "거의 매일 운동해요" },
     ],
+    writing: {
+      prompt: "꽤 괜찮았던 것(挺…的)과 아슬아슬했던 일(差点儿)을 써 보세요.",
+      hints: ["挺…的 / 差点儿+동사"],
+      samples: [
+        { zh: "这家店的面挺好吃的。", pinyin: "Zhè jiā diàn de miàn tǐng hǎochī de.", ko: "이 집 국수는 꽤 맛있어요." },
+        { zh: "我差点儿迟到了。", pinyin: "Wǒ chàdiǎnr chídào le.", ko: "하마터면 지각할 뻔했어요." },
+      ],
+      checklist: ["挺 뒤에 的로 마무리했다", "差点儿로 '~할 뻔'을 표현했다"],
+    },
     sections: [
       {
         heading: "比较 — '비교적·좀', 부드러운 정도",
@@ -726,6 +815,14 @@ const chapters = [
       { id: "h312-d5", type: "order", sentence: "我们学了差不多一年。", prompt: "'우리는 거의 1년을 배웠다'를 배열해 보세요." },
       { id: "h312-d6", type: "choice", listen: "差不多了。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["거의 다 됐어요", "많이 부족해요", "너무 많아요"], answer: "거의 다 됐어요" },
     ],
+    writing: {
+      prompt: "반 인원·선생님 나이 등을 어림수(多·左右)로 소개해 보세요.",
+      hints: ["수+多 / 수량+左右"],
+      samples: [
+        { zh: "我们班有三十多个学生，老师四十岁左右。", pinyin: "Wǒmen bān yǒu sānshí duō ge xuésheng, lǎoshī sìshí suì zuǒyòu.", ko: "우리 반에는 서른 명 남짓한 학생이 있고, 선생님은 마흔쯤이에요." },
+      ],
+      checklist: ["多·左右의 위치를 지켰다"],
+    },
     sections: [
       {
         heading: "差不多 — '거의·비슷하게'",
@@ -803,6 +900,14 @@ const chapters = [
       { id: "h313-d5", type: "order", sentence: "请你明天再来一次。", prompt: "'내일 한 번 더 와 주세요'를 배열해 보세요." },
       { id: "h313-d6", type: "choice", listen: "他又感冒了。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["그가 또 감기에 걸렸어요", "그는 감기가 나았어요", "그는 감기에 걸린 적 없어요"], answer: "그가 또 감기에 걸렸어요" },
     ],
+    writing: {
+      prompt: "이미 반복된 일(又)과 앞으로 반복할 일(再)을 한 문장씩 써 보세요.",
+      hints: ["과거 반복=又, 미래 반복=再"],
+      samples: [
+        { zh: "今天又下雨了，明天再看吧。", pinyin: "Jīntiān yòu xià yǔ le, míngtiān zài kàn ba.", ko: "오늘 또 비가 왔네요. 내일 다시 봐요." },
+      ],
+      checklist: ["又/再를 시제 어감에 맞게 갈랐다"],
+    },
     sections: [
       {
         heading: "一直 — '줄곧·계속', 끊김 없이",
