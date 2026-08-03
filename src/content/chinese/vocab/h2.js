@@ -137,6 +137,22 @@ const themes = {
         { zh: "远", pinyin: "yuǎn", ko: "멀다", pos: "형용사", hanja: "원(遠) — '멀 원'.", ex: { zh: "机场离这儿很远。", pinyin: "jīchǎng lí zhèr hěn yuǎn", ko: "공항은 여기서 멀어요." } },
       ],
     },
+    {
+      name: "일상 확장 — 습관·음식·기분",
+      words: [
+        { zh: "又", pinyin: "yòu", ko: "또(이미 반복됨)", pos: "부사", ex: { zh: "他又来了。", pinyin: "tā yòu lái le", ko: "그가 또 왔어요." } },
+        { zh: "聊天", pinyin: "liáotiān", ko: "수다 떨다", pos: "동사", ex: { zh: "我们聊天吧。", pinyin: "wǒmen liáotiān ba", ko: "우리 얘기 좀 해요." } },
+        { zh: "偶尔", pinyin: "ǒu'ěr", ko: "가끔", pos: "부사", ex: { zh: "我偶尔运动。", pinyin: "wǒ ǒu'ěr yùndòng", ko: "가끔 운동해요." } },
+        { zh: "或者", pinyin: "huòzhě", ko: "혹은(평서문)", pos: "접속사", ex: { zh: "咖啡或者茶都行。", pinyin: "kāfēi huòzhě chá dōu xíng", ko: "커피든 차든 다 좋아요." } },
+        { zh: "饺子", pinyin: "jiǎozi", ko: "만두, 교자", pos: "명사", hanja: "교자(餃子) — 한국 '교자만두'의 교자.", ex: { zh: "我们吃饺子吧。", pinyin: "wǒmen chī jiǎozi ba", ko: "우리 만두 먹어요." } },
+        { zh: "结束", pinyin: "jiéshù", ko: "끝나다", pos: "동사", hanja: "결속(結束) — 중국어에선 '끝나다'예요. 주의!", ex: { zh: "会议结束了。", pinyin: "huìyì jiéshù le", ko: "회의가 끝났어요." } },
+        { zh: "当然", pinyin: "dāngrán", ko: "당연히", pos: "부사", hanja: "당연(當然) — 한자 그대로.", ex: { zh: "当然可以！", pinyin: "dāngrán kěyǐ", ko: "당연히 되죠!" } },
+        { zh: "冰", pinyin: "bīng", ko: "얼음, 차갑다", pos: "명사", hanja: "빙(氷) — '빙수'의 빙.", ex: { zh: "一杯冰水。", pinyin: "yì bēi bīng shuǐ", ko: "얼음물 한 잔이요." } },
+        { zh: "火锅", pinyin: "huǒguō", ko: "훠궈", pos: "명사", ex: { zh: "我爱吃火锅。", pinyin: "wǒ ài chī huǒguō", ko: "훠궈를 정말 좋아해요." } },
+        { zh: "胖", pinyin: "pàng", ko: "살찌다, 뚱뚱하다", pos: "형용사", ex: { zh: "我胖了三公斤。", pinyin: "wǒ pàng le sān gōngjīn", ko: "3킬로그램 쪘어요." } },
+        { zh: "饿", pinyin: "è", ko: "배고프다", pos: "형용사", hanja: "아(餓) — '기아'의 아.", ex: { zh: "我饿了。", pinyin: "wǒ è le", ko: "배고파요." } },
+      ],
+    },
   ],
 }
 

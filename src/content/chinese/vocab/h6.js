@@ -913,6 +913,17 @@ const themes = {
         },
       ],
     },
+    {
+      name: "문어·관용 마감 어휘",
+      words: [
+        { zh: "乃", pinyin: "nǎi", ko: "곧 ~이다(문어)", pos: "동사", hanja: "내(乃) — 문어의 '~이다'.", ex: { zh: "失败乃成功之母。", pinyin: "shībài nǎi chénggōng zhī mǔ", ko: "실패는 곧 성공의 어머니다." } },
+        { zh: "鱿鱼", pinyin: "yóuyú", ko: "오징어", pos: "명사", hanja: "炒鱿鱼=오징어 볶음 → 이불 말듯 짐을 싸다 → 해고.", ex: { zh: "老板炒了他的鱿鱼。", pinyin: "lǎobǎn chǎo le tā de yóuyú", ko: "사장이 그를 해고했어요(관용)." } },
+        { zh: "苟", pinyin: "gǒu", ko: "구차하다(문어)", pos: "형용사", hanja: "구(苟) — 一丝不苟(일사불구)의 구.", ex: { zh: "他做事一丝不苟。", pinyin: "tā zuò shì yì sī bù gǒu", ko: "그는 일 처리가 한 치도 소홀함이 없어요." } },
+        { zh: "哑", pinyin: "yǎ", ko: "말문이 막히다", pos: "형용사", hanja: "아(啞) — '아연실색'과 결이 닿아요.", ex: { zh: "他哑口无言。", pinyin: "tā yǎ kǒu wú yán", ko: "그는 말문이 막혔어요." } },
+        { zh: "菩萨", pinyin: "púsà", ko: "보살", pos: "명사", hanja: "보살(菩薩) — 한자 그대로.", ex: { zh: "泥菩萨过江，自身难保。", pinyin: "ní púsà guò jiāng, zìshēn nán bǎo", ko: "진흙 보살이 강을 건너듯 제 몸도 못 지킨다(헐후어)." } },
+        { zh: "矣", pinyin: "yǐ", ko: "~이다·~구나(문어 종결)", pos: "조사", ex: { zh: "足矣。", pinyin: "zú yǐ", ko: "족하다." } },
+      ],
+    },
   ],
 };
 
