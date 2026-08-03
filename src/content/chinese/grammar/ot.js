@@ -12,6 +12,14 @@ const chapters = [
     titleFr: "汉语拼音",
     summary: "중국어 발음을 로마자로 적은 한어병음(pīnyīn). 우리가 아는 알파벳이지만 읽는 법이 다른 글자 몇 개부터 길들여요.",
     duration: "약 8분",
+    drills: [
+      { id: "ot01-d1", type: "fill", prompt: "'你好'의 병음은? (성조 부호 없이도 OK)", answer: "nǐ hǎo", accepts: ["ni hao", "nihao"] },
+      { id: "ot01-d2", type: "fill", prompt: "'谢谢'의 병음은?", answer: "xièxie", accepts: ["xiexie", "xie xie"] },
+      { id: "ot01-d3", type: "choice", prompt: "병음에서 b와 p의 차이는?", choices: ["b는 무기음(숨 약하게), p는 유기음(숨 세게)", "b는 유성음, p는 무성음 — 영어와 같다", "발음 차이가 없다"], answer: "b는 무기음(숨 약하게), p는 유기음(숨 세게)" },
+      { id: "ot01-d4", type: "choice", prompt: "j·q·x 뒤의 ü는 어떻게 표기하나요?", choices: ["점을 떼고 u로 쓴다", "ü 그대로 쓴다", "v로 쓴다"], answer: "점을 떼고 u로 쓴다" },
+      { id: "ot01-d5", type: "choice", prompt: "'ma'에서 성모(첫 자음)는?", choices: ["m", "a", "ma 전체"], answer: "m" },
+      { id: "ot01-d6", type: "choice", listen: "你好", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["안녕하세요", "감사합니다", "죄송합니다"], answer: "안녕하세요" },
+    ],
     sections: [
       {
         heading: "병음이란 무엇인가",
@@ -78,6 +86,14 @@ const chapters = [
     titleFr: "声调",
     summary: "중국어의 심장 — 성조. 높낮이가 다르면 단어가 통째로 바뀌어요. 4성과 경성, 그리고 한국인이 가장 많이 놓치는 함정까지.",
     duration: "약 10분",
+    drills: [
+      { id: "ot02-d1", type: "choice", listen: "妈", prompt: "듣고 성조를 고르세요. (mā)", choices: ["1성 — 높고 평평하게", "2성 — 끝을 올려서", "4성 — 뚝 떨어뜨려서"], answer: "1성 — 높고 평평하게" },
+      { id: "ot02-d2", type: "choice", listen: "马", prompt: "듣고 성조를 고르세요. (mǎ)", choices: ["3성 — 내렸다가 올려서", "1성 — 높고 평평하게", "2성 — 끝을 올려서"], answer: "3성 — 내렸다가 올려서" },
+      { id: "ot02-d3", type: "choice", listen: "骂", prompt: "듣고 성조를 고르세요. (mà)", choices: ["4성 — 위에서 뚝 떨어뜨려서", "3성 — 내렸다가 올려서", "1성 — 높고 평평하게"], answer: "4성 — 위에서 뚝 떨어뜨려서" },
+      { id: "ot02-d4", type: "choice", prompt: "3성+3성이 이어지면(예: 你好) 실제 발음은?", choices: ["앞 글자가 2성처럼 변한다", "둘 다 3성 그대로", "뒤 글자가 1성이 된다"], answer: "앞 글자가 2성처럼 변한다" },
+      { id: "ot02-d5", type: "choice", prompt: "경성(轻声)의 특징은?", choices: ["짧고 가볍게, 고정 높이 없음", "가장 높은 소리", "가장 긴 소리"], answer: "짧고 가볍게, 고정 높이 없음" },
+      { id: "ot02-d6", type: "fill", prompt: "성조 부호는 보통 어떤 글자 위에? (a·o·e 중 우선순위 1위)", answer: "a" },
+    ],
     sections: [
       {
         heading: "성조란 무엇인가 — 음의 높낮이가 뜻이다",
@@ -144,6 +160,14 @@ const chapters = [
     titleFr: "简体字",
     summary: "중국 대륙은 획을 줄인 간체자(简体字)를 써요. 한국 한자(번체)와 어떻게 다른지, 그리고 한자 지식이 어떻게 무기가 되는지 알아봐요.",
     duration: "약 8분",
+    drills: [
+      { id: "ot03-d1", type: "choice", prompt: "愛(사랑 애)의 간체자는?", choices: ["爱", "変", "受"], answer: "爱" },
+      { id: "ot03-d2", type: "fill", prompt: "國(나라 국)의 간체자는?", answer: "国" },
+      { id: "ot03-d3", type: "fill", prompt: "車(수레 차)의 간체자는?", answer: "车" },
+      { id: "ot03-d4", type: "choice", prompt: "간체자를 표준으로 쓰는 곳은?", choices: ["중국 대륙·싱가포르", "대만·홍콩", "일본"], answer: "중국 대륙·싱가포르" },
+      { id: "ot03-d5", type: "choice", prompt: "부수(部首)의 역할은?", choices: ["뜻의 힌트를 준다", "소리만 나타낸다", "획수를 세는 단위다"], answer: "뜻의 힌트를 준다" },
+      { id: "ot03-d6", type: "choice", listen: "汉语", prompt: "듣고 알맞은 뜻을 고르세요. (Hànyǔ)", choices: ["중국어", "한국어", "영어"], answer: "중국어" },
+    ],
     sections: [
       {
         heading: "간체자란 무엇인가",
@@ -224,6 +248,14 @@ const chapters = [
     titleFr: "基本语序",
     summary: "중국어의 뼈대는 '주어+동사+목적어'. 동사가 맨 끝에 오는 한국어와 정반대예요. 한국인이 가장 먼저 넘어야 할 벽.",
     duration: "약 9분",
+    drills: [
+      { id: "ot04-d1", type: "choice", prompt: "중국어의 기본 어순은?", choices: ["주어+동사+목적어 (SVO)", "주어+목적어+동사 (SOV)", "동사+주어+목적어 (VSO)"], answer: "주어+동사+목적어 (SVO)" },
+      { id: "ot04-d2", type: "order", sentence: "我喝茶。", prompt: "'나는 차를 마신다'를 배열해 보세요." },
+      { id: "ot04-d3", type: "order", sentence: "我去学校。", prompt: "'나는 학교에 간다'를 배열해 보세요." },
+      { id: "ot04-d4", type: "choice", prompt: "'나는 중국어를 배운다'의 옳은 순서는?", choices: ["我学汉语。", "我汉语学。", "学我汉语。"], answer: "我学汉语。" },
+      { id: "ot04-d5", type: "choice", prompt: "시간사(明天 내일)의 위치는?", choices: ["동사 앞 (我明天去)", "문장 맨 끝 (我去明天)", "동사 바로 뒤"], answer: "동사 앞 (我明天去)" },
+      { id: "ot04-d6", type: "choice", listen: "我爱你。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["사랑해", "고마워", "미안해"], answer: "사랑해" },
+    ],
     sections: [
       {
         heading: "주어 + 동사 + 목적어 (SVO)",

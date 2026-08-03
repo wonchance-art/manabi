@@ -161,7 +161,8 @@ export async function runCurriculumLint() {
   //  드릴 문장(sentence·choice 정답·fill 완성문)은 ① 같은 챕터의 fr 문자열 ② 같은 챕터 다른 드릴
   //  ③ 다른 챕터의 드릴과 문장 단위로 겹치지 않아야 한다.
   try {
-    const gdir = path.join(REPO_ROOT, 'src/content/french/grammar');
+    for (const track of ['french', 'chinese']) {
+    const gdir = path.join(REPO_ROOT, `src/content/${track}/grammar`);
     const gfiles = (await fs.readdir(gdir)).filter((f) => f.endsWith('.js'));
     const normSent = (s) => s.replace(/\s+/g, ' ').trim().toLowerCase();
     const globalSeen = new Map(); // normSent → "slug:drillId"
@@ -173,7 +174,7 @@ export async function runCurriculumLint() {
         const dm = seg.match(/drills: \[([\s\S]*?)\n    \]/);
         if (!dm) continue;
         const dseg = dm[1];
-        const frSet = new Set([...seg.matchAll(/fr: "((?:[^"\\]|\\.)*)"/g)].map((m) => normSent(m[1])));
+        const frSet = new Set([...seg.matchAll(/(?:fr|zh): "((?:[^"\\]|\\.)*)"/g)].map((m) => normSent(m[1])));
         const items = [];
         for (const m of dseg.matchAll(/\{([\s\S]*?)\}/g)) {
           const body = m[1];
@@ -189,13 +190,14 @@ export async function runCurriculumLint() {
         const local = new Set();
         for (const { id, sent } of items) {
           const label = `${marks[i].slug}:${id}`;
-          if (frSet.has(sent)) errors.push(`french 드릴 중복(챕터 예문과 동일): ${label} — "${sent}"`);
-          if (local.has(sent)) errors.push(`french 드릴 중복(챕터 내): ${label} — "${sent}"`);
+          if (frSet.has(sent)) errors.push(`${track} 드릴 중복(챕터 예문과 동일): ${label} — "${sent}"`);
+          if (local.has(sent)) errors.push(`${track} 드릴 중복(챕터 내): ${label} — "${sent}"`);
           local.add(sent);
-          if (globalSeen.has(sent)) errors.push(`french 드릴 중복(챕터 간): ${label} ↔ ${globalSeen.get(sent)}`);
+          if (globalSeen.has(sent)) errors.push(`${track} 드릴 중복(챕터 간): ${label} ↔ ${globalSeen.get(sent)}`);
           else globalSeen.set(sent, label);
         }
       }
+    }
     }
   } catch (e) {
     warnings.push(`드릴 비중복 게이트 실패: ${e}`);

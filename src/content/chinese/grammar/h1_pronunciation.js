@@ -14,6 +14,14 @@ const chapters = [
     summary:
       "중국어는 4가지 성조로 뜻이 결정돼요. 같은 '마' 소리도 성조에 따라 '엄마(妈) / 삼베(麻) / 말(马) / 꾸짖다(骂)'가 되는 이유를 배워요.",
     duration: "약 13분",
+    drills: [
+      { id: "h123-d1", type: "choice", listen: "麻", prompt: "듣고 성조를 고르세요. (má)", choices: ["2성 — 끝을 올려서", "3성 — 내렸다가 올려서", "4성 — 뚝 떨어뜨려서"], answer: "2성 — 끝을 올려서" },
+      { id: "h123-d2", type: "choice", listen: "买", prompt: "듣고 성조를 고르세요. (mǎi 사다)", choices: ["3성", "4성", "1성"], answer: "3성" },
+      { id: "h123-d3", type: "choice", prompt: "반3성이 나타나는 자리는?", choices: ["3성 뒤에 1·2·4성·경성이 올 때(앞 3성이 내려가기만 함)", "3성이 문장 끝에 올 때", "1성 두 개가 이어질 때"], answer: "3성 뒤에 1·2·4성·경성이 올 때(앞 3성이 내려가기만 함)" },
+      { id: "h123-d4", type: "choice", prompt: "妈妈(māma)의 둘째 음절은?", choices: ["경성", "1성", "3성"], answer: "경성" },
+      { id: "h123-d5", type: "choice", prompt: "一가 4성 앞에 오면(예: 一个)?", choices: ["2성으로 변한다 (yí)", "1성 그대로", "3성이 된다"], answer: "2성으로 변한다 (yí)" },
+      { id: "h123-d6", type: "choice", prompt: "不가 4성 앞에 오면(예: 不是)?", choices: ["2성으로 변한다 (bú)", "4성 그대로", "경성이 된다"], answer: "2성으로 변한다 (bú)" },
+    ],
     sections: [
       {
         heading: "4가지 성조 — 중국어 발음의 핵심",
@@ -169,6 +177,14 @@ const chapters = [
     summary:
       "중국어 알파벳(병음)은 영어와 다르게 발음돼요. c는 '츠', q는 '치', x는 '시'에 가까워요. 한국인이 가장 자주 실수하는 부분을 배워요.",
     duration: "약 14분",
+    drills: [
+      { id: "h124-d1", type: "choice", prompt: "zhi·chi·shi의 i는 어떤 소리?", choices: ["[으]에 가까운 소리 — [이]가 아니다", "[이] 그대로", "[우]에 가까운 소리"], answer: "[으]에 가까운 소리 — [이]가 아니다" },
+      { id: "h124-d2", type: "fill", prompt: "j + ü 표기: 병음으로 쓰면 ___ (예: 취하다 쥐)", answer: "ju" },
+      { id: "h124-d3", type: "choice", prompt: "'liu'의 실제 발음은?", choices: ["li+ou의 축약 — [리어우]에 가깝다", "[리우] 그대로", "[류]와 완전히 같다"], answer: "li+ou의 축약 — [리어우]에 가깝다" },
+      { id: "h124-d4", type: "choice", prompt: "yi·wu·yu의 정체는?", choices: ["성모 없는 i·u·ü의 표기 규칙", "특별한 자음", "감탄사 전용 표기"], answer: "성모 없는 i·u·ü의 표기 규칙" },
+      { id: "h124-d5", type: "choice", listen: "水", prompt: "듣고 병음을 고르세요. (물 수)", choices: ["shuǐ", "suǐ", "xuǐ"], answer: "shuǐ" },
+      { id: "h124-d6", type: "fill", prompt: "'儿'화음 표기: 花 + 儿 → huā___", answer: "r" },
+    ],
     sections: [
       {
         heading: "병음 자음 — 영어와 전혀 다르다",
