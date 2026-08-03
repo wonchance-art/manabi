@@ -20,6 +20,14 @@ const chapters = [
       { id: "h117-d5", type: "order", sentence: "我打算住五天。", prompt: "'닷새 묵을 계획이에요'를 배열해 보세요." },
       { id: "h117-d6", type: "choice", listen: "祝你旅途愉快！", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["즐거운 여행 되세요!", "여행이 취소됐어요", "탑승을 서두르세요"], answer: "즐거운 여행 되세요!" },
     ],
+    writing: {
+      prompt: "입국 심사에서 방문 목적과 체류 기간을 답해 보세요.",
+      hints: ["我是来…的", "住+기간"],
+      samples: [
+        { zh: "我是来旅游的，住一个星期。", pinyin: "Wǒ shì lái lǚyóu de, zhù yí ge xīngqī.", ko: "여행하러 왔고, 일주일 묵어요." },
+      ],
+      checklist: ["목적을 来+동사로 말했다", "기간을 住 뒤에 붙였다"],
+    },
     sections: [
       {
         heading: "방문 목적을 짧게 답해요",
@@ -148,6 +156,14 @@ const chapters = [
       { id: "h118-d5", type: "order", sentence: "这趟车到市中心吗？", prompt: "'이 차는 시내까지 가나요?'를 배열해 보세요." },
       { id: "h118-d6", type: "choice", listen: "车票二十块一张。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["표는 한 장에 20위안이에요", "표가 20장 남았어요", "20번 창구로 가세요"], answer: "표는 한 장에 20위안이에요" },
     ],
+    writing: {
+      prompt: "시내 가는 표를 사면서 수량과 가격 질문까지 한 번에 써 보세요.",
+      hints: ["几张 / 多少钱"],
+      samples: [
+        { zh: "我要两张去市区的票，多少钱？", pinyin: "Wǒ yào liǎng zhāng qù shìqū de piào, duōshao qián?", ko: "시내 가는 표 두 장 주세요. 얼마예요?" },
+      ],
+      checklist: ["표를 张으로 세었다", "가격을 多少钱으로 물었다"],
+    },
     sections: [
       {
         heading: "목적지까지 가는 표를 사요",
@@ -276,6 +292,14 @@ const chapters = [
       { id: "h119-d5", type: "order", sentence: "我想再住一天。", prompt: "'하루 더 묵고 싶어요'를 배열해 보세요." },
       { id: "h119-d6", type: "choice", listen: "这是您的房卡。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["객실 카드입니다", "영수증입니다", "아침 식사 쿠폰입니다"], answer: "객실 카드입니다" },
     ],
+    writing: {
+      prompt: "호텔 체크인 — 예약 사실을 알리고 여권을 건네는 두 문장을 써 보세요.",
+      hints: ["预订 / 这是…"],
+      samples: [
+        { zh: "我预订了房间，这是我的护照。", pinyin: "Wǒ yùdìng le fángjiān, zhè shì wǒ de hùzhào.", ko: "방을 예약했어요. 여기 제 여권이요." },
+      ],
+      checklist: ["예약했다는 사실을 먼저 알렸다", "这是로 건네는 동작을 표현했다"],
+    },
     sections: [
       {
         heading: "예약이 있다고 먼저 알려요",
@@ -404,6 +428,14 @@ const chapters = [
       { id: "h120-d5", type: "order", sentence: "洗手间的灯不亮了。", prompt: "'화장실 전등이 안 켜져요'를 배열해 보세요." },
       { id: "h120-d6", type: "choice", listen: "马上给您修。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["바로 고쳐 드릴게요", "내일 고쳐 드릴게요", "고칠 수 없어요"], answer: "바로 고쳐 드릴게요" },
     ],
+    writing: {
+      prompt: "객실 문제 하나를 알리고 해결(교체·수리)을 부탁해 보세요.",
+      hints: ["太…了 / 能…吗？"],
+      samples: [
+        { zh: "房间太冷了，能换个房间吗？", pinyin: "Fángjiān tài lěng le, néng huàn ge fángjiān ma?", ko: "방이 너무 추워요. 방을 바꿀 수 있나요?" },
+      ],
+      checklist: ["문제를 太…了로 말했다", "요청을 能…吗로 공손하게 했다"],
+    },
     sections: [
       {
         heading: "필요한 물건을 더 요청해요",
@@ -532,6 +564,14 @@ const chapters = [
       { id: "h121-d5", type: "order", sentence: "来一个不辣的菜吧。", prompt: "'안 매운 요리 하나 주세요'를 배열해 보세요." },
       { id: "h121-d6", type: "choice", listen: "请慢用。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["맛있게 드세요", "천천히 오세요", "조금만 드세요"], answer: "맛있게 드세요" },
     ],
+    writing: {
+      prompt: "추천을 묻고 조건(안 맵게 등)을 붙여 주문해 보세요.",
+      hints: ["有什么推荐的？"],
+      samples: [
+        { zh: "有什么推荐的？我要一个不辣的。", pinyin: "Yǒu shénme tuījiàn de? Wǒ yào yí ge bú là de.", ko: "추천 메뉴 있나요? 안 매운 걸로 하나 주세요." },
+      ],
+      checklist: ["추천을 먼저 물었다", "조건을 不…的로 붙였다"],
+    },
     sections: [
       {
         heading: "먹고 싶은 메뉴를 말해요",
@@ -660,6 +700,14 @@ const chapters = [
       { id: "h122-d5", type: "order", sentence: "可以不放牛奶吗？", prompt: "'우유를 안 넣어 주실 수 있나요?'를 배열해 보세요." },
       { id: "h122-d6", type: "choice", listen: "一共八十八块。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["모두 88위안입니다", "모두 18위안입니다", "8시에 문 닫아요"], answer: "모두 88위안입니다" },
     ],
+    writing: {
+      prompt: "계산을 요청하고 결제 수단을 확인하는 두 문장을 써 보세요.",
+      hints: ["买单 / 可以…吗？"],
+      samples: [
+        { zh: "服务员，买单！可以刷卡吗？", pinyin: "Fúwùyuán, mǎidān! Kěyǐ shuākǎ ma?", ko: "여기요, 계산할게요! 카드 되나요?" },
+      ],
+      checklist: ["买单으로 계산을 요청했다", "결제 수단을 可以…吗로 물었다"],
+    },
     sections: [
       {
         heading: "계산서를 요청해요",
