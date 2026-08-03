@@ -355,6 +355,125 @@ export async function runCurriculumLint() {
     }
   }
 
+  // (h) zh 병음 정합 게이트 — zh·pinyin 쌍 전수: 허용 문자 + 한자 수↔음절 수(모음 그룹 산식, 儿화 보정).
+  // 모음 시작 음절 앞 아포스트로피(정서법 표기)를 분리자로 신뢰한다 — 누락하면 음절 수가 어긋나 적발된다.
+  // zh에 라틴 문자가 섞인 메타 표기(A比B 등)는 판정 불가라 건너뛴다.
+  try {
+    const zdir = path.join(REPO_ROOT, 'src/content/chinese');
+    const zfiles = [];
+    for (const sub of ['grammar', 'bunkei', 'vocab']) {
+      const d = path.join(zdir, sub);
+      let names = [];
+      try {
+        names = await fs.readdir(d);
+      } catch {
+        continue;
+      }
+      for (const f of names) if (f.endsWith('.js')) zfiles.push(path.join(d, f));
+    }
+    const VOW = 'aeiouüāáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ';
+    const vowRun = new RegExp(`[${VOW}]+`, 'g');
+    const okChars = new RegExp(`^[a-z${VOW}]*$`);
+    for (const file of zfiles) {
+      const src = await fs.readFile(file, 'utf8');
+      const rel = path.relative(REPO_ROOT, file);
+      const re = /zh: "((?:[^"\\]|\\.)*)",\s*pinyin: "((?:[^"\\]|\\.)*)"/g;
+      let m;
+      while ((m = re.exec(src)) !== null) {
+        const zh = m[1];
+        const py = m[2];
+        if (/[A-Za-z]/.test(zh)) continue;
+        if (py.includes('→')) continue; // 성조 변조 대조 표기(nǐ hǎo → ní hǎo)는 판정 대상이 아니다
+        const hanzi = (zh.match(/[㐀-鿿]/g) || []).length;
+        if (hanzi === 0) continue;
+        const er = (zh.match(/儿/g) || []).length;
+        const clean = py.toLowerCase().replace(/\\"/g, ' ')
+          .replace(/[\s,，、.。？?!！:：;；·…—‘’“”「」『』«»'"()-]+/g, ' ').trim();
+        let charBad = false;
+        for (const tok of clean.split(' ')) {
+          if (tok && !okChars.test(tok)) {
+            errors.push(`zh 병음 문자 오류: ${rel} — "${py}" 토큰 "${tok}"`);
+            charBad = true;
+            break;
+          }
+        }
+        if (charBad) continue;
+        const syll = (clean.match(vowRun) || []).length;
+        if (!(syll === hanzi || (er > 0 && syll >= hanzi - er && syll < hanzi))) {
+          errors.push(`zh 병음 음절 불일치: ${rel} — "${zh}"(${hanzi}자) ↔ "${py}"(${syll}음절)`);
+        }
+      }
+    }
+  } catch (e) {
+    errors.push(`zh 병음 게이트 실패: ${e.message}`);
+  }
+
+  // (d-zh) 글자 커버 (report-only) — 레벨 챕터 파일의 CJK 글자가 해당 레벨까지의 누적 vocab 글자에
+  // 포함되는지. 단어 분절 없이 글자 단위로 근사한다(공백 없는 중문의 실용 커버 지표).
+  try {
+    const gmap = {
+      h1: ['ot.js', 'h1.js', 'h1_pronunciation.js', 'scene_travel.js', 'scene_emergency.js'],
+      h2: ['h2.js'], h3: ['h3.js'], h4: ['h4.js'], h5: ['h5.js'], h6: ['h6.js'],
+    };
+    const vdir = path.join(REPO_ROOT, 'src/content/chinese/vocab');
+    const gdir = path.join(REPO_ROOT, 'src/content/chinese/grammar');
+    const vfiles = (await fs.readdir(vdir)).filter((f) => f.endsWith('.js'));
+    const cum = new Set();
+    for (const lv of Object.keys(gmap)) {
+      for (const vf of vfiles.filter((x) => x.startsWith(lv))) {
+        const src = await fs.readFile(path.join(vdir, vf), 'utf8');
+        const re = /zh: "((?:[^"\\]|\\.)*)"/g;
+        let m;
+        while ((m = re.exec(src)) !== null) {
+          for (const ch of m[1]) if (/[㐀-鿿]/.test(ch)) cum.add(ch);
+        }
+      }
+      const freq = new Map();
+      let hit = 0;
+      let miss = 0;
+      const tally = (text) => {
+        for (const ch of text) {
+          if (!/[㐀-鿿]/.test(ch)) continue;
+          if (cum.has(ch)) hit += 1;
+          else {
+            miss += 1;
+            freq.set(ch, (freq.get(ch) ?? 0) + 1);
+          }
+        }
+      };
+      for (const gf of gmap[lv]) {
+        let gsrc = '';
+        try {
+          gsrc = await fs.readFile(path.join(gdir, gf), 'utf8');
+        } catch {
+          continue;
+        }
+        // 학습 노출 필드만 집계 — trad(번체 대조)·hanja(한국 정자체 해설)·note 등 설명 필드는
+        // 정자체가 설계상 정당하므로 커버 대상에서 뺀다.
+        const sre = /(?:zh|sentence|listen|speak|prompt|answer|q)\s*:\s*"((?:[^"\\]|\\.)*)"/g;
+        let sm;
+        while ((sm = sre.exec(gsrc)) !== null) tally(sm[1]);
+        const are = /(?:tiles|choices)\s*:\s*\[([^\]]*)\]/g;
+        let am;
+        while ((am = are.exec(gsrc)) !== null) {
+          const inner = am[1].match(/"((?:[^"\\]|\\.)*)"/g) ?? [];
+          for (const q of inner) tally(q.slice(1, -1));
+        }
+      }
+      const total = hit + miss;
+      if (total > 0) {
+        const pct = Math.round((hit / total) * 100);
+        if (pct < 100) {
+          const top = [...freq.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8)
+            .map(([c, n]) => `${c}(${n})`).join(' ');
+          warnings.push(`chinese/${lv.toUpperCase()}: 글자 커버 ${pct}% (한자 ${total}) — 미등재 상위: ${top}`);
+        }
+      }
+    }
+  } catch (e) {
+    errors.push(`zh 글자 커버 게이트 실패: ${e.message}`);
+  }
+
   return { errors, warnings };
 }
 

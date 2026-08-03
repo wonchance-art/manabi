@@ -43,7 +43,7 @@ const themes = {
         { zh: "得到", pinyin: "dédào", ko: "얻다, 획득하다", pos: "동사", ex: { zh: "他得到了很多帮助。", pinyin: "Tā dédàole hěn duō bāngzhù.", ko: "그는 많은 도움을 얻었어요." } },
         { zh: "弟", pinyin: "dì", ko: "남동생", pos: "명사", ex: { zh: "我弟今年十岁。", pinyin: "Wǒ dì jīnnián shí suì.", ko: "내 남동생은 올해 열 살이에요." } },
         { zh: "第", pinyin: "dì", ko: "제~(차례를 나타내는 접두어)", pos: "수사", ex: { zh: "这是我第一次来中国。", pinyin: "Zhè shì wǒ dì yī cì lái Zhōngguó.", ko: "이번이 내가 처음 중국에 온 거예요." } },
-        { zh: "第二", pinyin: "dìèr", ko: "두 번째, 제2", pos: "수사", ex: { zh: "他排第二。", pinyin: "Tā pái dì èr.", ko: "그는 두 번째예요." } },
+        { zh: "第二", pinyin: "dì'èr", ko: "두 번째, 제2", pos: "수사", ex: { zh: "他排第二。", pinyin: "Tā pái dì èr.", ko: "그는 두 번째예요." } },
         { zh: "电", pinyin: "diàn", ko: "전기", pos: "명사", ex: { zh: "家里停电了。", pinyin: "Jiā lǐ tíng diàn le.", ko: "집에 정전이 됐어요." } },
         { zh: "电视机", pinyin: "diànshìjī", ko: "텔레비전, TV 수상기", pos: "명사", ex: { zh: "客厅里有一台电视机。", pinyin: "Kètīng lǐ yǒu yì tái diànshìjī.", ko: "거실에 텔레비전이 한 대 있어요." } },
         { zh: "电影院", pinyin: "diànyǐngyuàn", ko: "영화관", pos: "명사", ex: { zh: "我们周末去电影院看电影。", pinyin: "Wǒmen zhōumò qù diànyǐngyuàn kàn diànyǐng.", ko: "우리는 주말에 영화관에 가서 영화를 봐요." } },

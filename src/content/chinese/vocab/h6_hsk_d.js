@@ -23,7 +23,7 @@ const themes = {
         { zh: "瀑布", pinyin: "pùbù", ko: "폭포", pos: "명사", ex: { zh: "我们去山里看了一个瀑布。", pinyin: "Wǒmen qù shān lǐ kàn le yí gè pùbù.", ko: "우리는 산에 가서 폭포를 구경했어요." } },
         { zh: "顾虑", pinyin: "gùlǜ", ko: "우려, 걱정", pos: "명사", ex: { zh: "请不要有顾虑，尽管说出你的想法。", pinyin: "Qǐng búyào yǒu gùlǜ, jǐnguǎn shuō chū nǐ de xiǎngfǎ.", ko: "우려하지 말고 당신의 생각을 마음껏 말해 주세요." } },
         { zh: "恐吓", pinyin: "kǒnghè", ko: "협박하다, 위협하다", pos: "동사", ex: { zh: "有人打电话恐吓他，要他交钱。", pinyin: "Yǒurén dǎ diànhuà kǒnghè tā, yào tā jiāo qián.", ko: "누군가 전화로 그를 협박하며 돈을 요구했어요." } },
-        { zh: "数额", pinyin: "shùé", ko: "액수, 수량", pos: "명사", ex: { zh: "这笔贷款的数额相当大。", pinyin: "Zhè bǐ dàikuǎn de shù'é xiāngdāng dà.", ko: "이 대출금의 액수가 상당히 커요." } },
+        { zh: "数额", pinyin: "shù'é", ko: "액수, 수량", pos: "명사", ex: { zh: "这笔贷款的数额相当大。", pinyin: "Zhè bǐ dàikuǎn de shù'é xiāngdāng dà.", ko: "이 대출금의 액수가 상당히 커요." } },
         { zh: "淹没", pinyin: "yānmò", ko: "침수시키다, 잠기게 하다", pos: "동사", ex: { zh: "洪水淹没了整片农田。", pinyin: "Hóngshuǐ yānmò le zhěng piàn nóngtián.", ko: "홍수가 논밭 전체를 잠기게 했어요." } },
         { zh: "闪烁", pinyin: "shǎnshuò", ko: "반짝이다, 깜빡이다", pos: "동사", ex: { zh: "夜空中星星在闪烁。", pinyin: "Yèkōng zhōng xīngxing zài shǎnshuò.", ko: "밤하늘에서 별들이 반짝이고 있어요." } },
         { zh: "眨", pinyin: "zhǎ", ko: "눈을 깜빡이다", pos: "동사", ex: { zh: "她惊讶得连眼睛都没眨一下。", pinyin: "Tā jīngyà de lián yǎnjīng dōu méi zhǎ yíxià.", ko: "그녀는 너무 놀라서 눈도 깜빡이지 못했어요." } },

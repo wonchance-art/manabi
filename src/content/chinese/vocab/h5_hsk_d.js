@@ -51,7 +51,7 @@ const themes = {
         { zh: "燃烧", pinyin: "ránshāo", ko: "연소하다, 타다", pos: "동사", hanja: "연소(燃燒) — '燃'은 탈 연, '燒'는 사를 소.", ex: { zh: "木头在火里燃烧。", pinyin: "mùtou zài huǒ lǐ ránshāo", ko: "나무가 불 속에서 타고 있어요." } },
         { zh: "嚷", pinyin: "rǎng", ko: "고함치다, 떠들어대다", pos: "동사", ex: { zh: "别在这儿大声嚷。", pinyin: "bié zài zhèr dàshēng rǎng", ko: "여기서 큰 소리로 떠들지 마세요." } },
         { zh: "绕", pinyin: "rào", ko: "감다, 둘러싸다; 돌아가다", pos: "동사", ex: { zh: "我们绕了一圈才到。", pinyin: "wǒmen rào le yì quān cái dào", ko: "우리는 한 바퀴 빙 돌아서야 도착했어요." } },
-        { zh: "热爱", pinyin: "rèài", ko: "열렬히 사랑하다, 애착을 갖다", pos: "동사", hanja: "열애(熱愛) — 한자는 '열애'지만 '간절히 사랑하다(일·조국 등)'를 뜻해요.", ex: { zh: "他热爱自己的工作。", pinyin: "tā rè'ài zìjǐ de gōngzuò", ko: "그는 자기 일을 무척 사랑해요." } },
+        { zh: "热爱", pinyin: "rè'ài", ko: "열렬히 사랑하다, 애착을 갖다", pos: "동사", hanja: "열애(熱愛) — 한자는 '열애'지만 '간절히 사랑하다(일·조국 등)'를 뜻해요.", ex: { zh: "他热爱自己的工作。", pinyin: "tā rè'ài zìjǐ de gōngzuò", ko: "그는 자기 일을 무척 사랑해요." } },
         { zh: "忍不住", pinyin: "rěnbuzhù", ko: "참지 못하다, 견디지 못하다", pos: "동사", hanja: "인부주(忍不住) — '忍'은 참을 인. '참아 낼 수 없다'.", ex: { zh: "她忍不住笑了。", pinyin: "tā rěnbuzhù xiào le", ko: "그녀는 참지 못하고 웃었어요." } },
         { zh: "融化", pinyin: "rónghuà", ko: "녹다, 용해되다", pos: "동사", hanja: "융화(融化) — '融'은 녹을 융, '化'는 될 화.", ex: { zh: "春天到了，雪开始融化。", pinyin: "chūntiān dào le, xuě kāishǐ rónghuà", ko: "봄이 와서 눈이 녹기 시작해요." } },
         { zh: "洒", pinyin: "sǎ", ko: "뿌리다, 흩뿌리다; 엎지르다", pos: "동사", ex: { zh: "他不小心把水洒了。", pinyin: "tā bù xiǎoxīn bǎ shuǐ sǎ le", ko: "그는 실수로 물을 엎질렀어요." } },

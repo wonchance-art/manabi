@@ -12,7 +12,7 @@ const themes = {
         { zh: "空白", pinyin: "kòngbái", ko: "공백, 여백", pos: "명사", ex: { zh: "请在空白处写上你的名字。", pinyin: "Qǐng zài kòngbái chù xiěshàng nǐ de míngzi.", ko: "빈 공간에 당신의 이름을 써 주세요." } },
         { zh: "地步", pinyin: "dìbù", ko: "지경, 정도", pos: "명사", ex: { zh: "事情已经发展到严重的地步。", pinyin: "Shìqing yǐjīng fāzhǎn dào yánzhòng de dìbù.", ko: "일이 이미 심각한 지경까지 이르렀어요." } },
         { zh: "伴随", pinyin: "bànsuí", ko: "동반하다, 따르다", pos: "동사", ex: { zh: "成功往往伴随着艰辛的努力。", pinyin: "Chénggōng wǎngwǎng bànsuízhe jiānxīn de nǔlì.", ko: "성공은 흔히 힘든 노력을 동반해요." } },
-        { zh: "悲哀", pinyin: "bēiāi", ko: "슬프다, 비통하다", pos: "형용사", ex: { zh: "他的遭遇让人感到悲哀。", pinyin: "Tā de zāoyù ràng rén gǎndào bēi'āi.", ko: "그의 처지는 사람을 슬프게 만들어요." } },
+        { zh: "悲哀", pinyin: "bēi'āi", ko: "슬프다, 비통하다", pos: "형용사", ex: { zh: "他的遭遇让人感到悲哀。", pinyin: "Tā de zāoyù ràng rén gǎndào bēi'āi.", ko: "그의 처지는 사람을 슬프게 만들어요." } },
         { zh: "嘲笑", pinyin: "cháoxiào", ko: "비웃다, 조롱하다", pos: "동사", ex: { zh: "同学们不该嘲笑他的口音。", pinyin: "Tóngxuémen bù gāi cháoxiào tā de kǒuyīn.", ko: "학생들은 그의 억양을 비웃으면 안 돼요." } },
         { zh: "遥远", pinyin: "yáoyuǎn", ko: "아득하다, 멀다", pos: "형용사", ex: { zh: "他来自一个遥远的国家。", pinyin: "Tā láizì yí gè yáoyuǎn de guójiā.", ko: "그는 아주 먼 나라에서 왔어요." } },
         { zh: "神圣", pinyin: "shénshèng", ko: "신성하다", pos: "형용사", ex: { zh: "婚姻是一件神圣的事情。", pinyin: "Hūnyīn shì yí jiàn shénshèng de shìqing.", ko: "결혼은 신성한 일이에요." } },

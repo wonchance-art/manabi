@@ -84,7 +84,7 @@ const themes = {
         { zh: "传真", pinyin: "chuánzhēn", ko: "팩스", pos: "명사", hanja: "전진(傳真) — '傳'은 전할 전, '眞'은 참 진.", ex: { zh: "请把文件发传真给我。", pinyin: "qǐng bǎ wénjiàn fā chuánzhēn gěi wǒ", ko: "문서를 팩스로 보내 주세요." } },
         { zh: "窗户", pinyin: "chuānghu", ko: "창문", pos: "명사", hanja: "창호(窗戶) — '窗'은 창 창, '戶'는 지게문 호.", ex: { zh: "请把窗户打开。", pinyin: "qǐng bǎ chuānghu dǎkāi", ko: "창문 좀 열어 주세요." } },
         { zh: "词典", pinyin: "cídiǎn", ko: "사전", pos: "명사", hanja: "사전(詞典) — '詞'는 말 사, '典'은 책 전.", ex: { zh: "我用词典查生词。", pinyin: "wǒ yòng cídiǎn chá shēngcí", ko: "저는 사전으로 새 단어를 찾아요." } },
-        { zh: "答案", pinyin: "dáàn", ko: "답, 정답, 해답", pos: "명사", hanja: "답안(答案) — '答'은 대답할 답, '案'은 책상·안 안.", ex: { zh: "这道题的答案是什么？", pinyin: "zhè dào tí de dá'àn shì shénme", ko: "이 문제의 답은 뭐예요?" } },
+        { zh: "答案", pinyin: "dá'àn", ko: "답, 정답, 해답", pos: "명사", hanja: "답안(答案) — '答'은 대답할 답, '案'은 책상·안 안.", ex: { zh: "这道题的答案是什么？", pinyin: "zhè dào tí de dá'àn shì shénme", ko: "이 문제의 답은 뭐예요?" } },
         { zh: "大概", pinyin: "dàgài", ko: "대략, 대강; 대강의 내용", pos: "부사", hanja: "대개(大概) — '大'는 큰 대, '概'는 대개 개.", ex: { zh: "他大概三十岁。", pinyin: "tā dàgài sānshí suì", ko: "그는 대략 서른 살이에요." } },
         { zh: "大使馆", pinyin: "dàshǐguǎn", ko: "대사관", pos: "명사", hanja: "대사관(大使館) — '使'는 사신 사, '館'은 집 관.", ex: { zh: "我去大使馆办签证。", pinyin: "wǒ qù dàshǐguǎn bàn qiānzhèng", ko: "저는 비자를 만들러 대사관에 가요." } },
         { zh: "代表", pinyin: "dàibiǎo", ko: "대표; 대표하다, 대신하다", pos: "명사", hanja: "대표(代表) — '代'는 대신할 대, '表'는 겉 표.", ex: { zh: "他是我们班的代表。", pinyin: "tā shì wǒmen bān de dàibiǎo", ko: "그는 우리 반 대표예요." } },

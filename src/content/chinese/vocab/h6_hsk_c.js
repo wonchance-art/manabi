@@ -134,7 +134,7 @@ const themes = {
         { zh: "犹如", pinyin: "yóurú", ko: "마치 ~와 같다", pos: "동사", ex: { zh: "夜空中的星星犹如钻石。", pinyin: "Yè kōng zhōng de xīng xing yóu rú zuàn shí.", ko: "밤하늘의 별들은 마치 다이아몬드 같아요." } },
         { zh: "迄今为止", pinyin: "qìjīn wéizhǐ", ko: "지금까지, 오늘날까지", pos: "관용구", ex: { zh: "迄今为止还没有人解开这个谜。", pinyin: "Qì jīn wéi zhǐ hái méi yǒu rén jiě kāi zhè ge mí.", ko: "지금까지 아무도 이 수수께끼를 풀지 못했어요." } },
         { zh: "支柱", pinyin: "zhīzhù", ko: "지주, 기둥, 버팀목", pos: "명사", ex: { zh: "旅游业是当地经济的支柱。", pinyin: "Lǚ yóu yè shì dāng dì jīng jì de zhī zhù.", ko: "관광업은 이 지역 경제의 버팀목이에요." } },
-        { zh: "饥饿", pinyin: "jīè", ko: "굶주림, 배고픔", pos: "명사", ex: { zh: "很多难民正忍受着饥饿。", pinyin: "Hěn duō nàn mín zhèng rěn shòu zhe jī è.", ko: "많은 난민들이 굶주림을 견디고 있어요." } },
+        { zh: "饥饿", pinyin: "jī'è", ko: "굶주림, 배고픔", pos: "명사", ex: { zh: "很多难民正忍受着饥饿。", pinyin: "Hěn duō nàn mín zhèng rěn shòu zhe jī è.", ko: "많은 난민들이 굶주림을 견디고 있어요." } },
         { zh: "空虚", pinyin: "kōngxū", ko: "공허하다, 허전하다", pos: "형용사", ex: { zh: "他退休后感到内心空虚。", pinyin: "Tā tuì xiū hòu gǎn dào nèi xīn kōng xū.", ko: "그는 은퇴 후 마음이 공허함을 느꼈어요." } },
         { zh: "喇叭", pinyin: "lǎba", ko: "나팔, 스피커, 확성기", pos: "명사", ex: { zh: "汽车喇叭突然响了起来。", pinyin: "Qì chē lǎ ba tū rán xiǎng le qǐ lai.", ko: "자동차 경적이 갑자기 울리기 시작했어요." } },
         { zh: "实质", pinyin: "shízhì", ko: "실질, 본질", pos: "명사", ex: { zh: "我们要看清问题的实质。", pinyin: "Wǒ men yào kàn qīng wèn tí de shí zhì.", ko: "우리는 문제의 본질을 명확히 봐야 해요." } },
