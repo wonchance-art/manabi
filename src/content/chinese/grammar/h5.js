@@ -13,6 +13,14 @@ const chapters = [
     titleFr: "书面语与口语",
     summary: "같은 뜻도 회화체와 격식 글말에서 단어가 통째로 달라져요. 5급은 서면어(书面语)의 문을 여는 레벨이에요.",
     duration: "약 9분",
+    drills: [
+      { id: "h501-d1", type: "choice", prompt: "서면어에서 '~와'는?", choices: ["与", "跟", "对"], answer: "与" },
+      { id: "h501-d2", type: "fill", prompt: "本公司位___首尔。(~에 위치하다 — 서면)", answer: "于" },
+      { id: "h501-d3", type: "choice", prompt: "서면어의 '만약'은?", choices: ["若", "要是", "的话"], answer: "若" },
+      { id: "h501-d4", type: "choice", prompt: "'및'에 해당하는 서면어는?", choices: ["以及", "还有", "再"], answer: "以及" },
+      { id: "h501-d5", type: "order", sentence: "会议将于明天举行。", prompt: "'회의는 내일 열릴 예정이다(서면)'를 배열해 보세요." },
+      { id: "h501-d6", type: "choice", listen: "请勿吸烟。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["흡연하지 마시오(격식)", "담배를 피우세요", "환기해 주세요"], answer: "흡연하지 마시오(격식)" },
+    ],
     sections: [
       {
         heading: "두 개의 층 — 구어와 서면어",
@@ -86,6 +94,14 @@ const chapters = [
     titleFr: "高级连词",
     summary: "以及·从而·进而·总之 — 문장과 문장을 논리적으로 잇는 글말 접속사. 논설문의 뼈대를 세워요.",
     duration: "약 10분",
+    drills: [
+      { id: "h502-d1", type: "fill", prompt: "___然你来了，就坐吧。(기왕 ~한 바에야)", answer: "既" },
+      { id: "h502-d2", type: "choice", prompt: "然而의 결은?", choices: ["서면적인 '그러나'", "구어적인 '그리고'", "'그래서'"], answer: "서면적인 '그러나'" },
+      { id: "h502-d3", type: "choice", prompt: "尽管…还是의 뜻은?", choices: ["~에도 불구하고 여전히", "~하자마자 곧", "~하기 때문에"], answer: "~에도 불구하고 여전히" },
+      { id: "h502-d4", type: "fill", prompt: "他病了，___此没来上课。(그래서 — 서면)", answer: "因" },
+      { id: "h502-d5", type: "order", sentence: "既然决定了，就去做吧。", prompt: "'기왕 결정했으니 가서 해라'를 배열해 보세요." },
+      { id: "h502-d6", type: "choice", listen: "天气不好，然而他还是来了。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["날씨가 안 좋았지만 그래도 왔어요", "날씨가 좋아서 왔어요", "날씨 때문에 못 왔어요"], answer: "날씨가 안 좋았지만 그래도 왔어요" },
+    ],
     sections: [
       {
         heading: "从而 — 앞 일이 원인이 되어 결과로",
@@ -147,6 +163,14 @@ const chapters = [
     titleFr: "成语",
     summary: "一举两得·一举一动·画蛇添足 — 네 글자 성어는 글말의 품격이에요. 한국 사자성어와의 닮음·다름을 함께 봐요.",
     duration: "약 11분",
+    drills: [
+      { id: "h503-d1", type: "choice", prompt: "马马虎虎의 뜻은?", choices: ["그저 그렇다·대충이다", "말과 호랑이", "매우 빠르다"], answer: "그저 그렇다·대충이다" },
+      { id: "h503-d2", type: "choice", prompt: "入乡随俗의 뜻은?", choices: ["그 고장에 가면 그 풍속을 따른다", "고향을 그리워한다", "풍속을 바꾼다"], answer: "그 고장에 가면 그 풍속을 따른다" },
+      { id: "h503-d3", type: "fill", prompt: "一举两___ (일거양득)", answer: "得", hint: "한국 한자음 그대로: 一举两得=일거양득" },
+      { id: "h503-d4", type: "choice", prompt: "半途而废의 뜻은?", choices: ["중도에 그만두다", "반쯤 성공하다", "길에서 쉬어 가다"], answer: "중도에 그만두다" },
+      { id: "h503-d5", type: "order", sentence: "我的汉语还是马马虎虎。", prompt: "'내 중국어는 아직 그저 그렇다'를 배열해 보세요." },
+      { id: "h503-d6", type: "choice", listen: "万事开头难。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["모든 일은 시작이 어렵다", "만사가 순조롭다", "끝이 좋으면 다 좋다"], answer: "모든 일은 시작이 어렵다" },
+    ],
     sections: [
       {
         heading: "성어란 무엇인가 — 형태가 굳은 네 글자",
@@ -207,6 +231,14 @@ const chapters = [
     titleFr: "使令兼语句",
     summary: "让은 회화, 使·令은 글말. '~로 하여금 ~하게 하다'의 격식 사역과 겸어문(兼语句) 구조를 익혀요.",
     duration: "약 9분",
+    drills: [
+      { id: "h504-d1", type: "fill", prompt: "妈妈___我去买菜。(시키다 — 구어)", answer: "让", accepts: ["叫"] },
+      { id: "h504-d2", type: "choice", prompt: "使·令의 결은?", choices: ["서면체·감정을 일으킴(使人感动)", "구어체 직접 명령", "피동 표지"], answer: "서면체·감정을 일으킴(使人感动)" },
+      { id: "h504-d3", type: "choice", prompt: "'이 소식이 모두를 기쁘게 했다'는?", choices: ["这个消息使大家很高兴。", "这个消息被大家很高兴。", "大家使这个消息很高兴。"], answer: "这个消息使大家很高兴。" },
+      { id: "h504-d4", type: "fill", prompt: "这件事___人难忘。(잊지 못하게 하다 — 서면)", answer: "令", accepts: ["使"] },
+      { id: "h504-d5", type: "order", sentence: "老师让我们多读书。", prompt: "'선생님은 우리에게 책을 많이 읽게 하신다'를 배열해 보세요." },
+      { id: "h504-d6", type: "choice", listen: "别让我等太久。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["너무 오래 기다리게 하지 마", "오래 기다려 줘", "기다리지 않을게"], answer: "너무 오래 기다리게 하지 마" },
+    ],
     sections: [
       {
         heading: "让 → 使·令 — 사역의 세 단계 격식",
@@ -277,6 +309,14 @@ const chapters = [
     titleFr: "被动句的书面形式",
     summary: "被는 기본, 글말에서는 由·受·遭·为...所가 등장해요. 피동의 격식 표현을 정리해요.",
     duration: "약 10분",
+    drills: [
+      { id: "h505-d1", type: "choice", prompt: "受到欢迎의 뜻은?", choices: ["환영을 받다", "환영을 하다", "환영을 사양하다"], answer: "환영을 받다" },
+      { id: "h505-d2", type: "fill", prompt: "这次活动___学校负责。(~가 맡아서 한다)", answer: "由" },
+      { id: "h505-d3", type: "choice", prompt: "遭到와 어울리는 목적어는?", choices: ["拒绝·批评 같은 부정적인 일", "欢迎·好评 같은 좋은 일", "선물·축하"], answer: "拒绝·批评 같은 부정적인 일" },
+      { id: "h505-d4", type: "fill", prompt: "他的建议___到了大家的欢迎。(받다)", answer: "受" },
+      { id: "h505-d5", type: "order", sentence: "这个问题由他来解决。", prompt: "'이 문제는 그가 해결하기로 한다'를 배열해 보세요." },
+      { id: "h505-d6", type: "choice", listen: "他的作品受到了好评。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["그의 작품이 호평을 받았어요", "그의 작품이 혹평을 받았어요", "그가 작품을 평가했어요"], answer: "그의 작품이 호평을 받았어요" },
+    ],
     sections: [
       {
         heading: "被 + 행위자 — 피동의 기본 복습",
@@ -338,6 +378,14 @@ const chapters = [
     titleFr: "文言代词 之·其",
     summary: "회화의 的·它를 글말은 之·其로 압축해요. 한문에서 온 두 글자가 격식 글의 밀도를 만들어요.",
     duration: "약 9분",
+    drills: [
+      { id: "h506-d1", type: "fill", prompt: "三分___一 (3분의 1)", answer: "之" },
+      { id: "h506-d2", type: "choice", prompt: "其中의 뜻은?", choices: ["그중에", "그래서", "게다가"], answer: "그중에" },
+      { id: "h506-d3", type: "choice", prompt: "之前/之后의 之는?", choices: ["문어적 '~의'가 굳은 형태", "동사 '가다'", "의문사"], answer: "문어적 '~의'가 굳은 형태" },
+      { id: "h506-d4", type: "fill", prompt: "百分___五十 (50퍼센트)", answer: "之" },
+      { id: "h506-d5", type: "order", sentence: "他们之中有一个中国人。", prompt: "'그들 중에 중국인이 한 명 있다'를 배열해 보세요." },
+      { id: "h506-d6", type: "choice", listen: "其实这也是原因之一。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["사실 이것도 이유 중 하나예요", "이것이 유일한 이유예요", "이유는 전혀 없어요"], answer: "사실 이것도 이유 중 하나예요" },
+    ],
     sections: [
       {
         heading: "之 — 的과 它의 글말 압축",
@@ -400,6 +448,14 @@ const chapters = [
     titleFr: "反问·强调·双重否定",
     summary: "难道·岂·不是...吗의 반어, 连...都의 강조, 不...不...의 이중부정 — 글에 힘과 어조를 싣는 장치들이에요.",
     duration: "약 11분",
+    drills: [
+      { id: "h507-d1", type: "fill", prompt: "我一点儿___不饿。(조금도 안 배고프다)", answer: "也", accepts: ["都"] },
+      { id: "h507-d2", type: "choice", prompt: "什么都懂의 뜻은?", choices: ["무엇이든 다 안다", "아무것도 모른다", "무엇을 아는지 묻는다"], answer: "무엇이든 다 안다" },
+      { id: "h507-d3", type: "choice", prompt: "'한 번도 가 본 적 없다'는?", choices: ["一次也没去过。", "一次不去过。", "没一次去过了。"], answer: "一次也没去过。" },
+      { id: "h507-d4", type: "fill", prompt: "他___都不怕。(무엇도 두려워하지 않는다)", answer: "什么" },
+      { id: "h507-d5", type: "order", sentence: "我一句话也没说。", prompt: "'나는 한마디도 하지 않았다'를 배열해 보세요." },
+      { id: "h507-d6", type: "choice", listen: "谁都知道这件事。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["누구나 다 이 일을 알아요", "아무도 이 일을 몰라요", "누가 아는지 물어봐요"], answer: "누구나 다 이 일을 알아요" },
+    ],
     sections: [
       {
         heading: "难道·岂 — 되물어서 강하게 긍정·부정",
@@ -454,6 +510,14 @@ const chapters = [
     titleFr: "结构助词 的·得·地",
     summary: "발음은 모두 de, 역할은 셋. 5급에서 的(수식)·得(정도·가능)·地(부사)를 깔끔히 갈라요.",
     duration: "약 10분",
+    drills: [
+      { id: "h508-d1", type: "choice", prompt: "명사 앞 수식의 표지는?", choices: ["的", "地", "得"], answer: "的" },
+      { id: "h508-d2", type: "choice", prompt: "동사 앞 부사어의 표지는?", choices: ["地", "的", "得"], answer: "地" },
+      { id: "h508-d3", type: "choice", prompt: "동사 뒤 보어를 잇는 표지는?", choices: ["得", "的", "地"], answer: "得" },
+      { id: "h508-d4", type: "fill", prompt: "他慢慢___走了过来。(부사어 표지)", answer: "地" },
+      { id: "h508-d5", type: "fill", prompt: "他跑___比我快。(보어 연결)", answer: "得" },
+      { id: "h508-d6", type: "choice", listen: "他汉语说得越来越好了。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["그의 중국어가 점점 늘고 있어요", "그의 중국어가 점점 나빠져요", "그는 중국어를 안 배워요"], answer: "그의 중국어가 점점 늘고 있어요" },
+    ],
     sections: [
       {
         heading: "세 글자, 한 발음 — 역할로 가르기",

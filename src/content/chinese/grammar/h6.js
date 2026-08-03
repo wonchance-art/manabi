@@ -13,6 +13,14 @@ const chapters = [
     titleFr: "高级成语",
     summary: "守株待兔·亡羊补牢·塞翁失马 — 고사가 통째로 담긴 성어. 네 글자로 한 문단을 대신하는 표현의 밀도를 익혀요.",
     duration: "약 11분",
+    drills: [
+      { id: "h601-d1", type: "choice", prompt: "画蛇添足의 뜻은?", choices: ["쓸데없는 것을 더해 일을 망치다", "뱀을 정교하게 그리다", "발 빠르게 움직이다"], answer: "쓸데없는 것을 더해 일을 망치다" },
+      { id: "h601-d2", type: "choice", prompt: "塞翁失马의 함의는?", choices: ["화가 복이 될 수도 있다", "말을 잃으면 끝장이다", "노인을 공경해야 한다"], answer: "화가 복이 될 수도 있다", hint: "새옹지마 — 한국 한자음 그대로" },
+      { id: "h601-d3", type: "fill", prompt: "百闻不如一___ (백문이 불여일견)", answer: "见" },
+      { id: "h601-d4", type: "choice", prompt: "对牛弹琴이 가리키는 상황은?", choices: ["알아듣지 못할 상대에게 말하다", "소에게 먹이를 주다", "음악을 함께 즐기다"], answer: "알아듣지 못할 상대에게 말하다" },
+      { id: "h601-d5", type: "order", sentence: "你这样做是画蛇添足。", prompt: "'네가 이러는 건 사족을 다는 격이다'를 배열해 보세요." },
+      { id: "h601-d6", type: "choice", listen: "熟能生巧。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["익숙해지면 요령이 생긴다", "익히지 않으면 잊는다", "기교보다 힘이 중요하다"], answer: "익숙해지면 요령이 생긴다" },
+    ],
     sections: [
       {
         heading: "고사성어 — 이야기가 굳은 네 글자",
@@ -75,6 +83,14 @@ const chapters = [
     titleFr: "惯用语·歇后语",
     summary: "马马虎虎의 관용구, 그리고 앞만 말하고 뜻은 뒤에 숨기는 헐후어(歇后语) — 구어의 묘미를 익혀요.",
     duration: "약 10분",
+    drills: [
+      { id: "h602-d1", type: "choice", prompt: "开夜车의 관용 뜻은?", choices: ["밤샘 작업을 하다", "밤에 운전하다", "야간 버스를 타다"], answer: "밤샘 작업을 하다" },
+      { id: "h602-d2", type: "choice", prompt: "炒鱿鱼의 관용 뜻은?", choices: ["해고하다", "오징어볶음을 먹다", "요리를 잘하다"], answer: "해고하다" },
+      { id: "h602-d3", type: "choice", prompt: "拍马屁의 뜻은?", choices: ["아첨하다", "말을 훈련시키다", "승마를 배우다"], answer: "아첨하다" },
+      { id: "h602-d4", type: "fill", prompt: "他是个夜猫___。(올빼미형 인간)", answer: "子" },
+      { id: "h602-d5", type: "order", sentence: "老板把他炒鱿鱼了。", prompt: "'사장이 그를 해고해 버렸다'를 배열해 보세요." },
+      { id: "h602-d6", type: "choice", listen: "别拍马屁了。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["아첨 좀 그만해", "박수 쳐 줘", "말 좀 세워 줘"], answer: "아첨 좀 그만해" },
+    ],
     sections: [
       {
         heading: "惯用语 — 세 글자 관용구",
@@ -128,6 +144,14 @@ const chapters = [
     titleFr: "文言虚词",
     summary: "而·则·乃·亦·尚 — 고전 한문에서 온 허사들이 격식 글의 결을 만들어요. 알아보고 풀어 읽는 능력을 길러요.",
     duration: "약 11분",
+    drills: [
+      { id: "h603-d1", type: "choice", prompt: "失败乃成功之母에서 乃는?", choices: ["~이다(문어)", "아니다", "혹은"], answer: "~이다(문어)" },
+      { id: "h603-d2", type: "choice", prompt: "…者의 용법은?", choices: ["~하는 사람·것", "의문을 나타냄", "감탄을 나타냄"], answer: "~하는 사람·것" },
+      { id: "h603-d3", type: "fill", prompt: "胜___为王。(이긴 사람이 왕이 된다)", answer: "者" },
+      { id: "h603-d4", type: "choice", prompt: "足矣의 뜻은?", choices: ["충분하다(문어)", "발이 아프다", "많이 모자라다"], answer: "충분하다(문어)" },
+      { id: "h603-d5", type: "order", sentence: "笑一笑，十年少。", prompt: "'한 번 웃으면 십 년 젊어진다'를 배열해 보세요." },
+      { id: "h603-d6", type: "choice", listen: "活到老，学到老。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["늙을 때까지 배운다", "늙으면 쉬어야 한다", "배움에는 때가 있다"], answer: "늙을 때까지 배운다" },
+    ],
     sections: [
       {
         heading: "而 — 순접·역접·수식을 잇는 만능 연결",
@@ -193,6 +217,14 @@ const chapters = [
     titleFr: "修辞手法",
     summary: "像...一样의 비유, 짝을 맞추는 대구(对偶), 세 번 거듭하는 배비(排比) — 글에 리듬과 이미지를 더하는 기술이에요.",
     duration: "약 11분",
+    drills: [
+      { id: "h604-d1", type: "choice", prompt: "'时间就是金钱'에 쓰인 수사법은?", choices: ["은유(비유)", "과장", "의성"], answer: "은유(비유)" },
+      { id: "h604-d2", type: "choice", prompt: "대구(对偶)를 이룬 표현은?", choices: ["远亲不如近邻", "我很高兴", "你好吗"], answer: "远亲不如近邻" },
+      { id: "h604-d3", type: "fill", prompt: "답이 필요 없는 물음으로 강조하는 수사법: ___问", answer: "反" },
+      { id: "h604-d4", type: "choice", prompt: "과장(夸张)의 예는?", choices: ["笑死我了", "我笑了", "他在笑"], answer: "笑死我了" },
+      { id: "h604-d5", type: "order", sentence: "时间就是金钱。", prompt: "'시간이 곧 돈이다'를 배열해 보세요." },
+      { id: "h604-d6", type: "choice", listen: "急死我了！", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["급해 죽겠어!(과장)", "천천히 해도 돼", "너무 슬퍼"], answer: "급해 죽겠어!(과장)" },
+    ],
     sections: [
       {
         heading: "比喻 — 직유와 은유",
@@ -255,6 +287,14 @@ const chapters = [
     titleFr: "口语与书面语的语体",
     summary: "脑袋 ↔ 头部, 老婆 ↔ 妻子 — 같은 뜻도 층에 따라 단어가 통째로 달라져요. 6급은 층을 가려 쓰는 감각을 완성해요.",
     duration: "약 10분",
+    drills: [
+      { id: "h605-d1", type: "choice", prompt: "격식을 갖춘 2인칭은?", choices: ["您", "你", "咱"], answer: "您" },
+      { id: "h605-d2", type: "choice", prompt: "请问과 喂의 구분은?", choices: ["请问=격식 있는 질문 개시, 喂=전화·부름", "반대다", "차이가 없다"], answer: "请问=격식 있는 질문 개시, 喂=전화·부름" },
+      { id: "h605-d3", type: "fill", prompt: "请问您贵___？(성함을 여쭙는 격식 표현)", answer: "姓" },
+      { id: "h605-d4", type: "choice", prompt: "구어에서 '우리(듣는 사람 포함)'는?", choices: ["咱们", "我们", "他们"], answer: "咱们" },
+      { id: "h605-d5", type: "order", sentence: "麻烦您帮我一下。", prompt: "'번거로우시겠지만 좀 도와주세요'를 배열해 보세요." },
+      { id: "h605-d6", type: "choice", listen: "劳驾，让一下。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["실례합니다, 좀 지나갈게요", "수고하셨습니다", "운전 조심하세요"], answer: "실례합니다, 좀 지나갈게요" },
+    ],
     sections: [
       {
         heading: "두 개의 어휘 창고",
@@ -327,6 +367,14 @@ const chapters = [
     titleFr: "高级连接词",
     summary: "鉴于(~에 비추어)·即便(설령 ~라도)·姑且(우선 ~하더라도) — 격식 글의 논리를 정밀하게 잇는 접속사들이에요.",
     duration: "약 11분",
+    drills: [
+      { id: "h606-d1", type: "fill", prompt: "___其坐着等，不如去找他。(~하느니 차라리)", answer: "与" },
+      { id: "h606-d2", type: "choice", prompt: "宁可A也不B의 뜻은?", choices: ["차라리 A할지언정 B는 안 한다", "A보다 B가 낫다", "A한 다음 B한다"], answer: "차라리 A할지언정 B는 안 한다" },
+      { id: "h606-d3", type: "choice", prompt: "以免의 뜻은?", choices: ["~하지 않도록", "~하기 위해서", "~하기 때문에"], answer: "~하지 않도록" },
+      { id: "h606-d4", type: "fill", prompt: "___旦决定，就不要后悔。(일단 ~하면)", answer: "一" },
+      { id: "h606-d5", type: "order", sentence: "与其抱怨，不如改变。", prompt: "'불평하느니 바꾸는 게 낫다'를 배열해 보세요." },
+      { id: "h606-d6", type: "choice", listen: "早点儿出发，以免堵车。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["차가 막히지 않게 일찍 출발해요", "늦게 출발해도 괜찮아요", "차가 막혀서 늦었어요"], answer: "차가 막히지 않게 일찍 출발해요" },
+    ],
     sections: [
       {
         heading: "鉴于 — ~에 비추어, ~을 고려하여",
@@ -389,6 +437,14 @@ const chapters = [
     titleFr: "近义词辨析",
     summary: "突然/忽然, 必须/必需, 制定/制订 — 한국어 번역이 같아 평생 헷갈리는 유의어를 미세한 결까지 가려요.",
     duration: "약 11분",
+    drills: [
+      { id: "h607-d1", type: "choice", prompt: "突然과 忽然의 구분은?", choices: ["突然은 형용사로도 쓰인다(很突然), 忽然은 부사만", "忽然은 형용사로도 쓰인다", "차이가 없다"], answer: "突然은 형용사로도 쓰인다(很突然), 忽然은 부사만" },
+      { id: "h607-d2", type: "choice", prompt: "帮助와 帮忙의 구분은?", choices: ["帮忙은 이합사(帮个忙), 帮助는 목적어를 직접 취한다", "帮助가 이합사다", "차이가 없다"], answer: "帮忙은 이합사(帮个忙), 帮助는 목적어를 직접 취한다" },
+      { id: "h607-d3", type: "choice", prompt: "二와 两의 구분은?", choices: ["양사 앞은 两, 서수·번호는 二", "양사 앞은 二, 서수는 两", "차이가 없다"], answer: "양사 앞은 两, 서수·번호는 二" },
+      { id: "h607-d4", type: "fill", prompt: "'방금 막 ~했다'를 뜻하는 동사 앞 부사: ___", answer: "刚" },
+      { id: "h607-d5", type: "order", sentence: "天忽然下起雨来了。", prompt: "'하늘에서 갑자기 비가 내리기 시작했다'를 배열해 보세요." },
+      { id: "h607-d6", type: "choice", listen: "我刚到家。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["방금 집에 도착했어요", "아직 집이에요", "곧 집에 갈 거예요"], answer: "방금 집에 도착했어요" },
+    ],
     sections: [
       {
         heading: "突然 vs 忽然 — 형용사냐 부사냐",
