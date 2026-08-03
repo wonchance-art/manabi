@@ -12,6 +12,14 @@ const chapters = [
     titleFr: "人称代词",
     summary: "我·你·他 — 중국어 인칭대명사. 복수는 们 하나만 붙이면 끝나는 깔끔한 규칙과, 존댓말 您까지 한 번에 정리해요.",
     duration: "약 7분",
+    drills: [
+      { id: "ot05-d1", type: "fill", prompt: "'우리' = 我___", answer: "们" },
+      { id: "ot05-d2", type: "choice", prompt: "'그녀'는?", choices: ["她", "他", "它"], answer: "她" },
+      { id: "ot05-d3", type: "fill", prompt: "'당신(존칭)'은? (한 글자)", answer: "您" },
+      { id: "ot05-d4", type: "choice", prompt: "它를 쓰는 대상은?", choices: ["사물·동물", "여성", "남성"], answer: "사물·동물" },
+      { id: "ot05-d5", type: "choice", prompt: "'그들(남성 또는 혼성)'은?", choices: ["他们", "她们", "它们"], answer: "他们" },
+      { id: "ot05-d6", type: "choice", listen: "我们", prompt: "듣고 알맞은 뜻을 고르세요. (wǒmen)", choices: ["우리", "너희", "그들"], answer: "우리" },
+    ],
     sections: [
       {
         heading: "단수 인칭대명사 — 我·你·他",
@@ -80,6 +88,14 @@ const chapters = [
     titleFr: "是字句",
     summary: "가장 기본 문형 'A是B(A는 B다)'. 단, 형용사 앞에는 是를 쓰지 않는다는 한국인 최대 함정도 여기서 함께 잡아요.",
     duration: "약 9분",
+    drills: [
+      { id: "h101-d1", type: "fill", prompt: "我___学生。(나는 학생이다)", answer: "是" },
+      { id: "h101-d2", type: "choice", prompt: "'나는 학생이 아니다'는?", choices: ["我不是学生。", "我没是学生。", "我是不学生。"], answer: "我不是学生。", hint: "是의 부정은 늘 不" },
+      { id: "h101-d3", type: "order", sentence: "她是医生。", prompt: "'그녀는 의사다'를 배열해 보세요." },
+      { id: "h101-d4", type: "fill", prompt: "是의 병음은?", answer: "shì", accepts: ["shi"] },
+      { id: "h101-d5", type: "choice", listen: "我是韩国人。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["저는 한국인이에요", "저는 중국인이에요", "저는 학생이에요"], answer: "저는 한국인이에요" },
+      { id: "h101-d6", type: "choice", prompt: "A是B 문형에서 형용사 서술(예: 예쁘다)을 말할 때는?", choices: ["是 없이 很+형용사를 쓴다 (她很漂亮)", "반드시 是를 쓴다 (她是漂亮)", "아무거나 같다"], answer: "是 없이 很+형용사를 쓴다 (她很漂亮)" },
+    ],
     sections: [
       {
         heading: "A 是 B — '~이다'의 기본 공식",
@@ -142,6 +158,14 @@ const chapters = [
     titleFr: "有字句",
     summary: "有는 '가지고 있다'와 '~이 있다'를 모두 담당해요. 부정이 不有가 아니라 没有라는, 有만의 특별 규칙이 핵심.",
     duration: "약 8분",
+    drills: [
+      { id: "h102-d1", type: "fill", prompt: "我___妹妹。(나는 여동생이 있다)", answer: "有" },
+      { id: "h102-d2", type: "choice", prompt: "'그는 휴대폰이 없다'는?", choices: ["他没有手机。", "他不有手机。", "他有不手机。"], answer: "他没有手机。", hint: "有의 부정은 늘 没" },
+      { id: "h102-d3", type: "order", sentence: "我有时间。", prompt: "'나는 시간이 있다'를 배열해 보세요." },
+      { id: "h102-d4", type: "fill", prompt: "有의 병음은?", answer: "yǒu", accepts: ["you"] },
+      { id: "h102-d5", type: "choice", listen: "我没有钱。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["저는 돈이 없어요", "저는 돈이 있어요", "저는 시간이 없어요"], answer: "저는 돈이 없어요" },
+      { id: "h102-d6", type: "choice", prompt: "존재의 有 — '桌子上有书'의 뜻은?", choices: ["책상 위에 책이 있다", "책상이 책을 샀다", "책 위에 책상이 있다"], answer: "책상 위에 책이 있다" },
+    ],
     sections: [
       {
         heading: "有 — 가지고 있다 / ~이 있다",
@@ -204,6 +228,14 @@ const chapters = [
     titleFr: "这・那",
     summary: "이것 这, 저것/그것 那. 한국어는 이·그·저 셋이지만 중국어는 둘로 나눠요. 여기·거기 这儿/那儿까지.",
     duration: "약 7분",
+    drills: [
+      { id: "h103-d1", type: "fill", prompt: "___是我的书。(이것은 내 책이다 — '이것')", answer: "这" },
+      { id: "h103-d2", type: "choice", prompt: "'저것'은?", choices: ["那", "这", "哪"], answer: "那" },
+      { id: "h103-d3", type: "choice", prompt: "'어느 것?'을 물을 때는?", choices: ["哪", "那", "这"], answer: "哪", hint: "점(丶) 하나 차이 — 입 구(口)가 붙으면 의문" },
+      { id: "h103-d4", type: "order", sentence: "那是学校。", prompt: "'저것은 학교다'를 배열해 보세요." },
+      { id: "h103-d5", type: "choice", listen: "这是什么？", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["이건 뭐예요?", "저건 누구예요?", "여기는 어디예요?"], answer: "이건 뭐예요?" },
+      { id: "h103-d6", type: "choice", prompt: "这·那의 발음 짝이 맞는 것은?", choices: ["这 zhè · 那 nà", "这 nà · 那 zhè", "这 zhē · 那 ná"], answer: "这 zhè · 那 nà" },
+    ],
     sections: [
       {
         heading: "这 이것 · 那 저것/그것",
@@ -245,6 +277,14 @@ const chapters = [
     titleFr: "量词",
     summary: "수사와 명사 사이에 반드시 끼는 양사. 한국어 '한 개·한 권·한 장'의 단위명사와 똑같은 발상이라 오히려 친근해요.",
     duration: "약 9분",
+    drills: [
+      { id: "h104-d1", type: "fill", prompt: "一___人 (사람 한 명 — 만능 양사)", answer: "个" },
+      { id: "h104-d2", type: "choice", prompt: "'책 한 권'은?", choices: ["一本书", "一个书", "一张书"], answer: "一本书" },
+      { id: "h104-d3", type: "choice", prompt: "'종이 한 장'은?", choices: ["一张纸", "一本纸", "一条纸"], answer: "一张纸" },
+      { id: "h104-d4", type: "choice", prompt: "수사+명사 사이에 양사가 빠지면?", choices: ["틀린 문장이 된다 (一书 ✗)", "더 격식 있는 표현이 된다", "복수의 뜻이 된다"], answer: "틀린 문장이 된다 (一书 ✗)" },
+      { id: "h104-d5", type: "order", sentence: "我有两个哥哥。", prompt: "'나는 형이 두 명 있다'를 배열해 보세요." },
+      { id: "h104-d6", type: "choice", listen: "一杯咖啡", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["커피 한 잔", "커피 두 잔", "차 한 잔"], answer: "커피 한 잔" },
+    ],
     sections: [
       {
         heading: "수사 + 양사 + 명사 — 사이에 단위가 필요해요",
@@ -315,6 +355,14 @@ const chapters = [
     titleFr: "疑问句 (吗・疑问词)",
     summary: "평서문 끝에 吗 하나면 의문문 끝. 어순을 안 바꿔서 영어보다 쉬워요. 谁·什么·哪 의문사까지.",
     duration: "약 9분",
+    drills: [
+      { id: "h105-d1", type: "fill", prompt: "你是学生___？(~인가요?)", answer: "吗" },
+      { id: "h105-d2", type: "choice", prompt: "'뭐?'를 묻는 의문사는?", choices: ["什么", "谁", "哪儿"], answer: "什么" },
+      { id: "h105-d3", type: "choice", prompt: "'누구?'는?", choices: ["谁", "什么", "怎么"], answer: "谁" },
+      { id: "h105-d4", type: "choice", prompt: "의문사 의문문의 규칙은?", choices: ["의문사가 답이 올 자리에 그대로 들어간다(어순 불변)", "의문사를 문장 맨 앞으로 보낸다", "문말에 吗를 함께 붙인다"], answer: "의문사가 답이 올 자리에 그대로 들어간다(어순 불변)", hint: "영어처럼 앞으로 안 보내요" },
+      { id: "h105-d5", type: "order", sentence: "你有什么书？", prompt: "'무슨 책을 갖고 있어요?'를 배열해 보세요." },
+      { id: "h105-d6", type: "choice", listen: "你是哪国人？", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["어느 나라 사람이에요?", "이름이 뭐예요?", "몇 살이에요?"], answer: "어느 나라 사람이에요?" },
+    ],
     sections: [
       {
         heading: "吗 의문문 — 끝에 한 글자만",
@@ -393,6 +441,14 @@ const chapters = [
     titleFr: "否定 不・没",
     summary: "부정어 둘. 不은 현재·습관·의지, 没는 과거·완료의 부정. 한국어 '안'과 '못'처럼 구별이 필요한 핵심 함정.",
     duration: "약 9분",
+    drills: [
+      { id: "h106-d1", type: "fill", prompt: "我___喝咖啡。(안 마셔요 — 현재 습관)", answer: "不" },
+      { id: "h106-d2", type: "fill", prompt: "他昨天___来。(안 왔어요 — 과거)", answer: "没", accepts: ["没有"] },
+      { id: "h106-d3", type: "choice", prompt: "不 vs 没 — 옳은 설명은?", choices: ["不=의지·습관·현재, 没=과거에 안 일어남", "不=과거, 没=미래", "완전히 같다"], answer: "不=의지·습관·현재, 没=과거에 안 일어남" },
+      { id: "h106-d4", type: "choice", prompt: "'울지 마!'는?", choices: ["别哭！", "不哭！", "没哭！"], answer: "别哭！", hint: "금지는 别" },
+      { id: "h106-d5", type: "order", sentence: "别忘了带伞。", prompt: "'우산 챙기는 거 잊지 마'를 배열해 보세요." },
+      { id: "h106-d6", type: "choice", listen: "我不知道。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["몰라요", "알아요", "잊었어요"], answer: "몰라요" },
+    ],
     sections: [
       {
         heading: "不 — 현재・습관・의지의 부정",
@@ -461,6 +517,14 @@ const chapters = [
     titleFr: "的",
     summary: "的는 한국어 '~의'이자 '~한'. 소유와 수식을 모두 담당하고, 친밀한 관계에서는 생략까지. 만능 연결고리예요.",
     duration: "약 8분",
+    drills: [
+      { id: "h107-d1", type: "fill", prompt: "我___书 (나의 책)", answer: "的" },
+      { id: "h107-d2", type: "choice", prompt: "的를 생략해도 자연스러운 것은?", choices: ["我妈妈 (가족·친밀 관계)", "我的书 (물건)", "老师的车 (남의 물건)"], answer: "我妈妈 (가족·친밀 관계)" },
+      { id: "h107-d3", type: "order", sentence: "这是老师的手机。", prompt: "'이것은 선생님의 휴대폰이다'를 배열해 보세요." },
+      { id: "h107-d4", type: "fill", prompt: "的의 병음은? (경성)", answer: "de" },
+      { id: "h107-d5", type: "choice", listen: "这是我的。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["이건 제 거예요", "이건 뭐예요?", "이건 새 거예요"], answer: "이건 제 거예요", hint: "명사 없이 的로 끝내면 '~의 것'" },
+      { id: "h107-d6", type: "choice", prompt: "'한국 친구'처럼 수식할 때는?", choices: ["韩国朋友 — 나라+명사는 的 없이 붙는 게 자연", "韩国的的朋友", "朋友韩国"], answer: "韩国朋友 — 나라+명사는 的 없이 붙는 게 자연" },
+    ],
     sections: [
       {
         heading: "A 的 B — '~의'",
@@ -523,6 +587,14 @@ const chapters = [
     titleFr: "连动句",
     summary: "한 주어가 동작을 연달아 할 때 동사를 순서대로 나열해요. 去吃饭(가서 먹다)처럼, 일어난 순서가 곧 어순.",
     duration: "약 8분",
+    drills: [
+      { id: "h108-d1", type: "order", sentence: "我去商店买东西。", prompt: "'가게에 가서 물건을 산다'를 배열해 보세요." },
+      { id: "h108-d2", type: "choice", prompt: "연동문의 어순은?", choices: ["동작이 일어나는 순서대로 동사를 나열", "중요한 동사를 먼저", "동사를 문말에 몰아서"], answer: "동작이 일어나는 순서대로 동사를 나열" },
+      { id: "h108-d3", type: "fill", prompt: "我坐地铁___公司。(지하철 타고 회사에 간다)", answer: "去" },
+      { id: "h108-d4", type: "choice", prompt: "'밥 먹으러 식당에 간다'는?", choices: ["我去饭馆吃饭。", "我吃饭去饭馆。", "我饭馆去吃饭。"], answer: "我去饭馆吃饭。" },
+      { id: "h108-d5", type: "choice", listen: "我们去喝咖啡吧。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["우리 커피 마시러 가자", "우리 커피 사 왔어", "커피는 어디서 팔아?"], answer: "우리 커피 마시러 가자" },
+      { id: "h108-d6", type: "choice", prompt: "수단+목적 연동문 '버스 타고 학교 간다'는?", choices: ["我坐公交车去学校。", "我去学校坐公交车。", "坐我公交车学校去。"], answer: "我坐公交车去学校。", hint: "수단 동사가 먼저" },
+    ],
     sections: [
       {
         heading: "연동문 — 동사를 일어난 순서대로",
@@ -571,6 +643,14 @@ const chapters = [
     titleFr: "时间・地点语序",
     summary: "중국어 어순의 핵심 — 시간과 장소는 동사 앞. 특히 在(~에서)를 동사 앞에 두는 규칙이 한국인 정답률을 좌우해요.",
     duration: "약 9분",
+    drills: [
+      { id: "h109-d1", type: "fill", prompt: "我___北京工作。(북경에서 일한다)", answer: "在" },
+      { id: "h109-d2", type: "choice", prompt: "시간사와 장소의 어순 — '나는 오늘 집에서 쉰다'는?", choices: ["我今天在家休息。", "我在家今天休息。", "我休息今天在家。"], answer: "我今天在家休息。", hint: "시간 → 장소 → 동사" },
+      { id: "h109-d3", type: "order", sentence: "他在图书馆看书。", prompt: "'그는 도서관에서 책을 본다'를 배열해 보세요." },
+      { id: "h109-d4", type: "choice", prompt: "在의 두 얼굴 — 옳은 짝은?", choices: ["在+장소+동사=~에서 하다 · 주어+在+장소=~에 있다", "在는 항상 '~에 있다'만", "在는 시간에만 쓴다"], answer: "在+장소+동사=~에서 하다 · 주어+在+장소=~에 있다" },
+      { id: "h109-d5", type: "choice", listen: "你在哪儿？", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["너 어디야?", "너 누구야?", "너 뭐 해?"], answer: "너 어디야?" },
+      { id: "h109-d6", type: "fill", prompt: "장소를 묻는 의문사: 你在___工作？(어디)", answer: "哪儿", accepts: ["哪里"] },
+    ],
     sections: [
       {
         heading: "시간은 동사 앞 — 주어 뒤 또는 문장 맨 앞",
@@ -633,6 +713,14 @@ const chapters = [
     titleFr: "数字",
     summary: "一二三부터 100까지는 한국 한자 숫자 그대로. 나이·시간 말하기와, 양사 앞 '2'는 两이 되는 규칙까지.",
     duration: "약 9분",
+    drills: [
+      { id: "h110-d1", type: "fill", prompt: "'스물다섯'을 한자로: 二十___", answer: "五" },
+      { id: "h110-d2", type: "choice", prompt: "시각의 2 — '2시'에서 2는 어떻게 읽나요?", choices: ["两 (liǎng)으로 읽는다", "二 (èr)로 읽는다", "둘 다 똑같이 흔하다"], answer: "两 (liǎng)으로 읽는다" },
+      { id: "h110-d3", type: "choice", prompt: "수를 묻는 의문사 — 10 미만이 예상될 때는?", choices: ["几 (아이 나이·시각 등)", "多少 (제한 없는 수)", "什么"], answer: "几 (아이 나이·시각 등)" },
+      { id: "h110-d4", type: "fill", prompt: "3시 반: 三点___", answer: "半" },
+      { id: "h110-d5", type: "choice", listen: "现在几点？", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["지금 몇 시예요?", "오늘 며칠이에요?", "몇 살이에요?"], answer: "지금 몇 시예요?" },
+      { id: "h110-d6", type: "choice", prompt: "'백'과 '천'의 짝은?", choices: ["百 · 千", "千 · 百", "万 · 百"], answer: "百 · 千" },
+    ],
     sections: [
       {
         heading: "0~100 — 한국 한자 숫자 그대로",
@@ -700,6 +788,14 @@ const chapters = [
     titleFr: "副词 都・也・真・一起",
     summary: "범위의 都(다), 첨가의 也(도), 강조의 真(정말), 동반의 一起(함께). 모두 주어 뒤·동사 앞에 온다는 위치 규칙이 한국인 최대 함정이에요.",
     duration: "약 9분",
+    drills: [
+      { id: "h111-d1", type: "fill", prompt: "我们___是学生。(우리는 모두 학생이다)", answer: "都" },
+      { id: "h111-d2", type: "fill", prompt: "我___喜欢咖啡。(나도 커피를 좋아한다)", answer: "也" },
+      { id: "h111-d3", type: "choice", prompt: "也와 都를 같이 쓸 때 순서는?", choices: ["也都 (我们也都是学生)", "都也", "아무 순서나"], answer: "也都 (我们也都是学生)" },
+      { id: "h111-d4", type: "choice", prompt: "부사의 위치는?", choices: ["주어 뒤, 동사 앞", "문장 맨 앞", "동사 뒤"], answer: "주어 뒤, 동사 앞" },
+      { id: "h111-d5", type: "order", sentence: "我们也都是老师。", prompt: "'우리도 모두 선생님이다'를 배열해 보세요." },
+      { id: "h111-d6", type: "choice", listen: "我也是。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["저도요", "저는요?", "다들 그래요"], answer: "저도요" },
+    ],
     sections: [
       {
         heading: "都 — '모두·다', 주어 뒤에 놓아요",
@@ -769,6 +865,14 @@ const chapters = [
     titleFr: "喜欢・想・请・不用",
     summary: "선호의 喜欢(좋아하다), 바람의 想(~하고 싶다), 요청의 请(~해 주세요), 불필요의 不用(~할 필요 없다). 일상 대화의 핵심 조동사·표현이에요.",
     duration: "약 9분",
+    drills: [
+      { id: "h112-d1", type: "fill", prompt: "我___去中国。(가고 싶다)", answer: "想" },
+      { id: "h112-d2", type: "fill", prompt: "我___喝茶。(마시는 걸 좋아한다)", answer: "喜欢" },
+      { id: "h112-d3", type: "choice", prompt: "'천천히 오세요(서두르지 마세요)'의 공손 표현은?", choices: ["请慢慢来。", "快来！", "来不来？"], answer: "请慢慢来。", hint: "请 = 공손의 문두" },
+      { id: "h112-d4", type: "choice", prompt: "감사 인사에 대한 자연스러운 답 조합은?", choices: ["不用谢 또는 不客气", "没关系 또는 对不起", "再见 또는 明天见"], answer: "不用谢 또는 不客气", hint: "不用 = ~할 필요 없다" },
+      { id: "h112-d5", type: "order", sentence: "我想学汉语。", prompt: "'중국어를 배우고 싶다'를 배열해 보세요." },
+      { id: "h112-d6", type: "choice", listen: "你想吃什么？", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["뭐 먹고 싶어?", "뭐 마시고 싶어?", "어디 가고 싶어?"], answer: "뭐 먹고 싶어?" },
+    ],
     sections: [
       {
         heading: "喜欢 — '좋아하다', 뒤에 동사도 명사도",
@@ -838,6 +942,14 @@ const chapters = [
     titleFr: "问候・常用语",
     summary: "谢谢/不客气, 对不起/没关系, 请问, 认识你很高兴. 분석하지 말고 짝으로 통째 외우면 첫 대화가 바로 굴러가는 고정표현 모음.",
     duration: "약 8분",
+    drills: [
+      { id: "h113-d1", type: "choice", prompt: "첫 만남에 어울리는 인사 조합은?", choices: ["你好 + 认识你很高兴", "再见 + 明天见", "谢谢 + 不客气"], answer: "你好 + 认识你很高兴" },
+      { id: "h113-d2", type: "fill", prompt: "'미안해요'에 대한 답 — ___关系。(괜찮아요)", answer: "没" },
+      { id: "h113-d3", type: "choice", prompt: "'잘 가(또 봐)'는?", choices: ["再见！", "你好！", "谢谢！"], answer: "再见！" },
+      { id: "h113-d4", type: "choice", prompt: "对不起에 담긴 뉘앙스는?", choices: ["정식 사과(잘못을 인정)", "가벼운 실례(지나갈게요)", "감사 인사"], answer: "정식 사과(잘못을 인정)" },
+      { id: "h113-d5", type: "order", sentence: "很高兴认识你。", prompt: "'만나서 반가워요'를 배열해 보세요." },
+      { id: "h113-d6", type: "choice", listen: "好久不见！", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["오랜만이야!", "곧 만나!", "처음 뵙겠습니다"], answer: "오랜만이야!" },
+    ],
     sections: [
       {
         heading: "谢谢 ↔ 不客气 — 감사와 답례",
