@@ -20,6 +20,14 @@ const chapters = [
       { id: "h201-d5", type: "order", sentence: "我买了三本书。", prompt: "'책 세 권을 샀다'를 배열해 보세요." },
       { id: "h201-d6", type: "choice", listen: "我吃了。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["먹었어요", "먹을 거예요", "안 먹어요"], answer: "먹었어요" },
     ],
+    writing: {
+      prompt: "오늘(또는 어제) 한 일 두 가지를 완료 了로 써 보세요.",
+      hints: ["동사+了+수량+명사"],
+      samples: [
+        { zh: "我早上喝了一杯咖啡，还看了报纸。", pinyin: "Wǒ zǎoshang hē le yì bēi kāfēi, hái kàn le bàozhǐ.", ko: "아침에 커피 한 잔을 마시고 신문도 봤어요." },
+      ],
+      checklist: ["了를 동사 바로 뒤에 놓았다", "안 한 일은 没(+了 삭제)로 말할 수 있다"],
+    },
     sections: [
       {
         heading: "동사 + 了 — 동작의 완료",
@@ -84,6 +92,14 @@ const chapters = [
       { id: "h202-d5", type: "fill", prompt: "过의 병음: ___ (경성)", answer: "guo" },
       { id: "h202-d6", type: "choice", listen: "我看过这个电影。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["이 영화 본 적 있어요", "이 영화 보는 중이에요", "이 영화 볼 거예요"], answer: "이 영화 본 적 있어요" },
     ],
+    writing: {
+      prompt: "해 본 경험과 아직 못 해 본 경험을 하나씩 过로 써 보세요.",
+      hints: ["동사+过", "부정은 没…过"],
+      samples: [
+        { zh: "我去过日本，没吃过北京烤鸭。", pinyin: "Wǒ qù guo Rìběn, méi chī guo Běijīng kǎoyā.", ko: "일본에 가 봤지만, 베이징 카오야는 아직 못 먹어 봤어요." },
+      ],
+      checklist: ["경험을 过로 표현했다", "부정에서 过를 지우지 않았다(没…过)"],
+    },
     sections: [
       {
         heading: "동사 + 过 — ~해 본 적 있다",
@@ -153,6 +169,14 @@ const chapters = [
       { id: "h203-d5", type: "choice", prompt: "'앉아서 얘기하자'는?", choices: ["我们坐着聊吧。", "我们在坐聊吧。", "我们聊坐着吧。"], answer: "我们坐着聊吧。" },
       { id: "h203-d6", type: "choice", listen: "你在做什么？", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["뭐 하고 있어?", "어디 가?", "뭐 먹었어?"], answer: "뭐 하고 있어?" },
     ],
+    writing: {
+      prompt: "지금 하고 있는 동작 하나(在)와 지속 중인 상태 하나(着)를 써 보세요.",
+      hints: ["在+동사 / 동사+着"],
+      samples: [
+        { zh: "我在听音乐，窗户开着。", pinyin: "Wǒ zài tīng yīnyuè, chuānghu kāi zhe.", ko: "음악을 듣고 있고, 창문은 열려 있어요." },
+      ],
+      checklist: ["진행은 在, 상태 지속은 着로 갈랐다"],
+    },
     sections: [
       {
         heading: "在 + 동사 — ~하고 있다",
@@ -216,6 +240,14 @@ const chapters = [
       { id: "h204-d5", type: "order", sentence: "他不喝酒了。", prompt: "'그는 이제 술을 안 마신다(변화)'를 배열해 보세요." },
       { id: "h204-d6", type: "choice", listen: "春天到了。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["봄이 왔어요", "봄이 갔어요", "겨울이에요"], answer: "봄이 왔어요" },
     ],
+    writing: {
+      prompt: "예전과 달라진 것 두 가지를 변화 了로 써 보세요.",
+      hints: ["문장 끝 了"],
+      samples: [
+        { zh: "天气热了，我也胖了。", pinyin: "Tiānqì rè le, wǒ yě pàng le.", ko: "날씨가 더워졌고, 저도 살쪘어요." },
+      ],
+      checklist: ["了를 문장 끝에 놓았다", "새로운 상황·변화의 어감이 있다"],
+    },
     sections: [
       {
         heading: "문장 끝 了 — 상황의 변화",
@@ -266,6 +298,14 @@ const chapters = [
       { id: "h205-d5", type: "order", sentence: "他比我大三岁。", prompt: "'그는 나보다 세 살 많다'를 배열해 보세요." },
       { id: "h205-d6", type: "choice", listen: "今天比昨天冷。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["오늘이 어제보다 추워요", "어제가 오늘보다 추워요", "오늘은 어제만큼 더워요"], answer: "오늘이 어제보다 추워요" },
     ],
+    writing: {
+      prompt: "두 가지를 比로 비교하고 차이의 정도까지 붙여 보세요.",
+      hints: ["A比B+형용사(+一点儿)", "很·非常 금지"],
+      samples: [
+        { zh: "地铁比公交车快一点儿。", pinyin: "Dìtiě bǐ gōngjiāochē kuài yìdiǎnr.", ko: "지하철이 버스보다 조금 빨라요." },
+      ],
+      checklist: ["형용사 앞에 很을 넣지 않았다", "차이 정도를 형용사 뒤에 붙였다"],
+    },
     sections: [
       {
         heading: "A 比 B + 형용사 — A가 B보다 ~하다",
@@ -327,6 +367,14 @@ const chapters = [
       { id: "h206-d5", type: "order", sentence: "明天我要上班。", prompt: "'내일 출근해야 한다'를 배열해 보세요." },
       { id: "h206-d6", type: "choice", listen: "我不会开车。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["운전할 줄 몰라요", "운전하기 싫어요", "운전하면 안 돼요"], answer: "운전할 줄 몰라요" },
     ],
+    writing: {
+      prompt: "할 줄 아는 것(会)과 지금은 안 되는 것(不能)을 한 문장으로 써 보세요.",
+      hints: ["会=배워서, 能=상황이 되어"],
+      samples: [
+        { zh: "我会游泳，今天不能游。", pinyin: "Wǒ huì yóuyǒng, jīntiān bù néng yóu.", ko: "수영할 줄 알지만, 오늘은 할 수 없어요." },
+      ],
+      checklist: ["会와 能을 구분해 골랐다"],
+    },
     sections: [
       {
         heading: "会 — 배워서 할 줄 안다",
@@ -390,6 +438,15 @@ const chapters = [
       { id: "h207-d5", type: "order", sentence: "我给妈妈买了礼物。", prompt: "'엄마에게 선물을 사 드렸다'를 배열해 보세요." },
       { id: "h207-d6", type: "choice", listen: "他对我笑了。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["그가 나를 보고 웃었어요", "그가 나에게 화냈어요", "그가 나를 불렀어요"], answer: "그가 나를 보고 웃었어요" },
     ],
+    writing: {
+      prompt: "누구에게 무엇을 해 줬는지(给), 어디에서 왔는지(从)를 한 문장씩 써 보세요.",
+      hints: ["개사구는 동사 앞"],
+      samples: [
+        { zh: "我给妹妹买了生日礼物。", pinyin: "Wǒ gěi mèimei mǎi le shēngrì lǐwù.", ko: "여동생에게 생일 선물을 사 줬어요." },
+        { zh: "他从上海来。", pinyin: "Tā cóng Shànghǎi lái.", ko: "그는 상하이에서 왔어요." },
+      ],
+      checklist: ["给/从 구를 동사 앞에 놓았다"],
+    },
     sections: [
       {
         heading: "给 — ~에게 (대상)",
@@ -459,6 +516,14 @@ const chapters = [
       { id: "h208-d5", type: "order", sentence: "我们休息了十分钟。", prompt: "'우리는 10분 쉬었다'를 배열해 보세요." },
       { id: "h208-d6", type: "choice", listen: "我睡了八个小时。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["8시간 잤어요", "8시에 잤어요", "8일 잤어요"], answer: "8시간 잤어요" },
     ],
+    writing: {
+      prompt: "어제 얼마나 잤는지·오늘 얼마나 공부했는지, 기간을 넣어 써 보세요.",
+      hints: ["동사+了+기간"],
+      samples: [
+        { zh: "我昨天睡了六个小时。", pinyin: "Wǒ zuótiān shuì le liù ge xiǎoshí.", ko: "어제 여섯 시간 잤어요." },
+      ],
+      checklist: ["기간을 동사 뒤에 놓았다"],
+    },
     sections: [
       {
         heading: "동사 + 시간의 양 — 얼마 동안 했다",
@@ -507,6 +572,14 @@ const chapters = [
       { id: "h209-d5", type: "fill", prompt: "还是의 병음: ___", answer: "háishi", accepts: ["haishi", "hái shì"] },
       { id: "h209-d6", type: "choice", listen: "喝茶还是喝咖啡？", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["차 마실래요, 커피 마실래요?", "차와 커피 둘 다 주세요", "차도 커피도 싫어요"], answer: "차 마실래요, 커피 마실래요?" },
     ],
+    writing: {
+      prompt: "친구에게 还是로 선택 질문을 하고, 내 답도 써 보세요.",
+      hints: ["A还是B？"],
+      samples: [
+        { zh: "你想喝热的还是冰的？我要冰的。", pinyin: "Nǐ xiǎng hē rè de háishi bīng de? Wǒ yào bīng de.", ko: "따뜻한 거 마실래, 차가운 거 마실래? 난 차가운 걸로 할게." },
+      ],
+      checklist: ["의문문 선택에 还是를 썼다(或者 아님)"],
+    },
     sections: [
       {
         heading: "A 还是 B? — 둘 중 어느 쪽?",
@@ -555,6 +628,14 @@ const chapters = [
       { id: "h210-d5", type: "order", sentence: "这本书我读了三遍。", prompt: "'이 책을 세 번 읽었다'를 배열해 보세요." },
       { id: "h210-d6", type: "choice", listen: "我来过一次。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["한 번 와 본 적 있어요", "한 번만 올게요", "처음 왔어요"], answer: "한 번 와 본 적 있어요" },
     ],
+    writing: {
+      prompt: "몇 번 했는지(次·遍)를 넣어 두 문장을 써 보세요.",
+      hints: ["처음부터 끝까지면 遍"],
+      samples: [
+        { zh: "这个电影我看了三遍。", pinyin: "Zhège diànyǐng wǒ kàn le sān biàn.", ko: "이 영화를 (처음부터 끝까지) 세 번 봤어요." },
+      ],
+      checklist: ["횟수를 동사 뒤에 놓았다", "次와 遍을 구분했다"],
+    },
     sections: [
       {
         heading: "동사 + 횟수 — 몇 번 했다",
@@ -603,6 +684,14 @@ const chapters = [
       { id: "h211-d5", type: "order", sentence: "这个菜有点儿辣。", prompt: "'이 요리는 조금 맵다'를 배열해 보세요." },
       { id: "h211-d6", type: "choice", listen: "真好吃！", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["정말 맛있다!", "너무 맵다!", "정말 비싸다!"], answer: "정말 맛있다!" },
     ],
+    writing: {
+      prompt: "살짝 불만인 것(有点儿)과 아주 좋은 것(真/很)을 한 문장에 담아 보세요.",
+      hints: ["有点儿+형용사=불만"],
+      samples: [
+        { zh: "今天有点儿累，但是很开心。", pinyin: "Jīntiān yǒudiǎnr lèi, dànshì hěn kāixīn.", ko: "오늘 좀 피곤하지만 아주 즐거워요." },
+      ],
+      checklist: ["有点儿을 형용사 앞에 놓았다"],
+    },
     sections: [
       {
         heading: "真・当然 — 감탄과 당연한 맞장구",
@@ -673,6 +762,14 @@ const chapters = [
       { id: "h212-d5", type: "order", sentence: "下课的时候给我打电话。", prompt: "'수업 끝날 때 전화해'를 배열해 보세요." },
       { id: "h212-d6", type: "choice", listen: "时间不早了。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["시간이 늦었네요", "아직 이르네요", "시간이 없어요"], answer: "시간이 늦었네요" },
     ],
+    writing: {
+      prompt: "이른 것(就)과 늦은 것(才)을 대비하는 두 문장을 써 보세요.",
+      hints: ["이르면 就, 늦으면 才"],
+      samples: [
+        { zh: "我六点就起床了，他十点才起床。", pinyin: "Wǒ liù diǎn jiù qǐchuáng le, tā shí diǎn cái qǐchuáng.", ko: "나는 6시에 벌써 일어났는데, 그는 10시에야 일어났어요." },
+      ],
+      checklist: ["就/才로 이르고 늦음의 어감을 살렸다"],
+    },
     sections: [
       {
         heading: "…的时候 — '~할 때'",
