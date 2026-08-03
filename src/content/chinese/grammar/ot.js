@@ -13,8 +13,8 @@ const chapters = [
     summary: "중국어 발음을 로마자로 적은 한어병음(pīnyīn). 우리가 아는 알파벳이지만 읽는 법이 다른 글자 몇 개부터 길들여요.",
     duration: "약 8분",
     drills: [
-      { id: "ot01-d1", type: "fill", prompt: "'你好'의 병음은? (성조 부호 없이도 OK)", answer: "nǐ hǎo", accepts: ["ni hao", "nihao"] },
-      { id: "ot01-d2", type: "fill", prompt: "'谢谢'의 병음은?", answer: "xièxie", accepts: ["xiexie", "xie xie"] },
+      { id: "ot01-d1", type: "fill", prompt: "'你好'의 병음: ___ (성조 부호 없이도 OK)", answer: "nǐ hǎo", accepts: ["ni hao", "nihao"] },
+      { id: "ot01-d2", type: "fill", prompt: "'谢谢'의 병음: ___", answer: "xièxie", accepts: ["xiexie", "xie xie"] },
       { id: "ot01-d3", type: "choice", prompt: "병음에서 b와 p의 차이는?", choices: ["b는 무기음(숨 약하게), p는 유기음(숨 세게)", "b는 유성음, p는 무성음 — 영어와 같다", "발음 차이가 없다"], answer: "b는 무기음(숨 약하게), p는 유기음(숨 세게)" },
       { id: "ot01-d4", type: "choice", prompt: "j·q·x 뒤의 ü는 어떻게 표기하나요?", choices: ["점을 떼고 u로 쓴다", "ü 그대로 쓴다", "v로 쓴다"], answer: "점을 떼고 u로 쓴다" },
       { id: "ot01-d5", type: "choice", prompt: "'ma'에서 성모(첫 자음)는?", choices: ["m", "a", "ma 전체"], answer: "m" },
@@ -92,7 +92,7 @@ const chapters = [
       { id: "ot02-d3", type: "choice", listen: "骂", prompt: "듣고 성조를 고르세요. (mà)", choices: ["4성 — 위에서 뚝 떨어뜨려서", "3성 — 내렸다가 올려서", "1성 — 높고 평평하게"], answer: "4성 — 위에서 뚝 떨어뜨려서" },
       { id: "ot02-d4", type: "choice", prompt: "3성+3성이 이어지면(예: 你好) 실제 발음은?", choices: ["앞 글자가 2성처럼 변한다", "둘 다 3성 그대로", "뒤 글자가 1성이 된다"], answer: "앞 글자가 2성처럼 변한다" },
       { id: "ot02-d5", type: "choice", prompt: "경성(轻声)의 특징은?", choices: ["짧고 가볍게, 고정 높이 없음", "가장 높은 소리", "가장 긴 소리"], answer: "짧고 가볍게, 고정 높이 없음" },
-      { id: "ot02-d6", type: "fill", prompt: "성조 부호는 보통 어떤 글자 위에? (a·o·e 중 우선순위 1위)", answer: "a" },
+      { id: "ot02-d6", type: "fill", prompt: "성조 부호 우선순위 1위 글자: ___ (a·o·e 중)", answer: "a" },
     ],
     sections: [
       {
@@ -162,8 +162,8 @@ const chapters = [
     duration: "약 8분",
     drills: [
       { id: "ot03-d1", type: "choice", prompt: "愛(사랑 애)의 간체자는?", choices: ["爱", "変", "受"], answer: "爱" },
-      { id: "ot03-d2", type: "fill", prompt: "國(나라 국)의 간체자는?", answer: "国" },
-      { id: "ot03-d3", type: "fill", prompt: "車(수레 차)의 간체자는?", answer: "车" },
+      { id: "ot03-d2", type: "fill", prompt: "國(나라 국)의 간체자: ___", answer: "国" },
+      { id: "ot03-d3", type: "fill", prompt: "車(수레 차)의 간체자: ___", answer: "车" },
       { id: "ot03-d4", type: "choice", prompt: "간체자를 표준으로 쓰는 곳은?", choices: ["중국 대륙·싱가포르", "대만·홍콩", "일본"], answer: "중국 대륙·싱가포르" },
       { id: "ot03-d5", type: "choice", prompt: "부수(部首)의 역할은?", choices: ["뜻의 힌트를 준다", "소리만 나타낸다", "획수를 세는 단위다"], answer: "뜻의 힌트를 준다" },
       { id: "ot03-d6", type: "choice", listen: "汉语", prompt: "듣고 알맞은 뜻을 고르세요. (Hànyǔ)", choices: ["중국어", "한국어", "영어"], answer: "중국어" },
