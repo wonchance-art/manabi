@@ -16,6 +16,14 @@ const chapters = [
       { id: "h115-d5", type: "order", sentence: "去机场应该坐几路车？", prompt: "'공항에 가려면 몇 번 버스를 타야 하나요?'를 배열해 보세요." },
       { id: "h115-d6", type: "choice", listen: "一直走，到红绿灯右转。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["직진하다가 신호등에서 우회전하세요", "신호등에서 좌회전하세요", "여기서 바로 돌아가세요"], answer: "직진하다가 신호등에서 우회전하세요" },
     ],
+    writing: {
+      prompt: "낯선 도시에서 지하철역 가는 길을 묻는 질문과 감사 인사를 써 보세요.",
+      hints: ["请问으로 시작"],
+      samples: [
+        { zh: "请问，地铁站怎么走？谢谢你！", pinyin: "Qǐngwèn, dìtiězhàn zěnme zǒu? Xièxie nǐ!", ko: "실례합니다, 지하철역은 어떻게 가나요? 감사합니다!" },
+      ],
+      checklist: ["请问으로 공손하게 시작했다", "怎么走로 길을 물었다"],
+    },
     sections: [
       {
         heading: "목적지까지 가는 길을 물어요",
@@ -144,6 +152,14 @@ const chapters = [
       { id: "h116-d5", type: "order", sentence: "我的钱包不见了。", prompt: "'지갑이 없어졌어요'를 배열해 보세요." },
       { id: "h116-d6", type: "choice", listen: "你哪儿不舒服？", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["어디가 불편하세요?", "어디에 사세요?", "어디로 가세요?"], answer: "어디가 불편하세요?" },
     ],
+    writing: {
+      prompt: "아픈 곳을 알리고 도움을 요청하는 두 문장을 써 보세요.",
+      hints: ["…疼 / 请帮帮我"],
+      samples: [
+        { zh: "我肚子疼，请帮帮我。", pinyin: "Wǒ dùzi téng, qǐng bāngbang wǒ.", ko: "배가 아파요, 도와주세요." },
+      ],
+      checklist: ["아픈 부위+疼으로 증상을 말했다", "请으로 공손하게 요청했다"],
+    },
     sections: [
       {
         heading: "어디가 아픈지 바로 말해요",

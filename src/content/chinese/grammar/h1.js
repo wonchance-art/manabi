@@ -96,6 +96,14 @@ const chapters = [
       { id: "h101-d5", type: "choice", listen: "我是韩国人。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["저는 한국인이에요", "저는 중국인이에요", "저는 학생이에요"], answer: "저는 한국인이에요" },
       { id: "h101-d6", type: "choice", prompt: "A是B 문형에서 형용사 서술(예: 예쁘다)을 말할 때는?", choices: ["是 없이 很+형용사를 쓴다 (她很漂亮)", "반드시 是를 쓴다 (她是漂亮)", "아무거나 같다"], answer: "是 없이 很+형용사를 쓴다 (她很漂亮)" },
     ],
+    writing: {
+      prompt: "是를 써서 자기소개 두 문장을 써 보세요 — 국적 하나, 직업(또는 신분) 하나.",
+      hints: ["我是…", "부정하고 싶으면 不是"],
+      samples: [
+        { zh: "我是韩国人，我是公司职员。", pinyin: "Wǒ shì Hánguórén, wǒ shì gōngsī zhíyuán.", ko: "저는 한국인이고, 회사원이에요." },
+      ],
+      checklist: ["是 앞뒤에 주어와 명사를 놓았다", "不是 부정도 한 번 시도해 봤다"],
+    },
     sections: [
       {
         heading: "A 是 B — '~이다'의 기본 공식",
@@ -166,6 +174,15 @@ const chapters = [
       { id: "h102-d5", type: "choice", listen: "我没有钱。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["저는 돈이 없어요", "저는 돈이 있어요", "저는 시간이 없어요"], answer: "저는 돈이 없어요" },
       { id: "h102-d6", type: "choice", prompt: "존재의 有 — '桌子上有书'의 뜻은?", choices: ["책상 위에 책이 있다", "책상이 책을 샀다", "책 위에 책상이 있다"], answer: "책상 위에 책이 있다" },
     ],
+    writing: {
+      prompt: "有/没有로 내가 가진 것 하나, 없는 것 하나를 써 보세요.",
+      hints: ["我有…", "없다는 没有(不有 아님)"],
+      samples: [
+        { zh: "我有手机，没有电脑。", pinyin: "Wǒ yǒu shǒujī, méiyǒu diànnǎo.", ko: "휴대폰은 있고 컴퓨터는 없어요." },
+        { zh: "我家有爸爸、妈妈和我。", pinyin: "Wǒ jiā yǒu bàba, māma hé wǒ.", ko: "우리 집에는 아빠, 엄마, 그리고 제가 있어요." },
+      ],
+      checklist: ["소유·존재를 有로 말했다", "부정을 没有로 썼다(不有 금지)"],
+    },
     sections: [
       {
         heading: "有 — 가지고 있다 / ~이 있다",
@@ -236,6 +253,14 @@ const chapters = [
       { id: "h103-d5", type: "choice", listen: "这是什么？", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["이건 뭐예요?", "저건 누구예요?", "여기는 어디예요?"], answer: "이건 뭐예요?" },
       { id: "h103-d6", type: "choice", prompt: "这·那의 발음 짝이 맞는 것은?", choices: ["这 zhè · 那 nà", "这 nà · 那 zhè", "这 zhē · 那 ná"], answer: "这 zhè · 那 nà" },
     ],
+    writing: {
+      prompt: "가까운 것과 먼 것을 하나씩 골라 这/那로 소개해 보세요.",
+      hints: ["这是… / 那是…"],
+      samples: [
+        { zh: "这是书，那是词典。", pinyin: "Zhè shì shū, nà shì cídiǎn.", ko: "이것은 책이고, 저것은 사전이에요." },
+      ],
+      checklist: ["가까우면 这, 멀면 那를 골랐다", "是로 명사와 연결했다"],
+    },
     sections: [
       {
         heading: "这 이것 · 那 저것/그것",
@@ -285,6 +310,14 @@ const chapters = [
       { id: "h104-d5", type: "order", sentence: "我有两个哥哥。", prompt: "'나는 형이 두 명 있다'를 배열해 보세요." },
       { id: "h104-d6", type: "choice", listen: "一杯咖啡", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["커피 한 잔", "커피 두 잔", "차 한 잔"], answer: "커피 한 잔" },
     ],
+    writing: {
+      prompt: "음식이나 물건 두 가지를 수량과 함께 주문·요청해 보세요(양사 필수).",
+      hints: ["一杯·两个·三本…", "2는 양사 앞에서 两"],
+      samples: [
+        { zh: "我要一杯咖啡和两个面包。", pinyin: "Wǒ yào yì bēi kāfēi hé liǎng ge miànbāo.", ko: "커피 한 잔과 빵 두 개 주세요." },
+      ],
+      checklist: ["수사+양사+명사 순서를 지켰다", "2를 两으로 썼다"],
+    },
     sections: [
       {
         heading: "수사 + 양사 + 명사 — 사이에 단위가 필요해요",
@@ -363,6 +396,14 @@ const chapters = [
       { id: "h105-d5", type: "order", sentence: "你有什么书？", prompt: "'무슨 책을 갖고 있어요?'를 배열해 보세요." },
       { id: "h105-d6", type: "choice", listen: "你是哪国人？", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["어느 나라 사람이에요?", "이름이 뭐예요?", "몇 살이에요?"], answer: "어느 나라 사람이에요?" },
     ],
+    writing: {
+      prompt: "친구에게 吗 의문문 하나, 되묻는 呢 하나를 써 보세요.",
+      hints: ["…吗？", "너는? = 你呢？"],
+      samples: [
+        { zh: "你是老师吗？你呢？", pinyin: "Nǐ shì lǎoshī ma? Nǐ ne?", ko: "선생님이세요? 당신은요?" },
+      ],
+      checklist: ["문장 끝에 吗만 붙여 의문문을 만들었다", "어순을 바꾸지 않았다"],
+    },
     sections: [
       {
         heading: "吗 의문문 — 끝에 한 글자만",
@@ -449,6 +490,14 @@ const chapters = [
       { id: "h106-d5", type: "order", sentence: "别忘了带伞。", prompt: "'우산 챙기는 거 잊지 마'를 배열해 보세요." },
       { id: "h106-d6", type: "choice", listen: "我不知道。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["몰라요", "알아요", "잊었어요"], answer: "몰라요" },
     ],
+    writing: {
+      prompt: "오늘 안 하는 것과 갖고 있지 않은 것을 각각 한 문장씩 부정문으로 써 보세요.",
+      hints: ["습관·의지 부정 = 不", "소유 부정 = 没有"],
+      samples: [
+        { zh: "我不喝咖啡，我喝茶。", pinyin: "Wǒ bù hē kāfēi, wǒ hē chá.", ko: "커피는 안 마시고 차를 마셔요." },
+      ],
+      checklist: ["동사 앞에 不를 놓았다", "소유의 부정은 没有로 했다"],
+    },
     sections: [
       {
         heading: "不 — 현재・습관・의지의 부정",
@@ -525,6 +574,14 @@ const chapters = [
       { id: "h107-d5", type: "choice", listen: "这是我的。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["이건 제 거예요", "이건 뭐예요?", "이건 새 거예요"], answer: "이건 제 거예요", hint: "명사 없이 的로 끝내면 '~의 것'" },
       { id: "h107-d6", type: "choice", prompt: "'한국 친구'처럼 수식할 때는?", choices: ["韩国朋友 — 나라+명사는 的 없이 붙는 게 자연", "韩国的的朋友", "朋友韩国"], answer: "韩国朋友 — 나라+명사는 的 없이 붙는 게 자연" },
     ],
+    writing: {
+      prompt: "내 것과 가족의 것을 하나씩 的로 소개해 보세요.",
+      hints: ["我的… / 妈妈的…"],
+      samples: [
+        { zh: "这是我的手机，那是妈妈的杯子。", pinyin: "Zhè shì wǒ de shǒujī, nà shì māma de bēizi.", ko: "이건 제 휴대폰이고, 저건 엄마의 컵이에요." },
+      ],
+      checklist: ["소유자+的+명사 순서를 지켰다", "가족·친한 관계는 的 생략도 가능함을 안다"],
+    },
     sections: [
       {
         heading: "A 的 B — '~의'",
@@ -595,6 +652,15 @@ const chapters = [
       { id: "h108-d5", type: "choice", listen: "我们去喝咖啡吧。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["우리 커피 마시러 가자", "우리 커피 사 왔어", "커피는 어디서 팔아?"], answer: "우리 커피 마시러 가자" },
       { id: "h108-d6", type: "choice", prompt: "수단+목적 연동문 '버스 타고 학교 간다'는?", choices: ["我坐公交车去学校。", "我去学校坐公交车。", "坐我公交车学校去。"], answer: "我坐公交车去学校。", hint: "수단 동사가 먼저" },
     ],
+    writing: {
+      prompt: "어디에 가서 무엇을 하는지, 이동+목적을 연동문 한 문장으로 써 보세요.",
+      hints: ["去+장소+동사", "교통수단은 坐…去"],
+      samples: [
+        { zh: "我去超市买水果。", pinyin: "Wǒ qù chāoshì mǎi shuǐguǒ.", ko: "슈퍼에 가서 과일을 사요." },
+        { zh: "我坐地铁去公司。", pinyin: "Wǒ zuò dìtiě qù gōngsī.", ko: "지하철을 타고 회사에 가요." },
+      ],
+      checklist: ["동사들이 일어나는 순서대로 배열했다", "접속사 없이 이어 붙였다"],
+    },
     sections: [
       {
         heading: "연동문 — 동사를 일어난 순서대로",
@@ -651,6 +717,15 @@ const chapters = [
       { id: "h109-d5", type: "choice", listen: "你在哪儿？", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["너 어디야?", "너 누구야?", "너 뭐 해?"], answer: "너 어디야?" },
       { id: "h109-d6", type: "fill", prompt: "장소를 묻는 의문사: 你在___工作？(어디)", answer: "哪儿", accepts: ["哪里"] },
     ],
+    writing: {
+      prompt: "오늘·내일 일정 두 문장 — 시간사와 장소(在…)를 함께 넣어 보세요.",
+      hints: ["시간은 주어 앞뒤, 장소는 동사 앞"],
+      samples: [
+        { zh: "我今天在家工作。", pinyin: "Wǒ jīntiān zài jiā gōngzuò.", ko: "오늘은 집에서 일해요." },
+        { zh: "他明天去北京。", pinyin: "Tā míngtiān qù Běijīng.", ko: "그는 내일 베이징에 가요." },
+      ],
+      checklist: ["시간사를 동사 뒤에 두지 않았다", "在+장소를 동사 앞에 놓았다"],
+    },
     sections: [
       {
         heading: "시간은 동사 앞 — 주어 뒤 또는 문장 맨 앞",
@@ -721,6 +796,14 @@ const chapters = [
       { id: "h110-d5", type: "choice", listen: "现在几点？", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["지금 몇 시예요?", "오늘 며칠이에요?", "몇 살이에요?"], answer: "지금 몇 시예요?" },
       { id: "h110-d6", type: "choice", prompt: "'백'과 '천'의 짝은?", choices: ["百 · 千", "千 · 百", "万 · 百"], answer: "百 · 千" },
     ],
+    writing: {
+      prompt: "가족 수나 물건 개수를 숫자로 소개하는 문장을 써 보세요.",
+      hints: ["몇 식구 = 几口人"],
+      samples: [
+        { zh: "我家有五口人。", pinyin: "Wǒ jiā yǒu wǔ kǒu rén.", ko: "우리 집은 다섯 식구예요." },
+      ],
+      checklist: ["숫자를 한자로 썼다", "사람 수에 口를 썼다"],
+    },
     sections: [
       {
         heading: "0~100 — 한국 한자 숫자 그대로",
@@ -796,6 +879,14 @@ const chapters = [
       { id: "h111-d5", type: "order", sentence: "我们也都是老师。", prompt: "'우리도 모두 선생님이다'를 배열해 보세요." },
       { id: "h111-d6", type: "choice", listen: "我也是。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["저도요", "저는요?", "다들 그래요"], answer: "저도요" },
     ],
+    writing: {
+      prompt: "나와 친구의 공통점을 也와 都로 한 문장씩 써 보세요.",
+      hints: ["나도 = 我也…", "우리 모두 = 我们都…"],
+      samples: [
+        { zh: "我也喜欢猫，我们都喜欢猫。", pinyin: "Wǒ yě xǐhuan māo, wǒmen dōu xǐhuan māo.", ko: "저도 고양이를 좋아해요. 우리 모두 좋아해요." },
+      ],
+      checklist: ["也·都를 동사 바로 앞에 놓았다", "주어 앞에 두지 않았다"],
+    },
     sections: [
       {
         heading: "都 — '모두·다', 주어 뒤에 놓아요",
@@ -873,6 +964,14 @@ const chapters = [
       { id: "h112-d5", type: "order", sentence: "我想学汉语。", prompt: "'중국어를 배우고 싶다'를 배열해 보세요." },
       { id: "h112-d6", type: "choice", listen: "你想吃什么？", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["뭐 먹고 싶어?", "뭐 마시고 싶어?", "어디 가고 싶어?"], answer: "뭐 먹고 싶어?" },
     ],
+    writing: {
+      prompt: "하고 싶은 일(想)과 하기로 한 일(要)을 한 문장씩 써 보세요.",
+      hints: ["想 = 바람, 要 = 의지·계획"],
+      samples: [
+        { zh: "我想去中国，我要学汉语。", pinyin: "Wǒ xiǎng qù Zhōngguó, wǒ yào xué Hànyǔ.", ko: "중국에 가고 싶고, 중국어를 배울 거예요." },
+      ],
+      checklist: ["想/要를 동사 앞에 놓았다", "바람과 의지를 구분해 골랐다"],
+    },
     sections: [
       {
         heading: "喜欢 — '좋아하다', 뒤에 동사도 명사도",
@@ -950,6 +1049,14 @@ const chapters = [
       { id: "h113-d5", type: "order", sentence: "很高兴认识你。", prompt: "'만나서 반가워요'를 배열해 보세요." },
       { id: "h113-d6", type: "choice", listen: "好久不见！", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["오랜만이야!", "곧 만나!", "처음 뵙겠습니다"], answer: "오랜만이야!" },
     ],
+    writing: {
+      prompt: "만났을 때 인사와 안부, 그에 대한 답까지 짧은 대화를 써 보세요.",
+      hints: ["最近怎么样？에 답하기"],
+      samples: [
+        { zh: "你好！最近怎么样？— 很好，谢谢！", pinyin: "Nǐ hǎo! Zuìjìn zěnmeyàng? — Hěn hǎo, xièxie!", ko: "안녕하세요! 요즘 어때요? — 좋아요, 고마워요!" },
+      ],
+      checklist: ["인사·안부·답 세 요소가 다 있다", "감사 표현을 넣었다"],
+    },
     sections: [
       {
         heading: "谢谢 ↔ 不客气 — 감사와 답례",

@@ -8,8 +8,12 @@ import RefSpeak from './RefSpeak';
  * 채점 엔진 없이 가능한 산출 루프: 먼저 쓰게 하고, 모범답은 그 다음에 연다.
  * 작성글은 기기(localStorage)에만 저장된다.
  */
+const HTML_LANG = { french: 'fr', chinese: 'zh', japanese: 'ja', english: 'en' };
+
 export default function WritingPractice({ lang, slug, writing }) {
   const storageKey = `${lang}_writing_${slug}`;
+  const htmlLang = HTML_LANG[lang] ?? 'fr';
+  const countsChars = htmlLang === 'zh' || htmlLang === 'ja';
   const [draft, setDraft] = useState(() => {
     try {
       return globalThis.localStorage?.getItem(storageKey) ?? '';
@@ -34,7 +38,9 @@ export default function WritingPractice({ lang, slug, writing }) {
     } catch {}
   };
   const doneCount = checks.filter(Boolean).length;
-  const wordCount = draft.trim() ? draft.trim().split(/\s+/).length : 0;
+  const wordCount = countsChars
+    ? draft.replace(/\s/g, '').length
+    : draft.trim() ? draft.trim().split(/\s+/).length : 0;
 
   return (
     <section className="card fr-section">
@@ -49,7 +55,7 @@ export default function WritingPractice({ lang, slug, writing }) {
         value={draft}
         onChange={(e) => save(e.target.value)}
         rows={3}
-        lang="fr"
+        lang={htmlLang}
         placeholder="여기에 직접 써 보세요 — 이 기기에만 저장돼요."
         style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: '0.95rem', lineHeight: 1.6, resize: 'vertical' }}
       />
@@ -62,10 +68,13 @@ export default function WritingPractice({ lang, slug, writing }) {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {writing.samples.map((smp) => (
-              <div key={smp.fr} style={{ padding: '8px 11px', borderRadius: 8, background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
-                <p style={{ margin: 0, fontSize: '0.92rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }} lang="fr">
-                  {smp.fr} <RefSpeak text={smp.fr} lang={lang} />
+              <div key={smp.fr ?? smp.zh} style={{ padding: '8px 11px', borderRadius: 8, background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
+                <p style={{ margin: 0, fontSize: '0.92rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }} lang={htmlLang}>
+                  {smp.fr ?? smp.zh} <RefSpeak text={smp.fr ?? smp.zh} lang={lang} />
                 </p>
+                {smp.pinyin && (
+                  <p style={{ margin: '2px 0 0', fontSize: '0.76rem', color: 'var(--text-secondary)' }}>{smp.pinyin}</p>
+                )}
                 <p style={{ margin: '2px 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                   {smp.ko}
                   {smp.note && <span> · {smp.note}</span>}
