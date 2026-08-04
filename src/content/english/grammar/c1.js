@@ -20,6 +20,14 @@ const chapters = [
       { id: "en-c101-d5", type: "order", sentence: "I would rather you didn't tell anyone.", prompt: "'아무에게도 말하지 않았으면 좋겠어'를 배열해 보세요." },
       { id: "en-c101-d6", type: "choice", listen: "If only I had more time.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["시간이 더 있다면 좋을 텐데", "시간이 딱 하나 남았어", "혼자만의 시간이 필요해"], answer: "시간이 더 있다면 좋을 텐데" },
     ],
+    writing: {
+      prompt: "회의 연기를 격식 있게 제안하는 문장을 가정법 현재로 써 보세요.",
+      hints: ["suggest that + 원형"],
+      samples: [
+        { en: "I suggest that the meeting be postponed until Monday.", ko: "회의를 월요일로 연기할 것을 제안합니다." },
+      ],
+      checklist: ["that절에 동사원형을 썼다"],
+    },
     sections: [
       {
         heading: "접속법이라는 유령 — 영어에도 '법(mood)'이 있었다",
@@ -100,6 +108,14 @@ const chapters = [
       { id: "en-c102-d5", type: "order", sentence: "There is some evidence to support this claim.", prompt: "'이 주장을 뒷받침할 근거가 어느 정도 있다'를 배열해 보세요." },
       { id: "en-c102-d6", type: "choice", listen: "I'm not entirely sure about that.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["그건 완전히 확신하지는 못하겠어요", "그건 전혀 몰라요", "그건 완전히 확실해요"], answer: "그건 완전히 확신하지는 못하겠어요" },
     ],
+    writing: {
+      prompt: "어떤 방법에 대한 의견을 단정하지 않고(헤징) 써 보세요.",
+      hints: ["seems to / may not"],
+      samples: [
+        { en: "This approach seems to work, though it may not suit everyone.", ko: "이 방법은 효과가 있어 보이지만, 모두에게 맞지는 않을 수 있어요." },
+      ],
+      checklist: ["단정 대신 seem·may로 여지를 남겼다"],
+    },
     sections: [
       {
         heading: "왜 헤징인가 — 단정의 비용",
@@ -189,6 +205,14 @@ const chapters = [
       { id: "en-c103-d5", type: "order", sentence: "Please do not hesitate to contact us.", prompt: "'언제든 연락 주세요(격식)'를 배열해 보세요." },
       { id: "en-c103-d6", type: "choice", listen: "Would you mind if I opened the window?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["창문을 열어도 될까요(아주 정중)", "창문을 닫아 주시겠어요", "창문이 열려 있나요"], answer: "창문을 열어도 될까요(아주 정중)" },
     ],
+    writing: {
+      prompt: "격식 있는 이메일의 부탁 문장 한 줄을 써 보세요.",
+      hints: ["I would appreciate it if…"],
+      samples: [
+        { en: "I would appreciate it if you could reply at your earliest convenience.", ko: "가급적 빨리 회신해 주시면 감사하겠습니다." },
+      ],
+      checklist: ["축약 없이 격식 표현을 썼다"],
+    },
     sections: [
       {
         heading: "1066년, 영어가 이중 언어가 된 날",
@@ -279,6 +303,14 @@ const chapters = [
       { id: "en-c104-d5", type: "order", sentence: "It was in Paris that they first met.", prompt: "'그들이 처음 만난 곳은 바로 파리였다'를 배열해 보세요." },
       { id: "en-c104-d6", type: "choice", listen: "It's not the money that matters.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["중요한 건 돈이 아니에요", "돈이 가장 중요해요", "돈이 모자라요"], answer: "중요한 건 돈이 아니에요" },
     ],
+    writing: {
+      prompt: "나에게 영향을 준 사람을 분열문으로 강조해 보세요.",
+      hints: ["It was … who…"],
+      samples: [
+        { en: "It was my grandmother who taught me how to cook.", ko: "요리를 가르쳐 주신 분은 바로 할머니였어요." },
+      ],
+      checklist: ["강조할 대상을 It was와 who 사이에 놓았다"],
+    },
     sections: [
       {
         heading: "정보구조 — 문장에는 스포트라이트가 있다",
@@ -357,6 +389,14 @@ const chapters = [
       { id: "en-c105-d5", type: "order", sentence: "Let's not beat around the bush.", prompt: "'빙빙 돌리지 말자'를 배열해 보세요." },
       { id: "en-c105-d6", type: "choice", listen: "That exam was a piece of cake.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["그 시험은 식은 죽 먹기였어", "시험에 케이크가 나왔어", "시험지가 찢어졌어"], answer: "그 시험은 식은 죽 먹기였어" },
     ],
+    writing: {
+      prompt: "요즘 배우는 것을 관용구 하나를 살려 써 보세요.",
+      hints: ["a piece of cake / pay off"],
+      samples: [
+        { en: "Learning idioms is not a piece of cake, but it pays off.", ko: "관용구 익히기는 식은 죽 먹기가 아니지만, 보람이 있어요." },
+      ],
+      checklist: ["관용구를 문자 그대로가 아닌 관용 의미로 썼다"],
+    },
     sections: [
       {
         heading: "개념적 은유 — 관용구에는 지도가 있다",
@@ -447,6 +487,14 @@ const chapters = [
       { id: "en-c106-d5", type: "order", sentence: "Further research is needed on this topic.", prompt: "'이 주제는 후속 연구가 필요하다'를 배열해 보세요." },
       { id: "en-c106-d6", type: "choice", listen: "The findings are consistent with previous studies.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["결과가 선행 연구와 일치해요", "결과가 완전히 새로워요", "연구를 이어서 해요"], answer: "결과가 선행 연구와 일치해요" },
     ],
+    writing: {
+      prompt: "관심 주제의 연구 결과 한 줄을 학술체로 써 보세요.",
+      hints: ["The results suggest that…"],
+      samples: [
+        { en: "The results suggest that sleep quality affects memory.", ko: "결과는 수면의 질이 기억력에 영향을 준다는 것을 시사한다." },
+      ],
+      checklist: ["축약·구어를 피하고 신중한 동사를 골랐다"],
+    },
     sections: [
       {
         heading: "학술 문체의 3원칙 — 압축, 탈인격, 신중함",
@@ -535,6 +583,14 @@ const chapters = [
       { id: "en-c107-d5", type: "order", sentence: "She encouraged me to apply for the job.", prompt: "'그녀는 내가 지원하도록 격려했다'를 배열해 보세요." },
       { id: "en-c107-d6", type: "choice", listen: "I forgot to lock the door.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["문 잠그는 걸 깜빡했어요(안 잠겨 있음)", "문 잠근 사실을 잊었어요(잠겨 있음)", "문이 저절로 잠겼어요"], answer: "문 잠그는 걸 깜빡했어요(안 잠겨 있음)", hint: "forget to do vs forget doing" },
     ],
+    writing: {
+      prompt: "remember to와 remember -ing의 차이가 드러나는 문장을 써 보세요.",
+      hints: ["remembered to… / remember -ing"],
+      samples: [
+        { en: "I remembered to call her, and I still remember calling her last year.", ko: "그녀에게 전화할 것을 잊지 않았고, 작년에 통화했던 일도 아직 기억나요." },
+      ],
+      checklist: ["to부정사=할 일, -ing=한 일로 갈랐다"],
+    },
     sections: [
       {
         heading: "목적어 + 보어 — consider it essential, appoint her director",
@@ -625,6 +681,14 @@ const chapters = [
       { id: "en-c108-d5", type: "order", sentence: "By the time you arrive, dinner will be ready.", prompt: "'네가 도착할 때쯤 저녁이 준비돼 있을 거야'를 배열해 보세요." },
       { id: "en-c108-d6", type: "choice", listen: "I was about to leave when you called.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["막 나가려던 참에 네가 전화했어", "나간 뒤에 전화가 왔어", "전화를 끊고 나갔어"], answer: "막 나가려던 참에 네가 전화했어" },
     ],
+    writing: {
+      prompt: "내년 이맘때 완료돼 있을 일을 미래완료로 써 보세요.",
+      hints: ["will have + p.p."],
+      samples: [
+        { en: "By this time next year, I will have finished my degree.", ko: "내년 이맘때면 학위를 마쳐 있을 거예요." },
+      ],
+      checklist: ["기준 시점(by…)을 함께 밝혔다"],
+    },
     sections: [
       {
         heading: "used to vs would vs be used to — 형태는 친척, 정체는 셋",
