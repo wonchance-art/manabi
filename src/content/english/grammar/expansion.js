@@ -297,6 +297,14 @@ const chapters = [
     summary:
       "so와 such가 결과절을 여는 방식, too가 만드는 불가능의 함의, enough의 위치를 품사별로 나눠 정도와 결과를 정확히 연결해요.",
     duration: "약 11분",
+    drills: [
+      { id: "en-b210-d1", type: "fill", prompt: "It was ___ hot that I couldn't sleep. (너무 ~해서)", answer: "so" },
+      { id: "en-b210-d2", type: "fill", prompt: "It was ___ a good movie that I watched it twice.", answer: "such" },
+      { id: "en-b210-d3", type: "choice", prompt: "so와 such의 구분은?", choices: ["so+형용사/부사, such+(관사)+명사", "so+명사, such+형용사", "차이가 없다"], answer: "so+형용사/부사, such+(관사)+명사" },
+      { id: "en-b210-d4", type: "choice", prompt: "'너무 어려서 운전할 수 없다'는?", choices: ["He is too young to drive.", "He is so young to drive.", "He is very young for drive."], answer: "He is too young to drive.", hint: "too ~ to = 부정의 뜻이 숨어 있어요" },
+      { id: "en-b210-d5", type: "order", sentence: "The box was too heavy for me to carry.", prompt: "'상자가 너무 무거워 들 수 없었다'를 배열해 보세요." },
+      { id: "en-b210-d6", type: "choice", listen: "It's warm enough to swim today.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["오늘 수영해도 될 만큼 따뜻해요", "수영하기엔 아직 추워요", "수영장이 충분히 넓어요"], answer: "오늘 수영해도 될 만큼 따뜻해요" },
+    ],
     sections: [
       {
         heading: "so는 형용사·부사, such는 명사 덩어리를 강조해요",
