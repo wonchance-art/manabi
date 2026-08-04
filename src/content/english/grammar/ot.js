@@ -21,6 +21,14 @@ const chapters = [
       { id: "en-ot01-d5", type: "order", sentence: "She drinks tea every day.", prompt: "'그녀는 매일 차를 마신다'를 배열해 보세요." },
       { id: "en-ot01-d6", type: "choice", listen: "I like Korean food.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["한국 음식을 좋아해요", "한국어를 좋아해요", "한국에 가고 싶어요"], answer: "한국 음식을 좋아해요" },
     ],
+    writing: {
+      prompt: "아침 습관 하나를 SVO 어순으로 한 문장 써 보세요 — 장소·시간은 뒤에.",
+      hints: ["주어+동사+목적어+(장소)+(시간)"],
+      samples: [
+        { en: "I drink coffee at home every morning.", ko: "저는 매일 아침 집에서 커피를 마셔요." },
+      ],
+      checklist: ["동사를 주어 바로 뒤에 놓았다", "장소·시간을 문장 뒤쪽에 두었다"],
+    },
     sections: [
       {
         heading: "이미 가진 자산 — 그리고 콩글리시 지뢰",

@@ -20,6 +20,14 @@ const chapters = [
       { id: "en-a101-d5", type: "order", sentence: "He is my best friend.", prompt: "'그는 내 가장 친한 친구다'를 배열해 보세요." },
       { id: "en-a101-d6", type: "choice", listen: "We are late.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["우리 늦었어", "우리 여기 있어", "우리 여덟 명이야"], answer: "우리 늦었어" },
     ],
+    writing: {
+      prompt: "be동사로 자기소개 두 문장 — 출신 하나, 직업(신분) 하나.",
+      hints: ["I am from… / I am a…"],
+      samples: [
+        { en: "I am from Seoul. I am a designer.", ko: "저는 서울 출신이고, 디자이너예요." },
+      ],
+      checklist: ["주어에 맞는 be동사(am/is/are)를 골랐다", "직업 앞에 a/an을 붙였다"],
+    },
     sections: [
       {
         heading: "be동사의 자리 — 주어 바로 뒤",
@@ -110,6 +118,14 @@ const chapters = [
       { id: "en-a102-d5", type: "order", sentence: "My father works at a bank.", prompt: "'아버지는 은행에서 일하신다'를 배열해 보세요." },
       { id: "en-a102-d6", type: "choice", listen: "She teaches English.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["그녀는 영어를 가르쳐요", "그녀는 영어를 배워요", "그녀는 영어를 만져요"], answer: "그녀는 영어를 가르쳐요" },
     ],
+    writing: {
+      prompt: "가족 한 명의 평소 하루를 두 문장으로 써 보세요.",
+      hints: ["3인칭 단수엔 -s"],
+      samples: [
+        { en: "My sister works at a hospital. She gets up at six.", ko: "언니는 병원에서 일해요. 6시에 일어나요." },
+      ],
+      checklist: ["3인칭 단수 동사에 -s를 붙였다"],
+    },
     sections: [
       {
         heading: "현재형은 '지금'이 아니라 '늘'",
@@ -197,6 +213,14 @@ const chapters = [
       { id: "en-a103-d5", type: "order", sentence: "He has a new car.", prompt: "'그는 새 차가 있다'를 배열해 보세요." },
       { id: "en-a103-d6", type: "choice", listen: "I need a pen, not the pen.", prompt: "듣고 화자의 의도를 고르세요.", choices: ["아무 펜이나 하나 필요해(그 펜 말고)", "그 특정한 펜이 필요해", "펜이 두 개 필요해"], answer: "아무 펜이나 하나 필요해(그 펜 말고)" },
     ],
+    writing: {
+      prompt: "가진 물건 둘을 a/an·the를 살려 소개해 보세요.",
+      hints: ["처음 언급 a/an → 다시 언급 the"],
+      samples: [
+        { en: "I have a laptop and an old camera. The camera is my father's.", ko: "노트북 하나와 오래된 카메라가 있어요. 그 카메라는 아버지 거예요." },
+      ],
+      checklist: ["모음 소리 앞에 an을 썼다", "다시 가리킬 때 the로 바꿨다"],
+    },
     sections: [
       {
         heading: "관사가 어려운 진짜 이유 — 범주 자체가 없으니까",
@@ -274,6 +298,14 @@ const chapters = [
       { id: "en-a104-d5", type: "order", sentence: "I have three dogs and a cat.", prompt: "'개 세 마리와 고양이 한 마리가 있다'를 배열해 보세요." },
       { id: "en-a104-d6", type: "choice", listen: "Two coffees, please.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["커피 두 잔 주세요", "커피 둘째 잔이에요", "커피 둘 다 싫어요"], answer: "커피 두 잔 주세요" },
     ],
+    writing: {
+      prompt: "집에 있는 것들을 복수형·불가산 각각 하나씩 넣어 써 보세요.",
+      hints: ["불가산엔 some"],
+      samples: [
+        { en: "I have two cats and some plants.", ko: "고양이 두 마리와 화분 몇 개가 있어요." },
+      ],
+      checklist: ["가산 명사에 복수 -s를 붙였다", "불가산에 -s를 붙이지 않았다"],
+    },
     sections: [
       {
         heading: "한국어는 선택, 영어는 의무",
@@ -365,6 +397,14 @@ const chapters = [
       { id: "en-a105-d5", type: "order", sentence: "Her brother is a police officer.", prompt: "'그녀의 오빠는 경찰이다'를 배열해 보세요." },
       { id: "en-a105-d6", type: "choice", listen: "Is this yours or mine?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["이거 네 거야, 내 거야?", "이거 우리 거야?", "이거 어디서 났어?"], answer: "이거 네 거야, 내 거야?" },
     ],
+    writing: {
+      prompt: "내 것과 가족의 것을 소유격·소유대명사로 비교해 보세요.",
+      hints: ["my/your… + mine/yours…"],
+      samples: [
+        { en: "My brother's car is old, but mine is new.", ko: "형 차는 오래됐지만 제 것은 새 거예요." },
+      ],
+      checklist: ["소유격(my)과 소유대명사(mine)를 구분했다"],
+    },
     sections: [
       {
         heading: "인칭대명사 한눈에 — 자리에 따라 옷을 갈아입어요",
@@ -452,6 +492,14 @@ const chapters = [
       { id: "en-a106-d5", type: "order", sentence: "My mom is talking on the phone.", prompt: "'엄마는 통화 중이다'를 배열해 보세요." },
       { id: "en-a106-d6", type: "choice", listen: "It's raining outside.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["밖에 비가 와요", "밖이 추워요", "밖에서 뛰고 있어요"], answer: "밖에 비가 와요" },
     ],
+    writing: {
+      prompt: "지금 집 안 풍경을 현재진행으로 두 문장 써 보세요.",
+      hints: ["be + -ing"],
+      samples: [
+        { en: "My dad is cooking, and my mom is reading a book.", ko: "아빠는 요리 중이고, 엄마는 책을 읽고 계세요." },
+      ],
+      checklist: ["be동사와 -ing를 함께 썼다"],
+    },
     sections: [
       {
         heading: "형태는 be + -ing — be를 빼먹지 마세요",
@@ -541,6 +589,14 @@ const chapters = [
       { id: "en-a107-d5", type: "order", sentence: "What time do you get up?", prompt: "'몇 시에 일어나요?'를 배열해 보세요." },
       { id: "en-a107-d6", type: "choice", listen: "Don't worry about it.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["걱정하지 마", "궁금해하지 마", "서두르지 마"], answer: "걱정하지 마" },
     ],
+    writing: {
+      prompt: "친구를 인터뷰한다면? 의문문 두 개를 만들어 보세요.",
+      hints: ["Do you…? / Where do you…?"],
+      samples: [
+        { en: "Do you like spicy food? Where do you usually eat lunch?", ko: "매운 음식 좋아해? 점심은 보통 어디서 먹어?" },
+      ],
+      checklist: ["조동사 do를 주어 앞에 놓았다", "의문사 뒤 어순을 지켰다"],
+    },
     sections: [
       {
         heading: "왜 do가 필요한가 — 한국어에 없는 장치",
@@ -628,6 +684,14 @@ const chapters = [
       { id: "en-a108-d5", type: "order", sentence: "The cat is under the table.", prompt: "'고양이가 탁자 아래에 있다'를 배열해 보세요." },
       { id: "en-a108-d6", type: "choice", listen: "See you at the station at three.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["3시에 역에서 봐", "3번 출구에서 봐", "3층에서 봐"], answer: "3시에 역에서 봐" },
     ],
+    writing: {
+      prompt: "이번 주 일정 하나를 in/on/at을 살려 써 보세요.",
+      hints: ["at+시각, on+요일"],
+      samples: [
+        { en: "I have a meeting at three on Friday.", ko: "금요일 3시에 회의가 있어요." },
+      ],
+      checklist: ["시각엔 at, 요일엔 on을 썼다"],
+    },
     sections: [
       {
         heading: "프레임 하나로 셋을 다 — 점·면·공간",

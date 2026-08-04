@@ -25,6 +25,14 @@ const chapters = [
       { id: "en-a109-d5", type: "order", sentence: "That building is our school.", prompt: "'저 건물이 우리 학교다'를 배열해 보세요." },
       { id: "en-a109-d6", type: "choice", listen: "Which one do you want, this or that?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["이거랑 저거 중 어느 거 줄까?", "하나만 원해?", "몇 개나 원해?"], answer: "이거랑 저거 중 어느 거 줄까?" },
     ],
+    writing: {
+      prompt: "가게에서 물건을 고르는 상황을 this/those·one으로 써 보세요.",
+      hints: ["this one / those"],
+      samples: [
+        { en: "These shoes are nice, but I like those ones.", ko: "이 신발도 좋지만 저것들이 마음에 들어요." },
+      ],
+      checklist: ["가까우면 these, 멀면 those를 골랐다", "명사 반복 대신 one(s)을 썼다"],
+    },
     sections: [
       {
         heading: "거리와 수를 동시에 표시해요",
@@ -101,6 +109,14 @@ const chapters = [
       { id: "en-a210-d5", type: "order", sentence: "Shall we meet at six?", prompt: "'6시에 만날까요?'를 배열해 보세요." },
       { id: "en-a210-d6", type: "choice", listen: "Let's grab a coffee sometime.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["언제 커피 한잔해요", "커피를 뺏어 마셔요", "커피 마실 시간이에요"], answer: "언제 커피 한잔해요" },
     ],
+    writing: {
+      prompt: "주말 약속을 제안하는 메시지 두 문장을 써 보세요.",
+      hints: ["Why don't we…? / How about…?"],
+      samples: [
+        { en: "Why don't we see a movie on Saturday? How about the new action one?", ko: "토요일에 영화 볼래? 새로 나온 액션 어때?" },
+      ],
+      checklist: ["제안 표현을 의문문으로 만들었다"],
+    },
     sections: [
       {
         heading: "want를 한 걸음 부드럽게 만들어요",
