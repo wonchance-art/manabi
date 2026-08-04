@@ -161,7 +161,7 @@ export async function runCurriculumLint() {
   //  드릴 문장(sentence·choice 정답·fill 완성문)은 ① 같은 챕터의 fr 문자열 ② 같은 챕터 다른 드릴
   //  ③ 다른 챕터의 드릴과 문장 단위로 겹치지 않아야 한다.
   try {
-    for (const track of ['french', 'chinese']) {
+    for (const track of ['french', 'chinese', 'english']) {
     const gdir = path.join(REPO_ROOT, `src/content/${track}/grammar`);
     const gfiles = (await fs.readdir(gdir)).filter((f) => f.endsWith('.js'));
     const normSent = (s) => s.replace(/\s+/g, ' ').trim().toLowerCase();
@@ -174,7 +174,7 @@ export async function runCurriculumLint() {
         const dm = seg.match(/drills: \[([\s\S]*?)\n    \]/);
         if (!dm) continue;
         const dseg = dm[1];
-        const frSet = new Set([...seg.matchAll(/(?:fr|zh): "((?:[^"\\]|\\.)*)"/g)].map((m) => normSent(m[1])));
+        const frSet = new Set([...seg.matchAll(/(?:fr|zh|en): "((?:[^"\\]|\\.)*)"/g)].map((m) => normSent(m[1])));
         const items = [];
         for (const m of dseg.matchAll(/\{([\s\S]*?)\}/g)) {
           const body = m[1];
