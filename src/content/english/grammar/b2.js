@@ -20,6 +20,14 @@ const chapters = [
       { id: "en-b201-d5", type: "order", sentence: "I would have called you if I had known.", prompt: "'알았더라면 전화했을 텐데'를 배열해 보세요." },
       { id: "en-b201-d6", type: "choice", listen: "I should have listened to you.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["네 말을 들었어야 했는데(후회)", "네 말을 잘 들을게", "네 목소리가 잘 들려"], answer: "네 말을 들었어야 했는데(후회)" },
     ],
+    writing: {
+      prompt: "작년의 후회 하나를 3형 조건문으로 써 보세요.",
+      hints: ["If I had…, I would have…"],
+      samples: [
+        { en: "If I had saved more money, I would have traveled last year.", ko: "돈을 더 모았더라면 작년에 여행 갔을 텐데요." },
+      ],
+      checklist: ["had p.p. + would have p.p. 짝을 지켰다"],
+    },
     sections: [
       {
         heading: "3형 — 이미 끝난 과거를 되돌려보는 상상",
@@ -109,6 +117,14 @@ const chapters = [
       { id: "en-b202-d5", type: "order", sentence: "How long have you been waiting here?", prompt: "'여기서 기다린 지 얼마나 됐어요?'를 배열해 보세요." },
       { id: "en-b202-d6", type: "choice", listen: "I've been thinking about you.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["계속 네 생각을 하고 있었어", "지금 막 생각났어", "생각을 그만뒀어"], answer: "계속 네 생각을 하고 있었어" },
     ],
+    writing: {
+      prompt: "최근 꾸준히 해 온 일을 현재완료진행으로 써 보세요.",
+      hints: ["have been -ing + for/since"],
+      samples: [
+        { en: "I've been keeping a diary in English for a month.", ko: "한 달째 영어로 일기를 쓰고 있어요." },
+      ],
+      checklist: ["기간(for/since)을 함께 밝혔다"],
+    },
     sections: [
       {
         heading: "have been -ing의 정체 — 기간을 강조하는 현재완료",
@@ -195,6 +211,14 @@ const chapters = [
       { id: "en-b203-d5", type: "order", sentence: "The rich are not always happy.", prompt: "'부자라고 늘 행복한 건 아니다'를 배열해 보세요." },
       { id: "en-b203-d6", type: "choice", listen: "I saw a dog, and the dog was huge.", prompt: "듣고 a→the의 흐름을 고르세요.", choices: ["개를 봤는데, 그 개가 엄청 컸다", "개 두 마리를 봤다", "큰 개를 기르고 있다"], answer: "개를 봤는데, 그 개가 엄청 컸다" },
     ],
+    writing: {
+      prompt: "등하교(출퇴근) 방식을 무관사 표현으로 써 보세요.",
+      hints: ["go to school / by bus"],
+      samples: [
+        { en: "I go to school by bus, and my sister goes to work by subway.", ko: "저는 버스로 등교하고, 언니는 지하철로 출근해요." },
+      ],
+      checklist: ["본래 기능(school·work)과 by+교통수단을 무관사로 썼다"],
+    },
     sections: [
       {
         heading: "무관사 — '관사 없음'도 하나의 선택이에요",
@@ -287,6 +311,14 @@ const chapters = [
       { id: "en-b204-d5", type: "order", sentence: "Little did he know about the surprise.", prompt: "'그는 그 깜짝 파티를 전혀 몰랐다'를 배열해 보세요." },
       { id: "en-b204-d6", type: "choice", listen: "Here comes the bus!", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["버스 온다!", "버스 여기서 서요", "버스에서 내려요"], answer: "버스 온다!" },
     ],
+    writing: {
+      prompt: "최고의 경험 하나를 Never 도치로 강조해 보세요.",
+      hints: ["Never have I…"],
+      samples: [
+        { en: "Never have I tasted such delicious food.", ko: "이렇게 맛있는 음식은 처음이에요." },
+      ],
+      checklist: ["부정어 문두 + 주어·조동사 도치를 지켰다"],
+    },
     sections: [
       {
         heading: "도치란 — 어순을 흔들어 시선을 끄는 장치",
@@ -375,6 +407,14 @@ const chapters = [
       { id: "en-b205-d5", type: "order", sentence: "Walking along the street, I met an old friend.", prompt: "'길을 걷다가 옛 친구를 만났다'를 배열해 보세요." },
       { id: "en-b205-d6", type: "choice", listen: "Seen from above, the city looks tiny.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["위에서 보면 도시가 아주 작아 보여요", "도시 위를 날고 있어요", "도시가 잘 안 보여요"], answer: "위에서 보면 도시가 아주 작아 보여요" },
     ],
+    writing: {
+      prompt: "아침 이야기를 분사구문으로 시작해 보세요.",
+      hints: ["-ing, 주절"],
+      samples: [
+        { en: "Arriving early, I got the best seat.", ko: "일찍 도착해서 가장 좋은 자리를 잡았어요." },
+      ],
+      checklist: ["분사의 주어 = 주절 주어를 확인했다"],
+    },
     sections: [
       {
         heading: "분사구문의 원리 — 접속사+주어를 떼어내는 압축",
@@ -462,6 +502,14 @@ const chapters = [
       { id: "en-b206-d5", type: "order", sentence: "Despite the rain, the game continued.", prompt: "'비에도 불구하고 경기는 계속됐다'를 배열해 보세요." },
       { id: "en-b206-d6", type: "choice", listen: "On the other hand, it's quite expensive.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["반면에, 꽤 비싸요", "한편으로 손에 넣었어요", "다른 손이 아파요"], answer: "반면에, 꽤 비싸요" },
     ],
+    writing: {
+      prompt: "교통 체증에도 잘 끝난 하루를 Despite와 However로 이어 보세요.",
+      hints: ["Despite+명사 / However,+문장"],
+      samples: [
+        { en: "Despite the traffic, we arrived on time. However, the meeting had been delayed.", ko: "차가 막혔지만 제시간에 도착했어요. 그런데 회의는 미뤄져 있었죠." },
+      ],
+      checklist: ["Despite 뒤에 명사(구)를 두었다"],
+    },
     sections: [
       {
         heading: "연결어에는 격식의 층이 있어요",
@@ -550,6 +598,14 @@ const chapters = [
       { id: "en-b207-d5", type: "order", sentence: "Can I take a picture here?", prompt: "'여기서 사진 찍어도 되나요?'를 배열해 보세요." },
       { id: "en-b207-d6", type: "choice", listen: "Let's keep in touch.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["계속 연락하고 지내자", "만지지 말자", "가까이 붙어 있자"], answer: "계속 연락하고 지내자" },
     ],
+    writing: {
+      prompt: "최근의 결심을 make/do 연어를 살려 써 보세요.",
+      hints: ["make a decision / do exercise"],
+      samples: [
+        { en: "I made a big decision yesterday: I'm going to do more exercise.", ko: "어제 큰 결심을 했어요. 운동을 더 하기로요." },
+      ],
+      checklist: ["make/do 연어를 바르게 짝지었다"],
+    },
     sections: [
       {
         heading: "문법은 맞는데 어색한 이유 — 단어의 교우 관계",
@@ -641,6 +697,14 @@ const chapters = [
       { id: "en-b208-d5", type: "order", sentence: "She saw him crossing the street.", prompt: "'그가 길을 건너는 걸 봤다'를 배열해 보세요." },
       { id: "en-b208-d6", type: "choice", listen: "I got my phone fixed.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["휴대폰을 (맡겨서) 고쳤어요", "휴대폰이 고장 났어요", "휴대폰을 붙잡았어요"], answer: "휴대폰을 (맡겨서) 고쳤어요" },
     ],
+    writing: {
+      prompt: "맡겨서 해결한 일(have+p.p.)과 그 기분을 써 보세요.",
+      hints: ["had my … + p.p."],
+      samples: [
+        { en: "I had my computer repaired, and it made me feel much better.", ko: "컴퓨터를 (맡겨서) 고쳤더니 기분이 한결 나아졌어요." },
+      ],
+      checklist: ["have+목적어+p.p. 꼴을 지켰다"],
+    },
     sections: [
       {
         heading: "사역 4총사 — 강제, 의뢰, 설득, 허락",
@@ -727,6 +791,14 @@ const chapters = [
       { id: "en-b209-d5", type: "order", sentence: "Neither of us knows the answer.", prompt: "'우리 둘 다 답을 모른다'를 배열해 보세요." },
       { id: "en-b209-d6", type: "choice", listen: "Everyone was there except John.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["존만 빼고 다 있었어요", "존만 있었어요", "존이 제일 늦었어요"], answer: "존만 빼고 다 있었어요" },
     ],
+    writing: {
+      prompt: "친구들을 each·few로 묘사해 보세요.",
+      hints: ["Each of… has / Few of…"],
+      samples: [
+        { en: "Each of my friends has a different hobby. Few of them like sports.", ko: "친구들은 저마다 취미가 달라요. 스포츠를 좋아하는 친구는 거의 없죠." },
+      ],
+      checklist: ["each of+복수+단수동사 수일치를 지켰다"],
+    },
     sections: [
       {
         heading: "all / every / each — '모든'의 세 얼굴",
