@@ -286,6 +286,10 @@
 - S1 STAMP_ALBUM_NODES 85 원자 전환(선행 #387 충족 — 즉시 착수): #150 5046785938
 - S4 수집 연출 정합 → S2 앨범 지역 탭·수집률 → S3 마일스톤 보상 v1(localStorage·DB 금지)
 ### done (최근)
+- 📚 드릴→SRS 연결(v2 통합): ChapterDrills 정오답을 drill id 단위 append-only
+  review_events + 기존 grammar_review FSRS 행으로 연결(정답 Good·오답 Again), 멱등 upsert와
+  게스트 localStorage·기존 문법 복습 화면 역해석을 회귀 고정
+  (`codex3/drill-srs-bridge`, draft #750, 구현 4fad9c3, base 01c303692f0c99562d2eac15db1c8b6501d31618)
 - `/learn` 진도·스트릭 위젯: 기존 게스트 localStorage 진도·활동 정본을 재사용해
   레벨별 방문/완료 수와 연속 학습일·첫 방문 빈 상태를 표면화하고 전체
   258파일/2,508테스트 green을 고정 (`codex3/learn-progress-widget`, 구현 4686d8e,

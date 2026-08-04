@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { useAuth } from '../lib/AuthContext';
-import { logReviewEvents } from '../lib/reviewEvents';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import RefSpeak from './RefSpeak';
 import { normalizeExerciseAnswer } from './ExerciseEnginePrototype';
+import { useAuth } from '../lib/AuthContext';
+import { recordChapterDrillResult } from '../lib/drillSrs';
 
 /** 딕테 채점 — 구두점·아포스트로피 변형에는 관대, 철자·악상에는 엄격 */
 // 힌트는 클릭해야 열린다 — 먼저 스스로 생각해 보게 하는 장치
@@ -129,7 +129,7 @@ function ChoiceDrill({ drill, onResult, done, lang }) {
 
 /**
  * 변형 드릴(RFC learning-path v1) — 새 문장으로 연습 후 관문 퀴즈(RefPatternCheck)로 가는 전 단계.
- * 채점은 로컬 표시 전용(SRS 연결은 관문 퀴즈가 담당 — v2에서 통합).
+ * 채점 결과는 drill id 단위로 기존 문법 SRS와 review_events에 연결한다.
  */
 // 드릴 채점 로컬 집계 — 기기에만 저장(약점 파악용). [시도, 오답] 누적.
 function bumpDrillStat(lang, id, ok) {
@@ -158,11 +158,14 @@ function readChapterStat(lang, drills) {
 export default function ChapterDrills({ lang, drills, title, intro }) {
   const { user } = useAuth();
   const [results, setResults] = useState({});
+  const settled = useRef(new Set());
   const [pastStat, setPastStat] = useState(() => readChapterStat(lang, drills));
   const answered = Object.keys(results).length;
   const right = Object.values(results).filter(Boolean).length;
 
   // 로그인 유저는 서버 누적(review_events)이 정본 — 기기가 바뀌어도 기록이 이어진다.
+  // source 태그는 시기별로 다르다(구 'drill' · SRS 통합 후 'grammar') — drill id가 전역
+  // 유일하므로 item_key로만 거른다.
   useEffect(() => {
     if (!user?.id || !Array.isArray(drills) || drills.length === 0) return undefined;
     let alive = true;
@@ -170,7 +173,6 @@ export default function ChapterDrills({ lang, drills, title, intro }) {
       .from('review_events')
       .select('item_key, correct')
       .eq('user_id', user.id)
-      .eq('source', 'drill')
       .in('item_key', drills.map((d) => d.id))
       .limit(2000)
       .then(({ data }) => {
@@ -180,14 +182,14 @@ export default function ChapterDrills({ lang, drills, title, intro }) {
     return () => { alive = false; };
   }, [user?.id, drills]);
 
-  const record = (id) => (ok) => setResults((r) => {
-    if (id in r) return r;
-    bumpDrillStat(lang, id, ok);
-    if (user?.id) {
-      logReviewEvents(user.id, [{ lang, source: 'drill', item_key: id, correct: ok }]);
-    }
-    return { ...r, [id]: ok };
-  });
+  // 기록 정본은 drillSrs 단일 경로(review_events + FSRS 행) — 게스트 통계 카운터만 별도 유지.
+  const record = (drill) => (ok) => {
+    if (settled.current.has(drill.id)) return;
+    settled.current.add(drill.id);
+    bumpDrillStat(lang, drill.id, ok);
+    setResults((r) => ({ ...r, [drill.id]: ok }));
+    void recordChapterDrillResult(user?.id, { lang, drill, correct: ok });
+  };
   return (
     <section className="card fr-section">
       <h2 className="fr-section__heading">{title ?? '변형 드릴 — 새 문장으로 손 풀기'}</h2>
@@ -208,10 +210,10 @@ export default function ChapterDrills({ lang, drills, title, intro }) {
               {d.sourceLabel && (
                 <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 4 }}>복습 · {d.sourceLabel}</p>
               )}
-              {d.type === 'choice' && <ChoiceDrill drill={d} done={done} onResult={record(d.id)} lang={lang} />}
-              {d.type === 'fill' && <InputDrill drill={d} lang={lang} done={done} onResult={record(d.id)} />}
-              {d.type === 'dictation' && <InputDrill drill={d} lang={lang} done={done} onResult={record(d.id)} dictation />}
-              {d.type === 'order' && <OrderDrill drill={d} done={done} onResult={record(d.id)} />}
+              {d.type === 'choice' && <ChoiceDrill drill={d} done={done} onResult={record(d)} lang={lang} />}
+              {d.type === 'fill' && <InputDrill drill={d} lang={lang} done={done} onResult={record(d)} />}
+              {d.type === 'dictation' && <InputDrill drill={d} lang={lang} done={done} onResult={record(d)} dictation />}
+              {d.type === 'order' && <OrderDrill drill={d} done={done} onResult={record(d)} />}
               {done && (
                 <p style={{ fontSize: '0.82rem', marginTop: 6, color: ok ? 'var(--accent, #2d6a4f)' : 'var(--text-muted)' }}>
                   {ok ? '정답이에요!' : `아쉬워요 — 정답: ${d.type === 'fill' ? d.answer : d.sentence ?? d.answer}`}
