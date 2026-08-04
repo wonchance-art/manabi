@@ -6,7 +6,7 @@
  * 모든 함수는 방어적 — 테이블 부재·비로그인·네트워크 실패 시 조용히 기본값을 돌려준다
  * (배포와 마이그레이션 적용 순서에 독립).
  */
-import { supabase } from './supabase';
+import { supabase } from './supabase.js';
 
 /** 정답률 → FSRS rating (1 Again / 2 Hard / 3 Good / 4 Easy) */
 export function ratingFromScore(right, total) {
@@ -113,7 +113,7 @@ export async function countDueGrammar(userId) {
 export async function gradeGrammarReview(row, rating) {
   if (!row?.user_id) return null;
   try {
-    const { calculateFSRS } = await import('./fsrs');
+    const { calculateFSRS } = await import('./fsrs.js');
     const next = calculateFSRS(rating, row);
     const updates = { ...next, last_reviewed_at: new Date().toISOString() };
     const { error } = await supabase
@@ -124,6 +124,46 @@ export async function gradeGrammarReview(row, rating) {
       .eq('slug', row.slug);
     if (error) return null;
     return { ...row, ...updates };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 단일 문법 카드의 즉시 채점 등록/갱신.
+ *
+ * ChapterDrills처럼 "등록과 첫 채점"이 같은 순간에 일어나는 호출부용이다.
+ * 기존 행이 있으면 현재 FSRS 상태에서 이어 가고, 없으면 신규 카드 상태에서 시작한다.
+ * upsert 충돌 키는 기존 grammar_review 계약(user_id,lang,slug)을 그대로 쓴다.
+ */
+export async function upsertRatedGrammarReview(userId, lang, slug, rating, now = new Date()) {
+  if (!userId || !lang || !slug || ![1, 2, 3, 4].includes(rating)) return null;
+  try {
+    const { data, error } = await supabase
+      .from('grammar_review')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('lang', lang)
+      .eq('slug', slug)
+      .maybeSingle();
+    if (error) return null;
+
+    const previous = data || initialQueueRow(userId, lang, slug, now);
+    const { calculateFSRS } = await import('./fsrs.js');
+    const next = calculateFSRS(rating, previous);
+    const row = {
+      ...previous,
+      ...next,
+      user_id: userId,
+      lang,
+      slug,
+      last_reviewed_at: now.toISOString(),
+    };
+    const { error: writeError } = await supabase
+      .from('grammar_review')
+      .upsert(row, { onConflict: 'user_id,lang,slug' });
+    if (writeError) return null;
+    return row;
   } catch {
     return null;
   }

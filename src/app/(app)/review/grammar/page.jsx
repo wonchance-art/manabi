@@ -4,6 +4,7 @@ import { getRefLang } from '@/content/refLangs';
 import { getReadingTrack } from '@/content/japanese';
 import { buildReviewQuiz } from '@/lib/refQuiz';
 import { staggerBackfillRows } from '@/lib/grammarSrs';
+import { buildDrillReviewQuiz, drillIdFromQueueSlug, findDrillContext } from '@/lib/drillSrs';
 import GrammarReviewSession from '@/views/GrammarReviewSession';
 
 export const metadata = { title: '문법 복습 | Anatomy Studio' };
@@ -51,8 +52,38 @@ function toReadingItem(row) {
   };
 }
 
+/** drill:<id> 큐 행 → 원본 드릴 한 문항 복습 아이템. */
+function toDrillItem(row) {
+  const drillId = drillIdFromQueueSlug(row.slug);
+  const ref = getRefLang(row.lang);
+  const found = findDrillContext(ref, drillId);
+  if (!ref || !found) return null;
+  const quiz = buildDrillReviewQuiz(found.drill);
+  if (!quiz.meaning.length && !quiz.apply.length && !quiz.produce.length) return null;
+  return {
+    srs: {
+      lang: row.lang,
+      slug: row.slug,
+      interval: row.interval,
+      ease_factor: row.ease_factor,
+      repetitions: row.repetitions,
+      next_review_at: row.next_review_at,
+    },
+    lang: row.lang,
+    langCode: ref.langCode,
+    langName: ref.name,
+    flag: ref.flag,
+    title: `${found.chapter.title} · 드릴`,
+    order: found.chapter.order,
+    level: found.chapter.level,
+    href: `${ref.base}/grammar/${found.chapter.slug}`,
+    quiz,
+  };
+}
+
 /** 큐 행 → 세션 아이템 (챕터·퀴즈 조립, 퀴즈 불가 챕터는 null) */
 function toItem(row) {
+  if (drillIdFromQueueSlug(row.slug)) return toDrillItem(row);
   if (typeof row.slug === 'string' && row.slug.startsWith('rt:')) return toReadingItem(row); // 독해 분기
   const ref = getRefLang(row.lang);
   if (!ref) return null;
@@ -171,6 +202,20 @@ export default async function Page() {
 
   // 예정 큐 — 제목만 필요 (퀴즈 조립 없이 가볍게)
   const upcoming = (upcomingRows || []).map(row => {
+    const drillId = drillIdFromQueueSlug(row.slug);
+    if (drillId) {
+      const ref = getRefLang(row.lang);
+      const found = findDrillContext(ref, drillId);
+      if (!ref || !found) return null;
+      return {
+        flag: ref.flag,
+        level: found.chapter.level,
+        order: found.chapter.order,
+        title: `${found.chapter.title} · 드릴`,
+        href: `${ref.base}/grammar/${found.chapter.slug}`,
+        dueAt: row.next_review_at,
+      };
+    }
     if (typeof row.slug === 'string' && row.slug.startsWith('rt:')) {
       const track = getReadingTrack('n5-tokyo');
       const text = track?.texts?.find(t => t.id === row.slug.slice(3));

@@ -7,6 +7,7 @@ import { JaText } from './refShared';
 import { useAuth } from '../lib/AuthContext';
 import { gradeGrammarReview, ratingFromScore } from '../lib/grammarSrs';
 import { logReviewEvents } from '../lib/reviewEvents';
+import { drillIdFromQueueSlug } from '../lib/drillSrs';
 import { recordActivity } from '../lib/streak';
 
 function shuffle(arr) {
@@ -137,7 +138,7 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
         return {
           lang: item.lang,
           source: 'grammar',
-          item_key: item.srs.slug,
+          item_key: drillIdFromQueueSlug(item.srs.slug) || item.srs.slug,
           correct: !!a.ok,
           detail: { stage: q.type, qtype, qid: q.id, ko: q.ko, answer: q.correct ?? q.answer ?? q.main, picked: a.picked },
         };
