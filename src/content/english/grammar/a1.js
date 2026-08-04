@@ -12,6 +12,14 @@ const chapters = [
     titleFr: "The verb be & SVO word order",
     summary: "한국어 어순(SOV)과 영어 어순(SVO)의 정면 충돌을 먼저 정리하고, 모든 문장의 출발점인 am/is/are를 배워요.",
     duration: "약 9분",
+    drills: [
+      { id: "en-a101-d1", type: "fill", prompt: "I ___ a nurse. (be동사)", answer: "am" },
+      { id: "en-a101-d2", type: "fill", prompt: "They ___ from Korea.", answer: "are" },
+      { id: "en-a101-d3", type: "choice", prompt: "'그녀는 의사다'는?", choices: ["She is a doctor.", "She are a doctor.", "She am a doctor."], answer: "She is a doctor." },
+      { id: "en-a101-d4", type: "choice", prompt: "'나는 안 바쁘다'는?", choices: ["I am not busy.", "I not am busy.", "I don't busy."], answer: "I am not busy.", hint: "형용사 앞엔 be동사 — don't busy는 한국인 단골 오류" },
+      { id: "en-a101-d5", type: "order", sentence: "He is my best friend.", prompt: "'그는 내 가장 친한 친구다'를 배열해 보세요." },
+      { id: "en-a101-d6", type: "choice", listen: "We are late.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["우리 늦었어", "우리 여기 있어", "우리 여덟 명이야"], answer: "우리 늦었어" },
+    ],
     sections: [
       {
         heading: "be동사의 자리 — 주어 바로 뒤",
@@ -94,6 +102,14 @@ const chapters = [
     titleFr: "Present simple & third person -s",
     summary: "습관과 사실을 말하는 현재형, 그리고 한국인이 10년을 틀리는 3인칭 단수 -s를 정면으로 다뤄요.",
     duration: "약 9분",
+    drills: [
+      { id: "en-a102-d1", type: "fill", prompt: "She ___ in Busan. (live)", answer: "lives", hint: "3인칭 단수 -s" },
+      { id: "en-a102-d2", type: "fill", prompt: "I ___ up at seven. (get)", answer: "get" },
+      { id: "en-a102-d3", type: "choice", prompt: "'그는 커피를 안 마신다'는?", choices: ["He doesn't drink coffee.", "He don't drink coffee.", "He doesn't drinks coffee."], answer: "He doesn't drink coffee.", hint: "doesn't 뒤엔 원형" },
+      { id: "en-a102-d4", type: "choice", prompt: "3인칭 단수 현재의 규칙은?", choices: ["동사에 -s/-es를 붙인다", "동사 원형 그대로 쓴다", "be동사를 앞에 붙인다"], answer: "동사에 -s/-es를 붙인다" },
+      { id: "en-a102-d5", type: "order", sentence: "My father works at a bank.", prompt: "'아버지는 은행에서 일하신다'를 배열해 보세요." },
+      { id: "en-a102-d6", type: "choice", listen: "She teaches English.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["그녀는 영어를 가르쳐요", "그녀는 영어를 배워요", "그녀는 영어를 만져요"], answer: "그녀는 영어를 가르쳐요" },
+    ],
     sections: [
       {
         heading: "현재형은 '지금'이 아니라 '늘'",
@@ -173,6 +189,14 @@ const chapters = [
     titleFr: "Articles: a / the",
     summary: "한국어에는 아예 없는 품사라서 평생 헷갈리는 관사. '아무거나 하나 a, 너도 아는 그것 the' 프레임으로 정리해요.",
     duration: "약 10분",
+    drills: [
+      { id: "en-a103-d1", type: "fill", prompt: "I have ___ umbrella. (a/an)", answer: "an" },
+      { id: "en-a103-d2", type: "fill", prompt: "The sun rises in ___ east.", answer: "the" },
+      { id: "en-a103-d3", type: "choice", prompt: "'나는 아침을 먹었다'에서 관사는?", choices: ["I had breakfast. (무관사)", "I had a breakfast.", "I had the breakfast."], answer: "I had breakfast. (무관사)", hint: "식사 이름 앞은 무관사" },
+      { id: "en-a103-d4", type: "choice", prompt: "an을 고르는 기준은?", choices: ["다음 '소리'가 모음일 때 (an hour)", "다음 '글자'가 모음일 때만", "명사가 두 글자 이상일 때"], answer: "다음 '소리'가 모음일 때 (an hour)" },
+      { id: "en-a103-d5", type: "order", sentence: "He has a new car.", prompt: "'그는 새 차가 있다'를 배열해 보세요." },
+      { id: "en-a103-d6", type: "choice", listen: "I need a pen, not the pen.", prompt: "듣고 화자의 의도를 고르세요.", choices: ["아무 펜이나 하나 필요해(그 펜 말고)", "그 특정한 펜이 필요해", "펜이 두 개 필요해"], answer: "아무 펜이나 하나 필요해(그 펜 말고)" },
+    ],
     sections: [
       {
         heading: "관사가 어려운 진짜 이유 — 범주 자체가 없으니까",
@@ -242,6 +266,14 @@ const chapters = [
     titleFr: "Plurals & countable / uncountable nouns",
     summary: "한국어는 복수 표시가 선택이지만 영어는 의무예요. 그리고 information처럼 '셀 수 없는' 명사의 함정을 파헤쳐요.",
     duration: "약 9분",
+    drills: [
+      { id: "en-a104-d1", type: "fill", prompt: "two ___ (child의 복수형)", answer: "children" },
+      { id: "en-a104-d2", type: "fill", prompt: "물 좀 주세요: Can I have some ___? (water)", answer: "water", hint: "불가산 명사엔 -s를 붙이지 않아요" },
+      { id: "en-a104-d3", type: "choice", prompt: "다음 중 불가산 명사는?", choices: ["information", "apple", "book"], answer: "information", hint: "informations는 없는 말" },
+      { id: "en-a104-d4", type: "choice", prompt: "'신발 한 켤레'는?", choices: ["a pair of shoes", "a shoe", "a shoes"], answer: "a pair of shoes" },
+      { id: "en-a104-d5", type: "order", sentence: "I have three dogs and a cat.", prompt: "'개 세 마리와 고양이 한 마리가 있다'를 배열해 보세요." },
+      { id: "en-a104-d6", type: "choice", listen: "Two coffees, please.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["커피 두 잔 주세요", "커피 둘째 잔이에요", "커피 둘 다 싫어요"], answer: "커피 두 잔 주세요" },
+    ],
     sections: [
       {
         heading: "한국어는 선택, 영어는 의무",
@@ -325,6 +357,14 @@ const chapters = [
     titleFr: "Pronouns & possessives",
     summary: "I/my/me/mine 네 벌의 옷을 정리하고, 한국인이 말하다 보면 he와 she가 뒤바뀌는 이유를 파헤쳐요.",
     duration: "약 9분",
+    drills: [
+      { id: "en-a105-d1", type: "fill", prompt: "This is ___ book. (나의)", answer: "my" },
+      { id: "en-a105-d2", type: "fill", prompt: "The bag is ___. (그녀의 것)", answer: "hers" },
+      { id: "en-a105-d3", type: "choice", prompt: "'그들의 집'은?", choices: ["their house", "there house", "they're house"], answer: "their house", hint: "their/there/they're — 소리는 같아요" },
+      { id: "en-a105-d4", type: "choice", prompt: "its와 it's의 구분은?", choices: ["its=그것의, it's=it is", "its=it is, it's=그것의", "차이가 없다"], answer: "its=그것의, it's=it is" },
+      { id: "en-a105-d5", type: "order", sentence: "Her brother is a police officer.", prompt: "'그녀의 오빠는 경찰이다'를 배열해 보세요." },
+      { id: "en-a105-d6", type: "choice", listen: "Is this yours or mine?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["이거 네 거야, 내 거야?", "이거 우리 거야?", "이거 어디서 났어?"], answer: "이거 네 거야, 내 거야?" },
+    ],
     sections: [
       {
         heading: "인칭대명사 한눈에 — 자리에 따라 옷을 갈아입어요",
@@ -404,6 +444,14 @@ const chapters = [
     titleFr: "Present continuous",
     summary: "be + -ing로 '지금 하는 중'을 표현해요. 현재형과의 역할 분담, 그리고 한국어 '-고 있다'와 어긋나는 지점까지.",
     duration: "약 9분",
+    drills: [
+      { id: "en-a106-d1", type: "fill", prompt: "She is ___ dinner now. (cook)", answer: "cooking" },
+      { id: "en-a106-d2", type: "fill", prompt: "They ___ watching TV.", answer: "are" },
+      { id: "en-a106-d3", type: "choice", prompt: "'나 지금 가고 있어!'는?", choices: ["I'm coming!", "I come now!", "I'm going to there!"], answer: "I'm coming!", hint: "부르는 쪽으로 갈 때는 come" },
+      { id: "en-a106-d4", type: "choice", prompt: "진행형으로 잘 쓰지 않는 동사는?", choices: ["know(알다)", "run(달리다)", "eat(먹다)"], answer: "know(알다)", hint: "상태 동사는 진행형 X" },
+      { id: "en-a106-d5", type: "order", sentence: "My mom is talking on the phone.", prompt: "'엄마는 통화 중이다'를 배열해 보세요." },
+      { id: "en-a106-d6", type: "choice", listen: "It's raining outside.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["밖에 비가 와요", "밖이 추워요", "밖에서 뛰고 있어요"], answer: "밖에 비가 와요" },
+    ],
     sections: [
       {
         heading: "형태는 be + -ing — be를 빼먹지 마세요",
@@ -485,6 +533,14 @@ const chapters = [
     titleFr: "Questions & negatives with do",
     summary: "일반동사의 의문문·부정문을 만드는 조동사 do. 왜 영어에는 이런 장치가 필요한지부터 이해하고 들어가요.",
     duration: "약 9분",
+    drills: [
+      { id: "en-a107-d1", type: "fill", prompt: "___ you like kimchi? (조동사)", answer: "Do" },
+      { id: "en-a107-d2", type: "fill", prompt: "She does ___ eat meat. (부정)", answer: "not" },
+      { id: "en-a107-d3", type: "choice", prompt: "'어디 살아요?'는?", choices: ["Where do you work?", "Where you work?", "Where does you work?"], answer: "Where do you work?" },
+      { id: "en-a107-d4", type: "choice", prompt: "'You are tired.'를 의문문으로 바꾸면?", choices: ["Are you tired?", "You are tired?", "Do you are tired?"], answer: "Are you tired?", hint: "be동사 문장은 be를 앞으로" },
+      { id: "en-a107-d5", type: "order", sentence: "What time do you get up?", prompt: "'몇 시에 일어나요?'를 배열해 보세요." },
+      { id: "en-a107-d6", type: "choice", listen: "Don't worry about it.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["걱정하지 마", "궁금해하지 마", "서두르지 마"], answer: "걱정하지 마" },
+    ],
     sections: [
       {
         heading: "왜 do가 필요한가 — 한국어에 없는 장치",
@@ -564,6 +620,14 @@ const chapters = [
     titleFr: "Prepositions: in / on / at",
     summary: "한국어 조사 '에' 하나로 끝나던 시간·장소 표현이 영어에선 in/on/at 셋으로 갈라져요. 점·면·공간 프레임으로 정리해요.",
     duration: "약 10분",
+    drills: [
+      { id: "en-a108-d1", type: "fill", prompt: "The meeting is ___ Monday. (요일)", answer: "on" },
+      { id: "en-a108-d2", type: "fill", prompt: "I get up ___ seven o'clock. (시각)", answer: "at" },
+      { id: "en-a108-d3", type: "choice", prompt: "'7월에'는?", choices: ["in July", "on July", "at July"], answer: "in July" },
+      { id: "en-a108-d4", type: "choice", prompt: "시간 전치사의 큰 그림은?", choices: ["in 큰 단위(연·월), on 날짜·요일, at 시각", "in 시각, on 연도, at 요일", "셋 다 아무 데나"], answer: "in 큰 단위(연·월), on 날짜·요일, at 시각" },
+      { id: "en-a108-d5", type: "order", sentence: "The cat is under the table.", prompt: "'고양이가 탁자 아래에 있다'를 배열해 보세요." },
+      { id: "en-a108-d6", type: "choice", listen: "See you at the station at three.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["3시에 역에서 봐", "3번 출구에서 봐", "3층에서 봐"], answer: "3시에 역에서 봐" },
+    ],
     sections: [
       {
         heading: "프레임 하나로 셋을 다 — 점·면·공간",
