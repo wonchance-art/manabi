@@ -20,6 +20,14 @@ const chapters = [
       { id: "en-a201-d5", type: "order", sentence: "We had dinner at home last night.", prompt: "'어젯밤 집에서 저녁을 먹었다'를 배열해 보세요." },
       { id: "en-a201-d6", type: "choice", listen: "I lost my phone.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["휴대폰을 잃어버렸어요", "휴대폰을 샀어요", "휴대폰이 느려요"], answer: "휴대폰을 잃어버렸어요" },
     ],
+    writing: {
+      prompt: "어제 있었던 일을 과거형 두 문장으로 써 보세요.",
+      hints: ["불규칙 동사 주의"],
+      samples: [
+        { en: "I met my friend yesterday. We ate pizza and talked a lot.", ko: "어제 친구를 만났어요. 피자를 먹고 수다를 떨었어요." },
+      ],
+      checklist: ["과거형(불규칙 포함)을 제대로 바꿨다"],
+    },
     sections: [
       {
         heading: "과거형의 의미 — 지금과 분리된, 끝난 일",
@@ -125,6 +133,14 @@ const chapters = [
       { id: "en-a202-d5", type: "order", sentence: "It was raining when I left home.", prompt: "'집을 나설 때 비가 오고 있었다'를 배열해 보세요." },
       { id: "en-a202-d6", type: "choice", listen: "What were you doing at nine?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["9시에 뭐 하고 있었어?", "9시에 뭐 할 거야?", "9시가 뭐가 좋아?"], answer: "9시에 뭐 하고 있었어?" },
     ],
+    writing: {
+      prompt: "어젯밤 9시, 무엇을 하고 있었는지 써 보세요.",
+      hints: ["was/were + -ing"],
+      samples: [
+        { en: "At nine last night, I was watching a drama.", ko: "어젯밤 9시엔 드라마를 보고 있었어요." },
+      ],
+      checklist: ["과거 한 시점의 진행을 표현했다"],
+    },
     sections: [
       {
         heading: "was/were + -ing — 과거의 배경 화면",
@@ -212,6 +228,14 @@ const chapters = [
       { id: "en-a2fut-d5", type: "order", sentence: "We are going to move next year.", prompt: "'내년에 이사할 예정이다'를 배열해 보세요." },
       { id: "en-a2fut-d6", type: "choice", listen: "I'll be there in ten minutes.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["10분 안에 갈게", "10분 전에 갔어", "10시까지 있을게"], answer: "10분 안에 갈게" },
     ],
+    writing: {
+      prompt: "이번 주말 계획을 be going to로 써 보세요.",
+      hints: ["이미 정한 계획 = be going to"],
+      samples: [
+        { en: "I'm going to visit my grandparents this weekend.", ko: "이번 주말에 조부모님을 뵈러 갈 거예요." },
+      ],
+      checklist: ["계획엔 be going to를 골랐다"],
+    },
     sections: [
       {
         heading: "미래가 두 개인 이유 — 결정의 타이밍",
@@ -290,6 +314,14 @@ const chapters = [
       { id: "en-a203-d5", type: "order", sentence: "My sister is younger than me.", prompt: "'여동생은 나보다 어리다'를 배열해 보세요." },
       { id: "en-a203-d6", type: "choice", listen: "This one is much cheaper.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["이게 훨씬 싸요", "이게 조금 비싸요", "이건 치즈 맛이에요"], answer: "이게 훨씬 싸요" },
     ],
+    writing: {
+      prompt: "두 도시(또는 두 물건)를 비교하는 문장을 써 보세요.",
+      hints: ["-er than / the -est"],
+      samples: [
+        { en: "Busan is warmer than Seoul, but Seoul is bigger.", ko: "부산이 서울보다 따뜻하지만, 서울이 더 커요." },
+      ],
+      checklist: ["비교급+than 꼴을 지켰다"],
+    },
     sections: [
       {
         heading: "-er vs more — 기준은 단어의 길이",
@@ -379,6 +411,14 @@ const chapters = [
       { id: "en-a204-d5", type: "order", sentence: "You should drink more water.", prompt: "'물을 더 마시는 게 좋겠어'를 배열해 보세요." },
       { id: "en-a204-d6", type: "choice", listen: "You must not park here.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["여기 주차하면 안 돼요", "여기 주차해도 돼요", "여기가 주차장이에요"], answer: "여기 주차하면 안 돼요" },
     ],
+    writing: {
+      prompt: "우리 집(또는 교실)의 규칙 두 가지를 조동사로 써 보세요.",
+      hints: ["must / can"],
+      samples: [
+        { en: "Visitors must take off their shoes. You can use the Wi-Fi.", ko: "방문객은 신발을 벗어야 해요. 와이파이는 써도 돼요." },
+      ],
+      checklist: ["의무엔 must, 허락엔 can을 골랐다"],
+    },
     sections: [
       {
         heading: "조동사의 공통 문법 — 세 가지 철칙",
@@ -467,6 +507,14 @@ const chapters = [
       { id: "en-a205-d5", type: "order", sentence: "She has lived here for ten years.", prompt: "'그녀는 여기 10년째 살고 있다'를 배열해 보세요." },
       { id: "en-a205-d6", type: "choice", listen: "I've never tried sushi.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["스시를 먹어 본 적이 없어요", "스시를 안 좋아해요", "스시를 자주 먹어요"], answer: "스시를 먹어 본 적이 없어요" },
     ],
+    writing: {
+      prompt: "해 본 것과 아직 못 해 본 것을 현재완료로 써 보세요.",
+      hints: ["have + p.p. / never"],
+      samples: [
+        { en: "I have never been abroad, but I have tried Thai food.", ko: "해외엔 못 가 봤지만, 태국 음식은 먹어 봤어요." },
+      ],
+      checklist: ["have+과거분사 꼴을 지켰다"],
+    },
     sections: [
       {
         heading: "한국어에 없는 시제 — 그래서 회피하게 된다",
@@ -561,6 +609,14 @@ const chapters = [
       { id: "en-a206-d5", type: "order", sentence: "I need to buy some milk.", prompt: "'우유를 사야 해'를 배열해 보세요." },
       { id: "en-a206-d6", type: "choice", listen: "I'm looking forward to seeing you.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["만날 날을 기대하고 있어요", "당신을 찾고 있어요", "앞쪽을 보고 있어요"], answer: "만날 날을 기대하고 있어요" },
     ],
+    writing: {
+      prompt: "즐기는 것(enjoy -ing)과 배우고 싶은 것(want to)을 한 문장씩 써 보세요.",
+      hints: ["enjoy -ing / want to"],
+      samples: [
+        { en: "I enjoy swimming, but I want to learn tennis this year.", ko: "수영을 즐기지만, 올해는 테니스를 배우고 싶어요." },
+      ],
+      checklist: ["enjoy 뒤엔 -ing, want 뒤엔 to부정사를 썼다"],
+    },
     sections: [
       {
         heading: "동사 뒤에 동사를 이으려면 — 두 가지 연결 장치",
@@ -653,6 +709,14 @@ const chapters = [
       { id: "en-a207-d5", type: "order", sentence: "He usually walks to work.", prompt: "'그는 보통 걸어서 출근한다'를 배열해 보세요." },
       { id: "en-a207-d6", type: "choice", listen: "I hardly ever eat out.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["외식을 거의 안 해요", "외식하기가 힘들어요", "열심히 외식해요"], answer: "외식을 거의 안 해요", hint: "hardly = 거의 ~않다" },
     ],
+    writing: {
+      prompt: "식사 습관을 빈도부사 두 개로 써 보세요.",
+      hints: ["usually / sometimes"],
+      samples: [
+        { en: "I usually cook at home, but I sometimes eat out.", ko: "보통은 집에서 요리하지만, 가끔 외식해요." },
+      ],
+      checklist: ["빈도부사를 일반동사 앞에 놓았다"],
+    },
     sections: [
       {
         heading: "빈도의 사다리 — always에서 never까지",
@@ -744,6 +808,14 @@ const chapters = [
       { id: "en-a208-d5", type: "order", sentence: "There are many stars in the sky.", prompt: "'하늘에 별이 많다'를 배열해 보세요." },
       { id: "en-a208-d6", type: "choice", listen: "Is there a bathroom on this floor?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["이 층에 화장실이 있나요?", "이 층이 몇 층인가요?", "화장실 바닥이 어때요?"], answer: "이 층에 화장실이 있나요?" },
     ],
+    writing: {
+      prompt: "우리 동네를 There is/are로 소개해 보세요.",
+      hints: ["단수 is / 복수 are"],
+      samples: [
+        { en: "There is a small park near my house, and there are many cafés.", ko: "집 근처에 작은 공원이 있고, 카페가 많아요." },
+      ],
+      checklist: ["뒤 명사의 수에 맞춰 is/are를 골랐다"],
+    },
     sections: [
       {
         heading: "'있다'의 두 갈래 — 존재의 there is, 소유의 have",

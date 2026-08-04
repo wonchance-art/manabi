@@ -150,7 +150,7 @@ const DIALOGUE_LINE_KEYS = new Set(['speaker', ...DIALOGUE_LANG_FIELDS, 'ipa', '
 // 학습 드릴(RFC learning-path §1) — 챕터 선택 필드, fail-closed.
 const DRILL_KEYS = new Set(['id', 'type', 'prompt', 'answer', 'accepts', 'choices', 'sentence', 'hint', 'speak', 'listen']);
 const WRITING_KEYS = new Set(['prompt', 'hints', 'samples', 'checklist']);
-const WRITING_SAMPLE_KEYS = new Set(['fr', 'zh', 'pinyin', 'ko', 'note']);
+const WRITING_SAMPLE_KEYS = new Set(['fr', 'zh', 'en', 'pinyin', 'ko', 'note']);
 function isValidWriting(v) {
   if (!isPlainObject(v)) return false;
   if (Object.keys(v).some((k) => !WRITING_KEYS.has(k))) return false;
@@ -162,7 +162,8 @@ function isValidWriting(v) {
     if (Object.keys(smp).some((k) => !WRITING_SAMPLE_KEYS.has(k))) return false;
     const hasFr = isNonEmptyString(smp.fr);
     const hasZh = isNonEmptyString(smp.zh);
-    if (hasFr === hasZh) return false; // fr/zh 중 정확히 하나
+    const hasEn = isNonEmptyString(smp.en);
+    if ((hasFr ? 1 : 0) + (hasZh ? 1 : 0) + (hasEn ? 1 : 0) !== 1) return false; // fr/zh/en 중 정확히 하나
     if (!isNonEmptyString(smp.ko)) return false;
     if ('pinyin' in smp && !(hasZh && isNonEmptyString(smp.pinyin))) return false;
     if ('note' in smp && !isNonEmptyString(smp.note)) return false;
