@@ -12,6 +12,14 @@ const chapters = [
     titleFr: "Style and Rhetoric",
     summary: "삼항 구조, 두운, understatement — 위대한 영어 연설과 에세이를 움직이는 설계 원리를 분해해요. 알고 들으면 모든 명연설이 다르게 들려요.",
     duration: "약 11분",
+    drills: [
+      { id: "en-c201-d1", type: "fill", prompt: "삼항 병렬: government of the people, by the people, ___ the people", answer: "for" },
+      { id: "en-c201-d2", type: "fill", prompt: "두운(alliteration)은 단어 ___소리의 반복이에요 (첫/끝)", answer: "첫" },
+      { id: "en-c201-d3", type: "choice", prompt: "수사 의문문의 목적은?", choices: ["답을 요구하지 않고 강조한다", "정보를 요청한다", "허락을 구한다"], answer: "답을 요구하지 않고 강조한다" },
+      { id: "en-c201-d4", type: "choice", prompt: "명암·대립을 나란히 세우는 수사법은?", choices: ["antithesis(대조 병치)", "hyperbole(과장)", "euphemism(완곡)"], answer: "antithesis(대조 병치)" },
+      { id: "en-c201-d5", type: "order", sentence: "Style is the dress of thought.", prompt: "'문체는 생각의 옷이다'를 배열해 보세요." },
+      { id: "en-c201-d6", type: "choice", listen: "Less is more.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["적을수록 좋다", "덜 주세요", "더 모자라요"], answer: "적을수록 좋다" },
+    ],
     sections: [
       {
         heading: "수사학 — 영어 글쓰기의 보이지 않는 교과과정",
@@ -98,6 +106,14 @@ const chapters = [
     titleFr: "Varieties of English",
     summary: "영국·미국·호주, 그리고 세계의 영어들. 발음·어휘·문법의 갈림길을 정리하고, 모어 화자보다 비모어 화자가 많은 lingua franca 시대의 영어관을 세워요.",
     duration: "약 11분",
+    drills: [
+      { id: "en-c202-d1", type: "fill", prompt: "미국 elevator = 영국 ___", answer: "lift" },
+      { id: "en-c202-d2", type: "fill", prompt: "미국 apartment = 영국 ___", answer: "flat" },
+      { id: "en-c202-d3", type: "choice", prompt: "영국식 철자는?", choices: ["colour", "color", "kolor"], answer: "colour" },
+      { id: "en-c202-d4", type: "choice", prompt: "호주 인사 G'day의 뜻은?", choices: ["Good day(안녕하세요)", "God's day", "Grey day"], answer: "Good day(안녕하세요)" },
+      { id: "en-c202-d5", type: "choice", prompt: "영국에서 '1층'이 ground floor인 이유는?", choices: ["지면층을 0층처럼 세기 때문", "미국과 같은 방식이라서", "지하층을 뜻해서"], answer: "지면층을 0층처럼 세기 때문" },
+      { id: "en-c202-d6", type: "choice", listen: "Cheers, mate!", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["고마워, 친구!(영국·호주 구어)", "건배!만 뜻한다", "응원 구호"], answer: "고마워, 친구!(영국·호주 구어)" },
+    ],
     sections: [
       {
         heading: "표준은 하나가 아니다 — 영어라는 군도",
@@ -183,6 +199,14 @@ const chapters = [
     titleFr: "Cultural Allusion",
     summary: "Achilles' heel, catch-22, good Samaritan — 영어 담화의 뼈대에는 세 개의 고전 지층이 깔려 있어요. 이 레퍼런스를 모르면 뉴스 헤드라인의 절반이 절반만 읽힙니다.",
     duration: "약 12분",
+    drills: [
+      { id: "en-c203-d1", type: "choice", prompt: "Achilles' heel의 뜻은?", choices: ["치명적인 약점", "빠른 발", "강력한 무기"], answer: "치명적인 약점" },
+      { id: "en-c203-d2", type: "choice", prompt: "Trojan horse가 가리키는 것은?", choices: ["안에 숨겨 들여보내는 위험·계략", "커다란 선물", "빠른 말"], answer: "안에 숨겨 들여보내는 위험·계략" },
+      { id: "en-c203-d3", type: "fill", prompt: "Pandora's ___ (열어서는 안 되는 것)", answer: "box" },
+      { id: "en-c203-d4", type: "choice", prompt: "David and Goliath 구도란?", choices: ["약자 대 강자의 대결", "오랜 친구 사이", "닮은 쌍둥이"], answer: "약자 대 강자의 대결" },
+      { id: "en-c203-d5", type: "choice", prompt: "catch-22 상황이란?", choices: ["이러지도 저러지도 못하는 모순 상황", "22번째 기회", "행운의 순간"], answer: "이러지도 저러지도 못하는 모순 상황" },
+      { id: "en-c203-d6", type: "choice", listen: "It was his Achilles' heel.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["그게 그의 치명적 약점이었어", "그의 발뒤꿈치가 아팠어", "그는 달리기가 빨랐어"], answer: "그게 그의 치명적 약점이었어" },
+    ],
     sections: [
       {
         heading: "암시(allusion) — 영어 화자들의 공유 메모리",
@@ -269,6 +293,14 @@ const chapters = [
     titleFr: "Humor, Irony, and Wordplay",
     summary: "sarcasm은 언제 무례가 아닌가, deadpan은 어떻게 알아채나, pun은 왜 신음을 부르나 — 영어 유머의 사회적 코드를 해독해요. C2의 진짜 최종 관문이에요.",
     duration: "약 11분",
+    drills: [
+      { id: "en-c204-d1", type: "choice", prompt: "sarcasm(비꼼)을 알아채는 신호는?", choices: ["상황과 반대되는 말 + 억양", "큰 목소리", "빠른 말speed"], answer: "상황과 반대되는 말 + 억양" },
+      { id: "en-c204-d2", type: "choice", prompt: "비 오는 날 'Oh great, it's raining again.'의 great는?", choices: ["반어(짜증)", "진심으로 기쁨", "감탄"], answer: "반어(짜증)" },
+      { id: "en-c204-d3", type: "fill", prompt: "understatement: 'not bad'가 실제로 뜻하는 것은 '꽤 ___'", answer: "좋다", accepts: ["괜찮다"] },
+      { id: "en-c204-d4", type: "choice", prompt: "pun(말장난)의 원리는?", choices: ["동음·다의어의 이중 의미", "심한 욕설", "같은 말 반복"], answer: "동음·다의어의 이중 의미" },
+      { id: "en-c204-d5", type: "order", sentence: "I'm not lazy, I'm on energy-saving mode.", prompt: "'게으른 게 아니라 절전 모드야'를 배열해 보세요." },
+      { id: "en-c204-d6", type: "choice", listen: "Yeah, right.", prompt: "듣고 뉘앙스를 고르세요.", choices: ["안 믿어(반어)", "네, 맞아요(순수 동의)", "오른쪽이요"], answer: "안 믿어(반어)", hint: "억양에 따라 반어가 되는 대표 표현" },
+    ],
     sections: [
       {
         heading: "아이러니와 sarcasm — 말과 뜻이 반대인 문장들",
@@ -339,6 +371,14 @@ const chapters = [
     titleFr: "The Art of Translation: Korean ↔ English",
     summary: "눈치, 정, 답답하다는 영어로 무엇인가 — 등가 없는 표현, 경어의 번역, 명사의 언어와 동사의 언어. 이 레퍼런스 전체를 관통해온 질문을 마지막으로 정리해요.",
     duration: "약 12분",
+    drills: [
+      { id: "en-c205-d1", type: "choice", prompt: "'눈치'를 영어로 옮기기 어려운 이유는?", choices: ["일대일 대응어가 없는 문화어라서", "발음이 어려워서", "너무 길어서"], answer: "일대일 대응어가 없는 문화어라서" },
+      { id: "en-c205-d2", type: "choice", prompt: "'화이팅!'의 자연스러운 영어는?", choices: ["You can do it! / Good luck!", "Fighting!", "Fire!"], answer: "You can do it! / Good luck!", hint: "Fighting은 콩글리시" },
+      { id: "en-c205-d3", type: "fill", prompt: "'셀카'의 영어: ___", answer: "selfie" },
+      { id: "en-c205-d4", type: "choice", prompt: "'핸드폰'의 바른 영어는?", choices: ["cell phone / mobile phone", "hand phone", "handy phone"], answer: "cell phone / mobile phone" },
+      { id: "en-c205-d5", type: "choice", prompt: "'(가게에서) 서비스로 드릴게요'는?", choices: ["It's on the house.", "It's service.", "This is free service time."], answer: "It's on the house." },
+      { id: "en-c205-d6", type: "choice", listen: "My bad.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["내 잘못이야(구어)", "나 나쁜 사람이야", "내 가방이야"], answer: "내 잘못이야(구어)" },
+    ],
     sections: [
       {
         heading: "번역은 등가 교환이 아니라 협상이다",

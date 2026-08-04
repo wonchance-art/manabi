@@ -12,6 +12,14 @@ const chapters = [
     titleFr: "The Subjunctive and Formal Constructions",
     summary: "I suggest he be..., If I were..., lest — 죽은 줄 알았던 접속법이 격식문 곳곳에 화석처럼 살아 있어요. 이 화석을 다룰 줄 알면 문장의 격이 달라져요.",
     duration: "약 10분",
+    drills: [
+      { id: "en-c101-d1", type: "fill", prompt: "I suggest that he ___ there early. (be — 가정법 현재)", answer: "be" },
+      { id: "en-c101-d2", type: "fill", prompt: "If I ___ you, I would apologize. (be)", answer: "were" },
+      { id: "en-c101-d3", type: "choice", prompt: "요구·제안 동사(suggest·insist) 뒤 that절의 동사는?", choices: ["동사원형(가정법 현재)", "3인칭 -s를 붙인다", "무조건 과거형"], answer: "동사원형(가정법 현재)" },
+      { id: "en-c101-d4", type: "choice", prompt: "'그가 정직해야 한다는 것이 중요하다'(격식)는?", choices: ["It is vital that he be honest.", "It is vital that he is honest always.", "It vital that honest he is."], answer: "It is vital that he be honest." },
+      { id: "en-c101-d5", type: "order", sentence: "I would rather you didn't tell anyone.", prompt: "'아무에게도 말하지 않았으면 좋겠어'를 배열해 보세요." },
+      { id: "en-c101-d6", type: "choice", listen: "If only I had more time.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["시간이 더 있다면 좋을 텐데", "시간이 딱 하나 남았어", "혼자만의 시간이 필요해"], answer: "시간이 더 있다면 좋을 텐데" },
+    ],
     sections: [
       {
         heading: "접속법이라는 유령 — 영어에도 '법(mood)'이 있었다",
@@ -84,6 +92,14 @@ const chapters = [
     titleFr: "Hedging and Softening",
     summary: "would suggest, might want to, appear to — 학술·비즈니스 영어의 신뢰는 역설적으로 '단정하지 않는 기술'에서 나와요. 한국어 '-인 것 같다' 감각과는 작동 방식이 다릅니다.",
     duration: "약 11분",
+    drills: [
+      { id: "en-c102-d1", type: "fill", prompt: "The results ___ to suggest a link. (~인 듯하다)", answer: "seem", accepts: ["appear"] },
+      { id: "en-c102-d2", type: "fill", prompt: "It could ___ argued that prices will rise.", answer: "be" },
+      { id: "en-c102-d3", type: "choice", prompt: "헤징(hedging)의 목적은?", choices: ["단정을 피하고 반박의 여지를 남긴다", "문장을 짧게 만든다", "주장을 더 세게 만든다"], answer: "단정을 피하고 반박의 여지를 남긴다" },
+      { id: "en-c102-d4", type: "choice", prompt: "가장 신중한(헤징이 강한) 표현은?", choices: ["This may possibly indicate a trend.", "This proves the trend.", "This is definitely the trend."], answer: "This may possibly indicate a trend." },
+      { id: "en-c102-d5", type: "order", sentence: "There is some evidence to support this claim.", prompt: "'이 주장을 뒷받침할 근거가 어느 정도 있다'를 배열해 보세요." },
+      { id: "en-c102-d6", type: "choice", listen: "I'm not entirely sure about that.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["그건 완전히 확신하지는 못하겠어요", "그건 전혀 몰라요", "그건 완전히 확실해요"], answer: "그건 완전히 확신하지는 못하겠어요" },
+    ],
     sections: [
       {
         heading: "왜 헤징인가 — 단정의 비용",
@@ -165,6 +181,14 @@ const chapters = [
     titleFr: "Register and Word Choice",
     summary: "get과 obtain, ask와 inquire — 영어에는 게르만계와 라틴계라는 두 핏줄이 흐르고, 어느 쪽 단어를 고르느냐가 곧 격식의 온도를 결정해요.",
     duration: "약 11분",
+    drills: [
+      { id: "en-c103-d1", type: "fill", prompt: "격식: Thank you for your ___ reply. (신속한)", answer: "prompt" },
+      { id: "en-c103-d2", type: "fill", prompt: "구어 kids ↔ 격식 ___", answer: "children" },
+      { id: "en-c103-d3", type: "choice", prompt: "격식체의 특징은?", choices: ["축약 회피·라틴계 어휘·수동태 선호", "축약과 속어를 즐겨 쓴다", "감탄사를 자주 쓴다"], answer: "축약 회피·라틴계 어휘·수동태 선호" },
+      { id: "en-c103-d4", type: "choice", prompt: "격식 있는 이메일 맺음말은?", choices: ["I look forward to hearing from you.", "See ya!", "Catch you later!"], answer: "I look forward to hearing from you." },
+      { id: "en-c103-d5", type: "order", sentence: "Please do not hesitate to contact us.", prompt: "'언제든 연락 주세요(격식)'를 배열해 보세요." },
+      { id: "en-c103-d6", type: "choice", listen: "Would you mind if I opened the window?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["창문을 열어도 될까요(아주 정중)", "창문을 닫아 주시겠어요", "창문이 열려 있나요"], answer: "창문을 열어도 될까요(아주 정중)" },
+    ],
     sections: [
       {
         heading: "1066년, 영어가 이중 언어가 된 날",
@@ -247,6 +271,14 @@ const chapters = [
     titleFr: "Cleft Sentences and Information Structure",
     summary: "한국어가 '은/는'과 어순으로 하는 일을, 영어는 it-cleft, what-cleft, 도치로 해요. 문장을 쪼개고 비틀어 스포트라이트를 옮기는 기술이에요.",
     duration: "약 11분",
+    drills: [
+      { id: "en-c104-d1", type: "fill", prompt: "___ was John who broke the vase. (분열문)", answer: "It" },
+      { id: "en-c104-d2", type: "fill", prompt: "___ I need is a long vacation. (유사분열문)", answer: "What" },
+      { id: "en-c104-d3", type: "choice", prompt: "It was yesterday that I met her.가 강조하는 것은?", choices: ["시점(yesterday)", "주어(I)", "동사(met)"], answer: "시점(yesterday)" },
+      { id: "en-c104-d4", type: "choice", prompt: "'내가 원하는 건 바로 휴식이다'는?", choices: ["What I want is some rest.", "That I want is some rest.", "Which I want is rest."], answer: "What I want is some rest." },
+      { id: "en-c104-d5", type: "order", sentence: "It was in Paris that they first met.", prompt: "'그들이 처음 만난 곳은 바로 파리였다'를 배열해 보세요." },
+      { id: "en-c104-d6", type: "choice", listen: "It's not the money that matters.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["중요한 건 돈이 아니에요", "돈이 가장 중요해요", "돈이 모자라요"], answer: "중요한 건 돈이 아니에요" },
+    ],
     sections: [
       {
         heading: "정보구조 — 문장에는 스포트라이트가 있다",
@@ -317,6 +349,14 @@ const chapters = [
     titleFr: "Idioms and Conceptual Metaphor",
     summary: "영어 관용구는 무작위 암기 대상이 아니라 개념적 은유라는 지도 위에 놓여 있어요. 한국어와 겹치는 지점, 어긋나는 지점을 짚으면 통째로 보여요.",
     duration: "약 10분",
+    drills: [
+      { id: "en-c105-d1", type: "fill", prompt: "It's raining cats and ___. (억수같이 퍼붓다)", answer: "dogs" },
+      { id: "en-c105-d2", type: "fill", prompt: "Break a ___! (공연 전 '행운을 빌어')", answer: "leg" },
+      { id: "en-c105-d3", type: "choice", prompt: "spill the beans의 뜻은?", choices: ["비밀을 누설하다", "콩 요리를 만들다", "돈을 낭비하다"], answer: "비밀을 누설하다" },
+      { id: "en-c105-d4", type: "choice", prompt: "the tip of the iceberg가 가리키는 것은?", choices: ["드러난 것은 전체의 일부일 뿐", "가장 중요한 핵심", "피해야 할 장애물"], answer: "드러난 것은 전체의 일부일 뿐" },
+      { id: "en-c105-d5", type: "order", sentence: "Let's not beat around the bush.", prompt: "'빙빙 돌리지 말자'를 배열해 보세요." },
+      { id: "en-c105-d6", type: "choice", listen: "That exam was a piece of cake.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["그 시험은 식은 죽 먹기였어", "시험에 케이크가 나왔어", "시험지가 찢어졌어"], answer: "그 시험은 식은 죽 먹기였어" },
+    ],
     sections: [
       {
         heading: "개념적 은유 — 관용구에는 지도가 있다",
@@ -399,6 +439,14 @@ const chapters = [
     titleFr: "Academic English",
     summary: "논문과 보고서의 영어는 별개의 방언이에요. 명사화로 압축하고, 수동태로 시선을 옮기고, 객관화 장치로 '나'를 지우는 — 학술 문체의 기계장치를 분해해봅니다.",
     duration: "약 12분",
+    drills: [
+      { id: "en-c106-d1", type: "fill", prompt: "The data ___ that the trend is rising. (indicate — 수일치)", answer: "indicate", hint: "data는 격식문에서 복수 취급" },
+      { id: "en-c106-d2", type: "fill", prompt: "___ to Smith (2020), the effect is small. (~에 따르면)", answer: "According" },
+      { id: "en-c106-d3", type: "choice", prompt: "학술문에서 피하는 것은?", choices: ["구어 축약(don't)·과도한 1인칭", "수동태 사용", "선행 연구 인용"], answer: "구어 축약(don't)·과도한 1인칭" },
+      { id: "en-c106-d4", type: "choice", prompt: "'결론적으로'는?", choices: ["In conclusion,", "By the way,", "Guess what,"], answer: "In conclusion," },
+      { id: "en-c106-d5", type: "order", sentence: "Further research is needed on this topic.", prompt: "'이 주제는 후속 연구가 필요하다'를 배열해 보세요." },
+      { id: "en-c106-d6", type: "choice", listen: "The findings are consistent with previous studies.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["결과가 선행 연구와 일치해요", "결과가 완전히 새로워요", "연구를 이어서 해요"], answer: "결과가 선행 연구와 일치해요" },
+    ],
     sections: [
       {
         heading: "학술 문체의 3원칙 — 압축, 탈인격, 신중함",
@@ -479,6 +527,14 @@ const chapters = [
     titleFr: "Verb Complementation Patterns",
     summary: "consider it essential, appoint her director, explain it to me — 동사마다 뒤에 올 수 있는 구조의 면허가 다릅니다. C1 정확성의 마지막 관문, 보어 구조의 체계를 해부해요.",
     duration: "약 10분",
+    drills: [
+      { id: "en-c107-d1", type: "fill", prompt: "We regret ___ inform you that the flight is cancelled.", answer: "to" },
+      { id: "en-c107-d2", type: "fill", prompt: "The movie is worth ___. (watch)", answer: "watching" },
+      { id: "en-c107-d3", type: "choice", prompt: "remember to do와 remember doing의 구분은?", choices: ["to do=앞으로 할 일을 기억, doing=이미 한 일을 기억", "to do=과거, doing=미래", "차이가 없다"], answer: "to do=앞으로 할 일을 기억, doing=이미 한 일을 기억" },
+      { id: "en-c107-d4", type: "choice", prompt: "'그를 설득해서 가입시켰다'는?", choices: ["I persuaded him to join.", "I persuaded him joining.", "I persuaded that he joins to."], answer: "I persuaded him to join." },
+      { id: "en-c107-d5", type: "order", sentence: "She encouraged me to apply for the job.", prompt: "'그녀는 내가 지원하도록 격려했다'를 배열해 보세요." },
+      { id: "en-c107-d6", type: "choice", listen: "I forgot to lock the door.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["문 잠그는 걸 깜빡했어요(안 잠겨 있음)", "문 잠근 사실을 잊었어요(잠겨 있음)", "문이 저절로 잠겼어요"], answer: "문 잠그는 걸 깜빡했어요(안 잠겨 있음)", hint: "forget to do vs forget doing" },
+    ],
     sections: [
       {
         heading: "목적어 + 보어 — consider it essential, appoint her director",
@@ -561,6 +617,14 @@ const chapters = [
     titleFr: "Time Perspective: used to / be to / Future Perfect",
     summary: "used to·would·be used to가 갈리는 지점, be to와 be about to의 격식 예정, 과거에서 본 미래, 그리고 미래완료까지 — 시제를 '운용'하는 C1의 시간 감각을 다뤄요.",
     duration: "약 10분",
+    drills: [
+      { id: "en-c108-d1", type: "fill", prompt: "By next year, I ___ have graduated. (미래완료)", answer: "will" },
+      { id: "en-c108-d2", type: "fill", prompt: "This time tomorrow, I ___ be flying to Paris. (미래진행)", answer: "will" },
+      { id: "en-c108-d3", type: "choice", prompt: "미래완료의 감각은?", choices: ["미래의 기준 시점까지 완료돼 있을 일", "그냥 아주 먼 미래", "과거에서 본 미래"], answer: "미래의 기준 시점까지 완료돼 있을 일" },
+      { id: "en-c108-d4", type: "choice", prompt: "'전화하려던 참이었어(결국 못 했다)'는?", choices: ["I was going to call you.", "I will called you.", "I am going to called you."], answer: "I was going to call you." },
+      { id: "en-c108-d5", type: "order", sentence: "By the time you arrive, dinner will be ready.", prompt: "'네가 도착할 때쯤 저녁이 준비돼 있을 거야'를 배열해 보세요." },
+      { id: "en-c108-d6", type: "choice", listen: "I was about to leave when you called.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["막 나가려던 참에 네가 전화했어", "나간 뒤에 전화가 왔어", "전화를 끊고 나갔어"], answer: "막 나가려던 참에 네가 전화했어" },
+    ],
     sections: [
       {
         heading: "used to vs would vs be used to — 형태는 친척, 정체는 셋",
