@@ -17,6 +17,14 @@ const chapters = [
       { id: "en-ot06-d5", type: "order", sentence: "Does this bus go to the airport?", prompt: "'이 버스 공항 가나요?'를 배열해 보세요." },
       { id: "en-ot06-d6", type: "choice", listen: "Go straight and turn right at the light.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["직진하다가 신호등에서 우회전하세요", "신호등에서 좌회전하세요", "불을 켜고 가세요"], answer: "직진하다가 신호등에서 우회전하세요" },
     ],
+    writing: {
+      prompt: "지하철역 가는 길을 묻고 감사까지, 두 문장을 써 보세요.",
+      hints: ["Is this the right way…?"],
+      samples: [
+        { en: "Is this the right way to the subway? Thanks a lot!", ko: "지하철 가는 길이 이쪽 맞나요? 정말 감사해요!" },
+      ],
+      checklist: ["공손하게 묻고 감사로 맺었다"],
+    },
     sections: [
       {
         heading: "1. 처음 말을 걸고 목적지까지 가는 법을 물어요",
@@ -246,6 +254,14 @@ const chapters = [
       { id: "en-ot07-d5", type: "order", sentence: "Where is the nearest pharmacy?", prompt: "'가장 가까운 약국이 어디예요?'를 배열해 보세요." },
       { id: "en-ot07-d6", type: "choice", listen: "Take this twice a day after meals.", prompt: "복약 안내를 듣고 고르세요.", choices: ["하루 두 번, 식후 복용", "하루 한 번, 식전 복용", "이틀에 한 번 복용"], answer: "하루 두 번, 식후 복용" },
     ],
+    writing: {
+      prompt: "증상을 말하고 약을 추천받는 두 문장을 써 보세요.",
+      hints: ["I have a… / Which medicine…?"],
+      samples: [
+        { en: "I have a headache and feel a little dizzy. Which medicine should I take?", ko: "머리가 아프고 약간 어지러워요. 어떤 약을 먹어야 할까요?" },
+      ],
+      checklist: ["증상을 have로 말했다"],
+    },
     sections: [
       {
         heading: "1. 몸 상태가 좋지 않다고 먼저 알려요",

@@ -413,6 +413,14 @@ const chapters = [
       { id: "en-c109-d5", type: "order", sentence: "Not everyone agrees with this idea.", prompt: "'모두가 이 생각에 동의하는 건 아니다'를 배열해 보세요." },
       { id: "en-c109-d6", type: "choice", listen: "Even my grandmother uses a smartphone.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["할머니조차 스마트폰을 쓰세요", "할머니만 스마트폰을 쓰세요", "할머니는 스마트폰을 안 쓰세요"], answer: "할머니조차 스마트폰을 쓰세요" },
     ],
+    writing: {
+      prompt: "주말 독서 습관을 only·even의 초점을 살려 써 보세요.",
+      hints: ["only on weekends / even then"],
+      samples: [
+        { en: "I read only on weekends, and even then just a few pages.", ko: "책은 주말에만 읽는데, 그마저도 몇 쪽뿐이에요." },
+      ],
+      checklist: ["only·even의 위치로 뜻을 조준했다"],
+    },
     sections: [
       {
         heading: "only는 바로 뒤의 대안을 지워요",
@@ -481,6 +489,14 @@ const chapters = [
       { id: "en-c206-d5", type: "order", sentence: "If you can come, please do.", prompt: "'올 수 있으면 와 줘(대용 do)'를 배열해 보세요." },
       { id: "en-c206-d6", type: "choice", listen: "I hope so.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["그러길 바라요", "그래서 바라요", "희망이 없어요"], answer: "그러길 바라요" },
     ],
+    writing: {
+      prompt: "반복을 피하는 대답(so·do 대용)을 넣은 짧은 대화를 써 보세요.",
+      hints: ["I think so / Tom will"],
+      samples: [
+        { en: "Can you finish this today? — I think so, and if I can't, Tom will.", ko: "오늘 끝낼 수 있어? — 그럴 것 같아. 내가 못 하면 톰이 할 거야." },
+      ],
+      checklist: ["반복 대신 so/do 대용을 썼다"],
+    },
     sections: [
       {
         heading: "조동사가 사라진 동사구의 자리를 지켜요",
