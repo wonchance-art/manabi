@@ -13,6 +13,14 @@ const chapters = [
     summary:
       "입국 심사에서 여권과 입국 서류를 제시하고, 방문 목적·체류 기간·숙소·신고 물품을 짧고 정확하게 답해요.",
     duration: "약 16분",
+    drills: [
+      { id: "en-ot08-d1", type: "fill", prompt: "I'm here ___ vacation. (~차 왔어요)", answer: "on" },
+      { id: "en-ot08-d2", type: "fill", prompt: "I'll be staying ___ a week. (기간)", answer: "for" },
+      { id: "en-ot08-d3", type: "choice", prompt: "'방문 목적이 뭔가요?'에 자연스러운 답은?", choices: ["I'm here for sightseeing.", "My purpose is travel to here.", "Because I want to."], answer: "I'm here for sightseeing." },
+      { id: "en-ot08-d4", type: "choice", prompt: "'신고할 물품이 없어요'는?", choices: ["Nothing to declare.", "No announce things.", "I don't say my items."], answer: "Nothing to declare." },
+      { id: "en-ot08-d5", type: "order", sentence: "Could you show me your return ticket?", prompt: "'돌아가는 표를 보여 주시겠어요?'를 배열해 보세요." },
+      { id: "en-ot08-d6", type: "choice", listen: "Enjoy your stay!", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["즐거운 체류 되세요!", "여기 머무르세요!", "숙박비를 내세요!"], answer: "즐거운 체류 되세요!" },
+    ],
     sections: [
       {
         heading: "1. 여권과 입국 서류를 함께 건네요",
@@ -217,6 +225,14 @@ const chapters = [
     summary:
       "공항 교통 창구에서 목적지까지 가는 표를 사고, 다음 출발 시각·운임·승강장·환승 여부를 차례로 확인해요.",
     duration: "약 16분",
+    drills: [
+      { id: "en-ot09-d1", type: "fill", prompt: "A ___ ticket to downtown, please. (왕복)", answer: "round-trip", accepts: ["return"] },
+      { id: "en-ot09-d2", type: "fill", prompt: "Which ___ does the train leave from? (승강장)", answer: "platform" },
+      { id: "en-ot09-d3", type: "choice", prompt: "'이 자리 임자 있나요?'는?", choices: ["Is this seat taken?", "Is this seat empty person?", "Do you sit here me?"], answer: "Is this seat taken?" },
+      { id: "en-ot09-d4", type: "choice", prompt: "'어디서 갈아타나요?'는?", choices: ["Where do I transfer?", "Where do I change body?", "Where is the exchange money?"], answer: "Where do I transfer?" },
+      { id: "en-ot09-d5", type: "order", sentence: "The next train leaves in five minutes.", prompt: "'다음 열차는 5분 뒤 출발합니다'를 배열해 보세요." },
+      { id: "en-ot09-d6", type: "choice", listen: "This train is bound for City Hall.", prompt: "안내 방송을 듣고 고르세요.", choices: ["이 열차는 시청행입니다", "이 열차는 시청에서 출발했습니다", "시청역은 정차하지 않습니다"], answer: "이 열차는 시청행입니다", hint: "bound for = ~행" },
+    ],
     sections: [
       {
         heading: "1. 목적지까지 가는 편도표를 요청해요",
@@ -422,6 +438,14 @@ const chapters = [
     summary:
       "숙소에 도착해 체크인을 요청하고 예약과 객실 유형을 확인한 뒤, 체크아웃 시각과 출발 전 짐 보관을 물어봐요.",
     duration: "약 16분",
+    drills: [
+      { id: "en-ot10-d1", type: "fill", prompt: "I have a ___ under the name Kim. (예약)", answer: "reservation", accepts: ["booking"] },
+      { id: "en-ot10-d2", type: "fill", prompt: "What time is ___-out?", answer: "check" },
+      { id: "en-ot10-d3", type: "choice", prompt: "'조식 포함인가요?'는?", choices: ["Is breakfast included?", "Is breakfast inside?", "Do you breakfast me?"], answer: "Is breakfast included?" },
+      { id: "en-ot10-d4", type: "choice", prompt: "'짐 좀 맡아 주실 수 있나요?'는?", choices: ["Could you keep my luggage?", "Could you keep my luggages?", "Can my baggages stay with you?"], answer: "Could you keep my luggage?", hint: "luggage는 불가산 — luggages는 없는 말" },
+      { id: "en-ot10-d5", type: "order", sentence: "I'd like to check in, please.", prompt: "'체크인하고 싶어요'를 배열해 보세요." },
+      { id: "en-ot10-d6", type: "choice", listen: "Here's your key card. Room 502.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["키 카드 여기요, 502호입니다", "502달러입니다", "5시 2분에 오세요"], answer: "키 카드 여기요, 502호입니다" },
+    ],
     sections: [
       {
         heading: "1. 프런트에서 체크인을 요청해요",
@@ -627,6 +651,14 @@ const chapters = [
     summary:
       "숙소에서 추가 수건과 와이파이 정보를 요청하고, 객실 설비 고장이나 소음을 설명해 필요한 해결 방법을 물어봐요.",
     duration: "약 16분",
+    drills: [
+      { id: "en-ot11-d1", type: "fill", prompt: "The air conditioner isn't ___. (작동을 안 해요)", answer: "working" },
+      { id: "en-ot11-d2", type: "fill", prompt: "Could I get an extra ___? (담요)", answer: "blanket" },
+      { id: "en-ot11-d3", type: "choice", prompt: "'방을 바꿀 수 있을까요?'는?", choices: ["Could I change rooms?", "Could you change my room to other one place?", "Room change please me."], answer: "Could I change rooms?" },
+      { id: "en-ot11-d4", type: "choice", prompt: "'옆방이 너무 시끄러워요'는?", choices: ["The room next door is too noisy.", "Next room is too loudly.", "Beside room sounds big."], answer: "The room next door is too noisy." },
+      { id: "en-ot11-d5", type: "order", sentence: "There is no hot water in my room.", prompt: "'방에 온수가 안 나와요'를 배열해 보세요." },
+      { id: "en-ot11-d6", type: "choice", listen: "We'll send someone up right away.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["바로 사람을 올려보내 드릴게요", "나중에 확인해 드릴게요", "직접 내려와 주세요"], answer: "바로 사람을 올려보내 드릴게요" },
+    ],
     sections: [
       {
         heading: "1. 추가 수건을 공손하게 요청해요",
@@ -832,6 +864,14 @@ const chapters = [
     summary:
       "식당에 들어가 인원에 맞는 자리를 요청하고, 메뉴와 추천을 확인한 뒤 음식과 음료를 공손하게 주문해요.",
     duration: "약 16분",
+    drills: [
+      { id: "en-ot12-d1", type: "fill", prompt: "Could I see the ___, please? (메뉴판)", answer: "menu" },
+      { id: "en-ot12-d2", type: "fill", prompt: "I'll ___ the steak. (주문할 때)", answer: "have", accepts: ["take", "get"] },
+      { id: "en-ot12-d3", type: "choice", prompt: "'추천 메뉴가 뭐예요?'는?", choices: ["What do you recommend?", "What is your recommend?", "Do you have recommendation to me?"], answer: "What do you recommend?" },
+      { id: "en-ot12-d4", type: "choice", prompt: "스테이크 굽기 '중간으로'는?", choices: ["Medium, please.", "Middle, please.", "Center, please."], answer: "Medium, please." },
+      { id: "en-ot12-d5", type: "order", sentence: "Could we get a table for two?", prompt: "'두 명 자리 있을까요?'를 배열해 보세요." },
+      { id: "en-ot12-d6", type: "choice", listen: "How would you like your eggs?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["계란은 어떻게 해 드릴까요?", "계란을 좋아하세요?", "계란을 몇 개 드릴까요?"], answer: "계란은 어떻게 해 드릴까요?" },
+    ],
     sections: [
       {
         heading: "1. 인원에 맞는 자리가 있는지 물어요",
@@ -1037,6 +1077,14 @@ const chapters = [
     summary:
       "식당에서 알레르기와 피해야 할 재료를 분명히 알리고, 음식의 재료를 확인한 뒤 계산서와 결제 방법을 요청해요.",
     duration: "약 16분",
+    drills: [
+      { id: "en-ot13-d1", type: "fill", prompt: "I'm allergic ___ peanuts.", answer: "to" },
+      { id: "en-ot13-d2", type: "fill", prompt: "Could we have the ___, please? (계산서 — 미국식)", answer: "check", accepts: ["bill"] },
+      { id: "en-ot13-d3", type: "choice", prompt: "'따로따로 계산할게요'는?", choices: ["We'd like to pay separately.", "We pay each other.", "Cut the money please."], answer: "We'd like to pay separately." },
+      { id: "en-ot13-d4", type: "choice", prompt: "'남은 음식 포장해 주세요'는?", choices: ["Could I get a to-go box?", "Please wrap this trash.", "Take away my food from me."], answer: "Could I get a to-go box?" },
+      { id: "en-ot13-d5", type: "order", sentence: "Is the tip included in the bill?", prompt: "'팁이 계산서에 포함돼 있나요?'를 배열해 보세요." },
+      { id: "en-ot13-d6", type: "choice", listen: "Keep the change.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["잔돈은 가지세요", "잔돈으로 바꿔 주세요", "변화를 지켜보세요"], answer: "잔돈은 가지세요" },
+    ],
     sections: [
       {
         heading: "1. 알레르기가 있는 재료를 먼저 알려요",

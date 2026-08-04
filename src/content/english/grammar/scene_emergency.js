@@ -9,6 +9,14 @@ const chapters = [
     summary:
       "목적지까지 가는 길을 묻고, 방향 안내를 확인하며, 알맞은 버스·기차와 환승 지점을 물어봐요.",
     duration: "약 15분",
+    drills: [
+      { id: "en-ot06-d1", type: "fill", prompt: "Excuse me, how do I ___ to the station? (도착하다)", answer: "get" },
+      { id: "en-ot06-d2", type: "fill", prompt: "Take the second ___ on the left. (모퉁이 돌기)", answer: "turn" },
+      { id: "en-ot06-d3", type: "choice", prompt: "'걸어갈 만한 거리인가요?'는?", choices: ["Is it within walking distance?", "Is it walk possible?", "Can it walk to there?"], answer: "Is it within walking distance?" },
+      { id: "en-ot06-d4", type: "choice", prompt: "'내릴 정거장을 지나쳤어요'는?", choices: ["I missed my stop.", "I lost my station.", "My stop ran away."], answer: "I missed my stop." },
+      { id: "en-ot06-d5", type: "order", sentence: "Does this bus go to the airport?", prompt: "'이 버스 공항 가나요?'를 배열해 보세요." },
+      { id: "en-ot06-d6", type: "choice", listen: "Go straight and turn right at the light.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["직진하다가 신호등에서 우회전하세요", "신호등에서 좌회전하세요", "불을 켜고 가세요"], answer: "직진하다가 신호등에서 우회전하세요" },
+    ],
     sections: [
       {
         heading: "1. 처음 말을 걸고 목적지까지 가는 법을 물어요",
@@ -230,6 +238,14 @@ const chapters = [
     summary:
       "몸 상태와 아픈 곳을 말하고 긴급 도움을 요청하며, 잃어버린 소지품과 마지막으로 본 곳을 설명해요.",
     duration: "약 15분",
+    drills: [
+      { id: "en-ot07-d1", type: "fill", prompt: "I have a ___ throat. (따끔한 — 인후통)", answer: "sore" },
+      { id: "en-ot07-d2", type: "fill", prompt: "I'd like to report a ___ passport. (잃어버린)", answer: "lost" },
+      { id: "en-ot07-d3", type: "choice", prompt: "'열이 나요'는?", choices: ["I have a fever.", "I am fever.", "Fever is on me."], answer: "I have a fever." },
+      { id: "en-ot07-d4", type: "choice", prompt: "약국에서 '처방전이 필요한가요?'는?", choices: ["Do I need a prescription?", "Do I need a receipt?", "Do I need a subscription?"], answer: "Do I need a prescription?", hint: "prescription 처방전 / receipt 영수증 / subscription 구독" },
+      { id: "en-ot07-d5", type: "order", sentence: "Where is the nearest pharmacy?", prompt: "'가장 가까운 약국이 어디예요?'를 배열해 보세요." },
+      { id: "en-ot07-d6", type: "choice", listen: "Take this twice a day after meals.", prompt: "복약 안내를 듣고 고르세요.", choices: ["하루 두 번, 식후 복용", "하루 한 번, 식전 복용", "이틀에 한 번 복용"], answer: "하루 두 번, 식후 복용" },
+    ],
     sections: [
       {
         heading: "1. 몸 상태가 좋지 않다고 먼저 알려요",
