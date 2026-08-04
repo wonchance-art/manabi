@@ -12,6 +12,14 @@ const chapters = [
     titleFr: "Present Perfect vs Past Simple",
     summary: "have p.p.를 '경험·완료·계속'으로 암기만 하고 회피해온 분들을 위해, 두 시제의 진짜 차이를 한 장의 그림으로 정리해요.",
     duration: "약 11분",
+    drills: [
+      { id: "en-b101-d1", type: "fill", prompt: "I ___ in London in 2019. (be — 특정 과거 시점)", answer: "was" },
+      { id: "en-b101-d2", type: "fill", prompt: "She has worked here ___ 2020. (~이후로 죽)", answer: "since" },
+      { id: "en-b101-d3", type: "choice", prompt: "yesterday와 함께 쓸 수 있는 시제는?", choices: ["과거단순 (I saw it yesterday.)", "현재완료 (I have seen it yesterday.)", "둘 다 된다"], answer: "과거단순 (I saw it yesterday.)", hint: "확정된 과거 시점 부사 + 현재완료는 금지" },
+      { id: "en-b101-d4", type: "choice", prompt: "for와 since의 구분은?", choices: ["for+기간, since+시작 시점", "for+시작 시점, since+기간", "차이가 없다"], answer: "for+기간, since+시작 시점" },
+      { id: "en-b101-d5", type: "order", sentence: "Have you finished the report yet?", prompt: "'보고서 다 끝냈어요?'를 배열해 보세요." },
+      { id: "en-b101-d6", type: "choice", listen: "I've already had lunch.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["벌써 점심을 먹었어요", "점심을 먹을 거예요", "점심이 준비됐어요"], answer: "벌써 점심을 먹었어요" },
+    ],
     sections: [
       {
         heading: "왜 우리는 현재완료를 피하게 됐나",
@@ -93,6 +101,14 @@ const chapters = [
     titleFr: "Conditionals: First & Second",
     summary: "If I have time과 If I had time은 시제가 아니라 '현실성'이 달라요. 한국어 '-면' 하나로 뭉뚱그려진 두 세계를 갈라봐요.",
     duration: "약 9분",
+    drills: [
+      { id: "en-b102-d1", type: "fill", prompt: "If it rains, I ___ stay home. (1형 — 실제 가능)", answer: "will" },
+      { id: "en-b102-d2", type: "fill", prompt: "If I ___ rich, I would travel the world. (be — 2형)", answer: "were", accepts: ["was"] },
+      { id: "en-b102-d3", type: "choice", prompt: "2형 조건문의 감각은?", choices: ["현재 사실과 반대인 상상", "미래의 실제 가능성", "과거의 후회"], answer: "현재 사실과 반대인 상상" },
+      { id: "en-b102-d4", type: "choice", prompt: "'복권에 당첨되면 집을 살 텐데(상상)'는?", choices: ["If I won the lottery, I would buy a house.", "If I win the lottery, I would buy a house.", "If I would win the lottery, I will buy a house."], answer: "If I won the lottery, I would buy a house." },
+      { id: "en-b102-d5", type: "order", sentence: "If you have time, come with us.", prompt: "'시간 있으면 우리랑 같이 가자'를 배열해 보세요." },
+      { id: "en-b102-d6", type: "choice", listen: "What would you do if you were me?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["네가 나라면 어떻게 하겠어?", "나랑 뭐 하고 싶어?", "내가 뭘 했으면 좋겠어?"], answer: "네가 나라면 어떻게 하겠어?" },
+    ],
     sections: [
       {
         heading: "한국어 '-면'은 하나, 영어 if는 여러 개",
@@ -168,6 +184,14 @@ const chapters = [
     titleFr: "The Passive Voice",
     summary: "수동태는 시험용 변환 연습이 아니라 '누가 했는지'를 굳이 말하고 싶지 않을 때 꺼내는 실전 도구예요.",
     duration: "약 10분",
+    drills: [
+      { id: "en-b103-d1", type: "fill", prompt: "This building ___ built in 1950. (be)", answer: "was" },
+      { id: "en-b103-d2", type: "fill", prompt: "English is ___ all over the world. (speak)", answer: "spoken" },
+      { id: "en-b103-d3", type: "choice", prompt: "수동태를 고르는 순간은?", choices: ["행위자보다 대상이 중요할 때", "문장을 격식 있어 보이게 할 때만", "과거를 말할 때만"], answer: "행위자보다 대상이 중요할 때" },
+      { id: "en-b103-d4", type: "choice", prompt: "'그 책은 많은 사람에게 읽힌다'는?", choices: ["The book is read by many people.", "The book reads by many people.", "The book is reading many people."], answer: "The book is read by many people." },
+      { id: "en-b103-d5", type: "order", sentence: "My bike was stolen last night.", prompt: "'어젯밤 자전거를 도둑맞았다'를 배열해 보세요." },
+      { id: "en-b103-d6", type: "choice", listen: "Breakfast is served until ten.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["아침 식사는 10시까지 제공돼요", "아침 10시에 예약했어요", "아침을 10인분 주문했어요"], answer: "아침 식사는 10시까지 제공돼요" },
+    ],
     sections: [
       {
         heading: "수동태는 언제 쓰나 — '누가'가 중요하지 않을 때",
@@ -247,6 +271,14 @@ const chapters = [
     titleFr: "Relative Clauses: who / which / that",
     summary: "한국어는 '어제 만난 사람', 영어는 'the person who I met yesterday'. 머릿속 어순을 반전시키는 훈련이 이 챕터의 전부예요.",
     duration: "약 10분",
+    drills: [
+      { id: "en-b104-d1", type: "fill", prompt: "The man ___ lives next door is a chef. (사람·주격)", answer: "who", accepts: ["that"] },
+      { id: "en-b104-d2", type: "fill", prompt: "This is the bag ___ I bought yesterday. (사물·목적격)", answer: "that", accepts: ["which"] },
+      { id: "en-b104-d3", type: "choice", prompt: "목적격 관계대명사의 특징은?", choices: ["생략할 수 있다", "절대 생략할 수 없다", "who만 쓸 수 있다"], answer: "생략할 수 있다" },
+      { id: "en-b104-d4", type: "choice", prompt: "'내가 어제 만난 여자'는?", choices: ["the woman I met yesterday", "the woman who I met her yesterday", "the woman whom met yesterday"], answer: "the woman I met yesterday", hint: "관계절 안에 her를 또 두면 중복" },
+      { id: "en-b104-d5", type: "order", sentence: "The movie that we watched was boring.", prompt: "'우리가 본 영화는 지루했다'를 배열해 보세요." },
+      { id: "en-b104-d6", type: "choice", listen: "Is this the train that goes downtown?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["이거 시내 가는 기차 맞아요?", "이 기차 어디서 오는 거예요?", "기차역이 시내에 있어요?"], answer: "이거 시내 가는 기차 맞아요?" },
+    ],
     sections: [
       {
         heading: "어순 반전 — 한국어는 앞에서, 영어는 뒤에서 꾸며요",
@@ -316,6 +348,14 @@ const chapters = [
     titleFr: "Reported Speech",
     summary: "'그가 바쁘대'를 영어로 — 따옴표를 벗기는 순간 시제가 한 칸씩 뒤로 밀리는 규칙과, say/tell의 구별을 정리해요.",
     duration: "약 10분",
+    drills: [
+      { id: "en-b105-d1", type: "fill", prompt: "She said that she ___ tired. (be — 시제 일치)", answer: "was" },
+      { id: "en-b105-d2", type: "fill", prompt: "He asked me ___ I liked coffee. (~인지 아닌지)", answer: "if", accepts: ["whether"] },
+      { id: "en-b105-d3", type: "choice", prompt: "'그는 바쁘다고 말했다'는?", choices: ["He said he was hungry.", "He said me he is hungry.", "He told that he hungry."], answer: "He said he was hungry.", hint: "said me는 없는 말 — told me" },
+      { id: "en-b105-d4", type: "choice", prompt: "tell과 say의 구분은?", choices: ["tell+사람(tell me), say+내용(say that)", "tell+내용, say+사람", "차이가 없다"], answer: "tell+사람(tell me), say+내용(say that)" },
+      { id: "en-b105-d5", type: "order", sentence: "She told me not to worry.", prompt: "'그녀는 나에게 걱정하지 말라고 했다'를 배열해 보세요." },
+      { id: "en-b105-d6", type: "choice", listen: "He said he would be late.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["그가 늦을 거라고 말했어요", "그가 늦어서 미안하다고 했어요", "그는 벌써 늦었어요"], answer: "그가 늦을 거라고 말했어요" },
+    ],
     sections: [
       {
         heading: "왜 시제가 뒤로 밀리나 — 보고 시점의 논리",
@@ -397,6 +437,14 @@ const chapters = [
     titleFr: "Modals of Speculation: must / might / can't",
     summary: "must be(틀림없다)부터 can't be(그럴 리 없다)까지 — 확신의 정도를 조동사 하나로 조절하는 법을 배워요.",
     duration: "약 8분",
+    drills: [
+      { id: "en-b106-d1", type: "fill", prompt: "He ___ be at home — the lights are on. (틀림없다)", answer: "must" },
+      { id: "en-b106-d2", type: "fill", prompt: "It ___ be true, but I'm not sure. (어쩌면)", answer: "might", accepts: ["may", "could"] },
+      { id: "en-b106-d3", type: "choice", prompt: "can't be의 뜻은?", choices: ["~일 리가 없다(추측)", "~할 능력이 없다만", "~하면 안 된다만"], answer: "~일 리가 없다(추측)" },
+      { id: "en-b106-d4", type: "choice", prompt: "확신의 세기 비교로 옳은 것은?", choices: ["must(틀림없다) > may/might(아마)", "might가 must보다 강하다", "전부 같다"], answer: "must(틀림없다) > may/might(아마)" },
+      { id: "en-b106-d5", type: "order", sentence: "She must be very proud of you.", prompt: "'그녀가 널 무척 자랑스러워하겠구나'를 배열해 보세요." },
+      { id: "en-b106-d6", type: "choice", listen: "You must be tired after the long flight.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["긴 비행에 피곤하시겠어요(추측)", "피곤해도 참아야 해요(의무)", "비행이 길어질 거예요"], answer: "긴 비행에 피곤하시겠어요(추측)" },
+    ],
     sections: [
       {
         heading: "조동사는 확신의 온도계예요",
@@ -474,6 +522,14 @@ const chapters = [
     titleFr: "Phrasal Verbs: An Introduction",
     summary: "postpone 대신 put off, discover 대신 find out — 원어민 입말의 심장인 구동사를 피하지 않고 정면으로 사귀는 법.",
     duration: "약 11분",
+    drills: [
+      { id: "en-b107-d1", type: "fill", prompt: "Please turn ___ the TV. (끄다)", answer: "off" },
+      { id: "en-b107-d2", type: "fill", prompt: "I'm looking ___ my keys. (~을 찾다)", answer: "for" },
+      { id: "en-b107-d3", type: "choice", prompt: "give up의 뜻은?", choices: ["포기하다", "나눠 주다", "위로 올리다"], answer: "포기하다" },
+      { id: "en-b107-d4", type: "choice", prompt: "통화 중 '끊지 말고 기다려 주세요'는?", choices: ["Please hold on.", "Please hang up.", "Please put off."], answer: "Please hold on.", hint: "hang up = 끊다" },
+      { id: "en-b107-d5", type: "order", sentence: "Can you pick me up at seven?", prompt: "'7시에 나 데리러 와 줄래?'를 배열해 보세요." },
+      { id: "en-b107-d6", type: "choice", listen: "The meeting was put off until Friday.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["회의가 금요일로 미뤄졌어요", "회의가 금요일에 끝났어요", "회의를 금요일마다 해요"], answer: "회의가 금요일로 미뤄졌어요" },
+    ],
     sections: [
       {
         heading: "왜 우리는 구동사를 피해왔나 — 격의 문제",
@@ -559,6 +615,14 @@ const chapters = [
     titleFr: "Preposition Combinations: depend on / interested in",
     summary: "listen, depend, interested — 단어는 다 아는데 to? on? in?에서 멈칫하는 순간을 위한 챕터예요. 전치사는 논리가 아니라 단짝이라, 덩어리 단위 공략법을 정리해요.",
     duration: "약 10분",
+    drills: [
+      { id: "en-b108-d1", type: "fill", prompt: "I'm interested ___ Korean history.", answer: "in" },
+      { id: "en-b108-d2", type: "fill", prompt: "It depends ___ the weather.", answer: "on" },
+      { id: "en-b108-d3", type: "choice", prompt: "'~을 자랑스러워하다'는?", choices: ["be proud of", "be proud for", "be proud to it"], answer: "be proud of" },
+      { id: "en-b108-d4", type: "choice", prompt: "'~을 기다리다'는?", choices: ["wait for", "wait to", "wait about"], answer: "wait for" },
+      { id: "en-b108-d5", type: "order", sentence: "She is good at playing the piano.", prompt: "'그녀는 피아노를 잘 친다'를 배열해 보세요." },
+      { id: "en-b108-d6", type: "choice", listen: "I'm worried about the exam.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["시험이 걱정돼요", "시험 준비를 끝냈어요", "시험이 어려웠어요"], answer: "시험이 걱정돼요" },
+    ],
     sections: [
       {
         heading: "동사+전치사 — 한 단어처럼 굳은 짝",
@@ -642,6 +706,14 @@ const chapters = [
     titleFr: "Question Craft: Indirect Questions & Tags",
     summary: "Do you know where it is?의 어순, aren't I?의 부가의문, So do I의 맞장구, Who broke it?의 주어 의문까지 — 질문을 둘러싼 네 가지 기술을 한 챕터에 모았어요.",
     duration: "약 10분",
+    drills: [
+      { id: "en-b109-d1", type: "fill", prompt: "You're coming, ___ you? (부가의문)", answer: "aren't" },
+      { id: "en-b109-d2", type: "fill", prompt: "___ far is it from here? (거리 묻기)", answer: "How" },
+      { id: "en-b109-d3", type: "choice", prompt: "'어느 것이 네 거야?'는?", choices: ["Which one is yours?", "What one is yours?", "Who one is yours?"], answer: "Which one is yours?" },
+      { id: "en-b109-d4", type: "choice", prompt: "간접의문문의 옳은 어순은?", choices: ["Do you know where he lives?", "Do you know where does he live?", "Do you know where lives he?"], answer: "Do you know where he lives?", hint: "간접의문문 안은 평서 어순" },
+      { id: "en-b109-d5", type: "order", sentence: "Could you tell me how to get there?", prompt: "'거기 가는 법을 알려 주시겠어요?'를 배열해 보세요." },
+      { id: "en-b109-d6", type: "choice", listen: "It's a nice day, isn't it?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["날씨 좋네요, 그렇죠?", "좋은 날이 아니에요", "무슨 요일이에요?"], answer: "날씨 좋네요, 그렇죠?" },
+    ],
     sections: [
       {
         heading: "간접의문 — 질문을 문장 속에 넣으면 어순이 풀린다",

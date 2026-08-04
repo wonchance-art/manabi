@@ -161,6 +161,14 @@ const chapters = [
     summary:
       "과거 사건이 둘일 때 먼저 일어난 일을 had+p.p.로 한 칸 뒤로 보내고, by the time·already·never로 시간 관계를 또렷하게 만들어요.",
     duration: "약 10분",
+    drills: [
+      { id: "en-b110-d1", type: "fill", prompt: "When I arrived, the train ___ already left.", answer: "had" },
+      { id: "en-b110-d2", type: "fill", prompt: "I realized I ___ forgotten my wallet.", answer: "had" },
+      { id: "en-b110-d3", type: "choice", prompt: "과거완료의 감각은?", choices: ["과거의 한 시점보다 더 앞선 일", "아주 먼 과거의 일", "완료될 예정인 일"], answer: "과거의 한 시점보다 더 앞선 일" },
+      { id: "en-b110-d4", type: "choice", prompt: "'집에 도착했을 때 비가 그쳐 있었다'는?", choices: ["When I got home, the rain had stopped.", "When I had got home, the rain stopped.", "When I got home, the rain has stopped."], answer: "When I got home, the rain had stopped." },
+      { id: "en-b110-d5", type: "order", sentence: "She had never seen snow before that day.", prompt: "'그날 전까지 그녀는 눈을 본 적이 없었다'를 배열해 보세요." },
+      { id: "en-b110-d6", type: "choice", listen: "The movie had already started when we arrived.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["도착했을 땐 영화가 이미 시작한 뒤였어요", "도착하자마자 영화가 시작했어요", "영화 시작 전에 도착했어요"], answer: "도착했을 땐 영화가 이미 시작한 뒤였어요" },
+    ],
     sections: [
       {
         heading: "과거 사건 두 개의 순서를 표시해요",
@@ -221,6 +229,14 @@ const chapters = [
     summary:
       "마감점 by와 지속 끝점 until, 대비책을 먼저 준비하는 in case, 정해진 기대를 나타내는 be supposed to를 실제 일정 문장으로 구분해요.",
     duration: "약 10분",
+    drills: [
+      { id: "en-b111-d1", type: "fill", prompt: "Finish it ___ Friday. (늦어도 금요일까지)", answer: "by" },
+      { id: "en-b111-d2", type: "fill", prompt: "I'll wait ___ six o'clock. (6시까지 계속)", answer: "until", accepts: ["till"] },
+      { id: "en-b111-d3", type: "choice", prompt: "by와 until의 구분은?", choices: ["by=마감 시점(그 전에 완료), until=그때까지 계속", "by=계속, until=마감", "차이가 없다"], answer: "by=마감 시점(그 전에 완료), until=그때까지 계속" },
+      { id: "en-b111-d4", type: "choice", prompt: "'만일을 대비해 우산 가져가'는?", choices: ["Take an umbrella just in case.", "Take an umbrella in the case.", "Take an umbrella of case."], answer: "Take an umbrella just in case." },
+      { id: "en-b111-d5", type: "order", sentence: "Let me know as soon as you arrive.", prompt: "'도착하자마자 알려 줘'를 배열해 보세요." },
+      { id: "en-b111-d6", type: "choice", listen: "The report is due by noon tomorrow.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["보고서 마감은 내일 정오까지예요", "보고서는 내일 정오에 발표돼요", "내일 정오에 보고서를 읽어요"], answer: "보고서 마감은 내일 정오까지예요" },
+    ],
     sections: [
       {
         heading: "by는 완료 마감, until은 계속되는 끝점이에요",
