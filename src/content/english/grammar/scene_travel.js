@@ -21,6 +21,14 @@ const chapters = [
       { id: "en-ot08-d5", type: "order", sentence: "Could you show me your return ticket?", prompt: "'돌아가는 표를 보여 주시겠어요?'를 배열해 보세요." },
       { id: "en-ot08-d6", type: "choice", listen: "Enjoy your stay!", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["즐거운 체류 되세요!", "여기 머무르세요!", "숙박비를 내세요!"], answer: "즐거운 체류 되세요!" },
     ],
+    writing: {
+      prompt: "입국 심사 답변 — 목적과 기간을 두 문장으로 써 보세요.",
+      hints: ["on vacation / staying for…"],
+      samples: [
+        { en: "I'm here on vacation, and I'll be staying for five days.", ko: "휴가차 왔고, 닷새 머물 예정이에요." },
+      ],
+      checklist: ["목적은 on, 기간은 for로 밝혔다"],
+    },
     sections: [
       {
         heading: "1. 여권과 입국 서류를 함께 건네요",
@@ -233,6 +241,14 @@ const chapters = [
       { id: "en-ot09-d5", type: "order", sentence: "The next train leaves in five minutes.", prompt: "'다음 열차는 5분 뒤 출발합니다'를 배열해 보세요." },
       { id: "en-ot09-d6", type: "choice", listen: "This train is bound for City Hall.", prompt: "안내 방송을 듣고 고르세요.", choices: ["이 열차는 시청행입니다", "이 열차는 시청에서 출발했습니다", "시청역은 정차하지 않습니다"], answer: "이 열차는 시청행입니다", hint: "bound for = ~행" },
     ],
+    writing: {
+      prompt: "왕복표를 사고 승강장을 확인하는 두 문장을 써 보세요.",
+      hints: ["round-trip / platform"],
+      samples: [
+        { en: "One round-trip ticket, please. Which platform is it?", ko: "왕복표 한 장 주세요. 몇 번 승강장인가요?" },
+      ],
+      checklist: ["표 종류를 정확히 말했다"],
+    },
     sections: [
       {
         heading: "1. 목적지까지 가는 편도표를 요청해요",
@@ -446,6 +462,14 @@ const chapters = [
       { id: "en-ot10-d5", type: "order", sentence: "I'd like to check in, please.", prompt: "'체크인하고 싶어요'를 배열해 보세요." },
       { id: "en-ot10-d6", type: "choice", listen: "Here's your key card. Room 502.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["키 카드 여기요, 502호입니다", "502달러입니다", "5시 2분에 오세요"], answer: "키 카드 여기요, 502호입니다" },
     ],
+    writing: {
+      prompt: "예약 확인과 체크아웃 후 짐 보관 요청을 써 보세요.",
+      hints: ["reservation under… / leave my luggage"],
+      samples: [
+        { en: "I have a reservation under Lee. Could I leave my luggage here after check-out?", ko: "이(Lee) 이름으로 예약했어요. 체크아웃 후 짐을 맡길 수 있을까요?" },
+      ],
+      checklist: ["under+이름으로 예약을 밝혔다", "luggage를 단수 취급했다"],
+    },
     sections: [
       {
         heading: "1. 프런트에서 체크인을 요청해요",
@@ -659,6 +683,14 @@ const chapters = [
       { id: "en-ot11-d5", type: "order", sentence: "There is no hot water in my room.", prompt: "'방에 온수가 안 나와요'를 배열해 보세요." },
       { id: "en-ot11-d6", type: "choice", listen: "We'll send someone up right away.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["바로 사람을 올려보내 드릴게요", "나중에 확인해 드릴게요", "직접 내려와 주세요"], answer: "바로 사람을 올려보내 드릴게요" },
     ],
+    writing: {
+      prompt: "객실 문제 신고와 추가 요청을 한 번에 써 보세요.",
+      hints: ["isn't working / extra…"],
+      samples: [
+        { en: "The heater isn't working, and could I get an extra towel?", ko: "히터가 작동하지 않아요. 그리고 수건 하나 더 주시겠어요?" },
+      ],
+      checklist: ["고장을 isn't working으로 알렸다"],
+    },
     sections: [
       {
         heading: "1. 추가 수건을 공손하게 요청해요",
@@ -872,6 +904,14 @@ const chapters = [
       { id: "en-ot12-d5", type: "order", sentence: "Could we get a table for two?", prompt: "'두 명 자리 있을까요?'를 배열해 보세요." },
       { id: "en-ot12-d6", type: "choice", listen: "How would you like your eggs?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["계란은 어떻게 해 드릴까요?", "계란을 좋아하세요?", "계란을 몇 개 드릴까요?"], answer: "계란은 어떻게 해 드릴까요?" },
     ],
+    writing: {
+      prompt: "오늘의 추천을 묻고 굽기까지 붙여 주문해 보세요.",
+      hints: ["today's special / medium"],
+      samples: [
+        { en: "What's today's special? I'll have that, medium please.", ko: "오늘의 추천 메뉴가 뭐예요? 그걸로 할게요, 미디엄으로요." },
+      ],
+      checklist: ["I'll have로 주문했다"],
+    },
     sections: [
       {
         heading: "1. 인원에 맞는 자리가 있는지 물어요",
@@ -1085,6 +1125,14 @@ const chapters = [
       { id: "en-ot13-d5", type: "order", sentence: "Is the tip included in the bill?", prompt: "'팁이 계산서에 포함돼 있나요?'를 배열해 보세요." },
       { id: "en-ot13-d6", type: "choice", listen: "Keep the change.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["잔돈은 가지세요", "잔돈으로 바꿔 주세요", "변화를 지켜보세요"], answer: "잔돈은 가지세요" },
     ],
+    writing: {
+      prompt: "알레르기를 알리고 따로 계산을 요청해 보세요.",
+      hints: ["allergic to / separate checks"],
+      samples: [
+        { en: "I'm allergic to shrimp. Could we get separate checks?", ko: "새우 알레르기가 있어요. 계산은 따로 해 주시겠어요?" },
+      ],
+      checklist: ["allergic to로 알레르기를 밝혔다"],
+    },
     sections: [
       {
         heading: "1. 알레르기가 있는 재료를 먼저 알려요",

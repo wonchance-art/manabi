@@ -20,6 +20,14 @@ const chapters = [
       { id: "en-c201-d5", type: "order", sentence: "Style is the dress of thought.", prompt: "'문체는 생각의 옷이다'를 배열해 보세요." },
       { id: "en-c201-d6", type: "choice", listen: "Less is more.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["적을수록 좋다", "덜 주세요", "더 모자라요"], answer: "적을수록 좋다" },
     ],
+    writing: {
+      prompt: "여행(또는 취미)을 삼항 병렬로 마무리하는 문장을 써 보세요.",
+      hints: ["A, B, and C — 같은 꼴 세 번"],
+      samples: [
+        { en: "I came for the food, stayed for the people, and left with a story.", ko: "음식 때문에 왔다가, 사람들 때문에 머물렀고, 이야기 하나를 안고 떠났어요." },
+      ],
+      checklist: ["세 항의 문법 꼴을 맞췄다(병렬)"],
+    },
     sections: [
       {
         heading: "수사학 — 영어 글쓰기의 보이지 않는 교과과정",
@@ -114,6 +122,14 @@ const chapters = [
       { id: "en-c202-d5", type: "choice", prompt: "영국에서 '1층'이 ground floor인 이유는?", choices: ["지면층을 0층처럼 세기 때문", "미국과 같은 방식이라서", "지하층을 뜻해서"], answer: "지면층을 0층처럼 세기 때문" },
       { id: "en-c202-d6", type: "choice", listen: "Cheers, mate!", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["고마워, 친구!(영국·호주 구어)", "건배!만 뜻한다", "응원 구호"], answer: "고마워, 친구!(영국·호주 구어)" },
     ],
+    writing: {
+      prompt: "같은 문장을 영국식·미국식 어휘로 나란히 써 보세요.",
+      hints: ["lift/elevator · flat/apartment"],
+      samples: [
+        { en: "In London, take the lift to your flat; in New York, take the elevator to your apartment.", ko: "런던에선 lift를 타고 flat으로, 뉴욕에선 elevator를 타고 apartment로 가요." },
+      ],
+      checklist: ["짝이 되는 변이형을 정확히 바꿨다"],
+    },
     sections: [
       {
         heading: "표준은 하나가 아니다 — 영어라는 군도",
@@ -207,6 +223,14 @@ const chapters = [
       { id: "en-c203-d5", type: "choice", prompt: "catch-22 상황이란?", choices: ["이러지도 저러지도 못하는 모순 상황", "22번째 기회", "행운의 순간"], answer: "이러지도 저러지도 못하는 모순 상황" },
       { id: "en-c203-d6", type: "choice", listen: "It was his Achilles' heel.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["그게 그의 치명적 약점이었어", "그의 발뒤꿈치가 아팠어", "그는 달리기가 빨랐어"], answer: "그게 그의 치명적 약점이었어" },
     ],
+    writing: {
+      prompt: "나의 약점을 문화 전거(Achilles' heel 등)로 표현해 보세요.",
+      hints: ["one's Achilles' heel"],
+      samples: [
+        { en: "Deadlines are my Achilles' heel.", ko: "마감은 저의 치명적 약점이에요." },
+      ],
+      checklist: ["전거의 뜻을 상황에 맞게 썼다"],
+    },
     sections: [
       {
         heading: "암시(allusion) — 영어 화자들의 공유 메모리",
@@ -301,6 +325,14 @@ const chapters = [
       { id: "en-c204-d5", type: "order", sentence: "I'm not lazy, I'm on energy-saving mode.", prompt: "'게으른 게 아니라 절전 모드야'를 배열해 보세요." },
       { id: "en-c204-d6", type: "choice", listen: "Yeah, right.", prompt: "듣고 뉘앙스를 고르세요.", choices: ["안 믿어(반어)", "네, 맞아요(순수 동의)", "오른쪽이요"], answer: "안 믿어(반어)", hint: "억양에 따라 반어가 되는 대표 표현" },
     ],
+    writing: {
+      prompt: "월요일 아침을 반어로 놀리는 한 줄을 써 보세요.",
+      hints: ["— said no one ever"],
+      samples: [
+        { en: "Monday mornings are my favorite — said no one ever.", ko: "월요일 아침이 제일 좋아 — 라고 말한 사람은 아무도 없죠." },
+      ],
+      checklist: ["말과 속뜻이 반대인 반어를 만들었다"],
+    },
     sections: [
       {
         heading: "아이러니와 sarcasm — 말과 뜻이 반대인 문장들",
@@ -379,6 +411,14 @@ const chapters = [
       { id: "en-c205-d5", type: "choice", prompt: "'(가게에서) 서비스로 드릴게요'는?", choices: ["It's on the house.", "It's service.", "This is free service time."], answer: "It's on the house." },
       { id: "en-c205-d6", type: "choice", listen: "My bad.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["내 잘못이야(구어)", "나 나쁜 사람이야", "내 가방이야"], answer: "내 잘못이야(구어)" },
     ],
+    writing: {
+      prompt: "영어에 없는 한국어 개념 하나를 로마자+풀이로 소개해 보세요.",
+      hints: ["nunchi — reads the room"],
+      samples: [
+        { en: "My friend has great nunchi — she reads the room instantly.", ko: "제 친구는 눈치가 빨라요 — 분위기를 단번에 읽죠." },
+      ],
+      checklist: ["대응어 없는 개념을 풀어 옮겼다"],
+    },
     sections: [
       {
         heading: "번역은 등가 교환이 아니라 협상이다",
