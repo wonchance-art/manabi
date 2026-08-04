@@ -17,6 +17,14 @@ const chapters = [
     summary:
       "가까운지 먼지, 하나인지 여럿인지에 따라 this·that·these·those를 고르고, 같은 명사를 반복하지 않도록 one·ones로 받아요.",
     duration: "약 9분",
+    drills: [
+      { id: "en-a109-d1", type: "fill", prompt: "___ shoes are too small. (가까이 있는 이것들)", answer: "These" },
+      { id: "en-a109-d2", type: "fill", prompt: "I don't like this one. Show me another ___.", answer: "one" },
+      { id: "en-a109-d3", type: "choice", prompt: "'저것들'은?", choices: ["those", "these", "that"], answer: "those" },
+      { id: "en-a109-d4", type: "choice", prompt: "대용어 one의 역할은?", choices: ["앞에 나온 명사의 반복을 피한다", "숫자 1로만 쓰인다", "관사를 대신한다"], answer: "앞에 나온 명사의 반복을 피한다" },
+      { id: "en-a109-d5", type: "order", sentence: "That building is our school.", prompt: "'저 건물이 우리 학교다'를 배열해 보세요." },
+      { id: "en-a109-d6", type: "choice", listen: "Which one do you want, this or that?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["이거랑 저거 중 어느 거 줄까?", "하나만 원해?", "몇 개나 원해?"], answer: "이거랑 저거 중 어느 거 줄까?" },
+    ],
     sections: [
       {
         heading: "거리와 수를 동시에 표시해요",
@@ -85,6 +93,14 @@ const chapters = [
     summary:
       "want보다 부드러운 would like, 상대에게 권하는 Would you like, 함께 정하는 Let's·Why don't we·How about을 상황에 맞게 골라요.",
     duration: "약 10분",
+    drills: [
+      { id: "en-a210-d1", type: "fill", prompt: "___ don't we take a break? (제안)", answer: "Why" },
+      { id: "en-a210-d2", type: "fill", prompt: "How ___ going for a walk?", answer: "about" },
+      { id: "en-a210-d3", type: "choice", prompt: "'창문 좀 닫아 주실래요?'(가장 공손)는?", choices: ["Would you mind closing the window?", "Close the window, please, now.", "You close the window?"], answer: "Would you mind closing the window?" },
+      { id: "en-a210-d4", type: "choice", prompt: "Would you mind ~?에 '네, 해 드릴게요'로 답하려면?", choices: ["Not at all.", "Yes, I mind.", "No, you can't."], answer: "Not at all.", hint: "mind=꺼리다 — 부정으로 답해야 승낙" },
+      { id: "en-a210-d5", type: "order", sentence: "Shall we meet at six?", prompt: "'6시에 만날까요?'를 배열해 보세요." },
+      { id: "en-a210-d6", type: "choice", listen: "Let's grab a coffee sometime.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["언제 커피 한잔해요", "커피를 뺏어 마셔요", "커피 마실 시간이에요"], answer: "언제 커피 한잔해요" },
+    ],
     sections: [
       {
         heading: "want를 한 걸음 부드럽게 만들어요",

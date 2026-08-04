@@ -12,6 +12,14 @@ const chapters = [
     titleFr: "Past simple & irregular verbs",
     summary: "끝난 일을 말하는 과거형. -ed의 발음 삼분법 [t]/[d]/[ɪd]와 피해 갈 수 없는 불규칙동사를 정리해요.",
     duration: "약 10분",
+    drills: [
+      { id: "en-a201-d1", type: "fill", prompt: "I ___ to Jeju last week. (go)", answer: "went" },
+      { id: "en-a201-d2", type: "fill", prompt: "She ___ a movie yesterday. (watch)", answer: "watched" },
+      { id: "en-a201-d3", type: "choice", prompt: "'나는 어제 그를 안 만났다'는?", choices: ["I didn't meet him yesterday.", "I didn't met him yesterday.", "I don't met him yesterday."], answer: "I didn't meet him yesterday.", hint: "didn't 뒤엔 원형" },
+      { id: "en-a201-d4", type: "choice", prompt: "다음 중 규칙 변화(-ed)인 것은?", choices: ["wanted", "went", "ate"], answer: "wanted" },
+      { id: "en-a201-d5", type: "order", sentence: "We had dinner at home last night.", prompt: "'어젯밤 집에서 저녁을 먹었다'를 배열해 보세요." },
+      { id: "en-a201-d6", type: "choice", listen: "I lost my phone.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["휴대폰을 잃어버렸어요", "휴대폰을 샀어요", "휴대폰이 느려요"], answer: "휴대폰을 잃어버렸어요" },
+    ],
     sections: [
       {
         heading: "과거형의 의미 — 지금과 분리된, 끝난 일",
@@ -109,6 +117,14 @@ const chapters = [
     titleFr: "Past continuous & used to",
     summary: "전화가 왔을 때(사건) 나는 자고 있었다(배경) — 과거를 입체적으로 그리는 was/were -ing, 그리고 '~하곤 했다'의 used to를 정리해요.",
     duration: "약 9분",
+    drills: [
+      { id: "en-a202-d1", type: "fill", prompt: "I ___ sleeping when you called. (be)", answer: "was" },
+      { id: "en-a202-d2", type: "fill", prompt: "They were ___ soccer at noon. (play)", answer: "playing" },
+      { id: "en-a202-d3", type: "choice", prompt: "과거진행의 쓰임은?", choices: ["과거 한 시점에 하고 있던 중", "과거의 반복된 습관", "미래의 확정 계획"], answer: "과거 한 시점에 하고 있던 중" },
+      { id: "en-a202-d4", type: "choice", prompt: "'내가 요리하는 동안 그는 TV를 봤다'는?", choices: ["While I was cooking, he watched TV.", "During I was cooking, he watched TV.", "While I was cooking, he was watch TV."], answer: "While I was cooking, he watched TV.", hint: "during 뒤엔 명사, while 뒤엔 문장" },
+      { id: "en-a202-d5", type: "order", sentence: "It was raining when I left home.", prompt: "'집을 나설 때 비가 오고 있었다'를 배열해 보세요." },
+      { id: "en-a202-d6", type: "choice", listen: "What were you doing at nine?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["9시에 뭐 하고 있었어?", "9시에 뭐 할 거야?", "9시가 뭐가 좋아?"], answer: "9시에 뭐 하고 있었어?" },
+    ],
     sections: [
       {
         heading: "was/were + -ing — 과거의 배경 화면",
@@ -188,6 +204,14 @@ const chapters = [
     titleFr: "Future: will vs be going to",
     summary: "영어의 두 미래 표현은 한국어 '-ㄹ게'와 '-ㄹ 거야'의 차이와 놀랍도록 닮았어요. 즉석 결정 vs 미리 정한 계획.",
     duration: "약 9분",
+    drills: [
+      { id: "en-a2fut-d1", type: "fill", prompt: "OK, I ___ call you tonight. (즉석 결정)", answer: "will" },
+      { id: "en-a2fut-d2", type: "fill", prompt: "She is ___ to visit Paris next month. (계획)", answer: "going" },
+      { id: "en-a2fut-d3", type: "choice", prompt: "will과 be going to의 구분은?", choices: ["will=즉석 결정·예측, be going to=이미 정한 계획", "will=과거, going to=현재", "차이가 없다"], answer: "will=즉석 결정·예측, be going to=이미 정한 계획" },
+      { id: "en-a2fut-d4", type: "choice", prompt: "하늘이 어두울 때 '비 올 것 같아'는?", choices: ["It's going to rain.", "It will rain now.", "It rains tomorrow."], answer: "It's going to rain.", hint: "눈앞의 근거가 있으면 be going to" },
+      { id: "en-a2fut-d5", type: "order", sentence: "We are going to move next year.", prompt: "'내년에 이사할 예정이다'를 배열해 보세요." },
+      { id: "en-a2fut-d6", type: "choice", listen: "I'll be there in ten minutes.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["10분 안에 갈게", "10분 전에 갔어", "10시까지 있을게"], answer: "10분 안에 갈게" },
+    ],
     sections: [
       {
         heading: "미래가 두 개인 이유 — 결정의 타이밍",
@@ -258,6 +282,14 @@ const chapters = [
     titleFr: "Comparatives & superlatives",
     summary: "taller인지 more tall인지 — 선택 기준은 단어의 길이예요. than 뒤에 me가 오는 이유까지 정리해요.",
     duration: "약 9분",
+    drills: [
+      { id: "en-a203-d1", type: "fill", prompt: "This bag is ___ than mine. (big)", answer: "bigger" },
+      { id: "en-a203-d2", type: "fill", prompt: "Seoul is the ___ city in Korea. (large)", answer: "largest" },
+      { id: "en-a203-d3", type: "choice", prompt: "'점점 더 좋아지고 있다'는?", choices: ["It's getting better and better.", "It's more and more good.", "It gets good good."], answer: "It's getting better and better." },
+      { id: "en-a203-d4", type: "choice", prompt: "good의 비교급은?", choices: ["better", "gooder", "more good"], answer: "better" },
+      { id: "en-a203-d5", type: "order", sentence: "My sister is younger than me.", prompt: "'여동생은 나보다 어리다'를 배열해 보세요." },
+      { id: "en-a203-d6", type: "choice", listen: "This one is much cheaper.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["이게 훨씬 싸요", "이게 조금 비싸요", "이건 치즈 맛이에요"], answer: "이게 훨씬 싸요" },
+    ],
     sections: [
       {
         heading: "-er vs more — 기준은 단어의 길이",
@@ -339,6 +371,14 @@ const chapters = [
     titleFr: "Modal verbs: can / must / should / have to",
     summary: "동사 앞에서 뉘앙스를 입히는 조동사. 특히 must not과 don't have to가 전혀 다른 뜻이 되는 함정을 집중 공략해요.",
     duration: "약 10분",
+    drills: [
+      { id: "en-a204-d1", type: "fill", prompt: "___ I open the window? (허락을 구할 때)", answer: "May", accepts: ["Can", "Could"] },
+      { id: "en-a204-d2", type: "fill", prompt: "You ___ wear a seatbelt. (강한 의무)", answer: "must" },
+      { id: "en-a204-d3", type: "choice", prompt: "can의 두 가지 얼굴은?", choices: ["능력(할 수 있다)·허락(해도 된다)", "의무·금지", "과거·미래"], answer: "능력(할 수 있다)·허락(해도 된다)" },
+      { id: "en-a204-d4", type: "choice", prompt: "'문 좀 열어 주시겠어요?'(공손)는?", choices: ["Could you open the door?", "You open the door?", "Open the door, OK?"], answer: "Could you open the door?" },
+      { id: "en-a204-d5", type: "order", sentence: "You should drink more water.", prompt: "'물을 더 마시는 게 좋겠어'를 배열해 보세요." },
+      { id: "en-a204-d6", type: "choice", listen: "You must not park here.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["여기 주차하면 안 돼요", "여기 주차해도 돼요", "여기가 주차장이에요"], answer: "여기 주차하면 안 돼요" },
+    ],
     sections: [
       {
         heading: "조동사의 공통 문법 — 세 가지 철칙",
@@ -419,6 +459,14 @@ const chapters = [
     titleFr: "Present perfect: an introduction",
     summary: "한국어에 없어서 평생 회피하게 되는 시제, 현재완료. '과거의 일이 지금까지 닿아 있다'는 프레임 하나로 입문해요.",
     duration: "약 10분",
+    drills: [
+      { id: "en-a205-d1", type: "fill", prompt: "I have ___ my homework. (finish)", answer: "finished" },
+      { id: "en-a205-d2", type: "fill", prompt: "___ you ever been to Japan?", answer: "Have" },
+      { id: "en-a205-d3", type: "choice", prompt: "'막 도착했어'는?", choices: ["I have just arrived.", "I just arrive.", "I have arrive just."], answer: "I have just arrived." },
+      { id: "en-a205-d4", type: "choice", prompt: "현재완료의 감각은?", choices: ["과거의 일이 지금과 연결된다(경험·완료·계속)", "그냥 먼 과거다", "미래에 완료될 일이다"], answer: "과거의 일이 지금과 연결된다(경험·완료·계속)" },
+      { id: "en-a205-d5", type: "order", sentence: "She has lived here for ten years.", prompt: "'그녀는 여기 10년째 살고 있다'를 배열해 보세요." },
+      { id: "en-a205-d6", type: "choice", listen: "I've never tried sushi.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["스시를 먹어 본 적이 없어요", "스시를 안 좋아해요", "스시를 자주 먹어요"], answer: "스시를 먹어 본 적이 없어요" },
+    ],
     sections: [
       {
         heading: "한국어에 없는 시제 — 그래서 회피하게 된다",
@@ -505,6 +553,14 @@ const chapters = [
     titleFr: "Infinitive vs gerund",
     summary: "want to go인데 enjoy going인 이유. 암기가 필요한 동사들과, stop to/-ing처럼 의미가 갈리는 함정을 정리해요.",
     duration: "약 9분",
+    drills: [
+      { id: "en-a206-d1", type: "fill", prompt: "I want ___ visit London.", answer: "to" },
+      { id: "en-a206-d2", type: "fill", prompt: "I enjoy ___ music. (listen)", answer: "listening" },
+      { id: "en-a206-d3", type: "choice", prompt: "동명사(-ing)만 받는 동사는?", choices: ["enjoy", "want", "hope"], answer: "enjoy" },
+      { id: "en-a206-d4", type: "choice", prompt: "'그는 담배를 끊었다'는?", choices: ["He stopped smoking.", "He stopped to smoke.", "둘 다 같은 뜻이다"], answer: "He stopped smoking.", hint: "stopped to smoke = 피우려고 멈췄다" },
+      { id: "en-a206-d5", type: "order", sentence: "I need to buy some milk.", prompt: "'우유를 사야 해'를 배열해 보세요." },
+      { id: "en-a206-d6", type: "choice", listen: "I'm looking forward to seeing you.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["만날 날을 기대하고 있어요", "당신을 찾고 있어요", "앞쪽을 보고 있어요"], answer: "만날 날을 기대하고 있어요" },
+    ],
     sections: [
       {
         heading: "동사 뒤에 동사를 이으려면 — 두 가지 연결 장치",
@@ -589,6 +645,14 @@ const chapters = [
     titleFr: "Adverbs of frequency & word order",
     summary: "always부터 never까지 빈도의 사다리를 세우고, 한국어와 달리 자리가 정해져 있는 빈도부사의 지정석 규칙을 익혀요.",
     duration: "약 8분",
+    drills: [
+      { id: "en-a207-d1", type: "fill", prompt: "I ___ drink coffee at night. (전혀 안 마신다)", answer: "never" },
+      { id: "en-a207-d2", type: "fill", prompt: "She is ___ late. (언제나)", answer: "always" },
+      { id: "en-a207-d3", type: "choice", prompt: "빈도부사의 위치는?", choices: ["일반동사 앞, be동사 뒤", "문장 맨 앞에만", "문장 맨 끝에만"], answer: "일반동사 앞, be동사 뒤" },
+      { id: "en-a207-d4", type: "choice", prompt: "빈도가 높은 순서로 옳은 것은?", choices: ["always > usually > sometimes > never", "sometimes > always > never", "never > usually > always"], answer: "always > usually > sometimes > never" },
+      { id: "en-a207-d5", type: "order", sentence: "He usually walks to work.", prompt: "'그는 보통 걸어서 출근한다'를 배열해 보세요." },
+      { id: "en-a207-d6", type: "choice", listen: "I hardly ever eat out.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["외식을 거의 안 해요", "외식하기가 힘들어요", "열심히 외식해요"], answer: "외식을 거의 안 해요", hint: "hardly = 거의 ~않다" },
+    ],
     sections: [
       {
         heading: "빈도의 사다리 — always에서 never까지",
@@ -672,6 +736,14 @@ const chapters = [
     titleFr: "There is / there are & impersonal it",
     summary: "한국어 '있다' 하나가 영어에선 there is(존재)와 have(소유)로 갈라져요. 주어가 꼭 필요한 영어의 해결사, 비인칭 it도 함께.",
     duration: "약 9분",
+    drills: [
+      { id: "en-a208-d1", type: "fill", prompt: "___ is a park near my house.", answer: "There" },
+      { id: "en-a208-d2", type: "fill", prompt: "There ___ two banks on this street.", answer: "are" },
+      { id: "en-a208-d3", type: "choice", prompt: "'우유가 하나도 없다'는?", choices: ["There isn't any milk.", "There isn't some milk.", "It isn't milk."], answer: "There isn't any milk.", hint: "부정문엔 any" },
+      { id: "en-a208-d4", type: "choice", prompt: "There is/are의 선택 기준은?", choices: ["뒤에 오는 명사의 단수·복수", "앞 문장의 시제", "문장의 길이"], answer: "뒤에 오는 명사의 단수·복수" },
+      { id: "en-a208-d5", type: "order", sentence: "There are many stars in the sky.", prompt: "'하늘에 별이 많다'를 배열해 보세요." },
+      { id: "en-a208-d6", type: "choice", listen: "Is there a bathroom on this floor?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["이 층에 화장실이 있나요?", "이 층이 몇 층인가요?", "화장실 바닥이 어때요?"], answer: "이 층에 화장실이 있나요?" },
+    ],
     sections: [
       {
         heading: "'있다'의 두 갈래 — 존재의 there is, 소유의 have",
