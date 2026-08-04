@@ -16,6 +16,11 @@
 ### doing
 ### todo
 ### done (최근)
+- Tatoeba fr 실음원 메타 v1: v1+v2 A1~A2 20문형을 오디오 메타 전용 API로 조회하고
+  오디오 자체 라이선스 CC BY/CC0 allowlist·낭독자 귀속·스키마 계약을 고정. 현행 후보의
+  오디오 22건은 NC 16·SA 1·미표시 5로 허용 0건(총 부족 120)을 명시하고, 3회 byte-identical
+  SHA·대상 3/3·전체 261파일/2,516테스트 green을 검증
+  (`codex/tatoeba-fr-audio`, 구현 cfe43e0, base 162d6bb7ec6908759308f1ce720e145550167d27)
 - Tatoeba fr A2 스냅샷 v2: unstable API `paging.next` 페이지네이션으로 10문형×20문장
   200건을 CC BY 2.0 FR·CC0 allowlist와 문장별 sourceUrl로 고정하고, 동일 쿼리 2회
   byte-identical SHA·스키마/라이선스 전수 계약·정본 전체 259파일/2,511테스트 green을 검증
