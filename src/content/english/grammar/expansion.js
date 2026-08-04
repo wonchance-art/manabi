@@ -365,6 +365,14 @@ const chapters = [
     summary:
       "only와 even이 어느 성분에 붙느냐에 따라 제외되는 대안과 놀라움의 초점이 어떻게 달라지는지 읽고, 모호한 문장을 다시 설계해요.",
     duration: "약 11분",
+    drills: [
+      { id: "en-c109-d1", type: "fill", prompt: "Only a ___ students passed the exam. (소수의)", answer: "few" },
+      { id: "en-c109-d2", type: "fill", prompt: "He ___ speaks in meetings. (좀처럼 ~않다)", answer: "rarely", accepts: ["seldom", "hardly"] },
+      { id: "en-c109-d3", type: "choice", prompt: "even의 효과는?", choices: ["예상 밖의 것까지 포함(~조차)", "범위를 좁힌다", "부정을 만든다"], answer: "예상 밖의 것까지 포함(~조차)" },
+      { id: "en-c109-d4", type: "choice", prompt: "'요리는 주말에만 한다'를 뜻하는 문장은?", choices: ["He cooks only on weekends.", "Only he cooks on weekends.", "He only cooks, on weekends."], answer: "He cooks only on weekends.", hint: "only의 위치가 뜻을 바꿔요" },
+      { id: "en-c109-d5", type: "order", sentence: "Not everyone agrees with this idea.", prompt: "'모두가 이 생각에 동의하는 건 아니다'를 배열해 보세요." },
+      { id: "en-c109-d6", type: "choice", listen: "Even my grandmother uses a smartphone.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["할머니조차 스마트폰을 쓰세요", "할머니만 스마트폰을 쓰세요", "할머니는 스마트폰을 안 쓰세요"], answer: "할머니조차 스마트폰을 쓰세요" },
+    ],
     sections: [
       {
         heading: "only는 바로 뒤의 대안을 지워요",
@@ -425,6 +433,14 @@ const chapters = [
     summary:
       "앞 문맥이 복원할 수 있는 동사구·to부정사·병렬 성분을 생략하고, 조동사나 do so로 구조를 지탱해 밀도 높은 문장을 만들어요.",
     duration: "약 12분",
+    drills: [
+      { id: "en-c206-d1", type: "fill", prompt: "A: Who ate the cake? — B: Tom ___. (동사 대용)", answer: "did" },
+      { id: "en-c206-d2", type: "fill", prompt: "I asked him to help, and he did ___. (그렇게)", answer: "so" },
+      { id: "en-c206-d3", type: "choice", prompt: "'Want some coffee?'에서 생략된 것은?", choices: ["Do you", "You do", "Did we"], answer: "Do you" },
+      { id: "en-c206-d4", type: "choice", prompt: "대용어 one/ones가 되받는 것은?", choices: ["앞에 나온 명사", "앞에 나온 동사", "문장 전체"], answer: "앞에 나온 명사" },
+      { id: "en-c206-d5", type: "order", sentence: "If you can come, please do.", prompt: "'올 수 있으면 와 줘(대용 do)'를 배열해 보세요." },
+      { id: "en-c206-d6", type: "choice", listen: "I hope so.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["그러길 바라요", "그래서 바라요", "희망이 없어요"], answer: "그러길 바라요" },
+    ],
     sections: [
       {
         heading: "조동사가 사라진 동사구의 자리를 지켜요",
