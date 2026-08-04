@@ -13,6 +13,14 @@ const chapters = [
     titleFr: "Word order & modifiers",
     summary: "영어의 뼈대는 SVO — 동사가 주어 바로 뒤에 와요. 한국어와 정반대인 이 어순과, 조사가 없어 위치가 곧 역할이 되는 원리, 수식어가 붙는 방향까지 큰 그림을 먼저 잡아요.",
     duration: "약 8분",
+    drills: [
+      { id: "en-ot01-d1", type: "fill", prompt: "I ___ coffee every morning. (마시다)", answer: "drink" },
+      { id: "en-ot01-d2", type: "fill", prompt: "She reads books ___ the library. (~에서)", answer: "in", accepts: ["at"] },
+      { id: "en-ot01-d3", type: "choice", prompt: "영어 어순의 기본 뼈대는?", choices: ["주어+동사+목적어(SVO)", "주어+목적어+동사(SOV)", "동사+주어+목적어"], answer: "주어+동사+목적어(SVO)" },
+      { id: "en-ot01-d4", type: "choice", prompt: "'나는 학교에서 영어를 공부한다'의 옳은 어순은?", choices: ["I study English at school.", "I at school English study.", "I English study at school."], answer: "I study English at school.", hint: "동사가 주어 바로 뒤 — 한국어와 반대예요" },
+      { id: "en-ot01-d5", type: "order", sentence: "She drinks tea every day.", prompt: "'그녀는 매일 차를 마신다'를 배열해 보세요." },
+      { id: "en-ot01-d6", type: "choice", listen: "I like Korean food.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["한국 음식을 좋아해요", "한국어를 좋아해요", "한국에 가고 싶어요"], answer: "한국 음식을 좋아해요" },
+    ],
     sections: [
       {
         heading: "이미 가진 자산 — 그리고 콩글리시 지뢰",
@@ -81,6 +89,14 @@ const chapters = [
     titleFr: "The alphabet: names vs sounds",
     summary: "A의 이름은 '에이', 소리는 [æ] — 이름과 소리는 다르다는 대원칙과, 전화로 스펠링을 불러주는 생존 기술을 배워요.",
     duration: "약 8분",
+    drills: [
+      { id: "en-ot02-d1", type: "choice", prompt: "영어 알파벳은 모두 몇 자?", choices: ["26자", "24자", "28자"], answer: "26자" },
+      { id: "en-ot02-d2", type: "fill", prompt: "대문자–소문자 짝: A–a, B–b, D–___", answer: "d" },
+      { id: "en-ot02-d3", type: "choice", prompt: "이메일 주소의 '@'는 뭐라고 읽나요?", choices: ["at", "and", "a"], answer: "at" },
+      { id: "en-ot02-d4", type: "choice", listen: "M", prompt: "듣고 어떤 글자인지 고르세요.", choices: ["M (엠)", "N (엔)", "L (엘)"], answer: "M (엠)" },
+      { id: "en-ot02-d5", type: "choice", prompt: "'W'의 올바른 이름은?", choices: ["더블유(double-u)", "더블브이", "따블유먼트"], answer: "더블유(double-u)" },
+      { id: "en-ot02-d6", type: "choice", listen: "B", prompt: "듣고 어떤 글자인지 고르세요.", choices: ["B (비)", "V (브이)", "P (피)"], answer: "B (비)", hint: "b/v/p 구분 — 한국인 최다 함정" },
+    ],
     sections: [
       {
         heading: "대원칙 — 글자의 이름과 소리는 다르다",
@@ -185,6 +201,14 @@ const chapters = [
     titleFr: "Phonics I: the four consonant traps",
     summary: "F vs P, B vs V, R vs L, 그리고 한국어에 없는 TH — 한글 표기가 만든 4대 자음 함정을 정면 돌파해요.",
     duration: "약 9분",
+    drills: [
+      { id: "en-ot03-d1", type: "choice", listen: "rice", prompt: "듣고 어떤 단어인지 고르세요.", choices: ["rice(쌀) — r", "lice(이) — l", "ice(얼음)"], answer: "rice(쌀) — r" },
+      { id: "en-ot03-d2", type: "choice", listen: "fork", prompt: "듣고 어떤 단어인지 고르세요.", choices: ["fork(포크) — f", "pork(돼지고기) — p", "four(4)"], answer: "fork(포크) — f" },
+      { id: "en-ot03-d3", type: "choice", prompt: "think의 th 발음 요령은?", choices: ["혀끝을 이 사이에 살짝 대고 바람을 내보낸다", "그냥 '씽크'로 읽는다", "혀를 목 쪽으로 만다"], answer: "혀끝을 이 사이에 살짝 대고 바람을 내보낸다" },
+      { id: "en-ot03-d4", type: "choice", listen: "sink", prompt: "듣고 어떤 단어인지 고르세요.", choices: ["sink(가라앉다) — s", "think(생각하다) — th", "zinc(아연)"], answer: "sink(가라앉다) — s" },
+      { id: "en-ot03-d5", type: "fill", prompt: "f 발음: 윗니를 ___입술에 살짝 대고 바람을 내보낸다", answer: "아래" },
+      { id: "en-ot03-d6", type: "choice", listen: "very", prompt: "듣고 어떤 단어인지 고르세요.", choices: ["very — v", "berry — b", "ferry — f"], answer: "very — v" },
+    ],
     sections: [
       {
         heading: "F vs P — 커피의 F는 'ㅋㅍ'가 아니다",
@@ -294,6 +318,14 @@ const chapters = [
     titleFr: "Phonics II: vowels & magic e",
     summary: "단모음 5개의 진짜 소리, 단어 끝 e가 부리는 마법, 그리고 ee·oo 더블 모음까지 — 처음 보는 단어를 읽는 힘을 길러요.",
     duration: "약 9분",
+    drills: [
+      { id: "en-ot04-d1", type: "choice", listen: "ship", prompt: "듣고 어떤 단어인지 고르세요.", choices: ["ship(배) — 짧은 i", "sheep(양) — 긴 ee", "shop(가게)"], answer: "ship(배) — 짧은 i" },
+      { id: "en-ot04-d2", type: "choice", listen: "full", prompt: "듣고 어떤 단어인지 고르세요.", choices: ["full(가득한) — 짧은 u", "fool(바보) — 긴 oo", "fall(떨어지다)"], answer: "full(가득한) — 짧은 u" },
+      { id: "en-ot04-d3", type: "choice", prompt: "cake의 a 소리는?", choices: ["에이(알파벳 이름 그대로)", "애(짧은 소리)", "아"], answer: "에이(알파벳 이름 그대로)" },
+      { id: "en-ot04-d4", type: "fill", prompt: "hat→hate: 끝의 e는 소리 없이 앞 모음을 알파벳 이름으로 바꿔요. 이런 e를 ___ e라고 해요 (영어로)", answer: "magic", accepts: ["silent"] },
+      { id: "en-ot04-d5", type: "choice", listen: "coat", prompt: "듣고 어떤 단어인지 고르세요.", choices: ["coat(코트) — 오우", "caught(잡았다) — 오", "cut(자르다) — 어"], answer: "coat(코트) — 오우" },
+      { id: "en-ot04-d6", type: "choice", listen: "bad", prompt: "듣고 어떤 단어인지 고르세요.", choices: ["bad(나쁜) — 애", "bed(침대) — 에", "bud(싹) — 어"], answer: "bad(나쁜) — 애" },
+    ],
     sections: [
       {
         heading: "단모음 5개 — '애플'이 아니라 [ˈæpl]인 이유",
@@ -400,6 +432,14 @@ const chapters = [
     titleFr: "Word stress & rhythm",
     summary: "영어는 강세 박자 언어 — 세게 읽는 위치(강세)를 놓치면 발음이 다 맞아도 못 알아들어요. 맥도날드·스타벅스로 직접 실험해봐요.",
     duration: "약 8분",
+    drills: [
+      { id: "en-ot05-d1", type: "choice", prompt: "banana의 강세 위치는?", choices: ["ba-NA-na(둘째 음절)", "BA-na-na(첫째 음절)", "ba-na-NA(셋째 음절)"], answer: "ba-NA-na(둘째 음절)" },
+      { id: "en-ot05-d2", type: "choice", prompt: "record가 '기록하다'(동사)일 때 강세는?", choices: ["re-CORD(뒤)", "RE-cord(앞)", "강세가 없다"], answer: "re-CORD(뒤)", hint: "명사는 앞, 동사는 뒤 — 2음절 단골 규칙" },
+      { id: "en-ot05-d3", type: "choice", prompt: "영어 리듬의 특징은?", choices: ["강세 음절만 또렷하고 나머지는 약하게 뭉갠다", "모든 음절을 같은 길이로 읽는다", "문장 끝을 항상 올린다"], answer: "강세 음절만 또렷하고 나머지는 약하게 뭉갠다" },
+      { id: "en-ot05-d4", type: "fill", prompt: "coffee의 강세는 ___째 음절에 있어요 (숫자)", answer: "첫", accepts: ["1"] },
+      { id: "en-ot05-d5", type: "choice", listen: "I wanna go home.", prompt: "듣고 wanna의 정체를 고르세요.", choices: ["want to의 연음", "won't의 연음", "wonder의 줄임"], answer: "want to의 연음" },
+      { id: "en-ot05-d6", type: "choice", listen: "thirteen", prompt: "듣고 어떤 수인지 고르세요.", choices: ["13(thirteen — 뒤 강세)", "30(thirty — 앞 강세)", "3(three)"], answer: "13(thirteen — 뒤 강세)" },
+    ],
     sections: [
       {
         heading: "영어는 강세 박자, 한국어는 음절 박자",
