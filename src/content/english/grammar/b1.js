@@ -20,6 +20,14 @@ const chapters = [
       { id: "en-b101-d5", type: "order", sentence: "Have you finished the report yet?", prompt: "'보고서 다 끝냈어요?'를 배열해 보세요." },
       { id: "en-b101-d6", type: "choice", listen: "I've already had lunch.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["벌써 점심을 먹었어요", "점심을 먹을 거예요", "점심이 준비됐어요"], answer: "벌써 점심을 먹었어요" },
     ],
+    writing: {
+      prompt: "좋아하는 영화(또는 책) 경험을 현재완료로, 처음 본 시점을 과거로 써 보세요.",
+      hints: ["have seen… / first saw in…"],
+      samples: [
+        { en: "I have seen that movie three times. I first saw it in 2015.", ko: "그 영화를 세 번 봤어요. 처음 본 건 2015년이었어요." },
+      ],
+      checklist: ["경험은 현재완료, 특정 시점은 과거로 갈랐다"],
+    },
     sections: [
       {
         heading: "왜 우리는 현재완료를 피하게 됐나",
@@ -109,6 +117,14 @@ const chapters = [
       { id: "en-b102-d5", type: "order", sentence: "If you have time, come with us.", prompt: "'시간 있으면 우리랑 같이 가자'를 배열해 보세요." },
       { id: "en-b102-d6", type: "choice", listen: "What would you do if you were me?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["네가 나라면 어떻게 하겠어?", "나랑 뭐 하고 싶어?", "내가 뭘 했으면 좋겠어?"], answer: "네가 나라면 어떻게 하겠어?" },
     ],
+    writing: {
+      prompt: "내일의 실제 계획(1형)과 지금과 다른 상상(2형)을 하나씩 써 보세요.",
+      hints: ["If…, I will… / If I had…, I would…"],
+      samples: [
+        { en: "If it's sunny tomorrow, I'll go hiking. If I had a car, I would drive to the beach.", ko: "내일 맑으면 등산 갈 거예요. 차가 있다면 해변까지 운전할 텐데요." },
+      ],
+      checklist: ["1형과 2형의 시제 짝을 지켰다"],
+    },
     sections: [
       {
         heading: "한국어 '-면'은 하나, 영어 if는 여러 개",
@@ -192,6 +208,14 @@ const chapters = [
       { id: "en-b103-d5", type: "order", sentence: "My bike was stolen last night.", prompt: "'어젯밤 자전거를 도둑맞았다'를 배열해 보세요." },
       { id: "en-b103-d6", type: "choice", listen: "Breakfast is served until ten.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["아침 식사는 10시까지 제공돼요", "아침 10시에 예약했어요", "아침을 10인분 주문했어요"], answer: "아침 식사는 10시까지 제공돼요" },
     ],
+    writing: {
+      prompt: "우리 동네에서 '되어지는 일' 하나를 수동태로 써 보세요.",
+      hints: ["is/was + p.p."],
+      samples: [
+        { en: "This bread is baked every morning at the corner bakery.", ko: "이 빵은 모퉁이 빵집에서 매일 아침 구워져요." },
+      ],
+      checklist: ["행위 대상을 주어로 세웠다"],
+    },
     sections: [
       {
         heading: "수동태는 언제 쓰나 — '누가'가 중요하지 않을 때",
@@ -279,6 +303,14 @@ const chapters = [
       { id: "en-b104-d5", type: "order", sentence: "The movie that we watched was boring.", prompt: "'우리가 본 영화는 지루했다'를 배열해 보세요." },
       { id: "en-b104-d6", type: "choice", listen: "Is this the train that goes downtown?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["이거 시내 가는 기차 맞아요?", "이 기차 어디서 오는 거예요?", "기차역이 시내에 있어요?"], answer: "이거 시내 가는 기차 맞아요?" },
     ],
+    writing: {
+      prompt: "특별한 친구(또는 물건)를 관계절로 소개해 보세요.",
+      hints: ["a friend who… / a thing that…"],
+      samples: [
+        { en: "I have a friend who speaks four languages.", ko: "4개 국어를 하는 친구가 있어요." },
+      ],
+      checklist: ["선행사 뒤에 who/that 절을 붙였다"],
+    },
     sections: [
       {
         heading: "어순 반전 — 한국어는 앞에서, 영어는 뒤에서 꾸며요",
@@ -356,6 +388,14 @@ const chapters = [
       { id: "en-b105-d5", type: "order", sentence: "She told me not to worry.", prompt: "'그녀는 나에게 걱정하지 말라고 했다'를 배열해 보세요." },
       { id: "en-b105-d6", type: "choice", listen: "He said he would be late.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["그가 늦을 거라고 말했어요", "그가 늦어서 미안하다고 했어요", "그는 벌써 늦었어요"], answer: "그가 늦을 거라고 말했어요" },
     ],
+    writing: {
+      prompt: "누군가에게 들은 말을 간접화법으로 전해 보세요.",
+      hints: ["said (that)… — 시제 한 칸 뒤로"],
+      samples: [
+        { en: "My boss said she was happy with my work.", ko: "상사가 제 일이 마음에 든다고 했어요." },
+      ],
+      checklist: ["전달문에서 시제를 일치시켰다"],
+    },
     sections: [
       {
         heading: "왜 시제가 뒤로 밀리나 — 보고 시점의 논리",
@@ -445,6 +485,14 @@ const chapters = [
       { id: "en-b106-d5", type: "order", sentence: "She must be very proud of you.", prompt: "'그녀가 널 무척 자랑스러워하겠구나'를 배열해 보세요." },
       { id: "en-b106-d6", type: "choice", listen: "You must be tired after the long flight.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["긴 비행에 피곤하시겠어요(추측)", "피곤해도 참아야 해요(의무)", "비행이 길어질 거예요"], answer: "긴 비행에 피곤하시겠어요(추측)" },
     ],
+    writing: {
+      prompt: "연락이 안 되는 친구의 상황을 must/might로 추측해 보세요.",
+      hints: ["must be… / might be…"],
+      samples: [
+        { en: "He isn't answering — he must be in a meeting.", ko: "전화를 안 받네요 — 회의 중인 게 틀림없어요." },
+      ],
+      checklist: ["확신 정도에 맞는 조동사를 골랐다"],
+    },
     sections: [
       {
         heading: "조동사는 확신의 온도계예요",
@@ -530,6 +578,14 @@ const chapters = [
       { id: "en-b107-d5", type: "order", sentence: "Can you pick me up at seven?", prompt: "'7시에 나 데리러 와 줄래?'를 배열해 보세요." },
       { id: "en-b107-d6", type: "choice", listen: "The meeting was put off until Friday.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["회의가 금요일로 미뤄졌어요", "회의가 금요일에 끝났어요", "회의를 금요일마다 해요"], answer: "회의가 금요일로 미뤄졌어요" },
     ],
+    writing: {
+      prompt: "오늘 하루를 구동사 두 개로 써 보세요.",
+      hints: ["wake up · give up · look for…"],
+      samples: [
+        { en: "I woke up late, so I gave up going to the gym.", ko: "늦게 일어나서 헬스장 가는 건 포기했어요." },
+      ],
+      checklist: ["구동사를 뜻에 맞게 골랐다"],
+    },
     sections: [
       {
         heading: "왜 우리는 구동사를 피해왔나 — 격의 문제",
@@ -623,6 +679,14 @@ const chapters = [
       { id: "en-b108-d5", type: "order", sentence: "She is good at playing the piano.", prompt: "'그녀는 피아노를 잘 친다'를 배열해 보세요." },
       { id: "en-b108-d6", type: "choice", listen: "I'm worried about the exam.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["시험이 걱정돼요", "시험 준비를 끝냈어요", "시험이 어려웠어요"], answer: "시험이 걱정돼요" },
     ],
+    writing: {
+      prompt: "관심사와 잘하는 것을 전치사 결합으로 써 보세요.",
+      hints: ["interested in / good at"],
+      samples: [
+        { en: "I'm interested in photography and good at editing photos.", ko: "사진에 관심이 있고 사진 편집을 잘해요." },
+      ],
+      checklist: ["동사·형용사에 맞는 전치사를 붙였다"],
+    },
     sections: [
       {
         heading: "동사+전치사 — 한 단어처럼 굳은 짝",
@@ -714,6 +778,14 @@ const chapters = [
       { id: "en-b109-d5", type: "order", sentence: "Could you tell me how to get there?", prompt: "'거기 가는 법을 알려 주시겠어요?'를 배열해 보세요." },
       { id: "en-b109-d6", type: "choice", listen: "It's a nice day, isn't it?", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["날씨 좋네요, 그렇죠?", "좋은 날이 아니에요", "무슨 요일이에요?"], answer: "날씨 좋네요, 그렇죠?" },
     ],
+    writing: {
+      prompt: "길을 물을 때: 부가의문 하나 + 간접의문 하나를 써 보세요.",
+      hints: ["…, don't you? / Could you tell me where…?"],
+      samples: [
+        { en: "You know this area well, don't you? Could you tell me where the bank is?", ko: "이 동네 잘 아시죠? 은행이 어디 있는지 알려 주시겠어요?" },
+      ],
+      checklist: ["간접의문문 안을 평서 어순으로 썼다"],
+    },
     sections: [
       {
         heading: "간접의문 — 질문을 문장 속에 넣으면 어순이 풀린다",

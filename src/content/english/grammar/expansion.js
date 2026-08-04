@@ -185,6 +185,14 @@ const chapters = [
       { id: "en-b110-d5", type: "order", sentence: "She had never seen snow before that day.", prompt: "'그날 전까지 그녀는 눈을 본 적이 없었다'를 배열해 보세요." },
       { id: "en-b110-d6", type: "choice", listen: "The movie had already started when we arrived.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["도착했을 땐 영화가 이미 시작한 뒤였어요", "도착하자마자 영화가 시작했어요", "영화 시작 전에 도착했어요"], answer: "도착했을 땐 영화가 이미 시작한 뒤였어요" },
     ],
+    writing: {
+      prompt: "아침에 일어나 보니 이미 벌어져 있던 일을 과거완료로 써 보세요.",
+      hints: ["had + p.p."],
+      samples: [
+        { en: "By the time I woke up, my family had eaten breakfast.", ko: "제가 일어났을 땐 가족들이 이미 아침을 먹은 뒤였어요." },
+      ],
+      checklist: ["기준 과거보다 앞선 일에 had p.p.를 썼다"],
+    },
     sections: [
       {
         heading: "과거 사건 두 개의 순서를 표시해요",
@@ -253,6 +261,14 @@ const chapters = [
       { id: "en-b111-d5", type: "order", sentence: "Let me know as soon as you arrive.", prompt: "'도착하자마자 알려 줘'를 배열해 보세요." },
       { id: "en-b111-d6", type: "choice", listen: "The report is due by noon tomorrow.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["보고서 마감은 내일 정오까지예요", "보고서는 내일 정오에 발표돼요", "내일 정오에 보고서를 읽어요"], answer: "보고서 마감은 내일 정오까지예요" },
     ],
+    writing: {
+      prompt: "과제(또는 서류) 안내문을 by와 until로 써 보세요.",
+      hints: ["by 마감 / until 계속"],
+      samples: [
+        { en: "Please submit the form by Friday. The office is open until six.", ko: "서류는 금요일까지 내 주세요. 사무실은 6시까지 열어요." },
+      ],
+      checklist: ["by와 until을 뜻에 맞게 갈랐다"],
+    },
     sections: [
       {
         heading: "by는 완료 마감, until은 계속되는 끝점이에요",
@@ -321,6 +337,14 @@ const chapters = [
       { id: "en-b210-d5", type: "order", sentence: "The box was too heavy for me to carry.", prompt: "'상자가 너무 무거워 들 수 없었다'를 배열해 보세요." },
       { id: "en-b210-d6", type: "choice", listen: "It's warm enough to swim today.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["오늘 수영해도 될 만큼 따뜻해요", "수영하기엔 아직 추워요", "수영장이 충분히 넓어요"], answer: "오늘 수영해도 될 만큼 따뜻해요" },
     ],
+    writing: {
+      prompt: "너무 ~해서 …했던 경험을 so…that으로 써 보세요.",
+      hints: ["so + 형용사 + that…"],
+      samples: [
+        { en: "The movie was so boring that I fell asleep.", ko: "영화가 너무 지루해서 잠들어 버렸어요." },
+      ],
+      checklist: ["so…that의 순서를 지켰다"],
+    },
     sections: [
       {
         heading: "so는 형용사·부사, such는 명사 덩어리를 강조해요",
