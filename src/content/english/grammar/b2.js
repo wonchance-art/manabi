@@ -12,6 +12,14 @@ const chapters = [
     titleFr: "Third & Mixed Conditionals",
     summary: "'그때 알았더라면' — 돌이킬 수 없는 과거를 가정하는 3형과, should have p.p.의 후회 표현을 완성해요.",
     duration: "약 10분",
+    drills: [
+      { id: "en-b201-d1", type: "fill", prompt: "If I ___ studied harder, I would have passed.", answer: "had" },
+      { id: "en-b201-d2", type: "fill", prompt: "If I had left earlier, I ___ have missed the train. (부정)", answer: "wouldn't" },
+      { id: "en-b201-d3", type: "choice", prompt: "3형 조건문의 감각은?", choices: ["과거 사실과 반대인 후회·상상", "미래의 실제 가능성", "현재의 습관"], answer: "과거 사실과 반대인 후회·상상" },
+      { id: "en-b201-d4", type: "choice", prompt: "혼합 조건문 'If I had taken that job, I would be rich now.'의 구조는?", choices: ["과거 가정 + 현재 결과", "현재 가정 + 과거 결과", "둘 다 미래"], answer: "과거 가정 + 현재 결과" },
+      { id: "en-b201-d5", type: "order", sentence: "I would have called you if I had known.", prompt: "'알았더라면 전화했을 텐데'를 배열해 보세요." },
+      { id: "en-b201-d6", type: "choice", listen: "I should have listened to you.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["네 말을 들었어야 했는데(후회)", "네 말을 잘 들을게", "네 목소리가 잘 들려"], answer: "네 말을 들었어야 했는데(후회)" },
+    ],
     sections: [
       {
         heading: "3형 — 이미 끝난 과거를 되돌려보는 상상",
@@ -93,6 +101,14 @@ const chapters = [
     titleFr: "Perfect Continuous Tenses",
     summary: "have been -ing는 '지금까지 얼마나 오래 하고 있는가'를 묻고 답하는 전용 프레임이에요. How long과 함께 세트로 익혀요.",
     duration: "약 9분",
+    drills: [
+      { id: "en-b202-d1", type: "fill", prompt: "I have been ___ for two hours. (wait)", answer: "waiting" },
+      { id: "en-b202-d2", type: "fill", prompt: "She ___ been studying since morning.", answer: "has" },
+      { id: "en-b202-d3", type: "choice", prompt: "현재완료진행의 초점은?", choices: ["지금까지 계속돼 온 동작의 과정·기간", "이미 완료된 결과만", "미래의 계획"], answer: "지금까지 계속돼 온 동작의 과정·기간" },
+      { id: "en-b202-d4", type: "choice", prompt: "'하루 종일 비가 오고 있다'는?", choices: ["It has been raining all day.", "It is raining all day yesterday.", "It rains all day now."], answer: "It has been raining all day." },
+      { id: "en-b202-d5", type: "order", sentence: "How long have you been waiting here?", prompt: "'여기서 기다린 지 얼마나 됐어요?'를 배열해 보세요." },
+      { id: "en-b202-d6", type: "choice", listen: "I've been thinking about you.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["계속 네 생각을 하고 있었어", "지금 막 생각났어", "생각을 그만뒀어"], answer: "계속 네 생각을 하고 있었어" },
+    ],
     sections: [
       {
         heading: "have been -ing의 정체 — 기간을 강조하는 현재완료",
@@ -171,6 +187,14 @@ const chapters = [
     titleFr: "Advanced Articles: Zero Article & Generic Use",
     summary: "go to school엔 왜 the가 없을까? a/the를 넘어 '관사 없음'이라는 제3의 선택지까지 — 한국인 영원한 숙제 2탄이에요.",
     duration: "약 11분",
+    drills: [
+      { id: "en-b203-d1", type: "fill", prompt: "She plays ___ piano every evening. (악기)", answer: "the" },
+      { id: "en-b203-d2", type: "fill", prompt: "I go to work ___ bus. (교통수단 — 무관사)", answer: "by" },
+      { id: "en-b203-d3", type: "choice", prompt: "'(죄수로) 교도소에 가다'는?", choices: ["go to prison (무관사)", "go to the prison", "go to a prison"], answer: "go to prison (무관사)", hint: "본래 기능으로 가면 무관사 — go to school과 같은 원리" },
+      { id: "en-b203-d4", type: "choice", prompt: "the를 쓰는 대표 경우는?", choices: ["세상에 하나뿐인 것·서로 아는 바로 그것", "처음 언급하는 아무것", "모든 복수 명사"], answer: "세상에 하나뿐인 것·서로 아는 바로 그것" },
+      { id: "en-b203-d5", type: "order", sentence: "The rich are not always happy.", prompt: "'부자라고 늘 행복한 건 아니다'를 배열해 보세요." },
+      { id: "en-b203-d6", type: "choice", listen: "I saw a dog, and the dog was huge.", prompt: "듣고 a→the의 흐름을 고르세요.", choices: ["개를 봤는데, 그 개가 엄청 컸다", "개 두 마리를 봤다", "큰 개를 기르고 있다"], answer: "개를 봤는데, 그 개가 엄청 컸다" },
+    ],
     sections: [
       {
         heading: "무관사 — '관사 없음'도 하나의 선택이에요",
@@ -255,6 +279,14 @@ const chapters = [
     titleFr: "Inversion & Emphasis",
     summary: "Not only..., Never have I... — 어순을 뒤집어 문장에 스포트라이트를 켜는 격식 장치. 작문·스피킹 고득점의 단골 무기예요.",
     duration: "약 10분",
+    drills: [
+      { id: "en-b204-d1", type: "fill", prompt: "Never ___ I seen such a beautiful sunset.", answer: "have" },
+      { id: "en-b204-d2", type: "fill", prompt: "Not only ___ she sing, but she also dances.", answer: "does", accepts: ["can"] },
+      { id: "en-b204-d3", type: "choice", prompt: "부정어 문두 도치의 규칙은?", choices: ["부정어가 문두에 오면 주어·조동사가 도치된다", "부정어 뒤는 평서 어순 그대로", "도치는 의문문에서만 일어난다"], answer: "부정어가 문두에 오면 주어·조동사가 도치된다" },
+      { id: "en-b204-d4", type: "choice", prompt: "'그제야 이해했다'는?", choices: ["Only then did I understand.", "Only then I understood.", "Then only I did understand."], answer: "Only then did I understand." },
+      { id: "en-b204-d5", type: "order", sentence: "Little did he know about the surprise.", prompt: "'그는 그 깜짝 파티를 전혀 몰랐다'를 배열해 보세요." },
+      { id: "en-b204-d6", type: "choice", listen: "Here comes the bus!", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["버스 온다!", "버스 여기서 서요", "버스에서 내려요"], answer: "버스 온다!" },
+    ],
     sections: [
       {
         heading: "도치란 — 어순을 흔들어 시선을 끄는 장치",
@@ -335,6 +367,14 @@ const chapters = [
     titleFr: "Participle Clauses",
     summary: "Having finished the report, ... — 접속사와 주어를 떼어내 문장을 압축하는 문어의 기술과, 악명 높은 현수분사 함정을 다뤄요.",
     duration: "약 10분",
+    drills: [
+      { id: "en-b205-d1", type: "fill", prompt: "___ tired, she went to bed early. (feel)", answer: "Feeling" },
+      { id: "en-b205-d2", type: "fill", prompt: "___ in 1990, the bridge is quite old. (build — 수동)", answer: "Built" },
+      { id: "en-b205-d3", type: "choice", prompt: "분사구문의 주어 원칙은?", choices: ["주절의 주어와 같아야 한다", "아무 주어나 상관없다", "주어는 항상 it이다"], answer: "주절의 주어와 같아야 한다", hint: "어기면 현수분사(dangling)" },
+      { id: "en-b205-d4", type: "choice", prompt: "'숙제를 끝내고 나서 나갔다'는?", choices: ["Having finished my homework, I went out.", "Finished my homework, I went out.", "Having finish my homework, I go out."], answer: "Having finished my homework, I went out." },
+      { id: "en-b205-d5", type: "order", sentence: "Walking along the street, I met an old friend.", prompt: "'길을 걷다가 옛 친구를 만났다'를 배열해 보세요." },
+      { id: "en-b205-d6", type: "choice", listen: "Seen from above, the city looks tiny.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["위에서 보면 도시가 아주 작아 보여요", "도시 위를 날고 있어요", "도시가 잘 안 보여요"], answer: "위에서 보면 도시가 아주 작아 보여요" },
+    ],
     sections: [
       {
         heading: "분사구문의 원리 — 접속사+주어를 떼어내는 압축",
@@ -414,6 +454,14 @@ const chapters = [
     titleFr: "Linking Devices: however / whereas / hence",
     summary: "but과 so만으로 버텨온 글에 however, nevertheless, whereas, hence를 — 연결어의 격식 스펙트럼과 구두점 규칙까지 정리해요.",
     duration: "약 10분",
+    drills: [
+      { id: "en-b206-d1", type: "fill", prompt: "It was raining. ___, we went hiking. (그럼에도)", answer: "However", accepts: ["Nevertheless", "Nonetheless"] },
+      { id: "en-b206-d2", type: "fill", prompt: "He studied hard; ___, he passed easily. (그 결과)", answer: "therefore", accepts: ["thus", "consequently"] },
+      { id: "en-b206-d3", type: "choice", prompt: "although와 despite의 구분은?", choices: ["although+문장, despite+명사(구)", "although+명사, despite+문장", "차이가 없다"], answer: "although+문장, despite+명사(구)" },
+      { id: "en-b206-d4", type: "choice", prompt: "'게다가'로 문장을 잇는 것은?", choices: ["Moreover,", "Whereas,", "Otherwise,"], answer: "Moreover," },
+      { id: "en-b206-d5", type: "order", sentence: "Despite the rain, the game continued.", prompt: "'비에도 불구하고 경기는 계속됐다'를 배열해 보세요." },
+      { id: "en-b206-d6", type: "choice", listen: "On the other hand, it's quite expensive.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["반면에, 꽤 비싸요", "한편으로 손에 넣었어요", "다른 손이 아파요"], answer: "반면에, 꽤 비싸요" },
+    ],
     sections: [
       {
         heading: "연결어에는 격식의 층이 있어요",
@@ -494,6 +542,14 @@ const chapters = [
     titleFr: "Collocations: make / do / have / take",
     summary: "heavy rain은 되는데 strong rain은 왜 안 될까? 단어들의 단짝 관계, 콜로케이션으로 '문법은 맞는데 어색한 영어'를 졸업해요.",
     duration: "약 11분",
+    drills: [
+      { id: "en-b207-d1", type: "fill", prompt: "make a ___ (결정을 내리다)", answer: "decision" },
+      { id: "en-b207-d2", type: "fill", prompt: "___ attention, please. (주목해 주세요)", answer: "Pay" },
+      { id: "en-b207-d3", type: "choice", prompt: "'실수하다'는?", choices: ["make a mistake", "do a mistake", "take a mistake"], answer: "make a mistake" },
+      { id: "en-b207-d4", type: "choice", prompt: "'숙제를 하다'는?", choices: ["do homework", "make homework", "take homework"], answer: "do homework", hint: "make=만들어내다, do=수행하다" },
+      { id: "en-b207-d5", type: "order", sentence: "Can I take a picture here?", prompt: "'여기서 사진 찍어도 되나요?'를 배열해 보세요." },
+      { id: "en-b207-d6", type: "choice", listen: "Let's keep in touch.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["계속 연락하고 지내자", "만지지 말자", "가까이 붙어 있자"], answer: "계속 연락하고 지내자" },
+    ],
     sections: [
       {
         heading: "문법은 맞는데 어색한 이유 — 단어의 교우 관계",
@@ -577,6 +633,14 @@ const chapters = [
     titleFr: "Causatives & Perception Verbs: make / let / have / get",
     summary: "make him go에는 to가 없고, I cut my hair는 셀프 이발이 돼요. 사역동사 4총사와 지각동사, 그리고 have something done까지 — 동사원형 보어의 세계를 정리해요.",
     duration: "약 10분",
+    drills: [
+      { id: "en-b208-d1", type: "fill", prompt: "My mom made me ___ my room. (clean — 원형)", answer: "clean" },
+      { id: "en-b208-d2", type: "fill", prompt: "I had my hair ___ yesterday. (cut — 맡겨서)", answer: "cut" },
+      { id: "en-b208-d3", type: "choice", prompt: "let/make/have의 결은?", choices: ["let=허락, make=강제, have=시킴(의뢰)", "let=강제, make=허락, have=금지", "전부 같다"], answer: "let=허락, make=강제, have=시킴(의뢰)" },
+      { id: "en-b208-d4", type: "choice", prompt: "'그가 노래하는 걸 들었다'는?", choices: ["I heard him sing.", "I heard him to sing.", "I heard he to sang."], answer: "I heard him sing.", hint: "지각동사 뒤엔 원형(또는 -ing)" },
+      { id: "en-b208-d5", type: "order", sentence: "She saw him crossing the street.", prompt: "'그가 길을 건너는 걸 봤다'를 배열해 보세요." },
+      { id: "en-b208-d6", type: "choice", listen: "I got my phone fixed.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["휴대폰을 (맡겨서) 고쳤어요", "휴대폰이 고장 났어요", "휴대폰을 붙잡았어요"], answer: "휴대폰을 (맡겨서) 고쳤어요" },
+    ],
     sections: [
       {
         heading: "사역 4총사 — 강제, 의뢰, 설득, 허락",
@@ -655,6 +719,14 @@ const chapters = [
     titleFr: "Determiners & Agreement: all / every / each",
     summary: "all, every, each는 같은 '모든'이 아니고, a few와 few는 긍정과 부정으로 갈려요. 한정사의 뉘앙스부터 a number of의 수일치까지, 작문 감점 단골 지대를 정리해요.",
     duration: "약 10분",
+    drills: [
+      { id: "en-b209-d1", type: "fill", prompt: "___ of the students has a laptop. (각각)", answer: "Each" },
+      { id: "en-b209-d2", type: "fill", prompt: "There is ___ money left. (거의 없다)", answer: "little" },
+      { id: "en-b209-d3", type: "choice", prompt: "few와 a few의 구분은?", choices: ["few=거의 없다(부정적), a few=조금 있다(긍정적)", "few=많다, a few=적다", "차이가 없다"], answer: "few=거의 없다(부정적), a few=조금 있다(긍정적)" },
+      { id: "en-b209-d4", type: "choice", prompt: "'경찰이 오고 있다'의 수일치는?", choices: ["The police are coming.", "The police is coming.", "A police is coming."], answer: "The police are coming.", hint: "police는 복수 취급" },
+      { id: "en-b209-d5", type: "order", sentence: "Neither of us knows the answer.", prompt: "'우리 둘 다 답을 모른다'를 배열해 보세요." },
+      { id: "en-b209-d6", type: "choice", listen: "Everyone was there except John.", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["존만 빼고 다 있었어요", "존만 있었어요", "존이 제일 늦었어요"], answer: "존만 빼고 다 있었어요" },
+    ],
     sections: [
       {
         heading: "all / every / each — '모든'의 세 얼굴",
