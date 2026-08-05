@@ -97,7 +97,6 @@ export default function Layout({ children }) {
     ] : []),
     { href: '/lessons',   label: '교재' },
     { href: '/vocab',     label: '어휘' },
-    { href: '/review/grammar', label: '복습' },
     { href: '/materials', label: '자료' },
   ];
 
@@ -107,7 +106,6 @@ export default function Layout({ children }) {
     ] : []),
     { href: '/lessons',   label: '교재' },
     { href: '/vocab',     label: '어휘' },
-    { href: '/review/grammar', label: '복습' },
     { href: '/materials', label: '자료' },
     ...(user ? [] : [{ href: '/auth', label: '로그인' }]),
   ];

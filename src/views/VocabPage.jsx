@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { recordReviewCompleted } from '../lib/learn/progressStore';
+import { countDueGrammar } from '../lib/grammarSrs';
 import { useTTS } from '../lib/useTTS';
 import { callGemini } from '../lib/gemini';
 import Button from '../components/Button';
@@ -37,6 +38,7 @@ export default function VocabPage() {
   const queryClient = useQueryClient();
   const { speak, supported: ttsSupported } = useTTS();
   const [tab, setTab] = useState('list');
+  const [dueGrammarCount, setDueGrammarCount] = useState(0);
   const [reviewIdx, setReviewIdx] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   const [reviewFinished, setReviewFinished] = useState(false);
@@ -373,6 +375,14 @@ export default function VocabPage() {
     } catch {}
   };
 
+  // 문법 복습 대기 수 — 어휘 화면이 복습 허브 역할을 하므로 여기서도 보여준다.
+  useEffect(() => {
+    if (!user?.id) { setDueGrammarCount(0); return undefined; }
+    let alive = true;
+    countDueGrammar(user.id).then((n) => { if (alive) setDueGrammarCount(n || 0); }, () => {});
+    return () => { alive = false; };
+  }, [user?.id]);
+
   const startReview = async () => {
     // 복습 예정(학습한 단어) 먼저, 그다음 하루 한도 내 새 단어
     const reviews = session.reviewsDue;
@@ -473,6 +483,10 @@ export default function VocabPage() {
             {session.count > 0 && (
               <Button onClick={startReview}>복습 시작 →</Button>
             )}
+            {/* 문법 복습은 별도 네비 탭 대신 이 복습 허브에 함께 둔다(어휘·문법 한자리). */}
+            <Link href="/review/grammar" className="btn btn--ghost btn--sm">
+              문법 복습{dueGrammarCount > 0 ? ` ${dueGrammarCount}` : ''} →
+            </Link>
             <Button size="sm" variant="ghost" onClick={() => setManualAddOpen(true)}>+ 추가</Button>
             {vocab.length > 0 && (
               <details style={{ position: 'relative' }}>
