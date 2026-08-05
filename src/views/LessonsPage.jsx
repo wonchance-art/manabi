@@ -143,8 +143,10 @@ export default function LessonsPage({ refManifest = {}, initialLang, initialLeve
 
   const refGroups = useMemo(() => {
     if (!refLang) return [];
+    // URL의 level은 임의 문자열일 수 있다 — 트랙에 없는 값이면 전체를 보여준다(빈 목록 방지).
+    const effectiveLevel = refLang.levels.some(l => l.label === levelFilter) ? levelFilter : 'all';
     return refLang.levels
-      .filter(l => levelFilter === 'all' || l.label === levelFilter)
+      .filter(l => effectiveLevel === 'all' || l.label === effectiveLevel)
       .map(l => ({ meta: l, chapters: l.chapters, vocabCount: l.vocabCount, bunkeiCount: l.bunkeiCount || 0 }));
   }, [refLang, levelFilter]);
 
