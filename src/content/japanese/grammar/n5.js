@@ -409,6 +409,14 @@ const chapters = [
     titleFr: "コンビニにほんご",
     summary: "여행 첫 일본어는 교실이 아니라 편의점에서 트여요. 계산대에서 뭐라 묻든 대답은 딱 두 개 — お願いします(네)와 大丈夫です(됐어요)만 손에 쥐면 첫 결제 끝.",
     duration: "약 5분",
+    drills: [
+      { id: "ja-ot07-d1", type: "choice", prompt: "점원 'あたためますか'의 뜻은?", choices: ["데워 드릴까요?", "봉투 드릴까요?", "포인트 카드 있으세요?"], answer: "데워 드릴까요?" },
+      { id: "ja-ot07-d2", type: "fill", prompt: "'괜찮아요(사양)': だいじょうぶ___。", answer: "です" },
+      { id: "ja-ot07-d3", type: "choice", prompt: "'봉투는 필요 없어요'는?", choices: ["ふくろは いりません", "ふくろは いません", "ふくろは たべません"], answer: "ふくろは いりません" },
+      { id: "ja-ot07-d4", type: "choice", prompt: "계산대에서 만능으로 통하는 두 마디는?", choices: ["おねがいします / だいじょうぶです", "こんにちは / さようなら", "はい / いいえ만"], answer: "おねがいします / だいじょうぶです" },
+      { id: "ja-ot07-d5", type: "order", sentence: "おにぎりを ひとつ おねがいします。", prompt: "'주먹밥 하나 부탁해요'를 배열해 보세요." },
+      { id: "ja-ot07-d6", type: "choice", listen: "ポイントカードは おもちですか。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["포인트 카드 있으세요?", "카드로 계산하세요?", "영수증 필요하세요?"], answer: "포인트 카드 있으세요?" },
+    ],
     sections: [
       {
         heading: "문 열자마자 다들 소리치는데, 무시해도 돼요",
@@ -585,6 +593,14 @@ const chapters = [
     titleFr: "居酒屋デビュー",
     summary: "일본의 밤은 이자카야에서 완성돼요. 안 시켰는데 나오는 접시 お通し의 정체와, 많은 사람이 첫 잔으로 곧잘 외치는 주문 「とりあえず生で」 — 이 둘만 알면 첫 방문도 당황 없어요.",
     duration: "약 5분",
+    drills: [
+      { id: "ja-ot08-d1", type: "choice", prompt: "お通し의 정체는?", choices: ["자릿세 격의 기본 안주(거절 어려움)", "무료 서비스 안주", "주문 실수"], answer: "자릿세 격의 기본 안주(거절 어려움)" },
+      { id: "ja-ot08-d2", type: "fill", prompt: "'일단 생맥주요!': とりあえず なま___！", answer: "で" },
+      { id: "ja-ot08-d3", type: "choice", prompt: "'건배!'는?", choices: ["かんぱい！", "がんばって！", "いらっしゃい！"], answer: "かんぱい！" },
+      { id: "ja-ot08-d4", type: "choice", prompt: "주문 마감을 물을 때는?", choices: ["ラストオーダーは なんじですか", "さいごの ちゅうもんは いつ たべますか", "おわりの じかんに なんですか"], answer: "ラストオーダーは なんじですか" },
+      { id: "ja-ot08-d5", type: "order", sentence: "えだまめと からあげを ください。", prompt: "'에다마메랑 가라아게 주세요'를 배열해 보세요." },
+      { id: "ja-ot08-d6", type: "choice", listen: "おのみものは いかがですか。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["음료는 어떻게 하시겠어요?", "음식은 맛있으세요?", "자리를 옮기시겠어요?"], answer: "음료는 어떻게 하시겠어요?" },
+    ],
     sections: [
       {
         heading: "안 시켰는데 접시가 나왔다 — 이거 계산돼요",
@@ -829,6 +845,14 @@ const chapters = [
     titleFr: "でんしゃのアナウンス",
     summary: "일본 전철은 유난히 말이 많아요. 방송이 쉴 새 없이 흐르지만, 딱 한 단어 まもなく(곧)만 잡아도 내릴 역은 안 놓쳐요. '뛰어들지 마세요' 방송의 뜻과 차내 매너까지 귀로 따라가 봐요.",
     duration: "약 5분",
+    drills: [
+      { id: "ja-ot11-d1", type: "choice", prompt: "안내방송 まもなく의 뜻은?", choices: ["곧·이제 곧", "천천히", "마지막으로"], answer: "곧·이제 곧" },
+      { id: "ja-ot11-d2", type: "fill", prompt: "'~행 열차': 東京___き", answer: "行", accepts: ["ゆ", "い"] },
+      { id: "ja-ot11-d3", type: "choice", prompt: "各駅停車(かくえきていしゃ)란?", choices: ["각 역마다 서는 완행", "급행", "특급"], answer: "각 역마다 서는 완행" },
+      { id: "ja-ot11-d4", type: "choice", prompt: "'막차'는?", choices: ["しゅうでん", "はつでん", "まんいん"], answer: "しゅうでん" },
+      { id: "ja-ot11-d5", type: "order", sentence: "この でんしゃは きゅうこうですか。", prompt: "'이 전철은 급행인가요?'를 배열해 보세요." },
+      { id: "ja-ot11-d6", type: "choice", listen: "まもなく でんしゃが まいります。", prompt: "안내방송을 듣고 고르세요.", choices: ["곧 전철이 들어옵니다", "전철이 지연되고 있습니다", "전철이 출발했습니다"], answer: "곧 전철이 들어옵니다" },
+    ],
     sections: [
       {
         heading: "일본 전철은 진짜 말이 많아요 — 근데 그게 도움돼요",
@@ -1089,6 +1113,14 @@ const chapters = [
     titleFr: "神社でおみくじ",
     summary: "붉은 鳥居를 지나면 방울, 賽銭함, 그리고 종이 한 장에 적힌 大吉·凶. 한국어 화자만의 특권 — 그 운세 한자를 '대길·흉'으로 그대로 읽어내는 쾌감을 즐겨봐요.",
     duration: "약 5분",
+    drills: [
+      { id: "ja-ot09-d1", type: "choice", prompt: "신사 참배의 기본 순서는?", choices: ["두 번 절·두 번 박수·한 번 절(二礼二拍手一礼)", "박수 세 번만", "절 한 번만"], answer: "두 번 절·두 번 박수·한 번 절(二礼二拍手一礼)" },
+      { id: "ja-ot09-d2", type: "fill", prompt: "운세 뽑기: おみ___", answer: "くじ" },
+      { id: "ja-ot09-d3", type: "choice", prompt: "おみくじ의 大吉은?", choices: ["대길(가장 좋음)", "대흉", "보통"], answer: "대길(가장 좋음)" },
+      { id: "ja-ot09-d4", type: "choice", prompt: "참배 전 손 씻는 곳은?", choices: ["てみずや(手水舎)", "おんせん", "といれ"], answer: "てみずや(手水舎)" },
+      { id: "ja-ot09-d5", type: "order", sentence: "おまもりを ふたつ ください。", prompt: "'부적 두 개 주세요'를 배열해 보세요." },
+      { id: "ja-ot09-d6", type: "choice", listen: "きょうは おまつりが あります。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["오늘은 축제가 있어요", "오늘은 문을 닫아요", "오늘은 비가 와요"], answer: "오늘은 축제가 있어요" },
+    ],
     sections: [
       {
         heading: "붉은 문이 보이면 신사 — 근데 왜 박수를?",
@@ -1326,6 +1358,14 @@ const chapters = [
     titleFr: "券売機とラーメン",
     summary: "라멘집에선 점원이 아니라 자판기가 주문을 받아요. 券売機의 당황 포인트와, 면이 부족할 때 외치는 마법의 한마디 「替え玉お願いします」 — 국물 4대 파벌 잡담까지 곁들여 한 그릇을 끝내봐요.",
     duration: "약 5분",
+    drills: [
+      { id: "ja-ot10-d1", type: "choice", prompt: "券売機(けんばいき)란?", choices: ["식권 자판기(먼저 표를 산다)", "복권 판매기", "음료 자판기"], answer: "식권 자판기(먼저 표를 산다)" },
+      { id: "ja-ot10-d2", type: "fill", prompt: "'면 추가(사리)': 替え___", answer: "玉", accepts: ["だま"] },
+      { id: "ja-ot10-d3", type: "choice", prompt: "'면 단단하게'는?", choices: ["めん かため", "めん やわらかめ", "めん おおもり"], answer: "めん かため" },
+      { id: "ja-ot10-d4", type: "choice", prompt: "'국물 진하게'는?", choices: ["あじ こいめ", "あじ うすめ", "あじ なしで"], answer: "あじ こいめ" },
+      { id: "ja-ot10-d5", type: "order", sentence: "かえだまを おねがいします。", prompt: "'사리 추가 부탁해요'를 배열해 보세요." },
+      { id: "ja-ot10-d6", type: "choice", listen: "しょっけんを おかいもとめください。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["식권을 구매해 주세요", "줄을 서 주세요", "잠시 기다려 주세요"], answer: "식권을 구매해 주세요" },
+    ],
     sections: [
       {
         heading: "점원이 안 와요 — 주문은 자판기가 받해요",
@@ -1396,6 +1436,14 @@ const chapters = [
     summary:
       "정글 같은 돈키호테를 헤집고 마지막 관문은 免税(멘제이) 카운터. 외울 건 「めんぜい おねがいします」와 「パスポート、これです」 두 마디뿐이에요. 게다가 2026년 11월부터 방식이 확 바뀌어요 — 매장에선 세금까지 포함해 사고, 출국할 때 확인받은 뒤 세금분을 돌려받아요.",
     duration: "약 5분",
+    drills: [
+      { id: "ja-ot12-d1", type: "fill", prompt: "'면세로 부탁해요': ___ぜいで おねがいします。", answer: "めん" },
+      { id: "ja-ot12-d2", type: "choice", prompt: "면세 수속에 필요한 것은?", choices: ["パスポート", "うんてんめんきょ", "がくせいしょう"], answer: "パスポート" },
+      { id: "ja-ot12-d3", type: "choice", prompt: "'면세 되나요?'는?", choices: ["めんぜいに なりますか", "めんぜいを たべますか", "めんぜいへ いきますか"], answer: "めんぜいに なりますか" },
+      { id: "ja-ot12-d4", type: "choice", prompt: "TAX-FREE 카운터에서 외울 말 두 마디는?", choices: ["めんぜいで おねがいします / パスポートです", "いくらですか / たかいです", "こんにちは / さようなら"], answer: "めんぜいで おねがいします / パスポートです" },
+      { id: "ja-ot12-d5", type: "order", sentence: "パスポートを おねがいします。", prompt: "'여권 부탁드립니다'를 배열해 보세요." },
+      { id: "ja-ot12-d6", type: "choice", listen: "こちらに サインを おねがいします。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["여기에 서명 부탁드려요", "이쪽으로 오세요", "잠시만 기다려 주세요"], answer: "여기에 서명 부탁드려요" },
+    ],
     sections: [
       {
         heading: "정글 같은 돈키호테, 마지막 관문은 免税 카운터",
