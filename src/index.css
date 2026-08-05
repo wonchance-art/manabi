@@ -9226,3 +9226,14 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   border-radius: 4px;
   box-shadow: 0 0 0 2px #fffaf0;
 }
+
+/* ── 랜딩: 교재 트랙 카드 ── */
+.track-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin-top: 28px; }
+.track-card { display: block; padding: 18px 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-secondary); text-decoration: none; color: inherit; transition: transform 0.15s ease, border-color 0.15s ease; }
+.track-card:hover { transform: translateY(-2px); border-color: var(--accent, #2d6a4f); }
+.track-card__native { display: block; font-size: 1.3rem; font-weight: 700; margin-bottom: 2px; }
+.track-card__name { display: block; font-size: 0.86rem; color: var(--text-secondary); margin-bottom: 8px; }
+.track-card__hook { display: block; font-size: 0.82rem; line-height: 1.5; color: var(--text-secondary); margin-bottom: 10px; }
+.track-card__stat { display: inline-block; font-size: 0.74rem; color: var(--text-muted); }
+.track-card__cta { display: block; margin-top: 8px; font-size: 0.82rem; font-weight: 600; color: var(--accent, #2d6a4f); }
+.landing-section__desc { margin: 10px auto 0; max-width: 560px; font-size: 0.92rem; line-height: 1.6; color: var(--text-secondary); text-align: center; }
