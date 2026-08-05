@@ -215,6 +215,9 @@
 
 ## Codex-2 (codex2/*)
 ### doing
+- 🛠️ `src/views` 리뷰 후속 V-05~V-13: 저장 실패 오성공, 영구 로딩·플래그,
+  DB 오류 빈 상태 오독, SSR localStorage 초기값, KST 자정 경계를 각 회귀 테스트와 함께 수정
+  (`codex2/fix-views-review-findings`, base `dc6659ef5197c67d5a9308c2625afcd82efa5ae6`)
 ### todo
 ### done (최근)
 - 🔍 전체 코드 리뷰 R1 — `src/views` 실제 46파일·18,951줄 전수 정독(스캔 0),
