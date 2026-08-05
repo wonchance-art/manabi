@@ -10,7 +10,8 @@ export const metadata = {
 // ISR — 목록의 챕터 제목·요약도 오버라이드를 반영. 저장 시 revalidatePath('/lessons')로 무효화.
 export const revalidate = 60;
 
-export default async function Page() {
+export default async function Page({ searchParams }) {
+  const sp = await searchParams;
   const refManifest = await applyManifestOverrides(buildRefManifest());
-  return <LessonsPage refManifest={refManifest} />;
+  return <LessonsPage refManifest={refManifest} initialLang={sp?.lang} initialLevel={sp?.level} />;
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { isPassed } from '../components/RefPatternCheck';
 import { useAuth } from '../lib/AuthContext';
 import { pullProgress } from '../lib/refProgress';
@@ -24,36 +24,35 @@ function PitchLine({ text }) {
   );
 }
 
-export default function LessonsPage({ refManifest = {} }) {
+export default function LessonsPage({ refManifest = {}, initialLang, initialLevel }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { user, profile } = useAuth();
   const isAdmin = profile?.role === 'admin';
 
-  const [langFilter, setLangFilter] = useState(() => {
-    const u = searchParams.get('lang');
-    if (u && VALID_LANGS.has(u)) return u;
-    // URL에 없으면 마지막 선택 언어 유지 (챕터 페이지 진입 시에도 갱신됨)
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('lessons_lang');
-      if (saved && VALID_LANGS.has(saved)) return saved;
-    }
-    return 'English';
-  });
+  // SSR 원칙: 초기 상태는 서버·클라이언트가 동일해야 한다(하이드레이션 미스매치 방지).
+  // URL 파라미터는 서버(page.jsx)에서 props로 받고, localStorage 복원은 마운트 후 useEffect로만 한다.
+  const urlLang = initialLang && VALID_LANGS.has(initialLang) ? initialLang : null;
+  const [langFilter, setLangFilter] = useState(urlLang ?? 'English');
   // 마지막으로 본 챕터 — 복귀 시 자동 스크롤 대상
-  const [lastChapter] = useState(() => {
-    if (typeof window === 'undefined') return null;
-    try { return JSON.parse(localStorage.getItem('ref_last_chapter') || 'null'); } catch { return null; }
-  });
+  const [lastChapter, setLastChapter] = useState(null);
   const scrolledRef = useRef(false);
-  const [levelFilter, setLevelFilter] = useState(searchParams.get('level') || 'all');
-  const [expandedGroups, setExpandedGroups] = useState(() => {
-    if (typeof window === 'undefined') return new Set();
+  const [levelFilter, setLevelFilter] = useState(initialLevel || 'all');
+  const [expandedGroups, setExpandedGroups] = useState(() => new Set());
+
+  useEffect(() => {
+    // URL에 lang이 없을 때만 마지막 선택 언어 복원 (챕터 페이지 진입 시에도 갱신됨)
     try {
-      const saved = JSON.parse(localStorage.getItem('lessons_expanded') || '[]');
-      return new Set(Array.isArray(saved) ? saved : []);
-    } catch { return new Set(); }
-  });
+      if (!urlLang) {
+        const saved = localStorage.getItem('lessons_lang');
+        if (saved && VALID_LANGS.has(saved)) setLangFilter(saved);
+      }
+      const last = JSON.parse(localStorage.getItem('ref_last_chapter') || 'null');
+      if (last) setLastChapter(last);
+      const exp = JSON.parse(localStorage.getItem('lessons_expanded') || '[]');
+      if (Array.isArray(exp) && exp.length) setExpandedGroups(new Set(exp));
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [refRead, setRefRead] = useState(() => ({}));
   const [refCheck, setRefCheck] = useState(() => ({}));
   const [refReadLoaded, setRefReadLoaded] = useState(false);
