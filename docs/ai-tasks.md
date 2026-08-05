@@ -294,6 +294,10 @@
 - S1 STAMP_ALBUM_NODES 85 원자 전환(선행 #387 충족 — 즉시 착수): #150 5046785938
 - S4 수집 연출 정합 → S2 앨범 지역 탭·수집률 → S3 마일스톤 보상 v1(localStorage·DB 금지)
 ### done (최근)
+- 🔍 전체 코드 리뷰 R1 — scripts·설정·테스트 영역(report-only): 고정 base
+  `8e7e41778f338c0ed8a5d6744dedd011fb409a74`에서 게이트 8파일·설정·service worker·
+  의존성·테스트 258파일을 감사해 치명 2·중대 12·경미 2와 미커버 핵심 경로 상위 5를 문서화
+  (`codex3/review-code-scripts-config-tests`, `docs/review-code-scripts-config-tests.md`)
 - 📚 드릴→SRS 연결(v2 통합): ChapterDrills 정오답을 drill id 단위 append-only
   review_events + 기존 grammar_review FSRS 행으로 연결(정답 Good·오답 Again), 멱등 upsert와
   게스트 localStorage·기존 문법 복습 화면 역해석을 회귀 고정
