@@ -22,6 +22,14 @@ const chapters = [
       { id: "ja-n401-d5", type: "order", sentence: "あした ともだちと えいがを みる。", prompt: "'내일 친구랑 영화 본다(반말)'를 배열해 보세요." },
       { id: "ja-n401-d6", type: "choice", listen: "もう たべた？", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["벌써 먹었어?(반말)", "이제 먹을래?", "더 먹을래?"], answer: "벌써 먹었어?(반말)" },
     ],
+    writing: {
+      prompt: "친구에게 보낼 반말 문자 한 줄을 써 보세요.",
+      hints: ["보통형+?"],
+      samples: [
+        { ja: "あした えいが みる？", ko: "내일 영화 볼래?" },
+      ],
+      checklist: ["보통형으로 물음을 만들었다"],
+    },
     sections: [
       {
         heading: "원형이 본체, ます는 그 위에 입은 옷 — 반말 4종 세트",
@@ -109,6 +117,14 @@ const chapters = [
       { id: "ja-n401b-d5", type: "order", sentence: "ここは わたしが うまれた まちです。", prompt: "'여기는 내가 태어난 동네예요'를 배열해 보세요." },
       { id: "ja-n401b-d6", type: "choice", listen: "これは ははが つくった おべんとうです。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["이건 엄마가 만든 도시락이에요", "이건 엄마에게 줄 도시락이에요", "엄마는 도시락을 팔아요"], answer: "이건 엄마가 만든 도시락이에요" },
     ],
+    writing: {
+      prompt: "최근 산 것(또는 본 것)을 수식절로 소개해 보세요.",
+      hints: ["〜た+명사"],
+      samples: [
+        { ja: "きのう かった ほんが おもしろいです。", ko: "어제 산 책이 재미있어요." },
+      ],
+      checklist: ["수식절을 명사 앞에 놓았다"],
+    },
     sections: [
       {
         heading: "꾸미는 말은 명사 앞에 툭 — 보통형 + 명사",
@@ -158,6 +174,14 @@ const chapters = [
       { id: "ja-n402-d5", type: "order", sentence: "しゅうまつは そうじを したり、かいものを したりします。", prompt: "'주말엔 청소를 하거나 장을 보거나 해요'를 배열해 보세요." },
       { id: "ja-n402-d6", type: "choice", listen: "ふじさんに のぼった ことが ありますか。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["후지산에 올라 본 적 있어요?", "후지산에 오르고 싶어요?", "후지산이 보여요?"], answer: "후지산에 올라 본 적 있어요?" },
     ],
+    writing: {
+      prompt: "가 본 곳 경험을 〜たことがあります로 써 보세요.",
+      hints: ["〜た ことが あります"],
+      samples: [
+        { ja: "おきなわに いった ことが あります。", ko: "오키나와에 가 본 적이 있어요." },
+      ],
+      checklist: ["경험 문형을 지켰다"],
+    },
     sections: [
       {
         heading: "'가 본 적 있어?'",
@@ -222,6 +246,14 @@ const chapters = [
       { id: "ja-n403-d5", type: "order", sentence: "わたしは すこし にほんごが はなせます。", prompt: "'저는 일본어를 조금 할 수 있어요'를 배열해 보세요." },
       { id: "ja-n403-d6", type: "choice", listen: "よやくが できますか。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["예약할 수 있나요?", "예약했나요?", "예약을 취소하나요?"], answer: "예약할 수 있나요?" },
     ],
+    writing: {
+      prompt: "할 수 있는 것 하나를 가능형으로 써 보세요.",
+      hints: ["〜られます/〜えます"],
+      samples: [
+        { ja: "からい ものが たべられます。", ko: "매운 것을 먹을 수 있어요." },
+      ],
+      checklist: ["대상에 が를 썼다"],
+    },
     sections: [
       {
         heading: "두 가지 '할 수 있다'",
@@ -308,6 +340,14 @@ const chapters = [
       { id: "ja-n404-d5", type: "order", sentence: "ともだちが てつだって くれました。", prompt: "'친구가 도와줬어요'를 배열해 보세요." },
       { id: "ja-n404-d6", type: "choice", listen: "だれに もらいましたか。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["누구한테 받았어요?", "누구한테 줬어요?", "누가 왔어요?"], answer: "누구한테 받았어요?" },
     ],
+    writing: {
+      prompt: "누가 나에게 해 준 고마운 일을 くれる로 써 보세요.",
+      hints: ["〜て くれました"],
+      samples: [
+        { ja: "ともだちが かさを かして くれました。", ko: "친구가 우산을 빌려줬어요." },
+      ],
+      checklist: ["남→나 방향에 くれる를 골랐다"],
+    },
     sections: [
       {
         heading: "왜 '주다'가 두 개인가 — 카메라의 위치",
@@ -406,6 +446,14 @@ const chapters = [
       { id: "ja-n405-d5", type: "order", sentence: "この みちを まっすぐ いくと、えきが あります。", prompt: "'이 길을 곧장 가면 역이 있어요'를 배열해 보세요." },
       { id: "ja-n405-d6", type: "choice", listen: "はるに なると、あたたかく なります。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["봄이 되면 따뜻해져요", "봄이 돼서 따뜻했어요", "봄에는 꽃이 펴요"], answer: "봄이 되면 따뜻해져요" },
     ],
+    writing: {
+      prompt: "기계·자판기 사용법을 と 조건으로 써 보세요.",
+      hints: ["〜と、〜ます"],
+      samples: [
+        { ja: "この ボタンを おすと、きっぷが でます。", ko: "이 버튼을 누르면 표가 나와요." },
+      ],
+      checklist: ["법칙적 결과에 と를 썼다"],
+    },
     sections: [
       {
         heading: "'-면' 4형제, 각자 전문 분야가 있다",
@@ -484,6 +532,14 @@ const chapters = [
       { id: "ja-nc2-d5", type: "order", sentence: "ことしも おせわに なりました。", prompt: "'올해도 신세 많이 졌습니다'를 배열해 보세요." },
       { id: "ja-nc2-d6", type: "choice", listen: "あけまして おめでとう ございます。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["새해 복 많이 받으세요", "생일 축하해요", "합격 축하해요"], answer: "새해 복 많이 받으세요" },
     ],
+    writing: {
+      prompt: "연말 인사 메시지를 써 보세요.",
+      hints: ["ことしは/よいおとしを"],
+      samples: [
+        { ja: "ことしは ありがとうございました。よいおとしを！", ko: "올해 감사했습니다. 좋은 새해 맞으세요!" },
+      ],
+      checklist: ["연말 인사 관용구를 썼다"],
+    },
     sections: [
       {
         heading: "12월이 되면, 일본은 국수를 삶기 시작해요",
@@ -566,6 +622,14 @@ const chapters = [
       { id: "ja-n405b-d5", type: "order", sentence: "やすかったら、ふたつ かいます。", prompt: "'싸면 두 개 살게요'를 배열해 보세요." },
       { id: "ja-n405b-d6", type: "choice", listen: "こまったら、いつでも いってください。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["곤란하면 언제든 말하세요", "곤란해도 참으세요", "곤란한 적이 있어요"], answer: "곤란하면 언제든 말하세요" },
     ],
+    writing: {
+      prompt: "친구 초대 메시지를 たら로 써 보세요.",
+      hints: ["〜たら、〜て ください"],
+      samples: [
+        { ja: "しゅうまつ ひまだったら、あそびに きて ください。", ko: "주말에 한가하면 놀러 오세요." },
+      ],
+      checklist: ["일회성 조건에 たら를 썼다"],
+    },
     sections: [
       {
         heading: "가장 만능, 그리고 '~했더니'",
@@ -628,6 +692,14 @@ const chapters = [
       { id: "ja-n405c-d5", type: "order", sentence: "まどが あいて いますよ。", prompt: "'창문이 열려 있어요'를 배열해 보세요." },
       { id: "ja-n405c-d6", type: "choice", listen: "でんきを けして ください。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["불을 꺼 주세요", "불을 켜 주세요", "불이 꺼졌어요"], answer: "불을 꺼 주세요" },
     ],
+    writing: {
+      prompt: "자동사·타동사가 하나씩 들어간 두 문장을 써 보세요.",
+      hints: ["が+자동사/を+타동사"],
+      samples: [
+        { ja: "まどを あけました。かぜで ドアが しまりました。", ko: "창문을 열었어요. 바람에 문이 닫혔어요." },
+      ],
+      checklist: ["조사를 동사 종류에 맞췄다"],
+    },
     sections: [
       {
         heading: "저절로 '열리다'인가, 누가 '열다'인가",
@@ -691,6 +763,14 @@ const chapters = [
       { id: "ja-n406-d5", type: "order", sentence: "かいぎで いけんを きかれました。", prompt: "'회의에서 의견을 (질문)받았어요'를 배열해 보세요." },
       { id: "ja-n406-d6", type: "choice", listen: "こどもに なかれて、ねられませんでした。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["아이가 울어서 잘 수 없었어요(피해)", "아이를 울려서 혼났어요", "아이와 함께 잤어요"], answer: "아이가 울어서 잘 수 없었어요(피해)" },
     ],
+    writing: {
+      prompt: "겪어서 속상했던 일을 피해 수동으로 써 보세요.",
+      hints: ["〜られました"],
+      samples: [
+        { ja: "あにに ケーキを たべられました。", ko: "형이 (내) 케이크를 먹어 버렸어요." },
+      ],
+      checklist: ["피해의 뉘앙스를 수동으로 담았다"],
+    },
     sections: [
       {
         heading: "'당하는' 형태 만들기 — 수동형 (あ단+れる)",
@@ -777,6 +857,14 @@ const chapters = [
       { id: "ja-n407-d5", type: "order", sentence: "せんせいは がくせいに ほんを よませます。", prompt: "'선생님은 학생에게 책을 읽게 해요'를 배열해 보세요." },
       { id: "ja-n407-d6", type: "choice", listen: "こどもに やさいを たべさせます。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["아이에게 야채를 먹게 해요", "아이가 야채를 싫어해요", "아이와 야채를 먹어요"], answer: "아이에게 야채를 먹게 해요" },
     ],
+    writing: {
+      prompt: "누군가에게 시킨 일을 사역형으로 써 보세요.",
+      hints: ["〜させました"],
+      samples: [
+        { ja: "こどもに へやを そうじさせました。", ko: "아이에게 방을 청소하게 했어요." },
+      ],
+      checklist: ["사역 대상에 に를 썼다"],
+    },
     sections: [
       {
         heading: "'시키는' 형태 만들기 — 사역형 (あ단+せる)",
@@ -864,6 +952,14 @@ const chapters = [
       { id: "ja-n408-d5", type: "order", sentence: "なつより ふゆの ほうが すきです。", prompt: "'여름보다 겨울을 더 좋아해요'를 배열해 보세요." },
       { id: "ja-n408-d6", type: "choice", listen: "どちらが やすいですか。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["어느 쪽이 싸요?", "어디가 아파요?", "얼마나 싸요?"], answer: "어느 쪽이 싸요?" },
     ],
+    writing: {
+      prompt: "음료 취향을 より·ほう로 비교해 보세요.",
+      hints: ["Aより Bの ほうが"],
+      samples: [
+        { ja: "コーヒーより おちゃの ほうが すきです。", ko: "커피보다 차를 더 좋아해요." },
+      ],
+      checklist: ["비교 틀을 지켰다"],
+    },
     sections: [
       {
         heading: "'버스보다 전철이 빨라'",
@@ -916,6 +1012,14 @@ const chapters = [
       { id: "ja-nc3-d5", type: "order", sentence: "しんかんせんで えきべんを たべます。", prompt: "'신칸센에서 에키벤을 먹어요'를 배열해 보세요." },
       { id: "ja-nc3-d6", type: "choice", listen: "まもなく はっしゃします。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["곧 발차합니다", "곧 도착합니다", "운행이 중지됐습니다"], answer: "곧 발차합니다" },
     ],
+    writing: {
+      prompt: "신칸센 여행 준비를 두 문장으로 써 보세요.",
+      hints: ["していせき/えきべん"],
+      samples: [
+        { ja: "していせきを よやくして、えきべんも かいました。", ko: "지정석을 예약하고 에키벤도 샀어요." },
+      ],
+      checklist: ["て형으로 준비를 이었다"],
+    },
     sections: [
       {
         heading: "표부터 갈린다 — 자유석은 싸고, 지정석은 내 자리가 있고",
@@ -1000,6 +1104,14 @@ const chapters = [
       { id: "ja-n408b-d5", type: "order", sentence: "かぞくが いちばん たいせつです。", prompt: "'가족이 제일 소중해요'를 배열해 보세요." },
       { id: "ja-n408b-d6", type: "choice", listen: "きょねんほど さむくないですね。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["작년만큼 춥지 않네요", "작년보다 춥네요", "작년이 그립네요"], answer: "작년만큼 춥지 않네요" },
     ],
+    writing: {
+      prompt: "가족(또는 반)에서 '가장 ~한' 사람을 써 보세요.",
+      hints: ["〜の なかで いちばん"],
+      samples: [
+        { ja: "かぞくの なかで ちちが いちばん はやく おきます。", ko: "가족 중 아빠가 제일 일찍 일어나요." },
+      ],
+      checklist: ["범위+いちばん 순서를 지켰다"],
+    },
     sections: [
       {
         heading: "'셋 중엔 이게 제일이야'",
@@ -1049,6 +1161,14 @@ const chapters = [
       { id: "ja-n409-d5", type: "order", sentence: "らいねん にほんへ りょこうに いこうと おもいます。", prompt: "'내년에 일본 여행을 가려고 해요'를 배열해 보세요." },
       { id: "ja-n409-d6", type: "choice", listen: "そろそろ かえろう。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["슬슬 돌아가자", "빨리 돌아와", "이제 도착했다"], answer: "슬슬 돌아가자" },
     ],
+    writing: {
+      prompt: "다음 주부터의 다짐을 의향형+と思います로 써 보세요.",
+      hints: ["〜ようと おもいます"],
+      samples: [
+        { ja: "らいしゅうから うんどうしようと おもいます。", ko: "다음 주부터 운동하려고 해요." },
+      ],
+      checklist: ["의향형을 바르게 활용했다"],
+    },
     sections: [
       {
         heading: "'같이 가자!'",
@@ -1106,6 +1226,14 @@ const chapters = [
       { id: "ja-n409b-d5", type: "order", sentence: "らいげつ ひっこす つもりです。", prompt: "'다음 달에 이사할 생각이에요'를 배열해 보세요." },
       { id: "ja-n409b-d6", type: "choice", listen: "なんじに しゅっぱつする よていですか。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["몇 시에 출발할 예정이에요?", "몇 시에 도착했어요?", "출발을 미룰까요?"], answer: "몇 시에 출발할 예정이에요?" },
     ],
+    writing: {
+      prompt: "올해의 목표를 つもり로 써 보세요.",
+      hints: ["〜つもりです"],
+      samples: [
+        { ja: "ことしじゅうに N4を とる つもりです。", ko: "올해 안에 N4를 딸 생각이에요." },
+      ],
+      checklist: ["의지엔 つもり를 골랐다"],
+    },
     sections: [
       {
         heading: "'꼭 그럴 작정이야'",
@@ -1163,6 +1291,14 @@ const chapters = [
       { id: "ja-n410-d5", type: "order", sentence: "ホテルを よやくして おきました。", prompt: "'호텔을 예약해 두었어요'를 배열해 보세요." },
       { id: "ja-n410-d6", type: "choice", listen: "まどが あけて あります。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["창문이 (누가) 열어 둔 상태예요", "창문을 지금 열고 있어요", "창문이 저절로 열렸어요"], answer: "창문이 (누가) 열어 둔 상태예요" },
     ],
+    writing: {
+      prompt: "여행 전 미리 해 둘 일을 ておく로 써 보세요.",
+      hints: ["〜て おきます"],
+      samples: [
+        { ja: "りょこうの まえに ホテルを しらべて おきます。", ko: "여행 전에 호텔을 알아봐 둘 거예요." },
+      ],
+      checklist: ["준비의 ておく를 썼다"],
+    },
     sections: [
       {
         heading: "'미리 사 둘게'",
@@ -1220,6 +1356,14 @@ const chapters = [
       { id: "ja-n410b-d5", type: "order", sentence: "さいふを おとして しまいました。", prompt: "'지갑을 잃어버리고 말았어요'를 배열해 보세요." },
       { id: "ja-n410b-d6", type: "choice", listen: "この ケーキ、たべて みてください。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["이 케이크 먹어 봐요", "이 케이크 먹지 마요", "이 케이크 다 먹었어요"], answer: "이 케이크 먹어 봐요" },
     ],
+    writing: {
+      prompt: "아차 싶었던 실수를 てしまう로 써 보세요.",
+      hints: ["〜て しまいました"],
+      samples: [
+        { ja: "けさ ねぼうして しまいました。", ko: "오늘 아침 늦잠 자 버렸어요." },
+      ],
+      checklist: ["아쉬움을 てしまう로 담았다"],
+    },
     sections: [
       {
         heading: "'아, 먹어 버렸다'",
@@ -1270,6 +1414,14 @@ const chapters = [
       { id: "ja-n410c-d5", type: "order", sentence: "にほんごが すきに なって きました。", prompt: "'일본어가 좋아지기 시작했어요'를 배열해 보세요." },
       { id: "ja-n410c-d6", type: "choice", listen: "つれて いって ください。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["데려가 주세요", "데려와 주세요", "두고 가 주세요"], answer: "데려가 주세요" },
     ],
+    writing: {
+      prompt: "요즘의 변화를 てくる로 써 보세요.",
+      hints: ["〜く なって きました"],
+      samples: [
+        { ja: "にほんごの べんきょうが たのしく なって きました。", ko: "일본어 공부가 재미있어지기 시작했어요." },
+      ],
+      checklist: ["변화의 방향을 てくる로 담았다"],
+    },
     sections: [
       {
         heading: "'비가 내리기 시작했어'",
@@ -1316,6 +1468,14 @@ const chapters = [
       { id: "ja-n411-d5", type: "order", sentence: "くすりを のまなければ なりません。", prompt: "'약을 먹어야 해요'를 배열해 보세요." },
       { id: "ja-n411-d6", type: "choice", listen: "きょうは ざんぎょうしなくても いいです。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["오늘은 야근 안 해도 돼요", "오늘은 야근해야 해요", "오늘 야근하면 좋겠어요"], answer: "오늘은 야근 안 해도 돼요" },
     ],
+    writing: {
+      prompt: "내일까지 해야 할 일을 의무 표현으로 써 보세요.",
+      hints: ["〜なければ なりません"],
+      samples: [
+        { ja: "あしたまでに レポートを ださなければ なりません。", ko: "내일까지 리포트를 내야 해요." },
+      ],
+      checklist: ["まで에 に를 붙여 기한을 밝혔다"],
+    },
     sections: [
       {
         heading: "의무는 이중부정 — ない형에서 출발",
@@ -1404,6 +1564,14 @@ const chapters = [
       { id: "ja-nc1-d5", type: "order", sentence: "タオルは おゆに いれません。", prompt: "'수건은 탕에 넣지 않아요'를 배열해 보세요." },
       { id: "ja-nc1-d6", type: "choice", listen: "おんせんは きもちいいですね。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["온천은 기분 좋네요", "온천은 뜨겁네요", "온천에 가고 싶네요"], answer: "온천은 기분 좋네요" },
     ],
+    writing: {
+      prompt: "온천 후기 두 문장을 써 보세요.",
+      hints: ["ろてんぶろ/さいこう"],
+      samples: [
+        { ja: "はじめて ろてんぶろに はいりました。さいこうでした。", ko: "처음 노천탕에 들어갔어요. 최고였어요." },
+      ],
+      checklist: ["과거형으로 후기를 맺었다"],
+    },
     sections: [
       {
         heading: "탕에 몸 담그기 전, 딱 한 바가지 — かけ湯",
@@ -1488,6 +1656,14 @@ const chapters = [
       { id: "ja-n412-d5", type: "order", sentence: "テレビを みながら ごはんを たべます。", prompt: "'TV를 보면서 밥을 먹어요'를 배열해 보세요." },
       { id: "ja-n412-d6", type: "choice", listen: "うたいながら シャワーを あびます。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["노래하면서 샤워해요", "샤워하고 나서 노래해요", "노래를 들으며 자요"], answer: "노래하면서 샤워해요" },
     ],
+    writing: {
+      prompt: "동시에 하는 두 동작을 ながら로 써 보세요.",
+      hints: ["ます어간+ながら"],
+      samples: [
+        { ja: "コーヒーを のみながら ほんを よみます。", ko: "커피를 마시면서 책을 읽어요." },
+      ],
+      checklist: ["주 동작을 뒤에 놓았다"],
+    },
     sections: [
       {
         heading: "'음악 들으면서 공부해'",
