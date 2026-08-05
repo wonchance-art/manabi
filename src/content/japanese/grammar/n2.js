@@ -14,6 +14,14 @@ const chapters = [
     titleFr: "ビジネス敬語",
     summary: "비즈니스 경어 세트를 표로 장착하고, 이중경어·알바 경어라는 함정, 그리고 한국 직장 경어와의 결정적 차이(압존법)를 다뤄요.",
     duration: "약 12분",
+    drills: [
+      { id: "ja-n201-d1", type: "fill", prompt: "資料を 拝見___ました。(겸양 — 봤습니다)", answer: "し" },
+      { id: "ja-n201-d2", type: "choice", prompt: "'알겠습니다'의 가장 격식 있는 응답은?", choices: ["かしこまりました", "わかった", "りょうかい"], answer: "かしこまりました" },
+      { id: "ja-n201-d3", type: "fill", prompt: "お世話に なって ___ます。(겸양 보조동사)", answer: "おり" },
+      { id: "ja-n201-d4", type: "choice", prompt: "윗사람에게 수고를 표할 때 무난한 쪽은?", choices: ["おつかれさまです", "ごくろうさま", "どうも만"], answer: "おつかれさまです", hint: "ご苦労さま는 윗→아랫사람 결이라는 관례가 널리 통용돼요" },
+      { id: "ja-n201-d5", type: "order", sentence: "のちほど こちらから ごれんらく いたします。", prompt: "'나중에 저희가 연락드리겠습니다'를 배열해 보세요." },
+      { id: "ja-n201-d6", type: "choice", listen: "いつも おせわに なって おります。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["늘 신세 지고 있습니다", "늘 걱정하고 있습니다", "늘 바쁘십니다"], answer: "늘 신세 지고 있습니다" },
+    ],
     sections: [
       {
         heading: "비즈니스 경어 세트 — 이 표 하나로 회의에 들어간다",
@@ -96,6 +104,14 @@ const chapters = [
     titleFr: "に伴い・に際して・を踏まえて・をめぐって",
     summary: "뉴스 헤드라인과 안내문을 여는 열쇠. 한자만 읽어내면 한국어 한자어로 뜻이 거의 직통하는 접속 표현들이에요.",
     duration: "약 11분",
+    drills: [
+      { id: "ja-n202-d1", type: "fill", prompt: "オープン___、セールを 行います。(~에 즈음하여)", answer: "にさいして", accepts: ["に際して"] },
+      { id: "ja-n202-d2", type: "choice", prompt: "に伴い의 뜻은?", choices: ["~에 따라(수반되는 변화)", "~에 반하여", "~를 위하여"], answer: "~에 따라(수반되는 변화)" },
+      { id: "ja-n202-d3", type: "fill", prompt: "調査結果を ___まえて、計画を 見直します。(근거로 삼아)", answer: "ふ" },
+      { id: "ja-n202-d4", type: "choice", prompt: "を踏まえて의 결은?", choices: ["앞의 것을 근거·전제로 하여", "앞의 것을 무시하고", "앞의 것을 미루고"], answer: "앞의 것을 근거·전제로 하여" },
+      { id: "ja-n202-d5", type: "order", sentence: "じんこうの げんしょうに ともない、がっこうが へって いる。", prompt: "'인구 감소에 따라 학교가 줄고 있다'를 배열해 보세요." },
+      { id: "ja-n202-d6", type: "choice", listen: "ほんじつは ごらいてん いただき、ありがとうございます。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["오늘 내점해 주셔서 감사합니다", "오늘은 영업을 마쳤습니다", "본일은 휴업입니다"], answer: "오늘 내점해 주셔서 감사합니다" },
+    ],
     sections: [
       {
         heading: "변화가 변화를 데려올 때",
@@ -165,6 +181,14 @@ const chapters = [
     titleFr: "〜ものだ・〜ことだ ほか",
     summary: "한국어 번역이 같아져버리는 세 쌍 — ものだ/ことだ, に違いない/はずだ, ざるを得ない/しかない — 을 현미경으로 들여다봐요.",
     duration: "약 11분",
+    drills: [
+      { id: "ja-n203-d1", type: "fill", prompt: "子どもは 早く 寝る ___だ。(일반론·당연)", answer: "もの" },
+      { id: "ja-n203-d2", type: "fill", prompt: "合格したければ、毎日 勉強する ___だ。(개별 충고)", answer: "こと" },
+      { id: "ja-n203-d3", type: "choice", prompt: "ものだ와 ことだ의 구분은?", choices: ["ものだ=일반론·본성·회상, ことだ=개별 상황의 충고", "반대다", "같다"], answer: "ものだ=일반론·본성·회상, ことだ=개별 상황의 충고" },
+      { id: "ja-n203-d4", type: "choice", prompt: "'옛날엔 자주 갔었지(회상)'는?", choices: ["よく いった ものだ", "よく いく ことだ", "よく いける わけだ"], answer: "よく いった ものだ" },
+      { id: "ja-n203-d5", type: "order", sentence: "じかんは たいせつに つかう ものだ。", prompt: "'시간은 소중히 쓰는 법이다'를 배열해 보세요." },
+      { id: "ja-n203-d6", type: "choice", listen: "むかしは よく あそんだ ものです。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["옛날엔 자주 놀았죠(회상)", "옛날 장난감이에요", "자주 놀아야 해요"], answer: "옛날엔 자주 놀았죠(회상)" },
+    ],
     sections: [
       {
         heading: "〜ものだ vs 〜ことだ — 세상의 이치 vs 너에게 주는 충고",
@@ -234,6 +258,14 @@ const chapters = [
     titleFr: "さえ・すら・まで・どころか・はおろか",
     summary: "'조차·마저·커녕' — 한국어 보조사와 거의 1:1로 포개지는, 한국어 화자 최대의 보너스 구간이에요.",
     duration: "약 10분",
+    drills: [
+      { id: "ja-n204-d1", type: "fill", prompt: "子ども___ 知って いる ことばです。(조차)", answer: "さえ" },
+      { id: "ja-n204-d2", type: "fill", prompt: "忙しくて、水___ 飲めなかった。(~조차 — 문어)", answer: "すら" },
+      { id: "ja-n204-d3", type: "choice", prompt: "どころか의 결은?", choices: ["~는커녕(반전 강조)", "~에 더하여", "~덕분에"], answer: "~는커녕(반전 강조)" },
+      { id: "ja-n204-d4", type: "choice", prompt: "'환영은커녕 쫓겨났다'는?", choices: ["かんげいどころか、おいだされた", "かんげいまでに、おいだされた", "かんげいのおかげで、おいだされた"], answer: "かんげいどころか、おいだされた" },
+      { id: "ja-n204-d5", type: "order", sentence: "あいさつまで わすれて しまった。", prompt: "'인사까지 잊어버렸다(극단)'를 배열해 보세요." },
+      { id: "ja-n204-d6", type: "choice", listen: "こどもにすら わかる ことです。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["아이조차 아는 일이에요", "아이만 아는 일이에요", "아이는 모르는 일이에요"], answer: "아이조차 아는 일이에요" },
+    ],
     sections: [
       {
         heading: "극단의 예를 들어 나머지를 말하게 하는 조사",
@@ -315,6 +347,14 @@ const chapters = [
     titleFr: "である体と新聞の日本語",
     summary: "논문·신문의 문체 である체, 그리고 한자어 밀도가 높아질수록 오히려 쉬워지는 — 한국어 화자의 독해력 폭발 지점.",
     duration: "약 12분",
+    drills: [
+      { id: "ja-n205-d1", type: "fill", prompt: "日本は 島国___。(문어 단정)", answer: "である" },
+      { id: "ja-n205-d2", type: "choice", prompt: "である체를 쓰는 곳은?", choices: ["논문·보고서·사설", "친구와의 문자", "경어 회화"], answer: "논문·보고서·사설" },
+      { id: "ja-n205-d3", type: "fill", prompt: "問題は 費用___る。(문어 — であ)", answer: "であ" },
+      { id: "ja-n205-d4", type: "choice", prompt: "であろう의 뜻은?", choices: ["~일 것이다(문어 추량)", "~였다(과거)", "~하자(권유)"], answer: "~일 것이다(문어 추량)" },
+      { id: "ja-n205-d5", type: "order", sentence: "けんきゅうの もくてきは いかの とおりである。", prompt: "'연구의 목적은 아래와 같다'를 배열해 보세요." },
+      { id: "ja-n205-d6", type: "choice", listen: "じんせいとは たびである。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["인생이란 여행이다(문어 단정)", "인생은 여행이었다", "인생 여행을 갑시다"], answer: "인생이란 여행이다(문어 단정)" },
+    ],
     sections: [
       {
         heading: "문체의 3단 기어",
@@ -407,6 +447,14 @@ const chapters = [
     titleFr: "たとえ〜ても・〜ば〜ほど・〜ないことには・〜ものなら",
     summary: "'설령 ~해도, ~하면 할수록, ~하지 않고서는, ~할 수 있다면' — 가정의 네 가지 고급 회로를 연결해요.",
     duration: "약 11분",
+    drills: [
+      { id: "ja-n206-d1", type: "fill", prompt: "___ 雨が 降っても、行きます。(설령)", answer: "たとえ" },
+      { id: "ja-n206-d2", type: "fill", prompt: "練習すれ___ するほど、上手に なります。(~할수록)", answer: "ば" },
+      { id: "ja-n206-d3", type: "choice", prompt: "ば〜ほど의 뜻은?", choices: ["~하면 할수록", "~하자마자", "~하는 김에"], answer: "~하면 할수록" },
+      { id: "ja-n206-d4", type: "choice", prompt: "'설령 실패해도 후회하지 않는다'는?", choices: ["たとえ しっぱいしても こうかいしない", "もし しっぱいなら こうかいした", "たとえ しっぱいしたら こうかいする"], answer: "たとえ しっぱいしても こうかいしない" },
+      { id: "ja-n206-d5", type: "order", sentence: "かんがえれば かんがえるほど、わからなく なる。", prompt: "'생각하면 할수록 모르겠다'를 배열해 보세요." },
+      { id: "ja-n206-d6", type: "choice", listen: "たとえ とおくても、あいに いきます。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["설령 멀어도 만나러 가요", "멀어서 못 가요", "가까우면 갈게요"], answer: "설령 멀어도 만나러 가요" },
+    ],
     sections: [
       {
         heading: "어떤 경우에도 무너지지 않는 양보",
@@ -476,6 +524,14 @@ const chapters = [
     titleFr: "〜がち・〜気味・〜つつある・〜一方だ",
     summary: "'자주 ~하게 되는, ~한 기미, 변해 가는 중, 한 방향으로만' — 상태의 결을 그리는 네 가지 붓이에요.",
     duration: "약 10분",
+    drills: [
+      { id: "ja-n207-d1", type: "fill", prompt: "最近、疲れ___です。(기미)", answer: "ぎみ", accepts: ["気味"] },
+      { id: "ja-n207-d2", type: "fill", prompt: "冬は 家に こもり___だ。(~하기 일쑤)", answer: "がち" },
+      { id: "ja-n207-d3", type: "choice", prompt: "つつある의 뜻은?", choices: ["~해 가는 중(변화 진행)", "~한 채로 정지", "~하자마자"], answer: "~해 가는 중(변화 진행)" },
+      { id: "ja-n207-d4", type: "choice", prompt: "一方だ의 결은?", choices: ["한 방향으로만 계속(악화 일로 등)", "다른 한편으로는", "일단 한 번은"], answer: "한 방향으로만 계속(악화 일로 등)" },
+      { id: "ja-n207-d5", type: "order", sentence: "ぶっかは あがる いっぽうだ。", prompt: "'물가는 오르기만 한다'를 배열해 보세요." },
+      { id: "ja-n207-d6", type: "choice", listen: "さいきん、ふとりぎみなんです。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["요즘 살찌는 기미예요", "요즘 살이 빠졌어요", "요즘 자주 굶어요"], answer: "요즘 살찌는 기미예요" },
+    ],
     sections: [
       {
         heading: "자꾸 그렇게 되는 (좋지 않은) 버릇",
@@ -551,6 +607,14 @@ const chapters = [
     titleFr: "〜きる・〜ぬく",
     summary: "동사 뒤에 한 조각을 붙여 '다 했다, 끝까지 해냈다'를 그리는 완수의 복합동사. 동작의 진행 바를 100%까지 채우는 きる와 ぬく — 그 한 칸의 차이가 N2 어휘력의 결을 만듭니다.",
     duration: "약 8분",
+    drills: [
+      { id: "ja-n208-d1", type: "fill", prompt: "マラソンを 走り___きました。(끝까지 해냈다)", answer: "ぬ" },
+      { id: "ja-n208-d2", type: "fill", prompt: "全部 使い___りました。(남김없이 다)", answer: "き" },
+      { id: "ja-n208-d3", type: "choice", prompt: "〜きる의 뜻은?", choices: ["완전히·끝까지 ~하다", "~하다 말다", "~하기 시작하다"], answer: "완전히·끝까지 ~하다" },
+      { id: "ja-n208-d4", type: "choice", prompt: "'다 셀 수 없을 만큼 많다'는?", choices: ["かぞえきれない", "かぞえぬけない", "かぞえがたくない"], answer: "かぞえきれない" },
+      { id: "ja-n208-d5", type: "order", sentence: "さいごまで やりぬく つもりだ。", prompt: "'끝까지 해낼 작정이다'를 배열해 보세요." },
+      { id: "ja-n208-d6", type: "choice", listen: "うりきれました。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["매진됐습니다", "세일 중입니다", "환불됐습니다"], answer: "매진됐습니다" },
+    ],
     sections: [
       {
         heading: "진행 바 100%와 그 좌절",
@@ -602,6 +666,14 @@ const chapters = [
     titleFr: "〜かける・〜そこなう・〜済み",
     summary: "진행 바가 도중에 멈추거나(かける), 아예 출발도 못 하거나(そこなう), '끝났다'는 도장이 찍히는(済み) — 완수의 반대편, 미완과 회피를 그리는 복합동사들이에요.",
     duration: "약 9분",
+    drills: [
+      { id: "ja-n208b-d1", type: "fill", prompt: "手紙を 書き___けて、やめました。(하다 말았다)", answer: "か" },
+      { id: "ja-n208b-d2", type: "fill", prompt: "電車に 乗り___ないました。(아깝게 놓쳤다)", answer: "そこ" },
+      { id: "ja-n208b-d3", type: "choice", prompt: "〜かける의 뜻은?", choices: ["~하다 말다(도중 상태)", "완수하다", "반복하다"], answer: "~하다 말다(도중 상태)" },
+      { id: "ja-n208b-d4", type: "choice", prompt: "予約済み의 済み는?", choices: ["~완료", "~예정", "~진행 중"], answer: "~완료" },
+      { id: "ja-n208b-d5", type: "order", sentence: "よみかけの ほんが つくえに ある。", prompt: "'읽다 만 책이 책상에 있다'를 배열해 보세요." },
+      { id: "ja-n208b-d6", type: "choice", listen: "ひるごはんを たべそこないました。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["점심을 (때를 놓쳐) 못 먹었어요", "점심을 많이 먹었어요", "점심이 맛없었어요"], answer: "점심을 (때를 놓쳐) 못 먹었어요" },
+    ],
     sections: [
       {
         heading: "멈춰 있는 진행 바",
@@ -667,6 +739,14 @@ const chapters = [
     titleFr: "〜てならない・〜てたまらない・〜てしょうがない",
     summary: "솟구치는 감정을 담는 세 그릇 — 저절로 솟는 てならない, 참을 수 없는 てたまらない, 회화 만능 てしょうがない — 의 온도 차를 정면 비교하고, 행동으로 터져 나오는 ずにはいられない까지 이어 붙여요.",
     duration: "약 8분",
+    drills: [
+      { id: "ja-n209-d1", type: "fill", prompt: "残念で ___ません。(감정이 북받쳐 견딜 수 없다)", answer: "なり" },
+      { id: "ja-n209-d2", type: "fill", prompt: "会いたくて ___らない。(참을 수 없다)", answer: "たま" },
+      { id: "ja-n209-d3", type: "choice", prompt: "てならない류의 결은?", choices: ["감정·감각이 저절로 북받침", "의무·강제", "금지·경고"], answer: "감정·감각이 저절로 북받침" },
+      { id: "ja-n209-d4", type: "choice", prompt: "'기뻐서 어쩔 줄 모르겠다'는?", choices: ["うれしくて しょうがない", "うれしくて いけない", "うれしければ ならない"], answer: "うれしくて しょうがない" },
+      { id: "ja-n209-d5", type: "order", sentence: "こきょうが なつかしくて たまらない。", prompt: "'고향이 그리워 견딜 수 없다'를 배열해 보세요." },
+      { id: "ja-n209-d6", type: "choice", listen: "ざんねんで なりません。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["너무나 아쉽습니다", "아쉽지 않습니다", "포기하겠습니다"], answer: "너무나 아쉽습니다" },
+    ],
     sections: [
       {
         heading: "저절로 솟아 멈출 수 없는 감정",
@@ -729,6 +809,14 @@ const chapters = [
     titleFr: "〜どころではない・〜に越したことはない",
     summary: "감정이 아니라 '정도의 한계선'을 긋는 두 문형 — 여유가 통째로 무너지는 どころではない, 그 위는 없다고 못 박는 に越したことはない — 을 나란히 놓아요.",
     duration: "약 6분",
+    drills: [
+      { id: "ja-n209b-d1", type: "fill", prompt: "忙しくて、旅行___では ない。(~할 상황이 아니다)", answer: "どころ" },
+      { id: "ja-n209b-d2", type: "choice", prompt: "に越したことはない의 뜻은?", choices: ["~하는 것이 최선(그보다 나은 건 없다)", "~를 넘어섰다", "~할 수 없다"], answer: "~하는 것이 최선(그보다 나은 건 없다)" },
+      { id: "ja-n209b-d3", type: "fill", prompt: "早く 休むに ___した ことは ない。", answer: "こ" },
+      { id: "ja-n209b-d4", type: "choice", prompt: "'공부할 상황이 아니다'는?", choices: ["べんきょうどころでは ない", "べんきょうに こした ことは ない", "べんきょうする べきだ"], answer: "べんきょうどころでは ない" },
+      { id: "ja-n209b-d5", type: "order", sentence: "ようじんするに こしたことは ない。", prompt: "'조심해서 나쁠 것 없다'를 배열해 보세요." },
+      { id: "ja-n209b-d6", type: "choice", listen: "いまは それどころじゃ ないんです。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["지금은 그럴 상황이 아니에요", "지금 바로 그거예요", "지금 어디냐면요"], answer: "지금은 그럴 상황이 아니에요" },
+    ],
     sections: [
       {
         heading: "그럴 여유가 전혀 없다",
@@ -772,6 +860,14 @@ const chapters = [
     titleFr: "〜ことだから・〜ものだから・〜だけに",
     summary: "같은 '~니까'라도 결이 달라요 — 잘 아는 사람을 근거로 추측하는 ことだから, 변명의 ものだから, '~인 만큼'의 だけに. 이유와 근거의 세 회로를 정밀하게 갈라 씁니다.",
     duration: "약 9분",
+    drills: [
+      { id: "ja-n210-d1", type: "fill", prompt: "彼の ___だから、また 遅れるでしょう。(그 사람 성격이니)", answer: "こと" },
+      { id: "ja-n210-d2", type: "fill", prompt: "急いで いた ___だから、忘れて しまった。(~한 사정이라)", answer: "もの" },
+      { id: "ja-n210-d3", type: "choice", prompt: "だけに의 결은?", choices: ["~인 만큼(더욱 그렇다)", "~뿐이라서 아쉽다", "~밖에 없어서"], answer: "~인 만큼(더욱 그렇다)" },
+      { id: "ja-n210-d4", type: "choice", prompt: "'프로인 만큼 실력이 다르다'는?", choices: ["プロだけに、うでが ちがう", "プロだけで、うでが ない", "プロばかりに、うでを みせない"], answer: "プロだけに、うでが ちがう" },
+      { id: "ja-n210-d5", type: "order", sentence: "ゆうめいな みせだけに、いつも こんで いる。", prompt: "'유명한 가게인 만큼 늘 붐빈다'를 배열해 보세요." },
+      { id: "ja-n210-d6", type: "choice", listen: "しんぱいだった ものだから、でんわしました。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["걱정돼서 (그만) 전화했어요", "걱정 말라고 전화했어요", "전화해서 걱정이에요"], answer: "걱정돼서 (그만) 전화했어요" },
+    ],
     sections: [
       {
         heading: "잘 아는 그 사람이니까, 분명",
@@ -827,6 +923,14 @@ const chapters = [
     titleFr: "〜末に・〜あげく・〜からすると",
     summary: "긴 과정의 결말을 맺는 末に·あげく, 그리고 단서 하나에서 추측을 출발시키는 からすると 패밀리 — 결론과 추론의 회로를 연결해요.",
     duration: "약 7분",
+    drills: [
+      { id: "ja-n210b-d1", type: "fill", prompt: "長い 交渉の ___に、合意した。(끝에 — 중립·긍정)", answer: "すえ", accepts: ["末"] },
+      { id: "ja-n210b-d2", type: "fill", prompt: "さんざん 迷った ___く、買いませんでした。(끝에 — 허탈)", answer: "あげ" },
+      { id: "ja-n210b-d3", type: "choice", prompt: "末に와 あげく의 결은?", choices: ["末に=중립·긍정 결말, あげく=부정적 결말", "반대다", "같다"], answer: "末に=중립·긍정 결말, あげく=부정적 결말" },
+      { id: "ja-n210b-d4", type: "choice", prompt: "からすると의 뜻은?", choices: ["~로 판단하건대", "~부터 시작해서", "~에게조차"], answer: "~로 판단하건대" },
+      { id: "ja-n210b-d5", type: "order", sentence: "はなしかたからすると、かんさいの ひとだろう。", prompt: "'말투로 보건대 간사이 사람일 것이다'를 배열해 보세요." },
+      { id: "ja-n210b-d6", type: "choice", listen: "まよった すえに、これに きめました。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["고민 끝에 이걸로 정했어요", "길을 잃고 헤맸어요", "정하지 못했어요"], answer: "고민 끝에 이걸로 정했어요" },
+    ],
     sections: [
       {
         heading: "긴 과정의 결말",
