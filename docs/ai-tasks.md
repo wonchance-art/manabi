@@ -220,6 +220,9 @@
 
 ## Codex-2 (codex2/*)
 ### doing
+- 🔍 `src/views` Supabase mutation 오류 확인 재감사: `await supabase.from(...)` 뒤 `{ error }`
+  미확인 지점을 전수 스캔하고 잔여가 있으면 단일 PR로 수리·회귀 고정
+  (`codex2/audit-view-supabase-errors`, base `258fa0c706fb3bfd965dbe1aec3d6aff6362f242`, #150 5197883976)
 ### todo
 ### done (최근)
 - 🛠️ `src/views` 리뷰 후속 V-05~V-13: 저장 성공 확인·재시도, query 오류 상태,
