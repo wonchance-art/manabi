@@ -288,6 +288,10 @@
 
 ## Codex-3 (codex3/*) — 게임 시스템 확장 (타 기기)
 ### doing
+- 🛡️ 리뷰 R1 후속 수리(발주 5194144381): 최신 base
+  `f40039ec3b9e44222fc5b73e460a74d76d04162e`에서 SW 콘텐츠 해시·오류 응답 캐시 제외,
+  curriculum scanner fail-closed+mutation 테스트, check-content 누락 모듈 편입,
+  Node 22/Vercel·world PNG 결정성은 보고만 수행
 ### todo
 - 📚 /learn 진도·스트릭 위젯(발주 5126671497) → **구현 #706 도착·Claude 게이트 green(lint 2종+vitest 2508) — 오너 승인 대기(draft 유지)** ← 피벗 후 우선, 아래 월드 항목 동결
 - (P0 공통) 로컬 clone 이전 확인 코멘트
