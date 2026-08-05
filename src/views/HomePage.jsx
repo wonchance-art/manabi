@@ -183,7 +183,7 @@ function ProgressBar({ pct, done }) {
   );
 }
 
-export default function HomePage({ continueManifest = {}, refManifest = {} }) {
+export default function HomePage({ continueManifest = {} }) {
   const { user, profile, fetchProfile } = useAuth();
   const router = useRouter();
 
@@ -476,7 +476,7 @@ export default function HomePage({ continueManifest = {}, refManifest = {} }) {
         );
       })()}
 
-      <ProfileStats refManifest={refManifest} />
+      <ProfileStats refManifest={continueManifest} />
 
     </div>
   );
