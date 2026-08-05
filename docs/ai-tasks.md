@@ -16,6 +16,11 @@
 ### doing
 ### todo
 ### done (최근)
+- 🔍 전체 코드 리뷰 R1 — `src/components` production 158파일/39,818줄 심층 정독으로
+  major 10·minor 3을 exact 라인·원문·수정안으로 고정하고, ChapterDrills/WritingPractice/
+  RefSpeak 정본·hydration 문제와 LearnProgressWidget 정상 cleanup을 판정. report-only,
+  targeted 2파일/6·전체 265파일/2,532테스트 green
+  (`codex/review-code-components`, assignment 5192929323, fixed base 8e7e41778f338c0ed8a5d6744dedd011fb409a74)
 - Tatoeba fr 실음원 메타 v1: v1+v2 A1~A2 20문형을 오디오 메타 전용 API로 조회하고
   오디오 자체 라이선스 CC BY/CC0 allowlist·낭독자 귀속·스키마 계약을 고정. 현행 후보의
   오디오 22건은 NC 16·SA 1·미표시 5로 허용 0건(총 부족 120)을 명시하고, 3회 byte-identical
