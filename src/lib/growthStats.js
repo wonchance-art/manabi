@@ -41,6 +41,18 @@ export function kstWeekStartMs(nowMs = Date.now()) {
     - daysSinceMon * 86400000 - 9 * 3600 * 1000;
 }
 
+/** KST 기준 오늘 0시의 UTC 밀리초. */
+export function kstDayStartMs(nowMs = Date.now()) {
+  const kst = new Date(nowMs + 9 * 3600 * 1000);
+  return Date.UTC(kst.getUTCFullYear(), kst.getUTCMonth(), kst.getUTCDate())
+    - 9 * 3600 * 1000;
+}
+
+/** KST 기준 오늘 0시의 UTC ISO 문자열(일간 집계 하한). */
+export function kstDayStartIso(nowMs = Date.now()) {
+  return new Date(kstDayStartMs(nowMs)).toISOString();
+}
+
 /** KST 기준 이번 주 월요일 0시의 UTC ISO 문자열(서버 count 조회 하한). */
 export function kstWeekStartIso(nowMs = Date.now()) {
   return new Date(kstWeekStartMs(nowMs)).toISOString();

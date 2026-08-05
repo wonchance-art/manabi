@@ -176,11 +176,15 @@ export default function MaterialAddPage() {
       // 추천 자료에서 진입했으면 material_id 기록 (이후 유저는 바로 뷰어로)
       const suggestionId = searchParams.get('suggestion');
       if (suggestionId) {
-        await supabase
+        const { error: suggestionLinkError } = await supabase
           .from('daily_suggestions')
           .update({ material_id: id })
           .eq('id', suggestionId)
           .is('material_id', null); // 이미 연결된 경우 덮어쓰지 않음
+        if (suggestionLinkError) {
+          toast('분석은 완료됐지만 추천 자료 연결에 실패했어요.', 'warning');
+          return;
+        }
       }
 
       if ('Notification' in window) {

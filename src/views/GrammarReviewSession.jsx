@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import RefSpeak from '../components/RefSpeak';
 import { JaText } from './refShared';
@@ -88,6 +88,10 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
   const [orderPicks, setOrderPicks] = useState({});
   const [revealedP, setRevealedP] = useState({});
   const [results, setResults] = useState([]);      // [{ item, right, total, rating, nextDays }]
+  const [grading, setGrading] = useState(false);
+  const [gradeError, setGradeError] = useState(null);
+  const [gradeAttempt, setGradeAttempt] = useState(0);
+  const gradeRequestRef = useRef(null);
 
   useEffect(() => setMounted(true), []);
 
@@ -120,38 +124,57 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
   useEffect(() => {
     if (!done || graded || !item) return;
     const rating = ratingFromScore(rightCount, total);
-    let nextDays = null;
-    if (user?.id) {
-      // 챕터 완료 확정 시점 1회 — done&&!graded 가드로 재실행 방지, 스트릭 갱신은 실패해도 흐름 유지(fire-and-forget)
-      recordActivity(user.id, () => fetchProfile(user.id));
-      gradeGrammarReview({ ...item.srs, user_id: user.id }, rating).then(updated => {
-        if (updated) {
-          const d = Math.max(1, Math.round(updated.interval));
-          setResults(prev => prev.map((r, i) => (i === idx ? { ...r, nextDays: d } : r)));
-        }
-      });
-      logReviewEvents(user.id, (questions || []).map(q => {
-        const a = answers[q.id];
-        if (!a) return null;
-        // qtype: meaning→cloze, order→order, produce→produce
-        const qtype = ({ meaning: 'cloze', order: 'order', produce: 'produce' })[q.type] || 'cloze';
-        return {
-          lang: item.lang,
-          source: 'grammar',
-          item_key: drillIdFromQueueSlug(item.srs.slug) || item.srs.slug,
-          correct: !!a.ok,
-          detail: { stage: q.type, qtype, qid: q.id, ko: q.ko, answer: q.correct ?? q.answer ?? q.main, picked: a.picked },
-        };
-      }).filter(Boolean));
+    const requestKey = `${idx}:${gradeAttempt}`;
+    if (!gradeRequestRef.current || gradeRequestRef.current.key !== requestKey) {
+      const promise = (async () => {
+        if (!user?.id) return null;
+        const updated = await gradeGrammarReview({ ...item.srs, user_id: user.id }, rating);
+        if (!updated) throw new Error('문법 복습 결과를 저장하지 못했습니다.');
+
+        // 저장 확인 뒤에만 활동·이벤트와 완료 상태를 확정한다.
+        recordActivity(user.id, () => fetchProfile(user.id));
+        logReviewEvents(user.id, (questions || []).map(q => {
+          const a = answers[q.id];
+          if (!a) return null;
+          const qtype = ({ meaning: 'cloze', order: 'order', produce: 'produce' })[q.type] || 'cloze';
+          return {
+            lang: item.lang,
+            source: 'grammar',
+            item_key: drillIdFromQueueSlug(item.srs.slug) || item.srs.slug,
+            correct: !!a.ok,
+            detail: { stage: q.type, qtype, qid: q.id, ko: q.ko, answer: q.correct ?? q.answer ?? q.main, picked: a.picked },
+          };
+        }).filter(Boolean));
+        return Math.max(1, Math.round(updated.interval));
+      })();
+      gradeRequestRef.current = { key: requestKey, promise };
     }
-    setResults(prev => [...prev, { item, right: rightCount, total, rating, nextDays }]);
+
+    let active = true;
+    setGrading(true);
+    setGradeError(null);
+    gradeRequestRef.current.promise
+      .then(nextDays => {
+        if (!active) return;
+        setResults(prev => prev.length > idx
+          ? prev
+          : [...prev, { item, right: rightCount, total, rating, nextDays }]);
+      })
+      .catch(() => {
+        if (active) setGradeError('결과를 저장하지 못했어요. 연결을 확인하고 다시 시도해 주세요.');
+      })
+      .finally(() => {
+        if (active) setGrading(false);
+      });
+    return () => { active = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [done]);
+  }, [done, gradeAttempt]);
 
   function nextChapter() {
     setAnswers({});
     setOrderPicks({});
     setRevealedP({});
+    setGradeError(null);
     setIdx(i => i + 1);
   }
 
@@ -371,15 +394,26 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
         <div className={`fr-check__verdict ${rightCount === total ? 'is-pass' : rightCount >= Math.ceil(total * 0.5) ? '' : 'is-fail'}`}>
           <p className="fr-check__result">
             <strong>{rightCount}/{total} — {RATING_LABEL[ratingFromScore(rightCount, total)]}</strong>
-            {results[idx]?.nextDays
+            {grading
+              ? ' · 복습 결과를 저장하고 있어요.'
+              : results[idx]?.nextDays
               ? <> · 다음 복습은 <strong>{results[idx].nextDays}일 후</strong>에 돌아와요.</>
-              : ' · 결과에 따라 다음 복습일이 조정돼요.'}
+              : graded
+                ? ' · 복습 결과를 저장했어요.'
+                : ''}
             {rightCount < total && <> 헷갈렸다면 <Link href={item.href} style={{ textDecoration: 'underline' }}>챕터를 다시 열어</Link> 확인해 보세요.</>}
           </p>
           <div className="fr-check__verdict-actions">
-            <button type="button" className="fr-check__next" onClick={nextChapter}>
-              {idx + 1 < items.length ? `다음 챕터 (${idx + 2}/${items.length}) →` : '결과 보기 →'}
-            </button>
+            {gradeError ? (
+              <>
+                <span role="alert" style={{ color: 'var(--danger)', fontSize: '0.84rem' }}>{gradeError}</span>
+                <button type="button" className="fr-check__next" onClick={() => setGradeAttempt(attempt => attempt + 1)}>저장 다시 시도</button>
+              </>
+            ) : (
+              <button type="button" className="fr-check__next" onClick={nextChapter} disabled={!graded || grading}>
+                {grading ? '저장 중…' : idx + 1 < items.length ? `다음 챕터 (${idx + 2}/${items.length}) →` : '결과 보기 →'}
+              </button>
+            )}
           </div>
         </div>
       )}

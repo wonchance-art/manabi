@@ -101,6 +101,11 @@ function isTokenDue(savedWords, token) {
   return new Date(v.next_review_at) <= new Date();
 }
 
+async function upsertViewerVocabulary(row, options = { onConflict: 'user_id,word_text' }) {
+  const { error } = await supabase.from('user_vocabulary').upsert(row, options);
+  if (error) throw error;
+}
+
 /**
  * 送り仮名(okurigana) 제거: 요미가나에서 원문에 이미 있는 히라가나 제거
  *
@@ -195,6 +200,7 @@ export default function ViewerPage() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [commentInput, setCommentInput] = useState('');
   const [saveAnim, setSaveAnim] = useState(false);
+  const [inlineSaving, setInlineSaving] = useState({});
   const { titleEditing, setTitleEditing, titleDraft, setTitleDraft, updateTitleMutation } = useTitleEdit(id, toast);
 
   const { data: material, isLoading, error, refetch } = useQuery({
@@ -566,15 +572,14 @@ export default function ViewerPage() {
           meaning: beforeToken.meaning || '',
           pos: beforeToken.pos || '',
         };
-        await supabase.from('token_corrections').insert({
+        const { error: logError } = await supabase.from('token_corrections').insert({
           material_id: id,
           token_id: tokenId,
           user_id: user.id,
           before_value: beforeSlim,
           after_value: corrections,
-        }).then(({ error: logErr }) => {
-          if (logErr) console.warn('[correction log] failed:', logErr.message);
         });
+        if (logError) console.warn('[correction log] failed:', logError.message);
       }
       return { tokenId, corrections };
     },
@@ -609,6 +614,29 @@ export default function ViewerPage() {
     correctTokenMutation.mutate({ tokenId, corrections });
   };
 
+  const saveInlineVocabulary = async (token) => {
+    const key = token.base_form || token.text;
+    if (inlineSaving[key]) return;
+    setInlineSaving(prev => ({ ...prev, [key]: true }));
+    try {
+      await upsertViewerVocabulary({
+        user_id: user.id,
+        word_text: normalizeWordText({ surface: token.text, base: token.base_form }),
+        base_form: token.base_form || token.text,
+        meaning: token.meaning || '',
+        pos: token.pos || '',
+        furigana: token.furigana || token.reading || '',
+        language: materialLang,
+      });
+      toast(`"${token.text}" 저장!`, 'success');
+      queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
+    } catch {
+      toast('저장 실패', 'error');
+    } finally {
+      setInlineSaving(prev => ({ ...prev, [key]: false }));
+    }
+  };
+
   const addToVocab = async () => {
     if (!user) { toast('로그인이 필요합니다.', 'warning'); return; }
     if (!selectedToken) return;
@@ -630,11 +658,7 @@ export default function ViewerPage() {
         source_material_id: id || null,
       };
 
-      const { error: insertError } = await supabase
-        .from('user_vocabulary')
-        .upsert([row], { onConflict: 'user_id,word_text', ignoreDuplicates: true });
-
-      if (insertError) throw insertError;
+      await upsertViewerVocabulary([row], { onConflict: 'user_id,word_text', ignoreDuplicates: true });
       saveCountRef.current += 1;
 
       // 저장 애니메이션 → 잠시 보여준 뒤 시트 닫기
@@ -728,25 +752,16 @@ export default function ViewerPage() {
       {dragAnalyzing && <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 8 }}>분석 중...</div>}
       {dragTokens.map((t, i) => {
         const isSaved = savedWords.surfaces?.has(t.text) || savedWords.bases?.has(t.base_form);
+        const saveKey = t.base_form || t.text;
         return (
           <div key={i} className={`pdf-word-item ${isSaved ? 'pdf-word-item--saved' : ''}`}>
             <span className="pdf-word-item__text" onClick={() => handleDragWordClick(t)}>{t.text}</span>
             <span className="pdf-word-item__meaning" onClick={() => handleDragWordClick(t)}>{t.meaning}</span>
             {user && (
               <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-                <button className="pdf-word-item__save" disabled={isSaved}
-                  onClick={async () => {
-                    try {
-                      await supabase.from('user_vocabulary').upsert({
-                        user_id: user.id, word_text: normalizeWordText({ surface: t.text, base: t.base_form }), base_form: t.base_form || t.text,
-                        meaning: t.meaning || '', pos: t.pos || '', furigana: t.furigana || t.reading || '',
-                        language: materialLang,
-                      }, { onConflict: 'user_id,word_text' });
-                      toast(`"${t.text}" 저장!`, 'success');
-                      queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
-                    } catch { toast('저장 실패', 'error'); }
-                  }}>
-                  {isSaved ? '✓' : '★'}
+                <button className="pdf-word-item__save" disabled={isSaved || inlineSaving[saveKey]}
+                  onClick={() => saveInlineVocabulary(t)}>
+                  {isSaved ? '✓' : inlineSaving[saveKey] ? '…' : '★'}
                 </button>
                 <button className="pdf-word-item__save pdf-word-item__dismiss"
                   onClick={() => {
@@ -1558,21 +1573,12 @@ export default function ViewerPage() {
             {user && (() => {
               const t = popupWord.token;
               const isSaved = savedWords.surfaces?.has(t.text) || savedWords.bases?.has(t.base_form);
+              const saveKey = t.base_form || t.text;
               return (
                 <button className={`pdf-detail-popup__save ${isSaved ? 'pdf-detail-popup__save--done' : ''}`}
-                  disabled={isSaved}
-                  onClick={async () => {
-                    try {
-                      await supabase.from('user_vocabulary').upsert({
-                        user_id: user.id, word_text: normalizeWordText({ surface: t.text, base: t.base_form }), base_form: t.base_form || t.text,
-                        meaning: t.meaning || '', pos: t.pos || '', furigana: t.furigana || t.reading || '',
-                        language: materialLang,
-                      }, { onConflict: 'user_id,word_text' });
-                      toast(`"${t.text}" 저장!`, 'success');
-                      queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
-                    } catch { toast('저장 실패', 'error'); }
-                  }}>
-                  {isSaved ? '✓ 저장됨' : '단어장에 저장'}
+                  disabled={isSaved || inlineSaving[saveKey]}
+                  onClick={() => saveInlineVocabulary(t)}>
+                  {isSaved ? '✓ 저장됨' : inlineSaving[saveKey] ? '저장 중…' : '단어장에 저장'}
                 </button>
               );
             })()}
