@@ -215,11 +215,13 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-- 🛠️ `src/views` 리뷰 후속 V-05~V-13: 저장 실패 오성공, 영구 로딩·플래그,
-  DB 오류 빈 상태 오독, SSR localStorage 초기값, KST 자정 경계를 각 회귀 테스트와 함께 수정
-  (`codex2/fix-views-review-findings`, base `dc6659ef5197c67d5a9308c2625afcd82efa5ae6`)
 ### todo
 ### done (최근)
+- 🛠️ `src/views` 리뷰 후속 V-05~V-13: 저장 성공 확인·재시도, query 오류 상태,
+  PDF URL/분석 실패 복구, 마운트 후 localStorage 복원, KST 일간 경계를 구현하고
+  전 뷰 await mutation error 보강 감사까지 완료(targeted 28·전체 268파일/2,554테스트 green,
+  diff SHA `5f8322d8…6bfe`, peak RSS 3,454,058,496B·swap 0,
+  `codex2/fix-views-review-findings`, 구현 `a633c37`, base `dc6659ef5197c67d5a9308c2625afcd82efa5ae6`)
 - 🔍 전체 코드 리뷰 R1 — `src/views` 실제 46파일·18,951줄 전수 정독(스캔 0),
   치명 3·중대 10·경미 3건을 `docs/review-code-views.md`에 원문 인용·수정안과 함께 보고
   (코드 수정 없음, targeted 21·전체 2,532 tests green, base `8e7e41778f338c0ed8a5d6744dedd011fb409a74`)
