@@ -14,6 +14,10 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
+- 🛠️ components 리뷰 후속 C-04~C-13 수리 — TTS 가용성, 자료 전환 비동기 오염,
+  중첩 button·dialog 접근성, Supabase/export/레슨 완료 실패 정합과 timer cleanup을
+  회귀 테스트로 고정(C-01~C-03 및 #853 수리 경로 불변, assignment 5198422435,
+  exact base `e694830ca5c47c464e949a6d657cb2454468bf84`)
 ### todo
 ### done (최근)
 - 🔍 전체 코드 리뷰 R1 — `src/components` production 158파일/39,818줄 심층 정독으로
