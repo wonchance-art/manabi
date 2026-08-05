@@ -215,6 +215,8 @@
 
 ## Codex-2 (codex2/*)
 ### doing
+- 🔍 전체 코드 리뷰 R1 — `src/views` 40파일 전수 심층 정독(코드 수정 없음,
+  `docs/review-code-views.md` 보고서 작성 중, base `8e7e41778f338c0ed8a5d6744dedd011fb409a74`)
 ### todo
 ### done (최근)
 - 📚 대사 IPA 커버리지 린트(report-only): 4트랙 grammar의 화자 객체 469개를
