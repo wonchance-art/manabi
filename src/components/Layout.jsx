@@ -96,8 +96,8 @@ export default function Layout({ children }) {
       { href: '/home', label: '홈' },
     ] : []),
     { href: '/lessons',   label: '교재' },
-    { href: '/vocab',     label: '복습' },
-    { href: '/materials', label: '자료' },
+    { href: '/vocab',     label: '복습', prefetch: false },
+    { href: '/materials', label: '자료', prefetch: false },
   ];
 
   const mobileNavLinks = [
@@ -105,9 +105,9 @@ export default function Layout({ children }) {
       { href: '/home', label: '홈' },
     ] : []),
     { href: '/lessons',   label: '교재' },
-    { href: '/vocab',     label: '복습' },
-    { href: '/materials', label: '자료' },
-    ...(user ? [] : [{ href: '/auth', label: '로그인' }]),
+    { href: '/vocab',     label: '복습', prefetch: false },
+    { href: '/materials', label: '자료', prefetch: false },
+    ...(user ? [] : [{ href: '/auth', label: '로그인', prefetch: false }]),
   ];
 
   return (
@@ -123,6 +123,7 @@ export default function Layout({ children }) {
             <Link
               key={l.href}
               href={l.href}
+              prefetch={l.prefetch}
               className={`gnb__link ${pathname === l.href || pathname.startsWith(l.href + '/') ? 'active' : ''}`}
               aria-current={pathname === l.href ? 'page' : undefined}
             >
@@ -218,6 +219,7 @@ export default function Layout({ children }) {
           <Link
             key={l.href}
             href={l.href}
+            prefetch={l.prefetch}
             className={`mobile-nav__link ${pathname === l.href || pathname.startsWith(l.href + '/') ? 'active' : ''}`}
             aria-current={pathname === l.href ? 'page' : undefined}
           >

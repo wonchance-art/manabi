@@ -47,6 +47,8 @@ export function buildContinueManifest() {
       flag: ref.flag,
       name: ref.name,
       levels: ref.LEVEL_META.map(m => ({
+        key: m.key,
+        short: m.short || m.key,
         label: m.label,
         chapters: ref.getGrammarChapters(m.key).map(c => ({
           slug: c.slug,

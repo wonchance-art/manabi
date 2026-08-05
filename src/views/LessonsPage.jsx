@@ -1,12 +1,29 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { isPassed } from '../components/RefPatternCheck';
 import { useAuth } from '../lib/AuthContext';
 import { pullProgress } from '../lib/refProgress';
-import LanguageWorldMap, { TRACK_COLORS } from '../components/LanguageWorldMap';
 import LearnPage from './LearnPage';
+
+const LanguageWorldMap = dynamic(() => import('../components/LanguageWorldMap'), {
+  ssr: false,
+  loading: () => (
+    <div
+      aria-hidden="true"
+      style={{ minHeight: 220, margin: '10px 0 12px', borderRadius: 10, background: 'var(--bg-secondary)' }}
+    />
+  ),
+});
+
+const TRACK_COLORS = {
+  English: '#3b6fb5',
+  French: '#a02840',
+  Japanese: '#b0483f',
+  Chinese: '#b0722f',
+};
 
 const LANG_FILTERS = [
   { key: 'English',  label: '영어' },
