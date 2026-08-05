@@ -285,6 +285,9 @@
 
 ## Codex-3 (codex3/*) — 게임 시스템 확장 (타 기기)
 ### doing
+- 🔍 전체 코드 리뷰 R1 — scripts·설정·테스트 영역(발주 5192929678): 고정 base
+  `8e7e41778f338c0ed8a5d6744dedd011fb409a74`에서 게이트 8파일·`next.config.mjs`·
+  `public/sw.js`·의존성·`src/**/__tests__` 품질을 report-only로 전수 감사
 ### todo
 - 📚 /learn 진도·스트릭 위젯(발주 5126671497) → **구현 #706 도착·Claude 게이트 green(lint 2종+vitest 2508) — 오너 승인 대기(draft 유지)** ← 피벗 후 우선, 아래 월드 항목 동결
 - (P0 공통) 로컬 clone 이전 확인 코멘트
