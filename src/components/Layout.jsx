@@ -96,7 +96,7 @@ export default function Layout({ children }) {
       { href: '/home', label: '홈' },
     ] : []),
     { href: '/lessons',   label: '교재' },
-    { href: '/vocab',     label: '어휘' },
+    { href: '/vocab',     label: '복습' },
     { href: '/materials', label: '자료' },
   ];
 
@@ -105,7 +105,7 @@ export default function Layout({ children }) {
       { href: '/home', label: '홈' },
     ] : []),
     { href: '/lessons',   label: '교재' },
-    { href: '/vocab',     label: '어휘' },
+    { href: '/vocab',     label: '복습' },
     { href: '/materials', label: '자료' },
     ...(user ? [] : [{ href: '/auth', label: '로그인' }]),
   ];

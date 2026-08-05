@@ -423,10 +423,19 @@ export default function VocabPage() {
   };
 
   if (!user) {
+    // 단어장은 계정 기반이지만 문법 복습은 이 기기 기록만으로도 이어갈 수 있다 —
+    // '복습' 탭이 게스트에게 막다른 길이 되지 않도록 경로를 함께 연다.
     return (
       <div className="page-container mypage-guest">
-        <h2>로그인이 필요한 페이지입니다</h2>
-        <Link href="/auth" className="btn btn--primary btn--md">로그인하러 가기</Link>
+        <h2>복습</h2>
+        <p style={{ color: 'var(--text-secondary)', margin: '6px 0 16px', lineHeight: 1.6 }}>
+          단어장은 로그인 후 기기 간 동기화와 함께 쓸 수 있어요.<br />
+          문법 복습은 지금 이 기기의 기록만으로도 바로 이어갈 수 있어요.
+        </p>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <Link href="/review/grammar" className="btn btn--primary btn--md">문법 복습 이어가기 →</Link>
+          <Link href="/auth" className="btn btn--ghost btn--md">로그인하고 단어장 쓰기</Link>
+        </div>
       </div>
     );
   }
@@ -437,7 +446,10 @@ export default function VocabPage() {
       {/* 헤더 — 제목 + 요약 수치 */}
       <div className="page-header">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-          <h1 className="page-header__title" style={{ margin: 0 }}>어휘</h1>
+          <div>
+            <h1 className="page-header__title" style={{ margin: 0 }}>복습</h1>
+            <p className="page-header__subtitle" style={{ margin: '2px 0 0' }}>단어와 문법을 한곳에서</p>
+          </div>
           {vocab.length > 0 && (
             <div style={{ display: 'flex', gap: 14, fontSize: '0.82rem', color: 'var(--text-muted)' }}>
               <span>전체 {vocab.length}개</span>
