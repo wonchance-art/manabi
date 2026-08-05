@@ -663,6 +663,17 @@
   /listen 세트 제거(페이지·api/media 4종·뷰 ≈1,950줄·LLM 키 표면 소멸 — **복원 지점 32e305e**) ·
   /learn→/lessons 통합(LearnPage embedded 모드·진도 스트립·리다이렉트·네비 일원화). 지역학은 오너 정정으로
   보존 분류(#832 — 네비 철회·라우트 유지). ⚠️ #833 커밋에 Vercel 웹훅 유실로 배포 미생성 → 본 보드 커밋으로 재트리거
+- **🔍 전체 코드 리뷰 R1(2026-08-05, 6자리 분담 — Claude 2 + Codex 4)**: base 8e7e417 고정·인용 의무·수정 금지 규격.
+  **Claude 즉시 수리 4건**: 저장형 XSS(#835 — word detail이 로그인 누구나 쓰는 크라우드소싱 필드인데 뷰어 6곳
+  dangerouslySetInnerHTML, sanitize 0 → 렌더 시점 이스케이프) / **AdminPage Hooks 순서(#838 — /admin이 프로덕션에서
+  열리지 않던 치명, 가드를 전 Hooks 뒤로)** · 오픈 리다이렉트 · 모달 XSS · level 폴백 / prebuild에 lint-curriculum 배선
+  (#839 — 콘텐츠 3중 게이트가 배포에서 미강제였음) / level 파라미터 key·label 양립(#840 — 원래부터 미작동, 실측 검증).
+  **위임 리뷰 재판정**: Codex-2 views(#836 정독 46파일)·Codex-3 scripts(#837) 최상급 채택 / 허수 기각 = admin
+  service_role '우회'(각 라우트 자체 requireAdmin 가드 실재)·fire-and-forget '기록 손실'(게스트 localStorage 정본).
+  **진행 중**: Codex-2 V-05~V-13 수리(V-13 확증 — supabase {error} 미확인으로 저장 실패가 성공 토스트) ·
+  Codex-3 sw.js 하드닝(분 단위 버전·404 캐시) · Codex-1 components(미착수) · Codex-4 성능(최신 main 재실측 지시).
+  **보류**: engines 20.x vs Node 22 계약(M-11 — Vercel 런타임·PNG 해시 영향, 검증 후 결정) · word-detail 크라우드소싱
+  쓰기 권한(오너 판단).
 ### todo (오너 전건 승인 2026-07-18 — owner-gate 해제분 포함, Codex-1 확장 큐 = #150 코멘트 5012160829)
 - **🧪 레벨 디자인 v3 리옹 파일럿(오너 승인·발주 5045143688)**: 경로 위계 RFC(Codex-1)·
   도쿄 40MiB 긴급 분해(Codex-2)·정석 한 바퀴 코스(Claude) — 성공 판정은 라이브 비교
