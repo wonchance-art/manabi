@@ -14,6 +14,14 @@ const chapters = [
     titleFr: "敬語のきそ",
     summary: "일본어 경어의 큰 지도(표준은 문화청 5분류)를 한국어 높임법에 포개 그린 뒤, 상대를 높이는 존경어부터 익혀요.",
     duration: "약 8분",
+    drills: [
+      { id: "ja-n301-d1", type: "fill", prompt: "先生は もう お帰り___なりました。(존경 패턴 お〜になる)", answer: "に" },
+      { id: "ja-n301-d2", type: "choice", prompt: "존경어의 방향은?", choices: ["상대(높일 사람)의 행동을 높인다", "내 행동을 낮춘다", "사물을 높인다"], answer: "상대(높일 사람)의 행동을 높인다" },
+      { id: "ja-n301-d3", type: "fill", prompt: "いらっしゃいます는 ___·行く·来る의 존경어예요", answer: "いる" },
+      { id: "ja-n301-d4", type: "choice", prompt: "'드십니다'(존경)는?", choices: ["めしあがります", "いただきます", "たべさせます"], answer: "めしあがります", hint: "いただく는 겸양(내가 먹다)" },
+      { id: "ja-n301-d5", type: "order", sentence: "しゃちょうは かいぎしつに いらっしゃいます。", prompt: "'사장님은 회의실에 계십니다'를 배열해 보세요." },
+      { id: "ja-n301-d6", type: "choice", listen: "しょうしょう おまちください。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["잠시만 기다려 주십시오", "조금만 주세요", "먼저 가십시오"], answer: "잠시만 기다려 주십시오" },
+    ],
     sections: [
       {
         heading: "경어는 한국인의 홈그라운드 — 단, 지도가 달라요",
@@ -65,6 +73,14 @@ const chapters = [
     titleFr: "謙譲語・内と外",
     summary: "나를 낮춰 상대를 올리는 겸양어, 그리고 한국어와 결정적으로 다른 상대경어(우치/소토)를 한 번에 정리해요. 거래처 메일이 왜 그렇게 쓰이는지도 여기서 풀려요.",
     duration: "약 8분",
+    drills: [
+      { id: "ja-n301b-d1", type: "fill", prompt: "わたしが ご案内___ます。(겸양 ご〜する)", answer: "し" },
+      { id: "ja-n301b-d2", type: "choice", prompt: "겸양어의 방향은?", choices: ["내(우치) 쪽 행동을 낮춰 상대를 높인다", "상대의 행동을 직접 높인다", "누구든 높인다"], answer: "내(우치) 쪽 행동을 낮춰 상대를 높인다" },
+      { id: "ja-n301b-d3", type: "choice", prompt: "거래처에 '우리 야마다 사장'을 말할 때 자연스러운 쪽은?", choices: ["やまだは ただいま せきを はずして おります", "やまだしゃちょうさまは おでかけです", "しゃちょうが いらっしゃいません"], answer: "やまだは ただいま せきを はずして おります", hint: "밖(소토)에는 우리 쪽(우치)을 낮춰요 — 직함·경칭 생략" },
+      { id: "ja-n301b-d4", type: "fill", prompt: "います의 겸양어: ___ます", answer: "おり" },
+      { id: "ja-n301b-d5", type: "order", sentence: "あした うかがいます。", prompt: "'내일 찾아뵙겠습니다'를 배열해 보세요." },
+      { id: "ja-n301b-d6", type: "choice", listen: "おせわに なって おります。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["신세 지고 있습니다(비즈니스 인사)", "걱정하고 있습니다", "부탁드립니다"], answer: "신세 지고 있습니다(비즈니스 인사)" },
+    ],
     sections: [
       {
         heading: "겸양어Ⅰ vs 겸양어Ⅱ — 향하는 상대냐, 듣는 이냐",
@@ -109,6 +125,14 @@ const chapters = [
     titleFr: "そうだ（でんぶん・ようたい）",
     summary: "'~라고 한다'(전문)와 '~할 것 같다'(양태) — 똑같은 そうだ가 붙는 자리 하나로 갈려요. 정보의 출처를 밝히는 によると도 여기서 짝지어요.",
     duration: "약 8분",
+    drills: [
+      { id: "ja-n302-d1", type: "fill", prompt: "ニュースに よると、あした 雨が ふる___です。(전문)", answer: "そう" },
+      { id: "ja-n302-d2", type: "fill", prompt: "この ケーキ、おいし___です。(보기에 ~할 것 같다)", answer: "そう" },
+      { id: "ja-n302-d3", type: "choice", prompt: "전문 そうだ와 양태 そうだ의 접속 차이는?", choices: ["전문=보통형+そうだ, 양태=ます어간·형용사 어간+そうだ", "차이가 없다", "반대다"], answer: "전문=보통형+そうだ, 양태=ます어간·형용사 어간+そうだ" },
+      { id: "ja-n302-d4", type: "choice", prompt: "'맛있다고 해요'(전해 들음)는?", choices: ["おいしいそうです", "おいしそうです", "おいしいらしくないです"], answer: "おいしいそうです", hint: "おいしそう는 '맛있어 보인다'" },
+      { id: "ja-n302-d5", type: "order", sentence: "あめが ふりそうです。", prompt: "'비가 올 것 같아요(하늘을 보니)'를 배열해 보세요." },
+      { id: "ja-n302-d6", type: "choice", listen: "たなかさんは けっこんするそうです。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["다나카 씨는 결혼한대요(전문)", "다나카 씨는 결혼할 것 같아요(추측)", "다나카 씨는 결혼했어요"], answer: "다나카 씨는 결혼한대요(전문)" },
+    ],
     sections: [
       {
         heading: "붙는 자리가 가르는 두 얼굴",
@@ -152,6 +176,14 @@ const chapters = [
     titleFr: "ようだ・みたい・らしい",
     summary: "'~인 것 같다'가 되는 ようだ·みたい·らしい를, 근거가 '내 오감'이냐 '들은 정보'냐로 갈라요.",
     duration: "약 9분",
+    drills: [
+      { id: "ja-n302b-d1", type: "fill", prompt: "かぜを ひいた___です。(내 관찰 근거의 추정)", answer: "よう" },
+      { id: "ja-n302b-d2", type: "choice", prompt: "らしい의 결은?", choices: ["전해 들은 근거의 추정·전형성(~답다)", "직접 관찰만", "강한 단정"], answer: "전해 들은 근거의 추정·전형성(~답다)" },
+      { id: "ja-n302b-d3", type: "fill", prompt: "あの 人は 学生___い 服を きて います。(~다운)", answer: "らし" },
+      { id: "ja-n302b-d4", type: "choice", prompt: "みたい의 문체는?", choices: ["ようだ의 회화체", "격식 문어체", "경어체"], answer: "ようだ의 회화체" },
+      { id: "ja-n302b-d5", type: "order", sentence: "だれも いないようです。", prompt: "'아무도 없는 것 같아요'를 배열해 보세요." },
+      { id: "ja-n302b-d6", type: "choice", listen: "この みせ、にんきが あるらしいですよ。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["이 가게 인기 있대요(들은 얘기)", "이 가게 인기가 없어요", "이 가게가 제일 좋아요"], answer: "이 가게 인기 있대요(들은 얘기)" },
+    ],
     sections: [
       {
         heading: "'~인 것 같다'의 세 얼굴 — 무엇을 근거로 삼았나",
@@ -213,6 +245,14 @@ const chapters = [
     titleFr: "ばかり・だけ・しか・こそ",
     summary: "'만, 밖에, 뿐, 야말로' — 한국어 보조사와 놀랍도록 평행한 한정 표현들을 짝지어 정리해요.",
     duration: "약 10분",
+    drills: [
+      { id: "ja-n303-d1", type: "fill", prompt: "ゲーム___ して います。(~만 하고 있다 — 치우침)", answer: "ばかり" },
+      { id: "ja-n303-d2", type: "fill", prompt: "千円___ ありません。(밖에 — 부정 호응)", answer: "しか" },
+      { id: "ja-n303-d3", type: "choice", prompt: "だけ와 しか의 구분은?", choices: ["だけ=긍정·부정 다 가능, しか=반드시 부정문", "반대다", "같다"], answer: "だけ=긍정·부정 다 가능, しか=반드시 부정문" },
+      { id: "ja-n303-d4", type: "choice", prompt: "'너야말로'는?", choices: ["あなたこそ", "あなたばかり", "あなたしか"], answer: "あなたこそ" },
+      { id: "ja-n303-d5", type: "order", sentence: "やさいだけ たべます。", prompt: "'야채만 먹어요'를 배열해 보세요." },
+      { id: "ja-n303-d6", type: "choice", listen: "あと ひとつしか のこって いません。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["하나밖에 안 남았어요", "하나만 남기세요", "하나 더 남았어요"], answer: "하나밖에 안 남았어요" },
+    ],
     sections: [
       {
         heading: "だけ vs しか — '만'과 '밖에'",
@@ -286,6 +326,14 @@ const chapters = [
     titleFr: "間・間に・うちに",
     summary: "'~하는 동안 내내'와 '그 사이의 한 시점'을 に 하나로 가르고, '지금 상태가 끝나기 전에'라는 うちに의 절박함까지 잡아요.",
     duration: "약 8분",
+    drills: [
+      { id: "ja-n304-d1", type: "fill", prompt: "あかちゃんが ねて いる ___に、そうじを します。(자는 사이 한 시점)", answer: "あいだ", accepts: ["間"] },
+      { id: "ja-n304-d2", type: "fill", prompt: "わかい ___に、いろいろ 経験した ほうが いいです。(변하기 전에)", answer: "うち" },
+      { id: "ja-n304-d3", type: "choice", prompt: "間와 間に의 구분은?", choices: ["間=그동안 내내, 間に=그 사이의 한 시점", "반대다", "같다"], answer: "間=그동안 내내, 間に=그 사이의 한 시점" },
+      { id: "ja-n304-d4", type: "choice", prompt: "うちに의 뉘앙스는?", choices: ["상태가 변하기 전에 해 두자", "끝난 다음에", "정확히 동시에"], answer: "상태가 변하기 전에 해 두자" },
+      { id: "ja-n304-d5", type: "order", sentence: "あめが やんで いる うちに、かえりましょう。", prompt: "'비가 그친 사이에 돌아갑시다'를 배열해 보세요." },
+      { id: "ja-n304-d6", type: "choice", listen: "るすの あいだに でんわが ありました。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["부재중에 전화가 왔었어요", "쉬는 동안 내내 통화했어요", "전화를 안 받았어요"], answer: "부재중에 전화가 왔었어요" },
+    ],
     sections: [
       {
         heading: "間(あいだ) vs 間に — '내내'와 '그 사이의 한 점'",
@@ -329,6 +377,14 @@ const chapters = [
     titleFr: "ところだ・たばかりだ",
     summary: "동사의 직전·도중·직후를 찍는 ところだ 3단계와, '시계의 직후' vs '마음의 직후'를 가르는 たばかりだ를 정리해요.",
     duration: "약 9분",
+    drills: [
+      { id: "ja-n304b-d1", type: "fill", prompt: "今から 出かける ___です。(막 ~하려는 참)", answer: "ところ" },
+      { id: "ja-n304b-d2", type: "fill", prompt: "さっき 着いた ___です。(~한 지 얼마 안 됨)", answer: "ばかり" },
+      { id: "ja-n304b-d3", type: "choice", prompt: "〜たところだ와 〜たばかりだ의 결은?", choices: ["ところ=직후 그 순간, ばかり=시간 폭 있는 '얼마 안 됨'", "완전히 같다", "반대다"], answer: "ところ=직후 그 순간, ばかり=시간 폭 있는 '얼마 안 됨'" },
+      { id: "ja-n304b-d4", type: "choice", prompt: "'지금 먹고 있는 중이에요'는?", choices: ["たべて いる ところです", "たべた ところです", "たべる ところです"], answer: "たべて いる ところです" },
+      { id: "ja-n304b-d5", type: "order", sentence: "いま かいぎが おわった ところです。", prompt: "'지금 막 회의가 끝난 참이에요'를 배열해 보세요." },
+      { id: "ja-n304b-d6", type: "choice", listen: "にほんに きた ばかりです。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["일본에 온 지 얼마 안 됐어요", "일본에 막 가려던 참이에요", "일본에만 왔어요"], answer: "일본에 온 지 얼마 안 됐어요" },
+    ],
     sections: [
       {
         heading: "동작의 직전·도중·직후를 찍는 카메라",
@@ -379,6 +435,14 @@ const chapters = [
     titleFr: "しえきうけみ 〜させられる",
     summary: "'시킴을 당하다'라는, 한국어에 한 단어로 없는 형태. 만드는 법을 분해하고 '억지로'의 뉘앙스를 잡아요.",
     duration: "약 10분",
+    drills: [
+      { id: "ja-n305-d1", type: "fill", prompt: "部長に お酒を 飲ま___ました。(억지로 마시게 됐다)", answer: "され" },
+      { id: "ja-n305-d2", type: "choice", prompt: "사역수동의 감각은?", choices: ["시켜서 억지로 하게 된 피해감", "허락받아 기쁨", "정중한 부탁"], answer: "시켜서 억지로 하게 된 피해감" },
+      { id: "ja-n305-d3", type: "fill", prompt: "子どもの とき、ピアノを 習わ___ました。(억지로 배웠다)", answer: "され" },
+      { id: "ja-n305-d4", type: "choice", prompt: "'(상대 때문에) 기다리게 됐다'는?", choices: ["またされました", "まちました", "またせました"], answer: "またされました", hint: "またせる=기다리게 하다(사역)" },
+      { id: "ja-n305-d5", type: "order", sentence: "ははに やさいを たべさせられました。", prompt: "'엄마가 시켜서 야채를 (억지로) 먹었어요'를 배열해 보세요." },
+      { id: "ja-n305-d6", type: "choice", listen: "２じかんも またされました。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["2시간이나 기다리게 됐어요(당함)", "2시간이나 기다리게 했어요", "2시간 뒤에 만나요"], answer: "2시간이나 기다리게 됐어요(당함)" },
+    ],
     sections: [
       {
         heading: "형태 분해 — 사역 + 수동 = 사역수동",
@@ -457,6 +521,14 @@ const chapters = [
     titleFr: "はずだ・べきだ",
     summary: "근거에서 도출한 논리적 확신 はずだ와, 화자의 가치 판단이 실린 당위 べきだ — '추론'과 '마땅함'을 딱 갈라요.",
     duration: "약 9분",
+    drills: [
+      { id: "ja-n306-d1", type: "fill", prompt: "彼は 来る ___です。(근거 있는 확신)", answer: "はず" },
+      { id: "ja-n306-d2", type: "fill", prompt: "約束は 守る___だ。(마땅히 ~해야)", answer: "べき" },
+      { id: "ja-n306-d3", type: "choice", prompt: "はず와 べき의 구분은?", choices: ["はず=근거 있는 확신, べき=당위·의무", "반대다", "같다"], answer: "はず=근거 있는 확신, べき=당위·의무" },
+      { id: "ja-n306-d4", type: "choice", prompt: "'올 리가 없다'는?", choices: ["くる はずが ない", "くる べきが ない", "くる はずに ない"], answer: "くる はずが ない" },
+      { id: "ja-n306-d5", type: "order", sentence: "かれは もう ついて いる はずです。", prompt: "'그는 이미 도착해 있을 거예요(확신)'를 배열해 보세요." },
+      { id: "ja-n306-d6", type: "choice", listen: "もっと はやく いうべきでした。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["더 빨리 말했어야 했어요(후회)", "더 빨리 말해 주세요", "빨리 말할 수 있어요"], answer: "더 빨리 말했어야 했어요(후회)" },
+    ],
     sections: [
       {
         heading: "근거 있는 확신, '~일 터이다'",
@@ -499,6 +571,14 @@ const chapters = [
     titleFr: "わけだ・わけがない",
     summary: "사정을 알고 '그래서 그런 거구나' 하고 납득하는 わけだ와, 헷갈리는 부정형(わけではない·わけがない)의 미로를 정리해요.",
     duration: "약 9분",
+    drills: [
+      { id: "ja-n306b-d1", type: "fill", prompt: "つまり、行かない ___ですね。(그런 셈이군요)", answer: "わけ" },
+      { id: "ja-n306b-d2", type: "choice", prompt: "わけがない의 뜻은?", choices: ["~일 리가 없다", "~해야 한다", "~인 셈이다"], answer: "~일 리가 없다" },
+      { id: "ja-n306b-d3", type: "choice", prompt: "わけではない의 뜻은?", choices: ["(전부) ~인 것은 아니다(부분 부정)", "절대로 아니다(전면 부정)", "당연히 그렇다"], answer: "(전부) ~인 것은 아니다(부분 부정)" },
+      { id: "ja-n306b-d4", type: "fill", prompt: "きらいな ___では ありません。(싫은 건 아니에요)", answer: "わけ" },
+      { id: "ja-n306b-d5", type: "order", sentence: "やすければ いい という わけでは ありません。", prompt: "'싸다고 다 좋은 건 아니에요'를 배열해 보세요." },
+      { id: "ja-n306b-d6", type: "choice", listen: "しらない わけが ないでしょう。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["모를 리가 없잖아요", "몰라도 돼요", "알 수가 없어요"], answer: "모를 리가 없잖아요" },
+    ],
     sections: [
       {
         heading: "'그래서 ~인 거구나'라는 납득",
@@ -551,6 +631,14 @@ const chapters = [
     titleFr: "について・に対して",
     summary: "한국어 '~에 대해' 하나가 일본어에서는 '주제로 다루는' について와 '상대로 부딪히는' に対して로 갈려요.",
     duration: "약 8분",
+    drills: [
+      { id: "ja-n307-d1", type: "fill", prompt: "環境問題___ レポートを 書きます。(~에 대해)", answer: "について" },
+      { id: "ja-n307-d2", type: "fill", prompt: "先生___、しつれいな 態度を とっては いけません。(~에게·향하여)", answer: "にたいして", accepts: ["に対して"] },
+      { id: "ja-n307-d3", type: "choice", prompt: "について와 に対して의 구분은?", choices: ["について=화제의 내용, に対して=행위가 향하는 대상·대비", "반대다", "같다"], answer: "について=화제의 내용, に対して=행위가 향하는 대상·대비" },
+      { id: "ja-n307-d4", type: "choice", prompt: "'질문에 대해 답하다'에 자연스러운 쪽은?", choices: ["しつもんに たいして こたえる", "しつもんに ついて はしる", "しつもんを たいして こたえる"], answer: "しつもんに たいして こたえる" },
+      { id: "ja-n307-d5", type: "order", sentence: "この もんだいに ついて かんがえましょう。", prompt: "'이 문제에 대해 생각해 봅시다'를 배열해 보세요." },
+      { id: "ja-n307-d6", type: "choice", listen: "おきゃくさまに たいして ていねいに はなします。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["손님에게 정중하게 말해요", "손님에 대한 소문이에요", "손님과 싸웠어요"], answer: "손님에게 정중하게 말해요" },
+    ],
     sections: [
       {
         heading: "말하고 조사하고 쓰는 '주제'",
@@ -592,6 +680,14 @@ const chapters = [
     titleFr: "にとって・によって",
     summary: "'누구의 입장에서 보느냐'의 にとって와, 수단·원인·행위자·'~에 따라 다르다'를 한 몸에 담은 によって를 정리해요.",
     duration: "약 9분",
+    drills: [
+      { id: "ja-n307b-d1", type: "fill", prompt: "わたし___、家族が いちばん 大切です。(~에게 있어)", answer: "にとって" },
+      { id: "ja-n307b-d2", type: "fill", prompt: "国___ 文化が ちがいます。(~에 따라)", answer: "によって" },
+      { id: "ja-n307b-d3", type: "choice", prompt: "にとって와 によって의 구분은?", choices: ["にとって=~의 입장에서 보면, によって=~에 따라·~로 인해", "반대다", "같다"], answer: "にとって=~의 입장에서 보면, によって=~에 따라·~로 인해" },
+      { id: "ja-n307b-d4", type: "choice", prompt: "'사람에 따라 달라요'는?", choices: ["ひとに よって ちがいます", "ひとに とって ちがいます", "ひとに たいして ちがいます"], answer: "ひとに よって ちがいます" },
+      { id: "ja-n307b-d5", type: "order", sentence: "この しゃしんは わたしに とって たからものです。", prompt: "'이 사진은 저에게 보물이에요'를 배열해 보세요." },
+      { id: "ja-n307b-d6", type: "choice", listen: "てんきに よって よていを かえます。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["날씨에 따라 일정을 바꿔요", "날씨 덕분에 즐거워요", "날씨에게 고마워요"], answer: "날씨에 따라 일정을 바꿔요" },
+    ],
     sections: [
       {
         heading: "'~에게 있어'라는 관점의 좌표",
@@ -643,6 +739,14 @@ const chapters = [
     titleFr: "のに・くせに",
     summary: "그냥 '~는데'가 아니에요. のに의 의외·불만, くせに의 비난 — 역접에 실리는 감정의 온도를 구별해요.",
     duration: "약 8분",
+    drills: [
+      { id: "ja-n308-d1", type: "fill", prompt: "薬を 飲んだ___、治りません。(~인데도)", answer: "のに" },
+      { id: "ja-n308-d2", type: "choice", prompt: "くせに의 결은?", choices: ["비난·불만 섞인 '~인 주제에'", "중립적인 역접", "감사의 표현"], answer: "비난·불만 섞인 '~인 주제에'" },
+      { id: "ja-n308-d3", type: "fill", prompt: "知って いる ___に、教えて くれません。(주제에)", answer: "くせ" },
+      { id: "ja-n308-d4", type: "choice", prompt: "のに가 담는 뉘앙스는?", choices: ["기대와 다른 결과에 대한 의외·아쉬움", "당연한 순접", "이유 설명"], answer: "기대와 다른 결과에 대한 의외·아쉬움" },
+      { id: "ja-n308-d5", type: "order", sentence: "たかい のに、すぐ こわれました。", prompt: "'비싼데도 금방 고장 났어요'를 배열해 보세요." },
+      { id: "ja-n308-d6", type: "choice", listen: "やくそくした のに、こなかったんです。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["약속했는데도 안 왔어요", "약속해서 왔어요", "약속을 안 했어요"], answer: "약속했는데도 안 왔어요" },
+    ],
     sections: [
       {
         heading: "의외함에 불만 한 스푼",
@@ -684,6 +788,14 @@ const chapters = [
     titleFr: "ものの・ところが・ところで",
     summary: "감정을 뺀 문어적 양보 ものの와, 예상을 뒤집는 반전 ところが(≠화제 전환 ところで)를 익히고, 역접 네 형제의 온도를 한 줄로 정리해요.",
     duration: "약 8분",
+    drills: [
+      { id: "ja-n308b-d1", type: "fill", prompt: "買った___、一度も 使って いません。(~하긴 했지만)", answer: "ものの" },
+      { id: "ja-n308b-d2", type: "choice", prompt: "ところが의 결은?", choices: ["예상 밖의 전개(그런데 뜻밖에)", "순접(그래서)", "이유(왜냐하면)"], answer: "예상 밖의 전개(그런데 뜻밖에)" },
+      { id: "ja-n308b-d3", type: "choice", prompt: "ところで의 쓰임은?", choices: ["화제 전환(그건 그렇고)", "강한 역접", "결과 정리"], answer: "화제 전환(그건 그렇고)" },
+      { id: "ja-n308b-d4", type: "fill", prompt: "試験を 受けた ___、結果は まだ 分かりません。", answer: "ものの" },
+      { id: "ja-n308b-d5", type: "order", sentence: "でかけた。ところが、あめが ふって きた。", prompt: "'외출했다. 그런데 비가 오기 시작했다'를 배열해 보세요." },
+      { id: "ja-n308b-d6", type: "choice", listen: "ところで、しゅうまつは ひまですか。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["그건 그렇고, 주말에 시간 있어요?", "그래서 주말이 바빠요", "그런데도 주말에 일해요"], answer: "그건 그렇고, 주말에 시간 있어요?" },
+    ],
     sections: [
       {
         heading: "감정을 뺀 문어적 양보",
@@ -725,6 +837,14 @@ const chapters = [
     titleFr: "〜ように・〜ために",
     summary: "한국어 '~하기 위해서' 하나가 일본어에서는 의지의 ために와 무의지의 ように로 갈라져요. ようにする/ようになる, 용도의 のに까지 목적 표현을 한 줄에 꿰어요.",
     duration: "약 10분",
+    drills: [
+      { id: "ja-n309-d1", type: "fill", prompt: "日本語が 話せる ___に、毎日 練習します。(~하도록)", answer: "よう" },
+      { id: "ja-n309-d2", type: "fill", prompt: "家を 買う ___に、貯金して います。(~하기 위해)", answer: "ため" },
+      { id: "ja-n309-d3", type: "choice", prompt: "ように와 ために의 구분은?", choices: ["ように=가능형·무의지 동사와, ために=의지 동사와", "반대다", "같다"], answer: "ように=가능형·무의지 동사와, ために=의지 동사와" },
+      { id: "ja-n309-d4", type: "choice", prompt: "'잊지 않도록 메모해요'는?", choices: ["わすれない ように メモします", "わすれる ために メモします", "わすれた ように メモします"], answer: "わすれない ように メモします" },
+      { id: "ja-n309-d5", type: "order", sentence: "こどもにも わかる ように、やさしく せつめいします。", prompt: "'아이도 알 수 있게 쉽게 설명해요'를 배열해 보세요." },
+      { id: "ja-n309-d6", type: "choice", listen: "おくれない ように、はやく でましょう。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["늦지 않게 일찍 나갑시다", "늦었으니 빨리 갑시다", "늦어도 괜찮아요"], answer: "늦지 않게 일찍 나갑시다" },
+    ],
     sections: [
       {
         heading: "내가 이루러 가는 목표",
