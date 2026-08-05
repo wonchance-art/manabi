@@ -10,7 +10,6 @@ import { supabase } from '../lib/supabase';
 import { useToast } from '../lib/ToastContext';
 
 // 미완성 기능 임시 숨김 — true로 바꾸면 학습·클래스 내비가 함께 복원된다.
-const SHOW_UNFINISHED_NAV = false;
 
 export default function Layout({ children }) {
   const { user, profile, isAdmin, signOut } = useAuth();
@@ -95,21 +94,24 @@ export default function Layout({ children }) {
   const navLinks = [
     ...(user ? [
       { href: '/home', label: '홈' },
-      ...(SHOW_UNFINISHED_NAV ? [{ href: '/learn', label: '학습' }] : []),
+      { href: '/learn', label: '학습' },
     ] : []),
     { href: '/lessons',   label: '교재' },
     { href: '/vocab',     label: '어휘' },
+    { href: '/review/grammar', label: '복습' },
+    { href: '/studies',   label: '지역학' },
     { href: '/materials', label: '자료' },
-    ...(user && SHOW_UNFINISHED_NAV ? [{ href: '/cohorts', label: '클래스' }] : []),
   ];
 
   const mobileNavLinks = [
     ...(user ? [
       { href: '/home', label: '홈' },
-      ...(SHOW_UNFINISHED_NAV ? [{ href: '/learn', label: '학습' }] : []),
+      { href: '/learn', label: '학습' },
     ] : []),
     { href: '/lessons',   label: '교재' },
     { href: '/vocab',     label: '어휘' },
+    { href: '/review/grammar', label: '복습' },
+    { href: '/studies',   label: '지역학' },
     { href: '/materials', label: '자료' },
     ...(user ? [] : [{ href: '/auth', label: '로그인' }]),
   ];
