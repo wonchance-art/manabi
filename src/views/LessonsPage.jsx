@@ -34,10 +34,18 @@ export default function LessonsPage({ refManifest = {}, initialLang, initialLeve
   // URL 파라미터는 서버(page.jsx)에서 props로 받고, localStorage 복원은 마운트 후 useEffect로만 한다.
   const urlLang = initialLang && VALID_LANGS.has(initialLang) ? initialLang : null;
   const [langFilter, setLangFilter] = useState(urlLang ?? 'English');
+  // URL의 level은 key('A1')로 오는 게 자연스럽지만 내부 필터 값은 label('A1 기초')이다.
+  // 서버·클라 동일한 refManifest로 초기값을 정규화해 외부 링크와 칩 활성 상태를 함께 맞춘다.
+  const urlLevel = (() => {
+    if (!initialLevel) return 'all';
+    const levels = refManifest?.[urlLang ?? 'English']?.levels ?? [];
+    const hit = levels.find(l => l.label === initialLevel) || levels.find(l => l.key === initialLevel);
+    return hit ? hit.label : 'all';
+  })();
   // 마지막으로 본 챕터 — 복귀 시 자동 스크롤 대상
   const [lastChapter, setLastChapter] = useState(null);
   const scrolledRef = useRef(false);
-  const [levelFilter, setLevelFilter] = useState(initialLevel || 'all');
+  const [levelFilter, setLevelFilter] = useState(urlLevel);
   const [expandedGroups, setExpandedGroups] = useState(() => new Set());
 
   useEffect(() => {
@@ -143,8 +151,10 @@ export default function LessonsPage({ refManifest = {}, initialLang, initialLeve
 
   const refGroups = useMemo(() => {
     if (!refLang) return [];
-    // URL의 level은 임의 문자열일 수 있다 — 트랙에 없는 값이면 전체를 보여준다(빈 목록 방지).
-    const effectiveLevel = refLang.levels.some(l => l.label === levelFilter) ? levelFilter : 'all';
+    // level은 임의 문자열일 수 있다 — label·key 어느 쪽도 아니면 전체를 보여준다(빈 목록 방지).
+    const matched = refLang.levels.find(l => l.label === levelFilter)
+      || refLang.levels.find(l => l.key === levelFilter);
+    const effectiveLevel = levelFilter === 'all' ? 'all' : (matched ? matched.label : 'all');
     return refLang.levels
       .filter(l => effectiveLevel === 'all' || l.label === effectiveLevel)
       .map(l => ({ meta: l, chapters: l.chapters, vocabCount: l.vocabCount, bunkeiCount: l.bunkeiCount || 0 }));

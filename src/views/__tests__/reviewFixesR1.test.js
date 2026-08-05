@@ -40,12 +40,20 @@ describe('코드 리뷰 R1 수리 회귀', () => {
     expect(src).toMatch(/return escapeHtml\(text\)/);
   });
 
-  it('V-04 LessonsPage: 미지의 level은 전체로 폴백한다', () => {
+  it('V-04 LessonsPage: level은 key/label 모두 받고 미지 값은 전체로 폴백한다', () => {
     const src = read('src/views/LessonsPage.jsx');
     expect(src).toContain('effectiveLevel');
-    const levels = [{ label: 'A1' }, { label: 'A2' }];
-    const pick = (lv) => (levels.some(l => l.label === lv) ? lv : 'all');
-    expect(pick('xyz')).toBe('all');
-    expect(pick('A1')).toBe('A1');
+    expect(src).toContain('urlLevel');
+    // 실제 매니페스트 형태: key='A1', label='A1 기초'
+    const levels = [{ key: 'OT', label: 'OT 오리엔테이션' }, { key: 'A1', label: 'A1 기초' }];
+    const resolve = (lv) => {
+      if (!lv || lv === 'all') return 'all';
+      const hit = levels.find(l => l.label === lv) || levels.find(l => l.key === lv);
+      return hit ? hit.label : 'all';
+    };
+    expect(resolve('A1')).toBe('A1 기초');        // 외부 링크가 쓰는 key
+    expect(resolve('A1 기초')).toBe('A1 기초');   // 칩이 쓰는 label
+    expect(resolve('xyz')).toBe('all');           // 미지 값
+    expect(resolve(undefined)).toBe('all');
   });
 });
