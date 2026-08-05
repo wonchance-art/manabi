@@ -9,6 +9,14 @@ const chapters = [
     summary:
       "목적지로 가는 법을 묻고, 길이 맞는지 확인하고, 방향·소요 시간·승하차 안내까지 한 장면에서 이어 말해요.",
     duration: "약 16분",
+    drills: [
+      { id: "ja-n529-d1", type: "fill", prompt: "すみません、駅は どう 行け___ いいですか。(가면)", answer: "ば" },
+      { id: "ja-n529-d2", type: "choice", prompt: "'걸어서 몇 분이에요?'는?", choices: ["あるいて なんぷんですか", "あるくて なんぷんですか", "あるいた なんぷんですか"], answer: "あるいて なんぷんですか" },
+      { id: "ja-n529-d3", type: "fill", prompt: "つぎの 駅で ___かえて ください。(갈아타다)", answer: "のり" },
+      { id: "ja-n529-d4", type: "choice", prompt: "'(역을) 지나쳐 버렸어요'는?", choices: ["のりすごしました", "のりおくれました", "おりました"], answer: "のりすごしました", hint: "のりおくれる=놓치다" },
+      { id: "ja-n529-d5", type: "order", sentence: "この でんしゃは しぶやに とまりますか。", prompt: "'이 전철 시부야에 서나요?'를 배열해 보세요." },
+      { id: "ja-n529-d6", type: "choice", listen: "つぎは しんじゅく、しんじゅくです。", prompt: "안내 방송을 듣고 고르세요.", choices: ["다음은 신주쿠입니다", "이번 역은 시부야입니다", "종점에 도착했습니다"], answer: "다음은 신주쿠입니다" },
+    ],
     sections: [
       {
         heading: "문형 1 — 목적지로 가는 법을 통째로 물어요",
@@ -293,6 +301,14 @@ const chapters = [
     summary:
       "아픈 부위와 증상이 시작된 때를 말하고, 분실과 미발견 상태를 구별하고, 필요한 도움을 정중하게 요청해요.",
     duration: "약 16분",
+    drills: [
+      { id: "ja-n530-d1", type: "fill", prompt: "あたまが ___です。(아프다)", answer: "いたい", accepts: ["痛い"] },
+      { id: "ja-n530-d2", type: "fill", prompt: "さいふを ___しました。(잃어버렸다)", answer: "なく" },
+      { id: "ja-n530-d3", type: "choice", prompt: "'구급차를 불러 주세요'는?", choices: ["きゅうきゅうしゃを よんで ください", "きゅうきゅうしゃに のって ください", "きゅうきゅうしゃを きいて ください"], answer: "きゅうきゅうしゃを よんで ください" },
+      { id: "ja-n530-d4", type: "choice", prompt: "약국에서 '두통약 있어요?'는?", choices: ["ずつうやくは ありますか", "ずつうやくは いますか", "ずつうやくを のみましたか"], answer: "ずつうやくは ありますか", hint: "약은 무생물 — あります" },
+      { id: "ja-n530-d5", type: "order", sentence: "パスポートを なくして しまいました。", prompt: "'여권을 잃어버리고 말았어요'를 배열해 보세요." },
+      { id: "ja-n530-d6", type: "choice", listen: "だいじょうぶですか。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["괜찮으세요?", "어디예요?", "누구세요?"], answer: "괜찮으세요?" },
+    ],
     sections: [
       {
         heading: "문형 1 — 아픈 부위를 が로 표시해요",
