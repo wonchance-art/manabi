@@ -30,21 +30,30 @@ function saveStoredVoice(langKey, voiceURI) {
 const serverAudioCache = new Map();
 let currentAudio = null;
 
+export function getTtsCapabilities(browser = typeof window === 'undefined' ? null : window) {
+  if (!browser) return { webSpeech: false, serverAudio: false, supported: false };
+  const webSpeech = !!browser.speechSynthesis && typeof browser.SpeechSynthesisUtterance === 'function';
+  const serverAudio = typeof browser.fetch === 'function'
+    && typeof browser.Audio === 'function'
+    && typeof browser.URL?.createObjectURL === 'function';
+  return { webSpeech, serverAudio, supported: webSpeech || serverAudio };
+}
+
 async function playServerTTS(text, language) {
   const url = `/api/tts?lang=${encodeURIComponent(language)}&text=${encodeURIComponent(text)}`;
   let objUrl = serverAudioCache.get(url);
   if (!objUrl) {
-    const res = await fetch(url);
+    const res = await window.fetch(url);
     if (!res.ok) throw new Error('tts ' + res.status);
     const blob = await res.blob();
-    objUrl = URL.createObjectURL(blob);
+    objUrl = window.URL.createObjectURL(blob);
     serverAudioCache.set(url, objUrl);
   }
   if (currentAudio) {
     currentAudio.pause();
     currentAudio.currentTime = 0;
   }
-  const audio = new Audio(objUrl);
+  const audio = new window.Audio(objUrl);
   currentAudio = audio;
   await audio.play();
 }
@@ -90,9 +99,9 @@ export function useTTS() {
 
   // 브라우저 내장 음성 — 서버 TTS 실패 시 폴백 전용
   const speakFallback = useCallback((text, language = 'Japanese', opts = {}) => {
-    if (typeof window === 'undefined' || !window.speechSynthesis) return;
+    if (!getTtsCapabilities().webSpeech) return;
     window.speechSynthesis.cancel();
-    const utter = new SpeechSynthesisUtterance(text);
+    const utter = new window.SpeechSynthesisUtterance(text);
     utter.lang = langCode(language);
     utter.rate = opts.rate ?? 0.85;
     utter.pitch = opts.pitch ?? 1;
@@ -117,8 +126,9 @@ export function useTTS() {
     if (typeof window !== 'undefined') window.speechSynthesis?.cancel();
   }, []);
 
-  // 서버 TTS는 브라우저 의존성이 없어 클라이언트면 항상 지원
-  const supported = typeof window !== 'undefined';
+  // 서버 음성 또는 Web Speech 중 실제 재생 경로가 있는 브라우저에서만 노출한다.
+  // 서버 음성을 이미 재생할 수 있는 환경은 Web Speech 부재만으로 차단하지 않는다.
+  const supported = getTtsCapabilities().supported;
 
   return { speak, stop, supported, listVoices, getSelectedVoice, setSelectedVoice, voicesReady };
 }

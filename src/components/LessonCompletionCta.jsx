@@ -17,6 +17,7 @@ export function claimLessonCompletion(pendingRef, completed) {
 export function LessonCompletionActions({
   completed,
   disabled,
+  error,
   lessonId,
   nextLesson,
   onComplete,
@@ -59,8 +60,17 @@ export function LessonCompletionActions({
           </Link>
         )}
       </div>
+      {error && <p role="alert" style={{ margin: '10px 0 0', color: 'var(--danger)', fontSize: '0.82rem' }}>{error}</p>}
     </section>
   );
+}
+
+export async function readLessonCompleted(progressGetter, userId, lessonRef) {
+  const result = await progressGetter(userId, {
+    lang: lessonRef.lang,
+    slugs: [lessonRef.slug],
+  });
+  return result.completedSlugs.includes(lessonRef.slug);
 }
 
 export default function LessonCompletionCta({ lessonRef, nextLesson }) {
@@ -68,6 +78,7 @@ export default function LessonCompletionCta({ lessonRef, nextLesson }) {
   const [completed, setCompleted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
   const pendingRef = useRef(false);
 
   useEffect(() => {
@@ -75,15 +86,19 @@ export default function LessonCompletionCta({ lessonRef, nextLesson }) {
 
     let active = true;
     setLoading(true);
+    setCompleted(false);
+    setError('');
 
-    getLessonProgress(user?.id, {
-      lang: lessonRef.lang,
-      slugs: [lessonRef.slug],
-    }).then((result) => {
-      if (!active) return;
-      setCompleted(result.completedSlugs.includes(lessonRef.slug));
-      setLoading(false);
-    });
+    readLessonCompleted(getLessonProgress, user?.id, lessonRef)
+      .then((isCompleted) => {
+        if (active) setCompleted(isCompleted);
+      })
+      .catch(() => {
+        if (active) setError('레슨 진행 상태를 불러오지 못했어요. 잠시 후 다시 시도해 주세요.');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
 
     return () => {
       active = false;
@@ -94,9 +109,12 @@ export default function LessonCompletionCta({ lessonRef, nextLesson }) {
     if (!claimLessonCompletion(pendingRef, completed)) return;
 
     setSaving(true);
+    setError('');
     try {
       await recordLessonCompleted(user?.id, lessonRef);
       setCompleted(true);
+    } catch {
+      setError('레슨 완료를 저장하지 못했어요. 연결을 확인하고 다시 눌러 주세요.');
     } finally {
       pendingRef.current = false;
       setSaving(false);
@@ -107,6 +125,7 @@ export default function LessonCompletionCta({ lessonRef, nextLesson }) {
     <LessonCompletionActions
       completed={completed}
       disabled={authLoading || loading || saving}
+      error={error}
       lessonId={lessonRef?.id}
       nextLesson={nextLesson}
       onComplete={completeLesson}

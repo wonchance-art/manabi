@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import Button from './Button';
 
@@ -16,6 +16,42 @@ export default function ReportMaterialButton({ materialId, userId, toast }) {
   const [reason, setReason] = useState('inappropriate');
   const [details, setDetails] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const dialogRef = useRef(null);
+  const submittingRef = useRef(false);
+  const titleId = useId();
+
+  submittingRef.current = submitting;
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const previousFocus = document.activeElement;
+    const dialog = dialogRef.current;
+    const selector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    const focusInitial = window.setTimeout(() => dialog?.querySelector('[data-dialog-initial-focus]')?.focus(), 0);
+    function onKeyDown(event) {
+      if (event.key === 'Escape' && !submittingRef.current) {
+        event.preventDefault();
+        setOpen(false);
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = [...(dialog?.querySelectorAll(selector) || [])].filter(el => !el.disabled);
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault(); last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault(); first.focus();
+      }
+    }
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.clearTimeout(focusInitial);
+      document.removeEventListener('keydown', onKeyDown);
+      previousFocus?.focus?.();
+    };
+  }, [open]);
 
   async function handleSubmit() {
     if (submitting || !userId) return;
@@ -63,9 +99,21 @@ export default function ReportMaterialButton({ materialId, userId, toast }) {
       </button>
 
       {open && (
-        <div className="modal-overlay" onClick={() => !submitting && setOpen(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 420 }}>
-            <h3 style={{ margin: '0 0 8px' }}>자료 신고</h3>
+        <div
+          className="modal-overlay"
+          onClick={() => !submitting && setOpen(false)}
+          role="presentation"
+        >
+          <div
+            ref={dialogRef}
+            className="modal"
+            onClick={e => e.stopPropagation()}
+            style={{ maxWidth: 420 }}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
+          >
+            <h3 id={titleId} style={{ margin: '0 0 8px' }}>자료 신고</h3>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: 14 }}>
               이 자료가 부적절하다고 생각하시면 이유를 선택해주세요.
             </p>
@@ -79,6 +127,7 @@ export default function ReportMaterialButton({ materialId, userId, toast }) {
                     value={r.value}
                     checked={reason === r.value}
                     onChange={e => setReason(e.target.value)}
+                    data-dialog-initial-focus={r.value === 'inappropriate' ? '' : undefined}
                   />
                   {r.label}
                 </label>
