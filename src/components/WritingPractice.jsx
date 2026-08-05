@@ -68,9 +68,9 @@ export default function WritingPractice({ lang, slug, writing }) {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {writing.samples.map((smp) => (
-              <div key={smp.fr ?? smp.zh ?? smp.en} style={{ padding: '8px 11px', borderRadius: 8, background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
+              <div key={smp.fr ?? smp.zh ?? smp.en ?? smp.ja} style={{ padding: '8px 11px', borderRadius: 8, background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
                 <p style={{ margin: 0, fontSize: '0.92rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }} lang={htmlLang}>
-                  {smp.fr ?? smp.zh ?? smp.en} <RefSpeak text={smp.fr ?? smp.zh ?? smp.en} lang={lang} />
+                  {smp.fr ?? smp.zh ?? smp.en ?? smp.ja} <RefSpeak text={smp.fr ?? smp.zh ?? smp.en ?? smp.ja} lang={lang} />
                 </p>
                 {smp.pinyin && (
                   <p style={{ margin: '2px 0 0', fontSize: '0.76rem', color: 'var(--text-secondary)' }}>{smp.pinyin}</p>

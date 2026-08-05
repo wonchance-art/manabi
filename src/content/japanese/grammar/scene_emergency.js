@@ -17,6 +17,14 @@ const chapters = [
       { id: "ja-n529-d5", type: "order", sentence: "この でんしゃは しぶやに とまりますか。", prompt: "'이 전철 시부야에 서나요?'를 배열해 보세요." },
       { id: "ja-n529-d6", type: "choice", listen: "つぎは しんじゅく、しんじゅくです。", prompt: "안내 방송을 듣고 고르세요.", choices: ["다음은 신주쿠입니다", "이번 역은 시부야입니다", "종점에 도착했습니다"], answer: "다음은 신주쿠입니다" },
     ],
+    writing: {
+      prompt: "역을 찾는 질문을 공손하게 써 보세요.",
+      hints: ["すみません、〜は どこですか"],
+      samples: [
+        { ja: "すみません、ちかてつの えきは どこですか。", ko: "실례합니다, 지하철역은 어디예요?" },
+      ],
+      checklist: ["すみません으로 부드럽게 열었다"],
+    },
     sections: [
       {
         heading: "문형 1 — 목적지로 가는 법을 통째로 물어요",
@@ -309,6 +317,14 @@ const chapters = [
       { id: "ja-n530-d5", type: "order", sentence: "パスポートを なくして しまいました。", prompt: "'여권을 잃어버리고 말았어요'를 배열해 보세요." },
       { id: "ja-n530-d6", type: "choice", listen: "だいじょうぶですか。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["괜찮으세요?", "어디예요?", "누구세요?"], answer: "괜찮으세요?" },
     ],
+    writing: {
+      prompt: "아픈 곳을 알리고 약을 청해 보세요.",
+      hints: ["〜が いたいです"],
+      samples: [
+        { ja: "おなかが いたいです。くすりを ください。", ko: "배가 아파요. 약을 주세요." },
+      ],
+      checklist: ["증상+요청 두 문장을 만들었다"],
+    },
     sections: [
       {
         heading: "문형 1 — 아픈 부위를 が로 표시해요",
