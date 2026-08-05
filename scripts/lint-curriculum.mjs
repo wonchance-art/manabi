@@ -5,7 +5,8 @@
 //      ※ '사용 문형의 의미적 커버'까지는 자동화하지 않는다(감사 몫) — 여기서는 순서 위반만 기계 검출.
 //  (d) 레벨 어휘 대조 — 챕터 fr 문장 토큰을 레벨 누적 vocab 팩과 대조(report-only 통계.
 //      굴절형·표제어 차이로 오탐이 있어 게이트로 쓰지 않는다. 기능어 스톱리스트 + 조야한 어간 매칭)
-// 적용 수위: fr A1~A2 = (a)(b)(c) 오류(exit 1) / (d)와 그 외 트랙·레벨 = report-only 경고.
+// 적용 수위: fr A1~A2 = (a)(b)(c) 오류(exit 1), (f) 드릴 비중복 = 4트랙 모두 오류,
+//             (d)와 그 외 트랙·레벨 = report-only 경고.
 // lint-content.mjs와 같은 텍스트 파싱 방식(콘텐츠 모듈은 확장자 없는 import라 plain node로 로드 불가).
 
 import fs from 'node:fs/promises';
@@ -16,27 +17,162 @@ const REPO_ROOT = fileURLToPath(new URL('../', import.meta.url));
 const TRACK_NAMES = ['chinese', 'english', 'french', 'japanese'];
 const ENFORCED = { french: new Set(['A1', 'A2']) };
 
-function parseChapters(source, fname) {
+function stringPropertyPattern(key, flags = '') {
+  return new RegExp(`(?:^|,)\\s*["']?${key}["']?\\s*:\\s*(?:"((?:[^"\\\\]|\\\\.)*)"|'((?:[^'\\\\]|\\\\.)*)')`, flags);
+}
+
+function decodeQuoted(raw = '') {
+  return raw
+    .replace(/\\n/g, '\n')
+    .replace(/\\r/g, '\r')
+    .replace(/\\t/g, '\t')
+    .replace(/\\(["'\\])/g, '$1');
+}
+
+function readStringProperty(source, key) {
+  const match = stringPropertyPattern(key, 'm').exec(source);
+  return match ? decodeQuoted(match[1] ?? match[2]) : undefined;
+}
+
+function readAllStringProperties(source, keys) {
+  const keyPattern = keys.join('|');
+  const re = new RegExp(`(?:^|,)\\s*["']?(?:${keyPattern})["']?\\s*:\\s*(?:"((?:[^"\\\\]|\\\\.)*)"|'((?:[^'\\\\]|\\\\.)*)')`, 'gm');
+  return [...source.matchAll(re)].map((match) => decodeQuoted(match[1] ?? match[2]));
+}
+
+function findBalancedEnd(source, start, open, close) {
+  let depth = 0;
+  let quote = null;
+  let escaped = false;
+  let lineComment = false;
+  let blockComment = false;
+  for (let i = start; i < source.length; i += 1) {
+    const ch = source[i];
+    const next = source[i + 1];
+    if (lineComment) {
+      if (ch === '\n') lineComment = false;
+      continue;
+    }
+    if (blockComment) {
+      if (ch === '*' && next === '/') { blockComment = false; i += 1; }
+      continue;
+    }
+    if (quote) {
+      if (escaped) escaped = false;
+      else if (ch === '\\') escaped = true;
+      else if (ch === quote) quote = null;
+      continue;
+    }
+    if (ch === '/' && next === '/') { lineComment = true; i += 1; continue; }
+    if (ch === '/' && next === '*') { blockComment = true; i += 1; continue; }
+    if (ch === '"' || ch === "'" || ch === '`') { quote = ch; continue; }
+    if (ch === open) depth += 1;
+    else if (ch === close) {
+      depth -= 1;
+      if (depth === 0) return i;
+    }
+  }
+  throw new Error(`닫히지 않은 ${open}${close} 블록 (offset ${start})`);
+}
+
+function findArrayProperty(source, key) {
+  const property = new RegExp(`["']?${key}["']?\\s*:`).exec(source);
+  if (!property) return null;
+  const start = source.indexOf('[', property.index + property[0].length);
+  if (start < 0) throw new Error(`${key} 배열 시작 '[' 누락`);
+  const end = findBalancedEnd(source, start, '[', ']');
+  return source.slice(start + 1, end);
+}
+
+function topLevelObjects(arraySource) {
+  const objects = [];
+  let i = 0;
+  while (i < arraySource.length) {
+    if (arraySource[i] !== '{') { i += 1; continue; }
+    const end = findBalancedEnd(arraySource, i, '{', '}');
+    objects.push(arraySource.slice(i + 1, end));
+    i = end + 1;
+  }
+  return objects;
+}
+
+function chapterMarks(source) {
+  const slugLine = /^\s*["']?slug["']?\s*:\s*(?:"((?:[^"\\]|\\.)*)"|'((?:[^'\\]|\\.)*)')\s*,?/gm;
+  return [...source.matchAll(slugLine)].map((match) => ({
+    slug: decodeQuoted(match[1] ?? match[2]),
+    at: match.index,
+  }));
+}
+
+export function parseChapters(source, fname) {
   const chapters = [];
-  const slugRe = /^\s+slug: "([^"]+)",\s*$/gm;
-  const marks = [];
-  let m;
-  while ((m = slugRe.exec(source)) !== null) marks.push({ slug: m[1], at: m.index });
+  const marks = chapterMarks(source);
   for (let i = 0; i < marks.length; i += 1) {
     const seg = source.slice(marks[i].at, i + 1 < marks.length ? marks[i + 1].at : source.length);
-    const level = seg.match(/level: "([^"]+)"/)?.[1];
-    const orderRaw = seg.match(/order: (\d+)/)?.[1];
-    const prereqRaw = seg.match(/prerequisites: \[([^\]]*)\]/)?.[1] ?? '';
-    const prerequisites = [...prereqRaw.matchAll(/"([^"]+)"/g)].map((x) => x[1]);
+    const level = readStringProperty(seg, 'level');
+    const orderRaw = /(?:^|,)\s*["']?order["']?\s*:\s*(\d(?:_?\d)*)/m.exec(seg)?.[1];
+    const prereqRaw = findArrayProperty(seg, 'prerequisites') ?? '';
+    const prerequisites = [...prereqRaw.matchAll(/"((?:[^"\\]|\\.)*)"|'((?:[^'\\]|\\.)*)'/g)]
+      .map((match) => decodeQuoted(match[1] ?? match[2]));
     chapters.push({
       slug: marks[i].slug,
       level,
-      order: orderRaw === undefined ? undefined : Number(orderRaw),
+      order: orderRaw === undefined ? undefined : Number(orderRaw.replaceAll('_', '')),
       prerequisites,
       file: fname,
     });
   }
   return chapters;
+}
+
+export function parseDrillItems(source) {
+  const drills = findArrayProperty(source, 'drills');
+  if (drills === null) return [];
+  return topLevelObjects(drills).flatMap((body) => {
+    const id = readStringProperty(body, 'id') ?? '?';
+    const type = readStringProperty(body, 'type') ?? '?';
+    let sentence;
+    if (type === 'order' || type === 'dictation') sentence = readStringProperty(body, 'sentence');
+    else if (type === 'fill') {
+      const prompt = readStringProperty(body, 'prompt');
+      const answer = readStringProperty(body, 'answer');
+      if (prompt && answer) sentence = prompt.replace('___', answer);
+    } else if (type === 'choice') sentence = readStringProperty(body, 'answer');
+    return sentence ? [{ id, sentence }] : [];
+  });
+}
+
+export async function scanDrillDuplicates({ repoRoot = REPO_ROOT, trackNames = TRACK_NAMES } = {}) {
+  const errors = [];
+  const normSent = (value) => value.replace(/\s+/g, ' ').trim().toLowerCase();
+  for (const track of trackNames) {
+    try {
+      const gdir = path.join(repoRoot, `src/content/${track}/grammar`);
+      const gfiles = (await fs.readdir(gdir)).filter((file) => file.endsWith('.js')).sort();
+      const globalSeen = new Map();
+      for (const file of gfiles) {
+        const source = await fs.readFile(path.join(gdir, file), 'utf8');
+        const marks = chapterMarks(source);
+        for (let i = 0; i < marks.length; i += 1) {
+          const segment = source.slice(marks[i].at, i + 1 < marks.length ? marks[i + 1].at : source.length);
+          const chapterSentences = new Set(readAllStringProperties(segment, ['fr', 'zh', 'en', 'ja']).map(normSent));
+          const local = new Set();
+          for (const item of parseDrillItems(segment)) {
+            const sentence = normSent(item.sentence);
+            const label = `${marks[i].slug}:${item.id}`;
+            if (chapterSentences.has(sentence)) errors.push(`${track} 드릴 중복(챕터 예문과 동일): ${label} — "${sentence}"`);
+            if (local.has(sentence)) errors.push(`${track} 드릴 중복(챕터 내): ${label} — "${sentence}"`);
+            local.add(sentence);
+            if (globalSeen.has(sentence)) errors.push(`${track} 드릴 중복(챕터 간): ${label} ↔ ${globalSeen.get(sentence)}`);
+            else globalSeen.set(sentence, label);
+          }
+        }
+      }
+    } catch (error) {
+      errors.push(`드릴 비중복 게이트 실패 [${track}]: ${error.message}`);
+    }
+  }
+  return errors;
 }
 
 async function parseSlugAliases() {
@@ -157,51 +293,11 @@ export async function runCurriculumLint() {
     for (const slug of edges.keys()) if ((state.get(slug) ?? 0) === 0) dfs(slug);
   }
 
-  // (f) 드릴 비중복 게이트 (RFC learning-path §2 — fr fail)
-  //  드릴 문장(sentence·choice 정답·fill 완성문)은 ① 같은 챕터의 fr 문자열 ② 같은 챕터 다른 드릴
-  //  ③ 다른 챕터의 드릴과 문장 단위로 겹치지 않아야 한다.
-  try {
-    for (const track of ['french', 'chinese', 'english', 'japanese']) {
-    const gdir = path.join(REPO_ROOT, `src/content/${track}/grammar`);
-    const gfiles = (await fs.readdir(gdir)).filter((f) => f.endsWith('.js'));
-    const normSent = (s) => s.replace(/\s+/g, ' ').trim().toLowerCase();
-    const globalSeen = new Map(); // normSent → "slug:drillId"
-    for (const f of gfiles.sort()) {
-      const src = await fs.readFile(path.join(gdir, f), 'utf8');
-      const marks = [...src.matchAll(/^\s+slug: "([^"]+)",\s*$/gm)].map((m) => ({ slug: m[1], at: m.index }));
-      for (let i = 0; i < marks.length; i += 1) {
-        const seg = src.slice(marks[i].at, i + 1 < marks.length ? marks[i + 1].at : src.length);
-        const dm = seg.match(/drills: \[([\s\S]*?)\n    \]/);
-        if (!dm) continue;
-        const dseg = dm[1];
-        const frSet = new Set([...seg.matchAll(/(?:fr|zh|en|ja): "((?:[^"\\]|\\.)*)"/g)].map((m) => normSent(m[1])));
-        const items = [];
-        for (const m of dseg.matchAll(/\{([\s\S]*?)\}/g)) {
-          const body = m[1];
-          const g = (k) => body.match(new RegExp(k + ': "((?:[^"\\\\]|\\\\.)*)"'))?.[1];
-          const id = g('id') ?? '?';
-          const type = g('type') ?? '?';
-          let sent = null;
-          if (type === 'order' || type === 'dictation') sent = g('sentence');
-          else if (type === 'fill' && g('prompt') && g('answer')) sent = g('prompt').replace('___', g('answer'));
-          else if (type === 'choice') sent = g('answer');
-          if (sent) items.push({ id, sent: normSent(sent) });
-        }
-        const local = new Set();
-        for (const { id, sent } of items) {
-          const label = `${marks[i].slug}:${id}`;
-          if (frSet.has(sent)) errors.push(`${track} 드릴 중복(챕터 예문과 동일): ${label} — "${sent}"`);
-          if (local.has(sent)) errors.push(`${track} 드릴 중복(챕터 내): ${label} — "${sent}"`);
-          local.add(sent);
-          if (globalSeen.has(sent)) errors.push(`${track} 드릴 중복(챕터 간): ${label} ↔ ${globalSeen.get(sent)}`);
-          else globalSeen.set(sent, label);
-        }
-      }
-    }
-    }
-  } catch (e) {
-    warnings.push(`드릴 비중복 게이트 실패: ${e}`);
-  }
+  // (f) 드릴 비중복 게이트 (RFC learning-path §2 — 4트랙 모두 hard fail)
+  //  드릴 문장(sentence·choice 정답·fill 완성문)은 ① 같은 챕터의 학습 언어 문자열
+  //  ② 같은 챕터 다른 드릴 ③ 다른 챕터의 드릴과 문장 단위로 겹치지 않아야 한다.
+  //  트랙 하나가 I/O·파싱에 실패해도 뒤 트랙 검사는 계속하되, scanner 실패 자체는 errors로 승격한다.
+  errors.push(...await scanDrillDuplicates());
 
   // (e′) bunkei 레벨 간 중복 키 감시 (report-only — 정리 라운드 재발 탐지)
   // 기준선(2026-07-30 정리 완료 시점 실측): ja 31(정당 재도입 keeper — 경어·ながら 등)·zh 1·en 2·fr 0.
