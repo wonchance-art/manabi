@@ -6,6 +6,7 @@ import { isPassed } from '../components/RefPatternCheck';
 import { useAuth } from '../lib/AuthContext';
 import { pullProgress } from '../lib/refProgress';
 import LanguageWorldMap, { TRACK_COLORS } from '../components/LanguageWorldMap';
+import LearnPage from './LearnPage';
 
 const LANG_FILTERS = [
   { key: 'English',  label: '영어' },
@@ -24,7 +25,7 @@ function PitchLine({ text }) {
   );
 }
 
-export default function LessonsPage({ refManifest = {}, initialLang, initialLevel }) {
+export default function LessonsPage({ refManifest = {}, initialLang, initialLevel, progressCatalog = {} }) {
   const router = useRouter();
   const { user, profile } = useAuth();
   const isAdmin = profile?.role === 'admin';
@@ -175,6 +176,9 @@ export default function LessonsPage({ refManifest = {}, initialLang, initialLeve
           <p className="page-header__subtitle">학습 순서대로 배치된 문법·어휘 레퍼런스</p>
         </div>
       </div>
+
+      {/* 내 진도 스트립 — 구 /learn 대시보드를 embedded로 통합 */}
+      <LearnPage embedded progressCatalog={progressCatalog} />
 
       {/* 언어 필터 */}
       <div className="materials-filters">

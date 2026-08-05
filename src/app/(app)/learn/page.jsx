@@ -1,12 +1,6 @@
-import LearnPage from '@/views/LearnPage';
-import { buildLearnProgressCatalog } from '@/lib/learn/homeProgressCatalog';
+import { redirect } from 'next/navigation';
 
-export const metadata = {
-  title: '학습 | Anatomy Studio',
-  description: '오늘의 학습과 연습을 한곳에서 시작하세요.',
-  openGraph: { title: '학습 | Anatomy Studio', description: '오늘의 학습과 연습을 한곳에서' },
-};
-
+// 학습 대시보드는 교재 페이지 상단에 통합 — 구 링크 호환용 리다이렉트 (통합: 최적화 R4)
 export default function Page() {
-  return <LearnPage progressCatalog={buildLearnProgressCatalog()} />;
+  redirect('/lessons');
 }
