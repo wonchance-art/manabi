@@ -220,11 +220,13 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-- 🔍 `src/views` Supabase mutation 오류 확인 재감사: `await supabase.from(...)` 뒤 `{ error }`
-  미확인 지점을 전수 스캔하고 잔여가 있으면 단일 PR로 수리·회귀 고정
-  (`codex2/audit-view-supabase-errors`, base `258fa0c706fb3bfd965dbe1aec3d6aff6362f242`, #150 5197883976)
 ### todo
 ### done (최근)
+- 🛠️ `src/views` Supabase 오류 확인 재감사: top-level 39파일의 직접 `await supabase.from(...)`
+  48건과 Promise/then 변형을 전수 확인하고, 무응답 mutation 3곳·조회 실패의 빈 상태 오독을
+  명시 오류 처리와 회귀 게이트로 고정(targeted 11·전체 274파일/2,578테스트 green,
+  diff SHA `9cd3504f…3f224`, max RSS 3,708,256,256B·peak footprint 24,775,656B·swap 0,
+  `codex2/audit-view-supabase-errors`, 구현 `63ca253`, base `ee578fe3fa89e6f6cbf6ab71dbccc9bf0df0082a`)
 - 🛠️ `src/views` 리뷰 후속 V-05~V-13: 저장 성공 확인·재시도, query 오류 상태,
   PDF URL/분석 실패 복구, 마운트 후 localStorage 복원, KST 일간 경계를 구현하고
   전 뷰 await mutation error 보강 감사까지 완료(targeted 28·전체 268파일/2,554테스트 green,
