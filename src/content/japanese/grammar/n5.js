@@ -15,6 +15,14 @@ const chapters = [
     titleFr: "〜だ・〜です",
     summary: "일본어의 모든 문장은 반말(보통체)과 해요체(정중체) 중 하나의 옷을 입어요. 원형은 だ, 정중화가 です — 한국어 반말/해요체와 1:1로 포개지는 첫 문법 챕터예요.",
     duration: "약 8분",
+    drills: [
+      { id: "ja-n504-d1", type: "fill", prompt: "わたしは 会社員___。(정중형)", answer: "です" },
+      { id: "ja-n504-d2", type: "fill", prompt: "これは 本___。(보통체)", answer: "だ" },
+      { id: "ja-n504-d3", type: "choice", prompt: "정중체와 보통체의 구분은?", choices: ["です=정중, だ=보통(친구·혼잣말)", "です=과거, だ=현재", "차이가 없다"], answer: "です=정중, だ=보통(친구·혼잣말)" },
+      { id: "ja-n504-d4", type: "choice", prompt: "'학생입니다'는?", choices: ["がくせいです", "がくせいだです", "がくせいますです"], answer: "がくせいです", hint: "だ와 です는 겹쳐 쓰지 않아요" },
+      { id: "ja-n504-d5", type: "order", sentence: "あには かいしゃいんです。", prompt: "'형은 회사원입니다'를 배열해 보세요." },
+      { id: "ja-n504-d6", type: "choice", listen: "はじめまして。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["처음 뵙겠습니다", "잘 먹겠습니다", "실례합니다"], answer: "처음 뵙겠습니다" },
+    ],
     sections: [
       {
         heading: "일본어도 반말/존댓말을 통째로 갈아입는다",
@@ -72,6 +80,14 @@ const chapters = [
     titleFr: "〜じゃない・〜だった",
     summary: "학생이 '아니다', 학생이 '아니었다' — 명사문의 부정과 과거를 원형(じゃない·だった)에서 정중형(じゃありません·でした)으로 한 번에 세워요.",
     duration: "약 9분",
+    drills: [
+      { id: "ja-n504b-d1", type: "fill", prompt: "きのうは 雨___なかったです。(부정)", answer: "じゃ", accepts: ["では"] },
+      { id: "ja-n504b-d2", type: "fill", prompt: "先週は 休み___た。(정중 과거)", answer: "でし" },
+      { id: "ja-n504b-d3", type: "choice", prompt: "'학생이 아니에요'는?", choices: ["がくせいじゃないです", "がくせいないです", "がくせいじゃです"], answer: "がくせいじゃないです" },
+      { id: "ja-n504b-d4", type: "choice", prompt: "명사문의 정중한 과거형은?", choices: ["でした", "ました", "かったです"], answer: "でした" },
+      { id: "ja-n504b-d5", type: "order", sentence: "きのうは しごとじゃなかった。", prompt: "'어제는 일이 아니었다(쉬는 날)'를 배열해 보세요." },
+      { id: "ja-n504b-d6", type: "choice", listen: "やすみでした。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["쉬는 날이었어요", "쉬는 날이에요", "쉬고 싶어요"], answer: "쉬는 날이었어요" },
+    ],
     sections: [
       {
         heading: "'아닌데?'라고 받아치고 싶을 때",
@@ -192,6 +208,14 @@ const chapters = [
     titleFr: "は・が",
     summary: "한국어 화자만 누리는 기적 — 은·는/이·가의 감각이 は/が에 거의 그대로 통해요. 평행이 어디까지 가고 어디서 어긋나는지 확인해요.",
     duration: "약 9분",
+    drills: [
+      { id: "ja-n505-d1", type: "fill", prompt: "わたし___ 田中です。(주제 제시)", answer: "は" },
+      { id: "ja-n505-d2", type: "fill", prompt: "だれ___ 来ますか。(의문사 주어)", answer: "が" },
+      { id: "ja-n505-d3", type: "choice", prompt: "は와 が의 큰 구분은?", choices: ["は=주제(이미 아는 것), が=새 정보·초점", "は=과거, が=현재", "차이가 없다"], answer: "は=주제(이미 아는 것), が=새 정보·초점" },
+      { id: "ja-n505-d4", type: "choice", prompt: "'코끼리는 코가 길다' 구문은?", choices: ["ぞうは はなが ながい", "ぞうが はなは ながい", "ぞうを はなが ながい"], answer: "ぞうは はなが ながい" },
+      { id: "ja-n505-d5", type: "order", sentence: "きょうは てんきが いいです。", prompt: "'오늘은 날씨가 좋아요'를 배열해 보세요." },
+      { id: "ja-n505-d6", type: "choice", listen: "これが いいです。", prompt: "듣고 뉘앙스를 고르세요.", choices: ["(여럿 중) 이게 좋아요", "이건 그저 그래요", "이거였어요"], answer: "(여럿 중) 이게 좋아요" },
+    ],
     sections: [
       {
         heading: "は는 왜 '하'가 아니라 '와'로 읽을까",
@@ -268,6 +292,14 @@ const chapters = [
     titleFr: "どうしの ますけい",
     summary: "일본어 동사는 단 세 그룹, 불규칙은 단 두 개. 그룹 구별법과 ます/ません/ました 활용을 한 번에 정리해요.",
     duration: "약 9분",
+    drills: [
+      { id: "ja-n507m-d1", type: "fill", prompt: "飲む → 飲___ます", answer: "み" },
+      { id: "ja-n507m-d2", type: "choice", prompt: "불규칙 동사 2개는?", choices: ["する·くる", "いく·かく", "たべる·みる"], answer: "する·くる" },
+      { id: "ja-n507m-d3", type: "fill", prompt: "食べる → 食べ___す", answer: "ま" },
+      { id: "ja-n507m-d4", type: "choice", prompt: "'갑니다'는?", choices: ["いきます", "いくます", "いきです"], answer: "いきます" },
+      { id: "ja-n507m-d5", type: "order", sentence: "まいあさ パンを たべます。", prompt: "'매일 아침 빵을 먹어요'를 배열해 보세요." },
+      { id: "ja-n507m-d6", type: "choice", listen: "なにを しますか。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["무엇을 해요?", "언제 해요?", "어디서 해요?"], answer: "무엇을 해요?" },
+    ],
     sections: [
       {
         heading: "일본어 동사, 죄다 う단으로 끝난다",
@@ -454,6 +486,14 @@ const chapters = [
     titleFr: "を・に・で・へ",
     summary: "을·를=を, 에=に, 에서=で… 조사 1:1 대응표는 한국어 화자의 최강 무기예요. 단, ~にあう처럼 직역이 배신하는 지점도 함께 짚어요.",
     duration: "약 9분",
+    drills: [
+      { id: "ja-n506-d1", type: "fill", prompt: "パン___ 食べます。(목적어)", answer: "を" },
+      { id: "ja-n506-d2", type: "fill", prompt: "図書館___ 勉強します。(동작이 벌어지는 곳)", answer: "で" },
+      { id: "ja-n506-d3", type: "choice", prompt: "に와 で의 구분은?", choices: ["に=존재·도착점·시각, で=동작 장소·수단", "に=수단, で=시각", "차이가 없다"], answer: "に=존재·도착점·시각, で=동작 장소·수단" },
+      { id: "ja-n506-d4", type: "fill", prompt: "７時___ 起きます。(시각)", answer: "に" },
+      { id: "ja-n506-d5", type: "order", sentence: "バスで 会社に 行きます。", prompt: "'버스로 회사에 가요'를 배열해 보세요." },
+      { id: "ja-n506-d6", type: "choice", listen: "でんしゃで いきます。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["전철로 가요", "전철에서 내려요", "전철이 좋아요"], answer: "전철로 가요" },
+    ],
     sections: [
       {
         heading: "한국어 조사 그대로 갈아 끼우면 된다",
@@ -609,6 +649,14 @@ const chapters = [
     titleFr: "います・あります",
     summary: "한국어 '있다' 하나가 일본어에서는 둘로 갈라져요 — 사람·동물은 います, 사물·식물은 あります. 장소 표현과 소유 표현까지 한 번에 정리해요.",
     duration: "약 8분",
+    drills: [
+      { id: "ja-n507e-d1", type: "fill", prompt: "机の上に 本が ___ます。(무생물)", answer: "あり" },
+      { id: "ja-n507e-d2", type: "fill", prompt: "公園に 犬が ___ます。(동물)", answer: "い" },
+      { id: "ja-n507e-d3", type: "choice", prompt: "あります/います의 구분은?", choices: ["무생물·식물=あります, 사람·동물=います", "반대다", "같다"], answer: "무생물·식물=あります, 사람·동물=います" },
+      { id: "ja-n507e-d4", type: "choice", prompt: "'시간이 없어요'는?", choices: ["じかんが ありません", "じかんが いません", "じかんが ないません"], answer: "じかんが ありません" },
+      { id: "ja-n507e-d5", type: "order", sentence: "えきの ちかくに ぎんこうが あります。", prompt: "'역 근처에 은행이 있어요'를 배열해 보세요." },
+      { id: "ja-n507e-d6", type: "choice", listen: "トイレは どこに ありますか。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["화장실은 어디에 있나요?", "화장실이 있나요?", "화장실은 몇 층인가요?"], answer: "화장실은 어디에 있나요?" },
+    ],
     sections: [
       {
         heading: "스스로 움직이면 いる, 못 움직이면 ある",
@@ -690,6 +738,14 @@ const chapters = [
     titleFr: "「か」と ぎもんし",
     summary: "어순을 바꿀 필요 없이 끝에 か만 붙이면 의문문 완성. 何·だれ·どこ·いつ — 한국어와 거의 1:1로 포개지는 의문사 세트를 정리해요.",
     duration: "약 8분",
+    drills: [
+      { id: "ja-n508q-d1", type: "fill", prompt: "これは 何です___。(의문)", answer: "か" },
+      { id: "ja-n508q-d2", type: "choice", prompt: "'누구'는?", choices: ["だれ", "どこ", "いつ"], answer: "だれ" },
+      { id: "ja-n508q-d3", type: "fill", prompt: "___に 行きますか。(어디)", answer: "どこ" },
+      { id: "ja-n508q-d4", type: "choice", prompt: "일본어 의문문의 어순은?", choices: ["평서문 그대로 + か", "주어와 동사를 도치", "의문사를 문말로"], answer: "평서문 그대로 + か" },
+      { id: "ja-n508q-d5", type: "order", sentence: "たんじょうびは いつですか。", prompt: "'생일은 언제예요?'를 배열해 보세요." },
+      { id: "ja-n508q-d6", type: "choice", listen: "おいくつですか。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["나이가 어떻게 되세요?", "몇 개 드릴까요?", "어디가 아프세요?"], answer: "나이가 어떻게 되세요?" },
+    ],
     sections: [
       {
         heading: "か, 문장 끝에 툭 붙는 물음표",
@@ -839,6 +895,14 @@ const chapters = [
     titleFr: "てけい",
     summary: "부탁(〜てください), 진행(〜ています), 문장 연결까지 — 일본어에서 가장 바쁜 활용형 て형의 음편 규칙을 정복해요.",
     duration: "약 9분",
+    drills: [
+      { id: "ja-n508t-d1", type: "fill", prompt: "書く → 書___て", answer: "い" },
+      { id: "ja-n508t-d2", type: "fill", prompt: "飲む → 飲___で", answer: "ん" },
+      { id: "ja-n508t-d3", type: "choice", prompt: "て형의 대표 쓰임은?", choices: ["동작 연결·〜てください·진행", "과거형 전용", "부정형 전용"], answer: "동작 연결·〜てください·진행" },
+      { id: "ja-n508t-d4", type: "choice", prompt: "'봐 주세요'는?", choices: ["みてください", "みるください", "みますください"], answer: "みてください" },
+      { id: "ja-n508t-d5", type: "order", sentence: "あさ おきて、シャワーを あびます。", prompt: "'아침에 일어나서 샤워를 해요'를 배열해 보세요." },
+      { id: "ja-n508t-d6", type: "choice", listen: "ちょっと まってください。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["잠깐 기다려 주세요", "잠깐 와 주세요", "조금 주세요"], answer: "잠깐 기다려 주세요" },
+    ],
     sections: [
       {
         heading: "て형 — 일본어에서 제일 바쁜 활용",
@@ -923,6 +987,14 @@ const chapters = [
     titleFr: "いけいようし・なけいようし",
     summary: "일본어 형용사는 두 종류 — 스스로 활용하는 い형용사와 명사처럼 행동하는 な형용사. 갈림길의 규칙을 한 번에 정리해요.",
     duration: "약 9분",
+    drills: [
+      { id: "ja-n509-d1", type: "fill", prompt: "この店は 安___です。(い형용사)", answer: "い" },
+      { id: "ja-n509-d2", type: "fill", prompt: "静か___ 町です。(な형용사 연결)", answer: "な" },
+      { id: "ja-n509-d3", type: "choice", prompt: "い형용사의 과거 정중형은?", choices: ["おいしかったです", "おいしいでした", "おいしくです"], answer: "おいしかったです", hint: "おいしいでした는 한국인 최다 오류" },
+      { id: "ja-n509-d4", type: "choice", prompt: "な형용사의 부정은?", choices: ["しずかじゃないです", "しずかくないです", "しずかいないです"], answer: "しずかじゃないです" },
+      { id: "ja-n509-d5", type: "order", sentence: "この こうえんは しずかで ひろいです。", prompt: "'이 공원은 조용하고 넓어요'를 배열해 보세요." },
+      { id: "ja-n509-d6", type: "choice", listen: "たかくないです。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["비싸지 않아요", "높이 있어요", "비쌌어요"], answer: "비싸지 않아요" },
+    ],
     sections: [
       {
         heading: "형용사가 두 부족으로 갈라진 언어",
@@ -1091,6 +1163,14 @@ const chapters = [
     titleFr: "こそあど ことば",
     summary: "これ/それ/あれ는 이것/그것/저것과 거의 1:1. 하지만 '기억 속의 그 사람'에서 한국어 '그'와 일본어 そ/あ가 갈라져요.",
     duration: "약 8분",
+    drills: [
+      { id: "ja-n510-d1", type: "fill", prompt: "___は 何ですか。(상대방 쪽 물건)", answer: "それ" },
+      { id: "ja-n510-d2", type: "choice", prompt: "こ·そ·あ의 감각은?", choices: ["こ=내 쪽, そ=상대 쪽, あ=둘 다에게 먼 곳", "こ=먼 곳, あ=내 쪽", "차이가 없다"], answer: "こ=내 쪽, そ=상대 쪽, あ=둘 다에게 먼 곳" },
+      { id: "ja-n510-d3", type: "fill", prompt: "___の 人は だれですか。(저기 멀리)", answer: "あ" },
+      { id: "ja-n510-d4", type: "choice", prompt: "'이쪽으로 오세요'의 지시어는?", choices: ["こちら", "そちら", "あちら"], answer: "こちら" },
+      { id: "ja-n510-d5", type: "order", sentence: "その かばんは わたしのです。", prompt: "'그 가방은 제 거예요'를 배열해 보세요." },
+      { id: "ja-n510-d6", type: "choice", listen: "あれは なんですか。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["저건 뭐예요?", "이건 뭐예요?", "그건 누구 거예요?"], answer: "저건 뭐예요?" },
+    ],
     sections: [
       {
         heading: "こ·そ·あ·ど = 이·그·저·어느, 칸칸이 딱 맞는다",
@@ -1173,6 +1253,14 @@ const chapters = [
     titleFr: "すうじ・じかん",
     summary: "만까지 조립식으로 끝나는 숫자, 그리고 4시·7시·9시의 읽기 함정까지 — 셈의 토대와 시각 말하기를 한 챕터에 모았어요.",
     duration: "약 8분",
+    drills: [
+      { id: "ja-n513-d1", type: "fill", prompt: "いま ___時ですか。(몇 시)", answer: "なん" },
+      { id: "ja-n513-d2", type: "choice", prompt: "'4시'의 읽기는?", choices: ["よじ", "しじ", "よんじ"], answer: "よじ", hint: "4시·7시·9시는 읽기 함정" },
+      { id: "ja-n513-d3", type: "fill", prompt: "９時___ 始まります。(시각 조사)", answer: "に" },
+      { id: "ja-n513-d4", type: "choice", prompt: "'7시'의 표준 읽기는?", choices: ["しちじ", "ななじ", "きゅうじ"], answer: "しちじ" },
+      { id: "ja-n513-d5", type: "order", sentence: "ごご ３時に あいましょう。", prompt: "'오후 3시에 만납시다'를 배열해 보세요." },
+      { id: "ja-n513-d6", type: "choice", listen: "いま くじはんです。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["지금 9시 반이에요", "지금 5시 반이에요", "지금 9시예요"], answer: "지금 9시 반이에요" },
+    ],
     sections: [
       {
         heading: "숫자, 레고처럼 조립하면 만까지 간다",
@@ -1404,6 +1492,14 @@ const chapters = [
     titleFr: "ひづけ・ようび・じょすうし",
     summary: "월·일·요일 읽기의 함정(4月·1日~10日 고유어 읽기)과, 한국어 '개/명/장'과 평행한 조수사까지 — 달력과 세는 말을 한 챕터에 모았어요.",
     duration: "약 9분",
+    drills: [
+      { id: "ja-n513b-d1", type: "fill", prompt: "きょうは ___曜日ですか。(무슨)", answer: "なん" },
+      { id: "ja-n513b-d2", type: "choice", prompt: "'1일(초하루)'의 읽기는?", choices: ["ついたち", "いちにち", "いちび"], answer: "ついたち" },
+      { id: "ja-n513b-d3", type: "choice", prompt: "사람 '두 명'은?", choices: ["ふたり", "ににん", "ふたにん"], answer: "ふたり" },
+      { id: "ja-n513b-d4", type: "fill", prompt: "りんごを 三___ ください。(개수)", answer: "つ", accepts: ["個", "こ"] },
+      { id: "ja-n513b-d5", type: "order", sentence: "たんじょうびは ４月８日です。", prompt: "'생일은 4월 8일이에요'를 배열해 보세요." },
+      { id: "ja-n513b-d6", type: "choice", listen: "きょうは きんようびです。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["오늘은 금요일이에요", "오늘은 월요일이에요", "오늘은 쉬는 날이에요"], answer: "오늘은 금요일이에요" },
+    ],
     sections: [
       {
         heading: "날짜 읽기, 1일~10일이 제일 험난하다",
@@ -1467,6 +1563,14 @@ const chapters = [
     titleFr: "〜たい・〜がほしい",
     summary: "하고 싶다(たい), 갖고 싶다(ほしい) — 행동의 바람과 물건의 바람을 나눠, 마음을 꺼내 놓는 두 문형을 한 챕터에 모았어요.",
     duration: "약 8분",
+    drills: [
+      { id: "ja-n511-d1", type: "fill", prompt: "水が 飲み___です。(마시고 싶다)", answer: "たい" },
+      { id: "ja-n511-d2", type: "choice", prompt: "たい형 문장의 조사 특징은?", choices: ["대상에 が를 자주 쓴다(水が飲みたい)", "を만 쓴다", "조사를 생략해야 한다"], answer: "대상에 が를 자주 쓴다(水が飲みたい)" },
+      { id: "ja-n511-d3", type: "fill", prompt: "日本へ 行き___です。(가고 싶다)", answer: "たい" },
+      { id: "ja-n511-d4", type: "choice", prompt: "'보고 싶었어요'는?", choices: ["みたかったです", "みたいでした", "みたいかったです"], answer: "みたかったです", hint: "たい는 い형용사처럼 활용" },
+      { id: "ja-n511-d5", type: "order", sentence: "すしが たべたいです。", prompt: "'초밥이 먹고 싶어요'를 배열해 보세요." },
+      { id: "ja-n511-d6", type: "choice", listen: "なにが したいですか。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["뭘 하고 싶어요?", "뭘 했어요?", "뭘 줄까요?"], answer: "뭘 하고 싶어요?" },
+    ],
     sections: [
       {
         heading: "〜たい로 '하고 싶어!' 질러 버리기",
@@ -1511,6 +1615,14 @@ const chapters = [
     titleFr: "〜ましょう・〜てもいいですか",
     summary: "같이 해요(ましょう/ませんか)로 권하고, 해도 돼요?(てもいいですか)로 허락을 구하고, 하면 안 돼요(てはいけません)로 선을 긋는 — 관계를 움직이는 문형 세트를 모았어요.",
     duration: "약 8분",
+    drills: [
+      { id: "ja-n511b-d1", type: "fill", prompt: "いっしょに 行き___んか。(권유)", answer: "ませ" },
+      { id: "ja-n511b-d2", type: "fill", prompt: "写真を とっても ___ですか。(허가)", answer: "いい" },
+      { id: "ja-n511b-d3", type: "choice", prompt: "'~해도 돼요?'는?", choices: ["〜てもいいですか", "〜たいですか", "〜ましたか"], answer: "〜てもいいですか" },
+      { id: "ja-n511b-d4", type: "choice", prompt: "'~합시다'는?", choices: ["〜ましょう", "〜ました", "〜まして"], answer: "〜ましょう" },
+      { id: "ja-n511b-d5", type: "order", sentence: "ちょっと やすみましょう。", prompt: "'잠깐 쉽시다'를 배열해 보세요." },
+      { id: "ja-n511b-d6", type: "choice", listen: "すわっても いいですか。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["앉아도 될까요?", "앉으세요", "앉지 마세요"], answer: "앉아도 될까요?" },
+    ],
     sections: [
       {
         heading: "'같이 할래요?', 온도 다른 두 버전",
@@ -1556,6 +1668,14 @@ const chapters = [
     summary:
       "목록에 더 남아 있으면 や〜など, 시작과 끝은 から〜まで, 둘 중 하나를 고를 때는 か — 짧은 조사로 목록의 성격과 범위를 또렷하게 만들어요.",
     duration: "약 9분",
+    drills: [
+      { id: "ja-n521-d1", type: "fill", prompt: "パン___ たまごを 買いました。(전부 나열)", answer: "と" },
+      { id: "ja-n521-d2", type: "fill", prompt: "お茶___ コーヒーが いいです。(아니면)", answer: "か" },
+      { id: "ja-n521-d3", type: "choice", prompt: "と와 や의 구분은?", choices: ["と=전부 나열, や=예시 나열(~등)", "반대다", "같다"], answer: "と=전부 나열, や=예시 나열(~등)" },
+      { id: "ja-n521-d4", type: "fill", prompt: "９時___ ５時まで 働きます。(부터)", answer: "から" },
+      { id: "ja-n521-d5", type: "order", sentence: "えきから いえまで あるきます。", prompt: "'역에서 집까지 걸어요'를 배열해 보세요." },
+      { id: "ja-n521-d6", type: "choice", listen: "みかんや りんごを かいました。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["귤이랑 사과 등을 샀어요", "귤과 사과만 샀어요", "귤 아니면 사과를 살 거예요"], answer: "귤이랑 사과 등을 샀어요" },
+    ],
     sections: [
       {
         heading: "사과와 빵 말고도 더 있다면 や",
@@ -1716,6 +1836,14 @@ const chapters = [
     summary:
       "ます 앞에 남는 동사 어간에 に를 붙이면 '무엇을 하러' 움직이는지 말할 수 있어요. 가다·오다·돌아가다와 목적을 한 문장에 묶어요.",
     duration: "약 8분",
+    drills: [
+      { id: "ja-n522-d1", type: "fill", prompt: "映画を 見___ 行きます。(~하러)", answer: "に" },
+      { id: "ja-n522-d2", type: "choice", prompt: "'놀러 갔어요'는?", choices: ["あそびに いきました", "あそぶに いきました", "あそびで いきました"], answer: "あそびに いきました" },
+      { id: "ja-n522-d3", type: "fill", prompt: "昼ご飯を 食べ___ 来ました。(~하러)", answer: "に" },
+      { id: "ja-n522-d4", type: "choice", prompt: "목적의 に 앞 동사 형태는?", choices: ["ます형 어간(見に·食べに)", "사전형 그대로", "て형"], answer: "ます형 어간(見に·食べに)" },
+      { id: "ja-n522-d5", type: "order", sentence: "ともだちに あいに いきます。", prompt: "'친구를 만나러 가요'를 배열해 보세요." },
+      { id: "ja-n522-d6", type: "choice", listen: "かいものに いきましょう。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["쇼핑하러 가요", "쇼핑에서 왔어요", "쇼핑을 샀어요"], answer: "쇼핑하러 가요" },
+    ],
     sections: [
       {
         heading: "ます를 떼고 に를 붙이면 목적지가 아니라 목적",
@@ -1883,6 +2011,14 @@ const chapters = [
     summary:
       "형용사를 줄줄이 잇거나 동작의 모습을 꾸밀 때도 두 부족의 규칙이 갈려요. い형은 くて·く, な형은 で·に로 바꿔 써요.",
     duration: "약 9분",
+    drills: [
+      { id: "ja-n523-d1", type: "fill", prompt: "安___て おいしい 店です。(い형 연결)", answer: "く" },
+      { id: "ja-n523-d2", type: "fill", prompt: "しずか___ きれいな 町です。(な형 연결)", answer: "で" },
+      { id: "ja-n523-d3", type: "choice", prompt: "'넓고 밝은 방'은?", choices: ["ひろくて あかるい へや", "ひろいくて あかるい へや", "ひろで あかるい へや"], answer: "ひろくて あかるい へや" },
+      { id: "ja-n523-d4", type: "choice", prompt: "부사화: はやい → '빨리'는?", choices: ["はやく", "はやに", "はやで"], answer: "はやく" },
+      { id: "ja-n523-d5", type: "order", sentence: "きょうは さむくて かぜが つよいです。", prompt: "'오늘은 춥고 바람이 세요'를 배열해 보세요." },
+      { id: "ja-n523-d6", type: "choice", listen: "やすくて いいですね。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["싸고 좋네요", "쉬어서 좋네요", "싸지 않네요"], answer: "싸고 좋네요" },
+    ],
     sections: [
       {
         heading: "두 특징을 한 문장에 포개기",
@@ -2046,6 +2182,14 @@ const chapters = [
     summary:
       "'어디에 무엇이 있다'와 '그것은 어디에 있다'는 같은 부품을 다른 순서로 놓아요. が로 새 존재를 소개하고, は로 이미 아는 대상의 위치를 찾아요.",
     duration: "약 8분",
+    drills: [
+      { id: "ja-n524-d1", type: "fill", prompt: "本は 机の ___に あります。(위)", answer: "上", accepts: ["うえ"] },
+      { id: "ja-n524-d2", type: "choice", prompt: "'~와 ~의 사이'는?", choices: ["あいだ", "となり", "うしろ"], answer: "あいだ" },
+      { id: "ja-n524-d3", type: "fill", prompt: "銀行は 駅の ___です。(앞)", answer: "前", accepts: ["まえ"] },
+      { id: "ja-n524-d4", type: "choice", prompt: "'은행은 역 옆이에요'는?", choices: ["ぎんこうは えきの となりです", "ぎんこうが えきに となりです", "ぎんこうを えきの となりです"], answer: "ぎんこうは えきの となりです" },
+      { id: "ja-n524-d5", type: "order", sentence: "コンビニは ホテルの うしろに あります。", prompt: "'편의점은 호텔 뒤에 있어요'를 배열해 보세요." },
+      { id: "ja-n524-d6", type: "choice", listen: "つくえの したに ねこが います。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["책상 밑에 고양이가 있어요", "책상 위에 고양이가 있어요", "의자 밑에 개가 있어요"], answer: "책상 밑에 고양이가 있어요" },
+    ],
     sections: [
       {
         heading: "새로 발견한 것과 이미 찾고 있는 것",
@@ -2203,6 +2347,14 @@ const chapters = [
     summary:
       "이유를 또렷하게 내세우는 から와 배경처럼 부드럽게 건네는 ので. 왜 그런지 묻고 답하는 N5의 기본 이유 표현을 익혀요.",
     duration: "약 9분",
+    drills: [
+      { id: "ja-n525-d1", type: "fill", prompt: "雨だ___、行きません。(이유 — 단정적)", answer: "から" },
+      { id: "ja-n525-d2", type: "fill", prompt: "頭が いたい___、休みます。(부드러운 이유)", answer: "ので" },
+      { id: "ja-n525-d3", type: "choice", prompt: "から와 ので의 결은?", choices: ["から=주관적·단정, ので=객관적·부드러움", "반대다", "같다"], answer: "から=주관적·단정, ので=객관적·부드러움" },
+      { id: "ja-n525-d4", type: "choice", prompt: "'왜요?'는?", choices: ["どうしてですか", "どこですか", "だれですか"], answer: "どうしてですか" },
+      { id: "ja-n525-d5", type: "order", sentence: "じかんが ないから、タクシーで いきます。", prompt: "'시간이 없으니까 택시로 가요'를 배열해 보세요." },
+      { id: "ja-n525-d6", type: "choice", listen: "やすいから、これを かいます。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["싸니까 이걸 살래요", "싸지만 안 살래요", "비싸서 못 사요"], answer: "싸니까 이걸 살래요" },
+    ],
     sections: [
       {
         heading: "내가 이유를 콕 짚을 때는 から",
@@ -2359,6 +2511,14 @@ const chapters = [
     summary:
       "정보를 더하는 そして, 시간 순서를 잇는 それから, 새 문장을 뒤집는 でも, 한 문장 안에서 부드럽게 꺾는 が를 구별해요.",
     duration: "약 8분",
+    drills: [
+      { id: "ja-n526-d1", type: "fill", prompt: "朝ご飯を 食べました。___、会社へ 行きました。(그다음에)", answer: "それから" },
+      { id: "ja-n526-d2", type: "choice", prompt: "'하지만'은?", choices: ["でも", "だから", "それで"], answer: "でも" },
+      { id: "ja-n526-d3", type: "fill", prompt: "___、しつもんが あります。(그런데 — 화제 전환)", answer: "ところで" },
+      { id: "ja-n526-d4", type: "choice", prompt: "だから의 뜻은?", choices: ["그래서(결과)", "그러나(역접)", "예를 들면"], answer: "그래서(결과)" },
+      { id: "ja-n526-d5", type: "order", sentence: "まず てを あらって、それから たべます。", prompt: "'먼저 손을 씻고, 그다음에 먹어요'를 배열해 보세요." },
+      { id: "ja-n526-d6", type: "choice", listen: "でも、ちょっと たかいですね。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["근데 좀 비싸네요", "그래서 싸네요", "게다가 높네요"], answer: "근데 좀 비싸네요" },
+    ],
     sections: [
       {
         heading: "정보를 더할까, 다음 장면으로 넘어갈까",
@@ -2514,6 +2674,14 @@ const chapters = [
     summary:
       "함께 느끼는 ね, 새 정보를 건네는 よ, 확인을 청하는 よね, 조심스레 예상하는 でしょう — 문장 끝에서 대화의 온도를 조절해요.",
     duration: "약 8분",
+    drills: [
+      { id: "ja-n527-d1", type: "fill", prompt: "いい 天気です___。(공감 구하기)", answer: "ね" },
+      { id: "ja-n527-d2", type: "fill", prompt: "これ、おいしいです___。(모르는 정보 알려줌)", answer: "よ" },
+      { id: "ja-n527-d3", type: "choice", prompt: "ね와 よ의 구분은?", choices: ["ね=공감·확인, よ=새 정보 전달", "반대다", "같다"], answer: "ね=공감·확인, よ=새 정보 전달" },
+      { id: "ja-n527-d4", type: "choice", prompt: "'그렇네요'(공감)는?", choices: ["そうですね", "そうですよ", "そうですか"], answer: "そうですね" },
+      { id: "ja-n527-d5", type: "order", sentence: "この みせ、やすいですね。", prompt: "'이 가게 싸네요'를 배열해 보세요." },
+      { id: "ja-n527-d6", type: "choice", listen: "あぶないですよ！", prompt: "듣고 뉘앙스를 고르세요.", choices: ["위험해요!(알려 주는 것)", "위험하죠?(동의)", "위험했어요(과거)"], answer: "위험해요!(알려 주는 것)" },
+    ],
     sections: [
       {
         heading: "같이 보며 맞장구치면 ね, 내가 알려 주면 よ",
@@ -2672,6 +2840,14 @@ const chapters = [
     summary:
       "항상·자주·가끔의 빈도 사다리와 あまり〜ません의 부정 호응, 이미 끝난 もう와 아직 남은 まだ를 묶어 일상 습관과 진행 상태를 말해요.",
     duration: "약 9분",
+    drills: [
+      { id: "ja-n528-d1", type: "fill", prompt: "___ 日本語を 勉強します。(매일)", answer: "まいにち" },
+      { id: "ja-n528-d2", type: "choice", prompt: "'가끔'은?", choices: ["ときどき", "いつも", "ぜんぜん"], answer: "ときどき" },
+      { id: "ja-n528-d3", type: "fill", prompt: "ぜんぜん 分かり___。(전혀 — 부정 호응)", answer: "ません" },
+      { id: "ja-n528-d4", type: "choice", prompt: "もう와 まだ의 구분은?", choices: ["もう=벌써·이미, まだ=아직", "반대다", "같다"], answer: "もう=벌써·이미, まだ=아직" },
+      { id: "ja-n528-d5", type: "order", sentence: "もう レポートを だしました。", prompt: "'벌써 리포트를 냈어요'를 배열해 보세요." },
+      { id: "ja-n528-d6", type: "choice", listen: "まだ おわっていません。", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["아직 안 끝났어요", "벌써 끝났어요", "이제 끝낼 거예요"], answer: "아직 안 끝났어요" },
+    ],
     sections: [
       {
         heading: "항상에서 전혀까지, 빈도 사다리 세우기",
