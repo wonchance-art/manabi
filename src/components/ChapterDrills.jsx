@@ -1,11 +1,13 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 import { supabase } from '../lib/supabase';
 import RefSpeak from './RefSpeak';
 import { normalizeExerciseAnswer } from './ExerciseEnginePrototype';
 import { useAuth } from '../lib/AuthContext';
-import { recordChapterDrillResult } from '../lib/drillSrs';
+import { recordChapterDrillResult, loadGuestDrillQueue } from '../lib/drillSrs';
+import { countDueGrammar } from '../lib/grammarSrs';
 
 /** 딕테 채점 — 구두점·아포스트로피 변형에는 관대, 철자·악상에는 엄격 */
 // 힌트는 클릭해야 열린다 — 먼저 스스로 생각해 보게 하는 장치
@@ -224,10 +226,40 @@ export default function ChapterDrills({ lang, drills, title, intro }) {
         })}
       </ol>
       {answered === drills.length && (
-        <p style={{ marginTop: 14, fontWeight: 600, fontSize: '0.9rem' }}>
-          {drills.length}문항 중 {right}개 정답 — {right === drills.length ? '완벽해요!' : '틀린 문항은 위 문형 설명을 다시 보고 와요.'}
-        </p>
+        <>
+          <p style={{ marginTop: 14, fontWeight: 600, fontSize: '0.9rem' }}>
+            {drills.length}문항 중 {right}개 정답 — {right === drills.length ? '완벽해요!' : '틀린 문항은 위 문형 설명을 다시 보고 와요.'}
+          </p>
+          <ReviewNudge userId={user?.id} />
+        </>
       )}
     </section>
+  );
+}
+
+function countGuestDueDrills() {
+  const now = new Date().toISOString();
+  return loadGuestDrillQueue().filter((r) => r?.next_review_at && r.next_review_at <= now).length;
+}
+
+/** 드릴 완주 직후 복습 동선 연결 — 방금 푼 문항은 미래 due라 '대기'엔 기존 카드만 잡힌다. */
+function ReviewNudge({ userId }) {
+  const [due, setDue] = useState(null);
+  useEffect(() => {
+    let alive = true;
+    if (userId) {
+      countDueGrammar(userId).then((n) => { if (alive) setDue(n); }, () => {});
+    } else {
+      setDue(countGuestDueDrills());
+    }
+    return () => { alive = false; };
+  }, [userId]);
+  return (
+    <p style={{ marginTop: 6, fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
+      풀이 기록은 복습 큐에 쌓였어요.{' '}
+      <Link href="/review/grammar" style={{ fontWeight: 600, color: 'var(--accent, #2d6a4f)' }}>
+        {typeof due === 'number' && due > 0 ? `지금 복습 대기 ${due}개 →` : '문법 복습에서 이어가기 →'}
+      </Link>
+    </p>
   );
 }

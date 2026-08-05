@@ -5,6 +5,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../lib/AuthContext';
 
+const TRACKS = [
+  { lang: 'French', native: 'Français', name: '프랑스어', hook: 'A1부터 C2까지 — DELF를 겨냥한 문법·작문 루트', stat: '86챕터 · 드릴 660+' },
+  { lang: 'Japanese', native: '日本語', name: '일본어', hook: 'N5부터 N1까지 — 조사·경어·문화 장면 드릴', stat: '98챕터 · 드릴 588' },
+  { lang: 'English', native: 'English', name: '영어', hook: '파닉스부터 C2 뉘앙스까지 — 콩글리시 교정 포함', stat: '68챕터 · 드릴 408' },
+  { lang: 'Chinese', native: '中文', name: '중국어', hook: '성조·병음부터 HSK 6급 문어까지 — 한자음 연계', stat: '78챕터 · 드릴 500+' },
+];
+
 const DEMO_TOKENS = [
   { text: '日本語', furigana: 'にほんご', meaning: '일본어', pos: '명사' },
   { text: 'を',    furigana: null,        meaning: '~을/를', pos: '조사' },
@@ -73,6 +80,7 @@ export default function LandingPage() {
           <span>Anatomy Studio</span>
         </div>
         <div className="landing-nav__actions">
+          <Link href="/lessons"   className="landing-nav__link">교재</Link>
           <Link href="/guide"     className="landing-nav__link landing-nav__link--desktop">사용 가이드</Link>
           <Link href="/materials" className="landing-nav__link landing-nav__link--desktop">자료실</Link>
           {user
@@ -150,6 +158,28 @@ export default function LandingPage() {
             >
               {demoSavedIds.has(demoSelectedIdx) ? '✓ 추가됨' : '★ 단어장에 추가'}
             </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ── TEXTBOOKS ── */}
+      <section className="landing-section">
+        <div className="landing-section__inner">
+          <p className="landing-section__eyebrow">무료 교재</p>
+          <h2 className="landing-section__title">4개 언어, 기초부터 최상급까지</h2>
+          <p className="landing-section__desc">
+            로그인 없이 바로 시작해요. 문법 설명 → 변형 드릴 → 직접 써 보기 → 자동 복습이 한 흐름으로 이어져요.
+          </p>
+          <div className="track-grid">
+            {TRACKS.map((t) => (
+              <Link key={t.lang} href={`/lessons?lang=${t.lang}`} className="track-card">
+                <span className="track-card__native">{t.native}</span>
+                <span className="track-card__name">{t.name}</span>
+                <span className="track-card__hook">{t.hook}</span>
+                <span className="track-card__stat">{t.stat}</span>
+                <span className="track-card__cta">교재 열기 →</span>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
@@ -256,6 +286,7 @@ export default function LandingPage() {
           <span className="landing-footer__copy">AI 기반 언어 해부 학습 플랫폼 · © 2026</span>
         </div>
         <div className="landing-footer__links">
+          <Link href="/lessons"  className="landing-footer__link">교재</Link>
           <Link href="/guide"    className="landing-footer__link">사용 가이드</Link>
           <Link href="/help"     className="landing-footer__link">도움말</Link>
           <Link href="/materials" className="landing-footer__link">자료실</Link>
