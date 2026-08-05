@@ -94,7 +94,6 @@ export default function Layout({ children }) {
   const navLinks = [
     ...(user ? [
       { href: '/home', label: '홈' },
-      { href: '/learn', label: '학습' },
     ] : []),
     { href: '/lessons',   label: '교재' },
     { href: '/vocab',     label: '어휘' },
@@ -105,7 +104,6 @@ export default function Layout({ children }) {
   const mobileNavLinks = [
     ...(user ? [
       { href: '/home', label: '홈' },
-      { href: '/learn', label: '학습' },
     ] : []),
     { href: '/lessons',   label: '교재' },
     { href: '/vocab',     label: '어휘' },

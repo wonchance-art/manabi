@@ -81,7 +81,7 @@ async function fetchLearnData(userId, lang) {
   return { dueVocab, dueGrammar, knownWords, passedChapters, weekSessions, episode, forecast };
 }
 
-export default function LearnPage({ progressCatalog = {} }) {
+export default function LearnPage({ progressCatalog = {}, embedded = false }) {
   const { user, profile } = useAuth();
 
   const lang = useMemo(() => {
@@ -100,11 +100,13 @@ export default function LearnPage({ progressCatalog = {} }) {
   });
 
   if (!user) return (
-    <div className="page-container home-page home-layout" style={{ maxWidth: 720 }}>
-      <div className="home-greeting">
+    <div className={embedded ? 'lessons-progress-embed' : 'page-container home-page home-layout'} style={embedded ? undefined : { maxWidth: 720 }}>
+      {!embedded && (
+        <div className="home-greeting">
         <h1 className="home-greeting__name">이 기기의 학습 진도</h1>
         <p className="home-greeting__sub">로그인하지 않아도 방문·완료 기록과 스트릭을 이어볼 수 있어요.</p>
-      </div>
+        </div>
+      )}
       <LearnProgressWidget catalog={progressCatalog} />
       <div className="learn-progress__guest-action">
         <span>기기 간 동기화와 맞춤 복습은 로그인 후 사용할 수 있어요.</span>
@@ -117,11 +119,13 @@ export default function LearnPage({ progressCatalog = {} }) {
 
   // 로딩 스켈레톤 — 홈(HomePage)과 동일한 skeleton 유틸 재사용, 타일 자리만 유지
   if (isLoading) return (
-    <div className="page-container home-page home-layout" style={{ maxWidth: 720 }}>
-      <div className="home-greeting">
+    <div className={embedded ? 'lessons-progress-embed' : 'page-container home-page home-layout'} style={embedded ? undefined : { maxWidth: 720 }}>
+      {!embedded && (
+        <div className="home-greeting">
         <h1 className="home-greeting__name">오늘의 학습, {displayName}님</h1>
         <p className="home-greeting__sub">필요한 연습을 한곳에서 이어가 볼까요?</p>
-      </div>
+        </div>
+      )}
       <div className="skeleton--card" style={{ height: 88 }}>
         <div className="skeleton-line--title skeleton-line" />
         <div className="skeleton-line--text skeleton-line" />
@@ -149,13 +153,15 @@ export default function LearnPage({ progressCatalog = {} }) {
   ];
 
   return (
-    <div className="page-container home-page home-layout" style={{ maxWidth: 720 }}>
+    <div className={embedded ? 'lessons-progress-embed' : 'page-container home-page home-layout'} style={embedded ? undefined : { maxWidth: 720 }}>
 
       {/* 인사 헤더 — 홈 그리팅 패턴 그대로 */}
-      <div className="home-greeting">
+      {!embedded && (
+        <div className="home-greeting">
         <h1 className="home-greeting__name">오늘의 학습, {displayName}님</h1>
         <p className="home-greeting__sub">필요한 연습을 한곳에서 이어가 볼까요?</p>
-      </div>
+        </div>
+      )}
 
       {/* ① 오늘 학습 주 CTA — 연재 중이면 '이어지는 이야기'로 병합(별도 연재 카드 제거).
           due 수치는 아래 연습 타일 배지로만 노출(문장 중복 제거). */}

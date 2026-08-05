@@ -9237,3 +9237,5 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .track-card__stat { display: inline-block; font-size: 0.74rem; color: var(--text-muted); }
 .track-card__cta { display: block; margin-top: 8px; font-size: 0.82rem; font-weight: 600; color: var(--accent, #2d6a4f); }
 .landing-section__desc { margin: 10px auto 0; max-width: 560px; font-size: 0.92rem; line-height: 1.6; color: var(--text-secondary); text-align: center; }
+
+.lessons-progress-embed { margin: 4px 0 20px; display: flex; flex-direction: column; gap: 12px; }
