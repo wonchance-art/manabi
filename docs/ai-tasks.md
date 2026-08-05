@@ -14,6 +14,10 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
+- 🔍 전체 코드 리뷰 R1 — `src/components` 전수 심층 정독. 하이드레이션·effect 정리·상태 경합·
+  접근성·렌더 성능과 ChapterDrills/WritingPractice/RefSpeak/LearnProgressWidget 핵심 경로를
+  파일:라인·원문 인용·수정안으로 보고서화(제품 코드 수정 없음, assignment 5192929323,
+  fixed base `8e7e41778f338c0ed8a5d6744dedd011fb409a74`)
 ### todo
 ### done (최근)
 - Tatoeba fr 실음원 메타 v1: v1+v2 A1~A2 20문형을 오디오 메타 전용 API로 조회하고
