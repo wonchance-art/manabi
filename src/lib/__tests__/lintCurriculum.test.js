@@ -76,3 +76,24 @@ describe('P11 커리큘럼 자동 게이트 (원칙 v1 §5)', () => {
     }
   });
 });
+
+describe('(f) 예문 중복 게이트 — 인라인 객체 첫 필드 사각지대 회귀', () => {
+  it('{ zh: "..." } 형태의 챕터 예문과 같은 드릴을 적발한다', async () => {
+    const { scanDrillDuplicates } = await import('../../../scripts/lint-curriculum.mjs');
+    const fs = await import('node:fs');
+    const target = 'src/content/chinese/grammar/h2.js';
+    const original = fs.readFileSync(target, 'utf8');
+    const dup = '我早上喝了一杯咖啡，还看了报纸。'; // h2-01 writing 샘플의 zh(인라인 객체 첫 필드)
+    expect(original).toContain(`{ zh: "${dup}"`);
+    try {
+      fs.writeFileSync(target, original.replace(
+        '      { id: "h201-d5", type: "order"',
+        `      { id: "h201-dDUP", type: "order", sentence: "${dup}", prompt: "회귀" },\n      { id: "h201-d5", type: "order"`,
+      ));
+      const errors = await scanDrillDuplicates({ trackNames: ['chinese'] });
+      expect(errors.some((e) => e.includes('h201-dDUP') && e.includes('챕터 예문과 동일'))).toBe(true);
+    } finally {
+      fs.writeFileSync(target, original);
+    }
+  });
+});

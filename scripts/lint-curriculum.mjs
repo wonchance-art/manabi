@@ -17,8 +17,11 @@ const REPO_ROOT = fileURLToPath(new URL('../', import.meta.url));
 const TRACK_NAMES = ['chinese', 'english', 'french', 'japanese'];
 const ENFORCED = { french: new Set(['A1', 'A2']) };
 
+// 앵커에 '{'를 포함하는 이유: 예문·샘플은 전부 `{ zh: "…", ko: "…" }` 형태라 첫 필드가
+// 여는 중괄호 뒤에 온다. `(?:^|,)`만 쓰면 그 첫 필드가 통째로 누락돼 (f)의 '챕터 예문과 동일'
+// 검사가 조용히 죽는다(실측: h2-01 세그먼트 예문 12건 → 0건). 아래 회귀 테스트가 이를 고정한다.
 function stringPropertyPattern(key, flags = '') {
-  return new RegExp(`(?:^|,)\\s*["']?${key}["']?\\s*:\\s*(?:"((?:[^"\\\\]|\\\\.)*)"|'((?:[^'\\\\]|\\\\.)*)')`, flags);
+  return new RegExp(`(?:^|[,{])\\s*["']?${key}["']?\\s*:\\s*(?:"((?:[^"\\\\]|\\\\.)*)"|'((?:[^'\\\\]|\\\\.)*)')`, flags);
 }
 
 function decodeQuoted(raw = '') {
@@ -36,7 +39,7 @@ function readStringProperty(source, key) {
 
 function readAllStringProperties(source, keys) {
   const keyPattern = keys.join('|');
-  const re = new RegExp(`(?:^|,)\\s*["']?(?:${keyPattern})["']?\\s*:\\s*(?:"((?:[^"\\\\]|\\\\.)*)"|'((?:[^'\\\\]|\\\\.)*)')`, 'gm');
+  const re = new RegExp(`(?:^|[,{])\\s*["']?(?:${keyPattern})["']?\\s*:\\s*(?:"((?:[^"\\\\]|\\\\.)*)"|'((?:[^'\\\\]|\\\\.)*)')`, 'gm');
   return [...source.matchAll(re)].map((match) => decodeQuoted(match[1] ?? match[2]));
 }
 
