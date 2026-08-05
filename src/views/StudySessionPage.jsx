@@ -25,6 +25,15 @@ function ymdLocal(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
+async function persistWritingPractice(row) {
+  try {
+    const { error } = await supabase.from('writing_practice').insert(row);
+    if (error) console.warn('[writing practice] history save failed:', error.message);
+  } catch (error) {
+    console.warn('[writing practice] history save failed:', error);
+  }
+}
+
 /**
  * KST 기준 이번 주 월요일 0시의 UTC ISO — 주간 회고 조회 하한.
  * studyMaterials의 kstWeekStartMs가 export되지 않아 로컬 재구현(근사).
@@ -610,11 +619,12 @@ export default function StudySessionPage({
   async function saveUserNext(text, score) {
     if (!user?.id) return false;
     try {
-      const { data } = await supabase.from('study_paragraphs')
+      const { data, error: loadError } = await supabase.from('study_paragraphs')
         .select('id, paragraph')
         .eq('user_id', user.id).eq('lang', lang).eq('status', 'used')
         .order('used_at', { ascending: false, nullsFirst: false })
         .order('created_at', { ascending: false }).limit(1);
+      if (loadError) return false;
       const row = data && data[0];
       if (!row || !row.paragraph) return false;
       const merged = { ...row.paragraph, userNext: { text: String(text).slice(0, 200), score } };
@@ -706,13 +716,13 @@ export default function StudySessionPage({
     setProduceReflected(reflected);
 
     // 세션에서 쓴 문장을 작문 기록실(writing_practice)에도 남긴다 — /writing 히스토리에 노출.
-    // WritingStudioPage.persist(:171)와 동일한 컬럼·형태. fire-and-forget이라 실패해도 세션 흐름 무영향.
+    // WritingStudioPage.persist(:171)와 동일한 컬럼·형태. 세션 흐름은 막지 않되 저장 오류를 기록한다.
     if (user?.id) {
       const allErrors = (feedback.sentences || []).flatMap(
         s => (s.errors || []).map(e => ({ ...e, sentence: s.original }))
       );
       const pat = item.targetPattern?.pattern || '';
-      supabase.from('writing_practice').insert({
+      void persistWritingPractice({
         user_id: user.id,
         sentence: textVal,
         corrected: feedback.sentences.map(s => s.corrected).join('\n'),
@@ -723,7 +733,7 @@ export default function StudySessionPage({
         prompt: pat ? `이야기 이어쓰기 — ${pat}` : null,
         level: paragraphMaterials?.level || null,
         errors: allErrors,
-      }).then(() => {}, () => {});
+      });
     }
 
     setProduceState({ status: 'done', feedback, targetScore });

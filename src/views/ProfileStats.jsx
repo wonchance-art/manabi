@@ -19,12 +19,16 @@ async function fetchProfileStats(userId) {
   heatmapStart.setDate(heatmapStart.getDate() - 179);
 
   const [
-    { data: heatmapRows },
-    { data: allVocab },
+    heatmapResult,
+    vocabResult,
   ] = await Promise.all([
     supabase.from('user_vocabulary').select('created_at').eq('user_id', userId).gte('created_at', heatmapStart.toISOString()),
     supabase.from('user_vocabulary').select('*').eq('user_id', userId),
   ]);
+  if (heatmapResult.error) throw heatmapResult.error;
+  if (vocabResult.error) throw vocabResult.error;
+  const heatmapRows = heatmapResult.data;
+  const allVocab = vocabResult.data;
 
   const heatmapDayCounts = {};
   for (const v of (heatmapRows || [])) {
@@ -75,7 +79,7 @@ export default function ProfileStats({ refManifest = {} }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  const { data } = useQuery({
+  const { data, error, refetch } = useQuery({
     queryKey: ['profile-stats', user?.id],
     queryFn: () => fetchProfileStats(user.id),
     enabled: !!user,
@@ -83,6 +87,14 @@ export default function ProfileStats({ refManifest = {} }) {
   });
 
   if (!user) return null;
+  if (error) return (
+    <div className="bento">
+      <div className="bento-item bento--4x1 card" role="alert">
+        <p>학습 통계를 불러오지 못했어요.</p>
+        <Button size="sm" variant="secondary" onClick={() => refetch()}>다시 시도</Button>
+      </div>
+    </div>
+  );
   const vocab = data?.vocab || [];
   const streak = profile?.streak_count ?? 0;
   const streakFreeze = profile?.streak_freeze_count;

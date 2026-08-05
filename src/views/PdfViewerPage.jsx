@@ -121,7 +121,8 @@ export default function PdfViewerPage() {
   const { data: savedVocab } = useQuery({
     queryKey: ['pdf-saved-vocab', user?.id],
     queryFn: async () => {
-      const { data } = await supabase.from('user_vocabulary').select('word_text, base_form').eq('user_id', user.id);
+      const { data, error } = await supabase.from('user_vocabulary').select('word_text, base_form').eq('user_id', user.id);
+      if (error) throw error;
       const set = new Set();
       for (const v of (data || [])) { if (v.word_text) set.add(v.word_text); if (v.base_form) set.add(v.base_form); }
       return set;

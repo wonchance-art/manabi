@@ -120,15 +120,19 @@ export default function MaterialAddPage() {
         .insert([materialRow])
         .select();
 
-      // PDF의 last_page_read 업데이트
-      if (pdfSource && !insertError) {
-        supabase.from('uploaded_pdfs')
-          .update({ last_page_read: pdfSource.pageEnd })
-          .eq('id', pdfSource.pdf.id)
-          .then(() => {});
-      }
-
       if (insertError) throw insertError;
+
+      // 본문 저장은 성공했으므로 PDF 위치 동기화 실패는 별도로 알리고 분석은 계속한다.
+      if (pdfSource) {
+        try {
+          const { error: pdfProgressError } = await supabase.from('uploaded_pdfs')
+            .update({ last_page_read: pdfSource.pageEnd })
+            .eq('id', pdfSource.pdf.id);
+          if (pdfProgressError) throw pdfProgressError;
+        } catch {
+          toast('자료는 저장됐지만 PDF 읽기 위치 동기화에 실패했어요.', 'warning');
+        }
+      }
 
       setStatus('저장 완료. 백그라운드 분석을 시작합니다...');
       setProgress(10);
