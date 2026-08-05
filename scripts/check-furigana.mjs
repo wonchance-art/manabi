@@ -4,6 +4,9 @@
  * 사용: node scripts/check-furigana.mjs src/content/japanese/bunkei/n5.js
  * (refShared.jsx의 alignFurigana와 동일 로직)
  */
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 const isKanjiLike = ch => /[一-鿿々〆ヶ0-9０-９]/.test(ch);
 const kataToHira = s => s.replace(/[ァ-ヶ]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60));
 const PUNCT = '。、・！？!?,. 　「」『』();（）:〜';
@@ -15,12 +18,31 @@ const UO_VOWEL = 'うくすつぬふむゆるぐずづぶぷぅゅょおこそ�
 const SMALL_KANA = 'ぁぃぅぇぉゃゅょゎっー';
 const moraLen = rt => rt.reduce((n, c) => n + (SMALL_KANA.includes(c) ? 0 : 1), 0); // 한자당 독음 길이 추정용
 
-function alignFurigana(ja, yomiRaw) {
+/**
+ * OT 문화 예문은 `かな (한글 독음)` 형식으로 학습자용 병기를 덧붙인다.
+ * 한글이 있다는 이유만으로 전체 yomi를 면제하지 않고, terminal 병기만 분리해 kana 본문을 검사한다.
+ */
+export function parseAlignmentYomi(yomiRaw) {
+  if (!yomiRaw || !/[가-힣]/.test(yomiRaw)) return { kind: 'plain', yomi: yomiRaw };
+
+  const annotated = yomiRaw.match(/^([\s\S]*?\S)\s*\(([^()]*)\)\s*$/u);
+  if (!annotated || /[가-힣]/.test(annotated[1]) || !/[가-힣]/.test(annotated[2])) {
+    return { kind: 'invalid-mixed', yomi: null };
+  }
+  return {
+    kind: 'ko-annotated',
+    yomi: annotated[1].trim(),
+    annotation: annotated[2],
+  };
+}
+
+export function alignFurigana(ja, yomiRaw) {
   if (!ja || !yomiRaw) return null;
-  if (/[가-힣]/.test(yomiRaw)) return 'KO_MIXED'; // 한글 병기(OT) — 의도된 폴백, 실패 아님
+  const parsed = parseAlignmentYomi(yomiRaw);
+  if (parsed.kind === 'invalid-mixed') return null;
   if (![...ja].some(isKanjiLike)) return 'NO_KANJI';
 
-  const yomi = [...kataToHira(yomiRaw.replace(/[\s　]+/g, ''))];
+  const yomi = [...kataToHira(parsed.yomi.replace(/[\s　]+/g, ''))];
   const segs = [];
   for (const ch of ja) {
     const t = isKanjiLike(ch) ? 'k' : 'p';
@@ -83,32 +105,47 @@ function alignFurigana(ja, yomiRaw) {
   return r ? r.parts : null;                           // 정렬 불가 — 정렬 신뢰 불가
 }
 
-const file = process.argv[2];
-if (!file) { console.error('usage: node scripts/check-furigana.mjs <content-file.js>'); process.exit(1); }
+export function checkFuriganaData(data) {
+  let total = 0;
+  let annotated = 0;
+  const fail = [];
 
-const mod = await import(new URL('../' + file, import.meta.url));
-const data = mod.default;
-let total = 0, fail = [];
+  function checkEx(ex, where) {
+    if (!ex?.ja) return;
+    total++;
+    if (parseAlignmentYomi(ex.yomi).kind === 'ko-annotated') annotated++;
+    const r = alignFurigana(ex.ja, ex.yomi);
+    if (r === null) fail.push({ where, ja: ex.ja, yomi: ex.yomi || '(없음)' });
+  }
 
-function checkEx(ex, where) {
-  if (!ex?.ja) return;
-  total++;
-  const r = alignFurigana(ex.ja, ex.yomi);
-  if (r === null) fail.push({ where, ja: ex.ja, yomi: ex.yomi || '(없음)' });
+  if (Array.isArray(data)) {
+    // grammar 챕터 배열
+    data.forEach(c => c.sections.forEach((s, si) =>
+      (s.examples || []).forEach(e => checkEx(e, `${c.slug} §${si + 1}`))));
+  } else {
+    // bunkei / vocab
+    data.themes.forEach(t => (t.items || t.words).forEach(i => {
+      checkEx(i.ex, `${t.name} / ${i.pattern || i.ja}`);
+      checkEx(i.ex2, `${t.name} / ${i.pattern || i.ja} (ex2)`);
+    }));
+  }
+
+  return { total, annotated, fail };
 }
 
-if (Array.isArray(data)) {
-  // grammar 챕터 배열
-  data.forEach(c => c.sections.forEach((s, si) =>
-    (s.examples || []).forEach(e => checkEx(e, `${c.slug} §${si + 1}`))));
-} else {
-  // bunkei / vocab
-  data.themes.forEach(t => (t.items || t.words).forEach(i => {
-    checkEx(i.ex, `${t.name} / ${i.pattern || i.ja}`);
-    checkEx(i.ex2, `${t.name} / ${i.pattern || i.ja} (ex2)`);
-  }));
+export async function runFuriganaCheck(file) {
+  const mod = await import(new URL('../' + file, import.meta.url));
+  const { total, annotated, fail } = checkFuriganaData(mod.default);
+  console.log(`검사: ${total}개 예문 — 한글 병기 ${annotated}건 — 정렬 실패 ${fail.length}건`);
+  fail.forEach(f => console.log(`  ✗ [${f.where}]\n    ja:   ${f.ja}\n    yomi: ${f.yomi}`));
+  return fail.length ? 1 : 0;
 }
 
-console.log(`검사: ${total}개 예문 — 정렬 실패 ${fail.length}건`);
-fail.forEach(f => console.log(`  ✗ [${f.where}]\n    ja:   ${f.ja}\n    yomi: ${f.yomi}`));
-process.exit(fail.length ? 1 : 0);
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const file = process.argv[2];
+  if (!file) {
+    console.error('usage: node scripts/check-furigana.mjs <content-file.js>');
+    process.exit(1);
+  }
+  process.exit(await runFuriganaCheck(file));
+}
