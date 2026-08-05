@@ -13,6 +13,14 @@ const chapters = [
     titleFr: "ごじゅん・じょし・しゅうしょく",
     summary: "일본어는 한국어와 문장의 뼈대가 같아요. 어순이 같고, 조사가 1:1로 대응하고, 꾸미는 말은 앞에서 붙여요 — 한국어 문장을 머리에 두고 단어만 갈아 끼우면 돼요.",
     duration: "약 8분",
+    drills: [
+      { id: "ja-ot01-d1", type: "choice", prompt: "'벤또(弁当)'의 일본어 발음은?", choices: ["べんとう(bentō)", "ばんとう", "びんとう"], answer: "べんとう(bentō)" },
+      { id: "ja-ot01-d2", type: "fill", prompt: "'약속'의 일본어 한자어: 約___ (やくそく)", answer: "束" },
+      { id: "ja-ot01-d3", type: "choice", prompt: "한국어와 일본어가 크게 공유하는 것은?", choices: ["한자어 어휘 다수와 비슷한 어순", "문자 체계 전부", "억양 규칙 전부"], answer: "한자어 어휘 다수와 비슷한 어순" },
+      { id: "ja-ot01-d4", type: "choice", prompt: "한국어에 들어온 일본어 유래 생활어는?", choices: ["구두(くつ)", "컴퓨터", "버스"], answer: "구두(くつ)" },
+      { id: "ja-ot01-d5", type: "fill", prompt: "'무료'의 일본어 읽기: 無料 = む___", answer: "りょう" },
+      { id: "ja-ot01-d6", type: "choice", listen: "やくそく", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["약속(約束)", "야구", "약국"], answer: "약속(約束)" },
+    ],
     sections: [
       {
         heading: "당신은 이미 일본어를 안다",
@@ -86,6 +94,14 @@ const chapters = [
     titleFr: "ひらがな・カタカナ・漢字",
     summary: "왜 일본어는 문자를 세 종류나 쓸까요? 한자·히라가나·가타카나 — 셋의 철저한 역할 분담을 정리해요. 글자 자체는 다음 두 챕터(히라가나·가타카나)에서 직접 익혀요.",
     duration: "약 12분",
+    drills: [
+      { id: "ja-n501-d1", type: "choice", prompt: "일본어 문장에서 히라가나의 주 역할은?", choices: ["조사·활용어미 등 문법 요소", "외래어 표기", "이름 전용 표기"], answer: "조사·활용어미 등 문법 요소" },
+      { id: "ja-n501-d2", type: "choice", prompt: "가타카나로 주로 쓰는 것은?", choices: ["アメリカ 같은 외래어", "조사 は·を", "동사 어미"], answer: "アメリカ 같은 외래어" },
+      { id: "ja-n501-d3", type: "choice", prompt: "한자가 맡는 역할은?", choices: ["명사·동사 어간 등 실질 의미", "감탄사", "어미 활용"], answer: "명사·동사 어간 등 실질 의미" },
+      { id: "ja-n501-d4", type: "fill", prompt: "일본어 문자 세 가지: 히라가나·가타카나·___", answer: "한자", accepts: ["漢字", "かんじ"] },
+      { id: "ja-n501-d5", type: "choice", prompt: "私はコーヒーを飲みます에서 조사 は·を는 어떤 문자?", choices: ["히라가나", "가타카나", "한자"], answer: "히라가나" },
+      { id: "ja-n501-d6", type: "choice", listen: "にほんご", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["일본어", "일본 인형", "이틀"], answer: "일본어" },
+    ],
     sections: [
       {
         heading: "한 문장 안에 세 가지 문자",
@@ -158,6 +174,14 @@ const chapters = [
     summary: "일본어의 가장 기본 문자. 오십음표를 보고 획순대로 따라 쓰고, 발음(로마자)으로 직접 테스트해요.",
     duration: "약 15분",
     kana: "hiragana",
+    drills: [
+      { id: "ja-ot05-d1", type: "choice", listen: "あ", prompt: "듣고 어떤 글자인지 고르세요.", choices: ["あ(a)", "お(o)", "や(ya)"], answer: "あ(a)" },
+      { id: "ja-ot05-d2", type: "choice", prompt: "자형이 ぬ와 헷갈리기 쉬운 글자는?", choices: ["め", "ろ", "へ"], answer: "め" },
+      { id: "ja-ot05-d3", type: "fill", prompt: "'스시'를 히라가나로: ___し", answer: "す" },
+      { id: "ja-ot05-d4", type: "choice", listen: "ふ", prompt: "듣고 어떤 글자인지 고르세요.", choices: ["ふ(fu)", "う(u)", "つ(tsu)"], answer: "ふ(fu)" },
+      { id: "ja-ot05-d5", type: "choice", prompt: "は가 조사로 쓰일 때 발음은?", choices: ["わ(wa)", "は(ha)", "ば(ba)"], answer: "わ(wa)" },
+      { id: "ja-ot05-d6", type: "choice", listen: "こんにちは", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["안녕하세요(낮 인사)", "안녕히 주무세요", "고맙습니다"], answer: "안녕하세요(낮 인사)" },
+    ],
     sections: [
       {
         heading: "히라가나란?",
@@ -227,6 +251,14 @@ const chapters = [
     summary: "외래어·강조에 쓰는 문자. 히라가나와 소리는 같고 모양만 달라요. 같은 방식으로 익히고 테스트해요.",
     duration: "약 12분",
     kana: "katakana",
+    drills: [
+      { id: "ja-ot06-d1", type: "choice", prompt: "シ와 ツ의 구분 요령은?", choices: ["シ는 점이 가로 배열·아래→위 삐침, ツ는 점이 세로 배열·위→아래 삐침", "완전히 같다", "シ가 항상 크다"], answer: "シ는 점이 가로 배열·아래→위 삐침, ツ는 점이 세로 배열·위→아래 삐침" },
+      { id: "ja-ot06-d2", type: "fill", prompt: "'커피'를 가타카나로: コー___ー", answer: "ヒ" },
+      { id: "ja-ot06-d3", type: "choice", prompt: "가타카나의 주 용도는?", choices: ["외래어·의성어·강조", "조사와 어미", "한자 전면 대체"], answer: "외래어·의성어·강조" },
+      { id: "ja-ot06-d4", type: "choice", prompt: "ソ와 ン 중 '소(so)'는?", choices: ["ソ", "ン", "둘 다"], answer: "ソ" },
+      { id: "ja-ot06-d5", type: "fill", prompt: "'버스'를 가타카나로: ___ス", answer: "バ" },
+      { id: "ja-ot06-d6", type: "choice", listen: "コンビニ", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["편의점", "콤비", "빌딩"], answer: "편의점" },
+    ],
     sections: [
       {
         heading: "가타카나는 언제 쓰나?",
@@ -285,6 +317,14 @@ const chapters = [
     titleFr: "はつおんとモーラ",
     summary: "おばさん(오바상)과 おばあさん(오바ー상)은 박자 하나 차이로 아주머니와 할머니가 갈려요. 한국어에 없는 '박자' 감각을 처음부터 제대로 잡아요.",
     duration: "약 10분",
+    drills: [
+      { id: "ja-n502-d1", type: "choice", listen: "おばあさん", prompt: "듣고 어떤 단어인지 고르세요.", choices: ["할머니(장음 ばあ)", "아주머니(おばさん)", "아버지"], answer: "할머니(장음 ばあ)", hint: "장단음이 뜻을 가르는 대표 짝" },
+      { id: "ja-n502-d2", type: "choice", listen: "きって", prompt: "듣고 어떤 단어인지 고르세요.", choices: ["우표(촉음 って)", "와서(きて)", "나무(き)"], answer: "우표(촉음 って)" },
+      { id: "ja-n502-d3", type: "choice", prompt: "촉음 っ의 발음 요령은?", choices: ["한 박자를 멈춘다", "빠르게 붙여 넘어간다", "길게 늘인다"], answer: "한 박자를 멈춘다" },
+      { id: "ja-n502-d4", type: "choice", listen: "でんき", prompt: "듣고 어떤 단어인지 고르세요.", choices: ["전기(でんき)", "날씨(てんき)", "인기(にんき)"], answer: "전기(でんき)", hint: "탁음 유무가 뜻을 가른다" },
+      { id: "ja-n502-d5", type: "choice", prompt: "일본어 리듬(모라)의 감각은?", choices: ["글자 하나하나를 같은 길이로", "강세 음절만 길게", "문말만 올려서"], answer: "글자 하나하나를 같은 길이로" },
+      { id: "ja-n502-d6", type: "fill", prompt: "ん은 한 박자를 ___한다 (차지/생략)", answer: "차지" },
+    ],
     sections: [
       {
         heading: "일본어는 박자 언어 — 모라란",
@@ -383,6 +423,14 @@ const chapters = [
     titleFr: "音読みと訓読み",
     summary: "한 글자에 읽기가 왜 두 개일까요? 그리고 한국 한자음을 음독으로 바꾸는 변환 규칙 — 한국어 화자만의 치트키를 공개해요.",
     duration: "약 9분",
+    drills: [
+      { id: "ja-n503-d1", type: "choice", prompt: "음독과 훈독의 구분은?", choices: ["음독=한자음 유래, 훈독=일본 고유어 읽기", "음독=고유어, 훈독=한자음", "차이가 없다"], answer: "음독=한자음 유래, 훈독=일본 고유어 읽기" },
+      { id: "ja-n503-d2", type: "fill", prompt: "学生(がくせい)의 学 음독 'がく'는 한국 한자음 '___'과 대응해요", answer: "학" },
+      { id: "ja-n503-d3", type: "choice", prompt: "山을 やま로 읽는 것은?", choices: ["훈독", "음독", "가타카나 읽기"], answer: "훈독" },
+      { id: "ja-n503-d4", type: "fill", prompt: "図書館(としょかん)은 한국 한자음으로 '___'", answer: "도서관" },
+      { id: "ja-n503-d5", type: "choice", prompt: "한국 한자음의 'ㄱ' 받침은 음독에서 주로?", choices: ["く·き로 남는다(学 がく·力 りょく)", "사라진다", "ん이 된다"], answer: "く·き로 남는다(学 がく·力 りょく)" },
+      { id: "ja-n503-d6", type: "choice", listen: "がっこう", prompt: "듣고 알맞은 뜻을 고르세요.", choices: ["학교(学校)", "각오", "가구"], answer: "학교(学校)" },
+    ],
     sections: [
       {
         heading: "음독과 훈독 — 한 글자에 읽기가 두 개",
