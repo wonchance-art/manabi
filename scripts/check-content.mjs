@@ -9,6 +9,7 @@
  */
 import { spawnSync } from 'node:child_process';
 import { readdirSync } from 'node:fs';
+import { discoverGrammarModules } from './content-module-discovery.mjs';
 import { allowedKanjiSet, KANJI_TO_LEVEL, isKanjiChar } from './kanji-levels.mjs';
 
 // ── P9 챕터 한자 레벨 검사기 자가 테스트 (인라인 assert) ──
@@ -186,12 +187,15 @@ const LANGS = {
   chinese:  { g: ['ot', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'], b: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'], v: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] },
 };
 const root = new URL('../src/content/', import.meta.url);
+const grammarModules = new Map();
+for (const language of Object.keys(LANGS))
+  grammarModules.set(language, await discoverGrammarModules(language, { contentRoot: root }));
 
 // ── 스토리 섹션(story) 검증 헬퍼 ──
-// grammar 챕터의 story.body {ja,yomi} 대사도 examples와 동일하게 후리가나 정렬을 검사하고,
-// story.questions(order/fill/produce)의 필수 필드를 게이트한다.
-// 후리가나 정렬은 scripts/check-furigana.mjs의 alignFurigana와 동일 로직(그 스크립트는 examples만
-// 순회하므로 story.body는 이 파일에서 동일 규약으로 직접 검사한다).
+// grammar 챕터의 story.body 대사를 언어별 text/reading 쌍으로 검사하고,
+// story.questions(order/fill/produce)의 필수 필드를 게이트한다. 일본어 {ja,yomi}의
+// 후리가나 정렬은 scripts/check-furigana.mjs의 alignFurigana와 동일 로직(그 스크립트는
+// examples만 순회하므로 story.body는 이 파일에서 동일 규약으로 직접 검사한다).
 const FILL_BLANK = '［　］';
 const isKanjiLike = ch => /[一-鿿々〆ヶ0-9０-９]/.test(ch);
 const kataToHira = s => s.replace(/[ァ-ヶ]/g, c => String.fromCharCode(c.charCodeAt(0) - 0x60));
@@ -272,20 +276,33 @@ function multisetEqual(a, b) {
   for (const x of b) { const c = count.get(x) || 0; if (c <= 0) return false; count.set(x, c - 1); }
   return true;
 }
-/** grammar 챕터의 story 섹션 검증 — body 후리가나 + 문항 스키마. errors 배열에 push. */
-function checkStorySection(sec, chSlug, errors) {
+const STORY_LANGUAGE_FIELDS = {
+  japanese: { text: 'ja', reading: 'yomi' },
+  english: { text: 'en', reading: 'ipa' },
+  french: { text: 'fr', reading: 'ipa' },
+  chinese: { text: 'zh', reading: 'pinyin' },
+};
+/** grammar 챕터의 story 섹션 검증 — 언어별 대사 + 문항 스키마. errors 배열에 push. */
+function checkStorySection(sec, chSlug, language, errors) {
   const st = sec.story;
-  // ── body: 대사(ja) 줄은 yomi 필수 + 후리가나 정렬 ──
+  const fields = STORY_LANGUAGE_FIELDS[language];
+  const textField = fields.text;
+  const readingField = fields.reading;
+  // ── body: 언어별 대사 줄은 발음 필수. 일본어는 후리가나 정렬까지 검증 ──
   (st.body || []).forEach((b, i) => {
-    if (b.ja == null && b.narr == null)
-      errors.push(`[story ${chSlug}] body[${i}]: ja·narr 둘 다 없음`);
-    if (b.ja == null) return; // 내레이션 문단
+    const text = b[textField];
+    if (text == null && b.narr == null)
+      errors.push(`[story ${chSlug}] body[${i}]: ${textField}·narr 둘 다 없음`);
+    if (text == null) return; // 내레이션 문단
     if (b.speaker !== undefined && !nonEmptyStr(b.speaker))
-      errors.push(`[story ${chSlug}] body[${i}] speaker가 비어있는 문자열: ${b.ja}`);
-    if (!nonEmptyStr(b.yomi)) { errors.push(`[story ${chSlug}] body[${i}] yomi 누락: ${b.ja}`); return; }
-    if (!nonEmptyStr(b.ko)) errors.push(`[story ${chSlug}] body[${i}] ko 누락: ${b.ja}`);
-    if (alignFurigana(b.ja, b.yomi) === null)
-      errors.push(`[furigana-story] ${chSlug} body[${i}] 요미 정렬 실패:\n    ja:   ${b.ja}\n    yomi: ${b.yomi}`);
+      errors.push(`[story ${chSlug}] body[${i}] speaker가 비어있는 문자열: ${text}`);
+    if (!nonEmptyStr(b[readingField])) {
+      errors.push(`[story ${chSlug}] body[${i}] ${readingField} 누락: ${text}`);
+      return;
+    }
+    if (!nonEmptyStr(b.ko)) errors.push(`[story ${chSlug}] body[${i}] ko 누락: ${text}`);
+    if (language === 'japanese' && alignFurigana(text, b[readingField]) === null)
+      errors.push(`[furigana-story] ${chSlug} body[${i}] 요미 정렬 실패:\n    ja:   ${text}\n    yomi: ${b[readingField]}`);
   });
   // ── questions: order/fill/produce 필수 필드 ──
   const ids = new Set();
@@ -294,7 +311,8 @@ function checkStorySection(sec, chSlug, errors) {
     const id = q.id || '(id 없음)';
     if (!nonEmptyStr(q.id)) errors.push(`[story ${chSlug}] 문항 id 누락`);
     else {
-      if (!idRe.test(q.id)) errors.push(`[story ${chSlug}] 문항 id 형식 위반(<slug>-sqN): ${q.id}`);
+      if (language === 'japanese' && !idRe.test(q.id))
+        errors.push(`[story ${chSlug}] 문항 id 형식 위반(<slug>-sqN): ${q.id}`);
       if (ids.has(q.id)) errors.push(`[story ${chSlug}] 문항 id 중복: ${q.id}`);
       ids.add(q.id);
     }
@@ -312,8 +330,9 @@ function checkStorySection(sec, chSlug, errors) {
     } else if (q.type === 'fill') {
       if (!nonEmptyStr(q.q)) errors.push(`[story ${chSlug}] fill q 누락: ${id}`);
       if (!nonEmptyStr(q.pattern)) errors.push(`[story ${chSlug}] fill pattern 누락: ${id}`);
-      const blanks = (String(q.ja || '').match(/［　］/g) || []).length;
-      if (blanks !== 1) errors.push(`[story ${chSlug}] fill ja에 빈칸 ${FILL_BLANK} ${blanks}개(≠1): ${id}`);
+      const blanks = (String(q[textField] || '').match(/［　］/g) || []).length;
+      if (blanks !== 1)
+        errors.push(`[story ${chSlug}] fill ${textField}에 빈칸 ${FILL_BLANK} ${blanks}개(≠1): ${id}`);
       if (!nonEmptyStr(q.answer)) errors.push(`[story ${chSlug}] fill answer 누락: ${id}`);
       if (q.accept !== undefined && (!Array.isArray(q.accept) || !q.accept.every(nonEmptyStr)))
         errors.push(`[story ${chSlug}] fill accept가 배열이 아니거나 비문자열/빈 원소: ${id}`);
@@ -352,17 +371,17 @@ const warns = [];
 for (const [lang, cfg] of Object.entries(LANGS)) {
   // ── 챕터: 슬러그 중복 + 퀴즈 최소 요건 + patternKo ──
   const slugs = new Set();
-  for (const lv of cfg.g) {
-    const m = await import(new URL(`${lang}/grammar/${lv}.js`, root));
-    for (const ch of m.default) {
-      if (slugs.has(ch.slug)) errors.push(`[${lang}/${lv}] 슬러그 중복: ${ch.slug}`);
+  for (const grammarModule of grammarModules.get(lang)) {
+    const source = grammarModule.file.replace(/\.js$/, '');
+    for (const ch of grammarModule.chapters) {
+      if (slugs.has(ch.slug)) errors.push(`[${lang}/${source}] 슬러그 중복: ${ch.slug}`);
       slugs.add(ch.slug);
       const own = (ch.sections || []).filter(s => s.pattern && s.patternKo).length;
       const noKo = (ch.sections || []).filter(s => s.pattern && !s.patternKo).length;
       const exs = (ch.sections || []).flatMap(s => s.examples || []).filter(e => e && e.ko).length;
-      if (noKo > 0) errors.push(`[${lang}/${lv}] ${ch.slug}: patternKo 없는 패턴 ${noKo}개`);
-      if (own < 2) warns.push(`[${lang}/${lv}] ${ch.slug}: 퀴즈 표현 문항 부족 (${own})`);
-      if (exs < 4) warns.push(`[${lang}/${lv}] ${ch.slug}: 예문 부족 (${exs})`);
+      if (noKo > 0) errors.push(`[${lang}/${source}] ${ch.slug}: patternKo 없는 패턴 ${noKo}개`);
+      if (own < 2) warns.push(`[${lang}/${source}] ${ch.slug}: 퀴즈 표현 문항 부족 (${own})`);
+      if (exs < 4) warns.push(`[${lang}/${source}] ${ch.slug}: 예문 부족 (${exs})`);
       // ── P9 챕터 한자 레벨 검사 (japanese grammar 전용) — 오류로 게이트화(교정 웨이브 후 승격) ──
       // 학습 텍스트 필드(pattern·examples[].ja·table·story.body[].ja·media.line.ja)에 챕터 레벨
       // 초과 한자가 있으면 실패. 문화 소재·고유명사·문자 학습 시연 등은 각 챕터 kanjiExempt로 면제.
@@ -372,11 +391,11 @@ for (const [lang, cfg] of Object.entries(LANGS)) {
           const total = [...viol.values()].reduce((a, b) => a + b, 0);
           const list = [...viol.entries()].sort((a, b) => b[1] - a[1])
             .map(([k, n]) => `${k}(${KANJI_TO_LEVEL.get(k) || '非JLPT'}·${n})`).join(' ');
-          errors.push(`[kanji ${lang}/${lv}] ${ch.slug}(레벨 ${ch.level}) 초과 한자 ${viol.size}종·${total}회: ${list}\n    → ja 표기를 가나로 바꾸거나, 문화 소재·고유명사면 챕터 kanjiExempt에 추가하세요.`);
+          errors.push(`[kanji ${lang}/${source}] ${ch.slug}(레벨 ${ch.level}) 초과 한자 ${viol.size}종·${total}회: ${list}\n    → ja 표기를 가나로 바꾸거나, 문화 소재·고유명사면 챕터 kanjiExempt에 추가하세요.`);
         }
       }
       // ── 스토리 섹션(story) — body 후리가나 + 문항 스키마 게이트 ──
-      for (const sec of (ch.sections || [])) if (sec.story) checkStorySection(sec, ch.slug, errors);
+      for (const sec of (ch.sections || [])) if (sec.story) checkStorySection(sec, ch.slug, lang, errors);
       // ── 미디어 섹션(media) — youtubeId·line 후리가나·songTitle/artist 게이트 ──
       for (const sec of (ch.sections || [])) if (sec.media) checkMediaSection(sec, ch.slug, errors);
     }
@@ -407,7 +426,7 @@ for (const [lang, cfg] of Object.entries(LANGS)) {
 
 // ── (ja) 요미가나 정렬 — 기존 스크립트를 파일별로 실행 ──
 const jaFiles = [
-  ...LANGS.japanese.g.map(l => `src/content/japanese/grammar/${l}.js`),
+  ...grammarModules.get('japanese').map(module => module.relativePath),
   ...LANGS.japanese.b.map(l => `src/content/japanese/bunkei/${l}.js`),
   // vocab은 보강 파일(n5_jlpt_a 등)까지 전부 — 하드코딩 목록이면 신규 파일이 감시망 밖으로 샌다.
   ...readdirSync('src/content/japanese/vocab').filter(f => f.endsWith('.js')).map(f => `src/content/japanese/vocab/${f}`),
@@ -454,9 +473,11 @@ for (const [lang, cv] of Object.entries(COVER)) {
     const idx = cfg.v.indexOf(lv === 'ot' ? cv.otPool : lv);
     const pool = new Set();
     for (let i = 0; i <= Math.max(idx, 0); i++) for (const w of vocabSets[cfg.v[i]]) pool.add(w);
-    const m = await import(new URL(`${lang}/grammar/${lv}.js`, root));
     const missing = new Set();
-    for (const ch of m.default)
+    const chapters = grammarModules.get(lang)
+      .flatMap(module => module.chapters)
+      .filter(ch => String(ch.level || '').toLowerCase() === lv);
+    for (const ch of chapters)
       for (const ex of (ch.sections || []).flatMap(sec => sec.examples || [])) {
         const text = ex[cv.field]; if (!text) continue;
         for (const tok of cv.tokenize(text)) {
