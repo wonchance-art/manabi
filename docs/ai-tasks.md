@@ -288,16 +288,19 @@
 
 ## Codex-3 (codex3/*) — 게임 시스템 확장 (타 기기)
 ### doing
-- 🛡️ 리뷰 R1 후속 수리(발주 5194144381): 최신 base
-  `f40039ec3b9e44222fc5b73e460a74d76d04162e`에서 SW 콘텐츠 해시·오류 응답 캐시 제외,
-  curriculum scanner fail-closed+mutation 테스트, check-content 누락 모듈 편입,
-  Node 22/Vercel·world PNG 결정성은 보고만 수행
 ### todo
 - 📚 /learn 진도·스트릭 위젯(발주 5126671497) → **구현 #706 도착·Claude 게이트 green(lint 2종+vitest 2508) — 오너 승인 대기(draft 유지)** ← 피벗 후 우선, 아래 월드 항목 동결
 - (P0 공통) 로컬 clone 이전 확인 코멘트
 - S1 STAMP_ALBUM_NODES 85 원자 전환(선행 #387 충족 — 즉시 착수): #150 5046785938
 - S4 수집 연출 정합 → S2 앨범 지역 탭·수집률 → S3 마일스톤 보상 v1(localStorage·DB 금지)
 ### done (최근)
+- 🛡️ 리뷰 R1 후속 수리(발주 5194144381): SW cache version을 배포 콘텐츠 SHA로
+  결정화하고 실패/redirect navigation 캐시를 차단했으며, curriculum drill scanner를
+  fail-closed+mutation 회귀로 고정하고 check-content가 expansion·scene 배열 모듈을 자동 발견.
+  Vercel 실측 Node 20.x와 Node 22 world PNG 2회 동일 SHA는 report-only로 기록
+  (`codex3/harden-sw-content-gates-v2`, 구현 `7d9ef85189bd1eea58c5fd619d4d0c96e360aef5`,
+  최신 replay base `dc6659ef5197c67d5a9308c2625afcd82efa5ae6`·최초 착수 base
+  `f40039ec3b9e44222fc5b73e460a74d76d04162e`)
 - 🔍 전체 코드 리뷰 R1 — scripts·설정·테스트 영역(report-only): 고정 base
   `8e7e41778f338c0ed8a5d6744dedd011fb409a74`에서 게이트 8파일·설정·service worker·
   의존성·테스트 258파일을 감사해 치명 2·중대 12·경미 2와 미커버 핵심 경로 상위 5를 문서화
