@@ -161,13 +161,19 @@ export default function ChapterDrills({ lang, drills, title, intro }) {
   const { user } = useAuth();
   const [results, setResults] = useState({});
   const settled = useRef(new Set());
-  const [pastStat, setPastStat] = useState(() => readChapterStat(lang, drills));
+  // hydration 안전: 로컬 통계도 마운트 후에 읽는다(서버 렌더에는 없는 값).
+  const [pastStat, setPastStat] = useState(null);
   const answered = Object.keys(results).length;
   const right = Object.values(results).filter(Boolean).length;
 
   // 로그인 유저는 서버 누적(review_events)이 정본 — 기기가 바뀌어도 기록이 이어진다.
   // source 태그는 시기별로 다르다(구 'drill' · SRS 통합 후 'grammar') — drill id가 전역
   // 유일하므로 item_key로만 거른다.
+  // 게스트·초기 표시는 기기 통계로 채우고, 로그인 사용자는 아래에서 서버 값으로 덮어쓴다.
+  useEffect(() => {
+    setPastStat(readChapterStat(lang, drills));
+  }, [lang, drills]);
+
   useEffect(() => {
     if (!user?.id || !Array.isArray(drills) || drills.length === 0) return undefined;
     let alive = true;
@@ -188,9 +194,12 @@ export default function ChapterDrills({ lang, drills, title, intro }) {
   const record = (drill) => (ok) => {
     if (settled.current.has(drill.id)) return;
     settled.current.add(drill.id);
-    bumpDrillStat(lang, drill.id, ok);
+    // 로그인 사용자의 정본은 서버(review_events + FSRS)다 — 로컬 카운터를 겹쳐 쓰면 이중 집계가 된다.
+    if (!user?.id) bumpDrillStat(lang, drill.id, ok);
     setResults((r) => ({ ...r, [drill.id]: ok }));
-    void recordChapterDrillResult(user?.id, { lang, drill, correct: ok });
+    // 기록이 실패하면 settled에서 풀어 같은 문항을 다시 시도할 수 있게 둔다(영구 차단 방지).
+    Promise.resolve(recordChapterDrillResult(user?.id, { lang, drill, correct: ok }))
+      .catch(() => { settled.current.delete(drill.id); });
   };
   return (
     <section className="card fr-section">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import RefSpeak from './RefSpeak';
 
 /**
@@ -14,22 +14,25 @@ export default function WritingPractice({ lang, slug, writing }) {
   const storageKey = `${lang}_writing_${slug}`;
   const htmlLang = HTML_LANG[lang] ?? 'fr';
   const countsChars = htmlLang === 'zh' || htmlLang === 'ja';
-  const [draft, setDraft] = useState(() => {
-    try {
-      return globalThis.localStorage?.getItem(storageKey) ?? '';
-    } catch {
-      return '';
-    }
-  });
+  // SSR·hydration 원칙: 첫 렌더는 서버와 동일한 빈 상태로 두고, 저장분은 마운트 후 복원한다.
+  // storageKey(챕터)가 바뀌면 이전 챕터의 초안이 남지 않도록 즉시 초기화 후 다시 읽는다.
+  const [draft, setDraft] = useState('');
   const [showSamples, setShowSamples] = useState(false);
   const checksKey = `${storageKey}_checks`;
-  const [checks, setChecks] = useState(() => {
+  const [checks, setChecks] = useState(() => writing.checklist.map(() => false));
+
+  useEffect(() => {
+    let saved = '';
+    let savedChecks = null;
     try {
-      const saved = JSON.parse(globalThis.localStorage?.getItem(checksKey) ?? 'null');
-      if (Array.isArray(saved) && saved.length === writing.checklist.length) return saved;
+      saved = globalThis.localStorage?.getItem(storageKey) ?? '';
+      const raw = JSON.parse(globalThis.localStorage?.getItem(checksKey) ?? 'null');
+      if (Array.isArray(raw) && raw.length === writing.checklist.length) savedChecks = raw;
     } catch {}
-    return writing.checklist.map(() => false);
-  });
+    setDraft(saved);
+    setChecks(savedChecks ?? writing.checklist.map(() => false));
+    setShowSamples(false);
+  }, [storageKey, checksKey, writing.checklist]);
 
   const save = (value) => {
     setDraft(value);
