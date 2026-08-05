@@ -277,7 +277,7 @@ export default function MaterialsPage() {
     return count;
   }
 
-  const { data: materials = [], isLoading } = useQuery({
+  const { data: materials = [], isLoading, error: materialsError, refetch: refetchMaterials } = useQuery({
     queryKey: ['materials', tab, user?.id, langFilter, levelFilter, searchQuery],
     queryFn: () => fetchMaterials({ tab, userId: user?.id, langFilter, levelFilter, searchQuery }),
     refetchInterval: (query) => {
@@ -456,6 +456,12 @@ export default function MaterialsPage() {
         )
       ) : isLoading ? (
         <CardGridSkeleton />
+      ) : materialsError ? (
+        <div className="empty-state">
+          <div className="empty-state__icon">×</div>
+          <p className="empty-state__msg">자료 목록을 불러올 수 없습니다. 잠시 후 다시 시도해 주세요.</p>
+          <button type="button" className="btn btn--primary btn--md" onClick={() => refetchMaterials()}>다시 시도</button>
+        </div>
       ) : filtered.length > 0 ? (
         <>
         <div className="feature-grid">

@@ -19,8 +19,11 @@ async function fetchLearnData(userId, lang) {
   const now = new Date().toISOString();
   const weekStartIso = kstWeekStartIso();
 
-  // 실패 시 null (문구 생략용) — 홈/서재의 방어적 count 패턴과 동일
-  const countOf = (q) => q.then(({ count }) => count ?? null, () => null);
+  const countOf = async (query) => {
+    const { count, error } = await query;
+    if (error) throw error;
+    return count ?? 0;
+  };
 
   const [
     dueVocab,
@@ -28,8 +31,8 @@ async function fetchLearnData(userId, lang) {
     knownWords,
     passedChapters,
     weekSessions,
-    latestUsed,
-    forecastRows,
+    latestUsedResult,
+    forecastResult,
     { buildForecast },
   ] = await Promise.all([
     // due 어휘 — 현재 학습 언어, next_review_at <= now
@@ -57,16 +60,19 @@ async function fetchLearnData(userId, lang) {
       .select('paragraph, materials, used_at, created_at')
       .eq('user_id', userId).eq('lang', lang).eq('status', 'used')
       .order('used_at', { ascending: false, nullsFirst: false })
-      .order('created_at', { ascending: false }).limit(1)
-      .then(({ data }) => (data && data[0]) || null, () => null),
+      .order('created_at', { ascending: false }).limit(1),
     // 망각 예보 재료 — 현재 학습 언어, 학습 이력 있는 행만(신규 저장 행은 서버에서 제외)
     supabase.from('user_vocabulary')
       .select('word_text, interval, last_reviewed_at')
       .eq('user_id', userId).eq('language', lang)
-      .not('last_reviewed_at', 'is', null).gt('interval', 0)
-      .then(({ data }) => data || [], () => []),
+      .not('last_reviewed_at', 'is', null).gt('interval', 0),
     import('../lib/forecast'),
   ]);
+
+  if (latestUsedResult.error) throw latestUsedResult.error;
+  if (forecastResult.error) throw forecastResult.error;
+  const latestUsed = latestUsedResult.data?.[0] || null;
+  const forecastRows = forecastResult.data || [];
 
   const forecast = buildForecast(forecastRows, new Date());
 
@@ -78,7 +84,11 @@ async function fetchLearnData(userId, lang) {
     if (typeof arc === 'string' && arc.trim() && Number.isFinite(ep) && ep >= 1) episode = ep;
   }
 
-  return { dueVocab, dueGrammar, knownWords, passedChapters, weekSessions, episode, forecast };
+  return {
+    dueVocab, dueGrammar, knownWords, passedChapters, weekSessions, episode,
+    episodeState: episode == null ? 'absent' : 'ready',
+    forecast,
+  };
 }
 
 export default function LearnPage({ progressCatalog = {}, embedded = false }) {
@@ -91,7 +101,7 @@ export default function LearnPage({ progressCatalog = {}, embedded = false }) {
     return fromProfile || 'Japanese';
   }, [profile]);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['learn', user?.id, lang],
     queryFn: () => fetchLearnData(user.id, lang),
     enabled: !!user,
@@ -138,12 +148,21 @@ export default function LearnPage({ progressCatalog = {}, embedded = false }) {
     </div>
   );
 
+  if (error) return (
+    <div className={embedded ? 'lessons-progress-embed' : 'page-container home-page home-layout'} style={embedded ? undefined : { maxWidth: 720, textAlign: 'center', paddingTop: 60 }}>
+      <h2 style={{ marginBottom: 8 }}>학습 정보를 불러올 수 없어요</h2>
+      <p style={{ color: 'var(--text-secondary)', marginBottom: 20 }}>복습 수치와 이야기 상태를 확인하지 못했습니다.</p>
+      <button type="button" className="btn btn--primary btn--md" onClick={() => refetch()}>다시 시도</button>
+    </div>
+  );
+
   const dueVocab     = data?.dueVocab;
   const dueGrammar   = data?.dueGrammar;
   const knownWords   = data?.knownWords;
   const passedChapters = data?.passedChapters;
   const weekSessions = data?.weekSessions;
   const episode      = data?.episode ?? null;
+  const episodeReady = data?.episodeState === 'ready';
   const practice = [
     { href: '/study/library',  title: '서재',          desc: '지난 문단 다시 읽기 · 내 자료로 학습', accent: 'var(--primary)', icon: '📖' },
     { href: '/review/grammar', title: '문법 복습',      desc: '돌아온 문법 다시 풀기', badge: dueGrammar, accent: 'var(--accent)', icon: '🧩' },
@@ -167,10 +186,10 @@ export default function LearnPage({ progressCatalog = {}, embedded = false }) {
           due 수치는 아래 연습 타일 배지로만 노출(문장 중복 제거). */}
       <Link href="/study" className="lessons-continue learn-cta">
         <span className="lessons-continue__body">
-          <span className="lessons-continue__kicker">{episode != null ? '이어지는 이야기' : '오늘 학습'}</span>
+          <span className="lessons-continue__kicker">{episodeReady ? '이어지는 이야기' : '오늘 학습'}</span>
           <span className="lessons-continue__title">
-            {episode == null
-              ? '이야기 한 편이 준비됐어요'
+            {!episodeReady
+              ? '오늘 학습을 시작해볼까요?'
               : episode >= 10
                 ? '새 이야기가 시작됐어요'
                 : `${episode + 1}화가 준비됐어요`}

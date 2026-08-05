@@ -28,6 +28,7 @@ async function getPdfUrl(storagePath) {
   const { data, error } = await supabase.storage
     .from('user-pdfs').createSignedUrl(storagePath, 3600);
   if (error) throw error;
+  if (!data?.signedUrl) throw new Error('SIGNED_URL_MISSING');
   return data.signedUrl;
 }
 
@@ -44,7 +45,7 @@ async function quickAnalyze(text, language) {
     headers: { 'Content-Type': 'application/json', ...authHeader },
     body: JSON.stringify({ lines, language }),
   });
-  if (!res.ok) return [];
+  if (!res.ok) throw new Error(`ANALYZE_FAILED_${res.status}`);
   const data = await res.json();
   const tokens = [];
   for (const r of data.results || []) {
@@ -58,8 +59,7 @@ async function quickAnalyze(text, language) {
 
 async function getTranslationAndContext(text, language) {
   const langName = language === 'Japanese' ? '일본어' : '영어';
-  try {
-    const raw = await callGemini(`다음 ${langName} 텍스트를 한국어로 처리해주세요.
+  const raw = await callGemini(`다음 ${langName} 텍스트를 한국어로 처리해주세요.
 
 "${text}"
 
@@ -72,8 +72,9 @@ async function getTranslationAndContext(text, language) {
 내용 이해를 돕는 배경 설명 2~3문장
 
 규칙: 마크다운 **굵게**만 사용, 간결하게`);
-    return raw?.candidates?.[0]?.content?.parts?.[0]?.text || raw;
-  } catch { return null; }
+  const result = raw?.candidates?.[0]?.content?.parts?.[0]?.text || raw;
+  if (!result) throw new Error('CONTEXT_EMPTY');
+  return result;
 }
 
 export default function PdfViewerPage() {
@@ -81,16 +82,15 @@ export default function PdfViewerPage() {
   const { user } = useAuth();
   const toast = useToast();
 
-  const [language, setLanguage] = useState(() => {
-    if (typeof window === 'undefined') return 'Japanese';
-    return localStorage.getItem('pdf_language') || 'Japanese';
-  });
+  const [language, setLanguage] = useState('Japanese');
   const [inputText, setInputText] = useState('');
   const [tokens, setTokens] = useState([]);
   const [analyzing, setAnalyzing] = useState(false);
   const [saving, setSaving] = useState({});
   const [contextExpl, setContextExpl] = useState('');
   const [contextLoading, setContextLoading] = useState(false);
+  const [analysisError, setAnalysisError] = useState({ tokens: null, context: null });
+  const analyzeRequestRef = useRef(0);
 
   // 단어 상세 팝업
   const [wordDetail, setWordDetail] = useState(null); // { token, detail, loading }
@@ -104,10 +104,15 @@ export default function PdfViewerPage() {
       setWordDetail(prev => prev ? { ...prev, detail: '설명을 가져올 수 없었어요.', loading: false } : null);
     }
   }
-  const [hideKnown, setHideKnown] = useState(() => {
-    if (typeof window === 'undefined') return true;
-    return localStorage.getItem('pdf_hideKnown') !== 'false';
-  });
+  const [hideKnown, setHideKnown] = useState(true);
+
+  // SSR와 hydration 첫 렌더는 같은 기본값을 쓰고, 브라우저 저장값은 마운트 뒤 복원한다.
+  useEffect(() => {
+    try {
+      setLanguage(localStorage.getItem('pdf_language') || 'Japanese');
+      setHideKnown(localStorage.getItem('pdf_hideKnown') !== 'false');
+    } catch { /* 저장소 차단 시 기본값 유지 */ }
+  }, []);
 
   const isClient = typeof window !== 'undefined';
   function getCached(key) { if (!isClient) return null; try { return JSON.parse(localStorage.getItem(`pdf_cache:${key}`)); } catch { return null; } }
@@ -128,7 +133,12 @@ export default function PdfViewerPage() {
   const { data: pdfInfo, isLoading, error } = useQuery({
     queryKey: ['pdf-info', id], queryFn: () => fetchPdfInfo(id), enabled: !!id,
   });
-  const { data: pdfUrl } = useQuery({
+  const {
+    data: pdfUrl,
+    isLoading: isPdfUrlLoading,
+    error: pdfUrlError,
+    refetch: refetchPdfUrl,
+  } = useQuery({
     queryKey: ['pdf-url', pdfInfo?.storage_path], queryFn: () => getPdfUrl(pdfInfo.storage_path),
     enabled: !!pdfInfo?.storage_path, staleTime: 1000 * 60 * 30,
   });
@@ -156,17 +166,45 @@ export default function PdfViewerPage() {
   async function handleAnalyze(text) {
     if (!text?.trim()) return;
     const t = text.trim();
+    const requestId = ++analyzeRequestRef.current;
     setInputText(t);
+    setAnalysisError({ tokens: null, context: null });
     const cacheKey = `${language}:${t.slice(0, 120)}`;
 
     const ct = getCached(`tokens:${cacheKey}`);
     const cc = getCached(`context:${cacheKey}`);
-    if (ct) { setTokens(markKnown(ct)); } else { setTokens([]); setAnalyzing(true); }
-    if (cc) { setContextExpl(cc); } else { setContextExpl(''); setContextLoading(true); }
+    if (ct) { setTokens(markKnown(ct)); setAnalyzing(false); } else { setTokens([]); setAnalyzing(true); }
+    if (cc) { setContextExpl(cc); setContextLoading(false); } else { setContextExpl(''); setContextLoading(true); }
 
     const promises = [];
-    if (!ct) promises.push(quickAnalyze(t, language).then(r => { setCached(`tokens:${cacheKey}`, r); setTokens(markKnown(r)); setAnalyzing(false); }));
-    if (!cc) promises.push(getTranslationAndContext(t, language).then(r => { const e = r || ''; setCached(`context:${cacheKey}`, e); setContextExpl(e); setContextLoading(false); }));
+    if (!ct) promises.push((async () => {
+      try {
+        const result = await quickAnalyze(t, language);
+        if (requestId !== analyzeRequestRef.current) return;
+        setCached(`tokens:${cacheKey}`, result);
+        setTokens(markKnown(result));
+      } catch {
+        if (requestId === analyzeRequestRef.current) {
+          setAnalysisError(prev => ({ ...prev, tokens: '단어 분석에 실패했어요.' }));
+        }
+      } finally {
+        if (requestId === analyzeRequestRef.current) setAnalyzing(false);
+      }
+    })());
+    if (!cc) promises.push((async () => {
+      try {
+        const result = await getTranslationAndContext(t, language);
+        if (requestId !== analyzeRequestRef.current) return;
+        setCached(`context:${cacheKey}`, result);
+        setContextExpl(result);
+      } catch {
+        if (requestId === analyzeRequestRef.current) {
+          setAnalysisError(prev => ({ ...prev, context: '번역과 맥락 생성에 실패했어요.' }));
+        }
+      } finally {
+        if (requestId === analyzeRequestRef.current) setContextLoading(false);
+      }
+    })());
     await Promise.allSettled(promises);
   }
 
@@ -215,7 +253,8 @@ export default function PdfViewerPage() {
   );
 
   const visibleTokens = hideKnown ? tokens.filter(t => !t._alreadySaved) : tokens;
-  const hasResults = tokens.length > 0 || analyzing || contextLoading || contextExpl;
+  const hasResults = tokens.length > 0 || analyzing || contextLoading || contextExpl
+    || analysisError.tokens || analysisError.context;
 
   const leftPanelContent = hasResults ? (
     <div className="pdf-context">
@@ -227,6 +266,11 @@ export default function PdfViewerPage() {
       )}
       {contextLoading ? (
         <div className="pdf-context__loading">번역 + 맥락 생성 중...</div>
+      ) : analysisError.context ? (
+        <div className="pdf-side__empty">
+          {analysisError.context}<br />
+          <button type="button" className="btn btn--ghost btn--sm" onClick={() => handleAnalyze(inputText)}>다시 시도</button>
+        </div>
       ) : contextExpl ? (
         <div className="pdf-context__text" dangerouslySetInnerHTML={{ __html: formatDetail(contextExpl) }} />
       ) : null}
@@ -267,6 +311,11 @@ export default function PdfViewerPage() {
     </div>
   ) : analyzing ? (
     <div className="pdf-side__empty">분석 중...</div>
+  ) : analysisError.tokens ? (
+    <div className="pdf-side__empty">
+      {analysisError.tokens}<br />
+      <button type="button" className="btn btn--ghost btn--sm" onClick={() => handleAnalyze(inputText)}>다시 시도</button>
+    </div>
   ) : (
     <div className="pdf-side__empty">
       단어 목록이<br />여기에 표시됩니다
@@ -294,7 +343,20 @@ export default function PdfViewerPage() {
 
         {/* 중앙 — PDF 내장 뷰어 */}
         <main className="pdf-main">
-          {pdfUrl ? <PdfDocument pdfUrl={pdfUrl} /> : <Spinner message="로딩 중..." />}
+          {pdfUrlError || (pdfInfo && !pdfInfo.storage_path) ? (
+            <div className="pdf-side__empty">
+              PDF 파일 주소를 불러올 수 없어요.<br />
+              {pdfInfo?.storage_path && (
+                <button type="button" className="btn btn--primary btn--sm" onClick={() => refetchPdfUrl()}>다시 시도</button>
+              )}
+            </div>
+          ) : isPdfUrlLoading ? (
+            <Spinner message="로딩 중..." />
+          ) : pdfUrl ? (
+            <PdfDocument pdfUrl={pdfUrl} />
+          ) : (
+            <div className="pdf-side__empty">PDF 파일 주소가 없습니다.</div>
+          )}
           <div className="pdf-input-bar">
             <button className="btn btn--ghost btn--sm" style={{ flexShrink: 0 }}
               onClick={async () => {
@@ -305,8 +367,8 @@ export default function PdfViewerPage() {
               placeholder="붙여넣기 또는 직접 입력" className="form-input" style={{ flex: 1, fontSize: '0.82rem' }}
               onPaste={e => { const t = e.clipboardData?.getData('text')?.trim(); if (t) { e.preventDefault(); handleAnalyze(t); } }}
               onKeyDown={e => e.key === 'Enter' && handleAnalyze(inputText)} />
-            <Button size="sm" onClick={() => handleAnalyze(inputText)} disabled={!inputText.trim() || analyzing}>
-              {analyzing ? '...' : '→'}
+            <Button size="sm" onClick={() => handleAnalyze(inputText)} disabled={!inputText.trim() || analyzing || contextLoading}>
+              {analyzing || contextLoading ? '...' : '→'}
             </Button>
           </div>
         </main>

@@ -188,6 +188,7 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
         // 신규 컬럼 미적용 환경 — 기본 컬럼만으로 재시도 (etym/hanja 폴백과 같은 패턴)
         const { prompt_type, prompt, level: lv, chapter_slug, errors, revision_of, ...base } = row;
         const r2 = await supabase.from('writing_practice').insert(base).select('id').single();
+        if (r2.error) throw r2.error;
         if (r2.data?.id) setSavedId(r2.data.id);
       } else if (data?.id) {
         setSavedId(data.id);

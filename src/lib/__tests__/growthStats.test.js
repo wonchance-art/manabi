@@ -3,12 +3,28 @@ import {
   KNOWN_WORD_MIN_INTERVAL,
   isKnownWord,
   isPassedChapter,
+  kstDayStartMs,
+  kstDayStartIso,
   kstWeekStartMs,
   kstWeekStartIso,
   isThisWeekSession,
   GROWTH_LABELS,
   GROWTH_COPY,
 } from '../growthStats';
+
+describe('kstDayStart — KST 일간 경계', () => {
+  it('KST 자정 직전은 같은 KST 날짜의 시작으로 묶인다', () => {
+    const beforeMidnight = Date.UTC(2024, 0, 1, 14, 59, 59); // KST 1/1 23:59:59
+    expect(kstDayStartMs(beforeMidnight)).toBe(Date.UTC(2023, 11, 31, 15, 0, 0));
+    expect(kstDayStartIso(beforeMidnight)).toBe('2023-12-31T15:00:00.000Z');
+  });
+
+  it('KST 자정부터 다음 날짜의 시작으로 전환된다', () => {
+    const midnight = Date.UTC(2024, 0, 1, 15, 0, 0); // KST 1/2 00:00:00
+    expect(kstDayStartMs(midnight)).toBe(Date.UTC(2024, 0, 1, 15, 0, 0));
+    expect(kstDayStartIso(midnight)).toBe('2024-01-01T15:00:00.000Z');
+  });
+});
 
 describe('isKnownWord — 아는 단어 판정(interval ≥ 7)', () => {
   it('임계값 상수는 7', () => {

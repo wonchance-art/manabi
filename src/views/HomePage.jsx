@@ -13,38 +13,33 @@ import { isPassed } from '../components/RefPatternCheck';
 import { pullProgress } from '../lib/refProgress';
 import ForecastCard from '../components/ForecastCard';
 import ProfileStats from './ProfileStats';
+import { kstDayStartIso, kstWeekStartIso } from '../lib/growthStats';
 
 // 언어 코드 → 한국어 라벨 (studyParagraph.js의 LANG_NAME과 동일 매핑)
 const LANG_LABEL = { Japanese: '일본어', English: '영어', French: '프랑스어', Chinese: '중국어' };
 
-async function fetchHomeData(userId, lang) {
-  const todayStr   = new Date().toISOString().split('T')[0];
-  const todayStart = `${todayStr}T00:00:00`;
-  const now        = new Date().toISOString();
-
-  const weekStartDate = new Date();
-  weekStartDate.setHours(0, 0, 0, 0);
-  const dow = weekStartDate.getDay();
-  weekStartDate.setDate(weekStartDate.getDate() - (dow === 0 ? 6 : dow - 1));
-  const weekStartISO = weekStartDate.toISOString();
+async function fetchHomeData(userId, lang, nowMs = Date.now()) {
+  const todayStart = kstDayStartIso(nowMs);
+  const now = new Date(nowMs).toISOString();
+  const weekStartISO = kstWeekStartIso(nowMs);
+  const weekStartDate = new Date(weekStartISO);
 
   // 지난주 범위 (월~일)
-  const prevWeekStart = new Date(weekStartDate);
-  prevWeekStart.setDate(prevWeekStart.getDate() - 7);
+  const prevWeekStart = new Date(weekStartDate.getTime() - 7 * 24 * 3600 * 1000);
   const prevWeekStartISO = prevWeekStart.toISOString();
   const prevWeekEndISO = weekStartISO;
 
   // vocab stats are derived client-side from vocabRows
   const [
-    { count: dueCount },
-    { data: vocabRows },
-    { data: recentProgress },
+    dueResult,
+    vocabResult,
+    recentResult,
     suggestionsRes,
-    { data: readProgressRows },
-    { data: allVocabRows },
-    { data: seriesMaterials },
-    { data: allCompleted },
-    forecastRows,
+    readProgressResult,
+    allVocabResult,
+    seriesMaterialsResult,
+    allCompletedResult,
+    forecastResult,
     { buildForecast },
   ] = await Promise.all([
     supabase.from('user_vocabulary').select('*', { count: 'exact', head: true })
@@ -72,10 +67,25 @@ async function fetchHomeData(userId, lang) {
     supabase.from('user_vocabulary')
       .select('word_text, interval, last_reviewed_at')
       .eq('user_id', userId).eq('language', lang)
-      .not('last_reviewed_at', 'is', null).gt('interval', 0)
-      .then(({ data }) => data || [], () => []),
+      .not('last_reviewed_at', 'is', null).gt('interval', 0),
     import('../lib/forecast'),
   ]);
+
+  const dbResults = [
+    dueResult, vocabResult, recentResult, readProgressResult, allVocabResult,
+    seriesMaterialsResult, allCompletedResult, forecastResult,
+  ];
+  const failed = dbResults.find(result => result?.error);
+  if (failed) throw failed.error;
+
+  const dueCount = dueResult.count;
+  const vocabRows = vocabResult.data;
+  const recentProgress = recentResult.data;
+  const readProgressRows = readProgressResult.data;
+  const allVocabRows = allVocabResult.data;
+  const seriesMaterials = seriesMaterialsResult.data;
+  const allCompleted = allCompletedResult.data;
+  const forecastRows = forecastResult.data || [];
 
   const rows = vocabRows || [];
   const reads = readProgressRows || [];
@@ -105,7 +115,7 @@ async function fetchHomeData(userId, lang) {
     todayReadCount,
     recentProgress:   (recentProgress || []).slice(0, 4),
     suggestions:      suggestionsRes || [],
-    forecast:         buildForecast(forecastRows, new Date()),
+    forecast:         buildForecast(forecastRows, new Date(nowMs)),
     weekVocab,
     weekReviews: weekReview,
     weekReads:   weekRead,
@@ -277,7 +287,7 @@ export default function HomePage({ continueManifest = {}, refManifest = {} }) {
     return fromProfile || 'Japanese';
   }, [profile]);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['home', user?.id, lang],
     queryFn:  () => fetchHomeData(user.id, lang),
     enabled:  !!user,
@@ -336,6 +346,14 @@ export default function HomePage({ continueManifest = {}, refManifest = {} }) {
           {[1,2,3,4].map(i => <div key={i} className="skeleton" style={{ height: 60, borderRadius: 'var(--radius-md)' }} />)}
         </div>
       </div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="page-container home-page" style={{ maxWidth: 720, textAlign: 'center', paddingTop: 80 }}>
+      <h2 style={{ marginBottom: 8 }}>학습 현황을 불러올 수 없어요</h2>
+      <p style={{ color: 'var(--text-secondary)', marginBottom: 20 }}>활동 기록을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.</p>
+      <button type="button" className="btn btn--primary btn--md" onClick={() => refetch()}>다시 시도</button>
     </div>
   );
 

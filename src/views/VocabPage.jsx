@@ -43,44 +43,45 @@ export default function VocabPage() {
   const scoringRef = useRef(false);
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('due');
-  const [langFilter, setLangFilter] = useState(() => {
-    if (typeof window === 'undefined') return 'all';
-    return localStorage.getItem('vocab_langFilter') || 'all';
-  });
+  const [langFilter, setLangFilter] = useState('all');
   const [showHint, setShowHint] = useState(false);
-  const [seriesFilter, setSeriesFilter] = useState(() => {
-    if (typeof window === 'undefined') return 'all';
-    return localStorage.getItem('vocab_seriesFilter') || 'all';
-  });
+  const [seriesFilter, setSeriesFilter] = useState('all');
+  const [settingsRestored, setSettingsRestored] = useState(false);
   useEffect(() => {
-    if (typeof window !== 'undefined') localStorage.setItem('vocab_seriesFilter', seriesFilter);
-  }, [seriesFilter]);
+    if (settingsRestored) localStorage.setItem('vocab_seriesFilter', seriesFilter);
+  }, [seriesFilter, settingsRestored]);
 
-  const [reviewMode, setReviewMode] = useState(() => {
-    if (typeof window === 'undefined') return 'auto';
-    return localStorage.getItem('as_review_mode') || 'auto';
-  });
+  const [reviewMode, setReviewMode] = useState('auto');
 
   // 자동 모드용: 복습 시작 시 review_events에서 유도한 단어별 숙련 rung (word_text → rung)
   const [vocabRungs, setVocabRungs] = useState({});
 
   // reviewMode 영속화
   useEffect(() => {
-    if (typeof window !== 'undefined') localStorage.setItem('as_review_mode', reviewMode);
-  }, [reviewMode]);
+    if (settingsRestored) localStorage.setItem('as_review_mode', reviewMode);
+  }, [reviewMode, settingsRestored]);
 
   // 하루 새 단어 한도
-  const [newPerDay, setNewPerDay] = useState(() => {
-    if (typeof window === 'undefined') return DEFAULT_NEW_PER_DAY;
-    const n = parseInt(localStorage.getItem('vocab_new_per_day'), 10);
-    return Number.isFinite(n) ? n : DEFAULT_NEW_PER_DAY;
-  });
+  const [newPerDay, setNewPerDay] = useState(DEFAULT_NEW_PER_DAY);
   useEffect(() => {
-    if (typeof window !== 'undefined') localStorage.setItem('vocab_new_per_day', String(newPerDay));
-  }, [newPerDay]);
+    if (settingsRestored) localStorage.setItem('vocab_new_per_day', String(newPerDay));
+  }, [newPerDay, settingsRestored]);
+
+  // SSR와 hydration 첫 렌더는 고정 기본값을 사용하고 저장된 환경설정은 마운트 후 복원한다.
+  useEffect(() => {
+    try {
+      setLangFilter(localStorage.getItem('vocab_langFilter') || 'all');
+      setSeriesFilter(localStorage.getItem('vocab_seriesFilter') || 'all');
+      setReviewMode(localStorage.getItem('as_review_mode') || 'auto');
+      const storedNewPerDay = parseInt(localStorage.getItem('vocab_new_per_day'), 10);
+      setNewPerDay(Number.isFinite(storedNewPerDay) ? storedNewPerDay : DEFAULT_NEW_PER_DAY);
+    } catch { /* 저장소 차단 시 기본값 유지 */ }
+    setSettingsRestored(true);
+  }, []);
 
   // 오늘 새로 시작한 단어 ID (날짜 바뀌면 자동 리셋)
-  const [introIds, setIntroIds] = useState(loadIntroIds);
+  const [introIds, setIntroIds] = useState([]);
+  useEffect(() => setIntroIds(loadIntroIds()), []);
   const registerNewIntro = (id) => {
     setIntroIds(prev => {
       if (prev.includes(id)) return prev;
