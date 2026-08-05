@@ -399,3 +399,50 @@ Node는 공식 v22.23.1을 사용했다.
 4. M-08/M-09/L-02를 content-hash SW cache lifecycle로 재설계한다.
 5. M-10/M-11을 배포 trace와 Node 22 runtime 계약으로 고정한다.
 6. L-01 dependency 제거는 위 correctness 수정과 분리한다.
+
+## 9. M-11 승인 전 런타임 실측 후속 보고
+
+2026-08-06 후속 구현 발주(issue #150 comment `5194144381`)의 승인 게이트에 따라
+`engines.node`는 바꾸지 않고 배포 런타임과 Node 22 PNG gate만 실측했다.
+
+### 저장소 선언(변경 없음)
+
+- 위치: `package.json:6-8`
+- 원문:
+
+  ```json
+  "engines": {
+    "node": "20.x"
+  }
+  ```
+
+### Vercel production build 실측
+
+- 대상: production READY deployment `dpl_BwGVGLZJ29HWx4kTNwfmbtvGXED4`
+- Git main head: `2b4fa4897982a62ce77c0d2295d91cbf89f89930`
+- build log 원문:
+
+  ```text
+  Warning: Due to "engines": { "node": "20.x" } in your `package.json` file,
+  the Node.js Version defined in your Project Settings ("24.x") will not apply,
+  Node.js Version "20.x" will be used instead.
+  ```
+
+- 판정: 현재 Vercel project setting은 24.x지만 package 선언이 우선되어 실제 production
+  build는 **Node 20.x**를 사용한다. 배포 생성·설정 변경은 수행하지 않았다.
+
+### 공식 Node 22 PNG/hash gate
+
+- 로컬 런타임: `v22.23.1`
+- gate: `vitest run src/components/world/__tests__/londonOverpassPipeline.test.js`
+- 결과: 2회 모두 **1 file / 6 tests passed**
+- 동일 snapshot 2회 직접 렌더:
+
+  ```text
+  run1 bytes=487858 sha256=c2c5f745d3301d1c526dae8e1697df9b8793b4f7d36a9f540452e34f017f796d
+  run2 bytes=487858 sha256=c2c5f745d3301d1c526dae8e1697df9b8793b4f7d36a9f540452e34f017f796d
+  ```
+
+- 판정: Node 22에서는 world PNG가 byte-identical이고 기존 hash gate와 일치한다. 다만 현재
+  Vercel이 20.x로 빌드하며 project setting은 24.x이므로, `engines` 변경은 Node 22/24 전환
+  정책과 production 재기준 승인을 받은 별도 PR에서 수행해야 한다.

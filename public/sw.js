@@ -1,4 +1,4 @@
-const CACHE_NAME = 'anatomy-studio-v202608051556';
+const CACHE_NAME = 'anatomy-studio-vebbf66b965be201d';
 
 const PRECACHE_URLS = [
   '/',
@@ -10,6 +10,15 @@ const PRECACHE_URLS = [
 ];
 
 const STATIC_EXTENSIONS = /\.(js|css|woff2?|ttf|otf|svg|png|jpg|ico|webp)$/;
+
+function isCacheableNavigationResponse(response) {
+  if (!response.ok || response.redirected || response.type !== 'basic') return false;
+  try {
+    return new URL(response.url).origin === self.location.origin;
+  } catch {
+    return false;
+  }
+}
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -62,9 +71,15 @@ self.addEventListener('fetch', (event) => {
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
-        .then((response) => {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+        .then(async (response) => {
+          if (isCacheableNavigationResponse(response)) {
+            const clone = response.clone();
+            try {
+              await caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+            } catch {
+              // Cache quota/storage failures must not replace a valid network response.
+            }
+          }
           return response;
         })
         .catch(() => caches.match(request).then((cached) => cached || caches.match('/offline')))
