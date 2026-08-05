@@ -14,12 +14,15 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
-- 🛠️ components 리뷰 후속 C-04~C-13 수리 — TTS 가용성, 자료 전환 비동기 오염,
-  중첩 button·dialog 접근성, Supabase/export/레슨 완료 실패 정합과 timer cleanup을
-  회귀 테스트로 고정(C-01~C-03 및 #853 수리 경로 불변, assignment 5198422435,
-  exact base `e694830ca5c47c464e949a6d657cb2454468bf84`)
 ### todo
 ### done (최근)
+- ✅ components 리뷰 후속 C-04~C-13 — 실제 TTS 경로 가용성, 자료별 async/storage
+  격리, 중첩 button 제거, Supabase/export/레슨 완료 실패 정합, 듣기 세션·NPC timer
+  cleanup, dialog Escape·focus trap/복귀를 회귀 테스트로 고정. diff SHA 2회
+  `5fc9f46ba2972d15f373bbbefa216accb045066b2df01d371346cdefe79ea091`, targeted
+  2파일/11·전체 275파일/2,584테스트 green, lint 0 errors(기존 warning 2), full max RSS
+  3,805,839,360B·swap 0 (`codex/fix-components-c04-c13`, 구현 `2836f36`, assignment
+  5198422435, exact base `e694830ca5c47c464e949a6d657cb2454468bf84`)
 - 🔍 전체 코드 리뷰 R1 — `src/components` production 158파일/39,818줄 심층 정독으로
   major 10·minor 3을 exact 라인·원문·수정안으로 고정하고, ChapterDrills/WritingPractice/
   RefSpeak 정본·hydration 문제와 LearnProgressWidget 정상 cleanup을 판정. report-only,
