@@ -647,7 +647,9 @@
 - **🧭 웹앱 구성 평가+개량 R1(2026-08-05, #827)**: 사용자 여정 실측 평가(랜딩→교재 발견 '하' — /lessons 링크 0 /
   트랙 홈 en·ja 404 / 복습 동선 약함, 만족 예측: 발견 후 85~90·퍼널 포함 ~70, memory/evaluation.md) → 우선순위 3종 구현:
   ① 랜딩 헤더·푸터 '교재' + 4트랙 카드 섹션(실측: lessons?lang 링크 4·CTA 4) ② en·ja 인덱스 리다이렉트(4트랙 200 대칭)
-  ③ 드릴 완주→ReviewNudge(서버/게스트 due 카운트→/review/grammar). 잔여 후보 = /lessons SSR화(선택 ④)
+  ③ 드릴 완주→ReviewNudge(서버/게스트 due 카운트→/review/grammar). ④ /lessons SSR화 완료(f84fc4d — useSearchParams 제거·localStorage useEffect 격리, next build+로컬 실증 후 배포).
+  ⚠️ 사고: R2 커밋이 브랜치 미생성+push 폴백으로 **PR 없이 main 직push**(단일 창구 위반 — 게이트는 전 통과라 revert 없이
+  기록으로 수습). 재발 방지: push 폴백(|| push HEAD) 금지·작업 시작 시 브랜치 확인
 ### todo (오너 전건 승인 2026-07-18 — owner-gate 해제분 포함, Codex-1 확장 큐 = #150 코멘트 5012160829)
 - **🧪 레벨 디자인 v3 리옹 파일럿(오너 승인·발주 5045143688)**: 경로 위계 RFC(Codex-1)·
   도쿄 40MiB 긴급 분해(Codex-2)·정석 한 바퀴 코스(Claude) — 성공 판정은 라이브 비교
