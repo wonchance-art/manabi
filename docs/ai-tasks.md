@@ -215,10 +215,11 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-- 🔍 전체 코드 리뷰 R1 — `src/views` 40파일 전수 심층 정독(코드 수정 없음,
-  `docs/review-code-views.md` 보고서 작성 중, base `8e7e41778f338c0ed8a5d6744dedd011fb409a74`)
 ### todo
 ### done (최근)
+- 🔍 전체 코드 리뷰 R1 — `src/views` 실제 46파일·18,951줄 전수 정독(스캔 0),
+  치명 3·중대 10·경미 3건을 `docs/review-code-views.md`에 원문 인용·수정안과 함께 보고
+  (코드 수정 없음, targeted 21·전체 2,532 tests green, base `8e7e41778f338c0ed8a5d6744dedd011fb409a74`)
 - 📚 대사 IPA 커버리지 린트(report-only): 4트랙 grammar의 화자 객체 469개를
   객체 단위로 스캔해 IPA 누락 176개를 파일별 라인으로 보고하고 단일행·다행 픽스처를 고정
   (`codex2/lint-dialogue-ipa`, 구현 e9694d4, base 1c3a03f5d9b9175ef300e4c4d8d8199504e9677b)
