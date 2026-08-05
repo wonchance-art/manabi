@@ -23,7 +23,9 @@ function AuthForm() {
   const { signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const from = searchParams.get('from') || '/materials';
+  // 오픈 리다이렉트 차단: 앱 내부 절대경로만 허용한다(//evil.com·https://evil.com 등은 기본값으로).
+  const rawFrom = searchParams.get('from');
+  const from = rawFrom && /^\/(?!\/)/.test(rawFrom) ? rawFrom : '/materials';
 
   useEffect(() => {
     if (searchParams.get('error') === 'email_confirm_failed') {

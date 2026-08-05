@@ -105,43 +105,34 @@ export default function AdminPage() {
   const queryClient = useQueryClient();
   const toast = useToast();
 
-  if (loading) return <div className="page-container"><Spinner /></div>;
-  if (!isAdmin) return (
-    <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
-      <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🚫</div>
-      <h2 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>접근 권한이 없습니다</h2>
-      <Link href="/" className="btn btn--primary">홈으로</Link>
-    </div>
-  );
-
   const { data: users = [], isLoading: usersLoading } = useQuery({
     queryKey: ['admin-users'],
     queryFn: fetchAllUsers,
-    enabled: tab === 'users',
+    enabled: isAdmin && tab === 'users',
   });
 
   const { data: materials = [], isLoading: matsLoading } = useQuery({
     queryKey: ['admin-materials'],
     queryFn: fetchAllMaterials,
-    enabled: tab === 'materials',
+    enabled: isAdmin && tab === 'materials',
   });
 
   const { data: sources = [], isLoading: sourcesLoading } = useQuery({
     queryKey: ['admin-sources'],
     queryFn: fetchContentSources,
-    enabled: tab === 'sources',
+    enabled: isAdmin && tab === 'sources',
   });
 
   const { data: overrides = [], isLoading: overridesLoading } = useQuery({
     queryKey: ['admin-overrides'],
     queryFn: fetchContentOverrides,
-    enabled: tab === 'overrides',
+    enabled: isAdmin && tab === 'overrides',
   });
 
   const { data: reports = [], isLoading: reportsLoading } = useQuery({
     queryKey: ['admin-world-reports'],
     queryFn: fetchWorldReports,
-    enabled: tab === 'reports',
+    enabled: isAdmin && tab === 'reports',
   });
 
   // 오버라이드 삭제 — API 라우트 경유(파일 버전 복원 + revalidatePath)
@@ -218,6 +209,18 @@ export default function AdminPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['admin-sources'] }),
     onError: (err) => toast('삭제 실패: ' + err.message, 'error'),
   });
+
+  // 인증 게이트는 모든 Hooks 호출 뒤에 둔다 — 위에서 조기 반환하면 loading true→false 전이 때
+  // Hooks 개수가 달라져 React가 "Rendered more hooks than during the previous render"로 중단한다.
+  // 네트워크 실행 자체는 각 query의 enabled(isAdmin 포함)가 막는다.
+  if (loading) return <div className="page-container"><Spinner /></div>;
+  if (!isAdmin) return (
+    <div className="page-container" style={{ textAlign: 'center', paddingTop: '80px' }}>
+      <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🚫</div>
+      <h2 style={{ color: 'var(--text-primary)', marginBottom: '8px' }}>접근 권한이 없습니다</h2>
+      <Link href="/" className="btn btn--primary">홈으로</Link>
+    </div>
+  );
 
   const handleAddSource = () => {
     if (!newSource.name.trim()) { toast('소스 이름을 입력하세요.', 'warning'); return; }

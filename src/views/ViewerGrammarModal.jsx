@@ -1,8 +1,19 @@
 import Spinner from '../components/Spinner';
 import Button from '../components/Button';
 
+// 결과가 dangerouslySetInnerHTML로 들어가고 입력은 모델 응답(사용자 선택 문장이 프롬프트에 포함)이라
+// 비신뢰로 취급한다. 원문을 먼저 이스케이프하고 이 함수가 만드는 태그만 뒤에서 삽입한다([[dangerous-html-sanitize]]).
+function escapeHtml(s) {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function inlineFormat(text) {
-  return text
+  return escapeHtml(text)
     .replace(/\*\*(.+?)\*\*/g, '<strong class="md-strong">$1</strong>')
     .replace(/\*(.+?)\*/g,     '<em class="md-em">$1</em>')
     .replace(/`(.+?)`/g,       '<code class="md-code">$1</code>');
