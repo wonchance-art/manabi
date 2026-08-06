@@ -712,6 +712,14 @@
   **성능 수리 발주(Codex-4)**: P1 폰트 4패밀리·14weight(gzip 약 240KB 상시) → 실사용 weight만·JP/Serif 라우트 한정,
   P2 /lessons worldMapPaths 동기 포함 → dynamic import, P5 nav prefetch 250KB, P4 /home 이중 catalog, P3 ISR 주석 불일치.
   **Codex-1(components 40k줄) 무응답** — 회신 없으면 Claude 회수.
+- **🔍 코드 리뷰 R1 마감(2026-08-05 심야, #849~#857)**: 위임 수리 3건 게이트·머지 — Codex-4 성능 P1~P5(#852:
+  **CSS gzip -20.9%(274→217KB)·/lessons First Load -25%(183→137KB)** 실측), Codex-2 뷰 supabase error 전수 보강(#854),
+  Codex-1 components C-04~C-13(#855 — TTS 가용성 계약은 serverAudio 폴백 확인 후 승인). Claude 직접 수리 = 학습 핵심
+  C-01~C-03(#853 — WritingPractice hydration·챕터 전환 초안 잔존, ChapterDrills 로그인 이중 집계·기록 실패 시 재시도 영구 차단).
+  **커버리지 공백 자가 발견**: 어느 세션에도 배정 안 된 `src/app` 서버 페이지를 Claude가 훑어 **soft 404 적발**(없는 챕터가
+  HTTP 200 — 검색엔진 유령 색인). #856 1차 수리가 선언 누락으로 무효였고 #857에서 `dynamicParams=false`로 근본 차단·회귀 테스트 고정.
+  **부수 교훈**: 세션 내내 쓰던 스모크 URL `/french/grammar/a1-01-etre`가 실재하지 않는 slug였고 soft 404 때문에 200으로 보였다
+  (실제 `a1-01-pronouns-etre`) — 라우트 스모크는 매니페스트 실재 slug로만. 전체 vitest 2,594 green.
 ### todo (오너 전건 승인 2026-07-18 — owner-gate 해제분 포함, Codex-1 확장 큐 = #150 코멘트 5012160829)
 - **🧪 레벨 디자인 v3 리옹 파일럿(오너 승인·발주 5045143688)**: 경로 위계 RFC(Codex-1)·
   도쿄 40MiB 긴급 분해(Codex-2)·정석 한 바퀴 코스(Claude) — 성공 판정은 라이브 비교
