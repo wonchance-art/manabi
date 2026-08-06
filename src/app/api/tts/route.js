@@ -18,8 +18,23 @@ const LANG_NAMES = { Japanese: 'Japanese', English: 'English', French: 'French' 
 
 // IP별 레이트 리밋 (비로그인 공개 레퍼런스에서도 쓰므로 IP 기준, 캐시 미스만 도달)
 const rateLimitMap = new Map();
-const RATE_LIMIT = 60; // 분당
+const RATE_LIMIT = 60; // 분당(IP별)
 const WINDOW_MS = 60 * 1000;
+// 서버리스에서 IP 맵은 인스턴스마다 따로 존재해 총량 제어가 되지 않는다. 외부 저장소 없이
+// 할 수 있는 최소한의 방어로 인스턴스 단위 총량 차단기를 둔다(비용 폭주 상한).
+const INSTANCE_BUDGET = 600; // 분당(전체 IP 합계)
+let instanceWindowStart = 0;
+let instanceCount = 0;
+
+function isInstanceBudgetExceeded() {
+  const now = Date.now();
+  if (now - instanceWindowStart > WINDOW_MS) {
+    instanceWindowStart = now;
+    instanceCount = 0;
+  }
+  instanceCount += 1;
+  return instanceCount > INSTANCE_BUDGET;
+}
 
 function isRateLimited(ip) {
   const now = Date.now();
@@ -65,9 +80,14 @@ export async function GET(request) {
   if (!text) {
     return Response.json({ error: 'text required' }, { status: 400 });
   }
+  // lang을 임의 값으로 바꾸면 URL이 매번 달라져 CDN 캐시를 우회하고 유료 호출이 그대로 발생한다.
+  // 지원 목록 밖은 거절해 캐시 우회 경로를 닫는다.
+  if (!Object.prototype.hasOwnProperty.call(VOICES, lang)) {
+    return Response.json({ error: 'unsupported lang' }, { status: 400 });
+  }
 
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
-  if (isRateLimited(ip)) {
+  if (isRateLimited(ip) || isInstanceBudgetExceeded()) {
     return Response.json({ error: 'rate limited' }, { status: 429 });
   }
 

@@ -43,12 +43,32 @@ export async function POST(request) {
     return Response.json({ error: 'missing fields' }, { status: 400 });
   }
 
+  // 이 엔드포인트의 정당한 용도는 '아직 비어 있는 공용 설명을 캐시로 채우는 것'뿐이다.
+  // 로그인만 하면 누구나 임의 문자열을 보낼 수 있으므로, 이미 채워진 설명은 덮어쓰지 않는다
+  // (반달리즘·오염 차단). 잘못 채워진 항목은 관리자 사전 화면에서 교정한다.
+  // 렌더 단계는 이미 이스케이프하지만(#835), 저장 단계에서도 마크업성 입력을 거절한다.
+  if (/[<>]/.test(String(detail_text))) {
+    return Response.json({ error: 'markup not allowed' }, { status: 400 });
+  }
+
   const supabase = getSupabase();
-  await supabase
+  const { data: existing } = await supabase
+    .from('morpheme_dictionary')
+    .select('detail_text')
+    .eq('base_form', base_form)
+    .eq('language', language)
+    .maybeSingle();
+
+  if (existing?.detail_text) {
+    return Response.json({ ok: true, skipped: 'already filled' });
+  }
+
+  const { error } = await supabase
     .from('morpheme_dictionary')
     .update({ detail_text: String(detail_text).slice(0, MAX_DETAIL_LEN) }) // 길이 캡
     .eq('base_form', base_form)
     .eq('language', language);
 
+  if (error) return Response.json({ error: 'save failed' }, { status: 500 });
   return Response.json({ ok: true });
 }
