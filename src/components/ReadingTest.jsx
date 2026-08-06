@@ -1,12 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { callGemini } from '../lib/gemini';
 import Button from './Button';
 
 const STORAGE_KEY = 'reading_test:';
 const HISTORY_KEY = 'reading_test_history:';
+
+export function isReadingTestRequestCurrent(requestRef, requestId, materialRef, materialId) {
+  return requestRef.current === requestId && materialRef.current === materialId;
+}
 
 function loadSaved(materialId) {
   if (typeof window === 'undefined' || !materialId) return null;
@@ -34,39 +38,67 @@ function getHistory(materialId) {
   try { return JSON.parse(localStorage.getItem(HISTORY_KEY + materialId) || '[]'); } catch { return []; }
 }
 
+function ReadingTestOverlay({ children, onClose }) {
+  return <div className="reading-test-overlay" onClick={onClose}>{children}</div>;
+}
+
 export default function ReadingTest({ rawText, language, materialId, onClose, inline = false, nextLesson = null }) {
   const [status, setStatus] = useState('idle'); // idle | loading | active | done
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
   const [result, setResult] = useState(null);
+  const requestRef = useRef(0);
+  const materialRef = useRef(materialId);
+  const skipPersistRef = useRef(false);
+
+  materialRef.current = materialId;
+
+  function isCurrentRequest(requestId, requestMaterialId) {
+    return isReadingTestRequestCurrent(requestRef, requestId, materialRef, requestMaterialId);
+  }
+
+  useEffect(() => () => { requestRef.current += 1; }, []);
 
   // 저장된 테스트 복원
   useEffect(() => {
+    requestRef.current += 1;
     const saved = loadSaved(materialId);
+    skipPersistRef.current = true;
     if (saved) {
-      setQuestions(saved.questions);
+      setQuestions(saved.questions || []);
       setAnswers(saved.answers || {});
       if (saved.result) {
         setResult(saved.result);
         setStatus('done');
       } else {
+        setResult(null);
         setStatus('active');
       }
-    } else if (inline) {
-      generateTest();
+    } else {
+      setQuestions([]);
+      setAnswers({});
+      setResult(null);
+      setStatus('idle');
+      if (inline) generateTest();
     }
-  }, [materialId]);
+  }, [materialId, inline]);
 
   // 답변/결과 변경 시 저장
   useEffect(() => {
+    if (skipPersistRef.current) {
+      skipPersistRef.current = false;
+      return;
+    }
     if (questions.length > 0 && materialId) {
       saveToDisk(materialId, { questions, answers, result });
     }
-  }, [answers, result]);
+  }, [questions, answers, result, materialId]);
 
   async function generateTest() {
     const excerpt = (rawText || '').slice(0, 2500);
     if (!excerpt.trim()) return;
+    const requestMaterialId = materialId;
+    const requestId = ++requestRef.current;
     setStatus('loading');
 
     try {
@@ -119,6 +151,8 @@ Rules:
 - Band 6-7 difficulty
 - Questions must require reading the passage to answer`);
 
+      if (!isCurrentRequest(requestId, requestMaterialId)) return;
+
       const clean = raw.replace(/```json|```/g, '').trim();
       const parsed = JSON.parse(clean.substring(clean.indexOf('{'), clean.lastIndexOf('}') + 1));
       setQuestions(parsed.questions);
@@ -127,7 +161,7 @@ Rules:
       setStatus('active');
       saveToDisk(materialId, { questions: parsed.questions, answers: {}, result: null });
     } catch {
-      setStatus('idle');
+      if (isCurrentRequest(requestId, requestMaterialId)) setStatus('idle');
     }
   }
 
@@ -169,12 +203,10 @@ Rules:
   const allAnswered = questions.length > 0 && Object.keys(answers).length === questions.length;
   const typeLabel = { mcq: 'Multiple Choice', yesno: 'Yes / No / Not Given', completion: 'Sentence Completion', short: 'Short Answer' };
 
-  const Wrapper = inline ? 'div' : ({ children }) => (
-    <div className="reading-test-overlay" onClick={onClose}>{children}</div>
-  );
+  const Wrapper = inline ? 'div' : ReadingTestOverlay;
 
   return (
-    <Wrapper>
+    <Wrapper {...(inline ? {} : { onClose })}>
       <div className={`reading-test ${inline ? 'reading-test--inline' : ''}`} onClick={e => e.stopPropagation()}>
 
         <div className="reading-test__header">

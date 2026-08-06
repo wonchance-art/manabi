@@ -8,37 +8,60 @@ import Button from './Button';
 
 const STORAGE_KEY = 'conversation:';
 
+export function isConversationRequestCurrent(requestRef, requestId, materialRef, materialId) {
+  return requestRef.current === requestId && materialRef.current === materialId;
+}
+
 export default function ConversationPanel({ rawText, language, materialId, materialTitle, onClose, inline = false, nextLesson = null }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
+  const [sttSupported, setSttSupported] = useState(false);
   const recognitionRef = useRef(null);
+  const requestRef = useRef(0);
+  const materialRef = useRef(materialId);
+  const skipPersistRef = useRef(false);
   const { speak, supported: ttsSupported } = useTTS();
   const scrollRef = useRef(null);
   const targetLang = language === 'Japanese' ? 'Japanese' : 'English';
   const targetLangKo = language === 'Japanese' ? '일본어' : '영어';
 
-  // Web Speech Recognition 지원 체크 (Chrome/Edge/Safari)
-  const sttSupported = typeof window !== 'undefined' &&
-    !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+  materialRef.current = materialId;
+
+  function isCurrentRequest(requestId, requestMaterialId) {
+    return isConversationRequestCurrent(requestRef, requestId, materialRef, requestMaterialId);
+  }
 
   function startListening() {
     if (listening || !sttSupported) return;
+    const recognitionMaterialId = materialId;
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recog = new SR();
     recog.lang = language === 'Japanese' ? 'ja-JP' : 'en-US';
     recog.continuous = false;
     recog.interimResults = false;
     recog.onresult = (event) => {
+      if (recognitionRef.current !== recog || materialRef.current !== recognitionMaterialId) return;
       const transcript = event.results[0][0].transcript;
       setInput(prev => (prev ? prev + ' ' : '') + transcript);
     };
-    recog.onend = () => setListening(false);
-    recog.onerror = () => setListening(false);
+    recog.onend = () => {
+      if (recognitionRef.current !== recog) return;
+      recognitionRef.current = null;
+      setListening(false);
+    };
+    recog.onerror = () => {
+      if (recognitionRef.current !== recog) return;
+      recognitionRef.current = null;
+      setListening(false);
+    };
     recognitionRef.current = recog;
     setListening(true);
-    try { recog.start(); } catch { setListening(false); }
+    try { recog.start(); } catch {
+      recognitionRef.current = null;
+      setListening(false);
+    }
   }
 
   function stopListening() {
@@ -47,14 +70,38 @@ export default function ConversationPanel({ rawText, language, materialId, mater
   }
 
   useEffect(() => {
-    if (!materialId) return;
+    setSttSupported(!!(window.SpeechRecognition || window.webkitSpeechRecognition));
+    return () => {
+      requestRef.current += 1;
+      try { recognitionRef.current?.abort?.(); } catch {}
+      recognitionRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    requestRef.current += 1;
+    try { recognitionRef.current?.abort?.(); } catch {}
+    recognitionRef.current = null;
+    setListening(false);
+    setLoading(false);
+    setInput('');
+
+    skipPersistRef.current = true;
+    if (!materialId) {
+      setMessages([]);
+      return;
+    }
     try {
       const saved = localStorage.getItem(STORAGE_KEY + materialId);
-      if (saved) setMessages(JSON.parse(saved));
-    } catch {}
+      setMessages(saved ? JSON.parse(saved) : []);
+    } catch { setMessages([]); }
   }, [materialId]);
 
   useEffect(() => {
+    if (skipPersistRef.current) {
+      skipPersistRef.current = false;
+      return;
+    }
     if (!materialId) return;
     try {
       if (messages.length > 0) localStorage.setItem(STORAGE_KEY + materialId, JSON.stringify(messages));
@@ -67,6 +114,8 @@ export default function ConversationPanel({ rawText, language, materialId, mater
 
   async function startConversation() {
     if (messages.length > 0 || loading) return;
+    const requestMaterialId = materialId;
+    const requestId = ++requestRef.current;
     setLoading(true);
     const prompt = `You are a friendly language tutor having a casual conversation with a student.
 The student just read this ${targetLang} passage titled "${materialTitle || ''}":
@@ -81,12 +130,14 @@ Open with ONE warm, specific question about the passage. Rules:
 - Make the student want to reply`;
     try {
       const raw = await callGemini(prompt);
+      if (!isCurrentRequest(requestId, requestMaterialId)) return;
       const text = (raw?.candidates?.[0]?.content?.parts?.[0]?.text || raw || '').trim();
       if (text) setMessages([{ role: 'ai', text, ts: Date.now() }]);
     } catch {
+      if (!isCurrentRequest(requestId, requestMaterialId)) return;
       setMessages([{ role: 'ai', text: '(시작에 실패했어요. 다시 시도해 주세요)', ts: Date.now(), error: true }]);
     } finally {
-      setLoading(false);
+      if (isCurrentRequest(requestId, requestMaterialId)) setLoading(false);
     }
   }
 
@@ -96,6 +147,8 @@ Open with ONE warm, specific question about the passage. Rules:
     setInput('');
     const next = [...messages, { role: 'user', text: userText, ts: Date.now() }];
     setMessages(next);
+    const requestMaterialId = materialId;
+    const requestId = ++requestRef.current;
     setLoading(true);
 
     const history = next.map(m => `${m.role === 'user' ? 'Student' : 'Tutor'}: ${m.text}`).join('\n');
@@ -121,6 +174,7 @@ If the message has no notable errors, OMIT PART 2 entirely.
 Output PART 1, then a blank line, then PART 2 (if any). No labels, no other text.`;
     try {
       const raw = await callGemini(prompt);
+      if (!isCurrentRequest(requestId, requestMaterialId)) return;
       const full = (raw?.candidates?.[0]?.content?.parts?.[0]?.text || raw || '').replace(/^Tutor:\s*/i, '').trim();
       const correctionMatch = full.match(/📝\s*교정:\s*(.+)$/s);
       const correction = correctionMatch ? correctionMatch[1].trim() : null;
@@ -130,9 +184,10 @@ Output PART 1, then a blank line, then PART 2 (if any). No labels, no other text
         { role: 'ai', text: text || '(응답이 비어있어요)', correction, ts: Date.now() },
       ]);
     } catch {
+      if (!isCurrentRequest(requestId, requestMaterialId)) return;
       setMessages(prev => [...prev, { role: 'ai', text: '(응답을 받지 못했어요)', ts: Date.now(), error: true }]);
     } finally {
-      setLoading(false);
+      if (isCurrentRequest(requestId, requestMaterialId)) setLoading(false);
     }
   }
 

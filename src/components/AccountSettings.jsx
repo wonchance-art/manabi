@@ -1,10 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { friendlyToastMessage } from '../lib/errorMessage';
 import Button from './Button';
-import ConfirmModal from './ConfirmModal';
+
+const EXPORT_KEYS = ['profile', 'vocab', 'materials', 'progress', 'notes', 'writings', 'pdfs'];
+
+export function unwrapAccountExportResults(results) {
+  const failed = results
+    .map((result, index) => (!result || result.error) ? EXPORT_KEYS[index] : null)
+    .filter(Boolean);
+  if (failed.length > 0) {
+    throw new Error(`데이터 조회 실패: ${failed.join(', ')}`);
+  }
+  return Object.fromEntries(EXPORT_KEYS.map((key, index) => [key, results[index]?.data ?? null]));
+}
 
 export default function AccountSettings({ user, toast, signOut }) {
   const [pwMode, setPwMode] = useState(false);
@@ -17,6 +28,42 @@ export default function AccountSettings({ user, toast, signOut }) {
   const [deleteText, setDeleteText] = useState('');
   const [deleting, setDeleting] = useState(false);
   const [exportMsg, setExportMsg] = useState(null);
+  const deleteDialogRef = useRef(null);
+  const deletingRef = useRef(false);
+  const deleteTitleId = useId();
+
+  deletingRef.current = deleting;
+
+  useEffect(() => {
+    if (!deleteConfirm) return undefined;
+    const previousFocus = document.activeElement;
+    const dialog = deleteDialogRef.current;
+    const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    const focusInitial = window.setTimeout(() => dialog?.querySelector('[data-dialog-initial-focus]')?.focus(), 0);
+    function onKeyDown(event) {
+      if (event.key === 'Escape' && !deletingRef.current) {
+        event.preventDefault();
+        setDeleteConfirm(false);
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = [...(dialog?.querySelectorAll(focusableSelector) || [])].filter(el => !el.disabled);
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault(); last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault(); first.focus();
+      }
+    }
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.clearTimeout(focusInitial);
+      document.removeEventListener('keydown', onKeyDown);
+      previousFocus?.focus?.();
+    };
+  }, [deleteConfirm]);
 
   async function handleChangePassword(e) {
     e.preventDefault();
@@ -53,15 +100,7 @@ export default function AccountSettings({ user, toast, signOut }) {
   async function handleExportMyData() {
     setExportMsg('데이터 수집 중...');
     try {
-      const [
-        { data: profile },
-        { data: vocab },
-        { data: materials },
-        { data: progress },
-        { data: notes },
-        { data: writings },
-        { data: pdfs },
-      ] = await Promise.all([
+      const exportResults = await Promise.all([
         supabase.from('profiles').select('*').eq('id', user.id).maybeSingle(),
         supabase.from('user_vocabulary').select('*').eq('user_id', user.id),
         supabase.from('reading_materials').select('*').eq('owner_id', user.id),
@@ -70,6 +109,7 @@ export default function AccountSettings({ user, toast, signOut }) {
         supabase.from('writing_practice').select('*').eq('user_id', user.id),
         supabase.from('uploaded_pdfs').select('*').eq('owner_id', user.id),
       ]);
+      const { profile, vocab, materials, progress, notes, writings, pdfs } = unwrapAccountExportResults(exportResults);
 
       const bundle = {
         exported_at: new Date().toISOString(),
@@ -188,9 +228,21 @@ export default function AccountSettings({ user, toast, signOut }) {
 
       {/* 계정 삭제 확인 */}
       {deleteConfirm && (
-        <div className="modal-overlay" onClick={() => !deleting && setDeleteConfirm(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 440 }}>
-            <h3 style={{ margin: '0 0 8px', color: 'var(--danger)' }}>계정 삭제</h3>
+        <div
+          className="modal-overlay"
+          onClick={() => !deleting && setDeleteConfirm(false)}
+          role="presentation"
+        >
+          <div
+            ref={deleteDialogRef}
+            className="modal"
+            onClick={e => e.stopPropagation()}
+            style={{ maxWidth: 440 }}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={deleteTitleId}
+          >
+            <h3 id={deleteTitleId} style={{ margin: '0 0 8px', color: 'var(--danger)' }}>계정 삭제</h3>
             <p style={{ fontSize: '0.88rem', lineHeight: 1.6, color: 'var(--text-secondary)', marginBottom: 14 }}>
               이 작업은 <strong>되돌릴 수 없습니다</strong>. 수집한 모든 단어, 자료, 기록이 영구 삭제돼요.
               공용(public)으로 공유한 자료는 익명 사용자로 남을 수 있습니다.
@@ -206,6 +258,7 @@ export default function AccountSettings({ user, toast, signOut }) {
               placeholder="삭제"
               style={{ marginBottom: 14 }}
               autoFocus
+              data-dialog-initial-focus
             />
             <div style={{ display: 'flex', gap: 8 }}>
               <Button variant="ghost" onClick={() => setDeleteConfirm(false)} disabled={deleting} style={{ flex: 1 }}>

@@ -50,15 +50,31 @@ export default function NpcDialog({
   const [tiedKyo, setTiedKyo] = useState(false);  // 凶 리추얼(묶고 가기/그냥) 선택 완료
   const [done, setDone] = useState(false);
   const completedRef = useRef(false);             // onComplete 멱등(스탬프 1회)
+  const rollTimerRef = useRef(null);
 
   const step = steps[idx] || null;
   const isSpeech = step?.t === 'say';
 
   // 스텝 전환 시 문항별 임시 상태 초기화.
   useEffect(() => {
+    if (rollTimerRef.current) {
+      clearInterval(rollTimerRef.current);
+      rollTimerRef.current = null;
+    }
     setShowKo(false); setTypeInput(''); setTries(0);
     setOmikuji(null); setOmikujiRolling(false); setTiedKyo(false);
   }, [idx]);
+
+  useEffect(() => () => {
+    if (rollTimerRef.current) clearInterval(rollTimerRef.current);
+    rollTimerRef.current = null;
+  }, []);
+
+  function exitDialog() {
+    if (rollTimerRef.current) clearInterval(rollTimerRef.current);
+    rollTimerRef.current = null;
+    onExit?.();
+  }
 
   // 마지막 스텝을 넘기면 완주 — 스탬프 1회 + 완료 카드.
   function finish() {
@@ -91,11 +107,12 @@ export default function NpcDialog({
     setOmikujiRolling(true);
     const faces = ['大吉', '吉', '中吉', '小吉', '末吉', '凶'];
     let n = 0;
-    const spin = setInterval(() => {
+    rollTimerRef.current = setInterval(() => {
       n += 1;
       setRollFace(faces[Math.floor(Math.random() * faces.length)]);
       if (n >= 12) {
-        clearInterval(spin);
+        clearInterval(rollTimerRef.current);
+        rollTimerRef.current = null;
         const result = drawOmikuji();
         setOmikuji(result);
         setOmikujiRolling(false);
@@ -110,7 +127,7 @@ export default function NpcDialog({
   useEffect(() => {
     if (!actionRef) return undefined;
     actionRef.current = () => {
-      if (done) { onExit?.(); return; }
+      if (done) { exitDialog(); return; }
       if (step && (step.t === 'say' || step.t === 'narr')) goNext();
     };
     return () => { if (actionRef) actionRef.current = null; };
@@ -119,7 +136,7 @@ export default function NpcDialog({
     if (!cancelRef) return undefined;
     cancelRef.current = () => {
       if (isSpeech && !done) { setShowKo((v) => !v); return; }
-      onExit?.();
+      exitDialog();
     };
     return () => { if (cancelRef) cancelRef.current = null; };
   });
@@ -132,7 +149,7 @@ export default function NpcDialog({
   // B(cancel)가 나가기로 배선되는 스텝(say 대사 제외 — 거기선 B=뜻 토글)에서만 Ⓑ 를 병기한다.
   const header = (
     <button
-      type="button" onClick={onExit} aria-label="대화 나가기"
+      type="button" onClick={exitDialog} aria-label="대화 나가기"
       style={{ ...gbcButton, position: 'absolute', top: 6, right: 6, zIndex: 1, padding: '2px 8px', fontSize: '0.7rem', boxShadow: 'none', pointerEvents: 'auto' }}
     >
       {isSpeech && !done ? '나가기' : '나가기 Ⓑ'}
@@ -154,7 +171,7 @@ export default function NpcDialog({
           <p style={{ fontSize: '0.68rem', color: GBC.inkSoft, margin: '0 0 4px' }}>
             {completionNote || '🗾 방문 기념 스탬프를 받았어요.'}
           </p>
-          <button type="button" onClick={onExit} style={{ ...gbcButtonPrimary, marginTop: 4 }}>돌아가기 →</button>
+          <button type="button" onClick={exitDialog} style={{ ...gbcButtonPrimary, marginTop: 4 }}>돌아가기 →</button>
         </div>
       </div>
     );

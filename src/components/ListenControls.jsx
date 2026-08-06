@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 export default function ListenControls({ text, language = 'Japanese' }) {
+  const [supported, setSupported] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [paused, setPaused] = useState(false);
   const [rate, setRate] = useState(1);
@@ -10,9 +11,24 @@ export default function ListenControls({ text, language = 'Japanese' }) {
   const [currentSentence, setCurrentSentence] = useState('');
   const sentencesRef = useRef([]);
   const indexRef = useRef(0);
-  const supported = typeof window !== 'undefined' && 'speechSynthesis' in window;
+  const sessionRef = useRef(0);
+  const rateRef = useRef(rate);
+  const languageRef = useRef(language);
+
+  rateRef.current = rate;
+  languageRef.current = language;
 
   useEffect(() => {
+    setSupported(!!window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function');
+  }, []);
+
+  useEffect(() => {
+    sessionRef.current += 1;
+    window.speechSynthesis?.cancel();
+    indexRef.current = 0;
+    setPlaying(false);
+    setPaused(false);
+    setCurrentSentence('');
     if (!text) { sentencesRef.current = []; return; }
     const sentences = text
       .replace(/\n+/g, ' ')
@@ -21,13 +37,15 @@ export default function ListenControls({ text, language = 'Japanese' }) {
       .filter(Boolean);
     sentencesRef.current = sentences;
     setProgress({ current: 0, total: sentences.length });
-  }, [text]);
+  }, [text, language]);
 
   useEffect(() => () => {
+    sessionRef.current += 1;
     if (typeof window !== 'undefined') window.speechSynthesis?.cancel();
   }, []);
 
-  function speakNext() {
+  function speakNext(sessionId) {
+    if (sessionRef.current !== sessionId) return;
     const sentences = sentencesRef.current;
     const i = indexRef.current;
     if (i >= sentences.length) {
@@ -36,12 +54,13 @@ export default function ListenControls({ text, language = 'Japanese' }) {
     }
     setProgress({ current: i + 1, total: sentences.length });
     setCurrentSentence(sentences[i]);
-    const utter = new SpeechSynthesisUtterance(sentences[i]);
-    utter.lang = language === 'Japanese' ? 'ja-JP' : 'en-US';
-    utter.rate = rate;
+    const utter = new window.SpeechSynthesisUtterance(sentences[i]);
+    utter.lang = languageRef.current === 'Japanese' ? 'ja-JP' : 'en-US';
+    utter.rate = rateRef.current;
     utter.onend = () => {
+      if (sessionRef.current !== sessionId) return;
       indexRef.current += 1;
-      if (indexRef.current < sentences.length) speakNext();
+      if (indexRef.current < sentencesRef.current.length) speakNext(sessionId);
       else stop();
     };
     window.speechSynthesis.speak(utter);
@@ -54,11 +73,12 @@ export default function ListenControls({ text, language = 'Japanese' }) {
       return;
     }
     if (!sentencesRef.current.length) return;
+    const sessionId = ++sessionRef.current;
     indexRef.current = 0;
     setPlaying(true);
     setPaused(false);
     window.speechSynthesis.cancel();
-    speakNext();
+    speakNext(sessionId);
   }
 
   function pause() {
@@ -67,6 +87,7 @@ export default function ListenControls({ text, language = 'Japanese' }) {
   }
 
   function stop() {
+    sessionRef.current += 1;
     window.speechSynthesis.cancel();
     indexRef.current = 0;
     setPlaying(false);

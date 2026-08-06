@@ -23,6 +23,37 @@ function describeVoice(v) {
   return tags.length > 0 ? ` · ${tags.join(' · ')}` : '';
 }
 
+export function VoiceOption({ voice, selected, onPick, onPreview }) {
+  return (
+    <li
+      role="option"
+      aria-selected={selected}
+      className={selected ? 'is-selected' : ''}
+      style={{ display: 'flex', alignItems: 'center' }}
+    >
+      <button
+        type="button"
+        onClick={() => onPick(voice.voiceURI)}
+        className={`tts-voice__option ${selected ? 'is-selected' : ''}`}
+        style={{ flex: 1, minWidth: 0, width: 'auto' }}
+      >
+        <span className="tts-voice__option-name">
+          {voice.name}
+          <span className="tts-voice__option-meta">{describeVoice(voice)} · {voice.lang}</span>
+        </span>
+      </button>
+      <button
+        type="button"
+        className="tts-voice__play"
+        onClick={(event) => onPreview(voice.voiceURI, event)}
+        aria-label={`${voice.name} 미리듣기`}
+        title="이 음성으로 미리듣기"
+        style={{ marginRight: 14 }}
+      >▷</button>
+    </li>
+  );
+}
+
 export default function TtsVoicePicker({ language = 'Japanese', compact = false }) {
   const { listVoices, getSelectedVoice, setSelectedVoice, speak, supported, voicesReady } = useTTS();
   const [open, setOpen] = useState(false);
@@ -85,27 +116,13 @@ export default function TtsVoicePicker({ language = 'Japanese', compact = false 
             {voices.map(v => {
               const isSel = v.voiceURI === selected || (!selected && v === voices[0]);
               return (
-                <li key={v.voiceURI}>
-                  <button
-                    type="button"
-                    onClick={() => pick(v.voiceURI)}
-                    className={`tts-voice__option ${isSel ? 'is-selected' : ''}`}
-                    role="option"
-                    aria-selected={isSel}
-                  >
-                    <span className="tts-voice__option-name">
-                      {v.name}
-                      <span className="tts-voice__option-meta">{describeVoice(v)} · {v.lang}</span>
-                    </span>
-                    <button
-                      type="button"
-                      className="tts-voice__play"
-                      onClick={(e) => preview(v.voiceURI, e)}
-                      aria-label={`${v.name} 미리듣기`}
-                      title="이 음성으로 미리듣기"
-                    >▷</button>
-                  </button>
-                </li>
+                <VoiceOption
+                  key={v.voiceURI}
+                  voice={v}
+                  selected={isSel}
+                  onPick={pick}
+                  onPreview={preview}
+                />
               );
             })}
           </ul>

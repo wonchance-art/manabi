@@ -68,14 +68,29 @@ export const gbcButtonPrimary = {
   color: GBC.creamHi,
 };
 
+export async function persistQuestReviewGrade(client, wordId, nextStats, reviewedAt = new Date().toISOString()) {
+  const { error } = await client
+    .from('user_vocabulary')
+    .update({ ...nextStats, last_reviewed_at: reviewedAt })
+    .eq('id', wordId);
+  if (error) throw error;
+}
+
 export default function QuestReview({ userId, onClose }) {
   const [phase, setPhase] = useState('loading'); // loading | empty | active | done
   const [items, setItems] = useState([]);
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [right, setRight] = useState(0);
+  const [gradeError, setGradeError] = useState('');
   const rightRef = useRef(0);   // quest:done의 정답 수 — 상태 클로저 지연 회피
   const gradingRef = useRef(false); // 채점 1회 잠금(더블탭 방지)
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
 
   // ── due 어휘 조회 (마운트 1회) — next_review_at <= now 상위 N개 ──
   useEffect(() => {
@@ -109,6 +124,7 @@ export default function QuestReview({ userId, onClose }) {
   const grade = async (correct) => {
     if (!current || gradingRef.current) return;
     gradingRef.current = true;
+    setGradeError('');
 
     const rating = correct ? 3 : 1; // 맞았어요=Good / 틀렸어요=Again (기존 채점 규약)
     const lang = current.language || detectLang(current.word_text);
@@ -127,12 +143,16 @@ export default function QuestReview({ userId, onClose }) {
       repetitions: current.repetitions ?? 0,
       next_review_at: current.next_review_at,
     });
-    // useVocabData.scoreMutation과 동일 페이로드 — fire-and-forget(학습 흐름 비차단).
-    supabase
-      .from('user_vocabulary')
-      .update({ ...nextStats, last_reviewed_at: new Date().toISOString() })
-      .eq('id', current.id)
-      .then(() => {}, () => {});
+    // 저장 성공이 확인된 뒤에만 점수·진행·완료 연출을 확정한다.
+    try {
+      await persistQuestReviewGrade(supabase, current.id, nextStats);
+      if (!mountedRef.current) return;
+    } catch {
+      if (!mountedRef.current) return;
+      setGradeError('복습 결과를 저장하지 못했어요. 연결을 확인하고 다시 눌러 주세요.');
+      gradingRef.current = false;
+      return;
+    }
 
     // 2) 이벤트 로그 — qtype:'flash'(자가채점 = 비대칭 신뢰, rung 규약 준수).
     logReviewEvents(userId, [{
@@ -214,6 +234,11 @@ export default function QuestReview({ userId, onClose }) {
         {/* 플래시 카드 */}
         {phase === 'active' && current && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {gradeError && (
+              <p role="alert" style={{ margin: 0, color: GBC.red, fontSize: '0.74rem', lineHeight: 1.5 }}>
+                {gradeError}
+              </p>
+            )}
             <div style={{
               minHeight: 92, display: 'flex', flexDirection: 'column',
               alignItems: 'center', justifyContent: 'center', gap: 6,
