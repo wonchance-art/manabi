@@ -5,7 +5,7 @@ import { detectLang, displayWord, splitSentenceAroundWord } from '../lib/constan
 
 function ScoreSection({ word, onScore }) {
   return (
-    <div className="review-card__answer">
+    <div className="review-card__answer" role="status" aria-live="polite">
       <p className="review-card__meaning">{word.meaning}</p>
       {word.source_sentence && (() => {
         const { parts, term } = splitSentenceAroundWord(word.source_sentence, word.word_text, word.base_form);
@@ -149,7 +149,7 @@ export default function VocabReview({
       ) : reviewWords.length > 0 ? (
         <>
           {/* 복습 모드 픽커 */}
-          <div className="chip-group" style={{ justifyContent: 'center', marginBottom: 14 }}>
+          <div className="chip-group" role="group" aria-label="복습 모드" style={{ justifyContent: 'center', marginBottom: 14 }}>
             {[['auto', '자동'], ['flash', '플래시'], ['typing', '타이핑'], ['context', '문맥'], ['listening', '듣기']].map(([m, label]) => (
               <button
                 key={m}
@@ -163,6 +163,7 @@ export default function VocabReview({
                   setContextSelected(null);
                 }}
                 disabled={m === 'listening' && !ttsSupported}
+                aria-pressed={reviewMode === m}
               >
                 {label}
               </button>
@@ -171,10 +172,10 @@ export default function VocabReview({
 
           <div className="card review-card">
             <div className="review-card__progress">
-              <span>남은 단어: {reviewWords.length - reviewIdx}</span>
+              <span role="status" aria-live="polite" aria-atomic="true">남은 단어: {reviewWords.length - reviewIdx}</span>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 {mode === 'flash' && !showAnswer && currentWord?.source_sentence && (
-                  <button className="review-hint-btn" onClick={() => setShowHint(h => !h)}>
+                  <button className="review-hint-btn" onClick={() => setShowHint(h => !h)} aria-expanded={showHint}>
                     {showHint ? '힌트 숨기기' : '힌트'}
                   </button>
                 )}
@@ -193,6 +194,7 @@ export default function VocabReview({
                     <button
                       onClick={() => speak(currentWord.word_text, currentWord.language || detectLang(currentWord.word_text))}
                       title="발음 듣기"
+                      aria-label={`${currentWord.word_text} 발음 듣기`}
                       style={{
                         background: 'var(--bg-secondary)', border: '1px solid var(--border)',
                         borderRadius: 'var(--radius-full)', padding: '4px 10px',
@@ -246,6 +248,7 @@ export default function VocabReview({
                         onChange={e => setTypingAnswer(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && typingAnswer.trim() && setShowAnswer(true)}
                         placeholder="의미를 입력하세요..."
+                        aria-label={`${currentWord.word_text}의 의미`}
                         className="search-input"
                         autoFocus
                         style={{ fontSize: '1rem', textAlign: 'center' }}
@@ -287,7 +290,7 @@ export default function VocabReview({
                   </div>
 
                   {!showAnswer ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div role="group" aria-label="문맥에 맞는 뜻 고르기" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       {contextOptions.map((opt, i) => (
                         <button
                           key={i}
@@ -358,6 +361,7 @@ export default function VocabReview({
                           transition: 'transform 0.15s',
                         }}
                         title="다시 듣기"
+                        aria-label={`${currentWord.word_text} 다시 듣기`}
                       >
                         ▷
                       </button>
@@ -366,7 +370,7 @@ export default function VocabReview({
                       </p>
 
                       {!showAnswer ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
+                        <div role="group" aria-label="들은 단어의 뜻 고르기" style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '100%' }}>
                           {contextOptions.map((opt, i) => (
                             <button
                               key={i}
@@ -449,6 +453,7 @@ export default function VocabReview({
                     <button
                       onClick={loadExamples}
                       disabled={exampleLoading}
+                      aria-live="polite"
                       style={{
                         width: '100%', padding: '8px',
                         background: 'none', border: '1px dashed var(--border)',

@@ -272,7 +272,7 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
   return (
     <div className="page-container" style={{ maxWidth: 760 }}>
       <header style={{ margin: '14px 0 18px' }}>
-        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: 6 }}>
+        <div role="status" aria-live="polite" aria-atomic="true" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: 6 }}>
           문법 복습 · 챕터 {idx + 1}/{items.length}
         </div>
         <h1 style={{ fontSize: '1.25rem', fontWeight: 700, lineHeight: 1.4 }}>
@@ -310,7 +310,7 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
                       ))}
                     </div>
                     {ans && (
-                      <div className="fr-quiz__answer">
+                      <div className="fr-quiz__answer" role="status" aria-live="polite">
                         {ans.ok ? '○' : '×'}{' '}
                         <span lang={item.langCode}>{renderMain(q.full, q.pron, item.langCode)}</span>
                         <RefSpeak text={q.full} lang={item.lang} size="xs" />
@@ -349,7 +349,7 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
                       </div>
                     )}
                     {ans && (
-                      <div className="fr-quiz__answer">
+                      <div className="fr-quiz__answer" role="status" aria-live="polite">
                         {ans.ok ? '○' : '×'}{' '}
                         <span lang={item.langCode}>{renderMain(q.answer, q.pron, item.langCode)}</span>
                         <RefSpeak text={q.answer} lang={item.lang} size="xs" />
@@ -366,11 +366,13 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
                         type="button"
                         className="fr-check__answer"
                         onClick={() => setRevealedP(prev => ({ ...prev, [q.id]: true }))}
+                        aria-expanded="false"
+                        aria-controls={`grammar-review-answer-${idx}-${q.id}`}
                       >
                         <span className="fr-check__hidden">입으로 만든 뒤 — 정답 보기</span>
                       </button>
                     ) : (
-                      <div className="fr-quiz__answer">
+                      <div id={`grammar-review-answer-${idx}-${q.id}`} className="fr-quiz__answer" role="status" aria-live="polite">
                         <span className="fr-check__main" lang={item.langCode}>{renderMain(q.main, q.pron, item.langCode)}</span>
                         <RefSpeak text={q.main} lang={item.lang} size="xs" />
                         {!ans && (
@@ -391,7 +393,7 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
       )}
 
       {done && (
-        <div className={`fr-check__verdict ${rightCount === total ? 'is-pass' : rightCount >= Math.ceil(total * 0.5) ? '' : 'is-fail'}`}>
+        <div role="status" aria-live="polite" aria-atomic="true" className={`fr-check__verdict ${rightCount === total ? 'is-pass' : rightCount >= Math.ceil(total * 0.5) ? '' : 'is-fail'}`}>
           <p className="fr-check__result">
             <strong>{rightCount}/{total} — {RATING_LABEL[ratingFromScore(rightCount, total)]}</strong>
             {grading

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Button from '../components/Button';
 import { detectLang, displayWord } from '../lib/constants';
@@ -15,6 +15,39 @@ export default function VocabList({
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [editing, setEditing] = useState(null); // 편집 중인 단어
+  const editDialogRef = useRef(null);
+  const editingOpen = !!editing;
+
+  useEffect(() => {
+    if (!editingOpen) return undefined;
+    const previousFocus = document.activeElement;
+    const dialog = editDialogRef.current;
+    const selector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    const focusInitial = window.setTimeout(() => dialog?.querySelector('[data-dialog-initial-focus]')?.focus(), 0);
+    function onKeyDown(event) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setEditing(null);
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = [...(dialog?.querySelectorAll(selector) || [])].filter(el => !el.disabled);
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault(); last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault(); first.focus();
+      }
+    }
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.clearTimeout(focusInitial);
+      document.removeEventListener('keydown', onKeyDown);
+      previousFocus?.focus?.();
+    };
+  }, [editingOpen]);
 
   const toggleSelect = (id) => {
     setSelectedIds(prev => {
@@ -59,26 +92,29 @@ export default function VocabList({
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="단어, 의미, 후리가나 검색..."
+              aria-label="단어장 검색"
               className="search-input"
             />
           </div>
-          <div className="chip-group">
+          <div className="chip-group" role="group" aria-label="정렬 순서">
             {[
               { value: 'due', label: '복습 순' },
               { value: 'newest', label: '최신 순' },
               { value: 'alpha', label: '가나다 순' },
             ].map(opt => (
               <button
+                type="button"
                 key={opt.value}
                 onClick={() => setSortBy(opt.value)}
                 className={`chip ${sortBy === opt.value ? 'chip--active' : ''}`}
+                aria-pressed={sortBy === opt.value}
               >
                 {opt.label}
               </button>
             ))}
           </div>
         </div>
-        <div className="chip-group">
+        <div className="chip-group" role="group" aria-label="단어 언어 필터">
           {[
             { value: 'all', label: '전체' },
             { value: 'Japanese', label: '일본어' },
@@ -87,9 +123,11 @@ export default function VocabList({
             { value: 'Chinese', label: '중국어' },
           ].map(f => (
             <button
+              type="button"
               key={f.value}
               onClick={() => { setLangFilter(f.value); localStorage.setItem('vocab_langFilter', f.value); }}
               className={`chip ${langFilter === f.value ? 'chip--active' : ''}`}
+              aria-pressed={langFilter === f.value}
             >
               {f.label}
             </button>
@@ -99,9 +137,11 @@ export default function VocabList({
           </span>
           {filteredVocab.length > 0 && (
             <button
+              type="button"
               onClick={() => { selectMode ? exitSelectMode() : setSelectMode(true); }}
               className={`chip ${selectMode ? 'chip--active' : ''}`}
               style={{ marginLeft: 'auto' }}
+              aria-pressed={selectMode}
             >
               {selectMode ? '✕ 취소' : '☑ 선택'}
             </button>
@@ -162,11 +202,7 @@ export default function VocabList({
               outline: selected ? '2px solid var(--primary)' : 'none',
               background: selected ? 'var(--primary-glow)' : undefined,
             }}
-            role="button"
-            tabIndex={0}
             onClick={handleClick}
-            onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), handleClick())}
-            aria-label={`${v.word_text} — ${v.meaning}${selectMode ? (selected ? ' (선택됨)' : '') : ''}`}
           >
             {selectMode && (
               <span className="vocab-row__check" style={{
@@ -181,11 +217,21 @@ export default function VocabList({
               : <span className="vocab-row__pos vocab-row__pos--empty" aria-hidden="true" />}
 
             {ttsSupported ? (
-              <button className="vocab-row__tts" title="발음 듣기"
+              <button type="button" className="vocab-row__tts" title="발음 듣기" aria-label={`${v.word_text} 발음 듣기`}
                 onClick={e => { e.stopPropagation(); speak(v.word_text, v.language || detectLang(v.word_text)); }}>▷</button>
             ) : <span className="vocab-row__tts vocab-row__tts--empty" aria-hidden="true" />}
 
-            <h3 className="vocab-row__word" lang={lc}>{displayWord(v.word_text, v.pos)}</h3>
+            <h3 className="vocab-row__word" lang={lc}>
+              <button
+                type="button"
+                className="vocab-row__word-button"
+                onClick={e => { e.stopPropagation(); handleClick(); }}
+                aria-label={`${v.word_text} — ${v.meaning}${selectMode ? (selected ? ' (선택됨)' : ' (선택 안 됨)') : ' 상세 열기'}`}
+                aria-pressed={selectMode ? selected : undefined}
+              >
+                {displayWord(v.word_text, v.pos)}
+              </button>
+            </h3>
             {v.furigana && <span className="vocab-row__reading">{v.furigana}</span>}
 
             <p className="vocab-row__meaning">{v.meaning}</p>
@@ -205,11 +251,11 @@ export default function VocabList({
                 ? <span className="vocab-row__due">복습</span>
                 : <span className="vocab-row__dot" style={{ background: stageColor }} title={stageLabel} aria-label={stageLabel} />}
               {!selectMode && updateVocabMutation && (
-                <button className="vocab-row__act" title="편집"
+                <button type="button" className="vocab-row__act" title="편집" aria-label={`${v.word_text} 편집`}
                   onClick={() => setEditing({ id: v.id, word_text: v.word_text, furigana: v.furigana || '', meaning: v.meaning || '', pos: v.pos || '' })}>✎</button>
               )}
               {!selectMode && (
-                <button className="vocab-row__act vocab-row__act--danger" title="삭제"
+                <button type="button" className="vocab-row__act vocab-row__act--danger" title="삭제" aria-label={`${v.word_text} 삭제`}
                   onClick={() => setConfirmAction({
                     message: `"${v.word_text}" 를 단어장에서 삭제할까요?`,
                     onConfirm: () => { deleteMutation.mutate(v.id); setConfirmAction(null); },
@@ -254,20 +300,23 @@ export default function VocabList({
       {/* 편집 모달 */}
       {editing && (
         <div className="modal-overlay" onClick={() => setEditing(null)}>
-          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 440 }}>
-            <h3 style={{ margin: '0 0 16px', fontSize: '1.05rem' }}>단어 편집</h3>
+          <div ref={editDialogRef} className="modal" role="dialog" aria-modal="true" aria-labelledby="vocab-edit-title" onClick={e => e.stopPropagation()} style={{ maxWidth: 440 }}>
+            <h3 id="vocab-edit-title" style={{ margin: '0 0 16px', fontSize: '1.05rem' }}>단어 편집</h3>
 
-            <label className="u-text-sm u-text-bold" style={{ display: 'block', marginBottom: 4 }}>단어</label>
+            <label htmlFor="vocab-edit-word" className="u-text-sm u-text-bold" style={{ display: 'block', marginBottom: 4 }}>단어</label>
             <input
+              id="vocab-edit-word"
               type="text"
               value={editing.word_text}
               onChange={e => setEditing(s => ({ ...s, word_text: e.target.value }))}
               className="form-input"
+              data-dialog-initial-focus
               style={{ marginBottom: 12 }}
             />
 
-            <label className="u-text-sm u-text-bold" style={{ display: 'block', marginBottom: 4 }}>후리가나 / 발음</label>
+            <label htmlFor="vocab-edit-reading" className="u-text-sm u-text-bold" style={{ display: 'block', marginBottom: 4 }}>후리가나 / 발음</label>
             <input
+              id="vocab-edit-reading"
               type="text"
               value={editing.furigana}
               onChange={e => setEditing(s => ({ ...s, furigana: e.target.value }))}
@@ -276,8 +325,9 @@ export default function VocabList({
               style={{ marginBottom: 12 }}
             />
 
-            <label className="u-text-sm u-text-bold" style={{ display: 'block', marginBottom: 4 }}>의미</label>
+            <label htmlFor="vocab-edit-meaning" className="u-text-sm u-text-bold" style={{ display: 'block', marginBottom: 4 }}>의미</label>
             <input
+              id="vocab-edit-meaning"
               type="text"
               value={editing.meaning}
               onChange={e => setEditing(s => ({ ...s, meaning: e.target.value }))}
@@ -285,8 +335,9 @@ export default function VocabList({
               style={{ marginBottom: 12 }}
             />
 
-            <label className="u-text-sm u-text-bold" style={{ display: 'block', marginBottom: 4 }}>품사</label>
+            <label htmlFor="vocab-edit-pos" className="u-text-sm u-text-bold" style={{ display: 'block', marginBottom: 4 }}>품사</label>
             <input
+              id="vocab-edit-pos"
               type="text"
               value={editing.pos}
               onChange={e => setEditing(s => ({ ...s, pos: e.target.value }))}

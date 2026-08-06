@@ -113,6 +113,8 @@ export default function VocabPage() {
   // 수동 단어 추가 모달
   const [manualAddOpen, setManualAddOpen] = useState(false);
   const [manualDraft, setManualDraft] = useState({ word_text: '', furigana: '', meaning: '', pos: '', language: 'Japanese' });
+  const manualDialogRef = useRef(null);
+  const manualAddPendingRef = useRef(false);
 
   const manualAddMutation = useMutation({
     mutationFn: async (draft) => {
@@ -142,6 +144,38 @@ export default function VocabPage() {
     },
     onError: (err) => toast('추가 실패 — ' + friendlyToastMessage(err), 'error'),
   });
+  manualAddPendingRef.current = manualAddMutation.isPending;
+
+  useEffect(() => {
+    if (!manualAddOpen) return undefined;
+    const previousFocus = document.activeElement;
+    const dialog = manualDialogRef.current;
+    const selector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    const focusInitial = window.setTimeout(() => dialog?.querySelector('[data-dialog-initial-focus]')?.focus(), 0);
+    function onKeyDown(event) {
+      if (event.key === 'Escape' && !manualAddPendingRef.current) {
+        event.preventDefault();
+        setManualAddOpen(false);
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusable = [...(dialog?.querySelectorAll(selector) || [])].filter(el => !el.disabled);
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault(); last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault(); first.focus();
+      }
+    }
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.clearTimeout(focusInitial);
+      document.removeEventListener('keydown', onKeyDown);
+      previousFocus?.focus?.();
+    };
+  }, [manualAddOpen]);
 
   // 검색용 인덱스 사전 계산 (vocab이 바뀔 때만 1회)
   const vocabSearchIndex = useMemo(() => {
@@ -427,7 +461,7 @@ export default function VocabPage() {
     // '복습' 탭이 게스트에게 막다른 길이 되지 않도록 경로를 함께 연다.
     return (
       <div className="page-container mypage-guest">
-        <h2>복습</h2>
+        <h1 style={{ fontSize: '1.5em' }}>복습</h1>
         <p style={{ color: 'var(--text-secondary)', margin: '6px 0 16px', lineHeight: 1.6 }}>
           단어장은 로그인 후 기기 간 동기화와 함께 쓸 수 있어요.<br />
           문법 복습은 지금 이 기기의 기록만으로도 바로 이어갈 수 있어요.
@@ -575,18 +609,22 @@ export default function VocabPage() {
       {/* 시리즈 필터 (list / review 탭에 공통 적용) */}
       {(tab === 'list' || tab === 'review') && availableSeries.length > 0 && (
         <div style={{ marginBottom: 12 }}>
-          <div className="chip-group">
+          <div className="chip-group" role="group" aria-label="단어 덱 필터">
             <button
+              type="button"
               className={`chip ${seriesFilter === 'all' ? 'chip--active' : ''}`}
               onClick={() => setSeriesFilter('all')}
+              aria-pressed={seriesFilter === 'all'}
             >
               전체 덱
             </button>
             {availableSeries.map(s => (
               <button
+                type="button"
                 key={s.key}
                 className={`chip ${seriesFilter === s.key ? 'chip--active' : ''}`}
                 onClick={() => setSeriesFilter(s.key)}
+                aria-pressed={seriesFilter === s.key}
               >
                 {s.label}
               </button>
@@ -662,11 +700,11 @@ export default function VocabPage() {
       {/* 수동 단어 추가 모달 */}
       {manualAddOpen && (
         <div className="modal-overlay" onClick={() => !manualAddMutation.isPending && setManualAddOpen(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 440 }}>
-            <h3 style={{ margin: '0 0 16px', fontSize: '1.05rem' }}>단어 직접 추가</h3>
+          <div ref={manualDialogRef} className="modal" role="dialog" aria-modal="true" aria-labelledby="vocab-add-title" onClick={e => e.stopPropagation()} style={{ maxWidth: 440 }}>
+            <h3 id="vocab-add-title" style={{ margin: '0 0 16px', fontSize: '1.05rem' }}>단어 직접 추가</h3>
 
-            <label className="u-text-sm u-text-bold" style={{ display: 'block', marginBottom: 4 }}>언어</label>
-            <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+            <span id="vocab-add-language-label" className="u-text-sm u-text-bold" style={{ display: 'block', marginBottom: 4 }}>언어</span>
+            <div role="group" aria-labelledby="vocab-add-language-label" style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
               {['Japanese', 'English', 'French', 'Chinese'].map(lang => (
                 <button
                   key={lang}
@@ -674,27 +712,31 @@ export default function VocabPage() {
                   onClick={() => setManualDraft(d => ({ ...d, language: lang }))}
                   className={`btn btn--sm ${manualDraft.language === lang ? 'btn--primary' : 'btn--ghost'}`}
                   style={{ flex: 1 }}
+                  aria-pressed={manualDraft.language === lang}
                 >
                   {({ Japanese: '일본어', English: '영어', French: '프랑스어', Chinese: '중국어' })[lang]}
                 </button>
               ))}
             </div>
 
-            <label className="u-text-sm u-text-bold" style={{ display: 'block', marginBottom: 4 }}>단어 *</label>
+            <label htmlFor="vocab-add-word" className="u-text-sm u-text-bold" style={{ display: 'block', marginBottom: 4 }}>단어 *</label>
             <input
+              id="vocab-add-word"
               type="text"
               value={manualDraft.word_text}
               onChange={e => setManualDraft(d => ({ ...d, word_text: e.target.value }))}
               className="form-input"
               placeholder={manualDraft.language === 'Japanese' ? '예: 食べる' : manualDraft.language === 'French' ? 'ex: bonjour' : manualDraft.language === 'Chinese' ? '例: 北京' : 'e.g. eloquent'}
               autoFocus
+              data-dialog-initial-focus
               style={{ marginBottom: 12 }}
             />
 
-            <label className="u-text-sm u-text-bold" style={{ display: 'block', marginBottom: 4 }}>
+            <label htmlFor="vocab-add-reading" className="u-text-sm u-text-bold" style={{ display: 'block', marginBottom: 4 }}>
               {manualDraft.language === 'Japanese' ? '후리가나' : '발음 (선택)'}
             </label>
             <input
+              id="vocab-add-reading"
               type="text"
               value={manualDraft.furigana}
               onChange={e => setManualDraft(d => ({ ...d, furigana: e.target.value }))}
@@ -703,8 +745,9 @@ export default function VocabPage() {
               style={{ marginBottom: 12 }}
             />
 
-            <label className="u-text-sm u-text-bold" style={{ display: 'block', marginBottom: 4 }}>의미</label>
+            <label htmlFor="vocab-add-meaning" className="u-text-sm u-text-bold" style={{ display: 'block', marginBottom: 4 }}>의미</label>
             <input
+              id="vocab-add-meaning"
               type="text"
               value={manualDraft.meaning}
               onChange={e => setManualDraft(d => ({ ...d, meaning: e.target.value }))}
@@ -713,8 +756,9 @@ export default function VocabPage() {
               style={{ marginBottom: 12 }}
             />
 
-            <label className="u-text-sm u-text-bold" style={{ display: 'block', marginBottom: 4 }}>품사 (선택)</label>
+            <label htmlFor="vocab-add-pos" className="u-text-sm u-text-bold" style={{ display: 'block', marginBottom: 4 }}>품사 (선택)</label>
             <input
+              id="vocab-add-pos"
               type="text"
               value={manualDraft.pos}
               onChange={e => setManualDraft(d => ({ ...d, pos: e.target.value }))}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '../lib/supabase';
 import RefSpeak from './RefSpeak';
@@ -65,7 +65,9 @@ function OrderDrill({ drill, onResult, done }) {
           );
         })}
       </div>
-      <p style={{ minHeight: 22, fontStyle: 'italic', fontSize: '0.92rem' }}>{picked.map((t) => t.split('#')[0]).join(' ')}</p>
+      <p aria-live="polite" aria-atomic="true" style={{ minHeight: 22, fontStyle: 'italic', fontSize: '0.92rem' }}>
+        {picked.map((t) => t.split('#')[0]).join(' ')}
+      </p>
       <div style={{ display: 'flex', gap: 8 }}>
         <button type="button" className="btn btn--sm" disabled={done} onClick={() => setPicked([])}>다시</button>
         <button type="button" className="btn btn--sm" disabled={!complete || done}
@@ -79,18 +81,20 @@ function OrderDrill({ drill, onResult, done }) {
 
 function InputDrill({ drill, lang, onResult, done, dictation }) {
   const [value, setValue] = useState('');
+  const promptId = useId();
   return (
     <div>
       {dictation ? (
-        <p style={{ fontSize: '0.88rem', marginBottom: 6 }}>
+        <p id={promptId} style={{ fontSize: '0.88rem', marginBottom: 6 }}>
           {drill.prompt || '재생을 누르고, 들리는 문장을 그대로 입력해 보세요.'}{' '}
           <RefSpeak text={drill.sentence} lang={lang} />
         </p>
       ) : (
-        <p style={{ fontSize: '0.95rem', marginBottom: 6 }}>{drill.prompt}<HintToggle hint={drill.hint} /></p>
+        <p id={promptId} style={{ fontSize: '0.95rem', marginBottom: 6 }}>{drill.prompt}<HintToggle hint={drill.hint} /></p>
       )}
       <div style={{ display: 'flex', gap: 8 }}>
         <input value={value} disabled={done} onChange={(e) => setValue(e.target.value)}
+          aria-labelledby={promptId}
           style={{ flex: 1, padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-secondary)' }}
           placeholder={dictation ? '들리는 대로…' : '정답 입력'} lang={dictation ? undefined : 'fr'} />
         <button type="button" className="btn btn--sm" disabled={done || !value.trim()}
@@ -226,7 +230,7 @@ export default function ChapterDrills({ lang, drills, title, intro }) {
               {d.type === 'dictation' && <InputDrill drill={d} lang={lang} done={done} onResult={record(d)} dictation />}
               {d.type === 'order' && <OrderDrill drill={d} done={done} onResult={record(d)} />}
               {done && (
-                <p style={{ fontSize: '0.82rem', marginTop: 6, color: ok ? 'var(--accent, #2d6a4f)' : 'var(--text-muted)' }}>
+                <p role="status" aria-live="polite" style={{ fontSize: '0.82rem', marginTop: 6, color: ok ? 'var(--accent, #2d6a4f)' : 'var(--text-muted)' }}>
                   {ok ? '정답이에요!' : `아쉬워요 — 정답: ${d.type === 'fill' ? d.answer : d.sentence ?? d.answer}`}
                 </p>
               )}
@@ -236,7 +240,7 @@ export default function ChapterDrills({ lang, drills, title, intro }) {
       </ol>
       {answered === drills.length && (
         <>
-          <p style={{ marginTop: 14, fontWeight: 600, fontSize: '0.9rem' }}>
+          <p role="status" aria-live="polite" style={{ marginTop: 14, fontWeight: 600, fontSize: '0.9rem' }}>
             {drills.length}문항 중 {right}개 정답 — {right === drills.length ? '완벽해요!' : '틀린 문항은 위 문형 설명을 다시 보고 와요.'}
           </p>
           <ReviewNudge userId={user?.id} />
@@ -264,7 +268,7 @@ function ReviewNudge({ userId }) {
     return () => { alive = false; };
   }, [userId]);
   return (
-    <p style={{ marginTop: 6, fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
+    <p role="status" aria-live="polite" style={{ marginTop: 6, fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
       풀이 기록은 복습 큐에 쌓였어요.{' '}
       <Link href="/review/grammar" style={{ fontWeight: 600, color: 'var(--accent, #2d6a4f)' }}>
         {typeof due === 'number' && due > 0 ? `지금 복습 대기 ${due}개 →` : '문법 복습에서 이어가기 →'}

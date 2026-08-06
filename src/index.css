@@ -796,6 +796,17 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   background: linear-gradient(135deg, var(--text-primary) 60%, var(--primary-light));
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
+.vocab-row__word-button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  background: linear-gradient(135deg, var(--text-primary) 60%, var(--primary-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 .vocab-row__reading {
   grid-area: reading; font-size: 0.78rem; color: var(--text-muted); letter-spacing: 0.02em;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -4898,13 +4909,21 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   border: none;
   background: none;
   border-bottom: 1px solid var(--border);
-  cursor: pointer;
   text-align: left;
   color: var(--text-primary);
   transition: background var(--transition-fast);
 }
 .lessons-list__group-header:hover {
   background: var(--bg-secondary);
+}
+.lessons-list__group-toggle {
+  grid-column: 1 / 5;
+  display: grid;
+  grid-template-columns: 14px 2.6rem 6.2em minmax(0, 1fr);
+  align-items: center;
+  column-gap: 8px;
+  min-width: 0;
+  text-align: left;
 }
 .lessons-list__group-chevron {
   font-size: 0.78rem;
@@ -4968,7 +4987,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: background var(--transition-fast);
-  outline: none;
+  color: inherit;
+  text-decoration: none;
 }
 .lessons-list__row:hover,
 .lessons-list__row:focus-visible {
@@ -8105,6 +8125,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 @media (max-width: 600px) {
   /* 좁은 화면 — 부제 칼럼은 양보하고 제목이 남는 폭을 차지 */
   .lessons-list__group-header { grid-template-columns: 12px 2.2rem minmax(0, 1fr) auto auto auto; }
+  .lessons-list__group-toggle {
+    grid-column: 1 / 4;
+    grid-template-columns: 12px 2.2rem minmax(0, 1fr);
+  }
   .lessons-list__group-focus { display: none; }
   .lessons-list__chip--bunkei { grid-column: 4; }
   .lessons-list__chip--vocab { grid-column: 5; }
