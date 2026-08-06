@@ -1,3 +1,4 @@
+import { notFound } from 'next/navigation';
 import ReferenceChapterPage from '@/views/ReferenceChapterPage';
 import { getGrammarStaticParams, loadChapter } from '@/content/refGrammarLoaders';
 import { getChapterOverride, mergeChapter } from '@/lib/contentOverrides';
@@ -24,5 +25,8 @@ export async function generateMetadata({ params }) {
 export default async function Page({ params }) {
   const { slug } = await params;
   const loaded = await loadChapter(LANGUAGE, slug);
+  // 없는 챕터는 화면만 '찾을 수 없음'으로 두면 HTTP 200(soft 404)이라 검색엔진이 유령 페이지를
+  // 색인하고 깨진 링크도 탐지되지 않는다 — 정식 404로 응답한다.
+  if (!loaded?.data) notFound();
   return <ReferenceChapterPage lang={LANGUAGE} slug={slug} {...loaded} />;
 }
