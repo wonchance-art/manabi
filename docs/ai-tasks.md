@@ -761,7 +761,11 @@
   flaky 1건은 Claude가 수리(마운트 후 복원 상태를 즉시 읽어 경합 → `waitForFunction` 대기, 3회 연속 green).
   접근성 R1·R2(#867·#868): useId 라벨 연결·동적 결과 라이브 리전·aria-expanded — 동작 변경 없는 보강만, 시각 변경은 제안으로 보류.
   **새 e2e가 즉시 값어치**: a11y가 학습 핵심을 건드렸을 때 교차 검증으로 통과 확인. 유닛 2,608 green.
-  #869(로그인 vocab e2e)는 모의 로그인 뒤 auth 쿠키 대기 타임아웃이 2회 연속 재현돼 **반려**(픽스처 문제 — 쿠키 직접 주입 권고).
+  **#869 로그인 vocab e2e도 merge — 단, Claude의 반려가 오판이었다**: 두 번 반려했으나 실패 원인은 제품·픽스처가 아니라
+  **내 검증 절차**였다. `NEXT_PUBLIC_*`는 빌드 시 번들에 인라인되는데 playwright 설정은 런타임 env로만 주므로,
+  환경변수 없이 `next build` 후 e2e를 돌리면 `createBrowserClient`가 초기화되지 못해 클라 `user`가 null이 되고
+  로그인 UI가 안 뜬다(**에러 없이 조용히 죽음**). 같은 env로 재빌드하니 **5/5 연속 2회 통과**. 정정·사과 게시하고 merge.
+  → 규칙: 인증 e2e는 `NEXT_PUBLIC_* … npx next build && node --test …` 순으로 검증(메모리 e2e-build-env-trap).
 ### todo (오너 전건 승인 2026-07-18 — owner-gate 해제분 포함, Codex-1 확장 큐 = #150 코멘트 5012160829)
 - **🧪 레벨 디자인 v3 리옹 파일럿(오너 승인·발주 5045143688)**: 경로 위계 RFC(Codex-1)·
   도쿄 40MiB 긴급 분해(Codex-2)·정석 한 바퀴 코스(Claude) — 성공 판정은 라이브 비교
