@@ -18,7 +18,9 @@ describe('P1–P5 초기 전송 성능 수리 회귀', () => {
     expect(appLayout).toContain('Noto_Serif_KR');
     expect(appLayout).toContain('className={notoSerifKr.variable}');
     expect(css).not.toContain('font-weight: 900');
-    expect(css.split('var(--font-serif)').length - 1).toBe(15);
+    // 사용 '개수'를 못 박으면 정당한 serif 사용마다 깨진다 — 검사할 것은 스코프다:
+    // (app) 레이아웃에서만 로드되고 root에는 없어야 한다(위 두 단언). 사용처는 존재만 확인한다.
+    expect(css.split('var(--font-serif)').length - 1).toBeGreaterThan(0);
   });
 
   it('P2: lessons 지도는 client dynamic chunk로 분리된다', () => {

@@ -9239,3 +9239,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .landing-section__desc { margin: 10px auto 0; max-width: 560px; font-size: 0.92rem; line-height: 1.6; color: var(--text-secondary); text-align: center; }
 
 .lessons-progress-embed { margin: 4px 0 20px; display: flex; flex-direction: column; gap: 12px; }
+
+/* ── 진입 화면(사설 도구) — 홍보 섹션 없이 트랙 선택만 ── */
+.landing--minimal { min-height: 100vh; display: flex; flex-direction: column; }
+.landing-minimal { flex: 1; max-width: 760px; margin: 0 auto; padding: 48px 20px 32px; width: 100%; }
+.landing-minimal__title { font-size: 1.5rem; font-weight: 700; margin: 0 0 20px; color: var(--text-primary); }
+.landing-minimal__note { margin-top: 22px; font-size: 0.86rem; line-height: 1.65; color: var(--text-secondary); }
+.landing-minimal__note a { color: var(--primary); font-weight: 600; }
+.landing-footer--minimal { justify-content: center; padding: 18px 20px 28px; }
