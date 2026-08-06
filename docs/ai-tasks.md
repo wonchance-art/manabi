@@ -232,12 +232,14 @@
 
 ## Codex-2 (codex2/*)
 ### doing
-- ♿ 학습 접근성 R2: `docs/review-a11y.md` 잔여 지적을 재검증하고 시각 디자인과
-  `/home`을 건드리지 않는 저위험 의미·ARIA·키보드 보강 및 회귀 계약을 이어서 수행
-  (`codex2/a11y-audit-r2`, assignment 5200639353,
-  exact base `2c0d8890f121205fd2464f2579422abd5486784d`)
 ### todo
 ### done (최근)
+- ♿ 학습 접근성 R2: 챕터 패턴 체크의 문제·선택지 연결과 채점 live status, 어휘 복습
+  힌트 disclosure·비색상 정오 상태, 단어장 도구 이름·CSV 키보드 진입을 저위험 보강하고
+  대비·44px·`/home`은 제안 전용으로 유지(targeted 5파일/18·전체 279파일/2,608테스트,
+  build 466페이지 green, 묶음 SHA `724e65e4…2c74`, max RSS 2,916,941,824B·
+  peak footprint 24,578,904B·swap 0, `codex2/a11y-audit-r2`, 구현 `2e5bdfe`,
+  assignment 5200639353, exact base `2c0d8890f121205fd2464f2579422abd5486784d`)
 - ♿ 학습 핵심 경로 접근성(a11y) 전수 감사 + 저위험 수리: 랜딩·`/lessons`·실제 챕터·
   `/vocab`·`/review/grammar`의 중첩 인터랙션, 네이티브 링크/포커스, 입력 이름, 라이브 리전,
   필터 상태, 모달 포커스 계약을 수리하고 `docs/review-a11y.md`에 실렌더 근거와 `/home`
