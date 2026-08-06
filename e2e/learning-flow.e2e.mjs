@@ -248,6 +248,15 @@ async function mockAuthenticatedVocab(context) {
     await json(route, []);
   });
 
+  const projectRef = new URL(config.webServer.env.NEXT_PUBLIC_SUPABASE_URL).hostname.split('.')[0];
+  const cookieValue = `base64-${Buffer.from(JSON.stringify(session)).toString('base64url')}`;
+  await context.addCookies([{
+    name: `sb-${projectRef}-auth-token`,
+    value: cookieValue,
+    url: config.use.baseURL,
+    sameSite: 'Lax',
+  }]);
+
   return { session, storedWords, writes };
 }
 
@@ -448,12 +457,6 @@ test('writing: 초안과 체크리스트를 새로고침 뒤 복원하고 이어
 test('authenticated vocab: 레퍼런스 단어 저장을 /vocab 새 단어 복습 큐에 반영한다', { timeout: config.timeout * 2 }, async () => {
   await runInFreshPage(async (page, context) => {
     const { session, storedWords, writes } = await mockAuthenticatedVocab(context);
-    await page.goto('/embed/review', { waitUntil: 'domcontentloaded', timeout: config.timeout });
-    await page.getByPlaceholder('이메일').fill('e2e-learner@example.com');
-    await page.getByPlaceholder('비밀번호').fill('e2e-password');
-    await page.getByRole('button', { name: '로그인', exact: true }).click();
-    await page.waitForFunction(() => document.cookie.includes('auth-token'));
-
     await page.goto('/french/vocab/a1', { waitUntil: 'domcontentloaded', timeout: config.timeout });
     await assertVisible(page.getByRole('heading', { name: 'A1 기초 어휘', exact: true }), 'French A1 vocabulary heading');
 
