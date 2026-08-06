@@ -16,6 +16,10 @@
 ### doing
 ### todo
 ### done (최근)
+- 로그인 사용자 학습 E2E R1: 인증 세션 쿠키 직접 주입으로 로그인 UI 타이밍 의존을
+  제거하고, 실재 A1 단어 저장→`/vocab` 새 단어 큐·복습 카드 계약을 연속 2회 5/5로 고정
+  (`codex/e2e-auth-vocab-r1`, 구현 `b08e4a5`, 수정 `936e0dc`, PR #869,
+  base `2c0d8890f121205fd2464f2579422abd5486784d`)
 - 학습 흐름 E2E 커버리지 R2: 게스트 `/lessons`에서 매니페스트 실재 4트랙 챕터로
   진입하고 6문항 choice·fill·order·listen 정오답 채점, 복습 넛지, 써 보기
   localStorage 새로고침 복원, 이어서 학습 카드 최상단, 없는 slug HTTP 404를 실렌더로 고정
