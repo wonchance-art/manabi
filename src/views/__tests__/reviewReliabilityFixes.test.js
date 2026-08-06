@@ -96,4 +96,65 @@ describe('src/views 리뷰 후속 신뢰성 회귀', () => {
     expect(materialAdd).toContain('const { error: suggestionLinkError } = await supabase');
     expect(materialAdd).toContain('if (suggestionLinkError)');
   });
+
+  it('V-13 재감사: 비동기 mutation도 반환 error를 버리지 않는다', () => {
+    const plan = read('src/views/StudyPlanPanel.jsx');
+    const session = read('src/views/StudySessionPage.jsx');
+    const materialAdd = read('src/views/MaterialAddPage.jsx');
+
+    expect(plan).toMatch(/const \{ data, error \} = await supabase\s+\.from\('study_plan_progress'\)/);
+    expect(plan).toContain("const { error } = await supabase.from('study_plan_progress').upsert(");
+    expect(plan).toContain('서버 동기화 실패 — 이 기기에는 저장됐어요');
+    expect(plan).not.toContain(').then(() => {}, () => {})');
+
+    expect(session).toContain("const { error } = await supabase.from('writing_practice').insert(row)");
+    expect(session).toContain("console.warn('[writing practice] history save failed:'");
+    expect(session).not.toContain(').then(() => {}, () => {})');
+
+    expect(materialAdd).toContain('const { error: pdfProgressError } = await supabase.from(\'uploaded_pdfs\')');
+    expect(materialAdd).toContain('if (pdfProgressError) throw pdfProgressError');
+    expect(materialAdd).toContain('자료는 저장됐지만 PDF 읽기 위치 동기화에 실패했어요.');
+  });
+
+  it('V-13 재감사: src/views 직접 await Supabase 조회가 error를 누락하지 않는다', () => {
+    const viewDir = path.join(process.cwd(), 'src/views');
+    const files = fs.readdirSync(viewDir)
+      .filter(file => /\.(?:js|jsx)$/.test(file) && file !== 'AdminPage.jsx');
+    const violations = [];
+
+    for (const file of files) {
+      const src = fs.readFileSync(path.join(viewDir, file), 'utf8');
+      const destructured = /(?:const|let)\s+\{([^}]*)\}\s*=\s*await\s+supabase\s*\.from\s*\(/g;
+      for (const match of src.matchAll(destructured)) {
+        const errorField = match[1].match(/\berror\s*:\s*(\w+)/);
+        const errorName = errorField?.[1] || (/\berror\b/.test(match[1]) ? 'error' : null);
+        if (!errorName) {
+          violations.push(`${file}: direct await omits error`);
+          continue;
+        }
+        const nearby = src.slice(match.index + match[0].length, match.index + 900);
+        if (!new RegExp(`\\b${errorName}\\b`).test(nearby)) {
+          violations.push(`${file}: ${errorName} is destructured but unused`);
+        }
+      }
+
+      const wholeResult = /const\s+(\w+)\s*=\s*await\s+supabase\s*\.from\s*\(/g;
+      for (const match of src.matchAll(wholeResult)) {
+        const nearby = src.slice(match.index, match.index + 900);
+        if (!nearby.includes(`${match[1]}.error`)) {
+          violations.push(`${file}: ${match[1]} result error unchecked`);
+        }
+      }
+    }
+
+    expect(violations).toEqual([]);
+
+    const profile = read('src/views/ProfileStats.jsx');
+    const pdfSection = read('src/views/MaterialAddPdfSection.jsx');
+    expect(profile).toContain('if (heatmapResult.error) throw heatmapResult.error');
+    expect(profile).toContain('if (vocabResult.error) throw vocabResult.error');
+    expect(profile).toContain('학습 통계를 불러오지 못했어요.');
+    expect(pdfSection).toContain('.then(({ count, error }) => {');
+    expect(pdfSection).toContain('연결된 자료를 확인하지 못했습니다.');
+  });
 });

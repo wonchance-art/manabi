@@ -207,11 +207,12 @@ export default function MaterialsPage() {
   const { data: pdfs = [] } = useQuery({
     queryKey: ['my-pdfs', user?.id],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('uploaded_pdfs')
         .select('id, title, page_count, created_at, thumbnail_path')
         .eq('owner_id', user.id)
         .order('created_at', { ascending: false });
+      if (error) throw error;
       return data || [];
     },
     enabled: !!user && tab === 'pdf',
@@ -221,10 +222,11 @@ export default function MaterialsPage() {
   const { data: progressMap = { completed: new Set(), inProgress: new Map() } } = useQuery({
     queryKey: ['reading-progress-list', user?.id],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('reading_progress')
         .select('material_id, is_completed, last_token_idx')
         .eq('user_id', user.id);
+      if (error) throw error;
       const completed = new Set();
       const inProgress = new Map();
       for (const r of (data || [])) {
@@ -242,11 +244,12 @@ export default function MaterialsPage() {
   const { data: dueVocabIndex } = useQuery({
     queryKey: ['due-vocab-index', user?.id],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('user_vocabulary')
         .select('word_text, base_form, next_review_at')
         .eq('user_id', user.id)
         .lte('next_review_at', new Date().toISOString());
+      if (error) throw error;
       const surfaces = new Set();
       const bases = new Set();
       for (const v of data || []) {

@@ -29,11 +29,12 @@ function base64ToBlob(base64, mimeType = 'image/jpeg') {
 }
 
 async function fetchPdfAnalyzedRanges(pdfId) {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('reading_materials')
     .select('id, title, page_start, page_end, processed_json')
     .eq('source_pdf_id', pdfId)
     .order('page_start', { ascending: true });
+  if (error) throw error;
   return data || [];
 }
 
@@ -555,14 +556,26 @@ function PdfThumbnail({ path, title }) {
 
 function DeletePdfConfirm({ pdf, onClose, onConfirm }) {
   const [relatedCount, setRelatedCount] = useState(null);
+  const [relatedError, setRelatedError] = useState(false);
 
   useEffect(() => {
-    if (!pdf) { setRelatedCount(null); return; }
+    if (!pdf) { setRelatedCount(null); setRelatedError(false); return; }
+    let cancelled = false;
+    setRelatedCount(null);
+    setRelatedError(false);
     supabase
       .from('reading_materials')
       .select('*', { count: 'exact', head: true })
       .eq('source_pdf_id', pdf.id)
-      .then(({ count }) => setRelatedCount(count || 0));
+      .then(({ count, error }) => {
+        if (cancelled) return;
+        if (error) {
+          setRelatedError(true);
+          return;
+        }
+        setRelatedCount(count || 0);
+      }, () => { if (!cancelled) setRelatedError(true); });
+    return () => { cancelled = true; };
   }, [pdf]);
 
   return (
@@ -570,14 +583,16 @@ function DeletePdfConfirm({ pdf, onClose, onConfirm }) {
       open={!!pdf}
       title="PDF 삭제"
       message={
-        relatedCount === null
+        relatedError
+          ? '연결된 자료를 확인하지 못했습니다. 닫고 다시 시도해 주세요.'
+          : relatedCount === null
           ? '정보 확인 중...'
           : relatedCount === 0
             ? `"${pdf?.title}"을 삭제할까요?`
             : `"${pdf?.title}"을 삭제하면 연결된 ${relatedCount}개 분석 자료도 함께 삭제됩니다. 저장한 단어는 단어장에 남습니다. 계속할까요?`
       }
       confirmLabel="삭제"
-      onConfirm={onConfirm}
+      onConfirm={() => { if (relatedCount !== null && !relatedError) onConfirm(); }}
       onCancel={onClose}
     />
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 
@@ -54,29 +54,67 @@ function LangPlan({ plan }) {
   const [done, setDone] = useState(() => new Set());
   const [mounted, setMounted] = useState(false);
   const [synced, setSynced] = useState(false);
+  const [syncError, setSyncError] = useState('');
+  const syncRequestRef = useRef(0);
 
   // 로드: localStorage 즉시 → 로그인 시 서버가 정본(기기 간 동기화)
   useEffect(() => {
     setMounted(true);
+    setSynced(false);
+    setSyncError('');
     let cancel = false;
     (async () => {
       try { setDone(new Set(JSON.parse(localStorage.getItem(storageKey) || '[]'))); } catch {}
       if (user?.id) {
-        const { data } = await supabase
-          .from('study_plan_progress')
-          .select('done')
-          .eq('user_id', user.id)
-          .eq('lang', plan.key)
-          .maybeSingle();
-        if (!cancel && Array.isArray(data?.done)) {
-          setDone(new Set(data.done));
-          try { localStorage.setItem(storageKey, JSON.stringify(data.done)); } catch {}
+        try {
+          const { data, error } = await supabase
+            .from('study_plan_progress')
+            .select('done')
+            .eq('user_id', user.id)
+            .eq('lang', plan.key)
+            .maybeSingle();
+          if (cancel) return;
+          if (error) {
+            setSyncError('서버 진도를 불러오지 못했어요');
+            return;
+          }
+          if (Array.isArray(data?.done)) {
+            setDone(new Set(data.done));
+            try { localStorage.setItem(storageKey, JSON.stringify(data.done)); } catch {}
+          }
+          setSynced(true);
+        } catch {
+          if (!cancel) setSyncError('서버 진도를 불러오지 못했어요');
         }
-        if (!cancel) setSynced(true);
       }
     })();
-    return () => { cancel = true; };
+    return () => {
+      cancel = true;
+      syncRequestRef.current += 1;
+    };
   }, [user?.id, plan.key, storageKey]);
+
+  async function syncProgress(arr) {
+    const requestId = ++syncRequestRef.current;
+    setSynced(false);
+    setSyncError('');
+    try {
+      const { error } = await supabase.from('study_plan_progress').upsert(
+        { user_id: user.id, lang: plan.key, done: arr, updated_at: new Date().toISOString() },
+        { onConflict: 'user_id,lang' },
+      );
+      if (requestId !== syncRequestRef.current) return;
+      if (error) {
+        setSyncError('서버 동기화 실패 — 이 기기에는 저장됐어요');
+        return;
+      }
+      setSynced(true);
+    } catch {
+      if (requestId === syncRequestRef.current) {
+        setSyncError('서버 동기화 실패 — 이 기기에는 저장됐어요');
+      }
+    }
+  }
 
   function toggle(n) {
     setDone(prev => {
@@ -85,10 +123,7 @@ function LangPlan({ plan }) {
       const arr = [...next].sort((a, b) => a - b);
       try { localStorage.setItem(storageKey, JSON.stringify(arr)); } catch {}
       if (user?.id) {
-        supabase.from('study_plan_progress').upsert(
-          { user_id: user.id, lang: plan.key, done: arr, updated_at: new Date().toISOString() },
-          { onConflict: 'user_id,lang' },
-        ).then(() => {}, () => {});
+        void syncProgress(arr);
       }
       return next;
     });
@@ -131,6 +166,7 @@ function LangPlan({ plan }) {
         {mounted && remaining > 0 && <> · 남은 {remaining} · 권장 <strong>주 {perWeek}</strong> · 다음 <strong>#{nextN}</strong></>}
         {mounted && remaining === 0 && <> · 🎉 완주!</>}
         {synced && <span className="myplan-sync" title="기기 간 동기화됨"> · ☁ 동기화</span>}
+        {syncError && <span className="myplan-sync" role="status"> · ⚠ {syncError}</span>}
       </div>
 
       {plan.levels.map(level => (

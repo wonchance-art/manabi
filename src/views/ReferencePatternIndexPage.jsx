@@ -60,15 +60,19 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
     if (!user || allItems.length === 0) { setSavedSet(new Set()); return; }
     let cancel = false;
     (async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('user_vocabulary')
         .select('word_text')
         .eq('user_id', user.id)
         .in('word_text', allItems.map(i => i.pattern));
+      if (!cancel && error) {
+        toast?.('저장 상태를 불러오지 못했어요', 'warning');
+        return;
+      }
       if (!cancel && data) setSavedSet(new Set(data.map(d => d.word_text)));
     })();
     return () => { cancel = true; };
-  }, [user?.id, allItems]);
+  }, [user?.id, allItems, toast]);
 
   async function savePattern(item) {
     if (!user) return toast?.('로그인하면 문형을 단어장에 저장할 수 있어요', 'info');

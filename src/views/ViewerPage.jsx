@@ -235,12 +235,13 @@ export default function ViewerPage() {
     queryKey: ['related-decks', id, materialLang],
     queryFn: async () => {
       // 1순위: 이 자료 출처인 덱
-      const { data: sourceDecks } = await supabase
+      const { data: sourceDecks, error: sourceDecksError } = await supabase
         .from('vocab_decks')
         .select('id, title, language, word_count, created_at, owner:profiles(display_name)')
         .eq('source_material_id', id)
         .order('created_at', { ascending: false })
         .limit(3);
+      if (sourceDecksError) throw sourceDecksError;
 
       if (sourceDecks && sourceDecks.length >= 3) return sourceDecks;
 
@@ -254,7 +255,8 @@ export default function ViewerPage() {
         .limit(3 - (sourceDecks?.length || 0));
       if (exclude.length) query = query.not('id', 'in', `(${exclude.join(',')})`);
 
-      const { data: langDecks } = await query;
+      const { data: langDecks, error: langDecksError } = await query;
+      if (langDecksError) throw langDecksError;
       return [...(sourceDecks || []), ...(langDecks || [])];
     },
     enabled: !!id && !!materialLang,
@@ -265,11 +267,12 @@ export default function ViewerPage() {
   const { data: sourcePdf } = useQuery({
     queryKey: ['source-pdf', material?.source_pdf_id],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('uploaded_pdfs')
         .select('id, title, page_count, storage_path, language, level')
         .eq('id', material.source_pdf_id)
         .maybeSingle();
+      if (error) throw error;
       return data;
     },
     enabled: !!material?.source_pdf_id,
@@ -281,12 +284,13 @@ export default function ViewerPage() {
   const { data: readingProgress } = useQuery({
     queryKey: ['reading-progress', user?.id, id],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('reading_progress')
         .select('is_completed')
         .eq('user_id', user.id)
         .eq('material_id', id)
         .maybeSingle();
+      if (error) throw error;
       return data;
     },
     enabled: !!user,
@@ -300,11 +304,12 @@ export default function ViewerPage() {
     queryFn: async () => {
       const lang = material?.processed_json?.metadata?.language;
       // 이미 읽은 자료 ID 가져오기
-      const { data: readIds } = await supabase
+      const { data: readIds, error: readIdsError } = await supabase
         .from('reading_progress')
         .select('material_id')
         .eq('user_id', user.id)
         .eq('is_completed', true);
+      if (readIdsError) throw readIdsError;
       const doneSet = new Set((readIds || []).map(r => r.material_id));
       doneSet.add(id); // 현재 자료도 제외
 
@@ -315,7 +320,8 @@ export default function ViewerPage() {
         .neq('id', id)
         .limit(10);
 
-      const { data } = await query;
+      const { data, error } = await query;
+      if (error) throw error;
       if (!data?.length) return null;
 
       // 같은 언어 → 같은 레벨 우선 필터
@@ -597,13 +603,14 @@ export default function ViewerPage() {
   const { data: tokenCorrections = [] } = useQuery({
     queryKey: ['token-corrections', id, selectedToken?.id],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('token_corrections')
         .select('id, before_value, after_value, created_at, user_id, profiles:user_id(display_name)')
         .eq('material_id', id)
         .eq('token_id', selectedToken.id)
         .order('created_at', { ascending: false })
         .limit(5);
+      if (error) throw error;
       return data || [];
     },
     enabled: !!selectedToken?.id && isSheetOpen,
