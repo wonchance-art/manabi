@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useId, useRef } from 'react';
 import Link from 'next/link';
 import Button from '../components/Button';
 import { detectLang, displayWord, splitSentenceAroundWord } from '../lib/constants';
@@ -39,6 +39,7 @@ export default function VocabReview({
   exampleSentences, exampleLoading, loadExamples,
   setTab,
 }) {
+  const hintId = useId();
   // 실제 출제 유형 — 자동 모드는 단어별 rung이 정한 서브모드(effectiveMode), 그 외엔 reviewMode.
   // 픽커의 활성 표시만 reviewMode를 쓰고, 카드 렌더링은 전부 mode를 따른다.
   const mode = effectiveMode || reviewMode;
@@ -175,11 +176,11 @@ export default function VocabReview({
               <span role="status" aria-live="polite" aria-atomic="true">남은 단어: {reviewWords.length - reviewIdx}</span>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 {mode === 'flash' && !showAnswer && currentWord?.source_sentence && (
-                  <button className="review-hint-btn" onClick={() => setShowHint(h => !h)} aria-expanded={showHint}>
+                  <button type="button" className="review-hint-btn" onClick={() => setShowHint(h => !h)} aria-expanded={showHint} aria-controls={hintId}>
                     {showHint ? '힌트 숨기기' : '힌트'}
                   </button>
                 )}
-                <button className="review-skip-btn" onClick={() => { setShowHint(false); handleSkip(); }} title="내일로 미루기">
+                <button type="button" className="review-skip-btn" onClick={() => { setShowHint(false); handleSkip(); }} title="내일로 미루기">
                   스킵 →
                 </button>
               </div>
@@ -217,7 +218,7 @@ export default function VocabReview({
                   {!showAnswer && showHint && currentWord.source_sentence && (() => {
                     const { parts, term } = splitSentenceAroundWord(currentWord.source_sentence, currentWord.word_text, currentWord.base_form);
                     return (
-                      <p className="review-card__hint">
+                      <p id={hintId} className="review-card__hint" role="status" aria-live="polite" aria-atomic="true">
                         {parts.map((part, i, arr) => (
                           i < arr.length - 1
                             ? <span key={i}>{part}<mark className="review-card__highlight review-card__highlight--hint">{term}</mark></span>
@@ -294,6 +295,7 @@ export default function VocabReview({
                       {contextOptions.map((opt, i) => (
                         <button
                           key={i}
+                          type="button"
                           disabled={contextSelected !== null}
                           onClick={() => {
                             setContextSelected(i);
@@ -323,6 +325,8 @@ export default function VocabReview({
                             color: 'var(--text-primary)',
                             transition: 'background 0.2s, border-color 0.2s',
                           }}
+                          aria-pressed={contextSelected === i}
+                          aria-label={`${opt.meaning}${contextSelected !== null ? (opt.id === currentWord.id ? ', 정답' : contextSelected === i ? ', 선택한 오답' : '') : ''}`}
                         >
                           {opt.meaning}
                         </button>
@@ -374,6 +378,7 @@ export default function VocabReview({
                           {contextOptions.map((opt, i) => (
                             <button
                               key={i}
+                              type="button"
                               disabled={contextSelected !== null}
                               onClick={() => {
                                 setContextSelected(i);
@@ -403,6 +408,8 @@ export default function VocabReview({
                                 color: 'var(--text-primary)',
                                 transition: 'background 0.2s, border-color 0.2s',
                               }}
+                              aria-pressed={contextSelected === i}
+                              aria-label={`${opt.meaning}${contextSelected !== null ? (opt.id === currentWord.id ? ', 정답' : contextSelected === i ? ', 선택한 오답' : '') : ''}`}
                             >
                               {opt.meaning}
                             </button>

@@ -43,6 +43,7 @@ export default function VocabPage() {
   const [showAnswer, setShowAnswer] = useState(false);
   const [reviewFinished, setReviewFinished] = useState(false);
   const scoringRef = useRef(false);
+  const csvInputRef = useRef(null);
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState('due');
   const [langFilter, setLangFilter] = useState('all');
@@ -536,25 +537,26 @@ export default function VocabPage() {
             <Button size="sm" variant="ghost" onClick={() => setManualAddOpen(true)}>+ 추가</Button>
             {vocab.length > 0 && (
               <details style={{ position: 'relative' }}>
-                <summary className="btn btn--ghost btn--sm" style={{ cursor: 'pointer', listStyle: 'none' }}>⋯</summary>
+                <summary className="btn btn--ghost btn--sm" aria-label="단어장 도구" style={{ cursor: 'pointer', listStyle: 'none' }}>⋯</summary>
                 <div style={{
                   position: 'absolute', right: 0, top: '100%', marginTop: 4,
                   background: 'var(--bg-card)', border: '1px solid var(--border)',
                   borderRadius: 'var(--radius-md)', boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
                   zIndex: 100, minWidth: 160, overflow: 'hidden',
                 }}>
-                  <button onClick={() => exportCSV(vocab)} style={{ display: 'block', width: '100%', padding: '10px 14px', border: 'none', background: 'transparent', textAlign: 'left', fontSize: '0.85rem', cursor: 'pointer', color: 'var(--text-primary)' }}>
+                  <button type="button" onClick={() => exportCSV(vocab)} style={{ display: 'block', width: '100%', padding: '10px 14px', border: 'none', background: 'transparent', textAlign: 'left', fontSize: '0.85rem', cursor: 'pointer', color: 'var(--text-primary)' }}>
                     CSV 내보내기
                   </button>
-                  <button onClick={() => exportAnki(vocab)} style={{ display: 'block', width: '100%', padding: '10px 14px', border: 'none', background: 'transparent', textAlign: 'left', fontSize: '0.85rem', cursor: 'pointer', color: 'var(--text-primary)' }}>
+                  <button type="button" onClick={() => exportAnki(vocab)} style={{ display: 'block', width: '100%', padding: '10px 14px', border: 'none', background: 'transparent', textAlign: 'left', fontSize: '0.85rem', cursor: 'pointer', color: 'var(--text-primary)' }}>
                     Anki 내보내기
                   </button>
-                  <label style={{ display: 'block', padding: '10px 14px', fontSize: '0.85rem', cursor: 'pointer', color: 'var(--text-primary)' }}>
-                    CSV 가져오기
-                    <input type="file" accept=".csv,text/csv" disabled={csvImportMutation.isPending}
-                      onChange={e => { const f = e.target.files?.[0]; if (f) csvImportMutation.mutate(f); e.target.value = ''; }}
-                      style={{ display: 'none' }} />
-                  </label>
+                  <button type="button" disabled={csvImportMutation.isPending} onClick={() => csvInputRef.current?.click()} style={{ display: 'block', width: '100%', padding: '10px 14px', border: 'none', background: 'transparent', textAlign: 'left', fontSize: '0.85rem', cursor: 'pointer', color: 'var(--text-primary)' }}>
+                    {csvImportMutation.isPending ? 'CSV 가져오는 중…' : 'CSV 가져오기'}
+                  </button>
+                  <input ref={csvInputRef} type="file" accept=".csv,text/csv" disabled={csvImportMutation.isPending}
+                    aria-label="CSV 파일 선택"
+                    onChange={e => { const f = e.target.files?.[0]; if (f) csvImportMutation.mutate(f); e.target.value = ''; }}
+                    style={{ display: 'none' }} />
                   <Link href="/home" style={{ display: 'block', padding: '10px 14px', fontSize: '0.85rem', textDecoration: 'none', color: 'var(--text-primary)' }}>
                     학습 통계
                   </Link>
