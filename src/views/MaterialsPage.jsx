@@ -636,11 +636,19 @@ export default function MaterialsPage() {
           <p className="empty-state__msg">
             {searchQuery || langFilter !== 'all' || levelFilter !== 'all'
               ? '조건에 맞는 자료가 없습니다.'
-              : tab === 'public'
-                ? '아직 공유된 공용 자료가 없습니다.\n관심 있는 텍스트를 업로드하면 모두가 함께 공부할 수 있어요!'
-                : '아직 보관된 개인 자료가 없습니다.'}
+              : !user
+                ? '자료는 계정에 저장돼요.\n로그인하면 텍스트를 올려 해부하고 단어장에 모을 수 있어요.'
+                : tab === 'public'
+                  ? '아직 공유된 공용 자료가 없습니다.'
+                  : '아직 보관된 개인 자료가 없습니다.'}
           </p>
-          {(searchQuery || langFilter !== 'all' || levelFilter !== 'all') ? (
+          {/* 게스트에게 빈 목록만 보여 주지 않는다 — 왜 비어 있는지와 다음 행동을 함께 준다. */}
+          {!user && !(searchQuery || langFilter !== 'all' || levelFilter !== 'all') ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+              <Link href="/auth" className="btn btn--primary btn--md">로그인하고 자료 올리기 →</Link>
+              <Link href="/lessons" className="empty-state__link">로그인 없이 교재부터 보기 →</Link>
+            </div>
+          ) : (searchQuery || langFilter !== 'all' || levelFilter !== 'all') ? (
             <button
               className="empty-state__link"
               onClick={() => { setLangFilter('all'); setLevelFilter('all'); setSearchInput(''); }}
