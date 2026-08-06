@@ -14,6 +14,9 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
+- 로그인 사용자 학습 E2E R1: 실재 챕터의 단어 저장을 인증 세션으로 수행하고
+  `/vocab` 복습 큐 반영을 기존 `e2e/learning-flow.e2e.mjs`에 고정
+  (`codex/e2e-auth-vocab-r1`, base `2c0d8890f121205fd2464f2579422abd5486784d`)
 ### todo
 ### done (최근)
 - 학습 흐름 E2E 커버리지 R2: 게스트 `/lessons`에서 매니페스트 실재 4트랙 챕터로
