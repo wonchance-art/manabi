@@ -227,6 +227,12 @@
 
 ## Codex-2 (codex2/*)
 ### doing
+- ♿ 학습 핵심 경로 접근성(a11y) 전수 감사 + 저위험 수리: `/lessons`·챕터·`/vocab`·
+  `/review/grammar`·랜딩의 키보드 조작, 의미론, 라이브 리전, 대비·44px 타겟을 실렌더와
+  정적 감사로 교차 검증하고 `docs/review-a11y.md`에 파일:라인 근거를 고정
+  (`codex2/a11y-audit-r1`, assignment 5200111024, exact base
+  `7a1354d0a037027f2d62d6f55ec325add280adc1`; 저위험 마크업·aria·포커스만 수리,
+  시각 디자인 변경은 제안 전용; targeted 회귀와 `npm test` green 전 구현 커밋 금지)
 ### todo
 ### done (최근)
 - 🛠️ `src/views` Supabase 오류 확인 재감사: top-level 39파일의 직접 `await supabase.from(...)`
