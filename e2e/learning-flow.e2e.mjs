@@ -259,9 +259,26 @@ test('writing: 초안과 체크리스트를 새로고침 뒤 복원하고 이어
       has: page.getByRole('heading', { name: '써 보기 — 배운 문형으로 직접', exact: true }),
     });
     await assertVisible(writing, 'reloaded writing practice');
+    // 저장분 복원은 hydration 안전을 위해 '마운트 후 useEffect'에서 일어난다(서버 렌더는 빈 상태).
+    // 즉시 읽으면 복원 전 빈 값을 읽어 flaky해지므로 값이 들어올 때까지 기다린다.
+    await page.waitForFunction(
+      (expected) => [...document.querySelectorAll('textarea')]
+        .some((el) => el.placeholder.startsWith('여기에 직접') && el.value === expected),
+      draft,
+      { timeout: config.timeout },
+    );
     assert.equal(await writing.getByPlaceholder('여기에 직접 써 보세요 — 이 기기에만 저장돼요.').inputValue(), draft);
     await writing.getByRole('button', { name: '다 썼어요 — 모범답 보기', exact: true }).click();
     const restoredChecks = writing.getByRole('checkbox');
+    // 체크리스트도 같은 이유로 복원을 기다린다.
+    await page.waitForFunction(
+      () => {
+        const boxes = [...document.querySelectorAll('input[type="checkbox"]')];
+        return boxes.length >= 3 && boxes[0].checked;
+      },
+      undefined,
+      { timeout: config.timeout },
+    );
     assert.equal(await restoredChecks.nth(0).isChecked(), true, 'the first checklist item should restore');
     await restoredChecks.nth(1).check();
     await restoredChecks.nth(2).check();
