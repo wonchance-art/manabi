@@ -14,11 +14,13 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
-- 학습 흐름 E2E 커버리지 R2: 게스트 `/lessons`→4트랙 챕터 진입·드릴
-  채점·복습 넛지·써 보기 로컬 복원·이어서 학습 카드·404를 실렌더 계약으로 고정
-  (`codex/e2e-learning-flow-r2`, base `8857a720f7d78c31bf2b2e05eef17252009d3fc6`)
 ### todo
 ### done (최근)
+- 학습 흐름 E2E 커버리지 R2: 게스트 `/lessons`에서 매니페스트 실재 4트랙 챕터로
+  진입하고 6문항 choice·fill·order·listen 정오답 채점, 복습 넛지, 써 보기
+  localStorage 새로고침 복원, 이어서 학습 카드 최상단, 없는 slug HTTP 404를 실렌더로 고정
+  (`codex/e2e-learning-flow-r2`, 구현 `0441b0c`,
+  base `8857a720f7d78c31bf2b2e05eef17252009d3fc6`)
 - ✅ components 리뷰 후속 C-04~C-13 — 실제 TTS 경로 가용성, 자료별 async/storage
   격리, 중첩 button 제거, Supabase/export/레슨 완료 실패 정합, 듣기 세션·NPC timer
   cleanup, dialog Escape·focus trap/복귀를 회귀 테스트로 고정. diff SHA 2회
