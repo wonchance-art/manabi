@@ -209,6 +209,24 @@ export default function LessonsPage({ refManifest = {}, initialLang, initialLeve
       {/* 내 진도 스트립 — 구 /learn 대시보드를 embedded로 통합 */}
       <LearnPage embedded progressCatalog={progressCatalog} />
 
+      {/* 이어서 학습 — 재방문자의 첫 화면은 '고를 것'이 아니라 '할 것' 하나여야 한다.
+          언어·레벨 필터보다 위에 둬서 바로 이어가게 한다. */}
+      {refLang && continueTarget && (
+        <button
+          type="button"
+          className="lessons-continue"
+          onClick={() => router.push(`${refLang.base}/grammar/${continueTarget.slug}`)}
+        >
+          <span className="lessons-continue__body">
+            <span className="lessons-continue__kicker">
+              {continueTarget.mode === 'retry' ? '재도전 — 지난 패턴 체크 미통과' : '이어서 학습'}
+            </span>
+            <span className="lessons-continue__title">#{continueTarget.order} {continueTarget.title}</span>
+          </span>
+          <span className="lessons-continue__meta">{continueTarget.levelLabel} →</span>
+        </button>
+      )}
+
       {/* 언어 필터 */}
       <div className="materials-filters">
         <div className="chip-group">
@@ -289,23 +307,6 @@ export default function LessonsPage({ refManifest = {}, initialLang, initialLeve
               ))}
             </div>
           </div>
-
-          {/* 이어서 학습 — 지금 할 챕터로 한 번에 */}
-          {continueTarget && (
-            <button
-              type="button"
-              className="lessons-continue"
-              onClick={() => router.push(`${refLang.base}/grammar/${continueTarget.slug}`)}
-            >
-              <span className="lessons-continue__body">
-                <span className="lessons-continue__kicker">
-                  {continueTarget.mode === 'retry' ? '재도전 — 지난 패턴 체크 미통과' : '이어서 학습'}
-                </span>
-                <span className="lessons-continue__title">#{continueTarget.order} {continueTarget.title}</span>
-              </span>
-              <span className="lessons-continue__meta">{continueTarget.levelLabel} →</span>
-            </button>
-          )}
 
           {/* 레벨별 레퍼런스 그룹 */}
           {refGroups.map(({ meta, chapters, vocabCount, bunkeiCount }) => {

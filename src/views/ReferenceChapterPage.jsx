@@ -289,23 +289,8 @@ export default async function ReferenceChapterPage({ lang, slug, registry: ref, 
           {chapter.duration && (
             <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>{chapter.duration}</span>
           )}
-          {/* 문형 사전·어휘 빠른 진입 — 헤더에서 바로 */}
-          {ref.getBunkei?.(chapter.level) && (
-            <Link
-              href={`${ref.base}/bunkei/${chapter.level.toLowerCase()}`}
-              className="fr-header-bunkei"
-            >
-              {chapter.level} 문형 사전
-            </Link>
-          )}
-          {ref.countVocab(chapter.level) > 0 && (
-            <Link
-              href={`${ref.base}/vocab/${chapter.level.toLowerCase()}`}
-              className="fr-header-bunkei"
-            >
-              {chapter.level} 어휘
-            </Link>
-          )}
+          {/* 문형 사전·어휘 진입은 본문을 마친 뒤(통과 후 추천·하단 CTA)에만 둔다 —
+              학습 시작 지점에서 옆길을 열면 흐름이 끊긴다. */}
         </div>
         <InlineEdit lang={lang} slug={slug} path="title">
           <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '1.7rem', fontWeight: 700, lineHeight: 1.42, letterSpacing: '-0.01em', wordBreak: 'keep-all' }}>{chapter.title}</h1>
