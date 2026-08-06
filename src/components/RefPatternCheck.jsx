@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import Link from 'next/link';
 import RefSpeak from './RefSpeak';
 import { JaText } from '../views/refShared';
@@ -49,6 +49,7 @@ const STAGE_META = {
  */
 export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug, intro = false, next = null, reviewLinks = [] }) {
   const { user } = useAuth();
+  const checkId = useId();
   const [seed, setSeed] = useState(0);          // 재도전 시 +1 → 보기 재셔플
   const [mounted, setMounted] = useState(false); // SSR 셔플 불일치 방지
   const [lastResult, setLastResult] = useState(null);
@@ -181,8 +182,8 @@ export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug
   let lastStage = null;
 
   return (
-    <section className="card fr-section fr-check">
-      <h2 className="fr-section__heading">
+    <section className="card fr-section fr-check" aria-labelledby={`${checkId}-title`}>
+      <h2 id={`${checkId}-title`} className="fr-section__heading">
         패턴 체크
         {total > 0 && <span className="fr-check__count">{answeredCount}/{total}</span>}
       </h2>
@@ -204,6 +205,8 @@ export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug
             lastStage = q.stage;
             const ans = answers[q.id];
             const stage = STAGE_META[q.stage];
+            const promptId = `${checkId}-${q.id}-prompt`;
+            const answerId = `${checkId}-${q.id}-answer`;
             return (
               <li key={`${seed}:${q.id}`} className="fr-quiz__item">
                 {showStage && (
@@ -216,9 +219,9 @@ export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug
                 {/* ① 예문 빈칸 — 문맥에 맞는 형태 고르기 */}
                 {q.type === 'meaning' && (
                   <div className="fr-quiz__q">
-                    <div className="fr-quiz__prompt" lang={langCode}>{q.sentence}</div>
+                    <div id={promptId} className="fr-quiz__prompt" lang={langCode}>{q.sentence}</div>
                     <div className="fr-quiz__sub">“{q.ko}”</div>
-                    <div className="fr-quiz__opts fr-quiz__opts--grid">
+                    <div className="fr-quiz__opts fr-quiz__opts--grid" role="group" aria-labelledby={promptId}>
                       {q.options.map(opt => (
                         <button
                           key={opt}
@@ -233,7 +236,7 @@ export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug
                       ))}
                     </div>
                     {ans && (
-                      <div className="fr-quiz__answer">
+                      <div id={answerId} className="fr-quiz__answer" role="status" aria-live="polite" aria-atomic="true">
                         {ans.ok ? '○' : '×'}{' '}
                         <span lang={langCode}>{renderMain(q.full, q.pron)}</span>
                         <RefSpeak text={q.full} lang={lang} size="xs" />
@@ -245,7 +248,7 @@ export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug
                 {/* ② 어순 배열 */}
                 {q.type === 'order' && (
                   <div className="fr-quiz__q">
-                    <div className="fr-quiz__prompt">“{q.ko}”</div>
+                    <div id={promptId} className="fr-quiz__prompt">“{q.ko}”</div>
                     <div className={`fr-quiz__line ${ans ? (ans.ok ? 'is-correct' : 'is-wrong') : ''}`}>
                       {(orderPicks[q.id] || []).map((bi, pos) => (
                         <button
@@ -262,7 +265,7 @@ export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug
                       {(orderPicks[q.id] || []).length === 0 && <span className="fr-quiz__line-hint">단어를 순서대로 탭하세요</span>}
                     </div>
                     {!ans && (
-                      <div className="fr-quiz__tokens">
+                      <div className="fr-quiz__tokens" role="group" aria-labelledby={promptId}>
                         {q.bank.map((tok, bi) => (
                           (orderPicks[q.id] || []).includes(bi) ? null : (
                             <button key={bi} type="button" className="fr-quiz__token" onClick={() => pickToken(q, bi)} lang={langCode}>
@@ -273,7 +276,7 @@ export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug
                       </div>
                     )}
                     {ans && (
-                      <div className="fr-quiz__answer">
+                      <div id={answerId} className="fr-quiz__answer" role="status" aria-live="polite" aria-atomic="true">
                         {ans.ok ? '○' : '×'}{' '}
                         <span lang={langCode}>{renderMain(q.answer, q.pron)}</span>
                         <RefSpeak text={q.answer} lang={lang} size="xs" />
@@ -285,8 +288,8 @@ export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug
                 {/* ② 번역 고르기 (어순 배열 불가 예문) */}
                 {q.type === 'choose' && (
                   <div className="fr-quiz__q">
-                    <div className="fr-quiz__prompt">“{q.ko}”</div>
-                    <div className="fr-quiz__opts fr-quiz__opts--col">
+                    <div id={promptId} className="fr-quiz__prompt">“{q.ko}”</div>
+                    <div className="fr-quiz__opts fr-quiz__opts--col" role="group" aria-labelledby={promptId}>
                       {q.options.map(opt => (
                         <button
                           key={opt}
@@ -300,24 +303,26 @@ export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug
                         </button>
                       ))}
                     </div>
-                    {ans && <div className="fr-quiz__answer">{ans.ok ? '○ 정확해요' : <>× 정답: <span lang={langCode}>{q.correct}</span></>}<RefSpeak text={q.correct} lang={lang} size="xs" /></div>}
+                    {ans && <div id={answerId} className="fr-quiz__answer" role="status" aria-live="polite" aria-atomic="true">{ans.ok ? '○ 정확해요' : <>× 정답: <span lang={langCode}>{q.correct}</span></>}<RefSpeak text={q.correct} lang={lang} size="xs" /></div>}
                   </div>
                 )}
 
                 {/* ③ 생산 — 회상 후 자가 채점 */}
                 {q.type === 'produce' && (
                   <div className="fr-quiz__q">
-                    <div className="fr-quiz__prompt">“{q.ko}”</div>
+                    <div id={promptId} className="fr-quiz__prompt">“{q.ko}”</div>
                     {!revealedP[q.id] ? (
                       <button
                         type="button"
                         className="fr-check__answer"
                         onClick={() => setRevealedP(prev => ({ ...prev, [q.id]: true }))}
+                        aria-expanded="false"
+                        aria-controls={answerId}
                       >
                         <span className="fr-check__hidden">입으로 만든 뒤 — 정답 보기</span>
                       </button>
                     ) : (
-                      <div className="fr-quiz__answer">
+                      <div id={answerId} className="fr-quiz__answer" role="status" aria-live="polite" aria-atomic="true">
                         <span className="fr-check__main" lang={langCode}>{renderMain(q.main, q.pron)}</span>
                         <RefSpeak text={q.main} lang={lang} size="xs" />
                         {!ans && (
@@ -338,7 +343,7 @@ export default function RefPatternCheck({ quiz, lang, langCode, storageKey, slug
       )}
 
       {done && (
-        <div className={`fr-check__verdict ${passedNow ? 'is-pass' : 'is-fail'}`}>
+        <div className={`fr-check__verdict ${passedNow ? 'is-pass' : 'is-fail'}`} role="status" aria-live="polite" aria-atomic="true">
           <p className="fr-check__result">
             {passedNow ? (
               <><strong>통과 — {rightCount}/{total}</strong>. 이 챕터의 패턴이 손에 익었어요.</>

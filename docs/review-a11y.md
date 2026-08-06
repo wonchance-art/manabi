@@ -97,3 +97,43 @@
 - 실제 브라우저 콘솔: React 개발 안내/Fast Refresh 외 오류 0
 - 결정성: 고정 순서 구현·회귀 파일 묶음 SHA-256 2회 byte-identical — `82094f88ad47c8a958cbabaad44693d997750607de6dcd62cc095ef3c13a76c3`
 - `git diff --check`: 통과
+
+## R2 — 잔여 저위험 보강
+
+- 후속 발주: issue #150 comment `5200639353`
+- exact base: `2c0d8890f121205fd2464f2579422abd5486784d`
+- 제한 유지: A11Y-09 대비와 A11Y-10 44px 타깃은 시각 설계 승인 전 제안만 유지하고,
+  A11Y-11 `/home`은 보고 전용으로 남겼다. 색·크기·밀도와 `/home` 제품 코드는 수정하지 않았다.
+
+| ID | 심각도 | R2 발견 | 처리 |
+| --- | --- | --- | --- |
+| A11Y-12 | 높음 | 챕터의 최종 `RefPatternCheck` 선택지는 문제 문장과 프로그램적으로 연결되지 않고, 채점·통과 결과가 라이브 리전이 아님 | 수정 |
+| A11Y-13 | 중간 | 어휘 복습 힌트 토글에 제어 대상이 없고 문맥·듣기 선택지의 선택/정오 상태가 색에만 의존 | 수정 |
+| A11Y-14 | 높음 | 단어장 `⋯` disclosure의 접근 이름이 없고 `display:none` 파일 입력을 감싼 레이블은 키보드로 CSV 가져오기를 열 수 없음 | 수정 |
+
+### 반영 내용
+
+- [RefPatternCheck.jsx](../src/components/RefPatternCheck.jsx)는 패턴 체크 제목으로 섹션을
+  명명하고, 문제 문장과 선택지 그룹을 `aria-labelledby`로 연결했다. 각 자동 채점 결과,
+  생산 정답 공개, 최종 통과 판정은 polite status로 공지하며 정답 공개 버튼은 제어 대상을 알린다.
+- [VocabReview.jsx](../src/views/VocabReview.jsx)는 힌트 토글과 힌트 영역을 연결하고 공개된
+  힌트를 status로 공지한다. 문맥·듣기 선택지는 `aria-pressed`와 접근 이름으로 선택한 오답과
+  정답을 색 없이도 구분한다.
+- [VocabPage.jsx](../src/views/VocabPage.jsx)는 `⋯` disclosure를 `단어장 도구`로 명명했다.
+  CSV 가져오기는 보이지 않는 파일 입력을 직접 감싼 레이블 대신 포커스 가능한 네이티브 버튼이
+  파일 선택기를 여는 구조로 바꿔 Tab/Enter/Space 경로를 확보했다.
+
+R2 변경은 의미·ARIA·키보드 진입만 보강하며 홍보 카피, 인증 정책, 저장 동작, 시각 디자인을
+바꾸지 않는다. 회귀는 `src/views/__tests__/a11yAuditR2.test.js`에서 고정한다.
+
+### R2 검증
+
+- Node: 공식 nvm `v22.23.1`
+- targeted: **5파일 / 18테스트 통과**
+- 전체 `npm test`: **279파일 / 2,608테스트 통과**, 77.51초
+- 전체 테스트 메모리: maximum resident set size **2,916,941,824 B (2,781.8 MiB)**,
+  peak memory footprint **24,578,904 B (23.4 MiB)**, swaps 0
+- `npm run build`: **466 static pages 통과**. 기존 콘텐츠·reading lint 경고와 ESLint warning 2건만 존재
+- targeted ESLint: 오류 0(프로젝트 설정상 JSX 3파일 ignored warning), `git diff --check`: 통과
+- 구현·회귀 4파일 묶음 SHA-256 2회 byte-identical:
+  `724e65e496c938030b05411790582069a1f5336a1ae92f677c93576758e72c74`
