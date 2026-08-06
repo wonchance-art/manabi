@@ -5,6 +5,10 @@ import { getChapterOverride, mergeChapter } from '@/lib/contentOverrides';
 
 // ISR — 오버라이드 저장 시 revalidatePath로 즉시 무효화되고, 그 외에는 60초 주기로 갱신.
 export const revalidate = 60;
+// 챕터 slug는 소스에서 전량 열거된다(generateStaticParams) — 목록에 없는 slug는 존재하지 않는
+// 페이지이므로 on-demand 렌더 없이 곧바로 404로 응답한다. ISR 라우트에서 notFound()만으로는
+// 상태가 200으로 나가는 문제(soft 404)를 이 선언이 근본 차단한다.
+export const dynamicParams = false;
 const LANGUAGE = 'French';
 
 export function generateStaticParams() {
