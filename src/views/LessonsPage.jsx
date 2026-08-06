@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { isPassed } from '../components/RefPatternCheck';
 import { useAuth } from '../lib/AuthContext';
@@ -229,12 +230,14 @@ export default function LessonsPage({ refManifest = {}, initialLang, initialLeve
 
       {/* 언어 필터 */}
       <div className="materials-filters">
-        <div className="chip-group">
+        <div className="chip-group" role="group" aria-label="언어 필터">
           {LANG_FILTERS.map(f => (
             <button
+              type="button"
               key={f.key}
               onClick={() => { setLangFilter(f.key); setLevelFilter('all'); }}
               className={`chip ${langFilter === f.key ? 'chip--active' : ''}`}
+              aria-pressed={langFilter === f.key}
             >
               {f.label}
             </button>
@@ -242,18 +245,22 @@ export default function LessonsPage({ refManifest = {}, initialLang, initialLeve
         </div>
 
         {/* 레벨 필터 */}
-        <div className="chip-group">
+        <div className="chip-group" role="group" aria-label="레벨 필터">
           <button
+            type="button"
             onClick={() => setLevelFilter('all')}
             className={`chip ${levelFilter === 'all' ? 'chip--active' : ''}`}
+            aria-pressed={levelFilter === 'all'}
           >
             전체
           </button>
           {levelOptions.map(lvl => (
             <button
+              type="button"
               key={lvl.value}
               onClick={() => setLevelFilter(lvl.value)}
               className={`chip ${levelFilter === lvl.value ? 'chip--active' : ''}`}
+              aria-pressed={levelFilter === lvl.value}
             >
               {lvl.short}
             </button>
@@ -321,42 +328,39 @@ export default function LessonsPage({ refManifest = {}, initialLang, initialLeve
             const groupComplete = chapters.length > 0 && (isIntroGroup ? readCount === chapters.length : passedCount === chapters.length);
             return (
               <section key={groupKey} className={`lessons-list__group ${isOpen ? 'is-open' : ''}`}>
-                <button
-                  type="button"
-                  className="lessons-list__group-header"
-                  onClick={() => toggleGroup(groupKey)}
-                  aria-expanded={isOpen}
-                >
-                  <span className="lessons-list__group-chevron" aria-hidden="true">{isOpen ? '▾' : '▸'}</span>
-                  <span className="lessons-list__group-glyph" aria-hidden="true">{meta.short || meta.key}</span>
-                  <span className="lessons-list__group-title">
-                    {meta.label.replace(`${meta.short || meta.key} `, '')}
-                  </span>
-                  <span className="lessons-list__group-focus">{meta.focus}</span>
+                <div className="lessons-list__group-header">
+                  <button
+                    type="button"
+                    className="lessons-list__group-toggle"
+                    onClick={() => toggleGroup(groupKey)}
+                    aria-expanded={isOpen}
+                    aria-controls={`${groupKey}-chapters`}
+                  >
+                    <span className="lessons-list__group-chevron" aria-hidden="true">{isOpen ? '▾' : '▸'}</span>
+                    <span className="lessons-list__group-glyph" aria-hidden="true">{meta.short || meta.key}</span>
+                    <span className="lessons-list__group-title">
+                      {meta.label.replace(`${meta.short || meta.key} `, '')}
+                    </span>
+                    <span className="lessons-list__group-focus">{meta.focus}</span>
+                  </button>
                   {/* 접힌 상태에서도 보이는 사전 바로가기 */}
                   {bunkeiCount > 0 && (
-                    <span
+                    <Link
                       className="lessons-list__bunkei-chip lessons-list__chip--bunkei"
-                      role="link"
-                      tabIndex={0}
+                      href={`${refLang.base}/bunkei/${meta.key.toLowerCase()}`}
                       title={`${meta.key} 문형 사전 — ${bunkeiCount}문형 전수 (검색·뜻 가리기)`}
-                      onClick={e => { e.stopPropagation(); router.push(`${refLang.base}/bunkei/${meta.key.toLowerCase()}`); }}
-                      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); router.push(`${refLang.base}/bunkei/${meta.key.toLowerCase()}`); } }}
                     >
                       문형 {bunkeiCount}
-                    </span>
+                    </Link>
                   )}
                   {vocabCount > 0 && (
-                    <span
+                    <Link
                       className="lessons-list__bunkei-chip lessons-list__chip--vocab"
-                      role="link"
-                      tabIndex={0}
+                      href={`${refLang.base}/vocab/${meta.key.toLowerCase()}`}
                       title={`${meta.label} 어휘 사전 — ${vocabCount}단어 (주제별·검색)`}
-                      onClick={e => { e.stopPropagation(); router.push(`${refLang.base}/vocab/${meta.key.toLowerCase()}`); }}
-                      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); router.push(`${refLang.base}/vocab/${meta.key.toLowerCase()}`); } }}
                     >
                       어휘 {vocabCount}
-                    </span>
+                    </Link>
                   )}
                   <span className="lessons-list__group-count">
                     {groupComplete ? (
@@ -368,29 +372,27 @@ export default function LessonsPage({ refManifest = {}, initialLang, initialLeve
                       </>
                     )}
                   </span>
-                </button>
+                </div>
                 {isOpen && (
-                  <ul className="lessons-list__rows">
+                  <ul className="lessons-list__rows" id={`${groupKey}-chapters`}>
                     {chapters.map(ch => {
                       const read = readSet.has(ch.slug);
                       const passed = isPassed(checkMap[ch.slug]);
                       // 진행 3단계: ○ 미학습 → ◐ 읽음 → ✅ 통과
                       return (
-                        <li
-                          key={ch.slug}
-                          id={`lessons-ch-${ch.slug}`}
-                          className={`lessons-list__row lessons-list__row--${passed ? 'passed' : read ? 'done' : 'idle'}`}
-                          onClick={() => router.push(`${refLang.base}/grammar/${ch.slug}`)}
-                          title={ch.summary || undefined}
-                          role="link"
-                          tabIndex={0}
-                          onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && router.push(`${refLang.base}/grammar/${ch.slug}`)}
-                        >
-                          <span className="lessons-list__status" aria-hidden="true">{passed ? '●' : read ? '◐' : '○'}</span>
-                          <span className="lessons-list__title">#{ch.order} {ch.title}</span>
-                          <span className="lessons-list__meta">
-                            {ch.topic && <span className="lessons-list__topic">{ch.topic}</span>}
-                          </span>
+                        <li key={ch.slug}>
+                          <Link
+                            id={`lessons-ch-${ch.slug}`}
+                            className={`lessons-list__row lessons-list__row--${passed ? 'passed' : read ? 'done' : 'idle'}`}
+                            href={`${refLang.base}/grammar/${ch.slug}`}
+                            title={ch.summary || undefined}
+                          >
+                            <span className="lessons-list__status" aria-hidden="true">{passed ? '●' : read ? '◐' : '○'}</span>
+                            <span className="lessons-list__title">#{ch.order} {ch.title}</span>
+                            <span className="lessons-list__meta">
+                              {ch.topic && <span className="lessons-list__topic">{ch.topic}</span>}
+                            </span>
+                          </Link>
                         </li>
                       );
                     })}

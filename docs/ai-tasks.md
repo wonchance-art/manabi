@@ -234,6 +234,13 @@
 ### doing
 ### todo
 ### done (최근)
+- ♿ 학습 핵심 경로 접근성(a11y) 전수 감사 + 저위험 수리: 랜딩·`/lessons`·실제 챕터·
+  `/vocab`·`/review/grammar`의 중첩 인터랙션, 네이티브 링크/포커스, 입력 이름, 라이브 리전,
+  필터 상태, 모달 포커스 계약을 수리하고 `docs/review-a11y.md`에 실렌더 근거와 `/home`
+  report-only·대비/44px 승인안을 고정(targeted 4파일/18테스트·전체 278파일/2,605테스트 green,
+  묶음 SHA `82094f88…a76c3`, max RSS 2,539,962,368B·peak footprint 24,611,672B·swap 0,
+  `codex2/a11y-audit-r1`, 구현 `353d0c2`, assignment 5200111024,
+  exact base `8857a720f7d78c31bf2b2e05eef17252009d3fc6`)
 - 🛠️ `src/views` Supabase 오류 확인 재감사: top-level 39파일의 직접 `await supabase.from(...)`
   48건과 Promise/then 변형을 전수 확인하고, 무응답 mutation 3곳·조회 실패의 빈 상태 오독을
   명시 오류 처리와 회귀 게이트로 고정(targeted 11·전체 274파일/2,578테스트 green,

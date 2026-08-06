@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import RefSpeak from './RefSpeak';
 
 /**
@@ -11,6 +11,10 @@ import RefSpeak from './RefSpeak';
 const HTML_LANG = { french: 'fr', chinese: 'zh', japanese: 'ja', english: 'en' };
 
 export default function WritingPractice({ lang, slug, writing }) {
+  const titleId = useId();
+  const promptId = useId();
+  const textareaId = useId();
+  const samplesId = useId();
   const storageKey = `${lang}_writing_${slug}`;
   const htmlLang = HTML_LANG[lang] ?? 'fr';
   const countsChars = htmlLang === 'zh' || htmlLang === 'ja';
@@ -47,14 +51,16 @@ export default function WritingPractice({ lang, slug, writing }) {
 
   return (
     <section className="card fr-section">
-      <h2 className="fr-section__heading">써 보기 — 배운 문형으로 직접</h2>
-      <p style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: '0 0 6px' }}>{writing.prompt}</p>
+      <h2 id={titleId} className="fr-section__heading">써 보기 — 배운 문형으로 직접</h2>
+      <p id={promptId} style={{ fontSize: '0.92rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: '0 0 6px' }}>{writing.prompt}</p>
       {Array.isArray(writing.hints) && writing.hints.length > 0 && (
         <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '0 0 8px' }}>
           힌트: {writing.hints.join(' · ')}
         </p>
       )}
       <textarea
+        id={textareaId}
+        aria-labelledby={`${titleId} ${promptId}`}
         value={draft}
         onChange={(e) => save(e.target.value)}
         rows={3}
@@ -65,11 +71,11 @@ export default function WritingPractice({ lang, slug, writing }) {
       <p style={{ margin: '4px 0 0', fontSize: '0.74rem', color: 'var(--text-muted)', textAlign: 'right' }}>단어 수: {wordCount}</p>
       <div style={{ marginTop: 4 }}>
         {!showSamples ? (
-          <button type="button" className="btn btn--sm" onClick={() => setShowSamples(true)}>
+          <button type="button" className="btn btn--sm" onClick={() => setShowSamples(true)} aria-expanded="false" aria-controls={samplesId}>
             다 썼어요 — 모범답 보기
           </button>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div id={samplesId} role="region" aria-label="모범답과 자기 점검" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {writing.samples.map((smp) => (
               <div key={smp.fr ?? smp.zh ?? smp.en ?? smp.ja} style={{ padding: '8px 11px', borderRadius: 8, background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
                 <p style={{ margin: 0, fontSize: '0.92rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }} lang={htmlLang}>
@@ -97,7 +103,7 @@ export default function WritingPractice({ lang, slug, writing }) {
                 </label>
               ))}
               {doneCount === checks.length && (
-                <p style={{ margin: '6px 0 0', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>점검 완료. 고친 문장으로 한 번 더 써 보면 완전히 내 것이 돼요.</p>
+                <p role="status" aria-live="polite" style={{ margin: '6px 0 0', fontSize: '0.82rem', color: 'var(--text-secondary)' }}>점검 완료. 고친 문장으로 한 번 더 써 보면 완전히 내 것이 돼요.</p>
               )}
             </div>
           </div>

@@ -51,10 +51,12 @@ export default function LandingPage() {
 
         {/* 저장이 필요한 기능만 로그인을 권한다 — 읽기·드릴·써 보기는 로그인 없이 그대로 쓴다. */}
         {!user && (
-          <p className="landing-minimal__note">
-            교재·드릴·써 보기는 로그인 없이 바로 쓸 수 있어요.{' '}
-            <Link href="/auth">로그인</Link>하면 단어장과 진도가 기기 간에 이어집니다.
-          </p>
+          <aside aria-label="로그인 안내">
+            <p className="landing-minimal__note">
+              교재·드릴·써 보기는 로그인 없이 바로 쓸 수 있어요.{' '}
+              <Link href="/auth">로그인</Link>하면 단어장과 진도가 기기 간에 이어집니다.
+            </p>
+          </aside>
         )}
       </main>
 
