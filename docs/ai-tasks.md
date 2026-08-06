@@ -14,6 +14,9 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
+- 인증 E2E 빌드 환경 계약 R1: 빌드 시점 `NEXT_PUBLIC_*` 주입과 실행 순서를
+  `e2e/README.md`에 고정해 런타임 env만 설정한 조용한 인증 실패를 차단
+  (`codex/e2e-auth-build-contract-r1`, base `aa1390995d8967092489d534193a4b39c7774e0b`)
 ### todo
 ### done (최근)
 - 로그인 사용자 학습 E2E R1: 인증 세션 쿠키 직접 주입으로 로그인 UI 타이밍 의존을
