@@ -14,6 +14,9 @@
 > 잠금 카피·적용 순서 확정. 세션 1~4 적극 활용 — D-트랙 큐 최상단, 대기 금지.
 ## Codex-1 (codex/*)
 ### doing
+- 학습 흐름 E2E 커버리지 R1: 게스트 `/lessons`→4트랙 챕터 진입·드릴
+  채점·복습 넛지·써 보기 로컬 복원·이어서 학습 카드·404를 실렌더 계약으로 고정
+  (`codex/e2e-learning-flow-r1`, base `7a1354d0a037027f2d62d6f55ec325add280adc1`)
 ### todo
 ### done (최근)
 - ✅ components 리뷰 후속 C-04~C-13 — 실제 TTS 경로 가용성, 자료별 async/storage
