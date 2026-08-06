@@ -232,6 +232,10 @@
 
 ## Codex-2 (codex2/*)
 ### doing
+- ♿ 학습 접근성 R2: `docs/review-a11y.md` 잔여 지적을 재검증하고 시각 디자인과
+  `/home`을 건드리지 않는 저위험 의미·ARIA·키보드 보강 및 회귀 계약을 이어서 수행
+  (`codex2/a11y-audit-r2`, assignment 5200639353,
+  exact base `2c0d8890f121205fd2464f2579422abd5486784d`)
 ### todo
 ### done (최근)
 - ♿ 학습 핵심 경로 접근성(a11y) 전수 감사 + 저위험 수리: 랜딩·`/lessons`·실제 챕터·
