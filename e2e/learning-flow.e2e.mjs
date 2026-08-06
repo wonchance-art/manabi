@@ -107,6 +107,150 @@ async function mockTts(context) {
   }));
 }
 
+function base64urlJson(value) {
+  return Buffer.from(JSON.stringify(value)).toString('base64url');
+}
+
+function fakeLearnerSession() {
+  const now = Math.floor(Date.now() / 1000);
+  const user = {
+    id: '00000000-0000-4000-8000-000000000172',
+    aud: 'authenticated',
+    role: 'authenticated',
+    email: 'e2e-learner@example.com',
+    email_confirmed_at: new Date((now - 60) * 1000).toISOString(),
+    confirmed_at: new Date((now - 60) * 1000).toISOString(),
+    last_sign_in_at: new Date(now * 1000).toISOString(),
+    app_metadata: { provider: 'email', providers: ['email'] },
+    user_metadata: { display_name: 'E2E 학습자' },
+    identities: [],
+    created_at: new Date((now - 3600) * 1000).toISOString(),
+    updated_at: new Date(now * 1000).toISOString(),
+  };
+  const accessToken = [
+    base64urlJson({ alg: 'HS256', typ: 'JWT' }),
+    base64urlJson({
+      sub: user.id,
+      aud: 'authenticated',
+      role: 'authenticated',
+      email: user.email,
+      iat: now,
+      exp: now + 3600,
+    }),
+    'e2e',
+  ].join('.');
+  return {
+    access_token: accessToken,
+    refresh_token: 'e2e-refresh-token',
+    expires_in: 3600,
+    expires_at: now + 3600,
+    token_type: 'bearer',
+    user,
+  };
+}
+
+async function mockAuthenticatedVocab(context) {
+  await context.addInitScript(() => {
+    class NoopIntersectionObserver {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+      takeRecords() { return []; }
+    }
+    Object.defineProperty(window, 'IntersectionObserver', {
+      configurable: true,
+      writable: true,
+      value: NoopIntersectionObserver,
+    });
+  });
+
+  const session = fakeLearnerSession();
+  const storedWords = [];
+  const writes = [];
+  const cors = {
+    'access-control-allow-origin': '*',
+    'access-control-allow-headers': '*',
+    'access-control-allow-methods': 'GET,POST,PATCH,PUT,DELETE,OPTIONS,HEAD',
+    'access-control-expose-headers': 'content-range',
+  };
+  const json = (route, body, extraHeaders = {}) => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    headers: { ...cors, ...extraHeaders },
+    body: JSON.stringify(body),
+  });
+
+  await context.route('**/api/suggestions/today', (route) => json(route, []));
+  await context.route('**/auth/v1/**', async (route) => {
+    if (route.request().method() === 'OPTIONS') {
+      await route.fulfill({ status: 204, headers: cors });
+      return;
+    }
+    const pathname = new URL(route.request().url()).pathname;
+    if (pathname.endsWith('/user')) await json(route, session.user);
+    else await json(route, session);
+  });
+  await context.route('**/rest/v1/**', async (route) => {
+    const request = route.request();
+    if (request.method() === 'OPTIONS') {
+      await route.fulfill({ status: 204, headers: cors });
+      return;
+    }
+
+    const url = new URL(request.url());
+    const table = url.pathname.split('/').pop();
+    if (table === 'profiles') {
+      await json(route, {
+        id: session.user.id,
+        display_name: 'E2E 학습자',
+        role: 'learner',
+        onboarded: true,
+        streak_count: 1,
+        last_login_at: '2026-08-06T00:00:00.000Z',
+      });
+      return;
+    }
+    if (request.method() === 'HEAD') {
+      await route.fulfill({ status: 200, headers: { ...cors, 'content-range': '*/0' } });
+      return;
+    }
+    if (table === 'user_vocabulary') {
+      if (request.method() === 'GET') {
+        const selectedWordsOnly = url.searchParams.get('select') === 'word_text';
+        await json(route, selectedWordsOnly
+          ? storedWords.map(({ word_text }) => ({ word_text }))
+          : storedWords);
+        return;
+      }
+      const payload = request.postDataJSON();
+      const rows = Array.isArray(payload) ? payload : [payload];
+      for (const row of rows) {
+        writes.push({ ...row });
+        const existing = storedWords.findIndex((item) => (
+          item.user_id === row.user_id && item.word_text === row.word_text
+        ));
+        const persisted = {
+          id: existing >= 0 ? storedWords[existing].id : `e2e-vocab-${storedWords.length + 1}`,
+          created_at: '2026-08-06T00:00:00.000Z',
+          next_review_at: '2000-01-01T00:00:00.000Z',
+          interval: 0,
+          ease_factor: 0,
+          repetitions: 0,
+          last_reviewed_at: null,
+          ...row,
+        };
+        if (existing >= 0) storedWords[existing] = persisted;
+        else storedWords.push(persisted);
+      }
+      await json(route, []);
+      return;
+    }
+    await json(route, []);
+  });
+
+  return { session, storedWords, writes };
+}
+
 async function openTrackChapter(page, track) {
   await page.goto('/lessons', { waitUntil: 'domcontentloaded', timeout: config.timeout });
   await page.getByRole('button', { name: track.label, exact: true }).click();
@@ -297,6 +441,69 @@ test('writing: 초안과 체크리스트를 새로고침 뒤 복원하고 이어
     await continueCard.click();
     await page.waitForURL('**/french/grammar/**', { timeout: config.timeout });
     await sampleHeap(page, 'writing restore and continue card');
+  });
+});
+
+// 인증 세션·DB upsert·캐시 재조회 중 하나가 끊기면 실재 어휘 저장부터 복습 카드 진입까지에서 잡는다.
+test('authenticated vocab: 레퍼런스 단어 저장을 /vocab 새 단어 복습 큐에 반영한다', { timeout: config.timeout * 2 }, async () => {
+  await runInFreshPage(async (page, context) => {
+    const { session, storedWords, writes } = await mockAuthenticatedVocab(context);
+    await page.goto('/embed/review', { waitUntil: 'domcontentloaded', timeout: config.timeout });
+    await page.getByPlaceholder('이메일').fill('e2e-learner@example.com');
+    await page.getByPlaceholder('비밀번호').fill('e2e-password');
+    await page.getByRole('button', { name: '로그인', exact: true }).click();
+    await page.waitForFunction(() => document.cookie.includes('auth-token'));
+
+    await page.goto('/french/vocab/a1', { waitUntil: 'domcontentloaded', timeout: config.timeout });
+    await assertVisible(page.getByRole('heading', { name: 'A1 기초 어휘', exact: true }), 'French A1 vocabulary heading');
+
+    const familyRow = page.locator('.fr-vrow').filter({
+      has: page.getByText('la famille', { exact: true }),
+    }).first();
+    await assertVisible(familyRow, 'real French vocabulary row');
+    const saveButton = familyRow.getByRole('button', { name: '단어장에 저장', exact: true });
+    await page.waitForFunction(
+      () => [...document.querySelectorAll('.fr-vrow')].some((row) => (
+        row.textContent.includes('la famille')
+        && row.querySelector('button[title="단어장에 저장 (FSRS 복습 시작)"]')
+      )),
+      undefined,
+      { timeout: config.timeout },
+    );
+    await saveButton.click();
+    await assertVisible(familyRow.getByRole('button', { name: '단어장에 저장됨', exact: true }), 'saved vocabulary state');
+
+    assert.equal(writes.length, 1, 'the save action should issue one authenticated upsert');
+    assert.equal(storedWords.length, 1, 'the mocked account should persist one vocabulary row');
+    assert.deepEqual(
+      {
+        user_id: storedWords[0].user_id,
+        word_text: storedWords[0].word_text,
+        meaning: storedWords[0].meaning,
+        language: storedWords[0].language,
+        source_ref: storedWords[0].source_ref,
+      },
+      {
+        user_id: session.user.id,
+        word_text: 'la famille',
+        meaning: '가족',
+        language: 'French',
+        source_ref: '프랑스어 · A1',
+      },
+    );
+
+    await page.getByRole('link', { name: '복습', exact: true }).first().click();
+    await page.waitForURL('**/vocab', { timeout: config.timeout });
+    assert.equal(new URL(page.url()).pathname, '/vocab');
+    await assertVisible(page.getByRole('heading', { name: '복습', exact: true }), 'vocabulary review heading');
+    await assertVisible(page.getByRole('button', { name: 'la famille — 가족 상세 열기', exact: true }), 'saved word in vocabulary list');
+    await assertVisible(page.getByText('개 — 복습 0 · 새 단어 1', { exact: false }), 'new vocabulary queue summary');
+
+    await page.getByRole('button', { name: '복습 시작 →', exact: true }).click();
+    await assertVisible(page.getByText('남은 단어: 1', { exact: true }), 'one-word review queue');
+    await assertVisible(page.getByRole('group', { name: '문맥에 맞는 뜻 고르기', exact: true }), 'saved word review card');
+    await assertVisible(page.getByRole('button', { name: '가족', exact: true }), 'saved word review answer');
+    await sampleHeap(page, 'authenticated vocabulary save and review queue');
   });
 });
 
