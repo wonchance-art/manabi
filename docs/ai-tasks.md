@@ -770,6 +770,12 @@
   환경변수 없이 `next build` 후 e2e를 돌리면 `createBrowserClient`가 초기화되지 못해 클라 `user`가 null이 되고
   로그인 UI가 안 뜬다(**에러 없이 조용히 죽음**). 같은 env로 재빌드하니 **5/5 연속 2회 통과**. 정정·사과 게시하고 merge.
   → 규칙: 인증 e2e는 `NEXT_PUBLIC_* … npx next build && node --test …` 순으로 검증(메모리 e2e-build-env-trap).
+- **🧹 e2e 신호 복구(#872·#873)**: `npm run e2e`가 **오래전부터 red**였고 CI·prebuild에 없어 아무도 몰랐다.
+  전량 실행 시 25건 중 7건 실패 — 전부 제거·동결 기능을 검사하는 스테일 테스트(월드 네비 노출 단언·독해 트랙·world 캔버스 5).
+  월드 단언은 **계약 반전**(노출돼야 함 → 없어야 함), 중단·동결분 6건은 사유 적어 `test.skip`, `waitForTimeout(500)`
+  경합은 `waitForResponse('/profiles')` 조건 대기로 교체 → **3회 연속 pass 13·fail 0·skip 6**.
+  실행 절차도 스크립트로 고정: `npm run e2e:full`(= 테스트 env 빌드 + 학습 흐름). 스모크와 분리해 학습 흐름 5/5 신호가 묻히지 않게 함.
+  ※ skip은 삭제가 아니다 — 해동 시 사유 주석 지우고 복원.
 ### todo (오너 전건 승인 2026-07-18 — owner-gate 해제분 포함, Codex-1 확장 큐 = #150 코멘트 5012160829)
 - **🧪 레벨 디자인 v3 리옹 파일럿(오너 승인·발주 5045143688)**: 경로 위계 RFC(Codex-1)·
   도쿄 40MiB 긴급 분해(Codex-2)·정석 한 바퀴 코스(Claude) — 성공 판정은 라이브 비교
