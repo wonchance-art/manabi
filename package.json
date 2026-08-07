@@ -23,7 +23,10 @@
     "check:overworld-assets": "node scripts/world/check-overworld-assets.mjs",
     "relay": "node scripts/ai-relay.mjs",
     "test": "vitest run",
-    "e2e": "node --test --test-concurrency=1 e2e/smoke.e2e.mjs"
+    "e2e": "node --test --test-concurrency=1 e2e/smoke.e2e.mjs",
+    "e2e:learning": "node --test --test-concurrency=1 e2e/learning-flow.e2e.mjs",
+    "e2e:build": "NEXT_PUBLIC_SUPABASE_URL=https://e2e.supabase.co NEXT_PUBLIC_SUPABASE_ANON_KEY=e2e-anon-key NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3100 next build",
+    "e2e:full": "npm run e2e:build && npm run e2e:learning"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
