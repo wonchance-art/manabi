@@ -953,7 +953,7 @@ export default function ViewerPage() {
           <ReportMaterialButton materialId={material.id} userId={user.id} toast={toast} />
         )}
         {user && savedCount > 0 && (
-          <Link href="/vocab" className="viewer-vocab-counter">
+          <Link href="/vocab" prefetch={false} className="viewer-vocab-counter">
             {savedCount}개 수집 → 단어장
           </Link>
         )}
@@ -1480,7 +1480,7 @@ export default function ViewerPage() {
             <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>
               이 자료와 관련된 공유 단어장
             </h3>
-            <Link href="/vocab" style={{ fontSize: '0.78rem', color: 'var(--primary-light)' }}>
+            <Link href="/vocab" prefetch={false} style={{ fontSize: '0.78rem', color: 'var(--primary-light)' }}>
               전체 보기 →
             </Link>
           </div>
@@ -1489,6 +1489,7 @@ export default function ViewerPage() {
               <Link
                 key={deck.id}
                 href="/vocab"
+                prefetch={false}
                 style={{
                   display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                   padding: '10px 14px', background: 'var(--bg-secondary)',

@@ -8,7 +8,9 @@ describe('핵심 학습 경로 접근성 수리 계약', () => {
   it('랜딩의 게스트 로그인 권유가 이름 있는 보조 영역으로 노출된다', () => {
     const landing = source('src/views/LandingPage.jsx');
     expect(landing).toContain('<aside aria-label="로그인 안내">');
-    expect(landing).toContain('<Link href="/auth">로그인</Link>');
+    // 계약은 "이름 있는 보조 영역 + /auth 로그인 링크"다. prefetch 같은 성능 속성이 붙어도
+    // 접근성 계약은 그대로이므로 마크업 정확 일치 대신 링크의 존재로 검사한다.
+    expect(landing).toMatch(/<Link href="\/auth"[^>]*>로그인<\/Link>/);
   });
 
   it('교재 필터는 선택 상태를 알리고 그룹·챕터 이동에 네이티브 링크를 쓴다', () => {

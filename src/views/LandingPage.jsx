@@ -26,11 +26,11 @@ export default function LandingPage() {
         </div>
         <div className="landing-nav__actions">
           <Link href="/lessons" className="landing-nav__link">교재</Link>
-          <Link href="/vocab" className="landing-nav__link">복습</Link>
-          <Link href="/materials" className="landing-nav__link landing-nav__link--desktop">자료</Link>
+          <Link href="/vocab" prefetch={false} className="landing-nav__link">복습</Link>
+          <Link href="/materials" prefetch={false} className="landing-nav__link landing-nav__link--desktop">자료</Link>
           {user
             ? <Link href="/home" className="btn btn--primary btn--sm">홈 →</Link>
-            : <Link href="/auth" className="btn btn--ghost btn--sm">로그인</Link>
+            : <Link href="/auth" prefetch={false} className="btn btn--ghost btn--sm">로그인</Link>
           }
         </div>
       </header>
@@ -54,7 +54,7 @@ export default function LandingPage() {
           <aside aria-label="로그인 안내">
             <p className="landing-minimal__note">
               교재·드릴·써 보기는 로그인 없이 바로 쓸 수 있어요.{' '}
-              <Link href="/auth">로그인</Link>하면 단어장과 진도가 기기 간에 이어집니다.
+              <Link href="/auth" prefetch={false}>로그인</Link>하면 단어장과 진도가 기기 간에 이어집니다.
             </p>
           </aside>
         )}
@@ -62,9 +62,9 @@ export default function LandingPage() {
 
       <footer className="landing-footer landing-footer--minimal">
         <div className="landing-footer__links">
-          <Link href="/guide" className="landing-footer__link">사용 가이드</Link>
-          <Link href="/terms" className="landing-footer__link">이용약관</Link>
-          <Link href="/privacy" className="landing-footer__link">개인정보</Link>
+          <Link href="/guide" prefetch={false} className="landing-footer__link">사용 가이드</Link>
+          <Link href="/terms" prefetch={false} className="landing-footer__link">이용약관</Link>
+          <Link href="/privacy" prefetch={false} className="landing-footer__link">개인정보</Link>
         </div>
       </footer>
     </div>
