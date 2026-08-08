@@ -475,6 +475,14 @@
 
 ## Claude (claude/*)
 ### doing
+- **🔧 CI 게이트 배선 완료(2026-08-08, #880)** — 그전까지 `.github/workflows/`에 테스트 워크플로가 **없었다**
+  (Supabase 마이그레이션 2개뿐). `npm test`도 e2e도 Claude 로컬에서만 돌아, e2e가 오래 red인 채로 안 걸린 구조적 원인.
+  이제 PR·main push마다 **test 잡**(lint → prebuild 콘텐츠 게이트 → vitest 2,614) + **e2e 잡**
+  (테스트 env 빌드 → smoke → learning-flow)이 돈다.
+  **배선 첫 실행이 곧바로 결함을 잡았다**: smoke `visibility` `test timed out after 30000ms` —
+  `.catch()`로 감싼 대기에 테스트와 같은 30s를 줘 catch가 실행될 틈이 없던 것. 로컬에선 `cancelled 1`로만
+  집계돼 내가 오판하고 넘겼다(요약 grep이 exit code를 삼킴). 잔여 대기 5s로 수리 → **2회차 두 잡 모두 green**.
+  **이제 merge 판정 기준은 CI green** — 로컬 실행은 선행 확인일 뿐.
 - **🏁 회수 라운드 완료(2026-08-08, #876·#877·#878)** — Codex-3·4가 이슈 2회·보드 1회 무응답이라 Claude가 직접 수행.
   ① **모바일**(#876): 실렌더 3뷰포트 × 12페이지 36조합 감사 → 가로 넘침은 한자 다리 표 1건뿐(360px +37px)
      → 표 안 스크롤 + ≤420px 여백 축소. 수리 후 36/36 넘침 0. 프로덕션 재확인 완료.
