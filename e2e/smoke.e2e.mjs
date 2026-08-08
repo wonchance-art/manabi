@@ -399,10 +399,15 @@ test('visibility: 일반 사용자에게 미완성 내비와 독해 트랙 진�
     // AuthContext가 프로필 조회 뒤 last_login_at 갱신까지 마치기 전에 이동하면 이전 문서의
     // fetch가 중단돼 console.error가 난다. 고정 대기(500ms)는 경합이라 flaky했다 —
     // 프로필 요청이 실제로 끝났는지를 조건으로 기다린다.
+    // 안 오면 넘어가려고 .catch로 감싼 대기다 — 그러려면 대기 한도가 테스트 한도보다 **짧아야** 한다.
+    // 같은 config.timeout(30s)을 주면 프로필 응답이 이미 지나간 실행에서 catch가 실행될 틈 없이
+    // 테스트가 먼저 죽는다(CI에서 `test timed out after 30000ms`로 재현).
+    // 프로필 도착 자체는 위의 프로필 버튼 단언이 이미 보장한다 — 여기선 잔여 요청만 짧게 기다린다.
+    const settleTimeout = Math.min(5000, Math.floor(config.timeout / 4));
     await page
-      .waitForResponse((res) => res.url().includes('/profiles'), { timeout: config.timeout })
+      .waitForResponse((res) => res.url().includes('/profiles'), { timeout: settleTimeout })
       .catch(() => {}); // 이미 끝났으면 대기 없이 진행
-    await page.waitForLoadState('networkidle', { timeout: config.timeout }).catch(() => {});
+    await page.waitForLoadState('networkidle', { timeout: settleTimeout }).catch(() => {});
 
     const desktopNav = page.getByRole('navigation', { name: '메인 내비게이션' });
     // 기본 데스크톱 viewport 에서는 CSS 로 숨겨져 role locator 대상에서 빠지므로

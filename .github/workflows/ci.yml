@@ -1,0 +1,66 @@
+name: CI
+
+# 이 리포의 검증은 그동안 전부 로컬 실행에만 의존했다. 그래서 `npm run e2e`가 오래 red인 채로
+# 아무에게도 안 걸렸다(#872~#874에서 발견). 게이트를 여기로 옮겨 사람 없이도 red가 드러나게 한다.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# 같은 브랜치에 새 푸시가 오면 진행 중인 실행은 취소한다(러너 시간 절약).
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: lint · 콘텐츠 게이트 · vitest
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run lint
+
+      # 콘텐츠 방어선 — 드릴 비중복(4트랙)·병음 정합·글자 커버 등.
+      # next build의 prebuild와 동일한 체인이라 여기서 먼저 깨뜨려 빌드 시간을 아낀다.
+      - name: 콘텐츠 게이트 (prebuild)
+        run: npm run prebuild
+
+      - run: npm test
+
+  e2e:
+    name: e2e (smoke · learning-flow)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      # NEXT_PUBLIC_* 는 빌드 시점에 번들로 인라인된다. 런타임에만 주면 클라이언트 인증이
+      # 에러 없이 조용히 죽으므로(#869 오판 선례), 빌드와 실행이 반드시 같은 값을 써야 한다.
+      # e2e:build 스크립트가 그 값을 고정해 들고 있다.
+      - name: 테스트 env로 빌드
+        run: npm run e2e:build
+
+      # 브라우저는 러너에 미리 깔린 Google Chrome을 쓴다(playwright.config.mjs 기본 channel).
+      - name: Chrome 확인
+        run: google-chrome --version
+
+      - run: npm run e2e
+
+      - run: npm run e2e:learning
