@@ -60,7 +60,7 @@ function OrderDrill({ drill, onResult, done }) {
           return (
             <button key={i} type="button" disabled={used || done}
               onClick={() => setPicked((p) => [...p, `${w}#${i}`])}
-              style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid var(--border)', background: used ? 'var(--bg-muted)' : 'var(--bg-secondary)', opacity: used ? 0.4 : 1 }}>
+              style={{ minHeight: 44, padding: '4px 12px', borderRadius: 6, border: '1px solid var(--border)', background: used ? 'var(--bg-muted)' : 'var(--bg-secondary)', opacity: used ? 0.4 : 1 }}>
               {w}
             </button>
           );
@@ -70,8 +70,8 @@ function OrderDrill({ drill, onResult, done }) {
         {picked.map((t) => t.split('#')[0]).join(' ')}
       </p>
       <div style={{ display: 'flex', gap: 8 }}>
-        <button type="button" className="btn btn--sm" disabled={done} onClick={() => setPicked([])}>다시</button>
-        <button type="button" className="btn btn--sm" disabled={!complete || done}
+        <button type="button" className="btn btn--sm drill-action" disabled={done} onClick={() => setPicked([])}>다시</button>
+        <button type="button" className="btn btn--sm drill-action" disabled={!complete || done}
           onClick={() => onResult(normalizeExerciseAnswer(picked.map((t) => t.split('#')[0]).join(' ')) === normalizeExerciseAnswer(drill.sentence))}>
           확인
         </button>
@@ -98,7 +98,7 @@ function InputDrill({ drill, lang, onResult, done, dictation }) {
           aria-labelledby={promptId}
           style={{ flex: 1, padding: '6px 10px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-secondary)' }}
           placeholder={dictation ? '들리는 대로…' : '정답 입력'} lang={dictation ? undefined : 'fr'} />
-        <button type="button" className="btn btn--sm" disabled={done || !value.trim()}
+        <button type="button" className="btn btn--sm drill-action" disabled={done || !value.trim()}
           onClick={() => onResult(matches(value, dictation ? drill.sentence : drill.answer, drill.accepts, dictation))}>
           확인
         </button>
@@ -117,7 +117,7 @@ function ChoiceDrill({ drill, onResult, done, lang }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {drill.choices.map((c, i) => (
           <button key={i} type="button" disabled={done} onClick={() => onResult(c === drill.answer)}
-            style={{ textAlign: 'left', padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-secondary)' }}>
+            style={{ minHeight: 44, textAlign: 'left', padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-secondary)' }}>
             {c}
           </button>
         ))}

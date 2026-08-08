@@ -251,8 +251,9 @@ button {
 }
 
 .gnb__profile-btn {
-  width: 36px;
-  height: 36px;
+  /* 고정 바 안의 단독 아이콘 버튼 — 44로 맞춘다 */
+  width: 44px;
+  height: 44px;
   border-radius: var(--radius-full);
   background: linear-gradient(135deg, var(--primary), var(--accent));
   display: flex;
@@ -301,6 +302,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-weight: 600;
   z-index: 9999;
   transition: top 0.2s;
+  /* 접근성 장치 자체이므로 히트 영역을 44로 — 키보드·스위치 사용자가 먼저 만난다 */
+  display: inline-flex; align-items: center; min-height: 44px;
 }
 .skip-link:focus {
   top: 12px;
@@ -3627,8 +3630,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 
 /* ========= Theme Toggle Button ========= */
 .theme-toggle {
-  width: 36px;
-  height: 36px;
+  /* 고정 바 안의 단독 아이콘 버튼 — 키워도 정보 밀도에 영향이 없어 44로 맞춘다 */
+  width: 44px;
+  height: 44px;
   border-radius: var(--radius-full);
   background: var(--bg-elevated);
   border: 1px solid var(--border);
@@ -3707,6 +3711,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
     font-weight: 600;
     padding: 8px 12px;
     min-width: 56px;
+    min-height: 44px;   /* 모바일에서 가장 많이 눌리는 곳 — WCAG 2.5.5(AAA) */
+    justify-content: center;
   }
 
   .mobile-nav__link.active {
@@ -8248,15 +8254,19 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 
 /* ── 발음 버튼 ── */
+/* 드릴 조작 버튼(확인·다시) — 학습 루프에서 반복해서 누르므로 히트 영역을 44로 준다.
+   .btn--sm 전역을 키우면 화면 전체 밀도가 바뀌므로 드릴 안에서만 적용한다. */
+.btn--sm.drill-action { min-height: 44px; }
+
 .fr-speak {
   background: transparent; border: none;
   cursor: pointer; font-size: 0.85rem;
   padding: 0; border-radius: var(--radius-sm);
   opacity: 0.6; transition: opacity 0.15s ease;
   vertical-align: middle;
-  /* 시각 글리프는 작게, 터치 히트 영역은 최소 40×40 */
+  /* 시각 글리프는 작게, 터치 히트 영역은 44×44(WCAG 2.5.5 AAA) — 학습 중 가장 자주 누른다 */
   display: inline-flex; align-items: center; justify-content: center;
-  min-width: 40px; min-height: 40px;
+  min-width: 44px; min-height: 44px;
 }
 .fr-speak:hover { opacity: 1; }
 .fr-speak--xs { font-size: 0.75rem; }
@@ -8533,6 +8543,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .fr-check__answer {
   background: transparent; border: none; cursor: pointer;
   text-align: left; padding: 0;
+  /* 관문 퀴즈의 정답 열기 — 학습 루프에서 누르는 조작이라 히트 영역 44 (글리프 크기는 그대로) */
+  display: flex; align-items: center; min-height: 44px;
 }
 .fr-check__hidden {
   font-size: 0.78rem; font-weight: 600;
