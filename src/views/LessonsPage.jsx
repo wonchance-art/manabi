@@ -19,6 +19,44 @@ const LanguageWorldMap = dynamic(() => import('../components/LanguageWorldMap'),
   ),
 });
 
+const MAP_PLACEHOLDER = { minHeight: 220, margin: '10px 0 12px', borderRadius: 10, background: 'var(--bg-secondary)' };
+
+/**
+ * 지도는 세계 국가 윤곽 좌표 95 kB짜리라 /lessons에서 가장 무거운 단일 조각이다.
+ * 모바일에선 첫 화면 아래(측정: 360×740에서 상단 y≈876)라 대부분 안 보고 지나간다 —
+ * 뷰포트 근처에 올 때까지 받지 않는다. 자리는 placeholder가 미리 잡아 둔다.
+ *
+ * IntersectionObserver 대신 위치 계산을 쓴다: e2e 하네스가 Link prefetch를 막으려고
+ * IntersectionObserver를 noop으로 덮는 경로가 있어(smoke `mockSupabaseSession`),
+ * IO에 기대면 그 실행에선 지도가 영영 안 뜬다.
+ */
+function WorldMapWhenNear({ langKey }) {
+  const holder = useRef(null);
+  const [near, setNear] = useState(false);
+
+  useEffect(() => {
+    if (near) return undefined;
+    const check = () => {
+      const el = holder.current;
+      if (!el) return;
+      if (el.getBoundingClientRect().top <= window.innerHeight + 100) setNear(true);
+    };
+    // 초기 판정은 레이아웃이 잡힌 뒤에 한다. 하이드레이션 직후에 재면 위쪽 콘텐츠가 아직 안 차서
+    // placeholder가 화면 안에 있는 것처럼 보이고, 결국 항상 즉시 로드된다(실측으로 확인).
+    const settle = setTimeout(check, 400);
+    window.addEventListener('scroll', check, { passive: true });
+    window.addEventListener('resize', check);
+    return () => {
+      clearTimeout(settle);
+      window.removeEventListener('scroll', check);
+      window.removeEventListener('resize', check);
+    };
+  }, [near]);
+
+  if (near) return <LanguageWorldMap langKey={langKey} />;
+  return <div ref={holder} aria-hidden="true" style={MAP_PLACEHOLDER} />;
+}
+
 const TRACK_COLORS = {
   English: '#3b6fb5',
   French: '#a02840',
@@ -282,7 +320,7 @@ export default function LessonsPage({ refManifest = {}, initialLang, initialLeve
                 i % 2 === 1 ? <strong key={i}>{part}</strong> : part
               )}
             </p>
-            <LanguageWorldMap langKey={langFilter} />
+            <WorldMapWhenNear langKey={langFilter} />
             {refLang.pitch && (
               <div style={{ margin: '10px 0 4px' }}>
                 <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 7 }}>

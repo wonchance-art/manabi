@@ -51,8 +51,35 @@ function ringToPath(pts) {
   parts.push(cur);
   return parts
     .filter((part) => part.length >= 3)
-    .map((part) => `M${part.map((pt) => pt.join(',')).join('L')}Z`)
+    .map(subpathToRelative)
+    .filter(Boolean)
     .join('');
+}
+
+// 절대좌표(`M493,105.3L494.1,105.3…`)는 점마다 5~6자리를 반복해 낭비가 크다.
+// 상대좌표(`m493,105.3l1.1,0…`)는 같은 도형을 절반 이하 바이트로 표현한다 — 렌더 결과는 동일.
+// 누적 오차를 막으려고 **실제로 출력한 좌표**를 기준으로 다음 delta를 계산한다.
+const fmt = (v) => {
+  const s = (Math.round(v * 10) / 10).toFixed(1);
+  return s.endsWith('.0') ? s.slice(0, -2) : s; // 105.0 → 105
+};
+
+function subpathToRelative(part) {
+  let [cx, cy] = part[0];
+  let d = `M${fmt(cx)},${fmt(cy)}`;
+  cx = Number(fmt(cx));
+  cy = Number(fmt(cy));
+  let drawn = 0;
+  for (let i = 1; i < part.length; i += 1) {
+    const dx = Math.round((part[i][0] - cx) * 10) / 10;
+    const dy = Math.round((part[i][1] - cy) * 10) / 10;
+    if (dx === 0 && dy === 0) continue; // 반올림 후 겹친 점은 그릴 게 없다
+    d += `l${fmt(dx)},${fmt(dy)}`;
+    cx += dx;
+    cy += dy;
+    drawn += 1;
+  }
+  return drawn >= 2 ? `${d}Z` : ''; // 점 3개 미만으로 줄어든 조각은 면이 되지 않는다
 }
 
 function geomToPath(geom) {
