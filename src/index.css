@@ -34,8 +34,10 @@
 
   /* Text */
   --text-primary: #F4EDE4;
-  --text-secondary: #A8917A;
-  --text-muted: #8A7055; /* WCAG 개선: 6B5440 → 8A7055 (대비 2.4 → 3.4) */
+  /* 대비는 가장 밝은 배경(--bg-elevated #382B1E) 위에서 재야 한다 — 카드 안 텍스트가 최악이다.
+     muted는 거기서 2.96:1로 AA(4.5) 미달이었다. 둘을 함께 올려 위계(휘도 차 0.123)를 유지한다. */
+  --text-secondary: #C4A98E;  /* 4.57 → 6.13 */
+  --text-muted: #AF8E6C;      /* 2.96 → 4.52 */
 
   /* Chrome components */
   --gnb-bg: rgba(26, 20, 16, 0.90);
