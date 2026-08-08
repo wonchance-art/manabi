@@ -571,6 +571,55 @@ test('authenticated drills: 드릴 채점이 review_events·grammar_review 정�
   });
 });
 
+// 비로그인 복습 — 기기 큐로 세션이 실제로 돌아가는지. 문항 조립은 /api/review/drills(서버)가 한다.
+// 이게 끊기면 게스트는 드릴을 아무리 풀어도 복습을 못 하고, 화면에는 아무 에러도 안 뜬다.
+test('guest review: 기기 큐로 복습 세션을 열고 채점이 카드를 전진시킨다', { timeout: config.timeout * 2 }, async () => {
+  await runInFreshPage(async (page, context) => {
+    await mockTts(context);
+    await page.goto('/japanese/grammar/n5-04-desu-da', { waitUntil: 'domcontentloaded', timeout: config.timeout });
+
+    const drills = page.locator('section.card.fr-section').filter({
+      has: page.getByRole('heading', { name: '변형 드릴 — 새 문장으로 손 풀기', exact: true }),
+    });
+    await assertVisible(drills, 'chapter drills');
+    await drills.locator('ol > li').nth(3).getByRole('button', { name: 'がくせいです', exact: true }).click();
+    await page.waitForFunction(
+      () => JSON.parse(localStorage.getItem('manabi-drill-review-v1') || '[]').length > 0,
+      undefined,
+      { timeout: config.timeout },
+    );
+
+    // 방금 푼 카드는 미래 due라 당장은 안 잡힌다 — 복습 시점이 된 상황으로 당긴다.
+    const before = await page.evaluate(() => {
+      const rows = JSON.parse(localStorage.getItem('manabi-drill-review-v1') || '[]');
+      rows.forEach((row) => { row.next_review_at = '2000-01-01T00:00:00.000Z'; });
+      localStorage.setItem('manabi-drill-review-v1', JSON.stringify(rows));
+      return rows[0];
+    });
+    assert.ok(before.slug.startsWith('drill:'), 'the guest queue stores drill cards by drill id');
+
+    await page.goto('/review/grammar', { waitUntil: 'domcontentloaded', timeout: config.timeout });
+    await assertVisible(page.getByText('이 기기에 쌓인 복습이에요.'), 'guest review notice');
+    const choice = page.getByRole('button', { name: 'がくせいです', exact: true });
+    await assertVisible(choice, 'review question rebuilt from the drill id');
+    await choice.click();
+
+    // 채점이 반영되면 카드의 다음 복습일이 미래로 간다(안 그러면 영원히 due로 남는다).
+    await page.waitForFunction(
+      () => {
+        const rows = JSON.parse(localStorage.getItem('manabi-drill-review-v1') || '[]');
+        return rows[0] && rows[0].next_review_at > '2000-01-01T00:00:00.000Z';
+      },
+      undefined,
+      { timeout: config.timeout },
+    );
+    const after = await page.evaluate(() => JSON.parse(localStorage.getItem('manabi-drill-review-v1'))[0]);
+    assert.ok(after.next_review_at > before.next_review_at, 'grading must advance the guest card');
+    assert.equal(after.slug, before.slug, 'grading advances the same card instead of adding one');
+    await sampleHeap(page, 'guest review session from the device queue');
+  });
+});
+
 // 동적 slug 폴백이 되살아나 soft 404가 생기면 실제 HTTP 상태와 전용 404 화면에서 잡는다.
 test('chapter 404: 매니페스트에 없는 slug는 HTTP 404로 응답한다', { timeout: config.timeout }, async () => {
   await runInFreshPage(async (page) => {

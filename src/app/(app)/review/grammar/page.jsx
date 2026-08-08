@@ -6,6 +6,7 @@ import { buildReviewQuiz } from '@/lib/refQuiz';
 import { staggerBackfillRows } from '@/lib/grammarSrs';
 import { buildDrillReviewQuiz, drillIdFromQueueSlug, findDrillContext } from '@/lib/drillSrs';
 import GrammarReviewSession from '@/views/GrammarReviewSession';
+import GuestGrammarReview from '@/views/GuestGrammarReview';
 
 export const metadata = { title: '문법 복습 | Anatomy Studio' };
 export const dynamic = 'force-dynamic';
@@ -132,7 +133,8 @@ export default async function Page() {
   );
 
   const { data: { user } = {} } = await supabase.auth.getUser();
-  if (!user) return <GrammarReviewSession items={[]} signedOut />;
+  // 비로그인도 기기 큐로 복습할 수 있다 — 문항 조립은 /api/review/drills가 서버에서 한다.
+  if (!user) return <GuestGrammarReview />;
 
   // ── 백필: 통과했지만 큐에 없는 챕터 등록 (기능 도입 전의 통과 기록 구제) ──
   try {

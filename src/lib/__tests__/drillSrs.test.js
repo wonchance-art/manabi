@@ -1,10 +1,12 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 process.env.NEXT_PUBLIC_SUPABASE_URL ||= 'http://localhost:54321';
 process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||= 'test-anon-key';
 
 const {
   applyDrillResultToQueue,
+  applyGuestReviewResult,
+  GUEST_DRILL_QUEUE_KEY,
   buildDrillReviewEvent,
   buildDrillReviewQuiz,
   drillIdFromQueueSlug,
@@ -89,5 +91,59 @@ describe('drillSrs — ChapterDrills 결과를 기존 복습 계약으로 연결
     expect(fill.produce[0]).toMatchObject({ ko: 'Je ___ ici.', main: 'suis' });
     expect(order.apply[0]).toMatchObject({ tokens: ['Je', 'suis', 'ici.'], answer: 'Je suis ici.' });
     expect(dictation.produce[0]).toMatchObject({ main: 'Nous sommes ici.' });
+  });
+});
+
+// 게스트 복습 세션(로그인 없이 /review/grammar)이 채점 결과를 기기 큐에 반영하는 경로.
+// 서버에 못 쓰는 대신 같은 FSRS 계산으로 카드를 전진시켜야 한다 — 안 그러면 같은 카드가 영원히 due로 남는다.
+describe('applyGuestReviewResult — 비로그인 복습 채점', () => {
+  const store = new Map();
+  beforeEach(() => {
+    store.clear();
+    vi.stubGlobal('window', {
+      localStorage: {
+        getItem: (k) => (store.has(k) ? store.get(k) : null),
+        setItem: (k, v) => store.set(k, v),
+      },
+    });
+  });
+  afterEach(() => vi.unstubAllGlobals());
+
+  const seed = (rows) => store.set(GUEST_DRILL_QUEUE_KEY, JSON.stringify(rows));
+  const queue = () => JSON.parse(store.get(GUEST_DRILL_QUEUE_KEY));
+
+  it('큐에 있는 카드를 전진시키고 다음 간격(일)을 돌려준다', () => {
+    seed([{ user_id: 'guest', lang: 'French', slug: 'drill:a101-d1', interval: 1, next_review_at: '2000-01-01T00:00:00.000Z' }]);
+
+    const days = applyGuestReviewResult(
+      { lang: 'French', slug: 'drill:a101-d1', rating: 3 },
+      { now: NOW, calculator },
+    );
+
+    expect(days).toBe(3);                    // calculator가 interval: rating을 돌려준다
+    expect(queue()).toHaveLength(1);         // 복습은 카드를 늘리지 않는다
+    expect(queue()[0].next_review_at).toBe('2026-08-03T05:00:00.000Z');
+    expect(queue()[0].last_reviewed_at).toBe(NOW.toISOString());
+  });
+
+  it('큐에 없는 카드는 만들지 않는다 — 복습은 등록된 카드에만 일어난다', () => {
+    seed([{ user_id: 'guest', lang: 'French', slug: 'drill:a101-d1', interval: 1 }]);
+
+    const days = applyGuestReviewResult(
+      { lang: 'French', slug: 'drill:없는카드', rating: 3 },
+      { now: NOW, calculator },
+    );
+
+    expect(days).toBeNull();
+    expect(queue()).toHaveLength(1);
+    expect(queue()[0].slug).toBe('drill:a101-d1');
+  });
+
+  it('인자가 모자라면 큐를 건드리지 않는다', () => {
+    seed([{ user_id: 'guest', lang: 'French', slug: 'drill:a101-d1', interval: 1 }]);
+    expect(applyGuestReviewResult({ lang: 'French', slug: '', rating: 3 })).toBeNull();
+    expect(applyGuestReviewResult({ lang: '', slug: 'drill:a101-d1', rating: 3 })).toBeNull();
+    expect(applyGuestReviewResult({ lang: 'French', slug: 'drill:a101-d1', rating: 0 })).toBeNull();
+    expect(queue()).toHaveLength(1);
   });
 });
