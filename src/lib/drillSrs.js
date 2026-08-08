@@ -5,6 +5,7 @@
  * 보관한다. 드릴 스키마는 건드리지 않으며 카드 식별자는 전역 유일한 drill.id다.
  */
 import { calculateFSRS } from './fsrs.js';
+import { supabase } from './supabase.js';
 import { initialQueueRow, upsertRatedGrammarReview } from './grammarSrs.js';
 import { logReviewEvents } from './reviewEvents.js';
 
@@ -140,6 +141,44 @@ export function recordChapterDrillResult(userId, { lang, drill, correct }) {
   });
   saveGuestDrillQueue(result.rows);
   return result.row;
+}
+
+/**
+ * 로그인 시 기기 큐를 서버로 옮긴다 — 게스트로 쌓은 복습이 로그인 후 사라지지 않게.
+ *
+ * 규칙: **서버가 정본이다.** 같은 카드가 이미 서버에 있으면 건드리지 않는다
+ * (다른 기기에서 더 진행됐을 수 있다) — `ignoreDuplicates`로 없는 것만 넣는다.
+ * 로컬 큐는 **쓰기 성공을 확인한 뒤에만** 비운다. 실패하면 그대로 두고 다음 기회에 다시 시도한다.
+ */
+export async function migrateGuestDrillQueue(userId) {
+  if (!userId) return { migrated: 0 };
+  const rows = loadGuestDrillQueue().filter(
+    (row) => row?.lang && typeof row.slug === 'string' && row.slug.startsWith(DRILL_QUEUE_PREFIX),
+  );
+  if (rows.length === 0) return { migrated: 0 };
+
+  const payload = rows.map((row) => ({
+    user_id: userId,
+    lang: row.lang,
+    slug: row.slug,
+    interval: row.interval ?? 0,
+    ease_factor: row.ease_factor ?? 0,
+    repetitions: row.repetitions ?? 0,
+    next_review_at: row.next_review_at ?? new Date().toISOString(),
+    last_reviewed_at: row.last_reviewed_at ?? null,
+  }));
+
+  try {
+    const { error } = await supabase
+      .from('grammar_review')
+      .upsert(payload, { onConflict: 'user_id,lang,slug', ignoreDuplicates: true });
+    if (error) return { migrated: 0, error };
+  } catch (error) {
+    return { migrated: 0, error };
+  }
+
+  saveGuestDrillQueue([]);
+  return { migrated: payload.length };
 }
 
 /** 레지스트리에서 drill id의 소속 챕터와 원본 문항을 찾는다. */

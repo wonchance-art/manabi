@@ -6,6 +6,7 @@ process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||= 'test-anon-key';
 const {
   applyDrillResultToQueue,
   applyGuestReviewResult,
+  migrateGuestDrillQueue,
   GUEST_DRILL_QUEUE_KEY,
   buildDrillReviewEvent,
   buildDrillReviewQuiz,
@@ -145,5 +146,79 @@ describe('applyGuestReviewResult — 비로그인 복습 채점', () => {
     expect(applyGuestReviewResult({ lang: '', slug: 'drill:a101-d1', rating: 3 })).toBeNull();
     expect(applyGuestReviewResult({ lang: 'French', slug: 'drill:a101-d1', rating: 0 })).toBeNull();
     expect(queue()).toHaveLength(1);
+  });
+});
+
+// 로그인 시 기기 큐 → 서버 이관. 여기가 조용히 깨지면 게스트로 쌓은 복습이 로그인과 함께 사라진다.
+describe('migrateGuestDrillQueue — 로그인 시 기기 큐 이관', () => {
+  const store = new Map();
+  let upsert;
+
+  beforeEach(() => {
+    store.clear();
+    upsert = vi.fn(async () => ({ error: null }));
+    // 파일 상단에서 이미 import한 모듈이 캐시에 있으면 아래 doMock이 적용되지 않는다
+    // (그러면 진짜 supabase를 타고 조용히 migrated: 0이 되어 테스트가 헛통과한다).
+    vi.resetModules();
+    vi.stubGlobal('window', {
+      localStorage: {
+        getItem: (k) => (store.has(k) ? store.get(k) : null),
+        setItem: (k, v) => store.set(k, v),
+      },
+    });
+    vi.doMock('../supabase.js', () => ({ supabase: { from: () => ({ upsert }) } }));
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.doUnmock('../supabase.js');
+    vi.resetModules();
+  });
+
+  const seed = (rows) => store.set(GUEST_DRILL_QUEUE_KEY, JSON.stringify(rows));
+  const queue = () => JSON.parse(store.get(GUEST_DRILL_QUEUE_KEY) || '[]');
+  const load = async () => (await import('../drillSrs')).migrateGuestDrillQueue;
+
+  it('서버에 없는 카드만 넣고(ignoreDuplicates) 성공 뒤에 로컬을 비운다', async () => {
+    seed([
+      { user_id: 'guest', lang: 'French', slug: 'drill:a101-d1', interval: 3, ease_factor: 5, repetitions: 0, next_review_at: '2026-09-01T00:00:00.000Z' },
+      { user_id: 'guest', lang: 'Japanese', slug: 'drill:n504-d4', interval: 1, next_review_at: '2026-08-20T00:00:00.000Z' },
+    ]);
+
+    const migrate = await load();
+    const result = await migrate('user-1');
+
+    expect(result.migrated).toBe(2);
+    expect(upsert).toHaveBeenCalledTimes(1);
+    const [payload, options] = upsert.mock.calls[0];
+    expect(options).toEqual({ onConflict: 'user_id,lang,slug', ignoreDuplicates: true });
+    expect(payload).toHaveLength(2);
+    expect(payload[0]).toMatchObject({ user_id: 'user-1', lang: 'French', slug: 'drill:a101-d1', interval: 3 });
+    expect(queue()).toEqual([]);   // 성공했으니 기기 큐는 비운다
+  });
+
+  it('쓰기가 실패하면 로컬 큐를 지우지 않는다 — 다음 기회에 다시 시도한다', async () => {
+    seed([{ user_id: 'guest', lang: 'French', slug: 'drill:a101-d1', interval: 3 }]);
+    upsert = vi.fn(async () => ({ error: { message: 'nope' } }));
+
+    const migrate = await load();
+    const result = await migrate('user-1');
+
+    expect(result.migrated).toBe(0);
+    expect(queue()).toHaveLength(1);
+  });
+
+  it('비로그인·빈 큐·드릴 아닌 slug는 아무것도 쓰지 않는다', async () => {
+    const migrate = await load();
+
+    seed([{ user_id: 'guest', lang: 'French', slug: 'drill:a101-d1' }]);
+    expect((await migrate(null)).migrated).toBe(0);
+
+    seed([]);
+    expect((await migrate('user-1')).migrated).toBe(0);
+
+    seed([{ user_id: 'guest', lang: 'French', slug: 'a1-01-pronouns-etre' }]); // 챕터 큐는 이 경로가 아니다
+    expect((await migrate('user-1')).migrated).toBe(0);
+
+    expect(upsert).not.toHaveBeenCalled();
   });
 });

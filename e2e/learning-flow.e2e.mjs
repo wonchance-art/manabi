@@ -620,6 +620,50 @@ test('guest review: 기기 큐로 복습 세션을 열고 채점이 카드를 �
   });
 });
 
+// 게스트로 쌓은 복습이 로그인과 함께 사라지면 안 된다. 이 이관이 끊겨도 화면엔 아무 표시가 없다.
+test('queue migration: 로그인하면 기기 복습 큐가 서버로 옮겨진다', { timeout: config.timeout * 2 }, async () => {
+  await runInFreshPage(async (page, context) => {
+    const { session, writesByTable } = await mockAuthenticatedVocab(context);
+
+    // 로그인 전에 기기 큐가 있던 상황을 만든다(게스트로 드릴을 풀어 둔 상태).
+    await context.addInitScript(() => {
+      if (localStorage.getItem('manabi-drill-review-v1')) return;
+      localStorage.setItem('manabi-drill-review-v1', JSON.stringify([{
+        user_id: 'guest',
+        lang: 'Japanese',
+        slug: 'drill:ja-n504-d4',
+        interval: 3,
+        ease_factor: 5,
+        repetitions: 0,
+        next_review_at: '2026-09-01T00:00:00.000Z',
+        last_reviewed_at: '2026-08-08T00:00:00.000Z',
+      }]));
+    });
+
+    await page.goto('/lessons', { waitUntil: 'domcontentloaded', timeout: config.timeout });
+
+    // 이관은 로그인 인지 직후 비동기로 나간다 — 도착할 때까지 조건 대기.
+    const deadline = Date.now() + config.timeout;
+    while (!(writesByTable.grammar_review || []).length && Date.now() < deadline) {
+      await page.waitForTimeout(150);
+    }
+
+    const migrated = writesByTable.grammar_review || [];
+    assert.equal(migrated.length, 1, 'the device queue card must be written to the server');
+    assert.equal(migrated[0].user_id, session.user.id, 'the card is claimed by the signed-in learner');
+    assert.equal(migrated[0].slug, 'drill:ja-n504-d4', 'the drill card keeps its identity');
+    assert.equal(migrated[0].interval, 3, 'the FSRS state carries over instead of restarting');
+
+    // 서버가 정본이 됐으니 기기 큐는 비워야 한다 — 안 그러면 다음 로그인마다 다시 쓴다.
+    await page.waitForFunction(
+      () => JSON.parse(localStorage.getItem('manabi-drill-review-v1') || '[]').length === 0,
+      undefined,
+      { timeout: config.timeout },
+    );
+    await sampleHeap(page, 'guest queue migration on sign-in');
+  });
+});
+
 // 동적 slug 폴백이 되살아나 soft 404가 생기면 실제 HTTP 상태와 전용 404 화면에서 잡는다.
 test('chapter 404: 매니페스트에 없는 slug는 HTTP 404로 응답한다', { timeout: config.timeout }, async () => {
   await runInFreshPage(async (page) => {
