@@ -233,6 +233,8 @@ export function RefHanjaBridge({ data }) {
   return (
     <div className="hanja-bridge">
       <span className="hanja-bridge__label">🀄 한자 다리 — 간체가 낯설 땐 번체·일본 한자로</span>
+      {/* 좁은 화면에서 한 행이 뷰포트를 넘으면 페이지 전체가 밀리므로 표만 가로 스크롤시킨다 */}
+      <div className="hanja-bridge__scroll">
       <table className="hanja-bridge__table">
         <tbody>
           {data.rows.map((r, i) => (
@@ -249,6 +251,7 @@ export function RefHanjaBridge({ data }) {
           ))}
         </tbody>
       </table>
+      </div>
       {data.note && <p className="hanja-bridge__note">{refInline(data.note)}</p>}
     </div>
   );

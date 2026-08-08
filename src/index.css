@@ -7716,6 +7716,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   color: #E8763C;
 }
 /* 표로 — 简/繁/日 열과 → 화살표가 행마다 세로로 정렬 (글자 수 무관) */
+.hanja-bridge__scroll { overflow-x: auto; }
 .hanja-bridge__table { border-collapse: collapse; margin: 2px 0; }
 .hanja-bridge__c {
   padding: 3px 0; vertical-align: baseline; white-space: nowrap;
@@ -7740,6 +7741,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   word-break: keep-all;
 }
 .hanja-bridge__note strong { color: var(--text-primary); }
+/* 좁은 화면에선 화살표 여백을 줄여 대부분의 행이 스크롤 없이 들어오게 한다 */
+@media (max-width: 420px) {
+  .hanja-bridge { padding: 12px 10px; }
+  .hanja-bridge__a { padding: 0 5px; }
+  .hanja-bridge__c { font-size: 1rem; }
+}
 
 /* ===== 관리자 내 진도표 ===== */
 .myplan__head { margin-bottom: 18px; }
