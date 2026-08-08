@@ -167,6 +167,7 @@ async function mockAuthenticatedVocab(context) {
   const session = fakeLearnerSession();
   const storedWords = [];
   const writes = [];
+  const writesByTable = {};
   const cors = {
     'access-control-allow-origin': '*',
     'access-control-allow-headers': '*',
@@ -199,6 +200,13 @@ async function mockAuthenticatedVocab(context) {
 
     const url = new URL(request.url());
     const table = url.pathname.split('/').pop();
+    // SRS 정본 경로 검증용 — 어느 테이블에 무엇을 썼는지 전부 모은다.
+    if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method())) {
+      let payload = null;
+      try { payload = request.postDataJSON(); } catch { payload = null; }
+      const rows = Array.isArray(payload) ? payload : [payload].filter(Boolean);
+      writesByTable[table] = (writesByTable[table] || []).concat(rows);
+    }
     if (table === 'profiles') {
       await json(route, {
         id: session.user.id,
@@ -257,7 +265,7 @@ async function mockAuthenticatedVocab(context) {
     sameSite: 'Lax',
   }]);
 
-  return { session, storedWords, writes };
+  return { session, storedWords, writes, writesByTable };
 }
 
 async function openTrackChapter(page, track) {
@@ -369,11 +377,18 @@ test('chapter drills: choice·fill·order·listen 6문항의 정오답과 복습
     const queued = await page.evaluate(() => JSON.parse(localStorage.getItem('manabi-drill-review-v1') || '[]'));
     assert.equal(queued.length, 6, 'all six guest drill results should enter the local review queue');
 
-    const reviewLink = drills.getByRole('link', { name: /문법 복습/ });
-    await assertVisible(reviewLink, 'review nudge link');
-    await reviewLink.click();
-    await page.waitForURL('**/review/grammar', { timeout: config.timeout });
-    await assertVisible(page.getByRole('heading', { name: '문법 복습', exact: true }), 'grammar review page');
+    // 게스트를 /review/grammar로 보내면 안 된다 — 그 페이지는 로그인 세션에서만 큐를 읽으므로
+    // "복습 대기 N개"라고 해놓고 빈 화면이 나오는 막다른 길이 된다(이전 계약의 결함).
+    // 게스트에겐 기록이 이 기기에 남았다는 사실만 알리고 그 자리에서 로그인을 권유해야 한다.
+    const nudgeLink = drills.getByRole('link', { name: /로그인하면 며칠 뒤 복습 큐로 돌아와요/ });
+    await assertVisible(nudgeLink, 'guest review nudge invites sign-in');
+    assert.equal(
+      await drills.getByRole('link', { name: /문법 복습/ }).count(),
+      0,
+      'guests must not be pointed at the signed-in-only review session',
+    );
+    await nudgeLink.click();
+    await page.waitForURL('**/auth**', { timeout: config.timeout });
     await sampleHeap(page, 'six drills and review nudge');
   });
 });
@@ -507,6 +522,52 @@ test('authenticated vocab: 레퍼런스 단어 저장을 /vocab 새 단어 복�
     await assertVisible(page.getByRole('group', { name: '문맥에 맞는 뜻 고르기', exact: true }), 'saved word review card');
     await assertVisible(page.getByRole('button', { name: '가족', exact: true }), 'saved word review answer');
     await sampleHeap(page, 'authenticated vocabulary save and review queue');
+  });
+});
+
+// 학습의 핵심 루프 — 드릴 채점이 SRS 정본(review_events + grammar_review)에 실제로 닿는지.
+// 로컬 카운터만 늘고 서버 기록이 끊기면 기기를 바꾼 순간 학습 이력이 사라지는데, 화면에는
+// 아무 표시도 나지 않는다. 그래서 "무엇을 어느 테이블에 썼는지"를 여기서 붙잡아 둔다.
+test('authenticated drills: 드릴 채점이 review_events·grammar_review 정본에 기록된다', { timeout: config.timeout * 2 }, async () => {
+  await runInFreshPage(async (page, context) => {
+    const { session, writesByTable } = await mockAuthenticatedVocab(context);
+    await mockTts(context);
+    await page.goto('/japanese/grammar/n5-04-desu-da', { waitUntil: 'domcontentloaded', timeout: config.timeout });
+
+    const drills = page.locator('section.card.fr-section').filter({
+      has: page.getByRole('heading', { name: '변형 드릴 — 새 문장으로 손 풀기', exact: true }),
+    });
+    await assertVisible(drills, 'chapter drills');
+    const items = drills.locator('ol > li');
+
+    // 로그인 상태가 클라이언트에 반영된 뒤에 채점해야 정본 경로(서버)로 간다.
+    await page.waitForFunction(
+      () => document.cookie.includes('auth-token'),
+      undefined,
+      { timeout: config.timeout },
+    );
+    await items.nth(0).getByPlaceholder('정답 입력').fill('です');
+    await items.nth(0).getByRole('button', { name: '확인', exact: true }).click();
+    await assertVisible(items.nth(0).getByText('정답이에요!', { exact: true }), 'correct fill result');
+
+    // 쓰기는 채점 직후 비동기로 나간다 — 도착할 때까지 조건 대기(고정 대기는 경합).
+    const deadline = Date.now() + config.timeout;
+    while (!(writesByTable.review_events || []).length && Date.now() < deadline) {
+      await page.waitForTimeout(150);
+    }
+
+    const events = writesByTable.review_events || [];
+    assert.ok(events.length >= 1, 'grading a drill must log a review event to the server');
+    assert.equal(events[0].user_id, session.user.id, 'the event belongs to the signed-in learner');
+    assert.equal(events[0].source, 'grammar', 'drill events are recorded under the grammar source');
+    assert.equal(events[0].correct, true, 'the correct answer is recorded as correct');
+
+    // 게스트 로컬 카운터는 로그인 사용자에게 쓰이면 안 된다(이중 집계 방지 계약).
+    const guestQueue = await page.evaluate(
+      () => JSON.parse(localStorage.getItem('manabi-drill-review-v1') || '[]'),
+    );
+    assert.equal(guestQueue.length, 0, 'signed-in grading must not also write the guest queue');
+    await sampleHeap(page, 'authenticated drill grading reaches the SRS tables');
   });
 });
 
