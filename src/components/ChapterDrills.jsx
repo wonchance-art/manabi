@@ -267,6 +267,20 @@ function ReviewNudge({ userId }) {
     }
     return () => { alive = false; };
   }, [userId]);
+  // 게스트를 /review/grammar로 보내면 안 된다 — 그 페이지는 로그인 세션에서만 큐를 읽으므로
+  // "복습 대기 N개"라고 해놓고 빈 화면이 나온다. 게스트에겐 기록이 이 기기에 남았다는 사실만
+  // 정확히 알리고, 큐를 이어가려면 로그인이 필요하다고 그 자리에서 권유한다.
+  if (!userId) {
+    return (
+      <p role="status" aria-live="polite" style={{ marginTop: 6, fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
+        풀이 기록은 이 기기에 쌓였어요.{' '}
+        <Link href="/auth" prefetch={false} style={{ fontWeight: 600, color: 'var(--accent, #2d6a4f)' }}>
+          로그인하면 며칠 뒤 복습 큐로 돌아와요 →
+        </Link>
+      </p>
+    );
+  }
+
   return (
     <p role="status" aria-live="polite" style={{ marginTop: 6, fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
       풀이 기록은 복습 큐에 쌓였어요.{' '}
