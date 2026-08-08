@@ -75,6 +75,33 @@ export function applyDrillResultToQueue(
   return { rows: next, row, rating, added: index < 0 };
 }
 
+/**
+ * 게스트 복습 세션의 채점 결과를 기기 큐에 반영한다.
+ * 로그인 사용자의 gradeGrammarReview와 같은 자리에서 쓰이므로 같은 것을 돌려준다 — 다음 간격(일).
+ * 큐에 없는 카드는 만들지 않는다(복습은 이미 등록된 카드에만 일어난다).
+ */
+export function applyGuestReviewResult(
+  { lang, slug, rating },
+  { now = new Date(), calculator = calculateFSRS } = {},
+) {
+  if (!lang || !slug || !rating) return null;
+  const rows = loadGuestDrillQueue();
+  const index = rows.findIndex((row) => row?.lang === lang && row?.slug === slug);
+  if (index < 0) return null;
+  const row = {
+    ...rows[index],
+    ...calculator(rating, rows[index]),
+    user_id: 'guest',
+    lang,
+    slug,
+    last_reviewed_at: now.toISOString(),
+  };
+  const next = [...rows];
+  next[index] = row;
+  saveGuestDrillQueue(next);
+  return Math.max(1, Math.round(row.interval ?? 1));
+}
+
 export function loadGuestDrillQueue() {
   if (typeof window === 'undefined') return [];
   try {

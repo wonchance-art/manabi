@@ -7,7 +7,7 @@ import { JaText } from './refShared';
 import { useAuth } from '../lib/AuthContext';
 import { gradeGrammarReview, ratingFromScore } from '../lib/grammarSrs';
 import { logReviewEvents } from '../lib/reviewEvents';
-import { drillIdFromQueueSlug } from '../lib/drillSrs';
+import { applyGuestReviewResult, drillIdFromQueueSlug } from '../lib/drillSrs';
 import { recordActivity } from '../lib/streak';
 
 function shuffle(arr) {
@@ -127,7 +127,9 @@ export default function GrammarReviewSession({ items, upcoming = [], signedOut =
     const requestKey = `${idx}:${gradeAttempt}`;
     if (!gradeRequestRef.current || gradeRequestRef.current.key !== requestKey) {
       const promise = (async () => {
-        if (!user?.id) return null;
+        // 게스트는 서버에 쓸 수 없다 — 같은 FSRS 계산으로 기기 큐를 전진시키고 다음 간격을 돌려준다.
+        // (기록이 이 기기에만 남는다는 사실은 화면에서 따로 알린다.)
+        if (!user?.id) return applyGuestReviewResult({ lang: item.lang, slug: item.srs.slug, rating });
         const updated = await gradeGrammarReview({ ...item.srs, user_id: user.id }, rating);
         if (!updated) throw new Error('문법 복습 결과를 저장하지 못했습니다.');
 
