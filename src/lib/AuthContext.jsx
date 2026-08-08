@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { getSupabase, supabase } from '../lib/supabase';
 import { hasSupabaseSessionCookie } from './authCookie';
+import { migrateGuestDrillQueue } from './drillSrs';
 import { useToast } from './ToastContext';
 import { pullProgress } from './refProgress';
 
@@ -205,7 +206,11 @@ export function AuthProvider({ children }) {
   // 로그인 시 앱 어디서든 레퍼런스 진도 동기화 — [강의]/[홈] 외 페이지에서도 기기 간 병합되도록.
   // user.id 변경(로그인/앱 진입) 시 1회만 도므로 force로 throttle 무시 — 다른 기기가 방금 올린 진도를 확실히 끌어온다.
   useEffect(() => {
-    if (user?.id) pullProgress(user.id, REF_READ_KEYS, { force: true }).catch(() => {});
+    if (!user?.id) return;
+    pullProgress(user.id, REF_READ_KEYS, { force: true }).catch(() => {});
+    // 게스트로 쌓은 드릴 복습 큐를 서버로 옮긴다 — 로그인했다고 기록이 사라지면 안 된다.
+    // 서버에 이미 있는 카드는 건드리지 않고(다른 기기가 더 진행했을 수 있다), 없는 것만 넣는다.
+    migrateGuestDrillQueue(user.id).catch(() => {});
   }, [user?.id]);
 
   // 이메일 회원가입
