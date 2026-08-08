@@ -28,6 +28,7 @@ export function AuthProvider({ children }) {
   // 쿠키가 없어 SDK를 건너뛴 상태 — 이 경우 로그인 성공 시 그 자리에서 listener를 붙여야 한다.
   const guestConfirmedRef = useRef(false);
   const subscriptionRef = useRef(null);
+  const unloadingRef = useRef(false);
 
   // 프로필 조회 및 스트릭 갱신
   async function fetchProfile(userId, metadata = {}) {
@@ -98,9 +99,25 @@ export function AuthProvider({ children }) {
         setProfile(data);
       }
     } catch (err) {
+      // 페이지를 떠나면 브라우저가 진행 중인 fetch를 끊고, 그게 "TypeError: Failed to fetch"로 온다.
+      // 취소는 실패가 아니다 — 에러로 남기면 정상 이동마다 콘솔이 오염되고,
+      // e2e의 "콘솔 에러 0" 단언이 경합으로 깨진다(smoke visibility flaky의 원인).
+      if (unloadingRef.current) return;
       console.error("프로필 로드/갱신 실패:", err.message);
     }
   }
+
+  // 이동 시작을 표시 — bfcache 복원(persisted)까지 고려해 pageshow에서 되돌린다.
+  useEffect(() => {
+    const onHide = () => { unloadingRef.current = true; };
+    const onShow = () => { unloadingRef.current = false; };
+    window.addEventListener('pagehide', onHide);
+    window.addEventListener('pageshow', onShow);
+    return () => {
+      window.removeEventListener('pagehide', onHide);
+      window.removeEventListener('pageshow', onShow);
+    };
+  }, []);
 
   // 세션 쿠키가 하나도 없으면 로그인 상태일 수 없다 — SDK(약 200 kB)를 받지 않고 게스트로 확정한다.
   // @supabase/ssr은 큰 세션을 `sb-<ref>-auth-token.0`처럼 조각내므로 접두사로 판정한다.
