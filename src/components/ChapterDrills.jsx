@@ -15,9 +15,10 @@ function HintToggle({ hint }) {
   const [open, setOpen] = useState(false);
   if (!hint) return null;
   if (!open) {
+    // 세로 패딩 1→3px: 실측 높이 23px이라 WCAG 2.5.8(AA) 최소 24px에 1px 모자랐다.
     return (
       <button type="button" onClick={() => setOpen(true)}
-        style={{ marginLeft: 8, fontSize: '0.75rem', color: 'var(--text-muted)', background: 'none', border: '1px solid var(--border)', borderRadius: 6, padding: '1px 8px', cursor: 'pointer' }}>
+        style={{ marginLeft: 8, fontSize: '0.75rem', color: 'var(--text-muted)', background: 'none', border: '1px solid var(--border)', borderRadius: 6, padding: '3px 8px', cursor: 'pointer' }}>
         힌트 보기
       </button>
     );
