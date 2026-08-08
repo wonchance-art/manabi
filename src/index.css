@@ -2868,6 +2868,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-size: 0.9rem;
   color: var(--text-secondary);
   transition: color var(--transition-fast);
+  /* WCAG 2.5.8(AA) 최소 24×24 — 실측 27×23. 높이만 1px 모자랐다. */
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
 }
 
 .landing-nav__link:hover {
@@ -3309,6 +3313,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-size: 0.85rem;
   color: var(--text-muted);
   transition: color var(--transition-fast);
+  /* WCAG 2.5.8(AA) 최소 24×24 — 실측 22px이라 2px 모자랐다. 글자 크기는 그대로 두고 히트 영역만 넓힌다. */
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
 }
 
 .landing-footer__link:hover {
@@ -8116,6 +8124,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .fr-header-bunkei:hover { background: var(--bg-elevated); color: var(--text-primary); }
 
 .lessons-list__bunkei-chip {
+  /* WCAG 2.5.8(AA) 최소 24×24 — 실측 53×23. 패딩 2→3px으로 높이만 채운다. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
   min-width: 6em;
   text-align: center;
   font-size: 0.72rem; font-weight: 700;
