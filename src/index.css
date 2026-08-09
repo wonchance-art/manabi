@@ -8942,7 +8942,6 @@ body.is-review-session .page-container { padding-top: 8px; }
   padding: 18px 20px; margin-bottom: 16px;
 }
 .vocab-hero__top { display: flex; align-items: baseline; gap: 10px; min-height: 44px; }
-.vocab-hero__opts { display: flex; gap: 8px; flex-wrap: wrap; }
 .vocab-tools { position: relative; margin-left: auto; align-self: center; }
 .vocab-tools__menu {
   position: absolute; right: 0; top: 100%; margin-top: 4px;
@@ -8958,6 +8957,7 @@ body.is-review-session .page-container { padding-top: 8px; }
 }
 .vocab-tools__item:hover { background: var(--bg-secondary); }
 .vocab-tools__item:disabled { opacity: 0.55; cursor: default; }
+.vocab-tools__field,
 .vocab-tools__limit { padding: 10px 14px; border-top: 1px solid var(--border); }
 .vocab-hero__kicker {
   font-size: 0.74rem; font-weight: 700;
@@ -9006,7 +9006,12 @@ body.is-review-session .page-container { padding-top: 8px; }
 }
 .search-input::placeholder { color: var(--text-muted); }
 .vocab-hero__go { display: flex; flex-direction: column; gap: 8px; }
-.vocab-hero__go > .btn--primary { width: 100%; justify-content: center; }
+/* 주 진입은 이 화면의 단 하나의 행동 — 위아래를 넉넉히 키워 무게를 준다 */
+.vocab-hero__go > .btn--primary {
+  width: 100%; justify-content: center;
+  min-height: 58px; padding-top: 16px; padding-bottom: 16px;
+  font-size: 1.02rem;
+}
 .vocab-hero__hint { margin: -2px 0 0; font-size: 0.76rem; color: var(--text-muted); text-align: center; }
 /* 개별 세션(단어만·문법만)은 보조 — 작은 고스트 한 줄 */
 .vocab-hero__split { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }

@@ -601,6 +601,51 @@ export default function VocabPage() {
                     onChange={e => { const f = e.target.files?.[0]; if (f) csvImportMutation.mutate(f); e.target.value = ''; }}
                     style={{ display: 'none' }} />
                   <Link href="/home" className="vocab-tools__item">학습 통계</Link>
+                  {/* 덱·방식은 기본값이면 평생 안 건드리는 설정 — 카드 표면 대신 여기(설정 서랍)에 산다.
+                      덱이 걸려 있으면 단어장 카드 요약에 덱 이름이 떠서 잊히지 않는다. */}
+                  {availableSeries.length > 0 && (
+                    <div className="vocab-tools__field">
+                      <label htmlFor="deck-filter" style={{ display: 'block', fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: 5 }}>
+                        덱
+                      </label>
+                      <select
+                        id="deck-filter"
+                        aria-label="덱 선택"
+                        value={seriesFilter}
+                        onChange={e => setSeriesFilter(e.target.value)}
+                        style={{
+                          width: '100%', padding: '6px 8px', fontSize: '0.85rem',
+                          borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)',
+                          background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer',
+                        }}
+                      >
+                        <option value="all">전체 덱</option>
+                        {availableSeries.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
+                      </select>
+                    </div>
+                  )}
+                  <div className="vocab-tools__field">
+                    <label htmlFor="review-mode" style={{ display: 'block', fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: 5 }}>
+                      단어 복습 방식
+                    </label>
+                    <select
+                      id="review-mode"
+                      aria-label="복습 방식"
+                      value={reviewMode}
+                      onChange={e => setReviewMode(e.target.value)}
+                      style={{
+                        width: '100%', padding: '6px 8px', fontSize: '0.85rem',
+                        borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)',
+                        background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer',
+                      }}
+                    >
+                      <option value="auto">자동</option>
+                      <option value="flash">플래시</option>
+                      <option value="typing">타이핑</option>
+                      <option value="context">문맥</option>
+                      <option value="listening" disabled={!ttsSupported}>듣기</option>
+                    </select>
+                  </div>
                   <div className="vocab-tools__limit">
                     <label htmlFor="new-per-day" style={{ display: 'block', fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: 5 }}>
                       하루 새 단어 한도
@@ -648,27 +693,6 @@ export default function VocabPage() {
                 </>
               )}
             </div>
-
-            {/* 범위·방식 — 기본값이면 건드릴 일 없는 설정이라 맨 아래 조용히. 라벨 없이 값이 자신을 설명한다. */}
-            {vocab.length > 0 && (availableSeries.length > 0 || session.count > 0) && (
-              <div className="vocab-hero__opts">
-                {availableSeries.length > 0 && (
-                  <select className="vocab-sort" aria-label="덱 선택" value={seriesFilter} onChange={e => setSeriesFilter(e.target.value)}>
-                    <option value="all">전체 덱</option>
-                    {availableSeries.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
-                  </select>
-                )}
-                {session.count > 0 && (
-                  <select className="vocab-sort" aria-label="복습 방식" value={reviewMode} onChange={e => setReviewMode(e.target.value)}>
-                    <option value="auto">자동</option>
-                    <option value="flash">플래시</option>
-                    <option value="typing">타이핑</option>
-                    <option value="context">문맥</option>
-                    <option value="listening" disabled={!ttsSupported}>듣기</option>
-                  </select>
-                )}
-              </div>
-            )}
           </div>
           <section className="card review-sec review-sec--vocab" aria-labelledby="dash-vocab">
             <div className="review-sec__head">
@@ -680,7 +704,12 @@ export default function VocabPage() {
               )}
             </div>
             {vocab.length > 0 && (
-              <p className="review-sec__meta">미학습 {deckStats.neu} · 학습 중 {deckStats.learning} · 숙련 {deckStats.mastered}</p>
+              <p className="review-sec__meta">
+                {seriesFilter !== 'all' && (
+                  <strong>{availableSeries.find(x => x.key === seriesFilter)?.label ?? seriesFilter} 덱 · </strong>
+                )}
+                미학습 {deckStats.neu} · 학습 중 {deckStats.learning} · 숙련 {deckStats.mastered}
+              </p>
             )}
             {vocab.length === 0 ? (
               <p className="review-sec__empty">교재나 자료에서 단어를 저장하면 여기에 모여요.</p>
