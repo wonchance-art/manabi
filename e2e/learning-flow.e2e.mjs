@@ -471,7 +471,7 @@ test('writing: 초안과 체크리스트를 새로고침 뒤 복원하고 이어
 // 인증 세션·DB upsert·캐시 재조회 중 하나가 끊기면 실재 어휘 저장부터 복습 카드 진입까지에서 잡는다.
 test('authenticated vocab: 레퍼런스 단어 저장을 /vocab 새 단어 복습 큐에 반영한다', { timeout: config.timeout * 2 }, async () => {
   await runInFreshPage(async (page, context) => {
-    const { session, storedWords, writes } = await mockAuthenticatedVocab(context);
+    const { session, storedWords, writes, writesByTable } = await mockAuthenticatedVocab(context);
     await page.goto('/french/vocab/a1', { waitUntil: 'domcontentloaded', timeout: config.timeout });
     await assertVisible(page.getByRole('heading', { name: 'A1 기초 어휘', exact: true }), 'French A1 vocabulary heading');
 
@@ -530,6 +530,26 @@ test('authenticated vocab: 레퍼런스 단어 저장을 /vocab 새 단어 복�
     await assertVisible(page.getByText('0 / 1', { exact: true }), 'one-word review queue');
     await assertVisible(page.getByRole('group', { name: '문맥에 맞는 뜻 고르기', exact: true }), 'saved word review card');
     await assertVisible(page.getByRole('button', { name: '가족', exact: true }), 'saved word review answer');
+
+    // ── 채점이 SRS 정본에 '올바른 컬럼명으로' 닿는지 ──
+    // 한때 easeFactor(비존재 컬럼)를 보내고 repetitions를 빠뜨려, PostgREST가 UPDATE 전체를
+    // 거부해도 화면엔 아무 표시가 없었다. 계약: PATCH 페이로드는 DB 컬럼과 동일한 snake_case.
+    await page.getByRole('button', { name: '가족', exact: true }).click();
+    const gradeDeadline = Date.now() + config.timeout;
+    let grades = [];
+    while (Date.now() < gradeDeadline) {
+      grades = (writesByTable.user_vocabulary || []).filter(
+        (row) => row && !row.word_text && row.next_review_at && 'interval' in row,
+      );
+      if (grades.length > 0) break;
+      await page.waitForTimeout(150);
+    }
+    assert.ok(grades.length >= 1, 'grading must persist FSRS stats to user_vocabulary');
+    const grade = grades[grades.length - 1];
+    for (const key of ['interval', 'ease_factor', 'repetitions', 'next_review_at']) {
+      assert.ok(key in grade, `grading payload must carry ${key}`);
+    }
+    assert.ok(!('easeFactor' in grade), 'camelCase easeFactor must never reach the DB');
     await sampleHeap(page, 'authenticated vocabulary save and review queue');
   });
 });
