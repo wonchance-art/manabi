@@ -14,15 +14,6 @@ describe('src/views 리뷰 후속 신뢰성 회귀', () => {
     expect(src.indexOf('if (error) return (')).toBeLessThan(src.indexOf('const isNewUser'));
   });
 
-  it('V-07 LearnPage: 조회 오류를 빈 상태로 바꾸지 않고 absent/ready 문구를 분리한다', () => {
-    const src = read('src/views/LearnPage.jsx');
-    expect(src).toContain('if (error) throw error');
-    expect(src).toContain('if (latestUsedResult.error) throw latestUsedResult.error');
-    expect(src).toContain("episodeState: episode == null ? 'absent' : 'ready'");
-    expect(src).toContain('if (error) return (');
-    expect(src).not.toContain('이야기 한 편이 준비됐어요');
-  });
-
   it('V-08 PdfViewerPage: signed URL 실패·경로 부재와 재시도를 렌더한다', () => {
     const src = read('src/views/PdfViewerPage.jsx');
     expect(src).toContain("throw new Error('SIGNED_URL_MISSING')");

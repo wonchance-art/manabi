@@ -8363,7 +8363,7 @@ body.is-review-session .page-container { padding-top: 8px; }
 }
 
 /* ── 듣고 읽기(/listen) — 인라인 형태소 탭 & 번역 줄 ── */
-/* 문장 속 단어 세그먼트 — 호버 시 은은한 하이라이트(learn-tile 틴트 톤), 탭하면 뜻 팝오버 */
+/* 문장 속 단어 세그먼트 — 호버 시 은은한 하이라이트, 탭하면 뜻 팝오버 */
 .listen-tok {
   cursor: pointer;
   border-radius: 3px;
@@ -8894,14 +8894,18 @@ body.is-review-session .page-container { padding-top: 8px; }
   .review-dash {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    grid-template-areas: 'hero vocab';
+    grid-template-areas:
+      'hero    vocab'
+      'revisit vocab';
     column-gap: 16px;
-    /* 두 카드는 stretch(기본값)로 같은 행 높이를 채운다 — 아래 모서리가 나란해야 한 판으로 읽힌다.
-       개별 margin-bottom(16/14px)이 남으면 바닥이 2px 어긋나므로 짝의 간격은 컨테이너가 갖는다. */
+    row-gap: 14px;
+    /* 카드들은 stretch(기본값)로 행 높이를 채운다 — 좌열(오늘+다시 보기)과 우열(단어장)의
+       바닥이 나란해야 한 판으로 읽힌다. 짝 안 개별 margin은 0, 간격은 그리드가 갖는다. */
     margin-bottom: 14px;
   }
   .review-dash > .vocab-hero { grid-area: hero; margin-bottom: 0; }
   .review-dash > .review-sec--vocab { grid-area: vocab; margin-bottom: 0; }
+  .review-dash > .review-sec--revisit { grid-area: revisit; margin-bottom: 0; }
 }
 
 /* ── 복습 대시보드 섹션 — 모든 영역이 같은 문법: 제목·수 / 오른쪽 진입 / 요약 한 줄 / 미리보기 행 ── */
@@ -9150,12 +9154,8 @@ body.is-review-session .page-container { padding-top: 8px; }
   .kana-test__prompt { font-size: 3.6rem; }
 }
 
-/* ========= LearnPage — 학습 허브 색 표정 =========
-   원칙: 기존 팔레트 변수만 사용(--primary/--accent/--warning/--danger/--text-muted).
-   타일별 --tile-accent 인라인 변수로 좌보더·아이콘원·hover 틴트·숫자색을 파생.
-   color-mix 로 라이트·다크 각 테마의 --bg-card 위에 은은한 틴트를 얹어 두 테마 공용. */
-
-/* ① 오늘 학습 주 CTA — 페이지 유일한 '큰' 요소: primary 그라데이션 + 좌측 악센트 밴드 */
+/* 강조형 이어서 카드(learn-cta) — 챕터 완주 CTA·코스맵 다음 단계가 쓴다:
+   primary 그라데이션 + 좌측 악센트 밴드 */
 .learn-cta {
   background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 15%, var(--bg-card)) 0%, var(--bg-card) 72%);
   border: 1px solid var(--border);
@@ -9167,22 +9167,7 @@ body.is-review-session .page-container { padding-top: 8px; }
 }
 .learn-cta .lessons-continue__meta { color: var(--primary-light); font-size: 1.05rem; }
 
-/* ② 이어지는 이야기 카드 — 좌보더 primary 한 줄의 '표정' */
-.learn-story {
-  display: block; text-decoration: none;
-  padding: 20px 22px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--primary);
-  border-radius: var(--radius-lg);
-  transition: all var(--transition-smooth);
-}
-.learn-story:hover { border-color: var(--border-hover); border-left-color: var(--primary); }
-.learn-story__kicker { font-size: 0.74rem; color: var(--text-muted); font-weight: 700; letter-spacing: 0.02em; margin-bottom: 6px; }
-.learn-story__title { font-size: 1.05rem; font-weight: 700; margin: 0 0 8px; line-height: 1.45; }
-.learn-story__more { font-size: 0.82rem; color: var(--text-secondary); }
-
-/* 망각 예보 카드 — 날씨 은유(안개), 홈/학습 공용. 죄책감 프레임 회피용으로
+/* 망각 예보 카드 — 날씨 은유(안개), 홈 전용. 죄책감 프레임 회피용으로
    danger/warning이 아닌 중립 text-muted 톤을 악센트로 쓴다(경보가 아니라 예보). */
 .forecast-card {
   display: flex; align-items: flex-start; gap: 12px;
@@ -9205,74 +9190,6 @@ body.is-review-session .page-container { padding-top: 8px; }
   background: var(--bg-secondary);
   border-radius: var(--radius-full);
   padding: 2px 10px;
-}
-
-/* ③ 연습실 그리드 + 타일 — 타일별 고유 악센트 */
-/* 연습실 타일 — 홈 벤토 1x1 셀, 세로 구성(아이콘 위, 제목·설명 아래) */
-.learn-tile {
-  display: flex; flex-direction: column; justify-content: center; gap: 6px;
-  text-decoration: none;
-  padding: 14px;
-  border-left: 3px solid var(--tile-accent, var(--border));
-}
-.learn-tile:hover {
-  background: color-mix(in srgb, var(--tile-accent, var(--text-muted)) 7%, var(--bg-card));
-  border-color: var(--border-hover);
-  border-left-color: var(--tile-accent, var(--border));
-}
-.learn-tile__head { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
-.learn-tile__icon {
-  width: 30px; height: 30px; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.95rem; line-height: 1;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--tile-accent, var(--text-muted)) 14%, transparent);
-}
-.learn-tile__badge { margin-left: 6px; font-size: 0.78rem; font-weight: 700; color: var(--tile-accent, var(--primary)); }
-
-/* ④ 성장 벤토 — 숫자 4개 각기 다른 악센트(타일 매핑과 일관), 라벨은 중립 유지 */
-.learn-stat .mypage-stat-cell__value { color: var(--tile-accent, var(--text-primary)); }
-
-/* /learn 진도·스트릭 — ProfileStats의 lvprog 문법과 같은 토큰을 재사용 */
-.learn-progress { margin: 0; }
-.learn-progress__language {
-  display: block;
-  margin-top: 3px;
-  font-size: 0.76rem;
-  color: var(--text-muted);
-}
-.learn-progress__counts {
-  width: 10.8em;
-  flex-shrink: 0;
-  text-align: right;
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-.learn-progress__footer,
-.learn-progress__guest-action {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 12px;
-  font-size: 0.76rem;
-  color: var(--text-muted);
-}
-.learn-progress__empty {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: 0.86rem;
-  line-height: 1.55;
-}
-.learn-progress__empty p { margin: 0 0 8px; }
-
-@media (max-width: 560px) {
-  .learn-progress .lvprog__row { align-items: flex-start; flex-wrap: wrap; }
-  .learn-progress .lvprog__bar { margin-top: 4px; }
-  .learn-progress__counts { width: 100%; padding-left: calc(2.8ch + 10px); text-align: left; }
-  .learn-progress__guest-action { align-items: flex-start; flex-direction: column; }
 }
 
 /* ========= 관리자 인라인 편집 (InlineEdit) =========
@@ -9460,7 +9377,6 @@ body.is-review-session .page-container { padding-top: 8px; }
 .track-card__cta { display: block; margin-top: 8px; font-size: 0.82rem; font-weight: 600; color: var(--accent-text, #2d6a4f); }
 .landing-section__desc { margin: 10px auto 0; max-width: 560px; font-size: 0.92rem; line-height: 1.6; color: var(--text-secondary); text-align: center; }
 
-.lessons-progress-embed { margin: 4px 0 20px; display: flex; flex-direction: column; gap: 12px; }
 
 /* ── 진입 화면(사설 도구) — 홍보 섹션 없이 트랙 선택만 ── */
 .landing--minimal { min-height: 100vh; display: flex; flex-direction: column; }

@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation';
 import { isPassed } from '../components/RefPatternCheck';
 import { useAuth } from '../lib/AuthContext';
 import { pullProgress } from '../lib/refProgress';
-import LearnPage from './LearnPage';
 
 const LanguageWorldMap = dynamic(() => import('../components/LanguageWorldMap'), {
   ssr: false,
@@ -81,7 +80,7 @@ function PitchLine({ text }) {
   );
 }
 
-export default function LessonsPage({ refManifest = {}, initialLang, initialLevel, progressCatalog = {} }) {
+export default function LessonsPage({ refManifest = {}, initialLang, initialLevel }) {
   const router = useRouter();
   const { user, profile } = useAuth();
   const isAdmin = profile?.role === 'admin';
@@ -245,8 +244,9 @@ export default function LessonsPage({ refManifest = {}, initialLang, initialLeve
         </div>
       </div>
 
-      {/* 내 진도 스트립 — 구 /learn 대시보드를 embedded로 통합 */}
-      <LearnPage embedded progressCatalog={progressCatalog} />
+      {/* 구 LearnPage 임베드 제거 — 오늘 학습 CTA·망각 예보·문법/어휘 복습 타일은 복습·홈과
+          중복이라 걷어냈다(시제 구분: 교재=새로 배우기). 서재·작문 입구는 복습 '다시 보기'로 이전,
+          레벨 진도는 아래 그룹 헤더가 직접 표시한다. */}
 
       {/* 이어서 학습 — 재방문자의 첫 화면은 '고를 것'이 아니라 '할 것' 하나여야 한다.
           언어·레벨 필터보다 위에 둬서 바로 이어가게 한다. */}
@@ -308,7 +308,8 @@ export default function LessonsPage({ refManifest = {}, initialLang, initialLeve
 
       {refLang && (
         <div className="lessons-list">
-          {/* 레퍼런스 소개 — 한국인 학습자 설계 + 콜아웃 범례 */}
+          {/* 트랙 소개 — 처음 온 사람에게만. 한 챕터라도 읽었으면 목록이 첫 화면이어야 한다. */}
+          {(refRead[langFilter]?.size ?? 0) === 0 && (
           <div className="card" style={{ padding: '14px 16px', marginBottom: 6 }}>
             {refLang.pitch && (
               <p style={{ fontSize: '1.05rem', fontWeight: 700, lineHeight: 1.55, margin: '2px 0 8px', color: 'var(--text-primary)' }}>
@@ -346,12 +347,16 @@ export default function LessonsPage({ refManifest = {}, initialLang, initialLeve
                 </div>
               </div>
             )}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: 6, fontSize: '0.74rem', color: 'var(--text-muted)' }}>
               {refLang.legend.map((item, i) => (
                 <span key={item}>{i > 0 && <span style={{ marginRight: 6 }}>·</span>}{item}</span>
               ))}
+              <Link href="/guide" prefetch={false} style={{ marginLeft: 'auto', fontWeight: 700, color: 'var(--accent-text)', display: 'inline-flex', alignItems: 'center', minHeight: 24 }}>
+                학습 가이드 →
+              </Link>
             </div>
           </div>
+          )}
 
           {/* 레벨별 레퍼런스 그룹 */}
           {refGroups.map(({ meta, chapters, vocabCount, bunkeiCount }) => {

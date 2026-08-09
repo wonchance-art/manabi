@@ -101,7 +101,7 @@ export function buildPushCopy({ falling, top3, hasNewEpisode, userNextReflected,
 // ── 재료 조회 ────────────────────────────────────────────────────────────
 
 /**
- * 예보 재료 — user_vocabulary에서 학습 이력 있는 행만(src/views/LearnPage.jsx의 forecastRows 쿼리와 동일 필터).
+ * 예보 재료 — user_vocabulary에서 학습 이력 있는 행만(홈 망각 예보의 forecastRows 쿼리와 동일 필터).
  * buildForecast는 순수함수라 이 재료를 그대로 넘기면 클라와 동일한 계산을 서버에서 재현한다.
  */
 export async function fetchForecastRows(supabase, userId, lang) {

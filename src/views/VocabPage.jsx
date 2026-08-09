@@ -744,6 +744,26 @@ export default function VocabPage() {
             )}
           </section>
 
+          {/* 다시 보기 — 교재의 서재·작문 타일을 이전해 온 것. 지난 학습물을 재방문하는 행동은
+              기억 축(복습) 소속이고, 이 둘의 입구는 앱 어디에도 중복이 없다. */}
+          <section className="card review-sec review-sec--revisit" aria-labelledby="dash-revisit">
+            <div className="review-sec__head">
+              <h2 id="dash-revisit" className="review-sec__title">다시 보기</h2>
+            </div>
+            <div className="review-sec__rows">
+              <Link href="/study/library" className="review-sec__row">
+                <span className="review-sec__word">서재</span>
+                <span className="review-sec__meaning">지난 문단 다시 읽기 · 내 자료로 학습</span>
+                <span className="review-sec__due">열기 →</span>
+              </Link>
+              <Link href="/writing" className="review-sec__row">
+                <span className="review-sec__word">작문 기록</span>
+                <span className="review-sec__meaning">내가 쓴 문장 돌아보기</span>
+                <span className="review-sec__due">열기 →</span>
+              </Link>
+            </div>
+          </section>
+
         </div>
       ) : tab === 'browse' ? (
         <>
