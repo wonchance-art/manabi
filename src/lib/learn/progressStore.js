@@ -140,7 +140,7 @@ export async function recordLessonCompleted(userId, lessonRef, options = {}) {
  *   - lang: 'Japanese' 등
  *   - correct: true | false
  *   - detail: { word_id, meaning, rating, ... } (메타)
- * @param {Object} [nextStats] - FSRS 결과 { interval, easeFactor, next_review_at, ... }
+ * @param {Object} [nextStats] - FSRS 결과 { interval, ease_factor, repetitions, next_review_at } — DB 컬럼과 동일한 snake_case여야 한다(미지 컬럼이 섞이면 PostgREST가 UPDATE 전체를 거부한다)
  */
 export async function recordReviewCompleted(userId, reviewRef, nextStats = {}) {
   if (!reviewRef || !reviewRef.type || !reviewRef.itemKey) return;

@@ -320,8 +320,12 @@ export default function VocabPage() {
       correct: rating > 1,
       detail: { word_id: currentWord.id, meaning: currentWord.meaning, rating, mode: reviewMode, qtype },
     }, {
+      // calculateFSRS 반환 키를 그대로 쓴다 — DB 컬럼과 동일(snake_case).
+      // 이전엔 easeFactor(비존재 컬럼)를 보내고 repetitions를 빠뜨려, PostgREST가 UPDATE 전체를
+      // 거부 → 채점해도 SRS가 전진하지 않는 조용한 실패였다(PATCH 페이로드 실측으로 확인).
       interval: nextStats.interval ?? 0,
-      easeFactor: nextStats.ease_factor ?? 0,
+      ease_factor: nextStats.ease_factor ?? 0,
+      repetitions: nextStats.repetitions ?? 0,
       next_review_at: nextStats.next_review_at,
     });
     // 기존 scoreMutation은 progressStore 내부에서 처리됨
