@@ -495,32 +495,19 @@ export default function VocabPage() {
         </div>
       )}
 
-      {/* 복습 히어로 — 이 페이지의 단 하나의 질문: 오늘 복습했나 */}
+      {/* 오늘-할-일 카드 — 위계는 셋뿐: 얼마나(수) → 무엇을(버튼) → 어떻게(조용한 셀렉트).
+          현황은 아래 한 줄, 단어장 관리는 ⋯ 메뉴로 뺐다 — 시선이 시작 버튼에 모이게. */}
       {tab === 'list' && !isLoading && (
         <div className="card vocab-hero">
-          <div className="vocab-hero__body">
+          <div className="vocab-hero__top">
             <span className="vocab-hero__kicker">{vocab.length === 0 ? '어휘' : '오늘 할 일'}</span>
             {vocab.length === 0 ? (
               <span className="vocab-hero__sub">자료를 읽으며 단어를 모아보세요</span>
             ) : session.count + dueGrammarCount > 0 ? (
-              <>
-                <span className="vocab-hero__num">{session.count + dueGrammarCount}</span>
-                <span className="vocab-hero__sub">
-                  개{[
-                    session.reviewsDue.length > 0 ? `단어 복습 ${session.reviewsDue.length}` : null,
-                    session.newToday > 0 ? `새 단어 ${session.newToday}` : null,
-                    dueGrammarCount > 0 ? `문법 ${dueGrammarCount}` : null,
-                  ].filter(Boolean).join(' · ') ? ` — ${[
-                    session.reviewsDue.length > 0 ? `단어 복습 ${session.reviewsDue.length}` : null,
-                    session.newToday > 0 ? `새 단어 ${session.newToday}` : null,
-                    dueGrammarCount > 0 ? `문법 ${dueGrammarCount}` : null,
-                  ].filter(Boolean).join(' · ')}` : ''}
-                </span>
-              </>
+              /* 분해(단어 n · 문법 m)는 적지 않는다 — 바로 아래 버튼 라벨이 그 자체다. 같은 수를 두 번 말하지 않는다. */
+              <span className="vocab-hero__num">{session.count + dueGrammarCount}</span>
             ) : session.newAvailable.length > 0 ? (
-              <span className="vocab-hero__done">
-                오늘 학습 끝 · 새 단어 {session.newAvailable.length}개는 내일
-              </span>
+              <span className="vocab-hero__done">오늘 학습 끝 · 새 단어 {session.newAvailable.length}개는 내일</span>
             ) : (
               <span className="vocab-hero__done">
                 오늘 복습 끝{(() => {
@@ -534,127 +521,100 @@ export default function VocabPage() {
                 })()}
               </span>
             )}
-          </div>
-          {/* 주 액션은 하나. 라벨은 실제로 할 일을 말한다 — 복습 0인데 '복습 시작'이라 하지 않는다. */}
-          <div className="vocab-hero__go">
-            {vocab.length === 0 ? (
-              <Link href="/materials" className="btn btn--primary">자료 읽기 →</Link>
-            ) : session.count > 0 ? (
-              <Button onClick={startReview}>
-                {session.reviewsDue.length > 0
-                  ? `단어 복습 ${session.reviewsDue.length}개 시작 →`
-                  : `새 단어 ${session.newToday}개 시작 →`}
-              </Button>
-            ) : dueGrammarCount > 0 ? (
-              <Link href="/review/grammar" className="btn btn--primary">문법 복습 {dueGrammarCount}개 →</Link>
-            ) : null}
-          </div>
-          {availableSeries.length > 0 && (
-            <div className="vocab-hero__mode">
-              <span className="vocab-hero__mode-label">덱</span>
-              <div className="chip-group" role="group" aria-label="단어 덱 필터">
-                {[{ key: 'all', label: '전체 덱' }, ...availableSeries].map(s => (
-                  <button
-                    type="button"
-                    key={s.key}
-                    className={`chip chip--sm ${seriesFilter === s.key ? 'chip--active' : ''}`}
-                    onClick={() => setSeriesFilter(s.key)}
-                    aria-pressed={seriesFilter === s.key}
+            {/* 단어장 관리(추가·CSV·Anki·통계·한도)는 매일 쓰는 게 아니다 — 한 메뉴로 접는다 */}
+            <details className="vocab-tools">
+              <summary className="btn btn--ghost btn--sm" aria-label="단어장 도구" style={{ cursor: 'pointer', listStyle: 'none' }}>⋯</summary>
+              <div className="vocab-tools__menu">
+                <button type="button" className="vocab-tools__item" onClick={() => setManualAddOpen(true)}>
+                  단어 직접 추가
+                </button>
+                <button type="button" className="vocab-tools__item" onClick={() => exportCSV(vocab)}>
+                  CSV 내보내기
+                </button>
+                <button type="button" className="vocab-tools__item" onClick={() => exportAnki(vocab)}>
+                  Anki 내보내기
+                </button>
+                <button type="button" className="vocab-tools__item" disabled={csvImportMutation.isPending} onClick={() => csvInputRef.current?.click()}>
+                  {csvImportMutation.isPending ? 'CSV 가져오는 중…' : 'CSV 가져오기'}
+                </button>
+                <input ref={csvInputRef} type="file" accept=".csv,text/csv" disabled={csvImportMutation.isPending}
+                  aria-label="CSV 파일 선택"
+                  onChange={e => { const f = e.target.files?.[0]; if (f) csvImportMutation.mutate(f); e.target.value = ''; }}
+                  style={{ display: 'none' }} />
+                <Link href="/home" className="vocab-tools__item">학습 통계</Link>
+                <div className="vocab-tools__limit">
+                  <label htmlFor="new-per-day" style={{ display: 'block', fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: 5 }}>
+                    하루 새 단어 한도
+                  </label>
+                  <select
+                    id="new-per-day"
+                    value={newPerDay}
+                    onChange={e => setNewPerDay(parseInt(e.target.value, 10))}
+                    style={{
+                      width: '100%', padding: '6px 8px', fontSize: '0.85rem',
+                      borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)',
+                      background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer',
+                    }}
                   >
-                    {s.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-          {session.count > 0 && (
-            <div className="vocab-hero__mode">
-              <span className="vocab-hero__mode-label">방식</span>
-              <div className="chip-group" role="group" aria-label="복습 방식">
-                {[['auto', '자동'], ['flash', '플래시'], ['typing', '타이핑'], ['context', '문맥'], ['listening', '듣기']].map(([m, label]) => (
-                  <button
-                    key={m}
-                    type="button"
-                    className={`chip chip--sm ${reviewMode === m ? 'chip--active' : ''}`}
-                    onClick={() => setReviewMode(m)}
-                    aria-pressed={reviewMode === m}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-          <div className="vocab-hero__more">
-            {/* 문법 복습은 별도 네비 탭 대신 이 복습 허브에 함께 둔다(어휘·문법 한자리). */}
-            {!(vocab.length > 0 && session.count === 0 && dueGrammarCount > 0) && (
-              <Link href="/review/grammar" className="btn btn--ghost btn--sm">
-                문법 복습{dueGrammarCount > 0 ? ` ${dueGrammarCount}` : ''} →
-              </Link>
-            )}
-            <Button size="sm" variant="ghost" onClick={() => setManualAddOpen(true)}>단어 추가</Button>
-            {vocab.length > 0 && (
-              <details style={{ position: 'relative' }}>
-                <summary className="btn btn--ghost btn--sm" aria-label="단어장 도구" style={{ cursor: 'pointer', listStyle: 'none' }}>⋯</summary>
-                <div style={{
-                  position: 'absolute', right: 0, top: '100%', marginTop: 4,
-                  background: 'var(--bg-card)', border: '1px solid var(--border)',
-                  borderRadius: 'var(--radius-md)', boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
-                  zIndex: 100, minWidth: 160, overflow: 'hidden',
-                }}>
-                  <button type="button" onClick={() => exportCSV(vocab)} style={{ display: 'block', width: '100%', padding: '10px 14px', border: 'none', background: 'transparent', textAlign: 'left', fontSize: '0.85rem', cursor: 'pointer', color: 'var(--text-primary)' }}>
-                    CSV 내보내기
-                  </button>
-                  <button type="button" onClick={() => exportAnki(vocab)} style={{ display: 'block', width: '100%', padding: '10px 14px', border: 'none', background: 'transparent', textAlign: 'left', fontSize: '0.85rem', cursor: 'pointer', color: 'var(--text-primary)' }}>
-                    Anki 내보내기
-                  </button>
-                  <button type="button" disabled={csvImportMutation.isPending} onClick={() => csvInputRef.current?.click()} style={{ display: 'block', width: '100%', padding: '10px 14px', border: 'none', background: 'transparent', textAlign: 'left', fontSize: '0.85rem', cursor: 'pointer', color: 'var(--text-primary)' }}>
-                    {csvImportMutation.isPending ? 'CSV 가져오는 중…' : 'CSV 가져오기'}
-                  </button>
-                  <input ref={csvInputRef} type="file" accept=".csv,text/csv" disabled={csvImportMutation.isPending}
-                    aria-label="CSV 파일 선택"
-                    onChange={e => { const f = e.target.files?.[0]; if (f) csvImportMutation.mutate(f); e.target.value = ''; }}
-                    style={{ display: 'none' }} />
-                  <Link href="/home" style={{ display: 'block', padding: '10px 14px', fontSize: '0.85rem', textDecoration: 'none', color: 'var(--text-primary)' }}>
-                    학습 통계
-                  </Link>
-                  <div style={{ padding: '10px 14px', borderTop: '1px solid var(--border)' }}>
-                    <label htmlFor="new-per-day" style={{ display: 'block', fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: 5 }}>
-                      하루 새 단어 한도
-                    </label>
-                    <select
-                      id="new-per-day"
-                      value={newPerDay}
-                      onChange={e => setNewPerDay(parseInt(e.target.value, 10))}
-                      style={{
-                        width: '100%', padding: '6px 8px', fontSize: '0.85rem',
-                        borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)',
-                        background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer',
-                      }}
-                    >
-                      {NEW_PER_DAY_OPTIONS.map(n => (
-                        <option key={n} value={n}>{n === 0 ? '없음 (복습만)' : `${n}개`}</option>
-                      ))}
-                    </select>
-                  </div>
+                    {NEW_PER_DAY_OPTIONS.map(n => (
+                      <option key={n} value={n}>{n === 0 ? '없음 (복습만)' : `${n}개`}</option>
+                    ))}
+                  </select>
                 </div>
-              </details>
-            )}
+              </div>
+            </details>
           </div>
+
+          {/* 할 일 = 버튼. 위의 총계를 버튼 두 개가 그대로 나눠 갖는다(단어 n + 문법 m). */}
+          {(vocab.length === 0 || session.count > 0 || dueGrammarCount > 0) && (
+            <div className="vocab-hero__go">
+              {vocab.length === 0 ? (
+                <Link href="/materials" className="btn btn--primary">자료 읽기 →</Link>
+              ) : (
+                <>
+                  {session.count > 0 && (
+                    <Button onClick={startReview}>단어 {session.count}개 시작 →</Button>
+                  )}
+                  {dueGrammarCount > 0 && (
+                    <Link href="/review/grammar" className={`btn ${session.count > 0 ? 'btn--ghost' : 'btn--primary'}`}>
+                      문법 {dueGrammarCount}개 시작 →
+                    </Link>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+
+          {/* 범위·방식 — 기본값이면 건드릴 일 없는 설정이라 맨 아래 조용히. 라벨 없이 값이 자신을 설명한다. */}
+          {vocab.length > 0 && (availableSeries.length > 0 || session.count > 0) && (
+            <div className="vocab-hero__opts">
+              {availableSeries.length > 0 && (
+                <select className="vocab-sort" aria-label="덱 선택" value={seriesFilter} onChange={e => setSeriesFilter(e.target.value)}>
+                  <option value="all">전체 덱</option>
+                  {availableSeries.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
+                </select>
+              )}
+              {session.count > 0 && (
+                <select className="vocab-sort" aria-label="복습 방식" value={reviewMode} onChange={e => setReviewMode(e.target.value)}>
+                  <option value="auto">자동</option>
+                  <option value="flash">플래시</option>
+                  <option value="typing">타이핑</option>
+                  <option value="context">문맥</option>
+                  <option value="listening" disabled={!ttsSupported}>듣기</option>
+                </select>
+              )}
+            </div>
+          )}
         </div>
       )}
 
-      {/* 상단 미니 현황 — 내 단어장 구성(미학습·학습 중·숙련) + 오늘 신규 한도 */}
+      {/* 단어장 구성 한 줄 — 읽는 것. '오늘 신규 n/한도'는 뺐다(위 카드의 단어 수가 이미
+          한도를 반영하고, 한도 설정은 ⋯ 메뉴에 있다 — 같은 사실을 세 곳에서 말하지 않는다). */}
       {tab === 'list' && !isLoading && vocab.length > 0 && (
         <div className="vocab-stat-strip">
           <span className="vocab-stat">미학습 <strong>{deckStats.neu}</strong></span>
           <span className="vocab-stat">학습 중 <strong>{deckStats.learning}</strong></span>
           <span className="vocab-stat">숙련 <strong>{deckStats.mastered}</strong></span>
-          {newPerDay > 0 && (
-            <span className="vocab-stat" title="오늘 새로 시작한 단어 / 하루 한도">
-              오늘 신규 <strong>{introIds.length}/{newPerDay}</strong>
-            </span>
-          )}
         </div>
       )}
 

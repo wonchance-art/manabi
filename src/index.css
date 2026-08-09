@@ -8887,14 +8887,30 @@ body.is-review-session .page-container { padding-top: 8px; }
 .hm-strip .hm-day { width: 100%; min-width: 9px; }
 
 /* 어휘 — 복습 히어로 */
-/* 액션 4개를 한 줄에 욱여넣어 모바일에서 '+ 추/가'로 쪼개졌다(실측 390px).
-   세로로 쌓고, 주 액션과 보조 액션의 무게를 나눈다. */
+/* 오늘-할-일 카드 — 모든 줄이 왼쪽 한 축에 맞는다. 위계: 수(top) → 버튼(go) → 설정(opts). */
 .vocab-hero {
   display: flex; flex-direction: column; align-items: stretch;
-  gap: 14px;
+  gap: 12px;
   padding: 18px 20px; margin-bottom: 16px;
 }
-.vocab-hero__body { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.vocab-hero__top { display: flex; align-items: baseline; gap: 10px; min-height: 44px; }
+.vocab-hero__opts { display: flex; gap: 8px; flex-wrap: wrap; }
+.vocab-tools { position: relative; margin-left: auto; align-self: center; }
+.vocab-tools__menu {
+  position: absolute; right: 0; top: 100%; margin-top: 4px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-md); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  z-index: 100; min-width: 172px; overflow: hidden;
+}
+.vocab-tools__item {
+  display: block; width: 100%; padding: 10px 14px;
+  border: none; background: transparent; text-align: left;
+  font-size: 0.85rem; cursor: pointer;
+  color: var(--text-primary); text-decoration: none;
+}
+.vocab-tools__item:hover { background: var(--bg-secondary); }
+.vocab-tools__item:disabled { opacity: 0.55; cursor: default; }
+.vocab-tools__limit { padding: 10px 14px; border-top: 1px solid var(--border); }
 .vocab-hero__kicker {
   font-size: 0.74rem; font-weight: 700;
   color: var(--text-muted); letter-spacing: 0.02em;
@@ -8908,7 +8924,6 @@ body.is-review-session .page-container { padding-top: 8px; }
 }
 .vocab-hero__sub { font-size: 0.88rem; color: var(--text-secondary); }
 .vocab-hero__done { font-size: 0.92rem; font-weight: 600; color: var(--accent-text); }
-.vocab-hero__actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 /* 목록 필터 한 줄 — 정렬(select) + 언어 칩 + 개수 + 선택 */
 .vocab-filter-row {
   display: flex; align-items: center; gap: 8px 10px; flex-wrap: wrap;
@@ -8934,13 +8949,6 @@ body.is-review-session .page-container { padding-top: 8px; }
   background-repeat: no-repeat;
 }
 
-.vocab-hero__mode { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.vocab-hero__mode-label {
-  flex-shrink: 0; font-size: 0.74rem; font-weight: 700;
-  color: var(--text-muted);
-}
-.chip--sm { padding: 5px 11px; font-size: 0.76rem; min-height: 32px; }
-
 /* 검색 입력에 배경·글자색 계약이 없어 다크 테마에서 흰 상자로 떴다(실측). */
 .search-input {
   background: var(--bg-secondary);
@@ -8949,19 +8957,8 @@ body.is-review-session .page-container { padding-top: 8px; }
   border-radius: var(--radius-md);
 }
 .search-input::placeholder { color: var(--text-muted); }
-.vocab-hero__go { display: flex; }
-.vocab-hero__go .btn { flex: 1; justify-content: center; }
-.vocab-hero__more {
-  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
-  margin-top: -4px;
-}
-@media (min-width: 620px) {
-  /* 넓으면 한 줄로 — 주 액션이 오른쪽에 붙는다 */
-  .vocab-hero { flex-direction: row; align-items: center; flex-wrap: wrap; }
-  .vocab-hero__body { flex: 1; }
-  .vocab-hero__go .btn { flex: none; }
-  .vocab-hero__more { margin-top: 0; }
-}
+.vocab-hero__go { display: flex; flex-direction: column; gap: 8px; }
+.vocab-hero__go .btn { width: 100%; justify-content: center; }
 
 /* 상단 미니 현황 strip — 복습/신규/학습 중/숙련 한눈에 */
 .vocab-stat-strip {

@@ -63,9 +63,9 @@ describe('핵심 학습 경로 접근성 수리 계약', () => {
     const vocab = source('src/views/VocabReview.jsx');
     const page = source('src/views/VocabPage.jsx');
     const grammar = source('src/views/GrammarReviewSession.jsx');
-    // 방식 선택은 세션 중이 아니라 시작 전(VocabPage)에서 고른다 — 세션 화면은 문항만 남긴다.
-    expect(page).toContain('role="group" aria-label="복습 방식"');
-    expect(page).toContain('aria-pressed={reviewMode === m}');
+    // 방식·덱 선택은 세션 시작 전(VocabPage)의 셀렉트다 — 칩 그룹에서 바꿨지만 접근 가능한 이름은 유지.
+    expect(page).toContain('aria-label="복습 방식"');
+    expect(page).toContain('aria-label="덱 선택"');
     // 진행 안내도 카드 안에서 상단바로 옮겼다 — 안내 자체는 유지되어야 한다.
     expect(page).toContain('role="progressbar"');
     expect(page).toContain('role="status" aria-live="polite"');
