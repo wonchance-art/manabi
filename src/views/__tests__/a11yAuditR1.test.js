@@ -40,7 +40,9 @@ describe('핵심 학습 경로 접근성 수리 계약', () => {
     expect(list).toContain('className="vocab-row__word-button"');
     expect(list).toContain('aria-pressed={selectMode ? selected : undefined}');
     expect(list).toContain('aria-label="단어장 검색"');
-    expect(list).toContain('role="group" aria-label="정렬 순서"');
+    // 정렬은 칩 3개에서 레이블 있는 select로 바뀌었다(줄 수를 줄이려고).
+    // 계약은 "정렬 컨트롤에 접근 가능한 이름이 있다"이지 특정 마크업이 아니다.
+    expect(list).toMatch(/aria-label="정렬 순서"/);
     expect(list).toContain('aria-label={`${v.word_text} 발음 듣기`}');
   });
 
@@ -59,9 +61,14 @@ describe('핵심 학습 경로 접근성 수리 계약', () => {
 
   it('어휘·문법 복습의 모드와 동적 결과가 보조기술에 전달된다', () => {
     const vocab = source('src/views/VocabReview.jsx');
+    const page = source('src/views/VocabPage.jsx');
     const grammar = source('src/views/GrammarReviewSession.jsx');
-    expect(vocab).toContain('role="group" aria-label="복습 모드"');
-    expect(vocab).toContain('aria-pressed={reviewMode === m}');
+    // 방식 선택은 세션 중이 아니라 시작 전(VocabPage)에서 고른다 — 세션 화면은 문항만 남긴다.
+    expect(page).toContain('role="group" aria-label="복습 방식"');
+    expect(page).toContain('aria-pressed={reviewMode === m}');
+    // 진행 안내도 카드 안에서 상단바로 옮겼다 — 안내 자체는 유지되어야 한다.
+    expect(page).toContain('role="progressbar"');
+    expect(page).toContain('role="status" aria-live="polite"');
     expect(vocab).toContain('role="status" aria-live="polite"');
     expect(grammar).toContain('role="status" aria-live="polite"');
     expect(grammar).toContain('aria-controls={`grammar-review-answer-${idx}-${q.id}`}');

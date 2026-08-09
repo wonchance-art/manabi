@@ -7,11 +7,20 @@ import { refInline } from './refShared';
 const LANG_CODE = { Japanese: 'ja', Chinese: 'zh-Hans', English: 'en', French: 'fr' };
 
 export default function VocabList({
-  filteredVocab, visibleCount, setVisibleCount,
+  vocab = [], filteredVocab, visibleCount, setVisibleCount,
   search, setSearch, sortBy, setSortBy, langFilter, setLangFilter,
   ttsSupported, speak, setConfirmAction, deleteMutation, onWordClick,
   bulkDeleteMutation, updateVocabMutation,
 }) {
+  // 단어장에 실제로 존재하는 언어(표시 순서는 고정 라벨 순)
+  const LANG_LABELS = [
+    { value: 'Japanese', label: '일본어' },
+    { value: 'English', label: '영어' },
+    { value: 'French', label: '프랑스어' },
+    { value: 'Chinese', label: '중국어' },
+  ];
+  const langsInVocab = LANG_LABELS.filter(l => vocab.some(v => v.language === l.value));
+
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [editing, setEditing] = useState(null); // 편집 중인 단어
@@ -96,32 +105,26 @@ export default function VocabList({
               className="search-input"
             />
           </div>
-          <div className="chip-group" role="group" aria-label="정렬 순서">
-            {[
-              { value: 'due', label: '복습 순' },
-              { value: 'newest', label: '최신 순' },
-              { value: 'alpha', label: '가나다 순' },
-            ].map(opt => (
-              <button
-                type="button"
-                key={opt.value}
-                onClick={() => setSortBy(opt.value)}
-                className={`chip ${sortBy === opt.value ? 'chip--active' : ''}`}
-                aria-pressed={sortBy === opt.value}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
         </div>
+        <div className="vocab-filter-row">
+          {/* 정렬은 검색과 다른 성격이라 필터 줄로 내렸다 — 검색 줄에 함께 두니 줄이 하나 더 생겼다 */}
+          <select
+            className="vocab-sort"
+            value={sortBy}
+            onChange={e => setSortBy(e.target.value)}
+            aria-label="정렬 순서"
+          >
+            <option value="due">복습 순</option>
+            <option value="newest">최신 순</option>
+            <option value="alpha">가나다 순</option>
+          </select>
         <div className="chip-group" role="group" aria-label="단어 언어 필터">
-          {[
-            { value: 'all', label: '전체' },
-            { value: 'Japanese', label: '일본어' },
-            { value: 'English', label: '영어' },
-            { value: 'French', label: '프랑스어' },
-            { value: 'Chinese', label: '중국어' },
-          ].map(f => (
+          {/* 4개 언어를 늘 깔아 두면 단어가 한 언어뿐일 때도 칩 5개가 자리를 먹는다 —
+              단어장에 실제로 있는 언어만, 그것도 둘 이상일 때만 보여준다. */}
+          {(langsInVocab.length > 1
+            ? [{ value: 'all', label: '전체' }, ...langsInVocab]
+            : []
+          ).map(f => (
             <button
               type="button"
               key={f.value}
@@ -132,15 +135,13 @@ export default function VocabList({
               {f.label}
             </button>
           ))}
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginLeft: '4px' }}>
-            {filteredVocab.length}개
-          </span>
+        </div>
+          <span className="vocab-filter-row__count">{filteredVocab.length}개</span>
           {filteredVocab.length > 0 && (
             <button
               type="button"
               onClick={() => { selectMode ? exitSelectMode() : setSelectMode(true); }}
               className={`chip ${selectMode ? 'chip--active' : ''}`}
-              style={{ marginLeft: 'auto' }}
               aria-pressed={selectMode}
             >
               {selectMode ? '✕ 취소' : '☑ 선택'}
