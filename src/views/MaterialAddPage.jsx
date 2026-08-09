@@ -64,21 +64,6 @@ export default function MaterialAddPage() {
       .finally(() => setIsSuggestionLoading(false));
   }, []);
 
-  // 클립보드 페이스트 진입 (iPad 등) — sessionStorage로 전달된 텍스트 자동 채우기
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      const pending = sessionStorage.getItem('pending_paste');
-      if (pending) {
-        setRawText(pending);
-        sessionStorage.removeItem('pending_paste');
-        setTimeout(() => {
-          document.querySelector('.form-textarea')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 100);
-      }
-    } catch {}
-  }, []);
-
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState('시스템 대기 중');
@@ -280,7 +265,7 @@ export default function MaterialAddPage() {
           <div className="form-field">
             <label className="form-label">
               공개 범위
-              {pdfSource && <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginLeft: 6 }}>(PDF 출처는 Private 고정)</span>}
+              {pdfSource && <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginLeft: 6 }}>(PDF 출처는 비공개 고정)</span>}
             </label>
             <div className="toggle-group">
               <button
@@ -288,14 +273,14 @@ export default function MaterialAddPage() {
                 className={`toggle-btn ${visibility === 'private' ? 'toggle-btn--primary' : ''}`}
                 disabled={!!pdfSource}
               >
-                Private
+                비공개
               </button>
               <button
                 onClick={() => !pdfSource && setVisibility('public')}
                 className={`toggle-btn ${visibility === 'public' ? 'toggle-btn--accent' : ''}`}
                 disabled={!!pdfSource}
               >
-                Public
+                공용
               </button>
             </div>
           </div>

@@ -327,31 +327,12 @@ export default function MaterialsPage() {
       <div className="page-header page-header--row">
         <div>
           <h1 className="page-header__title">자료실</h1>
-          <p className="page-header__subtitle">현지 언어 콘텐츠 (기사·이야기·PDF). 패턴 학습은 <Link href="/lessons" style={{ color: 'var(--primary-light)' }}>강의</Link>에서</p>
+          <p className="page-header__subtitle">현지 언어 콘텐츠 (기사·이야기·PDF). 패턴 학습은 <Link href="/lessons" style={{ color: 'var(--accent-text)' }}>교재</Link>에서</p>
         </div>
-        <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-          <button
-            className="btn btn--ghost btn--md"
-            onClick={async () => {
-              try {
-                const t = await navigator.clipboard.readText();
-                if (t?.trim()) {
-                  sessionStorage.setItem('pending_paste', t.trim());
-                  router.push('/materials/add');
-                } else {
-                  toast('클립보드가 비어있어요', 'info');
-                }
-              } catch {
-                toast('브라우저 클립보드 접근을 허용해 주세요', 'warning');
-              }
-            }}
-          >
-            붙여넣어 시작
-          </button>
-          <Link href="/materials/add" className="btn btn--primary btn--md">
-            새 자료 추가
-          </Link>
-        </div>
+        {/* 추가 입구는 하나 — 클립보드 붙여넣기는 추가 화면 안에 있다 */}
+        <Link href="/materials/add" className="btn btn--primary btn--md" style={{ flexShrink: 0 }}>
+          새 자료 추가
+        </Link>
       </div>
 
       {/* Search */}
@@ -370,11 +351,11 @@ export default function MaterialsPage() {
         <div className="tab-pills">
           <button onClick={() => setTab('public')}
             className={`tab-pills__item ${tab === 'public' ? 'tab-pills__item--accent' : ''}`}>
-            Public
+            공용
           </button>
           <button onClick={() => setTab('private')}
             className={`tab-pills__item ${tab === 'private' ? 'tab-pills__item--primary' : ''}`}>
-            Private
+            내 자료
           </button>
           {user && (
             <button onClick={() => setTab('pdf')}
@@ -565,7 +546,15 @@ export default function MaterialsPage() {
                       })()}
                     </div>
                   </div>
-                  <h3 className="card__title">{m.title}</h3>
+                  <h3 className="card__title">
+                    <Link
+                      href={`/viewer/${m.id}`}
+                      style={{ color: 'inherit', textDecoration: 'none' }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {m.title}
+                    </Link>
+                  </h3>
                 </div>
                 <div className="card__footer">
                   <span>
@@ -581,7 +570,7 @@ export default function MaterialsPage() {
                     {m.owner_id === user?.id ? (
                       <button
                         className="btn btn--ghost btn--sm"
-                        style={{ fontSize: '0.75rem', padding: '2px 8px' }}
+                        style={{ fontSize: '0.75rem', padding: '5px 10px' }}
                         disabled={toggleVisibilityMutation.isPending}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -599,7 +588,7 @@ export default function MaterialsPage() {
                     {m.owner_id === user?.id && (
                       <button
                         className="btn btn--ghost btn--sm"
-                        style={{ color: 'var(--danger)', padding: '2px 6px', fontSize: '0.75rem' }}
+                        style={{ color: 'var(--danger)', padding: '5px 10px', fontSize: '0.75rem' }}
                         disabled={deleteMutation.isPending}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -672,34 +661,18 @@ export default function MaterialsPage() {
         </div>
       )}
 
-      {/* 오늘의 추천 — 유저 레벨 ±1 필터링 */}
+      {/* 오늘의 추천(크론 수집) — 있을 때만 보인다. 빈 날의 상시 안내 카드는
+          상단 '새 자료 추가'·가이드 링크와 같은 문이라 없앴다. */}
       {(() => {
         const filteredSuggestions = filterSuggestionsByProfile(suggestions, profile);
-        if (filteredSuggestions.length > 0) {
-          return (
-            <section className="suggestions-section" style={{ marginTop: '40px' }}>
-              <h2 className="suggestions-section__title">오늘의 추천 자료</h2>
-              <div className="suggestions-grid">
-                {filteredSuggestions.map(s => (
-                  <SuggestionCard key={s.id} suggestion={s} router={router} />
-                ))}
-              </div>
-            </section>
-          );
-        }
-        // 추천이 없을 때 — 직접 추가 유도
+        if (filteredSuggestions.length === 0) return null;
         return (
           <section className="suggestions-section" style={{ marginTop: '40px' }}>
             <h2 className="suggestions-section__title">오늘의 추천 자료</h2>
-            <div className="card" style={{ padding: '28px 20px', textAlign: 'center' }}>
-              <p style={{ color: 'var(--text-secondary)', marginBottom: 16, fontSize: '0.9rem' }}>
-                오늘의 추천이 아직 준비되지 않았어요.
-                <br />직접 관심 있는 텍스트를 추가해보세요!
-              </p>
-              <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-                <Link href="/materials/add" className="btn btn--primary btn--sm">자료 추가하기</Link>
-                <Link href="/guide" className="btn btn--secondary btn--sm">학습 로드맵 보기</Link>
-              </div>
+            <div className="suggestions-grid">
+              {filteredSuggestions.map(s => (
+                <SuggestionCard key={s.id} suggestion={s} router={router} />
+              ))}
             </div>
           </section>
         );
