@@ -8887,6 +8887,24 @@ body.is-review-session .page-container { padding-top: 8px; }
 .hm-strip .hm-day { width: 100%; min-width: 9px; }
 
 /* 어휘 — 복습 히어로 */
+/* 가로로 넓을 때 — 카드가 한 열로 길게 늘어지지 않게 2열로 조판한다.
+   왼쪽 = 행동(오늘 카드)과 짧은 조망(문법 큐), 오른쪽 = 목록(단어장).
+   모바일은 DOM 순서 그대로 세로(오늘 → 단어장 → 문법). */
+@media (min-width: 900px) {
+  .review-dash {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      'hero    vocab'
+      'grammar vocab';
+    column-gap: 16px;
+    align-items: start;
+  }
+  .review-dash > .vocab-hero { grid-area: hero; }
+  .review-dash > .review-sec--vocab { grid-area: vocab; }
+  .review-dash > .review-sec--grammar { grid-area: grammar; }
+}
+
 /* ── 복습 대시보드 섹션 — 모든 영역이 같은 문법: 제목·수 / 오른쪽 진입 / 요약 한 줄 / 미리보기 행 ── */
 .review-sec { display: flex; flex-direction: column; gap: 8px; padding: 16px 20px; margin-bottom: 14px; }
 .review-sec__head { display: flex; align-items: baseline; gap: 6px; }
