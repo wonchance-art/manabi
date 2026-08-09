@@ -25,7 +25,6 @@ export default function MyPage() {
   const [isEditingGoals, setIsEditingGoals] = useState(false);
   const [goalReview, setGoalReview]       = useState(5);
   const [goalWords, setGoalWords]         = useState(5);
-  const [goalRead, setGoalRead]           = useState(1);
 
   const [openPanel, setOpenPanel] = useState(null);
   const togglePanel = (key) => setOpenPanel(prev => prev === key ? null : key);
@@ -119,7 +118,6 @@ export default function MyPage() {
   function startEditGoals() {
     setGoalReview(profile?.goal_review ?? 5);
     setGoalWords(profile?.goal_words  ?? 5);
-    setGoalRead(profile?.goal_read    ?? 1);
     setIsEditingGoals(true);
   }
 
@@ -128,7 +126,6 @@ export default function MyPage() {
       const { error } = await supabase.from('profiles').update({
         goal_review: Math.max(1, goalReview),
         goal_words:  Math.max(1, goalWords),
-        goal_read:   Math.max(1, goalRead),
       }).eq('id', user.id);
       if (error) throw error;
     },
@@ -239,7 +236,7 @@ export default function MyPage() {
         <details className="mypage-collapse" open={openPanel === 'goals'}
           onToggle={e => { if (e.currentTarget.open) setOpenPanel('goals'); else if (openPanel === 'goals') setOpenPanel(null); }}>
           <summary className="mypage-collapse__summary" onClick={e => { e.preventDefault(); togglePanel('goals'); }}>
-            <span>일일 목표 (복습 {profile?.goal_review ?? 5} · 수집 {profile?.goal_words ?? 5} · 완독 {profile?.goal_read ?? 1})</span>
+            <span>일일 목표 (복습 {profile?.goal_review ?? 5} · 수집 {profile?.goal_words ?? 5})</span>
             <span className="mypage-collapse__chevron">▾</span>
           </summary>
           <div className="mypage-collapse__body">
@@ -248,7 +245,6 @@ export default function MyPage() {
                 {[
                   { label: '단어 복습', value: goalReview, set: setGoalReview, min: 1, max: 50 },
                   { label: '단어 수집', value: goalWords,  set: setGoalWords,  min: 1, max: 30 },
-                  { label: '자료 완독', value: goalRead,   set: setGoalRead,   min: 1, max: 5  },
                 ].map(({ label, value, set, min, max }) => (
                   <div key={label} className="mypage-goal-slider">
                     <div className="mypage-goal-slider__head"><span>{label}</span><span className="mypage-goal-slider__value">{value}개</span></div>
@@ -271,41 +267,24 @@ export default function MyPage() {
         <details className="mypage-collapse" open={openPanel === 'alarm'}
           onToggle={e => { if (e.currentTarget.open) setOpenPanel('alarm'); else if (openPanel === 'alarm') setOpenPanel(null); }}>
           <summary className="mypage-collapse__summary" onClick={e => { e.preventDefault(); togglePanel('alarm'); }}>
-            <span>복습 알림 {reminderHour ? `(매일 ${reminderHour}시)` : '(꺼짐)'}</span>
+            <span>
+              {pushEnabled
+                ? `알림 (푸시 ${pushState?.subscribed ? '켜짐' : '꺼짐'}${reminderHour ? ` · 매일 ${reminderHour}시` : ''})`
+                : `알림 ${reminderHour ? `(매일 ${reminderHour}시)` : '(꺼짐)'}`}
+            </span>
             <span className="mypage-collapse__chevron">▾</span>
           </summary>
           <div className="mypage-collapse__body">
-            {typeof Notification !== 'undefined' && notifPerm === 'denied' && (
-              <div className="mypage-reminder-blocked">브라우저에서 알림이 차단돼 있어요.</div>
-            )}
-            <div className="mypage-reminder-options">
-              {['', '7', '9', '12', '18', '21'].map(h => (
-                <button key={h} className={`mypage-reminder-btn ${reminderHour === h ? 'mypage-reminder-btn--active' : ''}`}
-                  onClick={() => handleReminderChange(h)}>
-                  {h === '' ? '끄기' : `${h}시`}
-                </button>
-              ))}
-            </div>
-          </div>
-        </details>
-
-        {/* 알림(웹 푸시) — env 키(NEXT_PUBLIC_VAPID_PUBLIC_KEY) 부재 시 섹션 전체 숨김 */}
-        {pushEnabled && (
-          <details className="mypage-collapse" open={openPanel === 'push'}
-            onToggle={e => { if (e.currentTarget.open) setOpenPanel('push'); else if (openPanel === 'push') setOpenPanel(null); }}>
-            <summary className="mypage-collapse__summary" onClick={e => { e.preventDefault(); togglePanel('push'); }}>
-              <span>알림 {pushState?.subscribed ? '(켜짐)' : '(꺼짐)'}</span>
-              <span className="mypage-collapse__chevron">▾</span>
-            </summary>
-            <div className="mypage-collapse__body">
-              {pushState && !pushState.supported ? (
-                <div className="mypage-reminder-blocked">이 브라우저에서는 알림을 지원하지 않아요.</div>
+            {/* 푸시 — 서버가 보내는 알림. env 키(NEXT_PUBLIC_VAPID_PUBLIC_KEY) 부재 시 블록 숨김 */}
+            {pushEnabled && (
+              pushState && !pushState.supported ? (
+                <div className="mypage-reminder-blocked">이 브라우저에서는 푸시 알림을 지원하지 않아요.</div>
               ) : (
-                <>
+                <div style={{ marginBottom: 16 }}>
                   {pushState?.permission === 'denied' && (
                     <div className="mypage-reminder-blocked">브라우저에서 알림이 차단돼 있어요.</div>
                   )}
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: '0 0 12px' }}>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: '0 0 10px' }}>
                     내일 이야기가 도착하거나 오늘 복습할 단어가 있으면 알려드려요.
                   </p>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -318,11 +297,26 @@ export default function MyPage() {
                       </Button>
                     )}
                   </div>
-                </>
-              )}
+                </div>
+              )
+            )}
+            {/* 시간 리마인더 — 이 브라우저가 열려 있을 때 정해진 시각에 알려 준다(Layout이 발화) */}
+            {typeof Notification !== 'undefined' && notifPerm === 'denied' && !pushEnabled && (
+              <div className="mypage-reminder-blocked">브라우저에서 알림이 차단돼 있어요.</div>
+            )}
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6, margin: '0 0 10px' }}>
+              앱을 열어 둔 브라우저에서 정해진 시각에 복습을 알려드려요.
+            </p>
+            <div className="mypage-reminder-options">
+              {['', '7', '9', '12', '18', '21'].map(h => (
+                <button key={h} className={`mypage-reminder-btn ${reminderHour === h ? 'mypage-reminder-btn--active' : ''}`}
+                  onClick={() => handleReminderChange(h)}>
+                  {h === '' ? '끄기' : `${h}시`}
+                </button>
+              ))}
             </div>
-          </details>
-        )}
+          </div>
+        </details>
       </div>
 
       {/* 계정 & 앱 */}
