@@ -161,7 +161,9 @@ export default function LanguageWorldMap({ langKey }) {
       <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
         {t.stats.map((st) => (
           <div key={st.label} style={{ flex: '1 1 100px', minWidth: 100, padding: '8px 10px', borderRadius: 8, background: 'var(--bg-secondary)', border: '1px solid var(--border)', textAlign: 'center' }}>
-            <div style={{ fontSize: '1.02rem', fontWeight: 700, color: t.color }}>{st.n}</div>
+            {/* 트랙 색(#3b6fb5 등)은 대비 2.7~3.3이라 숫자를 읽기 어렵다 —
+                정체성 색은 지도 채색·범례에 두고, 숫자는 본문색으로 읽힌다. */}
+            <div style={{ fontSize: '1.02rem', fontWeight: 700, color: 'var(--text-primary)' }}>{st.n}</div>
             <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 2 }}>{st.label}</div>
           </div>
         ))}
