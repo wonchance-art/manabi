@@ -8894,15 +8894,12 @@ body.is-review-session .page-container { padding-top: 8px; }
   .review-dash {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    grid-template-areas:
-      'hero    vocab'
-      'grammar vocab';
+    grid-template-areas: 'hero vocab';
     column-gap: 16px;
     align-items: start;
   }
   .review-dash > .vocab-hero { grid-area: hero; }
   .review-dash > .review-sec--vocab { grid-area: vocab; }
-  .review-dash > .review-sec--grammar { grid-area: grammar; }
 }
 
 /* ── 복습 대시보드 섹션 — 모든 영역이 같은 문법: 제목·수 / 오른쪽 진입 / 요약 한 줄 / 미리보기 행 ── */
