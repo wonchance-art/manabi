@@ -8896,10 +8896,12 @@ body.is-review-session .page-container { padding-top: 8px; }
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas: 'hero vocab';
     column-gap: 16px;
-    align-items: start;
+    /* 두 카드는 stretch(기본값)로 같은 행 높이를 채운다 — 아래 모서리가 나란해야 한 판으로 읽힌다.
+       개별 margin-bottom(16/14px)이 남으면 바닥이 2px 어긋나므로 짝의 간격은 컨테이너가 갖는다. */
+    margin-bottom: 14px;
   }
-  .review-dash > .vocab-hero { grid-area: hero; }
-  .review-dash > .review-sec--vocab { grid-area: vocab; }
+  .review-dash > .vocab-hero { grid-area: hero; margin-bottom: 0; }
+  .review-dash > .review-sec--vocab { grid-area: vocab; margin-bottom: 0; }
 }
 
 /* ── 복습 대시보드 섹션 — 모든 영역이 같은 문법: 제목·수 / 오른쪽 진입 / 요약 한 줄 / 미리보기 행 ── */
