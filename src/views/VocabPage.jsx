@@ -549,6 +549,24 @@ export default function VocabPage() {
               <Link href="/review/grammar" className="btn btn--primary">문법 복습 {dueGrammarCount}개 →</Link>
             ) : null}
           </div>
+          {availableSeries.length > 0 && (
+            <div className="vocab-hero__mode">
+              <span className="vocab-hero__mode-label">덱</span>
+              <div className="chip-group" role="group" aria-label="단어 덱 필터">
+                {[{ key: 'all', label: '전체 덱' }, ...availableSeries].map(s => (
+                  <button
+                    type="button"
+                    key={s.key}
+                    className={`chip chip--sm ${seriesFilter === s.key ? 'chip--active' : ''}`}
+                    onClick={() => setSeriesFilter(s.key)}
+                    aria-pressed={seriesFilter === s.key}
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           {session.count > 0 && (
             <div className="vocab-hero__mode">
               <span className="vocab-hero__mode-label">방식</span>
@@ -665,42 +683,6 @@ export default function VocabPage() {
           </div>
         );
       })()}
-
-      {/* 덱 필터 — 세션 시작 전에 고르는 설정이라 세션 중에는 감춘다 */}
-      {tab === 'list' && availableSeries.length > 0 && (
-        <div style={{ marginBottom: 12 }}>
-          <div className="chip-group" role="group" aria-label="단어 덱 필터">
-            <button
-              type="button"
-              className={`chip ${seriesFilter === 'all' ? 'chip--active' : ''}`}
-              onClick={() => setSeriesFilter('all')}
-              aria-pressed={seriesFilter === 'all'}
-            >
-              전체 덱
-            </button>
-            {availableSeries.map(s => (
-              <button
-                type="button"
-                key={s.key}
-                className={`chip ${seriesFilter === s.key ? 'chip--active' : ''}`}
-                onClick={() => setSeriesFilter(s.key)}
-                aria-pressed={seriesFilter === s.key}
-              >
-                {s.label}
-              </button>
-            ))}
-          </div>
-          {tab === 'review' && seriesFilter !== 'all' && (() => {
-            const filtered = vocab.filter(vocabMatchesSeries);
-            const due = filtered.filter(v => new Date(v.next_review_at) <= new Date()).length;
-            return (
-              <div style={{ marginTop: 8, fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-이 덱 단어 <strong>{filtered.length}</strong>개 · 복습 대기 <strong style={{ color: due > 0 ? 'var(--warning)' : 'var(--accent)' }}>{due}</strong>개
-              </div>
-            );
-          })()}
-        </div>
-      )}
 
       {isLoading ? (
         <CardGridSkeleton height={120} />
