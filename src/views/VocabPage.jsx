@@ -624,25 +624,30 @@ export default function VocabPage() {
               </details>
             </div>
 
-            {/* 할 일 = 버튼. 위의 총계를 버튼 두 개가 그대로 나눠 갖는다(단어 n + 문법 m). */}
-            {(vocab.length === 0 || session.count > 0 || dueGrammarCount > 0) && (
-              <div className="vocab-hero__go">
-                {vocab.length === 0 ? (
-                  <Link href="/materials" className="btn btn--primary">자료 읽기 →</Link>
-                ) : (
-                  <>
-                    {session.count > 0 && (
-                      <Button onClick={startReview}>단어 {session.count}개 시작 →</Button>
-                    )}
-                    {dueGrammarCount > 0 && (
-                      <Link href="/review/grammar" className={`btn ${session.count > 0 ? 'btn--ghost' : 'btn--primary'}`}>
-                        문법 {dueGrammarCount}개 시작 →
-                      </Link>
-                    )}
-                  </>
-                )}
-              </div>
-            )}
+            {/* 주 진입 = 오늘 학습(/study) — 복습할 단어·문법과 새 내용을 문단 하나로 끝내는 통합 세션.
+                개별 세션(단어만·문법만)은 보조로 낮춘다. 위의 총계는 보조 링크 두 개가 나눠 갖는다. */}
+            <div className="vocab-hero__go">
+              {vocab.length === 0 ? (
+                <Link href="/materials" className="btn btn--primary">자료 읽기 →</Link>
+              ) : (
+                <>
+                  <Link href="/study" className="btn btn--primary">오늘 학습 시작 →</Link>
+                  <p className="vocab-hero__hint">복습할 단어·문법과 새 내용을 글 한 편에 녹여요 · 6~8분</p>
+                  {(session.count > 0 || dueGrammarCount > 0) && (
+                    <div className="vocab-hero__split">
+                      {session.count > 0 && (
+                        <Button variant="ghost" size="sm" onClick={startReview}>단어만 {session.count}개 →</Button>
+                      )}
+                      {dueGrammarCount > 0 && (
+                        <Link href="/review/grammar" className="btn btn--ghost btn--sm">
+                          문법만 {dueGrammarCount}개 →
+                        </Link>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
 
             {/* 범위·방식 — 기본값이면 건드릴 일 없는 설정이라 맨 아래 조용히. 라벨 없이 값이 자신을 설명한다. */}
             {vocab.length > 0 && (availableSeries.length > 0 || session.count > 0) && (

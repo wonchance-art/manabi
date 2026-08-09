@@ -9006,7 +9006,10 @@ body.is-review-session .page-container { padding-top: 8px; }
 }
 .search-input::placeholder { color: var(--text-muted); }
 .vocab-hero__go { display: flex; flex-direction: column; gap: 8px; }
-.vocab-hero__go .btn { width: 100%; justify-content: center; }
+.vocab-hero__go > .btn--primary { width: 100%; justify-content: center; }
+.vocab-hero__hint { margin: -2px 0 0; font-size: 0.76rem; color: var(--text-muted); text-align: center; }
+/* 개별 세션(단어만·문법만)은 보조 — 작은 고스트 한 줄 */
+.vocab-hero__split { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }
 
 /* 상단 미니 현황 strip — 복습/신규/학습 중/숙련 한눈에 */
 .vocab-stat-strip {
