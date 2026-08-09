@@ -9,7 +9,7 @@ import { useToast } from '../lib/ToastContext';
 import { useTTS } from '../lib/useTTS';
 import { createReviewEventBatcher } from '../lib/reviewEvents';
 import { fetchSavedWordSet, REFERENCE_VOCAB_PAGE_SIZE, takeThemeWords } from '../lib/referenceVocab';
-import { refInline, refMain, refPron, LevelDot, JaText, alignFurigana } from './refShared';
+import { refInline, refMain, refPron, LevelDot, JaText, alignFurigana, lightenForText } from './refShared';
 
 const LANG_KO = { Japanese: '일본어', English: '영어', French: '프랑스어', Chinese: '중국어' };
 
@@ -242,7 +242,7 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
                 key={m.key}
                 href={`${refInfo.base}/vocab/${m.key.toLowerCase()}`}
                 className={`fr-vocab-tab ${active ? 'is-active' : ''}`}
-                style={active ? { color: m.color, background: m.bg, borderColor: m.line } : undefined}
+                style={active ? { color: lightenForText(m.color), background: m.bg, borderColor: m.line } : undefined}
                 aria-current={active ? 'page' : undefined}
               >
                 {m.short || m.key}

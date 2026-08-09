@@ -220,7 +220,7 @@ export default function AccountSettings({ user, toast, signOut }) {
         )}
 
         {exportMsg && (
-          <div style={{ fontSize: '0.78rem', color: 'var(--primary)', marginTop: 8 }}>
+          <div style={{ fontSize: '0.78rem', color: 'var(--primary-light)', marginTop: 8 }}>
             {exportMsg}
           </div>
         )}

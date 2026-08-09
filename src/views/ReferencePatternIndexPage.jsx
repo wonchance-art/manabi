@@ -8,7 +8,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { useTTS } from '../lib/useTTS';
-import { refInline, refMain, refPron, LevelDot, JaText } from './refShared';
+import { refInline, refMain, refPron, LevelDot, JaText, lightenForText } from './refShared';
 
 /**
  * 문형 사전 — 레벨별 전수 커버 레이어 (챕터=이해, 사전=검색·암기) · 언어 공용
@@ -199,7 +199,7 @@ export default function ReferencePatternIndexPage({ lang = 'Japanese', refInfo, 
                 key={m.key}
                 href={`${refInfo.base}/bunkei/${m.key.toLowerCase()}`}
                 className={`fr-vocab-tab ${active ? 'is-active' : ''}`}
-                style={active ? { color: m.color, background: m.bg, borderColor: m.line } : undefined}
+                style={active ? { color: lightenForText(m.color), background: m.bg, borderColor: m.line } : undefined}
                 aria-current={active ? 'page' : undefined}
               >
                 {m.key}

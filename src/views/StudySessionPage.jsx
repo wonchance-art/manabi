@@ -967,7 +967,7 @@ export default function StudySessionPage({
         {(newWordCount > 0 || nextPreview || produceReflected) && (
           <div style={{ textAlign: 'center' }}>
             {produceReflected && (
-              <p style={{ fontSize: '0.8rem', color: 'var(--accent)', margin: (newWordCount > 0 || nextPreview) ? '0 0 6px' : 0, fontWeight: 700, lineHeight: 1.6 }}>
+              <p style={{ fontSize: '0.8rem', color: 'var(--accent-text)', margin: (newWordCount > 0 || nextPreview) ? '0 0 6px' : 0, fontWeight: 700, lineHeight: 1.6 }}>
                 당신이 정한 전개로 내일 이야기가 이어져요.
               </p>
             )}
@@ -999,7 +999,7 @@ export default function StudySessionPage({
           </div>
         )}
         {pushPrime === 'done' && (
-          <p style={{ textAlign: 'center', marginTop: 18, fontSize: '0.85rem', color: 'var(--accent)', fontWeight: 700 }}>
+          <p style={{ textAlign: 'center', marginTop: 18, fontSize: '0.85rem', color: 'var(--accent-text)', fontWeight: 700 }}>
             내일 만나요.
           </p>
         )}
@@ -1036,13 +1036,13 @@ export default function StudySessionPage({
       )}
 
       {item.warmup && !isRetry && (
-        <div style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 700, marginBottom: 8 }}>몸풀기</div>
+        <div style={{ fontSize: '0.75rem', color: 'var(--primary-light)', fontWeight: 700, marginBottom: 8 }}>몸풀기</div>
       )}
 
       {/* ── 오늘의 문단 (읽기 카드) ── */}
       {item.type === 'paragraph' && (
         <div className="card" style={{ padding: '22px 20px' }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary)', marginBottom: 14 }}>
+          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary-light)', marginBottom: 14 }}>
             {paragraphMaterials?.weekly ? '이번 주 헷갈린 것들' : '오늘의 문단'}
           </div>
           {item.preQuestion?.q && (
@@ -1053,7 +1053,7 @@ export default function StudySessionPage({
               borderLeft: '3px solid var(--primary)',
             }}>
               <span style={{ fontSize: '0.85rem', lineHeight: 1.6 }}>
-                <strong style={{ color: 'var(--primary)' }}>읽기 미션</strong> — {item.preQuestion.q}
+                <strong style={{ color: 'var(--primary-light)' }}>읽기 미션</strong> — {item.preQuestion.q}
               </span>
             </div>
           )}
@@ -1132,7 +1132,7 @@ export default function StudySessionPage({
       {/* ── 티칭 카드 ── */}
       {item.type === 'teach' && (
         <div className="card" style={{ padding: '22px 20px' }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary)', marginBottom: 10 }}>
+          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary-light)', marginBottom: 10 }}>
             새로 배우기 · {item.chapter.level} #{item.chapter.order} {item.chapter.title}
           </div>
           <div className="fr-pattern" style={{ borderColor: 'var(--primary)' }}>

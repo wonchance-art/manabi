@@ -403,7 +403,7 @@ function QuestionFlow({ questions, textId, onScrollToEvidence, onPass, passLabel
                     <div lang="ja" style={{ fontSize: '1.05rem', lineHeight: 2, marginBottom: 8, display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2 }}>
                       <span>{before}</span>
                       {a?.ok ? (
-                        <span style={{ fontWeight: 700, color: 'var(--accent, #6c7cff)', margin: '0 2px' }}>{q.fillAnswer}</span>
+                        <span style={{ fontWeight: 700, color: 'var(--accent-text, #6c7cff)', margin: '0 2px' }}>{q.fillAnswer}</span>
                       ) : (
                         <input
                           type="text" lang="ja" value={val} inputMode="text"

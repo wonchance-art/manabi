@@ -179,7 +179,7 @@ export default function VocabStats({ vocab, profile, section }) {
             </div>
             <div className="retention-buckets">
               {[
-                { label: '선명', count: retentionBuckets.high, color: 'var(--accent)', emoji: '●' },
+                { label: '선명', count: retentionBuckets.high, color: 'var(--accent-text)', emoji: '●' },
                 { label: '양호', count: retentionBuckets.mid, color: 'var(--primary-light)', emoji: '●' },
                 { label: '흐릿', count: retentionBuckets.low, color: 'var(--warning)', emoji: '●' },
                 { label: '위험', count: retentionBuckets.forgotten, color: 'var(--danger)', emoji: '●' },

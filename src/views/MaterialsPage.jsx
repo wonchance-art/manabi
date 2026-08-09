@@ -327,7 +327,7 @@ export default function MaterialsPage() {
       <div className="page-header page-header--row">
         <div>
           <h1 className="page-header__title">자료실</h1>
-          <p className="page-header__subtitle">현지 언어 콘텐츠 (기사·이야기·PDF). 패턴 학습은 <Link href="/lessons" style={{ color: 'var(--primary)' }}>강의</Link>에서</p>
+          <p className="page-header__subtitle">현지 언어 콘텐츠 (기사·이야기·PDF). 패턴 학습은 <Link href="/lessons" style={{ color: 'var(--primary-light)' }}>강의</Link>에서</p>
         </div>
         <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
           <button
@@ -537,7 +537,7 @@ export default function MaterialsPage() {
                         </span>
                       )}
                       {isCompleted ? (
-                        <span className="badge" style={{ background: 'rgba(74,138,92,0.15)', color: 'var(--accent)', fontWeight: 600 }}>
+                        <span className="badge" style={{ background: 'rgba(74,138,92,0.15)', color: 'var(--accent-text)', fontWeight: 600 }}>
                           ✓ 완독
                         </span>
                       ) : (() => {
@@ -546,7 +546,7 @@ export default function MaterialsPage() {
                         if (lastIdx && total > 0) {
                           const pct = Math.round((lastIdx / total) * 100);
                           return (
-                            <span className="badge" style={{ background: 'var(--bg-secondary)', color: 'var(--primary)', fontWeight: 600 }} title="이어서 읽기">
+                            <span className="badge" style={{ background: 'var(--bg-secondary)', color: 'var(--primary-light)', fontWeight: 600 }} title="이어서 읽기">
                               {pct}%
                             </span>
                           );

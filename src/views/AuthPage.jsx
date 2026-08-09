@@ -233,8 +233,8 @@ function AuthForm() {
 
           {!isLogin && !isForgot && !isReset && (
             <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: 10, lineHeight: 1.5 }}>
-              가입 시 <a href="/terms" target="_blank" rel="noopener" style={{ color: 'var(--primary)' }}>이용약관</a> 및{' '}
-              <a href="/privacy" target="_blank" rel="noopener" style={{ color: 'var(--primary)' }}>개인정보 처리방침</a>에 동의합니다.
+              가입 시 <a href="/terms" target="_blank" rel="noopener" style={{ color: 'var(--primary-light)' }}>이용약관</a> 및{' '}
+              <a href="/privacy" target="_blank" rel="noopener" style={{ color: 'var(--primary-light)' }}>개인정보 처리방침</a>에 동의합니다.
             </p>
           )}
         </form>

@@ -417,7 +417,7 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
                       {h.prompt && <div style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginBottom: 6 }}>과제: {h.prompt}</div>}
                       <div lang={LANG_CODE[h.language]} style={{ color: 'var(--text-muted)' }}>{h.sentence}</div>
                       {h.corrected && h.corrected !== h.sentence && (
-                        <div lang={LANG_CODE[h.language]} style={{ color: 'var(--accent)', fontWeight: 600, marginTop: 4, whiteSpace: 'pre-line' }}>{h.corrected}</div>
+                        <div lang={LANG_CODE[h.language]} style={{ color: 'var(--accent-text)', fontWeight: 600, marginTop: 4, whiteSpace: 'pre-line' }}>{h.corrected}</div>
                       )}
                       {h.feedback && <p style={{ margin: '8px 0 0', color: 'var(--text-secondary)' }}>{h.feedback}</p>}
                       {Array.isArray(h.errors) && h.errors.length > 0 && (
@@ -469,12 +469,12 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
                 </span>
               </div>
               {s.original !== s.corrected && (
-                <div style={{ fontSize: '1rem', fontWeight: 600, lineHeight: 1.7, marginTop: 6, color: 'var(--accent)' }} lang={lc}>
+                <div style={{ fontSize: '1rem', fontWeight: 600, lineHeight: 1.7, marginTop: 6, color: 'var(--accent-text)' }} lang={lc}>
                   {s.corrected}
                 </div>
               )}
               {s.errors.length === 0 && (
-                <div style={{ fontSize: '0.8rem', color: 'var(--accent)', marginTop: 6 }}>○ 자연스러운 문장이에요</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--accent-text)', marginTop: 6 }}>○ 자연스러운 문장이에요</div>
               )}
               {s.errors.map((e, j) => (
                 <div key={j} style={{
@@ -484,7 +484,7 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
                   <div>
                     <span lang={lc} style={{ color: 'var(--danger)', textDecoration: 'line-through' }}>{e.part}</span>
                     {' → '}
-                    <strong lang={lc} style={{ color: 'var(--accent)' }}>{e.fix}</strong>
+                    <strong lang={lc} style={{ color: 'var(--accent-text)' }}>{e.fix}</strong>
                     {e.href ? (
                       <Link href={e.href} className="chip" style={{ marginLeft: 8, fontSize: '0.72rem', padding: '2px 8px' }} title="관련 챕터 열기">
                         {e.tag} →
