@@ -570,12 +570,16 @@ export default function VocabPage() {
               ) : (
                 <span className="vocab-hero__done">
                   오늘 복습 끝{(() => {
-                    const next = vocab
+                    // 다음 도착은 단어·문법 중 먼저 오는 쪽 — 문법 큐 카드를 없애며 그 신호를 여기로 흡수했다.
+                    const nextVocab = vocab
                       .filter(v => vocabMatchesSeries(v) && new Date(v.next_review_at) > new Date())
                       .sort((a, b) => new Date(a.next_review_at) - new Date(b.next_review_at))[0];
-                    if (!next) return null;
-                    const d = new Date(next.next_review_at);
-                    const days = Math.ceil((d - new Date()) / 86400000);
+                    const candidates = [
+                      nextVocab ? new Date(nextVocab.next_review_at).getTime() : null,
+                      grammarQueue?.nextAt ?? null,
+                    ].filter(t => Number.isFinite(t));
+                    if (candidates.length === 0) return null;
+                    const days = Math.ceil((Math.min(...candidates) - Date.now()) / 86400000);
                     return ` — 다음 복습 ${days <= 1 ? '내일' : `${days}일 후`}`;
                   })()}
                 </span>
@@ -737,27 +741,6 @@ export default function VocabPage() {
                     );
                   })}
               </div>
-            )}
-          </section>
-
-          <section className="card review-sec review-sec--grammar" aria-labelledby="dash-grammar">
-            <div className="review-sec__head">
-              <h2 id="dash-grammar" className="review-sec__title">문법 큐 <span className="review-sec__count">{grammarQueue?.total ?? '—'}</span></h2>
-              <Link href="/review/grammar" className="review-sec__more">열기 →</Link>
-            </div>
-            {/* '지금 할 것'은 위 카드 버튼이 말한다 — 여기는 미래만: 예정 몇 장, 언제 돌아오나. */}
-            {grammarQueue == null ? (
-              <p className="review-sec__meta">불러오는 중…</p>
-            ) : grammarQueue.total === 0 ? (
-              <p className="review-sec__empty">챕터의 패턴 체크를 통과하면 며칠 뒤 여기로 돌아와요.</p>
-            ) : (
-              <p className="review-sec__meta">
-                예정 {grammarQueue.upcoming}장
-                {grammarQueue.nextAt && (() => {
-                  const days = Math.ceil((grammarQueue.nextAt - Date.now()) / 86400000);
-                  return ` · 다음 도착 ${days <= 1 ? '내일' : `${days}일 후`}`;
-                })()}
-              </p>
             )}
           </section>
 
