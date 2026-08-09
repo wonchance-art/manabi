@@ -215,7 +215,8 @@ export default function ReferenceVocabPage({ lang, refInfo, levelMeta = [], meta
   return (
     <div className="page-container" style={{ maxWidth: 760 }}>
       <nav style={{ marginBottom: 18 }} aria-label="브레드크럼">
-        <Link href={backHref} style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+        {/* 브레드크럼은 네비 링크라 WCAG 2.5.8 인라인 예외 대상이 아니다 — 실측 16px을 24로. */}
+        <Link href={backHref} style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', minHeight: 24 }}>
           ← {refInfo.name} 강의 목록
         </Link>
       </nav>
