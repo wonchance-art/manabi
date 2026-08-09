@@ -3,11 +3,11 @@ import { cookies } from 'next/headers';
 import { getRefLang } from '@/content/refLangs';
 import WritingStudioPage from '@/views/WritingStudioPage';
 
-export const metadata = { title: '라이팅 스튜디오 | Anatomy Studio' };
+export const metadata = { title: '작문 | Anatomy Studio' };
 export const dynamic = 'force-dynamic';
 
 /**
- * 라이팅 스튜디오 — 최근 통과 챕터(작문 과제 추천)를 서버에서 제목·패턴과 함께
+ * 작문(/writing) — 최근 통과 챕터(작문 과제 추천)를 서버에서 제목·패턴과 함께
  * 조립해 내려준다. 언어 콘텐츠는 서버에만 열리므로 클라이언트 번들에 실리지 않는다.
  */
 export default async function Page() {

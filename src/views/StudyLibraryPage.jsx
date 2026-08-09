@@ -42,6 +42,7 @@ function ParagraphCard({ entry, langCode, lang }) {
     <div className="card" style={{ padding: '14px 16px' }}>
       <button
         type="button"
+        aria-expanded={open}
         onClick={() => setOpen(v => !v)}
         style={{ background: 'none', border: 'none', padding: 0, width: '100%', textAlign: 'left', cursor: 'pointer' }}
       >
@@ -84,8 +85,9 @@ function ParagraphCard({ entry, langCode, lang }) {
           </div>
           <button
             type="button"
+            aria-expanded={showKo}
             onClick={() => setShowKo(v => !v)}
-            style={{ background: 'none', border: 'none', padding: 0, marginTop: 12, cursor: 'pointer', fontSize: '0.8rem', color: 'var(--text-muted)', textDecoration: 'underline' }}
+            style={{ background: 'none', border: 'none', padding: 0, marginTop: 12, cursor: 'pointer', fontSize: '0.8rem', color: 'var(--text-muted)', textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', minHeight: 28 }}
           >
             {showKo ? '번역 접기 ▴' : '번역 보기 ▾'}
           </button>
@@ -118,9 +120,10 @@ function MySourceComposer({ lang, langCode }) {
       <button
         type="button"
         onClick={() => setOpen(v => !v)}
-        style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '0.85rem', fontWeight: 700, color: 'var(--primary-light)' }}
+        aria-expanded={open}
+        style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '0.85rem', fontWeight: 700, color: 'var(--primary-light)', display: 'inline-flex', alignItems: 'center', minHeight: 28 }}
       >
-        ＋ 내 자료로 이야기 만들기 {open ? '▴' : '▾'}
+        ＋ 내 글감으로 이야기 만들기 {open ? '▴' : '▾'}
       </button>
       {open && (
         <div className="card" style={{ padding: '14px 16px', marginTop: 8 }}>
@@ -131,7 +134,7 @@ function MySourceComposer({ lang, langCode }) {
             onChange={e => setText(e.target.value.slice(0, SOURCE_MAX))}
             maxLength={SOURCE_MAX}
             rows={4}
-            placeholder="기사 한 부분, 좋아하는 문장, 수업 프린트… 붙여넣으면 오늘 문단의 소재가 돼요"
+            placeholder="기사 한 토막, 좋아하는 문장, 수업 프린트… 붙여넣으면 오늘 문단의 글감이 돼요"
             style={{ width: '100%', fontSize: '0.95rem', resize: 'vertical' }}
           />
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
@@ -147,16 +150,16 @@ function MySourceComposer({ lang, langCode }) {
 }
 
 /**
- * 다시 읽기 서재 — 성장 요약 3타일 + 지난 문단 재독 목록.
+ * 서재 — 성장 요약 3타일 + 지난 문단 재독 목록.
  * 재독은 어시스트(요미가나) 없이 원문만 보여 성장을 체감하게 한다.
  */
 export default function StudyLibraryPage({
-  paragraphs = [], summary = {}, lang, langCode, langName, flag, languages = [], signedOut = false,
+  paragraphs = [], summary = {}, lang, langCode, langName, languages = [], signedOut = false,
 }) {
   if (signedOut) {
     return (
       <div className="page-container" style={{ maxWidth: 640, textAlign: 'center', paddingTop: 60 }}>
-        <h1 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: 10 }}>다시 읽기 서재</h1>
+        <h1 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: 10 }}>서재</h1>
         <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 20 }}>
           로그인하면 그동안 읽은 이야기를 다시 읽고, 성장을 확인할 수 있어요.
         </p>
@@ -170,8 +173,8 @@ export default function StudyLibraryPage({
   return (
     <div className="page-container" style={{ maxWidth: 640 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '10px 0 16px' }}>
-        <h1 style={{ fontSize: '1.3rem', fontWeight: 700, flex: 1 }}>{flag} 다시 읽기 서재</h1>
-        <Link href={`/study?lang=${lang}`} style={{ fontSize: '0.82rem', color: 'var(--text-muted)', textDecoration: 'underline' }}>
+        <h1 style={{ fontSize: '1.3rem', fontWeight: 700, flex: 1 }}>서재</h1>
+        <Link href={`/study?lang=${lang}`} style={{ fontSize: '0.82rem', color: 'var(--text-muted)', textDecoration: 'underline', display: 'inline-flex', alignItems: 'center', minHeight: 28 }}>
           오늘 학습 →
         </Link>
       </div>
@@ -206,8 +209,8 @@ export default function StudyLibraryPage({
         <div className="chip-group" style={{ marginTop: 22, justifyContent: 'center' }}>
           {languages.map(l => (
             l.key === lang
-              ? <span key={l.key} className="chip chip--active">{l.flag} {l.name}</span>
-              : <a key={l.key} href={`/study/library?lang=${l.key}`} className="chip">{l.flag} {l.name}</a>
+              ? <span key={l.key} className="chip chip--active">{l.name}</span>
+              : <a key={l.key} href={`/study/library?lang=${l.key}`} className="chip">{l.name}</a>
           ))}
         </div>
       )}
