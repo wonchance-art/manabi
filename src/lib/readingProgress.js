@@ -6,7 +6,7 @@
  *   **slug 접두사(rt:)** 로 챕터 진도와 물리적으로 분리한다.
  * - refProgress.js(챕터용)는 손대지 않는다 — 이 파일이 독해 신설분이다.
  * - user_ref_progress 서버 반영은 read:true 만 사용한다. passed=true 는 쓰지 않는다:
- *   LearnPage 등이 lang·passed=true 로 "통과 챕터" 수를 집계하므로, passed 를 세우면
+ *   성장 통계(growthStats) 등이 lang·passed=true 로 "통과 챕터" 수를 집계하므로, passed 를 세우면
  *   독해 통과가 챕터 통계에 섞여 RT-12(오염 0) 를 위반한다.
  */
 import { supabase } from './supabase';

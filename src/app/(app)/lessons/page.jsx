@@ -1,7 +1,6 @@
 import LessonsPage from '@/views/LessonsPage';
 import { buildRefManifest } from '@/content/refManifest';
 import { applyManifestOverrides } from '@/lib/contentOverrides';
-import { buildLearnProgressCatalog } from '@/lib/learn/homeProgressCatalog';
 
 export const metadata = {
   title: '교재 | Anatomy Studio',
@@ -14,5 +13,5 @@ export const revalidate = 60;
 export default async function Page({ searchParams }) {
   const sp = await searchParams;
   const refManifest = await applyManifestOverrides(buildRefManifest());
-  return <LessonsPage refManifest={refManifest} initialLang={sp?.lang} initialLevel={sp?.level} progressCatalog={buildLearnProgressCatalog()} />;
+  return <LessonsPage refManifest={refManifest} initialLang={sp?.lang} initialLevel={sp?.level} />;
 }
