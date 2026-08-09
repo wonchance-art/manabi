@@ -5689,6 +5689,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   box-shadow: 0 0 0 3px var(--primary-glow);
 }
 .auth-link-btn {
+  /* '비밀번호 찾기'·'회원가입' — 글자는 작게 두되 히트 영역은 44 */
+  display: inline-flex; align-items: center; min-height: 44px;
   font-size: 0.75rem;
   color: var(--primary-light);
   background: none;
@@ -7849,6 +7851,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
   margin-bottom: 8px;
 }
+/* 검색 입력에 공통 크기 계약이 없어 브라우저 기본 높이(19px)로 렌더됐다 — 어느 화면에서 쓰든 44를 보장한다. */
+.search-input { min-height: 44px; padding: 8px 12px; }
 .fr-vlist-tools .search-input { flex: 1; min-width: 180px; }
 .fr-vlist-tools__toggles { display: flex; gap: 6px; }
 .fr-vlist-hint {
@@ -7887,6 +7891,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   display: flex; align-items: flex-start;
   padding-top: 2px;
   cursor: pointer;
+  /* 네이티브 체크박스는 18×18이라 AA(24) 미달 — 레이블이 히트 영역을 넓힌다(글리프는 그대로) */
+  min-width: 24px; min-height: 24px;
+  align-items: center; justify-content: center;
 }
 .fr-vrow__check input {
   width: 18px; height: 18px;
@@ -7946,6 +7953,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   background: transparent; border: none;
   font-size: 0.95rem; cursor: pointer;
   padding: 2px 4px; border-radius: var(--radius-sm);
+  /* 목록마다 150개씩 있는 주 조작 — 글리프는 그대로 두고 히트 영역만 44×44 */
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 44px; min-height: 44px;
   opacity: 0.75; transition: opacity 0.15s ease, transform 0.15s ease;
 }
 .fr-vrow__save:hover:not(:disabled) { opacity: 1; transform: scale(1.15); }
