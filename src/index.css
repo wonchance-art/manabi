@@ -20,6 +20,8 @@
   --primary-dark: #8A3818;
   --primary-glow: rgba(192, 82, 42, 0.18);
   --accent: #4A8A5C;
+  /* 배경으로 쓰면 문제없지만 글자로 쓰면 3.32라 AA 미달 — 글자 전용 변형을 따로 둔다(같은 색상, 밝기만). */
+  --accent-text: #58A46D;   /* 3.32 → 4.51 */
   --accent-glow: rgba(74, 138, 92, 0.18);
   --danger: #C84040;
   --warning: #D4962A;
@@ -75,6 +77,7 @@
   /* WCAG 개선: 라이트 모드에서 링크/강조색 대비 강화 */
   --primary-light: #B85A30; /* E07848 → B85A30 (3.0 → 4.8) */
   --accent: #3A6D49;        /* 4A8A5C → 3A6D49 (3.3 → 5.0) */
+  --accent-text: #3A6D49;   /* 라이트에선 글자도 같은 값으로 충분(5.0) — 다크의 밝은 변형을 물려받으면 안 된다 */
 
   --gnb-bg: rgba(245, 239, 230, 0.92);
   --mobile-nav-bg: rgba(237, 228, 216, 0.98);
@@ -9303,7 +9306,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .track-card__name { display: block; font-size: 0.86rem; color: var(--text-secondary); margin-bottom: 8px; }
 .track-card__hook { display: block; font-size: 0.82rem; line-height: 1.5; color: var(--text-secondary); margin-bottom: 10px; }
 .track-card__stat { display: inline-block; font-size: 0.74rem; color: var(--text-muted); }
-.track-card__cta { display: block; margin-top: 8px; font-size: 0.82rem; font-weight: 600; color: var(--accent, #2d6a4f); }
+.track-card__cta { display: block; margin-top: 8px; font-size: 0.82rem; font-weight: 600; color: var(--accent-text, #2d6a4f); }
 .landing-section__desc { margin: 10px auto 0; max-width: 560px; font-size: 0.92rem; line-height: 1.6; color: var(--text-secondary); text-align: center; }
 
 .lessons-progress-embed { margin: 4px 0 20px; display: flex; flex-direction: column; gap: 12px; }
@@ -9313,5 +9316,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .landing-minimal { flex: 1; max-width: 760px; margin: 0 auto; padding: 48px 20px 32px; width: 100%; }
 .landing-minimal__title { font-size: 1.5rem; font-weight: 700; margin: 0 0 20px; color: var(--text-primary); }
 .landing-minimal__note { margin-top: 22px; font-size: 0.86rem; line-height: 1.65; color: var(--text-secondary); }
-.landing-minimal__note a { color: var(--primary); font-weight: 600; }
+/* --primary(#C0522A)는 대비 2.92지만 버튼 '배경'으로 40곳에서 쓰여 토큰 자체를 못 바꾼다.
+   글자에는 이미 4.53인 --primary-light를 쓴다. */
+.landing-minimal__note a { color: var(--primary-light); font-weight: 600; }
 .landing-footer--minimal { justify-content: center; padding: 18px 20px 28px; }

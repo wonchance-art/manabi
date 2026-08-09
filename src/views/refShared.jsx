@@ -257,13 +257,22 @@ export function RefHanjaBridge({ data }) {
   );
 }
 
+// 레벨 색은 콘텐츠 데이터(각 언어의 content index)에 박혀 있고 수백 곳에서 쓰인다.
+// 그 값을 바꾸는 대신, 글자로 쓸 때만 같은 색상을 밝혀 대비를 확보한다(링·테두리는 원본 유지).
+// 예: #4C6EF5(3.17) → #638FFF(4.50). 이미 밝은 색은 255로 클램프돼 그대로 남는다.
+export function lightenForText(color, factor = 1.3) {
+  if (typeof color !== 'string' || !/^#[0-9a-f]{6}$/i.test(color)) return color;
+  const ch = [1, 3, 5].map((i) => Math.min(255, Math.round(parseInt(color.slice(i, i + 2), 16) * factor)));
+  return `#${ch.map((v) => v.toString(16).padStart(2, '0')).join('')}`;
+}
+
 /** 레벨 동그라미 배지 */
 export function LevelDot({ meta, size = 'md' }) {
   if (!meta) return null;
   return (
     <span
       className={`fr-level-dot ${size === 'sm' ? 'fr-level-dot--sm' : ''}`}
-      style={{ background: meta.bg, border: `2px solid ${meta.color}`, color: meta.color }}
+      style={{ background: meta.bg, border: `2px solid ${meta.color}`, color: lightenForText(meta.color) }}
     >
       {meta.short || meta.key}
     </span>

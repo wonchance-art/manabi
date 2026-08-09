@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { buildChapterQuiz } from '../lib/refQuiz';
-import { refInline, refMain, refPron, Callout, CALLOUT_ORDER, RefParallel, RefHanjaBridge, LevelDot, JaText } from './refShared';
+import { refInline, refMain, refPron, Callout, CALLOUT_ORDER, RefParallel, RefHanjaBridge, LevelDot, JaText, lightenForText } from './refShared';
 import RefReadMark from '../components/RefReadMark';
 import RefSpeak from '../components/RefSpeak';
 import RefPatternCheck from '../components/RefPatternCheck';
@@ -326,7 +326,7 @@ export default async function ReferenceChapterPage({ lang, slug, registry: ref, 
       {/* ── 핵심 패턴 한눈에 ── */}
       {patternIndex.length > 0 && (
         <div className="fr-pattern-summary" style={{ borderColor: meta?.line, background: meta?.bg }}>
-          <div className="fr-pattern-summary__title" style={{ color: meta?.color }}>핵심 패턴 한눈에</div>
+          <div className="fr-pattern-summary__title" style={{ color: lightenForText(meta?.color) }}>핵심 패턴 한눈에</div>
           <ol className="fr-pattern-summary__list">
             {patternIndex.map(p => (
               <li key={p.i}>
