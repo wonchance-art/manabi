@@ -149,31 +149,8 @@ export default function VocabReview({
         </div>
       ) : reviewWords.length > 0 ? (
         <>
-          {/* 복습 모드 픽커 */}
-          <div className="chip-group" role="group" aria-label="복습 모드" style={{ justifyContent: 'center', marginBottom: 14 }}>
-            {[['auto', '자동'], ['flash', '플래시'], ['typing', '타이핑'], ['context', '문맥'], ['listening', '듣기']].map(([m, label]) => (
-              <button
-                key={m}
-                type="button"
-                className={`chip ${reviewMode === m ? 'chip--active' : ''}`}
-                onClick={() => {
-                  setReviewMode(m);
-                  setShowAnswer(false);
-                  setShowHint(false);
-                  setTypingAnswer('');
-                  setContextSelected(null);
-                }}
-                disabled={m === 'listening' && !ttsSupported}
-                aria-pressed={reviewMode === m}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-
           <div className="card review-card">
-            <div className="review-card__progress">
-              <span role="status" aria-live="polite" aria-atomic="true">남은 단어: {reviewWords.length - reviewIdx}</span>
+            <div className="review-card__progress review-card__progress--tools">
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 {mode === 'flash' && !showAnswer && currentWord?.source_sentence && (
                   <button type="button" className="review-hint-btn" onClick={() => setShowHint(h => !h)} aria-expanded={showHint} aria-controls={hintId}>

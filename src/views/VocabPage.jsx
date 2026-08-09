@@ -457,6 +457,16 @@ export default function VocabPage() {
     }
   };
 
+  // 복습 세션 중에는 페이지 크롬(헤더·통계·필터·하단 네비)을 걷어낸다.
+  // 하단 네비는 Layout 소유라 컴포넌트에서 못 지운다 — body 클래스로 CSS에 알린다.
+  // 훅은 아래 `if (!user)` 조기 return보다 **위**에 있어야 한다(#838 Hooks 순서 사고와 같은 자리).
+  const inSession = tab === 'review' && !reviewFinished;
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+    document.body.classList.toggle('is-review-session', inSession);
+    return () => document.body.classList.remove('is-review-session');
+  }, [inSession]);
+
   if (!user) {
     // 단어장은 계정 기반이지만 문법 복습은 이 기기 기록만으로도 이어갈 수 있다 —
     // '복습' 탭이 게스트에게 막다른 길이 되지 않도록 경로를 함께 연다.
@@ -478,32 +488,34 @@ export default function VocabPage() {
   return (
     <div className="page-container">
 
-      {/* 헤더 — 제목 + 요약 수치 */}
-      <div className="page-header">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-          <div>
-            <h1 className="page-header__title" style={{ margin: 0 }}>복습</h1>
-            <p className="page-header__subtitle" style={{ margin: '2px 0 0' }}>단어와 문법을 한곳에서</p>
-          </div>
-          {vocab.length > 0 && (
-            <div style={{ display: 'flex', gap: 14, fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-              <span>전체 {vocab.length}개</span>
-            </div>
-          )}
+      {/* 헤더 — 세션 중에는 없앤다. 부제와 총계는 아래 통계와 중복이라 뺐다. */}
+      {!inSession && (
+        <div className="page-header">
+          <h1 className="page-header__title" style={{ margin: 0 }}>복습</h1>
         </div>
-      </div>
+      )}
 
       {/* 복습 히어로 — 이 페이지의 단 하나의 질문: 오늘 복습했나 */}
       {tab === 'list' && !isLoading && (
         <div className="card vocab-hero">
           <div className="vocab-hero__body">
-            <span className="vocab-hero__kicker">{vocab.length === 0 ? '어휘' : '오늘 학습'}</span>
+            <span className="vocab-hero__kicker">{vocab.length === 0 ? '어휘' : '오늘 할 일'}</span>
             {vocab.length === 0 ? (
               <span className="vocab-hero__sub">자료를 읽으며 단어를 모아보세요</span>
-            ) : session.count > 0 ? (
+            ) : session.count + dueGrammarCount > 0 ? (
               <>
-                <span className="vocab-hero__num">{session.count}</span>
-                <span className="vocab-hero__sub">개 — 복습 {session.reviewsDue.length} · 새 단어 {session.newToday}</span>
+                <span className="vocab-hero__num">{session.count + dueGrammarCount}</span>
+                <span className="vocab-hero__sub">
+                  개{[
+                    session.reviewsDue.length > 0 ? `단어 복습 ${session.reviewsDue.length}` : null,
+                    session.newToday > 0 ? `새 단어 ${session.newToday}` : null,
+                    dueGrammarCount > 0 ? `문법 ${dueGrammarCount}` : null,
+                  ].filter(Boolean).join(' · ') ? ` — ${[
+                    session.reviewsDue.length > 0 ? `단어 복습 ${session.reviewsDue.length}` : null,
+                    session.newToday > 0 ? `새 단어 ${session.newToday}` : null,
+                    dueGrammarCount > 0 ? `문법 ${dueGrammarCount}` : null,
+                  ].filter(Boolean).join(' · ')}` : ''}
+                </span>
               </>
             ) : session.newAvailable.length > 0 ? (
               <span className="vocab-hero__done">
@@ -523,18 +535,46 @@ export default function VocabPage() {
               </span>
             )}
           </div>
-          <div className="vocab-hero__actions">
-            {vocab.length === 0 && (
-              <Link href="/materials" className="btn btn--primary btn--sm">자료 읽기 →</Link>
-            )}
-            {session.count > 0 && (
-              <Button onClick={startReview}>복습 시작 →</Button>
-            )}
+          {/* 주 액션은 하나. 라벨은 실제로 할 일을 말한다 — 복습 0인데 '복습 시작'이라 하지 않는다. */}
+          <div className="vocab-hero__go">
+            {vocab.length === 0 ? (
+              <Link href="/materials" className="btn btn--primary">자료 읽기 →</Link>
+            ) : session.count > 0 ? (
+              <Button onClick={startReview}>
+                {session.reviewsDue.length > 0
+                  ? `단어 복습 ${session.reviewsDue.length}개 시작 →`
+                  : `새 단어 ${session.newToday}개 시작 →`}
+              </Button>
+            ) : dueGrammarCount > 0 ? (
+              <Link href="/review/grammar" className="btn btn--primary">문법 복습 {dueGrammarCount}개 →</Link>
+            ) : null}
+          </div>
+          {session.count > 0 && (
+            <div className="vocab-hero__mode">
+              <span className="vocab-hero__mode-label">방식</span>
+              <div className="chip-group" role="group" aria-label="복습 방식">
+                {[['auto', '자동'], ['flash', '플래시'], ['typing', '타이핑'], ['context', '문맥'], ['listening', '듣기']].map(([m, label]) => (
+                  <button
+                    key={m}
+                    type="button"
+                    className={`chip chip--sm ${reviewMode === m ? 'chip--active' : ''}`}
+                    onClick={() => setReviewMode(m)}
+                    aria-pressed={reviewMode === m}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          <div className="vocab-hero__more">
             {/* 문법 복습은 별도 네비 탭 대신 이 복습 허브에 함께 둔다(어휘·문법 한자리). */}
-            <Link href="/review/grammar" className="btn btn--ghost btn--sm">
-              문법 복습{dueGrammarCount > 0 ? ` ${dueGrammarCount}` : ''} →
-            </Link>
-            <Button size="sm" variant="ghost" onClick={() => setManualAddOpen(true)}>+ 추가</Button>
+            {!(vocab.length > 0 && session.count === 0 && dueGrammarCount > 0) && (
+              <Link href="/review/grammar" className="btn btn--ghost btn--sm">
+                문법 복습{dueGrammarCount > 0 ? ` ${dueGrammarCount}` : ''} →
+              </Link>
+            )}
+            <Button size="sm" variant="ghost" onClick={() => setManualAddOpen(true)}>단어 추가</Button>
             {vocab.length > 0 && (
               <details style={{ position: 'relative' }}>
                 <summary className="btn btn--ghost btn--sm" aria-label="단어장 도구" style={{ cursor: 'pointer', listStyle: 'none' }}>⋯</summary>
@@ -597,19 +637,37 @@ export default function VocabPage() {
               오늘 신규 <strong>{introIds.length}/{newPerDay}</strong>
             </span>
           )}
-          <span className="vocab-stat vocab-stat--total">{seriesFilter === 'all' ? '전체' : '이 덱'} <strong>{deckStats.total}</strong></span>
         </div>
       )}
 
-      {/* 복습 세션 중 — 목록 복귀 */}
-      {tab === 'review' && !reviewFinished && (
-        <button type="button" className="chip" style={{ marginBottom: 12 }} onClick={() => setTab('list')}>
-          ← 단어 목록
-        </button>
-      )}
+      {/* 세션 상단바 — 나가기 · 진행. 카드 안에 있던 '남은 단어'를 여기로 올려 문항만 남긴다. */}
+      {inSession && (() => {
+        const total = reviewQueue.length || 1;
+        const doneCount = Math.min(reviewIdx, total);
+        return (
+          <div className="review-topbar">
+            <button type="button" className="review-topbar__exit" onClick={() => setTab('list')}>
+              ← 나가기
+            </button>
+            <div
+              className="review-topbar__track"
+              role="progressbar"
+              aria-label="복습 진행"
+              aria-valuemin={0}
+              aria-valuemax={total}
+              aria-valuenow={doneCount}
+            >
+              <div className="review-topbar__fill" style={{ width: `${(doneCount / total) * 100}%` }} />
+            </div>
+            <span className="review-topbar__count" role="status" aria-live="polite" aria-atomic="true">
+              {doneCount} / {total}
+            </span>
+          </div>
+        );
+      })()}
 
-      {/* 시리즈 필터 (list / review 탭에 공통 적용) */}
-      {(tab === 'list' || tab === 'review') && availableSeries.length > 0 && (
+      {/* 덱 필터 — 세션 시작 전에 고르는 설정이라 세션 중에는 감춘다 */}
+      {tab === 'list' && availableSeries.length > 0 && (
         <div style={{ marginBottom: 12 }}>
           <div className="chip-group" role="group" aria-label="단어 덱 필터">
             <button
@@ -648,6 +706,7 @@ export default function VocabPage() {
         <CardGridSkeleton height={120} />
       ) : tab === 'list' ? (
         <VocabList
+          vocab={vocab}
           filteredVocab={filteredVocab}
           visibleCount={visibleCount}
           setVisibleCount={setVisibleCount}

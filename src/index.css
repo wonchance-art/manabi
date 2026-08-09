@@ -1076,11 +1076,43 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 
 /* ========= Review Card ========= */
+/* ── 복습 세션 몰입 ──
+   문항에 집중해야 하는 화면인데 헤더·통계·필터·하단 네비가 화면 절반을 먹고 있었다
+   (실측 390×900: 카드가 화면 아래 절반에서 시작, 세 번째 보기는 잘림).
+   세션 중에는 페이지 크롬을 걷어내고 진행·나가기만 남긴다. */
+body.is-review-session .mobile-nav { display: none; }
+body.is-review-session .page-container { padding-top: 8px; }
+
+.review-topbar {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 14px;
+}
+.review-topbar__exit {
+  display: inline-flex; align-items: center; gap: 4px;
+  min-height: 44px; padding: 0 4px;
+  background: none; border: none; cursor: pointer;
+  color: var(--text-muted); font-size: 0.85rem; font-weight: 600;
+}
+.review-topbar__exit:hover { color: var(--text-primary); }
+.review-topbar__track {
+  flex: 1; height: 3px; border-radius: 2px;
+  background: var(--bg-elevated); overflow: hidden;
+}
+.review-topbar__fill {
+  height: 100%; background: var(--accent);
+  transition: width 0.25s ease;
+}
+.review-topbar__count {
+  flex-shrink: 0; font-size: 0.8rem; font-weight: 700;
+  color: var(--text-secondary); font-variant-numeric: tabular-nums;
+}
+
 .review-card {
   min-height: 400px;
   display: flex;
   flex-direction: column;
-  padding: 40px;
+  /* 390px에서 좌우 40px씩 먹으면 단어가 줄바꿈된다 — 화면 폭에 따라 준다 */
+  padding: clamp(20px, 6vw, 40px);
   text-align: center;
 }
 
@@ -1097,6 +1129,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   margin-bottom: 20px;
 }
 
+.review-card__progress--tools { justify-content: flex-end; }
 .review-card__progress {
   margin-bottom: 20px;
   color: var(--text-muted);
@@ -1115,7 +1148,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 
 .review-card__word {
-  font-size: 3.5rem;
+  /* 고정 3.5rem은 'la famille' 같은 두 단어를 모바일에서 쪼갠다 — 폭에 맞춰 준다 */
+  font-size: clamp(1.9rem, 8.5vw, 3.5rem);
+  line-height: 1.15;
+  overflow-wrap: anywhere;
   font-weight: 800;
   margin: 0;
   background: linear-gradient(135deg, var(--text-primary), var(--primary-light));
@@ -8851,9 +8887,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .hm-strip .hm-day { width: 100%; min-width: 9px; }
 
 /* 어휘 — 복습 히어로 */
+/* 액션 4개를 한 줄에 욱여넣어 모바일에서 '+ 추/가'로 쪼개졌다(실측 390px).
+   세로로 쌓고, 주 액션과 보조 액션의 무게를 나눈다. */
 .vocab-hero {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 14px; flex-wrap: wrap;
+  display: flex; flex-direction: column; align-items: stretch;
+  gap: 14px;
   padding: 18px 20px; margin-bottom: 16px;
 }
 .vocab-hero__body { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
@@ -8870,19 +8908,76 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .vocab-hero__sub { font-size: 0.88rem; color: var(--text-secondary); }
 .vocab-hero__done { font-size: 0.92rem; font-weight: 600; color: var(--accent-text); }
-.vocab-hero__actions { display: flex; align-items: center; gap: 6px; }
+.vocab-hero__actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+/* 목록 필터 한 줄 — 정렬(select) + 언어 칩 + 개수 + 선택 */
+.vocab-filter-row {
+  display: flex; align-items: center; gap: 8px 10px; flex-wrap: wrap;
+}
+.vocab-filter-row__count {
+  margin-left: auto;
+  font-size: 0.8rem; color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.vocab-sort {
+  min-height: 44px; padding: 0 28px 0 13px;
+  font-size: 0.8rem; font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
+                    linear-gradient(135deg, var(--text-muted) 50%, transparent 50%);
+  background-position: calc(100% - 15px) 50%, calc(100% - 11px) 50%;
+  background-size: 4px 4px, 4px 4px;
+  background-repeat: no-repeat;
+}
+
+.vocab-hero__mode { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.vocab-hero__mode-label {
+  flex-shrink: 0; font-size: 0.74rem; font-weight: 700;
+  color: var(--text-muted);
+}
+.chip--sm { padding: 5px 11px; font-size: 0.76rem; min-height: 32px; }
+
+/* 검색 입력에 배경·글자색 계약이 없어 다크 테마에서 흰 상자로 떴다(실측). */
+.search-input {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+.search-input::placeholder { color: var(--text-muted); }
+.vocab-hero__go { display: flex; }
+.vocab-hero__go .btn { flex: 1; justify-content: center; }
+.vocab-hero__more {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  margin-top: -4px;
+}
+@media (min-width: 620px) {
+  /* 넓으면 한 줄로 — 주 액션이 오른쪽에 붙는다 */
+  .vocab-hero { flex-direction: row; align-items: center; flex-wrap: wrap; }
+  .vocab-hero__body { flex: 1; }
+  .vocab-hero__go .btn { flex: none; }
+  .vocab-hero__more { margin-top: 0; }
+}
 
 /* 상단 미니 현황 strip — 복습/신규/학습 중/숙련 한눈에 */
 .vocab-stat-strip {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
-  margin: -4px 0 16px;
+  display: flex; flex-wrap: wrap; align-items: baseline;
+  margin: -2px 0 18px;
 }
+/* 현황은 '읽는 것'이지 '누르는 것'이 아니다 — 칩(누를 것 같은 모양)에서 한 줄 텍스트로 낮춘다.
+   칩 4개가 액션과 같은 무게로 놓여 있어 화면의 위계를 흐렸다. */
 .vocab-stat {
   font-size: 0.78rem; color: var(--text-muted);
-  padding: 4px 10px; border-radius: var(--radius-full);
-  background: var(--bg-secondary); border: 1px solid var(--border);
   white-space: nowrap;
 }
+.vocab-stat + .vocab-stat::before {
+  content: '·'; margin: 0 7px; color: var(--border);
+}
+.vocab-stat strong { color: var(--text-secondary); font-weight: 700; }
 .vocab-stat strong {
   color: var(--text-primary); font-weight: 700; margin-left: 3px;
   font-variant-numeric: tabular-nums;
