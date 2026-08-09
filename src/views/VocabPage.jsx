@@ -457,6 +457,47 @@ export default function VocabPage() {
     }
   };
 
+  // ── 대시보드 데이터 ──
+  // 문법 큐 조망(미래) — '지금 할 것'은 히어로 버튼이 말하므로 여기선 예정만 본다.
+  const [grammarQueue, setGrammarQueue] = useState(null); // { total, upcoming, nextAt }
+  useEffect(() => {
+    if (!user?.id) return undefined;
+    let alive = true;
+    supabase
+      .from('grammar_review')
+      .select('next_review_at')
+      .eq('user_id', user.id)
+      .then(({ data }) => {
+        if (!alive || !Array.isArray(data)) return;
+        const now = Date.now();
+        const future = data
+          .map(r => new Date(r.next_review_at).getTime())
+          .filter(t => Number.isFinite(t) && t > now)
+          .sort((a, b) => a - b);
+        setGrammarQueue({ total: data.length, upcoming: future.length, nextAt: future[0] ?? null });
+      }, () => {});
+    return () => { alive = false; };
+  }, [user?.id]);
+
+  // 교재 진도 — 읽음 키(localStorage)만 읽는다. 총 챕터 수는 콘텐츠 레지스트리를 클라로
+  // 끌어와야 해서 싣지 않는다(읽은 수만으로 '이어서' 판단엔 충분).
+  const [trackReads, setTrackReads] = useState(null);
+  useEffect(() => {
+    try {
+      const TRACKS = [
+        ['French', 'fr_read_chapters', '🇫🇷', '프랑스어'],
+        ['Japanese', 'ja_read_chapters', '🇯🇵', '일본어'],
+        ['English', 'en_read_chapters', '🇬🇧', '영어'],
+        ['Chinese', 'zh_read_chapters', '🇨🇳', '중국어'],
+      ];
+      const rows = TRACKS.map(([lang, key, flag, label]) => {
+        const raw = JSON.parse(globalThis.localStorage?.getItem(key) ?? '[]');
+        return { lang, flag, label, read: Array.isArray(raw) ? raw.length : 0 };
+      }).filter(r => r.read > 0);
+      setTrackReads(rows);
+    } catch { setTrackReads([]); }
+  }, []);
+
   // 복습 세션 중에는 페이지 크롬(헤더·통계·필터·하단 네비)을 걷어낸다.
   // 하단 네비는 Layout 소유라 컴포넌트에서 못 지운다 — body 클래스로 CSS에 알린다.
   // 훅은 아래 `if (!user)` 조기 return보다 **위**에 있어야 한다(#838 Hooks 순서 사고와 같은 자리).
@@ -608,16 +649,6 @@ export default function VocabPage() {
         </div>
       )}
 
-      {/* 단어장 구성 한 줄 — 읽는 것. '오늘 신규 n/한도'는 뺐다(위 카드의 단어 수가 이미
-          한도를 반영하고, 한도 설정은 ⋯ 메뉴에 있다 — 같은 사실을 세 곳에서 말하지 않는다). */}
-      {tab === 'list' && !isLoading && vocab.length > 0 && (
-        <div className="vocab-stat-strip">
-          <span className="vocab-stat">미학습 <strong>{deckStats.neu}</strong></span>
-          <span className="vocab-stat">학습 중 <strong>{deckStats.learning}</strong></span>
-          <span className="vocab-stat">숙련 <strong>{deckStats.mastered}</strong></span>
-        </div>
-      )}
-
       {/* 세션 상단바 — 나가기 · 진행. 카드 안에 있던 '남은 단어'를 여기로 올려 문항만 남긴다. */}
       {inSession && (() => {
         const total = reviewQueue.length || 1;
@@ -647,7 +678,99 @@ export default function VocabPage() {
       {isLoading ? (
         <CardGridSkeleton height={120} />
       ) : tab === 'list' ? (
-        <VocabList
+        /* ── 대시보드 — 각 영역을 같은 문법(제목·수 / 오른쪽 진입 / 요약 / 미리보기)으로 조망한다.
+           목록을 다 펼치지 않는다: 단어장은 임박 5개만, 나머지는 클릭해서 들어간다. */
+        <>
+          <section className="card review-sec" aria-labelledby="dash-vocab">
+            <div className="review-sec__head">
+              <h2 id="dash-vocab" className="review-sec__title">단어장 <span className="review-sec__count">{vocab.length}</span></h2>
+              {vocab.length > 0 && (
+                <button type="button" className="review-sec__more" onClick={() => setTab('browse')}>
+                  전체 보기 →
+                </button>
+              )}
+            </div>
+            {vocab.length > 0 && (
+              <p className="review-sec__meta">미학습 {deckStats.neu} · 학습 중 {deckStats.learning} · 숙련 {deckStats.mastered}</p>
+            )}
+            {vocab.length === 0 ? (
+              <p className="review-sec__empty">교재나 자료에서 단어를 저장하면 여기에 모여요.</p>
+            ) : (
+              <div className="review-sec__rows">
+                {[...deckScope]
+                  .sort((x, y) => new Date(x.next_review_at ?? '9999') - new Date(y.next_review_at ?? '9999'))
+                  .slice(0, 5)
+                  .map(v => {
+                    const t = v.next_review_at ? new Date(v.next_review_at) : null;
+                    const days = t ? Math.ceil((t - new Date()) / 86400000) : null;
+                    const due = !t ? '새 단어' : days <= 0 ? '지금' : days === 1 ? '내일' : `${days}일 후`;
+                    return (
+                      <button
+                        key={v.id}
+                        type="button"
+                        className="review-sec__row"
+                        onClick={() => setDetailWord(v)}
+                        aria-label={`${v.word_text} — ${v.meaning} 상세 열기`}
+                      >
+                        <span className="review-sec__word" lang={({ French: 'fr', Japanese: 'ja', English: 'en', Chinese: 'zh' })[v.language]}>{v.word_text}</span>
+                        <span className="review-sec__meaning">{v.meaning}</span>
+                        <span className={`review-sec__due${due === '지금' ? ' review-sec__due--now' : ''}`}>{due}</span>
+                      </button>
+                    );
+                  })}
+              </div>
+            )}
+          </section>
+
+          <section className="card review-sec" aria-labelledby="dash-grammar">
+            <div className="review-sec__head">
+              <h2 id="dash-grammar" className="review-sec__title">문법 큐 <span className="review-sec__count">{grammarQueue?.total ?? '—'}</span></h2>
+              <Link href="/review/grammar" className="review-sec__more">열기 →</Link>
+            </div>
+            {/* '지금 할 것'은 위 카드 버튼이 말한다 — 여기는 미래만: 예정 몇 장, 언제 돌아오나. */}
+            {grammarQueue == null ? (
+              <p className="review-sec__meta">불러오는 중…</p>
+            ) : grammarQueue.total === 0 ? (
+              <p className="review-sec__empty">챕터의 패턴 체크를 통과하면 며칠 뒤 여기로 돌아와요.</p>
+            ) : (
+              <p className="review-sec__meta">
+                예정 {grammarQueue.upcoming}장
+                {grammarQueue.nextAt && (() => {
+                  const days = Math.ceil((grammarQueue.nextAt - Date.now()) / 86400000);
+                  return ` · 다음 도착 ${days <= 1 ? '내일' : `${days}일 후`}`;
+                })()}
+              </p>
+            )}
+          </section>
+
+          <section className="card review-sec" aria-labelledby="dash-tracks">
+            <div className="review-sec__head">
+              <h2 id="dash-tracks" className="review-sec__title">교재 진도</h2>
+              <Link href="/lessons" className="review-sec__more">교재 →</Link>
+            </div>
+            {trackReads == null ? (
+              <p className="review-sec__meta">불러오는 중…</p>
+            ) : trackReads.length === 0 ? (
+              <p className="review-sec__empty">아직 읽은 챕터가 없어요 — 교재에서 시작해 보세요.</p>
+            ) : (
+              <div className="review-sec__rows">
+                {trackReads.map(t => (
+                  <Link key={t.lang} href={`/lessons?lang=${t.lang}`} className="review-sec__row">
+                    <span className="review-sec__word">{t.flag} {t.label}</span>
+                    <span className="review-sec__meaning">{t.read}챕터 읽음</span>
+                    <span className="review-sec__due">이어서 →</span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </section>
+        </>
+      ) : tab === 'browse' ? (
+        <>
+          <button type="button" className="chip" style={{ marginBottom: 12 }} onClick={() => setTab('list')}>
+            ← 돌아가기
+          </button>
+          <VocabList
           vocab={vocab}
           filteredVocab={filteredVocab}
           visibleCount={visibleCount}
@@ -665,7 +788,8 @@ export default function VocabPage() {
           bulkDeleteMutation={bulkDeleteMutation}
           updateVocabMutation={updateVocabMutation}
           onWordClick={setDetailWord}
-        />
+          />
+        </>
       ) : tab === 'review' ? (
         <VocabReview
           vocab={vocab}
