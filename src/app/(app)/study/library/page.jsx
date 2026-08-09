@@ -4,11 +4,11 @@ import { getRefLang, REF_LANGS } from '@/content/refLangs';
 import StudyLibraryPage from '@/views/StudyLibraryPage';
 import { KNOWN_WORD_MIN_INTERVAL, kstWeekStartIso } from '@/lib/growthStats';
 
-export const metadata = { title: '다시 읽기 서재 | Anatomy Studio' };
+export const metadata = { title: '서재 | Anatomy Studio' };
 export const dynamic = 'force-dynamic';
 
 /**
- * 다시 읽기 서재 + 성장 요약 — 지난 '오늘의 문단'을 어시스트 없이 재독하며 성장을 확인한다.
+ * 서재 + 성장 요약 — 지난 '오늘의 문단'을 어시스트 없이 재독하며 성장을 확인한다.
  * 모든 조회는 방어적 — study_paragraphs 테이블이 없거나 실패해도 빈 서재로 우아하게 폴백.
  */
 export default async function Page({ searchParams }) {
@@ -95,8 +95,7 @@ export default async function Page({ searchParams }) {
       lang={lang}
       langCode={ref.langCode}
       langName={ref.name}
-      flag={ref.flag}
-      languages={Object.entries(REF_LANGS).map(([key, r]) => ({ key, name: r.name, flag: r.flag }))}
+      languages={Object.entries(REF_LANGS).map(([key, r]) => ({ key, name: r.name }))}
     />
   );
 }

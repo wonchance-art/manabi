@@ -10,10 +10,10 @@ import { logReviewEvents } from '../lib/reviewEvents';
 import { recordActivity } from '../lib/streak';
 
 const LANGS = [
-  { key: 'Japanese', label: '일본어', flag: '🇯🇵' },
-  { key: 'English', label: '영어', flag: '🇬🇧' },
-  { key: 'French', label: '프랑스어', flag: '🇫🇷' },
-  { key: 'Chinese', label: '중국어', flag: '🇨🇳' },
+  { key: 'Japanese', label: '일본어' },
+  { key: 'English', label: '영어' },
+  { key: 'French', label: '프랑스어' },
+  { key: 'Chinese', label: '중국어' },
 ];
 const LANG_CODE = { Japanese: 'ja', English: 'en', French: 'fr', Chinese: 'zh-Hans' };
 const FIT_LABEL = { below: '레벨보다 쉬운 문장이에요 — 한 단계 도전해 봐요', fit: '레벨에 딱 맞는 작문이에요', above: '레벨 이상으로 도전했어요 — 훌륭해요' };
@@ -21,7 +21,7 @@ const FIT_LABEL = { below: '레벨보다 쉬운 문장이에요 — 한 단계 �
 const scoreColor = s => (s >= 4 ? 'var(--accent)' : s === 3 ? 'var(--warning)' : 'var(--danger)');
 
 /**
- * 라이팅 스튜디오 — 프롬프트(챕터 연동/주제/자유)를 고르고 학습 언어로 작문하면
+ * 작문(/writing) — 프롬프트(챕터 연동/주제/자유)를 고르고 학습 언어로 작문하면
  * AI가 한국인 학습자 관점의 rubric으로 첨삭한다. 결과는 writing_practice에 저장되고
  * 오류는 review_events(약점 진단의 데이터)로 적재된다.
  */
@@ -229,7 +229,7 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
   if (signedOut) {
     return (
       <div className="page-container" style={{ maxWidth: 640, textAlign: 'center', paddingTop: 60 }}>
-        <h1 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: 10 }}>라이팅 스튜디오</h1>
+        <h1 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: 10 }}>작문</h1>
         <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 20 }}>
           로그인하면 배운 문법으로 작문하고 AI 첨삭을 받을 수 있어요.
         </p>
@@ -243,9 +243,9 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
   return (
     <div className="page-container" style={{ maxWidth: 760 }}>
       <header style={{ margin: '14px 0 18px' }}>
-        <h1 style={{ fontSize: '1.35rem', fontWeight: 700 }}>라이팅 스튜디오</h1>
+        <h1 style={{ fontSize: '1.35rem', fontWeight: 700 }}>작문</h1>
         <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', marginTop: 4 }}>
-          배운 문법으로 직접 써 보면 진짜 실력이 돼요. 1~5문장을 쓰면 AI가 한국인 학습자 눈높이로 첨삭해 드려요.
+          배운 문법으로 1~5문장을 쓰면 한국인 학습자 기준으로 첨삭해 드려요. 지난 작문도 아래에 쌓여요.
         </p>
       </header>
 
@@ -255,9 +255,10 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
           <button
             key={l.key}
             className={`chip ${language === l.key ? 'chip--active' : ''}`}
+            aria-pressed={language === l.key}
             onClick={() => { setLanguage(l.key); setResult(null); try { localStorage.setItem('writing_lang', l.key); } catch {} }}
           >
-            {l.flag} {l.label}
+            {l.label}
           </button>
         ))}
       </div>
@@ -266,6 +267,7 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
           <button
             key={lv}
             className={`chip ${level === lv ? 'chip--active' : ''}`}
+            aria-pressed={level === lv}
             onClick={() => { setLevel(lv); try { localStorage.setItem(`writing_level_${language}`, lv); } catch {} }}
           >
             {lv}
@@ -282,7 +284,7 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
               { key: 'topic', label: '오늘의 주제' },
               { key: 'free', label: '자유 작문' },
             ].filter(Boolean).map(t => (
-              <button key={t.key} className={`chip ${tab === t.key ? 'chip--active' : ''}`} onClick={() => setTab(t.key)}>
+              <button key={t.key} className={`chip ${tab === t.key ? 'chip--active' : ''}`} aria-pressed={tab === t.key} onClick={() => setTab(t.key)}>
                 {t.label}
               </button>
             ))}
@@ -293,6 +295,7 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
               {langChapters.map(c => (
                 <button
                   key={c.slug}
+                  aria-pressed={chapterSlug === c.slug}
                   onClick={() => setChapterSlug(c.slug)}
                   style={{
                     textAlign: 'left', padding: '10px 12px', borderRadius: 'var(--radius-md)',
@@ -323,6 +326,7 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
                 {topicChoices.map(t => (
                   <button
                     key={t}
+                    aria-pressed={(topic || topicChoices[0]) === t}
                     onClick={() => setTopic(t)}
                     style={{
                       textAlign: 'left', padding: '10px 12px', borderRadius: 'var(--radius-md)',
@@ -357,7 +361,7 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
               padding: '8px 12px', marginBottom: 10, borderRadius: 'var(--radius-md)',
               background: 'var(--primary-glow)', fontSize: '0.82rem', fontWeight: 600,
             }}>
-              ✍️ 재작문 — 1차 {prevScore}점. 첨삭을 반영해 고쳐 써 보세요.
+              재작문 — 1차 {prevScore}점. 첨삭을 반영해 고쳐 써 보세요.
             </div>
           )}
           <textarea
@@ -387,11 +391,11 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {history.map(h => {
               const open = expandedId === h.id;
-              const flag = LANGS.find(l => l.key === h.language)?.flag || '';
               return (
                 <div key={h.id} style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius-md)' }}>
                   <button
                     type="button"
+                    aria-expanded={open}
                     onClick={() => setExpandedId(open ? null : h.id)}
                     style={{
                       width: '100%', display: 'flex', alignItems: 'center', gap: 10,
@@ -399,7 +403,6 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
                       cursor: 'pointer', color: 'inherit', textAlign: 'left', fontSize: '0.85rem',
                     }}
                   >
-                    <span aria-hidden="true">{flag}</span>
                     {h.score != null && (
                       <span style={{ fontWeight: 800, color: scoreColor(h.score), flexShrink: 0 }}>{h.score}</span>
                     )}
@@ -453,7 +456,7 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
                 <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{FIT_LABEL[result.levelFit]}</div>
                 {prevScore != null && (
                   <div style={{ fontSize: '0.78rem', fontWeight: 700, marginTop: 2, color: result.score >= prevScore ? 'var(--accent)' : 'var(--warning)' }}>
-                    재작문: {prevScore}점 → {result.score}점 {result.score > prevScore ? `(+${result.score - prevScore} 🎉)` : result.score === prevScore ? '(유지)' : `(${result.score - prevScore})`}
+                    재작문: {prevScore}점 → {result.score}점 {result.score > prevScore ? `(+${result.score - prevScore})` : result.score === prevScore ? '(유지)' : `(${result.score - prevScore})`}
                   </div>
                 )}
               </div>
@@ -501,7 +504,7 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
 
           {result.naturalness.length > 0 && (
             <div className="card" style={{ padding: '16px 18px' }}>
-              <div style={{ fontSize: '0.82rem', fontWeight: 700, marginBottom: 8 }}>💡 더 자연스럽게</div>
+              <div style={{ fontSize: '0.82rem', fontWeight: 700, marginBottom: 8 }}>더 자연스럽게</div>
               <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {result.naturalness.map((n, i) => (
                   <li key={i} style={{ fontSize: '0.88rem', lineHeight: 1.65 }}>{n}</li>
@@ -512,7 +515,7 @@ export default function WritingStudioPage({ recentChapters = [], signedOut = fal
 
           <div style={{ display: 'flex', gap: 10 }}>
             {result.score < 5 && (
-              <Button onClick={startRevision} style={{ flex: 1.4 }}>✍️ 고쳐서 다시 쓰기</Button>
+              <Button onClick={startRevision} style={{ flex: 1.4 }}>고쳐서 다시 쓰기</Button>
             )}
             <Button variant="secondary" onClick={reset} style={{ flex: 1 }}>새 작문 쓰기</Button>
             {selectedChapter && tab === 'chapter' && (

@@ -13,8 +13,8 @@ const PRACTICE = [
     href: '/review/grammar',
   },
   {
-    title: '작문 기록',
-    desc: '학습에서 썼던 문장과 교정을 다시 읽어봐요.',
+    title: '작문',
+    desc: '배운 문법으로 1~5문장 쓰고 첨삭 받아요.',
     href: '/writing',
   },
 ];

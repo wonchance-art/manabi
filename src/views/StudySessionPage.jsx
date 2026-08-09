@@ -715,7 +715,7 @@ export default function StudySessionPage({
     }
     setProduceReflected(reflected);
 
-    // 세션에서 쓴 문장을 작문 기록실(writing_practice)에도 남긴다 — /writing 히스토리에 노출.
+    // 세션에서 쓴 문장을 writing_practice에도 남긴다 — 작문(/writing) 히스토리에 노출.
     // WritingStudioPage.persist(:171)와 동일한 컬럼·형태. 세션 흐름은 막지 않되 저장 오류를 기록한다.
     if (user?.id) {
       const allErrors = (feedback.sentences || []).flatMap(
@@ -1385,7 +1385,7 @@ export default function StudySessionPage({
                   <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginTop: 8 }}>{why}</p>
                 )}
                 <Link href="/writing" className="study-textlink" style={{ display: 'inline-block', marginTop: 8 }}>
-                  작문 기록실에서 더 다듬기 →
+                  작문에서 더 다듬기 →
                 </Link>
               </div>
             );

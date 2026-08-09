@@ -321,7 +321,7 @@ export default function AdminPage() {
               {
                 href: '/study/library',
                 icon: '📚',
-                title: '다시 읽기 서재 + 성장 요약',
+                title: '서재 + 성장 요약',
                 desc: '지난 «오늘의 문단»을 어시스트(요미가나) 없이 원문만으로 다시 읽으며 성장을 체감. 상단엔 아는 단어·통과 챕터·이번 주 세션 요약 타일.',
               },
               {
@@ -333,7 +333,7 @@ export default function AdminPage() {
               {
                 href: '/writing',
                 icon: '✍️',
-                title: '라이팅 스튜디오',
+                title: '작문',
                 desc: '배운 문법·주제·자유 작문을 AI가 한국인 학습자 눈높이로 첨삭. 오류는 약점 진단 데이터로 쌓여요. (4개 언어)',
               },
               {

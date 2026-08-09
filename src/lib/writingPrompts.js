@@ -1,5 +1,5 @@
 /**
- * 라이팅 스튜디오 — 언어별 첨삭 rubric·주제 은행·응답 스키마·검증.
+ * 작문(/writing) — 언어별 첨삭 rubric·주제 은행·응답 스키마·검증.
  * 프롬프트는 서버(/api/writing-feedback)에서만 조립하고, 클라이언트는
  * validateFeedback을 통과한 구조화 결과만 받는다.
  */
