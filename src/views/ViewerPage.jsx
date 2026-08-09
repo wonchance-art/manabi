@@ -974,7 +974,7 @@ export default function ViewerPage() {
       {sourcePdf && material.page_start && (
         <div className="u-highlight-card u-row u-row--between u-row--wrap u-row--gap-md u-mb-sm" style={{ marginBottom: 12 }}>
           <div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--primary)', fontWeight: 700 }}>
+            <div style={{ fontSize: '0.72rem', color: 'var(--primary-light)', fontWeight: 700 }}>
               PDF 출처
             </div>
             <div style={{ fontSize: '0.88rem', marginTop: 2 }}>
@@ -1505,7 +1505,7 @@ export default function ViewerPage() {
                 </div>
                 <span style={{
                   padding: '3px 10px', borderRadius: 'var(--radius-full)',
-                  background: 'var(--primary-glow)', color: 'var(--primary)',
+                  background: 'var(--primary-glow)', color: 'var(--primary-light)',
                   fontSize: '0.72rem', fontWeight: 600,
                 }}>
                   {deck.language === 'Japanese' ? '일본어' : '영어'}

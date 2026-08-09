@@ -119,7 +119,7 @@ export default function VocabReview({
                         {['일','월','화','수','목','금','토'][d.date.getDay()]}
                       </span>
                       {d.count > 0 && (
-                        <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--primary)' }}>{d.count}</span>
+                        <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--primary-light)' }}>{d.count}</span>
                       )}
                     </div>
                   ))}

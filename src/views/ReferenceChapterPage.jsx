@@ -331,7 +331,7 @@ export default async function ReferenceChapterPage({ lang, slug, registry: ref, 
             {patternIndex.map(p => (
               <li key={p.i}>
                 <a href={`#sec-${p.i + 1}`} className="fr-pattern-summary__item">
-                  <span className="fr-pattern-summary__num" style={{ color: meta?.color }}>{p.i + 1}</span>
+                  <span className="fr-pattern-summary__num" style={{ color: lightenForText(meta?.color) }}>{p.i + 1}</span>
                   <span className="fr-pattern-summary__text">{refInline(p.pattern)}</span>
                 </a>
               </li>
@@ -348,7 +348,7 @@ export default async function ReferenceChapterPage({ lang, slug, registry: ref, 
             <section key={i} id={`sec-${i + 1}`} className="card fr-section">
               <InlineEdit lang={lang} slug={slug} path={`sections.${i}.heading`}>
                 <h2 className="fr-section__heading">
-                  <span className="fr-section__num" style={{ background: meta?.bg, color: meta?.color }}>{i + 1}</span>
+                  <span className="fr-section__num" style={{ background: meta?.bg, color: lightenForText(meta?.color) }}>{i + 1}</span>
                   {sec.heading}
                 </h2>
               </InlineEdit>
@@ -387,7 +387,7 @@ export default async function ReferenceChapterPage({ lang, slug, registry: ref, 
             <section key={i} id={`sec-${i + 1}`} className="card fr-section">
               <InlineEdit lang={lang} slug={slug} path={`sections.${i}.heading`}>
                 <h2 className="fr-section__heading">
-                  <span className="fr-section__num" style={{ background: meta?.bg, color: meta?.color }}>{i + 1}</span>
+                  <span className="fr-section__num" style={{ background: meta?.bg, color: lightenForText(meta?.color) }}>{i + 1}</span>
                   {sec.heading}
                 </h2>
               </InlineEdit>
@@ -420,7 +420,7 @@ export default async function ReferenceChapterPage({ lang, slug, registry: ref, 
             <section key={i} id={`sec-${i + 1}`} className="card fr-section">
               <InlineEdit lang={lang} slug={slug} path={`sections.${i}.heading`}>
                 <h2 className="fr-section__heading">
-                  <span className="fr-section__num" style={{ background: meta?.bg, color: meta?.color }}>{i + 1}</span>
+                  <span className="fr-section__num" style={{ background: meta?.bg, color: lightenForText(meta?.color) }}>{i + 1}</span>
                   {sec.heading}
                 </h2>
               </InlineEdit>
@@ -473,7 +473,7 @@ export default async function ReferenceChapterPage({ lang, slug, registry: ref, 
             <section key={i} id={`sec-${i + 1}`} className="card fr-section">
               <InlineEdit lang={lang} slug={slug} path={`sections.${i}.heading`}>
                 <h2 className="fr-section__heading">
-                  <span className="fr-section__num" style={{ background: meta?.bg, color: meta?.color }}>{i + 1}</span>
+                  <span className="fr-section__num" style={{ background: meta?.bg, color: lightenForText(meta?.color) }}>{i + 1}</span>
                   {sec.heading}
                 </h2>
               </InlineEdit>
@@ -505,7 +505,7 @@ export default async function ReferenceChapterPage({ lang, slug, registry: ref, 
         <section key={i} id={`sec-${i + 1}`} className="card fr-section">
           <InlineEdit lang={lang} slug={slug} path={`sections.${i}.heading`}>
             <h2 className="fr-section__heading">
-              <span className="fr-section__num" style={{ background: meta?.bg, color: meta?.color }}>{i + 1}</span>
+              <span className="fr-section__num" style={{ background: meta?.bg, color: lightenForText(meta?.color) }}>{i + 1}</span>
               {sec.heading}
             </h2>
           </InlineEdit>

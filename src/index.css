@@ -19,7 +19,9 @@
   --primary-light: #E07848;
   --primary-dark: #8A3818;
   --primary-glow: rgba(192, 82, 42, 0.18);
-  --accent: #4A8A5C;
+  /* 배경으로 쓸 때 흰 글자 대비가 4.13이라 AA(4.5) 미달이었다 — 5%만 어둡혀 4.51.
+     글자로 쓸 때는 아래 --accent-text를 쓴다(반대 방향으로 밝혀야 하므로 토큰이 둘로 갈린다). */
+  --accent: #468357;
   /* 배경으로 쓰면 문제없지만 글자로 쓰면 3.32라 AA 미달 — 글자 전용 변형을 따로 둔다(같은 색상, 밝기만). */
   --accent-text: #58A46D;   /* 3.32 → 4.51 */
   --accent-glow: rgba(74, 138, 92, 0.18);
@@ -796,7 +798,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-size: 0.78rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
   transition: color .12s, border-color .12s;
 }
-.vocab-row__tts:hover { border-color: var(--primary); color: var(--primary); }
+.vocab-row__tts:hover { border-color: var(--primary); color: var(--primary-light); }
 .vocab-row__tts--empty { border-color: transparent; pointer-events: none; }
 .vocab-row__word {
   grid-area: word; align-self: baseline;
@@ -1241,7 +1243,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 
 .stat-card__value--primary { color: var(--primary-light); }
-.stat-card__value--accent  { color: var(--accent); }
+.stat-card__value--accent  { color: var(--accent-text); }
 .stat-card__value--green   { color: #51cf66; }
 
 .stat-card__sub {
@@ -1631,7 +1633,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   display: inline-block;
   font-size: 0.82rem;
   font-weight: 600;
-  color: var(--accent);
+  color: var(--accent-text);
   background: rgba(74, 138, 92, 0.12);
   padding: 4px 12px;
   border-radius: var(--radius-full);
@@ -2271,7 +2273,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .md-em {
   font-style: italic;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 .md-code {
   font-family: monospace;
@@ -2326,7 +2328,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .md-example__label {
   font-size: 0.72rem;
   font-weight: 700;
-  color: var(--accent);
+  color: var(--accent-text);
   flex-shrink: 0;
   min-width: 2.5em;
 }
@@ -2713,7 +2715,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .mypage-goal-slider__value {
   font-weight: 600;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 .mypage-range {
   width: 100%;
@@ -2788,7 +2790,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .mypage-reminder-status {
   margin-top: 10px;
   font-size: 0.82rem;
-  color: var(--accent);
+  color: var(--accent-text);
   font-weight: 500;
 }
 
@@ -3128,7 +3130,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--accent-text);
   margin-bottom: 12px;
 }
 
@@ -3630,7 +3632,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 
 .role-badge--admin   { background: rgba(255,146,43,0.15); color: #ff922b; }
 .role-badge--user    { background: var(--bg-elevated);    color: var(--text-muted); }
-.role-badge--public  { background: var(--accent-glow);    color: var(--accent); }
+.role-badge--public  { background: var(--accent-glow);    color: var(--accent-text); }
 .role-badge--private { background: var(--primary-glow);   color: var(--primary-light); }
 
 /* ========= Theme Toggle Button ========= */
@@ -4536,7 +4538,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   .viewer-sheet-bar__btn.is-active {
     border-color: var(--primary);
     background: var(--primary-glow);
-    color: var(--primary);
+    color: var(--primary-light);
   }
   .viewer-sheet-bar__badge {
     font-size: 0.72rem;
@@ -4550,7 +4552,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
     text-overflow: ellipsis;
   }
   .viewer-sheet-bar__btn.is-active .viewer-sheet-bar__badge {
-    color: var(--primary);
+    color: var(--primary-light);
     background: rgba(255,255,255,0.4);
   }
 
@@ -4737,7 +4739,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .reading-test__score-num {
   font-size: 3rem;
   font-weight: 800;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 .reading-test__score-total {
   font-size: 1.5rem;
@@ -4774,7 +4776,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   margin-bottom: 6px;
 }
 .reading-test__your-answer { color: var(--danger); }
-.reading-test__correct-answer { color: var(--accent); font-weight: 600; }
+.reading-test__correct-answer { color: var(--accent-text); font-weight: 600; }
 .reading-test__result-expl {
   font-size: 0.82rem;
   color: var(--text-muted);
@@ -4862,7 +4864,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .series-end-card__hint {
   font-size: 0.78rem;
   font-weight: 600;
-  color: var(--accent);
+  color: var(--accent-text);
   margin-bottom: 6px;
 }
 .series-end-card__title {
@@ -4891,7 +4893,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .lessons-hero__hint {
   font-size: 0.78rem;
   font-weight: 600;
-  color: var(--primary);
+  color: var(--primary-light);
   letter-spacing: 0.04em;
   margin-bottom: 6px;
 }
@@ -4952,7 +4954,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   transition: transform 0.15s;
 }
 .lessons-list__group.is-open .lessons-list__group-chevron {
-  color: var(--primary);
+  color: var(--primary-light);
 }
 .lessons-list__group-glyph {
   font-family: var(--font-serif);
@@ -5026,8 +5028,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   flex-shrink: 0;
   color: var(--border);
 }
-.lessons-list__row--done .lessons-list__status { color: var(--accent); }
-.lessons-list__row--progress .lessons-list__status { color: var(--primary); }
+.lessons-list__row--done .lessons-list__status { color: var(--accent-text); }
+.lessons-list__row--progress .lessons-list__status { color: var(--primary-light); }
 .lessons-list__lang {
   font-size: 0.95rem;
   flex-shrink: 0;
@@ -5060,7 +5062,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-weight: 600;
 }
 .lessons-list__pct {
-  color: var(--primary);
+  color: var(--primary-light);
   font-weight: 600;
 }
 
@@ -5091,7 +5093,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .next-lesson-card__hint {
   font-size: 0.72rem;
   font-weight: 600;
-  color: var(--primary);
+  color: var(--primary-light);
   letter-spacing: 0.06em;
   margin-bottom: 4px;
   text-transform: uppercase;
@@ -5192,7 +5194,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   color: var(--text-secondary);
   cursor: pointer;
 }
-.tts-voice__sample:hover { color: var(--primary); border-color: var(--primary); }
+.tts-voice__sample:hover { color: var(--primary-light); border-color: var(--primary); }
 .tts-voice__list {
   list-style: none;
   padding: 6px 0;
@@ -5221,7 +5223,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .tts-voice__option.is-selected::before {
   content: '✓';
-  color: var(--primary);
+  color: var(--primary-light);
   font-weight: 700;
   margin-right: 4px;
 }
@@ -5345,7 +5347,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .ja-particle rt {
   font-size: 0.68em;
-  color: var(--primary);
+  color: var(--primary-light);
   font-weight: 700;
   letter-spacing: 0.01em;
   line-height: 1;
@@ -5703,7 +5705,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   transition: color var(--transition-fast);
 }
 .auth-link-btn:hover {
-  color: var(--primary);
+  color: var(--primary-light);
   text-decoration: underline;
 }
 .auth-alert {
@@ -5721,7 +5723,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .auth-alert--success {
   background: rgba(6, 214, 160, 0.1);
   border: 1px solid rgba(6, 214, 160, 0.3);
-  color: var(--accent);
+  color: var(--accent-text);
 }
 .auth-alert__link {
   color: #FF6B6B;
@@ -5932,7 +5934,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .source-toggle--on {
   background: var(--accent-glow);
-  color: var(--accent);
+  color: var(--accent-text);
   border-color: rgba(74, 138, 92, 0.3);
 }
 .source-toggle--on:hover {
@@ -5950,7 +5952,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 /* ========= Viewer 완료 버튼 ========= */
 .grammar-btn--complete {
   background: var(--accent-glow);
-  color: var(--accent);
+  color: var(--accent-text);
   border-color: rgba(74, 138, 92, 0.4);
 }
 .grammar-btn--complete:hover {
@@ -5959,7 +5961,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .viewer-complete-badge {
   cursor: default;
   background: var(--accent-glow);
-  color: var(--accent);
+  color: var(--accent-text);
   border-color: rgba(74, 138, 92, 0.4);
 }
 
@@ -6062,7 +6064,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .streak-freeze-indicator {
   font-size: 0.75rem;
-  color: var(--primary);
+  color: var(--primary-light);
   font-weight: 600;
 }
 
@@ -6129,7 +6131,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   color: var(--text-muted);
 }
 .home-section-meta--done {
-  color: var(--accent);
+  color: var(--accent-text);
   font-weight: 700;
 }
 
@@ -6157,7 +6159,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   color: var(--text-muted);
   font-weight: 600;
 }
-.home-mission-row__count--done { color: var(--accent); }
+.home-mission-row__count--done { color: var(--accent-text); }
 .home-mission-row__cta {
   padding: 3px 10px;
   font-size: 0.72rem;
@@ -6244,7 +6246,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .home-recent-item__status { font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; }
-.home-recent-item__status--done { color: var(--accent); }
+.home-recent-item__status--done { color: var(--accent-text); }
 
 /* Rank list */
 .home-rank-list { display: flex; flex-direction: column; gap: 7px; }
@@ -6326,7 +6328,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 /* ========= btn--accent ========= */
 .btn--accent {
   background: var(--accent-glow);
-  color: var(--accent);
+  color: var(--accent-text);
   border: 1px solid rgba(74,138,92,0.4);
 }
 .btn--accent:hover { background: rgba(74,138,92,0.3); }
@@ -6334,7 +6336,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 /* ========= Materials 완료 배지 ========= */
 .badge--completed {
   background: var(--accent-glow);
-  color: var(--accent);
+  color: var(--accent-text);
   font-size: 0.7rem;
   padding: 2px 6px;
   border-radius: var(--radius-full);
@@ -6366,7 +6368,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .review-card__highlight--hint {
   background: rgba(74,138,92,0.2);
-  color: var(--accent);
+  color: var(--accent-text);
   border-radius: 2px;
   padding: 0 2px;
 }
@@ -6541,7 +6543,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 /* ========= 추천 카드 바로읽기 배지 ========= */
 .suggestion-card__ready {
   font-size: 0.7rem;
-  color: var(--accent);
+  color: var(--accent-text);
   font-weight: 600;
 }
 
@@ -6940,7 +6942,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   text-align: center;
 }
 .roadmap-sample.is-done .roadmap-sample__status {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 .roadmap-sample.is-done .roadmap-sample__title {
   color: var(--text-muted);
@@ -7330,7 +7332,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .save-anim__check {
   font-size: 1.1rem; font-weight: 700;
-  color: var(--accent);
+  color: var(--accent-text);
   animation: saveCheckBounce 0.5s cubic-bezier(0.34,1.56,0.64,1);
 }
 @keyframes saveCheckBounce {
@@ -7404,7 +7406,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   margin-bottom: 4px;
 }
 .home-challenge--done .home-challenge__badge {
-  color: var(--accent);
+  color: var(--accent-text);
   background: rgba(74,138,92,0.15);
 }
 .home-challenge__title {
@@ -7428,7 +7430,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   color: var(--primary-light);
 }
 .home-challenge--done .home-challenge__xp {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 .home-challenge__xp-label {
   font-size: 0.65rem; font-weight: 600;
@@ -7441,7 +7443,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .home-challenge__done-msg {
   margin-top: 10px;
   font-size: 0.85rem; font-weight: 600;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 /* ═══════════════════════════════════════════════
@@ -7492,7 +7494,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   padding: 1px 6px; border-radius: var(--radius-full);
 }
 .weekly-report__diff--up {
-  color: var(--accent);
+  color: var(--accent-text);
   background: rgba(74,138,92,0.12);
 }
 .weekly-report__diff--down {
@@ -7810,7 +7812,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .myplan-chip.is-done { background: rgba(74,138,92,0.14); border-color: rgba(74,138,92,0.4); color: var(--text-primary); }
 .myplan-chip.is-done .myplan-chip__n { background: #4A8A5C; color: #fff; }
 .myplan-chip.is-next { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-glow); }
-.myplan-chip.is-next .myplan-chip__n { color: var(--primary); }
+.myplan-chip.is-next .myplan-chip__n { color: var(--primary-light); }
 
 .fr-pager {
   display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
@@ -7962,14 +7964,14 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   opacity: 0.75; transition: opacity 0.15s ease, transform 0.15s ease;
 }
 .fr-vrow__save:hover:not(:disabled) { opacity: 1; transform: scale(1.15); }
-.fr-vrow__save.is-saved { opacity: 0.55; cursor: default; color: var(--accent); }
+.fr-vrow__save.is-saved { opacity: 0.55; cursor: default; color: var(--accent-text); }
 
 /* 가리기 자가 채점 — 공개 직후 "기억났어/몰랐어" (.fr-check__grade* 버튼 스타일 재사용) */
 .fr-vrow__grade { margin-top: 6px; }
 .fr-vrow__grade-done {
   font-size: 0.74rem; font-weight: 600;
 }
-.fr-vrow__grade-done.is-ok { color: var(--accent); }
+.fr-vrow__grade-done.is-ok { color: var(--accent-text); }
 .fr-vrow__grade-done.is-no { color: var(--text-muted); }
 
 /* 가리기 모드 — 가려진 셀 */
@@ -7998,7 +8000,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .bk-pinyin {
   display: block;
   font-size: 0.82rem; font-weight: 600;
-  color: var(--primary);
+  color: var(--primary-light);
   margin-top: 2px;
   letter-spacing: 0.01em;
 }
@@ -8022,6 +8024,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .bk-ex__ko { font-size: 0.78rem; color: var(--text-muted); margin-top: 1px; }
 .bk-chlink {
   flex-shrink: 0;
+  /* 문형 목록의 챕터 링크 — 실측 23.5px이라 AA(24) 경계에 걸렸다. 글자 크기는 그대로. */
+  display: inline-flex; align-items: center; min-height: 24px;
   font-size: 0.7rem; font-weight: 700;
   color: var(--text-muted);
   background: var(--bg-secondary);
@@ -8103,7 +8107,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .fr-vrow__chlink {
   display: inline-block;
   font-size: 0.74rem; font-weight: 600;
-  color: var(--primary);
+  color: var(--primary-light);
   margin-top: 5px;
 }
 .fr-vrow__chlink:hover { text-decoration: underline; }
@@ -8221,7 +8225,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .lessons-list__row--passed .lessons-list__status { font-size: 0.72rem; }
 .lessons-list__row--passed .lessons-list__title { color: var(--text-secondary); }
 .lessons-list__group-passed {
-  color: var(--accent);
+  color: var(--accent-text);
   font-weight: 700;
   margin-right: 8px;
 }
@@ -8239,7 +8243,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 .fr-bunkei-cta:hover { background: var(--bg-elevated); }
 .fr-bunkei-cta__text { flex: 1; }
-.fr-bunkei-cta__text strong { color: var(--primary); }
+.fr-bunkei-cta__text strong { color: var(--primary-light); }
 
 .fr-chfilter {
   display: flex; align-items: center; justify-content: space-between;
@@ -8388,7 +8392,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   color: var(--text-primary);
 }
 .fr-quiz__item:first-child .fr-quiz__stage { margin-top: 4px; }
-.fr-quiz__stage-num { color: var(--primary); }
+.fr-quiz__stage-num { color: var(--primary-light); }
 .fr-quiz__stage-hint { font-size: 0.72rem; font-weight: 500; color: var(--text-muted); }
 .fr-quiz__q {
   padding: 10px 12px;
@@ -8425,7 +8429,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   line-height: 1.5;
 }
 .fr-quiz__opt:hover:not(:disabled) { border-color: var(--primary); color: var(--text-primary); }
-.fr-quiz__opt.is-correct { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+.fr-quiz__opt.is-correct { border-color: var(--accent); color: var(--accent-text); font-weight: 700; }
 /* 정답 피드백 — 색상 외 기호 표시(색각 보조) */
 .fr-quiz__opt.is-correct::after { content: '✓'; margin-left: auto; padding-left: 8px; font-weight: 700; }
 .fr-quiz__opt.is-wrong { border-color: var(--danger); color: var(--danger); }
@@ -8472,7 +8476,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-size: 0.9rem; line-height: 1.7;
   margin-top: 6px;
 }
-.fr-quiz__mark.is-correct { color: var(--accent); }
+.fr-quiz__mark.is-correct { color: var(--accent-text); }
 .fr-quiz__mark.is-wrong { color: var(--danger); }
 /* 통과 판정 패널 — 채점 완료 시 */
 .fr-check__verdict {
@@ -8524,7 +8528,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   color: var(--text-muted);
   transition: color 0.15s ease, border-color 0.15s ease;
 }
-.fr-check__grade-btn.is-on--o { color: var(--accent); border-color: var(--accent); }
+.fr-check__grade-btn.is-on--o { color: var(--accent-text); border-color: var(--accent); }
 .fr-check__grade-btn.is-on--x { color: var(--danger); border-color: var(--danger); }
 .fr-check__last { color: var(--text-muted); }
 .fr-check__result {
@@ -8689,12 +8693,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-variant-numeric: tabular-nums;
   color: var(--text-primary);
 }
-.lvprog__key.is-done { color: var(--accent); }
+.lvprog__key.is-done { color: var(--accent-text); }
 .lvprog__series {
   font-size: 0.82rem; font-weight: 600; min-width: 100px;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.lvprog__series.is-done { color: var(--accent); }
+.lvprog__series.is-done { color: var(--accent-text); }
 .lvprog__bar {
   flex: 1; height: 7px; position: relative;
   background: var(--bg-secondary);
@@ -8713,7 +8717,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-variant-numeric: tabular-nums; white-space: nowrap;
 }
 .lvprog__next {
-  font-size: 0.76rem; font-weight: 600; color: var(--primary);
+  font-size: 0.76rem; font-weight: 600; color: var(--primary-light);
   text-decoration: none; min-width: 5.4em; text-align: right; white-space: nowrap;
 }
 .lvprog__next:hover { text-decoration: underline; }
@@ -8798,7 +8802,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   -webkit-line-clamp: 2; -webkit-box-orient: vertical;
 }
 .review-tile__cta {
-  font-size: 0.8rem; font-weight: 600; color: var(--primary);
+  font-size: 0.8rem; font-weight: 600; color: var(--primary-light);
   text-align: right;
 }
 @keyframes reviewWordIn {
@@ -8865,7 +8869,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-variant-numeric: tabular-nums;
 }
 .vocab-hero__sub { font-size: 0.88rem; color: var(--text-secondary); }
-.vocab-hero__done { font-size: 0.92rem; font-weight: 600; color: var(--accent); }
+.vocab-hero__done { font-size: 0.92rem; font-weight: 600; color: var(--accent-text); }
 .vocab-hero__actions { display: flex; align-items: center; gap: 6px; }
 
 /* 상단 미니 현황 strip — 복습/신규/학습 중/숙련 한눈에 */
@@ -8933,7 +8937,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   font-size: 0.78rem; padding: 3px 12px; border-radius: var(--radius-full);
   background: var(--bg-card); border: 1px solid var(--border); color: var(--text-secondary); cursor: pointer;
 }
-.gojuon-panel__replay:hover { border-color: var(--primary); color: var(--primary); }
+.gojuon-panel__replay:hover { border-color: var(--primary); color: var(--primary-light); }
 /* 넓은 화면: 패널을 표 왼쪽에 */
 @media (min-width: 760px) {
   .gojuon-board { flex-direction: row; align-items: flex-start; gap: 22px; }
@@ -8976,11 +8980,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .kana-test__input.is-correct { border-color: var(--accent); }
 .kana-test__input.is-wrong { border-color: var(--danger); }
 .kana-test__feedback { text-align: center; font-size: 0.95rem; font-weight: 700; margin: 10px 0 0; }
-.kana-test__feedback.is-ok { color: var(--accent); }
+.kana-test__feedback.is-ok { color: var(--accent-text); }
 .kana-test__feedback.is-no { color: var(--danger); }
 .kana-test__score { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-top: 8px; }
 .kana-test__pct { font-size: 2.6rem; font-weight: 800; font-variant-numeric: tabular-nums; }
-.kana-test__pct.is-ok { color: var(--accent); }
+.kana-test__pct.is-ok { color: var(--accent-text); }
 .kana-test__pct.is-no { color: var(--warning); }
 .kana-test__frac { font-size: 0.85rem; color: var(--text-muted); }
 .kana-test__wrong { margin: 16px 0 4px; padding: 12px 14px; background: var(--bg-secondary); border-radius: var(--radius-md); }
@@ -9014,7 +9018,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   filter: none;
   background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 22%, var(--bg-card)) 0%, var(--bg-card) 78%);
 }
-.learn-cta .lessons-continue__meta { color: var(--primary); font-size: 1.05rem; }
+.learn-cta .lessons-continue__meta { color: var(--primary-light); font-size: 1.05rem; }
 
 /* ② 이어지는 이야기 카드 — 좌보더 primary 한 줄의 '표정' */
 .learn-story {

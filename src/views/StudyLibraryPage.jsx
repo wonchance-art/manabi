@@ -18,7 +18,7 @@ function fmtDate(at) {
 function StatTile({ value, label, sub }) {
   return (
     <div className="card" style={{ flex: 1, minWidth: 0, padding: '14px 12px', textAlign: 'center' }}>
-      <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--accent)' }}>{value}</div>
+      <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--accent-text)' }}>{value}</div>
       <div style={{ fontSize: '0.78rem', fontWeight: 700, marginTop: 2 }}>{label}</div>
       {sub && <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: 3, lineHeight: 1.4 }}>{sub}</div>}
     </div>
@@ -51,7 +51,7 @@ function ParagraphCard({ entry, langCode, lang }) {
             <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{entry.episode}화</span>
           )}
           {entry.theme && (
-            <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--primary)' }}>{entry.theme}</span>
+            <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--primary-light)' }}>{entry.theme}</span>
           )}
           {entry.level && (
             <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>{entry.level}</span>
@@ -118,7 +118,7 @@ function MySourceComposer({ lang, langCode }) {
       <button
         type="button"
         onClick={() => setOpen(v => !v)}
-        style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '0.85rem', fontWeight: 700, color: 'var(--primary)' }}
+        style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '0.85rem', fontWeight: 700, color: 'var(--primary-light)' }}
       >
         ＋ 내 자료로 이야기 만들기 {open ? '▴' : '▾'}
       </button>

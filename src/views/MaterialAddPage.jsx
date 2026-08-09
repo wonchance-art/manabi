@@ -242,7 +242,7 @@ export default function MaterialAddPage() {
             borderRadius: 'var(--radius-md)',
           }}>
             <div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 700 }}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--primary-light)', fontWeight: 700 }}>
                 PDF 출처
               </div>
               <div style={{ fontSize: '0.88rem', marginTop: 2 }}>

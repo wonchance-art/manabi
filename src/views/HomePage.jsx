@@ -460,7 +460,7 @@ export default function HomePage({ continueManifest = {} }) {
               {suggestion.title}
             </h2>
             <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: 16 }}>
-              {isIdeal && <span style={{ color: 'var(--accent)', fontWeight: 700 }}>맞춤 </span>}
+              {isIdeal && <span style={{ color: 'var(--accent-text)', fontWeight: 700 }}>맞춤 </span>}
               {LANG_LABEL[suggestion.language] || suggestion.language} {suggestion.level}
               {suggestion.channel_name && ` · ${suggestion.channel_name}`}
             </div>

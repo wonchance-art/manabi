@@ -71,7 +71,7 @@ export default function ViewerQuizModal({
             {quizState.status === 'done' && (
               <>
                 <h2 className="completion-modal__title">퀴즈 완료</h2>
-                <p style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--accent)', margin: '12px 0' }}>
+                <p style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--accent-text)', margin: '12px 0' }}>
                   {quizState.score} / {quizState.total} 정답
                 </p>
                 <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', fontSize: '0.9rem' }}>
