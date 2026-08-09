@@ -28,7 +28,10 @@ const TIPS = [
 ];
 
 const linkStyle = {
-  display: 'inline-block',
+  // 카드 안 이동 링크 — 실측 높이 22px이라 AA(24) 미달이었다. 글자 크기는 그대로 두고 히트 영역만 44.
+  display: 'inline-flex',
+  alignItems: 'center',
+  minHeight: 44,
   marginTop: 14,
   fontSize: '0.85rem',
   fontWeight: 600,
