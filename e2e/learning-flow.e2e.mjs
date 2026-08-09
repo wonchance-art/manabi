@@ -515,16 +515,16 @@ test('authenticated vocab: 레퍼런스 단어 저장을 /vocab 새 단어 복�
     assert.equal(new URL(page.url()).pathname, '/vocab');
     await assertVisible(page.getByRole('heading', { name: '복습', exact: true }), 'vocabulary review heading');
     await assertVisible(page.getByRole('button', { name: 'la famille — 가족 상세 열기', exact: true }), 'saved word in vocabulary list');
-    // 요약은 '있는 것만' 말한다 — 0인 항목("복습 0")은 정보가 아니라서 빼도록 바꿨다.
-    await assertVisible(page.getByText('개 — 새 단어 1', { exact: false }), 'new vocabulary queue summary');
+    // 카드는 총계 하나만 말하고, 분해는 버튼 라벨이 대신한다 — 같은 수를 두 번 적지 않는다.
+    await assertVisible(page.getByText('오늘 할 일', { exact: false }), 'todo kicker');
+    assert.equal((await page.locator('.vocab-hero__num').textContent()).trim(), '1', 'hero total counts the one saved word');
     assert.equal(
       await page.getByText('복습 0', { exact: false }).count(),
       0,
-      'a zero bucket must not be spelled out in the summary',
+      'a zero bucket must not be spelled out anywhere',
     );
 
-    // 시작 버튼도 실제 할 일을 말한다(복습 0인데 '복습 시작'이라 하지 않는다).
-    await page.getByRole('button', { name: '새 단어 1개 시작 →', exact: true }).click();
+    await page.getByRole('button', { name: '단어 1개 시작 →', exact: true }).click();
     // 진행은 카드 안 '남은 단어'에서 상단바 'n / m'으로 옮겼다 — 세션 화면은 문항만 남긴다.
     await assertVisible(page.getByRole('progressbar', { name: '복습 진행' }), 'session progress bar');
     await assertVisible(page.getByText('0 / 1', { exact: true }), 'one-word review queue');
