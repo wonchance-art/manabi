@@ -1,4 +1,5 @@
 import { callGemini } from './gemini';
+import { langNameKo } from './constants';
 
 function localGet(key) {
   if (typeof window === 'undefined') return null;
@@ -34,7 +35,7 @@ export async function fetchWordDetailText(token, language) {
   } catch {}
 
   // 3. Gemini
-  const langName = language === 'Japanese' ? '일본어' : '영어';
+  const langName = langNameKo(language);
   const prompt = `"${token.text}" (${token.pos || ''})
 
 **뜻**

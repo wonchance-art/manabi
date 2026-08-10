@@ -39,6 +39,7 @@ import { useScrollRestore } from '../lib/useScrollRestore';
 import ViewerComments from './ViewerComments';
 import ViewerGrammarModal from './ViewerGrammarModal';
 import ViewerQuizModal from './ViewerQuizModal';
+import { langNameKo } from '../lib/constants';
 
 // 공부 모드 지원 언어 키 — REF_LANGS를 직접 import하면 교재 콘텐츠 전체가 클라 번들에 딸려 온다(1.8MB).
 // 실사용은 '이 자료 언어로 세션 생성 가능한가' 멤버십 체크 1곳뿐이라 정적 키 집합으로 대체한다.
@@ -424,7 +425,7 @@ export default function ViewerPage() {
       setIsSheetOpen(false);
 
       // 번역+맥락 localStorage 캐시 (lang:hash)
-      const langName = materialLang === 'Japanese' ? '일본어' : '영어';
+      const langName = langNameKo(materialLang);
       const cacheKey = `viewer_tx:${materialLang}:${sel.slice(0, 200)}`;
       const cached = (() => { try { return localStorage.getItem(cacheKey); } catch { return null; } })();
       if (cached) {

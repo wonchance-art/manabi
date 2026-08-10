@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { callGemini } from '../lib/gemini';
 import { useTTS } from '../lib/useTTS';
 import Button from './Button';
+import { langNameKo } from '../lib/constants';
 
 const STORAGE_KEY = 'conversation:';
 
@@ -25,7 +26,7 @@ export default function ConversationPanel({ rawText, language, materialId, mater
   const { speak, supported: ttsSupported } = useTTS();
   const scrollRef = useRef(null);
   const targetLang = language === 'Japanese' ? 'Japanese' : 'English';
-  const targetLangKo = language === 'Japanese' ? '일본어' : '영어';
+  const targetLangKo = langNameKo(language);
 
   materialRef.current = materialId;
 

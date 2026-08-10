@@ -1,6 +1,7 @@
 'use client';
 import { supabase } from './supabase';
 import { callGemini } from './gemini';
+import { langNameKo } from './constants';
 
 /**
  * 강의 자료의 한국어 설명을 가져오거나 생성.
@@ -15,7 +16,7 @@ export async function fetchOrGenerateExplanation(material) {
   if (material.lesson_explanation_ko) return material.lesson_explanation_ko;
 
   const lang = material.processed_json?.metadata?.language || 'Japanese';
-  const langName = lang === 'Japanese' ? '일본어' : '영어';
+  const langName = langNameKo(lang);
 
   const prompt = `다음 ${langName} 학습 자료의 핵심 패턴을 한국어 학습자에게 친화적으로 설명해주세요.
 
