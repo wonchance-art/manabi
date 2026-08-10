@@ -14,6 +14,7 @@ import JP_FOOD_DEEP from './japan/foodDeep.js';
 import JP_HISTORY_ROADS from './japan/historyRoads.js';
 import JP_LITERATURE_TRAVEL from './japan/literatureTravel.js';
 import JP_ART_PILGRIMAGE from './japan/artPilgrimage.js';
+import JP_FAITH_FESTIVALS from './japan/faithFestivals.js';
 import KR_OVERVIEW from './korea/overview.js';
 import KR_HISTORY_PREMODERN from './korea/historyPremodern.js';
 import KR_HISTORY_MODERN from './korea/historyModern.js';
@@ -44,7 +45,7 @@ export const STUDY_COUNTRIES = Object.freeze([
     nameKo: '일본학',
     nameLocal: '日本学',
     intro: '언어 너머의 일본 — 지리·역사·경제·사회를 공적 통계와 통설 기준으로 정리한 레퍼런스.',
-    docs: Object.freeze([JP_OVERVIEW, JP_HISTORY_PREMODERN, JP_HISTORY_MODERN, JP_HISTORY_ROADS, JP_ECONOMY, JP_CULTURE, JP_FOOD_DEEP, JP_LITERATURE_TRAVEL, JP_ART_PILGRIMAGE, JP_SOCIETY, JP_LIFE]),
+    docs: Object.freeze([JP_OVERVIEW, JP_HISTORY_PREMODERN, JP_HISTORY_MODERN, JP_HISTORY_ROADS, JP_ECONOMY, JP_CULTURE, JP_FOOD_DEEP, JP_LITERATURE_TRAVEL, JP_ART_PILGRIMAGE, JP_FAITH_FESTIVALS, JP_SOCIETY, JP_LIFE]),
   }),
   Object.freeze({
     id: 'korea',
