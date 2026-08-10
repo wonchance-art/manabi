@@ -30,6 +30,13 @@ export default async function Page({ params }) {
       <header style={{ marginBottom: 18 }}>
         <h1 style={{ margin: '0 0 6px' }}>{country.nameKo} <span style={{ fontSize: '0.9rem', opacity: 0.6 }}>{country.nameLocal}</span></h1>
         <p style={{ margin: 0, opacity: 0.85 }}>{country.intro}</p>
+        {country.id === 'japan' && (
+          <p style={{ margin: '10px 0 0' }}>
+            <Link href="/studies/japan/map" style={{ fontWeight: 700, fontSize: '0.88rem' }}>
+              🗺 일본학 지도 — 테마별 장소 핀으로 탐색 →
+            </Link>
+          </p>
+        )}
       </header>
       {STUDY_DOMAINS.map((domain) => {
         const docs = country.docs.filter((doc) => doc.domain === domain.id);

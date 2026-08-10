@@ -9387,3 +9387,9 @@ body.is-review-session .page-container { padding-top: 8px; }
    글자에는 이미 4.53인 --primary-light를 쓴다. */
 .landing-minimal__note a { color: var(--primary-light); font-weight: 600; }
 .landing-footer--minimal { justify-content: center; padding: 18px 20px 28px; }
+
+/* ── 일본학 지도 — 와이드 2열(지도+카드), 모바일 스택 ── */
+.jpmap-layout { display: flex; flex-direction: column; gap: 12px; }
+@media (min-width: 760px) {
+  .jpmap-layout { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(240px, 1fr); gap: 14px; align-items: start; }
+}
