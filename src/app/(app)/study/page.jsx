@@ -106,9 +106,8 @@ export default async function Page({ searchParams }) {
       lang={lang}
       langCode={ref.langCode}
       langName={ref.name}
-      flag={ref.flag}
       readKey={ref.readKey}
-      languages={Object.entries(REF_LANGS).map(([key, r]) => ({ key, name: r.name, flag: r.flag }))}
+      languages={Object.entries(REF_LANGS).map(([key, r]) => ({ key, name: r.name }))}
     />
   );
 

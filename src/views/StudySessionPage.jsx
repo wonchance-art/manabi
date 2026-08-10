@@ -64,7 +64,7 @@ function shuffle(arr) {
 export default function StudySessionPage({
   session = null, paragraphMaterials = null, pregenerated = null, warmup = [], dial = 'normal',
   sourceMode = false,
-  lang, langCode, langName, flag, readKey,
+  lang, langCode, langName, readKey,
   band = 'beginner', languages = [], signedOut = false,
 }) {
   // 입문 레벨(N5 등) 일본어 배려 — 답변 중에도 요미가나·후리가나를 보여준다.
@@ -827,6 +827,9 @@ export default function StudySessionPage({
           로그인하면 어휘·문법·독해가 섞인 맞춤 세션으로 매일 이어서 학습할 수 있어요.
         </p>
         <Link href="/auth" className="btn btn--primary btn--md">로그인 →</Link>
+        <p style={{ marginTop: 14 }}>
+          <Link href="/lessons" className="study-textlink">로그인 없이 교재 둘러보기 →</Link>
+        </p>
       </div>
     );
   }
@@ -839,7 +842,6 @@ export default function StudySessionPage({
           <Link href="/home" aria-label="나가기" onClick={handleExitClick} style={{ color: 'var(--text-muted)', fontSize: '1.1rem', padding: '6px 10px', margin: '-6px -10px' }}>✕</Link>
         </div>
         <div style={{ textAlign: 'center', paddingTop: 60 }}>
-          <div style={{ fontSize: '2rem', marginBottom: 12 }} aria-hidden="true">✍️</div>
           <h1 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: 8 }}>문단 마무리 중…</h1>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.7 }}>
             {parkingLong ? '조금만 더 기다려주세요…' : '오늘의 이야기를 거의 다 엮었어요'}
@@ -853,7 +855,7 @@ export default function StudySessionPage({
   if (gradedBase === 0 && genStatus !== 'loading') {
     return (
       <div className="page-container" style={{ maxWidth: 640, textAlign: 'center', paddingTop: 60 }}>
-        <h1 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: 10 }}>{flag} {langName} 학습</h1>
+        <h1 style={{ fontSize: '1.3rem', fontWeight: 700, marginBottom: 10 }}>{langName} 학습</h1>
         <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 20 }}>
           아직 세션을 만들 재료가 부족해요. 교재를 한 챕터 읽거나 단어를 몇 개 모으면 시작할 수 있어요.
         </p>
@@ -923,7 +925,6 @@ export default function StudySessionPage({
         {/* 2. 새 챕터 */}
         {newMeta && newItems.length > 0 && (
           <Link href={newMeta.href} className="card" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', marginBottom: 12 }}>
-            {chapterPassed && <span style={{ fontSize: '1.3rem' }} aria-hidden="true">🎉</span>}
             <span style={{ flex: 1 }}>
               <span style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600 }}>
                 {chapterPassed ? '새 챕터 통과!' : '새 챕터 — 다음 세션에서 다시'}
@@ -1026,8 +1027,8 @@ export default function StudySessionPage({
         </div>
         <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 700, flexShrink: 0 }}>
           {isRetry ? '오답 다시 풀기'
-            : item.type === 'produce-writing' ? `${flag} 보너스`
-            : `${flag} ${progressDone}/${progressTotal}`}
+            : item.type === 'produce-writing' ? '보너스'
+            : `${progressDone}/${progressTotal}`}
         </span>
       </div>
 
@@ -1107,6 +1108,7 @@ export default function StudySessionPage({
           )}
           <button
             type="button"
+            aria-expanded={showTranslation}
             onClick={() => setShowTranslation(v => !v)}
             className="study-textlink"
             style={{ marginTop: 14 }}
@@ -1305,7 +1307,7 @@ export default function StudySessionPage({
           {item.serial ? (
             <>
               <div className="fr-quiz__prompt" style={{ fontSize: '1rem', lineHeight: 1.6 }}>
-                ✍️ 주인공이 다음에 어떻게 할까요? 이야기의 다음 문장을 <span style={{ fontWeight: 700 }}>{langName}</span>로 한 문장 쓰세요.
+                주인공이 다음에 어떻게 할까요? 이야기의 다음 문장을 <span style={{ fontWeight: 700 }}>{langName}</span>로 한 문장 쓰세요.
               </div>
               {item.context && (
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.6, marginTop: 6 }}>
@@ -1322,7 +1324,7 @@ export default function StudySessionPage({
           ) : (
             <>
               <div className="fr-quiz__prompt" style={{ fontSize: '1rem', lineHeight: 1.6 }}>
-                ✍️ 이야기를 이어서 — <span lang={langCode} style={{ fontWeight: 700 }}>{item.targetPattern.pattern}</span>
+                이야기를 이어서 — <span lang={langCode} style={{ fontWeight: 700 }}>{item.targetPattern.pattern}</span>
                 {item.targetPattern.patternKo && <span style={{ color: 'var(--text-muted)' }}> ({item.targetPattern.patternKo})</span>}
                 을(를) 써서 한 문장
               </div>
