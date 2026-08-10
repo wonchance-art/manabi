@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { callGemini } from '../lib/gemini';
+import { useAuth } from '../lib/AuthContext';
+import { logReviewEvents } from '../lib/reviewEvents';
 import Button from './Button';
 
 const STORAGE_KEY = 'reading_test:';
@@ -43,6 +45,7 @@ function ReadingTestOverlay({ children, onClose }) {
 }
 
 export default function ReadingTest({ rawText, language, materialId, onClose, inline = false, nextLesson = null }) {
+  const { user } = useAuth();
   const [status, setStatus] = useState('idle'); // idle | loading | active | done
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
@@ -189,6 +192,17 @@ Rules:
     setResult(r);
     setStatus('done');
     pushHistory(materialId, score, questions.length);
+    // 읽기 루트 신호 편입 — 문항별 정오를 review_events로(다이얼·주간 회고에 합류).
+    // source='reading'은 어휘 rung(vocab 전용)·FSRS에는 영향 없다. 게스트는 로컬 히스토리만.
+    if (user?.id) {
+      logReviewEvents(user.id, explanations.map(ex => ({
+        lang: language,
+        source: 'reading',
+        item_key: `rt:${materialId || '-'}`,
+        correct: ex.correct,
+        detail: { qtype: 'reading-test' },
+      })));
+    }
   }
 
   function resetTest() {

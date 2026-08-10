@@ -33,20 +33,23 @@ export default function OnboardingModal() {
     setSaving(true);
     setError('');
 
-    // 주의: profiles 테이블에는 아직 learning_level_french / learning_level_chinese 컬럼이 없다
-    // (이번 작업은 스키마·마이그레이션 변경 금지 범위). 존재하지 않는 컬럼을 update payload에 넣으면
-    // PostgREST가 요청 전체를 거부하므로, levelFr/levelZh는 선택 UI만 제공하고 저장은 컬럼이
-    // 추가되는 별도 마이그레이션에서 이어받는다.
-    const { error: err } = await supabase
+    // fr/zh 수준 컬럼은 마이그레이션(20260810120000_profile_levels_fr_zh.sql) 적용 후 생긴다.
+    // 미적용 환경에서 미지 컬럼이 payload에 있으면 PostgREST가 요청 전체를 거부하므로,
+    // 컬럼 오류일 때만 fr/zh를 빼고 재시도한다(writing_practice 폴백과 같은 패턴).
+    const base = {
+      display_name: displayName.trim(),
+      learning_language: languages,
+      learning_level_japanese: levelJp,
+      learning_level_english: levelEn,
+      onboarded: true,
+    };
+    let { error: err } = await supabase
       .from('profiles')
-      .update({
-        display_name: displayName.trim(),
-        learning_language: languages,
-        learning_level_japanese: levelJp,
-        learning_level_english: levelEn,
-        onboarded: true,
-      })
+      .update({ ...base, learning_level_french: levelFr, learning_level_chinese: levelZh })
       .eq('id', user.id);
+    if (err && /column|schema/i.test(err.message || '')) {
+      ({ error: err } = await supabase.from('profiles').update(base).eq('id', user.id));
+    }
 
     if (err) {
       setError('저장 실패: ' + err.message);
