@@ -230,39 +230,6 @@ export default function ViewerPage() {
     staleTime: 1000 * 30,
   });
 
-  // 자료와 연관된 공유 단어장 덱
-  const { data: relatedDecks = [] } = useQuery({
-    queryKey: ['related-decks', id, materialLang],
-    queryFn: async () => {
-      // 1순위: 이 자료 출처인 덱
-      const { data: sourceDecks, error: sourceDecksError } = await supabase
-        .from('vocab_decks')
-        .select('id, title, language, word_count, created_at, owner:profiles(display_name)')
-        .eq('source_material_id', id)
-        .order('created_at', { ascending: false })
-        .limit(3);
-      if (sourceDecksError) throw sourceDecksError;
-
-      if (sourceDecks && sourceDecks.length >= 3) return sourceDecks;
-
-      // 2순위: 같은 언어 인기 덱 (word_count 순)
-      const exclude = sourceDecks?.map(d => d.id) || [];
-      let query = supabase
-        .from('vocab_decks')
-        .select('id, title, language, word_count, created_at, owner:profiles(display_name)')
-        .eq('language', materialLang)
-        .order('word_count', { ascending: false })
-        .limit(3 - (sourceDecks?.length || 0));
-      if (exclude.length) query = query.not('id', 'in', `(${exclude.join(',')})`);
-
-      const { data: langDecks, error: langDecksError } = await query;
-      if (langDecksError) throw langDecksError;
-      return [...(sourceDecks || []), ...(langDecks || [])];
-    },
-    enabled: !!id && !!materialLang,
-    staleTime: 1000 * 60 * 5,
-  });
-
   // PDF 출처 메타 (있으면)
   const { data: sourcePdf } = useQuery({
     queryKey: ['source-pdf', material?.source_pdf_id],
@@ -660,7 +627,7 @@ export default function ViewerPage() {
         meaning: selectedToken.meaning || '',
         pos: selectedToken.pos || '',
         next_review_at: new Date().toISOString(),
-        language: material?.language || (/[\u3040-\u30ff\u4e00-\u9fff]/.test(selectedToken.text) ? 'Japanese' : 'English'),
+        language: materialLang,
         source_sentence: sourceSentence || null,
         source_material_id: id || null,
       };
@@ -798,7 +765,7 @@ export default function ViewerPage() {
           </div>
         </div>
         {ttsSupported && (
-          <button onClick={() => speak(selectedToken.text, materialLang)} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }} title="발음 듣기">▷</button>
+          <button onClick={() => speak(selectedToken.text, materialLang)} aria-label="발음 듣기" style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', minWidth: 32, minHeight: 32 }} title="발음 듣기">▷</button>
         )}
       </div>
       <div style={{ fontSize: '1rem', lineHeight: 1.6, marginBottom: materialLang === 'English' && selectedToken.reading ? 4 : 14 }}>
@@ -895,11 +862,11 @@ export default function ViewerPage() {
       )}
 
       <header className="page-header viewer-header">
-        <Link href="/materials" className="viewer-back-link">← 라이브러리</Link>
+        <Link href="/materials" className="viewer-back-link">← 자료실</Link>
         {(prevLesson || nextLesson) && (
           <div className="viewer-series-nav">
             {prevLesson ? (
-              <Link href={`/viewer/${prevLesson.id}`} className="viewer-series-nav__btn" title={prevLesson.title} aria-label="이전 강의">◀</Link>
+              <Link href={`/viewer/${prevLesson.id}`} className="viewer-series-nav__btn" title={prevLesson.title} aria-label="이전 편">◀</Link>
             ) : <span className="viewer-series-nav__btn viewer-series-nav__btn--disabled" aria-hidden="true">◀</span>}
             {seriesPosition && (
               <span className="viewer-series-nav__position" title={`${seriesPosition.level} ${seriesPosition.series}`}>
@@ -907,7 +874,7 @@ export default function ViewerPage() {
               </span>
             )}
             {nextLesson ? (
-              <Link href={`/viewer/${nextLesson.id}`} className="viewer-series-nav__btn" title={nextLesson.title} aria-label="다음 강의">▶</Link>
+              <Link href={`/viewer/${nextLesson.id}`} className="viewer-series-nav__btn" title={nextLesson.title} aria-label="다음 편">▶</Link>
             ) : <span className="viewer-series-nav__btn viewer-series-nav__btn--disabled" aria-hidden="true">▶</span>}
           </div>
         )}
@@ -1009,13 +976,13 @@ export default function ViewerPage() {
 
       {/* Settings Bar */}
       <div className={`card viewer-settings ${settingsOpen ? 'viewer-settings--open' : ''}`}>
-        <button className="viewer-settings__toggle" onClick={() => setSettingsOpen(v => !v)}>
+        <button className="viewer-settings__toggle" aria-expanded={settingsOpen} onClick={() => setSettingsOpen(v => !v)}>
           읽기 설정 {settingsOpen ? '▲' : '▼'}
         </button>
         <div className="viewer-settings__body">
         <div className="viewer-settings__left">
           <div className="settings-control">
-            <span className="settings-label">SIZE</span>
+            <span className="settings-label">크기</span>
             <div className="settings-btn-group">
               <button className="settings-btn" onClick={() => setFontSize(f => Math.max(0.8, f - 0.1))}>-</button>
               <button className="settings-btn" onClick={() => setFontSize(f => Math.min(3, f + 0.1))}>+</button>
@@ -1023,7 +990,7 @@ export default function ViewerPage() {
           </div>
 
           <div className="settings-control">
-            <span className="settings-label">LINE</span>
+            <span className="settings-label">줄 간격</span>
             <input type="range" min="10" max="60" value={lineGap}
               onChange={e => setLineGap(parseInt(e.target.value))}
               className="settings-range settings-range--primary"
@@ -1031,7 +998,7 @@ export default function ViewerPage() {
           </div>
 
           <div className="settings-control">
-            <span className="settings-label">GAP</span>
+            <span className="settings-label">자간</span>
             <input type="range" min="0" max="1" step="0.05" value={charGap}
               onChange={e => setCharGap(parseFloat(e.target.value))}
               className="settings-range settings-range--accent"
@@ -1050,10 +1017,14 @@ export default function ViewerPage() {
           <div className="theme-btns">
             <button
               onClick={() => setTheme('light')}
+              aria-label="밝은 배경"
+              aria-pressed={theme === 'light'}
               className={`theme-btn theme-btn--light ${theme === 'light' ? 'theme-btn--active' : ''}`}
             />
             <button
               onClick={() => setTheme('dark')}
+              aria-label="어두운 배경"
+              aria-pressed={theme === 'dark'}
               className={`theme-btn theme-btn--dark ${theme === 'dark' ? 'theme-btn--active' : ''}`}
             />
           </div>
@@ -1168,7 +1139,7 @@ export default function ViewerPage() {
                 } catch {}
               }}
             >
-              이 자료로 오늘 세션 만들기
+              이 자료로 오늘 학습 만들기
             </Link>
           )}
         </div>
@@ -1398,7 +1369,7 @@ export default function ViewerPage() {
       {/* 다음 강의 — 같은 시리즈 next # (primary CTA) */}
       {isDone && nextLesson && (
         <Link href={`/viewer/${nextLesson.id}`} className="next-lesson-card">
-          <div className="next-lesson-card__hint">다음 강의</div>
+          <div className="next-lesson-card__hint">다음 편</div>
           <div className="next-lesson-card__title">{nextLesson.title}</div>
         </Link>
       )}
@@ -1470,49 +1441,6 @@ export default function ViewerPage() {
             inline
             nextLesson={nextLesson}
           />
-        </div>
-      )}
-
-      {/* 관련 공유 단어장 덱 */}
-      {isDone && relatedDecks.length > 0 && (
-        <div className="card" style={{ marginTop: 16, padding: 20 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>
-              이 자료와 관련된 공유 단어장
-            </h3>
-            <Link href="/vocab" prefetch={false} style={{ fontSize: '0.78rem', color: 'var(--primary-light)' }}>
-              전체 보기 →
-            </Link>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {relatedDecks.map(deck => (
-              <Link
-                key={deck.id}
-                href="/vocab"
-                prefetch={false}
-                style={{
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  padding: '10px 14px', background: 'var(--bg-secondary)',
-                  borderRadius: 'var(--radius-md)', textDecoration: 'none',
-                  transition: 'background 0.15s',
-                }}
-              >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{deck.title}</span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    {deck.owner?.display_name || '익명'} · {deck.word_count}단어
-                  </span>
-                </div>
-                <span style={{
-                  padding: '3px 10px', borderRadius: 'var(--radius-full)',
-                  background: 'var(--primary-glow)', color: 'var(--primary-light)',
-                  fontSize: '0.72rem', fontWeight: 600,
-                }}>
-                  {deck.language === 'Japanese' ? '일본어' : '영어'}
-                </span>
-              </Link>
-            ))}
-          </div>
         </div>
       )}
 
