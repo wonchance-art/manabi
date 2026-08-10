@@ -192,19 +192,24 @@ export default function MyPage() {
               <input className="form-input" value={editName} onChange={e => setEditName(e.target.value)} maxLength={20} />
             </div>
             <div className="form-field">
-              <label className="form-label">학습 언어</label>
+              <label className="form-label">학습 언어 <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>(복수 선택 가능)</span></label>
               <div className="toggle-group">
-                {['Japanese', 'English'].map(lang => (
+                {/* 온보딩과 같은 4트랙. 첫 번째 언어가 홈 예보·오늘 학습 기본 언어가 된다. */}
+                {[['Japanese', '일본어'], ['English', '영어'], ['French', '프랑스어'], ['Chinese', '중국어']].map(([lang, label]) => (
                   <button key={lang} type="button"
+                    aria-pressed={editLanguages.includes(lang)}
                     className={`toggle-btn ${editLanguages.includes(lang) ? 'toggle-btn--primary' : ''}`}
                     onClick={() => setEditLanguages(prev =>
                       prev.includes(lang) ? prev.length > 1 ? prev.filter(l => l !== lang) : prev : [...prev, lang]
                     )}>
-                    {lang === 'Japanese' ? '일본어' : '영어'}
+                    {label}
                   </button>
                 ))}
               </div>
             </div>
+            {/* 수준 편집은 저장 컬럼이 있는 일본어·영어만 — profiles에 learning_level_french/chinese
+                컬럼이 아직 없다(스키마 변경 금지 범위, OnboardingModal의 동일 제약 참조).
+                프랑스어·중국어 수준은 컬럼 추가 마이그레이션이 적용될 때 함께 열린다. */}
             {editLanguages.includes('Japanese') && (
               <div className="form-field">
                 <label className="form-label">일본어 수준</label>
