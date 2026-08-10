@@ -21,6 +21,8 @@ export default function MyPage() {
   const [editLanguages, setEditLanguages] = useState(['Japanese']);
   const [editLevelJp, setEditLevelJp]     = useState('N3 중급');
   const [editLevelEn, setEditLevelEn]     = useState('B1 중급');
+  const [editLevelFr, setEditLevelFr]     = useState('B1 중급');
+  const [editLevelZh, setEditLevelZh]     = useState('H3 중급');
 
   const [isEditingGoals, setIsEditingGoals] = useState(false);
   const [goalReview, setGoalReview]       = useState(5);
@@ -43,6 +45,8 @@ export default function MyPage() {
     setEditLanguages(profile.learning_language?.length ? profile.learning_language : ['Japanese']);
     setEditLevelJp(profile.learning_level_japanese || 'N3 중급');
     setEditLevelEn(profile.learning_level_english  || 'B1 중급');
+    setEditLevelFr(profile.learning_level_french   || 'B1 중급');
+    setEditLevelZh(profile.learning_level_chinese  || 'H3 중급');
   }, [profile]);
 
   useEffect(() => {
@@ -136,12 +140,19 @@ export default function MyPage() {
   const saveProfileMutation = useMutation({
     mutationFn: async () => {
       if (!editName.trim()) throw new Error('닉네임을 입력해주세요.');
-      const { error } = await supabase.from('profiles').update({
+      const base = {
         display_name: editName.trim(),
         learning_language: editLanguages,
         learning_level_japanese: editLevelJp,
         learning_level_english: editLevelEn,
-      }).eq('id', user.id);
+      };
+      // fr/zh 컬럼 미적용 환경 폴백 — 컬럼 오류일 때만 해당 필드 없이 재시도(온보딩과 동일 패턴)
+      let { error } = await supabase.from('profiles')
+        .update({ ...base, learning_level_french: editLevelFr, learning_level_chinese: editLevelZh })
+        .eq('id', user.id);
+      if (error && /column|schema/i.test(error.message || '')) {
+        ({ error } = await supabase.from('profiles').update(base).eq('id', user.id));
+      }
       if (error) throw error;
     },
     onSuccess: () => { fetchProfile(user.id, user.user_metadata); queryClient.invalidateQueries({ queryKey: ['home', user.id] }); toast('프로필이 저장됐습니다.', 'success'); },
@@ -207,9 +218,7 @@ export default function MyPage() {
                 ))}
               </div>
             </div>
-            {/* 수준 편집은 저장 컬럼이 있는 일본어·영어만 — profiles에 learning_level_french/chinese
-                컬럼이 아직 없다(스키마 변경 금지 범위, OnboardingModal의 동일 제약 참조).
-                프랑스어·중국어 수준은 컬럼 추가 마이그레이션이 적용될 때 함께 열린다. */}
+            {/* fr/zh 수준은 마이그레이션 미적용 환경에서 저장만 생략된다(폴백) — UI는 4트랙 대칭 */}
             {editLanguages.includes('Japanese') && (
               <div className="form-field">
                 <label className="form-label">일본어 수준</label>
@@ -228,6 +237,28 @@ export default function MyPage() {
                   {LEVELS.English.map(lvl => (
                     <button key={lvl} type="button" className={`level-btn ${editLevelEn === lvl ? 'level-btn--active' : ''}`}
                       onClick={() => setEditLevelEn(lvl)}>{lvl}</button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {editLanguages.includes('French') && (
+              <div className="form-field">
+                <label className="form-label">프랑스어 수준</label>
+                <div className="level-group">
+                  {LEVELS.French.slice(1).map(lvl => (
+                    <button key={lvl} type="button" className={`level-btn ${editLevelFr === lvl ? 'level-btn--active' : ''}`}
+                      onClick={() => setEditLevelFr(lvl)}>{lvl}</button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {editLanguages.includes('Chinese') && (
+              <div className="form-field">
+                <label className="form-label">중국어 수준</label>
+                <div className="level-group">
+                  {LEVELS.Chinese.slice(1).map(lvl => (
+                    <button key={lvl} type="button" className={`level-btn ${editLevelZh === lvl ? 'level-btn--active' : ''}`}
+                      onClick={() => setEditLevelZh(lvl)}>{lvl}</button>
                   ))}
                 </div>
               </div>
