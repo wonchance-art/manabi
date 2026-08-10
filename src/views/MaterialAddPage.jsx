@@ -10,6 +10,7 @@ import { analyzeText } from '../lib/analyzeText';
 import { autoSplitParagraphs } from '../lib/splitParagraphs';
 import { LEVELS } from '../lib/constants';
 import MaterialAddPdfSection from './MaterialAddPdfSection';
+import MaterialAddEpubSection from '../components/MaterialAddEpubSection';
 import { friendlyToastMessage } from '../lib/errorMessage';
 
 // --- Component ---
@@ -26,6 +27,7 @@ export default function MaterialAddPage() {
   const [level, setLevel] = useState('N3 중급');
   const [isSuggestionLoading, setIsSuggestionLoading] = useState(false);
   const [pdfSource, setPdfSource] = useState(null); // { pdf, pageStart, pageEnd }
+  const [epubSource, setEpubSource] = useState(false); // 개인 소장 전자책 반입 — 비공개 고정 근거
 
   // PDF에서 텍스트가 추출되면 폼에 주입
   const handlePdfRangeReady = ({ pdf, pageStart, pageEnd, rawText: extractedText }) => {
@@ -40,6 +42,20 @@ export default function MaterialAddPage() {
     setTimeout(() => {
       const el = document.querySelector('.form-textarea');
       el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 200);
+  };
+
+  // EPUB 챕터 반입 — 텍스트만 폼에 주입, 개인 소장물이므로 비공개 고정
+  const handleEpubReady = ({ title: epubTitle, rawText: epubText, language: epubLang }) => {
+    setPdfSource(null);
+    setEpubSource(true);
+    setTitle(epubTitle);
+    setRawText(epubText);
+    if (epubLang) { setLanguage(epubLang); setLevel(epubLang === 'Japanese' ? 'N3 중급' : 'B1 중급'); }
+    setVisibility('private');
+    toast('가져왔어요. 아래에서 확인 후 분석을 시작하세요.', 'success');
+    setTimeout(() => {
+      document.querySelector('.form-textarea')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 200);
   };
 
@@ -92,7 +108,7 @@ export default function MaterialAddPage() {
         title: title || "제목 없음",
         raw_text: autoSplitParagraphs(rawText),
         processed_json: initJson,
-        visibility: pdfSource ? 'private' : visibility, // PDF 출처는 강제 private
+        visibility: (pdfSource || epubSource) ? 'private' : visibility, // PDF·EPUB(개인 소장) 출처는 강제 private
         owner_id: user.id,
         ...(pdfSource ? {
           source_pdf_id: pdfSource.pdf.id,
@@ -217,6 +233,8 @@ export default function MaterialAddPage() {
         onRangeReady={handlePdfRangeReady}
       />
 
+      <MaterialAddEpubSection toast={toast} onReady={handleEpubReady} />
+
       <div className="card add-form">
         {/* PDF 출처 배지 */}
         {pdfSource && (
@@ -265,20 +283,20 @@ export default function MaterialAddPage() {
           <div className="form-field">
             <label className="form-label">
               공개 범위
-              {pdfSource && <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginLeft: 6 }}>(PDF 출처는 비공개 고정)</span>}
+              {(pdfSource || epubSource) && <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginLeft: 6 }}>({pdfSource ? 'PDF' : 'EPUB'} 출처는 비공개 고정)</span>}
             </label>
             <div className="toggle-group">
               <button
-                onClick={() => !pdfSource && setVisibility('private')}
+                onClick={() => !pdfSource && !epubSource && setVisibility('private')}
                 className={`toggle-btn ${visibility === 'private' ? 'toggle-btn--primary' : ''}`}
-                disabled={!!pdfSource}
+                disabled={!!pdfSource || epubSource}
               >
                 비공개
               </button>
               <button
-                onClick={() => !pdfSource && setVisibility('public')}
+                onClick={() => !pdfSource && !epubSource && setVisibility('public')}
                 className={`toggle-btn ${visibility === 'public' ? 'toggle-btn--accent' : ''}`}
-                disabled={!!pdfSource}
+                disabled={!!pdfSource || epubSource}
               >
                 공용
               </button>
