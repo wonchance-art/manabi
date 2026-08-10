@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { callGemini, GEMINI_MODEL } from './gemini';
+import { langNameKo } from './constants';
 
 export function useViewerQuiz() {
   const [quizState, setQuizState] = useState(null);
@@ -13,7 +14,7 @@ export function useViewerQuiz() {
     }
     setQuizState({ status: 'loading', pendingCompletion });
     try {
-      const prompt = `다음 ${lang === 'Japanese' ? '일본어' : '영어'} 텍스트를 읽고 내용 이해를 확인하는 객관식 문제 3개를 만들어주세요.
+      const prompt = `다음 ${langNameKo(lang)} 텍스트를 읽고 내용 이해를 확인하는 객관식 문제 3개를 만들어주세요.
 
 텍스트:
 """

@@ -35,6 +35,10 @@ export const FR_LEVELS = ['A0 입문', 'A1 기초', 'A2 초급', 'B1 중급', 'B
 // 중국어(HSK) — OT(오리엔테이션) + H1~H6. src/content/chinese/index.js ZH_LEVEL_META와 같은 학습 순서.
 export const ZH_LEVELS = ['OT 입문', 'H1 기초', 'H2 초급', 'H3 중급', 'H4 상급', 'H5 고급', 'H6 마스터'];
 
+/** 언어 키 → 한국어 이름 — AI 프롬프트·라벨 공용. 2트랙 삼항 하드코딩 재발 방지(자가 감사 ⑥). */
+export const LANG_NAME_KO = { Japanese: '일본어', English: '영어', French: '프랑스어', Chinese: '중국어' };
+export function langNameKo(lang) { return LANG_NAME_KO[lang] || '일본어'; }
+
 export const LEVELS = {
   Japanese: JP_LEVELS,
   English: EN_LEVELS,

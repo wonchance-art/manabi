@@ -15,6 +15,7 @@ import PdfDocument from '../components/PdfDocument';
 import ViewerBottomSheet from '../components/ViewerBottomSheet';
 import ListenControls from '../components/ListenControls';
 import { formatDetail } from '../lib/wordDetailFormat';
+import { langNameKo } from '../lib/constants';
 
 async function fetchPdfInfo(pdfId) {
   const { data, error } = await supabase
@@ -58,7 +59,7 @@ async function quickAnalyze(text, language) {
 }
 
 async function getTranslationAndContext(text, language) {
-  const langName = language === 'Japanese' ? '일본어' : '영어';
+  const langName = langNameKo(language);
   const raw = await callGemini(`다음 ${langName} 텍스트를 한국어로 처리해주세요.
 
 "${text}"
