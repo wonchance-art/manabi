@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
-export const metadata = { title: '학습 지표 | Anatomy Studio' };
+export const metadata = { title: '학습 지표' };
 export const dynamic = 'force-dynamic';
 
 const pct = (v) => (v === null || v === undefined ? '—' : `${Math.round(v * 100)}%`);

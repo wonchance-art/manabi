@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { STUDY_COUNTRIES } from '@/content/studies';
 
 export const metadata = {
-  title: '지역학 | Anatomy Studio',
+  title: '지역학',
   description: '언어 너머의 나라 이해 — 지리·역사·경제·사회·문화 레퍼런스',
 };
 

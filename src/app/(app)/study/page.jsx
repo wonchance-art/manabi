@@ -5,7 +5,7 @@ import { assembleStudyMaterials } from '@/lib/studyMaterials';
 import StudySessionPage from '@/views/StudySessionPage';
 import StudyOnboarding from '@/views/StudyOnboarding';
 
-export const metadata = { title: '오늘 학습 | Anatomy Studio' };
+export const metadata = { title: '오늘 학습' };
 export const dynamic = 'force-dynamic';
 
 /**

@@ -6,7 +6,7 @@ import { READING_LANG, readingIdsFromRows } from '@/lib/readingProgress';
 import { buildTrackPayload, createPatternCardResolver } from '@/lib/readingPayload';
 import ReadingTrackPage from '@/views/ReadingTrackPage';
 
-export const metadata = { title: '도쿄 도착 · 독해 트랙 | Anatomy Studio' };
+export const metadata = { title: '도쿄 도착 · 독해 트랙' };
 // 통과 집합이 사용자·시점마다 달라 정적 캐시 불가(review/grammar/page.jsx 관행)
 export const dynamic = 'force-dynamic';
 

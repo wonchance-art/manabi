@@ -14,8 +14,8 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }) {
   const { level } = await params;
   const bunkei = getBunkei(level);
-  if (!bunkei) return { title: '프랑스어 문형 사전 | Anatomy Studio' };
-  const title = `${bunkei.title} | 프랑스어 문형 사전 | Anatomy Studio`;
+  if (!bunkei) return { title: '프랑스어 문형 사전' };
+  const title = `${bunkei.title} | 프랑스어 문형 사전`;
   const description = bunkei.desc || `프랑스어 ${level.toUpperCase()} 핵심 구문·표현 전수 수록 — 구조·뜻·예문·챕터 링크`;
   return { title, description, openGraph: { title, description } };
 }

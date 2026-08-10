@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import { getRefLang } from '@/content/refLangs';
 import WritingStudioPage from '@/views/WritingStudioPage';
 
-export const metadata = { title: '작문 | Anatomy Studio' };
+export const metadata = { title: '작문' };
 export const dynamic = 'force-dynamic';
 
 /**

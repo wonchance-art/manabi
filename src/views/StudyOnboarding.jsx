@@ -172,6 +172,7 @@ export default function StudyOnboarding({ lang, langName, levels = [], readKey =
                   <button
                     key={l.key}
                     type="button"
+                    aria-pressed={startKey === l.key}
                     className={`chip ${startKey === l.key ? 'chip--active' : ''}`}
                     onClick={() => chooseLevel(l.key)}
                   >

@@ -11,9 +11,9 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }) {
   const { country: countryId, slug } = await params;
   const doc = getStudyDoc(countryId, slug);
-  if (!doc) return { title: '지역학 | Anatomy Studio' };
+  if (!doc) return { title: '지역학' };
   return {
-    title: `${doc.title} | 지역학 | Anatomy Studio`,
+    title: `${doc.title} | 지역학`,
     description: doc.summary,
   };
 }

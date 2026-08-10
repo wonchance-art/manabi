@@ -9,9 +9,9 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }) {
   const { country: countryId } = await params;
   const country = getStudyCountry(countryId);
-  if (!country) return { title: '지역학 | Anatomy Studio' };
+  if (!country) return { title: '지역학' };
   return {
-    title: `${country.nameKo} | 지역학 | Anatomy Studio`,
+    title: `${country.nameKo} | 지역학`,
     description: country.intro,
   };
 }

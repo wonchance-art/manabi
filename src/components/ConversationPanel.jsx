@@ -212,7 +212,7 @@ Output PART 1, then a blank line, then PART 2 (if any). No labels, no other text
         <div style={{ display: 'flex', gap: 8 }}>
           {nextLesson && messages.length >= 4 && (
             <Link href={`/viewer/${nextLesson.id}`} className="btn btn--ghost btn--sm" title={nextLesson.title}>
-              다음 강의 →
+              다음 편 →
             </Link>
           )}
           {messages.length > 0 && (

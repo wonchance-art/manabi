@@ -305,7 +305,7 @@ Rules:
               {onClose && <Button variant="ghost" onClick={onClose} style={{ flex: '1 1 120px' }}>Close</Button>}
               {nextLesson && (
                 <Link href={`/viewer/${nextLesson.id}`} className="btn btn--primary btn--md" style={{ flex: '1 1 160px', justifyContent: 'center' }}>
-                  다음 강의 →
+                  다음 편 →
                 </Link>
               )}
             </div>

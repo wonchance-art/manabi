@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import MaterialAddPage from '@/views/MaterialAddPage';
 
 export const metadata = {
-  title: '새 자료 추가 | Anatomy Studio',
+  title: '새 자료 추가',
 };
 
 export default function Page() {

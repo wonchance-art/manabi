@@ -18,10 +18,10 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }) {
   const { slug } = await params;
   const { data } = await loadChapter(LANGUAGE, slug);
-  if (!data) return { title: '일본어 문법 | Anatomy Studio' };
+  if (!data) return { title: '일본어 문법' };
   const chapter = mergeChapter(data.chapter, await getChapterOverride('Japanese', slug));
   const topicPart = chapter.topic ? ` — ${chapter.topic}` : '';
-  const title = `${chapter.title}${topicPart} | 일본어 문법 | Anatomy Studio`;
+  const title = `${chapter.title}${topicPart} | 일본어 문법`;
   const description = chapter.summary || '한국어 화자를 위한 일본어 문법 레퍼런스';
   return { title, description, openGraph: { title, description } };
 }
