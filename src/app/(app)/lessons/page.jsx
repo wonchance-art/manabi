@@ -3,8 +3,8 @@ import { buildRefManifest } from '@/content/refManifest';
 import { applyManifestOverrides } from '@/lib/contentOverrides';
 
 export const metadata = {
-  title: '교재 | Anatomy Studio',
-  description: '단계별 패턴·표현 강의와 문법·어휘 레퍼런스. JLPT N5→N1, CEFR A1→C2, 프랑스어 A0→C2.',
+  title: '교재',
+  description: '학습 순서대로 배치된 문법·어휘 레퍼런스. JLPT N5→N1, CEFR A1→C2, 프랑스어 A0→C2.',
 };
 
 // searchParams를 await하는 현재 구조는 dynamic SSR이다. revalidate는 유지하지만 ISR 전환을 의미하지 않는다.

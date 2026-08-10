@@ -1440,8 +1440,8 @@ export default function StudySessionPage({
         <div className="chip-group" style={{ marginTop: 26, justifyContent: 'center' }}>
           {languages.map(l => (
             l.key === lang
-              ? <span key={l.key} className="chip chip--active">{l.flag} {l.name}</span>
-              : <a key={l.key} href={`/study?lang=${l.key}`} className="chip">{l.flag} {l.name}</a>
+              ? <span key={l.key} className="chip chip--active" aria-current="page">{l.name}</span>
+              : <a key={l.key} href={`/study?lang=${l.key}`} className="chip">{l.name}</a>
           ))}
         </div>
       )}

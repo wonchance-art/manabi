@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: '이용약관 · Anatomy Studio',
+  title: '이용약관',
   description: 'Anatomy Studio 서비스 이용약관',
 };
 

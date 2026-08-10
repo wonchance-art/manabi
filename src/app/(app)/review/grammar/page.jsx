@@ -8,7 +8,7 @@ import { buildDrillReviewQuiz, drillIdFromQueueSlug, findDrillContext } from '@/
 import GrammarReviewSession from '@/views/GrammarReviewSession';
 import GuestGrammarReview from '@/views/GuestGrammarReview';
 
-export const metadata = { title: '문법 복습 | Anatomy Studio' };
+export const metadata = { title: '문법 복습' };
 export const dynamic = 'force-dynamic';
 
 /**

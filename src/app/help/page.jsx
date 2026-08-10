@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: '도움말 · Anatomy Studio',
+  title: '도움말',
   description: '자주 묻는 질문과 사용 팁',
 };
 

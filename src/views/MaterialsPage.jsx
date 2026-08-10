@@ -350,15 +350,18 @@ export default function MaterialsPage() {
 
         <div className="tab-pills">
           <button onClick={() => setTab('public')}
+            aria-pressed={tab === 'public'}
             className={`tab-pills__item ${tab === 'public' ? 'tab-pills__item--accent' : ''}`}>
             공용
           </button>
           <button onClick={() => setTab('private')}
+            aria-pressed={tab === 'private'}
             className={`tab-pills__item ${tab === 'private' ? 'tab-pills__item--primary' : ''}`}>
             내 자료
           </button>
           {user && (
             <button onClick={() => setTab('pdf')}
+            aria-pressed={tab === 'pdf'}
               className={`tab-pills__item ${tab === 'pdf' ? 'tab-pills__item--primary' : ''}`}>
               PDF
             </button>
@@ -373,6 +376,7 @@ export default function MaterialsPage() {
             <button
               key={f.key}
               onClick={() => { setLangFilter(f.key); setLevelFilter('all'); }}
+              aria-pressed={langFilter === f.key}
               className={`chip ${langFilter === f.key ? 'chip--active' : ''}`}
             >
               {f.label}
@@ -395,6 +399,7 @@ export default function MaterialsPage() {
           <div className="chip-group">
             <button
               onClick={() => setLevelFilter('all')}
+              aria-pressed={levelFilter === 'all'}
               className={`chip ${levelFilter === 'all' ? 'chip--active' : ''}`}
             >
               전체 난이도
@@ -403,6 +408,7 @@ export default function MaterialsPage() {
               <button
                 key={lvl}
                 onClick={() => setLevelFilter(lvl)}
+                aria-pressed={levelFilter === lvl}
                 className={`chip ${levelFilter === lvl ? 'chip--active' : ''}`}
               >
                 {lvl}

@@ -100,7 +100,7 @@ export default function KanaTest({ kind, slug, storageKey, lang }) {
         <p className="kana-test__lead">글자를 보고 <strong>발음(로마자)</strong>을 입력하세요. 발음을 알아야 풀 수 있어요.</p>
         <div className="chip-group" style={{ justifyContent: 'center', margin: '14px 0' }}>
           {ALL_SETS.map(s => (
-            <button key={s} type="button" className={`chip ${sets.includes(s) ? 'chip--active' : ''}`} onClick={() => toggleSet(s)}>
+            <button key={s} type="button" aria-pressed={sets.includes(s)} className={`chip ${sets.includes(s) ? 'chip--active' : ''}`} onClick={() => toggleSet(s)}>
               {SET_LABELS[s]}
             </button>
           ))}

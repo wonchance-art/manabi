@@ -4,7 +4,7 @@ import { getRefLang, REF_LANGS } from '@/content/refLangs';
 import StudyLibraryPage from '@/views/StudyLibraryPage';
 import { KNOWN_WORD_MIN_INTERVAL, kstWeekStartIso } from '@/lib/growthStats';
 
-export const metadata = { title: '서재 | Anatomy Studio' };
+export const metadata = { title: '서재' };
 export const dynamic = 'force-dynamic';
 
 /**

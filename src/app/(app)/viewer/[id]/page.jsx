@@ -20,7 +20,7 @@ export async function generateMetadata({ params }) {
       .select('title')
       .eq('id', id)
       .single();
-    const title = data?.title ? `${data.title} | Anatomy Studio` : '자료 뷰어 | Anatomy Studio';
+    const title = data?.title ? `${data.title}` : '자료 뷰어';
     const description = data?.title ? `AI가 분석한 "${data.title}" 학습 자료` : 'AI 언어 해부 학습';
     return {
       title,
@@ -28,7 +28,7 @@ export async function generateMetadata({ params }) {
       openGraph: { title, description },
     };
   } catch {
-    return { title: '자료 뷰어 | Anatomy Studio' };
+    return { title: '자료 뷰어' };
   }
 }
 

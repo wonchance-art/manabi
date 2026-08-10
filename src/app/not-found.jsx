@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: '페이지를 찾을 수 없어요 · Anatomy Studio',
+  title: '페이지를 찾을 수 없어요',
 };
 
 export default function NotFound() {

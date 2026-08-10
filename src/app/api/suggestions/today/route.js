@@ -17,7 +17,9 @@ export async function GET() {
     .order('created_at');
 
   if (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    // 추천은 있으면 좋은 부가 기능 — DB 실패를 클라 콘솔 500으로 흘리지 않고 빈 날과 동일하게 응답
+    console.error('[suggestions/today]', error.message);
+    return Response.json([], { headers: { 'Cache-Control': 'no-store' } });
   }
 
   return Response.json(data || [], {

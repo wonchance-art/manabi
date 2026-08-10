@@ -14,8 +14,8 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }) {
   const { level } = await params;
   const bunkei = getBunkei(level);
-  if (!bunkei) return { title: 'JLPT 문형 사전 | Anatomy Studio' };
-  const title = `${bunkei.title} | JLPT 문형 사전 | Anatomy Studio`;
+  if (!bunkei) return { title: 'JLPT 문형 사전' };
+  const title = `${bunkei.title} | JLPT 문형 사전`;
   const description = bunkei.desc || `JLPT ${level.toUpperCase()} 문형 전수 수록 — 접속·뜻·예문·챕터 링크`;
   return { title, description, openGraph: { title, description } };
 }
