@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
+import Link from 'next/link';
 import { useAuth } from '../lib/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toKoreanError } from '../lib/authErrors';
@@ -25,7 +26,7 @@ function AuthForm() {
   const searchParams = useSearchParams();
   // 오픈 리다이렉트 차단: 앱 내부 절대경로만 허용한다(//evil.com·https://evil.com 등은 기본값으로).
   const rawFrom = searchParams.get('from');
-  const from = rawFrom && /^\/(?!\/)/.test(rawFrom) ? rawFrom : '/materials';
+  const from = rawFrom && /^\/(?!\/)/.test(rawFrom) ? rawFrom : '/home';
 
   useEffect(() => {
     if (searchParams.get('error') === 'email_confirm_failed') {
@@ -59,6 +60,7 @@ function AuthForm() {
         await signIn(email, password);
         router.push(from);
       } else {
+        if (password.length < 8) { setError('비밀번호는 8자 이상이어야 합니다.'); setLoading(false); return; }
         await signUp(email, password, displayName);
         setSuccess('인증 이메일을 발송했습니다. 이메일을 확인해주세요.');
       }
@@ -67,7 +69,7 @@ function AuthForm() {
       if (msg === 'ALREADY_REGISTERED') {
         setError('ALREADY_REGISTERED');
       } else {
-        setError(msg || '로그인 중 오류가 발생했습니다. 다시 시도해주세요.');
+        setError(msg || '요청을 처리하지 못했습니다. 다시 시도해주세요.');
       }
     } finally {
       setLoading(false);
@@ -88,10 +90,10 @@ function AuthForm() {
         {/* Header */}
         <div className="auth-header">
           <h1 className="auth-header__title">
-            {isReset ? '새 비밀번호 설정' : isForgot ? '비밀번호 찾기' : isLogin ? '다시 오셨군요!' : '함께 성장해요'}
+            {isReset ? '새 비밀번호 설정' : isForgot ? '비밀번호 찾기' : isLogin ? '로그인' : '회원가입'}
           </h1>
           <p className="auth-header__sub">
-            {isReset ? '사용할 새 비밀번호를 입력해주세요' : isForgot ? '가입한 이메일로 재설정 링크를 보내드려요' : isLogin ? '계정에 로그인하세요' : '새 계정을 만들어보세요'}
+            {isReset ? '사용할 새 비밀번호를 입력해주세요' : isForgot ? '가입한 이메일로 재설정 링크를 보내드려요' : isLogin ? '진도와 단어장이 기기 간에 이어져요' : '진도·단어장·작문 기록을 계정에 보관해요'}
           </p>
         </div>
 
@@ -121,13 +123,15 @@ function AuthForm() {
         <form onSubmit={handleSubmit}>
           {!isLogin && !isForgot && (
             <div className="auth-field">
-              <label className="auth-label">닉네임</label>
+              <label className="auth-label" htmlFor="auth-nickname">닉네임</label>
               <input
+                id="auth-nickname"
                 type="text"
                 className="auth-input"
                 value={displayName}
                 onChange={e => setDisplayName(e.target.value)}
                 placeholder="학습 닉네임"
+                autoComplete="nickname"
                 required
               />
             </div>
@@ -135,13 +139,15 @@ function AuthForm() {
 
           {!isReset && (
             <div className="auth-field">
-              <label className="auth-label">이메일</label>
+              <label className="auth-label" htmlFor="auth-email">이메일</label>
               <input
+                id="auth-email"
                 type="email"
                 className="auth-input"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="hello@example.com"
+                autoComplete="email"
                 required
               />
             </div>
@@ -150,8 +156,9 @@ function AuthForm() {
           {isReset && (
             <>
               <div className="auth-field">
-                <label className="auth-label">새 비밀번호</label>
+                <label className="auth-label" htmlFor="auth-new-pw">새 비밀번호</label>
                 <input
+                  id="auth-new-pw"
                   type="password"
                   className="auth-input"
                   value={newPw}
@@ -163,8 +170,9 @@ function AuthForm() {
                 />
               </div>
               <div className="auth-field">
-                <label className="auth-label">새 비밀번호 확인</label>
+                <label className="auth-label" htmlFor="auth-new-pw2">새 비밀번호 확인</label>
                 <input
+                  id="auth-new-pw2"
                   type="password"
                   className="auth-input"
                   value={confirmNewPw}
@@ -181,7 +189,7 @@ function AuthForm() {
           {!isForgot && !isReset && (
             <div className="auth-field">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                <label className="auth-label" style={{ marginBottom: 0 }}>비밀번호</label>
+                <label className="auth-label" htmlFor="auth-password" style={{ marginBottom: 0 }}>비밀번호</label>
                 {isLogin && (
                   <button
                     type="button"
@@ -193,13 +201,15 @@ function AuthForm() {
                 )}
               </div>
               <input
+                id="auth-password"
                 type="password"
                 className="auth-input"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                placeholder="6자 이상"
+                placeholder={isLogin ? '비밀번호' : '8자 이상'}
+                autoComplete={isLogin ? 'current-password' : 'new-password'}
                 required
-                minLength={6}
+                minLength={isLogin ? 6 : 8}
               />
             </div>
           )}
@@ -238,6 +248,15 @@ function AuthForm() {
             </p>
           )}
         </form>
+
+        {/* 로그인은 벽이 아니라 권유 — 계정 없이 계속할 길을 항상 연다 */}
+        {!isReset && !isForgot && (
+          <p style={{ textAlign: 'center', margin: '14px 0 0' }}>
+            <Link href="/lessons" prefetch={false} className="auth-link-btn" style={{ display: 'inline-flex', alignItems: 'center', minHeight: 28 }}>
+              로그인 없이 교재 둘러보기 →
+            </Link>
+          </p>
+        )}
 
         {/* Toggle */}
         {!isReset && (
