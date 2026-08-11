@@ -31,7 +31,7 @@ export const metadata = {
     default: 'Anatomy Studio — AI 언어 해부 학습',
     template: '%s · Anatomy Studio',
   },
-  description: 'AI가 문장을 형태소 단위로 해부하는 일본어·영어 학습 앱. FSRS 알고리즘으로 과학적 단어 복습, 읽기가 곧 복습인 새로운 학습 경험.',
+  description: '일본어·영어·프랑스어·중국어 학습 도구 — 문법 교재, 매일 조립되는 학습 세션, FSRS 복습, 형태소 해부 읽기.',
   keywords: ['일본어 학습', '영어 학습', 'AI 언어', 'JLPT', 'FSRS', '간격 반복', '단어장', '독해'],
   authors: [{ name: 'Anatomy Studio' }],
   alternates: { canonical: '/' },
