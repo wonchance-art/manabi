@@ -30,6 +30,17 @@ describe('일본학 지도 핀 계약', () => {
     }
   });
 
+  it('포인트: 핀마다 2개 이상, 테마는 핀의 themes 안에 있고, 문장으로 끝난다', () => {
+    for (const p of JP_MAP_PINS) {
+      expect(p.points.length, p.id).toBeGreaterThanOrEqual(2);
+      for (const point of p.points) {
+        expect(p.themes.includes(point.theme), `${p.id} → ${point.theme}`).toBe(true);
+        expect(point.text.length, p.id).toBeGreaterThan(20);
+        expect(/[.다요)]$/.test(point.text.trim()), `${p.id}: ${point.text.slice(-8)}`).toBe(true);
+      }
+    }
+  });
+
   it('모든 테마에 핀이 3개 이상 있다(빈 필터 방지)', () => {
     for (const t of JP_MAP_THEMES) {
       const n = JP_MAP_PINS.filter((p) => p.themes.includes(t.id)).length;
