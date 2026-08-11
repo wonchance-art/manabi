@@ -8387,16 +8387,15 @@ body.is-review-session .page-container { padding-top: 8px; }
 .cohort-team__remove:hover { color: var(--danger, #e03131); background: var(--bg-secondary); }
 
 /* ========= 프로필 — 급수 진행·시리즈 진척도 ========= */
+/* 오너 지시(#959 정정): 원래 배치대로 제목 아래에 칩 줄 — 폭과 무관하게 항상
+   [진도] 한 줄 + 칩 한 줄의 2단 고정. 칩 줄은 절대 갈라지지 않고 좁으면 가로 스크롤. */
 .lvprog__head {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 10px; margin-bottom: 12px;
-  /* 한 줄 고정(오너 지시) — 중간 폭에서 칩이 둘째 줄로 떨어지지 않게. 좁으면 칩 영역만 가로 스크롤. */
-  flex-wrap: nowrap;
+  display: flex; flex-direction: column; align-items: flex-start;
+  gap: 8px; margin-bottom: 12px;
 }
-.lvprog__head > .mypage-section__title { flex-shrink: 0; }
 .lvprog__tabs {
   display: flex; gap: 4px;
-  min-width: 0; overflow-x: auto;
+  max-width: 100%; overflow-x: auto;
   scrollbar-width: none; /* 칩 몇 개짜리 보조 스크롤 — 바는 숨기고 제스처만 */
 }
 .lvprog__tabs::-webkit-scrollbar { display: none; }
