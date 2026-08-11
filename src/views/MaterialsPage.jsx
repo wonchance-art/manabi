@@ -9,7 +9,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import { parseTitle } from '../lib/seriesMeta';
-import { JP_LEVELS, EN_LEVELS } from '../lib/constants';
+import { JP_LEVELS, EN_LEVELS, ZH_LEVELS, langNameKo } from '../lib/constants';
 import ConfirmModal from '../components/ConfirmModal';
 import { CardGridSkeleton } from '../components/Skeleton';
 
@@ -102,6 +102,7 @@ const LANG_FILTERS = [
   { key: 'all',      label: '전체' },
   { key: 'Japanese', label: '일본어' },
   { key: 'English',  label: '영어' },
+  { key: 'Chinese',  label: '중국어' },
 ];
 
 
@@ -293,7 +294,8 @@ export default function MaterialsPage() {
 
   const levelOptions = langFilter === 'Japanese' ? JP_LEVELS
     : langFilter === 'English' ? EN_LEVELS
-    : [...JP_LEVELS, ...EN_LEVELS];
+    : langFilter === 'Chinese' ? ZH_LEVELS
+    : [...JP_LEVELS, ...EN_LEVELS, ...ZH_LEVELS];
 
   const filtered = (() => {
     if (sortBy === 'newest') return materials;
@@ -496,7 +498,7 @@ export default function MaterialsPage() {
                 <div>
                   <div className="card__row card__row--between">
                     <div className="card__row card__row--gap">
-                      <span className="card__flag">{language === 'English' ? '영어' : '일본어'}</span>
+                      <span className="card__flag">{langNameKo(language)}</span>
                       {level && <span className="tag">{level}</span>}
                       {seriesPosition && (
                         <span className="tag" style={{ background: 'var(--bg-secondary)', color: 'var(--text-secondary)', fontVariantNumeric: 'tabular-nums' }} title={`${titleMeta.series} 시리즈`}>

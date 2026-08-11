@@ -3,14 +3,19 @@ const nextConfig = {
   // Strict mode
   reactStrictMode: true,
 
-  // kuromoji 사전 파일(node_modules/kuromoji/dict/*.dat.gz)이 서버 번들에 포함되도록
+  // 사전·네이티브 바인딩이 서버 번들에 포함되도록 — kuromoji(ja) 사전과
+  // @node-rs/jieba(zh) 플랫폼별 .node 바이너리(Vercel은 linux-x64-gnu).
   outputFileTracingIncludes: {
-    '/api/analyze': ['./node_modules/kuromoji/dict/**/*'],
+    '/api/analyze': [
+      './node_modules/kuromoji/dict/**/*',
+      './node_modules/@node-rs/jieba-*/**/*',
+    ],
     '/api/admin/backfill-base-form': ['./node_modules/kuromoji/dict/**/*'],
   },
 
-  // kuromoji는 Node.js 런타임에서만 동작
-  serverExternalPackages: ['kuromoji', 'kuromojin'],
+  // Node.js 런타임 전용 — kuromoji(사전 fs 접근)·@node-rs/jieba(네이티브 .node,
+  // 번들러가 파싱하면 'Unexpected character' 로 실패한다).
+  serverExternalPackages: ['kuromoji', 'kuromojin', '@node-rs/jieba'],
 
   // 공개 서비스 기본 보안 헤더
   async headers() {
