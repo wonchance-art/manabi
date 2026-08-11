@@ -8389,9 +8389,18 @@ body.is-review-session .page-container { padding-top: 8px; }
 /* ========= 프로필 — 급수 진행·시리즈 진척도 ========= */
 .lvprog__head {
   display: flex; align-items: center; justify-content: space-between;
-  gap: 10px; flex-wrap: wrap; margin-bottom: 12px;
+  gap: 10px; margin-bottom: 12px;
+  /* 한 줄 고정(오너 지시) — 중간 폭에서 칩이 둘째 줄로 떨어지지 않게. 좁으면 칩 영역만 가로 스크롤. */
+  flex-wrap: nowrap;
 }
-.lvprog__tabs { display: flex; gap: 4px; }
+.lvprog__head > .mypage-section__title { flex-shrink: 0; }
+.lvprog__tabs {
+  display: flex; gap: 4px;
+  min-width: 0; overflow-x: auto;
+  scrollbar-width: none; /* 칩 몇 개짜리 보조 스크롤 — 바는 숨기고 제스처만 */
+}
+.lvprog__tabs::-webkit-scrollbar { display: none; }
+.lvprog__tabs .chip { flex-shrink: 0; white-space: nowrap; }
 .lvprog__rows { display: flex; flex-direction: column; gap: 9px; }
 .lvprog__row { display: flex; align-items: center; gap: 10px; }
 .lvprog__key {
