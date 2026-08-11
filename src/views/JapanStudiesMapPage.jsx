@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { JAPAN_PATH, JP_VIEW, projectJp } from '../components/japanMapPaths';
+import { JAPAN_PATH, JP_PREF_LINES, JP_VIEW, projectJp } from '../components/japanMapPaths';
 import { JP_MAP_PINS, JP_MAP_THEMES } from '../content/studies/japanMapPins';
 
 const THEME_BY_ID = Object.fromEntries(JP_MAP_THEMES.map((t) => [t.id, t]));
@@ -56,25 +56,25 @@ export default function JapanStudiesMapPage() {
 
       {/* 지도 + 선택 카드 */}
       <div className="jpmap-layout">
-        <div className="card" style={{ padding: 10 }}>
+        <div className="card jpmap-card">
           <svg viewBox={`0 0 ${JP_VIEW.w} ${JP_VIEW.h}`} role="img" aria-label="일본 지도 — 테마별 장소 핀"
             style={{ width: '100%', height: 'auto', display: 'block' }}>
-            <path d={JAPAN_PATH} fill="var(--bg-secondary)" stroke="var(--border)" strokeWidth="1.2" />
+            {/* 육지(50m 해안) → 현 경계(10m) → 핀 순의 레이어 */}
+            <path className="jpmap-land" d={JAPAN_PATH} />
+            <path className="jpmap-pref" d={JP_PREF_LINES} />
             {pins.map((p) => {
               const [x, y] = projectJp(p.lng, p.lat);
               const isActive = activeVisible?.id === p.id;
               return (
                 <g key={p.id} transform={`translate(${x}, ${y})`}>
-                  {isActive && <circle r="13" fill="none" stroke={pinColor(p)} strokeWidth="2" opacity="0.55" />}
+                  {isActive && <circle className="jpmap-pin-ring" r="11" style={{ stroke: pinColor(p) }} />}
                   <circle
-                    r="8"
-                    fill={pinColor(p)}
-                    stroke="var(--bg-card)"
-                    strokeWidth="1.5"
+                    className={`jpmap-pin${isActive ? ' is-active' : ''}`}
+                    r="7"
+                    style={{ fill: pinColor(p) }}
                     role="button"
                     tabIndex={0}
                     aria-label={`${p.name} — ${p.themes.map((t) => THEME_BY_ID[t].label).join('·')}`}
-                    style={{ cursor: 'pointer' }}
                     onClick={() => setActiveId(isActive ? null : p.id)}
                     onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), setActiveId(isActive ? null : p.id))}
                   />

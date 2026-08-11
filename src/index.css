@@ -9393,3 +9393,47 @@ body.is-review-session .page-container { padding-top: 8px; }
 @media (min-width: 760px) {
   .jpmap-layout { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(240px, 1fr); gap: 14px; align-items: start; }
 }
+/* 지도 카드 = 바다. 육지·현 경계는 토큰으로 두 테마 공용 — 라이트에선 옅은 종이색, 다크에선 융기감. */
+.jpmap-card { padding: 10px; background: color-mix(in srgb, var(--primary) 4%, var(--bg-secondary)); }
+.jpmap-land {
+  fill: var(--bg-elevated);
+  stroke: color-mix(in srgb, var(--text-muted) 45%, transparent);
+  stroke-width: 0.9;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.18));
+}
+.jpmap-pref {
+  fill: none;
+  stroke: color-mix(in srgb, var(--text-muted) 30%, transparent);
+  stroke-width: 0.6;
+  stroke-linejoin: round;
+}
+.jpmap-pin {
+  stroke: var(--bg-card);
+  stroke-width: 1.5;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.jpmap-pin:hover, .jpmap-pin:focus-visible { transform: scale(1.35); }
+/* 마우스 클릭의 기본 사각 아웃라인 제거 — 키보드 포커스는 활성 링과 확대가 이미 표시한다 */
+.jpmap-pin:focus { outline: none; }
+.jpmap-pin:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.jpmap-pin.is-active { transform: scale(1.2); }
+.jpmap-pin-ring {
+  fill: none;
+  stroke-width: 2;
+  opacity: 0.6;
+  animation: jpmap-pulse 1.6s ease-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+  pointer-events: none;
+}
+@keyframes jpmap-pulse {
+  0% { transform: scale(0.8); opacity: 0.7; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .jpmap-pin-ring { animation: none; }
+  .jpmap-pin { transition: none; }
+}
