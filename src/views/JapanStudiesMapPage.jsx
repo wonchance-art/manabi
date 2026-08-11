@@ -96,21 +96,33 @@ export default function JapanStudiesMapPage() {
                   </span>
                 ))}
               </div>
-              <p style={{ margin: 0, fontSize: '0.88rem', lineHeight: 1.65, color: 'var(--text-secondary)' }}>
-                {activeVisible.desc}
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 12 }}>
-                {activeVisible.themes.map((t) => (
-                  <Link key={t} href={`/studies/japan/${THEME_BY_ID[t].doc}`} prefetch={false}
-                    style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--accent-text)', display: 'inline-flex', alignItems: 'center', minHeight: 26 }}>
-                    {THEME_BY_ID[t].label} 문서에서 읽기 →
-                  </Link>
+              {/* 지식 포인트 — 이 층에서 전반을 다 볼 수 있게 쫙 펼친다. 문서는 아래 '더 보기'로만. */}
+              <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 9 }}>
+                {activeVisible.points.map((point, i) => (
+                  <li key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                    <span aria-hidden="true" style={{ flexShrink: 0, marginTop: 7, width: 7, height: 7, borderRadius: '50%', background: THEME_BY_ID[point.theme].color }} />
+                    <span style={{ fontSize: '0.85rem', lineHeight: 1.65, color: 'var(--text-secondary)' }}>{point.text}</span>
+                  </li>
                 ))}
-              </div>
+              </ul>
+              {/* 더 보기 — 원문 문서는 정말 관심 깊은 사람만 닿도록 접어 둔다 */}
+              <details style={{ marginTop: 14, borderTop: '1px solid var(--border)', paddingTop: 10 }}>
+                <summary style={{ cursor: 'pointer', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 700, listStyle: 'none', display: 'inline-flex', alignItems: 'center', minHeight: 26 }}>
+                  더 보기 — 근거 문서 ▾
+                </summary>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
+                  {activeVisible.themes.map((t) => (
+                    <Link key={t} href={`/studies/japan/${THEME_BY_ID[t].doc}`} prefetch={false}
+                      style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--accent-text)', display: 'inline-flex', alignItems: 'center', minHeight: 26 }}>
+                      {THEME_BY_ID[t].label} 문서 전문 →
+                    </Link>
+                  ))}
+                </div>
+              </details>
             </>
           ) : (
             <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-              핀을 누르면 장소 설명과 근거 문서가 여기에 떠요.
+              핀을 누르면 그 장소에서 알아 둘 것들이 여기에 펼쳐져요.
             </p>
           )}
         </aside>
@@ -132,6 +144,16 @@ export default function JapanStudiesMapPage() {
                 </span>
                 <span style={{ display: 'block', fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: 3, lineHeight: 1.55 }}>{p.desc}</span>
               </button>
+              {activeVisible?.id === p.id && (
+                <ul style={{ margin: '10px 0 0', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {p.points.map((point, i) => (
+                    <li key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                      <span aria-hidden="true" style={{ flexShrink: 0, marginTop: 7, width: 6, height: 6, borderRadius: '50%', background: THEME_BY_ID[point.theme].color }} />
+                      <span style={{ fontSize: '0.83rem', lineHeight: 1.6, color: 'var(--text-secondary)' }}>{point.text}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </li>
           ))}
         </ul>
