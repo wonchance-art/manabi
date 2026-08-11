@@ -12,6 +12,8 @@ import Button from '../components/Button';
 import VocabStats from './VocabStats';
 
 const LANG_KO = { Japanese: '일본어', English: '영어', Chinese: '중국어', French: '프랑스어' };
+// 진도 탭은 국기 이모지만(오너 지정 — 좁은 폭 글자 잘림 해소). 이름은 aria-label·title로.
+const LANG_FLAG = { Japanese: '🇯🇵', English: '🇬🇧', Chinese: '🇨🇳', French: '🇫🇷' };
 
 async function fetchProfileStats(userId) {
   const heatmapStart = new Date();
@@ -388,8 +390,12 @@ function LevelCoverageCard({ refManifest }) {
           {langs.map(l => (
             <button key={l} type="button"
               className={`chip ${lang === l ? 'chip--active' : ''}`}
+              aria-label={LANG_KO[l] || l}
+              aria-pressed={lang === l}
+              title={LANG_KO[l] || l}
+              style={{ fontSize: '1.05rem', lineHeight: 1 }}
               onClick={() => setLang(l)}>
-              {LANG_KO[l] || l}
+              <span aria-hidden="true">{LANG_FLAG[l] || (LANG_KO[l] || l)}</span>
             </button>
           ))}
         </div>
