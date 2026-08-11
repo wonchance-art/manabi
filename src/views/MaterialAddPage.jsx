@@ -306,18 +306,21 @@ export default function MaterialAddPage() {
           <div className="form-field">
             <label className="form-label">학습 언어</label>
             <div className="toggle-group">
-              <button
-                onClick={() => { setLanguage('Japanese'); setLevel('N3 중급'); }}
-                className={`toggle-btn ${language === 'Japanese' ? 'toggle-btn--primary' : ''}`}
-              >
-                일본어
-              </button>
-              <button
-                onClick={() => { setLanguage('English'); setLevel('B1 중급'); }}
-                className={`toggle-btn ${language === 'English' ? 'toggle-btn--primary' : ''}`}
-              >
-                영어
-              </button>
+              {/* 해부 분석이 지원하는 언어 — 일본어(형태소)·영어(표제어)·중국어(단어 분할+병음) */}
+              {[
+                ['Japanese', '일본어', 'N3 중급'],
+                ['English', '영어', 'B1 중급'],
+                ['Chinese', '중국어', 'H3 중급'],
+              ].map(([key, label, defaultLevel]) => (
+                <button
+                  key={key}
+                  aria-pressed={language === key}
+                  onClick={() => { setLanguage(key); setLevel(defaultLevel); }}
+                  className={`toggle-btn ${language === key ? 'toggle-btn--primary' : ''}`}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
           </div>
         </div>

@@ -4,7 +4,31 @@ const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemi
 
 function buildMeaningBatchPrompt(entries, language = 'Japanese') {
   if (language === 'English') return buildEnglishMeaningBatchPrompt(entries);
+  if (language === 'Chinese') return buildChineseMeaningBatchPrompt(entries);
   return buildJapaneseMeaningBatchPrompt(entries);
+}
+
+function buildChineseMeaningBatchPrompt(entries) {
+  const list = entries.map((e, i) => `${i + 1}. "${e.base_form}"${e.pos ? ` (${e.pos})` : ''}`).join('\n');
+  return `다음은 중국어(간체) 단어 목록입니다. 각 단어의 품사, 병음, 한국어 뜻을 JSON 배열로 알려주세요.
+
+${list}
+
+## 출력 형식 (순서와 길이 정확히 일치)
+[
+  { "pos": "명사", "reading": "túshūguǎn", "meanings": [{"meaning": "도서관"}] },
+  { "pos": "동사", "reading": "dú", "meanings": [{"meaning": "읽다"}, {"meaning": "공부하다"}] },
+  ...
+]
+
+## 규칙
+- pos는 한국어로 (명사/동사/형용사/부사/전치사/접속사/조사/대명사/양사/수사/감탄사/성어)
+- reading은 성조 기호가 붙은 병음 (예: 图书馆→túshūguǎn, 中国→Zhōngguó)
+- 각 단어에 1~2개 주요 의미 (가장 흔한 순)
+- 의미는 10자 이내로 간결하게
+- 다음자(多音字)는 가장 일반적인 독음 기준
+- 조사(的, 了, 着 등)는 한국어 대응 기능 설명 ("~의", "완료", "진행" 등)
+- 설명/주석 금지, JSON만 출력`;
 }
 
 function buildJapaneseMeaningBatchPrompt(entries) {

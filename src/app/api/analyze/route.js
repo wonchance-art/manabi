@@ -8,6 +8,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { tokenizeJaLine } from '@/lib/server/tokenizeJa';
 import { tokenizeEnLine } from '@/lib/server/tokenizeEn';
+import { tokenizeZhLine } from '@/lib/server/tokenizeZh';
 import { fetchMeaningsForMissing } from '@/lib/server/fetchMeanings';
 import { rateLimit, getClientKey } from '@/lib/server/rateLimit';
 
@@ -68,21 +69,24 @@ export async function POST(request) {
   if (!Array.isArray(rawLines) || rawLines.length === 0) {
     return Response.json({ error: 'lines required' }, { status: 400 });
   }
-  if (!['Japanese', 'English'].includes(language)) {
-    return Response.json({ error: 'language must be Japanese or English' }, { status: 400 });
+  if (!['Japanese', 'English', 'Chinese'].includes(language)) {
+    return Response.json({ error: 'language must be Japanese, English or Chinese' }, { status: 400 });
   }
   // 줄 수·줄 길이 캡 — 토큰화·Gemini 팬아웃 비용을 상한. 정상 세션(수 줄)은 영향 없음.
   const lines = rawLines.slice(0, MAX_LINES).map((l) => String(l ?? '').slice(0, MAX_LINE_LEN));
 
   try {
     // 1. 각 줄 토큰화 (언어별)
-    const tokenizer = language === 'Japanese' ? tokenizeJaLine : tokenizeEnLine;
+    // 일본어=kuromoji(async) · 영어=lemmatizer · 중국어=jieba+병음(둘 다 sync)
+    const tokenizer = language === 'Japanese' ? tokenizeJaLine
+      : language === 'Chinese' ? tokenizeZhLine
+      : tokenizeEnLine;
     const tokenizedLines = await Promise.all(
       lines.map(async (line) => ({
         original: line,
         tokens: language === 'Japanese'
           ? await tokenizer(line)    // kuromoji async
-          : tokenizer(line),          // 영어는 sync
+          : tokenizer(line),          // 영어·중국어는 sync
       }))
     );
 
