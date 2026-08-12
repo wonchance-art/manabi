@@ -8,6 +8,17 @@ import { callGemini, parseGeminiJSON, buildTokenizationPrompt } from './gemini';
  * - 실패해도 절대 중단하지 않음. 실패 줄은 failed 플레이스홀더로 보존.
  * - existingJson 전달 시 failed_indices 줄만 재시도 (성공 토큰 재사용).
  */
+/**
+ * 최종 상태 판정 — 성공 토큰이 하나도 없으면 'failed'.
+ * 전량 실패를 'partial'로 두면 UI가 "분석 완료(재시도 필요)"라고 말해 실패를 가린다
+ * (#969 — 중국어 EPUB 전량 실패가 '완료'로 표시된 사고).
+ */
+export function resolveAnalysisStatus(dictionary, failedCount, totalLines) {
+  const hasSuccess = Object.values(dictionary || {}).some((t) => t && !t.failed && t.pos !== '개행');
+  if (totalLines > 0 && !hasSuccess) return 'failed';
+  return failedCount > 0 ? 'partial' : 'completed';
+}
+
 export async function analyzeText(rawText, signal, { metadata = {}, onBatch, existingJson = null, concurrency = 6 } = {}) {
   const lang = metadata?.language || existingJson?.metadata?.language;
   // 일본어·영어 모두 공유 캐시 경로 사용 (Phase 2)
@@ -169,7 +180,7 @@ async function analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson,
     await onBatch?.({ currentJson, processed: processedLines, total });
   }
 
-  currentJson.status = currentJson.failed_indices.length > 0 ? 'partial' : 'completed';
+  currentJson.status = resolveAnalysisStatus(currentJson.dictionary, currentJson.failed_indices.length, total);
   currentJson.metadata = {
     ...(currentJson.metadata || {}),
     updated_at: new Date().toISOString(),
@@ -318,7 +329,7 @@ async function analyzeLineByLineGemini(rawText, signal, { metadata, onBatch, exi
     const processed = Math.min(i + currentConcurrency, total);
     const isLast = batchIndices[batchIndices.length - 1] >= total - 1;
     if (isLast) {
-      currentJson.status = currentJson.failed_indices.length > 0 ? 'partial' : 'completed';
+      currentJson.status = resolveAnalysisStatus(currentJson.dictionary, currentJson.failed_indices.length, total);
     }
     currentJson.metadata = {
       ...(currentJson.metadata || {}),

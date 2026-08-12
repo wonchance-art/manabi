@@ -3,19 +3,18 @@ const nextConfig = {
   // Strict mode
   reactStrictMode: true,
 
-  // 사전·네이티브 바인딩이 서버 번들에 포함되도록 — kuromoji(ja) 사전과
-  // @node-rs/jieba(zh) 플랫폼별 .node 바이너리(Vercel은 linux-x64-gnu).
+  // 사전·WASM이 서버 번들에 포함되도록 — kuromoji(ja) 사전과 jieba-wasm(zh)의 .wasm.
+  // (네이티브 @node-rs/jieba는 서버리스 플랫폼 바이너리 로드 실패로 WASM 교체 — 단일 파일·플랫폼 무관)
   outputFileTracingIncludes: {
     '/api/analyze': [
       './node_modules/kuromoji/dict/**/*',
-      './node_modules/@node-rs/jieba-*/**/*',
+      './node_modules/jieba-wasm/pkg/nodejs/**/*',
     ],
     '/api/admin/backfill-base-form': ['./node_modules/kuromoji/dict/**/*'],
   },
 
-  // Node.js 런타임 전용 — kuromoji(사전 fs 접근)·@node-rs/jieba(네이티브 .node,
-  // 번들러가 파싱하면 'Unexpected character' 로 실패한다).
-  serverExternalPackages: ['kuromoji', 'kuromojin', '@node-rs/jieba'],
+  // Node.js 런타임 전용 — kuromoji(사전 fs 접근)·jieba-wasm(.wasm을 fs로 로드).
+  serverExternalPackages: ['kuromoji', 'kuromojin', 'jieba-wasm'],
 
   // 공개 서비스 기본 보안 헤더
   async headers() {

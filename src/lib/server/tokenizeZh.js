@@ -1,17 +1,11 @@
 // 서버 전용 — 중국어 토큰화(단어 분할 + 병음).
-// 분할: @node-rs/jieba(Rust 네이티브 바인딩, 사전 동봉 — 네이티브 빌드 불필요).
+// 분할: jieba-wasm(jieba-rs의 WASM 빌드 — 플랫폼 무관 단일 .wasm, 사전 임베드).
+//   네이티브 @node-rs/jieba는 Vercel 서버리스에서 플랫폼 바이너리 로드가 실패해(#969 프로덕션
+//   전량 분석 실패 사고) WASM으로 교체했다 — 로컬·리눅스·서버리스 어디서나 같은 파일로 동작한다.
 // 병음: pinyin-pro(성조 기호). 중국어는 활용이 없어 base_form = 표면형이 그대로 표제어다.
-// 인스턴스는 모듈 스코프 lazy 싱글턴 — 사전 로드(11MB급)를 요청마다 반복하지 않는다.
 
-import { Jieba } from '@node-rs/jieba';
-import { dict } from '@node-rs/jieba/dict.js'; // ESM은 확장자 필수(번들러 밖 순수 Node 실행 대비)
+import { tag as jiebaTag } from 'jieba-wasm';
 import { pinyin } from 'pinyin-pro';
-
-let jieba = null;
-function getJieba() {
-  if (!jieba) jieba = Jieba.withDict(dict);
-  return jieba;
-}
 
 // jieba 품사 태그(중국어 관례) → 한국어 표기. 미지 태그는 null(뜻 조회 단계에서 채워질 수 있음).
 const POS_KO = {
@@ -35,7 +29,7 @@ const PUNCT = /^[\s。、，．！？!?,.:;：；""''「」『』（）()【】�
  */
 export function tokenizeZhLine(line) {
   if (!line || !line.trim()) return [];
-  const tagged = getJieba().tag(line, true);
+  const tagged = jiebaTag(line, true);
   const tokens = [];
   for (const { word, tag } of tagged) {
     const text = word;
