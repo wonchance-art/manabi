@@ -32,6 +32,7 @@ function getServerSupabase() {
 }
 
 export async function POST(request) {
+  const startedAt = Date.now();
   // 인증 확인 — 로그인 사용자만 분석 가능 (Gemini 쿼터 남용 방지)
   const authHeader = request.headers.get('authorization');
   if (!authHeader) {
@@ -123,10 +124,17 @@ export async function POST(request) {
     }
 
     // 미싱 처리 상한 — 배치 폭발 방지. 초과분은 이번 요청에서 뜻 없이 넘어간다(다음에 백필).
+    // deadline: 캐시가 빈 언어(중국어 개통 직후)는 미싱 100개 순차 조회가 실측 94s로 60s 캡을
+    // 넘겨 함수째 죽고, 클라에선 문단 전체 실패로 보였다(#969). 함수 킬 전에 조회만 중단한다.
     const cappedMissing = missingList.slice(0, MAX_MISSING);
     if (cappedMissing.length > 0) {
       try {
-        const { result: fetched } = await fetchMeaningsForMissing(cappedMissing, language, supabase);
+        // 35s: 마지막 웨이브가 deadline 직전 시작 + 개별 타임아웃 20s까지 물고 늘어져도
+        // 60s(maxDuration) 안에 응답 조립까지 마치는 상한.
+        const { result: fetched } = await fetchMeaningsForMissing(cappedMissing, language, supabase, {
+          deadlineMs: startedAt + 35_000,
+          concurrency: 3,
+        });
         for (const [baseForm, entry] of fetched) {
           cache.set(baseForm, entry);
         }
