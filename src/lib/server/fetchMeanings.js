@@ -89,9 +89,16 @@ function parseJsonLenient(text) {
  * @param {Array<{base_form, pos, reading}>} missing
  * @param {string} language
  * @param {object} supabase - server client (service role)
+ * @param {object} [opts]
+ * @param {number|null} [opts.deadlineMs] - 이 시각(epoch ms)을 넘기면 새 배치·재시도를 시작하지
+ *   않고 중단. 남은 단어는 뜻 없이 반환된다(MAX_MISSING 초과분과 같은 그레이스풀 디그레이드 —
+ *   캐시가 빈 언어에서 배치 순차 대기가 Vercel maxDuration을 넘겨 함수째 죽는 것을 방지, #969).
+ * @param {number} [opts.concurrency] - 동시 배치 수. 순차(=1)는 미싱 100개에 실측 94s로
+ *   60s 캡 초과 — 기본 3.
  * @returns {Map<string, {meanings, pos, reading, source}>} base_form → meaning entry
  */
-export async function fetchMeaningsForMissing(missing, language, supabase) {
+export async function fetchMeaningsForMissing(missing, language, supabase, opts = {}) {
+  const { deadlineMs = null, concurrency = 3 } = opts;
   const result = new Map();
   const errors = [];
   if (missing.length === 0) return { result, errors };
@@ -103,10 +110,13 @@ export async function fetchMeaningsForMissing(missing, language, supabase) {
   const BATCH_SIZE = 15;
   const MAX_RETRIES = 4;
   const DELAYS = [5000, 10000, 20000, 40000];
+  const CALL_TIMEOUT_MS = 20_000; // 개별 호출 행잉 방지 — deadline 판정은 호출 사이에만 돌므로 필수
+  const pastDeadline = () => deadlineMs != null && Date.now() >= deadlineMs;
 
   async function callGroqFallback(prompt) {
     const groqKey = process.env.GROQ_API_KEY;
     if (!groqKey) return null;
+    if (pastDeadline()) return null; // deadline 후 폴백까지 타면 함수 킬 위험 — 스킵
     try {
       const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
@@ -114,6 +124,7 @@ export async function fetchMeaningsForMissing(missing, language, supabase) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${groqKey}`,
         },
+        signal: AbortSignal.timeout(15_000),
         body: JSON.stringify({
           model: 'qwen/qwen3-32b',
           messages: [{ role: 'user', content: prompt }],
@@ -137,16 +148,23 @@ export async function fetchMeaningsForMissing(missing, language, supabase) {
   async function callWithRetry(prompt) {
     let lastErr = null;
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-      const res = await fetch(`${GEMINI_URL}?key=${apiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0 },
-        }),
-      });
-      const data = await res.json();
-      const isCapacity = res.status === 503 || res.status === 429 ||
+      let res, data;
+      try {
+        res = await fetch(`${GEMINI_URL}?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          signal: AbortSignal.timeout(CALL_TIMEOUT_MS),
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { temperature: 0 },
+          }),
+        });
+        data = await res.json();
+      } catch (e) {
+        res = { ok: false, status: 0 };
+        data = { error: e?.message || 'fetch failed' };
+      }
+      const isCapacity = res.status === 503 || res.status === 429 || res.status === 0 ||
         JSON.stringify(data).toLowerCase().includes('high demand') ||
         JSON.stringify(data).toLowerCase().includes('overloaded');
 
@@ -155,15 +173,14 @@ export async function fetchMeaningsForMissing(missing, language, supabase) {
 
       if (!isCapacity || attempt === MAX_RETRIES - 1) return { res, data };
       const delay = DELAYS[attempt];
+      if (deadlineMs != null && Date.now() + delay >= deadlineMs) return lastErr;
       console.warn(`[fetchMeanings] capacity retry ${attempt + 1}/${MAX_RETRIES} in ${delay}ms`);
       await new Promise(r => setTimeout(r, delay));
     }
     return lastErr;
   }
 
-  for (let i = 0; i < missing.length; i += BATCH_SIZE) {
-    const batch = missing.slice(i, i + BATCH_SIZE);
-
+  async function processBatch(batch, batchOffset) {
     const prompt = buildMeaningBatchPrompt(batch, language);
     let { res, data } = await callWithRetry(prompt);
 
@@ -176,16 +193,16 @@ export async function fetchMeaningsForMissing(missing, language, supabase) {
       } else {
         const errMsg = `HTTP ${res.status}: ${JSON.stringify(data).slice(0, 300)}`;
         console.warn('[fetchMeanings] batch failed:', errMsg);
-        errors.push({ stage: 'http', batch: i, error: errMsg });
-        continue;
+        errors.push({ stage: 'http', batch: batchOffset, error: errMsg });
+        return;
       }
     }
 
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!text) {
       console.warn('[fetchMeanings] empty response', JSON.stringify(data).slice(0, 200));
-      errors.push({ stage: 'empty', batch: i, error: 'no candidates.text' });
-      continue;
+      errors.push({ stage: 'empty', batch: batchOffset, error: 'no candidates.text' });
+      return;
     }
 
     let parsed;
@@ -193,14 +210,14 @@ export async function fetchMeaningsForMissing(missing, language, supabase) {
       parsed = parseJsonLenient(text);
     } catch (e) {
       console.warn('[fetchMeanings] parse failed:', e.message, text.slice(0, 300));
-      errors.push({ stage: 'parse', batch: i, error: e.message, sample: text.slice(0, 200) });
-      continue;
+      errors.push({ stage: 'parse', batch: batchOffset, error: e.message, sample: text.slice(0, 200) });
+      return;
     }
 
     if (!Array.isArray(parsed) || parsed.length !== batch.length) {
       console.warn('[fetchMeanings] length mismatch', parsed?.length, batch.length);
-      errors.push({ stage: 'length', batch: i, expected: batch.length, got: parsed?.length });
-      continue;
+      errors.push({ stage: 'length', batch: batchOffset, expected: batch.length, got: parsed?.length });
+      return;
     }
 
     // DB insert 준비
@@ -247,9 +264,26 @@ export async function fetchMeaningsForMissing(missing, language, supabase) {
         .upsert(rows, { onConflict: 'base_form,language', ignoreDuplicates: false });
       if (error) {
         console.warn('[fetchMeanings] db upsert failed:', error.message);
-        errors.push({ stage: 'db', batch: i, error: error.message });
+        errors.push({ stage: 'db', batch: batchOffset, error: error.message });
       }
     }
+  }
+
+  // 배치를 concurrency개씩 웨이브로 병렬 실행. 웨이브 사이에만 deadline을 판정해
+  // 진행 중 배치는 자연 완료시킨다(개별 호출은 CALL_TIMEOUT_MS로 상한).
+  const batches = [];
+  for (let i = 0; i < missing.length; i += BATCH_SIZE) {
+    batches.push({ batch: missing.slice(i, i + BATCH_SIZE), offset: i });
+  }
+  for (let w = 0; w < batches.length; w += concurrency) {
+    if (pastDeadline()) {
+      const remaining = batches.slice(w).reduce((n, b) => n + b.batch.length, 0);
+      console.warn(`[fetchMeanings] deadline reached — ${remaining} words skipped (graceful degrade)`);
+      errors.push({ stage: 'deadline', batch: batches[w].offset, remaining });
+      break;
+    }
+    const wave = batches.slice(w, w + concurrency);
+    await Promise.all(wave.map(({ batch, offset }) => processBatch(batch, offset)));
   }
 
   return { result, errors };
