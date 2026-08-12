@@ -475,6 +475,13 @@
 
 ## Claude (claude/*)
 ### doing
+- **🇨🇳 중국어 분석 프로덕션 실패 수리(2026-08-13, #969)** — 오너 보고: 중국어 EPUB이 "분석 완료"로
+  뜨는데 전부 실패·병음 부재. 진단: 로컬 완주는 성공 → **Vercel 서버리스의 @node-rs/jieba 네이티브
+  .node 로드 실패로 격리**. 수리 ① jieba-wasm 교체(zero-deps WASM, 동일 분할·200회 2ms, .wasm
+  readFileSync 표준 패턴 → NFT 플랫폼 무관 추적 실측) ② resolveAnalysisStatus — 성공 토큰 0이면
+  status='failed'(기존엔 전량 실패도 'partial'이라 "분석 완료(재시도 필요)"로 가려짐) ③ failed 전용
+  문구. 유닛 10(변이 red)·vitest 2,636·e2e 22/22·wasm 서버 완주 200·CI green·merge 0ff83a5.
+  기존 실패 자료는 뷰어 '재분석'으로 복구 — 오너 확인 대기.
 - **🇨🇳 중국어 배선 결함 수리(2026-08-12, #967)** — #965 후속 검증에서 발견: 서버에 jieba·병음을
   붙였는데 클라 analyzeText가 ja/en만 /api/analyze로 보내 **중국어가 옛 Gemini 폴백으로 새고 있었다**
   (실사용에서 새 파이프라인 미적용). 분기 수리 + 계약 테스트(클라 분기 집합 == 서버 화이트리스트,
