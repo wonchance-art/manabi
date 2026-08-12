@@ -11,7 +11,7 @@ import { callGemini, parseGeminiJSON, buildTokenizationPrompt } from './gemini';
 export async function analyzeText(rawText, signal, { metadata = {}, onBatch, existingJson = null, concurrency = 6 } = {}) {
   const lang = metadata?.language || existingJson?.metadata?.language;
   // 일본어·영어 모두 공유 캐시 경로 사용 (Phase 2)
-  if (lang === 'Japanese' || lang === 'English') {
+  if (lang === 'Japanese' || lang === 'English' || lang === 'Chinese') {
     return analyzeHybrid(rawText, signal, { metadata, onBatch, existingJson, language: lang });
   }
   // 기타 언어는 기존 Gemini per-line (fallback)
