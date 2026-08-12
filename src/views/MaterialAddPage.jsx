@@ -171,9 +171,11 @@ export default function MaterialAddPage() {
       });
 
       const failedCount = finalJson.failed_indices?.length || 0;
-      setStatus(failedCount > 0
-        ? `분석 완료 (${failedCount}개 단락 재시도 필요)`
-        : '전체 분석 완료');
+      setStatus(finalJson.status === 'failed'
+        ? '분석에 실패했어요 — 뷰어에서 재분석하거나 잠시 후 다시 시도해 주세요'
+        : failedCount > 0
+          ? `분석 완료 (${failedCount}개 단락 재시도 필요)`
+          : '전체 분석 완료');
       setProgress(100);
       setIsProcessing(false);
       setCompletedId(id);
