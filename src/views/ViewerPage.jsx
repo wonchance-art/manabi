@@ -877,7 +877,17 @@ export default function ViewerPage() {
     <div className="viewer-side__content">
       <div className="pdf-context__title">번역 · 맥락</div>
       {leftPanelText && (
-        <div className="pdf-context__original">"{leftPanelText.length > 120 ? leftPanelText.slice(0, 120) + '…' : leftPanelText}"</div>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 4 }}>
+          <div className="pdf-context__original" style={{ flex: 1, minWidth: 0 }}>"{leftPanelText.length > 120 ? leftPanelText.slice(0, 120) + '…' : leftPanelText}"</div>
+          {ttsSupported && (
+            <button
+              onClick={() => speak(leftPanelText, materialLang)}
+              aria-label="지정한 문장 듣기"
+              title="지정한 문장 듣기"
+              style={{ background: 'none', border: 'none', fontSize: '1.05rem', cursor: 'pointer', minWidth: 32, minHeight: 32, flexShrink: 0, color: 'var(--primary-light)' }}
+            >▷</button>
+          )}
+        </div>
       )}
       <div className="pdf-context__text" dangerouslySetInnerHTML={{ __html: formatDetail(leftPanelResult) }} />
     </div>
