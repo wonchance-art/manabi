@@ -475,6 +475,11 @@
 
 ## Claude (claude/*)
 ### doing
+- **🔧 시트 핸들 스와이프 고장·재오픈 불능 수리(2026-08-13, #996)** — 오너 정밀 재보고(핸들 잡고
+  내려도 안 되고 건드리면 고장, 이후 단어 탭에도 창 안 뜸)로 2중 원인 확정: ① touch-action 부재로
+  브라우저가 드래그를 가로채(touchcancel) transform 잔존 → 시트가 화면 밖 고착 ② 자동 오픈이
+  rising edge뿐이라 닫은 후 재오픈 신호 없음. 수리: 핸들 touch-action none·onTouchCancel 정리·
+  left/rightSignal 카운터(탭·드래그마다 발신). 격리 7케이스 ✅. CI green·merge 7fdbd91·배포 success.
 - **🔧 바텀시트 ✕ 제거(2026-08-13, #994)** — 오너 지시. 닫기는 핸들(탭·스와이프)+바 재탭 전담.
   44px 절대배치 ✕가 좁은 핸들에 겹쳐 터치 가로채던 여지 동시 제거. CI green·merge 960a9a9·
   배포 success.
