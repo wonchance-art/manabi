@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
+import { computeHeadingLevels } from '../lib/headingHeuristics';
 import { useAuth } from '../lib/AuthContext';
 import { useToast } from '../lib/ToastContext';
 import Spinner from '../components/Spinner';
@@ -1233,38 +1234,9 @@ export default function ViewerPage() {
           // raw_text 줄 분리 (헤딩 감지 + showRaw 렌더 공용)
           const rawLines = material?.raw_text?.split('\n') ?? [];
 
-          // 헤딩 감지: 명시적 # 마크다운 또는 휴리스틱 자동 감지
-          const SENTENCE_END = /[。！？!?.…」』)）】\]》>~〜]$/;
+          // 헤딩 감지: 명시적 # 마크다운 또는 휴리스틱 자동 감지 (대사 오탐 가드 포함 — #988)
           const HEADING_CLASS = { 1: 'viewer-h1', 2: 'viewer-h2', 3: 'viewer-h3' };
-
-          const headingLevels = rawLines.map((line, idx) => {
-            const trimmed = line.trim();
-            if (!trimmed) return 0;
-
-            // 명시적 마크다운
-            const md = trimmed.match(/^(#{1,3})\s/);
-            if (md) return md[1].length;
-
-            const len = trimmed.length;
-            const nextLine = rawLines[idx + 1]?.trim() || '';
-            const prevLine = rawLines[idx - 1]?.trim() || '';
-            const endsWithPunctuation = SENTENCE_END.test(trimmed);
-
-            // 첫 줄이고 짧고 마침표 없으면 → h1 (제목)
-            if (idx === 0 && len <= 40 && !endsWithPunctuation) return 1;
-
-            // 짧은 줄 + 마침표 없음 + 앞이 빈줄(또는 첫줄) + 뒤에 긴 줄 → h2
-            if (len <= 30 && !endsWithPunctuation
-                && (!prevLine || prevLine === '')
-                && nextLine.length > len * 1.5) return 2;
-
-            // 좀 더 긴 짧은 줄 + 마침표 없음 + 앞 빈줄 → h3
-            if (len <= 50 && len > 1 && !endsWithPunctuation
-                && (!prevLine || prevLine === '')
-                && nextLine.length > len) return 3;
-
-            return 0;
-          });
+          const headingLevels = computeHeadingLevels(rawLines);
 
           function getHeadingLevel(lineText, lineIdx) {
             if (lineIdx != null && headingLevels[lineIdx] != null) return headingLevels[lineIdx];
