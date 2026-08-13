@@ -2047,6 +2047,44 @@ body.is-review-session .page-container { padding-top: 8px; }
   line-height: 2.2;
 }
 
+/* 문장 전체 지정 버튼 — 줄 왼쪽 여백에 절대배치, 본문 호버 시 은은히·버튼 호버 시 선명 */
+.line-pick-anchor {
+  position: relative;
+  display: inline-block;
+  /* 0폭이면 line-break(flex-basis 100%)와 같은 줄에 끼어 이전 줄 끝에 버튼이 붙는다 — 1px로 다음 줄 강제 */
+  width: 1px;
+  height: 1em;
+  vertical-align: bottom;
+}
+.line-pick {
+  position: absolute;
+  right: 6px;
+  bottom: -0.15em;
+  width: 26px;
+  height: 26px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
+  background: none;
+  color: var(--primary-light);
+  font-size: 0.7rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s, background 0.12s;
+}
+/* 호버가 있는 기기(데스크톱)에서만 — 모바일은 여백이 없고 호버도 없다 */
+@media (hover: hover) {
+  .line-pick { display: flex; }
+  .reader-area:hover .line-pick { opacity: 0.35; }
+  .line-pick:hover {
+    opacity: 1;
+    background: var(--primary-glow);
+    border-color: var(--primary);
+  }
+}
+
 .word-token--saved .surface {
   border-bottom: 2px solid var(--primary-light);
   opacity: 0.6;
