@@ -233,6 +233,7 @@ export default function ViewerPage() {
           grammarFollowUp, setGrammarFollowUp,
           grammarFollowLoading, analyzeGrammar,
           requestGrammarAnalysis, askFollowUp,
+          setSelectionPopup: setGrammarSelectionPopup,
           handleTextSelection: handleGrammarTextSelection } = grammar;
 
   const { data: savedWords = { byKey: new Map(), surfaces: new Set(), bases: new Set() } } = useQuery({
@@ -419,10 +420,24 @@ export default function ViewerPage() {
   const { popupWord, setPopupWord, handleDragWordClick } = useDragWordPopup(materialLang);
 
   const handleTextSelection = () => {
-    handleGrammarTextSelection(isGrammarModalOpen);
     setTimeout(async () => {
-      const sel = window.getSelection()?.toString()?.trim();
-      if (!sel || sel.length < 2) return;
+      const selObj = window.getSelection();
+      const sel = selObj?.toString()?.trim();
+      if (!sel || sel.length < 2) {
+        handleGrammarTextSelection(isGrammarModalOpen); // 선택 해제 → 문법 팝업 정리 경로
+        return;
+      }
+      // AI 발동은 본문 텍스트 선택에만 — 사이드 패널·AI 결과·기타 UI에서의 선택은 완전 무시
+      const reader = readerRef.current;
+      const inReader = (node) => {
+        if (!node || !reader) return false;
+        return reader.contains(node.nodeType === Node.TEXT_NODE ? node.parentNode : node);
+      };
+      if (!inReader(selObj.anchorNode) || !inReader(selObj.focusNode)) {
+        setGrammarSelectionPopup(null); // 이전 팝업이 남지 않게만 정리
+        return;
+      }
+      handleGrammarTextSelection(isGrammarModalOpen);
       await runSelectionAnalysis(sel);
     }, 100);
   };
@@ -1273,13 +1288,25 @@ export default function ViewerPage() {
             });
           }
 
-          const renderToken = (tokenId) => {
+          const renderToken = (tokenId, lineHeadText = null) => {
             const token = json.dictionary[tokenId];
             if (!token) return null;
+            // 줄 첫 토큰에만 문장 전체 지정 막대 — 한자와 같은 라인박스에 인라인으로 앉혀
+            // 루비(요미가나·병음) 유무와 무관하게 본문 글자 높이에 정렬된다.
+            const linePick = lineHeadText ? (
+              <button
+                className="line-pick"
+                aria-label="문장 전체 분석"
+                title="문장 전체 분석"
+                onMouseUp={e => e.stopPropagation()}
+                onClick={e => { e.stopPropagation(); runSelectionAnalysis(lineHeadText); }}
+              />
+            ) : null;
             if (token.failed) {
               return (
                 <div key={tokenId} ref={el => { if (el) tokenRefs.current[tokenId] = el; }}
                   className="word-token word-token--failed" title="분석 실패 — 재시도 버튼을 눌러주세요">
+                  {linePick}
                   <span className="furigana" />
                   <span className="surface">{token.text}</span>
                   <span className="failed-marker">!</span>
@@ -1297,6 +1324,7 @@ export default function ViewerPage() {
                 role="button" tabIndex={0}
                 onClick={() => handleTokenClick(token, tokenId)}
                 onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), handleTokenClick(token, tokenId))}>
+                {linePick}
                 {rubySegments ? (
                   <span className="surface">
                     {rubySegments.map((seg, i) =>
@@ -1321,7 +1349,7 @@ export default function ViewerPage() {
               return (
                 <span key={lineIdx} className={hClass || undefined} style={{ display: 'contents' }}>
                   {lineTokens?.length > 0
-                    ? lineTokens.map(renderToken)
+                    ? lineTokens.map(id => renderToken(id))
                     : line.trim()
                       ? <span className="word-token--raw">{line.trim().replace(/^#{1,3}\s/, '')}</span>
                       : null
@@ -1376,18 +1404,9 @@ export default function ViewerPage() {
 
             return (
               <span key={gi} className={hClass || undefined} style={{ display: 'contents' }}>
-                {lineText.length >= 2 && (
-                  <span className="line-pick-anchor">
-                    <button
-                      className="line-pick"
-                      aria-label="문장 전체 분석"
-                      title="문장 전체 분석"
-                      onMouseUp={e => e.stopPropagation()}
-                      onClick={() => runSelectionAnalysis(lineText)}
-                    />
-                  </span>
+                {lineTokenIds.slice(startIdx).map((id, ti) =>
+                  renderToken(id, ti === 0 && lineText.length >= 2 ? lineText : null)
                 )}
-                {lineTokenIds.slice(startIdx).map(renderToken)}
                 {gi < lineGroups.length - 1 && <div className="line-break" />}
               </span>
             );
