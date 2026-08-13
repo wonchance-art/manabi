@@ -475,6 +475,11 @@
 
 ## Claude (claude/*)
 ### doing
+- **🔧 문장 막대 한자 정렬·AI 발동 본문 제한(2026-08-13, #984)** — 오너 보고 2건. ① 막대가 rt(요미
+  가나) 중심에 감(실측 확증: 앵커 1em이 flex 줄 상단에 붙음) → 앵커 폐기, 줄 첫 토큰 안 인라인
+  (baseline 공유·음수 마진) — 한자 중심 1px 차 실측. ② 문장 선택 AI가 본문 밖(패널·AI 결과)에서도
+  발동 → selection anchor/focus가 reader-area 안일 때만(문법 팝업 포함). CI green·merge 94681d8·
+  배포 success.
 - **✨ 문장 지정 버튼 인용 막대화(2026-08-13, #982)** — 오너 피드백. ▸ 원형 → quote 4px 세로 막대
   (1.3em), 기본 완전 숨김·버튼 자리 호버 시만 표시(reader 호버 은은 규칙 삭제). 히트 22px 유지.
   align-self:stretch는 다중 줄 flex에서 앵커 단독 줄·높이 0 — inline-block 유지 교훈. 실렌더 스크린샷
