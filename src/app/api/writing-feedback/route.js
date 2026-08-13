@@ -9,7 +9,7 @@ import { attachTagLinks } from '@/lib/writingTagLink';
  * validateFeedback 검증까지 마친 결과만 돌려준다.
  */
 
-const GROQ_MODEL = 'qwen/qwen3-32b';
+const GROQ_MODEL = 'qwen/qwen3.6-27b'; // qwen3-32b는 Groq에서 퇴역(2026-08 실측)
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const MAX_TEXT = 600;
 const MAX_PROMPT = 200;
@@ -174,8 +174,8 @@ export async function POST(request) {
     // flash → flash-lite → Groq (Gemini 키 없으면 바로 Groq)
     let raw = null;
     if (apiKey) {
-      raw = await callGemini('gemini-2.5-flash', promptText, apiKey).catch(() => null);
-      if (!raw) raw = await callGemini('gemini-2.5-flash-lite', promptText, apiKey).catch(() => null);
+      raw = await callGemini('gemini-3.6-flash', promptText, apiKey).catch(() => null);
+      if (!raw) raw = await callGemini('gemini-3.5-flash-lite', promptText, apiKey).catch(() => null);
     }
     if (!raw) raw = await callGroqJson(promptText).catch(() => null);
 

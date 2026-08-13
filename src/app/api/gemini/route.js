@@ -4,10 +4,13 @@ import { requireAdmin } from '@/lib/server/auth';
 // ── 프록시 잠금(비용 남용 방지) ──
 // 클라가 고를 수 있는 모델 화이트리스트 — flash·flash-lite만(pro 등 고비용 모델 차단).
 const ALLOWED_MODELS = new Set([
+  'models/gemini-3.6-flash',
+  'models/gemini-3.5-flash-lite',
+  // 구버전 클라 번들 하위호환 — 배포 직후 캐시된 클라가 옛 모델명을 보낸다
   'models/gemini-2.5-flash',
   'models/gemini-2.5-flash-lite',
 ]);
-const DEFAULT_MODEL = 'models/gemini-2.5-flash';
+const DEFAULT_MODEL = 'models/gemini-3.6-flash';
 // 텍스트 파트 합계 바이트 상한. contents 전체가 아니라 text만 잰다 — PDF OCR 경로가
 // inline_data(base64 이미지, 수백 KB)를 이 프록시로 보내므로 이미지는 캡에서 제외해야
 // 회귀가 없다(pdfExtract.js). 32KB면 ReadingTest 발췌(2.5K자)·대화·긴 CJK 선택을 모두 통과.
@@ -15,9 +18,8 @@ const MAX_TEXT_BYTES = 32 * 1024;
 // 출력 토큰 서버 상한 — 관측된 최대 사용처(단어상세·독해문항·문단번역)보다 넉넉, 출력 폭주 차단.
 const MAX_OUTPUT_TOKENS = 8192;
 
-// Qwen 3 — CJK 언어에 강하고 instruct 모드라 빠름
-// Reasoning 버전이 아닌 function calling(instruct) 카테고리 버전 사용
-const GROQ_MODEL = 'qwen/qwen3-32b';
+// Qwen — CJK 언어에 강함. qwen3-32b는 Groq에서 퇴역(2026-08 목록 실측) — 승계 모델 사용
+const GROQ_MODEL = 'qwen/qwen3.6-27b';
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 /** Groq 호출 + Gemini 호환 응답 형식으로 변환 */
@@ -220,10 +222,10 @@ export async function POST(request) {
     });
     let data = await response.json();
 
-    // 폴백 1: 1차 실패 시 gemini-2.5-flash-lite 재시도 (더 가볍고 용량 여유 있음)
-    if (!response.ok && model !== 'models/gemini-2.5-flash-lite') {
+    // 폴백 1: 1차 실패 시 gemini-3.5-flash-lite 재시도 (더 가볍고 용량 여유 있음)
+    if (!response.ok && model !== 'models/gemini-3.5-flash-lite') {
       recordStat('fallbackUsed');
-      const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`;
+      const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`;
       response = await fetch(fallbackUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
