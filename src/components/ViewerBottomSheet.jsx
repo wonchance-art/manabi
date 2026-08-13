@@ -9,6 +9,10 @@ export default function ViewerBottomSheet({
   rightActive,
   leftBadge,
   rightBadge,
+  // 명시적 재오픈 신호(증가 카운터) — active는 한 번 켜지면 유지되므로 rising edge만으론
+  // "시트를 닫은 뒤 다른 단어를 탭"했을 때 다시 열 방법이 없다(#996 오너 보고).
+  leftSignal = 0,
+  rightSignal = 0,
 }) {
   const [leftOpen, setLeftOpen] = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
@@ -32,6 +36,13 @@ export default function ViewerBottomSheet({
     }
     prevRight.current = rightActive;
   }, [rightActive]);
+
+  useEffect(() => {
+    if (leftSignal > 0) { setLeftOpen(true); setSheetOpen(true); }
+  }, [leftSignal]);
+  useEffect(() => {
+    if (rightSignal > 0) { setRightOpen(true); setSheetOpen(true); }
+  }, [rightSignal]);
 
   // 재탭 = 닫기: 열려 있는 섹션의 버튼을 다시 탭하면 시트째 닫는다.
   // ("해당 섹션만 열려 있을 때"로 좁히면 문장 드래그(번역+단어 동시 오픈) 상황에서
@@ -65,6 +76,12 @@ export default function ViewerBottomSheet({
     if (sheetRef.current) sheetRef.current.style.transform = '';
     if (dy > 48) setSheetOpen(false);
   };
+  // 브라우저가 제스처를 가로채 touchcancel이 오면 이동값이 남아 시트가 화면 밖에
+  // 고착된다(#996 '고장' 증상) — 반드시 원위치로 정리.
+  const onHandleTouchCancel = () => {
+    dragY.current = null;
+    if (sheetRef.current) sheetRef.current.style.transform = '';
+  };
   // 시트·바 안의 터치가 뷰어 본문의 onMouseUp(문장 드래그 분석)으로 버블되면
   // 닫기 동작과 충돌한다 — 여기서 끊는다.
   const stopMouseUp = (e) => e.stopPropagation();
@@ -95,6 +112,7 @@ export default function ViewerBottomSheet({
             onTouchStart={onHandleTouchStart}
             onTouchMove={onHandleTouchMove}
             onTouchEnd={onHandleTouchEnd}
+            onTouchCancel={onHandleTouchCancel}
             onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), closeSheet())}>
             <div className="viewer-sheet__handle-bar" aria-hidden="true" />
           </div>
