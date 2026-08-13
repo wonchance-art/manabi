@@ -2025,10 +2025,11 @@ body.is-review-session .page-container { padding-top: 8px; }
   cursor: pointer;
 }
 
-/* ruby 후리가나 */
+/* ruby 후리가나·병음 */
 .word-token ruby {
   ruby-position: over;
   ruby-overhang: auto;
+  ruby-align: center;
 }
 .word-token rt {
   font-size: 0.5em;
@@ -2036,6 +2037,10 @@ body.is-review-session .page-container { padding-top: 8px; }
   font-weight: 400;
   opacity: 0.85;
   user-select: none;
+  /* 병음처럼 공백 포함 독음이 rt 안에서 접히면 글자 배열이 흔들린다 — 한 줄 고정 */
+  white-space: nowrap;
+  text-align: center;
+  letter-spacing: -0.03em;
 }
 /* ruby 유무 관계없이 줄 높이 통일 — rt absolute라 공간은 line-height로 확보 */
 .word-token .surface {
@@ -3927,6 +3932,14 @@ body.is-review-session .page-container { padding-top: 8px; }
   font-size: 0.9rem;
   min-width: 40px;
 }
+/* 드래그 단어 리스트의 독음(병음·후리가나·IPA) */
+.pdf-word-item__reading {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 400;
+  color: var(--primary-light);
+  line-height: 1.2;
+}
 .pdf-word-item__meaning {
   flex: 1;
   font-size: 0.78rem;
@@ -4369,6 +4382,20 @@ body.is-review-session .page-container { padding-top: 8px; }
   @keyframes viewerSheetUp {
     from { transform: translateY(100%); }
     to { transform: translateY(0); }
+  }
+}
+
+/* 폰 — 뷰어 본문 가독 폭 최대화: viewer-center 24px×2 + reader-area 40px×2 여백이
+   375px 화면에서 본문을 245px(65%)로 줄였다. 카드를 풀블리드로 펴서 351px(94%) 확보. */
+@media (max-width: 767px) {
+  .viewer-center { padding: 12px 12px 72px; }
+  .reader-area {
+    margin-left: -12px;
+    margin-right: -12px;
+    border-left: none;
+    border-right: none;
+    border-radius: 0;
+    padding: 24px 12px;
   }
 }
 
