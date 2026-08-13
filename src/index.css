@@ -2080,10 +2080,23 @@ body.is-review-session .page-container { padding-top: 8px; }
   border-radius: 2px;
   background: var(--primary-light);
 }
-/* 호버가 있는 기기(데스크톱)에서만 — 기본은 완전 숨김, 버튼 자리에 마우스가 오면 표시 */
+/* 호버가 있는 기기(데스크톱) — 기본은 완전 숨김, 버튼 자리에 마우스가 오면 표시 */
 @media (hover: hover) {
   .line-pick { display: inline-flex; }
   .line-pick:hover { opacity: 1; }
+}
+/* 호버 없는 기기(모바일) — 호버로 부를 수 없고 왼쪽 여백도 없으므로,
+   각 줄 첫 글자 앞 인라인 자리에 상시 은은하게 표시(#1000 오너 보고). */
+@media (hover: none) {
+  .line-pick {
+    display: inline-flex;
+    opacity: 0.45;
+    margin-left: 0;
+    margin-right: 3px;
+    width: 15px;
+    justify-content: flex-start;
+  }
+  .line-pick:active { opacity: 1; }
 }
 
 .word-token--saved .surface {
