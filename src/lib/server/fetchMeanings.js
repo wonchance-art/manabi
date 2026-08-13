@@ -1,6 +1,7 @@
 // 서버 전용 — 미싱 형태소들의 의미를 Gemini에 배치 요청
 
-const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+// 뜻 조회는 단순 구조화 작업 — thinking 없는 flash-lite가 4배 빠르고 품질 동등(실측 배치당 12.7s→3.2s)
+const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent';
 
 function buildMeaningBatchPrompt(entries, language = 'Japanese') {
   if (language === 'English') return buildEnglishMeaningBatchPrompt(entries);
@@ -126,7 +127,7 @@ export async function fetchMeaningsForMissing(missing, language, supabase, opts 
         },
         signal: AbortSignal.timeout(15_000),
         body: JSON.stringify({
-          model: 'qwen/qwen3-32b',
+          model: 'qwen/qwen3.6-27b', // qwen3-32b는 Groq에서 퇴역(2026-08 목록 실측) — 승계 모델
           messages: [{ role: 'user', content: prompt }],
           temperature: 0,
           stream: false,

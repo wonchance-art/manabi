@@ -1,4 +1,4 @@
-export const GEMINI_MODEL = 'models/gemini-2.5-flash';
+export const GEMINI_MODEL = 'models/gemini-3.6-flash';
 
 async function callGeminiOnce(prompt, signal, { model, ...generationConfig } = {}) {
   // Supabase 세션 토큰 첨부 (서버 측 인증용)

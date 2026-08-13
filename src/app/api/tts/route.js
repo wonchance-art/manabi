@@ -1,11 +1,11 @@
 /**
- * 고품질 TTS 프록시 — Gemini TTS (gemini-2.5-flash-preview-tts)
+ * 고품질 TTS 프록시 — Gemini TTS (gemini-3.1-flash-tts-preview)
  * GET /api/tts?text=...&lang=Japanese|English|French
  * 응답: audio/wav (PCM 24kHz mono → WAV 래핑), 불변 캐시 헤더로 CDN·브라우저 캐싱.
  * 실패 시 클라이언트(useTTS)가 브라우저 내장 음성으로 폴백.
  */
 
-const TTS_MODEL = 'models/gemini-2.5-flash-preview-tts';
+const TTS_MODEL = 'models/gemini-3.1-flash-tts-preview'; // 2.5-preview-tts 승계 — 동일 요청·PCM 응답 실측
 
 // 언어별 프리셋 음성 (Gemini prebuilt voices)
 const VOICES = {

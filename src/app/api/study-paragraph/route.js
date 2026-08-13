@@ -13,7 +13,7 @@ import { assembleStudyMaterials, deriveArc } from '@/lib/studyMaterials';
  *    직접 조립해 생성·저장('prefetched')하고 { ok, preview }만 응답(다음 세션 즉시 시작용).
  */
 
-const GROQ_MODEL = 'qwen/qwen3-32b';
+const GROQ_MODEL = 'qwen/qwen3.6-27b'; // qwen3-32b는 Groq에서 퇴역(2026-08 실측)
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 const rateLimitMap = new Map();
@@ -95,8 +95,8 @@ function parseModelJson(text) {
 async function generateOnce(promptText, apiKey) {
   let raw = null;
   if (apiKey) {
-    raw = await callGemini('gemini-2.5-flash', promptText, apiKey).catch(() => null);
-    if (!raw) raw = await callGemini('gemini-2.5-flash-lite', promptText, apiKey).catch(() => null);
+    raw = await callGemini('gemini-3.6-flash', promptText, apiKey).catch(() => null);
+    if (!raw) raw = await callGemini('gemini-3.5-flash-lite', promptText, apiKey).catch(() => null);
   }
   if (!raw) raw = await callGroqJson(promptText).catch(() => null);
   const validated = validateParagraph(parseModelJson(raw));
