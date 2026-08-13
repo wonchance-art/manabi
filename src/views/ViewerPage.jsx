@@ -376,6 +376,7 @@ export default function ViewerPage() {
     setIsSheetOpen(true);
     setDragTokens(null);
     setWordDetail(null);
+    setRightSheetSignal(s => s + 1);
     if (settings.autoSpeakOnClick && ttsSupported && t.text) {
       speak(t.text, materialLang);
     }
@@ -412,6 +413,11 @@ export default function ViewerPage() {
   const [dragTokens, setDragTokens] = useState(null); // null이면 단일 클릭 모드
   const [dragAnalyzing, setDragAnalyzing] = useState(false);
 
+  // 모바일 시트 재오픈 신호 — active 유지 상태에선 rising edge가 없어, 시트를 닫은 뒤
+  // 다른 단어를 탭해도 시트가 다시 안 올라온다(#996). 탭·드래그 때마다 카운터를 올린다.
+  const [leftSheetSignal, setLeftSheetSignal] = useState(0);
+  const [rightSheetSignal, setRightSheetSignal] = useState(0);
+
   // 리딩 테스트
   const [showReadingTest, setShowReadingTest] = useState(false);
   // 회화 연습
@@ -445,6 +451,8 @@ export default function ViewerPage() {
 
   // 드래그 선택·문장 버튼 공용 — 왼쪽 번역+맥락, 오른쪽 단어 리스트 분석
   const runSelectionAnalysis = async (sel) => {
+    setLeftSheetSignal(s => s + 1);
+    setRightSheetSignal(s => s + 1);
     {
       // 왼쪽: 번역+맥락
       setLeftPanelText(sel);
@@ -1492,6 +1500,8 @@ export default function ViewerPage() {
         rightActive={dragTokens !== null || (selectedToken && isSheetOpen)}
         leftBadge={leftPanelLoading ? '생성 중' : null}
         rightBadge={selectedToken?.text || (dragTokens ? `${dragTokens.length}개` : null)}
+        leftSignal={leftSheetSignal}
+        rightSignal={rightSheetSignal}
       />
 
       <ViewerGrammarModal

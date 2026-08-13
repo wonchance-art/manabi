@@ -4408,6 +4408,9 @@ body.is-review-session .page-container { padding-top: 8px; }
     padding: 10px 16px 8px;
     border-bottom: 1px solid var(--border);
     cursor: pointer;
+    /* 핸들 드래그를 브라우저 스크롤·당겨서 새로고침에 뺏기지 않게 — 뺏기면 touchcancel로
+       스와이프 판정이 죽고 이동값이 남아 시트가 고착된다(#996) */
+    touch-action: none;
   }
   .viewer-sheet__handle-bar {
     width: 40px;
