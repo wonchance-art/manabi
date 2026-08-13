@@ -1852,6 +1852,9 @@ body.is-review-session .page-container { padding-top: 8px; }
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
+  /* 토큰(flex item)은 루비 내용(성조 부호 유무 등)에 따라 높이가 제각각 — 상자 기준 정렬이면
+     기호·무루비 토큰의 글자가 위로 떠 줄이 삐뚤빼뚤해진다(#990). 본문 글자 기준선으로 정렬. */
+  align-items: baseline;
 }
 
 .reader-area--dark  { background: rgba(255,255,255,0.03); }
