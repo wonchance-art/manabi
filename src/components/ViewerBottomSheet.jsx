@@ -97,7 +97,6 @@ export default function ViewerBottomSheet({
             onTouchEnd={onHandleTouchEnd}
             onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), closeSheet())}>
             <div className="viewer-sheet__handle-bar" aria-hidden="true" />
-            <button className="viewer-sheet__close" onClick={closeSheet} aria-label="닫기">✕</button>
           </div>
 
           <div className="viewer-sheet__sections">

@@ -4416,22 +4416,8 @@ body.is-review-session .page-container { padding-top: 8px; }
     background: var(--border);
     margin: 0 auto;
   }
-  .viewer-sheet__close {
-    position: absolute;
-    top: 0;
-    right: 4px;
-    background: none;
-    border: none;
-    font-size: 1rem;
-    color: var(--text-muted);
-    cursor: pointer;
-    /* 44px 터치 타깃 */
-    min-width: 44px;
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+  /* ✕ 버튼 제거(#994 오너 지시) — 핸들(탭·스와이프)과 바 버튼 재탭이 닫기 전담.
+     44px 절대배치 ✕가 핸들 위에 겹쳐 터치를 가로채던 여지도 함께 제거. */
   .viewer-sheet__sections {
     overflow-y: auto;
     flex: 1;
