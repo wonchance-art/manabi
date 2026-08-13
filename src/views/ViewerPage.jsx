@@ -129,6 +129,17 @@ function splitRuby(text, furigana) {
   const KANJI = /[\u4E00-\u9FFF\u3400-\u4DBF\uF900-\uFAFF]/;
   const isKanji = ch => KANJI.test(ch);
 
+  // 중국어 병음: 공백 구분 라틴 음절이 글자 수와 일치하면 글자별로 분배.
+  // 단어 전체에 통째로 붙이면 rt가 base보다 훨씬 넓어져(图书馆 3자 vs tú shū guǎn 11자)
+  // 글자 간격이 벌어진다 — 글자당 음절이 표준 병음 조판. 일본어 후리가나(가나)는 여기 안 걸린다.
+  const zhChars = [...text];
+  if (furigana.includes(' ') && !/[぀-ヿ]/.test(furigana) && zhChars.every(isKanji)) {
+    const syllables = furigana.trim().split(/\s+/);
+    if (syllables.length === zhChars.length) {
+      return zhChars.map((ch, i) => ({ kanji: ch, reading: syllables[i] }));
+    }
+  }
+
   // 1. surface를 [kanji 구간, hira 구간, ...] 으로 분할
   const segments = [];
   let i = 0;
@@ -730,7 +741,10 @@ export default function ViewerPage() {
         const saveKey = t.base_form || t.text;
         return (
           <div key={i} className={`pdf-word-item ${isSaved ? 'pdf-word-item--saved' : ''}`}>
-            <span className="pdf-word-item__text" onClick={() => handleDragWordClick(t)}>{t.text}</span>
+            <span className="pdf-word-item__text" onClick={() => handleDragWordClick(t)}>
+              {t.text}
+              {t.furigana && <span className="pdf-word-item__reading">{t.furigana}</span>}
+            </span>
             <span className="pdf-word-item__meaning" onClick={() => handleDragWordClick(t)}>{t.meaning}</span>
             {user && (
               <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
