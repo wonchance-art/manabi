@@ -1384,7 +1384,7 @@ export default function ViewerPage() {
                       title="문장 전체 분석"
                       onMouseUp={e => e.stopPropagation()}
                       onClick={() => runSelectionAnalysis(lineText)}
-                    >▸</button>
+                    />
                   </span>
                 )}
                 {lineTokenIds.slice(startIdx).map(renderToken)}
