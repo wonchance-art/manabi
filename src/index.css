@@ -2051,12 +2051,14 @@ body.is-review-session .page-container { padding-top: 8px; }
    절대배치(앵커)는 루비(요미가나·병음) 줄에서 rt 높이 쪽으로 어긋났다(#984 실측) — 인라인이 정답.
    음수 마진(-28+6=-22=폭 상쇄)으로 본문을 밀지 않고 왼쪽 여백에 나간다. */
 .line-pick {
-  /* 히트 영역은 넓게, 시각은 ::before의 얇은 인용 막대만 */
+  /* 히트 영역은 넓게, 시각은 ::before의 얇은 인용 막대만.
+     높이는 요미가나(rt) 상단~한자 하단 전체 커버(실측 1.55em + -0.18em 시프트). */
   width: 22px;
-  height: 1.2em;
+  height: 1.55em;
   margin-left: -28px;
   margin-right: 6px;
   vertical-align: middle;
+  transform: translateY(-0.18em);
   display: none;
   align-items: center;
   justify-content: flex-end;
