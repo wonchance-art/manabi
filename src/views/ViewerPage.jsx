@@ -423,7 +423,13 @@ export default function ViewerPage() {
     setTimeout(async () => {
       const sel = window.getSelection()?.toString()?.trim();
       if (!sel || sel.length < 2) return;
+      await runSelectionAnalysis(sel);
+    }, 100);
+  };
 
+  // 드래그 선택·문장 버튼 공용 — 왼쪽 번역+맥락, 오른쪽 단어 리스트 분석
+  const runSelectionAnalysis = async (sel) => {
+    {
       // 왼쪽: 번역+맥락
       setLeftPanelText(sel);
       setLeftPanelLoading(true);
@@ -498,7 +504,7 @@ export default function ViewerPage() {
           setDragAnalyzing(false);
         })(),
       ]);
-    }, 100);
+    }
   };
 
 
@@ -1364,8 +1370,23 @@ export default function ViewerPage() {
             // 명시적 # 토큰 스킵
             const startIdx = mdLevel;
 
+            // 문장 전체 지정 버튼용 원문 — rawLines가 어긋나면 토큰 표면형으로 폴백
+            const lineText = (rawLines[rawIdx] ?? '').trim().replace(/^#{1,3}\s/, '')
+              || lineTokenIds.slice(startIdx).map(id => json.dictionary[id]?.text || '').join('').trim();
+
             return (
               <span key={gi} className={hClass || undefined} style={{ display: 'contents' }}>
+                {lineText.length >= 2 && (
+                  <span className="line-pick-anchor">
+                    <button
+                      className="line-pick"
+                      aria-label="문장 전체 분석"
+                      title="문장 전체 분석"
+                      onMouseUp={e => e.stopPropagation()}
+                      onClick={() => runSelectionAnalysis(lineText)}
+                    >▸</button>
+                  </span>
+                )}
                 {lineTokenIds.slice(startIdx).map(renderToken)}
                 {gi < lineGroups.length - 1 && <div className="line-break" />}
               </span>
