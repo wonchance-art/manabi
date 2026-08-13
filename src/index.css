@@ -2047,23 +2047,16 @@ body.is-review-session .page-container { padding-top: 8px; }
   line-height: 2.2;
 }
 
-/* 문장 전체 지정 버튼 — 줄 왼쪽 여백에 절대배치, 본문 호버 시 은은히·버튼 호버 시 선명 */
-.line-pick-anchor {
-  position: relative;
-  display: inline-block;
-  /* 0폭이면 line-break(flex-basis 100%)와 같은 줄에 끼어 이전 줄 끝에 버튼이 붙는다 — 1px로 다음 줄 강제.
-     align-self: stretch는 다중 줄 flex에서 앵커가 단독 줄로 빠져 높이 0이 된다 — inline-block 고정 높이가 정답 */
-  width: 1px;
-  height: 1em;
-  vertical-align: bottom;
-}
+/* 문장 전체 지정 막대 — 줄 첫 토큰 안에 인라인으로 앉혀 한자와 라인박스·baseline을 공유.
+   절대배치(앵커)는 루비(요미가나·병음) 줄에서 rt 높이 쪽으로 어긋났다(#984 실측) — 인라인이 정답.
+   음수 마진(-28+6=-22=폭 상쇄)으로 본문을 밀지 않고 왼쪽 여백에 나간다. */
 .line-pick {
-  position: absolute;
-  right: 2px;
-  bottom: -0.1em;
   /* 히트 영역은 넓게, 시각은 ::before의 얇은 인용 막대만 */
   width: 22px;
-  height: 1.3em;
+  height: 1.2em;
+  margin-left: -28px;
+  margin-right: 6px;
+  vertical-align: middle;
   display: none;
   align-items: center;
   justify-content: flex-end;
@@ -2071,6 +2064,7 @@ body.is-review-session .page-container { padding-top: 8px; }
   background: none;
   padding: 0;
   cursor: pointer;
+  font-size: inherit; /* 버튼 UA 폰트가 em 기준을 깨뜨리지 않게 */
   opacity: 0;
   transition: opacity 0.12s;
 }
@@ -2083,7 +2077,7 @@ body.is-review-session .page-container { padding-top: 8px; }
 }
 /* 호버가 있는 기기(데스크톱)에서만 — 기본은 완전 숨김, 버튼 자리에 마우스가 오면 표시 */
 @media (hover: hover) {
-  .line-pick { display: flex; }
+  .line-pick { display: inline-flex; }
   .line-pick:hover { opacity: 1; }
 }
 
