@@ -4358,14 +4358,17 @@ body.is-review-session .page-container { padding-top: 8px; }
     border-top: 1px solid var(--border);
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     box-shadow: 0 -8px 32px rgba(0,0,0,0.18);
-    z-index: 110;
+    /* 하단 바(z-index 100) 아래 — 시트가 바를 덮으면 바 버튼 재탭으로 닫기가 안 먹힌다(버튼 충돌) */
+    z-index: 95;
     animation: viewerSheetUp 0.22s ease-out;
-    padding-bottom: env(safe-area-inset-bottom);
+    /* 바 높이만큼 비워 시트 콘텐츠가 바 뒤에 가리지 않게 */
+    padding-bottom: calc(60px + env(safe-area-inset-bottom));
   }
   .viewer-sheet__handle {
     position: relative;
     padding: 10px 16px 8px;
     border-bottom: 1px solid var(--border);
+    cursor: pointer;
   }
   .viewer-sheet__handle-bar {
     width: 40px;
@@ -4376,14 +4379,19 @@ body.is-review-session .page-container { padding-top: 8px; }
   }
   .viewer-sheet__close {
     position: absolute;
-    top: 6px;
-    right: 10px;
+    top: 0;
+    right: 4px;
     background: none;
     border: none;
     font-size: 1rem;
     color: var(--text-muted);
     cursor: pointer;
-    padding: 6px 10px;
+    /* 44px 터치 타깃 */
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .viewer-sheet__sections {
     overflow-y: auto;
