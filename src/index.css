@@ -3639,10 +3639,50 @@ body.is-review-session .page-container { padding-top: 8px; }
     color: var(--primary-light);
   }
 
-  .viewer-settings__left,
+  /* 읽기 설정 정렬 — 슬라이더는 라벨 왼쪽·컨트롤 오른쪽 풀폭 행, 버튼은 2열 그리드 */
+  .viewer-settings__left {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .viewer-settings__left .settings-control {
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .viewer-settings__left .settings-range {
+    flex: 1;
+    min-width: 0;
+    width: auto;
+  }
+  .viewer-settings__left .settings-select {
+    width: 100%;
+  }
   .viewer-settings__right {
-    flex-wrap: wrap;
-    gap: 10px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .viewer-settings__right .theme-btns {
+    grid-column: 1 / -1;
+    justify-content: center;
+    padding: 2px 0;
+  }
+  .viewer-settings__right .grammar-btn {
+    width: 100%;
+    padding: 10px 8px;
+    font-size: 0.82rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+  }
+  .viewer-settings__right > div .grammar-btn {
+    width: 100%;
+  }
+  .viewer-settings__right .study-textlink {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 6px 0;
   }
 
   .viewer-settings-bar {
