@@ -39,3 +39,31 @@ describe('중국어 토큰화', () => {
     expect(tokenizeZhLine('   ')).toEqual([]);
   });
 });
+
+// 문맥 병음(#1004): 줄 전체를 pinyin-pro에 넘겨 다음자·성조 변조를 문장 문맥으로 처리한다.
+// (단어별 호출의 실측 오류: 不对→bù(변조 누락), 走了→liǎo(오독))
+describe('문맥 병음 — 다음자·변조', () => {
+  const pyOf = (line, word) => tokenizeZhLine(line).find((t) => t.text === word)?.furigana;
+
+  it('성조 변조: 不对 → bú duì', () => {
+    expect(pyOf('这个不对。', '不对') ?? pyOf('这个不对。', '不')).toMatch(/^bú/);
+  });
+
+  it('어기조사 了: 吃了 → le (liǎo 오독 금지)', () => {
+    const toks = tokenizeZhLine('他吃了饭。');
+    const withLe = toks.find((t) => t.text.includes('了'));
+    expect(withLe.furigana).toContain('le');
+    expect(withLe.furigana).not.toContain('liǎo');
+  });
+
+  it('还没 → hái 유지', () => {
+    const toks = tokenizeZhLine('我还没吃饭。');
+    expect(toks.find((t) => t.text === '还')?.furigana).toBe('hái');
+  });
+
+  it('공백 섞인 줄에서도 글자-병음 정렬이 어긋나지 않는다', () => {
+    const toks = tokenizeZhLine('你好 世界。');
+    expect(toks.find((t) => t.text === '你好')?.furigana).toBe('nǐ hǎo');
+    expect(toks.find((t) => t.text === '世界')?.furigana).toBe('shì jiè');
+  });
+});

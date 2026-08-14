@@ -30,15 +30,36 @@ const PUNCT = /^[\s。、，．！？!?,.:;：；""''「」『』（）()【】�
 export function tokenizeZhLine(line) {
   if (!line || !line.trim()) return [];
   const tagged = jiebaTag(line, true);
+
+  // 병음은 단어별이 아니라 줄 전체를 한 번에 — pinyin-pro가 문장 문맥으로 다음자·성조
+  // 변조를 처리한다(단어별 호출은 不对→bù(변조 누락)·走了→liǎo(오독) 등 실측 오류, #1004).
+  // type:'all'은 줄의 모든 문자를 순서대로 돌려주므로 글자 수만큼 소비해 토큰에 재분배한다.
+  const perChar = pinyin(line, { toneType: 'symbol', type: 'all' });
+  let ci = 0;
+  // 토큰 글자를 perChar의 origin과 맞춰 소비 — jieba가 건너뛰는 문자(공백 등)가 있어도
+  // 정렬이 어긋나지 않게 매칭될 때까지 전진한다. 매칭 실패 시 단어 단위 폴백.
+  const takeSyllables = (chars) => {
+    const out = [];
+    for (const ch of chars) {
+      while (ci < perChar.length && perChar[ci].origin !== ch) ci++;
+      if (ci >= perChar.length) return null;
+      out.push(perChar[ci].pinyin || '');
+      ci++;
+    }
+    return out;
+  };
+
   const tokens = [];
   for (const { word, tag } of tagged) {
     const text = word;
     if (!text) continue;
     const isPunct = PUNCT.test(text) || tag === 'x' || tag === 'w';
+    const chars = [...text];
+    const syllables = (takeSyllables(chars) ?? [pinyin(text, { toneType: 'symbol', type: 'string' })]).filter(Boolean);
     tokens.push({
       text,
       base_form: text,                       // 중국어는 굴절이 없다 — 표면형이 곧 표제어
-      furigana: isPunct || !HAS_HANZI.test(text) ? '' : pinyin(text, { toneType: 'symbol', type: 'string' }),
+      furigana: isPunct || !HAS_HANZI.test(text) ? '' : syllables.join(' '),
       pos: isPunct ? '기호' : (POS_KO[tag] ?? null),
     });
   }
