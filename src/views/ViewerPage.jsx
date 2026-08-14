@@ -376,6 +376,7 @@ export default function ViewerPage() {
     setIsSheetOpen(true);
     setDragTokens(null);
     setWordDetail(null);
+    setPickedLineIdx(null);
     setRightSheetSignal(s => s + 1);
     if (settings.autoSpeakOnClick && ttsSupported && t.text) {
       speak(t.text, materialLang);
@@ -418,6 +419,9 @@ export default function ViewerPage() {
   const [leftSheetSignal, setLeftSheetSignal] = useState(0);
   const [rightSheetSignal, setRightSheetSignal] = useState(0);
 
+  // 문장 막대로 지정한 줄 — 해당 줄 전체에 지정 이펙트(#1002). 단어 클릭·드래그 시 해제.
+  const [pickedLineIdx, setPickedLineIdx] = useState(null);
+
   // 리딩 테스트
   const [showReadingTest, setShowReadingTest] = useState(false);
   // 회화 연습
@@ -445,6 +449,7 @@ export default function ViewerPage() {
         return;
       }
       handleGrammarTextSelection(isGrammarModalOpen);
+      setPickedLineIdx(null); // 드래그 선택은 브라우저 하이라이트가 담당 — 막대 지정 이펙트 해제
       await runSelectionAnalysis(sel);
     }, 100);
   };
@@ -1278,24 +1283,29 @@ export default function ViewerPage() {
             });
           }
 
-          const renderToken = (tokenId, lineHeadText = null) => {
+          const renderToken = (tokenId, lineHead = null, picked = false) => {
             const token = json.dictionary[tokenId];
             if (!token) return null;
+            const pickedClass = picked ? ' word-token--picked' : '';
             // 줄 첫 토큰에만 문장 전체 지정 막대 — 한자와 같은 라인박스에 인라인으로 앉혀
             // 루비(요미가나·병음) 유무와 무관하게 본문 글자 높이에 정렬된다.
-            const linePick = lineHeadText ? (
+            const linePick = lineHead ? (
               <button
                 className="line-pick"
                 aria-label="문장 전체 분석"
                 title="문장 전체 분석"
                 onMouseUp={e => e.stopPropagation()}
-                onClick={e => { e.stopPropagation(); runSelectionAnalysis(lineHeadText); }}
+                onClick={e => {
+                  e.stopPropagation();
+                  setPickedLineIdx(lineHead.rawIdx); // 문장 전체 지정 이펙트
+                  runSelectionAnalysis(lineHead.text);
+                }}
               />
             ) : null;
             if (token.failed) {
               return (
                 <div key={tokenId} ref={el => { if (el) tokenRefs.current[tokenId] = el; }}
-                  className="word-token word-token--failed" title="분석 실패 — 재시도 버튼을 눌러주세요">
+                  className={`word-token word-token--failed${pickedClass}`} title="분석 실패 — 재시도 버튼을 눌러주세요">
                   {linePick}
                   <span className="furigana" />
                   <span className="surface">{token.text}</span>
@@ -1310,7 +1320,7 @@ export default function ViewerPage() {
               : null;
             return (
               <div key={tokenId} ref={el => { if (el) tokenRefs.current[tokenId] = el; }}
-                className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}`}
+                className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}${pickedClass}`}
                 role="button" tabIndex={0}
                 onClick={() => handleTokenClick(token, tokenId)}
                 onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), handleTokenClick(token, tokenId))}>
@@ -1392,10 +1402,12 @@ export default function ViewerPage() {
             const lineText = (rawLines[rawIdx] ?? '').trim().replace(/^#{1,3}\s/, '')
               || lineTokenIds.slice(startIdx).map(id => json.dictionary[id]?.text || '').join('').trim();
 
+            const isPicked = pickedLineIdx === rawIdx;
+
             return (
               <span key={gi} className={hClass || undefined} style={{ display: 'contents' }}>
                 {lineTokenIds.slice(startIdx).map((id, ti) =>
-                  renderToken(id, ti === 0 && lineText.length >= 2 ? lineText : null)
+                  renderToken(id, ti === 0 && lineText.length >= 2 ? { text: lineText, rawIdx } : null, isPicked)
                 )}
                 {gi < lineGroups.length - 1 && <div className="line-break" />}
               </span>
