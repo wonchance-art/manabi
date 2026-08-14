@@ -167,7 +167,11 @@ export async function POST(request) {
         sequence.push(tokenId);
         const cached = cache.get(t.base_form);
         const meaning = cached?.meanings?.[0]?.meaning || '';
-        const rawReading = cached?.reading || t.furigana || null;
+        // 중국어 병음은 토크나이저가 문장 문맥(다음자·변조)으로 산출 — 캐시(첫 문맥의 병음)가
+        // 덮으면 문맥이 박제된다(#1004). 일본어는 Gemini 맥락 reading이 캐시에 있어 캐시 우선 유지.
+        const rawReading = (language === 'Chinese'
+          ? (t.furigana || cached?.reading)
+          : (cached?.reading || t.furigana)) || null;
         dictionary[tokenId] = {
           text: t.text,
           furigana: cleanFurigana(t.text, rawReading),
