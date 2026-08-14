@@ -475,6 +475,12 @@
 
 ## Claude (claude/*)
 ### doing
+- **🇨🇳 병음 문장 맥락화(2026-08-14, #1004)** — 오너 질문(맥락 반영 여부·다음자 처리). 진단:
+  단어별 pinyin 호출로 문맥 미반영(不对→bù·走了→liǎo 실측 오류) + 캐시 reading 우선이라 첫 문맥
+  병음 박제. 수리: 줄 전체 pinyin(type:all)→origin 매칭 재분배(공백 정렬 안전·폴백), route는
+  중국어만 토크나이저 병음 우선(ja는 Gemini 캐시 유지). 개선 실측 不对→bú·吃了→le·박제 해소.
+  잔여 한계(还书 huán 등)=pinyin-pro 판정 수준 기록. 유닛 10(변이 red)·vitest 2,647·CI green·
+  merge 298fc03·배포 success.
 - **✨ 문장 막대 지정 이펙트(2026-08-14, #1002)** — 오너 요청(첫 단어만 지정처럼 보임). pickedLineIdx
   상태 — 막대 탭 시 줄 전체 토큰 하이라이트(자간 gap은 그림자로 이어붙임)·막대 선명 고정, 단어
   클릭·드래그 시 해제, line-pick tap-highlight 투명화. 격리 실렌더 확증. CI green·merge 75ae1ea·
