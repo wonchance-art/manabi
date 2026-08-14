@@ -2072,6 +2072,8 @@ body.is-review-session .page-container { padding-top: 8px; }
   font-size: inherit; /* 버튼 UA 폰트가 em 기준을 깨뜨리지 않게 */
   opacity: 0;
   transition: opacity 0.12s;
+  /* 탭 시 첫 단어에 시스템 하이라이트가 얹혀 '단어 하나만 지정'처럼 보이는 것 방지 */
+  -webkit-tap-highlight-color: transparent;
 }
 .line-pick::before {
   content: '';
@@ -2097,6 +2099,16 @@ body.is-review-session .page-container { padding-top: 8px; }
     justify-content: flex-start;
   }
   .line-pick:active { opacity: 1; }
+}
+
+/* 문장 막대로 지정된 줄 — 줄 전체가 선택된 느낌(자간 gap이 있어 그림자로 이어 붙인다) */
+.word-token--picked .surface {
+  background: var(--primary-glow);
+  border-radius: 4px;
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+.word-token--picked .line-pick {
+  opacity: 1;
 }
 
 .word-token--saved .surface {
