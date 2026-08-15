@@ -1,4 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
 import {
   collectZhPosMarks,
   disambiguateZhPos,
@@ -6,6 +8,7 @@ import {
   pickZhMeaning,
   needsZhMeaningPosRefresh,
   buildZhPosWriteback,
+  splitZhToken,
   zhPosMarkKey,
 } from '../disambiguateZhPos.js';
 
@@ -40,6 +43,20 @@ describe('collectZhPosMarks — 판별 대상 수집', () => {
     const cache = new Map([['笔在', { pos: '기호' }]]);
     const lines = [{ tokens: [tok('笔在', null)] }];
     expect(collectZhPosMarks(lines, cache).map((m) => m.word)).toEqual(['笔在']);
+  });
+
+  it('품사 단서 없는 다자 토큰만 단어성 판정(oov) 대상이다', () => {
+    const lines = [{
+      tokens: [
+        tok('笔在', null),          // 미상 다자 → oov
+        tok('宗', null),            // 미상 1자 → 판정 불필요
+        tok('计划', '명사'),         // 품사 있음 → 일반 마크
+      ],
+    }];
+    const marks = collectZhPosMarks(lines, new Map());
+    expect(marks.find((m) => m.word === '笔在')?.oov).toBe(true);
+    expect(marks.find((m) => m.word === '宗')?.oov).toBeUndefined();
+    expect(marks.find((m) => m.word === '计划')?.oov).toBeUndefined();
   });
 
   it('캐시 pos가 다중(·)이면 jieba 태그와 무관하게 마크한다', () => {
@@ -101,6 +118,58 @@ describe('disambiguateZhPos — Gemini 문맥 판별', () => {
     await disambiguateZhPos(lines, marks);
     expect(sentPrompt).toContain('我计划去北京。');
     expect(sentPrompt).toContain('"工作" (문장 2)');
+  });
+
+  // 단어성 판정·분리 — 우연 병합(笔在)만 분해하고 실단어 신조어(社恐)는 유지한다.
+  describe('OOV 단어성 판정(split)', () => {
+    const oovMarks = [
+      { lineIdx: 0, word: '笔在', key: zhPosMarkKey(0, '笔在'), oov: true },
+      { lineIdx: 0, word: '社恐', key: zhPosMarkKey(0, '社恐'), oov: true },
+    ];
+    const oovLines = ['笔在桌子上,他有社恐。'];
+
+    it('oov 마크에만 [단어성 판정] 표시가 붙는다', async () => {
+      let sentPrompt = '';
+      vi.stubGlobal('fetch', vi.fn(async (url, opts) => {
+        sentPrompt = JSON.parse(opts.body).contents[0].parts[0].text;
+        return geminiText([{ all: [], pos: null }, { all: ['명사'], pos: '명사' }]);
+      }));
+      await disambiguateZhPos(oovLines, oovMarks);
+      expect(sentPrompt).toContain('"笔在" (문장 1) [단어성 판정]');
+      expect(sentPrompt).toContain('"社恐" (문장 1) [단어성 판정]');
+    });
+
+    it('유효한 분해는 parts로 저장, 실단어 verdict는 pos 경로로 저장한다', async () => {
+      vi.stubGlobal('fetch', vi.fn(async () => geminiText([
+        { all: [], pos: null, split: [{ t: '笔', pos: '명사' }, { t: '在', pos: '전치사' }] },
+        { all: ['명사'], pos: '명사' },
+      ])));
+      const picks = await disambiguateZhPos(oovLines, oovMarks);
+      expect(picks.get(zhPosMarkKey(0, '笔在'))?.parts).toEqual([
+        { t: '笔', pos: '명사' }, { t: '在', pos: '전치사' },
+      ]);
+      expect(picks.get(zhPosMarkKey(0, '社恐'))).toEqual({ pos: '명사', all: ['명사'] });
+    });
+
+    it('부분 연결이 원 표기와 다르면 분해를 버린다(모델 위반 방어)', async () => {
+      vi.stubGlobal('fetch', vi.fn(async () => geminiText([
+        { all: ['명사'], pos: '명사', split: [{ t: '笔', pos: '명사' }, { t: '存', pos: '동사' }] },
+        { all: ['명사'], pos: '명사' },
+      ])));
+      const picks = await disambiguateZhPos(oovLines, oovMarks);
+      expect(picks.get(zhPosMarkKey(0, '笔在'))?.parts).toBeUndefined();
+      expect(picks.get(zhPosMarkKey(0, '笔在'))?.pos).toBe('명사'); // pos 경로 폴백
+    });
+
+    it('oov 아닌 마크의 split은 무시한다', async () => {
+      vi.stubGlobal('fetch', vi.fn(async () => geminiText([
+        { all: ['동사', '명사'], pos: '동사', split: [{ t: '计', pos: '동사' }, { t: '划', pos: '동사' }] },
+        { all: ['동사', '명사'], pos: '명사' },
+      ])));
+      const picks = await disambiguateZhPos(lines, marks);
+      expect(picks.get(zhPosMarkKey(0, '计划'))?.parts).toBeUndefined();
+      expect(picks.get(zhPosMarkKey(0, '计划'))?.pos).toBe('동사');
+    });
   });
 
   it('pos가 all에 없는 항목은 버린다(모델 위반 — 해당 단어만 폴백)', async () => {
@@ -183,6 +252,33 @@ describe('resolveZhTokenPos — 최종 pos/pos_all 병합', () => {
       pick: { pos: '명사', all: ['명사'] },
       cachedPos: '명사', tokenPos: '명사', tokenPosAll: undefined,
     })).toEqual({ pos: '명사', posAll: null });
+  });
+});
+
+describe('splitZhToken — 우연 병합 분해', () => {
+  it('병음 음절(1자=1음절)을 부분 글자 수대로 나눠 갖는다', () => {
+    const merged = { text: '笔在', base_form: '笔在', furigana: 'bǐ zài', pos: null };
+    expect(splitZhToken(merged, [{ t: '笔', pos: '명사' }, { t: '在', pos: '전치사' }])).toEqual([
+      { text: '笔', base_form: '笔', furigana: 'bǐ', pos: '명사' },
+      { text: '在', base_form: '在', furigana: 'zài', pos: '전치사' },
+    ]);
+  });
+
+  it('2+1 같은 비대칭 분해도 음절 정렬이 맞는다', () => {
+    const merged = { text: '真好看', base_form: '真好看', furigana: 'zhēn hǎo kàn', pos: null };
+    expect(splitZhToken(merged, [{ t: '真', pos: '부사' }, { t: '好看', pos: '형용사' }])).toEqual([
+      { text: '真', base_form: '真', furigana: 'zhēn', pos: '부사' },
+      { text: '好看', base_form: '好看', furigana: 'hǎo kàn', pos: '형용사' },
+    ]);
+  });
+});
+
+// 계약: 분리 verdict가 라우트 조립부에 실제로 배선돼 있어야 한다 — 판정만 하고
+// 조립이 안 쓰면 분리가 조용히 사라진다.
+describe('분리 배선 계약 (analyze route)', () => {
+  it('라우트가 parts verdict로 splitZhToken을 호출한다', () => {
+    const src = fs.readFileSync(path.join(process.cwd(), 'src/app/api/analyze/route.js'), 'utf8');
+    expect(src).toContain('splitZhToken(t, parts)');
   });
 });
 

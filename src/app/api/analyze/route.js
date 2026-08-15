@@ -12,7 +12,7 @@ import { tokenizeZhLine } from '@/lib/server/tokenizeZh';
 import { fetchMeaningsForMissing } from '@/lib/server/fetchMeanings';
 import {
   collectZhPosMarks, disambiguateZhPos, resolveZhTokenPos, zhPosMarkKey,
-  pickZhMeaning, needsZhMeaningPosRefresh, buildZhPosWriteback,
+  pickZhMeaning, needsZhMeaningPosRefresh, buildZhPosWriteback, splitZhToken,
 } from '@/lib/server/disambiguateZhPos';
 import { rateLimit, getClientKey } from '@/lib/server/rateLimit';
 
@@ -190,7 +190,16 @@ export async function POST(request) {
     const results = tokenizedLines.map(({ tokens }, lineIdx) => {
       const sequence = [];
       const dictionary = {};
-      tokens.forEach((t, tokenIdx) => {
+      // OOV 우연 병합 분리 — 판별기가 "별개 단어들의 우연 결합"으로 판정한 토큰(笔在→笔/在)은
+      // 부분 토큰들로 조립한다(실단어 신조어(社恐)는 유지 verdict). 클라이언트(analyzeText)가
+      // 서버 id를 위치 기준으로 재부여하므로 토큰 수 변화는 안전하다.
+      const lineTokens = language === 'Chinese'
+        ? tokens.flatMap((t) => {
+            const parts = posPicks.get(zhPosMarkKey(lineIdx, t.text))?.parts;
+            return parts?.length ? splitZhToken(t, parts) : [t];
+          })
+        : tokens;
+      lineTokens.forEach((t, tokenIdx) => {
         const tokenId = `id_${lineIdx}_${tokenIdx}_${timestamp}`;
         sequence.push(tokenId);
         const cached = cache.get(t.base_form);
