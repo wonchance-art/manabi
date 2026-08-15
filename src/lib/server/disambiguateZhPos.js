@@ -54,7 +54,11 @@ export function collectZhPosMarks(tokenizedLines, cache) {
       const key = markKey(lineIdx, t.text);
       if (seen.has(key)) continue;
       seen.add(key);
-      marks.push({ lineIdx, word: t.text, key });
+      // 단어성 판정 대상: 품사 단서가 전혀 없는 다자 토큰 — jieba x-병합 OOV.
+      // 실측상 우연 병합(笔在·这宗)과 실제 신조어(社恐)가 섞여 있어 기계 분리는 불가,
+      // 문맥 판별기가 함께 판정한다(같은 호출 — 추가 비용 없음).
+      const oov = labels.length === 0 && [...t.text].length >= 2;
+      marks.push({ lineIdx, word: t.text, key, ...(oov ? { oov: true } : {}) });
     }
   });
   return marks.slice(0, MAX_MARKS);
@@ -65,7 +69,9 @@ function buildZhPosPrompt(lines, marks) {
   const usedLineIdxs = [...new Set(marks.map((m) => m.lineIdx))];
   const lineNo = new Map(usedLineIdxs.map((idx, i) => [idx, i + 1]));
   const sentenceList = usedLineIdxs.map((idx) => `${lineNo.get(idx)}. ${lines[idx]}`).join('\n');
-  const wordList = marks.map((m, i) => `${i + 1}. "${m.word}" (문장 ${lineNo.get(m.lineIdx)})`).join('\n');
+  const wordList = marks
+    .map((m, i) => `${i + 1}. "${m.word}" (문장 ${lineNo.get(m.lineIdx)})${m.oov ? ' [단어성 판정]' : ''}`)
+    .join('\n');
   return `다음은 중국어 문장 목록과, 각 문장에서 품사를 판정할 단어 목록입니다.
 
 ## 문장
@@ -80,12 +86,17 @@ ${wordList}
 [
   { "all": ["동사", "명사"], "pos": "동사" },
   { "all": ["명사"], "pos": "명사" },
+  { "all": [], "pos": null, "split": [{"t": "笔", "pos": "명사"}, {"t": "在", "pos": "전치사"}] },
   ...
 ]
 
 ## 규칙
 - all: 이 단어가 중국어에서 일반적으로 갖는 품사 후보 (흔한 순, 1~3개)
 - pos: 지정된 문장의 맥락에서 이 단어가 실제로 쓰인 품사 — 반드시 all 중 하나
+- split: [단어성 판정] 표시 항목만 — 이 표기가 실제 쓰이는 한 단어(신조어·전문어·고유명사
+  포함)면 split을 넣지 말 것. 별개 단어들이 우연히 이웃해 붙은 조합일 때만 순서대로
+  분해해 각 부분의 표기(t)와 그 문장에서의 품사(pos)를 적을 것 (부분들을 이으면 원 표기와
+  정확히 일치해야 함)
 - 품사 명칭: 명사/동사/형용사/부사/전치사/접속사/조사/대명사/양사/수사/감탄사/성어/지명/인명/고유명사
 - 설명/주석 금지, JSON만 출력`;
 }
@@ -129,17 +140,53 @@ export async function disambiguateZhPos(lines, marks, opts = {}) {
       return picks;
     }
     parsed.forEach((entry, i) => {
+      const mark = marks[i];
       const all = Array.isArray(entry?.all)
         ? entry.all.filter((p) => typeof p === 'string' && p.trim()).map((p) => p.trim().slice(0, 20)).slice(0, 4)
         : [];
       const pos = typeof entry?.pos === 'string' ? entry.pos.trim().slice(0, 20) : '';
+      // 단어성 판정: 유효한 분해(부분 연결 == 원 표기)가 오면 분리 verdict 우선 —
+      // 병합 비단어에는 pos/all이 무의미하다. 검증 실패 시 분해는 버리고 pos 경로 폴백.
+      const parts = mark.oov ? validateSplitParts(entry?.split, mark.word) : null;
+      if (parts) {
+        picks.set(mark.key, { pos: pos && all.includes(pos) ? pos : null, all, parts });
+        return;
+      }
       if (!pos || !all.includes(pos)) return; // pos∉all은 모델 위반 — 버리고 이 단어는 폴백
-      picks.set(marks[i].key, { pos, all });
+      picks.set(mark.key, { pos, all });
     });
   } catch (err) {
     console.warn('[disambiguateZhPos] failed:', err?.message);
   }
   return picks;
+}
+
+/** split 응답 검증 — 부분 2개 이상, 표기 비지 않음, 이어붙이면 원 표기와 정확히 일치. */
+function validateSplitParts(split, word) {
+  if (!Array.isArray(split) || split.length < 2) return null;
+  const parts = split.map((p) => ({
+    t: typeof p?.t === 'string' ? p.t.trim() : '',
+    pos: typeof p?.pos === 'string' && p.pos.trim() ? p.pos.trim().slice(0, 20) : null,
+  }));
+  if (parts.some((p) => !p.t)) return null;
+  if (parts.map((p) => p.t).join('') !== word) return null;
+  return parts;
+}
+
+/**
+ * 우연 병합 토큰을 판정 결과대로 부분 토큰들로 분해(순수 함수 — 라우트 조립부에서 사용).
+ * 병음은 병합 토큰의 음절열(공백 구분, 1자=1음절)을 부분 글자 수만큼 나눠 갖는다.
+ * 부분의 뜻은 캐시에 있으면 붙고 없으면 다음 요청에서 백필된다(그레이스풀).
+ */
+export function splitZhToken(token, parts) {
+  const sylls = String(token.furigana || '').split(' ').filter(Boolean);
+  let si = 0;
+  return parts.map((p) => {
+    const chars = [...p.t];
+    const furigana = sylls.slice(si, si + chars.length).join(' ');
+    si += chars.length;
+    return { text: p.t, base_form: p.t, furigana, pos: p.pos };
+  });
 }
 
 /**
