@@ -94,7 +94,7 @@ describe('fetchMeaningsForMissing — 병렬·deadline', () => {
     const entry = result.get('工作');
     expect(entry.pos).toBe('동사·명사');
     expect(entry.meanings).toEqual([
-      { meaning: '일하다', priority: 1, pos: '동사' },
+      { meaning: '일하다', priority: 1, pos: '동사', ja: null }, // ja 미응답 → null 판정 기록
       { meaning: '일, 직업', priority: 2, pos: '명사' },
     ]);
   });
@@ -109,7 +109,33 @@ describe('fetchMeaningsForMissing — 병렬·deadline', () => {
     const { result } = await fetchMeaningsForMissing(
       [{ base_form: '图书馆', pos: '명사', reading: 'túshūguǎn' }], 'Chinese', mockSupabase
     );
-    expect(result.get('图书馆').meanings).toEqual([{ meaning: '도서관', priority: 1 }]);
+    // ja 키는 중국어에서 항상 기록된다(응답에 없으면 null 판정) — 백필 무한 재조회 방지 계약
+    expect(result.get('图书馆').meanings).toEqual([{ meaning: '도서관', priority: 1, ja: null }]);
+  });
+
+  // 한자 대조 2단계 — 일본어 대응(ja)은 meanings[0]의 관례 필드로 저장(스키마 무변경)
+  it('중국어는 일본어 대응(ja)을 검증해 저장하고, 불량 형식은 null 판정으로 기록한다', async () => {
+    const arr = [
+      { pos: '명사', reading: 'túshūguǎn', meanings: [{ meaning: '도서관', pos: '명사' }], ja: { form: '図書館', yomi: 'としょかん' } },
+      { pos: '명사', reading: 'lǎoshī', meanings: [{ meaning: '선생님', pos: '명사' }], ja: { form: '先生', yomi: 'せんせい', diff: true } },
+      { pos: '조사', reading: 'de', meanings: [{ meaning: '~의', pos: '조사' }], ja: { form: '', yomi: '' } },
+    ];
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({ candidates: [{ content: { parts: [{ text: JSON.stringify(arr) }] } }] }),
+    })));
+    const { result } = await fetchMeaningsForMissing(
+      [
+        { base_form: '图书馆', pos: '명사', reading: '' },
+        { base_form: '老师', pos: '명사', reading: '' },
+        { base_form: '的', pos: '조사', reading: '' },
+      ],
+      'Chinese', mockSupabase
+    );
+    expect(result.get('图书馆').meanings[0].ja).toEqual({ form: '図書館', yomi: 'としょかん' });
+    expect(result.get('老师').meanings[0].ja).toEqual({ form: '先生', yomi: 'せんせい', diff: true });
+    expect(result.get('的').meanings[0].ja).toBeNull();
   });
 
   it('일본어는 Gemini pos를 무시하고 kuromoji pos를 유지한다', async () => {

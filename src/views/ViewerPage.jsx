@@ -39,6 +39,7 @@ import { useNextRangeMutation } from '../lib/useNextRangeMutation';
 import { useReadProgress } from '../lib/useReadProgress';
 import { useScrollRestore } from '../lib/useScrollRestore';
 import { readHanjaKo } from '../lib/hanjaKo';
+import { getJaRef, formatJaRef } from '../lib/jaRef';
 import TokenEditPanel from './TokenEditPanel';
 import TokenPosLabel from './TokenPosLabel';
 import TokenRangeGrips from './TokenRangeGrips';
@@ -684,7 +685,8 @@ export default function ViewerPage() {
       : null
   );
 
-  // 뜻·발음 수동 편집(링큐식) — 자료 소유자만(materials update RLS가 소유자 한정)
+  // 뜻·발음 수동 편집(링큐식) — 자료 소유자만(materials update RLS가 소유자 한정).
+  // 같은 사전 행을 한자 대조(ja 대응 표시)도 쓰므로, 편집 중이거나 대조 토글이 켜져 있으면 조회.
   const [isEditingToken, setIsEditingToken] = useState(false);
   const canEditToken = !!user?.id && user.id === material?.owner_id;
   const { data: editDictEntry } = useQuery({
@@ -699,7 +701,24 @@ export default function ViewerPage() {
       if (error) throw error;
       return data;
     },
-    enabled: isEditingToken && !!selectedToken?.base_form,
+    enabled: (isEditingToken || (showHanjaKo && materialLang === 'Chinese')) && !!selectedToken?.base_form,
+    staleTime: 1000 * 60,
+  });
+
+  // 드래그 상세 팝업 단어의 사전 행 — ja 대응 표시용(대조 토글 시)
+  const { data: popupDictEntry } = useQuery({
+    queryKey: ['token-dict', materialLang, popupWord?.token?.base_form],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('morpheme_dictionary')
+        .select('meanings, reading, pos')
+        .eq('language', materialLang)
+        .eq('base_form', popupWord.token.base_form)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: showHanjaKo && materialLang === 'Chinese' && !!popupWord?.token?.base_form,
     staleTime: 1000 * 60,
   });
 
@@ -881,11 +900,20 @@ export default function ViewerPage() {
             <TokenPosLabel token={selectedToken} />
             {selectedToken.base_form && selectedToken.base_form !== selectedToken.text && ` · ${selectedToken.base_form}`}
           </div>
-          {(() => { const hk = hanjaKoOf(selectedToken.text); return hk ? (
-            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 2 }}>
-              한자음 <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{hk}</span>
-            </div>
-          ) : null; })()}
+          {(() => {
+            const hk = hanjaKoOf(selectedToken.text);
+            const jr = materialLang === 'Chinese' && showHanjaKo
+              ? formatJaRef(getJaRef(editDictEntry), selectedToken.text)
+              : null;
+            if (!hk && !jr) return null;
+            return (
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 2 }}>
+                {hk && <>한자음 <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{hk}</span></>}
+                {hk && jr && ' · '}
+                {jr && <>日 <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{jr}</span></>}
+              </div>
+            );
+          })()}
         </div>
         {ttsSupported && (
           <button onClick={() => speak(selectedToken.text, materialLang)} aria-label="발음 듣기" style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', minWidth: 32, minHeight: 32 }} title="발음 듣기">▷</button>
@@ -1684,6 +1712,12 @@ export default function ViewerPage() {
               {(() => { const hk = hanjaKoOf(popupWord.token.text); return hk ? (
                 <span className="pdf-detail-popup__base">한자음 {hk}</span>
               ) : null; })()}
+              {(() => {
+                const jr = materialLang === 'Chinese' && showHanjaKo
+                  ? formatJaRef(getJaRef(popupDictEntry), popupWord.token.text)
+                  : null;
+                return jr ? <span className="pdf-detail-popup__base">日 {jr}</span> : null;
+              })()}
               <span className="pdf-detail-popup__short">{popupWord.token.meaning}</span>
             </div>
             <div className="pdf-detail-popup__body">
