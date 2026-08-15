@@ -1203,7 +1203,7 @@ export default function ViewerPage() {
       <div
         ref={readerRef}
         className={`card reader-area reader-area--${theme}`}
-        style={{ fontSize: `${fontSize}rem`, fontFamily, gap: `${lineGap}px ${charGap}rem` }}
+        style={{ fontSize: `${fontSize}rem`, fontFamily, gap: `${lineGap}px ${charGap}rem`, '--char-gap': `${charGap}rem` }}
         onPointerDown={tokenRange.handlePointerDown}
         onClickCapture={tokenRange.handleClickCapture}
       >
