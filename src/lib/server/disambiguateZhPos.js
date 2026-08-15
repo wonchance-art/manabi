@@ -42,11 +42,13 @@ export function collectZhPosMarks(tokenizedLines, cache) {
     for (const t of tokens || []) {
       if (!t?.text || !HAS_HANZI.test(t.text)) continue;
       const cachedPos = cache.get(t.base_form)?.pos;
+      // '기호' 라벨 무시: 한자 토큰이 기호일 수 없다 — x-태그 오분류 시절(这宗·笔在가
+      // 기호로 캐시됨)의 잔재가 판별을 막지 않게 미상으로 되돌려 마크한다.
       const labels = [
         ...splitPos(cachedPos),
         ...splitPos(t.pos_all),
         ...(t.pos ? [t.pos] : []),
-      ];
+      ].filter((p) => p !== '기호');
       // 라벨이 하나도 없으면 품사 미상(jieba 미지 태그 + 캐시 없음) — 판별로 채울 기회를 준다.
       if (labels.length > 0 && !labels.some((p) => MARKABLE_POS.has(p))) continue;
       const key = markKey(lineIdx, t.text);

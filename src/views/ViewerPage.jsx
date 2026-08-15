@@ -38,6 +38,7 @@ import { useTokenRangeSelect } from '../lib/useTokenRangeSelect';
 import { useNextRangeMutation } from '../lib/useNextRangeMutation';
 import { useReadProgress } from '../lib/useReadProgress';
 import { useScrollRestore } from '../lib/useScrollRestore';
+import TokenEditPanel from './TokenEditPanel';
 import TokenPosLabel from './TokenPosLabel';
 import TokenRangeGrips from './TokenRangeGrips';
 import ViewerComments from './ViewerComments';
@@ -379,6 +380,7 @@ export default function ViewerPage() {
     setDragTokens(null);
     setWordDetail(null);
     setPickedLineIdx(null);
+    setIsEditingToken(false); // 다른 단어로 넘어가면 편집 패널 접기
     tokenRange.clearRange(); // 범위 지정 이펙트와 상호 배타
     setRightSheetSignal(s => s + 1);
     if (settings.autoSpeakOnClick && ttsSupported && t.text) {
@@ -628,6 +630,25 @@ export default function ViewerPage() {
     correctTokenMutation.mutate({ tokenId, corrections });
   };
 
+  // 뜻·발음 수동 편집(링큐식) — 자료 소유자만(materials update RLS가 소유자 한정)
+  const [isEditingToken, setIsEditingToken] = useState(false);
+  const canEditToken = !!user?.id && user.id === material?.owner_id;
+  const { data: editDictEntry } = useQuery({
+    queryKey: ['token-dict', materialLang, selectedToken?.base_form],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('morpheme_dictionary')
+        .select('meanings, reading, pos')
+        .eq('language', materialLang)
+        .eq('base_form', selectedToken.base_form)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: isEditingToken && !!selectedToken?.base_form,
+    staleTime: 1000 * 60,
+  });
+
   const saveInlineVocabulary = async (token) => {
     const key = token.base_form || token.text;
     if (inlineSaving[key]) return;
@@ -811,9 +832,29 @@ export default function ViewerPage() {
           <button onClick={() => speak(selectedToken.text, materialLang)} aria-label="발음 듣기" style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', minWidth: 32, minHeight: 32 }} title="발음 듣기">▷</button>
         )}
       </div>
-      <div style={{ fontSize: '1rem', lineHeight: 1.6, marginBottom: materialLang === 'English' && selectedToken.reading ? 4 : 14 }}>
-        {selectedToken.meaning || '(뜻 없음)'}
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: materialLang === 'English' && selectedToken.reading ? 4 : 14 }}>
+        <div style={{ fontSize: '1rem', lineHeight: 1.6, flex: 1, minWidth: 0 }}>
+          {selectedToken.meaning || '(뜻 없음)'}
+        </div>
+        {canEditToken && (
+          <button
+            onClick={() => setIsEditingToken(v => !v)}
+            aria-label="뜻·발음 수정"
+            title="뜻·발음 수정"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.95rem', minWidth: 28, minHeight: 28, flexShrink: 0, opacity: isEditingToken ? 1 : 0.55 }}
+          >✏️</button>
+        )}
       </div>
+      {isEditingToken && (
+        <TokenEditPanel
+          token={selectedToken}
+          language={materialLang}
+          dictEntry={editDictEntry}
+          saving={correctTokenMutation.isPending}
+          onSave={(corrections) => { handleCorrectToken(selectedToken.id, corrections); setIsEditingToken(false); }}
+          onClose={() => setIsEditingToken(false)}
+        />
+      )}
       {materialLang === 'English' && selectedToken.reading && (
         <div style={{
           fontSize: '0.88rem',

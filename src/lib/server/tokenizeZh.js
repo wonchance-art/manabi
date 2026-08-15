@@ -62,7 +62,10 @@ export function tokenizeZhLine(line) {
   for (const { word, tag } of tagged) {
     const text = word;
     if (!text) continue;
-    const isPunct = PUNCT.test(text) || tag === 'x' || tag === 'w';
+    // x(기타)·w(기호) 태그는 문장부호가 관례지만, jieba는 사전에 없는 한자 조합
+    // (这宗·笔在·项有 등 HMM 병합 OOV)에도 x를 단다 — 한자를 포함하면 실단어로 취급해
+    // 병음을 달고 품사는 미상(null)으로 남긴다(문맥 판별기가 채움). 오너 보고 실측.
+    const isPunct = PUNCT.test(text) || ((tag === 'x' || tag === 'w') && !HAS_HANZI.test(text));
     const chars = [...text];
     const syllables = (takeSyllables(chars) ?? [pinyin(text, { toneType: 'symbol', type: 'string' })]).filter(Boolean);
     tokens.push({

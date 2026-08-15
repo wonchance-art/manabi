@@ -36,6 +36,12 @@ describe('collectZhPosMarks — 판별 대상 수집', () => {
     expect(collectZhPosMarks(lines, new Map()).map((m) => m.word)).toEqual(['内卷']);
   });
 
+  it("'기호'로 잘못 캐시된 한자어(x-태그 오분류 잔재)는 미상으로 되돌려 마크한다", () => {
+    const cache = new Map([['笔在', { pos: '기호' }]]);
+    const lines = [{ tokens: [tok('笔在', null)] }];
+    expect(collectZhPosMarks(lines, cache).map((m) => m.word)).toEqual(['笔在']);
+  });
+
   it('캐시 pos가 다중(·)이면 jieba 태그와 무관하게 마크한다', () => {
     const cache = new Map([['学习', { pos: '동사·명사' }]]);
     const lines = [{ tokens: [tok('学习', '지명')] }]; // 억지 케이스 — 캐시 후보가 우선 신호

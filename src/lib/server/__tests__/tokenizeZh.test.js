@@ -29,6 +29,19 @@ describe('중국어 토큰화', () => {
     expect(punct?.furigana).toBe('');
   });
 
+  // jieba는 사전에 없는 한자 조합(HMM 병합 OOV)에 x 태그를 단다 — 기호로 오분류하면
+  // 병음·품사가 통째로 사라진다(오너 보고: 这宗·这首·这片·这篇·笔在·项有 실측).
+  it('x 태그라도 한자 조합이면 병음을 달고 기호로 처리하지 않는다', () => {
+    const bi = tokenizeZhLine('笔在桌子上。').find((t) => t.text === '笔在');
+    expect(bi?.pos).not.toBe('기호');
+    expect(bi?.furigana).toBe('bǐ zài');
+    const zong = tokenizeZhLine('这宗案子很复杂。').find((t) => t.text === '这宗');
+    expect(zong?.pos).not.toBe('기호');
+    expect(zong?.furigana).toBe('zhè zōng');
+    const pian = tokenizeZhLine('这片森林。').find((t) => t.text === '这片');
+    expect(pian?.furigana).toBe('zhè piàn');
+  });
+
   it('품사 태그를 한국어로 옮긴다', () => {
     const tokens = tokenizeZhLine('我读书。');
     expect(tokens.find((t) => t.text === '我')?.pos).toBe('대명사');
