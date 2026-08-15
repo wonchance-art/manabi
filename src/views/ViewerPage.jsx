@@ -38,6 +38,7 @@ import { useTokenRangeSelect } from '../lib/useTokenRangeSelect';
 import { useNextRangeMutation } from '../lib/useNextRangeMutation';
 import { useReadProgress } from '../lib/useReadProgress';
 import { useScrollRestore } from '../lib/useScrollRestore';
+import { readHanjaKo } from '../lib/hanjaKo';
 import TokenEditPanel from './TokenEditPanel';
 import TokenPosLabel from './TokenPosLabel';
 import TokenRangeGrips from './TokenRangeGrips';
@@ -205,6 +206,7 @@ export default function ViewerPage() {
   // Custom hooks
   const settings = useViewerSettings();
   const { fontSize, setFontSize, lineGap, setLineGap, charGap, setCharGap,
+          showHanjaKo, setShowHanjaKo,
           theme, setTheme, fontFamily, setFontFamily, showFurigana, setShowFurigana,
           autoSpeakOnClick, setAutoSpeakOnClick,
           settingsOpen, setSettingsOpen } = settings;
@@ -665,6 +667,23 @@ export default function ViewerPage() {
     }
   };
 
+  // 한자 대조(옵트인) — 한국 한자음 테이블은 토글이 켜질 때만 지연 로드(245KB 청크,
+  // 이후 캐시). 표는 뜻이 아니라 발음 앵커: 老师 → 노사(어두 두음법칙).
+  const [hanjaKoTable, setHanjaKoTable] = useState(null);
+  useEffect(() => {
+    if (!showHanjaKo || materialLang !== 'Chinese' || hanjaKoTable) return undefined;
+    let alive = true;
+    import('../lib/data/hanjaKo.json')
+      .then((m) => { if (alive) setHanjaKoTable(m.default || m); })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [showHanjaKo, materialLang, hanjaKoTable]);
+  const hanjaKoOf = (text) => (
+    materialLang === 'Chinese' && showHanjaKo && hanjaKoTable
+      ? readHanjaKo(text, hanjaKoTable)
+      : null
+  );
+
   // 뜻·발음 수동 편집(링큐식) — 자료 소유자만(materials update RLS가 소유자 한정)
   const [isEditingToken, setIsEditingToken] = useState(false);
   const canEditToken = !!user?.id && user.id === material?.owner_id;
@@ -862,6 +881,11 @@ export default function ViewerPage() {
             <TokenPosLabel token={selectedToken} />
             {selectedToken.base_form && selectedToken.base_form !== selectedToken.text && ` · ${selectedToken.base_form}`}
           </div>
+          {(() => { const hk = hanjaKoOf(selectedToken.text); return hk ? (
+            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 2 }}>
+              한자음 <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{hk}</span>
+            </div>
+          ) : null; })()}
         </div>
         {ttsSupported && (
           <button onClick={() => speak(selectedToken.text, materialLang)} aria-label="발음 듣기" style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer', minWidth: 32, minHeight: 32 }} title="발음 듣기">▷</button>
@@ -1169,6 +1193,16 @@ export default function ViewerPage() {
           >
             {showFurigana ? '후리가나 숨기기' : '후리가나 보이기'}
           </button>
+
+          {materialLang === 'Chinese' && (
+            <button
+              onClick={() => setShowHanjaKo(v => !v)}
+              className={`grammar-btn ${showHanjaKo ? 'grammar-btn--active' : ''}`}
+              title="단어 상세에 한국 한자음(발음 앵커) 병기 — 예: 老师 → 노사"
+            >
+              {showHanjaKo ? '☑ 한자 대조 켜짐' : '◻ 한자 대조 꺼짐'}
+            </button>
+          )}
 
           {ttsSupported && (
             <button
@@ -1647,6 +1681,9 @@ export default function ViewerPage() {
               {popupWord.token.base_form && popupWord.token.base_form !== popupWord.token.text && (
                 <span className="pdf-detail-popup__base">{popupWord.token.base_form}</span>
               )}
+              {(() => { const hk = hanjaKoOf(popupWord.token.text); return hk ? (
+                <span className="pdf-detail-popup__base">한자음 {hk}</span>
+              ) : null; })()}
               <span className="pdf-detail-popup__short">{popupWord.token.meaning}</span>
             </div>
             <div className="pdf-detail-popup__body">
