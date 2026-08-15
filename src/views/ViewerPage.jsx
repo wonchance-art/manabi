@@ -39,6 +39,7 @@ import { useNextRangeMutation } from '../lib/useNextRangeMutation';
 import { useReadProgress } from '../lib/useReadProgress';
 import { useScrollRestore } from '../lib/useScrollRestore';
 import TokenPosLabel from './TokenPosLabel';
+import TokenRangeGrips from './TokenRangeGrips';
 import ViewerComments from './ViewerComments';
 import ViewerGrammarModal from './ViewerGrammarModal';
 import ViewerQuizModal from './ViewerQuizModal';
@@ -1414,6 +1415,15 @@ export default function ViewerPage() {
             );
           });
         })()}
+
+        {/* 지정 범위 양끝 그립 — 잡아 끌어 미세 조정(P3) */}
+        <TokenRangeGrips
+          range={tokenRange.range}
+          sequence={material?.processed_json?.sequence}
+          tokenRefs={tokenRefs}
+          readerRef={readerRef}
+          onGripDown={tokenRange.startGripAdjust}
+        />
 
         {isDone && (
           <div className="reader-hint">

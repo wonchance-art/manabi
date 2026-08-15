@@ -1,7 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
 import {
   createTokenRangeGesture,
   composeRangeText,
+  gripAnchor,
   LONG_PRESS_MS,
   MOVE_THRESHOLD,
   SCROLL_CANCEL_PX,
@@ -111,5 +114,25 @@ describe('composeRangeText — 범위 표면형 합성', () => {
 
   it('사전에 없는 토큰은 건너뛴다(깨진 시퀀스 방어)', () => {
     expect(composeRangeText(['t0', 'ghost', 't1'], dictionary, 0, 2)).toBe('我工作');
+  });
+});
+
+// 그립(양끝 핸들) 조정 — 잡은 쪽의 반대 끝이 앵커로 고정돼야 끌기가 직관과 일치한다.
+describe('gripAnchor — 그립 조정 앵커 판정', () => {
+  const range = { start: 3, end: 9 };
+
+  it('시작 그립을 잡으면 끝이 앵커, 끝 그립을 잡으면 시작이 앵커', () => {
+    expect(gripAnchor(range, 'start')).toBe(9);
+    expect(gripAnchor(range, 'end')).toBe(3);
+  });
+});
+
+// 계약: 그립이 뷰어에 실제로 배선돼 있어야 한다 — 훅만 있고 렌더가 빠지면 조용히 사라진다.
+describe('그립 배선 계약 (ViewerPage.jsx)', () => {
+  const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
+
+  it('TokenRangeGrips가 범위·그립 핸들러와 함께 렌더된다', () => {
+    expect(src).toContain('<TokenRangeGrips');
+    expect(src).toContain('onGripDown={tokenRange.startGripAdjust}');
   });
 });

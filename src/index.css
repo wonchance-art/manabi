@@ -1862,6 +1862,7 @@ body.is-review-session .page-container { padding-top: 8px; }
 
 /* Reader */
 .reader-area {
+  position: relative; /* 지정 범위 그립(.range-grip)의 절대 배치 기준 */
   min-height: 60vh;
   padding: 40px;
   display: flex;
@@ -1871,6 +1872,35 @@ body.is-review-session .page-container { padding-top: 8px; }
      기호·무루비 토큰의 글자가 위로 떠 줄이 삐뚤빼뚤해진다(#990). 본문 글자 기준선으로 정렬. */
   align-items: baseline;
 }
+
+/* 지정 범위 양끝 그립 — OS 선택 핸들의 인앱 버전. 28px 터치 타깃 안에 13px 손잡이. */
+.range-grip {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  margin-left: -14px;
+  margin-top: -5px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  touch-action: none; /* 그립 위 제스처는 전부 조정 — 브라우저 팬 개입 금지 */
+  cursor: grab;
+  z-index: 6;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+.range-grip::after {
+  content: '';
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 2.5px solid var(--bg-card);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+.range-grip:active { cursor: grabbing; }
+.range-grip:active::after { transform: scale(1.25); }
 
 .reader-area--dark  { background: rgba(255,255,255,0.03); }
 .reader-area--light { background: #fff; color: #2d3436; }
