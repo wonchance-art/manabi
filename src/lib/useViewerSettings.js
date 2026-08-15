@@ -15,6 +15,8 @@ export function useViewerSettings() {
   const [fontFamily, setFontFamilyRaw] = useState(() => readPref('fontFamily', "'Noto Sans KR'"));
   const [showFurigana, setShowFuriganaRaw] = useState(() => readPref('showFurigana', true));
   const [autoSpeakOnClick, setAutoSpeakOnClickRaw] = useState(() => readPref('autoSpeakOnClick', false));
+  // 한자 대조(중국어) — 한국 한자음 앵커 표시. 옵트인이 전제(오너 확정): 기본 꺼짐.
+  const [showHanjaKo, setShowHanjaKoRaw] = useState(() => readPref('showHanjaKo', false));
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const setFontSize = (v) => { const val = typeof v === 'function' ? v(fontSize) : v; setFontSizeRaw(val); savePref('fontSize', val); };
@@ -24,6 +26,7 @@ export function useViewerSettings() {
   const setFontFamily = (v) => { setFontFamilyRaw(v); savePref('fontFamily', v); };
   const setShowFurigana = (v) => { const val = typeof v === 'function' ? v(showFurigana) : v; setShowFuriganaRaw(val); savePref('showFurigana', val); };
   const setAutoSpeakOnClick = (v) => { const val = typeof v === 'function' ? v(autoSpeakOnClick) : v; setAutoSpeakOnClickRaw(val); savePref('autoSpeakOnClick', val); };
+  const setShowHanjaKo = (v) => { const val = typeof v === 'function' ? v(showHanjaKo) : v; setShowHanjaKoRaw(val); savePref('showHanjaKo', val); };
 
   return {
     fontSize, setFontSize,
@@ -33,6 +36,7 @@ export function useViewerSettings() {
     fontFamily, setFontFamily,
     showFurigana, setShowFurigana,
     autoSpeakOnClick, setAutoSpeakOnClick,
+    showHanjaKo, setShowHanjaKo,
     settingsOpen, setSettingsOpen,
   };
 }
