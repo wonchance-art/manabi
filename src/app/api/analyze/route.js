@@ -10,7 +10,10 @@ import { tokenizeJaLine } from '@/lib/server/tokenizeJa';
 import { tokenizeEnLine } from '@/lib/server/tokenizeEn';
 import { tokenizeZhLine } from '@/lib/server/tokenizeZh';
 import { fetchMeaningsForMissing } from '@/lib/server/fetchMeanings';
-import { collectZhPosMarks, disambiguateZhPos, resolveZhTokenPos, zhPosMarkKey } from '@/lib/server/disambiguateZhPos';
+import {
+  collectZhPosMarks, disambiguateZhPos, resolveZhTokenPos, zhPosMarkKey,
+  pickZhMeaning, needsZhMeaningPosRefresh, buildZhPosWriteback,
+} from '@/lib/server/disambiguateZhPos';
 import { rateLimit, getClientKey } from '@/lib/server/rateLimit';
 
 export const runtime = 'nodejs';
@@ -124,6 +127,17 @@ export async function POST(request) {
       }
     }
 
+    // 4.2. 중국어 자가 치유 — 다중 품사 행인데 뜻에 pos 태그가 없는 캐시 행은 미싱 경로로
+    // 뜻을 재조회해 태깅한다(겸류사 뜻 정렬이 문맥 품사를 따르려면 뜻마다 pos가 필요).
+    // 진짜 미싱 뒤에 붙어 MAX_MISSING 캡에서 미싱이 우선. 재조회 실패 시 기존 행 유지.
+    if (language === 'Chinese') {
+      for (const [baseForm, entry] of cache) {
+        if (needsZhMeaningPosRefresh(entry) && !missingList.some(m => m.base_form === baseForm)) {
+          missingList.push({ base_form: baseForm, pos: entry.pos, reading: entry.reading });
+        }
+      }
+    }
+
     // 4.5. 중국어 품사 문맥 판별 — 겸류사(工作·计划·希望 등)는 jieba가 문맥 불문 단어당 한
     // 태그만 달고, 캐시 pos 우선 병합이 그 첫 품사를 박제한다(병음 박제 #1004와 같은 구조).
     // 명/동/형 계열 한자어를 모아 flash-lite 1회로 "품사 후보 전체 + 이 문장에서의 품사"를
@@ -180,7 +194,6 @@ export async function POST(request) {
         const tokenId = `id_${lineIdx}_${tokenIdx}_${timestamp}`;
         sequence.push(tokenId);
         const cached = cache.get(t.base_form);
-        const meaning = cached?.meanings?.[0]?.meaning || '';
         // 중국어 병음은 토크나이저가 문장 문맥(다음자·변조)으로 산출 — 캐시(첫 문맥의 병음)가
         // 덮으면 문맥이 박제된다(#1004). 일본어는 Gemini 맥락 reading이 캐시에 있어 캐시 우선 유지.
         const rawReading = (language === 'Chinese'
@@ -196,6 +209,10 @@ export async function POST(request) {
               tokenPosAll: t.pos_all,
             })
           : { pos: cached?.pos || t.pos, posAll: null };
+        // 뜻도 문맥 품사를 따른다 — 짚힌 pos와 일치하는 뜻 우선, 없으면 첫 뜻(기존 동작).
+        const meaning = language === 'Chinese'
+          ? pickZhMeaning(cached?.meanings, pos)
+          : (cached?.meanings?.[0]?.meaning || '');
         dictionary[tokenId] = {
           text: t.text,
           furigana: cleanFurigana(t.text, rawReading),
@@ -207,6 +224,21 @@ export async function POST(request) {
       });
       return { sequence, dictionary };
     });
+
+    // 중국어 자가 치유 ② — 문맥 판별이 알아낸 다중 후보를 단일 pos 레거시 gemini 행에 기록
+    // (fire-and-forget). 다음 요청부터 캐시가 후보를 알고, 4.2의 뜻 pos 백필이 이어진다.
+    if (language === 'Chinese' && zhMarks.length > 0) {
+      for (const { pos: wbPos, baseForms } of buildZhPosWriteback(zhMarks, posPicks, cache)) {
+        supabase.from('morpheme_dictionary')
+          .update({ pos: wbPos })
+          .eq('language', 'Chinese')
+          .eq('source', 'gemini')
+          .in('base_form', baseForms)
+          .then(({ error }) => {
+            if (error) console.warn('[analyze] zh pos writeback failed:', error.message);
+          });
+      }
+    }
 
     // usage_count / last_used_at 업데이트 (fire-and-forget)
     const usedBaseForms = [...allBaseForms].filter(bf => cache.has(bf));

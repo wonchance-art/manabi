@@ -156,4 +156,58 @@ export function resolveZhTokenPos({ pick, cachedPos, tokenPos, tokenPosAll }) {
   return { pos, posAll };
 }
 
+/**
+ * 뜻 정렬 문맥화 — 짚힌 품사와 일치하는 뜻을 우선 선택.
+ * 뜻에 pos 태그가 없거나(레거시 행) 일치가 없으면 첫 뜻(기존 동작)으로 폴백.
+ * @param {Array<{meaning, pos?}>} meanings - morpheme_dictionary 행의 meanings
+ * @param {string|null} pos - resolveZhTokenPos가 짚은 문맥 품사
+ */
+export function pickZhMeaning(meanings, pos) {
+  if (!Array.isArray(meanings) || meanings.length === 0) return '';
+  if (pos) {
+    const matched = meanings.find((m) => m?.pos === pos && m?.meaning);
+    if (matched) return matched.meaning;
+  }
+  return meanings[0]?.meaning || '';
+}
+
+/**
+ * 레거시 자가 치유 ① — 다중 품사('·') 행인데 뜻에 pos 태그가 하나도 없으면 뜻 재조회 대상.
+ * 재조회는 기존 미싱 경로(fetchMeaningsForMissing)를 그대로 타고, 새 프롬프트가 뜻별 pos를
+ * 붙여 upsert한다. user_verified는 오너 확정이라 덮지 않는다.
+ * (프롬프트 불이행으로 태그가 안 붙으면 다음 요청에 다시 대상이 되지만, temperature 0 +
+ *  명시 형식이라 실제 반복은 드물고 MAX_MISSING·deadline 캡 안에서만 돈다.)
+ */
+export function needsZhMeaningPosRefresh(entry) {
+  if (!entry || entry.source === 'user_verified') return false;
+  if (splitPos(entry.pos).length < 2) return false;
+  const meanings = Array.isArray(entry.meanings) ? entry.meanings : [];
+  return meanings.length > 0 && !meanings.some((m) => m?.pos);
+}
+
+/**
+ * 레거시 자가 치유 ② — 문맥 판별이 알아낸 다중 후보(pick.all)를 아직 단일 pos로 남아 있는
+ * gemini 행에 기록할 그룹을 만든다(호출부가 fire-and-forget update). 다음 요청부터 캐시가
+ * 후보를 알게 되고, ①이 뜻 pos 백필을 이어간다 — 요청 2회로 레거시 행이 완전 치유된다.
+ * 같은 단어가 여러 줄에서 마크됐으면 첫 판정만 쓴다(temperature 0이라 사실상 동일).
+ * @returns {Array<{pos: string, baseForms: string[]}>} pos 후보 문자열별 업데이트 그룹
+ */
+export function buildZhPosWriteback(marks, picks, cache) {
+  const byPos = new Map();
+  const seen = new Set();
+  for (const m of marks) {
+    if (seen.has(m.word)) continue;
+    const pick = picks.get(m.key);
+    if (!pick || pick.all.length < 2) continue;
+    seen.add(m.word);
+    const entry = cache.get(m.word); // 중국어는 base_form === 표면형
+    if (!entry || entry.source !== 'gemini') continue;
+    if (splitPos(entry.pos).length >= 2) continue;
+    const joined = pick.all.join('·');
+    if (!byPos.has(joined)) byPos.set(joined, []);
+    byPos.get(joined).push(m.word);
+  }
+  return [...byPos.entries()].map(([pos, baseForms]) => ({ pos, baseForms }));
+}
+
 export { markKey as zhPosMarkKey };

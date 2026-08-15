@@ -77,8 +77,12 @@ describe('fetchMeaningsForMissing — 병렬·deadline', () => {
 
   // 겸류사: 중국어는 Gemini pos(다중 '·' 연결 포함)를 저장해야 사전이 후보를 안다.
   // (기존엔 영어만 entry.pos를 쓰고 중국어는 프롬프트로 받고도 버렸다 — jieba 단일 태그 박제)
-  it('중국어는 Gemini pos를 저장한다(겸류 다중 pos 포함)', async () => {
-    const arr = [{ pos: '동사·명사', reading: 'gōngzuò', meanings: [{ meaning: '일하다' }, { meaning: '일' }] }];
+  it('중국어는 Gemini pos를 저장한다(겸류 다중 pos + 뜻별 pos 태그 보존)', async () => {
+    const arr = [{
+      pos: '동사·명사',
+      reading: 'gōngzuò',
+      meanings: [{ meaning: '일하다', pos: '동사' }, { meaning: '일, 직업', pos: '명사' }],
+    }];
     vi.stubGlobal('fetch', vi.fn(async () => ({
       ok: true,
       status: 200,
@@ -87,7 +91,25 @@ describe('fetchMeaningsForMissing — 병렬·deadline', () => {
     const { result } = await fetchMeaningsForMissing(
       [{ base_form: '工作', pos: '명사성 동사', reading: 'gōngzuò' }], 'Chinese', mockSupabase
     );
-    expect(result.get('工作').pos).toBe('동사·명사');
+    const entry = result.get('工作');
+    expect(entry.pos).toBe('동사·명사');
+    expect(entry.meanings).toEqual([
+      { meaning: '일하다', priority: 1, pos: '동사' },
+      { meaning: '일, 직업', priority: 2, pos: '명사' },
+    ]);
+  });
+
+  it('뜻에 pos가 없으면(레거시 형식 응답) pos 필드 없이 저장한다', async () => {
+    const arr = [{ pos: '명사', reading: 'túshūguǎn', meanings: [{ meaning: '도서관' }] }];
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({ candidates: [{ content: { parts: [{ text: JSON.stringify(arr) }] } }] }),
+    })));
+    const { result } = await fetchMeaningsForMissing(
+      [{ base_form: '图书馆', pos: '명사', reading: 'túshūguǎn' }], 'Chinese', mockSupabase
+    );
+    expect(result.get('图书馆').meanings).toEqual([{ meaning: '도서관', priority: 1 }]);
   });
 
   it('일본어는 Gemini pos를 무시하고 kuromoji pos를 유지한다', async () => {
