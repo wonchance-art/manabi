@@ -106,6 +106,28 @@ body {
   min-height: 100vh;
   min-height: 100dvh; /* 동적 뷰포트 — 모바일 주소창 show/hide 시 하단 고정바 뜸 방지 */
   -webkit-font-smoothing: antialiased;
+  /* ── 앱 전역 무선택(네이티브 앱화, 오너 정책: 예외·복사 버튼 최소화) ──
+     UI 텍스트 드래그·iOS 길게 누르기 말풍선을 전역 차단 — 본문 드래그 지정은
+     인앱 지정(토큰 앵커)으로만 제공한다. 예외는 아래 타이핑 입력란 규칙 하나. */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* 전역 무선택의 유일 예외 — 타이핑 입력란(글쓰기·포럼·자료 추가·관리자 폼 전량 커버) */
+input, textarea, [contenteditable]:not([contenteditable="false"]) {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* 이미지 드래그 고스트 차단(webkit) — 앱 UI에서 이미지가 끌려나오지 않게 */
+img { -webkit-user-drag: none; }
+
+/* 임시(인앱 지정 개통 전까지): 뷰어 본문은 기존 브라우저 선택 유지 —
+   데스크톱 드래그 분석 공백 방지. 인앱 지정 PR에서 제거한다. */
+.reader-area {
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 a {
