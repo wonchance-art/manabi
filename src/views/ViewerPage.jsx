@@ -630,6 +630,41 @@ export default function ViewerPage() {
     correctTokenMutation.mutate({ tokenId, corrections });
   };
 
+  // 교정 전역 적용(링큐식) — 공유 사전 승격(user_verified) + 내 단어장 동기.
+  // 실패해도 이 자료의 교정(correctTokenMutation)은 이미 반영돼 있다(부분 성공 허용).
+  const promoteCorrection = async (token, corrections) => {
+    try {
+      let authHeader = {};
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token) authHeader = { Authorization: `Bearer ${session.access_token}` };
+      const res = await fetch('/api/dict-correct', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeader },
+        body: JSON.stringify({
+          base_form: token.base_form || token.text,
+          language: materialLang,
+          corrections,
+        }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const vocab = findSavedVocab(savedWords, token);
+      if (vocab?.id) {
+        const patch = {
+          ...(corrections.meaning ? { meaning: corrections.meaning } : {}),
+          ...(corrections.furigana ? { furigana: corrections.furigana } : {}),
+          ...(corrections.pos ? { pos: corrections.pos } : {}),
+        };
+        if (Object.keys(patch).length > 0) {
+          await supabase.from('user_vocabulary').update(patch).eq('id', vocab.id);
+          queryClient.invalidateQueries({ queryKey: ['vocab-words', user?.id] });
+        }
+      }
+      toast('사전과 단어장에도 반영했어요!', 'success');
+    } catch {
+      toast('전체 적용은 실패했어요 — 이 자료에는 반영됐어요.', 'warning');
+    }
+  };
+
   // 뜻·발음 수동 편집(링큐식) — 자료 소유자만(materials update RLS가 소유자 한정)
   const [isEditingToken, setIsEditingToken] = useState(false);
   const canEditToken = !!user?.id && user.id === material?.owner_id;
@@ -851,7 +886,11 @@ export default function ViewerPage() {
           language={materialLang}
           dictEntry={editDictEntry}
           saving={correctTokenMutation.isPending}
-          onSave={(corrections) => { handleCorrectToken(selectedToken.id, corrections); setIsEditingToken(false); }}
+          onSave={(corrections, opts) => {
+            handleCorrectToken(selectedToken.id, corrections);
+            if (opts?.applyGlobal) promoteCorrection(selectedToken, corrections);
+            setIsEditingToken(false);
+          }}
           onClose={() => setIsEditingToken(false)}
         />
       )}
