@@ -17,16 +17,17 @@ ${list}
 
 ## 출력 형식 (순서와 길이 정확히 일치)
 [
-  { "pos": "명사", "reading": "túshūguǎn", "meanings": [{"meaning": "도서관"}] },
-  { "pos": "동사·명사", "reading": "gōngzuò", "meanings": [{"meaning": "일하다"}, {"meaning": "일, 직업"}] },
+  { "pos": "명사", "reading": "túshūguǎn", "meanings": [{"meaning": "도서관", "pos": "명사"}] },
+  { "pos": "동사·명사", "reading": "gōngzuò", "meanings": [{"meaning": "일하다", "pos": "동사"}, {"meaning": "일, 직업", "pos": "명사"}] },
   ...
 ]
 
 ## 규칙
 - pos는 한국어로 (명사/동사/형용사/부사/전치사/접속사/조사/대명사/양사/수사/감탄사/성어)
 - 여러 품사로 두루 쓰이는 단어(겸류사)는 흔한 순으로 '·'로 이어 모두 적기 (예: 工作·学习 → "동사·명사")
+- 각 뜻(meanings 항목)에 그 뜻이 속하는 품사(pos)를 붙이기 — 겸류사는 품사마다 뜻 최소 1개
 - reading은 성조 기호가 붙은 병음 (예: 图书馆→túshūguǎn, 中国→Zhōngguó)
-- 각 단어에 1~2개 주요 의미 (가장 흔한 순)
+- 각 단어에 1~3개 주요 의미 (가장 흔한 순)
 - 의미는 10자 이내로 간결하게
 - 다음자(多音字)는 가장 일반적인 독음 기준
 - 조사(的, 了, 着 등)는 한국어 대응 기능 설명 ("~의", "완료", "진행" 등)
@@ -229,9 +230,11 @@ export async function fetchMeaningsForMissing(missing, language, supabase, opts 
       const meanings = Array.isArray(entry?.meanings) ? entry.meanings.filter(m => m?.meaning) : [];
       if (meanings.length === 0) return;
 
+      // 뜻별 pos 태그(중국어 겸류사 — 뜻 정렬이 문맥 품사를 따르는 데 필요)는 모델이 준 경우만 보존
       const normalizedMeanings = meanings.slice(0, 3).map((m, i) => ({
         meaning: String(m.meaning).slice(0, 80),
         priority: i + 1,
+        ...(m?.pos && typeof m.pos === 'string' ? { pos: String(m.pos).trim().slice(0, 20) } : {}),
       }));
 
       // 영어·중국어는 Gemini가 pos를 정해줌(중국어는 겸류 다중 pos '동사·명사' 포함 — jieba

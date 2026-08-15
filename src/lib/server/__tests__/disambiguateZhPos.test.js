@@ -3,6 +3,9 @@ import {
   collectZhPosMarks,
   disambiguateZhPos,
   resolveZhTokenPos,
+  pickZhMeaning,
+  needsZhMeaningPosRefresh,
+  buildZhPosWriteback,
   zhPosMarkKey,
 } from '../disambiguateZhPos.js';
 
@@ -174,5 +177,103 @@ describe('resolveZhTokenPos — 최종 pos/pos_all 병합', () => {
       pick: { pos: '명사', all: ['명사'] },
       cachedPos: '명사', tokenPos: '명사', tokenPosAll: undefined,
     })).toEqual({ pos: '명사', posAll: null });
+  });
+});
+
+describe('pickZhMeaning — 뜻 정렬 문맥화', () => {
+  const meanings = [
+    { meaning: '일하다', priority: 1, pos: '동사' },
+    { meaning: '일, 직업', priority: 2, pos: '명사' },
+  ];
+
+  it('짚힌 품사와 일치하는 뜻을 우선 선택한다', () => {
+    expect(pickZhMeaning(meanings, '명사')).toBe('일, 직업');
+    expect(pickZhMeaning(meanings, '동사')).toBe('일하다');
+  });
+
+  it('일치하는 태그가 없으면 첫 뜻(기존 동작)', () => {
+    expect(pickZhMeaning(meanings, '형용사')).toBe('일하다');
+  });
+
+  it('태그 없는 레거시 뜻·pos 없음도 첫 뜻', () => {
+    const legacy = [{ meaning: '계획', priority: 1 }];
+    expect(pickZhMeaning(legacy, '동사')).toBe('계획');
+    expect(pickZhMeaning(meanings, null)).toBe('일하다');
+  });
+
+  it('빈 배열·비배열은 빈 문자열', () => {
+    expect(pickZhMeaning([], '동사')).toBe('');
+    expect(pickZhMeaning(undefined, '동사')).toBe('');
+  });
+});
+
+describe('needsZhMeaningPosRefresh — 뜻 pos 백필 판정', () => {
+  it('다중 품사 gemini 행 + 태그 없는 뜻 → 재조회 대상', () => {
+    expect(needsZhMeaningPosRefresh({
+      pos: '동사·명사', source: 'gemini', meanings: [{ meaning: '일하다', priority: 1 }],
+    })).toBe(true);
+  });
+
+  it('뜻에 pos 태그가 이미 있으면 제외', () => {
+    expect(needsZhMeaningPosRefresh({
+      pos: '동사·명사', source: 'gemini', meanings: [{ meaning: '일하다', pos: '동사' }],
+    })).toBe(false);
+  });
+
+  it('단일 품사 행·user_verified·빈 뜻은 제외', () => {
+    expect(needsZhMeaningPosRefresh({ pos: '명사', source: 'gemini', meanings: [{ meaning: '계획' }] })).toBe(false);
+    expect(needsZhMeaningPosRefresh({ pos: '동사·명사', source: 'user_verified', meanings: [{ meaning: '일' }] })).toBe(false);
+    expect(needsZhMeaningPosRefresh({ pos: '동사·명사', source: 'gemini', meanings: [] })).toBe(false);
+    expect(needsZhMeaningPosRefresh(undefined)).toBe(false);
+  });
+});
+
+describe('buildZhPosWriteback — 레거시 행 다중 후보 기록 그룹', () => {
+  const mark = (lineIdx, word) => ({ lineIdx, word, key: zhPosMarkKey(lineIdx, word) });
+
+  it('단일 pos gemini 행에만, pos 후보 문자열별로 그룹핑한다', () => {
+    const marks = [mark(0, '计划'), mark(0, '希望'), mark(0, '图书馆')];
+    const picks = new Map([
+      [zhPosMarkKey(0, '计划'), { pos: '동사', all: ['동사', '명사'] }],
+      [zhPosMarkKey(0, '希望'), { pos: '명사', all: ['동사', '명사'] }],
+      [zhPosMarkKey(0, '图书馆'), { pos: '명사', all: ['명사'] }],       // 후보 1개 — 기록 불필요
+    ]);
+    const cache = new Map([
+      ['计划', { pos: '명사', source: 'gemini' }],
+      ['希望', { pos: '동사', source: 'gemini' }],
+      ['图书馆', { pos: '명사', source: 'gemini' }],
+    ]);
+    expect(buildZhPosWriteback(marks, picks, cache)).toEqual([
+      { pos: '동사·명사', baseForms: ['计划', '希望'] },
+    ]);
+  });
+
+  it('이미 다중 pos인 행·user_verified·캐시 없음·pick 없음은 제외한다', () => {
+    const marks = [mark(0, '工作'), mark(0, '学习'), mark(0, '研究'), mark(0, '发展')];
+    const picks = new Map([
+      [zhPosMarkKey(0, '工作'), { pos: '동사', all: ['동사', '명사'] }],
+      [zhPosMarkKey(0, '学习'), { pos: '동사', all: ['동사', '명사'] }],
+      [zhPosMarkKey(0, '研究'), { pos: '동사', all: ['동사', '명사'] }],
+      // 发展: pick 없음
+    ]);
+    const cache = new Map([
+      ['工作', { pos: '동사·명사', source: 'gemini' }],    // 이미 다중
+      ['学习', { pos: '동사', source: 'user_verified' }],  // 오너 확정
+      // 研究: 캐시 없음
+      ['发展', { pos: '동사', source: 'gemini' }],
+    ]);
+    expect(buildZhPosWriteback(marks, picks, cache)).toEqual([]);
+  });
+
+  it('여러 줄에서 마크된 같은 단어는 첫 판정만 기록한다', () => {
+    const marks = [mark(0, '计划'), mark(1, '计划')];
+    const picks = new Map([
+      [zhPosMarkKey(0, '计划'), { pos: '동사', all: ['동사', '명사'] }],
+      [zhPosMarkKey(1, '计划'), { pos: '명사', all: ['명사', '동사'] }],
+    ]);
+    const cache = new Map([['计划', { pos: '명사', source: 'gemini' }]]);
+    expect(buildZhPosWriteback(marks, picks, cache)).toEqual([
+      { pos: '동사·명사', baseForms: ['计划'] },
+    ]);
   });
 });
