@@ -76,6 +76,9 @@ export function createTokenRangeGesture(handlers = {}) {
   };
 }
 
+/** 그립이 잡은 쪽의 반대 끝 — 조정 중 고정될 앵커(순수 함수, 그립 드래그의 판정 핵심). */
+export const gripAnchor = (range, which) => (which === 'start' ? range.end : range.start);
+
 /** 범위 토큰의 표면형 합성 — 개행 토큰은 '\n'으로 보존해 다줄 분석(줄 분리)이 성립한다. */
 export function composeRangeText(sequence, dictionary, startIdx, endIdx) {
   let out = '';
@@ -256,6 +259,48 @@ export function useTokenRangeSelect({ sequence, dictionary, enabled = true, onSe
     docListenersRef.current = { move, up, cancel };
   }, [enabled, seqIndex]);
 
+  // 그립(양끝 핸들) 드래그 — 이미 확정된 범위의 한쪽 끝을 잡아 미세 조정한다.
+  // 임계·길게 누르기 없이 즉시 조정 모드로 진입하고, 놓을 때 범위가 실제로 바뀐 경우에만
+  // 재분석(onSelect)한다 — 무변경 릴리스에 Gemini 호출을 낭비하지 않는다.
+  const startGripAdjust = useCallback((which, e) => {
+    const r = range;
+    if (!r || !enabled) return;
+    e.preventDefault();
+    e.stopPropagation();
+    didSelectRef.current = true;
+    anchorRef.current = gripAnchor(r, which);
+    focusRef.current = which === 'start' ? r.start : r.end;
+    const before = { start: r.start, end: r.end };
+    const block = (ev) => ev.preventDefault();
+    document.addEventListener('touchmove', block, { passive: false });
+    touchBlockRef.current = block;
+    rafRef.current = requestAnimationFrame(stepAutoScrollRef.current);
+    const move = (ev) => {
+      lastPointRef.current = { x: ev.clientX, y: ev.clientY };
+      applyFocusRef.current(tokenIdxFromPointRef.current(ev.clientX, ev.clientY));
+    };
+    const detach = () => {
+      document.removeEventListener('pointermove', move);
+      document.removeEventListener('pointerup', up);
+      document.removeEventListener('pointercancel', cancel);
+      if (docListenersRef.current?.move === move) docListenersRef.current = null;
+    };
+    const up = () => {
+      detach();
+      const a = anchorRef.current;
+      const f = focusRef.current;
+      const changed = a != null && f != null &&
+        (Math.min(a, f) !== before.start || Math.max(a, f) !== before.end);
+      if (changed) finishRef.current();
+      else cleanupTransientRef.current(); // 무변경 — 하이라이트 유지, 재분석 생략
+    };
+    const cancel = () => { detach(); cleanupTransientRef.current(); };
+    document.addEventListener('pointermove', move);
+    document.addEventListener('pointerup', up);
+    document.addEventListener('pointercancel', cancel);
+    docListenersRef.current = { move, up, cancel };
+  }, [range, enabled]);
+
   // 제스처 직후 합성 click이 단어 시트를 열지 않게 캡처 단계에서 차단
   const handleClickCapture = useCallback((e) => {
     if (didSelectRef.current) {
@@ -275,5 +320,5 @@ export function useTokenRangeSelect({ sequence, dictionary, enabled = true, onSe
     };
   }, [clearRange]);
 
-  return { range, rangeTokenIds, clearRange, handlePointerDown, handleClickCapture };
+  return { range, rangeTokenIds, clearRange, handlePointerDown, handleClickCapture, startGripAdjust };
 }
