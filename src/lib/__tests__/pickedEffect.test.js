@@ -24,4 +24,18 @@ describe('지정 이펙트 불투명 등가색 (index.css)', () => {
     expect(css).toMatch(/\.reader-area--light \{ --picked-bg: color-mix\(in srgb, var\(--primary\)/);
     expect(css).toMatch(/\.reader-area--dark\s+\{ --picked-bg: color-mix\(in srgb, var\(--primary\)/);
   });
+
+  // 불투명색은 나중 형제가 앞 형제 글자를 가린다 — 확장은 이웃 글리프를 못 덮는 방향만.
+  // 전방향 spread(0 0 0 Npx)가 부활하면 "다음 글자 이펙트가 앞 글자 가림"이 재발한다.
+  it('기본 picked에 전방향 spread·수평 확장이 없다(상하 2px만)', () => {
+    expect(block).not.toMatch(/0 0 0 \d/);
+    const offsets = [...block.matchAll(/(?:^|,|:)\s*(-?[\d.]+(?:px|rem|em)|0|calc\([^)]*\)) (-?[\d.]+(?:px|rem|em)|0) 0/g)];
+    for (const [, x] of offsets) expect(x).toBe('0'); // 기본 규칙의 수평 오프셋은 전부 0
+  });
+
+  it('자간 이음은 연속 지정(+ 결합자)에서만, 정확히 --char-gap 폭 왼쪽으로만 칠한다', () => {
+    const adj = css.match(/\.word-token--picked \+ \.word-token--picked \.surface \{[^}]*\}/)?.[0] || '';
+    expect(adj).toContain('calc(-1 * var(--char-gap');
+    expect(adj).not.toMatch(/0 0 0 \d/); // spread 금지 — gap을 넘어 앞 상자를 침범할 수 없다
+  });
 });

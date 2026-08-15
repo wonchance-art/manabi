@@ -2146,16 +2146,28 @@ body.is-review-session .page-container { padding-top: 8px; }
   .line-pick:active { opacity: 1; }
 }
 
-/* 지정 이펙트(문장 막대·인앱 범위 공용) — 자간 gap이 있어 그림자로 이어 붙인다.
-   색은 반드시 '불투명 등가색'(--picked-bg): 반투명(rgba)을 배경+그림자로 이중 도색하면
-   인접 토큰·줄에서 겹치는 부분만 짙어진다(오너 보고 실측). 테마 배경과 미리 섞은 불투명색은
-   몇 겹을 칠해도 같은 색이라 이음매가 사라진다. */
+/* 지정 이펙트(문장 막대·인앱 범위 공용).
+   ① 색은 '불투명 등가색'(--picked-bg) — 반투명 이중 도색은 겹침이 짙어진다(#1013).
+   ② 확장은 '이웃 글리프를 덮지 않는 방향·폭'으로만 — 불투명색은 나중에 그려지는 형제가
+      앞 형제 글자를 가리므로(오너 보고: 다음 글자 이펙트가 앞 글자 가림) 전방향 spread 금지.
+      위아래 2px는 행간 최소 10px라 안전, 자간 이음은 '연속 지정된 뒤 토큰'이 정확히
+      gap 폭(--char-gap, 뷰어 설정 인라인 주입)만큼만 왼쪽으로 — 앞 토큰 상자 경계에서
+      멈춰 글리프에 닿을 수 없다. */
 .reader-area--light { --picked-bg: color-mix(in srgb, var(--primary) 18%, #fff); }
 .reader-area--dark  { --picked-bg: color-mix(in srgb, var(--primary) 18%, var(--bg-primary)); }
 .word-token--picked .surface {
   background: var(--picked-bg, var(--primary-glow));
   border-radius: 4px;
-  box-shadow: 0 0 0 3px var(--picked-bg, var(--primary-glow));
+  box-shadow:
+    0 2px 0 var(--picked-bg, var(--primary-glow)),
+    0 -2px 0 var(--picked-bg, var(--primary-glow));
+}
+/* 자간 이음 — 앞 토큰도 지정된 경우에만(줄 경계는 부모가 달라 자동 차단) */
+.word-token--picked + .word-token--picked .surface {
+  box-shadow:
+    0 2px 0 var(--picked-bg, var(--primary-glow)),
+    0 -2px 0 var(--picked-bg, var(--primary-glow)),
+    calc(-1 * var(--char-gap, 0.25rem)) 0 0 var(--picked-bg, var(--primary-glow));
 }
 .word-token--picked .line-pick {
   opacity: 1;
