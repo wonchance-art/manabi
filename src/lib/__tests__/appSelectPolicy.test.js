@@ -30,10 +30,27 @@ describe('앱 전역 무선택 정책 (index.css)', () => {
     expect(css).toMatch(/img \{[^}]*-webkit-user-drag: none/);
   });
 
-  // 임시 예외(인앱 지정 개통 전 데스크톱 드래그 분석 공백 방지) — 인앱 지정 PR에서
-  // 이 테스트를 "예외 없음" 검증으로 뒤집는다.
-  it('[임시] 뷰어 본문은 브라우저 선택을 유지한다(인앱 지정 개통 전)', () => {
-    const m = css.match(/^\.reader-area \{[^}]*\}/m)?.[0] || '';
-    expect(m).toContain('user-select: text');
+  // 뷰어 본문도 무선택 — 드래그 지정은 인앱(useTokenRangeSelect)이 전담한다.
+  // 브라우저 선택 예외가 부활하면 파란 네이티브 하이라이트와 인앱 이펙트가 겹친다.
+  it('뷰어 본문에 브라우저 선택 예외가 없다(인앱 지정 전담)', () => {
+    expect(css).not.toMatch(/\.reader-area[^{]*\{[^}]*user-select: text/);
+  });
+});
+
+/**
+ * 계약: 뷰어의 드래그 지정은 인앱 토큰 범위 지정만 쓴다 — 네이티브 selection 의존이
+ * ViewerPage에 되살아나면 전역 무선택 정책과 충돌한다(빈 selection이라 조용히 죽는 회귀).
+ */
+describe('뷰어 인앱 지정 전환 (ViewerPage.jsx)', () => {
+  const src = fs.readFileSync(path.join(process.cwd(), 'src/views/ViewerPage.jsx'), 'utf8');
+
+  it('window.getSelection 의존이 없다', () => {
+    expect(src).not.toContain('window.getSelection');
+  });
+
+  it('인앱 지정 훅과 토큰 data-tid 배선이 있다', () => {
+    expect(src).toContain('useTokenRangeSelect');
+    expect(src).toContain('data-tid={tokenId}');
+    expect(src).toContain('onPointerDown={tokenRange.handlePointerDown}');
   });
 });
