@@ -12,7 +12,7 @@ import { tokenizeZhLine } from '@/lib/server/tokenizeZh';
 import { fetchMeaningsForMissing } from '@/lib/server/fetchMeanings';
 import {
   collectZhPosMarks, disambiguateZhPos, resolveZhTokenPos, zhPosMarkKey,
-  pickZhMeaning, needsZhMeaningPosRefresh, buildZhPosWriteback, splitZhToken,
+  pickZhMeaning, needsZhMeaningPosRefresh, needsZhJaBackfill, buildZhPosWriteback, splitZhToken,
 } from '@/lib/server/disambiguateZhPos';
 import { rateLimit, getClientKey } from '@/lib/server/rateLimit';
 
@@ -127,12 +127,13 @@ export async function POST(request) {
       }
     }
 
-    // 4.2. 중국어 자가 치유 — 다중 품사 행인데 뜻에 pos 태그가 없는 캐시 행은 미싱 경로로
-    // 뜻을 재조회해 태깅한다(겸류사 뜻 정렬이 문맥 품사를 따르려면 뜻마다 pos가 필요).
-    // 진짜 미싱 뒤에 붙어 MAX_MISSING 캡에서 미싱이 우선. 재조회 실패 시 기존 행 유지.
+    // 4.2. 중국어 자가 치유 — 재조회 대상: ① 다중 품사 행인데 뜻에 pos 태그가 없음(겸류사
+    // 뜻 정렬에 필요) ② 일본어 대응(ja) 미판정(한자 대조 2단계 백필). 미싱 경로를 그대로
+    // 타고, 진짜 미싱 뒤에 붙어 MAX_MISSING 캡에서 미싱이 우선. 재조회 실패 시 기존 행 유지.
     if (language === 'Chinese') {
       for (const [baseForm, entry] of cache) {
-        if (needsZhMeaningPosRefresh(entry) && !missingList.some(m => m.base_form === baseForm)) {
+        if ((needsZhMeaningPosRefresh(entry) || needsZhJaBackfill(entry)) &&
+            !missingList.some(m => m.base_form === baseForm)) {
           missingList.push({ base_form: baseForm, pos: entry.pos, reading: entry.reading });
         }
       }

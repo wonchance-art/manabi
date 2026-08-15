@@ -42,6 +42,15 @@ describe('buildPromotedEntry — 승격 행 구성', () => {
     expect(buildPromotedEntry(existing, { meaning: '일하다', pos: '동사' }).pos).toBe('동사·명사');
   });
 
+  it('기존 뜻의 일본어 대응(ja)은 승격 후에도 보존된다(위치만 이동 — getJaRef가 위치 무관 탐색)', () => {
+    const withJa = {
+      ...existing,
+      meanings: [{ meaning: '일하다', priority: 1, pos: '동사', ja: { form: '仕事', yomi: 'しごと', diff: true } }],
+    };
+    const entry = buildPromotedEntry(withJa, { meaning: '근무하다', pos: '동사' });
+    expect(entry.meanings[1].ja).toEqual({ form: '仕事', yomi: 'しごと', diff: true });
+  });
+
   it('미등재 단어는 교정 뜻만으로 새 행을 만든다', () => {
     const entry = buildPromotedEntry(null, { meaning: '붓', pos: '명사', furigana: 'bǐ' });
     expect(entry).toEqual({

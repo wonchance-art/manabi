@@ -235,6 +235,18 @@ export function needsZhMeaningPosRefresh(entry) {
 }
 
 /**
+ * 한자 대조 2단계 백필 — 일본어 대응(ja)이 아직 판정되지 않은 행은 뜻 재조회 대상.
+ * ja: null은 "판정 완료·대응 없음"이라 재조회하지 않는다(무한 재조회 방지 — fetchMeanings가
+ * 항상 ja 키를 기록하는 계약과 쌍). user_verified는 오너 확정 — 덮지 않는다.
+ */
+export function needsZhJaBackfill(entry) {
+  if (!entry || entry.source === 'user_verified') return false;
+  const meanings = Array.isArray(entry.meanings) ? entry.meanings : [];
+  if (meanings.length === 0) return false;
+  return meanings.every((m) => !m || !('ja' in m));
+}
+
+/**
  * 레거시 자가 치유 ② — 문맥 판별이 알아낸 다중 후보(pick.all)를 아직 단일 pos로 남아 있는
  * gemini 행에 기록할 그룹을 만든다(호출부가 fire-and-forget update). 다음 요청부터 캐시가
  * 후보를 알게 되고, ①이 뜻 pos 백필을 이어간다 — 요청 2회로 레거시 행이 완전 치유된다.

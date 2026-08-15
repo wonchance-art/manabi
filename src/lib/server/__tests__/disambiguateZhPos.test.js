@@ -7,6 +7,7 @@ import {
   resolveZhTokenPos,
   pickZhMeaning,
   needsZhMeaningPosRefresh,
+  needsZhJaBackfill,
   buildZhPosWriteback,
   splitZhToken,
   zhPosMarkKey,
@@ -327,6 +328,23 @@ describe('needsZhMeaningPosRefresh — 뜻 pos 백필 판정', () => {
     expect(needsZhMeaningPosRefresh({ pos: '동사·명사', source: 'user_verified', meanings: [{ meaning: '일' }] })).toBe(false);
     expect(needsZhMeaningPosRefresh({ pos: '동사·명사', source: 'gemini', meanings: [] })).toBe(false);
     expect(needsZhMeaningPosRefresh(undefined)).toBe(false);
+  });
+});
+
+describe('needsZhJaBackfill — 일본어 대응 백필 판정', () => {
+  it('ja 키가 아무 뜻에도 없으면(미판정 레거시) 재조회 대상', () => {
+    expect(needsZhJaBackfill({ source: 'gemini', meanings: [{ meaning: '도서관' }] })).toBe(true);
+  });
+
+  it('ja: null(대응 없음 판정)·ja 있음은 재조회하지 않는다(무한 재조회 방지)', () => {
+    expect(needsZhJaBackfill({ source: 'gemini', meanings: [{ meaning: '~의', ja: null }] })).toBe(false);
+    expect(needsZhJaBackfill({ source: 'gemini', meanings: [{ meaning: '도서관', ja: { form: '図書館', yomi: 'としょかん' } }] })).toBe(false);
+  });
+
+  it('user_verified·빈 뜻은 제외', () => {
+    expect(needsZhJaBackfill({ source: 'user_verified', meanings: [{ meaning: '일' }] })).toBe(false);
+    expect(needsZhJaBackfill({ source: 'gemini', meanings: [] })).toBe(false);
+    expect(needsZhJaBackfill(undefined)).toBe(false);
   });
 });
 

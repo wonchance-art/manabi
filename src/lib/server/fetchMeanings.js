@@ -17,8 +17,8 @@ ${list}
 
 ## 출력 형식 (순서와 길이 정확히 일치)
 [
-  { "pos": "명사", "reading": "túshūguǎn", "meanings": [{"meaning": "도서관", "pos": "명사"}] },
-  { "pos": "동사·명사", "reading": "gōngzuò", "meanings": [{"meaning": "일하다", "pos": "동사"}, {"meaning": "일, 직업", "pos": "명사"}] },
+  { "pos": "명사", "reading": "túshūguǎn", "meanings": [{"meaning": "도서관", "pos": "명사"}], "ja": {"form": "図書館", "yomi": "としょかん"} },
+  { "pos": "동사·명사", "reading": "gōngzuò", "meanings": [{"meaning": "일하다", "pos": "동사"}, {"meaning": "일, 직업", "pos": "명사"}], "ja": {"form": "仕事", "yomi": "しごと", "diff": true} },
   ...
 ]
 
@@ -26,6 +26,9 @@ ${list}
 - pos는 한국어로 (명사/동사/형용사/부사/전치사/접속사/조사/대명사/양사/수사/감탄사/성어)
 - 여러 품사로 두루 쓰이는 단어(겸류사)는 흔한 순으로 '·'로 이어 모두 적기 (예: 工作·学习 → "동사·명사")
 - 각 뜻(meanings 항목)에 그 뜻이 속하는 품사(pos)를 붙이기 — 겸류사는 품사마다 뜻 최소 1개
+- ja: 이 단어의 일본어 대응 — form은 일본어에서 실제 그 뜻으로 쓰는 표기(신자체), yomi는 히라가나 읽기.
+  같은 한자어를 일본어도 같은 뜻으로 쓰면 diff 생략(図書館), 일본어에선 다른 단어를 쓰면 그 단어를 form에 넣고 diff: true(老师→先生).
+  기능어(的·了 등)나 마땅한 대응이 없으면 ja: null
 - reading은 성조 기호가 붙은 병음 (예: 图书馆→túshūguǎn, 中国→Zhōngguó)
 - 각 단어에 1~3개 주요 의미 (가장 흔한 순)
 - 의미는 10자 이내로 간결하게
@@ -236,6 +239,23 @@ export async function fetchMeaningsForMissing(missing, language, supabase, opts 
         priority: i + 1,
         ...(m?.pos && typeof m.pos === 'string' ? { pos: String(m.pos).trim().slice(0, 20) } : {}),
       }));
+
+      // 일본어 대응(한자 대조 2단계, 중국어만) — meanings jsonb 안 관례 필드로 저장(스키마
+      // 무변경). ja: null도 "판정 완료·대응 없음"으로 기록해 레거시 미판정(키 자체 부재)과
+      // 구분한다 — 백필 판정(needsZhJaBackfill)이 이 구분에 기댄다.
+      if (language === 'Chinese' && normalizedMeanings.length > 0) {
+        const rawJa = entry?.ja;
+        const ja = rawJa && typeof rawJa === 'object' &&
+          typeof rawJa.form === 'string' && rawJa.form.trim() &&
+          typeof rawJa.yomi === 'string' && rawJa.yomi.trim()
+          ? {
+              form: rawJa.form.trim().slice(0, 20),
+              yomi: rawJa.yomi.trim().slice(0, 30),
+              ...(rawJa.diff === true ? { diff: true } : {}),
+            }
+          : null;
+        normalizedMeanings[0] = { ...normalizedMeanings[0], ja };
+      }
 
       // 영어·중국어는 Gemini가 pos를 정해줌(중국어는 겸류 다중 pos '동사·명사' 포함 — jieba
       // 단일 태그보다 정확). 일본어는 kuromoji pos가 이미 정확해 유지.
