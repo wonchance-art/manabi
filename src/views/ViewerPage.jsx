@@ -37,6 +37,7 @@ import { useDragWordPopup } from '../lib/useDragWordPopup';
 import { useNextRangeMutation } from '../lib/useNextRangeMutation';
 import { useReadProgress } from '../lib/useReadProgress';
 import { useScrollRestore } from '../lib/useScrollRestore';
+import TokenPosLabel from './TokenPosLabel';
 import ViewerComments from './ViewerComments';
 import ViewerGrammarModal from './ViewerGrammarModal';
 import ViewerQuizModal from './ViewerQuizModal';
@@ -810,7 +811,7 @@ export default function ViewerPage() {
               : selectedToken.text}
           </div>
           <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 4 }}>
-            {selectedToken.pos}
+            <TokenPosLabel token={selectedToken} />
             {selectedToken.base_form && selectedToken.base_form !== selectedToken.text && ` · ${selectedToken.base_form}`}
           </div>
         </div>
@@ -1553,7 +1554,7 @@ export default function ViewerPage() {
               <button className="pdf-detail-popup__close" onClick={() => setPopupWord(null)}>✕</button>
             </div>
             <div className="pdf-detail-popup__meta">
-              <span className="pdf-detail-popup__pos">{popupWord.token.pos}</span>
+              <span className="pdf-detail-popup__pos"><TokenPosLabel token={popupWord.token} /></span>
               {popupWord.token.base_form && popupWord.token.base_form !== popupWord.token.text && (
                 <span className="pdf-detail-popup__base">{popupWord.token.base_form}</span>
               )}

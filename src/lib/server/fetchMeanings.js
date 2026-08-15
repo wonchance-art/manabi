@@ -18,12 +18,13 @@ ${list}
 ## 출력 형식 (순서와 길이 정확히 일치)
 [
   { "pos": "명사", "reading": "túshūguǎn", "meanings": [{"meaning": "도서관"}] },
-  { "pos": "동사", "reading": "dú", "meanings": [{"meaning": "읽다"}, {"meaning": "공부하다"}] },
+  { "pos": "동사·명사", "reading": "gōngzuò", "meanings": [{"meaning": "일하다"}, {"meaning": "일, 직업"}] },
   ...
 ]
 
 ## 규칙
 - pos는 한국어로 (명사/동사/형용사/부사/전치사/접속사/조사/대명사/양사/수사/감탄사/성어)
+- 여러 품사로 두루 쓰이는 단어(겸류사)는 흔한 순으로 '·'로 이어 모두 적기 (예: 工作·学习 → "동사·명사")
 - reading은 성조 기호가 붙은 병음 (예: 图书馆→túshūguǎn, 中国→Zhōngguó)
 - 각 단어에 1~2개 주요 의미 (가장 흔한 순)
 - 의미는 10자 이내로 간결하게
@@ -77,7 +78,7 @@ ${list}
 - 설명/주석 금지, JSON만 출력`;
 }
 
-function parseJsonLenient(text) {
+export function parseJsonLenient(text) {
   const cleaned = text.replace(/```json|```/g, '').trim();
   const start = cleaned.indexOf('[');
   const end = cleaned.lastIndexOf(']');
@@ -233,8 +234,11 @@ export async function fetchMeaningsForMissing(missing, language, supabase, opts 
         priority: i + 1,
       }));
 
-      // 영어는 Gemini가 pos를 정해줌, 일본어는 기존 pos 유지
-      const pos = language === 'English' && entry?.pos ? String(entry.pos).slice(0, 30) : source.pos;
+      // 영어·중국어는 Gemini가 pos를 정해줌(중국어는 겸류 다중 pos '동사·명사' 포함 — jieba
+      // 단일 태그보다 정확). 일본어는 kuromoji pos가 이미 정확해 유지.
+      const pos = (language === 'English' || language === 'Chinese') && entry?.pos
+        ? String(entry.pos).slice(0, 30)
+        : source.pos;
 
       // 일본어: Gemini 맥락 기반 reading / 영어: IPA 발음
       let reading;

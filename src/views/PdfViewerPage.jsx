@@ -16,6 +16,7 @@ import ViewerBottomSheet from '../components/ViewerBottomSheet';
 import ListenControls from '../components/ListenControls';
 import { formatDetail } from '../lib/wordDetailFormat';
 import { langNameKo } from '../lib/constants';
+import TokenPosLabel from './TokenPosLabel';
 
 async function fetchPdfInfo(pdfId) {
   const { data, error } = await supabase
@@ -404,7 +405,7 @@ export default function PdfViewerPage() {
               <button className="pdf-detail-popup__close" onClick={() => setWordDetail(null)}>✕</button>
             </div>
             <div className="pdf-detail-popup__meta">
-              <span className="pdf-detail-popup__pos">{wordDetail.token.pos}</span>
+              <span className="pdf-detail-popup__pos"><TokenPosLabel token={wordDetail.token} /></span>
               {wordDetail.token.base_form && wordDetail.token.base_form !== wordDetail.token.text && (
                 <span className="pdf-detail-popup__base">{wordDetail.token.base_form}</span>
               )}

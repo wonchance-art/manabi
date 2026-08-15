@@ -10,6 +10,7 @@ import { tokenizeJaLine } from '@/lib/server/tokenizeJa';
 import { tokenizeEnLine } from '@/lib/server/tokenizeEn';
 import { tokenizeZhLine } from '@/lib/server/tokenizeZh';
 import { fetchMeaningsForMissing } from '@/lib/server/fetchMeanings';
+import { collectZhPosMarks, disambiguateZhPos, resolveZhTokenPos, zhPosMarkKey } from '@/lib/server/disambiguateZhPos';
 import { rateLimit, getClientKey } from '@/lib/server/rateLimit';
 
 export const runtime = 'nodejs';
@@ -123,11 +124,22 @@ export async function POST(request) {
       }
     }
 
+    // 4.5. 중국어 품사 문맥 판별 — 겸류사(工作·计划·希望 등)는 jieba가 문맥 불문 단어당 한
+    // 태그만 달고, 캐시 pos 우선 병합이 그 첫 품사를 박제한다(병음 박제 #1004와 같은 구조).
+    // 명/동/형 계열 한자어를 모아 flash-lite 1회로 "품사 후보 전체 + 이 문장에서의 품사"를
+    // 받는다. 뜻 조회와 서로 독립(판별은 pos만, 뜻 조회는 meaning만)이라 병렬 실행 —
+    // 미싱이 있는 요청에선 벽시계 추가가 없다. 실패 시 기존 pos 폴백(그레이스풀).
+    const zhMarks = language === 'Chinese' ? collectZhPosMarks(tokenizedLines, cache) : [];
+    const posPicksPromise = zhMarks.length > 0
+      ? disambiguateZhPos(lines, zhMarks, { deadlineMs: startedAt + 35_000 })
+      : Promise.resolve(new Map());
+
     // 미싱 처리 상한 — 배치 폭발 방지. 초과분은 이번 요청에서 뜻 없이 넘어간다(다음에 백필).
     // deadline: 캐시가 빈 언어(중국어 개통 직후)는 미싱 100개 순차 조회가 실측 94s로 60s 캡을
     // 넘겨 함수째 죽고, 클라에선 문단 전체 실패로 보였다(#969). 함수 킬 전에 조회만 중단한다.
     const cappedMissing = missingList.slice(0, MAX_MISSING);
-    if (cappedMissing.length > 0) {
+    const meaningsPromise = (async () => {
+      if (cappedMissing.length === 0) return;
       try {
         // 35s: 마지막 웨이브가 deadline 직전 시작 + 개별 타임아웃 20s까지 물고 늘어져도
         // 60s(maxDuration) 안에 응답 조립까지 마치는 상한.
@@ -141,7 +153,9 @@ export async function POST(request) {
       } catch (err) {
         console.warn('[api/analyze] Gemini meaning fetch failed:', err?.message);
       }
-    }
+    })();
+    // disambiguateZhPos는 내부에서 전부 catch — reject 없이 빈 Map으로 수렴한다.
+    const [posPicks] = await Promise.all([posPicksPromise, meaningsPromise]);
 
     // 5. processed_json 호환 응답 조립
     // 불필요 furigana 필터: 히라가나·카타카나·기호만인 토큰은 reading 무시
@@ -172,12 +186,23 @@ export async function POST(request) {
         const rawReading = (language === 'Chinese'
           ? (t.furigana || cached?.reading)
           : (cached?.reading || t.furigana)) || null;
+        // 중국어 품사: 문맥 pick > 후보 첫 항목 > 캐시 > jieba(다른 언어는 기존 캐시 우선 그대로).
+        // 후보가 2개 이상이면 pos_all 동봉 — 뷰어가 후보 전체를 보여주고 맥락 품사만 강조한다.
+        const { pos, posAll } = language === 'Chinese'
+          ? resolveZhTokenPos({
+              pick: posPicks.get(zhPosMarkKey(lineIdx, t.text)),
+              cachedPos: cached?.pos,
+              tokenPos: t.pos,
+              tokenPosAll: t.pos_all,
+            })
+          : { pos: cached?.pos || t.pos, posAll: null };
         dictionary[tokenId] = {
           text: t.text,
           furigana: cleanFurigana(t.text, rawReading),
-          pos: cached?.pos || t.pos,
+          pos,
           meaning,
           base_form: t.base_form,
+          ...(posAll ? { pos_all: posAll } : {}),
         };
       });
       return { sequence, dictionary };

@@ -75,6 +75,34 @@ describe('fetchMeaningsForMissing — 병렬·deadline', () => {
     expect(deadlineErr.remaining).toBe(90);
   });
 
+  // 겸류사: 중국어는 Gemini pos(다중 '·' 연결 포함)를 저장해야 사전이 후보를 안다.
+  // (기존엔 영어만 entry.pos를 쓰고 중국어는 프롬프트로 받고도 버렸다 — jieba 단일 태그 박제)
+  it('중국어는 Gemini pos를 저장한다(겸류 다중 pos 포함)', async () => {
+    const arr = [{ pos: '동사·명사', reading: 'gōngzuò', meanings: [{ meaning: '일하다' }, { meaning: '일' }] }];
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({ candidates: [{ content: { parts: [{ text: JSON.stringify(arr) }] } }] }),
+    })));
+    const { result } = await fetchMeaningsForMissing(
+      [{ base_form: '工作', pos: '명사성 동사', reading: 'gōngzuò' }], 'Chinese', mockSupabase
+    );
+    expect(result.get('工作').pos).toBe('동사·명사');
+  });
+
+  it('일본어는 Gemini pos를 무시하고 kuromoji pos를 유지한다', async () => {
+    const arr = [{ pos: '엉뚱품사', reading: 'たべる', meanings: [{ meaning: '먹다' }] }];
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({ candidates: [{ content: { parts: [{ text: JSON.stringify(arr) }] } }] }),
+    })));
+    const { result } = await fetchMeaningsForMissing(
+      [{ base_form: '食べる', pos: '동사', reading: 'たべる' }], 'Japanese', mockSupabase
+    );
+    expect(result.get('食べる').pos).toBe('동사');
+  });
+
   it('capacity 재시도 대기가 deadline을 넘기면 재시도를 포기한다', async () => {
     const fetchSpy = vi.fn(async () => ({
       ok: false,

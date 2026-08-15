@@ -1,0 +1,159 @@
+// 서버 전용 — 중국어 품사 문맥 판별.
+// 중국어는 겸류사(한 단어가 명사·동사 등 여러 품사로 두루 쓰임)가 흔한데, jieba는 사전 등재어에
+// 문맥과 무관하게 단어당 한 태그만 단다(실측: 工作은 我在工作에서도 vn, 计划은 我计划去北京에서도 n,
+// 希望은 我有一个希望에서도 v). 캐시(morpheme_dictionary) pos 우선 병합까지 겹치면 첫 등재 품사가
+// 박제된다 — 병음 박제(#1004)와 같은 구조의 문제라 같은 방식(문장 문맥 산출)으로 푼다.
+// 결정적 해법이 없으므로(jieba 태그가 사전 고정) 명사/동사/형용사 계열 한자어만 골라 요청당
+// Gemini flash-lite 1회에 "사전상 품사 후보 전체 + 이 문장에서의 품사"를 묻는다.
+// 실패·타임아웃·키 없음이면 빈 결과 — 기존 pos 폴백으로 그대로 동작한다(그레이스풀 디그레이드).
+
+import { parseJsonLenient } from './fetchMeanings.js';
+
+const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent';
+
+// 판별 대상 품사 — 명·동·형 계열과 jieba 겸류 라벨(vn·vd·an·ad의 한국어 표기).
+// 대명사·조사·전치사·수사·양사·지명·인명 등은 품사가 안정적이라 묻지 않는다(호출 크기 절감).
+const MARKABLE_POS = new Set([
+  '명사', '동사', '형용사',
+  '명사성 동사', '부사성 동사', '명사성 형용사', '부사성 형용사',
+]);
+const HAS_HANZI = /[一-鿿]/;
+// 요청당 판별 단어 상한 — /api/analyze 캡(100줄×200자) 최악 케이스에서 프롬프트 폭발 방지.
+// 초과분은 이번 요청에서 기존 pos로 표시되고 다음 분석에서 다시 후보가 된다.
+const MAX_MARKS = 120;
+
+const splitPos = (s) => String(s || '').split('·').map((x) => x.trim()).filter(Boolean);
+
+const markKey = (lineIdx, word) => `${lineIdx}:${word}`;
+
+/**
+ * 판별할 (줄, 단어) 목록 수집.
+ * 대상: 한자를 포함하고, jieba pos·캐시 pos 중 하나라도 명/동/형 계열이거나 품사 미상인 토큰.
+ * 같은 줄의 중복 단어는 한 번만 — 드물게 한 줄에서 같은 단어가 다른 품사로 두 번 쓰여도
+ * 첫 판정을 공유한다(단순화 트레이드오프).
+ * @param {Array<{tokens: Array}>} tokenizedLines
+ * @param {Map<string, {pos}>} cache - base_form → morpheme_dictionary 행
+ * @returns {Array<{lineIdx, word, key}>}
+ */
+export function collectZhPosMarks(tokenizedLines, cache) {
+  const marks = [];
+  const seen = new Set();
+  tokenizedLines.forEach(({ tokens }, lineIdx) => {
+    for (const t of tokens || []) {
+      if (!t?.text || !HAS_HANZI.test(t.text)) continue;
+      const cachedPos = cache.get(t.base_form)?.pos;
+      const labels = [
+        ...splitPos(cachedPos),
+        ...splitPos(t.pos_all),
+        ...(t.pos ? [t.pos] : []),
+      ];
+      // 라벨이 하나도 없으면 품사 미상(jieba 미지 태그 + 캐시 없음) — 판별로 채울 기회를 준다.
+      if (labels.length > 0 && !labels.some((p) => MARKABLE_POS.has(p))) continue;
+      const key = markKey(lineIdx, t.text);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      marks.push({ lineIdx, word: t.text, key });
+    }
+  });
+  return marks.slice(0, MAX_MARKS);
+}
+
+function buildZhPosPrompt(lines, marks) {
+  // 판별 단어가 있는 줄만 실어 프롬프트를 줄인다(원 줄 번호 → 표시 번호 재부여).
+  const usedLineIdxs = [...new Set(marks.map((m) => m.lineIdx))];
+  const lineNo = new Map(usedLineIdxs.map((idx, i) => [idx, i + 1]));
+  const sentenceList = usedLineIdxs.map((idx) => `${lineNo.get(idx)}. ${lines[idx]}`).join('\n');
+  const wordList = marks.map((m, i) => `${i + 1}. "${m.word}" (문장 ${lineNo.get(m.lineIdx)})`).join('\n');
+  return `다음은 중국어 문장 목록과, 각 문장에서 품사를 판정할 단어 목록입니다.
+
+## 문장
+${sentenceList}
+
+## 단어
+${wordList}
+
+각 단어에 대해 JSON 배열로 답하세요.
+
+## 출력 형식 (단어 목록과 순서·길이 정확히 일치)
+[
+  { "all": ["동사", "명사"], "pos": "동사" },
+  { "all": ["명사"], "pos": "명사" },
+  ...
+]
+
+## 규칙
+- all: 이 단어가 중국어에서 일반적으로 갖는 품사 후보 (흔한 순, 1~3개)
+- pos: 지정된 문장의 맥락에서 이 단어가 실제로 쓰인 품사 — 반드시 all 중 하나
+- 품사 명칭: 명사/동사/형용사/부사/전치사/접속사/조사/대명사/양사/수사/감탄사/성어/지명/인명/고유명사
+- 설명/주석 금지, JSON만 출력`;
+}
+
+/**
+ * 판별 실행 — 요청당 Gemini flash-lite 1회.
+ * @param {string[]} lines - 요청의 원 줄 배열(marks의 lineIdx와 같은 인덱스 공간)
+ * @param {Array<{lineIdx, word, key}>} marks - collectZhPosMarks 결과
+ * @param {object} [opts]
+ * @param {number|null} [opts.deadlineMs] - 이 시각(epoch ms)을 넘겼으면 호출 자체를 생략
+ * @returns {Promise<Map<string, {pos: string, all: string[]}>>} mark.key → 판정
+ */
+export async function disambiguateZhPos(lines, marks, opts = {}) {
+  const { deadlineMs = null } = opts;
+  const picks = new Map();
+  if (!marks.length) return picks;
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return picks; // 뜻 조회와 달리 없어도 치명 아님 — 기존 pos로 폴백
+  if (deadlineMs != null && Date.now() >= deadlineMs) return picks;
+
+  try {
+    const res = await fetch(`${GEMINI_URL}?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(15_000),
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: buildZhPosPrompt(lines, marks) }] }],
+        generationConfig: { temperature: 0 },
+      }),
+    });
+    if (!res.ok) {
+      console.warn('[disambiguateZhPos] HTTP', res.status);
+      return picks;
+    }
+    const data = await res.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) return picks;
+    const parsed = parseJsonLenient(text);
+    if (!Array.isArray(parsed) || parsed.length !== marks.length) {
+      console.warn('[disambiguateZhPos] length mismatch', parsed?.length, marks.length);
+      return picks;
+    }
+    parsed.forEach((entry, i) => {
+      const all = Array.isArray(entry?.all)
+        ? entry.all.filter((p) => typeof p === 'string' && p.trim()).map((p) => p.trim().slice(0, 20)).slice(0, 4)
+        : [];
+      const pos = typeof entry?.pos === 'string' ? entry.pos.trim().slice(0, 20) : '';
+      if (!pos || !all.includes(pos)) return; // pos∉all은 모델 위반 — 버리고 이 단어는 폴백
+      picks.set(marks[i].key, { pos, all });
+    });
+  } catch (err) {
+    console.warn('[disambiguateZhPos] failed:', err?.message);
+  }
+  return picks;
+}
+
+/**
+ * 토큰 하나의 최종 pos / pos_all 결정(순수 함수 — 라우트 조립부에서 사용).
+ * 후보 집합 우선순위: 문맥 판별 all > 사전 다중 pos('·' 연결) > jieba 겸류 확장(pos_all).
+ * pos 우선순위: 문맥 pick > 후보 첫 항목(흔한 순) > 캐시 pos > jieba pos(기존 동작과 동일).
+ * @returns {{pos: string|null, posAll: string|null}} posAll은 후보 2개 이상일 때만('·' 연결)
+ */
+export function resolveZhTokenPos({ pick, cachedPos, tokenPos, tokenPosAll }) {
+  const fromPick = pick?.all?.length ? pick.all : null;
+  const cachedList = splitPos(cachedPos);
+  const jiebaList = splitPos(tokenPosAll);
+  const candidates = fromPick ?? (cachedList.length > 1 ? cachedList : null) ?? (jiebaList.length > 1 ? jiebaList : null);
+  const pos = pick?.pos ?? candidates?.[0] ?? (cachedPos || tokenPos || null);
+  const posAll = candidates && candidates.length > 1 ? candidates.join('·') : null;
+  return { pos, posAll };
+}
+
+export { markKey as zhPosMarkKey };
