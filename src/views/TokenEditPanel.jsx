@@ -12,6 +12,8 @@ export default function TokenEditPanel({ token, language, dictEntry, saving, onS
   const [meaningPos, setMeaningPos] = useState(null); // 칩 선택 시 동반 교정할 pos
   const [reading, setReading] = useState(token?.furigana || '');
   const [multiReadings, setMultiReadings] = useState([]);
+  // 링큐식 전역 적용 — 켜면 공유 사전(user_verified 승격)과 내 단어장에도 반영
+  const [applyGlobal, setApplyGlobal] = useState(false);
 
   // 중국어 1자 다음자 후보(还 hái/huán 등) — pinyin-pro 지연 로드, 실패해도 직접 입력 가능
   useEffect(() => {
@@ -44,7 +46,7 @@ export default function TokenEditPanel({ token, language, dictEntry, saving, onS
     if (reading.trim() !== (token?.furigana || '')) corrections.furigana = reading.trim();
     if (corrections.meaning && meaningPos) corrections.pos = meaningPos;
     if (Object.keys(corrections).length === 0) { onClose(); return; }
-    onSave(corrections);
+    onSave(corrections, { applyGlobal });
   };
 
   return (
@@ -93,6 +95,15 @@ export default function TokenEditPanel({ token, language, dictEntry, saving, onS
         placeholder="직접 입력"
         onChange={(e) => setReading(e.target.value)}
       />
+
+      <label className="token-edit__global">
+        <input
+          type="checkbox"
+          checked={applyGlobal}
+          onChange={(e) => setApplyGlobal(e.target.checked)}
+        />
+        이 단어 전체에 적용 (사전·단어장)
+      </label>
 
       <div className="token-edit__actions">
         <button type="button" className="btn btn--ghost btn--sm" onClick={onClose}>취소</button>
