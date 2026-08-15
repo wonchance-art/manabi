@@ -34,6 +34,7 @@ import { formatDetail } from '../lib/wordDetailFormat';
 import { useSeriesNeighbors } from '../lib/useSeriesNeighbors';
 import { useTitleEdit } from '../lib/useTitleEdit';
 import { useDragWordPopup } from '../lib/useDragWordPopup';
+import { useTokenRangeSelect } from '../lib/useTokenRangeSelect';
 import { useNextRangeMutation } from '../lib/useNextRangeMutation';
 import { useReadProgress } from '../lib/useReadProgress';
 import { useScrollRestore } from '../lib/useScrollRestore';
@@ -231,12 +232,11 @@ export default function ViewerPage() {
 
   const grammar = useGrammarAnalysis({ toast, materialLang });
   const { isGrammarModalOpen, setIsGrammarModalOpen, grammarAnalysis,
-          isGrammarLoading, selectedRangeText, checkedActions, setCheckedActions,
+          isGrammarLoading, selectedRangeText, setSelectedRangeText,
+          checkedActions, setCheckedActions,
           grammarFollowUp, setGrammarFollowUp,
           grammarFollowLoading, analyzeGrammar,
-          requestGrammarAnalysis, askFollowUp,
-          setSelectionPopup: setGrammarSelectionPopup,
-          handleTextSelection: handleGrammarTextSelection } = grammar;
+          requestGrammarAnalysis, askFollowUp } = grammar;
 
   const { data: savedWords = { byKey: new Map(), surfaces: new Set(), bases: new Set() } } = useQuery({
     queryKey: ['vocab-words', user?.id],
@@ -378,6 +378,7 @@ export default function ViewerPage() {
     setDragTokens(null);
     setWordDetail(null);
     setPickedLineIdx(null);
+    tokenRange.clearRange(); // 범위 지정 이펙트와 상호 배타
     setRightSheetSignal(s => s + 1);
     if (settings.autoSpeakOnClick && ttsSupported && t.text) {
       speak(t.text, materialLang);
@@ -431,29 +432,19 @@ export default function ViewerPage() {
   // 드래그 단어 클릭 → AI 상세 팝업 (PDF와 동일)
   const { popupWord, setPopupWord, handleDragWordClick } = useDragWordPopup(materialLang);
 
-  const handleTextSelection = () => {
-    setTimeout(async () => {
-      const selObj = window.getSelection();
-      const sel = selObj?.toString()?.trim();
-      if (!sel || sel.length < 2) {
-        handleGrammarTextSelection(isGrammarModalOpen); // 선택 해제 → 문법 팝업 정리 경로
-        return;
-      }
-      // AI 발동은 본문 텍스트 선택에만 — 사이드 패널·AI 결과·기타 UI에서의 선택은 완전 무시
-      const reader = readerRef.current;
-      const inReader = (node) => {
-        if (!node || !reader) return false;
-        return reader.contains(node.nodeType === Node.TEXT_NODE ? node.parentNode : node);
-      };
-      if (!inReader(selObj.anchorNode) || !inReader(selObj.focusNode)) {
-        setGrammarSelectionPopup(null); // 이전 팝업이 남지 않게만 정리
-        return;
-      }
-      handleGrammarTextSelection(isGrammarModalOpen);
-      setPickedLineIdx(null); // 드래그 선택은 브라우저 하이라이트가 담당 — 막대 지정 이펙트 해제
-      await runSelectionAnalysis(sel);
-    }, 100);
-  };
+  // 인앱 토큰 범위 지정 — 네이티브 선택 대체(앱 전역 무선택 정책). 데스크톱 즉시 드래그,
+  // 모바일 길게 누르기(300ms) 후 드래그. 확정 시 기존 분석 파이프라인에 그대로 투입하고,
+  // 문법 버튼 활성 경로(selectedRangeText)도 같은 텍스트로 채운다.
+  const tokenRange = useTokenRangeSelect({
+    sequence: material?.processed_json?.sequence,
+    dictionary: material?.processed_json?.dictionary,
+    enabled: true,
+    onSelect: (text) => {
+      setPickedLineIdx(null); // 막대 지정 이펙트와 상호 배타
+      setSelectedRangeText(text);
+      runSelectionAnalysis(text);
+    },
+  });
 
   // 드래그 선택·문장 버튼 공용 — 왼쪽 번역+맥락, 오른쪽 단어 리스트 분석
   const runSelectionAnalysis = async (sel) => {
@@ -904,7 +895,7 @@ export default function ViewerPage() {
   );
 
   return (
-    <div className={`viewer-3col viewer-theme-${theme}`} onMouseUp={handleTextSelection}>
+    <div className={`viewer-3col viewer-theme-${theme}`}>
 
       {/* 왼쪽 — 문법 해설 / 맥락 */}
       <aside className="viewer-side viewer-side--left">
@@ -1207,11 +1198,13 @@ export default function ViewerPage() {
         </div>{/* viewer-settings__body */}
       </div>
 
-      {/* Reader Area */}
+      {/* Reader Area — 인앱 토큰 범위 지정(드래그) 이벤트는 여기서 위임 수신 */}
       <div
         ref={readerRef}
         className={`card reader-area reader-area--${theme}`}
         style={{ fontSize: `${fontSize}rem`, fontFamily, gap: `${lineGap}px ${charGap}rem` }}
+        onPointerDown={tokenRange.handlePointerDown}
+        onClickCapture={tokenRange.handleClickCapture}
       >
         {isAnalyzing && !isStaleAnalysis && (
           <div className="analyzing-banner">
@@ -1287,7 +1280,9 @@ export default function ViewerPage() {
           const renderToken = (tokenId, lineHead = null, picked = false) => {
             const token = json.dictionary[tokenId];
             if (!token) return null;
-            const pickedClass = picked ? ' word-token--picked' : '';
+            // 막대 지정(줄 전체)과 인앱 범위 지정이 같은 이펙트 언어를 공유한다(#1002)
+            const inRange = tokenRange.rangeTokenIds?.has(tokenId) ?? false;
+            const pickedClass = picked || inRange ? ' word-token--picked' : '';
             // 줄 첫 토큰에만 문장 전체 지정 막대 — 한자와 같은 라인박스에 인라인으로 앉혀
             // 루비(요미가나·병음) 유무와 무관하게 본문 글자 높이에 정렬된다.
             const linePick = lineHead ? (
@@ -1298,7 +1293,9 @@ export default function ViewerPage() {
                 onMouseUp={e => e.stopPropagation()}
                 onClick={e => {
                   e.stopPropagation();
+                  tokenRange.clearRange(); // 범위 지정 이펙트와 상호 배타
                   setPickedLineIdx(lineHead.rawIdx); // 문장 전체 지정 이펙트
+                  setSelectedRangeText(lineHead.text); // 문법 버튼 활성 경로
                   runSelectionAnalysis(lineHead.text);
                 }}
               />
@@ -1306,6 +1303,7 @@ export default function ViewerPage() {
             if (token.failed) {
               return (
                 <div key={tokenId} ref={el => { if (el) tokenRefs.current[tokenId] = el; }}
+                  data-tid={tokenId}
                   className={`word-token word-token--failed${pickedClass}`} title="분석 실패 — 재시도 버튼을 눌러주세요">
                   {linePick}
                   <span className="furigana" />
@@ -1321,6 +1319,7 @@ export default function ViewerPage() {
               : null;
             return (
               <div key={tokenId} ref={el => { if (el) tokenRefs.current[tokenId] = el; }}
+                data-tid={tokenId}
                 className={`word-token ${isSaved ? 'word-token--saved' : ''} ${isDue ? 'word-token--due' : ''}${pickedClass}`}
                 role="button" tabIndex={0}
                 onClick={() => handleTokenClick(token, tokenId)}
