@@ -14,10 +14,19 @@ const POS_KO = {
   a: '형용사', ad: '부사성 형용사', an: '명사성 형용사',
   d: '부사', m: '수사', q: '양사', r: '대명사', p: '전치사',
   c: '접속사', u: '조사', xc: '허사', y: '어기조사', o: '의성어',
+  // jieba 세부 조사 태그(uj=的·ul=了·ud=得·uv=地·uz=着·ug=过) — 누락 시 초고빈도 조사가
+  // 품사 미상으로 남아 문맥 판별 대상에 매번 끼어든다(프롬프트 낭비).
+  uj: '조사', ul: '조사', ud: '조사', uv: '조사', uz: '조사', ug: '조사',
   e: '감탄사', i: '성어', l: '관용구', j: '약어', s: '처소사',
   t: '시간사', f: '방위사', b: '구별사', z: '상태사', h: '접두',
   k: '접미', g: '어소', w: '기호', x: '기타', eng: '외국어',
 };
+
+// jieba 겸류(兼类) 태그 → 품사 후보('·' 연결, 기본 계열 우선). 중국어는 한 단어가 명사·동사
+// 등으로 두루 쓰이는데 jieba는 문맥과 무관하게 단어당 한 태그만 단다(실측: 工作은 我在工作
+// 에서도 vn). 후보를 pos_all로 실어 보내면 /api/analyze의 문맥 판별기(disambiguateZhPos)가
+// 문장에 맞는 하나를 짚고, 판별 실패 시 첫 후보가 폴백 표시가 된다.
+const POS_ALL = { vn: '동사·명사', vd: '동사·부사', an: '형용사·명사', ad: '형용사·부사' };
 
 const HAS_HANZI = /[一-鿿]/;
 const PUNCT = /^[\s。、，．！？!?,.:;：；""''「」『』（）()【】…·\-—～~]+$/;
@@ -61,6 +70,7 @@ export function tokenizeZhLine(line) {
       base_form: text,                       // 중국어는 굴절이 없다 — 표면형이 곧 표제어
       furigana: isPunct || !HAS_HANZI.test(text) ? '' : syllables.join(' '),
       pos: isPunct ? '기호' : (POS_KO[tag] ?? null),
+      ...(!isPunct && POS_ALL[tag] ? { pos_all: POS_ALL[tag] } : {}),
     });
   }
   return tokens;

@@ -40,6 +40,25 @@ describe('중국어 토큰화', () => {
   });
 });
 
+// 겸류(兼类) 후보: jieba는 사전 등재어에 문맥 불문 한 태그만 단다(工作은 我在工作에서도 vn).
+// vn/vd/an/ad 겸류 태그는 pos_all 후보로 확장해 문맥 판별기(disambiguateZhPos)가 짚게 한다.
+describe('겸류 품사 후보(pos_all)', () => {
+  it('vn 태그 단어는 동사·명사 후보를 싣는다', () => {
+    const t = tokenizeZhLine('我在工作。').find((x) => x.text === '工作');
+    expect(t.pos_all).toBe('동사·명사');
+  });
+
+  it('단일 품사 단어에는 pos_all이 없다', () => {
+    const t = tokenizeZhLine('我在工作。').find((x) => x.text === '我');
+    expect(t.pos_all).toBeUndefined();
+  });
+
+  it('문장부호에는 pos_all이 없다', () => {
+    const t = tokenizeZhLine('好。').find((x) => x.text === '。');
+    expect(t.pos_all).toBeUndefined();
+  });
+});
+
 // 문맥 병음(#1004): 줄 전체를 pinyin-pro에 넘겨 다음자·성조 변조를 문장 문맥으로 처리한다.
 // (단어별 호출의 실측 오류: 不对→bù(변조 누락), 走了→liǎo(오독))
 describe('문맥 병음 — 다음자·변조', () => {
